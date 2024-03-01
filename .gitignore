@@ -1,2 +1,11 @@
 /build
 /lake-packages/*
+
+# Mac stuff
+
+.DS_Store
+
+# Windows Stuff
+
+lakefile.olean.lock
+lakefile.olean.trace
