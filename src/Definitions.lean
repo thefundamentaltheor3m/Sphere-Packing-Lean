@@ -2,36 +2,39 @@ import Mathlib.Analysis.InnerProductSpace.EuclideanDist
 import Mathlib.Geometry.Euclidean.Sphere.Basic
 import Mathlib.LinearAlgebra.FiniteDimensional
 
--- variable (V : Type _) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
-
 variable (n : ℕ)
--- Below copied from Mathlib/MeasureTheory/Integral/TorusIntegral.lean
--- The following allows the local notation ℝⁿ = Fin n → ℝ
+-- The following (copied from Mathlib/MeasureTheory/Integral/TorusIntegral.lean)
+-- allows the local notation ℝⁿ = Fin n → ℝ
 local macro:arg t:term:max noWs "ⁿ" : term => `(Fin n → $t)
 
 open Euclidean
 
 namespace SpherePacking
 
--- The following definition is NOT good: it means we'd need to supply each of those ingredients
--- explicitly every time we want to move forward.
-
--- def SpherePacking {P : Set V} (hP : Countable P) {r : ℝ} (hr : r > 0)
---   (hPr : ∀ p₁ p₂ : V, p₁ ∈ P → p₂ ∈ P → p₁ ≠ p₂ → Euclidean.dist p₁ p₂ > 2 * r) : Set V :=
---   {y | ∃ p : V, p ∈ P ∧ y ∈ ball p r}
-
--- Maybe we will also get an idea once we do packing density...
+/-
+# We define a Sphere Packing as a 5-tuple consisting of
+1. `centres`: A subset of ℝⁿ consisting of the centres of the spheres
+2. `hcc`: The `h`ypothesis that the set of `c`entres is `c`ountable
+3. `radius`: The (common) radius of each sphere in the packing
+4. `hrad`: The hypothesis that `radius` is positive
+5. `hpacking`: The hypothesis that no two spheres centred at points in `centres` with common
+    radius `c` intersect---ie, that the spheres do, indeed, form a packing.
+Remark. We define packings to be extensional: two packings are equal iff they have the same set of
+centres and the same common radius.
+-/
 
 @[ext]
 structure SpherePacking where
-  centres : Set ℝⁿ -- A subset of ℝⁿ
-  hcc : Countable centres -- Hypothesis that there are countably many centres
-  radius : ℝ -- The radius of each sphere in the packing
-  hrad : radius > 0 -- Hypothesis that the common radius is positive
-  -- Now, the hypothesis that the spheres form a valid packing
-  hpacking : ∀ p₁ p₂ : ℝⁿ, p₁ ∈ centres → p₂ ∈ centres → p₁ ≠ p₂ → Euclidean.dist p₁ p₂ > 2 * radius
+  centres : Set ℝⁿ
+  hcc : Countable centres
+  radius : ℝ
+  hrad : radius > 0
+  hpacking : ∀ p₁ p₂ : ℝⁿ, p₁ ∈ centres → p₂ ∈ centres → p₁ ≠ p₂ →
+    Euclidean.dist p₁ p₂ > 2 * radius
 
 #check SpherePacking.ext_iff
+
+-- Below, we give a few examples of sphere packings.
 
 def EgPacking2 : SpherePacking 2 where -- An example of a sphere packing in two dimensions
   centres := ∅
@@ -48,4 +51,4 @@ def EgPacking1 : SpherePacking 1 where -- An example of a sphere packing in one 
   hcc := Finite.to_countable
   radius := 1
   hrad := by linarith
-  hpacking := sorry -- Annoying to prove...
+  hpacking := sorry
