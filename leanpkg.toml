@@ -1,0 +1,15 @@
+# leanpkg.toml -- This file was generated using copilot
+
+# The Lean version to use for this project
+lean_version = "4.6.0"
+
+# The Lean package dependencies
+dependencies = [
+  { name = "mathlib4", git = "https://github.com/leanprover-community/mathlib4", rev = "master" }
+]
+
+# The Lean package configuration
+[package]
+name = "Sphere-Packing-Lean"
+version = "0.1"
+lean_version = ">=4.0.0"
