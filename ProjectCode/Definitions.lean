@@ -33,7 +33,7 @@ structure SpherePacking where
 
 #check SpherePacking.ext_iff
 
-def Packing2 : SpherePacking 2 where -- An example of a sphere packing in two dimensions
+def EgPacking2 : SpherePacking 2 where -- An example of a sphere packing in two dimensions
   centres := ∅
   hcc := Encodable.countable
   radius := 1
@@ -43,7 +43,7 @@ def Packing2 : SpherePacking 2 where -- An example of a sphere packing in two di
     exfalso
     assumption
 
-def Packing1 : SpherePacking 1 where -- An example of a sphere packing in one dimension
+def EgPacking1 : SpherePacking 1 where -- An example of a sphere packing in one dimension
   centres := {2, 4, 6, 8, 10}
   hcc := Finite.to_countable
   radius := 1
