@@ -39,7 +39,7 @@ To do:
 * Check with Kevin/Rob/Moritz how to build a dependency graph and a blueprint (LaTeX + Lean integration)
 * Formalise the notion of lattice (or check for existing, compatible ones)
 * Formalise Dual Lattice
-* Formalise isomorphism with $GL_n(\mathbb{R}) / GL_n(\mathbb{Z})
+* Formalise isomorphism with $\mathrm{GL}_n(\mathbb{R}) / \mathrm{GL}_n(\mathbb{Z})$
 * Formulae highlighted in notes
 
 Next Meeting: Friday, 15 March, MA B3 444
