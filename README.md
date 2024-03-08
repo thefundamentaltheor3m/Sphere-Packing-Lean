@@ -1,3 +1,5 @@
-# Welcome!
+# Sphere Packing in Lean
 
-This is for a project undertaken at EPFL in the Spring Semester of 2023-2024 under the supervision of Maryna Viazovska.
+This is a (very nascent) project attempting to formalise some notions about Sphere Packing in Lean.
+
+Contributors: Maryna Viazovska (EPFL), Sidharth Hariharan (Imperial College London/EPFL)
