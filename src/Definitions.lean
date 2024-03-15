@@ -14,23 +14,28 @@ local macro:arg t:term:max noWs "ⁿ" : term => `(Fin n → $t)
 
 instance : AddCommMonoid (ℝⁿ) := Pi.addCommMonoid
 noncomputable instance : Module ℝ (ℝⁿ) := Pi.module (Fin n) (fun i => ℝ) ℝ
+instance : Module ℤ (ℝⁿ) := by exact AddCommGroup.intModule (Fin n → ℝ)
 
 open Euclidean
 
+namespace SpherePacking
+
 section Lattices
-open LinearMap
+open BigOperators
 
 -- TODO: Definition of Lattice
 
-def elts_of (B : Basis (Fin n) ℝ ℝⁿ) : Set ℝⁿ :=
-  -- ⋃ (i : (Fin n)), {B i}
-  sorry
+def lattice (B : Basis (Fin n) ℝ ℝⁿ) : Set ℝⁿ :=
+  {v : ℝⁿ | ∃ (a : ℤⁿ), v = ∑ i : (Fin n), ↑(a i) * (B i) }
 
-def lattice' (B : Basis (Fin n) ℝ ℝⁿ) : Set ℝⁿ := -- Submodule.span ℤ (somehow extract elts of B)
-  sorry
+-- instance {B : Basis (Fin n) ℝ ℝⁿ} (lattice n B) : Submodule ℤ ℝⁿ := sorry
 
-def lattice (B : (Fin n) → ℝⁿ) (h : LinearIndependent ℝ B) :
-  Set ℝⁿ :=  sorry
+structure LatticeElement (B : Basis (Fin n) ℝ ℝⁿ) :=
+(v : ℝⁿ) (h : ∃ (a : ℤⁿ), v = ∑ i : (Fin n), ↑(a i) * (B i))
+
+def Lattice (B : Basis (Fin n) ℝ ℝⁿ) : Type := LatticeElement n B
+
+instance {B : Basis (Fin n) ℝ ℝⁿ} : AddCommGroup (LatticeElement n B) := sorry
 
 end Lattices
 
@@ -79,5 +84,23 @@ def EgPacking1 : SpherePacking 1 where -- An example of a sphere packing in one 
   radius := 1
   hrad := by linarith
   hpacking := sorry
+
+/- A Packing is S-Periodic if the set of centres is invariant under
+   addition by elements of S. -/
+def PeriodicPacking (P : SpherePacking n) (S : Set ℝⁿ) : Prop :=
+  ∀ (s c : ℝⁿ), s ∈ S → c ∈ P.centres → c + s ∈ P.centres
+
+example : PeriodicPacking 2 EgPacking2 {2} := by
+  intros s c hs hc
+  contradiction
+
+example (P : SpherePacking n) : PeriodicPacking n P {(0 : ℝⁿ)} := by
+  intros s c hs hc
+  have : s = (0 : ℝⁿ) := hs
+  simp_rw [this, add_zero]  -- Make this less clunky looking
+  assumption
+
+
+end SpherePacking
 
 end SpherePacking
