@@ -6,6 +6,7 @@ import Mathlib.GroupTheory.QuotientGroup
 import Mathlib.LinearAlgebra.Basis
 import Mathlib.LinearAlgebra.Span
 import Mathlib.LinearAlgebra.LinearIndependent
+-- TODO: Clean up imports once done with file
 
 variable (n : ℕ)
 -- The following (copied from Mathlib/MeasureTheory/Integral/TorusIntegral.lean)
@@ -23,7 +24,7 @@ namespace SpherePacking
 section Lattices
 open BigOperators
 
--- TODO: Definition of Lattice
+-- What's the best way of defining a lattice??
 
 def lattice (B : Basis (Fin n) ℝ ℝⁿ) : Set ℝⁿ :=
   {v : ℝⁿ | ∃ (a : ℤⁿ), v = ∑ i : (Fin n), ↑(a i) * (B i) }
@@ -85,21 +86,29 @@ def EgPacking1 : SpherePacking 1 where -- An example of a sphere packing in one 
   hrad := by linarith
   hpacking := sorry
 
-/- A Packing is S-Periodic if the set of centres is invariant under
+/- A Packing is S-periodic if the set of centres is invariant under
    addition by elements of S. -/
-def PeriodicPacking (P : SpherePacking n) (S : Set ℝⁿ) : Prop :=
+def Periodic (P : SpherePacking n) (S : Set ℝⁿ) : Prop :=
   ∀ (s c : ℝⁿ), s ∈ S → c ∈ P.centres → c + s ∈ P.centres
 
-example : PeriodicPacking 2 EgPacking2 {2} := by
+example : Periodic 2 EgPacking2 {2} := by
   intros s c hs hc
   contradiction
 
-example (P : SpherePacking n) : PeriodicPacking n P {(0 : ℝⁿ)} := by
+example (P : SpherePacking n) : Periodic n P {(0 : ℝⁿ)} := by
   intros s c hs hc
   have : s = (0 : ℝⁿ) := hs
   simp_rw [this, add_zero]  -- Make this less clunky looking
   assumption
 
+/- A Packing `P` is self-periodic if it is `P.centres`-periodic. -/
+def SelfPeriodic (P : SpherePacking n) : Prop := Periodic n P P.centres
+
+-- We'd like to be able to say of any packing `P` that if `P.centres` is a lattice, `P`
+-- is self-periodic. To do so, we'd need some sort of `is_lattice` type result.
+-- This might generally be a better approach: we could then define a structure for lattices whose
+-- first term is the lattice (which'll have Type `Set ℝⁿ`) and whose second term has Type
+-- `is_lattice`.
 
 end SpherePacking
 
