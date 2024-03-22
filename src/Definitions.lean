@@ -15,6 +15,9 @@ local macro:arg t:term:max noWs "ⁿ" : term => `(Fin n → $t)
 
 instance : AddCommMonoid (ℝⁿ) := Pi.addCommMonoid
 noncomputable instance : Module ℝ (ℝⁿ) := Pi.module (Fin n) (fun i => ℝ) ℝ
+instance : AddCommGroup (ℝⁿ) := Pi.addCommGroup
+instance : FiniteDimensional ℝ ℝⁿ := sorry
+instance : InnerProductSpace ℝ ℝⁿ := sorry
 instance : Module ℤ (ℝⁿ) := by exact AddCommGroup.intModule (Fin n → ℝ)
 
 open Euclidean
@@ -26,10 +29,14 @@ open BigOperators
 
 -- What's the best way of defining a lattice??
 
-def lattice (B : Basis (Fin n) ℝ ℝⁿ) : Set ℝⁿ :=
-  {v : ℝⁿ | ∃ (a : ℤⁿ), v = ∑ i : (Fin n), ↑(a i) * (B i)}
+def in_lattice (B : Basis (Fin n) ℝ ℝⁿ) (v : ℝⁿ) : Prop :=
+  ∃ (a : ℤⁿ), v = ∑ i : (Fin n), ↑(a i) * (B i)
 
-instance {B : Basis (Fin n) ℝ ℝⁿ} : AddCommGroup ↑(lattice n B) := by sorry
+def lattice (B : Basis (Fin n) ℝ ℝⁿ) : Set ℝⁿ :=
+  {v : ℝⁿ | in_lattice n B v}
+
+instance {B : Basis (Fin n) ℝ ℝⁿ} : AddCommGroup ↑(lattice n B) := by
+  sorry
 
 -- structure lattice' (B : Basis (Fin n) ℝ ℝⁿ) :=
 --   (vectors : Set ℝⁿ) (h : ∀ (v : ℝⁿ), v ∈ vectors → ∃ (a : ℤⁿ), v = ∑ i : (Fin n), ↑(a i) * (B i))
@@ -57,7 +64,6 @@ def nonoverlapping (centres : Set ℝⁿ) (radius : ℝ) : Prop :=  ∀ p₁ p�
 @[ext]
 structure SpherePacking where
   centres : Set ℝⁿ
-  -- hcc : Countable centres  -- I don't think this is necessary.
   radius : ℝ
   hrad : radius > 0
   hpacking : nonoverlapping n centres radius
@@ -68,7 +74,6 @@ structure SpherePacking where
 
 def EgPacking2 : SpherePacking 2 where -- An example of a sphere packing in two dimensions
   centres := ∅
-  -- hcc := Encodable.countable
   radius := 1
   hrad := by linarith
   hpacking := by
@@ -77,17 +82,30 @@ def EgPacking2 : SpherePacking 2 where -- An example of a sphere packing in two 
     assumption
 
 def EgPacking1 : SpherePacking 1 where -- An example of a sphere packing in one dimension
-  centres := {2, 4, 6, 8, 10}
-  -- hcc := Finite.to_countable
+  centres := {2, 4}
   radius := 1
   hrad := by linarith
-  hpacking := sorry
+  hpacking := by
+    intros p₁ p₂ hp₁ hp₂ hp₁p₂
+    have h₁ : p₁ = 2 ∨ p₁ = 4 := hp₁
+    have h₂ : p₂ = 2 ∨ p₂ = 4 := hp₂
+    rcases h₁ with c₁ | c₂;
+    { rcases h₂ with d₁ | d₂;
+      { rw [c₁, d₁] at hp₁p₂
+        contradiction }
+      { rw [c₁, d₂]
+        sorry } }
+    { rcases h₂ with d₁ | d₂;
+      { sorry }
+      { rw [c₂, d₂] at hp₁p₂
+        contradiction } }
 
 /- A Packing is S-periodic if the set of centres is invariant under addition by elements of S. -/
 def Periodic (P : SpherePacking n) (S : Set ℝⁿ) : Prop :=
   ∀ (s c : ℝⁿ), s ∈ S → c ∈ P.centres → c + s ∈ P.centres
 
-example : Periodic 2 EgPacking2 {2} := by
+example : Periodic 2 EgPacking2 {0} := by
+  unfold Periodic
   intros s c hs hc
   contradiction
 
@@ -96,6 +114,9 @@ example (P : SpherePacking n) : Periodic n P {(0 : ℝⁿ)} := by
   have : s = (0 : ℝⁿ) := hs
   simp_rw [this, add_zero]  -- Make this less clunky looking
   assumption
+
+lemma Countable_Centres (P : SpherePacking n) : Countable P.centres := by
+  sorry
 
 /- A Packing `P` is self-periodic if it is `P.centres`-periodic. -/
 def SelfPeriodic (P : SpherePacking n) : Prop := Periodic n P P.centres
