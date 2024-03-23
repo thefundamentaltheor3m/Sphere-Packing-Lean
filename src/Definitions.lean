@@ -11,14 +11,24 @@ import Mathlib.LinearAlgebra.LinearIndependent
 variable (n : ℕ)
 -- The following (copied from Mathlib/MeasureTheory/Integral/TorusIntegral.lean)
 -- allows the local notation ℝⁿ = Fin n → ℝ
-local macro:arg t:term:max noWs "ⁿ" : term => `(Fin n → $t)
+-- local macro:arg t:term:max noWs "ⁿ" : term => `(EuclideanSpace $t (Fin n)) --(Fin n → $t) -- EuclideanSpace
+local macro:arg t:term:max noWs "ⁿ" : term => `(EuclideanSpace $t (Fin n))
+
+-- I seriously doubt that all of this is necessary...
 
 instance : AddCommMonoid (ℝⁿ) := Pi.addCommMonoid
+instance : AddCommGroup (ℝⁿ) := Pi.addCommGroup
 noncomputable instance : Module ℝ (ℝⁿ) := Pi.module (Fin n) (fun i => ℝ) ℝ
 instance : AddCommGroup (ℝⁿ) := Pi.addCommGroup
-instance : FiniteDimensional ℝ ℝⁿ := sorry
+instance : FiniteDimensional ℝ ℝⁿ := Module.Finite.pi
 instance : InnerProductSpace ℝ ℝⁿ := sorry
-instance : Module ℤ (ℝⁿ) := by exact AddCommGroup.intModule (Fin n → ℝ)
+instance : TopologicalSpace ℝⁿ := Pi.topologicalSpace
+instance : TopologicalAddGroup ℝⁿ := TopologicalAddGroup.mk
+instance : T2Space ℝⁿ := Pi.t2Space
+instance : ContinuousSMul ℝ ℝⁿ := instContinuousSMulForAllInstSMulTopologicalSpace
+instance : Module ℤ (ℝⁿ) := AddCommGroup.intModule (EuclideanSpace ℝ (Fin n))
+instance : HMul ℝ ℝⁿ ℝⁿ := { hMul := fun a a => a }
+instance : HMul ℤ ℝⁿ ℝⁿ := { hMul := fun a a => a }
 
 open Euclidean
 
@@ -30,7 +40,7 @@ open BigOperators
 -- What's the best way of defining a lattice??
 
 def in_lattice (B : Basis (Fin n) ℝ ℝⁿ) (v : ℝⁿ) : Prop :=
-  ∃ (a : ℤⁿ), v = ∑ i : (Fin n), ↑(a i) * (B i)
+  ∃ (a : Fin n → ℤ), v = ∑ i : (Fin n), ↑(a i) * (B i)
 
 def lattice (B : Basis (Fin n) ℝ ℝⁿ) : Set ℝⁿ :=
   {v : ℝⁿ | in_lattice n B v}
@@ -81,6 +91,10 @@ def EgPacking2 : SpherePacking 2 where -- An example of a sphere packing in two 
     exfalso
     assumption
 
+instance {m : ℕ} : OfNat (EuclideanSpace ℝ (Fin 1)) m := by
+  -- use toEuclidean somehow
+  sorry
+
 def EgPacking1 : SpherePacking 1 where -- An example of a sphere packing in one dimension
   centres := {2, 4}
   radius := 1
@@ -94,6 +108,7 @@ def EgPacking1 : SpherePacking 1 where -- An example of a sphere packing in one 
       { rw [c₁, d₁] at hp₁p₂
         contradiction }
       { rw [c₁, d₂]
+        -- How does one get Euclidean.dist to output a number????
         sorry } }
     { rcases h₂ with d₁ | d₂;
       { sorry }
@@ -116,6 +131,7 @@ example (P : SpherePacking n) : Periodic n P {(0 : ℝⁿ)} := by
   assumption
 
 lemma Countable_Centres (P : SpherePacking n) : Countable P.centres := by
+  refine { exists_injective_nat' := ?exists_injective_nat' }
   sorry
 
 /- A Packing `P` is self-periodic if it is `P.centres`-periodic. -/
