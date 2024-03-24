@@ -69,7 +69,7 @@ centres and the same common radius. We
 -/
 
 def nonoverlapping (centres : Set ℝⁿ) (radius : ℝ) : Prop :=  ∀ p₁ p₂ : ℝⁿ, p₁ ∈ centres →
-  p₂ ∈ centres → p₁ ≠ p₂ → Euclidean.dist p₁ p₂ > 2 * radius
+  p₂ ∈ centres → p₁ ≠ p₂ → Euclidean.dist p₁ p₂ ≥ 2 * radius
 
 @[ext]
 structure SpherePacking where
