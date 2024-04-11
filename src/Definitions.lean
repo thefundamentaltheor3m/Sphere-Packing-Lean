@@ -1,57 +1,38 @@
-import Mathlib.Analysis.InnerProductSpace.EuclideanDist
-import Mathlib.Geometry.Euclidean.Sphere.Basic
-import Mathlib.LinearAlgebra.FiniteDimensional
-import Mathlib.LinearAlgebra.GeneralLinearGroup
-import Mathlib.GroupTheory.QuotientGroup
-import Mathlib.LinearAlgebra.Basis
-import Mathlib.LinearAlgebra.Span
-import Mathlib.LinearAlgebra.LinearIndependent
--- TODO: Clean up imports once done with file
+import Mathlib
+
+open Euclidean BigOperators
 
 variable (n : ℕ)
+
 -- The following (copied from Mathlib/MeasureTheory/Integral/TorusIntegral.lean)
 -- allows the local notation ℝⁿ = Fin n → ℝ
--- local macro:arg t:term:max noWs "ⁿ" : term => `(EuclideanSpace $t (Fin n)) --(Fin n → $t) -- EuclideanSpace
-local macro:arg t:term:max noWs "ⁿ" : term => `(EuclideanSpace $t (Fin n))
-
--- I seriously doubt that all of this is necessary...
-
-instance : AddCommMonoid (ℝⁿ) := Pi.addCommMonoid
-instance : AddCommGroup (ℝⁿ) := Pi.addCommGroup
-noncomputable instance : Module ℝ (ℝⁿ) := Pi.module (Fin n) (fun i => ℝ) ℝ
-instance : AddCommGroup (ℝⁿ) := Pi.addCommGroup
-instance : FiniteDimensional ℝ ℝⁿ := Module.Finite.pi
-instance : InnerProductSpace ℝ ℝⁿ := sorry
-instance : TopologicalSpace ℝⁿ := Pi.topologicalSpace
-instance : TopologicalAddGroup ℝⁿ := TopologicalAddGroup.mk
-instance : T2Space ℝⁿ := Pi.t2Space
-instance : ContinuousSMul ℝ ℝⁿ := instContinuousSMulForAllInstSMulTopologicalSpace
-instance : Module ℤ (ℝⁿ) := AddCommGroup.intModule (EuclideanSpace ℝ (Fin n))
-instance : HMul ℝ ℝⁿ ℝⁿ := { hMul := fun a a => a }
-instance : HMul ℤ ℝⁿ ℝⁿ := { hMul := fun a a => a }
-
-open Euclidean
+local macro:arg t:term:max noWs "ⁿ" : term => `(Fin n → $t) -- EuclideanSpace
+-- local macro:arg t:term:max noWs "ⁿ" : term => `(EuclideanSpace $t (Fin n))
 
 namespace SpherePacking
 
 section Lattices
-open BigOperators
 
 -- What's the best way of defining a lattice??
 
 def in_lattice (B : Basis (Fin n) ℝ ℝⁿ) (v : ℝⁿ) : Prop :=
   ∃ (a : Fin n → ℤ), v = ∑ i : (Fin n), ↑(a i) * (B i)
 
-def lattice (B : Basis (Fin n) ℝ ℝⁿ) : Set ℝⁿ :=
-  {v : ℝⁿ | in_lattice n B v}
+@[ext]
+structure lattice where
+  basis : Basis (Fin n) ℝ ℝⁿ
+  vectors : Set ℝⁿ
+  hlattice : ∀ v, v ∈ vectors ↔ in_lattice n basis v
 
-instance {B : Basis (Fin n) ℝ ℝⁿ} : AddCommGroup ↑(lattice n B) := by
-  sorry
-
--- structure lattice' (B : Basis (Fin n) ℝ ℝⁿ) :=
---   (vectors : Set ℝⁿ) (h : ∀ (v : ℝⁿ), v ∈ vectors → ∃ (a : ℤⁿ), v = ∑ i : (Fin n), ↑(a i) * (B i))
+#check lattice.ext_iff
 
 -- instance {B : Basis (Fin n) ℝ ℝⁿ} : AddCommGroup (lattice' n B) := sorry
+
+def E8 : lattice n where
+  basis := sorry
+  vectors := {v : ℝⁿ | ((∀ i : Fin n, v i ∈ ℤ) ∨ (∀ i : Fin n, (2 * v i) ∈ ℤ ∧ (v i ∉ ℤ))) ∧
+    ∑ i : Fin n, v i = 0}
+  hlattice := sorry
 
 end Lattices
 
@@ -65,11 +46,17 @@ section SpherePacking
 4. `hpacking`: The hypothesis that no two spheres centred at points in `centres` with common
     radius `c` intersect---ie, that the spheres do, indeed, form a packing.
 Remark. We define packings to be extensional: two packings are equal iff they have the same set of
-centres and the same common radius. We
+centres and the same common radius.
 -/
 
 def nonoverlapping (centres : Set ℝⁿ) (radius : ℝ) : Prop :=  ∀ p₁ p₂ : ℝⁿ, p₁ ∈ centres →
-  p₂ ∈ centres → p₁ ≠ p₂ → Euclidean.dist p₁ p₂ ≥ 2 * radius
+  p₂ ∈ centres → (p₁ ≠ p₂ ↔ Dist.dist p₁ p₂ ≥ 2 * radius)
+
+#check Dist.dist
+#eval Dist.dist (2 : ℝ) 5
+#eval Dist.dist (2 : Fin 1 → ℝ) 5
+#eval Dist.dist (fun j => j + 3 : Fin 2 → ℝ) 0
+#eval Dist.dist (fun j => j + 3 : Fin 4 → ℝ) (fun j => 2*j + 1 : Fin 4 → ℝ)
 
 @[ext]
 structure SpherePacking where
@@ -87,33 +74,13 @@ def EgPacking2 : SpherePacking 2 where -- An example of a sphere packing in two 
   radius := 1
   hrad := by linarith
   hpacking := by
-    intros p₁ p₂ hp₁ hp₂ hp₁p₂
-    exfalso
-    assumption
+    intros p₁ p₂ hp₁
+    contradiction
 
 instance {m : ℕ} : OfNat (EuclideanSpace ℝ (Fin 1)) m := by
   -- use toEuclidean somehow
   sorry
 
-def EgPacking1 : SpherePacking 1 where -- An example of a sphere packing in one dimension
-  centres := {2, 4}
-  radius := 1
-  hrad := by linarith
-  hpacking := by
-    intros p₁ p₂ hp₁ hp₂ hp₁p₂
-    have h₁ : p₁ = 2 ∨ p₁ = 4 := hp₁
-    have h₂ : p₂ = 2 ∨ p₂ = 4 := hp₂
-    rcases h₁ with c₁ | c₂;
-    { rcases h₂ with d₁ | d₂;
-      { rw [c₁, d₁] at hp₁p₂
-        contradiction }
-      { rw [c₁, d₂]
-        -- How does one get Euclidean.dist to output a number????
-        sorry } }
-    { rcases h₂ with d₁ | d₂;
-      { sorry }
-      { rw [c₂, d₂] at hp₁p₂
-        contradiction } }
 
 /- A Packing is S-periodic if the set of centres is invariant under addition by elements of S. -/
 def Periodic (P : SpherePacking n) (S : Set ℝⁿ) : Prop :=
