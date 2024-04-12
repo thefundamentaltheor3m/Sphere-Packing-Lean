@@ -30,8 +30,7 @@ structure lattice where
 
 def E8 : lattice n where
   basis := sorry
-  vectors := {v : ℝⁿ | ((∀ i : Fin n, v i ∈ ℤ) ∨ (∀ i : Fin n, (2 * v i) ∈ ℤ ∧ (v i ∉ ℤ))) ∧
-    ∑ i : Fin n, v i = 0}
+  vectors := sorry --{v : ℝⁿ | ((∀ i : Fin n, v i ∈ ℤ) ∨ (∀ i : Fin n, (2 * v i) ∈ ℤ ∧ (v i ∉ ℤ))) ∧ ∑ i : Fin n, v i = 0}
   hlattice := sorry
 
 end Lattices
