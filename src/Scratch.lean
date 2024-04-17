@@ -57,6 +57,10 @@ def nonoverlapping (centres : Set ℝⁿ) (radius : ℝ) : Prop :=  ∀ p₁ p�
 #eval Dist.dist (fun j => j + 3 : Fin 2 → ℝ) 0
 #eval Dist.dist (fun j => j + 3 : Fin 4 → ℝ) (fun j => 2*j + 1 : Fin 4 → ℝ)
 
+def V := EuclideanSpace ℝ (Fin 3)
+
+#check EuclideanSpace
+
 @[ext]
 structure SpherePacking where
   centres : Set ℝⁿ
