@@ -83,6 +83,9 @@ lemma contains_zero (Λ : lattice V) : (0 : V) ∈ Λ := by
   intro i hi
   rw [zero_smul]
 
+lemma vec_in_lattice {Λ : lattice V} (v : Λ.vectors) : in_lattice V Λ.basis ↑v :=
+  (mem_iff V v Λ).1 ((unfold_mem_def V (↑v) Λ).mpr (Subtype.coe_prop v))
+
 lemma closed_under_addition_mem (Λ : lattice V) : ∀ v w, v ∈ Λ → w ∈ Λ → v + w ∈ Λ := by
   intro v w hv hw
   rw [mem_iff] at *
@@ -97,39 +100,43 @@ instance (Λ : lattice V) : HAdd Λ.vectors Λ.vectors V := {
   hAdd := fun v w => v + w
 }
 
-lemma closed_under_addition (Λ : lattice V) : ∀ v w : Λ.vectors, v + w ∈ Λ := by
+lemma closed_under_addition (Λ : lattice V) : ∀ v w : Λ.vectors, ↑v + ↑w ∈ Λ := by
   intro v w
-  have hv := (mem_iff V v Λ).1 ((unfold_mem_def V (↑v) Λ).mpr (Subtype.coe_prop v))
-  have hw := (mem_iff V w Λ).1 ((unfold_mem_def V (↑w) Λ).mpr (Subtype.coe_prop w))
-  rcases hv with ⟨a, ha⟩
-  rcases hw with ⟨b, hb⟩
-  -- Somehow reproduct old proof...
-  -- use fun i => a i + b i
-  -- rw [ha, hb]
-  -- simp only [add_smul]
-  -- rw [← Finset.sum_add_distrib]
-  -- sorry
+  rcases vec_in_lattice V v with ⟨a, ha⟩
+  rcases vec_in_lattice V w with ⟨b, hb⟩
+  simp only [mem_iff, in_lattice._eq_1] at *
+  use fun i => a i + b i
+  simp_rw [add_smul, Finset.sum_add_distrib, ← ha, ← hb]
+  rfl
+
 
 example (Λ : lattice V) : ∀ v : Λ.vectors, ↑v ∈ Λ := fun v => by
   refine (unfold_mem_def V (↑v) Λ).mpr ?_
   simp only [Subtype.coe_prop]
 
 instance (Λ : lattice V) : AddCommGroup Λ.vectors := {
-  add := fun v w => ⟨↑v + ↑w, closed_under_addition V Λ v w
-    ((unfold_mem_def V (↑v) Λ).mpr (Subtype.coe_prop v))
-    ((unfold_mem_def V (↑w) Λ).mpr (Subtype.coe_prop w))⟩
+  add := fun v w => ⟨↑v + ↑w, closed_under_addition V Λ v w⟩
   add_assoc := fun v w x => by
     ext
-    sorry
+    exact add_assoc _ _ _
   zero := ⟨0, contains_zero V Λ⟩,
   zero_add := fun v => by
-    sorry
+    ext
+    exact zero_add _
   add_zero := fun v => by
-    sorry
-  neg := fun v => ⟨-v, sorry⟩,
+    ext
+    exact add_zero _
+  neg := fun v => ⟨-v, by
+    apply (mem_iff V _ _).2
+    rw [in_lattice._eq_1]
+    rcases vec_in_lattice V v with ⟨a, ha⟩
+    use fun i => -a i
+    simp only [neg_smul, Finset.sum_neg_distrib, ← ha] ⟩
   add_left_neg := fun v => by
-    sorry
+    ext
+    exact add_left_neg _
   add_comm := fun v w => by
-    sorry }
+    ext
+    exact add_comm _ _ }
 
 end Lattice
