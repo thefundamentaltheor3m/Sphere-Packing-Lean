@@ -1,6 +1,6 @@
 import Mathlib
 
-variables (V : Type*) [AddCommGroup V] [Module ℝ V] [FiniteDimensional ℝ V]
+variable (V : Type*) [AddCommGroup V] [Module ℝ V] [FiniteDimensional ℝ V]
 local notation "n" => FiniteDimensional.finrank ℝ V
 instance : HMul ℤ V V := { hMul := fun a v => a • v }
 instance : SMulWithZero ℤ V := {
@@ -109,7 +109,6 @@ lemma closed_under_addition (Λ : lattice V) : ∀ v w : Λ.vectors, ↑v + ↑w
   simp_rw [add_smul, Finset.sum_add_distrib, ← ha, ← hb]
   rfl
 
-
 example (Λ : lattice V) : ∀ v : Λ.vectors, ↑v ∈ Λ := fun v => by
   refine (unfold_mem_def V (↑v) Λ).mpr ?_
   simp only [Subtype.coe_prop]
@@ -138,5 +137,27 @@ instance (Λ : lattice V) : AddCommGroup Λ.vectors := {
   add_comm := fun v w => by
     ext
     exact add_comm _ _ }
+
+instance (Λ : lattice V) : Module ℤ Λ.vectors := AddCommGroup.intModule ↑Λ.vectors
+
+/- Isomorphism with ℤⁿ -/
+-- def toZn (Λ : lattice V) : Λ.vectors → (Fin n → ℤ) := fun v i => sorry
+
+example : FiniteDimensional.finrank ℝ (Module.Dual ℝ V) = n := Subspace.dual_finrank_eq
+
+example (B : Basis (Fin n) ℝ (Module.Dual ℝ V)) :
+  Basis (Fin (FiniteDimensional.finrank ℝ (Module.Dual ℝ V))) ℝ (Module.Dual ℝ V) := by
+  rw [Subspace.dual_finrank_eq]
+  exact B
+
+noncomputable def basis_of_dual (Λ : lattice V) :
+  Basis (Fin (FiniteDimensional.finrank ℝ (Module.Dual ℝ V))) ℝ (Module.Dual ℝ V) := by
+  rw [Subspace.dual_finrank_eq]
+  exact Basis.dualBasis Λ.basis
+
+noncomputable def dual (Λ : lattice V) : lattice (Module.Dual ℝ V) :=
+  { basis := basis_of_dual V Λ
+    vectors := {v | in_lattice (Module.Dual ℝ V) (basis_of_dual V Λ) v}
+    hlattice := fun v => Iff.rfl }
 
 end Lattice
