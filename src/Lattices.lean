@@ -160,4 +160,10 @@ noncomputable def dual (Λ : lattice V) : lattice (Module.Dual ℝ V) :=
     vectors := {v | in_lattice (Module.Dual ℝ V) (basis_of_dual V Λ) v}
     hlattice := fun v => Iff.rfl }
 
+/-
+# TODO:
+Restructure so that V is a () variable for the definition of a lattice and a {} variable for the
+rest. This is to avoid cumbersome notation.
+-/
+
 end Lattice
