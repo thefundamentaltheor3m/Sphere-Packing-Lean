@@ -86,19 +86,13 @@ lemma self_is_lattice_of_self_basis (Λ : lattice V) : Λ = lattice_of_basis Λ.
       exact h } }
 
 lemma contains_zero (Λ : lattice V) : (0 : V) ∈ Λ := by
-  rw [mem_iff, in_lattice]
+  rw [mem_iff]
   use fun i => 0
-  have : ∑ i : Fin n, (0 : V) = 0 := by
-    apply Finset.sum_eq_zero
-    intro i hi
-    rfl
-  rw [← this]
-  refine' Finset.sum_congr rfl _
-  intro i hi
-  rw [zero_smul]
+  simp only [zero_smul]
+  rw [Finset.sum_const_zero]
 
-lemma vec_in_lattice {Λ : lattice V} (v : Λ.vectors) : in_lattice V Λ.basis ↑v := sorry
-  -- (mem_iff v Λ).1 ((unfold_mem_def V (↑v) Λ).mpr (Subtype.coe_prop v))
+lemma vec_in_lattice {Λ : lattice V} (v : Λ.vectors) : in_lattice V Λ.basis ↑v :=
+  (mem_iff _ _).1 ((unfold_mem_def (↑v) Λ).mpr (Subtype.coe_prop v))
 
 lemma closed_under_addition_mem (Λ : lattice V) : ∀ v w, v ∈ Λ → w ∈ Λ → v + w ∈ Λ := by
   intro v w hv hw
@@ -118,7 +112,7 @@ lemma closed_under_addition (Λ : lattice V) : ∀ v w : Λ.vectors, ↑v + ↑w
   intro v w
   rcases vec_in_lattice v with ⟨a, ha⟩
   rcases vec_in_lattice w with ⟨b, hb⟩
-  simp only [mem_iff, in_lattice._eq_1] at *
+  simp only [mem_iff] at *
   use fun i => a i + b i
   simp_rw [add_smul, Finset.sum_add_distrib, ← ha, ← hb]
   rfl
@@ -141,7 +135,6 @@ instance (Λ : lattice V) : AddCommGroup Λ.vectors := {
     exact add_zero _
   neg := fun v => ⟨-v, by
     apply (mem_iff _ _).2
-    rw [in_lattice._eq_1]
     rcases vec_in_lattice v with ⟨a, ha⟩
     use fun i => -a i
     simp only [neg_smul, Finset.sum_neg_distrib, ← ha] ⟩
@@ -171,8 +164,9 @@ noncomputable def basis_of_dual (Λ : lattice V) :
 
 noncomputable def dual (Λ : lattice V) : lattice (Module.Dual ℝ V) :=
   { basis := basis_of_dual Λ
-    vectors := {v | in_lattice (Module.Dual ℝ V) (basis_of_dual V Λ) v}
-    hlattice := fun v => Iff.rfl }
+    vectors := {v | in_lattice (Module.Dual ℝ V) (basis_of_dual Λ) v}
+    hlattice := fun v => Iff.rfl
+    }
 
 /-
 # TODO:
