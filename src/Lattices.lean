@@ -157,6 +157,12 @@ example (B : Basis (Fin n) ℝ (Module.Dual ℝ V)) :
   rw [Subspace.dual_finrank_eq]
   exact B
 
+end AddCommGroup
+
+section Dual
+
+variable {V : Type*} [AddCommGroup V] [Module ℝ V] [FiniteDimensional ℝ V]
+
 noncomputable def basis_of_dual (Λ : lattice V) :
   Basis (Fin (FiniteDimensional.finrank ℝ (Module.Dual ℝ V))) ℝ (Module.Dual ℝ V) := by
   rw [Subspace.dual_finrank_eq]
@@ -165,15 +171,28 @@ noncomputable def basis_of_dual (Λ : lattice V) :
 noncomputable def dual (Λ : lattice V) : lattice (Module.Dual ℝ V) :=
   { basis := basis_of_dual Λ
     vectors := {v | in_lattice (Module.Dual ℝ V) (basis_of_dual Λ) v}
-    hlattice := fun v => Iff.rfl
-    }
+    hlattice := fun v => Iff.rfl }
 
-/-
-# TODO:
-Restructure so that V is a () variable for the definition of a lattice and a {} variable for the
-rest. This is to avoid cumbersome notation.
--/
+-- lemma dual_of_dual (Λ : lattice V) : dual (dual Λ) = Λ := by sorry
 
-end AddCommGroup
+end Dual
+
+section Volume
+
+-- variable {V : Type*} [AddCommGroup V] [Module ℝ V] [FiniteDimensional ℝ V]
+--   [TopologicalSpace V] [T2Space V] [TopologicalAddGroup V] [ContinuousSMul ℝ V]
+-- local notation "n" => FiniteDimensional.finrank ℝ V
+
+-- noncomputable def Eucl : EuclideanSpace ℝ (Fin n) := toEuclidean V
+-- example : V ≃L[ℝ] (Fin n → ℝ) := by library_search
+
+variable (n : ℕ)
+local notation "V" => Fin n → ℝ
+
+variable (Λ : lattice V)
+
+noncomputable def volume (Λ : lattice V) : ℝ := abs (Matrix.det (Basis.toMatrix (Pi.basisFun ℝ (Fin n)) sorry )) -- (fun i j => Λ.basis i j)))
+
+end Volume
 
 end Lattice
