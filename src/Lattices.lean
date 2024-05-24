@@ -186,13 +186,60 @@ section Volume
 -- noncomputable def Eucl : EuclideanSpace ℝ (Fin n) := toEuclidean V
 -- example : V ≃L[ℝ] (Fin n → ℝ) := by library_search
 
-variable (n : ℕ)
+variable {n : ℕ}
 local notation "V" => Fin n → ℝ
+
+example : FiniteDimensional.finrank ℝ V = n := by rw [FiniteDimensional.finrank_fintype_fun_eq_card,
+  Fintype.card_fin]
 
 variable (Λ : lattice V)
 
-noncomputable def volume (Λ : lattice V) : ℝ := abs (Matrix.det (Basis.toMatrix (Pi.basisFun ℝ (Fin n)) sorry )) -- (fun i j => Λ.basis i j)))
+noncomputable def volume (Λ : lattice V) : ℝ := abs (Matrix.det (
+  Basis.toMatrix (Pi.basisFun ℝ (Fin n)) fun i j => (Λ.basis ⟨i, by
+    rw [FiniteDimensional.finrank_fintype_fun_eq_card, Fintype.card_fin]
+    exact i.2⟩) j ))
 
 end Volume
 
+section E8
+
+local notation "V" => Fin 8 → ℝ
+
+def is_integer (x : ℝ) : Prop := ∃ (n : ℤ), x = ↑n
+
+def vec_to_V (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : V := fun i => match i with
+  | ⟨0, _⟩ => v₀
+  | ⟨1, _⟩ => v₁
+  | ⟨2, _⟩ => v₂
+  | ⟨3, _⟩ => v₃
+  | ⟨4, _⟩ => v₄
+  | ⟨5, _⟩ => v₅
+  | ⟨6, _⟩ => v₆
+  | ⟨7, _⟩ => v₇
+
+def E8_Basis_Vecs : Fin 8 → V := fun i => match i with
+  | ⟨0, _⟩ => vec_to_V 2 (-1) 0 0 0 0 0 0.5
+  | ⟨1, _⟩ => vec_to_V 0 1 (-1) 0 0 0 0 0.5
+  | ⟨2, _⟩ => vec_to_V 0 0 1 (-1) 0 0 0 0.5
+  | ⟨3, _⟩ => vec_to_V 0 0 0 1 (-1) 0 0 0.5
+  | ⟨4, _⟩ => vec_to_V 0 0 0 0 1 (-1) 0 0.5
+  | ⟨5, _⟩ => vec_to_V 0 0 0 0 0 1 (-1) 0.5
+  | ⟨6, _⟩ => vec_to_V 0 0 0 0 0 0 1 0.5
+  | ⟨7, _⟩ => vec_to_V 0 0 0 0 0 0 0 0.5
+
+-- def E8_Basis : Basis (Fin 8) ℝ V := Basis.mk ⟨E8_Basis_Vecs⟩
+
+def E8 : lattice V where
+  basis := sorry
+  vectors := {v : V | ((∀ i : Fin 8, is_integer (v i)) ∨
+    (∀ i : Fin 8, is_integer (2 * v i) ∧ ¬ is_integer (v i))) ∧ ∑ i : Fin 8, v i = 0}
+  hlattice := sorry
+
+end E8
+
 end Lattice
+
+
+-- instance (G : Type u_1) {α : Type u_2}  [Zero G]  [VAdd G α]  [MeasurableSpace α] (s : Set α)  (μ : autoParam (MeasureTheory.Measure α) _)
+--   (M : MeasureTheory.IsAddFundamentalDomain) : AddCommGroup M := by
+--   sorry
