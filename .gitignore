@@ -4,6 +4,8 @@
 # Mac stuff
 
 .DS_Store
+.lake/lakefile.olean.lock
+.lake/lakefile.olean.trace
 
 # Windows Stuff
 
