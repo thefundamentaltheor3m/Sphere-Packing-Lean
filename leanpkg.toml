@@ -10,6 +10,6 @@ dependencies = [
 
 # The Lean package configuration
 [package]
-name = "Sphere-Packing-Lean"
+name = "SpherePacking"
 version = "0.1"
 lean_version = ">=4.0.0"
