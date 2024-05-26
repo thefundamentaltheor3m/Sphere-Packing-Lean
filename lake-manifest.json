@@ -64,5 +64,5 @@
    "inputRev": null,
    "inherited": false,
    "configFile": "lakefile.lean"}],
- "name": "«Sphere-Packing-Lean»",
+ "name": "«SpherePacking»",
  "lakeDir": ".lake"}
