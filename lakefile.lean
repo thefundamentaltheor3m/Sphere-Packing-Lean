@@ -12,10 +12,7 @@ require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"
 
 @[default_target]
-lean_lib SpherePacking where
-  globs := #[
-    .andSubmodules `SpherePacking
-  ]
+lean_lib SpherePacking
 
 require checkdecls from git "https://github.com/PatrickMassot/checkdecls.git"
 

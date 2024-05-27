@@ -1,1 +1,1 @@
-import src.Lattices
+import SpherePacking.Lattices
