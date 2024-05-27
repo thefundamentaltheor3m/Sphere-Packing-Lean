@@ -121,29 +121,37 @@ example (Λ : lattice V) : ∀ v : Λ.vectors, ↑v ∈ Λ := fun v => by
   refine (unfold_mem_def (↑v) Λ).mpr ?_
   simp only [Subtype.coe_prop]
 
-instance (Λ : lattice V) : AddCommGroup Λ.vectors := {
+instance (Λ : lattice V) : Zero Λ.vectors where
+  zero := ⟨0, contains_zero Λ⟩
+
+instance (Λ : lattice V) : Add Λ.vectors where
   add := fun v w => ⟨↑v + ↑w, closed_under_addition Λ v w⟩
+
+instance (Λ : lattice V) : Neg Λ.vectors where
+  neg := fun v => ⟨-v, by
+    apply (mem_iff _ _).2
+    rcases vec_in_lattice v with ⟨a, ha⟩
+    use fun i => -a i
+    simp only [neg_smul, Finset.sum_neg_distrib, ← ha] ⟩
+
+instance (Λ : lattice V) : AddCommGroup Λ.vectors where
   add_assoc := fun v w x => by
     ext
     exact add_assoc _ _ _
-  zero := ⟨0, contains_zero Λ⟩,
   zero_add := fun v => by
     ext
     exact zero_add _
   add_zero := fun v => by
     ext
     exact add_zero _
-  neg := fun v => ⟨-v, by
-    apply (mem_iff _ _).2
-    rcases vec_in_lattice v with ⟨a, ha⟩
-    use fun i => -a i
-    simp only [neg_smul, Finset.sum_neg_distrib, ← ha] ⟩
   add_left_neg := fun v => by
     ext
     exact add_left_neg _
   add_comm := fun v w => by
     ext
-    exact add_comm _ _ }
+    exact add_comm _ _
+  nsmul := nsmulRec
+  zsmul := zsmulRec
 
 instance (Λ : lattice V) : Module ℤ Λ.vectors := AddCommGroup.intModule ↑Λ.vectors
 
