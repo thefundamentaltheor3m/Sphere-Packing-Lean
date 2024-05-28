@@ -14,7 +14,7 @@ The sphere packing constant measures which portion of $d$-dimensional Euclidean 
 
 Here are some dummy lemmas to test whether blueprint and its Lean interface actually work.
 
-\begin{lemma}\label{foo1}\lean{SpherePacking.DummyLemmas.foo1}\leanok
+\begin{lemma}\label{foo1}\lean{DummyLemmas.foo1}\leanok
   For all natural numbers $n$, we have that $n = n$.
 \end{lemma}
 \begin{proof}
@@ -22,14 +22,14 @@ Here are some dummy lemmas to test whether blueprint and its Lean interface actu
   Proof by reflexivity.
 \end{proof}
 
-\begin{lemma}\label{foo2}\lean{SpherePacking.DummyLemmas.foo2}\uses{foo1}\leanok
+\begin{lemma}\label{foo2}\lean{DummyLemmas.foo2}\uses{foo1}\leanok
   For all integers $n$, we have that $n = n$.
 \end{lemma}
 \begin{proof}
   This is super hard to prove so we will \verb|sorry| it for now.
 \end{proof}
 
-\begin{lemma}\label{foo3}\lean{SpherePacking.DummyLemmas.foo3}\leanok
+\begin{lemma}\label{foo3}\lean{DummyLemmas.foo3}\leanok
   $1 + 1 = 2$.
 \end{lemma}
 \begin{proof}
@@ -39,7 +39,7 @@ Here are some dummy lemmas to test whether blueprint and its Lean interface actu
 
 Let's turn things up a notch.
 
-\begin{lemma}\label{foo4}\lean{SpherePacking.DummyLemmas.foo4}\leanok  % Marking \leanok even though it hasn't been formalised
+\begin{lemma}\label{foo4}\lean{DummyLemmas.foo4}\leanok  % Marking \leanok even though it hasn't been formalised
   There exists an isomorphism
   \[
     \R[X] / (X^2 + 1) \cong \C
