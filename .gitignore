@@ -2,3 +2,8 @@
 
 # Mac stuff
 .DS_Store
+blueprint/print/
+blueprint/web/
+blueprint/src/web.paux
+blueprint/lean_decls
+blueprint/TeX_Outputs/
