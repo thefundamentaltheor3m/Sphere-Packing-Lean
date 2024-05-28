@@ -8,3 +8,5 @@
 blueprint/TeX_Outputs/
 blueprint/print/
 blueprint/web/
+blueprint/src/web.paux
+blueprint/lean_decls
