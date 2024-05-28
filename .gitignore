@@ -2,3 +2,7 @@
 
 # Mac stuff
 .DS_Store
+
+# LaTeX Local
+
+blueprint/TeX_Outputs/
