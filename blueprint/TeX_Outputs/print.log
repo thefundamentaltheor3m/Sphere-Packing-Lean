@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999994 (TeX Live 2022) (preloaded format=xelatex 2023.3.8)  28 MAY 2024 16:15
+This is XeTeX, Version 3.141592653-2.6-0.999994 (TeX Live 2022) (preloaded format=xelatex 2023.3.8)  28 MAY 2024 16:30
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -699,62 +699,22 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 LaTeX Font Info:    Trying to load font information for U+msb on input line 57.
  (/usr/local/texlive/2022/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) (./content.tex
-Missing character: There is no ‖ ("2016) in font ecrm1000!
-Missing character: There is no ⋅ ("22C5) in font ecrm1000!
-Missing character: There is no ‖ ("2016) in font ecrm1000!
-Missing character: There is no ⋅ ("22C5) in font ecrm1000!
-Missing character: There is no ∈ ("2208) in font ecrm1000!
-Missing character: There is no ∈ ("2208) in font ecrm1000!
-Missing character: There is no ⊂ ("2282) in font ecrm1000!
-Missing character: There is no ‖ ("2016) in font ecrm1000!
-Missing character: There is no − ("2212) in font ecrm1000!
-Missing character: There is no ‖ ("2016) in font ecrm1000!
-Missing character: There is no ≥ ("2265) in font ecrm1000!
-Missing character: There is no ∈ ("2208) in font ecrm1000!
-Missing character: There is no ⋃ ("22C3) in font ecrm1000!
-Missing character: There is no ∈ ("2208) in font ecrm0700!
-Missing character: There is no 𝛥 ("1D6E5) in font ecrm1000!
-Missing character: There is no ∶ ("2236) in font ecrm1000!
-Missing character: There is no ∩ ("2229) in font ecrm1000!
-Missing character: There is no 𝛥 ("1D6E5) in font ecrm1000!
-Missing character: There is no ∶ ("2236) in font ecrm1000!
-Missing character: There is no → ("2192) in font ecrm0700!
-Missing character: There is no ∞ ("221E) in font ecrm0700!
-Missing character: There is no 𝛥 ("1D6E5) in font ecrm1000!
-Missing character: There is no 𝛥 ("1D6E5) in font ecrm1000!
-Missing character: There is no 𝜋 ("1D70B) in font ecrm1000!
-Missing character: There is no ≈ ("2248) in font ecrm1000!
-Missing character: There is no 𝛬 ("1D6EC) in font ecrm1000!
-Missing character: There is no ⊂ ("2282) in font ecrm1000!
-Missing character: There is no 𝛬 ("1D6EC) in font ecrm1000!
-Missing character: There is no ∈ ("2208) in font ecrm1000!
-Missing character: There is no ∪ ("222A) in font ecrm1000!
-Missing character: There is no ∑ ("2211) in font ecrm1000!
-Missing character: There is no ≡ ("2261) in font ecrm1000!
-Missing character: There is no 𝛬 ("1D6EC) in font ecrm1000!
-Missing character: There is no 𝛬 ("1D6EC) in font ecrm1000!
-Missing character: There is no 𝛬 ("1D6EC) in font ecrm1000!
-[1
+) (./content.tex) [1
 
-]
-Missing character: There is no ⊂ ("2282) in font ecrm1000!
-Missing character: There is no ∈ ("2208) in font ecrm1000!
-Missing character: There is no ∈ ("2208) in font ecrm1000!
-) [2] (/Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.aux)
+] (/Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 Package rerunfilecheck Info: File `print.out' has not changed.
-(rerunfilecheck)             Checksum: 2366DE3DAC712DF8C0889429BD799021;591.
+(rerunfilecheck)             Checksum: 9744EA655E9F8A92549ECC3E76FA0A0B;375.
  ) 
 Here is how much of TeX's memory you used:
- 29907 strings out of 476179
- 608362 string characters out of 5809545
- 956289 words of memory out of 5000000
- 50207 multiletter control sequences out of 15000+600000
- 505140 words of font info for 73 fonts, out of 8000000 for 9000
+ 29894 strings out of 476179
+ 608117 string characters out of 5809545
+ 948008 words of memory out of 5000000
+ 50200 multiletter control sequences out of 15000+600000
+ 497866 words of font info for 69 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 100i,9n,104p,577b,413s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 100i,9n,104p,577b,325s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.pdf (2 pages).
+Output written on /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.pdf (1 page).

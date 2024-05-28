@@ -1077,8 +1077,6 @@ INPUT content.tex
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/lm/ec-lmr12.tfm
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/lm/ec-lmbx12.tfm
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/lm/ec-lmbx12.tfm
-INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/lm/ec-lmri10.tfm
-INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/lm/ec-lmbx10.tfm
 INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.aux
 INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
 INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
