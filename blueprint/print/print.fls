@@ -2,8 +2,8 @@ PWD /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergra
 INPUT /usr/local/texlive/2022/texmf.cnf
 INPUT /usr/local/texlive/2022/texmf-dist/web2c/texmf.cnf
 INPUT /usr/local/texlive/2022/texmf-var/web2c/xetex/xelatex.fmt
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/src/print.tex
-OUTPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.log
+INPUT print.tex
+OUTPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.log
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/base/article.cls
@@ -19,6 +19,57 @@ INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/base/size10.clo
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/base/size10.clo
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/base/size10.clo
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/base/size10.clo
+INPUT ./packages.tex
+INPUT ./packages.tex
+INPUT ./packages.tex
+INPUT packages.tex
+INPUT ./packages.tex
+INPUT ./packages.tex
+INPUT packages.tex
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/geometry/geometry.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/geometry/geometry.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/geometry/geometry.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/geometry/geometry.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/geometry/geometry.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/geometry/geometry.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/geometry/geometry.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/geometry/geometry.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/geometry/geometry.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/geometry/geometry.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/geometry/geometry.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/ifvtex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/ifvtex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/ifvtex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/ifvtex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/ifvtex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/ifvtex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/ifvtex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/ifvtex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/ifvtex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/ifvtex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/ifvtex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/l3kernel/expl3.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/l3kernel/expl3.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/l3kernel/expl3.sty
@@ -147,16 +198,6 @@ INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/mathtools/mathtools.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/mathtools/mathtools.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/mathtools/mathtools.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/keyval.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/tools/calc.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/tools/calc.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/tools/calc.sty
@@ -202,16 +243,6 @@ INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
-INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
@@ -961,6 +992,13 @@ INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/pgf/libraries/pgflibraryarr
 INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.meta.code.tex
 INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.meta.code.tex
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/graphicx.sty
+INPUT ./customisation.tex
+INPUT ./customisation.tex
+INPUT ./customisation.tex
+INPUT customisation.tex
+INPUT ./customisation.tex
+INPUT ./customisation.tex
+INPUT customisation.tex
 INPUT ./macros/common.tex
 INPUT ./macros/common.tex
 INPUT ./macros/common.tex
@@ -975,10 +1013,10 @@ INPUT macros/print.tex
 INPUT ./macros/print.tex
 INPUT ./macros/print.tex
 INPUT macros/print.tex
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.aux
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.aux
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.aux
-OUTPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.aux
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.aux
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.aux
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.aux
+OUTPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.aux
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/graphicx.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/graphics/color.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/hyperref/nameref.sty
@@ -1018,17 +1056,17 @@ INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/gettitlestring/gettitlestri
 INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/latex/kvoptions/kvoptions.sty
 INPUT /usr/local/texlive/2022/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
-OUTPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out
+OUTPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/jknappen/ec/ecrm0700.tfm
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/jknappen/ec/ecrm0500.tfm
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
@@ -1079,6 +1117,6 @@ INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/lm/ec-lmbx12.tfm
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/lm/ec-lmbx12.tfm
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/lm/ec-lmri10.tfm
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/lm/ec-lmbx10.tfm
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.aux
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
-INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/TeX_Outputs/print.out
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.aux
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out
+INPUT /Users/sidharth/Library/CloudStorage/OneDrive-ImperialCollegeLondon/Undergraduate Studies at Imperial College London/Lean/Sphere-Packing-Lean/blueprint/print/print.out

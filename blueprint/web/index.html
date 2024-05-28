@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sphere Packing in Lean</title>
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<div class="titlepage">
+<h1>Sphere Packing in Lean</h1>
+<p class="authors">
+<span class="author">Maryna Viazovska Sidharth Hariharan</span>
+</p>
+</div>
+<h1 id="a0000000002">1 Basic definitions for sphere packings</h1>
+<h2 id="thm: main">1.1 Sphere packings</h2>
+<p> The sphere packing constant measures which portion of \(d\)-dimensional Euclidean space can be covered by non-overlapping unit balls. More precisely, let \(\R ^d\) be the Euclidean vector space equipped with distance \(\| \cdot \| \) and Lebesgue measure \(\mathrm{Vol}(\cdot )\). For \(x\in \R ^d\) and \(r\in \R _{{\gt}0}\) we denote by \(B_d(x,r)\) the ball in \(\R ^d\) with center \(x\) and radius \(r\). </p>
+<p>Let \(X\subset \R ^d\) be a discrete set of points such that \(\| x-y\| \geq 2\) for any distinct \(x,y\in X\). Then the union </p>
+<div class="displaymath" id="a0000000003">
+  \[ \mathcal{P}=\bigcup _{x\in X} B_d(x,1) \]
+</div>
+<p> is a <em>sphere packing</em>.  </p>
+<p>If \(X\) is a lattice in \(\R ^d\) then we say that \(\mathcal{P}\) is a <em>lattice sphere packing</em>.  </p>
+<p> The <em>finite density</em> of a packing \(\mathcal{P}\) is defined as </p>
+<div class="displaymath" id="a0000000004">
+  \[ \Delta _{\mathcal{P}}(r):=\frac{\mathrm{Vol}(\mathcal{P}\cap B_d(0,r))}{\mathrm{Vol}(B_d(0,r))},\quad r{\gt}0. \]
+</div>
+
+<p> We define the <em>density</em> of a packing \(\mathcal{P}\) as the limit superior </p>
+<div class="displaymath" id="a0000000005">
+  \[ \Delta _{\mathcal{P}}:=\limsup \limits _{r\to \infty }\Delta _{\mathcal{P}}(r).  \]
+</div>
+
+<p> The number be want to know is the supremum over all possible packing densities called the <em>sphere packing constant</em>.  </p>
+<p>The main result of this paper is the proof that </p>
+<div class="displaymath" id="a0000000006">
+  \[ \Delta _8=\frac{\pi ^4}{384}\approx 0.25367. \]
+</div>
+<p> This is the density of the \(E_8\)-lattice sphere packing. Recall that the \(E_8\)-lattice \(\Lambda _8\subset \R ^8\) is given by </p>
+<div class="displaymath" id="a0000000007">
+  \[ \Lambda _8=\{ (x_i)\in \Z ^8\cup (\Z +\textstyle \frac12\displaystyle )^8|\; \sum _{i=1}^8x_i\equiv 0\; (\mathrm{mod\; 2})\} . \]
+</div>
+<p>  \(\Lambda _8\) is a positive-definite, even, unimodular lattice of rank 8. The minimal distance between two points in \(\Lambda _8\) is \(\sqrt{2}\).   The \(E_8\)-lattice sphere packing is the packing of unit balls with centers at \(\frac{1}{\sqrt{2}}\Lambda _8.\)  Our main result is  No packing of unit balls in Euclidean space \(\R ^8\) has density greater than that of the \(E_8\)-lattice packing.  </p>
+<h2 id="a0000000008">1.2 Lattices and Periodic packings</h2>
+<p>  Let \(S\) be a discrete subgroup of \(\R ^d\). A set \(X\subset \R ^d\) is said to \(S\)-periodic if for each \(s\in S\) and \(x\in X\) the vector \(x+s\) belongs to \(X\).  </p>
+<p> A lattice in the Euclidean space \(\R ^d\) is a discrete, co-compact, abelian subgroup.   </p>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+</body>
+</html>
