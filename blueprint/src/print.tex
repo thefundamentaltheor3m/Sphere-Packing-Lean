@@ -14,18 +14,22 @@
 
 \usepackage{expl3}
 
-\usepackage{amsmath, amssymb, amsthm, amsfonts, mathtools}
+\usepackage{amsmath, amssymb, amsthm, mathtools}
 \usepackage[unicode,colorlinks=true,linkcolor=blue,urlcolor=magenta, citecolor=blue]{hyperref}
 
 \usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
+\usepackage{fontspec}
+\setmathfont{latinmodern-math.otf}
+\setmathfont[range=\varnothing]{Asana-Math.otf}
+\setmathfont[range=\pitchfork]{Asana-Math.otf}
+\setmathfont[range=\intprod]{Asana-Math.otf}
+\setmathfont[range=\int]{latinmodern-math.otf}
 
-\usepackage[utf8]{inputenc}
 \usepackage[capitalize,noabbrev]{cleveref}
 \usepackage{autonum}
-\usepackage[T1]{fontenc}
 
-\usepackage{tikz}
-\usepackage{tikz-cd}
+% \usepackage{tikz}
+% \usepackage{tikz-cd}
 \usepackage{graphicx} % Required for inserting images
 
  % THEOREMS
