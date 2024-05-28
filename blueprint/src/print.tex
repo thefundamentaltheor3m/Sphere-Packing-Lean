@@ -12,20 +12,47 @@
 
 \documentclass[a4paper]{article}
 
-\usepackage{geometry}
-
 \usepackage{expl3}
 
-\usepackage{amssymb, amsthm, mathtools}
+\usepackage{amsmath, amssymb, amsthm, amsfonts, mathtools}
 \usepackage[unicode,colorlinks=true,linkcolor=blue,urlcolor=magenta, citecolor=blue]{hyperref}
 
 \usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
+
+\usepackage[utf8]{inputenc}
+\usepackage[capitalize,noabbrev]{cleveref}
+\usepackage{autonum}
+\usepackage[T1]{fontenc}
+
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage{graphicx} % Required for inserting images
+
+ % THEOREMS
+
+\newtheorem{theorem}{Theorem}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{hypothesis}[theorem]{Hypothesis}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\h}{\mathfrak{H}}
 
 \input{macros/common}
 \input{macros/print}
 
 \title{Sphere Packing in Lean}
-\author{Maryna Viazovska \and Sidharth Hariharan}
+\author{Maryna Viazovska}
 
 \begin{document}
 \maketitle

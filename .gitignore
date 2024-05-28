@@ -2,8 +2,11 @@
 
 # Mac stuff
 .DS_Store
+
+# LaTeX Local
+
+blueprint/TeX_Outputs/
 blueprint/print/
 blueprint/web/
 blueprint/src/web.paux
 blueprint/lean_decls
-blueprint/TeX_Outputs/
