@@ -23,3 +23,16 @@
  \newcommand{\C}{\mathbb{C}}
  \newcommand{\N}{\mathbb{N}}
  \newcommand{\h}{\mathfrak{H}}
+
+ % LEAN STUFF FROM OVERLEAF
+
+ \newif\ifLEAN
+
+ \NewEnviron{LEAN}{
+	\ifLEAN
+	\begin{LEAN}\BODY \end{LEAN}
+	\else\fi
+}
+
+\LEANfalse
+% \LEANtrue
