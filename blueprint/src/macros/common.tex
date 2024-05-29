@@ -30,9 +30,11 @@
 
  \NewEnviron{LEAN}{
 	\ifLEAN
-	\begin{LEAN}\BODY \end{LEAN}
+	% \begin{LEAN}
+  \BODY
+  % \end{LEAN}
 	\else\fi
 }
 
 \LEANfalse
-% \LEANtrue
+\LEANtrue
