@@ -2,7 +2,7 @@ import Mathlib
 
 open Euclidean BigOperators
 
-namespace Lattice
+namespace EuclideanLattice
 
 section Definitions
 
@@ -16,4 +16,4 @@ def is_lattice (Λ : Set V) : Prop := ∃ (B : Basis (Fin d) ℝ V), ∀ v : V, 
 
 end Definitions
 
-end Lattice
+end EuclideanLattice

@@ -1,1 +1,1 @@
-import SpherePacking.Basic.Lattice
+import SpherePacking.Basic.EuclideanLattice
