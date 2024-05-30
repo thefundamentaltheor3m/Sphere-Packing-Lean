@@ -1,2 +1,1 @@
-import SpherePacking.DummyLemmas
-import SpherePacking.Lattices
+import SpherePacking.Basic.Lattice
