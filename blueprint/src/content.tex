@@ -23,22 +23,26 @@
 The sphere packing constant measures which portion of $d$-dimensional Euclidean
 space can be covered by non-overlapping unit balls. More precisely, let $\R^d$ be the Euclidean vector space equipped with distance $\|\cdot\|$ and Lebesgue measure $\mathrm{Vol}(\cdot)$. For $x\in\R^d$ and $r\in\R_{>0}$ we denote by $B_d(x,r)$ the ball in $\R^d$ with center $x$ and radius $r$.
 
-\begin{definition}Let $X\subset \R^d$ be a discrete set of points such that $\|x-y\|\geq2$ for any distinct $x,y\in X$. Then the union
+\begin{definition}\label{def: Sphere Packing}
+  Let $X\subset \R^d$ be a discrete set of points such that $\|x-y\|\geq2$ for any distinct $x,y\in X$. Then the union
 $$\mathcal{P}=\bigcup_{x\in X} B_d(x,1)$$ is a \emph{sphere packing}.
 \end{definition}
 
-\begin{definition}If $X$ is a lattice in $\R^d$ then we say that $\mathcal{P}$ is a \emph{lattice sphere packing}.
+\begin{definition}\label{def: Lattice Packing}\uses{EuclideanLattice.is_lattice}
+  If $X$ is a lattice in $\R^d$ then we say that $\mathcal{P}$ is a \emph{lattice sphere packing}.
 \end{definition}
 
-\begin{definition} The \emph{finite density} of a packing $\mathcal{P}$ is defined as
+\begin{definition}\label{def: finite density}
+  The \emph{finite density} of a packing $\mathcal{P}$ is defined as
 $$\Delta_{\mathcal{P}}(r):=\frac{\mathrm{Vol}(\mathcal{P}\cap B_d(0,r))}{\mathrm{Vol}(B_d(0,r))},\quad r>0.$$
 \end{definition}
 
-\begin{definition} We define the \emph{density} of a packing $\mathcal{P}$ as the limit superior
+\begin{definition}\label{def: density}
+  We define the \emph{density} of a packing $\mathcal{P}$ as the limit superior
 $$\Delta_{\mathcal{P}}:=\limsup\limits_{r\to\infty}\Delta_{\mathcal{P}}(r). $$
 \end{definition}
 
-\begin{definition}
+\begin{definition}\label{def: Sphere Packing Constant}
 The number be want to know is the supremum over all possible packing densities
 $$\Delta_d:=\sup\limits_{\substack{\mathcal{P}\subset\R^d\\ \scriptscriptstyle\mathrm{sphere}\;\mathrm{packing}}}\Delta_{\mathcal{P}} $$
 called the \emph{sphere packing constant}.
@@ -46,12 +50,14 @@ called the \emph{sphere packing constant}.
 
 The main result of this paper is the proof that $$\Delta_8=\frac{\pi^4}{384}\approx 0.25367.$$
 This is the density of the $E_8$-lattice sphere packing.
-\begin{definition}Recall that the $E_8$-lattice $\Lambda_8\subset\R^8$ is given by
+\begin{definition}\label{def: E8 lattice}
+  Recall that the $E_8$-lattice $\Lambda_8\subset\R^8$ is given by
 $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1}^8x_i\equiv 0\;(\mathrm{mod\;2})\}.$$
 \end{definition}
-\begin{lemma}$\Lambda_8$ is a positive-definite, even, unimodular lattice of rank 8. The minimal distance between two points in $\Lambda_8$ is $\sqrt{2}$.
+\begin{lemma}\label{lemma: Characterisation of E8 lattice}
+  $\Lambda_8$ is a positive-definite, even, unimodular lattice of rank 8. The minimal distance between two points in $\Lambda_8$ is $\sqrt{2}$.
 \end{lemma}
-\begin{definition}
+\begin{definition}\label{def: E8 lattice packing}
 The $E_8$-lattice sphere packing is the packing of unit balls with centers at $\frac{1}{\sqrt{2}}\Lambda_8.$
 \end{definition}
 Our main result is
@@ -61,7 +67,8 @@ in Euclidean space $\R^8$ has density greater than that of the $E_8$-lattice pac
 \end{theorem}
 
 \subsection{Lattices and Periodic packings}
-\begin{definition} Let $S$ be a discrete subgroup of $\R^d$. A set $X\subset\R^d$ is said to $S$-periodic if for each $s\in S$ and $x\in X$ the vector $x+s$ belongs to $X$.
+\begin{definition}\label{def: Periodicity}
+  Let $S$ be a discrete subgroup of $\R^d$. A set $X\subset\R^d$ is said to $S$-periodic if for each $s\in S$ and $x\in X$ the vector $x+s$ belongs to $X$.
 \end{definition}
 
 \begin{definition}\label{EuclideanLattice.is_lattice}\lean{EuclideanLattice.is_lattice}\leanok
@@ -69,15 +76,13 @@ in Euclidean space $\R^8$ has density greater than that of the $E_8$-lattice pac
   A subset of the Euclidean space $\R^d$ is called a lattice if it is the $\Z$-span of a basis of $\R^d$.
 \end{definition}
 
-\begin{lemma} Density of a periodic packing ...
+\begin{lemma}\label{def: Density of periodic packing} \notready
+  Density of a periodic packing ...
 \end{lemma}
 \subsection{Facts from Fourier analysis}
 
 In this subsection we recall a few definitions from Fourier analysis.
-\begin{definition}\label{def: Fourier Transform definition}
-% \begin{LEAN}
-% \lean{def: Fourier Transform definition}
-% \end{LEAN}
+\begin{definition}\label{def: Fourier Transform definition} % \lean{def: Fourier Transform definition}
 The Fourier transform of an $L^1$-function $f:\R^d\to\C$ is defined as
 $$\mathcal{F}(f)(y)=\widehat{f}(y):=\int\limits_{\R^d} f(x)\,e^{-2\pi i x\cdot y}\,dx,\quad y\in\R^d $$
 where $x\cdot y=\frac12\|x\|^2+\frac12\|y\|^2-\frac12\|x-y\|^2$ is the standard scalar product in $\R^d$.
@@ -85,19 +90,14 @@ where $x\cdot y=\frac12\|x\|^2+\frac12\|y\|^2-\frac12\|x-y\|^2$ is the standard 
 \begin{definition}
 A $C^\infty$~function $f:\R^d\to\C$ is called a \emph{Schwartz function} if it goes to zero as $\|x\|\to\infty$ faster then any inverse power of $\|x\|$, and the same holds for all partial derivatives of $f$. The set of all Schwartz functions is called a \emph{Schwartz space}.
 \end{definition}
-\begin{lemma}The Fourier transform is an automorphism of the space of Schwartz functions.\end{lemma}
-\begin{lemma}\label{lemma: Gaussian Fourier}
-% \begin{LEAN}
-% \lean{lemma: Gaussian Fourier}
-\uses{def: Fourier Transform definition}
-% \end{LEAN}
+\begin{lemma}\label{lemma: Fourier transform is automorphism}
+  The Fourier transform is an automorphism of the space of Schwartz functions.
+\end{lemma}
+\begin{lemma}\label{lemma: Gaussian Fourier}\uses{def: Fourier Transform definition}
 \begin{equation}\mathcal{F}(e^{\pi i  \|x\|^2 z})(y)=z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.\end{equation}
 \end{lemma}
-\begin{theorem}label{thm: Poisson summation formula}
-% \begin{LEAN}
-% \lean{thm: Poisson summation formula}
-\uses{def: Fourier Transform definition}
-% \end{LEAN}
+\begin{theorem}\label{thm: Poisson summation formula}\uses{def: Fourier Transform definition}
+  Insert Poisson summation formula
 \end{theorem}
 
 \section{Cohn-Elkies programming bounds}
@@ -105,12 +105,7 @@ A $C^\infty$~function $f:\R^d\to\C$ is called a \emph{Schwartz function} if it g
 In 2003 Cohn and Elkies \cite{ElkiesCohn}  developed  linear programming bounds that apply directly to sphere packings. The goal of this section is to formalize the Cohn--Elkies linear programming bound.
 
 The following theorem is the key result of \cite{ElkiesCohn}. (The original theorem is stated for a   class of functions more general then Schwartz functions)
-\begin{theorem}\label{thm: Cohn-Elkies}
-% \begin{LEAN}
-% \lean{thm: Cohn-Elkies}
-\uses{def: Fourier Transform definition}
-\uses{thm: Poisson summation formula}
-% \end{LEAN}
+\begin{theorem}\label{thm: Cohn-Elkies}\uses{def: Fourier Transform definition}\uses{thm: Poisson summation formula}
 (Cohn, Elkies \cite{ElkiesCohn}) Suppose that  $f:\R^d\to\R$ is a Schwartz function, is not identically zero, and satisfies:
 \begin{equation}\label{eqn: Cohn-Elkies condition 1}f(x)\leq 0\mbox{ for } \|x\|\geq 1\end{equation} and
 \begin{equation}\label{eqn: Cohn-Elkies condition 2}\widehat{f}(x)\geq0\mbox{ for all } x\in\R^d.\end{equation}
@@ -124,7 +119,6 @@ To be included.
 
   The main step in our proof of Theorem \ref{thm: main} is the explicit  construction of an optimal function. It will be convenient for us to scale this function by $\sqrt{2}$.
 \begin{theorem}\label{thm: g}
-% \begin{LEAN}% \lean{thm: g}\uses{thm: g1}% \end{LEAN}
 There exists a radial Schwartz function $g:\R^8\to\R$ which satisfies:
 \begin{align}
 g(x)&\leq 0\mbox{ for } \|x\|\geq \sqrt{2} \label{eqn: g1}\\
@@ -153,10 +147,7 @@ $$(F|_k\gamma)(z):=j_k(z,\gamma)\,F(\gamma z). $$
 The chain rule implies
 $$F|_k\gamma_1\gamma_2=(F|_k\gamma_1)|_k\gamma_2.$$
 
-\begin{definition}\label{def: holomorphic modular form}
-% \begin{LEAN}
-% \lean{def: holomorphic modular form}
-% \end{LEAN}
+\begin{definition}\label{def: holomorphic modular form}% \lean{def: holomorphic modular form}
 A \emph{(holomorphic) modular form} of integer weight $k$ and congruence subgroup $\Gamma$ is a holomorphic function $f:\h\to\C$ such that:
 \begin{enumerate}
   \item $f|_k\gamma=f$ for all $\gamma\in\Gamma$
@@ -167,17 +158,14 @@ A \emph{(holomorphic) modular form} of integer weight $k$ and congruence subgrou
 Let $M_k(\Gamma)$ be the space of modular forms of weight $k$ and congruence subgroup $\Gamma$. A key fact in the theory of modular forms is that the spaces $M_k(\Gamma)$ are finite dimensional.
 
 Let us consider several examples of modular forms.
-\begin{definition}\label{def: Ek definition}
-% \begin{LEAN}% \lean{def: Ek definition}
-% \end{LEAN}
+\begin{definition}\label{def: Ek definition}% \lean{def: Ek definition}
 For an even integer $k\geq 4$ we define the \emph{weight $k$ Eisenstein series} as
 \begin{equation}\label{eqn: Ek definition}E_k(z):=\frac{1}{2\zeta(k)}\sum_{(c,d)\in\Z^2\backslash(0,0)}(c\tau+d)^{-k}.\end{equation}
 \end{definition}
-Since the sum converges absolutely, it is easy to see that $E_k\in M_k(\Gamma_1)$. The
-Eisenstein series possesses the Fourier expansion
+Since the sum converges absolutely, it is easy to see that $E_k\in M_k(\Gamma_1)$.
 \begin{lemma}\label{lemma: Ek Fourier}
-% \begin{LEAN}% \lean{lemma: Ek Fourier}\uses{def: Ek definition}
-% \end{LEAN}
+% \lean{lemma: Ek Fourier}\uses{def: Ek definition}
+The Eisenstein series possesses the Fourier expansion
 \begin{equation}\label{eqn: Ek Fourier}E_k(z)=1+\frac{2}{\zeta(1-k)}\sum_{n=1}^\infty \sigma_{k-1}(n)\,e^{2\pi i z}, \end{equation}
 where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
 \begin{align}
@@ -185,18 +173,16 @@ where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
   E_6(z)\,=\,& 1-504\sum_{n=1}^\infty \sigma_5(n)\,e^{2\pi i n z}. \notag
 \end{align}
 \end{lemma}
-The infinite sum \eqref{eqn: Ek definition} does not converge absolutely for $k=2$. On the other hand, the expression \eqref{eqn: Ek Fourier} converges to a holomorphic function on the upper half-plane and therefore we set
-\begin{definition} \label{def: E2 def}
-% \begin{LEAN}
-% \lean{def: E2 def}
-% \end{LEAN}
+The infinite sum \eqref{eqn: Ek definition} does not converge absolutely for $k=2$. On the other hand, the expression \eqref{eqn: Ek Fourier} converges to a holomorphic function on the upper half-plane and therefore
+\begin{definition} \label{def: E2 def} % \lean{def: E2 def}
+We set
 \begin{equation}E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.\notag\end{equation}
 \end{definition}
 \begin{lemma}
 \label{lemma: E2 transform}
-% \begin{LEAN}
+
 % \lean{lemma: Ek Fourier}
-% \end{LEAN}
+
 This function is not modular, however it satisfies
 \begin{equation}\label{eqn: E2 transform}z^{-2}\,E_2\Big(\frac{-1}{z}\Big)=E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.\end{equation}
 \end{lemma}
@@ -212,8 +198,8 @@ We define three different theta functions (so called ``Thetanullwerte'') as
 \end{align}
 The group $\Gamma_1$ is generated by the elements $T=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$ and $S=\left(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\right)$.
 \begin{lemma}\label{lemma: theta transform S T}
-% \begin{LEAN}% \lean{lemma: theta transform S T}
-% \end{LEAN}
+% \lean{lemma: theta transform S T}
+
 These elements  act on the theta functions in the following way
 \begin{align}
 z^{-2}\,\theta^4_{00}\Big(\frac{-1}{z}\Big)\,=\,&-\theta_{00}^4(z) \label{eqn: theta transform S}\\
@@ -235,9 +221,6 @@ The theta functions $\theta^4_{00},\theta^4_{01}$, and $\theta^4_{10}$ belong to
 
 
 \begin{definition}\label{def: weakly-holomorphic modular form}
-% \begin{LEAN}
-% \lean{def: weakly-holomorphic modular form}
-% \end{LEAN}
 A \emph{weakly-holomorphic modular form} of integer weight $k$ and congruence subgroup $\Gamma$ is a holomorphic function $f:\h\to\C$ such that:
 \begin{enumerate}
   \item $f|_k\gamma=f$ for all $\gamma\in\Gamma$
@@ -254,7 +237,7 @@ $$j(z)\,=\,q^{-1} + 744 + 196884\, q + 21493760\, q^2 + 864299970\, q^3 +
   20245856256\, q^4 + O(q^5) $$
   where $q=e^{2\pi i z}$. Using a simple computer algebra system such as PARI GP or Mathematica one can compute first hundred terms of this Fourier expansion within few seconds. An important question is to find an  asymptotic formula for $c_j(n)$, the $n$-th Fourier coefficient  of $j$. Using the Hardy-Ramanujan circle method \cite{Rademacher38} or the non-holomorphic Poincare series \cite{Petersson32} one can show that
   \begin{lemma}\label{lemma: j Fourier asymptotic}
-  % \begin{LEAN}% \lean{lemma: j Fourier asymptotic}% \end{LEAN}
+  % \lean{lemma: j Fourier asymptotic}
   \begin{equation}\label{eqn: j Fourier asymptotic}
   c_j(n)=\frac{2\pi}{n}\sum_{k=1}^\infty \frac{A_k(n)}{k}\,I_1\left(\frac{4\pi \sqrt{n}}{k}\right)\qquad n\in\Z_{>0}\end{equation}
   where
@@ -275,9 +258,6 @@ which double zeroes at all $\Lambda_8$-vectors of length greater than $\sqrt{2}$
 
 First, we will define function $a$. To this end we consider the following functions:
 \begin{definition}\label{def: phi4 phi2 phi0}
-% \begin{LEAN}
-% \lean{def: phi4 phi2 phi0}
-% \end{LEAN}
 \begin{align}
   \phi_{-4}\,:= \,& -Dj\,E_6^{-1}\label{eqn: def phi4}\\
   \phi_{-2}\,:= \,&\phi_{-4}\,E_2+Dj\,E_4^{-1}\label{eqn: def phi2}\\
@@ -285,11 +265,8 @@ First, we will define function $a$. To this end we consider the following functi
 \end{align}
 \end{definition}
 Here $Dj(z)=\frac{1}{2\pi i} \frac{d}{dz} j(z)$.
-These functions have the Fourier expansions
 \begin{lemma}\label{lemma: phi fourier4 phi fourier2 phi fourier0}
-% \begin{LEAN}
-% \lean{lemma: phi fourier4 phi fourier2 phi fourier0}\uses{def: phi4 phi2 phi0}
-% \end{LEAN}
+  These functions have the Fourier expansions
 \begin{align}
   \phi_{-4}(z)\,=\,&q^{-1} + 504 + 73764\, q + 2695040\, q^2 + 54755730\, q^3 + O(q^4)\label{eqn: phi fourier4}\\
   \phi_{-2}(z)\,=\,&720 + 203040\, q + 9417600\, q^2 + 223473600\, q^3 + 3566782080\, q^4+O(q^5)\label{eqn: phi fourier2}\\
@@ -297,18 +274,14 @@ These functions have the Fourier expansions
 \end{align}
 where $q=e^{2\pi i z}$.
 \end{lemma}
-The function $\phi_0(z)$ is not modular; however the identity \ref{lemma: E2 transform} implies the following transformation rule:
+The function $\phi_0(z)$ is not modular; however,
 \begin{lemma}\label{lemma: phi0 transform}
-% \begin{LEAN}% \lean{lemma: phi0 transform}\uses{lemma: E2 transform}
-% \end{LEAN}
+  The identity \ref{lemma: E2 transform} implies the following transformation rule:
 \begin{equation}\label{eqn: phi0 transform}
 \phi_0\Big(\frac{-1}{z}\Big)=\phi_0(z)-\frac{12i}{\pi}\,\frac{1}{z}\,\phi_{-2}(z)-\frac{36}{\pi^2}\,\frac{1}{z^2}\,\phi_{-4}(z).
 \end{equation}
 \end{lemma}
 \begin{definition}\label{def: a(r) definition}
-% \begin{LEAN}
-% \lean{eqn: a(r) definition}
-% \end{LEAN}
 For $x\in\R^8$ we define
 \begin{align}\label{eqn: a(r) definition}
   a(x):=&\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i \|x\|^2 z}\,dz
@@ -319,15 +292,8 @@ For $x\in\R^8$ we define
 \end{definition}
 We observe that the contour integrals in \eqref{eqn: a(r) definition} converge absolutely and uniformly for  $x\in\R^8$. Indeed,
 $\phi_0(z)=O(e^{-2\pi i z})$ as $\Im(z)\to \infty$. Therefore, $a(x)$ is well defined. Now we prove that $a$ satisfies condition \eqref{eqn: a fourier}.
-\begin{proposition}\label{prop: a(r) Fourier}
-% \begin{LEAN}
-% \lean{prop: a(r) Fourier}
-\uses{lemma: Ek Fourier}
-\uses{def: E2 def}
-\uses{lemma: j Fourier asymptotic}
-\uses{def: a(r) definition}
-\uses{lemma: Gaussian Fourier}
-% \end{LEAN}
+\begin{proposition}\label{prop: a(r) Fourier}\uses{lemma: Ek Fourier}\uses{def: E2 def}\uses{lemma: j Fourier asymptotic}\uses{def: a(r) definition}\uses{lemma: Gaussian Fourier}
+
 The function $a$ defined by \eqref{eqn: a(r) definition} belongs to the Schwartz space and satisfies $$\widehat{a}(x)=a(x). $$
 \end{proposition}
 \begin{proof}
@@ -373,11 +339,7 @@ This finishes the proof of the proposition.
 Next, we check that $a$ has double zeroes at all $\Lambda_8$-lattice points of length greater then $\sqrt{2}$.
 %Note that by definition function $a$ is radial and therefore in naturally defines a function on $\R_{\geq0}$. For abuse of notation we denote this function also by $a$.
 
-\begin{proposition}\label{prop: a(r) double zeroes}
-% \begin{LEAN}
-% \lean{prop: a(r) double zeroes}
-\uses{lemma:  phi0 transform}
-% \end{LEAN}
+\begin{proposition}\label{prop: a(r) double zeroes}\uses{lemma:  phi0 transform}
 For $r>\sqrt{2}$ we can express $a(r)$ in the following form
 \begin{equation}\label{eqn: a double zeroes}
   a(r)=-4\sin(\pi r^2/2)^2\,\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz.
@@ -425,14 +387,7 @@ Now from \eqref{eqn: phi0 transform} we find
 This finishes the proof.
 \end{proof}
 Finally, we find another convenient integral representation for $a$ and compute values of $a(r)$ at $r=0$ and $r=\sqrt{2}$.
-\begin{proposition}\label{prop: a another integral}
-% \begin{LEAN}
-% \lean{prop: a another integral}
-\uses{prop: a(r) double zeroes}
-\uses{lemma: phi fourier0}
-\uses{lemma: phi0 transform}
-\uses{def: a(r) definition}
-% \end{LEAN}
+\begin{proposition}\label{prop: a another integral}\uses{prop: a(r) double zeroes}\uses{lemma: phi fourier0}\uses{lemma: phi0 transform}\uses{def: a(r) definition}
 For $r\geq0$ we have
 \begin{align}\label{eqn: a another integral}a(r)=&4i\,\sin(\pi r^2/2)^2\,\Bigg(\frac{36}{\pi^3\,(r^2-2)}-\frac{8640}{\pi^3\,r^4}+\frac{18144}{\pi^3\,r^2}\\ +&\int\limits_0^\infty\,\left(t^2\,\phi_0\Big(\frac{i}{t}\Big)-\frac{36}{\pi^2}\,e^{2\pi t}+\frac{8640}{\pi}\,t-\frac{18144}{\pi^2}\right)\,e^{-\pi r^2 t}\,dt \Bigg) .\notag\end{align}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
@@ -453,11 +408,7 @@ Therefore, the identity \eqref{eqn: a another integral} holds for $r>\sqrt{2}$.
 On the other hand, from the definition~\eqref{eqn: a(r) definition} we see that $a(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion~\eqref{eqn: phi asymptotic} implies that the right hand side of \eqref{eqn: a another integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, the identity \eqref{eqn: a another integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
 \end{proof}
 From the identity~\eqref{eqn: a another integral} we see that the values $a(r)$ are in $i\R$ for all $r\in\R_{\geq0}$. In particular, we have
-\begin{proposition}\label{prop: a values}
-% \begin{LEAN}
-% \lean{prop: a values}
-\uses{prop: a another integral}
-% \end{LEAN}
+\begin{proposition}\label{prop: a values}\uses{prop: a another integral}
 We have
 \begin{equation}
 a(0)=\frac{-i\,8640}{\pi}\qquad
@@ -471,9 +422,6 @@ These identities follow immediately from the previous proposition.
 
 Now we construct function $b$. To this end we consider the function
 \begin{definition}\label{def: h}
-% \begin{LEAN}
-% \lean{def: h}
-% \end{LEAN}
 \begin{equation}\label{eqn: h define}
   h(z)\,:=\,128 \frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}.
 \end{equation}
@@ -491,11 +439,7 @@ h(z)\,=\,q^{-1} + 16 - 132 q + 640 q^2 - 2550 q^3+O(q^4).\notag
 Let $I=\left(\begin{smallmatrix}1&0\\0&1\end{smallmatrix}\right)$,
 $T=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$, and
 $S=\left(\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right)$ be elements of $\Gamma_1$.
-\begin{definition}\label{def: psi I psi T psi S}
-% \begin{LEAN}
-% \lean{def: psi I psi T psi S}
-\uses{def: h}
-% \end{LEAN}
+\begin{definition}\label{def: psi I psi T psi S}\uses{def: h}
 We define the followig three functions
 \begin{align}
   \psi_I\,:=\,&h-h|_{-2}ST \label{eqn: psi I define}\\
@@ -503,12 +447,8 @@ We define the followig three functions
   \psi_S\,:=\,&\psi_I|_{-2}S. \label{eqn: psi S define}
 \end{align}
 \end{definition}
-More explicitly, we have
-\begin{lemma}\label{lemma: psi I psi T psi S explicit}
-% \begin{LEAN}
-% \lean{lemma: psi I psi T psi S explicit}
-\uses{def: psi I psi T psi S}
-% \end{LEAN}
+\begin{lemma}\label{lemma: psi I psi T psi S explicit}\uses{def: psi I psi T psi S}
+  More explicitly, we have
 \begin{align}
 \psi_I(z)\,=\,&128\,\frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}\,+\,128
               \frac{\theta_{01}^4(z)-\theta_{10}^4(z)}{\theta_{00}^8(z)}\label{eqn: psi I explicit}\\
@@ -518,11 +458,7 @@ More explicitly, we have
               \frac{\theta_{10}^4(z)-\theta_{01}^4(z)}{\theta_{00}^8(z)}.\label{eqn: psi S explicit}
 \end{align}
 \end{lemma}
-\begin{lemma}\label{lemma: psi fourier I psi fourier T psi fourier S}
-% \begin{LEAN}
-% \lean{lemma: psi fourier I psi fourier T psi fourier S}
-\uses{lemma: psi I psi T psi S explicit}
-% \end{LEAN}
+\begin{lemma}\label{lemma: psi fourier I psi fourier T psi fourier S}\uses{lemma: psi I psi T psi S explicit}
 The Fourier expansions of these functions are
 \begin{align}
   \psi_I(z)\,=\,&q^{-1} + 144 - 5120 q^{1/2} + 70524 q - 626688 q^{3/2} + 4265600 q^2  + O(q^{5/2}) \label{eqn: psi fourier I}\\
@@ -530,11 +466,7 @@ The Fourier expansions of these functions are
   \psi_S(z)\,=\,&-10240 q^{1/2} - 1253376 q^{3/2} - 48328704 q^{5/2} - 1059078144 q^{7/2}+O(q^{9/2}).\label{eqn: psi fourier S}
 \end{align}
 \end{lemma}
-\begin{definition}\label{def: b(r) definition}
-% \begin{LEAN}
-% \lean{def: b(r) definition}
-\uses{def: psi I psi T psi S}
-% \end{LEAN}
+\begin{definition}\label{def: b(r) definition}\uses{def: psi I psi T psi S}
 For $x\in\R^8$ define
 \begin{align}\label{eqn: b(r) definition}
   b(x):= & \int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz
@@ -544,13 +476,7 @@ For $x\in\R^8$ define
 \end{align}
 \end{definition}
 Now we prove that $b$ satisfies condition \eqref{eqn: b fourier}.
-\begin{proposition}\label{prop: b(r) Fourier}
-% \begin{LEAN}
-% \lean{prop: b(r) Fourier}
-\uses{def: b(r) definition}
-\uses{lemma: Gaussian Fourier}
-\uses{def:  psi I psi T psi S}
-% \end{LEAN}
+\begin{proposition}\label{prop: b(r) Fourier}\uses{def: b(r) definition}\uses{lemma: Gaussian Fourier}\uses{def:  psi I psi T psi S}
 The function $b$ defined by \eqref{eqn: b(r) definition} belongs to the Schwartz space and satisfies
   $$\widehat{b}(x)=-b(x). $$
 \end{proposition}
@@ -598,12 +524,7 @@ Now from~\eqref{eqn: b(r) definition} we see that
 $$ \mathcal{F}(b)(x)=-b(x). $$
 \end{proof}
 Now we regard the radial function  $b$ as a function on $\R_{\geq0}$. We check that $b$ has double roots at $\Lambda_8$-points.
-\begin{proposition}\label{prop: b(r) double zeroes}
-% \begin{LEAN}
-% \lean{prop: b(r) double zeroes}
-\uses{lemma: psi fourier I psi fourier T psi fourier S}
-\uses{def: psi I psi T psi S}
-% \end{LEAN}
+\begin{proposition}\label{prop: b(r) double zeroes}\uses{lemma: psi fourier I psi fourier T psi fourier S}\uses{def: psi I psi T psi S}
 For $r>\sqrt{2}$ function $b(r)$ can be expressed as
 \begin{equation}\label{eqn: b double zeroes}
   b(r)=-4\sin(\pi r^2/2)^2\,\int\limits_{0}^{i\infty}\psi_I(z)\,e^{\pi i r^2 \,z}\,dz.
@@ -650,14 +571,7 @@ Combining \eqref{eqn: c1} and \eqref{eqn: c2} we find
   \end{align}
 \end{proof}
 At the end of this section we find another integral representation of $b(r)$ for $r\in\R_{\geq0}$ and compute special values of $b$.
-\begin{proposition}\label{prop: b another integral}
-% \begin{LEAN}
-% \lean{prop: b another integral}
-\uses{prop:  b(r) double zeroes}
-\uses{lemma: psi fourier I psi fourier T psi fourier S}
-\uses{def: b(r) definition}
-\uses{eqn: psi asymptotic}
-% \end{LEAN}
+\begin{proposition}\label{prop: b another integral}\uses{prop:  b(r) double zeroes}\uses{lemma: psi fourier I psi fourier T psi fourier S}\uses{def: b(r) definition}\uses{eqn: psi asymptotic}
 For $r\geq0$ we have
 \begin{equation}\label{eqn: b another integral}b(r)=4i\,\sin(\pi r^2/2)^2\,\left(\frac{144}{\pi\,r^2}+\frac{1}{\pi\,(r^2-2)}+\int\limits_0^\infty\,\left(\psi_I(it)-144-e^{2\pi t}\right)\,e^{-\pi r^2 t}\,dt\right).\end{equation}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
@@ -679,11 +593,7 @@ Therefore, the identity \eqref{eqn: b another integral} holds for $r>\sqrt{2}$.
 On the other hand, from the definition \eqref{eqn: b(r) definition} we see that $b(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion \eqref{eqn: psi asymptotic} implies that the right hand side of \eqref{eqn: b another integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, the identity \eqref{eqn: b another integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
 \end{proof}
 We see from \eqref{eqn: b another integral} that $b(r)\in i\R$ far all $r\in\R_\geq{0}$. Another immediate corollary of this proposition is
-\begin{proposition}\label{prop: b values}
-% \begin{LEAN}
-% \lean{prop: b values}
-\uses{prop: b another integral}
-% \end{LEAN}
+\begin{proposition}\label{prop: b values}\uses{prop: b another integral}
 We have
 \begin{equation}\label{eqn: b values}
 b(0)=0\qquad
@@ -694,12 +604,7 @@ b^\prime(\sqrt{2})=\frac{i}{2\sqrt{2}\,\pi}.
 
 \section{Proof of Theorem \ref{thm: g}}\label{sec: g}
 Finally, we are ready to prove Theorem \ref{thm: g}.
-\begin{theorem}\label{thm: g1}
-% \begin{LEAN}
-% \lean{thm: g1}
-\uses{prop: a(r) double zeroes}
-\uses{prop: b(r) double zeroes}
-% \end{LEAN}
+\begin{theorem}\label{thm: g1}\uses{prop: a(r) double zeroes}\uses{prop: b(r) double zeroes}
 The function
 $$g(x):=\frac{\pi\,i}{8640}a(x)+\frac{i}{240\pi}\,b(x)$$
 satisfies conditions \eqref{eqn: g1}--\eqref{eqn: g3}.
