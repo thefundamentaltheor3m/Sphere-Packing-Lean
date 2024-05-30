@@ -8,3 +8,5 @@ This is a (very nascent) project attempting to formalise some notions about Sphe
 * [API Documentation](https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/)
 
 Contributors: Maryna Viazovska (EPFL), Sidharth Hariharan (Imperial College London/EPFL)
+
+We would also like to extend our sincere thanks to Kevin Buzzard and Utensil Song for their support in this endeavour.
