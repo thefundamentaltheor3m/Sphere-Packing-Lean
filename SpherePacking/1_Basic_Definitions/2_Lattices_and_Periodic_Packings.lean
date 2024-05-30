@@ -6,10 +6,13 @@ namespace Lattice
 
 section Definitions
 
-variable {n : ℕ} (V : EuclideanSpace (Fin n) ℝ)
+variable {d : ℕ}
+local notation "V" => EuclideanSpace ℝ (Fin d)
 
--- def in_lattice (B : Basis (Fin n) ℝ V) (v : V) : Prop :=
---   ∃ (a : Fin n → ℤ), v = ∑ i : (Fin n), ↑(a i) • (B i)
+def in_lattice (B : Basis (Fin d) ℝ V) (v : V) : Prop :=
+  ∃ (a : Fin d → ℤ), v = ∑ i : (Fin d), ↑(a i) • (B i)
+
+def is_lattice (Λ : Set V) : Prop := ∃ (B : Basis (Fin d) ℝ V), ∀ v : V, v ∈ Λ ↔ in_lattice B v
 
 end Definitions
 
