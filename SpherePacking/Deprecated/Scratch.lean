@@ -27,7 +27,7 @@ structure lattice where
 #check lattice.ext_iff
 
 -- instance {B : Basis (Fin n) ℝ ℝⁿ} : AddCommGroup (lattice' n B) := sorry
-
+ 
 def E8 : lattice n where
   basis := sorry
   vectors := sorry --{v : ℝⁿ | ((∀ i : Fin n, v i ∈ ℤ) ∨ (∀ i : Fin n, (2 * v i) ∈ ℤ ∧ (v i ∉ ℤ))) ∧ ∑ i : Fin n, v i = 0}

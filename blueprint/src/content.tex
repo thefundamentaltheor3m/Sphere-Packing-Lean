@@ -23,26 +23,26 @@
 The sphere packing constant measures which portion of $d$-dimensional Euclidean
 space can be covered by non-overlapping unit balls. More precisely, let $\R^d$ be the Euclidean vector space equipped with distance $\|\cdot\|$ and Lebesgue measure $\mathrm{Vol}(\cdot)$. For $x\in\R^d$ and $r\in\R_{>0}$ we denote by $B_d(x,r)$ the ball in $\R^d$ with center $x$ and radius $r$.
 
-\begin{definition}\label{def: Sphere Packing}
+\begin{definition}\label{def: Sphere Packing}\lean{SpherePacking.isPacking}\leanok
   Let $X\subset \R^d$ be a discrete set of points such that $\|x-y\|\geq2$ for any distinct $x,y\in X$. Then the union
 $$\mathcal{P}=\bigcup_{x\in X} B_d(x,1)$$ is a \emph{sphere packing}.
 \end{definition}
 
-\begin{definition}\label{def: Lattice Packing}\uses{EuclideanLattice.is_lattice}
+\begin{definition}\label{def: Lattice Packing}\uses{EuclideanLattice.is_lattice}\lean{SpherePacking.isLatticePacking}\leanok
   If $X$ is a lattice in $\R^d$ then we say that $\mathcal{P}$ is a \emph{lattice sphere packing}.
 \end{definition}
 
-\begin{definition}\label{def: finite density}
+\begin{definition}\label{def: finite density}\lean{SpherePacking.FiniteDensity}\leanok
   The \emph{finite density} of a packing $\mathcal{P}$ is defined as
 $$\Delta_{\mathcal{P}}(r):=\frac{\mathrm{Vol}(\mathcal{P}\cap B_d(0,r))}{\mathrm{Vol}(B_d(0,r))},\quad r>0.$$
 \end{definition}
 
-\begin{definition}\label{def: density}
+\begin{definition}\label{def: density}\uses{SpherePacking.FiniteDensity}\lean{SpherePacking.Density}\leanok
   We define the \emph{density} of a packing $\mathcal{P}$ as the limit superior
 $$\Delta_{\mathcal{P}}:=\limsup\limits_{r\to\infty}\Delta_{\mathcal{P}}(r). $$
 \end{definition}
 
-\begin{definition}\label{def: Sphere Packing Constant}
+\begin{definition}\label{def: Sphere Packing Constant}\uses{SpherePacking.isPacking, SpherePacking.Density}\lean{SpherePacking.Constant}\leanok
 The number be want to know is the supremum over all possible packing densities
 $$\Delta_d:=\sup\limits_{\substack{\mathcal{P}\subset\R^d\\ \scriptscriptstyle\mathrm{sphere}\;\mathrm{packing}}}\Delta_{\mathcal{P}} $$
 called the \emph{sphere packing constant}.

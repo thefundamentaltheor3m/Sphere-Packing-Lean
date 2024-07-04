@@ -16,4 +16,12 @@ def is_lattice (Λ : Set V) : Prop := ∃ (B : Basis (Fin d) ℝ V), ∀ v : V, 
 
 end Definitions
 
+section E8
+
+local notation "V" => EuclideanSpace ℝ (Fin 8)
+
+def E8 : Set V := sorry
+
+end E8
+
 end EuclideanLattice
