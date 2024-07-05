@@ -23,26 +23,26 @@
 The sphere packing constant measures which portion of $d$-dimensional Euclidean
 space can be covered by non-overlapping unit balls. More precisely, let $\R^d$ be the Euclidean vector space equipped with distance $\|\cdot\|$ and Lebesgue measure $\mathrm{Vol}(\cdot)$. For $x\in\R^d$ and $r\in\R_{>0}$ we denote by $B_d(x,r)$ the ball in $\R^d$ with center $x$ and radius $r$.
 
-\begin{definition}\label{def: Sphere Packing}\lean{SpherePacking.isPacking}\leanok
+\begin{definition}\label{SpherePacking.isPacking}\lean{SpherePacking.isPacking}\leanok
   Let $X\subset \R^d$ be a discrete set of points such that $\|x-y\|\geq2$ for any distinct $x,y\in X$. Then the union
 $$\mathcal{P}=\bigcup_{x\in X} B_d(x,1)$$ is a \emph{sphere packing}.
 \end{definition}
 
-\begin{definition}\label{def: Lattice Packing}\uses{EuclideanLattice.is_lattice}\lean{SpherePacking.isLatticePacking}\leanok
+\begin{definition}\label{SpherePacking.isLatticePacking}\uses{EuclideanLattice.is_lattice}\lean{SpherePacking.isLatticePacking}\leanok
   If $X$ is a lattice in $\R^d$ then we say that $\mathcal{P}$ is a \emph{lattice sphere packing}.
 \end{definition}
 
-\begin{definition}\label{def: finite density}\lean{SpherePacking.FiniteDensity}\leanok
+\begin{definition}\label{SpherePacking.FiniteDensity}\lean{SpherePacking.FiniteDensity}\leanok
   The \emph{finite density} of a packing $\mathcal{P}$ is defined as
 $$\Delta_{\mathcal{P}}(r):=\frac{\mathrm{Vol}(\mathcal{P}\cap B_d(0,r))}{\mathrm{Vol}(B_d(0,r))},\quad r>0.$$
 \end{definition}
 
-\begin{definition}\label{def: density}\uses{SpherePacking.FiniteDensity}\lean{SpherePacking.Density}\leanok
+\begin{definition}\label{SpherePacking.Density}\uses{SpherePacking.FiniteDensity}\lean{SpherePacking.Density}\leanok
   We define the \emph{density} of a packing $\mathcal{P}$ as the limit superior
 $$\Delta_{\mathcal{P}}:=\limsup\limits_{r\to\infty}\Delta_{\mathcal{P}}(r). $$
 \end{definition}
 
-\begin{definition}\label{def: Sphere Packing Constant}\uses{SpherePacking.isPacking, SpherePacking.Density}\lean{SpherePacking.Constant}\leanok
+\begin{definition}\label{SpherePacking.Constant}\uses{SpherePacking.isPacking, SpherePacking.Density}\lean{SpherePacking.Constant}\leanok
 The number be want to know is the supremum over all possible packing densities
 $$\Delta_d:=\sup\limits_{\substack{\mathcal{P}\subset\R^d\\ \scriptscriptstyle\mathrm{sphere}\;\mathrm{packing}}}\Delta_{\mathcal{P}} $$
 called the \emph{sphere packing constant}.
@@ -50,18 +50,19 @@ called the \emph{sphere packing constant}.
 
 The main result of this paper is the proof that $$\Delta_8=\frac{\pi^4}{384}\approx 0.25367.$$
 This is the density of the $E_8$-lattice sphere packing.
-\begin{definition}\label{def: E8 lattice}
+
+\begin{definition}\label{EuclideanLattice.E8}\lean{EuclideanLattice.E8}\leanok
   Recall that the $E_8$-lattice $\Lambda_8\subset\R^8$ is given by
 $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1}^8x_i\equiv 0\;(\mathrm{mod\;2})\}.$$
 \end{definition}
 \begin{lemma}\label{lemma: Characterisation of E8 lattice}
   $\Lambda_8$ is a positive-definite, even, unimodular lattice of rank 8. The minimal distance between two points in $\Lambda_8$ is $\sqrt{2}$.
 \end{lemma}
-\begin{definition}\label{def: E8 lattice packing}
-The $E_8$-lattice sphere packing is the packing of unit balls with centers at $\frac{1}{\sqrt{2}}\Lambda_8.$
+\begin{definition}\label{SpherePacking.E8}\uses{EuclideanLattice.E8}\lean{SpherePacking.E8}\leanok
+The $E_8$-lattice sphere packing is the packing of unit balls with centers at $\frac{1}{\sqrt{2}}\Lambda_8$.
 \end{definition}
 Our main result is
-\begin{theorem}\label{thm: main}
+\begin{theorem}\label{SpherePacking.Main}\lean{SpherePacking.Main}
 No packing of unit balls
 in Euclidean space $\R^8$ has density greater than that of the $E_8$-lattice packing.
 \end{theorem}
@@ -76,7 +77,7 @@ in Euclidean space $\R^8$ has density greater than that of the $E_8$-lattice pac
   A subset of the Euclidean space $\R^d$ is called a lattice if it is the $\Z$-span of a basis of $\R^d$.
 \end{definition}
 
-\begin{lemma}\label{def: Density of periodic packing} \notready
+\begin{lemma}\label{SpherePacking.Density of periodic packing} \notready
   Density of a periodic packing ...
 \end{lemma}
 \subsection{Facts from Fourier analysis}
@@ -117,7 +118,7 @@ To be included.
 \end{proof}
 
 
-  The main step in our proof of Theorem \ref{thm: main} is the explicit  construction of an optimal function. It will be convenient for us to scale this function by $\sqrt{2}$.
+  The main step in our proof of Theorem \ref{SpherePacking.Main} is the explicit  construction of an optimal function. It will be convenient for us to scale this function by $\sqrt{2}$.
 \begin{theorem}\label{thm: g}
 There exists a radial Schwartz function $g:\R^8\to\R$ which satisfies:
 \begin{align}
@@ -126,7 +127,7 @@ g(x)&\leq 0\mbox{ for } \|x\|\geq \sqrt{2} \label{eqn: g1}\\
 g(0)&=\widehat{g}(0)=1.\label{eqn: g3}
 \end{align}
 \end{theorem}
-Theorem \ref{thm: Cohn-Elkies} applied to the optimal function $f(x)=g(x/\sqrt{2})$ immediately implies Theorem \ref{thm: main}.
+Theorem \ref{thm: Cohn-Elkies} applied to the optimal function $f(x)=g(x/\sqrt{2})$ immediately implies Theorem \ref{SpherePacking.Main}.
 
 
 \section{Modular forms}

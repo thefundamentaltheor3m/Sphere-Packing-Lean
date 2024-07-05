@@ -15,7 +15,9 @@ section Definitions
 
 def Centres (X : Set V) : Prop := (Discrete d X) ∧ (∀ x ∈ X, ∀ y ∈ X, x ≠ y → Euclidean.dist x y ≥ 2)
 
-def Packing (X P : Set V) : Prop := (Centres d X) ∧ (P = ⋃ x ∈ X, {y | Euclidean.dist x y < 1})  -- We don't include boundaries
+def Packing_of_Centres (X : Set V) : Set V := ⋃ x ∈ X, {y | Euclidean.dist x y < 1}
+
+def Packing (X P : Set V) : Prop := (Centres d X) ∧ (P = Packing_of_Centres d X)  -- We don't include boundaries
 
 def isPacking (P : Set V) : Prop := ∃ X, Packing d X P
 
@@ -45,5 +47,13 @@ def Constant : ENNReal := sSup {x : ENNReal | ∃ P, isPacking d P ∧ Density d
 -- To convert a limit into a function, could it be some kind of exists.mk of some some number such that (tendsto that number) is satisfied?
 
 end Density
+
+section E8_Packing
+
+def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_normalised)
+
+theorem Main : Constant 8 = Density 8 E8 := sorry
+
+end E8_Packing
 
 end SpherePacking
