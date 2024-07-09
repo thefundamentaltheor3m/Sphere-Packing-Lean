@@ -28,7 +28,7 @@ space can be covered by non-overlapping unit balls. More precisely, let $\R^d$ b
 $$\mathcal{P}=\bigcup_{x\in X} B_d(x,1)$$ is a \emph{sphere packing}.
 \end{definition}
 
-\begin{definition}\label{SpherePacking.isLatticePacking}\uses{EuclideanLattice.is_lattice}\lean{SpherePacking.isLatticePacking}\leanok
+\begin{definition}\label{SpherePacking.isLatticePacking}\uses{EuclideanLattice.isLattice}\lean{SpherePacking.isLatticePacking}\leanok
   If $X$ is a lattice in $\R^d$ then we say that $\mathcal{P}$ is a \emph{lattice sphere packing}.
 \end{definition}
 
@@ -72,7 +72,7 @@ in Euclidean space $\R^8$ has density greater than that of the $E_8$-lattice pac
   Let $S$ be a discrete subgroup of $\R^d$. A set $X\subset\R^d$ is said to $S$-periodic if for each $s\in S$ and $x\in X$ the vector $x+s$ belongs to $X$.
 \end{definition}
 
-\begin{definition}\label{EuclideanLattice.is_lattice}\lean{EuclideanLattice.is_lattice}\leanok
+\begin{definition}\label{EuclideanLattice.isLattice}\lean{EuclideanLattice.isLattice}\leanok
   % A lattice in the Euclidean space $\R^d$ is a discrete, co-compact, abelian subgroup.
   A subset of the Euclidean space $\R^d$ is called a lattice if it is the $\Z$-span of a basis of $\R^d$.
 \end{definition}

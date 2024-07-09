@@ -21,9 +21,13 @@ def Packing (X P : Set V) : Prop := (Centres d X) ∧ (P = Packing_of_Centres d 
 
 def isPacking (P : Set V) : Prop := ∃ X, Packing d X P
 
-def LatticePacking (Λ P : Set V) : Prop := (Packing d Λ P) ∧ (is_lattice Λ)
+def LatticePacking (Λ P : Set V) : Prop := (Packing d Λ P) ∧ (isLattice Λ)
 
 def isLatticePacking (P : Set V) : Prop := ∃ Λ, LatticePacking d Λ P
+
+def PeriodicPacking (Λ P : Set V) : Prop := (LatticePacking d Λ P) ∧ (isPeriodic Λ P)
+
+def isPeriodicPacking (P : Set V) : Prop := ∃ Λ, PeriodicPacking d Λ P
 
 end Definitions
 
