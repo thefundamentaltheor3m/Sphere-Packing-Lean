@@ -9,10 +9,22 @@ section Definitions
 variable {d : ℕ}
 local notation "V" => EuclideanSpace ℝ (Fin d)
 
-def inLattice (B : Basis (Fin d) ℝ V) (v : V) : Prop :=
+def inLattice (B : Basis (Fin d) ℝ V) (v : V) :=
   ∃ (a : Fin d → ℤ), v = ∑ i : (Fin d), ↑(a i) • (B i)
 
-def isLattice (Λ : Set V) : Prop := ∃ (B : Basis (Fin d) ℝ V), ∀ v : V, v ∈ Λ ↔ inLattice B v
+def isLattice (Λ : Set V) : Prop := ∃ (B : Basis (Fin d) ℝ V), Λ = Submodule.span ℤ (Set.range B)
+
+#check isLattice
+
+example (Λ : Set V) (hΛ : isLattice Λ) : ∃ m : ℕ, m = 4 := by
+  rcases hΛ with ⟨B, hB⟩
+  use 4
+
+-- def mem (Λ : Set V) (hΛ : isLattice Λ)
+
+instance (Λ : Set V) (hΛ : isLattice Λ) : Module ℤ ℝ := by
+  -- rcases hΛ with ⟨B, hB⟩
+  infer_instance
 
 def isPeriodic (Λ : Set V) -- (hΛ : isLattice Λ)
   (X : Set V) : Prop := ∀ v x : V, v ∈ Λ → x ∈ X → v + x ∈ Λ
@@ -27,9 +39,10 @@ variable {X Λ : Set V} (hΛ : isLattice Λ) (hX : isPeriodic Λ X)
 
 -- First, we show that a lattice is an additive, commutative group.
 
-instance : Membership V Λ := ⟨fun v => hΛ.2 v⟩
+instance : Membership V Λ := inLattice hΛ.1
 
 lemma closed_under_addition : ∀ v w : V, v ∈ Λ → w ∈ Λ → v + w ∈ Λ := by
+  intro v w
   sorry
 
 -- instance : AddCommGroup Λ where

@@ -27,7 +27,7 @@ structure lattice where
 #check lattice.ext_iff
 
 -- instance {B : Basis (Fin n) ℝ ℝⁿ} : AddCommGroup (lattice' n B) := sorry
- 
+
 def E8 : lattice n where
   basis := sorry
   vectors := sorry --{v : ℝⁿ | ((∀ i : Fin n, v i ∈ ℤ) ∨ (∀ i : Fin n, (2 * v i) ∈ ℤ ∧ (v i ∉ ℤ))) ∧ ∑ i : Fin n, v i = 0}
@@ -115,3 +115,35 @@ def SelfPeriodic (P : SpherePacking n) : Prop := Periodic n P P.centres
 end SpherePacking
 
 end SpherePacking
+
+example (h1 : ∃ n : ℕ, n + 1 = 5) : ∃ m : ℕ, m = 4 := by
+  rcases h1 with ⟨n, hn⟩
+  use 4
+
+example (Λ : Set ℝ) (hΛ : ∃ (B : Basis (Fin 1) ℝ ℝ), Λ = Submodule.span ℤ (Set.range B)) : ∃ m : ℕ, m = 4 := by
+  rcases hΛ with ⟨B, hB⟩
+  use 4
+
+variable {d : ℕ}
+local notation "V" => EuclideanSpace ℝ (Fin d)
+
+def isLattice (Λ : Set V) : Prop := ∃ (B : Basis (Fin d) ℝ V), Λ = Submodule.span ℤ (Set.range B)
+
+#check isLattice
+
+-- example (Λ : Set ℝ) (hΛ : isLattice Λ) : ∃ m : ℕ, m = 4 := by
+--   rcases hΛ with ⟨B, hB⟩
+--   use 4
+
+-- local notation "d" => 10
+
+
+def isLattice' (Λ : Set V) : Prop := ∃ (B : Basis (Fin d) ℝ V), Λ = Submodule.span ℤ (Set.range B)
+
+example (Λ : Set V) (hΛ : isLattice' Λ) : ∃ m : ℕ, m = 4 := by
+  rcases hΛ with ⟨B, hB⟩
+  use 4
+
+instance (B : Basis (Fin d) ℝ V) (Λ : Set V) (hΛ : Λ = Submodule.span ℤ (Set.range B)) : AddCommGroup Λ := by
+  
+  sorry
