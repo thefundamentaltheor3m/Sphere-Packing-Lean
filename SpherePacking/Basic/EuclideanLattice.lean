@@ -20,11 +20,10 @@ example (Λ : Set V) (hΛ : isLattice Λ) : ∃ m : ℕ, m = 4 := by
   rcases hΛ with ⟨B, hB⟩
   use 4
 
--- def mem (Λ : Set V) (hΛ : isLattice Λ)
-
-instance (Λ : Set V) (hΛ : isLattice Λ) : Module ℤ ℝ := by
+instance (Λ : Set V) (hΛ : isLattice Λ) : Membership V Λ := -- inLattice hΛ.1 -- by
   -- rcases hΛ with ⟨B, hB⟩
-  infer_instance
+  -- exact inLattice B v
+  sorry
 
 def isPeriodic (Λ : Set V) -- (hΛ : isLattice Λ)
   (X : Set V) : Prop := ∀ v x : V, v ∈ Λ → x ∈ X → v + x ∈ Λ
