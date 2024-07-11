@@ -79,7 +79,7 @@ instance : HMul ℝ V V := ⟨fun (r : ℝ) (v : V) => (fun i => r * v i)⟩
 def ℤ_as_ℝ : Set ℝ := {r : ℝ | ∃ (n : ℤ), ↑n = r}
 local notation "↑ℤ" => ℤ_as_ℝ
 
-def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin 8, (2 * v i) ∈ ↑ℤ ∧ (v i ∉ ↑ℤ))) ∧ ∑ i : Fin 8, v i = 0}
+def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin 8, (2 * v i) ∈ ↑ℤ ∧ (v i ∉ ↑ℤ))) ∧ ∑ i : Fin 8, v i ≡ 0 [PMOD 2]}
 
 def E8_normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
 
@@ -94,7 +94,8 @@ def E8_Normalised_Lattice : AddSubgroup V where
         intro i
         use 0
         rw [PiLp.zero_apply, Int.cast_zero] }
-      { simp only [PiLp.zero_apply, Finset.sum_const_zero] } }
+      { -- simp only [PiLp.zero_apply, Finset.sum_const_zero]
+      sorry } }
     { rw [one_div, smul_zero] }
   add_mem' := by
     intros a b ha hb
@@ -201,7 +202,8 @@ def E8_Normalised_Lattice : AddSubgroup V where
             apply hf
             simp only [f, mul_add, PiLp.add_apply, Int.cast_add, ←hn, ←hm, hp, hq, Int.cast_one, mul_one, Int.cast_mul, Int.cast_ofNat]
             linarith }
-      { simp only [PiLp.add_apply, Finset.sum_add_distrib, hv2, hw2, add_zero] } }
+      { --simp only [PiLp.add_apply, Finset.sum_add_distrib, hv2, hw2, add_zero]
+      sorry } }
     { rw [one_div, smul_add] }
   neg_mem' := by
     intro x hx
@@ -239,7 +241,8 @@ def E8_Normalised_Lattice : AddSubgroup V where
         rw [Set.mem_setOf_eq] at hv
         rcases hv with ⟨_, hv2⟩
         simp only [PiLp.neg_apply, Finset.sum_neg_distrib, neg_eq_zero]
-        exact hv2 } }
+        -- exact hv2
+        sorry } }
     { rw [one_div, smul_neg] }
 
 instance : TopologicalSpace E8_Normalised_Lattice := by infer_instance
