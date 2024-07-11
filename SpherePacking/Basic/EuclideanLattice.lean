@@ -94,8 +94,7 @@ def E8_Normalised_Lattice : AddSubgroup V where
         intro i
         use 0
         rw [PiLp.zero_apply, Int.cast_zero] }
-      { -- simp only [PiLp.zero_apply, Finset.sum_const_zero]
-      sorry } }
+      { simp only [PiLp.zero_apply, Finset.sum_const_zero, AddCommGroup.modEq_refl] } }
     { rw [one_div, smul_zero] }
   add_mem' := by
     intros a b ha hb
@@ -202,8 +201,10 @@ def E8_Normalised_Lattice : AddSubgroup V where
             apply hf
             simp only [f, mul_add, PiLp.add_apply, Int.cast_add, ←hn, ←hm, hp, hq, Int.cast_one, mul_one, Int.cast_mul, Int.cast_ofNat]
             linarith }
-      { --simp only [PiLp.add_apply, Finset.sum_add_distrib, hv2, hw2, add_zero]
-      sorry } }
+      { simp only [PiLp.add_apply, Finset.sum_add_distrib]
+        have HMODSUM : ∀ x y : ℤ, x ≡ 0 [PMOD 2] → y ≡ 0 [PMOD 2] → (x + y) ≡ 0 [PMOD 2] := by
+          sorry
+        sorry } }
     { rw [one_div, smul_add] }
   neg_mem' := by
     intro x hx
@@ -240,7 +241,7 @@ def E8_Normalised_Lattice : AddSubgroup V where
       { unfold E8_Set at hv
         rw [Set.mem_setOf_eq] at hv
         rcases hv with ⟨_, hv2⟩
-        simp only [PiLp.neg_apply, Finset.sum_neg_distrib, neg_eq_zero]
+        simp only [PiLp.neg_apply, Finset.sum_neg_distrib]
         -- exact hv2
         sorry } }
     { rw [one_div, smul_neg] }
