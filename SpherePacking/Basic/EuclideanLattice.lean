@@ -68,7 +68,7 @@ instance : AddAction Λ V := ActionOnPeriodic hΛ sorry
 
 end ActionbyTranslation
 
-section E8
+noncomputable section E8
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 
@@ -83,7 +83,7 @@ def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin
 
 def E8_normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
 
-noncomputable def E8_Normalised_Lattice : AddSubgroup V where
+def E8_Normalised_Lattice : AddSubgroup V where
   carrier := E8_normalised_Set
   zero_mem' := by
     simp
@@ -242,10 +242,41 @@ noncomputable def E8_Normalised_Lattice : AddSubgroup V where
         exact hv2 } }
     { rw [one_div, smul_neg] }
 
-instance : DiscreteTopology E8_Normalised_Lattice := sorry
+instance : TopologicalSpace E8_Normalised_Lattice := by infer_instance
+
+instance : DiscreteTopology E8_Normalised_Lattice := singletons_open_iff_discrete.mp fun x => by
+  -- unfold IsOpen
+  -- unfold TopologicalSpace.IsOpen
+  -- unfold instTopologicalSpaceSubtype.1
+  have H : ∀ U : Set E8_Normalised_Lattice, (∃ U' : Set V, IsOpen U' ∧ U = E8_normalised_Set ∩ U') → IsOpen U := by
+    intros U hU
+    rcases hU with ⟨U', hU', hU⟩
+    sorry
+  apply H {x}
+  use Euclidean.ball x 0.5
+  constructor
+  { exact Euclidean.isOpen_ball}
+  { unfold E8_normalised_Set ball E8_Set
+    ext x
+    constructor
+    { simp only [SetLike.coe_sort_coe, Set.image_singleton, Set.mem_singleton_iff, Set.mem_setOf_eq,
+      one_div, Set.mem_inter_iff]
+      rintro ⟨w, hw, rfl⟩
+      constructor
+      { sorry }
+      { -- have : Euclidean.dist (↑x) (↑x) = (0:ℝ) := by
+        --  sorry
+        sorry } }
+    { sorry } }
 
 noncomputable instance : isLattice' E8_Normalised_Lattice where
   span_top := by
+    unfold Submodule.span
+    simp only [sInf_eq_top, Set.mem_setOf_eq]
+    intros M hM
+    have HSet : ↑E8_Normalised_Lattice = E8_normalised_Set := rfl
+    rw [HSet] at hM
+    let hM' := Set.inclusion hM
     sorry
 
 end E8
