@@ -81,7 +81,7 @@ local notation "↑ℤ" => ℤ_as_ℝ
 
 def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin 8, (2 * v i) ∈ ↑ℤ ∧ (v i ∉ ↑ℤ))) ∧ ∑ i : Fin 8, v i = 0}
 
-def E8_normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) * w}
+def E8_normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
 
 noncomputable def E8_Normalised_Lattice : AddSubgroup V where
   carrier := E8_normalised_Set
@@ -92,13 +92,161 @@ noncomputable def E8_Normalised_Lattice : AddSubgroup V where
     { constructor
       { left
         intro i
-        simp only [PiLp.zero_apply]
-        sorry }
-      { sorry } }
-    {
-      sorry }
-  add_mem' := sorry
-  neg_mem' := sorry
+        use 0
+        rw [PiLp.zero_apply, Int.cast_zero] }
+      { simp only [PiLp.zero_apply, Finset.sum_const_zero] } }
+    { rw [one_div, smul_zero] }
+  add_mem' := by
+    intros a b ha hb
+    unfold E8_normalised_Set at *
+    unfold E8_Set at *
+    rw [Set.mem_setOf_eq] at *
+    rcases ha with ⟨v, hv, rfl⟩
+    rcases hb with ⟨w, hw, rfl⟩
+    use v + w
+    rcases hv with ⟨hv1, hv2⟩
+    rcases hw with ⟨hw1, hw2⟩
+    constructor
+    { constructor
+      { cases hv1
+        case inl hv1 =>
+          cases hw1
+          case inl hw1 =>
+            left
+            intro i
+            specialize hv1 i
+            specialize hw1 i
+            rcases hv1 with ⟨n, hn⟩
+            rcases hw1 with ⟨m, hm⟩
+            use n + m
+            rw [PiLp.add_apply, Int.cast_add, hn, hm]
+          case inr hw1 =>
+            right
+            intro i
+            specialize hv1 i
+            specialize hw1 i
+            rcases hv1 with ⟨n, hn⟩
+            rcases hw1 with ⟨hm1, hm2⟩
+            rcases hm1 with ⟨m, hm⟩
+            constructor
+            { rw [PiLp.add_apply]
+              use 2 * n + m
+              rw [Int.cast_add, mul_add, ← hn, hm, Int.cast_mul, Int.cast_ofNat] }
+            { intro HContra
+              apply hm2
+              rcases HContra with ⟨p, hp⟩
+              rw [PiLp.add_apply, ← hn] at hp
+              use ↑p - ↑n
+              rw [Int.cast_sub, hp, add_sub_cancel_left] }
+        case inr hv1 =>
+          cases hw1
+          case inl hw1 =>
+            right
+            intro i
+            specialize hv1 i
+            specialize hw1 i
+            rcases hv1 with ⟨hn1, hn2⟩
+            rcases hw1 with ⟨m, hm⟩
+            rcases hn1 with ⟨n, hn⟩
+            constructor
+            { rw [PiLp.add_apply]
+              use 2 * m + n
+              rw [Int.cast_add, mul_add, ← hm, hn, Int.cast_mul, Int.cast_ofNat, add_comm] }
+            { intro HContra
+              apply hn2
+              rcases HContra with ⟨p, hp⟩
+              rw [PiLp.add_apply, ← hm] at hp
+              use ↑p - ↑m
+              rw [Int.cast_sub, hp, add_sub_cancel_right] }
+          case inr hw1 =>
+            left
+            intro i
+            specialize hv1 i
+            specialize hw1 i
+            rcases hv1 with ⟨hn1, hn2⟩
+            rcases hw1 with ⟨hm1, hm2⟩
+            rcases hn1 with ⟨n, hn⟩
+            rcases hm1 with ⟨m, hm⟩
+            let f : ℝ → ℝ := fun x => ↑2 * x
+            have hf : Function.Injective f := by
+              unfold Function.Injective
+              intros x y hfxfy
+              simp [f] at hfxfy
+              exact hfxfy
+            have hnp : ∃ p : ℤ, n = 2 * p + 1 := by
+              rcases Int.even_or_odd' n with ⟨p, hp⟩
+              cases hp
+              case inl hp =>
+                exfalso
+                apply hn2
+                use p
+                apply hf
+                simp only [f, ← hn, hp, Int.cast_mul, Int.cast_ofNat]
+              case inr hp =>
+                use p
+            have hmq : ∃ q : ℤ, m = 2 * q + 1 := by
+              rcases Int.even_or_odd' m with ⟨q, hq⟩
+              cases hq
+              case inl hq =>
+                exfalso
+                apply hm2
+                use q
+                apply hf
+                simp only [f, ← hm, hq, Int.cast_mul, Int.cast_ofNat]
+              case inr hq =>
+                use q
+            rcases hnp with ⟨p, hp⟩
+            rcases hmq with ⟨q, hq⟩
+            use p + q + 1
+            apply hf
+            simp only [f, mul_add, PiLp.add_apply, Int.cast_add, ←hn, ←hm, hp, hq, Int.cast_one, mul_one, Int.cast_mul, Int.cast_ofNat]
+            linarith }
+      { simp only [PiLp.add_apply, Finset.sum_add_distrib, hv2, hw2, add_zero] } }
+    { rw [one_div, smul_add] }
+  neg_mem' := by
+    intro x hx
+    dsimp at *
+    rcases hx with ⟨v, hv, rfl⟩
+    use -v
+    constructor
+    { constructor
+      { rcases hv with ⟨hv1, _⟩
+        cases hv1
+        case inl hv1 =>
+          left
+          intro i
+          specialize hv1 i
+          rcases hv1 with ⟨n, hn⟩
+          use -n
+          rw [PiLp.neg_apply, Int.cast_neg, neg_inj]
+          exact hn
+        case inr hv1 =>
+          right
+          intro i
+          specialize hv1 i
+          rcases hv1 with ⟨hn1, hn2⟩
+          constructor
+          { rcases hn1 with ⟨n, hn⟩
+            use -n
+            rw [Int.cast_neg, PiLp.neg_apply, mul_neg, neg_inj]
+            exact hn }
+          { intro HContra
+            apply hn2
+            rcases HContra with ⟨n, hn⟩
+            use -n
+            rw [Int.cast_neg, hn, PiLp.neg_apply, neg_neg] } }
+      { unfold E8_Set at hv
+        rw [Set.mem_setOf_eq] at hv
+        rcases hv with ⟨_, hv2⟩
+        simp only [PiLp.neg_apply, Finset.sum_neg_distrib, neg_eq_zero]
+        exact hv2 } }
+    { rw [one_div, smul_neg] }
+
+instance : DiscreteTopology E8_Normalised_Lattice := sorry
+
+noncomputable instance : isLattice' E8_Normalised_Lattice where
+  span_top := by
+    sorry
 
 end E8
 
