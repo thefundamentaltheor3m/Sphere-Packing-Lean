@@ -16,6 +16,8 @@ def isLattice (Λ : Set V) : Prop := ∃ (B : Basis (Fin d) ℝ V), Λ = Submodu
 
 #check isLattice
 
+class isLattice' (Λ : AddSubgroup V) [DiscreteTopology Λ] extends IsZlattice ℝ Λ
+
 example (Λ : Set V) (hΛ : isLattice Λ) : ∃ m : ℕ, m = 4 := by
   rcases hΛ with ⟨B, hB⟩
   use 4
@@ -77,9 +79,26 @@ instance : HMul ℝ V V := ⟨fun (r : ℝ) (v : V) => (fun i => r * v i)⟩
 def ℤ_as_ℝ : Set ℝ := {r : ℝ | ∃ (n : ℤ), ↑n = r}
 local notation "↑ℤ" => ℤ_as_ℝ
 
-def E8 : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin 8, (2 * v i) ∈ ↑ℤ ∧ (v i ∉ ↑ℤ))) ∧ ∑ i : Fin 8, v i = 0}
+def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin 8, (2 * v i) ∈ ↑ℤ ∧ (v i ∉ ↑ℤ))) ∧ ∑ i : Fin 8, v i = 0}
 
-def E8_normalised : Set V := {v : V | ∃ w ∈ E8, v = ((1 : ℝ) / (Real.sqrt 2)) * w}
+def E8_normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) * w}
+
+noncomputable def E8_Normalised_Lattice : AddSubgroup V where
+  carrier := E8_normalised_Set
+  zero_mem' := by
+    simp
+    use (0 : V)
+    constructor
+    { constructor
+      { left
+        intro i
+        simp only [PiLp.zero_apply]
+        sorry }
+      { sorry } }
+    {
+      sorry }
+  add_mem' := sorry
+  neg_mem' := sorry
 
 end E8
 

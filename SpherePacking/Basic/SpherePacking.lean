@@ -54,7 +54,7 @@ end Density
 
 section E8_Packing
 
-def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_normalised)
+def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_normalised_Set)
 
 theorem Main : Constant 8 = Density 8 E8 := sorry
 
