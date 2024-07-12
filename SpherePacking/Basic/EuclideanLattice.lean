@@ -81,10 +81,10 @@ local notation "↑ℤ" => ℤ_as_ℝ
 
 def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin 8, (2 * v i) ∈ ↑ℤ ∧ (v i ∉ ↑ℤ))) ∧ ∑ i : Fin 8, v i ≡ 0 [PMOD 2]}
 
-def E8_normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
+def E8_Normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
 
 def E8_Normalised_Lattice : AddSubgroup V where
-  carrier := E8_normalised_Set
+  carrier := E8_Normalised_Set
   zero_mem' := by
     simp
     use (0 : V)
@@ -98,7 +98,7 @@ def E8_Normalised_Lattice : AddSubgroup V where
     { rw [one_div, smul_zero] }
   add_mem' := by
     intros a b ha hb
-    unfold E8_normalised_Set at *
+    unfold E8_Normalised_Set at *
     unfold E8_Set at *
     rw [Set.mem_setOf_eq] at *
     rcases ha with ⟨v, hv, rfl⟩
@@ -202,9 +202,14 @@ def E8_Normalised_Lattice : AddSubgroup V where
             simp only [f, mul_add, PiLp.add_apply, Int.cast_add, ←hn, ←hm, hp, hq, Int.cast_one, mul_one, Int.cast_mul, Int.cast_ofNat]
             linarith }
       { simp only [PiLp.add_apply, Finset.sum_add_distrib]
-        have HMODSUM : ∀ x y : ℤ, x ≡ 0 [PMOD 2] → y ≡ 0 [PMOD 2] → (x + y) ≡ 0 [PMOD 2] := by
-          sorry
-        sorry } }
+        have HMODSUM : ∀ x y : ℝ, x ≡ 0 [PMOD 2] → y ≡ 0 [PMOD 2] → (x + y) ≡ 0 [PMOD 2] := by  -- Should exist in Mathlib in some shape or form
+          intros x y hx hy
+          rcases hx with ⟨z1, hz1⟩
+          rcases hy with ⟨z2, hz2⟩
+          use z1 + z2
+          rw [zero_sub] at hz1 hz2
+          rw [zero_sub, neg_add_rev, add_smul, hz1, hz2, add_comm]
+        exact HMODSUM (∑ x : Fin 8, v x) (∑ x : Fin 8, w x) hv2 hw2 } }
     { rw [one_div, smul_add] }
   neg_mem' := by
     intro x hx
@@ -241,47 +246,89 @@ def E8_Normalised_Lattice : AddSubgroup V where
       { unfold E8_Set at hv
         rw [Set.mem_setOf_eq] at hv
         rcases hv with ⟨_, hv2⟩
-        simp only [PiLp.neg_apply, Finset.sum_neg_distrib]
-        -- exact hv2
-        sorry } }
+        rcases hv2 with ⟨z, hz⟩
+        rw [zero_sub] at hz
+        use -z
+        simp only [PiLp.neg_apply, Finset.sum_neg_distrib, zero_sub, neg_inj, neg_smul]
+        exact hz } }
     { rw [one_div, smul_neg] }
 
 instance : TopologicalSpace E8_Normalised_Lattice := by infer_instance
+
+instance : PseudoMetricSpace V := by infer_instance
+
+instance : MetricSpace V := by infer_instance
+
+instance : Dist V where
+  dist := Dist.dist
+
+lemma resolve_dist_self (x : E8_Normalised_Set) : Euclidean.dist (x : V) (x : V) = Dist.dist (x : V) (x : V) := by rw [Euclidean.dist, dist_self, dist_self]
 
 instance : DiscreteTopology E8_Normalised_Lattice := singletons_open_iff_discrete.mp fun x => by
   -- unfold IsOpen
   -- unfold TopologicalSpace.IsOpen
   -- unfold instTopologicalSpaceSubtype.1
-  have H : ∀ U : Set E8_Normalised_Lattice, (∃ U' : Set V, IsOpen U' ∧ U = E8_normalised_Set ∩ U') → IsOpen U := by
-    intros U hU
-    rcases hU with ⟨U', hU', hU⟩
+  have H : ∀ U : Set E8_Normalised_Lattice, (∃ U' : Set V, IsOpen U' ∧ U = E8_Normalised_Set ∩ U') → IsOpen U := by
+    -- intros U hU
+    -- rcases hU with ⟨U', hU', hU⟩
+    -- unfold IsOpen
+    -- unfold TopologicalSpace.IsOpen
+    -- simp [hU, hU']
+    -- rw []
+
     sorry
   apply H {x}
   use Euclidean.ball x 0.5
   constructor
   { exact Euclidean.isOpen_ball}
-  { unfold E8_normalised_Set ball E8_Set
-    ext x
+  { unfold E8_Normalised_Set ball E8_Set
+    ext y
     constructor
-    { simp only [SetLike.coe_sort_coe, Set.image_singleton, Set.mem_singleton_iff, Set.mem_setOf_eq,
-      one_div, Set.mem_inter_iff]
+    { simp only [SetLike.coe_sort_coe, Set.image_singleton, Set.mem_singleton_iff, Set.mem_setOf_eq, Set.mem_inter_iff]
       rintro ⟨w, hw, rfl⟩
       constructor
-      { sorry }
-      { -- have : Euclidean.dist (↑x) (↑x) = (0:ℝ) := by
-        --  sorry
-        sorry } }
-    { sorry } }
+      { exact x.2 }
+      { simp only [resolve_dist_self, PseudoMetricSpace.dist_self (↑x : V)]
+        suffices hself : Dist.dist (x : V) (x : V) = 0
+        { norm_num }
+        exact dist_self (x : V) } }
+    { simp only [Set.mem_setOf_eq, one_div, Set.mem_inter_iff, SetLike.coe_sort_coe,
+      Set.image_singleton, Set.mem_singleton_iff, and_imp, forall_exists_index]
+      rintro v H1 H2 H3 H4
+      sorry } }
 
-noncomputable instance : isLattice' E8_Normalised_Lattice where
+instance : isLattice' E8_Normalised_Lattice where
   span_top := by
     unfold Submodule.span
     simp only [sInf_eq_top, Set.mem_setOf_eq]
     intros M hM
-    have HSet : ↑E8_Normalised_Lattice = E8_normalised_Set := rfl
+    have HSet : ↑E8_Normalised_Lattice = E8_Normalised_Set := rfl
     rw [HSet] at hM
-    let hM' := Set.inclusion hM
+    suffices hbasis : ∃ B : Basis (Fin 8) ℝ V, ((Set.range B) : Set V) ⊆ (M : Set V)
+    { rcases hbasis with ⟨B, hB⟩
+      ext y
+      constructor
+      { simp only [Submodule.mem_top, implies_true] }
+      { intro hy
+        have h1 : ((Submodule.span ℝ (Set.range B)) : Set V) ⊆ (M : Set V) := by
+          intro z hz
+          have h2 : ∃ (a : Fin 8 → ℝ), z = ∑ i : (Fin 8), a i • (B i) := by
+            sorry
+          rcases h2 with ⟨a, ha⟩
+          rw [ha]
+          
+          sorry
+        rw [Basis.span_eq] at h1
+        exact h1 hy } }
+
     sorry
+    -- let hM' := Set.inclusion hM
+    -- ext v
+    -- constructor
+    -- { simp only [Submodule.mem_top, implies_true] }
+    -- { intro hv
+
+    --   sorry }
 
 end E8
 
