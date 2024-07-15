@@ -193,6 +193,10 @@ instance : MetricSpace V := by infer_instance
 instance : Dist V where
   dist := Dist.dist
 
+-- lemma resolve_dist (x y : V) : Euclidean.dist x y = Dist.dist x y := by
+--   rw [Euclidean.dist, Dist.dist]
+--   sorry
+
 lemma resolve_dist_self (x : E8_Normalised_Set) : Euclidean.dist (x : V) (x : V) = Dist.dist (x : V) (x : V) := by rw [Euclidean.dist, dist_self, dist_self]
 
 instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set := singletons_open_iff_discrete.mp fun x => by
@@ -225,7 +229,10 @@ instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set := sin
         exact dist_self (x : V) } }
     { simp only [Set.mem_setOf_eq, one_div, Set.mem_inter_iff, SetLike.coe_sort_coe,
       Set.image_singleton, Set.mem_singleton_iff, and_imp, forall_exists_index]
+      simp only [E8_Normalised_Set, Set.coe_setOf] at x
+      rcases x with ⟨x, w, hw1, hw2⟩
       rintro v H1 H2 H3 H4
+      simp only [H3, hw2, one_div] at H4 ⊢
       sorry } }
 
 instance instDiscreteE8NormalisedLattice : DiscreteTopology E8_Normalised_Lattice := instDiscreteE8NormalisedSet
@@ -275,6 +282,13 @@ section Packing
 instance : SpherePackingCentres 8 E8_Normalised_Set where
   nonoverlapping := by
     intros x hx y hy hxy
+    rcases hx with ⟨v, hv1, hv2⟩
+    rcases hy with ⟨w, hw1, hw2⟩
+    unfold E8_Set at hv1 hw1
+    rw [Set.mem_setOf_eq] at hv1 hw1
+    rcases hv1 with ⟨hv11, hv12⟩
+    rcases hw1 with ⟨hw11, hw12⟩
+    -- rw [PiLp.dist_eq_of_L2 x y] -- Doesn't work because of the difference between `Dist.dist` and ``Euclidean.dist`!!
     sorry
 
 local notation "P" => Packing_of_Centres 8 E8_Normalised_Set
