@@ -126,8 +126,7 @@ def E8_Normalised_Lattice : AddSubgroup V where
             specialize hv1 i
             specialize hw1 i
             rcases hv1 with ⟨n, hn⟩
-            rcases hw1 with ⟨hm1, hm2⟩
-            rcases hm1 with ⟨m, hm⟩
+            rcases hw1 with ⟨⟨m, hm⟩, hm2⟩
             constructor
             { rw [PiLp.add_apply]
               use 2 * n + m
@@ -145,9 +144,8 @@ def E8_Normalised_Lattice : AddSubgroup V where
             intro i
             specialize hv1 i
             specialize hw1 i
-            rcases hv1 with ⟨hn1, hn2⟩
+            rcases hv1 with ⟨⟨n, hn⟩, hn2⟩
             rcases hw1 with ⟨m, hm⟩
-            rcases hn1 with ⟨n, hn⟩
             constructor
             { rw [PiLp.add_apply]
               use 2 * m + n
@@ -163,10 +161,8 @@ def E8_Normalised_Lattice : AddSubgroup V where
             intro i
             specialize hv1 i
             specialize hw1 i
-            rcases hv1 with ⟨hn1, hn2⟩
-            rcases hw1 with ⟨hm1, hm2⟩
-            rcases hn1 with ⟨n, hn⟩
-            rcases hm1 with ⟨m, hm⟩
+            rcases hv1 with ⟨⟨n, hn⟩, hn2⟩
+            rcases hw1 with ⟨⟨m, hm⟩, hm2⟩
             let f : ℝ → ℝ := fun x => ↑2 * x
             have hf : Function.Injective f := by
               unfold Function.Injective
@@ -245,8 +241,7 @@ def E8_Normalised_Lattice : AddSubgroup V where
             rw [Int.cast_neg, hn, PiLp.neg_apply, neg_neg] } }
       { unfold E8_Set at hv
         rw [Set.mem_setOf_eq] at hv
-        rcases hv with ⟨_, hv2⟩
-        rcases hv2 with ⟨z, hz⟩
+        rcases hv with ⟨_, z, hz⟩
         rw [zero_sub] at hz
         use -z
         simp only [PiLp.neg_apply, Finset.sum_neg_distrib, zero_sub, neg_inj, neg_smul]
@@ -264,7 +259,7 @@ instance : Dist V where
 
 lemma resolve_dist_self (x : E8_Normalised_Set) : Euclidean.dist (x : V) (x : V) = Dist.dist (x : V) (x : V) := by rw [Euclidean.dist, dist_self, dist_self]
 
-instance : DiscreteTopology E8_Normalised_Lattice := singletons_open_iff_discrete.mp fun x => by
+instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set := singletons_open_iff_discrete.mp fun x => by
   -- unfold IsOpen
   -- unfold TopologicalSpace.IsOpen
   -- unfold instTopologicalSpaceSubtype.1
@@ -297,6 +292,8 @@ instance : DiscreteTopology E8_Normalised_Lattice := singletons_open_iff_discret
       rintro v H1 H2 H3 H4
       sorry } }
 
+instance instDiscreteE8NormalisedLattice : DiscreteTopology E8_Normalised_Lattice := instDiscreteE8NormalisedSet
+
 instance : isLattice' E8_Normalised_Lattice where
   span_top := by
     unfold Submodule.span
@@ -313,10 +310,12 @@ instance : isLattice' E8_Normalised_Lattice where
         have h1 : ((Submodule.span ℝ (Set.range B)) : Set V) ⊆ (M : Set V) := by
           intro z hz
           have h2 : ∃ (a : Fin 8 → ℝ), z = ∑ i : (Fin 8), a i • (B i) := by
+            rw [Basis.span_eq] at hz
+            -- rw [← Submodule.top_coe] at B
             sorry
-          rcases h2 with ⟨a, ha⟩
-          rw [ha]
-          
+          -- rcases h2 with ⟨a, ha⟩
+          -- apply (Basis.mem_submodule_iff B).2
+
           sorry
         rw [Basis.span_eq] at h1
         exact h1 hy } }
