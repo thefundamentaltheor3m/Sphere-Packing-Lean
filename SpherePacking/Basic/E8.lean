@@ -5,6 +5,7 @@ import SpherePacking.Basic.SpherePacking
 open Euclidean BigOperators EuclideanLattice SpherePacking
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
+local notation "ℝ⁸" => Fin 8 → ℝ
 
 instance : SMul ℝ V := ⟨fun (r : ℝ) (v : V) => (fun i => r * v i)⟩
 
@@ -20,7 +21,15 @@ def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin
 
 def E8_Normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
 
-
+def coords_to_R8 (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : ℝ⁸ := fun i => match i with
+| ⟨0, _⟩ => v₀
+| ⟨1, _⟩ => v₁
+| ⟨2, _⟩ => v₂
+| ⟨3, _⟩ => v₃
+| ⟨4, _⟩ => v₄
+| ⟨5, _⟩ => v₅
+| ⟨6, _⟩ => v₆
+| ⟨7, _⟩ => v₇
 
 end Definitions
 
