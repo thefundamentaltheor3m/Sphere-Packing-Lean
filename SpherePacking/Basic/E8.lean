@@ -260,7 +260,7 @@ instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set :=
 instance instDiscreteE8NormalisedLattice : DiscreteTopology E8_Normalised_Lattice :=
   instDiscreteE8NormalisedSet
 
-instance : isLattice E8_Normalised_Lattice where
+instance instLatticeE8 : isLattice E8_Normalised_Lattice where
   span_top := by
     unfold Submodule.span
     simp only [sInf_eq_top, Set.mem_setOf_eq]
@@ -275,25 +275,23 @@ instance : isLattice E8_Normalised_Lattice where
       { intro hy
         have h1 : ((Submodule.span ℝ (Set.range B)) : Set V) ⊆ (M : Set V) := by
           intro z hz
-          have h2 : ∃ (a : Fin 8 → ℝ), z = ∑ i : (Fin 8), a i • (B i) := by
-            rw [Basis.span_eq] at hz
-            -- rw [← Submodule.top_coe] at B
-            sorry
-          -- rcases h2 with ⟨a, ha⟩
-          -- apply (Basis.mem_submodule_iff B).2
-
-          sorry
+          rw [Basis.span_eq] at hz
+          rw [← B.span_eq] at hz
+          unfold Submodule.span at hz
+          simp only [Submodule.sInf_coe, Set.mem_setOf_eq, Set.mem_iInter, SetLike.mem_coe] at hz ⊢
+          specialize hz M hB
+          exact hz
         rw [Basis.span_eq] at h1
         exact h1 hy } }
-
+    suffices hE8basis : ∃ B : Basis (Fin 8) ℝ V, ((Set.range B) : Set V) ⊆ E8_Normalised_Set
+    { rcases hE8basis with ⟨B, hB⟩
+      use B
+      intro x hx
+      exact hM (hB hx) }
+    -- *TODO:* We need to feed in the (normalised) E8 basis uere.
+    -- This requires us to construct it in the first place.
+    -- This requires us to be able to get elements of `V` from elements of `ℝ⁸`.
     sorry
-    -- let hM' := Set.inclusion hM
-    -- ext v
-    -- constructor
-    -- { simp only [Submodule.mem_top, implies_true] }
-    -- { intro hv
-
-    --   sorry }
 
 
 end Lattice
