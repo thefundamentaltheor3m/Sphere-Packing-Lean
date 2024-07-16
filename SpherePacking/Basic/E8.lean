@@ -14,12 +14,12 @@ instance : HMul ℝ V V := ⟨fun (r : ℝ) (v : V) => (fun i => r * v i)⟩
 def ℤ_as_ℝ : Set ℝ := {r : ℝ | ∃ (n : ℤ), ↑n = r}
 local notation "↑ℤ" => ℤ_as_ℝ
 
-section Definitions
-
 def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin 8, (2 * v i) ∈ ↑ℤ
   ∧ (v i ∉ ↑ℤ))) ∧ ∑ i : Fin 8, v i ≡ 0 [PMOD 2]}
 
 def E8_Normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
+
+noncomputable section Basis
 
 def coords_to_R8 (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : ℝ⁸ := fun i => match i with
 | ⟨0, _⟩ => v₀
@@ -31,7 +31,45 @@ def coords_to_R8 (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : ℝ⁸ := fun
 | ⟨6, _⟩ => v₆
 | ⟨7, _⟩ => v₇
 
-end Definitions
+def R8_to_V (v : ℝ⁸) : V := fun i => v i
+
+def coords_to_V (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : V := R8_to_V (coords_to_R8 v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇)
+
+def E8_Basis_Vecs : Fin 8 → V := fun i => match i with
+  | ⟨0, _⟩ => coords_to_V 2 (-1) 0 0 0 0 0 0.5
+  | ⟨1, _⟩ => coords_to_V 0 1 (-1) 0 0 0 0 0.5
+  | ⟨2, _⟩ => coords_to_V 0 0 1 (-1) 0 0 0 0.5
+  | ⟨3, _⟩ => coords_to_V 0 0 0 1 (-1) 0 0 0.5
+  | ⟨4, _⟩ => coords_to_V 0 0 0 0 1 (-1) 0 0.5
+  | ⟨5, _⟩ => coords_to_V 0 0 0 0 0 1 (-1) 0.5
+  | ⟨6, _⟩ => coords_to_V 0 0 0 0 0 0 1 0.5
+  | ⟨7, _⟩ => coords_to_V 0 0 0 0 0 0 0 0.5
+
+def E8_Normalised_Basis_Vecs : Fin 8 → V := (√2)⁻¹ • E8_Basis_Vecs
+
+def E8_Normalised_Basis_Set : Set V := Set.range E8_Normalised_Basis_Vecs
+
+lemma E8_Normalised_Basis_LI : LinearIndependent ℝ E8_Normalised_Basis_Vecs := by
+  -- rw [LinearIndependent, LinearMap.ker_eq_bot']
+  -- intros m hm
+  -- unfold Finsupp.total at hm
+  -- simp only [Finsupp.coe_lsum, LinearMap.coe_smulRight, LinearMap.id_coe, id_eq,
+  --   E8_Basis_Vecs] at hm
+  rw [Fintype.linearIndependent_iff', LinearMap.lsum_apply] -- , LinearMap.ker_eq_bot']
+  -- intros x hx
+  sorry
+
+lemma E8_Normalised_Basis_SP : ⊤ ≤ Submodule.span ℝ (Set.range E8_Normalised_Basis_Vecs) := by
+  intro x hx
+  unfold Set.range
+  unfold Submodule.span
+  unfold sInf
+  sorry
+
+def E8_Normalised_Basis : Basis (Fin 8) ℝ V := Basis.mk
+  E8_Normalised_Basis_LI E8_Normalised_Basis_SP
+
+end Basis
 
 noncomputable section Lattice
 
@@ -255,6 +293,9 @@ instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set :=
       rcases x with ⟨x, w, hw1, hw2⟩
       rintro v H1 H2 H3 H4
       simp only [H3, hw2, one_div] at H4 ⊢
+      suffices hvw : v = w  -- Wasn't sure what kind of mul_eq thing to apply...
+      { rw [hvw] }
+
       sorry } }
 
 instance instDiscreteE8NormalisedLattice : DiscreteTopology E8_Normalised_Lattice :=
@@ -291,7 +332,36 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
     -- *TODO:* We need to feed in the (normalised) E8 basis uere.
     -- This requires us to construct it in the first place.
     -- This requires us to be able to get elements of `V` from elements of `ℝ⁸`.
-    sorry
+    use E8_Normalised_Basis
+    have hbasiselts : Set.range E8_Normalised_Basis = E8_Normalised_Basis_Set := by
+      ext x
+      constructor
+      { intro hx
+        rcases hx with ⟨i, hi⟩
+        use i
+        rw [← hi]
+        simp only [E8_Basis_Vecs]
+        sorry }
+      { sorry }
+    intro x hx
+    cases' hx with i hi
+    -- unfold E8_Basis at hi
+    rcases i with ⟨i₀ | i₁ | i₂ | i₃ | i₄ | i₅ | i₆ | i₇⟩
+    { unfold E8_Normalised_Set
+      simp only [Set.mem_setOf_eq, E8_Set]
+      use E8_Basis_Vecs 0
+      constructor
+      {
+        sorry }
+      { rw [← hi, E8_Normalised_Basis]
+        sorry } }
+    { sorry }
+    { sorry }
+    { sorry }
+    { sorry }
+    { sorry }
+    { sorry }
+    { sorry }
 
 
 end Lattice
