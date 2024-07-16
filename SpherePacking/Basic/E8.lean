@@ -64,6 +64,11 @@ lemma E8_Normalised_Basis_SP : ⊤ ≤ Submodule.span ℝ (Set.range E8_Normalis
   unfold Set.range
   unfold Submodule.span
   unfold sInf
+  unfold Submodule.instInfSet
+  simp only [Set.mem_setOf_eq, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk,
+    Set.mem_iInter, SetLike.mem_coe]
+  intros M hM
+  
   sorry
 
 def E8_Normalised_Basis : Basis (Fin 8) ℝ V := Basis.mk
