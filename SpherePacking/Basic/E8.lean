@@ -13,7 +13,8 @@ instance : HMul ℝ V V := ⟨fun (r : ℝ) (v : V) => (fun i => r * v i)⟩
 def ℤ_as_ℝ : Set ℝ := {r : ℝ | ∃ (n : ℤ), ↑n = r}
 local notation "↑ℤ" => ℤ_as_ℝ
 
-def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin 8, (2 * v i) ∈ ↑ℤ ∧ (v i ∉ ↑ℤ))) ∧ ∑ i : Fin 8, v i ≡ 0 [PMOD 2]}
+def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin 8, (2 * v i) ∈ ↑ℤ
+  ∧ (v i ∉ ↑ℤ))) ∧ ∑ i : Fin 8, v i ≡ 0 [PMOD 2]}
 
 def E8_Normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
 
@@ -131,10 +132,12 @@ def E8_Normalised_Lattice : AddSubgroup V where
             rcases hmq with ⟨q, hq⟩
             use p + q + 1
             apply hf
-            simp only [f, mul_add, PiLp.add_apply, Int.cast_add, ←hn, ←hm, hp, hq, Int.cast_one, mul_one, Int.cast_mul, Int.cast_ofNat]
+            simp only [f, mul_add, PiLp.add_apply, Int.cast_add, ←hn, ←hm, hp, hq, Int.cast_one,
+              mul_one, Int.cast_mul, Int.cast_ofNat]
             linarith }
       { simp only [PiLp.add_apply, Finset.sum_add_distrib]
-        have HMODSUM : ∀ x y : ℝ, x ≡ 0 [PMOD 2] → y ≡ 0 [PMOD 2] → (x + y) ≡ 0 [PMOD 2] := by  -- Should exist in Mathlib in some shape or form
+        have HMODSUM : ∀ x y : ℝ, x ≡ 0 [PMOD 2] → y ≡ 0 [PMOD 2] → (x + y) ≡ 0 [PMOD 2] := by
+          -- Should exist in Mathlib in some shape or form
           intros x y hx hy
           rcases hx with ⟨z1, hz1⟩
           rcases hy with ⟨z2, hz2⟩
@@ -197,13 +200,16 @@ instance : Dist V where
 --   rw [Euclidean.dist, Dist.dist]
 --   sorry
 
-lemma resolve_dist_self (x : E8_Normalised_Set) : Euclidean.dist (x : V) (x : V) = Dist.dist (x : V) (x : V) := by rw [Euclidean.dist, dist_self, dist_self]
+lemma resolve_dist_self (x : E8_Normalised_Set) : Euclidean.dist (x : V) (x : V) =
+  Dist.dist (x : V) (x : V) := by rw [Euclidean.dist, dist_self, dist_self]
 
-instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set := singletons_open_iff_discrete.mp fun x => by
+instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set :=
+  singletons_open_iff_discrete.mp fun x => by
   -- unfold IsOpen
   -- unfold TopologicalSpace.IsOpen
   -- unfold instTopologicalSpaceSubtype.1
-  have H : ∀ U : Set E8_Normalised_Lattice, (∃ U' : Set V, IsOpen U' ∧ U = E8_Normalised_Set ∩ U') → IsOpen U := by
+  have H : ∀ U : Set E8_Normalised_Lattice, (∃ U' : Set V, IsOpen U' ∧ U = E8_Normalised_Set ∩ U')
+    → IsOpen U := by
     -- intros U hU
     -- rcases hU with ⟨U', hU', hU⟩
     -- unfold IsOpen
@@ -219,7 +225,8 @@ instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set := sin
   { unfold E8_Normalised_Set ball E8_Set
     ext y
     constructor
-    { simp only [SetLike.coe_sort_coe, Set.image_singleton, Set.mem_singleton_iff, Set.mem_setOf_eq, Set.mem_inter_iff]
+    { simp only [SetLike.coe_sort_coe, Set.image_singleton, Set.mem_singleton_iff,
+      Set.mem_setOf_eq, Set.mem_inter_iff]
       rintro ⟨w, hw, rfl⟩
       constructor
       { exact x.2 }
@@ -235,7 +242,8 @@ instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set := sin
       simp only [H3, hw2, one_div] at H4 ⊢
       sorry } }
 
-instance instDiscreteE8NormalisedLattice : DiscreteTopology E8_Normalised_Lattice := instDiscreteE8NormalisedSet
+instance instDiscreteE8NormalisedLattice : DiscreteTopology E8_Normalised_Lattice :=
+  instDiscreteE8NormalisedSet
 
 instance : isLattice E8_Normalised_Lattice where
   span_top := by
@@ -288,7 +296,8 @@ instance : SpherePackingCentres 8 E8_Normalised_Set where
     rw [Set.mem_setOf_eq] at hv1 hw1
     rcases hv1 with ⟨hv11, hv12⟩
     rcases hw1 with ⟨hw11, hw12⟩
-    -- rw [PiLp.dist_eq_of_L2 x y] -- Doesn't work because of the difference between `Dist.dist` and ``Euclidean.dist`!!
+    -- rw [PiLp.dist_eq_of_L2 x y]
+    -- The above doesn't work because of the difference between `Dist.dist` and ``Euclidean.dist`!!
     sorry
 
 local notation "P" => Packing_of_Centres 8 E8_Normalised_Set
