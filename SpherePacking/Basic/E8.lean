@@ -5,7 +5,10 @@ import SpherePacking.Basic.SpherePacking
 open Euclidean BigOperators EuclideanLattice SpherePacking
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
+-- def V : Type := EuclideanSpace ℝ (Fin 8)
 local notation "ℝ⁸" => Fin 8 → ℝ
+
+#check V
 
 instance : SMul ℝ V := ⟨fun (r : ℝ) (v : V) => (fun i => r * v i)⟩
 
@@ -49,6 +52,13 @@ def E8_Normalised_Basis_Vecs : Fin 8 → V := (√2)⁻¹ • E8_Basis_Vecs
 
 def E8_Normalised_Basis_Set : Set V := Set.range E8_Normalised_Basis_Vecs
 
+def Standard_Orthonormal_Basis : OrthonormalBasis (Fin 8) ℝ V := EuclideanSpace.basisFun (Fin 8) ℝ
+
+def Standard_Basis : Basis (Fin 8) ℝ V := OrthonormalBasis.toBasis (Standard_Orthonormal_Basis)
+
+lemma E8_Det_0 : Standard_Basis.det E8_Normalised_Basis_Vecs ≠ 0 := by
+  sorry
+
 lemma E8_Normalised_Basis_LI : LinearIndependent ℝ E8_Normalised_Basis_Vecs := by
   -- rw [LinearIndependent, LinearMap.ker_eq_bot']
   -- intros m hm
@@ -57,6 +67,7 @@ lemma E8_Normalised_Basis_LI : LinearIndependent ℝ E8_Normalised_Basis_Vecs :=
   --   E8_Basis_Vecs] at hm
   rw [Fintype.linearIndependent_iff', LinearMap.lsum_apply] -- , LinearMap.ker_eq_bot']
   -- intros x hx
+
   sorry
 
 lemma E8_Normalised_Basis_SP : ⊤ ≤ Submodule.span ℝ (Set.range E8_Normalised_Basis_Vecs) := by
@@ -68,7 +79,7 @@ lemma E8_Normalised_Basis_SP : ⊤ ≤ Submodule.span ℝ (Set.range E8_Normalis
   simp only [Set.mem_setOf_eq, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk,
     Set.mem_iInter, SetLike.mem_coe]
   intros M hM
-  
+
   sorry
 
 def E8_Normalised_Basis : Basis (Fin 8) ℝ V := Basis.mk
