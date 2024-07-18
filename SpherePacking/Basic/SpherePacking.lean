@@ -3,6 +3,12 @@ import SpherePacking.Basic.EuclideanLattice
 
 open Euclidean BigOperators EuclideanLattice
 
+/-!
+# The choices made in this file mirror those made in `Algebra.Module.Zlattice.Basic`. Specifically,
+- All conditions pertaining to types of sphere packings are defined on the sets of centres
+- A sphere packing can be built from any set of centres using `Packing_of_Centres`.
+-/
+
 variable (d : ℕ)
 local notation "V" => EuclideanSpace ℝ (Fin d)
 local notation "B" => Euclidean.ball

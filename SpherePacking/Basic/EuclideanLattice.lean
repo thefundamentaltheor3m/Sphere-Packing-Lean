@@ -2,7 +2,7 @@ import Mathlib
 
 open Euclidean BigOperators
 
-namespace EuclideanLattice
+namespace EuclideanLattice  -- Perhaps this can be moved to a different file...
 
 section Definitions
 

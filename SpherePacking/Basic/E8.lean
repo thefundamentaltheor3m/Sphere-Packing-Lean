@@ -422,7 +422,7 @@ section Packing
 
 -- def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_Normalised_Set)
 
-instance instSpherePackingE8NormalisedLattice : SpherePackingCentres 8 E8_Normalised_Set where
+instance instSpherePackingE8NormalisedLattice : SpherePackingCentres 8 E8_Normalised_Lattice where
   nonoverlapping := by
     intros x hx y hy hxy
     rcases hx with ⟨v, hv1, hv2⟩
@@ -438,8 +438,8 @@ instance instSpherePackingE8NormalisedLattice : SpherePackingCentres 8 E8_Normal
     -- the proof that it is an additive, commutative subgroup of the ambient space).
     sorry
 
-local notation "P" => Packing_of_Centres 8 E8_Normalised_Set
+def E8_Packing := Packing_of_Centres 8 E8_Normalised_Lattice
 
-theorem Main : Constant 8 = Density 8 E8_Normalised_Set := sorry
+theorem Main : Constant 8 = Density 8 E8_Normalised_Lattice := sorry
 
 end Packing

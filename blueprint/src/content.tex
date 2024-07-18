@@ -21,28 +21,36 @@
   \section{Basic definitions for sphere packings}
 \subsection{Sphere packings}
 The sphere packing constant measures which portion of $d$-dimensional Euclidean
-space can be covered by non-overlapping unit balls. More precisely, let $\R^d$ be the Euclidean vector space equipped with distance $\|\cdot\|$ and Lebesgue measure $\mathrm{Vol}(\cdot)$. For $x\in\R^d$ and $r\in\R_{>0}$ we denote by $B_d(x,r)$ the ball in $\R^d$ with center $x$ and radius $r$.
+space can be covered by non-overlapping unit balls. More precisely, let $\R^d$ be the Euclidean vector space equipped with distance $\|\cdot\|$ and Lebesgue measure $\mathrm{Vol}(\cdot)$. For $x\in\R^d$ and $r\in\R_{>0}$ we denote by $B_d(x,r)$ the ball in $\R^d$ with center $x$ and radius $r$. There are several types of sphere packings, which are determined by imposing certain conditions on the set of centres of the spheres involved in the packing. Therefore, we begin by defining those conditions on the centres of the spheres.
 
-\begin{definition}\label{SpherePacking.isPacking}\lean{SpherePacking.isPacking}\leanok
-  Let $X\subset \R^d$ be a discrete set of points such that $\|x-y\|\geq2$ for any distinct $x,y\in X$. Then the union
-$$\mathcal{P}=\bigcup_{x\in X} B_d(x,1)$$ is a \emph{sphere packing}.
+\begin{definition}\label{SpherePacking.SpherePackingCentres}\lean{SpherePacking.SpherePackingCentres}\leanok
+  We say that $X \subseteq \R^d$ is a set of \emph{sphere packing centres} if $X$ is discrete and $\|x-y\|\geq2$ for any distinct $x,y\in X$.
 \end{definition}
 
-\begin{definition}\label{SpherePacking.isLatticePacking}\uses{EuclideanLattice.isLattice}\lean{SpherePacking.isLatticePacking}\leanok
-  If $X$ is a lattice in $\R^d$ then we say that $\mathcal{P}$ is a \emph{lattice sphere packing}.
+\begin{definition}\label{SpherePacking.LatticePackingCentres}\lean{SpherePacking.LatticePackingCentres}\uses{SpherePacking.SpherePackingCentres, EuclideanLattice.isLattice}\leanok
+  We say that $X \subseteq \R^d$ is a set of \emph{lattice packing centres} if $X$ is both a set of sphere packing centres and a lattice in $\R^d$.
 \end{definition}
 
-\begin{definition}\label{SpherePacking.FiniteDensity}\lean{SpherePacking.FiniteDensity}\leanok
+\begin{definition}\label{SpherePacking.Packing_of_Centres}\lean{SpherePacking.Packing_of_Centres}\leanok  % Do we want to replace the notation \mathcal{P} with \mathcal{P}_X or \mathcal{P}(X)?
+  Let $X\subset \R^d$ be a set of sphere packing centres. Then, the set
+$$\mathcal{P}=\bigcup_{x\in X} B_d(x,1)$$ of unit balls centred at points in $X$ is the corresponding \emph{sphere packing}.
+\end{definition}
+
+\begin{remark}
+  If $X$ is a set of lattice/periodic packing centres (see Definitions~\ref{SpherePacking.LatticePackingCentres} and~\ref{SpherePacking.PeriodicPackingCentres}), then the corresponding sphere packing $\mathcal{P}$ is called a \emph{lattice/periodic packing}.
+\end{remark}
+
+\begin{definition}\label{SpherePacking.FiniteDensity}\lean{SpherePacking.FiniteDensity}\uses{SpherePacking.Packing_of_Centres}\leanok
   The \emph{finite density} of a packing $\mathcal{P}$ is defined as
 $$\Delta_{\mathcal{P}}(r):=\frac{\mathrm{Vol}(\mathcal{P}\cap B_d(0,r))}{\mathrm{Vol}(B_d(0,r))},\quad r>0.$$
 \end{definition}
 
-\begin{definition}\label{SpherePacking.Density}\uses{SpherePacking.FiniteDensity}\lean{SpherePacking.Density}\leanok
+\begin{definition}\label{SpherePacking.Density}\lean{SpherePacking.Density}\uses{SpherePacking.Packing_of_Centres, SpherePacking.FiniteDensity}\leanok
   We define the \emph{density} of a packing $\mathcal{P}$ as the limit superior
 $$\Delta_{\mathcal{P}}:=\limsup\limits_{r\to\infty}\Delta_{\mathcal{P}}(r). $$
 \end{definition}
 
-\begin{definition}\label{SpherePacking.Constant}\uses{SpherePacking.isPacking, SpherePacking.Density}\lean{SpherePacking.Constant}\leanok
+\begin{definition}\label{SpherePacking.Constant}\lean{SpherePacking.Constant}\uses{SpherePacking.Packing_of_Centres, SpherePacking.Density}\leanok
 The number be want to know is the supremum over all possible packing densities
 $$\Delta_d:=\sup\limits_{\substack{\mathcal{P}\subset\R^d\\ \scriptscriptstyle\mathrm{sphere}\;\mathrm{packing}}}\Delta_{\mathcal{P}} $$
 called the \emph{sphere packing constant}.
@@ -51,41 +59,65 @@ called the \emph{sphere packing constant}.
 The main result of this paper is the proof that $$\Delta_8=\frac{\pi^4}{384}\approx 0.25367.$$
 This is the density of the $E_8$-lattice sphere packing.
 
-\begin{definition}\label{EuclideanLattice.E8}\lean{EuclideanLattice.E8}\leanok
-  Recall that the $E_8$-lattice $\Lambda_8\subset\R^8$ is given by
+\begin{definition}\label{E8_Set}\lean{E8_Set}\leanok
+  We define the \emph{$E_8$-lattice} (as a subset of $\R^8$) to be
 $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1}^8x_i\equiv 0\;(\mathrm{mod\;2})\}.$$
 \end{definition}
+
 \begin{lemma}\label{lemma: Characterisation of E8 lattice}\uses{EuclideanLattice.isLattice}
+  % I think we can remove this...
   $\Lambda_8$ is a positive-definite, even, unimodular lattice of rank 8. The minimal distance between two points in $\Lambda_8$ is $\sqrt{2}$.
 \end{lemma}
-\begin{definition}\label{SpherePacking.E8}\uses{EuclideanLattice.E8, SpherePacking.isPacking}\lean{SpherePacking.E8}\leanok
-The $E_8$-lattice sphere packing is the packing of unit balls with centers at $\frac{1}{\sqrt{2}}\Lambda_8$.
+
+\begin{definition}\label{E8_Normalised_Set}\lean{E8_Normalised_Set}\uses{E8_Set}\leanok
+  We define the \emph{normalised $E_8$-lattice} to be the set of points in $\R^8$ obtained by scaling the points of $\Lambda_8$ by $\frac{1}{\sqrt{2}}$. We denote this set by $\frac{1}{\sqrt{2}}\Lambda_8$.
 \end{definition}
+
+\begin{lemma}\label{E8_Normalised_Lattice}\lean{E8_Normalised_Lattice}\uses{E8_Normalised_Set}\leanok
+  $\frac{1}{\sqrt{2}}\Lambda_8$ can be viewed an additive subgroup of $\R^8$.
+\end{lemma}
+
+\begin{lemma}\label{instDiscreteE8NormalisedSet}\lean{instDiscreteE8NormalisedSet}\uses{E8_Normalised_Lattice}\leanok
+  $\frac{1}{\sqrt{2}}\Lambda_8$ is discrete---in other words, the subspace topology induced by its inclusion into $\R^8$ is the discrete topology.
+\end{lemma}
+
+\begin{lemma}\label{instLatticeE8}\lean{instLatticeE8}\uses{E8_Normalised_Lattice, instDiscreteE8NormalisedSet}\leanok
+  True to its name, $\frac{1}{\sqrt{2}}\Lambda_8$ is a lattice.
+\end{lemma}
+
+\begin{lemma}\label{instSpherePackingE8NormalisedLattice}\lean{instSpherePackingE8NormalisedLattice}\uses{SpherePacking.SpherePackingCentres, E8_Normalised_Lattice}\leanok
+  $\frac{1}{\sqrt{2}}\Lambda_8$ is a valid set of sphere packing centres.
+\end{lemma}
+
+\begin{definition}\label{E8_Packing}\lean{E8_Packing}\uses{SpherePacking.Packing_of_Centres, E8_Normalised_Lattice}\leanok
+  The \emph{$E_8$ sphere packing} is the sphere packing whose set of centres is $\frac{1}{\sqrt{2}}\Lambda_8$.
+\end{definition}
+
 Our main result is
-\begin{theorem}\label{SpherePacking.Main}\uses{SpherePacking.E8, SpherePacking.Constant, thm-g, thm-Cohn-Elkies}
+\begin{theorem}\label{Main}\uses{E8_Normalised_Lattice, SpherePacking.Constant, SpherePacking.Density}
 \lean{SpherePacking.Main}
 No packing of unit balls in Euclidean space $\R^8$ has density greater than that of the $E_8$-lattice packing.
 \end{theorem}
+\begin{proof}\uses{thm-g, thm-Cohn-Elkies}
+  We will prove this theorem over the course of this blueprint.
+\end{proof}
 
 \subsection{Lattices and Periodic packings}
-\begin{definition}\label{def: Periodicity}
-  Let $S$ be a discrete subgroup of $\R^d$. A set $X\subset\R^d$ is said to $S$-periodic if for each $s\in S$ and $x\in X$ the vector $x+s$ belongs to $X$.
-\end{definition}
 
 \begin{definition}\label{EuclideanLattice.isLattice}\lean{EuclideanLattice.isLattice}\leanok
   % A lattice in the Euclidean space $\R^d$ is a discrete, co-compact, abelian subgroup.
-  A subset of the Euclidean space $\R^d$ is called a lattice if it is the $\Z$-span of a basis of $\R^d$.
+  We say that an additive subgroup $\Lambda \leq \R^d$ is a \emph{lattice} if it is discrete and its $\R$-span contains all the elements of $\R^d$.
 \end{definition}
 
-\begin{definition}\label{SpherePacking.isPeriodicPacking}\uses{SpherePacking.isPacking, EuclideanLattice.isLattice}
-    A periodic packing is a sphere packing whose set of centres is $\Lambda$-periodic for some lattice $\Lambda$.
+\begin{definition}\label{SpherePacking.PeriodicPackingCentres}\lean{SpherePacking.PeriodicPackingCentres}\uses{SpherePacking.SpherePackingCentres, EuclideanLattice.isLattice}\leanok
+  We say that $X \subseteq \R^d$ is a set of \emph{periodic packing centres} if $X$ is a set of sphere packing centres and there exists a lattice $\Lambda \subset \R^d$ such that for any $x \in X$ and $y \in \Lambda$, their sum $x + y$ lies in $X$.
 \end{definition}
 
 \begin{lemma}\label{SpherePacking.Density of periodic packing}\notready
   Density of a periodic packing ...
 \end{lemma}
 
-\begin{definition}\label{def-Periodic-sphere-packing-constant}\uses{SpherePacking.Density, SpherePacking.isPeriodicPacking}\notready
+\begin{definition}\label{def-Periodic-sphere-packing-constant}\uses{SpherePacking.Density, SpherePacking.PeriodicPackingCentres}\notready
     The periodic sphere packing constant is defined to be
     $$ \Delta_{d}^{\text{periodic}} := \sup_{\substack{P \subset \R^d \\ \text{periodic packing}}} \Delta_P$$
 \end{definition}
