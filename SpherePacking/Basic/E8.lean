@@ -4,6 +4,15 @@ import SpherePacking.Basic.SpherePacking
 
 open Euclidean BigOperators EuclideanLattice SpherePacking
 
+/--
+* NOTE: *
+It will probably be useful, at some point in the future, to subsume this file under a more general
+file tackling the classification of crystallographic, irreducible Coxeter groups and their root
+systems. It might also be useful to add general API that will make it easier to construct a
+`SpherePackingCentres` instance for such lattices, which would be useful for the sphere packing
+problem in other dimensions.
+-/
+
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 -- def V : Type := EuclideanSpace ℝ (Fin 8)
 local notation "ℝ⁸" => Fin 8 → ℝ
