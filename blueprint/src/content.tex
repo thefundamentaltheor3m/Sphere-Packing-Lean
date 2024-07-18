@@ -114,8 +114,13 @@ No packing of unit balls in Euclidean space $\R^8$ has density greater than that
 \end{definition}
 
 \begin{lemma}\label{SpherePacking.Density of periodic packing}\notready
-  Density of a periodic packing ...
+  If $X \subseteq \R^d$ is a set of sphere packing centres that is periodic with respect to some lattice $\Lambda$, then the density of the corresponding (periodic) sphere packing is given by
+  $$ \frac{\lvert {X/\Lambda} \rvert}{\mathrm{Vol}(\R^d / \Lambda)} $$
+  where the quotients in the numerator and denominator correspond to the orbits of the action by translation of $\Lambda$ on $X$ and $\R^d$ respectively.
 \end{lemma}
+\begin{remark}
+  This can be thought of as the ``number of centres (hence, spheres) per fundamental domain".
+\end{remark}
 
 \begin{definition}\label{def-Periodic-sphere-packing-constant}\uses{SpherePacking.Density, SpherePacking.PeriodicPackingCentres}\notready
     The periodic sphere packing constant is defined to be
@@ -148,7 +153,7 @@ A $C^\infty$~function $f:\R^d\to\C$ is called a \emph{Schwartz function} if it g
 \begin{equation}\mathcal{F}(e^{\pi i  \|x\|^2 z})(y)=z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.\end{equation}
 \end{lemma}
 \begin{theorem}\label{thm-Poisson-summation-formula}\uses{def-Fourier-Transform}
-  (Poisson summation formula)$$\sum_{\ell\in\Lambda}f(\ell)=\frac{1}{\mathrm{vol}(\R^d/\Lambda)}\sum_{m\in\Lambda^*}\widehat{f}(m).$$
+  (Poisson summation formula)$$\sum_{\ell\in\Lambda}f(\ell)=\frac{1}{\mathrm{Vol}(\R^d/\Lambda)}\sum_{m\in\Lambda^*}\widehat{f}(m).$$
 \end{theorem}
 
 \section{Cohn-Elkies linear programming bounds}
