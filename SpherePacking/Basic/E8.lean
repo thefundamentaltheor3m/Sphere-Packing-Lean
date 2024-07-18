@@ -52,12 +52,21 @@ def E8_Normalised_Basis_Vecs : Fin 8 → V := (√2)⁻¹ • E8_Basis_Vecs
 
 def E8_Normalised_Basis_Set : Set V := Set.range E8_Normalised_Basis_Vecs
 
+-- Perhaps a more direct way to show that the above is a basis is to show that its determinant
+-- is nonzero. Ordinarily, this would be easy, but we formally, need to navigate the issues of
+-- picking the standard basis and translating result of one of the determinant algorithms into
+-- a proof that the determinant is nonzero. I'm not quite sure how to do that yet.
+
 def Standard_Orthonormal_Basis : OrthonormalBasis (Fin 8) ℝ V := EuclideanSpace.basisFun (Fin 8) ℝ
 
 def Standard_Basis : Basis (Fin 8) ℝ V := OrthonormalBasis.toBasis (Standard_Orthonormal_Basis)
 
 lemma E8_Det_0 : Standard_Basis.det E8_Normalised_Basis_Vecs ≠ 0 := by
   sorry
+
+-- The alternative is to just show it's linearly independent and spans the space.
+-- The issue is that we eventually need to unpack the vectors from `Basis.mk` to show that they
+-- all lie in `E8_Normalised_Set`. This is necessary for the `isLattice` instance.
 
 lemma E8_Normalised_Basis_LI : LinearIndependent ℝ E8_Normalised_Basis_Vecs := by
   rw [Fintype.linearIndependent_iff', LinearMap.lsum_apply , LinearMap.ker_eq_bot']
@@ -75,7 +84,7 @@ lemma E8_Normalised_Basis_LI : LinearIndependent ℝ E8_Normalised_Basis_Vecs :=
   -- simp only [Fin.zero_eta] at hxj
   rw [Pi.zero_apply]
   rcases i with ⟨i₀ | i₁ | i₂ | i₃ | i₄ | i₅ | i₆ | i₇ | n⟩
-  { 
+  {
     -- simp only [Fin.zero_eta, Fin.sum_univ_succ, Fin.sum_univ_succ, Fin.isValue,
     --   Fin.succ_zero_eq_one, Fin.succ_one_eq_two, mul_zero, zero_add] at hxj
     sorry }
