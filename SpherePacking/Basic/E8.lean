@@ -60,15 +60,33 @@ lemma E8_Det_0 : Standard_Basis.det E8_Normalised_Basis_Vecs ≠ 0 := by
   sorry
 
 lemma E8_Normalised_Basis_LI : LinearIndependent ℝ E8_Normalised_Basis_Vecs := by
-  -- rw [LinearIndependent, LinearMap.ker_eq_bot']
-  -- intros m hm
-  -- unfold Finsupp.total at hm
-  -- simp only [Finsupp.coe_lsum, LinearMap.coe_smulRight, LinearMap.id_coe, id_eq,
-  --   E8_Basis_Vecs] at hm
-  rw [Fintype.linearIndependent_iff', LinearMap.lsum_apply] -- , LinearMap.ker_eq_bot']
-  -- intros x hx
-
-  sorry
+  rw [Fintype.linearIndependent_iff', LinearMap.lsum_apply , LinearMap.ker_eq_bot']
+  intros x hx
+  simp only [LinearMap.coeFn_sum, LinearMap.coe_comp, LinearMap.coe_smulRight, LinearMap.id_coe,
+    id_eq, LinearMap.coe_proj, Finset.sum_apply, Function.comp_apply, Function.eval] at hx
+  ext i
+  have hxj : ∀ (j : Fin 8), (∑ x_1 : Fin 8, x x_1 • E8_Normalised_Basis_Vecs x_1) j = (0 : ℝ) := by
+    intro j
+    rw [hx, Pi.zero_apply]
+  specialize hxj i
+  rw [Finset.sum_apply, E8_Normalised_Basis_Vecs] at hxj
+  simp only [Pi.smul_apply, PiLp.smul_apply, smul_eq_mul, Fin.zero_eta] at hxj
+  unfold E8_Basis_Vecs coords_to_V coords_to_R8 R8_to_V at hxj
+  -- simp only [Fin.zero_eta] at hxj
+  rw [Pi.zero_apply]
+  rcases i with ⟨i₀ | i₁ | i₂ | i₃ | i₄ | i₅ | i₆ | i₇ | n⟩
+  { 
+    -- simp only [Fin.zero_eta, Fin.sum_univ_succ, Fin.sum_univ_succ, Fin.isValue,
+    --   Fin.succ_zero_eq_one, Fin.succ_one_eq_two, mul_zero, zero_add] at hxj
+    sorry }
+  { sorry }
+  { sorry }
+  { sorry }
+  { sorry }
+  { sorry }
+  { sorry }
+  { sorry }
+  { sorry }
 
 lemma E8_Normalised_Basis_SP : ⊤ ≤ Submodule.span ℝ (Set.range E8_Normalised_Basis_Vecs) := by
   intro x hx
