@@ -413,7 +413,7 @@ section Packing
 
 -- def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_Normalised_Set)
 
-instance : SpherePackingCentres 8 E8_Normalised_Set where
+instance instSpherePackingE8NormalisedLattice : SpherePackingCentres 8 E8_Normalised_Set where
   nonoverlapping := by
     intros x hx y hy hxy
     rcases hx with ⟨v, hv1, hv2⟩
@@ -424,6 +424,9 @@ instance : SpherePackingCentres 8 E8_Normalised_Set where
     rcases hw1 with ⟨hw11, hw12⟩
     -- rw [PiLp.dist_eq_of_L2 x y]
     -- The above doesn't work because of the difference between `Dist.dist` and ``Euclidean.dist`!!
+    -- The only strategy that comes to mind to tackle this proof is to expand `Euclidean.dist`
+    -- somehow and then do cases on `hv11` and `hw11` (as in the def of `E8_Normalised_Lattice`, ie,
+    -- the proof that it is an additive, commutative subgroup of the ambient space).
     sorry
 
 local notation "P" => Packing_of_Centres 8 E8_Normalised_Set
