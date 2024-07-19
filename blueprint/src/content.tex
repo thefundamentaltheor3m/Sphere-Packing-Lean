@@ -78,14 +78,75 @@ $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1
 \begin{lemma}\label{E8_Normalised_Lattice}\lean{E8_Normalised_Lattice}\uses{E8_Normalised_Set}\leanok
   $\frac{1}{\sqrt{2}}\Lambda_8$ can be viewed an additive subgroup of $\R^8$.
 \end{lemma}
+\begin{proof}\leanok
+  The proof is rather long, and merely involves checking several conditions. Tt is all written out (in excruciating detail) in the Lean formalisation.
+\end{proof}
 
 \begin{lemma}\label{instDiscreteE8NormalisedSet}\lean{instDiscreteE8NormalisedSet}\uses{E8_Normalised_Lattice}\leanok
   $\frac{1}{\sqrt{2}}\Lambda_8$ is discrete---in other words, the subspace topology induced by its inclusion into $\R^8$ is the discrete topology.
 \end{lemma}
+\begin{proof}
+  Any subset of $\frac{1}{\sqrt{2}}\Lambda_8$ consists of points that are at a distance of at least $1$ from each other. Hence, it is expressible as a union of sufficiently small open balls, and is therefore open with respect to the subspace topology.
+\end{proof}
 
-\begin{lemma}\label{instLatticeE8}\lean{instLatticeE8}\uses{E8_Normalised_Lattice, instDiscreteE8NormalisedSet}\leanok
+The only thing left to show in order to prove that $\frac{1}{\sqrt{2}}\Lambda_8$ is a lattice is that its $\R$-span is all of $\R^8$. It suffices to show that it contains a basis of $\R^8$, namely, the normalised $E_8$ basis.
+
+\begin{definition}\label{E8_Basis_Vecs}\lean{E8_Basis_Vecs}
+  We define the \emph{$E_8$ basis vectors} to be the set of vectors
+  \[ \B_8
+  \left\{
+    \begin{bmatrix}
+      1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0
+    \end{bmatrix},
+    \begin{bmatrix}
+      0 \\ 1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0
+    \end{bmatrix},
+    \begin{bmatrix}
+      0 \\ 0 \\ 1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0
+    \end{bmatrix},
+    \begin{bmatrix}
+      0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0 \\ 0 \\ 0
+    \end{bmatrix},
+    \begin{bmatrix}
+      0 \\ 0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0 \\ 0
+    \end{bmatrix},
+    \begin{bmatrix}
+      0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 1 \\ 1 \\ 0
+    \end{bmatrix},
+    \begin{bmatrix}
+      -\frac{1}{2} \\ -\frac{1}{2} \\ -\frac{1}{2} \\ -\frac{1}{2} \\ -\frac{1}{2} \\ -\frac{1}{2} \\ -\frac{1}{2} \\ -\frac{1}{2}
+    \end{bmatrix},
+    \begin{bmatrix}
+      0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0
+    \end{bmatrix},
+  \right\}
+  \]
+\end{definition}
+
+\begin{definition}\label{E8_Normalised_Basis_Vecs}\lean{E8_Normalised_Basis_Vecs}\uses{E8_Basis_Vecs}
+  We define the \emph{normalised $E_8$ basis vectors} to be the set $\frac{1}{\sqrt{2}}\B_8$ consisting of the elements of $\B_8$ scaled by $\frac{1}{\sqrt{2}}$.
+\end{definition}
+
+\begin{lemma}\label{E8_Normalised_Basis_LI}\lean{E8_Normalised_Basis_LI}\uses{E8_Normalised_Basis_Vecs}\leanok
+  $\frac{1}{\sqrt{2}}\B_8$ is linearly independent over $\R$.
+\end{lemma}
+\begin{proof}\uses{E8_Basis_Vecs}
+  There are multiple ways to prove this fact. One way is to show that the determinant of the matrix whose columns are the normalised $E_8$ basis vectors is non-zero. Another is to pick a linear combination and show that the coefficients must be zero by evaluating it row by row. Equivalently, one can show the kernel of the matrix with columns consisting of the normalised $E_8$ basis vectors is trivial by picking a vector in the kernel and showing each row of its image to be zero. We need to choose one of these approaches for the formalisation, depending on which mode of computation is more Lean-friendly.
+\end{proof}
+
+\begin{lemma}\label{E8_Normalised_Basis}\lean{E8_Normalised_Basis}\leanok
+  The normalised $E_8$ basis vectors do, indeed, form a basis of $\R^8$.
+\end{lemma}
+\begin{proof}\uses{E8_Basis_Vecs, E8_Normalised_Basis_LI}\leanok
+  This follows immediately from the fact that $\frac{1}{\sqrt{2}}\B_8$ is linearly independent and has cardinality $8$, which is precisely the $\R$-dimension of $\R^8$.
+\end{proof}
+
+\begin{lemma}\label{instLatticeE8}\lean{instLatticeE8}\uses{E8_Normalised_Lattice}\leanok
   True to its name, $\frac{1}{\sqrt{2}}\Lambda_8$ is a lattice.
 \end{lemma}
+\begin{proof}\uses{instDiscreteE8NormalisedSet, E8_Normalised_Set, E8_Normalised_Basis}
+  The idea is to show that $\frac{1}{\sqrt{2}}\B_8 \subset \frac{1}{\sqrt{2}}\Lambda_8$. Then, the fact that $\frac{1}{\sqrt{2}}\B_8$ is a basis of $\R^8$ (and hence spans it) implies that $\frac{1}{\sqrt{2}}\Lambda_8$ spans it too.
+\end{proof}
 
 \begin{lemma}\label{instSpherePackingE8NormalisedLattice}\lean{instSpherePackingE8NormalisedLattice}\uses{SpherePacking.SpherePackingCentres, E8_Normalised_Lattice}\leanok
   $\frac{1}{\sqrt{2}}\Lambda_8$ is a valid set of sphere packing centres.
