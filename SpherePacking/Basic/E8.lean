@@ -106,20 +106,11 @@ lemma E8_Normalised_Basis_LI : LinearIndependent ℝ E8_Normalised_Basis_Vecs :=
   { sorry }
   { sorry }
 
-lemma E8_Normalised_Basis_SP : ⊤ ≤ Submodule.span ℝ (Set.range E8_Normalised_Basis_Vecs) := by
-  intro x hx
-  unfold Set.range
-  unfold Submodule.span
-  unfold sInf
-  unfold Submodule.instInfSet
-  simp only [Set.mem_setOf_eq, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk,
-    Set.mem_iInter, SetLike.mem_coe]
-  intros M hM
+lemma E8_Normalised_Basis_Eq_Rank : Fintype.card (Fin 8) = FiniteDimensional.finrank ℝ V := by
+  rw [Fintype.card_fin, finrank_euclideanSpace, Fintype.card_fin]
 
-  sorry
-
-def E8_Normalised_Basis : Basis (Fin 8) ℝ V := Basis.mk
-  E8_Normalised_Basis_LI E8_Normalised_Basis_SP
+def E8_Normalised_Basis : Basis (Fin 8) ℝ V := basisOfLinearIndependentOfCardEqFinrank
+  E8_Normalised_Basis_LI E8_Normalised_Basis_Eq_Rank
 
 end Basis
 
