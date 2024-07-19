@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - '**'
+      - 'main'
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -10,9 +10,9 @@ permissions:
   id-token: write
 
 jobs:
-  build_project:
+  deploy_project:
     runs-on: ubuntu-latest
-    name: Build project
+    name: Build and Deploy Project
     steps:
       - name: Checkout project
         uses: actions/checkout@v2
