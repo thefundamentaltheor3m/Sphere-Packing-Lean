@@ -382,10 +382,14 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
       { intro hx
         rcases hx with ⟨i, hi⟩
         use i
-        rw [← hi]
-        simp only [E8_Basis_Vecs]
-        sorry }
-      { sorry }
+        simp only [← hi, E8_Normalised_Basis, Pi.smul_apply, PiLp.smul_apply, smul_eq_mul,
+          coe_basisOfLinearIndependentOfCardEqFinrank] }
+      { intro hx
+        apply Set.mem_range.mpr
+        rcases hx with ⟨i, hi⟩
+        use i
+        simp only [hi, E8_Normalised_Basis, Pi.smul_apply, PiLp.smul_apply, smul_eq_mul,
+          coe_basisOfLinearIndependentOfCardEqFinrank] }
     intro x hx
     cases' hx with i hi
     -- unfold E8_Basis at hi
