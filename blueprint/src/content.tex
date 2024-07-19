@@ -116,11 +116,11 @@ No packing of unit balls in Euclidean space $\R^8$ has density greater than that
 
 \begin{lemma}\label{SpherePacking.Density of periodic packing}\notready
   If $X \subseteq \R^d$ is a set of sphere packing centres that is periodic with respect to some lattice $\Lambda$, then the density of the corresponding (periodic) sphere packing is given by
-  $$ \frac{\lvert {X/\Lambda} \rvert}{\mathrm{Vol}(\R^d / \Lambda)} $$
+  $$ \frac{\lvert {X/\Lambda} \rvert}{\mathrm{Vol}(\R^d / \Lambda)} \cdot \mathrm{Vol}(B_d(0,1))$$
   where the quotients in the numerator and denominator correspond to the orbits of the action by translation of $\Lambda$ on $X$ and $\R^d$ respectively.
 \end{lemma}
 \begin{remark}
-  This can be thought of as the ``number of centres (hence, spheres) per fundamental domain".
+  This can be thought of as the ``volume of spheres per fundamental domain": the number of spheres per fundamental domain is $\lvert {X/\Lambda} \rvert$, and the volume of each sphere is $\mathrm{Vol}(B_d(0,1))$.
 \end{remark}
 
 \begin{definition}\label{def-Periodic-sphere-packing-constant}\uses{SpherePacking.Density, SpherePacking.PeriodicPackingCentres}\notready
