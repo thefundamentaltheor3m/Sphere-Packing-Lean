@@ -48,14 +48,14 @@ def R8_to_V (v : ℝ⁸) : V := fun i => v i
 def coords_to_V (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : V := R8_to_V (coords_to_R8 v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇)
 
 def E8_Basis_Vecs : Fin 8 → V := fun i => match i with
-  | ⟨0, _⟩ => coords_to_V 2 (-1) 0 0 0 0 0 0.5
-  | ⟨1, _⟩ => coords_to_V 0 1 (-1) 0 0 0 0 0.5
-  | ⟨2, _⟩ => coords_to_V 0 0 1 (-1) 0 0 0 0.5
-  | ⟨3, _⟩ => coords_to_V 0 0 0 1 (-1) 0 0 0.5
-  | ⟨4, _⟩ => coords_to_V 0 0 0 0 1 (-1) 0 0.5
-  | ⟨5, _⟩ => coords_to_V 0 0 0 0 0 1 (-1) 0.5
-  | ⟨6, _⟩ => coords_to_V 0 0 0 0 0 0 1 0.5
-  | ⟨7, _⟩ => coords_to_V 0 0 0 0 0 0 0 0.5
+  | ⟨0, _⟩ => coords_to_V 1 (-1) 0 0 0 0 0 0
+  | ⟨1, _⟩ => coords_to_V 0 1 (-1) 0 0 0 0 0
+  | ⟨2, _⟩ => coords_to_V 0 0 1 (-1) 0 0 0 0
+  | ⟨3, _⟩ => coords_to_V 0 0 0 1 (-1) 0 0 0
+  | ⟨4, _⟩ => coords_to_V 0 0 0 0 1 (-1) 0 0
+  | ⟨5, _⟩ => coords_to_V 0 0 0 0 0 1 1 0
+  | ⟨6, _⟩ => coords_to_V (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5)
+  | ⟨7, _⟩ => coords_to_V 0 0 0 0 0 1 (-1) 0
 
 def E8_Normalised_Basis_Vecs : Fin 8 → V := (√2)⁻¹ • E8_Basis_Vecs
 
@@ -372,9 +372,6 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
       use B
       intro x hx
       exact hM (hB hx) }
-    -- *TODO:* We need to feed in the (normalised) E8 basis uere.
-    -- This requires us to construct it in the first place.
-    -- This requires us to be able to get elements of `V` from elements of `ℝ⁸`.
     use E8_Normalised_Basis
     have hbasiselts : Set.range E8_Normalised_Basis = E8_Normalised_Basis_Set := by
       ext x
@@ -391,24 +388,356 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
         simp only [hi, E8_Normalised_Basis, Pi.smul_apply, PiLp.smul_apply, smul_eq_mul,
           coe_basisOfLinearIndependentOfCardEqFinrank] }
     intro x hx
+    rw [hbasiselts] at hx
     cases' hx with i hi
-    -- unfold E8_Basis at hi
-    rcases i with ⟨i₀ | i₁ | i₂ | i₃ | i₄ | i₅ | i₆ | i₇⟩
-    { unfold E8_Normalised_Set
-      simp only [Set.mem_setOf_eq, E8_Set]
-      use E8_Basis_Vecs 0
+    -- sorry
+    unfold E8_Normalised_Set
+    simp only [Set.mem_setOf_eq, E8_Set]
+    rcases i with ⟨i₀ | i₁ | i₂ | i₃ | i₄ | i₅ | i₆ | i₇ | n, hn⟩
+    { use E8_Basis_Vecs 0
       constructor
-      {
-        sorry }
-      { rw [← hi, E8_Normalised_Basis]
-        sorry } }
-    { sorry }
-    { sorry }
-    { sorry }
-    { sorry }
-    { sorry }
-    { sorry }
-    { sorry }
+      { constructor
+        { left
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V] }
+          { use (-1)
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] }
+          { use 0
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl] } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, Fin.isValue, one_div] } }
+    { use E8_Basis_Vecs 1
+      constructor
+      { constructor
+        { left
+          intro j
+          -- Rest done by copilot, pattern-matching with first. Very cool
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V] }
+          { use (-1)
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl] } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, Fin.isValue, one_div, zero_add, Fin.mk_one, Fin.isValue] } }
+    { -- The rest is easily done.
+      -- Copilot is still having difficulty doing the whole thing on its own, though...
+      use E8_Basis_Vecs 2
+      constructor
+      { constructor
+        { left
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V] }
+          { use (-1)
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl] } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
+    { use E8_Basis_Vecs 3
+      constructor
+      { constructor
+        { left
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V] }
+          { use (-1)
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl] } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
+    { use E8_Basis_Vecs 4
+      constructor
+      { constructor
+        { left
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V] }
+          { use (-1)
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl] } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
+    { use E8_Basis_Vecs 5
+      constructor
+      { constructor
+        { left
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V] }
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl, zero_add]
+          norm_num } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
+    { -- This case will need to be dealt with slightly differently
+      use E8_Basis_Vecs 6
+      constructor
+      { constructor
+        { right
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { constructor
+            { sorry }
+            { sorry } }
+          { constructor
+            { sorry }
+            { sorry } }
+          { constructor
+            { sorry }
+            { sorry } }
+          { constructor
+            { sorry }
+            { sorry } }
+          { constructor
+            { sorry }
+            { sorry } }
+          { constructor
+            { sorry }
+            { sorry } }
+          { constructor
+            { sorry }
+            { sorry } }
+          { constructor
+            { sorry }
+            { sorry } }
+          { sorry } }
+        { sorry } }
+      { sorry } }
+    { use E8_Basis_Vecs 7
+      constructor
+      { constructor
+        { left
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 1
+            simp only [Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_one] }
+          { use -1
+            simp only [Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_one, Int.reduceNeg, Int.cast_neg] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl] } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
+    { exfalso
+      simp only [Nat.add_one, Nat.succ] at hn
+      cases n
+      { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hn }
+      { linarith } }
 
 
 end Lattice
