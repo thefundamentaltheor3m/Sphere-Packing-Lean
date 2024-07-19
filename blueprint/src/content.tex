@@ -144,13 +144,16 @@ The only thing left to show in order to prove that $\frac{1}{\sqrt{2}}\Lambda_8$
 \begin{lemma}\label{instLatticeE8}\lean{instLatticeE8}\uses{E8_Normalised_Lattice}\leanok
   True to its name, $\frac{1}{\sqrt{2}}\Lambda_8$ is a lattice.
 \end{lemma}
-\begin{proof}\uses{instDiscreteE8NormalisedSet, E8_Normalised_Set, E8_Normalised_Basis}
+\begin{proof}\uses{instDiscreteE8NormalisedSet, E8_Normalised_Set, E8_Normalised_Basis, E8_Basis_Vecs}
   The idea is to show that $\frac{1}{\sqrt{2}}\B_8 \subset \frac{1}{\sqrt{2}}\Lambda_8$. Then, the fact that $\frac{1}{\sqrt{2}}\B_8$ is a basis of $\R^8$ (and hence spans it) implies that $\frac{1}{\sqrt{2}}\Lambda_8$ spans it too.
 \end{proof}
 
 \begin{lemma}\label{instSpherePackingE8NormalisedLattice}\lean{instSpherePackingE8NormalisedLattice}\uses{SpherePacking.SpherePackingCentres, E8_Normalised_Lattice}\leanok
   $\frac{1}{\sqrt{2}}\Lambda_8$ is a valid set of sphere packing centres.
 \end{lemma}
+\begin{proof}
+  We need to show that the distance between any two points in $\frac{1}{\sqrt{2}}\Lambda_8$ is at least 2. Equivalently, we need to show that the distance between any two points in $\Lambda_8$ is at least $\sqrt{2}$. Finish...
+\end{proof}
 
 \begin{definition}\label{E8_Packing}\lean{E8_Packing}\uses{SpherePacking.Packing_of_Centres, E8_Normalised_Lattice}\leanok
   The \emph{$E_8$ sphere packing} is the sphere packing whose set of centres is $\frac{1}{\sqrt{2}}\Lambda_8$.
