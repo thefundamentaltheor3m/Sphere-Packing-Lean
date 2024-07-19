@@ -18,8 +18,10 @@
   \end{abstract}
 
 
-  \section{Basic definitions for sphere packings}
+\section{Basic definitions for sphere packings}
+
 \subsection{Sphere packings}
+
 The sphere packing constant measures which portion of $d$-dimensional Euclidean
 space can be covered by non-overlapping unit balls. More precisely, let $\R^d$ be the Euclidean vector space equipped with distance $\|\cdot\|$ and Lebesgue measure $\mathrm{Vol}(\cdot)$. For $x\in\R^d$ and $r\in\R_{>0}$ we denote by $B_d(x,r)$ the ball in $\R^d$ with center $x$ and radius $r$. There are several types of sphere packings, which are determined by imposing certain conditions on the set of centres of the spheres involved in the packing. Therefore, we begin by defining those conditions on the centres of the spheres.
 
@@ -94,8 +96,7 @@ $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1
 \end{definition}
 
 Our main result is
-\begin{theorem}\label{Main}\uses{E8_Normalised_Lattice, SpherePacking.Constant, SpherePacking.Density}
-\lean{SpherePacking.Main}
+\begin{theorem}\label{Main}\lean{Main}\uses{E8_Normalised_Lattice, SpherePacking.Constant, SpherePacking.Density}
 No packing of unit balls in Euclidean space $\R^8$ has density greater than that of the $E_8$-lattice packing.
 \end{theorem}
 \begin{proof}\uses{thm-g, thm-Cohn-Elkies}
@@ -172,7 +173,7 @@ The following theorem is the key result of \cite{ElkiesCohn}. (The original theo
 To be included.
 \end{proof}
 
-The main step in our proof of Theorem \ref{SpherePacking.Main} is the explicit  construction of an optimal function. It will be convenient for us to scale this function by $\sqrt{2}$.
+The main step in our proof of Theorem \ref{Main} is the explicit  construction of an optimal function. It will be convenient for us to scale this function by $\sqrt{2}$.
 \begin{theorem}\label{thm-g}\uses{thm-g1}
 There exists a radial Schwartz function $g:\R^8\to\R$ which satisfies:
 \begin{align}
@@ -181,7 +182,7 @@ g(x)&\leq 0\mbox{ for } \|x\|\geq \sqrt{2} \label{eqn-g1}\\
 g(0)&=\widehat{g}(0)=1.\label{eqn-g3}
 \end{align}
 \end{theorem}
-Theorem \ref{thm-Cohn-Elkies} applied to the optimal function $f(x)=g(x/\sqrt{2})$ immediately implies Theorem \ref{SpherePacking.Main}.
+Theorem \ref{thm-Cohn-Elkies} applied to the optimal function $f(x)=g(x/\sqrt{2})$ immediately implies Theorem \ref{Main}.
 
 
 \section{Modular forms}  % A lot of this might exist already. We can clear things up quite easily.
