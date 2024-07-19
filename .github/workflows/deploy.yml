@@ -1,0 +1,33 @@
+on:
+  push:
+    branches:
+      - 'main'
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy_project:
+    runs-on: ubuntu-latest
+    name: Deploy Project
+    steps:
+      - name: Move documentation to `docs/docs`
+        run: |
+          sudo chown -R runner docs
+          cp -r .lake/build/doc docs/docs
+
+      - name: Upload docs & blueprint artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: docs/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+
+      - name: Make sure the cache works
+        run: |
+          mv docs/docs .lake/build/doc

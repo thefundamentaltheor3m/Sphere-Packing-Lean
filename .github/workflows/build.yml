@@ -12,23 +12,23 @@ permissions:
 jobs:
   build_project:
     runs-on: ubuntu-latest
-    name: Build project
+    name: Build Project
     steps:
-      - name: Checkout project
+      - name: Checkout Project
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - name: Install elan
+      - name: Install `elan`
         run: curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain leanprover/lean4:4.5.0
 
-      - name: Get cache
+      - name: Get Cache
         run: ~/.elan/bin/lake exe cache get || true
 
-      - name: Build project
+      - name: Build Project
         run: ~/.elan/bin/lake build SpherePacking
 
-      - name: Cache mathlib docs
+      - name: Cache Mathlib Docs
         uses: actions/cache@v3
         with:
           path: |
@@ -43,7 +43,7 @@ jobs:
           restore-keys: |
             MathlibDoc-
 
-      - name: Build documentation
+      - name: Build Documentation
         run: ~/.elan/bin/lake -R -Kenv=dev build SpherePacking:docs
 
       - name: Build blueprint and copy to `docs/blueprint`
@@ -66,24 +66,6 @@ jobs:
             leanblueprint web
             cp -r blueprint/web docs/blueprint
 
-      - name: Check declarations
+      - name: Check Declarations
         run: |
             ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
-
-      - name: Move documentation to `docs/docs`
-        run: |
-          sudo chown -R runner docs
-          cp -r .lake/build/doc docs/docs
-
-      - name: Upload docs & blueprint artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: docs/
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1
-
-      - name: Make sure the cache works
-        run: |
-          mv docs/docs .lake/build/doc
