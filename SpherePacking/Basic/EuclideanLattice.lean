@@ -32,6 +32,12 @@ noncomputable instance instPeriodicToAction (Λ : AddSubgroup V) [DiscreteTopolo
     unfold instHVAdd
     simp only [AddSubmonoid.coe_add, AddSubgroup.coe_toAddSubmonoid, Subtype.mk.injEq, add_assoc]
 
+/-
+We now need to find a way to embed the quotient of any set by this action into Euclidean space.
+-/
+
+
+
 end Action
 
 end EuclideanLattice
