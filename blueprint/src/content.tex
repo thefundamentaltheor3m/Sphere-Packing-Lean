@@ -7,7 +7,7 @@
 % can start with a \section or \chapter for instance.
 
 \begin{abstract}
-  This blueprint consists of an adaptation of Maryna Viazovska's Fields-Medal-winning paper proving that no packing of unit balls in Euclidean space $\R^8$ has density greater than that of the $E_8$-lattice packing.
+  This blueprint consists of an adaptation of Maryna Viazovska's Fields Medal-winning paper proving that no packing of unit balls in Euclidean space $\R^8$ has density greater than that of the $E_8$-lattice packing.
   \ifplastex
   % web
   This blueprint is a work in progress, and will be frequently updated and restructured as the formalisation effort progresses. You can view the contents of the current version of this page in PDF form \href{https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/blueprint.pdf}{here}.
@@ -79,7 +79,7 @@ $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1
   $\frac{1}{\sqrt{2}}\Lambda_8$ can be viewed an additive subgroup of $\R^8$.
 \end{lemma}
 \begin{proof}\leanok
-  The proof is rather long, and merely involves checking several conditions. Tt is all written out (in excruciating detail) in the Lean formalisation.
+  The proof is rather long, and merely involves checking several conditions. It is written out in great detail in the Lean formalisation.
 \end{proof}
 
 \begin{lemma}\label{instDiscreteE8NormalisedSet}\lean{instDiscreteE8NormalisedSet}\uses{E8_Normalised_Lattice}\leanok
@@ -93,7 +93,7 @@ The only thing left to show in order to prove that $\frac{1}{\sqrt{2}}\Lambda_8$
 
 \begin{definition}\label{E8_Basis_Vecs}\lean{E8_Basis_Vecs}
   We define the \emph{$E_8$ basis vectors} to be the set of vectors
-  \[ \B_8
+  \[ \B_8 =
   \left\{
     \begin{bmatrix}
       1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0
@@ -114,11 +114,11 @@ The only thing left to show in order to prove that $\frac{1}{\sqrt{2}}\Lambda_8$
       0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 1 \\ 1 \\ 0
     \end{bmatrix},
     \begin{bmatrix}
-      -\frac{1}{2} \\ -\frac{1}{2} \\ -\frac{1}{2} \\ -\frac{1}{2} \\ -\frac{1}{2} \\ -\frac{1}{2} \\ -\frac{1}{2} \\ -\frac{1}{2}
+      -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2
     \end{bmatrix},
     \begin{bmatrix}
       0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0
-    \end{bmatrix},
+    \end{bmatrix}
   \right\}
   \]
 \end{definition}
