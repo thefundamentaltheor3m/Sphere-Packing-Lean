@@ -47,6 +47,7 @@ def R8_to_V (v : ℝ⁸) : V := fun i => v i
 
 def coords_to_V (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : V := R8_to_V (coords_to_R8 v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇)
 
+-- Crosscheck numbering...
 def E8_Basis_Vecs : Fin 8 → V := fun i => match i with
   | ⟨0, _⟩ => coords_to_V 1 (-1) 0 0 0 0 0 0
   | ⟨1, _⟩ => coords_to_V 0 1 (-1) 0 0 0 0 0
@@ -92,6 +93,7 @@ lemma E8_Normalised_Basis_LI : LinearIndependent ℝ E8_Normalised_Basis_Vecs :=
   unfold E8_Basis_Vecs coords_to_V coords_to_R8 R8_to_V at hxj
   -- simp only [Fin.zero_eta] at hxj
   rw [Pi.zero_apply]
+
   rcases i with ⟨i₀ | i₁ | i₂ | i₃ | i₄ | i₅ | i₆ | i₇ | n, isLT⟩
   {
     -- simp only [Fin.zero_eta, Fin.sum_univ_succ, Fin.sum_univ_succ, Fin.isValue,
@@ -102,6 +104,7 @@ lemma E8_Normalised_Basis_LI : LinearIndependent ℝ E8_Normalised_Basis_Vecs :=
       List.ofFn_zero, Multiset.sum_coe, List.sum_cons, List.sum_nil, add_zero, Fin.succ,
       Nat.succ_eq_add_one, Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, Int.cast_one,
       add_right_neg, AddCommGroup.modEq_refl, mul_one, mul_zero, mul_neg, zero_add, neg_mul] at hxj
+
     sorry }
   { sorry }
   { sorry }
