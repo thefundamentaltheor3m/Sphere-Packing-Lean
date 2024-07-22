@@ -147,3 +147,6 @@ example (Λ : Set V) (hΛ : isLattice' Λ) : ∃ m : ℕ, m = 4 := by
 instance (B : Basis (Fin d) ℝ V) (Λ : Set V) (hΛ : Λ = Submodule.span ℤ (Set.range B)) : AddCommGroup Λ := by
   -- apply_instance
   sorry
+
+example (v : V) : Euclidean.dist v v = 0 := by
+  simp [Euclidean.dist]

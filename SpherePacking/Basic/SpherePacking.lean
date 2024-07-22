@@ -3,33 +3,36 @@ import SpherePacking.Basic.EuclideanLattice
 
 open Euclidean BigOperators EuclideanLattice
 
+/-!
+# The choices made in this file mirror those made in `Algebra.Module.Zlattice.Basic`. Specifically,
+- All conditions pertaining to types of sphere packings are defined on the sets of centres
+- A sphere packing can be built from any set of centres using `Packing_of_Centres`.
+-/
+
 variable (d : ℕ)
 local notation "V" => EuclideanSpace ℝ (Fin d)
 local notation "B" => Euclidean.ball
-
-def Discrete (X : Set V) : Prop := (Countable X) ∧ (∀ x ∈ X, ∃ ε > 0, ∀ y ∈ X, y ≠ x → Euclidean.dist x y > ε)  -- Nothing equivalent in mathlib?
 
 namespace SpherePacking
 
 section Definitions
 
-def Centres (X : Set V) : Prop := (Discrete d X) ∧ (∀ x ∈ X, ∀ y ∈ X, x ≠ y → Euclidean.dist x y ≥ 2)
+class SpherePackingCentres (X : Set V) [DiscreteTopology X] where
+  nonoverlapping : ∀ x ∈ X, ∀ y ∈ X, x ≠ y → Euclidean.dist x y ≥ 2
 
-def Packing_of_Centres (X : Set V) : Set V := ⋃ x ∈ X, {y | Euclidean.dist x y < 1}
+class LatticePackingCentres (X : AddSubgroup V) [DiscreteTopology X] [isLattice X] extends
+  SpherePackingCentres d X
 
-def Packing (X P : Set V) : Prop := (Centres d X) ∧ (P = Packing_of_Centres d X)  -- We don't include boundaries
+class PeriodicPackingCentres (X : Set V) [DiscreteTopology X] [SpherePackingCentres d X]
+  {Λ : AddSubgroup V} [DiscreteTopology Λ] [isLattice Λ] where
+  periodic : ∀ x ∈ X, ∀ y ∈ Λ, x + y ∈ X
 
-def isPacking (P : Set V) : Prop := ∃ X, Packing d X P
-
-def LatticePacking (Λ P : Set V) : Prop := (Packing d Λ P) ∧ (isLattice Λ)
-
-def isLatticePacking (P : Set V) : Prop := ∃ Λ, LatticePacking d Λ P
-
-def PeriodicPacking (Λ P : Set V) : Prop := (LatticePacking d Λ P) ∧ (isPeriodic Λ P)
-
-def isPeriodicPacking (P : Set V) : Prop := ∃ Λ, PeriodicPacking d Λ P
+def Packing_of_Centres (X : Set V) [DiscreteTopology X] [SpherePackingCentres d X] : Set V :=
+  ⋃ x ∈ X, (B x 1)
 
 end Definitions
+
+local notation "P" => Packing_of_Centres d
 
 noncomputable section Density
 
@@ -40,24 +43,16 @@ instance : MeasureSpace V := by infer_instance
 instance : MeasureSpace V :=
 { volume := volume }
 
--- variables {X P : Set V} (hP : isPacking d X P)
+def FiniteDensity (X : Set V) [DiscreteTopology X] [SpherePackingCentres d X] (r : ℝ) : ENNReal :=
+  volume ((P X) ∩ B (0:V) r) / (volume (B (0:V) r))
 
-def FiniteDensity (P : Set V) (r : ℝ) : ENNReal := volume (P ∩ B (0:V) r) / (volume (B (0:V) r))  -- Can remove hP and hr because nonneg error is handled by Euclidean.ball and strictly speaking this definition doesn't have to apply to a packing...
+def Density (X : Set V) [DiscreteTopology X] [SpherePackingCentres d X] : ENNReal :=
+  Filter.limsup (FiniteDensity d X) (Filter.atTop)
 
-def Density (P : Set V) : ENNReal := Filter.limsup (FiniteDensity d P) (Filter.atTop)
-
-def Constant : ENNReal := sSup {x : ENNReal | ∃ P, isPacking d P ∧ Density d P = x}
-
--- To convert a limit into a function, could it be some kind of exists.mk of some some number such that (tendsto that number) is satisfied?
+def Constant : ENNReal := sSup {x : ENNReal | ∃ X : Set V, ∃ inst1 : DiscreteTopology X,
+  ∃ inst2 : SpherePackingCentres d X, Density d X = x}
+  -- I don't really like how this looks. Is there a better way of formalising it?
 
 end Density
-
-section E8_Packing
-
-def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_normalised)
-
-theorem Main : Constant 8 = Density 8 E8 := sorry
-
-end E8_Packing
 
 end SpherePacking
