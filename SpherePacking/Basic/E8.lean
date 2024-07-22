@@ -96,6 +96,12 @@ lemma E8_Normalised_Basis_LI : LinearIndependent ℝ E8_Normalised_Basis_Vecs :=
   {
     -- simp only [Fin.zero_eta, Fin.sum_univ_succ, Fin.sum_univ_succ, Fin.isValue,
     --   Fin.succ_zero_eq_one, Fin.succ_one_eq_two, mul_zero, zero_add] at hxj
+    simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+      R8_to_V, E8_Normalised_Basis_Vecs, Fin.zero_eta, Pi.smul_apply,
+      Finset.sum, Fin.univ_val_map, List.ofFn_succ, Fin.succ_zero_eq_one, Fin.succ_one_eq_two,
+      List.ofFn_zero, Multiset.sum_coe, List.sum_cons, List.sum_nil, add_zero, Fin.succ,
+      Nat.succ_eq_add_one, Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, Int.cast_one,
+      add_right_neg, AddCommGroup.modEq_refl, mul_one, mul_zero, mul_neg, zero_add, neg_mul] at hxj
     sorry }
   { sorry }
   { sorry }
