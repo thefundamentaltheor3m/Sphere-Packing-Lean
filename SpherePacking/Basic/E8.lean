@@ -390,10 +390,10 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
     intro x hx
     rw [hbasiselts] at hx
     cases' hx with i hi
-    -- sorry
     unfold E8_Normalised_Set
     simp only [Set.mem_setOf_eq, E8_Set]
     rcases i with ⟨i₀ | i₁ | i₂ | i₃ | i₄ | i₅ | i₆ | i₇ | n, hn⟩
+    -- A lot of steps here are repeated. Can this code be optimised?
     { use E8_Basis_Vecs 0
       constructor
       { constructor
@@ -664,32 +664,140 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
           intro j
           rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
           { constructor
-            { sorry }
-            { sorry } }
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
           { constructor
-            { sorry }
-            { sorry } }
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
           { constructor
-            { sorry }
-            { sorry } }
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
           { constructor
-            { sorry }
-            { sorry } }
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
           { constructor
-            { sorry }
-            { sorry } }
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
           { constructor
-            { sorry }
-            { sorry } }
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
           { constructor
-            { sorry }
-            { sorry } }
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
           { constructor
-            { sorry }
-            { sorry } }
-          { sorry } }
-        { sorry } }
-      { sorry } }
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl, zero_add]
+          use 2
+          norm_num } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
     { use E8_Basis_Vecs 7
       constructor
       { constructor
