@@ -25,7 +25,7 @@ class LatticePackingCentres (X : AddSubgroup V) [DiscreteTopology X] [isLattice 
 
 class PeriodicPackingCentres (X : Set V) [DiscreteTopology X] [SpherePackingCentres d X]
   {Λ : AddSubgroup V} [DiscreteTopology Λ] [isLattice Λ] where
-  periodic : ∀ x ∈ X, ∀ y ∈ Λ, x + y ∈ X
+  periodic : LatticePeriodic Λ X
 
 def Packing_of_Centres (X : Set V) [DiscreteTopology X] [SpherePackingCentres d X] : Set V :=
   ⋃ x ∈ X, (B x 1)

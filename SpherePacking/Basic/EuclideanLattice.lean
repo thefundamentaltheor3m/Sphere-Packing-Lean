@@ -18,6 +18,20 @@ We need to define an action of a lattice on a set of lattice-periodic points in 
 This will allow us to formalise the theorem for the density of a periodic packing.
 -/
 
+def Periodic (Λ : AddSubgroup V) [DiscreteTopology Λ] [isLattice Λ] (X : Set V) : Prop :=
+  ∀ x ∈ Λ, ∀ y ∈ X, x + y ∈ X
+
+noncomputable instance instPeriodicToAction (Λ : AddSubgroup V) [DiscreteTopology Λ] [isLattice Λ] (X : Set V) (hPeriodic : Periodic Λ X) : AddAction Λ X where
+  vadd := fun x y => ⟨(x : V) + (y : V), hPeriodic x (SetLike.coe_mem x) y (Subtype.coe_prop y)⟩
+  zero_vadd := by
+    intro x
+    unfold instHVAdd
+    simp only [ZeroMemClass.coe_zero, zero_add, Subtype.coe_eta]
+  add_vadd := by
+    intros x y v
+    unfold instHVAdd
+    simp only [AddSubmonoid.coe_add, AddSubgroup.coe_toAddSubmonoid, Subtype.mk.injEq, add_assoc]
+
 end Action
 
 end EuclideanLattice
