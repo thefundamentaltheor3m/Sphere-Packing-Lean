@@ -92,7 +92,7 @@ lemma E8_Normalised_Basis_LI : LinearIndependent ℝ E8_Normalised_Basis_Vecs :=
   unfold E8_Basis_Vecs coords_to_V coords_to_R8 R8_to_V at hxj
   -- simp only [Fin.zero_eta] at hxj
   rw [Pi.zero_apply]
-  rcases i with ⟨i₀ | i₁ | i₂ | i₃ | i₄ | i₅ | i₆ | i₇ | n⟩
+  rcases i with ⟨i₀ | i₁ | i₂ | i₃ | i₄ | i₅ | i₆ | i₇ | n, isLT⟩
   {
     -- simp only [Fin.zero_eta, Fin.sum_univ_succ, Fin.sum_univ_succ, Fin.isValue,
     --   Fin.succ_zero_eq_one, Fin.succ_one_eq_two, mul_zero, zero_add] at hxj
