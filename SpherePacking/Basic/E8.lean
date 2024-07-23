@@ -53,7 +53,10 @@ def R8_to_V (v : ℝ⁸) : V := fun i => v i
 @[simp]
 def coords_to_V (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : V := R8_to_V (coords_to_R8 v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇)
 
--- Crosscheck numbering...
+/-! # Choice of Simple Roots
+There are many possible choices of simple roots for the E₈ root system. Here, we choose the one
+mentioned in the Wikipedia article https://en.wikipedia.org/wiki/E8_(mathematics).
+-/
 @[simp]
 def E8_Basis_Vecs : Fin 8 → V := fun i => match i with
   | ⟨0, _⟩ => coords_to_V 1 (-1) 0 0 0 0 0 0
