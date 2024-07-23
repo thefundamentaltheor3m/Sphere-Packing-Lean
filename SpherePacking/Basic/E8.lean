@@ -23,16 +23,20 @@ instance : SMul ℝ V := ⟨fun (r : ℝ) (v : V) => (fun i => r * v i)⟩
 
 instance : HMul ℝ V V := ⟨fun (r : ℝ) (v : V) => (fun i => r * v i)⟩
 
+@[simp]
 def ℤ_as_ℝ : Set ℝ := {r : ℝ | ∃ (n : ℤ), ↑n = r}
 local notation "↑ℤ" => ℤ_as_ℝ
 
+@[simp]
 def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin 8, (2 * v i) ∈ ↑ℤ
   ∧ (v i ∉ ↑ℤ))) ∧ ∑ i : Fin 8, v i ≡ 0 [PMOD 2]}
 
+@[simp]
 def E8_Normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
 
 noncomputable section Basis
 
+@[simp]
 def coords_to_R8 (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : ℝ⁸ := fun i => match i with
 | ⟨0, _⟩ => v₀
 | ⟨1, _⟩ => v₁
@@ -43,11 +47,14 @@ def coords_to_R8 (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : ℝ⁸ := fun
 | ⟨6, _⟩ => v₆
 | ⟨7, _⟩ => v₇
 
+@[simp]
 def R8_to_V (v : ℝ⁸) : V := fun i => v i
 
+@[simp]
 def coords_to_V (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : V := R8_to_V (coords_to_R8 v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇)
 
 -- Crosscheck numbering...
+@[simp]
 def E8_Basis_Vecs : Fin 8 → V := fun i => match i with
   | ⟨0, _⟩ => coords_to_V 1 (-1) 0 0 0 0 0 0
   | ⟨1, _⟩ => coords_to_V 0 1 (-1) 0 0 0 0 0
@@ -58,8 +65,10 @@ def E8_Basis_Vecs : Fin 8 → V := fun i => match i with
   | ⟨6, _⟩ => coords_to_V (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5)
   | ⟨7, _⟩ => coords_to_V 0 0 0 0 0 1 (-1) 0
 
+@[simp]
 def E8_Normalised_Basis_Vecs : Fin 8 → V := (√2)⁻¹ • E8_Basis_Vecs
 
+@[simp]
 def E8_Normalised_Basis_Set : Set V := Set.range E8_Normalised_Basis_Vecs
 
 -- Perhaps a more direct way to show that the above is a basis is to show that its determinant
@@ -67,12 +76,44 @@ def E8_Normalised_Basis_Set : Set V := Set.range E8_Normalised_Basis_Vecs
 -- picking the standard basis and translating result of one of the determinant algorithms into
 -- a proof that the determinant is nonzero. I'm not quite sure how to do that yet.
 
+@[simp]
 def Standard_Orthonormal_Basis : OrthonormalBasis (Fin 8) ℝ V := EuclideanSpace.basisFun (Fin 8) ℝ
 
+@[simp]
 def Standard_Basis : Basis (Fin 8) ℝ V := OrthonormalBasis.toBasis (Standard_Orthonormal_Basis)
 
-lemma E8_Det_0 : Standard_Basis.det E8_Normalised_Basis_Vecs ≠ 0 := by
-  sorry
+@[simp]
+def E8_Normalised_Basis_Matrix : Matrix (Fin 8) (Fin 8) ℝ := Standard_Basis.toMatrixEquiv
+  E8_Normalised_Basis_Vecs
+
+@[simp]
+def E8_Inv_Vecs : Fin 8 → V :=  fun i => match i with
+  | ⟨0, _⟩ => coords_to_V 1 (-1) 0 0 0 0 0 0
+  | ⟨1, _⟩ => coords_to_V 0 1 (-1) 0 0 0 0 0
+  | ⟨2, _⟩ => coords_to_V 0 0 1 (-1) 0 0 0 0
+  | ⟨3, _⟩ => coords_to_V 0 0 0 1 (-1) 0 0 0
+  | ⟨4, _⟩ => coords_to_V 0 0 0 0 1 (-1) 0 0
+  | ⟨5, _⟩ => coords_to_V 0 0 0 0 0 1 1 0
+  | ⟨6, _⟩ => coords_to_V (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5)
+  | ⟨7, _⟩ => coords_to_V 0 0 0 0 0 1 (-1) 0
+
+@[simp]
+def E8_Normalised_Inv_Vecs : Fin 8 → V := √2 • E8_Inv_Vecs
+
+@[simp]
+def E8_Normalised_Inverse_Matrix : Matrix (Fin 8) (Fin 8) ℝ := Standard_Basis.toMatrixEquiv
+  E8_Normalised_Inv_Vecs
+
+@[simp]
+lemma E8_Det_0 : E8_Normalised_Basis_Matrix.det ≠ 0 := by
+  have H : E8_Normalised_Basis_Matrix * E8_Normalised_Inverse_Matrix = 1 := by
+    simp only [E8_Normalised_Basis_Matrix, Standard_Basis, Standard_Orthonormal_Basis,
+      E8_Normalised_Basis_Vecs, LinearMapClass.map_smul, E8_Normalised_Inverse_Matrix,
+      E8_Normalised_Inv_Vecs, Algebra.mul_smul_comm, Algebra.smul_mul_assoc, ne_eq,
+      Nat.ofNat_nonneg, Real.sqrt_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, smul_inv_smul₀,
+      E8_Basis_Vecs, E8_Inv_Vecs, coords_to_V, coords_to_R8, R8_to_V]
+    sorry
+  exact Matrix.det_ne_zero_of_right_inverse H
 
 -- The alternative is to just show it's linearly independent and spans the space.
 -- The issue is that we eventually need to unpack the vectors from `Basis.mk` to show that they
@@ -121,6 +162,11 @@ lemma E8_Normalised_Basis_Eq_Rank : Fintype.card (Fin 8) = FiniteDimensional.fin
 def E8_Normalised_Basis : Basis (Fin 8) ℝ V := basisOfLinearIndependentOfCardEqFinrank
   E8_Normalised_Basis_LI E8_Normalised_Basis_Eq_Rank
 
+theorem Is_Basis_E8_Normalised_Basis_Vecs : LinearIndependent ℝ E8_Normalised_Basis_Vecs ∧
+  Submodule.span ℝ (Set.range E8_Normalised_Basis_Vecs) = ⊤ := by
+  rw [is_basis_iff_det Standard_Basis, isUnit_iff_ne_zero,]
+  sorry
+
 end Basis
 
 noncomputable section Lattice
@@ -137,7 +183,7 @@ def E8_Normalised_Lattice : AddSubgroup V where
         use 0
         rw [PiLp.zero_apply, Int.cast_zero] }
       { simp only [PiLp.zero_apply, Finset.sum_const_zero, AddCommGroup.modEq_refl] } }
-    { rw [one_div, smul_zero] }
+    { rw [smul_zero] }
   add_mem' := by
     intros a b ha hb
     unfold E8_Normalised_Set at *
@@ -283,9 +329,7 @@ def E8_Normalised_Lattice : AddSubgroup V where
             rcases HContra with ⟨n, hn⟩
             use -n
             rw [Int.cast_neg, hn, PiLp.neg_apply, neg_neg] } }
-      { unfold E8_Set at hv
-        rw [Set.mem_setOf_eq] at hv
-        rcases hv with ⟨_, z, hz⟩
+      { rcases hv with ⟨_, z, hz⟩
         rw [zero_sub] at hz
         use -z
         simp only [PiLp.neg_apply, Finset.sum_neg_distrib, zero_sub, neg_inj, neg_smul]
