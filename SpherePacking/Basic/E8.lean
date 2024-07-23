@@ -36,23 +36,6 @@ def E8_Normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Re
 
 noncomputable section Basis
 
-@[simp]
-def coords_to_R8 (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : ℝ⁸ := fun i => match i with
-| ⟨0, _⟩ => v₀
-| ⟨1, _⟩ => v₁
-| ⟨2, _⟩ => v₂
-| ⟨3, _⟩ => v₃
-| ⟨4, _⟩ => v₄
-| ⟨5, _⟩ => v₅
-| ⟨6, _⟩ => v₆
-| ⟨7, _⟩ => v₇
-
-@[simp]
-def R8_to_V (v : ℝ⁸) : V := fun i => v i
-
-@[simp]
-def coords_to_V (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : V := R8_to_V (coords_to_R8 v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇)
-
 /-! # Choice of Simple Roots
 There are many possible choices of simple roots for the E₈ root system. Here, we choose the one
 mentioned in the Wikipedia article https://en.wikipedia.org/wiki/E8_(mathematics).
@@ -410,7 +393,7 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
         use i
         simp only [← hi, E8_Normalised_Basis, Pi.smul_apply, PiLp.smul_apply, smul_eq_mul,
           coe_basisOfLinearIndependentOfCardEqFinrank, E8_Normalised_Basis_Vecs, Pi.smul_apply,
-          E8_Basis_Vecs, coords_to_V, Basis.coe_mk] }
+          E8_Basis_Vecs, Basis.coe_mk] }
       { intro hx
         apply Set.mem_range.mpr
         rcases hx with ⟨i, hi⟩
@@ -533,9 +516,8 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
         { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
             Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
             List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
-            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
-            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
-            AddCommGroup.modEq_refl]
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, Int.cast_zero,
+            Int.cast_one, add_right_neg, AddCommGroup.modEq_refl]
           simp only [E8_Matrix, Fin.isValue, Matrix.of_apply, Matrix.cons_val',
             Matrix.cons_val_zero, Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_one,
             Matrix.head_cons, Matrix.cons_val_two, Nat.succ_eq_add_one, Nat.reduceAdd,
@@ -732,28 +714,22 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
               Matrix.empty_val', Matrix.cons_val_fin_one]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { use 1
-            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { use 1
-            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { exfalso
             simp only [Nat.add_one, Nat.succ] at hm
@@ -777,8 +753,8 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
                 Matrix.empty_val', Matrix.cons_val_fin_one]
               sorry }
             { intro hcontra
-              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, Int.reduceNeg, Int.cast_neg,
+                Int.cast_one] at hcontra
               rcases hcontra with ⟨p, hp⟩
               have even_one : Even (1 : ℤ) := by
               { use -1 * p
@@ -816,32 +792,25 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
               Matrix.cons_val_fin_one]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { use 1
-            simp only [Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V, Int.cast_one]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { use -1
-            simp only [Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V, Int.cast_one, Int.reduceNeg, Int.cast_neg]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
-              R8_to_V, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
             sorry }
           { exfalso
             simp only [Nat.add_one, Nat.succ] at hm
