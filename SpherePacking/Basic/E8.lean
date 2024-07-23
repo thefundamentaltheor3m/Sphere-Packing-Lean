@@ -109,10 +109,24 @@ def E8_Normalised_Inv_Vecs : Fin 8 → V := (√2) • E8_Inv_Vecs
 def E8_Normalised_Inv_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (√2) • E8_Inv_Matrix
 
 @[simp]
-lemma E8_Det_ne_0 : E8_Normalised_Matrix.det ≠ 0 := by
-  have H : E8_Normalised_Matrix * E8_Normalised_Inv_Matrix = 1 := by
+lemma E8_Det_ne_0 : E8_Matrix.det ≠ 0 := by
+  have H : E8_Matrix * E8_Inv_Matrix = 1 := by
+    simp only [E8_Matrix, E8_Inv_Matrix, Matrix.cons_mul, Nat.succ_eq_add_one, Nat.reduceAdd,
+      Matrix.vecMul_cons, Matrix.head_cons, one_smul, Matrix.tail_cons, neg_smul, Matrix.neg_cons,
+      neg_zero, Combinatorics.Line.diagonal_apply, Matrix.neg_empty, zero_smul, Matrix.empty_vecMul,
+      add_zero, Matrix.add_cons, zero_add, Matrix.empty_add_empty, add_right_neg, Matrix.smul_cons,
+      smul_eq_mul, mul_one, mul_zero, Matrix.smul_empty, mul_neg, neg_neg, add_left_neg,
+      Matrix.empty_mul, Equiv.symm_apply_apply]
+    norm_num
     sorry
   exact Matrix.det_ne_zero_of_right_inverse H
+
+@[simp]
+lemma E8_Normalised_Det_ne_0 : E8_Normalised_Matrix.det ≠ 0 := by
+  intro h
+  apply E8_Det_ne_0
+  rw [E8_Normalised_Matrix] at h
+  sorry
 
 theorem Is_Basis_E8_Normalised_Basis_Vecs : LinearIndependent ℝ E8_Normalised_Basis_Vecs ∧
   Submodule.span ℝ (Set.range E8_Normalised_Basis_Vecs) = ⊤ := by
@@ -120,7 +134,7 @@ theorem Is_Basis_E8_Normalised_Basis_Vecs : LinearIndependent ℝ E8_Normalised_
   have H : Standard_Basis.det E8_Normalised_Basis_Vecs = E8_Normalised_Matrix.det := by
     sorry
   rw [H]
-  exact E8_Det_ne_0
+  exact E8_Normalised_Det_ne_0
 
 lemma Top_Le_Span_E8 : ⊤ ≤ Submodule.span ℝ (Set.range E8_Normalised_Basis_Vecs) := by
   rw [← Is_Basis_E8_Normalised_Basis_Vecs.2]
