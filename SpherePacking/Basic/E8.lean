@@ -72,8 +72,6 @@ def E8_Matrix : Matrix (Fin 8) (Fin 8) ℝ := !![
 @[simp]
 def E8_Basis_Vecs : Fin 8 → V := fun i => E8_Matrix i
 
-#eval E8_Basis_Vecs 0 4
-
 @[simp]
 def E8_Normalised_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (√2)⁻¹ • E8_Matrix
 
@@ -83,11 +81,6 @@ def E8_Normalised_Basis_Vecs : Fin 8 → V := (√2)⁻¹ • E8_Basis_Vecs
 @[simp]
 def E8_Normalised_Basis_Set : Set V := Set.range E8_Normalised_Basis_Vecs
 
--- Perhaps a more direct way to show that the above is a basis is to show that its determinant
--- is nonzero. Ordinarily, this would be easy, but we formally, need to navigate the issues of
--- picking the standard basis and translating result of one of the determinant algorithms into
--- a proof that the determinant is nonzero. I'm not quite sure how to do that yet.
-
 @[simp]
 def Standard_Orthonormal_Basis : OrthonormalBasis (Fin 8) ℝ V := EuclideanSpace.basisFun (Fin 8) ℝ
 
@@ -95,52 +88,39 @@ def Standard_Orthonormal_Basis : OrthonormalBasis (Fin 8) ℝ V := EuclideanSpac
 def Standard_Basis : Basis (Fin 8) ℝ V := OrthonormalBasis.toBasis (Standard_Orthonormal_Basis)
 
 @[simp]
-def E8_Normalised_Basis_Matrix : Matrix (Fin 8) (Fin 8) ℝ := Standard_Basis.toMatrixEquiv
-  E8_Normalised_Basis_Vecs
+def E8_Inv_Matrix : Matrix (Fin 8) (Fin 8) ℝ := !![ -- Computed on Symbolab
+  1, 1, 1, 1, 1, 0.5, 0, 0.5;
+  0, 1, 1, 1, 1, 0.5, 0, 0.5;
+  0, 0, 1, 1, 1, 0.5, 0, 0.5;
+  0, 0, 0, 1, 1, 0.5, 0, 0.5;
+  0, 0, 0, 0, 1, 0.5, 0, 0.5;
+  0, 0, 0, 0, 0, 0.5, 0, 0.5;
+  0, 0, 0, 0, 0, 0.5, 0, -0.5;
+  -1, -2, -3, -4, -5, -3.5, -2, -2.5
+]
 
 @[simp]
-def E8_Inv_Vecs : Fin 8 → V :=  fun i => match i with
-  | ⟨0, _⟩ => coords_to_V 1 (-1) 0 0 0 0 0 0
-  | ⟨1, _⟩ => coords_to_V 0 1 (-1) 0 0 0 0 0
-  | ⟨2, _⟩ => coords_to_V 0 0 1 (-1) 0 0 0 0
-  | ⟨3, _⟩ => coords_to_V 0 0 0 1 (-1) 0 0 0
-  | ⟨4, _⟩ => coords_to_V 0 0 0 0 1 (-1) 0 0
-  | ⟨5, _⟩ => coords_to_V 0 0 0 0 0 1 1 0
-  | ⟨6, _⟩ => coords_to_V (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5)
-  | ⟨7, _⟩ => coords_to_V 0 0 0 0 0 1 (-1) 0
+def E8_Inv_Vecs : Fin 8 → V := fun i => E8_Inv_Matrix i
 
 @[simp]
-def E8_Normalised_Inv_Vecs : Fin 8 → V := √2 • E8_Inv_Vecs
+def E8_Normalised_Inv_Vecs : Fin 8 → V := (√2) • E8_Inv_Vecs
 
 @[simp]
-def E8_Normalised_Inverse_Matrix : Matrix (Fin 8) (Fin 8) ℝ := Standard_Basis.toMatrixEquiv
-  E8_Normalised_Inv_Vecs
+def E8_Normalised_Inv_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (√2) • E8_Inv_Matrix
 
 @[simp]
-lemma E8_Det_0 : E8_Normalised_Basis_Matrix.det ≠ 0 := by
-  have H : E8_Normalised_Basis_Matrix * E8_Normalised_Inverse_Matrix = 1 := by
-    simp only [E8_Normalised_Basis_Matrix, Standard_Basis, Standard_Orthonormal_Basis,
-      E8_Normalised_Basis_Vecs, LinearMapClass.map_smul, E8_Normalised_Inverse_Matrix,
-      E8_Normalised_Inv_Vecs, Algebra.mul_smul_comm, Algebra.smul_mul_assoc, ne_eq,
-      Nat.ofNat_nonneg, Real.sqrt_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, smul_inv_smul₀,
-      E8_Basis_Vecs, E8_Inv_Vecs, coords_to_V, coords_to_R8, R8_to_V]
+lemma E8_Det_ne_0 : E8_Normalised_Matrix.det ≠ 0 := by
+  have H : E8_Normalised_Matrix * E8_Normalised_Inv_Matrix = 1 := by
     sorry
   exact Matrix.det_ne_zero_of_right_inverse H
-
--- The alternative is to just show it's linearly independent and spans the space.
--- The issue is that we eventually need to unpack the vectors from `Basis.mk` to show that they
--- all lie in `E8_Normalised_Set`. This is necessary for the `isLattice` instance.
-
-lemma E8_Normalised_Basis_Eq_Rank : Fintype.card (Fin 8) = FiniteDimensional.finrank ℝ V := by
-  rw [Fintype.card_fin, finrank_euclideanSpace, Fintype.card_fin]
-
--- def E8_Normalised_Basis : Basis (Fin 8) ℝ V := basisOfLinearIndependentOfCardEqFinrank
---   E8_Normalised_Basis_LI E8_Normalised_Basis_Eq_Rank
 
 theorem Is_Basis_E8_Normalised_Basis_Vecs : LinearIndependent ℝ E8_Normalised_Basis_Vecs ∧
   Submodule.span ℝ (Set.range E8_Normalised_Basis_Vecs) = ⊤ := by
   rw [is_basis_iff_det Standard_Basis, isUnit_iff_ne_zero,]
-  sorry
+  have H : Standard_Basis.det E8_Normalised_Basis_Vecs = E8_Normalised_Matrix.det := by
+    sorry
+  rw [H]
+  exact E8_Det_ne_0
 
 lemma Top_Le_Span_E8 : ⊤ ≤ Submodule.span ℝ (Set.range E8_Normalised_Basis_Vecs) := by
   rw [← Is_Basis_E8_Normalised_Basis_Vecs.2]
