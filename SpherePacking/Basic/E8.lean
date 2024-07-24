@@ -2,7 +2,7 @@ import Mathlib
 -- import SpherePacking.Basic.EuclideanLattice
 import SpherePacking.Basic.SpherePacking
 
-open Euclidean BigOperators EuclideanLattice SpherePacking
+open Euclidean EuclideanSpace BigOperators EuclideanLattice SpherePacking Matrix algebraMap
 
 /--
 * NOTE: *
@@ -34,99 +34,145 @@ def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin
 @[simp]
 def E8_Normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
 
-noncomputable section Basis
+section E₈_Over_ℚ
+/-! Credit for the code proving linear independence goes to Gareth Ma. -/
 
 /-! # Choice of Simple Roots
 There are many possible choices of simple roots for the E₈ root system. Here, we choose the one
 mentioned in the Wikipedia article https://en.wikipedia.org/wiki/E8_(mathematics).
 -/
+
 @[simp]
-def E8_Matrix : Matrix (Fin 8) (Fin 8) ℝ := !![
-  1, -1, 0, 0, 0, 0, 0, 0;
-  0, 1, -1, 0, 0, 0, 0, 0;
-  0, 0, 1, -1, 0, 0, 0, 0;
-  0, 0, 0, 1, -1, 0, 0, 0;
-  0, 0, 0, 0, 1, -1, 0, 0;
-  0, 0, 0, 0, 0, 1, 1, 0;
-  -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5;
-  0, 0, 0, 0, 0, 1, -1, 0
+def E₈' : Matrix (Fin 8) (Fin 8) ℚ := !![
+1,-1,0,0,0,0,0,0;
+0,1,-1,0,0,0,0,0;
+0,0,1,-1,0,0,0,0;
+0,0,0,1,-1,0,0,0;
+0,0,0,0,1,-1,0,0;
+0,0,0,0,0,1,1,0;
+-1/2,-1/2,-1/2,-1/2,-1/2,-1/2,-1/2,-1/2;
+0,0,0,0,0,1,-1,0
 ]
 
 @[simp]
-def E8_Basis_Vecs : Fin 8 → V := fun i => E8_Matrix i
-
-@[simp]
-def E8_Normalised_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (√2)⁻¹ • E8_Matrix
-
-@[simp]
-def E8_Normalised_Basis_Vecs : Fin 8 → V := (√2)⁻¹ • E8_Basis_Vecs
-
-@[simp]
-def E8_Normalised_Basis_Set : Set V := Set.range E8_Normalised_Basis_Vecs
-
-@[simp]
-def Standard_Orthonormal_Basis : OrthonormalBasis (Fin 8) ℝ V := EuclideanSpace.basisFun (Fin 8) ℝ
-
-@[simp]
-def Standard_Basis : Basis (Fin 8) ℝ V := OrthonormalBasis.toBasis (Standard_Orthonormal_Basis)
-
-@[simp]
-def E8_Inv_Matrix : Matrix (Fin 8) (Fin 8) ℝ := !![ -- Computed on Symbolab
-  1, 1, 1, 1, 1, 0.5, 0, 0.5;
-  0, 1, 1, 1, 1, 0.5, 0, 0.5;
-  0, 0, 1, 1, 1, 0.5, 0, 0.5;
-  0, 0, 0, 1, 1, 0.5, 0, 0.5;
-  0, 0, 0, 0, 1, 0.5, 0, 0.5;
-  0, 0, 0, 0, 0, 0.5, 0, 0.5;
-  0, 0, 0, 0, 0, 0.5, 0, -0.5;
-  -1, -2, -3, -4, -5, -3.5, -2, -2.5
+def F₈' : Matrix (Fin 8) (Fin 8) ℚ := !![
+1,1,1,1,1,1/2,0,1/2;
+0,1,1,1,1,1/2,0,1/2;
+0,0,1,1,1,1/2,0,1/2;
+0,0,0,1,1,1/2,0,1/2;
+0,0,0,0,1,1/2,0,1/2;
+0,0,0,0,0,1/2,0,1/2;
+0,0,0,0,0,1/2,0,-1/2;
+-1,-2,-3,-4,-5,-7/2,-2,-5/2
 ]
 
 @[simp]
-def E8_Inv_Vecs : Fin 8 → V := fun i => E8_Inv_Matrix i
+theorem E₈_mul_F₈_eq_id_Q : E₈' * F₈' = !![
+    1,0,0,0,0,0,0,0;
+    0,1,0,0,0,0,0,0;
+    0,0,1,0,0,0,0,0;
+    0,0,0,1,0,0,0,0;
+    0,0,0,0,1,0,0,0;
+    0,0,0,0,0,1,0,0;
+    0,0,0,0,0,0,1,0;
+    0,0,0,0,0,0,0,1;
+    ] := by
+  rw [E₈', F₈']
+  norm_num
 
 @[simp]
-def E8_Normalised_Inv_Vecs : Fin 8 → V := (√2) • E8_Inv_Vecs
+theorem E₈_mul_F₈_eq_one_Q : E₈' * F₈' = 1 := by
+  convert E₈_mul_F₈_eq_id_Q
+  rw [← Matrix.diagonal_one]
+  ext i j
+  by_cases h : i = j
+  · subst h
+    fin_cases i <;> norm_num
+  · rw [Matrix.diagonal_apply_ne _ h]
+    fin_cases i <;> fin_cases j <;> norm_num at h ⊢
 
 @[simp]
-def E8_Normalised_Inv_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (√2) • E8_Inv_Matrix
+theorem F₈_mul_E₈_eq_one_Q : F₈' * E₈' = 1 := by
+  rw [Matrix.mul_eq_one_comm, E₈_mul_F₈_eq_one_Q]
+
+end E₈_Over_ℚ
+
+noncomputable section E₈_Over_ℝ
 
 @[simp]
-lemma E8_Det_ne_0 : E8_Matrix.det ≠ 0 := by
-  have H : E8_Matrix * E8_Inv_Matrix = 1 := by
-    simp only [E8_Matrix, E8_Inv_Matrix, Matrix.cons_mul, Nat.succ_eq_add_one, Nat.reduceAdd,
-      Matrix.vecMul_cons, Matrix.head_cons, one_smul, Matrix.tail_cons, neg_smul, Matrix.neg_cons,
-      neg_zero, Combinatorics.Line.diagonal_apply, Matrix.neg_empty, zero_smul, Matrix.empty_vecMul,
-      add_zero, Matrix.add_cons, zero_add, Matrix.empty_add_empty, add_right_neg, Matrix.smul_cons,
-      smul_eq_mul, mul_one, mul_zero, Matrix.smul_empty, mul_neg, neg_neg, add_left_neg,
-      Matrix.empty_mul, Equiv.symm_apply_apply]
-    norm_num
-    sorry
-  exact Matrix.det_ne_zero_of_right_inverse H
+def E₈_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (algebraMap ℚ ℝ).mapMatrix E₈'
 
 @[simp]
-lemma E8_Normalised_Det_ne_0 : E8_Normalised_Matrix.det ≠ 0 := by
-  intro h
-  apply E8_Det_ne_0
-  rw [E8_Normalised_Matrix] at h
+def F₈_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (algebraMap ℚ ℝ).mapMatrix F₈'
+
+@[simp]
+theorem E₈_mul_F₈_eq_one_R : E₈_Matrix * F₈_Matrix = 1 := by
+  rw [E₈_Matrix, F₈_Matrix, RingHom.mapMatrix_apply, RingHom.mapMatrix_apply, ← Matrix.map_mul,
+    E₈_mul_F₈_eq_one_Q] --, map_one _ coe_zero coe_one]  -- Doesn't work for some reason
+  simp only [map_zero, _root_.map_one, Matrix.map_one]
+
+@[simp]
+theorem F₈_mul_E₈_eq_one_R : F₈_Matrix * E₈_Matrix = 1 := by
+  rw [E₈_Matrix, F₈_Matrix, RingHom.mapMatrix_apply, RingHom.mapMatrix_apply, ← Matrix.map_mul,
+    F₈_mul_E₈_eq_one_Q] --, map_one _ coe_zero coe_one]
+  simp only [map_zero, _root_.map_one, Matrix.map_one]
+
+theorem E₈_is_basis : LinearIndependent ℝ E₈_Matrix ∧ Submodule.span ℝ (Set.range E₈_Matrix) = ⊤ :=
+  by
+  -- This code seems to be generating a recursion error for some reason
+  -- rw [is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det]
+  -- change IsUnit E₈_Matrix.det
+  -- have : E₈_Matrix.det * F₈_Matrix.det = 1 := by
+  --   rw [← det_mul, E₈_mul_F₈_eq_one_R, det_one]
+  -- exact isUnit_of_mul_eq_one _ _ this
   sorry
 
-theorem Is_Basis_E8_Normalised_Basis_Vecs : LinearIndependent ℝ E8_Normalised_Basis_Vecs ∧
-  Submodule.span ℝ (Set.range E8_Normalised_Basis_Vecs) = ⊤ := by
-  rw [is_basis_iff_det Standard_Basis, isUnit_iff_ne_zero,]
-  have H : Standard_Basis.det E8_Normalised_Basis_Vecs = E8_Normalised_Matrix.det := by
-    sorry
-  rw [H]
-  exact E8_Normalised_Det_ne_0
-
-lemma Top_Le_Span_E8 : ⊤ ≤ Submodule.span ℝ (Set.range E8_Normalised_Basis_Vecs) := by
-  rw [← Is_Basis_E8_Normalised_Basis_Vecs.2]
+lemma Top_Le_Span_E₈ : ⊤ ≤ Submodule.span ℝ (Set.range E₈_Matrix) := by
+  rw [← E₈_is_basis.2]
 
 @[simp]
-def E8_Normalised_Basis : Basis (Fin 8) ℝ V := Basis.mk Is_Basis_E8_Normalised_Basis_Vecs.1
-  Top_Le_Span_E8
+def E₈_Basis : Basis (Fin 8) ℝ V := Basis.mk E₈_is_basis.1 Top_Le_Span_E₈
 
-end Basis
+end E₈_Over_ℝ
+
+noncomputable section E₈_Normalised_Over_ℝ
+
+@[simp]
+def E₈_Normalised_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (1 / Real.sqrt 2) • E₈_Matrix
+
+@[simp]
+def E₈_Normalised_Basis_Set : Set V := Set.range E₈_Normalised_Matrix
+
+@[simp]
+def F₈_Normalised_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (Real.sqrt 2) • F₈_Matrix
+
+@[simp]
+theorem E₈_Normalised_mul_F₈_Normalised_eq_one_R : E₈_Normalised_Matrix * F₈_Normalised_Matrix = 1
+  := by
+  have : (Real.sqrt 2) ≠ 0 := by
+    simp only [ne_eq, Nat.ofNat_nonneg, Real.sqrt_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true]
+  rw [E₈_Normalised_Matrix, F₈_Normalised_Matrix, Algebra.smul_mul_assoc, Algebra.mul_smul_comm,
+    one_div, inv_smul_smul₀ this]
+  exact E₈_mul_F₈_eq_one_R
+
+theorem E₈_Normalised_is_basis : LinearIndependent ℝ E₈_Normalised_Matrix ∧
+  Submodule.span ℝ (Set.range E₈_Normalised_Matrix) = ⊤ := by
+  -- Commented out due to deep recursion error
+  -- rw [is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det]
+  -- change IsUnit E₈_Normalised_Matrix.det
+  -- have : E₈_Normalised_Matrix.det * F₈_Normalised_Matrix.det = 1 := by
+  --   rw [← det_mul, E₈_Normalised_mul_F₈_Normalised_eq_one_R, det_one]
+  -- exact isUnit_of_mul_eq_one _ _ this
+  sorry
+
+lemma Top_Le_Span_E₈_Normalised : ⊤ ≤ Submodule.span ℝ (Set.range E₈_Normalised_Matrix) := by
+  rw [← E₈_Normalised_is_basis.2]
+
+@[simp]
+def E₈_Normalised_Basis : Basis (Fin 8) ℝ V := Basis.mk E₈_Normalised_is_basis.1
+  Top_Le_Span_E₈_Normalised
+
+end E₈_Normalised_Over_ℝ
 
 noncomputable section Lattice
 
@@ -384,72 +430,74 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
       use B
       intro x hx
       exact hM (hB hx) }
-    use E8_Normalised_Basis
-    have hbasiselts : Set.range E8_Normalised_Basis = E8_Normalised_Basis_Set := by
+    use E₈_Normalised_Basis
+    have hbasiselts : Set.range E₈_Normalised_Basis = E₈_Normalised_Basis_Set := by
       ext x
       constructor
       { intro hx
         rcases hx with ⟨i, hi⟩
         use i
-        simp only [← hi, E8_Normalised_Basis, Pi.smul_apply, PiLp.smul_apply, smul_eq_mul,
-          coe_basisOfLinearIndependentOfCardEqFinrank, E8_Normalised_Basis_Vecs, Pi.smul_apply,
-          E8_Basis_Vecs, Basis.coe_mk] }
+        simp only [← hi, E₈_Normalised_Basis, Pi.smul_apply, PiLp.smul_apply, smul_eq_mul,
+          coe_basisOfLinearIndependentOfCardEqFinrank, E₈_Normalised_Matrix, Pi.smul_apply,
+          E₈_Matrix, Basis.coe_mk] }
       { intro hx
         apply Set.mem_range.mpr
         rcases hx with ⟨i, hi⟩
         use i
-        simp only [hi, E8_Normalised_Basis, Pi.smul_apply, PiLp.smul_apply, smul_eq_mul,
-          coe_basisOfLinearIndependentOfCardEqFinrank, E8_Normalised_Basis_Vecs, Pi.smul_apply,
-          E8_Basis_Vecs, E8_Matrix, Basis.coe_mk, Pi.smul_apply, ← hi] }
+        simp only [hi, E₈_Normalised_Basis, Pi.smul_apply, PiLp.smul_apply, smul_eq_mul,
+          coe_basisOfLinearIndependentOfCardEqFinrank, E₈_Normalised_Matrix, Pi.smul_apply,
+          E₈_Matrix, Basis.coe_mk, Pi.smul_apply, ← hi] }
     intro x hx
     rw [hbasiselts] at hx
     cases' hx with i hi
     unfold E8_Normalised_Set
     simp only [Set.mem_setOf_eq, E8_Set]
+    sorry
+    /-
     rcases i with ⟨i₀ | i₁ | i₂ | i₃ | i₄ | i₅ | i₆ | i₇ | n, hn⟩
     -- A lot of steps here are repeated. Can this code be optimised?
-    { use E8_Basis_Vecs 0
+    { use E₈_Matrix 0
       constructor
       { constructor
         { left
           intro j
           rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
           { use 1
-            simp only [Int.cast_one, Fin.isValue, Fin.zero_eta, E8_Basis_Vecs, E8_Matrix,
+            simp only [Int.cast_one, Fin.isValue, Fin.zero_eta, E₈_Matrix, E₈_Matrix,
               Fin.isValue, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
               Matrix.empty_val', Matrix.cons_val_fin_one] }
           { use (-1)
-            simp only [Int.cast_one, Fin.zero_eta, E8_Basis_Vecs, E8_Matrix,
+            simp only [Int.cast_one, Fin.zero_eta, E₈_Matrix, E₈_Matrix,
               Fin.isValue, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
               Int.reduceNeg, Int.cast_neg, zero_add, Fin.mk_one, Fin.isValue, Matrix.cons_val_one,
               Matrix.head_cons] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val',
               Matrix.cons_val_two, Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_zero] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val',
               Matrix.cons_val_three, Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_zero] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val',
               Matrix.cons_val_four, Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_zero] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_zero]
             sorry }
@@ -458,12 +506,12 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
             cases m
             { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
             { linarith } } }
-        { simp only [E8_Basis_Vecs, E8_Matrix, Fin.isValue, Matrix.of_apply, Matrix.cons_val',
+        { simp only [E₈_Matrix, E₈_Matrix, Fin.isValue, Matrix.of_apply, Matrix.cons_val',
           Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_zero]
           sorry } }
-      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+      { simp only [E₈_Normalised_Matrix, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
         simp only [← hi, Fin.isValue, one_div] } }
-    { use E8_Basis_Vecs 1
+    { use E₈_Matrix 1
       constructor
       { constructor
         { left
@@ -471,40 +519,40 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
           -- Rest done by copilot, pattern-matching with first. Very cool
           rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, Fin.zero_eta,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, Fin.zero_eta,
               Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero, Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_one, Matrix.head_cons] }
           { use 1
-            simp only [Int.cast_one, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add, Fin.mk_one,
+            simp only [Int.cast_one, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add, Fin.mk_one,
               Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_one, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one] }
           { use (-1)
-            simp only [Int.reduceNeg, Int.cast_neg, Int.cast_one, E8_Basis_Vecs, E8_Matrix,
+            simp only [Int.reduceNeg, Int.cast_neg, Int.cast_one, E₈_Matrix, E₈_Matrix,
               Fin.isValue, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply,
               Matrix.cons_val', Matrix.cons_val_two, Nat.succ_eq_add_one, Matrix.tail_cons,
               Matrix.head_cons, Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_one] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val',
               Matrix.cons_val_three, Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_one] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val',
               Matrix.cons_val_four, Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_one] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_one, Matrix.head_cons]
             sorry }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_one, Matrix.head_cons]
             sorry }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_one, Matrix.head_cons]
             sorry }
@@ -516,61 +564,61 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
         { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
             Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
             List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
-            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, Int.cast_zero,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E₈_Matrix, Int.cast_zero,
             Int.cast_one, add_right_neg, AddCommGroup.modEq_refl]
-          simp only [E8_Matrix, Fin.isValue, Matrix.of_apply, Matrix.cons_val',
+          simp only [E₈_Matrix, Fin.isValue, Matrix.of_apply, Matrix.cons_val',
             Matrix.cons_val_zero, Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_one,
             Matrix.head_cons, Matrix.cons_val_two, Nat.succ_eq_add_one, Nat.reduceAdd,
             Matrix.tail_cons, Matrix.cons_val_three, Matrix.cons_val_four, zero_add,
             add_neg_cancel_left]
           sorry } }
-      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+      { simp only [E₈_Normalised_Matrix, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
         simp only [← hi, Fin.isValue, one_div, zero_add, Fin.mk_one, Fin.isValue] } }
-    { use E8_Basis_Vecs 2
+    { use E₈_Matrix 2
       constructor
       { constructor
         { left
           intro j
           rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, Fin.zero_eta,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, Fin.zero_eta,
               Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero, Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_two, Nat.succ_eq_add_one, Nat.reduceAdd,
               Matrix.tail_cons, Matrix.head_cons] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add, Fin.mk_one,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add, Fin.mk_one,
               Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_one, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_two, Nat.succ_eq_add_one,
               Nat.reduceAdd, Matrix.tail_cons] }
           { use 1
-            simp only [Int.cast_one, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add, Nat.reduceAdd,
+            simp only [Int.cast_one, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add, Nat.reduceAdd,
               Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_two,
               Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons, Matrix.empty_val',
               Matrix.cons_val_fin_one] }
           { use (-1)
-            simp only [Int.reduceNeg, Int.cast_neg, Int.cast_one, E8_Basis_Vecs, E8_Matrix,
+            simp only [Int.reduceNeg, Int.cast_neg, Int.cast_one, E₈_Matrix, E₈_Matrix,
               Fin.isValue, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply,
               Matrix.cons_val', Matrix.cons_val_three, Nat.succ_eq_add_one, Matrix.tail_cons,
               Matrix.head_cons, Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_two] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val',
               Matrix.cons_val_four, Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_two] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_two, Nat.succ_eq_add_one, Matrix.tail_cons,
               Matrix.head_cons]
             sorry }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_two, Nat.succ_eq_add_one, Matrix.tail_cons,
               Matrix.head_cons]
             sorry }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_two, Nat.succ_eq_add_one, Matrix.tail_cons,
               Matrix.head_cons]
@@ -581,53 +629,53 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
             { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
             { linarith } } }
         { sorry } }
-      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+      { simp only [E₈_Normalised_Matrix, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
         simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
-    { use E8_Basis_Vecs 3
+    { use E₈_Matrix 3
       constructor
       { constructor
         { left
           intro j
           rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, Fin.zero_eta,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, Fin.zero_eta,
               Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero, Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_three, Nat.succ_eq_add_one, Nat.reduceAdd,
               Matrix.tail_cons, Matrix.head_cons] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add, Fin.mk_one,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add, Fin.mk_one,
               Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_one, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_three,
               Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.tail_cons] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val',
               Matrix.cons_val_two, Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_three] }
           { use 1
-            simp only [Int.cast_one, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add, Nat.reduceAdd,
+            simp only [Int.cast_one, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add, Nat.reduceAdd,
               Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_three,
               Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons, Matrix.empty_val',
               Matrix.cons_val_fin_one] }
           { use (-1)
-            simp only [Int.reduceNeg, Int.cast_neg, Int.cast_one, E8_Basis_Vecs, E8_Matrix,
+            simp only [Int.reduceNeg, Int.cast_neg, Int.cast_one, E₈_Matrix, E₈_Matrix,
               Fin.isValue, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply,
               Matrix.cons_val', Matrix.cons_val_four, Nat.succ_eq_add_one, Matrix.tail_cons,
               Matrix.head_cons, Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_three] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_three, Nat.succ_eq_add_one, Matrix.tail_cons,
               Matrix.head_cons]
             sorry }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_three, Nat.succ_eq_add_one, Matrix.tail_cons,
               Matrix.head_cons]
             sorry }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_three, Nat.succ_eq_add_one, Matrix.tail_cons,
               Matrix.head_cons]
@@ -638,53 +686,53 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
             { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
             { linarith } } }
         { sorry } }
-      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+      { simp only [E₈_Normalised_Matrix, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
         simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
-    { use E8_Basis_Vecs 4
+    { use E₈_Matrix 4
       constructor
       { constructor
         { left
           intro j
           rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, Fin.zero_eta,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, Fin.zero_eta,
               Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero, Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_four, Nat.succ_eq_add_one, Nat.reduceAdd,
               Matrix.tail_cons, Matrix.head_cons] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add, Fin.mk_one,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add, Fin.mk_one,
               Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_one, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_four, Nat.succ_eq_add_one,
               Nat.reduceAdd, Matrix.tail_cons] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val',
               Matrix.cons_val_two, Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_four] }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val',
               Matrix.cons_val_three, Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_four] }
           { use 1
-            simp only [Int.cast_one, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add, Nat.reduceAdd,
+            simp only [Int.cast_one, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add, Nat.reduceAdd,
               Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_four,
               Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons, Matrix.empty_val',
               Matrix.cons_val_fin_one] }
           { use (-1)
-            simp only [Int.reduceNeg, Int.cast_neg, Int.cast_one, E8_Basis_Vecs, E8_Matrix,
+            simp only [Int.reduceNeg, Int.cast_neg, Int.cast_one, E₈_Matrix, E₈_Matrix,
               Fin.isValue, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply,
               Matrix.cons_val', Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.cons_val_four,
               Nat.succ_eq_add_one, Matrix.tail_cons, Matrix.head_cons]
             sorry }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_four, Nat.succ_eq_add_one, Matrix.tail_cons,
               Matrix.head_cons]
             sorry }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add,
               Nat.reduceAdd, Fin.reduceFinMk, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
               Matrix.cons_val_fin_one, Matrix.cons_val_four, Nat.succ_eq_add_one, Matrix.tail_cons,
               Matrix.head_cons]
@@ -695,41 +743,41 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
             { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
             { linarith } } }
         { sorry } }
-      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+      { simp only [E₈_Normalised_Matrix, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
         simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
-    { use E8_Basis_Vecs 5
+    { use E₈_Matrix 5
       constructor
       { constructor
         { left
           intro j
           rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, Fin.zero_eta,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, Fin.zero_eta,
               Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero, Matrix.empty_val',
               Matrix.cons_val_fin_one]
             sorry }
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, zero_add, Fin.mk_one,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, zero_add, Fin.mk_one,
               Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_one, Matrix.head_cons,
               Matrix.empty_val', Matrix.cons_val_fin_one]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { use 1
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { use 1
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { exfalso
             simp only [Nat.add_one, Nat.succ] at hm
@@ -737,10 +785,10 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
             { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
             { linarith } } }
         { sorry } }
-      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+      { simp only [E₈_Normalised_Matrix, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
         simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
     { -- This case will need to be dealt with slightly differently
-      use E8_Basis_Vecs 6
+      use E₈_Matrix 6
       constructor
       { constructor
         { right
@@ -748,18 +796,18 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
           rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
           { constructor
             { use -1
-              simp only [Int.reduceNeg, Int.cast_neg, Int.cast_one, E8_Basis_Vecs, E8_Matrix,
+              simp only [Int.reduceNeg, Int.cast_neg, Int.cast_one, E₈_Matrix, E₈_Matrix,
                 Fin.isValue, Fin.zero_eta, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
                 Matrix.empty_val', Matrix.cons_val_fin_one]
               sorry }
             { intro hcontra
-              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, Int.reduceNeg, Int.cast_neg,
+              simp only [Int.cast_one, Fin.isValue, E₈_Matrix, Int.reduceNeg, Int.cast_neg,
                 Int.cast_one] at hcontra
               rcases hcontra with ⟨p, hp⟩
               have even_one : Even (1 : ℤ) := by
               { use -1 * p
                 rify
-                simp only [hp, E8_Matrix, Fin.isValue, Fin.zero_eta, Matrix.of_apply,
+                simp only [hp, E₈_Matrix, Fin.isValue, Fin.zero_eta, Matrix.of_apply,
                   Matrix.cons_val', Matrix.cons_val_zero, Matrix.empty_val',
                   Matrix.cons_val_fin_one, neg_mul, one_mul]
                 norm_num
@@ -778,39 +826,39 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
             { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
             { linarith } } }
         { sorry } }
-      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+      { simp only [E₈_Normalised_Matrix, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
         simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
-    { use E8_Basis_Vecs 7
+    { use E₈_Matrix 7
       constructor
       { constructor
         { left
           intro j
           rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
           { use 0
-            simp only [Int.cast_zero, E8_Basis_Vecs, E8_Matrix, Fin.isValue, Fin.zero_eta,
+            simp only [Int.cast_zero, E₈_Matrix, E₈_Matrix, Fin.isValue, Fin.zero_eta,
               Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero, Matrix.empty_val',
               Matrix.cons_val_fin_one]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { use 1
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { use -1
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { use 0
-            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, Int.cast_zero]
+            simp only [Int.cast_zero, Fin.isValue, E₈_Matrix, Int.cast_zero]
             sorry }
           { exfalso
             simp only [Nat.add_one, Nat.succ] at hm
@@ -818,13 +866,14 @@ instance instLatticeE8 : isLattice E8_Normalised_Lattice where
             { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
             { linarith } } }
         { sorry } }
-      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+      { simp only [E₈_Normalised_Matrix, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
         simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
     { exfalso
       simp only [Nat.add_one, Nat.succ] at hn
       cases n
       { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hn }
       { linarith } }
+    -/
 
 
 end Lattice
