@@ -341,11 +341,19 @@ def E8_Normalised_Lattice : AddSubgroup V where
         exact hz } }
     { rw [one_div, smul_neg] }
 
-instance : TopologicalSpace E8_Normalised_Lattice := by infer_instance
+open Topology TopologicalSpace Filter Function
 
+@[simp]
+instance instTopSpaceE8Normalised : TopologicalSpace E8_Normalised_Lattice := by infer_instance
+
+@[simp]
 instance : PseudoMetricSpace V := by infer_instance
 
+@[simp]
 instance : MetricSpace V := by infer_instance
+
+@[simp]
+instance instTopSpaceV : TopologicalSpace V := by infer_instance
 
 instance : Dist V where
   dist := Dist.dist
@@ -354,61 +362,35 @@ instance : Dist V where
 --   rw [Euclidean.dist, Dist.dist]
 --   sorry
 
-lemma resolve_dist_self (x : E8_Normalised_Set) : Euclidean.dist (x : V) (x : V) =
+lemma resolve_dist_self (x : V) : Euclidean.dist (x : V) (x : V) =
   Dist.dist (x : V) (x : V) := by rw [Euclidean.dist, dist_self, dist_self]
 
 instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set := by
-  rw [discreteTopology_subtype_iff]
-  intros x hx
-  -- dsimp only [E8_Normalised_Set, E8_Set, ℤ_as_ℝ, Set.mem_setOf_eq, nhdsWithin,]
-  ext U
+  rw [discreteTopology_iff_singleton_mem_nhds]
+  intro x
+  rcases x with ⟨x, v, ⟨hv1, hv2⟩, hx⟩
+  rw [mem_nhds_subtype]
+  simp only [instTopSpaceV, E8_Normalised_Set, E8_Set, ℤ_as_ℝ, Set.mem_setOf_eq, Set.coe_setOf,
+    Set.subset_singleton_iff, Set.mem_preimage, Subtype.forall, not_exists, one_div,
+    Subtype.mk.injEq, forall_exists_index, and_imp]
+  use ball x 0.5
   constructor
-  { intro hU
-    simp only [Filter.mem_bot] }
-  { intro hU
-    rcases hx with ⟨v, ⟨hv1, hv2⟩, rfl⟩
-
+  { simp only [instTopSpaceV, isOpen_ball, ball, Set.mem_setOf_eq, dist_self, _root_.mem_nhds_iff]
+    use ball x 0.25
+    constructor
+    { intro y hy
+      simp only [instTopSpaceV, Set.mem_setOf_eq]
+      have : (0.25 : ℝ) ≤ 0.5 := by norm_num
+      rw [ball, Set.mem_setOf_eq] at hy
+      exact lt_of_lt_of_le hy this }
+    { constructor
+      { exact isOpen_ball }
+      { rw [ball, Set.mem_setOf_eq, resolve_dist_self x, dist_self]
+        norm_num } } }
+  { intros y z h1 h2 hyz hy
+    -- We would need to show that the distance between two points in the normalised lattice
+    -- is at least 1.
     sorry }
-  -- singletons_open_iff_discrete.mp fun x => by
-  -- -- unfold IsOpen
-  -- -- unfold TopologicalSpace.IsOpen
-  -- -- unfold instTopologicalSpaceSubtype.1
-  -- have H : ∀ U : Set E8_Normalised_Lattice, (∃ U' : Set V, IsOpen U' ∧ U = E8_Normalised_Set ∩ U')
-  --   → IsOpen U := by
-  --   -- intros U hU
-  --   -- rcases hU with ⟨U', hU', hU⟩
-  --   -- unfold IsOpen
-  --   -- unfold TopologicalSpace.IsOpen
-  --   -- simp [hU, hU']
-  --   -- rw []
-
-  --   sorry
-  -- apply H {x}
-  -- use Euclidean.ball x 0.5
-  -- constructor
-  -- { exact Euclidean.isOpen_ball}
-  -- { unfold E8_Normalised_Set ball E8_Set
-  --   ext y
-  --   constructor
-  --   { simp only [SetLike.coe_sort_coe, Set.image_singleton, Set.mem_singleton_iff,
-  --     Set.mem_setOf_eq, Set.mem_inter_iff]
-  --     rintro ⟨w, hw, rfl⟩
-  --     constructor
-  --     { exact x.2 }
-  --     { simp only [resolve_dist_self, PseudoMetricSpace.dist_self (↑x : V)]
-  --       suffices hself : Dist.dist (x : V) (x : V) = 0
-  --       { norm_num }
-  --       exact dist_self (x : V) } }
-  --   { simp only [Set.mem_setOf_eq, one_div, Set.mem_inter_iff, SetLike.coe_sort_coe,
-  --     Set.image_singleton, Set.mem_singleton_iff, and_imp, forall_exists_index]
-  --     simp only [E8_Normalised_Set, Set.coe_setOf] at x
-  --     rcases x with ⟨x, w, hw1, hw2⟩
-  --     rintro v H1 H2 H3 H4
-  --     simp only [H3, hw2, one_div] at H4 ⊢
-  --     suffices hvw : v = w  -- Wasn't sure what kind of mul_eq thing to apply...
-  --     { rw [hvw] }
-
-  --     sorry } }
 
 instance instDiscreteE8NormalisedLattice : DiscreteTopology E8_Normalised_Lattice :=
   instDiscreteE8NormalisedSet
