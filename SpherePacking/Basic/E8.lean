@@ -357,47 +357,58 @@ instance : Dist V where
 lemma resolve_dist_self (x : E8_Normalised_Set) : Euclidean.dist (x : V) (x : V) =
   Dist.dist (x : V) (x : V) := by rw [Euclidean.dist, dist_self, dist_self]
 
-instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set :=
-  singletons_open_iff_discrete.mp fun x => by
-  -- unfold IsOpen
-  -- unfold TopologicalSpace.IsOpen
-  -- unfold instTopologicalSpaceSubtype.1
-  have H : ∀ U : Set E8_Normalised_Lattice, (∃ U' : Set V, IsOpen U' ∧ U = E8_Normalised_Set ∩ U')
-    → IsOpen U := by
-    -- intros U hU
-    -- rcases hU with ⟨U', hU', hU⟩
-    -- unfold IsOpen
-    -- unfold TopologicalSpace.IsOpen
-    -- simp [hU, hU']
-    -- rw []
-
-    sorry
-  apply H {x}
-  use Euclidean.ball x 0.5
+instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set := by
+  rw [discreteTopology_subtype_iff]
+  intros x hx
+  -- dsimp only [E8_Normalised_Set, E8_Set, ℤ_as_ℝ, Set.mem_setOf_eq, nhdsWithin,]
+  ext U
   constructor
-  { exact Euclidean.isOpen_ball}
-  { unfold E8_Normalised_Set ball E8_Set
-    ext y
-    constructor
-    { simp only [SetLike.coe_sort_coe, Set.image_singleton, Set.mem_singleton_iff,
-      Set.mem_setOf_eq, Set.mem_inter_iff]
-      rintro ⟨w, hw, rfl⟩
-      constructor
-      { exact x.2 }
-      { simp only [resolve_dist_self, PseudoMetricSpace.dist_self (↑x : V)]
-        suffices hself : Dist.dist (x : V) (x : V) = 0
-        { norm_num }
-        exact dist_self (x : V) } }
-    { simp only [Set.mem_setOf_eq, one_div, Set.mem_inter_iff, SetLike.coe_sort_coe,
-      Set.image_singleton, Set.mem_singleton_iff, and_imp, forall_exists_index]
-      simp only [E8_Normalised_Set, Set.coe_setOf] at x
-      rcases x with ⟨x, w, hw1, hw2⟩
-      rintro v H1 H2 H3 H4
-      simp only [H3, hw2, one_div] at H4 ⊢
-      suffices hvw : v = w  -- Wasn't sure what kind of mul_eq thing to apply...
-      { rw [hvw] }
+  { intro hU
+    simp only [Filter.mem_bot] }
+  { intro hU
+    rcases hx with ⟨v, ⟨hv1, hv2⟩, rfl⟩
 
-      sorry } }
+    sorry }
+  -- singletons_open_iff_discrete.mp fun x => by
+  -- -- unfold IsOpen
+  -- -- unfold TopologicalSpace.IsOpen
+  -- -- unfold instTopologicalSpaceSubtype.1
+  -- have H : ∀ U : Set E8_Normalised_Lattice, (∃ U' : Set V, IsOpen U' ∧ U = E8_Normalised_Set ∩ U')
+  --   → IsOpen U := by
+  --   -- intros U hU
+  --   -- rcases hU with ⟨U', hU', hU⟩
+  --   -- unfold IsOpen
+  --   -- unfold TopologicalSpace.IsOpen
+  --   -- simp [hU, hU']
+  --   -- rw []
+
+  --   sorry
+  -- apply H {x}
+  -- use Euclidean.ball x 0.5
+  -- constructor
+  -- { exact Euclidean.isOpen_ball}
+  -- { unfold E8_Normalised_Set ball E8_Set
+  --   ext y
+  --   constructor
+  --   { simp only [SetLike.coe_sort_coe, Set.image_singleton, Set.mem_singleton_iff,
+  --     Set.mem_setOf_eq, Set.mem_inter_iff]
+  --     rintro ⟨w, hw, rfl⟩
+  --     constructor
+  --     { exact x.2 }
+  --     { simp only [resolve_dist_self, PseudoMetricSpace.dist_self (↑x : V)]
+  --       suffices hself : Dist.dist (x : V) (x : V) = 0
+  --       { norm_num }
+  --       exact dist_self (x : V) } }
+  --   { simp only [Set.mem_setOf_eq, one_div, Set.mem_inter_iff, SetLike.coe_sort_coe,
+  --     Set.image_singleton, Set.mem_singleton_iff, and_imp, forall_exists_index]
+  --     simp only [E8_Normalised_Set, Set.coe_setOf] at x
+  --     rcases x with ⟨x, w, hw1, hw2⟩
+  --     rintro v H1 H2 H3 H4
+  --     simp only [H3, hw2, one_div] at H4 ⊢
+  --     suffices hvw : v = w  -- Wasn't sure what kind of mul_eq thing to apply...
+  --     { rw [hvw] }
+
+  --     sorry } }
 
 instance instDiscreteE8NormalisedLattice : DiscreteTopology E8_Normalised_Lattice :=
   instDiscreteE8NormalisedSet
