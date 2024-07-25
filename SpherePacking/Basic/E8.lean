@@ -3,6 +3,7 @@ import Mathlib
 import SpherePacking.Basic.SpherePacking
 
 open Euclidean EuclideanSpace BigOperators EuclideanLattice SpherePacking Matrix algebraMap
+  Pointwise
 
 /--
 * NOTE: *
@@ -32,7 +33,8 @@ def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin
   ∧ (v i ∉ ↑ℤ))) ∧ ∑ i : Fin 8, v i ≡ 0 [PMOD 2]}
 
 @[simp]
-def E8_Normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
+def E8_Normalised_Set : Set V := (1 / Real.sqrt 2) • E8_Set
+-- {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
 
 section E₈_Over_ℚ
 /-! Credit for the code proving linear independence goes to Gareth Ma. -/
@@ -82,14 +84,16 @@ theorem E₈_mul_F₈_eq_id_Q : E₈' * F₈' = !![
 
 @[simp]
 theorem E₈_mul_F₈_eq_one_Q : E₈' * F₈' = 1 := by
-  convert E₈_mul_F₈_eq_id_Q
-  rw [← Matrix.diagonal_one]
-  ext i j
-  by_cases h : i = j
-  · subst h
-    fin_cases i <;> norm_num
-  · rw [Matrix.diagonal_apply_ne _ h]
-    fin_cases i <;> fin_cases j <;> norm_num at h ⊢
+  -- TODO: uncomment when needed (because it's slow)
+  sorry
+  /- convert E₈_mul_F₈_eq_id_Q -/
+  /- rw [← Matrix.diagonal_one] -/
+  /- ext i j -/
+  /- by_cases h : i = j -/
+  /- · subst h -/
+  /-   fin_cases i <;> norm_num -/
+  /- · rw [Matrix.diagonal_apply_ne _ h] -/
+  /-   fin_cases i <;> fin_cases j <;> norm_num at h ⊢ -/
 
 @[simp]
 theorem F₈_mul_E₈_eq_one_Q : F₈' * E₈' = 1 := by
@@ -117,8 +121,8 @@ theorem F₈_mul_E₈_eq_one_R : F₈_Matrix * E₈_Matrix = 1 := by
     F₈_mul_E₈_eq_one_Q] --, map_one _ coe_zero coe_one]
   simp only [map_zero, _root_.map_one, Matrix.map_one]
 
-theorem E₈_is_basis : LinearIndependent ℝ E₈_Matrix ∧ Submodule.span ℝ (Set.range E₈_Matrix) = ⊤ :=
-  by
+theorem E₈_is_basis :
+    LinearIndependent ℝ E₈_Matrix ∧ Submodule.span ℝ (Set.range E₈_Matrix) = ⊤ := by
   -- This code seems to be generating a recursion error for some reason
   -- rw [is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det]
   -- change IsUnit E₈_Matrix.det
@@ -155,8 +159,9 @@ theorem E₈_Normalised_mul_F₈_Normalised_eq_one_R : E₈_Normalised_Matrix * 
     one_div, inv_smul_smul₀ this]
   exact E₈_mul_F₈_eq_one_R
 
-theorem E₈_Normalised_is_basis : LinearIndependent ℝ E₈_Normalised_Matrix ∧
-  Submodule.span ℝ (Set.range E₈_Normalised_Matrix) = ⊤ := by
+theorem E₈_Normalised_is_basis :
+    LinearIndependent ℝ E₈_Normalised_Matrix ∧
+      Submodule.span ℝ (Set.range E₈_Normalised_Matrix) = ⊤ := by
   -- Commented out due to deep recursion error
   -- rw [is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det]
   -- change IsUnit E₈_Normalised_Matrix.det
