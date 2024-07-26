@@ -1,7 +1,11 @@
 import Mathlib
+
 -- import SpherePacking.Basic.EuclideanLattice
 import SpherePacking.Basic.SpherePacking
 import SpherePacking.Basic.Vec
+
+import SpherePacking.ForMathlib.Finsupp
+import SpherePacking.ForMathlib.InnerProductSpace
 
 open Euclidean EuclideanSpace BigOperators EuclideanLattice SpherePacking Matrix algebraMap
   Pointwise
@@ -192,11 +196,6 @@ macro "simp_E8_sum_apply" : tactic =>
 
 end E8_sum_apply_lemmas
 
--- Auxiliary lemma that should be in Mathlib
-theorem Finsupp.total_eq_sum {α β ι : Type*} [Fintype ι] [AddCommMonoid α] [Semiring β] [Module β α]
-    (v : ι → α) (y : ι →₀ β) : Finsupp.total ι α β v y = ∑ j, y j • v j :=
-  Finsupp.sum_fintype _ _ (by simp)
-
 theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Set (Fin 8 → ℝ)) := by
   ext v
   rw [SetLike.mem_coe, ← Finsupp.range_total, LinearMap.mem_range]
@@ -208,7 +207,7 @@ theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Se
       rfl
     · cases' hv₁ with hv₁ hv₁
       -- TODO (the y is just F8_Matrix * v, need to prove it has integer coefficients)
-      sorry
+      <;> sorry
   · obtain ⟨y, hy⟩ := hv
     erw [Finsupp.total_eq_sum] at hy
     constructor
@@ -300,101 +299,121 @@ end E8_Normalised_Over_ℝ
 
 noncomputable section Lattice
 
+theorem E8_add_mem {a b : V} (ha : a ∈ E8_Set) (hb : b ∈ E8_Set) : a + b ∈ E8_Set := by
+  obtain ⟨hv1, hv2⟩ := mem_E8_Set'.mp ha
+  obtain ⟨hw1, hw2⟩ := mem_E8_Set'.mp hb
+  rw [mem_E8_Set']
+  constructor
+  · simp_rw [PiLp.add_apply]
+    cases' hv1 with hv1 hv1 <;> cases' hw1 with hw1 hw1 <;> [left; right; right; left]
+    all_goals
+      intro i
+      obtain ⟨m, ⟨hm1, hm2⟩⟩ := hv1 i
+      obtain ⟨n, ⟨hn1, hn2⟩⟩ := hw1 i
+      use m + n, ?_, by simp [hm2, hn2, mul_add]
+      simp only [Int.odd_iff_not_even] at *
+      simp [Int.even_add, hm1, hn1]
+  · simp_rw [PiLp.add_apply, Finset.sum_add_distrib]
+    convert AddCommGroup.ModEq.add hv2 hw2
+    rw [add_zero]
+
+theorem E8_neg_mem {a : V} (ha : a ∈ E8_Set) : -a ∈ E8_Set := by
+  rw [mem_E8_Set'] at *
+  obtain ⟨hv1, hv2⟩ := ha
+  constructor
+  · cases' hv1 with hv1 hv1 <;> [left; right]
+    all_goals
+      intro i
+      obtain ⟨a, ⟨ha1, ha2⟩⟩ := hv1 i
+      use -a, by simp [Int.odd_iff_not_even, ha1], by simp [ha2]
+  · simp_rw [PiLp.neg_apply, Finset.sum_neg_distrib]
+    convert hv2.neg
+    rw [zero_eq_neg]
+
+def E8_Lattice : AddSubgroup V where
+  carrier := E8_Set
+  zero_mem' := by simp [mem_E8_Set]
+  add_mem' := E8_add_mem
+  neg_mem' := E8_neg_mem
+
 def E8_Normalised_Lattice : AddSubgroup V where
   carrier := E8_Normalised_Set
-  zero_mem' := by
-    simp only [E8_Normalised_Set, Set.mem_smul_set, mem_E8_Set]
-    refine ⟨0, ⟨⟨?_, ?_⟩, ?_⟩⟩ <;> simp
-  add_mem' := by
-    intros a b ha hb
+  zero_mem' := by simp [E8_Normalised_Set, Set.mem_smul_set]
+  add_mem' ha hb := by
     rw [E8_Normalised_Set, Set.mem_smul_set] at *
     obtain ⟨a, ha, rfl⟩ := ha
     obtain ⟨b, hb, rfl⟩ := hb
-    suffices a + b ∈ E8_Set by use a + b, this, by rw [smul_add]
-    obtain ⟨hv1, hv2⟩ := mem_E8_Set'.mp ha
-    obtain ⟨hw1, hw2⟩ := mem_E8_Set'.mp hb
-    rw [mem_E8_Set']
-    constructor
-    · simp_rw [PiLp.add_apply]
-      cases' hv1 with hv1 hv1 <;> cases' hw1 with hw1 hw1 <;> [left; right; right; left]
-      all_goals
-        intro i
-        obtain ⟨m, ⟨hm1, hm2⟩⟩ := hv1 i
-        obtain ⟨n, ⟨hn1, hn2⟩⟩ := hw1 i
-        use m + n, ?_, by simp [hm2, hn2, mul_add]
-        simp only [Int.odd_iff_not_even] at *
-        simp [Int.even_add, hm1, hn1]
-    · simp_rw [PiLp.add_apply, Finset.sum_add_distrib]
-      convert AddCommGroup.ModEq.add hv2 hw2
-      rw [add_zero]
-  neg_mem' := by
-    intros v hv
-    simp only at hv ⊢
-    rw [E8_Normalised_Set, Set.mem_smul_set] at *
-    obtain ⟨v, hv, rfl⟩ := hv
-    suffices -v ∈ E8_Set by use -v, this, by rw [smul_neg]
-    rw [mem_E8_Set'] at *
-    obtain ⟨hv1, hv2⟩ := hv
-    constructor
-    · cases' hv1 with hv1 hv1 <;> [left; right]
-      all_goals
-        intro i
-        obtain ⟨a, ⟨ha1, ha2⟩⟩ := hv1 i
-        use -a, by simp [Int.odd_iff_not_even, ha1], by simp [ha2]
-    · simp_rw [PiLp.neg_apply, Finset.sum_neg_distrib]
-      convert hv2.neg
-      rw [zero_eq_neg]
+    use a + b, E8_add_mem ha hb, by simp
+  neg_mem' ha := by
+    simp only [E8_Normalised_Set, Set.mem_smul_set] at *
+    obtain ⟨a, ha, rfl⟩ := ha
+    use -a, E8_neg_mem ha, by simp
 
-open Topology TopologicalSpace Filter Function
+open Topology TopologicalSpace Filter Function InnerProductSpace RCLike
 
-@[simp]
-instance instTopSpaceE8Normalised : TopologicalSpace E8_Normalised_Lattice := by infer_instance
+theorem E8_Matrix_inner {i j : Fin 8} :
+    haveI : Inner ℝ (Fin 8 → ℝ) := (inferInstance : Inner ℝ V)
+    ⟪(E8_Matrix i : V), E8_Matrix j⟫_ℝ = ∑ k, E8' i k * E8' j k := by
+  change ∑ k, E8_Matrix i k * E8_Matrix j k = _
+  simp_rw [E8_Matrix, RingHom.mapMatrix_apply, map_apply, eq_ratCast, Rat.cast_sum, Rat.cast_mul]
 
-@[simp]
-instance : PseudoMetricSpace V := by infer_instance
+set_option maxHeartbeats 2000000 in
+/-- All vectors in E₈ have norm √(2n) -/
+theorem E8_norm_eq_sqrt_even (v : E8_Lattice) :
+    ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n := by
+  sorry
+  /- rcases v with ⟨v, hv⟩ -/
+  /- change ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n -/
+  /- rw [norm_sq_eq_inner (𝕜 := ℝ) v] -/
+  /- simp_rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe, ← Finsupp.range_total, -/
+  /-   LinearMap.mem_range] at hv -/
+  /- replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by -/
+  /-   convert hv -/
+  /-   rw [← Finsupp.total_eq_sum E8_Matrix _] -/
+  /-   rfl -/
+  /- obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv -/
+  /- simp_rw [re_to_real, sum_inner, inner_sum, intCast_smul_left, intCast_smul_right, zsmul_eq_mul, -/
+  /-   Fin.sum_univ_eight] -/
+  /- repeat rw [E8_Matrix_inner] -/
+  /- repeat rw [Fin.sum_univ_eight] -/
+  /- -- compute the dot products -/
+  /- norm_num -/
+  /- -- normalise the goal to ∃ n, Even n ∧ _ = n -/
+  /- norm_cast -/
+  /- rw [exists_eq_right'] -/
+  /- -- now simplify the rest algebraically -/
+  /- ring_nf -/
+  /- simp [Int.even_sub, Int.even_add] -/
 
-@[simp]
-instance : MetricSpace V := by infer_instance
+theorem E8_norm_lower_bound (v : E8_Lattice) : v = 0 ∨ √2 ≤ ‖v‖ := by
+  rw [or_iff_not_imp_left]
+  intro hv
+  obtain ⟨n, ⟨hn, hn'⟩⟩ := E8_norm_eq_sqrt_even v
+  have : 0 ≤ (n : ℝ) := by rw [← hn']; exact sq_nonneg ‖↑v‖
+  have : 0 ≤ n := by norm_cast at this
+  have : n ≠ 0 := by contrapose! hv; simpa [hv] using hn'
+  have : 2 ≤ n := by obtain ⟨k, rfl⟩ := hn; omega
+  have : √2 ^ 2 ≤ ‖v‖ ^ 2 := by rw [sq, Real.mul_self_sqrt zero_le_two, hn']; norm_cast
+  rwa [sq_le_sq, abs_norm, abs_eq_self.mpr ?_] at this
+  exact Real.sqrt_nonneg 2
 
-@[simp]
-instance instTopSpaceV : TopologicalSpace V := by infer_instance
-
-instance : Dist V where
-  dist := Dist.dist
-
--- lemma resolve_dist (x y : V) : Euclidean.dist x y = Dist.dist x y := by
---   rw [Euclidean.dist, Dist.dist]
---   sorry
-
-lemma resolve_dist_self (x : V) : Euclidean.dist (x : V) (x : V) =
-  Dist.dist (x : V) (x : V) := by rw [Euclidean.dist, dist_self, dist_self]
+theorem E8_Normalised_norm_lower_bound (v : E8_Normalised_Lattice) : v = 0 ∨ 1 ≤ ‖v‖ := by
+  obtain ⟨v, hv⟩ := v
+  simp [E8_Normalised_Lattice, -E8_Set, Set.mem_smul_set] at hv
+  obtain ⟨y, ⟨hy, hy'⟩⟩ := hv
+  simp_rw [← hy', AddSubmonoid.mk_eq_zero, smul_eq_zero, inv_eq_zero, Real.sqrt_eq_zero zero_le_two,
+    OfNat.ofNat_ne_zero, false_or, AddSubgroup.coe_norm]
+  simp_rw [norm_smul, Real.norm_eq_abs, abs_inv, abs_eq_self.mpr (Real.sqrt_nonneg 2)]
+  have : 0 < √2 := Real.sqrt_pos.mpr zero_lt_two
+  rw [inv_mul_eq_div, le_div_iff this, one_mul]
+  convert E8_norm_lower_bound ⟨y, hy⟩
+  rw [Subtype.ext_iff, ZeroMemClass.coe_zero]
 
 instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set := by
-  rw [discreteTopology_iff_singleton_mem_nhds]
-  intro x
-  rcases x with ⟨x, v, ⟨hv1, hv2⟩, hx⟩
-  rw [mem_nhds_subtype]
-  simp only [instTopSpaceV, E8_Normalised_Set, E8_Set, Set.mem_setOf_eq, Set.coe_setOf,
-    Set.subset_singleton_iff, Set.mem_preimage, Subtype.forall, not_exists, one_div,
-    Subtype.mk.injEq, forall_exists_index, and_imp]
-  use ball x 0.5
-  constructor
-  { simp only [instTopSpaceV, isOpen_ball, ball, Set.mem_setOf_eq, dist_self, _root_.mem_nhds_iff]
-    use ball x 0.25
-    constructor
-    { intro y hy
-      simp only [instTopSpaceV, Set.mem_setOf_eq]
-      have : (0.25 : ℝ) ≤ 0.5 := by norm_num
-      rw [ball, Set.mem_setOf_eq] at hy
-      exact lt_of_lt_of_le hy this }
-    { constructor
-      { exact isOpen_ball }
-      { rw [ball, Set.mem_setOf_eq, resolve_dist_self x, dist_self]
-        norm_num } } }
-  { intro v
-    -- We would need to show that the distance between two points in the normalised lattice
-    -- is at least 1.
-    sorry }
+  convert_to DiscreteTopology E8_Normalised_Lattice
+  rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
+  use 1 / 2, by norm_num,
+    fun v h ↦ (E8_Normalised_norm_lower_bound v).resolve_right (by linarith [dist_zero_right v ▸ h])
 
 instance instDiscreteE8NormalisedLattice : DiscreteTopology E8_Normalised_Lattice :=
   instDiscreteE8NormalisedSet
