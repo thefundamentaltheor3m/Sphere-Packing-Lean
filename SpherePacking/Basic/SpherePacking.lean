@@ -18,7 +18,7 @@ namespace SpherePacking
 section Definitions
 
 class SpherePackingCentres (X : Set V) [DiscreteTopology X] where
-  nonoverlapping : ∀ x ∈ X, ∀ y ∈ X, x ≠ y → Euclidean.dist x y ≥ 2
+  nonoverlapping : ∀ x ∈ X, ∀ y ∈ X, x ≠ y → 2 ≤ ‖x - y‖
 
 class LatticePackingCentres (X : AddSubgroup V) [DiscreteTopology X] [isLattice X] extends
   SpherePackingCentres d X
