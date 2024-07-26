@@ -18,17 +18,19 @@ of vectors in ℝ^8 with sum of coordinates an even integer and coordinates eith
 half-integers (`E8_Set`). We prove these two definitions are equivalent, and prove various
 properties about the E₈ lattice.
 
-## Main Theorems
+## Main theorems
 
-`E8_Matrix`: a fixed ℤ-basis for the E₈ lattice
+* `E8_Matrix`: a fixed ℤ-basis for the E₈ lattice
+* `E8_is_basis`: `E8_Matrix` forms a ℝ-basis of ℝ⁸
+* `E8_Set`: the set of vectors in E₈, characterised by relations of their coordinates
+* `E8_Set_eq_span`: the ℤ-span of `E8_Matrix` coincides with `E8_Set`
+* `E8_norm_eq_sqrt_even`: E₈ is even
 
-`E8_is_basis`: `E8_Matrix` forms a ℝ-basis of ℝ⁸
+## TODO
 
-`E8_Set`: the set of vectors in E₈, characterised by relations of their coordinates
-
-`E8_Set_eq_span`: the ℤ-span of `E8_Matrix` coincides with `E8_Set`
-
-`E8_norm_eq_sqrt_even`: E₈ is even
+* Prove E₈ is unimodular
+* Prove E₈ is positive-definite
+* Documentation and naming
 
 -/
 
