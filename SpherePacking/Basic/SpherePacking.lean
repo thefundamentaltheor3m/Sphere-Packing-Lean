@@ -18,7 +18,9 @@ namespace SpherePacking
 section Definitions
 
 class SpherePackingCentres (X : Set V) [DiscreteTopology X] where
-  nonoverlapping : ∀ x ∈ X, ∀ y ∈ X, x ≠ y → 2 ≤ ‖x - y‖
+  -- Note by grhkm: changed distance from 2 to 1 because the normalisation factor chosen
+  -- means the centers are distance 1 apart
+  nonoverlapping : ∀ x ∈ X, ∀ y ∈ X, x ≠ y → 1 ≤ ‖x - y‖
 
 class LatticePackingCentres (X : AddSubgroup V) [DiscreteTopology X] [isLattice X] extends
   SpherePackingCentres d X

@@ -145,7 +145,7 @@ theorem F₈_mul_E8_eq_one_R : F₈_Matrix * E8_Matrix = 1 := by
 
 theorem E8_is_basis :
     LinearIndependent ℝ E8_Matrix ∧ Submodule.span ℝ (Set.range E8_Matrix) = ⊤ := by
-  -- This code seems to be generating a recursion error for some reason
+  /- TODO: un-sorry (kernel error, #15045) -/
   -- rw [is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det]
   -- change IsUnit E8_Matrix.det
   -- have : E8_Matrix.det * F₈_Matrix.det = 1 := by
@@ -249,6 +249,13 @@ theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Se
       /- rw [zsmul_eq_mul, Int.cast_sub, sub_mul, Int.cast_mul, mul_assoc] -/
       /- norm_num -/
 
+theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set V) = ⊤ := by
+  simp only [Submodule.span, sInf_eq_top, Set.mem_setOf_eq]
+  intros M hM
+  have := Submodule.span_le.mpr <| Submodule.subset_span.trans (E8_Set_eq_span ▸ hM)
+  rw [E8_is_basis.right] at this
+  exact Submodule.eq_top_iff'.mpr fun _ ↦ this trivial
+
 @[simp]
 def E8_Basis : Basis (Fin 8) ℝ V := Basis.mk E8_is_basis.left E8_is_basis.right.symm.le
 
@@ -277,20 +284,20 @@ theorem E8_Normalised_mul_F₈_Normalised_eq_one_R : E8_Normalised_Matrix * F₈
 theorem E8_Normalised_is_basis :
     LinearIndependent ℝ E8_Normalised_Matrix ∧
       Submodule.span ℝ (Set.range E8_Normalised_Matrix) = ⊤ := by
-  -- TODO: un-sorry (kernel error, #15045)
-  sorry
-  -- rw [is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det]
-  -- change IsUnit E8_Normalised_Matrix.det
-  -- have : E8_Normalised_Matrix.det * F₈_Normalised_Matrix.det = 1 := by
-  --   rw [← det_mul, E8_Normalised_mul_F₈_Normalised_eq_one_R, det_one]
-  -- exact isUnit_of_mul_eq_one _ _ this
-
-lemma Top_Le_Span_E8_Normalised : ⊤ ≤ Submodule.span ℝ (Set.range E8_Normalised_Matrix) :=
-  E8_Normalised_is_basis.right.symm.le
+  -- normally one can just copy the proof of E8_is_basis
+  -- but since that is blocked by a kernel error, I just come up with a new proof
+  constructor
+  · rw [E8_Normalised_Matrix]
+    exact LinearIndependent.units_smul E8_is_basis.left (fun _ ↦ ⟨1 / √2, √2, by simp, by simp⟩)
+  · rw [E8_Normalised_Matrix, Pi.smul_def, ← Set.smul_set_range, Submodule.span_smul,
+      E8_is_basis.right]
+    ext x
+    simp_rw [Submodule.mem_top, iff_true]
+    use fun y ↦ √2 * x y, by simp, by ext; simp
 
 @[simp]
 def E8_Normalised_Basis : Basis (Fin 8) ℝ V :=
-  Basis.mk E8_Normalised_is_basis.left Top_Le_Span_E8_Normalised
+  Basis.mk E8_Normalised_is_basis.left E8_Normalised_is_basis.right.symm.le
 
 end E8_Normalised_Over_ℝ
 
@@ -424,13 +431,6 @@ instance : DiscreteTopology E8_Set :=
 instance : DiscreteTopology E8_Normalised_Set :=
   (inferInstance : DiscreteTopology E8_Normalised_Lattice)
 
-theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set V) = ⊤ := by
-  simp only [Submodule.span, sInf_eq_top, Set.mem_setOf_eq]
-  intros M hM
-  have := Submodule.span_le.mpr <| Submodule.subset_span.trans (E8_Set_eq_span ▸ hM)
-  rw [E8_is_basis.right] at this
-  exact Submodule.eq_top_iff'.mpr fun _ ↦ this trivial
-
 instance : IsZlattice ℝ E8_Lattice :=
   ⟨E8_Set_span_eq_top⟩
 
@@ -447,21 +447,10 @@ section Packing
 
 -- def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_Normalised_Set)
 
-instance instSpherePackingE8NormalisedLattice : SpherePackingCentres 8 E8_Normalised_Lattice where
-  nonoverlapping := by
-    intros x hx y hy hxy
-    rcases hx with ⟨v, hv1, hv2⟩
-    rcases hy with ⟨w, hw1, hw2⟩
-    unfold E8_Set at hv1 hw1
-    rw [Set.mem_setOf_eq] at hv1 hw1
-    rcases hv1 with ⟨hv11, hv12⟩
-    rcases hw1 with ⟨hw11, hw12⟩
-    -- rw [PiLp.dist_eq_of_L2 x y]
-    -- The above doesn't work because of the difference between `Dist.dist` and ``Euclidean.dist`!!
-    -- The only strategy that comes to mind to tackle this proof is to expand `Euclidean.dist`
-    -- somehow and then do cases on `hv11` and `hw11` (as in the def of `E8_Normalised_Lattice`, ie,
-    -- the proof that it is an additive, commutative subgroup of the ambient space).
-    sorry
+instance instSpherePackingE8NormalisedLattice : SpherePackingCentres 8 E8_Normalised_Lattice :=
+  ⟨fun x hx y hy hxy ↦
+    have : x - y ∈ E8_Normalised_Lattice := AddSubgroup.sub_mem E8_Normalised_Lattice hx hy
+    (E8_Normalised_norm_lower_bound ⟨_, this⟩).resolve_left (by simp [hxy, sub_eq_zero])⟩
 
 def E8_Packing := Packing_of_Centres 8 E8_Normalised_Lattice
 
