@@ -10,3 +10,7 @@ This is a (very nascent) project attempting to formalise some notions about Sphe
 Contributors: Maryna Viazovska (EPFL), Sidharth Hariharan (Imperial College London/EPFL)
 
 We would also like to extend our sincere thanks to Kevin Buzzard and Utensil Song for their support in this endeavour.
+
+## Adding Files
+
+After adding new files, run `lake exe mk_all` to update the project "directory". (TODO: make this into a CI action)

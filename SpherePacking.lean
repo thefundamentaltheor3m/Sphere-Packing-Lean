@@ -1,1 +1,6 @@
-import SpherePacking.SpherePacking_Files
+import SpherePacking.Basic.E8
+import SpherePacking.Basic.EuclideanLattice
+import SpherePacking.Basic.SpherePacking
+import SpherePacking.ForMathlib.Finsupp
+import SpherePacking.ForMathlib.InnerProductSpace
+import SpherePacking.ForMathlib.Vec

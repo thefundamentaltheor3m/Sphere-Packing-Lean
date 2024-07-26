@@ -1,11 +1,36 @@
+/-
+Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sidharth Hariharan, Gareth Ma
+-/
 import Mathlib
 
--- import SpherePacking.Basic.EuclideanLattice
 import SpherePacking.Basic.SpherePacking
-import SpherePacking.Basic.Vec
-
+import SpherePacking.ForMathlib.Vec
 import SpherePacking.ForMathlib.Finsupp
 import SpherePacking.ForMathlib.InnerProductSpace
+
+/-!
+# Basic properties of the E₈ lattice
+
+We define the E₈ lattice in two ways, as the ℤ-span of a chosen basis (`E8_Matrix`), and as the set
+of vectors in ℝ^8 with sum of coordinates an even integer and coordinates either all integers or
+half-integers (`E8_Set`). We prove these two definitions are equivalent, and prove various
+properties about the E₈ lattice.
+
+## Main Theorems
+
+`E8_Matrix`: a fixed ℤ-basis for the E₈ lattice
+
+`E8_is_basis`: `E8_Matrix` forms a ℝ-basis of ℝ⁸
+
+`E8_Set`: the set of vectors in E₈, characterised by relations of their coordinates
+
+`E8_Set_eq_span`: the ℤ-span of `E8_Matrix` coincides with `E8_Set`
+
+`E8_norm_eq_sqrt_even`: E₈ is even
+
+-/
 
 open Euclidean EuclideanSpace BigOperators EuclideanLattice SpherePacking Matrix algebraMap
   Pointwise EuclideanLattice
@@ -54,9 +79,10 @@ theorem mem_E8_Set' {v : V} :
   simp_rw [this, mem_E8_Set]
 
 section E8_Over_ℚ
-/-! Credit for the code proving linear independence goes to Gareth Ma. -/
 
-/-! # Choice of Simple Roots
+/- Credit for the code proving linear independence goes to Gareth Ma. -/
+
+/- # Choice of Simple Roots
 There are many possible choices of simple roots for the E8 root system. Here, we choose the one
 mentioned in the Wikipedia article https://en.wikipedia.org/wiki/E8_(mathematics).
 -/
@@ -74,9 +100,9 @@ def E8' : Matrix (Fin 8) (Fin 8) ℚ := !![
 0,0,0,0,0,1,-1,0
 ]
 
-/-- F₈ is the inverse matrix of E₈, used to assist computation below. -/
+/-- F8 is the inverse matrix of E₈, used to assist computation below. -/
 @[simp]
-def F₈' : Matrix (Fin 8) (Fin 8) ℚ := !![
+def F8' : Matrix (Fin 8) (Fin 8) ℚ := !![
 1,1,1,1,1,1/2,0,1/2;
 0,1,1,1,1,1/2,0,1/2;
 0,0,1,1,1,1/2,0,1/2;
@@ -88,7 +114,7 @@ def F₈' : Matrix (Fin 8) (Fin 8) ℚ := !![
 ]
 
 @[simp]
-theorem E8_mul_F₈_eq_id_Q : E8' * F₈' = !![
+theorem E8_mul_F8_eq_id_Q : E8' * F8' = !![
     1,0,0,0,0,0,0,0;
     0,1,0,0,0,0,0,0;
     0,0,1,0,0,0,0,0;
@@ -98,25 +124,25 @@ theorem E8_mul_F₈_eq_id_Q : E8' * F₈' = !![
     0,0,0,0,0,0,1,0;
     0,0,0,0,0,0,0,1;
     ] := by
-  rw [E8', F₈']
+  rw [E8', F8']
   norm_num
 
 @[simp]
-theorem E8_mul_F₈_eq_one_Q : E8' * F₈' = 1 := by
+theorem E8_mul_F8_eq_one_Q : E8' * F8' = 1 := by
   -- TODO: un-sorry (slow)
   sorry
-  /- convert E8_mul_F₈_eq_id_Q -/
-  /- rw [← Matrix.diagonal_one] -/
-  /- ext i j -/
-  /- by_cases h : i = j -/
-  /- · subst h -/
-  /-   fin_cases i <;> norm_num -/
-  /- · rw [Matrix.diagonal_apply_ne _ h] -/
-  /-   fin_cases i <;> fin_cases j <;> norm_num at h ⊢ -/
+  -- convert E8_mul_F8_eq_id_Q
+  -- rw [← Matrix.diagonal_one]
+  -- ext i j
+  -- by_cases h : i = j
+  -- · subst h
+  --   fin_cases i <;> norm_num
+  -- · rw [Matrix.diagonal_apply_ne _ h]
+  --   fin_cases i <;> fin_cases j <;> norm_num at h ⊢
 
 @[simp]
-theorem F₈_mul_E8_eq_one_Q : F₈' * E8' = 1 := by
-  rw [Matrix.mul_eq_one_comm, E8_mul_F₈_eq_one_Q]
+theorem F8_mul_E8_eq_one_Q : F8' * E8' = 1 := by
+  rw [Matrix.mul_eq_one_comm, E8_mul_F8_eq_one_Q]
 
 end E8_Over_ℚ
 
@@ -126,30 +152,30 @@ noncomputable section E8_Over_ℝ
 def E8_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (algebraMap ℚ ℝ).mapMatrix E8'
 
 @[simp]
-def F₈_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (algebraMap ℚ ℝ).mapMatrix F₈'
+def F8_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (algebraMap ℚ ℝ).mapMatrix F8'
 
 theorem E8_Matrix_apply {i j : Fin 8} : E8_Matrix i j = E8' i j := by
   rfl
 
 @[simp]
-theorem E8_mul_F₈_eq_one_R : E8_Matrix * F₈_Matrix = 1 := by
-  rw [E8_Matrix, F₈_Matrix, RingHom.mapMatrix_apply, RingHom.mapMatrix_apply, ← Matrix.map_mul,
-    E8_mul_F₈_eq_one_Q] --, map_one _ coe_zero coe_one]  -- Doesn't work for some reason
+theorem E8_mul_F8_eq_one_R : E8_Matrix * F8_Matrix = 1 := by
+  rw [E8_Matrix, F8_Matrix, RingHom.mapMatrix_apply, RingHom.mapMatrix_apply, ← Matrix.map_mul,
+    E8_mul_F8_eq_one_Q] --, map_one _ coe_zero coe_one]  -- Doesn't work for some reason
   simp only [map_zero, _root_.map_one, Matrix.map_one]
 
 @[simp]
-theorem F₈_mul_E8_eq_one_R : F₈_Matrix * E8_Matrix = 1 := by
-  rw [E8_Matrix, F₈_Matrix, RingHom.mapMatrix_apply, RingHom.mapMatrix_apply, ← Matrix.map_mul,
-    F₈_mul_E8_eq_one_Q] --, map_one _ coe_zero coe_one]
+theorem F8_mul_E8_eq_one_R : F8_Matrix * E8_Matrix = 1 := by
+  rw [E8_Matrix, F8_Matrix, RingHom.mapMatrix_apply, RingHom.mapMatrix_apply, ← Matrix.map_mul,
+    F8_mul_E8_eq_one_Q] --, map_one _ coe_zero coe_one]
   simp only [map_zero, _root_.map_one, Matrix.map_one]
 
 theorem E8_is_basis :
     LinearIndependent ℝ E8_Matrix ∧ Submodule.span ℝ (Set.range E8_Matrix) = ⊤ := by
-  /- TODO: un-sorry (kernel error, #15045) -/
+  -- TODO: un-sorry (kernel error, #15045)
   -- rw [is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det]
   -- change IsUnit E8_Matrix.det
-  -- have : E8_Matrix.det * F₈_Matrix.det = 1 := by
-  --   rw [← det_mul, E8_mul_F₈_eq_one_R, det_one]
+  -- have : E8_Matrix.det * F8_Matrix.det = 1 := by
+  --   rw [← det_mul, E8_mul_F8_eq_one_R, det_one]
   -- exact isUnit_of_mul_eq_one _ _ this
   sorry
 
@@ -217,37 +243,37 @@ theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Se
         intro i
         -- TODO: un-sorry (slow)
         sorry
-        /- fin_cases i -/
-        /- <;> [use y 0 - k; use -y 0 + y 1 - k; use -y 1 + y 2 - k; use -y 2 + y 3 - k; -/
-        /-   use -y 3 + y 4 - k; use -y 4 + y 5 - k + y 7; use y 5 - k - y 7; use -k] -/
-        /- <;> convert congrFun hy _ -/
-        /- all_goals -/
-        /-   simp_rw [Fintype.sum_apply, Pi.smul_apply, Fin.sum_univ_eight, E8_Matrix_apply] -/
-        /-   simp [hk] -/
-        /-   ring_nf -/
+        -- fin_cases i
+        -- <;> [use y 0 - k; use -y 0 + y 1 - k; use -y 1 + y 2 - k; use -y 2 + y 3 - k;
+        --   use -y 3 + y 4 - k; use -y 4 + y 5 - k + y 7; use y 5 - k - y 7; use -k]
+        -- <;> convert congrFun hy _
+        -- all_goals
+        --   simp_rw [Fintype.sum_apply, Pi.smul_apply, Fin.sum_univ_eight, E8_Matrix_apply]
+        --   simp [hk]
+        --   ring_nf
       · right
         intro i
         -- TODO: un-sorry (slow)
         sorry
-        /- fin_cases i -/
-        /- <;> [use 2 * y 0 - y 6; use -2 * y 0 + 2 * y 1 - y 6; use -2 * y 1 + 2 * y 2 - y 6; -/
-        /-   use -2 * y 2 + 2 * y 3 - y 6; use -2 * y 3 + 2 * y 4 - y 6; -/
-        /-   use -2 * y 4 + 2 * y 5 - y 6 + 2 * y 7; use 2 * y 5 - y 6 - 2 * y 7; use -y 6] -/
-        /- <;> simp [Int.even_sub, Int.even_add, hy'] -/
-        /- <;> subst hy -/
-        /- <;> simp_E8_sum_apply -/
-        /- <;> try simp only [mul_sub, mul_add, neg_div] -/
-        /- <;> norm_num -/
-        /- <;> rw [← mul_assoc, mul_right_comm, mul_one_div_cancel (by norm_num), one_mul] -/
+        -- fin_cases i
+        -- <;> [use 2 * y 0 - y 6; use -2 * y 0 + 2 * y 1 - y 6; use -2 * y 1 + 2 * y 2 - y 6;
+        --   use -2 * y 2 + 2 * y 3 - y 6; use -2 * y 3 + 2 * y 4 - y 6;
+        --   use -2 * y 4 + 2 * y 5 - y 6 + 2 * y 7; use 2 * y 5 - y 6 - 2 * y 7; use -y 6]
+        -- <;> simp [Int.even_sub, Int.even_add, hy']
+        -- <;> subst hy
+        -- <;> simp_E8_sum_apply
+        -- <;> try simp only [mul_sub, mul_add, neg_div]
+        -- <;> norm_num
+        -- <;> rw [← mul_assoc, mul_right_comm, mul_one_div_cancel (by norm_num), one_mul]
     · subst hy
       simp_rw [Fintype.sum_apply, Pi.smul_apply, E8_Matrix_apply, Fin.sum_univ_eight]
       -- TODO: un-sorry (slow)
       sorry
-      /- simp -/
-      /- use y 6 * 2 - y 5 -/
-      /- ring_nf -/
-      /- rw [zsmul_eq_mul, Int.cast_sub, sub_mul, Int.cast_mul, mul_assoc] -/
-      /- norm_num -/
+      -- simp
+      -- use y 6 * 2 - y 5
+      -- ring_nf
+      -- rw [zsmul_eq_mul, Int.cast_sub, sub_mul, Int.cast_mul, mul_assoc]
+      -- norm_num
 
 @[simp]
 def E8_Basis : Basis (Fin 8) ℝ V := Basis.mk E8_is_basis.left E8_is_basis.right.symm.le
@@ -265,14 +291,14 @@ def E8_Scaled_Matrix (c : ℝ) : Matrix (Fin 8) (Fin 8) ℝ := c • E8_Matrix
 def E8_Scaled_Basis_Set (c : ℝ) : Set V := Set.range (E8_Scaled_Matrix c)
 
 @[simp]
-def F₈_Scaled_Matrix (c : ℝ) : Matrix (Fin 8) (Fin 8) ℝ := (1 / c) • F₈_Matrix
+def F8_Scaled_Matrix (c : ℝ) : Matrix (Fin 8) (Fin 8) ℝ := (1 / c) • F8_Matrix
 
 @[simp]
-theorem E8_Scaled_mul_F₈_Scaled_eq_one_R (hc : c ≠ 0) :
-    E8_Scaled_Matrix c * F₈_Scaled_Matrix c = 1 := by
+theorem E8_Scaled_mul_F8_Scaled_eq_one_R (hc : c ≠ 0) :
+    E8_Scaled_Matrix c * F8_Scaled_Matrix c = 1 := by
   have : √2 ≠ 0 := (Real.sqrt_pos.mpr zero_lt_two).ne.symm
-  simp_rw [E8_Scaled_Matrix, F₈_Scaled_Matrix, one_div, smul_mul_smul, mul_inv_cancel hc, one_smul]
-  exact E8_mul_F₈_eq_one_R
+  simp_rw [E8_Scaled_Matrix, F8_Scaled_Matrix, one_div, smul_mul_smul, mul_inv_cancel hc, one_smul]
+  exact E8_mul_F8_eq_one_R
 
 theorem Submodule.smul_top_eq_top {n : ℕ} (hc : c ≠ 0) : c • (⊤ : Submodule ℝ (Fin n → ℝ)) = ⊤ := by
   -- I think there might be a nicer proof by using translation symmetry
@@ -367,28 +393,28 @@ set_option maxHeartbeats 2000000 in
 theorem E8_norm_eq_sqrt_even (v : E8_Lattice) :
     ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n := by
   sorry
-  /- rcases v with ⟨v, hv⟩ -/
-  /- change ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n -/
-  /- rw [norm_sq_eq_inner (𝕜 := ℝ) v] -/
-  /- simp_rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe, ← Finsupp.range_total, -/
-  /-   LinearMap.mem_range] at hv -/
-  /- replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by -/
-  /-   convert hv -/
-  /-   rw [← Finsupp.total_eq_sum E8_Matrix _] -/
-  /-   rfl -/
-  /- obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv -/
-  /- simp_rw [re_to_real, sum_inner, inner_sum, intCast_smul_left, intCast_smul_right, zsmul_eq_mul, -/
-  /-   Fin.sum_univ_eight] -/
-  /- repeat rw [E8_Matrix_inner] -/
-  /- repeat rw [Fin.sum_univ_eight] -/
-  /- -- compute the dot products -/
-  /- norm_num -/
-  /- -- normalise the goal to ∃ n, Even n ∧ _ = n -/
-  /- norm_cast -/
-  /- rw [exists_eq_right'] -/
-  /- -- now simplify the rest algebraically -/
-  /- ring_nf -/
-  /- simp [Int.even_sub, Int.even_add] -/
+  -- rcases v with ⟨v, hv⟩
+  -- change ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n
+  -- rw [norm_sq_eq_inner (𝕜 := ℝ) v]
+  -- simp_rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe,← Finsupp.range_total,
+  --   LinearMap.mem_range] at hv
+  -- replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by
+  --   convert hv
+  --   rw [← Finsupp.total_eq_sum E8_Matrix _]
+  --   rfl
+  -- obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv
+  -- simp_rw [re_to_real, sum_inner, inner_sum, intCast_smul_left, intCast_smul_right, zsmul_eq_mul,
+  --   Fin.sum_univ_eight]
+  -- repeat rw [E8_Matrix_inner]
+  -- repeat rw [Fin.sum_univ_eight]
+  -- -- compute the dot products
+  -- norm_num
+  -- -- normalise the goal to ∃ n, Even n ∧ _ = n
+  -- norm_cast
+  -- rw [exists_eq_right']
+  -- -- now simplify the rest algebraically
+  -- ring_nf
+  -- simp [Int.even_sub, Int.even_add]
 
 theorem E8_norm_lower_bound (v : E8_Lattice) : v = 0 ∨ √2 ≤ ‖v‖ := by
   rw [or_iff_not_imp_left]
@@ -470,6 +496,7 @@ noncomputable instance instSpherePackingE8ScaledLattice {c : ℝ} [inst : Fact (
 
 def E8_Packing := Packing_of_Centres 8 (E8_Scaled_Lattice c) (|c| * √2)
 
-theorem Main : Constant 8 = Density 8 (E8_Scaled_Lattice c) (|c| * √2) := sorry
+theorem Main : Constant 8 = Density 8 (E8_Scaled_Lattice c) (|c| * √2) :=
+  sorry
 
 end Packing
