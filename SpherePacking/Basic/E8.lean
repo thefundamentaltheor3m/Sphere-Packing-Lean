@@ -146,6 +146,66 @@ theorem E8_mul_F8_eq_one_Q : E8' * F8' = 1 := by
 theorem F8_mul_E8_eq_one_Q : F8' * E8' = 1 := by
   rw [Matrix.mul_eq_one_comm, E8_mul_F8_eq_one_Q]
 
+section E8_unimodular
+
+/- In this section we perform "manual rref" (laughing as I type this). -/
+
+private def c₆ : Fin 8 → ℚ := ![1/2, 1, 3/2, 2, 5/2, 3, 1, 0]
+private def c₇ : Fin 8 → ℚ := ![0, 0, 0, 0, 0, -1, 4/5, 1]
+
+private theorem E8'_det_aux_1 : (∑ k : Fin 8, c₆ k • E8' k) = ![0, 0, 0, 0, 0, 0, 5/2, -1/2] := by
+  ext i
+  trans 1 / 2 * E8' 0 i + E8' 1 i + 3 / 2 * E8' 2 i + 2 * E8' 3 i
+    + 5 / 2 * E8' 4 i + 3 * E8' 5 i + E8' 6 i
+  · simp [Fin.sum_univ_eight, c₆, -E8']
+  · fin_cases i <;> simp [E8'] <;> norm_num
+
+private theorem E8'_det_aux_2 (i : Fin 8) :
+    E8'.updateRow 6 (∑ k, c₆ k • E8' k) i
+      = if i = 6 then ![0, 0, 0, 0, 0, 0, 5/2, -1/2] else E8' i := by
+  ext j
+  rw [updateRow_apply]
+  split_ifs with hi
+  · rw [E8'_det_aux_1]
+  · rfl
+
+private theorem E8'_det_aux_3 : (∑ k : Fin 8, c₇ k • (E8'.updateRow 6 (∑ k, c₆ k • E8' k)) k)
+    = ![0, 0, 0, 0, 0, 0, 0, -2/5] := by
+  ext i
+  simp_rw [E8'_det_aux_2, Fin.sum_univ_eight]
+  simp only [Fin.reduceEq, ↓reduceIte, smul_eq_mul, mul_zero, Pi.add_apply, Pi.smul_apply]
+  simp [c₇]
+  fin_cases i <;> simp <;> norm_num
+
+theorem E8'_updateRow₆₇ :
+    (E8'.updateRow 6 (∑ k : Fin 8, c₆ k • E8' k)).updateRow 7
+    (∑ k : Fin 8, c₇ k • E8'.updateRow 6 (∑ k : Fin 8, c₆ k • E8' k) k)
+      = !![1,-1,0,0,0,0,0,0;0,1,-1,0,0,0,0,0;0,0,1,-1,0,0,0,0;0,0,0,1,-1,0,0,0;0,0,0,0,1,-1,0,0;
+        0,0,0,0,0,1,1,0;0,0,0,0,0,0,5/2,-1/2;0,0,0,0,0,0,0,-2/5] := by
+  rw [E8'_det_aux_3, E8'_det_aux_1]
+  ext i _
+  fin_cases i <;> simp
+
+theorem E8'_det_aux_4 :
+    (!![1,-1,0,0,0,0,0,0;0,1,-1,0,0,0,0,0;0,0,1,-1,0,0,0,0;0,0,0,1,-1,0,0,0;0,0,0,0,1,-1,0,0;
+        0,0,0,0,0,1,1,0;0,0,0,0,0,0,5/2,-1/2;0,0,0,0,0,0,0,-2/5] : Matrix (Fin 8) (Fin 8) ℚ).det
+      = -1 := by
+  rw [Matrix.det_of_upperTriangular]
+  · simp [Fin.prod_univ_eight]; norm_num
+  · intro i j h
+    simp at h
+    fin_cases i <;> fin_cases j
+    <;> simp only [Fin.mk_one, Fin.isValue, Fin.reduceFinMk, Fin.reduceLT] at h <;> norm_num
+
+theorem E8_det_eq_one : E8'.det = 1 := by
+  have h₁ := congrArg (fun f ↦ c₇ 7 • f) (det_updateRow_sum E8' 6 c₆)
+  simp only at h₁
+  have h₂ := det_updateRow_sum (E8'.updateRow 6 (∑ k, c₆ k • E8' k)) 7 c₇
+  -- TODO: I can't do h₂.trans h₁ (also #15045)
+  sorry
+
+end E8_unimodular
+
 end E8_Over_ℚ
 
 noncomputable section E8_Over_ℝ
