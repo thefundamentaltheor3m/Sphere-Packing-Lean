@@ -17,10 +17,8 @@ namespace SpherePacking
 
 section Definitions
 
-class SpherePackingCentres (X : Set V) [DiscreteTopology X] where
-  -- Note by grhkm: changed distance from 2 to 1 because the normalisation factor chosen
-  -- means the centers are distance 1 apart
-  nonoverlapping : ∀ x ∈ X, ∀ y ∈ X, x ≠ y → 1 ≤ ‖x - y‖
+class SpherePackingCentres (X : Set V) (r : ℝ := 1) [DiscreteTopology X] where
+  nonoverlapping : ∀ x ∈ X, ∀ y ∈ X, x ≠ y → r ≤ ‖x - y‖
 
 class LatticePackingCentres (X : AddSubgroup V) [DiscreteTopology X] [isLattice X] extends
   SpherePackingCentres d X
@@ -29,8 +27,9 @@ class PeriodicPackingCentres (X : Set V) [DiscreteTopology X] [SpherePackingCent
   {Λ : AddSubgroup V} [DiscreteTopology Λ] [isLattice Λ] where
   periodic : ∀ x ∈ X, ∀ y ∈ Λ, x + y ∈ X
 
-def Packing_of_Centres (X : Set V) [DiscreteTopology X] [SpherePackingCentres d X] : Set V :=
-  ⋃ x ∈ X, (B x 1)
+def Packing_of_Centres (X : Set V) (r : ℝ)
+    [DiscreteTopology X] [SpherePackingCentres d X r] : Set V :=
+  ⋃ x ∈ X, (B x (r / 2))
 
 end Definitions
 
@@ -38,21 +37,22 @@ local notation "P" => Packing_of_Centres d
 
 noncomputable section Density
 
+open scoped ENNReal
 open MeasureTheory
 
-instance : MeasureSpace V := by infer_instance
+-- NOTE (grhkm): I *might* have messed up some constants with the introduction of (r : ℝ)
+-- Probably a TODO to doublecheck
+def FiniteDensity (X : Set V) (r : ℝ) [DiscreteTopology X] [SpherePackingCentres d X r] (R : ℝ) :
+    ℝ≥0∞ :=
+  volume ((P X r) ∩ B (0:V) R) / (volume (B (0:V) R))
 
-instance : MeasureSpace V :=
-{ volume := volume }
+def Density (X : Set V) (r : ℝ) [DiscreteTopology X] [SpherePackingCentres d X r] : ℝ≥0∞ :=
+  Filter.limsup (FiniteDensity d X r) Filter.atTop
 
-def FiniteDensity (X : Set V) [DiscreteTopology X] [SpherePackingCentres d X] (r : ℝ) : ENNReal :=
-  volume ((P X) ∩ B (0:V) r) / (volume (B (0:V) r))
-
-def Density (X : Set V) [DiscreteTopology X] [SpherePackingCentres d X] : ENNReal :=
-  Filter.limsup (FiniteDensity d X) (Filter.atTop)
-
-def Constant : ENNReal := sSup {x : ENNReal | ∃ X : Set V, ∃ inst1 : DiscreteTopology X,
-  ∃ inst2 : SpherePackingCentres d X, Density d X = x}
+def Constant : ENNReal :=
+  sSup {x : ℝ≥0∞ |
+    ∃ (X : Set V) (r : ℝ) (_inst1 : DiscreteTopology X) (_inst2 : SpherePackingCentres d X r),
+      Density d X r = x}
   -- I don't really like how this looks. Is there a better way of formalising it?
 
 end Density

@@ -36,7 +36,7 @@ def E8_Set : Set V :=
   {v | ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 * v i)) ∧ ∑ i, v i ≡ 0 [PMOD 2]}
 
 @[simp]
-def E8_Normalised_Set : Set V := (1 / Real.sqrt 2) • E8_Set
+def E8_Scaled_Set (c : ℝ) : Set V := c • E8_Set
 
 theorem mem_E8_Set {v : V} :
     v ∈ E8_Set ↔
@@ -249,59 +249,56 @@ theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Se
       /- rw [zsmul_eq_mul, Int.cast_sub, sub_mul, Int.cast_mul, mul_assoc] -/
       /- norm_num -/
 
-theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set V) = ⊤ := by
-  simp only [Submodule.span, sInf_eq_top, Set.mem_setOf_eq]
-  intros M hM
-  have := Submodule.span_le.mpr <| Submodule.subset_span.trans (E8_Set_eq_span ▸ hM)
-  rw [E8_is_basis.right] at this
-  exact Submodule.eq_top_iff'.mpr fun _ ↦ this trivial
-
 @[simp]
 def E8_Basis : Basis (Fin 8) ℝ V := Basis.mk E8_is_basis.left E8_is_basis.right.symm.le
 
 end E8_Over_ℝ
 
-noncomputable section E8_Normalised_Over_ℝ
+noncomputable section E8_Scaled_Over_ℝ
+
+variable {c : ℝ} (hc : c ≠ 0)
 
 @[simp]
-def E8_Normalised_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (1 / Real.sqrt 2) • E8_Matrix
+def E8_Scaled_Matrix (c : ℝ) : Matrix (Fin 8) (Fin 8) ℝ := c • E8_Matrix
 
 @[simp]
-def E8_Normalised_Basis_Set : Set V := Set.range E8_Normalised_Matrix
+def E8_Scaled_Basis_Set (c : ℝ) : Set V := Set.range (E8_Scaled_Matrix c)
 
 @[simp]
-def F₈_Normalised_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (Real.sqrt 2) • F₈_Matrix
+def F₈_Scaled_Matrix (c : ℝ) : Matrix (Fin 8) (Fin 8) ℝ := (1 / c) • F₈_Matrix
 
 @[simp]
-theorem E8_Normalised_mul_F₈_Normalised_eq_one_R : E8_Normalised_Matrix * F₈_Normalised_Matrix = 1
-  := by
-  have : (Real.sqrt 2) ≠ 0 := by
-    simp only [ne_eq, Nat.ofNat_nonneg, Real.sqrt_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true]
-  rw [E8_Normalised_Matrix, F₈_Normalised_Matrix, Algebra.smul_mul_assoc, Algebra.mul_smul_comm,
-    one_div, inv_smul_smul₀ this]
+theorem E8_Scaled_mul_F₈_Scaled_eq_one_R (hc : c ≠ 0) :
+    E8_Scaled_Matrix c * F₈_Scaled_Matrix c = 1 := by
+  have : √2 ≠ 0 := (Real.sqrt_pos.mpr zero_lt_two).ne.symm
+  simp_rw [E8_Scaled_Matrix, F₈_Scaled_Matrix, one_div, smul_mul_smul, mul_inv_cancel hc, one_smul]
   exact E8_mul_F₈_eq_one_R
 
-theorem E8_Normalised_is_basis :
-    LinearIndependent ℝ E8_Normalised_Matrix ∧
-      Submodule.span ℝ (Set.range E8_Normalised_Matrix) = ⊤ := by
+theorem Submodule.smul_top_eq_top {n : ℕ} (hc : c ≠ 0) : c • (⊤ : Submodule ℝ (Fin n → ℝ)) = ⊤ := by
+  -- I think there might be a nicer proof by using translation symmetry
+  ext x
+  simp_rw [Submodule.mem_top, iff_true]
+  use fun y ↦ c⁻¹ * x y, by simp, by ext; simp [hc]
+
+theorem E8_Scaled_is_basis (hc : c ≠ 0):
+    LinearIndependent ℝ (E8_Scaled_Matrix c)
+      ∧ Submodule.span ℝ (Set.range (E8_Scaled_Matrix c)) = ⊤ := by
   -- normally one can just copy the proof of E8_is_basis
   -- but since that is blocked by a kernel error, I just come up with a new proof
   constructor
-  · rw [E8_Normalised_Matrix]
-    exact LinearIndependent.units_smul E8_is_basis.left (fun _ ↦ ⟨1 / √2, √2, by simp, by simp⟩)
-  · rw [E8_Normalised_Matrix, Pi.smul_def, ← Set.smul_set_range, Submodule.span_smul,
-      E8_is_basis.right]
-    ext x
-    simp_rw [Submodule.mem_top, iff_true]
-    use fun y ↦ √2 * x y, by simp, by ext; simp
+  · rw [E8_Scaled_Matrix]
+    exact LinearIndependent.units_smul E8_is_basis.left
+      (fun _ ↦ ⟨c, c⁻¹, mul_inv_cancel hc, inv_mul_cancel hc⟩)
+  · rw [E8_Scaled_Matrix, Pi.smul_def, ← Set.smul_set_range, Submodule.span_smul,
+      E8_is_basis.right, Submodule.smul_top_eq_top hc]
 
 @[simp]
-def E8_Normalised_Basis : Basis (Fin 8) ℝ V :=
-  Basis.mk E8_Normalised_is_basis.left E8_Normalised_is_basis.right.symm.le
+def E8_Scaled_Basis : Basis (Fin 8) ℝ V :=
+  Basis.mk (E8_Scaled_is_basis hc).left (E8_Scaled_is_basis hc).right.symm.le
 
-end E8_Normalised_Over_ℝ
+end E8_Scaled_Over_ℝ
 
-noncomputable section Lattice
+noncomputable section E8_isZlattice
 
 theorem E8_add_mem {a b : V} (ha : a ∈ E8_Set) (hb : b ∈ E8_Set) : a + b ∈ E8_Set := by
   obtain ⟨hv1, hv2⟩ := mem_E8_Set'.mp ha
@@ -340,16 +337,16 @@ def E8_Lattice : AddSubgroup V where
   add_mem' := E8_add_mem
   neg_mem' := E8_neg_mem
 
-def E8_Normalised_Lattice : AddSubgroup V where
-  carrier := E8_Normalised_Set
-  zero_mem' := by simp [E8_Normalised_Set, Set.mem_smul_set]
+def E8_Scaled_Lattice (c : ℝ) : AddSubgroup V where
+  carrier := E8_Scaled_Set c
+  zero_mem' := by use 0; simp
   add_mem' ha hb := by
-    rw [E8_Normalised_Set, Set.mem_smul_set] at *
+    rw [E8_Scaled_Set, Set.mem_smul_set] at *
     obtain ⟨a, ha, rfl⟩ := ha
     obtain ⟨b, hb, rfl⟩ := hb
     use a + b, E8_add_mem ha hb, by simp
   neg_mem' ha := by
-    simp only [E8_Normalised_Set, Set.mem_smul_set] at *
+    simp only [E8_Scaled_Set, Set.mem_smul_set] at *
     obtain ⟨a, ha, rfl⟩ := ha
     use -a, E8_neg_mem ha, by simp
 
@@ -360,6 +357,10 @@ theorem E8_Matrix_inner {i j : Fin 8} :
     ⟪(E8_Matrix i : V), E8_Matrix j⟫_ℝ = ∑ k, E8' i k * E8' j k := by
   change ∑ k, E8_Matrix i k * E8_Matrix j k = _
   simp_rw [E8_Matrix, RingHom.mapMatrix_apply, map_apply, eq_ratCast, Rat.cast_sum, Rat.cast_mul]
+
+section E8_norm_bounds
+
+variable {c : ℝ}
 
 set_option maxHeartbeats 2000000 in
 /-- All vectors in E₈ have norm √(2n) -/
@@ -401,17 +402,20 @@ theorem E8_norm_lower_bound (v : E8_Lattice) : v = 0 ∨ √2 ≤ ‖v‖ := by
   rwa [sq_le_sq, abs_norm, abs_eq_self.mpr ?_] at this
   exact Real.sqrt_nonneg 2
 
-theorem E8_Normalised_norm_lower_bound (v : E8_Normalised_Lattice) : v = 0 ∨ 1 ≤ ‖v‖ := by
+theorem E8_Scaled_norm_lower_bound (hc : c ≠ 0) (v : E8_Scaled_Lattice c) :
+    v = 0 ∨ |c| * √2 ≤ ‖v‖ := by
   obtain ⟨v, hv⟩ := v
-  simp [E8_Normalised_Lattice, -E8_Set, Set.mem_smul_set] at hv
+  simp [E8_Scaled_Lattice, -E8_Set, Set.mem_smul_set] at hv
   obtain ⟨y, ⟨hy, hy'⟩⟩ := hv
-  simp_rw [← hy', AddSubmonoid.mk_eq_zero, smul_eq_zero, inv_eq_zero, Real.sqrt_eq_zero zero_le_two,
-    OfNat.ofNat_ne_zero, false_or, AddSubgroup.coe_norm]
-  simp_rw [norm_smul, Real.norm_eq_abs, abs_inv, abs_eq_self.mpr (Real.sqrt_nonneg 2)]
-  have : 0 < √2 := Real.sqrt_pos.mpr zero_lt_two
-  rw [inv_mul_eq_div, le_div_iff this, one_mul]
-  convert E8_norm_lower_bound ⟨y, hy⟩
-  rw [Subtype.ext_iff, ZeroMemClass.coe_zero]
+  simp_rw [← hy', AddSubmonoid.mk_eq_zero, smul_eq_zero, hc, false_or, AddSubgroup.coe_norm,
+    norm_smul, Real.norm_eq_abs]
+  cases' E8_norm_lower_bound ⟨y, hy⟩ with hy hy <;> simp [Subtype.ext_iff] at *
+  · tauto
+  · right; gcongr
+
+end E8_norm_bounds
+
+variable {c : ℝ}
 
 instance : DiscreteTopology E8_Lattice := by
   rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
@@ -420,40 +424,52 @@ instance : DiscreteTopology E8_Lattice := by
   have : 1 < √2 := by rw [Real.lt_sqrt zero_le_one, sq, mul_one]; exact one_lt_two
   linarith [dist_zero_right v ▸ h]
 
-instance : DiscreteTopology E8_Normalised_Lattice := by
+-- Not sure if `Fact` is a good idea, but might as well try it
+instance [hc : Fact (c ≠ 0)] : DiscreteTopology (E8_Scaled_Lattice c) := by
   rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
-  use 1 / 2, by norm_num,
-    fun v h ↦ (E8_Normalised_norm_lower_bound v).resolve_right (by linarith [dist_zero_right v ▸ h])
+  use |c| * √2, by norm_num [hc.out]
+  intro v h
+  exact (E8_Scaled_norm_lower_bound hc.out v).resolve_right (by linarith [dist_zero_right v ▸ h])
 
 instance : DiscreteTopology E8_Set :=
   (inferInstance : DiscreteTopology E8_Lattice)
 
-instance : DiscreteTopology E8_Normalised_Set :=
-  (inferInstance : DiscreteTopology E8_Normalised_Lattice)
+instance [Fact (c ≠ 0)] : DiscreteTopology (E8_Scaled_Set c) :=
+  (inferInstance : DiscreteTopology (E8_Scaled_Lattice c))
+
+theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set V) = ⊤ := by
+  simp only [Submodule.span, sInf_eq_top, Set.mem_setOf_eq]
+  intros M hM
+  have := Submodule.span_le.mpr <| Submodule.subset_span.trans (E8_Set_eq_span ▸ hM)
+  rw [E8_is_basis.right] at this
+  exact Submodule.eq_top_iff'.mpr fun _ ↦ this trivial
 
 instance : IsZlattice ℝ E8_Lattice :=
   ⟨E8_Set_span_eq_top⟩
 
-instance : IsZlattice ℝ E8_Normalised_Lattice where
+instance [inst : Fact (c ≠ 0)] : IsZlattice ℝ (E8_Scaled_Lattice c) where
   span_top := by
-    change Submodule.span ℝ ((1 / √2) • E8_Set) = ⊤
+    change Submodule.span ℝ (c • E8_Set) = ⊤
     rw [← Submodule.smul_span, E8_Set_span_eq_top, Submodule.eq_top_iff']
     intro v
-    use √2 • v, by simp, by simp
+    use c⁻¹ • v, by simp, by simp [← smul_assoc, smul_eq_mul, inv_mul_cancel inst.out, one_smul]
 
-end Lattice
+end E8_isZlattice
 
 section Packing
 
--- def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_Normalised_Set)
+variable {c : ℝ} [inst : Fact (c ≠ 0)]
 
-instance instSpherePackingE8NormalisedLattice : SpherePackingCentres 8 E8_Normalised_Lattice :=
+-- def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_Scaled_Set)
+
+noncomputable instance instSpherePackingE8ScaledLattice {c : ℝ} [inst : Fact (c ≠ 0)] :
+    SpherePackingCentres 8 (E8_Scaled_Lattice c) (|c| * √2) :=
   ⟨fun x hx y hy hxy ↦
-    have : x - y ∈ E8_Normalised_Lattice := AddSubgroup.sub_mem E8_Normalised_Lattice hx hy
-    (E8_Normalised_norm_lower_bound ⟨_, this⟩).resolve_left (by simp [hxy, sub_eq_zero])⟩
+    have : x - y ∈ E8_Scaled_Lattice c := AddSubgroup.sub_mem _ hx hy
+    (E8_Scaled_norm_lower_bound inst.out ⟨_, this⟩).resolve_left (by simp [hxy, sub_eq_zero])⟩
 
-def E8_Packing := Packing_of_Centres 8 E8_Normalised_Lattice
+def E8_Packing := Packing_of_Centres 8 (E8_Scaled_Lattice c) (|c| * √2)
 
-theorem Main : Constant 8 = Density 8 E8_Normalised_Lattice := sorry
+theorem Main : Constant 8 = Density 8 (E8_Scaled_Lattice c) (|c| * √2) := sorry
 
 end Packing
