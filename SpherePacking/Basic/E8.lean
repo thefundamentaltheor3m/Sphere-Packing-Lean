@@ -538,7 +538,10 @@ noncomputable instance instSpherePackingE8ScaledLattice {c : ℝ} [inst : Fact (
 
 def E8_Packing := Packing_of_Centres 8 (E8.E8_Scaled_Lattice c) (|c| * √2)
 
-theorem Main : Constant 8 = Density 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
+theorem Main : PeriodicConstant 8 = Density 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
+  sorry
+
+theorem Main' : Constant 8 = Density 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
   sorry
 
 end Packing

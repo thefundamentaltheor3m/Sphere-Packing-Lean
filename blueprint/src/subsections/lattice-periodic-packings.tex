@@ -1,0 +1,36 @@
+\subsection{Lattices and Periodic packings}
+
+\begin{definition}\label{EuclideanLattice.isLattice}\lean{EuclideanLattice.isLattice}\leanok
+  % A lattice in the Euclidean space $\R^d$ is a discrete, co-compact, abelian subgroup.
+  We say that an additive subgroup $\Lambda \leq \R^d$ is a \emph{lattice} if it is discrete and its $\R$-span contains all the elements of $\R^d$.
+\end{definition}
+
+
+\begin{definition}\label{SpherePacking.PeriodicPackingCentres}\lean{SpherePacking.PeriodicPackingCentres}\uses{SpherePacking.SpherePackingCentres, EuclideanLattice.isLattice}\leanok
+  We say that $X \subseteq \R^d$ is a set of \emph{periodic packing centres} if $X$ is a set of sphere packing centres and there exists a lattice $\Lambda \subset \R^d$ such that for any $x \in X$ and $y \in \Lambda$, their sum $x + y$ lies in $X$.
+\end{definition}
+
+\begin{lemma}\label{SpherePacking.Density of periodic packing}\notready
+  If $X \subseteq \R^d$ is a set of sphere packing centres that is periodic with respect to some lattice $\Lambda$, then the density of the corresponding (periodic) sphere packing is given by
+  $$ \frac{\lvert {X/\Lambda} \rvert}{\mathrm{Vol}(\R^d / \Lambda)} \cdot \mathrm{Vol}(B_d(0,1))$$
+  where the quotients in the numerator and denominator correspond to the orbits of the action by translation of $\Lambda$ on $X$ and $\R^d$ respectively.
+\end{lemma}
+\begin{remark}
+  This can be thought of as the ``volume of spheres per fundamental domain": the number of spheres per fundamental domain is $\lvert {X/\Lambda} \rvert$, and the volume of each sphere is $\mathrm{Vol}(B_d(0,1))$.
+\end{remark}
+
+\begin{definition}\label{def-Periodic-sphere-packing-constant}\uses{SpherePacking.Density, SpherePacking.PeriodicPackingCentres}\notready
+    The periodic sphere packing constant is defined to be
+    $$ \Delta_{d}^{\text{periodic}} := \sup_{\substack{P \subset \R^d \\ \text{periodic packing}}} \Delta_P$$
+\end{definition}
+
+\begin{theorem}\label{periodic-packing-optimal}\uses{SpherePacking.Density, def-Periodic-sphere-packing-constant}\notready
+    For all $d$, the periodic sphere packing constant in $\R^d$ is equal to the sphere packing constant in $\R^d$.
+\end{theorem}
+\begin{proof}
+  \todo{State this in Lean (ready).}
+  \todo{Fill in proof here (see~\cite{ElkiesCohn}, Appendix A)}
+\end{proof}
+
+In other words, it suffices to compute and optimise the periodic sphere packing constant.
+

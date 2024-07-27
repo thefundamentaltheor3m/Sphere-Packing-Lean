@@ -17,18 +17,21 @@ namespace SpherePacking
 
 section Definitions
 
-class SpherePackingCentres (X : Set V) (r : ℝ := 1) [DiscreteTopology X] where
+-- TODO: Rename to IsSpherePackingCentres, then define SpherePackingCentres as the univ
+-- and define Constant below as a sSup over this set
+class SpherePackingCentres (X : Set V) (r : ℝ) [DiscreteTopology X] where
   nonoverlapping : ∀ x ∈ X, ∀ y ∈ X, x ≠ y → r ≤ ‖x - y‖
 
-class LatticePackingCentres (X : AddSubgroup V) [DiscreteTopology X] [isLattice X] extends
-  SpherePackingCentres d X
+class LatticePackingCentres (X : AddSubgroup V) (r : ℝ)
+    [DiscreteTopology X] [IsZlattice ℝ X] extends
+  SpherePackingCentres d X r
 
-class PeriodicPackingCentres (X : Set V) [DiscreteTopology X] [SpherePackingCentres d X]
-  {Λ : AddSubgroup V} [DiscreteTopology Λ] [isLattice Λ] where
+class PeriodicPackingCentres (X : Set V) (r : ℝ) [DiscreteTopology X] [SpherePackingCentres d X r]
+    (Λ : AddSubgroup V) [DiscreteTopology Λ] [IsZlattice ℝ Λ] where
   periodic : ∀ x ∈ X, ∀ y ∈ Λ, x + y ∈ X
 
-def Packing_of_Centres (X : Set V) (r : ℝ)
-    [DiscreteTopology X] [SpherePackingCentres d X r] : Set V :=
+def Packing_of_Centres (X : Set V) (r : ℝ) [DiscreteTopology X] [SpherePackingCentres d X r] :
+    Set V :=
   ⋃ x ∈ X, (B x (r / 2))
 
 end Definitions
@@ -40,14 +43,19 @@ noncomputable section Density
 open scoped ENNReal
 open MeasureTheory
 
--- NOTE (grhkm): I *might* have messed up some constants with the introduction of (r : ℝ)
--- Probably a TODO to doublecheck
 def FiniteDensity (X : Set V) (r : ℝ) [DiscreteTopology X] [SpherePackingCentres d X r] (R : ℝ) :
     ℝ≥0∞ :=
   volume ((P X r) ∩ B (0:V) R) / (volume (B (0:V) R))
 
 def Density (X : Set V) (r : ℝ) [DiscreteTopology X] [SpherePackingCentres d X r] : ℝ≥0∞ :=
   Filter.limsup (FiniteDensity d X r) Filter.atTop
+
+def PeriodicConstant : ENNReal :=
+  sSup {x : ℝ≥0∞ |
+    ∃ (X : Set V) (r : ℝ) (Λ : AddSubgroup V)
+      (_inst1 : DiscreteTopology X) (_inst2 : SpherePackingCentres d X r)
+      (_inst3 : DiscreteTopology Λ) (_inst4 : IsZlattice ℝ Λ)
+      (_inst5 : PeriodicPackingCentres d X r Λ), Density d X r = x}
 
 def Constant : ENNReal :=
   sSup {x : ℝ≥0∞ |
