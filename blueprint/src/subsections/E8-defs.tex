@@ -100,6 +100,11 @@ In this section, we establish basic properties of the $E_8$ lattice and the $\B_
   The first part is the above lemma. The second part follows from that $\B_8$ is a basis and hence linearly independent over $\R$.
 \end{proof}
 
+\todo{Prove $E_8$ is unimodular.}
+\todo{Prove $E_8$ is positive-definite.}
+
+\subsection{The $E_8$ sphere packing}
+
 \begin{lemma}\label{instSpherePackingE8ScaledLattice}\lean{instSpherePackingE8ScaledLattice}\uses{SpherePacking.SpherePackingCentres, E8_Scaled_Lattice}\leanok
   For nonzero real numbers $c$, $c\Lambda_8$ is a valid set of sphere packing centres with separation $|c|\sqrt{2}$.
 \end{lemma}
@@ -111,5 +116,11 @@ In this section, we establish basic properties of the $E_8$ lattice and the $\B_
   The \emph{$E_8$ sphere packing} is the sphere packing with separation $1$, whose set of centres is $\frac{1}{\sqrt{2}}\Lambda_8$.
 \end{definition}
 
-% TODO: Unimodular, positive-definite
+\begin{theorem}\label{E8_Packing_density}\uses{E8_Packing}
+  We have $\Delta_{E_8} = \frac{\pi^4}{384}$.
+\end{theorem}
+\begin{proof}
+  \todo{Finish proof. Preferably we want APIs about fundamental region of lattice, and use that to reduce this theorem to computation inside the fundamental region, and use formula for volume of ball.}
+\end{proof}
+
 % TODO: Stuff about the fundamental region
