@@ -1,43 +1,10 @@
-/-
-Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Sidharth Hariharan, Gareth Ma
--/
 import Mathlib
-
+-- import SpherePacking.Basic.EuclideanLattice
 import SpherePacking.Basic.SpherePacking
-import SpherePacking.ForMathlib.Vec
-import SpherePacking.ForMathlib.Finsupp
-import SpherePacking.ForMathlib.InnerProductSpace
 
-/-!
-# Basic properties of the E₈ lattice
+open Euclidean BigOperators EuclideanLattice SpherePacking
 
-We define the E₈ lattice in two ways, as the ℤ-span of a chosen basis (`E8_Matrix`), and as the set
-of vectors in ℝ^8 with sum of coordinates an even integer and coordinates either all integers or
-half-integers (`E8_Set`). We prove these two definitions are equivalent, and prove various
-properties about the E₈ lattice.
-
-## Main theorems
-
-* `E8_Matrix`: a fixed ℤ-basis for the E₈ lattice
-* `E8_is_basis`: `E8_Matrix` forms a ℝ-basis of ℝ⁸
-* `E8_Set`: the set of vectors in E₈, characterised by relations of their coordinates
-* `E8_Set_eq_span`: the ℤ-span of `E8_Matrix` coincides with `E8_Set`
-* `E8_norm_eq_sqrt_even`: E₈ is even
-
-## TODO
-
-* Prove E₈ is unimodular
-* Prove E₈ is positive-definite
-* Documentation and naming
-
--/
-
-open Euclidean EuclideanSpace BigOperators EuclideanLattice SpherePacking Matrix algebraMap
-  Pointwise EuclideanLattice
-
-/-
+/--
 * NOTE: *
 It will probably be useful, at some point in the future, to subsume this file under a more general
 file tackling the classification of crystallographic, irreducible Coxeter groups and their root
@@ -46,9 +13,9 @@ easier to construct a `SpherePackingCentres` instance for such lattices, which w
 the sphere packing problem in other dimensions.
 -/
 
-namespace E8
-
 local notation "V" => EuclideanSpace ℝ (Fin 8)
+-- def V : Type := EuclideanSpace ℝ (Fin 8)
+local notation "ℝ⁸" => Fin 8 → ℝ
 
 #check V
 
@@ -56,489 +23,855 @@ instance : SMul ℝ V := ⟨fun (r : ℝ) (v : V) => (fun i => r * v i)⟩
 
 instance : HMul ℝ V V := ⟨fun (r : ℝ) (v : V) => (fun i => r * v i)⟩
 
-/-- E₈ is characterised as the set of vectors with (1) coordinates summing to an even integer,
-and (2) all its coordinates either an integer or a half-integer. -/
-@[simp]
-def E8_Set : Set V :=
-  {v | ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 * v i)) ∧ ∑ i, v i ≡ 0 [PMOD 2]}
+def ℤ_as_ℝ : Set ℝ := {r : ℝ | ∃ (n : ℤ), ↑n = r}
+local notation "↑ℤ" => ℤ_as_ℝ
 
-@[simp]
-def E8_Scaled_Set (c : ℝ) : Set V := c • E8_Set
+def E8_Set : Set V := {v : V | ((∀ i : Fin 8, v i ∈ ↑ℤ) ∨ (∀ i : Fin 8, (2 * v i) ∈ ↑ℤ
+  ∧ (v i ∉ ↑ℤ))) ∧ ∑ i : Fin 8, v i ≡ 0 [PMOD 2]}
 
-theorem mem_E8_Set {v : V} :
-    v ∈ E8_Set ↔
-      ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 * v i))
-        ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
-  simp
+def E8_Normalised_Set : Set V := {v : V | ∃ w ∈ E8_Set, v = ((1 : ℝ) / (Real.sqrt 2)) • w}
 
-theorem mem_E8_Set' {v : V} :
-    v ∈ E8_Set ↔
-      ((∀ i, ∃ n : ℤ, Even n ∧ n = 2 * v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 * v i))
-        ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
-  have (k : ℝ) : (∃ n : ℤ, Even n ∧ n = 2 * k) ↔ (∃ n : ℤ, n = k) :=
-    ⟨fun ⟨n, ⟨⟨l, hl⟩, hn⟩⟩ ↦ ⟨l, by simp [← two_mul, hl] at hn; exact hn⟩,
-     fun ⟨n, hn⟩ ↦ ⟨2 * n, ⟨even_two_mul n, by simp [hn]⟩⟩⟩
-  simp_rw [this, mem_E8_Set]
+noncomputable section Basis
 
-section E8_Over_ℚ
+def coords_to_R8 (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : ℝ⁸ := fun i => match i with
+| ⟨0, _⟩ => v₀
+| ⟨1, _⟩ => v₁
+| ⟨2, _⟩ => v₂
+| ⟨3, _⟩ => v₃
+| ⟨4, _⟩ => v₄
+| ⟨5, _⟩ => v₅
+| ⟨6, _⟩ => v₆
+| ⟨7, _⟩ => v₇
 
-/- Credit for the code proving linear independence goes to Gareth Ma. -/
+def R8_to_V (v : ℝ⁸) : V := fun i => v i
 
-/- # Choice of Simple Roots
-There are many possible choices of simple roots for the E8 root system. Here, we choose the one
-mentioned in the Wikipedia article https://en.wikipedia.org/wiki/E8_(mathematics).
--/
+def coords_to_V (v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇ : ℝ) : V := R8_to_V (coords_to_R8 v₀ v₁ v₂ v₃ v₄ v₅ v₆ v₇)
 
-/-- E₈ is also characterised as the ℤ-span of the following vectors. -/
-@[simp]
-def E8' : Matrix (Fin 8) (Fin 8) ℚ := !![
-1,-1,0,0,0,0,0,0;
-0,1,-1,0,0,0,0,0;
-0,0,1,-1,0,0,0,0;
-0,0,0,1,-1,0,0,0;
-0,0,0,0,1,-1,0,0;
-0,0,0,0,0,1,1,0;
--1/2,-1/2,-1/2,-1/2,-1/2,-1/2,-1/2,-1/2;
-0,0,0,0,0,1,-1,0
-]
+def E8_Basis_Vecs : Fin 8 → V := fun i => match i with
+  | ⟨0, _⟩ => coords_to_V 1 (-1) 0 0 0 0 0 0
+  | ⟨1, _⟩ => coords_to_V 0 1 (-1) 0 0 0 0 0
+  | ⟨2, _⟩ => coords_to_V 0 0 1 (-1) 0 0 0 0
+  | ⟨3, _⟩ => coords_to_V 0 0 0 1 (-1) 0 0 0
+  | ⟨4, _⟩ => coords_to_V 0 0 0 0 1 (-1) 0 0
+  | ⟨5, _⟩ => coords_to_V 0 0 0 0 0 1 1 0
+  | ⟨6, _⟩ => coords_to_V (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5) (-0.5)
+  | ⟨7, _⟩ => coords_to_V 0 0 0 0 0 1 (-1) 0
 
-/-- F8 is the inverse matrix of E₈, used to assist computation below. -/
-@[simp]
-def F8' : Matrix (Fin 8) (Fin 8) ℚ := !![
-1,1,1,1,1,1/2,0,1/2;
-0,1,1,1,1,1/2,0,1/2;
-0,0,1,1,1,1/2,0,1/2;
-0,0,0,1,1,1/2,0,1/2;
-0,0,0,0,1,1/2,0,1/2;
-0,0,0,0,0,1/2,0,1/2;
-0,0,0,0,0,1/2,0,-1/2;
--1,-2,-3,-4,-5,-7/2,-2,-5/2
-]
+def E8_Normalised_Basis_Vecs : Fin 8 → V := (√2)⁻¹ • E8_Basis_Vecs
 
-@[simp]
-theorem E8_mul_F8_eq_id_Q : E8' * F8' = !![
-    1,0,0,0,0,0,0,0;
-    0,1,0,0,0,0,0,0;
-    0,0,1,0,0,0,0,0;
-    0,0,0,1,0,0,0,0;
-    0,0,0,0,1,0,0,0;
-    0,0,0,0,0,1,0,0;
-    0,0,0,0,0,0,1,0;
-    0,0,0,0,0,0,0,1;
-    ] := by
-  rw [E8', F8']
-  norm_num
+def E8_Normalised_Basis_Set : Set V := Set.range E8_Normalised_Basis_Vecs
 
-@[simp]
-theorem E8_mul_F8_eq_one_Q : E8' * F8' = 1 := by
-  -- TODO: un-sorry (slow)
+-- Perhaps a more direct way to show that the above is a basis is to show that its determinant
+-- is nonzero. Ordinarily, this would be easy, but we formally, need to navigate the issues of
+-- picking the standard basis and translating result of one of the determinant algorithms into
+-- a proof that the determinant is nonzero. I'm not quite sure how to do that yet.
+
+def Standard_Orthonormal_Basis : OrthonormalBasis (Fin 8) ℝ V := EuclideanSpace.basisFun (Fin 8) ℝ
+
+def Standard_Basis : Basis (Fin 8) ℝ V := OrthonormalBasis.toBasis (Standard_Orthonormal_Basis)
+
+lemma E8_Det_0 : Standard_Basis.det E8_Normalised_Basis_Vecs ≠ 0 := by
   sorry
-  -- convert E8_mul_F8_eq_id_Q
-  -- rw [← Matrix.diagonal_one]
-  -- ext i j
-  -- by_cases h : i = j
-  -- · subst h
-  --   fin_cases i <;> norm_num
-  -- · rw [Matrix.diagonal_apply_ne _ h]
-  --   fin_cases i <;> fin_cases j <;> norm_num at h ⊢
 
-@[simp]
-theorem F8_mul_E8_eq_one_Q : F8' * E8' = 1 := by
-  rw [Matrix.mul_eq_one_comm, E8_mul_F8_eq_one_Q]
+-- The alternative is to just show it's linearly independent and spans the space.
+-- The issue is that we eventually need to unpack the vectors from `Basis.mk` to show that they
+-- all lie in `E8_Normalised_Set`. This is necessary for the `isLattice` instance.
 
-section E8_unimodular
-
-/- In this section we perform "manual rref" (laughing as I type this). -/
-
-private def c₆ : Fin 8 → ℚ := ![1/2, 1, 3/2, 2, 5/2, 3, 1, 0]
-private def c₇ : Fin 8 → ℚ := ![0, 0, 0, 0, 0, -1, 4/5, 1]
-
-private theorem E8'_det_aux_1 : (∑ k : Fin 8, c₆ k • E8' k) = ![0, 0, 0, 0, 0, 0, 5/2, -1/2] := by
+lemma E8_Normalised_Basis_LI : LinearIndependent ℝ E8_Normalised_Basis_Vecs := by
+  rw [Fintype.linearIndependent_iff', LinearMap.lsum_apply , LinearMap.ker_eq_bot']
+  intros x hx
+  simp only [LinearMap.coeFn_sum, LinearMap.coe_comp, LinearMap.coe_smulRight, LinearMap.id_coe,
+    id_eq, LinearMap.coe_proj, Finset.sum_apply, Function.comp_apply, Function.eval] at hx
   ext i
-  trans 1 / 2 * E8' 0 i + E8' 1 i + 3 / 2 * E8' 2 i + 2 * E8' 3 i
-    + 5 / 2 * E8' 4 i + 3 * E8' 5 i + E8' 6 i
-  · simp [Fin.sum_univ_eight, c₆, -E8']
-  · fin_cases i <;> simp [E8'] <;> norm_num
+  have hxj : ∀ (j : Fin 8), (∑ x_1 : Fin 8, x x_1 • E8_Normalised_Basis_Vecs x_1) j = (0 : ℝ) := by
+    intro j
+    rw [hx, Pi.zero_apply]
+  specialize hxj i
+  rw [Finset.sum_apply, E8_Normalised_Basis_Vecs] at hxj
+  simp only [Pi.smul_apply, PiLp.smul_apply, smul_eq_mul, Fin.zero_eta] at hxj
+  unfold E8_Basis_Vecs coords_to_V coords_to_R8 R8_to_V at hxj
+  -- simp only [Fin.zero_eta] at hxj
+  rw [Pi.zero_apply]
+  rcases i with ⟨i₀ | i₁ | i₂ | i₃ | i₄ | i₅ | i₆ | i₇ | n⟩
+  {
+    -- simp only [Fin.zero_eta, Fin.sum_univ_succ, Fin.sum_univ_succ, Fin.isValue,
+    --   Fin.succ_zero_eq_one, Fin.succ_one_eq_two, mul_zero, zero_add] at hxj
+    sorry }
+  { sorry }
+  { sorry }
+  { sorry }
+  { sorry }
+  { sorry }
+  { sorry }
+  { sorry }
+  { sorry }
 
-private theorem E8'_det_aux_2 (i : Fin 8) :
-    E8'.updateRow 6 (∑ k, c₆ k • E8' k) i
-      = if i = 6 then ![0, 0, 0, 0, 0, 0, 5/2, -1/2] else E8' i := by
-  ext j
-  rw [updateRow_apply]
-  split_ifs with hi
-  · rw [E8'_det_aux_1]
-  · rfl
+lemma E8_Normalised_Basis_Eq_Rank : Fintype.card (Fin 8) = FiniteDimensional.finrank ℝ V := by
+  rw [Fintype.card_fin, finrank_euclideanSpace, Fintype.card_fin]
 
-private theorem E8'_det_aux_3 : (∑ k : Fin 8, c₇ k • (E8'.updateRow 6 (∑ k, c₆ k • E8' k)) k)
-    = ![0, 0, 0, 0, 0, 0, 0, -2/5] := by
-  ext i
-  simp_rw [E8'_det_aux_2, Fin.sum_univ_eight]
-  simp only [Fin.reduceEq, ↓reduceIte, smul_eq_mul, mul_zero, Pi.add_apply, Pi.smul_apply]
-  simp [c₇]
-  fin_cases i <;> simp <;> norm_num
+def E8_Normalised_Basis : Basis (Fin 8) ℝ V := basisOfLinearIndependentOfCardEqFinrank
+  E8_Normalised_Basis_LI E8_Normalised_Basis_Eq_Rank
 
-theorem E8'_updateRow₆₇ :
-    (E8'.updateRow 6 (∑ k : Fin 8, c₆ k • E8' k)).updateRow 7
-    (∑ k : Fin 8, c₇ k • E8'.updateRow 6 (∑ k : Fin 8, c₆ k • E8' k) k)
-      = !![1,-1,0,0,0,0,0,0;0,1,-1,0,0,0,0,0;0,0,1,-1,0,0,0,0;0,0,0,1,-1,0,0,0;0,0,0,0,1,-1,0,0;
-        0,0,0,0,0,1,1,0;0,0,0,0,0,0,5/2,-1/2;0,0,0,0,0,0,0,-2/5] := by
-  rw [E8'_det_aux_3, E8'_det_aux_1]
-  ext i _
-  fin_cases i <;> simp
+end Basis
 
-theorem E8'_det_aux_4 :
-    (!![1,-1,0,0,0,0,0,0;0,1,-1,0,0,0,0,0;0,0,1,-1,0,0,0,0;0,0,0,1,-1,0,0,0;0,0,0,0,1,-1,0,0;
-        0,0,0,0,0,1,1,0;0,0,0,0,0,0,5/2,-1/2;0,0,0,0,0,0,0,-2/5] : Matrix (Fin 8) (Fin 8) ℚ).det
-      = -1 := by
-  rw [Matrix.det_of_upperTriangular]
-  · simp [Fin.prod_univ_eight]; norm_num
-  · intro i j h
-    simp at h
-    fin_cases i <;> fin_cases j
-    <;> simp only [Fin.mk_one, Fin.isValue, Fin.reduceFinMk, Fin.reduceLT] at h <;> norm_num
+noncomputable section Lattice
 
-theorem E8_det_eq_one : E8'.det = 1 := by
-  have h₁ := congrArg (fun f ↦ c₇ 7 • f) (det_updateRow_sum E8' 6 c₆)
-  simp only at h₁
-  have h₂ := det_updateRow_sum (E8'.updateRow 6 (∑ k, c₆ k • E8' k)) 7 c₇
-  -- TODO: I can't do h₂.trans h₁ (also #15045)
-  sorry
-
-end E8_unimodular
-
-end E8_Over_ℚ
-
-noncomputable section E8_Over_ℝ
-
-@[simp]
-def E8_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (algebraMap ℚ ℝ).mapMatrix E8'
-
-@[simp]
-def F8_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (algebraMap ℚ ℝ).mapMatrix F8'
-
-theorem E8_Matrix_apply {i j : Fin 8} : E8_Matrix i j = E8' i j := by
-  rfl
-
-@[simp]
-theorem E8_mul_F8_eq_one_R : E8_Matrix * F8_Matrix = 1 := by
-  rw [E8_Matrix, F8_Matrix, RingHom.mapMatrix_apply, RingHom.mapMatrix_apply, ← Matrix.map_mul,
-    E8_mul_F8_eq_one_Q] --, map_one _ coe_zero coe_one]  -- Doesn't work for some reason
-  simp only [map_zero, _root_.map_one, Matrix.map_one]
-
-@[simp]
-theorem F8_mul_E8_eq_one_R : F8_Matrix * E8_Matrix = 1 := by
-  rw [E8_Matrix, F8_Matrix, RingHom.mapMatrix_apply, RingHom.mapMatrix_apply, ← Matrix.map_mul,
-    F8_mul_E8_eq_one_Q] --, map_one _ coe_zero coe_one]
-  simp only [map_zero, _root_.map_one, Matrix.map_one]
-
-theorem E8_is_basis :
-    LinearIndependent ℝ E8_Matrix ∧ Submodule.span ℝ (Set.range E8_Matrix) = ⊤ := by
-  -- TODO: un-sorry (kernel error, #15045)
-  -- rw [is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det]
-  -- change IsUnit E8_Matrix.det
-  -- have : E8_Matrix.det * F8_Matrix.det = 1 := by
-  --   rw [← det_mul, E8_mul_F8_eq_one_R, det_one]
-  -- exact isUnit_of_mul_eq_one _ _ this
-  sorry
-
-section E8_sum_apply_lemmas
-
-variable {α : Type*} [Semiring α] [Module α ℝ] (y : Fin 8 → α)
-
-lemma E8_sum_apply_0 :
-    (∑ j : Fin 8, y j • E8_Matrix j) 0 = y 0 • 1 - y 6 • (1 / 2) := by
-  simp [Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
-
-lemma E8_sum_apply_1 :
-    (∑ j : Fin 8, y j • E8_Matrix j) 1 = y 0 • (-1) + y 1 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [Fin.sum_univ_eight, neg_div, smul_neg, -one_div, ← sub_eq_add_neg]
-
-lemma E8_sum_apply_2 :
-    (∑ j : Fin 8, y j • E8_Matrix j) 2 = y 1 • (-1) + y 2 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
-
-lemma E8_sum_apply_3 :
-    (∑ j : Fin 8, y j • E8_Matrix j) 3 = y 2 • (-1) + y 3 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
-
-lemma E8_sum_apply_4 :
-    (∑ j : Fin 8, y j • E8_Matrix j) 4 = y 3 • (-1) + y 4 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
-
-lemma E8_sum_apply_5 :
-    (∑ j : Fin 8, y j • E8_Matrix j) 5 = y 4 • (-1) + y 5 • 1 - y 6 • ((1 : ℝ) / 2) + y 7 • 1 := by
-  simp [Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
-
-lemma E8_sum_apply_6 :
-    (∑ j : Fin 8, y j • E8_Matrix j) 6 = y 5 • 1 - y 6 • ((1 : ℝ) / 2) - y 7 • 1 := by
-  simp [Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
-
-lemma E8_sum_apply_7 :
-    (∑ j : Fin 8, y j • E8_Matrix j) 7 = y 6 • (-(1 : ℝ) / 2) := by
-  simp [Fin.sum_univ_eight]
-
-macro "simp_E8_sum_apply" : tactic =>
-  `(tactic |
-    simp only [E8_sum_apply_0, E8_sum_apply_1, E8_sum_apply_2, E8_sum_apply_3, E8_sum_apply_4,
-      E8_sum_apply_5, E8_sum_apply_6, E8_sum_apply_7])
-
-end E8_sum_apply_lemmas
-
-theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Set (Fin 8 → ℝ)) := by
-  ext v
-  rw [SetLike.mem_coe, ← Finsupp.range_total, LinearMap.mem_range]
-  constructor <;> intro hv
-  · obtain ⟨hv₁, hv₂⟩ := mem_E8_Set'.mp hv
-    convert_to (∃ y : Fin 8 →₀ ℤ, (∑ i, y i • E8_Matrix i) = v)
-    · ext y
-      rw [← Finsupp.total_eq_sum]
-      rfl
-    · cases' hv₁ with hv₁ hv₁
-      -- TODO (the y is just F8_Matrix * v, need to prove it has integer coefficients)
-      <;> sorry
-  · obtain ⟨y, hy⟩ := hv
-    erw [Finsupp.total_eq_sum] at hy
+def E8_Normalised_Lattice : AddSubgroup V where
+  carrier := E8_Normalised_Set
+  zero_mem' := by
+    simp
+    use (0 : V)
     constructor
-    · by_cases hy' : Even (y 6)
-      · left
-        obtain ⟨k, hk⟩ := hy'
+    { constructor
+      { left
         intro i
-        -- TODO: un-sorry (slow)
-        sorry
-        -- fin_cases i
-        -- <;> [use y 0 - k; use -y 0 + y 1 - k; use -y 1 + y 2 - k; use -y 2 + y 3 - k;
-        --   use -y 3 + y 4 - k; use -y 4 + y 5 - k + y 7; use y 5 - k - y 7; use -k]
-        -- <;> convert congrFun hy _
-        -- all_goals
-        --   simp_rw [Fintype.sum_apply, Pi.smul_apply, Fin.sum_univ_eight, E8_Matrix_apply]
-        --   simp [hk]
-        --   ring_nf
-      · right
-        intro i
-        -- TODO: un-sorry (slow)
-        sorry
-        -- fin_cases i
-        -- <;> [use 2 * y 0 - y 6; use -2 * y 0 + 2 * y 1 - y 6; use -2 * y 1 + 2 * y 2 - y 6;
-        --   use -2 * y 2 + 2 * y 3 - y 6; use -2 * y 3 + 2 * y 4 - y 6;
-        --   use -2 * y 4 + 2 * y 5 - y 6 + 2 * y 7; use 2 * y 5 - y 6 - 2 * y 7; use -y 6]
-        -- <;> simp [Int.even_sub, Int.even_add, hy']
-        -- <;> subst hy
-        -- <;> simp_E8_sum_apply
-        -- <;> try simp only [mul_sub, mul_add, neg_div]
-        -- <;> norm_num
-        -- <;> rw [← mul_assoc, mul_right_comm, mul_one_div_cancel (by norm_num), one_mul]
-    · subst hy
-      simp_rw [Fintype.sum_apply, Pi.smul_apply, E8_Matrix_apply, Fin.sum_univ_eight]
-      -- TODO: un-sorry (slow)
-      sorry
-      -- simp
-      -- use y 6 * 2 - y 5
-      -- ring_nf
-      -- rw [zsmul_eq_mul, Int.cast_sub, sub_mul, Int.cast_mul, mul_assoc]
-      -- norm_num
+        use 0
+        rw [PiLp.zero_apply, Int.cast_zero] }
+      { simp only [PiLp.zero_apply, Finset.sum_const_zero, AddCommGroup.modEq_refl] } }
+    { rw [one_div, smul_zero] }
+  add_mem' := by
+    intros a b ha hb
+    unfold E8_Normalised_Set at *
+    unfold E8_Set at *
+    rw [Set.mem_setOf_eq] at *
+    rcases ha with ⟨v, hv, rfl⟩
+    rcases hb with ⟨w, hw, rfl⟩
+    use v + w
+    rcases hv with ⟨hv1, hv2⟩
+    rcases hw with ⟨hw1, hw2⟩
+    constructor
+    { constructor
+      { cases hv1
+        case inl hv1 =>
+          cases hw1
+          case inl hw1 =>
+            left
+            intro i
+            specialize hv1 i
+            specialize hw1 i
+            rcases hv1 with ⟨n, hn⟩
+            rcases hw1 with ⟨m, hm⟩
+            use n + m
+            rw [PiLp.add_apply, Int.cast_add, hn, hm]
+          case inr hw1 =>
+            right
+            intro i
+            specialize hv1 i
+            specialize hw1 i
+            rcases hv1 with ⟨n, hn⟩
+            rcases hw1 with ⟨⟨m, hm⟩, hm2⟩
+            constructor
+            { rw [PiLp.add_apply]
+              use 2 * n + m
+              rw [Int.cast_add, mul_add, ← hn, hm, Int.cast_mul, Int.cast_ofNat] }
+            { intro HContra
+              apply hm2
+              rcases HContra with ⟨p, hp⟩
+              rw [PiLp.add_apply, ← hn] at hp
+              use ↑p - ↑n
+              rw [Int.cast_sub, hp, add_sub_cancel_left] }
+        case inr hv1 =>
+          cases hw1
+          case inl hw1 =>
+            right
+            intro i
+            specialize hv1 i
+            specialize hw1 i
+            rcases hv1 with ⟨⟨n, hn⟩, hn2⟩
+            rcases hw1 with ⟨m, hm⟩
+            constructor
+            { rw [PiLp.add_apply]
+              use 2 * m + n
+              rw [Int.cast_add, mul_add, ← hm, hn, Int.cast_mul, Int.cast_ofNat, add_comm] }
+            { intro HContra
+              apply hn2
+              rcases HContra with ⟨p, hp⟩
+              rw [PiLp.add_apply, ← hm] at hp
+              use ↑p - ↑m
+              rw [Int.cast_sub, hp, add_sub_cancel_right] }
+          case inr hw1 =>
+            left
+            intro i
+            specialize hv1 i
+            specialize hw1 i
+            rcases hv1 with ⟨⟨n, hn⟩, hn2⟩
+            rcases hw1 with ⟨⟨m, hm⟩, hm2⟩
+            let f : ℝ → ℝ := fun x => ↑2 * x
+            have hf : Function.Injective f := by
+              unfold Function.Injective
+              intros x y hfxfy
+              simp [f] at hfxfy
+              exact hfxfy
+            have hnp : ∃ p : ℤ, n = 2 * p + 1 := by
+              rcases Int.even_or_odd' n with ⟨p, hp⟩
+              cases hp
+              case inl hp =>
+                exfalso
+                apply hn2
+                use p
+                apply hf
+                simp only [f, ← hn, hp, Int.cast_mul, Int.cast_ofNat]
+              case inr hp =>
+                use p
+            have hmq : ∃ q : ℤ, m = 2 * q + 1 := by
+              rcases Int.even_or_odd' m with ⟨q, hq⟩
+              cases hq
+              case inl hq =>
+                exfalso
+                apply hm2
+                use q
+                apply hf
+                simp only [f, ← hm, hq, Int.cast_mul, Int.cast_ofNat]
+              case inr hq =>
+                use q
+            rcases hnp with ⟨p, hp⟩
+            rcases hmq with ⟨q, hq⟩
+            use p + q + 1
+            apply hf
+            simp only [f, mul_add, PiLp.add_apply, Int.cast_add, ←hn, ←hm, hp, hq, Int.cast_one,
+              mul_one, Int.cast_mul, Int.cast_ofNat]
+            linarith }
+      { simp only [PiLp.add_apply, Finset.sum_add_distrib]
+        have HMODSUM : ∀ x y : ℝ, x ≡ 0 [PMOD 2] → y ≡ 0 [PMOD 2] → (x + y) ≡ 0 [PMOD 2] := by
+          -- Should exist in Mathlib in some shape or form
+          intros x y hx hy
+          rcases hx with ⟨z1, hz1⟩
+          rcases hy with ⟨z2, hz2⟩
+          use z1 + z2
+          rw [zero_sub] at hz1 hz2
+          rw [zero_sub, neg_add_rev, add_smul, hz1, hz2, add_comm]
+        exact HMODSUM (∑ x : Fin 8, v x) (∑ x : Fin 8, w x) hv2 hw2 } }
+    { rw [one_div, smul_add] }
+  neg_mem' := by
+    intro x hx
+    dsimp at *
+    rcases hx with ⟨v, hv, rfl⟩
+    use -v
+    constructor
+    { constructor
+      { rcases hv with ⟨hv1, _⟩
+        cases hv1
+        case inl hv1 =>
+          left
+          intro i
+          specialize hv1 i
+          rcases hv1 with ⟨n, hn⟩
+          use -n
+          rw [PiLp.neg_apply, Int.cast_neg, neg_inj]
+          exact hn
+        case inr hv1 =>
+          right
+          intro i
+          specialize hv1 i
+          rcases hv1 with ⟨hn1, hn2⟩
+          constructor
+          { rcases hn1 with ⟨n, hn⟩
+            use -n
+            rw [Int.cast_neg, PiLp.neg_apply, mul_neg, neg_inj]
+            exact hn }
+          { intro HContra
+            apply hn2
+            rcases HContra with ⟨n, hn⟩
+            use -n
+            rw [Int.cast_neg, hn, PiLp.neg_apply, neg_neg] } }
+      { unfold E8_Set at hv
+        rw [Set.mem_setOf_eq] at hv
+        rcases hv with ⟨_, z, hz⟩
+        rw [zero_sub] at hz
+        use -z
+        simp only [PiLp.neg_apply, Finset.sum_neg_distrib, zero_sub, neg_inj, neg_smul]
+        exact hz } }
+    { rw [one_div, smul_neg] }
 
-@[simp]
-def E8_Basis : Basis (Fin 8) ℝ V := Basis.mk E8_is_basis.left E8_is_basis.right.symm.le
+instance : TopologicalSpace E8_Normalised_Lattice := by infer_instance
 
-end E8_Over_ℝ
+instance : PseudoMetricSpace V := by infer_instance
 
-noncomputable section E8_Scaled_Over_ℝ
+instance : MetricSpace V := by infer_instance
 
-variable {c : ℝ} (hc : c ≠ 0)
+instance : Dist V where
+  dist := Dist.dist
 
-@[simp]
-def E8_Scaled_Matrix (c : ℝ) : Matrix (Fin 8) (Fin 8) ℝ := c • E8_Matrix
+-- lemma resolve_dist (x y : V) : Euclidean.dist x y = Dist.dist x y := by
+--   rw [Euclidean.dist, Dist.dist]
+--   sorry
 
-@[simp]
-def E8_Scaled_Basis_Set (c : ℝ) : Set V := Set.range (E8_Scaled_Matrix c)
+lemma resolve_dist_self (x : E8_Normalised_Set) : Euclidean.dist (x : V) (x : V) =
+  Dist.dist (x : V) (x : V) := by rw [Euclidean.dist, dist_self, dist_self]
 
-@[simp]
-def F8_Scaled_Matrix (c : ℝ) : Matrix (Fin 8) (Fin 8) ℝ := (1 / c) • F8_Matrix
+instance instDiscreteE8NormalisedSet : DiscreteTopology E8_Normalised_Set :=
+  singletons_open_iff_discrete.mp fun x => by
+  -- unfold IsOpen
+  -- unfold TopologicalSpace.IsOpen
+  -- unfold instTopologicalSpaceSubtype.1
+  have H : ∀ U : Set E8_Normalised_Lattice, (∃ U' : Set V, IsOpen U' ∧ U = E8_Normalised_Set ∩ U')
+    → IsOpen U := by
+    -- intros U hU
+    -- rcases hU with ⟨U', hU', hU⟩
+    -- unfold IsOpen
+    -- unfold TopologicalSpace.IsOpen
+    -- simp [hU, hU']
+    -- rw []
 
-@[simp]
-theorem E8_Scaled_mul_F8_Scaled_eq_one_R (hc : c ≠ 0) :
-    E8_Scaled_Matrix c * F8_Scaled_Matrix c = 1 := by
-  have : √2 ≠ 0 := (Real.sqrt_pos.mpr zero_lt_two).ne.symm
-  simp_rw [E8_Scaled_Matrix, F8_Scaled_Matrix, one_div, smul_mul_smul, mul_inv_cancel hc, one_smul]
-  exact E8_mul_F8_eq_one_R
-
-theorem Submodule.smul_top_eq_top {n : ℕ} (hc : c ≠ 0) : c • (⊤ : Submodule ℝ (Fin n → ℝ)) = ⊤ := by
-  -- I think there might be a nicer proof by using translation symmetry
-  ext x
-  simp_rw [Submodule.mem_top, iff_true]
-  use fun y ↦ c⁻¹ * x y, by simp, by ext; simp [hc]
-
-theorem E8_Scaled_is_basis (hc : c ≠ 0):
-    LinearIndependent ℝ (E8_Scaled_Matrix c)
-      ∧ Submodule.span ℝ (Set.range (E8_Scaled_Matrix c)) = ⊤ := by
-  -- normally one can just copy the proof of E8_is_basis
-  -- but since that is blocked by a kernel error, I just come up with a new proof
+    sorry
+  apply H {x}
+  use Euclidean.ball x 0.5
   constructor
-  · rw [E8_Scaled_Matrix]
-    exact LinearIndependent.units_smul E8_is_basis.left
-      (fun _ ↦ ⟨c, c⁻¹, mul_inv_cancel hc, inv_mul_cancel hc⟩)
-  · rw [E8_Scaled_Matrix, Pi.smul_def, ← Set.smul_set_range, Submodule.span_smul,
-      E8_is_basis.right, Submodule.smul_top_eq_top hc]
+  { exact Euclidean.isOpen_ball}
+  { unfold E8_Normalised_Set ball E8_Set
+    ext y
+    constructor
+    { simp only [SetLike.coe_sort_coe, Set.image_singleton, Set.mem_singleton_iff,
+      Set.mem_setOf_eq, Set.mem_inter_iff]
+      rintro ⟨w, hw, rfl⟩
+      constructor
+      { exact x.2 }
+      { simp only [resolve_dist_self, PseudoMetricSpace.dist_self (↑x : V)]
+        suffices hself : Dist.dist (x : V) (x : V) = 0
+        { norm_num }
+        exact dist_self (x : V) } }
+    { simp only [Set.mem_setOf_eq, one_div, Set.mem_inter_iff, SetLike.coe_sort_coe,
+      Set.image_singleton, Set.mem_singleton_iff, and_imp, forall_exists_index]
+      simp only [E8_Normalised_Set, Set.coe_setOf] at x
+      rcases x with ⟨x, w, hw1, hw2⟩
+      rintro v H1 H2 H3 H4
+      simp only [H3, hw2, one_div] at H4 ⊢
+      suffices hvw : v = w  -- Wasn't sure what kind of mul_eq thing to apply...
+      { rw [hvw] }
 
-@[simp]
-def E8_Scaled_Basis : Basis (Fin 8) ℝ V :=
-  Basis.mk (E8_Scaled_is_basis hc).left (E8_Scaled_is_basis hc).right.symm.le
+      sorry } }
 
-end E8_Scaled_Over_ℝ
+instance instDiscreteE8NormalisedLattice : DiscreteTopology E8_Normalised_Lattice :=
+  instDiscreteE8NormalisedSet
 
-noncomputable section E8_isZlattice
-
-theorem E8_add_mem {a b : V} (ha : a ∈ E8_Set) (hb : b ∈ E8_Set) : a + b ∈ E8_Set := by
-  rw [E8_Set_eq_span, SetLike.mem_coe] at *
-  exact (Submodule.add_mem_iff_right _ ha).mpr hb
-
-theorem E8_neg_mem {a : V} (ha : a ∈ E8_Set) : -a ∈ E8_Set := by
-  rw [E8_Set_eq_span, SetLike.mem_coe] at *
-  exact Submodule.neg_mem _ ha
-
-def E8_Lattice : AddSubgroup V where
-  carrier := E8_Set
-  zero_mem' := by simp [mem_E8_Set]
-  add_mem' := E8_add_mem
-  neg_mem' := E8_neg_mem
-
-def E8_Scaled_Lattice (c : ℝ) : AddSubgroup V where
-  carrier := E8_Scaled_Set c
-  zero_mem' := by use 0; simp
-  add_mem' ha hb := by
-    rw [E8_Scaled_Set, Set.mem_smul_set] at *
-    obtain ⟨a, ha, rfl⟩ := ha
-    obtain ⟨b, hb, rfl⟩ := hb
-    use a + b, E8_add_mem ha hb, by simp
-  neg_mem' ha := by
-    simp only [E8_Scaled_Set, Set.mem_smul_set] at *
-    obtain ⟨a, ha, rfl⟩ := ha
-    use -a, E8_neg_mem ha, by simp
-
-open Topology TopologicalSpace Filter Function InnerProductSpace RCLike
-
-theorem E8_Matrix_inner {i j : Fin 8} :
-    haveI : Inner ℝ (Fin 8 → ℝ) := (inferInstance : Inner ℝ V)
-    ⟪(E8_Matrix i : V), E8_Matrix j⟫_ℝ = ∑ k, E8' i k * E8' j k := by
-  change ∑ k, E8_Matrix i k * E8_Matrix j k = _
-  simp_rw [E8_Matrix, RingHom.mapMatrix_apply, map_apply, eq_ratCast, Rat.cast_sum, Rat.cast_mul]
-
-section E8_norm_bounds
-
-variable {c : ℝ}
-
-set_option maxHeartbeats 2000000 in
-/-- All vectors in E₈ have norm √(2n) -/
-theorem E8_norm_eq_sqrt_even (v : E8_Lattice) :
-    ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n := by
-  -- sorry
-  rcases v with ⟨v, hv⟩
-  change ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n
-  rw [norm_sq_eq_inner (𝕜 := ℝ) v]
-  simp_rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe,← Finsupp.range_total,
-    LinearMap.mem_range] at hv
-  replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by
-    convert hv
-    rw [← Finsupp.total_eq_sum E8_Matrix _]
-    rfl
-  obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv
-  simp_rw [re_to_real, sum_inner, inner_sum, intCast_smul_left, intCast_smul_right, zsmul_eq_mul,
-    Fin.sum_univ_eight]
-  repeat rw [E8_Matrix_inner]
-  repeat rw [Fin.sum_univ_eight]
-  -- compute the dot products
-  norm_num
-  -- normalise the goal to ∃ n, Even n ∧ _ = n
-  norm_cast
-  rw [exists_eq_right']
-  -- now simplify the rest algebraically
-  ring_nf
-  simp [Int.even_sub, Int.even_add]
-
-theorem E8_norm_lower_bound (v : E8_Lattice) : v = 0 ∨ √2 ≤ ‖v‖ := by
-  rw [or_iff_not_imp_left]
-  intro hv
-  obtain ⟨n, ⟨hn, hn'⟩⟩ := E8_norm_eq_sqrt_even v
-  have : 0 ≤ (n : ℝ) := by rw [← hn']; exact sq_nonneg ‖↑v‖
-  have : 0 ≤ n := by norm_cast at this
-  have : n ≠ 0 := by contrapose! hv; simpa [hv] using hn'
-  have : 2 ≤ n := by obtain ⟨k, rfl⟩ := hn; omega
-  have : √2 ^ 2 ≤ ‖v‖ ^ 2 := by rw [sq, Real.mul_self_sqrt zero_le_two, hn']; norm_cast
-  rwa [sq_le_sq, abs_norm, abs_eq_self.mpr ?_] at this
-  exact Real.sqrt_nonneg 2
-
-theorem E8_Scaled_norm_lower_bound (hc : c ≠ 0) (v : E8_Scaled_Lattice c) :
-    v = 0 ∨ |c| * √2 ≤ ‖v‖ := by
-  obtain ⟨v, hv⟩ := v
-  simp [E8_Scaled_Lattice, -E8_Set, Set.mem_smul_set] at hv
-  obtain ⟨y, ⟨hy, hy'⟩⟩ := hv
-  simp_rw [← hy', AddSubmonoid.mk_eq_zero, smul_eq_zero, hc, false_or, AddSubgroup.coe_norm,
-    norm_smul, Real.norm_eq_abs]
-  cases' E8_norm_lower_bound ⟨y, hy⟩ with hy hy <;> simp [Subtype.ext_iff] at *
-  · tauto
-  · right; gcongr
-
-end E8_norm_bounds
-
-variable {c : ℝ}
-
-instance : DiscreteTopology E8_Lattice := by
-  rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
-  use 1, by norm_num,
-    fun v h ↦ (E8_norm_lower_bound v).resolve_right ?_
-  have : 1 < √2 := by rw [Real.lt_sqrt zero_le_one, sq, mul_one]; exact one_lt_two
-  linarith [dist_zero_right v ▸ h]
-
--- Not sure if `Fact` is a good idea, but might as well try it
-instance instDiscreteE8ScaledLattice [hc : Fact (c ≠ 0)] :
-    DiscreteTopology (E8_Scaled_Lattice c) := by
-  rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
-  use |c| * √2, by norm_num [hc.out]
-  intro v h
-  exact (E8_Scaled_norm_lower_bound hc.out v).resolve_right (by linarith [dist_zero_right v ▸ h])
-
-instance : DiscreteTopology E8_Set :=
-  (inferInstance : DiscreteTopology E8_Lattice)
-
-instance instDiscreteE8ScaledSet [Fact (c ≠ 0)] : DiscreteTopology (E8_Scaled_Set c) :=
-  (inferInstance : DiscreteTopology (E8_Scaled_Lattice c))
-
-theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set V) = ⊤ := by
-  simp only [Submodule.span, sInf_eq_top, Set.mem_setOf_eq]
-  intros M hM
-  have := Submodule.span_le.mpr <| Submodule.subset_span.trans (E8_Set_eq_span ▸ hM)
-  rw [E8_is_basis.right] at this
-  exact Submodule.eq_top_iff'.mpr fun _ ↦ this trivial
-
-instance : IsZlattice ℝ E8_Lattice :=
-  ⟨E8_Set_span_eq_top⟩
-
-instance instIsZLatticeE8ScaledLattice [inst : Fact (c ≠ 0)] :
-    IsZlattice ℝ (E8_Scaled_Lattice c) where
+instance instLatticeE8 : isLattice E8_Normalised_Lattice where
   span_top := by
-    change Submodule.span ℝ (c • E8_Set) = ⊤
-    rw [← Submodule.smul_span, E8_Set_span_eq_top, Submodule.eq_top_iff']
-    intro v
-    use c⁻¹ • v, by simp, by simp [← smul_assoc, smul_eq_mul, inv_mul_cancel inst.out, one_smul]
+    unfold Submodule.span
+    simp only [sInf_eq_top, Set.mem_setOf_eq]
+    intros M hM
+    have HSet : ↑E8_Normalised_Lattice = E8_Normalised_Set := rfl
+    rw [HSet] at hM
+    suffices hbasis : ∃ B : Basis (Fin 8) ℝ V, ((Set.range B) : Set V) ⊆ (M : Set V)
+    { rcases hbasis with ⟨B, hB⟩
+      ext y
+      constructor
+      { simp only [Submodule.mem_top, implies_true] }
+      { intro hy
+        have h1 : ((Submodule.span ℝ (Set.range B)) : Set V) ⊆ (M : Set V) := by
+          intro z hz
+          rw [Basis.span_eq] at hz
+          rw [← B.span_eq] at hz
+          unfold Submodule.span at hz
+          simp only [Submodule.sInf_coe, Set.mem_setOf_eq, Set.mem_iInter, SetLike.mem_coe] at hz ⊢
+          specialize hz M hB
+          exact hz
+        rw [Basis.span_eq] at h1
+        exact h1 hy } }
+    suffices hE8basis : ∃ B : Basis (Fin 8) ℝ V, ((Set.range B) : Set V) ⊆ E8_Normalised_Set
+    { rcases hE8basis with ⟨B, hB⟩
+      use B
+      intro x hx
+      exact hM (hB hx) }
+    use E8_Normalised_Basis
+    have hbasiselts : Set.range E8_Normalised_Basis = E8_Normalised_Basis_Set := by
+      ext x
+      constructor
+      { intro hx
+        rcases hx with ⟨i, hi⟩
+        use i
+        simp only [← hi, E8_Normalised_Basis, Pi.smul_apply, PiLp.smul_apply, smul_eq_mul,
+          coe_basisOfLinearIndependentOfCardEqFinrank] }
+      { intro hx
+        apply Set.mem_range.mpr
+        rcases hx with ⟨i, hi⟩
+        use i
+        simp only [hi, E8_Normalised_Basis, Pi.smul_apply, PiLp.smul_apply, smul_eq_mul,
+          coe_basisOfLinearIndependentOfCardEqFinrank] }
+    intro x hx
+    rw [hbasiselts] at hx
+    cases' hx with i hi
+    unfold E8_Normalised_Set
+    simp only [Set.mem_setOf_eq, E8_Set]
+    rcases i with ⟨i₀ | i₁ | i₂ | i₃ | i₄ | i₅ | i₆ | i₇ | n, hn⟩
+    -- A lot of steps here are repeated. Can this code be optimised?
+    { use E8_Basis_Vecs 0
+      constructor
+      { constructor
+        { left
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V] }
+          { use (-1)
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] }
+          { use 0
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl] } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, Fin.isValue, one_div] } }
+    { use E8_Basis_Vecs 1
+      constructor
+      { constructor
+        { left
+          intro j
+          -- Rest done by copilot, pattern-matching with first. Very cool
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V] }
+          { use (-1)
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl] } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, Fin.isValue, one_div, zero_add, Fin.mk_one, Fin.isValue] } }
+    { -- The rest is easily done.
+      -- Copilot is still having difficulty doing the whole thing on its own, though...
+      use E8_Basis_Vecs 2
+      constructor
+      { constructor
+        { left
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V] }
+          { use (-1)
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl] } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
+    { use E8_Basis_Vecs 3
+      constructor
+      { constructor
+        { left
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V] }
+          { use (-1)
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl] } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
+    { use E8_Basis_Vecs 4
+      constructor
+      { constructor
+        { left
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V] }
+          { use (-1)
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl] } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
+    { use E8_Basis_Vecs 5
+      constructor
+      { constructor
+        { left
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V] }
+          { use 1
+            simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl, zero_add]
+          norm_num } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
+    { -- This case will need to be dealt with slightly differently
+      use E8_Basis_Vecs 6
+      constructor
+      { constructor
+        { right
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { constructor
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
+          { constructor
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
+          { constructor
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
+          { constructor
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
+          { constructor
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
+          { constructor
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
+          { constructor
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
+          { constructor
+            { use -1
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one]
+              norm_num }
+            { intro hcontra
+              simp only [Int.cast_one, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+                R8_to_V, Int.reduceNeg, Int.cast_neg, Int.cast_one] at hcontra
+              rcases hcontra with ⟨p, hp⟩
+              have even_one : Even (1 : ℤ) := by
+              { use -1 * p
+                rify
+                rw [neg_mul, one_mul, hp, neg_neg]
+                norm_num }
+              contradiction } }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl, zero_add]
+          use 2
+          norm_num } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
+    { use E8_Basis_Vecs 7
+      constructor
+      { constructor
+        { left
+          intro j
+          rcases j with ⟨j₀ | j₁ | j₂ | j₃ | j₄ | j₅ | j₆ | j₇ | m, hm⟩
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { use 1
+            simp only [Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_one] }
+          { use -1
+            simp only [Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_one, Int.reduceNeg, Int.cast_neg] }
+          { use 0
+            simp only [Int.cast_zero, Fin.isValue, E8_Basis_Vecs, coords_to_V, coords_to_R8,
+              R8_to_V, Int.cast_zero] }
+          { exfalso
+            simp only [Nat.add_one, Nat.succ] at hm
+            cases m
+            { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hm }
+            { linarith } } }
+        { simp only [Finset.sum, Fin.isValue, Fin.univ_val_map, List.ofFn_succ,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, List.ofFn_zero, Multiset.sum_coe,
+            List.sum_cons, List.sum_nil, add_zero, Fin.succ, Fin.isValue, Nat.succ_eq_add_one,
+            Nat.reduceAdd, Fin.val_zero, Fin.mk_one, Fin.reduceFinMk, E8_Basis_Vecs, coords_to_V,
+            coords_to_R8, R8_to_V, Int.cast_zero, Int.cast_one, add_right_neg,
+            AddCommGroup.modEq_refl] } }
+      { simp only [E8_Normalised_Basis_Vecs, Fin.zero_eta, Fin.isValue, Pi.smul_apply] at hi
+        simp only [← hi, zero_add, Nat.reduceAdd, Fin.reduceFinMk, Fin.isValue, one_div] } }
+    { exfalso
+      simp only [Nat.add_one, Nat.succ] at hn
+      cases n
+      { simp only [zero_add, Nat.succ_eq_add_one, Nat.reduceAdd, lt_self_iff_false] at hn }
+      { linarith } }
 
-end E8_isZlattice
-end E8
+
+end Lattice
 
 section Packing
 
-variable {c : ℝ} [inst : Fact (c ≠ 0)]
+-- def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_Normalised_Set)
 
--- def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_Scaled_Set)
+instance instSpherePackingE8NormalisedLattice : SpherePackingCentres 8 E8_Normalised_Lattice where
+  nonoverlapping := by
+    intros x hx y hy hxy
+    rcases hx with ⟨v, hv1, hv2⟩
+    rcases hy with ⟨w, hw1, hw2⟩
+    unfold E8_Set at hv1 hw1
+    rw [Set.mem_setOf_eq] at hv1 hw1
+    rcases hv1 with ⟨hv11, hv12⟩
+    rcases hw1 with ⟨hw11, hw12⟩
+    -- rw [PiLp.dist_eq_of_L2 x y]
+    -- The above doesn't work because of the difference between `Dist.dist` and ``Euclidean.dist`!!
+    -- The only strategy that comes to mind to tackle this proof is to expand `Euclidean.dist`
+    -- somehow and then do cases on `hv11` and `hw11` (as in the def of `E8_Normalised_Lattice`, ie,
+    -- the proof that it is an additive, commutative subgroup of the ambient space).
+    sorry
 
-noncomputable instance instSpherePackingE8ScaledLattice {c : ℝ} [inst : Fact (c ≠ 0)] :
-    SpherePackingCentres 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
-  ⟨fun x hx y hy hxy ↦
-    have : x - y ∈ E8.E8_Scaled_Lattice c := AddSubgroup.sub_mem _ hx hy
-    (E8.E8_Scaled_norm_lower_bound inst.out ⟨_, this⟩).resolve_left (by simp [hxy, sub_eq_zero])⟩
+def E8_Packing := Packing_of_Centres 8 E8_Normalised_Lattice
 
-def E8_Packing := Packing_of_Centres 8 (E8.E8_Scaled_Lattice c) (|c| * √2)
-
-theorem Main : Constant 8 = Density 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
-  sorry
+theorem Main : Constant 8 = Density 8 E8_Normalised_Lattice := sorry
 
 end Packing
