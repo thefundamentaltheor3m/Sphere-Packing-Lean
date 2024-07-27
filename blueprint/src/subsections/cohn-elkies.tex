@@ -1,0 +1,24 @@
+In 2003 Cohn and Elkies \cite{ElkiesCohn}  developed  linear programming bounds that apply directly to sphere packings. The goal of this section is to formalize the Cohn--Elkies linear programming bound.
+
+The following theorem is the key result of \cite{ElkiesCohn}. (The original theorem is stated for a   class of functions more general then Schwartz functions)
+\begin{theorem}\label{thm-Cohn-Elkies}\uses{def-Fourier-Transform, thm-Poisson-summation-formula, SpherePacking.Density}\notready
+(Cohn, Elkies \cite{ElkiesCohn}) Suppose that  $f:\R^d\to\R$ is a Schwartz function that is not identically zero and satisfies the following conditions:
+\begin{equation}\label{eqn-Cohn-Elkies-condition-1}f(x)\leq 0\mbox{ for } \|x\|\geq 1\end{equation} and
+\begin{equation}\label{eqn-Cohn-Elkies-condition-2}\widehat{f}(x)\geq0\mbox{ for all } x\in\R^d.\end{equation}
+  Then the density of $d$-dimensional
+  sphere packings is bounded above by $$\frac{f(0)}{\widehat{f}(0)}\cdot \frac{\pi^{\frac{d}{2}}}{2^d\,\Gamma(\textstyle \frac{d}{2}+1)}.$$
+\end{theorem}
+\begin{proof}
+To be included.
+\end{proof}
+
+The main step in our proof of Theorem \ref{Main} is the explicit  construction of an optimal function. It will be convenient for us to scale this function by $\sqrt{2}$.
+\begin{theorem}\label{thm-g}\uses{thm-g1}
+There exists a radial Schwartz function $g:\R^8\to\R$ which satisfies:
+\begin{align}
+g(x)&\leq 0\mbox{ for } \|x\|\geq \sqrt{2} \label{eqn-g1}\\
+\widehat{g}(x)&\geq0\mbox{ for all } x\in\R^8\label{eqn-g2}\\
+g(0)&=\widehat{g}(0)=1.\label{eqn-g3}
+\end{align}
+\end{theorem}
+Theorem \ref{thm-Cohn-Elkies} applied to the optimal function $f(x)=g(x/\sqrt{2})$ immediately implies Theorem \ref{Main}.
