@@ -46,9 +46,9 @@ easier to construct a `SpherePackingCentres` instance for such lattices, which w
 the sphere packing problem in other dimensions.
 -/
 
+namespace E8
+
 local notation "V" => EuclideanSpace ℝ (Fin 8)
--- def V : Type := EuclideanSpace ℝ (Fin 8)
-local notation "ℝ⁸" => Fin 8 → ℝ
 
 #check V
 
@@ -389,35 +389,12 @@ end E8_Scaled_Over_ℝ
 noncomputable section E8_isZlattice
 
 theorem E8_add_mem {a b : V} (ha : a ∈ E8_Set) (hb : b ∈ E8_Set) : a + b ∈ E8_Set := by
-  obtain ⟨hv1, hv2⟩ := mem_E8_Set'.mp ha
-  obtain ⟨hw1, hw2⟩ := mem_E8_Set'.mp hb
-  rw [mem_E8_Set']
-  constructor
-  · simp_rw [PiLp.add_apply]
-    cases' hv1 with hv1 hv1 <;> cases' hw1 with hw1 hw1 <;> [left; right; right; left]
-    all_goals
-      intro i
-      obtain ⟨m, ⟨hm1, hm2⟩⟩ := hv1 i
-      obtain ⟨n, ⟨hn1, hn2⟩⟩ := hw1 i
-      use m + n, ?_, by simp [hm2, hn2, mul_add]
-      simp only [Int.odd_iff_not_even] at *
-      simp [Int.even_add, hm1, hn1]
-  · simp_rw [PiLp.add_apply, Finset.sum_add_distrib]
-    convert AddCommGroup.ModEq.add hv2 hw2
-    rw [add_zero]
+  rw [E8_Set_eq_span, SetLike.mem_coe] at *
+  exact (Submodule.add_mem_iff_right _ ha).mpr hb
 
 theorem E8_neg_mem {a : V} (ha : a ∈ E8_Set) : -a ∈ E8_Set := by
-  rw [mem_E8_Set'] at *
-  obtain ⟨hv1, hv2⟩ := ha
-  constructor
-  · cases' hv1 with hv1 hv1 <;> [left; right]
-    all_goals
-      intro i
-      obtain ⟨a, ⟨ha1, ha2⟩⟩ := hv1 i
-      use -a, by simp [Int.odd_iff_not_even, ha1], by simp [ha2]
-  · simp_rw [PiLp.neg_apply, Finset.sum_neg_distrib]
-    convert hv2.neg
-    rw [zero_eq_neg]
+  rw [E8_Set_eq_span, SetLike.mem_coe] at *
+  exact Submodule.neg_mem _ ha
 
 def E8_Lattice : AddSubgroup V where
   carrier := E8_Set
@@ -454,29 +431,29 @@ set_option maxHeartbeats 2000000 in
 /-- All vectors in E₈ have norm √(2n) -/
 theorem E8_norm_eq_sqrt_even (v : E8_Lattice) :
     ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n := by
-  sorry
-  -- rcases v with ⟨v, hv⟩
-  -- change ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n
-  -- rw [norm_sq_eq_inner (𝕜 := ℝ) v]
-  -- simp_rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe,← Finsupp.range_total,
-  --   LinearMap.mem_range] at hv
-  -- replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by
-  --   convert hv
-  --   rw [← Finsupp.total_eq_sum E8_Matrix _]
-  --   rfl
-  -- obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv
-  -- simp_rw [re_to_real, sum_inner, inner_sum, intCast_smul_left, intCast_smul_right, zsmul_eq_mul,
-  --   Fin.sum_univ_eight]
-  -- repeat rw [E8_Matrix_inner]
-  -- repeat rw [Fin.sum_univ_eight]
-  -- -- compute the dot products
-  -- norm_num
-  -- -- normalise the goal to ∃ n, Even n ∧ _ = n
-  -- norm_cast
-  -- rw [exists_eq_right']
-  -- -- now simplify the rest algebraically
-  -- ring_nf
-  -- simp [Int.even_sub, Int.even_add]
+  -- sorry
+  rcases v with ⟨v, hv⟩
+  change ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n
+  rw [norm_sq_eq_inner (𝕜 := ℝ) v]
+  simp_rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe,← Finsupp.range_total,
+    LinearMap.mem_range] at hv
+  replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by
+    convert hv
+    rw [← Finsupp.total_eq_sum E8_Matrix _]
+    rfl
+  obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv
+  simp_rw [re_to_real, sum_inner, inner_sum, intCast_smul_left, intCast_smul_right, zsmul_eq_mul,
+    Fin.sum_univ_eight]
+  repeat rw [E8_Matrix_inner]
+  repeat rw [Fin.sum_univ_eight]
+  -- compute the dot products
+  norm_num
+  -- normalise the goal to ∃ n, Even n ∧ _ = n
+  norm_cast
+  rw [exists_eq_right']
+  -- now simplify the rest algebraically
+  ring_nf
+  simp [Int.even_sub, Int.even_add]
 
 theorem E8_norm_lower_bound (v : E8_Lattice) : v = 0 ∨ √2 ≤ ‖v‖ := by
   rw [or_iff_not_imp_left]
@@ -513,7 +490,8 @@ instance : DiscreteTopology E8_Lattice := by
   linarith [dist_zero_right v ▸ h]
 
 -- Not sure if `Fact` is a good idea, but might as well try it
-instance [hc : Fact (c ≠ 0)] : DiscreteTopology (E8_Scaled_Lattice c) := by
+instance instDiscreteE8ScaledLattice [hc : Fact (c ≠ 0)] :
+    DiscreteTopology (E8_Scaled_Lattice c) := by
   rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
   use |c| * √2, by norm_num [hc.out]
   intro v h
@@ -522,7 +500,7 @@ instance [hc : Fact (c ≠ 0)] : DiscreteTopology (E8_Scaled_Lattice c) := by
 instance : DiscreteTopology E8_Set :=
   (inferInstance : DiscreteTopology E8_Lattice)
 
-instance [Fact (c ≠ 0)] : DiscreteTopology (E8_Scaled_Set c) :=
+instance instDiscreteE8ScaledSet [Fact (c ≠ 0)] : DiscreteTopology (E8_Scaled_Set c) :=
   (inferInstance : DiscreteTopology (E8_Scaled_Lattice c))
 
 theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set V) = ⊤ := by
@@ -535,7 +513,8 @@ theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set V) = ⊤ := by
 instance : IsZlattice ℝ E8_Lattice :=
   ⟨E8_Set_span_eq_top⟩
 
-instance [inst : Fact (c ≠ 0)] : IsZlattice ℝ (E8_Scaled_Lattice c) where
+instance instIsZLatticeE8ScaledLattice [inst : Fact (c ≠ 0)] :
+    IsZlattice ℝ (E8_Scaled_Lattice c) where
   span_top := by
     change Submodule.span ℝ (c • E8_Set) = ⊤
     rw [← Submodule.smul_span, E8_Set_span_eq_top, Submodule.eq_top_iff']
@@ -543,6 +522,7 @@ instance [inst : Fact (c ≠ 0)] : IsZlattice ℝ (E8_Scaled_Lattice c) where
     use c⁻¹ • v, by simp, by simp [← smul_assoc, smul_eq_mul, inv_mul_cancel inst.out, one_smul]
 
 end E8_isZlattice
+end E8
 
 section Packing
 
@@ -551,14 +531,14 @@ variable {c : ℝ} [inst : Fact (c ≠ 0)]
 -- def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_Scaled_Set)
 
 noncomputable instance instSpherePackingE8ScaledLattice {c : ℝ} [inst : Fact (c ≠ 0)] :
-    SpherePackingCentres 8 (E8_Scaled_Lattice c) (|c| * √2) :=
+    SpherePackingCentres 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
   ⟨fun x hx y hy hxy ↦
-    have : x - y ∈ E8_Scaled_Lattice c := AddSubgroup.sub_mem _ hx hy
-    (E8_Scaled_norm_lower_bound inst.out ⟨_, this⟩).resolve_left (by simp [hxy, sub_eq_zero])⟩
+    have : x - y ∈ E8.E8_Scaled_Lattice c := AddSubgroup.sub_mem _ hx hy
+    (E8.E8_Scaled_norm_lower_bound inst.out ⟨_, this⟩).resolve_left (by simp [hxy, sub_eq_zero])⟩
 
-def E8_Packing := Packing_of_Centres 8 (E8_Scaled_Lattice c) (|c| * √2)
+def E8_Packing := Packing_of_Centres 8 (E8.E8_Scaled_Lattice c) (|c| * √2)
 
-theorem Main : Constant 8 = Density 8 (E8_Scaled_Lattice c) (|c| * √2) :=
+theorem Main : Constant 8 = Density 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
   sorry
 
 end Packing
