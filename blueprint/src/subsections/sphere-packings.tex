@@ -1,11 +1,11 @@
 \subsection{Sphere packings}
 
-The sphere packing constant measures which portion of $d$_dimensional Euclidean space can be covered by non_overlapping unit balls. More precisely, let $\R^d$ be the Euclidean vector space equipped with distance $\|\cdot\|$ and Lebesgue measure $\mathrm{Vol}(\cdot)$. For $x\in\R^d$ and $r\in\R_{>0}$ we denote by $B_d(x,r)$ the ball in $\R^d$ with center $x$ and radius $r$. There are several types of sphere packings, which are determined by imposing certain conditions on the set of centres of the spheres involved in the packing. Therefore, we begin by defining those conditions on the centres of the spheres.
+The sphere packing constant measures which portion of $d$-dimensional Euclidean space can be covered by non-overlapping unit balls. More precisely, let $\R^d$ be the Euclidean vector space equipped with distance $\|\cdot\|$ and Lebesgue measure $\mathrm{Vol}(\cdot)$. For $x\in\R^d$ and $r\in\R_{>0}$ we denote by $B_d(x,r)$ the ball in $\R^d$ with center $x$ and radius $r$. There are several types of sphere packings, which are determined by imposing certain conditions on the set of centres of the spheres involved in the packing. Therefore, we begin by defining those conditions on the centres of the spheres.
 
 Below, $c$ is any real number (the scaling factor), usually with constraints such as $c > 0$ or $c \neq 0$.
 
 \begin{definition}\label{SpherePacking.SpherePackingCentres}\lean{SpherePacking.SpherePackingCentres}\leanok
-  We say that $X \subseteq \R^d$ is a set of \emph{sphere packing centres with separation $r$} if $X$ is discrete and $\|x _ y\| \geq r$ for all $x \neq y\in X$.
+  We say that $X \subseteq \R^d$ is a set of \emph{sphere packing centres with separation $r$} if $X$ is discrete and $\|x - y\| \geq r$ for all $x \neq y\in X$.
 \end{definition}
 
 \begin{definition}\label{SpherePacking.LatticePackingCentres}\lean{SpherePacking.LatticePackingCentres}\uses{SpherePacking.SpherePackingCentres}\leanok

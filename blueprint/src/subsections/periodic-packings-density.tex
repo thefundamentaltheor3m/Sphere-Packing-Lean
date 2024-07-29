@@ -8,26 +8,27 @@ Below, let $X \subseteq \R^d$ be a set of periodic packing centers with respect 
   Let $\Lambda \subset \R^d$ be a lattice. A set $\mathcal{D} \subseteq \R^d$ is a \emph{fundamental domain} of $\Lambda$ such that for all distinct $x, y \in \Lambda$, we have $(x + \mathcal{D}) \cap (y + \mathcal{D}) = \emptyset$ (disjointness) and $\bigcup_{x \in \Lambda} x + \mathcal{D} = \R^d$ (tiling).
 \end{definition}
 
-\begin{lemma}\label{exists_bounded_fd}\lean{}\uses{fd}
+\begin{lemma}\label{exists-bounded-fd}\lean{}\uses{fd}
   There always exists a \emph{bounded} fundamental region $\mathcal{D}$ of $\Lambda$.
 \end{lemma}
 \begin{proof}
-  Since lattices have $\Z$_bases, there exists a set of vectors $\mathcal{B} \subseteq \R^d$ such that $\Lambda = \mathrm{span}_{\Z}(\mathcal{B})$. We claim that $\mathcal{D}_{\Lambda} = \{\sum_i c_i\mathcal{B}_i \subseteq \R^n : c_i \in [0, 1)^n\}$ is a fundamental domain. The rest exists in Mathlib already so I don't bother elaborating here :) From the definition, we see that for $v = \sum_i c_i\mathcal{B}_i \in \mathcal{D}_{\Lambda}$, we have $\|v\| \leq \sum_i \|c_i\mathcal{B}_i\| \leq \sum_i \|\mathcal{B}_i\|$, which is a constant. Hence, $\mathcal{D}_{\Lambda}$ is bounded.
+  Since lattices have $\Z$-bases, there exists a set of vectors $\mathcal{B} \subseteq \R^d$ such that $\Lambda = \mathrm{span}_{\Z}(\mathcal{B})$. We claim that $\mathcal{D}_{\Lambda} = \{\sum_i c_i\mathcal{B}_i \subseteq \R^n : c_i \in [0, 1)^n\}$ is a fundamental domain. The rest exists in Mathlib already so I don't bother elaborating here :) From the definition, we see that for $v = \sum_i c_i\mathcal{B}_i \in \mathcal{D}_{\Lambda}$, we have $\|v\| \leq \sum_i \|c_i\mathcal{B}_i\| \leq \sum_i \|\mathcal{B}_i\|$, which is a constant. Hence, $\mathcal{D}_{\Lambda}$ is bounded.
 \end{proof}
 
 We denote by $L$ the bound of norm of vectors in the fundamental domain $\mathcal{D}$.
 
-\begin{lemma}\label{exists_fd_coset_contains}\lean{}\uses{fd}
+\begin{lemma}\label{exists-fd-coset-contains}\lean{}\uses{fd}
   For all vectors $v \in \R^d$ there exists a unique lattice point $x \in \Lambda$ such that $v \in x + \mathcal{D}$.
 \end{lemma}
 \begin{proof}
   By the tiling property of the fundamental domain, we have $v \in \bigcup_{x \in \Lambda} (x + \mathcal{D})$. By definition, this means there exists a lattice point $x \in \Lambda$ such that $v \in x + \mathcal{D}$. To show that it is unique, suppose that $v \in (x + \mathcal{D}) \cap (y + \mathcal{D})$ for distinct $x \neq y \in \Lambda$. By the disjointness property, $v \in \emptyset$, contradiction.
 \end{proof}
 
-\begin{proof}[Proof of \cref{lattice_points_bounds}]\label{lattice_points_bounds_proof}\uses{fd, exists_fd_coset_contains}
-  For the first inequality, it suffices to prove that $\mathcal{B}_d(R _ L) \subseteq \bigcup_{x \in \Lambda \cap \mathcal{B}_d(R)} (x + \mathcal{D})$, since the cosets on the right are almost disjoint. For a vector $v \in \mathcal{B}_d(R _ L)$, we have $\|v\| < R _ L$ by definition. By \cref{exists_fd_coset_contains}, there exists a lattice point $x \in \Lambda$ such that $v \in x + \mathcal{D}$. Rearranging gives $v _ x \in \mathcal{D}$, which means $\|v _ x\| \leq L$. By the triangle inequality, $\|x\| < R$, i.e. $x \in \mathcal{B}_d(L)$, concluding the proof.
+\begin{proof}[Proof of \cref{lattice-points-bounds}]\label{lattice-points-bounds-proof}\uses{fd, exists-fd-coset-contains}
+  For the first inequality, it suffices to prove that $\mathcal{B}_d(R - L) \subseteq \bigcup_{x \in \Lambda \cap \mathcal{B}_d(R)} (x + \mathcal{D})$, since the cosets on the right are almost disjoint. For a vector $v \in \mathcal{B}_d(R - L)$, we have $\|v\| < R - L$ by definition. By Lemma \cref{exists-fd-coset-contains}, there exists a lattice point $x \in \Lambda$ such that $v \in x + \mathcal{D}$. Rearranging gives $v - x \in \mathcal{D}$, which means $\|v - x\| \leq L$. By the triangle inequality, $\|x\| < R$, i.e. $x \in \mathcal{B}_d(L)$, concluding the proof.
 
-  For the second inequality, we prove that $\bigcup_{x \in \Lambda \cap \mathcal{B}_d(R)} (x + \mathcal{D}) \subseteq \mathcal{B}_d(R + L)$. Consider a vector $x \in \Lambda \cap \mathcal{B}_d(R)$ and a vector $y \in x + \mathcal{D}$. From above, we know $\|x\| < R$ and $\|y _ x\| \leq L$, so $\|y\| < R + L$, concluding the proof.
+<<<<<<< HEAD
+  For the second inequality, we prove that $\bigcup_{x \in \Lambda \cap \mathcal{B}_d(R)} (x + \mathcal{D}) \subseteq \mathcal{B}_d(R + L)$. Consider a vector $x \in \Lambda \cap \mathcal{B}_d(R)$ and a vector $y \in x + \mathcal{D}$. From above, we know $\|x\| < R$ and $\|y - x\| \leq L$, so $\|y\| < R + L$, concluding the proof.
 \end{proof}
 
 Next, we build up to the proof for \cref{periodic_points_bounds}

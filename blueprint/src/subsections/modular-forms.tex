@@ -3,19 +3,19 @@
 
 In this section, we recall and develop some theory of (quasi)modular forms.
 
-Let $\h$ be the upper half_plane $\{z\in\C\mid\Im(z)>0\}$.
-\begin{lemma}\label{def_Gamma_1_Action}
+Let $\h$ be the upper half-plane $\{z\in\C\mid\Im(z)>0\}$.
+\begin{lemma}\label{def-Gamma-1-Action}
     The modular group $\Gamma_1:=\mathrm{PSL}_2(\Z)$ acts on $\h$ by linear fractional transformations
 $$\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)z:=\frac{az+b}{cz+d}.$$
 \end{lemma}
 
 Let $N$ be a positive integer.
-\begin{definition}\label{def_level_N_princ_cong_subgp}
+\begin{definition}\label{def-level-N-princ-cong-subgp}
     The \emph{level $N$ principal congruence subgroup} of $\Gamma_1$ is
     $$\Gamma(N):=\left\{\left.\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\Gamma_1\right|\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\equiv\left(\begin{smallmatrix}1&0\\0&1\end{smallmatrix}\right)\;\mathrm{mod}\;N\right\}.$$
 \end{definition}
 
-\begin{definition}\label{def_congruence_subgroup}\uses{def_level_N_princ_cong_subgp}
+\begin{definition}\label{def-congruence-subgroup}\uses{def-level-N-princ-cong-subgp}
     A subgroup $\Gamma\subset\Gamma_1$ is called a \emph{congruence subgroup} if $\Gamma(N)\subset\Gamma$ for some $N\in\N$.
 \end{definition}
 
@@ -23,27 +23,27 @@ An important example of a congruence subgroup is
 $$\Gamma_0(N):=\left\{\left.\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\Gamma_1\right|\;c\equiv0\;\mathrm{mod}\;N\right\}.$$
 
 Let $z\in\h$, $k\in\Z$, and $\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\mathrm{SL}_2(\Z)$.
-\begin{definition}\label{def_automorphy_factor}
+\begin{definition}\label{def-automorphy-factor}
     The \emph{automorphy factor} of weight $k$ is defined as
-$$j_k(z,\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)):=(cz+d)^{_k}.$$
+$$j_k(z,\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)):=(cz+d)^{-k}.$$
 \end{definition}
 
-\begin{lemma}\label{lemma_automorphy_factor_chain_rule}\uses{def_automorphy_factor}
+\begin{lemma}\label{lemma-automorphy-factor-chain-rule}\uses{def-automorphy-factor}
     The automorphy factor satisfies the \emph{chain rule}
 $$j_k(z,\gamma_1\gamma_2)=j_k(z,\gamma_1)\,j_k(\gamma_2z,\gamma_1). $$
 \end{lemma}
 
-\begin{definition}\label{def_slash_operator}\uses{def_automorphy_factor}
+\begin{definition}\label{def-slash-operator}\uses{def-automorphy-factor}
     Let $F$ be a  function on $\h$ and $\gamma\in\mathrm{PSL}_2(\Z)$. Then the \emph{slash operator} acts on $F$ by
 $$(F|_k\gamma)(z):=j_k(z,\gamma)\,F(\gamma z). $$
 \end{definition}
 
-\begin{lemma}\label{lemma_slash_operator_chail_rule}\uses{lemma_automorphy_factor_chain_rule}
+\begin{lemma}\label{lemma-slash-operator-chail-rule}\uses{lemma-automorphy-factor-chain-rule}
     The chain rule implies
 $$F|_k\gamma_1\gamma_2=(F|_k\gamma_1)|_k\gamma_2.$$
 \end{lemma}
 
-\begin{definition}\label{def_holomorphic_modular_form}\uses{def_congruence_subgroup}% \lean{def_holomorphic_modular_form}
+\begin{definition}\label{def-holomorphic-modular-form}\uses{def-congruence-subgroup}% \lean{def-holomorphic-modular-form}
 A \emph{(holomorphic) modular form} of integer weight $k$ and congruence subgroup $\Gamma$ is a holomorphic function $f:\h\to\C$ such that:
 \begin{enumerate}
   \item $f|_k\gamma=f$ for all $\gamma\in\Gamma$
@@ -51,109 +51,109 @@ A \emph{(holomorphic) modular form} of integer weight $k$ and congruence subgrou
 \end{enumerate}
 \end{definition}
 
-\begin{definition}\label{def_Mk}\uses{def_holomorphic_modular_form}
+\begin{definition}\label{def-Mk}\uses{def-holomorphic-modular-form}
     Let $M_k(\Gamma)$ be the space of modular forms of weight $k$ and congruence subgroup $\Gamma$.
 \end{definition}
 
 A key fact in the theory of modular forms is the following theorem:
-\begin{theorem}\label{theorem_Mk_finite_dimensional}\uses{def_Mk}
+\begin{theorem}\label{theorem-Mk-finite-dimensional}\uses{def-Mk}
     The spaces $M_k(\Gamma)$ are finite dimensional.
 \end{theorem}
 
 Let us consider several examples of modular forms.
-\begin{definition}\label{def_Ek_definition}% \lean{def_Ek_definition}
+\begin{definition}\label{def-Ek-definition}% \lean{def-Ek-definition}
 For an even integer $k\geq 4$ we define the \emph{weight $k$ Eisenstein series} as
-\begin{equation}\label{eqn_Ek_definition}
-E_k(z):=\frac{1}{2\zeta(k)}\sum_{(c,d)\in\Z^2\backslash(0,0)}(cz+d)^{_k}.\end{equation}
+\begin{equation}\label{eqn-Ek-definition}
+E_k(z):=\frac{1}{2\zeta(k)}\sum_{(c,d)\in\Z^2\backslash(0,0)}(cz+d)^{-k}.\end{equation}
 \end{definition}
-\begin{lemma}\label{lemma_Ek_is_modular_form}\uses{def_Mk}
+\begin{lemma}\label{lemma-Ek-is-modular-form}\uses{def-Mk}
     For all $k$, $E_k\in M_k(\Gamma_1)$
 \end{lemma}
 \begin{proof}
     This follows from the fact that the sum converges absolutely.
 \end{proof}
 
-\begin{lemma}\label{lemma_Ek_Fourier}\uses{def_Ek_definition}
-% \lean{lemma_Ek_Fourier}\uses{def_Ek_definition}
+\begin{lemma}\label{lemma-Ek-Fourier}\uses{def-Ek-definition}
+% \lean{lemma-Ek-Fourier}\uses{def-Ek-definition}
 The Eisenstein series possesses the Fourier expansion
-\begin{equation}\label{eqn_Ek_Fourier}E_k(z)=1+\frac{2}{\zeta(1_k)}\sum_{n=1}^\infty \sigma_{k_1}(n)\,e^{2\pi i z}, \end{equation}
-where $\sigma_{k_1}(n)\,=\,\sum_{d|n} d^{k_1}$. In particular, we have
+\begin{equation}\label{eqn-Ek-Fourier}E_k(z)=1+\frac{2}{\zeta(1-k)}\sum_{n=1}^\infty \sigma_{k-1}(n)\,e^{2\pi i z}, \end{equation}
+where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
 \begin{align}
   E_4(z)\,=\,& 1+240\sum_{n=1}^\infty \sigma_3(n)\,e^{2\pi i n z} \notag \\
-  E_6(z)\,=\,& 1_504\sum_{n=1}^\infty \sigma_5(n)\,e^{2\pi i n z}. \notag
+  E_6(z)\,=\,& 1-504\sum_{n=1}^\infty \sigma_5(n)\,e^{2\pi i n z}. \notag
 \end{align}
-\end{lemma}\label{lemma_E2_not_abs_conv}
-The infinite sum \eqref{eqn_Ek_definition} does not converge absolutely for $k=2$. On the other hand, the expression \eqref{eqn_Ek_Fourier} converges to a holomorphic function on the upper half_plane and therefore
-\begin{definition}\label{def_E2} % \lean{def_E2}
+\end{lemma}\label{lemma-E2-not-abs-conv}
+The infinite sum \eqref{eqn-Ek-definition} does not converge absolutely for $k=2$. On the other hand, the expression \eqref{eqn-Ek-Fourier} converges to a holomorphic function on the upper half-plane and therefore
+\begin{definition}\label{def-E2} % \lean{def-E2}
 We set
-\begin{equation}E_2(z):= 1_24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.\notag\end{equation}
+\begin{equation}E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.\notag\end{equation}
 \end{definition}
-\begin{lemma}\label{lemma_E2_transform}\uses{def_E2}
+\begin{lemma}\label{lemma-E2-transform}\uses{def-E2}
 This function is not modular, however it satisfies
-\begin{equation}\label{eqn_E2_transform}z^{_2}\,E_2\Big(\frac{_1}{z}\Big)=E_2(z) _\frac{6i}{\pi}\, \frac{1}{z}.\end{equation}
+\begin{equation}\label{eqn-E2-transform}z^{-2}\,E_2\Big(\frac{-1}{z}\Big)=E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.\end{equation}
 \end{lemma}
-The proof of this identity can be found in \cite[Section~2.3]{1_2_3}.
-The weight two Eisenstein series $E_2$ is an example of a \emph{quasimodular form} \cite[Section~5.1]{1_2_3}.
+The proof of this identity can be found in \cite[Section~2.3]{1-2-3}.
+The weight two Eisenstein series $E_2$ is an example of a \emph{quasimodular form} \cite[Section~5.1]{1-2-3}.
 
-Another example of modular forms we would like to consider are \emph{theta functions} \cite[Section~3.1]{1_2_3}.
-\begin{definition}\label{def_th00_th01_th10}
+Another example of modular forms we would like to consider are \emph{theta functions} \cite[Section~3.1]{1-2-3}.
+\begin{definition}\label{def-th00-th01-th10}
 We define three different theta functions (so called ``Thetanullwerte'') as
 \begin{align}
   \theta_{00}(z)\,=\, & \sum_{n\in\Z}e^{\pi i n^2 z} \notag \\
-  \theta_{01}(z)\,=\, & \sum_{n\in\Z}(_1)^n\,e^{\pi i n^2 z} \notag \\
+  \theta_{01}(z)\,=\, & \sum_{n\in\Z}(-1)^n\,e^{\pi i n^2 z} \notag \\
   \theta_{10}(z)\,=\, & \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 z}. \notag
 \end{align}
 \end{definition}
-The group $\Gamma_1$ is generated by the elements $T=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$ and $S=\left(\begin{smallmatrix}0&1\\_1&0\end{smallmatrix}\right)$.
-\begin{lemma}\label{lemma_theta_transform_S_T}\uses{def_th00_th01_th10}
+The group $\Gamma_1$ is generated by the elements $T=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$ and $S=\left(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\right)$.
+\begin{lemma}\label{lemma-theta-transform-S-T}\uses{def-th00-th01-th10}
 These elements act on the theta functions in the following way
 \begin{align}
-z^{_2}\,\theta^4_{00}\Big(\frac{_1}{z}\Big)\,=\,&_\theta_{00}^4(z) \label{eqn: theta transform S}\\
-z^{_2}\,\theta^4_{01}\Big(\frac{_1}{z}\Big)\,=\,&_\theta_{10}^4(z)\\
-z^{_2}\,\theta^4_{10}\Big(\frac{_1}{z}\Big)\,=\,&_\theta_{01}^4(z)
+z^{-2}\,\theta^4_{00}\Big(\frac{-1}{z}\Big)\,=\,&-\theta_{00}^4(z) \label{eqn: theta transform S}\\
+z^{-2}\,\theta^4_{01}\Big(\frac{-1}{z}\Big)\,=\,&-\theta_{10}^4(z)\\
+z^{-2}\,\theta^4_{10}\Big(\frac{-1}{z}\Big)\,=\,&-\theta_{01}^4(z)
 \end{align}
 and
 \begin{align}
 \theta^4_{00}(z+1)\,=\,&\theta_{01}^4(z)\\
 \theta^4_{01}(z+1)\,=\,&\theta_{00}^4(z)\\
-\theta^4_{10}(z+1)\,=\,&_\theta_{10}^4(z). \label{eqn: theta transform T}
+\theta^4_{10}(z+1)\,=\,&-\theta_{10}^4(z). \label{eqn: theta transform T}
 \end{align}
 \end{lemma}
 Moreover,
-\begin{lemma}\label{lemma_theta_functions_jacobi_identity}
+\begin{lemma}\label{lemma-theta-functions-jacobi-identity}
  These three theta functions satisfy the \emph{Jacobi identity}
 \begin{equation}
 \theta_{01}^4+\theta_{10}^4=\theta_{00}^4.
 \end{equation}
 \end{lemma}
 Finally,
-\begin{lemma}\label{lemma_theta_functions_modular_forms}
+\begin{lemma}\label{lemma-theta-functions-modular-forms}
     The theta functions $\theta^4_{00},\theta^4_{01}$, and $\theta^4_{10}$ belong to $M_2(\Gamma(2))$.
 \end{lemma}
 
 
-\begin{definition}\label{def_weakly_holomorphic_modular_form}
-A \emph{weakly_holomorphic modular form} of integer weight $k$ and congruence subgroup $\Gamma$ is a holomorphic function $f:\h\to\C$ such that:
+\begin{definition}\label{def-weakly-holomorphic-modular-form}
+A \emph{weakly-holomorphic modular form} of integer weight $k$ and congruence subgroup $\Gamma$ is a holomorphic function $f:\h\to\C$ such that:
 \begin{enumerate}
   \item $f|_k\gamma=f$ for all $\gamma\in\Gamma$
   \item for each $\alpha\in\Gamma_1\;f|_k\alpha$ has the Fourier expansion $f|_k\alpha (z)=\sum_{n=n_0}^\infty c_f(\alpha,\frac{n}{n_\alpha})\,e^{2\pi i \frac{n}{n_\alpha}z}$ for some $n_0\in\Z$ and $n_\alpha\in\N$.
 \end{enumerate}
 \end{definition}
-For an $m$_periodic holomorphic function $f$ and $n\in\frac 1m \Z$ we will denote the $n$_th Fourier coefficient of $f$ by $c_f(n)$ so that
+For an $m$-periodic holomorphic function $f$ and $n\in\frac 1m \Z$ we will denote the $n$-th Fourier coefficient of $f$ by $c_f(n)$ so that
 $$f(z)=\sum_{n\in\frac 1m \Z} c_f(n)\,e^{2\pi i n z}.$$
-We denote the space of weakly_holomorphic modular forms of weight $k$ and group $\Gamma$ by $M_k^!(\Gamma)$. The spaces $M_k^!(\Gamma)$ are infinite dimensional.
-Probably the most famous weakly_holomorphic modular form is the \emph{elliptic j_invariant}
-$$j\,:=\,\frac{1728\, E_4^3}{E_4^3_E_6^2}. $$
+We denote the space of weakly-holomorphic modular forms of weight $k$ and group $\Gamma$ by $M_k^!(\Gamma)$. The spaces $M_k^!(\Gamma)$ are infinite dimensional.
+Probably the most famous weakly-holomorphic modular form is the \emph{elliptic j-invariant}
+$$j\,:=\,\frac{1728\, E_4^3}{E_4^3-E_6^2}. $$
 This function belongs to $M_0^!(\Gamma_1)$ and has the Fourier expansion
-$$j(z)\,=\,q^{_1} + 744 + 196884\, q + 21493760\, q^2 + 864299970\, q^3 +
+$$j(z)\,=\,q^{-1} + 744 + 196884\, q + 21493760\, q^2 + 864299970\, q^3 +
   20245856256\, q^4 + O(q^5) $$
-  where $q=e^{2\pi i z}$. Using a simple computer algebra system such as PARI GP or Mathematica one can compute first hundred terms of this Fourier expansion within few seconds. An important question is to find an  asymptotic formula for $c_j(n)$, the $n$_th Fourier coefficient  of $j$. Using the Hardy_Ramanujan circle method \cite{Rademacher38} or the non_holomorphic Poincare series \cite{Petersson32} one can show that
+  where $q=e^{2\pi i z}$. Using a simple computer algebra system such as PARI GP or Mathematica one can compute first hundred terms of this Fourier expansion within few seconds. An important question is to find an  asymptotic formula for $c_j(n)$, the $n$-th Fourier coefficient  of $j$. Using the Hardy-Ramanujan circle method \cite{Rademacher38} or the non-holomorphic Poincare series \cite{Petersson32} one can show that
   \begin{lemma}\label{lemma: j Fourier asymptotic}
   % \lean{lemma: j Fourier asymptotic}
   \begin{equation}\label{eqn: j Fourier asymptotic}
   c_j(n)=\frac{2\pi}{n}\sum_{k=1}^\infty \frac{A_k(n)}{k}\,I_1\left(\frac{4\pi \sqrt{n}}{k}\right)\qquad n\in\Z_{>0}\end{equation}
   where
-  $$A_k(n)= \sum_{\substack{h\;\mathrm{mod}\;k\\(h,k)=1}} e^{\frac{_2\pi i}{k}(nh+h')},\quad hh'\equiv _1(\mbox{mod}\;k),$$
+  $$A_k(n)= \sum_{\substack{h\;\mathrm{mod}\;k\\(h,k)=1}} e^{\frac{-2\pi i}{k}(nh+h')},\quad hh'\equiv -1(\mbox{mod}\;k),$$
   and $I_\alpha(x)$ denotes the modified Bessel function of the first kind defined as in \cite[Section~9.6]{Abramowitz}.
   \end{lemma}
   A similar convergent asymptotic expansion holds for the Fourier coefficients of any weakly holomorphic modular form \cite{Hejhal}, \cite[Propositions~1.10 and~1.12]{Bruinier}. Such a convergent expansion implies effective estimates for the Fourier coefficients.

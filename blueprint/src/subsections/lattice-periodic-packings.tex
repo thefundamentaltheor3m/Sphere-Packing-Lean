@@ -1,8 +1,8 @@
 \subsection{Lattices and Periodic packings}
 
 \begin{definition}\label{EuclideanLattice.isLattice}\lean{EuclideanLattice.isLattice}\leanok
-  % A lattice in the Euclidean space $\R^d$ is a discrete, co_compact, abelian subgroup.
-  We say that an additive subgroup $\Lambda \leq \R^d$ is a \emph{lattice} if it is discrete and its $\R$_span contains all the elements of $\R^d$.
+  % A lattice in the Euclidean space $\R^d$ is a discrete, co-compact, abelian subgroup.
+  We say that an additive subgroup $\Lambda \leq \R^d$ is a \emph{lattice} if it is discrete and its $\R$-span contains all the elements of $\R^d$.
 \end{definition}
 
 
@@ -20,12 +20,12 @@
   This can be thought of as the ``volume of spheres per fundamental domain": the number of spheres per fundamental domain is $\lvert {X/\Lambda} \rvert$, and the volume of each sphere is $\mathrm{Vol}(B_d(0,1))$.
 \end{remark}
 
-\begin{definition}\label{def_Periodic_sphere_packing_constant}\uses{SpherePacking.Density, SpherePacking.PeriodicPackingCentres}\notready
+\begin{definition}\label{def-Periodic-sphere-packing-constant}\uses{SpherePacking.Density, SpherePacking.PeriodicPackingCentres}\notready
     The periodic sphere packing constant is defined to be
     $$ \Delta_{d}^{\text{periodic}} := \sup_{\substack{P \subset \R^d \\ \text{periodic packing}}} \Delta_P$$
 \end{definition}
 
-\begin{theorem}\label{periodic_packing_optimal}\uses{SpherePacking.Density, def_Periodic_sphere_packing_constant}\notready
+\begin{theorem}\label{periodic-packing-optimal}\uses{SpherePacking.Density, def-Periodic-sphere-packing-constant}\notready
     For all $d$, the periodic sphere packing constant in $\R^d$ is equal to the sphere packing constant in $\R^d$.
 \end{theorem}
 \begin{proof}
