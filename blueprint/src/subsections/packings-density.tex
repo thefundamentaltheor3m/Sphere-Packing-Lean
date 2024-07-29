@@ -2,11 +2,11 @@
 
 We first collect all the results we will prove here, then prove them separately below. We do this because some are proven already! Let $X \subseteq \R^d$ be a set of sphere packing centers with separation $r$.
 
-\begin{theorem}\label{finite-density-bounds}\uses{}\leanok
+\begin{theorem}\label{finite_density_bounds}\lean{SpherePacking.finite_density_lower_bound,SpherePacking.finite_density_upper_bound}\uses{SpherePacking.FiniteDensity}\leanok
   We have the following theorem relating the finite density and the number of lattice points in a ball:
 
   \[
-    \left|X \cap \mathcal{B}_d\left(R - \frac{r}{2}\right)\right| \cdot \frac{\mathrm{Vol}\left(\mathcal{B}_d\left(\frac{r}{2}\right)\right)}{\mathrm{Vol}(\mathcal{B}_d(R))}
+    \left|X \cap \mathcal{B}_d\left(R _ \frac{r}{2}\right)\right| \cdot \frac{\mathrm{Vol}\left(\mathcal{B}_d\left(\frac{r}{2}\right)\right)}{\mathrm{Vol}(\mathcal{B}_d(R))}
     \leq \Delta_{\mathcal{P}}(R)
     \leq \left|X \cap \mathcal{B}_d\left(R + \frac{r}{2}\right)\right| \cdot \frac{\mathrm{Vol}\left(\mathcal{B}_d\left(\frac{r}{2}\right)\right)}{\mathrm{Vol}(\mathcal{B}_d(R))}
   \]
@@ -15,35 +15,35 @@ We first collect all the results we will prove here, then prove them separately 
   Proven by Gareth already. The high level idea is to prove that $\mathcal{P} \cap \mathcal{B}_d(R) = \left(\bigcup_{x \in X} \mathcal{B}_d\left(x, \frac{r}{2}\right)\right) \subseteq \bigcup_{x \in X \cap \mathcal{B}_d\left(R + \frac{r}{2}\right)} \mathcal{B}_d\left(x, \frac{r}{2}\right)$, and a similar inequality for the upper bound. The rest follows by rearranging and usign the fact that the balls are pairwise disjoint.
 \end{proof}
 
-Suppose further that $X$ is a periodic packing w.r.t. the lattice $\Lambda \subseteq \R^d$. Let $\mathcal{D}$ be a fundamental region of $\Lambda$, say the parallelopiped defined in the proof of \cref{exists-bounded-fd}, and let $L$ be the bound on the norm of vectors in $\mathcal{D}$ (see \cref{exists-bounded-fd}).
+Suppose further that $X$ is a periodic packing w.r.t. the lattice $\Lambda \subseteq \R^d$. Let $\mathcal{D}$ be a fundamental region of $\Lambda$, say the parallelopiped defined in the proof of \cref{exists_bounded_fd}, and let $L$ be the bound on the norm of vectors in $\mathcal{D}$ (see \cref{exists_bounded_fd}).
 
-\begin{theorem}\label{lattice-points-bounds}\uses{lattice-points-bounds-proof}
+\begin{theorem}\label{lattice_points_bounds}\uses{lattice_points_bounds_proof}
   For real numbers $R > L$, we have the following inequality relating the number of lattice points from $\Lambda$ in a ball with the volume of the ball and the fundamental region $\mathcal{D}$:
 
   \[
-    \frac{\mathrm{Vol}(\mathcal{B}_d(R - L))}{\mathrm{Vol}(\mathcal{D})}
+    \frac{\mathrm{Vol}(\mathcal{B}_d(R _ L))}{\mathrm{Vol}(\mathcal{D})}
     \leq \left|\Lambda \cap \mathcal{B}_d(R)\right|
     \leq \frac{\mathrm{Vol}(\mathcal{B}_d(R + L))}{\mathrm{Vol}(\mathcal{D})}
   \]
 \end{theorem}
 
-The proof can be found at \cref{lattice-points-bounds-proof}.
+The proof can be found at \cref{lattice_points_bounds_proof}.
 
-\begin{theorem}\label{periodic-points-bounds}\uses{periodic-points-bounds-proof}
+\begin{theorem}\label{periodic_points_bounds}\uses{periodic_points_bounds_proof}
   For real numbers $R > L$, we have the following inequality relating the number of points from $X$ (periodic w.r.t. $\Lambda$) in a ball with the number of points from $\Lambda$:
 
   \[
-    \left|\Lambda \cap \mathcal{B}_d(R - L)\right|\left|X / \Lambda\right|
+    \left|\Lambda \cap \mathcal{B}_d(R _ L)\right|\left|X / \Lambda\right|
     \leq \left|X \cap \mathcal{B}_d(R)\right|
     \leq \left|\Lambda \cap \mathcal{B}_d(R + L)\right|\left|X / \Lambda\right|
   \]
 \end{theorem}
 
-\todo{Link the proof}
+The proof can be found at \cref{periodic_points_bounds_proof}.
 
 Finally, when we combine the inequalities above, we need one additional computational lemma.
 
-\begin{lemma}\label{volume-ball-ratio}
+\begin{lemma}\label{volume_ball_ratio}\lean{SpherePacking.volume_ball_ratio_tendsto_nhds_one}\leanok
   For any constant $C > 0$, we have
 
   \[
@@ -51,15 +51,5 @@ Finally, when we combine the inequalities above, we need one additional computat
   \]
 \end{lemma}
 \begin{proof}
-  Write out the formula for volume of a ball and simplify. More specifically, we have $\mathrm{Vol}(\mathcal{B}_d(R)) = R^d \pi^{d / 2} / \Gamma\left(\frac{d}{2} + 1\right)$, so $\mathrm{Vol}(\mathcal{B}_d(R)) / \mathrm{Vol}(\mathcal{B}_d(R + C)) = R^d / (R + C)^d = \left(1 - \frac{1}{R + C}\right)^d = 1$.
+  Write out the formula for volume of a ball and simplify. More specifically, we have $\mathrm{Vol}(\mathcal{B}_d(R)) = R^d \pi^{d / 2} / \Gamma\left(\frac{d}{2} + 1\right)$, so $\mathrm{Vol}(\mathcal{B}_d(R)) / \mathrm{Vol}(\mathcal{B}_d(R + C)) = R^d / (R + C)^d = \left(1 _ \frac{1}{R + C}\right)^d = 1$.
 \end{proof}
-
-% \begin{lemma}\label{volume-balls-ratio}\uses{}
-%   We have
-%
-%   \[
-%     \lim_{R \to \infty} \frac{
-%   \]
-% \end{lemma}
-
-% \begin{theorem}\label{}

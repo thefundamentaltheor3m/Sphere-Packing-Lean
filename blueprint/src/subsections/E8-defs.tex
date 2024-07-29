@@ -2,42 +2,42 @@
 
 There are several equivalent definitions of the $E_8$ lattice. Below, we formalise two of them, and prove they are equivalent.
 
-\begin{definition}{$E_8$-lattice, Definition 1}\label{E8_Set}\lean{E8.E8_Set}\leanok
-  We define the \emph{$E_8$-lattice} (as a subset of $\R^8$) to be
+\begin{definition}{$E_8$_lattice, Definition 1}\label{E8_Set}\lean{E8.E8_Set}\leanok
+  We define the \emph{$E_8$_lattice} (as a subset of $\R^8$) to be
 $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1}^8x_i\equiv 0\;(\mathrm{mod\;2})\}.$$
 \end{definition}
 
 \begin{definition}\label{E8_Scaled_Set}\lean{E8.E8_Scaled_Set}\uses{E8_Set}\leanok
-  We define the \emph{scaled $E_8$-lattice} (by a real number $c$) as $$c\Lambda_8 = \{c \cdot \vec{v} : \vec{v} \in \Lambda_8\}$$.
+  We define the \emph{scaled $E_8$_lattice} (by a real number $c$) as $$c\Lambda_8 = \{c \cdot \vec{v} : \vec{v} \in \Lambda_8\}$$.
 \end{definition}
 
-\begin{definition}{$E_8$-lattice, Definition 2}\label{E8_Basis_Vecs}\lean{E8.E8_Matrix}\leanok
+\begin{definition}{$E_8$_lattice, Definition 2}\label{E8_Basis_Vecs}\lean{E8.E8_Matrix}\leanok
   We define the \emph{$E_8$ basis vectors} to be the set of vectors
   \[ \B_8 =
   \left\{
     \begin{bmatrix}
-      1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0
+      1 \\ _1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0
     \end{bmatrix},
     \begin{bmatrix}
-      0 \\ 1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0
+      0 \\ 1 \\ _1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0
     \end{bmatrix},
     \begin{bmatrix}
-      0 \\ 0 \\ 1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0
+      0 \\ 0 \\ 1 \\ _1 \\ 0 \\ 0 \\ 0 \\ 0
     \end{bmatrix},
     \begin{bmatrix}
-      0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0 \\ 0 \\ 0
+      0 \\ 0 \\ 0 \\ 1 \\ _1 \\ 0 \\ 0 \\ 0
     \end{bmatrix},
     \begin{bmatrix}
-      0 \\ 0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0 \\ 0
+      0 \\ 0 \\ 0 \\ 0 \\ 1 \\ _1 \\ 0 \\ 0
     \end{bmatrix},
     \begin{bmatrix}
       0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 1 \\ 1 \\ 0
     \end{bmatrix},
     \begin{bmatrix}
-      -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2
+      _1/2 \\ _1/2 \\ _1/2 \\ _1/2 \\ _1/2 \\ _1/2 \\ _1/2 \\ _1/2
     \end{bmatrix},
     \begin{bmatrix}
-      0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0
+      0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 1 \\ _1 \\ 0
     \end{bmatrix}
   \right\}
   \]
@@ -54,9 +54,9 @@ $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1
 \begin{proof}
   We prove each side contains the other side.
 
-  For a vector $\vec{v} \in \Lambda_8 \subseteq \R^8$, we have $\sum_i \vec{v}_i \equiv 0 \pmod{2}$ and $\vec{v}_i$ being either all integers or all half-integers. After some modulo arithmetic, it can be seen that $\B_8^{-1}\vec{v}$ as integer coordinates (i.e. it is congruent to $0$ modulo $1$). Hence, $\vec{v} \in \mathrm{span}_{\Z}(\B_8)$.
+  For a vector $\vec{v} \in \Lambda_8 \subseteq \R^8$, we have $\sum_i \vec{v}_i \equiv 0 \pmod{2}$ and $\vec{v}_i$ being either all integers or all half_integers. After some modulo arithmetic, it can be seen that $\B_8^{_1}\vec{v}$ as integer coordinates (i.e. it is congruent to $0$ modulo $1$). Hence, $\vec{v} \in \mathrm{span}_{\Z}(\B_8)$.
 
-  For the opposite direction, we write the vector as $\vec{v} = \sum_i c_i\B_8^i \in \mathrm{span}_{\Z}(\B_8)$ with $c_i$ being integers and $\B_8^i$ being the $i$-th basis vector. Expanding the definition then gives $\vec{v} = \left(c_1 - \frac{1}{2}c_7, -c_1 + c_2 - \frac{1}{2}c_7, \cdots, -\frac{1}{2}c_7\right)$. Again, after some modulo arithmetic, it can be seen that $\sum_i \vec{v}_i$ is indeed $0$ modulo $2$ and are all either integers and half-integers, concluding the proof.
+  For the opposite direction, we write the vector as $\vec{v} = \sum_i c_i\B_8^i \in \mathrm{span}_{\Z}(\B_8)$ with $c_i$ being integers and $\B_8^i$ being the $i$_th basis vector. Expanding the definition then gives $\vec{v} = \left(c_1 _ \frac{1}{2}c_7, _c_1 + c_2 _ \frac{1}{2}c_7, \cdots, _\frac{1}{2}c_7\right)$. Again, after some modulo arithmetic, it can be seen that $\sum_i \vec{v}_i$ is indeed $0$ modulo $2$ and are all either integers and half_integers, concluding the proof.
 
   (Note: this proof doesn't depend on that $\B_8$ is linearly independent.)
 \end{proof}
@@ -66,17 +66,17 @@ $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1
 In this section, we establish basic properties of the $E_8$ lattice and the $\B_8$ vectors.
 
 \begin{lemma}\label{E8_Scaled_is_basis}\lean{E8.E8_Scaled_is_basis}\uses{E8_Scaled_Matrix}\leanok
-  For nonzero real numbers $c$, the set $c\B_8$ is a $\R$-basis of $\R^8$.
+  For nonzero real numbers $c$, the set $c\B_8$ is a $\R$_basis of $\R^8$.
 \end{lemma}
 \begin{proof}
-  It suffices to prove that $\B_8 \in \mathrm{GL}_8(\R)$. We prove this by explicitly defining the inverse matrix $\B_8^{-1}$ and proving $\B_8 \B_8^{-1} = I_8$, which implies that $\det(\B_8)$ is nonzero.
+  It suffices to prove that $\B_8 \in \mathrm{GL}_8(\R)$. We prove this by explicitly defining the inverse matrix $\B_8^{_1}$ and proving $\B_8 \B_8^{_1} = I_8$, which implies that $\det(\B_8)$ is nonzero.
 \end{proof}
 
 \begin{lemma}\label{E8_Scaled_Lattice}\lean{E8.E8_Scaled_Lattice}\uses{E8_Scaled_Set, E8_defs_equivalent}\leanok
   For real numbers $c$, $c\Lambda_8$ is an additive subgroup of $\R^8$.
 \end{lemma}
 \begin{proof}\leanok
-  Trivially follows from that $\Lambda_8 \subseteq \R^8$ is the $\Z$-span of $\B_8$ and hence an additive group.
+  Trivially follows from that $\Lambda_8 \subseteq \R^8$ is the $\Z$_span of $\B_8$ and hence an additive group.
 \end{proof}
 
 \begin{lemma}\label{E8_Shortest_Vector}\lean{E8.E8_norm_eq_sqrt_even}\uses{E8_defs_equivalent}\leanok
@@ -101,7 +101,7 @@ In this section, we establish basic properties of the $E_8$ lattice and the $\B_
 \end{proof}
 
 \todo{Prove $E_8$ is unimodular.}
-\todo{Prove $E_8$ is positive-definite.}
+\todo{Prove $E_8$ is positive_definite.}
 
 \subsection{The $E_8$ sphere packing}
 
