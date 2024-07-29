@@ -31,6 +31,13 @@ class PeriodicPackingCentres (X : Set V) (r : ℝ) [DiscreteTopology X] [SphereP
     (Λ : AddSubgroup V) [DiscreteTopology Λ] [IsZlattice ℝ Λ] where
   periodic : ∀ x ∈ X, ∀ y ∈ Λ, x + y ∈ X
 
+def PeriodicPacking.addAction (X : Set V) (r : ℝ) (Λ : AddSubgroup V)
+    [DiscreteTopology X] [SpherePackingCentres d X r] [DiscreteTopology Λ] [IsZlattice ℝ Λ]
+    [PeriodicPackingCentres d X r Λ] : AddAction Λ X where
+  vadd g x := ⟨(g : V) + x, PeriodicPackingCentres.periodic _ _ x.prop _ g.prop⟩
+  zero_vadd := _
+  add_vadd := _
+
 def Packing_of_Centres (X : Set V) (r : ℝ) [DiscreteTopology X] [SpherePackingCentres d X r] :
     Set V :=
   ⋃ x ∈ X, (ball x (r / 2))
