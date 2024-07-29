@@ -209,7 +209,7 @@ theorem aux6 (hr : 0 < r) (R : ℝ) : Finite ↑(X ∩ ball 0 R) := by
     apply lt_of_le_of_lt (Set.encard_mono inf_le_right)
     apply lt_of_le_of_lt this (by decide)
 
-theorem aux1 [DiscreteTopology X] (hd : 0 < d) (hr : 0 < r) :
+theorem finite_density_lower_bound [DiscreteTopology X] (hd : 0 < d) (hr : 0 < r) :
     FiniteDensity d X r R
       ≥ (X ∩ ball 0 (R - r / 2)).encard * volume (ball (0 : V) (r / 2))
         / volume (ball (0 : V) R) := by
@@ -222,7 +222,7 @@ theorem aux1 [DiscreteTopology X] (hd : 0 < d) (hr : 0 < r) :
   · exact (volume_ball_pos _ (by linarith)).ne.symm
   · exact (volume_ball_lt_top _).ne
 
-theorem aux2 [DiscreteTopology X] (hd : 0 < d) (hr : 0 < r) :
+theorem finite_density_upper_bound [DiscreteTopology X] (hd : 0 < d) (hr : 0 < r) :
     FiniteDensity d X r R
       ≤ (X ∩ ball 0 (R + r / 2)).encard * volume (ball (0 : V) (r / 2))
         / volume (ball (0 : V) R) := by
@@ -344,7 +344,7 @@ private lemma aux {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
         · exact ENNReal.ofReal_le_one.mpr this
         · apply le_self_add
 
-example {C : ℝ} (hd : 0 < d) (hC : 0 < C) :
+theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 < C) :
     Tendsto (fun R ↦ volume (ball (0 : V d) R) / volume (ball (0 : V d) (R + C))) atTop (𝓝 1) := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   have (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : V d) R) / volume (ball (0 : V d) (R + C))
