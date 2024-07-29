@@ -95,6 +95,59 @@ This function is not modular, however it satisfies
 The proof of this identity can be found in \cite[Section~2.3]{1-2-3}.
 The weight two Eisenstein series $E_2$ is an example of a \emph{quasimodular form} \cite[Section~5.1]{1-2-3}.
 
+
+The discriminant form is a unique normalized cusp form of weight 12, which can be defined using $E_4$ and $E_6$.
+\begin{definition}\label{def-disc-definition}% \lean{def-disc-definition}
+The \emph{discriminant form} $\Delta(z)$ is given by
+\begin{equation}\label{eqn-disc-definition}
+\Delta(z) = \frac{E_4(z)^3 - E_6(z)^2}{1728}
+\end{equation}
+\end{definition}
+
+\begin{lemma}\label{lem-disc-cuspform}
+$\Delta(z) \in M_{12}(\Gamma_1)$ and it vanishes at the unique cusp, i.e. it is a cusp form of level $\Gamma_1$ and weight $12$.
+\end{lemma}
+\begin{proof}
+Being a modular form of desired weight and level directly follows from those of $E_4$ and $E_6$.
+It is a cusp form since the constant terms of Fourier expansions of $E_4$ and $E_6$ are both $1$.
+\end{proof}
+
+It also admits a product formula, which allow us to prove positivity of $\Delta(it)$ for $t > 0$ later.
+\begin{lemma}\label{lem-disc-prodformula}
+We have
+\begin{equation}\label{eqn-disc-prodformula}
+\Delta(z) = e^{2 \pi i z} \prod_{n \ge 1} (1 - e^{2 \pi i n z})^{24}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+There are several known proofs of this.
+One possible proof that we can formalize is from Kohnen \cite{Kohnen}, which prove
+\begin{equation}\label{eqn-disc-logder}
+    \frac{1}{2\pi i z} \frac{d}{dz}(\log \Delta) = 1 - 24 \sum_{n \ge 1} \frac{ne^{2 \pi i n z}}{1 - e^{2 \pi i n z}}.
+\end{equation}
+by using a multiplicative analogue of the Hecke operator and the valence formula.
+% Here we briefly summarize the proof.
+% First of all, it is enough to prove that the logarithmic derivative of $\Delta$ is given by
+% \begin{equation}\label{eqn-disc-logder}
+%     \frac{1}{2\pi i z} \frac{d}{dz}(\log \Delta) = 1 - 24 \sum_{n \ge 1} \frac{ne^{2 \pi i n z}}{1 - e^{2 \pi i n z}}.
+% \end{equation}
+% Define the slash action of $\gamma = \left(\begin{smallmatrix}a & b \\ c & d\end{smallmatrix}\right) \in \mathrm{GL}_{2}^{+}(\R)$ as
+% \begin{equation}\label{eqn-slash-operator-gl2p}
+% (f|_{k} \gamma)(z) := (\det \gamma)^{k/2} j_k(z, \gamma) f(\gamma z).
+% \end{equation}
+% The ``multiplicative'' Hecke operator $T_{m}^{M}$ of weight $m \ge 1$ is given by
+% \begin{equation}\label{eqn-mult-hecke}
+% T_{m}^{M}(f) := \prod_{\gamma \in \Gamma_1 \backslash \mathcal{M}(m)} (f|_{m}\gamma)(z)
+% \end{equation}
+% where
+% \begin{equation}\label{eqn-matm}
+% \mathcal{M}(m) := \{\gamma in M_{2}(\Z): \det(\gamma) = m\} = \coprod_{\substack{ad = m, d > 0 \\ b\,(\mathrm{mod}\, d)}} \Gamma_1 \begin{pmatrix}a & b \\ 0 & d\end{pmatrix}.
+% \end{equation}
+% Then $\# \Gamma_1 \backslash \mathcal{M}(m) = \sigma_1(m)$, and for $f \in M_{k}(\Gamma_1)$, we have $T_{m}^{M}(f) \in M_{k \sigma_1(m)}(\Gamma_1)$.
+\end{proof}
+
+Note that the RHS of \eqref{eqn-disc-logder} is equal to the $E_2(z)$.
+
 Another example of modular forms we would like to consider are \emph{theta functions} \cite[Section~3.1]{1-2-3}.
 \begin{definition}\label{def-th00-th01-th10}
 We define three different theta functions (so called ``Thetanullwerte'') as
@@ -130,7 +183,7 @@ Finally,
 \begin{lemma}\label{lemma-theta-functions-modular-forms}
     The theta functions $\theta^4_{00},\theta^4_{01}$, and $\theta^4_{10}$ belong to $M_2(\Gamma(2))$.
 \end{lemma}
-
+Note that we only need the fourth powers of theta functions in Lemma \ref{lemma-theta-functions-modular-forms} to define \eqref{def: b(r) definition}, not $\theta_{00}, \theta_{01}, \theta_{10}$ themselves.
 
 \begin{definition}\label{def-weakly-holomorphic-modular-form}
 A \emph{weakly-holomorphic modular form} of integer weight $k$ and congruence subgroup $\Gamma$ is a holomorphic function $f:\h\to\C$ such that:
@@ -157,6 +210,3 @@ $$j(z)\,=\,q^{-1} + 744 + 196884\, q + 21493760\, q^2 + 864299970\, q^3 +
   and $I_\alpha(x)$ denotes the modified Bessel function of the first kind defined as in \cite[Section~9.6]{Abramowitz}.
   \end{lemma}
   A similar convergent asymptotic expansion holds for the Fourier coefficients of any weakly holomorphic modular form \cite{Hejhal}, \cite[Propositions~1.10 and~1.12]{Bruinier}. Such a convergent expansion implies effective estimates for the Fourier coefficients.
-
-
-
