@@ -526,19 +526,22 @@ end E8
 
 section Packing
 
-variable {c : ℝ} [inst : Fact (c ≠ 0)]
+variable {c : ℝ} (hc : c ≠ 0)
 
 -- def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_Scaled_Set)
 
-noncomputable instance instSpherePackingE8ScaledLattice {c : ℝ} [inst : Fact (c ≠ 0)] :
-    SpherePackingCentres 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
+private lemma scale_pos : 0 < |c| * √2 :=
+  Real.mul_pos (abs_pos.mpr hc) (Real.sqrt_pos.mpr zero_lt_two)
+
+noncomputable instance instSpherePackingE8ScaledLattice :
+    SpherePackingCentres 8 (E8.E8_Scaled_Lattice c) (scale_pos hc) :=
   ⟨fun x hx y hy hxy ↦
     have : x - y ∈ E8.E8_Scaled_Lattice c := AddSubgroup.sub_mem _ hx hy
     (E8.E8_Scaled_norm_lower_bound inst.out ⟨_, this⟩).resolve_left (by simp [hxy, sub_eq_zero])⟩
 
-def E8_Packing := Packing_of_Centres 8 (E8.E8_Scaled_Lattice c) (|c| * √2)
+def E8_Packing := Packing_of_Centres 8 (E8.E8_Scaled_Lattice c) (scale_pos hc)
 
-theorem Main : PeriodicConstant 8 = Density 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
+theorem Main : PeriodicConstant 8 = Density 8 (E8.E8_Scaled_Lattice c) (scale_pos hc) :=
   sorry
 
 theorem Main' : Constant 8 = Density 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
