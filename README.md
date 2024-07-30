@@ -7,9 +7,7 @@ This is a (very nascent) project attempting to formalise some notions about Sphe
 * [Blueprint (PDF version)](https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/blueprint.pdf)
 * [API Documentation](https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs/)
 
-Contributors: Maryna Viazovska (EPFL), Sidharth Hariharan (Imperial College London/EPFL)
-
-We would also like to extend our sincere thanks to Kevin Buzzard and Utensil Song for their support in this endeavour.
+This project was kickstarted at EPFL by Maryna Viazovska and Sidharth Hariharan, and would not have got off the ground without the invaluable support of Kevin Buzzard and Utensil Song. That being said, every contributor to this growing effort deserves a great deal of appreciation and has the gratitude of the creators of the repository.
 
 ## Adding Files
 
