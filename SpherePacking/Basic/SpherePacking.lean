@@ -41,12 +41,15 @@ def Density (X : Set V) (r : ℝ) [SpherePackingCentres d X r] : ℝ≥0∞ :=
 
 -- TODO: maybe we need some API around Fin 0 stuff. Or maybe we just ignore them lol
 example (X : Set (EuclideanSpace ℝ (Fin 0))) : volume X = 0 := by
-  exact?
+  refine exists_measurable_superset_iff_measure_eq_zero.mp ?_
+  sorry
 
-theorem Density_zero (X : Set (V 0)) (r : ℝ) [SpherePackingCentres 0 X r] (R : ℝ) :
+theorem Density_zero' (X : Set (V 0)) (r : ℝ) [SpherePackingCentres 0 X r] (R : ℝ) :
     FiniteDensity 0 X r R = 0 := by
   simp_rw [FiniteDensity]
   convert ENNReal.zero_div
+  refine measure_inter_null_of_null_left (ball 0 R) ?h.e'_2.h.e'_5.h
+  sorry
 
 theorem Density_zero (X : Set (V 0)) (r : ℝ) [SpherePackingCentres 0 X r] :
     Density 0 X r = 0 := by
@@ -125,7 +128,7 @@ theorem periodicSpherePackingConstant'_eq_periodicSpherePackingConstant'
     (r r' : ℝ) (hr : 0 < r) (hr' : 0 < r') :
       PeriodicSpherePackingConstant' d r = PeriodicSpherePackingConstant' d r' := by
   by_cases hd : d = 0
-  · subst hd; simp
+  · subst hd; sorry -- simp
   simp_rw [PeriodicSpherePackingConstant']
   apply le_antisymm
   all_goals
@@ -142,8 +145,8 @@ theorem periodicSpherePackingConstant'_eq_periodicSpherePackingConstant'
         sorry
       _ = ⨆ (X : Set V) (Λ : AddSubgroup V) (_ : SpherePackingCentres d X r')
             (_ : DiscreteTopology Λ) (_ : IsZlattice ℝ Λ) (_ : AddAction Λ X), Density d X r' := by
-        exact ENNReal.ciCup_prod_eq_ciCup₂ _
-  · done
+        sorry -- exact ENNReal.ciCup_prod_eq_ciCup₂ _
+  · sorry -- done
 
 example {ι : Type*} {f : ι → ℝ} [IsEmpty ι] : iSup f = 0 := Real.iSup_of_isEmpty f
 
@@ -152,14 +155,14 @@ example {f : ℝ → ℝ → ℝ} {s t : Set ℝ} {a b : ℝ} (ha : a ∈ s) (hb
     f a b ≤ ⨆ (x ∈ s) (y ∈ t), f x y := by
   convert_to _ ≤ ⨆ (x : s), ⨆ (y ∈ t), f (x : ℝ) y
   · sorry
-  · done
-  apply le_iSup₂
+  · sorry -- done
+  -- apply le_iSup₂
 
 example {f : ℝ → ℝ → ℝ} {s t : Set ℝ} {a b : ℝ} (ha : a ∈ s) (hb : b ∈ t)
       (hf : BddAbove (Set.range f.uncurry)) :
     f a b ≤ ⨆ (x ∈ s) (y ∈ t), f x y := calc
   f a b ≤ ⨆ (x ∈ s), f x b := by
-    apply le_iSup
+    sorry -- apply le_iSup
   _ ≤ ⨆ (x ∈ s) (y ∈ t), f x y := by
     sorry
 
