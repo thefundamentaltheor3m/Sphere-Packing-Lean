@@ -13,6 +13,8 @@ variable (d : ℕ)
 local notation "V" => EuclideanSpace ℝ (Fin d)
 local notation "V" d => EuclideanSpace ℝ (Fin d)
 
+noncomputable local instance instTopSpaceV : TopologicalSpace (V d) := by infer_instance
+
 namespace SpherePacking
 
 section Definitions
@@ -21,8 +23,50 @@ class SpherePackingCentres (X : Set V) (r : ℝ) where
   nonoverlapping : ∀ x ∈ X, ∀ y ∈ X, x ≠ y → r ≤ ‖x - y‖
 
 set_option linter.unusedVariables false in
+@[simp]
 def Packing_of_Centres (X : Set V) (r : ℝ) [SpherePackingCentres d X r] : Set V :=
   ⋃ x ∈ X, ball x (r / 2)
+
+/-
+instance instDiscreteTopologyOfSpherePackingCentres (X : Set (V d)) (r : ℝ) [Fact (r > 0)]
+  [SpherePackingCentres d X r] : DiscreteTopology X := by
+  sorry
+The above gives the following error:
+```
+cannot find synthesization order for instance instDiscreteTopologyOfSpherePackingCentres with type
+  ∀ (d : ℕ) (X : Set (V d)) (r : ℝ) [inst : Fact (r > 0)] [inst : SpherePackingCentres d X r],
+  DiscreteTopology ↑X
+all remaining arguments have metavariables:
+  Fact (?r > 0)
+  SpherePackingCentres d X ?r
+```
+-/
+
+/- Whoopsie! The following should be `DiscreteTopology X` and not the packing!
+instance instSpherePackingCentresDiscrete (X : Set V) (r : ℝ) [SpherePackingCentres d X r]
+  [Fact (r > 0)] : DiscreteTopology (Packing_of_Centres d X r) := by
+  rw [discreteTopology_iff_singleton_mem_nhds]
+  intro H
+  rcases H with ⟨v, U, hU, hvU⟩
+  rw [mem_nhds_subtype]
+  simp only [Set.subset_singleton_iff, Set.mem_preimage, Subtype.forall, Subtype.mk.injEq]
+  use ball v (r / 2)
+  constructor
+  · simp only [isOpen_ball, ball, _root_.mem_nhds_iff]
+    use ball v (r / 4)
+    constructor
+    · intro y hy
+      rw [Set.mem_setOf_eq]
+      sorry
+    · constructor
+      · exact isOpen_ball
+      · refine mem_ball_self ?h.right.right.h
+        simp only [Nat.ofNat_pos, div_pos_iff_of_pos_right]
+        exact Fact.out
+  · intro a ha₁ ha₂
+
+    sorry
+-/
 
 end Definitions
 
