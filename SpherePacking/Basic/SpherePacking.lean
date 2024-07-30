@@ -1,220 +1,122 @@
 import Mathlib
-import SpherePacking.Basic.EuclideanLattice
-
-open Metric BigOperators EuclideanLattice
 
 /-!
-# The choices made in this file mirror those made in `Algebra.Module.Zlattice.Basic`. Specifically,
-- All conditions pertaining to types of sphere packings are defined on the sets of centres
-- A sphere packing can be built from any set of centres using `Packing_of_Centres`.
+# Density of Sphere Packings
+
+Let `X ⊆ ℝ^d` be a set of points such that distinct points are at least distance `r` apart. Putting
+a ball of radius `r / 2` around each point, we have a configuration of *sphere packing*. We call `X`
+the sphere packing centers.
+
+We also define the *density* of the configuration.
 -/
 
-variable (d : ℕ)
-local notation "V" => EuclideanSpace ℝ (Fin d)
-local notation "V" d => EuclideanSpace ℝ (Fin d)
-
-noncomputable local instance instTopSpaceV : TopologicalSpace (V d) := by infer_instance
-
-namespace SpherePacking
+open scoped ENNReal
+open Metric BigOperators Pointwise Filter MeasureTheory
 
 section Definitions
 
-class SpherePackingCentres (X : Set V) (r : ℝ) where
-  nonoverlapping : ∀ x ∈ X, ∀ y ∈ X, x ≠ y → r ≤ ‖x - y‖
+structure SpherePacking (d : ℕ) where
+  centers : Set (EuclideanSpace ℝ (Fin d))
+  radius : ℝ
+  radius_pos : 0 < radius
+  centers_dist : Pairwise (radius ≤ dist · · : centers → centers → Prop)
 
-set_option linter.unusedVariables false in
-@[simp]
-def Packing_of_Centres (X : Set V) (r : ℝ) [SpherePackingCentres d X r] : Set V :=
-  ⋃ x ∈ X, ball x (r / 2)
+structure PeriodicSpherePacking (d : ℕ) extends SpherePacking d where
+  Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))
+  Λ_discrete : DiscreteTopology Λ := by infer_instance
+  Λ_lattice : IsZlattice ℝ Λ := by infer_instance
+  -- Note that an AddAction here is not enough, because
+  Λ_action : ∀ ⦃x y⦄, x ∈ Λ → y ∈ centers → x + y ∈ centers
 
-/-
-instance instDiscreteTopologyOfSpherePackingCentres (X : Set (V d)) (r : ℝ) [Fact (r > 0)]
-  [SpherePackingCentres d X r] : DiscreteTopology X := by
-  sorry
-The above gives the following error:
-```
-cannot find synthesization order for instance instDiscreteTopologyOfSpherePackingCentres with type
-  ∀ (d : ℕ) (X : Set (V d)) (r : ℝ) [inst : Fact (r > 0)] [inst : SpherePackingCentres d X r],
-  DiscreteTopology ↑X
-all remaining arguments have metavariables:
-  Fact (?r > 0)
-  SpherePackingCentres d X ?r
-```
--/
+variable {d : ℕ}
 
-/- Whoopsie! The following should be `DiscreteTopology X` and not the packing!
-instance instSpherePackingCentresDiscrete (X : Set V) (r : ℝ) [SpherePackingCentres d X r]
-  [Fact (r > 0)] : DiscreteTopology (Packing_of_Centres d X r) := by
-  rw [discreteTopology_iff_singleton_mem_nhds]
-  intro H
-  rcases H with ⟨v, U, hU, hvU⟩
-  rw [mem_nhds_subtype]
-  simp only [Set.subset_singleton_iff, Set.mem_preimage, Subtype.forall, Subtype.mk.injEq]
-  use ball v (r / 2)
-  constructor
-  · simp only [isOpen_ball, ball, _root_.mem_nhds_iff]
-    use ball v (r / 4)
-    constructor
-    · intro y hy
-      rw [Set.mem_setOf_eq]
-      sorry
-    · constructor
-      · exact isOpen_ball
-      · refine mem_ball_self ?h.right.right.h
-        simp only [Nat.ofNat_pos, div_pos_iff_of_pos_right]
-        exact Fact.out
-  · intro a ha₁ ha₂
+noncomputable instance PeriodicSpherePacking.instAddAction (S : PeriodicSpherePacking d) :
+    AddAction S.Λ S.centers where
+  vadd x y := ⟨↑x + ↑y, S.Λ_action x.prop y.prop⟩
+  zero_vadd := by
+    intro ⟨v, hv⟩
+    apply Subtype.ext
+    exact zero_add v
+  add_vadd := by
+    intro ⟨u, hu⟩ ⟨v, hv⟩ ⟨p, hp⟩
+    apply Subtype.ext
+    exact add_assoc u v p
 
-    sorry
--/
+abbrev SpherePacking.balls (S : SpherePacking d) : Set (EuclideanSpace ℝ (Fin d)) :=
+  ⋃ x ∈ S.centers, ball x (S.radius / 2)
+
+noncomputable def SpherePacking.finiteDensity (S : SpherePacking d) (R : ℝ) : ℝ≥0∞ :=
+  volume (S.balls ∩ ball 0 R) / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R))
+
+noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
+  limsup S.finiteDensity atTop
 
 end Definitions
 
 noncomputable section Density
 
-open scoped ENNReal
-open MeasureTheory Filter
+variable {d : ℕ} (S : SpherePacking d)
 
-set_option linter.unusedVariables false
+/-- The `PeriodicSpherePackingConstant` in dimension d is the supremum of the density of all
+periodic packings. See also `<TODO>` for specifying the separation radius of the packings. -/
+def PeriodicSpherePackingConstant (d : ℕ) : ℝ≥0∞ :=
+  ⨆ S : PeriodicSpherePacking d, S.density
 
-def FiniteDensity (X : Set V) (r : ℝ) [SpherePackingCentres d X r] (R : ℝ) : ℝ≥0∞ :=
-  volume ((Packing_of_Centres d X r) ∩ ball 0 R) / (volume (ball (0 : V) R))
-
-def Density (X : Set V) (r : ℝ) [SpherePackingCentres d X r] : ℝ≥0∞ :=
-  limsup (FiniteDensity d X r) atTop
-
--- TODO: maybe we need some API around Fin 0 stuff. Or maybe we just ignore them lol
-example (X : Set (EuclideanSpace ℝ (Fin 0))) : volume X = 0 := by
-  refine exists_measurable_superset_iff_measure_eq_zero.mp ?_
-  sorry
-
-theorem Density_zero' (X : Set (V 0)) (r : ℝ) [SpherePackingCentres 0 X r] (R : ℝ) :
-    FiniteDensity 0 X r R = 0 := by
-  simp_rw [FiniteDensity]
-  convert ENNReal.zero_div
-  refine measure_inter_null_of_null_left (ball 0 R) ?h.e'_2.h.e'_5.h
-  sorry
-
-theorem Density_zero (X : Set (V 0)) (r : ℝ) [SpherePackingCentres 0 X r] :
-    Density 0 X r = 0 := by
-  sorry
-
-/-- The `PeriodicSpherePackingConstant'` in dimension d with separation radius r is the supremum of
-the density of all periodic packings in dimension d with separation radius r. We later prove that
-all `PeriodicSpherePackingConstant'` with positive separation radius r are the same, and define
-`PeriodicSpherePackingConstant` as that unique value. See also `PeriodicSpherePackingConstant` and
-`periodicSpherePackingConstant'_eq_periodicSpherePackingConstant'`. -/
-def PeriodicSpherePackingConstant' (r : ℝ) : ℝ≥0∞ :=
-  ⨆ (X : Set V) (Λ : AddSubgroup V) (inst1 : SpherePackingCentres d X r)
-    (inst2 : DiscreteTopology Λ) (inst3 : IsZlattice ℝ Λ) (inst4 : AddAction Λ X), Density d X r
-
-/-- The `SpherePackingConstant` in dimension d with separation radius r is the supremum of the
-density of all packings in dimension d with separation radius r. We later prove that all
-`SpherePackingConstant'` with positive separation radius r are the same, and define
-`SpherePackingConstant` as that unique value. See also `SpherePackingConstant`. -/
-def SpherePackingConstant' (r : ℝ) : ℝ≥0∞ :=
-  ⨆ (X : Set V) (inst : SpherePackingCentres d X r), Density d X r
-
-/-- The `PeriodicSpherePackingConstant` in dimension d is the supremum of the
-density of all periodic packings in dimension d with separation radius 1. See also
-`PeriodicSpherePackingConstant'`. -/
-def PeriodicSpherePackingConstant : ℝ≥0∞ := PeriodicSpherePackingConstant' d 1
-
-/-- The `PeriodicSpherePackingConstant` in dimension d is the supremum of the
-density of all periodic packings in dimension d with separation radius 1. See also
-`PeriodicSpherePackingConstant'`. -/
-def SpherePackingConstant : ℝ≥0∞ := SpherePackingConstant' d 1
-
--- Obvious TODO: Extend to ConditionallyCompleteLattice
-theorem Real.ciCup_prod_eq_ciCup₂ {α β : Type*} [inst : Nonempty (α × β)] (f : α → β → ℝ)
-    (hf : BddAbove (Set.range f.uncurry)) :
-      ⨆ x : α × β, f x.fst x.snd = ⨆ (x : α) (y : β), f x y := by
-  haveI : Nonempty α := ⟨(Classical.choice inst).fst⟩
-  haveI : Nonempty β := ⟨(Classical.choice inst).snd⟩
-  apply ciSup_eq_of_forall_le_of_forall_lt_exists_gt
-  · intro ⟨x, y⟩
-    trans ⨆ y', f x y'
-    · refine le_ciSup (f := fun y' ↦ f x y') ?_ _
-      obtain ⟨u, hu⟩ := hf
-      use u
-      simp [mem_upperBounds] at hu ⊢
-      intro y'
-      exact hu _ x y' rfl
-    · refine le_ciSup (f := fun x' ↦ ⨆ y, f x' y) ?_ _
-      obtain ⟨u, hu⟩ := hf
-      use u
-      simp [mem_upperBounds] at hu ⊢
-      intro x'
-      apply ciSup_le
-      intro y'
-      exact hu _ x' y' rfl
-  · intro w hw
-    obtain ⟨x, hx⟩ := exists_lt_of_lt_ciSup hw
-    obtain ⟨y, hy⟩ := exists_lt_of_lt_ciSup hx
-    use ⟨x, y⟩
-
--- TODO: Change this to CompleteLattice
-theorem ENNReal.ciCup_prod_eq_ciCup₂ {α β : Type*} [inst : Nonempty (α × β)] (f : α → β → ℝ≥0∞) :
-    ⨆ x : α × β, f x.fst x.snd = ⨆ (x : α) (y : β), f x y := by
-  haveI : Nonempty α := ⟨(Classical.choice inst).fst⟩
-  haveI : Nonempty β := ⟨(Classical.choice inst).snd⟩
-  apply iSup_eq_of_forall_le_of_forall_lt_exists_gt
-  · intro ⟨x, y⟩
-    trans ⨆ y', f x y'
-    · apply le_iSup
-    · apply le_iSup (fun x ↦ ⨆ y, f x y)
-  · intro w hw
-    obtain ⟨x, hx⟩ := lt_iSup_iff.mp hw
-    obtain ⟨y, hy⟩ := lt_iSup_iff.mp hx
-    use ⟨x, y⟩
-
-theorem periodicSpherePackingConstant'_eq_periodicSpherePackingConstant'
-    (r r' : ℝ) (hr : 0 < r) (hr' : 0 < r') :
-      PeriodicSpherePackingConstant' d r = PeriodicSpherePackingConstant' d r' := by
-  by_cases hd : d = 0
-  · subst hd; sorry -- simp
-  simp_rw [PeriodicSpherePackingConstant']
-  apply le_antisymm
-  all_goals
-    apply iSup_le; intro X
-    apply iSup_le; intro Λ
-    apply iSup_le; intro inst1
-    apply iSup_le; intro inst2
-    apply iSup_le; intro inst3
-    apply iSup_le; intro inst4
-  · calc
-      _ ≤ ⨆ (XΛ : Set V × AddSubgroup V) (_ : SpherePackingCentres d XΛ.fst r')
-            (_ : DiscreteTopology XΛ.snd) (_ : IsZlattice ℝ XΛ.snd) (_ : AddAction XΛ.snd XΛ.fst),
-              Density d XΛ.fst r' := by
-        sorry
-      _ = ⨆ (X : Set V) (Λ : AddSubgroup V) (_ : SpherePackingCentres d X r')
-            (_ : DiscreteTopology Λ) (_ : IsZlattice ℝ Λ) (_ : AddAction Λ X), Density d X r' := by
-        sorry -- exact ENNReal.ciCup_prod_eq_ciCup₂ _
-  · sorry -- done
-
-example {ι : Type*} {f : ι → ℝ} [IsEmpty ι] : iSup f = 0 := Real.iSup_of_isEmpty f
-
-example {f : ℝ → ℝ → ℝ} {s t : Set ℝ} {a b : ℝ} (ha : a ∈ s) (hb : b ∈ t)
-      (hf : BddAbove (Set.range f.uncurry)) :
-    f a b ≤ ⨆ (x ∈ s) (y ∈ t), f x y := by
-  convert_to _ ≤ ⨆ (x : s), ⨆ (y ∈ t), f (x : ℝ) y
-  · sorry
-  · sorry -- done
-  -- apply le_iSup₂
-
-example {f : ℝ → ℝ → ℝ} {s t : Set ℝ} {a b : ℝ} (ha : a ∈ s) (hb : b ∈ t)
-      (hf : BddAbove (Set.range f.uncurry)) :
-    f a b ≤ ⨆ (x ∈ s) (y ∈ t), f x y := calc
-  f a b ≤ ⨆ (x ∈ s), f x b := by
-    sorry -- apply le_iSup
-  _ ≤ ⨆ (x ∈ s) (y ∈ t), f x y := by
-    sorry
-
-theorem periodicSpherePackingConstant_eq_periodicSpherePackingConstant'
-    (r : ℝ) (hr : 0 < r) :
-      PeriodicSpherePackingConstant d = PeriodicSpherePackingConstant' d r :=
-  periodicSpherePackingConstant'_eq_periodicSpherePackingConstant' _ _ _ zero_lt_one hr
+/-- The `SpherePackingConstant` in dimension d is the supremum of the density of all packings. See
+also `<TODO>` for specifying the separation radius of the packings. -/
+def SpherePackingConstant (d : ℕ) : ℝ≥0∞ :=
+  ⨆ S : SpherePacking d, S.density
 
 end Density
 
-end SpherePacking
+section DensityLemmas
+
+open SpherePacking
+
+variable {d : ℕ} (S : SpherePacking d)
+
+lemma finiteDensity_le_one (R : ℝ) : S.finiteDensity R ≤ 1 := by
+  rw [finiteDensity]
+  apply ENNReal.div_le_of_le_mul
+  rw [one_mul]
+  exact volume.mono Set.inter_subset_right
+
+lemma density_le_one : S.density ≤ 1 := by
+  rw [density]
+  apply limsup_le_iSup.trans
+  apply iSup_le
+  intro
+  exact finiteDensity_le_one _ _
+
+-- TODO
+
+/-- Finite density of a scaled packing. -/
+lemma density_smul (r : ℝ) (hX : Pairwise (r ≤ dist · · : X → X → Prop))
+    (R : ℝ) (c : ℝ) (hc : 0 < c) :
+      FiniteDensity (c • X) (c * r) (c * R) = FiniteDensity X r R := by
+  simp_rw [FiniteDensity]
+
+/-- Density of a scaled packing. -/
+lemma density_smul (r : ℝ) (hX : Pairwise (r ≤ dist · · : X → X → Prop)) (c : ℝ) (hc : 0 < c) :
+    Density (c • X) (c * r) = Density X r := by
+  sorry
+
+theorem aux (d : ℕ) :
+    PeriodicSpherePackingConstant d
+      = ⨆ (X : Set (EuclideanSpace ℝ (Fin d))) (Λ : AddSubgroup (EuclideanSpace ℝ (Fin d)))
+        (inst1 : DiscreteTopology Λ) (inst2 : IsZlattice ℝ Λ) (inst3 : AddAction Λ X),
+          Density X 1 := by
+  rw [PeriodicSpherePackingConstant, iSup_comm]
+  apply le_antisymm
+  · -- ⨆ (r) (X) (..), Density X r ≤ ⨆ (X) (..), Density X 1
+    sorry
+  · -- ⨆ (X) (..), Density X 1 ≤ ⨆ (r) (X) (..), Density X r
+    convert le_ciSup ?_ (1 : ℝ)
+    · rfl
+    · use 1
+      simp_rw [mem_upperBounds, Set.mem_range]
+      rintro C ⟨r, rfl⟩
+      repeat (apply iSup_le; intro)
+      exact density_le_one _ _
+
+end DensityLemmas
