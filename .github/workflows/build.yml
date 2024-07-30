@@ -67,6 +67,15 @@ jobs:
             leanblueprint web
             cp -r blueprint/web docs/blueprint
 
+      - name: Upload built blueprint artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: print.pdf
+          path: docs/blueprint
+
+      - name: Output artifact ID
+        run: echo 'Built blueprint PDF can be found at ${{ steps.artifact-upload-step.outputs.artifact-url }}'
+
       - name: Check Declarations
         run: |
             ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
