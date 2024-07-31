@@ -24,3 +24,7 @@ To modify the blueprint, modify `blueprint/src/content.tex` or any of the files 
 - `\lean{lem1, Proj.File.lem2}` indicates that the theorem (or definition) requires `lem1` and `Proj.File.lem2` **from Lean**.
 - `\leanok` indicates the proof is complete.
 - `\uses{thm:label1, ref:label2}` means the proof uses the theorems labelled by `\label{thm:label1}` and `\label{ref:label2}` **from LaTeX**.
+
+## Contributing to the Project
+
+Should you wish to make any contributions to the content of the project, please add them to a new branch and make a pull request. Your PR will need to satisfy certain status checks, be approved by a reviewer and have no conflicts with the base branch before it can be merged. Given that there might be several open PRs at any given time, please label your PR appropriately.
