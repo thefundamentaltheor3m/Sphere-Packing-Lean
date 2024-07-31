@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sidharth Hariharan, Gareth Ma
+-/
 import Mathlib
 
 /-!
@@ -165,6 +170,7 @@ lemma scale_finiteDensity (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 <
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   dsimp [finiteDensity, balls, scale]
   rw [EuclideanSpace.volume_ball_mul hc.le]
+  
   sorry
 
 /-- Density of a scaled packing. -/
@@ -172,6 +178,7 @@ lemma scale_density (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) :
     (S.scale hc).density = S.density := by
   -- Proving this would be a good practice for limsup API
   dsimp [density, finiteDensity]
+
   sorry
 
 -- TODO: Rename
