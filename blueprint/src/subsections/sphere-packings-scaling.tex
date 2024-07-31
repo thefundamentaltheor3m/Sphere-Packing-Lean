@@ -46,6 +46,6 @@ We can also use Lemma~\ref{SpherePacking.scale_density} to simplify the computat
     \Delta_d = \sup\limits_{\substack{\Pa \subset \R^d \\ \text{sphere packing} \\ \text{sep.~rad.} = 1}} \Delta_{\Pa}
   \]
 \end{lemma}
-\begin{proof}\uses{SpherePacking.scale_density}
+\begin{proof}\uses{SpherePacking.scale_density}\leanok
   That the supremum over packings of unit density is at most the sphere packing constant is obvious. For the reverse inequality, let $\Pa(X)$ be any sphere packing with separation radius $r$. We know, from Lemma~\ref{SpherePacking.scale_density}, that the density of $\Pa(X)$ is equal to that of the scaled packing $\Pa\!\left(\frac{X}{r}\right)$. Since the scaled packing has separation radius $1$, its density is naturally at most the supremum over all packings of unit density, meaning that the same is true of $\Pa(X)$.
 \end{proof}

@@ -1,13 +1,29 @@
 \subsection{Lattices and Periodic packings}
 
 \begin{definition}\label{IsZlattice}\lean{IsZlattice}\leanok
-  % A lattice in the Euclidean space $\R^d$ is a discrete, co-compact, abelian subgroup.
   We say that an additive subgroup $\Lambda \leq \R^d$ is a \emph{lattice} if it is discrete and its $\R$-span contains all the elements of $\R^d$.
 \end{definition}
 
+\begin{definition}\label{PeriodicSpherePacking}\lean{PeriodicSpherePacking}\uses{SpherePacking, IsZlattice}\leanok
+  We say that a sphere packing $\Pa(X)$ is ($\Lambda$-)\emph{periodic} if there exists a lattice $\Lambda \subset \R^d$ such that for all $x \in X$ and $y \in \Lambda$, $x + y \in X$ (ie, $X$ is $\Lambda$-periodic).
+\end{definition}
 
-\begin{definition}\label{SpherePacking.PeriodicPackingCentres}\lean{SpherePacking.PeriodicPackingCentres}\uses{SpherePacking.SpherePackingCentres, IsZlattice}\leanok
-  We say that $X \subseteq \R^d$ is a set of \emph{periodic packing centres} if $X$ is a set of sphere packing centres and there exists a lattice $\Lambda \subset \R^d$ such that for any $x \in X$ and $y \in \Lambda$, their sum $x + y$ lies in $X$.
+\begin{lemma}\label{PeriodicSpherePacking.toSpherePacking}\lean{PeriodicSpherePacking.toSpherePacking}\uses{PeriodicSpherePacking, SpherePacking}\leanok
+  Every periodic sphere packing is a sphere packing.
+\end{lemma}
+\begin{proof}
+  Mathematically, this lemma is hardly worth mentioning. We only do so to underscore the automatically constructed forgetful map \verb|PeriodicSpherePacking.toSpherePacking| in Lean.
+\end{proof}
+
+\begin{lemma}\label{PeriodicSpherePacking.instAddAction}\lean{PeriodicSpherePacking.instAddAction}\uses{PeriodicSpherePacking}\leanok
+  If $\Pa(X)$ is a $\Lambda$-periodic sphere packing, then $\Lambda$ acts on $X$ by translation.
+\end{lemma}
+\begin{proof}\leanok
+  This is immediate from the definition of a periodic sphere packing.
+\end{proof}
+
+\begin{definition}
+  If $\Lambda$ is a lattice, we call the $\Lambda$-periodic packing $\Pa(\Lambda)$ with centres at points in $\Lambda$ a lattice packing.
 \end{definition}
 
 \begin{lemma}\label{SpherePacking.density of periodic packing}\notready
