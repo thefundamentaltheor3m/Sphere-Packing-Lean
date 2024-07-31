@@ -105,18 +105,11 @@ In this section, we establish basic properties of the $E_8$ lattice and the $\B_
 
 \subsection{The $E_8$ sphere packing}
 
-\begin{lemma}\label{instSpherePackingE8ScaledLattice}\lean{instSpherePackingE8ScaledLattice}\uses{SpherePacking.SpherePackingCentres, E8_Scaled_Lattice}\leanok
-  For nonzero real numbers $c$, $c\Lambda_8$ is a valid set of sphere packing centres with separation $|c|\sqrt{2}$.
-\end{lemma}
-\begin{proof}
-  This follows directly from Theorem~\ref{E8_Shortest_Vector}.
-\end{proof}
-
-\begin{definition}\label{E8_Packing}\lean{E8_Packing}\uses{SpherePacking.Packing_of_Centres, E8_Scaled_Lattice}\leanok
+\begin{definition}\label{E8.E8Packing}\lean{E8.E8Packing}\uses{SpherePacking.balls, E8_Scaled_Lattice}\leanok
   The \emph{$E_8$ sphere packing} is the sphere packing with separation $1$, whose set of centres is $\frac{1}{\sqrt{2}}\Lambda_8$.
 \end{definition}
 
-\begin{theorem}\label{E8_Packing_density}\uses{E8_Packing}
+\begin{theorem}\label{E8Packing_density}\uses{E8.E8Packing}
   We have $\Delta_{E_8} = \frac{\pi^4}{384}$.
 \end{theorem}
 \begin{proof}

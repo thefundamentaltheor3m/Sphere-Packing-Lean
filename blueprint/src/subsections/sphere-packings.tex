@@ -1,36 +1,47 @@
-\subsection{Sphere packings}
+The Sphere Packing problem is a classic optimisation problem with widespread applications that go well beyond mathematics. The task is to determine the ``densest" possible arrangement of spheres in a given space. It remains unsolved in all but finitely many dimensions.
 
-The sphere packing constant measures which portion of $d$-dimensional Euclidean space can be covered by non-overlapping unit balls. More precisely, let $\R^d$ be the Euclidean vector space equipped with distance $\|\cdot\|$ and Lebesgue measure $\mathrm{Vol}(\cdot)$. For $x\in\R^d$ and $r\in\R_{>0}$ we denote by $B_d(x,r)$ the ball in $\R^d$ with center $x$ and radius $r$. There are several types of sphere packings, which are determined by imposing certain conditions on the set of centres of the spheres involved in the packing. Therefore, we begin by defining those conditions on the centres of the spheres.
+It was famously determined, in~\cite{Via2017}, that the optimal arrangement in $\mathbb{R}^8$ is given by the $E_8$ lattice. The result is strongly dependent on the Cohn-Elkies linear programming bound (Theorem 3.1 in~\cite{ElkiesCohn}), which, if a $\R^d \to \R$ function satisfying certain conditions exists, bounds the optimal density of sphere packings in $\R^d$ in terms of it. The proof in~\cite{Via2017} uses the theory of modular forms to construct a function that can be used to bound the density of all sphere packings in $\R^8$ above by the density of the $E_8$ lattice packing. This then allows us to conclude that no packing in $\R^8$ can be denser than the $E_8$ lattice packing.
 
-Below, $c$ is any real number (the scaling factor), usually with constraints such as $c > 0$ or $c \neq 0$.
+\subsection{The Setup}
 
-\begin{definition}\label{SpherePacking.SpherePackingCentres}\lean{SpherePacking.SpherePackingCentres}\leanok
-  We say that $X \subseteq \R^d$ is a set of \emph{sphere packing centres with separation $r$} if $X$ is discrete and $\|x - y\| \geq r$ for all $x \neq y\in X$.
+This subsection gives an overview for the setup of the problem, both informally and in Lean. Throughout this blueprint, $\R^d$ will denote the Euclidean vector space equipped with distance $\|\cdot\|$ and Lebesgue measure $\mathrm{Vol}(\cdot)$. For any $x\in\R^d$ and $r\in\R_{>0}$, we denote by $B_d(x,r)$ the open ball in $\R^d$ with center $x$ and radius $r$. While we will give a more formal definition of a sphere packing below (and in Lean), the underlying idea is that it is a union of balls of equal radius centred at points that are far enough from each other that the balls do not overlap.
+
+Arguably the most important definition in this subsection is that of \emph{packing density}, which measures which portion of $d$-dimensional Euclidean space is covered by a given sphere packing. Taking the supremum over all packings gives what we refer to as the \emph{sphere packing constant}, which is the quantity we are interested in optimising.
+
+\begin{definition}\label{SpherePacking.balls}\lean{SpherePacking.balls}\leanok  % Do we want to replace the notation \mathcal{P} with \mathcal{P}_X or \mathcal{P}(X)?
+  Given a set $X \subset \R^d$ and a real number $r > 0$ (known as the \emph{separation radius}) such that $\|x - y\| \geq r$ for all distinct $x, y \in X$, we define the \emph{sphere packing} $\Pa(X)$ with centres at $X$ to be the union of all open balls of radius $r$ centred at points in $X$:
+  \[
+    \Pa(X) := \bigcup_{x \in X} B_d(x, r)
+  \]
 \end{definition}
 
-\begin{definition}\label{SpherePacking.LatticePackingCentres}\lean{SpherePacking.LatticePackingCentres}\uses{SpherePacking.SpherePackingCentres}\leanok
-  We say that $X \subseteq \R^d$ is a set of \emph{lattice packing centres with separation $r$} if $X$ is both a set of sphere packing centres with separation $r$ and a lattice in $\R^d$.
-\end{definition}
-
-\begin{definition}\label{SpherePacking.Packing_of_Centres}\lean{SpherePacking.Packing_of_Centres}\leanok  % Do we want to replace the notation \mathcal{P} with \mathcal{P}_X or \mathcal{P}(X)?
-  Let $X\subset \R^d$ be a set of sphere packing centres of separation $r$. Then, the set $$\mathcal{P} = \bigcup_{x \in X} B_d\left(x, \frac{r}{2}\right)$$ of unit balls centred at points in $X$ is the corresponding \emph{sphere packing}.
-\end{definition}
-
-\begin{remark}
-  If $X$ is a set of lattice/periodic packing centres (see Definitions~\ref{SpherePacking.LatticePackingCentres} and~\ref{SpherePacking.PeriodicPackingCentres}), then the corresponding sphere packing $\mathcal{P}$ is called a \emph{lattice/periodic packing}.
+\begin{remark}\label{SpherePacking}\lean{SpherePacking}\leanok
+  Note that a sphere packing is uniquely defined from a given set of centres (which, in order to be a valid set of centres, must admit a corresponding separation radius). Therefore, as a conscious choice during the formalisation process, we will define everything that depends on sphere packings in terms of \verb|SpherePacking|, a \verb|structure| that bundles all the identifying information of a packing, but not the actual balls themselves. For the purposes of this blueprint, however, we will refrain from making this distinction.
 \end{remark}
 
-\begin{definition}\label{SpherePacking.FiniteDensity}\lean{SpherePacking.FiniteDensity}\uses{SpherePacking.Packing_of_Centres}\leanok
+We now define a notion of density for bounded regions of space by considering the density inside balls of finite radius.
+
+\begin{definition}\label{SpherePacking.finiteDensity}\lean{SpherePacking.finiteDensity}\uses{SpherePacking, SpherePacking.balls}\leanok
   The \emph{finite density} of a packing $\mathcal{P}$ is defined as
-$$\Delta_{\mathcal{P}}(R):=\frac{\mathrm{Vol}(\mathcal{P}\cap B_d(0,R))}{\mathrm{Vol}(B_d(0,R))},\quad R>0.$$
+  \[
+    \Delta_{\mathcal{P}}(R):=\frac{\mathrm{Vol}(\mathcal{P}\cap B_d(0,R))}{\mathrm{Vol}(B_d(0,R))},\quad R>0.
+  \]
 \end{definition}
 
-\begin{definition}\label{SpherePacking.Density}\lean{SpherePacking.Density}\uses{SpherePacking.Packing_of_Centres, SpherePacking.FiniteDensity}\leanok
-  We define the \emph{density} of a packing $\mathcal{P}$ as the limit supremum
-$$\Delta_{\mathcal{P}}:=\limsup\limits_{R\to\infty}\Delta_{\mathcal{P}}(R). $$
+As intuitive as it seems to take the density of a packing to be the limit of the finite densities as the radius of the ball goes to infinity, it is not immediately clear that this limit exists. Therefore, we define the density of a sphere packing as a limit superior instead.
+
+\begin{definition}\label{SpherePacking.density}\lean{SpherePacking.density}\uses{SpherePacking, SpherePacking.finiteDensity}\leanok
+  We define the \emph{density} of a packing $\mathcal{P}$ as the limit superior
+  \[
+    \Delta_{\mathcal{P}}:=\limsup\limits_{R\to\infty}\Delta_{\mathcal{P}}(R).
+  \]
 \end{definition}
 
-\begin{definition}\label{SpherePacking.Constant}\lean{SpherePacking.Constant}\uses{SpherePacking.Packing_of_Centres, SpherePacking.Density}\leanok
-  The sphere packing problem is to compute the \emph{sphere packing constant}, defined as supremum of packing densities over all possible packing
-$$\Delta_d:=\sup\limits_{\substack{\mathcal{P}\subset\R^d\\ \scriptscriptstyle\mathrm{sphere}\;\mathrm{packing}}}\Delta_{\mathcal{P}}.$$
+We may now define the sphere packing constant, the quantity that the sphere packing problem requires us to compute.
+
+\begin{definition}\label{SpherePackingConstant}\lean{SpherePackingConstant}\uses{SpherePacking.balls, SpherePacking.density}\leanok
+  The \emph{sphere packing constant} is defined as supremum of packing densities over all possible packings:
+  \[
+    \Delta_d:=\sup\limits_{\substack{\mathcal{P}\subset\R^d\\ \scriptscriptstyle\mathrm{sphere}\;\mathrm{packing}}}\Delta_{\mathcal{P}}.
+  \]
 \end{definition}
