@@ -4,26 +4,32 @@
 
  % THEOREMS
 
- \newtheorem{theorem}{Theorem}
- \newtheorem*{theorem*}{Theorem}
- \newtheorem{corollary}[theorem]{Corollary}
- \newtheorem{hypothesis}[theorem]{Hypothesis}
- \newtheorem{proposition}[theorem]{Proposition}
- \newtheorem{lemma}[theorem]{Lemma}
- \newtheorem{definition}[theorem]{Definition}
- \newtheorem{conjecture}[theorem]{Conjecture}
- \newtheorem{example}[theorem]{Example}
- \newtheorem{question}[theorem]{Question}
- \newtheorem{remark}[theorem]{Remark}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{hypothesis}[theorem]{Hypothesis}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{remark}[theorem]{Remark}
 
- % SET SYMBOLS
+% SET SYMBOLS
 
- \newcommand{\R}{\mathbb{R}}
- \newcommand{\Z}{\mathbb{Z}}
- \newcommand{\C}{\mathbb{C}}
- \newcommand{\N}{\mathbb{N}}
- \newcommand{\h}{\mathfrak{H}}
- \newcommand{\B}{\mathcal{B}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\h}{\mathfrak{H}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\Pa}{\mathcal{P}}  % Sphere packing
+\newcommand{\Vol}[1]{\operatorname{Vol}\!\left(#1\right)}
+
+% DELIMITERS  % So we don't need to do \left, \right and possibly \middle when things are big (Sid)
+
+\newcommand{\setof}[2]{\left\{ #1 \; \middle| \; #2 \right\}}
 
 % \LEANtrue
 
