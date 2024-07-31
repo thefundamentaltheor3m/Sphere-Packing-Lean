@@ -63,6 +63,7 @@ variable {d : ℕ}
 open Real
 
 -- Unfortunately I can't define a SMul ℝ (SpherePacking d) because we require 0 < c
+-- Perhaps we can define a monoid action instead - Sid
 def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePacking d where
   centers := c • S.centers
   separation := c * S.separation
@@ -170,7 +171,6 @@ lemma scale_finiteDensity (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 <
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   dsimp [finiteDensity, balls, scale]
   rw [EuclideanSpace.volume_ball_mul hc.le]
-  
   sorry
 
 /-- Density of a scaled packing. -/
@@ -178,11 +178,9 @@ lemma scale_density (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) :
     (S.scale hc).density = S.density := by
   -- Proving this would be a good practice for limsup API
   dsimp [density, finiteDensity]
-
   sorry
 
--- TODO: Rename
-theorem SpherePackingConstant_aux (hd : 0 < d) :
+theorem constant_eq_constant_normalized (hd : 0 < d) :
     SpherePackingConstant d = ⨆ (S : SpherePacking d) (_ : S.separation = 1), S.density := by
   rw [iSup_subtype', SpherePackingConstant]
   apply le_antisymm
