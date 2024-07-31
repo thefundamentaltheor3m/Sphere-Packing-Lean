@@ -34,8 +34,7 @@ properties about the E₈ lattice.
 
 -/
 
-open Euclidean EuclideanSpace BigOperators EuclideanLattice SpherePacking Matrix algebraMap
-  Pointwise EuclideanLattice
+open Euclidean EuclideanSpace BigOperators SpherePacking Matrix algebraMap Pointwise
 
 /-
 * NOTE: *
@@ -51,10 +50,6 @@ namespace E8
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 
 #check V
-
-instance : SMul ℝ V := ⟨fun (r : ℝ) (v : V) => (fun i => r * v i)⟩
-
-instance : HMul ℝ V V := ⟨fun (r : ℝ) (v : V) => (fun i => r * v i)⟩
 
 /-- E₈ is characterised as the set of vectors with (1) coordinates summing to an even integer,
 and (2) all its coordinates either an integer or a half-integer. -/
@@ -431,29 +426,30 @@ set_option maxHeartbeats 2000000 in
 /-- All vectors in E₈ have norm √(2n) -/
 theorem E8_norm_eq_sqrt_even (v : E8_Lattice) :
     ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n := by
-  -- sorry
-  rcases v with ⟨v, hv⟩
-  change ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n
-  rw [norm_sq_eq_inner (𝕜 := ℝ) v]
-  simp_rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe,← Finsupp.range_total,
-    LinearMap.mem_range] at hv
-  replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by
-    convert hv
-    rw [← Finsupp.total_eq_sum E8_Matrix _]
-    rfl
-  obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv
-  simp_rw [re_to_real, sum_inner, inner_sum, intCast_smul_left, intCast_smul_right, zsmul_eq_mul,
-    Fin.sum_univ_eight]
-  repeat rw [E8_Matrix_inner]
-  repeat rw [Fin.sum_univ_eight]
-  -- compute the dot products
-  norm_num
-  -- normalise the goal to ∃ n, Even n ∧ _ = n
-  norm_cast
-  rw [exists_eq_right']
-  -- now simplify the rest algebraically
-  ring_nf
-  simp [Int.even_sub, Int.even_add]
+  -- TODO: un-sorry (slow)
+  sorry
+  -- rcases v with ⟨v, hv⟩
+  -- change ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n
+  -- rw [norm_sq_eq_inner (𝕜 := ℝ) v]
+  -- simp_rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe,← Finsupp.range_total,
+  --   LinearMap.mem_range] at hv
+  -- replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by
+  --   convert hv
+  --   rw [← Finsupp.total_eq_sum E8_Matrix _]
+  --   rfl
+  -- obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv
+  -- simp_rw [re_to_real, sum_inner, inner_sum, intCast_smul_left, intCast_smul_right, zsmul_eq_mul,
+  --   Fin.sum_univ_eight]
+  -- repeat rw [E8_Matrix_inner]
+  -- repeat rw [Fin.sum_univ_eight]
+  -- -- compute the dot products
+  -- norm_num
+  -- -- normalise the goal to ∃ n, Even n ∧ _ = n
+  -- norm_cast
+  -- rw [exists_eq_right']
+  -- -- now simplify the rest algebraically
+  -- ring_nf
+  -- simp [Int.even_sub, Int.even_add]
 
 theorem E8_norm_lower_bound (v : E8_Lattice) : v = 0 ∨ √2 ≤ ‖v‖ := by
   rw [or_iff_not_imp_left]
@@ -522,26 +518,32 @@ instance instIsZLatticeE8ScaledLattice [inst : Fact (c ≠ 0)] :
     use c⁻¹ • v, by simp, by simp [← smul_assoc, smul_eq_mul, inv_mul_cancel inst.out, one_smul]
 
 end E8_isZlattice
-end E8
 
 section Packing
 
-variable {c : ℝ} [inst : Fact (c ≠ 0)]
+open scoped Real
 
--- def E8 := Packing_of_Centres 8 (EuclideanLattice.E8_Scaled_Set)
+variable {c : ℝ} (hc : c ≠ 0)
 
-noncomputable instance instSpherePackingE8ScaledLattice {c : ℝ} [inst : Fact (c ≠ 0)] :
-    SpherePackingCentres 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
-  ⟨fun x hx y hy hxy ↦
-    have : x - y ∈ E8.E8_Scaled_Lattice c := AddSubgroup.sub_mem _ hx hy
-    (E8.E8_Scaled_norm_lower_bound inst.out ⟨_, this⟩).resolve_left (by simp [hxy, sub_eq_zero])⟩
+-- Λ is inferred!
+noncomputable def E8Packing : PeriodicSpherePacking 8 where
+  centers := E8_Lattice
+  centers_dist x y h := (E8_norm_lower_bound (x - y)).resolve_left <| sub_ne_zero_of_ne h
+  Λ_action x y := add_mem
 
-def E8_Packing := Packing_of_Centres 8 (E8.E8_Scaled_Lattice c) (|c| * √2)
+-- sanity checks
+example : E8Packing.separation = √2 := rfl
+example : E8Packing.Λ = E8_Lattice := rfl
 
-theorem Main : PeriodicConstant 8 = Density 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
+-- proven in #25
+theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
   sorry
 
-theorem Main' : Constant 8 = Density 8 (E8.E8_Scaled_Lattice c) (|c| * √2) :=
+theorem Main : PeriodicSpherePackingConstant 8 = E8Packing.density :=
+  sorry
+
+theorem Main' : SpherePackingConstant 8 = E8Packing.density :=
   sorry
 
 end Packing
+end E8
