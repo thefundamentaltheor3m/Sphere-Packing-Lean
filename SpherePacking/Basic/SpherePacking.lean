@@ -24,6 +24,8 @@ open Metric BigOperators Pointwise Filter MeasureTheory
 
 section Definitions
 
+-- I considered defining a SetOf instance to treat SpherePacking as its centers automatically,
+-- but decided against it and opt for explicitly stating the conversion
 structure SpherePacking (d : ℕ) where
   centers : Set (EuclideanSpace ℝ (Fin d))
   separation : ℝ
@@ -32,14 +34,37 @@ structure SpherePacking (d : ℕ) where
 
 structure PeriodicSpherePacking (d : ℕ) extends SpherePacking d where
   Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))
-  -- Note that an AddAction here is not enough, because
+  -- Note that an AddAction here is not enough, because it might not agree with the action induced
+  -- by EuclideanSpace
   Λ_action : ∀ ⦃x y⦄, x ∈ Λ → y ∈ centers → x + y ∈ centers
   Λ_discrete : DiscreteTopology Λ := by infer_instance
   Λ_lattice : IsZlattice ℝ Λ := by infer_instance
 
 variable {d : ℕ}
 
-noncomputable instance PeriodicSpherePacking.instAddAction (S : PeriodicSpherePacking d) :
+theorem SpherePacking.centers_dist' (S : SpherePacking d) (x y : EuclideanSpace ℝ (Fin d))
+    (hx : x ∈ S.centers) (hy : y ∈ S.centers) (hxy : x ≠ y) :
+    S.separation ≤ dist x y := by
+  have : (⟨x, hx⟩ : S.centers) ≠ ⟨y, hy⟩ := Subtype.coe_ne_coe.mp hxy
+  -- The following fails. Reason unknown.
+  -- exact S.centers_dist this
+  have := S.centers_dist this
+  simp only at this
+  exact this
+
+instance SpherePacking.instCentersDiscrete (S : SpherePacking d) :
+    DiscreteTopology S.centers := by
+  simp_rw [← singletons_open_iff_discrete, Metric.isOpen_iff]
+  intro ⟨u, hu⟩ ⟨v, hv⟩ huv
+  simp_rw [Set.subset_singleton_iff, mem_ball, Subtype.forall, Subtype.mk.injEq]
+  rw [Set.mem_singleton_iff, Subtype.mk.injEq] at huv
+  subst huv
+  use S.separation, S.separation_pos
+  intro a ha h_dist
+  contrapose! h_dist
+  exact S.centers_dist <| Subtype.coe_ne_coe.mp h_dist
+
+noncomputable instance PeriodicSpherePacking.addAction (S : PeriodicSpherePacking d) :
     AddAction S.Λ S.centers where
   vadd x y := ⟨↑x + ↑y, S.Λ_action x.prop y.prop⟩
   zero_vadd := by
@@ -52,7 +77,7 @@ noncomputable instance PeriodicSpherePacking.instAddAction (S : PeriodicSpherePa
     exact add_assoc u v p
 
 abbrev SpherePacking.balls (S : SpherePacking d) : Set (EuclideanSpace ℝ (Fin d)) :=
-  ⋃ x ∈ S.centers, ball x (S.separation / 2)
+  ⋃ x : S.centers, ball (x : EuclideanSpace ℝ (Fin d)) (S.separation / 2)
 
 noncomputable def SpherePacking.finiteDensity (S : SpherePacking d) (R : ℝ) : ℝ≥0∞ :=
   volume (S.balls ∩ ball 0 R) / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R))
@@ -62,7 +87,7 @@ noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
 
 end Definitions
 
-section Instances
+section Scaling
 variable {d : ℕ}
 open Real
 
@@ -125,7 +150,43 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
         simpa [smul_smul, mul_inv_cancel hc.ne.symm, one_smul]
 }
 
-end Instances
+lemma PeriodicSpherePacking.scale_toSpherePacking
+    {S : PeriodicSpherePacking d} {c : ℝ} (hc : 0 < c) :
+    (S.scale hc).toSpherePacking = S.toSpherePacking.scale hc :=
+  rfl
+
+lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
+    (S.scale hc).balls = c • S.balls := by
+  ext x
+  simp only [scale, Set.mem_iUnion, Set.iUnion_coe_set]
+  constructor
+  · rintro ⟨y, hy, hxy⟩
+    have := Set.smul_mem_smul_set (a := c⁻¹) hy
+    rw [smul_smul, inv_mul_cancel hc.ne.symm, one_smul] at this
+    simp only [mem_ball, Set.mem_smul_set, Set.mem_iUnion] at hxy ⊢
+    use c⁻¹ • x, ?_, ?_
+    · use c⁻¹ • y, this
+      have : 0 ≤ c⁻¹ := by positivity
+      have h : 0 < c⁻¹ := by positivity
+      rw [dist_eq_norm] at hxy ⊢
+      rw [← smul_sub, norm_smul, Real.norm_eq_abs, abs_eq_self.mpr this]
+      apply lt_of_lt_of_le (b := c⁻¹ * (c * S.separation / 2))
+      · exact (mul_lt_mul_left h).mpr hxy
+      · rw [mul_div_assoc, ← mul_assoc, inv_mul_cancel hc.ne.symm, one_mul]
+    · rw [smul_smul, mul_inv_cancel hc.ne.symm, one_smul]
+  · intro h
+    simp only [mem_ball, Set.mem_smul_set, Set.mem_iUnion] at h ⊢
+    obtain ⟨x, ⟨⟨y, hy₁, hy₂⟩, rfl⟩⟩ := h
+    use c • y, ⟨y, hy₁, rfl⟩
+    rw [dist_eq_norm] at hy₂ ⊢
+    rw [← smul_sub, norm_smul, Real.norm_eq_abs, abs_eq_self.mpr hc.le, mul_div_assoc]
+    gcongr
+
+lemma PeriodicSpherePacking.scale_balls {S : PeriodicSpherePacking d} {c : ℝ} (hc : 0 < c) :
+    (S.scale hc).balls = c • S.balls :=
+  SpherePacking.scale_balls hc
+
+end Scaling
 
 noncomputable section Density
 
@@ -144,10 +205,9 @@ def SpherePackingConstant (d : ℕ) : ℝ≥0∞ :=
 end Density
 
 section DensityLemmas
-open scoped NNReal
 namespace SpherePacking
 
-variable {d : ℕ} (S : SpherePacking d) {c : ℝ≥0}
+variable {d : ℕ} (S : SpherePacking d)
 
 lemma finiteDensity_le_one (R : ℝ) : S.finiteDensity R ≤ 1 := by
   rw [finiteDensity]
@@ -162,6 +222,7 @@ lemma density_le_one : S.density ≤ 1 := by
   intro
   exact finiteDensity_le_one _ _
 
+-- TODO: Fix the namespace issues lol
 theorem EuclideanSpace.volume_ball_mul {ι : Type*} [Nonempty ι] [Fintype ι]
     {x : EuclideanSpace ℝ ι} {c : ℝ} (hc : 0 ≤ c) (R : ℝ) :
       volume (ball x (c * R)) = ENNReal.ofReal c ^ Fintype.card ι * volume (ball x R) := by
@@ -173,9 +234,21 @@ theorem EuclideanSpace.volume_ball_mul {ι : Type*} [Nonempty ι] [Fintype ι]
 lemma scale_finiteDensity (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  dsimp [finiteDensity, balls, scale]
-  rw [EuclideanSpace.volume_ball_mul hc.le]
+  have : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
+    convert (_root_.smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm
+    · exact Eq.symm (DistribMulAction.smul_zero c)
+    · rw [Real.norm_eq_abs, abs_eq_self.mpr hc.le]
+  rw [finiteDensity, scale_balls, this]
+  have : c • S.balls ∩ c • ball 0 R = c • (S.balls ∩ ball 0 R) := by
+    ext x;
+    simp only [Set.iUnion_coe_set, Set.mem_inter_iff, Set.mem_smul_set]
+    constructor <;> intro h
+    · done
+    · done
   sorry
+
+example {s t : Set ℝ} {c : ℝ} (hc : c ≠ 0) : c • (s ∩ t) = (c • s) ∩ (c • t) :=
+  Set.smul_set_inter₀ hc
 
 /-- Density of a scaled packing. -/
 lemma scale_density (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) :
@@ -206,49 +279,22 @@ section PeriodicDensity
 /- In this subsection, we prove that PeriodicDensity is equivalent to Density. This would allow us
 to compute density of a periodic sphere packing easier. -/
 
-variable (d : ℕ)
-local notation "V" => EuclideanSpace ℝ (Fin d)
-local notation "V" d => EuclideanSpace ℝ (Fin d)
-
-variable
-  (X : Set (V d)) (r : ℝ) [DiscreteTopology X] [SpherePackingCentres d X r]
-  (Λ : AddSubgroup (V d)) [DiscreteTopology Λ] [IsZlattice ℝ Λ] [PeriodicPackingCentres d X r Λ]
-  {F : Set (V d)} (hF : IsAddFundamentalDomain Λ F volume)
-
-theorem Main : Density d X r = PeriodicDensity d X r Λ hF := by
-  sorry
+-- TODO: state the theorem lol (first need to define PeriodicDensity in PeriodicPacking.lean
+-- Probably also using dot notation under PeriodicSpherePacking namespace
 
 end PeriodicDensity
 
 section BasicResults
-
-variable {d : ℕ}
-local notation "V" => EuclideanSpace ℝ (Fin d)
-local notation "V" d => EuclideanSpace ℝ (Fin d)
-
 open scoped ENNReal
 open EuclideanSpace
 
-variable (X : Set (V d)) (r R : ℝ) [DiscreteTopology X] [hX : SpherePackingCentres d X r]
-
-instance : Countable X := countable_of_Lindelof_of_discrete
+variable {d : ℕ} (S : SpherePacking d)
 
 /- In this section we establish basic results about FiniteDensity and Density of different types of
 packings. -/
 
-def instDiscreteX (hr : 0 < r) : DiscreteTopology X := by
-  simp_rw [← singletons_open_iff_discrete, Metric.isOpen_iff]
-  intro ⟨u, hu⟩ ⟨v, hv⟩ huv
-  simp only [Set.mem_singleton_iff, Subtype.mk.injEq, Set.subset_singleton_iff, mem_ball,
-    Subtype.forall] at huv ⊢
-  subst huv
-  use r, hr
-  intro a ha ha_dist
-  have hX_dist := hX.nonoverlapping a v ha hv
-  contrapose! hX_dist
-  use hX_dist, ha_dist
-
-theorem biUnion_inter_balls_subset_biUnion_balls_inter (r R : ℝ) :
+lemma biUnion_inter_balls_subset_biUnion_balls_inter
+    (X : Set (EuclideanSpace ℝ (Fin d))) (r R : ℝ) :
     ⋃ x ∈ X ∩ ball 0 R, ball x r ⊆ (⋃ x ∈ X, ball x r) ∩ ball 0 (R + r) := by
   intro x hx
   simp at hx ⊢
@@ -257,7 +303,8 @@ theorem biUnion_inter_balls_subset_biUnion_balls_inter (r R : ℝ) :
   apply lt_of_le_of_lt <| norm_le_norm_add_norm_sub' x y
   gcongr <;> tauto
 
-theorem biUnion_balls_inter_subset_biUnion_inter_balls (r R : ℝ) :
+lemma biUnion_balls_inter_subset_biUnion_inter_balls
+    (X : Set (EuclideanSpace ℝ (Fin d))) (r R : ℝ) :
     (⋃ x ∈ X, ball x r) ∩ ball 0 (R - r) ⊆ ⋃ x ∈ X ∩ ball 0 R, ball x r := by
   intro x hx
   simp at hx ⊢
@@ -269,18 +316,17 @@ theorem biUnion_balls_inter_subset_biUnion_inter_balls (r R : ℝ) :
     _ < R - r + r := by gcongr
     _ = R := by ring
 
-theorem volume_iUnion_balls_eq_tsum (hr : 0 < r) (R : ℝ) {r' : ℝ} (hr' : r' ≤ r / 2) :
-    volume (⋃ x : ↑(X ∩ ball 0 R), ball (x : EuclideanSpace ℝ (Fin d)) r')
-      = ∑' x : ↑(X ∩ ball 0 R), volume (ball (x : EuclideanSpace ℝ (Fin d)) r') := by
-  have : DiscreteTopology X := instDiscreteX _ _ hr
-  have : Countable X := countable_of_Lindelof_of_discrete
-  have : Countable ↑(X ∩ ball 0 R) := Set.Countable.mono (Set.inter_subset_left) this
+theorem SpherePacking.volume_iUnion_balls_eq_tsum
+    (R : ℝ) {r' : ℝ} (hr' : r' ≤ S.separation / 2) :
+    volume (⋃ x : ↑(S.centers ∩ ball 0 R), ball (x : EuclideanSpace ℝ (Fin d)) r')
+      = ∑' x : ↑(S.centers ∩ ball 0 R), volume (ball (x : EuclideanSpace ℝ (Fin d)) r') := by
+  have : Countable S.centers := countable_of_Lindelof_of_discrete
+  have : Countable ↑(S.centers ∩ ball 0 R) := Set.Countable.mono (Set.inter_subset_left) this
   apply measure_iUnion ?_ (fun _ ↦ measurableSet_ball)
   intro ⟨x, hx⟩ ⟨y, hy⟩ h
   apply ball_disjoint_ball
   simp_rw [ne_eq, Subtype.mk.injEq] at h ⊢
-  change _ ≤ ‖x - y‖
-  linarith [hX.nonoverlapping x y hx.left hy.left h]
+  linarith [S.centers_dist' x y hx.left hy.left h]
 
 -- https://github.com/leanprover-community/mathlib4/pull/15214/files
 -- Putting it as axioms so that #print axioms will show that this should be removed
@@ -290,44 +336,46 @@ axiom ENNReal.tsum_const_eq' {α : Type*} (s : Set α) (c : ENNReal) :
 
 /-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
 -/
-theorem inter_ball_encard_le (hd : 0 < d) (hr : 0 < r) (R : ℝ) :
-    (X ∩ ball 0 R).encard ≤
-      volume ((⋃ (x : X), ball (x : V) (r / 2)) ∩ ball 0 (R + r / 2))
-        / volume (ball (0 : V) (r / 2)) := by
-  have h := volume.mono <| biUnion_inter_balls_subset_biUnion_balls_inter X (r / 2) R
+theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
+    (S.centers ∩ ball 0 R).encard ≤
+      volume (S.balls ∩ ball 0 (R + S.separation / 2))
+        / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
+  have h := volume.mono <|
+    biUnion_inter_balls_subset_biUnion_balls_inter S.centers (S.separation / 2) R
   change volume _ ≤ volume _ at h
-  simp_rw [Set.biUnion_eq_iUnion, volume_iUnion_balls_eq_tsum X r hr _ (le_refl _),
+  simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R (le_refl _),
     Measure.addHaar_ball_center, ENNReal.tsum_const_eq'] at h
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.le_div_iff_mul_le] at h <;> left
-  · exact (volume_ball_pos _ (by linarith)).ne.symm
+  · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
   · exact (volume_ball_lt_top _).ne
 
 /-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
 -/
-theorem inter_ball_encard_ge (hd : 0 < d) (hr : 0 < r) (R : ℝ) :
-    (X ∩ ball 0 R).encard ≥
-      volume ((⋃ (x : X), ball (x : V) (r / 2)) ∩ ball 0 (R - r / 2))
-        / volume (ball (0 : V) (r / 2)) := by
-  have h := volume.mono <| biUnion_balls_inter_subset_biUnion_inter_balls X (r / 2) R
+theorem SpherePacking.inter_ball_encard_ge (hd : 0 < d) (R : ℝ) :
+    (S.centers ∩ ball 0 R).encard ≥
+      volume (S.balls ∩ ball 0 (R - S.separation / 2))
+        / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
+  have h := volume.mono <|
+    biUnion_balls_inter_subset_biUnion_inter_balls S.centers (S.separation / 2) R
   change volume _ ≤ volume _ at h
-  simp_rw [Set.biUnion_eq_iUnion, volume_iUnion_balls_eq_tsum X r hr _ (le_refl _),
+  simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ (le_refl _),
     Measure.addHaar_ball_center, ENNReal.tsum_const_eq'] at h
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.div_le_iff_le_mul] at h <;> left
-  · exact (volume_ball_pos _ (by linarith)).ne.symm
+  · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
   · exact (volume_ball_lt_top _).ne
 
-theorem aux6 (hr : 0 < r) (R : ℝ) : Finite ↑(X ∩ ball 0 R) := by
+theorem aux6 (R : ℝ) : Finite ↑(S.centers ∩ ball 0 R) := by
   apply Set.encard_lt_top_iff.mp
   by_cases hd : 0 < d
   · haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     apply ENat.toENNReal_lt.mp
-    apply lt_of_le_of_lt (inter_ball_encard_le X r hd hr R)
-    apply ENNReal.div_lt_top ?_ (volume_ball_pos _ (by linarith)).ne.symm
+    apply lt_of_le_of_lt (S.inter_ball_encard_le hd R)
+    apply ENNReal.div_lt_top ?_ (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
     rw [← lt_top_iff_ne_top]
     calc
-      _ ≤ volume (ball 0 (R + r / 2)) := volume.mono Set.inter_subset_right
+      _ ≤ volume (ball 0 (R + S.separation / 2)) := volume.mono Set.inter_subset_right
       _ < ⊤ := EuclideanSpace.volume_ball_lt_top _
   · rw [not_lt, nonpos_iff_eq_zero] at hd
     have : (ball (0 : EuclideanSpace ℝ (Fin 0)) R).encard ≤ 1 := by
@@ -337,30 +385,32 @@ theorem aux6 (hr : 0 < r) (R : ℝ) : Finite ↑(X ∩ ball 0 R) := by
     apply lt_of_le_of_lt (Set.encard_mono inf_le_right)
     apply lt_of_le_of_lt this (by decide)
 
-theorem finite_density_lower_bound [DiscreteTopology X] (hd : 0 < d) (hr : 0 < r) :
-    FiniteDensity d X r R
-      ≥ (X ∩ ball 0 (R - r / 2)).encard * volume (ball (0 : V) (r / 2))
-        / volume (ball (0 : V) R) := by
+theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
+    S.finiteDensity R
+      ≥ (S.centers ∩ ball 0 (R - S.separation / 2)).encard
+        * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+          / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  rw [FiniteDensity, Packing_of_Centres, Set.biUnion_eq_iUnion]
+  rw [finiteDensity, balls]
   apply ENNReal.div_le_div_right
   rw [← ENNReal.le_div_iff_mul_le] <;> try left
-  · have := inter_ball_encard_le X _ hd hr (R - r / 2)
+  · have := S.inter_ball_encard_le hd (R - S.separation / 2)
     rwa [sub_add_cancel] at this
-  · exact (volume_ball_pos _ (by linarith)).ne.symm
+  · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
   · exact (volume_ball_lt_top _).ne
 
-theorem finite_density_upper_bound [DiscreteTopology X] (hd : 0 < d) (hr : 0 < r) :
-    FiniteDensity d X r R
-      ≤ (X ∩ ball 0 (R + r / 2)).encard * volume (ball (0 : V) (r / 2))
-        / volume (ball (0 : V) R) := by
+theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
+    S.finiteDensity R
+      ≤ (S.centers ∩ ball 0 (R + S.separation / 2)).encard
+        * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+          / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  rw [FiniteDensity, Packing_of_Centres, Set.biUnion_eq_iUnion]
+  rw [finiteDensity, balls]
   apply ENNReal.div_le_div_right
   rw [← ENNReal.div_le_iff_le_mul] <;> try left
-  · have := inter_ball_encard_ge X _ hd hr (R + r / 2)
+  · have := S.inter_ball_encard_ge hd (R + S.separation / 2)
     rwa [add_sub_cancel_right] at this
-  · exact (volume_ball_pos _ (by linarith)).ne.symm
+  · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
   · exact (volume_ball_lt_top _).ne
 
 example : volume (ball (0 : EuclideanSpace ℝ (Fin 8)) (√2 / 2))
@@ -473,10 +523,12 @@ private lemma aux {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
         · apply le_self_add
 
 theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 < C) :
-    Tendsto (fun R ↦ volume (ball (0 : V d) R) / volume (ball (0 : V d) (R + C))) atTop (𝓝 1) := by
+    Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
+      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))) atTop (𝓝 1) := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  have (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : V d) R) / volume (ball (0 : V d) (R + C))
-      = ENNReal.ofReal (R ^ d / (R + C) ^ d) := by
+  have (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
+      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
+        = ENNReal.ofReal (R ^ d / (R + C) ^ d) := by
     rw [volume_ball, volume_ball, Fintype.card_fin, ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul,
       ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul, ← ENNReal.ofReal_div_of_pos, mul_div_mul_right]
     <;> positivity
