@@ -1,8 +1,39 @@
 \subsection{Lattices and Periodic packings}
 
+\subsubsection{On Lattices}
+
+We will begin by stating some basic facts about lattices.
+
 \begin{definition}\label{IsZlattice}\lean{IsZlattice}\leanok
   We say that an additive subgroup $\Lambda \leq \R^d$ is a \emph{lattice} if it is discrete and its $\R$-span contains all the elements of $\R^d$.
 \end{definition}
+
+There are several useful properties of lattices that already exist in Mathlib. We will state them here without proof.
+
+\begin{lemma}\label{Zlattice.module_free}\lean{Zlattice.module_free}\uses{IsZlattice}\leanok
+  Any lattice is a free $\Z$-module.
+\end{lemma}
+\begin{proof}\leanok
+  See \verb|theorem Zlattice.module_free| in \verb|Mathlib.Algebra.Module.Zlattice.Basic|.
+\end{proof}
+
+\begin{lemma}\label{Zlattice.rank}\lean{Zlattice.rank}\uses{IsZlattice}\leanok
+  Any lattice in $\R^d$ has $\Z$-rank $d$.
+\end{lemma}
+\begin{proof}\uses{Zlattice.module_free}
+  See \verb|theorem Zlattice.rank| in \verb|Mathlib.Algebra.Module.Zlattice.Basic|.
+\end{proof}
+
+\begin{lemma}\label{Basis.ofZlatticeBasis}\lean{Basis.ofZlatticeBasis}\uses{IsZlattice}\leanok
+  Any $\Z$-basis of $\Lambda$ is an $\R$-basis of $\R^d$.
+\end{lemma}
+\begin{proof}\uses{Zlattice.module_free, Zlattice.rank}\leanok
+  See \verb|def Basis.ofZlatticeBasis| in \verb|Mathlib.Algebra.Module.Zlattice.Basic|.
+\end{proof}
+
+\subsubsection{Lattice-Periodic Packings and Lattice Packings}
+
+We will now define periodic packings and lattice packings, which will be of great interest to us as we move forward.
 
 \begin{definition}\label{PeriodicSpherePacking}\lean{PeriodicSpherePacking}\uses{SpherePacking, IsZlattice}\leanok
   We say that a sphere packing $\Pa(X)$ is ($\Lambda$-)\emph{periodic} if there exists a lattice $\Lambda \subset \R^d$ such that for all $x \in X$ and $y \in \Lambda$, $x + y \in X$ (ie, $X$ is $\Lambda$-periodic).
@@ -28,11 +59,22 @@
 
 \begin{lemma}\label{SpherePacking.density of periodic packing}\notready
   If $X \subseteq \R^d$ is a set of sphere packing centres that is periodic with respect to some lattice $\Lambda$, then the density of the corresponding (periodic) sphere packing is given by
-  $$ \frac{\lvert {X/\Lambda} \rvert}{\mathrm{Vol}(\R^d / \Lambda)} \cdot \mathrm{Vol}(B_d(0,1))$$
-  where the quotients in the numerator and denominator correspond to the orbits of the action by translation of $\Lambda$ on $X$ and $\R^d$ respectively.
+  \begin{equation}
+    \frac{\lvert {X/\Lambda} \rvert}{\mathrm{Vol}(\R^d / \Lambda)} \cdot \mathrm{Vol}(B_d(0,1))
+    \label{eq:periodic_packing_density_formula}
+  \end{equation}
+  where % the quotient in the numerator and denominator correspond to the orbits of the action by translation of $\Lambda$ on $X$ and $\R^d$ respectively, and $\Vol{\R^d / \Lambda}$ corresponds \emph{not} to the volume of the $(d + 1)$-dimensional torus obtained by taking the quotient in a topological sense but to that of the $d$-dimensional fundamental parallelepiped corresponding to any basis of $\Lambda$ (see Lemma~\ref{Basis.ofZlatticeBasis}).
+  $\lvert X / \Lambda \rvert$ denotes the number of orbits of the additive action of $\Lambda$ on $X$ (cf. Lemma~\ref{PeriodicSpherePacking.instAddAction}) and $\Vol{\R^d / \Lambda}$ the covolume of $\Lambda$.
 \end{lemma}
+\begin{proof}
+  Let $\Pa(X)$ denote the packing with centres at $X$. Definition~\ref{SpherePacking.density} tells us that
+  \[
+    \Delta_{\Pa(X)} = \limsup_{R \to \infty} \Delta_{\Pa(X)}(R) = \lim_{R \to \infty} \sup_{S \geq R} \frac{\Vol{\Pa(X) \cap B_d(0, R)}}{\Vol{B_d(0, R)}}
+  \]
+\end{proof}
+
 \begin{remark}
-  This can be thought of as the ``volume of spheres per fundamental domain": the number of spheres per fundamental domain is $\lvert {X/\Lambda} \rvert$, and the volume of each sphere is $\mathrm{Vol}(B_d(0,1))$.
+  Lemma~\ref{SpherePacking.density of periodic packing} can be thought of as the ``volume of spheres per fundamental domain": the number of spheres per fundamental domain is $\lvert {X/\Lambda} \rvert$, and the volume of each sphere is $\mathrm{Vol}(B_d(0,1))$.
 \end{remark}
 
 \begin{definition}\label{def-Periodic-sphere-packing-constant}\uses{SpherePacking.density, PeriodicSpherePacking}\notready
