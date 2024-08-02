@@ -44,28 +44,67 @@ theorem Θ₃_as_jacobiTheta₂ (τ : ℂ) : Θ₃ τ = jacobiTheta₂ (0 : ℂ)
 
 theorem Θ₄_as_jacobiTheta₂ (τ : ℂ) : Θ₄ τ = jacobiTheta₂ (1/2 : ℂ) τ := by sorry
 
-
 /-- Slash action of various elements on H₂, H₃, H₄ -/
+lemma H₂_negI_action : (H₂ ∣[(2 : ℤ)] negI) = H₂ := even_weight_negI_action H₂ (2: ℤ) even_two
+lemma H₃_negI_action : (H₃ ∣[(2 : ℤ)] negI) = H₃ := even_weight_negI_action H₃ (2: ℤ) even_two
+lemma H₄_negI_action : (H₄ ∣[(2 : ℤ)] negI) = H₄ := even_weight_negI_action H₄ (2: ℤ) even_two
+
 lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = - H₂ := by sorry
 lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by sorry
 lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by sorry
 
-lemma H₂_α_action : (H₂ ∣[(2 : ℤ)] α) = H₂ := by sorry
-lemma H₃_α_action : (H₃ ∣[(2 : ℤ)] α) = H₃ := by sorry
-lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α) = H₄ := by sorry
+/-- Use α = T * T -/
+lemma H₂_α_action : (H₂ ∣[(2 : ℤ)] α) = H₂ := calc
+  (H₂ ∣[(2 : ℤ)] α) = (H₂ ∣[(2 : ℤ)] (T * T)) := sorry
+  _ = ((H₂ ∣[(2 : ℤ)] T)∣[(2 : ℤ)] T) := sorry
+  _ = ((-H₂) ∣[(2 : ℤ)] T) := by rw [H₂_T_action]
+  _ = (-H₂ ∣[(2 : ℤ)] T) := sorry
+  _ = H₂ := by rw [H₂_T_action, neg_neg]
 
+lemma H₃_α_action : (H₃ ∣[(2 : ℤ)] α) = H₃ := calc
+  (H₃ ∣[(2 : ℤ)] α) = (H₃ ∣[(2 : ℤ)] (T * T)) := sorry
+  _ = ((H₃ ∣[(2 : ℤ)] T)∣[(2 : ℤ)] T) := sorry
+  _ = (H₄ ∣[(2 : ℤ)] T) := by rw [H₃_T_action]
+  _ = H₃ := H₄_T_action
+
+lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α) = H₄ := calc
+  (H₄ ∣[(2 : ℤ)] α) = (H₄ ∣[(2 : ℤ)] (T * T)) := sorry
+  _ = ((H₄ ∣[(2 : ℤ)] T)∣[(2 : ℤ)] T) := sorry
+  _ = (H₃ ∣[(2 : ℤ)] T) := by rw [H₄_T_action]
+  _ = H₄ := H₃_T_action
+
+/-- Use jacobiTheta₂_functional_equation -/
 lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = - H₄ := by sorry
 lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = - H₃ := by sorry
 lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by sorry
 
-lemma H₂_β_action : (H₂ ∣[(2 : ℤ)] β) = H₂ := by sorry
-lemma H₃_β_action : (H₃ ∣[(2 : ℤ)] β) = H₃ := by sorry
-lemma H₄_β_action : (H₄ ∣[(2 : ℤ)] β) = H₄ := by sorry
+/-- Use β = -S * α^(-1) * S -/
+lemma H₂_β_action : (H₂ ∣[(2 : ℤ)] β) = H₂ := calc
+  (H₂ ∣[(2 : ℤ)] β) = (H₂ ∣[(2 : ℤ)] (negI * S * α^(-1 : ℤ) * S)) := sorry
+  _ = (((H₂ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := sorry
+  _ = ((H₂ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := by rw [H₂_negI_action]
+  _ = ((-H₄) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := by rw [H₂_S_action]
+  _ = (- H₄ ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := sorry
+  _ = - H₄ ∣[(2 : ℤ)] S := sorry
+  _ = H₂ := by rw [H₄_S_action, neg_neg]
 
-lemma H₂_negI_action : (H₂ ∣[(2 : ℤ)] negI_Γ2) = H₂ := even_weight_negI_Γ2_action H₂ (2: ℤ) even_two
-lemma H₃_negI_action : (H₃ ∣[(2 : ℤ)] negI_Γ2) = H₃ := even_weight_negI_Γ2_action H₃ (2: ℤ) even_two
-lemma H₄_negI_action : (H₄ ∣[(2 : ℤ)] negI_Γ2) = H₄ := even_weight_negI_Γ2_action H₄ (2: ℤ) even_two
+lemma H₃_β_action : (H₃ ∣[(2 : ℤ)] β) = H₃ := calc
+  (H₃ ∣[(2 : ℤ)] β) = (H₃ ∣[(2 : ℤ)] (negI * S * α^(-1 : ℤ) * S)) := sorry
+  _ = (((H₃ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := sorry
+  _ = ((H₃ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := by rw [H₃_negI_action]
+  _ = ((-H₃) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := by rw [H₃_S_action]
+  _ = (- H₃ ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := sorry
+  _ = - H₃ ∣[(2 : ℤ)] S := sorry
+  _ = H₃ := by rw [H₃_S_action, neg_neg]
 
+lemma H₄_β_action : (H₄ ∣[(2 : ℤ)] β) = H₄ := calc
+  (H₄ ∣[(2 : ℤ)] β) = (H₄ ∣[(2 : ℤ)] (negI * S * α^(-1 : ℤ) * S)) := sorry
+  _ = (((H₄ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := sorry
+  _ = ((H₄ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := by rw [H₄_negI_action]
+  _ = ((-H₂) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := by rw [H₄_S_action]
+  _ = (- H₂ ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := sorry
+  _ = - H₂ ∣[(2 : ℤ)] S := sorry
+  _ = H₄ := by rw [H₂_S_action, neg_neg]
 
 /-- H₂, H₃, H₄ are modular forms of weight 2 and level Γ(2) -/
 noncomputable def H₂_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 2) 2 where
