@@ -14,33 +14,29 @@ These theorems will be used to prove that 4-th powers of Jacobi theta functions 
 are modular forms of weight 2 and level Γ(2).
 -/
 
-open Matrix UpperHalfPlane
+open Matrix UpperHalfPlane CongruenceSubgroup
 
 open scoped ModularForm
 
-local notation "SL(" n ", " R ")" => SpecialLinearGroup (Fin n) R
-local notation "Γ(" n ")" => CongruenceSubgroup.Gamma n
+local notation "SL2Z" => SpecialLinearGroup (Fin 2) ℤ
+local notation "Γ2" => CongruenceSubgroup.Gamma 2
 
-
-def S : SL(2, ℤ) := ⟨!![0, -1; 1, 0], by simp⟩
-def T : SL(2, ℤ) := ⟨!![1, 1; 0, 1], by simp⟩
-def negI : SL(2, ℤ) := ⟨!![-1, 0; 0, -1], by simp⟩
--- TODO: better naming for these generators?
-def α : Γ(2) := sorry  -- 1 2 // 0 1
-def β : Γ(2) := sorry  -- 1 0 // 2 1
-def negI_Γ2 : Γ(2) := sorry
+def S : SL2Z := ⟨!![0, -1; 1, 0], by simp⟩
+def T : SL2Z := ⟨!![1, 1; 0, 1], by simp⟩
+def α : Γ2 := ⟨⟨!![1, 2; 0, 1], by simp⟩, by simp; decide⟩
+def β : Γ2 := ⟨⟨!![1, 0; 2, 1], by simp⟩, by simp; decide⟩
+def negI : Γ2 := ⟨⟨!![-1, 0; 0, -1], by simp⟩, by simp⟩
 
 
 theorem even_weight_negI_action (f : ℍ → ℂ) (k : ℤ) (hk : Even k) : (f ∣[k] negI = f) := by sorry
-theorem even_weight_negI_Γ2_action (f : ℍ → ℂ) (k : ℤ) (hk : Even k) : (f ∣[k] negI_Γ2 = f) := by sorry
 
-theorem SL2Z_generate : (Set.univ : Set SL(2, ℤ)) = Subgroup.closure {S, T, negI} := by
+theorem SL2Z_generate : (Set.univ : Set SL2Z) = Subgroup.closure {S, T, ↑negI} := by
   ext ⟨x, hx_det⟩
   simp only [Set.mem_univ, SetLike.mem_coe, true_iff]
   -- now prove that all 2x2 matrices with det 1 is in closure of S, T, and -I
   sorry
 
-theorem Γ2_generate : (Set.univ : Set Γ(2)) = Subgroup.closure {α, β, negI_Γ2} := by
+theorem Γ2_generate : (Set.univ : Set Γ2) = Subgroup.closure {α, β, negI} := by
   ext ⟨x, hx_det⟩
   simp only [Set.mem_univ, SetLike.mem_coe, true_iff]
   -- now prove that all 2x2 matrices with det 1 and equivalent to I modulo 2
@@ -48,7 +44,7 @@ theorem Γ2_generate : (Set.univ : Set Γ(2)) = Subgroup.closure {α, β, negI_�
   sorry
 
 theorem slashaction_generators
-    (f : ℍ → ℂ) (G : Subgroup SL(2, ℤ)) {s : Set SL(2, ℤ)} (hG : G = Subgroup.closure s) (k : ℤ) :
+    (f : ℍ → ℂ) (G : Subgroup SL2Z) {s : Set SL2Z} (hG : G = Subgroup.closure s) (k : ℤ) :
     (∀ γ : G, f ∣[k] γ = f) ↔ (∀ γ ∈ s, f ∣[k] γ = f) := by
   subst hG
   constructor <;> intro h
@@ -56,7 +52,7 @@ theorem slashaction_generators
     convert h ⟨γ, Subgroup.subset_closure hγ⟩
   · intro ⟨γ, hγ⟩
     -- key idea: this lemma allows induction on the "words" of the group
-    apply Subgroup.closure_induction (G := SL(2, ℤ)) (p := fun γ ↦ f ∣[k] γ = f) hγ h
+    apply Subgroup.closure_induction (G := SL2Z) (p := fun γ ↦ f ∣[k] γ = f) hγ h
     · exact SlashAction.slash_one _ _
     · intro x y hx hy
       rw [SlashAction.slash_mul, hx, hy]
@@ -66,10 +62,10 @@ theorem slashaction_generators
 
 theorem slashaction_generators_SL2Z
     (f : ℍ → ℂ) (k : ℤ) (hS : f ∣[k] S = f) (hT : f ∣[k] T = f)
-    (hnegI : f ∣[k] negI = f) : (∀ γ : SL(2, ℤ), f ∣[k] γ = f) := by
+    (hnegI : f ∣[k] negI = f) : (∀ γ : SL2Z, f ∣[k] γ = f) := by
   sorry
 
 theorem slashaction_generators_Γ2
     (f : ℍ → ℂ) (k : ℤ) (hα : f ∣[k] α = f) (hβ : f ∣[k] β = f)
-    (hnegI_Γ2 : f ∣[k] negI_Γ2 = f) : (∀ γ : Γ(2), f ∣[k] γ = f) := by
+    (hnegI_Γ2 : f ∣[k] negI = f) : (∀ γ : Γ2, f ∣[k] γ = f) := by
   sorry
