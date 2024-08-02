@@ -58,9 +58,9 @@ We will now define periodic packings and lattice packings, which will be of grea
 \end{definition}
 
 \begin{lemma}\label{SpherePacking.density of periodic packing}\notready
-  If $X \subseteq \R^d$ is a set of sphere packing centres that is periodic with respect to some lattice $\Lambda$, then the density of the corresponding (periodic) sphere packing is given by
+  If $X \subseteq \R^d$ is a set of sphere packing centres with separation $r$ that is periodic with respect to some lattice $\Lambda$, then the density of the corresponding (periodic) sphere packing is given by
   \begin{equation}
-    \frac{\lvert {X/\Lambda} \rvert}{\mathrm{Vol}(\R^d / \Lambda)} \cdot \mathrm{Vol}(B_d(0,1))
+    \frac{\lvert {X/\Lambda} \rvert}{\mathrm{Vol}(\R^d / \Lambda)} \cdot \mathrm{Vol}(B_d(0,r))
     \label{eq:periodic_packing_density_formula}
   \end{equation}
   where % the quotient in the numerator and denominator correspond to the orbits of the action by translation of $\Lambda$ on $X$ and $\R^d$ respectively, and $\Vol{\R^d / \Lambda}$ corresponds \emph{not} to the volume of the $(d + 1)$-dimensional torus obtained by taking the quotient in a topological sense but to that of the $d$-dimensional fundamental parallelepiped corresponding to any basis of $\Lambda$ (see Lemma~\ref{Basis.ofZlatticeBasis}).
@@ -69,12 +69,13 @@ We will now define periodic packings and lattice packings, which will be of grea
 \begin{proof}
   Let $\Pa(X)$ denote the packing with centres at $X$. Definition~\ref{SpherePacking.density} tells us that
   \[
-    \Delta_{\Pa(X)} = \limsup_{R \to \infty} \Delta_{\Pa(X)}(R) = \lim_{R \to \infty} \sup_{S \geq R} \frac{\Vol{\Pa(X) \cap B_d(0, R)}}{\Vol{B_d(0, R)}}
+    \Delta_{\Pa(X)} = \limsup_{R \to \infty} \Delta_{\Pa(X)}(R) = \lim_{R \to \infty} \sup_{S \geq R} \frac{\Vol{\Pa(X) \cap B_d(0, S)}}{\Vol{B_d(0, S)}}
   \]
+  The idea is to show that the sequence of suprema is constant by showing that the fraction is periodic. The way to do this would be to replace the $B_d(0, S)$ with a fundamental domain scaled by a factor proportional to $S$. How one would formalise this is not obvious at this juncture... [TODO: Flesh out mathematically as well]
 \end{proof}
 
 \begin{remark}
-  Lemma~\ref{SpherePacking.density of periodic packing} can be thought of as the ``volume of spheres per fundamental domain": the number of spheres per fundamental domain is $\lvert {X/\Lambda} \rvert$, and the volume of each sphere is $\mathrm{Vol}(B_d(0,1))$.
+  Lemma~\ref{SpherePacking.density of periodic packing} can be thought of as the ``volume of spheres per fundamental domain": the number of spheres per fundamental domain is $\lvert {X/\Lambda} \rvert$, and the volume of each sphere is $\mathrm{Vol}(B_d(0,r))$.
 \end{remark}
 
 \begin{definition}\label{def-Periodic-sphere-packing-constant}\uses{SpherePacking.density, PeriodicSpherePacking}\notready
