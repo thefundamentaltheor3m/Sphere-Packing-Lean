@@ -47,12 +47,15 @@ noncomputable instance PeriodicSpherePacking.instAddAction (S : PeriodicSpherePa
     apply Subtype.ext
     exact add_assoc u v p
 
+@[simp]
 abbrev SpherePacking.balls (S : SpherePacking d) : Set (EuclideanSpace ℝ (Fin d)) :=
   ⋃ x ∈ S.centers, ball x (S.separation / 2)
 
+@[simp]
 noncomputable def SpherePacking.finiteDensity (S : SpherePacking d) (R : ℝ) : ℝ≥0∞ :=
   volume (S.balls ∩ ball 0 R) / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R))
 
+@[simp]
 noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
   limsup S.finiteDensity atTop
 
