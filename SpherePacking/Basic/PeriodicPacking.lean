@@ -8,17 +8,20 @@ open SpherePacking EuclideanSpace MeasureTheory
 
 variable {d : ℕ} (S : PeriodicSpherePacking d)
 
-#check E8.E8_Set
-#check E8.E8_Lattice
-#check E8.E8_Basis
-#check Basis.ofZlatticeBasis
+#check S.lattice_basis
+#check parallelepiped
 #check Zspan.fundamentalDomain
-#check Zspan.fundamentalDomain_isBounded
-example : Submodule.span ℤ (Set.range E8.E8_Basis) = Submodule.span ℤ (Set.range E8.E8_Matrix) := by
-  congr
-  simp only [E8.E8_Basis, Basis.coe_mk]
 
-lemma aux : Finite (S.centers ∩ S.
+#check Zspan.fundamentalDomain_ae_parallelepiped
+#check Zspan.volume_fundamentalDomain
+#check measure_congr
+
+example {ι : Type*} [Fintype ι] [DecidableEq ι] (b b' : Basis ι ℝ (ι → ℝ)) :
+    volume (Zspan.fundamentalDomain b) = volume (Zspan.fundamentalDomain b') := by
+  sorry
+
+lemma aux : Finite (S.centers ∩ S.lattice_basis.fundamentalDomain) := by
+  sorry
 
 -- We want to define X / Λ
 instance : Finite (Quotient S.addAction.orbitRel) := by

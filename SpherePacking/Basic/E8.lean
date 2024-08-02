@@ -525,15 +525,15 @@ open scoped Real
 
 variable {c : ℝ} (hc : c ≠ 0)
 
--- Λ is inferred!
+-- lattice is inferred!
 noncomputable def E8Packing : PeriodicSpherePacking 8 where
   centers := E8_Lattice
   centers_dist x y h := (E8_norm_lower_bound (x - y)).resolve_left <| sub_ne_zero_of_ne h
-  Λ_action x y := add_mem
+  lattice_action x y := add_mem
 
 -- sanity checks
 example : E8Packing.separation = √2 := rfl
-example : E8Packing.Λ = E8_Lattice := rfl
+example : E8Packing.lattice = E8_Lattice := rfl
 
 -- proven in #25
 theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by

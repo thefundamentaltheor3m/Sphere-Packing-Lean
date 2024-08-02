@@ -3,9 +3,13 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Gareth Ma
 -/
-import Mathlib
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.Data.Real.ENatENNReal
+import Mathlib.Data.Set.Card
+import Mathlib.Topology.Compactness.PseudometrizableLindelof
+import Mathlib.Topology.EMetricSpace.Paracompact
+import Mathlib.Algebra.Module.Zlattice.Basic
 import SpherePacking.ForMathlib.VolumeOfBalls
-import SpherePacking.ForMathlib.Real
 
 open BigOperators MeasureTheory Metric
 
@@ -20,7 +24,7 @@ We also define the *density* of the configuration.
 -/
 
 open scoped ENNReal
-open Metric BigOperators Pointwise Filter MeasureTheory
+open BigOperators Pointwise Filter
 
 section Definitions
 
@@ -33,12 +37,12 @@ structure SpherePacking (d : ℕ) where
   centers_dist : Pairwise (separation ≤ dist · · : centers → centers → Prop)
 
 structure PeriodicSpherePacking (d : ℕ) extends SpherePacking d where
-  Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))
+  lattice : AddSubgroup (EuclideanSpace ℝ (Fin d))
   -- Note that an AddAction here is not enough, because it might not agree with the action induced
   -- by EuclideanSpace
-  Λ_action : ∀ ⦃x y⦄, x ∈ Λ → y ∈ centers → x + y ∈ centers
-  Λ_discrete : DiscreteTopology Λ := by infer_instance
-  Λ_lattice : IsZlattice ℝ Λ := by infer_instance
+  lattice_action : ∀ ⦃x y⦄, x ∈ lattice → y ∈ centers → x + y ∈ centers
+  lattice_discrete : DiscreteTopology lattice := by infer_instance
+  lattice_isZlattice : IsZlattice ℝ lattice := by infer_instance
 
 variable {d : ℕ}
 
@@ -51,6 +55,14 @@ theorem SpherePacking.centers_dist' (S : SpherePacking d) (x y : EuclideanSpace 
   have := S.centers_dist this
   simp only at this
   exact this
+
+instance PeriodicSpherePacking.instLatticeDiscrete (S : PeriodicSpherePacking d) :
+    DiscreteTopology S.lattice :=
+  S.lattice_discrete
+
+instance PeriodicSpherePacking.instIsZlattice (S : PeriodicSpherePacking d) :
+    IsZlattice ℝ S.lattice :=
+  S.lattice_isZlattice
 
 instance SpherePacking.instCentersDiscrete (S : SpherePacking d) :
     DiscreteTopology S.centers := by
@@ -65,8 +77,8 @@ instance SpherePacking.instCentersDiscrete (S : SpherePacking d) :
   exact S.centers_dist <| Subtype.coe_ne_coe.mp h_dist
 
 noncomputable instance PeriodicSpherePacking.addAction (S : PeriodicSpherePacking d) :
-    AddAction S.Λ S.centers where
-  vadd x y := ⟨↑x + ↑y, S.Λ_action x.prop y.prop⟩
+    AddAction S.lattice S.centers where
+  vadd x y := ⟨↑x + ↑y, S.lattice_action x.prop y.prop⟩
   zero_vadd := by
     intro ⟨v, hv⟩
     apply Subtype.ext
@@ -84,6 +96,24 @@ noncomputable def SpherePacking.finiteDensity (S : SpherePacking d) (R : ℝ) : 
 
 noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
   limsup S.finiteDensity atTop
+
+/-- Returns a ℝ-basis of ℝ^d such that the its ℤ-span is `S.lattice`. -/
+noncomputable def PeriodicSpherePacking.lattice_basis (S : PeriodicSpherePacking d) :
+    Basis (Module.Free.ChooseBasisIndex ℤ S.lattice) ℝ (EuclideanSpace ℝ (Fin d)) :=
+  Basis.ofZlatticeBasis _ _ (Zlattice.module_free ℝ S.lattice).chooseBasis
+
+theorem Submodule.toIntSubmodule_eq_iff_eq_toAddSubgroup {G : Type*} [AddCommGroup G]
+    {A : AddSubgroup G} {B : Submodule ℤ G} :
+    AddSubgroup.toIntSubmodule A = B ↔ A = B.toAddSubgroup := by
+  constructor <;> rintro rfl <;> rfl
+
+theorem PeriodicSpherePacking.lattice_basis_Z_span (S : PeriodicSpherePacking d) :
+    Submodule.span ℤ (Set.range S.lattice_basis) = AddSubgroup.toIntSubmodule S.lattice :=
+  (Submodule.toIntSubmodule_eq_iff_eq_toAddSubgroup.mpr (Basis.ofZlatticeBasis_span ..).symm).symm
+
+theorem PeriodicSpherePacking.lattice_basis_R_span (S : PeriodicSpherePacking d) :
+    Submodule.span ℝ (Set.range S.lattice_basis) = ⊤ :=
+  Basis.span_eq S.lattice_basis
 
 end Definitions
 
@@ -111,14 +141,14 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
 noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
     PeriodicSpherePacking d := {
   SpherePacking.scale S.toSpherePacking hc with
-  Λ := c • S.Λ
-  Λ_action := fun x y hx hy ↦ by
+  lattice := c • S.lattice
+  lattice_action := fun x y hx hy ↦ by
     simp_all only [SpherePacking.scale, Set.mem_smul_set, AddSubgroup.mem_smul_pointwise_iff_exists]
     obtain ⟨x, hx, rfl⟩ := hx
     obtain ⟨y, hy, rfl⟩ := hy
-    use x + y, S.Λ_action hx hy, smul_add ..
-  Λ_discrete := by
-    have := S.Λ_discrete
+    use x + y, S.lattice_action hx hy, smul_add ..
+  lattice_discrete := by
+    have := S.lattice_discrete
     rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff] at this ⊢
     obtain ⟨ε, hε, hε'⟩ := this
     use c * ε, Real.mul_pos hc hε
@@ -127,11 +157,9 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
     rintro x ⟨x, hx, rfl⟩ hx'
     rw [norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le, mul_lt_mul_left hc] at hx'
     rw [hε' x hx hx', smul_zero]
-  Λ_lattice := by
-    haveI := S.Λ_discrete
-    haveI := S.Λ_lattice
+  lattice_isZlattice := by
     use ?_
-    rw [← S.Λ_lattice.span_top]
+    rw [← S.lattice_isZlattice.span_top]
     ext v
     simp_rw [Submodule.mem_span]
     constructor <;> intro h p hp
@@ -222,14 +250,6 @@ lemma density_le_one : S.density ≤ 1 := by
   intro
   exact finiteDensity_le_one _ _
 
--- TODO: Fix the namespace issues lol
-theorem EuclideanSpace.volume_ball_mul {ι : Type*} [Nonempty ι] [Fintype ι]
-    {x : EuclideanSpace ℝ ι} {c : ℝ} (hc : 0 ≤ c) (R : ℝ) :
-      volume (ball x (c * R)) = ENNReal.ofReal c ^ Fintype.card ι * volume (ball x R) := by
-  simp_rw [EuclideanSpace.volume_ball]
-  simp only [← mul_assoc]
-  rw [ENNReal.ofReal_mul hc, mul_pow]
-
 /-- Finite density of a scaled packing. -/
 lemma scale_finiteDensity (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
@@ -238,17 +258,12 @@ lemma scale_finiteDensity (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 <
     convert (_root_.smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm
     · exact Eq.symm (DistribMulAction.smul_zero c)
     · rw [Real.norm_eq_abs, abs_eq_self.mpr hc.le]
-  rw [finiteDensity, scale_balls, this]
-  have : c • S.balls ∩ c • ball 0 R = c • (S.balls ∩ ball 0 R) := by
-    ext x;
-    simp only [Set.iUnion_coe_set, Set.mem_inter_iff, Set.mem_smul_set]
-    constructor <;> intro h
-    · done
-    · done
-  sorry
-
-example {s t : Set ℝ} {c : ℝ} (hc : c ≠ 0) : c • (s ∩ t) = (c • s) ∩ (c • t) :=
-  Set.smul_set_inter₀ hc
+  rw [finiteDensity, scale_balls, this, ← Set.smul_set_inter₀ hc.ne.symm]
+  repeat rw [Measure.addHaar_smul_of_nonneg _ hc.le]
+  rw [ENNReal.mul_div_mul_left, finiteDensity]
+  · rw [ne_eq, ENNReal.ofReal_eq_zero, not_le, finrank_euclideanSpace_fin]
+    positivity
+  · apply ENNReal.ofReal_ne_top
 
 /-- Density of a scaled packing. -/
 lemma scale_density (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) :
@@ -413,6 +428,18 @@ theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
   · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
   · exact (volume_ball_lt_top _).ne
 
+end BasicResults
+
+
+
+
+section ScratchPad
+
+open scoped Topology NNReal
+open Asymptotics Filter ENNReal EuclideanSpace
+
+variable {d : ℕ}
+
 example : volume (ball (0 : EuclideanSpace ℝ (Fin 8)) (√2 / 2))
     = ENNReal.ofReal (Real.pi ^ 4 / 384) := by
   have h₁ : √2 ^ 8 = 16 := by
@@ -431,10 +458,7 @@ example : volume (ball (0 : EuclideanSpace ℝ (Fin 8)) (√2 / 2))
   congr 1
   ring_nf
 
-open scoped Topology NNReal
-open Asymptotics Filter ENNReal
-
-private lemma aux {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
+private lemma aux {d : ℝ} {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
     ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
   -- wtf
   by_cases hε' : ε = ⊤
@@ -447,7 +471,7 @@ private lemma aux {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
       use t, hε, (ENNReal.ofReal_eq_coe_nnreal ht_nonneg).symm
     obtain ⟨t, ht_pos, rfl⟩ := this
     by_cases ht : t ≤ 1
-    · have hd' : (d : ℝ) ≠ 0 := by rw [ne_eq, Nat.cast_eq_zero]; exact Nat.not_eq_zero_of_lt hd
+    · have hd' : (d : ℝ) ≠ 0 := hd.ne.symm
       let K : ℝ := 1 / (1 - (1 - t) ^ (1 / (d : ℝ))) - 1
       have hK : 0 ≤ K := by
         simp_rw [K]
@@ -457,7 +481,7 @@ private lemma aux {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
           apply Real.rpow_lt_one
           · linarith
           · linarith
-          · exact one_div_pos.mpr <| Nat.cast_pos'.mpr hd
+          · exact one_div_pos.mpr <| by positivity
         · rw [sub_le_self_iff]
           apply Real.rpow_nonneg
           linarith
@@ -466,7 +490,6 @@ private lemma aux {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
       have : 1 - 1 / (k' + 1) ≥ 1 - 1 / (K + 1) := by
         gcongr
       have hK' : (k' / (k' + 1)) ^ d ≥ 1 - t := calc
-        -- (K / (K + 1)) ^ d = (1 - 1 / (K + 1)) ^ d := by
         (k' / (k' + 1)) ^ d = (1 - 1 / (k' + 1)) ^ d := by
           congr
           rw [eq_sub_iff_add_eq, div_add_div_same, div_self]
@@ -479,20 +502,21 @@ private lemma aux {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
           · linarith
         _ = ((1 - t) ^ (1 / (d : ℝ))) ^ d := by simp [K]
         _ = 1 - t := by
-          rw [← Real.rpow_mul_natCast (by linarith), one_div_mul_cancel hd', Real.rpow_one]
+          rw [← Real.rpow_mul (by linarith), one_div_mul_cancel hd', Real.rpow_one]
       rw [Set.mem_Icc, tsub_le_iff_right, ← ENNReal.ofReal_add]
       · constructor
         · apply ENNReal.one_le_ofReal.mpr
           linarith
         · trans 1
           · apply ENNReal.ofReal_le_one.mpr
-            apply pow_le_one
+            apply Real.rpow_le_one
             · apply div_nonneg
               · linarith
               · linarith
             · apply (div_le_one _).mpr
               · linarith
               · linarith
+            · positivity
           · exact le_self_add
       · linarith
       · linarith
@@ -500,19 +524,18 @@ private lemma aux {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
       intro k' hk'
       have : 0 ≤ k' ^ d / (k' + 1) ^ d := by
         apply div_nonneg
-        · apply pow_nonneg
+        · apply Real.rpow_nonneg
           linarith
-        · apply pow_nonneg
+        · apply Real.rpow_nonneg
           linarith
       have : k' ^ d / (k' + 1) ^ d ≤ 1 := by
         apply (div_le_one _).mpr
-        · apply pow_le_pow_left
-          · linarith
-          · linarith
-        · apply pow_pos
+        · gcongr
+          linarith
+        · apply Real.rpow_pos_of_pos
           linarith
       rw [not_le] at ht
-      rw [div_pow, Set.mem_Icc, tsub_le_iff_right]
+      rw [Real.div_rpow, Set.mem_Icc, tsub_le_iff_right]
       constructor
       · rw [← ENNReal.ofReal_add, ENNReal.one_le_ofReal]
         · linarith
@@ -521,6 +544,12 @@ private lemma aux {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
       · trans 1
         · exact ENNReal.ofReal_le_one.mpr this
         · apply le_self_add
+      · linarith
+      · linarith
+
+private lemma aux' {d : ℕ} {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
+    ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
+  simpa using aux (d := d) hε (Nat.cast_pos.mpr hd)
 
 theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 < C) :
     Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
@@ -534,7 +563,7 @@ theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 < C) :
     <;> positivity
   rw [ENNReal.tendsto_atTop (by decide)]
   intro ε hε
-  obtain ⟨k, ⟨hk₁, hk₂⟩⟩ := aux hε hd
+  obtain ⟨k, ⟨hk₁, hk₂⟩⟩ := aux' hε hd
   use k * C
   intro n hn
   specialize hk₂ (n / C) ((le_div_iff hC).mpr hn)
@@ -557,4 +586,4 @@ theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 < C) :
         _ > 0 := by linarith
   · exact (by positivity : 0 ≤ k * C).trans hn
 
-end BasicResults
+end ScratchPad
