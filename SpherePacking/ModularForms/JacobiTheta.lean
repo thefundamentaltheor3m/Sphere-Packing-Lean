@@ -22,9 +22,7 @@ Also Jacobi identity: Θ₂^4 + Θ₄^4 = Θ₃^4.
 
 open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix
 
-open scoped UpperHalfPlane ModularForm
-
-local notation "SL(" n ", " R ")" => SpecialLinearGroup (Fin n) R
+open scoped UpperHalfPlane ModularForm MatrixGroups
 
 
 /-- Define Θ₂, Θ₃, Θ₄ as series. -/
