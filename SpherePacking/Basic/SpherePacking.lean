@@ -10,6 +10,7 @@ import Mathlib.Topology.Compactness.PseudometrizableLindelof
 import Mathlib.Topology.EMetricSpace.Paracompact
 import Mathlib.Algebra.Module.Zlattice.Basic
 import SpherePacking.ForMathlib.VolumeOfBalls
+import SpherePacking.ForMathlib.ENNReal
 
 open BigOperators MeasureTheory Metric
 
@@ -87,6 +88,11 @@ noncomputable instance PeriodicSpherePacking.addAction (S : PeriodicSpherePackin
     intro ⟨u, hu⟩ ⟨v, hv⟩ ⟨p, hp⟩
     apply Subtype.ext
     exact add_assoc u v p
+
+theorem PeriodicSpherePacking.addAction_vadd (S : PeriodicSpherePacking d)
+    {x : S.lattice} {y : S.centers} :
+      x +ᵥ y = ⟨x.val + y.val, S.lattice_action x.prop y.prop⟩ :=
+  rfl
 
 abbrev SpherePacking.balls (S : SpherePacking d) : Set (EuclideanSpace ℝ (Fin d)) :=
   ⋃ x : S.centers, ball (x : EuclideanSpace ℝ (Fin d)) (S.separation / 2)
@@ -458,98 +464,29 @@ example : volume (ball (0 : EuclideanSpace ℝ (Fin 8)) (√2 / 2))
   congr 1
   ring_nf
 
-private lemma aux {d : ℝ} {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
+-- Credits to Bhavik Mehta for this <3 my original code is 92 lines long x)
+private lemma aux {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
     ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
-  -- wtf
-  by_cases hε' : ε = ⊤
-  · use 0
-    subst hε'
-    simp
-  · have : ∃ t : ℝ, 0 < t ∧ ε = ENNReal.ofReal t := by
-      obtain ⟨⟨t, ht_nonneg⟩, rfl⟩ := Option.ne_none_iff_exists'.mp hε'
-      rw [ENNReal.some_eq_coe, ENNReal.coe_pos] at hε
-      use t, hε, (ENNReal.ofReal_eq_coe_nnreal ht_nonneg).symm
-    obtain ⟨t, ht_pos, rfl⟩ := this
-    by_cases ht : t ≤ 1
-    · have hd' : (d : ℝ) ≠ 0 := hd.ne.symm
-      let K : ℝ := 1 / (1 - (1 - t) ^ (1 / (d : ℝ))) - 1
-      have hK : 0 ≤ K := by
-        simp_rw [K]
-        apply sub_nonneg.mpr
-        apply one_le_one_div
-        · rw [sub_pos]
-          apply Real.rpow_lt_one
-          · linarith
-          · linarith
-          · exact one_div_pos.mpr <| by positivity
-        · rw [sub_le_self_iff]
-          apply Real.rpow_nonneg
-          linarith
-      use K, hK
-      intro k' hk'
-      have : 1 - 1 / (k' + 1) ≥ 1 - 1 / (K + 1) := by
-        gcongr
-      have hK' : (k' / (k' + 1)) ^ d ≥ 1 - t := calc
-        (k' / (k' + 1)) ^ d = (1 - 1 / (k' + 1)) ^ d := by
-          congr
-          rw [eq_sub_iff_add_eq, div_add_div_same, div_self]
-          linarith
-        _ ≥ (1 - 1 / (K + 1)) ^ d := by
-          gcongr
-          rw [sub_nonneg, one_div_le, div_one]
-          · linarith
-          · linarith
-          · linarith
-        _ = ((1 - t) ^ (1 / (d : ℝ))) ^ d := by simp [K]
-        _ = 1 - t := by
-          rw [← Real.rpow_mul (by linarith), one_div_mul_cancel hd', Real.rpow_one]
-      rw [Set.mem_Icc, tsub_le_iff_right, ← ENNReal.ofReal_add]
-      · constructor
-        · apply ENNReal.one_le_ofReal.mpr
-          linarith
-        · trans 1
-          · apply ENNReal.ofReal_le_one.mpr
-            apply Real.rpow_le_one
-            · apply div_nonneg
-              · linarith
-              · linarith
-            · apply (div_le_one _).mpr
-              · linarith
-              · linarith
-            · positivity
-          · exact le_self_add
-      · linarith
-      · linarith
-    · use 0, le_refl 0
-      intro k' hk'
-      have : 0 ≤ k' ^ d / (k' + 1) ^ d := by
-        apply div_nonneg
-        · apply Real.rpow_nonneg
-          linarith
-        · apply Real.rpow_nonneg
-          linarith
-      have : k' ^ d / (k' + 1) ^ d ≤ 1 := by
-        apply (div_le_one _).mpr
-        · gcongr
-          linarith
-        · apply Real.rpow_pos_of_pos
-          linarith
-      rw [not_le] at ht
-      rw [Real.div_rpow, Set.mem_Icc, tsub_le_iff_right]
-      constructor
-      · rw [← ENNReal.ofReal_add, ENNReal.one_le_ofReal]
-        · linarith
-        · linarith
-        · linarith
-      · trans 1
-        · exact ENNReal.ofReal_le_one.mpr this
-        · apply le_self_add
-      · linarith
-      · linarith
+  suffices Filter.Tendsto
+      (fun k => (ENNReal.ofReal (1 - (k + 1)⁻¹) ^ d)) atTop (𝓝 (ENNReal.ofReal (1 - 0) ^ d)) by
+    rw [ENNReal.tendsto_atTop ?ha] at this
+    case ha => simp
+    obtain ⟨k, hk⟩ := this ε hε
+    refine ⟨max 0 k, by simp, ?_⟩
+    simp only [ge_iff_le, max_le_iff, and_imp]
+    intro k' hk₀ hk₁
+    have := hk k' hk₁
+    rwa [sub_zero, ofReal_one, one_rpow, ←one_div, one_sub_div, add_sub_cancel_right,
+      ENNReal.ofReal_rpow_of_nonneg] at this
+    · positivity
+    · positivity
+    · positivity
+  refine ENNReal.Tendsto.rpow (tendsto_ofReal (Tendsto.const_sub 1 ?_))
+  exact tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id)
 
-private lemma aux' {d : ℕ} {ε : ℝ≥0∞} (hε : 0 < ε) (hd : 0 < d) :
+private lemma aux' {ε : ℝ≥0∞} (hε : 0 < ε) :
     ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
-  simpa using aux (d := d) hε (Nat.cast_pos.mpr hd)
+  simpa using aux (d := d) (Nat.cast_nonneg _) hε
 
 theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 < C) :
     Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
@@ -563,27 +500,13 @@ theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 < C) :
     <;> positivity
   rw [ENNReal.tendsto_atTop (by decide)]
   intro ε hε
-  obtain ⟨k, ⟨hk₁, hk₂⟩⟩ := aux' hε hd
+  obtain ⟨k, ⟨hk₁, hk₂⟩⟩ := aux' hε
   use k * C
   intro n hn
-  specialize hk₂ (n / C) ((le_div_iff hC).mpr hn)
-  -- boring
-  rw [this]
-  · convert hk₂
-    rw [← div_pow]
-    congr 1
-    rw [div_eq_div_iff]
-    · rw [mul_add, mul_add, ← mul_div_assoc, mul_one, div_mul_cancel₀, mul_div_right_comm]
-      exact hC.ne.symm
-    · apply ne_of_gt
-      calc
-        n + C ≥ k * C + C := by gcongr
-        _ > 0 := by positivity
-    · apply ne_of_gt
-      calc
-        n / C + 1 ≥ k * C / C + 1 := by gcongr
-        _ = k + 1 := by rw [mul_div_cancel_right₀ _ hC.ne.symm]
-        _ > 0 := by linarith
-  · exact (by positivity : 0 ≤ k * C).trans hn
+  rw [this _ ((by positivity : 0 ≤ k * C).trans hn)]
+  convert hk₂ (n / C) ((le_div_iff hC).mpr hn)
+  rw [div_add_one, div_div_div_cancel_right, div_pow]
+  · positivity
+  · positivity
 
 end ScratchPad
