@@ -241,15 +241,13 @@ end Density
 section DensityLemmas
 namespace SpherePacking
 
-variable {d : ℕ} (S : SpherePacking d)
-
-lemma finiteDensity_le_one (R : ℝ) : S.finiteDensity R ≤ 1 := by
+lemma finiteDensity_le_one {d : ℕ} (S : SpherePacking d) (R : ℝ) : S.finiteDensity R ≤ 1 := by
   rw [finiteDensity]
   apply ENNReal.div_le_of_le_mul
   rw [one_mul]
   exact volume.mono Set.inter_subset_right
 
-lemma density_le_one : S.density ≤ 1 := by
+lemma density_le_one {d : ℕ} (S : SpherePacking d) : S.density ≤ 1 := by
   rw [density]
   apply limsup_le_iSup.trans
   apply iSup_le
@@ -257,7 +255,8 @@ lemma density_le_one : S.density ≤ 1 := by
   exact finiteDensity_le_one _ _
 
 /-- Finite density of a scaled packing. -/
-lemma scale_finiteDensity (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
+@[simp]
+lemma scale_finiteDensity {d : ℕ} (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   have : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
@@ -271,14 +270,38 @@ lemma scale_finiteDensity (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 <
     positivity
   · apply ENNReal.ofReal_ne_top
 
-/-- Density of a scaled packing. -/
-lemma scale_density (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) :
-    (S.scale hc).density = S.density := by
-  -- Proving this would be a good practice for limsup API
-  dsimp [density, finiteDensity]
-  sorry
+@[simp]
+lemma scale_finiteDensity' {d : ℕ} (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
+    (S.scale hc).finiteDensity R = S.finiteDensity (R / c) := by
+  rw [div_eq_mul_inv, ← scale_finiteDensity hd S hc, ← mul_assoc, mul_comm, ← mul_assoc,
+    inv_mul_cancel hc.ne.symm, one_mul]
 
-theorem constant_eq_constant_normalized (hd : 0 < d) :
+/-- Density of a scaled packing. -/
+lemma scale_density {d : ℕ} (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) :
+    (S.scale hc).density = S.density := by
+  simp only [density, limsup, limsSup, eventually_map, eventually_atTop]
+  apply le_antisymm
+  -- The following are almost identical. Can we condense the proof?
+  · simp only [sInf_le_iff, le_sInf_iff, Set.mem_setOf_eq, lowerBounds]
+    intro x hx y hy
+    rcases hx with ⟨a, ha⟩
+    apply hy
+    use c * a
+    intro b' hb'
+    rw [scale_finiteDensity' hd S hc]
+    apply ha
+    exact (le_div_iff' hc).mpr hb'
+  · simp only [sInf_le_iff, le_sInf_iff, Set.mem_setOf_eq, lowerBounds]
+    intro x hx y hy
+    rcases hx with ⟨a, ha⟩
+    apply hy
+    use a / c
+    intro b' hb'
+    rw [← scale_finiteDensity hd S hc]
+    apply ha
+    exact (div_le_iff' hc).mp hb'
+
+theorem constant_eq_constant_normalized {d : ℕ} (hd : 0 < d) :
     SpherePackingConstant d = ⨆ (S : SpherePacking d) (_ : S.separation = 1), S.density := by
   rw [iSup_subtype', SpherePackingConstant]
   apply le_antisymm
