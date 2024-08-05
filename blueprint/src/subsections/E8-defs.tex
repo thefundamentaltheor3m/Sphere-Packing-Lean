@@ -2,16 +2,16 @@
 
 There are several equivalent definitions of the $E_8$ lattice. Below, we formalise two of them, and prove they are equivalent.
 
-\begin{definition}{$E_8$-lattice, Definition 1}\label{E8-Set}\lean{E8.E8-Set}\leanok
+\begin{definition}{$E_8$-lattice, Definition 1}\label{E8-Set}\lean{E8.E8_Set}\leanok
   We define the \emph{$E_8$-lattice} (as a subset of $\R^8$) to be
 $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1}^8x_i\equiv 0\;(\mathrm{mod\;2})\}.$$
 \end{definition}
 
-\begin{definition}\label{E8-Scaled-Set}\lean{E8.E8-Scaled-Set}\uses{E8-Set}\leanok
+\begin{definition}\label{E8-Scaled-Set}\lean{E8.E8_Scaled_Set}\uses{E8-Set}\leanok
   We define the \emph{scaled $E_8$-lattice} (by a real number $c$) as $$c\Lambda_8 = \{c \cdot \vec{v} : \vec{v} \in \Lambda_8\}$$.
 \end{definition}
 
-\begin{definition}{$E-8$-lattice, Definition 2}\label{E8-Basis-Vecs}\lean{E8.E8-Matrix}\leanok
+\begin{definition}{$E-8$-lattice, Definition 2}\label{E8-Basis-Vecs}\lean{E8.E8_Matrix}\leanok
   We define the \emph{$E_8$ basis vectors} to be the set of vectors
   \[ \B_8 =
   \left\{
@@ -43,12 +43,12 @@ $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1
   \]
 \end{definition}
 
-\begin{definition}\label{E8-Scaled-Matrix}\lean{E8.E8-Scaled-Matrix}\uses{E8-Basis-Vecs}\leanok
+\begin{definition}\label{E8-Scaled-Matrix}\lean{E8.E8_Scaled_Matrix}\uses{E8-Basis-Vecs}\leanok
   We define the \emph{scaled $E_8$ basis vectors} (by a real number $c$) to be $c\B_8 = \{c \cdot \vec{v} : \vec{v}\in \B_8\}$.
 \end{definition}
 
 % Forward direction hasn't been proven yet
-\begin{theorem}\label{E8-defs-equivalent}\lean{E8.E8-Set-eq-span}\uses{E8-Scaled-Set, E8-Scaled-Matrix}%\leanok
+\begin{theorem}\label{E8-defs-equivalent}\lean{E8.E8_Set_eq_span}\uses{E8-Scaled-Set, E8-Scaled-Matrix}%\leanok
   The two definitions above coincide, i.e. $c\Lambda_8 = \mathrm{span}_{\Z}(c\B_8)$.
 \end{theorem}
 \begin{proof}
@@ -65,21 +65,21 @@ $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1
 
 In this section, we establish basic properties of the $E_8$ lattice and the $\B_8$ vectors.
 
-\begin{lemma}\label{E8-Scaled-is-basis}\lean{E8.E8-Scaled-is-basis}\uses{E8-Scaled-Matrix}\leanok
+\begin{lemma}\label{E8-Scaled-is-basis}\lean{E8.E8_Scaled_is_basis}\uses{E8-Scaled-Matrix}\leanok
   For nonzero real numbers $c$, the set $c\B_8$ is a $\R$-basis of $\R^8$.
 \end{lemma}
 \begin{proof}
   It suffices to prove that $\B_8 \in \mathrm{GL}_8(\R)$. We prove this by explicitly defining the inverse matrix $\B_8^{-1}$ and proving $\B_8 \B_8^{-1} = I_8$, which implies that $\det(\B_8)$ is nonzero.
 \end{proof}
 
-\begin{lemma}\label{E8-Scaled-Lattice}\lean{E8.E8-Scaled-Lattice}\uses{E8-Scaled-Set, E8-defs-equivalent}\leanok
+\begin{lemma}\label{E8-Scaled-Lattice}\lean{E8.E8_Scaled_Lattice}\uses{E8-Scaled-Set, E8-defs-equivalent}\leanok
   For real numbers $c$, $c\Lambda_8$ is an additive subgroup of $\R^8$.
 \end{lemma}
 \begin{proof}\leanok
   Trivially follows from that $\Lambda_8 \subseteq \R^8$ is the $\Z$-span of $\B_8$ and hence an additive group.
 \end{proof}
 
-\begin{lemma}\label{E8-Shortest-Vector}\lean{E8.E8-norm-eq-sqrt-even}\uses{E8-defs-equivalent}\leanok
+\begin{lemma}\label{E8-Shortest-Vector}\lean{E8.E8_norm_eq_sqrt_even}\uses{E8-defs-equivalent}\leanok
   All vectors in $\Lambda_8$ have norm of the form $\sqrt{2n}$, where $n$ is a nonnegative inteeger.
 \end{lemma}
 \begin{proof}
