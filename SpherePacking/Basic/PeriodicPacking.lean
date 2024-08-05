@@ -158,7 +158,8 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv :
 instance (S : PeriodicSpherePacking 0) : Subsingleton S.centers := inferInstance
 instance (S : PeriodicSpherePacking 0) : Finite S.centers := inferInstance
 
-noncomputable instance : Finite (Quotient S.addAction.orbitRel) :=
+noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
+    Finite (Quotient S.addAction.orbitRel) :=
   if hd : 0 < d then
     Finite.of_equiv (h := aux4 S hd) S.addActionOrbitRelEquiv.symm
   else
@@ -181,14 +182,35 @@ noncomputable def PeriodicSpherePacking.numReps : ℕ :=
 #check IsAddFundamentalDomain
 #check E8.E8_Basis
 
-example {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
+open Pointwise
+
+example
+    {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain b, ‖x‖ ≤ L) (R : ℝ) :
-      S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)).encard
-        ≤ (↑S.centers ∩ ball 0 R).encard := by
+    ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L),
+      x +ᵥ (fundamentalDomain b : Set (EuclideanSpace ℝ (Fin d)))
+        ⊆ ball 0 R := by
+  intro x hx
+  simp only [Set.mem_iUnion, exists_prop] at hx
+  obtain ⟨y, ⟨_, hy⟩, hy'⟩ := hx
+  obtain ⟨z, hz, rfl⟩ := Set.mem_vadd_set.mp hy'
+  simp only [mem_ball, dist_zero_right, vadd_eq_add] at hy ⊢
+  specialize hL z hz
+  calc
+    _ ≤ ‖y‖ + ‖z‖ := norm_add_le _ _
+    _ < (R - L) + L := by linarith
+    _ = R := by ring
+
+example
+    {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
+    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain b, ‖x‖ ≤ L) (R : ℝ) (hR : L < R) :
+    S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)).encard
+      ≤ (↑S.centers ∩ ball 0 R).encard := by
   sorry
 
-example {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
-    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain b, ‖x‖ ≤ L) (R : ℝ) :
-      (↑S.centers ∩ ball 0 R).encard
-        ≤ S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)).encard := by
+example
+    {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
+    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain b, ‖x‖ ≤ L) (R : ℝ) (hR : L < R) :
+    (↑S.centers ∩ ball 0 R).encard
+      ≤ S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)).encard := by
   sorry
