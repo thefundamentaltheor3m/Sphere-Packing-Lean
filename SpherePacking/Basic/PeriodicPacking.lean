@@ -182,7 +182,7 @@ noncomputable def PeriodicSpherePacking.numReps : ℕ :=
 #check IsAddFundamentalDomain
 #check E8.E8_Basis
 
-open Pointwise
+open Pointwise Filter
 
 example
     {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
@@ -206,6 +206,7 @@ example
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain b, ‖x‖ ≤ L) (R : ℝ) (hR : L < R) :
     S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)).encard
       ≤ (↑S.centers ∩ ball 0 R).encard := by
+
   sorry
 
 example
@@ -214,3 +215,47 @@ example
     (↑S.centers ∩ ball 0 R).encard
       ≤ S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)).encard := by
   sorry
+
+
+section Scratchpad
+
+-- The following is scratch work corresponding to a potential different approach
+
+/- The idea is to restate the density definition in terms of fundamental domains and then show that
+the function consisting of suprema in the corresponding limsup definition of density is
+ℤ-periodic. I don't know if this is a great idea in terms of Lean, but I thought it'd be interesting
+to try and formalise it. If this doesn't work, we can always go back to the original approach,
+maybe moving this to some sort of 'scratch' branch...
+-/
+
+private noncomputable def PeriodicSpherePacking.FundamentalDomainFiniteDensity (R : ℝ) : ℝ≥0∞ :=
+  volume (S.balls ∩ (R • fundamentalDomain S.lattice_basis)) /
+  volume (R • fundamentalDomain S.lattice_basis)
+
+private noncomputable def PeriodicSpherePacking.FundamentalDomainDensity : ℝ≥0∞ :=
+  limsup (S.FundamentalDomainFiniteDensity) atTop
+
+-- TODO: Get L automatically
+@[simp]
+private lemma PeriodicSpherePacking.FundamentalDomainDensity_eq_Density {L : ℝ}
+  (hL : ∀ x ∈ fundamentalDomain S.lattice_basis, ‖x‖ ≤ L) :
+  (S.toSpherePacking).density = S.FundamentalDomainDensity := by
+  simp only [density, PeriodicSpherePacking.FundamentalDomainDensity,
+    PeriodicSpherePacking.FundamentalDomainFiniteDensity, limsup, limsSup, eventually_map,
+    eventually_atTop]
+  apply le_antisymm
+  · simp only [sInf_le_iff, le_sInf_iff, Set.mem_setOf_eq, lowerBounds]
+    intro x hx y hy
+    rcases hx with ⟨a, ha⟩
+    apply hy
+
+    sorry
+  · sorry
+
+@[simp]
+private lemma PeriodicSpherePacking.FundamentalDomain_Scale_Nat (c : ℕ) :
+  volume (S.balls ∩ (c • fundamentalDomain S.lattice_basis)) =
+  c^d * volume (S.balls ∩ fundamentalDomain S.lattice_basis) := by
+  sorry
+
+end Scratchpad
