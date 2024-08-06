@@ -22,18 +22,18 @@ open SpherePacking EuclideanSpace MeasureTheory Metric Zspan Bornology
 
 variable {d : ℕ} (S : PeriodicSpherePacking d)
 
-#check S.lattice_basis
 #check parallelepiped
 #check Zspan.fundamentalDomain
-
 #check Zspan.fundamentalDomain_ae_parallelepiped
 #check Zspan.volume_fundamentalDomain
 #check measure_congr
 
-lemma aux1 :
-    IsBounded (⋃ x ∈ S.centers ∩ fundamentalDomain S.lattice_basis, ball x (S.separation / 2)) := by
-  obtain ⟨L, hL⟩ := isBounded_iff_forall_norm_le.mp <| fundamentalDomain_isBounded S.lattice_basis
+lemma aux1 {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    IsBounded (⋃ x ∈ S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _),
+      ball x (S.separation / 2)) := by
   apply isBounded_iff_forall_norm_le.mpr
+  obtain ⟨L, hL⟩ := isBounded_iff_forall_norm_le.mp
+    <| fundamentalDomain_isBounded (b.ofZlatticeBasis ℝ _)
   use L + S.separation / 2
   intro x hx
   obtain ⟨y, s, hy, hy'⟩ := Set.mem_iUnion.mp hx
@@ -43,8 +43,9 @@ lemma aux1 :
   specialize hL y hy.right
   exact (norm_le_norm_add_norm_sub' x y).trans (by gcongr)
 
-lemma aux2 : Set.PairwiseDisjoint (S.centers ∩ fundamentalDomain S.lattice_basis)
-    (fun x ↦ ball x (S.separation / 2)) := by
+lemma aux2 {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d))) :
+    Set.PairwiseDisjoint (S.centers ∩ fundamentalDomain b)
+      (fun x ↦ ball x (S.separation / 2)) := by
   intro x hx y hy hxy
   apply ball_disjoint_ball
   rw [add_halves]
@@ -93,9 +94,10 @@ theorem aux3 {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ
       exact h_disjoint hx hy (by simpa using hxy)
     · exact fun ⟨x, hx⟩ ↦ h_measurable x hx
 
-lemma aux4 (hd : 0 < d) : Finite ↑(S.centers ∩ fundamentalDomain S.lattice_basis) := by
+lemma aux4 {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (hd : 0 < d) :
+    Finite ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)) := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  apply aux3 (c := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))) ?_ ?_ (aux1 S)
+  apply aux3 (c := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))) ?_ ?_ (aux1 S b)
   · intros
     simp [Measure.addHaar_ball_center]
   · intro x hx y hy hxy
@@ -107,49 +109,55 @@ lemma aux4 (hd : 0 < d) : Finite ↑(S.centers ∩ fundamentalDomain S.lattice_b
     exact measurableSet_ball
 
 -- TODO: rename + move
-theorem PeriodicSpherePacking.fract_centers (s : S.centers) :
-    fract S.lattice_basis s.val ∈ S.centers := by
-  have := (floor S.lattice_basis s).prop
-  simp_rw [S.lattice_basis_Z_span] at this
+theorem PeriodicSpherePacking.fract_centers
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (s : S.centers) :
+    fract (b.ofZlatticeBasis ℝ _) s.val ∈ S.centers := by
+  have := (floor (b.ofZlatticeBasis ℝ _) s).prop
+  simp_rw [S.basis_Z_span] at this
   rw [fract_apply, sub_eq_add_neg, add_comm]
   apply S.lattice_action (Submodule.neg_mem _ this) s.prop
 
 -- TODO: rename + move
-theorem PeriodicSpherePacking.orbitRel_fract (a : S.centers) :
-    (S.addAction.orbitRel).Rel ⟨fract S.lattice_basis a, S.fract_centers _⟩ a := by
+theorem PeriodicSpherePacking.orbitRel_fract
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (a : S.centers) :
+    (S.addAction.orbitRel).Rel ⟨fract (b.ofZlatticeBasis ℝ _) a, S.fract_centers _ _⟩ a := by
   rw [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range]
-  refine ⟨⟨-↑(floor S.lattice_basis ↑a), ?_⟩, ?_⟩
+  refine ⟨⟨-↑(floor (b.ofZlatticeBasis ℝ _) ↑a), ?_⟩, ?_⟩
   · apply neg_mem
-    have := (floor S.lattice_basis a.val).prop
-    simp_rw [S.lattice_basis_Z_span] at this
+    have := (floor (b.ofZlatticeBasis ℝ _) a.val).prop
+    simp_rw [S.basis_Z_span] at this
     exact this
   · simp_rw [fract_apply, sub_eq_neg_add]
     rfl
 
-noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv :
-    Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ fundamentalDomain S.lattice_basis) where
+noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)) where
   toFun := by
     refine Quotient.lift ?_ ?_
     · intro s
-      use fract S.lattice_basis s, S.fract_centers _
-      simp only [fractRestrict_apply, mem_fundamentalDomain, repr_fract_apply, Set.mem_Ico,
-        Int.fract_nonneg, true_and]
-      intro
-      exact Int.fract_lt_one _
-    · intro ⟨a, ha⟩ ⟨b, hb⟩ h
+      use fract (Basis.ofZlatticeBasis ℝ _ b) s, ?_
+      · simp only [fractRestrict_apply, mem_fundamentalDomain, repr_fract_apply, Set.mem_Ico,
+          Int.fract_nonneg, true_and]
+        intro
+        exact Int.fract_lt_one _
+      · exact fract_centers _ _ _
+    · intro ⟨u, hu⟩ ⟨v, hv⟩ h
       simp only [Subtype.mk.injEq]
-      change (S.addAction.orbitRel).Rel ⟨a, ha⟩ ⟨b, hb⟩ at h
+      change (S.addAction.orbitRel).Rel ⟨u, hu⟩ ⟨v, hv⟩ at h
       rw [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range] at h
       obtain ⟨⟨y, hy⟩, hy'⟩ := h
-      have : y + b = a := Subtype.ext_iff.mp hy'
+      have : y + v = u := Subtype.ext_iff.mp hy'
       subst this
-      exact fract_zspan_add _ _ (by simpa [S.lattice_basis_Z_span] using hy)
+      refine fract_zspan_add _ _ ?_
+      rw [← Submodule.toIntSubmodule_eq_iff_eq_toAddSubgroup.mpr (b.ofZlatticeBasis_span ℝ _).symm]
+      exact hy
   invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, hx.left⟩⟧
   left_inv := by
     apply Quotient.ind
     intro ⟨a, ha⟩
     simp_rw [Quotient.lift_mk, Quotient.eq]
-    exact S.orbitRel_fract _
+    exact S.orbitRel_fract _ _
   right_inv := by
     intro ⟨x, hx⟩
     simp_rw [Quotient.lift_mk, Subtype.mk.injEq, fract_eq_self]
@@ -160,8 +168,10 @@ instance (S : PeriodicSpherePacking 0) : Finite S.centers := inferInstance
 
 noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
     Finite (Quotient S.addAction.orbitRel) :=
+  -- We choose an arbitrary ℤ-basis of S.lattice
+  let b : Basis _ ℤ S.lattice := (Zlattice.module_free ℝ S.lattice).chooseBasis
   if hd : 0 < d then
-    Finite.of_equiv (h := aux4 S hd) S.addActionOrbitRelEquiv.symm
+    Finite.of_equiv (h := aux4 S b hd) (S.addActionOrbitRelEquiv b).symm
   else
     have hd : d = 0 := Nat.eq_zero_of_not_pos hd
     have : Finite S.centers := by subst hd; infer_instance
@@ -170,17 +180,19 @@ noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
 noncomputable instance : Fintype (Quotient S.addAction.orbitRel) :=
   Fintype.ofFinite _
 
--- TODO: State and prove Theorem 2.3
--- |Λ ∩ ball 0 (R - L)||X ⧸ Λ| ≤ |X ∩ ball 0 R| ≤ |Λ ∩ ball 0 (R + L)||X ⧸ Λ|
-
 -- TODO: rename
 noncomputable def PeriodicSpherePacking.numReps : ℕ :=
   Fintype.card (Quotient S.addAction.orbitRel)
 
-#check isBounded_iff_forall_norm_le
--- The `L` here can be extracted from isBounded_iff_forall_norm_le
-#check IsAddFundamentalDomain
-#check E8.E8_Basis
+theorem PeriodicSpherePacking.numReps_eq_card_centers_inter_fundamentalDomain
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (hd : 0 < d) :
+    haveI := @Fintype.ofFinite _ <| aux4 S b hd
+    S.numReps = (S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)).toFinset.card := by
+  rw [numReps]
+  have := S.addActionOrbitRelEquiv b
+  convert (Finset.card_eq_of_equiv_fintype ?_).symm
+  simp_rw [Set.mem_toFinset]
+  exact this.symm
 
 open Pointwise Filter
 
@@ -201,21 +213,21 @@ example
     _ < (R - L) + L := by linarith
     _ = R := by ring
 
+-- Theorem 2.3, LB
 example
-    {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
-    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain b, ‖x‖ ≤ L) (R : ℝ) (hR : L < R) :
+    {ι : Type*} (b : Basis ι ℤ S.lattice)
+    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) (hR : L < R) :
     S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)).encard
       ≤ (↑S.centers ∩ ball 0 R).encard := by
-
   sorry
 
+-- Theorem 2.3, UB
 example
-    {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
-    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain b, ‖x‖ ≤ L) (R : ℝ) (hR : L < R) :
+    {ι : Type*} (b : Basis ι ℤ S.lattice)
+    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) (hR : L < R) :
     (↑S.centers ∩ ball 0 R).encard
       ≤ S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)).encard := by
   sorry
-
 
 section Scratchpad
 
@@ -228,34 +240,35 @@ to try and formalise it. If this doesn't work, we can always go back to the orig
 maybe moving this to some sort of 'scratch' branch...
 -/
 
-private noncomputable def PeriodicSpherePacking.FundamentalDomainFiniteDensity (R : ℝ) : ℝ≥0∞ :=
-  volume (S.balls ∩ (R • fundamentalDomain S.lattice_basis)) /
-  volume (R • fundamentalDomain S.lattice_basis)
-
-private noncomputable def PeriodicSpherePacking.FundamentalDomainDensity : ℝ≥0∞ :=
-  limsup (S.FundamentalDomainFiniteDensity) atTop
-
--- TODO: Get L automatically
-@[simp]
-private lemma PeriodicSpherePacking.FundamentalDomainDensity_eq_Density {L : ℝ}
-  (hL : ∀ x ∈ fundamentalDomain S.lattice_basis, ‖x‖ ≤ L) :
-  (S.toSpherePacking).density = S.FundamentalDomainDensity := by
-  simp only [density, PeriodicSpherePacking.FundamentalDomainDensity,
-    PeriodicSpherePacking.FundamentalDomainFiniteDensity, limsup, limsSup, eventually_map,
-    eventually_atTop]
-  apply le_antisymm
-  · simp only [sInf_le_iff, le_sInf_iff, Set.mem_setOf_eq, lowerBounds]
-    intro x hx y hy
-    rcases hx with ⟨a, ha⟩
-    apply hy
-
-    sorry
-  · sorry
-
-@[simp]
-private lemma PeriodicSpherePacking.FundamentalDomain_Scale_Nat (c : ℕ) :
-  volume (S.balls ∩ (c • fundamentalDomain S.lattice_basis)) =
-  c^d * volume (S.balls ∩ fundamentalDomain S.lattice_basis) := by
-  sorry
-
-end Scratchpad
+-- these are broken because I removed `lattice_basis`
+-- private noncomputable def PeriodicSpherePacking.FundamentalDomainFiniteDensity (R : ℝ) : ℝ≥0∞ :=
+--   volume (S.balls ∩ (R • fundamentalDomain S.lattice_basis)) /
+--   volume (R • fundamentalDomain S.lattice_basis)
+--
+-- private noncomputable def PeriodicSpherePacking.FundamentalDomainDensity : ℝ≥0∞ :=
+--   limsup (S.FundamentalDomainFiniteDensity) atTop
+--
+-- -- TODO: Get L automatically
+-- @[simp]
+-- private lemma PeriodicSpherePacking.FundamentalDomainDensity_eq_Density {L : ℝ}
+--   (hL : ∀ x ∈ fundamentalDomain S.lattice_basis, ‖x‖ ≤ L) :
+--   (S.toSpherePacking).density = S.FundamentalDomainDensity := by
+--   simp only [density, PeriodicSpherePacking.FundamentalDomainDensity,
+--     PeriodicSpherePacking.FundamentalDomainFiniteDensity, limsup, limsSup, eventually_map,
+--     eventually_atTop]
+--   apply le_antisymm
+--   · simp only [sInf_le_iff, le_sInf_iff, Set.mem_setOf_eq, lowerBounds]
+--     intro x hx y hy
+--     rcases hx with ⟨a, ha⟩
+--     apply hy
+--
+--     sorry
+--   · sorry
+--
+-- @[simp]
+-- private lemma PeriodicSpherePacking.FundamentalDomain_Scale_Nat (c : ℕ) :
+--   volume (S.balls ∩ (c • fundamentalDomain S.lattice_basis)) =
+--   c^d * volume (S.balls ∩ fundamentalDomain S.lattice_basis) := by
+--   sorry
+--
+-- end Scratchpad

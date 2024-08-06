@@ -103,23 +103,26 @@ noncomputable def SpherePacking.finiteDensity (S : SpherePacking d) (R : ℝ) : 
 noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
   limsup S.finiteDensity atTop
 
-/-- Returns a ℝ-basis of ℝ^d such that the its ℤ-span is `S.lattice`. -/
-noncomputable def PeriodicSpherePacking.lattice_basis (S : PeriodicSpherePacking d) :
-    Basis (Module.Free.ChooseBasisIndex ℤ S.lattice) ℝ (EuclideanSpace ℝ (Fin d)) :=
-  Basis.ofZlatticeBasis _ _ (Zlattice.module_free ℝ S.lattice).chooseBasis
+-- Here is one way to choose a basis, but I think for our purpose we can just supply one.
+-- /-- Returns a ℝ-basis of ℝ^d such that the its ℤ-span is `S.lattice`. -/
+-- noncomputable def PeriodicSpherePacking.lattice_basis (S : PeriodicSpherePacking d) :
+--     Basis (Module.Free.ChooseBasisIndex ℤ S.lattice) ℝ (EuclideanSpace ℝ (Fin d)) :=
+--   ((Zlattice.module_free ℝ S.lattice).chooseBasis).ofZlatticeBasis _ _
 
 theorem Submodule.toIntSubmodule_eq_iff_eq_toAddSubgroup {G : Type*} [AddCommGroup G]
     {A : AddSubgroup G} {B : Submodule ℤ G} :
     AddSubgroup.toIntSubmodule A = B ↔ A = B.toAddSubgroup := by
   constructor <;> rintro rfl <;> rfl
 
-theorem PeriodicSpherePacking.lattice_basis_Z_span (S : PeriodicSpherePacking d) :
-    Submodule.span ℤ (Set.range S.lattice_basis) = AddSubgroup.toIntSubmodule S.lattice :=
+theorem PeriodicSpherePacking.basis_Z_span
+    (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    Submodule.span ℤ (Set.range (b.ofZlatticeBasis ℝ _)) = AddSubgroup.toIntSubmodule S.lattice :=
   (Submodule.toIntSubmodule_eq_iff_eq_toAddSubgroup.mpr (Basis.ofZlatticeBasis_span ..).symm).symm
 
-theorem PeriodicSpherePacking.lattice_basis_R_span (S : PeriodicSpherePacking d) :
-    Submodule.span ℝ (Set.range S.lattice_basis) = ⊤ :=
-  Basis.span_eq S.lattice_basis
+theorem PeriodicSpherePacking.basis_R_span
+    (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    Submodule.span ℝ (Set.range (b.ofZlatticeBasis ℝ _)) = ⊤ :=
+  Basis.span_eq _
 
 end Definitions
 
