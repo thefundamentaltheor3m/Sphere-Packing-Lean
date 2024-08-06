@@ -26,15 +26,27 @@
   If $\Lambda$ is a lattice, we call the $\Lambda$-periodic packing $\Pa(\Lambda)$ with centres at points in $\Lambda$ a lattice packing.
 \end{definition}
 
-\todo{Remove this, since it's a duplicate of section 2.3 (Density of periodic packings.}
+It turns out that we can express the density of a periodic packing in a manner more conducive to computation:
+
 \begin{lemma}\label{SpherePacking.density of periodic packing}\notready
-  If $X \subseteq \R^d$ is a set of sphere packing centres that is periodic with respect to some lattice $\Lambda$, then the density of the corresponding (periodic) sphere packing is given by
-  $$ \frac{\lvert {X/\Lambda} \rvert}{\mathrm{Vol}(\R^d / \Lambda)} \cdot \mathrm{Vol}(B_d(0,1))$$
+  If $X \subseteq \R^d$ is a set of sphere packing centres with separation radius $r$ that is periodic with respect to some lattice $\Lambda$, then the density of the corresponding (periodic) sphere packing is given by
+  \begin{equation}
+    \frac{\abs{X/\Lambda}}{\Vol{\R^d / \Lambda}} \cdot \Vol{\Bd{0, \frac{r}{2}}}
+    \label{eq:periodic-packing-density-formula}
+  \end{equation}
   where the quotients in the numerator and denominator correspond to the orbits of the action by translation of $\Lambda$ on $X$ and $\R^d$ respectively.
 \end{lemma}
+\begin{proof}[Proof sketch]
+  While we do not currently have sufficient machinery to actually prove the result, we will offer a brief sketch. The idea is to bound the finite density of a periodic packing above and below by functions of $R$ that converge to~\eqref{eq:periodic-packing-density-formula} as $R \to \infty$. This will, first of all, imply that the finite density converges to~\eqref{eq:periodic-packing-density-formula} as $R \to \infty$. More importantly, it will demonstrate that the $\limsup$ in the definition of the density is actually a limit, and that the limit is given by~\eqref{eq:periodic-packing-density-formula}. We will prove the necessary results in Section~\ref{sec:packings-density}.
+\end{proof}
+
 \begin{remark}
-  This can be thought of as the ``volume of spheres per fundamental domain": the number of spheres per fundamental domain is $\lvert {X/\Lambda} \rvert$, and the volume of each sphere is $\mathrm{Vol}(B_d(0,1))$.
+  The expression in~\eqref{eq:periodic-packing-density-formula} can be thought of as the ``volume of spheres per fundamental domain": the number of spheres per fundamental domain is $\lvert {X/\Lambda} \rvert$, and the volume of each sphere is $\Vol{\Bd{0, \frac{r}{2}}}$. An intuitive (but more difficult to formalise) argument for why the formula holds is that the essence of the finite density definition does not actually depend on the shape of the ball, but rather on the amount of space occupied by a sphere packing within some bounded region. Taking that region to be a \emph{fundamental domain} instead of a \emph{sphere} does not invalidate the definition of density: ie, the two definitions of density are equivalent for periodic packings. When we look at fundamental domains of growing size instead of balls of growing size, we can observe some sort of periodicity in the spikes in finite density, which gives us the formula in~\eqref{eq:periodic-packing-density-formula}.
 \end{remark}
+
+We will exploit the ease of computation that comes with Lemma~\ref{SpherePacking.density of periodic packing} to compute the sphere packing density of the $E_8$ packing.
+
+Now that we have simplified the process of computing the packing densities of specific packings, we can simplify that of computing the sphere packing constant. It turns out that once again, periodicity is key.
 
 \begin{definition}\label{def-Periodic-sphere-packing-constant}\uses{SpherePacking.density, PeriodicSpherePacking}\notready
     The periodic sphere packing constant is defined to be
@@ -49,4 +61,4 @@
   \todo{Fill in proof here (see~\cite[Appendix A]{ElkiesCohn}}
 \end{proof}
 
-In other words, it suffices to compute and optimise the periodic sphere packing constant.
+Thus, one can show a sphere packing to be optimal by showing its density to be equal to the \emph{periodic} sphere packing constant instead of the regular sphere packing constant. The determination of the periodic constant is easier than that of the general constant, as we shall see when investigating the Linear Programming bounds derived by Cohn and Elkies in~\cite{ElkiesCohn}.
