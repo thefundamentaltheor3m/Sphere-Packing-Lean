@@ -98,7 +98,13 @@ We set
 \end{definition}
 \begin{lemma}\label{lemma-E2-transform}\uses{def-E2}
 This function is not modular, however it satisfies
-\begin{equation}\label{eqn-E2-transform}z^{-2}\,E_2\Big(\frac{-1}{z}\Big)=E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.\end{equation}
+\begin{equation}\label{eqn-E2-transform}
+    z^{-2}\,E_2\Big(\frac{-1}{z}\Big)=E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.
+\end{equation}
+More generally, we have
+\begin{equation}\label{eqn:E2-transform-general}
+(cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix} a & b \\ c & d\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb{Z}).
+\end{equation}
 \end{lemma}
 The proof of this identity can be found in \cite[Section~2.3]{1-2-3}.
 The weight two Eisenstein series $E_2$ is an example of a \emph{quasimodular form} \cite[Section~5.1]{1-2-3}.
@@ -283,6 +289,100 @@ By Lemma \ref{lemma-theta-functions-jacobi-identity} and the transformation law 
 \begin{equation}
     \Theta_{2}(it) = \sum_{n \in \Z} e^{- \pi (n + \frac{1}{2})^{2} t} > 0.
 \end{equation}
+\end{proof}
+
+
+\begin{definition}[Quasimodular form]\label{def:quasimodform}
+
+\end{definition}
+
+\begin{definition}\label{def:derivative}
+Let $F$ be a quasimodular form.
+We define the (normalized) derivative of $F$ as
+\begin{equation}\label{eqn:derivative}
+    F' = DF := \frac{1}{2\pi i} \frac{\dd}{\dd z} F.
+\end{equation}
+\end{definition}
+
+\begin{lemma}\label{lem:der-q-series}
+$D = q \frac{\dd}{\dd q}$.
+Especially, $q$-series of the derivative of a quasimodualr form $F(z) = \sum_{n \ge n_0} a_n q^n$ is $F'(z) = \sum_{n \ge n_0} n a_n q^n$.
+\end{lemma}
+\begin{proof}
+Directly follows from the definition \eqref{eqn:derivative}, where $\frac{1}{2 \pi i}\frac{\dd}{\dd z}e^{2\pi i n z} = n e^{2\pi i n z}$.
+\end{proof}
+
+\begin{definition}\label{def:serre-der}
+Let $F$ be a modular form and $k \in \mathbb{R}$. Define weight $k$ Serre derivative $\partial_{k}$ as
+\begin{equation}\label{eqn:serre-der}
+    \partial_{k}F := F' - \frac{k}{12} E_2 F.
+\end{equation}
+\end{definition}
+
+\begin{theorem}\label{thm:serre-der-modularity}
+Let $F$ be a modular form of weight $k$ and level $\Gamma$.
+Then $\partial_{k}F$ is a modular form of weight $k + 2$ of the same level.
+\end{theorem}
+\begin{proof}
+Let $G = \partial_{k}F = F' - \frac{k}{12}E_2 F$.
+It is enough to show that $G$ is invariant under $|_{k+2}\gamma$ for $\gamma \in \Gamma$.
+From $F \in M_k(\Gamma)$, we have
+\begin{equation}
+    (F|_{k}\gamma)(z) := (cz + d)^{-k} F\left(\frac{az + b}{cz + d}\right) = F(z), \quad \gamma = \begin{pmatrix}a & b \\ c & d\end{pmatrix} \in \Gamma.
+\end{equation}
+By taking derivative of the above equation, we get
+\begin{align}
+    &-kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k} (cz + d)^{-2} \frac{\dd F}{\dd z}\left(\frac{az + b}{cz + d}\right) = \frac{\dd F}{\dd z}(z) \\
+    &\Leftrightarrow (cz + d)^{-k - 2} F'\left(\frac{az + b}{cz + d}\right) = F'(z) - \frac{ikc}{2\pi(cz + d)}F(z).
+\end{align}
+Combined with \eqref{eqn:E2-transform-general}, we get
+\begin{align}
+    ((\partial_k F)|_{k+2}\gamma)(z) &= (cz + d)^{-k-2} \left(F'\left(\frac{az + b}{cz + d}\right) - \frac{k}{12}E_2\left(\frac{az + b}{cz + d}\right)F\left(\frac{az + b}{cz + d}\right)\right) \\
+    &= F'(z) - \frac{ikc}{2 \pi(cz + d)} F(z) - \frac{k}{12} \left(E_2 - \frac{6c}{\pi(cz + d)}\right) F(z) \\
+    &= F'(z) - \frac{k}{12} E_2(z) F(z) = (\partial_{k} F)(z)
+\end{align}
+so $\partial_{k}F \in M_{k+2}(\Gamma)$.
+\end{proof}
+More generally, the following theorem holds: if $F$ is a quasimodular form of weight $k$ and depth $s$, then $\partial_{k-s}F$ is a quasimodular form of weight $k + 2$ \emph{and depth $\le s$} of the same level, but we will not prove this.
+
+\begin{theorem}\label{thm:ramanujan-formula}
+We have
+\begin{align}
+    E_2' &= \frac{E_2^2 - E_4}{12} \label{eqn:DE2} \\
+    E_4' &= \frac{E_2 E_4 - E_6}{3} \label{eqn:DE4} \\
+    E_6' &= \frac{E_2 E_6 - E_4^2}{2} \label{eqn:DE6}
+\end{align}
+\end{theorem}
+\begin{proof}
+In terms of Serre derivatives, these are equivalent to
+\begin{align}
+    \partial_{1}E_2 &= -\frac{1}{12} E_4 \label{eqn:SE2} \\
+    \partial_{4}E_4 &= -\frac{1}{3} E_6 \label{eqn:SE4} \\
+    \partial_{6}E_6 &= -\frac{1}{2} E_4^2 \label{eqn:SE6}
+\end{align}
+By Theorem \ref{thm:serre-der-modularity}, all the serre derivatives are in fact modular.
+To be precise, modularity of $\partial_{4} E_4$ and $\partial_6 E_6$ directly follows from Theorem \ref{thm:serre-der-modularity}, and modularity of $\partial_{1}E_2$ follows from \eqref{eqn:E2-transform-general}: differentiating / taking sqaure of it gives
+\begin{align}
+    E_2'|_{4}\gamma &= E_2' - \frac{ic}{\pi(cz + d)} E_2 - \frac{3c^2}{\pi^2 (cz + d)^2} \label{eqn:DE2-transform} \\
+    E_2^2|_{4}\gamma &= E_2^2 - \frac{12ic}{\pi(cz + d)} E_2 - \frac{36c^2}{\pi^2 (cz + d)^2} \label{eqn:E2sq-transform}
+\end{align}
+respectively, hence \eqref{eqn:DE2}$-\frac{1}{12}$\eqref{eqn:E2sq-transform} is a modular form of weight 4.
+Since $\dim M_k(\Gamma_1) = 1$ for $k = 4, 6, 8$, they should be multiples of $E_4, E_6, E_8$, and the proportionality constants can be determined by observing the constant terms of $q$-expansions.
+\end{proof}
+
+\begin{theorem}\label{thm:serre-der-prod-rule}
+Serre derivative satisfies the following product rule: for any quasimodular forms $F$ and $G$,
+\begin{equation}
+    \partial_{w_1 + w_2} (FG) = (\partial_{w_1}F)G + F (\partial_{w_2}G).
+\end{equation}
+\end{theorem}
+\begin{proof}
+\begin{align}
+    \partial_{w_1 + w_2} (FG) &= (FG)' - \frac{w_1 + w_2}{12} E_2 (FG) \\
+    &= F'G + FG' - \frac{w_1 + w_2}{12} E_2(FG) \\
+    &= \left(F' - \frac{w_1}{12}E_2 F\right)G + F \left(G' - \frac{w_2}{12}E_2 G\right) \\
+    &= (\partial_{w_1}F)G + F(\partial_{w_2}G).
+\end{align}
 \end{proof}
 
 
