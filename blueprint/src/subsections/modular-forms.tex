@@ -3,6 +3,8 @@
 
 In this section, we recall and develop some theory of (quasi)modular forms.
 
+\subsection{Modular forms and examples}
+
 Let $\h$ be the upper half-plane $\{z\in\C\mid\Im(z)>0\}$.
 \begin{lemma}\label{def-Gamma-1-Action}
     The modular group $\Gamma_1:=\mathrm{SL}_2(\Z)$ acts on $\h$ by linear fractional transformations
@@ -91,23 +93,24 @@ where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
   E_6(z)\,=\,& 1-504\sum_{n=1}^\infty \sigma_5(n)\,e^{2\pi i n z}. \notag
 \end{align}
 \end{lemma}\label{lemma-E2-not-abs-conv}
-The infinite sum \eqref{eqn-Ek-definition} does not converge absolutely for $k=2$. On the other hand, the expression \eqref{eqn-Ek-Fourier} converges to a holomorphic function on the upper half-plane and therefore
-\begin{definition}\label{def-E2} % \lean{def-E2}
-We set
-\begin{equation}E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.\notag\end{equation}
-\end{definition}
-\begin{lemma}\label{lemma-E2-transform}\uses{def-E2}
-This function is not modular, however it satisfies
-\begin{equation}\label{eqn-E2-transform}
-    z^{-2}\,E_2\Big(\frac{-1}{z}\Big)=E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.
-\end{equation}
-More generally, we have
-\begin{equation}\label{eqn:E2-transform-general}
-(cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix} a & b \\ c & d\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb{Z}).
-\end{equation}
-\end{lemma}
-The proof of this identity can be found in \cite[Section~2.3]{1-2-3}.
-The weight two Eisenstein series $E_2$ is an example of a \emph{quasimodular form} \cite[Section~5.1]{1-2-3}.
+The infinite sum \eqref{eqn-Ek-definition} does not converge absolutely for $k=2$. On the other hand, the expression \eqref{eqn-Ek-Fourier} converges to a holomorphic function on the upper half-plane and we will take it as a definition of $E_2$ (See Definition \ref{def-E2} below).
+% The infinite sum \eqref{eqn-Ek-definition} does not converge absolutely for $k=2$. On the other hand, the expression \eqref{eqn-Ek-Fourier} converges to a holomorphic function on the upper half-plane and therefore
+% \begin{definition}\label{def-E2} % \lean{def-E2}
+% We set
+% \begin{equation}E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.\notag\end{equation}
+% \end{definition}
+% \begin{lemma}\label{lemma-E2-transform}\uses{def-E2}
+% This function is not modular, however it satisfies
+% \begin{equation}\label{eqn-E2-transform}
+%     z^{-2}\,E_2\Big(\frac{-1}{z}\Big)=E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.
+% \end{equation}
+% More generally, we have
+% \begin{equation}\label{eqn:E2-transform-general}
+% (cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix} a & b \\ c & d\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb{Z}).
+% \end{equation}
+% \end{lemma}
+% The proof of this identity can be found in \cite[Section~2.3]{1-2-3}.
+% The weight two Eisenstein series $E_2$ is an example of a \emph{quasimodular form} \cite[Section~5.1]{1-2-3}.
 
 
 The discriminant form is a unique normalized cusp form of weight 12, which can be defined using $E_4$ and $E_6$.
@@ -164,7 +167,17 @@ Note that the RHS of \eqref{eqn-disc-logder} is equal to the $E_2(z)$.
 As a side note, we can also consider defining $\Delta$ as \eqref{eqn-disc-prodformula}, and prove that it coincides with \eqref{eqn-disc-definition}.
 Such an argument can be found in \cite[Section 2.4]{Bruinier}.
 
-Another example of modular forms we would like to consider are \emph{theta functions} \cite[Section~3.1]{1-2-3}.
+\begin{corollary}\label{cor:disc-pos}
+$\Delta(it) > 0$ for all $t > 0$.
+\end{corollary}
+\begin{proof}
+By Lemma \ref{lem-disc-prodformula}, we have
+$$
+\Delta(it) = e^{-2 \pi t} \prod_{n \ge 1} (1 - e^{-2 \pi n t})^{24} > 0.
+$$
+\end{proof}
+
+Another examples of modular forms we would like to consider are \emph{theta functions} \cite[Section~3.1]{1-2-3}.
 \begin{definition}\label{def-th00-th01-th10}
 We define three different theta functions (so called ``Thetanullwerte'') as
 \begin{align}
@@ -291,10 +304,23 @@ By Lemma \ref{lemma-theta-functions-jacobi-identity} and the transformation law 
 \end{equation}
 \end{proof}
 
+\subsection{Quasimodular forms and derivatives}
+
+Morally, quasimodular forms can be thought as \emph{modular forms with differentiations}.
+It can be defined formally as follows.
 
 \begin{definition}[Quasimodular form]\label{def:quasimodform}
-
+Let $f: \mathfrak{H} \to \C$ be a holomorphic function, $k$ and $s \ge 0$ be integers.
+The function $f$ is a \emph{quasimodular form of weight $k$, level $\Gamma$, and depth $s$} if there exist holomorphic functions $f_0, \dots, f_s : \mathfrak{H} \to \C$ such that
+\begin{equation}\label{eqn:quasimod-def}
+    (f|_{k}\gamma)(z) = (cz + d)^{-k} f\left(\frac{az + b}{cz + d}\right) = \sum_{j=0}^{s} f_j(z) \left(\frac{c}{cz + d}\right)^j
+\end{equation}
+for all $z \in \mathfrak{H}$ and $\gamma = \left(\begin{smallmatrix} a&b\\c&d \end{smallmatrix}\right) \in \Gamma$.
 \end{definition}
+
+By taking $\gamma = I$, one can check that we should have $f_0 = f$. Thus quasimodular form of depth 0 is just a modular form of same weight and level.
+
+
 
 \begin{definition}\label{def:derivative}
 Let $F$ be a quasimodular form.
@@ -306,10 +332,57 @@ We define the (normalized) derivative of $F$ as
 
 \begin{lemma}\label{lem:der-q-series}
 $D = q \frac{\dd}{\dd q}$.
-Especially, $q$-series of the derivative of a quasimodualr form $F(z) = \sum_{n \ge n_0} a_n q^n$ is $F'(z) = \sum_{n \ge n_0} n a_n q^n$.
+Especially, $q$-series of the derivative of a quasimodular form $F(z) = \sum_{n \ge n_0} a_n q^n$ is $F'(z) = \sum_{n \ge n_0} n a_n q^n$.
 \end{lemma}
 \begin{proof}
 Directly follows from the definition \eqref{eqn:derivative}, where $\frac{1}{2 \pi i}\frac{\dd}{\dd z}e^{2\pi i n z} = n e^{2\pi i n z}$.
+\end{proof}
+
+\begin{theorem}\label{thm:quasimod-der-closed}
+The space of quasimodular forms is closed under the derivative \eqref{eqn:derivative}.
+If $F$ is a quasimodular form of weight $k$, level $\Gamma$, and depth $s$, then $F'$ is a quasimodular form of weight $k + 2$, level $\Gamma$, and depth $s + 1$.
+\end{theorem}
+\begin{proof}
+This follows from differentiating the definitional equation \eqref{eqn:quasimod-def}: we get
+\begin{align}
+    &-kc(cz + d)^{-k-1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k-2} \frac{\dd F}{\dd z} \left(\frac{az + b}{cz + d}\right) \\
+    &= \sum_{j=0}^{s} \frac{\dd F_j}{\dd z}(z)\left(\frac{c}{cz + d}\right)^j + F_j(z) \cdot (-j) \left(\frac{c}{cz + d}\right)^{j + 1} \\
+    &\Rightarrow (cz + d)^{-k-2}F'\left(\frac{az + b}{cz + d}\right) = \sum_{j=0}^{s + 1} G_j(z) \left(\frac{c}{cz + d}\right)^j
+\end{align}
+where
+\begin{equation}
+    G_j(z) := F_j'(z) - \frac{ikc}{2\pi(cz + d)} F_j(z) + \frac{i(j-1)}{2\pi} F_{j-1}(z), \quad F_{-1} := 0
+\end{equation}
+for $0 \le j \le s + 1$, which are holomorphic.
+\end{proof}
+
+The most important quasimodular form is the weight 2 Eisenstein series $E_2$.
+We define it as a $q$-series, which gives a holomorphic function on $\mathfrak{H}$.
+\begin{definition}\label{def-E2} % \lean{def-E2}
+We set
+\begin{equation}
+    E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.\notag
+\end{equation}
+\end{definition}
+
+\begin{lemma}\label{lemma-E2-transform}\uses{def-E2}
+This function is not modular, however it satisfies
+\begin{equation}\label{eqn-E2-S-transform}
+    z^{-2}\,E_2\Big(\frac{-1}{z}\Big)=E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.
+\end{equation}
+More generally, we have
+\begin{equation}\label{eqn:E2-transform-general}
+(cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix} a & b \\ c & d\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb{Z}).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Use \eqref{eqn-disc-logder}.
+Modularity of $\Delta(z)$ gives $(cz + d)^{-12}\Delta(\frac{az + b}{cz + d}) = \Delta(z)$ for $\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right) \in \Gamma_1$, and by differentiating it we get
+\begin{equation}
+    (cz + d)^{-14} \Delta'\left(\frac{az + b}{cz + d}\right) = \Delta'(z) - \frac{6ic}{\pi(cz + d)} \Delta(z).
+\end{equation}
+Now, divide both sides with $\Delta(z)$ proves \eqref{eqn:E2-transform-general}.
 \end{proof}
 
 \begin{definition}\label{def:serre-der}
@@ -377,6 +450,7 @@ Serre derivative satisfies the following product rule: for any quasimodular form
 \end{equation}
 \end{theorem}
 \begin{proof}
+It follows from the definition:
 \begin{align}
     \partial_{w_1 + w_2} (FG) &= (FG)' - \frac{w_1 + w_2}{12} E_2 (FG) \\
     &= F'G + FG' - \frac{w_1 + w_2}{12} E_2(FG) \\
