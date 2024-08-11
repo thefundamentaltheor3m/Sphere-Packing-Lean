@@ -119,6 +119,11 @@ theorem PeriodicSpherePacking.basis_Z_span
     Submodule.span ℤ (Set.range (b.ofZlatticeBasis ℝ _)) = AddSubgroup.toIntSubmodule S.lattice :=
   (Submodule.toIntSubmodule_eq_iff_eq_toAddSubgroup.mpr (Basis.ofZlatticeBasis_span ..).symm).symm
 
+theorem PeriodicSpherePacking.mem_basis_Z_span
+    (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (v) :
+    v ∈ Submodule.span ℤ (Set.range (b.ofZlatticeBasis ℝ _)) ↔ v ∈ S.lattice :=
+  SetLike.ext_iff.mp (S.basis_Z_span b) v
+
 theorem PeriodicSpherePacking.basis_R_span
     (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
     Submodule.span ℝ (Set.range (b.ofZlatticeBasis ℝ _)) = ⊤ :=
