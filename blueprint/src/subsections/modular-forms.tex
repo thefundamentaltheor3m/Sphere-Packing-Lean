@@ -310,7 +310,7 @@ Morally, quasimodular forms can be thought as \emph{modular forms with different
 It can be defined formally as follows.
 
 \begin{definition}[Quasimodular form]\label{def:quasimodform}
-Let $f: \mathfrak{H} \to \C$ be a holomorphic function, $k$ and $s \ge 0$ be integers.
+Let $f: \mathfrak{H} \to \C$ be a holomorphic function, and let $k$ and $s \ge 0$ be integers.
 The function $f$ is a \emph{quasimodular form of weight $k$, level $\Gamma$, and depth $s$} if there exist holomorphic functions $f_0, \dots, f_s : \mathfrak{H} \to \C$ such that
 \begin{equation}\label{eqn:quasimod-def}
     (f|_{k}\gamma)(z) = (cz + d)^{-k} f\left(\frac{az + b}{cz + d}\right) = \sum_{j=0}^{s} f_j(z) \left(\frac{c}{cz + d}\right)^j
@@ -318,8 +318,7 @@ The function $f$ is a \emph{quasimodular form of weight $k$, level $\Gamma$, and
 for all $z \in \mathfrak{H}$ and $\gamma = \left(\begin{smallmatrix} a&b\\c&d \end{smallmatrix}\right) \in \Gamma$.
 \end{definition}
 
-By taking $\gamma = I$, one can check that we should have $f_0 = f$. Thus quasimodular form of depth 0 is just a modular form of same weight and level.
-
+By taking $\gamma = \left(\begin{smallmatrix} 1 & 0 \\ 0 & 1 \end{smallmatrix}\right)$, one can check that we should have $f_0 = f$. Thus, a quasimodular form of depth $0$ is just a modular form of same weight and level.
 
 
 \begin{definition}\label{def:derivative}
@@ -331,8 +330,8 @@ We define the (normalized) derivative of $F$ as
 \end{definition}
 
 \begin{lemma}\label{lem:der-q-series}
-$D = q \frac{\dd}{\dd q}$.
-Especially, $q$-series of the derivative of a quasimodular form $F(z) = \sum_{n \ge n_0} a_n q^n$ is $F'(z) = \sum_{n \ge n_0} n a_n q^n$.
+We have an equality of operators $D = q \frac{\dd}{\dd q}$.
+In particular, the $q$-series of the derivative of a quasimodular form $F(z) = \sum_{n \ge n_0} a_n q^n$ is $F'(z) = \sum_{n \ge n_0} n a_n q^n$.
 \end{lemma}
 \begin{proof}
 Directly follows from the definition \eqref{eqn:derivative}, where $\frac{1}{2 \pi i}\frac{\dd}{\dd z}e^{2\pi i n z} = n e^{2\pi i n z}$.
@@ -386,7 +385,7 @@ Now, divide both sides with $\Delta(z)$ proves \eqref{eqn:E2-transform-general}.
 \end{proof}
 
 \begin{definition}\label{def:serre-der}
-Let $F$ be a modular form and $k \in \mathbb{R}$. Define weight $k$ Serre derivative $\partial_{k}$ as
+For $k \in \mathbb{R}$, define the weight $k$ Serre derivative $\partial_{k}$ of a modular form $F$ as
 \begin{equation}\label{eqn:serre-der}
     \partial_{k}F := F' - \frac{k}{12} E_2 F.
 \end{equation}
@@ -394,7 +393,7 @@ Let $F$ be a modular form and $k \in \mathbb{R}$. Define weight $k$ Serre deriva
 
 \begin{theorem}\label{thm:serre-der-modularity}
 Let $F$ be a modular form of weight $k$ and level $\Gamma$.
-Then $\partial_{k}F$ is a modular form of weight $k + 2$ of the same level.
+Then, $\partial_{k}F$ is a modular form of weight $k + 2$ of the same level.
 \end{theorem}
 \begin{proof}
 Let $G = \partial_{k}F = F' - \frac{k}{12}E_2 F$.
@@ -403,7 +402,7 @@ From $F \in M_k(\Gamma)$, we have
 \begin{equation}
     (F|_{k}\gamma)(z) := (cz + d)^{-k} F\left(\frac{az + b}{cz + d}\right) = F(z), \quad \gamma = \begin{pmatrix}a & b \\ c & d\end{pmatrix} \in \Gamma.
 \end{equation}
-By taking derivative of the above equation, we get
+By taking the derivative of the above equation, we get
 \begin{align}
     &-kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k} (cz + d)^{-2} \frac{\dd F}{\dd z}\left(\frac{az + b}{cz + d}\right) = \frac{\dd F}{\dd z}(z) \\
     &\Leftrightarrow (cz + d)^{-k - 2} F'\left(\frac{az + b}{cz + d}\right) = F'(z) - \frac{ikc}{2\pi(cz + d)}F(z).
@@ -416,7 +415,10 @@ Combined with \eqref{eqn:E2-transform-general}, we get
 \end{align}
 so $\partial_{k}F \in M_{k+2}(\Gamma)$.
 \end{proof}
-More generally, the following theorem holds: if $F$ is a quasimodular form of weight $k$ and depth $s$, then $\partial_{k-s}F$ is a quasimodular form of weight $k + 2$ \emph{and depth $\le s$} of the same level, but we will not prove this.
+\begin{remark}
+% In case we would like to reference this result at any point, I thought we could make it a remark
+    More generally, the following theorem holds: if $F$ is a quasimodular form of weight $k$ and depth $s$, then $\partial_{k-s}F$ is a quasimodular form of weight $k + 2$ \emph{and depth $\le s$} of the same level. We will not prove this here.
+\end{remark}
 
 \begin{theorem}\label{thm:ramanujan-formula}
 We have
@@ -433,18 +435,18 @@ In terms of Serre derivatives, these are equivalent to
     \partial_{4}E_4 &= -\frac{1}{3} E_6 \label{eqn:SE4} \\
     \partial_{6}E_6 &= -\frac{1}{2} E_4^2 \label{eqn:SE6}
 \end{align}
-By Theorem \ref{thm:serre-der-modularity}, all the serre derivatives are in fact modular.
-To be precise, modularity of $\partial_{4} E_4$ and $\partial_6 E_6$ directly follows from Theorem \ref{thm:serre-der-modularity}, and modularity of $\partial_{1}E_2$ follows from \eqref{eqn:E2-transform-general}: differentiating / taking sqaure of it gives
+By Theorem \ref{thm:serre-der-modularity}, all the serre derivatives are, in fact, modular.
+To be precise, the modularity of $\partial_{4} E_4$ and $\partial_6 E_6$ directly follows from Theorem \ref{thm:serre-der-modularity}, and that of $\partial_{1}E_2$ follows from \eqref{eqn:E2-transform-general}. Differentiating and squaring then gives us the following:
 \begin{align}
     E_2'|_{4}\gamma &= E_2' - \frac{ic}{\pi(cz + d)} E_2 - \frac{3c^2}{\pi^2 (cz + d)^2} \label{eqn:DE2-transform} \\
     E_2^2|_{4}\gamma &= E_2^2 - \frac{12ic}{\pi(cz + d)} E_2 - \frac{36c^2}{\pi^2 (cz + d)^2} \label{eqn:E2sq-transform}
 \end{align}
-respectively, hence \eqref{eqn:DE2}$-\frac{1}{12}$\eqref{eqn:E2sq-transform} is a modular form of weight 4.
+Hence, \eqref{eqn:DE2}$-\frac{1}{12}$\eqref{eqn:E2sq-transform} is a modular form of weight 4.
 Since $\dim M_k(\Gamma_1) = 1$ for $k = 4, 6, 8$, they should be multiples of $E_4, E_6, E_8$, and the proportionality constants can be determined by observing the constant terms of $q$-expansions.
 \end{proof}
 
 \begin{theorem}\label{thm:serre-der-prod-rule}
-Serre derivative satisfies the following product rule: for any quasimodular forms $F$ and $G$,
+The Serre derivative satisfies the following product rule: for any quasimodular forms $F$ and $G$,
 \begin{equation}
     \partial_{w_1 + w_2} (FG) = (\partial_{w_1}F)G + F (\partial_{w_2}G).
 \end{equation}
@@ -464,10 +466,10 @@ It follows from the definition:
 A \emph{weakly-holomorphic modular form} of integer weight $k$ and congruence subgroup $\Gamma$ is a holomorphic function $f:\h\to\C$ such that:
 \begin{enumerate}
   \item $f|_k\gamma=f$ for all $\gamma\in\Gamma$
-  \item for each $\alpha\in\Gamma_1\;f|_k\alpha$ has the Fourier expansion $f|_k\alpha (z)=\sum_{n=n_0}^\infty c_f(\alpha,\frac{n}{n_\alpha})\,e^{2\pi i \frac{n}{n_\alpha}z}$ for some $n_0\in\Z$ and $n_\alpha\in\N$.
+  \item for each $\alpha\in\Gamma_1\;f|_k\alpha$ has Fourier expansion $f|_k\alpha (z)=\sum_{n=n_0}^\infty c_f(\alpha,\frac{n}{n_\alpha})\,e^{2\pi i \frac{n}{n_\alpha}z}$ for some $n_0\in\Z$ and $n_\alpha\in\N$.
 \end{enumerate}
 \end{definition}
-For an $m$-periodic holomorphic function $f$ and $n\in\frac 1m \Z$ we will denote the $n$-th Fourier coefficient of $f$ by $c_f(n)$ so that
+For an $m$-periodic holomorphic function $f$ and $n\in\frac 1m \Z$, we will denote the $n$-th Fourier coefficient of $f$ by $c_f(n)$, so that
 $$f(z)=\sum_{n\in\frac 1m \Z} c_f(n)\,e^{2\pi i n z}.$$
 We denote the space of weakly-holomorphic modular forms of weight $k$ and group $\Gamma$ by $M_k^!(\Gamma)$. The spaces $M_k^!(\Gamma)$ are infinite dimensional.
 Probably the most famous weakly-holomorphic modular form is the \emph{elliptic j-invariant}
@@ -475,7 +477,7 @@ $$j\,:=\,\frac{1728\, E_4^3}{E_4^3-E_6^2}. $$
 This function belongs to $M_0^!(\Gamma_1)$ and has the Fourier expansion
 $$j(z)\,=\,q^{-1} + 744 + 196884\, q + 21493760\, q^2 + 864299970\, q^3 +
   20245856256\, q^4 + O(q^5) $$
-  where $q=e^{2\pi i z}$. Using a simple computer algebra system such as PARI GP or Mathematica one can compute first hundred terms of this Fourier expansion within few seconds. An important question is to find an  asymptotic formula for $c_j(n)$, the $n$-th Fourier coefficient  of $j$. Using the Hardy-Ramanujan circle method \cite{Rademacher38} or the non-holomorphic Poincare series \cite{Petersson32} one can show that
+  where $q=e^{2\pi i z}$. Using a simple computer algebra system, such as PARI GP or Mathematica, one can compute first hundred terms of this Fourier expansion in just a few seconds. An important question is to find an  asymptotic formula for $c_j(n)$, the $n$-th Fourier coefficient  of $j$. Using the Hardy-Ramanujan circle method \cite{Rademacher38} or the non-holomorphic Poincare series \cite{Petersson32}, one can show that
   \begin{lemma}\label{lemma: j Fourier asymptotic}
   % \lean{lemma: j Fourier asymptotic}
   \begin{equation}\label{eqn: j Fourier asymptotic}
