@@ -77,10 +77,15 @@ For an even integer $k\geq 4$ we define the \emph{weight $k$ Eisenstein series} 
 E_k(z):=\frac{1}{2\zeta(k)}\sum_{(c,d)\in\Z^2\backslash(0,0)}(cz+d)^{-k}.\end{equation}
 \end{definition}
 \begin{lemma}\label{lemma-Ek-is-modular-form}\uses{def-Mk}
-    For all $k$, $E_k\in M_k(\Gamma_1)$
+For all $k$, $E_k\in M_k(\Gamma_1)$.
+Especially, we have
+\begin{equation}\label{eqn:Ek-trans}
+    E_k \left(-\frac{1}{z}\right) = z^k E_k(z).
+\end{equation}
 \end{lemma}
 \begin{proof}
-    This follows from the fact that the sum converges absolutely.
+This follows from the fact that the sum converges absolutely.
+\eqref{eqn:Ek-trans} follows from applying slash operator with $\gamma = \left(\begin{smallmatrix} 0 & -1 \\ 1 & 0 \end{smallmatrix}\right)$.
 \end{proof}
 
 \begin{lemma}\label{lemma-Ek-Fourier}\uses{def-Ek-definition}
@@ -94,23 +99,6 @@ where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
 \end{align}
 \end{lemma}\label{lemma-E2-not-abs-conv}
 The infinite sum \eqref{eqn-Ek-definition} does not converge absolutely for $k=2$. On the other hand, the expression \eqref{eqn-Ek-Fourier} converges to a holomorphic function on the upper half-plane and we will take it as a definition of $E_2$ (See Definition \ref{def-E2} below).
-% The infinite sum \eqref{eqn-Ek-definition} does not converge absolutely for $k=2$. On the other hand, the expression \eqref{eqn-Ek-Fourier} converges to a holomorphic function on the upper half-plane and therefore
-% \begin{definition}\label{def-E2} % \lean{def-E2}
-% We set
-% \begin{equation}E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.\notag\end{equation}
-% \end{definition}
-% \begin{lemma}\label{lemma-E2-transform}\uses{def-E2}
-% This function is not modular, however it satisfies
-% \begin{equation}\label{eqn-E2-transform}
-%     z^{-2}\,E_2\Big(\frac{-1}{z}\Big)=E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.
-% \end{equation}
-% More generally, we have
-% \begin{equation}\label{eqn:E2-transform-general}
-% (cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix} a & b \\ c & d\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb{Z}).
-% \end{equation}
-% \end{lemma}
-% The proof of this identity can be found in \cite[Section~2.3]{1-2-3}.
-% The weight two Eisenstein series $E_2$ is an example of a \emph{quasimodular form} \cite[Section~5.1]{1-2-3}.
 
 
 The discriminant form is a unique normalized cusp form of weight 12, which can be defined using $E_4$ and $E_6$.
@@ -291,6 +279,20 @@ H_{2} + H_{4} = H_{3} \Leftrightarrow \Theta_{2}^4+ \Theta_{4}^4= \Theta_{3}^4.
 \end{lemma}
 \begin{proof}
 One possible proof is to use dimesion formula of the space of modular forms of weight 2 and level $\Gamma(2)$. Especially, this space have dimension 2, with basis $H_{2}$ and $H_{4}$.
+\end{proof}
+
+These are also related to $E_4$, $E_6$, and $\Delta$ as follows.
+\begin{lemma}\label{lemma:lv1-lv2-identities}
+We have
+\begin{align}
+    E_4 &= \label{eqn:E4-theta}\\
+    E_6 &= \label{eqn:E6-theta}\\
+    \Delta &= \label{eqn:disc-theta}
+\end{align}
+\end{lemma}
+\begin{proof}
+We can prove these similarly as Lemma \ref{lemma-theta-functions-jacobi-identity}.
+
 \end{proof}
 
 The \emph{strict} positivity of Jacobi theta functions might needed later.
@@ -477,13 +479,14 @@ $$j\,:=\,\frac{1728\, E_4^3}{E_4^3-E_6^2}. $$
 This function belongs to $M_0^!(\Gamma_1)$ and has the Fourier expansion
 $$j(z)\,=\,q^{-1} + 744 + 196884\, q + 21493760\, q^2 + 864299970\, q^3 +
   20245856256\, q^4 + O(q^5) $$
-  where $q=e^{2\pi i z}$. Using a simple computer algebra system, such as PARI GP or Mathematica, one can compute first hundred terms of this Fourier expansion in just a few seconds. An important question is to find an  asymptotic formula for $c_j(n)$, the $n$-th Fourier coefficient  of $j$. Using the Hardy-Ramanujan circle method \cite{Rademacher38} or the non-holomorphic Poincare series \cite{Petersson32}, one can show that
-  \begin{lemma}\label{lemma: j Fourier asymptotic}
-  % \lean{lemma: j Fourier asymptotic}
-  \begin{equation}\label{eqn: j Fourier asymptotic}
-  c_j(n)=\frac{2\pi}{n}\sum_{k=1}^\infty \frac{A_k(n)}{k}\,I_1\left(\frac{4\pi \sqrt{n}}{k}\right)\qquad n\in\Z_{>0}\end{equation}
-  where
-  $$A_k(n)= \sum_{\substack{h\;\mathrm{mod}\;k\\(h,k)=1}} e^{\frac{-2\pi i}{k}(nh+h')},\quad hh'\equiv -1(\mbox{mod}\;k),$$
-  and $I_\alpha(x)$ denotes the modified Bessel function of the first kind defined as in \cite[Section~9.6]{Abramowitz}.
-  \end{lemma}
-  A similar convergent asymptotic expansion holds for the Fourier coefficients of any weakly holomorphic modular form \cite{Hejhal}, \cite[Propositions~1.10 and~1.12]{Bruinier}. Such a convergent expansion implies effective estimates for the Fourier coefficients.
+where $q=e^{2\pi i z}$.
+Using a simple computer algebra system, such as PARI GP or Mathematica, one can compute first hundred terms of this Fourier expansion in just a few seconds. An important question is to find an  asymptotic formula for $c_j(n)$, the $n$-th Fourier coefficient  of $j$. Using the Hardy-Ramanujan circle method \cite{Rademacher38} or the non-holomorphic Poincare series \cite{Petersson32}, one can show that
+\begin{lemma}\label{lemma: j Fourier asymptotic}
+% \lean{lemma: j Fourier asymptotic}
+\begin{equation}\label{eqn: j Fourier asymptotic}
+c_j(n)=\frac{2\pi}{n}\sum_{k=1}^\infty \frac{A_k(n)}{k}\,I_1\left(\frac{4\pi \sqrt{n}}{k}\right)\qquad n\in\Z_{>0}\end{equation}
+where
+$$A_k(n)= \sum_{\substack{h\;\mathrm{mod}\;k\\(h,k)=1}} e^{\frac{-2\pi i}{k}(nh+h')},\quad hh'\equiv -1(\mbox{mod}\;k),$$
+and $I_\alpha(x)$ denotes the modified Bessel function of the first kind defined as in \cite[Section~9.6]{Abramowitz}.
+\end{lemma}
+A similar convergent asymptotic expansion holds for the Fourier coefficients of any weakly holomorphic modular form \cite{Hejhal}, \cite[Propositions~1.10 and~1.12]{Bruinier}. Such a convergent expansion implies effective estimates for the Fourier coefficients.
