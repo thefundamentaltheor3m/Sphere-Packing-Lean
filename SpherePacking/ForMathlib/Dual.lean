@@ -42,6 +42,10 @@ priori have access to any submodule-related results. We need to get to the submo
 and then use that to do things for `Zlattice`. I suspect that the entire thing is a lot simpler than
 what I currently have in mind... I think the only solution is to study the mathlib code in more
 detail. This comment is a note to myself to do just that.
+
+Addendum: how much of this is actually necessary for the proof of the main theorem? It is worth
+asking myself whether it can just be defined as a set (for now) in terms of which the PSF-L can be
+defined. That would probably be a bit simpler...
 -/
 
 end Zspan_Dual
