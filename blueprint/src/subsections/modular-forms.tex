@@ -79,13 +79,13 @@ E_k(z):=\frac{1}{2\zeta(k)}\sum_{(c,d)\in\Z^2\backslash(0,0)}(cz+d)^{-k}.\end{eq
 \begin{lemma}\label{lemma-Ek-is-modular-form}\uses{def-Mk}
 For all $k$, $E_k\in M_k(\Gamma_1)$.
 Especially, we have
-\begin{equation}\label{eqn:Ek-trans}
+\begin{equation}\label{eqn:Ek-trans-S}
     E_k \left(-\frac{1}{z}\right) = z^k E_k(z).
 \end{equation}
 \end{lemma}
 \begin{proof}
 This follows from the fact that the sum converges absolutely.
-\eqref{eqn:Ek-trans} follows from applying slash operator with $\gamma = \left(\begin{smallmatrix} 0 & -1 \\ 1 & 0 \end{smallmatrix}\right)$.
+Now apply slash operator with $\gamma = \left(\begin{smallmatrix} 0 & -1 \\ 1 & 0 \end{smallmatrix}\right)$ gives \eqref{eqn:Ek-trans-S}.
 \end{proof}
 
 \begin{lemma}\label{lemma-Ek-Fourier}\uses{def-Ek-definition}
@@ -97,8 +97,9 @@ where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
   E_4(z)\,=\,& 1+240\sum_{n=1}^\infty \sigma_3(n)\,e^{2\pi i n z} \notag \\
   E_6(z)\,=\,& 1-504\sum_{n=1}^\infty \sigma_5(n)\,e^{2\pi i n z}. \notag
 \end{align}
-\end{lemma}\label{lemma-E2-not-abs-conv}
-The infinite sum \eqref{eqn-Ek-definition} does not converge absolutely for $k=2$. On the other hand, the expression \eqref{eqn-Ek-Fourier} converges to a holomorphic function on the upper half-plane and we will take it as a definition of $E_2$ (See Definition \ref{def-E2} below).
+\end{lemma}
+The infinite sum \eqref{eqn-Ek-definition} does not converge absolutely for $k=2$.
+On the other hand, the expression \eqref{eqn-Ek-Fourier} converges to a holomorphic function on the upper half-plane and we will take it as a definition of $E_2$ (See Definition \ref{def-E2} below).
 
 
 The discriminant form is a unique normalized cusp form of weight 12, which can be defined using $E_4$ and $E_6$.
@@ -155,7 +156,7 @@ Note that the RHS of \eqref{eqn-disc-logder} is equal to the $E_2(z)$.
 As a side note, we can also consider defining $\Delta$ as \eqref{eqn-disc-prodformula}, and prove that it coincides with \eqref{eqn-disc-definition}.
 Such an argument can be found in \cite[Section 2.4]{Bruinier}.
 
-\begin{corollary}\label{cor:disc-pos}
+\begin{corollary}\label{cor:disc-pos}\uses{lem-disc-prodformula}
 $\Delta(it) > 0$ for all $t > 0$.
 \end{corollary}
 \begin{proof}
@@ -224,7 +225,7 @@ These identities follow from the identities of the \emph{two-variable} Jacobi th
     \theta(z, \tau) = \sum_{n \in \mathbb{Z}} e^{2 \pi i n z + \pi i n^2 \tau} \label{eqn:jacobi2}
 \end{equation}
 and already formalized by David Loeffler.
-This function specialize to the theta functions As
+This function specialize to the theta functions as
 \begin{align}
     \Theta_{2}(\tau) &= e^{\pi i \tau / 4} \theta(-\tau / 2, \tau) \label{eqn:Th2-as-jacobi2} \\
     \Theta_{3}(\tau) &= \theta(0, \tau) \label{eqn:Th3-as-jacobi2} \\
@@ -278,25 +279,27 @@ H_{2} + H_{4} = H_{3} \Leftrightarrow \Theta_{2}^4+ \Theta_{4}^4= \Theta_{3}^4.
 \end{equation}
 \end{lemma}
 \begin{proof}
-One possible proof is to use dimesion formula of the space of modular forms of weight 2 and level $\Gamma(2)$. Especially, this space have dimension 2, with basis $H_{2}$ and $H_{4}$.
+Use the dimesion formula of the space of modular forms of weight 2 and level $\Gamma(2)$.
+Especially, we have $\dim M_2(\Gamma(2)) = 2$ with basis $H_{2}$ and $H_{4}$.
 \end{proof}
 
 These are also related to $E_4$, $E_6$, and $\Delta$ as follows.
-\begin{lemma}\label{lemma:lv1-lv2-identities}
+\begin{lemma}\label{lemma:lv1-lv2-identities}\uses{lemma-theta-transform-S-T}
 We have
 \begin{align}
-    E_4 &= \label{eqn:E4-theta}\\
-    E_6 &= \label{eqn:E6-theta}\\
-    \Delta &= \label{eqn:disc-theta}
+    E_4 &= \frac{1}{2}(H_{2}^{2} + H_{3}^{2} + H_{4}^{2}) = H_{2}^{2} + H_{2}H_{4} + H_{4}^{2} \label{eqn:e4theta} \\
+    E_6 &= \frac{1}{2} (H_{2} + H_{3})(H_{3} + H_{4}) (H_{4} - H_{2}) = \frac{1}{2}(H_2 + 2H_4)(2H_2 + H_4)(H_4 - H_2) \label{eqn:e6theta} \\
+    \Delta &= \frac{1}{256} (H_{2}H_{3}H_{4})^2. \label{eqn:disctheta}
 \end{align}
 \end{lemma}
 \begin{proof}
 We can prove these similarly as Lemma \ref{lemma-theta-functions-jacobi-identity}.
-
+Right hand sides of \eqref{eqn:e4theta}, \eqref{eqn:e6theta}, and \eqref{eqn:disctheta} are all modular forms of level $\Gamma_1$ and desired weights, where \eqref{eqn:disctheta} is a cusp form since $H_2$ is.
+Now the identities follow from the dimension calculations $\dim M_4(\Gamma_1) = \dim M_6(\Gamma_1) = \dim S_{12}(\Gamma_1) = 1$ and comparing the first nonzero $q$-coefficients.
 \end{proof}
 
 The \emph{strict} positivity of Jacobi theta functions might needed later.
-\begin{lemma}\label{lemma-theta-pos}
+\begin{lemma}\label{lemma-theta-pos}\uses{lemma-theta-functions-jacobi-identity}
 All three functions $t \mapsto H_2(it), H_3(it), H_4(it)$ are positive for $t > 0$.
 \end{lemma}
 \begin{proof}
@@ -331,15 +334,15 @@ We define the (normalized) derivative of $F$ as
 \end{equation}
 \end{definition}
 
-\begin{lemma}\label{lem:der-q-series}
+\begin{lemma}\label{lem:der-q-series}\uses{def:derivative}
 We have an equality of operators $D = q \frac{\dd}{\dd q}$.
 In particular, the $q$-series of the derivative of a quasimodular form $F(z) = \sum_{n \ge n_0} a_n q^n$ is $F'(z) = \sum_{n \ge n_0} n a_n q^n$.
 \end{lemma}
 \begin{proof}
-Directly follows from the definition \eqref{eqn:derivative}, where $\frac{1}{2 \pi i}\frac{\dd}{\dd z}e^{2\pi i n z} = n e^{2\pi i n z}$.
+Directly follows from the definition \eqref{def:derivative}, where $\frac{1}{2 \pi i}\frac{\dd}{\dd z}e^{2\pi i n z} = n e^{2\pi i n z}$.
 \end{proof}
 
-\begin{theorem}\label{thm:quasimod-der-closed}
+\begin{theorem}\label{thm:quasimod-der-closed}\uses{def:quasimodform, def:derivative}
 The space of quasimodular forms is closed under the derivative \eqref{eqn:derivative}.
 If $F$ is a quasimodular form of weight $k$, level $\Gamma$, and depth $s$, then $F'$ is a quasimodular form of weight $k + 2$, level $\Gamma$, and depth $s + 1$.
 \end{theorem}
@@ -419,7 +422,7 @@ so $\partial_{k}F \in M_{k+2}(\Gamma)$.
 \end{proof}
 \begin{remark}
 % In case we would like to reference this result at any point, I thought we could make it a remark
-    More generally, the following theorem holds: if $F$ is a quasimodular form of weight $k$ and depth $s$, then $\partial_{k-s}F$ is a quasimodular form of weight $k + 2$ \emph{and depth $\le s$} of the same level. We will not prove this here.
+More generally, the following theorem holds: if $F$ is a quasimodular form of weight $k$ and depth $s$, then $\partial_{k-s}F$ is a quasimodular form of weight $k + 2$ \emph{and depth $\le s$} of the same level. We will not prove this here.
 \end{remark}
 
 \begin{theorem}\label{thm:ramanujan-formula}
@@ -447,7 +450,28 @@ Hence, \eqref{eqn:DE2}$-\frac{1}{12}$\eqref{eqn:E2sq-transform} is a modular for
 Since $\dim M_k(\Gamma_1) = 1$ for $k = 4, 6, 8$, they should be multiples of $E_4, E_6, E_8$, and the proportionality constants can be determined by observing the constant terms of $q$-expansions.
 \end{proof}
 
-\begin{theorem}\label{thm:serre-der-prod-rule}
+Similar argument allow us to compute (Serre) derivatives of $H_2, H_3, H_4$.
+\begin{proposition}\label{prop:theta-der}\uses{def:serre-der}
+We have
+\begin{align}
+    H_2' &= \frac{1}{6} (H_{2}^{2} + 2 H_{2} H_{4} + E_2 H_2) \label{eqn:H2-der}\\
+    H_3' &= \frac{1}{6} (H_{2}^{2} - H_{4}^{2} + E_2 H_3) \label{eqn:H3-der}\\
+    H_4' &= -\frac{1}{6} (2H_{2} H_{4} + H_{4}^{2} - E_2 H_4) \label{eqn:H4-der}
+\end{align}
+or equivalently,
+\begin{align}
+    \partial_{2} H_{2} &= \frac{1}{6} (H_{2}^{2} + 2 H_{2} H_{4}) \label{eqn:H2-serre-der} \\
+    \partial_{2} H_{3} &= \frac{1}{6} (H_{2}^{2} - H_{4}^{2}) \label{eqn:H3-serre-der} \\
+    \partial_{2} H_{4} &= -\frac{1}{6} (2H_{2} H_{4} + H_{4}^{2}) \label{eqn:H4-serre-der}
+\end{align}
+\end{proposition}
+\begin{proof}
+Equivalences are obvious from the definition of the Serre derivative.
+By Theorem \ref{thm:serre-der-modularity}, all the Serre derivatives are modular forms of weight 4 and level $\Gamma(2)$.
+We have $\dim M_4(\Gamma(2)) = 3$ with basis $H_2^2, H_2 H_4, H_4^2$, and comparing the first three $q$-coefficients give \eqref{eqn:H2-serre-der}, \eqref{eqn:H3-serre-der}, and \eqref{eqn:H4-serre-der}.
+\end{proof}
+
+\begin{theorem}\label{thm:serre-der-prod-rule}\uses{def:serre-der}
 The Serre derivative satisfies the following product rule: for any quasimodular forms $F$ and $G$,
 \begin{equation}
     \partial_{w_1 + w_2} (FG) = (\partial_{w_1}F)G + F (\partial_{w_2}G).

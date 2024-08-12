@@ -69,7 +69,9 @@ $$|a(r)|\leq 4C_2\,r\,K_1(2\sqrt{2}\pi r)+2C_3\frac{e^{-\pi(r^2+2)}}{r^2+2}.$$
 It is easy to see that the left hand side of this inequality decays faster then any inverse power of $r$. Analogous estimates can be obtained for all derivatives $\frac{d^k}{dr^k}a(r)$.
 
 Now we show that $a$ is an eigenfunction of the Fourier transform. We recall that the Fourier transform of a Gaussian function is
-\begin{equation}\label{eqn-gaussian Fourier}\mathcal{F}(e^{\pi i  \|x\|^2 z})(y)=z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.\end{equation}
+\begin{equation}\label{eqn-gaussian Fourier}
+  \mathcal{F}(e^{\pi i  \|x\|^2 z})(y)=z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
+\end{equation}
 Next, we exchange the contour integration with respect to $z$ variable and Fourier transform  with respect to $x$ variable in \eqref{eqn: a(r) definition}. This can be done, since the corresponding double integral converges absolutely. In this way we obtain
 \begin{align}
   \widehat{a}(y)=&\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz
@@ -98,7 +100,7 @@ Next, we check that $a$ has double zeroes at all $\Lambda_8$-lattice points of l
 
 \begin{proposition}
 \label{prop: a(r) double zeroes}
-\uses{lemma:  phi0 transform, def: a(r) definition}
+\uses{lemma: phi0 transform, def: a(r) definition}
 For $r>\sqrt{2}$ we can express $a(r)$ in the following form
 \begin{equation}\label{eqn: a double zeroes}
   a(r)=-4\sin(\pi r^2/2)^2\,\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz.
@@ -330,7 +332,7 @@ Combining \eqref{eqn: c1} and \eqref{eqn: c2} we find
   \end{align}
 \end{proof}
 At the end of this section we find another integral representation of $b(r)$ for $r\in\R_{\geq0}$ and compute special values of $b$.
-\begin{proposition}\label{prop: b another integral}\uses{prop:  b(r) double zeroes, lemma: psi fourier I psi fourier T psi fourier S, def: b(r) definition, eqn: psi asymptotic}
+\begin{proposition}\label{prop: b another integral}\uses{prop: b(r) double zeroes, lemma: psi fourier I psi fourier T psi fourier S, def: b(r) definition, eqn: psi asymptotic}
 For $r\geq0$ we have
 \begin{equation}\label{eqn: b another integral}b(r)=4i\,\sin(\pi r^2/2)^2\,\left(\frac{144}{\pi\,r^2}+\frac{1}{\pi\,(r^2-2)}+\int\limits_0^\infty\,\left(\psi_I(it)-144-e^{2\pi t}\right)\,e^{-\pi r^2 t}\,dt\right).\end{equation}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
