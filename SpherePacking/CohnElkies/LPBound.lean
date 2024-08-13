@@ -38,11 +38,13 @@ private lemma calc_steps (P : PeriodicSpherePacking d) (hP : P.separation = 1) :
       ∑' y : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       ∑' ℓ : P.Λ, (f (↑x - ↑y + ↑ℓ)).re
         :=  by sorry
-  -- Why are the `sorry`s below never executed?
+  -- Why are the tactics in the steps below (after each `by`) never executed?
   _ = ∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       ∑' y : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers), (1 / Zlattice.covolume P.Λ) *
       ∑' m : DualLattice P.Λ, (𝓕 f m).re * cexp (2 * π * I * ⟪↑x - ↑y, (m : ℝᵈ)⟫_ℝ)
-        := by sorry  -- This is where the PSF-L is applied
+        := by
+            rw [PSF_L hPSF (↑x - ↑y)]
+            sorry  -- This is where the PSF-L is applied
   _ = (1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re * (
       ∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       ∑' y : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
