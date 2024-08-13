@@ -105,4 +105,8 @@ theorem periodic_density_formula (S : PeriodicSpherePacking d) :
     (Zlattice.covolume S.Λ) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
   sorry
 
+theorem periodic_constant_eq_constant (hd : 0 < d) :
+    PeriodicSpherePackingConstant d = SpherePackingConstant d := by
+  sorry
+
 end Periodic_Packings
