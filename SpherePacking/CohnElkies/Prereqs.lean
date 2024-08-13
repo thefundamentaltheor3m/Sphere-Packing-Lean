@@ -42,6 +42,8 @@ end Dual_Lattice
 
 open scoped FourierTransform
 
+open Complex Real
+
 noncomputable section PSF_L
 
 /-
@@ -57,9 +59,18 @@ def PSF_Conditions (f : EuclideanSpace ℝ (Fin d) → ℂ) : Prop :=
   -/
   sorry
 
-theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
-  ∑' ℓ : Λ, f ℓ = (1 / Zlattice.covolume Λ) * ∑' m : DualLattice Λ, 𝓕 f m :=
+theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
+  (v : EuclideanSpace ℝ (Fin d)) :
+  ∑' ℓ : Λ, f (ℓ + v) = (1 / Zlattice.covolume Λ) * ∑' m : DualLattice Λ, (𝓕 f m) *
+  cexp (2 * π * I * ⟪v, m⟫_ℝ) :=
   sorry
+
+-- The version below is on the blueprint. I'm pretty sure it can be removed.
+theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
+  ∑' ℓ : Λ, f ℓ = (1 / Zlattice.covolume Λ) * ∑' m : DualLattice Λ, (𝓕 f m) := by
+have := PSF_L Λ hf (0 : EuclideanSpace ℝ (Fin d))
+simp only [add_zero, inner_zero_left, ofReal_zero, mul_zero, Complex.exp_zero, mul_one] at this
+exact this
 
 end PSF_L
 
@@ -98,9 +109,12 @@ theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
 
 instance I₁ (S : PeriodicSpherePacking d) : Fintype (Quotient S.instAddAction.orbitRel) := sorry
 
-instance HDiv₁ : HDiv ENNReal ℝ ENNReal := sorry  -- I hope this isn't outright wrong
+-- I hope these aren't outright wrong
+instance HDivENNReal : HDiv ENNReal ℝ ENNReal := sorry
+instance HMulENNReal : HMul ℝ ENNReal ENNReal := sorry
 
-theorem periodic_density_formula (S : PeriodicSpherePacking d) :
+@[simp]
+theorem PeriodicSpherePacking.periodic_density_formula (S : PeriodicSpherePacking d) :
   S.density = (Fintype.card (Quotient S.instAddAction.orbitRel) : ENNReal) /
     (Zlattice.covolume S.Λ) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
   sorry
@@ -110,3 +124,18 @@ theorem periodic_constant_eq_constant (hd : 0 < d) :
   sorry
 
 end Periodic_Packings
+
+section Misc
+
+variable {d : ℕ} (P : PeriodicSpherePacking d)
+local notation "ℝᵈ" => EuclideanSpace ℝ (Fin d)
+
+-- The following surely makes sense: subtracting a point in the fundamental domain from another
+-- should yield a point in the ambient space. But why does this need to be mentioned explicitly?
+instance HSubFundamentalDomain : HSub
+  (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))
+  (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))
+  ℝᵈ := by
+  sorry
+
+end Misc
