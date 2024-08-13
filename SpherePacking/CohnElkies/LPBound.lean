@@ -26,44 +26,46 @@ private lemma calc_aux (P : PeriodicSpherePacking d) (hP : P.separation = 1) :
   ∑' x : P.centers, ∑' y : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers), (f (x - ↑y)).re := sorry
 -/
 
+-- Why does adding a
 private lemma calc_steps (P : PeriodicSpherePacking d) (hP : P.separation = 1) :
   ↑(Fintype.card (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))) * (f 0).re ≥
   ↑(Fintype.card (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))) ^ 2 * (𝓕 f 0).re /
   Zlattice.covolume P.Λ volume := calc
   ↑(Fintype.card (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))) * (f 0).re
   _ ≥ ∑' x : P.centers, ∑' y : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers), (f (x - ↑y)).re
-        := sorry -- Might need some auxs or another calc, proving ≤ instead of ≥
+        := by sorry -- Might need some auxs or another calc, proving ≤ instead of ≥
   _ = ∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       ∑' y : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       ∑' ℓ : P.Λ, (f (↑x - ↑y + ↑ℓ)).re
-        := sorry
+        :=  by sorry
+  -- Why are the `sorry`s below never executed?
   _ = ∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       ∑' y : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers), (1 / Zlattice.covolume P.Λ) *
       ∑' m : DualLattice P.Λ, (𝓕 f m).re * cexp (2 * π * I * ⟪↑x - ↑y, (m : ℝᵈ)⟫_ℝ)
-        := sorry  -- This is where the PSF-L is applied
+        := by sorry  -- This is where the PSF-L is applied
   _ = (1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re * (
       ∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       ∑' y : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       cexp (2 * π * I * ⟪↑x - ↑y, (m : ℝᵈ)⟫_ℝ))
-        := sorry
+        := by sorry
   _ = (1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re * (
       ∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       ∑' y : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       cexp (2 * π * I * ⟪↑x, (m : ℝᵈ)⟫_ℝ) * cexp (2 * π * I * ⟪-↑y, (m : ℝᵈ)⟫_ℝ))
-        := sorry
+        := by sorry
   _ = (1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re *
       (∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers), cexp (2 * π * I * ⟪↑x, (m : ℝᵈ)⟫_ℝ)) *
       (∑' y : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers), cexp (-(2 * π * I * ⟪↑y, (m : ℝᵈ)⟫_ℝ)))
-        := sorry
+        := by sorry
   _ = (1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re *
       (∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers), cexp (2 * π * I * ⟪↑x, (m : ℝᵈ)⟫_ℝ)) *
       (∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers), cexp (2 * π * I * ⟪↑x, (m : ℝᵈ)⟫_ℝ)).
       conj -- Have I done complex conjugation correctly?
-        := sorry
+        := by sorry
   _ = (1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re *
       (∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       |cexp (2 * π * I * ⟪↑x, (m : ℝᵈ)⟫_ℝ)| ^ 2)
-        := sorry
+        := by sorry
   _ = (1 / Zlattice.covolume P.Λ) * (
       (∑' (m : DualLattice P.Λ) (hm : m ≠ 0), (𝓕 f m).re *
       (∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
@@ -71,7 +73,7 @@ private lemma calc_steps (P : PeriodicSpherePacking d) (hP : P.separation = 1) :
       +
       (𝓕 f (0 : ℝᵈ)).re * (∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       |cexp (2 * π * I * ⟪↑x, (0 : ℝᵈ)⟫_ℝ)| ^ 2))
-        := sorry
+        := by sorry
   -- Why is the ≥ sign below giving me an error?
   -- _ ≥ (1 / Zlattice.covolume P.Λ) * (𝓕 f (0 : ℝᵈ)).re *
   --     (∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
@@ -79,10 +81,10 @@ private lemma calc_steps (P : PeriodicSpherePacking d) (hP : P.separation = 1) :
   --       := sorry
   _ = (1 / Zlattice.covolume P.Λ) * (𝓕 f (0 : ℝᵈ)).re *
       ↑(Fintype.card (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))) ^ 2
-        := sorry
+        := by sorry
   _ = ↑(Fintype.card (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))) ^ 2 * (𝓕 f 0).re /
   Zlattice.covolume P.Λ volume
-        := sorry
+        := by sorry
 
 theorem LinearProgrammingBound :
   SpherePackingConstant d ≤ (f 0).re / (𝓕 f 0).re * volume (ball (0 : ℝᵈ) (1 / 2)) := by
