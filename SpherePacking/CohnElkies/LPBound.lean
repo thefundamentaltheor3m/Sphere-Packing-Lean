@@ -18,10 +18,19 @@ terms of the real part of `f`.
 variable {f : ℝᵈ → ℂ} (hPSF : PSF_Conditions f) (hReal : ∀ x : ℝᵈ, (f x).im = 0)
 variable (hCohnElkies₁ : ∀ x : ℝᵈ, ‖x‖ ≥ 1 → (f x).re ≤ 0) (hCohnElkies₂ : ∀ x : ℝᵈ, (𝓕 f x).re ≥ 0)
 
+-- The following gives the error `don't know how to synthesize placeholder for argument 'α'`
+-- but I don't see an `α` anywhere!
+/-
+private lemma calc_aux (P : PeriodicSpherePacking d) (hP : P.separation = 1) :
+  ↑(Fintype.card (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))) * (f 0).re ≥
+  ∑' x : P.centers, ∑' y : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers), (f (x - ↑y)).re := sorry
+-/
+
 private lemma calc_steps (P : PeriodicSpherePacking d) (hP : P.separation = 1) :
   ↑(Fintype.card (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))) * (f 0).re ≥
   ↑(Fintype.card (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))) ^ 2 * (𝓕 f 0).re /
   Zlattice.covolume P.Λ volume := calc
+  ↑(Fintype.card (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))) * (f 0).re
   _ ≥ ∑' x : P.centers, ∑' y : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers), (f (x - ↑y)).re
         := sorry -- Might need some auxs or another calc, proving ≤ instead of ≥
   _ = ∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
@@ -55,11 +64,19 @@ private lemma calc_steps (P : PeriodicSpherePacking d) (hP : P.separation = 1) :
       (∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
       |cexp (2 * π * I * ⟪↑x, (m : ℝᵈ)⟫_ℝ)| ^ 2)
         := sorry
-  -- Why is the ≥ sign giving me an error below?
+  _ = (1 / Zlattice.covolume P.Λ) * (
+      (∑' (m : DualLattice P.Λ) (hm : m ≠ 0), (𝓕 f m).re *
+      (∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
+      |cexp (2 * π * I * ⟪↑x, (m : ℝᵈ)⟫_ℝ)| ^ 2))
+      +
+      (𝓕 f (0 : ℝᵈ)).re * (∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
+      |cexp (2 * π * I * ⟪↑x, (0 : ℝᵈ)⟫_ℝ)| ^ 2))
+        := sorry
+  -- Why is the ≥ sign below giving me an error?
   -- _ ≥ (1 / Zlattice.covolume P.Λ) * (𝓕 f (0 : ℝᵈ)).re *
   --     (∑' x : Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers),
   --     |cexp (2 * π * I * ⟪↑x, (0 : ℝᵈ)⟫_ℝ)| ^ 2)
-  --       := sorry -- Might need some auxs or another calc, proving ≤ instead of ≥
+  --       := sorry
   _ = (1 / Zlattice.covolume P.Λ) * (𝓕 f (0 : ℝᵈ)).re *
       ↑(Fintype.card (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))) ^ 2
         := sorry
