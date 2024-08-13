@@ -1,7 +1,6 @@
-\section{Proof of Theorem \ref{thm-g}}\label{sec: g}
-Our proof of the Theorem~\ref{thm-g} relies on the following two inequalities for modular objects.
-\begin{proposition}\label{prop: inequalities A}
-\uses{lemma: phi fourier4 phi fourier2 phi fourier0, lemma: psi fourier I psi fourier T psi fourier S}
+\section{Proof of Theorem \ref{thm:g}}\label{sec: g}
+Our proof of the Theorem~\ref{thm:g} relies on the following two inequalities for modular objects.
+\begin{proposition}\label{prop:ineqA}\uses{lemma:ineqA-equiv, lemma:F-G-phi-psi-identities, lemma:F-G-pos, lemma: phi fourier4 phi fourier2 phi fourier0, lemma: psi fourier I psi fourier T psi fourier S, cor:ineqAnew}
 Consider the function $A:(0,\infty)\to\C$ defined as
 \begin{equation}\label{eqn:defA}
 A(t):=-t^2\phi_0(i/t)-\frac{36}{\pi^2}\,\psi_I(it).
@@ -13,8 +12,7 @@ Then
 for all $t > 0$.
 \end{proposition}
 
-\begin{proposition}\label{prop: inequalities B}
-\uses{lemma: phi fourier4 phi fourier2 phi fourier0, lemma: psi fourier I psi fourier T psi fourier S}
+\begin{proposition}\label{prop:ineqB}\uses{lemma:ineqB-equiv, lemma:F-G-phi-psi-identities, lemma: phi fourier4 phi fourier2 phi fourier0, lemma: psi fourier I psi fourier T psi fourier S, cor:ineqBnew}
 Consider the function $B:(0,\infty)\to\C$ defined as
 \begin{equation}\label{eqn:defB}
   B(t) := -t^2\phi_0(i/t)+\frac{36}{\pi^2}\,\psi_I(it)
@@ -26,9 +24,9 @@ Then
 for all $t > 0$.
 \end{proposition}
 
-Here we formalize the recent proof of the inequalities by Lee \cite{Lee}.
+Here we formalize the proof of the inequalities by Lee \cite{Lee}.
 
-First, we can rewrite the inequality in \ref{prop: inequalities A} as follows.
+First, we can rewrite the inequality in \ref{prop:ineqA} as follows.
 
 \begin{definition}
 Define two (quasi) modular forms as
@@ -38,11 +36,26 @@ Define two (quasi) modular forms as
 \end{align}
 \end{definition}
 
-\begin{lemma}\label{lem:identities}
+\begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{lemma: psi I psi T psi S explicit, lemma:lv1-lv2-identities, lemma:jacobi-identity}
 We have
+\begin{align}
+  \phi_0 &= \label{eqn:phi0-f} \\
+  \psi_S &= -\frac{1}{2} \frac{G}{\Delta}\label{eqn:psiS-G}
+\end{align}
 \end{lemma}
+\begin{proof}
+For \eqref{eqn:psiS-G}, using \eqref{eqn: psi S explicit} and \eqref{eqn:jacobi-identity} gives
+\begin{align}
+  \psi_S &= -128 \frac{H_3 + H_2}{H_4^2} - 128 \frac{H_2 - H_4}{H_3^2} \\
+  &= -128 \frac{H_3^2 (H_2 - H_4) + H_4^2 (H_2 - H_4)}{H_3^2 H_4^2} \\
+  &= -128 \frac{(H_2 + H_4)^2 (2H_2 + H_4) + H_4^2(H_2 + H_4)}{H_3^2 H_4^2} \\
+  &= -128 \frac{H_2 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_3^2 H_4^2} \\
+  &= -128 \frac{H_2^3 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_2^2 H_3^2 H_4^2} \\
+  &= - \frac{1}{2} \frac{G}{\Delta}.
+\end{align}
+\end{proof}
 
-\begin{lemma}\label{lem:ineqAnew}
+\begin{lemma}\label{lemma:ineqA-equiv}\uses{lemma:F-G-phi-psi-identities, cor:disc-pos}
 Inequality \eqref{eqn:ineqA} is equivalent to
 \begin{equation}\label{eqn:ineqAnew}
   F(it) + \frac{18}{\pi^2} G(it) > 0.
@@ -52,7 +65,7 @@ Inequality \eqref{eqn:ineqA} is equivalent to
 
 \end{proof}
 
-\begin{lemma}\label{lem:ineqBnew}
+\begin{lemma}\label{lemma:ineqB-equiv}\uses{lemma:F-G-phi-psi-identities, cor:disc-pos}
 Inequality \eqref{eqn:ineqB} is equivalent to
 \begin{equation}\label{eqn:ineqBnew}
   F(it) - \frac{18}{\pi^2} G(it) > 0.
@@ -64,7 +77,7 @@ Inequality \eqref{eqn:ineqB} is equivalent to
 
 Now, the first inequality \eqref{eqn:ineqA} follows from the positivity of each $F(it)$ and $G(it)$.
 
-\begin{lemma}
+\begin{lemma}\label{lemma:F-G-pos}\uses{thm:ramanujan-formula, lemma:theta-pos}
 For all $t > 0$, we have $F(it) > 0$ and $G(it) > 0$.
 \end{lemma}
 \begin{proof}
@@ -72,11 +85,18 @@ By Ramanujan's identity \eqref{eqn:DE4}, we have $F(z) = 9 E_4'(z)^2$ and
 \begin{equation}
   F(it) = 9E_4'(it)^2 = 9 \left(240\sum_{n \geq 1} n \sigma_3(n) e^{-2 \pi n t} \right) > 0.
 \end{equation}
-$G(it) > 0$ follows from positivity of $H_2(it)$ and $H_4(it)$ (Lemma \ref{lemma-theta-pos}).
+$G(it) > 0$ follows from positivity of $H_2(it)$ and $H_4(it)$ (Lemma \ref{lemma:theta-pos}).
+\end{proof}
+
+\begin{corollary}\label{cor:ineqAnew}\uses{lemma:F-G-pos}
+\eqref{eqn:ineqAnew} holds.
+\end{corollary}
+\begin{proof}
+This directly follows from Lemma \ref{lemma:F-G-pos}.
 \end{proof}
 
 To prove the second inequality \eqref{eqn:ineqBnew}, we need some identities satisfied by $F$ and $G$.
-\begin{lemma}\label{lem:FGde}\uses{thm:ramanujan-formula, thm:serre-der-prod-rule, prop:theta-der, lemma:lv1-lv2-identities}
+\begin{lemma}\label{lemma:F-G-de}\uses{thm:ramanujan-formula, thm:serre-der-prod-rule, prop:theta-der, lemma:lv1-lv2-identities}
 $F$ and $G$ satisfy the following differential equations:
 \begin{align}
     \partial_{12}\partial_{10} F - \frac{5}{6} E_{4} F &= 7200 \Delta (-E_{2}') \label{eqn:ddf} \\
@@ -113,7 +133,7 @@ which proves \eqref{eqn:ddf}.
 Similarly, \eqref{eqn:ddg} can be proved using Proposition \ref{prop:theta-der} and Lemma \ref{lemma:lv1-lv2-identities}.
 \end{proof}
 
-\begin{corollary}\label{cor:FGde}\uses{lem:FGde}
+\begin{corollary}\label{cor:F-G-de}\uses{lemma:F-G-de}
 \eqref{eqn:ddf} (resp. \eqref{eqn:ddg}) is positive (resp. negative) on the (positive) imaginary axis.
 \end{corollary}
 \begin{proof}
@@ -127,19 +147,18 @@ Since $G(it) > 0$ for all $t > 0$, we can define the quotient
 \end{equation}
 as a function on $(0, \infty)$.
 
-\begin{lemma}\label{lem:limQ}
+\begin{lemma}\label{lemma:Qlim}\uses{lemma:E2-transform, lemma:Ek-is-modular-form, lemma:theta-transform-S-T}
 We have
-\begin{equation}\label{eqn:limQ}
+\begin{equation}\label{eqn:Qlim}
   \lim_{t \to 0^+} Q(t) = \frac{18}{\pi^2}.
 \end{equation}
 \end{lemma}
-
 \begin{proof}
 We have
 \begin{equation}
   \lim_{t \to 0^+} Q(t) = \lim_{t \to 0^+} \frac{F(it)}{G(it)} = \lim_{t \to \infty} \frac{F(i/t)}{G(i/t)}.
 \end{equation}
-By using the transformation laws of Eisenstein series \eqref{eqn-E2-S-transform}, \eqref{eqn:Ek-trans-S} (for $k = 4, 6$) and the thetanull functions, \eqref{eqn:H2-transform-S}, \eqref{eqn:H4-transform-S}, we get
+By using the transformation laws of Eisenstein series \eqref{eqn:E2-S-transform}, \eqref{eqn:Ek-trans-S} (for $k = 4, 6$) and the thetanull functions, \eqref{eqn:H2-transform-S}, \eqref{eqn:H4-transform-S}, we get
 \begin{align}
     F\left(\frac{i}{t}\right) &= t^{12} F(it) - \frac{12t^{11}}{\pi} (E_2(it)E_4(it) - E_6(it))E_4(it) + \frac{36t^{10}}{\pi^2}E_4(it)^2, \\
     G\left(\frac{i}{t}\right) &= t^{10} H_{4}(it)^{3}(2H_{4}(it)^{2} + 5 H_{4}(it)H_{2}(it) + 5 H_{2}(it)^{2}).
@@ -154,7 +173,7 @@ From $\lim_{t \to \infty} E_4(it) = 1 = \lim_{t \to \infty}H_{4}(it)$, we get
 \end{align}
 \end{proof}
 
-\begin{proposition}\label{prop:Qdec}\uses{thm:ramanujan-formula, thm:serre-der-prod-rule}
+\begin{proposition}\label{prop:Qdec}\uses{thm:ramanujan-formula, thm:serre-der-prod-rule, cor:F-G-de}
 The function $t \mapsto Q(t)$ is monotone decreasing.
 \end{proposition}
 
@@ -170,7 +189,7 @@ Then its Fourier expansion starts with
 \[
     \mathcal{L}_{1, 0} = 5308416000 q^{\frac{7}{2}} + O(q^{\frac{9}{2}})
 \]
-and its Serre derivative $\partial_{22} \mathcal{L}_{1, 0}$ is positive by Corollary \ref{cor:FGde}:
+and its Serre derivative $\partial_{22} \mathcal{L}_{1, 0}$ is positive by Corollary \ref{cor:F-G-de}:
 \begin{align}
     \partial_{22} \mathcal{L}_{1, 0} = (\partial_{12} \partial_{10} F) G - F (\partial_{12}\partial_{10} G)
     = \Delta (7200 (-E_{2}') G + 640 H_2 F) > 0.
@@ -179,11 +198,15 @@ Hence $\mathcal{L}_{1, 0}(it) > 0$ by Theorem [REF], and the monotonicity follow
 \end{proof}
 
 
-As a corollary, we have
+\begin{corollary}\label{cor:ineqBnew} \uses{lemma:Qlim, prop:Qdec, lemma:F-G-pos}
+\eqref{eqn:ineqBnew} holds.
+\end{corollary}
+\begin{proof}
 \begin{equation}
-  \frac{F(it)}{G(it)} = Q(t) < \lim_{u \to 0^+} Q(u) = \frac{18}{\pi^2} \Rightarrow F(it) < \frac{18}{\pi^2} G(it)
+  \frac{F(it)}{G(it)} = Q(t) < \lim_{u \to 0^+} Q(u) = \frac{18}{\pi^2}
 \end{equation}
-and \eqref{eqn:ineqBnew} follows.
+and by Lemma \ref{lemma:F-G-pos}, \eqref{eqn:ineqBnew} follows.
+\end{proof}
 
 % \noindent \textbf{Remark:} \emph{We might formalize the  original proof from \cite{Via2017} or the proof of Dan Romik ``On Viazovska’s modular form inequalities'' \cite{Romik2023}. Below is the proof from \cite{Via2017}.}
 % \begin{proof}
@@ -278,27 +301,27 @@ and \eqref{eqn:ineqBnew} follows.
 % &B_0^{(6)}(t)>0\quad\mbox{ for }\;t\in(0,1]\notag \\
 % &B_\infty^{(6)}(t)>0\quad\mbox{ for }\;t\in[1,\infty). \notag
 % \end{align}
-% Now identity \eqref{eqn-g B} implies \eqref{eqn-g2}.
+% Now identity \eqref{eqn:g B} implies \eqref{eqn:g2}.
 % \end{proof}
-Finally, we are ready to prove Theorem~\ref{thm-g}.
-\begin{theorem}\label{thm-g1}
-\uses{prop: a(r) double zeroes, prop: b(r) double zeroes, prop: inequalities A, prop: inequalities B}
+Finally, we are ready to prove Theorem~\ref{thm:g}.
+\begin{theorem}\label{thm:g1}
+\uses{prop: a(r) double zeroes, prop: b(r) double zeroes, prop:ineqA, prop:ineqB}
 The function
 $$g(x):=\frac{\pi\,i}{8640}a(x)+\frac{i}{240\pi}\,b(x)$$
-satisfies conditions \eqref{eqn-g1}--\eqref{eqn-g3}.
+satisfies conditions \eqref{eqn:g1}--\eqref{eqn:g3}.
 \end{theorem}
 \begin{proof}
-First, we prove that \eqref{eqn-g1} holds. By Propositions~\ref{prop: a(r) double zeroes} and \ref{prop: b(r) double zeroes} we know that for $r>\sqrt{2}$
-\begin{equation}\label{eqn-g A} g(r)=\frac{\pi}{2160}\,\sin(\pi r^2/2)^2\,\int\limits_0^\infty A(t)\,e^{-\pi r^2 t}\,dt\end{equation}
+First, we prove that \eqref{eqn:g1} holds. By Propositions~\ref{prop: a(r) double zeroes} and \ref{prop: b(r) double zeroes} we know that for $r>\sqrt{2}$
+\begin{equation}\label{eqn:g A} g(r)=\frac{\pi}{2160}\,\sin(\pi r^2/2)^2\,\int\limits_0^\infty A(t)\,e^{-\pi r^2 t}\,dt\end{equation}
 where $$A(t)=-t^2\phi_0(i/t)-\frac{36}{\pi^2}\,\psi_I(it).$$
-from the Proposition~\ref{prop: inequalities A} we know that $A(t)<0\quad\mbox{for}\;t\in(0,\infty).$
-Therefore identity \eqref{eqn-g A} implies \eqref{eqn-g1}.
+from the Proposition~\ref{prop:ineqA} we know that $A(t)<0\quad\mbox{for}\;t\in(0,\infty).$
+Therefore identity \eqref{eqn:g A} implies \eqref{eqn:g1}.
 
-Next, we prove \eqref{eqn-g2}. By Propositions~\ref{prop: a another integral} and~\ref{prop: b another integral} we know that for $r>0$
-\begin{equation}\label{eqn-g B} \widehat{g}(r)=\frac{\pi}{2160}\,\sin(\pi r^2/2)^2\,\int\limits_0^\infty B(t)\,e^{-\pi r^2 t}\,dt\end{equation}
+Next, we prove \eqref{eqn:g2}. By Propositions~\ref{prop: a another integral} and~\ref{prop: b another integral} we know that for $r>0$
+\begin{equation}\label{eqn:g B} \widehat{g}(r)=\frac{\pi}{2160}\,\sin(\pi r^2/2)^2\,\int\limits_0^\infty B(t)\,e^{-\pi r^2 t}\,dt\end{equation}
 where $$B(t)=-t^2\phi_0(i/t)+\frac{36}{\pi^2}\,\psi_I(it).$$
 
 
-Finally, the property \eqref{eqn-g3} readily follows from Proposition~\ref{prop: a values} and Proposition~\ref{prop: b values}.
-This finishes the proof of Theorems~\ref{thm-g1} and~\ref{thm-g}.
+Finally, the property \eqref{eqn:g3} readily follows from Proposition~\ref{prop: a values} and Proposition~\ref{prop: b values}.
+This finishes the proof of Theorems~\ref{thm:g1} and~\ref{thm:g}.
 \end{proof}

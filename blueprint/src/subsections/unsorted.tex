@@ -6,11 +6,11 @@ In this section we construct two radial Schwartz functions $a,b:\R^8\to i\R$ suc
 \begin{align}\mathcal{F}(a)&=a\label{eqn: a fourier}\\
   \mathcal{F}(b)&=-b\label{eqn: b fourier}
 \end{align}
-which double zeroes at all $\Lambda_8$-vectors of length greater than $\sqrt{2}$. Recall that each vector of $\Lambda_8$ has length $\sqrt{2n}$ for some $n\in\N_{\geq 0}$. We define $a$ and $b$ so that their values are purely imaginary because this simplifies some of our computations. We will show in Section \ref{sec: g} that an appropriate linear combination of functions $a$ and $b$ satisfies conditions \eqref{eqn-g1}--\eqref{eqn-g3}.
+which double zeroes at all $\Lambda_8$-vectors of length greater than $\sqrt{2}$. Recall that each vector of $\Lambda_8$ has length $\sqrt{2n}$ for some $n\in\N_{\geq 0}$. We define $a$ and $b$ so that their values are purely imaginary because this simplifies some of our computations. We will show in Section \ref{sec: g} that an appropriate linear combination of functions $a$ and $b$ satisfies conditions \eqref{eqn:g1}--\eqref{eqn:g3}.
 
 First, we will define function $a$. To this end we consider the following functions:
 \begin{definition}\label{def: phi4 phi2 phi0}
-\uses{def-Ek-definition,def-E2}
+\uses{def:Ek-definition,def:E2}
 \begin{align}
   \phi_{-4}\,:= \,& -Dj\,E_6^{-1}\label{eqn: def phi4}\\
   \phi_{-2}\,:= \,&\phi_{-4}\,E_2+Dj\,E_4^{-1}\label{eqn: def phi2}\\
@@ -30,8 +30,8 @@ where $q=e^{2\pi i z}$.
 \end{lemma}
 The function $\phi_0(z)$ is not modular; however,
 \begin{lemma}\label{lemma: phi0 transform}
-\uses{def: phi4 phi2 phi0, lemma-E2-transform}
-  The identity \ref{lemma-E2-transform} implies the following transformation rule:
+\uses{def: phi4 phi2 phi0, lemma:E2-transform}
+  The identity \ref{lemma:E2-transform} implies the following transformation rule:
 \begin{equation}\label{eqn: phi0 transform}
 \phi_0\Big(\frac{-1}{z}\Big)=\phi_0(z)-\frac{12i}{\pi}\,\frac{1}{z}\,\phi_{-2}(z)-\frac{36}{\pi^2}\,\frac{1}{z^2}\,\phi_{-4}(z).
 \end{equation}
@@ -49,12 +49,12 @@ For $x\in\R^8$ we define
 We observe that the contour integrals in \eqref{eqn: a(r) definition} converge absolutely and uniformly for  $x\in\R^8$. Indeed,
 $\phi_0(z)=O(e^{-2\pi i z})$ as $\Im(z)\to \infty$. Therefore, $a(x)$ is well defined. Now we prove that $a$ satisfies condition \eqref{eqn: a fourier}.
 \begin{proposition}\label{prop: a(r) Fourier}
-\uses{lemma-Ek-Fourier, def-E2, lemma: j Fourier asymptotic, def: a(r) definition, lemma-Gaussian-Fourier}
+\uses{lemma:Ek-Fourier, def:E2, lemma: j Fourier asymptotic, def: a(r) definition, lemma:Gaussian-Fourier}
 
 The function $a$ defined by \eqref{eqn: a(r) definition} belongs to the Schwartz space and satisfies $$\widehat{a}(x)=a(x). $$
 \end{proposition}
 \begin{proof}
-First, we prove that $a$ is a Schwartz function. From Lemma \ref{lemma-Ek-Fourier}, Definition \ref{def-E2}, and \ref{lemma: j Fourier asymptotic} we deduce that the Fourier coefficients of $\phi_0$ satisfy
+First, we prove that $a$ is a Schwartz function. From Lemma \ref{lemma:Ek-Fourier}, Definition \ref{def:E2}, and \ref{lemma: j Fourier asymptotic} we deduce that the Fourier coefficients of $\phi_0$ satisfy
 $$|c_{\phi_0}(n)|\leq2\,e^{4\pi\sqrt{n}}\quad n\in\Z_{>0}.$$ Thus, there exists a positive constant $C$ such that
 $$|\phi_0(z)|\leq C\,e^{-2\pi \Im{z}}\qquad \mbox{for } \; \Im{z}>\frac 12.$$
 We estimate the first summand in the right-hand side of \eqref{eqn: a(r) definition}.  For $r\in\R_{\geq 0}$ we have
@@ -69,7 +69,7 @@ $$|a(r)|\leq 4C_2\,r\,K_1(2\sqrt{2}\pi r)+2C_3\frac{e^{-\pi(r^2+2)}}{r^2+2}.$$
 It is easy to see that the left hand side of this inequality decays faster then any inverse power of $r$. Analogous estimates can be obtained for all derivatives $\frac{d^k}{dr^k}a(r)$.
 
 Now we show that $a$ is an eigenfunction of the Fourier transform. We recall that the Fourier transform of a Gaussian function is
-\begin{equation}\label{eqn-gaussian Fourier}
+\begin{equation}\label{eqn:gaussian Fourier}
   \mathcal{F}(e^{\pi i  \|x\|^2 z})(y)=z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
 \end{equation}
 Next, we exchange the contour integration with respect to $z$ variable and Fourier transform  with respect to $x$ variable in \eqref{eqn: a(r) definition}. This can be done, since the corresponding double integral converges absolutely. In this way we obtain
@@ -182,7 +182,7 @@ These identities follow immediately from the previous proposition.
 \end{proof}
 
 Now we construct function $b$. To this end we consider the function
-\begin{definition}\label{def: h}\uses{def-th00-th01-th10}
+\begin{definition}\label{def: h}\uses{def:th00-th01-th10}
 \begin{equation}\label{eqn: h define}
   h(z)\,:=\,128 \frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}.
 \end{equation}
@@ -237,7 +237,7 @@ For $x\in\R^8$ define
 \end{align}
 \end{definition}
 Now we prove that $b$ satisfies condition \eqref{eqn: b fourier}.
-\begin{proposition}\label{prop: b(r) Fourier}\uses{def: b(r) definition, lemma-Gaussian-Fourier, def: psi I psi T psi S}
+\begin{proposition}\label{prop: b(r) Fourier}\uses{def: b(r) definition, lemma:Gaussian-Fourier, def: psi I psi T psi S}
 The function $b$ defined by \eqref{eqn: b(r) definition} belongs to the Schwartz space and satisfies
   $$\widehat{b}(x)=-b(x). $$
 \end{proposition}
@@ -255,7 +255,7 @@ We combine this inequality with analogous estimates for the other three summands
 $$|b(r)|\leq C_2\,r\,K_1(2\pi r)+C_3\,\frac{e^{-\pi(r^2+1)}}{r^2+1}.$$
 Here $C_1$, $C_2$, and $C_3$ are some positive constants. Similar estimates hold for all derivatives $\frac{d^k}{d^k r} b(r)$.
 
-Now we prove that $b$ is an eigenfunction of the Fourier transform. We use identity~\eqref{eqn-gaussian Fourier} and change contour integration in $z$ and Fourier transform in $x$. Thus we obtain
+Now we prove that $b$ is an eigenfunction of the Fourier transform. We use identity~\eqref{eqn:gaussian Fourier} and change contour integration in $z$ and Fourier transform in $x$. Thus we obtain
 \begin{align}
   \mathcal{F}(b)(x)= & \int\limits_{-1}^{i}\psi_T(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz
     + \int\limits_{1}^{i}\psi_T(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz \notag \\

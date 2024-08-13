@@ -1,6 +1,6 @@
 In this section, we recall a few definitions from Fourier analysis.
 
-\begin{definition}\label{def-Fourier-Transform} % \lean{def-Fourier-Transform} % Specialise Mathlib.VectorFourier.fourierIntegral
+\begin{definition}\label{def:Fourier-Transform} % \lean{def:Fourier-Transform} % Specialise Mathlib.VectorFourier.fourierIntegral
   The Fourier transform of an $L^1$-function $f:\R^d\to\C$ is defined as
 
   \[
@@ -10,22 +10,22 @@ In this section, we recall a few definitions from Fourier analysis.
   where $\langle x, y \rangle = \frac12\|x\|^2 + \frac12\|y\|^2 - \frac12\|x - y\|^2$ is the standard scalar product in $\R^d$.
 \end{definition}
 
-\begin{definition}\label{def-Schwartz-Function}
+\begin{definition}\label{def:Schwartz-Function}
 A $C^\infty$~function $f:\R^d\to\C$ is called a \emph{Schwartz function} if it goes to zero as $\|x\|\to\infty$ faster then any inverse power of $\|x\|$, and the same holds for all partial derivatives of $f$.
 \end{definition}
 
-\begin{definition}\label{def-Schwartz-Space}\uses{def-Schwartz-Function}
+\begin{definition}\label{def:Schwartz-Space}\uses{def:Schwartz-Function}
     The set of all Schwartz functions is called a \emph{Schwartz space}.
 \end{definition}
 
-\begin{lemma}\label{lemma-Fourier-transform-is-automorphism}\uses{def-Fourier-Transform, def-Schwartz-Space}
+\begin{lemma}\label{lemma:Fourier-transform-is-automorphism}\uses{def:Fourier-Transform, def:Schwartz-Space}
   The Fourier transform is an automorphism of the space of Schwartz functions.
 \end{lemma}
 \begin{proof}
   \todo{Fill in proof.}
 \end{proof}
 
-\begin{lemma}\label{lemma-Gaussian-Fourier}\uses{def-Fourier-Transform}
+\begin{lemma}\label{lemma:Gaussian-Fourier}\uses{def:Fourier-Transform}
   \begin{equation}
     \mathcal{F}(e^{\pi i \|x\|^2 z})(y) = z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
   \end{equation}
@@ -34,7 +34,7 @@ A $C^\infty$~function $f:\R^d\to\C$ is called a \emph{Schwartz function} if it g
   \todo{Fill in proof.}
 \end{proof}
 
-\begin{theorem}[(Poisson summation formula)]\label{thm-Poisson-summation-formula}\uses{def-Fourier-Transform}
+\begin{theorem}[(Poisson summation formula)]\label{thm:Poisson-summation-formula}\uses{def:Fourier-Transform}
   $$\sum_{\ell\in\Lambda}f(\ell)=\frac{1}{\mathrm{Vol}(\R^d/\Lambda)}\sum_{m\in\Lambda^*}\widehat{f}(m).$$
 \end{theorem}
 \begin{proof}
