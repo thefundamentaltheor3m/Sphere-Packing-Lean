@@ -1,7 +1,11 @@
 import Mathlib.Data.Set.Card
 import SpherePacking.Basic.E8
 import SpherePacking.Basic.SpherePacking
+
+import SpherePacking.ForMathlib.Cardinal
+import SpherePacking.ForMathlib.Encard
 import SpherePacking.ForMathlib.Zlattice
+import SpherePacking.ForMathlib.Bornology
 
 /- In this file, we establish results about density of periodic packings. This roughly corresponds
 to Section 2.2, "Bounds on Finite Density of Periodic Packing". -/
@@ -112,6 +116,12 @@ lemma aux4 (hd : 0 < d) : Finite ↑(S.centers ∩ D) := by
 lemma aux4' {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (hd : 0 < d) :
     Finite ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)) :=
   aux4 S _ (Zspan.fundamentalDomain_isBounded _) hd
+
+open scoped Pointwise in
+lemma aux4''
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (hd : 0 < d) (v : EuclideanSpace ℝ (Fin d)) :
+    Finite ↑(S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZlatticeBasis ℝ _))) :=
+  aux4 S _ (Bornology.isBounded_vadd_set _ _ <| Zspan.fundamentalDomain_isBounded _) hd
 
 end aux_lemmas
 
@@ -270,6 +280,7 @@ noncomputable instance : Fintype (Quotient S.addAction.orbitRel) :=
 end instances
 
 section main_theorem
+open scoped Pointwise
 variable {d : ℕ} (S : PeriodicSpherePacking d)
   (D : Set (EuclideanSpace ℝ (Fin d)))
   (hD_isBounded : IsBounded D)
@@ -279,8 +290,7 @@ variable {d : ℕ} (S : PeriodicSpherePacking d)
 noncomputable def PeriodicSpherePacking.numReps : ℕ :=
   Fintype.card (Quotient S.addAction.orbitRel)
 
-#check fract_zspan_add
-theorem PeriodicSpherePacking.card_centers_inter_fundamentalDomain (hd : 0 < d)
+theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain (hd : 0 < d)
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
     haveI := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
     (S.centers ∩ D).toFinset.card = S.numReps := by
@@ -288,7 +298,39 @@ theorem PeriodicSpherePacking.card_centers_inter_fundamentalDomain (hd : 0 < d)
   convert Finset.card_eq_of_equiv_fintype ?_
   simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv D hD_unique_covers).symm
 
-open Pointwise Filter
+theorem PeriodicSpherePacking.encard_centers_inter_isFundamentalDomain (hd : 0 < d)
+    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
+    (S.centers ∩ D).encard = S.numReps := by
+  rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hd hD_unique_covers]
+  convert Set.encard_eq_coe_toFinset_card _
+
+theorem PeriodicSpherePacking.card_centers_inter_fundamentalDomain (hd : 0 < d)
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    haveI := @Fintype.ofFinite _ <| aux4' S b hd
+    (S.centers ∩ (fundamentalDomain (b.ofZlatticeBasis ℝ _))).toFinset.card = S.numReps := by
+  rw [numReps]
+  convert Finset.card_eq_of_equiv_fintype ?_
+  simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv' b).symm
+
+theorem PeriodicSpherePacking.encard_centers_inter_fundamentalDomain (hd : 0 < d)
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    (S.centers ∩ (fundamentalDomain (b.ofZlatticeBasis ℝ _))).encard = S.numReps := by
+  rw [← S.card_centers_inter_fundamentalDomain hd b]
+  convert Set.encard_eq_coe_toFinset_card _
+
+theorem PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
+    haveI := @Fintype.ofFinite _ <| aux4'' S b hd v
+    (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZlatticeBasis ℝ _))).toFinset.card = S.numReps := by
+  rw [numReps]
+  convert Finset.card_eq_of_equiv_fintype ?_
+  simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv'' b _).symm
+
+theorem PeriodicSpherePacking.encard_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
+    (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZlatticeBasis ℝ _))).encard = S.numReps := by
+  rw [← S.card_centers_inter_vadd_fundamentalDomain hd b]
+  convert Set.encard_eq_coe_toFinset_card _
 
 theorem aux
     {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
@@ -307,27 +349,108 @@ theorem aux
     _ < (R - L) + L := by linarith
     _ = R := by ring
 
+-- Theorem 2.3, LB
 example
-    {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
-    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain b, ‖x‖ ≤ L) (R : ℝ) : false := by
-  have := aux S b hL R
+    (hd : 0 < d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice)
+    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
+    S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)).encard
+      ≤ (↑S.centers ∩ ball 0 R).encard := by
+  have := aux S (b.ofZlatticeBasis ℝ _) hL R
   have := Set.inter_subset_inter_right S.centers this
   rw [Set.biUnion_eq_iUnion, Set.inter_iUnion] at this
   have := Set.encard_mono this
-  rw [S.card_centers_inter_fundamentalDomain] at this
+  rw [Set.encard_iUnion_of_pairwiseDisjoint] at this
+  simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
+  · convert this
+    rw [nsmul_eq_mul, ENat.tsum_const_eq', mul_comm]
+  · intro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
+    simp only [Set.disjoint_iff, Set.subset_empty_iff]
+    ext u
+    rw [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
+    intro ⟨_, hux⟩ ⟨_, huy⟩
+    obtain ⟨w, hw, hw_unique⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZlatticeBasis ℝ _) u
+    rw [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub] at hux huy
+    have hx := hw_unique ⟨-x, ?_⟩ ?_
+    have hy := hw_unique ⟨-y, ?_⟩ ?_
+    · apply hxy
+      rw [Subtype.ext_iff, ← neg_inj]
+      exact Subtype.ext_iff.mp (hx.trans hy.symm)
+    · apply neg_mem
+      apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
+      · rw [S.basis_Z_span]
+        rfl
+      · exact hy.left
+    · simp_rw [AddSubmonoid.mk_vadd, vadd_eq_add, neg_add_eq_sub]
+      exact huy
+    · apply neg_mem
+      apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
+      · rw [S.basis_Z_span]
+        rfl
+      · exact hx.left
+    · simp_rw [AddSubmonoid.mk_vadd, vadd_eq_add, neg_add_eq_sub]
+      exact hux
 
--- Theorem 2.3, LB
-example
-    {ι : Type*} (b : Basis ι ℤ S.lattice)
-    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) (hR : L < R) :
-    S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)).encard
-      ≤ (↑S.centers ∩ ball 0 R).encard := by
-  sorry
+theorem aux'
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice)
+    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
+    ball 0 R
+      ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L),
+        x +ᵥ (fundamentalDomain (b.ofZlatticeBasis ℝ _) : Set (EuclideanSpace ℝ (Fin d))) := by
+  intro x hx
+  simp only [Set.mem_iUnion, exists_prop]
+  use floor (b.ofZlatticeBasis ℝ _) x
+  constructor
+  · constructor
+    · rw [SetLike.mem_coe, ← S.mem_basis_Z_span b]
+      exact Submodule.coe_mem _
+    · have : floor (b.ofZlatticeBasis ℝ _) x = x - fract (b.ofZlatticeBasis ℝ _) x := by
+        rw [fract]
+        abel
+      rw [mem_ball_zero_iff] at hx ⊢
+      calc
+        _ = ‖x - fract (b.ofZlatticeBasis ℝ _) x‖ := congrArg _ this
+        _ ≤ ‖x‖ + ‖fract (b.ofZlatticeBasis ℝ _) x‖ := norm_sub_le _ _
+        _ < R + L := add_lt_add_of_lt_of_le hx (hL _ (fract_mem_fundamentalDomain _ _))
+  · rw [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub]
+    exact fract_mem_fundamentalDomain (b.ofZlatticeBasis ℝ _) x
 
--- Theorem 2.3, UB
+-- Theorem 2.3, UB - somehow the proof is exactly the same as LB
 example
-    {ι : Type*} (b : Basis ι ℤ S.lattice)
-    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) (hR : L < R) :
+    (hd : 0 < d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice)
+    {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     (↑S.centers ∩ ball 0 R).encard
       ≤ S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)).encard := by
-  sorry
+  have := aux' S b hL R
+  have := Set.inter_subset_inter_right S.centers this
+  rw [Set.biUnion_eq_iUnion, Set.inter_iUnion] at this
+  have := Set.encard_mono this
+  rw [Set.encard_iUnion_of_pairwiseDisjoint] at this
+  simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
+  · convert this
+    rw [nsmul_eq_mul, ENat.tsum_const_eq', mul_comm]
+  · intro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
+    simp only [Set.disjoint_iff, Set.subset_empty_iff]
+    ext u
+    rw [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
+    intro ⟨_, hux⟩ ⟨_, huy⟩
+    obtain ⟨w, hw, hw_unique⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZlatticeBasis ℝ _) u
+    rw [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub] at hux huy
+    have hx := hw_unique ⟨-x, ?_⟩ ?_
+    have hy := hw_unique ⟨-y, ?_⟩ ?_
+    · apply hxy
+      rw [Subtype.ext_iff, ← neg_inj]
+      exact Subtype.ext_iff.mp (hx.trans hy.symm)
+    · apply neg_mem
+      apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
+      · rw [S.basis_Z_span]
+        rfl
+      · exact hy.left
+    · simp_rw [AddSubmonoid.mk_vadd, vadd_eq_add, neg_add_eq_sub]
+      exact huy
+    · apply neg_mem
+      apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
+      · rw [S.basis_Z_span]
+        rfl
+      · exact hx.left
+    · simp_rw [AddSubmonoid.mk_vadd, vadd_eq_add, neg_add_eq_sub]
+      exact hux

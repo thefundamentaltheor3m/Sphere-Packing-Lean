@@ -3,14 +3,14 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Gareth Ma
 -/
-import Mathlib.Order.CompletePartialOrder
+import Mathlib.Algebra.Module.Zlattice.Basic
 import Mathlib.Data.Real.ENatENNReal
 import Mathlib.Data.Set.Card
 import Mathlib.Topology.Compactness.PseudometrizableLindelof
 import Mathlib.Topology.EMetricSpace.Paracompact
-import Mathlib.Algebra.Module.Zlattice.Basic
-import SpherePacking.ForMathlib.VolumeOfBalls
+import Mathlib.Topology.OmegaCompletePartialOrder
 import SpherePacking.ForMathlib.ENNReal
+import SpherePacking.ForMathlib.VolumeOfBalls
 
 open BigOperators MeasureTheory Metric
 
@@ -384,6 +384,9 @@ theorem SpherePacking.volume_iUnion_balls_eq_tsum
 -- Putting it as axioms so that #print axioms will show that this should be removed
 -- TODO: remove when merged
 axiom ENNReal.tsum_const_eq' {α : Type*} (s : Set α) (c : ENNReal) :
+    ∑' (_ : s), c = s.encard * c
+
+axiom ENat.tsum_const_eq' {α : Type*} (s : Set α) (c : ENat) :
     ∑' (_ : s), c = s.encard * c
 
 /-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
