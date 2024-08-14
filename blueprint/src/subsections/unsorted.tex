@@ -181,9 +181,12 @@ These identities follow immediately from the previous proposition.
 \end{proof}
 
 Now we construct function $b$. To this end we consider the function
-\begin{definition}\label{def: h}\uses{def:th00-th01-th10}
+\begin{definition}\label{def: h}\uses{def:H2-H3-H4}
+% \begin{equation}\label{eqn: h define}
+%   h(z)\,:=\,128 \frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}.
+% \end{equation}
 \begin{equation}\label{eqn: h define}
-  h(z)\,:=\,128 \frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}.
+  h(z) := 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2}.
 \end{equation}
 \end{definition}
 It is easy to see that $h\in M^!_{-2}(\Gamma_0(2))$. Indeed, first we check that $h|_{-2}\gamma=h$
@@ -208,14 +211,19 @@ We define the followig three functions
 \end{align}
 \end{definition}
 \begin{lemma}\label{lemma: psi I psi T psi S explicit}\uses{def: psi I psi T psi S}
-  More explicitly, we have
+More explicitly, we have
+% \begin{align}
+% \psi_I(z)\,=\,&128\,\frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}\,+\,128
+%               \frac{\theta_{01}^4(z)-\theta_{10}^4(z)}{\theta_{00}^8(z)}\label{eqn: psi I explicit}\\
+% \psi_T(z)\,=\,&128\,\frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}\,+
+%               \,128\,\frac{\theta_{00}^4(z)+\theta_{10}^4(z)}{\theta_{01}^8(z)}\label{eqn: psi T explicit}\\
+% \psi_S(z)\,=\,&-128\,\frac{\theta_{00}^4(z)+\theta_{10}^4(z)}{\theta_{01}^8(z)}-128\,
+%               \frac{\theta_{10}^4(z)-\theta_{01}^4(z)}{\theta_{00}^8(z)}.\label{eqn: psi S explicit}
+% \end{align}
 \begin{align}
-\psi_I(z)\,=\,&128\,\frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}\,+\,128
-              \frac{\theta_{01}^4(z)-\theta_{10}^4(z)}{\theta_{00}^8(z)}\label{eqn: psi I explicit}\\
-\psi_T(z)\,=\,&128\,\frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}\,+
-              \,128\,\frac{\theta_{00}^4(z)+\theta_{10}^4(z)}{\theta_{01}^8(z)}\label{eqn: psi T explicit}\\
-\psi_S(z)\,=\,&-128\,\frac{\theta_{00}^4(z)+\theta_{10}^4(z)}{\theta_{01}^8(z)}-128\,
-              \frac{\theta_{10}^4(z)-\theta_{01}^4(z)}{\theta_{00}^8(z)}.\label{eqn: psi S explicit}
+  \psi_I(z) &= 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2} + 128 \frac{H_4(z) - H_2(z)}{H_3(z)^2} \label{eqn: psi I explicit} \\
+  \psi_T(z) &= 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2} + 128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} \label{eqn: psi T explicit} \\
+  \psi_S(z) &= 128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} - 128 \frac{H_2(z) - H_4(z)}{H_3(z)^2} \label{eqn: psi S explicit}
 \end{align}
 \end{lemma}
 \begin{lemma}\label{lemma: psi fourier I psi fourier T psi fourier S}\uses{lemma: psi I psi T psi S explicit}
