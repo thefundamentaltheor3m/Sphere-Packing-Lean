@@ -6,11 +6,22 @@ open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Re
 variable {d : ℕ} [Fact (0 < d)]
 
 /-
-*Slight problem:*
+# Potential Design Complications:
 
-What we have in Mathlib seems to deal with complex-valued functions. I've dealt with it for now by
-giving an assumption that the imaginary part of `f` is always zero and stating everything else in
-terms of the real part of `f`.
+* What we have in Mathlib on Fourier Transforms seems to deal with complex-valued functions. I've
+  dealt with it for now by giving an assumption that the imaginary part of `f` is always zero and
+  stating everything else in terms of the real part of `f`. The real-valuedness may not even be
+  necessary, as we could simply apply the Cohn-Elkies theorem to the real part of any complex-valued
+  function whose real part satisfies the Cohn-Elkies Conditions `hCohnElkies₁` and `hCohnElkies₂`.
+  If the hypothesis does go unused (as I expect it will), I will remove it.
+
+# TODOs:
+
+* We need a basis to prove `LinearProgrammingBound` in terms of `LinearProgrammingBound'`. It is not
+  immediately clear to me how to pull a basis out of thin air. I will need to study the `Zlattice`
+  and free module APIs in order to understand this better.
+* The summations do not seem to be allowing a ≠ type condition on the index variable. We need this
+  in order to be able to split sums up and deem one of the parts nonpositive or something.
 -/
 
 variable {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
@@ -29,7 +40,12 @@ variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) (b : Basis (Fin d
 
 private lemma calc_aux_1 :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)), (f (x - ↑y)).re
-  ≤ ↑(P.numReps' b) * (f 0).re := sorry -- This is necessary as there will be more `calc` steps here
+  ≤ ↑(P.numReps' b) * (f 0).re := sorry
+  -- calc
+  -- ∑' x : P.centers, ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)), (f (x - ↑y)).re
+  -- _ = ∑' (x : P.centers) (y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)))
+  --     (_ : (y : EuclideanSpace ℝ (Fin d)) ≠ ↑x), (f (x - ↑y)).re
+  --       := sorry
 
 private lemma calc_steps :
   ↑(P.numReps' b) * (f 0).re ≥ ↑(P.numReps' b) ^ 2 * (𝓕 f 0).re /
@@ -129,9 +145,12 @@ theorem LinearProgrammingBound : SpherePackingConstant d ≤
   rw [← periodic_constant_eq_constant (Fact.out),
     periodic_constant_eq_periodic_constant_normalized (Fact.out)]
   apply iSup_le
-  simp only [PeriodicSpherePacking.periodic_density_formula, iSup_le_iff]
-  intro P hP
+  intro P Bound hBound
   -- Once we choose a basis, we can apply `LinearProgrammingBound'` to hP and the basis.
+  -- Then the proof should look a bit like
+  -- rw [← iSup_le_iff]
+  -- intro P hP
+  -- exact LinearProgrammingBonud' (args)
   sorry
 
 end Basis_Independent
