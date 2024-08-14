@@ -1,7 +1,7 @@
 import SpherePacking.CohnElkies.Prereqs
 
 open scoped FourierTransform ENNReal
-open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real
+open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real Zspan
 
 variable {d : ℕ} [Fact (0 < d)]
 
@@ -11,9 +11,6 @@ variable {d : ℕ} [Fact (0 < d)]
 What we have in Mathlib seems to deal with complex-valued functions. I've dealt with it for now by
 giving an assumption that the imaginary part of `f` is always zero and stating everything else in
 terms of the real part of `f`.
-
-Another minor problem: why can I not get a representative in `Quotient (P.instAddAction.orbitRel)`
-as a member of `EuclideanSpace ℝ (Fin d)`?
 -/
 
 variable {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
@@ -21,89 +18,112 @@ variable (hReal : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0)
 variable (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
 variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
 
--- private lemma calc_aux (P : PeriodicSpherePacking d) (hP : P.separation = 1) :
---   ∑' x : P.centers, ∑' y : Quotient (P.instAddAction.orbitRel), (f (x - ↑y)).re ≤
---   ↑(Fintype.card (Quotient (P.instAddAction.orbitRel))) * (f 0).re
---   := calc ∑' x : P.centers, ∑' y : Quotient (P.instAddAction.orbitRel), (f (x - ↑y)).re
---   _ = ∑' x : P.centers,
---       ∑' (y : Quotient (P.instAddAction.orbitRel)), -- need (hy : y ≠ x) but type error
---       (f (x - ↑y)).re
---         := by sorry
+section Basis
 
--- Why does adding a
-private lemma calc_steps (P : PeriodicSpherePacking d) (hP : P.separation = 1) :
-  ↑(Fintype.card (Quotient (P.instAddAction.orbitRel))) * (f 0).re ≥
-  ↑(Fintype.card (Quotient (P.instAddAction.orbitRel))) ^ 2 * (𝓕 f 0).re /
+/-
+In this section, we will prove that the density of every periodic sphere packing of separation 1 is
+bounded above by the Cohn-Elkies bound.
+-/
+
+variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) (b : Basis (Fin d) ℤ P.Λ)
+
+private lemma calc_aux_1 :
+  ∑' x : P.centers, ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)), (f (x - ↑y)).re
+  ≤ ↑(P.numReps' b) * (f 0).re := sorry -- This is necessary as there will be more `calc` steps here
+
+private lemma calc_steps :
+  ↑(P.numReps' b) * (f 0).re ≥ ↑(P.numReps' b) ^ 2 * (𝓕 f 0).re /
   Zlattice.covolume P.Λ := calc
-  ↑(Fintype.card (Quotient (P.instAddAction.orbitRel))) * (f 0).re
+  ↑(P.numReps' b) * (f 0).re
   _ ≥ ∑' x : P.centers,
-      ∑' y : Quotient (P.instAddAction.orbitRel),
+      ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
       (f (x - ↑y)).re
-        := by sorry -- Might need some auxs or another calc, proving ≤ instead of ≥
-  _ = ∑' x : Quotient (P.instAddAction.orbitRel),
-      ∑' y : Quotient (P.instAddAction.orbitRel),
+        := by
+            rw [ge_iff_le]
+            exact calc_aux_1 b
+  _ = ∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
       ∑' ℓ : P.Λ, (f (↑x - ↑y + ↑ℓ)).re
         :=  by sorry
-  -- Why are the tactics in the steps below (after each `by`) never executed?
-  _ = ∑' x : Quotient (P.instAddAction.orbitRel),
-      ∑' y : Quotient (P.instAddAction.orbitRel), (1 / Zlattice.covolume P.Λ) *
-      ∑' m : DualLattice P.Λ, (𝓕 f m).re * cexp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)
+  _ = (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      ∑' ℓ : P.Λ, f (↑x - ↑y + ↑ℓ)).re
+        := by sorry
+  _ = (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)), (1 / Zlattice.covolume P.Λ) *
+      ∑' m : DualLattice P.Λ, (𝓕 f m).re * cexp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)).re -- This is technically a complex number so we must take the real part!
         := by
-            rw [PSF_L hPSF (↑x - ↑y)]
+            -- First need to say the two sides are equal if they're equal as complex numbers.
+            -- Then we can apply the PSF-L.
+            -- rw [PSF_L P.Λ hPSF]  -- Need to apply it inside sums!
             sorry  -- This is where the PSF-L is applied
-  _ = (1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re * (
-      ∑' x : Quotient (P.instAddAction.orbitRel),
-      ∑' y : Quotient (P.instAddAction.orbitRel),
-      cexp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))
+  _ = ((1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re * (
+      ∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      cexp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
         := by sorry
-  _ = (1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re * (
-      ∑' x : Quotient (P.instAddAction.orbitRel),
-      ∑' y : Quotient (P.instAddAction.orbitRel),
-      cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ) * cexp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))
+  _ = ((1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re * (
+      ∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ) * cexp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
+        := by sorry
+  _ = ((1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re *
+      (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)), cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
+      (∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)), cexp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)))).re
+        := by sorry
+  _ = ((1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re *
+      (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
+      (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) -- Need its complex conjugate
+      ).re
         := by sorry
   _ = (1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re *
-      (∑' x : Quotient (P.instAddAction.orbitRel), cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
-      (∑' y : Quotient (P.instAddAction.orbitRel), cexp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)))
-        := by sorry
-  _ = (1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re *
-      (∑' x : Quotient (P.instAddAction.orbitRel), cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
-      (∑' x : Quotient (P.instAddAction.orbitRel), cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)).
-      conj -- Have I done complex conjugation correctly?
-        := by sorry
-  _ = (1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re *
-      (∑' x : Quotient (P.instAddAction.orbitRel),
-      |cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)| ^ 2)
+      (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      Complex.abs (cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
         := by sorry
   _ = (1 / Zlattice.covolume P.Λ) * (
-      (∑' (m : DualLattice P.Λ) (hm : m ≠ 0), (𝓕 f m).re *
-      (∑' x : Quotient (P.instAddAction.orbitRel),
-      |cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)| ^ 2))
+      (∑' (m : DualLattice P.Λ) , (𝓕 f m).re * -- Need to add a `(hm : m ≠ 0)` into the sum
+      (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      Complex.abs (cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2))
       +
-      (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re * (∑' x : Quotient (P.instAddAction.orbitRel),
-      |cexp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)| ^ 2))
+      (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
+      (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      Complex.abs (cexp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2))
         := by sorry
   -- Why is the ≥ sign below giving me an error?
   -- _ ≥ (1 / Zlattice.covolume P.Λ) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
-  --     (∑' x : Quotient (P.instAddAction.orbitRel),
+  --     (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
   --     |cexp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)| ^ 2)
   --       := sorry
   _ = (1 / Zlattice.covolume P.Λ) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
-      ↑(Fintype.card (Quotient (P.instAddAction.orbitRel))) ^ 2
+      ↑(P.numReps' b) ^ 2
         := by sorry
-  _ = ↑(Fintype.card (Quotient (P.instAddAction.orbitRel))) ^ 2 * (𝓕 f 0).re /
+  _ = ↑(P.numReps' b) ^ 2 * (𝓕 f 0).re /
   Zlattice.covolume P.Λ volume
         := by sorry
 
-theorem LinearProgrammingBound :
-  SpherePackingConstant d ≤ (f 0).re / (𝓕 f 0).re * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
+theorem LinearProgrammingBound' : P.density ≤
+  (f 0).re / (𝓕 f 0).re * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
+  rw [P.periodic_density_formula' b]
+  suffices hCalc : (P.numReps' b) * (f 0).re ≥ (P.numReps' b)^2 * (𝓕 f 0).re / Zlattice.covolume P.Λ
+  · -- rw [hP]
+    sorry
+  exact calc_steps b
+
+end Basis
+
+section Basis_Independent
+
+
+theorem LinearProgrammingBound : SpherePackingConstant d ≤
+  (f 0).re / (𝓕 f 0).re * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   rw [← periodic_constant_eq_constant (Fact.out),
     periodic_constant_eq_periodic_constant_normalized (Fact.out)]
   apply iSup_le
   simp only [PeriodicSpherePacking.periodic_density_formula, iSup_le_iff]
   intro P hP
-  suffices hCalc : (Fintype.card (Quotient (P.instAddAction.orbitRel))) * (f 0).re ≥
-    (Fintype.card (Quotient (P.instAddAction.orbitRel)))^2 * (𝓕 f 0).re /
-    Zlattice.covolume P.Λ
-  · rw [hP]
-    sorry
-  exact calc_steps P hP
+  -- Once we choose a basis, we can apply `LinearProgrammingBound'` to hP and the basis.
+  sorry
+
+end Basis_Independent

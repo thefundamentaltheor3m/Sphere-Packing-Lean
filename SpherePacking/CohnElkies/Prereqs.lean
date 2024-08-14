@@ -75,7 +75,7 @@ exact this
 end PSF_L
 
 open scoped ENNReal
-open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory
+open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Zspan
 
 section Periodic_Packings
 
@@ -107,7 +107,25 @@ theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
     simp only
     exact le_iSup_iff.mpr fun b a ↦ a S
 
+-- Adapted from #25
+-- Reason: Need specific set of representatives for proof of Cohn-Elkies. Choice doesn't matter,
+-- so might as well choose a convenient one.
+
 instance (S : PeriodicSpherePacking d) : Fintype (Quotient S.instAddAction.orbitRel) := sorry
+
+noncomputable def PeriodicSpherePacking.numReps (S : PeriodicSpherePacking d) : ℕ :=
+  Fintype.card (Quotient S.instAddAction.orbitRel)
+
+instance (S : PeriodicSpherePacking d) : DiscreteTopology ↥S.Λ := S.Λ_discrete
+
+instance (S : PeriodicSpherePacking d) : IsZlattice ℝ S.Λ := S.Λ_lattice
+
+instance (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.Λ) :
+  Fintype ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)) := sorry
+
+noncomputable def PeriodicSpherePacking.numReps'
+  (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.Λ) : ℕ :=
+  Fintype.card ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _))
 
 -- I hope these aren't outright wrong
 instance HDivENNReal : HDiv ENNReal ℝ ENNReal := sorry
@@ -115,7 +133,14 @@ instance HMulENNReal : HMul ℝ ENNReal ENNReal := sorry
 
 @[simp]
 theorem PeriodicSpherePacking.periodic_density_formula (S : PeriodicSpherePacking d) :
-  S.density = (Fintype.card (Quotient S.instAddAction.orbitRel) : ENNReal) /
+  S.density = (S.numReps : ENNReal) /
+    (Zlattice.covolume S.Λ) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
+  sorry
+
+@[simp]
+theorem PeriodicSpherePacking.periodic_density_formula'
+  (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.Λ) :
+  S.density = (S.numReps' b : ENNReal) /
     (Zlattice.covolume S.Λ) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
   sorry
 
@@ -137,6 +162,12 @@ variable {d : ℕ} (P : PeriodicSpherePacking d)
 instance HSubFundamentalDomain : HSub
   (Quotient (P.instAddAction.orbitRel))
   (Quotient (P.instAddAction.orbitRel))
+  (EuclideanSpace ℝ (Fin d)) :=
+  sorry
+
+instance HSubInter (b : Basis (Fin d) ℤ P.Λ): HSub
+  (↑(P.centers ∩ fundamentalDomain (Basis.ofZlatticeBasis ℝ P.Λ b)))
+  (↑(P.centers ∩ fundamentalDomain (Basis.ofZlatticeBasis ℝ P.Λ b)))
   (EuclideanSpace ℝ (Fin d)) :=
   sorry
 
