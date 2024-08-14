@@ -1,6 +1,6 @@
 \section{Proof of Theorem \ref{thm:g}}\label{sec: g}
 Our proof of the Theorem~\ref{thm:g} relies on the following two inequalities for modular objects.
-\begin{proposition}\label{prop:ineqA}\uses{lemma:ineqA-equiv, lemma:F-G-phi-psi-identities, lemma:F-G-pos, lemma: phi fourier4 phi fourier2 phi fourier0, lemma: psi fourier I psi fourier T psi fourier S, cor:ineqAnew}
+\begin{proposition}\label{prop:ineqA}\uses{lemma:ineqABnew-equiv, lemma:F-G-phi-psi-identities, lemma:F-G-pos, cor:ineqAnew}
 Consider the function $A:(0,\infty)\to\C$ defined as
 \begin{equation}\label{eqn:defA}
 A(t):=-t^2\phi_0(i/t)-\frac{36}{\pi^2}\,\psi_I(it).
@@ -12,7 +12,7 @@ Then
 for all $t > 0$.
 \end{proposition}
 
-\begin{proposition}\label{prop:ineqB}\uses{lemma:ineqB-equiv, lemma:F-G-phi-psi-identities, lemma: phi fourier4 phi fourier2 phi fourier0, lemma: psi fourier I psi fourier T psi fourier S, cor:ineqBnew}
+\begin{proposition}\label{prop:ineqB}\uses{lemma:ineqABnew-equiv, lemma:F-G-phi-psi-identities, cor:ineqBnew}
 Consider the function $B:(0,\infty)\to\C$ defined as
 \begin{equation}\label{eqn:defB}
   B(t) := -t^2\phi_0(i/t)+\frac{36}{\pi^2}\,\psi_I(it)
@@ -39,11 +39,12 @@ Define two (quasi) modular forms as
 \begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{lemma: psi I psi T psi S explicit, lemma:lv1-lv2-identities, lemma:jacobi-identity}
 We have
 \begin{align}
-  \phi_0 &= \label{eqn:phi0-f} \\
+  \phi_0 &= \frac{F}{\Delta} \label{eqn:phi0-F} \\
   \psi_S &= -\frac{1}{2} \frac{G}{\Delta}\label{eqn:psiS-G}
 \end{align}
 \end{lemma}
 \begin{proof}
+\eqref{eqn:phi0-F} is clear.
 For \eqref{eqn:psiS-G}, using \eqref{eqn: psi S explicit} and \eqref{eqn:jacobi-identity} gives
 \begin{align}
   \psi_S &= -128 \frac{H_3 + H_2}{H_4^2} - 128 \frac{H_2 - H_4}{H_3^2} \\
@@ -55,27 +56,29 @@ For \eqref{eqn:psiS-G}, using \eqref{eqn: psi S explicit} and \eqref{eqn:jacobi-
 \end{align}
 \end{proof}
 
-\begin{lemma}\label{lemma:ineqA-equiv}\uses{lemma:F-G-phi-psi-identities, cor:disc-pos}
-Inequality \eqref{eqn:ineqA} is equivalent to
-\begin{equation}\label{eqn:ineqAnew}
-  F(it) + \frac{18}{\pi^2} G(it) > 0.
-\end{equation}
+\begin{lemma}\label{lemma:ineqABnew-equiv}\uses{lemma:F-G-phi-psi-identities, def: psi I psi T psi S, cor:disc-pos}
+Inequality \eqref{eqn:ineqA} and \eqref{eqn:ineqB} are equivalent to
+\begin{align}
+  F(it) + \frac{18}{\pi^2} G(it) > 0 \label{eqn:ineqAnew} \\
+  F(it) - \frac{18}{\pi^2} G(it) > 0 \label{eqn:ineqBnew}
+\end{align}
+respectively.
 \end{lemma}
 \begin{proof}
-
-\end{proof}
-
-\begin{lemma}\label{lemma:ineqB-equiv}\uses{lemma:F-G-phi-psi-identities, cor:disc-pos}
-Inequality \eqref{eqn:ineqB} is equivalent to
-\begin{equation}\label{eqn:ineqBnew}
-  F(it) - \frac{18}{\pi^2} G(it) > 0.
+By \eqref{eqn: psi S define},
+\begin{equation}
+  \psi_I(it) = (\psi_S|_{-2}S)(it) = (it)^{2}\psi_S\left(-\frac{1}{it}\right) = -t^2 \psi_S\left(\frac{i}{t}\right).
 \end{equation}
-\end{lemma}
-\begin{proof}
-
+Combined with Lemma \ref{lemma:F-G-phi-psi-identities} we can rewrite \eqref{eqn:ineqA} as
+\begin{equation}
+  A(t) = -t^2 \phi_0\left(\frac{i}{t}\right) + \frac{36}{\pi^2} \psi_S\left(\frac{i}{t}\right) < 0 \Leftrightarrow \frac{F(it)}{\Delta(it)} + \frac{18}{\pi^2} \frac{G(it)}{\Delta(it)} > 0
+\end{equation}
+for $t > 0$, which is equivalent to \eqref{eqn:ineqAnew} by Corollary \ref{cor:disc-pos}.
+Equivalences of \eqref{eqn:ineqB} and \eqref{eqn:ineqBnew} follows similarly; just change the sign.
 \end{proof}
 
-Now, the first inequality \eqref{eqn:ineqA} follows from the positivity of each $F(it)$ and $G(it)$.
+
+Now, the first inequality \eqref{eqn:ineqAnew} follows from the positivity of each $F(it)$ and $G(it)$.
 
 \begin{lemma}\label{lemma:F-G-pos}\uses{thm:ramanujan-formula, lemma:theta-pos}
 For all $t > 0$, we have $F(it) > 0$ and $G(it) > 0$.
