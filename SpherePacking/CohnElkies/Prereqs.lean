@@ -107,7 +107,7 @@ theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
     simp only
     exact le_iSup_iff.mpr fun b a ↦ a S
 
-instance I₁ (S : PeriodicSpherePacking d) : Fintype (Quotient S.instAddAction.orbitRel) := sorry
+instance (S : PeriodicSpherePacking d) : Fintype (Quotient S.instAddAction.orbitRel) := sorry
 
 -- I hope these aren't outright wrong
 instance HDivENNReal : HDiv ENNReal ℝ ENNReal := sorry
@@ -125,7 +125,9 @@ theorem periodic_constant_eq_constant (hd : 0 < d) :
 
 end Periodic_Packings
 
-section Misc
+noncomputable section Misc
+
+-- Vocab from #25: `Quotient S.addAction.orbitRel` is the set of _representatives_
 
 variable {d : ℕ} (P : PeriodicSpherePacking d)
 -- local notation "ℝᵈ" => EuclideanSpace ℝ (Fin d)
@@ -133,16 +135,12 @@ variable {d : ℕ} (P : PeriodicSpherePacking d)
 -- The following surely makes sense: subtracting a point in the fundamental domain from another
 -- should yield a point in the ambient space. But why does this need to be mentioned explicitly?
 instance HSubFundamentalDomain : HSub
-  (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))
-  (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))
-  (EuclideanSpace ℝ (Fin d)) := by
+  (Quotient (P.instAddAction.orbitRel))
+  (Quotient (P.instAddAction.orbitRel))
+  (EuclideanSpace ℝ (Fin d)) :=
   sorry
 
-instance coe_quotient_to_centers : Coe ↑P.centers (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers)) :=
-  sorry
-
-instance coe_quotient_to_ambient : (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))
-  Coe (EuclideanSpace ℝ (Fin d)) :=
-  sorry
+-- instance coe_quotient_to_ambient : Coe (Quotient (P.instAddAction.orbitRel))
+--   (EuclideanSpace ℝ (Fin d)) := sorry
 
 end Misc
