@@ -522,25 +522,63 @@ private lemma aux' {ε : ℝ≥0∞} (hε : 0 < ε) :
     ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
   simpa using aux (d := d) (Nat.cast_nonneg _) hε
 
-theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 < C) :
+theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 ≤ C) :
     Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))) atTop (𝓝 1) := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  have (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
-      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
-        = ENNReal.ofReal (R ^ d / (R + C) ^ d) := by
-    rw [volume_ball, volume_ball, Fintype.card_fin, ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul,
-      ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul, ← ENNReal.ofReal_div_of_pos, mul_div_mul_right]
-    <;> positivity
-  rw [ENNReal.tendsto_atTop (by decide)]
-  intro ε hε
-  obtain ⟨k, ⟨hk₁, hk₂⟩⟩ := aux' hε
-  use k * C
-  intro n hn
-  rw [this _ ((by positivity : 0 ≤ k * C).trans hn)]
-  convert hk₂ (n / C) ((le_div_iff hC).mpr hn)
-  rw [div_add_one, div_div_div_cancel_right, div_pow]
-  · positivity
-  · positivity
+  rcases le_iff_eq_or_lt.mp hC with (rfl | hC)
+  · simp_rw [add_zero]
+    apply Tendsto.congr' (f₁ := 1) ?_ tendsto_const_nhds
+    rw [EventuallyEq, eventually_atTop]
+    use 1
+    intro b hb
+    rw [ENNReal.div_self, Pi.one_apply]
+    · exact (volume_ball_pos _ (by linarith)).ne.symm
+    · exact (volume_ball_lt_top _).ne
+  · have (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
+        / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
+          = ENNReal.ofReal (R ^ d / (R + C) ^ d) := by
+      rw [volume_ball, volume_ball, Fintype.card_fin, ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul,
+        ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul, ← ENNReal.ofReal_div_of_pos, mul_div_mul_right]
+      <;> positivity
+    rw [ENNReal.tendsto_atTop (by decide)]
+    intro ε hε
+    obtain ⟨k, ⟨hk₁, hk₂⟩⟩ := aux' hε
+    use k * C
+    intro n hn
+    rw [this _ ((by positivity : 0 ≤ k * C).trans hn)]
+    convert hk₂ (n / C) ((le_div_iff hC).mpr hn)
+    rw [div_add_one, div_div_div_cancel_right, div_pow]
+    · positivity
+    · positivity
+
+theorem volume_ball_ratio_tendsto_nhds_one' {C C' : ℝ} (hd : 0 < d) (hC : 0 ≤ C) (hC' : 0 ≤ C') :
+    Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
+      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) atTop (𝓝 1) := by
+  -- I love ENNReal (I don't)
+  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  apply Tendsto.congr' (f₁ := fun R ↦
+    volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
+      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))
+        / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
+          / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))))
+  · rw [EventuallyEq, eventually_atTop]
+    use 1
+    intro R hR
+    have hR' : 0 < R := by linarith
+    rw [ENNReal.div_div_div_cancel_left]
+    · exact (volume_ball_pos _ hR').ne.symm
+    · exact (volume_ball_lt_top _).ne
+    · exact (volume_ball_lt_top _).ne
+  · convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
+      (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
+
+-- I need this strengthening, shouldn't be too hard, need to strengthen aux above
+theorem volume_ball_ratio_tendsto_nhds_one'' {C C' : ℝ} (hd : 0 < d) :
+    Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
+      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) atTop (𝓝 1) := by
+  sorry
 
 end ScratchPad
+
+

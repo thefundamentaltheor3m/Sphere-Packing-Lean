@@ -5,7 +5,7 @@ Authors: Sidharth Hariharan, Gareth Ma
 -/
 import Mathlib
 
-import SpherePacking.Basic.SpherePacking
+import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.ForMathlib.Vec
 import SpherePacking.ForMathlib.Finsupp
 import SpherePacking.ForMathlib.InnerProductSpace
@@ -535,9 +535,8 @@ noncomputable def E8Packing : PeriodicSpherePacking 8 where
 example : E8Packing.separation = √2 := rfl
 example : E8Packing.lattice = E8_Lattice := rfl
 
--- proven in #25
 theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
-  sorry
+  rw [PeriodicSpherePacking.density_eq (by omega) E8_Basis]
 
 theorem Main : PeriodicSpherePackingConstant 8 = E8Packing.density :=
   sorry
@@ -547,3 +546,5 @@ theorem Main' : SpherePackingConstant 8 = E8Packing.density :=
 
 end Packing
 end E8
+
+#min_imports

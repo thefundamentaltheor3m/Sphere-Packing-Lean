@@ -1,5 +1,4 @@
 import Mathlib.Data.Set.Card
-import SpherePacking.Basic.E8
 import SpherePacking.Basic.SpherePacking
 
 import SpherePacking.ForMathlib.Cardinal
@@ -273,7 +272,7 @@ noncomputable instance : Fintype (Quotient S.addAction.orbitRel) :=
 
 end instances
 
-section section_2_3
+section theorem_2_3
 open scoped Pointwise
 variable {d : ℕ} (S : PeriodicSpherePacking d)
   (D : Set (EuclideanSpace ℝ (Fin d)))
@@ -343,8 +342,8 @@ theorem aux
     _ < (R - L) + L := by linarith
     _ = R := by ring
 
--- Theorem 2.3, LB
-theorem PeriodicSpherePacking.aux_lb
+-- Theorem 2.3, lower bound
+theorem PeriodicSpherePacking.aux_ge
     (hd : 0 < d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice)
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     (↑S.centers ∩ ball 0 R).encard ≥
@@ -408,8 +407,8 @@ theorem aux'
   · rw [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub]
     exact fract_mem_fundamentalDomain (b.ofZlatticeBasis ℝ _) x
 
--- Theorem 2.3, UB - somehow the proof is exactly the same as LB
-theorem PeriodicSpherePacking.aux_ub
+-- Theorem 2.3, upper bound - the proof is similar to lower bound
+theorem PeriodicSpherePacking.aux_le
     (hd : 0 < d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice)
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     (↑S.centers ∩ ball 0 R).encard
@@ -472,7 +471,7 @@ variable {d : ℕ} (S : PeriodicSpherePacking d)
 
 /- In this section we prove Theorem 2.2 -/
 
-private theorem hD_isAddFundamentalDomain :IsAddFundamentalDomain S.lattice D where
+private theorem hD_isAddFundamentalDomain : IsAddFundamentalDomain S.lattice D where
   nullMeasurableSet := hD_measurable.nullMeasurableSet
   ae_covers := Filter.eventually_of_forall fun x ↦ (hD_unique_covers x).exists
   aedisjoint := by
@@ -506,7 +505,8 @@ theorem aux7 :
   · rw [Set.mem_vadd_set_iff_neg_vadd_mem, neg_neg]
     exact hg
 
-theorem PeriodicSpherePacking.aux2_lb (hd : 0 < d)  :
+-- Theorem 2.2, lower bound
+theorem PeriodicSpherePacking.aux2_ge (hd : 0 < d)  :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≥ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)) / volume D := by
   rw [ge_iff_le, ENNReal.div_le_iff]
@@ -548,7 +548,8 @@ theorem aux8 :
     _ ≤ ‖i‖ + ‖-i + x‖ := norm_add_le _ _
     _ < R + L := add_lt_add_of_lt_of_le hi_ball this
 
-theorem PeriodicSpherePacking.aux2_ub (hd : 0 < d)  :
+-- Theorem 2.2, upper bound
+theorem PeriodicSpherePacking.aux2_le (hd : 0 < d)  :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)) / volume D := by
   rw [ENNReal.le_div_iff_mul_le]
@@ -577,3 +578,153 @@ theorem PeriodicSpherePacking.aux2_ub (hd : 0 < d)  :
     have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]
     exact Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)
+
+open Zspan
+
+variable
+  {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice)
+  {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ)
+
+-- Theorem 2.2 lower bound, in terms of fundamental domain of Z-lattice
+theorem PeriodicSpherePacking.aux2_ge' (hd : 0 < d) :
+    (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
+      ≥ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L))
+        / volume (fundamentalDomain (b.ofZlatticeBasis ℝ _)) := by
+  refine S.aux2_ge _ ?_ (fundamentalDomain_measurableSet _) hL R hd
+  intro x
+  obtain ⟨⟨v, hv⟩, hv'⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZlatticeBasis ℝ _) x
+  simp only [S.basis_Z_span, AddSubmonoid.mk_vadd] at hv hv' ⊢
+  use ⟨v, hv⟩, hv'.left, ?_
+  intro ⟨y, hy⟩ hy'
+  have := hv'.right ⟨y, ?_⟩ hy'
+  rwa [Subtype.ext_iff] at this ⊢
+  rw [S.basis_Z_span]
+  exact hy
+
+-- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice
+theorem PeriodicSpherePacking.aux2_le' (hd : 0 < d) :
+    (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
+      ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L))
+        / volume (fundamentalDomain (b.ofZlatticeBasis ℝ _)) := by
+  refine S.aux2_le _ ?_ (fundamentalDomain_measurableSet _) hL R hd
+  intro x
+  obtain ⟨⟨v, hv⟩, hv'⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZlatticeBasis ℝ _) x
+  simp only [S.basis_Z_span, AddSubmonoid.mk_vadd] at hv hv' ⊢
+  use ⟨v, hv⟩, hv'.left, ?_
+  intro ⟨y, hy⟩ hy'
+  have := hv'.right ⟨y, ?_⟩ hy'
+  rwa [Subtype.ext_iff] at this ⊢
+  rw [S.basis_Z_span]
+  exact hy
+
+section finiteDensity_limit
+
+/- TODO: consider moving this section. -/
+
+open MeasureTheory Measure Metric Zspan
+
+variable
+  {d : ℕ} {S : PeriodicSpherePacking d} (hd : 0 < d)
+  {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice)
+  {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ)
+
+theorem aux_big_le :
+    S.finiteDensity R ≤
+      S.numReps
+        * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+          / volume (fundamentalDomain (b.ofZlatticeBasis ℝ _))
+            * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + S.separation / 2 + L * 2))
+              / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)) := calc
+  _ ≤ (S.centers ∩ ball 0 (R + S.separation / 2)).encard
+      * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+        / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
+    S.finiteDensity_le hd R
+  _ ≤ S.numReps
+        • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + S.separation / 2 + L)).encard
+          * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+            / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
+    gcongr
+    convert ENat.toENNReal_le.mpr (S.aux_le hd b hL _)
+    simp
+  _ ≤ S.numReps
+        * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + S.separation / 2 + L + L))
+          / volume (fundamentalDomain (b.ofZlatticeBasis ℝ _)))
+            * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+              / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
+    rw [nsmul_eq_mul]
+    gcongr
+    exact S.aux2_le' b hL _ hd
+  _ = S.numReps
+        * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+          / volume (fundamentalDomain (b.ofZlatticeBasis ℝ _))
+            * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + S.separation / 2 + L * 2))
+              / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)) := by
+    rw [← mul_div_assoc, ← mul_div_assoc, mul_two, ← add_assoc, ← ENNReal.mul_div_right_comm,
+      ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc]
+    congr 3
+    rw [mul_comm]
+
+theorem aux_big_ge :
+    S.finiteDensity R ≥
+      S.numReps
+        * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+          / volume (fundamentalDomain (b.ofZlatticeBasis ℝ _))
+            * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - S.separation / 2 - L * 2))
+              / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)) := calc
+  _ ≥ (S.centers ∩ ball 0 (R - S.separation / 2)).encard
+      * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+        / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
+    S.finiteDensity_ge hd R
+  _ ≥ S.numReps
+        • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - S.separation / 2 - L)).encard
+          * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+            / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
+    gcongr
+    convert ENat.toENNReal_le.mpr (S.aux_ge hd b hL _)
+    simp
+  _ ≥ S.numReps
+        * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - S.separation / 2 - L - L))
+          / volume (fundamentalDomain (b.ofZlatticeBasis ℝ _)))
+            * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+              / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
+    rw [nsmul_eq_mul]
+    gcongr
+    exact S.aux2_ge' b hL _ hd
+  _ = S.numReps
+        * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+          / volume (fundamentalDomain (b.ofZlatticeBasis ℝ _))
+            * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - S.separation / 2 - L * 2))
+              / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)) := by
+    rw [← mul_div_assoc, ← mul_div_assoc, mul_two, ← sub_sub, ← ENNReal.mul_div_right_comm,
+      ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc]
+    congr 3
+    rw [mul_comm]
+
+open Filter Topology
+
+private lemma PeriodicSpherePacking.tendsto_finiteDensity : Tendsto S.finiteDensity atTop
+    (𝓝 (S.numReps * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+      / volume (fundamentalDomain (b.ofZlatticeBasis ℝ _)))) := by
+  apply tendsto_of_tendsto_of_tendsto_of_le_of_le ?_ ?_ (aux_big_ge hd b hL) (aux_big_le hd b hL)
+  · rw [show ∀ a : ENNReal, 𝓝 a = 𝓝 (a * 1) by intro; rw [mul_one]]
+    apply ENNReal.Tendsto.const_mul
+    · simp_rw [sub_sub, sub_eq_add_neg]
+      convert volume_ball_ratio_tendsto_nhds_one'' hd (C := -(S.separation / 2 + L * 2))
+      rw [add_zero]
+    · left
+      exact one_ne_zero
+  · rw [show ∀ a : ENNReal, 𝓝 a = 𝓝 (a * 1) by intro; rw [mul_one]]
+    apply ENNReal.Tendsto.const_mul
+    · simp_rw [add_assoc]
+      convert volume_ball_ratio_tendsto_nhds_one'' hd (C := S.separation / 2 + L * 2)
+      rw [add_zero]
+    · left
+      exact one_ne_zero
+
+theorem PeriodicSpherePacking.density_eq :
+    S.density
+      = (S.numReps * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+        / volume (fundamentalDomain (b.ofZlatticeBasis ℝ _))) :=
+  limsSup_eq_of_le_nhds (S.tendsto_finiteDensity hd b hL)
+
+#print axioms PeriodicSpherePacking.density_eq
