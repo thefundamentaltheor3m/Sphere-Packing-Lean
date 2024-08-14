@@ -450,6 +450,17 @@ Differentiating and squaring then gives us the following:
 Hence, \eqref{eqn:DE2}$-\frac{1}{12}$\eqref{eqn:E2sq-transform} is a modular form of weight 4.
 Since $\dim M_k(\Gamma_1) = 1$ for $k = 4, 6, 8$, they should be multiples of $E_4, E_6, E_8$, and the proportionality constants can be determined by observing the constant terms of $q$-expansions.
 \end{proof}
+\begin{corollary}\label{cor:logder-disc-E2}\uses{thm:ramanujan-formula, def:disc-definition}
+\begin{equation}\label{eqn:logder-disc-E2}
+    \Delta' = E_2 \Delta.
+\end{equation}
+\end{corollary}
+\begin{proof}
+By Ramanujan's formula \eqref{eqn:DE4} and \eqref{eqn:DE6},
+\begin{equation}
+\Delta' = \frac{3 E_4^2 E_4' - 2 E_6 E_6'}{1728} = \frac{1}{1728} \left(3 E_4^2 \cdot \frac{E_2 E_4 - E_6}{3} - 2 E_6 \cdot \frac{E_2 E_6 - E_4^2}{2}\right) = \frac{E_2(E_4^3 - E_6^2)}{1728} = E_2\Delta.
+\end{equation}
+\end{proof}
 
 Similar argument allow us to compute (Serre) derivatives of $H_2, H_3, H_4$.
 \begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T}
@@ -488,6 +499,31 @@ It follows from the definition:
 \end{align}
 \end{proof}
 
+We also have the following useful theorem for proving positivity of quasimodular forms on the imaginary axis, which is \cite[Proposition 3.5, Corollary 3.6]{Lee}.
+\begin{theorem}\label{thm:anti-serre-der-pos}\uses{def:serre-der, cor:logder-disc-E2}
+Let $F$ be a holomorphic quasimodular cusp form with real Fourier coefficients.
+Assume that there exists $k$ such that $(\partial_{k}F)(it) > 0$ for all $t > 0$.
+If the first Fourier coefficient of $F$ is positive, then $F(it) > 0$ for all $t > 0$.
+\end{theorem}
+\begin{proof}
+By \eqref{eqn:logder-disc-E2}, we have
+\begin{align}
+    \frac{\dd}{\dd t} \left( \frac{F(it)}{\Delta(it)^{\frac{k}{12}}}\right)
+    &= (-2 \pi) \frac{F'(it) \Delta(it)^{\frac{k}{12}} - F(it) \frac{k}{12} E_{2}(it) \Delta(it)^{\frac{k}{12}}}{\Delta(it)^{\frac{k}{6}}} \\
+    &= (-2 \pi) \frac{(\partial_{k} F)(it)}{\Delta(it)^{\frac{k}{12}}}  < 0,
+\end{align}
+hence
+\[
+t \mapsto \frac{F(it)}{\Delta(it)^{\frac{k}{12}}}
+\]
+is monotone decreasing.
+Because of the assumption on the positivity of the first nonzero Fourier coefficient of $F$, $F(it) > 0$ for sufficiently large $t$ since
+\[
+F = \sum_{n \geq n_{0}} a_{n} q^{n} \Rightarrow e^{2 \pi n_{0} t} F(it) = a_{n_{0}} + e^{-2 \pi t}\sum_{n\geq n_{0} + 1} a_{n} e^{-2 \pi (n - n_{0} - 1)t}
+\]
+and $\lim_{t \to \infty} e^{2 \pi n_{0}t} F(it) = a_{n_0} > 0$, hence the result follows.
+\end{proof}
+
 
 \begin{definition}\label{def:weakly-holomorphic-modular-form}
 A \emph{weakly-holomorphic modular form} of integer weight $k$ and congruence subgroup $\Gamma$ is a holomorphic function $f:\h\to\C$ such that:
@@ -505,6 +541,7 @@ This function belongs to $M_0^!(\Gamma_1)$ and has the Fourier expansion
 $$j(z)\,=\,q^{-1} + 744 + 196884\, q + 21493760\, q^2 + 864299970\, q^3 +
   20245856256\, q^4 + O(q^5) $$
 where $q=e^{2\pi i z}$.
+% Seewoo: This (lemma below, Hardy-Ramanujan) might be deleted later
 Using a simple computer algebra system, such as PARI GP or Mathematica, one can compute first hundred terms of this Fourier expansion in just a few seconds. An important question is to find an  asymptotic formula for $c_j(n)$, the $n$-th Fourier coefficient  of $j$. Using the Hardy-Ramanujan circle method \cite{Rademacher38} or the non-holomorphic Poincare series \cite{Petersson32}, one can show that
 \begin{lemma}\label{lemma: j Fourier asymptotic}
 % \lean{lemma: j Fourier asymptotic}
