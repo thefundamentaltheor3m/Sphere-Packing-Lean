@@ -128,14 +128,21 @@ end Periodic_Packings
 section Misc
 
 variable {d : ℕ} (P : PeriodicSpherePacking d)
-local notation "ℝᵈ" => EuclideanSpace ℝ (Fin d)
+-- local notation "ℝᵈ" => EuclideanSpace ℝ (Fin d)
 
 -- The following surely makes sense: subtracting a point in the fundamental domain from another
 -- should yield a point in the ambient space. But why does this need to be mentioned explicitly?
 instance HSubFundamentalDomain : HSub
   (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))
   (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))
-  ℝᵈ := by
+  (EuclideanSpace ℝ (Fin d)) := by
+  sorry
+
+instance coe_quotient_to_centers : Coe ↑P.centers (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers)) :=
+  sorry
+
+instance coe_quotient_to_ambient : (Quotient (AddAction.orbitRel ↥P.Λ ↑P.centers))
+  Coe (EuclideanSpace ℝ (Fin d)) :=
   sorry
 
 end Misc
