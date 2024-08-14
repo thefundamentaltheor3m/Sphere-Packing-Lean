@@ -279,9 +279,25 @@ variable {d : ℕ} (S : PeriodicSpherePacking d)
   (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D)
 
+noncomputable instance PeriodicSpherePacking.instCentersSetoid : Setoid S.centers :=
+  S.addAction.orbitRel
+
 -- TODO: rename
 noncomputable def PeriodicSpherePacking.numReps : ℕ :=
   Fintype.card (Quotient S.addAction.orbitRel)
+
+theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice) : S.numReps = 1 := by
+  rw [numReps]
+  apply le_antisymm
+  · rw [Fintype.card_le_one_iff_subsingleton, ← AddAction.pretransitive_iff_subsingleton_quotient]
+    constructor
+    intro ⟨x, hx⟩ ⟨y, hy⟩
+    rw [hS] at hx hy
+    use ⟨y - x, sub_mem hy hx⟩
+    simp [addAction_vadd, Subtype.ext_iff.mpr]
+  · rw [Fintype.card, Finset.one_le_card]
+    let zero : S.centers := ⟨0, by rw [hS]; exact zero_mem _⟩
+    use ⟦zero⟧, by simp [zero]
 
 theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain (hd : 0 < d)
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :

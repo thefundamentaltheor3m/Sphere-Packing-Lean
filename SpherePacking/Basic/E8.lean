@@ -3,12 +3,12 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Gareth Ma
 -/
-import Mathlib
+import Mathlib.Data.Real.StarOrdered
+import Mathlib.Order.Category.NonemptyFinLinOrd
 
 import SpherePacking.Basic.PeriodicPacking
-import SpherePacking.ForMathlib.Vec
 import SpherePacking.ForMathlib.Finsupp
-import SpherePacking.ForMathlib.InnerProductSpace
+import SpherePacking.ForMathlib.Vec
 
 /-!
 # Basic properties of the E₈ lattice
@@ -34,7 +34,7 @@ properties about the E₈ lattice.
 
 -/
 
-open Euclidean EuclideanSpace BigOperators SpherePacking Matrix algebraMap Pointwise
+open EuclideanSpace BigOperators SpherePacking Matrix algebraMap Pointwise
 
 /-
 * NOTE: *
@@ -47,23 +47,18 @@ the sphere packing problem in other dimensions.
 
 namespace E8
 
-local notation "V" => EuclideanSpace ℝ (Fin 8)
-
-#check V
-
 /-- E₈ is characterised as the set of vectors with (1) coordinates summing to an even integer,
 and (2) all its coordinates either an integer or a half-integer. -/
-@[simp]
-def E8_Set : Set V :=
+def E8_Set : Set (EuclideanSpace ℝ (Fin 8)) :=
   {v | ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 * v i)) ∧ ∑ i, v i ≡ 0 [PMOD 2]}
 
-theorem mem_E8_Set {v : V} :
+theorem mem_E8_Set {v : EuclideanSpace ℝ (Fin 8)} :
     v ∈ E8_Set ↔
       ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 * v i))
         ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
-  simp
+  simp [E8_Set]
 
-theorem mem_E8_Set' {v : V} :
+theorem mem_E8_Set' {v : EuclideanSpace ℝ (Fin 8)} :
     v ∈ E8_Set ↔
       ((∀ i, ∃ n : ℤ, Even n ∧ n = 2 * v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 * v i))
         ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
@@ -82,7 +77,6 @@ mentioned in the Wikipedia article https://en.wikipedia.org/wiki/E8_(mathematics
 -/
 
 /-- E₈ is also characterised as the ℤ-span of the following vectors. -/
-@[simp]
 def E8' : Matrix (Fin 8) (Fin 8) ℚ := !![
 1,-1,0,0,0,0,0,0;
 0,1,-1,0,0,0,0,0;
@@ -95,7 +89,6 @@ def E8' : Matrix (Fin 8) (Fin 8) ℚ := !![
 ]
 
 /-- F8 is the inverse matrix of E₈, used to assist computation below. -/
-@[simp]
 def F8' : Matrix (Fin 8) (Fin 8) ℚ := !![
 1,1,1,1,1,1/2,0,1/2;
 0,1,1,1,1,1/2,0,1/2;
@@ -149,7 +142,7 @@ private theorem E8'_det_aux_1 : (∑ k : Fin 8, c₆ k • E8' k) = ![0, 0, 0, 0
   ext i
   trans 1 / 2 * E8' 0 i + E8' 1 i + 3 / 2 * E8' 2 i + 2 * E8' 3 i
     + 5 / 2 * E8' 4 i + 3 * E8' 5 i + E8' 6 i
-  · simp [Fin.sum_univ_eight, c₆, -E8']
+  · simp [Fin.sum_univ_eight, c₆]
   · fin_cases i <;> simp [E8'] <;> norm_num
 
 private theorem E8'_det_aux_2 (i : Fin 8) :
@@ -166,7 +159,7 @@ private theorem E8'_det_aux_3 : (∑ k : Fin 8, c₇ k • (E8'.updateRow 6 (∑
   ext i
   simp_rw [E8'_det_aux_2, Fin.sum_univ_eight]
   simp only [Fin.reduceEq, ↓reduceIte, smul_eq_mul, mul_zero, Pi.add_apply, Pi.smul_apply]
-  simp [c₇]
+  simp [c₇, E8']
   fin_cases i <;> simp <;> norm_num
 
 theorem E8'_updateRow₆₇ :
@@ -176,7 +169,7 @@ theorem E8'_updateRow₆₇ :
         0,0,0,0,0,1,1,0;0,0,0,0,0,0,5/2,-1/2;0,0,0,0,0,0,0,-2/5] := by
   rw [E8'_det_aux_3, E8'_det_aux_1]
   ext i _
-  fin_cases i <;> simp
+  fin_cases i <;> simp [E8']
 
 theorem E8'_det_aux_4 :
     (!![1,-1,0,0,0,0,0,0;0,1,-1,0,0,0,0,0;0,0,1,-1,0,0,0,0;0,0,0,1,-1,0,0,0;0,0,0,0,1,-1,0,0;
@@ -240,35 +233,35 @@ variable {α : Type*} [Semiring α] [Module α ℝ] (y : Fin 8 → α)
 
 lemma E8_sum_apply_0 :
     (∑ j : Fin 8, y j • E8_Matrix j) 0 = y 0 • 1 - y 6 • (1 / 2) := by
-  simp [E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_1 :
     (∑ j : Fin 8, y j • E8_Matrix j) 1 = y 0 • (-1) + y 1 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [E8_Matrix, Fin.sum_univ_eight, neg_div, smul_neg, -one_div, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, smul_neg, -one_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_2 :
     (∑ j : Fin 8, y j • E8_Matrix j) 2 = y 1 • (-1) + y 2 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_3 :
     (∑ j : Fin 8, y j • E8_Matrix j) 3 = y 2 • (-1) + y 3 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_4 :
     (∑ j : Fin 8, y j • E8_Matrix j) 4 = y 3 • (-1) + y 4 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_5 :
     (∑ j : Fin 8, y j • E8_Matrix j) 5 = y 4 • (-1) + y 5 • 1 - y 6 • ((1 : ℝ) / 2) + y 7 • 1 := by
-  simp [E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_6 :
     (∑ j : Fin 8, y j • E8_Matrix j) 6 = y 5 • 1 - y 6 • ((1 : ℝ) / 2) - y 7 • 1 := by
-  simp [E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_7 :
     (∑ j : Fin 8, y j • E8_Matrix j) 7 = y 6 • (-(1 : ℝ) / 2) := by
-  simp [E8_Matrix, Fin.sum_univ_eight]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight]
 
 macro "simp_E8_sum_apply" : tactic =>
   `(tactic |
@@ -334,15 +327,16 @@ end E8_Over_ℝ
 
 noncomputable section E8_isZlattice
 
-theorem E8_add_mem {a b : V} (ha : a ∈ E8_Set) (hb : b ∈ E8_Set) : a + b ∈ E8_Set := by
+theorem E8_add_mem {a b : EuclideanSpace ℝ (Fin 8)} (ha : a ∈ E8_Set) (hb : b ∈ E8_Set) :
+    a + b ∈ E8_Set := by
   rw [E8_Set_eq_span, SetLike.mem_coe] at *
   exact (Submodule.add_mem_iff_right _ ha).mpr hb
 
-theorem E8_neg_mem {a : V} (ha : a ∈ E8_Set) : -a ∈ E8_Set := by
+theorem E8_neg_mem {a : EuclideanSpace ℝ (Fin 8)} (ha : a ∈ E8_Set) : -a ∈ E8_Set := by
   rw [E8_Set_eq_span, SetLike.mem_coe] at *
   exact Submodule.neg_mem _ ha
 
-def E8_Lattice : AddSubgroup V where
+def E8_Lattice : AddSubgroup (EuclideanSpace ℝ (Fin 8)) where
   carrier := E8_Set
   zero_mem' := by simp [mem_E8_Set]
   add_mem' := E8_add_mem
@@ -351,8 +345,8 @@ def E8_Lattice : AddSubgroup V where
 open Topology TopologicalSpace Filter Function InnerProductSpace RCLike
 
 theorem E8_Matrix_inner {i j : Fin 8} :
-    haveI : Inner ℝ (Fin 8 → ℝ) := (inferInstance : Inner ℝ V)
-    ⟪(E8_Matrix i : V), E8_Matrix j⟫_ℝ = ∑ k, E8' i k * E8' j k := by
+    haveI : Inner ℝ (Fin 8 → ℝ) := (inferInstance : Inner ℝ (EuclideanSpace ℝ (Fin 8)))
+    ⟪(E8_Matrix i : EuclideanSpace ℝ (Fin 8)), E8_Matrix j⟫_ℝ = ∑ k, E8' i k * E8' j k := by
   change ∑ k, E8_Matrix i k * E8_Matrix j k = _
   simp_rw [E8_Matrix, RingHom.mapMatrix_apply, map_apply, eq_ratCast, Rat.cast_sum, Rat.cast_mul]
 
@@ -411,7 +405,7 @@ instance : DiscreteTopology E8_Lattice := by
 instance : DiscreteTopology E8_Set :=
   (inferInstance : DiscreteTopology E8_Lattice)
 
-theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set V) = ⊤ := by
+theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set (EuclideanSpace ℝ (Fin 8))) = ⊤ := by
   simp only [Submodule.span, sInf_eq_top, Set.mem_setOf_eq]
   intros M hM
   have := Submodule.span_le.mpr <| Submodule.subset_span.trans (E8_Set_eq_span ▸ hM)
