@@ -33,21 +33,38 @@ noncomputable def H₂ (τ : ℍ) : ℂ := (Θ₂ τ) ^ 4
 noncomputable def H₃ (τ : ℍ) : ℂ := (Θ₃ τ) ^ 4
 noncomputable def H₄ (τ : ℍ) : ℂ := (Θ₄ τ) ^ 4
 
+/-- Theta functions as specializations of jacobiTheta₂ -/
+theorem Θ₂_as_jacobiTheta₂ (τ : ℂ) (hτ : 0 < τ.im) :
+    Θ₂ τ = cexp (π * I * τ / 4) * jacobiTheta₂ (-τ/2) τ := by
+  simp_rw [Θ₂, jacobiTheta₂, jacobiTheta₂_term, ← smul_eq_mul (a := cexp _)]
+  rw [← (Equiv.subRight 1).tsum_eq, ← tsum_const_smul]
+  · simp_rw [Equiv.subRight_apply]
+    apply tsum_congr
+    intro b
+    have : ((b - 1 : ℤ) : ℂ) + 1 / 2 = b - 1 / 2 := by
+      push_cast
+      nth_rw 1 [← add_halves 1]
+      ring_nf
+    rw [this, smul_eq_mul, ← Complex.exp_add]
+    ring_nf
+  · exact (summable_jacobiTheta₂_term_iff _ _).mpr hτ
 
-/-- Theta functions as specializations of jacobiTheta₂-/
-theorem Θ₂_as_jacobiTheta₂ (τ : ℂ) : Θ₂ τ = (cexp (π * I * τ / 4)) * (jacobiTheta₂ (-τ/2) τ) := by
-  sorry
+theorem Θ₃_as_jacobiTheta₂ (τ : ℂ) : Θ₃ τ = jacobiTheta₂ (0 : ℂ) τ := by
+  simp_rw [Θ₃, jacobiTheta₂, jacobiTheta₂_term, mul_zero, zero_add]
 
-theorem Θ₃_as_jacobiTheta₂ (τ : ℂ) : Θ₃ τ = jacobiTheta₂ (0 : ℂ) τ := by sorry
-
-theorem Θ₄_as_jacobiTheta₂ (τ : ℂ) : Θ₄ τ = jacobiTheta₂ (1/2 : ℂ) τ := by sorry
+theorem Θ₄_as_jacobiTheta₂ (τ : ℂ) : Θ₄ τ = jacobiTheta₂ (1 / 2 : ℂ) τ := by
+  simp_rw [Θ₄, jacobiTheta₂, jacobiTheta₂_term]
+  apply tsum_congr
+  intro b
+  ring_nf
+  rw [Complex.exp_add, ← exp_pi_mul_I, ← exp_int_mul, mul_comm (b : ℂ)]
 
 /-- Slash action of various elements on H₂, H₃, H₄ -/
 lemma H₂_negI_action : (H₂ ∣[(2 : ℤ)] negI) = H₂ := even_weight_negI_action H₂ (2: ℤ) even_two
 lemma H₃_negI_action : (H₃ ∣[(2 : ℤ)] negI) = H₃ := even_weight_negI_action H₃ (2: ℤ) even_two
 lemma H₄_negI_action : (H₄ ∣[(2 : ℤ)] negI) = H₄ := even_weight_negI_action H₄ (2: ℤ) even_two
 
-lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = - H₂ := by sorry
+lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by sorry
 lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by sorry
 lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by sorry
 
