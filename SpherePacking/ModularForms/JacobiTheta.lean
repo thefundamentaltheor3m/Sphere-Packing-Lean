@@ -11,6 +11,8 @@ import Mathlib.NumberTheory.ModularForms.JacobiTheta.OneVariable
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
 
 import SpherePacking.ModularForms.SlashActionAuxil
+import SpherePacking.ForMathlib.UpperHalfPlane
+import SpherePacking.ForMathlib.SlashActions
 
 /-!
 # Jacobi theta functions
@@ -20,10 +22,12 @@ Prove that H₂, H₃, H₄ are modualar forms of weight 2 and level Γ(2).
 Also Jacobi identity: Θ₂^4 + Θ₄^4 = Θ₃^4.
 -/
 
-open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix
+open UpperHalfPlane hiding I
+open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix ModularGroup
+  ModularForm MatrixGroups SlashAction
 
-open scoped UpperHalfPlane ModularForm MatrixGroups
-
+local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
+local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
 
 /-- Define Θ₂, Θ₃, Θ₄ as series. -/
 noncomputable def Θ₂ (τ : ℂ) : ℂ := ∑' n : ℤ, cexp (π * I * (n + 1 / 2 : ℂ) ^ 2 * τ)
@@ -68,6 +72,10 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by sorry
 lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by sorry
 lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by sorry
 
+lemma H₂_T_inv_action : (H₂ ∣[(2 : ℤ)] T⁻¹) = -H₂ := by sorry
+lemma H₃_T_inv_action : (H₃ ∣[(2 : ℤ)] T⁻¹) = H₄ := by sorry
+lemma H₄_T_inv_action : (H₄ ∣[(2 : ℤ)] T⁻¹) = H₃ := by sorry
+
 /-- Use α = T * T -/
 lemma H₂_α_action : (H₂ ∣[(2 : ℤ)] α) = H₂ := calc
   (H₂ ∣[(2 : ℤ)] α) = (H₂ ∣[(2 : ℤ)] (T * T)) := sorry
@@ -89,18 +97,26 @@ lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α) = H₄ := calc
   _ = H₄ := H₃_T_action
 
 /-- Use jacobiTheta₂_functional_equation -/
-lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = - H₄ := by sorry
-lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = - H₃ := by sorry
-lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by sorry
+lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = - H₄ := by
+  sorry
+
+lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = - H₃ := by
+  sorry
+
+lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
+  have : S * S = -1 := by ext i j; simp [S]; fin_cases i <;> fin_cases j <;> simp
+  rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, this,
+    ModularForm.slash_neg' _ _ (by decide), slash_one]
 
 /-- Use β = -S * α^(-1) * S -/
 lemma H₂_β_action : (H₂ ∣[(2 : ℤ)] β) = H₂ := calc
-  (H₂ ∣[(2 : ℤ)] β) = (H₂ ∣[(2 : ℤ)] (negI * S * α^(-1 : ℤ) * S)) := sorry
-  _ = (((H₂ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := sorry
-  _ = ((H₂ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := by rw [H₂_negI_action]
-  _ = ((-H₄) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := by rw [H₂_S_action]
-  _ = (- H₄ ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := sorry
-  _ = - H₄ ∣[(2 : ℤ)] S := sorry
+  (H₂ ∣[(2 : ℤ)] β) = (H₂ ∣[(2 : ℤ)] (negI * S * α⁻¹ * S)) := sorry
+  _ = (((H₂ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := sorry
+  _ = ((H₂ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₂_negI_action]
+  _ = (- H₄ ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₂_S_action, neg_slash]
+  _ = - H₄ ∣[(2 : ℤ)] S := by
+    simp_rw [α_eq_T_sq, subgroup_slash, InvMemClass.coe_inv]
+    rw [← SL_slash, sq, _root_.mul_inv_rev, slash_mul, H₄_T_inv_action, neg_slash, H₃_T_inv_action]
   _ = H₂ := by rw [H₄_S_action, neg_neg]
 
 lemma H₃_β_action : (H₃ ∣[(2 : ℤ)] β) = H₃ := calc
@@ -122,15 +138,15 @@ lemma H₄_β_action : (H₄ ∣[(2 : ℤ)] β) = H₄ := calc
   _ = H₄ := by rw [H₂_S_action, neg_neg]
 
 /-- H₂, H₃, H₄ are modular forms of weight 2 and level Γ(2) -/
-noncomputable def H₂_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 2) 2 where
+noncomputable def H₂_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₂
   slash_action_eq' := slashaction_generators_Γ2 H₂ (2 : ℤ) H₂_α_action H₂_β_action H₂_negI_action
 
-noncomputable def H₃_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 2) 2 where
+noncomputable def H₃_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₃
   slash_action_eq' := slashaction_generators_Γ2 H₃ (2 : ℤ) H₃_α_action H₃_β_action H₃_negI_action
 
-noncomputable def H₄_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 2) 2 where
+noncomputable def H₄_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₄
   slash_action_eq' := slashaction_generators_Γ2 H₄ (2 : ℤ) H₄_α_action H₄_β_action H₄_negI_action
 

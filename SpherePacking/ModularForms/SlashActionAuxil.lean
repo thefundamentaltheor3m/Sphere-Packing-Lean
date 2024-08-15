@@ -24,6 +24,10 @@ def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp⟩, by simp; decide⟩
 def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp⟩, by simp; decide⟩
 def negI : Γ 2 := ⟨⟨!![-1, 0; 0, -1], by simp⟩, by simp⟩
 
+theorem α_eq_T_sq : α = ⟨T ^ 2,  by simp [sq, T]; decide⟩ := by
+  ext
+  simp [α, T, sq]
+
 theorem even_weight_negI_action (f : ℍ → ℂ) (k : ℤ) (hk : Even k) : (f ∣[k] negI = f) := by
   ext x
   have h_num : num negI x = -x := by simp [negI, num]
