@@ -3,7 +3,7 @@
 % formalise this proof or an alternative one like Seewoo's or Dan's.
 
 In this section we construct two radial Schwartz functions $a,b:\R^8\to i\R$ such that
-\begin{align}\mathcal{F}(a)&=a\label{eqn: a fourier}\\
+\begin{align}\mathcal{F}(a)&=a\label{eqn:a-fourier}\\
   \mathcal{F}(b)&=-b\label{eqn: b fourier}
 \end{align}
 which double zeroes at all $\Lambda_8$-vectors of length greater than $\sqrt{2}$. Recall that each vector of $\Lambda_8$ has length $\sqrt{2n}$ for some $n\in\N_{\geq 0}$. We define $a$ and $b$ so that their values are purely imaginary because this simplifies some of our computations. We will show in Section \ref{sec: g} that an appropriate linear combination of functions $a$ and $b$ satisfies conditions \eqref{eqn:g1}--\eqref{eqn:g3}.
@@ -35,43 +35,77 @@ The function $\phi_0(z)$ is not modular; however,
 \phi_0\Big(\frac{-1}{z}\Big)=\phi_0(z)-\frac{12i}{\pi}\,\frac{1}{z}\,\phi_{-2}(z)-\frac{36}{\pi^2}\,\frac{1}{z^2}\,\phi_{-4}(z).
 \end{equation}
 \end{lemma}
-\begin{definition}\label{def: a(r) definition}
+\begin{definition}\label{def:a-definition}
 \uses{def: phi4 phi2 phi0}
 For $x\in\R^8$ we define
-\begin{align}\label{eqn: a(r) definition}
+\begin{align}\label{eqn:a-definition}
   a(x):=&\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i \|x\|^2 z}\,dz
   +\int\limits_{1}^i\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i \|x\|^2 z}\,dz\\
   -&2\int\limits_{0}^i\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i \|x\|^2 z}\,dz
   +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i \|x\|^2 z}\,dz.\nonumber
 \end{align}
 \end{definition}
-We observe that the contour integrals in \eqref{eqn: a(r) definition} converge absolutely and uniformly for  $x\in\R^8$. Indeed,
-$\phi_0(z)=O(e^{-2\pi i z})$ as $\Im(z)\to \infty$. Therefore, $a(x)$ is well defined. Now we prove that $a$ satisfies condition \eqref{eqn: a fourier}.
-\begin{proposition}\label{prop: a(r) Fourier}
-\uses{lemma:Ek-Fourier, def:E2, lemma: j Fourier asymptotic, def: a(r) definition, lemma:Gaussian-Fourier}
+We observe that the contour integrals in \eqref{eqn:a-definition} converge absolutely and uniformly for  $x\in\R^8$. Indeed,
+$\phi_0(z)=O(e^{-2\pi i z})$ as $\Im(z)\to \infty$. Therefore, $a(x)$ is well defined. Now we prove that $a$ satisfies condition \eqref{eqn:a-fourier}.
+\begin{lemma}\label{lemma:phi0-bound}\uses{thm:ramanujan-formula, lemma:disc-prodformula}
+There exists a constant $C > 0$ such that
+\begin{equation}\label{eqn:phi0-bound}
+|\phi_0(z)| \le C e^{-2 \pi \Im z}
+\end{equation}
+for all $z$ with $\Im z > 1/2$.
+\end{lemma}
+\begin{proof}
+By Ramanujan's formula, $E_2 E_4 - E_6 = 3E_4'$.
+Using product formula of $\Delta$, we get
+\begin{align}
+  |\phi_0(z)| &= \left|\frac{(E_2(z) E_4(z) - E_6(z))^2}{\Delta(z)}\right| \\
+  &= 9\left|\frac{E_4'(z)^2}{\Delta(z)}\right| \\
+  &= 9 \cdot 240^2 \cdot \left|\frac{\left(\sum_{n \ge 1} n \sigma_3(n) e^{2 \pi i n z}\right)^{2}}{e^{2\pi i z} \prod_{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\
+  &= 9 \cdot 240^2 \cdot \left|e^{2 \pi i z}\right| \cdot \left|\frac{\left(1 + \sum_{n\ge 2} n\sigma_3(n) e^{2 \pi i (n - 1) z} \right)^{2}}{\prod_{n \ge 1}(1 - e^{2 \pi i n z})^{24}}\right| \\
+  &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot \frac{\left(1 + \sum_{n \ge 2} n \sigma_3(n) |e^{2 \pi i (n-1)z}|\right)^{2}}{\prod_{n \ge 1}|1 - e^{2 \pi i n z}|^{24}} \\
+  &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot \frac{\left(1 + \sum_{n \ge 2} n \sigma_3(n) e^{-\pi(n-1)}\right)^{2}}{\prod_{n \ge 1}(1 - e^{-\pi n})^{24}} \\
+  &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot e^{\pi} \cdot \frac{\left(\sum_{n \ge 1} n \sigma_3(n) e^{-\pi n}\right)^{2}}{e^{-\pi}\prod_{n \ge 1}(1 - e^{-\pi n})^{24}} \\
+  &\le C e^{-2 \pi \Im z}
+\end{align}
+where
+\begin{equation}
+  C = 9 \cdot 240^2 \cdot e^{\pi} \cdot \frac{E_4'(i/2)^{2}}{\Delta(i/2)}.
+\end{equation}
+\end{proof}
 
-The function $a$ defined by \eqref{eqn: a(r) definition} belongs to the Schwartz space and satisfies $$\widehat{a}(x)=a(x). $$
+\begin{proposition}\label{prop:a-schwartz}
+\uses{def:a-definition, lemma:Gaussian-Fourier, lemma:phi0-bound}
+$a(x)$ is a Schwartz function.
 \end{proposition}
 \begin{proof}
-First, we prove that $a$ is a Schwartz function. From Lemma \ref{lemma:Ek-Fourier}, Definition \ref{def:E2}, and \ref{lemma: j Fourier asymptotic} we deduce that the Fourier coefficients of $\phi_0$ satisfy
-$$|c_{\phi_0}(n)|\leq2\,e^{4\pi\sqrt{n}}\quad n\in\Z_{>0}.$$ Thus, there exists a positive constant $C$ such that
-$$|\phi_0(z)|\leq C\,e^{-2\pi \Im{z}}\qquad \mbox{for } \; \Im{z}>\frac 12.$$
-We estimate the first summand in the right-hand side of \eqref{eqn: a(r) definition}.  For $r\in\R_{\geq 0}$ we have
-\begin{align}&\Bigg|\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 z}\,dz\Bigg|=\Bigg|\int\limits_{i\infty}^{-1/(i+1)}\phi_0(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz\Bigg|\leq \notag\\
+We estimate the first summand in the right-hand side of \eqref{eqn:a-definition}.
+By \eqref{eqn:phi0-bound}, we have
+\begin{align}
+  &\left|\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 z}\,dz\right|=\left|\int\limits_{i\infty}^{-1/(i+1)}\phi_0(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz\right|\leq \notag\\
   &C_1\int\limits_{1/2}^{\infty}e^{-2\pi t}\,e^{-\pi  r^2/t}\,dt\leq C_1\int\limits_{0}^{\infty}e^{-2\pi t}\,e^{-\pi  r^2/t}\,dt=C_2\,r\,K_1(2\sqrt{2}\,\pi\,r)\notag
 \end{align}
-where $C_1$ and $C_2$ are some positive constants and $K_\alpha(x)$ is the modified Bessel function of the second kind defined as in \cite[Section~9.6]{Abramowitz}. This estimate also holds for the second and third summand in \eqref{eqn: a(r) definition}.
+where $C_1$ and $C_2$ are some positive constants and $K_\alpha(x)$ is the modified Bessel function of the second kind defined as in \cite[Section~9.6]{Abramowitz}. This estimate also holds for the second and third summand in \eqref{eqn:a-definition}.
 For the last summand we have
-$$ \Bigg|\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i r^2 z}\,dz\Bigg|\leq C\,\int\limits_{1}^{\infty} e^{-2\pi t}\,e^{-\pi r^2 t}\,dt=C_3\frac{e^{\pi(r^2+2)}}{r^2+2}.$$
+\begin{equation}
+\left|\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i r^2 z}\,dz\right|\leq C\,\int\limits_{1}^{\infty} e^{-2\pi t}\,e^{-\pi r^2 t}\,dt=C_3\frac{e^{\pi(r^2+2)}}{r^2+2}.
+\end{equation}
 Therefore, we arrive at
-$$|a(r)|\leq 4C_2\,r\,K_1(2\sqrt{2}\pi r)+2C_3\frac{e^{-\pi(r^2+2)}}{r^2+2}.$$
-It is easy to see that the left hand side of this inequality decays faster then any inverse power of $r$. Analogous estimates can be obtained for all derivatives $\frac{d^k}{dr^k}a(r)$.
+\begin{equation}
+  |a(r)|\leq 4C_2\,r\,K_1(2\sqrt{2}\pi r)+2C_3\frac{e^{-\pi(r^2+2)}}{r^2+2}.
+\end{equation}
+It is easy to see that the left hand side of this inequality decays faster then any inverse power of $r$. Analogous estimates can be obtained for all derivatives $\frac{\dd^k}{\dd r^k}a(r)$.
+\end{proof}
 
-Now we show that $a$ is an eigenfunction of the Fourier transform. We recall that the Fourier transform of a Gaussian function is
+\begin{proposition}\label{prop:a-fourier}
+\uses{lemma:Ek-Fourier, def:E2, def:a-definition, lemma:Gaussian-Fourier, prop:a-schwartz}
+$a(x)$ satisfies \eqref{eqn:a-fourier}.
+\end{proposition}
+\begin{proof}
+We recall that the Fourier transform of a Gaussian function is
 \begin{equation}\label{eqn:gaussian Fourier}
   \mathcal{F}(e^{\pi i  \|x\|^2 z})(y)=z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
 \end{equation}
-Next, we exchange the contour integration with respect to $z$ variable and Fourier transform  with respect to $x$ variable in \eqref{eqn: a(r) definition}. This can be done, since the corresponding double integral converges absolutely. In this way we obtain
+Next, we exchange the contour integration with respect to $z$ variable and Fourier transform  with respect to $x$ variable in \eqref{eqn:a-definition}. This can be done, since the corresponding double integral converges absolutely. In this way we obtain
 \begin{align}
   \widehat{a}(y)=&\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz
   +\int\limits_{1}^i\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz\notag \\
@@ -98,8 +132,8 @@ Next, we check that $a$ has double zeroes at all $\Lambda_8$-lattice points of l
 %Note that by definition function $a$ is radial and therefore in naturally defines a function on $\R_{\geq0}$. For abuse of notation we denote this function also by $a$.
 
 \begin{proposition}
-\label{prop: a(r) double zeroes}
-\uses{lemma: phi0 transform, def: a(r) definition}
+\label{prop:a-double-zeros}
+\uses{lemma: phi0 transform, def:a-definition}
 For $r>\sqrt{2}$ we can express $a(r)$ in the following form
 \begin{equation}\label{eqn: a double zeroes}
   a(r)=-4\sin(\pi r^2/2)^2\,\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz.
@@ -147,13 +181,13 @@ Now from \eqref{eqn: phi0 transform} we find
 This finishes the proof.
 \end{proof}
 Finally, we find another convenient integral representation for $a$ and compute values of $a(r)$ at $r=0$ and $r=\sqrt{2}$.
-\begin{proposition}\label{prop: a another integral}\uses{prop: a(r) double zeroes, def: phi4 phi2 phi0, lemma: phi0 transform, def: a(r) definition}
+\begin{proposition}\label{prop: a another integral}\uses{prop:a-double-zeros, def: phi4 phi2 phi0, lemma: phi0 transform, def:a-definition}
 For $r\geq0$ we have
 \begin{align}\label{eqn: a another integral}a(r)=&4i\,\sin(\pi r^2/2)^2\,\Bigg(\frac{36}{\pi^3\,(r^2-2)}-\frac{8640}{\pi^3\,r^4}+\frac{18144}{\pi^3\,r^2}\\ +&\int\limits_0^\infty\,\left(t^2\,\phi_0\Big(\frac{i}{t}\Big)-\frac{36}{\pi^2}\,e^{2\pi t}+\frac{8640}{\pi}\,t-\frac{18144}{\pi^2}\right)\,e^{-\pi r^2 t}\,dt \Bigg) .\notag\end{align}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
 \end{proposition}
 \begin{proof}
-Suppose that $r>\sqrt{2}$. Then by Proposition~\ref{prop: a(r) double zeroes}
+Suppose that $r>\sqrt{2}$. Then by Proposition~\ref{prop:a-double-zeros}
 $$a(r)=4i\,\sin(\pi r^2/2)^2\,\int\limits_{0}^{\infty}\phi_0(i/t)\,t^2\,e^{-\pi r^2 t}\,dt. $$
 From \eqref{eqn: phi fourier0}--\eqref{eqn: phi0 transform} we obtain
 \begin{equation}\label{eqn: phi asymptotic}
@@ -165,7 +199,7 @@ For $r>\sqrt{2}$ we have
 =\frac{36}{\pi^3\,(r^2-2)}-\frac{8640}{\pi^3\,r^4}+\frac{18144}{\pi^3\,r^2}.\end{equation}
 Therefore, the identity \eqref{eqn: a another integral} holds for $r>\sqrt{2}$.
 
-On the other hand, from the definition~\eqref{eqn: a(r) definition} we see that $a(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion~\eqref{eqn: phi asymptotic} implies that the right hand side of \eqref{eqn: a another integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, the identity \eqref{eqn: a another integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
+On the other hand, from the definition~\eqref{eqn:a-definition} we see that $a(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion~\eqref{eqn: phi asymptotic} implies that the right hand side of \eqref{eqn: a another integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, the identity \eqref{eqn: a another integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
 \end{proof}
 From the identity~\eqref{eqn: a another integral} we see that the values $a(r)$ are in $i\R$ for all $r\in\R_{\geq0}$. In particular, we have
 \begin{proposition}\label{prop: a values}\uses{prop: a another integral}
@@ -234,9 +268,9 @@ The Fourier expansions of these functions are
   \psi_S(z)\,=\,&-10240 q^{1/2} - 1253376 q^{3/2} - 48328704 q^{5/2} - 1059078144 q^{7/2}+O(q^{9/2}).\label{eqn: psi fourier S}
 \end{align}
 \end{lemma}
-\begin{definition}\label{def: b(r) definition}\uses{def: psi I psi T psi S}
+\begin{definition}\label{def:b-definition}\uses{def: psi I psi T psi S}
 For $x\in\R^8$ define
-\begin{align}\label{eqn: b(r) definition}
+\begin{align}\label{eqn:b-definition}
   b(x):= & \int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz
     + \int\limits_{1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz \\
   -& 2\,\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i \|x\|^2 z}\,dz
@@ -244,19 +278,19 @@ For $x\in\R^8$ define
 \end{align}
 \end{definition}
 Now we prove that $b$ satisfies condition \eqref{eqn: b fourier}.
-\begin{proposition}\label{prop: b(r) Fourier}\uses{def: b(r) definition, lemma:Gaussian-Fourier, def: psi I psi T psi S}
-The function $b$ defined by \eqref{eqn: b(r) definition} belongs to the Schwartz space and satisfies
+\begin{proposition}\label{prop: b(r) Fourier}\uses{def:b-definition, lemma:Gaussian-Fourier, def: psi I psi T psi S}
+The function $b$ defined by \eqref{eqn:b-definition} belongs to the Schwartz space and satisfies
   $$\widehat{b}(x)=-b(x). $$
 \end{proposition}
 \begin{proof}
-Here, we repeat the arguments used in the proof of Proposition~\ref{prop: a(r) Fourier}. First we show that $b$ is a Schwartz function. We have
+Here, we repeat the arguments used in the proof of Proposition~\ref{prop:a-fourier}. First we show that $b$ is a Schwartz function. We have
 \begin{align}
   &\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r^2 z}\,dz=\int\limits_{0}^{i+1}\psi_I(z)\,e^{\pi i r^2 (z-1)}\,dz=\notag\\
   &\int\limits_{i\infty}^{-1/(i+1)}\psi_I\Big(\frac{-1}{z}\Big)\,e^{\pi i r^2 (-1/z-1)}\,z^{-2}\,dz=\int\limits_{i\infty}^{-1/(i+1)}\psi_S(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz.\notag
 \end{align}
 There exists a positive constant $C$ such that
 $$|\psi_S(z)|\leq C\,e^{-\pi\,\Im{z}}\quad\mbox{for }\;\Im{z}>\frac12.$$
-Thus, as in the proof of Proposition~\ref{prop: a(r) Fourier} we estimate the first summand in the left-hand side of~\eqref{eqn: b(r) definition}
+Thus, as in the proof of Proposition~\ref{prop:a-fourier} we estimate the first summand in the left-hand side of~\eqref{eqn:b-definition}
 $$\Bigg|\int\limits_{-1}^i \psi_T(z)\,e^{\pi i r^2 z}\,dz \Bigg|\leq C_1\,r\,K_1(2\pi r).$$
 We combine this inequality with analogous estimates for the other three summands and obtain
 $$|b(r)|\leq C_2\,r\,K_1(2\pi r)+C_3\,\frac{e^{-\pi(r^2+1)}}{r^2+1}.$$
@@ -288,7 +322,7 @@ Therefore, we arrive at
   +& 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i \|x\|^2 z}\,dz
   + 2\,\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i \|x\|^2 w}\,dw.\notag
 \end{align}
-Now from~\eqref{eqn: b(r) definition} we see that
+Now from~\eqref{eqn:b-definition} we see that
 $$ \mathcal{F}(b)(x)=-b(x). $$
 \end{proof}
 Now we regard the radial function  $b$ as a function on $\R_{\geq0}$. We check that $b$ has double roots at $\Lambda_8$-points.
@@ -339,7 +373,7 @@ Combining \eqref{eqn: c1} and \eqref{eqn: c2} we find
   \end{align}
 \end{proof}
 At the end of this section we find another integral representation of $b(r)$ for $r\in\R_{\geq0}$ and compute special values of $b$.
-\begin{proposition}\label{prop: b another integral}\uses{prop: b(r) double zeroes, lemma: psi fourier I psi fourier T psi fourier S, def: b(r) definition, eqn: psi asymptotic}
+\begin{proposition}\label{prop: b another integral}\uses{prop: b(r) double zeroes, lemma: psi fourier I psi fourier T psi fourier S, def:b-definition, eqn: psi asymptotic}
 For $r\geq0$ we have
 \begin{equation}\label{eqn: b another integral}b(r)=4i\,\sin(\pi r^2/2)^2\,\left(\frac{144}{\pi\,r^2}+\frac{1}{\pi\,(r^2-2)}+\int\limits_0^\infty\,\left(\psi_I(it)-144-e^{2\pi t}\right)\,e^{-\pi r^2 t}\,dt\right).\end{equation}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
@@ -358,7 +392,7 @@ For $r>\sqrt{2}$ we have
 =\frac{1}{\pi\,(r^2-2)}+\frac{144}{\pi\,r^2}.\end{equation}
 Therefore, the identity \eqref{eqn: b another integral} holds for $r>\sqrt{2}$.
 
-On the other hand, from the definition \eqref{eqn: b(r) definition} we see that $b(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion \eqref{eqn: psi asymptotic} implies that the right hand side of \eqref{eqn: b another integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, the identity \eqref{eqn: b another integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
+On the other hand, from the definition \eqref{eqn:b-definition} we see that $b(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion \eqref{eqn: psi asymptotic} implies that the right hand side of \eqref{eqn: b another integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, the identity \eqref{eqn: b another integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
 \end{proof}
 We see from \eqref{eqn: b another integral} that $b(r)\in i\R$ far all $r\in\R_\geq{0}$. Another immediate corollary of this proposition is
 \begin{proposition}\label{prop: b values}\uses{prop: b another integral}
