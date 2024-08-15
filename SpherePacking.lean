@@ -1,5 +1,13 @@
 import SpherePacking.Basic.E8
+import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.Basic.SpherePacking
+import SpherePacking.ForMathlib.Bornology
+import SpherePacking.ForMathlib.Cardinal
+import SpherePacking.ForMathlib.ENNReal
+import SpherePacking.ForMathlib.Encard
 import SpherePacking.ForMathlib.Finsupp
 import SpherePacking.ForMathlib.InnerProductSpace
+import SpherePacking.ForMathlib.Real
 import SpherePacking.ForMathlib.Vec
+import SpherePacking.ForMathlib.VolumeOfBalls
+import SpherePacking.ForMathlib.Zlattice

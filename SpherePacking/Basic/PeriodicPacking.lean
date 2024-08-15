@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2024 Gareth Ma. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Gareth Ma
+-/
 import Mathlib.Data.Set.Card
 import SpherePacking.Basic.SpherePacking
 
@@ -742,5 +747,3 @@ theorem PeriodicSpherePacking.density_eq :
       = (S.numReps * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
         / volume (fundamentalDomain (b.ofZlatticeBasis ℝ _))) :=
   limsSup_eq_of_le_nhds (S.tendsto_finiteDensity hd b hL)
-
-#print axioms PeriodicSpherePacking.density_eq

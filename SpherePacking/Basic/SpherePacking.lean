@@ -470,33 +470,12 @@ theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
 
 end BasicResults
 
-
-
-
 section ScratchPad
 
 open scoped Topology NNReal
 open Asymptotics Filter ENNReal EuclideanSpace
 
 variable {d : ℕ}
-
-example : volume (ball (0 : EuclideanSpace ℝ (Fin 8)) (√2 / 2))
-    = ENNReal.ofReal (Real.pi ^ 4 / 384) := by
-  have h₁ : √2 ^ 8 = 16 := by
-    trans (√2 ^ 2) ^ 4
-    · rw [← pow_mul]
-    · norm_num
-  have h₂ : √Real.pi ^ 8 = Real.pi ^ 4 := by
-    trans (√Real.pi ^ 2) ^ 4
-    · rw [← pow_mul]
-    · rw [Real.sq_sqrt Real.pi_nonneg]
-  have h₃ : Nat.factorial 4 = 24 := by
-    decide
-  rw [volume_ball, ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul] <;> try positivity
-  norm_num
-  rw [h₁, h₂, h₃]
-  congr 1
-  ring_nf
 
 -- Credits to Bhavik Mehta for this <3 my original code is 92 lines long x)
 private lemma aux {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
@@ -580,5 +559,3 @@ theorem volume_ball_ratio_tendsto_nhds_one'' {C C' : ℝ} (hd : 0 < d) :
   sorry
 
 end ScratchPad
-
-
