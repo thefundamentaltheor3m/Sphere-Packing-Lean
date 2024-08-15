@@ -40,7 +40,7 @@ noncomputable def H₄ (τ : ℍ) : ℂ := (Θ₄ τ) ^ 4
 
 /-- Theta functions as specializations of jacobiTheta₂ -/
 theorem Θ₂_as_jacobiTheta₂ (τ : ℍ) :
-    Θ₂ τ = cexp (π * I * τ / 4) * jacobiTheta₂ (-τ/2) τ := by
+    Θ₂ τ = cexp (π * I * τ / 4) * jacobiTheta₂ (-τ / 2) τ := by
   simp_rw [Θ₂, jacobiTheta₂, jacobiTheta₂_term, ← smul_eq_mul (a := cexp _)]
   rw [← (Equiv.subRight 1).tsum_eq, ← tsum_const_smul]
   · simp_rw [Equiv.subRight_apply]
@@ -138,10 +138,58 @@ lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α) = H₄ := by
   simp [α_eq_T_sq, ← SL_slash, sq, slash_mul, H₃_T_action, H₄_T_action]
 
 /-- Use jacobiTheta₂_functional_equation -/
-lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = - H₄ := by
-  sorry
+lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
+  ext ⟨x, hx⟩
+  have hx' : x ≠ 0 := by simp [Complex.ext_iff, hx.ne.symm]
+  calc
+  _ = cexp (-π * I / x) * jacobiTheta₂ (1 / (2 * x)) (-1 / x) ^ 4 * x ^ (-2 : ℤ) := by
+    rw [modular_slash_S_apply, H₂, Θ₂_as_jacobiTheta₂]
+    simp [← neg_inv, mul_pow, ← Complex.exp_nat_mul]
+    rw [mul_comm 4, div_mul_cancel₀ _ (by norm_num)]
+    congr
+    · rw [← div_eq_mul_inv, neg_div]; rfl
+    · rw [← one_div, neg_div]; rfl
+  _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
+        * (1 / (I / x) ^ ((1 : ℂ) / 2) * cexp (π * I / (4 * x)) * jacobiTheta₂ (-1 / 2) x) ^ 4 := by
+    rw [mul_right_comm, jacobiTheta₂_functional_equation]
+    congr 4
+    · ring_nf
+    · congr 1
+      rw [neg_mul, one_div, neg_div, div_neg, neg_mul, neg_div, neg_neg]
+      ring_nf
+      simp [div_div, sq, ← mul_assoc, inv_mul_cancel_right₀ hx']
+    · ring_nf; simp [hx']
+    · ring_nf; simp [inv_inv]
+  _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
+        * ((1 / (I / x) ^ ((1 : ℂ) / 2)) ^ 4 * cexp (π * I / (4 * x)) ^ 4
+          * jacobiTheta₂ (-1 / 2) x ^ 4) := by
+    simp [mul_pow]
+  _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
+        * ((1 / (I / x) ^ (2 : ℂ)) * cexp (π * I / (4 * x)) ^ 4 * jacobiTheta₂ (1 / 2) x ^ 4) := by
+    congr 3
+    · simp only [div_pow, one_pow, ← cpow_mul_nat]
+      ring_nf
+    · rw [← jacobiTheta₂_add_left]
+      norm_num
+  _ = cexp (-π * I / x) * (x ^ (-2 : ℤ) * (-x ^ (2 : ℤ)))
+        * cexp (π * I / (4 * x)) ^ 4 * jacobiTheta₂ (1 / 2) x ^ 4 := by
+    repeat rw [← mul_assoc]
+    congr 4
+    rw [cpow_ofNat, div_pow, one_div_div, I_sq, div_neg, div_one]
+    rfl
+  _ = -cexp (-π * I / x) * cexp (π * I / x) * jacobiTheta₂ (1 / 2) x ^ 4 := by
+    rw [mul_neg, ← zpow_add₀ hx', neg_add_self, mul_neg, zpow_zero, mul_one]
+    congr 2
+    rw [← Complex.exp_nat_mul]
+    ring_nf
+  _ = -jacobiTheta₂ (1 / 2) x ^ 4 := by
+    rw [neg_mul, ← Complex.exp_add, neg_mul (π : ℂ), neg_div, neg_add_self, Complex.exp_zero,
+      neg_one_mul]
+  _ = -H₄ ⟨x, hx⟩ := by
+    rw [H₄, Θ₄_as_jacobiTheta₂]
+    rfl
 
-lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = - H₃ := by
+lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   sorry
 
 lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
