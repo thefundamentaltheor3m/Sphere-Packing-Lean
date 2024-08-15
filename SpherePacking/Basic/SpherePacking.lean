@@ -9,6 +9,8 @@ import Mathlib.Data.Set.Card
 import Mathlib.Topology.Compactness.PseudometrizableLindelof
 import Mathlib.Topology.EMetricSpace.Paracompact
 import Mathlib.Topology.OmegaCompletePartialOrder
+import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
+import SpherePacking.ForMathlib.ENat
 import SpherePacking.ForMathlib.ENNReal
 import SpherePacking.ForMathlib.VolumeOfBalls
 
@@ -182,14 +184,14 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
         exact Set.smul_set_mono hp
       · have : c • v ∈ c • p := Submodule.smul_mem _ _ h
         have := Submodule.smul_mem_pointwise_smul _ c⁻¹ _ this
-        simpa [smul_smul, inv_mul_cancel hc.ne.symm, one_smul]
+        simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul]
     · specialize h (c⁻¹ • p) ?_
       · rw [AddSubgroup.coe_pointwise_smul, Submodule.coe_pointwise_smul] at *
         have := Set.smul_set_mono (a := c⁻¹) hp
-        rwa [smul_smul, inv_mul_cancel hc.ne.symm, one_smul] at this
+        rwa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] at this
       · have : c⁻¹ • v ∈ c⁻¹ • p := Submodule.smul_mem _ _ h
         have := Submodule.smul_mem_pointwise_smul _ c _ this
-        simpa [smul_smul, mul_inv_cancel hc.ne.symm, one_smul]
+        simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm, one_smul]
 }
 
 lemma PeriodicSpherePacking.scale_toSpherePacking
@@ -204,7 +206,7 @@ lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
   constructor
   · rintro ⟨y, hy, hxy⟩
     have := Set.smul_mem_smul_set (a := c⁻¹) hy
-    rw [smul_smul, inv_mul_cancel hc.ne.symm, one_smul] at this
+    rw [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] at this
     simp only [mem_ball, Set.mem_smul_set, Set.mem_iUnion] at hxy ⊢
     use c⁻¹ • x, ?_, ?_
     · use c⁻¹ • y, this
@@ -214,8 +216,8 @@ lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
       rw [← smul_sub, norm_smul, Real.norm_eq_abs, abs_eq_self.mpr this]
       apply lt_of_lt_of_le (b := c⁻¹ * (c * S.separation / 2))
       · exact (mul_lt_mul_left h).mpr hxy
-      · rw [mul_div_assoc, ← mul_assoc, inv_mul_cancel hc.ne.symm, one_mul]
-    · rw [smul_smul, mul_inv_cancel hc.ne.symm, one_smul]
+      · rw [mul_div_assoc, ← mul_assoc, inv_mul_cancel₀ hc.ne.symm, one_mul]
+    · rw [smul_smul, mul_inv_cancel₀ hc.ne.symm, one_smul]
   · intro h
     simp only [mem_ball, Set.mem_smul_set, Set.mem_iUnion] at h ⊢
     obtain ⟨x, ⟨⟨y, hy₁, hy₂⟩, rfl⟩⟩ := h
@@ -282,7 +284,7 @@ lemma scale_finiteDensity {d : ℕ} (hd : 0 < d) (S : SpherePacking d) {c : ℝ}
 lemma scale_finiteDensity' {d : ℕ} (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity R = S.finiteDensity (R / c) := by
   rw [div_eq_mul_inv, ← scale_finiteDensity hd S hc, ← mul_assoc, mul_comm, ← mul_assoc,
-    inv_mul_cancel hc.ne.symm, one_mul]
+    inv_mul_cancel₀ hc.ne.symm, one_mul]
 
 /-- Density of a scaled packing. -/
 lemma scale_density {d : ℕ} (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) :
@@ -315,7 +317,7 @@ theorem constant_eq_constant_normalized {d : ℕ} (hd : 0 < d) :
   apply le_antisymm
   · apply iSup_le
     intro S
-    have h := inv_mul_cancel S.separation_pos.ne.symm
+    have h := inv_mul_cancel₀ S.separation_pos.ne.symm
     have := le_iSup (fun S : { S : SpherePacking d // S.separation = 1 } ↦ S.val.density)
         ⟨S.scale (inv_pos.mpr S.separation_pos), h⟩
     simpa only [scale_density hd]
@@ -380,15 +382,6 @@ theorem SpherePacking.volume_iUnion_balls_eq_tsum
   simp_rw [ne_eq, Subtype.mk.injEq] at h ⊢
   linarith [S.centers_dist' x y hx.left hy.left h]
 
--- https://github.com/leanprover-community/mathlib4/pull/15214/files
--- Putting it as axioms so that #print axioms will show that this should be removed
--- TODO: remove when merged
-axiom ENNReal.tsum_const_eq' {α : Type*} (s : Set α) (c : ENNReal) :
-    ∑' (_ : s), c = s.encard * c
-
-axiom ENat.tsum_const_eq' {α : Type*} (s : Set α) (c : ENat) :
-    ∑' (_ : s), c = s.encard * c
-
 /-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
 -/
 theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
@@ -399,7 +392,7 @@ theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
     biUnion_inter_balls_subset_biUnion_balls_inter S.centers (S.separation / 2) R
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R (le_refl _),
-    Measure.addHaar_ball_center, ENNReal.tsum_const_eq'] at h
+    Measure.addHaar_ball_center, ENNReal.tsum_set_const_eq] at h
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.le_div_iff_mul_le] at h <;> left
   · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
@@ -415,7 +408,7 @@ theorem SpherePacking.inter_ball_encard_ge (hd : 0 < d) (R : ℝ) :
     biUnion_balls_inter_subset_biUnion_inter_balls S.centers (S.separation / 2) R
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ (le_refl _),
-    Measure.addHaar_ball_center, ENNReal.tsum_const_eq'] at h
+    Measure.addHaar_ball_center, ENNReal.tsum_set_const_eq] at h
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.div_le_iff_le_mul] at h <;> left
   · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
@@ -470,92 +463,3 @@ theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
 
 end BasicResults
 
-section ScratchPad
-
-open scoped Topology NNReal
-open Asymptotics Filter ENNReal EuclideanSpace
-
-variable {d : ℕ}
-
--- Credits to Bhavik Mehta for this <3 my original code is 92 lines long x)
-private lemma aux {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
-    ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
-  suffices Filter.Tendsto
-      (fun k => (ENNReal.ofReal (1 - (k + 1)⁻¹) ^ d)) atTop (𝓝 (ENNReal.ofReal (1 - 0) ^ d)) by
-    rw [ENNReal.tendsto_atTop ?ha] at this
-    case ha => simp
-    obtain ⟨k, hk⟩ := this ε hε
-    refine ⟨max 0 k, by simp, ?_⟩
-    simp only [ge_iff_le, max_le_iff, and_imp]
-    intro k' hk₀ hk₁
-    have := hk k' hk₁
-    rwa [sub_zero, ofReal_one, one_rpow, ←one_div, one_sub_div, add_sub_cancel_right,
-      ENNReal.ofReal_rpow_of_nonneg] at this
-    · positivity
-    · positivity
-    · positivity
-  refine ENNReal.Tendsto.rpow (tendsto_ofReal (Tendsto.const_sub 1 ?_))
-  exact tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id)
-
-private lemma aux' {ε : ℝ≥0∞} (hε : 0 < ε) :
-    ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
-  simpa using aux (d := d) (Nat.cast_nonneg _) hε
-
-theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 ≤ C) :
-    Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
-      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))) atTop (𝓝 1) := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  rcases le_iff_eq_or_lt.mp hC with (rfl | hC)
-  · simp_rw [add_zero]
-    apply Tendsto.congr' (f₁ := 1) ?_ tendsto_const_nhds
-    rw [EventuallyEq, eventually_atTop]
-    use 1
-    intro b hb
-    rw [ENNReal.div_self, Pi.one_apply]
-    · exact (volume_ball_pos _ (by linarith)).ne.symm
-    · exact (volume_ball_lt_top _).ne
-  · have (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
-        / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
-          = ENNReal.ofReal (R ^ d / (R + C) ^ d) := by
-      rw [volume_ball, volume_ball, Fintype.card_fin, ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul,
-        ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul, ← ENNReal.ofReal_div_of_pos, mul_div_mul_right]
-      <;> positivity
-    rw [ENNReal.tendsto_atTop (by decide)]
-    intro ε hε
-    obtain ⟨k, ⟨hk₁, hk₂⟩⟩ := aux' hε
-    use k * C
-    intro n hn
-    rw [this _ ((by positivity : 0 ≤ k * C).trans hn)]
-    convert hk₂ (n / C) ((le_div_iff hC).mpr hn)
-    rw [div_add_one, div_div_div_cancel_right, div_pow]
-    · positivity
-    · positivity
-
-theorem volume_ball_ratio_tendsto_nhds_one' {C C' : ℝ} (hd : 0 < d) (hC : 0 ≤ C) (hC' : 0 ≤ C') :
-    Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
-      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) atTop (𝓝 1) := by
-  -- I love ENNReal (I don't)
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  apply Tendsto.congr' (f₁ := fun R ↦
-    volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
-      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))
-        / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
-          / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))))
-  · rw [EventuallyEq, eventually_atTop]
-    use 1
-    intro R hR
-    have hR' : 0 < R := by linarith
-    rw [ENNReal.div_div_div_cancel_left]
-    · exact (volume_ball_pos _ hR').ne.symm
-    · exact (volume_ball_lt_top _).ne
-    · exact (volume_ball_lt_top _).ne
-  · convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
-      (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
-
--- I need this strengthening, shouldn't be too hard, need to strengthen aux above
-theorem volume_ball_ratio_tendsto_nhds_one'' {C C' : ℝ} (hd : 0 < d) :
-    Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
-      / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) atTop (𝓝 1) := by
-  sorry
-
-end ScratchPad

@@ -486,7 +486,7 @@ theorem E8_Basis_volume : volume (fundamentalDomain (E8_Basis.ofZlatticeBasis �
 
 open MeasureTheory Zspan in
 theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
-  rw [PeriodicSpherePacking.density_eq (by omega) E8_Basis (L := 8 • √2)]
+  rw [PeriodicSpherePacking.density_eq E8_Basis ?_ (by omega) (L := 8 • √2)]
   · rw [E8Packing_numReps, Nat.cast_one, one_mul, volume_ball, Fintype.card_fin]
     simp only [E8Packing]
     have {x : ℝ} (hx : 0 ≤ x := by positivity) : √x ^ 8 = x ^ 4 := calc
