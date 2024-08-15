@@ -151,27 +151,13 @@ theorem periodic_constant_eq_constant (hd : 0 < d) :
 end Periodic_Packings
 
 noncomputable section Misc
-
--- Vocab from #25: `Quotient S.addAction.orbitRel` is the set of _representatives_
+-- TODO: Move to `SpherePacking/Basic/PeriodicPacking.lean` once #25 gets merged
 
 variable {d : ℕ} (P : PeriodicSpherePacking d)
--- local notation "ℝᵈ" => EuclideanSpace ℝ (Fin d)
 
--- The following surely makes sense: subtracting a point in the fundamental domain from another
--- should yield a point in the ambient space. But why does this need to be mentioned explicitly?
-instance HSubFundamentalDomain : HSub
-  (Quotient (P.instAddAction.orbitRel))
-  (Quotient (P.instAddAction.orbitRel))
-  (EuclideanSpace ℝ (Fin d)) :=
-  sorry
-
-instance HSubInter (b : Basis (Fin d) ℤ P.Λ): HSub
-  (↑(P.centers ∩ fundamentalDomain (Basis.ofZlatticeBasis ℝ P.Λ b)))
-  (↑(P.centers ∩ fundamentalDomain (Basis.ofZlatticeBasis ℝ P.Λ b)))
-  (EuclideanSpace ℝ (Fin d)) :=
-  sorry
-
--- instance coe_quotient_to_ambient : Coe (Quotient (P.instAddAction.orbitRel))
---   (EuclideanSpace ℝ (Fin d)) := sorry
+def PeriodicSpherePacking.basis_index_equiv : (Module.Free.ChooseBasisIndex ℤ ↥P.Λ) ≃ (Fin d) := by
+  refine Fintype.equivFinOfCardEq ?h
+  rw [← FiniteDimensional.finrank_eq_card_chooseBasisIndex, Zlattice.rank ℝ P.Λ,
+      finrank_euclideanSpace, Fintype.card_fin]
 
 end Misc

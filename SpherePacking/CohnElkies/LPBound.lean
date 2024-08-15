@@ -3,7 +3,7 @@ import SpherePacking.CohnElkies.Prereqs
 open scoped FourierTransform ENNReal
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real Zspan
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ} [Fact (0 < d)] -- Is `Fact` right here?
 
 /-
 # Potential Design Complications:
@@ -17,11 +17,10 @@ variable {d : ℕ} [Fact (0 < d)]
 
 # TODOs:
 
-* We need a basis to prove `LinearProgrammingBound` in terms of `LinearProgrammingBound'`. It is not
-  immediately clear to me how to pull a basis out of thin air. I will need to study the `Zlattice`
-  and free module APIs in order to understand this better.
 * The summations do not seem to be allowing a ≠ type condition on the index variable. We need this
   in order to be able to split sums up and deem one of the parts nonpositive or something.
+* Everything in `Prereqs.lean` is either a TODO or has already been done (eg. in #25) (to reflect
+  which the corresponding refs must be updated).
 -/
 
 variable {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
@@ -139,18 +138,16 @@ end Basis
 
 section Basis_Independent
 
-
 theorem LinearProgrammingBound : SpherePackingConstant d ≤
   (f 0).re / (𝓕 f 0).re * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   rw [← periodic_constant_eq_constant (Fact.out),
     periodic_constant_eq_periodic_constant_normalized (Fact.out)]
   apply iSup_le
-  intro P Bound hBound
-  -- Once we choose a basis, we can apply `LinearProgrammingBound'` to hP and the basis.
-  -- Then the proof should look a bit like
-  -- rw [← iSup_le_iff]
-  -- intro P hP
-  -- exact LinearProgrammingBonud' (args)
-  sorry
+  intro P
+  rw [iSup_le_iff]
+  intro _
+  -- We choose a ℤ-basis for the lattice and feed it into `LinearProgramingBound'`.
+  exact LinearProgrammingBound' (((Zlattice.module_free ℝ P.Λ).chooseBasis).reindex
+    (PeriodicSpherePacking.basis_index_equiv P))
 
 end Basis_Independent
