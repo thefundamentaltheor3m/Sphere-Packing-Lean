@@ -19,7 +19,6 @@ Key results:
 
 * `PeriodicSpherePacking.density_eq`: The density of a periodic sphere packing equals the natural
 density within a fundamental domain w.r.t. any basis.
-
 -/
 
 open scoped ENNReal
@@ -28,7 +27,6 @@ open SpherePacking EuclideanSpace MeasureTheory Metric Zspan Bornology
 section aux_lemmas
 
 variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
--- (hD_fd : IsAddFundamentalDomain S.lattice D) (hD_isBounded : IsBounded D)
 
 lemma aux1 (hD_isBounded : IsBounded D) :
     IsBounded (⋃ x ∈ S.centers ∩ D, ball x (S.separation / 2)) := by
