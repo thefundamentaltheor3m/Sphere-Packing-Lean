@@ -1,3 +1,4 @@
+import Mathlib.Algebra.Field.Power
 import Mathlib.Analysis.Complex.LocallyUniformLimit
 import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
@@ -6,9 +7,9 @@ import Mathlib.Geometry.Manifold.MFDeriv.FDeriv
 import Mathlib.Geometry.Manifold.SmoothManifoldWithCorners
 import Mathlib.NumberTheory.ModularForms.Basic
 import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
-import Mathlib.NumberTheory.ModularForms.SlashInvariantForms
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.OneVariable
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
+import Mathlib.NumberTheory.ModularForms.SlashInvariantForms
 
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ForMathlib.UpperHalfPlane
@@ -30,15 +31,15 @@ local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
 
 /-- Define Θ₂, Θ₃, Θ₄ as series. -/
-noncomputable def Θ₂ (τ : ℂ) : ℂ := ∑' n : ℤ, cexp (π * I * (n + 1 / 2 : ℂ) ^ 2 * τ)
-noncomputable def Θ₃ (τ : ℂ) : ℂ := ∑' n : ℤ, cexp (π * I * (n : ℂ) ^ 2 * τ)
-noncomputable def Θ₄ (τ : ℂ) : ℂ := ∑' n : ℤ, (-1) ^ n * cexp (π * I * (n : ℂ) ^ 2 * τ)
+noncomputable def Θ₂ (τ : ℍ) : ℂ := ∑' n : ℤ, cexp (π * I * (n + 1 / 2 : ℂ) ^ 2 * τ)
+noncomputable def Θ₃ (τ : ℍ) : ℂ := ∑' n : ℤ, cexp (π * I * (n : ℂ) ^ 2 * τ)
+noncomputable def Θ₄ (τ : ℍ) : ℂ := ∑' n : ℤ, (-1) ^ n * cexp (π * I * (n : ℂ) ^ 2 * τ)
 noncomputable def H₂ (τ : ℍ) : ℂ := (Θ₂ τ) ^ 4
 noncomputable def H₃ (τ : ℍ) : ℂ := (Θ₃ τ) ^ 4
 noncomputable def H₄ (τ : ℍ) : ℂ := (Θ₄ τ) ^ 4
 
 /-- Theta functions as specializations of jacobiTheta₂ -/
-theorem Θ₂_as_jacobiTheta₂ (τ : ℂ) (hτ : 0 < τ.im) :
+theorem Θ₂_as_jacobiTheta₂ (τ : ℍ) :
     Θ₂ τ = cexp (π * I * τ / 4) * jacobiTheta₂ (-τ/2) τ := by
   simp_rw [Θ₂, jacobiTheta₂, jacobiTheta₂_term, ← smul_eq_mul (a := cexp _)]
   rw [← (Equiv.subRight 1).tsum_eq, ← tsum_const_smul]
@@ -51,12 +52,12 @@ theorem Θ₂_as_jacobiTheta₂ (τ : ℂ) (hτ : 0 < τ.im) :
       ring_nf
     rw [this, smul_eq_mul, ← Complex.exp_add]
     ring_nf
-  · exact (summable_jacobiTheta₂_term_iff _ _).mpr hτ
+  · exact (summable_jacobiTheta₂_term_iff _ _).mpr τ.prop
 
-theorem Θ₃_as_jacobiTheta₂ (τ : ℂ) : Θ₃ τ = jacobiTheta₂ (0 : ℂ) τ := by
+theorem Θ₃_as_jacobiTheta₂ (τ : ℍ) : Θ₃ τ = jacobiTheta₂ (0 : ℂ) τ := by
   simp_rw [Θ₃, jacobiTheta₂, jacobiTheta₂_term, mul_zero, zero_add]
 
-theorem Θ₄_as_jacobiTheta₂ (τ : ℂ) : Θ₄ τ = jacobiTheta₂ (1 / 2 : ℂ) τ := by
+theorem Θ₄_as_jacobiTheta₂ (τ : ℍ) : Θ₄ τ = jacobiTheta₂ (1 / 2 : ℂ) τ := by
   simp_rw [Θ₄, jacobiTheta₂, jacobiTheta₂_term]
   apply tsum_congr
   intro b
@@ -64,13 +65,60 @@ theorem Θ₄_as_jacobiTheta₂ (τ : ℂ) : Θ₄ τ = jacobiTheta₂ (1 / 2 : 
   rw [Complex.exp_add, ← exp_pi_mul_I, ← exp_int_mul, mul_comm (b : ℂ)]
 
 /-- Slash action of various elements on H₂, H₃, H₄ -/
-lemma H₂_negI_action : (H₂ ∣[(2 : ℤ)] negI) = H₂ := even_weight_negI_action H₂ (2: ℤ) even_two
-lemma H₃_negI_action : (H₃ ∣[(2 : ℤ)] negI) = H₃ := even_weight_negI_action H₃ (2: ℤ) even_two
-lemma H₄_negI_action : (H₄ ∣[(2 : ℤ)] negI) = H₄ := even_weight_negI_action H₄ (2: ℤ) even_two
+lemma H₂_negI_action : (H₂ ∣[(2 : ℤ)] negI) = H₂ := modular_slash_negI_of_even H₂ (2: ℤ) even_two
+lemma H₃_negI_action : (H₃ ∣[(2 : ℤ)] negI) = H₃ := modular_slash_negI_of_even H₃ (2: ℤ) even_two
+lemma H₄_negI_action : (H₄ ∣[(2 : ℤ)] negI) = H₄ := modular_slash_negI_of_even H₄ (2: ℤ) even_two
 
-lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by sorry
-lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by sorry
-lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by sorry
+/-- These three transformation laws follow directly from tsum definition. -/
+lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
+  ext x
+  suffices hΘ₂ : Θ₂ ((1 : ℝ) +ᵥ x) = cexp (π * I / 4) * Θ₂ x by
+    simp_rw [modular_slash_T_apply, Pi.neg_apply, H₂, hΘ₂, mul_pow, ← Complex.exp_nat_mul,
+      mul_comm ((4 : ℕ) : ℂ), Nat.cast_ofNat, div_mul_cancel₀ (b := (4 : ℂ)) _ (by simp),
+      Complex.exp_pi_mul_I, neg_one_mul]
+  calc
+  _ = ∑' (n : ℤ), cexp (π * I * (n + 1 / 2) ^ 2 * ((1 : ℝ) +ᵥ x)) := by
+    rw [Θ₂]
+  _ = ∑' (n : ℤ), cexp (π * I / 4) * cexp (π * I * (n ^ 2 + n) + π * I * (n + 1 / 2) ^ 2 * x) := by
+    apply tsum_congr fun b ↦ ?_
+    rw [coe_vadd, ofReal_one]
+    repeat rw [← Complex.exp_add]
+    congr
+    ring_nf
+  _ = cexp (π * I / 4) * ∑' (n : ℤ), cexp (π * I * (n ^ 2 + n) + π * I * (n + 1 / 2) ^ 2 * x) := by
+    conv_rhs => rw [← smul_eq_mul ℂ]
+    simp_rw [← tsum_const_smul'', smul_eq_mul]
+  _ = _ := by
+    rw [Θ₂]
+    congr 1
+    apply tsum_congr fun b ↦ ?_
+    have : Even (b ^ 2 + b) := by
+      convert Int.even_mul_succ_self b using 1
+      ring_nf
+    norm_cast
+    rw [Complex.exp_add]
+    rw [mul_comm (π * I), Complex.exp_int_mul, Complex.exp_pi_mul_I, this.neg_one_zpow, one_mul]
+
+lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
+  ext x
+  rw [modular_slash_T_apply, H₃, H₄, Θ₃, Θ₄]
+  congr 1
+  apply tsum_congr fun b ↦ ?_
+  rw [coe_vadd, ofReal_one, mul_add, Complex.exp_add, mul_one, mul_comm (π * I), ← Int.cast_pow,
+    Complex.exp_int_mul, Complex.exp_pi_mul_I]
+  congr 1
+  rcases Int.even_or_odd b with (hb | hb)
+  · rw [hb.neg_one_zpow, Even.neg_one_zpow]
+    simp [sq, hb]
+  · rw [hb.neg_one_zpow, Odd.neg_one_zpow]
+    simp [sq, hb]
+
+lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by
+  -- H₄|T = H₃|T^2 = Θ₂(0, z + 2) = Θ₂(0, z) = H₃
+  ext x
+  simp_rw [← H₃_T_action, modular_slash_T_apply, H₃, Θ₃_as_jacobiTheta₂, coe_vadd, ← add_assoc]
+  norm_num
+  rw [add_comm, jacobiTheta₂_add_right]
 
 lemma H₂_T_inv_action : (H₂ ∣[(2 : ℤ)] T⁻¹) = -H₂ := by
   nth_rw 1 [← neg_eq_iff_eq_neg.mpr H₂_T_action, neg_slash, ← slash_mul, mul_inv_self, slash_one]
