@@ -15,13 +15,11 @@ are modular forms of weight 2 and level Γ(2).
 -/
 
 open scoped MatrixGroups ModularForm
-open Matrix UpperHalfPlane CongruenceSubgroup
+open Matrix UpperHalfPlane CongruenceSubgroup ModularGroup
 
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 local notation "Γ " n:100 => Gamma n
 
-def S : SL(2, ℤ) := ⟨!![0, -1; 1, 0], by simp⟩
-def T : SL(2, ℤ) := ⟨!![1, 1; 0, 1], by simp⟩
 def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp⟩, by simp; decide⟩
 def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp⟩, by simp; decide⟩
 def negI : Γ 2 := ⟨⟨!![-1, 0; 0, -1], by simp⟩, by simp⟩
@@ -34,6 +32,8 @@ theorem even_weight_negI_action (f : ℍ → ℂ) (k : ℤ) (hk : Even k) : (f �
     change smulAux negI x = x
     simp [smulAux, smulAux', h_num, h_denom]
   simp [ModularForm.subgroup_slash, SlashAction.map, ModularForm.slash, hk.neg_one_zpow, *]
+
+section slashaction_generators
 
 theorem SL2Z_generate : (⊤ : Subgroup SL(2, ℤ)) = Subgroup.closure {S, T, ↑negI} := by
   ext ⟨x, hx_det⟩
@@ -103,3 +103,5 @@ theorem slashaction_generators_Γ2
   refine (slashaction_generators' f {α, β, negI} Γ2_generate k).mpr ?_ γ
   intro γ hγ
   rcases hγ with (rfl | rfl | rfl | _) <;> assumption
+
+end slashaction_generators
