@@ -190,7 +190,20 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     rfl
 
 lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
-  sorry
+  ext x
+  have hx' : (x : ℂ) ≠ 0 := by cases' x with x hx; change x ≠ 0; simp [Complex.ext_iff, hx.ne.symm]
+  have := jacobiTheta₂_functional_equation 0
+  simp [-one_div] at this
+  simp [modular_slash_S_apply, Pi.neg_apply, H₃, Θ₃_as_jacobiTheta₂]
+  rw [this, mul_pow, ← neg_inv, neg_div, div_neg, neg_neg, one_div (x : ℂ)⁻¹, inv_inv,
+    mul_right_comm, ← neg_one_mul (_ ^ 4)]
+  congr
+  rw [div_pow, ← cpow_mul_nat, mul_neg, neg_neg]
+  ring_nf!
+  rw [← mul_inv, cpow_ofNat, sq, ← mul_assoc, zpow_two]
+  ring_nf!
+  rw [inv_pow, inv_I, even_two.neg_pow, I_sq, mul_neg_one, inv_inv, neg_mul, inv_mul_cancel]
+  exact pow_ne_zero _ hx'
 
 lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
   have : S * S = -1 := by ext i j; simp [S]; fin_cases i <;> fin_cases j <;> simp
