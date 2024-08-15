@@ -42,8 +42,20 @@ private lemma calc_aux_1 :
   ≤ ↑(P.numReps' b) * (f 0).re := sorry
   -- calc
   -- ∑' x : P.centers, ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)), (f (x - ↑y)).re
-  -- _ = ∑' (x : P.centers) (y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)))
-  --     (_ : (y : EuclideanSpace ℝ (Fin d)) ≠ ↑x), (f (x - ↑y)).re
+  -- _ = (∑' (x : P.centers) (y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)))
+  --     (_ : (y : EuclideanSpace ℝ (Fin d)) ≠ ↑x),
+  --     (f (x - ↑y)).re) +
+  --     (∑' (x : P.centers) (y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)))
+  --     (_ : (y : EuclideanSpace ℝ (Fin d)) = ↑x),
+  --     (f (x - ↑y)).re)
+  --       := sorry
+  -- _ ≤ (∑' (x : P.centers) (y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)))
+  --     (_ : (y : EuclideanSpace ℝ (Fin d)) = ↑x),
+  --     (f (x - ↑y)).re)
+  --       := sorry
+  --   _ = ∑' (y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _))), (f (y - ↑y)).re
+  --       := sorry
+  --   _ = ↑(P.numReps' b) * (f 0).re
   --       := sorry
 
 private lemma calc_steps :
@@ -114,11 +126,10 @@ private lemma calc_steps :
       (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
       Complex.abs (cexp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2))
         := by sorry
-  -- Why is the ≥ sign below giving me an error?
-  -- _ ≥ (1 / Zlattice.covolume P.Λ) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
-  --     (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
-  --     |cexp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)| ^ 2)
-  --       := sorry
+  _ ≥ (1 / Zlattice.covolume P.Λ) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
+      (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      Complex.abs (cexp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
+        := sorry
   _ = (1 / Zlattice.covolume P.Λ) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
       ↑(P.numReps' b) ^ 2
         := by sorry
