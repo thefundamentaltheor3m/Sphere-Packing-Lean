@@ -72,9 +72,12 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by sorry
 lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by sorry
 lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by sorry
 
-lemma H₂_T_inv_action : (H₂ ∣[(2 : ℤ)] T⁻¹) = -H₂ := by sorry
-lemma H₃_T_inv_action : (H₃ ∣[(2 : ℤ)] T⁻¹) = H₄ := by sorry
-lemma H₄_T_inv_action : (H₄ ∣[(2 : ℤ)] T⁻¹) = H₃ := by sorry
+lemma H₂_T_inv_action : (H₂ ∣[(2 : ℤ)] T⁻¹) = -H₂ := by
+  nth_rw 1 [← neg_eq_iff_eq_neg.mpr H₂_T_action, neg_slash, ← slash_mul, mul_inv_self, slash_one]
+lemma H₃_T_inv_action : (H₃ ∣[(2 : ℤ)] T⁻¹) = H₄ := by
+  nth_rw 1 [← H₄_T_action, ← slash_mul, mul_inv_self, slash_one]
+lemma H₄_T_inv_action : (H₄ ∣[(2 : ℤ)] T⁻¹) = H₃ := by
+  nth_rw 1 [← H₃_T_action, ← slash_mul, mul_inv_self, slash_one]
 
 /-- Use α = T * T -/
 lemma H₂_α_action : (H₂ ∣[(2 : ℤ)] α) = H₂ := calc
@@ -110,31 +113,39 @@ lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
 
 /-- Use β = -S * α^(-1) * S -/
 lemma H₂_β_action : (H₂ ∣[(2 : ℤ)] β) = H₂ := calc
-  (H₂ ∣[(2 : ℤ)] β) = (H₂ ∣[(2 : ℤ)] (negI * S * α⁻¹ * S)) := sorry
-  _ = (((H₂ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := sorry
+  (H₂ ∣[(2 : ℤ)] β) = (H₂ ∣[(2 : ℤ)] (negI * S * α⁻¹ * S)) := by
+    rw [subgroup_slash, β_eq_negI_mul_S_mul_α_inv_mul_S]
+    rfl
+  _ = (((H₂ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by simp [slash_mul]
   _ = ((H₂ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₂_negI_action]
   _ = (- H₄ ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₂_S_action, neg_slash]
   _ = - H₄ ∣[(2 : ℤ)] S := by
     simp_rw [α_eq_T_sq, subgroup_slash, InvMemClass.coe_inv]
-    rw [← SL_slash, sq, _root_.mul_inv_rev, slash_mul, H₄_T_inv_action, neg_slash, H₃_T_inv_action]
+    simp [← SL_slash, sq, slash_mul, H₃_T_inv_action, H₄_T_inv_action]
   _ = H₂ := by rw [H₄_S_action, neg_neg]
 
 lemma H₃_β_action : (H₃ ∣[(2 : ℤ)] β) = H₃ := calc
-  (H₃ ∣[(2 : ℤ)] β) = (H₃ ∣[(2 : ℤ)] (negI * S * α^(-1 : ℤ) * S)) := sorry
-  _ = (((H₃ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := sorry
-  _ = ((H₃ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := by rw [H₃_negI_action]
-  _ = ((-H₃) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := by rw [H₃_S_action]
-  _ = (- H₃ ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := sorry
-  _ = - H₃ ∣[(2 : ℤ)] S := sorry
+  (H₃ ∣[(2 : ℤ)] β) = (H₃ ∣[(2 : ℤ)] (negI * S * α⁻¹ * S)) := by
+    rw [subgroup_slash, β_eq_negI_mul_S_mul_α_inv_mul_S]
+    rfl
+  _ = (((H₃ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by simp [slash_mul]
+  _ = ((H₃ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₃_negI_action]
+  _ = (- H₃ ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₃_S_action, neg_slash]
+  _ = - H₃ ∣[(2 : ℤ)] S := by
+    simp_rw [α_eq_T_sq, subgroup_slash, InvMemClass.coe_inv]
+    simp [← SL_slash, sq, slash_mul, H₃_T_inv_action, H₄_T_inv_action]
   _ = H₃ := by rw [H₃_S_action, neg_neg]
 
 lemma H₄_β_action : (H₄ ∣[(2 : ℤ)] β) = H₄ := calc
-  (H₄ ∣[(2 : ℤ)] β) = (H₄ ∣[(2 : ℤ)] (negI * S * α^(-1 : ℤ) * S)) := sorry
-  _ = (((H₄ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := sorry
-  _ = ((H₄ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := by rw [H₄_negI_action]
-  _ = ((-H₂) ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := by rw [H₄_S_action]
-  _ = (- H₂ ∣[(2 : ℤ)] α^(-1 : ℤ)) ∣[(2 : ℤ)] S := sorry
-  _ = - H₂ ∣[(2 : ℤ)] S := sorry
+  (H₄ ∣[(2 : ℤ)] β) = (H₄ ∣[(2 : ℤ)] (negI * S * α⁻¹ * S)) := by
+    rw [subgroup_slash, β_eq_negI_mul_S_mul_α_inv_mul_S]
+    rfl
+  _ = (((H₄ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by simp [slash_mul]
+  _ = ((H₄ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₄_negI_action]
+  _ = (- H₂ ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₄_S_action, neg_slash]
+  _ = - H₂ ∣[(2 : ℤ)] S := by
+    simp_rw [α_eq_T_sq, subgroup_slash, InvMemClass.coe_inv]
+    simp [← SL_slash, sq, slash_mul, H₂_T_inv_action]
   _ = H₄ := by rw [H₂_S_action, neg_neg]
 
 /-- H₂, H₃, H₄ are modular forms of weight 2 and level Γ(2) -/

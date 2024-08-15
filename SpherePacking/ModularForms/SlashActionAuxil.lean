@@ -28,6 +28,10 @@ theorem α_eq_T_sq : α = ⟨T ^ 2,  by simp [sq, T]; decide⟩ := by
   ext
   simp [α, T, sq]
 
+theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by
+  ext
+  simp [β, S, α, negI]
+
 theorem even_weight_negI_action (f : ℍ → ℂ) (k : ℤ) (hk : Even k) : (f ∣[k] negI = f) := by
   ext x
   have h_num : num negI x = -x := by simp [negI, num]
