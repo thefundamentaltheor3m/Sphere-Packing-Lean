@@ -80,24 +80,14 @@ lemma H₄_T_inv_action : (H₄ ∣[(2 : ℤ)] T⁻¹) = H₃ := by
   nth_rw 1 [← H₃_T_action, ← slash_mul, mul_inv_self, slash_one]
 
 /-- Use α = T * T -/
-lemma H₂_α_action : (H₂ ∣[(2 : ℤ)] α) = H₂ := calc
-  (H₂ ∣[(2 : ℤ)] α) = (H₂ ∣[(2 : ℤ)] (T * T)) := sorry
-  _ = ((H₂ ∣[(2 : ℤ)] T)∣[(2 : ℤ)] T) := sorry
-  _ = ((-H₂) ∣[(2 : ℤ)] T) := by rw [H₂_T_action]
-  _ = (-H₂ ∣[(2 : ℤ)] T) := sorry
-  _ = H₂ := by rw [H₂_T_action, neg_neg]
+lemma H₂_α_action : (H₂ ∣[(2 : ℤ)] α) = H₂ := by
+  simp [α_eq_T_sq, ← SL_slash, sq, slash_mul, H₂_T_action]
 
-lemma H₃_α_action : (H₃ ∣[(2 : ℤ)] α) = H₃ := calc
-  (H₃ ∣[(2 : ℤ)] α) = (H₃ ∣[(2 : ℤ)] (T * T)) := sorry
-  _ = ((H₃ ∣[(2 : ℤ)] T)∣[(2 : ℤ)] T) := sorry
-  _ = (H₄ ∣[(2 : ℤ)] T) := by rw [H₃_T_action]
-  _ = H₃ := H₄_T_action
+lemma H₃_α_action : (H₃ ∣[(2 : ℤ)] α) = H₃ := by
+  simp [α_eq_T_sq, ← SL_slash, sq, slash_mul, H₃_T_action, H₄_T_action]
 
-lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α) = H₄ := calc
-  (H₄ ∣[(2 : ℤ)] α) = (H₄ ∣[(2 : ℤ)] (T * T)) := sorry
-  _ = ((H₄ ∣[(2 : ℤ)] T)∣[(2 : ℤ)] T) := sorry
-  _ = (H₃ ∣[(2 : ℤ)] T) := by rw [H₄_T_action]
-  _ = H₄ := H₃_T_action
+lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α) = H₄ := by
+  simp [α_eq_T_sq, ← SL_slash, sq, slash_mul, H₃_T_action, H₄_T_action]
 
 /-- Use jacobiTheta₂_functional_equation -/
 lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = - H₄ := by
@@ -113,40 +103,25 @@ lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
 
 /-- Use β = -S * α^(-1) * S -/
 lemma H₂_β_action : (H₂ ∣[(2 : ℤ)] β) = H₂ := calc
-  (H₂ ∣[(2 : ℤ)] β) = (H₂ ∣[(2 : ℤ)] (negI * S * α⁻¹ * S)) := by
-    rw [subgroup_slash, β_eq_negI_mul_S_mul_α_inv_mul_S]
-    rfl
-  _ = (((H₂ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by simp [slash_mul]
-  _ = ((H₂ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₂_negI_action]
-  _ = (- H₄ ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₂_S_action, neg_slash]
-  _ = - H₄ ∣[(2 : ℤ)] S := by
-    simp_rw [α_eq_T_sq, subgroup_slash, InvMemClass.coe_inv]
-    simp [← SL_slash, sq, slash_mul, H₃_T_inv_action, H₄_T_inv_action]
-  _ = H₂ := by rw [H₄_S_action, neg_neg]
+  _ = (((H₂ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by
+    simp [β_eq_negI_mul_S_mul_α_inv_mul_S, ← SL_slash, slash_mul]
+  _ = _ := by
+    rw [H₂_negI_action, H₂_S_action, neg_slash, neg_slash, α_eq_T_sq, subgroup_slash]
+    simp [← SL_slash, sq, slash_mul, H₄_T_inv_action, H₃_T_inv_action, H₄_S_action]
 
 lemma H₃_β_action : (H₃ ∣[(2 : ℤ)] β) = H₃ := calc
-  (H₃ ∣[(2 : ℤ)] β) = (H₃ ∣[(2 : ℤ)] (negI * S * α⁻¹ * S)) := by
-    rw [subgroup_slash, β_eq_negI_mul_S_mul_α_inv_mul_S]
-    rfl
-  _ = (((H₃ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by simp [slash_mul]
-  _ = ((H₃ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₃_negI_action]
-  _ = (- H₃ ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₃_S_action, neg_slash]
-  _ = - H₃ ∣[(2 : ℤ)] S := by
-    simp_rw [α_eq_T_sq, subgroup_slash, InvMemClass.coe_inv]
-    simp [← SL_slash, sq, slash_mul, H₃_T_inv_action, H₄_T_inv_action]
-  _ = H₃ := by rw [H₃_S_action, neg_neg]
+  _ = (((H₃ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by
+    simp [β_eq_negI_mul_S_mul_α_inv_mul_S, ← SL_slash, slash_mul]
+  _ = _ := by
+    rw [H₃_negI_action, H₃_S_action, neg_slash, neg_slash, α_eq_T_sq, subgroup_slash]
+    simp [← SL_slash, sq, slash_mul, H₄_T_inv_action, H₃_T_inv_action, H₃_S_action]
 
 lemma H₄_β_action : (H₄ ∣[(2 : ℤ)] β) = H₄ := calc
-  (H₄ ∣[(2 : ℤ)] β) = (H₄ ∣[(2 : ℤ)] (negI * S * α⁻¹ * S)) := by
-    rw [subgroup_slash, β_eq_negI_mul_S_mul_α_inv_mul_S]
-    rfl
-  _ = (((H₄ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by simp [slash_mul]
-  _ = ((H₄ ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₄_negI_action]
-  _ = (- H₂ ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by rw [H₄_S_action, neg_slash]
-  _ = - H₂ ∣[(2 : ℤ)] S := by
-    simp_rw [α_eq_T_sq, subgroup_slash, InvMemClass.coe_inv]
-    simp [← SL_slash, sq, slash_mul, H₂_T_inv_action]
-  _ = H₄ := by rw [H₂_S_action, neg_neg]
+  _ = (((H₄ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by
+    simp [β_eq_negI_mul_S_mul_α_inv_mul_S, ← SL_slash, slash_mul]
+  _ = _ := by
+    rw [H₄_negI_action, H₄_S_action, neg_slash, neg_slash, α_eq_T_sq, subgroup_slash]
+    simp [← SL_slash, sq, slash_mul, H₂_T_inv_action, H₂_S_action]
 
 /-- H₂, H₃, H₄ are modular forms of weight 2 and level Γ(2) -/
 noncomputable def H₂_SIF : SlashInvariantForm (Γ 2) 2 where
@@ -180,19 +155,19 @@ theorem isBoundedAtImInfty_H₄_SIF
     (A : SL(2, ℤ)) : IsBoundedAtImInfty (H₄_SIF.toFun ∣[(2:ℤ)] A) := by sorry
 
 
-noncomputable def H₂_MF : ModularForm (CongruenceSubgroup.Gamma 2) 2 := {
+noncomputable def H₂_MF : ModularForm (Γ 2) 2 := {
   H₂_SIF with
   holo' := H₂_SIF_MDifferentiable
   bdd_at_infty' := isBoundedAtImInfty_H₂_SIF
 }
 
-noncomputable def H₃_MF : ModularForm (CongruenceSubgroup.Gamma 2) 2 := {
+noncomputable def H₃_MF : ModularForm (Γ 2) 2 := {
   H₃_SIF with
   holo' := H₃_SIF_MDifferentiable
   bdd_at_infty' := isBoundedAtImInfty_H₃_SIF
 }
 
-noncomputable def H₄_MF : ModularForm (CongruenceSubgroup.Gamma 2) 2 := {
+noncomputable def H₄_MF : ModularForm (Γ 2) 2 := {
   H₄_SIF with
   holo' := H₄_SIF_MDifferentiable
   bdd_at_infty' := isBoundedAtImInfty_H₄_SIF
