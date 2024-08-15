@@ -28,6 +28,10 @@ variable (hReal : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0)
 variable (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
 variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
 
+-- We (locally) denote the Complex Conjugate of some `z : ℂ` by `conj z`
+-- Idea taken from https://github.com/leanprover-community/mathlib4/blob/75cc36e80cb9fe76f894b7688be1e0c792ae55d9/Mathlib/Analysis/Complex/UnitDisc/Basic.lean#L21
+local notation "conj" => starRingEnd ℂ
+
 section Basis
 
 /-
@@ -109,7 +113,7 @@ private lemma calc_steps :
   _ = ((1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
       cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
-      (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
+      conj (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
       cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) -- Need its complex conjugate
       ).re
         := by sorry
@@ -141,7 +145,25 @@ theorem LinearProgrammingBound' : P.density ≤
   (f 0).re / (𝓕 f 0).re * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   rw [P.periodic_density_formula' b]
   suffices hCalc : (P.numReps' b) * (f 0).re ≥ (P.numReps' b)^2 * (𝓕 f 0).re / Zlattice.covolume P.Λ
-  · -- rw [hP]
+  · rw [hP]
+    have haux₁ : 0 ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
+      sorry
+    have haux₂ : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) =
+      (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))).toNNReal := by
+      -- Necessary? Idea is to go to ℝ and cancel stuff...
+      refine (ENNReal.toNNReal_eq_toNNReal_iff' ?hx ?hy).mp rfl
+      · sorry
+      · exact ENNReal.coe_ne_top
+    have haux₃ : P.numReps' b > 0 := by
+      refine Nat.zero_lt_of_ne_zero ?h
+      sorry
+    -- Contraposing because it looks like Mathlib API makes it easier to cancel than to multiply
+    rify
+    by_contra H
+    rw [not_le] at H
+    rw [ge_iff_le, ← not_lt] at hCalc
+    apply hCalc
+    -- have H₁ := lt_of_mul_lt_mul_of_nonneg_right H haux₁
     sorry
   exact calc_steps b
 
@@ -156,9 +178,9 @@ theorem LinearProgrammingBound : SpherePackingConstant d ≤
   apply iSup_le
   intro P
   rw [iSup_le_iff]
-  intro _
+  intro hP
   -- We choose a ℤ-basis for the lattice and feed it into `LinearProgramingBound'`.
-  exact LinearProgrammingBound' (((Zlattice.module_free ℝ P.Λ).chooseBasis).reindex
+  exact LinearProgrammingBound' hP (((Zlattice.module_free ℝ P.Λ).chooseBasis).reindex
     (PeriodicSpherePacking.basis_index_equiv P))
 
 end Basis_Independent
