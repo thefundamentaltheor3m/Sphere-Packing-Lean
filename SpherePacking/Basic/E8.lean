@@ -3,12 +3,12 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Gareth Ma
 -/
-import Mathlib
+import Mathlib.Data.Real.StarOrdered
+import Mathlib.Order.Category.NonemptyFinLinOrd
 
-import SpherePacking.Basic.SpherePacking
-import SpherePacking.ForMathlib.Vec
+import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.ForMathlib.Finsupp
-import SpherePacking.ForMathlib.InnerProductSpace
+import SpherePacking.ForMathlib.Vec
 
 /-!
 # Basic properties of the E₈ lattice
@@ -34,7 +34,7 @@ properties about the E₈ lattice.
 
 -/
 
-open Euclidean EuclideanSpace BigOperators SpherePacking Matrix algebraMap Pointwise
+open EuclideanSpace BigOperators SpherePacking Matrix algebraMap Pointwise
 
 /-
 * NOTE: *
@@ -47,26 +47,18 @@ the sphere packing problem in other dimensions.
 
 namespace E8
 
-local notation "V" => EuclideanSpace ℝ (Fin 8)
-
-#check V
-
 /-- E₈ is characterised as the set of vectors with (1) coordinates summing to an even integer,
 and (2) all its coordinates either an integer or a half-integer. -/
-@[simp]
-def E8_Set : Set V :=
+def E8_Set : Set (EuclideanSpace ℝ (Fin 8)) :=
   {v | ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 * v i)) ∧ ∑ i, v i ≡ 0 [PMOD 2]}
 
-@[simp]
-def E8_Scaled_Set (c : ℝ) : Set V := c • E8_Set
-
-theorem mem_E8_Set {v : V} :
+theorem mem_E8_Set {v : EuclideanSpace ℝ (Fin 8)} :
     v ∈ E8_Set ↔
       ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 * v i))
         ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
-  simp
+  simp [E8_Set]
 
-theorem mem_E8_Set' {v : V} :
+theorem mem_E8_Set' {v : EuclideanSpace ℝ (Fin 8)} :
     v ∈ E8_Set ↔
       ((∀ i, ∃ n : ℤ, Even n ∧ n = 2 * v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 * v i))
         ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
@@ -85,7 +77,6 @@ mentioned in the Wikipedia article https://en.wikipedia.org/wiki/E8_(mathematics
 -/
 
 /-- E₈ is also characterised as the ℤ-span of the following vectors. -/
-@[simp]
 def E8' : Matrix (Fin 8) (Fin 8) ℚ := !![
 1,-1,0,0,0,0,0,0;
 0,1,-1,0,0,0,0,0;
@@ -98,7 +89,6 @@ def E8' : Matrix (Fin 8) (Fin 8) ℚ := !![
 ]
 
 /-- F8 is the inverse matrix of E₈, used to assist computation below. -/
-@[simp]
 def F8' : Matrix (Fin 8) (Fin 8) ℚ := !![
 1,1,1,1,1,1/2,0,1/2;
 0,1,1,1,1,1/2,0,1/2;
@@ -152,7 +142,7 @@ private theorem E8'_det_aux_1 : (∑ k : Fin 8, c₆ k • E8' k) = ![0, 0, 0, 0
   ext i
   trans 1 / 2 * E8' 0 i + E8' 1 i + 3 / 2 * E8' 2 i + 2 * E8' 3 i
     + 5 / 2 * E8' 4 i + 3 * E8' 5 i + E8' 6 i
-  · simp [Fin.sum_univ_eight, c₆, -E8']
+  · simp [Fin.sum_univ_eight, c₆]
   · fin_cases i <;> simp [E8'] <;> norm_num
 
 private theorem E8'_det_aux_2 (i : Fin 8) :
@@ -169,7 +159,7 @@ private theorem E8'_det_aux_3 : (∑ k : Fin 8, c₇ k • (E8'.updateRow 6 (∑
   ext i
   simp_rw [E8'_det_aux_2, Fin.sum_univ_eight]
   simp only [Fin.reduceEq, ↓reduceIte, smul_eq_mul, mul_zero, Pi.add_apply, Pi.smul_apply]
-  simp [c₇]
+  simp [c₇, E8']
   fin_cases i <;> simp <;> norm_num
 
 theorem E8'_updateRow₆₇ :
@@ -179,7 +169,7 @@ theorem E8'_updateRow₆₇ :
         0,0,0,0,0,1,1,0;0,0,0,0,0,0,5/2,-1/2;0,0,0,0,0,0,0,-2/5] := by
   rw [E8'_det_aux_3, E8'_det_aux_1]
   ext i _
-  fin_cases i <;> simp
+  fin_cases i <;> simp [E8']
 
 theorem E8'_det_aux_4 :
     (!![1,-1,0,0,0,0,0,0;0,1,-1,0,0,0,0,0;0,0,1,-1,0,0,0,0;0,0,0,1,-1,0,0,0;0,0,0,0,1,-1,0,0;
@@ -205,13 +195,14 @@ end E8_Over_ℚ
 
 noncomputable section E8_Over_ℝ
 
-@[simp]
 def E8_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (algebraMap ℚ ℝ).mapMatrix E8'
 
-@[simp]
 def F8_Matrix : Matrix (Fin 8) (Fin 8) ℝ := (algebraMap ℚ ℝ).mapMatrix F8'
 
-theorem E8_Matrix_apply {i j : Fin 8} : E8_Matrix i j = E8' i j := by
+theorem E8_Matrix_apply {i j : Fin 8} : E8_Matrix i j = E8' i j :=
+  rfl
+
+theorem E8_Matrix_apply_row {i : Fin 8} : E8_Matrix i = (fun j ↦ (E8' i j : ℝ)) :=
   rfl
 
 @[simp]
@@ -242,35 +233,35 @@ variable {α : Type*} [Semiring α] [Module α ℝ] (y : Fin 8 → α)
 
 lemma E8_sum_apply_0 :
     (∑ j : Fin 8, y j • E8_Matrix j) 0 = y 0 • 1 - y 6 • (1 / 2) := by
-  simp [Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_1 :
     (∑ j : Fin 8, y j • E8_Matrix j) 1 = y 0 • (-1) + y 1 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [Fin.sum_univ_eight, neg_div, smul_neg, -one_div, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, smul_neg, -one_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_2 :
     (∑ j : Fin 8, y j • E8_Matrix j) 2 = y 1 • (-1) + y 2 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_3 :
     (∑ j : Fin 8, y j • E8_Matrix j) 3 = y 2 • (-1) + y 3 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_4 :
     (∑ j : Fin 8, y j • E8_Matrix j) 4 = y 3 • (-1) + y 4 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_5 :
     (∑ j : Fin 8, y j • E8_Matrix j) 5 = y 4 • (-1) + y 5 • 1 - y 6 • ((1 : ℝ) / 2) + y 7 • 1 := by
-  simp [Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_6 :
     (∑ j : Fin 8, y j • E8_Matrix j) 6 = y 5 • 1 - y 6 • ((1 : ℝ) / 2) - y 7 • 1 := by
-  simp [Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_7 :
     (∑ j : Fin 8, y j • E8_Matrix j) 7 = y 6 • (-(1 : ℝ) / 2) := by
-  simp [Fin.sum_univ_eight]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight]
 
 macro "simp_E8_sum_apply" : tactic =>
   `(tactic |
@@ -332,95 +323,34 @@ theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Se
       -- rw [zsmul_eq_mul, Int.cast_sub, sub_mul, Int.cast_mul, mul_assoc]
       -- norm_num
 
-@[simp]
-def E8_Basis : Basis (Fin 8) ℝ V := Basis.mk E8_is_basis.left E8_is_basis.right.symm.le
-
 end E8_Over_ℝ
-
-noncomputable section E8_Scaled_Over_ℝ
-
-variable {c : ℝ} (hc : c ≠ 0)
-
-@[simp]
-def E8_Scaled_Matrix (c : ℝ) : Matrix (Fin 8) (Fin 8) ℝ := c • E8_Matrix
-
-@[simp]
-def E8_Scaled_Basis_Set (c : ℝ) : Set V := Set.range (E8_Scaled_Matrix c)
-
-@[simp]
-def F8_Scaled_Matrix (c : ℝ) : Matrix (Fin 8) (Fin 8) ℝ := (1 / c) • F8_Matrix
-
-@[simp]
-theorem E8_Scaled_mul_F8_Scaled_eq_one_R (hc : c ≠ 0) :
-    E8_Scaled_Matrix c * F8_Scaled_Matrix c = 1 := by
-  have : √2 ≠ 0 := (Real.sqrt_pos.mpr zero_lt_two).ne.symm
-  simp_rw [E8_Scaled_Matrix, F8_Scaled_Matrix, one_div, smul_mul_smul, mul_inv_cancel hc, one_smul]
-  exact E8_mul_F8_eq_one_R
-
-theorem Submodule.smul_top_eq_top {n : ℕ} (hc : c ≠ 0) : c • (⊤ : Submodule ℝ (Fin n → ℝ)) = ⊤ := by
-  -- I think there might be a nicer proof by using translation symmetry
-  ext x
-  simp_rw [Submodule.mem_top, iff_true]
-  use fun y ↦ c⁻¹ * x y, by simp, by ext; simp [hc]
-
-theorem E8_Scaled_is_basis (hc : c ≠ 0):
-    LinearIndependent ℝ (E8_Scaled_Matrix c)
-      ∧ Submodule.span ℝ (Set.range (E8_Scaled_Matrix c)) = ⊤ := by
-  -- normally one can just copy the proof of E8_is_basis
-  -- but since that is blocked by a kernel error, I just come up with a new proof
-  constructor
-  · rw [E8_Scaled_Matrix]
-    exact LinearIndependent.units_smul E8_is_basis.left
-      (fun _ ↦ ⟨c, c⁻¹, mul_inv_cancel hc, inv_mul_cancel hc⟩)
-  · rw [E8_Scaled_Matrix, Pi.smul_def, ← Set.smul_set_range, Submodule.span_smul,
-      E8_is_basis.right, Submodule.smul_top_eq_top hc]
-
-@[simp]
-def E8_Scaled_Basis : Basis (Fin 8) ℝ V :=
-  Basis.mk (E8_Scaled_is_basis hc).left (E8_Scaled_is_basis hc).right.symm.le
-
-end E8_Scaled_Over_ℝ
 
 noncomputable section E8_isZlattice
 
-theorem E8_add_mem {a b : V} (ha : a ∈ E8_Set) (hb : b ∈ E8_Set) : a + b ∈ E8_Set := by
+theorem E8_add_mem {a b : EuclideanSpace ℝ (Fin 8)} (ha : a ∈ E8_Set) (hb : b ∈ E8_Set) :
+    a + b ∈ E8_Set := by
   rw [E8_Set_eq_span, SetLike.mem_coe] at *
   exact (Submodule.add_mem_iff_right _ ha).mpr hb
 
-theorem E8_neg_mem {a : V} (ha : a ∈ E8_Set) : -a ∈ E8_Set := by
+theorem E8_neg_mem {a : EuclideanSpace ℝ (Fin 8)} (ha : a ∈ E8_Set) : -a ∈ E8_Set := by
   rw [E8_Set_eq_span, SetLike.mem_coe] at *
   exact Submodule.neg_mem _ ha
 
-def E8_Lattice : AddSubgroup V where
+def E8_Lattice : AddSubgroup (EuclideanSpace ℝ (Fin 8)) where
   carrier := E8_Set
   zero_mem' := by simp [mem_E8_Set]
   add_mem' := E8_add_mem
   neg_mem' := E8_neg_mem
 
-def E8_Scaled_Lattice (c : ℝ) : AddSubgroup V where
-  carrier := E8_Scaled_Set c
-  zero_mem' := by use 0; simp
-  add_mem' ha hb := by
-    rw [E8_Scaled_Set, Set.mem_smul_set] at *
-    obtain ⟨a, ha, rfl⟩ := ha
-    obtain ⟨b, hb, rfl⟩ := hb
-    use a + b, E8_add_mem ha hb, by simp
-  neg_mem' ha := by
-    simp only [E8_Scaled_Set, Set.mem_smul_set] at *
-    obtain ⟨a, ha, rfl⟩ := ha
-    use -a, E8_neg_mem ha, by simp
-
 open Topology TopologicalSpace Filter Function InnerProductSpace RCLike
 
 theorem E8_Matrix_inner {i j : Fin 8} :
-    haveI : Inner ℝ (Fin 8 → ℝ) := (inferInstance : Inner ℝ V)
-    ⟪(E8_Matrix i : V), E8_Matrix j⟫_ℝ = ∑ k, E8' i k * E8' j k := by
+    haveI : Inner ℝ (Fin 8 → ℝ) := (inferInstance : Inner ℝ (EuclideanSpace ℝ (Fin 8)))
+    ⟪(E8_Matrix i : EuclideanSpace ℝ (Fin 8)), E8_Matrix j⟫_ℝ = ∑ k, E8' i k * E8' j k := by
   change ∑ k, E8_Matrix i k * E8_Matrix j k = _
   simp_rw [E8_Matrix, RingHom.mapMatrix_apply, map_apply, eq_ratCast, Rat.cast_sum, Rat.cast_mul]
 
 section E8_norm_bounds
-
-variable {c : ℝ}
 
 set_option maxHeartbeats 2000000 in
 /-- All vectors in E₈ have norm √(2n) -/
@@ -463,59 +393,27 @@ theorem E8_norm_lower_bound (v : E8_Lattice) : v = 0 ∨ √2 ≤ ‖v‖ := by
   rwa [sq_le_sq, abs_norm, abs_eq_self.mpr ?_] at this
   exact Real.sqrt_nonneg 2
 
-theorem E8_Scaled_norm_lower_bound (hc : c ≠ 0) (v : E8_Scaled_Lattice c) :
-    v = 0 ∨ |c| * √2 ≤ ‖v‖ := by
-  obtain ⟨v, hv⟩ := v
-  simp [E8_Scaled_Lattice, -E8_Set, Set.mem_smul_set] at hv
-  obtain ⟨y, ⟨hy, hy'⟩⟩ := hv
-  simp_rw [← hy', AddSubmonoid.mk_eq_zero, smul_eq_zero, hc, false_or, AddSubgroup.coe_norm,
-    norm_smul, Real.norm_eq_abs]
-  cases' E8_norm_lower_bound ⟨y, hy⟩ with hy hy <;> simp [Subtype.ext_iff] at *
-  · tauto
-  · right; gcongr
-
 end E8_norm_bounds
 
-variable {c : ℝ}
-
-instance : DiscreteTopology E8_Lattice := by
+instance instDiscreteE8Lattice : DiscreteTopology E8_Lattice := by
   rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
   use 1, by norm_num,
     fun v h ↦ (E8_norm_lower_bound v).resolve_right ?_
   have : 1 < √2 := by rw [Real.lt_sqrt zero_le_one, sq, mul_one]; exact one_lt_two
   linarith [dist_zero_right v ▸ h]
 
--- Not sure if `Fact` is a good idea, but might as well try it
-instance instDiscreteE8ScaledLattice [hc : Fact (c ≠ 0)] :
-    DiscreteTopology (E8_Scaled_Lattice c) := by
-  rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
-  use |c| * √2, by norm_num [hc.out]
-  intro v h
-  exact (E8_Scaled_norm_lower_bound hc.out v).resolve_right (by linarith [dist_zero_right v ▸ h])
-
 instance : DiscreteTopology E8_Set :=
   (inferInstance : DiscreteTopology E8_Lattice)
 
-instance instDiscreteE8ScaledSet [Fact (c ≠ 0)] : DiscreteTopology (E8_Scaled_Set c) :=
-  (inferInstance : DiscreteTopology (E8_Scaled_Lattice c))
-
-theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set V) = ⊤ := by
+theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set (EuclideanSpace ℝ (Fin 8))) = ⊤ := by
   simp only [Submodule.span, sInf_eq_top, Set.mem_setOf_eq]
   intros M hM
   have := Submodule.span_le.mpr <| Submodule.subset_span.trans (E8_Set_eq_span ▸ hM)
   rw [E8_is_basis.right] at this
   exact Submodule.eq_top_iff'.mpr fun _ ↦ this trivial
 
-instance : IsZlattice ℝ E8_Lattice :=
+instance instIsZLatticeE8Lattice : IsZlattice ℝ E8_Lattice :=
   ⟨E8_Set_span_eq_top⟩
-
-instance instIsZLatticeE8ScaledLattice [inst : Fact (c ≠ 0)] :
-    IsZlattice ℝ (E8_Scaled_Lattice c) where
-  span_top := by
-    change Submodule.span ℝ (c • E8_Set) = ⊤
-    rw [← Submodule.smul_span, E8_Set_span_eq_top, Submodule.eq_top_iff']
-    intro v
-    use c⁻¹ • v, by simp, by simp [← smul_assoc, smul_eq_mul, inv_mul_cancel inst.out, one_smul]
 
 end E8_isZlattice
 
@@ -523,21 +421,93 @@ section Packing
 
 open scoped Real
 
-variable {c : ℝ} (hc : c ≠ 0)
-
--- Λ is inferred!
+-- lattice is inferred!
 noncomputable def E8Packing : PeriodicSpherePacking 8 where
   centers := E8_Lattice
   centers_dist x y h := (E8_norm_lower_bound (x - y)).resolve_left <| sub_ne_zero_of_ne h
-  Λ_action x y := add_mem
+  lattice_action x y := add_mem
 
 -- sanity checks
 example : E8Packing.separation = √2 := rfl
-example : E8Packing.Λ = E8_Lattice := rfl
+example : E8Packing.lattice = E8_Lattice := rfl
 
--- proven in #25
-theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
+-- We need a theorem for when centers = lattice
+theorem E8Packing_numReps : E8Packing.numReps = 1 := by
   sorry
+
+lemma E8_Matrix_mem (i : Fin 8) : E8_Matrix i ∈ E8_Lattice := by
+  rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe]
+  exact Set.mem_of_subset_of_mem Submodule.subset_span (Set.mem_range_self i)
+
+-- This is ugly but just hide it and pretend it's not there
+private lemma linearIndependent_subtype_thing
+    {d : ℕ} {ι : Type*} [Fintype ι]
+    {b : ι → EuclideanSpace ℝ (Fin d)} (hb : LinearIndependent ℤ b)
+    {s : AddSubgroup (EuclideanSpace ℝ (Fin d))}
+    (hs : s = (Submodule.span ℤ (Set.range b)).toAddSubgroup)
+    (h : ∀ i, b i ∈ s) :
+    LinearIndependent ℤ (fun i ↦ (⟨b i, h i⟩ : s)) := by
+  subst hs
+  exact linearIndependent_span hb
+
+noncomputable def E8_Basis : Basis (Fin 8) ℤ E8_Lattice := by
+  have af := E8_is_basis.left.restrict_scalars_algebras (R := ℤ) (S := ℝ) ?_
+  have : LinearIndependent ℤ (fun i ↦ (⟨E8_Matrix i, E8_Matrix_mem i⟩ : E8_Lattice)) := by
+    apply linearIndependent_subtype_thing af
+    simp_rw [E8_Lattice, E8_Set_eq_span]
+    rfl
+  · apply Basis.mk this
+    -- This is the worst proof ever but I don't want to waste my time on this
+    change (_ : Set E8_Lattice) ⊆ _
+    intro ⟨x, hx⟩ _
+    simp_rw [E8_Lattice, E8_Set_eq_span, AddSubgroup.mem_mk] at hx
+    rw [SetLike.mem_coe, Finsupp.mem_span_range_iff_exists_finsupp] at hx ⊢
+    obtain ⟨c, hc⟩ := hx
+    use c
+    apply Subtype.ext_iff.mpr
+    simp only [Finsupp.sum, ← hc, AddSubgroup.val_finset_sum, AddSubgroupClass.coe_zsmul]
+  · exact (algebraMap ℤ ℝ).injective_int
+
+-- sanity check
+example (i : Fin 8) : ((E8_Basis i : E8_Lattice) : EuclideanSpace ℝ (Fin 8)) = E8_Matrix i := by
+  simp [E8_Basis]
+
+lemma E8_Basis_apply_norm (i : Fin 8) : ‖E8_Basis i‖ = √2 := by
+  -- TODO: un-sorry (slow)
+  sorry
+  -- simp_rw [E8_Basis, Basis.coe_mk, AddSubgroup.coe_norm, norm_eq, Real.norm_eq_abs, sq_abs]
+  -- fin_cases i
+  -- <;> simp [Fin.sum_univ_eight, E8_Basis_apply_norm, Fin.sum_univ_eight, E8_Matrix_apply]
+  -- <;> norm_num
+
+open MeasureTheory Zspan in
+theorem E8_Basis_volume : volume (fundamentalDomain (E8_Basis.ofZlatticeBasis ℝ _)) = 1 := by
+  sorry
+
+open MeasureTheory Zspan in
+theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
+  rw [PeriodicSpherePacking.density_eq E8_Basis ?_ (by omega) (L := 8 • √2)]
+  · rw [E8Packing_numReps, Nat.cast_one, one_mul, volume_ball, Fintype.card_fin]
+    simp only [E8Packing]
+    have {x : ℝ} (hx : 0 ≤ x := by positivity) : √x ^ 8 = x ^ 4 := calc
+      √x ^ 8 = (√x ^ 2) ^ 4 := by rw [← pow_mul]
+      _ = x ^ 4 := by rw [Real.sq_sqrt hx]
+    rw [← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul, div_pow, this, this, ← mul_div_assoc,
+      div_mul_eq_mul_div, mul_comm, mul_div_assoc, mul_div_assoc]
+    norm_num [Nat.factorial, mul_one_div]
+    convert div_one _
+    · rw [E8_Basis_volume]
+    · rw [← ENNReal.ofReal_pow, ENNReal.ofReal_div_of_pos, ENNReal.ofReal_ofNat] <;> positivity
+    · positivity
+    · positivity
+  · intro x hx
+    trans ∑ i, ‖E8_Basis i‖
+    · rw [← fract_eq_self.mpr hx]
+      convert norm_fract_le (K := ℝ) _ _
+      simp; rfl
+    · apply le_of_eq
+      simp_rw [Fin.sum_univ_eight, E8_Basis_apply_norm]
+      ring_nf
 
 theorem Main : PeriodicSpherePackingConstant 8 = E8Packing.density :=
   sorry
