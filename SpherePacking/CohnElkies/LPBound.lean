@@ -62,6 +62,7 @@ private lemma calc_aux_1 :
   --   _ = ↑(P.numReps' b) * (f 0).re
   --       := sorry
 
+set_option maxHeartbeats 2000000
 private lemma calc_steps :
   ↑(P.numReps' b) * (f 0).re ≥ ↑(P.numReps' b) ^ 2 * (𝓕 f 0).re /
   Zlattice.covolume P.Λ := calc
@@ -86,24 +87,44 @@ private lemma calc_steps :
         := by sorry
   _ = (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
       ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)), (1 / Zlattice.covolume P.Λ) *
-      ∑' m : DualLattice P.Λ, (𝓕 f m).re *
+      ∑' m : DualLattice P.Λ, (𝓕 f m) *
       cexp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)).re
         := by
-            -- First need to say the two sides are equal if they're equal as complex numbers.
-            -- Then we can apply the PSF-L.
-            -- rw [PSF_L P.Λ hPSF]  -- Need to apply it inside sums!
-            sorry  -- This is where the PSF-L is applied
+            -- First, we apply the fact that two sides are equal if they're equal in ℂ.
+            apply congrArg re
+            -- Next, we apply the fact that two sums are equal if their summands are.
+            apply congrArg _ _
+            ext x
+            apply congrArg _ _
+            ext y
+            -- Now that we've isolated the innermost sum, we can use the PSF-L.
+            exact PSF_L P.Λ hPSF (x - ↑y)
   _ = ((1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re * (
       ∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
       ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
       cexp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
-        := by sorry
+        := by
+            apply congrArg re
+            sorry
   _ = ((1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re * (
       ∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
       ∑' y : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
       cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ) *
       cexp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
-        := by sorry
+        := by
+            -- As before, we have to go through a bunch of `congrArg`s to isolate the expressions we
+            -- are really trying to show are equal.
+            apply congrArg re
+            apply congrArg _ _
+            apply congrArg _ _
+            ext m
+            apply congrArg _ _
+            apply congrArg _ _
+            ext x
+            apply congrArg _ _
+            ext y
+
+            sorry
   _ = ((1 / Zlattice.covolume P.Λ) * ∑' m : DualLattice P.Λ, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)),
       cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
@@ -146,26 +167,19 @@ theorem LinearProgrammingBound' : P.density ≤
   rw [P.periodic_density_formula' b]
   suffices hCalc : (P.numReps' b) * (f 0).re ≥ (P.numReps' b)^2 * (𝓕 f 0).re / Zlattice.covolume P.Λ
   · rw [hP]
-    have haux₁ : 0 ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
+    rw [ge_iff_le] at hCalc
+    cases eq_or_ne (𝓕 f 0) 0
+    · case inl h𝓕f =>
+      rw [h𝓕f]
+      -- simp only [zero_re, div_zero]
+      -- Why does `div_zero` replace the value with `0` instead of `⊤`? I'd like `⊤`!
+      have h : ∀ a : ENNReal, a / 0 = ⊤ := by
+        
+        sorry
       sorry
-    have haux₂ : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) =
-      (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))).toNNReal := by
-      -- Necessary? Idea is to go to ℝ and cancel stuff...
-      refine (ENNReal.toNNReal_eq_toNNReal_iff' ?hx ?hy).mp rfl
-      · sorry
-      · exact ENNReal.coe_ne_top
-    have haux₃ : P.numReps' b > 0 := by
-      refine Nat.zero_lt_of_ne_zero ?h
+    · case inr h𝓕f =>
       sorry
-    -- Contraposing because it looks like Mathlib API makes it easier to cancel than to multiply
-    rify
-    by_contra H
-    rw [not_le] at H
-    rw [ge_iff_le, ← not_lt] at hCalc
-    apply hCalc
-    -- have H₁ := lt_of_mul_lt_mul_of_nonneg_right H haux₁
-    sorry
-  exact calc_steps b
+  exact calc_steps hPSF b
 
 end Basis
 
@@ -180,7 +194,7 @@ theorem LinearProgrammingBound : SpherePackingConstant d ≤
   rw [iSup_le_iff]
   intro hP
   -- We choose a ℤ-basis for the lattice and feed it into `LinearProgramingBound'`.
-  exact LinearProgrammingBound' hP (((Zlattice.module_free ℝ P.Λ).chooseBasis).reindex
+  exact LinearProgrammingBound' hPSF hP (((Zlattice.module_free ℝ P.Λ).chooseBasis).reindex
     (PeriodicSpherePacking.basis_index_equiv P))
 
 end Basis_Independent

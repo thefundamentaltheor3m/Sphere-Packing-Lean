@@ -61,7 +61,7 @@ def PSF_Conditions (f : EuclideanSpace ℝ (Fin d) → ℂ) : Prop :=
 
 theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
   (v : EuclideanSpace ℝ (Fin d)) :
-  ∑' ℓ : Λ, f (ℓ + v) = (1 / Zlattice.covolume Λ) * ∑' m : DualLattice Λ, (𝓕 f m) *
+  ∑' ℓ : Λ, f (v + ℓ) = (1 / Zlattice.covolume Λ) * ∑' m : DualLattice Λ, (𝓕 f m) *
   cexp (2 * π * I * ⟪v, m⟫_ℝ) :=
   sorry
 
@@ -69,7 +69,7 @@ theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
 theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
   ∑' ℓ : Λ, f ℓ = (1 / Zlattice.covolume Λ) * ∑' m : DualLattice Λ, (𝓕 f m) := by
 have := PSF_L Λ hf (0 : EuclideanSpace ℝ (Fin d))
-simp only [add_zero, inner_zero_left, ofReal_zero, mul_zero, Complex.exp_zero, mul_one] at this
+simp only [zero_add, inner_zero_left, ofReal_zero, mul_zero, Complex.exp_zero, mul_one] at this
 exact this
 
 end PSF_L
