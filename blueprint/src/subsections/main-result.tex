@@ -2,24 +2,24 @@
 
 With the terminologies above, we can state the main theorem of this project.
 
-\begin{theorem}\label{E8.Main}\lean{E8.Main}\uses{E8_Scaled_Lattice, SpherePackingConstant, SpherePacking.density}
-  All \emph{periodic} packing $\mathcal{P} \subseteq \R^8$ has density satisfying $\Delta_{\mathcal{P}} \leq \Delta_{E_8}$, the density of the $E_8$ sphere packing (see Definition~\ref{E8Packing}).
+\begin{theorem}\label{theorem:Main}\lean{E8.Main}\uses{E8-Lattice,SpherePackingConstant,SpherePacking.density,E8Packing-density}
+  All \emph{periodic} packing $\mathcal{P} \subseteq \R^8$ has density satisfying $\Delta_{\mathcal{P}} \leq \Delta_{E_8} = \frac{\pi^4}{384}$, the density of the $E_8$ sphere packing (see \cref{E8Packing}).
 \end{theorem}
 \begin{proof}
   We will prove this theorem over the course of this blueprint.
   % TODO: Add a \ref to the actual proof at the end of this blueprint, I guess.
 \end{proof}
 
-\begin{corollary}\label{E8.Main'}\lean{E8.Main'}\uses{E8.Main, periodic-packing-optimal}
+\begin{corollary}\label{corollary:Main'}\lean{E8.Main'}\uses{theorem:Main,periodic-packing-optimal}
   All packing $\mathcal{P} \subseteq \R^8$ has density satisfying $\Delta_{\mathcal{P}} \leq \Delta_{E_8}$.
 \end{corollary}
 \begin{proof}
-  This is a direct consequence of Theorem~\ref{periodic-packing-optimal} and Theorem~\ref{Main}.
+  This is a direct consequence of Theorem \cref{periodic-packing-optimal} and \cref{theorem:Main}.
 \end{proof}
 
-\begin{corollary}\label{E8.Main''}\uses{E8.Main'}
+\begin{corollary}\label{corollary:Main''}\uses{corollary:Main'}
   $\Delta_8 = \Delta_{E_8}$.
 \end{corollary}
 \begin{proof}
-  By definition, $\Delta_{E_8} \leq \Delta_8$, while Corollary~\ref{Main'} shows $\Delta_8 = \sup_{\mathrm{packing} \, \mathcal{P}} \leq \Delta_{E_8}$, and the result follows.
+  By definition, $\Delta_{E_8} \leq \Delta_8$, while \cref{corollary:Main'} shows $\Delta_8 = \sup_{\mathrm{packing} \, \mathcal{P}} \leq \Delta_{E_8}$, and the result follows.
 \end{proof}

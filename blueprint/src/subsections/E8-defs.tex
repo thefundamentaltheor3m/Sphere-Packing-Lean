@@ -2,16 +2,12 @@
 
 There are several equivalent definitions of the $E_8$ lattice. Below, we formalise two of them, and prove they are equivalent.
 
-\begin{definition}{$E_8$-lattice, Definition 1}\label{E8_Set}\lean{E8.E8_Set}\leanok
+\begin{definition}{($E_8$-lattice, Definition 1)}\label{E8-Set}\lean{E8.E8_Set}\leanok
   We define the \emph{$E_8$-lattice} (as a subset of $\R^8$) to be
 $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1}^8x_i\equiv 0\;(\mathrm{mod\;2})\}.$$
 \end{definition}
 
-\begin{definition}\label{E8_Scaled_Set}\lean{E8.E8_Scaled_Set}\uses{E8_Set}\leanok
-  We define the \emph{scaled $E_8$-lattice} (by a real number $c$) as $$c\Lambda_8 = \{c \cdot \vec{v} : \vec{v} \in \Lambda_8\}$$.
-\end{definition}
-
-\begin{definition}{$E_8$-lattice, Definition 2}\label{E8_Basis_Vecs}\lean{E8.E8_Matrix}\leanok
+\begin{definition}{($E_8$-lattice, Definition 2)}\label{E8-Matrix}\lean{E8.E8_Matrix}\leanok
   We define the \emph{$E_8$ basis vectors} to be the set of vectors
   \[ \B_8 =
   \left\{
@@ -43,13 +39,9 @@ $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1
   \]
 \end{definition}
 
-\begin{definition}\label{E8_Scaled_Matrix}\lean{E8.E8_Scaled_Matrix}\uses{E8_Basis_Vecs}\leanok
-  We define the \emph{scaled $E_8$ basis vectors} (by a real number $c$) to be $c\B_8 = \{c \cdot \vec{v} : \vec{v}\in \B_8\}$.
-\end{definition}
-
 % Forward direction hasn't been proven yet
-\begin{theorem}\label{E8_defs_equivalent}\lean{E8.E8_Set_eq_span}\uses{E8_Scaled_Set, E8_Scaled_Matrix}%\leanok
-  The two definitions above coincide, i.e. $c\Lambda_8 = \mathrm{span}_{\Z}(c\B_8)$.
+\begin{theorem}\label{E8-defs-equivalent}\lean{E8.E8_Set_eq_span}\uses{E8-Set, E8-Matrix}\leanok
+  The two definitions above coincide, i.e. $\Lambda_8 = \mathrm{span}_{\Z}(\B_8)$.
 \end{theorem}
 \begin{proof}
   We prove each side contains the other side.
@@ -65,39 +57,39 @@ $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1
 
 In this section, we establish basic properties of the $E_8$ lattice and the $\B_8$ vectors.
 
-\begin{lemma}\label{E8_Scaled_is_basis}\lean{E8.E8_Scaled_is_basis}\uses{E8_Scaled_Matrix}\leanok
-  For nonzero real numbers $c$, the set $c\B_8$ is a $\R$-basis of $\R^8$.
+\begin{lemma}\label{E8-is-basis}\lean{E8.E8_is_basis}\uses{E8-Matrix}\leanok
+  $B_8$ is a $\R$-basis of $\R^8$.
 \end{lemma}
 \begin{proof}
-  It suffices to prove that $\B_8 \in \mathrm{GL}_8(\R)$. We prove this by explicitly defining the inverse matrix $\B_8^{-1}$ and proving $\B_8 \B_8^{-1} = I_8$, which implies that $\det(\B_8)$ is nonzero.
+  It suffices to prove that $\B_8 \in \mathrm{GL}_8(\R)$. We prove this by explicitly defining the inverse matrix $\B_8^{-1}$ and proving $\B_8 \B_8^{-1} = I_8$, which implies that $\det(\B_8)$ is nonzero. See the Lean code for more details.,
 \end{proof}
 
-\begin{lemma}\label{E8_Scaled_Lattice}\lean{E8.E8_Scaled_Lattice}\uses{E8_Scaled_Set, E8_defs_equivalent}\leanok
-  For real numbers $c$, $c\Lambda_8$ is an additive subgroup of $\R^8$.
+\begin{lemma}\label{E8-Lattice}\lean{E8.E8_Lattice}\uses{E8-Set, E8-defs-equivalent}\leanok
+  $\Lambda_8$ is an additive subgroup of $\R^8$.
 \end{lemma}
 \begin{proof}\leanok
   Trivially follows from that $\Lambda_8 \subseteq \R^8$ is the $\Z$-span of $\B_8$ and hence an additive group.
 \end{proof}
 
-\begin{lemma}\label{E8_Shortest_Vector}\lean{E8.E8_norm_eq_sqrt_even}\uses{E8_defs_equivalent}\leanok
+\begin{lemma}\label{E8-vector-norms}\lean{E8.E8_norm_eq_sqrt_even}\uses{E8-defs-equivalent}\leanok
   All vectors in $\Lambda_8$ have norm of the form $\sqrt{2n}$, where $n$ is a nonnegative inteeger.
 \end{lemma}
 \begin{proof}
   Writing $\vec{v} = \sum_i c_i\B_8^i$, we have $\|v\|^2 = \sum_i \sum_j c_ic_j (\B_8^i \cdot \B_8^j)$. Computing all $64$ pairs of dot products and simplifying, we get a massive term that is a quadratic form in $c_i$ with even integer coefficients, concluding the proof.
 \end{proof}
 
-\begin{lemma}\label{instDiscreteE8ScaledLattice}\lean{E8.instDiscreteE8ScaledLattice}\uses{E8_Shortest_Vector}\leanok
-  For nonzero real numbers $c$, $c\Lambda_8$ is discrete, i.e. that the subspace topology induced by its inclusion into $\R^8$ is the discrete topology.
+\begin{lemma}\label{instDiscreteE8Lattice}\lean{E8.instDiscreteE8Lattice}\uses{E8-vector-norms}\leanok
+  $c\Lambda_8$ is discrete, i.e. that the subspace topology induced by its inclusion into $\R^8$ is the discrete topology.
 \end{lemma}
 \begin{proof}
-  We prove this for $c = 1$. Since $\Lambda_8$ is a topological group and $+$ is continuous, it suffices to prove that $\{0\}$ is open in $\Lambda_8$. This follows from the fact that there is an open ball $\B(\sqrt{2}) \subseteq \R^8$ around it containing no other lattice points, since the shortest nonzero vector has norm $\sqrt{2}$.
+  Since $\Lambda_8$ is a topological group and $+$ is continuous, it suffices to prove that $\{0\}$ is open in $\Lambda_8$. This follows from the fact that there is an open ball $\B(\sqrt{2}) \subseteq \R^8$ around it containing no other lattice points, since the shortest nonzero vector has norm $\sqrt{2}$.
 \end{proof}
 
-\begin{lemma}\label{instLatticeE8}\lean{E8.instIsZLatticeE8ScaledLattice}\uses{instDiscreteE8ScaledLattice, E8_Scaled_is_basis}\leanok
-  For nonzero real numbres $c$, $c\Lambda_8$ is a lattice, i.e. it is discrete and spans $\R^8$ over $\R$.
+\begin{lemma}\label{instLatticeE8}\lean{E8.instIsZLatticeE8Lattice}\uses{instDiscreteE8Lattice, E8-is-basis}\leanok
+  $c\Lambda_8$ is a $\Z$-lattice, i.e. it is discrete and spans $\R^8$ over $\R$.
 \end{lemma}
-\begin{proof}\leanok
-  The first part is the above lemma. The second part follows from that $\B_8$ is a basis and hence linearly independent over $\R$.
+\begin{proof}
+  The first part is by \cref{instDiscreteE8Lattice}, and the second part follows from that $\B_8$ is a basis (\cref{E8-is-basis}) and hence linearly independent over $\R$.
 \end{proof}
 
 \todo{Prove $E_8$ is unimodular.}
@@ -105,15 +97,20 @@ In this section, we establish basic properties of the $E_8$ lattice and the $\B_
 
 \subsection{The $E_8$ sphere packing}
 
-\begin{definition}\label{E8.E8Packing}\lean{E8.E8Packing}\uses{SpherePacking.balls, E8_Scaled_Lattice}\leanok
-  The \emph{$E_8$ sphere packing} is the sphere packing with separation $1$, whose set of centres is $\frac{1}{\sqrt{2}}\Lambda_8$.
+\begin{definition}\label{E8Packing}\lean{E8.E8Packing}\uses{E8-Lattice,E8-vector-norms}\leanok
+  The \emph{$E_8$ sphere packing} is the (periodic) sphere packing with separation $\sqrt{2}$, whose set of centres is $\Lambda_8$.
 \end{definition}
 
-\begin{theorem}\label{E8Packing_density}\uses{E8.E8Packing}
-  We have $\Delta_{E_8} = \frac{\pi^4}{384}$.
-\end{theorem}
+\begin{lemma}\label{E8Packing-covol}\lean{E8.E8_Basis_volume}\uses{E8Packing}
+  $\Vol{\Lambda_8} = \mathrm{Covol}(\R^8 / \Lambda_8) = 1$.
+\end{lemma}
 \begin{proof}
-  \todo{Finish proof. Preferably we want APIs about fundamental region of lattice, and use that to reduce this theorem to computation inside the fundamental region, and use formula for volume of ball.}
+  \todo{In theory this should follow directly from $\det(\Lambda_8) = 1$, but Lean hates me and \texttt{EuclideanSpace} is being annoying.}
 \end{proof}
 
-% TODO: Stuff about the fundamental region
+\begin{theorem}\label{E8Packing-density}\uses{theorem:psp-density,E8Packing-covol}
+  We have $\Delta_{\mathcal{P}(E_8)} = \frac{\pi^4}{384}$.
+\end{theorem}
+\begin{proof}
+  By \cref{theorem:psp-density}, we have $\Delta_{\mathcal{P}(E_8)} = |E_8 / E_8| \cdot \frac{\Vol{\mathcal{B}_8(\sqrt{2} / 2)}}{\mathrm{Covol}(E_8)} = \frac{\pi^4}{384}$, where the last equality follows from \cref{E8Packing-covol} and the formula for volume of a ball: $\Vol{\mathcal{B}_d(R)} = R^d \pi^{d / 2} / \Gamma\left(\frac{d}{2} + 1\right)$.
+\end{proof}
