@@ -4,7 +4,6 @@
 .DS_Store
 
 # LaTeX Local
-
 blueprint/TeX_Outputs/
 blueprint/print/*
 !blueprint/print/print.pdf
