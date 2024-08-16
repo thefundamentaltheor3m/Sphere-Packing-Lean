@@ -21,31 +21,58 @@ Let $N$ be a positive integer.
     A subgroup $\Gamma\subset\Gamma_1$ is called a \emph{congruence subgroup} if $\Gamma(N)\subset\Gamma$ for some $N\in\N$.
 \end{definition}
 
-An important example of a congruence subgroup is
-$$\Gamma_0(N):=\left\{\left.\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\Gamma_1\right|\;c\equiv0\;\mathrm{mod}\;N\right\}.$$
+\begin{definition}\label{def:Gamma-generators}\uses{def:level-N-princ-cong-subgp}\lean{ModularGroup.S,ModularGroup.T,α,β}\leanok
+  Define the matrices
 
-Let $z\in\h$, $k\in\Z$, and $\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\mathrm{SL}_2(\Z)$.
+  \[
+    S = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix} \in \Gamma_1,
+    T = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix} \in \Gamma_1,
+    \alpha = \begin{pmatrix} 1 & 2 \\ 0 & 1 \end{pmatrix} \in \Gamma_2 \subset \Gamma_1,
+    \beta = \begin{pmatrix} 1 & 0 \\ 2 & 1 \end{pmatrix} \in \Gamma_2 \subset \Gamma_1.
+  \]
+
+  It is easily verifiable that $\alpha = T^2$ and $\beta = -S\alpha^{-1}S = -ST^{-2}S$.
+\end{definition}
+
+The following two lemmas tell us the group structure of $\Gamma(1) = \Gamma_1$ and $\Gamma(2)$, which we will use later on to define the theta forms.
+
+\begin{lemma}\label{lemma:Gamma-1-generators}\uses{def:Gamma-generators}\lean{SL2Z_generate}
+  We have $\Gamma(1) = \langle S, T, -I \rangle$.
+\end{lemma}
+\begin{proof}
+  See~\cite[Exercise 1.1.1]{first course}.
+\end{proof}
+
+\begin{lemma}\label{lemma:Gamma-2-generators}\uses{def:Gamma-generators}\lean{Γ2_generate}
+  We have $\Gamma(2) = \langle \alpha, \gamma, -I \rangle$.
+\end{lemma}
+\begin{proof}
+  See~\cite[Exercise 1.2.4]{first course}.
+\end{proof}
+
+Let $z\in\h$, $k\in\Z$, and $\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\mathrm{SL}_2(\Z)$. We omit many of the proofs below when they exist in Mathlib already.
 \begin{definition}\label{def:automorphy-factor}
     The \emph{automorphy factor} of weight $k$ is defined as
 $$j_k(z,\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)):=(cz+d)^{-k}.$$
 \end{definition}
 
-\begin{lemma}\label{lemma:automorphy-factor-chain-rule}\uses{def:automorphy-factor}
+\begin{lemma}\label{lemma:automorphy-factor-chain-rule}\uses{def:automorphy-factor}\leanok
     The automorphy factor satisfies the \emph{chain rule}
 $$j_k(z,\gamma_1\gamma_2)=j_k(z,\gamma_1)\,j_k(\gamma_2z,\gamma_1). $$
 \end{lemma}
 
-\begin{definition}\label{def:slash-operator}\uses{def:automorphy-factor}
-    Let $F$ be a  function on $\h$ and $\gamma\in\mathrm{SL}_2(\Z)$. Then the \emph{slash operator} acts on $F$ by
+\begin{definition}\label{def:slash-operator}\uses{def:automorphy-factor}\leanok
+    Let $F$ be a function on $\h$ and $\gamma\in\mathrm{SL}_2(\Z)$. Then the \emph{slash operator} acts on $F$ by
 $$(F|_k\gamma)(z):=j_k(z,\gamma)\,F(\gamma z). $$
 \end{definition}
 
-\begin{lemma}\label{lemma:slash-operator-chain-rule}\uses{lemma:automorphy-factor-chain-rule}
-    The chain rule implies
-$$F|_k\gamma_1\gamma_2=(F|_k\gamma_1)|_k\gamma_2.$$
+\begin{lemma}\label{lemma:slash-operator-chain-rule}\uses{lemma:automorphy-factor-chain-rule}\lean{SlashAction.slash_mul}\leanok
+  The chain rule implies $$F|_k\gamma_1\gamma_2=(F|_k\gamma_1)|_k\gamma_2.$$
 \end{lemma}
 
-\begin{lemma}\label{lemma:slash-negI-even-weight}\uses{def:slash-operator}
+In particular, this lemma implies that if $\Gamma = \langle M_i \rangle_{i \in \mathcal{I}}$, then the slash action $F|\gamma$ is uniquely determined by the action of generators, i.e. $F|M_i$ and $F|M_i^{-1}$.
+
+\begin{lemma}\label{lemma:slash-negI-even-weight}\uses{def:slash-operator}\lean{modular_slash_negI_of_even}\leanok
    For even $k$, $F|_{k}(-I) = F$.
 \end{lemma}
 \begin{proof}
@@ -53,15 +80,15 @@ Follows from the definition of the slash operator:
 $(F|_{k}(-I))(z) = (-1)^{-k}F((-I)z) = F(z)$.
 \end{proof}
 
-\begin{definition}\label{def:holomorphic-modular-form}\uses{def:congruence-subgroup}% \lean{def:holomorphic-modular-form}
+\begin{definition}\label{def:holomorphic-modular-form}\uses{def:congruence-subgroup}\lean{ModularForm}\leanok
 A \emph{(holomorphic) modular form} of integer weight $k$ and congruence subgroup $\Gamma$ is a holomorphic function $f:\h\to\C$ such that:
 \begin{enumerate}
-  \item $f|_k\gamma=f$ for all $\gamma\in\Gamma$
-  \item for each $\alpha\in\Gamma_1\;f|_k\alpha$ has the Fourier expansion $f|_k\alpha (z)=\sum_{n=0}^\infty c_f(\alpha,\frac{n}{n_\alpha})\,e^{2\pi i \frac{n}{n_\alpha}z}$ for some $n_\alpha\in\N$ and Fourier coefficients $c_f(\alpha,m)\in\C$.
+  \item{(Slash invariant)} $f|_k\gamma=f$ for all $\gamma\in\Gamma$
+  \item{(Holomorphic at $i\infty$)} for each $\alpha\in\Gamma_1\;f|_k\alpha$ has the Fourier expansion $f|_k\alpha (z)=\sum_{n=0}^\infty c_f(\alpha,\frac{n}{n_\alpha})\,e^{2\pi i \frac{n}{n_\alpha}z}$ for some $n_\alpha\in\N$ and Fourier coefficients $c_f(\alpha,m)\in\C$.
 \end{enumerate}
 \end{definition}
 
-\begin{definition}\label{def:Mk}\uses{def:holomorphic-modular-form}
+\begin{definition}\label{def:Mk}\uses{def:holomorphic-modular-form}\lean{ModularForm}\leanok
     Let $M_k(\Gamma)$ be the space of modular forms of weight $k$ and congruence subgroup $\Gamma$.
 \end{definition}
 
@@ -69,6 +96,9 @@ A key fact in the theory of modular forms is the following theorem:
 \begin{theorem}\label{theorem-Mk-finite-dimensional}\uses{def:Mk}
     The spaces $M_k(\Gamma)$ are finite dimensional.
 \end{theorem}
+\begin{proof}
+  In this project, we only require the theorem for $\Gamma = \Gamma_1$ and $\Gamma = \Gamma_2$. For the proof, see~\cite{Serre73}.
+\end{proof}
 
 Let us consider several examples of modular forms.
 \begin{definition}\label{def:Ek-definition}% \lean{def:Ek-definition}
@@ -180,15 +210,14 @@ For convenience, we use the following notations for the fourth powers of the the
 \begin{definition}\label{def:H2-H3-H4}\uses{def:th00-th01-th10}
 Define
 \begin{equation}
-    H_2 = \Theta_2^4, \quad H_3 = \Theta_3^3, \quad H_4 = \Theta_4^3. \label{eqn:H2-H3-H4}
+    H_2 = \Theta_2^4, \quad H_3 = \Theta_3^4, \quad H_4 = \Theta_4^4. \label{eqn:H2-H3-H4}
 \end{equation}
 \end{definition}
 Note that we only need these fourth powers to define \eqref{def: b(r) definition}.
 
-The group $\Gamma_1$ is generated by the elements $T=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$, $S=\left(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\right)$, and $-I = \left(\begin{smallmatrix}-1&0\\0&-1\end{smallmatrix}\right)$.
-The following lemma shows how the theta functions (and their powers) transform under the slash action of these matrices.
+The group $\Gamma_1$ is generated by the elements $T=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$, $S=\left(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\right)$, and $-I = \left(\begin{smallmatrix}-1&0\\0&-1\end{smallmatrix}\right)$ (\cref{lemma:Gamma-1-generators}), and the transformation of functions under $\Gamma(2)$ is determined by that under $\Gamma_1$ (by \cref{lemma:slash-operator-chain-rule}). The following lemma shows how the theta functions (and their powers) transform under the slash action of these matrices.
 
-\begin{lemma}\label{lemma:theta-transform-S-T}\uses{def:th00-th01-th10, def:H2-H3-H4}
+\begin{lemma}\label{lemma:theta-transform-S-T}\uses{def:th00-th01-th10, def:H2-H3-H4}\lean{H₂_T_action,H₃_T_action,H₄_T_action,H₂_S_action,H₃_S_action,H₄_S_action}\leanok
 These elements act on the theta functions in the following way
 % \begin{align}
 % z^{-2}\,\theta^4_{00}\Big(\frac{-1}{z}\Big)\,=\,&-\theta_{00}^4(z) \label{eqn: theta transform S}\\
@@ -212,7 +241,7 @@ and
     H_4 | T &= H_3 \label{eqn:H4-transform-T}
 \end{align}
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
 The last three identities easily follow from the definition.
 For example, \eqref{eqn:H2-transform-T} follows from
 \begin{align}
@@ -247,21 +276,11 @@ and taking 4th power.
 \end{proof}
 
 Using the above identities, we can prove that these are modular forms.
-\begin{lemma}\label{lemma:theta-modular}\uses{lemma:slash-operator-chain-rule,lemma:slash-negI-even-weight,lemma:theta-transform-S-T}
-$H_{2}$, $H_{3}$, and $H_{4}$ belong to $M_2(\Gamma(2))$.
+\begin{lemma}\label{lemma:theta-slash-invariant}\uses{lemma:slash-operator-chain-rule,lemma:slash-negI-even-weight,lemma:theta-transform-S-T}\lean{H₂_SIF,H₃_SIF,H₄_SIF}\leanok
+  $H_{2}$, $H_{3}$, and $H_{4}$ are slash invariant under $\Gamma(2)$, i.e. for all $\gamma \in \Gamma(2)$ and $i \in \{2, 3, 4\}$, we have $H_i|\gamma = H_i|\gamma^{-1} = H_i$.
 \end{lemma}
-\begin{proof}
-Since the group $\Gamma(2)$ is generated by the three elements
-\begin{equation}
-    \alpha = \begin{pmatrix}
-        1 & 2 \\ 0 & 1
-    \end{pmatrix},\quad \beta = \begin{pmatrix}
-        1 & 0 \\ 2 & 1
-    \end{pmatrix},\quad -I = \begin{pmatrix}
-        -1 & 0 \\ 0 & -1
-    \end{pmatrix},
-\end{equation}
-it is enough to show that they are invariant under the slash actions with respect to $\alpha$, $\beta$, and $-I$.
+\begin{proof}\leanok
+  By \cref{lemma:Gamma-2-generators} and \cref{lemma:slash-operator-chain-rule}, it suffices to show that the $H_i$ are invariant under slash actions with respect to $\alpha$, $\beta$, and $-I$.
 Invariance under $-I$ follows from Lemma \ref{lemma:slash-negI-even-weight}.
 The rest follows from Lemma \ref{lemma:slash-operator-chain-rule}, \ref{lemma:theta-transform-S-T}, and the matrix identities
 \begin{equation}
@@ -272,6 +291,15 @@ For example, invariance for $H_2$ can be proved by
     H_2|\alpha &= H_2 |T^{2} = -H_2 |T = H_2 \\
     H_2|\beta &= H_2 |(-S\alpha^{-1}S) = H_2 | (S\alpha^{-1}S) =-H_4 |(\alpha^{-1}S) = -H_4 |S  = H_2.
 \end{align}
+\end{proof}
+
+\begin{lemma}\label{lemma:theta-modular}\uses{lemma:theta-slash-invariant}\lean{H₂_MF,H₃_MF,H₄_MF}
+$H_{2}$, $H_{3}$, and $H_{4}$ belong to $M_2(\Gamma(2))$.
+\end{lemma}
+\begin{proof}
+  \todo{Fill in this proof, in particular the analytic properties of $H_i$.}
+
+  We have to show that each $H_i$ satisfies property (2) of \cref{def:holomorphic-modular-form}
 \end{proof}
 
 We also have a nontrivial relation between these theta functions.
