@@ -29,15 +29,26 @@ First, we will define function $a$. To this end we consider the following functi
 where $q=e^{2\pi i z}$.
 \end{lemma}
 
-The function $\phi_0(z)$ is not modular; however,
+The function $\phi_0(z)$ is not modular; however, it satisfies the following transformation rules:
 
-\begin{lemma}\label{lemma: phi0 transform}
-\uses{def: phi4 phi2 phi0, lemma:E2-transform}
-    The identity \ref{lemma:E2-transform} implies the following transformation rule:
-\begin{equation}\label{eqn: phi0 transform}
-    \phi_0\left(-\frac{1}{z}\right) = \phi_0(z)-\frac{12i}{\pi}\,\frac{1}{z}\,\phi_{-2}(z)-\frac{36}{\pi^2}\,\frac{1}{z^2}\,\phi_{-4}(z).
-\end{equation}
+\begin{lemma}\label{lemma: phi0 transform}\uses{def: phi4 phi2 phi0, lemma:Ek-is-modular-form, lemma:E2-transform, lemma:disc-cuspform}
+We have
+\begin{align}
+    \phi_0(z + 1) &= \phi_0(z) \label{eqn:phi0-trans-T} \\
+    \phi_0\left(-\frac{1}{z}\right) &= \phi_0(z)-\frac{12i}{\pi}\,\frac{1}{z}\,\phi_{-2}(z)-\frac{36}{\pi^2}\,\frac{1}{z^2}\,\phi_{-4}(z).\label{eqn:phi0-trans-S}
+\end{align}
 \end{lemma}
+\begin{proof}
+\eqref{eqn:phi0-trans-T} easily follows from periodicity of Eisenstein series and $\Delta(z)$.
+For \eqref{eqn:phi0-trans-S},
+\begin{align}
+    \phi_{0}\left(-\frac{1}{z}\right) &= \frac{(E_2(-1/z) E_4(-1/z) - E_6(-1/z))^{2}}{\Delta(-1/z)} \\
+    &= \frac{((z^2 E_2(z) - 6iz / \pi) \cdot z^4 E_4(z) - z^6 E_6(z))^{2}}{z^{12} \Delta(z)} \\
+    &= \frac{\left(E_2(z) E_4(z) - E_6(z) - \frac{6i}{\pi z} E_4(z)\right)^2}{\Delta(z)} \\
+    &= \frac{(E_2(z) E_4(z) - E_6(z))^{2} - \frac{12i}{\pi z}(E_2(z) E_4(z) - E_6(z)) E_4(z) - \frac{36}{\pi^2 z^2} E_4(z)^{2}}{\Delta(z)} \\
+    &= \phi_0(z) - \frac{12 i}{\pi z} \phi_{-2}(z) - \frac{36}{\pi^2 z^2} \phi_{-4}(z).
+\end{align}
+\end{proof}
 
 \begin{definition}\label{def:a-definition}
 \uses{def: phi4 phi2 phi0}
@@ -147,7 +158,7 @@ For $r>\sqrt{2}$ we can express $a(r)$ in the following form
 \end{equation}
 \end{proposition}
 \begin{proof}
-We denote the right hand side of \eqref{eqn: a double zeroes} by $d(r)$.    It is easy to see that $d(r)$ is well-defined. Indeed, from the transformation formula \eqref{eqn: phi0 transform} and the expansions \eqref{eqn: phi fourier0}--\eqref{eqn: phi fourier4} we obtain
+We denote the right hand side of \eqref{eqn: a double zeroes} by $d(r)$.    It is easy to see that $d(r)$ is well-defined. Indeed, from the transformation formula \eqref{eqn:phi0-trans-S} and the expansions \eqref{eqn: phi fourier0}--\eqref{eqn: phi fourier4} we obtain
 \begin{align}
 \phi_0\Big(\frac{-1}{it}\Big)=&O(e^{-2\pi/t})\quad\mbox{as}\;t\to 0\notag\\
 \phi_0\Big(\frac{-1}{it}\Big)=&O(t^{-2}\,e^{2\pi t})\quad\mbox{as}\;t\to \infty\notag
@@ -159,7 +170,7 @@ Hence, the integral \eqref{eqn: a double zeroes} converges absolutely for $r>\sq
     2\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz\notag\\
     +&\int\limits_{1}^{i\infty+1}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz.\notag
 \end{align}
-From \eqref{eqn: phi0 transform} we deduce that if $r>\sqrt{2}$ then
+From \eqref{eqn:phi0-trans-S} we deduce that if $r>\sqrt{2}$ then
 $\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\to 0$ as $\Im(z)\to\infty$. Therefore, we can deform the paths of integration
 and rewrite
 \begin{align}
@@ -170,7 +181,7 @@ and rewrite
     +&\int\limits_{1}^{i}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz
     +\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz.\notag
 \end{align}
-Now from \eqref{eqn: phi0 transform} we find
+Now from \eqref{eqn:phi0-trans-S} we find
 \begin{align}&\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2-2\phi_0\Big(\frac{-1}{z}\Big)\,z^2+
 \phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2=\notag\\
 &\phi_0(z+1)\,(z+1)^2-2\phi_0(z)\,z^2+\phi_0(z-1)\,(z-1)^2\notag\\
@@ -196,7 +207,7 @@ The integral converges absolutely for all $r\in\R_{\geq 0}$.
 \begin{proof}
 Suppose that $r>\sqrt{2}$. Then by Proposition~\ref{prop:a-double-zeros}
 $$a(r)=4i\,\sin(\pi r^2/2)^2\,\int\limits_{0}^{\infty}\phi_0(i/t)\,t^2\,e^{-\pi r^2 t}\,dt. $$
-From \eqref{eqn: phi fourier0}--\eqref{eqn: phi0 transform} we obtain
+From \eqref{eqn: phi fourier0}--\eqref{eqn:phi0-trans-S} we obtain
 \begin{equation}\label{eqn: phi asymptotic}
 \phi_0(i/t)\,t^2=\frac{36}{\pi^2}\,e^{2 \pi t}-\frac{8640}{\pi}\,t+\frac{18144}{\pi^2}+O(t^2\,e^{-2\pi t})\quad\mbox{as}\;t\to\infty.
 \end{equation}
@@ -244,7 +255,7 @@ Let $I=\left(\begin{smallmatrix}1&0\\0&1\end{smallmatrix}\right)$,
 $T=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$, and
 $S=\left(\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right)$ be elements of $\Gamma_1$.
 \begin{definition}\label{def: psi I psi T psi S}\uses{def: h}
-We define the followig three functions
+We define the following three functions
 \begin{align}
     \psi_I\,:=\,&h-h|_{-2}ST \label{eqn: psi I define}\\
     \psi_T\,:=\,&\psi_I|_{-2}T \label{eqn: psi T define}\\
@@ -267,6 +278,7 @@ More explicitly, we have
     \psi_S(z) &= 128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} - 128 \frac{H_2(z) - H_4(z)}{H_3(z)^2} \label{eqn: psi S explicit}
 \end{align}
 \end{lemma}
+
 \begin{lemma}\label{lemma: psi fourier I psi fourier T psi fourier S}\uses{lemma: psi I psi T psi S explicit}
 The Fourier expansions of these functions are
 \begin{align}

@@ -111,10 +111,15 @@ The \emph{discriminant form} $\Delta(z)$ is given by
 \end{definition}
 
 \begin{lemma}\label{lemma:disc-cuspform}\uses{def:disc-definition}
-$\Delta(z) \in M_{12}(\Gamma_1)$ and it vanishes at the unique cusp, i.e. it is a cusp form of level $\Gamma_1$ and weight $12$.
+$\Delta(z) \in M_{12}(\Gamma_1)$.
+Especially, we have
+\begin{equation}\label{eqn:disc-trans-S}
+    \Delta\left(-\frac{1}{z}\right) = z^{12} \Delta(z).
+\end{equation}
+Also, it vanishes at the unique cusp, i.e. it is a cusp form of level $\Gamma_1$ and weight $12$.
 \end{lemma}
 \begin{proof}
-Being a modular form of desired weight and level directly follows from those of $E_4$ and $E_6$.
+Being a modular form of desired weight and level directly follows from those of $E_4$ and $E_6$, and \eqref{eqn:disc-trans-S} immediately follows.
 It is a cusp form since the constant terms of Fourier expansions of $E_4$ and $E_6$ are both $1$.
 \end{proof}
 
@@ -412,7 +417,7 @@ We set
 \begin{lemma}\label{lemma:E2-transform}\uses{def:E2}
 This function is not modular, however it satisfies
 \begin{equation}\label{eqn:E2-S-transform}
-    z^{-2}\,E_2\Big(\frac{-1}{z}\Big)=E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.
+    z^{-2}\,E_2\left(-\frac{1}{z}\right) = E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.
 \end{equation}
 More generally, we have
 \begin{equation}\label{eqn:E2-transform-general}
