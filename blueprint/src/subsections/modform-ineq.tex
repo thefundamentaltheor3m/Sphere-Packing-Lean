@@ -27,7 +27,7 @@ for all $t > 0$.
 Here we formalize the proof of the inequalities by Lee \cite{Lee}.
 First, we can rewrite the inequality in \ref{prop:ineqA} as follows.
 
-\begin{definition}
+\begin{definition}\label{def:FG-definition}
 Define two (quasi) modular forms as
 \begin{align}
   F(z) &= (E_2(z) E_4(z) - E_6(z))^2 \label{eqn:defF} \\
@@ -35,7 +35,7 @@ Define two (quasi) modular forms as
 \end{align}
 \end{definition}
 
-\begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{lemma: psi I psi T psi S explicit, lemma:lv1-lv2-identities, lemma:jacobi-identity}
+\begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{def:FG-definition, lemma:psiS-new}
 We have
 \begin{align}
   \phi_0 &= \frac{F}{\Delta} \label{eqn:phi0-F} \\
@@ -44,15 +44,7 @@ We have
 \end{lemma}
 \begin{proof}
 \eqref{eqn:phi0-F} is clear.
-For \eqref{eqn:psiS-G}, using \eqref{eqn: psi S explicit} and \eqref{eqn:jacobi-identity} gives
-\begin{align}
-  \psi_S &= -128 \frac{H_3 + H_2}{H_4^2} - 128 \frac{H_2 - H_4}{H_3^2} \\
-  &= -128 \frac{H_3^2 (H_2 - H_4) + H_4^2 (H_2 - H_4)}{H_3^2 H_4^2} \\
-  &= -128 \frac{(H_2 + H_4)^2 (2H_2 + H_4) + H_4^2(H_2 + H_4)}{H_3^2 H_4^2} \\
-  &= -128 \frac{H_2 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_3^2 H_4^2} \\
-  &= -128 \frac{H_2^3 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_2^2 H_3^2 H_4^2} \\
-  &= - \frac{1}{2} \frac{G}{\Delta}.
-\end{align}
+\eqref{eqn:psiS-G} is already shown in Lemma \ref{lemma:psiS-new}.
 \end{proof}
 
 \begin{lemma}\label{lemma:ineqABnew-equiv}\uses{lemma:F-G-phi-psi-identities, def: psi I psi T psi S, cor:disc-pos}

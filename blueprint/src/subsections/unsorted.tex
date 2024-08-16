@@ -4,7 +4,7 @@
 
 In this section we construct two radial Schwartz functions $a,b:\R^8\to i\R$ such that
 \begin{align}\mathcal{F}(a)&=a\label{eqn:a-fourier}\\
-  \mathcal{F}(b)&=-b\label{eqn: b fourier}
+  \mathcal{F}(b)&=-b\label{eqn:b-fourier}
 \end{align}
 which double zeroes at all $\Lambda_8$-vectors of length greater than $\sqrt{2}$. Recall that each vector of $\Lambda_8$ has length $\sqrt{2n}$ for some $n\in\N_{\geq 0}$. We define $a$ and $b$ so that their values are purely imaginary because this simplifies some of our computations. We will show in Section \ref{sec: g} that an appropriate linear combination of functions $a$ and $b$ satisfies conditions \eqref{eqn:g1}--\eqref{eqn:g3}.
 
@@ -45,8 +45,10 @@ For $x\in\R^8$ we define
   +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i \|x\|^2 z}\,dz.\nonumber
 \end{align}
 \end{definition}
+
 We observe that the contour integrals in \eqref{eqn:a-definition} converge absolutely and uniformly for  $x\in\R^8$. Indeed,
 $\phi_0(z)=O(e^{-2\pi i z})$ as $\Im(z)\to \infty$. Therefore, $a(x)$ is well defined. Now we prove that $a$ satisfies condition \eqref{eqn:a-fourier}.
+
 \begin{lemma}\label{lemma:phi0-bound}\uses{thm:ramanujan-formula, lemma:disc-prodformula}
 There exists a constant $C > 0$ such that
 \begin{equation}\label{eqn:phi0-bound}
@@ -63,6 +65,7 @@ Using product formula of $\Delta$, we get
   &= 9 \cdot 240^2 \cdot \left|\frac{\left(\sum_{n \ge 1} n \sigma_3(n) e^{2 \pi i n z}\right)^{2}}{e^{2\pi i z} \prod_{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\
   &= 9 \cdot 240^2 \cdot \left|e^{2 \pi i z}\right| \cdot \left|\frac{\left(1 + \sum_{n\ge 2} n\sigma_3(n) e^{2 \pi i (n - 1) z} \right)^{2}}{\prod_{n \ge 1}(1 - e^{2 \pi i n z})^{24}}\right| \\
   &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot \frac{\left(1 + \sum_{n \ge 2} n \sigma_3(n) |e^{2 \pi i (n-1)z}|\right)^{2}}{\prod_{n \ge 1}|1 - e^{2 \pi i n z}|^{24}} \\
+  &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot \frac{\left(1 + \sum_{n \ge 2} n \sigma_3(n) e^{-2 \pi (n-1) \Im z}|\right)^{2}}{\prod_{n \ge 1}(1 - e^{-2 \pi n \Im z})^{24}} \\
   &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot \frac{\left(1 + \sum_{n \ge 2} n \sigma_3(n) e^{-\pi(n-1)}\right)^{2}}{\prod_{n \ge 1}(1 - e^{-\pi n})^{24}} \\
   &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot e^{\pi} \cdot \frac{\left(\sum_{n \ge 1} n \sigma_3(n) e^{-\pi n}\right)^{2}}{e^{-\pi}\prod_{n \ge 1}(1 - e^{-\pi n})^{24}} \\
   &\le C e^{-2 \pi \Im z}
@@ -277,26 +280,83 @@ For $x\in\R^8$ define
   - 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i \|x\|^2 z}\,dz \nonumber.
 \end{align}
 \end{definition}
-Now we prove that $b$ satisfies condition \eqref{eqn: b fourier}.
-\begin{proposition}\label{prop: b(r) Fourier}\uses{def:b-definition, lemma:Gaussian-Fourier, def: psi I psi T psi S}
-The function $b$ defined by \eqref{eqn:b-definition} belongs to the Schwartz space and satisfies
-  $$\widehat{b}(x)=-b(x). $$
+
+Now we prove that $b$ is a Schwartz function and satisfies condition \eqref{eqn:b-fourier}.
+
+\begin{lemma}\label{lemma:psiS-new}\uses{lemma: psi I psi T psi S explicit, lemma:lv1-lv2-identities, lemma:jacobi-identity}
+$\psi_S(z)$ can be written as
+\begin{equation}\label{eqn:psiS-new}
+  \psi_S(z) = -\frac{H_2^3 (2 H_2^3 + 5 H_2 H_4 + 5 H_4^2)}{2 \Delta}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Using \eqref{eqn: psi S explicit} and \eqref{eqn:jacobi-identity} gives
+\begin{align}
+  \psi_S &= -128 \frac{H_3 + H_2}{H_4^2} - 128 \frac{H_2 - H_4}{H_3^2} \\
+  &= -128 \frac{H_3^2 (H_2 - H_4) + H_4^2 (H_2 - H_4)}{H_3^2 H_4^2} \\
+  &= -128 \frac{(H_2 + H_4)^2 (2H_2 + H_4) + H_4^2(H_2 + H_4)}{H_3^2 H_4^2} \\
+  &= -128 \frac{H_2 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_3^2 H_4^2} \\
+  &= -128 \frac{H_2^3 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_2^2 H_3^2 H_4^2} \\
+  &= - \frac{1}{2} \frac{H_2^3 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{\Delta}.
+\end{align}
+\end{proof}
+
+\begin{lemma}\label{lemma:psiS-bound}\uses{lemma:psiS-new, lemma:disc-prodformula, prop:H2-fourier, prop:H3-H4-fourier}
+There exists a constant $C > 0$ such that
+\begin{equation}\label{eqn:psiS-bound}
+|\psi_S(z)| \le C e^{- \pi \Im z}
+\end{equation}
+for all $z$ with $\Im z > 1/2$.
+\end{lemma}
+\begin{proof}
+Proof is similar to that of Lemma \ref{lemma:phi0-bound}.
+By Proposition \ref{prop:H2-fourier} and \ref{prop:H3-H4-fourier}, we can write Fourier expansion of the numerator of $\psi_S$ as
+\begin{equation}
+  H_2(z)^3 (2 H_2(z)^2 + 5 H_2(z) H_4(z) + 5 H_4(z)^2) = \sum_{n \ge 3} a_n e^{\pi i n z}
+\end{equation}
+with $a_3 = 16^3 \cdot 5 = 20480$.
+We have
+\begin{align}
+  |\psi_S(z)| &= \left|\frac{H_2(z)^3 (2 H_2(z)^2 + 5 H_2(z) H_4(z) + 5 H_4(z))}{2 \Delta(z)}\right| \\
+  &= \left|\frac{\sum_{n \ge 3} a_n e^{\pi i n z}}{2 e^{2\pi i z} \prod_{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\
+  &= \frac{1}{2}|e^{\pi i z}| \cdot \frac{|\sum_{n \ge 3} a_n e^{\pi i (n-3) z}|}{\prod_{n \ge 1} |1 - e^{2\pi i n z}|^{24}} \\
+  &\le \frac{1}{2} e^{-\pi \Im z} \cdot \frac{\sum_{n \ge 3} |a_n| e^{-\pi (n-3) \Im z}}{\prod_{n \ge 1} (1 - e^{-2 \pi n \Im z})^{24}} \\
+  &\le \frac{1}{2} e^{-\pi \Im z} \cdot \frac{\sum_{n \ge 3} |a_n| e^{-\pi (n - 3) / 2}}{\prod_{n \ge 1} (1 - e^{\pi n})^{24}} \\
+  &= C e^{-\pi \Im z}
+\end{align}
+where
+\begin{equation}
+  C = \frac{\sum_{n \ge 3} |a_n| e^{-\pi (n - 3) / 2}}{2\prod_{n \ge 1} (1 - e^{\pi n})^{24}}.
+\end{equation}
+\todo{In fact, we have $a_n \ge 0$ for all $n$. Then we can express the above constant as a special value of modular forms at $z = i/2$, like as Lemma \ref{lemma:phi0-bound}. However, this require additional works. Otherwise, one need s to prove that the summation on the numerator converges.}
+\end{proof}
+
+\begin{proposition}\label{prop:b-schwartz}\uses{lemma:psiS-bound}
+$b(x)$ is a Schwartz function.
 \end{proposition}
 \begin{proof}
-Here, we repeat the arguments used in the proof of Proposition~\ref{prop:a-fourier}. First we show that $b$ is a Schwartz function. We have
+We have
 \begin{align}
   &\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r^2 z}\,dz=\int\limits_{0}^{i+1}\psi_I(z)\,e^{\pi i r^2 (z-1)}\,dz=\notag\\
   &\int\limits_{i\infty}^{-1/(i+1)}\psi_I\Big(\frac{-1}{z}\Big)\,e^{\pi i r^2 (-1/z-1)}\,z^{-2}\,dz=\int\limits_{i\infty}^{-1/(i+1)}\psi_S(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz.\notag
 \end{align}
-There exists a positive constant $C$ such that
-$$|\psi_S(z)|\leq C\,e^{-\pi\,\Im{z}}\quad\mbox{for }\;\Im{z}>\frac12.$$
-Thus, as in the proof of Proposition~\ref{prop:a-fourier} we estimate the first summand in the left-hand side of~\eqref{eqn:b-definition}
-$$\Bigg|\int\limits_{-1}^i \psi_T(z)\,e^{\pi i r^2 z}\,dz \Bigg|\leq C_1\,r\,K_1(2\pi r).$$
+Using \eqref{eqn:psiS-bound}, we can estimate the first summand in the left-hand side of~\eqref{eqn:b-definition}
+\begin{equation}
+  \left|\int\limits_{-1}^i \psi_T(z)\,e^{\pi i r^2 z}\,dz \right|\leq C_1\,r\,K_1(2\pi r).
+\end{equation}
 We combine this inequality with analogous estimates for the other three summands and obtain
-$$|b(r)|\leq C_2\,r\,K_1(2\pi r)+C_3\,\frac{e^{-\pi(r^2+1)}}{r^2+1}.$$
-Here $C_1$, $C_2$, and $C_3$ are some positive constants. Similar estimates hold for all derivatives $\frac{d^k}{d^k r} b(r)$.
+\begin{equation}
+  |b(r)|\leq C_2\,r\,K_1(2\pi r)+C_3\,\frac{e^{-\pi(r^2+1)}}{r^2+1}.
+\end{equation}
+Here $C_1$, $C_2$, and $C_3$ are some positive constants. Similar estimates hold for all derivatives $\frac{\dd^k}{\dd^k r} b(r)$.
+\end{proof}
 
-Now we prove that $b$ is an eigenfunction of the Fourier transform. We use identity~\eqref{eqn:gaussian Fourier} and change contour integration in $z$ and Fourier transform in $x$. Thus we obtain
+\begin{proposition}\label{prop:b-fourier}\uses{def:b-definition, lemma:Gaussian-Fourier, def: psi I psi T psi S, prop:b-schwartz}
+$b(x)$ satisfies \eqref{eqn:b-fourier}.
+\end{proposition}
+\begin{proof}
+Here, we repeat the arguments used in the proof of Proposition~\ref{prop:a-fourier}.
+We use identity~\eqref{eqn:gaussian Fourier} and change contour integration in $z$ and Fourier transform in $x$. Thus we obtain
 \begin{align}
   \mathcal{F}(b)(x)= & \int\limits_{-1}^{i}\psi_T(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz
     + \int\limits_{1}^{i}\psi_T(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz \notag \\
