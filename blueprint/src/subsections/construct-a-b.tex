@@ -79,7 +79,7 @@ Then there exists a constant $C_f > 0$ such that
 for all $z$ with $\Im z > 1/2$.
 \end{lemma}
 \todo{
-Note that the assumption on the polynomial growth holds when $f$ is a modular form, where the proof can be found in \cite[p. 94]{Serre73} for the case of level 1 modular forms.
+Note that the assumption on the polynomial growth holds when $f$ is a holomorphic modular form, where the proof can be found in \cite[p. 94]{Serre73} for the case of level 1 modular forms.
 But we just add this for simplicity, and we can prove it for ``specific'' $f$ such as Eisenstein series, theta functions, and their combinations.
 }
 \begin{proof}
@@ -455,7 +455,7 @@ $$ \mathcal{F}(b)(x)=-b(x). $$
 \end{proof}
 Now we regard the radial function $b$ as a function on $\R_{\geq0}$. We check that $b$ has double roots at $\Lambda_8$-points.
 
-\begin{lemma}\label{lemma:psiI-bound}\uses{lemma:psiS-bound, lemma:psiS-new, lemma:psiI-psiT-psiS-fourier}
+\begin{lemma}\label{lemma:psiI-bound}\uses{lemma:mod-div-disc-bound, prop:H2-fourier, prop:H3-fourier, prop:H4-fourier, def:psiI-psiT-psiS, lemma:theta-transform-S-T, lemma:disc-cuspform}
 There exists a constant $C_I > 0$ such that
 \begin{equation}
     |\psi_I(z)| \le C_I e^{2 \pi \Im z}
@@ -463,7 +463,11 @@ There exists a constant $C_I > 0$ such that
 for all $z$ with $\Im z > 1/2$.
 \end{lemma}
 \begin{proof}
-\todo{Add proof.}
+By \eqref{eqn:psiS-new}, \eqref{eqn:psiS-define}, \eqref{eqn:H2-transform-S}, and \eqref{eqn:H4-transform-S},
+\begin{equation}
+    \psi_I(z) = \frac{H_4^3(2 H_4^2 + 5 H_4 H_2 + 5 H_2^2)}{2 \Delta}.
+\end{equation}
+The denominator is not a cusp form (i.e. has a nonzero constant term), hence Lemma \ref{lemma:mod-div-disc-bound} concludes the proof with $n_0 = 0$.
 \end{proof}
 
 \begin{corollary}\label{cor:psiI-near-0-infty}\uses{lemma:psiI-bound, lemma:psiS-bound, def:psiI-psiT-psiS}

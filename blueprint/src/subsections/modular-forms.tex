@@ -384,9 +384,9 @@ Now the identities follow from the dimension calculations $\dim M_4(\Gamma_1) = 
 \end{proof}
 
 The \emph{strict} positivity of Jacobi theta functions might needed later.
-\begin{lemma}\label{lemma:theta-pos}\uses{lemma:jacobi-identity, lemma:theta-transform-S-T}
+\begin{corollary}\label{cor:theta-pos}\uses{lemma:jacobi-identity, lemma:theta-transform-S-T}
 All three functions $t \mapsto H_2(it), H_3(it), H_4(it)$ are positive for $t > 0$.
-\end{lemma}
+\end{corollary}
 \begin{proof}
 By Lemma \ref{lemma:jacobi-identity} and the transformation law \eqref{eqn:H2-transform-S}, it is enough to prove the positivity for $\Theta_2(it)$, which is clear from its definition:
 \begin{equation}
@@ -449,8 +449,8 @@ The most important quasimodular form is the weight 2 Eisenstein series $E_2$.
 We define it as a $q$-series, which gives a holomorphic function on $\mathfrak{H}$.
 \begin{definition}\label{def:E2} % \lean{def:E2}
 We set
-\begin{equation}
-    E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.\notag
+\begin{equation}\label{eqn:E2}
+    E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.
 \end{equation}
 \end{definition}
 
