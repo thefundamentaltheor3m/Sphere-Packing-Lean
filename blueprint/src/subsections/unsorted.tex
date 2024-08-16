@@ -4,7 +4,7 @@
 
 In this section we construct two radial Schwartz functions $a,b:\R^8\to i\R$ such that
 \begin{align}\mathcal{F}(a)&=a\label{eqn:a-fourier}\\
-  \mathcal{F}(b)&=-b\label{eqn:b-fourier}
+    \mathcal{F}(b)&=-b\label{eqn:b-fourier}
 \end{align}
 which double zeroes at all $\Lambda_8$-vectors of length greater than $\sqrt{2}$. Recall that each vector of $\Lambda_8$ has length $\sqrt{2n}$ for some $n\in\N_{\geq 0}$. We define $a$ and $b$ so that their values are purely imaginary because this simplifies some of our computations. We will show in Section \ref{sec: g} that an appropriate linear combination of functions $a$ and $b$ satisfies conditions \eqref{eqn:g1}--\eqref{eqn:g3}.
 
@@ -12,41 +12,45 @@ First, we will define function $a$. To this end we consider the following functi
 \begin{definition}\label{def: phi4 phi2 phi0}
 \uses{def:Ek-definition,def:E2}
 \begin{align}
-  \phi_{-4} &:= \frac{E_4^2}{\Delta} \label{eqn: def phi4} \\
-  \phi_{-2} &:= \frac{E_4(E_2 E_4 - E_6)}{\Delta} \label{eqn: def phi2} \\
-  \phi_{0} &:= \frac{(E_2 E_4 - E_6)^2}{\Delta} \label{eqn: def phi0}
+    \phi_{-4} &:= \frac{E_4^2}{\Delta} \label{eqn: def phi4} \\
+    \phi_{-2} &:= \frac{E_4(E_2 E_4 - E_6)}{\Delta} \label{eqn: def phi2} \\
+    \phi_{0} &:= \frac{(E_2 E_4 - E_6)^2}{\Delta} \label{eqn: def phi0}
 \end{align}
 \end{definition}
+
 \begin{lemma}\label{lemma: phi fourier4 phi fourier2 phi fourier0}
 \uses{def: phi4 phi2 phi0}
-  These functions have the Fourier expansions
+    These functions have the Fourier expansions
 \begin{align}
-  \phi_{-4}(z)\,=\,&q^{-1} + 504 + 73764\, q + 2695040\, q^2 + 54755730\, q^3 + O(q^4)\label{eqn: phi fourier4}\\
-  \phi_{-2}(z)\,=\,&720 + 203040\, q + 9417600\, q^2 + 223473600\, q^3 + 3566782080\, q^4+O(q^5)\label{eqn: phi fourier2}\\
-  \phi_{0}(z)\,=\,&518400\, q + 31104000\, q^2 + 870912000\, q^3 + 15697152000\, q^4+O(q^5)\label{eqn: phi fourier0}
+    \phi_{-4}(z)\,=\,&q^{-1} + 504 + 73764\, q + 2695040\, q^2 + 54755730\, q^3 + O(q^4)\label{eqn: phi fourier4}\\
+    \phi_{-2}(z)\,=\,&720 + 203040\, q + 9417600\, q^2 + 223473600\, q^3 + 3566782080\, q^4+O(q^5)\label{eqn: phi fourier2}\\
+    \phi_{0}(z)\,=\,&518400\, q + 31104000\, q^2 + 870912000\, q^3 + 15697152000\, q^4+O(q^5)\label{eqn: phi fourier0}
 \end{align}
 where $q=e^{2\pi i z}$.
 \end{lemma}
+
 The function $\phi_0(z)$ is not modular; however,
+
 \begin{lemma}\label{lemma: phi0 transform}
 \uses{def: phi4 phi2 phi0, lemma:E2-transform}
-  The identity \ref{lemma:E2-transform} implies the following transformation rule:
+    The identity \ref{lemma:E2-transform} implies the following transformation rule:
 \begin{equation}\label{eqn: phi0 transform}
-\phi_0\Big(\frac{-1}{z}\Big)=\phi_0(z)-\frac{12i}{\pi}\,\frac{1}{z}\,\phi_{-2}(z)-\frac{36}{\pi^2}\,\frac{1}{z^2}\,\phi_{-4}(z).
+    \phi_0\left(-\frac{1}{z}\right) = \phi_0(z)-\frac{12i}{\pi}\,\frac{1}{z}\,\phi_{-2}(z)-\frac{36}{\pi^2}\,\frac{1}{z^2}\,\phi_{-4}(z).
 \end{equation}
 \end{lemma}
+
 \begin{definition}\label{def:a-definition}
 \uses{def: phi4 phi2 phi0}
 For $x\in\R^8$ we define
 \begin{align}\label{eqn:a-definition}
-  a(x):=&\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i \|x\|^2 z}\,dz
-  +\int\limits_{1}^i\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i \|x\|^2 z}\,dz\\
-  -&2\int\limits_{0}^i\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i \|x\|^2 z}\,dz
-  +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i \|x\|^2 z}\,dz.\nonumber
+    a(x):=&\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i \|x\|^2 z}\,dz
+    +\int\limits_{1}^i\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i \|x\|^2 z}\,dz\\
+    -&2\int\limits_{0}^i\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i \|x\|^2 z}\,dz
+    +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i \|x\|^2 z}\,dz.\nonumber
 \end{align}
 \end{definition}
 
-We observe that the contour integrals in \eqref{eqn:a-definition} converge absolutely and uniformly for  $x\in\R^8$. Indeed,
+We observe that the contour integrals in \eqref{eqn:a-definition} converge absolutely and uniformly for    $x\in\R^8$. Indeed,
 $\phi_0(z)=O(e^{-2\pi i z})$ as $\Im(z)\to \infty$. Therefore, $a(x)$ is well defined. Now we prove that $a$ satisfies condition \eqref{eqn:a-fourier}.
 
 \begin{lemma}\label{lemma:phi0-bound}\uses{thm:ramanujan-formula, lemma:disc-prodformula}
@@ -60,19 +64,19 @@ for all $z$ with $\Im z > 1/2$.
 By Ramanujan's formula, $E_2 E_4 - E_6 = 3E_4'$.
 Using product formula of $\Delta$, we get
 \begin{align}
-  |\phi_0(z)| &= \left|\frac{(E_2(z) E_4(z) - E_6(z))^2}{\Delta(z)}\right| \\
-  &= 9\left|\frac{E_4'(z)^2}{\Delta(z)}\right| \\
-  &= 9 \cdot 240^2 \cdot \left|\frac{\left(\sum_{n \ge 1} n \sigma_3(n) e^{2 \pi i n z}\right)^{2}}{e^{2\pi i z} \prod_{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\
-  &= 9 \cdot 240^2 \cdot \left|e^{2 \pi i z}\right| \cdot \left|\frac{\left(1 + \sum_{n\ge 2} n\sigma_3(n) e^{2 \pi i (n - 1) z} \right)^{2}}{\prod_{n \ge 1}(1 - e^{2 \pi i n z})^{24}}\right| \\
-  &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot \frac{\left(1 + \sum_{n \ge 2} n \sigma_3(n) |e^{2 \pi i (n-1)z}|\right)^{2}}{\prod_{n \ge 1}|1 - e^{2 \pi i n z}|^{24}} \\
-  &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot \frac{\left(1 + \sum_{n \ge 2} n \sigma_3(n) e^{-2 \pi (n-1) \Im z}|\right)^{2}}{\prod_{n \ge 1}(1 - e^{-2 \pi n \Im z})^{24}} \\
-  &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot \frac{\left(1 + \sum_{n \ge 2} n \sigma_3(n) e^{-\pi(n-1)}\right)^{2}}{\prod_{n \ge 1}(1 - e^{-\pi n})^{24}} \\
-  &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot e^{\pi} \cdot \frac{\left(\sum_{n \ge 1} n \sigma_3(n) e^{-\pi n}\right)^{2}}{e^{-\pi}\prod_{n \ge 1}(1 - e^{-\pi n})^{24}} \\
-  &\le C e^{-2 \pi \Im z}
+    |\phi_0(z)| &= \left|\frac{(E_2(z) E_4(z) - E_6(z))^2}{\Delta(z)}\right| \\
+    &= 9\left|\frac{E_4'(z)^2}{\Delta(z)}\right| \\
+    &= 9 \cdot 240^2 \cdot \left|\frac{\left(\sum_{n \ge 1} n \sigma_3(n) e^{2 \pi i n z}\right)^{2}}{e^{2\pi i z} \prod_{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\
+    &= 9 \cdot 240^2 \cdot \left|e^{2 \pi i z}\right| \cdot \left|\frac{\left(1 + \sum_{n\ge 2} n\sigma_3(n) e^{2 \pi i (n - 1) z} \right)^{2}}{\prod_{n \ge 1}(1 - e^{2 \pi i n z})^{24}}\right| \\
+    &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot \frac{\left(1 + \sum_{n \ge 2} n \sigma_3(n) |e^{2 \pi i (n-1)z}|\right)^{2}}{\prod_{n \ge 1}|1 - e^{2 \pi i n z}|^{24}} \\
+    &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot \frac{\left(1 + \sum_{n \ge 2} n \sigma_3(n) e^{-2 \pi (n-1) \Im z}|\right)^{2}}{\prod_{n \ge 1}(1 - e^{-2 \pi n \Im z})^{24}} \\
+    &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot \frac{\left(1 + \sum_{n \ge 2} n \sigma_3(n) e^{-\pi(n-1)}\right)^{2}}{\prod_{n \ge 1}(1 - e^{-\pi n})^{24}} \\
+    &\le 9 \cdot 240^2 \cdot e^{-2 \pi \Im z} \cdot e^{\pi} \cdot \frac{\left(\sum_{n \ge 1} n \sigma_3(n) e^{-\pi n}\right)^{2}}{e^{-\pi}\prod_{n \ge 1}(1 - e^{-\pi n})^{24}} \\
+    &\le C e^{-2 \pi \Im z}
 \end{align}
 where
 \begin{equation}
-  C = 9 \cdot 240^2 \cdot e^{\pi} \cdot \frac{E_4'(i/2)^{2}}{\Delta(i/2)}.
+    C = 9 \cdot 240^2 \cdot e^{\pi} \cdot \frac{E_4'(i/2)^{2}}{\Delta(i/2)}.
 \end{equation}
 \end{proof}
 
@@ -84,8 +88,8 @@ $a(x)$ is a Schwartz function.
 We estimate the first summand in the right-hand side of \eqref{eqn:a-definition}.
 By \eqref{eqn:phi0-bound}, we have
 \begin{align}
-  &\left|\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 z}\,dz\right|=\left|\int\limits_{i\infty}^{-1/(i+1)}\phi_0(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz\right|\leq \notag\\
-  &C_1\int\limits_{1/2}^{\infty}e^{-2\pi t}\,e^{-\pi  r^2/t}\,dt\leq C_1\int\limits_{0}^{\infty}e^{-2\pi t}\,e^{-\pi  r^2/t}\,dt=C_2\,r\,K_1(2\sqrt{2}\,\pi\,r)\notag
+    &\left|\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 z}\,dz\right|=\left|\int\limits_{i\infty}^{-1/(i+1)}\phi_0(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz\right|\leq \notag\\
+    &C_1\int\limits_{1/2}^{\infty}e^{-2\pi t}\,e^{-\pi    r^2/t}\,dt\leq C_1\int\limits_{0}^{\infty}e^{-2\pi t}\,e^{-\pi    r^2/t}\,dt=C_2\,r\,K_1(2\sqrt{2}\,\pi\,r)\notag
 \end{align}
 where $C_1$ and $C_2$ are some positive constants and $K_\alpha(x)$ is the modified Bessel function of the second kind defined as in \cite[Section~9.6]{Abramowitz}. This estimate also holds for the second and third summand in \eqref{eqn:a-definition}.
 For the last summand we have
@@ -94,7 +98,7 @@ For the last summand we have
 \end{equation}
 Therefore, we arrive at
 \begin{equation}
-  |a(r)|\leq 4C_2\,r\,K_1(2\sqrt{2}\pi r)+2C_3\frac{e^{-\pi(r^2+2)}}{r^2+2}.
+    |a(r)|\leq 4C_2\,r\,K_1(2\sqrt{2}\pi r)+2C_3\frac{e^{-\pi(r^2+2)}}{r^2+2}.
 \end{equation}
 It is easy to see that the left hand side of this inequality decays faster then any inverse power of $r$. Analogous estimates can be obtained for all derivatives $\frac{\dd^k}{\dd r^k}a(r)$.
 \end{proof}
@@ -106,27 +110,27 @@ $a(x)$ satisfies \eqref{eqn:a-fourier}.
 \begin{proof}
 We recall that the Fourier transform of a Gaussian function is
 \begin{equation}\label{eqn:gaussian Fourier}
-  \mathcal{F}(e^{\pi i  \|x\|^2 z})(y)=z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
+    \mathcal{F}(e^{\pi i \|x\|^2 z})(y)=z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
 \end{equation}
-Next, we exchange the contour integration with respect to $z$ variable and Fourier transform  with respect to $x$ variable in \eqref{eqn:a-definition}. This can be done, since the corresponding double integral converges absolutely. In this way we obtain
+Next, we exchange the contour integration with respect to $z$ variable and Fourier transform    with respect to $x$ variable in \eqref{eqn:a-definition}. This can be done, since the corresponding double integral converges absolutely. In this way we obtain
 \begin{align}
-  \widehat{a}(y)=&\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz
-  +\int\limits_{1}^i\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz\notag \\
-  -&2\int\limits_{0}^i\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz +2\int\limits_{i}^{i\infty}\phi_0(z)\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz.\notag
+    \widehat{a}(y)=&\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz
+    +\int\limits_{1}^i\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz\notag \\
+    -&2\int\limits_{0}^i\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz +2\int\limits_{i}^{i\infty}\phi_0(z)\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz.\notag
 \end{align}
 Now we make a change of variables $w=\frac{-1}{z}$. We obtain
 \begin{align}
-  \widehat{a}(y)=&\int\limits_{1}^i\phi_0\Big(1-\frac{1}{w-1}\Big)\,(\frac{-1}{w}+1)^2\,w^{2}\,e^{\pi i \|y\|^2 \,w}\,dw\notag\\
-  +&\int\limits_{-1}^i\phi_0\Big(1-\frac{1}{w+1}\Big)\,(\frac{-1}{w}-1)^2\,w^2\,e^{\pi i \|y\|^2 \,w}\,dw\\
-  -&2\int\limits_{i \infty}^i\phi_0(w)\,e^{\pi i \|y\|^2 \,w}\,dw +2\int\limits_{i}^{0}\phi_0\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|y\|^2 \,w}\,dw.\notag
+    \widehat{a}(y)=&\int\limits_{1}^i\phi_0\Big(1-\frac{1}{w-1}\Big)\,(\frac{-1}{w}+1)^2\,w^{2}\,e^{\pi i \|y\|^2 \,w}\,dw\notag\\
+    +&\int\limits_{-1}^i\phi_0\Big(1-\frac{1}{w+1}\Big)\,(\frac{-1}{w}-1)^2\,w^2\,e^{\pi i \|y\|^2 \,w}\,dw\\
+    -&2\int\limits_{i \infty}^i\phi_0(w)\,e^{\pi i \|y\|^2 \,w}\,dw +2\int\limits_{i}^{0}\phi_0\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|y\|^2 \,w}\,dw.\notag
 \end{align}
 Since $\phi_0$ is $1$-periodic we have
 \begin{align}
-  \widehat{a}(y)\,=\,&\int\limits_{1}^i\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i \|y\|^2 \,z}\,dz
-  +\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i \|y\|^2 \,z}\,dz\notag \\
-  +&2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i \|y\|^2 \,z}\,dz
-  -2\int\limits_{0}^{i}\phi_0\Big(\frac{-1}{z}\Big)\,z^{2}\,e^{\pi i \|y\|^2 \,z}\,dz\notag \\
-  \,=\,&a(y).
+    \widehat{a}(y)\,=\,&\int\limits_{1}^i\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i \|y\|^2 \,z}\,dz
+    +\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i \|y\|^2 \,z}\,dz\notag \\
+    +&2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i \|y\|^2 \,z}\,dz
+    -2\int\limits_{0}^{i}\phi_0\Big(\frac{-1}{z}\Big)\,z^{2}\,e^{\pi i \|y\|^2 \,z}\,dz\notag \\
+    \,=\,&a(y).
 \end{align}
 This finishes the proof of the proposition.
 \end{proof}
@@ -139,32 +143,32 @@ Next, we check that $a$ has double zeroes at all $\Lambda_8$-lattice points of l
 \uses{lemma: phi0 transform, def:a-definition}
 For $r>\sqrt{2}$ we can express $a(r)$ in the following form
 \begin{equation}\label{eqn: a double zeroes}
-  a(r)=-4\sin(\pi r^2/2)^2\,\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz.
+    a(r)=-4\sin(\pi r^2/2)^2\,\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz.
 \end{equation}
 \end{proposition}
 \begin{proof}
-We denote the right hand side of \eqref{eqn: a double zeroes} by $d(r)$.  It is easy to see that $d(r)$ is well-defined. Indeed, from the transformation formula \eqref{eqn: phi0 transform} and the expansions \eqref{eqn: phi fourier0}--\eqref{eqn: phi fourier4} we obtain
+We denote the right hand side of \eqref{eqn: a double zeroes} by $d(r)$.    It is easy to see that $d(r)$ is well-defined. Indeed, from the transformation formula \eqref{eqn: phi0 transform} and the expansions \eqref{eqn: phi fourier0}--\eqref{eqn: phi fourier4} we obtain
 \begin{align}
 \phi_0\Big(\frac{-1}{it}\Big)=&O(e^{-2\pi/t})\quad\mbox{as}\;t\to 0\notag\\
 \phi_0\Big(\frac{-1}{it}\Big)=&O(t^{-2}\,e^{2\pi t})\quad\mbox{as}\;t\to \infty\notag
 \end{align}
 Hence, the integral \eqref{eqn: a double zeroes} converges absolutely for $r>\sqrt{2}$.
-  We can write %\texttt{check signs}
+    We can write %\texttt{check signs}
 \begin{align}
-  d(r)=&\int\limits_{-1}^{i\infty-1}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz-
-  2\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz\notag\\
-  +&\int\limits_{1}^{i\infty+1}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz.\notag
+    d(r)=&\int\limits_{-1}^{i\infty-1}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz-
+    2\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz\notag\\
+    +&\int\limits_{1}^{i\infty+1}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz.\notag
 \end{align}
 From \eqref{eqn: phi0 transform} we deduce that if $r>\sqrt{2}$ then
 $\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\to 0$ as $\Im(z)\to\infty$. Therefore, we can deform the paths of integration
 and rewrite
 \begin{align}
-  d(r)=&\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz
-  +\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz\notag\\
-  -2&\int\limits_{0}^{i}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz
-  -2\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz\notag\\
-  +&\int\limits_{1}^{i}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz
-  +\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz.\notag
+    d(r)=&\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz
+    +\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz\notag\\
+    -2&\int\limits_{0}^{i}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz
+    -2\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz\notag\\
+    +&\int\limits_{1}^{i}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz
+    +\int\limits_{i}^{i\infty}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz.\notag
 \end{align}
 Now from \eqref{eqn: phi0 transform} we find
 \begin{align}&\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2-2\phi_0\Big(\frac{-1}{z}\Big)\,z^2+
@@ -173,13 +177,13 @@ Now from \eqref{eqn: phi0 transform} we find
 &-\frac{12i}{\pi}\,\Big(\phi_{-2}(z+1)\,(z+1)-2\phi_{-2}(z)\,z+\phi_{-2}(z-1)\,(z-1)\Big)\notag\\
 &-\frac{36}{\pi^2}\Big(\phi_{-4}(z+1)-2\phi_{-4}(z)+\phi_{-4}(z-1)\Big)=\notag\\
 &2\phi_0(z).
-  \end{align}
-  Thus, we obtain
-  \begin{align}
-  d(r)=&\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz
-  -2\int\limits_{0}^{i}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz\notag\\
-  +&\int\limits_{1}^{i}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz
-  +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i r^2 \,z}\,dz=a(r).\notag
+    \end{align}
+    Thus, we obtain
+    \begin{align}
+    d(r)=&\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 \,z}\,dz
+    -2\int\limits_{0}^{i}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz\notag\\
+    +&\int\limits_{1}^{i}\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i r^2 \,z}\,dz
+    +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i r^2 \,z}\,dz=a(r).\notag
 \end{align}
 This finishes the proof.
 \end{proof}
@@ -220,10 +224,10 @@ These identities follow immediately from the previous proposition.
 Now we construct function $b$. To this end we consider the function
 \begin{definition}\label{def: h}\uses{def:H2-H3-H4}
 % \begin{equation}\label{eqn: h define}
-%   h(z)\,:=\,128 \frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}.
+%     h(z)\,:=\,128 \frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}.
 % \end{equation}
 \begin{equation}\label{eqn: h define}
-  h(z) := 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2}.
+    h(z) := 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2}.
 \end{equation}
 \end{definition}
 It is easy to see that $h\in M^!_{-2}(\Gamma_0(2))$. Indeed, first we check that $h|_{-2}\gamma=h$
@@ -242,42 +246,42 @@ $S=\left(\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right)$ be elements of $\
 \begin{definition}\label{def: psi I psi T psi S}\uses{def: h}
 We define the followig three functions
 \begin{align}
-  \psi_I\,:=\,&h-h|_{-2}ST \label{eqn: psi I define}\\
-  \psi_T\,:=\,&\psi_I|_{-2}T \label{eqn: psi T define}\\
-  \psi_S\,:=\,&\psi_I|_{-2}S. \label{eqn: psi S define}
+    \psi_I\,:=\,&h-h|_{-2}ST \label{eqn: psi I define}\\
+    \psi_T\,:=\,&\psi_I|_{-2}T \label{eqn: psi T define}\\
+    \psi_S\,:=\,&\psi_I|_{-2}S. \label{eqn: psi S define}
 \end{align}
 \end{definition}
 \begin{lemma}\label{lemma: psi I psi T psi S explicit}\uses{def: psi I psi T psi S}
 More explicitly, we have
 % \begin{align}
 % \psi_I(z)\,=\,&128\,\frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}\,+\,128
-%               \frac{\theta_{01}^4(z)-\theta_{10}^4(z)}{\theta_{00}^8(z)}\label{eqn: psi I explicit}\\
+%                             \frac{\theta_{01}^4(z)-\theta_{10}^4(z)}{\theta_{00}^8(z)}\label{eqn: psi I explicit}\\
 % \psi_T(z)\,=\,&128\,\frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}\,+
-%               \,128\,\frac{\theta_{00}^4(z)+\theta_{10}^4(z)}{\theta_{01}^8(z)}\label{eqn: psi T explicit}\\
+%                             \,128\,\frac{\theta_{00}^4(z)+\theta_{10}^4(z)}{\theta_{01}^8(z)}\label{eqn: psi T explicit}\\
 % \psi_S(z)\,=\,&-128\,\frac{\theta_{00}^4(z)+\theta_{10}^4(z)}{\theta_{01}^8(z)}-128\,
-%               \frac{\theta_{10}^4(z)-\theta_{01}^4(z)}{\theta_{00}^8(z)}.\label{eqn: psi S explicit}
+%                             \frac{\theta_{10}^4(z)-\theta_{01}^4(z)}{\theta_{00}^8(z)}.\label{eqn: psi S explicit}
 % \end{align}
 \begin{align}
-  \psi_I(z) &= 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2} + 128 \frac{H_4(z) - H_2(z)}{H_3(z)^2} \label{eqn: psi I explicit} \\
-  \psi_T(z) &= 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2} + 128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} \label{eqn: psi T explicit} \\
-  \psi_S(z) &= 128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} - 128 \frac{H_2(z) - H_4(z)}{H_3(z)^2} \label{eqn: psi S explicit}
+    \psi_I(z) &= 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2} + 128 \frac{H_4(z) - H_2(z)}{H_3(z)^2} \label{eqn: psi I explicit} \\
+    \psi_T(z) &= 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2} + 128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} \label{eqn: psi T explicit} \\
+    \psi_S(z) &= 128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} - 128 \frac{H_2(z) - H_4(z)}{H_3(z)^2} \label{eqn: psi S explicit}
 \end{align}
 \end{lemma}
 \begin{lemma}\label{lemma: psi fourier I psi fourier T psi fourier S}\uses{lemma: psi I psi T psi S explicit}
 The Fourier expansions of these functions are
 \begin{align}
-  \psi_I(z)\,=\,&q^{-1} + 144 - 5120 q^{1/2} + 70524 q - 626688 q^{3/2} + 4265600 q^2  + O(q^{5/2}) \label{eqn: psi fourier I}\\
-  \psi_T(z)\,=\,&q^{-1} + 144 + 5120 q^{1/2} + 70524 q + 626688 q^{3/2} + 4265600 q^2  + O(q^{5/2}) \label{eqn: psi fourier T}\\
-  \psi_S(z)\,=\,&-10240 q^{1/2} - 1253376 q^{3/2} - 48328704 q^{5/2} - 1059078144 q^{7/2}+O(q^{9/2}).\label{eqn: psi fourier S}
+    \psi_I(z)\,=\,&q^{-1} + 144 - 5120 q^{1/2} + 70524 q - 626688 q^{3/2} + 4265600 q^2    + O(q^{5/2}) \label{eqn: psi fourier I}\\
+    \psi_T(z)\,=\,&q^{-1} + 144 + 5120 q^{1/2} + 70524 q + 626688 q^{3/2} + 4265600 q^2    + O(q^{5/2}) \label{eqn: psi fourier T}\\
+    \psi_S(z)\,=\,&-10240 q^{1/2} - 1253376 q^{3/2} - 48328704 q^{5/2} - 1059078144 q^{7/2}+O(q^{9/2}).\label{eqn: psi fourier S}
 \end{align}
 \end{lemma}
 \begin{definition}\label{def:b-definition}\uses{def: psi I psi T psi S}
 For $x\in\R^8$ define
 \begin{align}\label{eqn:b-definition}
-  b(x):= & \int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz
-    + \int\limits_{1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz \\
-  -& 2\,\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i \|x\|^2 z}\,dz
-  - 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i \|x\|^2 z}\,dz \nonumber.
+    b(x):= & \int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz
+        + \int\limits_{1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz \\
+    -& 2\,\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i \|x\|^2 z}\,dz
+    - 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i \|x\|^2 z}\,dz \nonumber.
 \end{align}
 \end{definition}
 
@@ -286,18 +290,18 @@ Now we prove that $b$ is a Schwartz function and satisfies condition \eqref{eqn:
 \begin{lemma}\label{lemma:psiS-new}\uses{lemma: psi I psi T psi S explicit, lemma:lv1-lv2-identities, lemma:jacobi-identity}
 $\psi_S(z)$ can be written as
 \begin{equation}\label{eqn:psiS-new}
-  \psi_S(z) = -\frac{H_2^3 (2 H_2^3 + 5 H_2 H_4 + 5 H_4^2)}{2 \Delta}.
+    \psi_S(z) = -\frac{H_2^3 (2 H_2^3 + 5 H_2 H_4 + 5 H_4^2)}{2 \Delta}.
 \end{equation}
 \end{lemma}
 \begin{proof}
 Using \eqref{eqn: psi S explicit} and \eqref{eqn:jacobi-identity} gives
 \begin{align}
-  \psi_S &= -128 \frac{H_3 + H_2}{H_4^2} - 128 \frac{H_2 - H_4}{H_3^2} \\
-  &= -128 \frac{H_3^2 (H_2 - H_4) + H_4^2 (H_2 - H_4)}{H_3^2 H_4^2} \\
-  &= -128 \frac{(H_2 + H_4)^2 (2H_2 + H_4) + H_4^2(H_2 + H_4)}{H_3^2 H_4^2} \\
-  &= -128 \frac{H_2 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_3^2 H_4^2} \\
-  &= -128 \frac{H_2^3 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_2^2 H_3^2 H_4^2} \\
-  &= - \frac{1}{2} \frac{H_2^3 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{\Delta}.
+    \psi_S &= -128 \frac{H_3 + H_2}{H_4^2} - 128 \frac{H_2 - H_4}{H_3^2} \\
+    &= -128 \frac{H_3^2 (H_2 - H_4) + H_4^2 (H_2 - H_4)}{H_3^2 H_4^2} \\
+    &= -128 \frac{(H_2 + H_4)^2 (2H_2 + H_4) + H_4^2(H_2 + H_4)}{H_3^2 H_4^2} \\
+    &= -128 \frac{H_2 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_3^2 H_4^2} \\
+    &= -128 \frac{H_2^3 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_2^2 H_3^2 H_4^2} \\
+    &= - \frac{1}{2} \frac{H_2^3 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{\Delta}.
 \end{align}
 \end{proof}
 
@@ -312,21 +316,21 @@ for all $z$ with $\Im z > 1/2$.
 Proof is similar to that of Lemma \ref{lemma:phi0-bound}.
 By Proposition \ref{prop:H2-fourier} and \ref{prop:H3-H4-fourier}, we can write Fourier expansion of the numerator of $\psi_S$ as
 \begin{equation}
-  H_2(z)^3 (2 H_2(z)^2 + 5 H_2(z) H_4(z) + 5 H_4(z)^2) = \sum_{n \ge 3} a_n e^{\pi i n z}
+    H_2(z)^3 (2 H_2(z)^2 + 5 H_2(z) H_4(z) + 5 H_4(z)^2) = \sum_{n \ge 3} a_n e^{\pi i n z}
 \end{equation}
 with $a_3 = 16^3 \cdot 5 = 20480$.
 We have
 \begin{align}
-  |\psi_S(z)| &= \left|\frac{H_2(z)^3 (2 H_2(z)^2 + 5 H_2(z) H_4(z) + 5 H_4(z))}{2 \Delta(z)}\right| \\
-  &= \left|\frac{\sum_{n \ge 3} a_n e^{\pi i n z}}{2 e^{2\pi i z} \prod_{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\
-  &= \frac{1}{2}|e^{\pi i z}| \cdot \frac{|\sum_{n \ge 3} a_n e^{\pi i (n-3) z}|}{\prod_{n \ge 1} |1 - e^{2\pi i n z}|^{24}} \\
-  &\le \frac{1}{2} e^{-\pi \Im z} \cdot \frac{\sum_{n \ge 3} |a_n| e^{-\pi (n-3) \Im z}}{\prod_{n \ge 1} (1 - e^{-2 \pi n \Im z})^{24}} \\
-  &\le \frac{1}{2} e^{-\pi \Im z} \cdot \frac{\sum_{n \ge 3} |a_n| e^{-\pi (n - 3) / 2}}{\prod_{n \ge 1} (1 - e^{\pi n})^{24}} \\
-  &= C e^{-\pi \Im z}
+    |\psi_S(z)| &= \left|\frac{H_2(z)^3 (2 H_2(z)^2 + 5 H_2(z) H_4(z) + 5 H_4(z))}{2 \Delta(z)}\right| \\
+    &= \left|\frac{\sum_{n \ge 3} a_n e^{\pi i n z}}{2 e^{2\pi i z} \prod_{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\
+    &= \frac{1}{2}|e^{\pi i z}| \cdot \frac{|\sum_{n \ge 3} a_n e^{\pi i (n-3) z}|}{\prod_{n \ge 1} |1 - e^{2\pi i n z}|^{24}} \\
+    &\le \frac{1}{2} e^{-\pi \Im z} \cdot \frac{\sum_{n \ge 3} |a_n| e^{-\pi (n-3) \Im z}}{\prod_{n \ge 1} (1 - e^{-2 \pi n \Im z})^{24}} \\
+    &\le \frac{1}{2} e^{-\pi \Im z} \cdot \frac{\sum_{n \ge 3} |a_n| e^{-\pi (n - 3) / 2}}{\prod_{n \ge 1} (1 - e^{\pi n})^{24}} \\
+    &= C e^{-\pi \Im z}
 \end{align}
 where
 \begin{equation}
-  C = \frac{\sum_{n \ge 3} |a_n| e^{-\pi (n - 3) / 2}}{2\prod_{n \ge 1} (1 - e^{\pi n})^{24}}.
+    C = \frac{\sum_{n \ge 3} |a_n| e^{-\pi (n - 3) / 2}}{2\prod_{n \ge 1} (1 - e^{\pi n})^{24}}.
 \end{equation}
 \todo{In fact, we have $a_n \ge 0$ for all $n$. Then we can express the above constant as a special value of modular forms at $z = i/2$, like as Lemma \ref{lemma:phi0-bound}. However, this require additional works. Otherwise, one need s to prove that the summation on the numerator converges.}
 \end{proof}
@@ -337,16 +341,16 @@ $b(x)$ is a Schwartz function.
 \begin{proof}
 We have
 \begin{align}
-  &\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r^2 z}\,dz=\int\limits_{0}^{i+1}\psi_I(z)\,e^{\pi i r^2 (z-1)}\,dz=\notag\\
-  &\int\limits_{i\infty}^{-1/(i+1)}\psi_I\Big(\frac{-1}{z}\Big)\,e^{\pi i r^2 (-1/z-1)}\,z^{-2}\,dz=\int\limits_{i\infty}^{-1/(i+1)}\psi_S(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz.\notag
+    &\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r^2 z}\,dz=\int\limits_{0}^{i+1}\psi_I(z)\,e^{\pi i r^2 (z-1)}\,dz=\notag\\
+    &\int\limits_{i\infty}^{-1/(i+1)}\psi_I\Big(\frac{-1}{z}\Big)\,e^{\pi i r^2 (-1/z-1)}\,z^{-2}\,dz=\int\limits_{i\infty}^{-1/(i+1)}\psi_S(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz.\notag
 \end{align}
 Using \eqref{eqn:psiS-bound}, we can estimate the first summand in the left-hand side of~\eqref{eqn:b-definition}
 \begin{equation}
-  \left|\int\limits_{-1}^i \psi_T(z)\,e^{\pi i r^2 z}\,dz \right|\leq C_1\,r\,K_1(2\pi r).
+    \left|\int\limits_{-1}^i \psi_T(z)\,e^{\pi i r^2 z}\,dz \right|\leq C_1\,r\,K_1(2\pi r).
 \end{equation}
 We combine this inequality with analogous estimates for the other three summands and obtain
 \begin{equation}
-  |b(r)|\leq C_2\,r\,K_1(2\pi r)+C_3\,\frac{e^{-\pi(r^2+1)}}{r^2+1}.
+    |b(r)|\leq C_2\,r\,K_1(2\pi r)+C_3\,\frac{e^{-\pi(r^2+1)}}{r^2+1}.
 \end{equation}
 Here $C_1$, $C_2$, and $C_3$ are some positive constants. Similar estimates hold for all derivatives $\frac{\dd^k}{\dd^k r} b(r)$.
 \end{proof}
@@ -358,45 +362,45 @@ $b(x)$ satisfies \eqref{eqn:b-fourier}.
 Here, we repeat the arguments used in the proof of Proposition~\ref{prop:a-fourier}.
 We use identity~\eqref{eqn:gaussian Fourier} and change contour integration in $z$ and Fourier transform in $x$. Thus we obtain
 \begin{align}
-  \mathcal{F}(b)(x)= & \int\limits_{-1}^{i}\psi_T(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz
-    + \int\limits_{1}^{i}\psi_T(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz \notag \\
-  -& 2\,\int\limits_{0}^{i}\psi_I(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz
-  - 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz. \notag
+    \mathcal{F}(b)(x)= & \int\limits_{-1}^{i}\psi_T(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz
+        + \int\limits_{1}^{i}\psi_T(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz \notag \\
+    -& 2\,\int\limits_{0}^{i}\psi_I(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz
+    - 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz. \notag
 \end{align}
 We make the change of variables $w=\frac{-1}{z}$ and arrive at
 \begin{align}
-  \mathcal{F}(b)(x)= & \int\limits_{1}^{i}\psi_T\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|x\|^2 w}\,dw
-    + \int\limits_{-1}^{i}\psi_T\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|x\|^2 w}\,dw \notag \\
-  -& 2\,\int\limits_{i\infty}^{i}\psi_I\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|x\|^2 w}\,dw
-  - 2\,\int\limits_{i}^{0}\psi_S\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|x\|^2 w}\,dw.\notag
+    \mathcal{F}(b)(x)= & \int\limits_{1}^{i}\psi_T\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|x\|^2 w}\,dw
+        + \int\limits_{-1}^{i}\psi_T\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|x\|^2 w}\,dw \notag \\
+    -& 2\,\int\limits_{i\infty}^{i}\psi_I\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|x\|^2 w}\,dw
+    - 2\,\int\limits_{i}^{0}\psi_S\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|x\|^2 w}\,dw.\notag
 \end{align}
-Now we observe that the definitions \eqref{eqn: psi I define}--\eqref{eqn: psi S define}   imply
+Now we observe that the definitions \eqref{eqn: psi I define}--\eqref{eqn: psi S define}     imply
 \begin{align}\psi_T|_{-2}S=&-\psi_T \notag \\
 \psi_I|_{-2}S=&\psi_S \notag \\
 \psi_S|_{-2}S=&\psi_I. \notag
 \end{align}
 Therefore, we arrive at
 \begin{align}
-  \mathcal{F}(b)(x)= & \int\limits_{1}^{i}-\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz
-    + \int\limits_{-1}^{i}-\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz \notag \\
-  +& 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i \|x\|^2 z}\,dz
-  + 2\,\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i \|x\|^2 w}\,dw.\notag
+    \mathcal{F}(b)(x)= & \int\limits_{1}^{i}-\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz
+        + \int\limits_{-1}^{i}-\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz \notag \\
+    +& 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i \|x\|^2 z}\,dz
+    + 2\,\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i \|x\|^2 w}\,dw.\notag
 \end{align}
 Now from~\eqref{eqn:b-definition} we see that
 $$ \mathcal{F}(b)(x)=-b(x). $$
 \end{proof}
-Now we regard the radial function  $b$ as a function on $\R_{\geq0}$. We check that $b$ has double roots at $\Lambda_8$-points.
+Now we regard the radial function    $b$ as a function on $\R_{\geq0}$. We check that $b$ has double roots at $\Lambda_8$-points.
 \begin{proposition}\label{prop: b(r) double zeroes}\uses{lemma: psi fourier I psi fourier T psi fourier S, def: psi I psi T psi S}
 For $r>\sqrt{2}$ function $b(r)$ can be expressed as
 \begin{equation}\label{eqn: b double zeroes}
-  b(r)=-4\sin(\pi r^2/2)^2\,\int\limits_{0}^{i\infty}\psi_I(z)\,e^{\pi i r^2 \,z}\,dz.
+    b(r)=-4\sin(\pi r^2/2)^2\,\int\limits_{0}^{i\infty}\psi_I(z)\,e^{\pi i r^2 \,z}\,dz.
 \end{equation}
 \end{proposition}
 \begin{proof}
 We denote the right hand side of~\eqref{eqn: b double zeroes} by $c(r)$. First, we check that $c(r)$ is well-defined. We have
 \begin{align}
 \psi_I(it)=O(t^{2}\,e^{\pi/t})\quad\mbox{as}\;t\to 0\notag\\
-  \psi_I(it)=O(e^{2\pi t})\quad\mbox{as}\;t\to\infty.\notag
+    \psi_I(it)=O(e^{2\pi t})\quad\mbox{as}\;t\to\infty.\notag
 \end{align}
 Therefore, the integral~\eqref{eqn: b double zeroes} converges for $r>\sqrt{2}$.
 Then we rewrite it in the following way:
@@ -414,7 +418,7 @@ We have
 \begin{align}\label{eqn: c1}c(r)=&\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz+\int\limits_{1}^{i}\psi_T(z)\,e^{\pi i r^2 \,z}\,dz
 -2\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i r^2 \,z}\,dz\\
 &+2\int\limits_{i}^{i\infty}(\psi_T(z)-\psi_I(z))\,e^{\pi i r^2 \,z}\,dz.\nonumber
-  \end{align}
+    \end{align}
 Next, we check that the functions $\psi_I,\psi_T$, and $\psi_S$ satisfy the following identity:
 \begin{equation}\label{eqn: c2}\psi_T+\psi_S=\psi_I.\end{equation}
 Indeed, from definitions \eqref{eqn: psi I define}-\eqref{eqn: psi S define} we get
@@ -430,7 +434,7 @@ Combining \eqref{eqn: c1} and \eqref{eqn: c2} we find
 -2\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i r^2 \,z}\,dz\notag\\
 &-2\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i r^2 \,z}\,dz\notag\\
 =&b(r).\notag
-  \end{align}
+    \end{align}
 \end{proof}
 At the end of this section we find another integral representation of $b(r)$ for $r\in\R_{\geq0}$ and compute special values of $b$.
 \begin{proposition}\label{prop: b another integral}\uses{prop: b(r) double zeroes, lemma: psi fourier I psi fourier T psi fourier S, def:b-definition, eqn: psi asymptotic}
