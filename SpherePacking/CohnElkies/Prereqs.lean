@@ -7,8 +7,9 @@ import Mathlib.Algebra.Module.Zlattice.Basic
 import Mathlib.Algebra.Module.Zlattice.Covolume
 import Mathlib.Analysis.Fourier.FourierTransform
 import SpherePacking.Basic.SpherePacking
+import SpherePacking.Basic.PeriodicPacking
 
-open BigOperators
+open BigOperators Bornology
 
 variable {d : ℕ}
 variable (Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZlattice ℝ Λ]
@@ -95,7 +96,7 @@ theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
   apply le_antisymm
   · apply iSup_le
     intro S
-    have h := inv_mul_cancel S.separation_pos.ne.symm
+    have h := inv_mul_cancel₀ S.separation_pos.ne.symm
     have := le_iSup (fun x : { x : PeriodicSpherePacking d // x.separation = 1 } ↦ x.val.density)
         ⟨S.scale (inv_pos.mpr S.separation_pos), h⟩
     rw [← scale_density hd]
@@ -111,21 +112,25 @@ theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
 -- Reason: Need specific set of representatives for proof of Cohn-Elkies. Choice doesn't matter,
 -- so might as well choose a convenient one.
 
-instance (S : PeriodicSpherePacking d) : Fintype (Quotient S.instAddAction.orbitRel) := sorry
+-- instance (S : PeriodicSpherePacking d) : Fintype (Quotient S.instAddAction.orbitRel) := sorry
 
-noncomputable def PeriodicSpherePacking.numReps (S : PeriodicSpherePacking d) : ℕ :=
-  Fintype.card (Quotient S.instAddAction.orbitRel)
+-- instance (S : PeriodicSpherePacking d) : DiscreteTopology ↥S.lattice := S.lattice_discrete
 
-instance (S : PeriodicSpherePacking d) : DiscreteTopology ↥S.Λ := S.Λ_discrete
+-- instance (S : PeriodicSpherePacking d) : IsZlattice ℝ S.lattice := S.lattice_lattice
 
-instance (S : PeriodicSpherePacking d) : IsZlattice ℝ S.Λ := S.Λ_lattice
-
-instance (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.Λ) :
+instance (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice) :
   Fintype ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)) := sorry
 
-noncomputable def PeriodicSpherePacking.numReps'
-  (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.Λ) : ℕ :=
+noncomputable def PeriodicSpherePacking.numReps''
+  (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice) : ℕ :=
   Fintype.card ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _))
+
+noncomputable def PeriodicSpherePacking.numReps' (S : PeriodicSpherePacking d) (hd : 0 < d)
+  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
+  -- (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
+  : ℕ :=
+  haveI := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
+  (S.centers ∩ D).toFinset.card
 
 -- I hope these aren't outright wrong
 instance HDivENNReal : HDiv ENNReal ℝ ENNReal := sorry
@@ -134,14 +139,16 @@ instance HMulENNReal : HMul ℝ ENNReal ENNReal := sorry
 @[simp]
 theorem PeriodicSpherePacking.periodic_density_formula (S : PeriodicSpherePacking d) :
   S.density = (S.numReps : ENNReal) /
-    (Zlattice.covolume S.Λ) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
+    (Zlattice.covolume S.lattice) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
   sorry
 
 @[simp]
 theorem PeriodicSpherePacking.periodic_density_formula'
-  (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.Λ) :
-  S.density = (S.numReps' b : ENNReal) /
-    (Zlattice.covolume S.Λ) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
+  (S : PeriodicSpherePacking d) (hd : 0 < d)
+  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
+  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
+  S.density = ((S.numReps' hd hD_isBounded) : ENNReal) /
+    (Zlattice.covolume S.lattice) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
   sorry
 
 theorem periodic_constant_eq_constant (hd : 0 < d) :
@@ -155,9 +162,9 @@ noncomputable section Misc
 
 variable {d : ℕ} (P : PeriodicSpherePacking d)
 
-def PeriodicSpherePacking.basis_index_equiv : (Module.Free.ChooseBasisIndex ℤ ↥P.Λ) ≃ (Fin d) := by
+def PeriodicSpherePacking.basis_index_equiv : (Module.Free.ChooseBasisIndex ℤ ↥P.lattice) ≃ (Fin d) := by
   refine Fintype.equivFinOfCardEq ?h
-  rw [← FiniteDimensional.finrank_eq_card_chooseBasisIndex, Zlattice.rank ℝ P.Λ,
+  rw [← FiniteDimensional.finrank_eq_card_chooseBasisIndex, Zlattice.rank ℝ P.lattice,
       finrank_euclideanSpace, Fintype.card_fin]
 
 end Misc
