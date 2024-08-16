@@ -38,6 +38,8 @@ noncomputable def H₂ (τ : ℍ) : ℂ := (Θ₂ τ) ^ 4
 noncomputable def H₃ (τ : ℍ) : ℂ := (Θ₃ τ) ^ 4
 noncomputable def H₄ (τ : ℍ) : ℂ := (Θ₄ τ) ^ 4
 
+#check SlashInvariantForm
+
 /-- Theta functions as specializations of jacobiTheta₂ -/
 theorem Θ₂_as_jacobiTheta₂ (τ : ℍ) :
     Θ₂ τ = cexp (π * I * τ / 4) * jacobiTheta₂ (-τ / 2) τ := by
@@ -69,6 +71,8 @@ lemma H₂_negI_action : (H₂ ∣[(2 : ℤ)] negI) = H₂ := modular_slash_negI
 lemma H₃_negI_action : (H₃ ∣[(2 : ℤ)] negI) = H₃ := modular_slash_negI_of_even H₃ (2: ℤ) even_two
 lemma H₄_negI_action : (H₄ ∣[(2 : ℤ)] negI) = H₄ := modular_slash_negI_of_even H₄ (2: ℤ) even_two
 
+#check SlashInvariantForm
+#check ModularForm
 /-- These three transformation laws follow directly from tsum definition. -/
 lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
   ext x
@@ -119,6 +123,8 @@ lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by
   simp_rw [← H₃_T_action, modular_slash_T_apply, H₃, Θ₃_as_jacobiTheta₂, coe_vadd, ← add_assoc]
   norm_num
   rw [add_comm, jacobiTheta₂_add_right]
+
+#check ModularForm
 
 lemma H₂_T_inv_action : (H₂ ∣[(2 : ℤ)] T⁻¹) = -H₂ := by
   nth_rw 1 [← neg_eq_iff_eq_neg.mpr H₂_T_action, neg_slash, ← slash_mul, mul_inv_self, slash_one]

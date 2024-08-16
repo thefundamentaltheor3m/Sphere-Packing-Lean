@@ -2,4 +2,8 @@ import SpherePacking.Basic.E8
 import SpherePacking.Basic.SpherePacking
 import SpherePacking.ForMathlib.Finsupp
 import SpherePacking.ForMathlib.InnerProductSpace
+import SpherePacking.ForMathlib.SlashActions
+import SpherePacking.ForMathlib.UpperHalfPlane
 import SpherePacking.ForMathlib.Vec
+import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.SlashActionAuxil
