@@ -807,11 +807,29 @@ theorem volume_ball_ratio_tendsto_nhds_one'
   · convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
       (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
 
--- I need this strengthening, shouldn't be too hard, need to strengthen aux above
+theorem Filter.map_add_atTop_eq {β : Type*} {f : ℝ → β} (C : ℝ) (α : Filter β) :
+    Tendsto f atTop α ↔ Tendsto (fun x ↦ f (x + C)) atTop α := by
+  constructor <;> intro hf
+  · apply tendsto_map'_iff.mp
+    convert hf
+    rw [map_atTop_eq_of_gc (fun x ↦ x - C) 0 ?_ ?_ ?_]
+    · exact Monotone.add_const (fun _ _ a ↦ a) _
+    · simp [le_sub_iff_add_le]
+    · simp [sub_add_cancel]
+  · convert tendsto_map'_iff.mpr hf using 1
+    rw [map_atTop_eq_of_gc (fun x ↦ x - C) 0 ?_ ?_ ?_]
+    · exact Monotone.add_const (fun _ _ a ↦ a) _
+    · simp [le_sub_iff_add_le]
+    · simp [sub_add_cancel]
+
 theorem volume_ball_ratio_tendsto_nhds_one'' {d : ℕ} {C C' : ℝ} (hd : 0 < d) :
     Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) atTop (𝓝 1) := by
-  sorry
+  apply (Filter.map_add_atTop_eq (max (-C) (-C')) _).mpr
+  simp_rw [add_assoc]
+  convert volume_ball_ratio_tendsto_nhds_one' hd ?_ ?_
+  · trans (-C) + C; linarith; gcongr; simp
+  · trans (-C') + C'; linarith; gcongr; simp
 
 end VolumeBallRatio
 

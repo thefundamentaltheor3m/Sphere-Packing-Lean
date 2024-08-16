@@ -91,6 +91,8 @@ noncomputable instance PeriodicSpherePacking.addAction (S : PeriodicSpherePackin
     apply Subtype.ext
     exact add_assoc u v p
 
+alias PeriodicSpherePacking.instAddAction := PeriodicSpherePacking.addAction
+
 theorem PeriodicSpherePacking.addAction_vadd (S : PeriodicSpherePacking d)
     {x : S.lattice} {y : S.centers} :
       x +ᵥ y = ⟨x.val + y.val, S.lattice_action x.prop y.prop⟩ :=
@@ -142,7 +144,7 @@ open Real
 def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePacking d where
   centers := c • S.centers
   separation := c * S.separation
-  separation_pos := Real.mul_pos hc S.separation_pos
+  separation_pos := mul_pos hc S.separation_pos
   centers_dist := fun ⟨x, hx⟩ ⟨y, hy⟩ _ ↦ by
     change c * S.separation ≤ ‖x - y‖
     obtain ⟨x', ⟨hx', rfl⟩⟩ := Set.mem_smul_set.mp hx
@@ -156,7 +158,7 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
 
 noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
     PeriodicSpherePacking d := {
-  SpherePacking.scale S.toSpherePacking hc with
+  S.toSpherePacking.scale hc with
   lattice := c • S.lattice
   lattice_action := fun x y hx hy ↦ by
     simp_all only [SpherePacking.scale, Set.mem_smul_set, AddSubgroup.mem_smul_pointwise_iff_exists]
@@ -167,7 +169,7 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
     have := S.lattice_discrete
     rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff] at this ⊢
     obtain ⟨ε, hε, hε'⟩ := this
-    use c * ε, Real.mul_pos hc hε
+    use c * ε, mul_pos hc hε
     simp_rw [dist_zero_right, AddSubgroup.coe_norm, AddSubgroup.coe_pointwise_smul,
       Subtype.forall, AddSubmonoid.mk_eq_zero, AddSubgroup.mem_smul_pointwise_iff_exists] at hε' ⊢
     rintro x ⟨x, hx, rfl⟩ hx'
@@ -460,8 +462,5 @@ theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
     rwa [add_sub_cancel_right] at this
   · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
   · exact (volume_ball_lt_top _).ne
-
-theorem SpherePacking.finiteDensity_le_ge (hd : 0 < d) (R : ℝ) :=
-  SpherePacking.finiteDensity_le 0 R ∧ SpherePacking.finiteDensity_ge 0 R
 
 end BasicResults

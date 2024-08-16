@@ -8,13 +8,6 @@
   We say that a sphere packing $\Pa(X)$ is ($\Lambda$-)\emph{periodic} if there exists a lattice $\Lambda \subset \R^d$ such that for all $x \in X$ and $y \in \Lambda$, $x + y \in X$ (ie, $X$ is $\Lambda$-periodic).
 \end{definition}
 
-\begin{lemma}\label{PeriodicSpherePacking.toSpherePacking}\lean{PeriodicSpherePacking.toSpherePacking}\uses{PeriodicSpherePacking, SpherePacking}\leanok
-  Every periodic sphere packing is a sphere packing.
-\end{lemma}
-\begin{proof}
-  Mathematically, this lemma is hardly worth mentioning. We only do so to underscore the automatically constructed forgetful map \verb|PeriodicSpherePacking.toSpherePacking| in Lean.
-\end{proof}
-
 \begin{lemma}\label{PeriodicSpherePacking.instAddAction}\lean{PeriodicSpherePacking.instAddAction}\uses{PeriodicSpherePacking}\leanok
   If $\Pa(X)$ is a $\Lambda$-periodic sphere packing, then $\Lambda$ acts on $X$ by translation.
 \end{lemma}
@@ -22,33 +15,11 @@
   This is immediate from the definition of a periodic sphere packing.
 \end{proof}
 
-\begin{definition}
-  If $\Lambda$ is a lattice, we call the $\Lambda$-periodic packing $\Pa(\Lambda)$ with centres at points in $\Lambda$ a lattice packing.
-\end{definition}
-
-It turns out that we can express the density of a periodic packing in a manner more conducive to computation:
-
-\begin{lemma}\label{SpherePacking.density of periodic packing}\notready
-  If $X \subseteq \R^d$ is a set of sphere packing centres with separation radius $r$ that is periodic with respect to some lattice $\Lambda$, then the density of the corresponding (periodic) sphere packing is given by
-  \begin{equation}
-    \frac{\abs{X/\Lambda}}{\Vol{\R^d / \Lambda}} \cdot \Vol{\Bd{0, \frac{r}{2}}}
-    \label{eq:periodic-packing-density-formula}
-  \end{equation}
-  where the quotients in the numerator and denominator correspond to the orbits of the action by translation of $\Lambda$ on $X$ and $\R^d$ respectively.
-\end{lemma}
-\begin{proof}[Proof sketch]
-  While we do not currently have sufficient machinery to actually prove the result, we will offer a brief sketch. The idea is to bound the finite density of a periodic packing above and below by functions of $R$ that converge to~\eqref{eq:periodic-packing-density-formula} as $R \to \infty$. This will, first of all, imply that the finite density converges to~\eqref{eq:periodic-packing-density-formula} as $R \to \infty$. More importantly, it will demonstrate that the $\limsup$ in the definition of the density is actually a limit, and that the limit is given by~\eqref{eq:periodic-packing-density-formula}. We will prove the necessary results in Section~\ref{sec:packings-density}.
-\end{proof}
-
-\begin{remark}
-  The expression in~\eqref{eq:periodic-packing-density-formula} can be thought of as the ``volume of spheres per fundamental domain": the number of spheres per fundamental domain is $\lvert {X/\Lambda} \rvert$, and the volume of each sphere is $\Vol{\Bd{0, \frac{r}{2}}}$.
-\end{remark}
-
-We will exploit the ease of computation that comes with Lemma~\ref{SpherePacking.density of periodic packing} to compute the sphere packing density of the $E_8$ packing.
+There is a natural definition of density for periodic sphere packings, namely the ``local'' density of balls in a fundamental domain. However, \textit{a priori} the density of sphere packing above need not to coincide with this alternative definition. In \cref{theorem:psp-density}, we will prove that this is the case.
 
 Now that we have simplified the process of computing the packing densities of specific packings, we can simplify that of computing the sphere packing constant. It turns out that once again, periodicity is key.
 
-\begin{definition}\label{def-Periodic-sphere-packing-constant}\uses{SpherePacking.density, PeriodicSpherePacking}\notready
+\begin{definition}\label{def:Periodic-sphere-packing-constant}\uses{SpherePacking.density, PeriodicSpherePacking}\notready
     The periodic sphere packing constant is defined to be
     $$ \Delta_{d}^{\text{periodic}} := \sup_{\substack{P \subset \R^d \\ \text{periodic packing}}} \Delta_P$$
 \end{definition}
@@ -58,7 +29,7 @@ Now that we have simplified the process of computing the packing densities of sp
 \end{theorem}
 \begin{proof}
   \todo{State this in Lean (ready).}
-  \todo{Fill in proof here (see~\cite[Appendix A]{ElkiesCohn}}
+  \todo{Fill in proof here (see~\cite[Appendix A]{ElkiesCohn})}
 \end{proof}
 
 Thus, one can show a sphere packing to be optimal by showing its density to be equal to the \emph{periodic} sphere packing constant instead of the regular sphere packing constant. The determination of the periodic constant is easier than that of the general constant, as we shall see when investigating the Linear Programming bounds derived by Cohn and Elkies in~\cite{ElkiesCohn}.

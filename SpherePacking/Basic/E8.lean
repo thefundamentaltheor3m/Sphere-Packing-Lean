@@ -395,7 +395,7 @@ theorem E8_norm_lower_bound (v : E8_Lattice) : v = 0 ∨ √2 ≤ ‖v‖ := by
 
 end E8_norm_bounds
 
-instance : DiscreteTopology E8_Lattice := by
+instance instDiscreteE8Lattice : DiscreteTopology E8_Lattice := by
   rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
   use 1, by norm_num,
     fun v h ↦ (E8_norm_lower_bound v).resolve_right ?_
@@ -412,7 +412,7 @@ theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set (EuclideanSpace �
   rw [E8_is_basis.right] at this
   exact Submodule.eq_top_iff'.mpr fun _ ↦ this trivial
 
-instance : IsZlattice ℝ E8_Lattice :=
+instance instIsZLatticeE8Lattice : IsZlattice ℝ E8_Lattice :=
   ⟨E8_Set_span_eq_top⟩
 
 end E8_isZlattice
