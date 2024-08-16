@@ -6,7 +6,7 @@ In this section, we recall and develop some theory of (quasi)modular forms.
 \subsection{Modular forms and examples}
 
 Let $\h$ be the upper half-plane $\{z\in\C\mid\Im(z)>0\}$.
-\begin{lemma}\label{def:Gamma-1-Action}
+\begin{lemma}\label{def:Gamma-1-Action}\leanok
     The modular group $\Gamma_1:=\mathrm{SL}_2(\Z)$ acts on $\h$ by linear fractional transformations
 $$\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)z:=\frac{az+b}{cz+d}.$$
 \end{lemma}
@@ -17,7 +17,7 @@ Let $N$ be a positive integer.
     $$\Gamma(N):=\left\{\left.\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\Gamma_1\right|\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\equiv\left(\begin{smallmatrix}1&0\\0&1\end{smallmatrix}\right)\;\mathrm{mod}\;N\right\}.$$
 \end{definition}
 
-\begin{definition}\label{def:congruence-subgroup}\uses{def:level-N-princ-cong-subgp}
+\begin{definition}\label{def:congruence-subgroup}\uses{def:level-N-princ-cong-subgp}\leanok
     A subgroup $\Gamma\subset\Gamma_1$ is called a \emph{congruence subgroup} if $\Gamma(N)\subset\Gamma$ for some $N\in\N$.
 \end{definition}
 
@@ -61,7 +61,7 @@ $$j_k(z,\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)):=(cz+d)^{-k}.
 $$j_k(z,\gamma_1\gamma_2)=j_k(z,\gamma_1)\,j_k(\gamma_2z,\gamma_1). $$
 \end{lemma}
 
-\begin{definition}\label{def:slash-operator}\uses{def:automorphy-factor}\leanok
+\begin{definition}\label{def:slash-operator}\uses{def:automorphy-factor, def:Gamma-1-Action}\leanok
     Let $F$ be a function on $\h$ and $\gamma\in\mathrm{SL}_2(\Z)$. Then the \emph{slash operator} acts on $F$ by
 $$(F|_k\gamma)(z):=j_k(z,\gamma)\,F(\gamma z). $$
 \end{definition}
@@ -298,12 +298,25 @@ For example, invariance for $H_2$ can be proved by
 \end{align}
 \end{proof}
 
+
+
+\begin{lemma}\label{lemma:theta-modular}\uses{lemma:theta-slash-invariant}\lean{H₂_MF,H₃_MF,H₄_MF}
+$H_{2}$, $H_{3}$, and $H_{4}$ belong to $M_2(\Gamma(2))$.
+\end{lemma}
+\begin{proof}
+  \todo{Fill in this proof, in particular the analytic properties of $H_i$.}
+
+  We have to show that each $H_i$ satisfies property (2) of \cref{def:holomorphic-modular-form}
+\end{proof}
+
+
+They have Fourier expansions as follows.
 \begin{proposition}\label{prop:H2-fourier}\uses{def:H2-H3-H4}
 $H_2$ admits a Fourier series of the form
 \begin{equation}
     H_2(z) = \sum_{n \ge 1} c_{H_2}(n) e^{\pi i n z}
 \end{equation}
-for some $c_{H_2}(n) \in \R_{\ge 0}$, with $c_{H_2}(1) = 16$.
+for some $c_{H_2}(n) \in \R_{\ge 0}$, with $c_{H_2}(1) = 16$ and $c_{H_2}(n) = O(n^k)$ for some $k \in \N$.
 \end{proposition}
 \begin{proof}
 We have
@@ -314,35 +327,34 @@ We have
     &= \left(2 e^{\pi i z / 4} + 2 \sum_{n \ge 1} e^{\pi i (n^2 + n + \frac{1}{4}) z}\right)^{4} \\
     &= 16 e^{\pi i z}\left(1 + \sum_{n \ge 1} e^{\pi i (n^2 + n)z}\right)^{4} \\
     &= 16 e^{\pi i z} + \sum_{n \ge 2} c_{H_2}(n) e^{\pi i n z} \\
-    &= \sum_{n \ge 1} c_{H_2}(n) e^{\pi i n z}
+    &= \sum_{n \ge 1} c_{H_2}(n) e^{\pi i n z}.
 \end{align}
 \end{proof}
 
-\begin{proposition}\label{prop:H3-H4-fourier}\uses{def:H2-H3-H4}
-$H_3$ and $H_4$ admit Fourier series of the form
-\begin{align}
-    H_3(z) &= \sum_{n \ge 0} c_{H_3}(n) e^{\pi i n z} \\
-    H_4(z) &= \sum_{n \ge 0} c_{H_4}(n) e^{\pi i n z}
-\end{align}
-for some $c_{H_3}(n) \in \R_{\ge 0}$ and $c_{H_4}(n) \in \R$, with $c_{H_3}(1) = c_{H_4}(1) = 1$.
-Especially, $H_3$ and $H_4$ are not cuspidal.
+\begin{proposition}\label{prop:H3-fourier}\uses{def:H2-H3-H4}
+$H_3$ admits a Fourier series of the form
+\begin{equation}
+    H_3(z) = \sum_{n \ge 0} c_{H_3}(n) e^{\pi i n z}
+\end{equation}
+for some $c_{H_3}(n) \in \R_{\ge 0}$ with $c_{H_3}(0) = 1$ and $c_{H_3}(n) = O(n^k)$ for some $k \in \N$.
+Especially, $H_3$ is not cuspidal.
 \end{proposition}
 \begin{proof}
-For $H_3$, we have
+We have
 \begin{equation}
     H_3(z) = \Theta_3(z)^{4} = \left(\sum_{n \in \Z} e^{\pi i n^2 z}\right)^{4} = \left(1 + 2 \sum_{n \ge 1} e^{\pi i n^2 z}\right)^{4} = 1 + O(e^{\pi i z}).
 \end{equation}
-We can prove for $H_4$ similarly.
 \end{proof}
 
-\begin{lemma}\label{lemma:theta-modular}\uses{lemma:theta-slash-invariant}\lean{H₂_MF,H₃_MF,H₄_MF}
-$H_{2}$, $H_{3}$, and $H_{4}$ belong to $M_2(\Gamma(2))$.
-\end{lemma}
-\begin{proof}
-  \todo{Fill in this proof, in particular the analytic properties of $H_i$.}
+\begin{proposition}\label{prop:H4-fourier}\uses{def:H2-H3-H4}
+$H_4$ admits a Fourier series of the form
+\begin{equation}
+    H_4(z) = \sum_{n \ge 0} c_{H_4}(n) e^{\pi i n z}
+\end{equation}
+for some $c_{H_4}(n) \in \R$ with $c_{H_4}(0) = 1$ and $c_{H_4}(n) = O(n^k)$ for some $k \in \N$.
+Especially, $H_4$ is not cuspidal.
+\end{proposition}
 
-  We have to show that each $H_i$ satisfies property (2) of \cref{def:holomorphic-modular-form}
-\end{proof}
 
 We also have a nontrivial relation between these theta functions.
 \begin{lemma}\label{lemma:jacobi-identity}\uses{lemma:theta-modular}
