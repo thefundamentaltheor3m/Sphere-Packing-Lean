@@ -122,13 +122,13 @@ lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by
   rw [add_comm, jacobiTheta₂_add_right]
 
 lemma H₂_T_inv_action : (H₂ ∣[(2 : ℤ)] T⁻¹) = -H₂ := by
-  nth_rw 1 [← neg_eq_iff_eq_neg.mpr H₂_T_action, neg_slash, ← slash_mul, mul_inv_self, slash_one]
+  nth_rw 1 [← neg_eq_iff_eq_neg.mpr H₂_T_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
 
 lemma H₃_T_inv_action : (H₃ ∣[(2 : ℤ)] T⁻¹) = H₄ := by
-  nth_rw 1 [← H₄_T_action, ← slash_mul, mul_inv_self, slash_one]
+  nth_rw 1 [← H₄_T_action, ← slash_mul, mul_inv_cancel, slash_one]
 
 lemma H₄_T_inv_action : (H₄ ∣[(2 : ℤ)] T⁻¹) = H₃ := by
-  nth_rw 1 [← H₃_T_action, ← slash_mul, mul_inv_self, slash_one]
+  nth_rw 1 [← H₃_T_action, ← slash_mul, mul_inv_cancel, slash_one]
 
 /-- Use α = T * T -/
 lemma H₂_α_action : (H₂ ∣[(2 : ℤ)] α) = H₂ := by
@@ -181,12 +181,12 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     rw [cpow_ofNat, div_pow, one_div_div, I_sq, div_neg, div_one]
     rfl
   _ = -cexp (-π * I / x) * cexp (π * I / x) * jacobiTheta₂ (1 / 2) x ^ 4 := by
-    rw [mul_neg, ← zpow_add₀ hx', neg_add_self, mul_neg, zpow_zero, mul_one]
+    rw [mul_neg, ← zpow_add₀ hx', neg_add_cancel, mul_neg, zpow_zero, mul_one]
     congr 2
     rw [← Complex.exp_nat_mul]
     ring_nf
   _ = -jacobiTheta₂ (1 / 2) x ^ 4 := by
-    rw [neg_mul, ← Complex.exp_add, neg_mul (π : ℂ), neg_div, neg_add_self, Complex.exp_zero,
+    rw [neg_mul, ← Complex.exp_add, neg_mul (π : ℂ), neg_div, neg_add_cancel, Complex.exp_zero,
       neg_one_mul]
   _ = -H₄ ⟨x, hx⟩ := by
     rw [H₄, Θ₄_as_jacobiTheta₂]
@@ -205,7 +205,7 @@ lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   ring_nf!
   rw [← mul_inv, cpow_ofNat, sq, ← mul_assoc, zpow_two]
   ring_nf!
-  rw [inv_pow, inv_I, even_two.neg_pow, I_sq, mul_neg_one, inv_inv, neg_mul, inv_mul_cancel]
+  rw [inv_pow, inv_I, even_two.neg_pow, I_sq, mul_neg_one, inv_inv, neg_mul, inv_mul_cancel₀]
   exact pow_ne_zero _ hx'
 
 lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
@@ -251,7 +251,8 @@ noncomputable def H₄_SIF : SlashInvariantForm (Γ 2) 2 where
 
 open UpperHalfPlane
 
-noncomputable def H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂_SIF := by sorry
+noncomputable def H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂_SIF := by
+  sorry
 
 noncomputable def H₃_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃_SIF := by sorry
 
