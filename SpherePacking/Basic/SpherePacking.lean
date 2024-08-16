@@ -461,5 +461,7 @@ theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
   · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
   · exact (volume_ball_lt_top _).ne
 
-end BasicResults
+theorem SpherePacking.finiteDensity_le_ge (hd : 0 < d) (R : ℝ) :=
+  SpherePacking.finiteDensity_le 0 R ∧ SpherePacking.finiteDensity_ge 0 R
 
+end BasicResults

@@ -1,18 +1,18 @@
-\subsection{Bounds on Finite Density of Packing}
+\subsection{On the Density of Periodic Packings}
 
-We first collect all the results we will prove here, then prove them separately below. We do this because some are proven already! Let $X \subseteq \R^d$ be a set of sphere packing centers with separation $r$.
+We begin by stating and proving a few useful lemmas that bound the densities of arbitrary sphere packings. Let $\Pa \subseteq \R^d$ be a sphere packing. Denote by $X$ its set of centers and by $r$ the corresponding separation radius.
 
-\begin{theorem}\label{finite-density-bounds}\uses{}\leanok
-  We have the following theorem relating the finite density and the number of lattice points in a ball:
-
+Observe that the finite density evaluated at some $R > 0$ measures the density of sphere packings within a bounded, open ball of radius $R$. As one might expect, there is a relationship between the finite density and the number of centers in the ball of radius $R$.
+\begin{lemma}\label{SpherePacking.finiteDensity_le_ge}\lean{SpherePacking.finiteDensity_le_ge}\uses{SpherePacking.finiteDensity}\leanok
+  For any $R > 0$,
   \[
     \left|X \cap \mathcal{B}_d\left(R - \frac{r}{2}\right)\right| \cdot \frac{\mathrm{Vol}\left(\mathcal{B}_d\left(\frac{r}{2}\right)\right)}{\mathrm{Vol}(\mathcal{B}_d(R))}
     \leq \Delta_{\mathcal{P}}(R)
     \leq \left|X \cap \mathcal{B}_d\left(R + \frac{r}{2}\right)\right| \cdot \frac{\mathrm{Vol}\left(\mathcal{B}_d\left(\frac{r}{2}\right)\right)}{\mathrm{Vol}(\mathcal{B}_d(R))}
   \]
-\end{theorem}
-\begin{proof}
-  Proven by Gareth already. The high level idea is to prove that $\mathcal{P} \cap \mathcal{B}_d(R) = \left(\bigcup_{x \in X} \mathcal{B}_d\left(x, \frac{r}{2}\right)\right) \subseteq \bigcup_{x \in X \cap \mathcal{B}_d\left(R + \frac{r}{2}\right)} \mathcal{B}_d\left(x, \frac{r}{2}\right)$, and a similar inequality for the upper bound. The rest follows by rearranging and usign the fact that the balls are pairwise disjoint.
+\end{lemma}
+\begin{proof}\uses{SpherePacking}\leanok
+  The high level idea is to prove that $\mathcal{P} \cap \mathcal{B}_d(R) = \left(\bigcup_{x \in X} \mathcal{B}_d\left(x, \frac{r}{2}\right)\right) \subseteq \bigcup_{x \in X \cap \mathcal{B}_d\left(R + \frac{r}{2}\right)} \mathcal{B}_d\left(x, \frac{r}{2}\right)$, and a similar inequality for the upper bound. The rest follows by rearranging and usign the fact that the balls are pairwise disjoint. The finer details can be found in the Lean proof.
 \end{proof}
 
 Suppose further that $X$ is a periodic packing w.r.t. the lattice $\Lambda \subseteq \R^d$. Let $\mathcal{D}$ be a fundamental region of $\Lambda$, say the parallelopiped defined in the proof of \cref{exists-bounded-fd}, and let $L$ be the bound on the norm of vectors in $\mathcal{D}$ (see \cref{exists-bounded-fd}).
