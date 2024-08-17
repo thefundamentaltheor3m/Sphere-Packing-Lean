@@ -33,38 +33,39 @@ local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
 
 /-- Define Θ₂, Θ₃, Θ₄ as series. -/
-noncomputable def Θ₂ (τ : ℍ) : ℂ := ∑' n : ℤ, cexp (π * I * (n + 1 / 2 : ℂ) ^ 2 * τ)
-noncomputable def Θ₃ (τ : ℍ) : ℂ := ∑' n : ℤ, cexp (π * I * (n : ℂ) ^ 2 * τ)
-noncomputable def Θ₄ (τ : ℍ) : ℂ := ∑' n : ℤ, (-1) ^ n * cexp (π * I * (n : ℂ) ^ 2 * τ)
+noncomputable def Θ₂_term (n : ℤ) (τ : ℍ) : ℂ := cexp (π * I * (n + 1 / 2 : ℂ) ^ 2 * τ)
+noncomputable def Θ₃_term (n : ℤ) (τ : ℍ) : ℂ := cexp (π * I * (n : ℂ) ^ 2 * τ)
+noncomputable def Θ₄_term (n : ℤ) (τ : ℍ) : ℂ := (-1) ^ n * cexp (π * I * (n : ℂ) ^ 2 * τ)
+noncomputable def Θ₂ (τ : ℍ) : ℂ := ∑' n : ℤ, Θ₂_term n τ
+noncomputable def Θ₃ (τ : ℍ) : ℂ := ∑' n : ℤ, Θ₃_term n τ
+noncomputable def Θ₄ (τ : ℍ) : ℂ := ∑' n : ℤ, Θ₄_term n τ
 noncomputable def H₂ (τ : ℍ) : ℂ := (Θ₂ τ) ^ 4
 noncomputable def H₃ (τ : ℍ) : ℂ := (Θ₃ τ) ^ 4
 noncomputable def H₄ (τ : ℍ) : ℂ := (Θ₄ τ) ^ 4
 
 /-- Theta functions as specializations of jacobiTheta₂ -/
-theorem Θ₂_as_jacobiTheta₂ (τ : ℍ) :
-    Θ₂ τ = cexp (π * I * τ / 4) * jacobiTheta₂ (-τ / 2) τ := by
-  simp_rw [Θ₂, jacobiTheta₂, jacobiTheta₂_term, ← smul_eq_mul (a := cexp _)]
-  rw [← (Equiv.subRight 1).tsum_eq, ← tsum_const_smul]
-  · simp_rw [Equiv.subRight_apply]
-    apply tsum_congr
-    intro b
-    have : ((b - 1 : ℤ) : ℂ) + 1 / 2 = b - 1 / 2 := by
-      push_cast
-      nth_rw 1 [← add_halves 1]
-      ring_nf
-    rw [this, smul_eq_mul, ← Complex.exp_add]
-    ring_nf
-  · exact (summable_jacobiTheta₂_term_iff _ _).mpr τ.prop
+theorem Θ₂_term_as_jacobiTheta₂_term (τ : ℍ) (n : ℤ) :
+    Θ₂_term n τ = cexp (π * I * τ / 4) * jacobiTheta₂_term n (τ / 2) τ := by
+  rw [Θ₂_term, jacobiTheta₂_term, ← Complex.exp_add]
+  ring_nf
+
+theorem Θ₂_as_jacobiTheta₂ (τ : ℍ) : Θ₂ τ = cexp (π * I * τ / 4) * jacobiTheta₂ (τ / 2) τ := by
+  simp_rw [Θ₂, Θ₂_term_as_jacobiTheta₂_term, ← smul_eq_mul, tsum_const_smul'', jacobiTheta₂]
+
+theorem Θ₃_term_as_jacobiTheta₂_term (τ : ℍ) (n : ℤ) :
+    Θ₃_term n τ = jacobiTheta₂_term n 0 τ := by
+  simp [Θ₃_term, jacobiTheta₂_term]
 
 theorem Θ₃_as_jacobiTheta₂ (τ : ℍ) : Θ₃ τ = jacobiTheta₂ (0 : ℂ) τ := by
-  simp_rw [Θ₃, jacobiTheta₂, jacobiTheta₂_term, mul_zero, zero_add]
+  simp_rw [Θ₃, Θ₃_term_as_jacobiTheta₂_term, jacobiTheta₂]
+
+theorem Θ₄_term_as_jacobiTheta₂_term (τ : ℍ) (n : ℤ) :
+    Θ₄_term n τ = jacobiTheta₂_term n (1 / 2 : ℂ) τ := by
+  rw [Θ₄_term, jacobiTheta₂_term, ← exp_pi_mul_I, ← exp_int_mul, ← Complex.exp_add]
+  ring_nf
 
 theorem Θ₄_as_jacobiTheta₂ (τ : ℍ) : Θ₄ τ = jacobiTheta₂ (1 / 2 : ℂ) τ := by
-  simp_rw [Θ₄, jacobiTheta₂, jacobiTheta₂_term]
-  apply tsum_congr
-  intro b
-  ring_nf
-  rw [Complex.exp_add, ← exp_pi_mul_I, ← exp_int_mul, mul_comm (b : ℂ)]
+  simp_rw [Θ₄, Θ₄_term_as_jacobiTheta₂_term, jacobiTheta₂]
 
 section H_SlashInvariant
 
@@ -82,7 +83,7 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
       Complex.exp_pi_mul_I, neg_one_mul]
   calc
   _ = ∑' (n : ℤ), cexp (π * I * (n + 1 / 2) ^ 2 * ((1 : ℝ) +ᵥ x)) := by
-    rw [Θ₂]
+    simp_rw [Θ₂, Θ₂_term]
   _ = ∑' (n : ℤ), cexp (π * I / 4) * cexp (π * I * (n ^ 2 + n) + π * I * (n + 1 / 2) ^ 2 * x) := by
     apply tsum_congr fun b ↦ ?_
     rw [coe_vadd, ofReal_one]
@@ -93,7 +94,7 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
     conv_rhs => rw [← smul_eq_mul ℂ]
     simp_rw [← tsum_const_smul'', smul_eq_mul]
   _ = _ := by
-    rw [Θ₂]
+    simp_rw [Θ₂, Θ₂_term]
     congr 1
     apply tsum_congr fun b ↦ ?_
     have : Even (b ^ 2 + b) := by
@@ -105,7 +106,7 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
 
 lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
   ext x
-  rw [modular_slash_T_apply, H₃, H₄, Θ₃, Θ₄]
+  simp_rw [modular_slash_T_apply, H₃, H₄, Θ₃, Θ₄, Θ₃_term, Θ₄_term]
   congr 1
   apply tsum_congr fun b ↦ ?_
   rw [coe_vadd, ofReal_one, mul_add, Complex.exp_add, mul_one, mul_comm (π * I), ← Int.cast_pow,
@@ -148,35 +149,34 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
   ext ⟨x, hx⟩
   have hx' : x ≠ 0 := by simp [Complex.ext_iff, hx.ne.symm]
   calc
-  _ = cexp (-π * I / x) * jacobiTheta₂ (1 / (2 * x)) (-1 / x) ^ 4 * x ^ (-2 : ℤ) := by
+  _ = cexp (-π * I / x) * jacobiTheta₂ (-1 / (2 * x)) (-1 / x) ^ 4 * x ^ (-2 : ℤ) := by
     rw [modular_slash_S_apply, H₂, Θ₂_as_jacobiTheta₂]
     simp [← neg_inv, mul_pow, ← Complex.exp_nat_mul]
     rw [mul_comm 4, div_mul_cancel₀ _ (by norm_num)]
-    congr
+    congr 4
     · rw [← div_eq_mul_inv, neg_div]; rfl
+    · rw [← one_div, neg_div, div_div, mul_comm, neg_div]; rfl
     · rw [← one_div, neg_div]; rfl
   _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
-        * (1 / (I / x) ^ ((1 : ℂ) / 2) * cexp (π * I / (4 * x)) * jacobiTheta₂ (-1 / 2) x) ^ 4 := by
+        * (1 / (I / x) ^ ((1 : ℂ) / 2) * cexp (π * I / (4 * x)) * jacobiTheta₂ (1 / 2) x) ^ 4 := by
     rw [mul_right_comm, jacobiTheta₂_functional_equation]
     congr 4
     · ring_nf
     · congr 1
-      rw [neg_mul, one_div, neg_div, div_neg, neg_mul, neg_div, neg_neg]
+      rw [neg_mul, neg_div, one_div, neg_div, div_neg, neg_mul, neg_div, neg_neg]
       ring_nf
       simp [div_div, sq, ← mul_assoc, inv_mul_cancel_right₀ hx']
     · ring_nf; simp [hx']
     · ring_nf; simp [inv_inv]
   _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
         * ((1 / (I / x) ^ ((1 : ℂ) / 2)) ^ 4 * cexp (π * I / (4 * x)) ^ 4
-          * jacobiTheta₂ (-1 / 2) x ^ 4) := by
+          * jacobiTheta₂ (1 / 2) x ^ 4) := by
     simp [mul_pow]
   _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
         * ((1 / (I / x) ^ (2 : ℂ)) * cexp (π * I / (4 * x)) ^ 4 * jacobiTheta₂ (1 / 2) x ^ 4) := by
     congr 3
-    · simp only [div_pow, one_pow, ← cpow_mul_nat]
-      ring_nf
-    · rw [← jacobiTheta₂_add_left]
-      norm_num
+    simp only [div_pow, one_pow, ← cpow_mul_nat]
+    ring_nf
   _ = cexp (-π * I / x) * (x ^ (-2 : ℤ) * (-x ^ (2 : ℤ)))
         * cexp (π * I / (4 * x)) ^ 4 * jacobiTheta₂ (1 / 2) x ^ 4 := by
     repeat rw [← mul_assoc]
@@ -288,7 +288,61 @@ section H_isBoundedAtImInfty
 variable (γ : SL(2, ℤ))
 
 theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
-  sorry
+  simp_rw [bounded_mem, H₂, Θ₂]
+  use (∑' n : ℤ, rexp (-π * ((n : ℝ) + 1 / 2) ^ 2)) ^ 4, 1
+  intro z hz
+  rw [map_pow]
+  gcongr
+  calc
+    _ = ‖∑' (n : ℤ), cexp (π * I * (n + 1 / 2) ^ 2 * z)‖ := rfl
+    _ ≤ ∑' (n : ℤ), ‖cexp (π * I * (n + 1 / 2) ^ 2 * z)‖ := norm_tsum_le_tsum_norm ?_
+    _ = ∑' (n : ℤ), ‖cexp (π * I * ((n + 1 / 2) ^ 2 * z : ℂ))‖ := by simp only [← mul_assoc]
+    _ = ∑' (n : ℤ), ‖rexp (-π * (((n + 1 / 2) ^ 2 : ℝ) * z : ℂ).im)‖ := by
+      apply tsum_congr fun b ↦ ?_
+      have (z : ℂ) : ‖cexp z‖ = ‖cexp z.re‖ := by
+        nth_rw 1 [← Complex.re_add_im z, Complex.exp_add, norm_mul, norm_exp_ofReal_mul_I, mul_one]
+      rw [this, mul_comm (π : ℂ), mul_assoc, I_mul_re, ← ofReal_exp, Complex.norm_eq_abs,
+        abs_ofReal, Real.norm_eq_abs, im_ofReal_mul, neg_mul]
+      simp
+    _ = ∑' (n : ℤ), ‖rexp (-π * ((n + 1 / 2) ^ 2 : ℝ) * z.im)‖ := by
+      simp_rw [im_ofReal_mul, UpperHalfPlane.im, ← mul_assoc]
+    _ ≤ _ := tsum_le_tsum (fun b ↦ ?_) ?_ ?_
+  · sorry
+  · rw [Real.norm_eq_abs, Real.abs_exp]
+    apply Real.exp_monotone
+    repeat rw [neg_mul]
+    apply neg_le_neg
+    have : (b : ℝ) + 1 / 2 ≠ 0 := by
+      intro hb
+      rw [add_eq_zero_iff_eq_neg] at hb
+      have : (2 * b : ℝ) = -1 := by simp [hb]
+      norm_cast at this
+      exact Int.even_iff_not_odd.mp (even_two_mul b) (by rw [this]; simp)
+    convert (mul_le_mul_left (mul_pos pi_pos (sq_pos_of_ne_zero this))).mpr hz using 1
+    rw [mul_one]
+  · sorry
+  · have (n : ℤ) : rexp (-π * (n + 1 / 2) ^ 2) = rexp (-π / 4) * jacobiTheta₂_term n (I / 2) I := by
+      rw [jacobiTheta₂_term, ofReal_exp, ofReal_exp, ← Complex.exp_add]
+      congr
+      symm
+      calc
+        _ = (-π / 4) + (2 * π * n * (I * (I / 2)) + π * n ^ 2 * (I * I)) := by
+          congr 2
+          · simp
+          · rw [← mul_div_assoc, mul_right_comm _ I]
+            ring_nf
+          · rw [mul_right_comm _ I _, mul_assoc]
+        _ = (-π / 4) + (-π * n - π * n ^ 2) := by
+          rw [← mul_div_assoc, ← sq, I_sq]
+          ring_nf
+        _ = _ := by
+          ring_nf
+          simp
+    apply summable_ofReal.mp
+    simp_rw [this, ← smul_eq_mul]
+    apply Summable.const_smul
+    rw [summable_jacobiTheta₂_term_iff]
+    simp
 
 theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
   sorry
