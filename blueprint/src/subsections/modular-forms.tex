@@ -297,9 +297,26 @@ For example, invariance for $H_2$ can be proved by
 $H_{2}$, $H_{3}$, and $H_{4}$ belong to $M_2(\Gamma(2))$.
 \end{lemma}
 \begin{proof}
-  \todo{Fill in this proof, in particular the analytic properties of $H_i$.}
+  We have to show that each $H_i$ satisfies property (2) of \cref{def:holomorphic-modular-form}. It suffices to show that for any $\gamma \in \Gamma_1$, $\|H_2|_2\gamma(z)\|$ is bounded as $z \in \mathbb{H} \to i\infty$. Write $\gamma = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$ with $a, b, c, d \in \Z$, and suppose that $z \in \mathbb{H}$ with $\Im(z) \geq A \in \R_{> 0}$. Then,
 
-  We have to show that each $H_i$ satisfies property (2) of \cref{def:holomorphic-modular-form}
+\begin{align}
+  \|H_2|_2\gamma(z)\|
+  &= \|(cz + d)^{-2} H_2(\gamma(z))\| \\
+  &\leq |(cz + d)^{-2}| \|H_2(\gamma(z))\| \\
+  &= \|cz + d\|^{-2} \left\|\sum_{n \in \Z} \exp\left(\pi i \left(n + \frac{1}{2}\right)^2 \gamma(z)\right)\right\|^4 \\
+  &\leq \|cz + d\|^{-2} \left(\sum_{n \in \Z} \left\|\exp\left(\pi i \left(n + \frac{1}{2}\right)^2 \gamma(z)\right)\right\|\right)^4 \\
+  &= \|cz + d\|^{-2} \left(\sum_{n \in \Z} \exp\left(-\pi \left(n + \frac{1}{2}\right)^2 \Im(\gamma(z))\right)\right)^4 \\
+  &= \|cz + d\|^{-2} \left(\sum_{n \in \Z} \exp\left(-\pi \left(n + \frac{1}{2}\right)^2 \cdot \frac{\Im(z)}{c^2\|z\|^2 + d^2}\right)\right)^4 \\
+  &\leq \|cz + d\|^{-2} \left(\sum_{n \in \Z} \exp\left(-\pi \left(n + \frac{1}{2}\right)^2 \cdot \frac{A}{c^2\|z\|^2 + d^2}\right)\right)^4 \\
+\end{align}
+
+Formalised:
+
+\begin{align}
+  a \neq 0 \implies \exists p \in \R_{> 0}, \sum_{n \in \Z} e^{-\pi (n + a)^2 t} = O_t(e^{-pt})
+\end{align}
+
+  \todo{Differentiability proof.}
 \end{proof}
 
 We also have a nontrivial relation between these theta functions.

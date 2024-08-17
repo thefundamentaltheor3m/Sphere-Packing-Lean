@@ -1,4 +1,5 @@
 import Mathlib.Algebra.Field.Power
+import Mathlib.Algebra.Group.Subgroup.Pointwise
 import Mathlib.Analysis.Complex.LocallyUniformLimit
 import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
@@ -11,9 +12,10 @@ import Mathlib.NumberTheory.ModularForms.JacobiTheta.OneVariable
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
 import Mathlib.NumberTheory.ModularForms.SlashInvariantForms
 
-import SpherePacking.ModularForms.SlashActionAuxil
-import SpherePacking.ForMathlib.UpperHalfPlane
+import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 import SpherePacking.ForMathlib.SlashActions
+import SpherePacking.ForMathlib.UpperHalfPlane
+import SpherePacking.ModularForms.SlashActionAuxil
 
 /-!
 # Jacobi theta functions
@@ -37,7 +39,6 @@ noncomputable def Θ₄ (τ : ℍ) : ℂ := ∑' n : ℤ, (-1) ^ n * cexp (π * 
 noncomputable def H₂ (τ : ℍ) : ℂ := (Θ₂ τ) ^ 4
 noncomputable def H₃ (τ : ℍ) : ℂ := (Θ₃ τ) ^ 4
 noncomputable def H₄ (τ : ℍ) : ℂ := (Θ₄ τ) ^ 4
-
 
 /-- Theta functions as specializations of jacobiTheta₂ -/
 theorem Θ₂_as_jacobiTheta₂ (τ : ℍ) :
@@ -64,6 +65,8 @@ theorem Θ₄_as_jacobiTheta₂ (τ : ℍ) : Θ₄ τ = jacobiTheta₂ (1 / 2 : 
   intro b
   ring_nf
   rw [Complex.exp_add, ← exp_pi_mul_I, ← exp_int_mul, mul_comm (b : ℂ)]
+
+section H_SlashInvariant
 
 /-- Slash action of various elements on H₂, H₃, H₄ -/
 lemma H₂_negI_action : (H₂ ∣[(2 : ℤ)] negI) = H₂ := modular_slash_negI_of_even H₂ (2: ℤ) even_two
@@ -209,9 +212,17 @@ lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   exact pow_ne_zero _ hx'
 
 lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
-  have : S * S = -1 := by ext i j; simp [S]; fin_cases i <;> fin_cases j <;> simp
-  rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, this,
+  rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, modular_S_sq,
     ModularForm.slash_neg' _ _ (by decide), slash_one]
+
+lemma H₂_S_inv_action : (H₂ ∣[(2 : ℤ)] S⁻¹) = -H₄ := by
+  rw [← neg_eq_iff_eq_neg.mpr H₄_S_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
+
+lemma H₃_S_inv_action : (H₃ ∣[(2 : ℤ)] S⁻¹) = -H₃ := by
+  nth_rw 1 [← neg_eq_iff_eq_neg.mpr H₃_S_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
+
+lemma H₄_S_inv_action : (H₄ ∣[(2 : ℤ)] S⁻¹) = -H₂ := by
+  rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
 
 /-- Use β = -S * α^(-1) * S -/
 lemma H₂_β_action : (H₂ ∣[(2 : ℤ)] β) = H₂ := calc
@@ -248,42 +259,105 @@ noncomputable def H₄_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₄
   slash_action_eq' := slashaction_generators_Γ2 H₄ (2 : ℤ) H₄_α_action H₄_β_action H₄_negI_action
 
+end H_SlashInvariant
 
-open UpperHalfPlane
+
+
+section H_MDifferentiable
 
 noncomputable def H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂_SIF := by
+  intro τ
+  suffices h_diff : DifferentiableAt ℂ (↑ₕH₂) τ.val by
+    have : (H₂ ∘ ↑ofComplex) ∘ UpperHalfPlane.coe = H₂_SIF := by
+      ext x
+      simp [H₂_SIF, ofComplex_apply]
+    rw [← this]
+    exact h_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
   sorry
 
 noncomputable def H₃_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃_SIF := by sorry
 
 noncomputable def H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF := by sorry
 
-theorem isBoundedAtImInfty_H₂_SIF
-    (A : SL(2, ℤ)) : IsBoundedAtImInfty (H₂_SIF.toFun ∣[(2:ℤ)] A) := by sorry
+end H_MDifferentiable
 
-theorem isBoundedAtImInfty_H₃_SIF
-    (A : SL(2, ℤ)) : IsBoundedAtImInfty (H₃_SIF.toFun ∣[(2:ℤ)] A) := by sorry
 
-theorem isBoundedAtImInfty_H₄_SIF
-    (A : SL(2, ℤ)) : IsBoundedAtImInfty (H₄_SIF.toFun ∣[(2:ℤ)] A) := by sorry
+
+section H_isBoundedAtImInfty
+
+variable (γ : SL(2, ℤ))
+
+theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
+  sorry
+
+theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
+  sorry
+
+theorem isBoundedAtImInfty_H₄ : IsBoundedAtImInfty H₄ := by
+  sorry
+
+theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
+      ∧ IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] γ) ∧ IsBoundedAtImInfty (H₄ ∣[(2 : ℤ)] γ) := by
+  apply Subgroup.closure_induction_left (s := {S, T, ↑negI})
+      (p := fun γ _ ↦ IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ) ∧ IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] γ)
+        ∧ IsBoundedAtImInfty (H₄ ∣[(2 : ℤ)] γ))
+  · simp [isBoundedAtImInfty_H₂, isBoundedAtImInfty_H₃, isBoundedAtImInfty_H₄]
+  · intro x hx y _ h
+    simp_rw [slash_mul]
+    rcases hx with (rfl | rfl | rfl | _)
+    · simp_rw [H₂_S_action, H₃_S_action, H₄_S_action, neg_slash, isBoundedAtImInfty_neg_iff]
+      use h.right.right, h.right.left, h.left
+    · simp_rw [H₂_T_action, H₃_T_action, H₄_T_action, neg_slash, isBoundedAtImInfty_neg_iff]
+      use h.left, h.right.right, h.right.left
+    · simp_rw [SL_slash, ← subgroup_slash, H₂_negI_action, H₃_negI_action, H₄_negI_action]
+      exact h
+  · intro x hx y _ h
+    simp_rw [slash_mul]
+    rcases hx with (rfl | rfl | rfl | _)
+    · simp_rw [H₂_S_inv_action, H₃_S_inv_action, H₄_S_inv_action, neg_slash,
+        isBoundedAtImInfty_neg_iff]
+      use h.right.right, h.right.left, h.left
+    · simp_rw [H₂_T_inv_action, H₃_T_inv_action, H₄_T_inv_action, neg_slash,
+        isBoundedAtImInfty_neg_iff]
+      use h.left, h.right.right, h.right.left
+    · simp_rw [← Subgroup.coe_inv, modular_negI_inv, SL_slash, ← subgroup_slash,
+        modular_slash_negI_of_even _ 2 (by decide)]
+      exact h
+  · intro s hs
+    simp_rw [Set.mem_setOf_eq, Set.mem_range] at hs
+    obtain ⟨s, rfl⟩ := hs
+    rw [Set.mem_iInter, SetLike.mem_coe]
+    intro hs
+    simp [top_le_iff.mp <| SL2Z_generate.symm ▸ (Subgroup.closure_le s).mpr hs]
+
+theorem isBoundedAtImInfty_H₂_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ) :=
+  (isBoundedAtImInfty_H_slash _).left
+
+theorem isBoundedAtImInfty_H₃_slash : IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] γ) :=
+  (isBoundedAtImInfty_H_slash _).right.left
+
+theorem isBoundedAtImInfty_H₄_slash : IsBoundedAtImInfty (H₄ ∣[(2 : ℤ)] γ) :=
+  (isBoundedAtImInfty_H_slash _).right.right
+
+end H_isBoundedAtImInfty
 
 
 noncomputable def H₂_MF : ModularForm (Γ 2) 2 := {
   H₂_SIF with
   holo' := H₂_SIF_MDifferentiable
-  bdd_at_infty' := isBoundedAtImInfty_H₂_SIF
+  bdd_at_infty' := isBoundedAtImInfty_H₂_slash
 }
 
 noncomputable def H₃_MF : ModularForm (Γ 2) 2 := {
   H₃_SIF with
   holo' := H₃_SIF_MDifferentiable
-  bdd_at_infty' := isBoundedAtImInfty_H₃_SIF
+  bdd_at_infty' := isBoundedAtImInfty_H₃_slash
 }
 
 noncomputable def H₄_MF : ModularForm (Γ 2) 2 := {
   H₄_SIF with
   holo' := H₄_SIF_MDifferentiable
-  bdd_at_infty' := isBoundedAtImInfty_H₄_SIF
+  bdd_at_infty' := isBoundedAtImInfty_H₄_slash
 }
 
 /-- Jacobi identity -/
