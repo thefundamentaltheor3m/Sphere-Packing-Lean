@@ -290,7 +290,8 @@ variable (γ : SL(2, ℤ))
 -- TODO: Isolate this somewhere
 lemma jacobiTheta₂_term_half_apply (n : ℤ) (z : ℂ) :
     jacobiTheta₂_term n (z / 2) z = cexp (π * I * (n ^ 2 + n) * z) := by
-  sorry
+  rw [jacobiTheta₂_term]
+  ring_nf
 
 lemma jacobiTheta₂_rel_aux (n : ℤ) (t : ℝ) :
     rexp (-π * (n + 1 / 2) ^ 2 * t)
@@ -300,6 +301,12 @@ lemma jacobiTheta₂_rel_aux (n : ℤ) (t : ℝ) :
   ring_nf
   simp
   ring_nf!
+
+lemma Complex.norm_exp (z : ℂ) : ‖cexp z‖ = rexp z.re := by
+  simp [abs_exp]
+
+lemma Complex.norm_exp_mul_I (z : ℂ) : ‖cexp (z * I)‖ = rexp (-z.im) := by
+  simp [abs_exp]
 
 theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
   simp_rw [bounded_mem, H₂, Θ₂]
@@ -357,7 +364,36 @@ theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
     simp
 
 theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
-  sorry
+  have h_rw (z : ℍ) (n : ℤ) : -(π * n ^ 2 * z : ℂ).im = -π * n ^ 2 * z.im := by
+    rw [mul_assoc, im_ofReal_mul, ← Int.cast_pow, ← ofReal_intCast, im_ofReal_mul]
+    simp [← mul_assoc]
+  have h_sum (z : ℍ) : Summable fun n : ℤ ↦ rexp (-π * n ^ 2 * z.im) := by
+    have := (summable_jacobiTheta₂_term_iff 0 z).mpr z.prop
+    rw [← summable_norm_iff, ← summable_ofReal] at this
+    simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, norm_exp_mul_I, h_rw] at this
+    simpa using summable_ofReal.mp this
+  simp_rw [bounded_mem, H₃, Θ₃]
+  use (∑' n : ℤ, rexp (-π * n ^ 2)) ^ 4, 1
+  intro z hz
+  rw [map_pow]
+  gcongr
+  calc
+    _ = ‖∑' (n : ℤ), cexp (π * I * (n : ℂ) ^ 2 * z)‖ := rfl
+    _ ≤ ∑' (n : ℤ), ‖cexp (π * I * (n : ℂ) ^ 2 * z)‖ := norm_tsum_le_tsum_norm ?_
+    _ = ∑' (n : ℤ), ‖cexp (π * (n : ℂ) ^ 2 * z * I)‖ := by simp_rw [mul_right_comm _ I]
+    _ = ∑' (n : ℤ), rexp (-π * (n : ℂ) ^ 2 * z).im := by simp_rw [Complex.norm_exp_mul_I]; simp
+    _ = ∑' (n : ℤ), rexp (-π * (n : ℝ) ^ 2 * z.im) := by
+      congr with n
+      rw [← ofReal_neg, ← coe_im, ← im_ofReal_mul]
+      simp
+    _ ≤ _ := tsum_le_tsum (fun b ↦ ?_) ?_ ?_
+  · simp_rw [mul_right_comm _ I _, norm_exp_mul_I, h_rw]
+    simpa using h_sum z
+  · apply exp_monotone
+    simp only [neg_mul, neg_le_neg_iff]
+    exact le_mul_of_one_le_right (by positivity) hz
+  · exact h_sum z
+  · simpa using h_sum UpperHalfPlane.I
 
 theorem isBoundedAtImInfty_H₄ : IsBoundedAtImInfty H₄ := by
   sorry
