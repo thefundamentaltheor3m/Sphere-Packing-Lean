@@ -328,7 +328,8 @@ theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
     _ = ∑' (n : ℤ), ‖rexp (-π * ((n + 1 / 2) ^ 2 : ℝ) * z.im)‖ := by
       simp_rw [im_ofReal_mul, UpperHalfPlane.im, ← mul_assoc]
     _ ≤ _ := tsum_le_tsum (fun b ↦ ?_) ?_ ?_
-  · have (n : ℤ) : cexp (π * I * (n + 1 / 2) ^ 2 * z)
+  · -- TODO: simplify and refactor this proof with subproof 3 & 4
+    have (n : ℤ) : cexp (π * I * (n + 1 / 2) ^ 2 * z)
         = cexp (π * I * z / 4) * jacobiTheta₂_term n (z / 2) z := by
       rw [jacobiTheta₂_term_half_apply, ← Complex.exp_add]
       ring_nf
@@ -363,7 +364,9 @@ theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
     rw [summable_jacobiTheta₂_term_iff]
     simp
 
-theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
+-- We isolate this lemma out as it's also used in the proof for Θ₄
+lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
+    ∑' (n : ℤ), ‖Θ₃_term n z‖ ≤ ∑' (n : ℤ), rexp (-π * n ^ 2) := by
   have h_rw (z : ℍ) (n : ℤ) : -(π * n ^ 2 * z : ℂ).im = -π * n ^ 2 * z.im := by
     rw [mul_assoc, im_ofReal_mul, ← Int.cast_pow, ← ofReal_intCast, im_ofReal_mul]
     simp [← mul_assoc]
@@ -372,31 +375,47 @@ theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
     rw [← summable_norm_iff, ← summable_ofReal] at this
     simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, norm_exp_mul_I, h_rw] at this
     simpa using summable_ofReal.mp this
-  simp_rw [bounded_mem, H₃, Θ₃]
-  use (∑' n : ℤ, rexp (-π * n ^ 2)) ^ 4, 1
-  intro z hz
-  rw [map_pow]
-  gcongr
   calc
-    _ = ‖∑' (n : ℤ), cexp (π * I * (n : ℂ) ^ 2 * z)‖ := rfl
-    _ ≤ ∑' (n : ℤ), ‖cexp (π * I * (n : ℂ) ^ 2 * z)‖ := norm_tsum_le_tsum_norm ?_
-    _ = ∑' (n : ℤ), ‖cexp (π * (n : ℂ) ^ 2 * z * I)‖ := by simp_rw [mul_right_comm _ I]
+    _ = ∑' (n : ℤ), ‖cexp (π * (n : ℂ) ^ 2 * z * I)‖ := by simp_rw [Θ₃_term, mul_right_comm _ I]
     _ = ∑' (n : ℤ), rexp (-π * (n : ℂ) ^ 2 * z).im := by simp_rw [Complex.norm_exp_mul_I]; simp
     _ = ∑' (n : ℤ), rexp (-π * (n : ℝ) ^ 2 * z.im) := by
       congr with n
       rw [← ofReal_neg, ← coe_im, ← im_ofReal_mul]
       simp
     _ ≤ _ := tsum_le_tsum (fun b ↦ ?_) ?_ ?_
-  · simp_rw [mul_right_comm _ I _, norm_exp_mul_I, h_rw]
-    simpa using h_sum z
   · apply exp_monotone
     simp only [neg_mul, neg_le_neg_iff]
     exact le_mul_of_one_le_right (by positivity) hz
   · exact h_sum z
   · simpa using h_sum UpperHalfPlane.I
 
+theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
+  simp_rw [bounded_mem, H₃, Θ₃]
+  use (∑' n : ℤ, rexp (-π * n ^ 2)) ^ 4, 1
+  intro z hz
+  rw [map_pow]
+  gcongr
+  rw [← Complex.norm_eq_abs]
+  apply (norm_tsum_le_tsum_norm ?_).trans (isBoundedAtImInfty_H₃_aux z hz)
+  simp_rw [Θ₃_term_as_jacobiTheta₂_term]
+  apply Summable.norm
+  rw [summable_jacobiTheta₂_term_iff]
+  exact z.prop
+
 theorem isBoundedAtImInfty_H₄ : IsBoundedAtImInfty H₄ := by
-  sorry
+  simp_rw [bounded_mem, H₄, Θ₄]
+  use (∑' n : ℤ, rexp (-π * n ^ 2)) ^ 4, 1
+  intro z hz
+  rw [map_pow]
+  gcongr
+  calc
+    _ ≤ ∑' (n : ℤ), ‖Θ₄_term n z‖ := norm_tsum_le_tsum_norm ?_
+    _ = ∑' (n : ℤ), ‖Θ₃_term n z‖ := by congr with n; simp [Θ₄_term, Θ₃_term]
+    _ ≤ _ := isBoundedAtImInfty_H₃_aux z hz
+  simp_rw [Θ₄_term_as_jacobiTheta₂_term]
+  apply Summable.norm
+  rw [summable_jacobiTheta₂_term_iff]
+  exact z.prop
 
 theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
       ∧ IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] γ) ∧ IsBoundedAtImInfty (H₄ ∣[(2 : ℤ)] γ) := by
