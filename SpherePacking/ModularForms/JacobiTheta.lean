@@ -287,6 +287,20 @@ section H_isBoundedAtImInfty
 
 variable (γ : SL(2, ℤ))
 
+-- TODO: Isolate this somewhere
+lemma jacobiTheta₂_term_half_apply (n : ℤ) (z : ℂ) :
+    jacobiTheta₂_term n (z / 2) z = cexp (π * I * (n ^ 2 + n) * z) := by
+  sorry
+
+lemma jacobiTheta₂_rel_aux (n : ℤ) (t : ℝ) :
+    rexp (-π * (n + 1 / 2) ^ 2 * t)
+      = rexp (-π * t / 4) * jacobiTheta₂_term n (I * t / 2) (I * t) := by
+  rw [jacobiTheta₂_term_half_apply, ofReal_exp, ofReal_exp, ← Complex.exp_add, ofReal_mul]
+  congr
+  ring_nf
+  simp
+  ring_nf!
+
 theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
   simp_rw [bounded_mem, H₂, Θ₂]
   use (∑' n : ℤ, rexp (-π * ((n : ℝ) + 1 / 2) ^ 2)) ^ 4, 1
@@ -307,7 +321,15 @@ theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
     _ = ∑' (n : ℤ), ‖rexp (-π * ((n + 1 / 2) ^ 2 : ℝ) * z.im)‖ := by
       simp_rw [im_ofReal_mul, UpperHalfPlane.im, ← mul_assoc]
     _ ≤ _ := tsum_le_tsum (fun b ↦ ?_) ?_ ?_
-  · sorry
+  · have (n : ℤ) : cexp (π * I * (n + 1 / 2) ^ 2 * z)
+        = cexp (π * I * z / 4) * jacobiTheta₂_term n (z / 2) z := by
+      rw [jacobiTheta₂_term_half_apply, ← Complex.exp_add]
+      ring_nf
+    simp_rw [this, ← smul_eq_mul (a := cexp _)]
+    apply Summable.norm
+    apply Summable.const_smul
+    rw [summable_jacobiTheta₂_term_iff, coe_im]
+    linarith
   · rw [Real.norm_eq_abs, Real.abs_exp]
     apply Real.exp_monotone
     repeat rw [neg_mul]
@@ -320,25 +342,15 @@ theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
       exact Int.even_iff_not_odd.mp (even_two_mul b) (by rw [this]; simp)
     convert (mul_le_mul_left (mul_pos pi_pos (sq_pos_of_ne_zero this))).mpr hz using 1
     rw [mul_one]
-  · sorry
-  · have (n : ℤ) : rexp (-π * (n + 1 / 2) ^ 2) = rexp (-π / 4) * jacobiTheta₂_term n (I / 2) I := by
-      rw [jacobiTheta₂_term, ofReal_exp, ofReal_exp, ← Complex.exp_add]
-      congr
-      symm
-      calc
-        _ = (-π / 4) + (2 * π * n * (I * (I / 2)) + π * n ^ 2 * (I * I)) := by
-          congr 2
-          · simp
-          · rw [← mul_div_assoc, mul_right_comm _ I]
-            ring_nf
-          · rw [mul_right_comm _ I _, mul_assoc]
-        _ = (-π / 4) + (-π * n - π * n ^ 2) := by
-          rw [← mul_div_assoc, ← sq, I_sq]
-          ring_nf
-        _ = _ := by
-          ring_nf
-          simp
+  · apply Summable.norm
     apply summable_ofReal.mp
+    simp_rw [jacobiTheta₂_rel_aux, ofReal_exp, ← smul_eq_mul (a := cexp _)]
+    apply Summable.const_smul
+    rw [summable_jacobiTheta₂_term_iff, I_mul_im, ofReal_re]
+    linarith
+  · apply summable_ofReal.mp
+    have (n : ℤ) := jacobiTheta₂_rel_aux n 1
+    simp_rw [mul_one] at this
     simp_rw [this, ← smul_eq_mul]
     apply Summable.const_smul
     rw [summable_jacobiTheta₂_term_iff]
