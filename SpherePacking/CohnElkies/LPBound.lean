@@ -74,7 +74,11 @@ private lemma calc_aux_1 {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
   --   _ = ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re
   --       := sorry
 
-set_option maxHeartbeats 2000000
+-- # NOTE:
+-- There are several summability results stated as intermediate `have`s in the following lemma.
+-- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
+-- If there are assumptions needed beyond PSF, we should require them here, not in `PSF_Conditions`.
+set_option maxHeartbeats 200000
 private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
   (hReal : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0)
   (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
@@ -122,6 +126,30 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
         := by
             apply congrArg re
+            simp only [tsum_mul_left]
+            apply congrArg _ _
+            simp only [← tsum_mul_left]
+            -- We want to apply `tsum_comm`, which requires some summability conditions.
+            have hSummable₁ : Summable (Function.uncurry fun
+            (m : ↥(DualLattice P.lattice)) (x : ↑(P.centers ∩ D)) ↦
+            ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 f ↑m).re * exp (2 * ↑π * I *
+            ↑⟪(x : EuclideanSpace ℝ (Fin d)) - ↑x_1, ↑m⟫_ℝ)) := by
+              sorry
+            rw [← tsum_comm hSummable₁]
+            apply congrArg _ _
+            ext x
+            have hSummable₂ : Summable (Function.uncurry fun
+            (m : ↥(DualLattice P.lattice)) (x_1 : ↑(P.centers ∩ D)) ↦
+            ↑(𝓕 f ↑m).re * exp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)) - ↑x_1, ↑m⟫_ℝ)) := by
+              sorry
+            rw [← tsum_comm hSummable₂]
+            apply congrArg _ _
+            ext y
+            apply congrArg _ _
+            ext m
+            -- We get a deterministic timeout again!
+            -- apply congrArg (fun x => x * cexp (2 * ↑π * I * ↑⟪↑x - ↑y, ↑m⟫_ℝ))
+            -- The idea is then to do some sort of `ofReal_re`
             sorry
   _ = ((1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
@@ -222,13 +250,50 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
         := by
             -- We need to show that the `m ≠ 0` part is negative.
-            sorry
+            rw [ge_iff_le, ← tsub_nonpos, mul_assoc,
+                ← mul_sub (1 / Zlattice.covolume P.lattice volume) _ _]
+            simp only [ZeroMemClass.coe_eq_zero, dite_eq_ite, sub_add_cancel_right, mul_neg,
+              Left.neg_nonpos_iff]
+            apply mul_nonneg
+            · refine one_div_nonneg.mpr ?ha.a
+              rw [Zlattice.covolume]
+              exact ENNReal.toReal_nonneg
+            · apply tsum_nonneg
+              intro m
+              cases eq_or_ne m 0
+              · case inl h =>
+                simp only [h, ↓reduceIte, le_refl]
+              · case inr h =>
+                simp only [h, ↓reduceIte]
+                apply mul_nonneg
+                · rw [← ge_iff_le]
+                  exact hCohnElkies₂ m
+                · -- The following is giving a deterministic timeout for some bizarre reason...
+                  -- exact sq_nonneg
+                  --   (Complex.abs (∑' (x : ↑(P.centers ∩ D)), cexp (2 * ↑π * I * ↑⟪↑x, ↑m⟫_ℝ)))
+                  sorry
   _ = (1 / Zlattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
       ↑(P.numReps' Fact.out hD_isBounded) ^ 2
-        := by sorry
+        := by
+            apply congrArg _ _
+            -- Why do I have to restate this to get `Set.toFinset_card ↑(P.centers ∩ D)` to work?
+            -- It should already be able to synthesise a `Fintype` instance... right?
+            haveI := P.instFintypeNumReps' Fact.out hD_isBounded
+            simp only [inner_zero_right, zero_mul, ofReal_zero, mul_zero, Complex.exp_zero,
+                       tsum_const, nsmul_eq_mul, mul_one, abs_natCast, Nat.cast_nonneg, ne_eq,
+                       not_false_eq_true, pow_left_inj, Nat.cast_inj,
+                       PeriodicSpherePacking.numReps', Set.toFinset_card] -- ↑(P.centers ∩ D)]
+            -- Why doesn't `exact Nat.card_eq_fintype_card` work?
+            -- exact Nat.card_eq_fintype_card
+            rw [Nat.card_eq_fintype_card]
+            -- Why doesn't `exact Fintype.card_congr' rfl` work?
+            -- exact Fintype.card_congr' rfl
+            sorry
   _ = ↑(P.numReps' Fact.out hD_isBounded) ^ 2 * (𝓕 f 0).re /
   Zlattice.covolume P.lattice volume
         := by sorry
+
+#check Finset ↑(P.centers ∩ D)
 
 theorem LinearProgrammingBound' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
   (hReal : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0)

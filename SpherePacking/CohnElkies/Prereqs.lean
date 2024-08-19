@@ -127,11 +127,16 @@ noncomputable def PeriodicSpherePacking.numReps''
   (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice) : ℕ :=
   Fintype.card ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _))
 
+noncomputable instance PeriodicSpherePacking.instFintypeNumReps'
+  (S : PeriodicSpherePacking d) (hd : 0 < d)
+  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
+  Fintype ↑(S.centers ∩ D) := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
+
 noncomputable def PeriodicSpherePacking.numReps' (S : PeriodicSpherePacking d) (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
   -- (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
   : ℕ :=
-  haveI := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
+  haveI := S.instFintypeNumReps' hd hD_isBounded
   (S.centers ∩ D).toFinset.card
 
 -- I hope these aren't outright wrong
