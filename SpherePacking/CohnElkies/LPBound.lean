@@ -55,24 +55,48 @@ private lemma calc_aux_1 {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
   {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
-  ≤ ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re := sorry
-  -- calc
-  -- ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
-  -- _ = (∑' (x : P.centers) (y : ↑(P.centers ∩ D))
-  --     (_ : (y : EuclideanSpace ℝ (Fin d)) ≠ ↑x),
-  --     (f (x - ↑y)).re) +
-  --     (∑' (x : P.centers) (y : ↑(P.centers ∩ D))
-  --     (_ : (y : EuclideanSpace ℝ (Fin d)) = ↑x),
-  --     (f (x - ↑y)).re)
-  --       := sorry
-  -- _ ≤ (∑' (x : P.centers) (y : ↑(P.centers ∩ D))
-  --     (_ : (y : EuclideanSpace ℝ (Fin d)) = ↑x),
-  --     (f (x - ↑y)).re)
-  --       := sorry
-  --   _ = ∑' (y : ↑(P.centers ∩ D)), (f (y - ↑y)).re
-  --       := sorry
-  --   _ = ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re
-  --       := sorry
+  ≤ ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re := calc
+  ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
+  _ = (∑' (x : P.centers) (y : ↑(P.centers ∩ D)),
+      if h : x - (y : EuclideanSpace ℝ (Fin d)) = 0 then 0 else (f (x - ↑y)).re) +
+      (∑' (x : ↑(P.centers ∩ D)), (f (0 : EuclideanSpace ℝ (Fin d))).re)
+        := by
+            -- First, we need to un-distribute the tsums on the RHS.
+            -- Then, we need to use some sort of `tsum_ite_eq`.
+            -- Both of the above require some summability stuff.
+            sorry
+  _ ≤ ∑' (x : ↑(P.centers ∩ D)), (f (0 : EuclideanSpace ℝ (Fin d))).re
+        := by
+            rw [← tsub_nonpos]
+            -- simp only [ZeroMemClass.coe_eq_zero, dite_eq_ite, sub_add_cancel_right, mul_neg,
+            --   Left.neg_nonpos_iff]
+            rw [add_sub_cancel_right]
+            apply tsum_nonpos
+            intro x
+            apply tsum_nonpos
+            intro y
+            cases eq_or_ne ((x : EuclideanSpace ℝ (Fin d)) - y) (0 : EuclideanSpace ℝ (Fin d))
+            · case inl h =>
+              simp only [h, ↓reduceDIte, le_refl]
+            · case inr h =>
+              simp only [h, ↓reduceDIte]
+              apply hCohnElkies₁ (x - y)
+              sorry
+    -- _ = ∑' (y : ↑(P.centers ∩ D)), (f (y - ↑y)).re
+    --     := by simp only [sub_self]
+    _ = ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re
+        := by
+            simp only [tsum_const, nsmul_eq_mul, mul_eq_mul_right_iff, Nat.cast_inj]
+            cases eq_or_ne (f 0).re 0
+            · case inl h =>
+              right
+              rw [h]
+            · case inr h =>
+              left
+              rw [PeriodicSpherePacking.numReps', Set.toFinset_card]
+              -- Now we have to deal with annoying `Nat.card` and `Fintype.card` stuff...
+              -- rw [Nat.card_eq_fintype_card]  -- Doesn't work
+              sorry
 
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following lemma.
@@ -289,9 +313,8 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
             -- Why doesn't `exact Fintype.card_congr' rfl` work?
             -- exact Fintype.card_congr' rfl
             sorry
-  _ = ↑(P.numReps' Fact.out hD_isBounded) ^ 2 * (𝓕 f 0).re /
-  Zlattice.covolume P.lattice volume
-        := by sorry
+  _ = ↑(P.numReps' Fact.out hD_isBounded) ^ 2 * (𝓕 f 0).re / Zlattice.covolume P.lattice volume
+        := by simp only [div_eq_mul_inv, one_div, mul_comm, mul_assoc, one_mul]
 
 #check Finset ↑(P.centers ∩ D)
 
