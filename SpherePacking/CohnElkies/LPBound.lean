@@ -85,28 +85,28 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
   ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re ≥ ↑(P.numReps' Fact.out hD_isBounded) ^ 2 * (𝓕 f 0).re /
   Zlattice.covolume P.lattice := calc
   ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re
-  _ ≥ ∑' x : P.centers,
-      ∑' y : ↑(P.centers ∩ D),
+  _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)),
       (f (x - ↑y)).re
         := by
             rw [ge_iff_le]
-            exact calc_aux_1 hPSF hReal hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hD_unique_covers hD_measurable
-  _ = ∑' x : ↑(P.centers ∩ D),
-      ∑' y : ↑(P.centers ∩ D),
-      ∑' ℓ : P.lattice, (f (↑x - ↑y + ↑ℓ)).re
+            exact calc_aux_1 hPSF hReal hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hD_unique_covers
+              hD_measurable
+  _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
+      (f (↑x - ↑y + ↑ℓ)).re
         :=  by sorry
   -- We now take the real part out so we can apply the PSF-L to the stuff inside.
   -- The idea would be to say, in subsequent lines, that "it suffices to show that the numbers
   -- whose real parts we're taking are equal as complex numbers" and then apply the PSF-L and
   -- other complex-valued stuff.
-  _ = (∑' x : ↑(P.centers ∩ D),
-      ∑' y : ↑(P.centers ∩ D),
-      ∑' ℓ : P.lattice, f (↑x - ↑y + ↑ℓ)).re
-        := by sorry
+  _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
+      f (↑x - ↑y + ↑ℓ)).re
+        := by
+            -- rw [re_tsum hPSF.1]
+            sorry
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / Zlattice.covolume P.lattice) *
       ∑' m : DualLattice P.lattice, (𝓕 f m) *
-      cexp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)).re
+      exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)).re
         := by
             -- First, we apply the fact that two sides are equal if they're equal in ℂ.
             apply congrArg re
@@ -118,17 +118,15 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
             -- Now that we've isolated the innermost sum, we can use the PSF-L.
             exact PSF_L P.lattice hPSF (x - ↑y)
   _ = ((1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re * (
-      ∑' x : ↑(P.centers ∩ D),
-      ∑' y : ↑(P.centers ∩ D),
-      cexp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
+      ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
+      exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
         := by
             apply congrArg re
             sorry
   _ = ((1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re * (
-      ∑' x : ↑(P.centers ∩ D),
-      ∑' y : ↑(P.centers ∩ D),
-      cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ) *
-      cexp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
+      ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ) *
+      exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
         := by
             -- As before, we have to go through a bunch of `congrArg`s to isolate the expressions we
             -- are really trying to show are equal.
@@ -141,38 +139,90 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
             ext x
             apply congrArg _ _
             ext y
-
-            sorry
+            rw [sub_eq_neg_add, inner_add_left]
+            push_cast  -- Can this be condensed into a rw so that there's just a bunch of rws?
+            rw [mul_add, Complex.exp_add, mul_comm]
   _ = ((1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ D),
-      cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
       (∑' y : ↑(P.centers ∩ D),
-      cexp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)))).re
-        := by sorry
+      exp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)))).re
+        := by
+            apply congrArg re
+            apply congrArg _ _
+            apply congrArg _ _
+            ext m
+            simp only [mul_assoc]
+            apply congrArg _ _
+            rw [← tsum_mul_right]
+            apply congrArg _ _
+            ext x
+            rw [← tsum_mul_left]
+            apply congrArg _ _
+            ext y
+            simp only [inner_neg_left, ofReal_neg, mul_neg]
   _ = ((1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ D),
-      cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
       conj (∑' x : ↑(P.centers ∩ D),
-      cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) -- Need its complex conjugate
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) -- Need its complex conjugate
       ).re
-        := by sorry
+        := by
+            apply congrArg re
+            apply congrArg _ _
+            apply congrArg _ _
+            ext m
+            apply congrArg _ _
+            rw [conj_tsum]
+            apply congrArg _ _
+            ext x
+            -- Might need some unit circle stuff
+            sorry
   _ = (1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
-      (∑' x : ↑(P.centers ∩ D),
-      Complex.abs (cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
-        := by sorry
+      (Complex.abs (∑' x : ↑(P.centers ∩ D),
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
+        := by
+            -- Need to turn the RHS into the real part of a complex number
+            rw [← ofReal_re (1 / Zlattice.covolume P.lattice volume *
+                               ∑' (m : ↥(DualLattice P.lattice)),
+                               (𝓕 f ↑m).re * Complex.abs (∑' (x : ↑(P.centers ∩ D)),
+                               cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_ℝ)) ^ 2)]
+            -- Now we can apply the fact that the real parts of both expressions are equal if they
+            -- are equal in ℂ.
+            apply congrArg re
+            push_cast
+            apply congrArg _ _
+            apply congrArg _ _
+            ext m
+            rw [mul_assoc]
+            apply congrArg _ _
+            rw [mul_conj, normSq_eq_abs]
+            norm_cast
+  -- We split the sum up into the `m = 0` and `m ≠ 0` parts.
   _ = (1 / Zlattice.covolume P.lattice) * (
-      (∑' (m : DualLattice P.lattice) , (𝓕 f m).re * -- Need to add a `(hm : m ≠ 0)` into the sum
-      (∑' x : ↑(P.centers ∩ D),
-      Complex.abs (cexp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2))
+      (∑' (m : DualLattice P.lattice), if hm : m = (0 : EuclideanSpace ℝ (Fin d)) then 0 else
+      (𝓕 f m).re * (Complex.abs (∑' x : ↑(P.centers ∩ D),
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2))
       +
       (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
-      (∑' x : ↑(P.centers ∩ D),
-      Complex.abs (cexp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2))
-        := by sorry
+      (Complex.abs (∑' x : ↑(P.centers ∩ D),
+      exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2))
+        := by
+            apply congrArg _ _
+            rw [add_comm]
+            have hSummable : Summable (fun (m : ↥(DualLattice P.lattice)) =>
+              (𝓕 f m).re * (Complex.abs (∑' x : ↑(P.centers ∩ D),
+              exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)) := by
+              -- This should, I think, follow from however we define `PSF_Conditions`.
+              sorry
+            rw [tsum_eq_add_tsum_ite hSummable (0 : ↥(DualLattice P.lattice))]
+            simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
   _ ≥ (1 / Zlattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
-      (∑' x : ↑(P.centers ∩ D),
-      Complex.abs (cexp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
-        := sorry
+      (Complex.abs (∑' x : ↑(P.centers ∩ D),
+      exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
+        := by
+            -- We need to show that the `m ≠ 0` part is negative.
+            sorry
   _ = (1 / Zlattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
       ↑(P.numReps' Fact.out hD_isBounded) ^ 2
         := by sorry
@@ -189,6 +239,7 @@ theorem LinearProgrammingBound' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF :
   (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
   P.density ≤
   (f 0).re / (𝓕 f 0).re * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
+  -- HUGE TODO: Get the periodic density formula in terms of some `D`.
   rw [P.periodic_density_formula' Fact.out hD_isBounded hD_unique_covers hD_measurable]
   suffices hCalc : (P.numReps' Fact.out hD_isBounded) * (f 0).re ≥ (P.numReps' Fact.out hD_isBounded)^2 * (𝓕 f 0).re / Zlattice.covolume P.lattice
   · rw [hP]
@@ -198,11 +249,9 @@ theorem LinearProgrammingBound' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF :
       rw [h𝓕f]
       -- simp only [zero_re, div_zero]
       -- Why does `div_zero` replace the value with `0` instead of `⊤`? I'd like `⊤`!
-      have h : ∀ a : ENNReal, a / 0 = ⊤ := by
-
-        sorry
       sorry
     · case inr h𝓕f =>
+
       sorry
   exact calc_steps hPSF hReal hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hD_unique_covers hD_measurable
 

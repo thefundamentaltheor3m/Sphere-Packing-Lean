@@ -52,18 +52,20 @@ This section defines the Poisson Summation Formual, Lattice Version (`PSF_L`). T
 dependency of the Cohn-Elkies proof.
 -/
 
+-- Could this maybe become a `structure` with each field being a different condition?
 def PSF_Conditions (f : EuclideanSpace ℝ (Fin d) → ℂ) : Prop :=
   /-
     Mention here all the conditions we decide to impose functions on which to define the PSF-L.
     For example, this could be that they must be Schwartz (cf. blueprint) or admissible (cf. Cohn-
     Elkies). This is a placeholder for now, as is almost everything in this file.
   -/
+  Summable f ∧
   sorry
 
 theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
   (v : EuclideanSpace ℝ (Fin d)) :
   ∑' ℓ : Λ, f (v + ℓ) = (1 / Zlattice.covolume Λ) * ∑' m : DualLattice Λ, (𝓕 f m) *
-  cexp (2 * π * I * ⟪v, m⟫_ℝ) :=
+  exp (2 * π * I * ⟪v, m⟫_ℝ) :=
   sorry
 
 -- The version below is on the blueprint. I'm pretty sure it can be removed.
@@ -149,22 +151,35 @@ theorem PeriodicSpherePacking.periodic_density_formula'
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
   S.density = ((S.numReps' hd hD_isBounded) : ENNReal) /
     (Zlattice.covolume S.lattice) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
+  -- __THIS IS A MASSIVE TODO__
   sorry
 
 theorem periodic_constant_eq_constant (hd : 0 < d) :
     PeriodicSpherePackingConstant d = SpherePackingConstant d := by
   sorry
 
-end Periodic_Packings
-
-noncomputable section Misc
 -- TODO: Move to `SpherePacking/Basic/PeriodicPacking.lean` once #25 gets merged
 
 variable {d : ℕ} (P : PeriodicSpherePacking d)
 
-def PeriodicSpherePacking.basis_index_equiv : (Module.Free.ChooseBasisIndex ℤ ↥P.lattice) ≃ (Fin d) := by
+noncomputable def PeriodicSpherePacking.basis_index_equiv :
+  (Module.Free.ChooseBasisIndex ℤ ↥P.lattice) ≃ (Fin d) := by
   refine Fintype.equivFinOfCardEq ?h
   rw [← FiniteDimensional.finrank_eq_card_chooseBasisIndex, Zlattice.rank ℝ P.lattice,
       finrank_euclideanSpace, Fintype.card_fin]
+
+-- lemma DualLattice.cast_zero : ↑(0 : ↥(DualLattice P.lattice)) = (0 : EuclideanSpace ℝ (Fin d)) :=
+--   rfl
+
+end Periodic_Packings
+
+noncomputable section Misc
+
+-- Pedantic stuff that already exists but for some reason isn't being found and needs restating!!
+
+instance (v : EuclideanSpace ℝ (Fin d)) : Decidable (v = 0) := Classical.propDecidable (v = 0)
+
+instance : DecidableEq (EuclideanSpace ℝ (Fin d)) :=
+  Classical.typeDecidableEq (EuclideanSpace ℝ (Fin d))
 
 end Misc
