@@ -1,13 +1,14 @@
 import Mathlib.Analysis.Normed.Group.Tannery
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
-
 import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ForMathlib.AtImInfty
 
 /-!
 # Limits at infinity
 
 In this file we prove the limit of Θᵢ(z) as z tends to i∞. This will be useful as we do
-computations with Fourier coefficients, e.g. comparing two q-expansions.
+computations with Fourier coefficients, e.g. comparing two q-expansions. This is also useful when we
+compute limits of forms later on (following Seewoo's approach).
 -/
 
 open scoped Real
@@ -19,17 +20,7 @@ lemma Int.ne_half (a : ℤ) : ↑a ≠ (1 / 2 : ℝ) :=
     rw [fract_intCast, fract_eq_self.mpr ⟨by linarith, by linarith⟩]
     norm_num
 
-lemma Filter.eventually_atImInfty {p : ℍ → Prop} :
-    (∀ᶠ x in atImInfty, p x) ↔ ∃ A : ℝ, ∀ z : ℍ, A ≤ z.im → p z :=
-  atImInfty_mem (setOf p)
-
-lemma Filter.tendsto_im_atImInfty : Tendsto (fun x : ℍ ↦ x.im) atImInfty atTop := by
-  simp only [atImInfty_basis.tendsto_iff atTop_basis, Set.mem_preimage, Set.mem_Ici, true_and,
-    true_implies]
-  exact fun b ↦ ⟨b, by simp⟩
-
-open HurwitzKernelBounds in
-lemma jacobiTheta₂_half_apply_tendsto_atImInfty :
+theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (x / 2) x) atImInfty (𝓝 2) := by
   simp_rw [jacobiTheta₂, jacobiTheta₂_term]
   convert tendsto_tsum_of_dominated_convergence
@@ -107,3 +98,4 @@ theorem Θ₂_tendsto_atImInfty : Tendsto Θ₂ atImInfty (𝓝 0) := by
     -- TODO: tendsto_div_const_atBot_of_pos and its friends should be aliased under Tendsto.
     (tendsto_div_const_atBot_of_pos zero_lt_four).mpr
       (tendsto_im_atImInfty.const_mul_atTop_of_neg (neg_lt_zero.mpr Real.pi_pos))
+
