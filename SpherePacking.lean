@@ -7,9 +7,13 @@ import SpherePacking.ForMathlib.ENNReal
 import SpherePacking.ForMathlib.Encard
 import SpherePacking.ForMathlib.Finsupp
 import SpherePacking.ForMathlib.InnerProductSpace
+import SpherePacking.ForMathlib.SlashActions
+import SpherePacking.ForMathlib.UpperHalfPlane
 import SpherePacking.ForMathlib.Real
 import SpherePacking.ForMathlib.Vec
 import SpherePacking.ForMathlib.Dual
 import SpherePacking.CohnElkies.Prereqs
 import SpherePacking.ForMathlib.VolumeOfBalls
 import SpherePacking.ForMathlib.Zlattice
+import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.SlashActionAuxil
