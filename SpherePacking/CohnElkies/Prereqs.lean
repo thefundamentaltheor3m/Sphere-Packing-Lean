@@ -142,8 +142,7 @@ lemma PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking 
 lemma PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d) -- (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
-  :
-  S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
+  : S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
   ext x
   simp only [Set.mem_iUnion, Subtype.exists, AddSubmonoid.mk_vadd, exists_prop]
   constructor
@@ -172,6 +171,14 @@ lemma PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePackin
     -- Then x = -g +ᵥ (y +ᵥ g) where -g is also in the lattice
     -- We can apply closure under action to this and the fact that (y +ᵥ g) is in the centers
     sorry
+
+lemma PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) -- (hd : 0 < d)
+  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
+  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
+  : -- Set.Pairwise (S.lattice) (Disjoint on (fun g => g +ᵥ S.centers ∩ D)) -- why the error?
+  True
+  := by
+  sorry
 
 -- I hope these aren't outright wrong
 instance HDivENNReal : HDiv ENNReal ℝ ENNReal := sorry
@@ -218,7 +225,10 @@ instance : DecidableEq (EuclideanSpace ℝ (Fin d)) :=
   Classical.typeDecidableEq (EuclideanSpace ℝ (Fin d))
 
 -- Now a small lemma from Fourier analysis:
-
+/- Just beneath the statement of Theorem 3.1 in Cohn and Elkies' original paper, they mention that
+𝓕 f being nonnegative and not identically zero (because f is not) means f(0) is not zero. Hence,
+f 0 / 𝓕 f 0 is well-defined, even when 𝓕 f 0 is zero (`ENNReal.div_zero` tells us it equals `⊤`).
+-/
 
 -- Now a small lemma from Complex analysis:
 local notation "conj" => starRingEnd ℂ
