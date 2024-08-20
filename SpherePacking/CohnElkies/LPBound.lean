@@ -41,7 +41,6 @@ variable (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 →
 variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
 
 -- We (locally) denote the Complex Conjugate of some `z : ℂ` by `conj z`
--- Idea taken from https://github.com/leanprover-community/mathlib4/blob/75cc36e80cb9fe76f894b7688be1e0c792ae55d9/Mathlib/Analysis/Complex/UnitDisc/Basic.lean#L21
 local notation "conj" => starRingEnd ℂ
 
 section Fundamental_Domain_Dependent
@@ -339,8 +338,8 @@ theorem LinearProgrammingBound' :
     cases eq_or_ne (𝓕 f 0) 0
     · case inl h𝓕f =>
       rw [h𝓕f, zero_re]
-      -- simp only [zero_re, div_zero]
-      -- Why does `div_zero` replace the value with `0` instead of `⊤`? I'd like `⊤`!
+      -- For `ENNReal.div_zero`, we need `f 0 ≠ 0`. This can be deduced from the fact that
+      -- `𝓕 f ≥ 0` and `f ≠ 0` (if we assume `f` to be Schwartz).
       sorry
     · case inr h𝓕f =>
 
