@@ -3,7 +3,7 @@ import SpherePacking.CohnElkies.Prereqs
 open scoped FourierTransform ENNReal
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real Zspan Bornology
 
-variable {d : ℕ} [Fact (0 < d)] -- Is `Fact` right here?
+variable {d : ℕ} [instPosDim : Fact (0 < d)] -- Is `Fact` right here?
 
 /-
 # Potential Design Complications:
@@ -27,7 +27,9 @@ variable {d : ℕ} [Fact (0 < d)] -- Is `Fact` right here?
   which the corresponding refs must be updated).
 -/
 
-variable {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
+-- Once we sort out the whole 'including variables' thing, we should remove all the variables from
+-- the various lemmas and leave these as they are. Else, we should remove these and keep those.
+variable {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f) (hne_zero : f ≠ 0)
 -- We need `f` to be real-valued for Cohn-Elkies, but do we need that for the PSF-L as well?
 variable (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
 -- I'm not sure if `hCohnElkies₂` can replace this, because of the 5th step in `calc_steps`.
@@ -44,23 +46,19 @@ local notation "conj" => starRingEnd ℂ
 
 section Fundamental_Domain_Dependent
 
+include d instPosDim f hPSF hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
+
+variable {P : PeriodicSpherePacking d} (hP : P.separation = 1)
+variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
+variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
+
 /-
 In this section, we will prove that the density of every periodic sphere packing of separation 1 is
 bounded above by the Cohn-Elkies bound.
 -/
 
-variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) (b : Basis (Fin d) ℤ P.lattice)
-variable {D : Set (EuclideanSpace ℝ (Fin d))}
-variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
 
-private lemma calc_aux_1 {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
-  (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
-  (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 f x).re = (𝓕 f x))
-  (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
-  (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
-  {P : PeriodicSpherePacking d} (hP : P.separation = 1)
-  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
+private lemma calc_aux_1 :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
   ≤ ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re := calc
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
@@ -105,37 +103,12 @@ private lemma calc_aux_1 {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
               -- rw [Nat.card_eq_fintype_card]  -- Doesn't work
               sorry
 
-set_option linter.unusedVariables false  -- What is with this included variable thing?
-private lemma calc_aux_2 (x m : EuclideanSpace ℝ (Fin d)) :
-  cexp (-(2 * ↑π * I * ↑⟪x, m⟫_ℝ)) = conj (cexp (2 * ↑π * I * ↑⟪x, m⟫_ℝ)) :=
-  calc cexp (-(2 * ↑π * I * ↑⟪x, m⟫_ℝ))
-  _ = Circle.exp (-2 * π * ⟪x, m⟫_ℝ)
-      := by
-          rw [Circle.exp_apply]
-          push_cast
-          ring_nf
-  _ = conj (Circle.exp (2 * π * ⟪x, m⟫_ℝ))
-      := by rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
-  _= conj (cexp (2 * ↑π * I * ↑⟪x, m⟫_ℝ))
-      := by
-          rw [Circle.exp_apply]
-          apply congrArg conj
-          push_cast
-          ring_nf
-
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following lemma.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
 -- If there are assumptions needed beyond PSF, we should require them here, not in `PSF_Conditions`.
 set_option maxHeartbeats 200000
-private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
-  (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
-  (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 f x).re = (𝓕 f x))
-  (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
-  (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
-  {P : PeriodicSpherePacking d} (hP : P.separation = 1)
-  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
+private lemma calc_steps :
   ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re ≥ ↑(P.numReps' Fact.out hD_isBounded) ^ 2 *
   (𝓕 f 0).re / Zlattice.covolume P.lattice := calc
   ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re
@@ -143,13 +116,13 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
       (f (x - ↑y)).re
         := by
             rw [ge_iff_le]
-            exact calc_aux_1 hPSF hReal hRealFourier hCohnElkies₁ hCohnElkies₂
-              hP hD_isBounded hD_unique_covers hD_measurable
+            exact calc_aux_1 hPSF hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hD_isBounded
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
         :=  by
               -- We need to use `PeriodocSpherePacking.unique_covers_of_centers` to split up the
               -- `tsum` in `x` by writing `P.centers` as a union of translates of `P.centers ∩ D`.
+
               sorry
   -- We now take the real part out so we can apply the PSF-L to the stuff inside.
   -- The idea would be to say, in subsequent lines, that "it suffices to show that the numbers
@@ -158,7 +131,7 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       f (↑x - ↑y + ↑ℓ)).re
         := by
-            -- rw [re_tsum hPSF.1]
+            -- rw [re_tsum hPSF.1] -- Needs some sort of summability over subsets...?
             sorry
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / Zlattice.covolume P.lattice) *
@@ -257,7 +230,7 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
             rw [conj_tsum]
             apply congrArg _ _
             ext x
-            exact calc_aux_2 (x : EuclideanSpace ℝ (Fin d)) (m : EuclideanSpace ℝ (Fin d))
+            exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
   _ = (1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
       (Complex.abs (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
@@ -345,16 +318,10 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
   _ = ↑(P.numReps' Fact.out hD_isBounded) ^ 2 * (𝓕 f 0).re / Zlattice.covolume P.lattice volume
         := by simp only [div_eq_mul_inv, one_div, mul_comm, mul_assoc, one_mul]
 
-#check Finset ↑(P.centers ∩ D)
+-- And now, the main result of this section:
+include hP hD_isBounded hD_unique_covers hD_measurable
 
-theorem LinearProgrammingBound' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
-  (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
-  (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 f x).re = (𝓕 f x))
-  (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
-  (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
-  {P : PeriodicSpherePacking d} (hP : P.separation = 1)
-  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
+theorem LinearProgrammingBound' :
   P.density ≤
   (f 0).re / (𝓕 f 0).re * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   -- HUGE TODO: Get the periodic density formula in terms of some `D`.
@@ -364,15 +331,14 @@ theorem LinearProgrammingBound' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF :
     rw [ge_iff_le] at hCalc
     cases eq_or_ne (𝓕 f 0) 0
     · case inl h𝓕f =>
-      rw [h𝓕f]
+      rw [h𝓕f, zero_re]
       -- simp only [zero_re, div_zero]
       -- Why does `div_zero` replace the value with `0` instead of `⊤`? I'd like `⊤`!
       sorry
     · case inr h𝓕f =>
 
       sorry
-  exact calc_steps hPSF hReal hRealFourier hCohnElkies₁ hCohnElkies₂
-    hP hD_isBounded hD_unique_covers hD_measurable
+  exact calc_steps hPSF hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hD_isBounded
 
 end Fundamental_Domain_Dependent
 

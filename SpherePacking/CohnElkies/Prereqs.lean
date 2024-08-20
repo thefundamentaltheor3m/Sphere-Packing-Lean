@@ -211,11 +211,32 @@ end Periodic_Packings
 
 noncomputable section Misc
 
--- Pedantic stuff that already exists but for some reason isn't being found and needs restating!!
-
+-- For some reason the following two instances seem to need restating...
 instance (v : EuclideanSpace ℝ (Fin d)) : Decidable (v = 0) := Classical.propDecidable (v = 0)
 
 instance : DecidableEq (EuclideanSpace ℝ (Fin d)) :=
   Classical.typeDecidableEq (EuclideanSpace ℝ (Fin d))
+
+-- Now a small lemma from Fourier analysis:
+
+
+-- Now a small lemma from Complex analysis:
+local notation "conj" => starRingEnd ℂ
+lemma Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
+  cexp (-(2 * ↑π * I * ↑⟪x, m⟫_ℝ)) = conj (cexp (2 * ↑π * I * ↑⟪x, m⟫_ℝ)) :=
+  calc cexp (-(2 * ↑π * I * ↑⟪x, m⟫_ℝ))
+  _ = Circle.exp (-2 * π * ⟪x, m⟫_ℝ)
+      := by
+          rw [Circle.exp_apply]
+          push_cast
+          ring_nf
+  _ = conj (Circle.exp (2 * π * ⟪x, m⟫_ℝ))
+      := by rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
+  _= conj (cexp (2 * ↑π * I * ↑⟪x, m⟫_ℝ))
+      := by
+          rw [Circle.exp_apply]
+          apply congrArg conj
+          push_cast
+          ring_nf
 
 end Misc
