@@ -82,14 +82,6 @@ open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Zspan
 
 section Periodic_Packings
 
-/-
-This section consists of two results:
-1. The formula for the density of a periodic packing
-2. The periodic sphere packing constant is the supremum over packings of separation radius 1
-These can be moved to the file `SpherePacking/Basic/PeriodicPacking.lean` being worked on in #25 or
-to the file `SpherePacking/Basic/SpherePacking.lean`.
--/
-
 theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
     PeriodicSpherePackingConstant d = ⨆ (S : PeriodicSpherePacking d) (_ : S.separation = 1),
     S.density := by
@@ -110,19 +102,11 @@ theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
     simp only
     exact le_iSup_iff.mpr fun b a ↦ a S
 
--- Adapted from #25
--- Reason: Need specific set of representatives for proof of Cohn-Elkies. Choice doesn't matter,
--- so might as well choose a convenient one.
-
--- instance (S : PeriodicSpherePacking d) : Fintype (Quotient S.instAddAction.orbitRel) := sorry
-
--- instance (S : PeriodicSpherePacking d) : DiscreteTopology ↥S.lattice := S.lattice_discrete
-
--- instance (S : PeriodicSpherePacking d) : IsZlattice ℝ S.lattice := S.lattice_lattice
-
+-- Removable?
 instance (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice) :
   Fintype ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)) := sorry
 
+-- Removable?
 noncomputable def PeriodicSpherePacking.numReps''
   (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice) : ℕ :=
   Fintype.card ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _))
@@ -138,6 +122,53 @@ noncomputable def PeriodicSpherePacking.numReps' (S : PeriodicSpherePacking d) (
   : ℕ :=
   haveI := S.instFintypeNumReps' hd hD_isBounded
   (S.centers ∩ D).toFinset.card
+
+lemma PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking d) -- (hd : 0 < d)
+  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
+  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
+  :
+  ∀ x : S.centers, ∃! g : S.lattice, (g +ᵥ x : EuclideanSpace ℝ (Fin d)) ∈ S.centers ∩ D := by
+  intro x
+  obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers (x : EuclideanSpace ℝ (Fin d))
+  use g
+  simp only [Set.mem_inter_iff, Subtype.coe_prop, true_and, Subtype.forall] at hg₁ hg₂ ⊢
+  constructor
+  · exact hg₁
+  · intro a ha hmem
+    exact hg₂ a ha hmem
+
+lemma PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d) -- (hd : 0 < d)
+  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
+  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
+  :
+  S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
+  ext x
+  simp only [Set.mem_iUnion, Subtype.exists, AddSubmonoid.mk_vadd, exists_prop]
+  constructor
+  · intro hx
+    obtain ⟨g, hg₁, hg₂⟩ := S.unique_covers_of_centers hD_unique_covers ⟨x, hx⟩
+    use -g
+    simp only [neg_mem_iff, SetLike.coe_mem, true_and]
+    obtain ⟨hy₁, hy₂⟩ := hg₁
+    have : ∃ y : D, ↑y = g +ᵥ x := by use ⟨g +ᵥ x, hy₂⟩
+    obtain ⟨y, hy⟩ := this
+    suffices : x = -g +ᵥ (y : EuclideanSpace ℝ (Fin d))
+    · rw [this] --, Subtype.coe_prop y]
+      have hy' := Subtype.coe_prop y
+      have hg' := Subtype.coe_prop g
+      refine Set.vadd_mem_vadd_set ?h.intro.intro.a
+      simp only [Set.mem_inter_iff, hy', and_true]
+      rw [hy]
+      sorry
+    rw [hy, neg_vadd_vadd]
+  · intro hexa
+    obtain ⟨y, hy₁, hy₂⟩ := hexa
+    rw [Set.vadd_set_inter, Set.mem_inter_iff] at hy₂
+    obtain ⟨hy₂, hy₃⟩ := hy₂
+    -- Idea: x = y +ᵥ g for some g in the lattice
+    -- Then x = -g +ᵥ (y +ᵥ g) where -g is also in the lattice
+    -- We can apply closure under addition to this and the fact that (y +ᵥ g) is in the centers
+    sorry
 
 -- I hope these aren't outright wrong
 instance HDivENNReal : HDiv ENNReal ℝ ENNReal := sorry

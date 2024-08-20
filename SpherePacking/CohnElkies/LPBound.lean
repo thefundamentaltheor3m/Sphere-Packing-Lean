@@ -28,7 +28,12 @@ variable {d : ℕ} [Fact (0 < d)] -- Is `Fact` right here?
 -/
 
 variable {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
-variable (hReal : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0)
+-- The next 2 should be absorbed into hPSF. If `f` is Schwartz, for instance, then they will
+-- both be satisfied, because Schwartz functions are real-valued and their Fourier transforms are
+-- Schwartz, making them real-valued as well (cf. blueprint).
+variable (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
+variable (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 f x).re = (𝓕 f x))
+-- The Cohn-Elkies conditions:
 variable (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
 variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
 
@@ -48,7 +53,8 @@ variable {D : Set (EuclideanSpace ℝ (Fin d))}
 variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
 
 private lemma calc_aux_1 {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
-  (hReal : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0)
+  (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
+  (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 f x).re = (𝓕 f x))
   (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
   (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
   {P : PeriodicSpherePacking d} (hP : P.separation = 1)
@@ -98,30 +104,52 @@ private lemma calc_aux_1 {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
               -- rw [Nat.card_eq_fintype_card]  -- Doesn't work
               sorry
 
+set_option linter.unusedVariables false  -- What is with this included variable thing?
+private lemma calc_aux_2 (x m : EuclideanSpace ℝ (Fin d)) :
+  cexp (-(2 * ↑π * I * ↑⟪x, m⟫_ℝ)) = conj (cexp (2 * ↑π * I * ↑⟪x, m⟫_ℝ)) :=
+  calc cexp (-(2 * ↑π * I * ↑⟪x, m⟫_ℝ))
+  _ = Circle.exp (-2 * π * ⟪x, m⟫_ℝ)
+      := by
+          rw [Circle.exp_apply]
+          push_cast
+          ring_nf
+  _ = conj (Circle.exp (2 * π * ⟪x, m⟫_ℝ))
+      := by rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
+  _= conj (cexp (2 * ↑π * I * ↑⟪x, m⟫_ℝ))
+      := by
+          rw [Circle.exp_apply]
+          apply congrArg conj
+          push_cast
+          ring_nf
+
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following lemma.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
 -- If there are assumptions needed beyond PSF, we should require them here, not in `PSF_Conditions`.
 set_option maxHeartbeats 200000
 private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
-  (hReal : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0)
+  (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
+  (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 f x).re = (𝓕 f x))
   (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
   (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
   {P : PeriodicSpherePacking d} (hP : P.separation = 1)
   {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
-  ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re ≥ ↑(P.numReps' Fact.out hD_isBounded) ^ 2 * (𝓕 f 0).re /
-  Zlattice.covolume P.lattice := calc
+  ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re ≥ ↑(P.numReps' Fact.out hD_isBounded) ^ 2 *
+  (𝓕 f 0).re / Zlattice.covolume P.lattice := calc
   ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re
   _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)),
       (f (x - ↑y)).re
         := by
             rw [ge_iff_le]
-            exact calc_aux_1 hPSF hReal hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hD_unique_covers
-              hD_measurable
+            exact calc_aux_1 hPSF hReal hRealFourier hCohnElkies₁ hCohnElkies₂
+              hP hD_isBounded hD_unique_covers hD_measurable
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
-        :=  by sorry
+        :=  by
+              -- We need to use `PeriodocSpherePacking.unique_covers_of_centers` to split up the
+              -- `tsum` in `x` by writing `P.centers` as a union of translates of `P.centers ∩ D`.
+              sorry
   -- We now take the real part out so we can apply the PSF-L to the stuff inside.
   -- The idea would be to say, in subsequent lines, that "it suffices to show that the numbers
   -- whose real parts we're taking are equal as complex numbers" and then apply the PSF-L and
@@ -171,10 +199,11 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
             ext y
             apply congrArg _ _
             ext m
-            -- We get a deterministic timeout again!
-            -- apply congrArg (fun x => x * cexp (2 * ↑π * I * ↑⟪↑x - ↑y, ↑m⟫_ℝ))
-            -- The idea is then to do some sort of `ofReal_re`
-            sorry
+            refine (IsUnit.mul_left_inj ?h.h).mpr ?h.a
+            · rw [isUnit_iff_ne_zero]
+              exact Complex.exp_ne_zero _
+            · -- This proof should be modified once we properly define `PSF_Conditions`.
+              exact (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
   _ = ((1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ) *
@@ -228,8 +257,7 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
             rw [conj_tsum]
             apply congrArg _ _
             ext x
-            -- Might need some unit circle stuff
-            sorry
+            exact calc_aux_2 (x : EuclideanSpace ℝ (Fin d)) (m : EuclideanSpace ℝ (Fin d))
   _ = (1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
       (Complex.abs (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
@@ -273,16 +301,19 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
       (Complex.abs (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
         := by
-            -- We need to show that the `m ≠ 0` part is negative.
+            -- We need to show that the `m ≠ 0` part is nonpositive.
+            -- We begin by subtracting both sides, and thereby, isolating the `m ≠ 0` part.
             rw [ge_iff_le, ← tsub_nonpos, mul_assoc,
                 ← mul_sub (1 / Zlattice.covolume P.lattice volume) _ _]
             simp only [ZeroMemClass.coe_eq_zero, dite_eq_ite, sub_add_cancel_right, mul_neg,
               Left.neg_nonpos_iff]
+            -- We now get rid of the `1 / Zlattice.covolume P.lattice volume` factor.
             apply mul_nonneg
             · refine one_div_nonneg.mpr ?ha.a
               rw [Zlattice.covolume]
               exact ENNReal.toReal_nonneg
-            · apply tsum_nonneg
+            · -- We now show that the `m ≠ 0` sum is nonpositive by showing that each term is.
+              apply tsum_nonneg
               intro m
               cases eq_or_ne m 0
               · case inl h =>
@@ -292,10 +323,8 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
                 apply mul_nonneg
                 · rw [← ge_iff_le]
                   exact hCohnElkies₂ m
-                · -- The following is giving a deterministic timeout for some bizarre reason...
-                  -- exact sq_nonneg
-                  --   (Complex.abs (∑' (x : ↑(P.centers ∩ D)), cexp (2 * ↑π * I * ↑⟪↑x, ↑m⟫_ℝ)))
-                  sorry
+                · -- Providing an explicit argument gived a deterministic timeout for some reason
+                  exact sq_nonneg _
   _ = (1 / Zlattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
       ↑(P.numReps' Fact.out hD_isBounded) ^ 2
         := by
@@ -319,7 +348,8 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
 #check Finset ↑(P.centers ∩ D)
 
 theorem LinearProgrammingBound' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
-  (hReal : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0)
+  (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
+  (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 f x).re = (𝓕 f x))
   (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
   (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
   {P : PeriodicSpherePacking d} (hP : P.separation = 1)
@@ -341,7 +371,8 @@ theorem LinearProgrammingBound' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF :
     · case inr h𝓕f =>
 
       sorry
-  exact calc_steps hPSF hReal hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hD_unique_covers hD_measurable
+  exact calc_steps hPSF hReal hRealFourier hCohnElkies₁ hCohnElkies₂
+    hP hD_isBounded hD_unique_covers hD_measurable
 
 end Fundamental_Domain_Dependent
 
