@@ -59,7 +59,8 @@ def PSF_Conditions (f : EuclideanSpace ℝ (Fin d) → ℂ) : Prop :=
     For example, this could be that they must be Schwartz (cf. blueprint) or admissible (cf. Cohn-
     Elkies). This is a placeholder for now, as is almost everything in this file.
 
-    I think Schwartz is a good choice, because it also guarantees that
+    I think Schwartz is a good choice, because we can use the results in
+    `Mathlib.Analysis.Distribution.FourierSchwartz` to conclude various things about the function.
   -/
   Summable f ∧
   sorry
@@ -147,30 +148,31 @@ lemma PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePackin
   simp only [Set.mem_iUnion, Subtype.exists, AddSubmonoid.mk_vadd, exists_prop]
   constructor
   · intro hx
-    obtain ⟨g, hg₁, hg₂⟩ := S.unique_covers_of_centers hD_unique_covers ⟨x, hx⟩
+    obtain ⟨g, hg₁, _⟩ := S.unique_covers_of_centers hD_unique_covers ⟨x, hx⟩
     use -g
     simp only [neg_mem_iff, SetLike.coe_mem, true_and]
     obtain ⟨hy₁, hy₂⟩ := hg₁
     have : ∃ y : D, ↑y = g +ᵥ x := by use ⟨g +ᵥ x, hy₂⟩
     obtain ⟨y, hy⟩ := this
     suffices : x = -g +ᵥ (y : EuclideanSpace ℝ (Fin d))
-    · rw [this] --, Subtype.coe_prop y]
+    · rw [this]
       have hy' := Subtype.coe_prop y
-      have hg' := Subtype.coe_prop g
       refine Set.vadd_mem_vadd_set ?h.intro.intro.a
       simp only [Set.mem_inter_iff, hy', and_true]
       rw [hy]
       -- Idea: closure under additive action
-      sorry
+      exact hy₁
     rw [hy, neg_vadd_vadd]
   · intro hexa
-    obtain ⟨y, hy₁, hy₂⟩ := hexa
-    rw [Set.vadd_set_inter, Set.mem_inter_iff] at hy₂
-    obtain ⟨hy₂, hy₃⟩ := hy₂
-    -- Idea: x = y +ᵥ g for some g in the lattice
-    -- Then x = -g +ᵥ (y +ᵥ g) where -g is also in the lattice
-    -- We can apply closure under action to this and the fact that (y +ᵥ g) is in the centers
-    sorry
+    obtain ⟨g, hg₁, hg₂⟩ := hexa
+    rw [Set.vadd_set_inter, Set.mem_inter_iff] at hg₂
+    obtain ⟨hg₂, _⟩ := hg₂
+    -- Idea: x = g +ᵥ y for some y in the set of centers
+    -- Then apply closure under action
+    obtain ⟨y, hy₁, hy₂⟩ := hg₂
+    simp only [vadd_eq_add] at hy₂
+    rw [← hy₂]
+    exact S.lattice_action hg₁ hy₁
 
 lemma PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) -- (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
@@ -228,6 +230,8 @@ instance : DecidableEq (EuclideanSpace ℝ (Fin d)) :=
 /- Just beneath the statement of Theorem 3.1 in Cohn and Elkies' original paper, they mention that
 𝓕 f being nonnegative and not identically zero (because f is not) means f(0) is not zero. Hence,
 f 0 / 𝓕 f 0 is well-defined, even when 𝓕 f 0 is zero (`ENNReal.div_zero` tells us it equals `⊤`).
+(If f is Schwartz, then 𝓕 f is identically zero iff f is, because 𝓕 · is a continuous linear
+automorphism of the Schwartz space - cf. `Mathlib.Analysis.Distribution.FourierSchwartz`.)
 -/
 
 -- Now a small lemma from Complex analysis:
