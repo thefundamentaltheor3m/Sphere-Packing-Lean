@@ -58,6 +58,8 @@ def PSF_Conditions (f : EuclideanSpace ℝ (Fin d) → ℂ) : Prop :=
     Mention here all the conditions we decide to impose functions on which to define the PSF-L.
     For example, this could be that they must be Schwartz (cf. blueprint) or admissible (cf. Cohn-
     Elkies). This is a placeholder for now, as is almost everything in this file.
+
+    I think Schwartz is a good choice, because it also guarantees that
   -/
   Summable f ∧
   sorry
@@ -159,6 +161,7 @@ lemma PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePackin
       refine Set.vadd_mem_vadd_set ?h.intro.intro.a
       simp only [Set.mem_inter_iff, hy', and_true]
       rw [hy]
+      -- Idea: closure under additive action
       sorry
     rw [hy, neg_vadd_vadd]
   · intro hexa
@@ -167,7 +170,7 @@ lemma PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePackin
     obtain ⟨hy₂, hy₃⟩ := hy₂
     -- Idea: x = y +ᵥ g for some g in the lattice
     -- Then x = -g +ᵥ (y +ᵥ g) where -g is also in the lattice
-    -- We can apply closure under addition to this and the fact that (y +ᵥ g) is in the centers
+    -- We can apply closure under action to this and the fact that (y +ᵥ g) is in the centers
     sorry
 
 -- I hope these aren't outright wrong
@@ -178,6 +181,8 @@ instance HMulENNReal : HMul ℝ ENNReal ENNReal := sorry
 theorem PeriodicSpherePacking.periodic_density_formula (S : PeriodicSpherePacking d) :
   S.density = (S.numReps : ENNReal) /
     (Zlattice.covolume S.lattice) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
+  -- Is this necessary? Might be nice to have a basis- and bound-independent version of
+  -- `PeriodicSpherePacking.density_eq`...
   sorry
 
 @[simp]
@@ -187,14 +192,12 @@ theorem PeriodicSpherePacking.periodic_density_formula'
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
   S.density = ((S.numReps' hd hD_isBounded) : ENNReal) /
     (Zlattice.covolume S.lattice) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
-  -- __THIS IS A MASSIVE TODO__
+  -- TODO: Reframe this in terms of `PeriodicSpherePacking.density_eq` and prove it
   sorry
 
 theorem periodic_constant_eq_constant (hd : 0 < d) :
     PeriodicSpherePackingConstant d = SpherePackingConstant d := by
   sorry
-
--- TODO: Move to `SpherePacking/Basic/PeriodicPacking.lean` once #25 gets merged
 
 variable {d : ℕ} (P : PeriodicSpherePacking d)
 
@@ -203,9 +206,6 @@ noncomputable def PeriodicSpherePacking.basis_index_equiv :
   refine Fintype.equivFinOfCardEq ?h
   rw [← FiniteDimensional.finrank_eq_card_chooseBasisIndex, Zlattice.rank ℝ P.lattice,
       finrank_euclideanSpace, Fintype.card_fin]
-
--- lemma DualLattice.cast_zero : ↑(0 : ↥(DualLattice P.lattice)) = (0 : EuclideanSpace ℝ (Fin d)) :=
---   rfl
 
 end Periodic_Packings
 

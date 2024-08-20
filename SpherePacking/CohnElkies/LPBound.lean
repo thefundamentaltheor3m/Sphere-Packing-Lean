@@ -28,10 +28,11 @@ variable {d : ℕ} [Fact (0 < d)] -- Is `Fact` right here?
 -/
 
 variable {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f)
--- The next 2 should be absorbed into hPSF. If `f` is Schwartz, for instance, then they will
--- both be satisfied, because Schwartz functions are real-valued and their Fourier transforms are
--- Schwartz, making them real-valued as well (cf. blueprint).
+-- We need `f` to be real-valued for Cohn-Elkies, but do we need that for the PSF-L as well?
 variable (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
+-- I'm not sure if `hCohnElkies₂` can replace this, because of the 5th step in `calc_steps`.
+-- (The blueprint says that 𝓕 f x ≥ 0, ie, 𝓕 f ∈ [0, ∞) ⊆ ℝ, for all x ∈ ℝᵈ)
+-- We can't simply replace 𝓕 f with its real part everywhere because the PSF-L involves 𝓕 f.
 variable (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 f x).re = (𝓕 f x))
 -- The Cohn-Elkies conditions:
 variable (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
@@ -202,8 +203,7 @@ private lemma calc_steps {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Co
             refine (IsUnit.mul_left_inj ?h.h).mpr ?h.a
             · rw [isUnit_iff_ne_zero]
               exact Complex.exp_ne_zero _
-            · -- This proof should be modified once we properly define `PSF_Conditions`.
-              exact (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
+            · exact (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
   _ = ((1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ) *
