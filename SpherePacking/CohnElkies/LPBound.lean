@@ -57,7 +57,7 @@ In this section, we will prove that the density of every periodic sphere packing
 bounded above by the Cohn-Elkies bound.
 -/
 
-
+include hP
 private lemma calc_aux_1 :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
   ≤ ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re := calc
@@ -73,8 +73,6 @@ private lemma calc_aux_1 :
   _ ≤ ∑' (x : ↑(P.centers ∩ D)), (f (0 : EuclideanSpace ℝ (Fin d))).re
         := by
             rw [← tsub_nonpos]
-            -- simp only [ZeroMemClass.coe_eq_zero, dite_eq_ite, sub_add_cancel_right, mul_neg,
-            --   Left.neg_nonpos_iff]
             rw [add_sub_cancel_right]
             apply tsum_nonpos
             intro x
@@ -86,7 +84,13 @@ private lemma calc_aux_1 :
             · case inr h =>
               simp only [h, ↓reduceDIte]
               apply hCohnElkies₁ (x - y)
-              sorry
+              -- Both `x` and `y` are in `P.centers` and are distinct. `hP` then implies the result.
+              rw [← hP]
+              apply P.centers_dist'
+              · exact Subtype.mem x
+              · obtain ⟨hy₁, hy₂⟩ := Subtype.mem y
+                exact hy₁
+              · exact sub_ne_zero.mp h
     -- _ = ∑' (y : ↑(P.centers ∩ D)), (f (y - ↑y)).re
     --     := by simp only [sub_self]
     _ = ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re
@@ -116,12 +120,15 @@ private lemma calc_steps :
       (f (x - ↑y)).re
         := by
             rw [ge_iff_le]
-            exact calc_aux_1 hPSF hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hD_isBounded
+            exact calc_aux_1 hPSF hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
+              hD_isBounded
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
         :=  by
               -- We need to use `PeriodocSpherePacking.unique_covers_of_centers` to split up the
               -- `tsum` in `x` by writing `P.centers` as a union of translates of `P.centers ∩ D`.
+              -- We'd need disjointedness so we can apply `tsum_finset_bUnion_disjoint`.
+              -- Some summability stuff might be necessary as well...
 
               sorry
   -- We now take the real part out so we can apply the PSF-L to the stuff inside.
@@ -296,7 +303,7 @@ private lemma calc_steps :
                 apply mul_nonneg
                 · rw [← ge_iff_le]
                   exact hCohnElkies₂ m
-                · -- Providing an explicit argument gived a deterministic timeout for some reason
+                · -- Providing an explicit argument gives a deterministic timeout for some reason
                   exact sq_nonneg _
   _ = (1 / Zlattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
       ↑(P.numReps' Fact.out hD_isBounded) ^ 2
@@ -338,7 +345,7 @@ theorem LinearProgrammingBound' :
     · case inr h𝓕f =>
 
       sorry
-  exact calc_steps hPSF hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hD_isBounded
+  exact calc_steps hPSF hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded
 
 end Fundamental_Domain_Dependent
 
