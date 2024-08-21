@@ -124,7 +124,7 @@ noncomputable def PeriodicSpherePacking.numReps' (S : PeriodicSpherePacking d) (
   -- (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
   : ℕ :=
   haveI := S.instFintypeNumReps' hd hD_isBounded
-  (S.centers ∩ D).toFinset.card
+  Fintype.card ↑(S.centers ∩ D)
 
 lemma PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking d) -- (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)

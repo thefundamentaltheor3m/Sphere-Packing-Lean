@@ -101,10 +101,9 @@ private lemma calc_aux_1 :
               rw [h]
             · case inr h =>
               left
-              rw [PeriodicSpherePacking.numReps', Set.toFinset_card]
-              -- Now we have to deal with annoying `Nat.card` and `Fintype.card` stuff...
-              -- rw [Nat.card_eq_fintype_card]  -- Doesn't work
-              sorry
+              let myInstFintype := P.instFintypeNumReps' Fact.out hD_isBounded
+              rw [PeriodicSpherePacking.numReps']
+              exact Nat.card_eq_fintype_card
 
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following lemma.
@@ -308,19 +307,12 @@ private lemma calc_steps :
       ↑(P.numReps' Fact.out hD_isBounded) ^ 2
         := by
             apply congrArg _ _
-            -- Why do I have to restate this to get `Set.toFinset_card ↑(P.centers ∩ D)` to work?
-            -- It should already be able to synthesise a `Fintype` instance... right?
-            haveI := P.instFintypeNumReps' Fact.out hD_isBounded
+            let myInstFintype := P.instFintypeNumReps' Fact.out hD_isBounded
             simp only [inner_zero_right, zero_mul, ofReal_zero, mul_zero, Complex.exp_zero,
                        tsum_const, nsmul_eq_mul, mul_one, abs_natCast, Nat.cast_nonneg, ne_eq,
                        not_false_eq_true, pow_left_inj, Nat.cast_inj,
                        PeriodicSpherePacking.numReps', Set.toFinset_card] -- ↑(P.centers ∩ D)]
-            -- Why doesn't `exact Nat.card_eq_fintype_card` work?
-            -- exact Nat.card_eq_fintype_card
-            rw [Nat.card_eq_fintype_card]
-            -- Why doesn't `exact Fintype.card_congr' rfl` work?
-            -- exact Fintype.card_congr' rfl
-            sorry
+            exact Nat.card_eq_fintype_card
   _ = ↑(P.numReps' Fact.out hD_isBounded) ^ 2 * (𝓕 f 0).re / Zlattice.covolume P.lattice volume
         := by simp only [div_eq_mul_inv, one_div, mul_comm, mul_assoc, one_mul]
 
