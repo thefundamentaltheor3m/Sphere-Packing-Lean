@@ -74,9 +74,9 @@ theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
 -- The version below is on the blueprint. I'm pretty sure it can be removed.
 theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
   ∑' ℓ : Λ, f ℓ = (1 / Zlattice.covolume Λ) * ∑' m : DualLattice Λ, (𝓕 f m) := by
-have := PSF_L Λ hf (0 : EuclideanSpace ℝ (Fin d))
-simp only [zero_add, inner_zero_left, ofReal_zero, mul_zero, Complex.exp_zero, mul_one] at this
-exact this
+  have := PSF_L Λ hf (0 : EuclideanSpace ℝ (Fin d))
+  simp only [zero_add, inner_zero_left, ofReal_zero, mul_zero, Complex.exp_zero, mul_one] at this
+  exact this
 
 end PSF_L
 
@@ -105,6 +105,10 @@ theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
     simp only
     exact le_iSup_iff.mpr fun b a ↦ a S
 
+end Periodic_Packings
+
+section numReps_Related
+
 -- Removable?
 instance (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice) :
   Fintype ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)) := sorry
@@ -125,6 +129,17 @@ noncomputable def PeriodicSpherePacking.numReps' (S : PeriodicSpherePacking d) (
   : ℕ :=
   haveI := S.instFintypeNumReps' hd hD_isBounded
   Fintype.card ↑(S.centers ∩ D)
+
+lemma PeriodicSpherePacking.numReps'_nonneg (S : PeriodicSpherePacking d) (hd : 0 < d)
+  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
+  0 ≤ S.numReps' hd hD_isBounded := by
+  letI := S.instFintypeNumReps' hd hD_isBounded
+  rw [PeriodicSpherePacking.numReps']
+  exact Nat.zero_le (Fintype.card ↑(S.centers ∩ D))
+
+end numReps_Related
+
+section Disjoint_Covering_of_Centers
 
 lemma PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking d) -- (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
@@ -174,22 +189,64 @@ lemma PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePackin
     rw [← hy₂]
     exact S.lattice_action hg₁ hy₁
 
+-- This is true but unnecessary (for now). What's more important is expressing it as a disjoint
+-- union over points in X / Λ = X ∩ D of translates of the lattice by points in X / Λ = X ∩ D or
+-- something like that, because that's what's needed for `tsum_finset_bUnion_disjoint`.
 lemma PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) -- (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
-  : -- Set.Pairwise (S.lattice) (Disjoint on (fun g => g +ᵥ S.centers ∩ D)) -- why the error?
-  True
+  : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
+  -- True
   := by
   sorry
 
--- I hope these aren't outright wrong
-instance HDivENNReal : HDiv ENNReal ℝ ENNReal := sorry
-instance HMulENNReal : HMul ℝ ENNReal ENNReal := sorry
+end Disjoint_Covering_of_Centers
+
+section Fundamental_Domains_in_terms_of_Basis
+
+variable (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice)
+
+-- Note that we have `Zspan.fundamentalDomain_isBounded`. We can use this to prove the following,
+-- which is necessary for `PeriodicSpherePacking.density_eq`.
+lemma PeriodicSpherePacking.exists_bound_on_fundamental_domain :
+  ∃ L : ℝ, ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L :=
+  isBounded_iff_forall_norm_le.1 (fundamentalDomain_isBounded (Basis.ofZlatticeBasis ℝ S.lattice b))
+
+-- We now prove the following, which are necessary(?) for the Cohn-Elkies version of the density
+-- formula.
+lemma PeriodicSpherePacking.fundamental_domain_unique_covers :
+   ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _) := by
+  sorry
+
+lemma PeriodocSpherePacking.fundamental_domain_measurable :
+  MeasurableSet (fundamentalDomain (b.ofZlatticeBasis ℝ _)) := by
+  sorry
+
+end Fundamental_Domains_in_terms_of_Basis
+
+section Periodic_Density_Formula
+
+noncomputable instance HDivENNReal : HDiv NNReal ENNReal ENNReal where
+  hDiv := fun x y => x / y
+noncomputable instance HMulENNReal : HMul NNReal ENNReal ENNReal where
+  hMul := fun x y => x * y
+
+noncomputable def PeriodicSpherePacking.basis_index_equiv (P : PeriodicSpherePacking d) :
+  (Module.Free.ChooseBasisIndex ℤ ↥P.lattice) ≃ (Fin d) := by
+  refine Fintype.equivFinOfCardEq ?h
+  rw [← FiniteDimensional.finrank_eq_card_chooseBasisIndex, Zlattice.rank ℝ P.lattice,
+      finrank_euclideanSpace, Fintype.card_fin]
+
+#check PeriodicSpherePacking.density_eq
 
 @[simp]
-theorem PeriodicSpherePacking.periodic_density_formula (S : PeriodicSpherePacking d) :
-  S.density = (S.numReps : ENNReal) /
-    (Zlattice.covolume S.lattice) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
+theorem PeriodicSpherePacking.periodic_density_formula (S : PeriodicSpherePacking d) (hd : 0 < d) :
+  S.density = (Real.toNNReal ((Real.toNNReal (S.numReps : ℝ)) /
+  (Zlattice.covolume S.lattice))) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+  := by
+  let b : Basis (Fin d) ℤ ↥S.lattice := ((Zlattice.module_free ℝ S.lattice).chooseBasis).reindex (S.basis_index_equiv)
+  obtain ⟨L, hL⟩ := S.exists_bound_on_fundamental_domain b
+  rw [S.density_eq b hL hd]
   -- Is this necessary? Might be nice to have a basis- and bound-independent version of
   -- `PeriodicSpherePacking.density_eq`...
   sorry
@@ -199,8 +256,9 @@ theorem PeriodicSpherePacking.periodic_density_formula'
   (S : PeriodicSpherePacking d) (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
-  S.density = ((S.numReps' hd hD_isBounded) : ENNReal) /
-    (Zlattice.covolume S.lattice) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
+  S.density = (Real.toNNReal ((Real.toNNReal (S.numReps' hd hD_isBounded : ℝ)) /
+    (Zlattice.covolume S.lattice))) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
+    := by
   -- TODO: Reframe this in terms of `PeriodicSpherePacking.density_eq` and prove it
   sorry
 
@@ -208,15 +266,7 @@ theorem periodic_constant_eq_constant (hd : 0 < d) :
     PeriodicSpherePackingConstant d = SpherePackingConstant d := by
   sorry
 
-variable {d : ℕ} (P : PeriodicSpherePacking d)
-
-noncomputable def PeriodicSpherePacking.basis_index_equiv :
-  (Module.Free.ChooseBasisIndex ℤ ↥P.lattice) ≃ (Fin d) := by
-  refine Fintype.equivFinOfCardEq ?h
-  rw [← FiniteDimensional.finrank_eq_card_chooseBasisIndex, Zlattice.rank ℝ P.lattice,
-      finrank_euclideanSpace, Fintype.card_fin]
-
-end Periodic_Packings
+end Periodic_Density_Formula
 
 noncomputable section Misc
 
