@@ -21,8 +21,6 @@ variable {d : ℕ} [instPosDim : Fact (0 < d)] -- Is `Fact` right here?
 
 # TODOs:
 
-* The summations do not seem to be allowing a ≠ type condition on the index variable. We need this
-  in order to be able to split sums up and deem one of the parts nonpositive or something.
 * Everything in `Prereqs.lean` is either a TODO or has already been done (eg. in #25) (to reflect
   which the corresponding refs must be updated).
 -/
@@ -318,6 +316,14 @@ private lemma calc_steps :
 
 -- And now, the main result of this section:
 include hP hD_isBounded hD_unique_covers hD_measurable
+
+-- Temporary hack, must be deleted
+instance : HMul ℝ ℝ≥0∞ ℝ≥0∞ := sorry
+
+/-
+I think the only sustainable fix is to show that the volume of a sphere is finite and then turn
+`SpherePacking.density` into an element of `ℝ` instead of `ℝ≥0∞`.
+-/
 
 theorem LinearProgrammingBound' :
   P.density ≤

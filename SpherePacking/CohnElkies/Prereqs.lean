@@ -216,11 +216,15 @@ lemma PeriodicSpherePacking.exists_bound_on_fundamental_domain :
 -- formula.
 lemma PeriodicSpherePacking.fundamental_domain_unique_covers :
    ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _) := by
+  intro x
+  let x' := (b.ofZlatticeBasis ℝ _).repr x
+  -- How do I take the floor of all the components of `x`?
+  -- The `g` we need should be the negative of that floor.
   sorry
 
-lemma PeriodocSpherePacking.fundamental_domain_measurable :
-  MeasurableSet (fundamentalDomain (b.ofZlatticeBasis ℝ _)) := by
-  sorry
+-- Note that we already have `Zspan.fundamentalDomain_measurableSet`. Use
+-- `fundamentalDomain_measurableSet (Basis.ofZlatticeBasis ℝ S.lattice b)` to say that our desired
+-- fundamental domain is measurable.
 
 end Fundamental_Domains_in_terms_of_Basis
 
@@ -239,26 +243,68 @@ noncomputable def PeriodicSpherePacking.basis_index_equiv (P : PeriodicSpherePac
 
 #check PeriodicSpherePacking.density_eq
 
-@[simp]
-theorem PeriodicSpherePacking.periodic_density_formula (S : PeriodicSpherePacking d) (hd : 0 < d) :
-  S.density = (Real.toNNReal ((Real.toNNReal (S.numReps : ℝ)) /
-  (Zlattice.covolume S.lattice))) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
-  := by
+-- @[simp]
+theorem PeriodicSpherePacking.periodic_density_formula_MESSY (S : PeriodicSpherePacking d) (hd : 0 < d) :
+  S.density = (Real.toNNReal ((Real.toNNReal (S.numReps : ℝ)) / (Zlattice.covolume S.lattice))) *
+  volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
   let b : Basis (Fin d) ℤ ↥S.lattice := ((Zlattice.module_free ℝ S.lattice).chooseBasis).reindex (S.basis_index_equiv)
   obtain ⟨L, hL⟩ := S.exists_bound_on_fundamental_domain b
+  have hNN₁ : (0 : ℝ) ≤ S.numReps := Nat.cast_nonneg' S.numReps
+  have hNN₂ := LT.lt.le (Zlattice.covolume_pos S.lattice)
+  have hNN₃ : 0 ≤ ((S.numReps : ℝ).toNNReal : ℝ) / Zlattice.covolume S.lattice volume := by
+    rw [NNReal.toNNReal_coe_nat, NNReal.coe_natCast]
+    refine div_nonneg ?ha hNN₂
+    exact Nat.cast_nonneg' S.numReps
   rw [S.density_eq b hL hd]
-  -- Is this necessary? Might be nice to have a basis- and bound-independent version of
-  -- `PeriodicSpherePacking.density_eq`...
+  rw [Zlattice.covolume_eq_measure_fundamentalDomain S.lattice volume
+      (Zlattice.isAddFundamentalDomain b volume)] at hNN₂ hNN₃ ⊢
+  simp only [NNReal.toNNReal_coe_nat, NNReal.coe_natCast, ← mul_div]
+  -- Idea is to use `Real.toNNReal_of_nonneg` somehow...
   sorry
 
+/- Here's a version of `PeriodicSpherePacking.density_eq` that
+1. Does not require the `hL` hypothesis that the original one does
+2. Uses `Zlattice.covolume` instead of the `volume` of a basis-dependent `fundamentalDomain`
+-/
 @[simp]
+theorem PeriodicSpherePacking.density_eq'
+  (S : PeriodicSpherePacking d) (hd : 0 < d) : S.density =
+  (ENat.toENNReal (S.numReps : ENat)) *
+  volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) /
+  Real.toNNReal (Zlattice.covolume S.lattice) := by
+  let b : Basis (Fin d) ℤ ↥S.lattice := ((Zlattice.module_free ℝ S.lattice).chooseBasis).reindex
+    (S.basis_index_equiv)
+  obtain ⟨L, hL⟩ := S.exists_bound_on_fundamental_domain b
+  rw [Real.toNNReal_of_nonneg (LT.lt.le (Zlattice.covolume_pos S.lattice volume))]
+  rw [S.density_eq b hL hd]
+  simp only [ENat.toENNReal_coe]
+  apply congrArg _ _
+  refine (ENNReal.toReal_eq_toReal_iff' ?hx ?hy).mp ?_
+  · rw [← lt_top_iff_ne_top]
+    letI := fundamentalDomain_isBounded (Basis.ofZlatticeBasis ℝ S.lattice b)
+    exact IsBounded.measure_lt_top this
+  · exact ENNReal.coe_ne_top
+  · rw [ENNReal.coe_toReal, NNReal.coe_mk]
+    refine Eq.symm (Zlattice.covolume_eq_measure_fundamentalDomain S.lattice volume ?h)
+    exact Zlattice.isAddFundamentalDomain b volume
+
+-- Necessary?
+@[simp]
+theorem PeriodicSpherePacking.density_eq''
+  (S : PeriodicSpherePacking d) (hd : 0 < d) : ENNReal.toReal S.density =
+  (S.numReps : ℝ) *
+  (ENNReal.toReal (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)))) /
+  (Zlattice.covolume S.lattice) := by
+  sorry
+
+-- @[simp]
 theorem PeriodicSpherePacking.periodic_density_formula'
   (S : PeriodicSpherePacking d) (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
   S.density = (Real.toNNReal ((Real.toNNReal (S.numReps' hd hD_isBounded : ℝ)) /
     (Zlattice.covolume S.lattice))) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
-    := by
+  := by
   -- TODO: Reframe this in terms of `PeriodicSpherePacking.density_eq` and prove it
   sorry
 
