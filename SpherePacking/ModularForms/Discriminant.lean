@@ -2,7 +2,7 @@ import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
 import Mathlib.NumberTheory.ModularForms.SlashInvariantForms
 import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
 
-open EisensteinSeries ModularForm UpperHalfPlane CongruenceSubgroup
+open EisensteinSeries ModularForm UpperHalfPlane CongruenceSubgroup MatrixGroups
 
 /-!
 # Discriminant form.
