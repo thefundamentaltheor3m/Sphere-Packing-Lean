@@ -2,7 +2,7 @@ import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
 import Mathlib.NumberTheory.ModularForms.SlashInvariantForms
 import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
 
-open EisensteinSeries ModularForm UpperHalfPlane CongruenceSubgroup MatrixGroups
+open EisensteinSeries ModularForm UpperHalfPlane CongruenceSubgroup MatrixGroups Complex Real
 
 /-!
 # Discriminant form.
@@ -36,3 +36,10 @@ noncomputable def Δ_CF: CuspForm (Gamma 1) 12 := {
   Δ with
   zero_at_infty' := isZeroAtImInfty_Δ_slash
 }
+
+/-- Product expansion of q-series -/
+noncomputable def η_prod_term (n : ℕ) (τ : ℍ) : ℂ := 1 - cexp (2 * π * Complex.I * n * τ)
+noncomputable def η_prod (τ : ℍ) : ℂ := cexp (π * Complex.I * τ / 12) * ∏' n : ℕ+, η_prod_term n τ
+noncomputable def Δ_prod (τ : ℍ) : ℂ := (η_prod τ) ^ 24
+
+theorem Δ_CF_product_formula : Δ_CF.toFun = Δ_prod := sorry
