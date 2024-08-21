@@ -34,6 +34,15 @@ theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by
   ext
   simp [β, S, α, negI]
 
+theorem ModularGroup.modular_negI_sq : negI ^ 2 = 1 := by
+  ext i j
+  simp [negI, sq]
+  fin_cases i <;> fin_cases j <;> rfl
+
+theorem ModularGroup.modular_negI_inv : negI⁻¹ = negI := by
+  ext i j
+  simp [negI]
+
 section slash_action
 
 variable (f : ℍ → ℂ) (k : ℤ) (z : ℍ)
