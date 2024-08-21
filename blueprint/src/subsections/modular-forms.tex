@@ -293,13 +293,30 @@ For example, invariance for $H_2$ can be proved by
 \end{align}
 \end{proof}
 
-\begin{lemma}\label{lemma:theta-modular}\uses{lemma:theta-slash-invariant}\lean{H₂_MF,H₃_MF,H₄_MF}
+\begin{lemma}\label{lemma:theta-bounded-im-infty}\uses{lemma:theta-slash-invariant}\lean{isBoundedAtImInfty_H_slash}\leanok
+  For all $\gamma \in \Gamma_1$, $H_{2}|_2 \gamma$, $H_{3}|_2 \gamma$, and $H_{4}|_2 \gamma$ are holomorphic at $i\infty$.
+\end{lemma}
+\begin{proof}
+  We want to show that for $\gamma \in \Gamma_1$, $\|H_2|_2\gamma(z)\|$ is bounded as $z \in \mathbb{H} \to i\infty$. Firstly, by \cref{lemma:theta-modular}, \cref{lemma:Gamma-2-generators} and induction on group elements, we notice that $\{\pm H_2, \pm H_3, \pm H_4\}$ is closed under action by $\Gamma_1$. Hence, it suffices to prove that $H_2$, $H_3$ and $H_4$ are bounded at $i\infty$. Consider $z \in \mathbb{H}$ with $\Im(z) \geq A$. We proceed by direct algebraic manipulation:
+
+\begin{align}
+  \|H_2(z)\|
+  &= \left\|\sum_{n \in \Z} \exp\left(\pi i \left(n + \frac{1}{2}\right)^2 z\right)\right\|^4
+  \leq \left(\sum_{n \in \Z} \left\|\exp\left(\pi i \left(n + \frac{1}{2}\right)^2 z\right)\right)\right\|^4 \\
+  &= \left(\sum_{n \in \Z} \left\|\exp\left(-\pi \left(n + \frac{1}{2}\right)^2 \Im(z)\right)\right)\right\|^4
+  \leq \left(\sum_{n \in \Z} \left\|\exp\left(-\pi \left(n + \frac{1}{2}\right)^2 A\right)\right)\right\|^4
+\end{align}
+
+  Where we prove the final term is convergent by noticing that it equals $\exp(-\pi A / 4)\theta(iA / 2, iA)$, which has been shown to converge in \texttt{Mathlib}. The proofs for $H_3$ and $H_4$ are similar (actually easier) and have been omitted.
+
+  \todo{It seems the \texttt{MDifferentiable} requirement is missing.}
+\end{proof}
+
+\begin{lemma}\label{lemma:theta-modular}\uses{lemma:theta-slash-invariant,lemma:theta-bounded-im-infty}\lean{H₂_SIF_MDifferentiable,H₃_SIF_MDifferentiable,H₄_SIF_MDifferentiable}
 $H_{2}$, $H_{3}$, and $H_{4}$ belong to $M_2(\Gamma(2))$.
 \end{lemma}
 \begin{proof}
-  \todo{Fill in this proof, in particular the analytic properties of $H_i$.}
-
-  We have to show that each $H_i$ satisfies property (2) of \cref{def:holomorphic-modular-form}
+  From \cref{lemma:theta-slash-invariant} and \cref{lemma:theta-bounded-im-infty}, it remains ot prove that $H_2$, $H_3$ and $H_4$ are holomorphic on $\mathbb{H}$. \todo{fill in proof.}
 \end{proof}
 
 We also have a nontrivial relation between these theta functions.
