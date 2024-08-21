@@ -85,6 +85,27 @@ theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
       simpa using le_mul_of_one_le_right
         (by rw [← mul_add, add_comm]; exact mul_nonneg Real.pi_nonneg (this k)) hz
 
+#check jacobiTheta₂_term
+-- -πIn^2z.im
+theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
+    Tendsto (fun x : ℍ ↦ jacobiTheta₂ 0 x) atImInfty (𝓝 1) := by
+  simp_rw [jacobiTheta₂, jacobiTheta₂_term, mul_zero, zero_add]
+  convert tendsto_tsum_of_dominated_convergence
+    (f := fun (z : ℍ) (n : ℤ) ↦ cexp (π * I * n ^ 2 * z))
+    (𝓕 := atImInfty)
+    (g := fun k ↦ if k = 0 then 1 else 0)
+    (bound := fun n : ℤ ↦ rexp (-π * n ^ 2)) ?_ ?_ ?_
+  · simp
+  · apply summable_ofReal.mp
+    have := (summable_jacobiTheta₂_term_iff 0 I).mpr (by simp)
+    rw [← summable_norm_iff, ← summable_ofReal] at this
+    simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, mul_assoc, ← sq, I_sq,
+      mul_neg_one, norm_exp, re_ofReal_mul, neg_re, mul_neg, ← neg_mul, ← ofReal_intCast,
+      ← ofReal_pow, ofReal_re] at this
+    exact this
+  · sorry
+  · sorry
+
 theorem Θ₂_tendsto_atImInfty : Tendsto Θ₂ atImInfty (𝓝 0) := by
   rw [funext Θ₂_as_jacobiTheta₂, ← zero_mul (2 : ℂ)]
   refine Tendsto.mul ?_ jacobiTheta₂_half_apply_tendsto_atImInfty
@@ -99,3 +120,16 @@ theorem Θ₂_tendsto_atImInfty : Tendsto Θ₂ atImInfty (𝓝 0) := by
     (tendsto_div_const_atBot_of_pos zero_lt_four).mpr
       (tendsto_im_atImInfty.const_mul_atTop_of_neg (neg_lt_zero.mpr Real.pi_pos))
 
+theorem Θ₃_tendsto_atImInfty : Tendsto Θ₃ atImInfty (𝓝 1) := by
+  simp_rw [funext Θ₃_as_jacobiTheta₂, jacobiTheta₂, jacobiTheta₂_term, mul_zero, zero_add]
+  -- refine Tendsto.mul ?_ jacobiTheta₂_half_apply_tendsto_atImInfty
+  -- apply tendsto_zero_iff_norm_tendsto_zero.mpr
+  -- -- simp_rw directly below fails
+  -- have (z : ℍ) : ‖cexp (π * I * z / 4)‖ = rexp (-π * z.im / 4) := by
+  --   rw [mul_right_comm, mul_div_right_comm, norm_exp_mul_I]
+  --   simp [neg_div]
+  -- simp_rw [this]
+  -- exact (Real.tendsto_exp_atBot).comp <|
+  --   -- TODO: tendsto_div_const_atBot_of_pos and its friends should be aliased under Tendsto.
+  --   (tendsto_div_const_atBot_of_pos zero_lt_four).mpr
+  --     (tendsto_im_atImInfty.const_mul_atTop_of_neg (neg_lt_zero.mpr Real.pi_pos))
