@@ -6,8 +6,8 @@
 import Mathlib.Algebra.Module.Zlattice.Basic
 import Mathlib.Algebra.Module.Zlattice.Covolume
 import Mathlib.Analysis.Fourier.FourierTransform
--- import Mathlib.Analysis.Distrubution.FourierSchwartz
--- import Mathlib.Analysis.Distrubution.SchwartzSpace
+import Mathlib.Analysis.Distribution.FourierSchwartz
+import Mathlib.Analysis.Distribution.SchwartzSpace
 import SpherePacking.Basic.SpherePacking
 import SpherePacking.Basic.PeriodicPacking
 
@@ -206,6 +206,8 @@ lemma PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) --
   simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
   intro hz₁ hz₂
   sorry
+
+
 
 end Disjoint_Covering_of_Centers
 
