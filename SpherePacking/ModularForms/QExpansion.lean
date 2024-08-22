@@ -19,6 +19,12 @@ open Complex Asymptotics Topology Filter
 
 namespace QExp
 
+/-- This lemma allows one to group any q-expansions into the "canonical" form of
+`∑' n, a n * cexp (π * z * n * I)`. -/
+lemma tsum_qexp_fiberwise {ι : Type*} (f : ι → ℕ) (z : ℂ) :
+    (∑' i, cexp (π * z * f i * I)) = (∑' n : ℕ, Nat.card (f ⁻¹' {n}) • cexp (π * z * n * I)) := by
+  sorry
+
 lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * rexp (-π * n)) :
     Tendsto (fun z : ℍ ↦ ∑' n, a n * cexp (π * I * n * z)) atImInfty (𝓝 (a 0)) := by
   convert tendsto_tsum_of_dominated_convergence (f := fun z n ↦ a n * cexp (π * I * n * z))
@@ -49,6 +55,22 @@ lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * r
     nth_rw 4 [← mul_one k]
     rw [Nat.cast_mul, Nat.cast_one, ← mul_assoc]
     gcongr
+
+lemma tsum_nat_pos_ite {f : ℕ+ → ℂ} :
+    (∑' n, f n) = (∑' n : ℕ, if hn : 0 < n then f ⟨n, hn⟩ else 0) := by
+  sorry
+
+lemma tendsto_nat_pos (a : ℕ+ → ℂ) :
+    Tendsto (fun z : ℍ ↦ ∑' n, a n * cexp (π * I * n * z)) atImInfty (𝓝 0) := by
+  by_cases ha : Summable fun n : ℕ+ ↦ ‖a n‖ * rexp (-π * n)
+  · convert tendsto_nat (fun n ↦ if hn : 0 < n then a ⟨n, hn⟩ else 0) ?_ with z
+    · rw [tsum_nat_pos_ite]
+      apply tsum_congr
+      intro b
+      split_ifs <;> simp
+    · sorry
+  · -- the sum should just be 0
+    sorry
 
 lemma tsum_int_ite {f : ℕ → ℂ} :
     (∑' n, f n) = (∑' n : ℤ, if hn : 0 ≤ n then f n.toNat else 0) := by
