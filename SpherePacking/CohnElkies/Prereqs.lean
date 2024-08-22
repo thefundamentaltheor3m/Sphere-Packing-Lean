@@ -204,6 +204,8 @@ end Disjoint_Covering_of_Centers
 
 section Fundamental_Domains_in_terms_of_Basis
 
+open Zspan Submodule
+
 variable (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice)
 
 -- Note that we have `Zspan.fundamentalDomain_isBounded`. We can use this to prove the following,
@@ -216,11 +218,26 @@ lemma PeriodicSpherePacking.exists_bound_on_fundamental_domain :
 -- formula.
 lemma PeriodicSpherePacking.fundamental_domain_unique_covers :
    ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _) := by
+  -- I'd like to be able to apply `exist_unique_vadd_mem_fundamentalDomain` here, but I can't...
+  have : S.lattice = (span ℤ (Set.range (b.ofZlatticeBasis ℝ _))).toAddSubgroup :=
+    Eq.symm (Basis.ofZlatticeBasis_span ℝ S.lattice b)
   intro x
-  let x' := (b.ofZlatticeBasis ℝ _).repr x
-  -- How do I take the floor of all the components of `x`?
-  -- The `g` we need should be the negative of that floor.
-  sorry
+  obtain ⟨g, hg₁, hg₂⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZlatticeBasis ℝ _) x
+  -- The `g` we need should be the negative of the floor of `x`.
+  have hg_mem : ↑g ∈ S.lattice := by simp only [this, mem_toAddSubgroup, SetLike.coe_mem]
+  -- exact (vadd_mem_fundamentalDomain b (-floor b x) x).mpr rfl
+  use ⟨↑g, hg_mem⟩
+  constructor
+  · exact hg₁
+  · intro y
+    have hy_mem : ↑y ∈ (span ℤ (Set.range ⇑(Basis.ofZlatticeBasis ℝ S.lattice b))).toAddSubgroup :=
+      by simp only [← this, SetLike.coe_mem]
+    intro hy
+    simp only at hg₂ ⊢
+    specialize hg₂ ⟨y, hy_mem⟩ hy
+    refine SetCoe.ext ?h.right.a
+    have heq : ↑y = (g : EuclideanSpace ℝ (Fin d)) := by rw [← hg₂]
+    exact heq
 
 -- Note that we already have `Zspan.fundamentalDomain_measurableSet`. Use
 -- `fundamentalDomain_measurableSet (Basis.ofZlatticeBasis ℝ S.lattice b)` to say that our desired
@@ -329,6 +346,12 @@ f 0 / 𝓕 f 0 is well-defined, even when 𝓕 f 0 is zero (`ENNReal.div_zero` t
 (If f is Schwartz, then 𝓕 f is identically zero iff f is, because 𝓕 · is a continuous linear
 automorphism of the Schwartz space - cf. `Mathlib.Analysis.Distribution.FourierSchwartz`.)
 -/
+lemma Fourier_Aux (f : EuclideanSpace ℝ (Fin d) → ℂ) (hf : f ≠ 0)
+  (hFourier_nonneg : ∀ m, ∃ x : ℝ, x ≥ 0 ∧ 𝓕 f m = x) (hFourier_not_identically_zero : 𝓕 f ≠ 0) :
+  ∃ y : ℝ, y > 0 ∧ f 0 = y := by
+  -- Should follow from some assumptions on f or the construction of 𝓕 f as an integral: the
+  -- integral of a nonnegative function with respect to the Lebesgue measure is
+  sorry
 
 -- Now a small lemma from Complex analysis:
 local notation "conj" => starRingEnd ℂ

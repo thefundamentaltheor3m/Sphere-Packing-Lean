@@ -299,7 +299,7 @@ private lemma calc_steps :
                 apply mul_nonneg
                 · rw [← ge_iff_le]
                   exact hCohnElkies₂ m
-                · -- Providing an explicit argument gives a deterministic timeout for some reason
+                · -- Providing an explicit argument below gives a deterministic timeout...
                   exact sq_nonneg _
   _ = (1 / Zlattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
       ↑(P.numReps' Fact.out hD_isBounded) ^ 2
@@ -329,7 +329,7 @@ theorem LinearProgrammingBound' :
   P.density ≤
   (f 0).re / (𝓕 f 0).re * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   -- HUGE TODO: Get the periodic density formula in terms of some `D`.
-  rw [P.periodic_density_formula' Fact.out hD_isBounded hD_unique_covers hD_measurable]
+  rw [P.density_eq' Fact.out]
   suffices hCalc : (P.numReps' Fact.out hD_isBounded) * (f 0).re ≥ (P.numReps' Fact.out hD_isBounded)^2 * (𝓕 f 0).re / Zlattice.covolume P.lattice
   · rw [hP]
     rw [ge_iff_le] at hCalc
@@ -337,10 +337,9 @@ theorem LinearProgrammingBound' :
     · case inl h𝓕f =>
       rw [h𝓕f, zero_re]
       -- For `ENNReal.div_zero`, we need `f 0 ≠ 0`. This can be deduced from the fact that
-      -- `𝓕 f ≥ 0` and `f ≠ 0` (if we assume `f` to be Schwartz).
+      -- `𝓕 f ≥ 0` and `f ≠ 0`.
       sorry
     · case inr h𝓕f =>
-
       sorry
   exact calc_steps hPSF hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded
 
