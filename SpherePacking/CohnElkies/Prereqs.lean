@@ -214,8 +214,7 @@ lemma PeriodicSpherePacking.exists_bound_on_fundamental_domain :
   ∃ L : ℝ, ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L :=
   isBounded_iff_forall_norm_le.1 (fundamentalDomain_isBounded (Basis.ofZlatticeBasis ℝ S.lattice b))
 
--- We now prove the following, which are necessary(?) for the Cohn-Elkies version of the density
--- formula.
+-- Is the following necessary? It was a fun exercise to prove it, but still...
 lemma PeriodicSpherePacking.fundamental_domain_unique_covers :
    ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _) := by
   -- I'd like to be able to apply `exist_unique_vadd_mem_fundamentalDomain` here, but I can't...
@@ -258,27 +257,6 @@ noncomputable def PeriodicSpherePacking.basis_index_equiv (P : PeriodicSpherePac
   rw [← FiniteDimensional.finrank_eq_card_chooseBasisIndex, Zlattice.rank ℝ P.lattice,
       finrank_euclideanSpace, Fintype.card_fin]
 
-#check PeriodicSpherePacking.density_eq
-
--- @[simp]
-theorem PeriodicSpherePacking.periodic_density_formula_MESSY (S : PeriodicSpherePacking d) (hd : 0 < d) :
-  S.density = (Real.toNNReal ((Real.toNNReal (S.numReps : ℝ)) / (Zlattice.covolume S.lattice))) *
-  volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
-  let b : Basis (Fin d) ℤ ↥S.lattice := ((Zlattice.module_free ℝ S.lattice).chooseBasis).reindex (S.basis_index_equiv)
-  obtain ⟨L, hL⟩ := S.exists_bound_on_fundamental_domain b
-  have hNN₁ : (0 : ℝ) ≤ S.numReps := Nat.cast_nonneg' S.numReps
-  have hNN₂ := LT.lt.le (Zlattice.covolume_pos S.lattice)
-  have hNN₃ : 0 ≤ ((S.numReps : ℝ).toNNReal : ℝ) / Zlattice.covolume S.lattice volume := by
-    rw [NNReal.toNNReal_coe_nat, NNReal.coe_natCast]
-    refine div_nonneg ?ha hNN₂
-    exact Nat.cast_nonneg' S.numReps
-  rw [S.density_eq b hL hd]
-  rw [Zlattice.covolume_eq_measure_fundamentalDomain S.lattice volume
-      (Zlattice.isAddFundamentalDomain b volume)] at hNN₂ hNN₃ ⊢
-  simp only [NNReal.toNNReal_coe_nat, NNReal.coe_natCast, ← mul_div]
-  -- Idea is to use `Real.toNNReal_of_nonneg` somehow...
-  sorry
-
 /- Here's a version of `PeriodicSpherePacking.density_eq` that
 1. Does not require the `hL` hypothesis that the original one does
 2. Uses `Zlattice.covolume` instead of the `volume` of a basis-dependent `fundamentalDomain`
@@ -304,26 +282,6 @@ theorem PeriodicSpherePacking.density_eq'
   · rw [ENNReal.coe_toReal, NNReal.coe_mk]
     refine Eq.symm (Zlattice.covolume_eq_measure_fundamentalDomain S.lattice volume ?h)
     exact Zlattice.isAddFundamentalDomain b volume
-
--- Necessary?
-@[simp]
-theorem PeriodicSpherePacking.density_eq''
-  (S : PeriodicSpherePacking d) (hd : 0 < d) : ENNReal.toReal S.density =
-  (S.numReps : ℝ) *
-  (ENNReal.toReal (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)))) /
-  (Zlattice.covolume S.lattice) := by
-  sorry
-
--- @[simp]
-theorem PeriodicSpherePacking.periodic_density_formula'
-  (S : PeriodicSpherePacking d) (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
-  S.density = (Real.toNNReal ((Real.toNNReal (S.numReps' hd hD_isBounded : ℝ)) /
-    (Zlattice.covolume S.lattice))) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
-  := by
-  -- TODO: Reframe this in terms of `PeriodicSpherePacking.density_eq` and prove it
-  sorry
 
 theorem periodic_constant_eq_constant (hd : 0 < d) :
     PeriodicSpherePackingConstant d = SpherePackingConstant d := by
