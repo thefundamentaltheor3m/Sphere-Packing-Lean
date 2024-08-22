@@ -19,9 +19,9 @@ open Complex Asymptotics Topology Filter
 
 namespace QExp
 
-lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * rexp (-2 * π * n)) :
-    Tendsto (fun z : ℍ ↦ ∑' n, a n * cexp (2 * π * I * z * n)) atImInfty (𝓝 (a 0)) := by
-  convert tendsto_tsum_of_dominated_convergence (f := fun z n ↦ a n * cexp (2 * π * I * z * n))
+lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * rexp (-π * n)) :
+    Tendsto (fun z : ℍ ↦ ∑' n, a n * cexp (π * I * n * z)) atImInfty (𝓝 (a 0)) := by
+  convert tendsto_tsum_of_dominated_convergence (f := fun z n ↦ a n * cexp (π * I * n * z))
     (𝓕 := atImInfty) (g := Set.indicator {0} (fun _ ↦ a 0)) ha ?_ ?_
   · rw [← tsum_subtype]
     convert (Finset.tsum_subtype {0} (fun _ ↦ a 0)).symm with x
@@ -36,53 +36,33 @@ lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * r
       rw [← mul_zero ‖a k‖]
       refine Tendsto.const_mul ‖a k‖ <| (Real.tendsto_exp_atBot).comp ?_
       simp only [mul_im, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
-        coe_re, zero_mul, add_zero, coe_im, natCast_im, natCast_re, zero_add, tendsto_neg_atBot_iff]
-      rw [tendsto_mul_const_atTop_of_pos, tendsto_const_mul_atTop_of_pos] <;> try positivity
+        coe_re, zero_mul, add_zero, coe_im, natCast_im, natCast_re, zero_add, tendsto_neg_atBot_iff,
+        mul_assoc]
+      rw [tendsto_const_mul_atTop_of_pos, tendsto_const_mul_atTop_of_pos] <;> try positivity
       exact tendsto_im_atImInfty
   · rw [eventually_atImInfty]
     use 1
     intro z hz k
-    simp_rw [norm_mul, mul_right_comm _ I, norm_exp_mul_I, mul_right_comm]
+    simp_rw [norm_mul, mul_right_comm _ I, norm_exp_mul_I]
     simp only [norm_eq_abs, mul_im, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero,
       sub_zero, coe_re, zero_mul, add_zero, coe_im, natCast_im, natCast_re, zero_add, neg_mul]
     nth_rw 4 [← mul_one k]
     rw [Nat.cast_mul, Nat.cast_one, ← mul_assoc]
     gcongr
 
-example (n : ℤ) (z : ℝ) : @fourier 1 n (↑z) = cexp (2 * π * I * n * z) := by simp
+lemma tsum_int_ite {f : ℕ → ℂ} :
+    (∑' n, f n) = (∑' n : ℤ, if hn : 0 ≤ n then f n.toNat else 0) := by
+  sorry
 
-example {f : ℤ → ℝ} (hf : Summable f) : Summable (fun n : ℕ ↦ f n) :=
-  (summable_int_iff_summable_nat_and_neg.mp hf).left
-
-#check tsum_of_nat_of_neg_add_one
-lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * rexp (-2 * π * n))
+lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * rexp (-π * n))
     (ha' : ∀ n, n < 0 → a n = 0) :
-    Tendsto (fun z : ℍ ↦ ∑' n, a n * cexp (2 * π * I * z * n)) atImInfty (𝓝 (a 0)) := by
-  -- ∑' (n : ℕ), f ↑n + ∑' (n : ℕ), f (-(↑n + 1))
-  have : Tendsto
-    (fun z : ℍ ↦ (∑' n : ℕ, (a n * cexp (2 * π * I * z * n)
-      + a (-(n + 1 : ℤ)) * cexp (2 * π * I * z * (-(n + 1) : ℤ))))) atImInfty (𝓝 (a 0)) := by
-    have := tendsto_nat (fun n ↦ a n) ?_
-    apply this.congr
-    · exact fun _ ↦ tsum_congr (by simpa using fun _ ↦ ha' _ (by omega))
-    · exact (summable_int_iff_summable_nat_and_neg.mp ha).left
-  apply this.congr'
-  rw [EventuallyEq, eventually_atImInfty]
-  use 1, fun z hz ↦ ?_
-  rw [← tsum_nat_add_neg_add_one]
-  rfl
-  rw [← summable_norm_iff]
-  convert_to Summable fun n ↦ ‖a n‖ * rexp (z.im * -2 * π * n)
-  · ext n
-    rw [norm_mul, mul_right_comm _ I, mul_right_comm _ I, norm_exp_mul_I]
-    simp
-    ring_nf
-    simp
-  · apply ha.of_nonneg_of_le (fun _ ↦ by positivity) fun b ↦ ?_
-    by_cases hb : 0 ≤ b
-    · have : z.im * -2 * π * b ≤ -2 * π * b := by
-        gcongr
-        simp [hz]
-      gcongr
-    · norm_num at hb
-      simp [ha' _ hb]
+    Tendsto (fun z : ℍ ↦ ∑' n, a n * cexp (π * I * n * z)) atImInfty (𝓝 (a 0)) := by
+  let a' : ℕ → ℂ := fun n ↦ a n
+  convert tendsto_nat a' ?_ with z
+  · rw [tsum_int_ite]
+    apply tsum_congr fun n ↦ ?_
+    split_ifs with hn
+    · obtain ⟨k, rfl⟩ := Int.eq_ofNat_of_zero_le hn
+      simp
+    · simp [ha' n (lt_of_not_le hn)]
+  · exact ha

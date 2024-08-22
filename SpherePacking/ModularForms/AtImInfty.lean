@@ -2,6 +2,7 @@ import Mathlib.Analysis.Normed.Group.Tannery
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ForMathlib.AtImInfty
+import SpherePacking.ModularForms.QExpansion
 
 /-!
 # Limits at infinity
@@ -85,38 +86,71 @@ theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
       simpa using le_mul_of_one_le_right
         (by rw [← mul_add, add_comm]; exact mul_nonneg Real.pi_nonneg (this k)) hz
 
-theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
-    Tendsto (fun x : ℍ ↦ jacobiTheta₂ 0 x) atImInfty (𝓝 1) := by
-  simp_rw [jacobiTheta₂, jacobiTheta₂_term, mul_zero, zero_add]
-  convert tendsto_tsum_of_dominated_convergence
-    (f := fun (z : ℍ) (n : ℤ) ↦ cexp (π * I * n ^ 2 * z))
-    (𝓕 := atImInfty)
-    (g := fun k ↦ if k = 0 then 1 else 0)
-    (bound := fun n : ℤ ↦ rexp (-π * n ^ 2)) ?_ ?_ ?_
-  · simp
-  · apply summable_ofReal.mp
-    have := (summable_jacobiTheta₂_term_iff 0 I).mpr (by simp)
-    rw [← summable_norm_iff, ← summable_ofReal] at this
-    simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, mul_assoc, ← sq, I_sq,
-      mul_neg_one, norm_exp, re_ofReal_mul, neg_re, mul_neg, ← neg_mul, ← ofReal_intCast,
-      ← ofReal_pow, ofReal_re] at this
-    exact this
-  · intro k
-    simp only
-    split_ifs with hk
-    · subst hk
-      simpa using tendsto_const_nhds
-    · rw [tendsto_zero_iff_norm_tendsto_zero]
-      simp_rw [mul_right_comm _ I, norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← ofReal_intCast,
-        ← ofReal_pow, im_ofReal_mul, ← mul_assoc]
-      simpa using tendsto_im_atImInfty.const_mul_atTop (by positivity)
-  · rw [eventually_atImInfty]
-    use 1, fun z hz k ↦ ?_
-    simp only
-    simp_rw [mul_right_comm _ I, norm_exp_mul_I]
-    simpa [← ofReal_intCast, ← ofReal_pow] using le_mul_of_one_le_right (by positivity) hz
+lemma aux {ι α β : Type*} [AddCommGroup β] [UniformSpace β] [UniformAddGroup β] [CompleteSpace β]
+    [T2Space β] (g : α → β) {f : ι → α} (h : Summable (g ∘ f)) :
+    (∑' x, g (f x)) = (∑' x, Nat.card { y // f y = x } • g x) := calc
+  _ = ∑' x, (∑' y : { y : ι // f y = x }, g (f y)) :=
+    (h.hasSum.tsum_fiberwise f).tsum_eq.symm
+  _ = ∑' x, (∑' _ : { y : ι // f y = x }, g x) :=
+    tsum_congr fun x ↦ tsum_congr fun ⟨y, hy⟩ ↦ by subst hy; rfl
+  _ = _ :=
+    tsum_congr fun x ↦ by rw [tsum_const]
 
-#check Θ₄_as_jacobiTheta₂
+theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
+    Tendsto (fun x : ℍ ↦ jacobiTheta₂ 0 x) atImInfty (𝓝 1) := by classical
+  have {n : ℤ} {x : ℍ} : jacobiTheta₂_term n 0 x = cexp (π * I * (n ^ 2 : ℤ) * x) := by
+    rw [jacobiTheta₂_term, mul_zero, zero_add]
+    norm_cast
+  simp_rw [jacobiTheta₂, this]
+  let h_fin (n : ℤ) : Fintype { k // k ^ 2 = n } := by
+    apply Set.Finite.fintype
+    apply Set.Finite.subset (s := Set.Icc (-|n|) |n|) (Set.finite_Icc _ _)
+    rintro y (rfl : y ^ 2 = n)
+    apply abs_le.mp
+    rw [_root_.abs_pow, _root_.sq_abs, ← Int.natCast_natAbs]
+    exact Int.natAbs_le_self_sq y
+  let h_fin' (n : ℤ) : Fintype { k | k ^ 2 = n } := h_fin n
+  convert QExp.tendsto_int (fun n ↦ Fintype.card { k // k ^ 2 = n }) ?_ ?_ using 1
+  · ext z
+    rw [aux (g := fun n : ℤ ↦ cexp (π * I * n * z))]
+    · apply tsum_congr fun x ↦ ?_
+      simp
+    · convert_to Summable (fun n ↦ jacobiTheta₂_term n 0 z)
+      · ext z; simp [this]
+      · rw [summable_jacobiTheta₂_term_iff]
+        simpa using z.prop
+  · simp
+  · apply Summable.of_norm_bounded (fun n : ℕ ↦ 2 * rexp (-π * n))
+    · have : Summable fun n : ℕ ↦ rexp (-π * n) := by
+        simp_rw [Real.exp_mul]
+        simpa using Real.pi_pos
+      convert this.const_smul 2 using 2
+      simp
+    · intro i
+      simp_rw [norm_nat, neg_mul, norm_mul, RCLike.norm_natCast, Real.norm_eq_abs, Real.abs_exp]
+      apply (mul_le_mul_right ?_).mpr
+      · have : Fintype.card { k : ℤ // k ^ 2 = i } = Fintype.card { k : ℤ | k ^ 2 = i } :=
+          Fintype.card_congr' rfl
+        rw [Nat.cast_le_ofNat, this]
+        by_cases hn : ∃ m : ℤ, m ^ 2 = i
+        · obtain ⟨m, hm⟩ := hn
+          rw [Fintype.card_of_finset' {-m, m}]
+          · exact Finset.card_le_two
+          · intro x
+            simp [sq_eq_sq_iff_eq_or_eq_neg, or_comm, ← hm]
+        · simp only [not_exists] at hn ⊢
+          rw [Fintype.card_of_finset' ∅]
+          · simp
+          · simp [hn]
+      · positivity
+  · intro n hn
+    simp
+    rw [Fintype.card_eq_zero_iff]
+    constructor
+    intro ⟨k, hk⟩
+    have : n ≥ 0 := by rw [← hk]; positivity
+    omega
+
 theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (1 / 2 : ℂ) x) atImInfty (𝓝 1) := by
   simp_rw [jacobiTheta₂, jacobiTheta₂_term, mul_right_comm _ _ (1 / 2 : ℂ), ← mul_div_assoc,
