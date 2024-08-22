@@ -6,6 +6,8 @@
 import Mathlib.Algebra.Module.Zlattice.Basic
 import Mathlib.Algebra.Module.Zlattice.Covolume
 import Mathlib.Analysis.Fourier.FourierTransform
+-- import Mathlib.Analysis.Distrubution.FourierSchwartz
+-- import Mathlib.Analysis.Distrubution.SchwartzSpace
 import SpherePacking.Basic.SpherePacking
 import SpherePacking.Basic.PeriodicPacking
 
@@ -44,6 +46,12 @@ end Dual_Lattice
 open scoped FourierTransform
 
 open Complex Real
+
+section Schwartz_Functions
+
+
+
+end Schwartz_Functions
 
 noncomputable section PSF_L
 
@@ -108,15 +116,6 @@ theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
 end Periodic_Packings
 
 section numReps_Related
-
--- Removable?
-instance (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice) :
-  Fintype ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _)) := sorry
-
--- Removable?
-noncomputable def PeriodicSpherePacking.numReps''
-  (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice) : ℕ :=
-  Fintype.card ↑(S.centers ∩ fundamentalDomain (b.ofZlatticeBasis ℝ _))
 
 noncomputable instance PeriodicSpherePacking.instFintypeNumReps'
   (S : PeriodicSpherePacking d) (hd : 0 < d)
@@ -198,15 +197,27 @@ lemma PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) --
   : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
   -- True
   := by
+  intro x hx y hy hxy
+  obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers x
+  specialize hg₂ y
+  simp only  at hg₂
+  simp only [Set.disjoint_iff_inter_eq_empty]
+  ext z
+  simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
+  intro hz₁ hz₂
   sorry
 
 end Disjoint_Covering_of_Centers
 
 section Fundamental_Domains_in_terms_of_Basis
 
-open Zspan Submodule
+open Submodule
 
 variable (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice)
+
+-- I include the following because some lemmas in `PeriodicPacking` have them as assumptions, and
+-- I'd like to replace all instances of `D` with `fundamentalDomain (b.ofZlatticeBasis ℝ _)` and
+-- the assumptions on `D` with the following lemmas.
 
 -- Note that we have `Zspan.fundamentalDomain_isBounded`. We can use this to prove the following,
 -- which is necessary for `PeriodicSpherePacking.density_eq`.
@@ -214,17 +225,17 @@ lemma PeriodicSpherePacking.exists_bound_on_fundamental_domain :
   ∃ L : ℝ, ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L :=
   isBounded_iff_forall_norm_le.1 (fundamentalDomain_isBounded (Basis.ofZlatticeBasis ℝ S.lattice b))
 
--- Is the following necessary? It was a fun exercise to prove it, but still...
+-- Note that we have `Zspan.exist_unique_vadd_mem_fundamentalDomain`. We can use this to prove the
+-- following.
 lemma PeriodicSpherePacking.fundamental_domain_unique_covers :
    ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _) := by
-  -- I'd like to be able to apply `exist_unique_vadd_mem_fundamentalDomain` here, but I can't...
   have : S.lattice = (span ℤ (Set.range (b.ofZlatticeBasis ℝ _))).toAddSubgroup :=
     Eq.symm (Basis.ofZlatticeBasis_span ℝ S.lattice b)
   intro x
+  -- The `g` we need should be the negative of the floor of `x`, but we can obtain it from the
+  -- existing library result.
   obtain ⟨g, hg₁, hg₂⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZlatticeBasis ℝ _) x
-  -- The `g` we need should be the negative of the floor of `x`.
   have hg_mem : ↑g ∈ S.lattice := by simp only [this, mem_toAddSubgroup, SetLike.coe_mem]
-  -- exact (vadd_mem_fundamentalDomain b (-floor b x) x).mpr rfl
   use ⟨↑g, hg_mem⟩
   constructor
   · exact hg₁
@@ -318,14 +329,14 @@ lemma Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
   calc cexp (-(2 * ↑π * I * ↑⟪x, m⟫_ℝ))
   _ = Circle.exp (-2 * π * ⟪x, m⟫_ℝ)
       := by
-          rw [Circle.exp_apply]
+          rw [Circle.coe_exp]
           push_cast
           ring_nf
   _ = conj (Circle.exp (2 * π * ⟪x, m⟫_ℝ))
       := by rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
   _= conj (cexp (2 * ↑π * I * ↑⟪x, m⟫_ℝ))
       := by
-          rw [Circle.exp_apply]
+          rw [Circle.coe_exp]
           apply congrArg conj
           push_cast
           ring_nf
