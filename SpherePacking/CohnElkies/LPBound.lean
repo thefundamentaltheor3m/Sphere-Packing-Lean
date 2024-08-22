@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sidharth Hariharan
+-/
 import SpherePacking.CohnElkies.Prereqs
 
-open scoped FourierTransform ENNReal
+open scoped FourierTransform ENNReal SchwartzMap
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real Zspan Bornology
 
 variable {d : ℕ} [instPosDim : Fact (0 < d)] -- Is `Fact` right here?
@@ -27,7 +32,7 @@ variable {d : ℕ} [instPosDim : Fact (0 < d)] -- Is `Fact` right here?
 
 -- Once we sort out the whole 'including variables' thing, we should remove all the variables from
 -- the various lemmas and leave these as they are. Else, we should remove these and keep those.
-variable {f : EuclideanSpace ℝ (Fin d) → ℂ} (hPSF : PSF_Conditions f) (hne_zero : f ≠ 0)
+variable {f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)} (hPSF : PSF_Conditions f) (hne_zero : f ≠ 0)
 -- We need `f` to be real-valued for Cohn-Elkies, but do we need that for the PSF-L as well?
 variable (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
 -- I'm not sure if `hCohnElkies₂` can replace this, because of the 5th step in `calc_steps`.
@@ -40,6 +45,25 @@ variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥
 
 -- We (locally) denote the Complex Conjugate of some `z : ℂ` by `conj z`
 local notation "conj" => starRingEnd ℂ
+
+section Complex_Function_Helpers
+
+private lemma helper (g : EuclideanSpace ℝ (Fin d) → ℂ) :
+  (∀ x : EuclideanSpace ℝ (Fin d), ↑(g x).re = (g x)) →
+  (∀ x : EuclideanSpace ℝ (Fin d), (g x).im = 0) := by
+  intro hIsReal x
+  specialize hIsReal x
+  rw [← hIsReal, ofReal_im]
+
+include hReal in
+private lemma hImZero : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0 :=
+  helper f hReal
+
+include hRealFourier in
+private lemma hFourierImZero : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).im = 0 :=
+  helper (𝓕 f) hRealFourier
+
+end Complex_Function_Helpers
 
 section Fundamental_Domain_Dependent
 
@@ -312,7 +336,8 @@ private lemma calc_steps :
                        PeriodicSpherePacking.numReps', Set.toFinset_card] -- ↑(P.centers ∩ D)]
             exact Nat.card_eq_fintype_card
   _ = ↑(P.numReps' Fact.out hD_isBounded) ^ 2 * (𝓕 f 0).re / Zlattice.covolume P.lattice volume
-        := by simp only [div_eq_mul_inv, one_div, mul_comm, mul_assoc, one_mul]
+        := by simp only [div_eq_mul_inv, one_div, mul_comm, one_mul, ← mul_assoc]
+
 
 -- And now, the main result of this section:
 include hP hD_isBounded hD_unique_covers hD_measurable
@@ -338,6 +363,31 @@ theorem LinearProgrammingBound' :
       rw [h𝓕f, zero_re]
       -- For `ENNReal.div_zero`, we need `f 0 ≠ 0`. This can be deduced from the fact that
       -- `𝓕 f ≥ 0` and `f ≠ 0`.
+      have hne_zero_at_zero : (f 0).re ≠ 0 := by
+        -- apply ne_of_gt
+        have haux₁ : 𝓕 f ≠ 0 := by
+          rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
+          intro hFourierZero
+          apply hne_zero
+          rw [← ContinuousLinearEquiv.map_eq_zero_iff (SchwartzMap.fourierTransformCLE ℝ)]
+          exact Eq.symm (SchwartzMap.ext (congrFun (id (Eq.symm hFourierZero))))
+        have haux₂ : f 0 = 𝓕⁻ (𝓕 f) 0 := by
+          sorry
+        -- Idea is to use the Inverse Fourier Integral to conclude that 𝓕 f, which is ≥ 0, must
+        -- integrate to zero if f 0 = 0. But this is impossible because that would imply 𝓕 f = 0 ae
+        -- which is not the case. (Perhaps we should say in our assumptions that f is nonzero on a
+        -- set of positive measure?)
+        intro hf00
+        apply haux₁
+        rw [fourierIntegralInv_eq] at haux₂
+        simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul] at haux₂
+        -- We need to take real parts at haux₂
+        rw [← re_add_im (f 0)] at haux₂
+        -- We cam now simplify
+        rw [hf00, hImZero hReal, ofReal_zero, zero_add, zero_mul] at haux₂
+        -- We now need to conclude using the fact that 𝓕 f is nonnegative but integrates to zero
+        -- (What we get is that 𝓕 f is zero a.e, so we need to modify our assumptions!!)
+        sorry
       sorry
     · case inr h𝓕f =>
       sorry

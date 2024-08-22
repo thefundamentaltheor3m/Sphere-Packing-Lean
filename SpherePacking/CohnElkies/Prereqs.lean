@@ -1,4 +1,9 @@
 /-
+Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sidharth Hariharan
+-/
+/-
 ## THIS FILE SHOULD EVENTUALLY BE REMOVED AND THE REFERENCES IN COHN-ELKIES MUST BE REPLACED WITH
 ## THE RIGHT ONES (NOT THE ONES FROM HERE). THIS FILE IS JUST A TEMPORARY SOLUTION TO MAKE THE
 ## COHN-ELKIES FILE WORK.
@@ -49,7 +54,13 @@ open Complex Real
 
 section Schwartz_Functions
 
+variable (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℝ)
 
+namespace SchwartzMap
+
+
+
+end SchwartzMap
 
 end Schwartz_Functions
 
@@ -207,7 +218,8 @@ lemma PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) --
   intro hz₁ hz₂
   sorry
 
-
+-- Can we use some sort of orbit disjointedness result and factor through the equivalence between
+-- the `Quotient` and `S.centers ∩ D`?
 
 end Disjoint_Covering_of_Centers
 
@@ -302,6 +314,24 @@ theorem periodic_constant_eq_constant (hd : 0 < d) :
 
 end Periodic_Density_Formula
 
+open scoped FourierTransform
+
+section Fourier
+
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
+
+variable {V : Type*} [NormedAddCommGroup V]
+  [InnerProductSpace ℝ V] [MeasurableSpace V] [BorelSpace V] [FiniteDimensional ℝ V]
+
+-- Super surprised not to find this in Mathlib!
+-- @[simp]
+-- def fourierIntegral (f : V → E) : 𝓕⁻ (𝓕 f) = f := by
+--   ext x
+--   refine Integrable.fourier_inversion ?h.hf ?h.h'f ?h.hv
+--   sorry
+
+end Fourier
+
 noncomputable section Misc
 
 -- For some reason the following two instances seem to need restating...
@@ -309,20 +339,6 @@ instance (v : EuclideanSpace ℝ (Fin d)) : Decidable (v = 0) := Classical.propD
 
 instance : DecidableEq (EuclideanSpace ℝ (Fin d)) :=
   Classical.typeDecidableEq (EuclideanSpace ℝ (Fin d))
-
--- Now a small lemma from Fourier analysis:
-/- Just beneath the statement of Theorem 3.1 in Cohn and Elkies' original paper, they mention that
-𝓕 f being nonnegative and not identically zero (because f is not) means f(0) is not zero. Hence,
-f 0 / 𝓕 f 0 is well-defined, even when 𝓕 f 0 is zero (`ENNReal.div_zero` tells us it equals `⊤`).
-(If f is Schwartz, then 𝓕 f is identically zero iff f is, because 𝓕 · is a continuous linear
-automorphism of the Schwartz space - cf. `Mathlib.Analysis.Distribution.FourierSchwartz`.)
--/
-lemma Fourier_Aux (f : EuclideanSpace ℝ (Fin d) → ℂ) (hf : f ≠ 0)
-  (hFourier_nonneg : ∀ m, ∃ x : ℝ, x ≥ 0 ∧ 𝓕 f m = x) (hFourier_not_identically_zero : 𝓕 f ≠ 0) :
-  ∃ y : ℝ, y > 0 ∧ f 0 = y := by
-  -- Should follow from some assumptions on f or the construction of 𝓕 f as an integral: the
-  -- integral of a nonnegative function with respect to the Lebesgue measure is
-  sorry
 
 -- Now a small lemma from Complex analysis:
 local notation "conj" => starRingEnd ℂ
