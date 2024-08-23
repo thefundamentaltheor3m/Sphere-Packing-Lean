@@ -48,6 +48,7 @@ local notation "conj" => starRingEnd ℂ
 
 section Complex_Function_Helpers
 
+
 private lemma helper (g : EuclideanSpace ℝ (Fin d) → ℂ) :
   (∀ x : EuclideanSpace ℝ (Fin d), ↑(g x).re = (g x)) →
   (∀ x : EuclideanSpace ℝ (Fin d), (g x).im = 0) := by

@@ -13,12 +13,14 @@ import Mathlib.Algebra.Module.Zlattice.Covolume
 import Mathlib.Analysis.Fourier.FourierTransform
 import Mathlib.Analysis.Distribution.FourierSchwartz
 import Mathlib.Analysis.Distribution.SchwartzSpace
+import Mathlib.Topology.Algebra.InfiniteSum.Basic
+import Mathlib.Analysis.Normed.Group.InfiniteSum
 import SpherePacking.Basic.SpherePacking
 import SpherePacking.Basic.PeriodicPacking
 
 open BigOperators Bornology
 
-variable {d : ℕ}
+variable {d : ℕ} [Fact (0 < d)]
 variable (Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZlattice ℝ Λ]
 
 noncomputable section Dual_Lattice
@@ -54,13 +56,61 @@ open Complex Real
 
 section Schwartz_Functions
 
-variable (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℝ)
-
 namespace SchwartzMap
 
+lemma Summable_Inverse_Powers (P : PeriodicSpherePacking d) :
+  ∃ k > 0, Summable (fun x : P.centers => 1 / ‖(x : EuclideanSpace ℝ (Fin d))‖^k) := by
+  simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs]
+  use 2 * d  -- Pretty sure anything greater than `d` would work
+  constructor
+  · simp only [Nat.ofNat_pos, mul_pos_iff_of_pos_left]
+    exact Fact.out
+  · intro ε hε
+    sorry
 
 
 end SchwartzMap
+
+namespace PeriodicSpherePacking
+
+variable (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℝ)
+
+example (a b c : ℝ) : a ≤ b → b < c → a < c := fun a_1 a_2 ↦ lt_of_le_of_lt a_1 a_2
+
+theorem SchwartzMap_Summable (P : PeriodicSpherePacking d) : Summable (fun x : P.centers => f x)
+:= by
+  rw [summable_iff_vanishing_norm]
+  intro ε hε
+  obtain ⟨k, hk', hk⟩ := SchwartzMap.Summable_Inverse_Powers P
+  simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs] at hk
+  obtain ⟨C, hC⟩ := f.decay' k 0
+  simp only [norm_iteratedFDeriv_zero, Real.norm_eq_abs] at hC
+  have haux₁ : ε / (C + 1) > 0 := by
+    refine div_pos hε ?_
+    specialize hC (0 : EuclideanSpace ℝ (Fin d))
+    rw [norm_zero, zero_pow (Nat.not_eq_zero_of_lt hk'), zero_mul] at hC
+    linarith
+  specialize hk ε hε
+  obtain ⟨s, hs⟩ := hk
+  use s
+  intro t ht
+  specialize hs t ht
+  suffices htriangle : ∑ x ∈ t, |f ↑x| < ε
+  · refine lt_of_le_of_lt ?_ htriangle
+    rw [Real.norm_eq_abs]
+    exact Finset.abs_sum_le_sum_abs (fun i : P.centers ↦ f ↑i) t
+  refine lt_of_le_of_lt ?_ hs
+  have haux₂ : ∀ x ∈ t, (0 : ℝ) ≤ (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹ := by
+    intro x hx
+    simp only [inv_nonneg, norm_nonneg, pow_nonneg]
+  rw [Finset.abs_sum_of_nonneg haux₂]
+  cases t.eq_empty_or_nonempty
+  · case inl hempty =>
+    rw [hempty, Finset.sum_empty, Finset.sum_empty]
+  · case inr hnonempty =>
+    sorry
+
+end PeriodicSpherePacking
 
 end Schwartz_Functions
 
