@@ -58,33 +58,30 @@ section Schwartz_Functions
 
 namespace SchwartzMap
 
-lemma Summable_Inverse_Powers (P : PeriodicSpherePacking d) :
-  ∃ k > 0, Summable (fun x : P.centers => 1 / ‖(x : EuclideanSpace ℝ (Fin d))‖^k) := by
-  simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs]
-  use 2 * d  -- Pretty sure anything greater than `d` would work
-  constructor
-  · simp only [Nat.ofNat_pos, mul_pos_iff_of_pos_left]
-    exact Fact.out
-  · intro ε hε
-    -- Translating and scaling fundamental domains could be a good idea - discussion with Bhavik
-    sorry
+@[simp]
+def Inv_Pow_Summable_Over (X : Set (EuclideanSpace ℝ (Fin d))) : Prop :=
+  Summable (fun x : X => 1 / ‖(x : EuclideanSpace ℝ (Fin d))‖ ^ (d + 1))
 
-
-end SchwartzMap
-
-namespace PeriodicSpherePacking
+-- TODO: Remove after proving that d + 1 does, indeed, work.
+-- Else, use as hack for `Summable_of_Inv_Pow_Summable'`.
+def Exists_Inv_Pow_Summable_Over (X : Set (EuclideanSpace ℝ (Fin d))) : Prop :=
+  ∃ k > 0, Summable (fun x : X => 1 / ‖(x : EuclideanSpace ℝ (Fin d))‖^k)
 
 variable (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℝ)
+-- Need to relax to decaying! Reason: want its composition with `Subtype.val` to be valid.
+-- This would _not_ be true of Schwartz functions because the restriction cannot be Schwartz!
+-- (Its domain and codomain are almost never going to be vector spaces!!!!!!!!)
 
-example (a b c : ℝ) : a ≤ b → b < c → a < c := fun a_1 a_2 ↦ lt_of_le_of_lt a_1 a_2
-
-theorem SchwartzMap_Summable' (P : PeriodicSpherePacking d) (hne_zero : 0 ∉ ↑P.centers) :
-Summable (fun x : P.centers => f x)
-:= by
+theorem Summable_of_Inv_Pow_Summable' -- (P : PeriodicSpherePacking d)
+  {X : Set (EuclideanSpace ℝ (Fin d))} (hX : SchwartzMap.Inv_Pow_Summable_Over X)
+  (hne_zero : 0 ∉ X) :
+  Summable (fun x : X => f x) := by
   rw [summable_iff_vanishing_norm]
   intro ε hε
-  obtain ⟨k, hk', hk⟩ := SchwartzMap.Summable_Inverse_Powers P
-  simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs] at hk
+  let k := d + 1
+  have hk' : 0 < k := by positivity
+  rw [Inv_Pow_Summable_Over] at hX
+  simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs] at hX
   obtain ⟨C, hC⟩ := f.decay' k 0
   have hC_nonneg : 0 ≤ C := by
     specialize hC (0 : EuclideanSpace ℝ (Fin d))
@@ -92,15 +89,15 @@ Summable (fun x : P.centers => f x)
     exact hC
   simp only [norm_iteratedFDeriv_zero, Real.norm_eq_abs] at hC
   have haux₁ : 0 < C + 1 := by linarith
-  specialize hk (ε / (C + 1)) (div_pos hε haux₁)
-  obtain ⟨s, hs⟩ := hk
+  specialize hX (ε / (C + 1)) (div_pos hε haux₁)
+  obtain ⟨s, hs⟩ := hX
   use s
   intro t ht
   specialize hs t ht
   suffices htriangle : ∑ x ∈ t, |f ↑x| < ε
   · refine lt_of_le_of_lt ?_ htriangle
     rw [Real.norm_eq_abs]
-    exact Finset.abs_sum_le_sum_abs (fun i : P.centers ↦ f ↑i) t
+    exact Finset.abs_sum_le_sum_abs (fun i : X ↦ f ↑i) t
   have haux₂ : |∑ x ∈ t, (C + 1) * (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹| < ε := by
     rw [← Finset.mul_sum, IsAbsoluteValue.abv_mul (fun (x : ℝ) ↦ |x|) _ _, abs_of_pos haux₁]
     exact (lt_div_iff' haux₁).mp hs
@@ -131,6 +128,32 @@ Summable (fun x : P.centers => f x)
     refine LE.le.trans hC ?_
     rw [le_add_iff_nonneg_right]
     exact zero_le_one
+
+theorem Summable_of_Inv_Pow_Summable -- (P : PeriodicSpherePacking d)
+  (X : Set (EuclideanSpace ℝ (Fin d))) (hX : SchwartzMap.Inv_Pow_Summable_Over X) :
+  Summable (fun x : X => f x) := by
+  if hzero : 0 ∈ X then
+    let s : Finset (X) := {⟨0, hzero⟩}
+    rw [Inv_Pow_Summable_Over] at hX
+    rw [← (Finset.summable_compl_iff s)] at hX ⊢
+    -- rw [← Inv_Pow_Summable_Over] at hX
+    -- refine Summable_of_Inv_Pow_Summable' (f ∘ Subtype.val) ?_ ?_
+
+    sorry
+  else
+    exact Summable_of_Inv_Pow_Summable' f hX hzero
+
+end SchwartzMap
+
+namespace PeriodicSpherePacking
+
+lemma Summable_Inverse_Powers (P : PeriodicSpherePacking d) :
+  SchwartzMap.Inv_Pow_Summable_Over P.centers := by
+  rw [SchwartzMap.Inv_Pow_Summable_Over]
+  simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs]
+  · intro ε hε
+    -- Translating and scaling fundamental domains could be a good idea - discussion with Bhavik
+    sorry
 
 end PeriodicSpherePacking
 
