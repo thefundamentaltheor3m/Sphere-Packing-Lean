@@ -66,6 +66,7 @@ lemma Summable_Inverse_Powers (P : PeriodicSpherePacking d) :
   · simp only [Nat.ofNat_pos, mul_pos_iff_of_pos_left]
     exact Fact.out
   · intro ε hε
+    -- Translating and scaling fundamental domains could be a good idea - discussion with Bhavik
     sorry
 
 
@@ -77,20 +78,21 @@ variable (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℝ)
 
 example (a b c : ℝ) : a ≤ b → b < c → a < c := fun a_1 a_2 ↦ lt_of_le_of_lt a_1 a_2
 
-theorem SchwartzMap_Summable (P : PeriodicSpherePacking d) : Summable (fun x : P.centers => f x)
+theorem SchwartzMap_Summable' (P : PeriodicSpherePacking d) (hne_zero : 0 ∉ ↑P.centers) :
+Summable (fun x : P.centers => f x)
 := by
   rw [summable_iff_vanishing_norm]
   intro ε hε
   obtain ⟨k, hk', hk⟩ := SchwartzMap.Summable_Inverse_Powers P
   simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs] at hk
   obtain ⟨C, hC⟩ := f.decay' k 0
-  simp only [norm_iteratedFDeriv_zero, Real.norm_eq_abs] at hC
-  have haux₁ : ε / (C + 1) > 0 := by
-    refine div_pos hε ?_
+  have hC_nonneg : 0 ≤ C := by
     specialize hC (0 : EuclideanSpace ℝ (Fin d))
     rw [norm_zero, zero_pow (Nat.not_eq_zero_of_lt hk'), zero_mul] at hC
-    linarith
-  specialize hk ε hε
+    exact hC
+  simp only [norm_iteratedFDeriv_zero, Real.norm_eq_abs] at hC
+  have haux₁ : 0 < C + 1 := by linarith
+  specialize hk (ε / (C + 1)) (div_pos hε haux₁)
   obtain ⟨s, hs⟩ := hk
   use s
   intro t ht
@@ -99,16 +101,36 @@ theorem SchwartzMap_Summable (P : PeriodicSpherePacking d) : Summable (fun x : P
   · refine lt_of_le_of_lt ?_ htriangle
     rw [Real.norm_eq_abs]
     exact Finset.abs_sum_le_sum_abs (fun i : P.centers ↦ f ↑i) t
-  refine lt_of_le_of_lt ?_ hs
-  have haux₂ : ∀ x ∈ t, (0 : ℝ) ≤ (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹ := by
-    intro x hx
-    simp only [inv_nonneg, norm_nonneg, pow_nonneg]
-  rw [Finset.abs_sum_of_nonneg haux₂]
+  have haux₂ : |∑ x ∈ t, (C + 1) * (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹| < ε := by
+    rw [← Finset.mul_sum, IsAbsoluteValue.abv_mul (fun (x : ℝ) ↦ |x|) _ _, abs_of_pos haux₁]
+    exact (lt_div_iff' haux₁).mp hs
+  refine lt_of_le_of_lt ?_ haux₂
+  have haux₃ : ∀ x ∈ t, (0 : ℝ) ≤ (C + 1) * (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹ := by
+    intro x _
+    apply mul_nonneg
+    · linarith
+    · simp only [inv_nonneg, norm_nonneg, pow_nonneg]
+  rw [Finset.abs_sum_of_nonneg haux₃]
   cases t.eq_empty_or_nonempty
   · case inl hempty =>
     rw [hempty, Finset.sum_empty, Finset.sum_empty]
   · case inr hnonempty =>
-    sorry
+    apply Finset.sum_le_sum
+    intro x _
+    have haux₄ : (x : EuclideanSpace ℝ (Fin d)) ≠ 0 := by
+      intro h
+      apply hne_zero
+      rw [← h]
+      exact Subtype.coe_prop x
+    have haux₅ : 0 < (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k) := by
+      apply pow_pos
+      exact norm_pos_iff'.mpr haux₄
+    refine le_of_mul_le_mul_of_pos_right ?_ haux₅
+    rw [mul_comm, mul_assoc, inv_mul_cancel₀ (ne_of_gt haux₅), mul_one]
+    specialize hC x
+    refine LE.le.trans hC ?_
+    rw [le_add_iff_nonneg_right]
+    exact zero_le_one
 
 end PeriodicSpherePacking
 
