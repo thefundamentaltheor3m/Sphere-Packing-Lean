@@ -51,6 +51,21 @@ def DualLattice : AddSubgroup (EuclideanSpace ℝ (Fin d)) where
 
 end Dual_Lattice
 
+section Euclidean_Space
+
+instance instNonemptyFin : Nonempty (Fin d) := by
+  rw [← Fintype.card_pos_iff, Fintype.card_fin]
+  exact Fact.out
+
+-- noncomputable instance : DivisionCommMonoid ENNReal where
+--   inv_inv := inv_inv
+--   mul_inv_rev := sorry
+--   inv_eq_of_mul := sorry
+--   mul_comm := sorry
+
+
+end Euclidean_Space
+
 open scoped FourierTransform
 
 open Complex Real
@@ -87,6 +102,19 @@ theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) 
   have := PSF_L Λ hf (0 : EuclideanSpace ℝ (Fin d))
   simp only [zero_add, inner_zero_left, ofReal_zero, mul_zero, Complex.exp_zero, mul_one] at this
   exact this
+
+namespace SchwartzMap
+
+theorem PoissonSummation_Lattices (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
+  (v : EuclideanSpace ℝ (Fin d)) : ∑' ℓ : Λ, f (v + ℓ) = (1 / Zlattice.covolume Λ) *
+  ∑' m : DualLattice Λ, (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_ℝ) := by
+  sorry
+
+-- theorem PoissonSummation_Lattices' (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) :
+--   ∑' ℓ : Λ, f ℓ = (1 / Zlattice.covolume Λ) * ∑' m : DualLattice Λ, (𝓕 f m) := by
+--   sorry
+
+end SchwartzMap
 
 end PSF_L
 

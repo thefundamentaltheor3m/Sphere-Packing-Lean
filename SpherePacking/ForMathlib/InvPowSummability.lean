@@ -35,12 +35,16 @@ namespace DecayingMap
 
 section Subtype
 
-variable {X : Set (EuclideanSpace ℝ (Fin d))} {f : X → ℝ} (hf : IsDecayingMap f) {Y : Subtype X}
+variable {X : Set (EuclideanSpace ℝ (Fin d))} {f : X → ℝ} (hf : IsDecayingMap f)
 
 -- I want to say that the composition of a decaying map with `Subtype.val` is a decaying map.
 -- The reason I need this is so that I can do summability after excluding zero from the set
 
--- lemma comp_Subtype_val : IsDecayingMap (fun y : ((Y : Set X) : Set (EuclideanSpace ℝ (Fin d))) => f y) := by
+-- theorem Decaying_over_compl_finset (s : Finset X) : IsDecayingMap
+-- (fun (x : (({x : X // x ∉ s} : Set X) : Set (EuclideanSpace ℝ (Fin d)))) => f x) := by
+--   sorry
+
+-- lemma comp_Subtype_val (Y : Subtype X) : IsDecayingMap (fun y : Y.val => f y) := by
 --   sorry
 
 end Subtype

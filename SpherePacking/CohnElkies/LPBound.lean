@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 import SpherePacking.CohnElkies.Prereqs
+import SpherePacking.ForMathlib.VolumeOfBalls
 
 open scoped FourierTransform ENNReal SchwartzMap
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real Zspan Bornology
@@ -32,7 +33,7 @@ variable {d : ℕ} [instPosDim : Fact (0 < d)] -- Is `Fact` right here?
 
 -- Once we sort out the whole 'including variables' thing, we should remove all the variables from
 -- the various lemmas and leave these as they are. Else, we should remove these and keep those.
-variable {f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)} (hPSF : PSF_Conditions f) (hne_zero : f ≠ 0)
+variable {f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)} (hne_zero : f ≠ 0)
 -- We need `f` to be real-valued for Cohn-Elkies, but do we need that for the PSF-L as well?
 variable (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
 -- I'm not sure if `hCohnElkies₂` can replace this, because of the 5th step in `calc_steps`.
@@ -48,8 +49,7 @@ local notation "conj" => starRingEnd ℂ
 
 section Complex_Function_Helpers
 
-
-private lemma helper (g : EuclideanSpace ℝ (Fin d) → ℂ) :
+private theorem helper (g : EuclideanSpace ℝ (Fin d) → ℂ) :
   (∀ x : EuclideanSpace ℝ (Fin d), ↑(g x).re = (g x)) →
   (∀ x : EuclideanSpace ℝ (Fin d), (g x).im = 0) := by
   intro hIsReal x
@@ -57,18 +57,18 @@ private lemma helper (g : EuclideanSpace ℝ (Fin d) → ℂ) :
   rw [← hIsReal, ofReal_im]
 
 include hReal in
-private lemma hImZero : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0 :=
+private theorem hImZero : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0 :=
   helper f hReal
 
 include hRealFourier in
-private lemma hFourierImZero : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).im = 0 :=
+private theorem hFourierImZero : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).im = 0 :=
   helper (𝓕 f) hRealFourier
 
 end Complex_Function_Helpers
 
 section Fundamental_Domain_Dependent
 
-include d instPosDim f hPSF hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
+include d instPosDim f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
 variable {P : PeriodicSpherePacking d} (hP : P.separation = 1)
 variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
@@ -80,7 +80,7 @@ bounded above by the Cohn-Elkies bound.
 -/
 
 include hP
-private lemma calc_aux_1 :
+private theorem calc_aux_1 :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
   ≤ ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re := calc
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
@@ -129,11 +129,11 @@ private lemma calc_aux_1 :
               exact Nat.card_eq_fintype_card
 
 -- # NOTE:
--- There are several summability results stated as intermediate `have`s in the following lemma.
+-- There are several summability results stated as intermediate `have`s in the following theorem.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
 -- If there are assumptions needed beyond PSF, we should require them here, not in `PSF_Conditions`.
 set_option maxHeartbeats 200000
-private lemma calc_steps :
+private theorem calc_steps :
   ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re ≥ ↑(P.numReps' Fact.out hD_isBounded) ^ 2 *
   (𝓕 f 0).re / Zlattice.covolume P.lattice := calc
   ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re
@@ -141,7 +141,7 @@ private lemma calc_steps :
       (f (x - ↑y)).re
         := by
             rw [ge_iff_le]
-            exact calc_aux_1 hPSF hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
+            exact calc_aux_1 hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
               hD_isBounded
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
@@ -174,7 +174,7 @@ private lemma calc_steps :
             apply congrArg _ _
             ext y
             -- Now that we've isolated the innermost sum, we can use the PSF-L.
-            exact PSF_L P.lattice hPSF (x - ↑y)
+            exact SchwartzMap.PoissonSummation_Lattices P.lattice f (x - ↑y)
   _ = ((1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
@@ -294,7 +294,6 @@ private lemma calc_steps :
             have hSummable : Summable (fun (m : ↥(DualLattice P.lattice)) =>
               (𝓕 f m).re * (Complex.abs (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)) := by
-              -- This should, I think, follow from however we define `PSF_Conditions`.
               sorry
             rw [tsum_eq_add_tsum_ite hSummable (0 : ↥(DualLattice P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
@@ -344,7 +343,7 @@ private lemma calc_steps :
 include hP hD_isBounded hD_unique_covers hD_measurable
 
 -- Temporary hack, must be deleted
-instance : HMul ℝ ℝ≥0∞ ℝ≥0∞ := sorry
+-- instance : HMul ℝ ℝ≥0∞ ℝ≥0∞ := sorry
 
 /-
 I think the only sustainable fix is to show that the volume of a sphere is finite and then turn
@@ -352,19 +351,26 @@ I think the only sustainable fix is to show that the volume of a sphere is finit
 -/
 
 theorem LinearProgrammingBound' :
-  P.density ≤
-  (f 0).re / (𝓕 f 0).re * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
+  P.density ≤ (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
+  volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   -- HUGE TODO: Get the periodic density formula in terms of some `D`.
   rw [P.density_eq' Fact.out]
-  suffices hCalc : (P.numReps' Fact.out hD_isBounded) * (f 0).re ≥ (P.numReps' Fact.out hD_isBounded)^2 * (𝓕 f 0).re / Zlattice.covolume P.lattice
+  suffices hCalc : (P.numReps' Fact.out hD_isBounded) * (f 0).re ≥
+    (P.numReps' Fact.out hD_isBounded)^2 * (𝓕 f 0).re / Zlattice.covolume P.lattice
   · rw [hP]
     rw [ge_iff_le] at hCalc
+    have vol_pos := EuclideanSpace.volume_ball_pos (0 : EuclideanSpace ℝ (Fin d)) one_half_pos
+    have vol_ne_zero : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ 0 :=
+      Ne.symm (ne_of_lt vol_pos)
+    have vol_ne_top : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ ∞ := by
+      rw [← lt_top_iff_ne_top]
+      exact EuclideanSpace.volume_ball_lt_top 0
     cases eq_or_ne (𝓕 f 0) 0
     · case inl h𝓕f =>
       rw [h𝓕f, zero_re]
       -- For `ENNReal.div_zero`, we need `f 0 ≠ 0`. This can be deduced from the fact that
       -- `𝓕 f ≥ 0` and `f ≠ 0`.
-      have hne_zero_at_zero : (f 0).re ≠ 0 := by
+      have gt_zero_at_zero : (f 0).re > 0 := by
         -- apply ne_of_gt
         have haux₁ : 𝓕 f ≠ 0 := by
           rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
@@ -378,28 +384,34 @@ theorem LinearProgrammingBound' :
         -- integrate to zero if f 0 = 0. But this is impossible because that would imply 𝓕 f = 0 ae
         -- which is not the case. (Perhaps we should say in our assumptions that f is nonzero on a
         -- set of positive measure?)
-        intro hf00
-        apply haux₁
         rw [fourierIntegralInv_eq] at haux₂
         simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul] at haux₂
         -- We need to take real parts at haux₂
         rw [← re_add_im (f 0)] at haux₂
         -- We cam now simplify
-        rw [hf00, hImZero hReal, ofReal_zero, zero_add, zero_mul] at haux₂
-        -- We now need to conclude using the fact that 𝓕 f is nonnegative but integrates to zero
-        -- (What we get is that 𝓕 f is zero a.e, so we need to modify our assumptions!!)
+        rw [hImZero hReal, ofReal_zero, zero_mul, add_zero] at haux₂
         sorry
-      sorry
+      have ne_zero_at_zero : ((f 0).re.toNNReal : ENNReal) ≠ 0 :=
+        ENNReal.coe_ne_zero.mpr (Ne.symm (ne_of_lt (toNNReal_pos.mpr gt_zero_at_zero)))
+      -- Now we can safely divide by zero!
+      rw [ENat.toENNReal_coe, toNNReal_zero, ENNReal.coe_zero, ENNReal.div_zero ne_zero_at_zero]
+      -- We now need to multiply by ⊤.
+      rw [ENNReal.top_mul vol_ne_zero]
+      exact le_top
     · case inr h𝓕f =>
+      rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
+          ← mul_assoc]
+      -- have := ENNReal.cancel_of_ne (vol_ne_top) -- Want something similar for Mul...
+      
       sorry
-  exact calc_steps hPSF hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded
+  exact calc_steps hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded
 
 end Fundamental_Domain_Dependent
 
 section Fundamental_Domain_Inependent
 
 theorem LinearProgrammingBound : SpherePackingConstant d ≤
-  (f 0).re / (𝓕 f 0).re * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
+  (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   rw [← periodic_constant_eq_constant (Fact.out),
     periodic_constant_eq_periodic_constant_normalized (Fact.out)]
   apply iSup_le
