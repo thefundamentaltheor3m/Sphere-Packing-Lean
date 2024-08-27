@@ -17,3 +17,4 @@ import SpherePacking.ForMathlib.VolumeOfBalls
 import SpherePacking.ForMathlib.Zlattice
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.SlashActionAuxil
+import SpherePacking.ForMathlib.InvPowSummability

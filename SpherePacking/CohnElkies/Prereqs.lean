@@ -17,6 +17,7 @@ import Mathlib.Topology.Algebra.InfiniteSum.Basic
 import Mathlib.Analysis.Normed.Group.InfiniteSum
 import SpherePacking.Basic.SpherePacking
 import SpherePacking.Basic.PeriodicPacking
+import SpherePacking.ForMathlib.InvPowSummability
 
 open BigOperators Bornology
 
@@ -130,7 +131,7 @@ noncomputable def PeriodicSpherePacking.numReps' (S : PeriodicSpherePacking d) (
   haveI := S.instFintypeNumReps' hd hD_isBounded
   Fintype.card ↑(S.centers ∩ D)
 
-lemma PeriodicSpherePacking.numReps'_nonneg (S : PeriodicSpherePacking d) (hd : 0 < d)
+theorem PeriodicSpherePacking.numReps'_nonneg (S : PeriodicSpherePacking d) (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
   0 ≤ S.numReps' hd hD_isBounded := by
   letI := S.instFintypeNumReps' hd hD_isBounded
@@ -141,7 +142,7 @@ end numReps_Related
 
 section Disjoint_Covering_of_Centers
 
-lemma PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking d) -- (hd : 0 < d)
+theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking d) -- (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
   :
@@ -155,7 +156,7 @@ lemma PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking 
   · intro a ha hmem
     exact hg₂ a ha hmem
 
-lemma PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d) -- (hd : 0 < d)
+theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d) -- (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
   : S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
@@ -192,7 +193,7 @@ lemma PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePackin
 -- This is true but unnecessary (for now). What's more important is expressing it as a disjoint
 -- union over points in X / Λ = X ∩ D of translates of the lattice by points in X / Λ = X ∩ D or
 -- something like that, because that's what's needed for `tsum_finset_bUnion_disjoint`.
-lemma PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) -- (hd : 0 < d)
+theorem PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) -- (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
   : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
@@ -225,13 +226,13 @@ variable (S : PeriodicSpherePacking d) (b : Basis (Fin d) ℤ S.lattice)
 
 -- Note that we have `Zspan.fundamentalDomain_isBounded`. We can use this to prove the following,
 -- which is necessary for `PeriodicSpherePacking.density_eq`.
-lemma PeriodicSpherePacking.exists_bound_on_fundamental_domain :
+theorem PeriodicSpherePacking.exists_bound_on_fundamental_domain :
   ∃ L : ℝ, ∀ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _), ‖x‖ ≤ L :=
   isBounded_iff_forall_norm_le.1 (fundamentalDomain_isBounded (Basis.ofZlatticeBasis ℝ S.lattice b))
 
 -- Note that we have `Zspan.exist_unique_vadd_mem_fundamentalDomain`. We can use this to prove the
 -- following.
-lemma PeriodicSpherePacking.fundamental_domain_unique_covers :
+theorem PeriodicSpherePacking.fundamental_domain_unique_covers :
    ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _) := by
   have : S.lattice = (span ℤ (Set.range (b.ofZlatticeBasis ℝ _))).toAddSubgroup :=
     Eq.symm (Basis.ofZlatticeBasis_span ℝ S.lattice b)
@@ -330,9 +331,9 @@ instance (v : EuclideanSpace ℝ (Fin d)) : Decidable (v = 0) := Classical.propD
 instance : DecidableEq (EuclideanSpace ℝ (Fin d)) :=
   Classical.typeDecidableEq (EuclideanSpace ℝ (Fin d))
 
--- Now a small lemma from Complex analysis:
+-- Now a small theorem from Complex analysis:
 local notation "conj" => starRingEnd ℂ
-lemma Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
+theorem Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
   cexp (-(2 * ↑π * I * ↑⟪x, m⟫_ℝ)) = conj (cexp (2 * ↑π * I * ↑⟪x, m⟫_ℝ)) :=
   calc cexp (-(2 * ↑π * I * ↑⟪x, m⟫_ℝ))
   _ = Circle.exp (-2 * π * ⟪x, m⟫_ℝ)

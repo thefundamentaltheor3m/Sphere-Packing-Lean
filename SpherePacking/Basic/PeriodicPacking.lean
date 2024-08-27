@@ -492,7 +492,7 @@ private theorem hD_isAddFundamentalDomain
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
     IsAddFundamentalDomain S.lattice D where
   nullMeasurableSet := hD_measurable.nullMeasurableSet
-  ae_covers := Filter.eventually_of_forall fun x ↦ (hD_unique_covers x).exists
+  ae_covers := Filter.Eventually.of_forall fun x ↦ (hD_unique_covers x).exists
   aedisjoint := by
     apply Measure.pairwise_aedisjoint_of_aedisjoint_forall_ne_zero
     · intro g hg
