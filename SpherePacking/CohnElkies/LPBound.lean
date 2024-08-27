@@ -5,6 +5,7 @@ Authors: Sidharth Hariharan
 -/
 import SpherePacking.CohnElkies.Prereqs
 import SpherePacking.ForMathlib.VolumeOfBalls
+import SpherePacking.Basic.PeriodicPacking
 
 open scoped FourierTransform ENNReal SchwartzMap
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real Zspan Bornology
@@ -29,6 +30,8 @@ variable {d : ℕ} [instPosDim : Fact (0 < d)] -- Is `Fact` right here?
 
 * Everything in `Prereqs.lean` is either a TODO or has already been done (eg. in #25) (to reflect
   which the corresponding refs must be updated).
+* Add some lemmas about when the set of centres of a sphere packing is empty. Then, do cases here
+  and remove the `Nonempty` instance in the assumptions.
 -/
 
 -- Once we sort out the whole 'including variables' thing, we should remove all the variables from
@@ -66,11 +69,50 @@ private theorem hFourierImZero : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).
 
 end Complex_Function_Helpers
 
+section Nonnegativity
+
+include hne_zero
+
+theorem f_fourier_inv_fou : f = 𝓕⁻ (𝓕 f) :=
+  -- Surely this is right... surely we can apply Fubini and swap the two integrals... right?
+  sorry
+
+theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
+  rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
+  intro hFourierZero
+  apply hne_zero
+  rw [← ContinuousLinearEquiv.map_eq_zero_iff (SchwartzMap.fourierTransformCLE ℝ)]
+  exact Eq.symm (SchwartzMap.ext (congrFun (id (Eq.symm hFourierZero))))
+
+include hReal hRealFourier hCohnElkies₂
+
+theorem f_nonneg_at_zero : 0 ≤ (f 0).re :=
+  -- Building off the previous one, f(0) is an integral of a nonneg function, and hence, also nonneg
+  sorry
+
+theorem f_pos_at_zero_of_fou_zero_at_zero (hzero : 𝓕 f 0 = 0) : 0 < (f 0).re := by
+  -- We know from previous that f(0) is nonneg. If zero, then the integral of 𝓕 f is zero, making
+  -- 𝓕 f zero (it's continuous and nonneg: if it's pos anywhere, it's pos on a nbhd, and hence the
+  -- integral must be pos too, but it's zero, contra). By Schwartz, f is identically zero iff 𝓕 f
+  -- is (𝓕 is a linear iso). But 𝓕 f is zero while f is not, contra! So f(0) is positive.
+  -- apply ne_of_gt
+  have haux₁ : f 0 = 𝓕⁻ (𝓕 f) 0 := by
+    sorry
+  rw [fourierIntegralInv_eq] at haux₁
+  simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul] at haux₁
+  -- We need to take real parts at haux₁
+  rw [← re_add_im (f 0)] at haux₁
+  -- We cam now simplify
+  rw [hImZero hReal, ofReal_zero, zero_mul, add_zero] at haux₁
+  sorry
+
+end Nonnegativity
+
 section Fundamental_Domain_Dependent
 
 include d instPosDim f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
-variable {P : PeriodicSpherePacking d} (hP : P.separation = 1)
+variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.centers]
 variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
 variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
 
@@ -370,40 +412,67 @@ theorem LinearProgrammingBound' :
       rw [h𝓕f, zero_re]
       -- For `ENNReal.div_zero`, we need `f 0 ≠ 0`. This can be deduced from the fact that
       -- `𝓕 f ≥ 0` and `f ≠ 0`.
-      have gt_zero_at_zero : (f 0).re > 0 := by
-        -- apply ne_of_gt
-        have haux₁ : 𝓕 f ≠ 0 := by
-          rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
-          intro hFourierZero
-          apply hne_zero
-          rw [← ContinuousLinearEquiv.map_eq_zero_iff (SchwartzMap.fourierTransformCLE ℝ)]
-          exact Eq.symm (SchwartzMap.ext (congrFun (id (Eq.symm hFourierZero))))
-        have haux₂ : f 0 = 𝓕⁻ (𝓕 f) 0 := by
-          sorry
-        -- Idea is to use the Inverse Fourier Integral to conclude that 𝓕 f, which is ≥ 0, must
-        -- integrate to zero if f 0 = 0. But this is impossible because that would imply 𝓕 f = 0 ae
-        -- which is not the case. (Perhaps we should say in our assumptions that f is nonzero on a
-        -- set of positive measure?)
-        rw [fourierIntegralInv_eq] at haux₂
-        simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul] at haux₂
-        -- We need to take real parts at haux₂
-        rw [← re_add_im (f 0)] at haux₂
-        -- We cam now simplify
-        rw [hImZero hReal, ofReal_zero, zero_mul, add_zero] at haux₂
-        sorry
       have ne_zero_at_zero : ((f 0).re.toNNReal : ENNReal) ≠ 0 :=
-        ENNReal.coe_ne_zero.mpr (Ne.symm (ne_of_lt (toNNReal_pos.mpr gt_zero_at_zero)))
+        ENNReal.coe_ne_zero.mpr (Ne.symm (ne_of_lt (toNNReal_pos.mpr
+        (f_pos_at_zero_of_fou_zero_at_zero hne_zero hReal hRealFourier hCohnElkies₂ h𝓕f))))
       -- Now we can safely divide by zero!
       rw [ENat.toENNReal_coe, toNNReal_zero, ENNReal.coe_zero, ENNReal.div_zero ne_zero_at_zero]
       -- We now need to multiply by ⊤.
       rw [ENNReal.top_mul vol_ne_zero]
       exact le_top
     · case inr h𝓕f =>
+      -- First, we shift things around and cancel volumes on the right
       rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
-          ← mul_assoc]
-      -- have := ENNReal.cancel_of_ne (vol_ne_top) -- Want something similar for Mul...
-      
-      sorry
+          ← mul_assoc, ENNReal.mul_le_mul_right vol_ne_zero vol_ne_top]
+      -- Next, we simplify `hCalc` by replacing `numReps'` with `numReps`
+      rw [← P.numReps_eq_numReps' hD_isBounded hD_unique_covers] at hCalc
+      -- Next, we multiply both sides by `(𝓕 (⇑f) 0).re.toNNReal`, cancelling accordingly.
+      have hfouaux₁ : ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) ≠ 0 := by
+        intro hContra
+        apply h𝓕f
+        simp only [ENNReal.coe_eq_zero, toNNReal_eq_zero] at hContra
+        specialize hCohnElkies₂ 0
+        rw [ge_iff_le] at hCohnElkies₂
+        -- We can't simply do antisymm because we have an equality in ℂ, not ℝ!
+        rw [← re_add_im (𝓕 (⇑f) 0), le_antisymm hContra hCohnElkies₂,
+            hFourierImZero hRealFourier 0, ofReal_zero, zero_mul, add_zero]
+      have hfouaux₂ : ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) ≠ ⊤ := ENNReal.coe_ne_top
+      rw [← ENNReal.mul_le_mul_right hfouaux₁ hfouaux₂,
+          div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _,
+          mul_assoc ((f 0).re.toNNReal : ENNReal) _ _, ENNReal.inv_mul_cancel hfouaux₁ hfouaux₂]
+      -- We put it in a more desirable form and consolidate.
+      rw [mul_one, mul_assoc, ← ENNReal.div_eq_inv_mul]
+      -- Next, we multiply both sides on the left by `↑P.numReps`.
+      have hnRaux₁ : ENat.toENNReal (P.numReps : ENat) ≠ 0 := by
+        rw [ENat.toENNReal_coe, ne_eq, Nat.cast_eq_zero, ← ne_eq]
+        -- intro hContra
+        -- rw [← P.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers Fact.out]
+        unfold PeriodicSpherePacking.numReps
+        haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) := by
+          rw [nonempty_quotient_iff]
+          assumption
+        exact Fintype.card_ne_zero
+      have hnRaux₂ : ENat.toENNReal (P.numReps : ENat) ≠ ⊤ := Ne.symm (ne_of_beq_false rfl)
+      rw [← ENNReal.mul_le_mul_left hnRaux₁ hnRaux₂]
+      -- We put it in a more desirable form and consolidate.
+      rw [ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc]
+      -- Now, we use the nonnegativity of... everything... to get the `toNNReal`s to the outside.
+      have hRHSCast : (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal
+      := by
+        -- rw [ENNReal.coe_mul, ENNReal.coe_natCast]
+        norm_cast
+        refine NNReal.eq ?_
+        have haux₁ : 0 ≤ ↑P.numReps * (f 0).re := mul_nonneg (Nat.cast_nonneg' P.numReps)
+          (f_nonneg_at_zero hne_zero hReal hRealFourier hCohnElkies₂)
+        rw [Real.toNNReal_of_nonneg (f_nonneg_at_zero hne_zero hReal hRealFourier hCohnElkies₂),
+            Real.toNNReal_of_nonneg haux₁]
+        push_cast
+        rfl
+      have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) / ((Zlattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 * (𝓕 (⇑f) 0).re / Zlattice.covolume P.lattice volume).toNNReal := by
+        sorry
+      -- We can now get rid of the `toNNReal`s and use `hCalc` to finish the proof!
+      rw [hRHSCast, hLHSCast, ENNReal.coe_le_coe]
+      exact Real.toNNReal_le_toNNReal hCalc
   exact calc_steps hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded
 
 end Fundamental_Domain_Dependent

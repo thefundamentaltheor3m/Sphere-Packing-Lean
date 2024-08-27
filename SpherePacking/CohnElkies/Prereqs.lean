@@ -153,18 +153,27 @@ noncomputable instance PeriodicSpherePacking.instFintypeNumReps'
   Fintype ↑(S.centers ∩ D) := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
 
 noncomputable def PeriodicSpherePacking.numReps' (S : PeriodicSpherePacking d) (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
-  -- (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
-  : ℕ :=
-  haveI := S.instFintypeNumReps' hd hD_isBounded
+  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) : ℕ :=
+  letI := S.instFintypeNumReps' hd hD_isBounded
   Fintype.card ↑(S.centers ∩ D)
 
-theorem PeriodicSpherePacking.numReps'_nonneg (S : PeriodicSpherePacking d) (hd : 0 < d)
+theorem PeriodicSpherePacking.numReps'_nonneg (S : PeriodicSpherePacking d)
   {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
-  0 ≤ S.numReps' hd hD_isBounded := by
-  letI := S.instFintypeNumReps' hd hD_isBounded
+  0 ≤ S.numReps' Fact.out hD_isBounded := by
+  letI := S.instFintypeNumReps' Fact.out hD_isBounded
   rw [PeriodicSpherePacking.numReps']
   exact Nat.zero_le (Fintype.card ↑(S.centers ∩ D))
+
+theorem PeriodicSpherePacking.numReps_eq_numReps' (S : PeriodicSpherePacking d)
+  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
+  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
+  S.numReps = S.numReps' Fact.out hD_isBounded := by
+  letI := S.instFintypeNumReps' Fact.out hD_isBounded
+  rw [PeriodicSpherePacking.numReps']
+  rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers Fact.out]
+  exact Set.toFinset_card (S.centers ∩ D)
+
+-- theorem PeriodicSpherePacking.numReps_ne_zero (S : PeriodicSpherePacking d)
 
 end numReps_Related
 
