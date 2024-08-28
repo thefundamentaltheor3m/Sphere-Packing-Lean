@@ -469,7 +469,23 @@ theorem LinearProgrammingBound' :
         push_cast
         rfl
       have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) / ((Zlattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 * (𝓕 (⇑f) 0).re / Zlattice.covolume P.lattice volume).toNNReal := by
-        sorry
+        simp only [mul_div_assoc, div_eq_mul_inv]
+        have haux₁ : 0 ≤ ↑P.numReps ^ 2 * (𝓕 (⇑f) 0).re * (Zlattice.covolume P.lattice volume)⁻¹ := by
+          refine mul_nonneg (mul_nonneg (sq_nonneg (P.numReps : ℝ)) (hCohnElkies₂ 0)) ?_
+          rw [inv_nonneg]
+          exact LT.lt.le (Zlattice.covolume_pos P.lattice volume)
+        rw [Real.toNNReal_of_nonneg haux₁]
+        have haux₂ : (Zlattice.covolume P.lattice volume).toNNReal ≠ 0 := by
+          apply LT.lt.ne'
+          rw [Real.toNNReal_pos]
+          exact Zlattice.covolume_pos P.lattice volume
+        rw [← ENNReal.coe_inv haux₂]
+        norm_cast
+        rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0),
+            Real.toNNReal_of_nonneg (LT.lt.le (Zlattice.covolume_pos P.lattice volume))]
+        refine NNReal.eq ?_
+        push_cast
+        rfl
       -- We can now get rid of the `toNNReal`s and use `hCalc` to finish the proof!
       rw [hRHSCast, hLHSCast, ENNReal.coe_le_coe]
       exact Real.toNNReal_le_toNNReal hCalc
