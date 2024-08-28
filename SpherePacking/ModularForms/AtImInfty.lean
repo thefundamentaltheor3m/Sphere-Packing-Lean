@@ -14,7 +14,7 @@ compute limits of forms later on (following Seewoo's approach).
 
 open scoped Real
 open UpperHalfPlane hiding I
-open Complex Asymptotics Topology Filter
+open QExp Complex Asymptotics Topology Filter
 
 lemma Int.ne_half (a : ℤ) : ↑a ≠ (1 / 2 : ℝ) :=
   ne_of_apply_ne Int.fract <| by
@@ -47,26 +47,19 @@ theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
     · simp [tendsto_const_nhds]
     · simp [tendsto_const_nhds]
     · simp only [hn, not_false_eq_true, Set.indicator_of_not_mem]
-      apply tendsto_zero_iff_norm_tendsto_zero.mpr
-      have h₁ (n : ℤ) (z : ℂ) : (π * I * n * z + π * I * n ^ 2 * z) = π * (n + n ^ 2) * z * I := by
+      have : ∃ m : ℤ, (n : ℂ) + (n : ℂ) ^ 2 = 2 * (m : ℝ) := by
+        simp_rw [two_mul, sq, ← mul_one_add]
+        norm_cast
+        change Even _
+        by_cases hn : Even n
+        · exact hn.mul_right _
+        · exact (odd_one.add_odd (Int.odd_iff_not_even.mpr hn)).mul_left _
+      obtain ⟨m, hm⟩ := this
+      convert_to Tendsto (fun z : ℍ ↦ 𝕢 m z) atImInfty (𝓝 0)
+      · ext z
+        rw [𝕢, ← hm]
         ring_nf
-      have h_base' : rexp (-π) ^ ((n : ℝ) + n ^ 2) < 1 := by
-        apply Real.rpow_lt_one
-        positivity
-        apply Real.exp_lt_one_iff.mpr (by simp; positivity)
-        convert_to 0 < ((n * (n + 1) : ℤ) : ℝ)
-        · push_cast
-          ring_nf
-        · apply Int.cast_pos.mpr
-          by_cases hn' : 0 < n
-          · apply mul_pos hn' (by omega)
-          · rw [Set.mem_insert_iff, Set.mem_singleton_iff] at hn
-            exact mul_pos_of_neg_of_neg (by omega) (by omega)
-      simp_rw [h₁, norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← Int.cast_pow, ← Int.cast_add,
-        ← ofReal_intCast, im_ofReal_mul, ← mul_assoc, Int.cast_add, Int.cast_pow, ← neg_mul,
-        Real.exp_mul, coe_im]
-      refine (tendsto_rpow_atTop_of_base_lt_one _ ?_ h_base').comp tendsto_im_atImInfty
-      exact neg_one_lt_zero.trans (by positivity)
+      · exact 𝕢_tendsto_atImInfty _
   · rw [eventually_atImInfty]
     use 1
     intro z hz k
@@ -110,46 +103,7 @@ theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
     rw [_root_.abs_pow, _root_.sq_abs, ← Int.natCast_natAbs]
     exact Int.natAbs_le_self_sq y
   let h_fin' (n : ℤ) : Fintype { k | k ^ 2 = n } := h_fin n
-  convert QExp.tendsto_int (fun n ↦ Fintype.card { k // k ^ 2 = n }) ?_ ?_ using 1
-  · ext z
-    rw [aux (g := fun n : ℤ ↦ cexp (π * I * n * z))]
-    · apply tsum_congr fun x ↦ ?_
-      simp
-    · convert_to Summable (fun n ↦ jacobiTheta₂_term n 0 z)
-      · ext z; simp [this]
-      · rw [summable_jacobiTheta₂_term_iff]
-        simpa using z.prop
-  · simp
-  · apply Summable.of_norm_bounded (fun n : ℕ ↦ 2 * rexp (-π * n))
-    · have : Summable fun n : ℕ ↦ rexp (-π * n) := by
-        simp_rw [Real.exp_mul]
-        simpa using Real.pi_pos
-      convert this.const_smul 2 using 2
-      simp
-    · intro i
-      simp_rw [norm_nat, neg_mul, norm_mul, RCLike.norm_natCast, Real.norm_eq_abs, Real.abs_exp]
-      apply (mul_le_mul_right ?_).mpr
-      · have : Fintype.card { k : ℤ // k ^ 2 = i } = Fintype.card { k : ℤ | k ^ 2 = i } :=
-          Fintype.card_congr' rfl
-        rw [Nat.cast_le_ofNat, this]
-        by_cases hn : ∃ m : ℤ, m ^ 2 = i
-        · obtain ⟨m, hm⟩ := hn
-          rw [Fintype.card_of_finset' {-m, m}]
-          · exact Finset.card_le_two
-          · intro x
-            simp [sq_eq_sq_iff_eq_or_eq_neg, or_comm, ← hm]
-        · simp only [not_exists] at hn ⊢
-          rw [Fintype.card_of_finset' ∅]
-          · simp
-          · simp [hn]
-      · positivity
-  · intro n hn
-    simp
-    rw [Fintype.card_eq_zero_iff]
-    constructor
-    intro ⟨k, hk⟩
-    have : n ≥ 0 := by rw [← hk]; positivity
-    omega
+  sorry
 
 theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (1 / 2 : ℂ) x) atImInfty (𝓝 1) := by
