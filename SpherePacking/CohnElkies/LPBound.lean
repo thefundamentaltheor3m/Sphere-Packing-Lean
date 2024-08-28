@@ -6,6 +6,7 @@ Authors: Sidharth Hariharan
 import SpherePacking.CohnElkies.Prereqs
 import SpherePacking.ForMathlib.VolumeOfBalls
 import SpherePacking.Basic.PeriodicPacking
+import Mathlib.Logic.IsEmpty
 
 open scoped FourierTransform ENNReal SchwartzMap
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real Zspan Bornology
@@ -392,6 +393,16 @@ I think the only sustainable fix is to show that the volume of a sphere is finit
 `SpherePacking.density` into an element of `ℝ` instead of `ℝ≥0∞`.
 -/
 
+end Fundamental_Domain_Dependent
+
+section Main_Theorem_For_One_Packing
+
+variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.centers]
+variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
+variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
+
+include d instPosDim f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded hD_unique_covers
+
 theorem LinearProgrammingBound' :
   P.density ≤ (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
   volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
@@ -491,9 +502,11 @@ theorem LinearProgrammingBound' :
       exact Real.toNNReal_le_toNNReal hCalc
   exact calc_steps hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded
 
-end Fundamental_Domain_Dependent
+end Main_Theorem_For_One_Packing
 
-section Fundamental_Domain_Inependent
+section Main_Theorem
+
+include d instPosDim f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
 theorem LinearProgrammingBound : SpherePackingConstant d ≤
   (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
@@ -503,10 +516,15 @@ theorem LinearProgrammingBound : SpherePackingConstant d ≤
   intro P
   rw [iSup_le_iff]
   intro hP
-  -- We need to choose `D` to be a fundamental domain and cook up proofs of the necessary
-  -- assumptions on `D` to feed into `LinearProgrammingBound'`.
-  -- exact LinearProgrammingBound' hPSF hP (((Zlattice.module_free ℝ P.lattice).chooseBasis).reindex
-  --   (PeriodicSpherePacking.basis_index_equiv P))
-  sorry
+  cases isEmpty_or_nonempty ↑P.centers
+  · case inl instEmpty =>
+    rw [P.density_of_centers_empty Fact.out]
+    exact zero_le _
+  · case inr instNonempty =>
+    let b : Basis (Fin d) ℤ ↥P.lattice := ((Zlattice.module_free ℝ P.lattice).chooseBasis).reindex
+      (P.basis_index_equiv)
+    exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
+      (fundamentalDomain_isBounded (Basis.ofZlatticeBasis ℝ P.lattice b))
+      (P.fundamental_domain_unique_covers b)
 
-end Fundamental_Domain_Inependent
+end Main_Theorem
