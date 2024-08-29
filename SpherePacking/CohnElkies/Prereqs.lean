@@ -273,7 +273,7 @@ theorem PeriodicSpherePacking.fundamental_domain_unique_covers :
    ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _) := by
   have : S.lattice = (span ℤ (Set.range (b.ofZlatticeBasis ℝ _))).toAddSubgroup :=
     Eq.symm (Basis.ofZlatticeBasis_span ℝ S.lattice b)
-  intro x
+  intro x 
   -- The `g` we need should be the negative of the floor of `x`, but we can obtain it from the
   -- existing library result.
   obtain ⟨g, hg₁, hg₂⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZlatticeBasis ℝ _) x
