@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Sidharth Hariharan
+Authors: Sidharth Hariharan, Bhavik Mehta
 -/
 import Mathlib
 
@@ -46,15 +46,7 @@ lemma summable_union_disjoint.{u_1, u_2}
 variable {X : Set (EuclideanSpace ℝ (Fin d))} {f : EuclideanSpace ℝ (Fin d) → ℝ}
 variable (hf : IsDecayingMap X f)
 
--- I want to say that the composition of a decaying map with `Subtype.val` is a decaying map.
--- The reason I need this is so that I can do summability after excluding zero from the set
-
--- theorem Decaying_over_compl_finset (s : Finset X) : IsDecayingMap
--- (fun (x : (({x : X // x ∉ s} : Set X) : Set (EuclideanSpace ℝ (Fin d)))) => f x) := by
---   sorry
-
--- lemma comp_Subtype_val (Y : Subtype X) : IsDecayingMap (fun y : Y.val => f y) := by
---   sorry
+-- TODO: Change from `Subtype`s to `Set`s and add appropriate 'decaying over subsets' lemma
 
 end Subtype
 
@@ -122,8 +114,6 @@ theorem Summable_of_Inv_Pow_Summable'
     refine LE.le.trans (hC x.2) ?_
     rw [le_add_iff_nonneg_right]
     exact zero_le_one
-
--- lemma comp_Subtype_val {X : Set (EuclideanSpace ℝ (Fin d))} (s : Subtype X) :
 
 set_option pp.funBinderTypes true
 
