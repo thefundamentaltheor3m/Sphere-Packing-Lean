@@ -50,18 +50,18 @@ We begin by stating a general summability result over specific subsets of $\R^d$
   \]
 \end{lemma}
 \begin{proof}
-  First, note that it does not matter how we number the (countably many) elements of the discrete set $X$: if we prove absolute convergence for one numbering, we prove absolute convergence for \emph{any} numbering. The idea will be to bound the sequence of partial sums by considering the volumes of concentric $d$-spheres of the appropriate radii.
+  First, note that it does not matter how we number the (countably many) elements of the discrete set $X$: if we prove absolute convergence for one numbering, we prove absolute convergence for \emph{any} numbering. The idea will be to bound the sequence of partial sums by considering the volumes of concentric $d$-spheres of the appropriate radii (or scaled versions of a $0$-centred fundamental domain).
 
-  Number the elements of $X$ such that $\norm{x_1} \leq \norm{x_2} \leq \ldots$, and for all $R \in \N$, let $N_R$ be the largest index such that $\norm{x_{N_R}} \leq R$ (which exists because there can only be finitely many elements of $X$ in any ball of radius $R$). Define $S_R := \sum_{j=1}^{N_R} \norm{x_j}^{-k}$. If we can show that $S_R$ is a Cauchy sequence, we can show that $S_R$ (and therefore, $\sum_{j=1}^{\infty} \norm{x_j}^{-k}$) is convergent.
+  % Number the elements of $X$ such that $\norm{x_1} \leq \norm{x_2} \leq \ldots$, and for all $R \in \N$, let $N_R$ be the largest index such that $\norm{x_{N_R}} \leq R$ (which exists because there can only be finitely many elements of $X$ in any ball of radius $R$). Define $S_R := \sum_{j=1}^{N_R} \norm{x_j}^{-k}$. If we can show that $S_R$ is a Cauchy sequence, we can show that $S_R$ (and therefore, $\sum_{j=1}^{\infty} \norm{x_j}^{-k}$) is convergent.
 
-  Fix $\eps > 0$. We need to find an $R \in \N$ such that for all $R < R_1 < R_2 \in \N$, $S_{R_2} - S_{R_1} < \eps$. We have that
-  \[
-    0 \leq \sum_{j=N_{R_1}}^{N_{R_2}} \frac{1}{\norm{x_j}^k} \leq \frac{\Vol{\B_d(0, R_2)} - \Vol{B_d(0, R_1)}}{R_1^k} \leq \frac{c R_2^{d}}{R_1^k}
-  \]
-  for all $R > 1$. Then, for $k = d + 1$ (similarly for any $k > d$), we have some $c$ such that
-  \[
-    0 \leq S_R \leq \frac{c}{R} \xrightarrow{R \to \infty} 0
-  \]
+  % Fix $\eps > 0$. We need to find an $R \in \N$ such that for all $R < R_1 < R_2 \in \N$, $S_{R_2} - S_{R_1} < \eps$. We have that
+  % \[
+  %   0 \leq \sum_{j=N_{R_1}}^{N_{R_2}} \frac{1}{\norm{x_j}^k} \leq \frac{\Vol{\B_d(0, R_2)} - \Vol{B_d(0, R_1)}}{R_1^k} \leq \frac{c R_2^{d}}{R_1^k}
+  % \]
+  % for all $R > 1$. Then, for $k = d + 1$ (similarly for any $k > d$), we have some $c$ such that
+  % \[
+  %   0 \leq S_R \leq \frac{c}{R} \xrightarrow{R \to \infty} 0
+  % \]
 \end{proof}
 
 The decaying property of Schwartz functions means that they can be compared to the absolutely convergent power series above.

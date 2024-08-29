@@ -121,6 +121,12 @@ theorem Summable_of_Inv_Pow_Summable
     let s : Finset (X) := {⟨0, hzero⟩}
     rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at hX
     rw [← (Finset.summable_compl_iff s)] at hX ⊢
+    let t := {x : X // x ∉ s}
+    have htaux₁ : t = {x : X // x ≠ ⟨0, hzero⟩} := by simp only [t, s, Finset.mem_singleton, ne_eq]
+    -- have htaux₂ : ⟨0, hzero⟩ ∉ t := by
+    --   sorry
+    
+    -- have htaux₂ : (0 : EuclideanSpace ℝ (Fin d)) ∉ t := sorry
     -- rw [← Inv_Pow_Norm_Summable_Over_Set_Euclidean] at hX
     -- refine Summable_of_Inv_Pow_Summable' (f ∘ Subtype.val) ?_ ?_
 
