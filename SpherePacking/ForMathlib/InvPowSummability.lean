@@ -26,8 +26,9 @@ def Inv_Pow_Norm_Summable_Over_Set_Euclidean (X : Set (EuclideanSpace ℝ (Fin d
 def Exists_Inv_Pow_Norm_Summable_Over_Set_Euclidean (X : Set (EuclideanSpace ℝ (Fin d))) : Prop :=
   ∃ k > 0, Summable (fun x : X => 1 / ‖(x : EuclideanSpace ℝ (Fin d))‖^k)
 
-def IsDecayingMap {X : Set (EuclideanSpace ℝ (Fin d))} (f : X → ℝ) : Prop :=
-  ∀ k : ℕ, ∃ C : ℝ, ∀ x : X, ‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k * ‖f x‖ ≤ C
+def IsDecayingMap (X : Set (EuclideanSpace ℝ (Fin d)))
+    (f : EuclideanSpace ℝ (Fin d) → ℝ) : Prop :=
+  ∀ k : ℕ, ∃ C : ℝ, ∀ x ∈ X, ‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k * ‖f x‖ ≤ C
 
 end Definitions
 
@@ -35,7 +36,15 @@ namespace DecayingMap
 
 section Subtype
 
-variable {X : Set (EuclideanSpace ℝ (Fin d))} {f : X → ℝ} (hf : IsDecayingMap f)
+lemma summable_union_disjoint.{u_1, u_2}
+    {α : Type u_1} {β : Type u_2} [AddCommMonoid α] [TopologicalSpace α] {f : β → α}
+  [T2Space α] [ContinuousAdd α] {s t : Set β} (hd : Disjoint s t) (hs : Summable (f ∘ (↑) : s → α))
+  (ht : Summable (f ∘ (↑) : t → α)) :
+  Summable (f ∘ (↑) : (s ∪ t : Set β) → α) :=
+  (hs.hasSum.add_disjoint hd ht.hasSum).summable
+
+variable {X : Set (EuclideanSpace ℝ (Fin d))} {f : EuclideanSpace ℝ (Fin d) → ℝ}
+variable (hf : IsDecayingMap X f)
 
 -- I want to say that the composition of a decaying map with `Subtype.val` is a decaying map.
 -- The reason I need this is so that I can do summability after excluding zero from the set
@@ -51,14 +60,16 @@ end Subtype
 
 section EuclideanSpace
 
-variable {f : EuclideanSpace ℝ (Fin d) → ℝ}
-  (hf : IsDecayingMap (fun x : (⊤ : Set (EuclideanSpace ℝ (Fin d))) => f x))
+variable {X} {f : EuclideanSpace ℝ (Fin d) → ℝ}
+  (hf : IsDecayingMap X f)
 
-include hf
-
-theorem Summable_of_Inv_Pow_Summable' {X : Set (EuclideanSpace ℝ (Fin d))}
-  (hX : Inv_Pow_Norm_Summable_Over_Set_Euclidean X) (hne_zero : 0 ∉ X) :
+include hf in
+theorem Summable_of_Inv_Pow_Summable'
+    (hX : Inv_Pow_Norm_Summable_Over_Set_Euclidean X) (hne_zero : 0 ∉ X) :
   Summable (fun x : X => f x) := by
+  rcases X.eq_empty_or_nonempty with rfl | hX'
+  case inl => sorry
+  case inr =>
   rw [summable_iff_vanishing_norm]
   intro ε hε
   let k := d + 1
@@ -68,9 +79,9 @@ theorem Summable_of_Inv_Pow_Summable' {X : Set (EuclideanSpace ℝ (Fin d))}
   obtain ⟨C, hC⟩ := hf k
   simp only [Set.top_eq_univ, Real.norm_eq_abs, Subtype.forall, Set.mem_univ, true_implies] at hC
   have hC_nonneg : 0 ≤ C := by
-    specialize hC (0 : EuclideanSpace ℝ (Fin d))
-    rw [norm_zero, zero_pow (Nat.not_eq_zero_of_lt hk'), zero_mul] at hC
-    exact hC
+    obtain ⟨i, hi⟩ := hX'
+    specialize hC i hi
+    refine hC.trans' (by positivity)
   have haux₁ : 0 < C + 1 := by linarith
   specialize hX (ε / (C + 1)) (div_pos hε haux₁)
   obtain ⟨s, hs⟩ := hX
@@ -108,29 +119,44 @@ theorem Summable_of_Inv_Pow_Summable' {X : Set (EuclideanSpace ℝ (Fin d))}
     refine le_of_mul_le_mul_of_pos_right ?_ haux₅
     rw [mul_comm, mul_assoc, inv_mul_cancel₀ (ne_of_gt haux₅), mul_one]
     specialize hC x
-    refine LE.le.trans hC ?_
+    refine LE.le.trans (hC x.2) ?_
     rw [le_add_iff_nonneg_right]
     exact zero_le_one
 
 -- lemma comp_Subtype_val {X : Set (EuclideanSpace ℝ (Fin d))} (s : Subtype X) :
 
+set_option pp.funBinderTypes true
+
+#check tsum_union_disjoint
+
+-- should be in mathlib!!
+lemma Summable.subset {X X' : Set (EuclideanSpace ℝ (Fin d))}
+    (hX : Summable (fun x : X => f x)) (hX' : X' ⊆ X) :
+    Summable (fun x : X' => f x) := by
+  sorry
+
+lemma Inv_Pow_Norm_Summable_Over_Set_Euclidean.subset {X X' : Set (EuclideanSpace ℝ (Fin d))}
+    (hX : Inv_Pow_Norm_Summable_Over_Set_Euclidean X) (hX' : X' ⊆ X) :
+    Inv_Pow_Norm_Summable_Over_Set_Euclidean X' := by
+  rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at *
+  sorry
+  -- apply Summable.subset
+  -- exact Summable.subset (X := X) _ hX'
+
+-- include hf in
 theorem Summable_of_Inv_Pow_Summable
-  (X : Set (EuclideanSpace ℝ (Fin d))) (hX : Inv_Pow_Norm_Summable_Over_Set_Euclidean X) :
+  (X : Set (EuclideanSpace ℝ (Fin d))) (hX : Inv_Pow_Norm_Summable_Over_Set_Euclidean X)
+  (hf : IsDecayingMap X f) :
   Summable (fun x : X => f x) := by
   if hzero : 0 ∈ X then
-    let s : Finset (X) := {⟨0, hzero⟩}
-    rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at hX
-    rw [← (Finset.summable_compl_iff s)] at hX ⊢
-    let t := {x : X // x ∉ s}
-    have htaux₁ : t = {x : X // x ≠ ⟨0, hzero⟩} := by simp only [t, s, Finset.mem_singleton, ne_eq]
-    -- have htaux₂ : ⟨0, hzero⟩ ∉ t := by
-    --   sorry
-    
-    -- have htaux₂ : (0 : EuclideanSpace ℝ (Fin d)) ∉ t := sorry
-    -- rw [← Inv_Pow_Norm_Summable_Over_Set_Euclidean] at hX
-    -- refine Summable_of_Inv_Pow_Summable' (f ∘ Subtype.val) ?_ ?_
-
-    sorry
+    have := Summable_of_Inv_Pow_Summable' (X := X \ {0}) (f := f) sorry sorry (by simp)
+    have : Summable (fun x : ({0} ∪ (X \ {0}) : Set (EuclideanSpace ℝ (Fin d))) => f x) := by
+      apply summable_union_disjoint
+      · simp
+      · refine Set.Finite.summable (by simp) _
+      · exact this
+    convert this <;>
+    simp [hzero]
   else
     exact Summable_of_Inv_Pow_Summable' hf hX hzero
 
@@ -144,7 +170,7 @@ namespace SchwartzMap
 
 variable (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℝ)
 
-lemma IsDecaying : IsDecayingMap (fun x : (⊤ : Set (EuclideanSpace ℝ (Fin d))) => f x) := by
+lemma IsDecaying : IsDecayingMap Set.univ f := by
   intro k
   obtain ⟨C, hC⟩ := f.decay' k 0
   use C
@@ -155,7 +181,7 @@ lemma IsDecaying : IsDecayingMap (fun x : (⊤ : Set (EuclideanSpace ℝ (Fin d)
 theorem Summable_of_Inv_Pow_Summable' -- (P : PeriodicSpherePacking d)
   {X : Set (EuclideanSpace ℝ (Fin d))} (hX : Inv_Pow_Norm_Summable_Over_Set_Euclidean X)
   (hne_zero : 0 ∉ X) : Summable (fun x : X => f x) :=
-  DecayingMap.Summable_of_Inv_Pow_Summable' (f.IsDecaying) hX hne_zero
+  DecayingMap.Summable_of_Inv_Pow_Summable' sorry hX hne_zero
 
 end SchwartzMap
 
