@@ -121,79 +121,7 @@ end PSF_L
 open scoped ENNReal
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Zspan
 
-section Disjoint_Covering_of_Centers
 
-theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
-  :
-  ∀ x : S.centers, ∃! g : S.lattice, (g +ᵥ x : EuclideanSpace ℝ (Fin d)) ∈ S.centers ∩ D := by
-  intro x
-  obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers (x : EuclideanSpace ℝ (Fin d))
-  use g
-  simp only [Set.mem_inter_iff, Subtype.coe_prop, true_and, Subtype.forall] at hg₁ hg₂ ⊢
-  constructor
-  · exact hg₁
-  · intro a ha hmem
-    exact hg₂ a ha hmem
-
-theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
-  : S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
-  ext x
-  simp only [Set.mem_iUnion, Subtype.exists, AddSubmonoid.mk_vadd, exists_prop]
-  constructor
-  · intro hx
-    obtain ⟨g, hg₁, _⟩ := S.unique_covers_of_centers hD_unique_covers ⟨x, hx⟩
-    use -g
-    simp only [neg_mem_iff, SetLike.coe_mem, true_and]
-    obtain ⟨hy₁, hy₂⟩ := hg₁
-    have : ∃ y : D, ↑y = g +ᵥ x := by use ⟨g +ᵥ x, hy₂⟩
-    obtain ⟨y, hy⟩ := this
-    suffices : x = -g +ᵥ (y : EuclideanSpace ℝ (Fin d))
-    · rw [this]
-      have hy' := Subtype.coe_prop y
-      refine Set.vadd_mem_vadd_set ?h.intro.intro.a
-      simp only [Set.mem_inter_iff, hy', and_true]
-      rw [hy]
-      -- Idea: closure under additive action
-      exact hy₁
-    rw [hy, neg_vadd_vadd]
-  · intro hexa
-    obtain ⟨g, hg₁, hg₂⟩ := hexa
-    rw [Set.vadd_set_inter, Set.mem_inter_iff] at hg₂
-    obtain ⟨hg₂, _⟩ := hg₂
-    -- Idea: x = g +ᵥ y for some y in the set of centers
-    -- Then apply closure under action
-    obtain ⟨y, hy₁, hy₂⟩ := hg₂
-    simp only [vadd_eq_add] at hy₂
-    rw [← hy₂]
-    exact S.lattice_action hg₁ hy₁
-
--- This is true but unnecessary (for now). What's more important is expressing it as a disjoint
--- union over points in X / Λ = X ∩ D of translates of the lattice by points in X / Λ = X ∩ D or
--- something like that, because that's what's needed for `tsum_finset_bUnion_disjoint`.
-theorem PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
-  : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
-  -- True
-  := by
-  intro x hx y hy hxy
-  obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers x
-  specialize hg₂ y
-  simp only  at hg₂
-  simp only [Set.disjoint_iff_inter_eq_empty]
-  ext z
-  simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
-  intro hz₁ hz₂
-  sorry
-
--- Can we use some sort of orbit disjointedness result and factor through the equivalence between
--- the `Quotient` and `S.centers ∩ D`?
-
-end Disjoint_Covering_of_Centers
 
 section Fundamental_Domains_in_terms_of_Basis
 
