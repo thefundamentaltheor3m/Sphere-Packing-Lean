@@ -121,30 +121,6 @@ end PSF_L
 open scoped ENNReal
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Zspan
 
-section Periodic_Packings
-
-theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
-    PeriodicSpherePackingConstant d = ⨆ (S : PeriodicSpherePacking d) (_ : S.separation = 1),
-    S.density := by
-  -- Argument almost identical to `constant_eq_constant_normalized`, courtesy Gareth
-  rw [iSup_subtype', PeriodicSpherePackingConstant]
-  apply le_antisymm
-  · apply iSup_le
-    intro S
-    have h := inv_mul_cancel₀ S.separation_pos.ne.symm
-    have := le_iSup (fun x : { x : PeriodicSpherePacking d // x.separation = 1 } ↦ x.val.density)
-        ⟨S.scale (inv_pos.mpr S.separation_pos), h⟩
-    rw [← scale_density hd]
-    · exact this
-    · rw [inv_pos]
-      exact S.separation_pos
-  · apply iSup_le
-    intro ⟨S, _⟩
-    simp only
-    exact le_iSup_iff.mpr fun b a ↦ a S
-
-end Periodic_Packings
-
 section numReps_Related
 
 noncomputable instance PeriodicSpherePacking.instFintypeNumReps'
@@ -273,7 +249,7 @@ theorem PeriodicSpherePacking.fundamental_domain_unique_covers :
    ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZlatticeBasis ℝ _) := by
   have : S.lattice = (span ℤ (Set.range (b.ofZlatticeBasis ℝ _))).toAddSubgroup :=
     Eq.symm (Basis.ofZlatticeBasis_span ℝ S.lattice b)
-  intro x 
+  intro x
   -- The `g` we need should be the negative of the floor of `x`, but we can obtain it from the
   -- existing library result.
   obtain ⟨g, hg₁, hg₂⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZlatticeBasis ℝ _) x

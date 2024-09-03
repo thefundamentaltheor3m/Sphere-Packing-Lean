@@ -869,3 +869,27 @@ theorem PeriodicSpherePacking.density_eq
   limsSup_eq_of_le_nhds (S.tendsto_finiteDensity b hL hd)
 
 end DensityEqFdDensity
+
+section ConstantEqNormalizedConstant
+
+theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
+    PeriodicSpherePackingConstant d = ⨆ (S : PeriodicSpherePacking d) (_ : S.separation = 1),
+    S.density := by
+  -- Argument almost identical to `constant_eq_constant_normalized`, courtesy Gareth
+  rw [iSup_subtype', PeriodicSpherePackingConstant]
+  apply le_antisymm
+  · apply iSup_le
+    intro S
+    have h := inv_mul_cancel₀ S.separation_pos.ne.symm
+    have := le_iSup (fun x : { x : PeriodicSpherePacking d // x.separation = 1 } ↦ x.val.density)
+        ⟨S.scale (inv_pos.mpr S.separation_pos), h⟩
+    rw [← scale_density hd]
+    · exact this
+    · rw [inv_pos]
+      exact S.separation_pos
+  · apply iSup_le
+    intro ⟨S, _⟩
+    simp only
+    exact le_iSup_iff.mpr fun b a ↦ a S
+
+end ConstantEqNormalizedConstant
