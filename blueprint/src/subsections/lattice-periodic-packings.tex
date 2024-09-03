@@ -1,8 +1,29 @@
 \subsection{Lattices and Periodic packings}
 
+We begin by defining what a lattice is in Euclidean space.
+
 \begin{definition}\label{IsZlattice}\lean{IsZlattice}\leanok
   We say that an additive subgroup $\Lambda \leq \R^d$ is a \emph{lattice} if it is discrete and its $\R$-span contains all the elements of $\R^d$.
 \end{definition}
+
+There is also a corresponding dual notion, which will become relevant when we start doing Fourier analysis on functions over lattices.
+
+\begin{definition}\label{Zlattice.Dual}\lean{Zlattice.Dual}\leanok
+  The \emph{dual lattice} of a lattice $\Lambda$ is the set
+  \[ \Lambda^* := \setof{v \in \R^d}{\forall l \in \Lambda, \left\langle v,l \right\rangle \in \Z} \]
+\end{definition}
+
+As one might expect,
+\begin{theorem}\label{Zlattice.instIsZlatticeDual}\lean{Zlattice.instIsZlatticeDual}
+  The dual of a lattice is also a lattice.
+\end{theorem}
+\begin{proof}
+  Let $\Lambda$ be a lattice and $\Lambda^*$ its dual. We need to show three things: that $\Lambda^*$ is an additive subgroup of $\R^d$; that $\Lambda^*$ is discrete; and that the $\R$-span of $\Lambda^*$ contains all of $\R^d$.
+
+  It is easy enough to see that $\Lambda^*$ is an additive subgroup of $\R^d$: it clearly contains the zero vector (whose inner-product with any vector is zero), and is closed under addition and negation because the inner-product is bilinear and $\Z$ is closed under addition and negation.
+
+  
+\end{proof}
 
 \begin{definition}\label{PeriodicSpherePacking}\lean{PeriodicSpherePacking}\uses{SpherePacking, IsZlattice}\leanok
   We say that a sphere packing $\Pa(X)$ is ($\Lambda$-)\emph{periodic} if there exists a lattice $\Lambda \subset \R^d$ such that for all $x \in X$ and $y \in \Lambda$, $x + y \in X$ (ie, $X$ is $\Lambda$-periodic).
