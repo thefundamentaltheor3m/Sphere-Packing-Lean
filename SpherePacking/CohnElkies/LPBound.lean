@@ -440,7 +440,7 @@ theorem LinearProgrammingBound' :
       rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
           ← mul_assoc, ENNReal.mul_le_mul_right vol_ne_zero vol_ne_top]
       -- Next, we simplify `hCalc` by replacing `numReps'` with `numReps`
-      rw [← P.numReps_eq_numReps' hD_isBounded hD_unique_covers] at hCalc
+      rw [← P.numReps_eq_numReps' Fact.out hD_isBounded hD_unique_covers] at hCalc
       -- Next, we multiply both sides by `(𝓕 (⇑f) 0).re.toNNReal`, cancelling accordingly.
       have hfouaux₁ : ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) ≠ 0 := by
         intro hContra

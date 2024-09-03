@@ -270,8 +270,13 @@ noncomputable instance : Fintype (Quotient S.addAction.orbitRel) :=
 
 end instances
 
-section theorem_2_3
+section numReps
+
+-- Gareth's Code
+
 open scoped Pointwise
+
+
 variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
 
 noncomputable instance PeriodicSpherePacking.instCentersSetoid : Setoid S.centers :=
@@ -339,6 +344,53 @@ theorem PeriodicSpherePacking.encard_centers_inter_vadd_fundamentalDomain (hd : 
     (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZlatticeBasis ℝ _))).encard = S.numReps := by
   rw [← S.card_centers_inter_vadd_fundamentalDomain hd b]
   convert Set.encard_eq_coe_toFinset_card _
+
+
+end numReps
+
+-- TODO: Merge above and below; rename stuff as needed
+
+section numReps_aux
+
+  -- Sid's code for Cohn-Elkies
+
+variable {d : ℕ}
+
+noncomputable instance PeriodicSpherePacking.instFintypeNumReps'
+  (S : PeriodicSpherePacking d) (hd : 0 < d)
+  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
+  Fintype ↑(S.centers ∩ D) := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
+
+noncomputable def PeriodicSpherePacking.numReps' (S : PeriodicSpherePacking d) (hd : 0 < d)
+  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) : ℕ :=
+  letI := S.instFintypeNumReps' hd hD_isBounded
+  Fintype.card ↑(S.centers ∩ D)
+
+theorem PeriodicSpherePacking.numReps'_nonneg (S : PeriodicSpherePacking d) (hd : 0 < d)
+  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
+  0 ≤ S.numReps' hd hD_isBounded := by
+  letI := S.instFintypeNumReps' hd hD_isBounded
+  rw [PeriodicSpherePacking.numReps']
+  exact Nat.zero_le (Fintype.card ↑(S.centers ∩ D))
+
+theorem PeriodicSpherePacking.numReps_eq_numReps' (S : PeriodicSpherePacking d) (hd : 0 < d)
+  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
+  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
+  S.numReps = S.numReps' hd hD_isBounded := by
+  letI := S.instFintypeNumReps' hd hD_isBounded
+  rw [PeriodicSpherePacking.numReps']
+  rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers hd]
+  exact Set.toFinset_card (S.centers ∩ D)
+
+-- theorem PeriodicSpherePacking.numReps_ne_zero (S : PeriodicSpherePacking d)
+
+end numReps_aux
+
+section theorem_2_3
+
+variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
+
+open scoped Pointwise
 
 private theorem aux
     {ι : Type*} (b : Basis ι ℝ (EuclideanSpace ℝ (Fin d)))
