@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gareth Ma
 -/
 import Mathlib.Data.Set.Card
+import Mathlib.Algebra.Module.Zlattice.Covolume
 import SpherePacking.Basic.SpherePacking
-
 import SpherePacking.ForMathlib.Cardinal
 import SpherePacking.ForMathlib.Encard
 import SpherePacking.ForMathlib.Zlattice
@@ -1065,3 +1065,52 @@ theorem PeriodicSpherePacking.fundamental_domain_unique_covers :
 -- fundamental domain is measurable.
 
 end Fundamental_Domains_in_terms_of_Basis
+
+section Periodic_Density_Formula
+
+noncomputable instance HDivENNReal : HDiv NNReal ENNReal ENNReal where
+  hDiv := fun x y => x / y
+noncomputable instance HMulENNReal : HMul NNReal ENNReal ENNReal where
+  hMul := fun x y => x * y
+
+noncomputable def PeriodicSpherePacking.basis_index_equiv (P : PeriodicSpherePacking d) :
+  (Module.Free.ChooseBasisIndex ℤ ↥P.lattice) ≃ (Fin d) := by
+  refine Fintype.equivFinOfCardEq ?h
+  rw [← FiniteDimensional.finrank_eq_card_chooseBasisIndex, Zlattice.rank ℝ P.lattice,
+      finrank_euclideanSpace, Fintype.card_fin]
+
+/- Here's a version of `PeriodicSpherePacking.density_eq` that
+1. does not require the `hL` hypothesis that the original one does
+2. uses `Zlattice.covolume` instead of the `volume` of a basis-dependent `fundamentalDomain`
+-/
+@[simp]
+theorem PeriodicSpherePacking.density_eq'
+  (S : PeriodicSpherePacking d) (hd : 0 < d) : S.density =
+  (ENat.toENNReal (S.numReps : ENat)) *
+  volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) /
+  Real.toNNReal (Zlattice.covolume S.lattice) := by
+  let b : Basis (Fin d) ℤ ↥S.lattice := ((Zlattice.module_free ℝ S.lattice).chooseBasis).reindex
+    (S.basis_index_equiv)
+  obtain ⟨L, hL⟩ := S.exists_bound_on_fundamental_domain b
+  rw [Real.toNNReal_of_nonneg (LT.lt.le (Zlattice.covolume_pos S.lattice volume))]
+  rw [S.density_eq b hL hd]
+  simp only [ENat.toENNReal_coe]
+  apply congrArg _ _
+  refine (ENNReal.toReal_eq_toReal_iff' ?hx ?hy).mp ?_
+  · rw [← lt_top_iff_ne_top]
+    letI := fundamentalDomain_isBounded (Basis.ofZlatticeBasis ℝ S.lattice b)
+    exact IsBounded.measure_lt_top this
+  · exact ENNReal.coe_ne_top
+  · rw [ENNReal.coe_toReal, NNReal.coe_mk]
+    refine Eq.symm (Zlattice.covolume_eq_measure_fundamentalDomain S.lattice volume ?h)
+    exact Zlattice.isAddFundamentalDomain b volume
+
+end Periodic_Density_Formula
+
+section Periodic_Constant_Eq_Constant
+
+theorem periodic_constant_eq_constant (hd : 0 < d) :
+    PeriodicSpherePackingConstant d = SpherePackingConstant d := by
+  sorry
+
+end Periodic_Constant_Eq_Constant

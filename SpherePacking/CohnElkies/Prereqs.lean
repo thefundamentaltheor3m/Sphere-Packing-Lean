@@ -125,50 +125,7 @@ open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Zspan
 
 
 
-section Periodic_Density_Formula
 
-noncomputable instance HDivENNReal : HDiv NNReal ENNReal ENNReal where
-  hDiv := fun x y => x / y
-noncomputable instance HMulENNReal : HMul NNReal ENNReal ENNReal where
-  hMul := fun x y => x * y
-
-noncomputable def PeriodicSpherePacking.basis_index_equiv (P : PeriodicSpherePacking d) :
-  (Module.Free.ChooseBasisIndex ℤ ↥P.lattice) ≃ (Fin d) := by
-  refine Fintype.equivFinOfCardEq ?h
-  rw [← FiniteDimensional.finrank_eq_card_chooseBasisIndex, Zlattice.rank ℝ P.lattice,
-      finrank_euclideanSpace, Fintype.card_fin]
-
-/- Here's a version of `PeriodicSpherePacking.density_eq` that
-1. Does not require the `hL` hypothesis that the original one does
-2. Uses `Zlattice.covolume` instead of the `volume` of a basis-dependent `fundamentalDomain`
--/
-@[simp]
-theorem PeriodicSpherePacking.density_eq'
-  (S : PeriodicSpherePacking d) (hd : 0 < d) : S.density =
-  (ENat.toENNReal (S.numReps : ENat)) *
-  volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) /
-  Real.toNNReal (Zlattice.covolume S.lattice) := by
-  let b : Basis (Fin d) ℤ ↥S.lattice := ((Zlattice.module_free ℝ S.lattice).chooseBasis).reindex
-    (S.basis_index_equiv)
-  obtain ⟨L, hL⟩ := S.exists_bound_on_fundamental_domain b
-  rw [Real.toNNReal_of_nonneg (LT.lt.le (Zlattice.covolume_pos S.lattice volume))]
-  rw [S.density_eq b hL hd]
-  simp only [ENat.toENNReal_coe]
-  apply congrArg _ _
-  refine (ENNReal.toReal_eq_toReal_iff' ?hx ?hy).mp ?_
-  · rw [← lt_top_iff_ne_top]
-    letI := fundamentalDomain_isBounded (Basis.ofZlatticeBasis ℝ S.lattice b)
-    exact IsBounded.measure_lt_top this
-  · exact ENNReal.coe_ne_top
-  · rw [ENNReal.coe_toReal, NNReal.coe_mk]
-    refine Eq.symm (Zlattice.covolume_eq_measure_fundamentalDomain S.lattice volume ?h)
-    exact Zlattice.isAddFundamentalDomain b volume
-
-theorem periodic_constant_eq_constant (hd : 0 < d) :
-    PeriodicSpherePackingConstant d = SpherePackingConstant d := by
-  sorry
-
-end Periodic_Density_Formula
 
 section Empty_Centers
 
