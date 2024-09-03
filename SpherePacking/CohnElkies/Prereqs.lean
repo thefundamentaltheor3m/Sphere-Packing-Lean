@@ -118,68 +118,6 @@ end SchwartzMap
 
 end PSF_L
 
-open scoped ENNReal
-open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Zspan
-
-
-
-
-
-
-
-section Empty_Centers
-
-theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePacking d) (hd : 0 < d)
-  [instEmpty : IsEmpty S.centers] : S.density = 0 := by
-  -- Idea: Use formula
-  -- (We are using `IsEmpty` in order to do cases on `isEmpty_or_nonempty` in proofs)
-  rw [S.density_eq' hd]
-  let b := ((Zlattice.module_free ℝ S.lattice).chooseBasis).reindex (S.basis_index_equiv)
-  let D := fundamentalDomain (Basis.ofZlatticeBasis ℝ S.lattice b)
-  have hD_isBounded : IsBounded D := fundamentalDomain_isBounded (Basis.ofZlatticeBasis ℝ S.lattice b)
-  have hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D :=
-    S.fundamental_domain_unique_covers b
-  rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers hd]
-  simp only [Set.toFinset_card, ENat.toENNReal_coe, ENNReal.div_eq_zero_iff, mul_eq_zero,
-    Nat.cast_eq_zero, ENNReal.coe_ne_top, or_false]
-  left
-  letI instFintype := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
-  rw [Fintype.card_eq_zero_iff]
-  refine Set.isEmpty_coe_sort.mpr ?h.a
-  suffices : S.centers = ∅
-  · rw [this]
-    exact Set.empty_inter D
-  exact Set.isEmpty_coe_sort.mp instEmpty
-
-theorem SpherePacking.density_of_centers_empty (S : SpherePacking d) (hd : 0 < d)
-  [instEmpty : IsEmpty S.centers] : S.density = 0 := by
-  -- Idea: construct a periodic sphere packing with some lattice and the same set of centres
-  -- Show that its toSpherePacking is the same as S
-  -- Then use formula
-  let b : Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d)) := (EuclideanSpace.basisFun (Fin d) ℝ).toBasis
-  let Λ := (Submodule.span ℤ (Set.range b)).toAddSubgroup
-  let P : PeriodicSpherePacking d := {
-    centers := S.centers
-    separation := S.separation
-    separation_pos := S.separation_pos
-    centers_dist := S.centers_dist
-    lattice := Λ
-    lattice_action := by
-      simp only
-      intros x y _ hy
-      rw [Set.isEmpty_coe_sort.mp instEmpty, Set.mem_empty_iff_false] at hy
-      exfalso
-      exact hy
-    lattice_discrete := -- `by infer_instance` also works for this and the next one
-      instDiscreteTopologySubtypeMemSubmoduleIntSpanRangeCoeBasisRealOfFinite b
-    lattice_isZlattice := _root_.Zspan.isZlattice b
-  }
-  have h₁ : P.toSpherePacking = S := rfl
-  rw [← h₁]
-  exact P.density_of_centers_empty hd
-
-end Empty_Centers
-
 open scoped FourierTransform
 
 section Fourier
