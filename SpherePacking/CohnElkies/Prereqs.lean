@@ -120,21 +120,26 @@ end PSF_L
 
 open scoped FourierTransform
 
-section Fourier
+section FourierSchwartz
 
-variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
+namespace SchwartzMap
 
-variable {V : Type*} [NormedAddCommGroup V]
-  [InnerProductSpace ℝ V] [MeasurableSpace V] [BorelSpace V] [FiniteDimensional ℝ V]
+variable (𝕜 : Type*) [RCLike 𝕜]
+  {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [NormedSpace 𝕜 E] [SMulCommClass ℂ 𝕜 E] [CompleteSpace E]
+  {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
+  [MeasurableSpace V] [BorelSpace V]
+  (f : 𝓢(V, E))
 
--- Super surprised not to find this in Mathlib!
--- @[simp]
--- def fourierIntegral (f : V → E) : 𝓕⁻ (𝓕 f) = f := by
---   ext x
---   refine Integrable.fourier_inversion ?h.hf ?h.h'f ?h.hv
---   sorry
+include 𝕜 in
+@[simp]
+theorem fourierInversion : 𝓕⁻ (𝓕 f) = f := by
+  rw [← fourierTransformCLE_apply 𝕜 f,
+      ← fourierTransformCLE_symm_apply 𝕜 _,
+      ContinuousLinearEquiv.symm_apply_apply]
 
-end Fourier
+end SchwartzMap
+
+end FourierSchwartz
 
 noncomputable section Misc
 

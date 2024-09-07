@@ -7,6 +7,8 @@ import SpherePacking.CohnElkies.Prereqs
 import SpherePacking.ForMathlib.VolumeOfBalls
 import SpherePacking.Basic.PeriodicPacking
 import Mathlib.Logic.IsEmpty
+import Mathlib.MeasureTheory.Integral.SetIntegral
+import Mathlib.Analysis.Complex.Basic
 
 open scoped FourierTransform ENNReal SchwartzMap
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real Zspan Bornology
@@ -72,12 +74,10 @@ end Complex_Function_Helpers
 
 section Nonnegativity
 
+private theorem hIntegrable : MeasureTheory.Integrable (𝓕 f) :=
+    ((SchwartzMap.fourierTransformCLE ℝ) f).integrable
+
 include hne_zero
-
-theorem f_fourier_inv_fou : f = 𝓕⁻ (𝓕 f) :=
-  -- Surely this is right... surely we can apply Fubini and swap the two integrals... right?
-
-  sorry
 
 theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
   rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
@@ -88,9 +88,16 @@ theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
 
 include hReal hRealFourier hCohnElkies₂
 
-theorem f_nonneg_at_zero : 0 ≤ (f 0).re :=
+theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   -- Building off the previous one, f(0) is an integral of a nonneg function, and hence, also nonneg
-  sorry
+  rw [← f.fourierInversion ℝ, fourierIntegralInv_eq]
+  simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul]
+  have hcalc₁ :
+    (∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v).re =
+    ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := by
+    rw [← RCLike.re_eq_complex_re, ← integral_re hIntegrable]
+  rw [hcalc₁]
+  exact integral_nonneg hCohnElkies₂
 
 theorem f_pos_at_zero_of_fou_zero_at_zero (hzero : 𝓕 f 0 = 0) : 0 < (f 0).re := by
   -- We know from previous that f(0) is nonneg. If zero, then the integral of 𝓕 f is zero, making
@@ -98,18 +105,46 @@ theorem f_pos_at_zero_of_fou_zero_at_zero (hzero : 𝓕 f 0 = 0) : 0 < (f 0).re 
   -- integral must be pos too, but it's zero, contra). By Schwartz, f is identically zero iff 𝓕 f
   -- is (𝓕 is a linear iso). But 𝓕 f is zero while f is not, contra! So f(0) is positive.
   -- apply ne_of_gt
-  have haux₁ : f 0 = 𝓕⁻ (𝓕 f) 0 := by rw [← f_fourier_inv_fou hne_zero]
+  have haux₁ : f 0 = 𝓕⁻ (𝓕 f) 0 := by rw [f.fourierInversion ℝ]
   rw [fourierIntegralInv_eq] at haux₁
   simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul] at haux₁
   -- We need to take real parts at haux₁
   rw [← re_add_im (f 0), hImZero hReal, ofReal_zero, zero_mul, add_zero] at haux₁
   -- We need to take real and imaginary parts inside the integral.
   have haux₂ : ∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v =
-    ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re +
-    ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).im * I := by
+    ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re :=
+    calc ∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v
+    _ = ↑(∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re) +
+    (∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).im) * I
+      := by
+         rw [← re_add_im (∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v)]
+         rw [← RCLike.re_eq_complex_re, ← integral_re hIntegrable, RCLike.re_eq_complex_re]
+         rw [← RCLike.im_eq_complex_im, ← integral_im hIntegrable, RCLike.im_eq_complex_im]
+    _ = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re
+      := by
+         rw [add_right_eq_self]
+         suffices hwhat : ∀ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).im = 0
+         · simp only [hwhat, ofReal_zero, zero_mul, integral_zero]
+         exact hFourierImZero hRealFourier
+  rw [haux₂] at haux₁
+  norm_cast at haux₁
+  rw [haux₁, lt_iff_not_ge]
+  by_contra hantisymm₁
+  have hantisymm₂ : 0 ≤ ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := by
+    -- Integral of a nonneg function is nonneg
     sorry
-  -- simp? [hFourierImZero] at haux₂
-  sorry
+  have hintzero : 0 = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := by
+    rw [ge_iff_le] at hantisymm₁
+    exact antisymm' hantisymm₁ hantisymm₂
+  have h𝓕frezero : ∀ x, (𝓕 f x).re = 0 := by
+    -- Integral of a nonneg continuous function is zero iff the function is zero
+    sorry
+  have h𝓕fzero : 𝓕 f = 0 := by
+    ext x
+    rw [← re_add_im (𝓕 f x), hFourierImZero hRealFourier, ofReal_zero, zero_mul,
+        add_zero, Pi.zero_apply, ofReal_eq_zero]
+    exact h𝓕frezero x
+  exact fourier_ne_zero hne_zero h𝓕fzero
 
 end Nonnegativity
 
