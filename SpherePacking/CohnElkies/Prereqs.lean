@@ -131,6 +131,7 @@ variable (𝕜 : Type*) [RCLike 𝕜]
   (f : 𝓢(V, E))
 
 include 𝕜 in
+@[simp]
 theorem fourierInversion : 𝓕⁻ (𝓕 f) = f := by
   rw [← fourierTransformCLE_apply 𝕜 f,
       ← fourierTransformCLE_symm_apply 𝕜 _,
