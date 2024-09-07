@@ -14,15 +14,13 @@ There is also a corresponding dual notion, which will become relevant when we st
 \end{definition}
 
 As one might expect,
-\begin{theorem}\label{Zlattice.instIsZlatticeDual}\lean{Zlattice.instIsZlatticeDual}
+\begin{theorem}\label{Zlattice.instIsZlatticeDual}\lean{Zlattice.instIsZlatticeDual}\uses{Zlattice.Dual}
   The dual of a lattice is also a lattice.
 \end{theorem}
 \begin{proof}
   Let $\Lambda$ be a lattice and $\Lambda^*$ its dual. We need to show three things: that $\Lambda^*$ is an additive subgroup of $\R^d$; that $\Lambda^*$ is discrete; and that the $\R$-span of $\Lambda^*$ contains all of $\R^d$.
 
   It is easy enough to see that $\Lambda^*$ is an additive subgroup of $\R^d$: it clearly contains the zero vector (whose inner-product with any vector is zero), and is closed under addition and negation because the inner-product is bilinear and $\Z$ is closed under addition and negation.
-
-  
 \end{proof}
 
 \begin{definition}\label{PeriodicSpherePacking}\lean{PeriodicSpherePacking}\uses{SpherePacking, IsZlattice}\leanok
