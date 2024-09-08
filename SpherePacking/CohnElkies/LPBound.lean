@@ -130,14 +130,27 @@ theorem f_pos_at_zero_of_fou_zero_at_zero (hzero : 𝓕 f 0 = 0) : 0 < (f 0).re 
   norm_cast at haux₁
   rw [haux₁, lt_iff_not_ge]
   by_contra hantisymm₁
-  have hantisymm₂ : 0 ≤ ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := by
-    -- Integral of a nonneg function is nonneg
-    sorry
+  have hantisymm₂ : 0 ≤ ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := integral_nonneg hCohnElkies₂
   have hintzero : 0 = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := by
     rw [ge_iff_le] at hantisymm₁
     exact antisymm' hantisymm₁ hantisymm₂
   have h𝓕frezero : ∀ x, (𝓕 f x).re = 0 := by
     -- Integral of a nonneg continuous function is zero iff the function is zero
+    suffices hfun : (fun x => (𝓕 f x).re) = 0
+    -- (This is the function actually being integrated)
+    · intro x
+      calc (𝓕 (⇑f) x).re
+      _ = (fun x => (𝓕 f x).re) x := rfl
+      _ = (0 : (EuclideanSpace ℝ (Fin d)) → ℝ) x := by rw [hfun]
+      _ = 0 := by rw [Pi.zero_apply]
+    have hvolnezero : (volume : Measure (EuclideanSpace ℝ (Fin d))) ≠ 0 :=
+      Ne.symm (NeZero.ne' volume)
+    have hcont : Continuous (fun x ↦ (𝓕 (⇑f) x).re) := by
+      rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
+      exact Continuous.comp' continuous_re ((SchwartzMap.fourierTransformCLE ℝ) f).continuous
+    refine (Continuous.integral_zero_iff_zero_of_nonneg hcont ?_ hCohnElkies₂).mp hintzero.symm
+    -- Surely I can use `hRealFourier`, `← SchwartzMap.fourierTransformCLE_apply ℝ f` and
+    -- `SchwartzMap.integrable` here somehow to conclude that the real part is integrable...
     sorry
   have h𝓕fzero : 𝓕 f = 0 := by
     ext x
