@@ -141,6 +141,80 @@ end SchwartzMap
 
 end FourierSchwartz
 
+section Integration
+
+open MeasureTheory Filter
+
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+variable [MeasurableSpace E] [BorelSpace E] [MeasureSpace E] -- More generality possible?
+
+theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Continuous f)
+  (hf₂ : Integrable f) (hnn : ∀ x, 0 ≤ f x) : ∫ (v : E), f v = 0 ↔ f = 0 := by
+  /- Informal proof:
+  ← is obvious. Now, assume the integral is zero. Suppose, for contradiction, that f ≠ 0.
+  Then, there is a point x at which 0 < f x. So, there is a neighbourhood of x at which
+  0 < f. The integral over this neighbourhood has to be positive, but less than that over
+  the entire space. This is a contradiction.
+  -/
+  constructor
+  · intro hintf
+    by_contra hne
+    -- Get an x at which f x ≠ 0
+    obtain ⟨x, hneatx⟩ := Function.ne_iff.mp fun a ↦ hne (id (Eq.symm a))
+    have hposatx : 0 < f x := lt_of_le_of_ne (hnn x) hneatx
+    -- Get a neighbourhood of x at which f is positive
+    have hexistsnhd : ∃ U ∈ (nhds x), ∀ y ∈ U, 0 < f y := by
+      -- I think this is gonna be hard...
+      sorry
+    -- Compare the integral over this neighbourhood to the integral over the entire space
+    obtain ⟨U, hU₁, hU₂⟩ := hexistsnhd
+    -- let : fun v => Decidable (v ∈ U) := sorry
+    haveI inst₁ (v : E) : Decidable (v ∈ U) := Classical.propDecidable (v ∈ U)
+    let g := fun v => if v ∈ U then f v else 0
+    have hintgleintf : ∫ (v : E), g v ≤ ∫ (v : E), f v := by
+      refine integral_mono ?_ hf₂ ?_
+      · -- Should be easy... no?
+        simp only [g]
+        sorry
+      · intro v
+        by_cases hv : v ∈ U
+        · simp only [hv, ↓reduceIte, le_refl, g]
+        · simp only [hv, ↓reduceIte, g]
+          exact hnn v
+    have hintgpos : 0 < ∫ (v : E), g v := by
+      -- This might be difficult too
+      dsimp only [g]
+      sorry
+    linarith
+  · intro hf
+    simp only [hf, Pi.zero_apply]
+    exact integral_zero E ℝ
+
+example {f : EuclideanSpace ℝ (Fin d) → ℝ} (hf₁ : Continuous f) (hf₂ : Integrable f)
+  (hnn : ∀ x, 0 ≤ f x) : ∫ (v : EuclideanSpace ℝ (Fin d)), f v = 0 ↔ f = 0 :=
+  hf₁.integral_zero_iff_zero_of_nonneg hf₂ hnn
+
+namespace SchwartzMap
+
+theorem toFun_eq_zero_iff_zero {E F : Type*}
+  [NormedAddCommGroup E] [NormedSpace ℝ E]
+  [NormedAddCommGroup F] [NormedSpace ℝ F]
+  (f : 𝓢(E, F)) : (f : E → F) = 0 ↔ f = 0 := by
+  constructor
+  · exact fun a ↦ SchwartzMap.ext (congrFun a)
+  · intro hf
+    rw [hf]
+    exact coeFn_zero
+
+theorem integral_zero_iff_zero_of_nonneg {f : 𝓢(EuclideanSpace ℝ (Fin d), ℝ)}
+  (hnn : ∀ x, 0 ≤ f x) : ∫ (v : EuclideanSpace ℝ (Fin d)), f v = 0 ↔ f = 0 := by
+  simp [← f.toFun_eq_zero_iff_zero]
+  exact f.continuous.integral_zero_iff_zero_of_nonneg f.integrable hnn
+
+end SchwartzMap
+
+end Integration
+
 noncomputable section Misc
 
 -- For some reason the following two instances seem to need restating...
