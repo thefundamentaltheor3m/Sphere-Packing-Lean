@@ -96,7 +96,7 @@ A key fact in the theory of modular forms is that the spaces $M_k(\Gamma)$ are f
 Especially, we can compute the dimension of $M_k(\Gamma)$ explicitly for the congruence subgroups $\Gamma$, using valence formula:
 
 \begin{theorem}[Valence formula]\label{thm:valence-formula}
-
+\todo{TODO: add the precise statement.}
 \end{theorem}
 Using this, we can compute the dimensions of the following spaces of modular forms:
 
@@ -175,7 +175,7 @@ It is a cusp form since the constant terms of Fourier expansions of $E_4$ and $E
 \end{proof}
 
 It also admits a product formula, which allow us to prove positivity of $\Delta(it)$ for $t > 0$ later.
-\begin{lemma}\label{lemma:disc-prodformula}\uses{def:disc-definition}
+\begin{lemma}\label{lemma:disc-prodformula}\uses{def:disc-definition, thm:valence-formula}
 We have
 \begin{equation}\label{eqn:disc-prodformula}
 \Delta(z) = e^{2 \pi i z} \prod_{n \ge 1} (1 - e^{2 \pi i n z})^{24}.
@@ -220,6 +220,14 @@ By Lemma \ref{lemma:disc-prodformula}, we have
 $$
 \Delta(it) = e^{-2 \pi t} \prod_{n \ge 1} (1 - e^{-2 \pi n t})^{24} > 0.
 $$
+\end{proof}
+
+The following nonvanishing result, which directly follows from \Cref{lemma:disc-prodformula}, will be used in the construction of the magic function.
+\begin{corollary}\label{cor:disc-nonvanishing}\uses{lemma:disc-prodformula, thm:valence-formula}
+$\Delta(z) \neq 0$ for all $z \in \h$.
+\end{corollary}
+\begin{proof}
+This follows from the product formula, or valence formula.
 \end{proof}
 
 Another examples of modular forms we would like to consider are \emph{theta functions} \cite[Section~3.1]{1-2-3}.
