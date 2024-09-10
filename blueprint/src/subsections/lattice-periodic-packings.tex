@@ -14,27 +14,25 @@ There is also a corresponding dual notion, which will become relevant when we st
 \end{definition}
 
 As one might expect,
-\begin{theorem}\label{Zlattice.instIsZlatticeDual}\lean{Zlattice.instIsZlatticeDual}
+\begin{theorem}\label{Zlattice.instIsZlatticeDual}\lean{Zlattice.instIsZlatticeDual}\uses{Zlattice.Dual}
   The dual of a lattice is also a lattice.
 \end{theorem}
 \begin{proof}
   Let $\Lambda$ be a lattice and $\Lambda^*$ its dual. We need to show three things: that $\Lambda^*$ is an additive subgroup of $\R^d$; that $\Lambda^*$ is discrete; and that the $\R$-span of $\Lambda^*$ contains all of $\R^d$.
 
   It is easy enough to see that $\Lambda^*$ is an additive subgroup of $\R^d$: it clearly contains the zero vector (whose inner-product with any vector is zero), and is closed under addition and negation because the inner-product is bilinear and $\Z$ is closed under addition and negation.
-
-  
 \end{proof}
 
 \begin{definition}\label{PeriodicSpherePacking}\lean{PeriodicSpherePacking}\uses{SpherePacking, IsZlattice}\leanok
   We say that a sphere packing $\Pa(X)$ is ($\Lambda$-)\emph{periodic} if there exists a lattice $\Lambda \subset \R^d$ such that for all $x \in X$ and $y \in \Lambda$, $x + y \in X$ (ie, $X$ is $\Lambda$-periodic).
 \end{definition}
 
-\begin{lemma}\label{PeriodicSpherePacking.instAddAction}\lean{PeriodicSpherePacking.instAddAction}\uses{PeriodicSpherePacking}\leanok
-  If $\Pa(X)$ is a $\Lambda$-periodic sphere packing, then $\Lambda$ acts on $X$ by translation.
-\end{lemma}
-\begin{proof}\leanok
-  This is immediate from the definition of a periodic sphere packing.
-\end{proof}
+% \begin{lemma}\label{PeriodicSpherePacking.instAddAction}\lean{PeriodicSpherePacking.instAddAction}\uses{PeriodicSpherePacking}\leanok
+%   If $\Pa(X)$ is a $\Lambda$-periodic sphere packing, then $\Lambda$ acts on $X$ by translation.
+% \end{lemma}
+% \begin{proof}\leanok
+%   This is immediate from the definition of a periodic sphere packing.
+% \end{proof}
 
 There is a natural definition of density for periodic sphere packings, namely the ``local'' density of balls in a fundamental domain. However, \textit{a priori} the density of sphere packing above need not to coincide with this alternative definition. In \cref{theorem:psp-density}, we will prove that this is the case.
 

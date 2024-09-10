@@ -10,7 +10,7 @@ which double zeroes at all $\Lambda_8$-vectors of length greater than $\sqrt{2}$
 
 First, we will define function $a$. To this end we consider the following functions:
 \begin{definition}\label{def:phi4-phi2-phi0}
-\uses{def:Ek-definition,def:E2}
+\uses{def:Ek,def:E2}
 \begin{align}
     \phi_{-4} &:= \frac{E_4^2}{\Delta} \label{eqn: def phi4} \\
     \phi_{-2} &:= \frac{E_4(E_2 E_4 - E_6)}{\Delta} \label{eqn: def phi2} \\
@@ -140,7 +140,7 @@ Note that we can take the constants $C_0$, $C_{-2}$, and $C_{-4}$ as
 \end{align}
 
 \begin{proposition}\label{prop:a-schwartz}
-\uses{def:a-definition, lemma:Gaussian-Fourier, cor:phi0-bound}
+\uses{def:a-definition, cor:phi0-bound}
 $a(x)$ is a Schwartz function.
 \end{proposition}
 \begin{proof}
@@ -217,7 +217,7 @@ For the second estimate, by \eqref{eqn:phi0-trans-S}, \eqref{eqn:phi2-bound}, an
 
 \begin{proposition}
 \label{prop:a-double-zeros}
-\uses{cor:phi0-near-0-infty, def:a-definition}
+\uses{cor:phi0-near-0-infty, def:a-definition, cor:disc-nonvanishing}
 For $r>\sqrt{2}$ we can express $a(r)$ in the following form
 \begin{equation}\label{eqn: a double zeroes}
     a(r)=-4\sin(\pi r^2/2)^2\,\int\limits_{0}^{i\infty}\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i r^2 \,z}\,dz.
@@ -263,9 +263,9 @@ This finishes the proof.
 
 Finally, we find another convenient integral representation for $a$ and compute values of $a(r)$ at $r=0$ and $r=\sqrt{2}$.
 
-\begin{proposition}\label{prop: a another integral}\uses{prop:a-double-zeros, def:phi4-phi2-phi0, lemma:phi0-transform, def:a-definition}
+\begin{proposition}\label{prop:a-another-integral}\uses{prop:a-double-zeros, def:phi4-phi2-phi0, lemma:phi0-transform, def:a-definition}
 For $r\geq0$ we have
-\begin{align}\label{eqn: a another integral}a(r)=&4i\,\sin(\pi r^2/2)^2\,\Bigg(\frac{36}{\pi^3\,(r^2-2)}-\frac{8640}{\pi^3\,r^4}+\frac{18144}{\pi^3\,r^2}\\ +&\int\limits_0^\infty\,\left(t^2\,\phi_0\Big(\frac{i}{t}\Big)-\frac{36}{\pi^2}\,e^{2\pi t}+\frac{8640}{\pi}\,t-\frac{18144}{\pi^2}\right)\,e^{-\pi r^2 t}\,dt \Bigg) .\notag\end{align}
+\begin{align}\label{eqn:a-another-integral}a(r)=&4i\,\sin(\pi r^2/2)^2\,\Bigg(\frac{36}{\pi^3\,(r^2-2)}-\frac{8640}{\pi^3\,r^4}+\frac{18144}{\pi^3\,r^2}\\ +&\int\limits_0^\infty\,\left(t^2\,\phi_0\Big(\frac{i}{t}\Big)-\frac{36}{\pi^2}\,e^{2\pi t}+\frac{8640}{\pi}\,t-\frac{18144}{\pi^2}\right)\,e^{-\pi r^2 t}\,dt \Bigg) .\notag\end{align}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
 \end{proposition}
 \begin{proof}
@@ -279,18 +279,19 @@ For $r>\sqrt{2}$ we have
 \begin{equation}
 \int\limits_0^\infty \left(\frac{36}{\pi^2}\,e^{2 \pi t}+\frac{8640}{\pi}\,t+\frac{18144}{\pi^2}\right)\,e^{-\pi r^2 t}\,dt
 =\frac{36}{\pi^3\,(r^2-2)}-\frac{8640}{\pi^3\,r^4}+\frac{18144}{\pi^3\,r^2}.\end{equation}
-Therefore, the identity \eqref{eqn: a another integral} holds for $r>\sqrt{2}$.
+Therefore, the identity \eqref{eqn:a-another-integral} holds for $r>\sqrt{2}$.
 
-On the other hand, from the definition~\eqref{eqn:a-definition} we see that $a(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion~\eqref{eqn: phi asymptotic} implies that the right hand side of \eqref{eqn: a another integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, the identity \eqref{eqn: a another integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
+On the other hand, from the definition~\eqref{eqn:a-definition} we see that $a(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion~\eqref{eqn: phi asymptotic} implies that the right hand side of \eqref{eqn:a-another-integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, the identity \eqref{eqn:a-another-integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
 \end{proof}
-From the identity~\eqref{eqn: a another integral} we see that the values $a(r)$ are in $i\R$ for all $r\in\R_{\geq0}$. In particular, we have
-\begin{proposition}\label{prop: a values}\uses{prop: a another integral}
-We have
-\begin{equation}
-a(0)=\frac{-i\,8640}{\pi}\qquad
-a(\sqrt{2})=0\qquad
-a^\prime(\sqrt{2})=\frac{i\,72\sqrt{2}}{\pi}.
-\end{equation}
+From the identity~\eqref{eqn:a-another-integral} we see that the values $a(r)$ are in $i\R$ for all $r\in\R_{\geq0}$.
+% In particular, we have
+\begin{proposition}\label{prop:a0}\uses{prop:a-another-integral}
+We have $a(0) = -\frac{i}{8640}$.
+% \begin{equation}
+% a(0)=\frac{-i\,8640}{\pi}\qquad
+% a(\sqrt{2})=0\qquad
+% a^\prime(\sqrt{2})=\frac{i\,72\sqrt{2}}{\pi}.
+% \end{equation}
 \end{proposition}
 \begin{proof}
 These identities follow immediately from the previous proposition.
@@ -486,7 +487,7 @@ and combined with \eqref{eqn:psiS-bound} we get \eqref{eqn:psiI-near-0}.
 \eqref{eqn:psiI-near-infty} follows from Lemma \ref{lemma:psiI-bound}.
 \end{proof}
 
-\begin{proposition}\label{prop:b-double-zeros}\uses{lemma:psiI-psiT-psiS-fourier, def:psiI-psiT-psiS, cor:psiI-near-0-infty}
+\begin{proposition}\label{prop:b-double-zeros}\uses{lemma:psiI-psiT-psiS-fourier, def:psiI-psiT-psiS, cor:psiI-near-0-infty, cor:disc-nonvanishing}
 For $r>\sqrt{2}$ function $b(r)$ can be expressed as
 \begin{equation}\label{eqn: b double zeroes}
     b(r)=-4\sin(\pi r^2/2)^2\,\int\limits_{0}^{i\infty}\psi_I(z)\,e^{\pi i r^2 \,z}\,dz.
@@ -530,13 +531,13 @@ Combining \eqref{eqn: c1} and \eqref{eqn: c2} we find
 \end{proof}
 At the end of this section we find another integral representation of $b(r)$ for $r\in\R_{\geq0}$ and compute special values of $b$.
 
-\begin{proposition}\label{prop: b another integral}\uses{prop:b-double-zeros, lemma:psiI-psiT-psiS-fourier, def:b-definition, eqn: psi asymptotic}
+\begin{proposition}\label{prop:b-another-integral}\uses{prop:b-double-zeros, lemma:psiI-psiT-psiS-fourier, def:b-definition, eqn: psi asymptotic}
 For $r\geq0$ we have
-\begin{equation}\label{eqn: b another integral}b(r)=4i\,\sin(\pi r^2/2)^2\,\left(\frac{144}{\pi\,r^2}+\frac{1}{\pi\,(r^2-2)}+\int\limits_0^\infty\,\left(\psi_I(it)-144-e^{2\pi t}\right)\,e^{-\pi r^2 t}\,dt\right).\end{equation}
+\begin{equation}\label{eqn:b-another-integral}b(r)=4i\,\sin(\pi r^2/2)^2\,\left(\frac{144}{\pi\,r^2}+\frac{1}{\pi\,(r^2-2)}+\int\limits_0^\infty\,\left(\psi_I(it)-144-e^{2\pi t}\right)\,e^{-\pi r^2 t}\,dt\right).\end{equation}
 The integral converges absolutely for all $r\in\R_{\geq 0}$.
 \end{proposition}
 \begin{proof}
-The proof is analogous to the proof of Proposition~\ref{prop: a another integral}.
+The proof is analogous to the proof of Proposition~\ref{prop:a-another-integral}.
 First, suppose that $r>\sqrt{2}$. Then by Proposition~\ref{prop:b-double-zeros}
 $$b(r)=4i\,\sin(\pi r^2/2)^2\,\int\limits_{0}^{\infty}\psi_I(it)\,e^{-\pi r^2 t}\,dt. $$
 From \eqref{eqn: psi fourier I} we obtain
@@ -547,17 +548,18 @@ For $r>\sqrt{2}$ we have
 \begin{equation}
 \int\limits_0^\infty \left(e^{2\pi t}+144\right)\,e^{-\pi r^2 t}\,dt
 =\frac{1}{\pi\,(r^2-2)}+\frac{144}{\pi\,r^2}.\end{equation}
-Therefore, the identity \eqref{eqn: b another integral} holds for $r>\sqrt{2}$.
+Therefore, the identity \eqref{eqn:b-another-integral} holds for $r>\sqrt{2}$.
 
-On the other hand, from the definition \eqref{eqn:b-definition} we see that $b(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion \eqref{eqn: psi asymptotic} implies that the right hand side of \eqref{eqn: b another integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, the identity \eqref{eqn: b another integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
+On the other hand, from the definition \eqref{eqn:b-definition} we see that $b(r)$ is analytic in some neighborhood of $[0,\infty)$. The asymptotic expansion \eqref{eqn: psi asymptotic} implies that the right hand side of \eqref{eqn:b-another-integral} is also analytic in some neighborhood of $[0,\infty)$. Hence, the identity \eqref{eqn:b-another-integral} holds on the whole interval $[0,\infty)$. This finishes the proof of the proposition.
 \end{proof}
-We see from \eqref{eqn: b another integral} that $b(r)\in i\R$ far all $r\in\R_\geq{0}$. Another immediate corollary of this proposition is
+We see from \eqref{eqn:b-another-integral} that $b(r)\in i\R$ far all $r\in\R_\geq{0}$.
+Another immediate corollary of this proposition is
 
-\begin{proposition}\label{prop: b values}\uses{prop: b another integral}
-We have
-\begin{equation}\label{eqn: b values}
-b(0)=0\qquad
-b(\sqrt{2})=0\qquad
-b^\prime(\sqrt{2})=\frac{i}{2\sqrt{2}\,\pi}.
-\end{equation}
+\begin{proposition}\label{prop:b0}\uses{prop:b-another-integral}
+We have $b(0) = 0$.
+% \begin{equation}\label{eqn: b values}
+% b(0)=0\qquad
+% % b(\sqrt{2})=0\qquad
+% % b^\prime(\sqrt{2})=\frac{i}{2\sqrt{2}\,\pi}.
+% \end{equation}
 \end{proposition}

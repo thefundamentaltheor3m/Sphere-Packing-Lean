@@ -44,7 +44,7 @@ The following two lemmas tell us the group structure of $\Gamma(1) = \Gamma_1$ a
 \end{proof}
 
 \begin{lemma}\label{lemma:Gamma-2-generators}\uses{def:Gamma-generators}\lean{Γ2_generate}
-  We have $\Gamma(2) = \langle \alpha, \gamma, -I \rangle$.
+  We have $\Gamma(2) = \langle \alpha, \beta, -I \rangle$.
 \end{lemma}
 \begin{proof}
   See~\cite[Exercise 1.2.4]{first course}.
@@ -92,21 +92,42 @@ A \emph{(holomorphic) modular form} of integer weight $k$ and congruence subgrou
     Let $M_k(\Gamma)$ be the space of modular forms of weight $k$ and congruence subgroup $\Gamma$.
 \end{definition}
 
-A key fact in the theory of modular forms is the following theorem:
-\begin{theorem}\label{theorem-Mk-finite-dimensional}\uses{def:Mk}
-    The spaces $M_k(\Gamma)$ are finite dimensional.
+A key fact in the theory of modular forms is that the spaces $M_k(\Gamma)$ are finite-dimensional.
+Especially, we can compute the dimension of $M_k(\Gamma)$ explicitly for the congruence subgroups $\Gamma$, using valence formula:
+
+\begin{theorem}[Valence formula]\label{thm:valence-formula}
+\todo{TODO: add the precise statement.}
 \end{theorem}
-\begin{proof}
-  In this project, we only require the theorem for $\Gamma = \Gamma_1$ and $\Gamma = \Gamma_2$. For the proof, see~\cite{Serre73}.
-\end{proof}
+Using this, we can compute the dimensions of the following spaces of modular forms:
+
+
+% the following theorem:
+% \begin{theorem}\label{theorem-Mk-finite-dimensional}\uses{def:Mk}
+%     The spaces $M_k(\Gamma)$ are finite dimensional.
+% \end{theorem}
+% \begin{proof}
+%   In this project, we only require the theorem for $\Gamma = \Gamma_1$ and $\Gamma = \Gamma_2$. For the proof, see~\cite{Serre73}.
+% \end{proof}
+% A key fact in the theory of modular forms is that they form a finite-dimensional vector space (for a fixed weight and level).
+% Especially, we use the following dimension results.
+
+\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:valence-formula}
+We have
+\begin{align}
+    \dim M_4(\mathrm{SL}_{2}(\mathbb{Z})) &= 1, \label{eqn:dimM4} \\
+    \dim M_6(\mathrm{SL}_{2}(\mathbb{Z})) &= 1, \label{eqn:dimM6} \\
+    \dim M_8(\mathrm{SL}_{2}(\mathbb{Z})) &= 1, \label{eqn:dimM8} \\
+    \dim M_2(\Gamma(2)) &= 2, \label{eqn:dimM2l2}
+\end{align}
+\end{corollary}
 
 Let us consider several examples of modular forms.
-\begin{definition}\label{def:Ek-definition}% \lean{def:Ek-definition}
+\begin{definition}\label{def:Ek}% \lean{def:Ek}
 For an even integer $k\geq 4$ we define the \emph{weight $k$ Eisenstein series} as
 \begin{equation}\label{eqn:Ek-definition}
 E_k(z):=\frac{1}{2\zeta(k)}\sum_{(c,d)\in\Z^2\backslash(0,0)}(cz+d)^{-k}.\end{equation}
 \end{definition}
-\begin{lemma}\label{lemma:Ek-is-modular-form}\uses{def:Mk}
+\begin{lemma}\label{lemma:Ek-is-modular-form}\uses{def:Mk, def:Ek}
 For all $k$, $E_k\in M_k(\Gamma_1)$.
 Especially, we have
 \begin{equation}\label{eqn:Ek-trans-S}
@@ -118,8 +139,8 @@ This follows from the fact that the sum converges absolutely.
 Now apply slash operator with $\gamma = \left(\begin{smallmatrix} 0 & -1 \\ 1 & 0 \end{smallmatrix}\right)$ gives \eqref{eqn:Ek-trans-S}.
 \end{proof}
 
-\begin{lemma}\label{lemma:Ek-Fourier}\uses{def:Ek-definition}
-% \lean{lemma:Ek-Fourier}\uses{def:Ek-definition}
+\begin{lemma}\label{lemma:Ek-Fourier}\uses{def:Ek}
+% \lean{lemma:Ek-Fourier}\uses{def:Ek}
 The Eisenstein series possesses the Fourier expansion
 \begin{equation}\label{eqn:Ek-Fourier}E_k(z)=1+\frac{2}{\zeta(1-k)}\sum_{n=1}^\infty \sigma_{k-1}(n)\,e^{2\pi i z}, \end{equation}
 where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
@@ -154,7 +175,7 @@ It is a cusp form since the constant terms of Fourier expansions of $E_4$ and $E
 \end{proof}
 
 It also admits a product formula, which allow us to prove positivity of $\Delta(it)$ for $t > 0$ later.
-\begin{lemma}\label{lemma:disc-prodformula}\uses{def:disc-definition}
+\begin{lemma}\label{lemma:disc-prodformula}\uses{def:disc-definition, thm:valence-formula}
 We have
 \begin{equation}\label{eqn:disc-prodformula}
 \Delta(z) = e^{2 \pi i z} \prod_{n \ge 1} (1 - e^{2 \pi i n z})^{24}.
@@ -201,6 +222,14 @@ $$
 $$
 \end{proof}
 
+The following nonvanishing result, which directly follows from \Cref{lemma:disc-prodformula}, will be used in the construction of the magic function.
+\begin{corollary}\label{cor:disc-nonvanishing}\uses{lemma:disc-prodformula, thm:valence-formula}
+$\Delta(z) \neq 0$ for all $z \in \h$.
+\end{corollary}
+\begin{proof}
+This follows from the product formula, or valence formula.
+\end{proof}
+
 Another examples of modular forms we would like to consider are \emph{theta functions} \cite[Section~3.1]{1-2-3}.
 \begin{definition}\label{def:th00-th01-th10}
 We define three different theta functions (so called ``Thetanullwerte'') as
@@ -220,7 +249,8 @@ Define
 \end{definition}
 Note that we only need these fourth powers to define \eqref{def:b-definition}.
 
-The group $\Gamma_1$ is generated by the elements $T=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$, $S=\left(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\right)$, and $-I = \left(\begin{smallmatrix}-1&0\\0&-1\end{smallmatrix}\right)$ (\cref{lemma:Gamma-1-generators}), and the transformation of functions under $\Gamma(2)$ is determined by that under $\Gamma_1$ (by \cref{lemma:slash-operator-chain-rule}). The following lemma shows how the theta functions (and their powers) transform under the slash action of these matrices.
+The group $\Gamma_1$ is generated by the elements $T=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$, $S=\left(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\right)$, and $-I = \left(\begin{smallmatrix}-1&0\\0&-1\end{smallmatrix}\right)$ (\Cref{lemma:Gamma-1-generators}), and the transformation of functions under $\Gamma(2)$ is determined by that under $\Gamma_1$ (by \Cref{lemma:slash-operator-chain-rule}).
+The following lemma shows how the theta functions (and their powers) transform under the slash action of these matrices.
 
 \begin{lemma}\label{lemma:theta-transform-S-T}\uses{def:th00-th01-th10, def:H2-H3-H4}\lean{H₂_T_action,H₃_T_action,H₄_T_action,H₂_S_action,H₃_S_action,H₄_S_action}\leanok
 These elements act on the theta functions in the following way
@@ -281,7 +311,7 @@ and taking 4th power.
 \end{proof}
 
 Using the above identities, we can prove that these are modular forms.
-\begin{lemma}\label{lemma:theta-slash-invariant}\uses{lemma:slash-operator-chain-rule,lemma:slash-negI-even-weight,lemma:theta-transform-S-T}\lean{H₂_SIF,H₃_SIF,H₄_SIF}\leanok
+\begin{lemma}\label{lemma:theta-slash-invariant}\uses{lemma:slash-operator-chain-rule,lemma:slash-negI-even-weight,lemma:theta-transform-S-T,lemma:Gamma-2-generators}\lean{H₂_SIF,H₃_SIF,H₄_SIF}\leanok
   $H_{2}$, $H_{3}$, and $H_{4}$ are slash invariant under $\Gamma(2)$, i.e. for all $\gamma \in \Gamma(2)$ and $i \in \{2, 3, 4\}$, we have $H_i|\gamma = H_i|\gamma^{-1} = H_i$.
 \end{lemma}
 \begin{proof}\leanok
@@ -298,11 +328,11 @@ For example, invariance for $H_2$ can be proved by
 \end{align}
 \end{proof}
 
-\begin{lemma}\label{lemma:theta-bounded-im-infty}\uses{lemma:theta-slash-invariant}\lean{isBoundedAtImInfty_H_slash}\leanok
+\begin{lemma}\label{lemma:theta-bounded-im-infty}\uses{lemma:theta-slash-invariant, lemma:Gamma-1-generators}\lean{isBoundedAtImInfty_H_slash}\leanok
   For all $\gamma \in \Gamma_1$, $H_{2}|_2 \gamma$, $H_{3}|_2 \gamma$, and $H_{4}|_2 \gamma$ are holomorphic at $i\infty$.
 \end{lemma}
 \begin{proof}
-  We want to show that for $\gamma \in \Gamma_1$, $\|H_2|_2\gamma(z)\|$ is bounded as $z \in \mathbb{H} \to i\infty$. Firstly, by \cref{lemma:theta-modular}, \cref{lemma:Gamma-2-generators} and induction on group elements, we notice that $\{\pm H_2, \pm H_3, \pm H_4\}$ is closed under action by $\Gamma_1$. Hence, it suffices to prove that $H_2$, $H_3$ and $H_4$ are bounded at $i\infty$. Consider $z \in \mathbb{H}$ with $\Im(z) \geq A$. We proceed by direct algebraic manipulation:
+  We want to show that for $\gamma \in \Gamma_1$, $\|H_2|_2\gamma(z)\|$ is bounded as $z \in \mathbb{H} \to i\infty$. Firstly, by \Cref{lemma:theta-transform-S-T}, \Cref{lemma:Gamma-2-generators} and induction on group elements, we notice that $\{\pm H_2, \pm H_3, \pm H_4\}$ is closed under action by $\Gamma_1$. Hence, it suffices to prove that $H_2$, $H_3$ and $H_4$ are bounded at $i\infty$. Consider $z \in \mathbb{H}$ with $\Im(z) \geq A$. We proceed by direct algebraic manipulation:
 
 \begin{align}
   \|H_2(z)\|
@@ -372,15 +402,15 @@ Especially, $H_4$ is not cuspidal.
 
 
 We also have a nontrivial relation between these theta functions.
-\begin{lemma}\label{lemma:jacobi-identity}\uses{lemma:theta-modular}
+\begin{lemma}\label{lemma:jacobi-identity}\uses{lemma:theta-modular, cor:dim-mf}
 These three theta functions satisfy the \emph{Jacobi identity}
 \begin{equation}\label{eqn:jacobi-identity}
 H_{2} + H_{4} = H_{3} \Leftrightarrow \Theta_{2}^4 + \Theta_{4}^4 = \Theta_{3}^4.
 \end{equation}
 \end{lemma}
 \begin{proof}
-Use the dimesion formula of the space of modular forms of weight 2 and level $\Gamma(2)$.
-Especially, we have $\dim M_2(\Gamma(2)) = 2$ with basis $H_{2}$ and $H_{4}$.
+By \eqref{eqn:dimM2l2}, $H_{2}$, $H_{3}$, and $H_{4}$ are linearly dependent.
+The relation can be identified by comparing the first two $q$-coefficients of the Fourier expansions.
 \end{proof}
 
 These are also related to $E_4$, $E_6$, and $\Delta$ as follows.
@@ -412,20 +442,18 @@ By Lemma \ref{lemma:jacobi-identity} and the transformation law \eqref{eqn:H2-tr
 \subsection{Quasimodular forms and derivatives}
 
 Morally, quasimodular forms can be thought as \emph{modular forms with differentiations}.
-It can be defined formally as follows.
-
-\begin{definition}[Quasimodular form]\label{def:quasimodform}
+It can be defined formally as follows:
+% \begin{definition}[Quasimodular form]\label{def:quasimodform}
 Let $f: \mathfrak{H} \to \C$ be a holomorphic function, and let $k$ and $s \ge 0$ be integers.
 The function $f$ is a \emph{quasimodular form of weight $k$, level $\Gamma$, and depth $s$} if there exist holomorphic functions $f_0, \dots, f_s : \mathfrak{H} \to \C$ such that
 \begin{equation}\label{eqn:quasimod-def}
     (f|_{k}\gamma)(z) = (cz + d)^{-k} f\left(\frac{az + b}{cz + d}\right) = \sum_{j=0}^{s} f_j(z) \left(\frac{c}{cz + d}\right)^j
 \end{equation}
 for all $z \in \mathfrak{H}$ and $\gamma = \left(\begin{smallmatrix} a&b\\c&d \end{smallmatrix}\right) \in \Gamma$.
-\end{definition}
+% \end{definition}
 
 By taking $\gamma = \left(\begin{smallmatrix} 1 & 0 \\ 0 & 1 \end{smallmatrix}\right)$, one can check that we should have $f_0 = f$. Thus, a quasimodular form of depth $0$ is just a modular form of same weight and level.
-
-
+Also, it is easy to see that the space of quasimodular forms is closed under the normalized derivative.
 \begin{definition}\label{def:derivative}
 Let $F$ be a quasimodular form.
 We define the (normalized) derivative of $F$ as
@@ -434,6 +462,7 @@ We define the (normalized) derivative of $F$ as
 \end{equation}
 \end{definition}
 
+$D$ is normalized as in \eqref{eqn:derivative} because of the following lemma.
 \begin{lemma}\label{lemma:der-q-series}\uses{def:derivative}
 We have an equality of operators $D = q \frac{\dd}{\dd q}$.
 In particular, the $q$-series of the derivative of a quasimodular form $F(z) = \sum_{n \ge n_0} a_n q^n$ is $F'(z) = \sum_{n \ge n_0} n a_n q^n$.
@@ -442,23 +471,23 @@ In particular, the $q$-series of the derivative of a quasimodular form $F(z) = \
 Directly follows from the definition \eqref{def:derivative}, where $\frac{1}{2 \pi i}\frac{\dd}{\dd z}e^{2\pi i n z} = n e^{2\pi i n z}$.
 \end{proof}
 
-\begin{theorem}\label{thm:quasimod-der-closed}\uses{def:quasimodform, def:derivative}
-The space of quasimodular forms is closed under the derivative \eqref{eqn:derivative}.
-If $F$ is a quasimodular form of weight $k$, level $\Gamma$, and depth $s$, then $F'$ is a quasimodular form of weight $k + 2$, level $\Gamma$, and depth $s + 1$.
-\end{theorem}
-\begin{proof}
-This follows from differentiating the definitional equation \eqref{eqn:quasimod-def}: we get
-\begin{align}
-    &-kc(cz + d)^{-k-1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k-2} \frac{\dd F}{\dd z} \left(\frac{az + b}{cz + d}\right) \\
-    &= \sum_{j=0}^{s} \frac{\dd F_j}{\dd z}(z)\left(\frac{c}{cz + d}\right)^j + F_j(z) \cdot (-j) \left(\frac{c}{cz + d}\right)^{j + 1} \\
-    &\Rightarrow (cz + d)^{-k-2}F'\left(\frac{az + b}{cz + d}\right) = \sum_{j=0}^{s + 1} G_j(z) \left(\frac{c}{cz + d}\right)^j
-\end{align}
-where
-\begin{equation}
-    G_j(z) := F_j'(z) - \frac{ikc}{2\pi(cz + d)} F_j(z) + \frac{i(j-1)}{2\pi} F_{j-1}(z), \quad F_{-1} := 0
-\end{equation}
-for $0 \le j \le s + 1$, which are holomorphic.
-\end{proof}
+% \begin{theorem}\label{thm:quasimod-der-closed}\uses{def:quasimodform, def:derivative}
+% The space of quasimodular forms is closed under the derivative \eqref{eqn:derivative}.
+% If $F$ is a quasimodular form of weight $k$, level $\Gamma$, and depth $s$, then $F'$ is a quasimodular form of weight $k + 2$, level $\Gamma$, and depth $s + 1$.
+% \end{theorem}
+% \begin{proof}
+% This follows from differentiating the definitional equation \eqref{eqn:quasimod-def}: we get
+% \begin{align}
+%     &-kc(cz + d)^{-k-1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k-2} \frac{\dd F}{\dd z} \left(\frac{az + b}{cz + d}\right) \\
+%     &= \sum_{j=0}^{s} \frac{\dd F_j}{\dd z}(z)\left(\frac{c}{cz + d}\right)^j + F_j(z) \cdot (-j) \left(\frac{c}{cz + d}\right)^{j + 1} \\
+%     &\Rightarrow (cz + d)^{-k-2}F'\left(\frac{az + b}{cz + d}\right) = \sum_{j=0}^{s + 1} G_j(z) \left(\frac{c}{cz + d}\right)^j
+% \end{align}
+% where
+% \begin{equation}
+%     G_j(z) := F_j'(z) - \frac{ikc}{2\pi(cz + d)} F_j(z) + \frac{i(j-1)}{2\pi} F_{j-1}(z), \quad F_{-1} := 0
+% \end{equation}
+% for $0 \le j \le s + 1$, which are holomorphic.
+% \end{proof}
 
 The most important quasimodular form is the weight 2 Eisenstein series $E_2$.
 We define it as a $q$-series, which gives a holomorphic function on $\mathfrak{H}$.
@@ -525,7 +554,7 @@ so $\partial_{k}F \in M_{k+2}(\Gamma)$.
 More generally, the following theorem holds: if $F$ is a quasimodular form of weight $k$ and depth $s$, then $\partial_{k-s}F$ is a quasimodular form of weight $k + 2$ \emph{and depth $\le s$} of the same level. We will not prove this here.
 \end{remark}
 
-\begin{theorem}\label{thm:ramanujan-formula}\uses{thm:serre-der-modularity, def:serre-der, lemma:E2-transform}
+\begin{theorem}\label{thm:ramanujan-formula}\uses{thm:serre-der-modularity, def:serre-der, lemma:E2-transform, cor:dim-mf}
 We have
 \begin{align}
     E_2' &= \frac{E_2^2 - E_4}{12} \label{eqn:DE2} \\
@@ -548,7 +577,7 @@ Differentiating and squaring then gives us the following:
     E_2^2|_{4}\gamma &= E_2^2 - \frac{12ic}{\pi(cz + d)} E_2 - \frac{36c^2}{\pi^2 (cz + d)^2} \label{eqn:E2sq-transform}
 \end{align}
 Hence, \eqref{eqn:DE2}$-\frac{1}{12}$\eqref{eqn:E2sq-transform} is a modular form of weight 4.
-Since $\dim M_k(\Gamma_1) = 1$ for $k = 4, 6, 8$, they should be multiples of $E_4, E_6, E_8$, and the proportionality constants can be determined by observing the constant terms of $q$-expansions.
+By \Cref{cor:dim-mf}, they should be multiples of $E_4, E_6, E_4^2$, and the proportionality constants can be determined by observing the constant terms of $q$-expansions.
 \end{proof}
 \begin{corollary}\label{cor:logder-disc-E2}\uses{thm:ramanujan-formula, def:disc-definition}
 \begin{equation}\label{eqn:logder-disc-E2}
