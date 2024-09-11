@@ -99,7 +99,7 @@ theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   rw [hcalc₁]
   exact integral_nonneg hCohnElkies₂
 
-theorem f_pos_at_zero_of_fou_zero_at_zero (hzero : 𝓕 f 0 = 0) : 0 < (f 0).re := by
+theorem f_zero_pos : 0 < (f 0).re := by
   -- We know from previous that f(0) is nonneg. If zero, then the integral of 𝓕 f is zero, making
   -- 𝓕 f zero (it's continuous and nonneg: if it's pos anywhere, it's pos on a nbhd, and hence the
   -- integral must be pos too, but it's zero, contra). By Schwartz, f is identically zero iff 𝓕 f
@@ -143,15 +143,14 @@ theorem f_pos_at_zero_of_fou_zero_at_zero (hzero : 𝓕 f 0 = 0) : 0 < (f 0).re 
       _ = (fun x => (𝓕 f x).re) x := rfl
       _ = (0 : (EuclideanSpace ℝ (Fin d)) → ℝ) x := by rw [hfun]
       _ = 0 := by rw [Pi.zero_apply]
-    have hvolnezero : (volume : Measure (EuclideanSpace ℝ (Fin d))) ≠ 0 :=
-      Ne.symm (NeZero.ne' volume)
     have hcont : Continuous (fun x ↦ (𝓕 (⇑f) x).re) := by
       rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
       exact Continuous.comp' continuous_re ((SchwartzMap.fourierTransformCLE ℝ) f).continuous
     refine (Continuous.integral_zero_iff_zero_of_nonneg hcont ?_ hCohnElkies₂).mp hintzero.symm
-    -- Surely I can use `hRealFourier`, `← SchwartzMap.fourierTransformCLE_apply ℝ f` and
-    -- `SchwartzMap.integrable` here somehow to conclude that the real part is integrable...
-    sorry
+    rw [← RCLike.re_eq_complex_re]
+    refine MeasureTheory.Integrable.re ?_
+    rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
+    exact ((SchwartzMap.fourierTransformCLE ℝ) f).integrable
   have h𝓕fzero : 𝓕 f = 0 := by
     ext x
     rw [← re_add_im (𝓕 f x), hFourierImZero hRealFourier, ofReal_zero, zero_mul,
@@ -477,7 +476,7 @@ theorem LinearProgrammingBound' :
       -- `𝓕 f ≥ 0` and `f ≠ 0`.
       have ne_zero_at_zero : ((f 0).re.toNNReal : ENNReal) ≠ 0 :=
         ENNReal.coe_ne_zero.mpr (Ne.symm (ne_of_lt (toNNReal_pos.mpr
-        (f_pos_at_zero_of_fou_zero_at_zero hne_zero hReal hRealFourier hCohnElkies₂ h𝓕f))))
+        (f_zero_pos hne_zero hReal hRealFourier hCohnElkies₂))))
       -- Now we can safely divide by zero!
       rw [ENat.toENNReal_coe, toNNReal_zero, ENNReal.coe_zero, ENNReal.div_zero ne_zero_at_zero]
       -- We now need to multiply by ⊤.
