@@ -168,7 +168,7 @@ theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Con
     have hposatx : 0 < f x := lt_of_le_of_ne (hnn x) hneatx
     -- Get a neighbourhood of x at which f is positive
     -- TODO: Make this a separate lemma and put it into `ForMathlib` (think about max generality)
-    have hexistsnhd : ∃ U ∈ (nhds x), ∀ y ∈ U, 0 < f y := by
+    have hexistsnhd : ∃ U ∈ (nhds x), MeasurableSet U ∧ ∀ y ∈ U, 0 < f y := by
       have h₁ : ContinuousAt f x := continuousAt hf₁
       rw [continuousAt_def] at h₁
       have h₁' : Set.Ioo (f x / 2) (3 * f x / 2) ∈ nhds (f x) := by
@@ -178,12 +178,14 @@ theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Con
       use (f ⁻¹' Set.Ioo (f x / 2) (3 * f x / 2))
       constructor
       · exact h₁
-      · intro y hy
-        have h₂ : f y ∈ Set.Ioo (f x / 2) (3 * f x / 2) := hy
-        rw [Set.mem_Ioo] at h₂
-        linarith
+      · constructor
+        · exact hf₁.measurable measurableSet_Ioo
+        · intro y hy
+          have h₂ : f y ∈ Set.Ioo (f x / 2) (3 * f x / 2) := hy
+          rw [Set.mem_Ioo] at h₂
+          linarith
     -- Compare the integral over this neighbourhood to the integral over the entire space
-    obtain ⟨U, hU₁, hU₂⟩ := hexistsnhd
+    obtain ⟨U, hU₁, hU₂, hU₃⟩ := hexistsnhd
     -- haveI inst₁ (v : E) : Decidable (v ∈ U) := Classical.propDecidable (v ∈ U)
     -- let g := fun v => if v ∈ U then f v else 0
     have hintgleintf : ∫ (v : E) in U, f v ≤ ∫ (v : E), f v := by
@@ -199,16 +201,25 @@ theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Con
       · dsimp [Function.support]
         suffices hInclusion : U ⊆ {x | f x ≠ 0}
         · have : (volume.restrict U) U ≤ (volume.restrict U) {x | f x ≠ 0} := by
-            -- exact?
-            have h₁ : U ≤ᵐ[volume] {x | f x ≠ 0} := HasSubset.Subset.eventuallyLE hInclusion
-            have h₂ : volume ≤ (volume : Measure E) := le_rfl
+            -- have h₁ : U ≤ᵐ[volume] {x | f x ≠ 0} := HasSubset.Subset.eventuallyLE hInclusion
+            -- have h₂ : volume ≤ (volume : Measure E) := le_rfl
             -- refine Measure.restrict_mono' h₁ h₂
+            -- IDEA: U is contained in the support so its (vol restricted to U) is the vol of U (?)
+            rw [Measure.restrict_apply_self]
+            have h₁ : (volume.restrict U) {x | f x ≠ 0} = (volume.restrict U) (U ∩ {x | f x ≠ 0}) := by
+              sorry
+            rw [h₁]
+            have h₂ : MeasurableSet U := by
+              -- Our open nhd is the preimage of an interval, and therefore, measurable.
+              -- Perhaps it's better to use the explicit preimage instead of turning the have lemma
+              -- into a separate lemma and using that U or imposing additional conditions on U...
+              sorry
             sorry
           exact gt_of_ge_of_gt this hUpos
         intro y hy
         rw [Set.mem_setOf_eq]
-        specialize hU₂ y hy
-        exact Ne.symm (ne_of_lt hU₂)
+        specialize hU₃ y hy
+        exact Ne.symm (ne_of_lt hU₃)
       rw [Measure.restrict_apply_self]
       exact MeasureTheory.Measure.measure_pos_of_mem_nhds volume hU₁
     linarith
