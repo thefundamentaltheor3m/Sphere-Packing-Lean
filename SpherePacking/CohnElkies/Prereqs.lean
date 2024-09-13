@@ -146,7 +146,11 @@ section Integration
 open MeasureTheory Filter
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-variable [MeasurableSpace E] [BorelSpace E] [MeasureSpace E] -- More generality possible?
+variable [TopologicalSpace E] [TopologicalAddGroup E] [MeasureSpace E] [BorelSpace E]
+variable [(volume : Measure E).IsAddLeftInvariant] [(volume : Measure E).Regular]
+  [NeZero (volume : Measure E)] -- More Generality Possible?
+
+instance : (volume : Measure E).IsOpenPosMeasure := isOpenPosMeasure_of_addLeftInvariant_of_regular
 
 theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Continuous f)
   (hf₂ : Integrable f) (hnn : ∀ x, 0 ≤ f x) : ∫ (v : E), f v = 0 ↔ f = 0 := by
@@ -163,28 +167,50 @@ theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Con
     obtain ⟨x, hneatx⟩ := Function.ne_iff.mp fun a ↦ hne (id (Eq.symm a))
     have hposatx : 0 < f x := lt_of_le_of_ne (hnn x) hneatx
     -- Get a neighbourhood of x at which f is positive
+    -- TODO: Make this a separate lemma and put it into `ForMathlib` (think about max generality)
     have hexistsnhd : ∃ U ∈ (nhds x), ∀ y ∈ U, 0 < f y := by
-      -- I think this is gonna be hard...
-      sorry
+      have h₁ : ContinuousAt f x := continuousAt hf₁
+      rw [continuousAt_def] at h₁
+      have h₁' : Set.Ioo (f x / 2) (3 * f x / 2) ∈ nhds (f x) := by
+        apply Ioo_mem_nhds (div_two_lt_of_pos hposatx) ?_
+        linarith
+      specialize h₁ (Set.Ioo (f x / 2) (3 * f x / 2)) h₁'
+      use (f ⁻¹' Set.Ioo (f x / 2) (3 * f x / 2))
+      constructor
+      · exact h₁
+      · intro y hy
+        have h₂ : f y ∈ Set.Ioo (f x / 2) (3 * f x / 2) := hy
+        rw [Set.mem_Ioo] at h₂
+        linarith
     -- Compare the integral over this neighbourhood to the integral over the entire space
     obtain ⟨U, hU₁, hU₂⟩ := hexistsnhd
-    -- let : fun v => Decidable (v ∈ U) := sorry
-    haveI inst₁ (v : E) : Decidable (v ∈ U) := Classical.propDecidable (v ∈ U)
-    let g := fun v => if v ∈ U then f v else 0
-    have hintgleintf : ∫ (v : E), g v ≤ ∫ (v : E), f v := by
-      refine integral_mono ?_ hf₂ ?_
-      · -- Should be easy... no?
-        simp only [g]
-        sorry
-      · intro v
-        by_cases hv : v ∈ U
-        · simp only [hv, ↓reduceIte, le_refl, g]
-        · simp only [hv, ↓reduceIte, g]
-          exact hnn v
-    have hintgpos : 0 < ∫ (v : E), g v := by
-      -- This might be difficult too
-      dsimp only [g]
-      sorry
+    -- haveI inst₁ (v : E) : Decidable (v ∈ U) := Classical.propDecidable (v ∈ U)
+    -- let g := fun v => if v ∈ U then f v else 0
+    have hintgleintf : ∫ (v : E) in U, f v ≤ ∫ (v : E), f v := by
+      refine integral_mono_measure Measure.restrict_le_self ?_ hf₂
+      simp only [EventuallyLE, Pi.zero_apply, hnn, eventually_true]
+    have hintgpos : 0 < ∫ (v : E) in U, f v := by
+      -- refine (setIntegral_pos_iff_support_of_nonneg_ae ?hf ?hfi).mpr ?_
+      -- · sorry
+      -- · sorry
+      -- · sorry
+      refine (integral_pos_iff_support_of_nonneg hnn (Integrable.restrict hf₂)).mpr ?_
+      suffices hUpos : 0 < (volume.restrict U) U
+      · dsimp [Function.support]
+        suffices hInclusion : U ⊆ {x | f x ≠ 0}
+        · have : (volume.restrict U) U ≤ (volume.restrict U) {x | f x ≠ 0} := by
+            -- exact?
+            have h₁ : U ≤ᵐ[volume] {x | f x ≠ 0} := HasSubset.Subset.eventuallyLE hInclusion
+            have h₂ : volume ≤ (volume : Measure E) := le_rfl
+            -- refine Measure.restrict_mono' h₁ h₂
+            sorry
+          exact gt_of_ge_of_gt this hUpos
+        intro y hy
+        rw [Set.mem_setOf_eq]
+        specialize hU₂ y hy
+        exact Ne.symm (ne_of_lt hU₂)
+      rw [Measure.restrict_apply_self]
+      exact MeasureTheory.Measure.measure_pos_of_mem_nhds volume hU₁
     linarith
   · intro hf
     simp only [hf, Pi.zero_apply]
