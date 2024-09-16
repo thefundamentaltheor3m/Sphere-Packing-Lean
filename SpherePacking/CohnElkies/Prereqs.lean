@@ -143,6 +143,9 @@ end FourierSchwartz
 
 section Positivity_on_Nhd
 
+-- TODO: PR this to Mathlib (very useful!)
+-- Or was I just not able to find it...
+
 variable {E : Type*} [TopologicalSpace E]
 
 theorem Continuous.pos_iff_exists_nhd_pos {f : E → ℝ} (hf₁ : Continuous f) (x : E) :
