@@ -141,11 +141,66 @@ end SchwartzMap
 
 end FourierSchwartz
 
+section Positivity_on_Nhd
+
+variable {E : Type*} [TopologicalSpace E]
+
+theorem Continuous.pos_iff_exists_nhd_pos {f : E → ℝ} (hf₁ : Continuous f) (x : E) :
+  0 < f x ↔ ∃ U ∈ (nhds x), ∀ y ∈ U, 0 < f y := by
+  constructor
+  · intro hposatx
+    have h₁ : ContinuousAt f x := continuousAt hf₁
+    rw [continuousAt_def] at h₁
+    have h₁' : Set.Ioo (f x / 2) (3 * f x / 2) ∈ nhds (f x) := by
+      apply Ioo_mem_nhds (div_two_lt_of_pos hposatx) ?_
+      linarith
+    specialize h₁ (Set.Ioo (f x / 2) (3 * f x / 2)) h₁'
+    use (f ⁻¹' Set.Ioo (f x / 2) (3 * f x / 2))
+    constructor
+    · exact h₁
+    · intro y hy
+      have h₂ : f y ∈ Set.Ioo (f x / 2) (3 * f x / 2) := hy
+      rw [Set.mem_Ioo] at h₂
+      linarith
+  · intro hexistsnhd
+    obtain ⟨U, hU₁, hU₂⟩ := hexistsnhd
+    specialize hU₂ x (mem_of_mem_nhds hU₁)
+    exact hU₂
+
+open MeasureTheory
+
+variable [MeasureSpace E] [BorelSpace E]
+
+theorem Continuous.pos_iff_exists_measurable_nhd_pos {f : E → ℝ} (hf₁ : Continuous f) (x : E) :
+  0 < f x ↔ ∃ U ∈ (nhds x), MeasurableSet U ∧ ∀ y ∈ U, 0 < f y := by
+  constructor
+  · intro hposatx
+    have h₁ : ContinuousAt f x := continuousAt hf₁
+    rw [continuousAt_def] at h₁
+    have h₁' : Set.Ioo (f x / 2) (3 * f x / 2) ∈ nhds (f x) := by
+      apply Ioo_mem_nhds (div_two_lt_of_pos hposatx) ?_
+      linarith
+    specialize h₁ (Set.Ioo (f x / 2) (3 * f x / 2)) h₁'
+    use (f ⁻¹' Set.Ioo (f x / 2) (3 * f x / 2))
+    constructor
+    · exact h₁
+    · constructor
+      · exact hf₁.measurable measurableSet_Ioo
+      · intro y hy
+        have h₂ : f y ∈ Set.Ioo (f x / 2) (3 * f x / 2) := hy
+        rw [Set.mem_Ioo] at h₂
+        linarith
+  · intro hnhx
+    obtain ⟨U, hU₁, _, hU₃⟩ := hnhx
+    exact (hf₁.pos_iff_exists_nhd_pos x).mpr ⟨U, hU₁, hU₃⟩
+
+end Positivity_on_Nhd
+
 section Integration
 
 open MeasureTheory Filter
 
-variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+variable {E : Type*} [NormedAddCommGroup E]
 variable [TopologicalSpace E] [TopologicalAddGroup E] [MeasureSpace E] [BorelSpace E]
 variable [(volume : Measure E).IsAddLeftInvariant] [(volume : Measure E).Regular]
   [NeZero (volume : Measure E)] -- More Generality Possible?
@@ -167,54 +222,18 @@ theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Con
     obtain ⟨x, hneatx⟩ := Function.ne_iff.mp fun a ↦ hne (id (Eq.symm a))
     have hposatx : 0 < f x := lt_of_le_of_ne (hnn x) hneatx
     -- Get a neighbourhood of x at which f is positive
-    -- TODO: Make this a separate lemma and put it into `ForMathlib` (think about max generality)
-    have hexistsnhd : ∃ U ∈ (nhds x), MeasurableSet U ∧ ∀ y ∈ U, 0 < f y := by
-      have h₁ : ContinuousAt f x := continuousAt hf₁
-      rw [continuousAt_def] at h₁
-      have h₁' : Set.Ioo (f x / 2) (3 * f x / 2) ∈ nhds (f x) := by
-        apply Ioo_mem_nhds (div_two_lt_of_pos hposatx) ?_
-        linarith
-      specialize h₁ (Set.Ioo (f x / 2) (3 * f x / 2)) h₁'
-      use (f ⁻¹' Set.Ioo (f x / 2) (3 * f x / 2))
-      constructor
-      · exact h₁
-      · constructor
-        · exact hf₁.measurable measurableSet_Ioo
-        · intro y hy
-          have h₂ : f y ∈ Set.Ioo (f x / 2) (3 * f x / 2) := hy
-          rw [Set.mem_Ioo] at h₂
-          linarith
+    obtain ⟨U, hU₁, hU₃⟩ := (hf₁.pos_iff_exists_nhd_pos x).mp hposatx
     -- Compare the integral over this neighbourhood to the integral over the entire space
-    obtain ⟨U, hU₁, hU₂, hU₃⟩ := hexistsnhd
-    -- haveI inst₁ (v : E) : Decidable (v ∈ U) := Classical.propDecidable (v ∈ U)
-    -- let g := fun v => if v ∈ U then f v else 0
     have hintgleintf : ∫ (v : E) in U, f v ≤ ∫ (v : E), f v := by
       refine integral_mono_measure Measure.restrict_le_self ?_ hf₂
       simp only [EventuallyLE, Pi.zero_apply, hnn, eventually_true]
     have hintgpos : 0 < ∫ (v : E) in U, f v := by
-      -- refine (setIntegral_pos_iff_support_of_nonneg_ae ?hf ?hfi).mpr ?_
-      -- · sorry
-      -- · sorry
-      -- · sorry
       refine (integral_pos_iff_support_of_nonneg hnn (Integrable.restrict hf₂)).mpr ?_
       suffices hUpos : 0 < (volume.restrict U) U
       · dsimp [Function.support]
         suffices hInclusion : U ⊆ {x | f x ≠ 0}
         · have : (volume.restrict U) U ≤ (volume.restrict U) {x | f x ≠ 0} := by
-            -- have h₁ : U ≤ᵐ[volume] {x | f x ≠ 0} := HasSubset.Subset.eventuallyLE hInclusion
-            -- have h₂ : volume ≤ (volume : Measure E) := le_rfl
-            -- refine Measure.restrict_mono' h₁ h₂
-            -- IDEA: U is contained in the support so its (vol restricted to U) is the vol of U (?)
-            rw [Measure.restrict_apply_self]
-            have h₁ : (volume.restrict U) {x | f x ≠ 0} = (volume.restrict U) (U ∩ {x | f x ≠ 0}) := by
-              sorry
-            rw [h₁]
-            have h₂ : MeasurableSet U := by
-              -- Our open nhd is the preimage of an interval, and therefore, measurable.
-              -- Perhaps it's better to use the explicit preimage instead of turning the have lemma
-              -- into a separate lemma and using that U or imposing additional conditions on U...
-              sorry
-            sorry
+            rw [Measure.restrict_apply_self, Measure.restrict_apply_superset hInclusion]
           exact gt_of_ge_of_gt this hUpos
         intro y hy
         rw [Set.mem_setOf_eq]
