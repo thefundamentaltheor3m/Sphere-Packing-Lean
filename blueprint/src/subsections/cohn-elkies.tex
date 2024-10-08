@@ -1,14 +1,14 @@
 In 2003 Cohn and Elkies \cite{ElkiesCohn}  developed  linear programming bounds that apply directly to sphere packings. The goal of this section is to formalize the Cohn--Elkies linear programming bound.
 
 The following theorem is the key result of \cite{ElkiesCohn}. (The original theorem is stated for a   class of functions more general then Schwartz functions)
-\begin{theorem}\label{thm:Cohn-Elkies}\uses{def:Fourier-Transform, thm:Poisson-summation-formula, SpherePacking.density}\notready
+\begin{theorem}\label{thm:Cohn-Elkies}\uses{def:Fourier-Transform, SpherePacking.density}\leanok
 (Cohn--Elkies \cite{ElkiesCohn}) Suppose that  $f:\R^d\to\R$ is a Schwartz function that is not identically zero and satisfies the following conditions:
 \begin{equation}\label{eqn:Cohn-Elkies-condition-1}f(x)\leq 0\mbox{ for } \|x\|\geq 1\end{equation} and
 \begin{equation}\label{eqn:Cohn-Elkies-condition-2}\widehat{f}(x)\geq0\mbox{ for all } x\in\R^d.\end{equation}
   Then the density of $d$-dimensional
   sphere packings is bounded above by $$\frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)).$$
 \end{theorem}
-\begin{proof}
+\begin{proof}\uses{thm:Poisson-summation-formula, periodic_constant_eq_constant, periodic_constant_eq_periodic_constant_normalized, SpherePacking.constant_eq_constant_normalized}\leanok
 Here we reproduce the proof given in \cite{ElkiesCohn}. We will first prove the theorem for periodic packings.
 
 Let $X\subset\mathbb{R}^d$ be a discrete subset  such that $\|x-y\|\geq 1$ for any distinct $x,y\in X$.
