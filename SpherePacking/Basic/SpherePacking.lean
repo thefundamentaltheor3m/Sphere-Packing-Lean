@@ -31,8 +31,6 @@ open BigOperators Pointwise Filter
 
 section Definitions
 
--- I considered defining a SetOf instance to treat SpherePacking as its centers automatically,
--- but decided against it and opt for explicitly stating the conversion
 structure SpherePacking (d : ℕ) where
   centers : Set (EuclideanSpace ℝ (Fin d))
   separation : ℝ
@@ -41,8 +39,6 @@ structure SpherePacking (d : ℕ) where
 
 structure PeriodicSpherePacking (d : ℕ) extends SpherePacking d where
   lattice : AddSubgroup (EuclideanSpace ℝ (Fin d))
-  -- Note that an AddAction here is not enough, because it might not agree with the action induced
-  -- by EuclideanSpace
   lattice_action : ∀ ⦃x y⦄, x ∈ lattice → y ∈ centers → x + y ∈ centers
   lattice_discrete : DiscreteTopology lattice := by infer_instance
   lattice_isZlattice : IsZlattice ℝ lattice := by infer_instance

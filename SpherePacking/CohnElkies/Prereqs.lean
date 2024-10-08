@@ -162,8 +162,6 @@ theorem Continuous.pos_iff_exists_nhd_pos {f : E → ℝ} (hf₁ : Continuous f)
     specialize hU₂ x (mem_of_mem_nhds hU₁)
     exact hU₂
 
-#exit
-
 open MeasureTheory
 
 variable [MeasureSpace E] [BorelSpace E]

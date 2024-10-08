@@ -530,9 +530,12 @@ theorem LinearProgrammingBound' :
             Real.toNNReal_of_nonneg haux₁]
         push_cast
         rfl
-      have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) / ((Zlattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 * (𝓕 (⇑f) 0).re / Zlattice.covolume P.lattice volume).toNNReal := by
+      have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) /
+        ((Zlattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
+        (𝓕 (⇑f) 0).re / Zlattice.covolume P.lattice volume).toNNReal := by
         simp only [mul_div_assoc, div_eq_mul_inv]
-        have haux₁ : 0 ≤ ↑P.numReps ^ 2 * (𝓕 (⇑f) 0).re * (Zlattice.covolume P.lattice volume)⁻¹ := by
+        have haux₁ : 0 ≤ ↑P.numReps ^ 2 * (𝓕 (⇑f) 0).re * (Zlattice.covolume P.lattice volume)⁻¹
+        := by
           refine mul_nonneg (mul_nonneg (sq_nonneg (P.numReps : ℝ)) (hCohnElkies₂ 0)) ?_
           rw [inv_nonneg]
           exact LT.lt.le (Zlattice.covolume_pos P.lattice volume)
