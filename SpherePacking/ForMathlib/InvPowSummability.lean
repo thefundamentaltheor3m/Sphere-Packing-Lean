@@ -43,8 +43,16 @@ lemma summable_union_disjoint.{u_1, u_2}
   Summable (f ∘ (↑) : (s ∪ t : Set β) → α) :=
   (hs.hasSum.add_disjoint hd ht.hasSum).summable
 
-variable {X : Set (EuclideanSpace ℝ (Fin d))} {f : EuclideanSpace ℝ (Fin d) → ℝ}
+variable {X X' : Set (EuclideanSpace ℝ (Fin d))} {f : EuclideanSpace ℝ (Fin d) → ℝ}
 variable (hf : IsDecayingMap X f)
+
+include hf in
+lemma IsDecayingMap.subset (hX' : X' ⊆ X) : IsDecayingMap X' f := by
+  intro k
+  obtain ⟨C, hC⟩ := hf k
+  use C
+  intro x hx
+  exact hC x (hX' hx)
 
 -- TODO: Change from `Subtype`s to `Set`s and add appropriate 'decaying over subsets' lemma
 
@@ -60,60 +68,69 @@ theorem Summable_of_Inv_Pow_Summable'
     (hX : Inv_Pow_Norm_Summable_Over_Set_Euclidean X) (hne_zero : 0 ∉ X) :
   Summable (fun x : X => f x) := by
   rcases X.eq_empty_or_nonempty with rfl | hX'
-  case inl => sorry
-  case inr =>
-  rw [summable_iff_vanishing_norm]
-  intro ε hε
-  let k := d + 1
-  have hk' : 0 < k := by positivity
-  rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at hX
-  simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs] at hX
-  obtain ⟨C, hC⟩ := hf k
-  simp only [Set.top_eq_univ, Real.norm_eq_abs, Subtype.forall, Set.mem_univ, true_implies] at hC
-  have hC_nonneg : 0 ≤ C := by
-    obtain ⟨i, hi⟩ := hX'
-    specialize hC i hi
-    refine hC.trans' (by positivity)
-  have haux₁ : 0 < C + 1 := by linarith
-  specialize hX (ε / (C + 1)) (div_pos hε haux₁)
-  obtain ⟨s, hs⟩ := hX
-  use s
-  intro t ht
-  specialize hs t ht
-  suffices htriangle : ∑ x ∈ t, |f ↑x| < ε
-  · refine lt_of_le_of_lt ?_ htriangle
-    rw [Real.norm_eq_abs]
-    exact Finset.abs_sum_le_sum_abs (fun i : X ↦ f ↑i) t
-  have haux₂ : |∑ x ∈ t, (C + 1) * (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹| < ε := by
-    rw [← Finset.mul_sum, IsAbsoluteValue.abv_mul (fun (x : ℝ) ↦ |x|) _ _, abs_of_pos haux₁]
-    exact (lt_div_iff' haux₁).mp hs
-  refine lt_of_le_of_lt ?_ haux₂
-  have haux₃ : ∀ x ∈ t, (0 : ℝ) ≤ (C + 1) * (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹ := by
-    intro x _
-    apply mul_nonneg
-    · linarith
-    · simp only [inv_nonneg, norm_nonneg, pow_nonneg]
-  rw [Finset.abs_sum_of_nonneg haux₃]
-  cases t.eq_empty_or_nonempty
-  · case inl hempty =>
-    rw [hempty, Finset.sum_empty, Finset.sum_empty]
-  · case inr hnonempty =>
-    apply Finset.sum_le_sum
-    intro x _
-    have haux₄ : (x : EuclideanSpace ℝ (Fin d)) ≠ 0 := by
-      intro h
-      apply hne_zero
-      rw [← h]
-      exact Subtype.coe_prop x
-    have haux₅ : 0 < (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k) := by
-      apply pow_pos
-      exact norm_pos_iff'.mpr haux₄
-    refine le_of_mul_le_mul_of_pos_right ?_ haux₅
-    rw [mul_comm, mul_assoc, inv_mul_cancel₀ (ne_of_gt haux₅), mul_one]
-    specialize hC x
-    refine LE.le.trans (hC x.2) ?_
-    rw [le_add_iff_nonneg_right]
-    exact zero_le_one
+  · case inl =>
+    dsimp only [Summable, HasSum]
+    use 0
+    intro ε hε
+    simp only [Filter.mem_map, Filter.mem_atTop_sets, ge_iff_le, le_of_subsingleton,
+      Set.mem_preimage, true_implies, exists_const]
+    intro b
+    rw [eq_top_of_bot_eq_top rfl b]
+    simp only [Finset.top_eq_univ, Finset.univ_eq_empty, Finset.sum_empty]
+    exact mem_of_mem_nhds hε
+  · case inr =>
+    rw [summable_iff_vanishing_norm]
+    intro ε hε
+    let k := d + 1
+    have hk' : 0 < k := by positivity
+    rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at hX
+    simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs] at hX
+    obtain ⟨C, hC⟩ := hf k
+    simp only [Set.top_eq_univ, Real.norm_eq_abs, Subtype.forall, Set.mem_univ, true_implies] at hC
+    have hC_nonneg : 0 ≤ C := by
+      obtain ⟨i, hi⟩ := hX'
+      specialize hC i hi
+      refine hC.trans' (by positivity)
+    have haux₁ : 0 < C + 1 := by linarith
+    specialize hX (ε / (C + 1)) (div_pos hε haux₁)
+    obtain ⟨s, hs⟩ := hX
+    use s
+    intro t ht
+    specialize hs t ht
+    suffices htriangle : ∑ x ∈ t, |f ↑x| < ε
+    · refine lt_of_le_of_lt ?_ htriangle
+      rw [Real.norm_eq_abs]
+      exact Finset.abs_sum_le_sum_abs (fun i : X ↦ f ↑i) t
+    have haux₂ : |∑ x ∈ t, (C + 1) * (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹| < ε := by
+      rw [← Finset.mul_sum, IsAbsoluteValue.abv_mul (fun (x : ℝ) ↦ |x|) _ _, abs_of_pos haux₁]
+      exact (lt_div_iff' haux₁).mp hs
+    refine lt_of_le_of_lt ?_ haux₂
+    have haux₃ : ∀ x ∈ t, (0 : ℝ) ≤ (C + 1) * (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹ := by
+      intro x _
+      apply mul_nonneg
+      · linarith
+      · simp only [inv_nonneg, norm_nonneg, pow_nonneg]
+    rw [Finset.abs_sum_of_nonneg haux₃]
+    cases t.eq_empty_or_nonempty
+    · case inl hempty =>
+      rw [hempty, Finset.sum_empty, Finset.sum_empty]
+    · case inr hnonempty =>
+      apply Finset.sum_le_sum
+      intro x _
+      have haux₄ : (x : EuclideanSpace ℝ (Fin d)) ≠ 0 := by
+        intro h
+        apply hne_zero
+        rw [← h]
+        exact Subtype.coe_prop x
+      have haux₅ : 0 < (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k) := by
+        apply pow_pos
+        exact norm_pos_iff'.mpr haux₄
+      refine le_of_mul_le_mul_of_pos_right ?_ haux₅
+      rw [mul_comm, mul_assoc, inv_mul_cancel₀ (ne_of_gt haux₅), mul_one]
+      specialize hC x
+      refine LE.le.trans (hC x.2) ?_
+      rw [le_add_iff_nonneg_right]
+      exact zero_le_one
 
 set_option pp.funBinderTypes true
 
@@ -123,15 +140,24 @@ set_option pp.funBinderTypes true
 lemma Summable.subset {X X' : Set (EuclideanSpace ℝ (Fin d))}
     (hX : Summable (fun x : X => f x)) (hX' : X' ⊆ X) :
     Summable (fun x : X' => f x) := by
-  sorry
+  let g : X' → X := fun x => ⟨x.1, hX' x.2⟩
+  have hg : Function.Injective g := by
+    intro x₁ x₂ h
+    simp only [g, Subtype.mk_eq_mk] at h
+    exact Subtype.ext h
+  have := Summable.comp_injective hX hg
+  exact this
 
+-- set_option maxHeartbeats 1000000
 lemma Inv_Pow_Norm_Summable_Over_Set_Euclidean.subset {X X' : Set (EuclideanSpace ℝ (Fin d))}
     (hX : Inv_Pow_Norm_Summable_Over_Set_Euclidean X) (hX' : X' ⊆ X) :
     Inv_Pow_Norm_Summable_Over_Set_Euclidean X' := by
   rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at *
-  sorry
+  -- The following all take much too long...
+  -- exact Summable.subset hX hX'
   -- apply Summable.subset
   -- exact Summable.subset (X := X) _ hX'
+  sorry
 
 -- include hf in
 theorem Summable_of_Inv_Pow_Summable
@@ -139,7 +165,14 @@ theorem Summable_of_Inv_Pow_Summable
   (hf : IsDecayingMap X f) :
   Summable (fun x : X => f x) := by
   if hzero : 0 ∈ X then
-    have := Summable_of_Inv_Pow_Summable' (X := X \ {0}) (f := f) sorry sorry (by simp)
+    have haux₁ : IsDecayingMap (X \ {0}) f := IsDecayingMap.subset hf Set.diff_subset
+    have haux₂ : Inv_Pow_Norm_Summable_Over_Set_Euclidean (X \ {0}) := by
+      rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at hX ⊢
+      have : X \ {0} ⊆ X := Set.diff_subset
+      -- Again a deterministic timeout!
+      -- exact Summable.subset hX this
+      sorry
+    have := Summable_of_Inv_Pow_Summable' (X := X \ {0}) (f := f) haux₁ sorry (by simp)
     have : Summable (fun x : ({0} ∪ (X \ {0}) : Set (EuclideanSpace ℝ (Fin d))) => f x) := by
       apply summable_union_disjoint
       · simp
@@ -168,10 +201,11 @@ lemma IsDecaying : IsDecayingMap Set.univ f := by
   simp only [Set.top_eq_univ, Real.norm_eq_abs, Subtype.forall, Set.mem_univ, true_implies]
   exact hC
 
-theorem Summable_of_Inv_Pow_Summable' -- (P : PeriodicSpherePacking d)
+theorem Summable_of_Inv_Pow_Summable'
   {X : Set (EuclideanSpace ℝ (Fin d))} (hX : Inv_Pow_Norm_Summable_Over_Set_Euclidean X)
   (hne_zero : 0 ∉ X) : Summable (fun x : X => f x) :=
-  DecayingMap.Summable_of_Inv_Pow_Summable' sorry hX hne_zero
+  DecayingMap.Summable_of_Inv_Pow_Summable' (DecayingMap.IsDecayingMap.subset (IsDecaying f)
+    (Set.subset_univ X)) hX hne_zero
 
 end SchwartzMap
 

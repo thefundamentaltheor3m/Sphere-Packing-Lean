@@ -53,9 +53,9 @@ end Dual_Lattice
 
 section Euclidean_Space
 
-instance instNonemptyFin : Nonempty (Fin d) := by
-  rw [← Fintype.card_pos_iff, Fintype.card_fin]
-  exact Fact.out
+instance instNonemptyFin : Nonempty (Fin d) := ⟨0, Fact.out⟩
+  -- rw [← Fintype.card_pos_iff, Fintype.card_fin]
+  -- exact Fact.out
 
 -- noncomputable instance : DivisionCommMonoid ENNReal where
 --   inv_inv := inv_inv
@@ -147,28 +147,22 @@ section Positivity_on_Nhd
 -- Or was I just not able to find it...
 
 variable {E : Type*} [TopologicalSpace E]
-
+#synth OrderClosedTopology ℝ
 theorem Continuous.pos_iff_exists_nhd_pos {f : E → ℝ} (hf₁ : Continuous f) (x : E) :
   0 < f x ↔ ∃ U ∈ (nhds x), ∀ y ∈ U, 0 < f y := by
   constructor
-  · intro hposatx
-    have h₁ : ContinuousAt f x := continuousAt hf₁
-    rw [continuousAt_def] at h₁
-    have h₁' : Set.Ioo (f x / 2) (3 * f x / 2) ∈ nhds (f x) := by
-      apply Ioo_mem_nhds (div_two_lt_of_pos hposatx) ?_
-      linarith
-    specialize h₁ (Set.Ioo (f x / 2) (3 * f x / 2)) h₁'
-    use (f ⁻¹' Set.Ioo (f x / 2) (3 * f x / 2))
-    constructor
-    · exact h₁
-    · intro y hy
-      have h₂ : f y ∈ Set.Ioo (f x / 2) (3 * f x / 2) := hy
-      rw [Set.mem_Ioo] at h₂
-      linarith
+  · intro hx
+    suffices ∀ᶠ y in nhds x, 0 < f y by
+      rw [Filter.eventually_iff] at this
+      refine ⟨_, this, by simp⟩
+    set_option pp.all true in
+      show_term exact hf₁.tendsto x (eventually_gt_nhds hx)
   · intro hexistsnhd
     obtain ⟨U, hU₁, hU₂⟩ := hexistsnhd
     specialize hU₂ x (mem_of_mem_nhds hU₁)
     exact hU₂
+
+#exit
 
 open MeasureTheory
 
