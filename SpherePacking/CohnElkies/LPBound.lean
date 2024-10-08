@@ -563,7 +563,8 @@ section Main_Theorem
 include d instPosDim f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
 theorem LinearProgrammingBound : SpherePackingConstant d ≤
-  (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
+  (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))
+  := by
   rw [← periodic_constant_eq_constant (Fact.out),
     periodic_constant_eq_periodic_constant_normalized (Fact.out)]
   apply iSup_le
