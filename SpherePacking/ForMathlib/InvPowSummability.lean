@@ -137,7 +137,10 @@ set_option pp.funBinderTypes true
 #check tsum_union_disjoint
 
 -- should be in mathlib!!
-lemma Summable.subset {X X' : Set (EuclideanSpace ℝ (Fin d))}
+lemma Summable.subset {α β : Type*}
+    [AddCommGroup β] [UniformSpace β] [UniformAddGroup β] [CompleteSpace β]
+    (f : α → β)
+    {X X' : Set α}
     (hX : Summable (fun x : X => f x)) (hX' : X' ⊆ X) :
     Summable (fun x : X' => f x) := by
   let g : X' → X := fun x => ⟨x.1, hX' x.2⟩
@@ -153,11 +156,7 @@ lemma Inv_Pow_Norm_Summable_Over_Set_Euclidean.subset {X X' : Set (EuclideanSpac
     (hX : Inv_Pow_Norm_Summable_Over_Set_Euclidean X) (hX' : X' ⊆ X) :
     Inv_Pow_Norm_Summable_Over_Set_Euclidean X' := by
   rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at *
-  -- The following all take much too long...
-  -- exact Summable.subset hX hX'
-  -- apply Summable.subset
-  -- exact Summable.subset (X := X) _ hX'
-  sorry
+  exact Summable.subset (fun (x : EuclideanSpace ℝ (Fin d)) ↦ 1 / ‖x‖ ^ (d + 1)) hX hX'
 
 -- include hf in
 theorem Summable_of_Inv_Pow_Summable
@@ -167,19 +166,14 @@ theorem Summable_of_Inv_Pow_Summable
   if hzero : 0 ∈ X then
     have haux₁ : IsDecayingMap (X \ {0}) f := IsDecayingMap.subset hf Set.diff_subset
     have haux₂ : Inv_Pow_Norm_Summable_Over_Set_Euclidean (X \ {0}) := by
-      rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at hX ⊢
-      have : X \ {0} ⊆ X := Set.diff_subset
-      -- Again a deterministic timeout!
-      -- exact Summable.subset hX this
-      sorry
-    have := Summable_of_Inv_Pow_Summable' (X := X \ {0}) (f := f) haux₁ sorry (by simp)
+      exact Inv_Pow_Norm_Summable_Over_Set_Euclidean.subset hX (by simp)
+    have := Summable_of_Inv_Pow_Summable' (X := X \ {0}) (f := f) haux₁ haux₂ (by simp)
     have : Summable (fun x : ({0} ∪ (X \ {0}) : Set (EuclideanSpace ℝ (Fin d))) => f x) := by
       apply summable_union_disjoint
       · simp
       · refine Set.Finite.summable (by simp) _
       · exact this
-    convert this <;>
-    simp [hzero]
+    convert this <;> simp [hzero]
   else
     exact Summable_of_Inv_Pow_Summable' hf hX hzero
 
@@ -210,6 +204,15 @@ theorem Summable_of_Inv_Pow_Summable'
 end SchwartzMap
 
 end Schwartz
+
+/-
+The idea of everything we've done so far is that if we have a set over which the inverse norm power
+is summable, we have several summability results for decaying maps (and therefore Schwartz maps).
+
+The next step is to prove that the inverse norm power is summable over the set of centers of a
+sphere packing, or, more generally, over any set of points in Euclidean space that is acted upon by
+a lattice such that the number of orbits is finite.
+-/
 
 /- *TODO:* Move to `SpherePacking/CohnElkies/Prereqs.lean`
 namespace PeriodicSpherePacking
