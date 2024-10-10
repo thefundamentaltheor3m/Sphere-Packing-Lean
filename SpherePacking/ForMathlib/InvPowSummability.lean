@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Bhavik Mehta
 -/
 import Mathlib
+import Mathlib.Algebra.Module.Zlattice.Basic
 
 /-!
 This file proves lemmas involving the summability of functions that decay in a manner comparable to
@@ -213,6 +214,17 @@ The next step is to prove that the inverse norm power is summable over the set o
 sphere packing, or, more generally, over any set of points in Euclidean space that is acted upon by
 a lattice such that the number of orbits is finite.
 -/
+
+section Sets_Acted_Upon_By_Lattice
+
+open Zlattice
+
+variable {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))}
+  [DiscreteTopology Λ] [IsZlattice ℝ Λ] (ρ : AddAction Λ X)
+
+-- theorem Summable_Inverse_Powers (hFin : Finite ) : Inv_Pow_Norm_Summable_Over_Set_Euclidean X :=
+
+end Sets_Acted_Upon_By_Lattice
 
 /- *TODO:* Move to `SpherePacking/CohnElkies/Prereqs.lean`
 namespace PeriodicSpherePacking
