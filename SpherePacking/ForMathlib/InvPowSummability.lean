@@ -5,6 +5,7 @@ Authors: Sidharth Hariharan, Bhavik Mehta
 -/
 import Mathlib
 import Mathlib.Algebra.Module.Zlattice.Basic
+import SpherePacking.Basic.PeriodicPacking
 
 /-!
 This file proves lemmas involving the summability of functions that decay in a manner comparable to
@@ -217,25 +218,34 @@ a lattice such that the number of orbits is finite.
 
 section Sets_Acted_Upon_By_Lattice
 
-open Zlattice
+open Zlattice Zspan
 
-variable {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))}
+-- set_option diagnostics true
+theorem Summable_Inverse_Powers_of_Finite_Orbits
+  {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))}
   [DiscreteTopology Λ] [IsZlattice ℝ Λ] (ρ : AddAction Λ X)
-
--- theorem Summable_Inverse_Powers (hFin : Finite ) : Inv_Pow_Norm_Summable_Over_Set_Euclidean X :=
-
-end Sets_Acted_Upon_By_Lattice
-
-/- *TODO:* Move to `SpherePacking/CohnElkies/Prereqs.lean`
-namespace PeriodicSpherePacking
-
-lemma Summable_Inverse_Powers (P : PeriodicSpherePacking d) :
-  Inv_Pow_Norm_Summable_Over_Set_Euclidean P.centers := by
+  [Fintype (Quotient ρ.orbitRel)]
+  -- (hFin : Finite ((X ∩ (fundamentalDomain (Basis.ofZlatticeBasis ℝ Λ ((Zlattice.module_free ℝ Λ).chooseBasis)))) : Set (EuclideanSpace ℝ (Fin d))))
+  : Inv_Pow_Norm_Summable_Over_Set_Euclidean X := by
   rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean]
   simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs]
-  · intro ε hε
-    -- Translating and scaling fundamental domains could be a good idea - discussion with Bhavik
+  intro ε hε
+  -- Translating and scaling fundamental domains could be a good idea - discussion with Bhavik
+  let bℤ : Basis _ ℤ Λ :=
+    ((Zlattice.module_free ℝ Λ).chooseBasis).reindex (Zlattice.basis_index_equiv Λ)
+  let bℝ := (Basis.ofZlatticeBasis ℝ Λ bℤ)
+  let D := {m | ∀ i, bℝ.repr m i ∈ Set.Ico (-1 : ℝ) 1}
+  haveI : Fintype ((X ∩ D) : Set (EuclideanSpace ℝ (Fin d))) := by -- Is `Finite` better?
+    -- This should follow from the fact that the number of orbits is finite
     sorry
+  let N := Fintype.card ((X ∩ D) : Set (EuclideanSpace ℝ (Fin d)))
+  
+  sorry
 
-end PeriodicSpherePacking
--/
+theorem Summable_Inverse_Powers_over_Periodic_Packing_Centres (P : PeriodicSpherePacking d) :
+  Inv_Pow_Norm_Summable_Over_Set_Euclidean P.centers :=
+  Summable_Inverse_Powers_of_Finite_Orbits P.addAction -- P.finiteOrbitRelQuotient
+
+/- *TODO:* Move to `SpherePacking/CohnElkies/Prereqs.lean` -/
+
+end Sets_Acted_Upon_By_Lattice

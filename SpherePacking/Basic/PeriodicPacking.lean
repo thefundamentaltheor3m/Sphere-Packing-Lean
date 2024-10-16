@@ -1073,11 +1073,14 @@ noncomputable instance HDivENNReal : HDiv NNReal ENNReal ENNReal where
 noncomputable instance HMulENNReal : HMul NNReal ENNReal ENNReal where
   hMul := fun x y => x * y
 
-noncomputable def PeriodicSpherePacking.basis_index_equiv (P : PeriodicSpherePacking d) :
-  (Module.Free.ChooseBasisIndex ℤ ↥P.lattice) ≃ (Fin d) := by
+noncomputable def Zlattice.basis_index_equiv (Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZlattice ℝ Λ] :
+  (Module.Free.ChooseBasisIndex ℤ Λ) ≃ (Fin d) := by
   refine Fintype.equivFinOfCardEq ?h
-  rw [← FiniteDimensional.finrank_eq_card_chooseBasisIndex, Zlattice.rank ℝ P.lattice,
+  rw [← FiniteDimensional.finrank_eq_card_chooseBasisIndex, Zlattice.rank ℝ Λ,
       finrank_euclideanSpace, Fintype.card_fin]
+
+noncomputable def PeriodicSpherePacking.basis_index_equiv (P : PeriodicSpherePacking d) :
+  (Module.Free.ChooseBasisIndex ℤ ↥P.lattice) ≃ (Fin d) := Zlattice.basis_index_equiv P.lattice
 
 /- Here's a version of `PeriodicSpherePacking.density_eq` that
 1. does not require the `hL` hypothesis that the original one does
