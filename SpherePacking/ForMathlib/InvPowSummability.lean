@@ -220,6 +220,15 @@ section Sets_Acted_Upon_By_Lattice
 
 open Zlattice Zspan
 
+theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))}
+  [inst : DiscreteTopology ↥Λ] [inst_1 : IsZlattice ℝ Λ] :
+  let bℤ := (Module.Free.chooseBasis ℤ ↥Λ).reindex (basis_index_equiv Λ);
+  let bℝ := Basis.ofZlatticeBasis ℝ Λ bℤ;
+  let D := {m | ∀ (i : Fin d), (bℝ.repr m) i ∈ Set.Ico (-1) 1};
+  Finite ↑(X ∩ D) :=
+  -- Consider function from this thing to set of orbits. Show preimage of any singleton in `Quotient` consists of 2^d elements. Then card is card of 2^d
+  sorry
+
 -- set_option diagnostics true
 theorem Summable_Inverse_Powers_of_Finite_Orbits
   {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))}
@@ -233,13 +242,10 @@ theorem Summable_Inverse_Powers_of_Finite_Orbits
   -- Translating and scaling fundamental domains could be a good idea - discussion with Bhavik
   let bℤ : Basis _ ℤ Λ :=
     ((Zlattice.module_free ℝ Λ).chooseBasis).reindex (Zlattice.basis_index_equiv Λ)
-  let bℝ := (Basis.ofZlatticeBasis ℝ Λ bℤ)
+  let bℝ := Basis.ofZlatticeBasis ℝ Λ bℤ
   let D := {m | ∀ i, bℝ.repr m i ∈ Set.Ico (-1 : ℝ) 1}
-  haveI : Fintype ((X ∩ D) : Set (EuclideanSpace ℝ (Fin d))) := by -- Is `Finite` better?
-    -- This should follow from the fact that the number of orbits is finite
-    sorry
-  let N := Fintype.card ((X ∩ D) : Set (EuclideanSpace ℝ (Fin d)))
-  
+  -- let N := Fintype.card ((X ∩ D) : Set (EuclideanSpace ℝ (Fin d)))
+
   sorry
 
 theorem Summable_Inverse_Powers_over_Periodic_Packing_Centres (P : PeriodicSpherePacking d) :
