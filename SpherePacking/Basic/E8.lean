@@ -277,13 +277,13 @@ theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Se
   · obtain ⟨hv₁, hv₂⟩ := mem_E8_Set'.mp hv
     convert_to (∃ y : Fin 8 →₀ ℤ, (∑ i, y i • E8_Matrix i) = v)
     · ext y
-      rw [← Finsupp.total_eq_sum]
+      rw [← Finsupp.linearCombination_eq_sum]
       rfl
     · cases' hv₁ with hv₁ hv₁
       -- TODO (the y is just F8_Matrix * v, need to prove it has integer coefficients)
       <;> sorry
   · obtain ⟨y, hy⟩ := hv
-    erw [Finsupp.total_eq_sum] at hy
+    erw [Finsupp.linearCombination_eq_sum] at hy
     constructor
     · by_cases hy' : Even (y 6)
       · left
@@ -325,7 +325,7 @@ theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Se
 
 end E8_Over_ℝ
 
-noncomputable section E8_isZlattice
+noncomputable section E8_isZLattice
 
 theorem E8_add_mem {a b : EuclideanSpace ℝ (Fin 8)} (ha : a ∈ E8_Set) (hb : b ∈ E8_Set) :
     a + b ∈ E8_Set := by
@@ -365,7 +365,7 @@ theorem E8_norm_eq_sqrt_even (v : E8_Lattice) :
   --   LinearMap.mem_range] at hv
   -- replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by
   --   convert hv
-  --   rw [← Finsupp.total_eq_sum E8_Matrix _]
+  --   rw [← Finsupp.linearCombination_eq_sum E8_Matrix _]
   --   rfl
   -- obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv
   -- simp_rw [re_to_real, sum_inner, inner_sum, intCast_smul_left, intCast_smul_right, zsmul_eq_mul,
@@ -412,10 +412,10 @@ theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set (EuclideanSpace �
   rw [E8_is_basis.right] at this
   exact Submodule.eq_top_iff'.mpr fun _ ↦ this trivial
 
-instance instIsZLatticeE8Lattice : IsZlattice ℝ E8_Lattice :=
+instance instIsZLatticeE8Lattice : IsZLattice ℝ E8_Lattice :=
   ⟨E8_Set_span_eq_top⟩
 
-end E8_isZlattice
+end E8_isZLattice
 
 section Packing
 
@@ -480,11 +480,11 @@ lemma E8_Basis_apply_norm (i : Fin 8) : ‖E8_Basis i‖ = √2 := by
   -- <;> simp [Fin.sum_univ_eight, E8_Basis_apply_norm, Fin.sum_univ_eight, E8_Matrix_apply]
   -- <;> norm_num
 
-open MeasureTheory Zspan in
-theorem E8_Basis_volume : volume (fundamentalDomain (E8_Basis.ofZlatticeBasis ℝ _)) = 1 := by
+open MeasureTheory ZSpan in
+theorem E8_Basis_volume : volume (fundamentalDomain (E8_Basis.ofZLatticeBasis ℝ _)) = 1 := by
   sorry
 
-open MeasureTheory Zspan in
+open MeasureTheory ZSpan in
 theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
   rw [PeriodicSpherePacking.density_eq E8_Basis ?_ (by omega) (L := 8 • √2)]
   · rw [E8Packing_numReps, Nat.cast_one, one_mul, volume_ball, Fintype.card_fin]

@@ -11,7 +11,7 @@ import Mathlib.MeasureTheory.Integral.SetIntegral
 import Mathlib.Analysis.Complex.Basic
 
 open scoped FourierTransform ENNReal SchwartzMap
-open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real Zspan Bornology
+open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan Bornology
 
 variable {d : ℕ} [instPosDim : Fact (0 < d)] -- Is `Fact` right here?
 
@@ -229,7 +229,7 @@ private theorem calc_aux_1 :
 set_option maxHeartbeats 200000
 private theorem calc_steps :
   ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re ≥ ↑(P.numReps' Fact.out hD_isBounded) ^ 2 *
-  (𝓕 f 0).re / Zlattice.covolume P.lattice := calc
+  (𝓕 f 0).re / ZLattice.covolume P.lattice := calc
   ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re
   _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)),
       (f (x - ↑y)).re
@@ -256,7 +256,7 @@ private theorem calc_steps :
             -- rw [re_tsum hPSF.1] -- Needs some sort of summability over subsets...?
             sorry
   _ = (∑' x : ↑(P.centers ∩ D),
-      ∑' y : ↑(P.centers ∩ D), (1 / Zlattice.covolume P.lattice) *
+      ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice) *
       ∑' m : DualLattice P.lattice, (𝓕 f m) *
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)).re
         := by
@@ -269,7 +269,7 @@ private theorem calc_steps :
             ext y
             -- Now that we've isolated the innermost sum, we can use the PSF-L.
             exact SchwartzMap.PoissonSummation_Lattices P.lattice f (x - ↑y)
-  _ = ((1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re * (
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
         := by
@@ -299,7 +299,7 @@ private theorem calc_steps :
             · rw [isUnit_iff_ne_zero]
               exact Complex.exp_ne_zero _
             · exact (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
-  _ = ((1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re * (
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ) *
       exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
@@ -318,7 +318,7 @@ private theorem calc_steps :
             rw [sub_eq_neg_add, inner_add_left]
             push_cast  -- Can this be condensed into a rw so that there's just a bunch of rws?
             rw [mul_add, Complex.exp_add, mul_comm]
-  _ = ((1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
       (∑' y : ↑(P.centers ∩ D),
@@ -337,7 +337,7 @@ private theorem calc_steps :
             apply congrArg _ _
             ext y
             simp only [inner_neg_left, ofReal_neg, mul_neg]
-  _ = ((1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
       conj (∑' x : ↑(P.centers ∩ D),
@@ -353,12 +353,12 @@ private theorem calc_steps :
             apply congrArg _ _
             ext x
             exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
-  _ = (1 / Zlattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
+  _ = (1 / ZLattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
       (Complex.abs (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
         := by
             -- Need to turn the RHS into the real part of a complex number
-            rw [← ofReal_re (1 / Zlattice.covolume P.lattice volume *
+            rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
                                ∑' (m : ↥(DualLattice P.lattice)),
                                (𝓕 f ↑m).re * Complex.abs (∑' (x : ↑(P.centers ∩ D)),
                                cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_ℝ)) ^ 2)]
@@ -374,7 +374,7 @@ private theorem calc_steps :
             rw [mul_conj, normSq_eq_abs]
             norm_cast
   -- We split the sum up into the `m = 0` and `m ≠ 0` parts.
-  _ = (1 / Zlattice.covolume P.lattice) * (
+  _ = (1 / ZLattice.covolume P.lattice) * (
       (∑' (m : DualLattice P.lattice), if hm : m = (0 : EuclideanSpace ℝ (Fin d)) then 0 else
       (𝓕 f m).re * (Complex.abs (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2))
@@ -391,20 +391,20 @@ private theorem calc_steps :
               sorry
             rw [tsum_eq_add_tsum_ite hSummable (0 : ↥(DualLattice P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
-  _ ≥ (1 / Zlattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
+  _ ≥ (1 / ZLattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
       (Complex.abs (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
         := by
             -- We need to show that the `m ≠ 0` part is nonpositive.
             -- We begin by subtracting both sides, and thereby, isolating the `m ≠ 0` part.
             rw [ge_iff_le, ← tsub_nonpos, mul_assoc,
-                ← mul_sub (1 / Zlattice.covolume P.lattice volume) _ _]
+                ← mul_sub (1 / ZLattice.covolume P.lattice volume) _ _]
             simp only [ZeroMemClass.coe_eq_zero, dite_eq_ite, sub_add_cancel_right, mul_neg,
               Left.neg_nonpos_iff]
-            -- We now get rid of the `1 / Zlattice.covolume P.lattice volume` factor.
+            -- We now get rid of the `1 / ZLattice.covolume P.lattice volume` factor.
             apply mul_nonneg
             · refine one_div_nonneg.mpr ?ha.a
-              rw [Zlattice.covolume]
+              rw [ZLattice.covolume]
               exact ENNReal.toReal_nonneg
             · -- We now show that the `m ≠ 0` sum is nonpositive by showing that each term is.
               apply tsum_nonneg
@@ -419,7 +419,7 @@ private theorem calc_steps :
                   exact hCohnElkies₂ m
                 · -- Providing an explicit argument below gives a deterministic timeout...
                   exact sq_nonneg _
-  _ = (1 / Zlattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
+  _ = (1 / ZLattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
       ↑(P.numReps' Fact.out hD_isBounded) ^ 2
         := by
             apply congrArg _ _
@@ -429,7 +429,7 @@ private theorem calc_steps :
                        not_false_eq_true, pow_left_inj, Nat.cast_inj,
                        PeriodicSpherePacking.numReps', Set.toFinset_card] -- ↑(P.centers ∩ D)]
             exact Nat.card_eq_fintype_card
-  _ = ↑(P.numReps' Fact.out hD_isBounded) ^ 2 * (𝓕 f 0).re / Zlattice.covolume P.lattice volume
+  _ = ↑(P.numReps' Fact.out hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume
         := by simp only [div_eq_mul_inv, one_div, mul_comm, one_mul, ← mul_assoc]
 
 
@@ -460,7 +460,7 @@ theorem LinearProgrammingBound' :
   -- HUGE TODO: Get the periodic density formula in terms of some `D`.
   rw [P.density_eq' Fact.out]
   suffices hCalc : (P.numReps' Fact.out hD_isBounded) * (f 0).re ≥
-    (P.numReps' Fact.out hD_isBounded)^2 * (𝓕 f 0).re / Zlattice.covolume P.lattice
+    (P.numReps' Fact.out hD_isBounded)^2 * (𝓕 f 0).re / ZLattice.covolume P.lattice
   · rw [hP]
     rw [ge_iff_le] at hCalc
     have vol_pos := EuclideanSpace.volume_ball_pos (0 : EuclideanSpace ℝ (Fin d)) one_half_pos
@@ -531,23 +531,23 @@ theorem LinearProgrammingBound' :
         push_cast
         rfl
       have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) /
-        ((Zlattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
-        (𝓕 (⇑f) 0).re / Zlattice.covolume P.lattice volume).toNNReal := by
+        ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
+        (𝓕 (⇑f) 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
         simp only [mul_div_assoc, div_eq_mul_inv]
-        have haux₁ : 0 ≤ ↑P.numReps ^ 2 * (𝓕 (⇑f) 0).re * (Zlattice.covolume P.lattice volume)⁻¹
+        have haux₁ : 0 ≤ ↑P.numReps ^ 2 * (𝓕 (⇑f) 0).re * (ZLattice.covolume P.lattice volume)⁻¹
         := by
           refine mul_nonneg (mul_nonneg (sq_nonneg (P.numReps : ℝ)) (hCohnElkies₂ 0)) ?_
           rw [inv_nonneg]
-          exact LT.lt.le (Zlattice.covolume_pos P.lattice volume)
+          exact LT.lt.le (ZLattice.covolume_pos P.lattice volume)
         rw [Real.toNNReal_of_nonneg haux₁]
-        have haux₂ : (Zlattice.covolume P.lattice volume).toNNReal ≠ 0 := by
+        have haux₂ : (ZLattice.covolume P.lattice volume).toNNReal ≠ 0 := by
           apply LT.lt.ne'
           rw [Real.toNNReal_pos]
-          exact Zlattice.covolume_pos P.lattice volume
+          exact ZLattice.covolume_pos P.lattice volume
         rw [← ENNReal.coe_inv haux₂]
         norm_cast
         rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0),
-            Real.toNNReal_of_nonneg (LT.lt.le (Zlattice.covolume_pos P.lattice volume))]
+            Real.toNNReal_of_nonneg (LT.lt.le (ZLattice.covolume_pos P.lattice volume))]
         refine NNReal.eq ?_
         push_cast
         rfl
@@ -576,10 +576,10 @@ theorem LinearProgrammingBound : SpherePackingConstant d ≤
     rw [P.density_of_centers_empty Fact.out]
     exact zero_le _
   · case inr instNonempty =>
-    let b : Basis (Fin d) ℤ ↥P.lattice := ((Zlattice.module_free ℝ P.lattice).chooseBasis).reindex
+    let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
       (P.basis_index_equiv)
     exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
-      (fundamentalDomain_isBounded (Basis.ofZlatticeBasis ℝ P.lattice b))
+      (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ P.lattice b))
       (P.fundamental_domain_unique_covers b)
 
 end Main_Theorem

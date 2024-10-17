@@ -1,9 +1,11 @@
-import Mathlib.Algebra.Module.Zlattice.Basic
+import Mathlib.Algebra.Module.ZLattice.Basic
+
+open ZSpan
 
 variable {E ι K : Type*} [NormedLinearOrderedField K] [NormedAddCommGroup E] [NormedSpace K E]
   (b : Basis ι K E) [FloorRing K] [Fintype ι] (m : E)
 
-theorem Zspan.ceil_sub_mem_fundamentalDomain (v) : ceil b v - v ∈ fundamentalDomain b := by
+theorem ZSpan.ceil_sub_mem_fundamentalDomain (v) : ceil b v - v ∈ fundamentalDomain b := by
   rw [mem_fundamentalDomain]
   intro i
   simp_rw [map_sub, Finsupp.coe_sub, Pi.sub_apply, repr_ceil_apply, Set.mem_Ico, sub_nonneg]
@@ -20,7 +22,7 @@ theorem Zspan.ceil_sub_mem_fundamentalDomain (v) : ceil b v - v ∈ fundamentalD
       rw [this, sub_self]
       exact zero_lt_one
 
-theorem Zspan.floor_eq_zero (v : E) : v ∈ fundamentalDomain b ↔ floor b v = 0 := by
+theorem ZSpan.floor_eq_zero (v : E) : v ∈ fundamentalDomain b ↔ floor b v = 0 := by
   simp_rw [mem_fundamentalDomain, ← Int.floor_eq_zero_iff]
   constructor <;> intro h
   · simp_rw [floor, h, zero_smul, Finset.sum_const, smul_zero]

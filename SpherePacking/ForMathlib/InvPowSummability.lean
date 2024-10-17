@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Bhavik Mehta
 -/
 import Mathlib
-import Mathlib.Algebra.Module.Zlattice.Basic
+import Mathlib.Algebra.Module.ZLattice.Basic
 import SpherePacking.Basic.PeriodicPacking
 
 /-!
@@ -218,12 +218,12 @@ a lattice such that the number of orbits is finite.
 
 section Sets_Acted_Upon_By_Lattice
 
-open Zlattice Zspan
+open ZLattice ZSpan
 
 theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))}
-  [inst : DiscreteTopology ↥Λ] [inst_1 : IsZlattice ℝ Λ] :
+  [inst : DiscreteTopology ↥Λ] [inst_1 : IsZLattice ℝ Λ] :
   let bℤ := (Module.Free.chooseBasis ℤ ↥Λ).reindex (basis_index_equiv Λ);
-  let bℝ := Basis.ofZlatticeBasis ℝ Λ bℤ;
+  let bℝ := Basis.ofZLatticeBasis ℝ Λ bℤ;
   let D := {m | ∀ (i : Fin d), (bℝ.repr m) i ∈ Set.Ico (-1) 1};
   Finite ↑(X ∩ D) :=
   -- Consider function from this thing to set of orbits. Show preimage of any singleton in `Quotient` consists of 2^d elements. Then card is card of 2^d
@@ -232,17 +232,17 @@ theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : AddSu
 -- set_option diagnostics true
 theorem Summable_Inverse_Powers_of_Finite_Orbits
   {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))}
-  [DiscreteTopology Λ] [IsZlattice ℝ Λ] (ρ : AddAction Λ X)
+  [DiscreteTopology Λ] [IsZLattice ℝ Λ] (ρ : AddAction Λ X)
   [Fintype (Quotient ρ.orbitRel)]
-  -- (hFin : Finite ((X ∩ (fundamentalDomain (Basis.ofZlatticeBasis ℝ Λ ((Zlattice.module_free ℝ Λ).chooseBasis)))) : Set (EuclideanSpace ℝ (Fin d))))
+  -- (hFin : Finite ((X ∩ (fundamentalDomain (Basis.ofZLatticeBasis ℝ Λ ((ZLattice.module_free ℝ Λ).chooseBasis)))) : Set (EuclideanSpace ℝ (Fin d))))
   : Inv_Pow_Norm_Summable_Over_Set_Euclidean X := by
   rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean]
   simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs]
   intro ε hε
   -- Translating and scaling fundamental domains could be a good idea - discussion with Bhavik
   let bℤ : Basis _ ℤ Λ :=
-    ((Zlattice.module_free ℝ Λ).chooseBasis).reindex (Zlattice.basis_index_equiv Λ)
-  let bℝ := Basis.ofZlatticeBasis ℝ Λ bℤ
+    ((ZLattice.module_free ℝ Λ).chooseBasis).reindex (ZLattice.basis_index_equiv Λ)
+  let bℝ := Basis.ofZLatticeBasis ℝ Λ bℤ
   let D := {m | ∀ i, bℝ.repr m i ∈ Set.Ico (-1 : ℝ) 1}
   -- let N := Fintype.card ((X ∩ D) : Set (EuclideanSpace ℝ (Fin d)))
 
