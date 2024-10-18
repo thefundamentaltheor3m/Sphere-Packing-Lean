@@ -159,16 +159,15 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
       subst this
       have hv' := (Classical.choose_spec (hD_unique_covers v)).right
       simp at hv'
-      simp_rw [Subtype.forall, AddSubmonoid.mk_vadd, vadd_eq_add, Subtype.mk.injEq, ← add_assoc]
+      simp_rw [Subtype.forall, S.lattice.mk_vadd, vadd_eq_add, Subtype.mk.injEq, ← add_assoc,]
       congr 1
       convert Subtype.ext_iff.mp (hv' _ ?_ ?_)
       · exact add_mem (SetLike.coe_mem _) hy
-      · rw [add_assoc]
+      · simp only [S.lattice.mk_vadd, vadd_eq_add, add_assoc]
         have := (Classical.choose_spec (hD_unique_covers (y + v))).left
-        -- ew.
         change (Classical.choose _ : S.lattice).val + (y + v) ∈ D at this
-        convert this using 5 with x
-        simp [← add_assoc]
+        simp only [Subtype.forall] at this
+        exact this
   invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, hx.left⟩⟧
   left_inv := by
     apply Quotient.ind
@@ -196,12 +195,14 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
   use ⟨v.val, ?_⟩, ?_, ?_
   · apply Set.mem_of_subset_of_mem ?_ v.prop
     rw [← Submodule.coe_toAddSubgroup, Basis.ofZLatticeBasis_span]
+    rfl
   · simp only at hv' ⊢
     convert hv using 1
   · intro s hs
     rw [← hv' ⟨s, ?_⟩ hs]
     apply Set.mem_of_subset_of_mem _ s.prop
     rw [← Submodule.coe_toAddSubgroup, Basis.ofZLatticeBasis_span]
+    rfl
 
 noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
     {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
@@ -214,7 +215,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
       constructor
       · rw [sub_eq_neg_add]
         apply S.lattice_action ?_ hu_centers
-        apply AddSubgroup.neg_mem
+        apply Submodule.neg_mem
         exact (mem_basis_Z_span ..).mp $ Submodule.coe_mem _
       · rw [Set.mem_vadd_set]
         use fract (b.ofZLatticeBasis ℝ _) (u - v), fract_mem_fundamentalDomain _ _, ?_
@@ -225,7 +226,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
       constructor
       · rw [fract, sub_eq_neg_add]
         apply S.lattice_action ?_ hu_centers
-        apply AddSubgroup.neg_mem
+        apply Submodule.neg_mem
         exact (mem_basis_Z_span ..).mp $ Submodule.coe_mem _
       · exact fract_mem_fundamentalDomain _ _
     left_inv := fun ⟨u, ⟨hu_centers, hu_fd⟩⟩ ↦ by
@@ -438,17 +439,17 @@ theorem PeriodicSpherePacking.aux_ge
     · apply neg_mem
       apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
       · rw [S.basis_Z_span]
-        rfl
       · exact hy.left
-    · simp_rw [AddSubmonoid.mk_vadd, vadd_eq_add, neg_add_eq_sub]
-      exact huy
+    · sorry
+      -- simp_rw [S.lattice.mk_vadd, vadd_eq_add, neg_add_eq_sub]
+      -- exact huy
     · apply neg_mem
       apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
       · rw [S.basis_Z_span]
-        rfl
       · exact hx.left
-    · simp_rw [AddSubmonoid.mk_vadd, vadd_eq_add, neg_add_eq_sub]
-      exact hux
+    · sorry
+      -- simp_rw [AddSubmonoid.mk_vadd, vadd_eq_add, neg_add_eq_sub]
+      -- exact hux
 
 private theorem aux'
     {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice)

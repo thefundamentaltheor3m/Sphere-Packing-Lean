@@ -152,9 +152,9 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
     have := S.centers_dist this
     exact (mul_le_mul_left hc).mpr this
 
--- count_heartbeats in
+
 noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
-    PeriodicSpherePacking d := {
+  PeriodicSpherePacking d := {
   S.toSpherePacking.scale hc with
   lattice := c • S.lattice
   lattice_action := fun x y hx hy ↦ by
@@ -173,7 +173,11 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
     -- rw [hε' x hx hx', smul_zero]
     simp only [DistribMulAction.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero]
     right
-    sorry
+    specialize hε' x hx
+    simp only [DistribMulAction.toLinearMap_apply, AddSubgroupClass.coe_norm,
+      Submodule.mk_eq_zero] at hx' hε'
+    rw [norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le, mul_lt_mul_left hc] at hx'
+    exact hε' hx'
   lattice_isZLattice := by
     use ?_
     rw [← S.lattice_isZLattice.span_top]
