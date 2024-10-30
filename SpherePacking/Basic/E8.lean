@@ -176,7 +176,7 @@ theorem E8'_det_aux_4 :
         0,0,0,0,0,1,1,0;0,0,0,0,0,0,5/2,-1/2;0,0,0,0,0,0,0,-2/5] : Matrix (Fin 8) (Fin 8) ℚ).det
       = -1 := by
   rw [Matrix.det_of_upperTriangular]
-  · simp [Fin.prod_univ_eight]; norm_num
+  · simp [Fin.prod_univ_eight];
   · intro i j h
     simp at h
     fin_cases i <;> fin_cases j
@@ -272,7 +272,7 @@ end E8_sum_apply_lemmas
 
 theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Set (Fin 8 → ℝ)) := by
   ext v
-  rw [SetLike.mem_coe, ← Finsupp.range_total, LinearMap.mem_range]
+  rw [SetLike.mem_coe, ← Finsupp.range_linearCombination, LinearMap.mem_range]
   constructor <;> intro hv
   · obtain ⟨hv₁, hv₂⟩ := mem_E8_Set'.mp hv
     convert_to (∃ y : Fin 8 →₀ ℤ, (∑ i, y i • E8_Matrix i) = v)
@@ -336,11 +336,23 @@ theorem E8_neg_mem {a : EuclideanSpace ℝ (Fin 8)} (ha : a ∈ E8_Set) : -a ∈
   rw [E8_Set_eq_span, SetLike.mem_coe] at *
   exact Submodule.neg_mem _ ha
 
-def E8_Lattice : AddSubgroup (EuclideanSpace ℝ (Fin 8)) where
+def E8_AddSubgroup : AddSubgroup (EuclideanSpace ℝ (Fin 8)) where
   carrier := E8_Set
   zero_mem' := by simp [mem_E8_Set]
   add_mem' := E8_add_mem
   neg_mem' := E8_neg_mem
+
+def E8_Lattice : Submodule ℤ (EuclideanSpace ℝ (Fin 8)) where
+  carrier := E8_Set
+  zero_mem' := by simp [mem_E8_Set]
+  add_mem' := E8_add_mem
+  smul_mem' := by
+    intros n v hv
+    simp only [mem_E8_Set] at hv ⊢
+    obtain ⟨hv₁, hv₂⟩ := hv
+    -- Need to do cases on whether n is even or odd
+    -- Then do cases on hv₁
+    sorry
 
 open Topology TopologicalSpace Filter Function InnerProductSpace RCLike
 
@@ -436,15 +448,16 @@ theorem E8Packing_numReps : E8Packing.numReps = 1 := by
   sorry
 
 lemma E8_Matrix_mem (i : Fin 8) : E8_Matrix i ∈ E8_Lattice := by
-  rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe]
+  rw [E8_Lattice, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, E8_Set_eq_span,
+      SetLike.mem_coe]
   exact Set.mem_of_subset_of_mem Submodule.subset_span (Set.mem_range_self i)
 
 -- This is ugly but just hide it and pretend it's not there
 private lemma linearIndependent_subtype_thing
     {d : ℕ} {ι : Type*} [Fintype ι]
     {b : ι → EuclideanSpace ℝ (Fin d)} (hb : LinearIndependent ℤ b)
-    {s : AddSubgroup (EuclideanSpace ℝ (Fin d))}
-    (hs : s = (Submodule.span ℤ (Set.range b)).toAddSubgroup)
+    {s : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
+    (hs : s = (Submodule.span ℤ (Set.range b)))
     (h : ∀ i, b i ∈ s) :
     LinearIndependent ℤ (fun i ↦ (⟨b i, h i⟩ : s)) := by
   subst hs
@@ -460,12 +473,13 @@ noncomputable def E8_Basis : Basis (Fin 8) ℤ E8_Lattice := by
     -- This is the worst proof ever but I don't want to waste my time on this
     change (_ : Set E8_Lattice) ⊆ _
     intro ⟨x, hx⟩ _
-    simp_rw [E8_Lattice, E8_Set_eq_span, AddSubgroup.mem_mk] at hx
+    simp_rw [E8_Lattice, E8_Set_eq_span, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk] at hx
     rw [SetLike.mem_coe, Finsupp.mem_span_range_iff_exists_finsupp] at hx ⊢
     obtain ⟨c, hc⟩ := hx
     use c
     apply Subtype.ext_iff.mpr
     simp only [Finsupp.sum, ← hc, AddSubgroup.val_finset_sum, AddSubgroupClass.coe_zsmul]
+    exact Submodule.coe_sum E8_Lattice (fun i ↦ c i • ⟨E8_Matrix i, E8_Matrix_mem i⟩) c.support
   · exact (algebraMap ℤ ℝ).injective_int
 
 -- sanity check
