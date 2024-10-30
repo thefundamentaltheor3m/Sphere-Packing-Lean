@@ -26,7 +26,15 @@ lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * r
   · rw [← tsum_subtype]
     convert (Finset.tsum_subtype {0} (fun _ ↦ a 0)).symm with x
     · rw [Finset.sum_const, Finset.card_singleton, one_smul]
-    · exact Finset.mem_singleton.symm
+    · -- Why did this get so complicated all of a sudden
+      ext n
+      simp only [Set.mem_singleton_iff]
+      constructor
+      · intro hn
+        rw [hn]
+        exact Finset.singleton_subset_set_iff.mp fun ⦃a⦄ a ↦ a
+      · intro hn
+        exact Finset.mem_zero.mp hn
   · intro k
     rcases eq_or_ne k 0 with (rfl | hk)
     · simpa using tendsto_const_nhds
