@@ -22,34 +22,35 @@ import SpherePacking.ForMathlib.InvPowSummability
 open BigOperators Bornology
 
 variable {d : ℕ} [Fact (0 < d)]
-variable (Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
+variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
 
-noncomputable section Dual_Lattice
 
-/-
-This section defines the Dual Lattice of a Lattice. Taken from `SpherePacking/ForMathlib/Dual.lean`.
--/
+-- noncomputable section Dual_Lattice
 
-def DualLattice : AddSubgroup (EuclideanSpace ℝ (Fin d)) where
-  carrier := { x | ∀ l : Λ, ∃ n : ℤ, ⟪x, l⟫_ℝ = ↑n }
-  zero_mem' := by
-    simp only [Subtype.forall, Set.mem_setOf_eq, inner_zero_left]
-    intro a _
-    use 0
-    rw [Int.cast_zero]
-  add_mem' := by
-    intros x y hx hy l
-    obtain ⟨n, hn⟩ := hx l
-    obtain ⟨m, hm⟩ := hy l
-    use n + m
-    simp only [inner_add_left, hn, hm, Int.cast_add]
-  neg_mem' := by
-    intros x hx l
-    obtain ⟨n, hn⟩ := hx l
-    use -n
-    simp only [inner_neg_left, hn, Int.cast_neg]
+-- /-
+-- This section defines the Dual Lattice of a Lattice. Taken from `SpherePacking/ForMathlib/Dual.lean`.
+-- -/
 
-end Dual_Lattice
+-- def DualLattice : AddSubgroup (EuclideanSpace ℝ (Fin d)) where
+--   carrier := { x | ∀ l : Λ, ∃ n : ℤ, ⟪x, l⟫_ℝ = ↑n }
+--   zero_mem' := by
+--     simp only [Subtype.forall, Set.mem_setOf_eq, inner_zero_left]
+--     intro a _
+--     use 0
+--     rw [Int.cast_zero]
+--   add_mem' := by
+--     intros x y hx hy l
+--     obtain ⟨n, hn⟩ := hx l
+--     obtain ⟨m, hm⟩ := hy l
+--     use n + m
+--     simp only [inner_add_left, hn, hm, Int.cast_add]
+--   neg_mem' := by
+--     intros x hx l
+--     obtain ⟨n, hn⟩ := hx l
+--     use -n
+--     simp only [inner_neg_left, hn, Int.cast_neg]
+
+-- end Dual_Lattice
 
 section Euclidean_Space
 
@@ -69,8 +70,11 @@ end Euclidean_Space
 open scoped FourierTransform
 
 open Complex Real
+open LinearMap (BilinForm)
 
 noncomputable section PSF_L
+
+instance inst₁ : IsScalarTower ℤ ℝ (EuclideanSpace ℝ (Fin d)) := AddCommGroup.intIsScalarTower
 
 /-
 This section defines the Poisson Summation Formual, Lattice Version (`PSF_L`). This is a direct
@@ -90,15 +94,17 @@ def PSF_Conditions (f : EuclideanSpace ℝ (Fin d) → ℂ) : Prop :=
   Summable f ∧
   sorry
 
+-- include inst₁ in
 theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
   (v : EuclideanSpace ℝ (Fin d)) :
-  ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) * ∑' m : DualLattice Λ, (𝓕 f m) *
-  exp (2 * π * I * ⟪v, m⟫_ℝ) :=
+  ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) * ∑' m : BilinForm.dualSubmodule Inner Λ,
+  (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) :=
   sorry
 
 -- The version below is on the blueprint. I'm pretty sure it can be removed.
+-- include inst₁ in
 theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
-  ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : DualLattice Λ, (𝓕 f m) := by
+  ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : BilinForm.dualSubmodule Inner Λ, (𝓕 f m) := by
   have := PSF_L Λ hf (0 : EuclideanSpace ℝ (Fin d))
   simp only [zero_add, inner_zero_left, ofReal_zero, mul_zero, Complex.exp_zero, mul_one] at this
   exact this
