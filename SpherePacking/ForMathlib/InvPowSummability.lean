@@ -220,8 +220,8 @@ section Sets_Acted_Upon_By_Lattice
 
 open ZLattice ZSpan
 
-theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))}
-  [inst : DiscreteTopology ↥Λ] [inst_1 : IsZLattice ℝ Λ] :
+theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))}
+  {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))} [DiscreteTopology ↥Λ] [IsZLattice ℝ Λ] :
   let bℤ := (Module.Free.chooseBasis ℤ ↥Λ).reindex (basis_index_equiv Λ);
   let bℝ := Basis.ofZLatticeBasis ℝ Λ bℤ;
   let D := {m | ∀ (i : Fin d), (bℝ.repr m) i ∈ Set.Ico (-1) 1};
@@ -231,7 +231,7 @@ theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : AddSu
 
 -- set_option diagnostics true
 theorem Summable_Inverse_Powers_of_Finite_Orbits
-  {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : AddSubgroup (EuclideanSpace ℝ (Fin d))}
+  {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
   [DiscreteTopology Λ] [IsZLattice ℝ Λ] (ρ : AddAction Λ X)
   [Fintype (Quotient ρ.orbitRel)]
   -- (hFin : Finite ((X ∩ (fundamentalDomain (Basis.ofZLatticeBasis ℝ Λ ((ZLattice.module_free ℝ Λ).chooseBasis)))) : Set (EuclideanSpace ℝ (Fin d))))
