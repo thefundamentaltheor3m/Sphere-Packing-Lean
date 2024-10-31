@@ -6,3 +6,8 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
+import SpherePacking.ModularForms.Eisenstein
+
+local notation "V" => EuclideanSpace ℝ (Fin 8)
+
+
