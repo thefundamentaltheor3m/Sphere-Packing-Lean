@@ -20,7 +20,9 @@ import SpherePacking.ForMathlib.UpperHalfPlane
 import SpherePacking.ForMathlib.Vec
 import SpherePacking.ForMathlib.VolumeOfBalls
 import SpherePacking.ForMathlib.Zlattice
+import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.ModularForms.AtImInfty
+import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.SlashActionAuxil

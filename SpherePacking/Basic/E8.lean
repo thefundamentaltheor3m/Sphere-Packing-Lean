@@ -115,17 +115,7 @@ theorem E8_mul_F8_eq_id_Q : E8' * F8' = !![
   norm_num
 
 @[simp]
-theorem E8_mul_F8_eq_one_Q : E8' * F8' = 1 := by
-  -- TODO: un-sorry (slow)
-  sorry
-  -- convert E8_mul_F8_eq_id_Q
-  -- rw [← Matrix.diagonal_one]
-  -- ext i j
-  -- by_cases h : i = j
-  -- · subst h
-  --   fin_cases i <;> norm_num
-  -- · rw [Matrix.diagonal_apply_ne _ h]
-  --   fin_cases i <;> fin_cases j <;> norm_num at h ⊢
+theorem E8_mul_F8_eq_one_Q : E8' * F8' = 1 := by rw [E8_mul_F8_eq_id_Q]; decide
 
 @[simp]
 theorem F8_mul_E8_eq_one_Q : F8' * E8' = 1 := by

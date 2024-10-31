@@ -31,8 +31,8 @@ variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ]
 -- This section defines the Dual Lattice of a Lattice. Taken from `SpherePacking/ForMathlib/Dual.lean`.
 -- -/
 
--- def DualLattice : AddSubgroup (EuclideanSpace ℝ (Fin d)) where
---   carrier := { x | ∀ l : Λ, ∃ n : ℤ, ⟪x, l⟫_ℝ = ↑n }
+-- def bilinFormOfRealInner.dualSubmodule : AddSubgroup (EuclideanSpace ℝ (Fin d)) where
+--   carrier := { x | ∀ l : Λ, ∃ n : ℤ, ⟪x, l⟫_[ℝ] = ↑n }
 --   zero_mem' := by
 --     simp only [Subtype.forall, Set.mem_setOf_eq, inner_zero_left]
 --     intro a _
@@ -74,7 +74,7 @@ open LinearMap (BilinForm)
 
 noncomputable section PSF_L
 
-instance inst₁ : IsScalarTower ℤ ℝ (EuclideanSpace ℝ (Fin d)) := AddCommGroup.intIsScalarTower
+-- instance inst₁ : IsScalarTower ℤ ℝ (EuclideanSpace ℝ (Fin d)) := AddCommGroup.intIsScalarTower
 
 /-
 This section defines the Poisson Summation Formual, Lattice Version (`PSF_L`). This is a direct
@@ -94,30 +94,27 @@ def PSF_Conditions (f : EuclideanSpace ℝ (Fin d) → ℂ) : Prop :=
   Summable f ∧
   sorry
 
--- include inst₁ in
 theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
   (v : EuclideanSpace ℝ (Fin d)) :
-  ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) * ∑' m : BilinForm.dualSubmodule Inner Λ,
-  (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) :=
+  ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
+    ∑' m : bilinFormOfRealInner.dualSubmodule Λ,
+  (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ ]) :=
   sorry
 
 -- The version below is on the blueprint. I'm pretty sure it can be removed.
--- include inst₁ in
 theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
-  ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : BilinForm.dualSubmodule Inner Λ, (𝓕 f m) := by
-  have := PSF_L Λ hf (0 : EuclideanSpace ℝ (Fin d))
-  simp only [zero_add, inner_zero_left, ofReal_zero, mul_zero, Complex.exp_zero, mul_one] at this
-  exact this
+  ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m) := by
+  simpa using PSF_L Λ hf 0
 
 namespace SchwartzMap
 
 theorem PoissonSummation_Lattices (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
   (v : EuclideanSpace ℝ (Fin d)) : ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
-  ∑' m : DualLattice Λ, (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_ℝ) := by
+  ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) := by
   sorry
 
 -- theorem PoissonSummation_Lattices' (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) :
---   ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : DualLattice Λ, (𝓕 f m) := by
+--   ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m) := by
 --   sorry
 
 end SchwartzMap
@@ -283,16 +280,16 @@ instance : DecidableEq (EuclideanSpace ℝ (Fin d)) :=
 -- Now a small theorem from Complex analysis:
 local notation "conj" => starRingEnd ℂ
 theorem Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
-  cexp (-(2 * ↑π * I * ↑⟪x, m⟫_ℝ)) = conj (cexp (2 * ↑π * I * ↑⟪x, m⟫_ℝ)) :=
-  calc cexp (-(2 * ↑π * I * ↑⟪x, m⟫_ℝ))
-  _ = Circle.exp (-2 * π * ⟪x, m⟫_ℝ)
+  cexp (-(2 * ↑π * I * ↑⟪x, m⟫_[ℝ])) = conj (cexp (2 * ↑π * I * ↑⟪x, m⟫_[ℝ])) :=
+  calc cexp (-(2 * ↑π * I * ↑⟪x, m⟫_[ℝ]))
+  _ = Circle.exp (-2 * π * ⟪x, m⟫_[ℝ])
       := by
           rw [Circle.coe_exp]
           push_cast
           ring_nf
-  _ = conj (Circle.exp (2 * π * ⟪x, m⟫_ℝ))
+  _ = conj (Circle.exp (2 * π * ⟪x, m⟫_[ℝ]))
       := by rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
-  _= conj (cexp (2 * ↑π * I * ↑⟪x, m⟫_ℝ))
+  _= conj (cexp (2 * ↑π * I * ↑⟪x, m⟫_[ℝ]))
       := by
           rw [Circle.coe_exp]
           apply congrArg conj

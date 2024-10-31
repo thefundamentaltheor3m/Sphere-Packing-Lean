@@ -257,8 +257,8 @@ private theorem calc_steps :
             sorry
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice) *
-      ∑' m : DualLattice P.lattice, (𝓕 f m) *
-      exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)).re
+      ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m) *
+      exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])).re
         := by
             -- First, we apply the fact that two sides are equal if they're equal in ℂ.
             apply congrArg re
@@ -269,9 +269,9 @@ private theorem calc_steps :
             ext y
             -- Now that we've isolated the innermost sum, we can use the PSF-L.
             exact SchwartzMap.PoissonSummation_Lattices P.lattice f (x - ↑y)
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re * (
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
-      exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
+      exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
         := by
             apply congrArg re
             simp only [tsum_mul_left]
@@ -279,16 +279,16 @@ private theorem calc_steps :
             simp only [← tsum_mul_left]
             -- We want to apply `tsum_comm`, which requires some summability conditions.
             have hSummable₁ : Summable (Function.uncurry fun
-            (m : ↥(DualLattice P.lattice)) (x : ↑(P.centers ∩ D)) ↦
+            (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x : ↑(P.centers ∩ D)) ↦
             ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 f ↑m).re * exp (2 * ↑π * I *
-            ↑⟪(x : EuclideanSpace ℝ (Fin d)) - ↑x_1, ↑m⟫_ℝ)) := by
+            ↑⟪(x : EuclideanSpace ℝ (Fin d)) - (x_1 : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) := by
               sorry
             rw [← tsum_comm hSummable₁]
             apply congrArg _ _
             ext x
             have hSummable₂ : Summable (Function.uncurry fun
-            (m : ↥(DualLattice P.lattice)) (x_1 : ↑(P.centers ∩ D)) ↦
-            ↑(𝓕 f ↑m).re * exp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)) - ↑x_1, ↑m⟫_ℝ)) := by
+            (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x_1 : ↑(P.centers ∩ D)) ↦
+            ↑(𝓕 f ↑m).re * exp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)) - ↑x_1, ↑m⟫_[ℝ])) := by
               sorry
             rw [← tsum_comm hSummable₂]
             apply congrArg _ _
@@ -299,10 +299,10 @@ private theorem calc_steps :
             · rw [isUnit_iff_ne_zero]
               exact Complex.exp_ne_zero _
             · exact (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re * (
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
-      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ) *
-      exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ))).re
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
+      exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
         := by
             -- As before, we have to go through a bunch of `congrArg`s to isolate the expressions we
             -- are really trying to show are equal.
@@ -318,11 +318,11 @@ private theorem calc_steps :
             rw [sub_eq_neg_add, inner_add_left]
             push_cast  -- Can this be condensed into a rw so that there's just a bunch of rws?
             rw [mul_add, Complex.exp_add, mul_comm]
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ D),
-      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       (∑' y : ↑(P.centers ∩ D),
-      exp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)))).re
+      exp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])))).re
         := by
             apply congrArg re
             apply congrArg _ _
@@ -337,11 +337,11 @@ private theorem calc_steps :
             apply congrArg _ _
             ext y
             simp only [inner_neg_left, ofReal_neg, mul_neg]
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ D),
-      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) *
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       conj (∑' x : ↑(P.centers ∩ D),
-      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) -- Need its complex conjugate
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) -- Need its complex conjugate
       ).re
         := by
             apply congrArg re
@@ -353,15 +353,15 @@ private theorem calc_steps :
             apply congrArg _ _
             ext x
             exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
-  _ = (1 / ZLattice.covolume P.lattice) * ∑' m : DualLattice P.lattice, (𝓕 f m).re *
+  _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re *
       (Complex.abs (∑' x : ↑(P.centers ∩ D),
-      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
             -- Need to turn the RHS into the real part of a complex number
             rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
-                               ∑' (m : ↥(DualLattice P.lattice)),
+                               ∑' (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)),
                                (𝓕 f ↑m).re * Complex.abs (∑' (x : ↑(P.centers ∩ D)),
-                               cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_ℝ)) ^ 2)]
+                               cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
             -- Now we can apply the fact that the real parts of both expressions are equal if they
             -- are equal in ℂ.
             apply congrArg re
@@ -375,25 +375,25 @@ private theorem calc_steps :
             norm_cast
   -- We split the sum up into the `m = 0` and `m ≠ 0` parts.
   _ = (1 / ZLattice.covolume P.lattice) * (
-      (∑' (m : DualLattice P.lattice), if hm : m = (0 : EuclideanSpace ℝ (Fin d)) then 0 else
+      (∑' (m : bilinFormOfRealInner.dualSubmodule P.lattice), if hm : m = (0 : EuclideanSpace ℝ (Fin d)) then 0 else
       (𝓕 f m).re * (Complex.abs (∑' x : ↑(P.centers ∩ D),
-      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2))
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
       +
       (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
       (Complex.abs (∑' x : ↑(P.centers ∩ D),
-      exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2))
+      exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
         := by
             apply congrArg _ _
             rw [add_comm]
-            have hSummable : Summable (fun (m : ↥(DualLattice P.lattice)) =>
+            have hSummable : Summable (fun (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) =>
               (𝓕 f m).re * (Complex.abs (∑' x : ↑(P.centers ∩ D),
-              exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)) := by
+              exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
               sorry
-            rw [tsum_eq_add_tsum_ite hSummable (0 : ↥(DualLattice P.lattice))]
+            rw [tsum_eq_add_tsum_ite hSummable (0 : ↥(bilinFormOfRealInner.dualSubmodule P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
   _ ≥ (1 / ZLattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
       (Complex.abs (∑' x : ↑(P.centers ∩ D),
-      exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_ℝ)) ^ 2)
+      exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
             -- We need to show that the `m ≠ 0` part is nonpositive.
             -- We begin by subtracting both sides, and thereby, isolating the `m ≠ 0` part.

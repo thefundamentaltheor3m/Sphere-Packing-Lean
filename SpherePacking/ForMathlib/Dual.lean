@@ -13,7 +13,7 @@ simply use the notion of a dual submodule to talk about the dual of a lattice.
 -- import Mathlib.Algebra.Module.ZLattice.Basic
 -- import Mathlib.Algebra.Module.ZLattice.Covolume
 -- import Mathlib.Analysis.InnerProductSpace.Basic
--- import Mathlib.LinearAlgebra.BilinearForm.DualLattice
+-- import Mathlib.LinearAlgebra.BilinearForm.bilinFormOfRealInner.dualSubmodule
 -- import Mathlib.LinearAlgebra.FreeModule.Basic
 
 -- -- TODO: Generalise to other fields like ℂ
@@ -44,7 +44,7 @@ simply use the notion of a dual submodule to talk about the dual of a lattice.
 -- end ZSpan
 
 -- /-
--- Essentially, `LinearAlgebra.BilinearForm.DualLattice` contains a lot of things about dual
+-- Essentially, `LinearAlgebra.BilinearForm.bilinFormOfRealInner.dualSubmodule` contains a lot of things about dual
 -- submodules. The key is to specialise everything to the case of ℤ-submodules and apply that to
 -- lattices. The trouble is, we're doing everything using `ZLattice` instead of `ZSpan`. We do not a
 -- priori have access to any submodule-related results. We need to get to the submodule level somehow
@@ -66,7 +66,7 @@ simply use the notion of a dual submodule to talk about the dual of a lattice.
 --   (L : Submodule ℤ E) [inst1 : DiscreteTopology L] [inst2 : IsZLattice ℝ L]
 
 -- def Dual : Submodule ℤ E where
---   carrier := { x | ∀ l : L, ∃ n : ℤ, ⟨x, l⟫_ℝ = ↑n }
+--   carrier := { x | ∀ l : L, ∃ n : ℤ, ⟨x, l⟫_[ℝ] = ↑n }
 --   zero_mem' := by
 --     simp only [Subtype.forall, Set.mem_setOf_eq, inner_zero_left]
 --     intro a _
@@ -85,7 +85,7 @@ simply use the notion of a dual submodule to talk about the dual of a lattice.
 --     simp only [inner_neg_left, hn, Int.cast_neg]
 
 -- -- Note to self:
--- -- Fix the error by studying `LinearAlgebra.BilinearForm.DualLattice` in more detail
+-- -- Fix the error by studying `LinearAlgebra.BilinearForm.bilinFormOfRealInner.dualSubmodule` in more detail
 -- -- theorem Duel_eq_span_of_dual : ZLattice.Dual L =
 -- --  ZSpan.dual (Module.Free.chooseBasis ℤ L E) :=
 -- --   sorry
@@ -105,5 +105,3 @@ simply use the notion of a dual submodule to talk about the dual of a lattice.
 -- instance instIsZLatticeDual : IsZLattice ℝ (ZLattice.Dual L) := sorry
 
 -- end ZLattice
-
-
