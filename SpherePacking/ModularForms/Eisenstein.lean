@@ -9,12 +9,12 @@ open EisensteinSeries ModularForm
 
 def standardcongruencecondition : Fin 2 → ZMod ((1 : ℕ+) : ℕ) := 0
 
-private lemma aux4 : (3 : ℤ) ≤ 4 := Int.le.intro_sub (4 - Nat.succ 2) rfl
-private lemma aux6 : (3 : ℤ) ≤ 6 := Int.le.intro_sub (6 - Nat.succ 2) rfl
+private lemma aux4 : (3 : ℤ) ≤ 4 := by norm_num
+private lemma aux6 : (3 : ℤ) ≤ 6 := by norm_num
 
 noncomputable def E₂ := eisensteinSeries_SIF standardcongruencecondition 2
-noncomputable def E₄ := eisensteinSeries_MF (aux4) standardcongruencecondition
-noncomputable def E₆ := eisensteinSeries_MF (aux6) standardcongruencecondition
+noncomputable def E₄ := eisensteinSeries_MF aux4 standardcongruencecondition
+noncomputable def E₆ := eisensteinSeries_MF aux6 standardcongruencecondition
 
 -- Need to try and get holomorphicity conditions too
 
@@ -25,3 +25,6 @@ noncomputable def Δ (z : UpperHalfPlane) := ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 172
 noncomputable def φ₀ (z : UpperHalfPlane) := (((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) / (Δ z)
 noncomputable def φ₂' (z : UpperHalfPlane) := (E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z)
 noncomputable def φ₄' (z : UpperHalfPlane) := ((E₄ z) ^ 2) / (Δ z)
+
+noncomputable def φ₀'' (z : ℂ) : ℂ :=
+  if hz : 0 < z.im then φ₀ ⟨z, hz⟩ else 0
