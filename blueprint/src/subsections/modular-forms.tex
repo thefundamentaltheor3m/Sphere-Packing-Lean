@@ -266,7 +266,7 @@ A key fact in the theory of modular forms is that the spaces $M_k(\Gamma)$ are f
 To prove this we will do use the following non-standard proof. First we have the following result.
 
 \begin{theorem}\label{thm:nonpos_wt}\uses{def:holomorphic-modular-form}\lean{ModularForm}\leanok
-    Let $k \in \Z$ with $k \lt 0$. Then $M_k(\Gamma_1) = \{0\}$ and moreover $\dim M_0(\Gamma(1)) = 1$.
+    Let $k \in \Z$ with $k < 0$. Then $M_k(\Gamma_1) = \{0\}$ and moreover $\dim M_0(\Gamma(1)) = 1$.
 \end{theorem}
 \begin{proof}
     The proof makes use of the maximum modulus principle, as its already been formalised we skipt the details here but see the lean proof for details.
@@ -274,11 +274,11 @@ To prove this we will do use the following non-standard proof. First we have the
 
 
 \begin{theorem}\label{thm:lvl1_dims}\uses{def:holomorphic-modular-form, lemma:disc-E4E6, def:disc-definition}\lean{ModularForm}\leanok
-    Let $k \in \Z$ with $k \ge 0$ and even. Then $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor $ if $k \equi 2 \mod 12$ and $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor + 1$ if $k \nequi 2 \mod 12$.
+    Let $k \in \Z$ with $k \ge 0$ and even. Then $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor $ if $k \equiv 2 \mod 12$ and $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor + 1$ if $k \not\equiv 2 \mod 12$.
 \end{theorem}
 \begin{proof}
 
-First we note that for $2 \lt k$ we have $\dim(M_k(\Gamma_1)) = 1 + \dim S_k(\Gamma_1)$. This follows since we know the $E_k$ are in $M_k$ so by scalling appropriately, any non-cuspform $f \in M_k$ we would have $f - a E_k \in S_k$ for some $a$.
+First we note that for $2 < k$ we have $\dim(M_k(\Gamma_1)) = 1 + \dim S_k(\Gamma_1)$. This follows since we know the $E_k$ are in $M_k$ so by scalling appropriately, any non-cuspform $f \in M_k$ we would have $f - a E_k \in S_k$ for some $a$.
 
 Next, note that  $S_k(\Gamma_1)$ is isomorphic to $M_{k-12}(\Gamma_1)$, since if $f \in S_k$ then $f/ \Delta$ is now a modular form (using the product expansion of $\Delta$ and its non-vanishing on $\mathfrak{H}$) of weight $k-12$. Note its important that $f$ is a cuspform so that the quotient by $\Delta$ is a modular form.
 
