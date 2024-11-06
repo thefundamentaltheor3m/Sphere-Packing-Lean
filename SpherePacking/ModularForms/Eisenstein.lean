@@ -2,7 +2,7 @@
 The purpose of this file is to define the Eisenstein series we are interested in using more convenient notation.
 -/
 
-import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
+import Mathlib
 -- import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
 
 open EisensteinSeries ModularForm
@@ -41,6 +41,17 @@ end Holomorphicity
 
 noncomputable section Integrability
 
--- Here, we show that 
+-- Here, we show that
 
 end Integrability
+
+open Complex Real
+
+section Product_Formula
+
+theorem DiscriminantProductFormula (z : UpperHalfPlane) : Δ z = cexp (2 * π * I * z) * ∏' (n : ℕ+),
+  (1 - cexp (2 * π * I * n * z)) ^ 24 := sorry
+
+end Product_Formula
+
+#min_imports
