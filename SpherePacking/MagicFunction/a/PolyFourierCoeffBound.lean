@@ -124,7 +124,7 @@ private lemma step_7 :
   ∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24 ≤
   rexp (-π * (n₀ - 2) * z.im) * abs (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
   (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := by
-  
+
   sorry
 
 private lemma step_8 :
