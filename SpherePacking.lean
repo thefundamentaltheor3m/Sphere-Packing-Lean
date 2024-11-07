@@ -19,7 +19,7 @@ import SpherePacking.ForMathlib.SlashActions
 import SpherePacking.ForMathlib.UpperHalfPlane
 import SpherePacking.ForMathlib.Vec
 import SpherePacking.ForMathlib.VolumeOfBalls
-import SpherePacking.ForMathlib.Zlattice
+import SpherePacking.ForMathlib.ZLattice
 import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.a.PolyFourierCoeffBound
 import SpherePacking.ModularForms.AtImInfty
