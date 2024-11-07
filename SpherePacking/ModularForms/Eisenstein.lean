@@ -5,19 +5,24 @@ The purpose of this file is to define the Eisenstein series we are interested in
 import Mathlib
 -- import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
 
-open EisensteinSeries ModularForm
+open EisensteinSeries ModularForm Complex Real
 
 noncomputable section Definitions
 
 def standardcongruencecondition : Fin 2 → ZMod ((1 : ℕ+) : ℕ) := 0
 
-private lemma aux4 : (3 : ℤ) ≤ 4 := by norm_num
-private lemma aux6 : (3 : ℤ) ≤ 6 := by norm_num
+-- private lemma aux4 : (3 : ℤ) ≤ 4 := by norm_num
+-- private lemma aux6 : (3 : ℤ) ≤ 6 := by norm_num
 
 /- The Eisenstein Series E₂, E₄ and E₆ -/
-def E₂ := eisensteinSeries_SIF standardcongruencecondition 2
-def E₄ := eisensteinSeries_MF aux4 standardcongruencecondition
-def E₆ := eisensteinSeries_MF aux6 standardcongruencecondition
+def E₂ : UpperHalfPlane → ℂ := sorry -- eisensteinSeries_SIF standardcongruencecondition 2
+def E₄ : ModularForm (CongruenceSubgroup.Gamma ↑1) 4 :=
+  eisensteinSeries_MF (by norm_num) standardcongruencecondition
+def E₆ : ModularForm (CongruenceSubgroup.Gamma ↑1) 6 :=
+  eisensteinSeries_MF (by norm_num) standardcongruencecondition
+
+lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
+    1 - 24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * I * n * z) / (1 - cexp (2 * π * I * n * z)) := sorry
 
 /- The discriminant form -/
 def Δ (z : UpperHalfPlane) := ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 1728
@@ -48,6 +53,9 @@ end Integrability
 open Complex Real
 
 section Product_Formula
+
+lemma MultipliableDiscriminantProductExpansion : Multipliable (fun (z : UpperHalfPlane) =>
+  cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := sorry
 
 theorem DiscriminantProductFormula (z : UpperHalfPlane) : Δ z = cexp (2 * π * I * z) * ∏' (n : ℕ+),
   (1 - cexp (2 * π * I * n * z)) ^ 24 := sorry
