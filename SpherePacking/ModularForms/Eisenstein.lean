@@ -35,7 +35,13 @@ def E₆ : ModularForm (CongruenceSubgroup.Gamma ↑1) 6 :=
 
 def S0 : Set ℤ := {0}ᶜ
 
-def G₂ : ℍ → ℂ := fun z => ∑' (m : ℤ), (∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2)
+def G₂ : ℍ → ℂ := fun z => ∑' (m : ℤ), (∑' (n : ℤ), 1 / (m * z + n) ^ 2) --hmm is this right?
+
+lemma G₂_eq1 (z : ℍ) : G₂ z = 2 * riemannZeta 2 +
+  ∑' (m : ℕ+), ∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2 := by
+  rw [G₂]
+
+  sorry
 
 /-This is proven in the modular forms repo. -/
 lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
@@ -43,7 +49,20 @@ lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
 
 /-Check that we didnt define the zero function! -/
 lemma G2_summable (z : ℍ) : Summable fun m : ℤ =>  (∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2) := by
+  --is this true??
   sorry
+
+
+/-This is from the modforms repo, so no need to prove it. -/
+theorem series_eql' (z : ℍ) :
+    ↑π * Complex.I - 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * z * n) =
+      1 / z + ∑' n : ℕ+, (1 / ((z : ℂ) - n) + 1 / (z + n)) := sorry
+
+/-This is from the modforms repo, so no need to prove it. -/
+theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
+    ∑' d : ℤ, 1 / ((z : ℂ) + d) ^ k =
+      (-2 * ↑π * Complex.I) ^ k / (k - 1)! *
+      ∑' n : ℕ+, n ^ ((k - 1) ) * Complex.exp (2 * ↑π * Complex.I * z * n) := sorry
 
 def E₂ : ℍ → ℂ := (1 / (2 * riemannZeta 2)) •  G₂
 
