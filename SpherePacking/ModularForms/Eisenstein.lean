@@ -37,11 +37,35 @@ def S0 : Set ℤ := {0}ᶜ
 
 def G₂ : ℍ → ℂ := fun z => ∑' (m : ℤ), (∑' (n : ℤ), 1 / (m * z + n) ^ 2) --hmm is this right?
 
-lemma G₂_eq1 (z : ℍ) : G₂ z = 2 * riemannZeta 2 +
+/--Maybe this is the definition we want as I cant see how to easily show the other outer sum is
+absolutely convergent. -/
+def G₂' : ℍ → ℂ := fun z =>  2 * riemannZeta 2 + limUnder (atTop)
+    (fun k : ℕ+ => ∑ m in Finset.range k, 2 • (∑' (n : ℤ), 1 / ((m + 1 : ℂ) * z + n) ^ 2))
+
+lemma G₂_eq1 (z : ℍ) : G₂' z = 2 * riemannZeta 2 +
   ∑' (m : ℕ+), ∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2 := by
-  rw [G₂]
+  rw [G₂']
 
   sorry
+
+lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
+  (fun N : ℕ => ∑ n in (Finset.Icc (-(N : ℤ)) (N : ℤ)),
+    (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = 0 := by
+  apply Filter.Tendsto.limUnder_eq
+  rw [@NormedAddCommGroup.tendsto_nhds_zero]
+  intro ε hε
+  simp only [  norm_eq_abs, eventually_atTop, ge_iff_le]
+  use 1
+  intro b hb
+  have : ∑ n in (Finset.Icc (-(b : ℤ)) (b : ℤ)),
+    (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1)) = 0 := by
+    induction' b with b hB
+    aesop
+    sorry
+  rw [this]
+  simp [hε]
+
+
 
 /-This is proven in the modular forms repo. -/
 lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
