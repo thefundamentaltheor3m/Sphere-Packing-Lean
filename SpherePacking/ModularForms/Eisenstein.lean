@@ -48,20 +48,37 @@ lemma G₂_eq1 (z : ℍ) : G₂' z = 2 * riemannZeta 2 +
 
   sorry
 
+lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) = Finset.Ico (-(b : ℤ)) (b) ∪ {-((b+1) : ℤ), (b : ℤ)} :=  by
+  ext n
+  simp
+  omega
+
+
 lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
-  (fun N : ℕ => ∑ n in (Finset.Icc (-(N : ℤ)) (N : ℤ)),
+  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = 0 := by
   apply Filter.Tendsto.limUnder_eq
   rw [@NormedAddCommGroup.tendsto_nhds_zero]
   intro ε hε
   simp only [  norm_eq_abs, eventually_atTop, ge_iff_le]
-  use 1
+  use 0
   intro b hb
-  have : ∑ n in (Finset.Icc (-(b : ℤ)) (b : ℤ)),
-    (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1)) = 0 := by
+  have : ∑ n in (Finset.Ico (-(b : ℤ)) (b : ℤ)),
+    (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1)) = (1 / ((m : ℂ) * z - b) -  1 / (m * z + b))  := by
     induction' b with b hB
     aesop
+    simp only [Nat.cast_add, Nat.cast_one, Int.reduceNeg, one_div,
+      Finset.sum_sub_distrib] at *
+    rw [fsb]
+    rw [Finset.sum_union]
+    rw [Finset.sum_union]
+    have := hB ?_
+
+
+
     sorry
+
+
   rw [this]
   simp [hε]
 
