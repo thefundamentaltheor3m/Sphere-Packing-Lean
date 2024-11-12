@@ -35,20 +35,24 @@ def E₆ : ModularForm (CongruenceSubgroup.Gamma ↑1) 6 :=
 
 def S0 : Set ℤ := {0}ᶜ
 
-def G₂ : ℍ → ℂ := fun z => ∑' (m : ℤ), (∑' (n : ℤ), 1 / (m * z + n) ^ 2) --hmm is this right?
+def G₂' : ℍ → ℂ := fun z => ∑' (m : ℤ), (∑' (n : ℤ), 1 / (m * z + n) ^ 2) --hmm is this right?
 
 /--Maybe this is the definition we want as I cant see how to easily show the other outer sum is
 absolutely convergent. -/
-def G₂' : ℍ → ℂ := fun z =>  2 * riemannZeta 2 + limUnder (atTop)
+def G₂ : ℍ → ℂ := fun z =>  2 * riemannZeta 2 + limUnder (atTop)
     (fun k : ℕ+ => ∑ m in Finset.range k, 2 • (∑' (n : ℤ), 1 / ((m + 1 : ℂ) * z + n) ^ 2))
 
-lemma G₂_eq1 (z : ℍ) : G₂' z = 2 * riemannZeta 2 +
+lemma G₂_eq1 (z : ℍ) : G₂ z = 2 * riemannZeta 2 +
   ∑' (m : ℕ+), ∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2 := by
-  rw [G₂']
-
+  rw [G₂]
+  rw [Filter.Tendsto.limUnder_eq]
+  simp
+  rw [@NormedAddCommGroup.tendsto_atTop]
+  --is this true?
   sorry
 
-lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) = Finset.Ico (-(b : ℤ)) (b) ∪ {-((b+1) : ℤ), (b : ℤ)} :=  by
+lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) = Finset.Ico (-(b : ℤ)) (b) ∪
+    {-((b+1) : ℤ), (b : ℤ)} :=  by
   ext n
   simp
   omega
@@ -76,20 +80,27 @@ lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
 
 
 
-    sorry
+    all_goals{sorry}
 
 
   rw [this]
   simp [hε]
+  sorry
 
 
+lemma PS2 (z : ℍ) (n : ℤ) : limUnder atTop
+  (fun N : ℕ => ∑ m in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+    ∑' m : ℕ+, (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = -2 * π * Complex.I / z := by sorry
+
+lemma G2_alt_eq (z : ℍ) : --this sum is now abs convergent. Idea is to subtract PS1 from the G₂ defn.
+    G₂ z = ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)* z +n)^2 * (m * z + n +1))  := by sorry
 
 /-This is proven in the modular forms repo. -/
 lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
     Summable fun d : ℤ => ((((n : ℂ) * z) + d) ^ k)⁻¹ := by sorry
 
 /-Check that we didnt define the zero function! -/
-lemma G2_summable (z : ℍ) : Summable fun m : ℤ =>  (∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2) := by
+lemma G2'_summable (z : ℍ) : Summable fun m : ℤ =>  (∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2) := by
   --is this true??
   sorry
 
