@@ -58,7 +58,7 @@ lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) = Finset.Ico (-(b : ℤ)) 
   omega
 
 
-lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
+lemma PS1 (z : ℍ) (m : ℤ) (hm : m ≠ 0) : limUnder atTop
   (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = 0 := by
   apply Filter.Tendsto.limUnder_eq
@@ -87,13 +87,29 @@ lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
   simp [hε]
   sorry
 
+lemma ada (f : ℤ → ℂ) (h : ∀ i, f i = 0) : ∑' n, f n = 0 := by
+  convert tsum_zero
+  aesop
 
-lemma PS2 (z : ℍ) (n : ℤ) : limUnder atTop
+
+lemma PS2 (z : ℍ) : ∑' m : S0, (limUnder atTop
+  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+    (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1)))) = 0 := by
+    convert tsum_zero
+    next m =>
+    apply PS1
+    apply m.2
+
+lemma PS3 (z : ℍ) (n : ℤ) : limUnder atTop
   (fun N : ℕ => ∑ m in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     ∑' m : ℕ+, (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = -2 * π * Complex.I / z := by sorry
 
 lemma G2_alt_eq (z : ℍ) : --this sum is now abs convergent. Idea is to subtract PS1 from the G₂ defn.
-    G₂ z = ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)* z +n)^2 * (m * z + n +1))  := by sorry
+    G₂ z = ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)* z +n)^2 * (m * z + n +1))  := by
+    rw [G₂]
+    have :=  PS2 z
+
+    sorry
 
 /-This is proven in the modular forms repo. -/
 lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
