@@ -104,8 +104,14 @@ lemma PS3 (z : ℍ) (n : ℤ) : limUnder atTop
   (fun N : ℕ => ∑ m in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     ∑' m : ℕ+, (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = -2 * π * Complex.I / z := by sorry
 
-lemma G2_alt_eq (z : ℍ) : --this sum is now abs convergent. Idea is to subtract PS1 from the G₂ defn.
-    G₂ z = ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)* z +n)^2 * (m * z + n +1))  := by
+
+lemma G_2_alt_summable : Summable fun z =>
+    ∑' m : ℤ × ℤ, 1 / (((m.1 : ℂ)* z +m.2)^2 * (m.1 * z + m.2 + 1))  := by
+
+  sorry
+
+--this sum is now abs convergent. Idea is to subtract PS1 from the G₂ defn.
+lemma G2_alt_eq (z : ℍ) : G₂ z = ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)* z +n)^2 * (m * z + n +1))  := by
     rw [G₂]
     have :=  PS2 z
 
@@ -256,6 +262,7 @@ lemma dim_gen_cong_levels (k : ℤ) (Γ : Subgroup SL(2, ℤ)) (hΓ : Subgroup.i
     FiniteDimensional ℂ (ModularForm Γ k) := by sorry
 --use the norm to turn it into a level one question.
 
+...
 
 end Product_Formula
 
