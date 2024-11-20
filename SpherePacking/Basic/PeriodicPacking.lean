@@ -132,7 +132,7 @@ theorem PeriodicSpherePacking.fract_centers
 -- TODO: rename + move
 theorem PeriodicSpherePacking.orbitRel_fract
     {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (a : S.centers) :
-    (S.addAction.orbitRel).Rel ⟨fract (b.ofZLatticeBasis ℝ _) a, S.fract_centers _ _⟩ a := by
+    (S.addAction.orbitRel).r ⟨fract (b.ofZLatticeBasis ℝ _) a, S.fract_centers _ _⟩ a := by
   rw [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range]
   refine ⟨⟨-↑(floor (b.ofZLatticeBasis ℝ _) ↑a), ?_⟩, ?_⟩
   · apply neg_mem
@@ -152,7 +152,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
       use g.val + s.val, S.lattice_action g.prop s.prop,
         (Classical.choose_spec (hD_unique_covers s.val)).left
     · intro ⟨u, hu⟩ ⟨v, hv⟩ h
-      change (S.addAction.orbitRel).Rel ⟨u, hu⟩ ⟨v, hv⟩ at h
+      change (S.addAction.orbitRel).r ⟨u, hu⟩ ⟨v, hv⟩ at h
       rw [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range] at h
       obtain ⟨⟨y, hy⟩, hy'⟩ := h
       have : y + v = u := Subtype.ext_iff.mp hy'
@@ -173,7 +173,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     apply Quotient.ind
     intro ⟨a, ha⟩
     simp_rw [Quotient.lift_mk, Quotient.eq]
-    change (S.addAction.orbitRel).Rel _ _
+    change (S.addAction.orbitRel).r _ _
     simp_rw [AddAction.orbitRel_apply, AddAction.orbit, Set.mem_range]
     simp [addAction_vadd]
   right_inv := by
