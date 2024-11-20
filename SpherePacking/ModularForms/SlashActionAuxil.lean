@@ -51,14 +51,17 @@ open ModularForm
 
 /- This section proves rewriting lemmas for f|[k]γ for various γ. -/
 
-theorem modular_negI_smul : negI • z = z := by
+theorem modular_negI_smul : negI.1 • z = z := by
   change smulAux negI z = z
   simp [smulAux, smulAux', negI, num, denom]
 
-theorem modular_slash_negI_of_even (hk : Even k) : f ∣[k] negI = f := by
+theorem modular_slash_negI_of_even (hk : Even k) : f ∣[k] negI.1 = f := by
   ext x
-  rw [subgroup_slash, slash_def, slash, ← subgroup_moeb, modular_negI_smul]
-  simp [denom, negI, hk.neg_one_zpow]
+  rw [slash_action_eq'_iff]
+  rw [modular_negI_smul]
+  simp only [negI, Int.reduceNeg, Fin.isValue, of_apply, cons_val', cons_val_zero, empty_val',
+    cons_val_fin_one, cons_val_one, head_fin_const, Int.cast_zero, zero_mul, head_cons,
+    Int.cast_neg, Int.cast_one, zero_add, hk.neg_one_zpow, one_mul]
 
 theorem modular_slash_S_apply :
     (f ∣[k] S) z = f (UpperHalfPlane.mk (-z)⁻¹ z.im_inv_neg_coe_pos) * z ^ (-k) := by
@@ -93,12 +96,12 @@ uniquely determined by the slash action by elements in s. See `slashaction_gener
 version where `s` is a set of elements in `G`. -/
 theorem slashaction_generators
     (f : ℍ → ℂ) (G : Subgroup SL(2, ℤ)) (s : Set SL(2, ℤ)) (hG : G = Subgroup.closure s) (k : ℤ) :
-    (∀ γ : G, f ∣[k] γ = f) ↔ (∀ γ ∈ s, f ∣[k] γ = f) := by
+    (∀ γ : G, f ∣[k] γ.1 = f) ↔ (∀ γ ∈ s, f ∣[k] γ = f) := by
   subst hG
   constructor <;> intro h
   · intro γ hγ
     convert h ⟨γ, Subgroup.subset_closure hγ⟩
-  · simp only [ModularForm.subgroup_slash, Subtype.forall]
+  · simp only [Subtype.forall]
     intro ⟨γ, hγ⟩
     -- key idea: this lemma allows induction on the "words" of the group
     apply Subgroup.closure_induction (G := SL(2, ℤ)) (p := fun γ _ ↦ f ∣[k] γ = f) h --hγ h
@@ -113,24 +116,26 @@ uniquely determined by the slash action by elements in s. See `slashaction_gener
 version where `s` is a set of elements in SL(2, ℤ). -/
 theorem slashaction_generators'
     (f : ℍ → ℂ) {G : Subgroup SL(2, ℤ)} (s : Set G) (hG : ⊤ = Subgroup.closure s) (k : ℤ) :
-    (∀ γ : G, f ∣[k] γ = f) ↔ (∀ γ ∈ s, f ∣[k] γ = f) := by
+    (∀ γ : G, f ∣[k] γ.1 = f) ↔ (∀ γ ∈ s, f ∣[k] γ.1 = f) := by
   constructor <;> intro h
   · intro γ _
     exact h _
   · intro ⟨γ, hγ⟩
     -- key idea: this lemma allows induction on the "words" of the group
-    apply Subgroup.closure_induction (G := G) (p := fun γ _ ↦ f ∣[k] γ = f) (k := s) ?_ ?_
+    apply Subgroup.closure_induction (G := G) (p := fun γ _ ↦ f ∣[k] γ.1 = f) (k := s) ?_ ?_
     · intro _ _ _ _ hf₁ hf₂
+      rw [@Subgroup.coe_mul]
       rw [SlashAction.slash_mul, hf₁, hf₂]
     · intro x _ hf
-      rw [← hf, ← SlashAction.slash_mul, mul_inv_cancel, SlashAction.slash_one, hf]
+      rw [← hf, ← SlashAction.slash_mul]
+      simp [hf]
     · simp [← hG]
     · intro γ hγ
       exact h γ hγ
     · exact SlashAction.slash_one k f
 
 theorem slashaction_generators_SL2Z
-    (f : ℍ → ℂ) (k : ℤ) (hS : f ∣[k] S = f) (hT : f ∣[k] T = f) (hnegI : f ∣[k] negI = f) :
+    (f : ℍ → ℂ) (k : ℤ) (hS : f ∣[k] S = f) (hT : f ∣[k] T = f) (hnegI : f ∣[k] negI.1 = f) :
     (∀ γ : SL(2, ℤ), f ∣[k] γ = f) := by
   intro γ
   refine (slashaction_generators f ⊤ _ SL2Z_generate k).mpr ?_ ⟨γ, by simp⟩
@@ -138,8 +143,8 @@ theorem slashaction_generators_SL2Z
   rcases hγ with (rfl | rfl | rfl | _) <;> assumption
 
 theorem slashaction_generators_Γ2
-    (f : ℍ → ℂ) (k : ℤ) (hα : f ∣[k] α = f) (hβ : f ∣[k] β = f) (hnegI : f ∣[k] negI = f) :
-    (∀ γ : Γ 2, f ∣[k] γ = f) := by
+    (f : ℍ → ℂ) (k : ℤ) (hα : f ∣[k] α.1 = f) (hβ : f ∣[k] β.1 = f) (hnegI : f ∣[k] negI.1 = f) :
+    (∀ γ : Γ 2, f ∣[k] γ.1 = f) := by
   intro γ
   refine (slashaction_generators' f {α, β, negI} Γ2_generate k).mpr ?_ γ
   intro γ hγ
