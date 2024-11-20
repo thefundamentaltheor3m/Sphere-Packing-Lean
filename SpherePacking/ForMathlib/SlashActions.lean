@@ -2,9 +2,15 @@ import Mathlib.NumberTheory.ModularForms.SlashActions
 
 -- Maybe this belongs in NumberTheory/ModularForms/SlashActions.lean, next to ModularForm.mul_slash
 
-local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
+local notation "GL(" n ", " R ")" "⁺" => @Matrix.GLPos (Fin n) R (instDecidableEqFin n)
+  (Fin.fintype n) Real.linearOrderedCommRing
 
 open ModularForm MatrixGroups UpperHalfPlane
+
+/- Looks like the way to fix the errors is to replace each GL(2, ℝ)⁺ with
+  `@Matrix.GLPos (Fin 2) ℝ (instDecidableEqFin 2) (Fin.fintype 2) Real.linearOrderedCommRing :
+  Subgroup (GL (Fin 2) ℝ)`... but it's just so ugly!
+-/
 
 /-- Slash action under -I₂ as a GL(2, ℝ)⁺ matrix. See `ModularForm.slash_neg_one'` for the SL(2, ℤ)
 version. -/
