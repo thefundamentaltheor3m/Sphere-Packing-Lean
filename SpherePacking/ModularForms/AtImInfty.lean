@@ -116,7 +116,6 @@ theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
     simp_rw [mul_right_comm _ I, norm_exp_mul_I]
     simpa [← ofReal_intCast, ← ofReal_pow] using le_mul_of_one_le_right (by positivity) hz
 
-#check Θ₄_as_jacobiTheta₂
 theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (1 / 2 : ℂ) x) atImInfty (𝓝 1) := by
   simp_rw [jacobiTheta₂, jacobiTheta₂_term, mul_right_comm _ _ (1 / 2 : ℂ), ← mul_div_assoc,

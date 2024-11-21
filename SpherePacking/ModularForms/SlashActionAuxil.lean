@@ -144,9 +144,9 @@ theorem slashaction_generators_SL2Z
 
 theorem slashaction_generators_Γ2
     (f : ℍ → ℂ) (k : ℤ) (hα : f ∣[k] α.1 = f) (hβ : f ∣[k] β.1 = f) (hnegI : f ∣[k] negI.1 = f) :
-    (∀ γ : Γ 2, f ∣[k] γ.1 = f) := by
-  intro γ
-  refine (slashaction_generators' f {α, β, negI} Γ2_generate k).mpr ?_ γ
+    (∀ γ ∈ Γ 2, f ∣[k] γ = f) := by
+  intro γ hγ
+  refine (slashaction_generators' f {α, β, negI} Γ2_generate k).mpr ?_ ⟨_, hγ⟩
   intro γ hγ
   rcases hγ with (rfl | rfl | rfl | _) <;> assumption
 

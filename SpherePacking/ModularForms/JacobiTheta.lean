@@ -70,9 +70,9 @@ theorem Θ₄_as_jacobiTheta₂ (τ : ℍ) : Θ₄ τ = jacobiTheta₂ (1 / 2 : 
 section H_SlashInvariant
 
 /-- Slash action of various elements on H₂, H₃, H₄ -/
-lemma H₂_negI_action : (H₂ ∣[(2 : ℤ)] negI) = H₂ := modular_slash_negI_of_even H₂ (2: ℤ) even_two
-lemma H₃_negI_action : (H₃ ∣[(2 : ℤ)] negI) = H₃ := modular_slash_negI_of_even H₃ (2: ℤ) even_two
-lemma H₄_negI_action : (H₄ ∣[(2 : ℤ)] negI) = H₄ := modular_slash_negI_of_even H₄ (2: ℤ) even_two
+lemma H₂_negI_action : (H₂ ∣[(2 : ℤ)] negI.1) = H₂ := modular_slash_negI_of_even H₂ (2: ℤ) even_two
+lemma H₃_negI_action : (H₃ ∣[(2 : ℤ)] negI.1) = H₃ := modular_slash_negI_of_even H₃ (2: ℤ) even_two
+lemma H₄_negI_action : (H₄ ∣[(2 : ℤ)] negI.1) = H₄ := modular_slash_negI_of_even H₄ (2: ℤ) even_two
 
 /-- These three transformation laws follow directly from tsum definition. -/
 lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
@@ -135,13 +135,13 @@ lemma H₄_T_inv_action : (H₄ ∣[(2 : ℤ)] T⁻¹) = H₃ := by
   nth_rw 1 [← H₃_T_action, ← slash_mul, mul_inv_cancel, slash_one]
 
 /-- Use α = T * T -/
-lemma H₂_α_action : (H₂ ∣[(2 : ℤ)] α) = H₂ := by
+lemma H₂_α_action : (H₂ ∣[(2 : ℤ)] α.1) = H₂ := by
   simp [α_eq_T_sq, ← SL_slash, sq, slash_mul, H₂_T_action]
 
-lemma H₃_α_action : (H₃ ∣[(2 : ℤ)] α) = H₃ := by
+lemma H₃_α_action : (H₃ ∣[(2 : ℤ)] α.1) = H₃ := by
   simp [α_eq_T_sq, ← SL_slash, sq, slash_mul, H₃_T_action, H₄_T_action]
 
-lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α) = H₄ := by
+lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α.1) = H₄ := by
   simp [α_eq_T_sq, ← SL_slash, sq, slash_mul, H₃_T_action, H₄_T_action]
 
 /-- Use jacobiTheta₂_functional_equation -/
@@ -153,10 +153,11 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     rw [modular_slash_S_apply, H₂, Θ₂_as_jacobiTheta₂]
     simp [← neg_inv, mul_pow, ← Complex.exp_nat_mul]
     rw [mul_comm 4, div_mul_cancel₀ _ (by norm_num)]
-    congr 4
-    · rw [← div_eq_mul_inv, neg_div]; rfl
-    · rw [← one_div, neg_div, div_div, mul_comm, neg_div]; rfl
-    · rw [← one_div, neg_div]; rfl
+    left
+    congr 3
+    · rw [← div_eq_mul_inv, neg_div]
+    · rw [← one_div, neg_div, div_div, mul_comm, neg_div]
+    · rw [← one_div, neg_div]
   _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
         * (1 / (I / x) ^ ((1 : ℂ) / 2) * cexp (π * I / (4 * x)) * jacobiTheta₂ (1 / 2) x) ^ 4 := by
     rw [mul_right_comm, jacobiTheta₂_functional_equation]
@@ -225,25 +226,25 @@ lemma H₄_S_inv_action : (H₄ ∣[(2 : ℤ)] S⁻¹) = -H₂ := by
   rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
 
 /-- Use β = -S * α^(-1) * S -/
-lemma H₂_β_action : (H₂ ∣[(2 : ℤ)] β) = H₂ := calc
-  _ = (((H₂ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by
+lemma H₂_β_action : (H₂ ∣[(2 : ℤ)] β.1) = H₂ := calc
+  _ = (((H₂ ∣[(2 : ℤ)] negI.1) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α.1⁻¹) ∣[(2 : ℤ)] S := by
     simp [β_eq_negI_mul_S_mul_α_inv_mul_S, ← SL_slash, slash_mul]
   _ = _ := by
-    rw [H₂_negI_action, H₂_S_action, neg_slash, neg_slash, α_eq_T_sq, subgroup_slash]
+    rw [H₂_negI_action, H₂_S_action, neg_slash, neg_slash, α_eq_T_sq]
     simp [← SL_slash, sq, slash_mul, H₄_T_inv_action, H₃_T_inv_action, H₄_S_action]
 
-lemma H₃_β_action : (H₃ ∣[(2 : ℤ)] β) = H₃ := calc
-  _ = (((H₃ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by
+lemma H₃_β_action : (H₃ ∣[(2 : ℤ)] β.1) = H₃ := calc
+  _ = (((H₃ ∣[(2 : ℤ)] negI.1) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α.1⁻¹) ∣[(2 : ℤ)] S := by
     simp [β_eq_negI_mul_S_mul_α_inv_mul_S, ← SL_slash, slash_mul]
   _ = _ := by
-    rw [H₃_negI_action, H₃_S_action, neg_slash, neg_slash, α_eq_T_sq, subgroup_slash]
+    rw [H₃_negI_action, H₃_S_action, neg_slash, neg_slash, α_eq_T_sq]
     simp [← SL_slash, sq, slash_mul, H₄_T_inv_action, H₃_T_inv_action, H₃_S_action]
 
-lemma H₄_β_action : (H₄ ∣[(2 : ℤ)] β) = H₄ := calc
-  _ = (((H₄ ∣[(2 : ℤ)] negI) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α⁻¹) ∣[(2 : ℤ)] S := by
+lemma H₄_β_action : (H₄ ∣[(2 : ℤ)] β.1) = H₄ := calc
+  _ = (((H₄ ∣[(2 : ℤ)] negI.1) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α.1⁻¹) ∣[(2 : ℤ)] S := by
     simp [β_eq_negI_mul_S_mul_α_inv_mul_S, ← SL_slash, slash_mul]
   _ = _ := by
-    rw [H₄_negI_action, H₄_S_action, neg_slash, neg_slash, α_eq_T_sq, subgroup_slash]
+    rw [H₄_negI_action, H₄_S_action, neg_slash, neg_slash, α_eq_T_sq]
     simp [← SL_slash, sq, slash_mul, H₂_T_inv_action, H₂_S_action]
 
 /-- H₂, H₃, H₄ are modular forms of weight 2 and level Γ(2) -/
@@ -309,10 +310,10 @@ lemma Complex.norm_exp_mul_I (z : ℂ) : ‖cexp (z * I)‖ = rexp (-z.im) := by
   simp [abs_exp]
 
 theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
-  simp_rw [bounded_mem, H₂, Θ₂]
+  simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₂, Θ₂]
   use (∑' n : ℤ, rexp (-π * ((n : ℝ) + 1 / 2) ^ 2)) ^ 4, 1
   intro z hz
-  rw [map_pow]
+  rw [norm_pow]
   gcongr
   calc
     _ = ‖∑' (n : ℤ), cexp (π * I * (n + 1 / 2) ^ 2 * z)‖ := rfl
@@ -347,7 +348,7 @@ theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
       rw [add_eq_zero_iff_eq_neg] at hb
       have : (2 * b : ℝ) = -1 := by simp [hb]
       norm_cast at this
-      exact Int.even_iff_not_odd.mp (even_two_mul b) (by rw [this]; simp)
+      exact Int.not_odd_iff_even.mpr (even_two_mul b) (by rw [this]; simp)
     convert (mul_le_mul_left (mul_pos pi_pos (sq_pos_of_ne_zero this))).mpr hz using 1
     rw [mul_one]
   · apply Summable.norm
@@ -390,12 +391,12 @@ lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
   · simpa using h_sum UpperHalfPlane.I
 
 theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
-  simp_rw [bounded_mem, H₃, Θ₃]
+  simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₃, Θ₃]
   use (∑' n : ℤ, rexp (-π * n ^ 2)) ^ 4, 1
   intro z hz
-  rw [map_pow]
+  rw [norm_pow]
   gcongr
-  rw [← Complex.norm_eq_abs]
+  -- rw [← Complex.norm_eq_abs]
   apply (norm_tsum_le_tsum_norm ?_).trans (isBoundedAtImInfty_H₃_aux z hz)
   simp_rw [Θ₃_term_as_jacobiTheta₂_term]
   apply Summable.norm
@@ -403,10 +404,10 @@ theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
   exact z.prop
 
 theorem isBoundedAtImInfty_H₄ : IsBoundedAtImInfty H₄ := by
-  simp_rw [bounded_mem, H₄, Θ₄]
+  simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₄, Θ₄]
   use (∑' n : ℤ, rexp (-π * n ^ 2)) ^ 4, 1
   intro z hz
-  rw [map_pow]
+  rw [norm_pow]
   gcongr
   calc
     _ ≤ ∑' (n : ℤ), ‖Θ₄_term n z‖ := norm_tsum_le_tsum_norm ?_
@@ -430,7 +431,7 @@ theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
       use h.right.right, h.right.left, h.left
     · simp_rw [H₂_T_action, H₃_T_action, H₄_T_action, neg_slash, isBoundedAtImInfty_neg_iff]
       use h.left, h.right.right, h.right.left
-    · simp_rw [SL_slash, ← subgroup_slash, H₂_negI_action, H₃_negI_action, H₄_negI_action]
+    · rw [SL_slash, H₂_negI_action, H₃_negI_action, H₄_negI_action]
       exact h
   · intro x hx y _ h
     simp_rw [slash_mul]
@@ -441,8 +442,9 @@ theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
     · simp_rw [H₂_T_inv_action, H₃_T_inv_action, H₄_T_inv_action, neg_slash,
         isBoundedAtImInfty_neg_iff]
       use h.left, h.right.right, h.right.left
-    · simp_rw [← Subgroup.coe_inv, modular_negI_inv, SL_slash, ← subgroup_slash,
+    · rw [← Subgroup.coe_inv, modular_negI_inv, SL_slash,
         modular_slash_negI_of_even _ 2 (by decide)]
+      rw [H₃_negI_action, H₄_negI_action]
       exact h
   · intro s hs
     simp_rw [Set.mem_setOf_eq, Set.mem_range] at hs

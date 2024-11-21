@@ -62,7 +62,6 @@ example (n : ℤ) (z : ℝ) : @fourier 1 n (↑z) = cexp (2 * π * I * n * z) :=
 example {f : ℤ → ℝ} (hf : Summable f) : Summable (fun n : ℕ ↦ f n) :=
   (summable_int_iff_summable_nat_and_neg.mp hf).left
 
-#check tsum_of_nat_of_neg_add_one
 lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * rexp (-2 * π * n))
     (ha' : ∀ n, n < 0 → a n = 0) :
     Tendsto (fun z : ℍ ↦ ∑' n, a n * cexp (2 * π * I * z * n)) atImInfty (𝓝 (a 0)) := by

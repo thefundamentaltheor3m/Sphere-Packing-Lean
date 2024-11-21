@@ -150,7 +150,7 @@ section Positivity_on_Nhd
 -- Or was I just not able to find it...
 
 variable {E : Type*} [TopologicalSpace E]
-#synth OrderClosedTopology ℝ
+
 theorem Continuous.pos_iff_exists_nhd_pos {f : E → ℝ} (hf₁ : Continuous f) (x : E) :
   0 < f x ↔ ∃ U ∈ (nhds x), ∀ y ∈ U, 0 < f y := by
   constructor
@@ -158,8 +158,7 @@ theorem Continuous.pos_iff_exists_nhd_pos {f : E → ℝ} (hf₁ : Continuous f)
     suffices ∀ᶠ y in nhds x, 0 < f y by
       rw [Filter.eventually_iff] at this
       refine ⟨_, this, by simp⟩
-    set_option pp.all true in
-      show_term exact hf₁.tendsto x (eventually_gt_nhds hx)
+    exact hf₁.tendsto x (eventually_gt_nhds hx)
   · intro hexistsnhd
     obtain ⟨U, hU₁, hU₂⟩ := hexistsnhd
     specialize hU₂ x (mem_of_mem_nhds hU₁)
