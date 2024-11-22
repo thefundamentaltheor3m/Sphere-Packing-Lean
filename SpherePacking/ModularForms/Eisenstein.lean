@@ -104,11 +104,189 @@ lemma PS3 (z : ℍ) (n : ℤ) : limUnder atTop
   (fun N : ℕ => ∑ m in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     ∑' m : ℕ+, (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = -2 * π * Complex.I / z := by sorry
 
+lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ ≤ c * b⁻¹ ↔ b ≤ c * a := by
+  constructor
+  intro h
+  simp_rw [inv_eq_one_div] at h
+  rw [mul_one_div, le_div_comm₀ _ hb] at h
+  simp only [one_div, div_inv_eq_mul] at h
+  apply h
+  simp only [one_div, inv_pos]
+  exact ha
+  intro h
+  simp_rw [inv_eq_one_div]
+  rw [← div_le_comm₀ _ ha]
+  simp only [one_div, mul_inv_rev, inv_inv]
+  rw [propext (mul_inv_le_iff₀ hc), mul_comm]
+  exact h
+  simp only [one_div]
+  apply mul_pos hc (inv_pos.mpr hb)
 
-lemma G_2_alt_summable : Summable fun z =>
-    ∑' m : ℤ × ℤ, 1 / (((m.1 : ℂ)* z +m.2)^2 * (m.1 * z + m.2 + 1))  := by
+theorem extracted_1 (b : Fin 2 → ℤ) (hb : b ≠ 0) (HB1 : b ≠ ![0, -1]) :
+    ‖![b 0, b 1 + 1]‖ ^ (-1 : ℝ) * ‖b‖ ^ (-2 : ℝ) ≤ 2 * ‖b‖ ^ (-3 : ℝ) := by
+  rw [show (-3 : ℝ) = -1 -2  by norm_num]
+  have ht : b = ![b 0, b 1] := by
+    ext i
+    fin_cases i <;> rfl
+  nth_rw 3 [Real.rpow_of_add_eq (y := -1) (z := -2) (by apply norm_nonneg) (by norm_num)
+    (by norm_num)]
+  rw [← mul_assoc]
+  apply mul_le_mul
+  · simp_rw [Real.rpow_neg_one]
+    rw [aux]
+    · simp only [norm_eq_max_natAbs, Nat.cast_max, Nat.succ_eq_add_one, Nat.reduceAdd,
+        Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, max_le_iff]
+      have : 2 * max ↑(b 0).natAbs ↑(b 1 + 1).natAbs = max (2*(b 0)).natAbs (2*(b 1 + 1)).natAbs := by
+        simp_rw [Int.natAbs_mul]
+        exact (Nat.mul_max_mul_left 2 (b 0).natAbs (b 1 + 1).natAbs).symm
+      refine ⟨?_ , ?_⟩
+      · norm_cast
+        simp only [this, Fin.isValue, le_max_iff]
+        left
+        simp only [Int.natAbs_mul, Int.reduceAbs]
+        apply Nat.le_mul_of_pos_left _ Nat.zero_lt_two
+      norm_cast
+      rcases eq_or_ne (b 1) (-1) with hr | hr
+      · simp only [this, le_max_iff]
+        left
+        simp only [hr, Int.reduceNeg, IsUnit.neg_iff, isUnit_one, Int.natAbs_of_isUnit, Fin.isValue, Int.natAbs_mul, Int.reduceAbs, Fin.isValue]
+        have hb0 : b 0 ≠ 0 := by
+          rw [ht, hr] at HB1
+          simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Fin.isValue, Int.reduceNeg, ne_eq] at HB1
+          by_contra hh
+          simp only [hh, Int.reduceNeg, not_true_eq_false] at HB1
+        omega
+      · rw [this]
+        simp only [Fin.isValue, le_max_iff]
+        right
+        simp only [Int.natAbs_mul, Int.reduceAbs]
+        omega
+    · simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Fin.isValue, norm_pos_iff, ne_eq,
+      Matrix.cons_eq_zero_iff, Matrix.zero_empty, and_true, not_and]
+      intro h
+      by_contra H
+      rw [@add_eq_zero_iff_eq_neg] at H
+      rw [ht, h, H] at HB1
+      simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Int.reduceNeg, ne_eq, not_true_eq_false] at HB1
+    · exact norm_pos_iff'.mpr hb
+    · simp only [Nat.ofNat_pos]
+  · rfl
+  · apply Real.rpow_nonneg
+    apply norm_nonneg
+  · simp only [Nat.ofNat_pos, mul_nonneg_iff_of_pos_left]
+    apply Real.rpow_nonneg
+    apply norm_nonneg
 
-  sorry
+lemma G_2_alt_summable (z : ℍ) : Summable fun  (m : Fin 2 → ℤ) =>
+    1 / (((m 0 : ℂ) * z + m 1)^2 * (m 0 * z + m 1 + 1))  := by
+  have hk' : 2 < (3 : ℝ) := by linarith
+  apply ((summable_one_div_norm_rpow hk').mul_left <| r z ^ (-3 : ℝ) *  2).of_norm_bounded_eventually
+  rw [Filter.eventually_iff_exists_mem ]
+  use { ![0,0], ![0,-1]}ᶜ
+  simp
+  intro b HB1 HB2
+  have hk0 : 0 ≤ (2 : ℝ) := by norm_num
+  have hk0' : 0 ≤ (1 : ℝ) := by norm_num
+  have p1 := summand_bound z  hk0 b
+  let b' : Fin 2 → ℤ := ![b 0, b 1 + 1]
+  have p2 := summand_bound z hk0' b'
+  simp only [Nat.ofNat_nonneg, zero_le_one, Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one,
+    Matrix.head_cons, Int.cast_add, Int.cast_one, one_div, mul_inv_rev, map_mul, map_inv₀, map_pow,
+     ge_iff_le, b'] at *
+  have := mul_le_mul p2 p1 ?_ ?_
+  have hpow :  Complex.abs (↑(b 0) * ↑z + ↑(b 1)) ^ (-2 : ℝ) =  (Complex.abs (↑(b 0) * ↑z + ↑(b 1)) ^ 2)⁻¹ :=
+    by norm_cast
+  have hpow2 :  Complex.abs (↑(b 0) * ↑z + ↑(b 1)+1) ^ (-1 : ℝ) = (Complex.abs (↑(b 0) * ↑z + ↑(b 1)+1))⁻¹ :=
+    by apply Real.rpow_neg_one
+  rw [← hpow, ← hpow2]
+  rw [← add_assoc] at this
+  apply le_trans this
+  have :  r z ^ (-1 : ℝ) * ‖![b 0, b 1 + 1]‖ ^ (-1 : ℝ) * (r z ^ (-2 : ℝ) * ‖b‖ ^ (-2 : ℝ)) =
+    r z ^ (-3 : ℝ) * ‖![b 0, b 1 + 1]‖ ^ (-1 : ℝ) * ‖b‖ ^ (-2 : ℝ) := by
+    rw [show (-3 : ℝ) = -2 -1  by norm_num]
+    nth_rw 5 [Real.rpow_of_add_eq (y := -2) (z := -1)]
+    ring
+    exact (r_pos z).le
+    norm_cast
+    norm_cast
+  rw [this]
+  have hg : r z ^ (-3 : ℝ) * 2 * ‖b‖ ^ (-3 : ℝ) = r z ^ (-3 : ℝ) * (2 * ‖b‖ ^ (-3 : ℝ)) := by ring
+  rw [hg, mul_assoc]
+  apply mul_le_mul
+  rfl
+  apply  extracted_1
+  convert HB1
+  apply symm
+  simp only [Matrix.cons_eq_zero_iff, Matrix.zero_empty, and_self]
+  simpa using HB2
+  · exact
+    mul_nonneg (Real.rpow_nonneg (norm_nonneg ![b 0, b 1 + 1]) (-1))
+      (Real.rpow_nonneg (norm_nonneg b) (-2))
+  · apply Real.rpow_nonneg
+    apply (r_pos z).le
+  · apply Real.rpow_nonneg
+    exact AbsoluteValue.nonneg Complex.abs _
+  · exact
+    mul_nonneg (Real.rpow_nonneg (LT.lt.le (r_pos z)) (-1))
+      (Real.rpow_nonneg (norm_nonneg ![b 0, b 1 + 1]) (-1))
+
+lemma G2_alt_indexing (z : ℍ) : ∑' (m : Fin 2 → ℤ),
+    1 / (((m 0 : ℂ) * z + m 1)^2 * (m 0 * z + m 1 + 1)) =
+    ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)* z + n)^2 * (m * z + n +1)) := by
+  rw [ ← (finTwoArrowEquiv _).symm.tsum_eq]
+  simp
+  refine tsum_prod' ?h ?h₁
+  have := G_2_alt_summable z
+  simp at this
+  rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
+  apply this
+  intro b
+  simp
+  have := G_2_alt_summable z
+  simp at this
+  rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
+  apply this.prod_factor
+
+def swap : (Fin 2 → ℤ) → (Fin 2 → ℤ) := fun x => ![x 1, x 0]
+
+@[simp]
+lemma swap_apply (b : Fin 2 → ℤ) : swap b = ![b 1, b 0] := rfl
+
+lemma swap_involutive (b : Fin 2 → ℤ) : swap (swap b) = b := by
+  ext i
+  fin_cases i <;> rfl
+
+def swap_equiv : Equiv (Fin 2 → ℤ) (Fin 2 → ℤ) := Equiv.mk swap swap
+  (by rw [LeftInverse]; apply swap_involutive)
+  (by rw [Function.RightInverse]; apply swap_involutive)
+
+lemma G2_alt_indexing2 (z : ℍ) : ∑' (m : Fin 2 → ℤ),
+    1 / (((m 0 : ℂ) * z + m 1)^2 * (m 0 * z + m 1 + 1)) =
+    ∑' n : ℤ, ∑' m : ℤ, 1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) := by
+  have := (G_2_alt_summable z)
+  simp at this
+  rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
+  rw [tsum_comm']
+  rw [G2_alt_indexing]
+  apply this.congr
+  intro b
+  simp
+  rfl
+  intro b
+  simp
+  apply this.prod_factor
+  intro c
+  simp
+  have H := (G_2_alt_summable z)
+  simp at this
+  rw [← swap_equiv.summable_iff] at H
+  rw [← (finTwoArrowEquiv _).symm.summable_iff] at H
+  simp [Fin.isValue, one_div, mul_inv_rev, swap_equiv, Equiv.coe_fn_mk,
+    finTwoArrowEquiv_symm_apply, swap_apply] at H
+  have := H.prod_factor c
+  simp at this
+  apply this
+
 
 --this sum is now abs convergent. Idea is to subtract PS1 from the G₂ defn.
 lemma G2_alt_eq (z : ℍ) : G₂ z = ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)* z +n)^2 * (m * z + n +1))  := by
