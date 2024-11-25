@@ -83,7 +83,7 @@ The decaying property of Schwartz functions means that they can be compared to t
 
 We end with a crucial result on Schwartz functions, the statement of which only makes sense because of the above result.
 % Should probably include something about multiplying a Schwartz function by a negative exponential, either saying that the result is Schwartz (??) or by saying that it is summable. Both would be enough to make the RHS of the sum below converge absolutely.
-\begin{theorem}[Poisson summation formula]\label{thm:Poisson-summation-formula}\uses{def:Fourier-Transform, def:Schwartz-Space, lemma:Schwartz-summable, lemma:inv-power-summable, ZLattice.instIsZLatticeDual}
+\begin{theorem}[Poisson summation formula]\label{thm:Poisson-summation-formula}\uses{def:Fourier-Transform, def:Schwartz-Space, lemma:Schwartz-summable, lemma:inv-power-summable}
   Let $\Lambda$ be a lattice in $\R^d$, and let $f:\R^d\to\R$ be a Schwartz function. Then, for all $v \in \R^d$,
   \[
     \sum_{\ell\in\Lambda}f(\ell + v) = \frac{1}{\Vol{\R^d/\Lambda}} \sum_{m\in\Lambda^*}\widehat{f}(m) e^{-2\pi i \ang{v, m}}.

@@ -8,13 +8,13 @@ We begin by defining what a lattice is in Euclidean space.
 
 There is also a corresponding dual notion, which will become relevant when we start doing Fourier analysis on functions over lattices.
 
-\begin{definition}\label{ZLattice.Dual}\lean{ZLattice.Dual}\leanok
+\begin{definition}\label{ZLattice.Dual}%\lean{ZLattice.Dual}\leanok
   The \emph{dual lattice} of a lattice $\Lambda$ is the set
   \[ \Lambda^* := \setof{v \in \R^d}{\forall l \in \Lambda, \left\langle v,l \right\rangle \in \Z} \]
 \end{definition}
 
 As one might expect,
-\begin{theorem}\label{ZLattice.instIsZLatticeDual}\lean{ZLattice.instIsZLatticeDual}\uses{ZLattice.Dual}
+\begin{theorem}\label{ZLattice.instIsZLatticeDual}%\lean{ZLattice.instIsZLatticeDual}\uses{ZLattice.Dual}
   The dual of a lattice is also a lattice.
 \end{theorem}
 \begin{proof}
