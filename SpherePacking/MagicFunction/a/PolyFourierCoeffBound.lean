@@ -74,6 +74,19 @@ lemma aux_7 (a b : ℤ) : Complex.abs (cexp (↑π * I * (a - b) * z)) ≤ rexp 
   refine exp_le_exp.2 ?_
   simp; linarith
 
+lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (2 * π * ↑↑n * z.im)) ^ 24 := by
+  -- suffices hsuff₁ : 0 < ∏' (n : ℕ+), Complex.abs (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24
+  -- · refine gt_of_ge_of_gt ?_ hsuff₁
+  --   rw [ge_iff_le]
+  --   apply?
+  --   sorry
+  -- refine LE.le.lt_of_ne (aux_6 z) ?_
+  -- rw [← aux_5 z]
+  -- intro hcontra
+  -- symm at hcontra
+  -- rw [← Complex.norm_eq_abs, norm_eq_zero] at hcontra
+
+  sorry
 
 lemma aux_misc (x : UpperHalfPlane) : abs (cexp (I * x)) ≤ rexp (x.im) := by
   rw [aux_1 x]
@@ -202,7 +215,7 @@ private lemma step_10 :
     apply tsum_nonneg
     intro i
     exact mul_nonneg (AbsoluteValue.nonneg Complex.abs (c i)) (exp_nonneg _)
-  · sorry
+  · exact aux_8 z
   · sorry
 
 private lemma step_11 :
@@ -210,7 +223,20 @@ private lemma step_11 :
   (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) ≤
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
   (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) := by
-  sorry
+  gcongr
+  · exact le_of_lt (aux_8 z)
+  · refine tsum_le_tsum ?_ ?_ ?_
+    · intro i
+
+      -- have : 0 ≤ Complex.abs (c i) := by exact AbsoluteValue.nonneg Complex.abs (c i)
+      suffices : rexp (-π * (↑i - ↑n₀) * z.im) ≤ rexp (-π * (↑i - ↑n₀) / 2)
+      · simp [AbsoluteValue.nonneg Complex.abs (c i), this]
+        sorry
+      sorry
+    ·
+      sorry
+    · simp only [div_eq_mul_inv]
+      sorry
 
 private lemma step_12 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
