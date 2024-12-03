@@ -2,13 +2,8 @@
 The purpose of this file is to define the Eisenstein series we are interested in using more convenient notation.
 -/
 
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Data.Real.StarOrdered
-import Mathlib.NumberTheory.ArithmeticFunction
-import Mathlib.NumberTheory.LSeries.RiemannZeta
-import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
-import Mathlib.Topology.CompletelyRegular
-import Mathlib.Topology.EMetricSpace.Paracompact
+import Mathlib
+
 -- import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
@@ -349,11 +344,6 @@ lemma limUnder_add {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f g :
   refine CauchySeq.tendsto_limUnder hg
 
 
-theorem extracted_2 (z : ℍ) (b : ℤ) :
-  Tendsto (fun x : ℕ ↦ (Complex.abs (↑b * ↑z - ↑x))⁻¹) atTop (𝓝 0) := by
-
-  sorry
-
 lemma auxr (z : ℍ) (b : ℤ):
       ((limUnder atTop fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-N : ℤ) N, 1 / (((b : ℂ) * ↑z + ↑n) ^ 2 * (↑b * ↑z + ↑n + 1))) +
       limUnder atTop fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-N : ℤ) N, (1 / ((b : ℂ) * ↑z + ↑n) - 1 / (↑b * ↑z + ↑n + 1))) =
@@ -363,11 +353,20 @@ lemma auxr (z : ℍ) (b : ℤ):
       rw [this]
       congr
       ext n
-      simp
-      sorry
-      have := summable_iff_cauchySeq_finset.mp   (G_2_alt_summable z)
+      simp only [one_div, mul_inv_rev, Pi.add_apply]
+
+      rw [← Finset.sum_add_distrib ]
+      congr
+      ext n
 
       sorry
+      have := summable_iff_cauchySeq_finset.mp   (G_2_alt_summable z)
+      apply Filter.Tendsto.cauchySeq (x := ∑' (x : ℤ),
+         ((b  : ℂ) * ↑z + ↑x + 1)⁻¹ * (((b : ℂ) * ↑z + ↑x) ^ 2)⁻¹)
+      have hA:= (G2_prod_summable1 z b).hasSum
+      have ht := hA.comp verga
+      simp at *
+      apply ht
       conv =>
         enter [1]
         intro d
@@ -431,28 +430,25 @@ lemma G2_alt_eq (z : ℍ) : G₂ z = ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)
     rw [G₂]
     have :=  PS2 z
     set t :=  ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)* z +n)^2 * (m * z + n +1))
-    rw [show t = t + 0 by ring]
-    rw [← this]
+    rw [show t = t + 0 by ring, ← this]
     simp only [t]
     rw [← tsum_add]
-    rw [aux3]
-    congr
-    ext n
-    congr
-    ext m
-    rw [aux3]
-    rw [aux3]
-    rw [auxr z]
-    · have H := G2_prod_summable1 z m
-      simpa using H
-    · have H := G2_summable_aux m z 2 (by norm_num)
-      simpa using H
-    · have H := G_2_alt_summable z
-      rw [← (finTwoArrowEquiv _).symm.summable_iff] at H
-      have ha := H.prod
-      apply ha.congr
-      intro b
-      simpa using PS1 z b
+    · rw [aux3]
+      · congr
+        ext n
+        congr
+        ext m
+        rw [aux3, aux3, auxr z]
+        · have H := G2_prod_summable1 z m
+          simpa using H
+        · have H := G2_summable_aux m z 2 (by norm_num)
+          simpa using H
+      · have H := G_2_alt_summable z
+        rw [← (finTwoArrowEquiv _).symm.summable_iff] at H
+        have ha := H.prod
+        apply ha.congr
+        intro b
+        simpa using PS1 z b
     · have H := G_2_alt_summable z
       rw [← (finTwoArrowEquiv _).symm.summable_iff] at H
       have ha := H.prod
