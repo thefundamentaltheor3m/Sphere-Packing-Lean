@@ -39,8 +39,8 @@ def G₂' : ℍ → ℂ := fun z => ∑' (m : ℤ), (∑' (n : ℤ), 1 / (m * z 
 
 /--Maybe this is the definition we want as I cant see how to easily show the other outer sum is
 absolutely convergent. -/
-def G₂ : ℍ → ℂ := fun z =>  2 * riemannZeta 2 + limUnder (atTop)
-    (fun k : ℕ+ => ∑ m in Finset.range k, 2 • (∑' (n : ℤ), 1 / ((m + 1 : ℂ) * z + n) ^ 2))
+def G₂ : ℍ → ℂ := fun z =>  limUnder (atTop)
+    (fun N : ℕ => ∑ m in Finset.Ico (-N : ℤ) N, (∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2))
 
 lemma G₂_eq1 (z : ℍ) : G₂ z = 2 * riemannZeta 2 +
   ∑' (m : ℕ+), ∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2 := by
@@ -58,7 +58,12 @@ lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) = Finset.Ico (-(b : ℤ)) 
   omega
 
 
-lemma PS1 (z : ℍ) (m : ℤ) (hm : m ≠ 0) : limUnder atTop
+theorem telescope_aux (z : ℍ) (m : ℤ) (b : ℕ) :
+  ∑ n ∈ Finset.Ico (-b : ℤ) b, (1 / ((m : ℂ) * ↑z + ↑n) - 1 / (↑m * ↑z + ↑n + 1)) =
+    1 / (↑m * ↑z - ↑b) - 1 / (↑m * ↑z + ↑b) := sorry
+
+
+lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
   (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = 0 := by
   apply Filter.Tendsto.limUnder_eq
@@ -69,9 +74,15 @@ lemma PS1 (z : ℍ) (m : ℤ) (hm : m ≠ 0) : limUnder atTop
   intro b hb
   have : ∑ n in (Finset.Ico (-(b : ℤ)) (b : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1)) = (1 / ((m : ℂ) * z - b) -  1 / (m * z + b))  := by
-    induction' b with b hB
+
+    induction' b  with b ihb
     aesop
-    simp only [Nat.cast_add, Nat.cast_one, Int.reduceNeg, one_div,
+
+
+
+
+    sorry
+  /-   simp only [Nat.cast_add, Nat.cast_one, Int.reduceNeg, one_div,
       Finset.sum_sub_distrib] at *
     rw [fsb]
     rw [Finset.sum_union]
@@ -85,6 +96,7 @@ lemma PS1 (z : ℍ) (m : ℤ) (hm : m ≠ 0) : limUnder atTop
 
   rw [this]
   simp [hε]
+  sorry -/
   sorry
 
 lemma ada (f : ℤ → ℂ) (h : ∀ i, f i = 0) : ∑' n, f n = 0 := by
@@ -92,13 +104,13 @@ lemma ada (f : ℤ → ℂ) (h : ∀ i, f i = 0) : ∑' n, f n = 0 := by
   aesop
 
 
-lemma PS2 (z : ℍ) : ∑' m : S0, (limUnder atTop
+lemma PS2 (z : ℍ) : ∑' m : ℤ, (limUnder atTop
   (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1)))) = 0 := by
     convert tsum_zero
     next m =>
     apply PS1
-    apply m.2
+    --apply m.2
 
 lemma PS3 (z : ℍ) (n : ℤ) : limUnder atTop
   (fun N : ℕ => ∑ m in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
@@ -230,6 +242,13 @@ lemma G_2_alt_summable (z : ℍ) : Summable fun  (m : Fin 2 → ℤ) =>
     mul_nonneg (Real.rpow_nonneg (LT.lt.le (r_pos z)) (-1))
       (Real.rpow_nonneg (norm_nonneg ![b 0, b 1 + 1]) (-1))
 
+theorem G2_prod_summable1 (z : ℍ) (b : ℤ) :
+    Summable fun c : ℤ ↦ ((b : ℂ) * ↑z + ↑c + 1)⁻¹ * (((b : ℂ) * ↑z + ↑c) ^ 2)⁻¹ := by
+  have := G_2_alt_summable z
+  simp only [Fin.isValue, one_div, mul_inv_rev] at this
+  rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
+  apply this.prod_factor b
+
 lemma G2_alt_indexing (z : ℍ) : ∑' (m : Fin 2 → ℤ),
     1 / (((m 0 : ℂ) * z + m 1)^2 * (m 0 * z + m 1 + 1)) =
     ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)* z + n)^2 * (m * z + n +1)) := by
@@ -243,7 +262,7 @@ lemma G2_alt_indexing (z : ℍ) : ∑' (m : Fin 2 → ℤ),
   intro b
   simp
   have := G_2_alt_summable z
-  simp at this
+  simp only [Fin.isValue, one_div, mul_inv_rev] at this
   rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
   apply this.prod_factor
 
@@ -288,16 +307,200 @@ lemma G2_alt_indexing2 (z : ℍ) : ∑' (m : Fin 2 → ℤ),
   apply this
 
 
---this sum is now abs convergent. Idea is to subtract PS1 from the G₂ defn.
-lemma G2_alt_eq (z : ℍ) : G₂ z = ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)* z +n)^2 * (m * z + n +1))  := by
-    rw [G₂]
-    have :=  PS2 z
+lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
+  apply Monotone.tendsto_atTop_atTop
+  rw [@monotone_iff_forall_covBy]
+  intro a b h
+  simp at *
+  intro t
+  simp
+  intro h1 h2
+  rw [Order.covBy_iff_add_one_eq] at h
+  rw [← h]
+  omega
+  intro b
 
-    sorry
+
+
+
+  sorry
+
+lemma aux3 (f : ℤ → ℂ) (hf : Summable f) : ∑' n, f n =
+    limUnder atTop (fun N : ℕ => ∑ n in Finset.Ico (-N : ℤ) N, f n) := by
+  rw [Filter.Tendsto.limUnder_eq]
+  have  := hf.hasSum
+  have V := this.comp verga
+  apply V
+
+
+
+lemma limUnder_add {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f g : α → ℂ) (hf : CauchySeq f) (hg : CauchySeq g) :
+     (limUnder atTop f) + (limUnder atTop g) = limUnder atTop (f + g) := by
+  nth_rw 3 [Filter.Tendsto.limUnder_eq]
+  rw [@Pi.add_def]
+  apply Filter.Tendsto.add
+  refine CauchySeq.tendsto_limUnder hf
+  refine CauchySeq.tendsto_limUnder hg
+
+
+theorem extracted_2 (z : ℍ) (b : ℤ) :
+  Tendsto (fun x : ℕ ↦ (Complex.abs (↑b * ↑z - ↑x))⁻¹) atTop (𝓝 0) := by
+
+  sorry
+
+lemma auxr (z : ℍ) (b : ℤ):
+      ((limUnder atTop fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-N : ℤ) N, 1 / (((b : ℂ) * ↑z + ↑n) ^ 2 * (↑b * ↑z + ↑n + 1))) +
+      limUnder atTop fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-N : ℤ) N, (1 / ((b : ℂ) * ↑z + ↑n) - 1 / (↑b * ↑z + ↑n + 1))) =
+      limUnder atTop fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-N : ℤ) N, 1 / (((b : ℂ) * ↑z + ↑n) ^ 2) := by
+      have := limUnder_add (f := fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-N : ℤ) N, 1 / (((b : ℂ) * ↑z + ↑n) ^ 2 * (↑b * ↑z + ↑n + 1)))
+        (g := fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-N : ℤ) N, (1 / ((b : ℂ) * ↑z + ↑n) - 1 / (↑b * ↑z + ↑n + 1))) ?_ ?_
+      rw [this]
+      congr
+      ext n
+      simp
+      sorry
+      have := summable_iff_cauchySeq_finset.mp   (G_2_alt_summable z)
+
+      sorry
+      conv =>
+        enter [1]
+        intro d
+        rw [telescope_aux ]
+
+      apply Filter.Tendsto.cauchySeq (x := 0)
+      have h1 : Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z - ↑d)) atTop (𝓝 0) := by
+        rw [@tendsto_zero_iff_norm_tendsto_zero]
+        conv =>
+          enter [1]
+          simp
+        apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, -n]‖ ^ (-1 : ℝ))
+        simp
+        intro t
+        have := EisensteinSeries.summand_bound z (k := 1)  (by simp) ![b, -t]
+        simp at *
+        apply le_trans _ this
+        apply le_of_eq
+        rw [Real.rpow_neg_one]
+        congr
+        rw [← tendsto_const_smul_iff₀ (c := r z ) ]
+        simp
+        have hr : r z * r z ^ (-1 : ℝ) = 1 := by
+          rw [Real.rpow_neg_one]
+          refine mul_inv_cancel₀ (ne_of_lt (r_pos z)).symm
+        conv =>
+          enter [1]
+          intro r
+          rw [← mul_assoc, hr]
+        simp
+        apply squeeze_zero' (g := (fun n : ℕ => |(n : ℝ)| ^ (-1 : ℝ)))
+        apply Filter.Eventually.of_forall
+        intro x
+        refine Real.rpow_nonneg ?g0.hf.hp.hx (-1)
+        apply norm_nonneg
+        rw [@eventually_atTop]
+        use b.natAbs
+        intro x hx
+        apply le_of_eq
+        congr
+        rw [EisensteinSeries.norm_eq_max_natAbs ]
+        simp [hx]
+        simp
+        apply tendsto_inverse_atTop_nhds_zero_nat.congr
+        intro x
+        exact Eq.symm (Real.rpow_neg_one ↑x)
+
+        have := r_pos z
+        exact (ne_of_lt this).symm
+        --apply bdd_le_mul_tendsto_zero
+
+
+
+
+
+
+      have h2 : Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z + ↑d)) atTop (𝓝 0) := by sorry
+      have := Filter.Tendsto.sub h1 h2
+      simpa using this
 
 /-This is proven in the modular forms repo. -/
 lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
     Summable fun d : ℤ => ((((n : ℂ) * z) + d) ^ k)⁻¹ := by sorry
+
+--this sum is now abs convergent. Idea is to subtract PS1 from the G₂ defn.
+lemma G2_alt_eq (z : ℍ) : G₂ z = ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) := by
+    rw [G₂]
+    have :=  PS2 z
+    set t :=  ∑' m : ℤ, ∑' n : ℤ, 1 / (((m : ℂ)* z +n)^2 * (m * z + n +1))
+    rw [show t = t + 0 by ring]
+    rw [← this]
+    simp only [t]
+    rw [← tsum_add]
+    rw [aux3]
+    congr
+    ext n
+    congr
+    ext m
+    rw [aux3]
+    rw [aux3]
+    rw [auxr z]
+    · have H := G2_prod_summable1 z m
+      simpa using H
+    · have H := G2_summable_aux m z 2 (by norm_num)
+      simpa using H
+    · have H := G_2_alt_summable z
+      rw [← (finTwoArrowEquiv _).symm.summable_iff] at H
+
+
+
+
+
+
+      --summable_prod_of_nonneg
+      sorry
+
+/-     conv =>
+      enter [2,2]
+      intro b
+      rw [aux3 _ (by sorry)]
+      rw [auxr z]
+
+    rw [aux3]
+    congr
+    ext n
+    congr
+    ext m
+    rw [aux3]
+    simp
+    have := G2_summable_aux m z 2 (by norm_num)
+    apply this -/
+
+
+
+
+
+
+
+
+
+
+
+/-     set t := limUnder atTop fun N : ℤ ↦ ∑ n ∈ Finset.Icc (-N) N, ∑' (n_1 : ℤ), 1 / ((↑n * ↑z + ↑n_1) ^ 2 * ((n : ℂ) * ↑z + ↑n_1 + 1))
+    rw [show t = t + 0 by ring]
+    rw [← this]
+    simp only [one_div, nsmul_eq_mul, Nat.cast_ofNat, mul_inv_rev, Finset.sum_sub_distrib, t]
+    rw [limUnder_add] -/
+
+
+
+
+    sorry
+    have H := G_2_alt_summable z
+    rw [← (finTwoArrowEquiv _).symm.summable_iff] at H
+
+    sorry
+    sorry
+    sorry
+
 
 /-Check that we didnt define the zero function! -/
 lemma G2'_summable (z : ℍ) : Summable fun m : ℤ =>  (∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2) := by
