@@ -69,7 +69,8 @@ lemma aux_6 : 0 ≤ ∏' (n : ℕ+), Complex.abs (1 - cexp (2 * ↑π * I * ↑�
   rw [← aux_5 z]
   exact AbsoluteValue.nonneg Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24)
 
-lemma aux_7 (a b : ℤ) : Complex.abs (cexp (↑π * I * (a - b) * z)) ≤ rexp (-π * (a - b) * z.im) := by
+lemma aux_7 (a b : ℤ) : Complex.abs (cexp (↑π * I * (a - b) * z)) ≤ rexp (-π * (a - b) * z.im) :=
+  by
   rw [mul_comm (π : ℂ) I, mul_assoc, mul_assoc, aux_1 (↑π * ((a - b) * z))]
   refine exp_le_exp.2 ?_
   simp; linarith
@@ -85,8 +86,16 @@ lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (2 * π * ↑↑n * z.im)) ^ 24 := 
   -- intro hcontra
   -- symm at hcontra
   -- rw [← Complex.norm_eq_abs, norm_eq_zero] at hcontra
-
   sorry
+
+lemma aux_ring (i : ℤ) : (I * ↑π * (↑i - ↑n₀) * z) = I * ((↑π * (↑i - ↑n₀)) * z) := by ring
+
+lemma aux_9 (i : ℤ) :
+    ‖c i * cexp (↑π * I * (↑i - ↑n₀) * z)‖ = ‖c i‖ * rexp (-π * (↑i - ↑n₀) * z.im) := by
+  rw [Complex.norm_eq_abs, Complex.norm_eq_abs, map_mul, mul_comm (↑π) (I)]
+  rw [aux_ring, aux_1]
+  congr; simp
+
 
 lemma aux_misc (x : UpperHalfPlane) : abs (cexp (I * x)) ≤ rexp (x.im) := by
   rw [aux_1 x]
@@ -102,16 +111,16 @@ section calc_steps
 
 include hf in
 private lemma step_1 :
-  abs ((f z) / (Δ ⟨z, by linarith⟩)) = abs (
-    (∑' (n : ℤ), c n * cexp (π * I * n * z)) /
-    (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)
-  ) := by simp_rw [DiscriminantProductFormula, hf, fouterm, UpperHalfPlane.coe]
+    abs ((f z) / (Δ ⟨z, by linarith⟩)) = abs (
+      (∑' (n : ℤ), c n * cexp (π * I * n * z)) /
+      (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)
+    ) := by simp_rw [DiscriminantProductFormula, hf, fouterm, UpperHalfPlane.coe]
 
 private lemma step_2 :
-  abs ((∑' (n : ℤ), c n * cexp (π * I * n * z)) /
-  (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
-  abs ((cexp (π * I * n₀ * z) * ∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
-  (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
+    abs ((∑' (n : ℤ), c n * cexp (π * I * n * z)) /
+    (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
+    abs ((cexp (π * I * n₀ * z) * ∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
+    (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
   apply congr_arg Complex.abs
   apply congr_arg (fun x => x /
     (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24))
@@ -122,48 +131,45 @@ private lemma step_2 :
   ring
 
 private lemma step_3 :
-  abs ((cexp (π * I * n₀ * z) * ∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
-  (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
-  abs ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
-  (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
-  (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by field_simp
+    abs ((cexp (π * I * n₀ * z) * ∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
+    (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
+    abs ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
+    (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
+    (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by field_simp
 
 private lemma step_4 :
-  abs ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
-  (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
-  (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
-  abs ((cexp (π * I * (n₀ - 2) * z)) *
-  (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
-  (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
+    abs ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
+    (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
+    (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
+    abs ((cexp (π * I * (n₀ - 2) * z)) *
+    (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
+    (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
   rw [mul_sub, sub_mul, ← Complex.exp_sub]
   congr 6
   ac_rfl
 
 private lemma step_5 :
-  abs ((cexp (π * I * (n₀ - 2) * z)) *
-  (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
-  (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
-  abs (cexp (π * I * (n₀ - 2) * z)) *
-  abs (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
-  Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := by simp only [map_div₀, map_mul]
+    abs ((cexp (π * I * (n₀ - 2) * z)) *
+    (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
+    (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
+    abs (cexp (π * I * (n₀ - 2) * z)) *
+    abs (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
+    Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := by
+  simp only [map_div₀, map_mul]
 
 private lemma step_6 :
-  abs (cexp (π * I * (n₀ - 2) * z)) *
-  abs (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
-  Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) =
-  abs (cexp (π * I * (n₀ - 2) * z)) *
-  abs (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
-  ∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24 := by
-  congr
-  -- Not quite sure how to go from here. Doesn't seem to be in the library.
-  -- Here's one approach, but I suspect it's not the best...
-  exact aux_5 z
+    abs (cexp (π * I * (n₀ - 2) * z)) *
+    abs (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
+    Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) =
+    abs (cexp (π * I * (n₀ - 2) * z)) *
+    abs (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
+    ∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24 := by congr; exact aux_5 z
 
 private lemma step_7 :
-  abs (cexp (π * I * (n₀ - 2) * z)) * abs (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
-  ∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24 ≤
-  rexp (-π * (n₀ - 2) * z.im) * abs (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
-  (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := by
+    abs (cexp (π * I * (n₀ - 2) * z)) * abs (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
+    ∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24 ≤
+    rexp (-π * (n₀ - 2) * z.im) * abs (∑' (n : ℤ), c n * cexp (π * I * (n - n₀) * z)) /
+    (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
   · exact aux_6 z
   · exact aux_7 z n₀ 2
@@ -184,7 +190,7 @@ private lemma step_8 :
     _ = ∑' (n : ℤ), Complex.abs (c n) * Complex.abs (cexp (↑π * I * (↑n - ↑n₀) * z)) :=
       by simp only [map_mul]
 
-include hn₀ hcsum hpoly in
+include hcsum in
 private lemma step_9 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * abs (cexp (π * I * (n - n₀) * z))) /
     (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
@@ -198,12 +204,8 @@ private lemma step_9 :
       gcongr
       exact aux_7 z n n₀
     apply tsum_le_tsum h₁ (aux_4 z c n₀ hcsum)
-    -- exact?
-    simp only [← Complex.norm_eq_abs]
-    -- unfold IsBigO at hpoly
-    rw [isBigO_atTop_iff_eventually_exists] at hpoly
-
-    sorry
+    simp only [← Complex.norm_eq_abs, ← aux_9, aux_ring]
+    exact aux_3 z c n₀ hcsum
 
 private lemma step_10 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) * z.im)) /
@@ -278,7 +280,7 @@ theorem BoundedRatioWithDiscOfPolyFourierCoeff : abs ((f z) / (Δ ⟨z, by linar
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * abs (cexp (π * I * (n - n₀) * z))) /
       (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := step_8 z c n₀ hcsum
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) * z.im)) /
-      (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := step_9 z c n₀ hn₀ hcsum k hpoly
+      (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := step_9 z c n₀ hcsum
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) * z.im)) /
       (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) := step_10 z c n₀
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
