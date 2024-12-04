@@ -69,8 +69,8 @@ lemma aux_6 : 0 ≤ ∏' (n : ℕ+), Complex.abs (1 - cexp (2 * ↑π * I * ↑�
   rw [← aux_5 z]
   exact AbsoluteValue.nonneg Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24)
 
-lemma aux_7 (a b : ℤ) : Complex.abs (cexp (↑π * I * (a - b) * z)) ≤ rexp (-π * (a - b) * z.im) :=
-  by
+lemma aux_7 (a b : ℤ) :
+    Complex.abs (cexp (↑π * I * (a - b) * z)) ≤ rexp (-π * (a - b) * z.im) := by
   rw [mul_comm (π : ℂ) I, mul_assoc, mul_assoc, aux_1 (↑π * ((a - b) * z))]
   refine exp_le_exp.2 ?_
   simp; linarith
@@ -96,6 +96,10 @@ lemma aux_9 (i : ℤ) :
   rw [aux_ring, aux_1]
   congr; simp
 
+include hcsum in
+lemma aux_10 : Summable fun n ↦ Complex.abs (c n) * rexp (-π * (↑n - ↑n₀) * z.im) := by
+  simp only [← Complex.norm_eq_abs, ← aux_9, aux_ring]
+  exact aux_3 z c n₀ hcsum
 
 lemma aux_misc (x : UpperHalfPlane) : abs (cexp (I * x)) ≤ rexp (x.im) := by
   rw [aux_1 x]
@@ -204,8 +208,7 @@ private lemma step_9 :
       gcongr
       exact aux_7 z n n₀
     apply tsum_le_tsum h₁ (aux_4 z c n₀ hcsum)
-    simp only [← Complex.norm_eq_abs, ← aux_9, aux_ring]
-    exact aux_3 z c n₀ hcsum
+    exact aux_10 z c n₀ hcsum
 
 private lemma step_10 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) * z.im)) /
@@ -220,6 +223,7 @@ private lemma step_10 :
   · exact aux_8 z
   · sorry
 
+include hz hn₀ hcsum hpoly in
 private lemma step_11 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) * z.im)) /
   (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) ≤
@@ -229,23 +233,52 @@ private lemma step_11 :
   · exact le_of_lt (aux_8 z)
   · refine tsum_le_tsum ?_ ?_ ?_
     · intro i
-
-      -- have : 0 ≤ Complex.abs (c i) := by exact AbsoluteValue.nonneg Complex.abs (c i)
-      suffices : rexp (-π * (↑i - ↑n₀) * z.im) ≤ rexp (-π * (↑i - ↑n₀) / 2)
-      · simp [AbsoluteValue.nonneg Complex.abs (c i), this]
-        sorry
-      sorry
-    ·
-      sorry
+      if hi : i < n₀ then
+      · specialize hn₀ i hi
+        simp [hn₀]
+      else
+      · simp [AbsoluteValue.nonneg Complex.abs (c i)]
+        gcongr -- Bad idea: it goes way too far! exp
+        simp only [div_eq_mul_inv,
+          mul_comm (-((π * (↑i - ↑n₀)))) (2⁻¹),
+          ← neg_mul_eq_mul_neg,
+          neg_le_neg_iff,
+          mul_comm (π * (↑i - ↑n₀)) (z.im)]
+        gcongr
+        · rw [not_lt] at hi
+          apply mul_nonneg pi_nonneg
+          rw [sub_nonneg, Int.cast_le]
+          exact hi
+        · rw [inv_eq_one_div]
+          exact le_of_lt hz
+    · exact aux_10 z c n₀ hcsum
     · simp only [div_eq_mul_inv]
+      -- *This is where we use the fact that c is eventually polynomial in n.*
       sorry
 
 private lemma step_12 :
-  rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
-  (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) ≤
-  rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
-  (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := by
-  sorry
+    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
+    (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) ≤
+    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
+    (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := by
+  gcongr
+  · -- This allows us to get rid of the numerators
+    apply mul_nonneg
+    · exact exp_nonneg _
+    · sorry
+  · -- ⊢ The denominator of the RHS is positive (and by the next case, that of the LHS is too)
+    -- This has nothing to do with the fact that the product exists (?) because if it's not
+    -- multipliable, the product is 1. So, we just need to show that all the terms are positive.
+    suffices hposterms : ∀ (n : ℕ+), 0 < (1 - rexp (-π * ↑n)) ^ 24
+    ·
+      sorry
+    intro n
+    apply pow_pos
+    apply sub_pos.2
+    simp
+    exact pi_pos
+  · -- ⊢ The denominator of the RHS is ≤ the denominator of the LHS
+    sorry
 
 private lemma step_13 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
@@ -284,7 +317,7 @@ theorem BoundedRatioWithDiscOfPolyFourierCoeff : abs ((f z) / (Δ ⟨z, by linar
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) * z.im)) /
       (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) := step_10 z c n₀
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
-      (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) := step_11 z c n₀
+      (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) := step_11 z hz c n₀ hn₀ hcsum k hpoly
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
       (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := step_12 z c n₀
   _ = (BoundConstntOfPolyFourierCoeff c n₀) * rexp (-π * (n₀ - 2) * z.im) := step_13 z c n₀
