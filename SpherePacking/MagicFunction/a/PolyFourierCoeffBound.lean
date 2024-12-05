@@ -7,6 +7,7 @@ M4R File
 -/
 
 import SpherePacking.ModularForms.Eisenstein
+import SpherePacking.ForMathlib.tprod
 import Mathlib
 
 open Filter Complex Real BigOperators Asymptotics
@@ -267,16 +268,14 @@ private lemma step_12 :
     · exact exp_nonneg _
     · sorry
   · -- ⊢ The denominator of the RHS is positive (and by the next case, that of the LHS is too)
-    -- This has nothing to do with the fact that the product exists (?) because if it's not
-    -- multipliable, the product is 1. So, we just need to show that all the terms are positive.
-    suffices hposterms : ∀ (n : ℕ+), 0 < (1 - rexp (-π * ↑n)) ^ 24
-    ·
-      sorry
-    intro n
-    apply pow_pos
-    apply sub_pos.2
-    simp
-    exact pi_pos
+    -- The following idea is WRONG! tprod_pos_of_pos isn't true: consider fun (n : ℕ) => 1 / 2
+    -- apply tprod_pos_of_pos
+    -- intro n
+    -- apply pow_pos
+    -- apply sub_pos.2
+    -- simp
+    -- exact pi_pos
+    sorry
   · -- ⊢ The denominator of the RHS is ≤ the denominator of the LHS
     sorry
 
