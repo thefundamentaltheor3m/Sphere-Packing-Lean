@@ -277,6 +277,8 @@ private lemma step_12 :
     -- exact pi_pos
     sorry
   · -- ⊢ The denominator of the RHS is ≤ the denominator of the LHS
+    -- apply tprod_le_tprod -- But state it without OrderedCommMonoid (or just ℝ) and sorry
+    -- Remember that we need each term to be nonneg
     sorry
 
 private lemma step_13 :

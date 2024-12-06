@@ -22,3 +22,9 @@ variable {β : Type*} {f : β → ℝ}
 --   else
 --   · rw [tprod_eq_one_of_not_multipliable hmul]
 --     exact zero_lt_one
+
+
+/- # State:
+* Tprod le tprod under nonnegativity assumption, without OrderedCommMonoid
+* Tprod positive: make a specific aux lemma for the one we want
+-/
