@@ -51,6 +51,12 @@ lemma δ_neq (a b : ℤ) (h : a ≠ 0) : δ a b = 0 := by
   simp [δ, h]
 
 
+instance natPosSMul : SMul ℕ+ ℍ where
+  smul x z := UpperHalfPlane.mk (x * z) <| by simp; apply z.2
+
+
+
+theorem natPosSMul_apply (c : ℕ+) (z : ℍ) : ((c  • z : ℍ) : ℂ) = (c : ℂ) * (z : ℂ) := by rfl
 
 /--Maybe this is the definition we want as I cant see how to easily show the other outer sum is
 absolutely convergent. -/
@@ -61,12 +67,249 @@ def G₂ : ℍ → ℂ := fun z =>  limUnder (atTop)
 lemma G₂_eq (z : UpperHalfPlane) : G₂ z = (2 * riemannZeta 2) -
     8 * π ^ 2 * ∑' (n : ℕ+), (sigma 1 n) * cexp (2 * π * Complex.I * n * z) := sorry
 
-lemma G2_cauchy (z : ℍ) :
-  CauchySeq  (fun N : ℕ => ∑ m in Finset.Ico (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) := by
-  apply Filter.Tendsto.cauchySeq (x := (2 * riemannZeta 2) -
-    8 * π ^ 2 * ∑' (n : ℕ+), (sigma 1 n) * cexp (2 * π * Complex.I * n * z))
+/-This is from the modforms repo, so no need to prove it. -/
+theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
+    ∑' d : ℤ, 1 / ((z : ℂ) + d) ^ k =
+      (-2 * ↑π * Complex.I) ^ k / (k - 1)! *
+      ∑' n : ℕ+, n ^ ((k - 1) ) * Complex.exp (2 * ↑π * Complex.I * z * n) := sorry
+
+lemma t4  (z : ℍ) (k : ℕ) (hk : 2 ≤ k):
+    ∑' c : ℕ+, ∑' d : ℤ, 1 / (((c • z : ℍ) : ℂ) + d) ^ k =
+      ∑' e : ℕ+,
+        (-2 * ↑π * Complex.I) ^ k / (k - 1)! *
+        ∑' n : ℕ+, n ^ (k - 1) * Complex.exp (2 * ↑π * Complex.I * e * z * n) := by
+      congr
+      funext c
+      rw [ q_exp_iden k hk (c • z : ℍ), natPosSMul_apply c z, ← mul_assoc]
+
+lemma t6 (z : ℍ) (f : ℤ → ℂ) :
+  (fun N : ℕ => ∑ m in Finset.Ico (-N : ℤ) N, f m) =
+  (fun N : ℕ => ∑ m in Finset.Ico (-N : ℤ) 0, f m) +
+  (fun N : ℕ => ∑ m in Finset.Ico (0 : ℤ) N, f m) := by
+  ext N
+  simp
 
   sorry
+
+lemma finsetaux1 (f : ℤ → ℂ) (N : ℕ) : ∑ m in Finset.Ico (-N : ℤ) N, f m =
+  ∑ m in Finset.range (N + 1), (f (-m)) + ∑ m in Finset.range N , f m - f 0 := by sorry
+
+def negEquiv : ℤ ≃ ℤ where
+  toFun n := -n
+  invFun n := -n
+  left_inv := by apply neg_neg
+  right_inv := by apply neg_neg
+
+theorem int_sum_neg {α : Type*} [AddCommMonoid α] [TopologicalSpace α] [T2Space α] (f : ℤ → α) :
+  ∑' d : ℤ, f d = ∑' d, f (-d) :=
+  by
+  have h : (fun d => f (-d)) = (fun d => f d) ∘ negEquiv.toFun :=
+    by
+    funext
+    simp
+    rfl
+  rw [h]
+  apply symm
+  apply negEquiv.tsum_eq
+
+lemma t7 (z : ℍ) (N : ℕ) :
+  (∑ m in Finset.Ico (-N : ℤ) 0, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) =
+   ∑ m in Finset.Ico (-N : ℤ) 0, (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
+      ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * -m * z * n) := by
+  apply Finset.sum_congr  rfl
+  intro m hm
+  simp at hm
+  have hm : 0 ≤ -m := by linarith
+  have hm0 : 0 < -m := by linarith
+  set M := (-m).toNat
+  have hM : 0 < M := by simp [M, hm0]
+  set mm : ℕ+ := ⟨M, hM⟩
+  have hmm : (mm : ℂ) = - (m : ℂ) := by
+    simp [mm, M]
+    have := Int.toNat_of_nonneg hm
+    norm_cast
+  have := q_exp_iden 2 (by norm_num) (mm • z)
+  rw [natPosSMul_apply mm z] at this
+  rw [hmm] at this
+  simp at *
+  conv at this =>
+    enter [2,2,1]
+    ext n
+    rw [← mul_assoc]
+  rw [← this]
+  nth_rw 1 [int_sum_neg]
+  congr
+  funext m
+  simp
+  ring
+
+
+
+
+lemma aux33 (f : ℕ → ℂ) (hf : Summable f) : ∑' n, f (n) =
+    limUnder atTop (fun N : ℕ => ∑ n in Finset.range N, f (n)) := by
+  rw [Filter.Tendsto.limUnder_eq]
+  have  := hf.hasSum
+  have V := this.comp tendsto_finset_range
+  apply V
+
+
+lemma aux34 (f : ℕ → ℂ) (hf : Summable f) : ∑' n, f (n + 1) =
+    limUnder atTop (fun N : ℕ => ∑ n in Finset.range N, f (n + 1)) := by
+    rw [aux33 ]
+    rw [summable_nat_add_iff ]
+    apply hf
+
+/- this is being Pr'd-/
+lemma tsum_pnat_eq_tsum_succ3 {α : Type*} [TopologicalSpace α] [AddCommMonoid α] [T2Space α]
+  (f : ℕ → α) : ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f (n + 1) := by sorry
+
+lemma aux35 (f : ℕ → ℂ) (hf : Summable f) : ∑' n : ℕ+, f n =
+  limUnder atTop (fun N : ℕ => ∑ n in Finset.range N, f (n + 1)) := by
+  rw [← aux34 f hf]
+  apply tsum_pnat_eq_tsum_succ3
+
+
+lemma t8 (z : ℍ) :
+  (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) =
+  (fun N : ℕ => (2* (riemannZeta 2))) + (fun N : ℕ => ∑ m in Finset.range N, 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
+      ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * (m + 1) * z * n)) := by
+  funext m
+  simp
+
+  sorry
+
+/-This is straight from the mod forms repo-/
+theorem tsum_sigma_eqn {k : ℕ} (z : ℍ) :
+    ∑' c : ℕ+ × ℕ+, (c.1 ^ k : ℂ) * Complex.exp (2 * ↑π * Complex.I * z * c.1 * c.2) =
+      ∑' e : ℕ+, sigma k e * Complex.exp (2 * ↑π * Complex.I * e * z) := by sorry
+
+/-This is straight from the mod forms repo-/
+theorem a1 (k : ℕ) (e : ℕ+) (z : ℍ) :
+    Summable fun c : ℕ+ => (e : ℂ) ^ (k - 1) * exp (2 * ↑π * Complex.I * ↑z * e * c) := by sorry
+/-This is straight from the mod forms repo-/
+theorem a4 (k : ℕ) (z : ℍ) :
+    Summable (uncurry fun b c : ℕ+ => ↑b ^ (k - 1) * exp (2 * ↑π * Complex.I * ↑c * ↑z * ↑b)) := by sorry
+
+lemma t9 (z : ℍ) : ∑' m : ℕ,
+  ( 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
+      ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * (m + 1) * z * n))  =  -
+    8 * π ^ 2 * ∑' (n : ℕ+), (sigma 1 n) * cexp (2 * π * Complex.I * n * z) := by
+  have := tsum_pnat_eq_tsum_succ3 (fun m => 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
+      ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * (m) * z * n))
+  simp at *
+  rw [← this]
+  have := tsum_sigma_eqn z (k := 1)
+  rw [tsum_mul_left]
+  rw [← this]
+  have he :  2 * (2 * ↑π * Complex.I) ^ 2 = - 8 * π ^ 2 := by sorry
+  rw [he]
+  simp
+  left
+  symm
+  simp only [pow_one, neg_mul] at *
+  rw [tsum_prod]
+  rw [tsum_comm' ]
+  congr
+  funext m
+  congr
+  funext n
+  simp
+  congr 1
+  ring
+  have := a4 2 z
+
+  sorry --these 3 are in the modforms repo
+  sorry
+  sorry
+  have := a4 2 z
+  apply this.congr
+  intro b
+  simp [uncurry]
+  congr 1
+  ring
+
+
+
+lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
+  apply Monotone.tendsto_atTop_atTop
+  rw [@monotone_iff_forall_covBy]
+  intro a b h
+  simp at *
+  intro t
+  simp
+  intro h1 h2
+  rw [Order.covBy_iff_add_one_eq] at h
+  rw [← h]
+  omega
+  intro b
+
+
+
+
+  sorry
+
+lemma verga2 : Tendsto (fun N : ℕ => Finset.Icc (-N : ℤ) N) atTop atTop := by
+  apply Monotone.tendsto_atTop_atTop
+  rw [@monotone_iff_forall_covBy]
+  intro a b h
+  simp at *
+  intro t
+  simp
+  intro h1 h2
+  rw [Order.covBy_iff_add_one_eq] at h
+  rw [← h]
+  omega
+  intro b
+
+
+
+
+  sorry
+
+
+lemma Icc_cauchy_Ico (f : ℤ → ℂ) :
+  CauchySeq (fun N => ∑ m in Finset.Icc (-N : ℤ) N, f m) ↔
+  (CauchySeq fun N => ∑ m in Finset.Ico (-N : ℤ) N, f m) := by
+
+
+
+  /- constructor
+  intro h
+  have := cauchySeq_tendsto_of_complete h
+  obtain ⟨g, hg⟩ := this
+  apply Filter.Tendsto.cauchySeq (x := g)
+  rw [Filter.tendsto_iff_comap ] at *
+
+  have hj := verga2
+  have hj' := verga
+  rw [Filter.tendsto_iff_comap ] at hj hj'
+  apply le_trans hg  -/
+
+  /- rw [@Filter.le_def]
+  simp
+  intro x y hxy H
+  rw [@preimage_subset_iff] at *
+  refine ⟨y, hxy, ?_⟩
+  rw [@preimage_subset_iff]
+   -/
+  sorry
+
+lemma G2_cauchy (z : ℍ) :
+  CauchySeq  (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) := by
+  rw [t8]
+  simp
+  apply CauchySeq.const_add
+  apply Filter.Tendsto.cauchySeq (x :=  -
+    8 * π ^ 2 * ∑' (n : ℕ+), (sigma 1 n) * cexp (2 * π * Complex.I * n * z))
+  rw [← t9]
+  have hf : Summable fun m : ℕ => ( 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
+      ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * (m + 1) * z * n)) := by sorry
+  have := hf.hasSum
+  have V := this.comp tendsto_finset_range
+  simp at *
+  apply V
+
 
 
 lemma G₂_eq1 (z : ℍ) : G₂ z = 2 * riemannZeta 2 +
@@ -720,6 +963,8 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
   sorry
   sorry
   sorry
+  sorry
+  sorry
 /- /-Check that we didnt define the zero function! -/
 lemma G2'_summable (z : ℍ) : Summable fun m : ℤ =>  (∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2) := by
   --is this true??
@@ -731,11 +976,7 @@ theorem series_eql' (z : ℍ) :
     ↑π * Complex.I - 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * z * n) =
       1 / z + ∑' n : ℕ+, (1 / ((z : ℂ) - n) + 1 / (z + n)) := sorry
 
-/-This is from the modforms repo, so no need to prove it. -/
-theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
-    ∑' d : ℤ, 1 / ((z : ℂ) + d) ^ k =
-      (-2 * ↑π * Complex.I) ^ k / (k - 1)! *
-      ∑' n : ℕ+, n ^ ((k - 1) ) * Complex.exp (2 * ↑π * Complex.I * z * n) := sorry
+
 
 def E₂ : ℍ → ℂ := (1 / (2 * riemannZeta 2)) •  G₂
 
