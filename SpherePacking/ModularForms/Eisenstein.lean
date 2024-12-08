@@ -268,13 +268,71 @@ lemma verga2 : Tendsto (fun N : ℕ => Finset.Icc (-N : ℤ) N) atTop atTop := b
   sorry
 
 
-lemma Icc_cauchy_Ico (f : ℤ → ℂ) :
-  CauchySeq (fun N => ∑ m in Finset.Icc (-N : ℤ) N, f m) ↔
-  (CauchySeq fun N => ∑ m in Finset.Ico (-N : ℤ) N, f m) := by
 
 
 
-  /- constructor
+lemma Icc_eq_Ico_union_right (l u : ℤ) (h : l ≤ u) :
+  Finset.Icc l u = Finset.Ico l u ∪ {u} := by
+  apply Finset.ext
+  intro x
+  rw [Finset.mem_union, Finset.mem_Icc, Finset.mem_Ico, Finset.mem_singleton]
+  constructor
+  · intro hx
+    rcases hx with ⟨hl, hu⟩
+    by_cases hg :  x = u
+    · -- If x = u
+      right; exact hg
+    · -- If x < u
+      left; exact ⟨hl, by sorry⟩
+  · intro hx
+    cases hx with
+    | inl hIco =>
+      rcases hIco with ⟨hl, hlt⟩
+      exact ⟨hl, hlt.le⟩
+    | inr hu_eq =>
+      rw [hu_eq]
+      exact ⟨h, le_refl u⟩
+
+lemma sum_Icc_eq_sum_Ico_succ {α : Type*} [AddCommMonoid α] (f : ℤ → α)
+  {l u : ℤ} (h : l ≤ u) :
+  ∑ m in Finset.Icc l u, f m = (∑ m in Finset.Ico l u, f m) + f u := by
+  -- Start with the definition of Icc and Ico sets as Finsets
+  let S_Icc := Finset.Icc l u
+  let S_Ico := Finset.Ico l u
+  have : S_Icc = S_Ico ∪ {u} := by
+    sorry
+    --rw [Icc_eq_Ico_union_right _ _ h]
+
+  -- Since u is the maximum element, it doesn't appear in Ico l u
+  have disjointness : S_Ico ∩ {u} = ∅ := by
+    -- The set Ico l u only includes integers strictly less than u, so it cannot contain u itself.
+    sorry
+  sorry
+  --rw [this, Finset.sum_union disjointness, Finset.sum_singleton]
+
+lemma auxl (a b c d : ℂ): Complex.abs ((a + b) - (c +d)) ≤ Complex.abs (a - c) + Complex.abs (b - d) := by
+  have : Complex.abs (a + b) ≤ Complex.abs a + Complex.abs b := by exact AbsoluteValue.add_le Complex.abs a b
+  conv  =>
+    enter [1,2]
+    rw [show a + b - (c + d) = (a - c) + (b - d) by ring]
+  apply  AbsoluteValue.add_le Complex.abs
+
+
+lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) :
+  CauchySeq (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, f m) ↔
+  CauchySeq (fun N : ℕ => ∑ m in Finset.Ico (-N : ℤ) N, f m) := by
+  simp_rw [cauchySeq_iff_le_tendsto_0]
+  constructor
+  intro h
+  --have  := exists_norm_le_of_cauchySeq
+  obtain ⟨g, hg, H, H2⟩ := h
+  sorry
+
+
+  /- simp [CauchySeq]
+
+
+  constructor
   intro h
   have := cauchySeq_tendsto_of_complete h
   obtain ⟨g, hg⟩ := this
@@ -284,7 +342,7 @@ lemma Icc_cauchy_Ico (f : ℤ → ℂ) :
   have hj := verga2
   have hj' := verga
   rw [Filter.tendsto_iff_comap ] at hj hj'
-  apply le_trans hg  -/
+  apply le_trans hg -/
 
   /- rw [@Filter.le_def]
   simp
