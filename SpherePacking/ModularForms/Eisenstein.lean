@@ -271,44 +271,19 @@ lemma verga2 : Tendsto (fun N : ℕ => Finset.Icc (-N : ℤ) N) atTop atTop := b
 
 
 
-lemma Icc_eq_Ico_union_right (l u : ℤ) (h : l ≤ u) :
-  Finset.Icc l u = Finset.Ico l u ∪ {u} := by
-  apply Finset.ext
-  intro x
-  rw [Finset.mem_union, Finset.mem_Icc, Finset.mem_Ico, Finset.mem_singleton]
-  constructor
-  · intro hx
-    rcases hx with ⟨hl, hu⟩
-    by_cases hg :  x = u
-    · -- If x = u
-      right; exact hg
-    · -- If x < u
-      left; exact ⟨hl, by sorry⟩
-  · intro hx
-    cases hx with
-    | inl hIco =>
-      rcases hIco with ⟨hl, hlt⟩
-      exact ⟨hl, hlt.le⟩
-    | inr hu_eq =>
-      rw [hu_eq]
-      exact ⟨h, le_refl u⟩
+lemma Icc_eq_Ico_union_right (l : ℕ)  :
+  Finset.Icc (-(l + 1 : ℤ)) (l + 1) = Finset.Icc (-(l : ℤ)) (l : ℤ) ∪
+    {(-((l + 1): ℤ)), ((l + 1) : ℤ)} := by
+  induction' l with l ih
+  simp
+  rfl
+  zify
+  refine Finset.ext_iff.mpr ?_
+  intro a
+  simp
+  omega
 
-lemma sum_Icc_eq_sum_Ico_succ {α : Type*} [AddCommMonoid α] (f : ℤ → α)
-  {l u : ℤ} (h : l ≤ u) :
-  ∑ m in Finset.Icc l u, f m = (∑ m in Finset.Ico l u, f m) + f u := by
-  -- Start with the definition of Icc and Ico sets as Finsets
-  let S_Icc := Finset.Icc l u
-  let S_Ico := Finset.Ico l u
-  have : S_Icc = S_Ico ∪ {u} := by
-    sorry
-    --rw [Icc_eq_Ico_union_right _ _ h]
 
-  -- Since u is the maximum element, it doesn't appear in Ico l u
-  have disjointness : S_Ico ∩ {u} = ∅ := by
-    -- The set Ico l u only includes integers strictly less than u, so it cannot contain u itself.
-    sorry
-  sorry
-  --rw [this, Finset.sum_union disjointness, Finset.sum_singleton]
 
 lemma auxl (a b c d : ℂ): Complex.abs ((a + b) - (c +d)) ≤ Complex.abs (a - c) + Complex.abs (b - d) := by
   have : Complex.abs (a + b) ≤ Complex.abs a + Complex.abs b := by exact AbsoluteValue.add_le Complex.abs a b
@@ -318,16 +293,83 @@ lemma auxl (a b c d : ℂ): Complex.abs ((a + b) - (c +d)) ≤ Complex.abs (a - 
   apply  AbsoluteValue.add_le Complex.abs
 
 
+lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m in Finset.Icc (-N : ℤ) N, f m =
+  f N + f (-N : ℤ)  + ∑ m in Finset.Icc (-(N - 1) : ℤ) (N-1), f m := by
+  induction' N with N ih
+  simp
+  aesop
+  zify
+  rw [Icc_eq_Ico_union_right]
+  rw [Finset.sum_union]
+  ring
+  rw [add_assoc]
+  congr
+  rw [ Finset.sum_pair]
+  ring
+  omega
+  simp
+
+lemma cc(f : ℤ → ℂ) (hc :  CauchySeq fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, f m)
+  (hs : ∀ n , f n = f (-n)) :
+  Tendsto f atTop (𝓝 0) := by
+  have h := cauchySeq_iff_tendsto_dist_atTop_0.mp hc
+  simp_rw [cauchySeq_iff_le_tendsto_0] at *
+  obtain ⟨g, hg, H, Hg⟩ := hc
+  rw [Metric.tendsto_atTop] at *
+  simp at *
+  intro ε hε
+  have hh := Hg (2 * ε) (by linarith)
+  obtain ⟨N, hN⟩ := hh
+  use N + 1
+  intro n hn
+  have H3 := H (n).natAbs (n -1).natAbs N ?_ ?_
+  rw [trex f n.natAbs] at H3
+  simp [dist_eq_norm] at *
+  have h1 : |n| = n := by
+    simp
+    linarith
+  simp_rw [h1] at H3
+  have h2 : |n - 1| = n - 1 := by
+    simp
+    linarith
+  simp_rw [h2] at H3
+  simp at H3
+  rw [← hs n] at H3
+  rw [show f n + f n = 2 * f n by ring] at H3
+  simp at H3
+  have HN := hN N (by rfl)
+  have hgn : g N ≤ |g N| := by
+    exact le_abs_self (g N)
+  have := le_trans H3 hgn
+  have hgnn : 2 * Complex.abs (f n) < 2 * ε := by
+    apply lt_of_le_of_lt
+    exact this
+    exact HN
+  nlinarith
+  omega
+  omega
+  omega
+
 lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) :
   CauchySeq (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, f m) ↔
   CauchySeq (fun N : ℕ => ∑ m in Finset.Ico (-N : ℤ) N, f m) := by
-  simp_rw [cauchySeq_iff_le_tendsto_0]
-  constructor
+
+
+ /-  constructor
   intro h
+  have hh :=  h
+  simp_rw [cauchySeq_iff_le_tendsto_0] at *
   --have  := exists_norm_le_of_cauchySeq
   obtain ⟨g, hg, H, H2⟩ := h
-  sorry
-
+  refine ⟨g, hg, ?_, H2⟩
+  intro n m N hn hm
+  have H3 := H n m N hn hm
+  simp [dist_eq_norm] at *
+  have hnn : (-n : ℤ) ≤ n := by linarith
+  have hnm : (-m : ℤ) ≤ m := by linarith
+  rw [sum_Icc_eq_sum_Ico_succ _ hnn, sum_Icc_eq_sum_Ico_succ _ hnm] at H3
+  have HHr := H
+  sorry -/
 
   /- simp [CauchySeq]
 
@@ -715,24 +757,6 @@ lemma G2_alt_indexing2_δ (z : ℍ) : ∑' (m : Fin 2 → ℤ),
   apply this
 
 
-lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
-  apply Monotone.tendsto_atTop_atTop
-  rw [@monotone_iff_forall_covBy]
-  intro a b h
-  simp at *
-  intro t
-  simp
-  intro h1 h2
-  rw [Order.covBy_iff_add_one_eq] at h
-  rw [← h]
-  omega
-  intro b
-
-
-
-
-  sorry
-
 lemma aux3 (f : ℤ → ℂ) (hf : Summable f) : ∑' n, f n =
     limUnder atTop (fun N : ℕ => ∑ n in Finset.Ico (-N : ℤ) N, f n) := by
   rw [Filter.Tendsto.limUnder_eq]
@@ -918,6 +942,9 @@ theorem extracted_5 (z : ℍ) (b : ℤ) :
   have hA:= (G2_summable_aux b z 2 (by norm_num)).hasSum
   have ht := hA.comp verga
   simp at *
+  have := ht.congr' (f₂ := fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, (1 / ((b : ℂ) * ↑z - ↑n) ^ 2 )) ?_
+  simp at this
+
   sorry
 
 lemma auxr (z : ℍ) (b : ℤ):
