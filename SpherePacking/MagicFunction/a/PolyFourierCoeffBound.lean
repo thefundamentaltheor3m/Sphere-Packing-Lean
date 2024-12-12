@@ -102,6 +102,9 @@ lemma aux_10 : Summable fun n ↦ Complex.abs (c n) * rexp (-π * (↑n - ↑n�
   simp only [← Complex.norm_eq_abs, ← aux_9, aux_ring]
   exact aux_3 z c n₀ hcsum
 
+lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
+  sorry
+
 lemma aux_misc (x : UpperHalfPlane) : abs (cexp (I * x)) ≤ rexp (x.im) := by
   rw [aux_1 x]
   refine exp_le_exp.2 ?_
@@ -266,20 +269,19 @@ private lemma step_12 :
   · -- This allows us to get rid of the numerators
     apply mul_nonneg
     · exact exp_nonneg _
-    · sorry
+    · apply tsum_nonneg
+      intro i
+      exact mul_nonneg (AbsoluteValue.nonneg Complex.abs (c i)) (exp_nonneg _)
   · -- ⊢ The denominator of the RHS is positive (and by the next case, that of the LHS is too)
     -- The following idea is WRONG! tprod_pos_of_pos isn't true: consider fun (n : ℕ) => 1 / 2
-    -- apply tprod_pos_of_pos
-    -- intro n
-    -- apply pow_pos
-    -- apply sub_pos.2
-    -- simp
-    -- exact pi_pos
-    sorry
+    exact aux_11
   · -- ⊢ The denominator of the RHS is ≤ the denominator of the LHS
     -- apply tprod_le_tprod -- But state it without OrderedCommMonoid (or just ℝ) and sorry
     -- Remember that we need each term to be nonneg
-    sorry
+    apply tprod_le_of_nonneg
+    · sorry
+    · sorry
+    · sorry
 
 private lemma step_13 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
