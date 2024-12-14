@@ -170,6 +170,45 @@ lemma aux35 (f : ℕ → ℂ) (hf : Summable f) : ∑' n : ℕ+, f n =
   apply tsum_pnat_eq_tsum_succ3
 
 
+def summable_term (z : ℍ) : ℤ → ℂ :=  (fun m : ℤ => (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
+
+lemma term_evem (z : ℍ) (m : ℤ) : summable_term z m = summable_term z (-m) := by
+  simp [summable_term]
+  nth_rw 1 [int_sum_neg]
+  congr
+  funext m
+  simp
+  ring
+
+lemma Icc_succ (n : ℕ) : Finset.Icc (-(n + 1) : ℤ) (n + 1) = Finset.Icc (-n : ℤ) n ∪
+  {(-(n+1) : ℤ), (n + 1 : ℤ)} := by
+  refine Finset.ext_iff.mpr ?_
+  intro a
+  simp
+  omega
+
+
+lemma Icc_sum_even (f : ℤ → ℂ) (hf : ∀ n, f n = f (-n)) (N : ℕ):
+    ∑ m in Finset.Icc (-N : ℤ) N, f m = f 0 +  2 * ∑ m in Finset.range (N + 1), f m := by
+  induction' N with N ih
+  simp
+  aesop
+  simp
+  have := Icc_succ (N + 1)
+  simp only [neg_add_rev, Int.reduceNeg,  Nat.cast_add, Nat.cast_one] at *
+  rw [this]
+  rw [Finset.sum_union]
+  rw [Finset.sum_pair]
+  rw [ih]
+  nth_rw 2 [Finset.sum_range_succ]
+  have HF:= hf (N + 1)
+  simp at HF
+  rw [← HF]
+  ring
+  norm_cast
+
+  sorry
+
 lemma t8 (z : ℍ) :
   (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) =
   (fun N : ℕ => (2* (riemannZeta 2))) + (fun N : ℕ => ∑ m in Finset.range N, 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
@@ -231,39 +270,9 @@ lemma t9 (z : ℍ) : ∑' m : ℕ,
 
 
 
-lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
-  apply Monotone.tendsto_atTop_atTop
-  rw [@monotone_iff_forall_covBy]
-  intro a b h
-  simp at *
-  intro t
-  simp
-  intro h1 h2
-  rw [Order.covBy_iff_add_one_eq] at h
-  rw [← h]
-  omega
-  intro b
-
-
-
-
-  sorry
-
 lemma verga2 : Tendsto (fun N : ℕ => Finset.Icc (-N : ℤ) N) atTop atTop :=
   tendsto_atTop_finset_of_monotone (fun _ _ _ ↦ Finset.Icc_subset_Icc (by gcongr) (by gcongr)) (fun x ↦ ⟨x.natAbs, by simp [le_abs, neg_le]⟩)
 
-
-lemma Icc_eq_Ico_union_right (l : ℕ)  :
-  Finset.Icc (-(l + 1 : ℤ)) (l + 1) = Finset.Icc (-(l : ℤ)) (l : ℤ) ∪
-    {(-((l + 1): ℤ)), ((l + 1) : ℤ)} := by
-  induction' l with l ih
-  simp
-  rfl
-  zify
-  refine Finset.ext_iff.mpr ?_
-  intro a
-  simp
-  omega
 
 
 
@@ -285,7 +294,7 @@ lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m in Finset.Icc (-N 
   simp
   aesop
   zify
-  rw [Icc_eq_Ico_union_right]
+  rw [Icc_succ]
   rw [Finset.sum_union]
   ring
   rw [add_assoc]
@@ -340,10 +349,10 @@ lemma cc(f : ℤ → ℂ) (hc :  CauchySeq fun N : ℕ => ∑ m in Finset.Icc (-
 lemma sum_Icc_eq_sum_Ico_succ {α : Type*} [AddCommMonoid α] (f : ℤ → α)
     {l u : ℤ} (h : l ≤ u) :
     ∑ m in Finset.Icc l u, f m = (∑ m in Finset.Ico l u, f m) + f u := by
-  sorry
+  rw [Finset.Icc_eq_cons_Ico h]
+  simp
+  rw [add_comm]
 
-example (f : ℤ → ℂ) (hf : f ≠ 0) : ∃ n, f n ≠ 0 := by
-  exact ne_iff.mp hf
 
 lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n , f n = f (-n))
   (hc : CauchySeq (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, f m) ) :
@@ -771,6 +780,24 @@ lemma G2_alt_indexing2_δ (z : ℍ) : ∑' (m : Fin 2 → ℤ),
   simp at this
   apply this
 
+
+lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
+  apply Monotone.tendsto_atTop_atTop
+  rw [@monotone_iff_forall_covBy]
+  intro a b h
+  simp at *
+  intro t
+  simp
+  intro h1 h2
+  rw [Order.covBy_iff_add_one_eq] at h
+  rw [← h]
+  omega
+  intro b
+
+
+
+
+  sorry
 
 lemma aux3 (f : ℤ → ℂ) (hf : Summable f) : ∑' n, f n =
     limUnder atTop (fun N : ℕ => ∑ n in Finset.Ico (-N : ℤ) N, f n) := by
