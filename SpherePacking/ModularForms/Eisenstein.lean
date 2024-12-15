@@ -188,13 +188,13 @@ lemma Icc_succ (n : ℕ) : Finset.Icc (-(n + 1) : ℤ) (n + 1) = Finset.Icc (-n 
   omega
 
 
+
 lemma Icc_sum_even (f : ℤ → ℂ) (hf : ∀ n, f n = f (-n)) (N : ℕ):
-    ∑ m in Finset.Icc (-N : ℤ) N, f m = f 0 +  2 * ∑ m in Finset.range (N + 1), f m := by
+    ∑ m in Finset.Icc (-N : ℤ) N, f m =  2 * ∑ m in Finset.range (N + 1), f m  - f 0 := by
   induction' N with N ih
   simp
-  aesop
-  simp
-  have := Icc_succ (N + 1)
+  ring
+  have := Icc_succ N
   simp only [neg_add_rev, Int.reduceNeg,  Nat.cast_add, Nat.cast_one] at *
   rw [this]
   rw [Finset.sum_union]
@@ -204,19 +204,75 @@ lemma Icc_sum_even (f : ℤ → ℂ) (hf : ∀ n, f n = f (-n)) (N : ℕ):
   have HF:= hf (N + 1)
   simp at HF
   rw [← HF]
-  ring
+  ring_nf
   norm_cast
+  omega
+  simp
+
+lemma zeta_two_eqn : ∑' (n : ℤ), ((n : ℂ) ^ 2)⁻¹ = 2 * riemannZeta 2 := by
+  have := tsum_nat_add_neg (f := fun n => 1/((n : ℂ) ^ 2)) ?_
+  simp at this
+  rw [← this]
+  have hr := zeta_nat_eq_tsum_of_gt_one (k := 2)
+  simp at hr
+  rw [hr]
+  rw [tsum_add]
+  ring
+  repeat{
+  have := Complex.summable_one_div_nat_cpow  (p := 2)
+  simp at this
+  exact this}
+  simp
+  have := Complex.summable_one_div_nat_cpow  (p := 2)
+  simp at *
+  norm_cast at *
+  apply  Summable.of_nat_of_neg_add_one
+  apply this
 
   sorry
+
+lemma sum_range_zero (f : ℤ → ℂ) (n : ℕ) : ∑ m in Finset.range (n+1), f m = f 0 +
+  ∑ m in Finset.range n, f (m+1) := by
+  rw [Finset.sum_range_succ' ]
+  rw [add_comm]
+  simp
+
+lemma auxer (a c : ℂ) : a + 2*2*c - 2*c =a + 2*c := by ring
 
 lemma t8 (z : ℍ) :
   (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) =
-  (fun N : ℕ => (2* (riemannZeta 2))) + (fun N : ℕ => ∑ m in Finset.range N, 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
+  (fun _ : ℕ => 2*((riemannZeta 2))) + (fun N : ℕ => ∑ m in Finset.range (N), 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
       ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * (m + 1) * z * n)) := by
   funext m
-  simp
+  simp only [one_div, neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one, Nat.factorial_one,
+    Nat.cast_one, div_one, pow_one, Pi.add_apply]
+  rw [Icc_sum_even]
+  simp only [Int.cast_natCast, Int.cast_zero, zero_mul, zero_add]
+  rw [ zeta_two_eqn]
+  nth_rw 2 [add_comm]
+  have := sum_range_zero (fun m =>  (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) m
+  simp only [Int.cast_natCast, one_div, Int.cast_zero, zero_mul, zero_add, Int.cast_add,
+    Int.cast_one] at this
+  rw [this, zeta_two_eqn, add_comm, mul_add, ← mul_assoc, auxer]
+  congr
+  rw [@Finset.mul_sum]
+  congr
+  ext d
+  let Z : ℍ := ⟨(d +1)* z, by simp; apply mul_pos; linarith; exact z.2⟩
+  have := q_exp_iden 2 (by norm_num) (z := Z)
+  simp only [coe_mk_subtype, one_div, neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one,
+    Nat.factorial_one, Nat.cast_one, div_one, pow_one, Z] at *
+  rw [this]
+  ring_nf
+  congr
+  ext r
+  congr
+  ring
+  · intro n
+    have := term_evem z n
+    simp [summable_term] at *
+    exact this
 
-  sorry
 
 /-This is straight from the mod forms repo-/
 theorem tsum_sigma_eqn {k : ℕ} (z : ℍ) :
@@ -296,7 +352,7 @@ lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m in Finset.Icc (-N 
   zify
   rw [Icc_succ]
   rw [Finset.sum_union]
-  ring
+  ring_nf
   rw [add_assoc]
   congr
   rw [ Finset.sum_pair]
@@ -418,7 +474,6 @@ lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n , f n = f (-
     have HG := Filter.Tendsto.add hbb haa
     simpa using HG
 
-
 lemma G2_cauchy (z : ℍ) :
   CauchySeq  (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) := by
   rw [t8]
@@ -451,10 +506,29 @@ lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) = Finset.Ico (-(b : ℤ)) 
   simp
   omega
 
+example (a b c d: ℂ ) : a + b - (c + d) = a - c + (b - d) := by
+  exact add_sub_add_comm a b c d
 
 theorem telescope_aux (z : ℍ) (m : ℤ) (b : ℕ) :
   ∑ n ∈ Finset.Ico (-b : ℤ) b, (1 / ((m : ℂ) * ↑z + ↑n) - 1 / (↑m * ↑z + ↑n + 1)) =
-    1 / (↑m * ↑z - ↑b) - 1 / (↑m * ↑z + ↑b) := sorry
+    1 / (↑m * ↑z - ↑b) - 1 / (↑m * ↑z + ↑b) := by
+  induction' b  with b ihb
+  aesop
+  simp only [Nat.cast_add, Nat.cast_one, Int.reduceNeg, one_div,
+      Finset.sum_sub_distrib] at *
+  rw [fsb, Finset.sum_union, Finset.sum_union, Finset.sum_pair, Finset.sum_pair,add_sub_add_comm, ihb]
+  simp only [neg_add_rev, Int.reduceNeg, Int.cast_add, Int.cast_neg, Int.cast_one, Int.cast_natCast]
+  ring
+  · omega
+  · omega
+  · simp only [neg_add_rev, Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Ico,
+    le_add_iff_nonneg_left, Left.nonneg_neg_iff, Int.reduceLE, add_neg_lt_iff_lt_add, false_and,
+    not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
+    lt_self_iff_false, and_false, and_self]
+  · simp only [neg_add_rev, Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Ico,
+    le_add_iff_nonneg_left, Left.nonneg_neg_iff, Int.reduceLE, add_neg_lt_iff_lt_add, false_and,
+    not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
+    lt_self_iff_false, and_false, and_self]
 
 
 lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
@@ -468,30 +542,10 @@ lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
   intro b hb
   have : ∑ n in (Finset.Ico (-(b : ℤ)) (b : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1)) = (1 / ((m : ℂ) * z - b) -  1 / (m * z + b))  := by
-
-    induction' b  with b ihb
-    aesop
-
-
-
-
-
-    sorry
-  /-   simp only [Nat.cast_add, Nat.cast_one, Int.reduceNeg, one_div,
-      Finset.sum_sub_distrib] at *
-    rw [fsb]
-    rw [Finset.sum_union]
-    rw [Finset.sum_union]
-    have := hB ?_
-
-
-
-    all_goals{sorry}
-
-
+    apply telescope_aux
   rw [this]
   simp [hε]
-  sorry -/
+
   sorry
 
 lemma ada (f : ℤ → ℂ) (h : ∀ i, f i = 0) : ∑' n, f n = 0 := by
@@ -1070,6 +1124,7 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUn
   congr
   ext N
   simp
+  sorry
   sorry
 
 
