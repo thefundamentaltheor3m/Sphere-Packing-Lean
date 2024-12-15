@@ -82,18 +82,6 @@ lemma t4  (z : ℍ) (k : ℕ) (hk : 2 ≤ k):
       funext c
       rw [ q_exp_iden k hk (c • z : ℍ), natPosSMul_apply c z, ← mul_assoc]
 
-lemma t6 (z : ℍ) (f : ℤ → ℂ) :
-  (fun N : ℕ => ∑ m in Finset.Ico (-N : ℤ) N, f m) =
-  (fun N : ℕ => ∑ m in Finset.Ico (-N : ℤ) 0, f m) +
-  (fun N : ℕ => ∑ m in Finset.Ico (0 : ℤ) N, f m) := by
-  ext N
-  simp
-
-  sorry
-
-lemma finsetaux1 (f : ℤ → ℂ) (N : ℕ) : ∑ m in Finset.Ico (-N : ℤ) N, f m =
-  ∑ m in Finset.range (N + 1), (f (-m)) + ∑ m in Finset.range N , f m - f 0 := by sorry
-
 def negEquiv : ℤ ≃ ℤ where
   toFun n := -n
   invFun n := -n
@@ -101,8 +89,7 @@ def negEquiv : ℤ ≃ ℤ where
   right_inv := by apply neg_neg
 
 theorem int_sum_neg {α : Type*} [AddCommMonoid α] [TopologicalSpace α] [T2Space α] (f : ℤ → α) :
-  ∑' d : ℤ, f d = ∑' d, f (-d) :=
-  by
+  ∑' d : ℤ, f d = ∑' d, f (-d) := by
   have h : (fun d => f (-d)) = (fun d => f d) ∘ negEquiv.toFun :=
     by
     funext
@@ -111,6 +98,17 @@ theorem int_sum_neg {α : Type*} [AddCommMonoid α] [TopologicalSpace α] [T2Spa
   rw [h]
   apply symm
   apply negEquiv.tsum_eq
+
+theorem summable_neg {α : Type*} [TopologicalSpace α] [AddCommMonoid α] (f : ℤ → α) (hf : Summable f) :
+  Summable fun d => f (-d) := by
+  have h : (fun d => f (-d)) = (fun d => f d) ∘ negEquiv.toFun :=
+    by
+    funext
+    simp
+    rfl
+  rw [h]
+  have := negEquiv.summable_iff.mpr hf
+  apply this
 
 lemma t7 (z : ℍ) (N : ℕ) :
   (∑ m in Finset.Ico (-N : ℤ) 0, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) =
@@ -530,23 +528,108 @@ theorem telescope_aux (z : ℍ) (m : ℤ) (b : ℕ) :
     not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
     lt_self_iff_false, and_false, and_self]
 
+theorem tendstozero_inv_linear (z : ℍ) (b : ℤ)  :
+  Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z + ↑d)) atTop (𝓝 0) := by
+    rw [@tendsto_zero_iff_norm_tendsto_zero]
+    conv =>
+      enter [1]
+      simp
+    apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, n]‖ ^ (-1 : ℝ))
+    simp
+    intro t
+    have := EisensteinSeries.summand_bound z (k := 1)  (by simp) ![b, t]
+    simp at *
+    apply le_trans _ this
+    apply le_of_eq
+    rw [Real.rpow_neg_one]
+    rw [← tendsto_const_smul_iff₀ (c := r z ) ]
+    simp
+    have hr : r z * r z ^ (-1 : ℝ) = 1 := by
+      rw [Real.rpow_neg_one]
+      refine mul_inv_cancel₀ (ne_of_lt (r_pos z)).symm
+    conv =>
+      enter [1]
+      intro r
+      rw [← mul_assoc, hr]
+    simp
+    apply squeeze_zero' (g := (fun n : ℕ => |(n : ℝ)| ^ (-1 : ℝ)))
+    apply Filter.Eventually.of_forall
+    intro x
+    refine Real.rpow_nonneg ?g0.hf.hp.hx (-1)
+    apply norm_nonneg
+    rw [@eventually_atTop]
+    use b.natAbs
+    intro x hx
+    apply le_of_eq
+    congr
+    rw [EisensteinSeries.norm_eq_max_natAbs ]
+    simp [hx]
+    simp
+    apply tendsto_inverse_atTop_nhds_zero_nat.congr
+    intro x
+    exact Eq.symm (Real.rpow_neg_one ↑x)
+    have := r_pos z
+    exact (ne_of_lt this).symm
+
+theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ)  :
+  Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z - ↑d)) atTop (𝓝 0) := by
+    rw [@tendsto_zero_iff_norm_tendsto_zero]
+    conv =>
+      enter [1]
+      simp
+    apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, -n]‖ ^ (-1 : ℝ))
+    simp
+    intro t
+    have := EisensteinSeries.summand_bound z (k := 1)  (by simp) ![b, -t]
+    simp at *
+    apply le_trans _ this
+    apply le_of_eq
+    rw [Real.rpow_neg_one]
+    congr
+    rw [← tendsto_const_smul_iff₀ (c := r z ) ]
+    simp
+    have hr : r z * r z ^ (-1 : ℝ) = 1 := by
+      rw [Real.rpow_neg_one]
+      refine mul_inv_cancel₀ (ne_of_lt (r_pos z)).symm
+    conv =>
+      enter [1]
+      intro r
+      rw [← mul_assoc, hr]
+    simp
+    apply squeeze_zero' (g := (fun n : ℕ => |(n : ℝ)| ^ (-1 : ℝ)))
+    apply Filter.Eventually.of_forall
+    intro x
+    refine Real.rpow_nonneg ?g0.hf.hp.hx (-1)
+    apply norm_nonneg
+    rw [@eventually_atTop]
+    use b.natAbs
+    intro x hx
+    apply le_of_eq
+    congr
+    rw [EisensteinSeries.norm_eq_max_natAbs ]
+    simp [hx]
+    simp
+    apply tendsto_inverse_atTop_nhds_zero_nat.congr
+    intro x
+    exact Eq.symm (Real.rpow_neg_one ↑x)
+    have := r_pos z
+    exact (ne_of_lt this).symm
+
 
 lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
   (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = 0 := by
   apply Filter.Tendsto.limUnder_eq
-  rw [@NormedAddCommGroup.tendsto_nhds_zero]
-  intro ε hε
-  simp only [  norm_eq_abs, eventually_atTop, ge_iff_le]
-  use 0
-  intro b hb
-  have : ∑ n in (Finset.Ico (-(b : ℤ)) (b : ℤ)),
-    (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1)) = (1 / ((m : ℂ) * z - b) -  1 / (m * z + b))  := by
-    apply telescope_aux
+  have :  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+    (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) =
+    (fun N : ℕ => (1 / ((m : ℂ) * z - N) -  1 / (m * z + N))) := by
+    funext N
+    rw [telescope_aux]
   rw [this]
-  simp [hε]
-
-  sorry
+  have h0 := tendstozero_inv_linear z m
+  have h1 := tendstozero_inv_linear_neg z m
+  have h2 := Filter.Tendsto.sub h1 h0
+  simpa using h2
 
 lemma ada (f : ℤ → ℂ) (h : ∀ i, f i = 0) : ∑' n, f n = 0 := by
   convert tsum_zero
@@ -561,9 +644,77 @@ lemma PS2 (z : ℍ) : ∑' m : ℤ, (limUnder atTop
     apply PS1
     --apply m.2
 
+/-This is from the modforms repo, so no need to prove it. -/
+theorem series_eql' (z : ℍ) :
+    ↑π * Complex.I - 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * z * n) =
+      1 / z + ∑' n : ℕ+, (1 / ((z : ℂ) - n) + 1 / (z + n)) := sorry
+
+/- lemma series_eqn2 (z : ℍ) (d : ℤ) :  ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z - d) - 1 / (↑m * ↑z + d)) =
+  2 * (↑π * Complex.I - 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * z * n)) :=by
+
+  sorry -/
+
+
+/-this is from the mod forms repo-/
+theorem int_tsum_pNat {α : Type*} [UniformSpace α] [CommRing α]  [ UniformAddGroup α] [CompleteSpace α]
+  [T2Space α] (f : ℤ → α) (hf2 : Summable f) :
+  ∑' n, f n = f 0 + ∑' n : ℕ+, f n + ∑' m : ℕ+, f (-m) :=
+  by sorry
+
+example (a b c : ℂ) : a + (b -c ) = a + b - c := by
+  exact add_sub_assoc' a b c
+
+lemma sum_int_pnat (z : ℍ) (d : ℤ) :
+  2/ d + ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z - d) - 1 / (↑m * ↑z + d))  = ∑' m : ℕ+,
+    ((1 / ((m : ℂ) * ↑z - d) + 1 / (-↑m * ↑z + -d)) - (1 / ((m : ℂ) * ↑z + d)) - 1 / (-↑m * ↑z + d)) := by
+  rw [int_tsum_pNat]
+  simp
+  ring
+  rw [← tsum_add]
+  congr
+  funext m
+  ring
+  group
+  sorry
+  sorry
+  sorry
+
+lemma sum_int_pnat2 (z : ℍ) (d : ℤ) :
+  ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z - d) - 1 / (↑m * ↑z + d))  = -2/d + ∑' m : ℕ+,
+    ((1 / ((m : ℂ) * ↑z - d) + 1 / (-↑m * ↑z + -d)) - (1 / ((m : ℂ) * ↑z + d)) - 1 / (-↑m * ↑z + d)) := by
+  rw [← sum_int_pnat]
+  ring
+
+
 lemma PS3 (z : ℍ) : limUnder atTop
   (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
-    ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = -2 * π * Complex.I / z := by sorry
+    ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = -2 * π * Complex.I / z := by
+  apply Filter.Tendsto.limUnder_eq
+  have : (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+    ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) =
+    (fun N : ℕ =>
+    ∑' m : ℤ ,  ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) := by
+    ext n
+    rw [tsum_sum]
+    intro i hi
+
+    sorry
+  conv at this =>
+    enter [2]
+    ext
+    conv =>
+      enter [1]
+      ext m
+      rw [telescope_aux z]
+  conv at this =>
+    enter [2]
+    ext m
+    rw [show (m : ℂ) = (m : ℤ) by simp]
+    rw [sum_int_pnat2]
+  rw [this]
+
+
+  sorry
 
 lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ ≤ c * b⁻¹ ↔ b ≤ c * a := by
   constructor
@@ -835,23 +986,25 @@ lemma G2_alt_indexing2_δ (z : ℍ) : ∑' (m : Fin 2 → ℤ),
   apply this
 
 
-lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
-  apply Monotone.tendsto_atTop_atTop
-  rw [@monotone_iff_forall_covBy]
-  intro a b h
+lemma int_add_abs_self_nonneg (n : ℤ) : 0 ≤ n + |n| := by
+  by_cases h : 0 ≤ n
+  apply add_nonneg h
+  exact abs_nonneg n
   simp at *
-  intro t
+  rw [abs_of_neg h]
   simp
-  intro h1 h2
-  rw [Order.covBy_iff_add_one_eq] at h
-  rw [← h]
+
+
+lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
+  apply  tendsto_atTop_finset_of_monotone (fun _ _ _ ↦ Finset.Ico_subset_Ico (by omega) (by gcongr))
+  intro x
+  use (x).natAbs + 1
+  simp [le_abs]
+  constructor
+  apply le_trans _ (int_add_abs_self_nonneg x)
   omega
-  intro b
-
-
-
-
-  sorry
+  refine Int.lt_add_one_iff.mpr ?_
+  exact le_abs_self x
 
 lemma aux3 (f : ℤ → ℂ) (hf : Summable f) : ∑' n, f n =
     limUnder atTop (fun N : ℕ => ∑ n in Finset.Ico (-N : ℤ) N, f n) := by
@@ -890,48 +1043,7 @@ lemma limUnder_sub {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f g :
   refine CauchySeq.tendsto_limUnder hg
 
 
-theorem tendstozero_inv_linear (z : ℍ) (b : ℤ)  :
-  Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z + ↑d)) atTop (𝓝 0) := by
-    rw [@tendsto_zero_iff_norm_tendsto_zero]
-    conv =>
-      enter [1]
-      simp
-    apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, n]‖ ^ (-1 : ℝ))
-    simp
-    intro t
-    have := EisensteinSeries.summand_bound z (k := 1)  (by simp) ![b, t]
-    simp at *
-    apply le_trans _ this
-    apply le_of_eq
-    rw [Real.rpow_neg_one]
-    rw [← tendsto_const_smul_iff₀ (c := r z ) ]
-    simp
-    have hr : r z * r z ^ (-1 : ℝ) = 1 := by
-      rw [Real.rpow_neg_one]
-      refine mul_inv_cancel₀ (ne_of_lt (r_pos z)).symm
-    conv =>
-      enter [1]
-      intro r
-      rw [← mul_assoc, hr]
-    simp
-    apply squeeze_zero' (g := (fun n : ℕ => |(n : ℝ)| ^ (-1 : ℝ)))
-    apply Filter.Eventually.of_forall
-    intro x
-    refine Real.rpow_nonneg ?g0.hf.hp.hx (-1)
-    apply norm_nonneg
-    rw [@eventually_atTop]
-    use b.natAbs
-    intro x hx
-    apply le_of_eq
-    congr
-    rw [EisensteinSeries.norm_eq_max_natAbs ]
-    simp [hx]
-    simp
-    apply tendsto_inverse_atTop_nhds_zero_nat.congr
-    intro x
-    exact Eq.symm (Real.rpow_neg_one ↑x)
-    have := r_pos z
-    exact (ne_of_lt this).symm
+
 
 theorem poly_id (z : ℍ) (b n : ℤ) :
   ((b : ℂ) * ↑z + ↑n + 1)⁻¹ * (((b : ℂ) * ↑z + ↑n) ^ 2)⁻¹ + (δ b n) +
@@ -1044,13 +1156,17 @@ theorem extracted_4 (z : ℍ) (b : ℤ) :
 theorem extracted_5 (z : ℍ) (b : ℤ) :
   CauchySeq fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, (1 / ((b : ℂ) * ↑z - ↑n) ^ 2 ) := by
   apply Filter.Tendsto.cauchySeq (x := ∑' (x : ℤ), ((((b : ℂ) * ↑z - ↑x) ^ 2)⁻¹))
-  have hA:= (G2_summable_aux b z 2 (by norm_num)).hasSum
+  have haa := summable_neg _ (G2_summable_aux b z 2 (by norm_num))
+  have hA:= (haa).hasSum
   have ht := hA.comp verga
   simp at *
   have := ht.congr' (f₂ := fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, (1 / ((b : ℂ) * ↑z - ↑n) ^ 2 )) ?_
   simp at this
-  sorry
-  sorry
+  apply this
+  apply Filter.Eventually.of_forall
+  intro N
+  simp
+  congr
 
 lemma auxr (z : ℍ) (b : ℤ):
     ((limUnder atTop fun N : ℕ ↦
@@ -1165,10 +1281,7 @@ lemma G2'_summable (z : ℍ) : Summable fun m : ℤ =>  (∑' (n : ℤ), 1 / ((m
   sorry
  -/
 
-/-This is from the modforms repo, so no need to prove it. -/
-theorem series_eql' (z : ℍ) :
-    ↑π * Complex.I - 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * z * n) =
-      1 / z + ∑' n : ℕ+, (1 / ((z : ℂ) - n) + 1 / (z + n)) := sorry
+
 
 
 
