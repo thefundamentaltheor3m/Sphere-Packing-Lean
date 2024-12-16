@@ -328,8 +328,6 @@ lemma verga2 : Tendsto (fun N : ℕ => Finset.Icc (-N : ℤ) N) atTop atTop :=
   tendsto_atTop_finset_of_monotone (fun _ _ _ ↦ Finset.Icc_subset_Icc (by gcongr) (by gcongr)) (fun x ↦ ⟨x.natAbs, by simp [le_abs, neg_le]⟩)
 
 
-
-
 lemma auxl (a b c d : ℂ): Complex.abs ((a + b) - (c +d)) ≤ Complex.abs (a - c) + Complex.abs (b - d) := by
   have : Complex.abs (a + b) ≤ Complex.abs a + Complex.abs b := by exact AbsoluteValue.add_le Complex.abs a b
   conv  =>
@@ -487,7 +485,7 @@ lemma G2_cauchy (z : ℍ) :
   simp at *
   apply V
 
-
+/-
 
 lemma G₂_eq1 (z : ℍ) : G₂ z = 2 * riemannZeta 2 +
   ∑' (m : ℕ+), ∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2 := by
@@ -496,7 +494,7 @@ lemma G₂_eq1 (z : ℍ) : G₂ z = 2 * riemannZeta 2 +
   simp
   rw [@NormedAddCommGroup.tendsto_atTop]
   --is this true?
-  sorry
+  sorry -/
 
 lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) = Finset.Ico (-(b : ℤ)) (b) ∪
     {-((b+1) : ℤ), (b : ℤ)} :=  by
@@ -685,36 +683,32 @@ lemma sum_int_pnat2 (z : ℍ) (d : ℤ) :
   rw [← sum_int_pnat]
   ring
 
+lemma sum_int_pnat3 (z : ℍ) (d : ℤ) :
+  ∑' m : ℕ+,
+    ((1 / ((m : ℂ) * ↑z - d) + 1 / (-↑m * ↑z + -d)) - (1 / ((m : ℂ) * ↑z + d)) - 1 / (-↑m * ↑z + d)) =
+  (2 / z) * ∑' m : ℕ+,
+    ((1 / (-(d : ℂ)/↑z - m) + 1 / (-d/↑z + m))) := by
+  rw [← Summable.tsum_mul_left ]
+  congr
+  funext m
+  have he : ∀ m d : ℂ , ((m : ℂ) * z + d) = z * ((d : ℂ)/z + m) := by
+    intro m
+    ring
+    have : (z : ℂ) ≠ (0 : ℂ) := by
+      exact ne_zero z
+    field_simp
+  have h1 := he m (-d)
+  have h2 := he (-m) (-d)
+  have h3 := he (-m) d
+  simp at *
 
-lemma PS3 (z : ℍ) : limUnder atTop
-  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
-    ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = -2 * π * Complex.I / z := by
-  apply Filter.Tendsto.limUnder_eq
-  have : (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
-    ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) =
-    (fun N : ℕ =>
-    ∑' m : ℤ ,  ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) := by
-    ext n
-    rw [tsum_sum]
-    intro i hi
-
-    sorry
-  conv at this =>
-    enter [2]
-    ext
-    conv =>
-      enter [1]
-      ext m
-      rw [telescope_aux z]
-  conv at this =>
-    enter [2]
-    ext m
-    rw [show (m : ℂ) = (m : ℤ) by simp]
-    rw [sum_int_pnat2]
-  rw [this]
 
 
   sorry
+
+  sorry
+
+
 
 lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ ≤ c * b⁻¹ ↔ b ≤ c * a := by
   constructor
@@ -733,6 +727,231 @@ lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ ≤ c * 
   exact h
   simp only [one_div]
   apply mul_pos hc (inv_pos.mpr hb)
+
+lemma pow_max (x y : ℕ) : (max x y)^2 = max (x^2) (y ^ 2) := by
+    by_cases h:  max x y = x
+    rw [h]
+    simp at *
+    nlinarith
+    have hh : max x y = y := by
+      simp at *
+      apply h.le
+    rw [hh]
+    simp at *
+    nlinarith
+
+theorem extracted_abs_norm_summable (z : ℍ) (i : ℤ) :
+  Summable fun m ↦ 1 / (r z ^ 2 * 2⁻¹ * ‖![m, i]‖ ^ 2) := by
+  have hS : Summable fun m : ℤ => 1 / (r z ^ 2 * 2⁻¹ * m ^ 2) := by
+    simp
+    apply Summable.mul_right
+    norm_cast
+    sorry
+  apply hS.of_norm_bounded_eventually
+  rw [Filter.eventually_iff_exists_mem ]
+  use (Finset.Icc (-|i|) (|i|))ᶜ
+  simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Int.reduceNeg, mem_cofinite, compl_compl,
+    finite_singleton, Finite.insert, mem_compl_iff, mem_insert_iff, mem_singleton_iff, not_or,
+    Fin.isValue, one_div, mul_inv_rev, norm_mul, norm_inv, norm_eq_abs, norm_pow, and_imp, true_and]
+  simp only [Finset.coe_Icc, norm_norm, Real.norm_ofNat, inv_inv,
+    Real.norm_eq_abs, _root_.sq_abs]
+  constructor
+  exact finite_Icc (-|i|) |i|
+  intro y hy
+  apply le_of_eq
+  simp only [mul_eq_mul_right_iff, inv_inj, norm_nonneg, mul_eq_zero, OfNat.ofNat_ne_zero,
+    inv_eq_zero, ne_eq, not_false_eq_true, pow_eq_zero_iff, false_or]
+  left
+  simp [norm_eq_max_natAbs]
+  have hg : ((y.natAbs : ℝ) ⊔ ↑i.natAbs) ^ 2 = y.natAbs ^ 2 ⊔ i.natAbs ^ 2 := by
+    zify
+    norm_cast
+    rw [pow_max]
+  rw [hg]
+  have hg2 :  y.natAbs ^ 2 ⊔ i.natAbs ^ 2 =  y.natAbs ^ 2:= by
+    simp only [sup_eq_left]
+    have hii : i^2 ≤ y^2 := by
+      rw [@sq_le_sq]
+      simp only [mem_Icc, not_and, not_le] at hy
+      rw [@le_abs']
+      by_cases hh : -|i| ≤ y
+      have hhy := hy hh
+      right
+      exact hhy.le
+      simp only [not_le] at hh
+      left
+      exact hh.le
+    zify
+    aesop
+  rw [hg2]
+  simp only [Nat.cast_pow, Nat.cast_nonneg]
+  have := Int.natAbs_pow_two y
+  norm_cast
+  rw [← this]
+  rfl
+
+
+
+lemma summable_pain (z : ℍ) (i : ℤ) :
+  Summable (fun m : ℤ ↦ 1 / ((m : ℂ) * ↑z + ↑i) - 1 / (↑m * ↑z + ↑i + 1)) := by
+  have h1 : (fun m : ℤ ↦ 1 / ((m : ℂ) * ↑z + ↑i) - 1 / (↑m * ↑z + ↑i + 1)) =
+    (fun m : ℤ ↦ 1 / (((m : ℂ) * ↑z + ↑i)*(↑m * ↑z + ↑i + 1))) := by
+    funext m
+    sorry
+  rw [h1]
+  have hS : Summable fun m : ℤ => 1 / (r z ^ 2 * 2⁻¹ * ‖![m, i]‖ ^ 2) := by
+    apply extracted_abs_norm_summable
+  apply hS.of_norm_bounded_eventually
+  rw [Filter.eventually_iff_exists_mem ]
+  use {0, -1}ᶜ
+  constructor
+  · simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Int.reduceNeg, mem_cofinite, compl_compl,
+    finite_singleton, Finite.insert, mem_compl_iff, mem_insert_iff, mem_singleton_iff, not_or,
+    Fin.isValue, one_div, mul_inv_rev, norm_mul, norm_inv, norm_eq_abs, norm_pow, and_imp, true_and]
+  · intro y hy
+    have hi := summand_bound z (k := 1) (by norm_num) ![y, i]
+    have hi1 := summand_bound z (k := 1) (by norm_num) ![y, i + 1]
+    simp only [one_div, mul_inv_rev, Nat.succ_eq_add_one, Nat.reduceAdd, Int.reduceNeg,
+      mem_compl_iff, mem_insert_iff, mem_singleton_iff, not_or, Fin.isValue, Matrix.cons_val_zero,
+      Matrix.cons_val_one, Matrix.head_cons, Int.cast_add, Int.cast_one, norm_mul, norm_inv,
+      norm_eq_abs, ge_iff_le] at *
+    have := mul_le_mul hi1 hi (by rw [Real.rpow_neg_one, inv_nonneg]; apply AbsoluteValue.nonneg )
+      (by simp_rw [Real.rpow_neg_one, ← mul_inv, inv_nonneg]; apply mul_nonneg; exact (r_pos z).le; exact norm_nonneg _)
+    have he1 : Complex.abs (↑y * ↑z + (↑i + 1)) ^ (-1 : ℝ) * Complex.abs (↑y * ↑z + ↑i) ^ (-1 : ℝ) =
+        (Complex.abs (↑y * ↑z + ↑i + 1))⁻¹ * (Complex.abs (↑y * ↑z + ↑i))⁻¹ := by
+        simp_rw [Real.rpow_neg_one]
+        congr 1
+        congr 1
+        norm_cast
+        rw [Int.cast_add, ← add_assoc]
+        congr
+        simp
+    rw [he1] at this
+    apply le_trans this
+    have hl : r z ^ (-1 : ℝ) * ‖![y, i + 1]‖ ^ (-1 : ℝ) * (r z ^ (-1 : ℝ) * ‖![y, i]‖ ^ (-1 : ℝ)) =
+      r z ^ (-2 : ℝ) * (‖![y, i + 1]‖⁻¹ * ‖![y, i]‖⁻¹) := by
+      rw [show (-2 : ℝ) = -1 + -1 by ring]
+      rw [Real.rpow_add]
+      simp_rw [Real.rpow_neg_one]
+      ring
+      exact r_pos z
+    have hr : (‖![y, i]‖ ^ 2)⁻¹ * ((2⁻¹)⁻¹ * (r z ^ 2)⁻¹) =
+      (r z ^ (-2 : ℝ)) * (2 * (‖![y, i]‖⁻¹) * (‖![y, i]‖⁻¹)) := by
+      sorry
+    rw [hl, hr]
+    gcongr
+    apply Real.rpow_nonneg
+    apply (r_pos z).le
+
+    simp only [Nat.succ_eq_add_one, Nat.reduceAdd, norm_eq_max_natAbs, Fin.isValue,
+      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, Nat.cast_max]
+    rw [aux]
+    · norm_cast
+      rw [← Nat.mul_max_mul_left]
+      omega
+    · simp [hy.1]
+    · simp [hy.1]
+    · exact zero_lt_two
+
+
+theorem extracted_12 (z : ℍ) :
+    Tendsto (fun n : ℕ => (2 / (z : ℂ) * ∑' (m : ℕ+),
+     (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) atTop (𝓝 (2 * ↑π * Complex.I / ↑z)) := by
+  have : Tendsto (fun n : ℕ+ => (2 / (z : ℂ) * ∑' (m : ℕ+),
+     (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) atTop (𝓝 (2 * ↑π * Complex.I / ↑z))  := by
+    have : (fun n : ℕ+ => (2 / (z : ℂ) * ∑' (m : ℕ+),
+     (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) = (fun N : ℕ+ =>
+      (2 / (z : ℂ) * (↑π * Complex.I - 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * (-N / z) * n) - z / -N))) := by
+      funext N
+      set Z : ℍ := ⟨-N / z, sorry⟩
+      have hS := series_eql' Z
+      simp [Z] at *
+      rw [← sub_eq_iff_eq_add'] at hS
+      left
+      have hSS := hS.symm
+      apply hSS
+    rw [this]
+    have h3 : (fun N : ℕ+ =>
+        (2 / (z : ℂ) * (↑π * Complex.I - 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * (-N / z) * n) - z / -N)))  = (fun N : ℕ+ =>
+        ((2 / (z : ℂ)) * ↑π * Complex.I - ((2 / z) * 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * (-N / z) * n)) - 2 / -N)) := by
+        funext N
+        have hz : 2 / -(N : ℂ) = (2 / z) * (z / -N) := by
+          have : (z : ℂ) ≠ 0 := ne_zero z
+          field_simp
+        rw [hz]
+        ring
+    rw [h3]
+    rw [show 2 * ↑π * Complex.I / ↑z =  2 * ↑π * Complex.I / ↑z - 0 - 0 by ring]
+    apply Tendsto.sub
+    apply Tendsto.sub
+    sorry
+    sorry
+
+
+
+
+
+
+
+
+
+    sorry
+  rw [Metric.tendsto_atTop] at *
+  simp at *
+  intro ε hε
+  have th := this ε hε
+  obtain ⟨N, hN⟩ := th
+  use N
+  intro n hn
+  have hn0 : 0 < n := by
+   have l := N.2
+   simp at *
+   apply Nat.lt_of_lt_of_le l hn
+  have HNN := hN ⟨n, hn0⟩ ?_
+  simp at *
+  exact HNN
+  norm_cast
+
+
+lemma PS3 (z : ℍ) : limUnder atTop
+  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+    ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = 2 * π * Complex.I / z := by
+  apply Filter.Tendsto.limUnder_eq
+  have : (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+    ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) =
+    (fun N : ℕ =>
+    ∑' m : ℤ ,  ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) := by
+    ext n
+    rw [tsum_sum]
+    intro i hi
+    apply summable_pain
+  conv at this =>
+    enter [2]
+    ext
+    conv =>
+      enter [1]
+      ext m
+      rw [telescope_aux z]
+  conv at this =>
+    enter [2]
+    ext m
+    rw [show (m : ℂ) = (m : ℤ) by simp]
+    rw [sum_int_pnat2]
+  rw [this]
+  rw [show 2 * ↑π * Complex.I / ↑z = 0 + 2 * ↑π * Complex.I / ↑z by ring]
+  apply Tendsto.add
+  ·
+
+    sorry
+
+  ·
+    conv =>
+      enter [1]
+      ext n
+      rw [sum_int_pnat3]
+
+    sorry
+
 
 theorem extracted_1 (b : Fin 2 → ℤ) (hb : b ≠ 0) (HB1 : b ≠ ![0, -1]) :
     ‖![b 0, b 1 + 1]‖ ^ (-1 : ℝ) * ‖b‖ ^ (-2 : ℝ) ≤ 2 * ‖b‖ ^ (-3 : ℝ) := by
@@ -795,7 +1014,9 @@ lemma G_2_alt_summable (z : ℍ) : Summable fun  (m : Fin 2 → ℤ) =>
   apply ((summable_one_div_norm_rpow hk').mul_left <| r z ^ (-3 : ℝ) *  2).of_norm_bounded_eventually
   rw [Filter.eventually_iff_exists_mem ]
   use { ![0,0], ![0,-1]}ᶜ
-  simp
+  simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Int.reduceNeg, mem_cofinite, compl_compl,
+    finite_singleton, Finite.insert, mem_compl_iff, mem_insert_iff, mem_singleton_iff, not_or,
+    Fin.isValue, one_div, mul_inv_rev, norm_mul, norm_inv, norm_eq_abs, norm_pow, and_imp, true_and]
   intro b HB1 HB2
   have hk0 : 0 ≤ (2 : ℝ) := by norm_num
   have hk0' : 0 ≤ (1 : ℝ) := by norm_num
@@ -1245,7 +1466,7 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUn
 
 
 
-lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 * π * Complex.I / z =
+lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - 2 * π * Complex.I / z =
   ∑' n : ℤ, ∑' m : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m n) := by
   rw [G2_S_act]
   rw [← PS3 z]
