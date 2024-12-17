@@ -1030,10 +1030,10 @@ theorem extracted_12 (z : ℍ) :
   norm_cast
 
 
-lemma PS3 (z : ℍ) : limUnder atTop
-  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
-    ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = -2 * π * Complex.I / z := by
-  apply Filter.Tendsto.limUnder_eq
+theorem PS3tn2 (z : ℍ) :
+  Tendsto (fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N,
+    ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z + ↑n) - 1 / (↑m * ↑z + ↑n + 1))) atTop
+    (𝓝 (-2 * ↑π * Complex.I / ↑z)) := by
   have : (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) =
     (fun N : ℕ =>
@@ -1068,6 +1068,13 @@ lemma PS3 (z : ℍ) : limUnder atTop
       ext n
       rw [sum_int_pnat3]
     apply extracted_12
+
+lemma PS3 (z : ℍ) : limUnder atTop
+  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+    ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = -2 * π * Complex.I / z := by
+  apply Filter.Tendsto.limUnder_eq
+  apply PS3tn2
+
 
 
 
@@ -1575,13 +1582,11 @@ lemma CauchySeq.congr (f g : ℕ → ℂ) (hf : f = g) (hh : CauchySeq g) : Cauc
   rw [hf]
   exact hh
 
-
-lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUnder (atTop)
-    fun N : ℕ => ((∑' (n : ℤ), ∑ m in Finset.Ico (-N : ℤ) N, (1 / ((n : ℂ) * z + m) ^ 2))) := by
-  rw [ modular_S_smul]
-  simp [G₂]
-  rw [ limUnder_mul_const]
-  congr
+theorem extracted_66 (z : ℍ) :
+  (fun _ => ((z : ℂ) ^ 2)⁻¹) *
+    (fun N : ℕ ↦ ∑ x ∈ Finset.Ico (-↑N : ℤ) ↑N, ∑' (n : ℤ), (((x : ℂ) * (-↑z)⁻¹ + ↑n) ^ 2)⁻¹) =
+  fun N : ℕ ↦
+    ∑' (n : ℤ), ∑ x ∈ Finset.Ico (-↑N : ℤ) ↑N, (((n : ℂ) * ↑z + ↑x) ^ 2)⁻¹ := by
   ext N
   simp
   rw [@Finset.mul_sum]
@@ -1605,6 +1610,46 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUn
 
 
     sorry
+
+
+theorem extracted_66c (z : ℍ) :
+  (fun _ => ((z : ℂ) ^ 2)⁻¹) *
+    (fun N : ℕ ↦ ∑ x ∈ Finset.Icc (-↑N : ℤ) ↑N, ∑' (n : ℤ), (((x : ℂ) * (-↑z)⁻¹ + ↑n) ^ 2)⁻¹) =
+  fun N : ℕ ↦
+    ∑' (n : ℤ), ∑ x ∈ Finset.Icc (-↑N : ℤ) ↑N, (((n : ℂ) * ↑z + ↑x) ^ 2)⁻¹ := by
+  ext N
+  simp
+  rw [@Finset.mul_sum]
+  rw [tsum_sum]
+  congr
+  ext n
+  rw [← tsum_mul_left]
+  rw [int_sum_neg]
+  congr
+  ext d
+  have hz := ne_zero z
+  rw [← neg_ne_zero] at hz
+  rw [← mul_inv]
+  congr 1
+  rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
+  congr
+  field_simp
+  simp only [UpperHalfPlane.coe]
+  ring
+  · intro i hi
+
+
+    sorry
+
+
+
+lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUnder (atTop)
+    fun N : ℕ => ((∑' (n : ℤ), ∑ m in Finset.Ico (-N : ℤ) N, (1 / ((n : ℂ) * z + m) ^ 2))) := by
+  rw [ modular_S_smul]
+  simp [G₂]
+  rw [ limUnder_mul_const]
+  congr
+  simpa using extracted_66 z
   · apply CauchySeq_Icc_iff_CauchySeq_Ico
     intro d
     rw [int_sum_neg]
@@ -1627,7 +1672,32 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUn
     field_simp
     ring
 
+theorem extracted_6 (z : ℍ) : CauchySeq fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-(N : ℤ)) ↑N,
+  ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z + ↑n) - 1 / (↑m * ↑z + ↑n + 1)) := by
+  have := PS3tn2 z
+  apply Filter.Tendsto.cauchySeq
+  apply this
 
+lemma cauchy_seq_mul_const (f : ℕ → ℂ) (c : ℂ) (hc  : c ≠ 0) :
+  CauchySeq f → CauchySeq (c • f) := by
+  intro hf
+  rw [Metric.cauchySeq_iff' ] at *
+  simp at *
+  intro ε hε
+  have hcc : 0 < ‖c‖ := by
+    simp [hc]
+  have hC : 0 < Complex.abs c := by
+    simp [hc]
+  have H := hf (ε / ‖c‖) (by simp; rw [lt_div_iff₀' hC]; simp [hε] )
+  obtain ⟨N, hN⟩ := H
+  use N
+  intro n hn
+  have h1 := hN n hn
+  simp [dist_eq_norm] at *
+  rw [← mul_sub]
+  simp only [AbsoluteValue.map_mul]
+  rw [lt_div_iff₀' (by simp [hc])] at h1
+  exact h1
 
 lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 * π * Complex.I / z =
   ∑' n : ℤ, ∑' m : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m n) := by
@@ -1653,17 +1723,42 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
 
 
 
-  sorry
-  sorry
-  sorry
-  sorry
-  sorry
-  sorry
-/- /-Check that we didnt define the zero function! -/
-lemma G2'_summable (z : ℍ) : Summable fun m : ℤ =>  (∑' (n : ℤ), 1 / ((m : ℂ) * z + n) ^ 2) := by
-  --is this true??
-  sorry
- -/
+  · sorry
+  · sorry
+  · sorry
+  · conv =>
+      enter [1]
+      ext N
+      rw [tsum_sum (by sorry)]
+    apply CauchySeq_Icc_iff_CauchySeq_Ico
+    intro n
+    nth_rw 2 [int_sum_neg]
+    congr
+    ext m
+    simp
+    ring
+    conv =>
+      enter [1]
+      ext N
+      rw [← tsum_sum (by sorry)]
+
+    have := G2_cauchy ⟨-1 / z, by simpa using pnat_div_upper 1 z⟩
+    have  hC := cauchy_seq_mul_const _ ((z : ℂ) ^ 2)⁻¹ (by sorry) this
+    apply hC.congr
+    have H := extracted_66c z
+    simp at *
+    rw [← H]
+    ext N
+    simp
+    left
+    congr
+    ext n
+    congr
+    ext m
+    congr
+    ring
+  · apply extracted_6
+  · sorry
 
 
 
