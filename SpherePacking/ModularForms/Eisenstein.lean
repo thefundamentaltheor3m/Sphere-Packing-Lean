@@ -162,6 +162,13 @@ lemma aux34 (f : ℕ → ℂ) (hf : Summable f) : ∑' n, f (n + 1) =
 lemma tsum_pnat_eq_tsum_succ3 {α : Type*} [TopologicalSpace α] [AddCommMonoid α] [T2Space α]
   (f : ℕ → α) : ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f (n + 1) := by sorry
 
+lemma tsum_pnat_eq_tsum_succ4 {α : Type*} [TopologicalSpace α] [AddCommMonoid α] [T2Space α]
+  (f : ℕ → α) : f 0 + ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f n := by sorry
+
+
+
+
+
 lemma aux35 (f : ℕ → ℂ) (hf : Summable f) : ∑' n : ℕ+, f n =
   limUnder atTop (fun N : ℕ => ∑ n in Finset.range N, f (n + 1)) := by
   rw [← aux34 f hf]
@@ -659,8 +666,6 @@ theorem int_tsum_pNat {α : Type*} [UniformSpace α] [CommRing α]  [ UniformAdd
   ∑' n, f n = f 0 + ∑' n : ℕ+, f n + ∑' m : ℕ+, f (-m) :=
   by sorry
 
-example (a b c : ℂ) : a + (b -c ) = a + b - c := by
-  exact add_sub_assoc' a b c
 
 lemma sum_int_pnat (z : ℍ) (d : ℤ) :
   2/ d + ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z - d) - 1 / (↑m * ↑z + d))  = ∑' m : ℕ+,
@@ -854,14 +859,104 @@ lemma summable_pain (z : ℍ) (i : ℤ) :
     · exact zero_lt_two
 
 
+
+theorem exp_upperHalfPlane_lt_one (z : ℍ) :
+    Complex.abs (Complex.exp (2 * ↑π * Complex.I * z)) < 1 := by
+  simp only [abs_exp, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
+    Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, coe_re, coe_im,
+    zero_sub, Real.exp_lt_one_iff, Left.neg_neg_iff]
+  positivity
+
+lemma pnat_div_upper (n : ℕ+) (z : ℍ) : 0 < (-(n : ℂ) / z).im := by
+  norm_cast
+  rw [div_im]
+  simp only [Int.cast_neg, Int.cast_natCast, neg_im, natCast_im, neg_zero, coe_re, zero_mul,
+    zero_div, neg_re, natCast_re, coe_im, neg_mul, zero_sub, Left.neg_pos_iff, gt_iff_lt]
+  rw [@div_neg_iff]
+  right
+  simp only [Left.neg_neg_iff, Nat.cast_pos, PNat.pos, mul_pos_iff_of_pos_left, Complex.normSq_pos,
+    ne_eq]
+  refine ⟨z.2, ne_zero z⟩
+
+
+lemma pnat_nat_tendsto (f : ℕ → ℝ) (hf : Tendsto (fun n : ℕ+ => f n) atTop (𝓝 0)) :
+  Tendsto f atTop (𝓝 0) := by
+  exact tendsto_comp_val_Ioi_atTop.mp hf
+
+
+theorem tsum_exp_tendsto_zero (z : ℍ) :
+    Tendsto (fun x : ℕ+ ↦ 2 / ↑z * 2 * ↑π * Complex.I *
+    ∑' (n : ℕ), cexp (2 * ↑π * Complex.I * (-↑↑x / ↑z) * ↑n)) atTop (𝓝 (4 * ↑π * Complex.I / ↑z)) := by
+  rw [show  4 * ↑π * Complex.I / ↑z =  2 / ↑z * 2 * ↑π * Complex.I +  0 by ring]
+  conv =>
+    enter [1]
+    ext n
+    rw [← tsum_pnat_eq_tsum_succ4]
+    rw [mul_add]
+  simp
+  nth_rw 3 [show  2 / ↑z * 2 * ↑π * Complex.I =  2 / ↑z * 2 * ↑π * Complex.I +  2 / ↑z * 2 * ↑π * Complex.I*0 by ring]
+
+  apply Tendsto.add
+  simp only [tendsto_const_nhds_iff]
+  apply Tendsto.mul
+  simp
+  have := tendsto_tsum_of_dominated_convergence (𝓕 := atTop) (g := fun (n : ℕ+) => (0 : ℂ))
+    (f := fun d : ℕ+ => fun n : ℕ+ => cexp (2 * ↑π * Complex.I * (-↑↑d / ↑z) * ↑n) )
+    (bound := fun n : ℕ+ => (Complex.abs (cexp (2 * ↑π * Complex.I * (-1 / ↑z)))^ (n : ℕ)))
+  simp [norm_eq_abs, ge_iff_le, tsum_zero, forall_exists_index] at this
+  apply this
+  · apply Summable.subtype
+    simpa only [summable_geometric_iff_norm_lt_one, Real.norm_eq_abs, Complex.abs_abs] using
+      (exp_upperHalfPlane_lt_one ⟨-1 / z, by simpa using (pnat_div_upper 1 z)⟩)
+  · intro k
+    have : (fun x : ℕ+ ↦ cexp (2 * ↑π * Complex.I * (-↑↑(x : ℂ) / ↑z) * ↑k)) =
+    (fun x : ℕ+ ↦ (cexp (2 * ↑π * Complex.I * (-↑↑(k : ℂ) / ↑z)))  ^ (x : ℕ)) := by
+      ext n
+      rw [← exp_nsmul]
+      congr
+      simp
+      ring
+    rw [this]
+    have ht : Tendsto (fun x : ℕ ↦ cexp (2 * ↑π * Complex.I * (-↑k / ↑z)) ^ ↑x) atTop (𝓝 0) := by
+      -- tendsto_pow_atTop_nhds_zero_of_lt_one
+
+      sorry
+    apply tendsto_comp_val_Ioi_atTop.mpr ht
+  ·
+    simp
+    use 1
+    intro b hb k
+    have : cexp (2 * ↑π * Complex.I * (-↑↑b / ↑z) * ↑k) =
+      ((cexp (2 * ↑π * Complex.I * (- 1 / ↑z)) ^ ↑k) ^ (b : ℕ)) := by
+      rw [← pow_mul, ← exp_nsmul]
+      congr
+      simp only [nsmul_eq_mul, Nat.cast_mul]
+      ring
+    rw [this]
+    simp
+    rw [← pow_mul]
+    apply  Bound.pow_le_pow_right_of_le_one_or_one_le ?_
+    right
+    constructor
+    · apply AbsoluteValue.nonneg Complex.abs
+    · have := exp_upperHalfPlane_lt_one ⟨- 1 / z, by simpa using (pnat_div_upper 1 z)⟩
+      constructor
+      apply this.le
+      exact Nat.le_mul_of_pos_right k hb
+
+
+
+
+
 theorem extracted_12 (z : ℍ) :
     Tendsto (fun n : ℕ => (2 / (z : ℂ) * ∑' (m : ℕ+),
-     (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) atTop (𝓝 (2 * ↑π * Complex.I / ↑z)) := by
+     (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) atTop (𝓝 (-2 * ↑π * Complex.I / ↑z)) := by
   have : Tendsto (fun n : ℕ+ => (2 / (z : ℂ) * ∑' (m : ℕ+),
-     (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) atTop (𝓝 (2 * ↑π * Complex.I / ↑z))  := by
+     (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) atTop (𝓝 (-2 * ↑π * Complex.I / ↑z))  := by
     have : (fun n : ℕ+ => (2 / (z : ℂ) * ∑' (m : ℕ+),
      (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) = (fun N : ℕ+ =>
-      (2 / (z : ℂ) * (↑π * Complex.I - 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * (-N / z) * n) - z / -N))) := by
+      (2 / (z : ℂ) * (↑π * Complex.I - 2 * ↑π * Complex.I *
+      ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * (-N / z) * n) - z / -N))) := by
       funext N
       set Z : ℍ := ⟨-N / z, sorry⟩
       have hS := series_eql' Z
@@ -872,8 +967,10 @@ theorem extracted_12 (z : ℍ) :
       apply hSS
     rw [this]
     have h3 : (fun N : ℕ+ =>
-        (2 / (z : ℂ) * (↑π * Complex.I - 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * (-N / z) * n) - z / -N)))  = (fun N : ℕ+ =>
-        ((2 / (z : ℂ)) * ↑π * Complex.I - ((2 / z) * 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * (-N / z) * n)) - 2 / -N)) := by
+        (2 / (z : ℂ) * (↑π * Complex.I - 2 * ↑π * Complex.I *
+        ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * (-N / z) * n) - z / -N)))  =
+        (fun N : ℕ+ => ((2 / (z : ℂ)) * ↑π * Complex.I - ((2 / z) * 2 * ↑π * Complex.I *
+          ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * (-N / z) * n)) - 2 / -N)) := by
         funext N
         have hz : 2 / -(N : ℂ) = (2 / z) * (z / -N) := by
           have : (z : ℂ) ≠ 0 := ne_zero z
@@ -881,21 +978,24 @@ theorem extracted_12 (z : ℍ) :
         rw [hz]
         ring
     rw [h3]
-    rw [show 2 * ↑π * Complex.I / ↑z =  2 * ↑π * Complex.I / ↑z - 0 - 0 by ring]
+    rw [show -2 * ↑π * Complex.I / ↑z =  2 * ↑π * Complex.I / ↑z - 4 * ↑π * Complex.I / ↑z - 0 by ring]
     apply Tendsto.sub
     apply Tendsto.sub
-    sorry
-    sorry
-
-
-
-
-
-
-
-
-
-    sorry
+    simp
+    ring
+    apply tsum_exp_tendsto_zero
+    have := tendsto_const_div_pow 2 1 (Nat.one_ne_zero)
+    rw [Metric.tendsto_atTop] at *
+    simp at *
+    intro ε hε
+    have ht := this ε hε
+    obtain ⟨N,HN ⟩ := ht
+    use ⟨(N + 1), Nat.zero_lt_succ N⟩
+    intro n hn
+    apply HN n ?_
+    rw [← PNat.coe_le_coe ] at hn
+    simp at hn
+    omega
   rw [Metric.tendsto_atTop] at *
   simp at *
   intro ε hε
@@ -915,7 +1015,7 @@ theorem extracted_12 (z : ℍ) :
 
 lemma PS3 (z : ℍ) : limUnder atTop
   (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
-    ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = 2 * π * Complex.I / z := by
+    ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = -2 * π * Complex.I / z := by
   apply Filter.Tendsto.limUnder_eq
   have : (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) =
@@ -938,7 +1038,7 @@ lemma PS3 (z : ℍ) : limUnder atTop
     rw [show (m : ℂ) = (m : ℤ) by simp]
     rw [sum_int_pnat2]
   rw [this]
-  rw [show 2 * ↑π * Complex.I / ↑z = 0 + 2 * ↑π * Complex.I / ↑z by ring]
+  rw [show -2 * ↑π * Complex.I / ↑z = 0 + -2 * ↑π * Complex.I / ↑z by ring]
   apply Tendsto.add
   ·
 
@@ -1466,7 +1566,7 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUn
 
 
 
-lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - 2 * π * Complex.I / z =
+lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 * π * Complex.I / z =
   ∑' n : ℤ, ∑' m : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m n) := by
   rw [G2_S_act]
   rw [← PS3 z]
