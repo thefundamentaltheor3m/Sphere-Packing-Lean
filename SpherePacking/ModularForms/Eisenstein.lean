@@ -1979,9 +1979,8 @@ lemma G₂_eq_G₂_a (z : ℍ) : G₂ z = G₂_a z := by
 
 lemma G2_q_exp (z : ℍ) : G₂ z = (2 * riemannZeta 2)  - 8 * π ^ 2 *
   ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * n * z) := by
-  rw [G₂_eq_G₂_a, G₂_a]
-  rw [Filter.Tendsto.limUnder_eq]
-  rw [t8]
+  rw [G₂_eq_G₂_a, G₂_a, Filter.Tendsto.limUnder_eq]
+  rw [t8 z]
   rw [sub_eq_add_neg]
   apply Filter.Tendsto.add
   · simp only [tendsto_const_nhds_iff]
@@ -1990,6 +1989,31 @@ lemma G2_q_exp (z : ℍ) : G₂ z = (2 * riemannZeta 2)  - 8 * π ^ 2 *
       Nat.factorial_one, Nat.cast_one, div_one, pow_one] at *
     apply this
 
+lemma G2_periodic :  (G₂ ∣[(2 : ℤ)] ModularGroup.T) = G₂ := by
+  ext z
+  simp only [SL_slash, slash_def, slash, ModularGroup.det_coe, ofReal_one, Int.reduceSub, zpow_one,
+    mul_one, Int.reduceNeg, zpow_neg]
+  have := UpperHalfPlane.modular_T_smul z
+  rw [ModularGroup.sl_moeb] at this
+  rw [this, ModularGroup.denom_apply]
+  simp only [G2_q_exp, coe_vadd, ofReal_one, ModularGroup.T, Fin.isValue, Matrix.of_apply,
+    Matrix.cons_val', Matrix.cons_val_zero, Matrix.empty_val', Matrix.cons_val_fin_one,
+    Matrix.cons_val_one, Matrix.head_fin_const, Int.cast_zero, zero_mul, Matrix.head_cons,
+    Int.cast_one, zero_add, one_zpow, inv_one, mul_one, sub_right_inj, mul_eq_mul_left_iff,
+    mul_eq_zero, OfNat.ofNat_ne_zero, ne_eq, not_false_eq_true, pow_eq_zero_iff, ofReal_eq_zero,
+    false_or]
+  left
+  congr
+  ext n
+  simp only [mul_eq_mul_left_iff, Nat.cast_eq_zero]
+  left
+  rw [mul_add]
+  have :=  exp_periodic.nat_mul n
+  rw [Periodic] at this
+  have ht := this (2 * π * Complex.I * n * z)
+  rw [← ht]
+  congr 1
+  ring
 
 def E₂ : ℍ → ℂ := (1 / (2 * riemannZeta 2)) •  G₂
 
