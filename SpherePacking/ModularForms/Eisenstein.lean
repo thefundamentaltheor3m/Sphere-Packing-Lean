@@ -166,7 +166,28 @@ lemma tsum_pnat_eq_tsum_succ4 {α : Type*} [TopologicalSpace α] [AddCommMonoid 
   (f : ℕ → α) : f 0 + ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f n := by sorry
 
 
+lemma pnat_div_upper (n : ℕ+) (z : ℍ) : 0 < (-(n : ℂ) / z).im := by
+  norm_cast
+  rw [div_im]
+  simp only [Int.cast_neg, Int.cast_natCast, neg_im, natCast_im, neg_zero, coe_re, zero_mul,
+    zero_div, neg_re, natCast_re, coe_im, neg_mul, zero_sub, Left.neg_pos_iff, gt_iff_lt]
+  rw [@div_neg_iff]
+  right
+  simp only [Left.neg_neg_iff, Nat.cast_pos, PNat.pos, mul_pos_iff_of_pos_left, Complex.normSq_pos,
+    ne_eq]
+  refine ⟨z.2, ne_zero z⟩
 
+lemma pos_nat_div_upper (n : ℤ) (hn : 0 < n) (z : ℍ) : 0 < (-(n : ℂ) / z).im := by
+  norm_cast
+  rw [div_im]
+  simp [Int.cast_neg, Int.cast_natCast, neg_im, natCast_im, neg_zero, coe_re, zero_mul,
+    zero_div, neg_re, natCast_re, coe_im, neg_mul, zero_sub, Left.neg_pos_iff, gt_iff_lt]
+  rw [div_neg_iff]
+  right
+  simp [Left.neg_neg_iff, Nat.cast_pos, PNat.pos, mul_pos_iff_of_pos_left, Complex.normSq_pos,
+    ne_eq]
+  have hnr : 0 < (n : ℝ) := by simp [hn]
+  refine ⟨by apply mul_pos hnr z.2; , ne_zero z⟩
 
 
 lemma aux35 (f : ℕ → ℂ) (hf : Summable f) : ∑' n : ℕ+, f n =
@@ -664,6 +685,10 @@ theorem int_tsum_pNat {α : Type*} [UniformSpace α] [CommRing α]  [ UniformAdd
   by sorry
 
 
+/- This is from the mod forms repo -/
+theorem lhs_summable (z : ℍ) : Summable fun n : ℕ+ => 1 / ((z : ℂ) - n) + 1 / (z + n) := by sorry
+
+
 lemma sum_int_pnat (z : ℍ) (d : ℤ) :
   2/ d + ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z - d) - 1 / (↑m * ↑z + d))  = ∑' m : ℕ+,
     ((1 / ((m : ℂ) * ↑z - d) + 1 / (-↑m * ↑z + -d)) - (1 / ((m : ℂ) * ↑z + d)) - 1 / (-↑m * ↑z + d)) := by
@@ -675,6 +700,7 @@ lemma sum_int_pnat (z : ℍ) (d : ℤ) :
   funext m
   ring
   group
+  simp
   sorry
   sorry
   sorry
@@ -683,6 +709,9 @@ lemma sum_int_pnat2 (z : ℍ) (d : ℤ) :
   ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z - d) - 1 / (↑m * ↑z + d))  = -2/d + ∑' m : ℕ+,
     ((1 / ((m : ℂ) * ↑z - d) + 1 / (-↑m * ↑z + -d)) - (1 / ((m : ℂ) * ↑z + d)) - 1 / (-↑m * ↑z + d)) := by
   rw [← sum_int_pnat]
+  ring
+
+lemma arg1 (a b c d e f g h : ℂ) : e/ f + g /h  - a / b - c / d = e / f + g / h + a / -b + c / -d := by
   ring
 
 lemma sum_int_pnat3 (z : ℍ) (d : ℤ) :
@@ -695,20 +724,61 @@ lemma sum_int_pnat3 (z : ℍ) (d : ℤ) :
   funext m
   have he : ∀ m d : ℂ , ((m : ℂ) * z + d) = z * ((d : ℂ)/z + m) := by
     intro m
-    ring
+    ring_nf
     have : (z : ℂ) ≠ (0 : ℂ) := by
       exact ne_zero z
     field_simp
-  have h1 := he m (-d)
-  have h2 := he (-m) (-d)
-  have h3 := he (-m) d
-  simp at *
+  rw [arg1]
+  ring_nf
+  rw [add_comm]
+  have h4 := ne_zero z
+  simp [UpperHalfPlane.coe] at *
+  congr 1
+  · field_simp
+  · field_simp
+  · by_cases hd : d = 0
+    rw [hd]
+    simp
+    conv =>
+      enter [1]
+      ext m
+      ring_nf
+    apply summable_zero
+    by_cases hd2 : 0 < d
+    have := lhs_summable ⟨ -d / z, by simpa using pos_nat_div_upper d hd2 z⟩
+    apply this.congr
+    intro b
+    simp
+    let D := (-d).natAbs
+    have hd : 0 < D := by
+      aesop
+    have hd22 : (D : ℂ) = -d := by
+      simp [D]
+      have : 0 ≤ -d := by
+        linarith
+      have := Int.natAbs_of_nonneg this
+      norm_cast
+      rw [← this, Int.natAbs_neg ]
+      rfl
+    have := lhs_summable ⟨ -D/ z, by simpa using pnat_div_upper ⟨D, hd⟩ z⟩
+    rw [← summable_mul_left_iff (a := -1) (by norm_num) ]
+    simp at *
+    rw [hd22] at this
+    apply this.congr
+    intro b
+    have hz := ne_zero z
+    simp [UpperHalfPlane.coe] at *
+    field_simp
+    congr 1
+    have := linear_ne_zero ![b, -d] z (by aesop)
+    simp at this
+
+    sorry
 
 
 
-  sorry
 
-  sorry
+    sorry
 
 
 
@@ -876,9 +946,6 @@ lemma summable_pain (z : ℍ) (i : ℤ) :
   rw [← Finset.summable_compl_iff  (s := {0}) ]  at this
   apply this
 
-
-
-
 theorem exp_upperHalfPlane_lt_one (z : ℍ) :
     Complex.abs (Complex.exp (2 * ↑π * Complex.I * z)) < 1 := by
   simp only [abs_exp, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
@@ -886,16 +953,7 @@ theorem exp_upperHalfPlane_lt_one (z : ℍ) :
     zero_sub, Real.exp_lt_one_iff, Left.neg_neg_iff]
   positivity
 
-lemma pnat_div_upper (n : ℕ+) (z : ℍ) : 0 < (-(n : ℂ) / z).im := by
-  norm_cast
-  rw [div_im]
-  simp only [Int.cast_neg, Int.cast_natCast, neg_im, natCast_im, neg_zero, coe_re, zero_mul,
-    zero_div, neg_re, natCast_re, coe_im, neg_mul, zero_sub, Left.neg_pos_iff, gt_iff_lt]
-  rw [@div_neg_iff]
-  right
-  simp only [Left.neg_neg_iff, Nat.cast_pos, PNat.pos, mul_pos_iff_of_pos_left, Complex.normSq_pos,
-    ne_eq]
-  refine ⟨z.2, ne_zero z⟩
+
 
 
 lemma pnat_nat_tendsto (f : ℕ → ℝ) (hf : Tendsto (fun n : ℕ+ => f n) atTop (𝓝 0)) :
@@ -1491,6 +1549,22 @@ theorem extracted_3 (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
 lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
     Summable fun d : ℤ => ((((n : ℂ) * z) + d) ^ k)⁻¹ := by sorry
 
+lemma extracted_77 (z : ℍ) (n : ℤ) : Summable fun b : ℤ ↦ (((b : ℂ) * ↑z + ↑n) ^ 2)⁻¹ := by
+  have := (G2_summable_aux (-n) ⟨-1 /z, by simpa using pnat_div_upper 1 z⟩  2 (by norm_num)).mul_left ((z : ℂ)^2)⁻¹
+  apply this.congr
+  intro b
+  simp only [UpperHalfPlane.coe, Int.cast_neg, neg_mul]
+  field_simp
+  norm_cast
+  congr 1
+  rw [← mul_pow]
+  congr
+  have hz := ne_zero z --this come our with a coe that should be fixed
+  simp only [UpperHalfPlane.coe, ne_eq] at hz
+  field_simp
+  ring
+
+
 theorem extracted_4 (z : ℍ) (b : ℤ) :
   CauchySeq fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, (1 / ((b : ℂ) * ↑z + ↑n) ^ 2 ) := by
   apply Filter.Tendsto.cauchySeq (x := ∑' (x : ℤ), ((((b : ℂ) * ↑z + ↑x) ^ 2)⁻¹))
@@ -1607,9 +1681,7 @@ theorem extracted_66 (z : ℍ) :
   simp only [UpperHalfPlane.coe]
   ring
   · intro i hi
-
-
-    sorry
+    exact extracted_77 z i
 
 
 theorem extracted_66c (z : ℍ) :
@@ -1637,9 +1709,7 @@ theorem extracted_66c (z : ℍ) :
   simp only [UpperHalfPlane.coe]
   ring
   · intro i hi
-
-
-    sorry
+    exact extracted_77 z i
 
 
 
@@ -1658,7 +1728,7 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUn
     simp only [UpperHalfPlane.coe, Int.cast_neg, neg_mul, inv_inj]
     ring
     have := G2_cauchy ⟨-(1 : ℂ) / z, by simpa using pnat_div_upper 1 z⟩
-    simp at this
+    simp only [coe_mk_subtype, one_div] at this
     apply this.congr
     ext N
     congr
@@ -1666,7 +1736,7 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUn
     congr
     ext n
     congr 1
-    simp [UpperHalfPlane.coe, Int.cast_neg, neg_mul, inv_inj]
+    simp only [UpperHalfPlane.coe]
     have hz := ne_zero z
     rw [← neg_ne_zero] at hz
     field_simp
@@ -1682,35 +1752,32 @@ lemma cauchy_seq_mul_const (f : ℕ → ℂ) (c : ℂ) (hc  : c ≠ 0) :
   CauchySeq f → CauchySeq (c • f) := by
   intro hf
   rw [Metric.cauchySeq_iff' ] at *
-  simp at *
+  simp only [ne_eq, gt_iff_lt, ge_iff_le, Pi.smul_apply, smul_eq_mul] at *
   intro ε hε
   have hcc : 0 < ‖c‖ := by
-    simp [hc]
+    simp only [norm_eq_abs, AbsoluteValue.pos_iff, ne_eq, hc, not_false_eq_true]
   have hC : 0 < Complex.abs c := by
-    simp [hc]
+    simp only [AbsoluteValue.pos_iff, ne_eq, hc, not_false_eq_true]
   have H := hf (ε / ‖c‖) (by simp; rw [lt_div_iff₀' hC]; simp [hε] )
   obtain ⟨N, hN⟩ := H
   use N
   intro n hn
   have h1 := hN n hn
-  simp [dist_eq_norm] at *
+  simp only [dist_eq_norm, norm_eq_abs, AbsoluteValue.pos_iff, ne_eq, gt_iff_lt] at *
   rw [← mul_sub]
   simp only [AbsoluteValue.map_mul]
   rw [lt_div_iff₀' (by simp [hc])] at h1
   exact h1
 
+
+
 lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 * π * Complex.I / z =
   ∑' n : ℤ, ∑' m : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m n) := by
-  rw [G2_S_act]
-  rw [← PS3 z]
-  rw [aux3]
-
-  rw [limUnder_sub]
+  rw [G2_S_act, ← PS3 z, aux3, limUnder_sub]
   congr
   ext N
-  simp
-  rw [tsum_sum]
-  rw [← Finset.sum_sub_distrib ]
+  simp only [one_div, Pi.sub_apply, mul_inv_rev]
+  rw [tsum_sum, ← Finset.sum_sub_distrib ]
   congr
   ext n
   rw [← tsum_sub]
@@ -1718,38 +1785,35 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
   ext m
   have := poly_id z m n
   nth_rw 1 [← this]
-  simp
-
-
-
-
-  · sorry
-  · sorry
-  · sorry
+  simp only [add_sub_cancel_right]
+  · exact extracted_77 z n
+  · simpa only [one_div] using (summable_pain z n)
+  · intro i hi
+    exact extracted_77 z i
   · conv =>
       enter [1]
       ext N
-      rw [tsum_sum (by sorry)]
+      rw [tsum_sum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
     apply CauchySeq_Icc_iff_CauchySeq_Ico
     intro n
     nth_rw 2 [int_sum_neg]
     congr
     ext m
-    simp
+    simp only [one_div, Int.cast_neg, neg_mul, inv_inj]
     ring
     conv =>
       enter [1]
       ext N
-      rw [← tsum_sum (by sorry)]
-
+      rw [← tsum_sum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
     have := G2_cauchy ⟨-1 / z, by simpa using pnat_div_upper 1 z⟩
-    have  hC := cauchy_seq_mul_const _ ((z : ℂ) ^ 2)⁻¹ (by sorry) this
+    have  hC := cauchy_seq_mul_const _ ((z : ℂ) ^ 2)⁻¹ (by simp [ne_zero z]) this
     apply hC.congr
     have H := extracted_66c z
     simp at *
     rw [← H]
     ext N
-    simp
+    simp only [Pi.mul_apply, Pi.smul_apply, smul_eq_mul, mul_eq_mul_left_iff, inv_eq_zero, ne_eq,
+      OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff]
     left
     congr
     ext n
@@ -1758,7 +1822,14 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
     congr
     ring
   · apply extracted_6
-  · sorry
+  · have := G_2_alt_summable_δ z
+    simp only [Fin.isValue, one_div, mul_inv_rev] at this
+    rw [← swap_equiv.summable_iff, ← (finTwoArrowEquiv _).symm.summable_iff] at this
+    have ht := Summable.prod this
+    simp only [Fin.isValue, swap_equiv, Equiv.coe_fn_mk, finTwoArrowEquiv_symm_apply, comp_apply,
+      swap_apply, Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.cons_val_one, Matrix.head_cons,
+      Matrix.cons_val_zero, one_div, mul_inv_rev] at *
+    exact ht
 
 
 
