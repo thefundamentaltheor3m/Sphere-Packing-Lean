@@ -60,12 +60,8 @@ theorem natPosSMul_apply (c : ℕ+) (z : ℍ) : ((c  • z : ℍ) : ℂ) = (c : 
 
 /--Maybe this is the definition we want as I cant see how to easily show the other outer sum is
 absolutely convergent. -/
-def G₂ : ℍ → ℂ := fun z =>  limUnder (atTop)
+def G₂ : ℍ → ℂ := fun z => limUnder (atTop)
     (fun N : ℕ => ∑ m in Finset.Ico (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
-
-/-This should follow from the mod forms repo stuff. Will port soon. -/
-lemma G₂_eq (z : UpperHalfPlane) : G₂ z = (2 * riemannZeta 2) -
-    8 * π ^ 2 * ∑' (n : ℕ+), (sigma 1 n) * cexp (2 * π * Complex.I * n * z) := sorry
 
 /-This is from the modforms repo, so no need to prove it. -/
 theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
@@ -271,7 +267,8 @@ lemma auxer (a c : ℂ) : a + 2*2*c - 2*c =a + 2*c := by ring
 
 lemma t8 (z : ℍ) :
   (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) =
-  (fun _ : ℕ => 2*((riemannZeta 2))) + (fun N : ℕ => ∑ m in Finset.range (N), 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
+  (fun _ : ℕ => 2*((riemannZeta 2))) +
+  (fun N : ℕ => ∑ m in Finset.range (N), 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
       ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * (m + 1) * z * n)) := by
   funext m
   simp only [one_div, neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one, Nat.factorial_one,
@@ -448,9 +445,9 @@ lemma sum_Icc_eq_sum_Ico_succ {α : Type*} [AddCommMonoid α] (f : ℤ → α)
     {l u : ℤ} (h : l ≤ u) :
     ∑ m in Finset.Icc l u, f m = (∑ m in Finset.Ico l u, f m) + f u := by
   rw [Finset.Icc_eq_cons_Ico h]
-  simp
+  simp only [Finset.cons_eq_insert, Finset.mem_Ico, lt_self_iff_false, and_false, not_false_eq_true,
+    Finset.sum_insert]
   rw [add_comm]
-
 
 lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n , f n = f (-n))
   (hc : CauchySeq (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, f m) ) :
@@ -468,7 +465,6 @@ lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n , f n = f (-
     have hy := hN n
     apply hy
     omega
-
   have h1 := Filter.Tendsto.mul_const  2 h0
   have hff : Tendsto (fun n : ℕ => 2 * ‖f n‖) atTop (𝓝 0) := by
     rw [Metric.tendsto_atTop] at *
@@ -486,16 +482,12 @@ lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n , f n = f (-
   obtain ⟨b, hb, H, hbb⟩ := hc
   obtain ⟨a, ha, H2, haa⟩ := this
   refine ⟨b + a, ?_, ?_, ?_⟩
-
   · intro n
     simp
     apply add_nonneg
     exact hb n
     apply ha n
-
-  ·
-
-    intro n m N hn hm
+  · intro n m N hn hm
     have H3 := H n m N hn hm
     simp [dist_eq_norm] at *
     rw [sum_Icc_eq_sum_Ico_succ _, sum_Icc_eq_sum_Ico_succ _] at H3
@@ -509,11 +501,9 @@ lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n , f n = f (-
     ring
     have H22 := H2 n m N hn hm
     exact H22
-
     omega
     omega
-  ·
-    have HG := Filter.Tendsto.add hbb haa
+  · have HG := Filter.Tendsto.add hbb haa
     simpa using HG
 
 
@@ -531,6 +521,32 @@ theorem nat_pos_tsum2' {α : Type*} [TopologicalSpace α] [AddCommMonoid α]  (f
   intro b
   simp
 
+theorem G2_c_tendsto (z : ℍ) :
+  Tendsto
+    (fun N ↦
+      ∑ x ∈ Finset.range N,
+        2 * (2 * ↑π * Complex.I) ^ 2 * ∑' (n : ℕ+), ↑↑n * cexp (2 * ↑π * Complex.I * (↑x + 1) * ↑z * ↑↑n))
+    atTop (𝓝 (-8 * ↑π ^ 2 * ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (2 * ↑π * Complex.I * ↑↑n * ↑z))) := by
+    rw [← t9]
+    have hf : Summable fun m : ℕ => ( 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
+        ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * (m + 1) * z * n)) := by
+        conv =>
+          enter [1]
+          ext m
+          rw [show (m : ℂ) +  1 = (((m + 1) : ℕ) : ℂ) by simp]
+        have := nat_pos_tsum2' (f := fun m : ℕ => ( 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
+        ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * (m) * z * n)) )
+        rw  [← this]
+        have := (a4 2 z).prod_symm.prod
+        apply Summable.mul_left
+        apply this.congr
+        intro b
+        congr
+    have := hf.hasSum
+    have V := this.comp tendsto_finset_range
+    simp at *
+    apply V
+
 lemma G2_cauchy (z : ℍ) :
   CauchySeq  (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) := by
   rw [t8]
@@ -538,25 +554,7 @@ lemma G2_cauchy (z : ℍ) :
   apply CauchySeq.const_add
   apply Filter.Tendsto.cauchySeq (x :=  -
     8 * π ^ 2 * ∑' (n : ℕ+), (sigma 1 n) * cexp (2 * π * Complex.I * n * z))
-  rw [← t9]
-  have hf : Summable fun m : ℕ => ( 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
-      ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * (m + 1) * z * n)) := by
-      conv =>
-        enter [1]
-        ext m
-        rw [show (m : ℂ) +  1 = (((m + 1) : ℕ) : ℂ) by simp]
-      have := nat_pos_tsum2' (f := fun m : ℕ => ( 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
-      ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * (m) * z * n)) )
-      rw  [← this]
-      have := (a4 2 z).prod_symm.prod
-      apply Summable.mul_left
-      apply this.congr
-      intro b
-      congr
-  have := hf.hasSum
-  have V := this.comp tendsto_finset_range
-  simp at *
-  apply V
+  apply G2_c_tendsto z
 
 lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) = Finset.Ico (-(b : ℤ)) (b) ∪
     {-((b+1) : ℤ), (b : ℤ)} :=  by
@@ -1172,6 +1170,16 @@ theorem extracted_12 (z : ℍ) :
   simp only [PNat.mk_coe, gt_iff_lt] at *
   exact HNN
   norm_cast
+
+lemma int_tendsto_nat {f : ℤ → ℂ} {x : ℂ} (hf : Tendsto f atTop (𝓝 x)) :
+  Tendsto (fun n : ℕ => f n) atTop (𝓝 x) := by
+  rw [Metric.tendsto_atTop] at *
+  intro ε hε
+  obtain ⟨N, hN⟩ := hf ε hε
+  use N.natAbs
+  intro n hn
+  apply hN n ?_
+  omega
 
 lemma pnat_tendsto_nat (f : ℕ → ℂ) (x : ℂ) (hf : Tendsto (fun n : ℕ+ => f n) atTop (𝓝 x)) :
   Tendsto f atTop (𝓝 x) := by
@@ -1932,6 +1940,56 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
 lemma G2_transf_aux (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 * π * Complex.I / z =
   G₂ z := by
   rw [G2_inde_lhs, G2_alt_eq z , ← G2_alt_indexing2_δ , G2_alt_indexing_δ]
+
+def G₂_a : ℍ → ℂ := fun z => limUnder (atTop)
+    (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
+
+lemma rest (f g : ℕ → ℂ) (x : ℂ) (hf : Tendsto f atTop (𝓝 x)) (hfg : Tendsto (g - f) atTop (𝓝 0)) :
+  Tendsto g atTop (𝓝 x) := by
+  have := Tendsto.add hf hfg
+  simp at this
+  exact this
+
+
+lemma G₂_eq_G₂_a (z : ℍ) : G₂ z = G₂_a z := by
+  rw [G₂]
+  rw [G₂_a]
+  rw [Filter.Tendsto.limUnder_eq]
+  have := CauchySeq.tendsto_limUnder  (G2_cauchy z)
+  apply rest _ _ _ this
+  have h0 := cc _  (G2_cauchy z) ?_
+  conv =>
+    enter [1]
+    ext N
+    simp
+    rw [sum_Icc_eq_sum_Ico_succ _ (by omega)]
+    simp
+  have := Filter.Tendsto.neg h0
+  simp only [one_div, neg_zero] at this
+  have := int_tendsto_nat this
+  apply this
+  · intro n
+    nth_rw 2 [int_sum_neg]
+    congr
+    ext m
+    simp only [one_div, Int.cast_neg, neg_mul, inv_inj]
+    ring
+
+
+
+lemma G2_q_exp (z : ℍ) : G₂ z = (2 * riemannZeta 2)  - 8 * π ^ 2 *
+  ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * n * z) := by
+  rw [G₂_eq_G₂_a, G₂_a]
+  rw [Filter.Tendsto.limUnder_eq]
+  rw [t8]
+  rw [sub_eq_add_neg]
+  apply Filter.Tendsto.add
+  · simp only [tendsto_const_nhds_iff]
+  · have := G2_c_tendsto z
+    simp only [UpperHalfPlane.coe, neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one,
+      Nat.factorial_one, Nat.cast_one, div_one, pow_one] at *
+    apply this
+
 
 def E₂ : ℍ → ℂ := (1 / (2 * riemannZeta 2)) •  G₂
 
