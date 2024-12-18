@@ -2017,6 +2017,9 @@ lemma G2_periodic :  (G₂ ∣[(2 : ℤ)] ModularGroup.T) = G₂ := by
 
 def E₂ : ℍ → ℂ := (1 / (2 * riemannZeta 2)) •  G₂
 
+/-This is being PRd-/
+lemma SL2_gens : Subgroup.closure {ModularGroup.S, ModularGroup.T} = ⊤ := by sorry
+
 /-This result is already proven in the modular forms repo and being PRed (slowly) into mathlib, so
 we can use it freely here. -/
 lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) :
@@ -2029,13 +2032,27 @@ lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
     1 - 24 * ∑' (n : ℕ+),
     ↑n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)) := sorry
 
-
+def D₂ (γ : SL(2,ℤ)) : ℍ → ℂ := fun z => (2 * π * Complex.I * γ 1 0) / (denom γ z)
 
 /-This is the annoying exercise. -/
-lemma G₂_transform (z : ℍ) (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) z =
-  G₂ z - (2 * π * Complex.I * γ 1 0) / (denom γ z) := by
+lemma G₂_transform (z : ℍ) (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) =
+  G₂ - (D₂ γ):= by
+  have := Subgroup.closure_induction (G := SL(2, ℤ)) (p := fun γ _ ↦ G₂ ∣[(2 : ℤ)] γ = G₂ - (D₂ γ))
+    (k := ({ModularGroup.S, ModularGroup.T})) ?_ ?_
+  apply this
+  · intro a b ha hb HA HB
+    sorry
+  · intro g hg hg2
 
-  sorry
+    sorry
+  · rw [SL2_gens]
+    simp
+  · intro a ha
+
+    sorry
+  · ext z
+    simp [D₂]
+
 
 /-Should be easy from the above.-/
 lemma E₂_transform (z : ℍ) (γ : SL(2, ℤ)) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
