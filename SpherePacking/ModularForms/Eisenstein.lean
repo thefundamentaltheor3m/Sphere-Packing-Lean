@@ -2107,9 +2107,9 @@ theorem modular_slash_S_apply :
   rw [SL_slash, slash_def, slash, ← ModularGroup.sl_moeb, modular_S_smul]
   simp [denom, ModularGroup.S]
 
+
 /-This is the annoying exercise. -/
-lemma G₂_transform (z : ℍ) (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) =
-  G₂ - (D₂ γ):= by
+lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂ γ):= by
   have := Subgroup.closure_induction (G := SL(2, ℤ)) (p := fun γ _ ↦ G₂ ∣[(2 : ℤ)] γ = G₂ - (D₂ γ))
     (k := ({ModularGroup.S, ModularGroup.T})) ?_ ?_
   apply this
@@ -2130,20 +2130,26 @@ lemma G₂_transform (z : ℍ) (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) =
     rw [this]
     simp only [SL_slash, sub_neg_eq_add, add_sub_cancel_right]
   · rw [SL2_gens]
-    simp
+    simp only [Subgroup.mem_top]
   · intro a ha
-    simp at *
+    simp only [mem_insert_iff, mem_singleton_iff, SL_slash] at *
     rcases ha with h1|h2
     · ext z
-      simp
+      simp only [Pi.sub_apply]
       rw [h1, D2_S z]
       have:= modular_slash_S_apply G₂ 2 z
-
-
-      sorry
-
-
-    sorry
+      simp only [SL_slash, Int.reduceNeg, zpow_neg] at this
+      rw [this, mul_comm]
+      have := G2_transf_aux z
+      rw [← this]
+      ring_nf
+      rw [modular_S_smul]
+      congr
+      simp only [UpperHalfPlane.coe, inv_pow, inv_inj]
+      norm_cast
+      simp only [UpperHalfPlane.coe]
+      ring
+    · simpa only [h2, D2_T, sub_zero] using G2_periodic
   · simp only [SlashAction.slash_one, D2_one, sub_zero]
 
 
