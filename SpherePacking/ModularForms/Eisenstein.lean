@@ -7,13 +7,12 @@ import Mathlib
 -- import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex
+  Metric Filter Function Complex MatrixGroups
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
 
 open ArithmeticFunction
 
-local notation "SL(" n ", " R ")" => Matrix.SpecialLinearGroup (Fin n) R
 noncomputable section Definitions
 
 def standardcongruencecondition : Fin 2 → ZMod ((1 : ℕ+) : ℕ) := 0
@@ -1950,7 +1949,6 @@ lemma rest (f g : ℕ → ℂ) (x : ℂ) (hf : Tendsto f atTop (𝓝 x)) (hfg : 
   simp at this
   exact this
 
-
 lemma G₂_eq_G₂_a (z : ℍ) : G₂ z = G₂_a z := by
   rw [G₂]
   rw [G₂_a]
@@ -2032,7 +2030,82 @@ lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
     1 - 24 * ∑' (n : ℕ+),
     ↑n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)) := sorry
 
-def D₂ (γ : SL(2,ℤ)) : ℍ → ℂ := fun z => (2 * π * Complex.I * γ 1 0) / (denom γ z)
+
+def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := fun z => (2 * π * Complex.I * γ 1 0) / (denom γ z)
+
+lemma ModularGroup.coe_mul (A B : SL(2, ℤ)) :
+    (ModularGroup.coe A) * B = ModularGroup.coe (A * B) := by
+  have : Matrix.SpecialLinearGroup.toGLPos ∘ (Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) = ModularGroup.coe := by
+    funext A
+    rfl
+  let C := MonoidHom.comp Matrix.SpecialLinearGroup.toGLPos (Matrix.SpecialLinearGroup.map (n := Fin 2) (Int.castRingHom ℝ))
+  have hC : C = ModularGroup.coe := by
+    rw [← this]
+    rfl
+  have := C.map_mul A B
+  rw [hC] at this
+  exact this.symm
+
+lemma denom_diff (A B : SL(2,ℤ)) (z : ℍ) : ((A * B) 1 0) * (denom B z) =
+  (A 1 0) * B.1.det + (B 1 0) * denom (A* B) z := by
+  rw [ModularGroup.coe_mul A B]
+  simp_rw [ModularGroup.denom_apply]
+  have h0 := Matrix.two_mul_expl A.1 B.1
+  have h1 := Matrix.det_fin_two B.1
+  simp only [Fin.isValue, Matrix.SpecialLinearGroup.coe_mul, h0.2.2.1, Int.cast_add, Int.cast_mul,
+    h1, Int.cast_sub, h0.2.2.2]
+  ring
+
+lemma D2_mul (A B : SL(2,ℤ)) : D₂ (A * B) = ((D₂ A) ∣[(2 : ℤ)] B) + (D₂ B):= by
+  ext z
+  have := denom_cocycle A B z
+  have hab : (A : GL(2,ℝ)⁺) * B = ((A * B) : SL(2, ℤ)) := by
+    apply ModularGroup.coe_mul A B
+  simp only [D₂, Fin.isValue, Matrix.SpecialLinearGroup.coe_mul, SL_slash, slash_def, Pi.add_apply,
+    slash, ModularGroup.det_coe, ofReal_one, Int.reduceSub, zpow_one, mul_one, Int.reduceNeg,
+    zpow_neg]
+  simp_rw [← mul_div, mul_assoc, ← mul_add]
+  congr
+  have hde : denom B z ≠ 0 := by exact denom_ne_zero (↑B) z
+  field_simp [hde]
+  have hd := denom_diff A B z
+  rw [ ← sub_eq_iff_eq_add] at hd
+  simp only [Fin.isValue, Matrix.SpecialLinearGroup.coe_mul, Matrix.SpecialLinearGroup.det_coe,
+    Int.cast_one, mul_one] at hd
+  simp only [Fin.isValue, ← hab, this, ← hd, zpow_two]
+  rw [sub_mul, sub_div, ← mul_assoc,  ← mul_assoc]
+  simp_rw [mul_div_mul_right _ _ hde ]
+  have : B • z = smulAux B z := by
+    rfl
+  simp only [Fin.isValue, ← this, ModularGroup.sl_moeb]
+  rw [ mul_div_cancel_right₀]
+  ring
+  exact denom_ne_zero (↑A) (↑B • z)
+
+lemma D2_one : D₂ 1 = 0 := by
+  ext z
+  simp only [D₂, Fin.isValue, Matrix.SpecialLinearGroup.coe_one, ne_eq, one_ne_zero,
+    not_false_eq_true, Matrix.one_apply_ne, Int.cast_zero, mul_zero, zero_div, Pi.zero_apply]
+
+lemma D2_inv (A : SL(2,ℤ)) : (D₂ A)∣[(2 : ℤ)] A⁻¹ = - D₂ (A⁻¹) := by
+  have := D2_mul A A⁻¹
+  simp only [mul_inv_cancel, SL_slash] at this
+  rw [D2_one] at this
+  apply eq_neg_of_add_eq_zero_left (_root_.id (Eq.symm this))
+
+lemma D2_T : D₂ ModularGroup.T = 0 := by
+  ext z
+  simp [D₂, ModularGroup.T]
+
+lemma D2_S (z : ℍ) : D₂ ModularGroup.S z = 2 * (π : ℂ) * Complex.I / z := by
+  simp [D₂, ModularGroup.S, ModularGroup.denom_apply]
+
+
+variable (f : ℍ → ℂ) (k : ℤ) (z : ℍ)
+theorem modular_slash_S_apply :
+    (f ∣[k] ModularGroup.S) z = f (UpperHalfPlane.mk (-z)⁻¹ z.im_inv_neg_coe_pos) * z ^ (-k) := by
+  rw [SL_slash, slash_def, slash, ← ModularGroup.sl_moeb, modular_S_smul]
+  simp [denom, ModularGroup.S]
 
 /-This is the annoying exercise. -/
 lemma G₂_transform (z : ℍ) (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) =
@@ -2041,17 +2114,37 @@ lemma G₂_transform (z : ℍ) (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) =
     (k := ({ModularGroup.S, ModularGroup.T})) ?_ ?_
   apply this
   · intro a b ha hb HA HB
-    sorry
+    rw [D2_mul, SlashAction.slash_mul, HA, sub_eq_add_neg, SlashAction.add_slash, HB]
+    ext z
+    simp only [SlashAction.neg_slash, SL_slash, Pi.add_apply, Pi.sub_apply, Pi.neg_apply]
+    ring
   · intro g hg hg2
-
-    sorry
+    have H1 : (G₂ ∣[(2 : ℤ)] g)  ∣[(2 : ℤ)] g⁻¹ = (G₂ - D₂ g)∣[(2 : ℤ)] g⁻¹ := by
+      rw [hg2]
+    rw [←  SlashAction.slash_mul, sub_eq_add_neg, SlashAction.add_slash] at H1
+    simp only [mul_inv_cancel, SlashAction.slash_one, SL_slash, SlashAction.neg_slash] at H1
+    nth_rw 2 [H1]
+    rw [← sub_eq_add_neg]
+    have := D2_inv g
+    simp only [SL_slash] at this
+    rw [this]
+    simp only [SL_slash, sub_neg_eq_add, add_sub_cancel_right]
   · rw [SL2_gens]
     simp
   · intro a ha
+    simp at *
+    rcases ha with h1|h2
+    · ext z
+      simp
+      rw [h1, D2_S z]
+      have:= modular_slash_S_apply G₂ 2 z
+
+
+      sorry
+
 
     sorry
-  · ext z
-    simp [D₂]
+  · simp only [SlashAction.slash_one, D2_one, sub_zero]
 
 
 /-Should be easy from the above.-/
