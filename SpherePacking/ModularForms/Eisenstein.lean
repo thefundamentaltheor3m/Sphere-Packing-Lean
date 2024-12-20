@@ -506,6 +506,21 @@ lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n , f n = f (-
     simpa using HG
 
 
+theorem nat_pos_tprod2' {α : Type*} [TopologicalSpace α] [CommMonoid α]  (f : ℕ → α) :
+    (Multipliable fun x : ℕ+ => f x) ↔ Multipliable  fun x : ℕ => f (x + 1) :=
+  by
+  rw [← Equiv.multipliable_iff _root_.Equiv.pnatEquivNat]
+  constructor
+  intro hf
+  apply Multipliable.congr hf
+  intro b
+  simp
+  intro hf
+  apply Multipliable.congr hf
+  intro b
+  simp
+
+
 theorem nat_pos_tsum2' {α : Type*} [TopologicalSpace α] [AddCommMonoid α]  (f : ℕ → α) :
     (Summable fun x : ℕ+ => f x) ↔ Summable fun x : ℕ => f (x + 1) :=
   by
@@ -759,7 +774,9 @@ theorem summable_diff (z : ℍ) (d : ℤ) :
   ring
 
 
-
+/- lemma multipliable_pnats (f : ℕ → ℂ) : Multipliable (fun n : ℕ+ => f n) ↔ Multipliable  f := by
+  rw [nat_pos_tprod2']
+  have :=  multipliable_nat_add_iff (f := f) 1 -/
 
 lemma summable_pnats (f : ℕ → ℂ) : Summable (fun n : ℕ+ => f n) ↔ Summable f := by
   rw [nat_pos_tsum2', summable_nat_add_iff]
@@ -2157,8 +2174,182 @@ lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂
 lemma E₂_transform (z : ℍ) (γ : SL(2, ℤ)) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
   E₂ z + 6 / ( π * Complex.I * z) := sorry
 
-lemma MultipliableDiscriminantProductExpansion : Multipliable (fun (z : UpperHalfPlane) =>
-  cexp (2 * π * Complex.I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * Complex.I * n * z)) ^ 24) := sorry
+
+/-this is being PRd-/
+lemma Complex.summable_nat_multipliable_one_add (f : ℕ → ℂ) (hf : Summable f)
+    (hff : ∀ n : ℕ, 1 + f n ≠ 0) : Multipliable (fun n : ℕ => 1 + f n) := by sorry
+
+lemma MultipliableDiscriminantProductExpansion (z : ℍ) :
+  Multipliable (fun  (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z)) ^ 24) := by
+  sorry
+
+lemma MultipliableEtaProductExpansion (z : ℍ) :
+    Multipliable (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ) := by
+  have := Complex.summable_nat_multipliable_one_add (fun (n : ℕ) => (-cexp (2 * π * Complex.I * (n + 1) * z)) ) ?_ ?_
+  simp at this
+  apply this.congr
+  intro n
+  ring
+  sorry
+  intro n
+  simp
+
+  sorry
+
+lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
+  Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z)) ) := by
+  conv =>
+    enter [1]
+    ext n
+    rw [sub_eq_add_neg]
+  let g := (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * n * z)) )
+  have := MultipliableEtaProductExpansion z
+  conv at this =>
+    enter [1]
+    ext n
+    rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp]
+  rw [← nat_pos_tprod2' g ] at this
+  apply this.congr
+  intro b
+  rfl
+
+lemma R (x : ℍ):
+   Tendsto
+      (fun n : ℕ =>
+        logDeriv (fun z =>∏ j in Finset.range n, (1 - cexp (2 * π * Complex.I * (n + 1) * z))) x)
+      atTop (𝓝 <| ∑' n : ℕ, logDeriv (fun z => 1 - cexp (2 * π * Complex.I * (n + 1) * z)) x) := by
+
+  sorry
+
+/-this is being PRd-/
+lemma prod_tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ → α → ℂ} (K : Set α)
+    (hK : IsCompact K) (u : ℕ → ℝ) (hu : Summable u) (h : ∀ n x, x ∈ K → (‖(f n x)‖) ≤ u n)
+    (hfn : ∀ x : K, ∀ n : ℕ, 1 + f n x ≠ 0) (hcts : ∀ n, ContinuousOn (fun x => (f n x)) K) :
+    TendstoUniformlyOn (fun n : ℕ => fun a : α => ∏ i in Finset.range n, (1 + (f i a)))
+    (fun a => ∏' i, (1 + (f i a))) atTop K := by sorry
+
+variable {ι κ α : Type*}
+variable [Preorder α] [CommMonoid α] [TopologicalSpace α] {a c : α} {f : ι → α}
+
+@[to_additive]
+theorem le_hasProd_of_le_prod_ev [ClosedIciTopology α]
+    (hf : HasProd f a) (h : ∀ᶠ s : Finset ι in atTop, c ≤ ∏ i ∈ s, f i)  : c ≤ a :=
+  ge_of_tendsto hf h
+
+@[to_additive]
+theorem le_hasProd_of_le_prod_ev_range [ClosedIciTopology α] [T2Space α] (f : ℕ → α) (hm : Multipliable f)
+    (hf : HasProd f a) (h : ∀ᶠ s : ℕ in atTop, c ≤ ∏ i ∈ Finset.range s, f i)  : c ≤ a := by
+  rw [Multipliable.hasProd_iff_tendsto_nat hm] at hf
+  apply ge_of_tendsto hf h
+
+example (a b : ℂ) : ‖a‖ - ‖b‖ ≤ ‖a - b‖ := by
+  exact norm_sub_norm_le a b
+
+
+lemma term_le_prod (f : ℕ → ℂ) (b t : ℕ) (ht : t ∈ Finset.range b) : ‖1 + f t‖ ≤ ∏ i in Finset.range b, ‖(1 + f i)‖ := by
+  induction' b with b ih generalizing t
+  simp at *
+  rw [Finset.prod_range_succ]
+  simp at *
+  by_cases ht2 :  t < b
+  · have := ih t ht2
+
+    sorry
+  sorry
+
+/-Being Prd-/
+lemma Complex.log_of_summable {f : ℕ → ℂ} (hf : Summable f) :
+    Summable (fun n : ℕ => Complex.log (1 + f n)) := by sorry
+
+lemma tprod_ne_zero (x : ℂ) (f : ℕ → ℂ → ℂ) (hf : ∀ i x, 1 + f i x ≠ 0)
+  (hu : ∀ x : ℂ, Summable fun n => f n x) : (∏' i : ℕ, (1 + f i) x) ≠ 0 := by
+  have := Complex.cexp_tsum_eq_tprod (fun n => fun x => 1 + f n x) ?_ ?_
+  have hxx := congrFun this x
+  simp
+  rw [← hxx]
+  simp only [comp_apply, exp_ne_zero, not_false_eq_true]
+  intro n z
+  simp
+  apply hf
+  intro x
+  simp
+  apply Complex.log_of_summable
+  apply hu x
+
+
+theorem logDeriv_tprod_eq_tsumb  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ → ℂ → ℂ) (hf : ∀ i, f i x ≠ 0)
+    (hd : ∀ i : ℕ, DifferentiableOn ℂ (f i) s) (hm : Summable fun i ↦ logDeriv (f i) ↑x)
+    (htend :TendstoLocallyUniformlyOn (fun n ↦ ∏ i ∈ Finset.range n, f i)
+    (fun x ↦ ∏' (i : ℕ), f i x) atTop s) (hnez : ∏' (i : ℕ), f i ↑x ≠ 0) :
+    logDeriv (∏' i : ℕ, f i ·) x = ∑' i : ℕ, logDeriv (f i) x := by
+    rw [← Complex.cexp_tsum_eq_tprod]
+    rw [logDeriv]
+    simp
+    rw [deriv_comp]
+    simp
+    rw [deriv_tsum ]
+    simp
+    congr
+    ext n
+
+
+    all_goals{sorry}
+
+theorem logDeriv_tprod_eq_tsum  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ → ℂ → ℂ) (hf : ∀ i, f i x ≠ 0)
+    (hd : ∀ i : ℕ, DifferentiableOn ℂ (f i) s) (hm : Summable fun i ↦ logDeriv (f i) ↑x)
+    (htend :TendstoLocallyUniformlyOn (fun n ↦ ∏ i ∈ Finset.range n, f i)
+    (fun x ↦ ∏' (i : ℕ), f i x) atTop s) (hnez : ∏' (i : ℕ), f i ↑x ≠ 0) :
+    logDeriv (∏' i : ℕ, f i ·) x = ∑' i : ℕ, logDeriv (f i) x := by
+    have h2 := Summable.hasSum hm
+    rw [Summable.hasSum_iff_tendsto_nat hm] at h2
+    apply symm
+    rw [← Summable.hasSum_iff hm]
+    rw [Summable.hasSum_iff_tendsto_nat hm]
+    let g := (∏' i : ℕ, f i ·)
+    have := logDeriv_tendsto (fun n ↦ ∏ i ∈ Finset.range n, (f i)) g (s := s) hs (p := atTop)
+    simp [g] at this
+    have HT := this x x.2 ?_ ?_ ?_ ?_
+    conv =>
+      enter [1]
+      ext n
+      rw [← logDeriv_prod _ _ _ (by intro i hi; apply hf i)
+        (by intro i hi; apply (hd i x x.2).differentiableAt; exact IsOpen.mem_nhds hs x.2)]
+    apply HT.congr
+    intro m
+    congr
+    ext i
+    simp only [Finset.prod_apply]
+    exact htend
+    use 0
+    intro b hb
+    rw [DifferentiableOn]
+    intro z hz
+    apply DifferentiableAt.differentiableWithinAt
+    have hp : ∀ (i : ℕ), i ∈ Finset.range b →  DifferentiableAt ℂ (f i) z := by
+      intro i hi
+      have := (hd i z hz).differentiableAt
+      apply this
+      exact IsOpen.mem_nhds hs hz
+    have := DifferentiableAt.finset_prod hp
+    convert this
+    simp only [Finset.prod_apply]
+    · exact hnez
+
+
+
+
+    --DifferentiableAt.finset_prod
+    --logDeriv_tendsto
+
+    --Summable.hasSum_iff_tendsto_nat
+
+
+
+
+lemma MultipliableDiscriminantProductExpansion2 : Multipliable (fun (z : UpperHalfPlane) =>
+  cexp (2 * π * Complex.I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * Complex.I * n * z)) ^ 24) := by
+    --I dont think we mean this
+    sorry
 
 /- The discriminant form -/
 def Δ (z : UpperHalfPlane) :=  cexp (2 * π * Complex.I * z) * ∏' (n : ℕ+),
@@ -2171,9 +2362,21 @@ lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by sorry
 def η (z : ℂ) := cexp (π * Complex.I * z / 24) * ∏' (n : ℕ+),
     (1 - cexp (2 * π * Complex.I * n * z))
 
+/- The eta function. Best to define it on all of ℂ since we want to take its logDeriv. -/
+def η2 (z : ℂ) := cexp (π * Complex.I * z / 24) * ∏' (n : ℕ),
+    (1 - cexp (2 * π * Complex.I * (n + 1) * z))
+
 lemma eta_disc (z : ℍ) : (η ^ 24) z = Δ z := by sorry
 
-lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z := sorry
+lemma eta_logDeriv (z : ℍ) : logDeriv η2 z = (π * Complex.I / 12) * E₂ z := by
+  have :=  HasProd.Multipliable.tendsto_prod_tprod_nat (MultipliableEtaProductExpansion z)
+  unfold η2
+  rw [logDeriv_mul]
+  have HG := logDeriv_tprod_eq_tsum (s := {x : ℂ | 0 < x.im}) ?_ z
+    (fun (n : ℕ) => fun (x : ℂ) => 1 - cexp (2 * π * Complex.I * (n + 1) * x)) ?_ ?_ ?_ ?_ ?_
+  simp [UpperHalfPlane.coe] at *
+  rw [HG]
+  all_goals {sorry}
 
 /- φ₀, φ₋₂ and φ₋₄, except we can't use - signs in subscripts for definitions... -/
 def φ₀ (z : UpperHalfPlane) := (((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) / (Δ z)
