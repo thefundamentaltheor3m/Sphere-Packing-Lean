@@ -2052,8 +2052,19 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
 /--This we should get from the modular forms repo stuff. Will port these things soon. -/
 lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
     1 - 24 * ∑' (n : ℕ+),
-    ↑n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)) := sorry
+    ↑n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)) := by
+  rw [E₂]
+  simp
+  rw [G2_q_exp]
+  rw [mul_sub]
+  congr 1
 
+  sorry
+  rw [← mul_assoc]
+  congr 1
+
+  sorry
+  sorry
 
 def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := fun z => (2 * π * Complex.I * γ 1 0) / (denom γ z)
 
@@ -2220,14 +2231,6 @@ lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
   intro b
   rfl
 
-lemma R (x : ℍ):
-   Tendsto
-      (fun n : ℕ =>
-        logDeriv (fun z =>∏ j in Finset.range n, (1 - cexp (2 * π * Complex.I * (n + 1) * z))) x)
-      atTop (𝓝 <| ∑' n : ℕ, logDeriv (fun z => 1 - cexp (2 * π * Complex.I * (n + 1) * z)) x) := by
-
-  sorry
-
 /-this is being PRd-/
 lemma prod_tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ → α → ℂ} (K : Set α)
     (hK : IsCompact K) (u : ℕ → ℝ) (hu : Summable u) (h : ∀ n x, x ∈ K → (‖(f n x)‖) ≤ u n)
@@ -2351,12 +2354,12 @@ def Δ (z : UpperHalfPlane) :=  cexp (2 * π * Complex.I * z) * ∏' (n : ℕ+),
 /-This should be easy from the definition and the Mulitpliable bit. -/
 lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by sorry
 
-/- The eta function. Best to define it on all of ℂ since we want to take its logDeriv. -/
-def η (z : ℂ) := cexp (π * Complex.I * z / 24) * ∏' (n : ℕ+),
-    (1 - cexp (2 * π * Complex.I * n * z))
+/- /- The eta function. Best to define it on all of ℂ since we want to take its logDeriv. -/
+def η (z : ℂ) := cexp (2 * π * Complex.I * z / 24) * ∏' (n : ℕ+),
+    (1 - cexp (2 * π * Complex.I * n * z)) -/
 
 /- The eta function. Best to define it on all of ℂ since we want to take its logDeriv. -/
-def η2 (z : ℂ) := cexp (π * Complex.I * z / 24) * ∏' (n : ℕ),
+def η (z : ℂ) := cexp (2 * π * Complex.I * z / 24) * ∏' (n : ℕ),
     (1 - cexp (2 * π * Complex.I * (n + 1) * z))
 
 lemma eta_disc (z : ℍ) : (η ^ 24) z = Δ z := by sorry
@@ -2412,9 +2415,6 @@ lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fun n : �
     gcongr
     apply le_trans this.le
     norm_cast
-
-example (a b : ℝ) (h : a ≤ b) (ha : 0 ≤ a) : a ^ 2 ≤ b ^ 2 := by
-  exact pow_le_pow_left₀ ha h 2
 
 lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.range n,
     fun x_1 ↦ 1 + -cexp (2 * ↑π * Complex.I *  (↑x + 1) * x_1))
@@ -2473,61 +2473,153 @@ lemma exp_aux (z : ℍ) (n : ℕ) : cexp (2 * ↑π * Complex.I * n * ↑z) =
   ring
 
 
-lemma tsum_eq_tsum_sigma : ∑' n : ℕ,
-    n * cexp (2 * π * Complex.I * (n + 1) * z) / (1 - cexp (2 * π *  Complex.I * (n + 1) * z)) =
+lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ,
+    (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) / (1 - cexp (2 * π *  Complex.I * (n + 1) * z)) =
     ∑' n : ℕ, sigma 1 (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) := by
-
   have :=  fun m : ℕ => tsum_choose_mul_geometric_of_norm_lt_one  (r := (cexp (2 * ↑π * Complex.I * ↑z))^(m+1)) 0 (by sorry)
-
-  simp at this
+  simp only [add_zero, Nat.choose_zero_right, Nat.cast_one, one_mul, zero_add, pow_one,
+    one_div] at this
   conv =>
     enter [1,1]
     ext n
-    rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp]
-    rw [exp_aux]
-    rw [div_eq_mul_one_div]
+    rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp only [Nat.cast_add, Nat.cast_one],
+      exp_aux, div_eq_mul_one_div]
     simp
-    rw [← this n]
-    rw [← tsum_mul_left]
-
+    rw [← this n, ← tsum_mul_left]
     conv =>
       enter [1]
       ext m
-      rw [mul_assoc]
-      rw [← pow_succ' (cexp (2 * ↑π * Complex.I * ↑z) ^ (n + 1)) m ]
+      rw [mul_assoc, ← pow_succ' (cexp (2 * ↑π * Complex.I * ↑z) ^ (n + 1)) m ]
   have := tsum_sigma_eqn z (k := 1)
   conv =>
     enter [2,1]
     ext n
     rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp]
-
   have h1 := tsum_pnat_eq_tsum_succ3 (fun n => sigma 1 (n) * cexp (2 * π * Complex.I * (n) * z))
   simp only [UpperHalfPlane.coe] at *
   rw [← h1]
+  have h2 := fun n : ℕ => tsum_pnat_eq_tsum_succ3
+    ( fun m => ↑(n + 1) * (cexp (2 * ↑π * Complex.I * ↑z) ^ (n + 1)) ^ (m))
+  simp only [UpperHalfPlane.coe] at h2
+  conv =>
+    enter [1,1]
+    ext n
+    rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp only [Nat.cast_add, Nat.cast_one], ← h2 n]
+    conv =>
+      enter [1]
+      ext m
+      rw [pow_right_comm]
+  have h3 := tsum_pnat_eq_tsum_succ3
+      (fun n ↦ ∑' (m : ℕ+), ↑(n) * (cexp (2 * ↑π * Complex.I * ↑z) ^ (m : ℕ)) ^ (n))
+  simp only [UpperHalfPlane.coe] at h3
+  rw [← h3, ← this]
+  simp only [pow_one]
+  rw [tsum_prod' ]
+  congr
+  ext n
+  congr
+  ext m
+  simp only [mul_eq_mul_left_iff, Nat.cast_eq_zero, PNat.ne_zero, or_false]
+  rw [← Complex.exp_nat_mul, ← Complex.exp_nat_mul]
+  congr 1
+  ring
+  · sorry --these sorrys are done in the mod forms repo
+  · sorry
 
+lemma tsum_log_deriv_eqn (z : ℍ) :
+  ∑' (i : ℕ), logDeriv (fun x ↦ 1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x)) ↑z  =  ∑' n : ℕ,
+    -(2 * ↑π * Complex.I * (↑n + 1)) * cexp (2 * π * Complex.I * (n + 1) * z) / (1 - cexp (2 * π *  Complex.I * (n + 1) * z)) := by
+  congr
+  ext i
+  have h0 : ∀ i : ℕ, Differentiable ℂ (fun x => (2 * π * Complex.I * (i + 1) * x)) := by
+      intro i
+      fun_prop
+  have h1 := fun i : ℕ => logDeriv_one_sub_exp_comp 1 (fun x => (2 * π * Complex.I * (i + 1) * x)) (h0 i)
+  have h2 : ∀ i : ℕ, (fun x ↦ 1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x))=
+      ((fun z ↦ 1 - 1 * cexp z) ∘ fun x ↦ 2 * ↑π * Complex.I * (↑i + 1) * x) := by
+      intro i
+      ext y
+      simp
+  have h3 : ∀ i : ℕ, deriv (fun x : ℂ => (2 * π * Complex.I * (i + 1) * x)) =
+        fun _ => 2 * (π : ℂ) * Complex.I * (i + 1) := by
+      intro i
+      ext y
+      rw [deriv_mul]
+      · simp only [differentiableAt_const, deriv_mul, deriv_const', zero_mul, mul_zero, add_zero,
+        deriv_add, deriv_id'', mul_one, zero_add]
+      · simp only [differentiableAt_const]
+      · simp only [differentiableAt_id']
+  rw [h2 i, h1 i, h3 i]
+  simp
 
+lemma logDeriv_z_term (z : ℍ) : logDeriv (fun z ↦ cexp (2 * ↑π * Complex.I * z / 24)) ↑z  = 2* ↑π * Complex.I / 24 := by
+  have : (fun z ↦ cexp (2 * ↑π * Complex.I * z / 24)) = (fun z ↦ cexp (z)) ∘ (fun z => (2 * ↑π * Complex.I / 24) * z)  := by
+    ext y
+    simp
+    congr
+    ring
+  rw [this, logDeriv_comp, deriv_const_mul]
+  simp only [LogDeriv_exp, Pi.one_apply, deriv_id'', mul_one, one_mul]
+  · fun_prop
+  · fun_prop
+  · fun_prop
 
-
-
-
-  sorry
-
-lemma eta_logDeriv (z : ℍ) : logDeriv η2 z = (π * Complex.I / 12) * E₂ z := by
-  --have :=  HasProd.Multipliable.tendsto_prod_tprod_nat (MultipliableEtaProductExpansion z)
-  unfold η2
+lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z := by
+  unfold η
   rw [logDeriv_mul]
   have HG := logDeriv_tprod_eq_tsum (s := {x : ℂ | 0 < x.im}) ?_ z
     (fun (n : ℕ) => fun (x : ℂ) => 1 - cexp (2 * π * Complex.I * (n + 1) * x)) ?_ ?_ ?_ ?_ ?_
-  simp [UpperHalfPlane.coe] at *
+  simp only [mem_setOf_eq, UpperHalfPlane.coe] at *
   rw [HG]
-  · sorry
+  · have := tsum_log_deriv_eqn z
+    have h0 := logDeriv_z_term z
+    simp only [UpperHalfPlane.coe] at *
+    rw [this, E₂, h0]
+    simp
+    rw [G2_q_exp]
+    rw [riemannZeta_two]
+    conv =>
+      enter [1,2,1]
+      ext n
+      rw [show  -(2 * ↑π * Complex.I * (↑n + 1) * cexp (2 * ↑π * Complex.I * (↑n + 1) * z.1)) /
+        (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * z.1)) =
+        (-2 * ↑π * Complex.I) * (((↑n + 1) * cexp (2 * ↑π * Complex.I * (↑n + 1) * z.1)) /
+        (1 - cexp (2 * ↑π * Complex.I * (n + 1) * z.1))) by ring]
+    rw [tsum_mul_left (a := -2 * ↑π * Complex.I)]
+    have := tsum_eq_tsum_sigma z
+    simp only [UpperHalfPlane.coe] at *
+    rw [this, mul_sub]
+    rw [sub_eq_add_neg, mul_add]
+    congr 1
+    · have hpi : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
+      ring_nf
+      field_simp
+      ring
+    · ring_nf
+      rw [show ↑π * Complex.I * (1 / 12) *
+        -((↑π ^ 2 * (1 / 6))⁻¹ * (1 / 2) * (↑π ^ 2 * 8 *
+        ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1))) =
+        (↑π * Complex.I * (1 / 12) * -((↑π ^ 2 * (1 / 6))⁻¹ * (1 / 2) * (↑π ^ 2 * 8)) *
+        ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1)) by ring]
+      congr 1
+      have hpi : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
+      field_simp
+      ring
+      conv =>
+        enter [1,1]
+        ext n
+        rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp]
+      have hl := tsum_pnat_eq_tsum_succ3
+        (fun n ↦ ↑((σ 1) (n)) * cexp (↑π * Complex.I * 2 * (↑n) * ↑z))
+      simp only [UpperHalfPlane.coe] at hl
+      rw [← hl]
   · exact isOpen_lt continuous_const Complex.continuous_im
   · intro i
-    simp
+    simp only [mem_setOf_eq, ne_eq]
     rw [@sub_eq_zero]
     intro h
     have j := exp_upperHalfPlane_lt_one_nat z i
-    simp [UpperHalfPlane.coe] at *
+    simp only [UpperHalfPlane.coe] at *
     rw [← h] at j
     simp at j
   · intro i x hx
@@ -2535,8 +2627,7 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η2 z = (π * Complex.I / 12) * E₂ z :
   · simp only [mem_setOf_eq]
     have h0 : ∀ i : ℕ, Differentiable ℂ (fun x => (2 * π * Complex.I * (i + 1) * x)) := by
       intro i
-      apply Differentiable.const_mul
-      exact differentiable_id'
+      fun_prop
     have h1 := fun i : ℕ => logDeriv_one_sub_exp_comp 1 (fun x => (2 * π * Complex.I * (i + 1) * x)) (h0 i)
     have h2 : ∀ i : ℕ, (fun x ↦ 1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x))=
       ((fun z ↦ 1 - 1 * cexp z) ∘ fun x ↦ 2 * ↑π * Complex.I * (↑i + 1) * x) := by
@@ -2569,7 +2660,7 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η2 z = (π * Complex.I / 12) * E₂ z :
     apply hS.congr
     intro b
     congr
-    simp
+    simp only [Nat.cast_add, Nat.cast_one]
     · rw [← Complex.exp_nsmul]
       simp only [UpperHalfPlane.coe, nsmul_eq_mul, Nat.cast_add, Nat.cast_one]
       ring_nf
@@ -2627,6 +2718,28 @@ noncomputable section Integrability
 end Integrability
 
 open Complex Real
+
+lemma deriv_eq_iff (f g : ℂ → ℂ) (z : ℂ) : deriv f = deriv g ↔ f = g + (fun _ => z) := by
+  constructor
+  intro h
+  rw [← sub_eq_zero] at h
+  --rw [← deriv_sub]
+  sorry
+  sorry
+
+
+example (a : ℂ) (z : ℍ) : deriv (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log a))) z = (fun a : ℂ => cexp (-(1 / (2 : ℂ))* (log a))) z:= by
+  have :  (fun a ↦ cexp (1 / 2 * Complex.log a)) =  cexp ∘ (fun a ↦ (1 / 2 * Complex.log a)) := by
+    ext z
+    simp
+  rw [this, deriv_comp]
+  simp
+  sorry
+  · fun_prop
+  · apply DifferentiableAt.const_mul
+    refine Complex.differentiableAt_log ?_
+
+    sorry
 
 noncomputable section  Product_Formula
 /-This one is easy.-/
