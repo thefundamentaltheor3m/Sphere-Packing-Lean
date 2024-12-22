@@ -2719,11 +2719,26 @@ end Integrability
 
 open Complex Real
 
-lemma deriv_eq_iff (f g : ℂ → ℂ) (z : ℂ) : deriv f = deriv g ↔ f = g + (fun _ => z) := by
+lemma deriv_eq_iff (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
+    deriv f = deriv g ↔ ∃z, f = g + (fun _ => z) := by
   constructor
   intro h
   rw [← sub_eq_zero] at h
-  --rw [← deriv_sub]
+
+  have h0 := fun z => congrFun h z
+  simp at *
+
+  have h2 := is_const_of_deriv_eq_zero (f := f - g)
+  simp at *
+  use f 1 - g 1
+  ext x
+  have h1 :=  deriv_sub (f := f) (g := g) (x := x)
+  simp
+  have h43 := h2 ?_ ?_ x 1
+  rw [← h43]
+  simp
+  apply Differentiable.sub hf hg
+
   sorry
   sorry
 
