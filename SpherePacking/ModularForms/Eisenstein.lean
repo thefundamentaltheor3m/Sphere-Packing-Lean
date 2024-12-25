@@ -2189,7 +2189,7 @@ lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂
 
 
 /-Should be easy from the above.-/
-lemma E₂_transform (z : ℍ) (γ : SL(2, ℤ)) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
+lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
   E₂ z + 6 / ( π * Complex.I * z) := sorry
 
 
@@ -2273,7 +2273,8 @@ lemma tprod_ne_zero (x : ℂ) (f : ℕ → ℂ → ℂ) (hf : ∀ i x, 1 + f i x
   apply hu x
 
 
-theorem logDeriv_tprod_eq_tsumb  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ → ℂ → ℂ) (hf : ∀ i, f i x ≠ 0)
+theorem logDeriv_tprod_eq_tsumb  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ → ℂ → ℂ)
+    (hf : ∀ i, f i x ≠ 0)
     (hd : ∀ i : ℕ, DifferentiableOn ℂ (f i) s) (hm : Summable fun i ↦ logDeriv (f i) ↑x)
     (htend :TendstoLocallyUniformlyOn (fun n ↦ ∏ i ∈ Finset.range n, f i)
     (fun x ↦ ∏' (i : ℕ), f i x) atTop s) (hnez : ∏' (i : ℕ), f i ↑x ≠ 0) :
@@ -2347,12 +2348,6 @@ lemma MultipliableDiscriminantProductExpansion2 : Multipliable (fun (z : UpperHa
     --I dont think we mean this
     sorry
 
-/- The discriminant form -/
-def Δ (z : UpperHalfPlane) :=  cexp (2 * π * Complex.I * z) * ∏' (n : ℕ+),
-    (1 - cexp (2 * π * Complex.I * n * z)) ^ 24
-
-/-This should be easy from the definition and the Mulitpliable bit. -/
-lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by sorry
 
 /- /- The eta function. Best to define it on all of ℂ since we want to take its logDeriv. -/
 def η (z : ℂ) := cexp (2 * π * Complex.I * z / 24) * ∏' (n : ℕ+),
@@ -2361,8 +2356,6 @@ def η (z : ℂ) := cexp (2 * π * Complex.I * z / 24) * ∏' (n : ℕ+),
 /- The eta function. Best to define it on all of ℂ since we want to take its logDeriv. -/
 def η (z : ℂ) := cexp (2 * π * Complex.I * z / 24) * ∏' (n : ℕ),
     (1 - cexp (2 * π * Complex.I * (n + 1) * z))
-
-lemma eta_disc (z : ℍ) : (η ^ 24) z = Δ z := by sorry
 
 lemma aux47 (r : ℂ) (hr : ‖r‖ < 1) : Tendsto (fun n : ℕ => 1 - r^n) atTop (𝓝 1) := by
   rw [show (1 : ℂ) = 1 - 0 by ring]
@@ -2466,6 +2459,12 @@ theorem eta_tprod_ne_zero (z : ℍ) :
   sorry
   sorry
 
+lemma eta_nonzero_on_UpperHalfPlane (z : ℍ) : η z ≠ 0 := by
+  rw [η]
+  have := eta_tprod_ne_zero z
+  simp at *
+  apply this
+
 lemma exp_aux (z : ℍ) (n : ℕ) : cexp (2 * ↑π * Complex.I * n * ↑z) =
     cexp (2 * ↑π * Complex.I * ↑z) ^ n := by
   rw [← Complex.exp_nat_mul]
@@ -2563,6 +2562,38 @@ lemma logDeriv_z_term (z : ℍ) : logDeriv (fun z ↦ cexp (2 * ↑π * Complex.
   · fun_prop
   · fun_prop
   · fun_prop
+
+theorem eta_differentiableAt (z : ℍ) :
+  DifferentiableAt ℂ (fun z ↦ ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * z))) ↑z := by
+  have hD := eta_tndntunif.differentiableOn ?_ ?_
+  simp_rw [sub_eq_add_neg]
+  rw [DifferentiableOn] at hD
+  have hDz := (hD z (by apply z.2)).differentiableAt
+  apply hDz
+  · apply IsOpen.mem_nhds  (isOpen_lt continuous_const Complex.continuous_im)
+    apply z.2
+  · simp
+    use 0
+    intro b hb
+    have := DifferentiableOn.finset_prod (u := Finset.range b)
+      (f := fun i : ℕ => fun x => 1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x))
+      (s := {x : ℂ | 0 < x.im}) ?_
+    · apply this.congr
+      intro x hx
+      simp [sub_eq_add_neg]
+    · intro i hi
+      fun_prop
+  · apply isOpen_lt continuous_const Complex.continuous_im
+
+lemma eta_DifferentiableAt_UpperHalfPlane (z : ℍ) : DifferentiableAt ℂ η z := by
+  unfold η
+  apply DifferentiableAt.mul
+  · conv =>
+      enter [2]
+      rw [show (fun z => cexp (2 * ↑π * Complex.I * z / 24)) = cexp ∘ (fun z => 2 * ↑π * Complex.I * z / 24) by rfl]
+    apply DifferentiableAt.cexp
+    fun_prop
+  · apply eta_differentiableAt
 
 lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z := by
   unfold η
@@ -2673,35 +2704,8 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
   · simp only [ne_eq, exp_ne_zero, not_false_eq_true]
   · exact eta_tprod_ne_zero z
   · fun_prop
-  · have hD := eta_tndntunif.differentiableOn ?_ ?_
-    simp_rw [sub_eq_add_neg]
-    rw [DifferentiableOn] at hD
-    have hDz := (hD z (by apply z.2)).differentiableAt
-    apply hDz
-    · apply IsOpen.mem_nhds  (isOpen_lt continuous_const Complex.continuous_im)
-      apply z.2
-    · simp
-      use 0
-      intro b hb
-      have := DifferentiableOn.finset_prod (u := Finset.range b)
-        (f := fun i : ℕ => fun x => 1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x))
-        (s := {x : ℂ | 0 < x.im}) ?_
-      · apply this.congr
-        intro x hx
-        simp [sub_eq_add_neg]
-      · intro i hi
-        fun_prop
-    · apply isOpen_lt continuous_const Complex.continuous_im
+  · apply eta_differentiableAt
 
-
-/- φ₀, φ₋₂ and φ₋₄, except we can't use - signs in subscripts for definitions... -/
-def φ₀ (z : UpperHalfPlane) := (((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) / (Δ z)
-def φ₂' (z : UpperHalfPlane) := (E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z)
-def φ₄' (z : UpperHalfPlane) := ((E₄ z) ^ 2) / (Δ z)
-/- We extend these definitions to ℂ for convenience. -/
-def φ₀'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₀ ⟨z, hz⟩ else 0
-def φ₂'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₂' ⟨z, hz⟩ else 0
-def φ₄'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₄' ⟨z, hz⟩ else 0
 
 end Definitions
 
@@ -2903,8 +2907,10 @@ lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn
     exact hg.differentiableAt (x := x) (IsOpen.mem_nhds hs2 hx)
 
 
+noncomputable def csqrt : ℂ → ℂ :=  (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log a)))
+
 lemma csqrt_deriv (z : ℍ) : deriv (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log a))) z =
-    (2 : ℂ)⁻¹ • (fun a : ℂ => cexp (-(1 / (2 : ℂ))* (log a))) z:= by
+    (2 : ℂ)⁻¹ • (fun a : ℂ => cexp (-(1 / (2 : ℂ)) * (log a))) z:= by
   have :  (fun a ↦ cexp (1 / 2 * Complex.log a)) =  cexp ∘ (fun a ↦ (1 / 2 * Complex.log a)) := by
     ext z
     simp
@@ -2930,8 +2936,237 @@ lemma csqrt_deriv (z : ℍ) : deriv (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log 
   · apply DifferentiableAt.const_mul
     refine Complex.differentiableAt_log hzz
 
+lemma csqrt_differentiableAt (z : ℍ) : DifferentiableAt ℂ csqrt z := by
+  unfold csqrt
+  apply DifferentiableAt.cexp
+  apply DifferentiableAt.const_mul
+  apply Complex.differentiableAt_log
+  rw [@mem_slitPlane_iff]
+  right
+  have hz := z.2
+  simp only [UpperHalfPlane.coe] at hz
+  exact Ne.symm (ne_of_lt hz)
+
+lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
+  (logDeriv ((csqrt) * η)) z := by
+  have h0 : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z = ((z :ℂ)^(2 : ℤ))⁻¹ * (logDeriv η) (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) := by
+    rw [logDeriv_comp, mul_comm]
+    congr
+    conv =>
+      enter [1,1]
+      intro z
+      rw [neg_div]
+      simp
+    simp only [deriv.neg', deriv_inv', neg_neg, inv_inj]
+    norm_cast
+    · sorry
+    conv =>
+      enter [2]
+      ext z
+      rw [neg_div]
+      simp
+    apply DifferentiableAt.neg
+    apply DifferentiableAt.inv
+    simp only [differentiableAt_id']
+    exact ne_zero z
+  rw [h0, show ((csqrt) * η) = (fun x => (csqrt) x * η x) by rfl, logDeriv_mul]
+  nth_rw 2 [logDeriv_apply]
+  unfold csqrt
+  have := csqrt_deriv z
+  rw [this]
+  simp only [one_div, neg_mul, smul_eq_mul]
+  nth_rw 2 [div_eq_mul_inv]
+  rw [← Complex.exp_neg, show 2⁻¹ * cexp (-(2⁻¹ * Complex.log ↑z)) * cexp (-(2⁻¹ * Complex.log ↑z)) =
+   (cexp (-(2⁻¹ * Complex.log ↑z)) * cexp (-(2⁻¹ * Complex.log ↑z)))* 2⁻¹ by ring, ← Complex.exp_add,
+   ← sub_eq_add_neg, show -(2⁻¹ * Complex.log ↑z) - 2⁻¹ * Complex.log ↑z = -Complex.log ↑z by ring, Complex.exp_neg, Complex.exp_log, eta_logDeriv z]
+  have Rb := eta_logDeriv (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ)
+  simp only [coe_mk_subtype] at Rb
+  rw [Rb]
+  have E := E₂_transform z
+  simp only [one_div, neg_mul, smul_eq_mul, SL_slash, slash_def, slash, ← ModularGroup.sl_moeb,
+    modular_S_smul, ModularGroup.det_coe, ofReal_one, Int.reduceSub, zpow_one, mul_one,
+    ModularGroup.denom_S, Int.reduceNeg, zpow_neg] at *
+  have h00 :  (UpperHalfPlane.mk (-z : ℂ)⁻¹ z.im_inv_neg_coe_pos) = (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) := by
+    simp [UpperHalfPlane.mk]
+    ring_nf
+  rw [h00] at E
+  rw [← mul_assoc, mul_comm, ← mul_assoc]
+  simp only [UpperHalfPlane.coe] at *
+  rw [E, add_mul, add_comm]
+  congr 1
+  have hzne := ne_zero z
+  have hI : Complex.I ≠ 0 := by
+    exact I_ne_zero
+  have hpi : (π : ℂ) ≠ 0 := by
+    simp only [ne_eq, ofReal_eq_zero]
+    exact pi_ne_zero
+  simp [UpperHalfPlane.coe] at hzne ⊢
+  field_simp
+  ring
+  rw [mul_comm]
+  · simpa only [UpperHalfPlane.coe, ne_eq] using (ne_zero z)
+  · simp only [csqrt, one_div, ne_eq, Complex.exp_ne_zero, not_false_eq_true]
+  · apply eta_nonzero_on_UpperHalfPlane z
+  · unfold csqrt
+    rw [show (fun a ↦ cexp (1 / 2 * Complex.log a)) = cexp ∘ (fun a ↦ 1 / 2 * Complex.log a) by rfl]
+    apply DifferentiableAt.comp
+    simp
+    apply DifferentiableAt.const_mul
+    apply Complex.differentiableAt_log
+    rw [@mem_slitPlane_iff]
+    right
+    have hz := z.2
+    simp only [UpperHalfPlane.coe] at hz
+    exact Ne.symm (ne_of_lt hz)
+  · apply eta_DifferentiableAt_UpperHalfPlane z
+
+lemma eta_logderivs : {z : ℂ | 0 < z.im}.EqOn (logDeriv (η ∘ (fun z : ℂ => -1/z)))
+  (logDeriv ((csqrt) * η)) := by
+  intro z hz
+  have := eta_logDeriv_eql ⟨z, hz⟩
+  exact this
+
+lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn ((η ∘ (fun z : ℂ => -1/z)))
+  (z • ((csqrt) * η)) := by
+  have h := eta_logderivs
+  rw [logDeriv_eqOn_iff] at h
+  · exact h
+  · apply DifferentiableOn.comp
+    pick_goal 4
+    · use ({z : ℂ | 0 < z.im})
+    · rw [DifferentiableOn]
+      intro x hx
+      apply DifferentiableAt.differentiableWithinAt
+      apply eta_DifferentiableAt_UpperHalfPlane ⟨x, hx⟩
+    · apply DifferentiableOn.div
+      fun_prop
+      fun_prop
+      intro x hx
+      have hx2 := ne_zero (⟨x, hx⟩ : ℍ)
+      norm_cast at *
+    · intro y hy
+      simp
+      have := UpperHalfPlane.im_inv_neg_coe_pos (⟨y, hy⟩ : ℍ)
+      conv =>
+        enter [2,1]
+        rw [neg_div]
+        rw [div_eq_mul_inv]
+        simp
+      simp at *
+      rw [neg_div, neg_neg_iff_pos]
+      exact this
+  · apply DifferentiableOn.mul
+    simp only [DifferentiableOn, mem_setOf_eq]
+    intro x hx
+    apply (csqrt_differentiableAt ⟨x, hx⟩).differentiableWithinAt
+    simp only [DifferentiableOn, mem_setOf_eq]
+    intro x hx
+    apply (eta_DifferentiableAt_UpperHalfPlane ⟨x, hx⟩).differentiableWithinAt
+  · use UpperHalfPlane.I
+    simp only [coe_I, mem_setOf_eq, Complex.I_im, zero_lt_one]
+  · exact isOpen_lt continuous_const Complex.continuous_im
+  · exact convex_halfSpace_im_gt 0
+  · intro x hx
+    simp only [Pi.mul_apply, ne_eq, mul_eq_zero, not_or]
+    refine ⟨ ?_ , by apply eta_nonzero_on_UpperHalfPlane ⟨x, hx⟩⟩
+    unfold csqrt
+    simp only [one_div, Complex.exp_ne_zero, not_false_eq_true]
+  · intro x hx
+    simp only [comp_apply, ne_eq]
+    have := eta_nonzero_on_UpperHalfPlane ⟨-1 / x, by simpa using pnat_div_upper 1 ⟨x, hx⟩⟩
+    simpa only [ne_eq, coe_mk_subtype] using this
+
+lemma cqrt_I : (csqrt (Complex.I)) ^ 24  = 1 := by
+  unfold csqrt
+  rw [← Complex.exp_nat_mul]
+  conv =>
+    enter [1,1]
+    rw [← mul_assoc]
+    rw [show ((24 : ℕ) : ℂ) * (1 / 2) = (12 : ℕ) by
+      field_simp; ring]
+  rw [Complex.exp_nat_mul]
+  rw [Complex.exp_log]
+  have hi4 := Complex.I_pow_four
+  have : Complex.I ^ 12 = (Complex.I ^ 4) ^ 3 :=by
+    rw [← @npow_mul]
+  rw [this, hi4]
+  simp
+  exact I_ne_zero
+
+lemma eta_equality : {z : ℂ | 0 < z.im}.EqOn ((η ∘ (fun z : ℂ => -1/z)))
+   ((csqrt (Complex.I))⁻¹ • ((csqrt) * η)) := by
+  have h := eta_logderivs_const
+  obtain ⟨z, hz, h⟩ := h
+  intro x hx
+  have h2 := h hx
+  have hI : (Complex.I) ∈ {z : ℂ | 0 < z.im} := by
+    simp only [mem_setOf_eq, Complex.I_im, zero_lt_one]
+  have h3 := h hI
+  simp at h3
+  conv at h3 =>
+    enter [2]
+    rw [← mul_assoc]
+  have he : η Complex.I ≠ 0 := by
+    have h:=  eta_nonzero_on_UpperHalfPlane UpperHalfPlane.I
+    convert h
+  have hcd := (mul_eq_right₀ he).mp (_root_.id (Eq.symm h3))
+  rw [mul_eq_one_iff_inv_eq₀ hz] at hcd
+  rw [@inv_eq_iff_eq_inv] at hcd
+  rw [hcd] at h2
+  exact h2
 
 noncomputable section  Product_Formula
+
+
+/- The discriminant form -/
+def Δ (z : UpperHalfPlane) :=  cexp (2 * π * Complex.I * z) * ∏' (n : ℕ),
+    (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24
+
+lemma Multipliable_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) :
+     Multipliable (fun i => f i ^ n) := by
+  induction' n with n hn
+  · simp
+    apply multipliable_one
+  · conv =>
+      enter [1]
+      intro u
+      rw [pow_succ]
+    apply Multipliable.mul hn hf
+
+lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) : (∏' (i : ℕ), f i) ^ n = ∏' (i : ℕ), (f i) ^ n := by
+  induction' n with n hn
+  · simp
+  · rw [pow_succ]
+    rw [hn]
+    rw [← tprod_mul]
+    congr
+    apply Multipliable_pow f hf n
+    exact hf
+
+lemma Δ_eq_η_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
+  rw [η, Δ, mul_pow]
+  congr
+  rw [← Complex.exp_nat_mul]
+  congr 1
+  field_simp
+  rw [tprod_pow]
+  apply MultipliableEtaProductExpansion
+
+
+
+/- φ₀, φ₋₂ and φ₋₄, except we can't use - signs in subscripts for definitions... -/
+def φ₀ (z : UpperHalfPlane) := (((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) / (Δ z)
+def φ₂' (z : UpperHalfPlane) := (E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z)
+def φ₄' (z : UpperHalfPlane) := ((E₄ z) ^ 2) / (Δ z)
+/- We extend these definitions to ℂ for convenience. -/
+def φ₀'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₀ ⟨z, hz⟩ else 0
+def φ₂'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₂' ⟨z, hz⟩ else 0
+def φ₄'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₄' ⟨z, hz⟩ else 0
+
+
+/-This should be easy from the definition and the Mulitpliable bit. -/
+lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by sorry
+
 /-This one is easy.-/
 lemma Discriminant_T_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.T) = Δ := sorry
 
