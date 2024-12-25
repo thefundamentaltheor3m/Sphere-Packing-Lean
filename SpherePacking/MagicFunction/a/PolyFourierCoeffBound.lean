@@ -8,6 +8,7 @@ M4R File
 
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ForMathlib.tprod
+import SpherePacking.ForMathlib.Normed
 import Mathlib
 
 open Filter Complex Real BigOperators Asymptotics
@@ -76,7 +77,7 @@ lemma aux_7 (a b : ℤ) :
   refine exp_le_exp.2 ?_
   simp; linarith
 
-lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (2 * π * ↑↑n * z.im)) ^ 24 := by
+lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 := by
   -- suffices hsuff₁ : 0 < ∏' (n : ℕ+), Complex.abs (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24
   -- · refine gt_of_ge_of_gt ?_ hsuff₁
   --   rw [ge_iff_le]
@@ -218,7 +219,7 @@ private lemma step_10 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) * z.im)) /
     (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) * z.im)) /
-    (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) := by
+    (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · apply mul_nonneg (exp_nonneg (-π * (↑n₀ - 2) * z.im))
     apply tsum_nonneg
@@ -230,9 +231,9 @@ private lemma step_10 :
 include hz hn₀ hcsum hpoly in
 private lemma step_11 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) * z.im)) /
-  (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) ≤
+  (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) ≤
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
-  (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) := by
+  (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · exact le_of_lt (aux_8 z)
   · refine tsum_le_tsum ?_ ?_ ?_
@@ -258,11 +259,25 @@ private lemma step_11 :
     · exact aux_10 z c n₀ hcsum
     · simp only [div_eq_mul_inv]
       -- *This is where we use the fact that c is eventually polynomial in n.*
+      suffices : Summable fun (n : ℕ) ↦ Complex.abs (c (n + n₀)) * rexp (-π * ↑n * 2⁻¹)
+      · sorry
+      -- refine summable_real_norm_mul_geometric_of_norm_lt_one ?_ hpoly
+      let c' := fun (n : ℕ) ↦ c (n + n₀)
+      have hc'poly : c' =O[atTop] fun n ↦ (n ^ k : ℂ) := by
+        sorry
+      -- refine summable_real_norm_mul_geometric_of_norm_lt_one ?_ hc'poly
+      have hcc' : ∀ (n : ℕ), c (n + n₀) = c' n := fun _ => rfl
+      simp only [hcc', mul_comm]
+      have hnorm : ∀ (n : ℕ), ‖rexp (↑n * -π * 2⁻¹)‖ < 1 := by
+        intro n; simp;
+        sorry
+      -- apply summable_real_norm_mul_geometric_of_norm_lt_one ?_ hc'poly
       sorry
 
+include hz in
 private lemma step_12 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
-    (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) ≤
+    (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) ≤
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
     (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := by
   gcongr
@@ -279,9 +294,26 @@ private lemma step_12 :
     -- apply tprod_le_tprod -- But state it without OrderedCommMonoid (or just ℝ) and sorry
     -- Remember that we need each term to be nonneg
     apply tprod_le_of_nonneg
-    · sorry
-    · sorry
-    · sorry
+    · intro n; simp
+      have : (1 - rexp (-(π * ↑↑n))) ^ 24 = ((1 - rexp (-(π * ↑↑n))) ^ 12) ^ 2 := by ring
+      rw [this]
+      exact sq_nonneg ((1 - rexp (-(π * ↑↑n))) ^ 12)
+    · intro n; simp
+      suffices : 1 - rexp (-(π * ↑↑n)) < 1 - rexp (-2 * π * ↑↑n * z.im)
+      · apply le_of_lt
+        have h₁ : 0 ≤ 1 - rexp (-(π * ↑↑n)) := by norm_num; positivity
+        have h₂ : 0 ≤ 1 - rexp (-2 * π * ↑↑n * z.im) := by linarith
+        have h₃ : 24 ≠ 0 := by positivity
+        have h₄ : (1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 24 = (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 :=
+          by ring_nf
+        rw [h₄]
+        exact (pow_lt_pow_iff_left₀ h₁ h₂ h₃).mpr this
+      gcongr; simp; ring_nf
+      calc π * ↑↑n
+      _ ≤ π * ↑↑n * 1 := by rw [mul_one]
+      _ < π * ↑↑n * z.im * 2 := by
+        rw [mul_assoc (π * ↑↑n), mul_lt_mul_left (by positivity)]
+        linarith
 
 private lemma step_13 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
@@ -318,11 +350,11 @@ theorem BoundedRatioWithDiscOfPolyFourierCoeff : abs ((f z) / (Δ ⟨z, by linar
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) * z.im)) /
       (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := step_9 z c n₀ hcsum
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) * z.im)) /
-      (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) := step_10 z c n₀
+      (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_10 z c n₀
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
-      (∏' (n : ℕ+), (1 - rexp (2 * π * n * z.im)) ^ 24) := step_11 z hz c n₀ hn₀ hcsum k hpoly
+      (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_11 z hz c n₀ hn₀ hcsum k hpoly
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℤ), abs (c n) * rexp (-π * (n - n₀) / 2)) /
-      (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := step_12 z c n₀
+      (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := step_12 z hz c n₀
   _ = (BoundConstntOfPolyFourierCoeff c n₀) * rexp (-π * (n₀ - 2) * z.im) := step_13 z c n₀
 
 
