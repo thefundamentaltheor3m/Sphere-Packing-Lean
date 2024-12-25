@@ -27,11 +27,11 @@ variable (f : ℂ → ℂ) (hf : ∀ x : ℂ, f x = ∑' (n : ℕ), (fouterm c x
 -- local notation "f" => fun (x : ℂ) => ∑' (n : ℤ), (fouterm c x n)
 -- #check f z
 
-noncomputable def BoundConstntOfPolyFourierCoeff : ℝ :=
+noncomputable def DivDiscBound : ℝ :=
   (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24)
 
-#check BoundConstntOfPolyFourierCoeff
+#check DivDiscBound
 
 section calc_aux
 
@@ -313,16 +313,16 @@ private lemma step_12 :
 private lemma step_13 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) =
-  (BoundConstntOfPolyFourierCoeff c n₀) * rexp (-π * (n₀ - 2) * z.im) := by
-  rw [BoundConstntOfPolyFourierCoeff, mul_div_assoc, mul_comm]
+  (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := by
+  rw [DivDiscBound, mul_div_assoc, mul_comm]
 
 
 
 end calc_steps
 
 include f hf z hz c n₀ hcsum k hpoly in
-theorem BoundedRatioWithDiscOfPolyFourierCoeff : abs ((f z) / (Δ ⟨z, by linarith⟩)) ≤
-  (BoundConstntOfPolyFourierCoeff c n₀) * rexp (-π * (n₀ - 2) * z.im) := calc
+theorem DivDiscBoundOfPolyFourierCoeff : abs ((f z) / (Δ ⟨z, by linarith⟩)) ≤
+  (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := calc
   _ = abs ((∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
       (cexp (2 * π * I * z) * ∏' (n : ℕ+),
       (1 - cexp (2 * π * I * n * z)) ^ 24)) := step_1 z hz c n₀ f hf
@@ -351,7 +351,7 @@ theorem BoundedRatioWithDiscOfPolyFourierCoeff : abs ((f z) / (Δ ⟨z, by linar
       (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_11 z hz c n₀ hcsum k hpoly
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
       (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := step_12 z hz c n₀
-  _ = (BoundConstntOfPolyFourierCoeff c n₀) * rexp (-π * (n₀ - 2) * z.im) := step_13 z c n₀
+  _ = (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := step_13 z c n₀
 
 
 -- #check BoundedRatioWithDiscOfPolyFourierCoeff
