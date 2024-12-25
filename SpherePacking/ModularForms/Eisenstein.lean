@@ -2011,6 +2011,16 @@ lemma G2_q_exp (z : ℍ) : G₂ z = (2 * riemannZeta 2)  - 8 * π ^ 2 *
       Nat.factorial_one, Nat.cast_one, div_one, pow_one] at *
     apply this
 
+lemma exp_periodo (z : ℍ) (n : ℕ) :
+  cexp (2 * ↑π * Complex.I * ↑↑n * (1 + ↑z)) = cexp (2 * ↑π * Complex.I * ↑↑n * ↑z) := by
+  rw [mul_add]
+  have :=  exp_periodic.nat_mul n
+  rw [Periodic] at this
+  have ht := this (2 * π * Complex.I * n * z)
+  rw [← ht]
+  congr 1
+  ring
+
 lemma G2_periodic :  (G₂ ∣[(2 : ℤ)] ModularGroup.T) = G₂ := by
   ext z
   simp only [SL_slash, slash_def, slash, ModularGroup.det_coe, ofReal_one, Int.reduceSub, zpow_one,
@@ -2029,13 +2039,7 @@ lemma G2_periodic :  (G₂ ∣[(2 : ℤ)] ModularGroup.T) = G₂ := by
   ext n
   simp only [mul_eq_mul_left_iff, Nat.cast_eq_zero]
   left
-  rw [mul_add]
-  have :=  exp_periodic.nat_mul n
-  rw [Periodic] at this
-  have ht := this (2 * π * Complex.I * n * z)
-  rw [← ht]
-  congr 1
-  ring
+  apply exp_periodo
 
 def E₂ : ℍ → ℂ := (1 / (2 * riemannZeta 2)) •  G₂
 
@@ -2141,6 +2145,11 @@ theorem modular_slash_S_apply :
     (f ∣[k] ModularGroup.S) z = f (UpperHalfPlane.mk (-z)⁻¹ z.im_inv_neg_coe_pos) * z ^ (-k) := by
   rw [SL_slash, slash_def, slash, ← ModularGroup.sl_moeb, modular_S_smul]
   simp [denom, ModularGroup.S]
+
+
+theorem modular_slash_T_apply : (f ∣[k] ModularGroup.T) z = f ((1 : ℝ) +ᵥ z) := by
+  rw [SL_slash, slash_def, slash, ← ModularGroup.sl_moeb, modular_T_smul]
+  simp [denom, ModularGroup.T]
 
 
 /-This is the annoying exercise. -/
@@ -3076,7 +3085,7 @@ lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn (
     have := eta_nonzero_on_UpperHalfPlane ⟨-1 / x, by simpa using pnat_div_upper 1 ⟨x, hx⟩⟩
     simpa only [ne_eq, coe_mk_subtype] using this
 
-lemma cqrt_I : (csqrt (Complex.I)) ^ 24  = 1 := by
+lemma csqrt_I : (csqrt (Complex.I)) ^ 24  = 1 := by
   unfold csqrt
   rw [← Complex.exp_nat_mul]
   conv =>
@@ -3092,6 +3101,17 @@ lemma cqrt_I : (csqrt (Complex.I)) ^ 24  = 1 := by
   rw [this, hi4]
   simp
   exact I_ne_zero
+
+lemma csqrt_pow_24 (z : ℂ) (hz : z ≠ 0) : (csqrt z) ^ 24 = z ^ 12 := by
+  unfold csqrt
+  rw [← Complex.exp_nat_mul]
+  conv =>
+    enter [1,1]
+    rw [← mul_assoc]
+    rw [show ((24 : ℕ) : ℂ) * (1 / 2) = (12 : ℕ) by
+      field_simp; ring]
+  rw [Complex.exp_nat_mul, Complex.exp_log hz]
+
 
 lemma eta_equality : {z : ℂ | 0 < z.im}.EqOn ((η ∘ (fun z : ℂ => -1/z)))
    ((csqrt (Complex.I))⁻¹ • ((csqrt) * η)) := by
@@ -3165,13 +3185,50 @@ def φ₄'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₄' ⟨z, hz⟩ else 0
 
 
 /-This should be easy from the definition and the Mulitpliable bit. -/
-lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by sorry
+lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by
+  rw [Δ_eq_η_pow]
+  simpa using eta_nonzero_on_UpperHalfPlane z
+
+
 
 /-This one is easy.-/
-lemma Discriminant_T_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.T) = Δ := sorry
+lemma Discriminant_T_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.T) = Δ := by
+  ext z
+  rw [ modular_slash_T_apply, Δ, Δ]
+  simp only [coe_vadd, ofReal_one]
+  have h1 : cexp (2 * ↑π * Complex.I * (1 + ↑z)) = cexp (2 * ↑π * Complex.I * (↑z)) := by
+    simpa using exp_periodo z 1
+  rw [h1]
+  simp only [mul_eq_mul_left_iff, Complex.exp_ne_zero, or_false]
+  apply tprod_congr
+  intro b
+  have := exp_periodo z (b+1)
+  simp only [Nat.cast_add, Nat.cast_one] at this
+  rw [this]
+
 
 /-This is the hard one. -/
-lemma Discriminant_S_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.S) = Δ := sorry
+lemma Discriminant_S_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.S) = Δ := by
+  ext z
+  rw [ modular_slash_S_apply, Δ_eq_η_pow, Δ_eq_η_pow]
+  have he := eta_equality z.2
+  simp only [comp_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul, UpperHalfPlane.coe_mk,
+    Int.reduceNeg, zpow_neg] at *
+  have hi :  -1/(z.1 : ℂ) = (-(z : ℂ))⁻¹ := by
+    rw [neg_div]
+    rw [← neg_inv]
+    simp [UpperHalfPlane.coe]
+  rw [hi] at he
+  rw [he, mul_pow, mul_pow, inv_pow, csqrt_I]
+  simp only [inv_one, one_mul, UpperHalfPlane.coe]
+  rw [mul_comm]
+  have hzz := csqrt_pow_24 z.1 (ne_zero z)
+  rw [hzz, ← mul_assoc]
+  have hz := ne_zero z
+  simp only [UpperHalfPlane.coe, ne_eq] at hz
+  norm_cast
+  field_simp
+
 -- use E₂_transform
 
 def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
