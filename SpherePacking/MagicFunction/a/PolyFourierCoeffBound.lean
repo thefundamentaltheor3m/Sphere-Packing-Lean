@@ -21,8 +21,11 @@ The only `sorry`s are in the section `calc_aux`, which consists of auxiliary lem
 various `calc_steps` lemmas, which in turn make up the proof of the main theorem. Below, we give a
 comprehensive list of things to be done, including but not limited to the `sorry`s in this file.
 - [ ] `aux_5`: prove `fun i ↦ (1 - cexp (2 * ↑π * I * ↑↑i * z)) ^ 24` is Multipliable
-- [ ] `aux_11`: prove `0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24` using the specific properties of
-      the function `fun (n : ℕ+) ↦ (1 - rexp (-π * ↑↑n)) ^ 24` (there's no general `tprod_pos`)
+- [ ] `aux_8` and `aux_11`: prove `0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24` and
+      `0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24` using the specific properties of the function
+      `fun (n : ℕ+) ↦ (1 - rexp (-n * k))` for some parameter `k : ℝ` (there's no general
+      `tprod_pos` result for the positivity of infinite products)
+- [ ] `aux_11`: prove `0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24` in similar fashion
 - [ ] `step_10`, `step_12`: prove `tprod_le_tprod` in SpherePacking.ForMathlib.tprod
 - [ ] `step_11`: prove `summable_real_norm_mul_geometric_of_norm_lt_one` in
       SpherePacking.ForMathlib.SpecificLimits
@@ -44,7 +47,7 @@ noncomputable def DivDiscBound : ℝ :=
   (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24)
 
-#check DivDiscBound
+-- #check DivDiscBound
 
 section calc_aux
 
