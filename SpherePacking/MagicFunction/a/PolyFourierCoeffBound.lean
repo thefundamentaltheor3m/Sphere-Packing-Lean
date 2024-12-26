@@ -8,8 +8,26 @@ M4R File
 
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ForMathlib.tprod
-import SpherePacking.ForMathlib.Normed
+import SpherePacking.ForMathlib.SpecificLimits
 import Mathlib
+
+/-!
+
+This file contains the proof of Lemma 7.4 in the blueprint, which gives an upper-bound on the ratio
+between any function whose Fourier coefficients are O(n^k) and its discriminant.
+
+# TODO:
+The only `sorry`s are in the section `calc_aux`, which consists of auxiliary lemmas that are used in
+various `calc_steps` lemmas, which in turn make up the proof of the main theorem. Below, we give a
+comprehensive list of things to be done, including but not limited to the `sorry`s in this file.
+- [ ] `aux_5`: prove `fun i ↦ (1 - cexp (2 * ↑π * I * ↑↑i * z)) ^ 24` is Multipliable
+- [ ] `aux_11`: prove `0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24` using the specific properties of
+      the function `fun (n : ℕ+) ↦ (1 - rexp (-π * ↑↑n)) ^ 24` (there's no general `tprod_pos`)
+- [ ] `step_10`, `step_12`: prove `tprod_le_tprod` in SpherePacking.ForMathlib.tprod
+- [ ] `step_11`: prove `summable_real_norm_mul_geometric_of_norm_lt_one` in
+      SpherePacking.ForMathlib.SpecificLimits
+
+-/
 
 open Filter Complex Real BigOperators Asymptotics
 
@@ -21,11 +39,6 @@ variable (c : ℤ → ℂ) (n₀ : ℤ) -- (hn₀ : ∀ (n : ℤ), n < n₀ → 
 variable (hcsum : Summable fun (i : ℕ) ↦ (fouterm c z (i + n₀)))
 variable (k : ℕ) (hpoly : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)))
 variable (f : ℂ → ℂ) (hf : ∀ x : ℂ, f x = ∑' (n : ℕ), (fouterm c x (n + n₀)))
-
--- private noncomputable def f (x : ℂ) : ℂ := ∑' (n : ℤ), (fouterm c x n)
-
--- local notation "f" => fun (x : ℂ) => ∑' (n : ℤ), (fouterm c x n)
--- #check f z
 
 noncomputable def DivDiscBound : ℝ :=
   (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
@@ -82,16 +95,6 @@ lemma aux_7 (a : ℤ) :
   simp; linarith
 
 lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 := by
-  -- suffices hsuff₁ : 0 < ∏' (n : ℕ+), Complex.abs (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24
-  -- · refine gt_of_ge_of_gt ?_ hsuff₁
-  --   rw [ge_iff_le]
-  --   apply?
-  --   sorry
-  -- refine LE.le.lt_of_ne (aux_6 z) ?_
-  -- rw [← aux_5 z]
-  -- intro hcontra
-  -- symm at hcontra
-  -- rw [← Complex.norm_eq_abs, norm_eq_zero] at hcontra
   sorry
 
 lemma aux_ring (i : ℕ) : (I * ↑π * ↑i * z) = I * ((↑π * ↑i) * z) := by ring
@@ -119,8 +122,6 @@ lemma aux_misc (x : UpperHalfPlane) : abs (cexp (I * x)) ≤ rexp (x.im) := by
 end calc_aux
 
 section calc_steps
-
--- include z hz c n₀ hn₀ hcsum k hpoly
 
 include hf in
 private lemma step_1 :
@@ -219,6 +220,7 @@ private lemma step_9 :
     apply tsum_le_tsum h₁ (aux_4 z c n₀ hcsum)
     exact aux_10 z c n₀ hcsum
 
+include hz in
 private lemma step_10 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n * z.im)) /
     (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
@@ -230,7 +232,19 @@ private lemma step_10 :
     intro i
     exact mul_nonneg (AbsoluteValue.nonneg Complex.abs (c (i + n₀))) (exp_nonneg _)
   · exact aux_8 z
-  · sorry
+  · apply tprod_le_of_nonneg
+    · intro n; simp
+      have :
+        (1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 24 = ((1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 12) ^ 2 :=
+        by ring_nf
+      rw [this]
+      exact sq_nonneg ((1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 12)
+    · intro n; simp
+      gcongr
+      · simp; positivity
+      · have hre : -(2 * π * n * z.im) = (2 * π * I * n * z).re := by field_simp
+        rw [hre]
+        exact aux_2 (2 * π * I * n * z)
 
 -- set_option maxHeartbeats 100000 in
 include hz hcsum hpoly in
@@ -248,15 +262,12 @@ private lemma step_11 :
       gcongr
     · exact aux_10 z c n₀ hcsum
     · simp only [div_eq_mul_inv]
-      -- *This is where we use the fact that c is eventually polynomial in n.*
-      -- suffices hsepn₀ : Summable fun n ↦ Complex.abs (c (↑n + n₀ + 1)) * rexp (-π * (n + 1) * 2⁻¹)
-      -- · sorry
+      -- **This is where we use the fact that c is eventually polynomial in n.**
       have hnorm : ‖(rexp (-π * 2⁻¹) : ℂ)‖ < 1 := by
         rw [Complex.norm_real]
         simp; positivity
       have h₁ : ∀ (n : ℕ), rexp (-π * n * 2⁻¹) = (rexp (-π * 2⁻¹)) ^ n := by
         intro n; symm
-        -- rw [← Real.exp_mul (-π * 2⁻¹) n]
         calc (rexp (-π * 2⁻¹)) ^ n
         _ = rexp ((-π * 2⁻¹) * n) := by
           have := (Real.exp_mul (-π * 2⁻¹) n).symm
@@ -282,13 +293,8 @@ private lemma step_12 :
     · apply tsum_nonneg
       intro i
       exact mul_nonneg (AbsoluteValue.nonneg Complex.abs (c (i + n₀))) (exp_nonneg _)
-  · -- ⊢ The denominator of the RHS is positive (and by the next case, that of the LHS is too)
-    -- The following idea is WRONG! tprod_pos_of_pos isn't true: consider fun (n : ℕ) => 1 / 2
-    exact aux_11
-  · -- ⊢ The denominator of the RHS is ≤ the denominator of the LHS
-    -- apply tprod_le_tprod -- But state it without OrderedCommMonoid (or just ℝ) and sorry
-    -- Remember that we need each term to be nonneg
-    apply tprod_le_of_nonneg
+  · exact aux_11
+  · apply tprod_le_of_nonneg
     · intro n; simp
       have : (1 - rexp (-(π * ↑↑n))) ^ 24 = ((1 - rexp (-(π * ↑↑n))) ^ 12) ^ 2 := by ring
       rw [this]
@@ -316,9 +322,9 @@ private lemma step_13 :
   (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := by
   rw [DivDiscBound, mul_div_assoc, mul_comm]
 
-
-
 end calc_steps
+
+section main_theorem
 
 include f hf z hz c n₀ hcsum k hpoly in
 theorem DivDiscBoundOfPolyFourierCoeff : abs ((f z) / (Δ ⟨z, by linarith⟩)) ≤
@@ -353,5 +359,10 @@ theorem DivDiscBoundOfPolyFourierCoeff : abs ((f z) / (Δ ⟨z, by linarith⟩))
       (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := step_12 z hz c n₀
   _ = (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := step_13 z c n₀
 
+-- #check DivDiscBoundOfPolyFourierCoeff
 
--- #check BoundedRatioWithDiscOfPolyFourierCoeff
+end main_theorem
+
+section Corollaries
+
+end Corollaries
