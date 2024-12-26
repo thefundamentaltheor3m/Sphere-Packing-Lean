@@ -352,7 +352,7 @@ theorem DivDiscBoundOfPolyFourierCoeff : abs ((f z) / (Δ ⟨z, by linarith⟩))
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n * z.im)) /
       (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := step_9 z c n₀ hcsum
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n * z.im)) /
-      (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_10 z c n₀
+      (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_10 z hz c n₀
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
       (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_11 z hz c n₀ hcsum k hpoly
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
