@@ -11,7 +11,7 @@ import SpherePacking.ForMathlib.tprod
 import SpherePacking.ForMathlib.SpecificLimits
 import Mathlib
 
-/-!
+/-
 
 This file contains the proof of Lemma 7.4 in the blueprint, which gives an upper-bound on the ratio
 between any function whose Fourier coefficients are O(n^k) and its discriminant.
