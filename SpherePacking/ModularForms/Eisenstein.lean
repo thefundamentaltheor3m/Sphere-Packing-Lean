@@ -2247,7 +2247,7 @@ lemma prod_tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ
     TendstoUniformlyOn (fun n : ℕ => fun a : α => ∏ i in Finset.range n, (1 + (f i a)))
     (fun a => ∏' i, (1 + (f i a))) atTop K := by sorry
 
-variable {ι κ α : Type*}
+/- variable {ι κ α : Type*}
 variable [Preorder α] [CommMonoid α] [TopologicalSpace α] {a c : α} {f : ι → α}
 
 @[to_additive]
@@ -2259,7 +2259,7 @@ theorem le_hasProd_of_le_prod_ev [ClosedIciTopology α]
 theorem le_hasProd_of_le_prod_ev_range [ClosedIciTopology α] [T2Space α] (f : ℕ → α) (hm : Multipliable f)
     (hf : HasProd f a) (h : ∀ᶠ s : ℕ in atTop, c ≤ ∏ i ∈ Finset.range s, f i)  : c ≤ a := by
   rw [Multipliable.hasProd_iff_tendsto_nat hm] at hf
-  apply ge_of_tendsto hf h
+  apply ge_of_tendsto hf h -/
 
 
 /-Being Prd-/
@@ -3231,14 +3231,105 @@ lemma Discriminant_S_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.S) = Δ := by
 
 -- use E₂_transform
 
+/-this is from other file-/
+theorem slashaction_generators_SL2Z
+    (f : ℍ → ℂ) (k : ℤ) (hS : f ∣[k] ModularGroup.S = f) (hT : f ∣[k] ModularGroup.T = f) :
+    (∀ γ : SL(2, ℤ), f ∣[k] γ = f) := by sorry
+
 def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun := Δ
-  slash_action_eq' A := by sorry
+  slash_action_eq' A := by
+    intro hA
+    exact slashaction_generators_SL2Z Δ 12 (Discriminant_S_invariant) (Discriminant_T_invariant) A
 
 open Manifold in
-lemma Discriminant_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Δ := sorry
+lemma Discriminant_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Discriminant_SIF := sorry
 
-lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty (Δ ∣[(12 : ℤ)] γ) := sorry
+instance : atImInfty.NeBot := by
+  classical
+  rw [atImInfty]
+  rw [Filter.comap_neBot_iff ]
+  simp
+  intro t x hx
+
+  sorry
+
+
+lemma log_summable_pow (f : ℕ → ℂ) (hf : Summable (fun n => Complex.log (1 + f n))) (m : ℕ) :
+    Summable (fun n => Complex.log ((1 + f n)^m)) := by
+  have := (Summable.mul_left m (f := (fun n => Complex.log (1 + f n))) hf).norm
+
+
+  apply Summable.of_norm_bounded _ this
+  intro i
+  simp [Complex.log]
+
+  sorry
+
+lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
+    (Discriminant_SIF ∣[(12 : ℤ)] γ) := by
+  rw [IsZeroAtImInfty, ZeroAtFilter]
+  have := Discriminant_SIF.slash_action_eq' γ (by  sorry)
+  simp at *
+  rw [this]
+  simp [Discriminant_SIF]
+  unfold Δ
+  rw [show (0 : ℂ) =  0 * 1 by ring]
+  apply Tendsto.mul
+  · rw [tendsto_zero_iff_norm_tendsto_zero]
+    simp only [Complex.norm_eq_abs, Complex.abs_exp, mul_re, re_ofNat, ofReal_re, im_ofNat,
+      ofReal_im, mul_zero, sub_zero, Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im,
+      mul_one, sub_self, coe_re, coe_im, zero_sub, tendsto_exp_comp_nhds_zero,
+      tendsto_neg_atBot_iff]
+    rw [Filter.tendsto_const_mul_atTop_iff_pos ]
+
+    sorry
+    rw [atImInfty]
+
+
+    sorry
+
+  have := Complex.cexp_tsum_eq_tprod (fun n : ℕ => fun x : ℍ => (1 - (cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x))) ^ 24 ) ?_ ?_
+  --have hxx := congrFun this x
+
+  conv =>
+    enter [1]
+    rw [← this]
+  apply Tendsto.comp (y := (𝓝 0))
+  refine Continuous.tendsto' ?_ 0 1 ?_
+  exact Complex.continuous_exp
+  exact Complex.exp_zero
+  have := tendsto_tsum_of_dominated_convergence (𝓕 := atImInfty) (g := fun (x : ℕ) => (0 : ℂ))
+      (f := (fun x : ℍ ↦ fun (n : ℕ) => Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * (x : ℂ))) ^ 24)))
+      (bound := fun x => 1)
+  simp at this
+  apply this
+  sorry
+  sorry
+  sorry
+  sorry
+  intro x
+  simp
+  have := log_summable_pow (fun n => -cexp (2 * ↑π * Complex.I * (↑n + 1) * x)) ?_ 24
+  apply this.congr
+  intro b
+  rw [sub_eq_add_neg]
+  simp
+/-   conv =>
+    enter [1]
+    ext n
+    conv =>
+      enter [1]
+      rw [sub_eq_add_neg]
+
+    rw [Complex.log]
+  simp -/
+  --apply Complex.log_of_summable
+
+/-   have := tendsto_tsum_of_dominated_convergence (𝓕 := atImInfty) (g := fun (x : ℍ) => (1 : ℂ))
+      (f := (fun x : ℍ ↦ (∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * (x : ℂ))) ^ 24)))
+      (bound := fun x => 1)   -/
+  sorry
 
 def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (z : ℍ) :
   ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) where
