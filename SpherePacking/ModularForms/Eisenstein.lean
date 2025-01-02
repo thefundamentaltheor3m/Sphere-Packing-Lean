@@ -3254,35 +3254,110 @@ instance : atImInfty.NeBot := by
 
   sorry
 
+lemma arg_pow_aux (n : ℕ) (x : ℂ) (hx : x ≠ 0) (hna : |arg x| < π / n) :
+  Complex.arg (x ^ n) = n * Complex.arg x := by
+  induction' n with n hn2
+  simp only [pow_zero, arg_one, CharP.cast_eq_zero, zero_mul]
+  by_cases hn0 : n = 0
+  · simp only [hn0, zero_add, pow_one, Nat.cast_one, one_mul]
+  · rw [pow_succ, arg_mul, hn2, Nat.cast_add]
+    ring
+    apply lt_trans hna
+    gcongr
+    exact (lt_add_one n)
+    apply pow_ne_zero n hx
+    exact hx
+    simp
+    rw [hn2]
+    rw [abs_lt] at hna
+    constructor
+    · have hnal := hna.1
+      rw [← neg_div] at hnal
+      rw [div_lt_iff₀' ] at hnal
+      · rw [@Nat.cast_add, add_mul] at hnal
+        simpa only [gt_iff_lt, Nat.cast_one, one_mul] using hnal
+      · norm_cast
+        omega
+    · have hnal := hna.2
+      rw [lt_div_iff₀'  ] at hnal
+      rw [@Nat.cast_add] at hnal
+      · rw [add_mul] at hnal
+        simpa only [ge_iff_le, Nat.cast_one, one_mul] using hnal.le
+      · norm_cast
+        omega
+    apply lt_trans hna
+    gcongr
+    exact (lt_add_one n)
+
+
+lemma one_add_abs_half_ne_zero {x : ℂ} (hb : Complex.abs x < 1 / 2) : 1 + x ≠ 0 := by
+  by_contra h
+  rw [@add_eq_zero_iff_neg_eq] at h
+  rw [← h] at hb
+  simp at hb
+  linarith
 
 lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀ᶠ m : ℕ in atTop,
     Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
-  simp
-  rw [Metric.tendsto_atTop] at *
-  have h0 := continuousAt_pow (1 + f 0) n
-  --have h1 := Complex.continuousAt_arg (x := 1 + f 0) ?_
-
-  have h2 := (Complex.continuousAt_arg ?_).comp (continuousAt_pow (1) n)
+  simp only [eventually_atTop, ge_iff_le]
+  have hf1 := hf.const_add 1
+  simp only [add_zero] at hf1
+  have h2 := (Complex.continuousAt_arg (x := 1) ?_)
   rw [ContinuousAt] at *
-  simp at h2
+  have h3 := h2.comp hf1
+  simp only [arg_one] at h3
   rw [Metric.tendsto_nhds] at *
+  simp only [gt_iff_lt, dist_zero_right, Complex.norm_eq_abs, eventually_atTop, ge_iff_le,
+    dist_self_add_left, arg_one, Real.norm_eq_abs, comp_apply] at *
+  by_cases hn0 : n = 0
+  · rw [hn0]
+    simp only [pow_zero, arg_one, CharP.cast_eq_zero, zero_mul, implies_true, exists_const]
+  · have hpi : 0 < π / n := by
+      apply div_pos
+      exact pi_pos
+      simp only [Nat.cast_pos]
+      omega
+    obtain ⟨a, hA⟩ := h3 (π / n) hpi
+    obtain ⟨a2, ha2⟩ := hf (1/2) (one_half_pos)
+    use max a a2
+    intro b hb
+    rw [arg_pow_aux n (1 + f b) ?_]
+    apply hA b
+    exact le_of_max_le_left hb
+    have ha2 := ha2 b (le_of_max_le_right hb)
+    simp only [ne_eq]
+    apply one_add_abs_half_ne_zero ha2
+  simp only [one_mem_slitPlane]
+
+
+lemma clog_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀ᶠ m : ℕ in atTop,
+    Complex.log ((1 + f m) ^ n) = n * Complex.log (1 + f m) := by
+  have h := arg_pow n f hf
   simp at *
-  --have := Complex.arg_mul
+  simp_rw [Complex.log]
+  obtain ⟨a, ha⟩ := h
+  use a
+  intro b hb
+  have h2 := ha b hb
+  rw [h2]
+  simp only [AbsoluteValue.map_pow, log_pow, ofReal_mul, ofReal_natCast]
+  ring
 
-  sorry
-
-lemma log_summable_pow (f : ℕ → ℂ) (hf : Summable (fun n => Complex.log (1 + f n))) (m : ℕ) :
+lemma log_summable_pow (f : ℕ → ℂ)  (hf : Summable f)  (m : ℕ) :
     Summable (fun n => Complex.log ((1 + f n)^m)) := by
-  have := (Summable.mul_left m (f := (fun n => Complex.log (1 + f n))) hf).norm
+  have hfl := log_of_summable hf
+  have := (Summable.mul_left m (f := (fun n => Complex.log (1 + f n))) hfl).norm
+  apply Summable.of_norm_bounded_eventually_nat _ this
+  have hft := hf.tendsto_atTop_zero
+  have H := clog_pow m f hft
+  simp at *
+  obtain ⟨a, ha⟩ := H
+  use a
+  intro b hb
+  apply le_of_eq
+  rw [ha b hb]
+  simp only [AbsoluteValue.map_mul, abs_natCast]
 
-
-  apply Summable.of_norm_bounded _ this
-  intro i
-  simp [Complex.log]
-  have := Complex.arg_mul_coe_angle (x := 1 + f i) (y := 1 + f i) (sorry) (sorry)
-  --have := Complex.abs_arg_le_pi
-
-  sorry
 
 lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
     (Discriminant_SIF ∣[(12 : ℤ)] γ) := by
