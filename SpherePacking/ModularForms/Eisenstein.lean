@@ -3255,6 +3255,22 @@ instance : atImInfty.NeBot := by
   sorry
 
 
+lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀ᶠ m : ℕ in atTop,
+    Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
+  simp
+  rw [Metric.tendsto_atTop] at *
+  have h0 := continuousAt_pow (1 + f 0) n
+  --have h1 := Complex.continuousAt_arg (x := 1 + f 0) ?_
+
+  have h2 := (Complex.continuousAt_arg ?_).comp (continuousAt_pow (1) n)
+  rw [ContinuousAt] at *
+  simp at h2
+  rw [Metric.tendsto_nhds] at *
+  simp at *
+  --have := Complex.arg_mul
+
+  sorry
+
 lemma log_summable_pow (f : ℕ → ℂ) (hf : Summable (fun n => Complex.log (1 + f n))) (m : ℕ) :
     Summable (fun n => Complex.log ((1 + f n)^m)) := by
   have := (Summable.mul_left m (f := (fun n => Complex.log (1 + f n))) hf).norm
@@ -3263,6 +3279,8 @@ lemma log_summable_pow (f : ℕ → ℂ) (hf : Summable (fun n => Complex.log (1
   apply Summable.of_norm_bounded _ this
   intro i
   simp [Complex.log]
+  have := Complex.arg_mul_coe_angle (x := 1 + f i) (y := 1 + f i) (sorry) (sorry)
+  --have := Complex.abs_arg_le_pi
 
   sorry
 
