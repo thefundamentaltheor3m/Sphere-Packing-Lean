@@ -3359,6 +3359,9 @@ lemma log_summable_pow (f : ℕ → ℂ)  (hf : Summable f)  (m : ℕ) :
   simp only [AbsoluteValue.map_mul, abs_natCast]
 
 
+theorem extracted_7u (k : ℕ) :
+  Tendsto (fun x : ℍ ↦ Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) ^ 24)) atImInfty (𝓝 0) := sorry
+
 lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
     (Discriminant_SIF ∣[(12 : ℤ)] γ) := by
   rw [IsZeroAtImInfty, ZeroAtFilter]
@@ -3375,12 +3378,9 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
       mul_one, sub_self, coe_re, coe_im, zero_sub, tendsto_exp_comp_nhds_zero,
       tendsto_neg_atBot_iff]
     rw [Filter.tendsto_const_mul_atTop_iff_pos ]
-
-    sorry
+    exact two_pi_pos
     rw [atImInfty]
-
-
-    sorry
+    exact tendsto_comap
 
   have := Complex.cexp_tsum_eq_tprod (fun n : ℕ => fun x : ℍ => (1 - (cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x))) ^ 24 ) ?_ ?_
   --have hxx := congrFun this x
@@ -3394,12 +3394,25 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
   exact Complex.exp_zero
   have := tendsto_tsum_of_dominated_convergence (𝓕 := atImInfty) (g := fun (x : ℕ) => (0 : ℂ))
       (f := (fun x : ℍ ↦ fun (n : ℕ) => Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * (x : ℂ))) ^ 24)))
-      (bound := fun x => 1)
+      (bound := fun k => Complex.abs (Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * Complex.I)) ^ 24)))
   simp at this
   apply this
-  sorry
-  sorry
-  sorry
+  ·
+    sorry
+  ·
+    intro k
+
+    sorry
+  ·
+    have := fun k => (extracted_7u k).norm
+
+    have Hk := fun k => Filter.Tendsto.isBoundedUnder_le (this k)
+    simp at Hk
+    rw [Filter.eventually_iff_exists_mem ]
+    simp_rw [IsBoundedUnder, IsBounded] at Hk
+    simp at hK1
+
+    sorry
   sorry
   intro x
   simp
@@ -3407,21 +3420,7 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
   apply this.congr
   intro b
   rw [sub_eq_add_neg]
-  simp
-/-   conv =>
-    enter [1]
-    ext n
-    conv =>
-      enter [1]
-      rw [sub_eq_add_neg]
 
-    rw [Complex.log]
-  simp -/
-  --apply Complex.log_of_summable
-
-/-   have := tendsto_tsum_of_dominated_convergence (𝓕 := atImInfty) (g := fun (x : ℍ) => (1 : ℂ))
-      (f := (fun x : ℍ ↦ (∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * (x : ℂ))) ^ 24)))
-      (bound := fun x => 1)   -/
   sorry
 
 def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (z : ℍ) :
