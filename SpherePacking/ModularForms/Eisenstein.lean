@@ -2432,7 +2432,8 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
   have := IsCompact.exists_sSup_image_eq_and_ge hK2 (by simpa using hN) hc
   obtain ⟨z, hz, hB, HB⟩ := this
   have :=  prod_tendstoUniformlyOn_tprod'  K  hK2 (f := (fun i ↦
-    fun x_1 ↦ -cexp (2 * ↑π * Complex.I *  (i + 1) * x_1))) (fun n=> ‖cexp (2 * ↑π * Complex.I * z)^(n + 1)‖) ?_ ?_ ?_ ?_
+    fun x_1 ↦ -cexp (2 * ↑π * Complex.I *  (i + 1) * x_1)))
+    (fun n=> ‖cexp (2 * ↑π * Complex.I * z)^(n + 1)‖) ?_ ?_ ?_ ?_
   simp at *
   convert this
   simp
@@ -3330,6 +3331,51 @@ lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀�
   simp only [one_mem_slitPlane]
 
 
+lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) : ∀ᶠ m : ℍ in atImInfty,
+    Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
+  rw [Filter.eventually_iff_exists_mem ]
+  have hf1 := hf.const_add 1
+  simp only [add_zero] at hf1
+  have h2 := (Complex.continuousAt_arg (x := 1) ?_)
+  rw [ContinuousAt] at *
+  have h3 := h2.comp hf1
+  simp only [arg_one] at h3
+  rw [Metric.tendsto_nhds] at *
+  simp only [gt_iff_lt, dist_zero_right, Complex.norm_eq_abs, eventually_atTop, ge_iff_le,
+    dist_self_add_left, arg_one, Real.norm_eq_abs, comp_apply] at *
+  by_cases hn0 : n = 0
+  · simp_rw [hn0]
+    simp only [pow_zero, arg_one, CharP.cast_eq_zero, zero_mul, implies_true, and_true]
+    rw [atImInfty]
+    simp only [mem_comap, mem_atTop_sets, ge_iff_le]
+    use {n  | 1 ≤ n.im}
+    use {r : ℝ | 1 ≤ r}
+    refine ⟨?_, ?_⟩
+    use 1
+    intro b hb
+    aesop
+    simp only [preimage_setOf_eq, subset_refl]
+  · have hpi : 0 < π / n := by
+      apply div_pos
+      exact pi_pos
+      simp only [Nat.cast_pos]
+      omega
+    have hA1 := h3 (π / n) hpi
+    have hA2 := hf (1/2) (one_half_pos)
+    rw [Filter.eventually_iff_exists_mem ] at hA1 hA2
+    obtain ⟨a, ha1, hA1⟩ := hA1
+    obtain ⟨a2, ha2, hA2⟩ := hA2
+    use min a a2
+    refine ⟨by rw [atImInfty] at *; simp at *; refine ⟨ha1, ha2⟩, ?_⟩
+    intro b hb
+    rw [arg_pow_aux n (1 + f b) ?_]
+    apply hA1 b
+    exact mem_of_mem_inter_left hb
+    have ha2 := hA2 b ( mem_of_mem_inter_right hb)
+    simp only [ne_eq]
+    apply one_add_abs_half_ne_zero ha2
+  simp only [one_mem_slitPlane]
+
 lemma clog_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀ᶠ m : ℕ in atTop,
     Complex.log ((1 + f m) ^ n) = n * Complex.log (1 + f m) := by
   have h := arg_pow n f hf
@@ -3342,6 +3388,22 @@ lemma clog_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀
   rw [h2]
   simp only [AbsoluteValue.map_pow, log_pow, ofReal_mul, ofReal_natCast]
   ring
+
+lemma clog_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) : ∀ᶠ m : ℍ in atImInfty,
+    Complex.log ((1 + f m) ^ n) = n * Complex.log (1 + f m) := by
+  have h := arg_pow2 n f hf
+  simp at *
+  simp_rw [Complex.log]
+  obtain ⟨a, ha0, ha⟩ := h
+  use a
+  refine ⟨ha0, ?_⟩
+  intro b hb
+  have h2 := ha hb
+  simp at *
+  rw [h2]
+  simp only [AbsoluteValue.map_pow, log_pow, ofReal_mul, ofReal_natCast]
+  ring
+
 
 lemma log_summable_pow (f : ℕ → ℂ)  (hf : Summable f)  (m : ℕ) :
     Summable (fun n => Complex.log ((1 + f n)^m)) := by
@@ -3359,8 +3421,111 @@ lemma log_summable_pow (f : ℕ → ℂ)  (hf : Summable f)  (m : ℕ) :
   simp only [AbsoluteValue.map_mul, abs_natCast]
 
 
+
+lemma log_exp_le (a : ℍ) (k : ℕ) :  ∀ᶠ (b : ℍ) in atImInfty,
+  Complex.abs (Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * b)) ^ 24)) ≤
+      Complex.abs (24 * cexp (2 * ↑π * Complex.I * (↑k + 1) * a)) := by
+  simp_rw [Complex.log]
+  simp
+
+  sorry
+
+lemma tendstozero_mul_bounded (f g : ℍ → ℂ) (r : ℝ) (hf : Tendsto f atImInfty (𝓝 0)) (hg : ∀ z, ‖g z‖ ≤ r) :
+  Tendsto (fun z => f z * g z) atImInfty (𝓝 0) := by
+  rw [Metric.tendsto_nhds] at *
+  simp only [dist_zero_right, comp_apply] at *
+  by_cases hr : r = 0
+  · rw [hr] at hg
+    simp at hg
+    sorry
+  intro ε hε
+  have hrp : 0 < r := by sorry
+  have hf2 := hf (ε / r) (div_pos hε hrp)
+  rw [Filter.eventually_iff_exists_mem ] at *
+  obtain ⟨a, ha0, ha⟩ := hf2
+  use a
+  refine ⟨ha0, ?_⟩
+  intro b hb
+  have haa := ha b hb
+  rw [norm_mul]
+  have hbg := hg b
+  have := mul_lt_mul' hbg haa (by sorry) hrp
+  rw [mul_comm]
+  convert this
+  field_simp
+
+
+lemma tendstozero_mul_bounded2 (f g : ℍ → ℂ) (r : ℝ) (hr : 0 < r) (hf : Tendsto f atImInfty (𝓝 0))
+   (hg : ∀ᶠ z in atImInfty, ‖g z‖ ≤ r) (hg2 : ∀ z, 0 < ‖g z‖ ) :
+  Tendsto (fun z => f z * g z) atImInfty (𝓝 0) := by
+  rw [Metric.tendsto_nhds] at *
+  simp only [dist_zero_right, comp_apply] at *
+  intro ε hε
+  have hf2 := hf (ε / r) (div_pos hε hr)
+  rw [Filter.eventually_iff_exists_mem ] at *
+  obtain ⟨a, ha0, ha⟩ := hf2
+  obtain ⟨a2, ha2, hA2⟩ := hg
+  use min a a2
+  refine ⟨by rw [atImInfty] at *; simp at *; refine ⟨ha0, ha2⟩, ?_⟩
+  intro b hb
+  have haa := ha b (by exact mem_of_mem_inter_left hb)
+  have hbg:= hA2 b (by exact mem_of_mem_inter_right hb)
+  rw [norm_mul]
+  have := mul_lt_mul' hbg haa (by exact norm_nonneg (f b)) hrp
+  rw [mul_comm]
+  convert this
+  field_simp
+
+
+
+
+
 theorem extracted_7u (k : ℕ) :
   Tendsto (fun x : ℍ ↦ Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) ^ 24)) atImInfty (𝓝 0) := sorry
+
+variable  {a a₁ a₂ : ℝ}
+
+@[to_additive]
+theorem hasProd_le_nonneg (f g : ℕ → ℝ) (h : ∀ i, f i ≤ g i)  (h0 : ∀ i, 0 ≤ f i)
+  (hf : HasProd f a₁) (hg : HasProd g a₂) : a₁ ≤ a₂ := by
+  apply le_of_tendsto_of_tendsto' hf hg
+  intro s
+  apply Finset.prod_le_prod
+  intros i hi
+  exact h0 i
+  intros i hi
+  exact h i
+
+@[to_additive]
+theorem HasProd.le_one_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i)
+    (ha : HasProd g a) : a ≤ 1 := by
+  apply hasProd_le_nonneg (f := g) (g := fun _ => 1) h h0 ha hasProd_one
+
+@[to_additive]
+theorem one_le_tprod_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i)  : ∏' i, g i ≤ 1 := by
+  by_cases hg : Multipliable g
+  · apply hg.hasProd.le_one_nonneg g h h0
+  · rw [tprod_eq_one_of_not_multipliable hg]
+
+
+lemma tendsto_prod_of_dominated_convergence {α β G : Type*} {𝓕 : Filter ℍ}
+    {f : ℕ → ℍ → ℝ} {g : ℕ → ℝ}
+    (hab : ∀ k : ℕ, Tendsto (f k ·)  𝓕 (𝓝 (g k)))
+    (h_bound : TendstoLocallyUniformly (fun n ↦ ∏ i ∈ Finset.range n, fun x ↦ f i x)
+    (fun x : ℍ ↦ ∏' (i : ℕ), f i x) atTop) :
+    Tendsto (∏' k, f k ·) 𝓕 (𝓝 (∏' k, g k)) := by
+    --have := TendstoLocallyUniformly.tendsto_comp (F := fun n ↦ ∏ i ∈ Finset.range n, fun x ↦ f x i) (f := (fun x : ℍ ↦ ∏' (i : ℕ), f x i)) (g := g)
+    --have h2 := h_bound.comp
+    rw [Metric.tendsto_nhds] at *
+    rw [Metric.tendstoLocallyUniformly_iff] at *
+    conv at hab =>
+      enter [2]
+      rw [Metric.tendsto_nhds]
+    simp at *
+
+    sorry
+
+
 
 lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
     (Discriminant_SIF ∣[(12 : ℤ)] γ) := by
@@ -3370,6 +3535,35 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
   rw [this]
   simp [Discriminant_SIF]
   unfold Δ
+  /- apply tendstozero_mul_bounded2 (r := 1)
+  · exact Real.zero_lt_one
+  · sorry
+  · have ht : ∀ k : ℕ, Tendsto (fun x : ℍ ↦ ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) ^ 24)) atImInfty (𝓝 1) := by
+      nth_rw 3 [show (1 : ℂ) =  1 - 0 by ring]
+      intro k
+
+      sorry
+
+    sorry
+  · sorry
+
+ -/
+
+/-   apply tendstozero_mul_bounded (r := 1)
+  sorry
+  intro z
+  rw [norm_tprod]
+
+  apply  one_le_tprod_nonneg
+  intro i
+  rw [norm_pow]
+  rw [pow_le_one_iff_of_nonneg]
+
+
+
+
+  sorry -/
+
   rw [show (0 : ℂ) =  0 * 1 by ring]
   apply Tendsto.mul
   · rw [tendsto_zero_iff_norm_tendsto_zero]
@@ -3405,14 +3599,25 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
     sorry
   ·
     have := fun k => (extracted_7u k).norm
+    have B := log_exp_le UpperHalfPlane.I
+    rw [Filter.eventually_iff_exists_mem] at *
 
+    use { a | 1 ≤ a.im}
+    refine ⟨?_, ?_⟩
+    · rw [atImInfty]
+      simp
+      sorry
+    · intro y hy k
+
+      sorry
+/-
     have Hk := fun k => Filter.Tendsto.isBoundedUnder_le (this k)
     simp at Hk
     rw [Filter.eventually_iff_exists_mem ]
     simp_rw [IsBoundedUnder, IsBounded] at Hk
     simp at hK1
+ -/
 
-    sorry
   sorry
   intro x
   simp
