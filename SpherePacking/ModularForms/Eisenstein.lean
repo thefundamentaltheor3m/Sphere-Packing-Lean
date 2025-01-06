@@ -3481,7 +3481,7 @@ lemma tendstozero_mul_bounded2 (f g : ℍ → ℂ) (r : ℝ) (hr : 0 < r) (hf : 
 
 
 theorem extracted_7u (k : ℕ) :
-  Tendsto (fun x : ℍ ↦ Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) ^ 24)) atImInfty (𝓝 0) := sorry
+  Tendsto (fun x : ℍ ↦ Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)))) atImInfty (𝓝 0) := sorry
 
 variable  {a a₁ a₂ : ℝ}
 
@@ -3507,6 +3507,12 @@ theorem one_le_tprod_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i
   · apply hg.hasProd.le_one_nonneg g h h0
   · rw [tprod_eq_one_of_not_multipliable hg]
 
+lemma tprod_eventually_bounded (g : ℕ → ℝ) (h : ∀ᶠ i in atTop, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i) :
+  ∃ C : ℝ, ∏' i, g i ≤ C := by
+  --have := tprod_le_of_prod_range_le (α := ℝ)
+
+  sorry
+
 
 lemma tendsto_prod_of_dominated_convergence {α β G : Type*} {𝓕 : Filter ℍ}
     {f : ℕ → ℍ → ℝ} {g : ℕ → ℝ}
@@ -3526,6 +3532,46 @@ lemma tendsto_prod_of_dominated_convergence {α β G : Type*} {𝓕 : Filter ℍ
     sorry
 
 
+
+theorem extracted_rre7 :
+  Tendsto (fun x : ℍ ↦ ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x)) ^ 24) atImInfty (𝓝 1) := by
+  have ht : ∀ k : ℕ, Tendsto (fun x : ℍ ↦ ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) ^ 24)) atImInfty (𝓝 1) := by
+    sorry
+  have hmultipliable : ∀ x : ℍ, Multipliable (fun k : ℕ => (1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * x)) ^ 24) := by
+    sorry
+  have hbound : TendstoLocallyUniformly (fun n ↦ ∏ i ∈ Finset.range n, fun x : ℍ ↦ (1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x)) ^ 24)
+      (fun x : ℍ ↦ ∏' (i : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x)) ^ 24) atTop := by
+    sorry
+  rw [Metric.tendsto_nhds] at *
+  rw [Metric.tendstoLocallyUniformly_iff] at *
+  have := hbound 1 (by sorry)
+  have hc : Continuous (fun x : ℍ ↦ ∏' (i : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x)) ^ 24) := by
+    sorry
+  have hc2 := hc.tendsto
+
+  sorry
+
+/- lemma arg_pow_of_le_one (z : ℂ) (n : ℕ) (hz : ‖z‖ < 1) : arg ((1 + z) ^ n) = n * arg (1 + z) := by
+  induction' n with n hn
+  simp
+
+  sorry -/
+
+lemma I_in_atImInfty : { z : ℍ | 1 ≤ z.im} ∈ atImInfty := by
+  sorry
+
+lemma atImInfy_pnat_mono (n : ℕ+) (S : Set ℍ) (hS : S ∈ atImInfty) (x : ℍ) (hx : x ∈ S) : n • x ∈ S :=  by
+
+
+  rw [atImInfty_mem] at hS
+
+  obtain ⟨a, ha⟩ := hS
+  apply ha
+  have := UpperHalfPlane.atImInfty_basis
+
+
+
+  sorry
 
 lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
     (Discriminant_SIF ∣[(12 : ℤ)] γ) := by
@@ -3588,7 +3634,7 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
   exact Complex.exp_zero
   have := tendsto_tsum_of_dominated_convergence (𝓕 := atImInfty) (g := fun (x : ℕ) => (0 : ℂ))
       (f := (fun x : ℍ ↦ fun (n : ℕ) => Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * (x : ℂ))) ^ 24)))
-      (bound := fun k => Complex.abs (Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * Complex.I)) ^ 24)))
+      (bound := fun k => Complex.abs (24 * cexp (2 * ↑π * Complex.I * (↑k + 1) * Complex.I)))
   simp at this
   apply this
   ·
@@ -3598,18 +3644,28 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
 
     sorry
   ·
-    have := fun k => (extracted_7u k).norm
-    have B := log_exp_le UpperHalfPlane.I
-    rw [Filter.eventually_iff_exists_mem] at *
+    have := fun k => (extracted_7u k)
+    have h0 := this 0
+    have h1 := clog_pow2 24 _ h0
+    simp at h1
 
-    use { a | 1 ≤ a.im}
-    refine ⟨?_, ?_⟩
-    · rw [atImInfty]
-      simp
-      sorry
-    · intro y hy k
 
-      sorry
+
+    rw [Filter.eventually_iff_exists_mem ] at *
+    obtain ⟨a, ha0, ha⟩ := h1
+    let b := {z : ℍ | 1 ≤ z.im}
+    use min a b
+    refine ⟨by  simp [ha0, I_in_atImInfty]; sorry, ?_⟩
+    intro b hb k
+    let K : ℕ+ := ⟨k+1, sorry⟩
+    have hbb : K • b ∈ a := by sorry
+    have haa := ha (K • b) hbb
+    simp [K, natPosSMul_apply] at haa
+
+
+
+
+    sorry
 /-
     have Hk := fun k => Filter.Tendsto.isBoundedUnder_le (this k)
     simp at Hk
