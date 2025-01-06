@@ -3481,7 +3481,7 @@ lemma tendstozero_mul_bounded2 (f g : ℍ → ℂ) (r : ℝ) (hr : 0 < r) (hf : 
 
 
 theorem extracted_7u (k : ℕ) :
-  Tendsto (fun x : ℍ ↦ Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)))) atImInfty (𝓝 0) := sorry
+  Tendsto (fun x : ℍ ↦ -cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) atImInfty (𝓝 0) := sorry
 
 variable  {a a₁ a₂ : ℝ}
 
@@ -3557,21 +3557,35 @@ theorem extracted_rre7 :
 
   sorry -/
 
-lemma I_in_atImInfty : { z : ℍ | 1 ≤ z.im} ∈ atImInfty := by
+lemma I_in_atImInfty (A: ℝ) : { z : ℍ | A ≤ z.im} ∈ atImInfty := by
   sorry
 
-lemma atImInfy_pnat_mono (n : ℕ+) (S : Set ℍ) (hS : S ∈ atImInfty) (x : ℍ) (hx : x ∈ S) : n • x ∈ S :=  by
-
-
+lemma atImInfy_pnat_mono (n : ℕ+) (S : Set ℍ) (hS : S ∈ atImInfty) : ∃ A : ℝ, S ∩ {z | 1 ≤ z.im} =
+  {z | A ≤ z.im} := by
   rw [atImInfty_mem] at hS
+  obtain ⟨A, hA⟩ := hS
+  by_cases h : A < 1
+  · use 1
+    ext x
+    simp
+    intro hx
+    apply hA
+    apply le_trans h.le hx
+  · use A
+    simp at h
+    ext x
+    simp
+    constructor
+    intro h0
 
-  obtain ⟨a, ha⟩ := hS
-  apply ha
-  have := UpperHalfPlane.atImInfty_basis
+    sorry
+    sorry
 
-
-
-  sorry
+lemma cexp_two_pi_I_im_antimono (a b : ℍ) (h : a.im ≤ b.im) : Complex.abs (cexp (2 * ↑π * Complex.I * b))
+   ≤ Complex.abs (cexp (2 * ↑π * Complex.I * a)) := by
+  simp_rw [Complex.abs_exp]
+  simp
+  gcongr
 
 lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
     (Discriminant_SIF ∣[(12 : ℤ)] γ) := by
@@ -3634,7 +3648,7 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
   exact Complex.exp_zero
   have := tendsto_tsum_of_dominated_convergence (𝓕 := atImInfty) (g := fun (x : ℕ) => (0 : ℂ))
       (f := (fun x : ℍ ↦ fun (n : ℕ) => Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * (x : ℂ))) ^ 24)))
-      (bound := fun k => Complex.abs (24 * cexp (2 * ↑π * Complex.I * (↑k + 1) * Complex.I)))
+      (bound := fun k => Complex.abs (36 * cexp (2 * ↑π * Complex.I * (↑k + 1) * Complex.I)))
   simp at this
   apply this
   ·
@@ -3648,20 +3662,39 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
     have h0 := this 0
     have h1 := clog_pow2 24 _ h0
     simp at h1
+    rw [Metric.tendsto_nhds] at h0
+    have h00 := h0 (1/2) (one_half_pos)
+    simp at h00
 
 
 
     rw [Filter.eventually_iff_exists_mem ] at *
     obtain ⟨a, ha0, ha⟩ := h1
-    let b := {z : ℍ | 1 ≤ z.im}
-    use min a b
-    refine ⟨by  simp [ha0, I_in_atImInfty]; sorry, ?_⟩
+    obtain ⟨a2, ha2, ha3⟩ := h00
+    have ha00 := ha0
+    have ha002 := ha2
+    rw [atImInfty_mem] at ha0 ha2
+    obtain ⟨A, hA⟩ := ha0
+    obtain ⟨A2, hA2⟩ := ha2
+    let S := {z : ℍ | max A (max A2 1) ≤ z.im}
+    use min a S
+    refine ⟨by  simp [ha00, I_in_atImInfty]; sorry, ?_⟩
     intro b hb k
     let K : ℕ+ := ⟨k+1, sorry⟩
-    have hbb : K • b ∈ a := by sorry
-    have haa := ha (K • b) hbb
-    simp [K, natPosSMul_apply] at haa
+    have hbb : K • b ∈ min a S := by
+      simp
+      have hb2 := hb.2
+      simp [S] at hb2
 
+      sorry
+    simp at hbb
+    have haa := ha (K • b) hbb.1
+    simp [K, natPosSMul_apply] at haa
+    have := Complex.norm_log_one_add_half_le_self (z := -cexp (2 * ↑π * Complex.I * (↑k + 1) * b))
+    rw [sub_eq_add_neg]
+    simp_rw [← mul_assoc] at haa
+    rw [haa]
+    simp
 
 
 
