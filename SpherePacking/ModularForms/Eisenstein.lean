@@ -3581,8 +3581,8 @@ lemma atImInfy_pnat_mono (n : ℕ+) (S : Set ℍ) (hS : S ∈ atImInfty) : ∃ A
     sorry
     sorry
 
-lemma cexp_two_pi_I_im_antimono (a b : ℍ) (h : a.im ≤ b.im) : Complex.abs (cexp (2 * ↑π * Complex.I * b))
-   ≤ Complex.abs (cexp (2 * ↑π * Complex.I * a)) := by
+lemma cexp_two_pi_I_im_antimono (a b : ℍ) (h : a.im ≤ b.im) (n : ℕ) : Complex.abs (cexp (2 * ↑π * Complex.I * n * b))
+   ≤ Complex.abs (cexp (2 * ↑π * Complex.I *n * a)) := by
   simp_rw [Complex.abs_exp]
   simp
   gcongr
@@ -3648,7 +3648,7 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
   exact Complex.exp_zero
   have := tendsto_tsum_of_dominated_convergence (𝓕 := atImInfty) (g := fun (x : ℕ) => (0 : ℂ))
       (f := (fun x : ℍ ↦ fun (n : ℕ) => Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * (x : ℂ))) ^ 24)))
-      (bound := fun k => Complex.abs (36 * cexp (2 * ↑π * Complex.I * (↑k + 1) * Complex.I)))
+      (bound := fun k => Complex.abs (24 *((3/2)* cexp (2 * ↑π * Complex.I * (↑k + 1) * Complex.I))))
   simp at this
   apply this
   ·
@@ -3677,24 +3677,29 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
     obtain ⟨A, hA⟩ := ha0
     obtain ⟨A2, hA2⟩ := ha2
     let S := {z : ℍ | max A (max A2 1) ≤ z.im}
-    use min a S
+    let T := min a a2
+    use min T S
     refine ⟨by  simp [ha00, I_in_atImInfty]; sorry, ?_⟩
     intro b hb k
     let K : ℕ+ := ⟨k+1, sorry⟩
-    have hbb : K • b ∈ min a S := by
+    have hbb : K • b ∈ min T S := by
       simp
       have hb2 := hb.2
       simp [S] at hb2
 
       sorry
     simp at hbb
-    have haa := ha (K • b) hbb.1
+    have haa := ha (K • b) (by sorry)
     simp [K, natPosSMul_apply] at haa
     have := Complex.norm_log_one_add_half_le_self (z := -cexp (2 * ↑π * Complex.I * (↑k + 1) * b))
     rw [sub_eq_add_neg]
     simp_rw [← mul_assoc] at haa
     rw [haa]
+    simp at *
+    apply le_trans (this ?_)
     simp
+    have hr := cexp_two_pi_I_im_antimono UpperHalfPlane.I b (n := k + 1) ?_
+    simpa using hr
 
 
 
