@@ -3516,6 +3516,14 @@ lemma tendsto_prod_of_dominated_convergence {α β G : Type*} {𝓕 : Filter ℍ
     Tendsto (∏' k, f k ·) 𝓕 (𝓝 (∏' k, g k)) := by
     --have := TendstoLocallyUniformly.tendsto_comp (F := fun n ↦ ∏ i ∈ Finset.range n, fun x ↦ f x i) (f := (fun x : ℍ ↦ ∏' (i : ℕ), f x i)) (g := g)
     --have h2 := h_bound.comp
+    have hh : Multipliable f := by sorry
+    have h2 := hh.hasProd
+    rw [hh.hasProd_iff_tendsto_nat] at h2
+    have ht : Tendsto (fun x => fun n ↦ ∏ i ∈ Finset.range n, f i x) 𝓕 (𝓝 ((fun n ↦ ∏ i ∈ Finset.range n, g n))) := by sorry
+    have hg : Multipliable g := by sorry
+    have h3 := hg.hasProd
+    rw [hg.hasProd_iff_tendsto_nat] at h3
+
     rw [Metric.tendsto_nhds] at *
     rw [Metric.tendstoLocallyUniformly_iff] at *
     conv at hab =>
