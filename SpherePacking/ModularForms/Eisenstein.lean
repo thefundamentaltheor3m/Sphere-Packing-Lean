@@ -49,11 +49,8 @@ lemma δ_eq2 : δ 0 (-1) = 2 := by simp [δ]
 lemma δ_neq (a b : ℤ) (h : a ≠ 0) : δ a b = 0 := by
   simp [δ, h]
 
-
 instance natPosSMul : SMul ℕ+ ℍ where
   smul x z := UpperHalfPlane.mk (x * z) <| by simp; apply z.2
-
-
 
 theorem natPosSMul_apply (c : ℕ+) (z : ℍ) : ((c  • z : ℍ) : ℂ) = (c : ℂ) * (z : ℂ) := by rfl
 
@@ -543,7 +540,7 @@ theorem G2_c_tendsto (z : ℍ) :
     atTop (𝓝 (-8 * ↑π ^ 2 * ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (2 * ↑π * Complex.I * ↑↑n * ↑z))) := by
     rw [← t9]
     have hf : Summable fun m : ℕ => ( 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
-        ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * (m + 1) * z * n)) := by
+        ∑' n : ℕ+, n ^ ((2 - 1)) * Complex.exp (2 * ↑π * Complex.I * (m + 1) * z * n)) := by
         conv =>
           enter [1]
           ext m
@@ -1492,6 +1489,23 @@ def swap_equiv : Equiv (Fin 2 → ℤ) (Fin 2 → ℤ) := Equiv.mk swap swap
   simp at this
   apply this -/
 
+
+lemma exp_aux (z : ℍ) (n : ℕ) : cexp (2 * ↑π * Complex.I * n * ↑z) =
+    cexp (2 * ↑π * Complex.I * ↑z) ^ n := by
+  rw [← Complex.exp_nat_mul]
+  congr 1
+  ring
+
+theorem summable_exp_pow (z : ℍ) : Summable fun i : ℕ ↦
+    Complex.abs (cexp (2 * ↑π * Complex.I * (↑i + 1) * z)) := by
+  conv =>
+    enter [1]
+    ext i
+    rw [show ((i : ℂ) + 1) = ((i + 1) : ℕ) by simp, exp_aux, abs_pow]
+  rw [summable_nat_add_iff 1 ]
+  simp only [summable_geometric_iff_norm_lt_one, Real.norm_eq_abs, Complex.abs_abs]
+  apply exp_upperHalfPlane_lt_one
+
 lemma G2_alt_indexing2_δ (z : ℍ) : ∑' (m : Fin 2 → ℤ),
     (1 / (((m 0 : ℂ) * z + m 1)^2 * (m 0 * z + m 1 + 1)) + δ (m 0) (m 1))  =
     ∑' n : ℤ, ∑' m : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m n) := by
@@ -2048,22 +2062,6 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
         (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
         ∑' n : ℕ+, sigma (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by sorry
 
-/--This we should get from the modular forms repo stuff. Will port these things soon. -/
-lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
-    1 - 24 * ∑' (n : ℕ+),
-    ↑n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)) := by
-  rw [E₂]
-  simp
-  rw [G2_q_exp]
-  rw [mul_sub]
-  congr 1
-
-  sorry
-  rw [← mul_assoc]
-  congr 1
-
-  sorry
-  sorry
 
 def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := fun z => (2 * π * Complex.I * γ 1 0) / (denom γ z)
 
@@ -2194,16 +2192,33 @@ lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂
 
 /-Should be easy from the above.-/
 lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
-  E₂ z + 6 / ( π * Complex.I * z) := sorry
+  E₂ z + 6 / ( π * Complex.I * z) := by
+  rw [E₂]
+  have := G₂_transform (ModularGroup.S)
+  simp only [SL_slash, one_div, mul_inv_rev, SlashAction.smul_slash_of_tower, Pi.smul_apply,
+    smul_eq_mul] at *
+  rw [this]
+  simp only [Pi.sub_apply]
+  rw [D2_S]
+  ring_nf
+  rw [sub_eq_add_neg]
+  congr
+  rw [riemannZeta_two]
+  have hpi : (π : ℂ) ≠ 0 := by simp; exact Real.pi_ne_zero --make this a lemma
+  ring_nf
+  simp only [inv_pow, inv_I, mul_neg, neg_mul, neg_inj, mul_eq_mul_right_iff, OfNat.ofNat_ne_zero,
+    or_false]
+  rw [← inv_pow, pow_two, ← mul_assoc, mul_inv_cancel₀ hpi, one_mul]
+  ring
 
 
 /-this is being PRd-/
 lemma Complex.summable_nat_multipliable_one_add (f : ℕ → ℂ) (hf : Summable f)
     (hff : ∀ n : ℕ, 1 + f n ≠ 0) : Multipliable (fun n : ℕ => 1 + f n) := by sorry
 
-lemma MultipliableDiscriminantProductExpansion (z : ℍ) :
+/- lemma MultipliableDiscriminantProductExpansion (z : ℍ) :
   Multipliable (fun  (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z)) ^ 24) := by
-  sorry
+  sorry --dont seem to need this -/
 
 theorem term_ne_zero (z : ℍ) (n : ℕ) : 1 -cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑z) ≠ 0 := by
   rw [@sub_ne_zero]
@@ -2220,7 +2235,8 @@ lemma MultipliableEtaProductExpansion (z : ℍ) :
   apply this.congr
   intro n
   ring
-  sorry
+  rw [←summable_norm_iff]
+  simpa using summable_exp_pow z
   intro n
   simp
   apply term_ne_zero
@@ -2268,8 +2284,8 @@ theorem le_hasProd_of_le_prod_ev_range [ClosedIciTopology α] [T2Space α] (f : 
 lemma Complex.log_of_summable {f : ℕ → ℂ} (hf : Summable f) :
     Summable (fun n : ℕ => Complex.log (1 + f n)) := by sorry
 
-lemma tprod_ne_zero (x : ℂ) (f : ℕ → ℂ → ℂ) (hf : ∀ i x, 1 + f i x ≠ 0)
-  (hu : ∀ x : ℂ, Summable fun n => f n x) : (∏' i : ℕ, (1 + f i) x) ≠ 0 := by
+lemma tprod_ne_zero (x : ℍ) (f : ℕ → ℍ → ℂ) (hf : ∀ i x, 1 + f i x ≠ 0)
+  (hu : ∀ x : ℍ, Summable fun n => f n x) : (∏' i : ℕ, (1 + f i) x) ≠ 0 := by
   have := Complex.cexp_tsum_eq_tprod (fun n => fun x => 1 + f n x) ?_ ?_
   have hxx := congrFun this x
   simp
@@ -2284,7 +2300,7 @@ lemma tprod_ne_zero (x : ℂ) (f : ℕ → ℂ → ℂ) (hf : ∀ i x, 1 + f i x
   apply hu x
 
 
-theorem logDeriv_tprod_eq_tsumb  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ → ℂ → ℂ)
+/- theorem logDeriv_tprod_eq_tsumb  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ → ℂ → ℂ)
     (hf : ∀ i, f i x ≠ 0)
     (hd : ∀ i : ℕ, DifferentiableOn ℂ (f i) s) (hm : Summable fun i ↦ logDeriv (f i) ↑x)
     (htend :TendstoLocallyUniformlyOn (fun n ↦ ∏ i ∈ Finset.range n, f i)
@@ -2301,11 +2317,12 @@ theorem logDeriv_tprod_eq_tsumb  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ 
     ext n
 
 
-    all_goals{sorry}
+    all_goals{sorry} -/
 
-theorem logDeriv_tprod_eq_tsum  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ → ℂ → ℂ) (hf : ∀ i, f i x ≠ 0)
+theorem logDeriv_tprod_eq_tsum  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ → ℂ → ℂ)
+    (hf : ∀ i, f i x ≠ 0)
     (hd : ∀ i : ℕ, DifferentiableOn ℂ (f i) s) (hm : Summable fun i ↦ logDeriv (f i) ↑x)
-    (htend :TendstoLocallyUniformlyOn (fun n ↦ ∏ i ∈ Finset.range n, f i)
+    (htend : TendstoLocallyUniformlyOn (fun n ↦ ∏ i ∈ Finset.range n, f i)
     (fun x ↦ ∏' (i : ℕ), f i x) atTop s) (hnez : ∏' (i : ℕ), f i ↑x ≠ 0) :
     logDeriv (∏' i : ℕ, f i ·) x = ∑' i : ℕ, logDeriv (f i) x := by
     have h2 := Summable.hasSum hm
@@ -2315,7 +2332,7 @@ theorem logDeriv_tprod_eq_tsum  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ �
     rw [Summable.hasSum_iff_tendsto_nat hm]
     let g := (∏' i : ℕ, f i ·)
     have := logDeriv_tendsto (fun n ↦ ∏ i ∈ Finset.range n, (f i)) g (s := s) hs (p := atTop)
-    simp [g] at this
+    simp only [eventually_atTop, ge_iff_le, ne_eq, forall_exists_index, Subtype.forall, g] at this
     have HT := this x x.2 ?_ ?_ ?_ ?_
     conv =>
       enter [1]
@@ -2438,10 +2455,10 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
     (fun n=> ‖cexp (2 * ↑π * Complex.I * z)^(n + 1)‖) ?_ ?_ ?_ ?_
   simp at *
   convert this
-  simp
+  simp only [Finset.prod_apply]
   · simp_rw [norm_pow]
     rw [summable_nat_add_iff 1]
-    simp
+    simp only [norm_eq_abs, summable_geometric_iff_norm_lt_one, Real.norm_eq_abs, Complex.abs_abs]
     apply  exp_upperHalfPlane_lt_one ⟨z, by simpa using (hK hz)⟩
   · intro n
     intro x hx
@@ -2453,24 +2470,23 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
     simp_rw [norm_pow]
     apply pow_le_pow_left₀ _  HB2
     simp only [norm_eq_abs, apply_nonneg]
-  · intro x hx
-    sorry
+  · intro x k
+    simpa using term_ne_zero ⟨x.1, by simpa using (hK x.2)⟩ k
   · intro n
     fun_prop
-  ·
-    sorry
+  · apply (isOpen_lt continuous_const Complex.continuous_im)
 
 theorem eta_tprod_ne_zero (z : ℍ) :
   ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑z)) ≠ 0 := by
   simp_rw [sub_eq_add_neg]
   have := tprod_ne_zero z (fun n x => -cexp (2 * ↑π * Complex.I * (n + 1) * x)) ?_ ?_
-  simp at *
+  simp only [Pi.add_apply, Pi.one_apply, ne_eq] at *
   apply this
   intro i x
-  simp
-
-  sorry
-  sorry
+  simpa using (term_ne_zero x i)
+  intro x
+  rw [←summable_norm_iff]
+  simpa using summable_exp_pow x
 
 lemma eta_nonzero_on_UpperHalfPlane (z : ℍ) : η z ≠ 0 := by
   rw [η]
@@ -2478,17 +2494,12 @@ lemma eta_nonzero_on_UpperHalfPlane (z : ℍ) : η z ≠ 0 := by
   simp at *
   apply this
 
-lemma exp_aux (z : ℍ) (n : ℕ) : cexp (2 * ↑π * Complex.I * n * ↑z) =
-    cexp (2 * ↑π * Complex.I * ↑z) ^ n := by
-  rw [← Complex.exp_nat_mul]
-  congr 1
-  ring
 
 
 lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ,
     (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) / (1 - cexp (2 * π *  Complex.I * (n + 1) * z)) =
     ∑' n : ℕ, sigma 1 (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) := by
-  have :=  fun m : ℕ => tsum_choose_mul_geometric_of_norm_lt_one  (r := (cexp (2 * ↑π * Complex.I * ↑z))^(m+1)) 0 (by sorry)
+  have :=  fun m : ℕ => tsum_choose_mul_geometric_of_norm_lt_one  (r := (cexp (2 * ↑π * Complex.I * ↑z))^(m+1)) 0 (by rw [← exp_aux]; simpa using exp_upperHalfPlane_lt_one_nat z m)
   simp only [add_zero, Nat.choose_zero_right, Nat.cast_one, one_mul, zero_add, pow_one,
     one_div] at this
   conv =>
@@ -2535,8 +2546,42 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ,
   rw [← Complex.exp_nat_mul, ← Complex.exp_nat_mul]
   congr 1
   ring
-  · sorry --these sorrys are done in the mod forms repo
-  · sorry
+  · have := a4 2 z
+    apply this.congr
+    intro b
+    simp only [uncurry, Nat.add_one_sub_one, pow_one, UpperHalfPlane.coe, mul_eq_mul_left_iff,
+      Nat.cast_eq_zero, PNat.ne_zero, or_false]
+    ring_nf
+  · intro e
+    have := a1  2 e z
+    simpa using this
+
+/--This we should get from the modular forms repo stuff. Will port these things soon. -/
+lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
+    1 - 24 * ∑' (n : ℕ+),
+    ↑n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)) := by
+  rw [E₂]
+  simp
+  rw [G2_q_exp]
+  rw [mul_sub]
+  congr 1
+  · rw [riemannZeta_two]
+    have hpi : (π : ℂ) ≠ 0 := by simp; exact Real.pi_ne_zero
+    field_simp
+    ring
+  · rw [← mul_assoc]
+    congr 1
+    · rw [riemannZeta_two]
+      have hpi : (π : ℂ) ≠ 0 := by simp; exact Real.pi_ne_zero
+      norm_cast
+      field_simp
+      ring
+    · have hl := tsum_pnat_eq_tsum_succ3 (fun n => sigma 1 n * cexp (2 * π * Complex.I * n * z))
+      have hr := tsum_pnat_eq_tsum_succ3 (fun n => n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)))
+      rw [hl, hr]
+      have ht := tsum_eq_tsum_sigma z
+      simp at *
+      rw [ht]
 
 lemma tsum_log_deriv_eqn (z : ℍ) :
   ∑' (i : ℕ), logDeriv (fun x ↦ 1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x)) ↑z  =  ∑' n : ℕ,
@@ -3250,7 +3295,6 @@ def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
 
 open Manifold in
 
-
 instance : atImInfty.NeBot := by
   rw [atImInfty, Filter.comap_neBot_iff ]
   simp only [mem_atTop_sets, ge_iff_le, forall_exists_index]
@@ -3270,7 +3314,6 @@ instance : atImInfty.NeBot := by
   apply le_trans this
   linarith
 
-
 lemma arg_pow_aux (n : ℕ) (x : ℂ) (hx : x ≠ 0) (hna : |arg x| < π / n) :
   Complex.arg (x ^ n) = n * Complex.arg x := by
   induction' n with n hn2
@@ -3284,7 +3327,7 @@ lemma arg_pow_aux (n : ℕ) (x : ℂ) (hx : x ≠ 0) (hna : |arg x| < π / n) :
     exact (lt_add_one n)
     apply pow_ne_zero n hx
     exact hx
-    simp
+    simp only [mem_Ioc]
     rw [hn2]
     rw [abs_lt] at hna
     constructor
@@ -3296,8 +3339,7 @@ lemma arg_pow_aux (n : ℕ) (x : ℂ) (hx : x ≠ 0) (hna : |arg x| < π / n) :
       · norm_cast
         omega
     · have hnal := hna.2
-      rw [lt_div_iff₀'  ] at hnal
-      rw [@Nat.cast_add] at hnal
+      rw [lt_div_iff₀', Nat.cast_add] at hnal
       · rw [add_mul] at hnal
         simpa only [ge_iff_le, Nat.cast_one, one_mul] using hnal.le
       · norm_cast
@@ -3305,7 +3347,6 @@ lemma arg_pow_aux (n : ℕ) (x : ℂ) (hx : x ≠ 0) (hna : |arg x| < π / n) :
     apply lt_trans hna
     gcongr
     exact (lt_add_one n)
-
 
 lemma one_add_abs_half_ne_zero {x : ℂ} (hb : Complex.abs x < 1 / 2) : 1 + x ≠ 0 := by
   by_contra h
@@ -3345,7 +3386,6 @@ lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀�
     simp only [ne_eq]
     apply one_add_abs_half_ne_zero ha2
   simp only [one_mem_slitPlane]
-
 
 lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) : ∀ᶠ m : ℍ in atImInfty,
     Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
@@ -3415,7 +3455,8 @@ lemma clog_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) 
   refine ⟨ha0, ?_⟩
   intro b hb
   have h2 := ha hb
-  simp at *
+  simp only [mem_atTop_sets, ge_iff_le, mem_preimage, mem_setOf_eq, AbsoluteValue.map_pow, log_pow,
+    ofReal_mul, ofReal_natCast] at *
   rw [h2]
   simp only [AbsoluteValue.map_pow, log_pow, ofReal_mul, ofReal_natCast]
   ring
@@ -3428,7 +3469,7 @@ lemma log_summable_pow (f : ℕ → ℂ)  (hf : Summable f)  (m : ℕ) :
   apply Summable.of_norm_bounded_eventually_nat _ this
   have hft := hf.tendsto_atTop_zero
   have H := clog_pow m f hft
-  simp at *
+  simp only [norm_mul, Complex.norm_natCast, Complex.norm_eq_abs, eventually_atTop, ge_iff_le] at *
   obtain ⟨a, ha⟩ := H
   use a
   intro b hb
@@ -3486,15 +3527,11 @@ lemma tendstozero_mul_bounded2 (f g : ℍ → ℂ) (r : ℝ) (hr : 0 < r) (hf : 
   convert this
   field_simp
 
-
-
-
-
-theorem extracted_7u (k : ℕ) :
+theorem tendsto_neg_cexp_atImInfty (k : ℕ) :
   Tendsto (fun x : ℍ ↦ -cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) atImInfty (𝓝 0) := by
   have := Tendsto.neg (f :=  (fun x : ℍ ↦ cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)))
     (l := atImInfty) (y := 0)
-  simp at this
+  simp only [neg_zero] at this
   apply this
   refine tendsto_exp_nhds_zero_iff.mpr ?_
   simp
@@ -3523,7 +3560,7 @@ theorem log_one_neg_cexp_tendto_zero (k : ℕ) :
     nth_rw 3 [show (1 : ℂ) = 1 + 0 by ring]
     apply Tendsto.add
     simp
-    apply extracted_7u
+    apply tendsto_neg_cexp_atImInfty
 
 variable  {a a₁ a₂ : ℝ}
 
@@ -3655,35 +3692,8 @@ lemma cexp_two_pi_I_im_antimono (a b : ℍ) (h : a.im ≤ b.im) (n : ℕ) :
   simp
   gcongr
 
-theorem summable_exp_pow (z : ℍ) : Summable fun i : ℕ ↦
-    Complex.abs (cexp (2 * ↑π * Complex.I * (↑i + 1) * z)) := by
-  conv =>
-    enter [1]
-    ext i
-    rw [show ((i : ℂ) + 1) = ((i + 1) : ℕ) by simp, exp_aux, abs_pow]
-  rw [summable_nat_add_iff 1 ]
-  simp only [summable_geometric_iff_norm_lt_one, Real.norm_eq_abs, Complex.abs_abs]
-  apply exp_upperHalfPlane_lt_one
-
-lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
-    (Discriminant_SIF ∣[(12 : ℤ)] γ) := by
-  rw [IsZeroAtImInfty, ZeroAtFilter]
-  have := Discriminant_SIF.slash_action_eq' γ (CongruenceSubgroup.mem_Gamma_one γ)
-  simp at *
-  rw [this]
-  simp [Discriminant_SIF]
-  unfold Δ
-  rw [show (0 : ℂ) =  0 * 1 by ring]
-  apply Tendsto.mul
-  · rw [tendsto_zero_iff_norm_tendsto_zero]
-    simp only [Complex.norm_eq_abs, Complex.abs_exp, mul_re, re_ofNat, ofReal_re, im_ofNat,
-      ofReal_im, mul_zero, sub_zero, Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im,
-      mul_one, sub_self, coe_re, coe_im, zero_sub, tendsto_exp_comp_nhds_zero,
-      tendsto_neg_atBot_iff]
-    rw [Filter.tendsto_const_mul_atTop_iff_pos ]
-    exact two_pi_pos
-    rw [atImInfty]
-    exact tendsto_comap
+theorem Delta_boundedfactor :
+  Tendsto (fun x : ℍ ↦ ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x)) ^ 24) atImInfty (𝓝 1) := by
   have := Complex.cexp_tsum_eq_tprod (fun n : ℕ => fun x : ℍ =>
     (1 - (cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x))) ^ 24 ) ?_ ?_
   conv =>
@@ -3702,7 +3712,7 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
     apply Summable.mul_left
     simpa using (summable_exp_pow UpperHalfPlane.I)
   · apply log_one_neg_cexp_tendto_zero
-  · have := fun k => (extracted_7u k)
+  · have := fun k => (tendsto_neg_cexp_atImInfty k)
     have h0 := this 0
     have h1 := clog_pow2 24 _ h0
     simp only [CharP.cast_eq_zero, zero_add, mul_one, Nat.cast_ofNat] at h1
@@ -3753,6 +3763,27 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
     · rw [←summable_norm_iff]
       simpa using (summable_exp_pow x)
 
+lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
+    (Discriminant_SIF ∣[(12 : ℤ)] γ) := by
+  rw [IsZeroAtImInfty, ZeroAtFilter]
+  have := Discriminant_SIF.slash_action_eq' γ (CongruenceSubgroup.mem_Gamma_one γ)
+  simp at *
+  rw [this]
+  simp [Discriminant_SIF]
+  unfold Δ
+  rw [show (0 : ℂ) =  0 * 1 by ring]
+  apply Tendsto.mul
+  · rw [tendsto_zero_iff_norm_tendsto_zero]
+    simp only [Complex.norm_eq_abs, Complex.abs_exp, mul_re, re_ofNat, ofReal_re, im_ofNat,
+      ofReal_im, mul_zero, sub_zero, Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im,
+      mul_one, sub_self, coe_re, coe_im, zero_sub, tendsto_exp_comp_nhds_zero,
+      tendsto_neg_atBot_iff]
+    rw [Filter.tendsto_const_mul_atTop_iff_pos ]
+    exact two_pi_pos
+    rw [atImInfty]
+    exact tendsto_comap
+  · apply Delta_boundedfactor
+
 def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun := Discriminant_SIF
   slash_action_eq' := Discriminant_SIF.slash_action_eq'
@@ -3775,13 +3806,101 @@ def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
     exact this
   zero_at_infty' := fun A => Discriminant_zeroAtImInfty A
 
+lemma Delta_apply (z : ℍ) : Delta z = Δ z := by rfl
+
+lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ  => Real.exp (-2 * π * τ.im)) := by
+  rw [Asymptotics.IsTheta]
+  refine ⟨by simpa using CuspFormClass.exp_decay_atImInfty 1 Delta, ?_⟩
+  rw [Asymptotics.isBigO_iff']
+  have := Delta_boundedfactor.norm
+  simp only [Complex.norm_eq_abs, norm_one] at this
+  have h12 : (1 : ℝ) / 2 < 1 :=  one_half_lt_one
+  have hl := Filter.Tendsto.eventually_const_le h12 this
+  rw [Metric.tendsto_nhds] at *
+  use 2
+  refine ⟨by simp, ?_⟩
+  rw [Filter.eventually_iff_exists_mem] at *
+  obtain ⟨A1, hA1, hA2⟩ := hl
+  use A1
+  refine ⟨hA1, ?_⟩
+  intro z hz
+  rw [Delta_apply, Δ]
+  simp only [neg_mul, Real.norm_eq_abs, Real.abs_exp, norm_mul, Complex.norm_eq_abs]
+  have hA3 := hA2 z hz
+  conv =>
+    enter [2,2,1]
+    rw [Complex.abs_exp]
+  simp only [mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero, Complex.I_re,
+    mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, coe_re, coe_im, zero_sub]
+  have hm : 0 ≤ 2 * rexp (-(2 * π * z.im)) := by
+    positivity
+  have h4 := mul_le_mul_of_nonneg_left hA3 hm
+  conv at h4 =>
+    enter [1]
+    rw [mul_comm, ← mul_assoc]
+    simp
+  simp only [gt_iff_lt, one_div, Nat.ofNat_pos, mul_nonneg_iff_of_pos_left, ge_iff_le] at *
+  rw [← mul_assoc]
+  exact h4
+
+theorem extracted_7 (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (γ : SL(2, ℤ)) :
+  (⇑f / ⇑Delta) ∣[k - 12] γ = ⇑f / ⇑Delta := by
+
+  sorry
 
 def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (z : ℍ) :
   ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) where
-    toFun := f / Δ
-    slash_action_eq' := sorry
-    holo' := sorry --need to use the q-expansion to see that its still holo
-    bdd_at_infty' := sorry
+    toFun := f / Delta
+    slash_action_eq' := by
+
+      sorry
+    holo' := by
+      rw [mdifferentiable_iff]
+      simp only [SlashInvariantForm.coe_mk]
+      have : (⇑f / ⇑Delta) ∘ ↑ofComplex = (⇑f ∘ ↑ofComplex) / (Delta ∘ ↑ofComplex) := by rfl
+      rw [this]
+      apply DifferentiableOn.div
+      · simpa only [CuspForm.toSlashInvariantForm_coe] using
+        (UpperHalfPlane.mdifferentiable_iff.mp f.holo')
+      · simpa only [CuspForm.toSlashInvariantForm_coe] using
+        (UpperHalfPlane.mdifferentiable_iff.mp Delta.holo')
+      · intro x hx
+        have := Δ_ne_zero ⟨x, hx⟩
+        simp only [comp_apply, ne_eq]
+        rw [ofComplex_apply_of_im_pos hx]
+        apply this
+    bdd_at_infty' := by
+      intro A
+      have h1 := CuspFormClass.exp_decay_atImInfty 1 f
+      have h2 := Delta_isTheta_rexp.2
+      rw [IsBoundedAtImInfty, BoundedAtFilter] at *
+      rw [Asymptotics.isBigO_iff'] at h1 ⊢
+      rw [Asymptotics.isBigO_iff''] at h2
+      simp only [gt_iff_lt, Complex.norm_eq_abs, neg_mul, Nat.cast_one, div_one, Real.norm_eq_abs,
+        Real.abs_exp, SlashInvariantForm.coe_mk, SL_slash, Pi.one_apply, norm_one, mul_one] at *
+      obtain ⟨e1, he1, hf⟩ := h1
+      obtain ⟨e2, he2, hD⟩ := h2
+      use e1/e2
+      refine ⟨ by positivity, ?_⟩
+      rw [eventually_iff_exists_mem] at *
+      obtain ⟨A1, hA, hA2⟩ := hf
+      obtain ⟨B2, hB2, hB3⟩ := hD
+      use min A1 B2
+      refine ⟨by simp [hA, hB2], ?_⟩
+      intro z hz
+      have : ((⇑f / ⇑Delta) ∣[k - 12] ModularGroup.coe A) z = ((⇑f z / ⇑Delta z)) := by sorry
+      rw [this]
+      simp
+      have he1e2 : e1 / e2 = (e1 * rexp (-(2 * π * z.im))) / (e2 * rexp (-(2 * π * z.im))) := by
+        refine Eq.symm (mul_div_mul_right e1 e2  (Real.exp_ne_zero _))
+      rw [he1e2]
+      apply div_le_div₀
+      · positivity
+      · apply hA2
+        apply hz.1
+      · positivity
+      · apply hB3
+        apply hz.2
 
 
 /-this is done in the modformdims repo, soon to be in mathlib.-/
