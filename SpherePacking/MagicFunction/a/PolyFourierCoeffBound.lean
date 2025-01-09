@@ -9,6 +9,7 @@ M4R File
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ForMathlib.tprod
 import SpherePacking.ForMathlib.SpecificLimits
+import SpherePacking.ForMathlib.Divisors
 import Mathlib
 
 /-
@@ -329,6 +330,10 @@ end calc_steps
 
 section main_theorem
 
+/-
+This section contains the proof of the main result of this file.
+-/
+
 include f hf z hz c n₀ hcsum k hpoly in
 theorem DivDiscBoundOfPolyFourierCoeff : abs ((f z) / (Δ ⟨z, by linarith⟩)) ≤
   (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := calc
@@ -366,6 +371,42 @@ theorem DivDiscBoundOfPolyFourierCoeff : abs ((f z) / (Δ ⟨z, by linarith⟩))
 
 end main_theorem
 
+section sigma
+
+/-
+Recall that σₖ(n) = ∑ {d | n}, d ^ k. In this section, we prove that for all n,
+σₖ(n) = O(n ^ (k + 1)).
+-/
+
+open ArithmeticFunction
+
+#check σ
+
+theorem ArithmeticFunction.sigma_asymptotic (k : ℕ) :
+    (fun n ↦ (σ k n : ℝ)) =O[atTop] (fun n ↦ (n ^ (k + 1) : ℝ)) := by
+  rw [isBigO_iff]
+  use 1
+  simp
+  use 1
+  intro n hn
+  rw [sigma_apply]
+  norm_cast
+  calc ∑ d ∈ n.divisors, d ^ k
+  _ ≤ ∑ d ∈ n.divisors, n ^ k := by
+      apply Finset.sum_le_sum
+      intro d hd
+      refine pow_le_pow ?_ hn le_rfl
+      exact Nat.divisor_le hd
+  _ ≤ n * n ^ k := by
+      rw [Finset.sum_const, smul_eq_mul]
+      gcongr
+      exact Nat.card_divisors_le_self n
+  _ = n ^ (k + 1) := by ring
+
+end sigma
+
 section Corollaries
+
+
 
 end Corollaries
