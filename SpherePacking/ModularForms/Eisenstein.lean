@@ -33,6 +33,11 @@ def E (k : ℤ) (hk : 3 ≤ k) : ModularForm (CongruenceSubgroup.Gamma ↑1) k :
 def E₆ : ModularForm (CongruenceSubgroup.Gamma ↑1) 6 :=
   (1/2) • eisensteinSeries_MF (by norm_num) standardcongruencecondition
 
+lemma E4_apply (z : ℍ) : E₄ z = E 4 (by norm_num) z := rfl
+
+lemma E6_apply (z : ℍ) : E₆ z = E 6 (by norm_num) z := rfl
+
+
 def S0 : Set ℤ := {0}ᶜ
 
 def G₂' : ℍ → ℂ := fun z => ∑' (m : ℤ), (∑' (n : ℤ), 1 / (m * z + n) ^ 2) --hmm is this right?
@@ -2055,12 +2060,7 @@ def E₂ : ℍ → ℂ := (1 / (2 * riemannZeta 2)) •  G₂
 /-This is being PRd-/
 lemma SL2_gens : Subgroup.closure {ModularGroup.S, ModularGroup.T} = ⊤ := by sorry
 
-/-This result is already proven in the modular forms repo and being PRed (slowly) into mathlib, so
-we can use it freely here. -/
-lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) :
-    (E k hk) z = 1 +
-        (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
-        ∑' n : ℕ+, sigma (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by sorry
+
 
 
 def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := fun z => (2 * π * Complex.I * γ 1 0) / (denom γ z)
@@ -3843,17 +3843,35 @@ lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ  => Real.exp (-2 * π * 
   rw [← mul_assoc]
   exact h4
 
-theorem extracted_7 (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (γ : SL(2, ℤ)) :
+lemma CuspForm_apply (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (z : ℍ) :
+  f.toFun z = f z := by rfl
+
+theorem div_Delta_is_SIF (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (γ : SL(2, ℤ)) :
   (⇑f / ⇑Delta) ∣[k - 12] γ = ⇑f / ⇑Delta := by
+  ext z
+  rw [ModularForm.slash_action_eq'_iff (k -12) _ γ]
+  have h0 : (⇑f / ⇑Delta) z = (⇑f z / ⇑Delta z) := rfl
+  have h1 : (⇑f / ⇑Delta) (γ • z) = (⇑f (γ • z) / ⇑Delta (γ • z)) := rfl
+  have h2 := congrFun (f.slash_action_eq' γ (CongruenceSubgroup.mem_Gamma_one γ)) z
+  have h3 := congrFun (Delta.slash_action_eq' γ (CongruenceSubgroup.mem_Gamma_one γ)) z
+  rw [ModularForm.slash_action_eq'_iff, CuspForm_apply,  CuspForm_apply] at h2 h3
+  rw [h0, h1, h2, h3,  Delta_apply]
+  have hD := Δ_ne_zero z
+  have := pow_ne_zero  12 (denom_ne_zero γ z)
+  rw [ModularGroup.denom_apply] at this
+  ring_nf
+  nth_rw 2 [mul_comm]
+  rw [← inv_zpow, inv_zpow']
+  simp_rw [← mul_assoc]
+  rw [zpow_add₀ (by apply (denom_ne_zero γ z))]
+  ring
 
-  sorry
-
-def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (z : ℍ) :
+def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) :
   ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) where
     toFun := f / Delta
     slash_action_eq' := by
-
-      sorry
+      intro γ _
+      apply div_Delta_is_SIF
     holo' := by
       rw [mdifferentiable_iff]
       simp only [SlashInvariantForm.coe_mk]
@@ -3888,7 +3906,9 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
       use min A1 B2
       refine ⟨by simp [hA, hB2], ?_⟩
       intro z hz
-      have : ((⇑f / ⇑Delta) ∣[k - 12] ModularGroup.coe A) z = ((⇑f z / ⇑Delta z)) := by sorry
+      have : ((⇑f / ⇑Delta) ∣[k - 12] ModularGroup.coe A) z = ((⇑f z / ⇑Delta z)) := by
+        have := congrFun (div_Delta_is_SIF k f A) z
+        simpa only [SL_slash, Pi.div_apply] using this
       rw [this]
       simp
       have he1e2 : e1 / e2 = (e1 * rexp (-(2 * π * z.im))) / (e2 * rexp (-(2 * π * z.im))) := by
@@ -3902,19 +3922,81 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
       · apply hB3
         apply hz.2
 
+lemma CuspForm_div_Discriminant_apply (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (z : ℍ) :
+  (CuspForm_div_Discriminant k f) z = f z / Δ z := rfl
+
+theorem CuspForm_div_Discriminant_Add (k : ℤ) (x y : CuspForm (CongruenceSubgroup.Gamma 1) k) :
+  (fun f ↦ CuspForm_div_Discriminant k f) (x + y) =
+    (fun f ↦ CuspForm_div_Discriminant k f) x + (fun f ↦ CuspForm_div_Discriminant k f) y := by
+  ext z
+  simp only [CuspForm_div_Discriminant_apply, CuspForm.add_apply, ModularForm.add_apply]
+  ring
+
+
+def Modform_mul_Delta  (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) :
+ CuspForm (CongruenceSubgroup.Gamma 1) k where
+   toFun := f * Delta
+   slash_action_eq' := sorry
+   holo' := sorry
+   zero_at_infty' := sorry
 
 /-this is done in the modformdims repo, soon to be in mathlib.-/
 lemma weigth_zero_rank_eq_one : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 0) = 1 :=
   by sorry
 
-/-this is done in the modformdims repo, soon to be in mathlib.-/
+/-this is done in the modformdims repo, now in mathlib.-/
 lemma neg_weight_rank_zero (k : ℤ) (hk : k < 0) :
-    Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) k) = 0 := by sorry
+    Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) k) = 0 := by
+    exact ModularForm.levelOne_neg_weight_rank_zero hk
+
 
 def CuspForms_iso_Modforms (k : ℤ) : CuspForm (CongruenceSubgroup.Gamma 1) k ≃ₗ[ℂ]
-    ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) := sorry
+    ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) where
+      toFun f :=  CuspForm_div_Discriminant k f
+      map_add' a b := CuspForm_div_Discriminant_Add k a b
+      map_smul' := by
+        intro m a
+        ext z
+        simp only [CuspForm_div_Discriminant_apply, CuspForm.smul_apply, smul_eq_mul,
+          RingHom.id_apply, ModularForm.smul_apply]
+        ring
+      invFun f := sorry
+      left_inv := sorry
+      right_inv := sorry
 
-theorem DiscriminantProductFormula (z : UpperHalfPlane) : Δ z = ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 1728 := sorry
+/-This result is already proven in the modular forms repo and being PRed (slowly) into mathlib, so
+we can use it freely here. -/
+lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) :
+    (E k hk) z = 1 +
+        (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
+        ∑' n : ℕ+, sigma (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by sorry
+
+-- lemma E4_E6_q_exp :  ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 1728  =
+
+def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
+  toFun z :=  ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 1728
+  slash_action_eq' := sorry
+  holo' := sorry
+  zero_at_infty' := by
+    intro A
+
+    sorry
+
+
+lemma delta_eq_E4E6_const : ∃ (c : ℂ), c ≠ 0 ∧ ∀ z : ℍ, (c • Δ) z = ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 1728 := by sorry
+
+theorem DiscriminantProductFormula (z : UpperHalfPlane) : Δ z = ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 1728 := by
+  obtain ⟨c, hc, H⟩ := delta_eq_E4E6_const
+  have h := H z
+  suffices h2 : c  = 1
+  · rw [← h, h2]
+    simp
+  · have Qe4 := E_k_q_expansion 4 (by norm_num) (sorry) z
+    have Qe6 := E_k_q_expansion 6 (by norm_num) (sorry) z
+    rw [E4_apply, E6_apply] at h
+    zify at *
+    rw [Qe4, Qe6] at h
+    sorry
 --enough to check its a cuspform, since if it is, then divining by Δ gives a modular form of weight 0.
 
 lemma weight_two_empty (f : ModularForm (CongruenceSubgroup.Gamma 1) 2) : f = 0 := sorry
