@@ -34,12 +34,13 @@ comprehensive list of things to be done, including but not limited to the `sorry
 -/
 
 open Filter Complex Real BigOperators Asymptotics
+open scoped UpperHalfPlane
 
 private noncomputable def fouterm (coeff : ℤ → ℂ) (x : ℂ) (i : ℤ) : ℂ :=
   (coeff i) * cexp (π * I * i * x)
 
 variable (z : ℂ) (hz : 1 / 2 < z.im)
-variable (c : ℤ → ℂ) (n₀ : ℤ) -- (hn₀ : ∀ (n : ℤ), n < n₀ → c n = 0)
+variable (c : ℤ → ℂ) (n₀ : ℤ) (hcn₀ : c n₀ ≠ 0) -- (hn₀ : ∀ (n : ℤ), n < n₀ → c n = 0)
 variable (hcsum : Summable fun (i : ℕ) ↦ (fouterm c z (i + n₀)))
 variable (k : ℕ) (hpoly : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)))
 variable (f : ℂ → ℂ) (hf : ∀ x : ℂ, f x = ∑' (n : ℕ), (fouterm c x (n + n₀)))
@@ -117,7 +118,7 @@ lemma aux_10 : Summable fun (n : ℕ) ↦ Complex.abs (c (n + n₀)) * rexp (-π
 lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
   sorry
 
-lemma aux_misc (x : UpperHalfPlane) : abs (cexp (I * x)) ≤ rexp (x.im) := by
+lemma aux_misc (x : ℍ) : abs (cexp (I * x)) ≤ rexp (x.im) := by
   rw [aux_1 x]
   refine exp_le_exp.2 ?_
   rw [UpperHalfPlane.coe_im, neg_le_self_iff]
@@ -371,14 +372,61 @@ theorem DivDiscBoundOfPolyFourierCoeff : abs ((f z) / (Δ ⟨z, by linarith⟩))
 
 end main_theorem
 
+section positivity
+
+-- Note that this proof does NOT use our custom `summable_norm_pow_mul_geometric_of_norm_lt_one`
+-- for functions with real inputs (see SpherePacking.ForMathlib.SpecificLimits).
+include hpoly hcn₀ in
+theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
+  rw [DivDiscBound]
+  apply div_pos
+  · refine tsum_pos ?_ ?_ 0 ?_
+    · have h₁ (n : ℕ) : Complex.abs (c (↑n + n₀)) * rexp (-π * ↑n / 2) =
+          ‖(c (↑n + n₀)) * rexp (-π * ↑n / 2)‖ := by
+        rw [Complex.norm_eq_abs, map_mul]
+        norm_cast
+        simp
+      simp only [h₁, summable_norm_iff]
+      have h₂ : (fun (n : ℕ) ↦ c (↑n + n₀) * rexp (-π * ↑n / 2)) =O[atTop]
+          (fun (n : ℕ) ↦ (n ^ k) * rexp (-π * ↑n / 2)) := by
+        refine IsBigO.mul hpoly ?_
+        norm_cast
+        exact isBigO_refl _ atTop
+      refine summable_of_isBigO_nat ?_ h₂
+      have h₃ (n : ℕ) : rexp (-π * ↑n / 2) = (rexp (-π / 2)) ^ n := by
+        symm; calc (rexp (-π / 2)) ^ n
+        _ = rexp ((-π / 2) * n) := by
+          rw [(Real.exp_mul (-π / 2) n)]
+          norm_cast
+        _ = rexp (-π * ↑n / 2) := by ring_nf
+      simp only [h₃]
+      rw [← summable_norm_iff]
+      refine summable_norm_pow_mul_geometric_of_norm_lt_one k ?_
+      simp only [Real.norm_eq_abs, Real.abs_exp, exp_lt_one_iff, neg_div, neg_lt_zero]
+      positivity
+    · intro i
+      positivity
+    · simp
+      exact hcn₀
+  · calc 0
+    _ < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * (1 / 2 * I).im)) ^ 24 := aux_8 (1 / 2 * I)
+    _ = ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
+      congr
+      ext n
+      congr 3
+      simp
+      ring
+
+end positivity
+
+open ArithmeticFunction
+
 section sigma
 
 /-
 Recall that σₖ(n) = ∑ {d | n}, d ^ k. In this section, we prove that for all n,
 σₖ(n) = O(n ^ (k + 1)).
 -/
-
-open ArithmeticFunction
 
 #check σ
 
@@ -407,6 +455,11 @@ end sigma
 
 section Corollaries
 
-
+theorem abs_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
+    abs (φ₀ z) ≤ C₀ * rexp (-2 * π * z.im) := by
+  -- let c : ℤ → ℂ := fun n ↦ n * (σ 3 n)
+  sorry
 
 end Corollaries
+
+#min_imports
