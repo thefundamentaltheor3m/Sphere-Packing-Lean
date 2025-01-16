@@ -3,7 +3,8 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 
-The contents of this file should eventually be moved to Mathlib/NumberTheory/Divisors.lean
+*The contents of this file were merged to Mathlib/NumberTheory/Divisors.lean.*
+*This file should be removed after Mathlib is bumped.*
 -/
 
 import Mathlib.NumberTheory.Divisors
