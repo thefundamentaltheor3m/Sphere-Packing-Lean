@@ -2,7 +2,21 @@
 The purpose of this file is to define the Eisenstein series we are interested in using more convenient notation.
 -/
 
-import Mathlib
+import Mathlib.Algebra.Order.Group.Int
+import Mathlib.Analysis.CStarAlgebra.Classes
+import Mathlib.Analysis.Complex.TaylorSeries
+import Mathlib.Analysis.Normed.Group.Tannery
+import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
+import Mathlib.Data.Finset.Functor
+import Mathlib.Data.Int.Star
+import Mathlib.Data.Real.StarOrdered
+import Mathlib.NumberTheory.ArithmeticFunction
+import Mathlib.NumberTheory.LSeries.HurwitzZetaValues
+import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
+import Mathlib.NumberTheory.ModularForms.LevelOne
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.Topology.EMetricSpace.Paracompact
+import Mathlib.Topology.Separation.CompletelyRegular
 
 -- import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
 
