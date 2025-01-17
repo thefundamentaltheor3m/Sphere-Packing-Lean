@@ -2934,19 +2934,9 @@ lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn
   have ha := hderiv hv
   have hb := he hv
   rw [hb] at ha
-  simp only [deriv, fderiv, Pi.zero_apply] at ha
-  split_ifs at ha with hc
-  apply HasFDerivWithinAt.fderivWithin
-  apply HasFDerivAt.hasFDerivWithinAt
-  have hc2 := hc.choose_spec
-  convert hc2
-  exact ContinuousLinearMap.ext_ring (_root_.id (Eq.symm ha))
-  exact IsOpen.uniqueDiffWithinAt hs2 hv
-  apply fderivWithin_zero_of_not_differentiableWithinAt
-  intro ho
-  obtain ⟨o, ho⟩ := ho
-  have ho2 := ho.hasFDerivAt (by exact IsOpen.mem_nhds hs2 hv)
-  aesop
+  simp only [Pi.zero_apply] at ha
+  rw [fderivWithin_of_isOpen hs2 hv]
+  exact Eq.symm (ContinuousLinearMap.ext_ring (_root_.id (Eq.symm ha)))
   exact  hfn v hv
   exact  hgn v hv
   exact  hfn y hy
@@ -3299,20 +3289,20 @@ instance : atImInfty.NeBot := by
   rw [atImInfty, Filter.comap_neBot_iff ]
   simp only [mem_atTop_sets, ge_iff_le, forall_exists_index]
   intro t x hx
-  have := ENNReal.nhdsWithin_Ioi_ofNat_nebot
+  have := ENNReal.nhdsGT_ofNat_neBot
   let z : ℂ := Complex.mk (0 : ℝ) (|x| + 1)
   have h0 : 0 ≤ |x| := by
     apply abs_nonneg
   have hz : 0 < z.im := by
-    simp only
-    linarith
+    positivity
   use ⟨z, hz⟩
   apply hx
   simp only [UpperHalfPlane.im, coe_mk_subtype]
   have : x ≤ |x| := by
     apply le_abs_self
   apply le_trans this
-  linarith
+  simp only [le_add_iff_nonneg_right, zero_le_one, z]
+
 
 lemma arg_pow_aux (n : ℕ) (x : ℂ) (hx : x ≠ 0) (hna : |arg x| < π / n) :
   Complex.arg (x ^ n) = n * Complex.arg x := by
@@ -3973,6 +3963,232 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
 
 -- lemma E4_E6_q_exp :  ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 1728  =
 
+
+open SlashInvariantFormClass ModularFormClass
+variable {k : ℤ} {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup SL(2, ℤ)} (n : ℕ) (f : F)
+
+open scoped Real MatrixGroups CongruenceSubgroup
+
+def qExpansion : PowerSeries ℂ :=
+  .mk fun m ↦ (↑m.factorial)⁻¹ * iteratedDeriv m (cuspFunction n f) 0
+
+lemma IteratedDeriv_smul (a : ℂ)  (f : ℂ → ℂ) (m : ℕ) :
+    iteratedDeriv m (a • f) = a • iteratedDeriv m f  := by
+  induction' m with m hm
+  simp
+  rw [iteratedDeriv_succ, iteratedDeriv_succ]
+  rw [hm]
+  ext x
+  rw [@Pi.smul_def]
+  exact deriv_const_smul' a (f := iteratedDeriv m f) (x := x)
+
+
+
+lemma qExpansion_smul (a : ℂ) (f : CuspForm Γ(n) k) [NeZero n] :
+    (a • qExpansion n f) = (qExpansion n (a • f)) := by
+  ext m
+  simp only [_root_.map_smul, smul_eq_mul]
+  simp_rw [qExpansion]
+  have : (cuspFunction n (a • f)) = a • cuspFunction n f := by
+    ext z
+    by_cases h : z = 0
+    · rw [h]
+      have h0 := CuspFormClass.cuspFunction_apply_zero n (a • f)
+      have h1 := CuspFormClass.cuspFunction_apply_zero n f
+      simp only [h0, Pi.smul_apply, h1, smul_eq_mul, mul_zero]
+    · simp only [cuspFunction, CuspForm.coe_smul, Pi.smul_apply, smul_eq_mul]
+      rw [Function.Periodic.cuspFunction_eq_of_nonzero _ _ h,
+        Function.Periodic.cuspFunction_eq_of_nonzero _ _ h]
+      simp only [comp_apply, Pi.smul_apply, smul_eq_mul]
+  rw [this]
+  simp only [PowerSeries.coeff_mk]
+  conv =>
+    enter [2,2]
+    rw [IteratedDeriv_smul]
+  simp only [Pi.smul_apply, smul_eq_mul]
+  ring
+
+
+lemma qExpansion_coeff (m : ℕ) :
+    (qExpansion n f).coeff ℂ m = (↑m.factorial)⁻¹ * iteratedDeriv m (cuspFunction n f) 0 := by
+  simp only [qExpansion, PowerSeries.coeff_mk]
+
+lemma hasSum_qExpansion_of_abs_lt [NeZero n] [ModularFormClass F Γ(n) k]
+    {q : ℂ} (hq : q.abs < 1) :
+    HasSum (fun m : ℕ ↦ (qExpansion n f).coeff ℂ m • q ^ m) (cuspFunction n f q) := by
+  simp only [qExpansion_coeff, ← eq_cuspFunction n f]
+  have hdiff : DifferentiableOn ℂ (cuspFunction n f) (Metric.ball 0 1) := by
+    refine fun z hz ↦ (differentiableAt_cuspFunction n f ?_).differentiableWithinAt
+    simpa using hz
+  have qmem : q ∈ Metric.ball 0 1 := by simpa using hq
+  convert hasSum_taylorSeries_on_ball hdiff qmem using 2 with m
+  rw [sub_zero, smul_eq_mul, smul_eq_mul, mul_right_comm, smul_eq_mul, mul_assoc]
+
+lemma cuspfunc_Zero [NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0 = (qExpansion n f).coeff ℂ 0 := by
+  have := hasSum_qExpansion_of_abs_lt n f (q := 0) (by simp)
+  simp at this
+  rw [Summable.hasSum_iff] at this
+  sorry
+  sorry
+
+local notation "𝕢" => Periodic.qParam
+
+theorem UpperHalfPlane.abs_qParam_lt_one (n : ℕ) [NeZero n] (τ : ℍ) : (𝕢 n τ).abs < 1 := by
+  rw [Periodic.abs_qParam, Real.exp_lt_one_iff, neg_mul, coe_im, neg_mul, neg_div, neg_lt_zero,
+    div_pos_iff_of_pos_right (mod_cast Nat.pos_of_ne_zero <| NeZero.ne _)]
+  positivity
+
+lemma hasSum_qExpansion [NeZero n] [ModularFormClass F Γ(n) k] (τ : ℍ) :
+    HasSum (fun m : ℕ ↦ (qExpansion n f).coeff ℂ m • 𝕢 n τ ^ m) (f τ) := by
+  simpa only [eq_cuspFunction n f] using
+    hasSum_qExpansion_of_abs_lt n f (τ.abs_qParam_lt_one n)
+
+/-- The `q`-expansion of a level `n` modular form, bundled as a `FormalMultilinearSeries`.
+TODO: Maybe get rid of this and instead define a general API for converting `PowerSeries` to
+`FormalMultlinearSeries`. -/
+def qExpansionFormalMultilinearSeries : FormalMultilinearSeries ℂ ℂ ℂ :=
+  fun m ↦ (qExpansion n f).coeff ℂ m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m _
+
+lemma qExpansionFormalMultilinearSeries_apply_norm (m : ℕ) :
+    ‖qExpansionFormalMultilinearSeries n f m‖ = ‖(qExpansion n f).coeff ℂ m‖ := by
+  rw [qExpansionFormalMultilinearSeries,
+    ← (ContinuousMultilinearMap.piFieldEquiv ℂ (Fin m) ℂ).symm.norm_map]
+  simp
+
+lemma qExpansionFormalMultilinearSeries_radius [NeZero n] [ModularFormClass F Γ(n) k] :
+    1 ≤ (qExpansionFormalMultilinearSeries n f).radius := by
+  refine le_of_forall_ge_of_dense fun r hr ↦ ?_
+  lift r to NNReal using hr.ne_top
+  apply FormalMultilinearSeries.le_radius_of_summable
+  simp only [qExpansionFormalMultilinearSeries_apply_norm]
+  rw [← r.abs_eq]
+  simp_rw [pow_abs, ← Complex.abs_ofReal, ofReal_pow, ← Complex.norm_eq_abs, ← norm_mul]
+  exact (hasSum_qExpansion_of_abs_lt n f (q := r) (by simpa using hr)).summable.norm
+
+/-- The `q`-expansion of `f` is an `FPowerSeries` representing `cuspFunction n f`. -/
+lemma hasFPowerSeries_cuspFunction [NeZero n] [ModularFormClass F Γ(n) k] :
+    HasFPowerSeriesOnBall (cuspFunction n f) (qExpansionFormalMultilinearSeries n f) 0 1 := by
+  refine ⟨qExpansionFormalMultilinearSeries_radius n f, zero_lt_one, fun hy ↦ ?_⟩
+  rw [EMetric.mem_ball, edist_zero_right, ENNReal.coe_lt_one_iff, ← NNReal.coe_lt_one,
+    coe_nnnorm, Complex.norm_eq_abs] at hy
+  simpa [qExpansionFormalMultilinearSeries] using hasSum_qExpansion_of_abs_lt n f hy
+
+
+theorem cuspfunc_lim_coef {k : ℤ} {F : Type u_1} [inst : FunLike F ℍ ℂ] (n : ℕ) (c : ℕ → ℂ) (f : F)
+  [inst_1 : ModularFormClass F Γ(n) k] [inst_2 : NeZero n] (hf : ∀ (τ : ℍ), HasSum (fun m ↦ c m • 𝕢 ↑n ↑τ ^ m) (f τ))
+  (q : ℂ) (hq : ‖q‖ < 1) (hq1 : q ≠ 0) : HasSum (fun m ↦ c m • q ^ m) (cuspFunction n f q) := sorry
+
+
+lemma modfom_q_exp_cuspfunc  (c : ℕ → ℂ) (f : F) [ModularFormClass F Γ(n) k]
+    [NeZero n]
+    (hf : ∀ τ : ℍ,  HasSum (fun m : ℕ ↦ (c m) • 𝕢 n τ ^ m) (f τ)) : ∀ q : ℂ, ‖q‖ < 1 →
+    HasSum (fun m : ℕ ↦ c m • q ^ m) (cuspFunction n f q) := by
+  intro q hq
+  by_cases hq1 : q ≠ 0
+  have hq2 := Function.Periodic.im_invQParam_pos_of_abs_lt_one (h := n)
+    (by simp; exact Nat.pos_of_neZero n) hq hq1
+  have hft := hf ⟨(Periodic.invQParam (↑n) q), hq2⟩
+  have := eq_cuspFunction n f ⟨(Periodic.invQParam (↑n) q), hq2⟩
+  simp only [smul_eq_mul, Complex.norm_eq_abs, ne_eq, coe_mk_subtype] at *
+  rw [Function.Periodic.qParam_right_inv] at this hft
+  rw [← this] at hft
+  exact hft
+  · simp only [ne_eq, Nat.cast_eq_zero]
+    exact NeZero.ne n
+  · exact hq1
+  · simp only [ne_eq, Nat.cast_eq_zero]
+    exact NeZero.ne n
+  · exact hq1
+  · --have h1 : Tendsto (fun z : ℍ => ∑' i, c i * (𝕢 n z) ^ n) atImInfty (𝓝 (c 0)) := by sorry
+    have h2 : cuspFunction n f 0 = c 0 := by
+      rw [cuspFunction, Function.Periodic.cuspFunction_zero_eq_limUnder_nhds_ne]
+      apply Filter.Tendsto.limUnder_eq
+      have := cuspfunc_lim_coef n c f hf
+      rw [cuspFunction] at this
+      have htt : Tendsto (fun q => ∑' m, c m * q ^ m) (𝓝[≠] 0) (𝓝 (c 0)) := by
+        have hD := tendsto_tsum_of_dominated_convergence (𝓕 := (𝓝[≠] (0 : ℂ)))
+          (f := fun q : ℂ => fun m : ℕ => c m * q ^ m) (g := fun m : ℕ => c m * 0 ^ m) (bound := fun m => ‖c m‖ * (1 / 2 ) ^ m ) ?_ ?_ ?_
+        convert hD
+        simp only
+
+        sorry
+        have ht3 := (this (1/2) (by norm_num) (by apply one_div_ne_zero; exact Ne.symm (NeZero.ne' 2))).summable.norm
+        simpa using ht3
+        intro k
+        apply Tendsto.const_mul
+        have := ((continuous_pow k (M := ℂ) ).tendsto) 0
+        apply Filter.Tendsto.mono_left this
+        exact nhdsWithin_le_nhds
+        rw [eventually_iff_exists_mem]
+        use {z | (z : ℂ) ≠ 0 ∧ ‖z‖ < 1 / 2}
+        constructor
+        · rw [@mem_nhdsWithin_iff]
+          sorry
+        · intro y hy k
+          simp only [norm_mul, Complex.norm_eq_abs, norm_pow, one_div, inv_pow]
+          gcongr
+          have hy2 := hy.2.le
+          rw [← inv_pow]
+          gcongr
+          simpa only [Complex.norm_eq_abs, one_div] using hy2
+      apply htt.congr'
+      rw [@eventuallyEq_nhdsWithin_iff]
+      rw [@eventually_nhds_iff_ball]
+      use 1
+      simp only [gt_iff_lt, zero_lt_one, mem_ball, dist_zero_right, Complex.norm_eq_abs,
+        mem_compl_iff, mem_singleton_iff, true_and]
+      intro y hy hy0
+      exact (this y hy hy0).tsum_eq
+
+
+    --rw [cuspFunction, Function.Periodic.cuspFunction_zero_eq_limUnder_nhds_ne] at h1
+    simp at hq1
+    simp_rw [hq1]
+    rw [h2]
+    simp
+
+    sorry
+
+lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
+    (hf : ∀ τ : ℍ,  HasSum (fun m : ℕ ↦ (c m) • 𝕢 n τ ^ m) (f τ))  :
+    c = (fun m => (qExpansion n f).coeff ℂ m) := by
+  ext m
+  have h := hasFPowerSeries_cuspFunction n f
+  let qExpansion2 : PowerSeries ℂ := .mk fun m ↦ c m
+  let qq : FormalMultilinearSeries ℂ ℂ ℂ :=
+    fun m ↦ (qExpansion2).coeff ℂ m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m _
+  have H2 : HasFPowerSeriesOnBall (cuspFunction n f) qq 0 1 := by
+    have H21 : 1 ≤ qq.radius := by sorry
+    refine ⟨H21 , zero_lt_one, ?_⟩
+    intro y hy
+    rw [EMetric.mem_ball, edist_zero_right, ENNReal.coe_lt_one_iff, ← NNReal.coe_lt_one,
+    coe_nnnorm, Complex.norm_eq_abs] at hy
+    simp
+    have := modfom_q_exp_cuspfunc n c f hf
+    sorry
+  have h3 : HasFPowerSeriesAt (cuspFunction n f) qq 0 := by
+    rw [HasFPowerSeriesAt]
+    use 1
+  have h4 : HasFPowerSeriesAt (cuspFunction n f) (qExpansionFormalMultilinearSeries n f) 0 := by
+    rw [HasFPowerSeriesAt]
+    use 1
+  have := HasFPowerSeriesAt.eq_formalMultilinearSeries h3 h4
+  rw [@FormalMultilinearSeries.ext_iff] at this
+  have h5 := this m
+  simp [qq, qExpansion2, qExpansionFormalMultilinearSeries] at h5
+  let t := c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ m
+  let v :=   (PowerSeries.coeff ℂ m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ m
+  have htv : (c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ).toFun =
+    ( (PowerSeries.coeff ℂ m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ).toFun := by
+    rw [h5]
+  have h6 := congrFun htv m
+  simpa using h6
+
+
+
+
+
+
 def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun z :=  ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 1728
   slash_action_eq' := sorry
@@ -3983,20 +4199,83 @@ def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
     sorry
 
 
-lemma delta_eq_E4E6_const : ∃ (c : ℂ), c ≠ 0 ∧ ∀ z : ℍ, (c • Δ) z = ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 1728 := by sorry
 
-theorem DiscriminantProductFormula (z : UpperHalfPlane) : Δ z = ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 1728 := by
+lemma q_exp_inj (j : ℕ → ℂ) (z : ℍ) (h : ℕ+)
+    (H : ∑' n : ℕ, j n * Complex.exp (2 * ↑π * Complex.I * z * n / h) = 0) :
+  ∀ n : ℕ, j n = 0 := by
+  intro m
+  --have := DifferentiableOn.hasFPowerSeriesOnBall
+
+  --have := hasSum_fourier_series_of_summable
+  --have := intervalIntegral.tsum_intervalIntegral_eq_of_summable_norm
+  sorry
+
+
+lemma delta_eq_E4E6_const : ∃ (c : ℂ), c ≠ 0 ∧ ∀ z : ℍ, (c • Delta) = Delta_E4_E6_aux := by sorry
+
+lemma Delta_q_one_term : (qExpansion 1 Delta).coeff ℂ 1 = 1 := by
+  rw [qExpansion_coeff]
+  simp
+  apply HasDerivAt.deriv
+  refine hasDerivAt_iff_tendsto_slope_zero.mpr ?_
+  rw [CuspFormClass.cuspFunction_apply_zero 1 Delta]
+  simp
+  have HT : Tendsto (fun z => z⁻¹ * (Delta ∘ ofComplex) ((Periodic.invQParam 1 z))) (𝓝[≠] 0) (𝓝 1) := by
+    rw [Metric.tendsto_nhds]
+    intro ε hε
+    rw [eventually_iff_exists_mem]
+    use {z | (z : ℂ) ≠ 0 ∧ ‖z‖ < 1}
+    constructor
+    ·
+      rw [@mem_nhdsWithin_iff]
+      use 1
+      simp
+      intro y hy
+      simp at hy
+      aesop
+    · intro y hy
+      simp
+      have hz :=Function.Periodic.im_invQParam_pos_of_abs_lt_one (h := 1) (by exact Real.zero_lt_one) hy.2 hy.1
+      have :=  ofComplex_apply_of_im_pos hz
+      rw [this, Delta_apply]
+
+
+
+      --ofComplex_apply_of_im_pos
+      sorry
+
+
+
+
+  apply Filter.Tendsto.congr' _ HT
+
+
+  sorry
+
+lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff ℂ 1 = 1 := by sorry
+
+theorem DiscriminantProductFormula (z : UpperHalfPlane) : Delta = Delta_E4_E6_aux  := by
+  ext z
   obtain ⟨c, hc, H⟩ := delta_eq_E4E6_const
   have h := H z
   suffices h2 : c  = 1
-  · rw [← h, h2]
+  · simp [Delta, Discriminant_SIF]
+    rw [← h, h2]
     simp
+    rfl
   · have Qe4 := E_k_q_expansion 4 (by norm_num) (sorry) z
     have Qe6 := E_k_q_expansion 6 (by norm_num) (sorry) z
-    rw [E4_apply, E6_apply] at h
+    /- rw [E4_apply, E6_apply] at h
     zify at *
-    rw [Qe4, Qe6] at h
-    sorry
+    rw [Qe4, Qe6] at h -/
+    have h1 := Delta_q_one_term
+    have h2 := Delta_E4_E6_aux_q_one_term
+    rw [← h] at h2
+    have := qExpansion_smul 1 c Delta
+    rw [← this] at h2
+    simp at h2
+    rw [h1] at h2
+    simpa using h2
 --enough to check its a cuspform, since if it is, then divining by Δ gives a modular form of weight 0.
 
 lemma weight_two_empty (f : ModularForm (CongruenceSubgroup.Gamma 1) 2) : f = 0 := sorry
