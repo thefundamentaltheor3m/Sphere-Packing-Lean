@@ -4261,12 +4261,20 @@ lemma qExpansion_mul_coeff_zero (f g : ModularForm Γ(n) k)
       simp only [comp_apply, Pi.mul_apply]
     rw [this]
     apply Filter.Tendsto.mul
-    rw [cuspFunction]
     simp
     have h1 := Function.Periodic.boundedAtFilter_cuspFunction (h := n) (by sorry)
       (bounded_at_infty_comp_ofComplex f)
-
-    sorry
+    have h2 : Tendsto (cuspFunction n f) (𝓝[≠] 0) (𝓝 (cuspFunction n f 0)) := by sorry
+    apply h2.congr'
+    rw [@eventuallyEq_nhdsWithin_iff]
+    rw [eventually_iff_exists_mem]
+    use ball 0 1
+    constructor
+    apply Metric.ball_mem_nhds
+    exact Real.zero_lt_one
+    intro y hy hy0
+    apply Function.Periodic.cuspFunction_eq_of_nonzero
+    simpa using hy0
     sorry
 
 
