@@ -4245,12 +4245,38 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
     or_false, qExpansion2, qq] using h6
 
 
-variable (f g : PowerSeries ℂ)
-
-
+theorem modform_tendto_ndhs_zero {k : ℤ} (n : ℕ) (f : ModularForm Γ(n) k) [inst : NeZero n] :
+    Tendsto (fun x ↦ (⇑f ∘ ↑ofComplex) (Periodic.invQParam (↑n) x)) (𝓝[≠] 0)
+    (𝓝 (cuspFunction n f 0)) := by
+  simp only [comp_apply]
+  have h1 := Function.Periodic.boundedAtFilter_cuspFunction (h := n)
+    (by simp only [Nat.cast_pos]; exact Nat.pos_of_neZero n)
+    (bounded_at_infty_comp_ofComplex f)
+  have h2 : Tendsto (cuspFunction n f) (𝓝[≠] 0) (𝓝 (cuspFunction n f 0)) := by
+    apply tendsto_nhdsWithin_of_tendsto_nhds
+    apply (Function.Periodic.differentiableAt_cuspFunction_zero (h := n)
+      (by simp only [Nat.cast_pos]; exact Nat.pos_of_neZero n) ?_ ?_ ?_).continuousAt.tendsto
+    apply SlashInvariantFormClass.periodic_comp_ofComplex
+    simp only [eventually_comap, eventually_atTop, ge_iff_le]
+    use 1
+    intro b hb a ha
+    apply ModularFormClass.differentiableAt_comp_ofComplex (z := a)
+    rw [ha]
+    linarith
+    apply ModularFormClass.bounded_at_infty_comp_ofComplex
+  apply h2.congr'
+  rw [@eventuallyEq_nhdsWithin_iff, eventually_iff_exists_mem]
+  use ball 0 1
+  constructor
+  apply Metric.ball_mem_nhds
+  exact Real.zero_lt_one
+  intro y hy hy0
+  apply Function.Periodic.cuspFunction_eq_of_nonzero
+  simpa only [ne_eq, mem_compl_iff, mem_singleton_iff] using hy0
 
 lemma qExpansion_mul_coeff_zero (f g : ModularForm Γ(n) k)
-    [NeZero n] : (qExpansion n (f.mul g)).coeff ℂ 0 = (((qExpansion n f)).coeff ℂ 0) * ((qExpansion n g)).coeff ℂ 0 := by
+    [NeZero n] : (qExpansion n (f.mul g)).coeff ℂ 0 =
+      (((qExpansion n f)).coeff ℂ 0) * ((qExpansion n g)).coeff ℂ 0 := by
     simp_rw [qExpansion_coeff ]
     simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul]
     rw [cuspFunction, Periodic.cuspFunction ]
@@ -4261,26 +4287,32 @@ lemma qExpansion_mul_coeff_zero (f g : ModularForm Γ(n) k)
       simp only [comp_apply, Pi.mul_apply]
     rw [this]
     apply Filter.Tendsto.mul
-    simp
-    have h1 := Function.Periodic.boundedAtFilter_cuspFunction (h := n) (by sorry)
-      (bounded_at_infty_comp_ofComplex f)
-    have h2 : Tendsto (cuspFunction n f) (𝓝[≠] 0) (𝓝 (cuspFunction n f 0)) := by sorry
-    apply h2.congr'
-    rw [@eventuallyEq_nhdsWithin_iff]
-    rw [eventually_iff_exists_mem]
-    use ball 0 1
-    constructor
-    apply Metric.ball_mem_nhds
-    exact Real.zero_lt_one
-    intro y hy hy0
-    apply Function.Periodic.cuspFunction_eq_of_nonzero
-    simpa using hy0
-    sorry
+    · apply modform_tendto_ndhs_zero
+    · apply modform_tendto_ndhs_zero
 
+
+/-
+
+
+lemma cuspform_iff_coeff_zero (f : ModularForm Γ(n) k) [NeZero n] (A : SL(2, ℤ)) :
+    (qExpansion n f).coeff ℂ 0 = 0 ↔  f.1.1 ∈ CuspForm Γ(n) k := by
+  split
+  · intro h
+    have h1 := Function.Periodic.cuspFunction_eq_of_nonzero (h := n)
+      (by simp only [Nat.cast_pos]; exact Nat.pos_of_neZero n) h
+    rw [cuspFunction, Periodic.cuspFunction] at h1
+    simp only [update_self, mul_coe] at h1
+    exact h1
+  · intro h
+    have h1 := Function.Periodic.cuspFunction_eq_of_nonzero (h := n)
+      (by simp only [Nat.cast_pos]; exact Nat.pos_of_neZero n) h
+    rw [cuspFunction, Periodic.cuspFunction] at h1
+    simp only [update_self, mul_coe] at h1
+    exact h1 -/
 
 
 def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
-  toFun z :=  ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 1728
+  toFun :=  (1/ 1728) • ((E₄.mul E₄).mul E₄ - (E₆.mul E₆))
   slash_action_eq' := sorry
   holo' := sorry
   zero_at_infty' := by
@@ -4341,6 +4373,24 @@ lemma Delta_q_one_term : (qExpansion 1 Delta).coeff ℂ 1 = 1 := by
 
 
   sorry
+
+def ModForm_mk (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k ) : ModularForm Γ k where
+  toFun := f
+  slash_action_eq' := f.slash_action_eq'
+  holo' := f.holo'
+  bdd_at_infty' A := (f.zero_at_infty' A).boundedAtFilter
+
+def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspForm Γ k →ₗ[ℂ] ModularForm Γ k where
+  toFun f := ModForm_mk Γ k f
+  map_add' := by
+    intro f g
+    simp only [ModForm_mk, CuspForm.coe_add]
+    rfl
+  map_smul' := by
+    intro m f
+    simp only [ModForm_mk, CuspForm.coe_smul, RingHom.id_apply]
+    rfl
+
 
 lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff ℂ 1 = 1 := by sorry
 
