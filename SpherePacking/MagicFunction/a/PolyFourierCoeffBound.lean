@@ -30,7 +30,6 @@ comprehensive list of things to be done, including but not limited to the `sorry
 - [ ] `step_10`, `step_12`: prove `tprod_le_tprod` in SpherePacking.ForMathlib.tprod
 - [ ] `step_11`: prove `summable_real_norm_mul_geometric_of_norm_lt_one` in
       SpherePacking.ForMathlib.SpecificLimits
-
 -/
 
 open Filter Complex Real BigOperators Asymptotics
@@ -43,6 +42,7 @@ variable (z : ℂ) (hz : 1 / 2 < z.im)
 variable (c : ℤ → ℂ) (n₀ : ℤ) (hcn₀ : c n₀ ≠ 0) -- (hn₀ : ∀ (n : ℤ), n < n₀ → c n = 0)
 variable (hcsum : Summable fun (i : ℕ) ↦ (fouterm c z (i + n₀)))
 variable (k : ℕ) (hpoly : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)))
+--  Change to just `c n` is polynomial. Should work!
 variable (f : ℂ → ℂ) (hf : ∀ x : ℂ, f x = ∑' (n : ℕ), (fouterm c x (n + n₀)))
 
 noncomputable def DivDiscBound : ℝ :=
@@ -99,6 +99,7 @@ lemma aux_7 (a : ℤ) :
   refine exp_le_exp.2 ?_
   simp; linarith
 
+include hz in
 lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 := by
   sorry
 
@@ -236,7 +237,7 @@ private lemma step_10 :
     apply tsum_nonneg
     intro i
     exact mul_nonneg (AbsoluteValue.nonneg Complex.abs (c (i + n₀))) (exp_nonneg _)
-  · exact aux_8 z
+  · exact aux_8 z hz
   · apply tprod_le_of_nonneg
     · intro n; simp
       have :
@@ -259,7 +260,7 @@ private lemma step_11 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
-  · exact le_of_lt (aux_8 z)
+  · exact le_of_lt (aux_8 z hz)
   · refine tsum_le_tsum ?_ ?_ ?_
     · intro i
       gcongr
@@ -408,14 +409,16 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
       positivity
     · simp
       exact hcn₀
-  · calc 0
-    _ < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * (1 / 2 * I).im)) ^ 24 := aux_8 (1 / 2 * I)
-    _ = ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
-      congr
-      ext n
-      congr 3
-      simp
-      ring
+  · sorry
+    -- Use new result that Δ(iz) > 0 [TODO: BUMP]
+    -- calc 0
+    -- _ < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * (1 / 2 * I).im)) ^ 24 := aux_8 (1 / 2 * I) (by sorry)
+    -- _ = ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
+    --   congr
+    --   ext n
+    --   congr 3
+    --   simp
+    --   ring
 
 end positivity
 
@@ -451,14 +454,72 @@ theorem ArithmeticFunction.sigma_asymptotic (k : ℕ) :
       exact Nat.card_divisors_le_self n
   _ = n ^ (k + 1) := by ring
 
+theorem ArithmeticFunction.sigma_asymptotic' (k : ℕ) :
+    (fun n ↦ (σ k n : ℂ)) =O[atTop] (fun n ↦ (n ^ (k + 1) : ℂ)) := by
+  have (n : ℕ) : (n : ℂ) = ((n : ℝ) : ℂ) := by norm_cast
+  simp only [this]
+  rw [isBigO_ofReal_left]
+  norm_cast
+  simp only [Nat.cast_pow]
+  exact ArithmeticFunction.sigma_asymptotic k
+
 end sigma
 
 section Corollaries
 
 theorem abs_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     abs (φ₀ z) ≤ C₀ * rexp (-2 * π * z.im) := by
-  -- let c : ℤ → ℂ := fun n ↦ n * (σ 3 n)
-  sorry
+  -- This is a reasonable thing to do because all inputs are in nonnegative
+  let c : ℤ → ℂ := fun n ↦ n * (σ 3 n.toNat)
+  let d : ℕ → ℂ := fun n ↦ n * (σ 3 n)
+  have hcd (n : ℕ) : c n = d n := by congr
+  have hdpoly : d =O[atTop] (fun n ↦ (n ^ 5 : ℂ)) := by
+    have h₁ (n : ℕ) : n ^ 5 = n * n ^ 4 := by exact Nat.pow_succ'
+    norm_cast
+    simp only [h₁]
+    push_cast
+    refine IsBigO.mul (isBigO_refl _ atTop) ?_
+    have h := ArithmeticFunction.sigma_asymptotic' 3
+    simp only [Nat.reduceAdd] at h
+    norm_cast at h ⊢
+  have hcpoly : c =O[atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
+    -- Use `Asymptotics.IsBigO.congr'` to relate properties of c to properties of d
+    simp [isBigO_iff] at hdpoly ⊢
+    obtain ⟨R, m, hR⟩ := hdpoly
+    use R, m
+    intro n hn
+    have hnnonneg : 0 ≤ n := calc 0
+      _ ≤ (m : ℤ) := by positivity
+      _ ≤ ↑n := hn
+    have hnnat : n.toNat = n := by
+      simp only [Int.ofNat_toNat, sup_eq_left, hnnonneg]
+    have hmnnat : m ≤ n.toNat := by
+      zify
+      rw [hnnat]
+      exact hn
+    specialize hR n.toNat hmnnat
+    rw [← hcd, hnnat] at hR
+    calc Complex.abs (c n)
+    _ ≤ R * n.toNat ^ 5 := hR
+    _ = R * |↑n| ^ 5 := by
+      simp
+      norm_cast
+      left
+      rw [hnnat]
+      exact Eq.symm (abs_of_nonneg hnnonneg)
+    -- refine IsBigO.congr' ?_ ?_
+    -- rw [hcd]
+    -- exact IsBigO.mul (ArithmeticFunction.sigma_asymptotic 3) (IsBigO_refl _ atTop)
+  use DivDiscBound c 1
+  constructor
+  · rw [gt_iff_lt]
+    have hc1 : c 1 ≠ 0 := calc c 1
+      _ = (σ 3 1) := by simp only [Int.cast_one, Int.toNat_one, one_mul, c]
+      _ = 1 := by norm_cast
+      _ ≠ 0 := by norm_num
+    refine DivDiscBound_pos c 1 hc1 5 ?_
+    sorry
+  · sorry
 
 end Corollaries
 
