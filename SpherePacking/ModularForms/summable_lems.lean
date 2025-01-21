@@ -491,6 +491,68 @@ theorem G2_prod_summable1_δ (z : ℍ) (b : ℤ) :
   apply this.prod_factor b
 
 
+
+def swap : (Fin 2 → ℤ) → (Fin 2 → ℤ) := fun x => ![x 1, x 0]
+
+@[simp]
+lemma swap_apply (b : Fin 2 → ℤ) : swap b = ![b 1, b 0] := rfl
+
+lemma swap_involutive (b : Fin 2 → ℤ) : swap (swap b) = b := by
+  ext i
+  fin_cases i <;> rfl
+
+def swap_equiv : Equiv (Fin 2 → ℤ) (Fin 2 → ℤ) := Equiv.mk swap swap
+  (by rw [LeftInverse]; apply swap_involutive)
+  (by rw [Function.RightInverse]; apply swap_involutive)
+
+
+lemma G2_alt_indexing_δ (z : ℍ) : ∑' (m : Fin 2 → ℤ),
+    (1 / (((m 0 : ℂ) * z + m 1)^2 * (m 0 * z + m 1 + 1)) + δ (m 0) (m 1))  =
+    ∑' m : ℤ, ∑' n : ℤ, (1 / (((m : ℂ)* z + n)^2 * (m * z + n +1)) + (δ m n)) := by
+  rw [ ← (finTwoArrowEquiv _).symm.tsum_eq]
+  simp
+  refine tsum_prod' ?h ?h₁
+  have := G_2_alt_summable_δ z
+  simp at this
+  rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
+  apply this
+  intro b
+  simp
+  have := G_2_alt_summable_δ z
+  simp only [Fin.isValue, one_div, mul_inv_rev] at this
+  rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
+  apply this.prod_factor
+
+
+
+
+lemma G2_alt_indexing2_δ (z : ℍ) : ∑' (m : Fin 2 → ℤ),
+    (1 / (((m 0 : ℂ) * z + m 1)^2 * (m 0 * z + m 1 + 1)) + δ (m 0) (m 1))  =
+    ∑' n : ℤ, ∑' m : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m n) := by
+  have := (G_2_alt_summable_δ z)
+  simp at this
+  rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
+  rw [tsum_comm']
+  rw [G2_alt_indexing_δ]
+  apply this.congr
+  intro b
+  simp
+  rfl
+  intro b
+  simp
+  apply this.prod_factor
+  intro c
+  simp
+  have H := (G_2_alt_summable_δ z)
+  simp at this
+  rw [← swap_equiv.summable_iff] at H
+  rw [← (finTwoArrowEquiv _).symm.summable_iff] at H
+  simp [Fin.isValue, one_div, mul_inv_rev, swap_equiv, Equiv.coe_fn_mk,
+    finTwoArrowEquiv_symm_apply, swap_apply] at H
+  have := H.prod_factor c
+  simp at this
+  apply this
+
 /-This is proven in the modular forms repo. -/
 lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
     Summable fun d : ℤ => ((((n : ℂ) * z) + d) ^ k)⁻¹ := by sorry
@@ -558,7 +620,7 @@ lemma t9 (z : ℍ) : ∑' m : ℕ,
   congr 1
   ring
   · have := (a4 2 z).prod_symm
-    simp [swap] at *
+    simp [_root_.swap] at *
     apply this.congr
     intro b
     rw [Prod.swap]
