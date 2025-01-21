@@ -714,6 +714,21 @@ This implies
     &= (2 H_2 + H_4)^{2} (f_2^2 + f_2 f_4 + f_4^2) = 0
 \end{align}
 and we get $f_2 = 0$.
+\textcolor{red}{(SW: The last line uses the fact that the ring of holomorhic functions on $\mathfrak{H}$ is an integral domain, and I'm not sure if the theorem exists or easily provable in mathlib.)}
+
+Here's an alternative approach, which does not use identity theorem but need more careful analysis of the vanishing order at the cusp.
+Consider another modular form
+\begin{equation}
+    e := (f_2 + 2f_4) (2f_2 + f_4) (f_4 - f_2).
+\end{equation}
+One can show that $e|_{T} = e$ and $e|_{S} = -e$, which implies that $e^{2}$ is a modular form of weight $24$ and level $1$.
+Moreover, one can check $f_{2} = O(q^{3/2})$ and $f_{4} = O(q^{1/2})$, which implies $e = O(q^{3/2})$ and $e^{2} = O(q^{3})$.
+Once we show that $E_4^3 \Delta$ and $\Delta^2$ form a basis of $S_{24}(\Gamma(1))$ (dimension formula gives $\dim S_{24}(\Gamma(1)) = 2$, and the above two modular forms are linearly independent by considering the coefficient of $q$), we can conclude that $e^{2} = 0$, hence $e = 0$.
+Combining this with $g = 0$ and \eqref{eqn:e6theta} gives $E_{6} f_{2}^{3} = 0$, so
+\begin{equation}
+    \Delta f_{2}^{3} = \frac{E_{4}^{2}f_{2} (E_{4}f_{2}^{2}) - E_{6} (E_{6}f_{2}^{3})}{1728} = 0
+\end{equation}
+and nonvanishing of $\Delta$ gives $f_{2} = 0$.
 % Now, define $g:= f_{2}^{2} + f_{2}f_{4} + f_{4}^{2}$.
 % Then one can check that $g$ is invariant under the actions of $S$ and $T$, hence it is a modular form of weight $8$ and level $1$.
 % Also, by analyzing the limit of $g$ as $z \to i \infty$, one can see that $g$ is a cusp form, hence \eqref{eqn:dimS8} gives $g = 0$.
@@ -723,7 +738,6 @@ and we get $f_2 = 0$.
 % \]
 % so each factor should be zero, and this gives $f_{2} = f_{4} = 0$.
 \end{proof}
-\textcolor{red}{SW: The last line uses the fact that the ring of holomorhic functions on $\mathfrak{H}$ is an integral domain, and I'm not sure if the theorem exists or easily provable in mathlib.}
 
 \begin{theorem}\label{thm:serre-der-prod-rule}\uses{def:serre-der}
 The Serre derivative satisfies the following product rule: for any quasimodular forms $F$ and $G$,
