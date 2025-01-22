@@ -4,14 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Gareth Ma
 -/
 import Mathlib.Algebra.Module.ZLattice.Basic
-import Mathlib.Data.Real.ENatENNReal
-import Mathlib.Data.Set.Card
+import Mathlib.Data.Real.StarOrdered
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 import Mathlib.Topology.Compactness.PseudometrizableLindelof
 import Mathlib.Topology.EMetricSpace.Paracompact
-import Mathlib.Topology.OmegaCompletePartialOrder
-import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
-import SpherePacking.ForMathlib.ENat
-import SpherePacking.ForMathlib.ENNReal
+
 import SpherePacking.ForMathlib.VolumeOfBalls
 
 open BigOperators MeasureTheory Metric
@@ -271,9 +269,9 @@ lemma density_le_one {d : ℕ} (S : SpherePacking d) : S.density ≤ 1 := by
 
 /-- Finite density of a scaled packing. -/
 @[simp]
-lemma scale_finiteDensity {d : ℕ} (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
+lemma scale_finiteDensity {d : ℕ} (_ : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  -- haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd -- (_ : 0 < d) unnecessary
   have : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
     convert (_root_.smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm
     · exact Eq.symm (DistribMulAction.smul_zero c)
@@ -467,3 +465,5 @@ theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
   · exact (volume_ball_lt_top _).ne
 
 end BasicResults
+
+-- #min_imports

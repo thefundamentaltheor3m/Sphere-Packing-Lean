@@ -12,5 +12,4 @@ lemma Cardinal.aux {α : Type*} {s : Set α} : toENat #s = s.encard := by
     rw [Set.encard_eq_top_iff.mpr hs, toENat_eq_top.mpr hs']
 
 example {α : Type*} (s t : Set α) (h : #s ≤ #t) : s.encard ≤ t.encard := by
-  convert Cardinal.toENat.monotone' h <;> simp [Cardinal.aux]
-
+  convert Cardinal.toENat.monotone' h

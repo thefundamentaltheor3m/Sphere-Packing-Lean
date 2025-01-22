@@ -3,12 +3,13 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
-import SpherePacking.CohnElkies.Prereqs
-import SpherePacking.ForMathlib.VolumeOfBalls
-import SpherePacking.Basic.PeriodicPacking
 import Mathlib.Logic.IsEmpty
 import Mathlib.MeasureTheory.Integral.SetIntegral
 import Mathlib.Analysis.Complex.Basic
+
+import SpherePacking.CohnElkies.Prereqs
+import SpherePacking.ForMathlib.VolumeOfBalls
+import SpherePacking.Basic.PeriodicPacking
 
 open scoped FourierTransform ENNReal SchwartzMap
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan Bornology

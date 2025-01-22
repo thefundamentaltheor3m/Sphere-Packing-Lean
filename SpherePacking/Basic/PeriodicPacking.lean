@@ -3,13 +3,14 @@ Copyright (c) 2024 Gareth Ma. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gareth Ma
 -/
-import Mathlib.Data.Set.Card
 import Mathlib.Algebra.Module.ZLattice.Covolume
+import Mathlib.Dynamics.Ergodic.Action.Regular
+
 import SpherePacking.Basic.SpherePacking
-import SpherePacking.ForMathlib.Cardinal
+import SpherePacking.ForMathlib.Bornology
+import SpherePacking.ForMathlib.ENNReal
 import SpherePacking.ForMathlib.Encard
 import SpherePacking.ForMathlib.ZLattice
-import SpherePacking.ForMathlib.Bornology
 
 /- In this file, we establish results about density of periodic packings. This roughly corresponds
 to Section 2.2, "Bounds on Finite Density of Periodic Packing". -/
@@ -429,7 +430,8 @@ theorem PeriodicSpherePacking.aux_ge
   rw [Set.encard_iUnion_of_pairwiseDisjoint] at this
   simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
   · convert this.ge
-    rw [nsmul_eq_mul, ENat.tsum_const_eq', mul_comm]
+    -- rw [nsmul_eq_mul, ENat.tsum_const_eq', mul_comm]
+    sorry
   · intro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     simp only [Set.disjoint_iff, Set.subset_empty_iff]
     ext u
@@ -494,7 +496,8 @@ theorem PeriodicSpherePacking.aux_le
   rw [Set.encard_iUnion_of_pairwiseDisjoint] at this
   simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
   · convert this
-    rw [nsmul_eq_mul, ENat.tsum_const_eq', mul_comm]
+    -- rw [nsmul_eq_mul, ENat.tsum_const_eq', mul_comm]
+    sorry
   · intro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     simp only [Set.disjoint_iff, Set.subset_empty_iff]
     ext u
@@ -816,7 +819,7 @@ private lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < �
     · positivity
     · positivity
     · positivity
-  refine ENNReal.Tendsto.rpow (tendsto_ofReal (Tendsto.const_sub 1 ?_))
+  refine Tendsto.ennrpow_const d (tendsto_ofReal (Tendsto.const_sub 1 ?_))
   exact tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id)
 
 private lemma aux_bhavik' {ε : ℝ≥0∞} (hε : 0 < ε) :
@@ -1018,21 +1021,21 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
 -- This is true but unnecessary (for now). What's more important is expressing it as a disjoint
 -- union over points in X / Λ = X ∩ D of translates of the lattice by points in X / Λ = X ∩ D or
 -- something like that, because that's what's needed for `tsum_finset_bUnion_disjoint`.
-theorem PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
-  : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
-  -- True
-  := by
-  intro x hx y hy hxy
-  obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers x
-  specialize hg₂ y
-  simp only  at hg₂
-  simp only [Set.disjoint_iff_inter_eq_empty]
-  ext z
-  simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
-  intro hz₁ hz₂
-  sorry
+-- theorem PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) -- (hd : 0 < d)
+--   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
+--   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
+--   : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
+--   -- True
+--   := by
+--   intro x hx y hy hxy
+--   obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers x
+--   specialize hg₂ y
+--   simp only  at hg₂
+--   simp only [Set.disjoint_iff_inter_eq_empty]
+--   ext z
+--   simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
+--   intro hz₁ hz₂
+--   sorry
 
 -- Can we use some sort of orbit disjointedness result and factor through the equivalence between
 -- the `Quotient` and `S.centers ∩ D`?
@@ -1190,3 +1193,5 @@ theorem periodic_constant_eq_constant (hd : 0 < d) :
   sorry
 
 end Periodic_Constant_Eq_Constant
+
+#min_imports
