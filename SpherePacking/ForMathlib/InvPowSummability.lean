@@ -3,8 +3,9 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Bhavik Mehta
 -/
-import Mathlib
-import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.Analysis.Distribution.SchwartzSpace
+import Mathlib.Topology.Separation.CompletelyRegular
+
 import SpherePacking.Basic.PeriodicPacking
 
 /-!
@@ -126,7 +127,7 @@ theorem Summable_of_Inv_Pow_Summable'
         exact Subtype.coe_prop x
       have haux₅ : 0 < (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k) := by
         apply pow_pos
-        exact norm_pos_iff'.mpr haux₄
+        positivity
       refine le_of_mul_le_mul_of_pos_right ?_ haux₅
       rw [mul_comm, mul_assoc, inv_mul_cancel₀ (ne_of_gt haux₅), mul_one]
       specialize hC x
@@ -261,3 +262,5 @@ What's wild is that this is CHRIS's file! **ASK ABOUT IT**
 -/
 
 end Sets_Acted_Upon_By_Lattice
+
+#min_imports
