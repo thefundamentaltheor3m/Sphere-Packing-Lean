@@ -3,9 +3,6 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Gareth Ma
 -/
-import Mathlib.Data.Real.StarOrdered
-import Mathlib.Order.Category.NonemptyFinLinOrd
-
 import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.ForMathlib.Finsupp
 import SpherePacking.ForMathlib.Vec

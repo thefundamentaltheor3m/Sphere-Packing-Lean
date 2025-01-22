@@ -1,4 +1,3 @@
-import Mathlib.Topology.Instances.ENNReal
 import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
 /- Maybe put this in Mathlib/Analysis/SpecialFunctions/Pow/Continuity.lean -/
