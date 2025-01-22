@@ -8,13 +8,16 @@ Authors: Sidharth Hariharan
 ## THE RIGHT ONES (NOT THE ONES FROM HERE). THIS FILE IS JUST A TEMPORARY SOLUTION TO MAKE THE
 ## COHN-ELKIES FILE WORK.
 -/
-import Mathlib.Algebra.Module.ZLattice.Basic
 import Mathlib.Algebra.Module.ZLattice.Covolume
-import Mathlib.Analysis.Fourier.FourierTransform
+import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Analysis.Distribution.FourierSchwartz
-import Mathlib.Analysis.Distribution.SchwartzSpace
-import Mathlib.Topology.Algebra.InfiniteSum.Basic
-import Mathlib.Analysis.Normed.Group.InfiniteSum
+import Mathlib.Analysis.RCLike.Inner
+import Mathlib.LinearAlgebra.BilinearForm.DualLattice
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.Topology.Compactness.PseudometrizableLindelof
+import Mathlib.Topology.EMetricSpace.Paracompact
+import Mathlib.Topology.Separation.CompletelyRegular
+
 import SpherePacking.Basic.SpherePacking
 import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.ForMathlib.InvPowSummability
@@ -98,7 +101,7 @@ theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
   (v : EuclideanSpace ℝ (Fin d)) :
   ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
     ∑' m : bilinFormOfRealInner.dualSubmodule Λ,
-  (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ ]) :=
+  (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) :=
   sorry
 
 -- The version below is on the blueprint. I'm pretty sure it can be removed.
@@ -296,3 +299,5 @@ theorem Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
           ring_nf
 
 end Misc
+
+#min_imports
