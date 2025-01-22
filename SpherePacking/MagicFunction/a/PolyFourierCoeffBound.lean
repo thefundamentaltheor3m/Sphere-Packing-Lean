@@ -9,7 +9,6 @@ M4R File
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ForMathlib.tprod
 import SpherePacking.ForMathlib.SpecificLimits
-import SpherePacking.ForMathlib.Divisors
 import Mathlib
 
 /-
