@@ -1,16 +1,8 @@
 import Mathlib.Algebra.Field.Power
-import Mathlib.Algebra.Group.Subgroup.Pointwise
-import Mathlib.Analysis.Complex.LocallyUniformLimit
-import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
-import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
-import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
-import Mathlib.Geometry.Manifold.MFDeriv.FDeriv
-import Mathlib.Geometry.Manifold.SmoothManifoldWithCorners
-import Mathlib.NumberTheory.ModularForms.Basic
-import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
-import Mathlib.NumberTheory.ModularForms.JacobiTheta.OneVariable
+import Mathlib.Analysis.CStarAlgebra.Classes
+import Mathlib.Data.Real.StarOrdered
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
-import Mathlib.NumberTheory.ModularForms.SlashInvariantForms
+import Mathlib.Order.CompletePartialOrder
 
 import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 import SpherePacking.ForMathlib.SlashActions
