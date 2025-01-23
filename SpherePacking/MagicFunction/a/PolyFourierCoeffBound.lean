@@ -133,7 +133,7 @@ private lemma step_1 :
     abs ((f z) / (Δ ⟨z, by linarith⟩)) = abs (
       (∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
       (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)
-    ) := by simp [DiscriminantProductFormula, hf, fouterm, UpperHalfPlane.coe]
+    ) := by simp [DiscriminantProductFormula, hf, fouterm, UpperHalfPlane.coe];
 
 private lemma step_2 :
     abs ((∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
