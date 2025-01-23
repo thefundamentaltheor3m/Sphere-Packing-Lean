@@ -139,15 +139,13 @@ lemma Complex.log_of_summable {f : ℕ → ℂ} (hf : Summable f) :
 
 lemma tprod_ne_zero (x : ℍ) (f : ℕ → ℍ → ℂ) (hf : ∀ i x, 1 + f i x ≠ 0)
   (hu : ∀ x : ℍ, Summable fun n => f n x) : (∏' i : ℕ, (1 + f i) x) ≠ 0 := by
-  have := Complex.cexp_tsum_eq_tprod (fun n => fun x => 1 + f n x) ?_ ?_
-  have hxx := congrFun this x
+  have := Complex.cexp_tsum_eq_tprod (fun n => 1 + f n x) ?_ ?_
   simp
-  rw [← hxx]
+  rw [← this]
   simp only [comp_apply, exp_ne_zero, not_false_eq_true]
-  intro n z
+  intro n
   simp
   apply hf
-  intro x
   simp
   apply Complex.log_of_summable
   apply hu x
@@ -1533,10 +1531,22 @@ lemma cexp_two_pi_I_im_antimono (a b : ℍ) (h : a.im ≤ b.im) (n : ℕ) :
   simp
   gcongr
 
+
+variable {α ι: Type*}
+
+lemma Complex.cexp_tsum_eq_tprod_func (f : ι → α → ℂ) (hfn : ∀ x n, f n x ≠ 0)
+    (hf : ∀ x : α, Summable fun n => log (f n x)) :
+    (cexp ∘ (fun a : α => (∑' n : ι, log (f n a)))) = fun a : α => ∏' n : ι, f n a := by
+  ext a
+  apply (HasProd.tprod_eq ?_).symm
+  apply ((hf a).hasSum.cexp).congr
+  intro _
+  congr
+  exact funext fun x ↦ exp_log (hfn a x)
+
 theorem Delta_boundedfactor :
   Tendsto (fun x : ℍ ↦ ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x)) ^ 24) atImInfty (𝓝 1) := by
-  have := Complex.cexp_tsum_eq_tprod (fun n : ℕ => fun x : ℍ =>
-    (1 - (cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x))) ^ 24 ) ?_ ?_
+  have := Complex.cexp_tsum_eq_tprod_func (fun n : ℕ => fun x : ℍ => (1 - (cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x))) ^ 24 ) ?_ ?_
   conv =>
     enter [1]
     rw [← this]
@@ -1820,9 +1830,6 @@ variable {k : ℤ} {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup SL(2, ℤ)} (n
 
 open scoped Real MatrixGroups CongruenceSubgroup
 
-def qExpansion : PowerSeries ℂ :=
-  .mk fun m ↦ (↑m.factorial)⁻¹ * iteratedDeriv m (cuspFunction n f) 0
-
 lemma IteratedDeriv_smul (a : ℂ)  (f : ℂ → ℂ) (m : ℕ) :
     iteratedDeriv m (a • f) = a • iteratedDeriv m f  := by
   induction' m with m hm
@@ -1860,21 +1867,6 @@ lemma qExpansion_smul (a : ℂ) (f : CuspForm Γ(n) k) [NeZero n] :
   ring
 
 
-lemma qExpansion_coeff (m : ℕ) :
-    (qExpansion n f).coeff ℂ m = (↑m.factorial)⁻¹ * iteratedDeriv m (cuspFunction n f) 0 := by
-  simp only [qExpansion, PowerSeries.coeff_mk]
-
-lemma hasSum_qExpansion_of_abs_lt [NeZero n] [ModularFormClass F Γ(n) k]
-    {q : ℂ} (hq : q.abs < 1) :
-    HasSum (fun m : ℕ ↦ (qExpansion n f).coeff ℂ m • q ^ m) (cuspFunction n f q) := by
-  simp only [qExpansion_coeff, ← eq_cuspFunction n f]
-  have hdiff : DifferentiableOn ℂ (cuspFunction n f) (Metric.ball 0 1) := by
-    refine fun z hz ↦ (differentiableAt_cuspFunction n f ?_).differentiableWithinAt
-    simpa using hz
-  have qmem : q ∈ Metric.ball 0 1 := by simpa using hq
-  convert hasSum_taylorSeries_on_ball hdiff qmem using 2 with m
-  rw [sub_zero, smul_eq_mul, smul_eq_mul, mul_right_comm, smul_eq_mul, mul_assoc]
-
 lemma cuspfunc_Zero [NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0 = (qExpansion n f).coeff ℂ 0 := by
   have := hasSum_qExpansion_of_abs_lt n f (q := 0) (by simp)
   simp at this
@@ -1884,46 +1876,7 @@ lemma cuspfunc_Zero [NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0
 
 local notation "𝕢" => Periodic.qParam
 
-theorem UpperHalfPlane.abs_qParam_lt_one (n : ℕ) [NeZero n] (τ : ℍ) : (𝕢 n τ).abs < 1 := by
-  rw [Periodic.abs_qParam, Real.exp_lt_one_iff, neg_mul, coe_im, neg_mul, neg_div, neg_lt_zero,
-    div_pos_iff_of_pos_right (mod_cast Nat.pos_of_ne_zero <| NeZero.ne _)]
-  positivity
 
-lemma hasSum_qExpansion [NeZero n] [ModularFormClass F Γ(n) k] (τ : ℍ) :
-    HasSum (fun m : ℕ ↦ (qExpansion n f).coeff ℂ m • 𝕢 n τ ^ m) (f τ) := by
-  simpa only [eq_cuspFunction n f] using
-    hasSum_qExpansion_of_abs_lt n f (τ.abs_qParam_lt_one n)
-
-/-- The `q`-expansion of a level `n` modular form, bundled as a `FormalMultilinearSeries`.
-TODO: Maybe get rid of this and instead define a general API for converting `PowerSeries` to
-`FormalMultlinearSeries`. -/
-def qExpansionFormalMultilinearSeries : FormalMultilinearSeries ℂ ℂ ℂ :=
-  fun m ↦ (qExpansion n f).coeff ℂ m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m _
-
-lemma qExpansionFormalMultilinearSeries_apply_norm (m : ℕ) :
-    ‖qExpansionFormalMultilinearSeries n f m‖ = ‖(qExpansion n f).coeff ℂ m‖ := by
-  rw [qExpansionFormalMultilinearSeries,
-    ← (ContinuousMultilinearMap.piFieldEquiv ℂ (Fin m) ℂ).symm.norm_map]
-  simp only [_root_.map_smul, smul_eq_mul, norm_mul, Complex.norm_eq_abs,
-    LinearIsometryEquiv.norm_map, ContinuousMultilinearMap.norm_mkPiAlgebraFin, mul_one]
-
-lemma qExpansionFormalMultilinearSeries_radius [NeZero n] [ModularFormClass F Γ(n) k] :
-    1 ≤ (qExpansionFormalMultilinearSeries n f).radius := by
-  refine le_of_forall_ge_of_dense fun r hr ↦ ?_
-  lift r to NNReal using hr.ne_top
-  apply FormalMultilinearSeries.le_radius_of_summable
-  simp only [qExpansionFormalMultilinearSeries_apply_norm]
-  rw [← r.abs_eq]
-  simp_rw [pow_abs, ← Complex.abs_ofReal, ofReal_pow, ← Complex.norm_eq_abs, ← norm_mul]
-  exact (hasSum_qExpansion_of_abs_lt n f (q := r) (by simpa using hr)).summable.norm
-
-/-- The `q`-expansion of `f` is an `FPowerSeries` representing `cuspFunction n f`. -/
-lemma hasFPowerSeries_cuspFunction [NeZero n] [ModularFormClass F Γ(n) k] :
-    HasFPowerSeriesOnBall (cuspFunction n f) (qExpansionFormalMultilinearSeries n f) 0 1 := by
-  refine ⟨qExpansionFormalMultilinearSeries_radius n f, zero_lt_one, fun hy ↦ ?_⟩
-  rw [EMetric.mem_ball, edist_zero_right, ENNReal.coe_lt_one_iff, ← NNReal.coe_lt_one,
-    coe_nnnorm, Complex.norm_eq_abs] at hy
-  simpa [qExpansionFormalMultilinearSeries] using hasSum_qExpansion_of_abs_lt n f hy
 
 
 theorem cuspfunc_lim_coef {k : ℤ} {F : Type u_1} [inst : FunLike F ℍ ℂ] (n : ℕ) (c : ℕ → ℂ) (f : F)
