@@ -357,7 +357,7 @@ theorem extracted_6 (z : ℍ) : CauchySeq fun N : ℕ ↦ ∑ n ∈ Finset.Ico (
 
 lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 * π * Complex.I / z =
   ∑' n : ℤ, ∑' m : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m n) := by
-  rw [G2_S_act, ← PS3 z, aux3, limUnder_sub]
+  rw [G2_S_act, ← PS3 z, tsum_limUnder_atTop, limUnder_sub]
   congr
   ext N
   simp only [one_div, Pi.sub_apply, mul_inv_rev]
@@ -471,12 +471,12 @@ lemma G2_alt_eq (z : ℍ) : G₂ z = ∑' m : ℤ, ∑' n : ℤ, (1 / (((m : ℂ
     rw [show t = t + 0 by ring, ← this]
     simp only [t]
     rw [← tsum_add]
-    · rw [aux3]
+    · rw [tsum_limUnder_atTop]
       · congr
         ext n
         congr
         ext m
-        rw [aux3, aux3, auxr z m]
+        rw [tsum_limUnder_atTop, tsum_limUnder_atTop, auxr z m]
         · have H := G2_prod_summable1_δ z m
           simpa using H
         · have H := G2_summable_aux m z 2 (by norm_num)
