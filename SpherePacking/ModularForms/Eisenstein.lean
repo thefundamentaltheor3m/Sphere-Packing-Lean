@@ -1034,6 +1034,18 @@ noncomputable section  Product_Formula
 def Δ (z : UpperHalfPlane) :=  cexp (2 * π * Complex.I * z) * ∏' (n : ℕ),
     (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24
 
+lemma DiscriminantProductFormula ( z : ℍ) : Δ z =  cexp (2 * π * Complex.I * z) * ∏' (n : ℕ+),
+    (1 - cexp (2 * π * Complex.I * (n) * z)) ^ 24 := by
+    simp [Δ]
+    conv =>
+      enter [1,1]
+      ext n
+      rw [show (n : ℂ) + 1 = ((n + 1) : ℕ) by simp]
+
+    have := tprod_pnat_eq_tprod_succ (fun n => (1 - cexp (2 * π * Complex.I * (n) * z)) ^ 24)
+    rw [this]
+
+
 lemma Multipliable_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) :
      Multipliable (fun i => f i ^ n) := by
   induction' n with n hn
@@ -2334,7 +2346,7 @@ lemma Delta_q_one_term : (qExpansion 1 Delta).coeff ℂ 1 = 1 := by
 
 lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff ℂ 1 = 1 := by sorry
 
-theorem DiscriminantProductFormula (z : UpperHalfPlane) : Delta = Delta_E4_E6_aux  := by
+theorem Delta_E4_eqn (z : UpperHalfPlane) : Delta = Delta_E4_E6_aux  := by
   ext z
   obtain ⟨c, hc, H⟩ := delta_eq_E4E6_const
   suffices h2 : c  = 1 by
