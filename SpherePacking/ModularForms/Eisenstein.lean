@@ -2151,6 +2151,42 @@ lemma cuspFunction_mul (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ
   rw [iteratedDeriv_succ, iteratedDeriv_succ, hm]
   simp only [mul_add, add_mul, sum_range_succ, mul_assoc, mul_comm, mul_left_comm]
  -/
+
+lemma deriv_mul_eq (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
+    deriv (f * g) = deriv f *  g + f * deriv g := by
+  ext y
+  exact deriv_mul (hf y) (hg y)
+
+lemma IteratedDeriv_mul (f g : ℂ → ℂ) (m : ℕ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
+    iteratedDeriv m (f * g) =
+    ∑ i in Finset.range m.succ, (m.choose i) * (iteratedDeriv i f) * (iteratedDeriv (m - i) g) := by
+  induction' m with m hm generalizing f g
+  simp only [iteratedDeriv_zero, Finset.sum_singleton, Finset.range_one, Finset.mem_singleton,
+    Nat.choose_zero_right, Nat.sub_zero, Nat.choose_one_right, Nat.sub_self, mul_one]
+  ring
+  --rw [iteratedDeriv_succ', deriv_mul_eq f g hf hg]
+  rw [iteratedDeriv_succ, hm]
+  ext y
+  simp
+  have := deriv_sum (A := fun i => (((m.choose i) : ℂ) • (iteratedDeriv i f) * (iteratedDeriv (m - i) g ))) (u := Finset.range (m+1)) (x := y) ?_
+  simp at *
+  have hy : (fun y ↦ ∑ x ∈ Finset.range (m + 1), ↑(m.choose x) * iteratedDeriv x f y * iteratedDeriv (m - x) g y) =
+    (∑ x ∈ Finset.range (m + 1), (fun y => ↑(m.choose x) * iteratedDeriv x f * iteratedDeriv (m - x) g) y) := by
+    exact
+      Eq.symm
+        (Finset.sum_fn (Finset.range (m + 1)) fun c y ↦
+          ↑(m.choose c) * iteratedDeriv c f y * iteratedDeriv (m - c) g y)
+  rw [hy] at this
+
+  conv =>
+    enter [1]
+    --rw [this]
+  sorry
+  sorry
+  sorry
+  sorry
+
+
 lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b)
     [NeZero n] : (qExpansion n (f.mul g)) = ((qExpansion n f)) * ((qExpansion n g)) := by
   ext m
