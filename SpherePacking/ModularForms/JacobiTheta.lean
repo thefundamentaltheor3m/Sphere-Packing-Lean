@@ -443,7 +443,12 @@ theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
     obtain ⟨s, rfl⟩ := hs
     rw [Set.mem_iInter, SetLike.mem_coe]
     intro hs
-    simp [top_le_iff.mp <| SL2Z_generate.symm ▸ (Subgroup.closure_le s).mpr hs]
+    have hs2 : {S, T} ⊆ (s : Set (SL(2, ℤ))) := by
+      apply subset_trans _ hs
+      simp only [Set.singleton_subset_iff, Set.mem_insert_iff, Set.mem_singleton_iff, true_or,
+        Set.insert_subset_insert]
+    simp only [top_le_iff.mp <| SL2Z_generate.symm ▸ (Subgroup.closure_le s).mpr hs2,
+      Subgroup.mem_top]
 
 theorem isBoundedAtImInfty_H₂_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ) :=
   (isBoundedAtImInfty_H_slash _).left
