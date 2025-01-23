@@ -324,7 +324,7 @@ lemma summable_pain (z : ℍ) (i : ℤ) :
   apply this
 
 
-theorem extracted_1 (b : Fin 2 → ℤ) (hb : b ≠ 0) (HB1 : b ≠ ![0, -1]) :
+theorem vector_norm_bound (b : Fin 2 → ℤ) (hb : b ≠ 0) (HB1 : b ≠ ![0, -1]) :
     ‖![b 0, b 1 + 1]‖ ^ (-1 : ℝ) * ‖b‖ ^ (-2 : ℝ) ≤ 2 * ‖b‖ ^ (-3 : ℝ) := by
   rw [show (-3 : ℝ) = -1 -2  by norm_num]
   have ht : b = ![b 0, b 1] := by
@@ -421,7 +421,7 @@ lemma G_2_alt_summable (z : ℍ) : Summable fun  (m : Fin 2 → ℤ) =>
   rw [hg, mul_assoc]
   apply mul_le_mul
   rfl
-  apply  extracted_1
+  apply  vector_norm_bound
   convert HB1
   apply symm
   simp only [Matrix.cons_eq_zero_iff, Matrix.zero_empty, and_self]
