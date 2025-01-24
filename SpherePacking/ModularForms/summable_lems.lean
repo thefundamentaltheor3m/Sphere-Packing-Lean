@@ -7,6 +7,7 @@ import Mathlib.Topology.EMetricSpace.Paracompact
 import Mathlib.Topology.Separation.CompletelyRegular
 import SpherePacking.ModularForms.exp_lems
 import SpherePacking.ModularForms.upperhalfplane
+import Mathlib
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set
   Metric Filter Function Complex MatrixGroups
@@ -240,6 +241,67 @@ lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ ≤ c * 
   simp only [one_div]
   apply mul_pos hc (inv_pos.mpr hb)
 
+/- lemma summable_hammer (f g : ℕ → ℂ) (a b : ℝ) (hab : 1 < a + b)
+    (hf : (fun n => (f n)⁻¹) =O[atTop] fun n => (n : ℝ) ^ (-a : ℝ))
+    (hg : (fun n => (g n)⁻¹) =O[atTop] fun n => (n : ℝ) ^ (-b : ℝ))  :
+    Summable fun n => (f n * g n)⁻¹ := by
+
+  have := (Real.summable_nat_rpow_inv (p := a + b)).mpr (by norm_cast at *)
+  rw [← summable_nat_add_iff 1] at *
+  apply summable_of_isBigO_nat this
+  conv =>
+    enter [3]
+    ext nReA
+    rw [← Real.rpow_neg (by norm_cast; simp), neg_add, Real.rpow_add (by norm_cast; simp)]
+  conv =>
+    enter [2]
+    ext n
+    rw [mul_inv]
+
+  apply Asymptotics.IsBigO.mul hf hg -/
+
+
+lemma summable_hammerTime  {α : Type} [NormedField α] [CompleteSpace α] (f  : ℤ → α) (a : ℝ) (hab : 1 < a)
+    (hf : (fun n => (f n)⁻¹) =O[cofinite] fun n => ((n : ℝ) ^ (a : ℝ))⁻¹) :
+    Summable fun n => (f n)⁻¹ := by
+  have := (Real.summable_nat_rpow_inv (p := a )).mpr (by norm_cast at *)
+
+  apply summable_of_isBigO _ hf
+  sorry
+  --exact hf
+
+
+lemma chris (f g e : ℤ → ℝ) (hf : f =O[cofinite] g) (h : e ≤ᶠ[cofinite] f) : e =O[cofinite] g := by
+  apply Asymptotics.IsBigO.of_norm_eventuallyLE
+  rw [@Asymptotics.isBigO_iff'] at hf
+  rw [@eventuallyLE_iff_all_subsets] at h
+  have hh := h ⊤
+  simp at hh
+
+  sorry
+
+lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻¹) =O[cofinite] fun n => ((n : ℝ)⁻¹)  := by
+
+  sorry
+
+
+
+theorem extracted_1 (z : ℍ) (i : ℤ) :
+  Summable fun (m : ℤ) ↦ ((m : ℂ) * ↑z + ↑i + 1)⁻¹ * ((m : ℂ) * ↑z + ↑i)⁻¹ := by
+  conv =>
+    enter [1]
+    ext m
+    rw [← mul_inv]
+  apply summable_hammerTime _ 2 (by norm_num)
+  simp
+  constructor
+  ·
+    sorry
+
+  · rw [@Asymptotics.isBigO_atTop_iff_eventually_exists]
+    simp
+
+    sorry
 
 lemma summable_pain (z : ℍ) (i : ℤ) :
   Summable (fun m : ℤ ↦ 1 / ((m : ℂ) * ↑z + ↑i) - 1 / (↑m * ↑z + ↑i + 1)) := by
@@ -261,6 +323,7 @@ lemma summable_pain (z : ℍ) (i : ℤ) :
   rw [h1]
   simp
   have :  Summable fun (m : ℤ) ↦ (↑(m : ℂ) * (z  : ℂ) + ↑i + 1)⁻¹ * (↑(m : ℂ) * (z : ℂ) + ↑i)⁻¹ := by
+
     have hS : Summable fun m : ℤ => 1 / (r z ^ 2 * 2⁻¹ * ‖![m, i]‖ ^ 2) := by
       apply extracted_abs_norm_summable
     apply hS.of_norm_bounded_eventually
