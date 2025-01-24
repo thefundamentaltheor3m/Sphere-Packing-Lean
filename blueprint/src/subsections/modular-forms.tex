@@ -310,10 +310,14 @@ We know that $\dim(M_k(\Gamma_1))$ is finite dimensional from the above, now thi
 \begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:dim_mf}
 We have
 \begin{align}
+    \dim M_2(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimM2} \\
     \dim M_4(\mathrm{SL}_{2}(\mathbb{Z})) &= 1, \label{eqn:dimM4} \\
     \dim M_6(\mathrm{SL}_{2}(\mathbb{Z})) &= 1, \label{eqn:dimM6} \\
     \dim M_8(\mathrm{SL}_{2}(\mathbb{Z})) &= 1, \label{eqn:dimM8} \\
-    \dim M_2(\Gamma(2)) &= 2, \label{eqn:dimM2l2}
+    \dim S_4(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimS4} \\
+    \dim S_6(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimS6} \\
+    \dim S_8(\mathrm{SL}_{2}(\mathbb{Z})) &= 0. \label{eqn:dimS8}
+    % \dim M_2(\Gamma(2)) &= 2, \label{eqn:dimM2l2}
 \end{align}
 \end{corollary}
 
@@ -496,8 +500,21 @@ H_{2} + H_{4} = H_{3} \Leftrightarrow \Theta_{2}^4 + \Theta_{4}^4 = \Theta_{3}^4
 \end{equation}
 \end{lemma}
 \begin{proof}
-By \eqref{eqn:dimM2l2}, $H_{2}$, $H_{3}$, and $H_{4}$ are linearly dependent.
-The relation can be identified by comparing the first two $q$-coefficients of the Fourier expansions.
+Let $f = (H_2 + H_4 - H_3)^{2}$.
+Obviously, $f$ is a modular form of weight $4$ and level $\Gamma(2)$.
+However, by using the transformation rules of $H_2, H_3, H_4$, one have
+\begin{align}
+    f|_{S} &= (-H_4 - H_2 + H_3)^{2} = f\\
+    f|_{T} &= (-H_2 + H_3 - H_4)^{2} = f
+\end{align}
+so $f$ is actually a modular form of level $1$.
+By considering the limit as $z \to i\infty$, $f$ is a cusp form, so we get $f = 0$ from \eqref{eqn:dimS4}.
+% Apply \Cref{lemma:trzero} to $f = H_{2}$, and use \eqref{eqn:H2-transform-S} and \eqref{eqn:H4-transform-T} so that
+% \[
+%     \mathrm{Tr}(H_{2}) = H_{2} + H_{2} | S + H_{2} | T = H_{2} + H_{4} + H_{3} = 0.
+% \]
+% By \eqref{eqn:dimM2l2}, $H_{2}$, $H_{3}$, and $H_{4}$ are linearly dependent.
+% The relation can be identified by comparing the first two $q$-coefficients of the Fourier expansions.
 \end{proof}
 
 These are also related to $E_4$, $E_6$, and $\Delta$ as follows.
@@ -605,7 +622,7 @@ By taking the derivative of the above equation, we get
 Combined with \eqref{eqn:E2-transform-general}, we get
 \begin{align}
     ((\partial_k F)|_{k+2}\gamma)(z) &= (cz + d)^{-k-2} \left(F'\left(\frac{az + b}{cz + d}\right) - \frac{k}{12}E_2\left(\frac{az + b}{cz + d}\right)F\left(\frac{az + b}{cz + d}\right)\right) \\
-    &= F'(z) - \frac{ikc}{2 \pi(cz + d)} F(z) - \frac{k}{12} \left(E_2 - \frac{6c}{\pi(cz + d)}\right) F(z) \\
+    &= F'(z) - \frac{ikc}{2 \pi(cz + d)} F(z) - \frac{k}{12} \left(E_2 - \frac{6ic}{\pi(cz + d)}\right) F(z) \\
     &= F'(z) - \frac{k}{12} E_2(z) F(z) = (\partial_{k} F)(z)
 \end{align}
 so $\partial_{k}F \in M_{k+2}(\Gamma)$.
@@ -653,7 +670,7 @@ By Ramanujan's formula \eqref{eqn:DE4} and \eqref{eqn:DE6},
 \end{proof}
 
 Similar argument allow us to compute (Serre) derivatives of $H_2, H_3, H_4$.
-\begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T}
+\begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T, lemma:jacobi-identity}
 We have
 \begin{align}
     H_2' &= \frac{1}{6} (H_{2}^{2} + 2 H_{2} H_{4} + E_2 H_2) \label{eqn:H2-der}\\
@@ -669,8 +686,34 @@ or equivalently,
 \end{proposition}
 \begin{proof}
 Equivalences are obvious from the definition of the Serre derivative.
-By Theorem \ref{thm:serre-der-modularity}, all the Serre derivatives are modular forms of weight 4 and level $\Gamma(2)$.
-We have $\dim M_4(\Gamma(2)) = 3$ with basis $H_2^2, H_2 H_4, H_4^2$, and comparing the first three $q$-coefficients give \eqref{eqn:H2-serre-der}, \eqref{eqn:H3-serre-der}, and \eqref{eqn:H4-serre-der}.
+Define $f_{2}, f_{3}, f_{4}$ be the differences of the left and right hand sides of \eqref{eqn:H2-serre-der}, \eqref{eqn:H3-serre-der}, \eqref{eqn:H4-serre-der}.
+\begin{align}
+    f_{2} &:= \partial_{2} H_{2} - \frac{1}{6} H_{2}(H_{2} + 2H_{4}) \\
+    f_{3} &:= \partial_{2} H_{3} - \frac{1}{6} (H_{2}^2 - H_{4}^2) \\
+    f_{4} &:= \partial_{2} H_{4} + \frac{1}{6} H_{4}(2H_{2} + H_{4}).
+\end{align}
+Then these are a priori modular forms of weight $4$ and level $\Gamma(2)$, and our goal is to prove that they are actually zeros.
+By Jacobi's identity \eqref{eqn:jacobi-identity}, we have $f_{2} + f_{4} = f_{3}$.
+Also, the transformation rules of $H_2, H_3, H_4$ give
+\begin{align}
+    f_{2}|_{S} &= -f_{4} \\
+    f_{2}|_{T} &= -f_{2} \\
+    f_{4}|_{S} &= -f_{2} \\
+    f_{4}|_{T} &= f_{3} = f_{2} + f_{4}.
+\end{align}
+Now, define
+\begin{align}
+    g &:= (2 H_2 + H_4) f_2 + (H_2 + 2 H_4) f_4 \\
+    h &:= f_{2}^{2} + f_{2}f_{4} + f_{4}^{2}.
+\end{align}
+Then one can check that both $g$ and $h$ are invariant under the actions of $S$ and $T$, hence they are modular forms of level $1$.
+Also, by analyzing the limit of $g$ and $h$ as $z \to i \infty$, one can see that $g$ and $h$ are cusp forms, hence $g = h = 0$ by \eqref{eqn:dimS6} and \eqref{eqn:dimS8}.
+This implies
+\begin{align}
+    3 E_4 f_2^{2} &= 3 (H_2^2 + H_2 H_4 + H_4^2) f_2^{2} = ((2 H_2 + H_4)^{2} - (2H_2 + H_4)(H_2 + 2H_4) + (H_2 + 2H_4)^{2}) f_2^{2}\\
+    &= (2 H_2 + H_4)^{2} (f_2^2 + f_2 f_4 + f_4^2) = 0
+\end{align}
+and by considering $q$-series ($E_4$ has an invertible $q$-series), we get $f_2 = 0$.
 \end{proof}
 
 \begin{theorem}\label{thm:serre-der-prod-rule}\uses{def:serre-der}
