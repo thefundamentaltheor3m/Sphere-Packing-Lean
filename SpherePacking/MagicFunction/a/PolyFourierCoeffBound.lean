@@ -444,8 +444,6 @@ Recall that σₖ(n) = ∑ {d | n}, d ^ k. In this section, we prove that for al
 σₖ(n) = O(n ^ (k + 1)).
 -/
 
-#check σ
-
 theorem ArithmeticFunction.sigma_asymptotic (k : ℕ) :
     (fun n ↦ (σ k n : ℝ)) =O[atTop] (fun n ↦ (n ^ (k + 1) : ℝ)) := by
   rw [isBigO_iff]
