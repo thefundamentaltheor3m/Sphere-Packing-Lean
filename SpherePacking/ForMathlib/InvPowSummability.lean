@@ -5,8 +5,9 @@ Authors: Sidharth Hariharan, Bhavik Mehta
 -/
 import Mathlib.Analysis.Distribution.SchwartzSpace
 import Mathlib.Topology.Separation.CompletelyRegular
+import Mathlib.Algebra.Module.ZLattice.Basic
 
-import SpherePacking.Basic.PeriodicPacking
+-- import SpherePacking.Basic.PeriodicPacking
 
 /-!
 This file proves lemmas involving the summability of functions that decay in a manner comparable to
@@ -100,8 +101,8 @@ theorem Summable_of_Inv_Pow_Summable'
     use s
     intro t ht
     specialize hs t ht
-    suffices htriangle : ∑ x ∈ t, |f ↑x| < ε
-    · refine lt_of_le_of_lt ?_ htriangle
+    suffices htriangle : ∑ x ∈ t, |f ↑x| < ε by
+      refine lt_of_le_of_lt ?_ htriangle
       rw [Real.norm_eq_abs]
       exact Finset.abs_sum_le_sum_abs (fun i : X ↦ f ↑i) t
     have haux₂ : |∑ x ∈ t, (C + 1) * (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹| < ε := by
@@ -217,9 +218,20 @@ sphere packing, or, more generally, over any set of points in Euclidean space th
 a lattice such that the number of orbits is finite.
 -/
 
-section Sets_Acted_Upon_By_Lattice
-
 open ZLattice ZSpan
+
+section Stuff_From_Periodic
+
+noncomputable def ZLattice.basis_index_equiv (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
+  (Module.Free.ChooseBasisIndex ℤ Λ) ≃ (Fin d) := by
+  refine Fintype.equivFinOfCardEq ?h
+  rw [← Module.finrank_eq_card_chooseBasisIndex,
+      ZLattice.rank ℝ Λ,
+      finrank_euclideanSpace, Fintype.card_fin]
+
+end Stuff_From_Periodic
+
+section Sets_Acted_Upon_By_Lattice
 
 theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))}
   {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))} [DiscreteTopology ↥Λ] [IsZLattice ℝ Λ] :
@@ -249,9 +261,9 @@ theorem Summable_Inverse_Powers_of_Finite_Orbits
 
   sorry
 
-theorem Summable_Inverse_Powers_over_Periodic_Packing_Centres (P : PeriodicSpherePacking d) :
-  Inv_Pow_Norm_Summable_Over_Set_Euclidean P.centers :=
-  Summable_Inverse_Powers_of_Finite_Orbits P.addAction -- P.finiteOrbitRelQuotient
+-- theorem Summable_Inverse_Powers_over_Periodic_Packing_Centres (P : PeriodicSpherePacking d) :
+--   Inv_Pow_Norm_Summable_Over_Set_Euclidean P.centers :=
+--   Summable_Inverse_Powers_of_Finite_Orbits P.addAction -- P.finiteOrbitRelQuotient
 
 /- *TODO:* Move to `SpherePacking/CohnElkies/Prereqs.lean` -/
 
