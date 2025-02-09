@@ -22,7 +22,7 @@ import SpherePacking.ForMathlib.Vec
 import SpherePacking.ForMathlib.VolumeOfBalls
 import SpherePacking.ForMathlib.ZLattice
 import SpherePacking.MagicFunction.a.Basic
-import SpherePacking.MagicFunction.a.PolyFourierCoeffBound
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.ModularForms.AtImInfty
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ModularForms.JacobiTheta
