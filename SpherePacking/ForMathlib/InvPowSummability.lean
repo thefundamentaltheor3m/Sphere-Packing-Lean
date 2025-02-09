@@ -7,7 +7,7 @@ import Mathlib.Analysis.Distribution.SchwartzSpace
 import Mathlib.Topology.Separation.CompletelyRegular
 import Mathlib.Algebra.Module.ZLattice.Basic
 
--- import SpherePacking.Basic.PeriodicPacking
+import SpherePacking.Basic.PeriodicPacking
 
 /-!
 This file proves lemmas involving the summability of functions that decay in a manner comparable to
@@ -219,17 +219,6 @@ a lattice such that the number of orbits is finite.
 -/
 
 open ZLattice ZSpan
-
-section Stuff_From_Periodic
-
-noncomputable def ZLattice.basis_index_equiv (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
-  (Module.Free.ChooseBasisIndex ℤ Λ) ≃ (Fin d) := by
-  refine Fintype.equivFinOfCardEq ?h
-  rw [← Module.finrank_eq_card_chooseBasisIndex,
-      ZLattice.rank ℝ Λ,
-      finrank_euclideanSpace, Fintype.card_fin]
-
-end Stuff_From_Periodic
 
 section Sets_Acted_Upon_By_Lattice
 
