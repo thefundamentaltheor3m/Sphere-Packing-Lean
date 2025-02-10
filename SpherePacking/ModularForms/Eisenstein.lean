@@ -717,8 +717,9 @@ lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularFor
   rw [iteratedDeriv_mul, iteratedDeriv_mul]
   simp
   have := Finset.sum_choose_succ_mul (fun i => fun j => ((iteratedDeriv i (cuspFunction n f)) * (iteratedDeriv j (cuspFunction n g))) 0) m
+  sorry
 
-  rw [Finset.sum_antidiagonal_choose_succ_mul ]
+  --rw [Finset.sum_antidiagonal_choose_succ_mul ]
 
   --have := FormalMultilinearSeries.coeff_fslope
   --have := deriv_mul (c:= cuspFunction n f) (d := cuspFunction n g)
@@ -728,7 +729,7 @@ lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularFor
   rw [PowerSeries.coeff_mul ]
   simp_rw [qExpansion_coeff ] -/
 
-  sorry
+  all_goals {sorry}
 
 
 /-
@@ -855,49 +856,130 @@ lemma auxasdf (n : ℕ) : (PowerSeries.coeff ℂ n) ((qExpansion 1 E₄) * (qExp
 
 def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 := by sorry
 
-
+lemma Delta_cuspFuntion_eq : Set.EqOn  (cuspFunction 1 Delta)
+     (fun y  => (y : ℂ) * ∏' i, ((1 : ℂ) - y ^ (i + 1)) ^ 24)  (Metric.ball 0 (1/2)) := by
+  rw [cuspFunction]
+  intro y hy
+  by_cases hyn0 : y = 0
+  · rw [hyn0]
+    simp
+    have := CuspFormClass.cuspFunction_apply_zero 1 Delta
+    rw [cuspFunction] at this
+    simpa using this
+  · rw [Function.Periodic.cuspFunction_eq_of_nonzero]
+    simp
+    have hz :=Function.Periodic.im_invQParam_pos_of_abs_lt_one (h := 1) (by exact Real.zero_lt_one) (q := y) ?_ ?_
+    rw [ofComplex_apply_of_im_pos hz]
+    rw [Delta_apply, Δ]
+    have hq := Function.Periodic.qParam_right_inv (h := 1) ?_ (q := y) hyn0
+    simp
+    have : cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y) = y := by
+      nth_rw 2 [← hq]
+      congr 1
+      simp
+    rw [this]
+    congr
+    ext n
+    congr
+    have : cexp (2 * ↑π * Complex.I * (↑n + 1) * Periodic.invQParam 1 y) =
+      (cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y)) ^ (n+1)  := by
+      rw [← Complex.exp_nsmul]
+      congr
+      ring
+    rw [this]
+    congr
+    exact Ne.symm (zero_ne_one' ℝ)
+    simp at hy
+    apply lt_trans hy
+    linarith
+    exact hyn0
+    exact hyn0
 
 
 lemma delta_eq_E4E6_const : ∃ (c : ℂ), c ≠ 0 ∧ (c • Delta) = Delta_E4_E6_aux := by sorry
 
+
+lemma asdf : TendstoLocallyUniformlyOn (fun n : ℕ ↦ ∏ x ∈ Finset.range n,
+    fun y : ℂ ↦ (1 - y ^ (x + 1))) (fun x ↦ ∏' i, (1 - x ^ (i + 1))) atTop (Metric.ball 0 (1/2 : ℝ)) := by
+  have := prod_tendstoUniformlyOn_tprod' ( Metric.closedBall 0 (1/2)) (f:= fun x : ℕ => fun y : ℂ => -y ^ (x + 1) )
+    (by exact isCompact_closedBall 0 (1 / 2)) (fun n => (1/2)^(n +1)) (sorry) ?_ ?_ ?_
+  apply TendstoLocallyUniformlyOn.mono (s := Metric.closedBall 0 (1/2))
+  simp at *
+  have H:= this.tendstoLocallyUniformlyOn
+  conv =>
+    enter [1]
+    ext y
+    conv =>
+      enter [2]
+      ext n y
+      rw [sub_eq_add_neg]
+  conv =>
+    enter [2]
+    ext y
+    conv =>
+      enter [1]
+      ext n
+      rw [sub_eq_add_neg]
+  convert H
+  simp
+  exact ball_subset_closedBall
+  intro n x hx
+  simp at *
+  rw [← inv_pow]
+  apply pow_le_pow_left₀
+  exact AbsoluteValue.nonneg Complex.abs x
+  exact hx
+  intro x n
+  have hx := x.2
+  simp at *
+
+  sorry
+  intro n
+  fun_prop
+
+
+
+theorem diffwithinat_prod_1 : DifferentiableWithinAt ℂ (fun (y : ℂ) ↦ ∏' (i : ℕ), (1 - y ^ (i + 1)) ^ 24) (ball 0 (1 / 2)) 0 := by
+  conv =>
+    enter [2]
+    ext n
+    rw [← tprod_pow _ (sorry)]
+  apply DifferentiableWithinAt.pow
+  have hu := asdf.differentiableOn ?_ ?_
+  apply hu
+  simp
+  simp
+  use 0
+  intro b hb
+  have := DifferentiableOn.finset_prod (u := Finset.range b) (f := fun x : ℕ => fun y : ℂ => 1 - y ^ (x + 1))
+    (s := Metric.ball 0 (1/2)) ?_
+  simp at this
+  convert this
+  simp
+  intro i hi
+  fun_prop
+  exact isOpen_ball
+
+
 lemma Delta_q_one_term : (qExpansion 1 Delta).coeff ℂ 1 = 1 := by
   rw [qExpansion_coeff]
   simp
-  apply HasDerivAt.deriv
-  refine hasDerivAt_iff_tendsto_slope_zero.mpr ?_
-  rw [CuspFormClass.cuspFunction_apply_zero 1 Delta]
+  rw [← derivWithin_of_isOpen (s := Metric.ball 0 (1 / 2 : ℝ)) (isOpen_ball) (by sorry) ]
+  rw [derivWithin_congr Delta_cuspFuntion_eq ]
+  rw [derivWithin_mul ]
   simp
-  have HT : Tendsto (fun z => z⁻¹ * (Delta ∘ ofComplex) ((Periodic.invQParam 1 z))) (𝓝[≠] 0) (𝓝 1) := by
-    rw [Metric.tendsto_nhds]
-    intro ε hε
-    rw [eventually_iff_exists_mem]
-    use {z | (z : ℂ) ≠ 0 ∧ ‖z‖ < 1}
-    constructor
-    ·
-      rw [@mem_nhdsWithin_iff]
-      use 1
-      simp
-      intro y hy
-      simp at hy
-      aesop
-    · intro y hy
-      simp
-      have hz :=Function.Periodic.im_invQParam_pos_of_abs_lt_one (h := 1) (by exact Real.zero_lt_one) hy.2 hy.1
-      have :=  ofComplex_apply_of_im_pos hz
-      rw [this, Delta_apply]
+  have := derivWithin_id' ( 0 * ∏' (i : ℕ), (1 - 0 ^ (i + 1)) ^ 24 : ℂ) (Metric.ball 0 (1 / 2 : ℝ)) ?_
+  simp at *
+  rw [this]
+  simp
+  apply IsOpen.uniqueDiffWithinAt
+  exact isOpen_ball
+  refine mem_ball_self (by norm_num)
+  exact differentiableWithinAt_id'
+  apply diffwithinat_prod_1
+  simp
+  exact CuspFormClass.cuspFunction_apply_zero 1 Delta
 
-
-
-      --ofComplex_apply_of_im_pos
-      sorry
-
-
-
-
-  apply Filter.Tendsto.congr' _ HT
-
-
-  sorry
 
 
 
