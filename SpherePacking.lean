@@ -1,8 +1,10 @@
 import SpherePacking.Basic.E8
 import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.Basic.SpherePacking
+
 import SpherePacking.CohnElkies.LPBound
 import SpherePacking.CohnElkies.Prereqs
+
 import SpherePacking.ForMathlib.AtImInfty
 import SpherePacking.ForMathlib.Bornology
 import SpherePacking.ForMathlib.Cardinal
@@ -21,10 +23,13 @@ import SpherePacking.ForMathlib.UpperHalfPlane
 import SpherePacking.ForMathlib.Vec
 import SpherePacking.ForMathlib.VolumeOfBalls
 import SpherePacking.ForMathlib.ZLattice
-import SpherePacking.MagicFunction.a.Basic
-import SpherePacking.MagicFunction.PolyFourierCoeffBound
+
 import SpherePacking.ModularForms.AtImInfty
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.SlashActionAuxil
+
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.MagicFunction.a.Basic
+import SpherePacking.MagicFunction.a.Schwartz

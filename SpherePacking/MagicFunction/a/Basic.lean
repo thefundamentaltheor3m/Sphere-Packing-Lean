@@ -13,6 +13,8 @@ local notation "V" => EuclideanSpace ℝ (Fin 8)
 
 open Set Complex Real
 
+namespace MagicFunction
+
 noncomputable section Parametrisations
 
 private def z₁ (t : Icc (0 : ℝ) 1) : ℂ := -1 * t + I * (1 - t)
@@ -59,31 +61,46 @@ private lemma z₄_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioi 0) : 0 < (z₄'
 
 end UpperHalfPlane
 
-noncomputable section Integrals
+noncomputable section Real_Input
 
-private def I₁ (x : V) := ∫ t in Ioo (0 : ℝ) 1,
-  φ₀'' (-1 / ((z₁' t) + (1 : ℂ))) *
-  ((z₁' t) + (1 : ℂ)) ^ 2 *
-  cexp (π * I * ‖x‖ ^ 2 * (z₁' t))
+def I₁' (x : ℝ) := ∫ t in Ioo (0 : ℝ) 1, -(I + 1) -- Added factor due to variable change!!
+  * φ₀'' (-1 / ((z₁' t) + (1 : ℂ)))
+  * ((z₁' t) + (1 : ℂ)) ^ 2
+  * cexp (π * I * |x| ^ 2 * (z₁' t))
 
-private def I₂ (x : V) := ∫ t in Ioo (0 : ℝ) 1,
-  φ₀'' (-1 / ((z₂' t) - (1 : ℂ))) *
-  ((z₂' t) - (1 : ℂ)) ^ 2 *
-  cexp (π * I * ‖x‖ ^ 2 * (z₂' t))
+def I₂' (x : ℝ) := ∫ t in Ioo (0 : ℝ) 1, (I + 1) -- Added factor due to variable change!!
+  * φ₀'' (-1 / ((z₂' t) - (1 : ℂ)))
+  * ((z₂' t) - (1 : ℂ)) ^ 2
+  * cexp (π * I * |x| ^ 2 * (z₂' t))
 
-private def I₃ (x : V) := ∫ t in Ioo (0 : ℝ) 1,
-  φ₀'' (-1 / (z₃' t)) *
-  (z₃' t) ^ 2 *
-  cexp (π * I * ‖x‖ ^ 2 * (z₃' t))
+def I₃' (x : ℝ) := ∫ t in Ioo (0 : ℝ) 1, (-I) -- Added factor due to variable change!!
+  * φ₀'' (-1 / (z₃' t))
+  * (z₃' t) ^ 2
+  * cexp (π * I * |x| ^ 2 * (z₃' t))
 
-private def I₄ (x : V) := ∫ t in Ioi (0 : ℝ),
-  φ₀'' (-1 / z₄' t) *
-  (z₄' t) ^ 2 *
-  cexp (π * I * ‖x‖ ^ 2 * (z₄' t))
+def I₄' (x : ℝ) := ∫ t in Ioi (0 : ℝ), I -- Added factor due to variable change!!
+  * φ₀'' (-1 / z₄' t)
+  * (z₄' t) ^ 2
+  * cexp (π * I * |x| ^ 2 * (z₄' t))
 
-end Integrals
+def a' (x : ℝ) := I₁' x + I₂' x + I₃' x + I₄' x
 
-noncomputable def a (x : V) := I₁ x + I₂ x + I₃ x + I₄ x
+end Real_Input
+
+noncomputable section Vector_Input
+
+def I₁ (x : V) := I₁' ‖x‖
+
+def I₂ (x : V) := I₂' ‖x‖
+
+def I₃ (x : V) := I₃' ‖x‖
+
+def I₄ (x : V) := I₄' ‖x‖
+
+def a (x : V) := a' ‖x‖
+
+end Vector_Input
+
 #check a
 
 #min_imports
