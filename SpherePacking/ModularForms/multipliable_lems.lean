@@ -73,7 +73,7 @@ lemma tprod_ne_zero (x : ℍ) (f : ℕ → ℍ → ℂ) (hf : ∀ i x, 1 + f i x
 
 
 
-lemma Multipliable_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) :
+lemma Multipliable_pow {ι : Type*} (f : ι → ℂ) (hf : Multipliable f) (n : ℕ) :
      Multipliable (fun i => f i ^ n) := by
   induction' n with n hn
   · simp
@@ -85,6 +85,13 @@ lemma Multipliable_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) :
     apply Multipliable.mul hn hf
 
 
+
+lemma MultipliableDeltaProductExpansion_pnat (z : ℍ) :
+  Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z))^24) := by
+  apply Multipliable_pow
+  apply MultipliableEtaProductExpansion_pnat z
+
+
 lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) : (∏' (i : ℕ), f i) ^ n = ∏' (i : ℕ), (f i) ^ n := by
   induction' n with n hn
   · simp
@@ -94,3 +101,29 @@ lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) : (∏' (i : �
     congr
     apply Multipliable_pow f hf n
     exact hf
+
+
+
+variable  {a a₁ a₂ : ℝ} {ι : Type*}
+
+@[to_additive]
+theorem hasProd_le_nonneg (f g : ι → ℝ) (h : ∀ i, f i ≤ g i)  (h0 : ∀ i, 0 ≤ f i)
+  (hf : HasProd f a₁) (hg : HasProd g a₂) : a₁ ≤ a₂ := by
+  apply le_of_tendsto_of_tendsto' hf hg
+  intro s
+  apply Finset.prod_le_prod
+  intros i hi
+  exact h0 i
+  intros i hi
+  exact h i
+
+@[to_additive]
+theorem HasProd.le_one_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i)
+    (ha : HasProd g a) : a ≤ 1 := by
+  apply hasProd_le_nonneg (f := g) (g := fun _ => 1) h h0 ha hasProd_one
+
+@[to_additive]
+theorem one_le_tprod_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i)  : ∏' i, g i ≤ 1 := by
+  by_cases hg : Multipliable g
+  · apply hg.hasProd.le_one_nonneg g h h0
+  · rw [tprod_eq_one_of_not_multipliable hg]

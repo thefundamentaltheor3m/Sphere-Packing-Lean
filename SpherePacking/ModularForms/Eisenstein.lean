@@ -261,28 +261,6 @@ lemma tendstozero_mul_bounded (f g : ℍ → ℂ) (r : ℝ) (hf : Tendsto f atIm
 
 
 variable  {a a₁ a₂ : ℝ}
-
-@[to_additive]
-theorem hasProd_le_nonneg (f g : ℕ → ℝ) (h : ∀ i, f i ≤ g i)  (h0 : ∀ i, 0 ≤ f i)
-  (hf : HasProd f a₁) (hg : HasProd g a₂) : a₁ ≤ a₂ := by
-  apply le_of_tendsto_of_tendsto' hf hg
-  intro s
-  apply Finset.prod_le_prod
-  intros i hi
-  exact h0 i
-  intros i hi
-  exact h i
-
-@[to_additive]
-theorem HasProd.le_one_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i)
-    (ha : HasProd g a) : a ≤ 1 := by
-  apply hasProd_le_nonneg (f := g) (g := fun _ => 1) h h0 ha hasProd_one
-
-@[to_additive]
-theorem one_le_tprod_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i)  : ∏' i, g i ≤ 1 := by
-  by_cases hg : Multipliable g
-  · apply hg.hasProd.le_one_nonneg g h h0
-  · rw [tprod_eq_one_of_not_multipliable hg]
 /-
 lemma tprod_eventually_bounded (g : ℕ → ℝ) (h : ∀ᶠ i in atTop, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i) :
   ∃ C : ℝ, ∏' i, g i ≤ C := by
@@ -673,7 +651,11 @@ lemma deriv_mul_eq (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differe
   ext y
   exact deriv_mul (hf y) (hg y)
 
-lemma IteratedDeriv_mul (f g : ℂ → ℂ) (m : ℕ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
+lemma deriv_mul_smul_eq (f g : ℂ → ℂ) (a : ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
+    deriv (a • (f * g)) = a • deriv f *  g + a• f * deriv g := by
+  sorry
+
+lemma iteratedDeriv_mul (f g : ℂ → ℂ) (m : ℕ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
     iteratedDeriv m (f * g) =
     ∑ i in Finset.range m.succ, (m.choose i) * (iteratedDeriv i f) * (iteratedDeriv (m - i) g) := by
   induction' m with m hm generalizing f g
@@ -693,10 +675,28 @@ lemma IteratedDeriv_mul (f g : ℂ → ℂ) (m : ℕ) (hf : Differentiable ℂ f
         (Finset.sum_fn (Finset.range (m + 1)) fun c y ↦
           ↑(m.choose c) * iteratedDeriv c f y * iteratedDeriv (m - c) g y)
   rw [hy] at this
+  simp at this
+  --have (i : ℕ) := deriv_const_smul (m.choose i) ?_ (f:= (iteratedDeriv i f)*(iteratedDeriv (m - i) g)) (x := y)
 
+  have ht (x : ℕ) :   deriv (((m.choose x)  : ℂ) • (iteratedDeriv x f * iteratedDeriv (m - x) g)) y =
+    ↑(m.choose x) • deriv ((iteratedDeriv x f * iteratedDeriv (m - x) g)) y := by
+
+    simp
+    rw [← deriv_const_mul ]
+    congr
+
+    sorry
   conv =>
     enter [1]
-    --rw [this]
+    rw [this]
+    conv =>
+      enter [2]
+      ext x
+      rw [ht x]
+      rw [deriv_mul_eq _ _ (sorry) (sorry)]
+  --have := norm_iteratedFDeriv_mul_le
+
+
   sorry
   sorry
   sorry
@@ -712,6 +712,14 @@ lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularFor
   --have := PowerSeries.coeff_succ_mul_X
   simp_rw [qExpansion_coeff, cuspFunction_mul ] at *
   rw [iteratedDeriv_succ']
+  rw [deriv_mul_eq]
+  rw [iteratedDeriv_add]
+  rw [iteratedDeriv_mul, iteratedDeriv_mul]
+  simp
+  have := Finset.sum_choose_succ_mul (fun i => fun j => ((iteratedDeriv i (cuspFunction n f)) * (iteratedDeriv j (cuspFunction n g))) 0) m
+
+  rw [Finset.sum_antidiagonal_choose_succ_mul ]
+
   --have := FormalMultilinearSeries.coeff_fslope
   --have := deriv_mul (c:= cuspFunction n f) (d := cuspFunction n g)
  /-  by_cases h : m = 0
