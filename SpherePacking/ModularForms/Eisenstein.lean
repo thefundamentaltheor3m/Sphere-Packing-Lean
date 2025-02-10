@@ -773,6 +773,26 @@ def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspForm Γ k
 def CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ)  : Submodule ℂ (ModularForm Γ k) :=
   LinearMap.range (CuspForm_to_ModularForm Γ k)
 
+lemma mem_CuspFormSubmodule  (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k) (hf : f ∈ CuspFormSubmodule Γ k) :
+    ∃ g : CuspForm Γ k, f = CuspForm_to_ModularForm Γ k g := by
+  rw [CuspFormSubmodule, LinearMap.mem_range] at hf
+  aesop
+
+instance (priority := 100) CuspFormSubmodule.funLike : FunLike (CuspFormSubmodule Γ k) ℍ ℂ where
+  coe f := f.1.toFun
+  coe_injective' f g h := by cases f; cases g; congr; exact DFunLike.ext' h
+
+instance (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspFormClass (CuspFormSubmodule Γ k) Γ k where
+  slash_action_eq f := f.1.slash_action_eq'
+  holo f := f.1.holo'
+  zero_at_infty f := by
+    have hf := f.2
+    have := mem_CuspFormSubmodule Γ k f hf
+    obtain ⟨g, hg⟩ := this
+    convert g.zero_at_infty'
+    ext y
+    aesop
+
 def IsCuspForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k) : Prop :=
   f ∈ CuspFormSubmodule Γ k
 
@@ -814,7 +834,9 @@ lemma IsCuspForm_iff_coeffZero_eq_zero  (k : ℤ) (f : ModularForm Γ(1) k) :
     use ⟨f.toSlashInvariantForm , f.holo', ?_⟩
     · simp only [CuspForm_to_ModularForm, ModForm_mk]
       rfl
-    · intro A
+    ·
+
+      intro A
       have hf := f.slash_action_eq' A (CongruenceSubgroup.mem_Gamma_one A)
       simp only [ SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe, SL_slash] at *
       rw [hf]
