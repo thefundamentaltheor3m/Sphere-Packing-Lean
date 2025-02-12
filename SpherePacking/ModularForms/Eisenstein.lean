@@ -356,12 +356,6 @@ def CuspForms_iso_Modforms (k : ℤ) : CuspForm (CongruenceSubgroup.Gamma 1) k �
       left_inv := sorry
       right_inv := sorry
 
-/-This result is already proven in the modular forms repo and being PRed (slowly) into mathlib, so
-we can use it freely here. -/
-lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) :
-    (E k hk) z = 1 +
-        (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
-        ∑' n : ℕ+, sigma (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by sorry
 
 -- lemma E4_E6_q_exp :  ((E₄ z) ^ 3 - (E₆ z) ^ 2) / 1728  =
 
@@ -703,33 +697,7 @@ lemma iteratedDeriv_mul (f g : ℂ → ℂ) (m : ℕ) (hf : Differentiable ℂ f
   sorry
 
 
-lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b)
-    [NeZero n] : (qExpansion n (f.mul g)) = ((qExpansion n f)) * ((qExpansion n g)) := by
-  ext m
-  induction' m with m hm
-  simpa using qExpansion_mul_coeff_zero n a b f g
-  rw [PowerSeries.coeff_mul ] at *
-  --have := PowerSeries.coeff_succ_mul_X
-  simp_rw [qExpansion_coeff, cuspFunction_mul ] at *
-  rw [iteratedDeriv_succ']
-  rw [deriv_mul_eq]
-  rw [iteratedDeriv_add]
-  rw [iteratedDeriv_mul, iteratedDeriv_mul]
-  simp
-  have := Finset.sum_choose_succ_mul (fun i => fun j => ((iteratedDeriv i (cuspFunction n f)) * (iteratedDeriv j (cuspFunction n g))) 0) m
-  sorry
 
-  --rw [Finset.sum_antidiagonal_choose_succ_mul ]
-
-  --have := FormalMultilinearSeries.coeff_fslope
-  --have := deriv_mul (c:= cuspFunction n f) (d := cuspFunction n g)
- /-  by_cases h : m = 0
-  simp_rw [h]
-  simpa using qExpansion_mul_coeff_zero n a b f g
-  rw [PowerSeries.coeff_mul ]
-  simp_rw [qExpansion_coeff ] -/
-
-  all_goals {sorry}
 
 
 /-
@@ -868,7 +836,7 @@ def foo : ModularForm Γ(1) 12 := (E₄).mul ((E₄).mul E₄)
 
 def bar : ModularForm Γ(1) 12 := (E₆).mul E₆
 
-def foobar : ModularForm Γ(1) 12 :=(1/ 1728 : ℂ) • (foo - bar)
+def foobar : ModularForm Γ(1) 12 := (1/ 1728 : ℂ) • (foo - bar)
 
 lemma auxasdf (n : ℕ) : (PowerSeries.coeff ℂ n) ((qExpansion 1 E₄) * (qExpansion 1 E₆)) =
     ∑ p ∈ Finset.antidiagonal n, (PowerSeries.coeff ℂ p.1) ((qExpansion 1 E₄)) * (PowerSeries.coeff ℂ p.2) ((qExpansion 1 E₆)) := by
@@ -877,6 +845,10 @@ lemma auxasdf (n : ℕ) : (PowerSeries.coeff ℂ n) ((qExpansion 1 E₄) * (qExp
 
 
 def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 := by sorry
+
+
+
+
 
 lemma Delta_cuspFuntion_eq : Set.EqOn  (cuspFunction 1 Delta)
      (fun y  => (y : ℂ) * ∏' i, ((1 : ℂ) - y ^ (i + 1)) ^ 24)  (Metric.ball 0 (1/2)) := by
@@ -961,7 +933,8 @@ lemma asdf : TendstoLocallyUniformlyOn (fun n : ℕ ↦ ∏ x ∈ Finset.range n
 
 
 
-theorem diffwithinat_prod_1 : DifferentiableWithinAt ℂ (fun (y : ℂ) ↦ ∏' (i : ℕ), (1 - y ^ (i + 1)) ^ 24) (ball 0 (1 / 2)) 0 := by
+theorem diffwithinat_prod_1 :
+  DifferentiableWithinAt ℂ (fun (y : ℂ) ↦ ∏' (i : ℕ), (1 - y ^ (i + 1)) ^ 24) (ball 0 (1 / 2)) 0 := by
   conv =>
     enter [2]
     ext n
@@ -1003,7 +976,77 @@ lemma Delta_q_one_term : (qExpansion 1 Delta).coeff ℂ 1 = 1 := by
   exact CuspFormClass.cuspFunction_apply_zero 1 Delta
 
 
+/-This result is already proven in the modular forms repo and being PRed (slowly) into mathlib, so
+we can use it freely here. -/
+lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) :
+    (E k hk) z = 1 +
+        (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
+        ∑' n : ℕ+, sigma (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by sorry
 
+lemma sigma_zero (k : ℕ) : sigma k 0 = 0 := by
+  exact rfl
+
+lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff ℂ 0 = 1 := by
+  let c : ℕ → ℂ := fun m => if m = 0 then 1 else 240 * (sigma 3 m)
+  have h := q_exp_unique 1 c E₄ ?_
+  have hc := congr_fun h 0
+  rw [← hc]
+  simp [c]
+  intro z
+  have := E_k_q_expansion 4 (by norm_num) (by exact Nat.even_iff.mpr rfl) z
+
+  sorry
+
+lemma E4_q_exp_one : (qExpansion 1 E₄).coeff ℂ 1 = 240 := by sorry
+
+lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b)
+    [NeZero n] : (qExpansion n (f.mul g)) = ((qExpansion n f)) * ((qExpansion n g)) := by
+  ext m
+  induction' m with m hm
+  simpa using qExpansion_mul_coeff_zero n a b f g
+  rw [PowerSeries.coeff_mul ] at *
+  --have := PowerSeries.coeff_succ_mul_X
+  simp_rw [qExpansion_coeff, cuspFunction_mul ] at *
+  rw [iteratedDeriv_succ']
+  rw [deriv_mul_eq]
+  rw [iteratedDeriv_add]
+  rw [iteratedDeriv_mul, iteratedDeriv_mul]
+  simp
+  have := Finset.sum_choose_succ_mul (fun i => fun j => ((iteratedDeriv i (cuspFunction n f)) * (iteratedDeriv j (cuspFunction n g))) 0) m
+
+  sorry
+
+  --rw [Finset.sum_antidiagonal_choose_succ_mul ]
+
+  --have := FormalMultilinearSeries.coeff_fslope
+  --have := deriv_mul (c:= cuspFunction n f) (d := cuspFunction n g)
+ /-  by_cases h : m = 0
+  simp_rw [h]
+  simpa using qExpansion_mul_coeff_zero n a b f g
+  rw [PowerSeries.coeff_mul ]
+  simp_rw [qExpansion_coeff ] -/
+
+  all_goals {sorry}
+
+lemma antidiagonal_one : Finset.antidiagonal 1 = {(1,0), (0,1)} := by
+  ext ⟨x,y⟩
+  simp
+  omega
+
+
+
+lemma E4_pow_q_exp_one : (qExpansion 1 ((E₄).mul ((E₄).mul E₄))).coeff ℂ 1 = 3 * 240 := by
+  rw [qExpansion_mul_coeff, qExpansion_mul_coeff]
+  rw [PowerSeries.coeff_mul, antidiagonal_one]
+  simp
+  rw [PowerSeries.coeff_mul, antidiagonal_one]
+  have := E4_q_exp_zero
+  simp at *
+  simp_rw [E4_q_exp_one, this]
+  ring
+
+
+lemma E6_pow_q_exp_one : (qExpansion 1 ((E₆).mul E₆)).coeff ℂ 1 = -2 * 504 := by sorry
 
 lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff ℂ 1 = 1 := by sorry
 
@@ -1059,6 +1102,8 @@ section Ramanujan_Formula
 theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
     (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) := by
   sorry
+
+
 
 end Ramanujan_Formula
 
