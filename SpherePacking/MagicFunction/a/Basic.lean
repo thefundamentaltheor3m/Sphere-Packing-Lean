@@ -17,21 +17,21 @@ namespace MagicFunction
 
 noncomputable section Parametrisations
 
-private def z₁ (t : Icc (0 : ℝ) 1) : ℂ := -1 * (1 - t) + I * t
+def z₁ (t : Icc (0 : ℝ) 1) : ℂ := -1 * (1 - t) + I * t
 
-private def z₁' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₁ t -- `by norm_num` also works
+def z₁' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₁ t -- `by norm_num` also works
 
-private def z₂ (t : Icc (0 : ℝ) 1) : ℂ := (1 - t) + I * t
+def z₂ (t : Icc (0 : ℝ) 1) : ℂ := (1 - t) + I * t
 
-private def z₂' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₂ t -- `by norm_num` also works
+def z₂' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₂ t -- `by norm_num` also works
 
-private def z₃ (t : Icc (0 : ℝ) 1) : ℂ := I * t
+def z₃ (t : Icc (0 : ℝ) 1) : ℂ := I * t
 
-private def z₃' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₃ t -- `by norm_num` also works
+def z₃' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₃ t -- `by norm_num` also works
 
-private def z₄ (t : NNReal) : ℂ := I * (1 + t)
+def z₄ (t : NNReal) : ℂ := I * (1 + t)
 
-private def z₄' (t : ℝ) : ℂ := IciExtend z₄ t -- `by norm_num` also works
+def z₄' (t : ℝ) : ℂ := IciExtend z₄ t -- `by norm_num` also works
 
 end Parametrisations
 
