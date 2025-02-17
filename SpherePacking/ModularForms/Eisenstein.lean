@@ -788,9 +788,16 @@ lemma CuspForm_to_ModularForm_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : Modu
   simp [ModForm_mk] at *
   exact hgg
 
-instance : FunLike (ℍ → ℂ) ℍ ℂ where
-  coe f := f
-  coe_injective' := fun ⦃_ _⦄ a ↦ a
+lemma CuspForm_to_ModularForm_Fun_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k)
+    (hf : IsCuspForm Γ k f) : (IsCuspForm_to_CuspForm Γ k f hf).toFun =
+    f.toFun := by
+  rw [IsCuspForm_to_CuspForm]
+  rw [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range] at hf
+  have hg := hf.choose_spec
+  simp_rw [CuspForm_to_ModularForm] at hg
+  have hgg := congr_arg (fun x ↦ x.toFun) hg
+  simp [ModForm_mk] at *
+  exact hgg
 
 lemma IsCuspForm_iff_coeffZero_eq_zero  (k : ℤ) (f : ModularForm Γ(1) k) :
     IsCuspForm Γ(1) k f ↔ (qExpansion 1 f).coeff ℂ 0 = 0 := by
@@ -810,9 +817,7 @@ lemma IsCuspForm_iff_coeffZero_eq_zero  (k : ℤ) (f : ModularForm Γ(1) k) :
     use ⟨f.toSlashInvariantForm , f.holo', ?_⟩
     · simp only [CuspForm_to_ModularForm, ModForm_mk]
       rfl
-    ·
-
-      intro A
+    · intro A
       have hf := f.slash_action_eq' A (CongruenceSubgroup.mem_Gamma_one A)
       simp only [ SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe, SL_slash] at *
       rw [hf]
@@ -850,13 +855,27 @@ lemma auxasdf (n : ℕ) : (PowerSeries.coeff ℂ n) ((qExpansion 1 E₄) * (qExp
 def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 := by
   let foo : ModularForm Γ(1) 12 := (E₄).mul ((E₄).mul E₄)
   let bar : ModularForm Γ(1) 12 := (E₆).mul E₆
-  apply IsCuspForm_to_CuspForm _ _ ((1/ 1728 : ℂ) • (foo - bar))
+  let F := DirectSum.of _ 4 E₄
+  let G := DirectSum.of _ 6 E₆
+  apply IsCuspForm_to_CuspForm _ _ ((1/ 1728 : ℂ) • (F^3 - G^2) 12 )
   rw [IsCuspForm_iff_coeffZero_eq_zero]
 
   sorry
 
 
-lemma Delta_E4_E6_eq : ModForm_mk Γ(1) 12 Delta_E4_E6_aux = (1/ 1728 : ℂ) • ((E₄).mul ((E₄).mul E₄) ) := by sorry
+lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
+  ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 - (DirectSum.of _ 6 E₆)^2) 12 )) := by
+  rw [ModForm_mk]
+  rw [Delta_E4_E6_aux]
+  have := CuspForm_to_ModularForm_Fun_coe _ _  ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 - (DirectSum.of _ 6 E₆)^2) 12 )) ?_
+  simp at *
+  ext z
+  have hg := congr_fun this z
+  simp at *
+  rw [← hg]
+  rfl
+
+  sorry
 
 
 
@@ -1196,6 +1215,11 @@ lemma weight_six_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 6) = 1 := 
     rw [@sub_eq_zero] at this
     aesop
 
+lemma modularForm_normalise (f : ModularForm Γ(n) k) (hf : ¬ IsCuspForm Γ(n) k f) :
+    (qExpansion n (((qExpansion n f).coeff ℂ 0)⁻¹ • f)).coeff ℂ 0  = 1 := by
+  --rw [← qExpansion_smul]
+  sorry
+
 lemma weight_two_zero (f : ModularForm (CongruenceSubgroup.Gamma 1) 2) : f = 0 := by
 /- cant be a cuspform from the above, so let a be its constant term, then f^2 = a^2 E₄ and
 f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contradiction. -/
@@ -1228,7 +1252,9 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
     rw [finrank_eq_one_iff_of_nonzero' E₄ E4_ne_zero] at r4
     have r4f := r4 (f.mul f)
     obtain ⟨c4, hc4⟩ := r4f
-    have hc4e : c4 =  ((qExpansion 1 f).coeff ℂ 0)^2 := by sorry
+    have hc4e : c4 =  ((qExpansion 1 f).coeff ℂ 0)^2 := by
+
+      sorry
     exfalso
     let F :=  DirectSum.of _ 2 f
     let D := DirectSum.of _ 12 (ModForm_mk Γ(1) 12 Delta) 12
@@ -1262,15 +1288,21 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
       rw [@DirectSum.smul_apply]
       simp only [PowerSeries.coeff_zero_eq_constantCoeff, Int.reduceAdd, DirectSum.of_eq_same, F]
       rfl
-    have V : (((F^2)^3) 12) - (((F^3)^2) 12) =  ((qExpansion 1 f).coeff ℂ 0)^6 • D := by
+    have V : (1 / 1728 : ℂ) • ((((F^2)^3) 12) - (((F^3)^2) 12)) =  ((qExpansion 1 f).coeff ℂ 0)^6 • D := by
       rw [HF12, hF2]
       simp [D]
-      rw [Delta_E4_eqn]
+      rw [Delta_E4_eqn, Delta_E4_E6_eq, pow_two, pow_three, DirectSum.of_mul_of,
+        DirectSum.of_mul_of,DirectSum.of_mul_of]
+      simp only [one_div, Int.reduceAdd, DirectSum.sub_apply, DirectSum.of_eq_same, D, F]
+      ext y
+      simp only [ModularForm.smul_apply, sub_apply, Int.reduceAdd, smul_eq_mul, D, F]
+      ring_nf
+      rfl
 
-      sorry
-    have ht :  (((F^2)^3) 12) - (((F^3)^2) 12) = 0 := by
-      ring
+    have ht : (1 / 1728 : ℂ) • ((((F^2)^3) 12) - (((F^3)^2) 12)) = 0 := by
+      ext y
       simp
+      ring_nf
     rw [ht] at V
     have hr := congr_fun (congr_arg (fun x ↦ x.toFun) V) UpperHalfPlane.I
     simp at hr
