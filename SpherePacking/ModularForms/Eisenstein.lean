@@ -402,12 +402,8 @@ lemma qExpansion_smul (a : ℂ) (f : CuspForm Γ(n) k) [NeZero n] :
   ring
 
 
-lemma cuspfunc_Zero [NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0 = (qExpansion n f).coeff ℂ 0 := by
-  have := hasSum_qExpansion_of_abs_lt n f (q := 0) (by simp)
-  simp at this
-  rw [Summable.hasSum_iff] at this
-  sorry
-  sorry
+
+
 
 local notation "𝕢" => Periodic.qParam
 
@@ -441,6 +437,21 @@ lemma tsum_zero_pow (f : ℕ → ℂ) : (∑' m, f m * 0 ^ m) = f 0 := by
   simp only [ne_eq, AddLeftCancelMonoid.add_eq_zero, one_ne_zero, and_false, not_false_eq_true,
     zero_pow, mul_zero]
   apply summable_zero
+
+
+lemma cuspfunc_Zero [NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0 = (qExpansion n f).coeff ℂ 0 := by
+  have := hasSum_qExpansion_of_abs_lt n f (q := 0) (by simp)
+  simp at this
+  rw [Summable.hasSum_iff] at this
+  rw [tsum_zero_pow] at this
+  apply this.symm
+
+  sorry
+
+
+
+
+
 
 lemma modfom_q_exp_cuspfunc  (c : ℕ → ℂ) (f : F) [ModularFormClass F Γ(n) k]
     [NeZero n]
@@ -598,6 +609,46 @@ theorem modform_tendto_ndhs_zero {k : ℤ} (n : ℕ) (f : ModularForm Γ(n) k) [
   intro y hy hy0
   apply Function.Periodic.cuspFunction_eq_of_nonzero
   simpa only [ne_eq, mem_compl_iff, mem_singleton_iff] using hy0
+
+lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
+    (a • qExpansion n f) = (qExpansion n (a • f)) := by
+  ext m
+  simp only [_root_.map_smul, smul_eq_mul]
+  simp_rw [qExpansion]
+  have : (cuspFunction n (a • f)) = a • cuspFunction n f := by
+    ext z
+    by_cases h : z = 0
+    · simp_rw [h, cuspFunction,Periodic.cuspFunction]
+      simp
+      rw [Filter.limUnder_eq_iff ]
+      have hl : ((a • ⇑f) ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n = fun x => a * (f ∘ ↑ofComplex) (Periodic.invQParam ↑n x) := by
+        simp only [comp_apply, smul_eq_mul]
+        ext y
+        simp
+      rw [hl]
+      simp
+      apply Filter.Tendsto.const_mul
+      have := modform_tendto_ndhs_zero _ f
+      simp at this
+      convert this
+      rw [Filter.limUnder_eq_iff ]
+      apply this
+      aesop
+      have := modform_tendto_ndhs_zero _ (a • f)
+      aesop
+    · simp only [cuspFunction, CuspForm.coe_smul, Pi.smul_apply, smul_eq_mul]
+      rw [Function.Periodic.cuspFunction_eq_of_nonzero _ _ h,
+        Function.Periodic.cuspFunction_eq_of_nonzero _ _ h]
+      simp only [comp_apply, Pi.smul_apply, smul_eq_mul]
+      simp
+  rw [this]
+  simp only [PowerSeries.coeff_mk]
+  conv =>
+    enter [2,2]
+    rw [IteratedDeriv_smul]
+  simp only [Pi.smul_apply, smul_eq_mul]
+  ring
+
 
 theorem cuspFunction_mul_zero (n : ℕ) (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b) [inst : NeZero n] :
     cuspFunction n (f.mul g) 0 = cuspFunction n f 0 * cuspFunction n g 0 := by
@@ -1193,6 +1244,14 @@ lemma weight_four_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 4) = 1 :=
     aesop
 
 
+lemma modularForm_normalise (f : ModularForm Γ(1) k) (hf : ¬ IsCuspForm Γ(1) k f) :
+    (qExpansion 1 (((qExpansion 1 f).coeff ℂ 0)⁻¹ • f)).coeff ℂ 0  = 1 := by
+  rw [← qExpansion_smul2]
+  refine inv_mul_cancel₀ ?_
+  intro h
+  rw [← (IsCuspForm_iff_coeffZero_eq_zero k f)] at h
+  exact hf h
+
 lemma weight_six_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 6) = 1 := by
   rw [rank_eq_one_iff ]
   refine ⟨E₆,E6_ne_zero, ?_⟩
@@ -1209,16 +1268,17 @@ lemma weight_six_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 6) = 1 := 
       rw [← IsCuspForm_iff_coeffZero_eq_zero] at h
       exact hf2 h
     set c := (qExpansion 1 f).coeff ℂ 0 with hc
-    have hcusp : IsCuspForm Γ(1) 6 (E₆ - c⁻¹• f) := by sorry
+    have hcusp : IsCuspForm Γ(1) 6 (E₆ - c⁻¹• f) := by
+      rw [IsCuspForm_iff_coeffZero_eq_zero]
+
+      sorry
     have := IsCuspForm_weight_lt_eq_zero 6 (by norm_num) (E₆ - c⁻¹• f) hcusp
     have hfc := hf c
     rw [@sub_eq_zero] at this
     aesop
 
-lemma modularForm_normalise (f : ModularForm Γ(n) k) (hf : ¬ IsCuspForm Γ(n) k f) :
-    (qExpansion n (((qExpansion n f).coeff ℂ 0)⁻¹ • f)).coeff ℂ 0  = 1 := by
-  --rw [← qExpansion_smul]
-  sorry
+
+
 
 lemma weight_two_zero (f : ModularForm (CongruenceSubgroup.Gamma 1) 2) : f = 0 := by
 /- cant be a cuspform from the above, so let a be its constant term, then f^2 = a^2 E₄ and
