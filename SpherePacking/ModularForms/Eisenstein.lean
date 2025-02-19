@@ -1097,6 +1097,46 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
 lemma sigma_zero (k : ℕ) : sigma k 0 = 0 := by
   exact rfl
 
+
+@[simp] --generalize this away from ℂ
+lemma IteratedDeriv_zero_fun (n : ℕ) (z : ℂ): iteratedDeriv n (fun _ : ℂ => (0 : ℂ)) z = 0 := by
+  induction' n with n hn
+  simp
+  rw [iteratedDeriv_succ']
+  simp [hn]
+
+lemma qExpansion_injective (n : ℕ) [NeZero n] (f : ModularForm Γ(n) k) :
+    qExpansion n f = 0 ↔ f = 0 := by
+  constructor
+  intro h
+  ext z
+  have := (hasSum_qExpansion n f z).tsum_eq
+  rw [← this]
+  rw [h]
+  simp
+  intro h
+  have : Periodic.cuspFunction n 0 = 0 := by
+    ext z
+    rw [Periodic.cuspFunction]
+    by_cases hz : z = 0
+    rw [hz]
+    simp
+    apply Filter.Tendsto.limUnder_eq
+    refine NormedAddCommGroup.tendsto_nhds_zero.mpr ?_
+    simp
+    simp [hz]
+  rw [qExpansion, cuspFunction, h]
+  simp
+  rw [this]
+  ext y
+  simp
+  right
+  apply IteratedDeriv_zero_fun
+
+lemma qExpansion_zero [NeZero n] : qExpansion n (0 : ModularForm Γ(n) k) = 0 := by
+  rw [qExpansion_injective]
+
+
 lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff ℂ 0 = 1 := by
   let c : ℕ → ℂ := fun m => if m = 0 then 1 else 240 * (sigma 3 m)
   have h := q_exp_unique 1 c E₄ ?_
@@ -1324,8 +1364,11 @@ lemma E4_ne_zero : E₄ ≠ 0 := by sorry
 
 lemma E6_ne_zero : E₆ ≠ 0 := by sorry
 
-lemma Ek_ne_zero (k : ℕ) (hk :  3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by sorry
-
+lemma Ek_ne_zero (k : ℕ) (hk :  3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
+  have := Ek_q_exp_zero k hk hk2
+  intro h
+  rw [h, qExpansion_zero] at this
+  simp at this
 
 lemma modularForm_normalise (f : ModularForm Γ(1) k) (hf : ¬ IsCuspForm Γ(1) k f) :
     (qExpansion 1 (((qExpansion 1 f).coeff ℂ 0)⁻¹ • f)).coeff ℂ 0  = 1 := by
@@ -1568,33 +1611,34 @@ lemma weight_four_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 4) = 1 :=
     rw [@sub_eq_zero] at this
     aesop
 
-lemma weight_eight_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 8) = 1 := by
+lemma weight_eight_one_dimensional  (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (hk3 : k < 12):
+    Module.rank ℂ (ModularForm Γ(1) k) = 1 := by
   rw [rank_eq_one_iff ]
-  refine ⟨E 8 (by norm_num),Ek_ne_zero 8 (by norm_num) (by exact Nat.even_iff.mpr rfl), ?_⟩
+  refine ⟨E k hk ,Ek_ne_zero k hk hk2, ?_⟩
   by_contra h
   simp at h
   obtain ⟨f, hf⟩ := h
-  by_cases hf2 : IsCuspForm Γ(1) 8 f
+  by_cases hf2 : IsCuspForm Γ(1) k f
   · have hfc1 := hf 0
     simp at *
-    have := IsCuspForm_weight_lt_eq_zero 8 (by norm_num) f hf2
+    have := IsCuspForm_weight_lt_eq_zero k (by simpa using hk3) f hf2
     aesop
   · have hc1 : (qExpansion 1 f).coeff ℂ 0 ≠ 0 := by
       intro h
       rw [← IsCuspForm_iff_coeffZero_eq_zero] at h
       exact hf2 h
     set c := (qExpansion 1 f).coeff ℂ 0 with hc
-    have hcusp : IsCuspForm Γ(1) 8 (E 8 (by norm_num) - c⁻¹• f) := by
+    have hcusp : IsCuspForm Γ(1) k (E k hk - c⁻¹• f) := by
       rw [IsCuspForm_iff_coeffZero_eq_zero]
       rw [qExpansion_sub]
       have := modularForm_normalise f hf2
       simp only [ne_eq,  map_sub] at *
       rw [hc, this]
-      have hE := Ek_q_exp_zero 8 (by norm_num) (by exact Nat.even_iff.mpr rfl)
+      have hE := Ek_q_exp_zero k hk hk2
       simp at *
       rw [hE]
       exact sub_eq_zero_of_eq rfl
-    have := IsCuspForm_weight_lt_eq_zero 8 (by norm_num) (E 8 (by norm_num) - c⁻¹• f) hcusp
+    have := IsCuspForm_weight_lt_eq_zero k (by simpa using hk3) (E k hk - c⁻¹• f) hcusp
     have hfc := hf c
     rw [@sub_eq_zero] at this
     aesop
@@ -1757,9 +1801,21 @@ lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk
     rw [hc]
     ring
 
-lemma dim_modforms_lvl_one (k : ℤ) (hk : Even k) :
-    Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) k) = if 12 ∣ k - 2 then
-    Nat.floor (k / 12) else Nat.floor (k / 12) + 1 := by
+lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
+    Module.finrank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) k) = if 12 ∣ ( k : ℤ) - 2 then
+    Nat.floor (k/ 12) else Nat.floor (k / 12) + 1 := by
+
+
+  by_cases h : 12 ∣ (k : ℤ) - 2
+  simp [h]
+  induction' k with k H
+  simp at h
+  exfalso
+  omega
+  simp at *
+  apply Module.finrank_eq_of_rank_eq
+  rw [dim_modforms_eq_one_add_dim_cuspforms _ hk hk2]
+  sorry
 
   sorry
 
