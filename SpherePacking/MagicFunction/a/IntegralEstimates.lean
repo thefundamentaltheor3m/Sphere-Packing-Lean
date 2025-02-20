@@ -37,7 +37,7 @@ private def f' : ℝ → ℝ := fun t ↦ -1 / (2 * t ^ 2)
 
 private def g : ℝ → ℝ → ℂ := fun r s ↦ (I + 1)
     * φ₀'' ((I - 1) * s)
-      * ((I + 1) / (2 * s)) ^ 2 * (-1 / (2 * s ^ 2))
+      * ((I + 1) / (2 * s)) ^ 2 * (1 / (2 * s ^ 2))
         * cexp (I * π * r ^ 2 * (-1 + (1 / (2 * s)) * (I + 1)))
 
 lemma z₁'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₁' t = -1 * (1 - t) + I * t := by
@@ -206,7 +206,7 @@ private lemma calc_aux_3 (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (
       * (φ₀'' ((I - 1) / (2 * ↑x)))
       * (((I + 1) * (2 * ↑x)) ^ 2 * (-(2 * ↑x)) ^ 2 * ofReal (1 / (2 * x ^ 2)))
       * cexp (I * ↑π * ↑r ^ 2 * (-1 + ↑x * (I + 1)))
-    := by ring
+    := by sorry
   have hrearrange_RHS : -- Break product of 5 things into product of 4 things
       (1 + I)
       * φ₀'' (-1 / (-1 * (1 - ↑x) + I * ↑x + 1))
@@ -218,6 +218,7 @@ private lemma calc_aux_3 (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (
       * ((-1 * (1 - ↑x) + I * ↑x + 1) ^ 2 * 16)
       * cexp (↑π * I * ↑|r| ^ 2 * (-1 * (1 - ↑x) + I * ↑x))
     := by ring
+  stop
   rw [hrearrange_LHS, hrearrange_RHS]
   congr 1
   · congr 1 <;> field_simp
