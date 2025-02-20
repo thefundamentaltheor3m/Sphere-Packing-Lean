@@ -1772,8 +1772,7 @@ lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk
       apply LinearEquiv.rank_eq
       have := CuspForm_iso_CuspFormSubmodule Γ(1) k
       exact _root_.id this.symm
-    rw [← h1]
-    rw [← Submodule.rank_quotient_add_rank (CuspFormSubmodule (CongruenceSubgroup.Gamma 1) k) ]
+    rw [← h1, ← Submodule.rank_quotient_add_rank (CuspFormSubmodule (CongruenceSubgroup.Gamma 1) k)]
     congr
     rw [rank_eq_one_iff ]
     refine ⟨ Submodule.Quotient.mk (E k (by linarith)), ?_, ?_⟩
@@ -1781,8 +1780,7 @@ lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk
     rw [Submodule.Quotient.mk_eq_zero] at hq
     have := IsCuspForm_iff_coeffZero_eq_zero k (E k (by linarith))
     rw [IsCuspForm] at this
-    rw [this] at hq
-    rw [Ek_q_exp_zero k hk hk2] at hq
+    rw [this, Ek_q_exp_zero k hk hk2] at hq
     aesop
     intro v
     have  := Quotient.exists_rep v
@@ -1791,22 +1789,95 @@ lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk
     rw [← Submodule.Quotient.mk_smul, ← hf ]
     have : ⟦f⟧ = Submodule.Quotient.mk f
       (p := (CuspFormSubmodule (CongruenceSubgroup.Gamma 1) k)  ):= by rfl
-    rw [this]
-    rw [Submodule.Quotient.eq ]
-    rw [CuspFormSubmodule_mem_iff_coeffZero_eq_zero]
-    rw [qExpansion_sub, ← qExpansion_smul2]
+    rw [this, Submodule.Quotient.eq, CuspFormSubmodule_mem_iff_coeffZero_eq_zero, qExpansion_sub,
+      ← qExpansion_smul2]
     have hc := Ek_q_exp_zero k hk hk2
     simp only [PowerSeries.coeff_zero_eq_constantCoeff, map_sub, PowerSeries.constantCoeff_smul,
       smul_eq_mul] at *
     rw [hc]
     ring
 
-lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
-    Module.finrank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) k) = if 12 ∣ ( k : ℤ) - 2 then
-    Nat.floor (k/ 12) else Nat.floor (k / 12) + 1 := by
+
+theorem dim_weight_two : Module.rank ℂ (ModularForm Γ(1) ↑2) = 0 := by
+  rw [@rank_zero_iff_forall_zero]
+  intro f
+  apply weight_two_zero f
+
+lemma dims_weight_lt_three_and_not_zero_Eq_zero (k : ℕ) (hk : (k : ℤ) < 3) (hk0 : k ≠ 0) :
+    Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) k) = 0 := by
+  by_cases hOdd : Odd k
+
+  sorry
+  simp at hOdd
+  by_cases h2 : k = 2
+  rw [h2]
+  apply dim_weight_two
+  exfalso
+  simp at *
+  rw [@even_iff_exists_two_mul] at hOdd
+  obtain ⟨n, hn⟩ := hOdd
+  rw [hn] at hk
+  omega
 
 
-  by_cases h : 12 ∣ (k : ℤ) - 2
+lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k)  :
+    Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) (k)) = if 12 ∣ ((k) : ℤ) - 2 then
+    Nat.floor ((k)/ 12) else Nat.floor ((k) / 12) + 1 := by
+  induction' k using Nat.strong_induction_on with k ihn
+  have h2 := LinearEquiv.rank_eq (CuspForms_iso_Modforms (((k)) : ℤ))
+  have := dim_modforms_eq_one_add_dim_cuspforms (k) (sorry) hk2
+  rw [this, h2]
+  by_cases HK : (3 : ℤ) ≤ (((k : ℤ) - 12))
+
+  have iH := ihn (k - 12) (by sorry) ?_ ?_
+  have hk12 : (((k - 12) : ℕ) : ℤ) = k - 12 := by sorry
+  rw [hk12] at iH
+  rw [iH]
+  split_ifs
+  sorry
+  sorry
+  sorry
+  sorry
+  · omega
+  sorry
+  simp at HK
+  have : k ∈ Finset.filter Even (Finset.Icc 3 14) := by
+    simp [hk2]
+    omega
+  have hkops : k ∈ ({4,6,8,10,12, 14} : Finset ℕ) := by
+    simp at *
+    sorry
+  fin_cases hkops
+  · simp
+    have h8 : -8 < 0 := by norm_num
+    rw [ModularForm.levelOne_neg_weight_rank_zero h8]
+    aesop
+  · sorry
+  · sorry
+  · sorry
+  ·
+    sorry
+  · simp
+    rw [dim_weight_two]
+    simp
+
+
+/-   simp at *
+  have := dim_modforms_eq_one_add_dim_cuspforms (2 * (k + 1)) hkn hkeven
+  have h2 := LinearEquiv.rank_eq (CuspForms_iso_Modforms ((2 * (k + 1)) : ℤ))
+  simp at *
+  have h3 : ((2 * (k + 1)) : ℕ) = (2 * ((k + 1) : ℕ) : ℤ) := by sorry
+  have h4 : (2 * ((k + 1) : ℕ) : ℤ) = 2 * ((k : ℤ) + 1) := by sorry
+  rw [← h4] at h2
+  rw [h3] at this
+  rw [this, h2] -/
+
+
+
+
+
+/-
+  by_cases h : 12 ∣ ((2 * k) : ℤ) - 2
   simp [h]
   induction' k with k H
   simp at h
@@ -1814,7 +1885,8 @@ lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
   omega
   simp at *
   apply Module.finrank_eq_of_rank_eq
-  rw [dim_modforms_eq_one_add_dim_cuspforms _ hk hk2]
+  --rw [dim_modforms_eq_one_add_dim_cuspforms _ hk hk2] -/
+
   sorry
 
   sorry
