@@ -36,13 +36,86 @@ private def f : ℝ → ℝ := fun t ↦ 1 / (2 * t)
 private def f' : ℝ → ℝ := fun t ↦ -1 / (2 * t ^ 2)
 
 private def g : ℝ → ℝ → ℂ := fun r s ↦ (I + 1)
-    * φ₀'' ((I - 1) * s) * ((I + 1) / (2 * s)) ^ 2 * (-1 / (2 * s)) ^ 2
-      * cexp (I * π * r ^ 2 * (1 / (2 * s)) * (I - 1))
+    * φ₀'' ((I - 1) * s)
+      * ((I + 1) / (2 * s)) ^ 2 * (-1 / (2 * s ^ 2))
+        * cexp (I * π * r ^ 2 * (-1 + (1 / (2 * s)) * (I + 1)))
+
+lemma z₁'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₁' t = -1 * (1 - t) + I * t := by
+  rw [z₁', IccExtend_of_mem zero_le_one z₁ ht, z₁]
+
+lemma z₁'_eq_of_mem' {t : ℝ} (ht : t ∈ Icc 0 1) : z₁' t = t * (I + 1) - 1 := by
+  rw [z₁'_eq_of_mem ht]
+  ring
+
+lemma I₁'_eq (r : ℝ) : I₁' r =
+    ∫ t in Ioo (0 : ℝ) 1, (1 + I) -- Added factor due to variable change!!
+      * φ₀'' ((I - 1) * (1 / (2 * t)))
+      * (t * (I + 1)) ^ 2
+      * cexp (π * I * r ^ 2 * (t * (I + 1) - 1)) := by
+  apply setIntegral_congr_fun measurableSet_Ioo
+  intro t ht
+  dsimp
+  rw [z₁'_eq_of_mem' (Ioo_subset_Icc_self ht), sub_add_cancel]
+  congr! 4
+  · have : t ≠ 0 := ht.1.ne'
+    have h2 : (t : ℂ) ≠ 0 := by simp [this]
+    have h3 : I + 1 ≠ 0 := by
+      intro h
+      simpa using congr(($h).re)
+    field_simp [h2, h3]
+    ring_nf
+    simp
+    ring
+  · norm_cast
+    simp
+
+-- define g to be the rhs of this divided by |f' x|
+-- (except change all the f t to x)
+lemma I₁'_eq' (r : ℝ) : I₁' r =
+    ∫ t in Ioo (0 : ℝ) 1,
+        (1 + I)
+      * φ₀'' ((I - 1) * (f t))
+      * ((I + 1) / (2 * f t)) ^ 2
+      * cexp (π * I * r ^ 2 * ((I + 1) / (2 * f t) - 1)) := by
+  have : ∀ x : ℂ, ∀ t ≠ 0, x / (2 * f t) = t * x := by
+    intro x t ht
+    rw [f]
+    field_simp
+    ring
+  rw [I₁'_eq]
+  apply setIntegral_congr_fun measurableSet_Ioo
+  intro t ht
+  dsimp
+  congr 2
+  · simp [f]
+  · rw [this _ _ ht.1.ne']
+  · congr 2
+    rw [this _ _ ht.1.ne']
+
+-- def I₁' (x : ℝ) := ∫ t in Ioo (0 : ℝ) 1, (1 + I) -- Added factor due to variable change!!
+--   * φ₀'' (-1 / ((z₁' t) + (1 : ℂ)))
+--   * ((z₁' t) + (1 : ℂ)) ^ 2
+--   * cexp (π * I * |x| ^ 2 * (z₁' t))
+
+-- lemma g_comp_f {r t : ℝ} :
+--     g r (f t) = (I + 1) * φ₀'' ((I - 1) / (2 * t)) * sorry * cexp sorry := by
+--   rw [f, g]
+--   congr 1
+--   · sorry
+--   · sorry
+
+-- private lemma calc_aux_3' (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t)) = I₁' r := by
+--   rw [I₁']
+--   apply setIntegral_congr_ae₀ nullMeasurableSet_Ioo
+--   apply ae_of_all
+--   intro x hx
+
+
+-- sure (but re-parametrise later into rectangular...)
 
 private lemma aux_measurable : MeasurableSet ((Ioo 0 1) : Set ℝ) := measurableSet_Ioo
 
 private lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioo 0 1) : HasDerivWithinAt f (f' x) (Ioo 0 1) x := by
-
   sorry
 
 private lemma aux_injOn : InjOn f (Ioo 0 1) := by
@@ -93,11 +166,11 @@ private lemma congr_aux_1 (x : ℝ) :
       rw [I_sq]
       ring
 
-private lemma congr_aux_2 (x : ℝ) :
-    I * ↑x ^ 4 * (↑x)⁻¹ ^ 2 * 16 + I ^ 2 * ↑x ^ 4 * (↑x)⁻¹ ^ 2 * 8 + ↑x ^ 4 * (↑x)⁻¹ ^ 2 * 8 =
-    I * ↑x ^ 2 * 32 + I ^ 2 * ↑x ^ 2 * 16 + ↑x ^ 2 * 16 := by
-  field_simp
-  sorry
+-- private lemma congr_aux_2 (x : ℝ) :
+--     I * ↑x ^ 4 * (↑x)⁻¹ ^ 2 * 16 + I ^ 2 * ↑x ^ 4 * (↑x)⁻¹ ^ 2 * 8 + ↑x ^ 4 * (↑x)⁻¹ ^ 2 * 8 =
+--     I * ↑x ^ 2 * 32 + I ^ 2 * ↑x ^ 2 * 16 + ↑x ^ 2 * 16 := by
+--   field_simp
+--   sorry
 
 -- Now, the main result of this section.
 
@@ -123,14 +196,16 @@ private lemma calc_aux_3 (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (
     exact pow_pos hx.1 2
   rw [habs]
   have hrearrange_LHS : -- Break product of 2 things into product of 4 things
-      ofReal ((1 / (2 * x ^ 2)))
-      * ((I + 1) * φ₀'' ((I - 1) / (2 * ↑x))
-        * ((I + 1) * (2 * ↑x)) ^ 2
-          * (-(2 * ↑x)) ^ 2 * cexp (I * ↑π * ↑r ^ 2 * ↑x * (I - 1)))
-      = (1 + I)
+      ofReal (1 / (2 * x ^ 2))
+        * ((I + 1)
+          * φ₀'' ((I - 1) / (2 * ↑x))
+            * ((I + 1) * (2 * ↑x)) ^ 2
+              * -(2 * ↑x) ^ 2
+                * cexp (I * ↑π * ↑r ^ 2 * (-1 + ↑x * (I + 1))))
+      = (I + 1)
       * (φ₀'' ((I - 1) / (2 * ↑x)))
       * (((I + 1) * (2 * ↑x)) ^ 2 * (-(2 * ↑x)) ^ 2 * ofReal (1 / (2 * x ^ 2)))
-      * cexp (I * ↑π * ↑r ^ 2 * ↑x * (I - 1))
+      * cexp (I * ↑π * ↑r ^ 2 * (-1 + ↑x * (I + 1)))
     := by ring
   have hrearrange_RHS : -- Break product of 5 things into product of 4 things
       (1 + I)
@@ -149,9 +224,10 @@ private lemma calc_aux_3 (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (
     · left
       congr 1
       symm
-      exact congr_aux_1 x
+      sorry
     · ring_nf
       -- WHOOPSIE. This is WRONG! Something from an earlier step?
+      -- field_simp
       sorry
   · ring_nf
     -- I suspect this is wrong too, and that this combined with the previous step is what is right.
