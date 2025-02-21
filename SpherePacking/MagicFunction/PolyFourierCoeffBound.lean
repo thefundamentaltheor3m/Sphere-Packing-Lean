@@ -40,15 +40,27 @@ private noncomputable def fouterm (coeff : ℤ → ℂ) (x : ℂ) (i : ℤ) : �
 variable (z : ℍ) (hz : 1 / 2 < z.im)
 variable (c : ℤ → ℂ) (n₀ : ℤ) (hcn₀ : c n₀ ≠ 0) -- (hn₀ : ∀ (n : ℤ), n < n₀ → c n = 0)
 variable (hcsum : Summable fun (i : ℕ) ↦ (fouterm c z (i + n₀)))
-variable (k : ℕ) (hpoly : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)))
+variable (k : ℕ) (hpoly : c =O[atTop] (fun n ↦ (n ^ k : ℝ)))
 --  Change to just `c n` is polynomial. Should work!
-variable (f : ℂ → ℂ) (hf : ∀ x : ℂ, f x = ∑' (n : ℕ), (fouterm c x (n + n₀)))
+variable (f : ℍ → ℂ) (hf : ∀ x : ℍ, f x = ∑' (n : ℕ), (fouterm c x (n + n₀)))
 
 noncomputable def DivDiscBound : ℝ :=
   (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24)
 
 -- #check DivDiscBound
+
+section hpoly_aux
+
+include hpoly in
+theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)) := by
+  simp [isBigO_iff] at hpoly ⊢
+  obtain ⟨C, m, hCa⟩ := hpoly
+  use C
+  use (m - n₀).toNat
+  sorry
+
+end hpoly_aux
 
 section calc_aux
 
@@ -282,8 +294,10 @@ private lemma step_11 :
           ‖c (↑n + n₀) * rexp (-π * 2⁻¹) ^ n‖ := fun n => by
         rw [norm_mul, neg_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs, Real.abs_exp]
       simp only [h₁, ← Complex.norm_eq_abs, h₂]
-      norm_cast at hpoly
-      exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm hpoly
+      -- norm_cast at hpoly
+      have := hpoly' c n₀ k hpoly
+      norm_cast at this
+      exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
 
 include hz in
 private lemma step_12 :
@@ -389,7 +403,7 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
       simp only [h₁, summable_norm_iff]
       have h₂ : (fun (n : ℕ) ↦ c (↑n + n₀) * rexp (-π * ↑n / 2)) =O[atTop]
           (fun (n : ℕ) ↦ (n ^ k) * rexp (-π * ↑n / 2)) := by
-        refine IsBigO.mul hpoly ?_
+        refine IsBigO.mul (hpoly' c n₀ k hpoly) ?_
         norm_cast
         exact isBigO_refl _ atTop
       refine summable_of_isBigO_nat ?_ h₂
@@ -429,8 +443,6 @@ section sigma
 Recall that σₖ(n) = ∑ {d | n}, d ^ k. In this section, we prove that for all n,
 σₖ(n) = O(n ^ (k + 1)).
 -/
-
-#check σ
 
 theorem ArithmeticFunction.sigma_asymptotic (k : ℕ) :
     (fun n ↦ (σ k n : ℝ)) =O[atTop] (fun n ↦ (n ^ (k + 1) : ℝ)) := by
@@ -506,19 +518,26 @@ theorem abs_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
       left
       rw [hnnat]
       exact Eq.symm (abs_of_nonneg hnnonneg)
-    -- refine IsBigO.congr' ?_ ?_
-    -- rw [hcd]
-    -- exact IsBigO.mul (ArithmeticFunction.sigma_asymptotic 3) (IsBigO_refl _ atTop)
-  use DivDiscBound c 1
+  use DivDiscBound c 4
   constructor
-  · rw [gt_iff_lt]
+  · stop
+    rw [gt_iff_lt]
     have hc1 : c 1 ≠ 0 := calc c 1
       _ = (σ 3 1) := by simp only [Int.cast_one, Int.toNat_one, one_mul, c]
       _ = 1 := by norm_cast
       _ ≠ 0 := by norm_num
     refine DivDiscBound_pos c 1 hc1 5 ?_
-    sorry
-  · sorry
+    exact hcpoly
+  · simp only [φ₀]
+    intro z hz
+    -- sorry
+    calc _ ≤ _ := DivDiscBoundOfPolyFourierCoeff z hz c 4 ?_ 5 hcpoly (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) ?_
+      _ = _ := by congr 2; ring
+    -- refine DivDiscBoundOfPolyFourierCoeff z hz c 4 ?_ 5 hcpoly (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) ?_
+    · sorry
+    · sorry
+    -- · sorry
+    -- · sorry
 
 end Corollaries
 
