@@ -1887,9 +1887,6 @@ lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k)  :
   apply Module.finrank_eq_of_rank_eq
   --rw [dim_modforms_eq_one_add_dim_cuspforms _ hk hk2] -/
 
-  sorry
-
-  sorry
 
 lemma dim_gen_cong_levels (k : ℤ) (Γ : Subgroup SL(2, ℤ)) (hΓ : Subgroup.index Γ ≠ 0) :
     FiniteDimensional ℂ (ModularForm Γ k) := by sorry
