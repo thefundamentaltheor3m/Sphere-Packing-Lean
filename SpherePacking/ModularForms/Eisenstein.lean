@@ -1819,10 +1819,21 @@ lemma dims_weight_lt_three_and_not_zero_Eq_zero (k : ℕ) (hk : (k : ℤ) < 3) (
   rw [hn] at hk
   omega
 
+lemma floor_lem1 (k a : ℚ) (ha : 0 < a) (hak : a ≤ k) :
+    1 + Nat.floor ((k - a) / a) = Nat.floor (k / a) := by
+  rw [div_sub_same (Ne.symm (ne_of_lt ha))]
+  have := Nat.floor_sub_one (k/a)
+  norm_cast at *
+  rw [this]
+  refine Nat.add_sub_cancel' ?_
+  refine Nat.le_floor ?_
+  refine (le_div_iff₀ ha).mpr ?_
+  simpa using hak
+
 
 lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k)  :
     Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) (k)) = if 12 ∣ ((k) : ℤ) - 2 then
-    Nat.floor ((k)/ 12) else Nat.floor ((k) / 12) + 1 := by
+    Nat.floor ((k : ℚ)/ 12) else Nat.floor ((k : ℚ) / 12) + 1 := by
   induction' k using Nat.strong_induction_on with k ihn
   have h2 := LinearEquiv.rank_eq (CuspForms_iso_Modforms (((k)) : ℤ))
   have := dim_modforms_eq_one_add_dim_cuspforms (k) (sorry) hk2
@@ -1834,32 +1845,55 @@ lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k)  :
   rw [hk12] at iH
   rw [iH]
   split_ifs
-  sorry
+  · have : ((k - 12) : ℕ) = (k : ℚ) - 12 := by
+      norm_cast
+    rw [this]
+    have := floor_lem1 k 12
+    norm_cast at *
+    apply this
+    norm_num
+    omega
   sorry
   sorry
   sorry
   · omega
-  sorry
+  · refine (Nat.even_sub ?_).mpr ?_
+    omega
+    simp [hk2]
+    decide
   simp at HK
-  have : k ∈ Finset.filter Even (Finset.Icc 3 14) := by
+  have hkop : k ∈ Finset.filter Even (Finset.Icc 3 14) := by
     simp [hk2]
     omega
-  have hkops : k ∈ ({4,6,8,10,12, 14} : Finset ℕ) := by
-    simp at *
-    sorry
-  fin_cases hkops
-  · simp
+  have : Finset.filter Even (Finset.Icc 3 14) =  ({4,6,8,10,12, 14} : Finset ℕ) := by
+      decide
+  rw [this] at hkop
+  fin_cases hkop
+  · simp only [Nat.cast_ofNat, Int.reduceSub, Int.reduceNeg, Nat.reduceDiv, Nat.floor_zero,
+    zero_add, Nat.cast_ite, CharP.cast_eq_zero, Nat.cast_one]
     have h8 : -8 < 0 := by norm_num
     rw [ModularForm.levelOne_neg_weight_rank_zero h8]
-    aesop
-  · sorry
-  · sorry
-  · sorry
-  ·
-    sorry
+    norm_cast
+  · simp only [Nat.cast_ofNat, Int.reduceSub, Int.reduceNeg, Nat.reduceDiv, Nat.floor_zero,
+    zero_add, Nat.cast_ite, CharP.cast_eq_zero, Nat.cast_one]
+    have h8 : -6 < 0 := by norm_num
+    rw [ModularForm.levelOne_neg_weight_rank_zero h8]
+    norm_cast
+  · simp only [Nat.cast_ofNat, Int.reduceSub, Int.reduceNeg, Nat.reduceDiv, Nat.floor_zero,
+    zero_add, Nat.cast_ite, CharP.cast_eq_zero, Nat.cast_one]
+    have h8 : -4 < 0 := by norm_num
+    rw [ModularForm.levelOne_neg_weight_rank_zero h8]
+    norm_cast
+  · simp only [Nat.cast_ofNat, Int.reduceSub, Int.reduceNeg, Nat.reduceDiv, Nat.floor_zero,
+    zero_add, Nat.cast_ite, CharP.cast_eq_zero, Nat.cast_one]
+    have h8 : -2 < 0 := by norm_num
+    rw [ModularForm.levelOne_neg_weight_rank_zero h8]
+    norm_cast
   · simp
-    rw [dim_weight_two]
-    simp
+    rw [ModularForm.levelOne_weight_zero_rank_one]
+    norm_cast
+  · simp [dim_weight_two]
+    norm_cast
 
 
 /-   simp at *
