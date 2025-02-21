@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 import Mathlib
+import SpherePacking.ModularForms.multipliable_lems
 
 /-! The contents of this file should go to Topology.Algebra.InfiniteSum, either
  into Basic or into another file. -/
@@ -24,8 +25,14 @@ variable {β : Type*} {f g : β → ℝ} (hg : Multipliable g)
 --     exact zero_lt_one
 
 
-lemma tprod_le_of_nonneg (hfnn : 0 ≤ f) (hfg : f ≤ g) : ∏' b, f b ≤ ∏' b, g b := by
+lemma tprod_le_of_nonneg_of_multipliable (hfnn : 0 ≤ f) (hfg : f ≤ g) (hf : Multipliable f)
+  (hg : Multipliable g) : ∏' b, f b ≤ ∏' b, g b := by
+  have := hasProd_le_nonneg f g (a₁ := ∏' b, f b) (a₂ := ∏' b, g b) hfg hfnn
+  apply this
+  · exact hf.hasProd
+  · exact hg.hasProd
 
+lemma tprod_le_of_nonneg (hfnn : 0 ≤ f) (hfg : f ≤ g) : ∏' b, f b ≤ ∏' b, g b := by
   sorry
 
 /- # State:

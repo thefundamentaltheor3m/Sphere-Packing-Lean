@@ -7,6 +7,7 @@ import Mathlib.Topology.EMetricSpace.Paracompact
 import Mathlib.Topology.Separation.CompletelyRegular
 import SpherePacking.ModularForms.exp_lems
 import SpherePacking.ModularForms.upperhalfplane
+import Mathlib
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set
   Metric Filter Function Complex MatrixGroups
@@ -14,7 +15,6 @@ open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
 
 open ArithmeticFunction
-
 
 def negEquiv : ℤ ≃ ℤ where
   toFun n := -n
@@ -240,6 +240,199 @@ lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ ≤ c * 
   simp only [one_div]
   apply mul_pos hc (inv_pos.mpr hb)
 
+/- lemma summable_hammer (f g : ℕ → ℂ) (a b : ℝ) (hab : 1 < a + b)
+    (hf : (fun n => (f n)⁻¹) =O[atTop] fun n => (n : ℝ) ^ (-a : ℝ))
+    (hg : (fun n => (g n)⁻¹) =O[atTop] fun n => (n : ℝ) ^ (-b : ℝ))  :
+    Summable fun n => (f n * g n)⁻¹ := by
+
+  have := (Real.summable_nat_rpow_inv (p := a + b)).mpr (by norm_cast at *)
+  rw [← summable_nat_add_iff 1] at *
+  apply summable_of_isBigO_nat this
+  conv =>
+    enter [3]
+    ext nReA
+    rw [← Real.rpow_neg (by norm_cast; simp), neg_add, Real.rpow_add (by norm_cast; simp)]
+  conv =>
+    enter [2]
+    ext n
+    rw [mul_inv]
+
+  apply Asymptotics.IsBigO.mul hf hg -/
+
+
+lemma summable_hammerTime  {α : Type} [NormedField α] [CompleteSpace α] (f  : ℤ → α) (a : ℝ) (hab : 1 < a)
+    (hf : (fun n => (f n)⁻¹) =O[cofinite] fun n => (|(n : ℝ)| ^ (a : ℝ))⁻¹) :
+    Summable fun n => (f n)⁻¹ := by
+  apply summable_of_isBigO _ hf
+  have := Real.summable_abs_int_rpow hab
+  apply this.congr
+  intro b
+  refine Real.rpow_neg ?_ a
+  exact abs_nonneg (b : ℝ)
+
+
+lemma AA (f g e : ℤ → ℝ) (hf : f =O[cofinite] g) (h : e =O[cofinite] f) : e =O[cofinite] g := by
+  exact Asymptotics.IsBigO.trans h hf
+
+/- lemma chris (f g e : ℤ → ℝ) (hf : f =O[cofinite] g) (h : (fun x => ‖e x‖) ≤ᶠ[cofinite] f) : e =O[cofinite] g := by
+  apply Asymptotics.IsBigO.of_norm_eventuallyLE
+  rw [@Asymptotics.isBigO_iff'] at hf
+
+  rw [@eventuallyLE_iff_all_subsets] at h
+
+  --simp at hh
+  rw [@eventuallyLE_iff_all_subsets]
+  intro s
+  have hh := h s
+
+  sorry -/
+
+lemma norm_symm (x y : ℤ) : ‖![x, y]‖ = ‖![y,x]‖ := by
+  simp_rw [EisensteinSeries.norm_eq_max_natAbs]
+  rw [max_comm]
+  simp
+
+lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻¹) =O[cofinite]
+    fun n => (|(n : ℝ)|⁻¹)  := by
+  have h1 : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻¹) =O[cofinite]
+    (fun n : ℤ => ((r z * ‖![n, m]‖))⁻¹) := by
+    rw [@Asymptotics.isBigO_iff']
+    use 1
+    simp
+    constructor
+    repeat{
+    use 0
+    intro n hn
+    have := EisensteinSeries.summand_bound z (k := 1) (by norm_num) ![m, n]
+    simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      ge_iff_le] at *
+    nth_rw 2 [mul_comm]
+    simp_rw [Real.rpow_neg_one] at this
+    have hr : (r z)⁻¹ = |r z|⁻¹ := by
+      simp only [inv_inj]
+      apply symm
+      rw [abs_eq_self]
+      exact (r_pos z).le
+    rw [← hr, norm_symm]
+    exact this}
+  apply  Asymptotics.IsBigO.trans  h1
+  rw [@Asymptotics.isBigO_iff']
+  use (r z)⁻¹
+  refine ⟨by simp; exact r_pos z, ?_⟩
+  simp
+  constructor
+  use min (-1) m
+  intro n hn
+  --have := EisensteinSeries.summand_bound z (k := 1) (by norm_num) ![n, m]
+  rw [mul_comm]
+  gcongr
+  · simp [(r_pos z).le]
+  · exact r_pos z
+  · exact le_abs_self (r z)
+  · simp; omega
+  · rw [EisensteinSeries.norm_eq_max_natAbs]
+    simp
+    left
+    norm_cast
+    rw [Int.abs_eq_natAbs]
+    rfl
+  use max 1 m
+  intro b hb
+  rw [EisensteinSeries.norm_eq_max_natAbs]
+  simp
+  rw [mul_comm]
+  gcongr
+  · simp [(r_pos z).le]
+  · exact r_pos z
+  · exact le_abs_self (r z)
+  · simp; omega
+  · simp at *;
+    left
+    norm_cast
+    rw [Int.abs_eq_natAbs]
+    rfl
+
+lemma linear_bigO' (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((n : ℂ) * z + m)⁻¹) =O[cofinite]
+    fun n => (|(n : ℝ)|⁻¹)  := by
+  have h1 : (fun (n : ℤ) => ((n : ℂ) * z + m)⁻¹) =O[cofinite]
+    (fun n : ℤ => ((r z * ‖![m, n]‖))⁻¹) := by
+    rw [@Asymptotics.isBigO_iff']
+    use 1
+    simp
+    constructor
+    repeat{
+    use 0
+    intro n hn
+    have := EisensteinSeries.summand_bound z (k := 1) (by norm_num) ![n, m]
+    simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      ge_iff_le] at *
+    nth_rw 2 [mul_comm]
+    simp_rw [Real.rpow_neg_one] at this
+    have hr : (r z)⁻¹ = |r z|⁻¹ := by
+      simp only [inv_inj]
+      apply symm
+      rw [abs_eq_self]
+      exact (r_pos z).le
+    rw [← hr, norm_symm]
+    exact this}
+  apply  Asymptotics.IsBigO.trans  h1
+  rw [@Asymptotics.isBigO_iff']
+  use (r z)⁻¹
+  refine ⟨by simp; exact r_pos z, ?_⟩
+  simp
+  constructor
+  use min (-1) m
+  intro n hn
+  --have := EisensteinSeries.summand_bound z (k := 1) (by norm_num) ![n, m]
+  rw [mul_comm]
+  gcongr
+  · simp [(r_pos z).le]
+  · exact r_pos z
+  · exact le_abs_self (r z)
+  · simp; omega
+  · rw [EisensteinSeries.norm_eq_max_natAbs]
+    simp
+    right
+    norm_cast
+    rw [Int.abs_eq_natAbs]
+    rfl
+  use max 1 m
+  intro b hb
+  rw [EisensteinSeries.norm_eq_max_natAbs]
+  simp
+  rw [mul_comm]
+  gcongr
+  · simp [(r_pos z).le]
+  · exact r_pos z
+  · exact le_abs_self (r z)
+  · simp; omega
+  · simp at *;
+    right
+    norm_cast
+    rw [Int.abs_eq_natAbs]
+    rfl
+
+
+theorem summable_diff_denom (z : ℍ) (i : ℤ) :
+  Summable fun (m : ℤ) ↦ ((m : ℂ) * ↑z + ↑i + 1)⁻¹ * ((m : ℂ) * ↑z + ↑i)⁻¹ := by
+  conv =>
+    enter [1]
+    ext m
+    rw [← mul_inv]
+  apply summable_hammerTime _ 2 (by norm_num)
+  have h1 := linear_bigO' (i+1) z
+  have h2 := linear_bigO' i z
+  have h3 := h2.mul h1
+  apply h3.congr
+  · intro n
+    rw [mul_comm]
+    simp
+    ring
+  · intro n
+    norm_cast
+    rw [pow_two]
+    rw [← mul_inv]
+    simp
 
 lemma summable_pain (z : ℍ) (i : ℤ) :
   Summable (fun m : ℤ ↦ 1 / ((m : ℂ) * ↑z + ↑i) - 1 / (↑m * ↑z + ↑i + 1)) := by
@@ -261,65 +454,7 @@ lemma summable_pain (z : ℍ) (i : ℤ) :
   rw [h1]
   simp
   have :  Summable fun (m : ℤ) ↦ (↑(m : ℂ) * (z  : ℂ) + ↑i + 1)⁻¹ * (↑(m : ℂ) * (z : ℂ) + ↑i)⁻¹ := by
-    have hS : Summable fun m : ℤ => 1 / (r z ^ 2 * 2⁻¹ * ‖![m, i]‖ ^ 2) := by
-      apply extracted_abs_norm_summable
-    apply hS.of_norm_bounded_eventually
-    rw [Filter.eventually_iff_exists_mem ]
-    use {0, -1}ᶜ
-    constructor
-    · simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Int.reduceNeg, mem_cofinite, compl_compl,
-      finite_singleton, Finite.insert, mem_compl_iff, mem_insert_iff, mem_singleton_iff, not_or,
-      Fin.isValue, one_div, mul_inv_rev, norm_mul, norm_inv, norm_eq_abs, norm_pow, and_imp, true_and]
-    · intro y hy
-      have hi := summand_bound z (k := 1) (by norm_num) ![y, i]
-      have hi1 := summand_bound z (k := 1) (by norm_num) ![y, i + 1]
-      simp only [one_div, mul_inv_rev, Nat.succ_eq_add_one, Nat.reduceAdd, Int.reduceNeg,
-        mem_compl_iff, mem_insert_iff, mem_singleton_iff, not_or, Fin.isValue, Matrix.cons_val_zero,
-        Matrix.cons_val_one, Matrix.head_cons, Int.cast_add, Int.cast_one, norm_mul, norm_inv,
-        norm_eq_abs, ge_iff_le] at *
-      have := mul_le_mul hi1 hi (by rw [Real.rpow_neg_one, inv_nonneg]; apply AbsoluteValue.nonneg )
-        (by simp_rw [Real.rpow_neg_one, ← mul_inv, inv_nonneg]; apply mul_nonneg; exact (r_pos z).le; exact norm_nonneg _)
-      have he1 : Complex.abs (↑y * ↑z + (↑i + 1)) ^ (-1 : ℝ) * Complex.abs (↑y * ↑z + ↑i) ^ (-1 : ℝ) =
-          (Complex.abs (↑y * ↑z + ↑i + 1))⁻¹ * (Complex.abs (↑y * ↑z + ↑i))⁻¹ := by
-          simp_rw [Real.rpow_neg_one]
-          congr 1
-          congr 1
-          norm_cast
-          rw [Int.cast_add, ← add_assoc]
-          congr
-          simp
-      rw [he1] at this
-      apply le_trans this
-      have hl : r z ^ (-1 : ℝ) * ‖![y, i + 1]‖ ^ (-1 : ℝ) * (r z ^ (-1 : ℝ) * ‖![y, i]‖ ^ (-1 : ℝ)) =
-        r z ^ (-2 : ℝ) * (‖![y, i + 1]‖⁻¹ * ‖![y, i]‖⁻¹) := by
-        rw [show (-2 : ℝ) = -1 + -1 by ring]
-        rw [Real.rpow_add]
-        simp_rw [Real.rpow_neg_one]
-        ring
-        exact r_pos z
-      have hr : (‖![y, i]‖ ^ 2)⁻¹ * ((2⁻¹)⁻¹ * (r z ^ 2)⁻¹) =
-        (r z ^ (-2 : ℝ)) * (2 * (‖![y, i]‖⁻¹) * (‖![y, i]‖⁻¹)) := by
-        simp only [Nat.succ_eq_add_one, Nat.reduceAdd, inv_inv]
-        ring_nf
-        simp only [inv_pow, mul_eq_mul_right_iff, mul_eq_mul_left_iff, inv_eq_zero, ne_eq,
-          OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff, norm_eq_zero,
-          Matrix.cons_eq_zero_iff, Matrix.zero_empty, and_true, or_false]
-        left
-        have:= r_pos z
-        rw [Real.rpow_neg (r_pos z).le, Real.rpow_two]
-      rw [hl, hr]
-      gcongr
-      apply Real.rpow_nonneg
-      apply (r_pos z).le
-      simp only [Nat.succ_eq_add_one, Nat.reduceAdd, norm_eq_max_natAbs, Fin.isValue,
-        Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, Nat.cast_max]
-      rw [aux]
-      · norm_cast
-        rw [← Nat.mul_max_mul_left]
-        omega
-      · simp [hy.1]
-      · simp [hy.1]
-      · exact zero_lt_two
+    apply summable_diff_denom
   rw [← Finset.summable_compl_iff  (s := {0}) ]  at this
   apply this
 

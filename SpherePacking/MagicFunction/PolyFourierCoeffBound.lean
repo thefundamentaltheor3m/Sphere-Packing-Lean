@@ -93,14 +93,14 @@ private lemma aux_4 : Summable fun (i : ℕ) ↦ Complex.abs (c (i + n₀)) *
     Complex.abs (cexp (↑π * I * ↑i * z)) := by
   simp_rw [← map_mul, ← Complex.norm_eq_abs]; exact aux_3 z c n₀ hcsum
 
-lemma aux_5 : Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24) =
+lemma aux_5 (z : ℍ) : Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24) =
   ∏' (n : ℕ+), Complex.abs (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
   simp only [← abs_pow]
   apply Complex.abs_tprod -- ℕ+ (fun n => (1 - cexp (2 * ↑π * I * n * z)) ^ 24)
-  sorry
+  apply MultipliableDeltaProductExpansion_pnat z
 
 
-lemma aux_6 : 0 ≤ ∏' (n : ℕ+), Complex.abs (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
+lemma aux_6 (z : ℍ) : 0 ≤ ∏' (n : ℕ+), Complex.abs (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
   rw [← aux_5 z]
   exact AbsoluteValue.nonneg Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24)
 
@@ -187,7 +187,7 @@ private lemma step_5 :
     Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   simp only [map_div₀, map_mul]
 
-private lemma step_6 :
+private lemma step_6  :
     abs (cexp (π * I * (n₀ - 2) * z)) *
     abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) =
@@ -206,7 +206,7 @@ private lemma step_7 :
     exact aux_7 z (n₀ - 2)
 
 include hcsum in
-private lemma step_8 :
+private lemma step_8  :
     rexp (-π * (n₀ - 2) * z.im) * abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * abs (cexp (π * I * n * z))) /

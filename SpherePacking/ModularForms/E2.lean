@@ -578,7 +578,8 @@ lemma D2_S (z : ℍ) : D₂ ModularGroup.S z = 2 * (π : ℂ) * Complex.I / z :=
   simp [D₂, ModularGroup.S, ModularGroup.denom_apply]
 
 /-This is being PRd-/
-lemma SL2_gens : Subgroup.closure {ModularGroup.S, ModularGroup.T} = ⊤ := by sorry
+lemma SL2_gens : Subgroup.closure {ModularGroup.S, ModularGroup.T} = ⊤ := by
+  exact SpecialLinearGroup.SL2Z_generators
 
 
 variable (f : ℍ → ℂ) (k : ℤ) (z : ℍ)
@@ -715,3 +716,92 @@ lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
     or_false]
   rw [← inv_pow, pow_two, ← mul_assoc, mul_inv_cancel₀ hpi, one_mul]
   ring
+
+
+
+lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ,
+    (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) / (1 - cexp (2 * π *  Complex.I * (n + 1) * z)) =
+    ∑' n : ℕ, sigma 1 (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) := by
+  have :=  fun m : ℕ => tsum_choose_mul_geometric_of_norm_lt_one  (r := (cexp (2 * ↑π * Complex.I * ↑z))^(m+1)) 0 (by rw [← exp_aux]; simpa using exp_upperHalfPlane_lt_one_nat z m)
+  simp only [add_zero, Nat.choose_zero_right, Nat.cast_one, one_mul, zero_add, pow_one,
+    one_div] at this
+  conv =>
+    enter [1,1]
+    ext n
+    rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp only [Nat.cast_add, Nat.cast_one],
+      exp_aux, div_eq_mul_one_div]
+    simp
+    rw [← this n, ← tsum_mul_left]
+    conv =>
+      enter [1]
+      ext m
+      rw [mul_assoc, ← pow_succ' (cexp (2 * ↑π * Complex.I * ↑z) ^ (n + 1)) m ]
+  have := tsum_sigma_eqn z (k := 1)
+  conv =>
+    enter [2,1]
+    ext n
+    rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp]
+  have h1 := tsum_pnat_eq_tsum_succ3 (fun n => sigma 1 (n) * cexp (2 * π * Complex.I * (n) * z))
+  simp only [UpperHalfPlane.coe] at *
+  rw [← h1]
+  have h2 := fun n : ℕ => tsum_pnat_eq_tsum_succ3
+    ( fun m => ↑(n + 1) * (cexp (2 * ↑π * Complex.I * ↑z) ^ (n + 1)) ^ (m))
+  simp only [UpperHalfPlane.coe] at h2
+  conv =>
+    enter [1,1]
+    ext n
+    rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp only [Nat.cast_add, Nat.cast_one], ← h2 n]
+    conv =>
+      enter [1]
+      ext m
+      rw [pow_right_comm]
+  have h3 := tsum_pnat_eq_tsum_succ3
+      (fun n ↦ ∑' (m : ℕ+), ↑(n) * (cexp (2 * ↑π * Complex.I * ↑z) ^ (m : ℕ)) ^ (n))
+  simp only [UpperHalfPlane.coe] at h3
+  rw [← h3, ← this]
+  simp only [pow_one]
+  rw [tsum_prod' ]
+  congr
+  ext n
+  congr
+  ext m
+  simp only [mul_eq_mul_left_iff, Nat.cast_eq_zero, PNat.ne_zero, or_false]
+  rw [← Complex.exp_nat_mul, ← Complex.exp_nat_mul]
+  congr 1
+  ring
+  · have := a4 2 z
+    apply this.congr
+    intro b
+    simp only [uncurry, Nat.add_one_sub_one, pow_one, UpperHalfPlane.coe, mul_eq_mul_left_iff,
+      Nat.cast_eq_zero, PNat.ne_zero, or_false]
+    ring_nf
+  · intro e
+    have := a1  2 e z
+    simpa using this
+
+/--This we should get from the modular forms repo stuff. Will port these things soon. -/
+lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
+    1 - 24 * ∑' (n : ℕ+),
+    ↑n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)) := by
+  rw [E₂]
+  simp
+  rw [G2_q_exp]
+  rw [mul_sub]
+  congr 1
+  · rw [riemannZeta_two]
+    have hpi : (π : ℂ) ≠ 0 := by simp; exact Real.pi_ne_zero
+    field_simp
+    ring
+  · rw [← mul_assoc]
+    congr 1
+    · rw [riemannZeta_two]
+      have hpi : (π : ℂ) ≠ 0 := by simp; exact Real.pi_ne_zero
+      norm_cast
+      field_simp
+      ring
+    · have hl := tsum_pnat_eq_tsum_succ3 (fun n => sigma 1 n * cexp (2 * π * Complex.I * n * z))
+      have hr := tsum_pnat_eq_tsum_succ3 (fun n => n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)))
+      rw [hl, hr]
+      have ht := tsum_eq_tsum_sigma z
+      simp at *
+      rw [ht]
