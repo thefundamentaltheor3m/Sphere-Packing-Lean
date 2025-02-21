@@ -13,7 +13,7 @@ local notation "V" => EuclideanSpace ℝ (Fin 8)
 
 open Set Complex Real
 
-namespace MagicFunction
+namespace MagicFunction.a.Parametrisations
 
 noncomputable section Parametrisations
 
@@ -39,22 +39,22 @@ section UpperHalfPlane
 
 -- Show that the things that go into φ₀ are in the upper half plane
 
-private lemma z₁_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₁' t).im := by
+lemma z₁_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₁' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
   rw [z₁', IccExtend_of_mem zero_le_one z₁ ht', z₁]; simp
   exact ht.1
 
-private lemma z₂_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₂' t).im := by
+lemma z₂_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₂' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
   rw [z₂', IccExtend_of_mem zero_le_one z₂ ht', z₂]; simp
   exact ht.1
 
-private lemma z₃_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₃' t).im := by
+lemma z₃_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₃' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
   rw [z₃', IccExtend_of_mem zero_le_one z₃ ht', z₃]; simp
   exact ht.1
 
-private lemma z₄_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioi 0) : 0 < (z₄' t).im := by
+lemma z₄_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioi 0) : 0 < (z₄' t).im := by
   have ht' : t ∈ Ici 0 := mem_Ici_of_Ioi ht
   rw [z₄', IciExtend_of_mem z₄ ht', z₄]; simp
   have : 0 ≤ t := ht'
@@ -103,5 +103,7 @@ def a (x : V) := a' ‖x‖
 end Vector_Input
 
 #check a
+
+end MagicFunction.a.Parametrisations
 
 #min_imports

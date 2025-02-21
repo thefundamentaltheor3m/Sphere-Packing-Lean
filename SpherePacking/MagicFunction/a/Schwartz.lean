@@ -8,7 +8,7 @@ M4R File
 
 import Mathlib
 
-import SpherePacking.MagicFunction.a.IntegralEstimates
+import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 
 /-! # a is a Schwartz Function
 
