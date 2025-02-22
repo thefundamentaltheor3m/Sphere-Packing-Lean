@@ -131,12 +131,17 @@ lemma aux_measurable : MeasurableSet ((Ioo 0 1) : Set ℝ) := measurableSet_Ioo
 
 #check hasDerivWithinAt_zpow
 lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioo 0 1) : HasDerivWithinAt f (f' x) (Ioo 0 1) x := by
-  have h₁ : f = fun t ↦ (1 / 2) * t⁻¹ := by
+  have hf : f = fun t ↦ (1 / 2) * t ^ (-1 : ℤ) := by
     ext x
     field_simp
     rfl
-  rw [f', neg_div, neg_eq_neg_one_mul]
-  
+  have hf' : f' = fun t ↦ (1 / 2) * (-1 * t ^ (-2 : ℤ)) := by
+    ext x
+    field_simp
+    congr
+  rw [hf, hf']
+  apply HasDerivWithinAt.const_mul
+  -- refine hasDerivWithinAt_zpow (-1 : ℤ) x ?_ (Ioo 0 1)
   sorry
 
 lemma aux_injOn : InjOn f (Ioo 0 1) := by
