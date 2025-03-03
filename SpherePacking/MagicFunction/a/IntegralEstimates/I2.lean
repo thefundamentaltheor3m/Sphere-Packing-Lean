@@ -11,10 +11,11 @@ import Mathlib
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
 
-/-! # Constructing Upper-Bounds for I₁
+/-! # Constructing Upper-Bounds for I₂
 
-The purpose of this file is to construct bounds on the integral `I₁` that is part of the definition
-of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
+The purpose of this file is to construct bounds on the integral `I₂` that is part of the definition
+of the function `a`. We do something similar to what we did for `I₁` in
+`SpherePacking.MagicFunction.a.IntegralEstimates.I1`.
 -/
 
 open MagicFunction.a.Parametrisations MagicFunction.a.Real_Integrals
@@ -22,7 +23,7 @@ open MagicFunction.a.Parametrisations MagicFunction.a.Real_Integrals
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter
 open scoped Function
 
-namespace MagicFunction.a.IntegralEstimates.I1
+namespace MagicFunction.a.IntegralEstimates.I2
 
 noncomputable section Change_of_Variables
 
@@ -135,18 +136,16 @@ lemma aux_measurable : MeasurableSet ((Ioo 0 1) : Set ℝ) := measurableSet_Ioo
 lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioo 0 1) : HasDerivWithinAt f (f' x) (Ioo 0 1) x := by
   have hf : f = fun t ↦ (1 / 2) * t ^ (-1 : ℤ) := by
     ext x
-    simp (disch := field_simp_discharge) only [Int.reduceNeg, zpow_neg, zpow_one, inv_eq_one_div,
-      mul_div_assoc', mul_one, div_div]
+    field_simp
     rfl
   have hf' : f' = fun t ↦ (1 / 2) * (-1 * t ^ (-2 : ℤ)) := by
     ext x
-    simp (disch := field_simp_discharge) only [Int.reduceNeg, zpow_neg, inv_eq_one_div, neg_mul,
-      one_mul, neg_div', mul_div_assoc', mul_neg, mul_one, div_div]
-    rfl
+    field_simp
+    congr
   rw [hf, hf']
   apply HasDerivWithinAt.const_mul
-  norm_cast
-  exact hasDerivWithinAt_zpow (-1 : ℤ) x (Or.inl (ne_of_gt hx.1)) (Ioo 0 1)
+  -- refine hasDerivWithinAt_zpow (-1 : ℤ) x ?_ (Ioo 0 1)
+  sorry
 
 lemma aux_injOn : InjOn f (Ioo 0 1) := by
   intro _ _ _ _ hf
@@ -210,7 +209,7 @@ lemma congr_aux_1 (x : ℝ) :
 
 -- Now, the main result of this section.
 
-lemma I₁_Expression (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t)) = I₁' r := by
+lemma Congruency (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t)) = I₁' r := by
   rw [I₁'_eq']
   apply setIntegral_congr_ae₀ nullMeasurableSet_Ioo
   apply ae_of_all
@@ -225,6 +224,7 @@ lemma I₁_Expression (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t
       mul_pos_iff_of_pos_right]
     exact pow_pos hx.1 2
   simp only [f', g, f, habs, real_smul]
+
   have hrearrange_LHS : -- Break product of 2 things into product of 4 things
     ofReal (1 / (2 * x ^ 2))
     * ((I + 1)
@@ -253,13 +253,3 @@ lemma I₁_Expression (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t
 end Showing_Equality_to_I₁
 
 ----------------------------------------------------------------
-
-section Bounding
-
--- Now that we have `MagicFunction.a.IntegralEstimates.I1.I₁_Expression`, we can bound `I₁`.
-
--- #check I₁_Expression
-
-
-
-end Bounding

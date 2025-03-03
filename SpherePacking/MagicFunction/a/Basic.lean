@@ -62,6 +62,12 @@ lemma z₄_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioi 0) : 0 < (z₄' t).im :
 
 end UpperHalfPlane
 
+end MagicFunction.a.Parametrisations
+
+open MagicFunction.a.Parametrisations
+
+namespace MagicFunction.a.Real_Integrals
+
 noncomputable section Real_Input
 
 def I₁' (x : ℝ) := ∫ t in Ioo (0 : ℝ) 1, (1 + I) -- Added factor due to variable change!!
@@ -88,6 +94,12 @@ def a' (x : ℝ) := I₁' x + I₂' x + I₃' x + I₄' x
 
 end Real_Input
 
+end MagicFunction.a.Real_Integrals
+
+open MagicFunction.a.Real_Integrals
+
+namespace MagicFunction.a.Radial_Functions
+
 noncomputable section Vector_Input
 
 def I₁ (x : V) := I₁' ‖x‖
@@ -104,6 +116,6 @@ end Vector_Input
 
 #check a
 
-end MagicFunction.a.Parametrisations
+end MagicFunction.a.Radial_Functions
 
 #min_imports
