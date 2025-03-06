@@ -1,21 +1,31 @@
 import Mathlib
 
-open SchwartzMap
+open SchwartzMap Function
 
 section Aux
 
-theorem norm_iteratedDeriv_multidimensional_le_const_mul_abs_nthDeriv_real {d : ℕ} (f : 𝓢(ℝ, ℂ))
-    (x : EuclideanSpace ℝ (Fin d)) (n : ℕ) {k' : ℕ} {C : ℝ}
-    (hC : ∀ (x : ℝ), ‖x‖ ^ (k') * ‖iteratedFDeriv ℝ n f.toFun x‖ ≤ C) :
-    ∃ (D : ℝ), ‖iteratedFDeriv ℝ 0 (fun x ↦ f (‖x‖ ^ 2)) x‖
-    ≤ D * Complex.abs (iteratedDeriv n f (‖x‖ ^ 2)) := by
-  induction' n with n hn
+lemma hasTemperateGrowth_norm_sq {d : ℕ} :
+    HasTemperateGrowth (fun (x : EuclideanSpace ℝ (Fin d)) ↦ ‖x‖ ^ 2) := by
+  refine @Function.HasTemperateGrowth.of_fderiv (EuclideanSpace ℝ (Fin d)) ℝ _ _ _ _
+    (fun x ↦ ‖x‖ ^ 2) ?_ (Differentiable.norm_sq ℝ differentiable_id) 2 1 ?_
   · sorry
-  · sorry
+  · intro x
+    simp only [norm_pow, norm_norm, pow_one, one_mul, pow_two, norm_mul]
+    suffices : ‖x‖ ≤ 1 + ‖x‖
+    ·
+      sorry
+    sorry
+
+lemma le_one_add_sq_of_nonneg {x : ℝ} : x ≤ 1 + x ^ 2 := by nlinarith
 
 end Aux
 
-noncomputable def schwartzMap_multidimensional_of_schwartzMap_real (d : ℕ) (f : 𝓢(ℝ, ℂ)) :
+-- @[simps!]
+-- noncomputable def schwartzMap_multidimensional_of_schwartzMap_real (d : ℕ) (f : 𝓢(ℝ, ℂ)) :
+--     𝓢((EuclideanSpace ℝ (Fin d)), ℂ) := f.compCLM ℝ _ _
+
+
+noncomputable def schwartzMap_multidimensional_of_schwartzMap_real' (d : ℕ) (f : 𝓢(ℝ, ℂ)) :
     𝓢((EuclideanSpace ℝ (Fin d)), ℂ) where
   toFun := fun x ↦ f (‖x‖ ^ 2) -- f ∘ norm
   smooth' := f.smooth'.comp (contDiff_id.norm_sq ℝ)
@@ -25,7 +35,8 @@ noncomputable def schwartzMap_multidimensional_of_schwartzMap_real (d : ℕ) (f 
     · obtain ⟨m, hm⟩ := hk
       obtain ⟨C, hC⟩ := f.decay' m n
       induction' n with n hn
-      · use C
+      · -- Base Case
+        use C
         intro x
         specialize hC (‖x‖ ^ 2)
         simp only [norm_pow, norm_norm, norm_iteratedFDeriv_zero, Complex.norm_eq_abs] at hC ⊢
@@ -37,9 +48,9 @@ noncomputable def schwartzMap_multidimensional_of_schwartzMap_real (d : ℕ) (f 
           ne_eq]
         left
         rfl
-      · use C
+      · -- Inductive Case
+        use C
         intro x
-
         sorry
     else
     · rw [Nat.not_even_iff_odd] at hk
