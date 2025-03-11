@@ -9,6 +9,8 @@ M4R File
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ForMathlib.tprod
 import SpherePacking.ForMathlib.SpecificLimits
+import SpherePacking.ForMathlib.Fourier
+
 import Mathlib
 
 /-
@@ -420,7 +422,8 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
       positivity
     · intro i
       positivity
-    · simp
+    · simp only [CharP.cast_eq_zero, zero_add, mul_zero, zero_div, Real.exp_zero, mul_one,
+        AbsoluteValue.pos_iff, ne_eq]
       exact hcn₀
   · sorry
     -- Use new result that Δ(iz) > 0 [TODO: BUMP]
@@ -435,7 +438,7 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
 
 end positivity
 
-open ArithmeticFunction
+open ArithmeticFunction Nat
 
 section sigma
 
@@ -448,7 +451,7 @@ theorem ArithmeticFunction.sigma_asymptotic (k : ℕ) :
     (fun n ↦ (σ k n : ℝ)) =O[atTop] (fun n ↦ (n ^ (k + 1) : ℝ)) := by
   rw [isBigO_iff]
   use 1
-  simp
+  simp only [Real.norm_natCast, norm_pow, one_mul, eventually_atTop, ge_iff_le]
   use 1
   intro n hn
   rw [sigma_apply]
@@ -495,7 +498,8 @@ theorem abs_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     norm_cast at h ⊢
   have hcpoly : c =O[atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
     -- Use `Asymptotics.IsBigO.congr'` to relate properties of c to properties of d
-    simp [isBigO_iff] at hdpoly ⊢
+    simp only [isBigO_iff, Complex.norm_eq_abs, norm_pow, Complex.norm_natCast, eventually_atTop,
+      ge_iff_le, Real.norm_eq_abs] at hdpoly ⊢
     obtain ⟨R, m, hR⟩ := hdpoly
     use R, m
     intro n hn
@@ -511,16 +515,28 @@ theorem abs_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     specialize hR n.toNat hmnnat
     rw [← hcd, hnnat] at hR
     calc Complex.abs (c n)
-    _ ≤ R * n.toNat ^ 5 := hR
+    _ ≤ R * n.toNat ^ 5 := by rwa [abs_natCast] at hR
     _ = R * |↑n| ^ 5 := by
-      simp
+      simp only [mul_eq_mul_left_iff, Nat.cast_nonneg, abs_nonneg, ne_eq, OfNat.ofNat_ne_zero,
+        not_false_eq_true, pow_left_inj₀]
       norm_cast
       left
       rw [hnnat]
       exact Eq.symm (abs_of_nonneg hnnonneg)
   use DivDiscBound c 4
   constructor
-  · stop
+  · rw [gt_iff_lt]
+    refine DivDiscBound_pos c 4 ?_ 5 ?_
+    · have : c 4 = 4 * (σ 3 4) := rfl
+      rw [this]
+      simp only [ne_eq, _root_.mul_eq_zero, OfNat.ofNat_ne_zero, cast_eq_zero, false_or]
+      have : ¬((σ 3) 4 = 0) ↔ ¬ (∑ d ∈ divisors 4, d ^ 3 = 0) := by rfl
+      rw [this]
+      simp only [Finset.sum_eq_zero_iff, mem_divisors, ne_eq, OfNat.ofNat_ne_zero,
+        not_false_eq_true, and_true, pow_eq_zero_iff, not_forall, Classical.not_imp]
+      exact ⟨2, (by norm_num), (by norm_num)⟩
+    · sorry
+    stop
     rw [gt_iff_lt]
     have hc1 : c 1 ≠ 0 := calc c 1
       _ = (σ 3 1) := by simp only [Int.cast_one, Int.toNat_one, one_mul, c]
