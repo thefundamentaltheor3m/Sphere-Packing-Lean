@@ -526,32 +526,25 @@ theorem abs_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
   use DivDiscBound c 4
   constructor
   · rw [gt_iff_lt]
-    refine DivDiscBound_pos c 4 ?_ 5 ?_
-    · have : c 4 = 4 * (σ 3 4) := rfl
-      rw [this]
-      simp only [ne_eq, _root_.mul_eq_zero, OfNat.ofNat_ne_zero, cast_eq_zero, false_or]
-      have : ¬((σ 3) 4 = 0) ↔ ¬ (∑ d ∈ divisors 4, d ^ 3 = 0) := by rfl
-      rw [this]
-      simp only [Finset.sum_eq_zero_iff, mem_divisors, ne_eq, OfNat.ofNat_ne_zero,
-        not_false_eq_true, and_true, pow_eq_zero_iff, not_forall, Classical.not_imp]
-      exact ⟨2, (by norm_num), (by norm_num)⟩
-    · sorry
-    stop
-    rw [gt_iff_lt]
-    have hc1 : c 1 ≠ 0 := calc c 1
-      _ = (σ 3 1) := by simp only [Int.cast_one, Int.toNat_one, one_mul, c]
-      _ = 1 := by norm_cast
-      _ ≠ 0 := by norm_num
-    refine DivDiscBound_pos c 1 hc1 5 ?_
-    exact hcpoly
+    refine DivDiscBound_pos c 4 ?_ 5 hcpoly
+    have : c 4 = 4 * (σ 3 4) := rfl
+    rw [this]
+    simp only [ne_eq, _root_.mul_eq_zero, OfNat.ofNat_ne_zero, cast_eq_zero, false_or]
+    have : ¬((σ 3) 4 = 0) ↔ ¬ (∑ d ∈ divisors 4, d ^ 3 = 0) := by rfl
+    rw [this]
+    simp only [Finset.sum_eq_zero_iff, mem_divisors, ne_eq, OfNat.ofNat_ne_zero,
+      not_false_eq_true, and_true, pow_eq_zero_iff, not_forall, Classical.not_imp]
+    exact ⟨2, (by norm_num), (by norm_num)⟩
   · simp only [φ₀]
     intro z hz
-    -- sorry
-    calc _ ≤ _ := DivDiscBoundOfPolyFourierCoeff z hz c 4 ?_ 5 hcpoly (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) ?_
+    calc _ ≤ _ := DivDiscBoundOfPolyFourierCoeff z hz c 4 ?_ 5 hcpoly
+          (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) ?_
       _ = _ := by congr 2; ring
-    -- refine DivDiscBoundOfPolyFourierCoeff z hz c 4 ?_ 5 hcpoly (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) ?_
-    · sorry
-    · sorry
+    ·
+      sorry
+    · -- This is where I need to use Bhavik's result
+      
+      sorry
     -- · sorry
     -- · sorry
 
