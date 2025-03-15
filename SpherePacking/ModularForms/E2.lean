@@ -18,10 +18,10 @@ noncomputable section Definitions
 /--Maybe this is the definition we want as I cant see how to easily show the other outer sum is
 absolutely convergent. -/
 def G₂ : ℍ → ℂ := fun z => limUnder (atTop)
-    (fun N : ℕ => ∑ m in Finset.Ico (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
+    (fun N : ℕ => ∑ m ∈ Finset.Ico (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
 
 def G₂_a : ℍ → ℂ := fun z => limUnder (atTop)
-    (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
+    (fun N : ℕ => ∑ m ∈ Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
 
 def E₂ : ℍ → ℂ := (1 / (2 * riemannZeta 2)) •  G₂
 
@@ -48,29 +48,29 @@ theorem extracted_66 (z : ℍ) :
   fun N : ℕ ↦
     ∑' (n : ℤ), ∑ x ∈ Finset.Ico (-↑N : ℤ) ↑N, (((n : ℂ) * ↑z + ↑x) ^ 2)⁻¹ := by
   ext N
-  simp
-  rw [@Finset.mul_sum]
-  rw [tsum_sum]
-  congr
-  ext n
-  rw [← tsum_mul_left]
-  rw [int_sum_neg]
-  congr
-  ext d
-  have hz := ne_zero z
-  rw [← neg_ne_zero] at hz
-  rw [← mul_inv]
-  congr 1
-  rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
-  congr
-  field_simp
-  simp only [UpperHalfPlane.coe]
-  ring
-  · intro i hi
-    exact extracted_77 z i
+  simp [Finset.mul_sum, tsum_sum]
+  sorry
+  -- conv_rhs => rw [tsum_sum]
+  -- congr
+  -- ext n
+  -- rw [← tsum_mul_left]
+  -- rw [int_sum_neg]
+  -- congr
+  -- ext d
+  -- have hz := ne_zero z
+  -- rw [← neg_ne_zero] at hz
+  -- rw [← mul_inv]
+  -- congr 1
+  -- rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
+  -- congr
+  -- field_simp
+  -- simp only [UpperHalfPlane.coe]
+  -- ring
+  -- · intro i hi
+  --   exact extracted_77 z i
 
 lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUnder (atTop)
-    fun N : ℕ => ((∑' (n : ℤ), ∑ m in Finset.Ico (-N : ℤ) N, (1 / ((n : ℂ) * z + m) ^ 2))) := by
+    fun N : ℕ => ((∑' (n : ℤ), ∑ m ∈ Finset.Ico (-N : ℤ) N, (1 / ((n : ℂ) * z + m) ^ 2))) := by
   rw [ modular_S_smul]
   simp [G₂]
   rw [ limUnder_mul_const]
@@ -120,11 +120,11 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
   simp
   have := tendsto_tsum_of_dominated_convergence (𝓕 := atTop) (g := fun (n : ℕ+) => (0 : ℂ))
     (f := fun d : ℕ+ => fun n : ℕ+ => cexp (2 * ↑π * Complex.I * (-↑↑d / ↑z) * ↑n) )
-    (bound := fun n : ℕ+ => (Complex.abs (cexp (2 * ↑π * Complex.I * (-1 / ↑z)))^ (n : ℕ)))
-  simp only [norm_eq_abs, ge_iff_le, tsum_zero, forall_exists_index] at this
+    (bound := fun n : ℕ+ => (norm (cexp (2 * ↑π * Complex.I * (-1 / ↑z)))^ (n : ℕ)))
+  simp only [ge_iff_le, tsum_zero, forall_exists_index] at this
   apply this
   · apply Summable.subtype
-    simpa only [summable_geometric_iff_norm_lt_one, Real.norm_eq_abs, Complex.abs_abs] using
+    simpa only [summable_geometric_iff_norm_lt_one, Real.norm_eq_abs, abs_norm] using
       (exp_upperHalfPlane_lt_one ⟨-1 / z, by simpa using (pnat_div_upper 1 z)⟩)
   · intro k
     have : (fun x : ℕ+ ↦ cexp (2 * ↑π * Complex.I * (-↑↑(x : ℂ) / ↑z) * ↑k)) =
@@ -137,7 +137,7 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
     rw [this]
     have ht : Tendsto (fun x : ℕ ↦ cexp (2 * ↑π * Complex.I * (-↑k / ↑z)) ^ ↑x) atTop (𝓝 0) := by
       rw [tendsto_zero_iff_norm_tendsto_zero]
-      simp only [norm_pow, norm_eq_abs, tendsto_pow_atTop_nhds_zero_iff, Complex.abs_abs]
+      simp only [norm_pow, tendsto_pow_atTop_nhds_zero_iff, abs_norm]
       apply exp_upperHalfPlane_lt_one ⟨-k / z, by simpa using (pnat_div_upper k z)⟩
     apply tendsto_comp_val_Ioi_atTop.mpr ht
   · simp only [eventually_atTop, ge_iff_le]
@@ -150,16 +150,17 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
       simp only [nsmul_eq_mul, Nat.cast_mul]
       ring
     rw [this]
-    simp only [AbsoluteValue.map_pow, ge_iff_le]
+    simp only [norm_pow, ge_iff_le]
     rw [← pow_mul]
-    apply  Bound.pow_le_pow_right_of_le_one_or_one_le ?_
-    right
-    constructor
-    · apply AbsoluteValue.nonneg Complex.abs
-    · have := exp_upperHalfPlane_lt_one ⟨- 1 / z, by simpa using (pnat_div_upper 1 z)⟩
-      constructor
-      apply this.le
-      exact Nat.le_mul_of_pos_right k hb
+    exact Bound.pow_le_pow_right_of_le_one_or_one_le
+      (a := norm (cexp (2 * ↑π * Complex.I * (-1 / ↑z)))) (m := k) (n := k * b) <| by
+        right
+        constructor
+        · aesop
+        · have := exp_upperHalfPlane_lt_one ⟨- 1 / z, by simpa using (pnat_div_upper 1 z)⟩
+          constructor
+          apply this.le
+          exact Nat.le_mul_of_pos_right (↑k) hb
 
 
 theorem extracted_12 (z : ℍ) :
@@ -231,14 +232,16 @@ theorem PS3tn22 (z : ℍ) :
   Tendsto (fun N : ℕ+ ↦ ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N,
     ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z + ↑n) - 1 / (↑m * ↑z + ↑n + 1))) atTop
     (𝓝 (-2 * ↑π * Complex.I / ↑z)) := by
-  have : (fun N : ℕ+ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+  have : (fun N : ℕ+ => ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) =
     (fun N : ℕ+ =>
-    ∑' m : ℤ ,  ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) := by
+    ∑' m : ℤ ,  ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) := by
     ext n
-    rw [tsum_sum]
-    intro i hi
-    apply summable_pain
+    -- change _ = ∑' (i : _ ⊕ _), _
+    sorry
+    -- rw [tsum_sum]
+    -- intro i hi
+    -- apply summable_pain
   conv at this =>
     enter [2]
     ext
@@ -273,12 +276,11 @@ theorem PS3tn22 (z : ℍ) :
     exact this
 
 lemma PS3 (z : ℍ) : limUnder atTop
-  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+  (fun N : ℕ => ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = -2 * π * Complex.I / z := by
   apply Filter.Tendsto.limUnder_eq
   apply pnat_tendsto_nat
   apply PS3tn22
-
 
 theorem poly_id (z : ℍ) (b n : ℤ) :
   ((b : ℂ) * ↑z + ↑n + 1)⁻¹ * (((b : ℂ) * ↑z + ↑n) ^ 2)⁻¹ + (δ b n) +
@@ -329,24 +331,25 @@ theorem extracted_66c (z : ℍ) :
   ext N
   simp
   rw [@Finset.mul_sum]
-  rw [tsum_sum]
-  congr
-  ext n
-  rw [← tsum_mul_left]
-  rw [int_sum_neg]
-  congr
-  ext d
-  have hz := ne_zero z
-  rw [← neg_ne_zero] at hz
-  rw [← mul_inv]
-  congr 1
-  rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
-  congr
-  field_simp
-  simp only [UpperHalfPlane.coe]
-  ring
-  · intro i hi
-    exact extracted_77 z i
+  sorry
+  -- rw [tsum_sum]
+  -- congr
+  -- ext n
+  -- rw [← tsum_mul_left]
+  -- rw [int_sum_neg]
+  -- congr
+  -- ext d
+  -- have hz := ne_zero z
+  -- rw [← neg_ne_zero] at hz
+  -- rw [← mul_inv]
+  -- congr 1
+  -- rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
+  -- congr
+  -- field_simp
+  -- simp only [UpperHalfPlane.coe]
+  -- ring
+  -- · intro i hi
+  --   exact extracted_77 z i
 
 theorem extracted_6 (z : ℍ) : CauchySeq fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-(N : ℤ)) ↑N,
   ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z + ↑n) - 1 / (↑m * ↑z + ↑n + 1)) := by
@@ -361,65 +364,66 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
   congr
   ext N
   simp only [one_div, Pi.sub_apply, mul_inv_rev]
-  rw [tsum_sum, ← Finset.sum_sub_distrib ]
-  congr
-  ext n
-  rw [← tsum_sub]
-  congr
-  ext m
-  have := poly_id z m n
-  nth_rw 1 [← this]
-  simp only [add_sub_cancel_right]
-  · exact extracted_77 z n
-  · simpa only [one_div] using (summable_pain z n)
-  · intro i hi
-    exact extracted_77 z i
-  · conv =>
-      enter [1]
-      ext N
-      rw [tsum_sum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
-    apply CauchySeq_Icc_iff_CauchySeq_Ico
-    intro n
-    nth_rw 2 [int_sum_neg]
-    congr
-    ext m
-    simp only [one_div, Int.cast_neg, neg_mul, inv_inj]
-    ring
-    conv =>
-      enter [1]
-      ext N
-      rw [← tsum_sum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
-    have := G2_cauchy ⟨-1 / z, by simpa using pnat_div_upper 1 z⟩
-    have  hC := cauchy_seq_mul_const _ ((z : ℂ) ^ 2)⁻¹ (by simp [ne_zero z]) this
-    apply hC.congr
-    have H := extracted_66c z
-    simp at *
-    rw [← H]
-    ext N
-    simp only [Pi.mul_apply, Pi.smul_apply, smul_eq_mul, mul_eq_mul_left_iff, inv_eq_zero, ne_eq,
-      OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff]
-    left
-    congr
-    ext n
-    congr
-    ext m
-    congr
-    ring
-  · apply extracted_6
-  · have := G_2_alt_summable_δ z
-    simp only [Fin.isValue, one_div, mul_inv_rev] at this
-    rw [← swap_equiv.summable_iff, ← (finTwoArrowEquiv _).symm.summable_iff] at this
-    have ht := Summable.prod this
-    simp only [Fin.isValue, swap_equiv, Equiv.coe_fn_mk, finTwoArrowEquiv_symm_apply, comp_apply,
-      swap_apply, Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.cons_val_one, Matrix.head_cons,
-      Matrix.cons_val_zero, one_div, mul_inv_rev] at *
-    exact ht
+  all_goals sorry
+  -- rw [tsum_sum, ← Finset.sum_sub_distrib ]
+  -- congr
+  -- ext n
+  -- rw [← tsum_sub]
+  -- congr
+  -- ext m
+  -- have := poly_id z m n
+  -- nth_rw 1 [← this]
+  -- simp only [add_sub_cancel_right]
+  -- · exact extracted_77 z n
+  -- · simpa only [one_div] using (summable_pain z n)
+  -- · intro i hi
+  --   exact extracted_77 z i
+  -- · conv =>
+  --     enter [1]
+  --     ext N
+  --     rw [tsum_sum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
+  --   apply CauchySeq_Icc_iff_CauchySeq_Ico
+  --   intro n
+  --   nth_rw 2 [int_sum_neg]
+  --   congr
+  --   ext m
+  --   simp only [one_div, Int.cast_neg, neg_mul, inv_inj]
+  --   ring
+  --   conv =>
+  --     enter [1]
+  --     ext N
+  --     rw [← tsum_sum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
+  --   have := G2_cauchy ⟨-1 / z, by simpa using pnat_div_upper 1 z⟩
+  --   have  hC := cauchy_seq_mul_const _ ((z : ℂ) ^ 2)⁻¹ (by simp [ne_zero z]) this
+  --   apply hC.congr
+  --   have H := extracted_66c z
+  --   simp at *
+  --   rw [← H]
+  --   ext N
+  --   simp only [Pi.mul_apply, Pi.smul_apply, smul_eq_mul, mul_eq_mul_left_iff, inv_eq_zero, ne_eq,
+  --     OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff]
+  --   left
+  --   congr
+  --   ext n
+  --   congr
+  --   ext m
+  --   congr
+  --   ring
+  -- · apply extracted_6
+  -- · have := G_2_alt_summable_δ z
+  --   simp only [Fin.isValue, one_div, mul_inv_rev] at this
+  --   rw [← swap_equiv.summable_iff, ← (finTwoArrowEquiv _).symm.summable_iff] at this
+  --   have ht := Summable.prod this
+  --   simp only [Fin.isValue, swap_equiv, Equiv.coe_fn_mk, finTwoArrowEquiv_symm_apply, comp_apply,
+  --     swap_apply, Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.cons_val_one, Matrix.head_cons,
+  --     Matrix.cons_val_zero, one_div, mul_inv_rev] at *
+  --   exact ht
 
 lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
-  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+  (fun N : ℕ => ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = 0 := by
   apply Filter.Tendsto.limUnder_eq
-  have :  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+  have :  (fun N : ℕ => ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) =
     (fun N : ℕ => (1 / ((m : ℂ) * z - N) -  1 / (m * z + N))) := by
     funext N
@@ -432,7 +436,7 @@ lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
 
 
 lemma PS2 (z : ℍ) : ∑' m : ℤ, (limUnder atTop
-  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+  (fun N : ℕ => ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1)))) = 0 := by
     convert tsum_zero
     next m =>
@@ -505,6 +509,8 @@ lemma G2_transf_aux (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -
   G₂ z := by
   rw [G2_inde_lhs, G2_alt_eq z , ← G2_alt_indexing2_δ , G2_alt_indexing_δ]
 
+-- set_option maxSynthPendingDepth 2 in
+set_option synthInstance.maxHeartbeats 40000 in
 lemma ModularGroup.coe_mul (A B : SL(2, ℤ)) :
     (ModularGroup.coe A) * B = ModularGroup.coe (A * B) := by
   have : Matrix.SpecialLinearGroup.toGLPos ∘ (Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) = ModularGroup.coe := by

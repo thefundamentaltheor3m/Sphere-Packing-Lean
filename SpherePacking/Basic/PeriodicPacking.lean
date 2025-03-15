@@ -76,7 +76,7 @@ theorem aux3 {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ
     rw [OuterMeasure.measureOf_eq_coe, Measure.coe_toOuterMeasure, Set.biUnion_eq_iUnion,
       measure_iUnion] at h_volume'
     · have h_le := tsum_mono (f := fun _ ↦ c) (g := fun (x : s) ↦ volume (f x)) ?_ ?_ ?_
-      · have h₁ := (ENNReal.tsum_set_const_eq _ _ ▸ h_le).trans h_volume'
+      · have h₁ := (ENNReal.tsum_set_const _ _ ▸ h_le).trans h_volume'
         rw [← Set.encard_lt_top_iff, ← ENat.toENNReal_lt, ENat.toENNReal_top]
         refine lt_of_le_of_lt ((ENNReal.le_div_iff_mul_le ?_ ?_).mpr h₁) <|
           ENNReal.div_lt_top ?_ hc.ne.symm
@@ -179,7 +179,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     simp [addAction_vadd]
   right_inv := by
     intro ⟨x, hx⟩
-    simp_rw [Quotient.lift_mk, Subtype.mk.injEq, add_left_eq_self]
+    simp_rw [Quotient.lift_mk, Subtype.mk.injEq, add_eq_right]
     obtain ⟨g, ⟨hg, hg'⟩⟩ := hD_unique_covers x
     trans g.val <;> norm_cast
     · apply hg'
@@ -587,7 +587,7 @@ theorem aux7 (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hL 
     exact hg
 
 -- Theorem 2.2, lower bound
-set_option diagnostics true in
+-- set_option diagnostics true in
 theorem PeriodicSpherePacking.aux2_ge
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
     (hL : ∀ x ∈ D, ‖x‖ ≤ L) (hd : 0 < d) :
@@ -600,7 +600,7 @@ theorem PeriodicSpherePacking.aux2_ge
     have : Countable ↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
       Set.Countable.mono (Set.inter_subset_left) this
     rw [Set.biUnion_eq_iUnion, measure_iUnion]
-    · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const_eq]
+    · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
     · intro ⟨x, hx⟩ ⟨y, hy⟩ hxy
       replace hxy : x ≠ y := Subtype.ext_iff.ne.mp hxy
       simp_rw [Set.disjoint_iff]
@@ -652,7 +652,7 @@ theorem PeriodicSpherePacking.aux2_le
     have : Countable ↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
       Set.Countable.mono (Set.inter_subset_left) this
     rw [Set.biUnion_eq_iUnion, measure_iUnion]
-    · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const_eq]
+    · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
     · intro ⟨x, hx⟩ ⟨y, hy⟩ hxy
       replace hxy : x ≠ y := Subtype.ext_iff.ne.mp hxy
       simp_rw [Set.disjoint_iff]
@@ -982,7 +982,7 @@ theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePackin
   · intro a ha hmem
     exact hg₂ a ha hmem
 
-set_option diagnostics true in
+-- set_option diagnostics true in
 theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d) -- (hd : 0 < d)
   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
@@ -1178,7 +1178,7 @@ theorem SpherePacking.density_of_centers_empty (S : SpherePacking d) (hd : 0 < d
       exact hy
     lattice_discrete := -- `by infer_instance` also works for this and the next one
       instDiscreteTopologySubtypeMemSubmoduleIntSpanRangeCoeBasisRealOfFinite b
-    lattice_isZLattice := _root_.ZSpan.isZLattice b
+    -- lattice_isZLattice := inferInstance
   }
   have h₁ : P.toSpherePacking = S := rfl
   rw [← h₁]
@@ -1193,5 +1193,3 @@ theorem periodic_constant_eq_constant (hd : 0 < d) :
   sorry
 
 end Periodic_Constant_Eq_Constant
-
-#min_imports

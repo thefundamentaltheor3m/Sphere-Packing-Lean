@@ -5,8 +5,6 @@ Authors: Sidharth Hariharan, Bhavik Mehta
 -/
 import Mathlib.Analysis.Distribution.SchwartzSpace
 import Mathlib.Topology.Separation.CompletelyRegular
-import Mathlib.Algebra.Module.ZLattice.Basic
-
 import SpherePacking.Basic.PeriodicPacking
 
 /-!
@@ -107,7 +105,7 @@ theorem Summable_of_Inv_Pow_Summable'
       exact Finset.abs_sum_le_sum_abs (fun i : X ↦ f ↑i) t
     have haux₂ : |∑ x ∈ t, (C + 1) * (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹| < ε := by
       rw [← Finset.mul_sum, IsAbsoluteValue.abv_mul (fun (x : ℝ) ↦ |x|) _ _, abs_of_pos haux₁]
-      exact (lt_div_iff' haux₁).mp hs
+      simpa [mul_comm] using (lt_div_iff₀ haux₁).1 hs
     refine lt_of_le_of_lt ?_ haux₂
     have haux₃ : ∀ x ∈ t, (0 : ℝ) ≤ (C + 1) * (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹ := by
       intro x _
@@ -137,8 +135,6 @@ theorem Summable_of_Inv_Pow_Summable'
       exact zero_le_one
 
 set_option pp.funBinderTypes true
-
-#check tsum_union_disjoint
 
 -- should be in mathlib!!
 lemma Summable.subset {α β : Type*}
@@ -263,5 +259,3 @@ What's wild is that this is CHRIS's file! **ASK ABOUT IT**
 -/
 
 end Sets_Acted_Upon_By_Lattice
-
-#min_imports

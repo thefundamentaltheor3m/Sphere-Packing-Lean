@@ -56,6 +56,7 @@ local notation "conj" => starRingEnd ℂ
 
 section Complex_Function_Helpers
 
+omit instPosDim in
 private theorem helper (g : EuclideanSpace ℝ (Fin d) → ℂ) :
   (∀ x : EuclideanSpace ℝ (Fin d), ↑(g x).re = (g x)) →
   (∀ x : EuclideanSpace ℝ (Fin d), (g x).im = 0) := by
@@ -64,10 +65,12 @@ private theorem helper (g : EuclideanSpace ℝ (Fin d) → ℂ) :
   rw [← hIsReal, ofReal_im]
 
 include hReal in
+omit instPosDim in
 private theorem hImZero : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0 :=
   helper f hReal
 
 include hRealFourier in
+omit instPosDim in
 private theorem hFourierImZero : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).im = 0 :=
   helper (𝓕 f) hRealFourier
 
@@ -75,11 +78,13 @@ end Complex_Function_Helpers
 
 section Nonnegativity
 
+omit instPosDim in
 private theorem hIntegrable : MeasureTheory.Integrable (𝓕 f) :=
     ((SchwartzMap.fourierTransformCLE ℝ) f).integrable
 
 include hne_zero
 
+omit instPosDim in
 theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
   rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
   intro hFourierZero
@@ -87,8 +92,9 @@ theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
   rw [← ContinuousLinearEquiv.map_eq_zero_iff (SchwartzMap.fourierTransformCLE ℝ)]
   exact Eq.symm (SchwartzMap.ext (congrFun (id (Eq.symm hFourierZero))))
 
-include hReal hRealFourier hCohnElkies₂
-
+-- include hReal hRealFourier hCohnElkies₂
+include hCohnElkies₂ in
+omit instPosDim hne_zero in
 theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   -- Building off the previous one, f(0) is an integral of a nonneg function, and hence, also nonneg
   rw [← f.fourierInversion ℝ, fourierIntegralInv_eq]
@@ -100,6 +106,8 @@ theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   rw [hcalc₁]
   exact integral_nonneg hCohnElkies₂
 
+include hReal hRealFourier hCohnElkies₂ in
+omit instPosDim in
 theorem f_zero_pos : 0 < (f 0).re := by
   -- We know from previous that f(0) is nonneg. If zero, then the integral of 𝓕 f is zero, making
   -- 𝓕 f zero (it's continuous and nonneg: if it's pos anywhere, it's pos on a nbhd, and hence the
@@ -123,7 +131,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
          rw [← RCLike.im_eq_complex_im, ← integral_im hIntegrable, RCLike.im_eq_complex_im]
     _ = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re
       := by
-         rw [add_right_eq_self]
+         rw [add_eq_left]
          suffices hwhat : ∀ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).im = 0
          · simp only [hwhat, ofReal_zero, zero_mul, integral_zero]
          exact hFourierImZero hRealFourier
@@ -357,7 +365,7 @@ private theorem calc_steps :
             ext x
             exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
   _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re *
-      (Complex.abs (∑' x : ↑(P.centers ∩ D),
+      (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
             sorry
@@ -381,23 +389,23 @@ private theorem calc_steps :
   -- We split the sum up into the `m = 0` and `m ≠ 0` parts.
   _ = (1 / ZLattice.covolume P.lattice) * (
       (∑' (m : bilinFormOfRealInner.dualSubmodule P.lattice), if hm : m = (0 : EuclideanSpace ℝ (Fin d)) then 0 else
-      (𝓕 f m).re * (Complex.abs (∑' x : ↑(P.centers ∩ D),
+      (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
       +
       (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
-      (Complex.abs (∑' x : ↑(P.centers ∩ D),
+      (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
         := by
             apply congrArg _ _
             rw [add_comm]
             have hSummable : Summable (fun (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) =>
-              (𝓕 f m).re * (Complex.abs (∑' x : ↑(P.centers ∩ D),
+              (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
               sorry
             rw [tsum_eq_add_tsum_ite hSummable (0 : ↥(bilinFormOfRealInner.dualSubmodule P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
   _ ≥ (1 / ZLattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
-      (Complex.abs (∑' x : ↑(P.centers ∩ D),
+      (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
             -- We need to show that the `m ≠ 0` part is nonpositive.
@@ -430,11 +438,11 @@ private theorem calc_steps :
             apply congrArg _ _
             let myInstFintype := P.instFintypeNumReps' Fact.out hD_isBounded
             simp only [inner_zero_right, zero_mul, ofReal_zero, mul_zero, Complex.exp_zero,
-                       tsum_const, nsmul_eq_mul, mul_one, abs_natCast, Nat.cast_nonneg, ne_eq,
-                       not_false_eq_true, pow_left_inj, Nat.cast_inj,
-                       PeriodicSpherePacking.numReps', Set.toFinset_card] -- ↑(P.centers ∩ D)]
+            tsum_const, nsmul_eq_mul, mul_one, Complex.norm_natCast, Nat.cast_nonneg, ne_eq,
+            not_false_eq_true, pow_left_inj₀, Nat.cast_inj,
+            PeriodicSpherePacking.numReps', Set.toFinset_card] -- ↑(P.centers ∩ D)]
             simp only [RCLike.wInner_zero_right, ofReal_zero, mul_zero, Complex.exp_zero,
-              tsum_const, Nat.card_eq_fintype_card, nsmul_eq_mul, mul_one, abs_natCast]
+              tsum_const, Nat.card_eq_fintype_card, nsmul_eq_mul, mul_one, Complex.norm_natCast]
   _ = ↑(P.numReps' Fact.out hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume
         := by simp only [div_eq_mul_inv, one_div, mul_comm, one_mul, ← mul_assoc]
 
@@ -531,8 +539,8 @@ theorem LinearProgrammingBound' :
         norm_cast
         refine NNReal.eq ?_
         have haux₁ : 0 ≤ ↑P.numReps * (f 0).re := mul_nonneg (Nat.cast_nonneg' P.numReps)
-          (f_nonneg_at_zero hne_zero hReal hRealFourier hCohnElkies₂)
-        rw [Real.toNNReal_of_nonneg (f_nonneg_at_zero hne_zero hReal hRealFourier hCohnElkies₂),
+          (f_nonneg_at_zero hCohnElkies₂)
+        rw [Real.toNNReal_of_nonneg (f_nonneg_at_zero hCohnElkies₂),
             Real.toNNReal_of_nonneg haux₁]
         push_cast
         rfl

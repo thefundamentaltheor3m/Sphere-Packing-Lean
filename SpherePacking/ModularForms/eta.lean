@@ -23,7 +23,7 @@ noncomputable def η (z : ℂ) := cexp (2 * π * Complex.I * z / 24) * ∏' (n :
 lemma prod_tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ → α → ℂ} (K : Set α)
     (hK : IsCompact K) (u : ℕ → ℝ) (hu : Summable u) (h : ∀ n x, x ∈ K → (‖(f n x)‖) ≤ u n)
     (hfn : ∀ x : K, ∀ n : ℕ, 1 + f n x ≠ 0) (hcts : ∀ n, ContinuousOn (fun x => (f n x)) K) :
-    TendstoUniformlyOn (fun n : ℕ => fun a : α => ∏ i in Finset.range n, (1 + (f i a)))
+    TendstoUniformlyOn (fun n : ℕ => fun a : α => ∏ i ∈ Finset.range n, (1 + (f i a)))
     (fun a => ∏' i, (1 + (f i a))) atTop K := by sorry
 
 lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.range n,
@@ -47,7 +47,7 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
   simp only [Finset.prod_apply]
   · simp_rw [norm_pow]
     rw [summable_nat_add_iff 1]
-    simp only [norm_eq_abs, summable_geometric_iff_norm_lt_one, Real.norm_eq_abs, Complex.abs_abs]
+    simp only [summable_geometric_iff_norm_lt_one, Real.norm_eq_abs, abs_norm]
     apply  exp_upperHalfPlane_lt_one ⟨z, by simpa using (hK hz)⟩
   · intro n
     intro x hx
@@ -58,7 +58,7 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
     have HB2 := HB x hx
     simp_rw [norm_pow]
     apply pow_le_pow_left₀ _  HB2
-    simp only [norm_eq_abs, apply_nonneg]
+    simp [apply_nonneg]
   · intro x k
     simpa using term_ne_zero ⟨x.1, by simpa using (hK x.2)⟩ k
   · intro n
@@ -246,7 +246,7 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
     apply Summable.neg
     apply Summable.mul_left
     have hS := logDeriv_q_expo_summable (cexp (2 * ↑π * Complex.I * ↑z))
-      (by simpa only [norm_eq_abs] using exp_upperHalfPlane_lt_one z)
+      (by simpa using exp_upperHalfPlane_lt_one z)
     rw [← summable_nat_add_iff 1] at hS
     apply hS.congr
     intro b

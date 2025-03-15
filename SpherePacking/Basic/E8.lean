@@ -346,8 +346,7 @@ open Topology TopologicalSpace Filter Function InnerProductSpace RCLike
 theorem E8_Matrix_inner {i j : Fin 8} :
     haveI : Inner ℝ (Fin 8 → ℝ) := (inferInstance : Inner ℝ (EuclideanSpace ℝ (Fin 8)))
     ⟪(E8_Matrix i : EuclideanSpace ℝ (Fin 8)), E8_Matrix j⟫_ℝ = ∑ k, E8' i k * E8' j k := by
-  change ∑ k, E8_Matrix i k * E8_Matrix j k = _
-  simp_rw [E8_Matrix, RingHom.mapMatrix_apply, map_apply, eq_ratCast, Rat.cast_sum, Rat.cast_mul]
+  simp [inner, E8_Matrix, RingHom.mapMatrix_apply, map_apply, eq_ratCast, mul_comm]
 
 section E8_norm_bounds
 
@@ -451,23 +450,23 @@ private lemma linearIndependent_subtype_thing
   exact linearIndependent_span hb
 
 noncomputable def E8_Basis : Basis (Fin 8) ℤ E8_Lattice := by
-  have af := E8_is_basis.left.restrict_scalars_algebras (R := ℤ) (S := ℝ) ?_
+  have af := E8_is_basis.left.restrict_scalars' (R := ℤ) (S := ℝ)
+    --restrict_scalars_algebras (R := ℤ) (S := ℝ) ?_
   have : LinearIndependent ℤ (fun i ↦ (⟨E8_Matrix i, E8_Matrix_mem i⟩ : E8_Lattice)) := by
     apply linearIndependent_subtype_thing af
     simp_rw [E8_Lattice, E8_Set_eq_span]
     rfl
-  · apply Basis.mk this
-    -- This is the worst proof ever but I don't want to waste my time on this
-    change (_ : Set E8_Lattice) ⊆ _
-    intro ⟨x, hx⟩ _
-    simp_rw [E8_Lattice, E8_Set_eq_span, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk] at hx
-    rw [SetLike.mem_coe, Finsupp.mem_span_range_iff_exists_finsupp] at hx ⊢
-    obtain ⟨c, hc⟩ := hx
-    use c
-    apply Subtype.ext_iff.mpr
-    simp only [Finsupp.sum, ← hc, AddSubgroup.val_finset_sum, AddSubgroupClass.coe_zsmul]
-    exact Submodule.coe_sum E8_Lattice (fun i ↦ c i • ⟨E8_Matrix i, E8_Matrix_mem i⟩) c.support
-  · exact (algebraMap ℤ ℝ).injective_int
+  apply Basis.mk this
+  -- This is the worst proof ever but I don't want to waste my time on this
+  change (_ : Set E8_Lattice) ⊆ _
+  intro ⟨x, hx⟩ _
+  simp_rw [E8_Lattice, E8_Set_eq_span, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk] at hx
+  rw [SetLike.mem_coe, Finsupp.mem_span_range_iff_exists_finsupp] at hx ⊢
+  obtain ⟨c, hc⟩ := hx
+  use c
+  apply Subtype.ext_iff.mpr
+  simp only [Finsupp.sum, ← hc, AddSubgroup.val_finset_sum, AddSubgroupClass.coe_zsmul]
+  exact Submodule.coe_sum E8_Lattice (fun i ↦ c i • ⟨E8_Matrix i, E8_Matrix_mem i⟩) c.support
 
 -- sanity check
 example (i : Fin 8) : ((E8_Basis i : E8_Lattice) : EuclideanSpace ℝ (Fin 8)) = E8_Matrix i := by

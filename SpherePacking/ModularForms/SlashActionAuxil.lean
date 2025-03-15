@@ -53,8 +53,8 @@ open ModularForm
 /- This section proves rewriting lemmas for f|[k]γ for various γ. -/
 
 theorem modular_negI_smul : negI.1 • z = z := by
-  change smulAux negI z = z
-  simp [smulAux, smulAux', negI, num, denom]
+  change smulAux ⟨negI.1, by simp⟩ z = z
+  simp [smulAux, smulAux', negI, num, denom, Matrix.SpecialLinearGroup.toGL]
 
 theorem modular_slash_negI_of_even (hk : Even k) : f ∣[k] negI.1 = f := by
   ext x

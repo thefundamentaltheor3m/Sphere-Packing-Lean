@@ -23,7 +23,7 @@ theorem term_ne_zero (z : ℍ) (n : ℕ) : 1 -cexp (2 * ↑π * Complex.I * (↑
   intro h
   have :=  exp_upperHalfPlane_lt_one_nat z n
   rw [← h] at this
-  simp only [AbsoluteValue.map_one, lt_self_iff_false] at *
+  simp [norm_one, lt_self_iff_false] at *
 
 lemma MultipliableEtaProductExpansion (z : ℍ) :
     Multipliable (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ) := by

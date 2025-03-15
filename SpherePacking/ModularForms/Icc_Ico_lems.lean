@@ -17,25 +17,26 @@ lemma Icc_succ (n : ℕ) : Finset.Icc (-(n + 1) : ℤ) (n + 1) = Finset.Icc (-n 
   omega
 
 
-lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m in Finset.Icc (-N : ℤ) N, f m =
-  f N + f (-N : ℤ)  + ∑ m in Finset.Icc (-(N - 1) : ℤ) (N-1), f m := by
+lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) :
+    ∑ m ∈ Finset.Icc (-N : ℤ) N, f m =
+    f N + f (-N : ℤ) + ∑ m ∈ Finset.Icc (-(N - 1) : ℤ) (N-1), f m := by
   induction' N with N ih
-  simp
-  aesop
-  zify
-  rw [Icc_succ]
-  rw [Finset.sum_union]
-  ring_nf
-  rw [add_assoc]
-  congr
-  rw [ Finset.sum_pair]
-  ring
-  omega
-  simp
+  · simp_all [nonpos_iff_eq_zero, one_ne_zero]
+  · zify
+    rw [Icc_succ]
+    rw [Finset.sum_union]
+    ring_nf
+    rw [add_assoc]
+    congr
+    rw [ Finset.sum_pair]
+    ring
+    omega
+    simp
 
 
 lemma Icc_sum_even (f : ℤ → ℂ) (hf : ∀ n, f n = f (-n)) (N : ℕ):
-    ∑ m in Finset.Icc (-N : ℤ) N, f m =  2 * ∑ m in Finset.range (N + 1), f m  - f 0 := by
+    ∑ m ∈ Finset.Icc (-N : ℤ) N, f m =
+    2 * ∑ m ∈ Finset.range (N + 1), f m - f 0 := by
   induction' N with N ih
   simp only [CharP.cast_eq_zero, neg_zero, Finset.Icc_self, Finset.sum_singleton, zero_add,
     Finset.range_one]
@@ -53,8 +54,6 @@ lemma Icc_sum_even (f : ℤ → ℂ) (hf : ∀ n, f n = f (-n)) (N : ℕ):
   simp only [Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Icc, le_add_iff_nonneg_left,
     Left.nonneg_neg_iff, Int.reduceLE, add_neg_le_iff_le_add, false_and, not_false_eq_true,
     Finset.disjoint_singleton_right, add_le_iff_nonpos_right, and_false, and_self]
-
-
 
 lemma verga2 : Tendsto (fun N : ℕ => Finset.Icc (-N : ℤ) N) atTop atTop :=
   tendsto_atTop_finset_of_monotone (fun _ _ _ ↦ Finset.Icc_subset_Icc (by gcongr) (by gcongr))
@@ -79,7 +78,8 @@ lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
   refine Int.lt_add_one_iff.mpr ?_
   exact le_abs_self x
 
-lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) = Finset.Ico (-(b : ℤ)) (b) ∪
+lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) =
+    Finset.Ico (-(b : ℤ)) (b) ∪
     {-((b+1) : ℤ), (b : ℤ)} :=  by
   ext n
   simp

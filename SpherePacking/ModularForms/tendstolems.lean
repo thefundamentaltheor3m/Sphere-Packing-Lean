@@ -38,5 +38,3 @@ lemma aux47 (r : ℂ) (hr : ‖r‖ < 1) : Tendsto (fun n : ℕ => 1 - r^n) atTo
   apply Filter.Tendsto.sub
   simp
   apply tendsto_pow_atTop_nhds_zero_of_norm_lt_one hr
-
-#min_imports

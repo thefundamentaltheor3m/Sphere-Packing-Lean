@@ -7,7 +7,6 @@ M4R File
 -/
 
 import SpherePacking.ModularForms.Eisenstein
-import Mathlib
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 
@@ -114,8 +113,4 @@ def a (x : V) := a' ‖x‖
 
 end Vector_Input
 
-#check a
-
 end MagicFunction.a.Radial_Functions
-
-#min_imports

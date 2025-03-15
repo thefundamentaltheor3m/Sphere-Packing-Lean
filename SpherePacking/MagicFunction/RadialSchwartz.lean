@@ -39,5 +39,3 @@ noncomputable def schwartzMap_multidimensional_of_schwartzMap_real : 𝓢(F, ℂ
   intro _
   simp only [norm_pow, norm_norm]
   nlinarith
-
-#check (schwartzMap_multidimensional_of_schwartzMap_real F f).toFun

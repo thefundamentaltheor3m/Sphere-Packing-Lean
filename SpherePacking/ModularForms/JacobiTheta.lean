@@ -83,7 +83,7 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
     congr
     ring_nf
   _ = cexp (π * I / 4) * ∑' (n : ℤ), cexp (π * I * (n ^ 2 + n) + π * I * (n + 1 / 2) ^ 2 * x) := by
-    conv_rhs => rw [← smul_eq_mul ℂ]
+    conv_rhs => rw [← smul_eq_mul]
     simp_rw [← tsum_const_smul'', smul_eq_mul]
   _ = _ := by
     simp_rw [Θ₂, Θ₂_term]
@@ -295,11 +295,11 @@ lemma jacobiTheta₂_rel_aux (n : ℤ) (t : ℝ) :
   simp
   ring_nf!
 
-lemma Complex.norm_exp (z : ℂ) : ‖cexp z‖ = rexp z.re := by
-  simp [abs_exp]
+-- lemma Complex.norm_exp (z : ℂ) : ‖cexp z‖ = rexp z.re := by
+--   simp [abs_exp]
 
 lemma Complex.norm_exp_mul_I (z : ℂ) : ‖cexp (z * I)‖ = rexp (-z.im) := by
-  simp [abs_exp]
+  simp [norm_exp]
 
 theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
   simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₂, Θ₂]
@@ -315,8 +315,7 @@ theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
       apply tsum_congr fun b ↦ ?_
       have (z : ℂ) : ‖cexp z‖ = ‖cexp z.re‖ := by
         nth_rw 1 [← Complex.re_add_im z, Complex.exp_add, norm_mul, norm_exp_ofReal_mul_I, mul_one]
-      rw [this, mul_comm (π : ℂ), mul_assoc, I_mul_re, ← ofReal_exp, Complex.norm_eq_abs,
-        abs_ofReal, Real.norm_eq_abs, im_ofReal_mul, neg_mul]
+      rw [this, mul_comm (π : ℂ), mul_assoc, I_mul_re, ← ofReal_exp, norm_real, Real.norm_eq_abs, im_ofReal_mul, neg_mul]
       simp
     _ = ∑' (n : ℤ), ‖rexp (-π * ((n + 1 / 2) ^ 2 : ℝ) * z.im)‖ := by
       simp_rw [im_ofReal_mul, UpperHalfPlane.im, ← mul_assoc]
