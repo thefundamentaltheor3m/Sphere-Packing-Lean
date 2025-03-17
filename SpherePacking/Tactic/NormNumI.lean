@@ -6,7 +6,6 @@ Authors: Heather Macbeth, Yunzhou Xie
 import Mathlib.Data.Complex.Basic
 
 open Lean Meta Elab Qq Tactic Complex
-open Mathlib.Meta.NormNum
 open ComplexConjugate
 
 namespace Mathlib.Tactic.NormNumI
@@ -113,8 +112,8 @@ partial def parse (z : Q(ℂ)) :
 
 def normalize (z : Q(ℂ)) : MetaM (Σ a b : Q(ℝ), Q($z = ⟨$a, $b⟩)) := do
   let ⟨a, b, pf⟩ ← parse z
-  let ra ← derive (α := q(ℝ)) a
-  let rb ← derive (α := q(ℝ)) b
+  let ra ← Mathlib.Meta.NormNum.derive (α := q(ℝ)) a
+  let rb ← Mathlib.Meta.NormNum.derive (α := q(ℝ)) b
   let { expr := (a' : Q(ℝ)), proof? := (pf_a : Q($a = $a')) } ← ra.toSimpResult | unreachable!
   let { expr := (b' : Q(ℝ)), proof? := (pf_b : Q($b = $b')) } ← rb.toSimpResult | unreachable!
   return ⟨a', b', q(eq_eq $pf $pf_a $pf_b)⟩
