@@ -748,9 +748,131 @@ lemma iteratedDeriv_mul (f g : ℂ → ℂ) (m : ℕ) (hf : Differentiable ℂ f
   sorry
 
 
+lemma iteratedDerivAt_mul (f g : ℂ → ℂ) (s : ℂ) (m : ℕ) (hf : DifferentiableAt ℂ f s)
+    (hg : DifferentiableAt ℂ g s) :
+    iteratedDeriv m (f * g) s =
+    ∑ i in Finset.range m.succ, (m.choose i) * (iteratedDeriv i f s) * (iteratedDeriv (m - i) g s) := by
+  induction' m with m hm generalizing f g
+  simp only [iteratedDeriv_zero, Finset.sum_singleton, Finset.range_one, Finset.mem_singleton,
+    Nat.choose_zero_right, Nat.sub_zero, Nat.choose_one_right, Nat.sub_self, mul_one]
+  ring
+  rfl
+  --rw [iteratedDeriv_succ', deriv_mul_eq f g hf hg]
+  rw [iteratedDeriv_succ']
+  --rw [deriv_mul_eq]
+  ext y
+  simp
+  have := deriv_sum (A := fun i => (((m.choose i) : ℂ) • (iteratedDeriv i f) * (iteratedDeriv (m - i) g ))) (u := Finset.range (m+1)) (x := y) ?_
+  simp at *
+  have hy : (fun y ↦ ∑ x ∈ Finset.range (m + 1), ↑(m.choose x) * iteratedDeriv x f y * iteratedDeriv (m - x) g y) =
+    (∑ x ∈ Finset.range (m + 1), (fun y => ↑(m.choose x) * iteratedDeriv x f * iteratedDeriv (m - x) g) y) := by
+    exact
+      Eq.symm
+        (Finset.sum_fn (Finset.range (m + 1)) fun c y ↦
+          ↑(m.choose c) * iteratedDeriv c f y * iteratedDeriv (m - c) g y)
+  rw [hy] at this
+  simp at this
+  --have (i : ℕ) := deriv_const_smul (m.choose i) ?_ (f:= (iteratedDeriv i f)*(iteratedDeriv (m - i) g)) (x := y)
+
+  have ht (x : ℕ) :   deriv (((m.choose x)  : ℂ) • (iteratedDeriv x f * iteratedDeriv (m - x) g)) y =
+    ↑(m.choose x) • deriv ((iteratedDeriv x f * iteratedDeriv (m - x) g)) y := by
+
+    simp
+    rw [← deriv_const_mul ]
+    congr
+
+    sorry
+  conv =>
+    enter [1]
+    rw [this]
+    conv =>
+      enter [2]
+      ext x
+      rw [ht x]
+      rw [deriv_mul_eq _ _ (sorry) (sorry)]
+  --have := norm_iteratedFDeriv_mul_le
 
 
+  sorry
+  sorry
+  sorry
+  sorry
 
+
+theorem derivWithin_mul2 (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn ℂ f s )
+    (hd : DifferentiableOn ℂ g s ) :
+    derivWithin (fun y => f y * g y) s = derivWithin f s * g  + f  * derivWithin g s  := by
+  ext y
+  by_cases h : y ∈ closure s
+  simp
+  rw [derivWithin_mul]
+  apply hf y
+
+  sorry
+  apply hd y sorry
+  simp
+  simp_rw [derivWithin]
+  simp_rw [fderivWithin_zero_of_nmem_closure h]
+  simp
+
+
+lemma iteratedDerivWithin_mul (f g : ℂ → ℂ) (s : Set ℂ) (x : ℂ) (m : ℕ) (hf : DifferentiableWithinAt ℂ f s x)
+    (hg : DifferentiableWithinAt ℂ g s x) :
+    iteratedDerivWithin m (f * g) s x =
+    ∑ i in Finset.range m.succ, (m.choose i) * (iteratedDerivWithin i f s x) * (iteratedDerivWithin (m - i) g s x) := by
+  induction' m with m hm generalizing f g
+  simp  [iteratedDeriv_zero, Finset.sum_singleton, Finset.range_one, Finset.mem_singleton,
+    Nat.choose_zero_right, Nat.sub_zero, Nat.choose_one_right, Nat.sub_self, mul_one]
+
+  --rw [iteratedDeriv_succ', deriv_mul_eq f g hf hg]
+  have h1 := derivWithin_mul hf hg
+  have h2 : (fun y => f y * g y) = f * g := by sorry
+
+  rw [iteratedDerivWithin_succ, ← h2, h1,  hm]
+  ext y
+  simp
+  have := deriv_sum (A := fun i => (((m.choose i) : ℂ) • (iteratedDeriv i f) * (iteratedDeriv (m - i) g ))) (u := Finset.range (m+1)) (x := y) ?_
+  simp at *
+  have hy : (fun y ↦ ∑ x ∈ Finset.range (m + 1), ↑(m.choose x) * iteratedDeriv x f y * iteratedDeriv (m - x) g y) =
+    (∑ x ∈ Finset.range (m + 1), (fun y => ↑(m.choose x) * iteratedDeriv x f * iteratedDeriv (m - x) g) y) := by
+    exact
+      Eq.symm
+        (Finset.sum_fn (Finset.range (m + 1)) fun c y ↦
+          ↑(m.choose c) * iteratedDeriv c f y * iteratedDeriv (m - c) g y)
+  rw [hy] at this
+  simp at this
+  --have (i : ℕ) := deriv_const_smul (m.choose i) ?_ (f:= (iteratedDeriv i f)*(iteratedDeriv (m - i) g)) (x := y)
+
+  have ht (x : ℕ) :   deriv (((m.choose x)  : ℂ) • (iteratedDeriv x f * iteratedDeriv (m - x) g)) y =
+    ↑(m.choose x) • deriv ((iteratedDeriv x f * iteratedDeriv (m - x) g)) y := by
+
+    simp
+    rw [← deriv_const_mul ]
+    congr
+
+    sorry
+  conv =>
+    enter [1]
+    rw [this]
+    conv =>
+      enter [2]
+      ext x
+      rw [ht x]
+      rw [deriv_mul_eq _ _ (sorry) (sorry)]
+  --have := norm_iteratedFDeriv_mul_le
+
+
+  sorry
+  sorry
+  sorry
+  sorry
+
+
+lemma iteratedDeriv_mul_anti (f g : ℂ → ℂ) (m : ℕ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
+    iteratedDeriv m (f * g) =
+    ∑ i in Finset.antidiagonal (m + 1), (m.choose i.2) * (iteratedDeriv i.1 f) * (iteratedDeriv i.2 g) := by
+
+  sorry
 /-
 
 
@@ -1164,6 +1286,47 @@ lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff ℂ 0 = 1 := by
   sorry
   sorry
 
+
+lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff ℂ m) =
+    fun m => if m = 0 then 1 else (240 : ℂ) * (sigma 3 m) := by
+  let c : ℕ → ℂ := fun m => if m = 0 then 1 else 240 * (sigma 3 m)
+  have h := q_exp_unique 1 c E₄ ?_
+  rw [← h]
+  intro z
+  have := E_k_q_expansion 4 (by norm_num) (by exact Nat.even_iff.mpr rfl) z
+  rw [Summable.hasSum_iff]
+  rw [ E4_apply]
+  simp at this
+  rw [this, tsum_eq_zero_add']
+  have V := tsum_pnat_eq_tsum_succ (fun b => c (b) • 𝕢 ↑1 ↑z ^ (b))
+  simp at *
+  rw [← V]
+  simp [c]
+  rw [← tsum_mul_left]
+  apply tsum_congr
+  intro b
+  have Z := riemannZeta_two_mul_nat (k := 2) (by norm_num)
+  simp at Z
+  rw [ show 2 * 2 = (4 : ℂ) by ring] at Z
+  rw [Z]
+  ring
+  rw [Complex.I_pow_four ]
+  simp only [inv_pow, bernoulli, bernoulli'_four, Rat.cast_mul, Rat.cast_pow, Rat.cast_neg,
+    Rat.cast_one, Rat.cast_div, Rat.cast_ofNat, mul_inv_rev, inv_div, Nat.factorial,
+    Nat.succ_eq_add_one, Nat.reduceAdd, zero_add, mul_one, Nat.reduceMul, Nat.cast_ofNat, inv_inv,
+    c]
+  have pin : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
+  field_simp
+  ring
+  congr
+  rw [Function.Periodic.qParam]
+  rw [← Complex.exp_nsmul]
+  congr
+  simp
+  ring
+  sorry
+  sorry
+
 @[simp]
 theorem Complex.I_pow_six : Complex.I ^ 6 = -1 := by
   rw [(by norm_num : 6 = 2 * 3), pow_mul, I_sq]
@@ -1189,6 +1352,42 @@ lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff ℂ 0 = 1 := by
   have hc := congr_fun h 0
   rw [← hc]
   simp [c]
+  intro z
+  have := E_k_q_expansion 6 (by norm_num) (by exact Nat.even_iff.mpr rfl) z
+  rw [Summable.hasSum_iff]
+  rw [ E6_apply]
+  simp at this
+  rw [this, tsum_eq_zero_add']
+  have V := tsum_pnat_eq_tsum_succ (fun b => c (b) • 𝕢 ↑1 ↑z ^ (b))
+  simp at *
+  rw [← V]
+  simp [c]
+  rw [← tsum_mul_left]
+  apply tsum_congr
+  intro b
+  have Z := riemannZeta_two_mul_nat (k := 3) (by norm_num)
+  simp at Z
+  rw [ show 2 * 3 = (6 : ℂ) by ring] at Z
+  rw [Z]
+  ring
+  rw [Complex.I_pow_six ]
+  simp [bernoulli, Nat.factorial]
+  have pin : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
+  field_simp
+  ring
+  congr
+  rw [Function.Periodic.qParam]
+  rw [← Complex.exp_nsmul]
+  congr
+  simp
+  ring
+  sorry
+  sorry
+
+lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff ℂ m) = fun m => if m = 0 then 1 else  -(504 : ℂ) * (sigma 5 m) := by
+  let c : ℕ → ℂ := fun m => if m = 0 then 1 else  -504 * (sigma 5 m)
+  have h := q_exp_unique 1 c E₆ ?_
+  rw [← h]
   intro z
   have := E_k_q_expansion 6 (by norm_num) (by exact Nat.even_iff.mpr rfl) z
   rw [Summable.hasSum_iff]
@@ -1251,7 +1450,9 @@ lemma Ek_q_exp_zero (k : ℕ) (hk :  3 ≤ (k : ℤ)) (hk2 : Even k) : (qExpansi
   sorry
   sorry
 
-lemma E4_q_exp_one : (qExpansion 1 E₄).coeff ℂ 1 = 240 := by sorry
+example (a b c : ℂ ) (ha : a ≠ 0) : a⁻¹ * b = c → b = a * c := by
+  intro h
+  exact (inv_mul_eq_iff_eq_mul₀ ha).mp h
 
 lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b)
     [NeZero n] : (qExpansion n (f.mul g)) = ((qExpansion n f)) * ((qExpansion n g)) := by
@@ -1264,11 +1465,61 @@ lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularFor
   rw [iteratedDeriv_succ']
   rw [deriv_mul_eq]
   rw [iteratedDeriv_add]
-  rw [iteratedDeriv_mul, iteratedDeriv_mul]
+  rw [iteratedDerivAt_mul, iteratedDerivAt_mul]
   simp
-  have := Finset.sum_choose_succ_mul (fun i => fun j => ((iteratedDeriv i (cuspFunction n f)) * (iteratedDeriv j (cuspFunction n g))) 0) m
+  have := Finset.sum_choose_succ_mul (fun i => fun j =>
+    ((iteratedDeriv i (cuspFunction n f) 0) * (iteratedDeriv j (cuspFunction n g) 0)) ) m
+  conv =>
+    enter [1,2,1,2]
+    ext a
+    rw [← iteratedDeriv_succ']
+  conv =>
+    enter [1,2,2,2]
+    ext b
+    rw [← iteratedDeriv_succ']
+  have h0 : ((m+1)! : ℂ) ≠  0 := by sorry
+  rw [inv_mul_eq_iff_eq_mul₀ h0]
+  rw [@Finset.Nat.sum_antidiagonal_eq_sum_range_succ_mk]
+  rw [Finset.mul_sum]
+  simp
+  rw [show m + 1 + 1 = m + 2 by ring]
+  have HS :   ∑ x ∈ Finset.range (m + 2),
+    ↑(m + 1)! *
+    ((↑x !)⁻¹ * iteratedDeriv x (cuspFunction n f) 0 *
+    ((↑(m + 1 - x)!)⁻¹ * iteratedDeriv (m + 1 - x) (cuspFunction n g) 0)) = ∑ i ∈ Finset.range (m + 2),
+    ↑((m + 1).choose i) * ((iteratedDeriv i (cuspFunction n f) 0) *
+    (iteratedDeriv (m + 1 - i) (cuspFunction n g)) 0) := by
+    apply Finset.sum_congr
+    rfl
+    intro x hx
+    have HS1 : ↑(m + 1)! *
+    ((↑x !)⁻¹ * iteratedDeriv x (cuspFunction n f) 0 *
+      ((↑(m + 1 - x)!)⁻¹ * iteratedDeriv (m + 1 - x) (cuspFunction n g) 0)) =
+      (↑(m + 1)! *
+    ((↑x !)⁻¹ * ((↑(m + 1 - x)!)⁻¹) * iteratedDeriv x (cuspFunction n f) 0 *
+      iteratedDeriv (m + 1 - x) (cuspFunction n g) 0)) := by ring
+    rw [HS1]
+    simp_rw [← mul_assoc]
+    congr
+    rw [Nat.cast_choose ℂ (b := m + 1) (a := x)]
+    field_simp
+    simp at hx
+    omega
+  rw [HS]
+  rw [this]
+  rw [add_comm]
+  congr 1
+  apply Finset.sum_congr
+  rfl
+  intro x hx
+  rw [← mul_assoc]
+  congr
+  simp at hx
+  omega
+  congr
+  ext n
+  ring
 
-  sorry
 
   --rw [Finset.sum_antidiagonal_choose_succ_mul ]
 
@@ -1281,6 +1532,25 @@ lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularFor
   simp_rw [qExpansion_coeff ] -/
 
   all_goals {sorry}
+
+#exit
+
+lemma E4_q_exp_one : (qExpansion 1 E₄).coeff ℂ 1 = 240 := by
+  have := E4_q_exp
+  have H := congr_fun this 1
+  simp at H
+  rw [H]
+  simp
+  exact rfl
+
+lemma E6_q_exp_one : (qExpansion 1 E₆).coeff ℂ 1 = -504 := by
+  have := E6_q_exp
+  have H := congr_fun this 1
+  simp at H
+  rw [H]
+  simp
+  exact rfl
+
 
 lemma antidiagonal_one : Finset.antidiagonal 1 = {(1,0), (0,1)} := by
   ext ⟨x,y⟩
@@ -1566,8 +1836,6 @@ lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
   rw [E4_q_exp_zero]
   simp
 
-lemma E6_pow_q_exp_one : (qExpansion 1 ((E₆).mul E₆)).coeff ℂ 1 = -2 * 504 := by sorry
-
 instance : FunLike (ℍ → ℂ) ℍ ℂ := { coe := fun ⦃a₁⦄ ↦ a₁, coe_injective' := fun ⦃_ _⦄ a ↦ a}
 
 lemma qExpansion_ext (f g : ℍ → ℂ) (h : f = g) : qExpansion 1 f =
@@ -1584,6 +1852,66 @@ lemma qExpansion_ext2 {α β : Type*} [FunLike α ℍ ℂ] [FunLike β ℍ ℂ] 
   simp_rw [cuspFunction, Periodic.cuspFunction]
   rw [h]
 
+lemma qExpansion_of_mul (a b : ℤ) (f : ModularForm Γ(1) a) (g : ModularForm Γ(1) b) :
+  qExpansion 1 (((((DirectSum.of (ModularForm Γ(1)) a ) f)) * ((DirectSum.of (ModularForm Γ(1)) b ) g)) (a + b)) =
+    (qExpansion 1 f) * (qExpansion 1 g) := by
+  rw [DirectSum.of_mul_of]
+  rw [← qExpansion_mul_coeff]
+  apply qExpansion_ext2
+  ext z
+  simp
+  rfl
+
+lemma iteratedDeriv_const_eq_zero (m : ℕ) (hm : 0 < m) (c : ℂ) :
+    iteratedDeriv m (fun _ : ℂ => c) = fun _ : ℂ => 0 := by
+  ext z
+  have := iteratedDeriv_const_add hm (f := fun (x : ℂ) => (0 : ℂ)) c (x := z)
+  simpa using this
+
+lemma qExpansion_pow (f : ModularForm Γ(1) k) (n : ℕ) :
+  qExpansion 1 ((((DirectSum.of (ModularForm Γ(1)) k ) f) ^ n) (n * k)) = (qExpansion 1 f) ^ n := by
+  induction' n with n hn
+  simp
+  rw [show 0 * k = 0 by ring]
+  have hq : qExpansion 1 ((1 : ModularForm Γ(1) 0)) = 1 := by
+    have : (cuspFunction 1 ((1 : ModularForm Γ(1) 0))) = 1 := by
+      simp only [cuspFunction, Periodic.cuspFunction]
+      ext z
+      simp
+      by_cases hz : z = 0
+      rw [hz]
+      simp
+      apply Filter.Tendsto.limUnder_eq
+      apply tendsto_const_nhds
+      simp [hz]
+    rw [qExpansion]
+    rw [this]
+    ext m
+    simp
+    by_cases hm : m = 0
+    rw [hm]
+    simp
+    simp [hm]
+    right
+    have hmp : 0 < m := by omega
+    have := iteratedDeriv_const_eq_zero m hmp 1
+    have ht := congr_fun this 0
+    apply ht
+  rw [← hq]
+  apply qExpansion_ext2
+  rfl
+  rw [pow_succ, pow_succ]
+  rw [show ↑(n + 1) * k = (n • k) + k by simp; ring]
+  rw [DirectSum.ofPow] at *
+  rw [qExpansion_of_mul]
+  simp
+  left
+  rw [← hn]
+  apply qExpansion_ext2
+  ext z
+  rw [show n * k = n • k by rfl]
+  simp
+
 
 lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff ℂ 1 = 1 := by
   have := Delta_E4_E6_eq
@@ -1594,9 +1922,31 @@ lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff ℂ 1 = 
     simp
     rfl
   rw [h1, Delta_E4_E6_eq]
-
-  sorry
-
+  simp only [one_div, DirectSum.sub_apply]
+  rw [← qExpansion_smul2]
+  rw [qExpansion_sub]
+  have h4 := qExpansion_pow E₄ 3
+  have h6 := qExpansion_pow E₆ 2
+  simp only [Nat.cast_ofNat, Int.reduceMul] at h4 h6
+  rw [h4, h6]
+  simp
+  rw [pow_three, pow_two]
+  simp_rw [PowerSeries.coeff_mul]
+  rw [antidiagonal_one]
+  simp  [Finset.mem_singleton, Prod.mk.injEq, one_ne_zero, zero_ne_one, and_self,
+    not_false_eq_true, Finset.sum_insert, Finset.antidiagonal_zero, Prod.mk_zero_zero,
+    Finset.sum_singleton, Prod.fst_zero, Prod.snd_zero]
+  have he4 := E4_q_exp_zero
+  have he6 := E6_q_exp_zero
+  simp at *
+  simp_rw [E4_q_exp_one, he4, he6]
+  ring_nf
+  rw [antidiagonal_one]
+  simp  [Finset.mem_singleton, Prod.mk.injEq, one_ne_zero, zero_ne_one, and_self,
+    not_false_eq_true, Finset.sum_insert, Finset.antidiagonal_zero, Prod.mk_zero_zero,
+    Finset.sum_singleton, Prod.fst_zero, Prod.snd_zero]
+  simp_rw [E4_q_exp_one, he4, E6_q_exp_one]
+  ring
 
 theorem Delta_E4_eqn : Delta = Delta_E4_E6_aux  := by
   ext z
