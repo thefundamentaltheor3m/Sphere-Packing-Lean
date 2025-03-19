@@ -930,20 +930,6 @@ def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 := by
   sorry
 
 
-lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
-  ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 - (DirectSum.of _ 6 E₆)^2) 12 )) := by
-  rw [ModForm_mk]
-  rw [Delta_E4_E6_aux]
-  have := CuspForm_to_ModularForm_Fun_coe _ _  ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 - (DirectSum.of _ 6 E₆)^2) 12 )) ?_
-  simp at *
-  ext z
-  have hg := congr_fun this z
-  simp at *
-  rw [← hg]
-  rfl
-
-  sorry
-
 
 
 lemma Delta_cuspFuntion_eq : Set.EqOn  (cuspFunction 1 Delta)
@@ -1314,25 +1300,7 @@ lemma E4_pow_q_exp_one : (qExpansion 1 ((E₄).mul ((E₄).mul E₄))).coeff ℂ
   ring
 
 
-lemma E6_pow_q_exp_one : (qExpansion 1 ((E₆).mul E₆)).coeff ℂ 1 = -2 * 504 := by sorry
 
-lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff ℂ 1 = 1 := by sorry
-
-theorem Delta_E4_eqn : Delta = Delta_E4_E6_aux  := by
-  ext z
-  obtain ⟨c, H⟩ := delta_eq_E4E6_const
-  suffices h2 : c  = 1 by
-    rw [h2] at H
-    simp at H
-    rw [H]
-  · have h1 := Delta_q_one_term
-    have h2 := Delta_E4_E6_aux_q_one_term
-    have := qExpansion_smul 1 c Delta
-    rw [← H] at h2
-    rw [← this] at h2
-    simp at h2
-    rw [h1] at h2
-    simpa using h2
 
 --enough to check its a cuspform, since if it is, then divining by Δ gives a modular form of weight 0.
 
@@ -1359,16 +1327,20 @@ lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1
   simp only [CuspForm.zero_apply]
 
 
-/-This is in the mod forms repo-/
-lemma E4_ne_zero : E₄ ≠ 0 := by sorry
-
-lemma E6_ne_zero : E₆ ≠ 0 := by sorry
 
 lemma Ek_ne_zero (k : ℕ) (hk :  3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
   have := Ek_q_exp_zero k hk hk2
   intro h
   rw [h, qExpansion_zero] at this
   simp at this
+
+
+/-This is in the mod forms repo-/
+lemma E4_ne_zero : E₄ ≠ 0 := by
+  apply Ek_ne_zero 4 (by norm_num) (by exact Nat.even_iff.mpr rfl)
+
+lemma E6_ne_zero : E₆ ≠ 0 := by
+    apply Ek_ne_zero 6 (by norm_num) (by exact Nat.even_iff.mpr rfl)
 
 lemma modularForm_normalise (f : ModularForm Γ(1) k) (hf : ¬ IsCuspForm Γ(1) k f) :
     (qExpansion 1 (((qExpansion 1 f).coeff ℂ 0)⁻¹ • f)).coeff ℂ 0  = 1 := by
@@ -1551,6 +1523,97 @@ lemma qExpansion_sub (f g : ModularForm Γ(1) k) : (qExpansion 1 (f - g)) =
     exact analyticAt_cuspFunction_zero 1 g
   · refine mem_ball_self ?_
     exact Real.zero_lt_one
+
+
+lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
+  ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 - (DirectSum.of _ 6 E₆)^2) 12 )) := by
+  rw [ModForm_mk]
+  rw [Delta_E4_E6_aux]
+  have := CuspForm_to_ModularForm_Fun_coe _ _  ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 - (DirectSum.of _ 6 E₆)^2) 12 )) ?_
+  simp at *
+  ext z
+  have hg := congr_fun this z
+  simp at *
+  rw [← hg]
+  rfl
+  rw [IsCuspForm_iff_coeffZero_eq_zero]
+  simp only [one_div, DirectSum.sub_apply]
+  rw [← qExpansion_smul2, qExpansion_sub]
+  simp only [_root_.map_smul,  map_sub, smul_eq_mul,
+    mul_eq_zero, inv_eq_zero, OfNat.ofNat_ne_zero, false_or]
+  have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
+    ext z
+    rw [pow_three]
+    rw [@DirectSum.of_mul_of, DirectSum.of_mul_of]
+    simp
+    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₄ (GradedMonoid.GMul.mul E₄ E₄)) rfl]
+    rfl
+  have hd6 : ((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12 = E₆.mul E₆ := by
+    ext z
+    rw [pow_two]
+    rw [@DirectSum.of_mul_of]
+    simp
+    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₆ E₆) rfl]
+    rfl
+  rw [hds, hd6]
+  rw [qExpansion_mul_coeff, qExpansion_mul_coeff, qExpansion_mul_coeff, PowerSeries.coeff_mul, PowerSeries.coeff_mul,]
+  simp only [Finset.antidiagonal_zero, Prod.mk_zero_zero, Finset.sum_singleton, Prod.fst_zero,
+    Prod.snd_zero, map_mul]
+  simp_rw [E4_q_exp_zero, E6_q_exp_zero]
+  rw [PowerSeries.coeff_mul]
+  simp only [Finset.antidiagonal_zero, Prod.mk_zero_zero, Finset.sum_singleton, Prod.fst_zero,
+    Prod.snd_zero, one_mul, mul_one]
+  rw [E4_q_exp_zero]
+  simp
+
+lemma E6_pow_q_exp_one : (qExpansion 1 ((E₆).mul E₆)).coeff ℂ 1 = -2 * 504 := by sorry
+
+instance : FunLike (ℍ → ℂ) ℍ ℂ := { coe := fun ⦃a₁⦄ ↦ a₁, coe_injective' := fun ⦃_ _⦄ a ↦ a}
+
+lemma qExpansion_ext (f g : ℍ → ℂ) (h : f = g) : qExpansion 1 f =
+    qExpansion 1 g := by
+  rw [h]
+
+lemma qExpansion_ext2 {α β : Type*} [FunLike α ℍ ℂ] [FunLike β ℍ ℂ] (f : α) (g : β) (h : ⇑f = ⇑g) :
+    qExpansion 1 f = qExpansion 1 g := by
+  simp_rw [qExpansion]
+  ext m
+  simp
+  left
+  congr
+  simp_rw [cuspFunction, Periodic.cuspFunction]
+  rw [h]
+
+
+lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff ℂ 1 = 1 := by
+  have := Delta_E4_E6_eq
+  have h1 : (qExpansion 1 Delta_E4_E6_aux) = qExpansion 1 (ModForm_mk Γ(1) 12 Delta_E4_E6_aux) := by
+    apply qExpansion_ext2 Delta_E4_E6_aux (ModForm_mk Γ(1) 12 Delta_E4_E6_aux) ?_
+    ext z
+    rw [Delta_E4_E6_aux, ModForm_mk]
+    simp
+    rfl
+  rw [h1, Delta_E4_E6_eq]
+
+  sorry
+
+
+theorem Delta_E4_eqn : Delta = Delta_E4_E6_aux  := by
+  ext z
+  obtain ⟨c, H⟩ := delta_eq_E4E6_const
+  suffices h2 : c  = 1 by
+    rw [h2] at H
+    simp at H
+    rw [H]
+  · have h1 := Delta_q_one_term
+    have h2 := Delta_E4_E6_aux_q_one_term
+    have := qExpansion_smul 1 c Delta
+    rw [← H] at h2
+    rw [← this] at h2
+    simp at h2
+    rw [h1] at h2
+    simpa using h2
+
 
 lemma weight_six_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 6) = 1 := by
   rw [rank_eq_one_iff ]
