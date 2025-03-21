@@ -25,9 +25,37 @@ theorem term_ne_zero (z : ℍ) (n : ℕ) : 1 -cexp (2 * ↑π * Complex.I * (↑
   rw [← h] at this
   simp only [AbsoluteValue.map_one, lt_self_iff_false] at *
 
+theorem ball_pow_ne_1 (x : ℂ) (hx : x ∈ ball 0 1) (n : ℕ) : 1 + (fun n ↦ -x ^ (n + 1)) n ≠ 0 := by
+  simp only [mem_ball, dist_zero_right, norm_eq_abs] at *
+  rw [← sub_eq_add_neg, sub_ne_zero]
+  have hxn : Complex.abs (x ^ (n + 1)) < 1 := by
+    simp only [AbsoluteValue.map_pow]
+    refine pow_lt_one₀ ?_ hx ?_
+    exact AbsoluteValue.nonneg Complex.abs x
+    omega
+  intro h
+  rw [← h] at hxn
+  simp only [AbsoluteValue.map_one, lt_self_iff_false] at hxn
+
+theorem multipliable_lt_one (x : ℂ)  (hx : x ∈ ball 0 1) :
+  Multipliable fun i ↦ 1 - x ^ (i+ 1) := by
+  have := Complex.summable_nat_multipliable_one_add (fun (n : ℕ) => (- x ^ (n + 1) )) ?_ ?_
+  conv =>
+    enter [1]
+    ext n
+    rw [sub_eq_add_neg]
+  exact this
+  rw [@summable_neg_iff]
+  rw [@summable_nat_add_iff]
+  rw [@summable_geometric_iff_norm_lt_one]
+  simpa using hx
+  exact fun n ↦ ball_pow_ne_1 x hx n
+
+
 lemma MultipliableEtaProductExpansion (z : ℍ) :
     Multipliable (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ) := by
-  have := Complex.summable_nat_multipliable_one_add (fun (n : ℕ) => (-cexp (2 * π * Complex.I * (n + 1) * z)) ) ?_ ?_
+  have := Complex.summable_nat_multipliable_one_add (fun (n : ℕ) =>
+    (-cexp (2 * π * Complex.I * (n + 1) * z)) ) ?_ ?_
   simp at this
   apply this.congr
   intro n
