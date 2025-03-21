@@ -556,9 +556,9 @@ lemma deriv_mul_eq (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differe
   ext y
   exact deriv_mul (hf y) (hg y)
 
-lemma deriv_mul_smul_eq (f g : ℂ → ℂ) (a : ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
+/- lemma deriv_mul_smul_eq (f g : ℂ → ℂ) (a : ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
     deriv (a • (f * g)) = a • deriv f *  g + a• f * deriv g := by
-  sorry
+  sorry -/
 
 /- lemma iteratedDeriv_mul (f g : ℂ → ℂ) (m : ℕ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
     iteratedDeriv m (f * g) =
@@ -862,7 +862,7 @@ lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff ℂ m) =
   simp at Z
   rw [ show 2 * 2 = (4 : ℂ) by ring] at Z
   rw [Z]
-  ring
+  ring_nf
   rw [Complex.I_pow_four ]
   simp only [inv_pow, bernoulli, bernoulli'_four, Rat.cast_mul, Rat.cast_pow, Rat.cast_neg,
     Rat.cast_one, Rat.cast_div, Rat.cast_ofNat, mul_inv_rev, inv_div, Nat.factorial,
@@ -870,7 +870,7 @@ lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff ℂ m) =
     c]
   have pin : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
   field_simp
-  ring
+  ring_nf
   congr
   rw [Function.Periodic.qParam]
   rw [← Complex.exp_nsmul]
@@ -924,7 +924,7 @@ lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff ℂ m) = fun m => if m = 0 
   simp at Z
   rw [ show 2 * 3 = (6 : ℂ) by ring] at Z
   rw [Z]
-  ring
+  ring_nf
   rw [Complex.I_pow_six ]
   simp only [inv_pow, bernoulli, bernoulli'_six, one_div, Rat.cast_mul, Rat.cast_pow, Rat.cast_neg,
     Rat.cast_one, Rat.cast_inv, Rat.cast_ofNat, mul_inv_rev, inv_inv, Nat.factorial,
@@ -932,7 +932,7 @@ lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff ℂ m) = fun m => if m = 0 
     neg_mul, neg_inj, c]
   have pin : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
   field_simp
-  ring
+  ring_nf
   congr
   rw [Function.Periodic.qParam]
   rw [← Complex.exp_nsmul]
@@ -987,10 +987,7 @@ def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 := by
   let G := DirectSum.of _ 6 E₆
   apply IsCuspForm_to_CuspForm _ _ ((1/ 1728 : ℂ) • (F^3 - G^2) 12 )
   rw [IsCuspForm_iff_coeffZero_eq_zero]
-
-  sorry
-
-
+  exact E4E6_coeff_zero_eq_zero
 
 
 lemma Delta_cuspFuntion_eq : Set.EqOn  (cuspFunction 1 Delta)
