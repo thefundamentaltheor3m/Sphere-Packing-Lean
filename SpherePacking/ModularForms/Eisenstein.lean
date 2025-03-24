@@ -328,25 +328,33 @@ variable {α ι: Type*}
 
 def Modform_mul_Delta  (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) :
  CuspForm (CongruenceSubgroup.Gamma 1) k where
-   toFun := f * Delta
-   slash_action_eq' :=
+  toFun := f  * Delta
+  slash_action_eq' A hA := by
+    conv =>
+      enter [1,2]
+      rw [show k = k - 12 + 12 by ring]
+    rw [ModularForm.mul_slash_SL2,
+    SlashInvariantFormClass.slash_action_eq f A hA, SlashInvariantFormClass.slash_action_eq Delta A hA]
+  holo' := f.holo'.mul Delta.holo'
+  zero_at_infty' := by
+    intro A
+    have h1 := f.bdd_at_infty' A
+    have h2 := Delta.zero_at_infty' A
+    rw [IsBoundedAtImInfty, BoundedAtFilter, IsZeroAtImInfty, ZeroAtFilter] at *
 
     sorry
-   holo' := sorry
-   zero_at_infty' := sorry
+
+theorem mul_apply {k₁ k₂ : ℤ} {Γ : Subgroup SL(2, ℤ)} (f : SlashInvariantForm Γ k₁)
+    (g : SlashInvariantForm Γ k₂) (z : ℍ) : (f.mul g) z = f z * g z :=
+  rfl
 
 lemma Modform_mul_Delta_apply (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) (z : ℍ) :
   (Modform_mul_Delta k f) z = f z * Delta z := rfl
+  /-   rw [Modform_mul_Delta]
+    have := mul_apply f.1 Delta.1 z
+    simp
 
-/-this is done in the modformdims repo, soon to be in mathlib.-/
-lemma weigth_zero_rank_eq_one : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 0) = 1 :=
-  by apply ModularForm.levelOne_weight_zero_rank_one
-
-/-this is done in the modformdims repo, now in mathlib.-/
-lemma neg_weight_rank_zero (k : ℤ) (hk : k < 0) :
-    Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) k) = 0 := by
-    exact ModularForm.levelOne_neg_weight_rank_zero hk
-
+    sorry -/
 
 def CuspForms_iso_Modforms (k : ℤ) : CuspForm (CongruenceSubgroup.Gamma 1) k ≃ₗ[ℂ]
     ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) where
@@ -1052,7 +1060,7 @@ lemma delta_eq_E4E6_const : ∃ (c : ℂ), (c • Delta) = Delta_E4_E6_aux := by
     apply Module.finrank_eq_of_rank_eq
     rw [LinearEquiv.rank_eq this]
     simp
-    exact weigth_zero_rank_eq_one
+    exact ModularForm.levelOne_weight_zero_rank_one
   simp at this
   apply (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).mp hr Delta_E4_E6_aux
 
