@@ -329,9 +329,14 @@ variable {α ι: Type*}
 def Modform_mul_Delta  (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) :
  CuspForm (CongruenceSubgroup.Gamma 1) k where
    toFun := f * Delta
-   slash_action_eq' := sorry
+   slash_action_eq' :=
+
+    sorry
    holo' := sorry
    zero_at_infty' := sorry
+
+lemma Modform_mul_Delta_apply (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) (z : ℍ) :
+  (Modform_mul_Delta k f) z = f z * Delta z := rfl
 
 /-this is done in the modformdims repo, soon to be in mathlib.-/
 lemma weigth_zero_rank_eq_one : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 0) = 1 :=
@@ -353,8 +358,17 @@ def CuspForms_iso_Modforms (k : ℤ) : CuspForm (CongruenceSubgroup.Gamma 1) k �
         simp only [CuspForm_div_Discriminant_apply, CuspForm.smul_apply, smul_eq_mul,
           RingHom.id_apply, ModularForm.smul_apply]
         ring
-      invFun f := sorry
-      left_inv := sorry
+      invFun := Modform_mul_Delta k
+      left_inv := by
+        intro f
+        ext z
+        simp [Modform_mul_Delta_apply, CuspForm_div_Discriminant_apply ]
+
+
+
+
+
+        sorry
       right_inv := sorry
 
 
@@ -405,13 +419,10 @@ lemma cuspfunc_Zero [NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0
   rw [Summable.hasSum_iff] at this
   rw [tsum_zero_pow] at this
   apply this.symm
-
-  sorry
-
-
-
-
-
+  rw [← summable_nat_add_iff 1]
+  simp only [ne_eq, AddLeftCancelMonoid.add_eq_zero, one_ne_zero, and_false, not_false_eq_true,
+    zero_pow, mul_zero]
+  apply summable_zero
 
 lemma modfom_q_exp_cuspfunc  (c : ℕ → ℂ) (f : F) [ModularFormClass F Γ(n) k]
     [NeZero n]
