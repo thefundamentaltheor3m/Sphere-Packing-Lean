@@ -16,7 +16,7 @@ variable {k : ℤ} {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup SL(2, ℤ)} (n
 open scoped Real MatrixGroups CongruenceSubgroup
 
 
-theorem modform_tendto_ndhs_zero {k : ℤ} (n : ℕ) (f : ModularForm Γ(n) k) [inst : NeZero n] :
+theorem modform_tendto_ndhs_zero {k : ℤ} (n : ℕ) [ModularFormClass F Γ(n) k] [inst : NeZero n] :
     Tendsto (fun x ↦ (⇑f ∘ ↑ofComplex) (Periodic.invQParam (↑n) x)) (𝓝[≠] 0)
     (𝓝 (cuspFunction n f 0)) := by
   simp only [comp_apply]
@@ -214,11 +214,11 @@ lemma cuspFunction_sub [NeZero n] (f g : ModularForm Γ(n) k) :
   rw [Filter.Tendsto.limUnder_eq]
   apply Tendsto.sub
   · apply tendsto_nhds_limUnder
-    have := modform_tendto_ndhs_zero n f
+    have := modform_tendto_ndhs_zero f n
     simp only [Nat.cast_one, comp_apply] at *
     aesop
   · apply tendsto_nhds_limUnder
-    have := modform_tendto_ndhs_zero n g
+    have := modform_tendto_ndhs_zero g n
     simp only [Nat.cast_one, comp_apply] at *
     aesop
   · simp [hy]
@@ -301,11 +301,11 @@ lemma cuspFunction_add [NeZero n] (f g : ModularForm Γ(n) k) :
   rw [Filter.Tendsto.limUnder_eq]
   apply Tendsto.add
   · apply tendsto_nhds_limUnder
-    have := modform_tendto_ndhs_zero n f
+    have := modform_tendto_ndhs_zero f n
     simp only [Nat.cast_one, comp_apply] at *
     aesop
   · apply tendsto_nhds_limUnder
-    have := modform_tendto_ndhs_zero n g
+    have := modform_tendto_ndhs_zero g n
     simp only [Nat.cast_one, comp_apply] at *
     aesop
   · simp [hy]
@@ -389,13 +389,13 @@ lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
       rw [hl]
       simp
       apply Filter.Tendsto.const_mul
-      have := modform_tendto_ndhs_zero _ f
+      have := modform_tendto_ndhs_zero f _
       simp at this
       convert this
       rw [Filter.limUnder_eq_iff ]
       apply this
       aesop
-      have := modform_tendto_ndhs_zero _ (a • f)
+      have := modform_tendto_ndhs_zero (a • f) _
       aesop
     · simp only [cuspFunction, CuspForm.coe_smul, Pi.smul_apply, smul_eq_mul]
       rw [Function.Periodic.cuspFunction_eq_of_nonzero _ _ h,
@@ -434,3 +434,119 @@ lemma qExpansion_smul (a : ℂ) (f : CuspForm Γ(n) k) [NeZero n] :
     rw [IteratedDeriv_smul]
   simp only [Pi.smul_apply, smul_eq_mul]
   ring
+
+
+instance : FunLike (ℍ → ℂ) ℍ ℂ := { coe := fun ⦃a₁⦄ ↦ a₁, coe_injective' := fun ⦃_ _⦄ a ↦ a}
+
+lemma qExpansion_ext (f g : ℍ → ℂ) (h : f = g) : qExpansion 1 f =
+    qExpansion 1 g := by
+  rw [h]
+
+lemma qExpansion_ext2 {α β : Type*} [FunLike α ℍ ℂ] [FunLike β ℍ ℂ] (f : α) (g : β) (h : ⇑f = ⇑g) :
+    qExpansion 1 f = qExpansion 1 g := by
+  simp_rw [qExpansion]
+  ext m
+  simp
+  left
+  congr
+  simp_rw [cuspFunction, Periodic.cuspFunction]
+  rw [h]
+
+lemma qExpansion_of_mul (a b : ℤ) (f : ModularForm Γ(1) a) (g : ModularForm Γ(1) b) :
+  qExpansion 1 (((((DirectSum.of (ModularForm Γ(1)) a ) f)) * ((DirectSum.of (ModularForm Γ(1)) b ) g)) (a + b)) =
+    (qExpansion 1 f) * (qExpansion 1 g) := by
+  rw [DirectSum.of_mul_of]
+  rw [← qExpansion_mul_coeff]
+  apply qExpansion_ext2
+  ext z
+  simp
+  rfl
+
+@[simp] --generalize this away from ℂ
+lemma IteratedDeriv_zero_fun (n : ℕ) (z : ℂ): iteratedDeriv n (fun _ : ℂ => (0 : ℂ)) z = 0 := by
+  induction' n with n hn
+  simp
+  rw [iteratedDeriv_succ']
+  simp [hn]
+
+lemma iteratedDeriv_const_eq_zero (m : ℕ) (hm : 0 < m) (c : ℂ) :
+    iteratedDeriv m (fun _ : ℂ => c) = fun _ : ℂ => 0 := by
+  ext z
+  have := iteratedDeriv_const_add hm (f := fun (x : ℂ) => (0 : ℂ)) c (x := z)
+  simpa only [add_zero, IteratedDeriv_zero_fun] using this
+
+lemma qExpansion_pow (f : ModularForm Γ(1) k) (n : ℕ) :
+  qExpansion 1 ((((DirectSum.of (ModularForm Γ(1)) k ) f) ^ n) (n * k)) = (qExpansion 1 f) ^ n := by
+  induction' n with n hn
+  simp
+  rw [show 0 * k = 0 by ring]
+  have hq : qExpansion 1 ((1 : ModularForm Γ(1) 0)) = 1 := by
+    have : (cuspFunction 1 ((1 : ModularForm Γ(1) 0))) = 1 := by
+      simp only [cuspFunction, Periodic.cuspFunction]
+      ext z
+      simp
+      by_cases hz : z = 0
+      rw [hz]
+      simp
+      apply Filter.Tendsto.limUnder_eq
+      apply tendsto_const_nhds
+      simp [hz]
+    rw [qExpansion]
+    rw [this]
+    ext m
+    simp
+    by_cases hm : m = 0
+    rw [hm]
+    simp
+    simp [hm]
+    right
+    have hmp : 0 < m := by omega
+    have := iteratedDeriv_const_eq_zero m hmp 1
+    have ht := congr_fun this 0
+    apply ht
+  rw [← hq]
+  apply qExpansion_ext2
+  rfl
+  rw [pow_succ, pow_succ]
+  rw [show ↑(n + 1) * k = (n • k) + k by simp; ring]
+  rw [DirectSum.ofPow] at *
+  rw [qExpansion_of_mul]
+  simp
+  left
+  rw [← hn]
+  apply qExpansion_ext2
+  ext z
+  rw [show n * k = n • k by rfl]
+  simp
+
+
+lemma qExpansion_injective (n : ℕ) [NeZero n] (f : ModularForm Γ(n) k) :
+    qExpansion n f = 0 ↔ f = 0 := by
+  constructor
+  intro h
+  ext z
+  have := (hasSum_qExpansion n f z).tsum_eq
+  rw [← this]
+  rw [h]
+  simp
+  intro h
+  have : Periodic.cuspFunction n 0 = 0 := by
+    ext z
+    rw [Periodic.cuspFunction]
+    by_cases hz : z = 0
+    rw [hz]
+    simp
+    apply Filter.Tendsto.limUnder_eq
+    refine NormedAddCommGroup.tendsto_nhds_zero.mpr ?_
+    simp
+    simp [hz]
+  rw [qExpansion, cuspFunction, h]
+  simp
+  rw [this]
+  ext y
+  simp
+  right
+  apply IteratedDeriv_zero_fun
+
+lemma qExpansion_zero [NeZero n] : qExpansion n (0 : ModularForm Γ(n) k) = 0 := by
+  rw [qExpansion_injective]
