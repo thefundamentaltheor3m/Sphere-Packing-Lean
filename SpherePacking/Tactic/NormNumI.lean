@@ -119,9 +119,9 @@ partial def parse (z : Q(ℂ)) :
       return ⟨q(OfNat.ofNat $n), q(0), (q(split_num $n):)⟩
   | ~q(OfScientific.ofScientific $m $x $exp) =>
     return ⟨q(OfScientific.ofScientific $m $x $exp), q(0), q(split_scientific _ _ _)⟩
-  /- parse a constructor type -/
-  |~q(Complex.mk $a $b) =>
-    pure ⟨a, b, q(rfl)⟩
+  -- /- parse a constructor type -/
+  -- |~q(Complex.mk $a $b) =>
+  --   pure ⟨a, b, q(rfl)⟩
   | _ => throwError "found the atom {z} which is not a numeral"
 
 def normalize (z : Q(ℂ)) : MetaM (Σ a b : Q(ℝ), Q($z = ⟨$a, $b⟩)) := do
