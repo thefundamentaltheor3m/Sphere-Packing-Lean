@@ -66,6 +66,9 @@ theorem ne_of_im_ne {z w : ℂ} {az bz aw bw : ℝ} (hz : z = ⟨az, bz⟩) (hw 
     (hb : bz ≠ bw) : z ≠ w := by
   simp [hz, hw, hb]
 
+theorem re_eq_of_eq {z : ℂ} {a b : ℝ} (hz : z = ⟨a, b⟩) : Complex.re z = a := by simp [hz]
+theorem im_eq_of_eq {z : ℂ} {a b : ℝ} (hz : z = ⟨a, b⟩) : Complex.im z = b := by simp [hz]
+
 partial def parse (z : Q(ℂ)) :
     MetaM (Σ a b : Q(ℝ),  Q($z = ⟨$a, $b⟩)) := do
   match z with
@@ -159,6 +162,30 @@ such that `norm_num` successfully recognises both the real and imaginary parts o
     | true => return Result'.isBool true q(NormNumI.eq_of_eq_of_eq_of_eq $pfz $pfw $ra $rb)
     | false => return Result'.isBool false q(NormNumI.ne_of_im_ne $pfz $pfw $rb)
   | false => return Result'.isBool false q(NormNumI.ne_of_re_ne $pfz $pfw $ra)
+
+/-- The `norm_num` extension which identifies expressions of the form `Complex.re (z : ℂ)`,
+such that `norm_num` successfully recognises the real part of `z`.
+-/
+@[norm_num Complex.re _] def evalRe : NormNumExt where eval {v β} e := do
+  haveI' : v =QL 0 := ⟨⟩; haveI' : $β =Q ℝ := ⟨⟩
+  let .proj ``Complex 0 z ← whnfR e | failure
+  have z : Q(ℂ) := z
+  haveI' : $e =Q (Complex.re $z) := ⟨⟩
+  let ⟨a, _, pf⟩ ← NormNumI.parse z
+  let r ← derive q($a)
+  return r.eqTrans q(NormNumI.re_eq_of_eq $pf)
+
+/-- The `norm_num` extension which identifies expressions of the form `Complex.im (z : ℂ)`,
+such that `norm_num` successfully recognises the imaginary part of `z`.
+-/
+@[norm_num Complex.im _] def evalIm : NormNumExt where eval {v β} e := do
+  haveI' : v =QL 0 := ⟨⟩; haveI' : $β =Q ℝ := ⟨⟩
+  let .proj ``Complex 1 z ← whnfR e | failure
+  have z : Q(ℂ) := z
+  haveI' : $e =Q (Complex.im $z) := ⟨⟩
+  let ⟨_, b, pf⟩ ← NormNumI.parse z
+  let r ← derive q($b)
+  return r.eqTrans q(NormNumI.im_eq_of_eq $pf)
 
 end NormNum
 
