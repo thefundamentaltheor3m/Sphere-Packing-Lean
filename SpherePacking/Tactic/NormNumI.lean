@@ -5,10 +5,11 @@ Authors: Heather Macbeth, Yunzhou Xie
 -/
 import Mathlib.Data.Complex.Basic
 
-open Lean Meta Elab Qq Tactic Complex
+open Lean Meta Elab Qq Tactic Complex Mathlib.Tactic
 open ComplexConjugate
 
-namespace Mathlib.Tactic.NormNumI
+namespace Mathlib.Meta
+namespace NormNumI
 
 theorem split_I : I = ⟨0, 1⟩ := rfl
 
@@ -53,7 +54,17 @@ theorem eq_eq {z : ℂ} {a b a' b' : ℝ} (pf : z = ⟨a, b⟩)
   (pf_a : a = a') (pf_b : b = b') :
   z = ⟨a', b'⟩ := by simp_all
 
-theorem eq_of_eq_of_eq {a b c : ℂ} (ha : a = c) (hb : b = c) : a = b := by simp [ha, hb]
+theorem eq_of_eq_of_eq_of_eq {z w : ℂ} {az bz aw bw : ℝ} (hz : z = ⟨az, bz⟩) (hw : w = ⟨aw, bw⟩)
+    (ha : az = aw) (hb : bz = bw) : z = w := by
+  simp [hz, hw, ha, hb]
+
+theorem ne_of_re_ne {z w : ℂ} {az bz aw bw : ℝ} (hz : z = ⟨az, bz⟩) (hw : w = ⟨aw, bw⟩)
+    (ha : az ≠ aw) : z ≠ w := by
+  simp [hz, hw, ha]
+
+theorem ne_of_im_ne {z w : ℂ} {az bz aw bw : ℝ} (hz : z = ⟨az, bz⟩) (hw : w = ⟨aw, bw⟩)
+    (hb : bz ≠ bw) : z ≠ w := by
+  simp [hz, hw, hb]
 
 partial def parse (z : Q(ℂ)) :
     MetaM (Σ a b : Q(ℝ),  Q($z = ⟨$a, $b⟩)) := do
@@ -125,18 +136,30 @@ elab "norm_numI" : conv => do
   let ⟨a, b, pf⟩ ← normalize z
   Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }
 
-def proveEq (g : MVarId) : MetaM Unit := do
-  let tgt ← g.getType
-  let some ⟨α, a, b⟩ := tgt.consumeMData.eq? | throwError "goal is not an equality"
-  guard (← withReducibleAndInstances (isDefEq α q(ℂ))) <|> throwError "type of equality is not ℂ"
-  let ⟨a₁, a₂, pf_a⟩ := ← normalize a
-  let ⟨b₁, b₂, pf_b⟩ := ← normalize b
-  guard (← withReducibleAndInstances (isDefEq a₁ b₁)) <|>
-    throwError "Real-part disagreement: LHS normalizes to {a₁}, RHS normalizes to {b₁}"
-  guard (← withReducibleAndInstances (isDefEq a₂ b₂)) <|>
-    throwError "Imaginary-part disagreement: LHS normalizes to {a₂}, RHS normalizes to {b₂}"
-  g.assign (← mkAppM ``eq_of_eq_of_eq #[pf_a, pf_b])
+end NormNumI
+namespace NormNum
 
-elab "norm_numI" : tactic => liftMetaFinishingTactic proveEq
+/-- The `norm_num` extension which identifies expressions of the form `(z : ℂ) = (w : ℂ)`,
+such that `norm_num` successfully recognises both the real and imaginary parts of both `z` and `w`.
+-/
+@[norm_num (_ : ℂ) = _] def evalComplexEq : NormNumExt where eval {v β} e := do
+  haveI' : v =QL 0 := ⟨⟩; haveI' : $β =Q Prop := ⟨⟩
+  let .app (.app f z) w ← whnfR e | failure
+  guard <| ← withNewMCtxDepth <| isDefEq f q(Eq (α := ℂ))
+  have z : Q(ℂ) := z
+  have w : Q(ℂ) := w
+  haveI' : $e =Q ($z = $w) := ⟨⟩
+  let ⟨az, bz, pfz⟩ ← NormNumI.parse z
+  let ⟨aw, bw, pfw⟩ ← NormNumI.parse w
+  let ⟨ba, ra⟩ ← deriveBool q($az = $aw)
+  match ba with
+  | true =>
+    let ⟨bb, rb⟩ ← deriveBool q($bz = $bw)
+    match bb with
+    | true => return Result'.isBool true q(NormNumI.eq_of_eq_of_eq_of_eq $pfz $pfw $ra $rb)
+    | false => return Result'.isBool false q(NormNumI.ne_of_im_ne $pfz $pfw $rb)
+  | false => return Result'.isBool false q(NormNumI.ne_of_re_ne $pfz $pfw $ra)
 
-end Mathlib.Tactic.NormNumI
+end NormNum
+
+end Mathlib.Meta
