@@ -10,6 +10,7 @@ import Mathlib
 
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
+import SpherePacking.Tactic.NormNumI
 
 /-! # Constructing Upper-Bounds for I₁
 
@@ -61,13 +62,8 @@ lemma I₁'_eq (r : ℝ) : I₁' r =
   congr! 4
   · have : t ≠ 0 := ht.1.ne'
     have h2 : (t : ℂ) ≠ 0 := by simp [this]
-    have h3 : I + 1 ≠ 0 := by
-      intro h
-      simpa using congr(($h).re)
-    field_simp [h2, h3]
-    ring_nf
-    simp
-    ring
+    field_simp [h2]
+    linear_combination -t * I_sq
   · norm_cast
     simp
 

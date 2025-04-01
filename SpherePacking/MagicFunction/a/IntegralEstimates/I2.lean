@@ -10,6 +10,7 @@ import Mathlib
 
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
+import SpherePacking.Tactic.NormNumI
 
 /-! # Constructing Upper-Bounds for I₂
 
@@ -62,13 +63,8 @@ lemma I₁'_eq (r : ℝ) : I₁' r =
   congr! 4
   · have : t ≠ 0 := ht.1.ne'
     have h2 : (t : ℂ) ≠ 0 := by simp [this]
-    have h3 : I + 1 ≠ 0 := by
-      intro h
-      simpa using congr(($h).re)
-    field_simp [h2, h3]
-    ring_nf
-    simp
-    ring
+    field_simp [h2]
+    linear_combination -t * I_sq
   · norm_cast
     simp
 
@@ -190,22 +186,14 @@ section Showing_Equality_to_I₁
 
 lemma congr_aux_1 (x : ℝ) :
     -1 / (↑x - 1 + I * ↑x + 1) = (I - 1) / (2 * ↑x) := calc
-  _ = -1 / (x + I * x) := by
+  _ = -1 / ((1 + I) * x) := by
     congr 1
     ring
-  _ = (-1 * (1 - I)) / ((x + I * x) * (1 - I)) := by
-    symm
-    apply mul_div_mul_right
-    intro hcontra
-    rw [sub_eq_zero] at hcontra
-    have : (ofReal 1).im = I.im := congrArg im hcontra
-    simp at this
   _ = (I - 1) / (2 * x) := by
-    congr 1
-    · ring
-    · ring_nf
-      rw [I_sq]
-      ring
+    by_cases hx : (x:ℂ) = 0
+    · simp [hx]
+    field_simp
+    linear_combination - x * I_sq
 
 -- Now, the main result of this section.
 
@@ -237,16 +225,11 @@ lemma Congruency (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t)) = 
       * cexp (I * ↑π * ↑|r| ^ 2 * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1)))
     := by ring
   rw [hrearrange_LHS]
-  congr 2
-  · congr 1
+  congrm ?_  * cexp ?_
+  · field_simp [hx.1.ne']
     ring
-  · field_simp
-    ring_nf
-    congr 2 <;> field_simp [hx.1.ne'] <;> ring
-  · rw [mul_comm I π]
-    norm_cast
+  · norm_cast
     rw [_root_.sq_abs r]
-    congr
     field_simp
     ring
 
