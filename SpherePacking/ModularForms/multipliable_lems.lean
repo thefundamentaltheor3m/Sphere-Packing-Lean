@@ -23,19 +23,19 @@ theorem term_ne_zero (z : ℍ) (n : ℕ) : 1 -cexp (2 * ↑π * Complex.I * (↑
   intro h
   have :=  exp_upperHalfPlane_lt_one_nat z n
   rw [← h] at this
-  simp only [AbsoluteValue.map_one, lt_self_iff_false] at *
+  simp only [norm_one, lt_self_iff_false] at *
 
 theorem ball_pow_ne_1 (x : ℂ) (hx : x ∈ ball 0 1) (n : ℕ) : 1 + (fun n ↦ -x ^ (n + 1)) n ≠ 0 := by
-  simp only [mem_ball, dist_zero_right, norm_eq_abs] at *
+  simp only [mem_ball, dist_zero_right] at *
   rw [← sub_eq_add_neg, sub_ne_zero]
-  have hxn : Complex.abs (x ^ (n + 1)) < 1 := by
-    simp only [AbsoluteValue.map_pow]
+  have hxn : ‖(x ^ (n + 1))‖ < 1 := by
+    simp only [norm_pow]
     refine pow_lt_one₀ ?_ hx ?_
-    exact AbsoluteValue.nonneg Complex.abs x
+    exact norm_nonneg x
     omega
   intro h
   rw [← h] at hxn
-  simp only [AbsoluteValue.map_one, lt_self_iff_false] at hxn
+  simp only [norm_one, lt_self_iff_false] at hxn
 
 theorem multipliable_lt_one (x : ℂ)  (hx : x ∈ ball 0 1) :
   Multipliable fun i ↦ 1 - x ^ (i+ 1) := by

@@ -47,7 +47,7 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
   simp only [Finset.prod_apply]
   · simp_rw [norm_pow]
     rw [summable_nat_add_iff 1]
-    simp only [norm_eq_abs, summable_geometric_iff_norm_lt_one, Real.norm_eq_abs, Complex.abs_abs]
+    simp only [summable_geometric_iff_norm_lt_one, norm_norm]
     apply  exp_upperHalfPlane_lt_one ⟨z, by simpa using (hK hz)⟩
   · intro n
     intro x hx
@@ -58,7 +58,7 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
     have HB2 := HB x hx
     simp_rw [norm_pow]
     apply pow_le_pow_left₀ _  HB2
-    simp only [norm_eq_abs, apply_nonneg]
+    simp only [norm_nonneg]
   · intro x k
     simpa using term_ne_zero ⟨x.1, by simpa using (hK x.2)⟩ k
   · intro n
@@ -246,7 +246,7 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
     apply Summable.neg
     apply Summable.mul_left
     have hS := logDeriv_q_expo_summable (cexp (2 * ↑π * Complex.I * ↑z))
-      (by simpa only [norm_eq_abs] using exp_upperHalfPlane_lt_one z)
+      (by simpa using exp_upperHalfPlane_lt_one z)
     rw [← summable_nat_add_iff 1] at hS
     apply hS.congr
     intro b

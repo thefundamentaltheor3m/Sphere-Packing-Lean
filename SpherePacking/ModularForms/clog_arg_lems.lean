@@ -44,7 +44,7 @@ lemma arg_pow_aux (n : ℕ) (x : ℂ) (hx : x ≠ 0) (hna : |arg x| < π / n) :
     gcongr
     exact (lt_add_one n)
 
-lemma one_add_abs_half_ne_zero {x : ℂ} (hb : Complex.abs x < 1 / 2) : 1 + x ≠ 0 := by
+lemma one_add_abs_half_ne_zero {x : ℂ} (hb :  ‖x‖ < 1 / 2) : 1 + x ≠ 0 := by
   by_contra h
   rw [@add_eq_zero_iff_neg_eq] at h
   rw [← h] at hb
@@ -61,7 +61,7 @@ lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀�
   have h3 := h2.comp hf1
   simp only [arg_one] at h3
   rw [Metric.tendsto_nhds] at *
-  simp only [gt_iff_lt, dist_zero_right, Complex.norm_eq_abs, eventually_atTop, ge_iff_le,
+  simp only [gt_iff_lt, dist_zero_right,  eventually_atTop, ge_iff_le,
     dist_self_add_left, arg_one, Real.norm_eq_abs, comp_apply] at *
   by_cases hn0 : n = 0
   · rw [hn0]
@@ -93,7 +93,7 @@ lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) :
   have h3 := h2.comp hf1
   simp only [arg_one] at h3
   rw [Metric.tendsto_nhds] at *
-  simp only [gt_iff_lt, dist_zero_right, Complex.norm_eq_abs, eventually_atTop, ge_iff_le,
+  simp only [gt_iff_lt, dist_zero_right, eventually_atTop, ge_iff_le,
     dist_self_add_left, arg_one, Real.norm_eq_abs, comp_apply] at *
   by_cases hn0 : n = 0
   · simp_rw [hn0]
@@ -138,7 +138,7 @@ lemma clog_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀
   intro b hb
   have h2 := ha b hb
   rw [h2]
-  simp only [AbsoluteValue.map_pow, Real.log_pow, ofReal_mul, ofReal_natCast]
+  simp only [norm_pow, Real.log_pow, ofReal_mul, ofReal_natCast]
   ring
 
 lemma clog_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) : ∀ᶠ m : ℍ in atImInfty,
@@ -154,7 +154,7 @@ lemma clog_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) 
   simp only [mem_atTop_sets, ge_iff_le, mem_preimage, mem_setOf_eq, AbsoluteValue.map_pow, Real.log_pow,
     ofReal_mul, ofReal_natCast] at *
   rw [h2]
-  simp only [AbsoluteValue.map_pow, Real.log_pow, ofReal_mul, ofReal_natCast]
+  simp only [norm_pow, Real.log_pow, ofReal_mul, ofReal_natCast]
   ring
 
 
@@ -166,10 +166,10 @@ lemma log_summable_pow (f : ℕ → ℂ)  (hf : Summable f)  (m : ℕ) :
   apply Summable.of_norm_bounded_eventually_nat _ this
   have hft := hf.tendsto_atTop_zero
   have H := clog_pow m f hft
-  simp only [norm_mul, Complex.norm_natCast, Complex.norm_eq_abs, eventually_atTop, ge_iff_le] at *
+  simp only [norm_mul, Complex.norm_natCast,  eventually_atTop, ge_iff_le] at *
   obtain ⟨a, ha⟩ := H
   use a
   intro b hb
   apply le_of_eq
   rw [ha b hb]
-  simp only [AbsoluteValue.map_mul, abs_natCast]
+  simp only [Complex.norm_mul, norm_natCast]

@@ -90,7 +90,7 @@ theorem derivWithin_mul2 (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableO
 lemma iteratedDerivWithin_mul (f g : ℂ → ℂ) (s : Set ℂ) (hs : IsOpen s) (x : ℂ) (hx : x ∈ s) (m : ℕ)
     (hf : ContDiffOn ℂ ⊤ f s)(hg : ContDiffOn ℂ ⊤ g s) :
     iteratedDerivWithin m (f * g) s x =
-    ∑ i in Finset.range m.succ, (m.choose i) * (iteratedDerivWithin i f s x) * (iteratedDerivWithin (m - i) g s x) := by
+    ∑ i ∈ Finset.range m.succ, (m.choose i) * (iteratedDerivWithin i f s x) * (iteratedDerivWithin (m - i) g s x) := by
   induction' m with m hm generalizing f g
   simp only [iteratedDerivWithin_zero, Pi.mul_apply, Nat.succ_eq_add_one, zero_add,
     Finset.range_one, zero_le, Nat.sub_eq_zero_of_le, Finset.sum_singleton, Nat.choose_self,
@@ -127,9 +127,11 @@ lemma iteratedDerivWithin_mul (f g : ℂ → ℂ) (s : Set ℂ) (hs : IsOpen s) 
   apply ContDiffOn.mul
   exact ContDiffOn.derivWithin hf (by exact IsOpen.uniqueDiffOn hs) (m := m) (by simp)
   apply ContDiffOn.of_le hg (by simp)
+  exact hx
   apply ContDiffOn.mul
   apply ContDiffOn.of_le hf (by simp)
   apply ContDiffOn.derivWithin hg (by exact IsOpen.uniqueDiffOn hs) (m := m) (by simp)
+  exact hx
   exact hx
 
 
@@ -248,18 +250,20 @@ lemma qExpansion_sub (f g : ModularForm Γ(1) k) : (qExpansion 1 (f - g)) =
     exact Real.zero_lt_one
   · refine IsOpen.uniqueDiffOn ?_
     exact isOpen_ball
-  · refine DifferentiableOn.contDiffOn ?_ ?_
+  · refine (DifferentiableOn.contDiffOn (E := ℂ) ?_ ?_).contDiffWithinAt ?_
     intro x hx
     refine DifferentiableAt.differentiableWithinAt ?_
     refine differentiableAt_cuspFunction 1 f ?_
     simpa using hx
     exact  isOpen_ball
-  · refine DifferentiableOn.contDiffOn ?_ ?_
+    simp
+  · refine (DifferentiableOn.contDiffOn (E := ℂ) ?_ ?_).contDiffWithinAt ?_
     intro x hx
     refine DifferentiableAt.differentiableWithinAt ?_
     refine differentiableAt_cuspFunction 1 g ?_
     simpa using hx
     exact  isOpen_ball
+    simp
   · refine IsOpen.uniqueDiffOn ?_
     exact isOpen_ball
   · refine AnalyticAt.contDiffAt ?_
@@ -326,18 +330,20 @@ lemma qExpansion_add (f g : ModularForm Γ(1) k) : (qExpansion 1 (f + g)) =
     exact Real.zero_lt_one
   · refine IsOpen.uniqueDiffOn ?_
     exact isOpen_ball
-  · refine DifferentiableOn.contDiffOn ?_ ?_
+  · refine (DifferentiableOn.contDiffOn (E := ℂ) ?_ ?_).contDiffWithinAt ?_
     intro x hx
     refine DifferentiableAt.differentiableWithinAt ?_
     refine differentiableAt_cuspFunction 1 f ?_
     simpa using hx
     exact  isOpen_ball
-  · refine DifferentiableOn.contDiffOn ?_ ?_
+    simp
+  · refine (DifferentiableOn.contDiffOn (E := ℂ) ?_ ?_).contDiffWithinAt ?_
     intro x hx
     refine DifferentiableAt.differentiableWithinAt ?_
     refine differentiableAt_cuspFunction 1 g ?_
     simpa using hx
     exact  isOpen_ball
+    simp
   · refine IsOpen.uniqueDiffOn ?_
     exact isOpen_ball
   · refine AnalyticAt.contDiffAt ?_

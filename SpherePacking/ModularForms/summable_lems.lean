@@ -46,7 +46,7 @@ theorem summable_neg {α : Type*} [TopologicalSpace α] [AddCommMonoid α] (f : 
 
 
 lemma aux33 (f : ℕ → ℂ) (hf : Summable f) : ∑' n, f (n) =
-    limUnder atTop (fun N : ℕ => ∑ n in Finset.range N, f (n)) := by
+    limUnder atTop (fun N : ℕ => ∑ n ∈ Finset.range N, f (n)) := by
   rw [Filter.Tendsto.limUnder_eq]
   have  := hf.hasSum
   have V := this.comp tendsto_finset_range
@@ -76,7 +76,7 @@ theorem nat_pos_tsum2' {α : Type*} [TopologicalSpace α] [AddCommMonoid α]  (f
   simp
 
 /-this is from the mod forms repo-/
-theorem int_tsum_pNat {α : Type*} [UniformSpace α] [CommRing α]  [ UniformAddGroup α] [CompleteSpace α]
+theorem int_tsum_pNat {α : Type*} [UniformSpace α] [CommRing α]  [ IsUniformAddGroup α] [CompleteSpace α]
   [T2Space α] (f : ℤ → α) (hf2 : Summable f) :
   ∑' n, f n = f 0 + ∑' n : ℕ+, f n + ∑' m : ℕ+, f (-m) :=
   by sorry
@@ -183,7 +183,7 @@ theorem extracted_abs_norm_summable (z : ℍ) (i : ℤ) :
   use (Finset.Icc (-|i|) (|i|))ᶜ
   simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Int.reduceNeg, mem_cofinite, compl_compl,
     finite_singleton, Finite.insert, mem_compl_iff, mem_insert_iff, mem_singleton_iff, not_or,
-    Fin.isValue, one_div, mul_inv_rev, norm_mul, norm_inv, norm_eq_abs, norm_pow, and_imp, true_and]
+    Fin.isValue, one_div, mul_inv_rev, norm_mul, norm_inv, norm_pow, and_imp, true_and]
   simp only [Finset.coe_Icc, norm_norm, Real.norm_ofNat, inv_inv,
     Real.norm_eq_abs, _root_.sq_abs]
   constructor
@@ -523,7 +523,7 @@ lemma G_2_alt_summable (z : ℍ) : Summable fun  (m : Fin 2 → ℤ) =>
   use { ![0,0], ![0,-1]}ᶜ
   simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Int.reduceNeg, mem_cofinite, compl_compl,
     finite_singleton, Finite.insert, mem_compl_iff, mem_insert_iff, mem_singleton_iff, not_or,
-    Fin.isValue, one_div, mul_inv_rev, norm_mul, norm_inv, norm_eq_abs, norm_pow, and_imp, true_and]
+    Fin.isValue, one_div, mul_inv_rev, norm_mul, norm_inv,  norm_pow, and_imp, true_and]
   intro b HB1 HB2
   have hk0 : 0 ≤ (2 : ℝ) := by norm_num
   have hk0' : 0 ≤ (1 : ℝ) := by norm_num
@@ -534,11 +534,11 @@ lemma G_2_alt_summable (z : ℍ) : Summable fun  (m : Fin 2 → ℤ) =>
     Matrix.head_cons, Int.cast_add, Int.cast_one, one_div, mul_inv_rev, map_mul, map_inv₀, map_pow,
      ge_iff_le, b'] at *
   have := mul_le_mul p2 p1 ?_ ?_
-  have hpow : Complex.abs (↑(b 0) * ↑z + ↑(b 1)) ^ (-2 : ℝ) =
-    (Complex.abs (↑(b 0) * ↑z + ↑(b 1)) ^ 2)⁻¹ :=
+  have hpow : ‖(↑((b 0) : ℂ) * (z : ℂ) + ↑(b 1))‖ ^ (-2 : ℝ) =
+    (‖(↑((b 0) : ℂ) * (z : ℂ) + ↑(b 1))‖ ^ 2)⁻¹ :=
     by norm_cast
-  have hpow2 : Complex.abs (↑(b 0) * ↑z + ↑(b 1)+1) ^ (-1 : ℝ) =
-    (Complex.abs (↑(b 0) * ↑z + ↑(b 1)+1))⁻¹ :=
+  have hpow2 : ‖(↑((b 0) : ℂ) * (z : ℂ) + ↑(b 1)) + 1‖ ^ (-1 : ℝ) =
+    (‖(↑((b 0) : ℂ) * (z : ℂ) + ↑(b 1)) + 1‖)⁻¹ :=
     by apply Real.rpow_neg_one
   rw [← hpow, ← hpow2]
   rw [← add_assoc] at this
@@ -567,7 +567,7 @@ lemma G_2_alt_summable (z : ℍ) : Summable fun  (m : Fin 2 → ℤ) =>
   · apply Real.rpow_nonneg
     apply (r_pos z).le
   · apply Real.rpow_nonneg
-    exact AbsoluteValue.nonneg Complex.abs _
+    apply norm_nonneg
   · exact
     mul_nonneg (Real.rpow_nonneg (LT.lt.le (r_pos z)) (-1))
       (Real.rpow_nonneg (norm_nonneg ![b 0, b 1 + 1]) (-1))
@@ -694,8 +694,8 @@ lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
 
 
 
-lemma sum_range_zero (f : ℤ → ℂ) (n : ℕ) : ∑ m in Finset.range (n+1), f m = f 0 +
-  ∑ m in Finset.range n, f (m+1) := by
+lemma sum_range_zero (f : ℤ → ℂ) (n : ℕ) : ∑ m ∈ Finset.range (n+1), f m = f 0 +
+  ∑ m ∈ Finset.range n, f (m+1) := by
   rw [Finset.sum_range_succ' ]
   rw [add_comm]
   simp
@@ -872,11 +872,11 @@ lemma exp_aux (z : ℍ) (n : ℕ) : cexp (2 * ↑π * Complex.I * n * ↑z) =
   ring
 
 theorem summable_exp_pow (z : ℍ) : Summable fun i : ℕ ↦
-    Complex.abs (cexp (2 * ↑π * Complex.I * (↑i + 1) * z)) := by
+     ‖(cexp (2 * ↑π * Complex.I * (↑i + 1) * z))‖ := by
   conv =>
     enter [1]
     ext i
-    rw [show ((i : ℂ) + 1) = ((i + 1) : ℕ) by simp, exp_aux, abs_pow]
+    rw [show ((i : ℂ) + 1) = ((i + 1) : ℕ) by simp, exp_aux, norm_pow]
   rw [summable_nat_add_iff 1 ]
-  simp only [summable_geometric_iff_norm_lt_one, Real.norm_eq_abs, Complex.abs_abs]
+  simp only [summable_geometric_iff_norm_lt_one, norm_norm]
   apply exp_upperHalfPlane_lt_one
