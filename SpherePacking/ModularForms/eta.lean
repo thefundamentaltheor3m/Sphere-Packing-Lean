@@ -186,12 +186,15 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
       ring_nf
       field_simp
       ring
-    · ring_nf
-      rw [show ↑π * Complex.I * (1 / 12) *
-        -((↑π ^ 2 * (1 / 6))⁻¹ * (1 / 2) * (↑π ^ 2 * 8 *
-        ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1))) =
-        (↑π * Complex.I * (1 / 12) * -((↑π ^ 2 * (1 / 6))⁻¹ * (1 / 2) * (↑π ^ 2 * 8)) *
-        ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1)) by ring]
+    ·
+      have hr :    ↑π * Complex.I / 12 *
+         -((↑π ^ 2 / (6 : ℂ))⁻¹ * 2⁻¹ * (8 * ↑π ^ 2 * ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (2 * ↑π * Complex.I * ↑↑n * ↑z))) =
+        (↑π * Complex.I * (1 / 12) * -(((π : ℂ) ^ 2 * (1 / 6))⁻¹ * (1 / 2) * (↑π ^ 2 * 8)) *
+        ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1)) := by
+          ring_nf
+          rfl
+      simp only [UpperHalfPlane.coe] at *
+      rw [hr]
       congr 1
       have hpi : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
       field_simp
@@ -203,7 +206,13 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
       have hl := tsum_pnat_eq_tsum_succ3
         (fun n ↦ ↑((σ 1) (n)) * cexp (↑π * Complex.I * 2 * (↑n) * ↑z))
       simp only [UpperHalfPlane.coe] at hl
-      rw [← hl]
+      rw [ hl]
+      apply tsum_congr
+      intro b
+      simp
+      left
+      congr 1
+      ring
   · exact isOpen_lt continuous_const Complex.continuous_im
   · intro i
     simp only [mem_setOf_eq, ne_eq]

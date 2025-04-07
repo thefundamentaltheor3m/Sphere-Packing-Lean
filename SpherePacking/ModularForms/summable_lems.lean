@@ -848,7 +848,7 @@ lemma sum_int_pnatt (z : ℍ) (d : ℕ+) :
     rw [summable_int_iff_summable_nat_and_neg ] at this
     have H := this.2
     simp only [Int.cast_natCast, one_div, Int.cast_neg, neg_mul] at *
-    have v : Summable fun (n : ℕ) ↦ (-((n : ℂ) * ↑z)  - ↑(d : ℂ))⁻¹ - (-((n : ℂ)* ↑z) + ↑↑d )⁻¹ := by
+    have v : Summable fun (n : ℕ) ↦ ( - ↑(d : ℂ)- z * ((n : ℂ) ))⁻¹ - (↑↑d - z * ((n : ℂ)) )⁻¹ := by
       apply H.congr
       intro b
       ring

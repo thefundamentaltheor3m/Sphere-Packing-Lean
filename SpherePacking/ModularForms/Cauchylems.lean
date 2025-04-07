@@ -363,8 +363,8 @@ lemma t8 (z : ℍ) :
   ring_nf
   congr
   ext r
-  congr
-  ring
+  congr 1
+  ring_nf
   · intro n
     have := term_evem z n
     simp [summable_term] at *

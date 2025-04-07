@@ -79,13 +79,44 @@ lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : 
   1 / (x 0 * (z : ℂ) + x 1) ^ ↑k = 2 * riemannZeta ↑k +
     2 * ((-2 * ↑π * Complex.I) ^ k / ↑(k - 1)!) * ∑' (n : ℕ+), ↑((σ (k - 1)) ↑n) * cexp (2 * ↑π * Complex.I * ↑z * ↑↑n) := by sorry
 
+
+lemma smul_disjoint ( i j : ℕ) (hij : i ≠ j) : Disjoint (({i} : Set ℕ)  • (gammaSet 1 0)) (({j} : Set ℕ)  • (gammaSet 1 0)) := by
+  sorry
+/-   rw [Set.disjoint_left ]
+  intro v hv
+  rw [Set.mem_smul] at *
+  simp [eq_iff_true_of_subsingleton] at *
+  obtain ⟨y, hy, hy2⟩:= hv
+  intro x hx
+  rw [←hy2]
+  intro H
+  have r1 : j * x 0 = i * y 0 := by
+    exact congrFun H 0
+  have r2 : j * x 1 = i * y 1 := by
+    exact congrFun H 1
+  have r11 := Int.gcd_mul_left j (x 0) (x 1)
+  have r22 := Int.gcd_mul_left i (y 0) (y 1)
+  simp at *
+  rw [r1, r2, hx] at r11
+  rw [hy] at r22
+  rw [r22] at r11
+  simp at r11
+  exact hij r11 -/
+
 lemma EQ2 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : Fin 2 → ℤ),
-  1 / (x 0 * (z : ℂ) + x 1) ^ ↑k = 2 * (riemannZeta (k)) +
-    2 * ∑' (c : gammaSet 1 0), 1 / ((c.1 0) * (z : ℂ) + (c.1 1)) ^ k := by
+  1 / (x 0 * (z : ℂ) + x 1) ^ ↑k = (riemannZeta (k)) * ∑' (c : gammaSet 1 0), 1 / ((c.1 0) * (z : ℂ) + (c.1 1)) ^ k := by
   have := GammaSet_one_Equiv.symm.tsum_eq (fun v => 1 / ((v 0 : ℂ) * z + v 1) ^ k)
   rw [← this]
+  have h1 := smul_disjoint
+  let h0 := (Set.unionEqSigmaOfDisjoint h1).symm
+  rw [ ← h0.tsum_eq]
+  rw [tsum_sigma]
+  simp [GammaSet_one_Equiv]
+  sorry
 
   sorry
+
+
 
 /-This result is already proven in the modular forms repo and being PRed (slowly) into mathlib, so
 we can use it freely here. -/
@@ -101,9 +132,21 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
   have := eisensteinSeries_SIF_apply standardcongruencecondition k z
   rw [this, eisensteinSeries, standardcongruencecondition]
   simp
-
-
-
-
-
-  sorry
+  simp_rw [eisSummand]
+  have HE1 := EQ1 k hk hk2 z
+  have HE2 := EQ2 k hk hk2 z
+  have z2 : (riemannZeta (k)) ≠ 0 := by
+    refine riemannZeta_ne_zero_of_one_lt_re ?_
+    simp
+    omega
+  rw [← inv_mul_eq_iff_eq_mul₀ z2 ] at HE2
+  simp [UpperHalfPlane.coe] at *
+  conv =>
+    enter [1,2]
+    rw [← HE2]
+  simp_rw [← mul_assoc]
+  rw [HE1, mul_add]
+  have : 2⁻¹ * (riemannZeta (k))⁻¹ * (2 * riemannZeta (k)) = 1 := by
+    field_simp
+  rw [this]
+  ring
