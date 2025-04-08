@@ -66,7 +66,7 @@ end MagicFunction.a.Parametrisations
 
 open MagicFunction.a.Parametrisations
 
-namespace MagicFunction.a.Real_Integrals
+namespace MagicFunction.a.RealIntegrals
 
 noncomputable section Real_Input
 
@@ -94,11 +94,11 @@ def a' (x : ℝ) := I₁' x + I₂' x + I₃' x + I₄' x
 
 end Real_Input
 
-end MagicFunction.a.Real_Integrals
+end MagicFunction.a.RealIntegrals
 
-open MagicFunction.a.Real_Integrals
+open MagicFunction.a.RealIntegrals
 
-namespace MagicFunction.a.Radial_Functions
+namespace MagicFunction.a.RadialFunctions
 
 noncomputable section Vector_Input
 
@@ -116,6 +116,6 @@ end Vector_Input
 
 #check a
 
-end MagicFunction.a.Radial_Functions
+end MagicFunction.a.RadialFunctions
 
 #min_imports

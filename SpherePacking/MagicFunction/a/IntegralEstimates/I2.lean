@@ -18,8 +18,8 @@ of the function `a`. We do something similar to what we did for `I₁` in
 `SpherePacking.MagicFunction.a.IntegralEstimates.I1`.
 -/
 
-open MagicFunction.a.Parametrisations MagicFunction.a.Real_Integrals
-  MagicFunction.a.Radial_Functions
+open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
+  MagicFunction.a.RadialFunctions
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter
 open scoped Function
 

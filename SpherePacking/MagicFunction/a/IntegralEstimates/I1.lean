@@ -17,8 +17,8 @@ The purpose of this file is to construct bounds on the integral `I₁` that is p
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 -/
 
-open MagicFunction.a.Parametrisations MagicFunction.a.Real_Integrals
-  MagicFunction.a.Radial_Functions
+open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
+  MagicFunction.a.RadialFunctions
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter
 open scoped Function
 
