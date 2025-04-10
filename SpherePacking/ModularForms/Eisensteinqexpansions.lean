@@ -1,4 +1,5 @@
 import Mathlib
+import SpherePacking.ModularForms.summable_lems
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
@@ -196,6 +197,17 @@ theorem aut_iter_deriv (d : ℤ) (k : ℕ) :
   simp at *
   apply this
 
+theorem aut_iter_deriv' (d : ℤ) (k : ℕ) :
+    EqOn (iteratedDerivWithin k (fun z : ℂ => 1 / (z - d)) {z : ℂ | 0 < z.im})
+      (fun t : ℂ => (-1) ^ k * k ! * (1 / (t - d) ^ (k + 1))) {z : ℂ | 0 < z.im} :=
+  by
+  intro x hx
+  have h1 : (fun z : ℂ => 1 / (z - d)) = fun z : ℂ => 1 / (z + -d) := by rfl
+  rw [h1]
+  have h2 : x - d = x + -d := by rfl
+  simp_rw [h2]
+  simpa using aut_iter_deriv (-d : ℤ) k hx
+/-
 
 theorem hasDerivAt_tsum_fun {α : Type*} (f : α → ℂ → ℂ)
     {s : Set ℂ} (hs : IsOpen s) (x : ℂ) (hx : x ∈ s)
@@ -274,15 +286,13 @@ theorem deriv_tsum_fun' {α : Type _} (f : α → ℂ → ℂ) {s : Set ℂ}
     derivWithin (fun z => ∑' n : α, f n z) s x = ∑' n : α, derivWithin (fun z => f n z) s x := by
   apply
     HasDerivWithinAt.derivWithin (hasDerivWithinAt_tsum_fun' f hs x hx hf hu hf2)
-      (IsOpen.uniqueDiffWithinAt hs hx)
+      (IsOpen.uniqueDiffWithinAt hs hx) -/
 
 theorem derivWithin_tsum_fun' {α : Type _} (f : α → ℂ → ℂ) {s : Set ℂ}
     (hs : IsOpen s) (x : ℂ) (hx : x ∈ s) (hf : ∀ y ∈ s, Summable fun n : α => f n y)
-    (hu :
-      ∀ (K) (_ : K ⊆ s),
-        IsCompact K →
-          ∃ u : α → ℝ, Summable u ∧ ∀ (n : α) (k : K), ‖ (deriv (f n) k)‖ ≤ u n)
-    (hf2 : ∀ (n : α) (r : s), DifferentiableAt ℂ (f n) r) :
+    (hu :∀ K ⊆ s, IsCompact K →
+          ∃ u : α → ℝ, Summable u ∧ ∀ n (k : K), ‖ derivWithin (f n) s k‖ ≤ u n)
+    (hf2 : ∀ n (r : s), DifferentiableAt ℂ (f n) r) :
     derivWithin (fun z => ∑' n : α, f n z) s x = ∑' n : α, derivWithin (fun z => f n z) s x := by
   apply HasDerivWithinAt.derivWithin
   apply HasDerivAt.hasDerivWithinAt
@@ -297,11 +307,106 @@ theorem derivWithin_tsum_fun' {α : Type _} (f : α → ℂ → ℂ) {s : Set �
     simp
     apply hf y hy
   apply hasDerivAt_of_tendstoLocallyUniformlyOn hs _ _ A hx
-  use fun n : Finset α => fun a => ∑ i in n, derivWithin (fun z => f i z) s a
+  use fun n : Finset α => fun a => ∑ i ∈ n, derivWithin (fun z => f i z) s a
   rw [tendstoLocallyUniformlyOn_iff_forall_isCompact hs]
   intro K hK1 hK2
+  have HU := hu K hK1 hK2
+  obtain ⟨u, hu1, hu2⟩ := HU
+  apply tendstoUniformlyOn_tsum hu1
+  intro n x hx
+  apply hu2 n ⟨x, hx⟩
+  filter_upwards
+  intro t r hr
+  apply HasDerivAt.sum
+  intro q hq
+  apply HasDerivWithinAt.hasDerivAt
+  apply DifferentiableWithinAt.hasDerivWithinAt
+  apply (hf2 q ⟨r, hr⟩).differentiableWithinAt
+  exact IsOpen.mem_nhds hs hr
+  apply IsOpen.uniqueDiffWithinAt hs hx
 
+theorem aut_contDiffOn (d : ℤ) (k : ℕ) : ContDiffOn ℂ k (fun z : ℂ => 1 / (z - d))
+    {z : ℂ | 0 < z.im} := by
+  simp only [one_div, Opens.coe_mk]
+  apply ContDiffOn.inv
+  apply ContDiffOn.sub
+  apply contDiffOn_id
+  apply contDiffOn_const
+  intro x hx
+  have := upper_ne_int ⟨x, hx⟩ (-d)
+  norm_cast at *
+  simp at *
+  rw [add_neg_eq_zero] at this
+  rw [sub_eq_zero]
+  convert this
 
+theorem iter_div_aut_add (d : ℤ) (k : ℕ) :
+    EqOn (iteratedDerivWithin k (fun z : ℂ => 1 / (z - d) + 1 / (z + d)) {z : ℂ | 0 < z.im})
+      ((fun t : ℂ => (-1) ^ k * k ! * (1 / (t - d) ^ (k + 1))) + fun t : ℂ =>
+        (-1) ^ k * k ! * (1 / (t + d) ^ (k + 1))) {z : ℂ | 0 < z.im} := by
+  intro x hx
+  have h1 :
+    (fun z : ℂ => 1 / (z - d) + 1 / (z + d)) =
+      (fun z : ℂ => 1 / (z - d)) + fun z : ℂ => 1 / (z + d) :=
+    by rfl
+  rw [h1]
+  simp only [Opens.coe_mk, one_div, Pi.add_apply] at *
+  rw [iteratedDerivWithin_add hx ?_]
+  · have h2 := aut_iter_deriv d k hx
+    have h3 := aut_iter_deriv' d k hx
+    simp at *
+    rw [h2, h3]
+  · have h4 := aut_contDiffOn d k
+    simp at h4
+    apply h4
+    exact hx
+  · have h5 := aut_contDiffOn (-d) k
+    simp at h5
+    apply h5
+    exact hx
+  · refine IsOpen.uniqueDiffOn ?_
+    refine isOpen_lt ?_ ?_
+    · fun_prop
+    · fun_prop
+
+theorem summable_iter_aut (k : ℕ) (z : ℍ) :
+    Summable fun n : ℕ+ => iteratedDerivWithin k (fun z : ℂ => 1 / (z - n) + 1 / (z + n))
+      {z : ℂ | 0 < z.im} z :=
+  by
+  have := fun d : ℕ+ => iter_div_aut_add d k z.2
+  simp at *
+  have ht := (summable_congr this).2 ?_
+  norm_cast at *
+  by_cases hk : 1 ≤ k
+  conv =>
+    enter [1]
+    ext b
+    rw [← mul_add]
+  rw [summable_mul_left_iff]
+
+  sorry
+  sorry
+  /- apply Summable.add
+  rw [summable_mul_left_iff]
+  have h1 := lhs_summable_2 z (k + 1)
+  norm_cast at *
+  simp at *
+  apply h1
+  linarith
+  simp only [Ne.def, neg_one_pow_mul_eq_zero_iff, Nat.cast_eq_zero]
+  apply Nat.factorial_ne_zero
+  rw [summable_mul_left_iff]
+  have h2 := lhs_summable_2' z (k + 1)
+  norm_cast at *
+  simp at *
+  apply h2
+  linarith
+  simp only [Ne.def, neg_one_pow_mul_eq_zero_iff, Nat.cast_eq_zero]
+  apply Nat.factorial_ne_zero
+  simp at hk
+  simp_rw [hk]
+  simp
+  simpa using lhs_summable z -/
 
 
 theorem aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ) :
@@ -324,10 +429,15 @@ theorem aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ) :
     apply IH x
   simp_rw [HH]
   simp
-  rw [deriv_tsum_fun']
+  rw [derivWithin_tsum_fun']
   apply tsum_congr
   intro b
   rw [iteratedDerivWithin_succ]
+  refine isOpen_lt ?_ ?_
+  · fun_prop
+  · fun_prop
+  · simpa using x.2
+  intro y hy
   apply IsOpen.uniqueDiffWithinAt upper_half_plane_isOpen x.2
   exact upper_half_plane_isOpen
   exact x.2
