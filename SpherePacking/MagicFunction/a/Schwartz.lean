@@ -23,6 +23,8 @@ open MagicFunction MagicFunction.a MagicFunction.a.RadialFunctions MagicFunction
 
 open Set Complex Real SchwartzMap
 
+open scoped ContDiff
+
 namespace MagicFunction.a.SchwartzProperties
 
 section Smooth
@@ -33,19 +35,19 @@ There is no reference for this in the blueprint. The idea is to use integrabilit
 inside the integrals.
 -/
 
-theorem I₁'_smooth' : ContDiff ℝ (@WithTop.some ℕ∞ ⊤) MagicFunction.a.RealIntegrals.I₁' := by
+theorem I₁'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₁' := by
   sorry
 
-theorem I₂'_smooth' : ContDiff ℝ (@WithTop.some ℕ∞ ⊤) MagicFunction.a.RealIntegrals.I₂' := by
+theorem I₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₂' := by
   sorry
 
-theorem I₃'_smooth' : ContDiff ℝ (@WithTop.some ℕ∞ ⊤) MagicFunction.a.RealIntegrals.I₃' := by
+theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' := by
   sorry
 
-theorem I₄'_smooth' : ContDiff ℝ (@WithTop.some ℕ∞ ⊤) MagicFunction.a.RealIntegrals.I₄' := by
+theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' := by
   sorry
 
-theorem smooth' :  ContDiff ℝ (@WithTop.some ℕ∞ ⊤) MagicFunction.a.RealIntegrals.a' :=
+theorem smooth' :  ContDiff ℝ ∞ RealIntegrals.a' :=
   ((I₁'_smooth'.add I₂'_smooth').add I₃'_smooth').add I₄'_smooth'
 
 end Smooth
@@ -58,23 +60,23 @@ We follow the proof of Proposition 7.8 in the blueprint.
 -/
 
 theorem I₁'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-  ‖x‖ ^ k * ‖iteratedFDeriv ℝ n MagicFunction.a.RealIntegrals.I₁' x‖ ≤ C := by
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₁' x‖ ≤ C := by
   sorry
 
 theorem I₂'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-  ‖x‖ ^ k * ‖iteratedFDeriv ℝ n MagicFunction.a.RealIntegrals.I₂' x‖ ≤ C := by
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₂' x‖ ≤ C := by
   sorry
 
 theorem I₃'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-  ‖x‖ ^ k * ‖iteratedFDeriv ℝ n MagicFunction.a.RealIntegrals.I₃' x‖ ≤ C := by
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₃' x‖ ≤ C := by
   sorry
 
 theorem I₄'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-  ‖x‖ ^ k * ‖iteratedFDeriv ℝ n MagicFunction.a.RealIntegrals.I₄' x‖ ≤ C := by
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₄' x‖ ≤ C := by
   sorry
 
 theorem decay' :  ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n MagicFunction.a.RealIntegrals.a' x‖ ≤ C := by
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.a' x‖ ≤ C := by
   intro k n
   obtain ⟨C₁, h₁⟩ := I₁'_decay' k n
   obtain ⟨C₂, h₂⟩ := I₂'_decay' k n
@@ -129,7 +131,7 @@ end MagicFunction.a.SchwartzProperties
 
 noncomputable section SchwartzMap
 
-namespace MagicFunction
+namespace MagicFunction.FourierEigenfunctions
 
 /-- The radial component of the +1-Fourier Eigenfunction of Viazovska's Magic Function. -/
 @[simps!]
@@ -143,6 +145,6 @@ def a' : 𝓢(ℝ, ℂ) where
 def a : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := schwartzMap_multidimensional_of_schwartzMap_real
   (EuclideanSpace ℝ (Fin 8)) a'
 
-end MagicFunction
+end MagicFunction.FourierEigenfunctions
 
 end SchwartzMap
