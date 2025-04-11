@@ -383,7 +383,17 @@ theorem summable_iter_aut (k : ℕ) (z : ℍ) :
     ext b
     rw [← mul_add]
   rw [summable_mul_left_iff]
+  apply Summable.add
+  have := summable_hammerTime_nat (fun n : ℕ => (((z : ℂ) - n) ^ (k + 1))) (k+1) (by sorry) ?_
+  apply this.subtype
+  norm_cast
+  simp_rw [← inv_pow]
+  have : (fun (n : ℕ) ↦ (↑(n ^ (k + 1)) : ℂ)⁻¹) = fun (n : ℕ) ↦ (↑(n : ℂ)⁻¹)  ^ (k + 1) := by sorry
 
+
+
+
+  --have h1 := lhs_summable z (k + 1) hk
   sorry
   sorry
   /- apply Summable.add

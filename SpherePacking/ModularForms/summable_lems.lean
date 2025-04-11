@@ -270,6 +270,15 @@ lemma summable_hammerTime  {α : Type} [NormedField α] [CompleteSpace α] (f  :
   refine Real.rpow_neg ?_ a
   exact abs_nonneg (b : ℝ)
 
+lemma summable_hammerTime_nat  {α : Type} [NormedField α] [CompleteSpace α] (f : ℕ → α) (a : ℝ) (hab : 1 < a)
+    (hf : (fun n => (f n)⁻¹) =O[cofinite] fun n => (|(n : ℝ)| ^ (a : ℝ))⁻¹) :
+    Summable fun n => (f n)⁻¹ := by
+  apply summable_of_isBigO _ hf
+  have := Real.summable_nat_rpow_inv.mpr hab
+  apply this.congr
+  intro b
+  simp
+
 
 lemma AA (f g e : ℤ → ℝ) (hf : f =O[cofinite] g) (h : e =O[cofinite] f) : e =O[cofinite] g := by
   exact Asymptotics.IsBigO.trans h hf
@@ -351,6 +360,23 @@ lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻
     norm_cast
     rw [Int.abs_eq_natAbs]
     rfl
+
+lemma Asymptotics.IsBigO.zify {α β: Type*} [Norm α] [Norm β] {f : ℤ → α} {g : ℤ → β} (hf : f =O[cofinite] g) :
+    (fun (n : ℕ) => f n) =O[cofinite] fun n => g n := by
+  rw [@isBigO_iff] at *
+  obtain ⟨C, hC⟩ := hf
+  use C
+  rw [Int.cofinite_eq] at hC
+  rw [Nat.cofinite_eq_atTop]
+  apply Filter.Eventually.natCast_atTop  (p := fun n => ‖f n‖ ≤ C * ‖g n‖)
+  simp_all only [eventually_sup, eventually_atBot, eventually_atTop, ge_iff_le]
+
+
+lemma linear_bigO_nat (m : ℕ) (z : ℍ) : (fun (n : ℕ) => ((m : ℂ) * z + n)⁻¹) =O[cofinite]
+    fun n => (|(n : ℝ)|⁻¹)  := by
+  have := linear_bigO (m : ℤ) z
+  apply this.zify
+
 
 lemma linear_bigO' (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((n : ℂ) * z + m)⁻¹) =O[cofinite]
     fun n => (|(n : ℝ)|⁻¹)  := by
