@@ -372,7 +372,7 @@ lemma Asymptotics.IsBigO.zify {α β: Type*} [Norm α] [Norm β] {f : ℤ → α
   simp_all only [eventually_sup, eventually_atBot, eventually_atTop, ge_iff_le]
 
 
-lemma linear_bigO_nat (m : ℕ) (z : ℍ) : (fun (n : ℕ) => ((m : ℂ) * z + n)⁻¹) =O[cofinite]
+lemma linear_bigO_nat (m : ℤ) (z : ℍ) : (fun (n : ℕ) => ((m : ℂ) * z + n)⁻¹) =O[cofinite]
     fun n => (|(n : ℝ)|⁻¹)  := by
   have := linear_bigO (m : ℤ) z
   apply this.zify

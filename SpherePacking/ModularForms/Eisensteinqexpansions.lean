@@ -374,7 +374,7 @@ theorem summable_iter_aut (k : ℕ) (z : ℍ) :
       {z : ℂ | 0 < z.im} z :=
   by
   have := fun d : ℕ+ => iter_div_aut_add d k z.2
-  simp at *
+  simp only [Int.cast_natCast, one_div, Pi.add_apply] at *
   have ht := (summable_congr this).2 ?_
   norm_cast at *
   by_cases hk : 1 ≤ k
@@ -384,39 +384,101 @@ theorem summable_iter_aut (k : ℕ) (z : ℍ) :
     rw [← mul_add]
   rw [summable_mul_left_iff]
   apply Summable.add
-  have := summable_hammerTime_nat (fun n : ℕ => (((z : ℂ) - n) ^ (k + 1))) (k+1) (by sorry) ?_
-  apply this.subtype
-  norm_cast
-  simp_rw [← inv_pow]
-  have : (fun (n : ℕ) ↦ (↑(n ^ (k + 1)) : ℂ)⁻¹) = fun (n : ℕ) ↦ (↑(n : ℂ)⁻¹)  ^ (k + 1) := by sorry
-
-
-
-
-  --have h1 := lhs_summable z (k + 1) hk
-  sorry
-  sorry
-  /- apply Summable.add
-  rw [summable_mul_left_iff]
-  have h1 := lhs_summable_2 z (k + 1)
-  norm_cast at *
-  simp at *
-  apply h1
-  linarith
-  simp only [Ne.def, neg_one_pow_mul_eq_zero_iff, Nat.cast_eq_zero]
-  apply Nat.factorial_ne_zero
-  rw [summable_mul_left_iff]
-  have h2 := lhs_summable_2' z (k + 1)
-  norm_cast at *
-  simp at *
-  apply h2
-  linarith
-  simp only [Ne.def, neg_one_pow_mul_eq_zero_iff, Nat.cast_eq_zero]
-  apply Nat.factorial_ne_zero
-  simp at hk
+  · have := summable_hammerTime_nat (fun n : ℕ => (((z : ℂ) - n) ^ (k + 1))) (k+1) (by sorry) ?_
+    apply this.subtype
+    norm_cast
+    simp_rw [← inv_pow]
+    have : (fun (n : ℕ) ↦ (↑(n ^ (k + 1)) : ℝ)⁻¹) = fun (n : ℕ) ↦ (↑(n : ℝ)⁻¹)  ^ (k + 1) := by sorry
+    conv =>
+      enter [3]
+      rw [this]
+    apply Asymptotics.IsBigO.pow
+    have hl := linear_bigO_nat (-1) z
+    conv =>
+      enter [2]
+      intro x
+      rw [sub_eq_add_neg]
+    apply Asymptotics.IsBigO.of_abs_right
+    simp only [Nat.cast_pow, inv_pow, Int.reduceNeg, Int.cast_neg, Int.cast_one, neg_mul, one_mul,
+      Nat.abs_cast, Asymptotics.isBigO_abs_right] at *
+    have hl2 := Asymptotics.IsBigO.neg_left hl
+    apply hl2.congr_left
+    intro n
+    rw [@neg_inv]
+    congr
+    ring
+  · have := summable_hammerTime_nat (fun n : ℕ => (((z : ℂ) + n) ^ (k + 1))) (k+1) (by sorry) ?_
+    apply this.subtype
+    norm_cast
+    simp_rw [← inv_pow]
+    have : (fun (n : ℕ) ↦ (↑(n ^ (k + 1)) : ℝ)⁻¹) = fun (n : ℕ) ↦ (↑(n : ℝ)⁻¹)  ^ (k + 1) := by sorry
+    conv =>
+      enter [3]
+      rw [this]
+    apply Asymptotics.IsBigO.pow
+    have hl := linear_bigO_nat 1 z
+    apply Asymptotics.IsBigO.of_abs_right
+    simp only [Nat.cast_pow, inv_pow, Int.cast_one, one_mul, Nat.abs_cast,
+      Asymptotics.isBigO_abs_right] at *
+    exact hl
+  simp only [ne_eq, mul_eq_zero, pow_eq_zero_iff', neg_eq_zero, one_ne_zero, false_and,
+    Nat.cast_eq_zero, false_or]
+  exact Nat.factorial_ne_zero k
+  simp only [not_le, Nat.lt_one_iff] at hk
   simp_rw [hk]
+  simp only [pow_zero, Nat.factorial_zero, Nat.cast_one, mul_one, zero_add, pow_one, one_mul]
+  simpa using lhs_summable z
+
+
+theorem aut_bound_on_comp (K : Set ℍ) (hk2 : IsCompact K) (k : ℕ) :
+    ∃ u : ℕ+ → ℝ,
+      Summable u ∧
+        ∀ (n : ℕ+) (s : K),
+          Complex.abs
+              (deriv
+                (fun z : ℂ =>
+                  iteratedDerivWithin k (fun z : ℂ => (z - (n : ℂ))⁻¹ + (z + n)⁻¹) {z : ℂ | 0 < z.im} z)
+                s) ≤
+            u n :=
+  by
+  by_cases h1 : Set.Nonempty K
+  have H := UpperHalfPlane.subset_verticalStrip_of_isCompact hk2
+  obtain ⟨A, B, hB, hAB⟩ := H
+  refine'
+    ⟨fun a : ℕ+ => 2 * Complex.abs ((k + 1)! / rfunct (lbpoint A B hB) ^ (k + 2)) * ((a : ℝ) ^ ((k : ℤ) +2))⁻¹,
+      _, _⟩
+  exact upper_bnd_summable A B hB k
+  intro n s
+  have hr := der_of_iter_der ⟨s.1, hk s.2⟩ k n
+  simp  at *
+  rw [hr]
+  apply le_trans (Complex.abs.add_le _ _)
+  simp_rw [mul_assoc]
+  rw [two_mul]
+  apply add_le_add
+  have he1 := sub_bound ⟨s.1, hk s.2⟩ A B hB ?_ k n
+  simp_rw [div_eq_mul_inv] at *
+  simp at *
+  norm_cast at *
+  simp at *
+  apply hAB
   simp
-  simpa using lhs_summable z -/
+  have he1 := add_bound ⟨s.1, hk s.2⟩ A B hB ?_ k n
+  simp_rw [div_eq_mul_inv] at *
+  simp  at *
+  norm_cast at *
+
+  apply hAB
+  simp  at *
+  refine' ⟨fun _ => 0, _, _⟩
+  apply summable_zero
+  intro n
+  rw [not_nonempty_iff_eq_empty] at h1
+  intro r
+  exfalso
+  have hr := r.2
+  simp_rw [h1] at hr
+  simp at hr
 
 
 theorem aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ) :
@@ -448,7 +510,12 @@ theorem aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ) :
   · fun_prop
   · simpa using x.2
   intro y hy
-  apply IsOpen.uniqueDiffWithinAt upper_half_plane_isOpen x.2
+  simpa using summable_iter_aut k ⟨y, hy⟩
+  intro K hK hK2
+  sorry
+  sorry
+
+/-   apply IsOpen.uniqueDiffWithinAt upper_half_plane_isOpen x.2
   exact upper_half_plane_isOpen
   exact x.2
   intro y hy
@@ -458,7 +525,7 @@ theorem aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ) :
   intro n r
   apply diff_at_aux r k n
   apply IsOpen.uniqueDiffWithinAt upper_half_plane_isOpen
-  exact x.2
+  exact x.2 -/
 
 theorem aux_iter_der_tsum (k : ℕ) (hk : 1 ≤ k) (x : ℍ) :
     iteratedDerivWithin k
