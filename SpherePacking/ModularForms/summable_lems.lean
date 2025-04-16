@@ -280,9 +280,6 @@ lemma summable_hammerTime_nat  {α : Type} [NormedField α] [CompleteSpace α] (
   simp
 
 
-lemma AA (f g e : ℤ → ℝ) (hf : f =O[cofinite] g) (h : e =O[cofinite] f) : e =O[cofinite] g := by
-  exact Asymptotics.IsBigO.trans h hf
-
 /- lemma chris (f g e : ℤ → ℝ) (hf : f =O[cofinite] g) (h : (fun x => ‖e x‖) ≤ᶠ[cofinite] f) : e =O[cofinite] g := by
   apply Asymptotics.IsBigO.of_norm_eventuallyLE
   rw [@Asymptotics.isBigO_iff'] at hf
@@ -370,6 +367,13 @@ lemma Asymptotics.IsBigO.zify {α β: Type*} [Norm α] [Norm β] {f : ℤ → α
   rw [Nat.cofinite_eq_atTop]
   apply Filter.Eventually.natCast_atTop  (p := fun n => ‖f n‖ ≤ C * ‖g n‖)
   simp_all only [eventually_sup, eventually_atBot, eventually_atTop, ge_iff_le]
+
+
+lemma Asymptotics.IsBigO.of_neg {α β: Type*} [Norm α] [Norm β] {f : ℤ → α} {g : ℤ → β}
+    (hf : f =O[cofinite] g) : (fun n => f (-n)) =O[cofinite] fun n => g (-n) := by
+  rw [← Equiv.neg_apply]
+  apply Asymptotics.IsBigO.comp_tendsto hf
+  refine Injective.tendsto_cofinite (Equiv.injective (Equiv.neg ℤ))
 
 
 lemma linear_bigO_nat (m : ℤ) (z : ℍ) : (fun (n : ℕ) => ((m : ℂ) * z + n)⁻¹) =O[cofinite]

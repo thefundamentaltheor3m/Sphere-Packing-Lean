@@ -291,7 +291,7 @@ theorem deriv_tsum_fun' {α : Type _} (f : α → ℂ → ℂ) {s : Set ℂ}
 theorem derivWithin_tsum_fun' {α : Type _} (f : α → ℂ → ℂ) {s : Set ℂ}
     (hs : IsOpen s) (x : ℂ) (hx : x ∈ s) (hf : ∀ y ∈ s, Summable fun n : α => f n y)
     (hu :∀ K ⊆ s, IsCompact K →
-          ∃ u : α → ℝ, Summable u ∧ ∀ n (k : K), ‖ derivWithin (f n) s k‖ ≤ u n)
+          ∃ u : α → ℝ, Summable u ∧ ∀ n (k : K), ‖derivWithin (f n) s k‖ ≤ u n)
     (hf2 : ∀ n (r : s), DifferentiableAt ℂ (f n) r) :
     derivWithin (fun z => ∑' n : α, f n z) s x = ∑' n : α, derivWithin (fun z => f n z) s x := by
   apply HasDerivWithinAt.derivWithin
@@ -384,7 +384,8 @@ theorem summable_iter_aut (k : ℕ) (z : ℍ) :
     rw [← mul_add]
   rw [summable_mul_left_iff]
   apply Summable.add
-  · have := summable_hammerTime_nat (fun n : ℕ => (((z : ℂ) - n) ^ (k + 1))) (k+1) (by sorry) ?_
+  ·
+    have := summable_hammerTime_nat (fun n : ℕ => (((z : ℂ) - n) ^ (k + 1))) (k+1) (by sorry) ?_
     apply this.subtype
     norm_cast
     simp_rw [← inv_pow]
@@ -394,6 +395,7 @@ theorem summable_iter_aut (k : ℕ) (z : ℍ) :
       rw [this]
     apply Asymptotics.IsBigO.pow
     have hl := linear_bigO_nat (-1) z
+
     conv =>
       enter [2]
       intro x
@@ -430,20 +432,34 @@ theorem summable_iter_aut (k : ℕ) (z : ℍ) :
   simpa using lhs_summable z
 
 
-theorem aut_bound_on_comp (K : Set ℍ) (hk2 : IsCompact K) (k : ℕ) :
+theorem aut_bound_on_comp (K : Set {z : ℂ | 0 < z.im}) (hk2 : IsCompact K) (k : ℕ) :
     ∃ u : ℕ+ → ℝ,
       Summable u ∧
         ∀ (n : ℕ+) (s : K),
-          Complex.abs
-              (deriv
-                (fun z : ℂ =>
-                  iteratedDerivWithin k (fun z : ℂ => (z - (n : ℂ))⁻¹ + (z + n)⁻¹) {z : ℂ | 0 < z.im} z)
-                s) ≤
-            u n :=
-  by
+        ‖(derivWithin (fun z : ℂ =>
+        iteratedDerivWithin k (fun z : ℂ => (z - (n : ℂ))⁻¹ + (z + n)⁻¹) K z) K s)‖ ≤
+            u n := by
   by_cases h1 : Set.Nonempty K
   have H := UpperHalfPlane.subset_verticalStrip_of_isCompact hk2
   obtain ⟨A, B, hB, hAB⟩ := H
+  let zAB : ℍ :=   ⟨⟨A, B⟩, by simp [hB]⟩
+  refine ⟨fun a : ℕ+ => 2 * ‖((k + 1)! / r (zAB) ^ (k + 2)) * ((a : ℝ) ^ ((k : ℤ) +2))⁻¹‖,
+      ?_, ?_⟩
+  sorry
+  intro n s
+  rw [← iteratedDerivWithin_succ]
+  have HT := iter_div_aut_add n (k+1)
+  sorry
+  refine' ⟨fun _ => 0, _, _⟩
+  apply summable_zero
+  intro n
+  rw [not_nonempty_iff_eq_empty] at h1
+  intro r
+  exfalso
+  have hr := r.2
+  simp_rw [h1] at hr
+  simp at hr
+/-   obtain ⟨A, B, hB, hAB⟩ := H
   refine'
     ⟨fun a : ℕ+ => 2 * Complex.abs ((k + 1)! / rfunct (lbpoint A B hB) ^ (k + 2)) * ((a : ℝ) ^ ((k : ℤ) +2))⁻¹,
       _, _⟩
@@ -478,12 +494,12 @@ theorem aut_bound_on_comp (K : Set ℍ) (hk2 : IsCompact K) (k : ℕ) :
   exfalso
   have hr := r.2
   simp_rw [h1] at hr
-  simp at hr
+  simp at hr -/
 
 
 theorem aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ) :
-    iteratedDerivWithin k (fun z : ℂ => ∑' n : ℕ+, (1 / (z - n) + 1 / (z + n))) {z : ℂ | 0 < z.im}  x =
-      ∑' n : ℕ+, iteratedDerivWithin k (fun z : ℂ => 1 / (z - n) + 1 / (z + n)) {z : ℂ | 0 < z.im}  x :=
+    iteratedDerivWithin k (fun z : ℂ => ∑' n : ℕ+, (1 / (z - n) + 1 / (z + n))) {z : ℂ | 0 < z.im} x =
+      ∑' n : ℕ+, iteratedDerivWithin k (fun z : ℂ => 1 / (z - n) + 1 / (z + n)) {z : ℂ | 0 < z.im} x :=
   by
   induction' k with k IH generalizing x
   simp only [iteratedDerivWithin_zero]
