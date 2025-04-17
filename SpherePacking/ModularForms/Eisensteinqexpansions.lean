@@ -1300,7 +1300,7 @@ theorem q_exp_iden'' (k : ℕ) (hk : 2 ≤ k) :
   congr
   ring
 
-theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
+theorem q_exp_iden2 (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
     ∑' d : ℤ, 1 / ((z : ℂ) + d) ^ k =
       (-2 * ↑π * Complex.I) ^ k / (k - 1)! * ∑' n : ℕ+, n ^ ((k - 1) ) * Complex.exp (2 * ↑π * Complex.I * z * n) :=
   by
@@ -1597,7 +1597,7 @@ theorem tsum_sigma_eqn2 {k : ℕ} (z : ℍ) :
   have := @Nat.sum_divisorsAntidiagonal' ℂ _ (fun (x : ℕ) => fun (y : ℕ) =>
     (x : ℂ) ^ (k : ℕ) * Complex.exp (2 * ↑π * Complex.I * z * x * y)) n
   simp at this
-
+  sorry
   sorry
 /-   simp_rw [sigma_eq_sum_div',sum_sigma_fn_eq z]
   apply tsum_congr
