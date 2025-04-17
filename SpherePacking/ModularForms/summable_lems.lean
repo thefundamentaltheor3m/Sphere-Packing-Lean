@@ -85,7 +85,63 @@ theorem int_tsum_pNat {α : Type*} [UniformSpace α] [CommRing α]  [ IsUniformA
 /- This is from the mod forms repo -/
 theorem lhs_summable (z : ℍ) : Summable fun n : ℕ+ => 1 / ((z : ℂ) - n) + 1 / (z + n) := by sorry
 
+theorem int_nat_sum {α : Type*} [AddCommGroup α] [UniformSpace α] [ IsUniformAddGroup α]  [CompleteSpace α]
+  (f : ℤ → α) : Summable f → Summable fun x : ℕ => f x :=
+  by
+  have : IsCompl (Set.range (Int.ofNat : ℕ → ℤ)) (Set.range Int.negSucc) :=
+    by
+    constructor
+    · rw [disjoint_iff_inf_le]
+      rintro _ ⟨⟨i, rfl⟩, ⟨j, ⟨⟩⟩⟩
+    · rw [codisjoint_iff_le_sup]
+      rintro (i | j) _
+      exacts [Or.inl ⟨_, rfl⟩, Or.inr ⟨_, rfl⟩]
+  intro h
+  have H:= @summable_subtype_and_compl _ _ _ _ _ f _ (Set.range (Int.ofNat : ℕ → ℤ))
+  simp at H
+  rw [← H] at h
+  cases' h with h_left h_right
+  rw [← (Equiv.ofInjective (Int.ofNat : ℕ → ℤ) Nat.cast_injective).symm.summable_iff]
+  apply Summable.congr h_left
+  intro b
+  simp
+  apply congr_arg
+  exact Eq.symm (Equiv.apply_ofInjective_symm Nat.cast_injective b)
 
+theorem sum_int_even {α : Type*} [UniformSpace α] [CommRing α]  [IsUniformAddGroup α] [CompleteSpace α]
+  [T2Space α] (f : ℤ → α) (hf : ∀ n : ℤ, f n = f (-n)) (hf2 : Summable f) :
+    ∑' n, f n = f 0 + 2 * ∑' n : ℕ+, f n :=
+  by
+  sorry
+  /- have hpos : HasSum (fun n : ℕ => f n) (f 0 + ∑' n : ℕ+, f n) :=
+    by
+    rw [← _root_.Equiv.pnatEquivNat.hasSum_iff]
+    simp_rw [Equiv.pnatEquivNat] at *
+    simp at *
+    have hf3 : Summable ((fun n : ℕ => f (↑n + 1)) ∘ PNat.natPred) :=
+      by
+      have hs : Summable fun n : ℕ+ => f n := by apply (int_nat_sum f hf2).subtype
+      apply Summable.congr hs
+      intro b; simp; congr; simp
+    rw [Summable.hasSum_iff hf3]
+    congr
+    funext
+    simp
+    congr
+    norm_cast
+    simp
+  have hneg : HasSum (fun n : ℕ => f (-n.succ)) (∑' n : ℕ+, f n) :=
+    by
+    have h1 : (fun n : ℕ => f (-↑n.succ)) = fun n : ℕ => f ↑n.succ :=
+      by
+      funext
+      apply hf
+    rw [h1]
+    convert hpos
+
+  have := (HasSum.of_nat_of_neg_add_one hpos hneg).tsum_eq
+  rw [this]
+  ring -/
 
 lemma neg_div_neg_aux ( a b : ℂ) : -a/b = a / -b := by
   ring
@@ -730,12 +786,6 @@ lemma sum_range_zero (f : ℤ → ℂ) (n : ℕ) : ∑ m ∈ Finset.range (n+1),
   rw [add_comm]
   simp
 
-
-/-This is from the modforms repo, so no need to prove it. -/
-theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
-    ∑' d : ℤ, 1 / ((z : ℂ) + d) ^ k =
-      (-2 * ↑π * Complex.I) ^ k / (k - 1)! *
-      ∑' n : ℕ+, n ^ ((k - 1) ) * Complex.exp (2 * ↑π * Complex.I * z * n) := sorry
 
 /-This is straight from the mod forms repo-/
 theorem tsum_sigma_eqn {k : ℕ} (z : ℍ) :
