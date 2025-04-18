@@ -132,10 +132,9 @@ theorem q_exp_iden_2 (k : ℕ) (hk : 3 ≤ k) (hk2 : Even k) (z : ℍ) :
     simp  [zero_add, mul_eq_mul_left_iff,  one_ne_zero]
     norm_cast
     simp only [PNat.pow_coe, Nat.cast_pow]
-    rw [zeta_nat_eq_tsum_of_gt_one hkk, ← tsum_pnat_eq_tsum_succ4]
+    rw [zeta_nat_eq_tsum_of_gt_one hkk, ← tsum_pNat _ (by simp; omega)]
     simp only [CharP.cast_eq_zero, one_div, right_eq_add, inv_eq_zero, pow_eq_zero_iff', ne_eq,
       true_and]
-    exact Nat.ne_zero_of_lt hk
     intro n
     simp only [Int.cast_neg, inv_inj]
     rw [Even.neg_pow hk2]
