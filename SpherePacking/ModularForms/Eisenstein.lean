@@ -1768,7 +1768,7 @@ lemma ModularForm.dimension_level_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Ev
     Nat.floor ((k : ℚ)/ 12) else Nat.floor ((k : ℚ) / 12) + 1 := by
   apply dim_modforms_lvl_one k hk hk2
 
-#print axioms ModularForm.dimension_level_one
+--#print axioms ModularForm.dimension_level_one
 
 
 lemma dim_gen_cong_levels (k : ℤ) (Γ : Subgroup SL(2, ℤ)) (hΓ : Subgroup.index Γ ≠ 0) :
