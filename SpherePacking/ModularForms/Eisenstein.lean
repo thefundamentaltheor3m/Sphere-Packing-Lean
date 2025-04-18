@@ -15,6 +15,7 @@ import SpherePacking.ModularForms.multipliable_lems
 import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.qExpansion_lems
 import SpherePacking.ModularForms.IsCuspForm
+import SpherePacking.ModularForms.Eisensteinqexpansions
 
 -- import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
 
@@ -27,7 +28,6 @@ open ArithmeticFunction
 
 noncomputable section Definitions
 
-def standardcongruencecondition : Fin 2 → ZMod ((1 : ℕ+) : ℕ) := 0
 
 
 
@@ -39,11 +39,15 @@ def standardcongruencecondition : Fin 2 → ZMod ((1 : ℕ+) : ℕ) := 0
 def E₄ : ModularForm (CongruenceSubgroup.Gamma ↑1) 4 :=
   (1/2 : ℂ) • eisensteinSeries_MF (by norm_num) standardcongruencecondition /-they need  1/2 for the
     normalization to match up (since the sum here is taken over coprime integers).-/
-def E (k : ℤ) (hk : 3 ≤ k) : ModularForm (CongruenceSubgroup.Gamma ↑1) k :=
-  (1/2 : ℂ) • eisensteinSeries_MF hk standardcongruencecondition /-they need  1/2 for the
-    normalization to match up (since the sum here is taken over coprime integers).-/
+
 def E₆ : ModularForm (CongruenceSubgroup.Gamma ↑1) 6 :=
   (1/2 : ℂ) • eisensteinSeries_MF (by norm_num) standardcongruencecondition
+
+
+lemma E4_eq : E₄ = E 4 (by norm_num) := rfl
+
+lemma E6_eq : E₆ = E 6 (by norm_num) := rfl
+
 
 lemma E4_apply (z : ℍ) : E₄ z = E 4 (by norm_num) z := rfl
 
@@ -806,13 +810,6 @@ lemma auxasdf (n : ℕ) : (PowerSeries.coeff ℂ n) ((qExpansion 1 E₄) * (qExp
   apply PowerSeries.coeff_mul
 
 
-/-This result is already proven in the modular forms repo and being PRed (slowly) into mathlib, so
-we can use it freely here. -/
-lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) :
-    (E k hk) z = 1 +
-        (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
-        ∑' n : ℕ+, sigma (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by sorry
-
 lemma sigma_bound (k n : ℕ) : sigma k n ≤ n ^ (k + 1) := by
   rw [ArithmeticFunction.sigma_apply]
   have :  ∑ d ∈ n.divisors, d ^ k ≤  ∑ d ∈ n.divisors, n ^ k := by
@@ -828,16 +825,78 @@ lemma sigma_bound (k n : ℕ) : sigma k n ≤ n ^ (k + 1) := by
   simp
   exact Nat.card_divisors_le_self n
 
+def Ek_q (k : ℕ) : ℕ → ℂ :=  fun m => if m = 0 then 1 else
+    (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m)
 
-lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff ℂ m) =
-    fun m => if m = 0 then 1 else (240 : ℂ) * (sigma 3 m) := by
-  let c : ℕ → ℂ := fun m => if m = 0 then 1 else 240 * (sigma 3 m)
-  have h := q_exp_unique 1 c E₄ ?_
-  rw [← h]
+lemma qexpsummable (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
+  Summable fun m ↦ Ek_q k m • 𝕢 ↑1 ↑z ^ m := by
+  rw [← summable_nat_add_iff 1]
+  simp [Ek_q, Function.Periodic.qParam]
+  conv =>
+    enter [1]
+    ext m
+    rw [mul_assoc]
+  apply Summable.mul_left
+  rw [sigma]
+  simp
+  apply Summable.of_norm
+  have hs : Summable fun a : ℕ ↦ ((a + 1) ^ k) * ‖cexp (2 * ↑π * Complex.I * ↑z) ^ (a + 1)‖ := by
+    conv =>
+      enter [1]
+      ext a
+      rw [show ((a : ℝ) + 1) = ((a + 1) : ℕ) by simp]
+
+    have := summable_nat_add_iff 1
+        (f := fun a : ℕ ↦ (((a) : ℝ) ^ k) * ‖cexp (2 * ↑π * Complex.I * ↑z) ^ (a)‖)
+    simp at *
+    rw [this]
+    have ht : ‖cexp (2 * ↑π * Complex.I * ↑z)‖ < 1 := by
+      exact norm_exp_two_pi_I_lt_one z
+    have := summable_norm_pow_mul_geometric_of_norm_lt_one k ht
+    simp at *
+    apply this
+  apply Summable.of_nonneg_of_le _ _ hs
+  simp
+  intro b
+  simp at *
+  have hr : ‖∑ x ∈ (b + 1).divisors, (x : ℂ) ^ (k - 1)‖ ≤
+    ‖∑ x ∈ (b + 1).divisors, ((b + 1) : ℂ) ^ (k - 1)‖ := by
+    apply le_trans (norm_sum_le (b + 1).divisors _ )
+    simp only [norm_pow, Complex.norm_natCast, Finset.sum_const, nsmul_eq_mul, Complex.norm_mul]
+    have h2 :  ∑ x ∈ (b + 1).divisors, (x : ℝ) ^ (k - 1) ≤
+      ∑ x ∈ (b + 1).divisors, (b + 1) ^ (k - 1) := by
+      norm_cast
+      apply Finset.sum_le_sum
+      intro i hi
+      simp at *
+      refine Nat.pow_le_pow_left ?_ (k - 1)
+      apply Nat.le_of_dvd _ hi
+      omega
+    apply le_trans h2
+    simp only [Finset.sum_const, smul_eq_mul, Nat.cast_mul, Nat.cast_pow, Nat.cast_add,
+      Nat.cast_one, Nat.cast_pos, Finset.card_pos, Nat.nonempty_divisors, ne_eq, Nat.add_eq_zero,
+      one_ne_zero, and_false, not_false_eq_true, mul_le_mul_left]
+    norm_cast
+  apply le_trans hr
+  simp
+  norm_cast
+  nth_rw 2 [show k = 1 + (k - 1) by omega]
+  rw [pow_add]
+  gcongr
+  simp
+  simpa using Nat.card_divisors_le_self (b + 1)
+
+
+lemma Ek_q_exp_zero (k : ℕ) (hk :  3 ≤ (k : ℤ)) (hk2 : Even k) : (qExpansion 1 (E k hk)).coeff ℂ 0 = 1 := by
+  let c : ℕ → ℂ := fun m => if m = 0 then 1 else
+    (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m)
+  have h := q_exp_unique 1 c (E k hk) ?_
+  have hc := congr_fun h 0
+  rw [← hc]
+  simp [c]
   intro z
-  have := E_k_q_expansion 4 (by norm_num) (by exact Nat.even_iff.mpr rfl) z
+  have := E_k_q_expansion k hk hk2 z
   rw [Summable.hasSum_iff]
-  rw [ E4_apply]
   simp at this
   rw [this, tsum_eq_zero_add']
   have V := tsum_pnat_eq_tsum_succ (fun b => c (b) • 𝕢 ↑1 ↑z ^ (b))
@@ -847,28 +906,89 @@ lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff ℂ m) =
   rw [← tsum_mul_left]
   apply tsum_congr
   intro b
-  have Z := riemannZeta_two_mul_nat (k := 2) (by norm_num)
-  simp at Z
-  rw [ show 2 * 2 = (4 : ℂ) by ring] at Z
-  rw [Z]
   ring_nf
-  rw [Complex.I_pow_four ]
-  simp only [inv_pow, bernoulli, bernoulli'_four, Rat.cast_mul, Rat.cast_pow, Rat.cast_neg,
-    Rat.cast_one, Rat.cast_div, Rat.cast_ofNat, mul_inv_rev, inv_div, Nat.factorial,
-    Nat.succ_eq_add_one, Nat.reduceAdd, zero_add, mul_one, Nat.reduceMul, Nat.cast_ofNat, inv_inv,
-    c]
-  have pin : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
   field_simp
-  ring_nf
   congr
   rw [Function.Periodic.qParam]
   rw [← Complex.exp_nsmul]
   congr
   simp
   ring
+  have hr := (summable_nat_add_iff 1 (f := fun n : ℕ ↦ c (n) • 𝕢 (1 : ℝ) ↑z ^ (n)))
+  simp at *
+  rw [hr]
+  have :=  qexpsummable k hk z
+  simp [c, Ek_q] at *
+  apply this
+  have :=  qexpsummable k hk z
+  simp [c, Ek_q] at *
+  apply this
 
-  sorry
-  sorry
+
+lemma Ek_q_exp (k : ℕ) (hk :  3 ≤ (k : ℤ)) (hk2 : Even k) : (fun m => (qExpansion 1 (E k hk)).coeff ℂ m) =
+  fun m => if m = 0 then 1 else
+    (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m) := by
+  let c : ℕ → ℂ := fun m => if m = 0 then 1 else
+      (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m)
+  have h := q_exp_unique 1 c (E k hk) ?_
+  rw [← h]
+  intro z
+  have := E_k_q_expansion k hk hk2 z
+  rw [Summable.hasSum_iff]
+  simp at this
+  rw [this, tsum_eq_zero_add']
+  have V := tsum_pnat_eq_tsum_succ (fun b => c (b) • 𝕢 ↑1 ↑z ^ (b))
+  simp at *
+  rw [← V]
+  simp [c]
+  rw [← tsum_mul_left]
+  apply tsum_congr
+  intro b
+  ring_nf
+  field_simp
+  congr
+  rw [Function.Periodic.qParam]
+  rw [← Complex.exp_nsmul]
+  congr
+  simp
+  ring
+  have hr := (summable_nat_add_iff 1 (f := fun n : ℕ ↦ c (n) • 𝕢 (1 : ℝ) ↑z ^ (n)))
+  simp at *
+  rw [hr]
+  have :=  qexpsummable k hk z
+  simp [c, Ek_q] at *
+  apply this
+  have :=  qexpsummable k hk z
+  simp [c, Ek_q] at *
+  apply this
+
+lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff ℂ m) =
+    fun m => if m = 0 then 1 else (240 : ℂ) * (sigma 3 m) := by
+  have HH := Ek_q_exp 4 (by norm_num) (by exact Nat.even_iff.mpr rfl)
+  rw [E4_eq]
+  simp at *
+  rw [HH]
+  have Z := riemannZeta_two_mul_nat (k := 2) (by norm_num)
+  simp at Z
+  rw [ show 2 * 2 = (4 : ℂ) by ring] at Z
+  rw [Z]
+  ext m
+  simp_all only [inv_div]
+  split
+  next h =>
+    subst h
+    simp_all only
+  next h =>
+    simp_all only [mul_eq_mul_right_iff, Nat.cast_eq_zero]
+    left
+    simp [inv_pow, bernoulli, bernoulli'_four, Rat.cast_mul, Rat.cast_pow, Rat.cast_neg,
+    Rat.cast_one, Rat.cast_div, Rat.cast_ofNat, mul_inv_rev, inv_div, Nat.factorial,
+    Nat.succ_eq_add_one, Nat.reduceAdd, zero_add, mul_one, Nat.reduceMul, Nat.cast_ofNat, inv_inv]
+    ring_nf
+    rw [Complex.I_pow_four ]
+    have pin : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
+    field_simp
+
 
 
 lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff ℂ 0 = 1 := by
@@ -894,43 +1014,28 @@ theorem bernoulli'_six : bernoulli' 6 = 1 / 42 := by
   norm_num [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_zero, h1, h2]
 
 lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff ℂ m) = fun m => if m = 0 then 1 else  -(504 : ℂ) * (sigma 5 m) := by
-  let c : ℕ → ℂ := fun m => if m = 0 then 1 else  -504 * (sigma 5 m)
-  have h := q_exp_unique 1 c E₆ ?_
-  rw [← h]
-  intro z
-  have := E_k_q_expansion 6 (by norm_num) (by exact Nat.even_iff.mpr rfl) z
-  rw [Summable.hasSum_iff]
-  rw [ E6_apply]
-  simp at this
-  rw [this, tsum_eq_zero_add']
-  have V := tsum_pnat_eq_tsum_succ (fun b => c (b) • 𝕢 ↑1 ↑z ^ (b))
+
+  have HH := Ek_q_exp 6 (by norm_num) (by exact Nat.even_iff.mpr rfl)
+  rw [E6_eq]
   simp at *
-  rw [← V]
-  simp [c]
-  rw [← tsum_mul_left]
-  apply tsum_congr
-  intro b
+  rw [HH]
   have Z := riemannZeta_two_mul_nat (k := 3) (by norm_num)
   simp at Z
   rw [ show 2 * 3 = (6 : ℂ) by ring] at Z
   rw [Z]
-  ring_nf
-  rw [Complex.I_pow_six ]
+  ext m
+  simp_all only [inv_div]
+  split
+  rfl
   simp only [inv_pow, bernoulli, bernoulli'_six, one_div, Rat.cast_mul, Rat.cast_pow, Rat.cast_neg,
     Rat.cast_one, Rat.cast_inv, Rat.cast_ofNat, mul_inv_rev, inv_inv, Nat.factorial,
     Nat.succ_eq_add_one, Nat.reduceAdd, zero_add, mul_one, Nat.reduceMul, Nat.cast_ofNat, mul_neg,
-    neg_mul, neg_inj, c]
+    neg_mul, neg_inj]
+  ring_nf
+  rw [Complex.I_pow_six ]
   have pin : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
   field_simp
-  ring_nf
-  congr
-  rw [Function.Periodic.qParam]
-  rw [← Complex.exp_nsmul]
-  congr
-  simp
-  ring
-  sorry
-  sorry
+
 
 lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff ℂ 0 = 1 := by
   simpa using congr_fun E6_q_exp 0
@@ -1133,36 +1238,6 @@ lemma sigma_zero (k : ℕ) : sigma k 0 = 0 := by
   exact rfl
 
 
-lemma Ek_q_exp_zero (k : ℕ) (hk :  3 ≤ (k : ℤ)) (hk2 : Even k) : (qExpansion 1 (E k hk)).coeff ℂ 0 = 1 := by
-  let c : ℕ → ℂ := fun m => if m = 0 then 1 else
-    (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m)
-  have h := q_exp_unique 1 c (E k hk) ?_
-  have hc := congr_fun h 0
-  rw [← hc]
-  simp [c]
-  intro z
-  have := E_k_q_expansion k hk hk2 z
-  rw [Summable.hasSum_iff]
-  simp at this
-  rw [this, tsum_eq_zero_add']
-  have V := tsum_pnat_eq_tsum_succ (fun b => c (b) • 𝕢 ↑1 ↑z ^ (b))
-  simp at *
-  rw [← V]
-  simp [c]
-  rw [← tsum_mul_left]
-  apply tsum_congr
-  intro b
-  ring_nf
-  field_simp
-  congr
-  rw [Function.Periodic.qParam]
-  rw [← Complex.exp_nsmul]
-  congr
-  simp
-  ring
-
-  sorry
-  sorry
 
 variable {α β γ : Type*}
 

@@ -1,5 +1,3 @@
-import Mathlib
-import SpherePacking.ModularForms.summable_lems
 import SpherePacking.ModularForms.Delta
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
@@ -191,42 +189,6 @@ lemma EQ0 (k : ℕ) (z : ℍ) : ∑' (x : Fin 2 → ℤ),
   apply tsum_congr
   intro x
   simp
-
-
-theorem tsum_sigma_eqn2 (k : ℕ) (z : ℍ) :
-    ∑' (c : Fin 2 → ℕ+), (c 0 ^ k : ℂ) * Complex.exp (2 * ↑π * Complex.I * z * c 0 * c 1) =
-      ∑' e : ℕ+, sigma k e * Complex.exp (2 * ↑π * Complex.I * z * e) := by
-  rw [← (piFinTwoEquiv fun _ => ℕ+).symm.tsum_eq]
-  rw [← sigmaAntidiagonalEquivProd.tsum_eq]
-  simp [sigmaAntidiagonalEquivProd, mapdiv]
-  simp_rw [sigma_eq_sum_div']
-  simp
-  rw [tsum_sigma ]
-  apply tsum_congr
-  intro n
-  rw [tsum_fintype]
-  simp
-  have := @Nat.sum_divisorsAntidiagonal' ℂ _ (fun (x : ℕ) => fun (y : ℕ) =>
-    (x : ℂ) ^ (k : ℕ) * Complex.exp (2 * ↑π * Complex.I * z * x * y)) n
-  simp at this
-  have H := Finset.sum_attach ((n : ℕ).divisorsAntidiagonal) (fun (x : ℕ × ℕ) =>
-    (x.1 : ℂ) ^ (k : ℕ) * Complex.exp (2 * ↑π * Complex.I * z * x.1 * x.2))
-  simp at H
-  rw [H]
-  rw [this]
-  rw [Finset.sum_mul ]
-  apply Finset.sum_congr
-  rfl
-  intro i hi
-  simp
-  left
-  congr 1
-  have hni : (n / i : ℕ) * (i : ℂ) = n := by
-    norm_cast
-    simp at *
-    exact Nat.div_mul_cancel hi
-  rw [mul_assoc, hni]
-  exact summable_auxil_1 k z
 
 lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : Fin 2 → ℤ),
     1 / (x 0 * (z : ℂ) + x 1) ^ ↑k = 2 * riemannZeta ↑k +

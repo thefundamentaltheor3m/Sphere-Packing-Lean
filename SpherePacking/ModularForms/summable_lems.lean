@@ -950,6 +950,21 @@ theorem a33 (k : ℕ) (e : ℕ+) (z : ℍ) :
     zero_sub, Real.exp_lt_one_iff, Left.neg_neg_iff]
   positivity
 
+lemma hsum (k : ℕ) (z : ℍ) : Summable fun b : ℕ+ => ∑ i ∈ (b : ℕ).divisors, b ^ k *
+    ‖exp (2 * ↑π * Complex.I * ↑z * b)‖  := by
+    simp
+    have hs := summable_norm_iff.mpr (a33 (k+1) 1 z)
+    apply Summable.of_nonneg_of_le _ _ hs
+    simp only [Nat.cast_pos, Finset.card_pos, Nat.nonempty_divisors, ne_eq, PNat.ne_zero,
+      not_false_eq_true, mul_nonneg_iff_of_pos_left, PNat.pos, pow_pos, norm_nonneg, implies_true]
+    intro b
+    simp only [PNat.val_ofNat, Nat.cast_one, mul_one, Complex.norm_mul, norm_pow, norm_natCast]
+    rw [← mul_assoc]
+    gcongr
+    rw [pow_add, mul_comm]
+    gcongr
+    simpa using Nat.card_divisors_le_self (b : ℕ)
+
 theorem summable_auxil_1 (k : ℕ) (z : ℍ) :
   Summable fun c : (n : ℕ+) × { x // x ∈ (n : ℕ).divisorsAntidiagonal } ↦
   ↑(↑(c.snd) : ℕ × ℕ).1 ^ k *
@@ -970,19 +985,7 @@ theorem summable_auxil_1 (k : ℕ) (z : ℍ) :
     simp
     rw [H b]
     rw [H2 b]
-  have hsum : Summable fun b : ℕ+ => ∑ i ∈ (b : ℕ).divisors, b ^ k *
-    ‖exp (2 * ↑π * Complex.I * ↑z * b)‖  := by
-    simp
-    have hs := summable_norm_iff.mpr (a33 (k+1) 1 z)
-    apply Summable.of_nonneg_of_le _ _ hs
-    simp
-    intro b
-    simp
-    rw [← mul_assoc]
-    gcongr
-    rw [pow_add, mul_comm]
-    gcongr
-    simpa using Nat.card_divisors_le_self (b : ℕ)
+  have hsum := hsum k z
   apply Summable.of_nonneg_of_le _ _ hsum
   · intro b
     apply Finset.sum_nonneg

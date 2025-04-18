@@ -102,7 +102,13 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUn
 /-This is from the modforms repo, so no need to prove it. -/
 theorem series_eql' (z : ℍ) :
     ↑π * Complex.I - 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * z * n) =
-      1 / z + ∑' n : ℕ+, (1 / ((z : ℂ) - n) + 1 / (z + n)) := sorry
+      1 / z + ∑' n : ℕ+, (1 / ((z : ℂ) - n) + 1 / (z + n)) := by
+    have := EisensteinSeries_Identity z
+    rw [this]
+    congr
+    ext n
+    rw [← Complex.exp_nat_mul]
+    ring_nf
 
 theorem tsum_exp_tendsto_zero (z : ℍ) :
     Tendsto (fun x : ℕ+ ↦ 2 / ↑z * 2 * ↑π * Complex.I *
