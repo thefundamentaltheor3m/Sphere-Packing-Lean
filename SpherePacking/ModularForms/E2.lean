@@ -110,6 +110,12 @@ theorem series_eql' (z : ℍ) :
     rw [← Complex.exp_nat_mul]
     ring_nf
 
+theorem extracted_summable (z : ℍ) (n : ℕ+) : Summable fun m : ℕ ↦
+    cexp (2 * ↑π * Complex.I * (-↑↑n / ↑z) * ↑m) := by
+  have A1 := a1 1 1 ⟨ -n / z , pnat_div_upper n z⟩
+  simp at A1
+  apply A1
+
 theorem tsum_exp_tendsto_zero (z : ℍ) :
     Tendsto (fun x : ℕ+ ↦ 2 / ↑z * 2 * ↑π * Complex.I *
     ∑' (n : ℕ), cexp (2 * ↑π * Complex.I * (-↑↑x / ↑z) * ↑n)) atTop (𝓝 (4 * ↑π * Complex.I / ↑z)) := by
@@ -117,7 +123,7 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
   conv =>
     enter [1]
     ext n
-    rw [← tsum_pnat_eq_tsum_succ4, mul_add]
+    rw [← tsum_pnat_eq_tsum_succ4 _ (by apply extracted_summable z n), mul_add]
   simp only [CharP.cast_eq_zero, mul_zero, exp_zero, mul_one, add_zero]
   nth_rw 3 [show  2 / ↑z * 2 * ↑π * Complex.I =  2 / ↑z * 2 * ↑π * Complex.I +  2 / ↑z * 2 * ↑π * Complex.I*0 by ring]
   apply Tendsto.add
@@ -785,7 +791,8 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ,
     ring_nf
   · intro e
     have := a1  2 e z
-    simpa using this
+    simp at *
+    apply this.subtype
 
 /--This we should get from the modular forms repo stuff. Will port these things soon. -/
 lemma E₂_eq (z : UpperHalfPlane) : E₂ z =

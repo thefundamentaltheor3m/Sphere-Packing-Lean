@@ -2397,11 +2397,11 @@ theorem summable_exp_pow (z : ℍ) : Summable fun i : ℕ ↦
 
 /-This is straight from the mod forms repo-/
 theorem a1 (k : ℕ) (e : ℕ+) (z : ℍ) :
-    Summable fun c : ℕ+ => (e : ℂ) ^ (k - 1) * exp (2 * ↑π * Complex.I * ↑z * e * c) := by
+    Summable fun c : ℕ => (e : ℂ) ^ (k - 1) * exp (2 * ↑π * Complex.I * ↑z * e * c) := by
   apply Summable.mul_left
   apply Summable.of_norm
-  have : (fun a : ℕ+ ↦ ‖cexp (2 * ↑π * Complex.I * ↑z * ↑↑e * ↑↑a)‖) =
-    fun a : ℕ+ ↦ ‖cexp (2 * ↑π * Complex.I * ↑z * ↑↑e) ^ (a : ℕ)‖ := by
+  have : (fun a : ℕ ↦ ‖cexp (2 * ↑π * Complex.I * ↑z * ↑↑e * ↑↑a)‖) =
+    fun a : ℕ ↦ ‖cexp (2 * ↑π * Complex.I * ↑z * ↑↑e) ^ (a : ℕ)‖ := by
     ext a
     rw [← Complex.exp_nat_mul]
     ring_nf
@@ -2413,7 +2413,7 @@ theorem a1 (k : ℕ) (e : ℕ+) (z : ℍ) :
       Nat.cast_pos, PNat.pos, mul_pos_iff_of_pos_right]
     positivity
   have h2 := summable_norm_iff.mpr (summable_geometric_iff_norm_lt_one.mpr h1)
-  apply h2.subtype
+  apply h2
 
 
 /-This is straight from the mod forms repo-/
@@ -2473,7 +2473,7 @@ lemma t9 (z : ℍ) : ∑' m : ℕ,
   · intro e
     have := a1 2 e z
     simp at *
-    exact this
+    apply this.subtype
   have := a4 2 z
   apply this.congr
   intro b
