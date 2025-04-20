@@ -121,7 +121,7 @@ theorem q_exp_iden_2 (k : ℕ) (hk : 3 ≤ k) (hk2 : Even k) (z : ℍ) :
   by
   have hkk : 1 < (k ) := by
     linarith
-  rw [tsum_prod, sum_int_even]
+  rw [Summable.tsum_prod, sum_int_even]
   · simp only [Int.cast_zero, zero_mul, zero_add, one_div, Int.cast_natCast, add_left_inj]
     rw [sum_int_even]
     simp  [algebraMap.coe_zero, Int.cast_ofNat, one_div]
@@ -204,10 +204,10 @@ lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : 
   rw [tsum_mul_left]
   rw [← mul_assoc]
   congr 1
-  rw [tsum_comm]
+  rw [Summable.tsum_comm]
   rw [← tsum_sigma_eqn2]
   rw [← (piFinTwoEquiv fun _ => ℕ+).symm.tsum_eq]
-  rw [tsum_prod']
+  rw [Summable.tsum_prod']
   simp
   congr
   ext i
@@ -239,10 +239,10 @@ lemma EQ22 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
   rw [← GammaSet_one_Equiv.symm.tsum_eq]
   have hk1 : 1 < k := by omega
   have hr := zeta_nat_eq_tsum_of_gt_one hk1
-  rw [tsum_sigma, GammaSet_one_Equiv, hr, tsum_mul_tsum_of_summable_norm (by simp [hk1])
+  rw [Summable.tsum_sigma, GammaSet_one_Equiv, hr, tsum_mul_tsum_of_summable_norm (by simp [hk1])
     (by apply(EisensteinSeries.summable_norm_eisSummand hk z).subtype)  ]
   simp
-  rw [tsum_prod' ]
+  rw [Summable.tsum_prod' ]
   apply tsum_congr
   intro b
   by_cases hb : b = 0

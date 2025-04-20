@@ -50,7 +50,7 @@ theorem extracted_66 (z : ℍ) :
   ext N
   simp
   rw [@Finset.mul_sum]
-  rw [tsum_finsetSum]
+  rw [Summable.tsum_finsetSum]
   congr
   ext n
   rw [← tsum_mul_left]
@@ -250,7 +250,7 @@ theorem PS3tn22 (z : ℍ) :
     (fun N : ℕ+ =>
     ∑' m : ℤ ,  ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) := by
     ext n
-    rw [tsum_finsetSum]
+    rw [Summable.tsum_finsetSum]
     intro i hi
     apply summable_pain
   conv at this =>
@@ -343,7 +343,7 @@ theorem extracted_66c (z : ℍ) :
   ext N
   simp
   rw [@Finset.mul_sum]
-  rw [tsum_finsetSum]
+  rw [Summable.tsum_finsetSum]
   congr
   ext n
   rw [← tsum_mul_left]
@@ -375,10 +375,10 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
   congr
   ext N
   simp only [one_div, Pi.sub_apply, mul_inv_rev]
-  rw [tsum_finsetSum, ← Finset.sum_sub_distrib ]
+  rw [Summable.tsum_finsetSum, ← Finset.sum_sub_distrib ]
   congr
   ext n
-  rw [← tsum_sub]
+  rw [← Summable.tsum_sub]
   congr
   ext m
   have := poly_id z m n
@@ -391,7 +391,7 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
   · conv =>
       enter [1]
       ext N
-      rw [tsum_finsetSum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
+      rw [Summable.tsum_finsetSum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
     apply CauchySeq_Icc_iff_CauchySeq_Ico
     intro n
     nth_rw 2 [int_sum_neg]
@@ -402,7 +402,7 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
     conv =>
       enter [1]
       ext N
-      rw [← tsum_finsetSum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
+      rw [← Summable.tsum_finsetSum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
     have := G2_cauchy ⟨-1 / z, by simpa using pnat_div_upper 1 z⟩
     have  hC := cauchy_seq_mul_const _ ((z : ℂ) ^ 2)⁻¹ (by simp [ne_zero z]) this
     apply hC.congr
@@ -484,7 +484,7 @@ lemma G2_alt_eq (z : ℍ) : G₂ z = ∑' m : ℤ, ∑' n : ℤ, (1 / (((m : ℂ
     set t :=  ∑' m : ℤ, ∑' n : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m n)
     rw [show t = t + 0 by ring, ← this]
     simp only [t]
-    rw [← tsum_add]
+    rw [← Summable.tsum_add]
     · rw [tsum_limUnder_atTop]
       · congr
         ext n
@@ -774,7 +774,7 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ,
   simp only [UpperHalfPlane.coe] at h3
   rw [← h3, ← this]
   simp only [pow_one]
-  rw [tsum_prod' ]
+  rw [Summable.tsum_prod' ]
   congr
   ext n
   congr

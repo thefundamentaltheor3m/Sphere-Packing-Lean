@@ -517,8 +517,7 @@ lemma qExpansion_pow (f : ModularForm Γ(1) k) (n : ℕ) :
   rw [show ↑(n + 1) * k = (n • k) + k by simp; ring]
   rw [DirectSum.ofPow] at *
   rw [qExpansion_of_mul]
-  simp
-  left
+  congr
   rw [← hn]
   apply qExpansion_ext2
   ext z

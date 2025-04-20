@@ -78,7 +78,7 @@ theorem tsum_pNat {α : Type _} [AddCommGroup α] [UniformSpace α] [IsUniformAd
   [CompleteSpace α] (f : ℕ → α) (hf : f 0 = 0) : ∑' n : ℕ+, f n = ∑' n, f n :=
   by
   by_cases hf2 : Summable f
-  rw [tsum_eq_zero_add]
+  rw [Summable.tsum_eq_zero_add]
   rw [hf]
   simp
   have hpos : HasSum (fun n : ℕ => f (n + 1)) (∑' n : ℕ+, f n) :=
@@ -108,7 +108,7 @@ theorem tsum_pNat {α : Type _} [AddCommGroup α] [UniformSpace α] [IsUniformAd
 lemma tsum_pnat_eq_tsum_succ4 {α : Type*} [TopologicalSpace α] [AddCommGroup α]
     [IsTopologicalAddGroup α] [T2Space α]
   (f : ℕ → α) (hf : Summable f) : f 0 + ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f n := by
-  rw [tsum_eq_zero_add hf]
+  rw [Summable.tsum_eq_zero_add hf]
   simp
   exact tsum_pnat_eq_tsum_succ f
 
@@ -960,7 +960,7 @@ lemma G2_alt_indexing_δ (z : ℍ) : ∑' (m : Fin 2 → ℤ),
     ∑' m : ℤ, ∑' n : ℤ, (1 / (((m : ℂ)* z + n)^2 * (m * z + n +1)) + (δ m n)) := by
   rw [ ← (finTwoArrowEquiv _).symm.tsum_eq]
   simp
-  refine tsum_prod' ?h ?h₁
+  refine Summable.tsum_prod' ?h ?h₁
   have := G_2_alt_summable_δ z
   simp at this
   rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
@@ -981,7 +981,7 @@ lemma G2_alt_indexing2_δ (z : ℍ) : ∑' (m : Fin 2 → ℤ),
   have := (G_2_alt_summable_δ z)
   simp at this
   rw [← (finTwoArrowEquiv _).symm.summable_iff] at this
-  rw [tsum_comm']
+  rw [ Summable.tsum_comm']
   rw [G2_alt_indexing_δ]
   apply this.congr
   intro b
@@ -2127,7 +2127,7 @@ theorem aux_iter_der_tsum (k : ℕ) (hk : 1 ≤ k) (x : ℍ) :
     rw [h2]
     rw [int_tsum_pNat]
     · simp
-      rw [tsum_add]
+      rw [ Summable.tsum_add]
       · rw [tsum_mul_left]
         rw [tsum_mul_left]
         rw [mul_add]
@@ -2326,7 +2326,7 @@ theorem tsum_sigma_eqn2 (k : ℕ) (z : ℍ) :
   simp [sigmaAntidiagonalEquivProd, mapdiv]
   simp_rw [sigma_eq_sum_div']
   simp
-  rw [tsum_sigma ]
+  rw [ Summable.tsum_sigma ]
   apply tsum_congr
   intro n
   rw [tsum_fintype]
@@ -2449,7 +2449,7 @@ lemma t9 (z : ℍ) : ∑' m : ℕ,
   left
   symm
   simp only [pow_one, neg_mul] at *
-  rw [tsum_prod, tsum_comm' ]
+  rw [ Summable.tsum_prod,  Summable.tsum_comm' ]
   congr
   funext m
   congr
@@ -2531,7 +2531,7 @@ lemma sum_int_pnatt (z : ℍ) (d : ℕ+) :
   simp only [Int.cast_zero, zero_mul, zero_sub, one_div, zero_add, Int.cast_natCast, Int.cast_neg,
     neg_mul]
   ring_nf
-  rw [← tsum_add]
+  rw [←  Summable.tsum_add]
   congr
   funext m
   ring

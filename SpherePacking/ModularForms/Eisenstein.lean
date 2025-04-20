@@ -483,7 +483,7 @@ theorem summable_zero_pow {G : Type*} [NormedField G] (f : ℕ → G) : Summable
   apply summable_zero
 
 lemma tsum_zero_pow (f : ℕ → ℂ) : (∑' m, f m * 0 ^ m) = f 0 := by
-  rw [tsum_eq_zero_add]
+  rw [Summable.tsum_eq_zero_add]
   simp only [pow_zero, mul_one, ne_eq, AddLeftCancelMonoid.add_eq_zero, one_ne_zero, and_false,
     not_false_eq_true, zero_pow, mul_zero, tsum_zero, add_zero]
   apply summable_zero_pow

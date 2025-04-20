@@ -125,7 +125,7 @@ lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) : (∏' (i : �
   · simp
   · rw [pow_succ]
     rw [hn]
-    rw [← tprod_mul]
+    rw [← Multipliable.tprod_mul]
     congr
     apply Multipliable_pow f hf n
     exact hf
