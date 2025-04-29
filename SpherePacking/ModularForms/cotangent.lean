@@ -95,20 +95,20 @@ theorem tendsto_euler_sin_prod' (x : ℂ) (h0 : x ≠ 0) :
   rw [sub_eq_add_neg, ←neg_div]
   rfl
 
-theorem multipliable_sinTerm (x : ℂ) (hx : x ∈ ℂ_ℤ) :
+theorem multipliable_sinTerm (x : ℂ) :
     Multipliable fun i => sinTerm x i := by
   apply Complex.multipliable_one_add_of_summable
   · rw [← summable_norm_iff]
     have := (summable_pow_div_add (x^2) 2 1 (by omega))
     simpa only [norm_div, norm_neg, norm_pow,  Nat.cast_one]
-  · apply sinTerm_ne_zero hx
+
 
 lemma euler_sin_tprod (x : ℂ) (hx : x ∈ ℂ_ℤ) :
     ∏' i : ℕ, sinTerm x i = Complex.sin (π * x) / (π * x) := by
   rw [← Multipliable.hasProd_iff, Multipliable.hasProd_iff_tendsto_nat]
   · apply tendsto_euler_sin_prod' x (by apply integerComplement.ne_zero hx)
-  · exact multipliable_sinTerm x hx
-  · exact multipliable_sinTerm x hx
+  · exact multipliable_sinTerm x
+  · exact multipliable_sinTerm x
 
 private lemma sinTerm_bound_aux (Z : Set ℂ_ℤ) (hZ : IsCompact Z) : ∃ u : ℕ → ℝ, Summable u ∧
     ∀ (j : ℕ) z, z ∈ Z → (‖-z.1 ^ 2 / (j + 1) ^ 2‖) ≤ u j := by

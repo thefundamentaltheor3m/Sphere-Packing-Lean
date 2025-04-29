@@ -384,7 +384,6 @@ lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn (
         rw [div_eq_mul_inv]
         simp
       simp at *
-      rw [neg_div, neg_neg_iff_pos]
       exact this
   · apply DifferentiableOn.mul
     simp only [DifferentiableOn, mem_setOf_eq]

@@ -58,13 +58,14 @@ theorem extracted_66 (z : ℍ) :
   congr
   ext d
   have hz := ne_zero z
-  rw [← neg_ne_zero] at hz
+
   rw [← mul_inv]
   congr 1
   rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
   congr
+  simp only [UpperHalfPlane.coe] at *
+  rw [mul_add]
   field_simp
-  simp only [UpperHalfPlane.coe]
   ring
   · intro i hi
     exact extracted_77 z i
@@ -96,7 +97,7 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUn
     have hz := ne_zero z
     rw [← neg_ne_zero] at hz
     field_simp
-    ring
+
 
 
 /-This is from the modforms repo, so no need to prove it. -/
@@ -351,7 +352,6 @@ theorem extracted_66c (z : ℍ) :
   congr
   ext d
   have hz := ne_zero z
-  rw [← neg_ne_zero] at hz
   rw [← mul_inv]
   congr 1
   rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]

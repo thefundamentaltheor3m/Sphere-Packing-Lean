@@ -15,7 +15,7 @@ lemma zeta_two_eqn : ∑' (n : ℤ), ((n : ℂ) ^ 2)⁻¹ = 2 * riemannZeta 2 :=
   rw [← this]
   have hr := zeta_nat_eq_tsum_of_gt_one (k := 2)
   simp only [Nat.one_lt_ofNat, Nat.cast_ofNat, one_div, forall_const] at hr
-  rw [hr, tsum_add]
+  rw [hr, Summable.tsum_add]
   ring
   repeat{
   have := Complex.summable_one_div_nat_cpow  (p := 2)
