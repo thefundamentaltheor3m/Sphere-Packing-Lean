@@ -1418,7 +1418,7 @@ theorem tsum_aexp_contDiffOn (k : ℕ) :
   simp at *
   rw [← h22]
   have hss : s.1 ∈ {z : ℂ | 0 < z.im} := by
-    aesop
+    simpa using hK1 s.2
   have h21 := (iter_div_aut_add n m).symm hss
   simpa using h21
   intro n r

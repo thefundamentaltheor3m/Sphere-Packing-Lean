@@ -97,8 +97,8 @@ def GammaSet_one_Equiv : (Fin 2 → ℤ) ≃ (Σn : ℕ, gammaSetN n) where
   left_inv v := by
             ext i
             fin_cases i
-            refine Int.mul_ediv_cancel' Int.gcd_dvd_left
-            refine Int.mul_ediv_cancel' Int.gcd_dvd_right
+            refine Int.mul_ediv_cancel' (Int.gcd_dvd_left (v 0) (v 1))
+            refine Int.mul_ediv_cancel' (Int.gcd_dvd_right (v 0) (v 1))
   right_inv v := by
            ext i
            have hv2 := v.2.2
@@ -111,8 +111,11 @@ def GammaSet_one_Equiv : (Fin 2 → ℤ) ≃ (Σn : ℕ, gammaSetN n) where
            rw [Int.gcd_mul_left, hg]
            omega
            fin_cases i
-           refine Int.mul_ediv_cancel'  Int.gcd_dvd_left
-           refine Int.mul_ediv_cancel' Int.gcd_dvd_right
+           refine Int.mul_ediv_cancel'  ?_
+           simp
+           exact Int.gcd_dvd_left _ _
+           simp
+           refine Int.mul_ediv_cancel' (Int.gcd_dvd_right _ _)
 
 
 theorem q_exp_iden_2 (k : ℕ) (hk : 3 ≤ k) (hk2 : Even k) (z : ℍ) :
