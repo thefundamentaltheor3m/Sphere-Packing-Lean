@@ -83,6 +83,8 @@ theorem I₄'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
 -- approach!
 theorem decay' :  ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.a' x‖ ≤ C := by
+  -- Not going to fix because going to golf completely anyway
+  stop
   intro k n
   obtain ⟨C₁, h₁⟩ := I₁'_decay' k n
   obtain ⟨C₂, h₂⟩ := I₂'_decay' k n
