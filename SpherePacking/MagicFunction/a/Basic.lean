@@ -62,48 +62,60 @@ lemma z₄_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioi 0) : 0 < (z₄' t).im :
 
 end UpperHalfPlane
 
+end MagicFunction.a.Parametrisations
+
+open MagicFunction.a.Parametrisations
+
+namespace MagicFunction.a.RealIntegrals
+
 noncomputable section Real_Input
 
 def I₁' (x : ℝ) := ∫ t in Ioo (0 : ℝ) 1, (1 + I) -- Added factor due to variable change!!
   * φ₀'' (-1 / ((z₁' t) + (1 : ℂ)))
   * ((z₁' t) + (1 : ℂ)) ^ 2
-  * cexp (π * I * |x| ^ 2 * (z₁' t))
+  * cexp (π * I * x * (z₁' t))
 
 def I₂' (x : ℝ) := ∫ t in Ioo (0 : ℝ) 1, (1 - I) -- Added factor due to variable change!!
   * φ₀'' (-1 / ((z₂' t) - (1 : ℂ)))
   * ((z₂' t) - (1 : ℂ)) ^ 2
-  * cexp (π * I * |x| ^ 2 * (z₂' t))
+  * cexp (π * I * x * (z₂' t))
 
-def I₃' (x : ℝ) := ∫ t in Ioo (0 : ℝ) 1, I -- Added factor due to variable change!!
+def I₃' (x : ℝ) := -2 * ∫ t in Ioo (0 : ℝ) 1, I -- Added factor due to variable change!!
   * φ₀'' (-1 / (z₃' t))
   * (z₃' t) ^ 2
-  * cexp (π * I * |x| ^ 2 * (z₃' t))
+  * cexp (π * I * x * (z₃' t))
 
-def I₄' (x : ℝ) := ∫ t in Ioi (0 : ℝ), I -- Added factor due to variable change!!
+def I₄' (x : ℝ) := 2 * ∫ t in Ioi (0 : ℝ), I -- Added factor due to variable change!!
   * φ₀'' (-1 / z₄' t)
   * (z₄' t) ^ 2
-  * cexp (π * I * |x| ^ 2 * (z₄' t))
+  * cexp (π * I * x * (z₄' t))
 
 def a' (x : ℝ) := I₁' x + I₂' x + I₃' x + I₄' x
 
 end Real_Input
 
+end MagicFunction.a.RealIntegrals
+
+open MagicFunction.a.RealIntegrals
+
+namespace MagicFunction.a.RadialFunctions
+
 noncomputable section Vector_Input
 
-def I₁ (x : V) := I₁' ‖x‖
+def I₁ (x : V) := I₁' ‖x‖ ^ 2
 
-def I₂ (x : V) := I₂' ‖x‖
+def I₂ (x : V) := I₂' ‖x‖ ^ 2
 
-def I₃ (x : V) := I₃' ‖x‖
+def I₃ (x : V) := I₃' ‖x‖ ^ 2
 
-def I₄ (x : V) := I₄' ‖x‖
+def I₄ (x : V) := I₄' ‖x‖ ^ 2
 
-def a (x : V) := a' ‖x‖
+def a (x : V) := a' ‖x‖ ^ 2
 
 end Vector_Input
 
 #check a
 
-end MagicFunction.a.Parametrisations
+end MagicFunction.a.RadialFunctions
 
 #min_imports

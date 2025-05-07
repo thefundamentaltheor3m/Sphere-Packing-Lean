@@ -11,10 +11,11 @@ import Mathlib
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
 
-/-! # Constructing Upper-Bounds for I₁
+/-! # Constructing Upper-Bounds for I₂
 
-The purpose of this file is to construct bounds on the integral `I₁` that is part of the definition
-of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
+The purpose of this file is to construct bounds on the integral `I₂` that is part of the definition
+of the function `a`. We do something similar to what we did for `I₁` in
+`SpherePacking.MagicFunction.a.IntegralEstimates.I1`.
 -/
 
 open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
@@ -22,7 +23,11 @@ open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter
 open scoped Function
 
-namespace MagicFunction.a.IntegralEstimates.I1
+-- Need to copy and paste from I₁ file
+
+#exit
+
+namespace MagicFunction.a.IntegralEstimates.I2
 
 noncomputable section Change_of_Variables
 
@@ -53,21 +58,23 @@ lemma I₁'_eq (r : ℝ) : I₁' r =
     ∫ t in Ioo (0 : ℝ) 1, (1 + I) -- Added factor due to variable change!!
       * φ₀'' ((I - 1) * (1 / (2 * t)))
       * (t * (I + 1)) ^ 2
-      * cexp (π * I * r * (t * (I + 1) - 1)) := by
+      * cexp (π * I * r ^ 2 * (t * (I + 1) - 1)) := by
   apply setIntegral_congr_fun measurableSet_Ioo
   intro t ht
   dsimp
   rw [z₁'_eq_of_mem' (Ioo_subset_Icc_self ht), sub_add_cancel]
   congr! 4
-  have : t ≠ 0 := ht.1.ne'
-  have h2 : (t : ℂ) ≠ 0 := by simp [this]
-  have h3 : I + 1 ≠ 0 := by
-    intro h
-    simpa using congr(($h).re)
-  field_simp [h2, h3]
-  ring_nf
-  simp
-  ring
+  · have : t ≠ 0 := ht.1.ne'
+    have h2 : (t : ℂ) ≠ 0 := by simp [this]
+    have h3 : I + 1 ≠ 0 := by
+      intro h
+      simpa using congr(($h).re)
+    field_simp [h2, h3]
+    ring_nf
+    simp
+    ring
+  · norm_cast
+    simp
 
 -- define g to be the rhs of this multiplied by the absolute value of the derivative of (f⁻¹)'
 -- (except change all the f t to x)
@@ -76,7 +83,7 @@ lemma I₁'_eq' (r : ℝ) : I₁' r =
         (1 + I)
       * φ₀'' ((I - 1) * (f t))
       * ((I + 1) / (2 * f t)) ^ 2
-      * cexp (π * I * r * ((I + 1) / (2 * f t) - 1)) := by
+      * cexp (π * I * r ^ 2 * ((I + 1) / (2 * f t) - 1)) := by
   have : ∀ x : ℂ, ∀ t ≠ 0, x / (2 * f t) = t * x := by
     intro x t ht
     rw [f]
@@ -122,7 +129,7 @@ def g : ℝ → ℝ → ℂ := fun r s ↦
   * φ₀'' ((I - 1) * s)
   * ((I + 1) / (2 * s)) ^ 2 *
     (1 / (2 * s ^ 2))
-  * cexp (I * π * r *
+  * cexp (I * π * |r| ^ 2 *
     (-1 +
       (1 / (2 * s)) *
         (I + 1)))
@@ -133,18 +140,16 @@ lemma aux_measurable : MeasurableSet ((Ioo 0 1) : Set ℝ) := measurableSet_Ioo
 lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioo 0 1) : HasDerivWithinAt f (f' x) (Ioo 0 1) x := by
   have hf : f = fun t ↦ (1 / 2) * t ^ (-1 : ℤ) := by
     ext x
-    simp (disch := field_simp_discharge) only [Int.reduceNeg, zpow_neg, zpow_one, inv_eq_one_div,
-      mul_div_assoc', mul_one, div_div]
+    field_simp
     rfl
   have hf' : f' = fun t ↦ (1 / 2) * (-1 * t ^ (-2 : ℤ)) := by
     ext x
-    simp (disch := field_simp_discharge) only [Int.reduceNeg, zpow_neg, inv_eq_one_div, neg_mul,
-      one_mul, neg_div', mul_div_assoc', mul_neg, mul_one, div_div]
-    rfl
+    field_simp
+    congr
   rw [hf, hf']
   apply HasDerivWithinAt.const_mul
-  norm_cast
-  exact hasDerivWithinAt_zpow (-1 : ℤ) x (Or.inl (ne_of_gt hx.1)) (Ioo 0 1)
+  -- refine hasDerivWithinAt_zpow (-1 : ℤ) x ?_ (Ioo 0 1)
+  sorry
 
 lemma aux_injOn : InjOn f (Ioo 0 1) := by
   intro _ _ _ _ hf
@@ -185,6 +190,8 @@ end Changing_Variables
 
 section Showing_Equality_to_I₁
 
+-- Before we can prove the main result, we prove some auxiliary results.
+
 lemma congr_aux_1 (x : ℝ) :
     -1 / (↑x - 1 + I * ↑x + 1) = (I - 1) / (2 * ↑x) := calc
   _ = -1 / (x + I * x) := by
@@ -206,7 +213,7 @@ lemma congr_aux_1 (x : ℝ) :
 
 -- Now, the main result of this section.
 
-lemma I₁_Expression (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t)) = I₁' r := by
+lemma Congruency (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t)) = I₁' r := by
   rw [I₁'_eq']
   apply setIntegral_congr_ae₀ nullMeasurableSet_Ioo
   apply ae_of_all
@@ -221,16 +228,17 @@ lemma I₁_Expression (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t
       mul_pos_iff_of_pos_right]
     exact pow_pos hx.1 2
   simp only [f', g, f, habs, real_smul]
+
   have hrearrange_LHS : -- Break product of 2 things into product of 4 things
     ofReal (1 / (2 * x ^ 2))
     * ((I + 1)
     * φ₀'' ((I - 1) * ↑(1 / (2 * x)))
     * ((I + 1) / (2 * ↑(1 / (2 * x)))) ^ 2 * (1 / (2 * ↑(1 / (2 * x)) ^ 2))
-    * cexp (I * ↑π * ↑r * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1))))
+    * cexp (I * ↑π * ↑|r| ^ 2 * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1))))
       = (I + 1)
       * φ₀'' ((I - 1) * ↑(1 / (2 * x)))
       * (ofReal (1 / (2 * x ^ 2)) * ((I + 1) / (2 * ↑(1 / (2 * x)))) ^ 2 * (1 / (2 * ↑(1 / (2 * x)) ^ 2)))
-      * cexp (I * ↑π * ↑r * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1)))
+      * cexp (I * ↑π * ↑|r| ^ 2 * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1)))
     := by ring
   rw [hrearrange_LHS]
   congr 2
@@ -241,6 +249,7 @@ lemma I₁_Expression (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t
     congr 2 <;> field_simp [hx.1.ne'] <;> ring
   · rw [mul_comm I π]
     norm_cast
+    rw [_root_.sq_abs r]
     congr
     field_simp
     ring
@@ -248,13 +257,3 @@ lemma I₁_Expression (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t
 end Showing_Equality_to_I₁
 
 ----------------------------------------------------------------
-
-section Bounding
-
--- Now that we have `MagicFunction.a.IntegralEstimates.I1.I₁_Expression`, we can bound `I₁`.
-
--- #check I₁_Expression
-
-
-
-end Bounding

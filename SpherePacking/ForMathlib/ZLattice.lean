@@ -1,8 +1,9 @@
-import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib
 
 open ZSpan
 
-variable {E ι K : Type*} [NormedLinearOrderedField K] [NormedAddCommGroup E] [NormedSpace K E]
+variable {E ι K : Type*} [NormedField K] [LinearOrder K] [IsStrictOrderedRing K]
+  [NormedAddCommGroup E] [NormedSpace K E]
   (b : Basis ι K E) [FloorRing K] [Fintype ι] (m : E)
 
 theorem ZSpan.ceil_sub_mem_fundamentalDomain (v) : ceil b v - v ∈ fundamentalDomain b := by

@@ -166,7 +166,7 @@ lemma log_summable_pow (f : ℕ → ℂ)  (hf : Summable f)  (m : ℕ) :
   apply Summable.of_norm_bounded_eventually_nat _ this
   have hft := hf.tendsto_atTop_zero
   have H := clog_pow m f hft
-  simp only [norm_mul, Complex.norm_natCast,  eventually_atTop, ge_iff_le] at *
+  simp only [norm_mul, Complex.norm_natCast, eventually_atTop, ge_iff_le] at *
   obtain ⟨a, ha⟩ := H
   use a
   intro b hb
