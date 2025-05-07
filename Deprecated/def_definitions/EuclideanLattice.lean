@@ -16,7 +16,7 @@ def isLattice (Λ : Set V) : Prop := ∃ (B : Basis (Fin d) ℝ V), Λ = Submodu
 
 #check isLattice
 
-class isLattice' (Λ : AddSubgroup V) [DiscreteTopology Λ] extends IsZlattice ℝ Λ
+class isLattice' (Λ : AddSubgroup V) [DiscreteTopology Λ] extends IsZLattice ℝ Λ
 
 example (Λ : Set V) (hΛ : isLattice Λ) : ∃ m : ℕ, m = 4 := by
   rcases hΛ with ⟨B, hB⟩

@@ -1,29 +1,16 @@
-In this section, we recall a few definitions from Fourier analysis.
+Recall the definition of a Fourier transform.
 
-\begin{definition}\label{def:Fourier-Transform} % \lean{def:Fourier-Transform} % Specialise Mathlib.VectorFourier.fourierIntegral
+\begin{definition}\label{def:Fourier-Transform}\lean{Real.fourierIntegral}\leanok
   The Fourier transform of an $L^1$-function $f:\R^d\to\C$ is defined as
 
   \[
-    \mathcal{F}(f)(y) = \widehat{f}(y) \coloneqq \int_{\R^d} f(x)e^{-2\pi i \langle x, y \rangle} \,\mathrm{d}x, \quad y \in \R^d
+    \mathcal{F}(f)(y) = \widehat{f}(y) := \int_{\R^d} f(x)e^{-2\pi i \langle x, y \rangle} \,\mathrm{d}x, \quad y \in \R^d
   \]
 
   where $\langle x, y \rangle = \frac12\|x\|^2 + \frac12\|y\|^2 - \frac12\|x - y\|^2$ is the standard scalar product in $\R^d$.
 \end{definition}
 
-\begin{definition}\label{def:Schwartz-Function}
-A $C^\infty$~function $f:\R^d\to\C$ is called a \emph{Schwartz function} if it goes to zero as $\|x\|\to\infty$ faster then any inverse power of $\|x\|$, and the same holds for all partial derivatives of $f$.
-\end{definition}
-
-\begin{definition}\label{def:Schwartz-Space}\uses{def:Schwartz-Function}
-    The set of all Schwartz functions is called a \emph{Schwartz space}.
-\end{definition}
-
-\begin{lemma}\label{lemma:Fourier-transform-is-automorphism}\uses{def:Fourier-Transform, def:Schwartz-Space}
-  The Fourier transform is an automorphism of the space of Schwartz functions.
-\end{lemma}
-\begin{proof}
-  \todo{Fill in proof.}
-\end{proof}
+The following computational result will be of use later on.
 
 \begin{lemma}\label{lemma:Gaussian-Fourier}\uses{def:Fourier-Transform}
   \begin{equation}
@@ -34,9 +21,76 @@ A $C^\infty$~function $f:\R^d\to\C$ is called a \emph{Schwartz function} if it g
   \todo{Fill in proof.}
 \end{proof}
 
-\begin{theorem}[(Poisson summation formula)]\label{thm:Poisson-summation-formula}\uses{def:Fourier-Transform}
-  $$\sum_{\ell\in\Lambda}f(\ell)=\frac{1}{\mathrm{Vol}(\R^d/\Lambda)}\sum_{m\in\Lambda^*}\widehat{f}(m).$$
+Of great interest to us will be a specific family of functions, known as Schwartz Functions. The Fourier transform behaves particularly well when acting on Schwartz functions. We elaborate in the following subsections.
+
+\subsection{On Schwartz Functions}
+
+\begin{definition}\label{def:Schwartz-Space}\lean{SchwartzMap}\leanok
+A $C^\infty$~function $f:\R^d\to\C$ is called a \emph{Schwartz function} if it decays to zero as $\|x\|\to\infty$ faster then any inverse power of $\|x\|$, and the same holds for all partial derivatives of $f$, ie, if for all $k, n \in \N$, there exists a constant $C \in \R$ such that for all $x \in \R^d$, $\norm{x}^k \cdot \norm{f^{(n)}(x)} \leq C$, where $f^{(n)}$ denotes the $n$-th derivative of $f$ considered along with the appropriate operator norm. The set of all Schwartz functions from $\R^d$ to $\C$ is called the \emph{Schwartz space}. It is an $\R$-vector space.
+\end{definition}
+
+\begin{lemma}\label{lemma:Fourier-transform-is-automorphism}\lean{SchwartzMap.fourierTransformCLM}\uses{def:Fourier-Transform, def:Schwartz-Space}\leanok
+  The Fourier transform is a continuous, linear automorphism of the space of Schwartz functions.
+\end{lemma}
+\begin{proof}\leanok
+  We do not elaborate here as the result already exists in Mathlib. We do, however, mention that the Lean implementation \emph{defines} a continuous linear equivalence on the Schwartz space \emph{using} the Fourier transform (see \verb|SchwartzMap.fourierTransformCLM|). The `proof' that for any Schwartz function $f$, its Fourier transform and its image under this continuous linear equivalence are, indeed, the same $\R^d \to \R$ function, is stated in Mathlib solely for the purpose of \verb|rw| and \verb|simp| tactics, and is proven simply by \verb|rfl|.
+\end{proof}
+
+% Consider adding an example for expository effect (really not necessary, would be nice if time permits though)
+Another reason we are interested in Schwartz Functions is that they behave well under infinite sums. This will be useful to us when proving the Cohn-Elkies linear programming bound.
+
+\subsection{On the Summability of Schwartz Functions}
+
+We begin by stating a general summability result over specific subsets of $\R^d$.
+
+\begin{lemma}\label{lemma:inv-power-summable}
+  Let $X \subset \R^d$ be a set of sphere packing centres of separation $1$ that is periodic with some lattice $\Lambda \subset \R^d$. Then, there exists $k \in \N$ sufficiently large such that
+  \[
+    \sum_{x \in X} \frac{1}{\norm{x}^{k}} < \infty.
+  \]
+\end{lemma}
+\begin{proof}
+  First, note that it does not matter how we number the (countably many) elements of the discrete set $X$: if we prove absolute convergence for one numbering, we prove absolute convergence for \emph{any} numbering. The idea will be to bound the sequence of partial sums by considering the volumes of concentric $d$-spheres of the appropriate radii (or scaled versions of a $0$-centred fundamental domain).
+
+  \todo{Finish!}
+
+  % Number the elements of $X$ such that $\norm{x_1} \leq \norm{x_2} \leq \ldots$, and for all $R \in \N$, let $N_R$ be the largest index such that $\norm{x_{N_R}} \leq R$ (which exists because there can only be finitely many elements of $X$ in any ball of radius $R$). Define $S_R := \sum_{j=1}^{N_R} \norm{x_j}^{-k}$. If we can show that $S_R$ is a Cauchy sequence, we can show that $S_R$ (and therefore, $\sum_{j=1}^{\infty} \norm{x_j}^{-k}$) is convergent.
+
+  % Fix $\eps > 0$. We need to find an $R \in \N$ such that for all $R < R_1 < R_2 \in \N$, $S_{R_2} - S_{R_1} < \eps$. We have that
+  % \[
+  %   0 \leq \sum_{j=N_{R_1}}^{N_{R_2}} \frac{1}{\norm{x_j}^k} \leq \frac{\Vol{\B_d(0, R_2)} - \Vol{B_d(0, R_1)}}{R_1^k} \leq \frac{c R_2^{d}}{R_1^k}
+  % \]
+  % for all $R > 1$. Then, for $k = d + 1$ (similarly for any $k > d$), we have some $c$ such that
+  % \[
+  %   0 \leq S_R \leq \frac{c}{R} \xrightarrow{R \to \infty} 0
+  % \]
+\end{proof}
+
+The decaying property of Schwartz functions means that they can be compared to the absolutely convergent power series above.
+
+\begin{lemma}\label{lemma:Schwartz-summable}\uses{def:Schwartz-Space}
+  Let $f : \R^d \to \C$ be a Schwartz function and let $X \subset \R^d$ be periodic with respect to some lattice $\Lambda \subset \R^d$. Then,
+  \[
+    \sum_{x \in X} |f(x)| < \infty.
+  \]
+\end{lemma}
+\begin{proof}
+  Without loss of generality, assume that $0 \notin X$: if $0 \in X$, then we can add the $f(0)$ term to the sum over nonzero elements of $X$, which, if the sum over the nonzero elements converges absolutely, will be equal to the sum over all of $X$. Now, we know that for all $k \in \N$, there exists some constant $C$ such that $|f(x)| \leq C\norm{x}^{-k}$ for all $x \in \R^d$. Choosing $k$ to be sufficiently large, we see that
+  \[
+    \sum_{x \in X} |f(x)| \leq \sum_{x \in X} \frac{C}{\norm{x}^{k}} = C \sum_{x \in X} \frac{1}{\norm{x}^k} < \infty.
+  \]
+\end{proof}
+
+We end with a crucial result on Schwartz functions, the statement of which only makes sense because of the above result.
+% Should probably include something about multiplying a Schwartz function by a negative exponential, either saying that the result is Schwartz (??) or by saying that it is summable. Both would be enough to make the RHS of the sum below converge absolutely.
+\begin{theorem}[Poisson summation formula]\label{thm:Poisson-summation-formula}\uses{def:Fourier-Transform, def:Schwartz-Space, lemma:Schwartz-summable, lemma:inv-power-summable}
+  Let $\Lambda$ be a lattice in $\R^d$, and let $f:\R^d\to\R$ be a Schwartz function. Then, for all $v \in \R^d$,
+  \[
+    \sum_{\ell\in\Lambda}f(\ell + v) = \frac{1}{\Vol{\R^d/\Lambda}} \sum_{m\in\Lambda^*}\widehat{f}(m) e^{-2\pi i \ang{v, m}}.
+  \]
 \end{theorem}
 \begin{proof}
   \todo{Fill in proof.}
 \end{proof}
+
+While the Poisson Summation Formula over lattices can be stated in greater generality (and probably should be formalised as such in Mathlib due to the many applications it admits), we stick with Schwartz functions because that should be sufficient for our purposes.

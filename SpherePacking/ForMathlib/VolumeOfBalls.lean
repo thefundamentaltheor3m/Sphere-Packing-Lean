@@ -49,7 +49,6 @@ theorem EuclideanSpace.volume_ball_lt_top [inst : NoAtoms (volume : Measure (Euc
     (x : EuclideanSpace ℝ ι) : volume (ball x r) < ⊤ := by
   by_cases h : Nonempty ι
   · rw [volume_ball]
-    exact mul_lt_top (pow_ne_top ofReal_ne_top) ofReal_ne_top
+    exact Batteries.compareOfLessAndEq_eq_lt.mp rfl
   · rw [volume_subsingleton <| @EuclideanSpace.ball_subsingleton _ _ _ (not_nonempty_iff.mp h) _]
     exact zero_lt_top
-

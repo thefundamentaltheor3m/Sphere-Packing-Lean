@@ -72,7 +72,15 @@ lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * r
   · rw [← tsum_subtype]
     convert (Finset.tsum_subtype {0} (fun _ ↦ a 0)).symm with x
     · rw [Finset.sum_const, Finset.card_singleton, one_smul]
-    · exact Finset.mem_singleton.symm
+    · -- Why did this get so complicated all of a sudden
+      ext n
+      simp only [Set.mem_singleton_iff]
+      constructor
+      · intro hn
+        rw [hn]
+        exact Finset.singleton_subset_set_iff.mp fun ⦃a⦄ a ↦ a
+      · intro hn
+        exact Finset.mem_zero.mp hn
   · intro k
     rcases eq_or_ne k 0 with (rfl | hk)
     · simp [𝕢, tendsto_const_nhds]
@@ -83,37 +91,14 @@ lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * r
   · rw [eventually_atImInfty]
     use 1
     intro z hz k
-    rw [norm_mul]
-    exact mul_le_mul_of_nonneg_left (norm_𝕢_le_of_one_le_im _ _ (by norm_cast; omega) hz) (by simp)
+    simp_rw [norm_mul, mul_right_comm _ I, norm_exp_mul_I, mul_right_comm]
+    simp only [mul_im, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero,
+      sub_zero, coe_re, zero_mul, add_zero, coe_im, natCast_im, natCast_re, zero_add, neg_mul]
+    nth_rw 4 [← mul_one k]
+    rw [Nat.cast_mul, Nat.cast_one, ← mul_assoc]
+    gcongr
 
--- α probably has to be some topological group as well
-lemma tsum_pnat {α : Type*} [NormedRing α] {f : ℕ+ → α} :
-    (∑' n, f n) = (∑' n : ℕ, f ⟨n + 1, by omega⟩) := by
-  sorry
-
-lemma tendsto_pnat (a : ℕ+ → ℂ) :
-    Tendsto (fun z : ℍ ↦ ∑' n, a n * 𝕢 n z) atImInfty (𝓝 0) := by
-  sorry
-
-lemma tendsto_pnat' {ι : Type*} (a : ι → ℂ) (f : ι → ℤ) (hf : ∀ i, 0 ≤ f i)
-    (h_bound : Summable fun n ↦ ‖a n‖ * rexp (π * (-2 * f n))) :
-    Tendsto (fun z : ℍ ↦ ∑' n, a n * 𝕢 (f n) z) atImInfty (𝓝 0) := by
-  convert tendsto_tsum_of_dominated_convergence (f := fun z n ↦ a n * 𝕢 (f n) z)
-    (𝓕 := atImInfty) (g := fun _ ↦ 0) h_bound ?_ ?_
-  · simp
-  · intro n
-    simpa using (𝕢_tendsto_atImInfty (f n)).const_mul (a n)
-  · rw [eventually_atImInfty]
-    use 1, fun z hz n ↦ ?_
-    rw [norm_mul]
-    apply mul_le_mul_of_nonneg_left
-      (norm_𝕢_le_of_one_le_im _ _ (by exact_mod_cast hf _) hz) (by simp)
-
-lemma tsum_int_ite {f : ℕ → ℂ} :
-    (∑' n, f n) = (∑' n : ℤ, if hn : 0 ≤ n then f n.toNat else 0) := by
-  sorry
-
-lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * rexp (π * (-2 * n)))
+lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * rexp (-2 * π * n))
     (ha' : ∀ n, n < 0 → a n = 0) :
     Tendsto (fun z : ℍ ↦ ∑' n, a n * 𝕢 n z) atImInfty (𝓝 (a 0)) := by
   let a' : ℕ → ℂ := fun n ↦ a n

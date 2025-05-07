@@ -3,9 +3,6 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Gareth Ma
 -/
-import Mathlib.Data.Real.StarOrdered
-import Mathlib.Order.Category.NonemptyFinLinOrd
-
 import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.ForMathlib.Finsupp
 import SpherePacking.ForMathlib.Vec
@@ -115,17 +112,7 @@ theorem E8_mul_F8_eq_id_Q : E8' * F8' = !![
   norm_num
 
 @[simp]
-theorem E8_mul_F8_eq_one_Q : E8' * F8' = 1 := by
-  -- TODO: un-sorry (slow)
-  sorry
-  -- convert E8_mul_F8_eq_id_Q
-  -- rw [← Matrix.diagonal_one]
-  -- ext i j
-  -- by_cases h : i = j
-  -- · subst h
-  --   fin_cases i <;> norm_num
-  -- · rw [Matrix.diagonal_apply_ne _ h]
-  --   fin_cases i <;> fin_cases j <;> norm_num at h ⊢
+theorem E8_mul_F8_eq_one_Q : E8' * F8' = 1 := by rw [E8_mul_F8_eq_id_Q]; decide
 
 @[simp]
 theorem F8_mul_E8_eq_one_Q : F8' * E8' = 1 := by
@@ -176,7 +163,7 @@ theorem E8'_det_aux_4 :
         0,0,0,0,0,1,1,0;0,0,0,0,0,0,5/2,-1/2;0,0,0,0,0,0,0,-2/5] : Matrix (Fin 8) (Fin 8) ℚ).det
       = -1 := by
   rw [Matrix.det_of_upperTriangular]
-  · simp [Fin.prod_univ_eight]; norm_num
+  · simp [Fin.prod_univ_eight];
   · intro i j h
     simp at h
     fin_cases i <;> fin_cases j
@@ -272,18 +259,18 @@ end E8_sum_apply_lemmas
 
 theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Set (Fin 8 → ℝ)) := by
   ext v
-  rw [SetLike.mem_coe, ← Finsupp.range_total, LinearMap.mem_range]
+  rw [SetLike.mem_coe, ← Finsupp.range_linearCombination, LinearMap.mem_range]
   constructor <;> intro hv
   · obtain ⟨hv₁, hv₂⟩ := mem_E8_Set'.mp hv
     convert_to (∃ y : Fin 8 →₀ ℤ, (∑ i, y i • E8_Matrix i) = v)
     · ext y
-      rw [← Finsupp.total_eq_sum]
+      rw [← Finsupp.linearCombination_eq_sum]
       rfl
     · cases' hv₁ with hv₁ hv₁
       -- TODO (the y is just F8_Matrix * v, need to prove it has integer coefficients)
       <;> sorry
   · obtain ⟨y, hy⟩ := hv
-    erw [Finsupp.total_eq_sum] at hy
+    erw [Finsupp.linearCombination_eq_sum] at hy
     constructor
     · by_cases hy' : Even (y 6)
       · left
@@ -325,7 +312,7 @@ theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Se
 
 end E8_Over_ℝ
 
-noncomputable section E8_isZlattice
+noncomputable section E8_isZLattice
 
 theorem E8_add_mem {a b : EuclideanSpace ℝ (Fin 8)} (ha : a ∈ E8_Set) (hb : b ∈ E8_Set) :
     a + b ∈ E8_Set := by
@@ -336,19 +323,31 @@ theorem E8_neg_mem {a : EuclideanSpace ℝ (Fin 8)} (ha : a ∈ E8_Set) : -a ∈
   rw [E8_Set_eq_span, SetLike.mem_coe] at *
   exact Submodule.neg_mem _ ha
 
-def E8_Lattice : AddSubgroup (EuclideanSpace ℝ (Fin 8)) where
+def E8_AddSubgroup : AddSubgroup (EuclideanSpace ℝ (Fin 8)) where
   carrier := E8_Set
   zero_mem' := by simp [mem_E8_Set]
   add_mem' := E8_add_mem
   neg_mem' := E8_neg_mem
+
+def E8_Lattice : Submodule ℤ (EuclideanSpace ℝ (Fin 8)) where
+  carrier := E8_Set
+  zero_mem' := by simp [mem_E8_Set]
+  add_mem' := E8_add_mem
+  smul_mem' := by
+    intros n v hv
+    simp only [mem_E8_Set] at hv ⊢
+    obtain ⟨hv₁, hv₂⟩ := hv
+    -- Need to do cases on whether n is even or odd
+    -- Then do cases on hv₁
+    sorry
 
 open Topology TopologicalSpace Filter Function InnerProductSpace RCLike
 
 theorem E8_Matrix_inner {i j : Fin 8} :
     haveI : Inner ℝ (Fin 8 → ℝ) := (inferInstance : Inner ℝ (EuclideanSpace ℝ (Fin 8)))
     ⟪(E8_Matrix i : EuclideanSpace ℝ (Fin 8)), E8_Matrix j⟫_ℝ = ∑ k, E8' i k * E8' j k := by
-  change ∑ k, E8_Matrix i k * E8_Matrix j k = _
-  simp_rw [E8_Matrix, RingHom.mapMatrix_apply, map_apply, eq_ratCast, Rat.cast_sum, Rat.cast_mul]
+  simp only [inner, inner_apply, conj_trivial, Rat.cast_sum, Rat.cast_mul,
+    E8_Matrix_apply, mul_comm]
 
 section E8_norm_bounds
 
@@ -365,7 +364,7 @@ theorem E8_norm_eq_sqrt_even (v : E8_Lattice) :
   --   LinearMap.mem_range] at hv
   -- replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by
   --   convert hv
-  --   rw [← Finsupp.total_eq_sum E8_Matrix _]
+  --   rw [← Finsupp.linearCombination_eq_sum E8_Matrix _]
   --   rfl
   -- obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv
   -- simp_rw [re_to_real, sum_inner, inner_sum, intCast_smul_left, intCast_smul_right, zsmul_eq_mul,
@@ -412,10 +411,10 @@ theorem E8_Set_span_eq_top : Submodule.span ℝ (E8_Set : Set (EuclideanSpace �
   rw [E8_is_basis.right] at this
   exact Submodule.eq_top_iff'.mpr fun _ ↦ this trivial
 
-instance instIsZLatticeE8Lattice : IsZlattice ℝ E8_Lattice :=
+instance instIsZLatticeE8Lattice : IsZLattice ℝ E8_Lattice :=
   ⟨E8_Set_span_eq_top⟩
 
-end E8_isZlattice
+end E8_isZLattice
 
 section Packing
 
@@ -423,6 +422,8 @@ open scoped Real
 
 -- lattice is inferred!
 noncomputable def E8Packing : PeriodicSpherePacking 8 where
+  separation := √2
+  lattice := E8_Lattice
   centers := E8_Lattice
   centers_dist x y h := (E8_norm_lower_bound (x - y)).resolve_left <| sub_ne_zero_of_ne h
   lattice_action x y := add_mem
@@ -436,37 +437,38 @@ theorem E8Packing_numReps : E8Packing.numReps = 1 := by
   sorry
 
 lemma E8_Matrix_mem (i : Fin 8) : E8_Matrix i ∈ E8_Lattice := by
-  rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe]
+  rw [E8_Lattice, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, E8_Set_eq_span,
+      SetLike.mem_coe]
   exact Set.mem_of_subset_of_mem Submodule.subset_span (Set.mem_range_self i)
 
 -- This is ugly but just hide it and pretend it's not there
 private lemma linearIndependent_subtype_thing
     {d : ℕ} {ι : Type*} [Fintype ι]
     {b : ι → EuclideanSpace ℝ (Fin d)} (hb : LinearIndependent ℤ b)
-    {s : AddSubgroup (EuclideanSpace ℝ (Fin d))}
-    (hs : s = (Submodule.span ℤ (Set.range b)).toAddSubgroup)
+    {s : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
+    (hs : s = (Submodule.span ℤ (Set.range b)))
     (h : ∀ i, b i ∈ s) :
     LinearIndependent ℤ (fun i ↦ (⟨b i, h i⟩ : s)) := by
   subst hs
   exact linearIndependent_span hb
 
 noncomputable def E8_Basis : Basis (Fin 8) ℤ E8_Lattice := by
-  have af := E8_is_basis.left.restrict_scalars_algebras (R := ℤ) (S := ℝ) ?_
+  have af := E8_is_basis.left.restrict_scalars' ℤ
   have : LinearIndependent ℤ (fun i ↦ (⟨E8_Matrix i, E8_Matrix_mem i⟩ : E8_Lattice)) := by
     apply linearIndependent_subtype_thing af
     simp_rw [E8_Lattice, E8_Set_eq_span]
     rfl
-  · apply Basis.mk this
+  apply Basis.mk this
     -- This is the worst proof ever but I don't want to waste my time on this
-    change (_ : Set E8_Lattice) ⊆ _
-    intro ⟨x, hx⟩ _
-    simp_rw [E8_Lattice, E8_Set_eq_span, AddSubgroup.mem_mk] at hx
-    rw [SetLike.mem_coe, Finsupp.mem_span_range_iff_exists_finsupp] at hx ⊢
-    obtain ⟨c, hc⟩ := hx
-    use c
-    apply Subtype.ext_iff.mpr
-    simp only [Finsupp.sum, ← hc, AddSubgroup.val_finset_sum, AddSubgroupClass.coe_zsmul]
-  · exact (algebraMap ℤ ℝ).injective_int
+  change (_ : Set E8_Lattice) ⊆ _
+  intro ⟨x, hx⟩ _
+  simp_rw [E8_Lattice, E8_Set_eq_span, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk] at hx
+  rw [SetLike.mem_coe, Finsupp.mem_span_range_iff_exists_finsupp] at hx ⊢
+  obtain ⟨c, hc⟩ := hx
+  use c
+  apply Subtype.ext_iff.mpr
+  simp only [Finsupp.sum, ← hc, AddSubgroup.val_finset_sum, AddSubgroupClass.coe_zsmul]
+  exact Submodule.coe_sum E8_Lattice (fun i ↦ c i • ⟨E8_Matrix i, E8_Matrix_mem i⟩) c.support
 
 -- sanity check
 example (i : Fin 8) : ((E8_Basis i : E8_Lattice) : EuclideanSpace ℝ (Fin 8)) = E8_Matrix i := by
@@ -480,11 +482,11 @@ lemma E8_Basis_apply_norm (i : Fin 8) : ‖E8_Basis i‖ = √2 := by
   -- <;> simp [Fin.sum_univ_eight, E8_Basis_apply_norm, Fin.sum_univ_eight, E8_Matrix_apply]
   -- <;> norm_num
 
-open MeasureTheory Zspan in
-theorem E8_Basis_volume : volume (fundamentalDomain (E8_Basis.ofZlatticeBasis ℝ _)) = 1 := by
+open MeasureTheory ZSpan in
+theorem E8_Basis_volume : volume (fundamentalDomain (E8_Basis.ofZLatticeBasis ℝ _)) = 1 := by
   sorry
 
-open MeasureTheory Zspan in
+open MeasureTheory ZSpan in
 theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
   rw [PeriodicSpherePacking.density_eq E8_Basis ?_ (by omega) (L := 8 • √2)]
   · rw [E8Packing_numReps, Nat.cast_one, one_mul, volume_ball, Fintype.card_fin]

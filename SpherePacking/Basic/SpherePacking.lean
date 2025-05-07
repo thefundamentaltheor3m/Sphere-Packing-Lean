@@ -3,15 +3,13 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Gareth Ma
 -/
-import Mathlib.Algebra.Module.Zlattice.Basic
-import Mathlib.Data.Real.ENatENNReal
-import Mathlib.Data.Set.Card
+import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.Data.Real.StarOrdered
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 import Mathlib.Topology.Compactness.PseudometrizableLindelof
 import Mathlib.Topology.EMetricSpace.Paracompact
-import Mathlib.Topology.OmegaCompletePartialOrder
-import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
-import SpherePacking.ForMathlib.ENat
-import SpherePacking.ForMathlib.ENNReal
+
 import SpherePacking.ForMathlib.VolumeOfBalls
 
 open BigOperators MeasureTheory Metric
@@ -31,8 +29,6 @@ open BigOperators Pointwise Filter
 
 section Definitions
 
--- I considered defining a SetOf instance to treat SpherePacking as its centers automatically,
--- but decided against it and opt for explicitly stating the conversion
 structure SpherePacking (d : ℕ) where
   centers : Set (EuclideanSpace ℝ (Fin d))
   separation : ℝ
@@ -40,12 +36,10 @@ structure SpherePacking (d : ℕ) where
   centers_dist : Pairwise (separation ≤ dist · · : centers → centers → Prop)
 
 structure PeriodicSpherePacking (d : ℕ) extends SpherePacking d where
-  lattice : AddSubgroup (EuclideanSpace ℝ (Fin d))
-  -- Note that an AddAction here is not enough, because it might not agree with the action induced
-  -- by EuclideanSpace
+  lattice : Submodule ℤ (EuclideanSpace ℝ (Fin d))
   lattice_action : ∀ ⦃x y⦄, x ∈ lattice → y ∈ centers → x + y ∈ centers
   lattice_discrete : DiscreteTopology lattice := by infer_instance
-  lattice_isZlattice : IsZlattice ℝ lattice := by infer_instance
+  lattice_isZLattice : IsZLattice ℝ lattice := by infer_instance
 
 variable {d : ℕ}
 
@@ -63,9 +57,9 @@ instance PeriodicSpherePacking.instLatticeDiscrete (S : PeriodicSpherePacking d)
     DiscreteTopology S.lattice :=
   S.lattice_discrete
 
-instance PeriodicSpherePacking.instIsZlattice (S : PeriodicSpherePacking d) :
-    IsZlattice ℝ S.lattice :=
-  S.lattice_isZlattice
+instance PeriodicSpherePacking.instIsZLattice (S : PeriodicSpherePacking d) :
+    IsZLattice ℝ S.lattice :=
+  S.lattice_isZLattice
 
 instance SpherePacking.instCentersDiscrete (S : SpherePacking d) :
     DiscreteTopology S.centers := by
@@ -111,26 +105,26 @@ noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
 -- /-- Returns a ℝ-basis of ℝ^d such that the its ℤ-span is `S.lattice`. -/
 -- noncomputable def PeriodicSpherePacking.lattice_basis (S : PeriodicSpherePacking d) :
 --     Basis (Module.Free.ChooseBasisIndex ℤ S.lattice) ℝ (EuclideanSpace ℝ (Fin d)) :=
---   ((Zlattice.module_free ℝ S.lattice).chooseBasis).ofZlatticeBasis _ _
+--   ((ZLattice.module_free ℝ S.lattice).chooseBasis).ofZLatticeBasis _ _
 
-theorem Submodule.toIntSubmodule_eq_iff_eq_toAddSubgroup {G : Type*} [AddCommGroup G]
-    {A : AddSubgroup G} {B : Submodule ℤ G} :
-    AddSubgroup.toIntSubmodule A = B ↔ A = B.toAddSubgroup := by
-  constructor <;> rintro rfl <;> rfl
+-- Rendered unnecessary by bump to 4.13.0-rc3
+-- theorem Submodule.toIntSubmodule_eq_iff_eq_toAddSubgroup {G : Type*} [AddCommGroup G]
+--     {A : AddSubgroup G} {B : Submodule ℤ G} :
+--     AddSubgroup.toIntSubmodule A = B ↔ A = B.toAddSubgroup := by
+--   constructor <;> rintro rfl <;> rfl
 
 theorem PeriodicSpherePacking.basis_Z_span
     (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
-    Submodule.span ℤ (Set.range (b.ofZlatticeBasis ℝ _)) = AddSubgroup.toIntSubmodule S.lattice :=
-  (Submodule.toIntSubmodule_eq_iff_eq_toAddSubgroup.mpr (Basis.ofZlatticeBasis_span ..).symm).symm
+    Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) = S.lattice := Basis.ofZLatticeBasis_span ℝ S.lattice b
 
 theorem PeriodicSpherePacking.mem_basis_Z_span
     (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (v) :
-    v ∈ Submodule.span ℤ (Set.range (b.ofZlatticeBasis ℝ _)) ↔ v ∈ S.lattice :=
+    v ∈ Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) ↔ v ∈ S.lattice :=
   SetLike.ext_iff.mp (S.basis_Z_span b) v
 
 theorem PeriodicSpherePacking.basis_R_span
     (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
-    Submodule.span ℝ (Set.range (b.ofZlatticeBasis ℝ _)) = ⊤ :=
+    Submodule.span ℝ (Set.range (b.ofZLatticeBasis ℝ _)) = ⊤ :=
   Basis.span_eq _
 
 end Definitions
@@ -156,8 +150,9 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
     have := S.centers_dist this
     exact (mul_le_mul_left hc).mpr this
 
+
 noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
-    PeriodicSpherePacking d := {
+  PeriodicSpherePacking d := {
   S.toSpherePacking.scale hc with
   lattice := c • S.lattice
   lattice_action := fun x y hx hy ↦ by
@@ -170,25 +165,31 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
     rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff] at this ⊢
     obtain ⟨ε, hε, hε'⟩ := this
     use c * ε, mul_pos hc hε
-    simp_rw [dist_zero_right, AddSubgroup.coe_norm, AddSubgroup.coe_pointwise_smul,
-      Subtype.forall, AddSubmonoid.mk_eq_zero, AddSubgroup.mem_smul_pointwise_iff_exists] at hε' ⊢
+    simp_rw [dist_zero_right, Subtype.forall] at hε' ⊢
     rintro x ⟨x, hx, rfl⟩ hx'
+    -- rw [mul_lt_mul_left hc] at hx'
+    -- rw [hε' x hx hx', smul_zero]
+    simp only [DistribMulAction.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero]
+    right
+    specialize hε' x hx
+    simp only [DistribMulAction.toLinearMap_apply, AddSubgroupClass.coe_norm,
+      Submodule.mk_eq_zero] at hx' hε'
     rw [norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le, mul_lt_mul_left hc] at hx'
-    rw [hε' x hx hx', smul_zero]
-  lattice_isZlattice := by
+    exact hε' hx'
+  lattice_isZLattice := by
     use ?_
-    rw [← S.lattice_isZlattice.span_top]
+    rw [← S.lattice_isZLattice.span_top]
     ext v
     simp_rw [Submodule.mem_span]
     constructor <;> intro h p hp
     · specialize h (c • p) ?_
-      · rw [AddSubgroup.coe_pointwise_smul, Submodule.coe_pointwise_smul]
+      · rw [Submodule.coe_pointwise_smul]
         exact Set.smul_set_mono hp
       · have : c • v ∈ c • p := Submodule.smul_mem _ _ h
         have := Submodule.smul_mem_pointwise_smul _ c⁻¹ _ this
         simpa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul]
     · specialize h (c⁻¹ • p) ?_
-      · rw [AddSubgroup.coe_pointwise_smul, Submodule.coe_pointwise_smul] at *
+      · rw [Submodule.coe_pointwise_smul] at *
         have := Set.smul_set_mono (a := c⁻¹) hp
         rwa [smul_smul, inv_mul_cancel₀ hc.ne.symm, one_smul] at this
       · have : c⁻¹ • v ∈ c⁻¹ • p := Submodule.smul_mem _ _ h
@@ -268,9 +269,9 @@ lemma density_le_one {d : ℕ} (S : SpherePacking d) : S.density ≤ 1 := by
 
 /-- Finite density of a scaled packing. -/
 @[simp]
-lemma scale_finiteDensity {d : ℕ} (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
+lemma scale_finiteDensity {d : ℕ} (_ : 0 < d) (S : SpherePacking d) {c : ℝ} (hc : 0 < c) (R : ℝ) :
     (S.scale hc).finiteDensity (c * R) = S.finiteDensity R := by
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  -- haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd -- (_ : 0 < d) unnecessary
   have : ball (0 : EuclideanSpace ℝ (Fin d)) (c * R) = c • ball 0 R := by
     convert (_root_.smul_ball hc.ne.symm (0 : EuclideanSpace ℝ (Fin d)) R).symm
     · exact Eq.symm (DistribMulAction.smul_zero c)
@@ -302,7 +303,7 @@ lemma scale_density {d : ℕ} (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc :
     intro b' hb'
     rw [scale_finiteDensity' hd S hc]
     apply ha
-    exact (le_div_iff' hc).mpr hb'
+    exact (le_div_iff₀' hc).mpr hb'
   · simp only [sInf_le_iff, le_sInf_iff, Set.mem_setOf_eq, lowerBounds]
     intro x hx y hy
     rcases hx with ⟨a, ha⟩
@@ -311,7 +312,7 @@ lemma scale_density {d : ℕ} (hd : 0 < d) (S : SpherePacking d) {c : ℝ} (hc :
     intro b' hb'
     rw [← scale_finiteDensity hd S hc]
     apply ha
-    exact (div_le_iff' hc).mp hb'
+    exact (div_le_iff₀' hc).mp hb'
 
 theorem constant_eq_constant_normalized {d : ℕ} (hd : 0 < d) :
     SpherePackingConstant d = ⨆ (S : SpherePacking d) (_ : S.separation = 1), S.density := by
@@ -394,7 +395,7 @@ theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
     biUnion_inter_balls_subset_biUnion_balls_inter S.centers (S.separation / 2) R
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R (le_refl _),
-    Measure.addHaar_ball_center, ENNReal.tsum_set_const_eq] at h
+    Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.le_div_iff_mul_le] at h <;> left
   · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
@@ -410,7 +411,7 @@ theorem SpherePacking.inter_ball_encard_ge (hd : 0 < d) (R : ℝ) :
     biUnion_balls_inter_subset_biUnion_inter_balls S.centers (S.separation / 2) R
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ (le_refl _),
-    Measure.addHaar_ball_center, ENNReal.tsum_set_const_eq] at h
+    Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.div_le_iff_le_mul] at h <;> left
   · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
@@ -464,3 +465,5 @@ theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
   · exact (volume_ball_lt_top _).ne
 
 end BasicResults
+
+-- #min_imports
