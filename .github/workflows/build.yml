@@ -1,8 +1,7 @@
 on:
   push:
-    branches:
-      - '**'
-      - '!main'
+  pull_request:
+  workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -16,18 +15,9 @@ jobs:
     name: Build Project
     steps:
       - name: Checkout Project
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v4
 
-      - name: Install `elan`
-        run: curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain leanprover/lean4:4.5.0
-
-      - name: Get Cache
-        run: ~/.elan/bin/lake exe cache get || true
-
-      - name: Build Project
-        run: ~/.elan/bin/lake build SpherePacking
+      - uses: leanprover/lean-action@v1
 
       - name: Cache Mathlib Docs
         uses: actions/cache@v3
@@ -44,8 +34,9 @@ jobs:
           restore-keys: |
             MathlibDoc-
 
-      # - name: Build Documentation
-      #   run: ~/.elan/bin/lake -R -Kenv=dev build SpherePacking:docs
+      - name: Build Documentation
+        run: ~/.elan/bin/lake -R -Kenv=dev build SpherePacking:docs
+        if: github.ref == 'refs/heads/main'
 
       - name: Build blueprint and copy to `docs/blueprint`
         uses: xu-cheng/texlive-action@v2
