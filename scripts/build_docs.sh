@@ -15,7 +15,7 @@ version = "0.1.0"
 packagesDir = "../.lake/packages"
 
 [[require]]
-name = "SpherePacking-Docs"
+name = "SpherePacking"
 path = "../"
 
 [[require]]

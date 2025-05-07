@@ -24,4 +24,3 @@ open Complex Real Set MeasureTheory MeasureTheory.Measure Filter
 open scoped Function
 
 -- Need to copy and paste from I₁ file
-

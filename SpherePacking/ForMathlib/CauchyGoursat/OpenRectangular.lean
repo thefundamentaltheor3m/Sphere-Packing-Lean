@@ -243,11 +243,11 @@ theorem integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_o
   -- (Maybe prove this? Idk)
   -- let b :=
 
-#check integrableOn_Ioi_of_intervalIntegral_norm_tendsto -- use for last one
--- #check integrableOn_Ioi_of_intervalIntegral_tendsto -- use for last one
-#check Filter.tendsto_id
+-- #check integrableOn_Ioi_of_intervalIntegral_norm_tendsto -- use for last one
+-- -- #check integrableOn_Ioi_of_intervalIntegral_tendsto -- use for last one
+-- #check Filter.tendsto_id
 
-#check integral_boundary_rect_eq_zero_of_differentiable_on_off_countable
-#check intervalIntegral_tendsto_integral_Ioi
+-- #check integral_boundary_rect_eq_zero_of_differentiable_on_off_countable
+-- #check intervalIntegral_tendsto_integral_Ioi
 
 end Contour_Deformation_of_Integrable_along_ONE
