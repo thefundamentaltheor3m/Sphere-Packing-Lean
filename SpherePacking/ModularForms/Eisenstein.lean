@@ -417,7 +417,7 @@ theorem cuspfunc_lim_coef {k : ℤ} {F : Type u_1} [inst : FunLike F ℍ ℂ] (n
     (by simp; exact Nat.pos_of_neZero n) hq hq1
   have hft := hf ⟨(Periodic.invQParam (↑n) q), hq2⟩
   have := eq_cuspFunction n f ⟨(Periodic.invQParam (↑n) q), hq2⟩
-  simp only [smul_eq_mul, Complex.norm_eq_abs, ne_eq, coe_mk_subtype] at *
+  simp only [smul_eq_mul, , ne_eq, coe_mk_subtype] at *
   rw [Function.Periodic.qParam_right_inv] at this hft
   rw [← this] at hft
   exact hft
@@ -485,21 +485,21 @@ lemma modfom_q_exp_cuspfunc  (c : ℕ → ℂ) (f : F) [ModularFormClass F Γ(n)
         · rw [@mem_nhdsWithin_iff]
           refine ⟨1/2, by norm_num, ?_⟩
           intro y hy
-          simp only [smul_eq_mul, Complex.norm_eq_abs, ne_eq, Decidable.not_not, one_div,
+          simp only [smul_eq_mul, , ne_eq, Decidable.not_not, one_div,
             mem_inter_iff, mem_ball, dist_zero_right, mem_compl_iff, mem_singleton_iff,
             mem_setOf_eq] at *
           refine ⟨hy.2, hy.1⟩
         · intro y hy k
-          simp only [norm_mul, Complex.norm_eq_abs, norm_pow, one_div, inv_pow]
+          simp only [norm_mul, , norm_pow, one_div, inv_pow]
           gcongr
           have hy2 := hy.2.le
           rw [← inv_pow]
           gcongr
-          simpa only [Complex.norm_eq_abs, one_div] using hy2
+          simpa only [, one_div] using hy2
       apply htt.congr'
       rw [@eventuallyEq_nhdsWithin_iff, eventually_nhds_iff_ball]
       use 1
-      simp only [gt_iff_lt, zero_lt_one, mem_ball, dist_zero_right, Complex.norm_eq_abs,
+      simp only [gt_iff_lt, zero_lt_one, mem_ball, dist_zero_right, ,
         mem_compl_iff, mem_singleton_iff, true_and]
       intro y hy hy0
       exact (this y hy hy0).tsum_eq
@@ -527,7 +527,7 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
     simp only [qq]
     rw [
     ← (ContinuousMultilinearMap.piFieldEquiv ℂ (Fin m) ℂ).symm.norm_map]
-    simp only [_root_.map_smul, smul_eq_mul, norm_mul, Complex.norm_eq_abs,
+    simp only [_root_.map_smul, smul_eq_mul, norm_mul, ,
       LinearIsometryEquiv.norm_map, ContinuousMultilinearMap.norm_mkPiAlgebraFin, mul_one]
   have H2 : HasFPowerSeriesOnBall (cuspFunction n f) qq 0 1 := by
     have H21 : 1 ≤ qq.radius := by
@@ -538,12 +538,12 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
           enter [1]
           intro n
           rw [hqq2]
-        simp only [PowerSeries.coeff_mk, Complex.norm_eq_abs, qExpansion2, qq]
+        simp only [PowerSeries.coeff_mk, , qExpansion2, qq]
         sorry
     refine ⟨H21 , zero_lt_one, ?_⟩
     intro y hy
     rw [EMetric.mem_ball, edist_zero_right, ENNReal.coe_lt_one_iff, ← NNReal.coe_lt_one,
-    coe_nnnorm, Complex.norm_eq_abs] at hy
+    coe_nnnorm, ] at hy
     simp
     have := modfom_q_exp_cuspfunc n c f hf y hy
     apply this.congr
@@ -1032,7 +1032,7 @@ lemma asdf : TendstoLocallyUniformlyOn (fun n : ℕ ↦ ∏ x ∈ Finset.range n
   simp at *
   rw [← inv_pow]
   apply pow_le_pow_left₀
-  exact AbsoluteValue.nonneg Complex.abs x
+  exact AbsoluteValue.nonneg norm x
   exact hx
   intro x n
   have hx := x.2

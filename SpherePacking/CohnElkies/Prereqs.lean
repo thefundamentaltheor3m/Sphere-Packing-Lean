@@ -201,7 +201,7 @@ section Integration
 open MeasureTheory Filter
 
 variable {E : Type*} [NormedAddCommGroup E]
-variable [TopologicalSpace E] [TopologicalAddGroup E] [MeasureSpace E] [BorelSpace E]
+variable [TopologicalSpace E] [IsTopologicalAddGroup E] [MeasureSpace E] [BorelSpace E]
 variable [(volume : Measure E).IsAddLeftInvariant] [(volume : Measure E).Regular]
   [NeZero (volume : Measure E)] -- More Generality Possible?
 
@@ -262,6 +262,7 @@ theorem toFun_eq_zero_iff_zero {E F : Type*}
     rw [hf]
     exact coeFn_zero
 
+omit [Fact (0 < d)] in
 theorem integral_zero_iff_zero_of_nonneg {f : 𝓢(EuclideanSpace ℝ (Fin d), ℝ)}
   (hnn : ∀ x, 0 ≤ f x) : ∫ (v : EuclideanSpace ℝ (Fin d)), f v = 0 ↔ f = 0 := by
   simp [← f.toFun_eq_zero_iff_zero]
@@ -279,6 +280,7 @@ instance (v : EuclideanSpace ℝ (Fin d)) : Decidable (v = 0) := Classical.propD
 instance : DecidableEq (EuclideanSpace ℝ (Fin d)) :=
   Classical.typeDecidableEq (EuclideanSpace ℝ (Fin d))
 
+omit [Fact (0 < d)]
 -- Now a small theorem from Complex analysis:
 local notation "conj" => starRingEnd ℂ
 theorem Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
@@ -299,5 +301,3 @@ theorem Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
           ring_nf
 
 end Misc
-
-#min_imports

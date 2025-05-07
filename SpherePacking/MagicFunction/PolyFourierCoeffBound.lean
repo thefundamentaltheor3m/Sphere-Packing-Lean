@@ -74,8 +74,8 @@ private lemma aux_1 (x : ℂ) : abs (cexp (I * x)) = rexp (-x.im) := by
   simp
 
 -- Below was written by Bhavik
-private lemma aux_2 (x : ℂ) : 1 - Real.exp x.re ≤ Complex.abs (1 - cexp x) := calc
-  abs (1 - cexp x) ≥ |Complex.abs 1 - abs (cexp x)| := abs.abs_abv_sub_le_abv_sub _ _
+private lemma aux_2 (x : ℂ) : 1 - Real.exp x.re ≤ norm (1 - cexp x) := calc
+  abs (1 - cexp x) ≥ |norm 1 - abs (cexp x)| := abs.abs_abv_sub_le_abv_sub _ _
   _ = |1 - rexp x.re| := by simp [Complex.abs_exp]
   _ ≥ _ := le_abs_self _
 
@@ -91,23 +91,23 @@ private lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π *
   exact h₁
 
 include hcsum in
-private lemma aux_4 : Summable fun (i : ℕ) ↦ Complex.abs (c (i + n₀)) *
-    Complex.abs (cexp (↑π * I * ↑i * z)) := by
-  simp_rw [← map_mul, ← Complex.norm_eq_abs]; exact aux_3 z c n₀ hcsum
+private lemma aux_4 : Summable fun (i : ℕ) ↦ norm (c (i + n₀)) *
+    norm (cexp (↑π * I * ↑i * z)) := by
+  simp_rw [← map_mul, ← ]; exact aux_3 z c n₀ hcsum
 
-lemma aux_5 (z : ℍ) : Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24) =
-  ∏' (n : ℕ+), Complex.abs (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
+lemma aux_5 (z : ℍ) : norm (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24) =
+  ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
   simp only [← abs_pow]
   apply Complex.abs_tprod -- ℕ+ (fun n => (1 - cexp (2 * ↑π * I * n * z)) ^ 24)
   apply MultipliableDeltaProductExpansion_pnat z
 
 
-lemma aux_6 (z : ℍ) : 0 ≤ ∏' (n : ℕ+), Complex.abs (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
+lemma aux_6 (z : ℍ) : 0 ≤ ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
   rw [← aux_5 z]
-  exact AbsoluteValue.nonneg Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24)
+  exact AbsoluteValue.nonneg norm (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24)
 
 lemma aux_7 (a : ℤ) :
-    Complex.abs (cexp (↑π * I * a * z)) ≤ rexp (-π * a * z.im) := by
+    norm (cexp (↑π * I * a * z)) ≤ rexp (-π * a * z.im) := by
   rw [mul_comm (π : ℂ) I, mul_assoc, mul_assoc, aux_1 (↑π * (a * z))]
   refine exp_le_exp.2 ?_
   simp; linarith
@@ -120,13 +120,13 @@ lemma aux_ring (i : ℕ) : (I * ↑π * ↑i * z) = I * ((↑π * ↑i) * z) := 
 
 lemma aux_9 (i : ℕ) :
     ‖c (i + n₀) * cexp (↑π * I * ↑i * z)‖ = ‖c (i + n₀)‖ * rexp (-π * ↑i * z.im) := by
-  rw [Complex.norm_eq_abs, Complex.norm_eq_abs, map_mul, mul_comm (↑π) (I)]
+  rw [, , map_mul, mul_comm (↑π) (I)]
   rw [aux_ring, aux_1]
   congr; simp
 
 include hcsum in
-lemma aux_10 : Summable fun (n : ℕ) ↦ Complex.abs (c (n + n₀)) * rexp (-π * ↑n * z.im) := by
-  simp only [← Complex.norm_eq_abs, ← aux_9, aux_ring]
+lemma aux_10 : Summable fun (n : ℕ) ↦ norm (c (n + n₀)) * rexp (-π * ↑n * z.im) := by
+  simp only [← , ← aux_9, aux_ring]
   exact aux_3 z c n₀ hcsum
 
 lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
@@ -186,13 +186,13 @@ private lemma step_5 :
     (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
     abs (cexp (π * I * (n₀ - 2) * z)) *
     abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-    Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := by
+    norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   simp only [map_div₀, map_mul]
 
 private lemma step_6  :
     abs (cexp (π * I * (n₀ - 2) * z)) *
     abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-    Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) =
+    norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) =
     abs (cexp (π * I * (n₀ - 2) * z)) *
     abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     ∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24 := by congr; exact aux_5 z
@@ -216,11 +216,11 @@ private lemma step_8  :
   gcongr
   · exact aux_6 z
   · calc
-    _ ≤ ∑' (n : ℕ), Complex.abs ((c (n + n₀)) * (cexp (↑π * I * ↑n * z))) := by
-      simp_rw [← Complex.norm_eq_abs]
+    _ ≤ ∑' (n : ℕ), norm ((c (n + n₀)) * (cexp (↑π * I * ↑n * z))) := by
+      simp_rw [← ]
       refine norm_tsum_le_tsum_norm ?_
       exact aux_3 z c n₀ hcsum
-    _ = ∑' (n : ℕ), Complex.abs (c (n + n₀)) * Complex.abs (cexp (↑π * I * ↑n * z)) :=
+    _ = ∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (↑π * I * ↑n * z)) :=
       by simp only [map_mul]
 
 include hcsum in
@@ -231,8 +231,8 @@ private lemma step_9 :
     (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
   · exact aux_6 z
-  · have h₁ : ∀ (n : ℕ), Complex.abs (c (n + n₀)) * Complex.abs (cexp (↑π * I * ↑n * z)) ≤
-        Complex.abs (c (n + n₀)) * rexp (-π * n * z.im) := by
+  · have h₁ : ∀ (n : ℕ), norm (c (n + n₀)) * norm (cexp (↑π * I * ↑n * z)) ≤
+        norm (c (n + n₀)) * rexp (-π * n * z.im) := by
       intro n
       gcongr
       exact aux_7 z n
@@ -249,7 +249,7 @@ private lemma step_10 :
   · apply mul_nonneg (exp_nonneg (-π * (↑n₀ - 2) * z.im))
     apply tsum_nonneg
     intro i
-    exact mul_nonneg (AbsoluteValue.nonneg Complex.abs (c (i + n₀))) (exp_nonneg _)
+    exact mul_nonneg (AbsoluteValue.nonneg norm (c (i + n₀))) (exp_nonneg _)
   · exact aux_8 z hz
   · apply tprod_le_of_nonneg
     · intro n; simp
@@ -295,7 +295,7 @@ private lemma step_11 :
       have h₂ : ∀ (n : ℕ), ‖c (↑n + n₀)‖ * rexp (-π * 2⁻¹) ^ n =
           ‖c (↑n + n₀) * rexp (-π * 2⁻¹) ^ n‖ := fun n => by
         rw [norm_mul, neg_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs, Real.abs_exp]
-      simp only [h₁, ← Complex.norm_eq_abs, h₂]
+      simp only [h₁, ← , h₂]
       -- norm_cast at hpoly
       have := hpoly' c n₀ k hpoly
       norm_cast at this
@@ -313,7 +313,7 @@ private lemma step_12 :
     · exact exp_nonneg _
     · apply tsum_nonneg
       intro i
-      exact mul_nonneg (AbsoluteValue.nonneg Complex.abs (c (i + n₀))) (exp_nonneg _)
+      exact mul_nonneg (AbsoluteValue.nonneg norm (c (i + n₀))) (exp_nonneg _)
   · exact aux_11
   · apply tprod_le_of_nonneg
     · intro n; simp
@@ -367,7 +367,7 @@ theorem DivDiscBoundOfPolyFourierCoeff : abs ((f z) / (Δ z)) ≤
       (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := step_4 z c n₀
   _ = abs (cexp (π * I * (n₀ - 2) * z)) *
       abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      Complex.abs (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := step_5 z c n₀
+      norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := step_5 z c n₀
   _ = abs (cexp (π * I * (n₀ - 2) * z)) * abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       ∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24 := step_6 z c n₀
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
@@ -397,9 +397,9 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
   rw [DivDiscBound]
   apply div_pos
   · refine tsum_pos ?_ ?_ 0 ?_
-    · have h₁ (n : ℕ) : Complex.abs (c (↑n + n₀)) * rexp (-π * ↑n / 2) =
+    · have h₁ (n : ℕ) : norm (c (↑n + n₀)) * rexp (-π * ↑n / 2) =
           ‖(c (↑n + n₀)) * rexp (-π * ↑n / 2)‖ := by
-        rw [Complex.norm_eq_abs, map_mul]
+        rw [, map_mul]
         norm_cast
         simp
       simp only [h₁, summable_norm_iff]
@@ -498,7 +498,7 @@ theorem abs_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     norm_cast at h ⊢
   have hcpoly : c =O[atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
     -- Use `Asymptotics.IsBigO.congr'` to relate properties of c to properties of d
-    simp only [isBigO_iff, Complex.norm_eq_abs, norm_pow, Complex.norm_natCast, eventually_atTop,
+    simp only [isBigO_iff, , norm_pow, Complex.norm_natCast, eventually_atTop,
       ge_iff_le, Real.norm_eq_abs] at hdpoly ⊢
     obtain ⟨R, m, hR⟩ := hdpoly
     use R, m
@@ -514,7 +514,7 @@ theorem abs_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
       exact hn
     specialize hR n.toNat hmnnat
     rw [← hcd, hnnat] at hR
-    calc Complex.abs (c n)
+    calc norm (c n)
     _ ≤ R * n.toNat ^ 5 := by rwa [abs_natCast] at hR
     _ = R * |↑n| ^ 5 := by
       simp only [mul_eq_mul_left_iff, Nat.cast_nonneg, abs_nonneg, ne_eq, OfNat.ofNat_ne_zero,
@@ -543,7 +543,7 @@ theorem abs_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     ·
       sorry
     · -- This is where I need to use Bhavik's result
-      
+
       sorry
     -- · sorry
     -- · sorry

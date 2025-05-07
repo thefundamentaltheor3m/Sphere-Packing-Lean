@@ -278,7 +278,7 @@ private theorem calc_steps :
             simp only [tsum_mul_left]
             apply congrArg _ _
             simp only [← tsum_mul_left]
-            -- We want to apply `tsum_comm`, which requires some summability conditions.
+            -- We want to apply `Summable.tsum_comm`, which requires some summability conditions.
             have hSummable₁ : Summable (Function.uncurry fun
             (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x : ↑(P.centers ∩ D)) ↦
             ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 f ↑m).re * exp (2 * ↑π * I *
@@ -286,14 +286,14 @@ private theorem calc_steps :
               sorry
             sorry
             -- The following broke after the bump
-            -- rw [← tsum_comm hSummable₁]
+            -- rw [← Summable.tsum_comm hSummable₁]
             -- apply congrArg _ _
             -- ext x
             -- have hSummable₂ : Summable (Function.uncurry fun
             -- (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x_1 : ↑(P.centers ∩ D)) ↦
             -- ↑(𝓕 f ↑m).re * exp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)) - ↑x_1, ↑m⟫_[ℝ])) := by
             --   sorry
-            -- rw [← tsum_comm hSummable₂]
+            -- rw [← Summable.tsum_comm hSummable₂]
             -- apply congrArg _ _
             -- ext y
             -- apply congrArg _ _
@@ -357,7 +357,7 @@ private theorem calc_steps :
             ext x
             exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
   _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re *
-      (Complex.abs (∑' x : ↑(P.centers ∩ D),
+      (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
             sorry
@@ -365,7 +365,7 @@ private theorem calc_steps :
             -- We need to turn the RHS into the real part of a complex number
             -- rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
             --                    ∑' (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)),
-            --                    (𝓕 f ↑m).re * Complex.abs (∑' (x : ↑(P.centers ∩ D)),
+            --                    (𝓕 f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
             --                    cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
             -- -- Now we can apply the fact that the real parts of both expressions are equal if they
             -- -- are equal in ℂ.
@@ -381,23 +381,23 @@ private theorem calc_steps :
   -- We split the sum up into the `m = 0` and `m ≠ 0` parts.
   _ = (1 / ZLattice.covolume P.lattice) * (
       (∑' (m : bilinFormOfRealInner.dualSubmodule P.lattice), if hm : m = (0 : EuclideanSpace ℝ (Fin d)) then 0 else
-      (𝓕 f m).re * (Complex.abs (∑' x : ↑(P.centers ∩ D),
+      (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
       +
       (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
-      (Complex.abs (∑' x : ↑(P.centers ∩ D),
+      (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
         := by
             apply congrArg _ _
             rw [add_comm]
             have hSummable : Summable (fun (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) =>
-              (𝓕 f m).re * (Complex.abs (∑' x : ↑(P.centers ∩ D),
+              (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
               sorry
             rw [tsum_eq_add_tsum_ite hSummable (0 : ↥(bilinFormOfRealInner.dualSubmodule P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
   _ ≥ (1 / ZLattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
-      (Complex.abs (∑' x : ↑(P.centers ∩ D),
+      (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
             -- We need to show that the `m ≠ 0` part is nonpositive.

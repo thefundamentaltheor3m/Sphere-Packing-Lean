@@ -42,7 +42,7 @@ lemma cc(f : ℤ → ℂ) (hc :  CauchySeq fun N : ℕ => ∑ m in Finset.Icc (-
   have hgn : g N ≤ |g N| := by
     exact le_abs_self (g N)
   have := le_trans H3 hgn
-  have hgnn : 2 * Complex.abs (f n) < 2 * ε := by
+  have hgnn : 2 * norm (f n) < 2 * ε := by
     apply lt_of_le_of_lt
     exact this
     exact HN
@@ -60,9 +60,9 @@ lemma sum_Icc_eq_sum_Ico_succ {α : Type*} [AddCommMonoid α] (f : ℤ → α)
     Finset.sum_insert]
   rw [add_comm]
 
-lemma auxl2 (a b c : ℂ): Complex.abs (a - b) ≤ Complex.abs (a - b + c) + Complex.abs (c) := by
+lemma auxl2 (a b c : ℂ): norm (a - b) ≤ norm (a - b + c) + norm (c) := by
   nth_rw 1 [show a - b = (a - b + c) + -c by ring]
-  have : Complex.abs (a - b + c + -c) ≤ Complex.abs (a - b+ c) + Complex.abs (-c) := by exact AbsoluteValue.add_le Complex.abs (a - b+ c) (-c)
+  have : norm (a - b + c + -c) ≤ norm (a - b+ c) + norm (-c) := by exact AbsoluteValue.add_le norm (a - b+ c) (-c)
   simpa using this
 
 lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n , f n = f (-n))
@@ -308,7 +308,7 @@ lemma cauchy_seq_mul_const (f : ℕ → ℂ) (c : ℂ) (hc  : c ≠ 0) :
   intro ε hε
   have hcc : 0 < ‖c‖ := by
     simp only [norm_eq_abs, AbsoluteValue.pos_iff, ne_eq, hc, not_false_eq_true]
-  have hC : 0 < Complex.abs c := by
+  have hC : 0 < norm c := by
     simp only [AbsoluteValue.pos_iff, ne_eq, hc, not_false_eq_true]
   have H := hf (ε / ‖c‖) (by simp; rw [lt_div_iff₀' hC]; simp [hε] )
   obtain ⟨N, hN⟩ := H

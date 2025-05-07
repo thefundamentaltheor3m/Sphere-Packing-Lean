@@ -50,7 +50,7 @@ theorem extracted_66 (z : ℍ) :
   ext N
   simp
   rw [@Finset.mul_sum]
-  rw [tsum_sum]
+  rw [Summable.tsum_sum]
   congr
   ext n
   rw [← tsum_mul_left]
@@ -120,7 +120,7 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
   simp
   have := tendsto_tsum_of_dominated_convergence (𝓕 := atTop) (g := fun (n : ℕ+) => (0 : ℂ))
     (f := fun d : ℕ+ => fun n : ℕ+ => cexp (2 * ↑π * Complex.I * (-↑↑d / ↑z) * ↑n) )
-    (bound := fun n : ℕ+ => (Complex.abs (cexp (2 * ↑π * Complex.I * (-1 / ↑z)))^ (n : ℕ)))
+    (bound := fun n : ℕ+ => (norm (cexp (2 * ↑π * Complex.I * (-1 / ↑z)))^ (n : ℕ)))
   simp only [norm_eq_abs, ge_iff_le, tsum_zero, forall_exists_index] at this
   apply this
   · apply Summable.subtype
@@ -155,7 +155,7 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
     apply  Bound.pow_le_pow_right_of_le_one_or_one_le ?_
     right
     constructor
-    · apply AbsoluteValue.nonneg Complex.abs
+    · apply AbsoluteValue.nonneg norm
     · have := exp_upperHalfPlane_lt_one ⟨- 1 / z, by simpa using (pnat_div_upper 1 z)⟩
       constructor
       apply this.le
@@ -236,7 +236,7 @@ theorem PS3tn22 (z : ℍ) :
     (fun N : ℕ+ =>
     ∑' m : ℤ ,  ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) := by
     ext n
-    rw [tsum_sum]
+    rw [Summable.tsum_sum]
     intro i hi
     apply summable_pain
   conv at this =>
@@ -329,7 +329,7 @@ theorem extracted_66c (z : ℍ) :
   ext N
   simp
   rw [@Finset.mul_sum]
-  rw [tsum_sum]
+  rw [Summable.tsum_sum]
   congr
   ext n
   rw [← tsum_mul_left]
@@ -361,7 +361,7 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
   congr
   ext N
   simp only [one_div, Pi.sub_apply, mul_inv_rev]
-  rw [tsum_sum, ← Finset.sum_sub_distrib ]
+  rw [Summable.tsum_sum, ← Finset.sum_sub_distrib ]
   congr
   ext n
   rw [← tsum_sub]
@@ -377,7 +377,7 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
   · conv =>
       enter [1]
       ext N
-      rw [tsum_sum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
+      rw [Summable.tsum_sum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
     apply CauchySeq_Icc_iff_CauchySeq_Ico
     intro n
     nth_rw 2 [int_sum_neg]
@@ -388,7 +388,7 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
     conv =>
       enter [1]
       ext N
-      rw [← tsum_sum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
+      rw [← Summable.tsum_sum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
     have := G2_cauchy ⟨-1 / z, by simpa using pnat_div_upper 1 z⟩
     have  hC := cauchy_seq_mul_const _ ((z : ℂ) ^ 2)⁻¹ (by simp [ne_zero z]) this
     apply hC.congr
@@ -760,7 +760,7 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ,
   simp only [UpperHalfPlane.coe] at h3
   rw [← h3, ← this]
   simp only [pow_one]
-  rw [tsum_prod' ]
+  rw [Summable.tsum_prod' ]
   congr
   ext n
   congr
