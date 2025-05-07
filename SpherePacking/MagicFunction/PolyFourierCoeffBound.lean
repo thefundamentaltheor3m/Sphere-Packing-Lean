@@ -47,7 +47,7 @@ variable (k : ℕ) (hpoly : c =O[atTop] (fun n ↦ (n ^ k : ℝ)))
 variable (f : ℍ → ℂ) (hf : ∀ x : ℍ, f x = ∑' (n : ℕ), (fouterm c x (n + n₀)))
 
 noncomputable def DivDiscBound : ℝ :=
-  (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
+  (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24)
 
 -- #check DivDiscBound
@@ -68,15 +68,15 @@ section calc_aux
 
 -- These could even go in Mathlib... they look useful (if a bit random)
 
-private lemma aux_1 (x : ℂ) : abs (cexp (I * x)) = rexp (-x.im) := by
+private lemma aux_1 (x : ℂ) : norm (cexp (I * x)) = rexp (-x.im) := by
   have h₁ : I * (↑x.im * I) = -x.im := by rw [mul_comm, mul_assoc, Complex.I_mul_I, mul_neg_one]
-  rw [← x.re_add_im, mul_add, h₁, Complex.abs_exp]
+  rw [← x.re_add_im, mul_add, h₁, Complex.norm_exp]
   simp
 
 -- Below was written by Bhavik
 private lemma aux_2 (x : ℂ) : 1 - Real.exp x.re ≤ norm (1 - cexp x) := calc
-  abs (1 - cexp x) ≥ |norm 1 - abs (cexp x)| := abs.abs_abv_sub_le_abv_sub _ _
-  _ = |1 - rexp x.re| := by simp [Complex.abs_exp]
+  norm (1 - cexp x) ≥ |‖(1 : ℂ)‖ - norm (cexp x)| := abs_norm_sub_norm_le 1 (cexp x)
+  _ = |1 - rexp x.re| := by simp [Complex.norm_exp]
   _ ≥ _ := le_abs_self _
 
 include hcsum in
@@ -93,18 +93,18 @@ private lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π *
 include hcsum in
 private lemma aux_4 : Summable fun (i : ℕ) ↦ norm (c (i + n₀)) *
     norm (cexp (↑π * I * ↑i * z)) := by
-  simp_rw [← map_mul, ← ]; exact aux_3 z c n₀ hcsum
+  simp_rw [← norm_mul]; exact aux_3 z c n₀ hcsum
 
 lemma aux_5 (z : ℍ) : norm (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24) =
   ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
-  simp only [← abs_pow]
-  apply Complex.abs_tprod -- ℕ+ (fun n => (1 - cexp (2 * ↑π * I * n * z)) ^ 24)
+  simp only [← norm_pow]
+  apply Multipliable.norm_tprod -- ℕ+ (fun n => (1 - cexp (2 * ↑π * I * n * z)) ^ 24)
   apply MultipliableDeltaProductExpansion_pnat z
 
 
 lemma aux_6 (z : ℍ) : 0 ≤ ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
   rw [← aux_5 z]
-  exact AbsoluteValue.nonneg norm (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24)
+  exact norm_nonneg _
 
 lemma aux_7 (a : ℤ) :
     norm (cexp (↑π * I * a * z)) ≤ rexp (-π * a * z.im) := by
@@ -120,19 +120,19 @@ lemma aux_ring (i : ℕ) : (I * ↑π * ↑i * z) = I * ((↑π * ↑i) * z) := 
 
 lemma aux_9 (i : ℕ) :
     ‖c (i + n₀) * cexp (↑π * I * ↑i * z)‖ = ‖c (i + n₀)‖ * rexp (-π * ↑i * z.im) := by
-  rw [, , map_mul, mul_comm (↑π) (I)]
+  rw [norm_mul, mul_comm (↑π) (I)]
   rw [aux_ring, aux_1]
   congr; simp
 
 include hcsum in
 lemma aux_10 : Summable fun (n : ℕ) ↦ norm (c (n + n₀)) * rexp (-π * ↑n * z.im) := by
-  simp only [← , ← aux_9, aux_ring]
+  simp only [← aux_9, aux_ring]
   exact aux_3 z c n₀ hcsum
 
 lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
   sorry
 
-lemma aux_misc (x : ℍ) : abs (cexp (I * x)) ≤ rexp (x.im) := by
+lemma aux_misc (x : ℍ) : norm (cexp (I * x)) ≤ rexp (x.im) := by
   rw [aux_1 x]
   refine exp_le_exp.2 ?_
   rw [UpperHalfPlane.coe_im, neg_le_self_iff]
@@ -144,15 +144,15 @@ section calc_steps
 
 include hf in
 private lemma step_1 :
-    abs ((f z) / (Δ z)) = abs (
+    norm ((f z) / (Δ z)) = norm (
       (∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
       (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)
     ) := by simp [DiscriminantProductFormula, hf, fouterm, UpperHalfPlane.coe];
 
 private lemma step_2 :
-    abs ((∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
+    norm ((∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
     (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
-    abs ((cexp (π * I * n₀ * z) * ∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+    norm ((cexp (π * I * n₀ * z) * ∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
   congr
   rw [← tsum_mul_left]
@@ -163,17 +163,17 @@ private lemma step_2 :
   ring
 
 private lemma step_3 :
-    abs ((cexp (π * I * n₀ * z) * ∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+    norm ((cexp (π * I * n₀ * z) * ∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
-    abs ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
+    norm ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
     (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by field_simp
 
 private lemma step_4 :
-    abs ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
+    norm ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
     (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
-    abs ((cexp (π * I * (n₀ - 2) * z)) *
+    norm ((cexp (π * I * (n₀ - 2) * z)) *
     (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
   rw [mul_sub, sub_mul, ← Complex.exp_sub]
@@ -181,27 +181,27 @@ private lemma step_4 :
   ac_rfl
 
 private lemma step_5 :
-    abs ((cexp (π * I * (n₀ - 2) * z)) *
+    norm ((cexp (π * I * (n₀ - 2) * z)) *
     (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) =
-    abs (cexp (π * I * (n₀ - 2) * z)) *
-    abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+    norm (cexp (π * I * (n₀ - 2) * z)) *
+    norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := by
-  simp only [map_div₀, map_mul]
+  simp only [norm_div, norm_mul]
 
 private lemma step_6  :
-    abs (cexp (π * I * (n₀ - 2) * z)) *
-    abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+    norm (cexp (π * I * (n₀ - 2) * z)) *
+    norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) =
-    abs (cexp (π * I * (n₀ - 2) * z)) *
-    abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-    ∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24 := by congr; exact aux_5 z
+    norm (cexp (π * I * (n₀ - 2) * z)) *
+    norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+    ∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24 := by congr; exact aux_5 z
 
 private lemma step_7 :
-    abs (cexp (π * I * (n₀ - 2) * z)) * abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-    ∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24 ≤
-    rexp (-π * (n₀ - 2) * z.im) * abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-    (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := by
+    norm (cexp (π * I * (n₀ - 2) * z)) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+    ∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24 ≤
+    rexp (-π * (n₀ - 2) * z.im) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+    (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
   · exact aux_6 z
   · norm_cast
@@ -209,26 +209,25 @@ private lemma step_7 :
 
 include hcsum in
 private lemma step_8  :
-    rexp (-π * (n₀ - 2) * z.im) * abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-    (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * abs (cexp (π * I * n * z))) /
-    (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := by
+    rexp (-π * (n₀ - 2) * z.im) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+    (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
+    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (π * I * n * z))) /
+    (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
   · exact aux_6 z
   · calc
     _ ≤ ∑' (n : ℕ), norm ((c (n + n₀)) * (cexp (↑π * I * ↑n * z))) := by
-      simp_rw [← ]
       refine norm_tsum_le_tsum_norm ?_
       exact aux_3 z c n₀ hcsum
     _ = ∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (↑π * I * ↑n * z)) :=
-      by simp only [map_mul]
+      by simp only [norm_mul]
 
 include hcsum in
 private lemma step_9 :
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * abs (cexp (π * I * n * z))) /
-    (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n * z.im)) /
-    (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := by
+    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (π * I * n * z))) /
+    (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
+    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
+    (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
   · exact aux_6 z
   · have h₁ : ∀ (n : ℕ), norm (c (n + n₀)) * norm (cexp (↑π * I * ↑n * z)) ≤
@@ -236,20 +235,16 @@ private lemma step_9 :
       intro n
       gcongr
       exact aux_7 z n
-    apply tsum_le_tsum h₁ (aux_4 z c n₀ hcsum)
+    apply Summable.tsum_le_tsum h₁ (aux_4 z c n₀ hcsum)
     exact aux_10 z c n₀ hcsum
 
 include hz in
 private lemma step_10 :
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n * z.im)) /
-    (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n * z.im)) /
+    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
+    (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
+    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
     (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
-  · apply mul_nonneg (exp_nonneg (-π * (↑n₀ - 2) * z.im))
-    apply tsum_nonneg
-    intro i
-    exact mul_nonneg (AbsoluteValue.nonneg norm (c (i + n₀))) (exp_nonneg _)
   · exact aux_8 z hz
   · apply tprod_le_of_nonneg
     · intro n; simp
@@ -268,13 +263,13 @@ private lemma step_10 :
 -- set_option maxHeartbeats 100000 in
 include hz hcsum hpoly in
 private lemma step_11 :
-  rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n * z.im)) /
+  rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) ≤
-  rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
+  rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · exact le_of_lt (aux_8 z hz)
-  · refine tsum_le_tsum ?_ ?_ ?_
+  · refine Summable.tsum_le_tsum ?_ ?_ ?_
     · intro i
       gcongr
       rw [neg_mul, neg_mul, neg_div, neg_le_neg_iff, div_eq_mul_inv, inv_eq_one_div]
@@ -294,8 +289,9 @@ private lemma step_11 :
         _ = rexp (-π * ↑n * 2⁻¹) := by congr 1; ring
       have h₂ : ∀ (n : ℕ), ‖c (↑n + n₀)‖ * rexp (-π * 2⁻¹) ^ n =
           ‖c (↑n + n₀) * rexp (-π * 2⁻¹) ^ n‖ := fun n => by
-        rw [norm_mul, neg_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs, Real.abs_exp]
-      simp only [h₁, ← , h₂]
+        rw [norm_mul, neg_mul, norm_pow, Complex.norm_real]
+        simp
+      simp only [h₁, h₂]
       -- norm_cast at hpoly
       have := hpoly' c n₀ k hpoly
       norm_cast at this
@@ -303,18 +299,13 @@ private lemma step_11 :
 
 include hz in
 private lemma step_12 :
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
+    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
     (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) ≤
-    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
+    rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
     (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := by
   gcongr
   · -- This allows us to get rid of the numerators
-    apply mul_nonneg
-    · exact exp_nonneg _
-    · apply tsum_nonneg
-      intro i
-      exact mul_nonneg (AbsoluteValue.nonneg norm (c (i + n₀))) (exp_nonneg _)
-  · exact aux_11
+    exact aux_11
   · apply tprod_le_of_nonneg
     · intro n; simp
       have : (1 - rexp (-(π * ↑↑n))) ^ 24 = ((1 - rexp (-(π * ↑↑n))) ^ 12) ^ 2 := by ring
@@ -338,7 +329,7 @@ private lemma step_12 :
         linarith
 
 private lemma step_13 :
-  rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
+  rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) =
   (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := by
   rw [DivDiscBound, mul_div_assoc, mul_comm]
@@ -352,35 +343,35 @@ This section contains the proof of the main result of this file.
 -/
 
 include f hf z hz c n₀ hcsum k hpoly in
-theorem DivDiscBoundOfPolyFourierCoeff : abs ((f z) / (Δ z)) ≤
+theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
   (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := calc
-  _ = abs ((∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
+  _ = norm ((∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
       (cexp (2 * π * I * z) * ∏' (n : ℕ+),
       (1 - cexp (2 * π * I * n * z)) ^ 24)) := step_1 z c n₀ f hf
-  _ = abs ((cexp (π * I * n₀ * z) * ∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+  _ = norm ((cexp (π * I * n₀ * z) * ∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := step_2 z c n₀
-  _ = abs ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
+  _ = norm ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
       (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := step_3 z c n₀
-  _ = abs ((cexp (π * I * (n₀ - 2) * z)) *
+  _ = norm ((cexp (π * I * (n₀ - 2) * z)) *
       (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := step_4 z c n₀
-  _ = abs (cexp (π * I * (n₀ - 2) * z)) *
-      abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+  _ = norm (cexp (π * I * (n₀ - 2) * z)) *
+      norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := step_5 z c n₀
-  _ = abs (cexp (π * I * (n₀ - 2) * z)) * abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      ∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24 := step_6 z c n₀
-  _ ≤ rexp (-π * (n₀ - 2) * z.im) * abs (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := step_7 z c n₀
-  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * abs (cexp (π * I * n * z))) /
-      (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := step_8 z c n₀ hcsum
-  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n * z.im)) /
-      (∏' (n : ℕ+), abs (1 - cexp (2 * π * I * n * z)) ^ 24) := step_9 z c n₀ hcsum
-  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n * z.im)) /
+  _ = norm (cexp (π * I * (n₀ - 2) * z)) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+      ∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24 := step_6 z c n₀
+  _ ≤ rexp (-π * (n₀ - 2) * z.im) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
+      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := step_7 z c n₀
+  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (π * I * n * z))) /
+      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := step_8 z c n₀ hcsum
+  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
+      (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := step_9 z c n₀ hcsum
+  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
       (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_10 z hz c n₀
-  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
+  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
       (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_11 z hz c n₀ hcsum k hpoly
-  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), abs (c (n + n₀)) * rexp (-π * n / 2)) /
+  _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
       (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := step_12 z hz c n₀
   _ = (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := step_13 z c n₀
 
@@ -396,10 +387,10 @@ include hpoly hcn₀ in
 theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
   rw [DivDiscBound]
   apply div_pos
-  · refine tsum_pos ?_ ?_ 0 ?_
+  · refine Summable.tsum_pos ?_ ?_ 0 ?_
     · have h₁ (n : ℕ) : norm (c (↑n + n₀)) * rexp (-π * ↑n / 2) =
           ‖(c (↑n + n₀)) * rexp (-π * ↑n / 2)‖ := by
-        rw [, map_mul]
+        rw [norm_mul]
         norm_cast
         simp
       simp only [h₁, summable_norm_iff]
@@ -418,13 +409,10 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
       simp only [h₃]
       rw [← summable_norm_iff]
       refine summable_norm_pow_mul_geometric_of_norm_lt_one k ?_
-      simp only [Real.norm_eq_abs, Real.abs_exp, exp_lt_one_iff, neg_div, neg_lt_zero]
-      positivity
+      simp [neg_div, pi_pos]
     · intro i
       positivity
-    · simp only [CharP.cast_eq_zero, zero_add, mul_zero, zero_div, Real.exp_zero, mul_one,
-        AbsoluteValue.pos_iff, ne_eq]
-      exact hcn₀
+    · simp [hcn₀]
   · sorry
     -- Use new result that Δ(iz) > 0 [TODO: BUMP]
     -- calc 0
@@ -481,8 +469,8 @@ end sigma
 
 section Corollaries
 
-theorem abs_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
-    abs (φ₀ z) ≤ C₀ * rexp (-2 * π * z.im) := by
+theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
+    norm (φ₀ z) ≤ C₀ * rexp (-2 * π * z.im) := by
   -- This is a reasonable thing to do because all inputs are in nonnegative
   let c : ℤ → ℂ := fun n ↦ n * (σ 3 n.toNat)
   let d : ℕ → ℂ := fun n ↦ n * (σ 3 n)
@@ -498,8 +486,8 @@ theorem abs_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     norm_cast at h ⊢
   have hcpoly : c =O[atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
     -- Use `Asymptotics.IsBigO.congr'` to relate properties of c to properties of d
-    simp only [isBigO_iff, , norm_pow, Complex.norm_natCast, eventually_atTop,
-      ge_iff_le, Real.norm_eq_abs] at hdpoly ⊢
+    simp only [isBigO_iff, norm_pow, Complex.norm_natCast, eventually_atTop,
+      ge_iff_le] at hdpoly ⊢
     obtain ⟨R, m, hR⟩ := hdpoly
     use R, m
     intro n hn
@@ -515,14 +503,15 @@ theorem abs_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     specialize hR n.toNat hmnnat
     rw [← hcd, hnnat] at hR
     calc norm (c n)
-    _ ≤ R * n.toNat ^ 5 := by rwa [abs_natCast] at hR
+    _ ≤ R * n.toNat ^ 5 := hR
+      -- rwa [Real.norm_natCast] at hR
     _ = R * |↑n| ^ 5 := by
-      simp only [mul_eq_mul_left_iff, Nat.cast_nonneg, abs_nonneg, ne_eq, OfNat.ofNat_ne_zero,
+      simp only [mul_eq_mul_left_iff, Nat.cast_nonneg, norm_nonneg, ne_eq, OfNat.ofNat_ne_zero,
         not_false_eq_true, pow_left_inj₀]
       norm_cast
       left
-      rw [hnnat]
-      exact Eq.symm (abs_of_nonneg hnnonneg)
+      rw [cast_pow, hnnat]
+      simp [hnnonneg, abs_of_nonneg]
   use DivDiscBound c 4
   constructor
   · rw [gt_iff_lt]
