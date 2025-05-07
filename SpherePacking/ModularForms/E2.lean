@@ -18,10 +18,10 @@ noncomputable section Definitions
 /--Maybe this is the definition we want as I cant see how to easily show the other outer sum is
 absolutely convergent. -/
 def G₂ : ℍ → ℂ := fun z => limUnder (atTop)
-    (fun N : ℕ => ∑ m in Finset.Ico (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
+    (fun N : ℕ => ∑ m ∈ Finset.Ico (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
 
 def G₂_a : ℍ → ℂ := fun z => limUnder (atTop)
-    (fun N : ℕ => ∑ m in Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
+    (fun N : ℕ => ∑ m ∈ Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
 
 def E₂ : ℍ → ℂ := (1 / (2 * riemannZeta 2)) •  G₂
 
@@ -50,7 +50,7 @@ theorem extracted_66 (z : ℍ) :
   ext N
   simp
   rw [@Finset.mul_sum]
-  rw [Summable.tsum_sum]
+  rw [Summable.tsum_finsetSum]
   congr
   ext n
   rw [← tsum_mul_left]
@@ -58,19 +58,20 @@ theorem extracted_66 (z : ℍ) :
   congr
   ext d
   have hz := ne_zero z
-  rw [← neg_ne_zero] at hz
+
   rw [← mul_inv]
   congr 1
   rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
   congr
+  simp only [UpperHalfPlane.coe] at *
+  rw [mul_add]
   field_simp
-  simp only [UpperHalfPlane.coe]
   ring
   · intro i hi
     exact extracted_77 z i
 
 lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUnder (atTop)
-    fun N : ℕ => ((∑' (n : ℤ), ∑ m in Finset.Ico (-N : ℤ) N, (1 / ((n : ℂ) * z + m) ^ 2))) := by
+    fun N : ℕ => ((∑' (n : ℤ), ∑ m ∈ Finset.Ico (-N : ℤ) N, (1 / ((n : ℂ) * z + m) ^ 2))) := by
   rw [ modular_S_smul]
   simp [G₂]
   rw [ limUnder_mul_const]
@@ -96,13 +97,25 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) =  limUn
     have hz := ne_zero z
     rw [← neg_ne_zero] at hz
     field_simp
-    ring
+
 
 
 /-This is from the modforms repo, so no need to prove it. -/
 theorem series_eql' (z : ℍ) :
     ↑π * Complex.I - 2 * ↑π * Complex.I * ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * z * n) =
-      1 / z + ∑' n : ℕ+, (1 / ((z : ℂ) - n) + 1 / (z + n)) := sorry
+      1 / z + ∑' n : ℕ+, (1 / ((z : ℂ) - n) + 1 / (z + n)) := by
+    have := EisensteinSeries_Identity z
+    rw [this]
+    congr
+    ext n
+    rw [← Complex.exp_nat_mul]
+    ring_nf
+
+theorem extracted_summable (z : ℍ) (n : ℕ+) : Summable fun m : ℕ ↦
+    cexp (2 * ↑π * Complex.I * (-↑↑n / ↑z) * ↑m) := by
+  have A1 := a1 1 1 ⟨ -n / z , pnat_div_upper n z⟩
+  simp at A1
+  apply A1
 
 theorem tsum_exp_tendsto_zero (z : ℍ) :
     Tendsto (fun x : ℕ+ ↦ 2 / ↑z * 2 * ↑π * Complex.I *
@@ -111,7 +124,7 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
   conv =>
     enter [1]
     ext n
-    rw [← tsum_pnat_eq_tsum_succ4, mul_add]
+    rw [← tsum_pnat_eq_tsum_succ4 _ (by apply extracted_summable z n), mul_add]
   simp only [CharP.cast_eq_zero, mul_zero, exp_zero, mul_one, add_zero]
   nth_rw 3 [show  2 / ↑z * 2 * ↑π * Complex.I =  2 / ↑z * 2 * ↑π * Complex.I +  2 / ↑z * 2 * ↑π * Complex.I*0 by ring]
   apply Tendsto.add
@@ -119,13 +132,14 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
   apply Tendsto.mul
   simp
   have := tendsto_tsum_of_dominated_convergence (𝓕 := atTop) (g := fun (n : ℕ+) => (0 : ℂ))
-    (f := fun d : ℕ+ => fun n : ℕ+ => cexp (2 * ↑π * Complex.I * (-↑↑d / ↑z) * ↑n) )
-    (bound := fun n : ℕ+ => (norm (cexp (2 * ↑π * Complex.I * (-1 / ↑z)))^ (n : ℕ)))
-  simp only [norm_eq_abs, ge_iff_le, tsum_zero, forall_exists_index] at this
+    (f := fun d : ℕ+ => fun n : ℕ+ => cexp (2 * ↑π * Complex.I * (-↑↑d / ↑z) * n) )
+    (bound := fun n : ℕ+ => (‖(cexp (2 * ↑π * Complex.I * (-1 / ↑z)))^ (Subtype.val n)‖))
+  simp only [ge_iff_le, tsum_zero, forall_exists_index] at this
   apply this
-  · apply Summable.subtype
-    simpa only [summable_geometric_iff_norm_lt_one, Real.norm_eq_abs, Complex.abs_abs] using
+  · have hs : Summable fun n : ℕ ↦ ‖cexp (2 * ↑π * Complex.I * (-1 / ↑z)) ^ n‖ := by
+      simpa [summable_geometric_iff_norm_lt_one, Real.norm_eq_abs] using
       (exp_upperHalfPlane_lt_one ⟨-1 / z, by simpa using (pnat_div_upper 1 z)⟩)
+    apply Summable.subtype hs
   · intro k
     have : (fun x : ℕ+ ↦ cexp (2 * ↑π * Complex.I * (-↑↑(x : ℂ) / ↑z) * ↑k)) =
     (fun x : ℕ+ ↦ (cexp (2 * ↑π * Complex.I * (-↑↑(k : ℂ) / ↑z)))  ^ (x : ℕ)) := by
@@ -137,7 +151,7 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
     rw [this]
     have ht : Tendsto (fun x : ℕ ↦ cexp (2 * ↑π * Complex.I * (-↑k / ↑z)) ^ ↑x) atTop (𝓝 0) := by
       rw [tendsto_zero_iff_norm_tendsto_zero]
-      simp only [norm_pow, norm_eq_abs, tendsto_pow_atTop_nhds_zero_iff, Complex.abs_abs]
+      simp only [norm_pow, tendsto_pow_atTop_nhds_zero_iff, abs_norm]
       apply exp_upperHalfPlane_lt_one ⟨-k / z, by simpa using (pnat_div_upper k z)⟩
     apply tendsto_comp_val_Ioi_atTop.mpr ht
   · simp only [eventually_atTop, ge_iff_le]
@@ -150,12 +164,13 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
       simp only [nsmul_eq_mul, Nat.cast_mul]
       ring
     rw [this]
-    simp only [AbsoluteValue.map_pow, ge_iff_le]
+    simp only [norm_pow, ge_iff_le]
     rw [← pow_mul]
+
     apply  Bound.pow_le_pow_right_of_le_one_or_one_le ?_
     right
     constructor
-    · apply AbsoluteValue.nonneg norm
+    · apply norm_nonneg
     · have := exp_upperHalfPlane_lt_one ⟨- 1 / z, by simpa using (pnat_div_upper 1 z)⟩
       constructor
       apply this.le
@@ -231,12 +246,12 @@ theorem PS3tn22 (z : ℍ) :
   Tendsto (fun N : ℕ+ ↦ ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N,
     ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z + ↑n) - 1 / (↑m * ↑z + ↑n + 1))) atTop
     (𝓝 (-2 * ↑π * Complex.I / ↑z)) := by
-  have : (fun N : ℕ+ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+  have : (fun N : ℕ+ => ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) =
     (fun N : ℕ+ =>
-    ∑' m : ℤ ,  ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) := by
+    ∑' m : ℤ ,  ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) := by
     ext n
-    rw [Summable.tsum_sum]
+    rw [Summable.tsum_finsetSum]
     intro i hi
     apply summable_pain
   conv at this =>
@@ -273,7 +288,7 @@ theorem PS3tn22 (z : ℍ) :
     exact this
 
 lemma PS3 (z : ℍ) : limUnder atTop
-  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+  (fun N : ℕ => ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = -2 * π * Complex.I / z := by
   apply Filter.Tendsto.limUnder_eq
   apply pnat_tendsto_nat
@@ -329,7 +344,7 @@ theorem extracted_66c (z : ℍ) :
   ext N
   simp
   rw [@Finset.mul_sum]
-  rw [Summable.tsum_sum]
+  rw [Summable.tsum_finsetSum]
   congr
   ext n
   rw [← tsum_mul_left]
@@ -337,7 +352,6 @@ theorem extracted_66c (z : ℍ) :
   congr
   ext d
   have hz := ne_zero z
-  rw [← neg_ne_zero] at hz
   rw [← mul_inv]
   congr 1
   rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
@@ -361,10 +375,10 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
   congr
   ext N
   simp only [one_div, Pi.sub_apply, mul_inv_rev]
-  rw [Summable.tsum_sum, ← Finset.sum_sub_distrib ]
+  rw [Summable.tsum_finsetSum, ← Finset.sum_sub_distrib ]
   congr
   ext n
-  rw [← tsum_sub]
+  rw [← Summable.tsum_sub]
   congr
   ext m
   have := poly_id z m n
@@ -377,7 +391,7 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
   · conv =>
       enter [1]
       ext N
-      rw [Summable.tsum_sum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
+      rw [Summable.tsum_finsetSum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
     apply CauchySeq_Icc_iff_CauchySeq_Ico
     intro n
     nth_rw 2 [int_sum_neg]
@@ -388,7 +402,7 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
     conv =>
       enter [1]
       ext N
-      rw [← Summable.tsum_sum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
+      rw [← Summable.tsum_finsetSum (by intro i hi; simp only [one_div]; exact extracted_77 z i)]
     have := G2_cauchy ⟨-1 / z, by simpa using pnat_div_upper 1 z⟩
     have  hC := cauchy_seq_mul_const _ ((z : ℂ) ^ 2)⁻¹ (by simp [ne_zero z]) this
     apply hC.congr
@@ -416,10 +430,10 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
     exact ht
 
 lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
-  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+  (fun N : ℕ => ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) = 0 := by
   apply Filter.Tendsto.limUnder_eq
-  have :  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+  have :  (fun N : ℕ => ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) =
     (fun N : ℕ => (1 / ((m : ℂ) * z - N) -  1 / (m * z + N))) := by
     funext N
@@ -432,7 +446,7 @@ lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
 
 
 lemma PS2 (z : ℍ) : ∑' m : ℤ, (limUnder atTop
-  (fun N : ℕ => ∑ n in (Finset.Ico (-(N : ℤ)) (N : ℤ)),
+  (fun N : ℕ => ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1)))) = 0 := by
     convert tsum_zero
     next m =>
@@ -470,7 +484,7 @@ lemma G2_alt_eq (z : ℍ) : G₂ z = ∑' m : ℤ, ∑' n : ℤ, (1 / (((m : ℂ
     set t :=  ∑' m : ℤ, ∑' n : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m n)
     rw [show t = t + 0 by ring, ← this]
     simp only [t]
-    rw [← tsum_add]
+    rw [← Summable.tsum_add]
     · rw [tsum_limUnder_atTop]
       · congr
         ext n
@@ -777,7 +791,8 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ,
     ring_nf
   · intro e
     have := a1  2 e z
-    simpa using this
+    simp at *
+    apply this.subtype
 
 /--This we should get from the modular forms repo stuff. Will port these things soon. -/
 lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
