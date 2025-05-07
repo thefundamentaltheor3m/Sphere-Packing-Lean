@@ -136,7 +136,7 @@ def g : ℝ → ℝ → ℂ := fun r s ↦
 
 lemma aux_measurable : MeasurableSet ((Ioo 0 1) : Set ℝ) := measurableSet_Ioo
 
-#check hasDerivWithinAt_zpow
+-- #check hasDerivWithinAt_zpow
 lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioo 0 1) : HasDerivWithinAt f (f' x) (Ioo 0 1) x := by
   have hf : f = fun t ↦ (1 / 2) * t ^ (-1 : ℤ) := by
     ext x

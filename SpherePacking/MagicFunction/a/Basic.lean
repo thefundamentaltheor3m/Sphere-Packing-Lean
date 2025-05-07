@@ -114,7 +114,7 @@ def a (x : V) := a' ‖x‖ ^ 2
 
 end Vector_Input
 
-#check a
+-- #check a
 
 end MagicFunction.a.RadialFunctions
 

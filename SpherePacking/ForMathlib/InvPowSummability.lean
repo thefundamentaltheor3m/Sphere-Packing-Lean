@@ -138,8 +138,6 @@ theorem Summable_of_Inv_Pow_Summable'
 
 set_option pp.funBinderTypes true
 
-#check tsum_union_disjoint
-
 -- should be in mathlib!!
 lemma Summable.subset {α β : Type*}
     [AddCommGroup β] [UniformSpace β] [IsUniformAddGroup β] [CompleteSpace β]
