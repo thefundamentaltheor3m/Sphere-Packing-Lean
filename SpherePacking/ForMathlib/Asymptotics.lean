@@ -7,7 +7,7 @@ This file is more of a scratch file for asymptotics. If there is anything here t
 Mathlib, which should not be the case, then we can PR it.
 -/
 
-import Mathlib.Analysis.Asymptotics.Asymptotics
+import Mathlib.Analysis.Asymptotics.Defs
 
 open Asymptotics Filter
 
@@ -49,6 +49,3 @@ theorem isBigO_pow {f F : α → E} {n : ℕ} (hf : f =O[atTop] F) :
   --   exact (isBigO_const_const_iff atTop).mpr fun a ↦ a
   -- · simp only [pow_succ]
   --   exact IsBigO.mul hn hf
-
-#min_imports
-

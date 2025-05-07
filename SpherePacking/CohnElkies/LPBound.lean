@@ -12,7 +12,8 @@ import SpherePacking.ForMathlib.VolumeOfBalls
 import SpherePacking.Basic.PeriodicPacking
 
 open scoped FourierTransform ENNReal SchwartzMap
-open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan Bornology
+open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan
+  Bornology Summable
 
 variable {d : ℕ} [instPosDim : Fact (0 < d)] -- Is `Fact` right here?
 

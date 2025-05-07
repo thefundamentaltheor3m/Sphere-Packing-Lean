@@ -44,7 +44,7 @@ lemma arg_pow_aux (n : ℕ) (x : ℂ) (hx : x ≠ 0) (hna : |arg x| < π / n) :
     gcongr
     exact (lt_add_one n)
 
-lemma one_add_abs_half_ne_zero {x : ℂ} (hb : norm x < 1 / 2) : 1 + x ≠ 0 := by
+lemma one_add_abs_half_ne_zero {x : ℂ} (hb :  ‖x‖ < 1 / 2) : 1 + x ≠ 0 := by
   by_contra h
   rw [@add_eq_zero_iff_neg_eq] at h
   rw [← h] at hb
@@ -61,7 +61,7 @@ lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀�
   have h3 := h2.comp hf1
   simp only [arg_one] at h3
   rw [Metric.tendsto_nhds] at *
-  simp only [gt_iff_lt, dist_zero_right, eventually_atTop, ge_iff_le,
+  simp only [gt_iff_lt, dist_zero_right,  eventually_atTop, ge_iff_le,
     dist_self_add_left, arg_one, Real.norm_eq_abs, comp_apply] at *
   by_cases hn0 : n = 0
   · rw [hn0]
@@ -172,4 +172,4 @@ lemma log_summable_pow (f : ℕ → ℂ)  (hf : Summable f)  (m : ℕ) :
   intro b hb
   apply le_of_eq
   rw [ha b hb]
-  simp only [norm_mul, norm_natCast]
+  simp only [Complex.norm_mul, norm_natCast]

@@ -11,11 +11,10 @@ open ArithmeticFunction
 
 
 /-this is being PRd-/
-lemma Complex.summable_nat_multipliable_one_add (f : ℕ → ℂ) (hf : Summable f)
-    (hff : ∀ n : ℕ, 1 + f n ≠ 0) : Multipliable (fun n : ℕ => 1 + f n) := by
-    apply Complex.multipliable_of_summable_log
-    apply hff
-    apply Complex.summable_log_one_add_of_summable hf
+lemma Complex.summable_nat_multipliable_one_add (f : ℕ → ℂ) (hf : Summable f) :
+    Multipliable (fun n : ℕ => 1 + f n) := by
+  apply Complex.multipliable_of_summable_log
+  apply Complex.summable_log_one_add_of_summable hf
 
 
 theorem term_ne_zero (z : ℍ) (n : ℕ) : 1 -cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑z) ≠ 0 := by
@@ -23,21 +22,43 @@ theorem term_ne_zero (z : ℍ) (n : ℕ) : 1 -cexp (2 * ↑π * Complex.I * (↑
   intro h
   have :=  exp_upperHalfPlane_lt_one_nat z n
   rw [← h] at this
-  simp only [AbsoluteValue.map_one, lt_self_iff_false] at *
+  simp only [norm_one, lt_self_iff_false] at *
+
+theorem ball_pow_ne_1 (x : ℂ) (hx : x ∈ ball 0 1) (n : ℕ) : 1 + (fun n ↦ -x ^ (n + 1)) n ≠ 0 := by
+  simp only [mem_ball, dist_zero_right] at *
+  rw [← sub_eq_add_neg, sub_ne_zero]
+  have hxn : ‖(x ^ (n + 1))‖ < 1 := by
+    simp only [norm_pow]
+    refine pow_lt_one₀ ?_ hx ?_
+    exact norm_nonneg x
+    omega
+  intro h
+  rw [← h] at hxn
+  simp only [norm_one, lt_self_iff_false] at hxn
+
+theorem multipliable_lt_one (x : ℂ)  (hx : x ∈ ball 0 1) :
+  Multipliable fun i ↦ 1 - x ^ (i+ 1) := by
+  have := Complex.summable_nat_multipliable_one_add (fun (n : ℕ) => (- x ^ (n + 1) )) ?_
+  conv =>
+    enter [1]
+    ext n
+    rw [sub_eq_add_neg]
+  exact this
+  rw [@summable_neg_iff]
+  rw [@summable_nat_add_iff]
+  rw [@summable_geometric_iff_norm_lt_one]
+  simpa using hx
 
 lemma MultipliableEtaProductExpansion (z : ℍ) :
     Multipliable (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ) := by
-  have := Complex.summable_nat_multipliable_one_add (fun (n : ℕ) => (-cexp (2 * π * Complex.I * (n + 1) * z)) ) ?_ ?_
+  have := Complex.summable_nat_multipliable_one_add (fun (n : ℕ) =>
+    (-cexp (2 * π * Complex.I * (n + 1) * z)) ) ?_
   simp at this
   apply this.congr
   intro n
   ring
   rw [←summable_norm_iff]
   simpa using summable_exp_pow z
-  intro n
-  simp
-  apply term_ne_zero
-
 
 lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
   Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z))) := by
@@ -60,17 +81,14 @@ lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
 
 lemma tprod_ne_zero (x : ℍ) (f : ℕ → ℍ → ℂ) (hf : ∀ i x, 1 + f i x ≠ 0)
   (hu : ∀ x : ℍ, Summable fun n => f n x) : (∏' i : ℕ, (1 + f i) x) ≠ 0 := by
-  have := Complex.cexp_tsum_eq_tprod (fun n => 1 + f n x) ?_ ?_
+  have := Complex.cexp_tsum_eq_tprod (f := fun n => 1 + f n x) ?_
   simp
   rw [← this]
   simp only [comp_apply, exp_ne_zero, not_false_eq_true]
-  intro n
-  simp
-  apply hf
-  simp
   apply Complex.summable_log_one_add_of_summable
   apply hu x
-
+  intro n
+  apply hf n x
 
 
 lemma Multipliable_pow {ι : Type*} (f : ι → ℂ) (hf : Multipliable f) (n : ℕ) :
@@ -97,7 +115,7 @@ lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) : (∏' (i : �
   · simp
   · rw [pow_succ]
     rw [hn]
-    rw [← tprod_mul]
+    rw [← Multipliable.tprod_mul]
     congr
     apply Multipliable_pow f hf n
     exact hf

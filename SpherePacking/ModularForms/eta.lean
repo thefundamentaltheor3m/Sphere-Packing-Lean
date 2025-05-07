@@ -4,6 +4,7 @@ import SpherePacking.ModularForms.multipliable_lems
 import SpherePacking.ModularForms.logDeriv_lems
 import SpherePacking.ModularForms.E2
 import SpherePacking.ModularForms.csqrt
+import SpherePacking.ModularForms.uniformcts
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
@@ -18,13 +19,13 @@ noncomputable def η (z : ℂ) := cexp (2 * π * Complex.I * z / 24) * ∏' (n :
     (1 - cexp (2 * π * Complex.I * (n + 1) * z))
 
 
-
 /-this is being PRd-/
 lemma prod_tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ → α → ℂ} (K : Set α)
     (hK : IsCompact K) (u : ℕ → ℝ) (hu : Summable u) (h : ∀ n x, x ∈ K → (‖(f n x)‖) ≤ u n)
     (hfn : ∀ x : K, ∀ n : ℕ, 1 + f n x ≠ 0) (hcts : ∀ n, ContinuousOn (fun x => (f n x)) K) :
-    TendstoUniformlyOn (fun n : ℕ => fun a : α => ∏ i in Finset.range n, (1 + (f i a)))
-    (fun a => ∏' i, (1 + (f i a))) atTop K := by sorry
+    TendstoUniformlyOn (fun n : ℕ => fun a : α => ∏ i ∈ Finset.range n, (1 + (f i a)))
+    (fun a => ∏' i, (1 + (f i a))) atTop K := by
+    apply tendstoUniformlyOn_tprod' hK hu h hfn hcts
 
 lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.range n,
     fun x_1 ↦ 1 + -cexp (2 * ↑π * Complex.I *  (↑x + 1) * x_1))
@@ -47,7 +48,7 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
   simp only [Finset.prod_apply]
   · simp_rw [norm_pow]
     rw [summable_nat_add_iff 1]
-    simp only [norm_eq_abs, summable_geometric_iff_norm_lt_one, Real.norm_eq_abs, Complex.abs_abs]
+    simp only [summable_geometric_iff_norm_lt_one, norm_norm]
     apply  exp_upperHalfPlane_lt_one ⟨z, by simpa using (hK hz)⟩
   · intro n
     intro x hx
@@ -58,7 +59,7 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
     have HB2 := HB x hx
     simp_rw [norm_pow]
     apply pow_le_pow_left₀ _  HB2
-    simp only [norm_eq_abs, apply_nonneg]
+    simp only [norm_nonneg]
   · intro x k
     simpa using term_ne_zero ⟨x.1, by simpa using (hK x.2)⟩ k
   · intro n
@@ -186,12 +187,15 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
       ring_nf
       field_simp
       ring
-    · ring_nf
-      rw [show ↑π * Complex.I * (1 / 12) *
-        -((↑π ^ 2 * (1 / 6))⁻¹ * (1 / 2) * (↑π ^ 2 * 8 *
-        ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1))) =
-        (↑π * Complex.I * (1 / 12) * -((↑π ^ 2 * (1 / 6))⁻¹ * (1 / 2) * (↑π ^ 2 * 8)) *
-        ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1)) by ring]
+    ·
+      have hr :    ↑π * Complex.I / 12 *
+         -((↑π ^ 2 / (6 : ℂ))⁻¹ * 2⁻¹ * (8 * ↑π ^ 2 * ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (2 * ↑π * Complex.I * ↑↑n * ↑z))) =
+        (↑π * Complex.I * (1 / 12) * -(((π : ℂ) ^ 2 * (1 / 6))⁻¹ * (1 / 2) * (↑π ^ 2 * 8)) *
+        ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1)) := by
+          ring_nf
+          rfl
+      simp only [UpperHalfPlane.coe] at *
+      rw [hr]
       congr 1
       have hpi : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
       field_simp
@@ -203,7 +207,13 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
       have hl := tsum_pnat_eq_tsum_succ3
         (fun n ↦ ↑((σ 1) (n)) * cexp (↑π * Complex.I * 2 * (↑n) * ↑z))
       simp only [UpperHalfPlane.coe] at hl
-      rw [← hl]
+      rw [ hl]
+      apply tsum_congr
+      intro b
+      simp
+      left
+      congr 1
+      ring
   · exact isOpen_lt continuous_const Complex.continuous_im
   · intro i
     simp only [mem_setOf_eq, ne_eq]
@@ -246,7 +256,7 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
     apply Summable.neg
     apply Summable.mul_left
     have hS := logDeriv_q_expo_summable (cexp (2 * ↑π * Complex.I * ↑z))
-      (by simpa only [norm_eq_abs] using exp_upperHalfPlane_lt_one z)
+      (by simpa using exp_upperHalfPlane_lt_one z)
     rw [← summable_nat_add_iff 1] at hS
     apply hS.congr
     intro b
@@ -374,7 +384,6 @@ lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn (
         rw [div_eq_mul_inv]
         simp
       simp at *
-      rw [neg_div, neg_neg_iff_pos]
       exact this
   · apply DifferentiableOn.mul
     simp only [DifferentiableOn, mem_setOf_eq]
