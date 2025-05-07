@@ -17,7 +17,7 @@ lemma congr_aux_1' (x : ℝ) :
   field_simp
   linear_combination - x * I_sq
 
-#check Mathlib.Meta.NormNum.Result
+-- #check Mathlib.Meta.NormNum.Result
 -- open Lean Mathlib.Meta.NormNum Qq in
 -- /-- Evaluates the `Int.lcm` function. -/
 -- @[norm_num HAdd.hAdd _ _]
