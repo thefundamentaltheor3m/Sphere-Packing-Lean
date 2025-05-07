@@ -1690,18 +1690,6 @@ lemma floor_lem1 (k a : ℚ) (ha : 0 < a) (hak : a ≤ k) :
   refine (le_div_iff₀ ha).mpr ?_
   simpa using hak
 
-lemma floor_lem1 (k a : ℚ) (ha : 0 < a) (hak : a ≤ k) :
-    1 + Nat.floor ((k - a) / a) = Nat.floor (k / a) := by
-  rw [div_sub_same (Ne.symm (ne_of_lt ha))]
-  have := Nat.floor_sub_one (k/a)
-  norm_cast at *
-  rw [this]
-  refine Nat.add_sub_cancel' ?_
-  refine Nat.le_floor ?_
-  refine (le_div_iff₀ ha).mpr ?_
-  simpa using hak
-
-
 lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k)  :
     Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) (k)) = if 12 ∣ ((k) : ℤ) - 2 then
     Nat.floor ((k : ℚ)/ 12) else Nat.floor ((k : ℚ) / 12) + 1 := by
@@ -1795,8 +1783,4 @@ theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
     (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) := by
   sorry
 
-
-
 end Ramanujan_Formula
-
-#min_imports

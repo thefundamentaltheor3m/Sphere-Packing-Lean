@@ -17,7 +17,7 @@ lemma Icc_succ (n : ℕ) : Finset.Icc (-(n + 1) : ℤ) (n + 1) = Finset.Icc (-n 
   omega
 
 
-lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m ∈ Finset.Icc (-N : ℤ) N, f m 
+lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m ∈ Finset.Icc (-N : ℤ) N, f m =
   f N + f (-N : ℤ)  + ∑ m ∈ Finset.Icc (-(N - 1) : ℤ) (N - 1), f m := by
   induction' N with N ih
   simp
