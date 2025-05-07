@@ -53,23 +53,21 @@ lemma I₁'_eq (r : ℝ) : I₁' r =
     ∫ t in Ioo (0 : ℝ) 1, (1 + I) -- Added factor due to variable change!!
       * φ₀'' ((I - 1) * (1 / (2 * t)))
       * (t * (I + 1)) ^ 2
-      * cexp (π * I * r ^ 2 * (t * (I + 1) - 1)) := by
+      * cexp (π * I * r * (t * (I + 1) - 1)) := by
   apply setIntegral_congr_fun measurableSet_Ioo
   intro t ht
   dsimp
   rw [z₁'_eq_of_mem' (Ioo_subset_Icc_self ht), sub_add_cancel]
   congr! 4
-  · have : t ≠ 0 := ht.1.ne'
-    have h2 : (t : ℂ) ≠ 0 := by simp [this]
-    have h3 : I + 1 ≠ 0 := by
-      intro h
-      simpa using congr(($h).re)
-    field_simp [h2, h3]
-    ring_nf
-    simp
-    ring
-  · norm_cast
-    simp
+  have : t ≠ 0 := ht.1.ne'
+  have h2 : (t : ℂ) ≠ 0 := by simp [this]
+  have h3 : I + 1 ≠ 0 := by
+    intro h
+    simpa using congr(($h).re)
+  field_simp [h2, h3]
+  ring_nf
+  simp
+  ring
 
 -- define g to be the rhs of this multiplied by the absolute value of the derivative of (f⁻¹)'
 -- (except change all the f t to x)
@@ -78,7 +76,7 @@ lemma I₁'_eq' (r : ℝ) : I₁' r =
         (1 + I)
       * φ₀'' ((I - 1) * (f t))
       * ((I + 1) / (2 * f t)) ^ 2
-      * cexp (π * I * r ^ 2 * ((I + 1) / (2 * f t) - 1)) := by
+      * cexp (π * I * r * ((I + 1) / (2 * f t) - 1)) := by
   have : ∀ x : ℂ, ∀ t ≠ 0, x / (2 * f t) = t * x := by
     intro x t ht
     rw [f]
@@ -124,7 +122,7 @@ def g : ℝ → ℝ → ℂ := fun r s ↦
   * φ₀'' ((I - 1) * s)
   * ((I + 1) / (2 * s)) ^ 2 *
     (1 / (2 * s ^ 2))
-  * cexp (I * π * |r| ^ 2 *
+  * cexp (I * π * r *
     (-1 +
       (1 / (2 * s)) *
         (I + 1)))
@@ -228,11 +226,11 @@ lemma I₁_Expression (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t
     * ((I + 1)
     * φ₀'' ((I - 1) * ↑(1 / (2 * x)))
     * ((I + 1) / (2 * ↑(1 / (2 * x)))) ^ 2 * (1 / (2 * ↑(1 / (2 * x)) ^ 2))
-    * cexp (I * ↑π * ↑|r| ^ 2 * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1))))
+    * cexp (I * ↑π * ↑r * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1))))
       = (I + 1)
       * φ₀'' ((I - 1) * ↑(1 / (2 * x)))
       * (ofReal (1 / (2 * x ^ 2)) * ((I + 1) / (2 * ↑(1 / (2 * x)))) ^ 2 * (1 / (2 * ↑(1 / (2 * x)) ^ 2)))
-      * cexp (I * ↑π * ↑|r| ^ 2 * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1)))
+      * cexp (I * ↑π * ↑r * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1)))
     := by ring
   rw [hrearrange_LHS]
   congr 2
@@ -243,7 +241,6 @@ lemma I₁_Expression (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t
     congr 2 <;> field_simp [hx.1.ne'] <;> ring
   · rw [mul_comm I π]
     norm_cast
-    rw [_root_.sq_abs r]
     congr
     field_simp
     ring

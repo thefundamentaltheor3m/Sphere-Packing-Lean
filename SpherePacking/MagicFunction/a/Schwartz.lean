@@ -75,6 +75,12 @@ theorem I₄'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₄' x‖ ≤ C := by
   sorry
 
+-- [UPDATE] This is completely unnecessary. A better approach (since I'm showing smoothness and
+-- decaying for all constituent integrals) is to simply DEFINE CORRESPONDING `SchwartzMap`S AND
+-- DEFINE `FourierEigenfunctions.a'` AS THEIR SUM! What I'm doing here and in the corresponding
+-- `smooth'` lemma is just an instance of the known fact that the Schwartz space is closed under
+-- addition (indeed, it is closed under all linear combinations). This is a hugely inefficient
+-- approach!
 theorem decay' :  ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.a' x‖ ≤ C := by
   intro k n

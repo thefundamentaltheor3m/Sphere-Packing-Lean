@@ -33,3 +33,5 @@ import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.a.Schwartz
+import SpherePacking.MagicFunction.a.IntegralEstimates.I1
+import SpherePacking.MagicFunction.a.IntegralEstimates.I2
