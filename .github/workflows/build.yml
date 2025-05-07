@@ -67,3 +67,20 @@ jobs:
       - name: Check Declarations
         run: |
             ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
+
+      - name: Move documentation to `docs/docs`
+        run: |
+          sudo chown -R runner docs
+          cp -r docbuild/.lake/build/doc docs/docs
+        if: github.ref == 'refs/heads/main'
+
+      - name: Upload docs & blueprint artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+        if: github.ref == 'refs/heads/main'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        if: github.ref == 'refs/heads/main'
