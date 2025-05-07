@@ -63,8 +63,6 @@ lemma tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero
 
 end Tendsto_Zero
 
-variable [CompleteSpace E]
-
 section Eventually_Eq_Zero
 
 private lemma hzero (hcont : ContinuousOn f ([[x₁, x₂]] ×ℂ (Ici y))) (s : Set ℂ) (hs : s.Countable)

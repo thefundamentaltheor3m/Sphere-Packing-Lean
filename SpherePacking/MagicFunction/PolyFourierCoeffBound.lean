@@ -6,12 +6,11 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
-import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.ForMathlib.tprod
-import SpherePacking.ForMathlib.SpecificLimits
 import SpherePacking.ForMathlib.Fourier
+import SpherePacking.ForMathlib.SpecificLimits
+import SpherePacking.ForMathlib.tprod
+import SpherePacking.ModularForms.Eisenstein
 
-import Mathlib
 
 /-
 
@@ -538,5 +537,3 @@ theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     -- · sorry
 
 end Corollaries
-
-#min_imports

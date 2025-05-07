@@ -4,7 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 import Mathlib.Logic.IsEmpty
-import Mathlib.MeasureTheory.Integral.SetIntegral
+import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
+import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
+import Mathlib.MeasureTheory.Integral.Bochner.Set
 import Mathlib.Analysis.Complex.Basic
 
 import SpherePacking.CohnElkies.Prereqs
@@ -15,7 +17,7 @@ open scoped FourierTransform ENNReal SchwartzMap
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan
   Bornology Summable
 
-variable {d : ℕ} [instPosDim : Fact (0 < d)] -- Is `Fact` right here?
+variable {d : ℕ}
 
 /-
 # Potential Design Complications:
@@ -79,8 +81,7 @@ section Nonnegativity
 private theorem hIntegrable : MeasureTheory.Integrable (𝓕 f) :=
     ((SchwartzMap.fourierTransformCLE ℝ) f).integrable
 
-include hne_zero
-
+include hne_zero in
 theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
   rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
   intro hFourierZero
@@ -88,8 +89,9 @@ theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
   rw [← ContinuousLinearEquiv.map_eq_zero_iff (SchwartzMap.fourierTransformCLE ℝ)]
   exact Eq.symm (SchwartzMap.ext (congrFun (id (Eq.symm hFourierZero))))
 
-include hReal hRealFourier hCohnElkies₂
+-- include hReal hRealFourier hCohnElkies₂
 
+include hCohnElkies₂ in
 theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   -- Building off the previous one, f(0) is an integral of a nonneg function, and hence, also nonneg
   rw [← f.fourierInversion ℝ, fourierIntegralInv_eq]
@@ -101,6 +103,7 @@ theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   rw [hcalc₁]
   exact integral_nonneg hCohnElkies₂
 
+include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
   -- We know from previous that f(0) is nonneg. If zero, then the integral of 𝓕 f is zero, making
   -- 𝓕 f zero (it's continuous and nonneg: if it's pos anywhere, it's pos on a nbhd, and hence the
@@ -124,7 +127,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
          rw [← RCLike.im_eq_complex_im, ← integral_im hIntegrable, RCLike.im_eq_complex_im]
     _ = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re
       := by
-         rw [add_right_eq_self]
+         rw [add_eq_left]
          suffices hwhat : ∀ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).im = 0
          · simp only [hwhat, ofReal_zero, zero_mul, integral_zero]
          exact hFourierImZero hRealFourier
@@ -164,7 +167,7 @@ end Nonnegativity
 
 section Fundamental_Domain_Dependent
 
-include d instPosDim f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
+include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
 variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.centers]
 variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
@@ -176,9 +179,9 @@ bounded above by the Cohn-Elkies bound.
 -/
 
 include hP
-private theorem calc_aux_1 :
+private theorem calc_aux_1 (hd : 0 < d) :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
-  ≤ ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re := calc
+  ≤ ↑(P.numReps' hd hD_isBounded) * (f 0).re := calc
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
   _ = (∑' (x : P.centers) (y : ↑(P.centers ∩ D)),
       if h : x - (y : EuclideanSpace ℝ (Fin d)) = 0 then 0 else (f (x - ↑y)).re) +
@@ -211,7 +214,7 @@ private theorem calc_aux_1 :
               · exact sub_ne_zero.mp h
     -- _ = ∑' (y : ↑(P.centers ∩ D)), (f (y - ↑y)).re
     --     := by simp only [sub_self]
-    _ = ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re
+    _ = ↑(P.numReps' hd hD_isBounded) * (f 0).re
         := by
             simp only [tsum_const, nsmul_eq_mul, mul_eq_mul_right_iff, Nat.cast_inj]
             cases eq_or_ne (f 0).re 0
@@ -220,7 +223,7 @@ private theorem calc_aux_1 :
               rw [h]
             · case inr h =>
               left
-              let myInstFintype := P.instFintypeNumReps' Fact.out hD_isBounded
+              let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
               rw [PeriodicSpherePacking.numReps']
               exact Nat.card_eq_fintype_card
 
@@ -229,16 +232,18 @@ private theorem calc_aux_1 :
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
 -- If there are assumptions needed beyond PSF, we should require them here, not in `PSF_Conditions`.
 set_option maxHeartbeats 200000
-private theorem calc_steps :
-  ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re ≥ ↑(P.numReps' Fact.out hD_isBounded) ^ 2 *
-  (𝓕 f 0).re / ZLattice.covolume P.lattice := calc
-  ↑(P.numReps' Fact.out hD_isBounded) * (f 0).re
+private theorem calc_steps (hd : 0 < d) :
+    ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥ ↑(P.numReps' hd hD_isBounded) ^ 2 *
+    (𝓕 f 0).re / ZLattice.covolume P.lattice := by
+  have : Fact (0 < d) := ⟨hd⟩
+  calc
+  ↑(P.numReps' hd hD_isBounded) * (f 0).re
   _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)),
       (f (x - ↑y)).re
         := by
             rw [ge_iff_le]
             exact calc_aux_1 hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
-              hD_isBounded
+              hD_isBounded hd
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
         :=  by
@@ -395,7 +400,8 @@ private theorem calc_steps :
               (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
               sorry
-            rw [tsum_eq_add_tsum_ite hSummable (0 : ↥(bilinFormOfRealInner.dualSubmodule P.lattice))]
+            rw [Summable.tsum_eq_add_tsum_ite hSummable
+              (0 : ↥(bilinFormOfRealInner.dualSubmodule P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
   _ ≥ (1 / ZLattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
       (norm (∑' x : ↑(P.centers ∩ D),
@@ -429,19 +435,19 @@ private theorem calc_steps :
       ↑(P.numReps' Fact.out hD_isBounded) ^ 2
         := by
             apply congrArg _ _
-            let myInstFintype := P.instFintypeNumReps' Fact.out hD_isBounded
+            let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
             simp only [inner_zero_right, zero_mul, ofReal_zero, mul_zero, Complex.exp_zero,
-                       tsum_const, nsmul_eq_mul, mul_one, abs_natCast, Nat.cast_nonneg, ne_eq,
-                       not_false_eq_true, pow_left_inj, Nat.cast_inj,
+                       tsum_const, nsmul_eq_mul, mul_one, Complex.norm_natCast, Nat.cast_nonneg,
+                       ne_eq, not_false_eq_true, pow_left_inj, Nat.cast_inj,
                        PeriodicSpherePacking.numReps', Set.toFinset_card] -- ↑(P.centers ∩ D)]
             simp only [RCLike.wInner_zero_right, ofReal_zero, mul_zero, Complex.exp_zero,
-              tsum_const, Nat.card_eq_fintype_card, nsmul_eq_mul, mul_one, abs_natCast]
-  _ = ↑(P.numReps' Fact.out hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume
+              tsum_const, Nat.card_eq_fintype_card, nsmul_eq_mul, mul_one, Complex.norm_natCast]
+  _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume
         := by simp only [div_eq_mul_inv, one_div, mul_comm, one_mul, ← mul_assoc]
 
 
 -- And now, the main result of this section:
-include hP hD_isBounded hD_unique_covers hD_measurable
+-- include hP hD_isBounded hD_unique_covers hD_measurable
 
 -- Temporary hack, must be deleted
 -- instance : HMul ℝ ℝ≥0∞ ℝ≥0∞ := sorry
@@ -459,15 +465,16 @@ variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.cente
 variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
 variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
 
-include d instPosDim f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded hD_unique_covers
+include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded hD_unique_covers
 
-theorem LinearProgrammingBound' :
+theorem LinearProgrammingBound' (hd : 0 < d) :
   P.density ≤ (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
   volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   -- HUGE TODO: Get the periodic density formula in terms of some `D`.
-  rw [P.density_eq' Fact.out]
-  suffices hCalc : (P.numReps' Fact.out hD_isBounded) * (f 0).re ≥
-    (P.numReps' Fact.out hD_isBounded)^2 * (𝓕 f 0).re / ZLattice.covolume P.lattice
+  have : Fact (0 < d) := ⟨hd⟩
+  rw [P.density_eq' hd]
+  suffices hCalc : (P.numReps' hd hD_isBounded) * (f 0).re ≥
+    (P.numReps' hd hD_isBounded)^2 * (𝓕 f 0).re / ZLattice.covolume P.lattice
   · rw [hP]
     rw [ge_iff_le] at hCalc
     have vol_pos := EuclideanSpace.volume_ball_pos (0 : EuclideanSpace ℝ (Fin d)) one_half_pos
@@ -480,7 +487,7 @@ theorem LinearProgrammingBound' :
     · case inl h𝓕f =>
       rw [h𝓕f, zero_re]
       -- For `ENNReal.div_zero`, we need `f 0 ≠ 0`. This can be deduced from the fact that
-      -- `𝓕 f ≥ 0` and `f ≠ 0`.
+      -- `𝓕 f ≥ 0` and `f ≠ 0`.
       have ne_zero_at_zero : ((f 0).re.toNNReal : ENNReal) ≠ 0 :=
         ENNReal.coe_ne_zero.mpr (Ne.symm (ne_of_lt (toNNReal_pos.mpr
         (f_zero_pos hne_zero hReal hRealFourier hCohnElkies₂))))
@@ -532,8 +539,8 @@ theorem LinearProgrammingBound' :
         norm_cast
         refine NNReal.eq ?_
         have haux₁ : 0 ≤ ↑P.numReps * (f 0).re := mul_nonneg (Nat.cast_nonneg' P.numReps)
-          (f_nonneg_at_zero hne_zero hReal hRealFourier hCohnElkies₂)
-        rw [Real.toNNReal_of_nonneg (f_nonneg_at_zero hne_zero hReal hRealFourier hCohnElkies₂),
+          (f_nonneg_at_zero hCohnElkies₂)
+        rw [Real.toNNReal_of_nonneg (f_nonneg_at_zero hCohnElkies₂),
             Real.toNNReal_of_nonneg haux₁]
         push_cast
         rfl
@@ -561,32 +568,32 @@ theorem LinearProgrammingBound' :
       -- We can now get rid of the `toNNReal`s and use `hCalc` to finish the proof!
       rw [hRHSCast, hLHSCast, ENNReal.coe_le_coe]
       exact Real.toNNReal_le_toNNReal hCalc
-  exact calc_steps hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded
+  exact calc_steps hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hd
 
 end Main_Theorem_For_One_Packing
 
 section Main_Theorem
 
-include d instPosDim f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
+include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
-theorem LinearProgrammingBound : SpherePackingConstant d ≤
+theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
   (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))
   := by
-  rw [← periodic_constant_eq_constant (Fact.out),
-    periodic_constant_eq_periodic_constant_normalized (Fact.out)]
+  rw [← periodic_constant_eq_constant hd,
+    periodic_constant_eq_periodic_constant_normalized hd]
   apply iSup_le
   intro P
   rw [iSup_le_iff]
   intro hP
   cases isEmpty_or_nonempty ↑P.centers
   · case inl instEmpty =>
-    rw [P.density_of_centers_empty Fact.out]
+    rw [P.density_of_centers_empty hd]
     exact zero_le _
   · case inr instNonempty =>
     let b : Basis (Fin d) ℤ ↥P.lattice := ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex
       (P.basis_index_equiv)
     exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
       (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ P.lattice b))
-      (P.fundamental_domain_unique_covers b)
+      (P.fundamental_domain_unique_covers b) hd
 
 end Main_Theorem
