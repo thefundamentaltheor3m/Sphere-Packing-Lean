@@ -107,14 +107,14 @@ def I₄' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1,
   * cexp (π * I * x * (z₄' t))
 
 def I₅' (x : ℝ) : ℂ := -2 * ∫ t in (0 : ℝ)..1, I -- Added factor due to variable change!!
-  * φ₀'' (-1 / (z₃' t))
-  * (z₃' t) ^ 2
-  * cexp (π * I * x * (z₃' t))
+  * φ₀'' (-1 / (z₅' t))
+  * (z₅' t) ^ 2
+  * cexp (π * I * x * (z₅' t))
 
 def I₆' (x : ℝ) : ℂ := 2 * ∫ t in Ioi (0 : ℝ), I -- Added factor due to variable change!!
-  * φ₀'' (-1 / z₄' t)
-  * (z₄' t) ^ 2
-  * cexp (π * I * x * (z₄' t))
+  * φ₀'' (-1 / z₆' t)
+  * (z₆' t) ^ 2
+  * cexp (π * I * x * (z₆' t))
 
 def a' (x : ℝ) := I₁' x + I₂' x + I₃' x + I₄' x + I₅' x + I₆' x
 
@@ -142,8 +142,134 @@ def I₆ (x : V) : ℂ := I₆' (‖x‖ ^ 2)
 
 def a (x : V) : ℂ := a' (‖x‖ ^ 2)
 
-lemma a_def (x : V) : a x = I₁ x + I₂ x + I₃ x + I₄ x + I₅ x + I₆ x := rfl
-
 end Vector_Input
+
+open intervalIntegral
+
+section Eq
+
+lemma a_eq (x : V) : a x = I₁ x + I₂ x + I₃ x + I₄ x + I₅ x + I₆ x := rfl
+
+lemma z₁'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₁' t = -1 + I * t := by
+  rw [z₁', IccExtend_of_mem zero_le_one z₁ ht, z₁]
+
+lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, I
+    * φ₀'' (-1 / (I * t))
+    * (I * t) ^ 2
+    * cexp (-π * I * r)
+    * cexp (-π * r * t) := by
+  rw [I₁']
+  apply integral_congr
+  simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
+  intro t ht₀ ht₁
+  have hmem : t ∈ Icc 0 1 := ⟨ht₀, ht₁⟩
+  simp only [z₁'_eq_of_mem hmem]
+  calc
+  _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (-π * r * (I + t)) := by
+      congr 2 <;> ring_nf
+      rw [I_sq]
+      ring
+  _ = _ := by
+      conv_rhs => rw [mul_assoc]
+      rw [← Complex.exp_add]
+      congr
+      ring_nf
+
+lemma z₂'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₂' t = -1 + t + I := by
+  rw [z₂', IccExtend_of_mem zero_le_one z₂ ht, z₂]
+
+lemma I₂'_eq (r : ℝ) : I₂' r = ∫ t in (0 : ℝ)..1,
+    φ₀'' (-1 / (t + I))
+    * (t + I) ^ 2
+    * cexp (-π * I * r)
+    * cexp (π * I * r * t)
+    * cexp (-π * r) := by
+  rw [I₂']
+  apply integral_congr
+  simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
+  intro t ht₀ ht₁
+  have hmem : t ∈ Icc 0 1 := ⟨ht₀, ht₁⟩
+  simp only [z₂'_eq_of_mem hmem]
+  calc
+  _ = φ₀'' (-1 / (t + I)) * (t + I) ^ 2 * cexp (π * I * r * (-1 + t + I)) := by
+      congr 2 <;> ring_nf
+  _ = _ := by
+      conv_rhs => rw [mul_assoc, mul_assoc]
+      rw [← Complex.exp_add, ← Complex.exp_add]
+      congr
+      ring_nf
+      rw [I_sq]
+      ring_nf
+
+lemma z₃'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₃' t = 1 + I * t := by
+  rw [z₃', IccExtend_of_mem zero_le_one z₃ ht, z₃]
+
+lemma I₃'_eq (r : ℝ) : I₃' r = ∫ t in (0 : ℝ)..1, I
+    * φ₀'' (-1 / (I * t))
+    * (I * t) ^ 2
+    * cexp (π * I * r)
+    * cexp (-π * r * t) := by
+  rw [I₃']
+  apply integral_congr
+  simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
+  intro t ht₀ ht₁
+  have hmem : t ∈ Icc 0 1 := ⟨ht₀, ht₁⟩
+  simp only [z₃'_eq_of_mem hmem]
+  calc
+  _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (-π * r * (-I + t)) := by
+      congr 2 <;> ring_nf
+      rw [I_sq]
+      ring
+  _ = _ := by
+      conv_rhs => rw [mul_assoc]
+      rw [← Complex.exp_add]
+      congr
+      ring_nf
+
+lemma z₄'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₄' t = 1 - t + I := by
+  rw [z₄', IccExtend_of_mem zero_le_one z₄ ht, z₄]
+
+lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1,
+    φ₀'' (-1 / (-t + I))
+    * (-t + I) ^ 2
+    * cexp (π * I * r)
+    * cexp (-π * I * r * t)
+    * cexp (-π * r) := by
+  rw [I₄']
+  apply integral_congr
+  simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
+  intro t ht₀ ht₁
+  have hmem : t ∈ Icc 0 1 := ⟨ht₀, ht₁⟩
+  simp only [z₄'_eq_of_mem hmem]
+  calc
+  _ = φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2 * cexp (π * I * r * (1 - t + I)) := by
+      congr 2 <;> ring_nf
+  _ = _ := by
+      conv_rhs => rw [mul_assoc, mul_assoc]
+      rw [← Complex.exp_add, ← Complex.exp_add]
+      congr
+      ring_nf
+      rw [I_sq]
+      ring_nf
+
+lemma z₅'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₅' t = I * t := by
+  rw [z₅', IccExtend_of_mem zero_le_one z₅ ht, z₅]
+
+lemma I₅'_eq (r : ℝ) : I₅' r = -2 * ∫ t in (0 : ℝ)..1, I
+    * φ₀'' (-1 / (I * t))
+    * (I * t) ^ 2
+    * cexp (-π * r * t) := by
+  rw [I₅']; congr 1
+  apply integral_congr
+  simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
+  intro t ht₀ ht₁
+  have hmem : t ∈ Icc 0 1 := ⟨ht₀, ht₁⟩
+  simp only [z₅'_eq_of_mem hmem]
+  congr 2
+  ring_nf
+  rw [I_sq]
+  ring_nf
+
+end Eq
 
 end MagicFunction.a.RadialFunctions
