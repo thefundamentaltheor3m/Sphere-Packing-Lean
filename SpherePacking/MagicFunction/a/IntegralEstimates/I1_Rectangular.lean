@@ -19,7 +19,7 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 
 open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions
-open Complex Real Set MeasureTheory MeasureTheory.Measure Filter
+open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
 open scoped Function
 
 namespace MagicFunction.a.IntegralEstimates.I1
@@ -28,23 +28,30 @@ noncomputable section Change_of_Variables
 
 variable (r : ℝ)
 
-/-! We begin by performing changes of variables. -/
+/-! We begin by performing changes of variables. We use `Ioc` intervals everywhere because of the
+way `intervalIntegral` is defined. -/
+
+-- Change of variable result is based on
 -- #check intervalIntegral.integral_comp_smul_deriv
--- #check MeasureTheory.integral_image_eq_integral_abs_deriv_smul
+
+-- Interval integrals can be reconciled with `Ioc` integrals using
+-- #check intervalIntegral_eq_integral_uIoc
+-- taking advantage of the fact that we have the following:
+-- example : uIoc 0 1 = Ioc 0 1 := rfl
 
 def f : ℝ → ℝ := fun t ↦ 1 / t
 
 def f' : ℝ → ℝ := fun t ↦ -1 / t ^ 2
 
-def g : ℝ → ℝ → ℂ := fun r s ↦
-  φ₀'' (I * s)
+def g : ℝ → ℝ → ℂ := fun r s ↦ -I
+  * φ₀'' (I * s)
   * (s ^ (-4 : ℤ))
   * cexp (-π * I * r)
-  * cexp (I * π * r / s)
+  * cexp (-π * r / s)
 
-lemma aux_measurable : MeasurableSet ((Ioo 0 1) : Set ℝ) := measurableSet_Ioo
+lemma aux_measurable : MeasurableSet ((Ioc 0 1) : Set ℝ) := measurableSet_Ioc
 
-lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioo 0 1) : HasDerivWithinAt f (f' x) (Ioo 0 1) x := by
+lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioc 0 1) : HasDerivWithinAt f (f' x) (Ioc 0 1) x := by
   have hf : f = fun t ↦ (t ^ (-1 : ℤ)) := by
     ext t
     rw [f, div_eq_mul_inv, zpow_neg, zpow_one, one_mul]
@@ -55,32 +62,76 @@ lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioo 0 1) : HasDerivWithinAt f (f' x) (I
   simp only [hf, hf']
   have : -x ^ (-2 : ℤ) = (-1 : ℤ) * x ^ ((-1 : ℤ) - 1) := by simp
   rw [this]
-  exact hasDerivWithinAt_zpow (-1 : ℤ) x (Or.inl (ne_of_gt hx.1)) (Ioo 0 1)
+  exact hasDerivWithinAt_zpow (-1 : ℤ) x (Or.inl (ne_of_gt hx.1)) (Ioc 0 1)
 
-lemma aux_injOn : InjOn f (Ioo 0 1) := by
+lemma aux_injOn : InjOn f (Ioc 0 1) := by
   intro _ _ _ _ hf
   simp only [f, div_eq_mul_inv, neg_mul, one_mul, neg_inj, inv_inj] at hf
   exact hf
 
 lemma Changing_Domain_of_Integration (r : ℝ) :
-    ∫ s in Ioi (1 : ℝ), (g r s) = ∫ (s : ℝ) in f '' (Ioo (0 : ℝ) (1 : ℝ)), (g r s) := by
+    ∫ s in Ici (1 : ℝ), (g r s) = ∫ (s : ℝ) in f '' (Ioc (0 : ℝ) (1 : ℝ)), (g r s) := by
   congr
   ext x
   constructor <;> intro hx
   · use x⁻¹
-    simp only [mem_Ioi, mem_Ioo] at hx ⊢
+    simp only [mem_Ici, mem_Icc] at hx ⊢
     constructor
     · refine ⟨by positivity, ?_⟩
-      rw [← mul_one x⁻¹, inv_mul_lt_one₀ (by positivity)]
+      rw [← mul_one x⁻¹, inv_mul_le_one₀ (by positivity)]
       exact hx
     · rw [f, div_inv_eq_mul, one_mul]
   · obtain ⟨y, hy₁, hy₂⟩ := hx
     rw [← hy₂, f]
-    simp only [one_div, mul_inv_rev, mem_Ioi, inv_pos, Nat.ofNat_pos, lt_mul_iff_one_lt_left]
-    exact one_lt_inv_iff₀.mpr hy₁
+    simp only [one_div, mul_inv_rev, mem_Ici, inv_pos, Nat.ofNat_pos, lt_mul_iff_one_lt_left]
+    exact one_le_inv_iff₀.mpr hy₁
 
-lemma Changing_Variables (r : ℝ) : ∫ (s : ℝ) in f '' (Ioo (0 : ℝ) (1 : ℝ)), (g r s) =
-    ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t)) :=
+lemma Changing_Variables (r : ℝ) : ∫ (s : ℝ) in f '' (Ioc (0 : ℝ) (1 : ℝ)), (g r s) =
+    ∫ (t : ℝ) in Ioc 0 1, |f' t| • (g r (f t)) :=
   integral_image_eq_integral_abs_deriv_smul aux_measurable aux_hasDeriv aux_injOn (g r)
 
+lemma Writing_as_intervalIntegral (r : ℝ) :
+    ∫ (t : ℝ) in Ioc 0 1, |f' t| • (g r (f t)) = ∫ t in (0 : ℝ)..1, |f' t| • (g r (f t)) := by
+  simp [intervalIntegral_eq_integral_uIoc]
+
+lemma Reconciling_Change_of_Variables (r : ℝ) :
+    I₁' r = ∫ t in Ioc 0 1, |f' t| • (g r (f t)) := by
+  simp only [I₁'_eq_Ioc, f, f', g]
+  apply setIntegral_congr_ae₀ nullMeasurableSet_Ioc
+  apply ae_of_all
+  intro t ht
+  obtain ⟨ht₀, ht₁⟩ := ht
+  simp only [Int.reduceNeg, zpow_neg, smul_neg, real_smul, neg_inj]
+  have h₁ : |-1 / t ^ 2| = 1 / t ^ 2 := by rw [neg_div, abs_neg, abs_of_nonneg (by positivity)]
+  have h₃ : -1 / (I * t) = I / t := by
+    rw [div_mul_eq_div_div_swap, div_I, neg_div, neg_mul, neg_neg, mul_comm, mul_div, mul_one]
+  have ht₀' : (t : ℂ) ^ 2 ≠ 0 := by
+    norm_cast
+    simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff]
+    exact ne_of_gt ht₀
+  rw [h₁, h₃]
+  simp only [neg_mul, ofReal_div, ofReal_one, ofReal_pow, mul_div_assoc', mul_one, div_zpow,
+    one_zpow, inv_div, div_one, div_div_eq_mul_div, mul_neg, div_mul_eq_mul_div, one_mul, neg_div']
+  rw [eq_div_iff ht₀', neg_mul, neg_inj]
+  ring_nf
+  ac_rfl
+
+theorem Complete_Change_of_Variables (r : ℝ) : I₁' r = ∫ s in Ici (1 : ℝ), (g r s) := by
+  rw [Reconciling_Change_of_Variables, ← Changing_Variables, ← Changing_Domain_of_Integration]
+
 end Change_of_Variables
+
+section Bounding
+
+lemma I₁'_bounding_1 (r : ℝ) :
+    ‖I₁' r‖ ≤ ∫ s in Ici (1 : ℝ), ‖φ₀'' (I * s)‖ * (s ^ (-4 : ℤ)) * rexp (-π * r / s) := calc
+  _ = ‖∫ s in Ici (1 : ℝ), g r s‖ := by simp only [Complete_Change_of_Variables, g]
+  _ ≤ ∫ s in Ici (1 : ℝ), ‖g r s‖ := norm_integral_le_integral_norm (g r)
+  _ ≤ ∫ s in Ici (1 : ℝ), ‖φ₀'' (I * s)‖ * (s ^ (-4 : ℤ)) * rexp (-π * r / s) := by
+
+      sorry
+  _ = _ := by sorry
+
+#check MeasureTheory.integral_mono_of_nonneg -- integrability can't be avoided...
+
+end Bounding

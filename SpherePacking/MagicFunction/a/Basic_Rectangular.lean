@@ -178,7 +178,7 @@ lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, -I
       rw [mul_pow, I_sq]
       ring_nf
 
-lemma I_1'_eq' (r : ℝ) : I₁' r = -I * ∫ t in (0 : ℝ)..1,
+lemma I₁'_eq' (r : ℝ) : I₁' r = -I * ∫ t in (0 : ℝ)..1,
     φ₀'' (-1 / (I * t))
     * t ^ 2
     * cexp (-π * I * r)
@@ -189,6 +189,18 @@ lemma I_1'_eq' (r : ℝ) : I₁' r = -I * ∫ t in (0 : ℝ)..1,
   congr
   ext x
   ring
+
+lemma I₁'_eq_Ioc (r : ℝ) : I₁' r = ∫ (t : ℝ) in Ioc 0 1, -I
+  * φ₀'' (-1 / (I * t))
+  * t ^ 2
+  * cexp (-π * I * r)
+  * cexp (-π * r * t) := by simp [I₁'_eq, intervalIntegral_eq_integral_uIoc]
+
+lemma I₁'_eq'_Ioc (r : ℝ) : I₁' r = -I * ∫ t in (0 : ℝ)..1,
+    φ₀'' (-1 / (I * t))
+    * t ^ 2
+    * cexp (-π * I * r)
+    * cexp (-π * r * t) := by simp [I₁'_eq', intervalIntegral_eq_integral_uIoc]
 
 lemma z₂'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₂' t = -1 + t + I := by
   rw [z₂', IccExtend_of_mem zero_le_one z₂ ht, z₂]
