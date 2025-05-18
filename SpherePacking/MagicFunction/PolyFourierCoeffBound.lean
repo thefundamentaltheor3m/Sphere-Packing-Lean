@@ -35,6 +35,8 @@ comprehensive list of things to be done, including but not limited to the `sorry
 open Filter Complex Real BigOperators Asymptotics
 open scoped UpperHalfPlane
 
+namespace MagicFunction.PolyFourierCoeffBound
+
 private noncomputable def fouterm (coeff : ℤ → ℂ) (x : ℂ) (i : ℤ) : ℂ :=
   (coeff i) * cexp (π * I * i * x)
 
