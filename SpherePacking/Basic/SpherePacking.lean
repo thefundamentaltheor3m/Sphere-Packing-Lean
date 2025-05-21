@@ -395,7 +395,7 @@ theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
     biUnion_inter_balls_subset_biUnion_balls_inter S.centers (S.separation / 2) R
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum R (le_refl _),
-    Measure.addHaar_ball_center, ENNReal.tsum_set_const_eq] at h
+    Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.le_div_iff_mul_le] at h <;> left
   · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
@@ -411,7 +411,7 @@ theorem SpherePacking.inter_ball_encard_ge (hd : 0 < d) (R : ℝ) :
     biUnion_balls_inter_subset_biUnion_inter_balls S.centers (S.separation / 2) R
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ (le_refl _),
-    Measure.addHaar_ball_center, ENNReal.tsum_set_const_eq] at h
+    Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.div_le_iff_le_mul] at h <;> left
   · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm

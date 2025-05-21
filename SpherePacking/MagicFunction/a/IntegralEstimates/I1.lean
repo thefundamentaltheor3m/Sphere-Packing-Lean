@@ -18,8 +18,8 @@ The purpose of this file is to construct bounds on the integral `I₁` that is p
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 -/
 
-open MagicFunction.a.Parametrisations MagicFunction.a.Real_Integrals
-  MagicFunction.a.Radial_Functions
+open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
+  MagicFunction.a.RadialFunctions
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter
 open scoped Function
 
@@ -54,18 +54,21 @@ lemma I₁'_eq (r : ℝ) : I₁' r =
     ∫ t in Ioo (0 : ℝ) 1, (1 + I) -- Added factor due to variable change!!
       * φ₀'' ((I - 1) * (1 / (2 * t)))
       * (t * (I + 1)) ^ 2
-      * cexp (π * I * r ^ 2 * (t * (I + 1) - 1)) := by
+      * cexp (π * I * r * (t * (I + 1) - 1)) := by
   apply setIntegral_congr_fun measurableSet_Ioo
   intro t ht
   dsimp
   rw [z₁'_eq_of_mem' (Ioo_subset_Icc_self ht), sub_add_cancel]
   congr! 4
-  · have : t ≠ 0 := ht.1.ne'
-    have h2 : (t : ℂ) ≠ 0 := by simp [this]
-    field_simp [h2]
-    linear_combination -t * I_sq
-  · norm_cast
-    simp
+  have : t ≠ 0 := ht.1.ne'
+  have h2 : (t : ℂ) ≠ 0 := by simp [this]
+  have h3 : I + 1 ≠ 0 := by
+    intro h
+    simpa using congr(($h).re)
+  field_simp [h2, h3]
+  ring_nf
+  simp
+  ring
 
 -- define g to be the rhs of this multiplied by the absolute value of the derivative of (f⁻¹)'
 -- (except change all the f t to x)
@@ -74,7 +77,7 @@ lemma I₁'_eq' (r : ℝ) : I₁' r =
         (1 + I)
       * φ₀'' ((I - 1) * (f t))
       * ((I + 1) / (2 * f t)) ^ 2
-      * cexp (π * I * r ^ 2 * ((I + 1) / (2 * f t) - 1)) := by
+      * cexp (π * I * r * ((I + 1) / (2 * f t) - 1)) := by
   have : ∀ x : ℂ, ∀ t ≠ 0, x / (2 * f t) = t * x := by
     intro x t ht
     rw [f]
@@ -120,14 +123,14 @@ def g : ℝ → ℝ → ℂ := fun r s ↦
   * φ₀'' ((I - 1) * s)
   * ((I + 1) / (2 * s)) ^ 2 *
     (1 / (2 * s ^ 2))
-  * cexp (I * π * |r| ^ 2 *
+  * cexp (I * π * r *
     (-1 +
       (1 / (2 * s)) *
         (I + 1)))
 
 lemma aux_measurable : MeasurableSet ((Ioo 0 1) : Set ℝ) := measurableSet_Ioo
 
-#check hasDerivWithinAt_zpow
+-- #check hasDerivWithinAt_zpow
 lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioo 0 1) : HasDerivWithinAt f (f' x) (Ioo 0 1) x := by
   have hf : f = fun t ↦ (1 / 2) * t ^ (-1 : ℤ) := by
     ext x
@@ -183,73 +186,6 @@ end Changing_Variables
 
 section Showing_Equality_to_I₁
 
--- [TODO] move all this metaprogramming stuff elsewhere!!
--- example (a b c:ℂ) : a / (b * c) = (a/b) * c⁻¹ := by rw [@div_mul_eq_div_div]; exact?
--- Before we can prove the main result, we prove some auxiliary results.
-lemma congr_aux_1' (x : ℝ) :
-    -1 / (↑x - 1 + I * ↑x + 1) = (I - 1) / (2 * ↑x) := by
-  trans - 1 / ((1 + I) * x)
-  · congr 1
-    ring
-  obtain rfl | hx := eq_or_ne x 0
-  · simp
-  have : (x:ℂ) ≠ 0 := mod_cast hx
-  have : 1 + I ≠ 0 := sorry -- ought to be by done by a norm_num extension
-  field_simp
-  linear_combination - x * I_sq
-
-#check Mathlib.Meta.NormNum.Result
--- open Lean Mathlib.Meta.NormNum Qq in
--- /-- Evaluates the `Int.lcm` function. -/
--- @[norm_num HAdd.hAdd _ _]
--- def Tactic.NormNum.evalComplexAdd : NormNumExt where eval {u α} e := do
---   let .app (.app _ (x : Q(ℂ))) (y : Q(ℂ)) ← Meta.whnfR e | failure
---   haveI' : u =QL 0 := ⟨⟩; haveI' : $α =Q ℂ := ⟨⟩
---   let i : Q(DivisionRing ℂ) := q(NormedDivisionRing.toDivisionRing)
---   let ⟨ex, p⟩ ← deriveRat x i
---   let ⟨ey, q⟩ ← deriveRat y i
---   -- let ⟨ed, pf⟩ := proveIntLCM ex ey
---   return (_ : Result e)
-
-set_option push_neg.use_distrib true in
-lemma _root_.Complex.ne_iff (a b : ℂ) : a ≠ b ↔ (a.re ≠ b.re ∨ a.im ≠ b.im) := by rw [ne_eq, Complex.ext_iff]; push_neg; rfl
-
-example (z:ℂ) :z = ⟨z.re,z.im⟩ := by rw [Complex.eta]
-example : 1 + I ≠ 0 := by rw [Complex.ne_iff]; norm_num
-
-example : 1  = 3 * I ^ 2 + 4 := by
-  refine Eq.trans ((Complex.eta _)).symm ?_
-  refine Eq.trans ?_ (Complex.eta _)
-  simp only [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im,
-    Complex.sub_re, Complex.sub_im, Complex.I_re, Complex.I_im, Complex.neg_re, Complex.neg_im, pow_succ, pow_zero]
-  simp only [one_re, one_im, zero_re, zero_im, Complex.re_ofNat, Complex.im_ofNat]
-  norm_num1
-  rfl
-
-example : -2 = (I - 1) * (1 + I) := by
-  refine Eq.trans ((Complex.eta _)).symm ?_
-  refine Eq.trans ?_ (Complex.eta _)
-  simp only [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im,
-    Complex.sub_re, Complex.sub_im, Complex.I_re, Complex.I_im, Complex.neg_re, Complex.neg_im,
-    one_re, one_im, zero_re, zero_im, Complex.re_ofNat, Complex.im_ofNat]
-  norm_num1
-  rfl
-
-lemma congr_aux_1'' (x : ℝ) :
-    -1 / (↑x - 1 + I * ↑x + 1) = (I - 1) / (2 * ↑x) := by
-  trans - 1 / ((1 + I) * x)
-  · congr 1
-    ring
-  obtain rfl | hx := eq_or_ne x 0
-  · simp
-  rw [div_mul_eq_div_div]
-  rw [div_mul_eq_div_div]
-  congr! 1
-  conv_lhs => norm_num1
-  have : 1 + I ≠ 0 := sorry -- ought to be by done by a norm_num extension
-  field_simp
-  linear_combination - I_sq
-
 lemma congr_aux_1 (x : ℝ) :
     -1 / (↑x - 1 + I * ↑x + 1) = (I - 1) / (2 * ↑x) := calc
   _ = -1 / (x + I * x) := by
@@ -291,11 +227,11 @@ lemma I₁_Expression (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t
     * ((I + 1)
     * φ₀'' ((I - 1) * ↑(1 / (2 * x)))
     * ((I + 1) / (2 * ↑(1 / (2 * x)))) ^ 2 * (1 / (2 * ↑(1 / (2 * x)) ^ 2))
-    * cexp (I * ↑π * ↑|r| ^ 2 * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1))))
+    * cexp (I * ↑π * ↑r * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1))))
       = (I + 1)
       * φ₀'' ((I - 1) * ↑(1 / (2 * x)))
       * (ofReal (1 / (2 * x ^ 2)) * ((I + 1) / (2 * ↑(1 / (2 * x)))) ^ 2 * (1 / (2 * ↑(1 / (2 * x)) ^ 2)))
-      * cexp (I * ↑π * ↑|r| ^ 2 * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1)))
+      * cexp (I * ↑π * ↑r * (-1 + 1 / (2 * ↑(1 / (2 * x))) * (I + 1)))
     := by ring
   rw [hrearrange_LHS]
   congr 2
@@ -306,7 +242,6 @@ lemma I₁_Expression (r : ℝ) : ∫ (t : ℝ) in Ioo 0 1, |f' t| • (g r (f t
     congr 2 <;> field_simp [hx.1.ne'] <;> ring
   · rw [mul_comm I π]
     norm_cast
-    rw [_root_.sq_abs r]
     congr
     field_simp
     ring

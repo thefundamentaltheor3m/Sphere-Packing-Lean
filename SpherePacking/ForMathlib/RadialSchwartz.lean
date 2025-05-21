@@ -1,4 +1,6 @@
-import Mathlib
+import Mathlib.Analysis.Distribution.SchwartzSpace
+import Mathlib.Analysis.InnerProductSpace.Calculus
+import Mathlib.Data.Real.StarOrdered
 
 open SchwartzMap Function RCLike
 
@@ -30,11 +32,11 @@ lemma hasTemperateGrowth_norm_sq :
 
 end ForMathlib
 
-variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
+variable (F : Type*) [NormedAddCommGroup F] [InnerProductSpace ℝ F] (f : 𝓢(ℝ, ℂ))
 
 @[simps!]
-noncomputable def schwartzMap_multidimensional_of_schwartzMap_real (f : 𝓢(ℝ, ℂ)) :
-    𝓢(F, ℂ) := f.compCLM ℝ hasTemperateGrowth_norm_sq <| by
+noncomputable def schwartzMap_multidimensional_of_schwartzMap_real : 𝓢(F, ℂ) :=
+    f.compCLM ℝ hasTemperateGrowth_norm_sq <| by
   use 1, 1
   intro _
   simp only [norm_pow, norm_norm]

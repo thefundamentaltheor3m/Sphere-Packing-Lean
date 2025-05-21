@@ -1,8 +1,11 @@
 on:
   push:
     branches:
-      - '**'
-      - '!main'
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -16,36 +19,30 @@ jobs:
     name: Build Project
     steps:
       - name: Checkout Project
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v4
 
-      - name: Install `elan`
-        run: curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain leanprover/lean4:4.5.0
-
-      - name: Get Cache
-        run: ~/.elan/bin/lake exe cache get || true
-
-      - name: Build Project
-        run: ~/.elan/bin/lake build SpherePacking
+      - uses: leanprover/lean-action@v1
 
       - name: Cache Mathlib Docs
         uses: actions/cache@v3
         with:
           path: |
-            .lake/build/doc/Init
-            .lake/build/doc/Lake
-            .lake/build/doc/Lean
-            .lake/build/doc/Std
-            .lake/build/doc/Mathlib
-            .lake/build/doc/declarations
-            !.lake/build/doc/declarations/declaration-data-SpherePacking*
-          key: MathlibDoc-${{ hashFiles('lake-manifest.json') }}
-          restore-keys: |
-            MathlibDoc-
+            docbuild/.lake/build/doc/Aesop
+            docbuild/.lake/build/doc/Batteries
+            docbuild/.lake/build/doc/find
+            docbuild/.lake/build/doc/Init
+            docbuild/.lake/build/doc/Lake
+            docbuild/.lake/build/doc/Lean
+            docbuild/.lake/build/doc/Mathlib
+            docbuild/.lake/build/doc/Std
+          key: Doc-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+          restore-keys:
+            ${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}
+        if: github.ref == 'refs/heads/main'
 
-      # - name: Build Documentation
-      #   run: ~/.elan/bin/lake -R -Kenv=dev build SpherePacking:docs
+      - name: Build Documentation
+        run: scripts/build_docs.sh
+        if: github.ref == 'refs/heads/main'
 
       - name: Build blueprint and copy to `docs/blueprint`
         uses: xu-cheng/texlive-action@v2
@@ -70,3 +67,20 @@ jobs:
       - name: Check Declarations
         run: |
             ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
+
+      - name: Move documentation to `docs/docs`
+        run: |
+          sudo chown -R runner docs
+          cp -r docbuild/.lake/build/doc docs/docs
+        if: github.ref == 'refs/heads/main'
+
+      - name: Upload docs & blueprint artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+        if: github.ref == 'refs/heads/main'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        if: github.ref == 'refs/heads/main'

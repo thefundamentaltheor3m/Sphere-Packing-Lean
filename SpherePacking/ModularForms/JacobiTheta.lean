@@ -83,7 +83,7 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
     congr
     ring_nf
   _ = cexp (π * I / 4) * ∑' (n : ℤ), cexp (π * I * (n ^ 2 + n) + π * I * (n + 1 / 2) ^ 2 * x) := by
-    conv_rhs => rw [← smul_eq_mul ℂ]
+    conv_rhs => rw [← smul_eq_mul]
     simp_rw [← tsum_const_smul'', smul_eq_mul]
   _ = _ := by
     simp_rw [Θ₂, Θ₂_term]
@@ -194,7 +194,7 @@ lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   have := jacobiTheta₂_functional_equation 0
   simp [-one_div] at this
   simp [modular_slash_S_apply, Pi.neg_apply, H₃, Θ₃_as_jacobiTheta₂]
-  rw [this, mul_pow, ← neg_inv, neg_div, div_neg, neg_neg, one_div (x : ℂ)⁻¹, inv_inv,
+  rw [this, mul_pow, neg_div, div_neg, neg_neg, one_div (x : ℂ)⁻¹, inv_inv,
     mul_right_comm, ← neg_one_mul (_ ^ 4)]
   congr
   rw [div_pow, ← cpow_mul_nat, mul_neg, neg_neg]
@@ -295,11 +295,11 @@ lemma jacobiTheta₂_rel_aux (n : ℤ) (t : ℝ) :
   simp
   ring_nf!
 
-lemma Complex.norm_exp (z : ℂ) : ‖cexp z‖ = rexp z.re := by
-  simp [abs_exp]
+-- lemma Complex.norm_exp (z : ℂ) : ‖cexp z‖ = rexp z.re := by
+--   simp [abs_exp]
 
 lemma Complex.norm_exp_mul_I (z : ℂ) : ‖cexp (z * I)‖ = rexp (-z.im) := by
-  simp [abs_exp]
+  simp [norm_exp]
 
 theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
   simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₂, Θ₂]
@@ -315,12 +315,12 @@ theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
       apply tsum_congr fun b ↦ ?_
       have (z : ℂ) : ‖cexp z‖ = ‖cexp z.re‖ := by
         nth_rw 1 [← Complex.re_add_im z, Complex.exp_add, norm_mul, norm_exp_ofReal_mul_I, mul_one]
-      rw [this, mul_comm (π : ℂ), mul_assoc, I_mul_re, ← ofReal_exp, Complex.norm_eq_abs,
-        abs_ofReal, Real.norm_eq_abs, im_ofReal_mul, neg_mul]
+      rw [this, mul_comm (π : ℂ), mul_assoc, I_mul_re, ← ofReal_exp,
+        norm_real, Real.norm_eq_abs, im_ofReal_mul, neg_mul]
       simp
     _ = ∑' (n : ℤ), ‖rexp (-π * ((n + 1 / 2) ^ 2 : ℝ) * z.im)‖ := by
       simp_rw [im_ofReal_mul, UpperHalfPlane.im, ← mul_assoc]
-    _ ≤ _ := tsum_le_tsum (fun b ↦ ?_) ?_ ?_
+    _ ≤ _ := Summable.tsum_le_tsum (fun b ↦ ?_) ?_ ?_
   · -- TODO: simplify and refactor this proof with subproof 3 & 4
     have (n : ℤ) : cexp (π * I * (n + 1 / 2) ^ 2 * z)
         = cexp (π * I * z / 4) * jacobiTheta₂_term n (z / 2) z := by
@@ -375,7 +375,7 @@ lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
       congr with n
       rw [← ofReal_neg, ← coe_im, ← im_ofReal_mul]
       simp
-    _ ≤ _ := tsum_le_tsum (fun b ↦ ?_) ?_ ?_
+    _ ≤ _ := Summable.tsum_le_tsum (fun b ↦ ?_) ?_ ?_
   · apply exp_monotone
     simp only [neg_mul, neg_le_neg_iff]
     exact le_mul_of_one_le_right (by positivity) hz
@@ -388,7 +388,7 @@ theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
   intro z hz
   rw [norm_pow]
   gcongr
-  -- rw [← Complex.norm_eq_abs]
+  -- rw [← ]
   apply (norm_tsum_le_tsum_norm ?_).trans (isBoundedAtImInfty_H₃_aux z hz)
   simp_rw [Θ₃_term_as_jacobiTheta₂_term]
   apply Summable.norm

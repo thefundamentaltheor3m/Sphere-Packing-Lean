@@ -160,9 +160,9 @@ lemma atImInfy_pnat_mono (S : Set ℍ) (hS : S ∈ atImInfty) (B : ℝ) : ∃ A 
 
 
 lemma cexp_two_pi_I_im_antimono (a b : ℍ) (h : a.im ≤ b.im) (n : ℕ) :
-    Complex.abs (cexp (2 * ↑π * Complex.I * n * b))
-    ≤ Complex.abs (cexp (2 * ↑π * Complex.I *n * a)) := by
-  simp_rw [Complex.abs_exp]
+    ‖(cexp (2 * ↑π * Complex.I * n * b))‖
+    ≤  ‖(cexp (2 * ↑π * Complex.I *n * a))‖:= by
+  simp_rw [Complex.norm_exp]
   simp
   gcongr
 
@@ -227,7 +227,7 @@ theorem Delta_boundedfactor :
   exact Complex.exp_zero
   have := tendsto_tsum_of_dominated_convergence (𝓕 := atImInfty) (g := fun (x : ℕ) => (0 : ℂ))
       (f := (fun x : ℍ ↦ fun (n : ℕ) => Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * (x : ℂ))) ^ 24)))
-      (bound := fun k => Complex.abs (24 *((3/2)* cexp (2 * ↑π * Complex.I * (↑k + 1) * Complex.I))))
+      (bound := fun k =>  ‖(24 *((3/2)* cexp (2 * ↑π * Complex.I * (↑k + 1) * Complex.I)))‖)
   simp at this
   apply this
   · apply Summable.mul_left
@@ -240,8 +240,7 @@ theorem Delta_boundedfactor :
     simp only [CharP.cast_eq_zero, zero_add, mul_one, Nat.cast_ofNat] at h1
     rw [Metric.tendsto_nhds] at h0
     have h00 := h0 (1/2) (one_half_pos)
-    simp only [CharP.cast_eq_zero, zero_add, mul_one, dist_zero_right, norm_neg,
-      Complex.norm_eq_abs, one_div] at h00
+    simp only [CharP.cast_eq_zero, zero_add, mul_one, dist_zero_right, norm_neg, one_div] at h00
     rw [Filter.eventually_iff_exists_mem ] at *
     obtain ⟨a, ha0, ha⟩ := h1
     obtain ⟨a2, ha2, ha3⟩ := h00
@@ -261,9 +260,9 @@ theorem Delta_boundedfactor :
     simp_rw [← mul_assoc] at haa
     rw [haa]
     simp only [forall_exists_index, and_imp, gt_iff_lt, CharP.cast_eq_zero, zero_add, mul_one,
-      dist_zero_right, norm_neg, Complex.norm_eq_abs, inf_eq_inter, inter_mem_iff, sup_le_iff,
-      mem_inter_iff, mem_setOf_eq, one_div, AbsoluteValue.map_mul, abs_ofNat, Nat.ofNat_pos,
-      mul_le_mul_left, ge_iff_le] at *
+      dist_zero_right, norm_neg, inf_eq_inter, inter_mem_iff, sup_le_iff, mem_inter_iff,
+      mem_setOf_eq, one_div, Complex.norm_mul, norm_ofNat, Nat.ofNat_pos, mul_le_mul_left,
+      ge_iff_le, K] at *
     apply le_trans (this ?_)
     simp only [Nat.ofNat_pos, div_pos_iff_of_pos_left, mul_le_mul_left]
     have hr := cexp_two_pi_I_im_antimono UpperHalfPlane.I b (n := k + 1) ?_
@@ -298,7 +297,7 @@ lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
   rw [show (0 : ℂ) =  0 * 1 by ring]
   apply Tendsto.mul
   · rw [tendsto_zero_iff_norm_tendsto_zero]
-    simp only [Complex.norm_eq_abs, Complex.abs_exp, mul_re, re_ofNat, ofReal_re, im_ofNat,
+    simp only [Complex.norm_exp, mul_re, re_ofNat, ofReal_re, im_ofNat,
       ofReal_im, mul_zero, sub_zero, Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im,
       mul_one, sub_self, coe_re, coe_im, zero_sub, tendsto_exp_comp_nhds_zero,
       tendsto_neg_atBot_iff]
@@ -337,7 +336,7 @@ lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ  => Real.exp (-2 * π * 
   refine ⟨by simpa using CuspFormClass.exp_decay_atImInfty 1 Delta, ?_⟩
   rw [Asymptotics.isBigO_iff']
   have := Delta_boundedfactor.norm
-  simp only [Complex.norm_eq_abs, norm_one] at this
+  simp only [norm_one] at this
   have h12 : (1 : ℝ) / 2 < 1 :=  one_half_lt_one
   have hl := Filter.Tendsto.eventually_const_le h12 this
   rw [Metric.tendsto_nhds] at *
@@ -349,11 +348,11 @@ lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ  => Real.exp (-2 * π * 
   refine ⟨hA1, ?_⟩
   intro z hz
   rw [Delta_apply, Δ]
-  simp only [neg_mul, Real.norm_eq_abs, Real.abs_exp, norm_mul, Complex.norm_eq_abs]
+  simp only [neg_mul, Real.norm_eq_abs, Real.abs_exp, norm_mul]
   have hA3 := hA2 z hz
   conv =>
     enter [2,2,1]
-    rw [Complex.abs_exp]
+    rw [Complex.norm_exp]
   simp only [mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero, Complex.I_re,
     mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, coe_re, coe_im, zero_sub]
   have hm : 0 ≤ 2 * rexp (-(2 * π * z.im)) := by
@@ -418,7 +417,7 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
       rw [IsBoundedAtImInfty, BoundedAtFilter] at *
       rw [Asymptotics.isBigO_iff'] at h1 ⊢
       rw [Asymptotics.isBigO_iff''] at h2
-      simp only [gt_iff_lt, Complex.norm_eq_abs, neg_mul, Nat.cast_one, div_one, Real.norm_eq_abs,
+      simp only [gt_iff_lt, neg_mul, Nat.cast_one, div_one, Real.norm_eq_abs,
         Real.abs_exp, SlashInvariantForm.coe_mk, SL_slash, Pi.one_apply, norm_one, mul_one] at *
       obtain ⟨e1, he1, hf⟩ := h1
       obtain ⟨e2, he2, hD⟩ := h2

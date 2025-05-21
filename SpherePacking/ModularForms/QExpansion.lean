@@ -51,16 +51,11 @@ lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * r
     use 1
     intro z hz k
     simp_rw [norm_mul, mul_right_comm _ I, norm_exp_mul_I, mul_right_comm]
-    simp only [norm_eq_abs, mul_im, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero,
+    simp only [mul_im, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero,
       sub_zero, coe_re, zero_mul, add_zero, coe_im, natCast_im, natCast_re, zero_add, neg_mul]
     nth_rw 4 [← mul_one k]
     rw [Nat.cast_mul, Nat.cast_one, ← mul_assoc]
     gcongr
-
-example (n : ℤ) (z : ℝ) : @fourier 1 n (↑z) = cexp (2 * π * I * n * z) := by simp
-
-example {f : ℤ → ℝ} (hf : Summable f) : Summable (fun n : ℕ ↦ f n) :=
-  (summable_int_iff_summable_nat_and_neg.mp hf).left
 
 lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * rexp (-2 * π * n))
     (ha' : ∀ n, n < 0 → a n = 0) :

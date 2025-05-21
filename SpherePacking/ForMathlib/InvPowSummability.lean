@@ -107,7 +107,7 @@ theorem Summable_of_Inv_Pow_Summable'
       exact Finset.abs_sum_le_sum_abs (fun i : X ↦ f ↑i) t
     have haux₂ : |∑ x ∈ t, (C + 1) * (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹| < ε := by
       rw [← Finset.mul_sum, IsAbsoluteValue.abv_mul (fun (x : ℝ) ↦ |x|) _ _, abs_of_pos haux₁]
-      exact (lt_div_iff' haux₁).mp hs
+      exact (lt_div_iff₀' haux₁).mp hs
     refine lt_of_le_of_lt ?_ haux₂
     have haux₃ : ∀ x ∈ t, (0 : ℝ) ≤ (C + 1) * (‖(x : EuclideanSpace ℝ (Fin d))‖ ^ k)⁻¹ := by
       intro x _
@@ -138,11 +138,9 @@ theorem Summable_of_Inv_Pow_Summable'
 
 set_option pp.funBinderTypes true
 
-#check tsum_union_disjoint
-
 -- should be in mathlib!!
 lemma Summable.subset {α β : Type*}
-    [AddCommGroup β] [UniformSpace β] [UniformAddGroup β] [CompleteSpace β]
+    [AddCommGroup β] [UniformSpace β] [IsUniformAddGroup β] [CompleteSpace β]
     (f : α → β)
     {X X' : Set α}
     (hX : Summable (fun x : X => f x)) (hX' : X' ⊆ X) :
@@ -263,5 +261,3 @@ What's wild is that this is CHRIS's file! **ASK ABOUT IT**
 -/
 
 end Sets_Acted_Upon_By_Lattice
-
-#min_imports
