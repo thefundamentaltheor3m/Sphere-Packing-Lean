@@ -9,7 +9,7 @@ M4R File
 import Mathlib
 
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
-import SpherePacking.MagicFunction.a.Basic_Rectangular
+import SpherePacking.MagicFunction.a.Basic
 
 /-! # Constructing Upper-Bounds for I₁
 
@@ -151,8 +151,8 @@ lemma I₁'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀
   apply inv_le_one_of_one_le₀
   exact one_le_zpow₀ hs <| Int.zero_le_ofNat 4
 
-lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
-    ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x) := by
+  lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
+      ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
   use C₀, hC₀_pos
   intro s hs
@@ -167,10 +167,9 @@ lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
   have him'_gt_half : 1 / 2 < z.im := by rw [him']; linarith
   specialize hC₀ z him'_gt_half
   simp only [z, him'] at hC₀
-  suffices : φ₀ ⟨I * ↑s, hpos'⟩ = φ₀'' (I * ↑s)
-  · rw [← this]
-    exact hC₀
-  simp [φ₀'', hpos]
+  simp only [φ₀'', mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, hpos,
+    ↓reduceDIte, z]
+  exact hC₀
 
 end Bounding_Integrand
 
@@ -179,6 +178,8 @@ section Integrability
 lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
     (hC₀ : ∀ x ∈ Ici 1, ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x)) :
     IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := sorry
+
+-- Bound is mentioned before g so it can be used to bound g
 
 lemma g_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
     (hC₀ : ∀ x ∈ Ici 1, ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x)) :
@@ -199,7 +200,7 @@ lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, �
   exact setIntegral_mono_on (g_integrableOn r C₀ hC₀_pos hC₀) (Bound_integrableOn r C₀ hC₀_pos hC₀)
     measurableSet_Ici hC₀
 
-lemma I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
+theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₁' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_1_aux_3 r
   use C₀, hC₀_pos
