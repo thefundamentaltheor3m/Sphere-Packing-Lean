@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2025 Heather Macbeth. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Heather Macbeth, Yunzhou Xie
+Authors: Heather Macbeth, Yunzhou Xie, Sidharth Hariharan
 -/
 import Mathlib.Data.Complex.Basic
 
@@ -137,6 +137,14 @@ elab "norm_numI" : conv => do
   unless (q(ℂ) == (← inferType z)) do throwError "{z} is not a complex number"
   have z : Q(ℂ) := z
   let ⟨a, b, pf⟩ ← normalize z
+  Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }
+
+-- Testing the `parse` function
+elab "norm_numI_parse" : conv => do
+  let z ← Conv.getLhs
+  unless (q(ℂ) == (← inferType z)) do throwError "{z} is not a complex number"
+  have z : Q(ℂ) := z
+  let ⟨a, b, pf⟩ ← parse z
   Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }
 
 end NormNumI
