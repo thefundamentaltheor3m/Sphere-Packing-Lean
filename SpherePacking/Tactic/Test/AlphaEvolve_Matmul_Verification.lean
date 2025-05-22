@@ -230,7 +230,9 @@ theorem check (A B : Matrix (Fin 4) (Fin 4) ℂ) : matmul4x4 A B = A * B := by
   apply Eq.symm
   apply Matrix.ext
   intro i j
-  fin_cases i, j
+  fin_cases i, j <;>
+  norm_num1 <;>
+  stop
   { -- all_goals
     rw [Matrix.mul_apply]
     simp [Fin.sum_univ_succ, Fin.val_zero, Fin.val_succ]
@@ -243,5 +245,15 @@ theorem check (A B : Matrix (Fin 4) (Fin 4) ℂ) : matmul4x4 A B = A * B := by
     ]
     -- ring
     -- simp [Complex.I_sq, left_distrib]
+    · norm_num1
+      field_simp
+      sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
   }
   <;> sorry
