@@ -46,10 +46,10 @@ theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' := by
 theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' := by
   sorry
 
-theorem I₅'_smooth : ContDiff ℝ ∞ I₅' := by
+theorem I₅'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₅' := by
   sorry
 
-theorem I₆'_smooth : ContDiff ℝ ∞ I₆' := by
+theorem I₆'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₆' := by
   sorry
 
 end Smooth
