@@ -1244,8 +1244,6 @@ variable {α β γ : Type*}
 
 variable [CommMonoid α] [TopologicalSpace α] [UniformSpace α]
 
-def HasProdUniformlyOn (f : ι → β → α) (g : β → α) (s : Set β) : Prop :=
-  TendstoUniformlyOn (fun s : Finset ι ↦ ∏ b ∈ s, f b) g atTop s
 
 lemma E4_q_exp_one : (qExpansion 1 E₄).coeff ℂ 1 = 240 := by
   have := E4_q_exp

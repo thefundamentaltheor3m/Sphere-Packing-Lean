@@ -429,7 +429,7 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
       use min A1 B2
       refine ⟨by simp [hA, hB2], ?_⟩
       intro z hz
-      have : ((⇑f / ⇑Delta) ∣[k - 12] ModularGroup.coe A) z = ((⇑f z / ⇑Delta z)) := by
+      have : ((⇑f / ⇑Delta) ∣[k - 12]  coe2 A) z = ((⇑f z / ⇑Delta z)) := by
         have := congrFun (div_Delta_is_SIF k f A) z
         simpa only [SL_slash, Pi.div_apply] using this
       rw [this]

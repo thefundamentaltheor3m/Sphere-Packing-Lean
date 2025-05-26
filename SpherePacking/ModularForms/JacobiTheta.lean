@@ -19,7 +19,7 @@ Also Jacobi identity: Θ₂^4 + Θ₄^4 = Θ₃^4.
 
 open UpperHalfPlane hiding I
 open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix ModularGroup
-  ModularForm MatrixGroups SlashAction
+  ModularForm SlashAction MatrixGroups
 
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 local notation "Γ " n:100 => CongruenceSubgroup.Gamma n

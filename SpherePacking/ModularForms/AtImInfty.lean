@@ -45,7 +45,7 @@ theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
     rcases this with (rfl | rfl | hn) <;> ring_nf
     · simp [tendsto_const_nhds]
     · simp [tendsto_const_nhds]
-    · simp only [hn, not_false_eq_true, Set.indicator_of_not_mem]
+    · simp only [hn, not_false_eq_true, Set.indicator_of_notMem]
       apply tendsto_zero_iff_norm_tendsto_zero.mpr
       have h₁ (n : ℤ) (z : ℂ) : (π * I * n * z + π * I * n ^ 2 * z) = π * (n + n ^ 2) * z * I := by
         ring_nf
