@@ -6,8 +6,10 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
-import SpherePacking.ModularForms.Eisenstein
 import Mathlib
+
+import SpherePacking.ModularForms.Eisenstein
+import SpherePacking.Tactic.NormNumI
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 
@@ -37,7 +39,7 @@ def z₅ (t : Icc (0 : ℝ) 1) : ℂ := I * t
 
 def z₅' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₅ t -- `by norm_num` also works
 
-def z₆ (t : NNReal) : ℂ := I * (1 + t)
+def z₆ (t : Ici (1 : ℝ)) : ℂ := I * t
 
 def z₆' (t : ℝ) : ℂ := IciExtend z₆ t -- `by norm_num` also works
 
@@ -49,32 +51,36 @@ section UpperHalfPlane
 
 lemma z₁_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₁' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
-  rw [z₁', IccExtend_of_mem zero_le_one z₁ ht', z₁]; simp
+  simp only [z₁', IccExtend_of_mem zero_le_one z₁ ht', z₁, add_im, neg_im, one_im, neg_zero, mul_im,
+    I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, gt_iff_lt]
   exact ht.1
 
 lemma z₂_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₂' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
-  rw [z₂', IccExtend_of_mem zero_le_one z₂ ht', z₂]; simp
+  simp [z₂', IccExtend_of_mem zero_le_one z₂ ht', z₂]
 
 lemma z₃_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₃' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
-  rw [z₃', IccExtend_of_mem zero_le_one z₃ ht', z₃]; simp
+  simp only [z₃', IccExtend_of_mem zero_le_one z₃ ht', z₃, add_im, one_im, mul_im, I_re, ofReal_im,
+    mul_zero, I_im, ofReal_re, one_mul, zero_add, gt_iff_lt]
   exact ht.1
 
 lemma z₄_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₄' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
-  rw [z₄', IccExtend_of_mem zero_le_one z₄ ht', z₄]; simp
+  simp [z₄', IccExtend_of_mem zero_le_one z₄ ht', z₄]
 
 lemma z₅_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₅' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
-  rw [z₅', IccExtend_of_mem zero_le_one z₅ ht', z₅]; simp
+  simp only [z₅', IccExtend_of_mem zero_le_one z₅ ht', z₅, mul_im, I_re, ofReal_im, mul_zero, I_im,
+    ofReal_re, one_mul, zero_add, gt_iff_lt]
   exact ht.1
 
-lemma z₆_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioi 0) : 0 < (z₆' t).im := by
-  have ht' : t ∈ Ici 0 := mem_Ici_of_Ioi ht
-  rw [z₆', IciExtend_of_mem z₆ ht', z₆]; simp
-  have : 0 ≤ t := ht'
-  positivity
+lemma z₆_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioi (1 : ℝ)) : 0 < (z₆' t).im := by
+  have ht' : t ∈ Ici 1 := mem_Ici_of_Ioi ht
+  simp only [z₆', IciExtend_of_mem z₆ ht', z₆, mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re,
+    one_mul, zero_add, gt_iff_lt]
+  rw [mem_Ioi] at ht
+  exact zero_lt_one.trans ht
 
 end UpperHalfPlane
 
@@ -111,9 +117,8 @@ def I₅' (x : ℝ) : ℂ := -2 * ∫ t in (0 : ℝ)..1, I -- Added factor due t
   * (z₅' t) ^ 2
   * cexp (π * I * x * (z₅' t))
 
-def I₆' (x : ℝ) : ℂ := 2 * ∫ t in Ioi (0 : ℝ), I -- Added factor due to variable change!!
-  * φ₀'' (-1 / z₆' t)
-  * (z₆' t) ^ 2
+def I₆' (x : ℝ) : ℂ := 2 * ∫ t in Ici (1 : ℝ), I -- Added factor due to variable change!!
+  * φ₀'' (z₆' t)
   * cexp (π * I * x * (z₆' t))
 
 def a' (x : ℝ) := I₁' x + I₂' x + I₃' x + I₄' x + I₅' x + I₆' x
@@ -353,6 +358,32 @@ lemma I₅'_eq' (r : ℝ) : I₅' r = 2 * I * ∫ t in (0 : ℝ)..1,
     * t ^ 2
     * cexp (-π * r * t) := by
     simp [I₅'_eq', intervalIntegral_eq_integral_uIoc]
+
+lemma z₆'_eq_of_mem {t : ℝ} (ht : t ∈ Ici 1) : z₆' t = I * t := by
+  rw [z₆', IciExtend_of_mem z₆ ht, z₆]
+
+lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
+    * φ₀'' (I * t)
+    * cexp (-π * r * t) := by
+  rw [I₆']; congr 1
+  apply MeasureTheory.setIntegral_congr_fun (X := ℝ) (E := ℂ) (measurableSet_Ici)
+  simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
+  intro t ht
+  rw [z₆'_eq_of_mem ht]
+  congr
+  -- conv_lhs => norm_numI -- Doesn't work
+  ring_nf
+  simp
+
+  lemma I₆'_eq' (r : ℝ) : I₆' r = 2 * I * ∫ t in Ici (1 : ℝ),
+    φ₀'' (I * t)
+    * cexp (-π * r * t) := by
+    rw [I₆'_eq r]
+    simp only [mul_assoc, ← smul_eq_mul I]
+    rw [← MeasureTheory.integral_smul]
+    congr; ext t
+    simp only [smul_eq_mul I]
+    ring_nf
 
 end Eq
 
