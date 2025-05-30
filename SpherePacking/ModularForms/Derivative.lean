@@ -1,7 +1,7 @@
 import SpherePacking.ModularForms.Eisenstein
 
 open UpperHalfPlane hiding I
-open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm
+open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
 
 open scoped ModularForm MatrixGroups
 
@@ -16,7 +16,44 @@ noncomputable def E₆_fun : ℍ → ℂ := E₆.toFun
 
 noncomputable def D (F : ℍ → ℂ) : ℍ → ℂ := λ (z : ℍ) => (2 * π * I)⁻¹ * ((deriv (F ∘ ofComplex)) z)
 
+/--
+Basic properties of derivatives: linearity, Leibniz rule, etc.
+-/
+theorem D_add (F G : ℍ → ℂ) (z : ℍ) : D (F + G) z = D F z + D G z := by sorry
+
+theorem D_smul (c : ℂ) (F : ℍ → ℂ) (z : ℍ) : D (c • F) z = c * D F z := by sorry
+
+theorem D_mul (F G : ℍ → ℂ) (z : ℍ) : D (F * G) z = F z * D G z + G z * D F z := by sorry
+
+theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by sorry
+
+
 noncomputable def serre_D (k : ℂ) (F : ℍ → ℂ) : ℍ → ℂ := λ (z : ℍ) => D F z - k * 12⁻¹ * E₂ z * F z
+
+/--
+Basic properties of Serre derivative: linearity, Leibniz rule, etc.
+-/
+theorem serre_D_add (k : ℤ) (F G : ℍ → ℂ) (z : ℍ) :
+    serre_D k (F + G) z = serre_D k F z + serre_D k G z
+  := by
+  simp only [serre_D, D_add]
+  simp
+  ring_nf
+
+theorem serre_D_smul (k : ℤ) (c : ℂ) (F : ℍ → ℂ) (z : ℍ) :
+    serre_D k (c • F) z = c * serre_D k F z
+  := by
+  simp only [serre_D, D_smul]
+  simp
+  ring_nf
+
+theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (z : ℍ) :
+    serre_D (k₁ + k₂) (F * G) z = F z * serre_D k₁ G z + G z * serre_D k₂ F z
+  := by
+  simp only [serre_D, D_mul]
+  simp
+  ring_nf
+
 
 /--
 Serre derivative is equivariant under the slash action. More precisely, if `F` is invariant under the slash action
