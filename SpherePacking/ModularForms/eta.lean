@@ -1,10 +1,8 @@
-import Mathlib
-import SpherePacking.ModularForms.exp_lems
-import SpherePacking.ModularForms.multipliable_lems
-import SpherePacking.ModularForms.logDeriv_lems
 import SpherePacking.ModularForms.E2
 import SpherePacking.ModularForms.csqrt
-import SpherePacking.ModularForms.uniformcts
+import SpherePacking.ModularForms.logDeriv_lems
+import SpherePacking.ModularForms.multipliable_lems
+
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex

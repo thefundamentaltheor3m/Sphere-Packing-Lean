@@ -1,9 +1,6 @@
-import Mathlib
-import SpherePacking.ModularForms.eta
-import SpherePacking.ModularForms.multipliable_lems
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.clog_arg_lems
-
+import SpherePacking.ModularForms.eta
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
@@ -454,3 +451,5 @@ theorem CuspForm_div_Discriminant_Add (k : ℤ) (x y : CuspForm (CongruenceSubgr
   ext z
   simp only [CuspForm_div_Discriminant_apply, CuspForm.add_apply, ModularForm.add_apply]
   ring
+
+#min_imports
