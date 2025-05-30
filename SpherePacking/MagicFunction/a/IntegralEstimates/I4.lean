@@ -26,7 +26,7 @@ open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
 open scoped Function UpperHalfPlane
 
-namespace MagicFunction.a.IntegralEstimates.I4
+namespace MagicFunction.a.IntegralEstimates.I₄
 
 variable (r : ℝ)
 
@@ -88,7 +88,7 @@ lemma parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1,
       conv at h => rw [sub_eq_add_neg, add_comm, ← sub_eq_add_neg, sub_eq_zero]
       -- This has to be the most ridiculous proof ever. It should never have to go down to 0 ≠ 1 :(
       have h₁ : (ofReal t).im = 0 := ofReal_im t
-      have h₂ : (ofReal t).im = -1 := by rw [← h]; norm_num1 -- Our tactic!! (`simp` works too)
+      have h₂ : (ofReal t).im = -1 := by rw [← h]; norm_num1 -- `simp` works too
       rw [h₁] at h₂
       norm_num1 at h₂
   _ = _ := by

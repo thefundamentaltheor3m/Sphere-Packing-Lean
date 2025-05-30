@@ -26,7 +26,7 @@ open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
 open scoped Function UpperHalfPlane
 
-namespace MagicFunction.a.IntegralEstimates.I2
+namespace MagicFunction.a.IntegralEstimates.I₂
 
 variable (r : ℝ)
 
@@ -203,7 +203,7 @@ open SchwartzMap
 section Zeroth_Derivative
 
 theorem decay'₀ : ∀ (k : ℕ), ∃ C, ∀ (x : ℝ), ‖x‖ ^ k * ‖I₂' x‖ ≤ C := by
-  
+
   sorry
 
 end Zeroth_Derivative

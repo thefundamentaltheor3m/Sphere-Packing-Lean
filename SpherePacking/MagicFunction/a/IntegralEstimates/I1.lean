@@ -26,7 +26,7 @@ open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
 open scoped Function UpperHalfPlane
 
-namespace MagicFunction.a.IntegralEstimates.I1
+namespace MagicFunction.a.IntegralEstimates.I₁
 
 noncomputable section Change_of_Variables
 
