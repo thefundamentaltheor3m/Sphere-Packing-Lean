@@ -44,9 +44,9 @@ lemma I₄'_eq_integral_g_Ioo (r : ℝ) : I₄' r = ∫ t in Ioo (0 : ℝ) 1, g 
 
 end Setup
 
-#exit
+-- #exit
 
--- The rest of this file needs fixing
+-- The rest of this file needs fixing.
 
 ----------------------------------------------------------------
 
@@ -60,58 +60,60 @@ lemma I₄'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ �
   obtain ⟨ht₀, ht₁⟩ := ht
   rw [g, norm_mul, norm_mul, norm_mul, mul_assoc, mul_assoc, norm_mul]
   gcongr
-  · rw [norm_pow, ← normSq_eq_norm_sq, normSq_apply, add_re, ofReal_re, I_re, add_zero, add_im,
-      ofReal_im, I_im, zero_add, mul_one]
+  · rw [norm_pow, ← normSq_eq_norm_sq, normSq_apply, add_re, neg_re, ofReal_re, I_re,
+      add_zero, mul_neg, neg_mul, neg_neg, add_im, neg_im, ofReal_im, neg_zero, I_im, zero_add,
+      mul_one]
     nlinarith
   · conv_rhs => rw [← one_mul (rexp _), ← one_mul (rexp _)]
     gcongr <;> apply le_of_eq
     · calc
-      _ = ‖cexp (((-π * r : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
-      _ = 1 := norm_exp_ofReal_mul_I (-π * r)
+      _ = ‖cexp (((π * r : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
+      _ = 1 := norm_exp_ofReal_mul_I (π * r)
     · calc
-      _ = ‖cexp (((π * r * t : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
-      _ = 1 := norm_exp_ofReal_mul_I (π * r * t)
+      _ = ‖cexp (((-π * r * t : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
+      _ = 1 := norm_exp_ofReal_mul_I (-π * r * t)
     · rw [norm_exp]
       simp
 
 lemma parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1,
-    (-1 / (↑t + I)) = -t / (t ^ 2 + 1) + (1 / (t ^ 2 + 1) * I) := by
+    (-1 / (-↑t + I)) = t / (t ^ 2 + 1) + (1 / (t ^ 2 + 1) * I) := by
   intro t ht
   obtain ⟨ht₀, ht₁⟩ := ht
   calc
-  _ = (-1 / (t + I)) * ((t - I) / (t - I)) := by
-      conv_lhs => rw [← mul_one (-1 / (t + I))]
+  _ = (-1 / (-t + I)) * ((-t - I) / (-t - I)) := by
+      conv_lhs => rw [← mul_one (-1 / (-t + I))]
       congr; symm
       apply div_self
       intro h
-      conv at h => rw [sub_eq_zero]
+      conv at h => rw [sub_eq_add_neg, add_comm, ← sub_eq_add_neg, sub_eq_zero]
       -- This has to be the most ridiculous proof ever. It should never have to go down to 0 ≠ 1 :(
       have h₁ : (ofReal t).im = 0 := ofReal_im t
-      have h₂ : (ofReal t).im = 1 := by rw [h]; exact I_im
-      exact zero_ne_one ((h₁.symm).trans h₂)
+      have h₂ : (ofReal t).im = -1 := by rw [← h]; norm_num1 -- Our tactic!! (`simp` works too)
+      rw [h₁] at h₂
+      norm_num1 at h₂
   _ = _ := by
-      conv_lhs => rw [div_mul_div_comm (-1) (t + I)]
+      conv_lhs => rw [div_mul_div_comm (-1) (-t + I)]
       simp only [neg_mul, one_mul, neg_sub, div_mul_eq_mul_div, div_add_div_same]
       congr
-      · ac_rfl
+      · ring
       · ring_nf
         rw [I_sq]
         ring
 
-lemma im_parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (↑t + I)).im = 1 / (t ^ 2 + 1) := by
+lemma im_parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (-↑t + I)).im = 1 / (t ^ 2 + 1) := by
   intro t ht
   conv_lhs => rw [parametrisation_eq t ht, add_im]
   norm_cast
   rw [zero_add, mul_I_im, ofReal_re]
 
-lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (↑t + I)).im := by
+lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (-↑t + I)).im := by
   intro t ht
   have hpos : 0 < t ^ 2 + 1 := by positivity
   rw [im_parametrisation_eq t ht, one_div, one_div, inv_lt_inv₀ two_pos hpos]
   obtain ⟨ht₀, ht₁⟩ := ht
   nlinarith
 
-lemma im_parametrisation_upper : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (↑t + I)).im < 1 := by
+lemma im_parametrisation_upper : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (-↑t + I)).im < 1 := by
   intro t ht
   rw [im_parametrisation_eq t ht, one_div, ← inv_one, inv_lt_inv₀]
   obtain ⟨ht₀, ht₁⟩ := ht
@@ -120,15 +122,15 @@ lemma im_parametrisation_upper : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (↑t + I)).im
   · exact one_pos
 
 lemma I₄'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ioo (0 : ℝ) 1,
-    ‖g r t‖ ≤ C₀ * rexp (-2 * π * (-1 / (t + I)).im) * 2 * rexp (-π * r) := by
+    ‖g r t‖ ≤ C₀ * rexp (-2 * π * (-1 / (-t + I)).im) * 2 * rexp (-π * r) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
   use C₀, hC₀_pos
   intro t ht
   apply (I₄'_bounding_aux_1 r t ht).trans
   gcongr
-  have him : 1 / 2 < (-1 / (↑t + I)).im := im_parametrisation_lower t ht
-  have hpos : 0 < (-1 / (↑t + I)).im := one_half_pos.trans him
-  let z : ℍ := ⟨-1 / (t + I), hpos⟩
+  have him : 1 / 2 < (-1 / (-↑t + I)).im := im_parametrisation_lower t ht
+  have hpos : 0 < (-1 / (-↑t + I)).im := one_half_pos.trans him
+  let z : ℍ := ⟨-1 / (-t + I), hpos⟩
   specialize hC₀ z him
   simp only [φ₀'', hpos, ↓reduceDIte]
   exact hC₀
