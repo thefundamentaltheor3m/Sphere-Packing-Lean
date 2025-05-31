@@ -451,5 +451,3 @@ theorem CuspForm_div_Discriminant_Add (k : ℤ) (x y : CuspForm (CongruenceSubgr
   ext z
   simp only [CuspForm_div_Discriminant_apply, CuspForm.add_apply, ModularForm.add_apply]
   ring
-
-#min_imports

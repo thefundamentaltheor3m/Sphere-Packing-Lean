@@ -143,5 +143,3 @@ theorem one_le_tprod_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i
   by_cases hg : Multipliable g
   · apply hg.hasProd.le_one_nonneg g h h0
   · rw [tprod_eq_one_of_not_multipliable hg]
-
-#min_imports

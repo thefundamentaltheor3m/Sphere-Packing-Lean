@@ -851,4 +851,3 @@ lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
       have ht := tsum_eq_tsum_sigma z
       simp at *
       rw [ht]
-#min_imports
