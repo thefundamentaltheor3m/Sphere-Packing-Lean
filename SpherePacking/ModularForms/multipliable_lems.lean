@@ -1,5 +1,3 @@
-import Mathlib
-import SpherePacking.ModularForms.exp_lems
 import SpherePacking.ModularForms.summable_lems
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
