@@ -157,22 +157,21 @@ lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
   (hC₀ : ∀ t ∈ Ioo 0 1, ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r)) :
   IntegrableOn (fun t ↦ C₀ * rexp (-π) * 2 * rexp (-π * r)) (Ioo (0 : ℝ) 1) volume := sorry
 
--- Bound is mentioned before g so it can be used to bound g
-
-lemma g_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
-  (hC₀ : ∀ t ∈ Ioo 0 1, ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r)) :
-  IntegrableOn (fun t ↦ ‖g r t‖) (Ioo (0 : ℝ) 1) volume := sorry
-
 end Integrability
 
 section Bounding_Integral
 
 lemma I₄'_bounding_aux_4 (r : ℝ) :  ∃ C₀ > 0,
     ∫ t in Ioo (0 : ℝ) 1, ‖g r t‖ ≤ ∫ _ in Ioo (0 : ℝ) 1, C₀ * rexp (-π) * 2 * rexp (-π * r) := by
+  wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ioo (0 : ℝ) 1) volume
+  · refine ⟨1, by positivity, ?_⟩
+    haveI h₁ : CompleteSpace ℝ := inferInstance
+    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ioo (0 : ℝ) 1))) := hint
+    conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
+    positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₄'_bounding_aux_3 r
   use C₀, hC₀_pos
-  exact setIntegral_mono_on (g_integrableOn r C₀ hC₀_pos hC₀) (Bound_integrableOn r C₀ hC₀_pos hC₀)
-    measurableSet_Ioo hC₀
+  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hC₀_pos hC₀) measurableSet_Ioo hC₀
 
 theorem I₄'_bounding (r : ℝ) : ∃ C₁ > 0, ‖I₄' r‖ ≤ C₁ * rexp (-π * r) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₄'_bounding_aux_4 r

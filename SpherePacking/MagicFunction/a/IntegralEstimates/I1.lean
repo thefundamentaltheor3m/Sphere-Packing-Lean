@@ -180,26 +180,21 @@ lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
     (hC₀ : ∀ x ∈ Ici 1, ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x)) :
     IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := sorry
 
--- Bound is mentioned before g so it can be used to bound g
-
-lemma g_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
-    (hC₀ : ∀ x ∈ Ici 1, ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x)) :
-    IntegrableOn (fun s ↦ ‖g r s‖) (Ici 1) volume := by
-  -- I don't think this follows from the fact that `‖g‖` is bounded by something integrable:
-  -- `IntegrableOn` also has an `AEStronglyMeasurable` condition that wouldn't necessarily be
-  -- satisfied by something ≤ something integrable.
-  sorry
-
 end Integrability
 
 section Bounding_Integral
 
 lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, ‖g r s‖ ≤
     ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
+  wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
+  · refine ⟨1, by positivity, ?_⟩
+    haveI h₁ : CompleteSpace ℝ := inferInstance
+    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
+    conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
+    positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_aux_2 r
   use C₀, hC₀_pos
-  exact setIntegral_mono_on (g_integrableOn r C₀ hC₀_pos hC₀) (Bound_integrableOn r C₀ hC₀_pos hC₀)
-    measurableSet_Ici hC₀
+  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hC₀_pos hC₀) measurableSet_Ici hC₀
 
 theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₁' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
