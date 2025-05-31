@@ -3,21 +3,9 @@ The purpose of this file is to define the Eisenstein series we are interested in
 convenient notation. We will also state results with `sorry`s that should be proved and eventually
 moved elsewhere in the project.
 -/
-import Mathlib
-import SpherePacking.ModularForms.Cauchylems
-import SpherePacking.ModularForms.tendstolems
-import SpherePacking.ModularForms.Icc_Ico_lems
-import SpherePacking.ModularForms.limunder_lems
-import SpherePacking.ModularForms.E2
-import SpherePacking.ModularForms.eta
-import SpherePacking.ModularForms.logDeriv_lems
-import SpherePacking.ModularForms.multipliable_lems
-import SpherePacking.ModularForms.Delta
-import SpherePacking.ModularForms.qExpansion_lems
-import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.ModularForms.Eisensteinqexpansions
+import SpherePacking.ModularForms.IsCuspForm
 
--- import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups

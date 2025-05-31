@@ -1,9 +1,6 @@
-import Mathlib
-import SpherePacking.ModularForms.eta
-import SpherePacking.ModularForms.multipliable_lems
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.clog_arg_lems
-
+import SpherePacking.ModularForms.eta
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups

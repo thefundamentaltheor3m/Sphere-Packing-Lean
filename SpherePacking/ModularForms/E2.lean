@@ -1,11 +1,10 @@
-import Mathlib
-import SpherePacking.ModularForms.limunder_lems
-import SpherePacking.ModularForms.summable_lems
+import Mathlib.Analysis.Normed.Group.Tannery
+import Mathlib.LinearAlgebra.Matrix.FixedDetMatrices
+import Mathlib.NumberTheory.LSeries.HurwitzZetaValues
 import SpherePacking.ModularForms.Cauchylems
+import SpherePacking.ModularForms.limunder_lems
 import SpherePacking.ModularForms.tendstolems
-import SpherePacking.ModularForms.exp_lems
-import Mathlib.Data.Real.Basic
-import Mathlib.LinearAlgebra.Matrix.SpecialLinearGroup
+
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups Matrix.SpecialLinearGroup
