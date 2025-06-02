@@ -32,9 +32,6 @@ lemma tprod_le_of_nonneg_of_multipliable (hfnn : 0 ≤ f) (hfg : f ≤ g) (hf : 
   · exact hf.hasProd
   · exact hg.hasProd
 
-lemma tprod_le_of_nonneg (hfnn : 0 ≤ f) (hfg : f ≤ g) : ∏' b, f b ≤ ∏' b, g b := by
-  sorry
-
 /- # State:
 * Tprod le tprod under nonnegativity assumption, without OrderedCommMonoid
 * Tprod positive: make a specific aux lemma for the one we want

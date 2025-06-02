@@ -247,7 +247,7 @@ private lemma step_10 :
     (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · exact aux_8 z hz
-  · apply tprod_le_of_nonneg
+  · apply tprod_le_of_nonneg_of_multipliable
     · intro n; simp
       have :
         (1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 24 = ((1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 12) ^ 2 :=
@@ -260,6 +260,8 @@ private lemma step_10 :
       · have hre : -(2 * π * n * z.im) = (2 * π * I * n * z).re := by field_simp
         rw [hre]
         exact aux_2 (2 * π * I * n * z)
+    · sorry
+    · sorry
 
 -- set_option maxHeartbeats 100000 in
 include hz hcsum hpoly in
