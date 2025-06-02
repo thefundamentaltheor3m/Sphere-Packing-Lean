@@ -12,7 +12,7 @@ $$\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)z:=\frac{az+b}{cz+d}.
 \end{lemma}
 
 Let $N$ be a positive integer.
-\begin{definition}\label{def:level-N-princ-cong-subgp}
+\begin{definition}\label{def:level-N-princ-cong-subgp}\leanok
     The \emph{level $N$ principal congruence subgroup} of $\Gamma_1$ is
     $$\Gamma(N):=\left\{\left.\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\Gamma_1\right|\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\equiv\left(\begin{smallmatrix}1&0\\0&1\end{smallmatrix}\right)\;\mathrm{mod}\;N\right\}.$$
 \end{definition}
@@ -40,6 +40,7 @@ The following two lemmas tell us the group structure of $\Gamma(1) = \Gamma_1$ a
   We have $\Gamma(1) = \langle S, T, -I \rangle$.
 \end{lemma}
 \begin{proof}
+    \leanok
   See~\cite[Exercise 1.1.1]{first course}.
 \end{proof}
 
@@ -51,12 +52,12 @@ The following two lemmas tell us the group structure of $\Gamma(1) = \Gamma_1$ a
 \end{proof}
 
 Let $z\in\h$, $k\in\Z$, and $\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\mathrm{SL}_2(\Z)$. We omit many of the proofs below when they exist in Mathlib already.
-\begin{definition}\label{def:automorphy-factor}
+\begin{definition}\label{def:automorphy-factor}\leanok \lean{UperHalfPlane.denom}
     The \emph{automorphy factor} of weight $k$ is defined as
 $$j_k(z,\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)):=(cz+d)^{-k}.$$
 \end{definition}
 
-\begin{lemma}\label{lemma:automorphy-factor-chain-rule}\uses{def:automorphy-factor}\leanok
+\begin{lemma}\label{lemma:automorphy-factor-chain-rule}\uses{def:automorphy-factor}\leanok \lean{UpperHalfPlane.denom_cocycle}
     The automorphy factor satisfies the \emph{chain rule}
 $$j_k(z,\gamma_1\gamma_2)=j_k(z,\gamma_1)\,j_k(\gamma_2z,\gamma_1). $$
 \end{lemma}
@@ -70,12 +71,13 @@ $$(F|_k\gamma)(z):=j_k(z,\gamma)\,F(\gamma z). $$
   The chain rule implies $$F|_k\gamma_1\gamma_2=(F|_k\gamma_1)|_k\gamma_2.$$
 \end{lemma}
 
-In particular, this lemma implies that if $\Gamma = \langle M_i \rangle_{i \in \mathcal{I}}$, then the slash action $F|\gamma$ is uniquely determined by the action of generators, i.e. $F|M_i$ and $F|M_i^{-1}$.
+In particular, this lemma implies that if $\Gamma = \langle M_i \rangle_{i \in \mathcal{I}} \rangle$, then the slash action $F|\gamma$ is uniquely determined by the action of generators, i.e. $F|M_i$ and $F|M_i^{-1}$.
 
 \begin{lemma}\label{lemma:slash-negI-even-weight}\uses{def:slash-operator}\lean{modular_slash_negI_of_even}\leanok
    For even $k$, $F|_{k}(-I) = F$.
 \end{lemma}
 \begin{proof}
+    \leanok
 Follows from the definition of the slash operator:
 $(F|_{k}(-I))(z) = (-1)^{-k}F((-I)z) = F(z)$.
 \end{proof}
@@ -94,19 +96,20 @@ A \emph{(holomorphic) modular form} of integer weight $k$ and congruence subgrou
 
 
 Let us consider several examples of modular forms.
-\begin{definition}\label{def:Ek}% \lean{def:Ek}
+\begin{definition}\label{def:Ek} \lean{ModularForm.eisensteinSeries_MF }
 For an even integer $k\geq 4$ we define the \emph{weight $k$ Eisenstein series} as
 \begin{equation}\label{eqn:Ek-definition}
 E_k(z):=\frac{1}{2\zeta(k)}\sum_{(c,d)\in\Z^2\backslash(0,0)}(cz+d)^{-k}.\end{equation}
 \end{definition}
-\begin{lemma}\label{lemma:Ek-is-modular-form}\uses{def:Mk, def:Ek}
+\begin{lemma}\label{lemma:Ek-is-modular-form}\uses{def:Mk, def:Ek}\lean{EisensteinSeries.eisensteinSeries_SIF}
 For all $k$, $E_k\in M_k(\Gamma_1)$.
 Especially, we have
-\begin{equation}\label{eqn:Ek-trans-S}
+\begin{equation}\label{eqn:Ek-trans-S}\leanok
     E_k \left(-\frac{1}{z}\right) = z^k E_k(z).
 \end{equation}
 \end{lemma}
 \begin{proof}
+    \leanok
 This follows from the fact that the sum converges absolutely.
 Now apply slash operator with $\gamma = \left(\begin{smallmatrix} 0 & -1 \\ 1 & 0 \end{smallmatrix}\right)$ gives \eqref{eqn:Ek-trans-S}.
 \end{proof}
@@ -138,14 +141,14 @@ This product formula allows us to prove positivity of $\Delta(it)$ for $t > 0$ l
 We define it as a $q$-series, which gives a holomorphic function on $\mathfrak{H}$.
 \begin{definition}\label{def:E2} \lean{E₂}
 We set
-\begin{equation}\label{eqn:E2}
+\begin{equation}\label{eqn:E2}\leanok \lean{E₂_eq}
     E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.
 \end{equation}
 \end{definition}
 
 \begin{lemma}\label{lemma:E2-transform}\uses{def:E2}\leanok
 This function is not modular, however it satisfies
-\begin{equation}\label{eqn:E2-S-transform}
+\begin{equation}\label{eqn:E2-S-transform}\leanok \lean{E₂_transform}
     z^{-2}\,E_2\left(-\frac{1}{z}\right) = E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.
 \end{equation}
 
@@ -162,11 +165,12 @@ The Dedekind eta function is defined as
     where $q = e^{2\pi i z}$.
 \end{definition}
 
-\begin{lemma}\label{lemma:dedekind_eta_transformation}
+\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{eta_equality}
 The Dedekind eta function transforms as
     $$\eta\left(-\frac{1}{z}\right) = \sqrt{-iz} \eta(z).$$
 \end{lemma}
 \begin{proof}
+    \leanok
     Cosider the logarithmic derivative of $\eta$, which one can easily see is equal to $\frac{\pi i}{12} E_2$.
     The result then follows from the transformation of $E_2$.
 
@@ -183,6 +187,7 @@ Especially, we have
 Also, it vanishes at the unique cusp, i.e. it is a cusp form of level $\Gamma_1$ and weight $12$.
 \end{lemma}
 \begin{proof}
+    \leanok
 The fact that it is invariant under translation is clear from the definition, so we only need to check transformation under $S$. Now, note that $\eta^24 = \Delta$, and from \ref{lemma:dedekind_eta_transformation} we have $\eta(-1/z) = \sqrt{-iz} \eta(z)$, so $\Delta(-1/z) = z^{12} \Delta(z)$ as required.
 
 \end{proof}
@@ -203,7 +208,7 @@ Using this one can now easily check that  we have
     Now, divide both sides with $\Delta(z)$ proves \eqref{eqn:E2-transform-general}.
 \end{proof}
 
-\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}
+\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}\leanok \lean{Delta_E4_eqn}
 We have
 \begin{equation}
 \Delta(z) = (E_4^3-E_6^2)/1728.
@@ -244,7 +249,7 @@ To checke its a cuspform, we just look at  the $q$-expansions of $E_4$ and $E_6$
 %As a side note, we can also consider defining $\Delta$ as \eqref{eqn:disc-prodformula}, and prove that it coincides with \eqref{eqn:disc-definition}.
 %Such an argument can be found in \cite[Section 2.4]{Bruinier}.
 
-\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition} \leanok
+\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition} \leanok \lean{aux_8}
 $\Delta(it) > 0$ for all $t > 0$.
 \end{corollary}
 \begin{proof}
@@ -255,10 +260,11 @@ $$
 \end{proof}
 
 The following nonvanishing result, which directly follows from \Cref{def:disc-definition}, will be used in the construction of the magic function.
-\begin{corollary}\label{cor:disc-nonvanishing}\uses{def:disc-definition}
+\begin{corollary}\label{cor:disc-nonvanishing}\uses{def:disc-definition}\leanok \lean{Δ_ne_zero}
 $\Delta(z) \neq 0$ for all $z \in \h$.
 \end{corollary}
 \begin{proof}
+    \leanok
 This follows from the product formula.
 \end{proof}
 
@@ -292,7 +298,7 @@ but $a_0(f) \ne 0$ (since its assumed to not be a cuspform), this would mean $\D
 
 \end{proof}
 
-\begin{theorem}\label{thm:dim-mf}\uses{def:Mk, thm:lvl1_dims}
+\begin{theorem}\label{thm:dim-mf}\uses{def:Mk, thm:lvl1_dims}\leanok \lean{dim_gen_cong_levels}
 Let $\Gamma$ be a congruence subgroup. Then $M_k(\Gamma)$ is finite-dimensional.
 \end{theorem}
 \begin{proof}
