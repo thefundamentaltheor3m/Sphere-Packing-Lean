@@ -666,7 +666,7 @@ lemma G2_periodic :  (G₂ ∣[(2 : ℤ)] ModularGroup.T) = G₂ := by
   apply exp_periodo
 
 /-This is the annoying exercise. -/
-lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂ γ):= by
+lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂ γ) := by
   have := Subgroup.closure_induction (G := SL(2, ℤ)) (p := fun γ _ ↦ G₂ ∣[(2 : ℤ)] γ = G₂ - (D₂ γ))
     (k := ({ModularGroup.S, ModularGroup.T})) ?_ ?_
   apply this

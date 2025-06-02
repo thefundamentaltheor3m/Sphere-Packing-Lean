@@ -54,6 +54,7 @@ lemma E4_apply (z : ℍ) : E₄ z = E 4 (by norm_num) z := rfl
 lemma E6_apply (z : ℍ) : E₆ z = E 6 (by norm_num) z := rfl
 
 
+
 variable (f : ℍ → ℂ) (k : ℤ) (z : ℍ)
 
 
