@@ -1,13 +1,11 @@
-import Mathlib
-import SpherePacking.ModularForms.exp_lems
-import SpherePacking.ModularForms.multipliable_lems
-import SpherePacking.ModularForms.logDeriv_lems
 import SpherePacking.ModularForms.E2
 import SpherePacking.ModularForms.csqrt
-import SpherePacking.ModularForms.uniformcts
+import SpherePacking.ModularForms.logDeriv_lems
+import SpherePacking.ModularForms.multipliable_lems
+
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex MatrixGroups
+  Metric Filter Function Complex
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
 
@@ -314,7 +312,7 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
   simp only [coe_mk_subtype] at Rb
   rw [Rb]
   have E := E₂_transform z
-  simp only [one_div, neg_mul, smul_eq_mul, SL_slash, slash_def, slash, ← ModularGroup.sl_moeb,
+  simp only [one_div, neg_mul, smul_eq_mul, SL_slash_def, slash, ← ModularGroup.sl_moeb,
     modular_S_smul, ModularGroup.det_coe, ofReal_one, Int.reduceSub, zpow_one, mul_one,
     ModularGroup.denom_S, Int.reduceNeg, zpow_neg] at *
   have h00 :  (UpperHalfPlane.mk (-z : ℂ)⁻¹ z.im_inv_neg_coe_pos) = (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) := by

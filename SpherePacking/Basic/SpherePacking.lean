@@ -465,5 +465,3 @@ theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
   · exact (volume_ball_lt_top _).ne
 
 end BasicResults
-
--- #min_imports

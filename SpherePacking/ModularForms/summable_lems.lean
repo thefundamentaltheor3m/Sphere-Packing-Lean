@@ -19,7 +19,7 @@ import SpherePacking.ModularForms.tsumderivWithin
 
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set
-  Metric Filter Function Complex MatrixGroups
+  Metric Filter Function Complex
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
 
@@ -563,10 +563,10 @@ lemma summable_pain (z : ℍ) (i : ℤ) :
     funext m
     rw [ div_sub_div]
     simp only [one_mul, mul_one, add_sub_cancel_left, one_div, mul_inv_rev]
-    have := linear_ne_zero ![m, i] z ?_
+    have := linear_ne_zero  (cd := ![m, i]) z ?_
     simpa using this
     aesop
-    have h2 := linear_ne_zero ![m, i + 1] z ?_
+    have h2 := linear_ne_zero (cd := ![m, i + 1]) z ?_
     simp only [Fin.isValue, Matrix.cons_val_zero, ofReal_intCast, Matrix.cons_val_one,
       Matrix.head_cons, ofReal_add, ofReal_one, ne_eq] at h2
     rw [add_assoc]

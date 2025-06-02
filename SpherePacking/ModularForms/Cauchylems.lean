@@ -4,7 +4,7 @@ import SpherePacking.ModularForms.summable_lems
 
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex MatrixGroups
+  Metric Filter Function Complex
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
 
