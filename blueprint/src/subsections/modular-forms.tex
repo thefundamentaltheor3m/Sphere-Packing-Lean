@@ -111,7 +111,7 @@ This follows from the fact that the sum converges absolutely.
 Now apply slash operator with $\gamma = \left(\begin{smallmatrix} 0 & -1 \\ 1 & 0 \end{smallmatrix}\right)$ gives \eqref{eqn:Ek-trans-S}.
 \end{proof}
 
-\begin{lemma}\label{lemma:Ek-Fourier}\uses{def:Ek}
+\begin{lemma}\label{lemma:Ek-Fourier}\uses{def:Ek}\lean{E_k_q_expansion}\leanok
 % \lean{lemma:Ek-Fourier}\uses{def:Ek}
 The Eisenstein series possesses the Fourier expansion
 \begin{equation}\label{eqn:Ek-Fourier}E_k(z)=1+\frac{2}{\zeta(1-k)}\sum_{n=1}^\infty \sigma_{k-1}(n)\,e^{2\pi i z}, \end{equation}
@@ -126,7 +126,7 @@ On the other hand, the expression \eqref{eqn:Ek-Fourier} converges to a holomorp
 
 
 The discriminant form is a unique normalized cusp form of weight 12, which can be defined as:
-\begin{definition}\label{def:disc-definition}% \lean{def:disc-definition}
+\begin{definition}\label{def:disc-definition}\lean{Delta}\leanok
 The \emph{discriminant form} $\Delta(z)$ is given by
 \begin{equation}\label{eqn:disc-definition}
 \Delta(z) = e^{2 \pi i z} \prod_{n \ge 1} (1 - e^{2 \pi i n z})^{24}.
@@ -136,14 +136,14 @@ The \emph{discriminant form} $\Delta(z)$ is given by
 This product formula allows us to prove positivity of $\Delta(it)$ for $t > 0$ later. But we need to first check its a modular form. For this we first need some definitions/ results.
 
 We define it as a $q$-series, which gives a holomorphic function on $\mathfrak{H}$.
-\begin{definition}\label{def:E2} % \lean{def:E2}
+\begin{definition}\label{def:E2} \lean{E₂}
 We set
 \begin{equation}\label{eqn:E2}
     E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.
 \end{equation}
 \end{definition}
 
-\begin{lemma}\label{lemma:E2-transform}\uses{def:E2}
+\begin{lemma}\label{lemma:E2-transform}\uses{def:E2}\leanok
 This function is not modular, however it satisfies
 \begin{equation}\label{eqn:E2-S-transform}
     z^{-2}\,E_2\left(-\frac{1}{z}\right) = E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.
@@ -151,12 +151,12 @@ This function is not modular, however it satisfies
 
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\leanok
 This is excercise 1.2.8 of \cite{first course}.
 
 \end{proof}
 
-\begin{definition}\label{def:dedekind_eta}
+\begin{definition}\label{def:dedekind_eta}\leanok \lean{η}
 The Dedekind eta function is defined as
     $$\eta(z) = q^{1/24} \prod_{n \ge 1} (1 - q^n)$$
     where $q = e^{2\pi i z}$.
@@ -174,7 +174,7 @@ The Dedekind eta function transforms as
 \end{proof}
 
 
-\begin{lemma}\label{lemma:disc-cuspform}\uses{def:disc-definition, lemma:dedekind_eta_transformation}
+\begin{lemma}\label{lemma:disc-cuspform}\uses{def:disc-definition, lemma:dedekind_eta_transformation}\leanok \lean{Delta}
 $\Delta(z) \in M_{12}(\Gamma_1)$.
 Especially, we have
 \begin{equation}\label{eqn:disc-trans-S}
@@ -189,12 +189,13 @@ The fact that it is invariant under translation is clear from the definition, so
 
 Using this one can now easily check that  we have
 
-\begin{lemma}\label{lemma:E2-transform-general}\uses{lemma:disc-cuspform}
+\begin{lemma}\label{lemma:E2-transform-general}\uses{lemma:disc-cuspform}\leanok \lean{G₂_transform}
 \begin{equation}\label{eqn:E2-transform-general}
 (cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix} a & b \\ c & d\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb{Z}).
 \end{equation}
 \end{lemma}
 \begin{proof}
+    \leanok
     Modularity of $\Delta(z)$ gives $(cz + d)^{-12}\Delta(\frac{az + b}{cz + d}) = \Delta(z)$ for $\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right) \in \Gamma_1$, and by differentiating it we get
     \begin{equation}
         (cz + d)^{-14} \Delta'\left(\frac{az + b}{cz + d}\right) = \Delta'(z) - \frac{6ic}{\pi(cz + d)} \Delta(z).
@@ -243,7 +244,7 @@ To checke its a cuspform, we just look at  the $q$-expansions of $E_4$ and $E_6$
 %As a side note, we can also consider defining $\Delta$ as \eqref{eqn:disc-prodformula}, and prove that it coincides with \eqref{eqn:disc-definition}.
 %Such an argument can be found in \cite[Section 2.4]{Bruinier}.
 
-\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition}
+\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition} \leanok
 $\Delta(it) > 0$ for all $t > 0$.
 \end{corollary}
 \begin{proof}
@@ -269,15 +270,16 @@ To prove this we will do use the following non-standard proof. First we have the
     Let $k \in \Z$ with $k < 0$. Then $M_k(\Gamma_1) = \{0\}$ and moreover $\dim M_0(\Gamma(1)) = 1$.
 \end{theorem}
 \begin{proof}
+    \leanok
     The proof makes use of the maximum modulus principle, as its already been formalised we skipt the details here but see the lean proof for details.
 \end{proof}
 
 
-\begin{theorem}\label{thm:lvl1_dims}\uses{def:holomorphic-modular-form, lemma:disc-E4E6, def:disc-definition}\lean{ModularForm}\leanok
+\begin{theorem}\label{thm:lvl1_dims}\uses{def:holomorphic-modular-form, lemma:disc-E4E6, def:disc-definition}\lean{ModularForm.dimension_level_one}\leanok
     Let $k \in \Z$ with $k \ge 0$ and even. Then $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor $ if $k \equiv 2 \mod 12$ and $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor + 1$ if $k \not\equiv 2 \mod 12$.
 \end{theorem}
 \begin{proof}
-
+\leanok
 First we note that for $2 < k$ we have $\dim(M_k(\Gamma_1)) = 1 + \dim S_k(\Gamma_1)$. This follows since we know the $E_k$ are in $M_k$ so by scalling appropriately, any non-cuspform $f \in M_k$ we would have $f - a E_k \in S_k$ for some $a$.
 
 Next, note that  $S_k(\Gamma_1)$ is isomorphic to $M_{k-12}(\Gamma_1)$, since if $f \in S_k$ then $f/ \Delta$ is now a modular form (using the product expansion of $\Delta$ and its non-vanishing on $\mathfrak{H}$) of weight $k-12$. Note its important that $f$ is a cuspform so that the quotient by $\Delta$ is a modular form.
@@ -307,7 +309,7 @@ We know that $\dim(M_k(\Gamma_1))$ is finite dimensional from the above, now thi
 % A key fact in the theory of modular forms is that they form a finite-dimensional vector space (for a fixed weight and level).
 % Especially, we use the following dimension results.
 
-\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:dim_mf}
+\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:dim_mf}\leanok
 We have
 \begin{align}
     \dim M_2(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimM2} \\
