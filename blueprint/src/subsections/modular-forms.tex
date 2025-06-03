@@ -10,6 +10,9 @@ Let $\h$ be the upper half-plane $\{z\in\C\mid\Im(z)>0\}$.
     The modular group $\Gamma_1:=\mathrm{SL}_2(\Z)$ acts on $\h$ by linear fractional transformations
 $$\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)z:=\frac{az+b}{cz+d}.$$
 \end{lemma}
+\begin{proof}
+    \leanok
+\end{proof}
 
 Let $N$ be a positive integer.
 \begin{definition}\label{def:level-N-princ-cong-subgp}\leanok
@@ -61,6 +64,9 @@ $$j_k(z,\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)):=(cz+d)^{-k}.
     The automorphy factor satisfies the \emph{chain rule}
 $$j_k(z,\gamma_1\gamma_2)=j_k(z,\gamma_1)\,j_k(\gamma_2z,\gamma_1). $$
 \end{lemma}
+\begin{proof}
+    \leanok
+\end{proof}
 
 \begin{definition}\label{def:slash-operator}\uses{def:automorphy-factor, def:Gamma-1-Action}\leanok
     Let $F$ be a function on $\h$ and $\gamma\in\mathrm{SL}_2(\Z)$. Then the \emph{slash operator} acts on $F$ by
@@ -70,6 +76,9 @@ $$(F|_k\gamma)(z):=j_k(z,\gamma)\,F(\gamma z). $$
 \begin{lemma}\label{lemma:slash-operator-chain-rule}\uses{lemma:automorphy-factor-chain-rule}\lean{SlashAction.slash_mul}\leanok
   The chain rule implies $$F|_k\gamma_1\gamma_2=(F|_k\gamma_1)|_k\gamma_2.$$
 \end{lemma}
+\begin{proof}
+    \leanok
+\end{proof}
 
 In particular, this lemma implies that if $\Gamma = \langle M_i \rangle_{i \in \mathcal{I}} \rangle$, then the slash action $F|\gamma$ is uniquely determined by the action of generators, i.e. $F|M_i$ and $F|M_i^{-1}$.
 
@@ -124,12 +133,17 @@ where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
   E_6(z)\,=\,& 1-504\sum_{n=1}^\infty \sigma_5(n)\,e^{2\pi i n z}. \notag
 \end{align}
 \end{lemma}
+
+\begin{proof}
+\leanok
+\end{proof}
+
 The infinite sum \eqref{eqn:Ek-definition} does not converge absolutely for $k=2$.
 On the other hand, the expression \eqref{eqn:Ek-Fourier} converges to a holomorphic function on the upper half-plane and we will take it as a definition of $E_2$ (See Definition \ref{def:E2} below).
 
 
 The discriminant form is a unique normalized cusp form of weight 12, which can be defined as:
-\begin{definition}\label{def:disc-definition}\lean{Delta}\leanok
+\begin{definition}\label{def:disc-definition}\lean{Delta}\leanok \uses{def:dedekind_eta}
 The \emph{discriminant form} $\Delta(z)$ is given by
 \begin{equation}\label{eqn:disc-definition}
 \Delta(z) = e^{2 \pi i z} \prod_{n \ge 1} (1 - e^{2 \pi i n z})^{24}.
@@ -165,7 +179,7 @@ The Dedekind eta function is defined as
     where $q = e^{2\pi i z}$.
 \end{definition}
 
-\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{eta_equality}
+\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{eta_equality}\uses{def:dedekind_eta}
 The Dedekind eta function transforms as
     $$\eta\left(-\frac{1}{z}\right) = \sqrt{-iz} \eta(z).$$
 \end{lemma}
@@ -328,6 +342,9 @@ We have
     % \dim M_2(\Gamma(2)) &= 2, \label{eqn:dimM2l2}
 \end{align}
 \end{corollary}
+\begin{proof}
+\leanok
+\end{proof}
 
 Another examples of modular forms we would like to consider are \emph{theta functions} \cite[Section~3.1]{1-2-3}.
 \begin{definition}\label{def:th00-th01-th10}
