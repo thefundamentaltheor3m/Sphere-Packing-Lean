@@ -10,9 +10,12 @@ Let $\h$ be the upper half-plane $\{z\in\C\mid\Im(z)>0\}$.
     The modular group $\Gamma_1:=\mathrm{SL}_2(\Z)$ acts on $\h$ by linear fractional transformations
 $$\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)z:=\frac{az+b}{cz+d}.$$
 \end{lemma}
+\begin{proof}
+    \leanok
+\end{proof}
 
 Let $N$ be a positive integer.
-\begin{definition}\label{def:level-N-princ-cong-subgp}
+\begin{definition}\label{def:level-N-princ-cong-subgp}\leanok
     The \emph{level $N$ principal congruence subgroup} of $\Gamma_1$ is
     $$\Gamma(N):=\left\{\left.\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\Gamma_1\right|\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\equiv\left(\begin{smallmatrix}1&0\\0&1\end{smallmatrix}\right)\;\mathrm{mod}\;N\right\}.$$
 \end{definition}
@@ -40,6 +43,7 @@ The following two lemmas tell us the group structure of $\Gamma(1) = \Gamma_1$ a
   We have $\Gamma(1) = \langle S, T, -I \rangle$.
 \end{lemma}
 \begin{proof}
+    \leanok
   See~\cite[Exercise 1.1.1]{first course}.
 \end{proof}
 
@@ -51,15 +55,18 @@ The following two lemmas tell us the group structure of $\Gamma(1) = \Gamma_1$ a
 \end{proof}
 
 Let $z\in\h$, $k\in\Z$, and $\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\mathrm{SL}_2(\Z)$. We omit many of the proofs below when they exist in Mathlib already.
-\begin{definition}\label{def:automorphy-factor}
+\begin{definition}\label{def:automorphy-factor}\leanok \lean{UpperHalfPlane.denom}
     The \emph{automorphy factor} of weight $k$ is defined as
 $$j_k(z,\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)):=(cz+d)^{-k}.$$
 \end{definition}
 
-\begin{lemma}\label{lemma:automorphy-factor-chain-rule}\uses{def:automorphy-factor}\leanok
+\begin{lemma}\label{lemma:automorphy-factor-chain-rule}\uses{def:automorphy-factor}\leanok \lean{UpperHalfPlane.denom_cocycle}
     The automorphy factor satisfies the \emph{chain rule}
 $$j_k(z,\gamma_1\gamma_2)=j_k(z,\gamma_1)\,j_k(\gamma_2z,\gamma_1). $$
 \end{lemma}
+\begin{proof}
+    \leanok
+\end{proof}
 
 \begin{definition}\label{def:slash-operator}\uses{def:automorphy-factor, def:Gamma-1-Action}\leanok
     Let $F$ be a function on $\h$ and $\gamma\in\mathrm{SL}_2(\Z)$. Then the \emph{slash operator} acts on $F$ by
@@ -69,13 +76,17 @@ $$(F|_k\gamma)(z):=j_k(z,\gamma)\,F(\gamma z). $$
 \begin{lemma}\label{lemma:slash-operator-chain-rule}\uses{lemma:automorphy-factor-chain-rule}\lean{SlashAction.slash_mul}\leanok
   The chain rule implies $$F|_k\gamma_1\gamma_2=(F|_k\gamma_1)|_k\gamma_2.$$
 \end{lemma}
+\begin{proof}
+    \leanok
+\end{proof}
 
-In particular, this lemma implies that if $\Gamma = \langle M_i \rangle_{i \in \mathcal{I}}$, then the slash action $F|\gamma$ is uniquely determined by the action of generators, i.e. $F|M_i$ and $F|M_i^{-1}$.
+In particular, this lemma implies that if $\Gamma = \langle M_i \rangle_{i \in \mathcal{I}} \rangle$, then the slash action $F|\gamma$ is uniquely determined by the action of generators, i.e. $F|M_i$ and $F|M_i^{-1}$.
 
 \begin{lemma}\label{lemma:slash-negI-even-weight}\uses{def:slash-operator}\lean{modular_slash_negI_of_even}\leanok
    For even $k$, $F|_{k}(-I) = F$.
 \end{lemma}
 \begin{proof}
+    \leanok
 Follows from the definition of the slash operator:
 $(F|_{k}(-I))(z) = (-1)^{-k}F((-I)z) = F(z)$.
 \end{proof}
@@ -94,24 +105,25 @@ A \emph{(holomorphic) modular form} of integer weight $k$ and congruence subgrou
 
 
 Let us consider several examples of modular forms.
-\begin{definition}\label{def:Ek}% \lean{def:Ek}
+\begin{definition}\label{def:Ek} \lean{ModularForm.eisensteinSeries_MF }
 For an even integer $k\geq 4$ we define the \emph{weight $k$ Eisenstein series} as
 \begin{equation}\label{eqn:Ek-definition}
 E_k(z):=\frac{1}{2\zeta(k)}\sum_{(c,d)\in\Z^2\backslash(0,0)}(cz+d)^{-k}.\end{equation}
 \end{definition}
-\begin{lemma}\label{lemma:Ek-is-modular-form}\uses{def:Mk, def:Ek}
+\begin{lemma}\label{lemma:Ek-is-modular-form}\uses{def:Mk, def:Ek}\lean{EisensteinSeries.eisensteinSeries_SIF}
 For all $k$, $E_k\in M_k(\Gamma_1)$.
 Especially, we have
-\begin{equation}\label{eqn:Ek-trans-S}
+\begin{equation}\label{eqn:Ek-trans-S}\leanok
     E_k \left(-\frac{1}{z}\right) = z^k E_k(z).
 \end{equation}
 \end{lemma}
 \begin{proof}
+    \leanok
 This follows from the fact that the sum converges absolutely.
 Now apply slash operator with $\gamma = \left(\begin{smallmatrix} 0 & -1 \\ 1 & 0 \end{smallmatrix}\right)$ gives \eqref{eqn:Ek-trans-S}.
 \end{proof}
 
-\begin{lemma}\label{lemma:Ek-Fourier}\uses{def:Ek}
+\begin{lemma}\label{lemma:Ek-Fourier}\uses{def:Ek}\lean{E_k_q_expansion}\leanok
 % \lean{lemma:Ek-Fourier}\uses{def:Ek}
 The Eisenstein series possesses the Fourier expansion
 \begin{equation}\label{eqn:Ek-Fourier}E_k(z)=1+\frac{2}{\zeta(1-k)}\sum_{n=1}^\infty \sigma_{k-1}(n)\,e^{2\pi i z}, \end{equation}
@@ -121,12 +133,17 @@ where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
   E_6(z)\,=\,& 1-504\sum_{n=1}^\infty \sigma_5(n)\,e^{2\pi i n z}. \notag
 \end{align}
 \end{lemma}
+
+\begin{proof}
+\leanok
+\end{proof}
+
 The infinite sum \eqref{eqn:Ek-definition} does not converge absolutely for $k=2$.
 On the other hand, the expression \eqref{eqn:Ek-Fourier} converges to a holomorphic function on the upper half-plane and we will take it as a definition of $E_2$ (See Definition \ref{def:E2} below).
 
 
 The discriminant form is a unique normalized cusp form of weight 12, which can be defined as:
-\begin{definition}\label{def:disc-definition}% \lean{def:disc-definition}
+\begin{definition}\label{def:disc-definition}\lean{Delta}\leanok \uses{def:dedekind_eta}
 The \emph{discriminant form} $\Delta(z)$ is given by
 \begin{equation}\label{eqn:disc-definition}
 \Delta(z) = e^{2 \pi i z} \prod_{n \ge 1} (1 - e^{2 \pi i n z})^{24}.
@@ -136,14 +153,14 @@ The \emph{discriminant form} $\Delta(z)$ is given by
 This product formula allows us to prove positivity of $\Delta(it)$ for $t > 0$ later. But we need to first check its a modular form. For this we first need some definitions/ results.
 
 We define it as a $q$-series, which gives a holomorphic function on $\mathfrak{H}$.
-\begin{definition}\label{def:E2} % \lean{def:E2}
+\begin{definition}\label{def:E2} \lean{E₂_eq} \leanok
 We set
 \begin{equation}\label{eqn:E2}
     E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.
 \end{equation}
 \end{definition}
 
-\begin{lemma}\label{lemma:E2-transform}\uses{def:E2}
+\begin{lemma}\label{lemma:E2-transform}\uses{def:E2}\leanok\lean{E₂_transform}
 This function is not modular, however it satisfies
 \begin{equation}\label{eqn:E2-S-transform}
     z^{-2}\,E_2\left(-\frac{1}{z}\right) = E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.
@@ -151,22 +168,23 @@ This function is not modular, however it satisfies
 
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\leanok
 This is excercise 1.2.8 of \cite{first course}.
 
 \end{proof}
 
-\begin{definition}\label{def:dedekind_eta}
+\begin{definition}\label{def:dedekind_eta}\leanok \lean{η}
 The Dedekind eta function is defined as
     $$\eta(z) = q^{1/24} \prod_{n \ge 1} (1 - q^n)$$
     where $q = e^{2\pi i z}$.
 \end{definition}
 
-\begin{lemma}\label{lemma:dedekind_eta_transformation}
+\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{eta_equality}\uses{def:dedekind_eta}
 The Dedekind eta function transforms as
     $$\eta\left(-\frac{1}{z}\right) = \sqrt{-iz} \eta(z).$$
 \end{lemma}
 \begin{proof}
+    \leanok
     Cosider the logarithmic derivative of $\eta$, which one can easily see is equal to $\frac{\pi i}{12} E_2$.
     The result then follows from the transformation of $E_2$.
 
@@ -174,7 +192,7 @@ The Dedekind eta function transforms as
 \end{proof}
 
 
-\begin{lemma}\label{lemma:disc-cuspform}\uses{def:disc-definition, lemma:dedekind_eta_transformation}
+\begin{lemma}\label{lemma:disc-cuspform}\uses{def:disc-definition, lemma:dedekind_eta_transformation}\leanok \lean{Delta}
 $\Delta(z) \in M_{12}(\Gamma_1)$.
 Especially, we have
 \begin{equation}\label{eqn:disc-trans-S}
@@ -183,18 +201,20 @@ Especially, we have
 Also, it vanishes at the unique cusp, i.e. it is a cusp form of level $\Gamma_1$ and weight $12$.
 \end{lemma}
 \begin{proof}
+    \leanok
 The fact that it is invariant under translation is clear from the definition, so we only need to check transformation under $S$. Now, note that $\eta^24 = \Delta$, and from \ref{lemma:dedekind_eta_transformation} we have $\eta(-1/z) = \sqrt{-iz} \eta(z)$, so $\Delta(-1/z) = z^{12} \Delta(z)$ as required.
 
 \end{proof}
 
 Using this one can now easily check that  we have
 
-\begin{lemma}\label{lemma:E2-transform-general}\uses{lemma:disc-cuspform}
+\begin{lemma}\label{lemma:E2-transform-general}\uses{lemma:disc-cuspform}\leanok \lean{G₂_transform}
 \begin{equation}\label{eqn:E2-transform-general}
 (cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix} a & b \\ c & d\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb{Z}).
 \end{equation}
 \end{lemma}
 \begin{proof}
+    \leanok
     Modularity of $\Delta(z)$ gives $(cz + d)^{-12}\Delta(\frac{az + b}{cz + d}) = \Delta(z)$ for $\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right) \in \Gamma_1$, and by differentiating it we get
     \begin{equation}
         (cz + d)^{-14} \Delta'\left(\frac{az + b}{cz + d}\right) = \Delta'(z) - \frac{6ic}{\pi(cz + d)} \Delta(z).
@@ -202,7 +222,7 @@ Using this one can now easily check that  we have
     Now, divide both sides with $\Delta(z)$ proves \eqref{eqn:E2-transform-general}.
 \end{proof}
 
-\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}
+\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}\leanok \lean{Delta_E4_eqn}
 We have
 \begin{equation}
 \Delta(z) = (E_4^3-E_6^2)/1728.
@@ -243,7 +263,7 @@ To checke its a cuspform, we just look at  the $q$-expansions of $E_4$ and $E_6$
 %As a side note, we can also consider defining $\Delta$ as \eqref{eqn:disc-prodformula}, and prove that it coincides with \eqref{eqn:disc-definition}.
 %Such an argument can be found in \cite[Section 2.4]{Bruinier}.
 
-\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition}
+\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition} \leanok \lean{aux_8}
 $\Delta(it) > 0$ for all $t > 0$.
 \end{corollary}
 \begin{proof}
@@ -254,10 +274,11 @@ $$
 \end{proof}
 
 The following nonvanishing result, which directly follows from \Cref{def:disc-definition}, will be used in the construction of the magic function.
-\begin{corollary}\label{cor:disc-nonvanishing}\uses{def:disc-definition}
+\begin{corollary}\label{cor:disc-nonvanishing}\uses{def:disc-definition}\leanok \lean{Δ_ne_zero}
 $\Delta(z) \neq 0$ for all $z \in \h$.
 \end{corollary}
 \begin{proof}
+    \leanok
 This follows from the product formula.
 \end{proof}
 
@@ -269,15 +290,16 @@ To prove this we will do use the following non-standard proof. First we have the
     Let $k \in \Z$ with $k < 0$. Then $M_k(\Gamma_1) = \{0\}$ and moreover $\dim M_0(\Gamma(1)) = 1$.
 \end{theorem}
 \begin{proof}
+    \leanok
     The proof makes use of the maximum modulus principle, as its already been formalised we skipt the details here but see the lean proof for details.
 \end{proof}
 
 
-\begin{theorem}\label{thm:lvl1_dims}\uses{def:holomorphic-modular-form, lemma:disc-E4E6, def:disc-definition}\lean{ModularForm}\leanok
+\begin{theorem}\label{thm:lvl1_dims}\uses{def:holomorphic-modular-form, lemma:disc-E4E6, def:disc-definition}\lean{ModularForm.dimension_level_one}\leanok
     Let $k \in \Z$ with $k \ge 0$ and even. Then $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor $ if $k \equiv 2 \mod 12$ and $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor + 1$ if $k \not\equiv 2 \mod 12$.
 \end{theorem}
 \begin{proof}
-
+\leanok
 First we note that for $2 < k$ we have $\dim(M_k(\Gamma_1)) = 1 + \dim S_k(\Gamma_1)$. This follows since we know the $E_k$ are in $M_k$ so by scalling appropriately, any non-cuspform $f \in M_k$ we would have $f - a E_k \in S_k$ for some $a$.
 
 Next, note that  $S_k(\Gamma_1)$ is isomorphic to $M_{k-12}(\Gamma_1)$, since if $f \in S_k$ then $f/ \Delta$ is now a modular form (using the product expansion of $\Delta$ and its non-vanishing on $\mathfrak{H}$) of weight $k-12$. Note its important that $f$ is a cuspform so that the quotient by $\Delta$ is a modular form.
@@ -290,7 +312,7 @@ but $a_0(f) \ne 0$ (since its assumed to not be a cuspform), this would mean $\D
 
 \end{proof}
 
-\begin{theorem}\label{thm:dim-mf}\uses{def:Mk, thm:lvl1_dims}
+\begin{theorem}\label{thm:dim-mf}\uses{def:Mk, thm:lvl1_dims}\leanok \lean{dim_gen_cong_levels}
 Let $\Gamma$ be a congruence subgroup. Then $M_k(\Gamma)$ is finite-dimensional.
 \end{theorem}
 \begin{proof}
@@ -307,7 +329,7 @@ We know that $\dim(M_k(\Gamma_1))$ is finite dimensional from the above, now thi
 % A key fact in the theory of modular forms is that they form a finite-dimensional vector space (for a fixed weight and level).
 % Especially, we use the following dimension results.
 
-\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:dim_mf}
+\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:dim_mf}\leanok
 We have
 \begin{align}
     \dim M_2(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimM2} \\
@@ -320,6 +342,9 @@ We have
     % \dim M_2(\Gamma(2)) &= 2, \label{eqn:dimM2l2}
 \end{align}
 \end{corollary}
+\begin{proof}
+\leanok
+\end{proof}
 
 Another examples of modular forms we would like to consider are \emph{theta functions} \cite[Section~3.1]{1-2-3}.
 \begin{definition}\label{def:th00-th01-th10}
