@@ -167,6 +167,14 @@ theorem a_eq_sum_integrals_RadialFunctions : a =
   + MagicFunction.a.RadialFunctions.I₅
   + MagicFunction.a.RadialFunctions.I₆ := rfl
 
+theorem a_eq_sum_integrals_SchwartzIntegrals : a =
+    MagicFunction.a.SchwartzIntegrals.I₁
+  + MagicFunction.a.SchwartzIntegrals.I₂
+  + MagicFunction.a.SchwartzIntegrals.I₃
+  + MagicFunction.a.SchwartzIntegrals.I₄
+  + MagicFunction.a.SchwartzIntegrals.I₅
+  + MagicFunction.a.SchwartzIntegrals.I₆ := rfl
+
 theorem a'_eq_sum_RealIntegrals : a' =
     MagicFunction.a.RealIntegrals.I₁'
   + MagicFunction.a.RealIntegrals.I₂'
