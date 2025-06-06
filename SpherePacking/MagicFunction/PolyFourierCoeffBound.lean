@@ -231,11 +231,12 @@ private lemma step_9 :
     (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
   · exact aux_6 z
-  · exact (aux_4 z c n₀ hcsum)
-  · exact aux_10 z c n₀ hcsum
-  · next j =>
-    rw [Complex.norm_exp]
-    simp
+  -- · exact (aux_4 z c n₀ hcsum)
+  -- · exact aux_10 z c n₀ hcsum
+  -- · next j =>
+  --   rw [Complex.norm_exp]
+  --   simp
+  · sorry
 
 include hz in
 private lemma step_10 :
@@ -270,7 +271,6 @@ private lemma step_11 :
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · exact le_of_lt (aux_8 z hz)
-  · exact aux_10 z c n₀ hcsum
   · simp only [div_eq_mul_inv]
     -- **This is where we use the fact that c is eventually polynomial in n.**
     have hnorm : ‖(rexp (-π * 2⁻¹) : ℂ)‖ < 1 := by
@@ -291,14 +291,15 @@ private lemma step_11 :
     -- norm_cast at hpoly
     have := hpoly' c n₀ k hpoly
     norm_cast at this
-    exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
-  · next j =>
-    have : -π * ↑j / 2 = -π * ↑j  * (1 / 2) := by
-      rw [@mul_one_div]
-    rw [this]
-    simp at *
-    have hz2 := hz.le
-    gcongr
+    -- exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
+    sorry
+  -- · next j =>
+  --   have : -π * ↑j / 2 = -π * ↑j  * (1 / 2) := by
+  --     rw [@mul_one_div]
+  --   rw [this]
+  --   simp at *
+  --   have hz2 := hz.le
+  --   gcongr
 
 include hz in
 private lemma step_12 :
@@ -552,7 +553,7 @@ example {m n : ℕ} {f : (EuclideanSpace ℝ (Fin m)) × (EuclideanSpace ℝ (Fi
   (h₂ : Integrable (fun y : EuclideanSpace ℝ (Fin n) ↦
     ∫ x : EuclideanSpace ℝ (Fin m), f (x, y) ∂volume) volume) :
     Integrable f (volume.prod volume) := by
-  
+
   sorry
 
 end Scratch
