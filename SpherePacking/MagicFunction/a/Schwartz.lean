@@ -13,8 +13,7 @@ import SpherePacking.MagicFunction.a.Basic
 
 /-! # `a` is a Schwartz Function
 
-The purpose of this file is to prove that `a` is a Schwartz function. We follow the proof of
-Proposition 7.8 in the blueprint.
+The purpose of this file is to prove that `a` is a Schwartz function. It collects results stated elsewhere and presents them concisely.
 -/
 
 open MagicFunction MagicFunction.a MagicFunction.a.RadialFunctions MagicFunction.a.RealIntegrals
@@ -160,8 +159,21 @@ def a' : 𝓢(ℝ, ℂ) :=
 def a : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := schwartzMap_multidimensional_of_schwartzMap_real
   (EuclideanSpace ℝ (Fin 8)) a'
 
-theorem a_eq_sum_integrals : a = I₁ + I₂ + I₃ + I₄ + I₅ + I₆ := by
-  sorry
+theorem a_eq_sum_integrals_RadialFunctions : a =
+    MagicFunction.a.RadialFunctions.I₁
+  + MagicFunction.a.RadialFunctions.I₂
+  + MagicFunction.a.RadialFunctions.I₃
+  + MagicFunction.a.RadialFunctions.I₄
+  + MagicFunction.a.RadialFunctions.I₅
+  + MagicFunction.a.RadialFunctions.I₆ := rfl
+
+theorem a'_eq_sum_RealIntegrals : a' =
+    MagicFunction.a.RealIntegrals.I₁'
+  + MagicFunction.a.RealIntegrals.I₂'
+  + MagicFunction.a.RealIntegrals.I₃'
+  + MagicFunction.a.RealIntegrals.I₄'
+  + MagicFunction.a.RealIntegrals.I₅'
+  + MagicFunction.a.RealIntegrals.I₆' := rfl
 
 end MagicFunction.FourierEigenfunctions
 
