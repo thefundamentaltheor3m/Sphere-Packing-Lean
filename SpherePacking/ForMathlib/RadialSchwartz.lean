@@ -50,13 +50,57 @@ open Set
 open scoped ContDiff
 
 -- variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
-variable {f : ℝ → ℂ} (hcontdiff : ContDiff ℝ ∞ f)
-  (hdecay : ∀ k n : ℕ, ∃ C : ℝ, ∀ x ∈ (Ici (0 : ℝ)), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C)
+variable {g : ℝ → ℂ} (d : ℕ) (hContDiffOn : ContDiffOn ℝ ∞ g (Ici (0 : ℝ)))
+  (hdecay : ∀ k n : ℕ, ∃ C : ℝ, ∀ x ∈ (Ici (0 : ℝ)), ‖x‖ ^ k *
+    ‖iteratedFDerivWithin ℝ n g (Ici 0) x‖ ≤ C)
 
-noncomputable def schwartzMap_multidimensional_of_schwartzLike_real (d : ℕ) :
+include hContDiffOn in
+lemma ContDiffOn.comp_norm_sq_smooth :  -- More general version possible but for now unnecessary
+    ContDiff ℝ ∞ (fun (x : EuclideanSpace ℝ (Fin d)) ↦ g (‖x‖ ^ 2)) :=
+  hContDiffOn.comp_contDiff (contDiff_norm_sq ℝ) <| by simp
+
+-- To match with `norm_iteratedFDerivWithin_comp_le`
+local notation "f" => fun (x : EuclideanSpace ℝ (Fin d)) ↦ ‖x‖ ^ 2
+local notation "s" => (⊤ : Set (EuclideanSpace ℝ (Fin d)))
+local notation "t" => (Ici (0 : ℝ) : Set ℝ)
+
+private lemma ht : UniqueDiffOn ℝ t := uniqueDiffOn_Ici 0
+private lemma hs : UniqueDiffOn ℝ s := uniqueDiffOn_univ
+private lemma hst : Set.MapsTo f s t := fun _ _ => by simp
+
+private lemma hD (x : EuclideanSpace ℝ (Fin d)) (n : ℕ) : ∀ i : ℕ, 1 ≤ i → i ≤ n →
+    ‖iteratedFDerivWithin ℝ i f s x‖ ≤ 2 ^ i := by
+  have hnorm_eq (y : EuclideanSpace ℝ (Fin d)) : ‖y‖ ^ 2 = inner ℝ y y := by
+    simp only [PiLp.norm_sq_eq_of_L2, Real.norm_eq_abs, sq_abs, PiLp.inner_apply, inner_apply,
+      conj_trivial]
+    congr; ext; ring
+  have hinner_eq_innerSL (a b : EuclideanSpace ℝ (Fin d)) : inner ℝ a b = innerSL ℝ a b := rfl
+  intro i hi₁ hi₂
+  rw [iteratedFDerivWithin_eq_iteratedFDeriv]
+  · have h₁ : ContDiff ℝ ∞ (fun (x : EuclideanSpace ℝ (Fin d)) ↦ x) := contDiff_id
+    simp only [hnorm_eq, hinner_eq_innerSL]
+    have h₂ : ‖innerSL ℝ‖ ≤ 1 := norm_innerSL_le (E := EuclideanSpace ℝ (Fin d)) ℝ
+    have h₃ : i ≤ ∞ := right_eq_inf.mp rfl
+    have h₄ :=
+      ContinuousLinearMap.norm_iteratedFDeriv_le_of_bilinear_of_le_one (innerSL ℝ) h₁ h₁ x h₃ h₂
+    apply h₄.trans
+    have h₅ (j : ℕ) : ‖iteratedFDeriv ℝ j (fun (x : EuclideanSpace ℝ (Fin d)) ↦ x) x‖ = 1 := by
+      -- Why is this not obvious?
+      sorry
+    simp only [h₅, mul_one]
+    -- This isn't in the library?!
+    sorry
+  · exact uniqueDiffOn_univ
+  · exact (contDiff_norm_sq ℝ).contDiffAt
+  · trivial
+
+
+
+
+noncomputable def schwartzMap_multidimensional_of_schwartzLike_real :
     𝓢(EuclideanSpace ℝ (Fin d), ℂ) where
-  toFun := fun x ↦ f (‖x‖ ^ 2)
-  smooth' := hcontdiff.comp <| contDiff_norm_sq ℝ
+  toFun := fun x ↦ g (f x)
+  smooth' := hContDiffOn.comp_norm_sq_smooth d
   decay' := by
     intro k n
     obtain ⟨C, hC⟩ := hdecay k n
@@ -68,15 +112,18 @@ noncomputable def schwartzMap_multidimensional_of_schwartzLike_real (d : ℕ) :
       simp only [PiLp.norm_sq_eq_of_L2, Real.norm_eq_abs, sq_abs, PiLp.inner_apply, inner_apply,
         conj_trivial]
       congr; ext; ring
-    have hrw : (fun (x : EuclideanSpace ℝ (Fin d)) ↦ f (‖x‖ ^ 2)) = (fun x ↦ f (inner ℝ x x)) := by
+    have hrw : (fun (x : EuclideanSpace ℝ (Fin d)) ↦ g (‖x‖ ^ 2)) = (fun x ↦ g (inner ℝ x x)) := by
       ext x
       congr
       exact hnorm_eq x
     rw [hrw]
     have hbilin : ‖innerSL ℝ (E := EuclideanSpace ℝ (Fin d))‖ ≤ 1 := norm_innerSL_le ℝ
     have hinner_eq_innerSL (a b : EuclideanSpace ℝ (Fin d)) : inner ℝ a b = innerSL ℝ a b := rfl
-    change ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x ↦ f (innerSL ℝ x x)) x‖ ≤ ↑n.factorial * C * 2 ^ n
-    
+    change ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x ↦ g (innerSL ℝ x x)) x‖ ≤ ↑n.factorial * C * 2 ^ n
+    -- wlog hne_zero : x ≠ 0
+    -- · simp only [ne_eq, Decidable.not_not] at hne_zero
+    --   rw [hne_zero, norm_zero, zero_pow, zero_mul]
+    --   sorry
     stop
 
     -- norm_iteratedFDeriv_comp_le hcontdiff (contDiff_norm_sq ℝ) (n := n) ?_ x ?_ ?_
@@ -105,7 +152,10 @@ noncomputable def schwartzMap_multidimensional_of_schwartzLike_real (d : ℕ) :
 -- example (n : ℕ) (x : F) : ‖iteratedFDeriv ℝ n (fun (v : F) ↦ ‖v‖^2) x‖ < 2 ^ n := by
 --   sorry
 
-
+example (n d : ℕ) (x : EuclideanSpace ℝ (Fin d)) (g : EuclideanSpace ℝ (Fin d) → ℝ)
+    (h : ContDiffOn ℝ n g ⊤) :
+    iteratedFDeriv ℝ n g x = iteratedFDerivWithin ℝ n g (⊤ : Set (EuclideanSpace ℝ (Fin d))) x :=
+  Eq.symm (iteratedFDerivWithin_eq_iteratedFDeriv uniqueDiffOn_univ (h x trivial) trivial)
 
 #check ContinuousLinearMap.norm_iteratedFDeriv_le_of_bilinear_of_le_one
 
