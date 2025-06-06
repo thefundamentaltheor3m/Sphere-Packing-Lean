@@ -231,13 +231,11 @@ private lemma step_9 :
     (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
   · exact aux_6 z
-  · have h₁ : ∀ (n : ℕ), norm (c (n + n₀)) * norm (cexp (↑π * I * ↑n * z)) ≤
-        norm (c (n + n₀)) * rexp (-π * n * z.im) := by
-      intro n
-      gcongr
-      exact aux_7 z n
-    apply Summable.tsum_le_tsum h₁ (aux_4 z c n₀ hcsum)
-    exact aux_10 z c n₀ hcsum
+  · exact (aux_4 z c n₀ hcsum)
+  · exact aux_10 z c n₀ hcsum
+  · next j =>
+    rw [Complex.norm_exp]
+    simp
 
 include hz in
 private lemma step_10 :
@@ -272,33 +270,35 @@ private lemma step_11 :
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · exact le_of_lt (aux_8 z hz)
-  · refine Summable.tsum_le_tsum ?_ ?_ ?_
-    · intro i
-      gcongr
-      rw [neg_mul, neg_mul, neg_div, neg_le_neg_iff, div_eq_mul_inv, inv_eq_one_div]
-      gcongr
-    · exact aux_10 z c n₀ hcsum
-    · simp only [div_eq_mul_inv]
-      -- **This is where we use the fact that c is eventually polynomial in n.**
-      have hnorm : ‖(rexp (-π * 2⁻¹) : ℂ)‖ < 1 := by
-        rw [Complex.norm_real]
-        simp; positivity
-      have h₁ : ∀ (n : ℕ), rexp (-π * n * 2⁻¹) = (rexp (-π * 2⁻¹)) ^ n := by
-        intro n; symm
-        calc (rexp (-π * 2⁻¹)) ^ n
-        _ = rexp ((-π * 2⁻¹) * n) := by
-          have := (Real.exp_mul (-π * 2⁻¹) n).symm
-          norm_cast at this
-        _ = rexp (-π * ↑n * 2⁻¹) := by congr 1; ring
-      have h₂ : ∀ (n : ℕ), ‖c (↑n + n₀)‖ * rexp (-π * 2⁻¹) ^ n =
-          ‖c (↑n + n₀) * rexp (-π * 2⁻¹) ^ n‖ := fun n => by
-        rw [norm_mul, neg_mul, norm_pow, Complex.norm_real]
-        simp
-      simp only [h₁, h₂]
-      -- norm_cast at hpoly
-      have := hpoly' c n₀ k hpoly
-      norm_cast at this
-      exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
+  · exact aux_10 z c n₀ hcsum
+  · simp only [div_eq_mul_inv]
+    -- **This is where we use the fact that c is eventually polynomial in n.**
+    have hnorm : ‖(rexp (-π * 2⁻¹) : ℂ)‖ < 1 := by
+      rw [Complex.norm_real]
+      simp; positivity
+    have h₁ : ∀ (n : ℕ), rexp (-π * n * 2⁻¹) = (rexp (-π * 2⁻¹)) ^ n := by
+      intro n; symm
+      calc (rexp (-π * 2⁻¹)) ^ n
+      _ = rexp ((-π * 2⁻¹) * n) := by
+        have := (Real.exp_mul (-π * 2⁻¹) n).symm
+        norm_cast at this
+      _ = rexp (-π * ↑n * 2⁻¹) := by congr 1; ring
+    have h₂ : ∀ (n : ℕ), ‖c (↑n + n₀)‖ * rexp (-π * 2⁻¹) ^ n =
+        ‖c (↑n + n₀) * rexp (-π * 2⁻¹) ^ n‖ := fun n => by
+      rw [norm_mul, neg_mul, norm_pow, Complex.norm_real]
+      simp
+    simp only [h₁, h₂]
+    -- norm_cast at hpoly
+    have := hpoly' c n₀ k hpoly
+    norm_cast at this
+    exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
+  · next j =>
+    have : -π * ↑j / 2 = -π * ↑j  * (1 / 2) := by
+      rw [@mul_one_div]
+    rw [this]
+    simp at *
+    have hz2 := hz.le
+    gcongr
 
 include hz in
 private lemma step_12 :

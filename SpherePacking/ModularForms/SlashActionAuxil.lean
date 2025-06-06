@@ -15,7 +15,7 @@ These theorems will be used to prove that 4-th powers of Jacobi theta functions 
 are modular forms of weight 2 and level Γ(2).
 -/
 
-open scoped MatrixGroups ModularForm
+open scoped  ModularForm MatrixGroups
 open Matrix UpperHalfPlane CongruenceSubgroup ModularGroup
 
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
@@ -53,8 +53,8 @@ open ModularForm
 /- This section proves rewriting lemmas for f|[k]γ for various γ. -/
 
 theorem modular_negI_smul : negI.1 • z = z := by
-  change smulAux negI z = z
-  simp [smulAux, smulAux', negI, num, denom]
+  rw [specialLinearGroup_apply]
+  simp [negI, num, denom]
 
 theorem modular_slash_negI_of_even (hk : Even k) : f ∣[k] negI.1 = f := by
   ext x
@@ -66,12 +66,14 @@ theorem modular_slash_negI_of_even (hk : Even k) : f ∣[k] negI.1 = f := by
 
 theorem modular_slash_S_apply :
     (f ∣[k] S) z = f (UpperHalfPlane.mk (-z)⁻¹ z.im_inv_neg_coe_pos) * z ^ (-k) := by
-  rw [SL_slash, slash_def, slash, ← sl_moeb, modular_S_smul]
-  simp [denom, S]
+  rw [SL_slash_apply, denom, UpperHalfPlane.modular_S_smul]
+  simp [S]
+
+
 
 theorem modular_slash_T_apply : (f ∣[k] T) z = f ((1 : ℝ) +ᵥ z) := by
-  rw [SL_slash, slash_def, slash, ← sl_moeb, modular_T_smul]
-  simp [denom, T]
+  rw [SL_slash_apply, denom, UpperHalfPlane.modular_T_smul]
+  simp [T]
 
 end slash_action
 

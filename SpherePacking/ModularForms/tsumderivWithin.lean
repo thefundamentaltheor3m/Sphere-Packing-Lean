@@ -7,7 +7,7 @@ import SpherePacking.ModularForms.iteratedderivs
 
 
 open UpperHalfPlane TopologicalSpace Set
-  Metric Filter Function Complex MatrixGroups
+  Metric Filter Function Complex
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
 

@@ -3,7 +3,6 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
-import Mathlib
 import SpherePacking.ModularForms.multipliable_lems
 
 /-! The contents of this file should go to Topology.Algebra.InfiniteSum, either
