@@ -254,9 +254,9 @@ private lemma step_10 :
         by ring_nf
       rw [this]
       exact sq_nonneg ((1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 12)
-    · intro n; simp
+    · intro n; simp only [neg_mul]
       gcongr
-      · simp; positivity
+      · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
       · have hre : -(2 * π * n * z.im) = (2 * π * I * n * z).re := by field_simp
         rw [hre]
         exact aux_2 (2 * π * I * n * z)
@@ -541,3 +541,18 @@ theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     -- · sorry
 
 end Corollaries
+
+section Scratch
+
+open MeasureTheory
+open scoped MeasureTheory.Measure
+
+example {m n : ℕ} {f : (EuclideanSpace ℝ (Fin m)) × (EuclideanSpace ℝ (Fin n)) → ℝ}
+  (h₁ : ∀ x : EuclideanSpace ℝ (Fin m), Integrable (fun y : EuclideanSpace ℝ (Fin n) ↦ f (x, y)))
+  (h₂ : Integrable (fun y : EuclideanSpace ℝ (Fin n) ↦
+    ∫ x : EuclideanSpace ℝ (Fin m), f (x, y) ∂volume) volume) :
+    Integrable f (volume.prod volume) := by
+  
+  sorry
+
+end Scratch
