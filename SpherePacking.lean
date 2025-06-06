@@ -32,6 +32,10 @@ import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 import SpherePacking.MagicFunction.a.IntegralEstimates.I2
+import SpherePacking.MagicFunction.a.IntegralEstimates.I3
+import SpherePacking.MagicFunction.a.IntegralEstimates.I4
+import SpherePacking.MagicFunction.a.IntegralEstimates.I5
+import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 import SpherePacking.MagicFunction.a.Schwartz
 import SpherePacking.ModularForms.AtImInfty
 import SpherePacking.ModularForms.BigO
@@ -62,4 +66,4 @@ import SpherePacking.ModularForms.tendstolems
 import SpherePacking.ModularForms.tsumderivWithin
 import SpherePacking.ModularForms.uniformcts
 import SpherePacking.ModularForms.upperhalfplane
-import SpherePacking.Tactic.NormNumI_Scratch
+import SpherePacking.Tactic.NormNumI

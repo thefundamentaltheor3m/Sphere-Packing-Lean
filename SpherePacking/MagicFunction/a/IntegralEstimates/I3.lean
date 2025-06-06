@@ -12,9 +12,9 @@ import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.Tactic.NormNumI
 
-/-! # Constructing Upper-Bounds for I₁
+/-! # Constructing Upper-Bounds for I₃
 
-The purpose of this file is to construct bounds on the integral `I₁` that is part of the definition
+The purpose of this file is to construct bounds on the integral `I₃` that is part of the definition
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 
 ## TODO:
@@ -26,7 +26,7 @@ open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
 open scoped Function UpperHalfPlane
 
-namespace MagicFunction.a.IntegralEstimates.I₁
+namespace MagicFunction.a.IntegralEstimates.I₃
 
 noncomputable section Change_of_Variables
 
@@ -52,7 +52,7 @@ def f' : ℝ → ℝ := fun t ↦ -1 / t ^ 2
 def g : ℝ → ℝ → ℂ := fun r s ↦ -I
   * φ₀'' (I * s)
   * (s ^ (-4 : ℤ))
-  * cexp (-π * I * r)
+  * cexp (π * I * r)
   * cexp (-π * r / s)
 
 lemma aux_measurable : MeasurableSet ((Ioc 0 1) : Set ℝ) := measurableSet_Ioc
@@ -105,8 +105,8 @@ lemma Writing_as_intervalIntegral (r : ℝ) :
   simp [intervalIntegral_eq_integral_uIoc]
 
 lemma Reconciling_Change_of_Variables (r : ℝ) :
-    I₁' r = ∫ t in Ioc 0 1, |f' t| • (g r (f t)) := by
-  simp only [I₁'_eq_Ioc, f, f', g]
+    I₃' r = ∫ t in Ioc 0 1, |f' t| • (g r (f t)) := by
+  simp only [I₃'_eq_Ioc, f, f', g]
   apply setIntegral_congr_ae₀ nullMeasurableSet_Ioc
   apply ae_of_all
   intro t ht
@@ -126,7 +126,7 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
   ring_nf
   ac_rfl
 
-theorem Complete_Change_of_Variables (r : ℝ) : I₁' r = ∫ s in Ici (1 : ℝ), (g r s) := by
+theorem Complete_Change_of_Variables (r : ℝ) : I₃' r = ∫ s in Ici (1 : ℝ), (g r s) := by
   rw [Reconciling_Change_of_Variables, ← Changing_Variables, ← Changing_Domain_of_Integration]
 
 end Change
@@ -139,7 +139,7 @@ section Bounding
 
 section Bounding_Integrand
 
-lemma I₁'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀'' (I * ↑x)‖ * rexp (-π * r / x) := by
+lemma I₃'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀'' (I * ↑x)‖ * rexp (-π * r / x) := by
   intro s hs
   rw [mem_Ici] at hs
   simp only [g, neg_mul, Int.reduceNeg, zpow_neg, norm_neg, norm_mul, norm_I, one_mul, norm_inv,
@@ -152,13 +152,13 @@ lemma I₁'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀
   apply inv_le_one_of_one_le₀
   exact one_le_zpow₀ hs <| Int.zero_le_ofNat 4
 
-  lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
+  lemma I₃'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
       ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
   use C₀, hC₀_pos
   intro s hs
   rw [mem_Ici] at hs
-  apply (I₁'_bounding_aux_1 r s hs).trans
+  apply (I₃'_bounding_aux_1 r s hs).trans
   gcongr
   have him : (I * s).im = s := by simp
   have hpos : 0 < s := by positivity
@@ -184,7 +184,7 @@ end Integrability
 
 section Bounding_Integral
 
-lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, ‖g r s‖ ≤
+lemma I₃'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, ‖g r s‖ ≤
     ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
   wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
   · refine ⟨1, by positivity, ?_⟩
@@ -192,13 +192,13 @@ lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, �
     have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
     conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
     positivity
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_aux_2 r
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₃'_bounding_aux_2 r
   use C₀, hC₀_pos
   exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hC₀_pos hC₀) measurableSet_Ici hC₀
 
-theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
-    ‖I₁' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_1_aux_3 r
+theorem I₃'_bounding (r : ℝ) : ∃ C₀ > 0,
+    ‖I₃' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₃'_bounding_1_aux_3 r
   use C₀, hC₀_pos
   calc
   _ = ‖∫ s in Ici (1 : ℝ), g r s‖ := by simp only [Complete_Change_of_Variables, g]
