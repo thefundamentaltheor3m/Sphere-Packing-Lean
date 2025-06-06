@@ -231,12 +231,11 @@ private lemma step_9 :
     (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
   · exact aux_6 z
-  -- · exact (aux_4 z c n₀ hcsum)
-  -- · exact aux_10 z c n₀ hcsum
-  -- · next j =>
-  --   rw [Complex.norm_exp]
-  --   simp
-  · sorry
+  · exact (aux_4 z c n₀ hcsum)
+  · exact aux_10 z c n₀ hcsum
+  · next j =>
+    rw [Complex.norm_exp]
+    simp
 
 include hz in
 private lemma step_10 :
@@ -271,6 +270,8 @@ private lemma step_11 :
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · exact le_of_lt (aux_8 z hz)
+  · sorry
+  · sorry
   · simp only [div_eq_mul_inv]
     -- **This is where we use the fact that c is eventually polynomial in n.**
     have hnorm : ‖(rexp (-π * 2⁻¹) : ℂ)‖ < 1 := by
@@ -287,11 +288,13 @@ private lemma step_11 :
         ‖c (↑n + n₀) * rexp (-π * 2⁻¹) ^ n‖ := fun n => by
       rw [norm_mul, neg_mul, norm_pow, Complex.norm_real]
       simp
+    -- Something's broken here... let's fix it later...
+    stop
     simp only [h₁, h₂]
     -- norm_cast at hpoly
     have := hpoly' c n₀ k hpoly
     norm_cast at this
-    -- exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
+    exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
     sorry
   -- · next j =>
   --   have : -π * ↑j / 2 = -π * ↑j  * (1 / 2) := by
@@ -310,7 +313,7 @@ private lemma step_12 :
   gcongr
   · -- This allows us to get rid of the numerators
     exact aux_11
-  · apply tprod_le_of_nonneg
+  · apply tprod_le_of_nonneg_of_multipliable
     · intro n; simp
       have : (1 - rexp (-(π * ↑↑n))) ^ 24 = ((1 - rexp (-(π * ↑↑n))) ^ 12) ^ 2 := by ring
       rw [this]
@@ -331,6 +334,8 @@ private lemma step_12 :
       _ < π * ↑↑n * z.im * 2 := by
         rw [mul_assoc (π * ↑↑n), mul_lt_mul_left (by positivity)]
         linarith
+    · sorry
+    · sorry
 
 private lemma step_13 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
