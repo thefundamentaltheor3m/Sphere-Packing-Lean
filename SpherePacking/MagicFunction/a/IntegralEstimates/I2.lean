@@ -147,9 +147,11 @@ end Bounding_Integrand
 
 section Integrability
 
-lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
-  (hC₀ : ∀ t ∈ Ioo 0 1, ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r)) :
-  IntegrableOn (fun t ↦ C₀ * rexp (-π) * 2 * rexp (-π * r)) (Ioo (0 : ℝ) 1) volume := sorry
+lemma Bound_integrableOn (r C₀ : ℝ) :
+    IntegrableOn (fun _ ↦ C₀ * rexp (-π) * 2 * rexp (-π * r)) (Ioo (0 : ℝ) 1) volume := by
+  rw [integrableOn_const_iff]
+  right
+  exact measure_Ioo_lt_top
 
 end Integrability
 
@@ -165,7 +167,7 @@ lemma I₂'_bounding_aux_4 (r : ℝ) :  ∃ C₀ > 0,
     positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_3 r
   use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hC₀_pos hC₀) measurableSet_Ioo hC₀
+  exact setIntegral_mono_on hint (Bound_integrableOn r C₀) measurableSet_Ioo hC₀
 
 theorem I₂'_bounding (r : ℝ) : ∃ C₁ > 0, ‖I₂' r‖ ≤ C₁ * rexp (-π * r) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_4 r
