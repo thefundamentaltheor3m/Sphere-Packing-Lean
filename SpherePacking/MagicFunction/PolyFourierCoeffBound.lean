@@ -35,6 +35,8 @@ comprehensive list of things to be done, including but not limited to the `sorry
 open Filter Complex Real BigOperators Asymptotics
 open scoped UpperHalfPlane
 
+namespace MagicFunction.PolyFourierCoeffBound
+
 private noncomputable def fouterm (coeff : ℤ → ℂ) (x : ℂ) (i : ℤ) : ℂ :=
   (coeff i) * cexp (π * I * i * x)
 
@@ -243,19 +245,21 @@ private lemma step_10 :
     (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · exact aux_8 z hz
-  · apply tprod_le_of_nonneg
+  · apply tprod_le_of_nonneg_of_multipliable
     · intro n; simp
       have :
         (1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 24 = ((1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 12) ^ 2 :=
         by ring_nf
       rw [this]
       exact sq_nonneg ((1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 12)
-    · intro n; simp
+    · intro n; simp only [neg_mul]
       gcongr
-      · simp; positivity
+      · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
       · have hre : -(2 * π * n * z.im) = (2 * π * I * n * z).re := by field_simp
         rw [hre]
         exact aux_2 (2 * π * I * n * z)
+    · sorry
+    · sorry
 
 -- set_option maxHeartbeats 100000 in
 include hz hcsum hpoly in
@@ -266,7 +270,8 @@ private lemma step_11 :
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · exact le_of_lt (aux_8 z hz)
-  · exact aux_10 z c n₀ hcsum
+  · sorry
+  · sorry
   · simp only [div_eq_mul_inv]
     -- **This is where we use the fact that c is eventually polynomial in n.**
     have hnorm : ‖(rexp (-π * 2⁻¹) : ℂ)‖ < 1 := by
@@ -283,18 +288,21 @@ private lemma step_11 :
         ‖c (↑n + n₀) * rexp (-π * 2⁻¹) ^ n‖ := fun n => by
       rw [norm_mul, neg_mul, norm_pow, Complex.norm_real]
       simp
+    -- Something's broken here... let's fix it later...
+    stop
     simp only [h₁, h₂]
     -- norm_cast at hpoly
     have := hpoly' c n₀ k hpoly
     norm_cast at this
     exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
-  · next j =>
-    have : -π * ↑j / 2 = -π * ↑j  * (1 / 2) := by
-      rw [@mul_one_div]
-    rw [this]
-    simp at *
-    have hz2 := hz.le
-    gcongr
+    sorry
+  -- · next j =>
+  --   have : -π * ↑j / 2 = -π * ↑j  * (1 / 2) := by
+  --     rw [@mul_one_div]
+  --   rw [this]
+  --   simp at *
+  --   have hz2 := hz.le
+  --   gcongr
 
 include hz in
 private lemma step_12 :
@@ -305,7 +313,7 @@ private lemma step_12 :
   gcongr
   · -- This allows us to get rid of the numerators
     exact aux_11
-  · apply tprod_le_of_nonneg
+  · apply tprod_le_of_nonneg_of_multipliable
     · intro n; simp
       have : (1 - rexp (-(π * ↑↑n))) ^ 24 = ((1 - rexp (-(π * ↑↑n))) ^ 12) ^ 2 := by ring
       rw [this]
@@ -326,6 +334,8 @@ private lemma step_12 :
       _ < π * ↑↑n * z.im * 2 := by
         rw [mul_assoc (π * ↑↑n), mul_lt_mul_left (by positivity)]
         linarith
+    · sorry
+    · sorry
 
 private lemma step_13 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
@@ -537,3 +547,18 @@ theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     -- · sorry
 
 end Corollaries
+
+section Scratch
+
+open MeasureTheory
+open scoped MeasureTheory.Measure
+
+example {m n : ℕ} {f : (EuclideanSpace ℝ (Fin m)) × (EuclideanSpace ℝ (Fin n)) → ℝ}
+  (h₁ : ∀ x : EuclideanSpace ℝ (Fin m), Integrable (fun y : EuclideanSpace ℝ (Fin n) ↦ f (x, y)))
+  (h₂ : Integrable (fun y : EuclideanSpace ℝ (Fin n) ↦
+    ∫ x : EuclideanSpace ℝ (Fin m), f (x, y) ∂volume) volume) :
+    Integrable f (volume.prod volume) := by
+
+  sorry
+
+end Scratch
