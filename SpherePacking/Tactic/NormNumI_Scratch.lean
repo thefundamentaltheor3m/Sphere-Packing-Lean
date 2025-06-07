@@ -1,4 +1,4 @@
-import Mathlib
+import Mathlib.Analysis.CStarAlgebra.Classes
 
 open Complex
 

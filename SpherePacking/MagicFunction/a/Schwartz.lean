@@ -6,8 +6,6 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
-import Mathlib
-
 import SpherePacking.ForMathlib.RadialSchwartz
 import SpherePacking.MagicFunction.a.Basic
 
