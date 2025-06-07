@@ -51,7 +51,7 @@ open scoped ContDiff
 
 -- variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
 variable {g : ℝ → ℂ} (d : ℕ) (hContDiffOn : ContDiffOn ℝ ∞ g (Ici (0 : ℝ)))
-  (hdecay : ∀ k n : ℕ, ∃ C : ℝ, ∀ x ∈ (Ici (0 : ℝ)), ‖x‖ ^ k *
+  (hdecay : ∀ k n : ℕ, ∃ C : ℝ, ∀ x ∈ (Ici (0 : ℝ)), ‖x‖ ^ ((k : ℝ) / 2) *
     ‖iteratedFDerivWithin ℝ n g (Ici 0) x‖ ≤ C)
 
 include hContDiffOn in
@@ -94,7 +94,28 @@ private lemma hD (x : EuclideanSpace ℝ (Fin d)) (n : ℕ) : ∀ i : ℕ, 1 ≤
   · exact (contDiff_norm_sq ℝ).contDiffAt
   · trivial
 
+private lemma h_pow (x : EuclideanSpace ℝ (Fin d)) (k : ℕ) :
+    (‖x‖ ^ 2) ^ ((k : ℝ) / 2) = ‖x‖ ^ (k : ℝ) := by
+  have h_pow_2 : ‖x‖ ^ 2 = ‖x‖ ^ (2 : ℝ) := by norm_cast
+  rw [h_pow_2, ← Real.rpow_mul (by positivity)]
+  field_simp
 
+include hdecay in
+private lemma hC (x : EuclideanSpace ℝ (Fin d)) (n k : ℕ) : ∃ C : ℝ, ∀ i ≤ n,
+    (‖x‖ ^ k) * ‖iteratedFDerivWithin ℝ i g t (f x)‖ ≤ C := by
+  -- I know that given some k, for all n, there is a Cₙ such that ‖deriv‖ ≤ Cₙ / (‖x‖ ^ (k / 2))
+  -- Simply define C to be the max of all Cᵢ for 0 ≤ i ≤ n
+  -- Copilot did the first few lines
+  choose! C hC using hdecay k
+  let Cmax := Finset.range (n + 1) |>.sup' (by simp) C
+  use Cmax
+  intro i hi
+  specialize hC i (‖x‖ ^ 2)
+  simp only [mem_Ici, norm_nonneg, pow_nonneg, norm_pow, norm_norm, forall_const, h_pow] at hC
+  have hCi : C i ≤ Cmax := Finset.le_sup' C <| Finset.mem_range_succ_iff.mpr hi
+  simp only
+  have := hC.trans hCi
+  norm_cast at this
 
 
 noncomputable def schwartzMap_multidimensional_of_schwartzLike_real :
@@ -106,8 +127,16 @@ noncomputable def schwartzMap_multidimensional_of_schwartzLike_real :
     obtain ⟨C, hC⟩ := hdecay k n
     use n.factorial * C * 2 ^ n
     intro x
-    specialize hC ‖x‖
-    simp only [mem_Ici, norm_nonneg, norm_norm, forall_const] at hC
+    -- specialize hC (‖x‖ ^ 2)
+    -- simp only [mem_Ici, norm_nonneg, pow_nonneg, norm_pow, norm_norm, forall_const] at hC
+    -- rw [h_pow d x k, Real.rpow_natCast] at hC
+    rw [← iteratedFDerivWithin_eq_iteratedFDeriv uniqueDiffOn_univ]
+    wlog hk_ne_zero : k ≠ 0
+    · simp only [ne_eq, Decidable.not_not] at hk_ne_zero
+      simp only [hk_ne_zero, pow_zero, one_mul] at hC ⊢
+
+      sorry
+    stop
     have hnorm_eq (y : EuclideanSpace ℝ (Fin d)) : ‖y‖ ^ 2 = inner ℝ y y := by
       simp only [PiLp.norm_sq_eq_of_L2, Real.norm_eq_abs, sq_abs, PiLp.inner_apply, inner_apply,
         conj_trivial]
@@ -120,6 +149,8 @@ noncomputable def schwartzMap_multidimensional_of_schwartzLike_real :
     have hbilin : ‖innerSL ℝ (E := EuclideanSpace ℝ (Fin d))‖ ≤ 1 := norm_innerSL_le ℝ
     have hinner_eq_innerSL (a b : EuclideanSpace ℝ (Fin d)) : inner ℝ a b = innerSL ℝ a b := rfl
     change ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x ↦ g (innerSL ℝ x x)) x‖ ≤ ↑n.factorial * C * 2 ^ n
+
+      sorry
     -- wlog hne_zero : x ≠ 0
     -- · simp only [ne_eq, Decidable.not_not] at hne_zero
     --   rw [hne_zero, norm_zero, zero_pow, zero_mul]
@@ -146,7 +177,6 @@ noncomputable def schwartzMap_multidimensional_of_schwartzLike_real :
       sorry
     · intro x
       simp only [← norm_fderiv_iteratedFDeriv] at hC ⊢
-
       sorry
 
 -- example (n : ℕ) (x : F) : ‖iteratedFDeriv ℝ n (fun (v : F) ↦ ‖v‖^2) x‖ < 2 ^ n := by
@@ -164,6 +194,8 @@ end SchwartzMap_multidimensional_of_schwartzLike_real
 section Scratch
 
 namespace Scratch
+
+-- Below is copy pasted from mathlib. Using it for scratch.
 
 open scoped Nat NNReal ContDiff
 
