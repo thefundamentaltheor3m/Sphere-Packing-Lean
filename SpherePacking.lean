@@ -54,7 +54,6 @@ import SpherePacking.ModularForms.cotangent
 import SpherePacking.ModularForms.csqrt
 import SpherePacking.ModularForms.equivs
 import SpherePacking.ModularForms.eta
-import SpherePacking.ModularForms.eta_cleanup
 import SpherePacking.ModularForms.exp_lems
 import SpherePacking.ModularForms.iteratedderivs
 import SpherePacking.ModularForms.limunder_lems
