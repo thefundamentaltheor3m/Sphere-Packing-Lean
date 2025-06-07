@@ -1,6 +1,7 @@
 import Mathlib.Algebra.Field.Power
-import Mathlib.Analysis.CStarAlgebra.Classes
+import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Data.Real.StarOrdered
+import Mathlib.NumberTheory.ModularForms.Basic
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
 import Mathlib.Order.CompletePartialOrder
 

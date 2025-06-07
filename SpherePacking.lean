@@ -68,3 +68,6 @@ import SpherePacking.ModularForms.tsumderivWithin
 import SpherePacking.ModularForms.uniformcts
 import SpherePacking.ModularForms.upperhalfplane
 import SpherePacking.Tactic.NormNumI
+import SpherePacking.Tactic.NormNumI_Scratch
+import SpherePacking.Tactic.Test.AlphaEvolve_Matmul_Verification
+import SpherePacking.Tactic.Test.NormNumI

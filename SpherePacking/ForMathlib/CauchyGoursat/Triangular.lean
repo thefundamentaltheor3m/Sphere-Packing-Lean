@@ -6,7 +6,8 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
-import Mathlib
+import Mathlib.Analysis.Normed.Ring.Basic
+import Mathlib.Data.Complex.Basic
 
 /-! # Deforming Paths of Integration for Triangular Contours
 
@@ -15,7 +16,7 @@ contours, then the integral along the diagonal of the rectangle is equal to the 
 pairs of perpendicular sides of the rectangle.
 -/
 
-open Set Real Complex intervalIntegral Metric Filter MeasureTheory
+open Set Real Complex Metric Filter
 
 open scoped Interval Topology
 
@@ -29,5 +30,4 @@ theorem im_of_real_add_real_mul_I (x y : ℝ) : (x + y * I).im = y := by simp
 
 end aux
 
-variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] {f : ℂ → E} {x₁ x₂ : ℝ} (y : ℝ)
-
+-- variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] {f : ℂ → E} {x₁ x₂ : ℝ} (y : ℝ)
