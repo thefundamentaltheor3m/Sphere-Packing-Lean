@@ -82,8 +82,8 @@ for all $z$ with $\Im z > 1/2$.
 Note that the assumption on the polynomial growth holds when $f$ is a holomorphic modular form, where the proof can be found in \cite[p. 94]{Serre73} for the case of level 1 modular forms.
 But we just add this for simplicity, and we can prove it for ``specific'' $f$ such as Eisenstein series, theta functions, and their combinations.
 }
-\begin{proof}\uses{lemma:disc-prodformula}\leanok
-By the product formula \eqref{eqn:disc-prodformula},
+\begin{proof}\uses{def:disc-definition}\leanok
+By definition of $\Delta(z)$ \eqref{eqn:disc-definition}, we have
 \begin{align}
     \left|\frac{f(z)}{\Delta(z)}\right| &= \left|\frac{\sum_{n \ge n_0} c_f(n) e^{\pi i n z}}{e^{2 \pi i z}\prod_{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\
     &= |e^{\pi i (n_0 - 2)z}| \cdot \frac{|\sum_{n \ge n_0} c_f(n) e^{\pi i (n - n_0) z}|}{\prod_{n \ge 1} |1 - e^{2\pi i n z}|^{24}} \\
@@ -271,7 +271,7 @@ The integral converges absolutely for all $r\in\R_{\geq 0}$.
 \begin{proof}
 Suppose that $r>\sqrt{2}$. Then by Proposition~\ref{prop:a-double-zeros}
 $$a(r)=4i\,\sin(\pi r^2/2)^2\,\int\limits_{0}^{\infty}\phi_0(i/t)\,t^2\,e^{-\pi r^2 t}\,dt. $$
-From \eqref{eqn: phi fourier0}--\eqref{eqn:phi0-trans-S} we obtain
+From \eqref{eqn:phi0-trans-S} we obtain
 \begin{equation}\label{eqn: phi asymptotic}
 \phi_0(i/t)\,t^2=\frac{36}{\pi^2}\,e^{2 \pi t}-\frac{8640}{\pi}\,t+\frac{18144}{\pi^2}+O(t^2\,e^{-2\pi t})\quad\mbox{as}\;t\to\infty.
 \end{equation}

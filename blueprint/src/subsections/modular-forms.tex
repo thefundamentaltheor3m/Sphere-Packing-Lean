@@ -143,7 +143,7 @@ On the other hand, the expression \eqref{eqn:Ek-Fourier} converges to a holomorp
 
 
 The discriminant form is a unique normalized cusp form of weight 12, which can be defined as:
-\begin{definition}\label{def:disc-definition}\lean{Delta}\leanok \uses{def:dedekind_eta}
+\begin{definition}\label{def:disc-definition}\lean{Delta}\leanok\uses{def:dedekind_eta}
 The \emph{discriminant form} $\Delta(z)$ is given by
 \begin{equation}\label{eqn:disc-definition}
 \Delta(z) = e^{2 \pi i z} \prod_{n \ge 1} (1 - e^{2 \pi i n z})^{24}.
@@ -153,7 +153,7 @@ The \emph{discriminant form} $\Delta(z)$ is given by
 This product formula allows us to prove positivity of $\Delta(it)$ for $t > 0$ later. But we need to first check its a modular form. For this we first need some definitions/ results.
 
 We define it as a $q$-series, which gives a holomorphic function on $\mathfrak{H}$.
-\begin{definition}\label{def:E2} \lean{E₂_eq} \leanok
+\begin{definition}\label{def:E2}\lean{E₂_eq}\leanok
 We set
 \begin{equation}\label{eqn:E2}
     E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.
@@ -192,7 +192,7 @@ The Dedekind eta function transforms as
 \end{proof}
 
 
-\begin{lemma}\label{lemma:disc-cuspform}\uses{def:disc-definition, lemma:dedekind_eta_transformation}\leanok \lean{Delta}
+\begin{lemma}\label{lemma:disc-cuspform}\uses{def:disc-definition, lemma:dedekind_eta_transformation}\leanok\lean{Delta}
 $\Delta(z) \in M_{12}(\Gamma_1)$.
 Especially, we have
 \begin{equation}\label{eqn:disc-trans-S}
@@ -208,7 +208,7 @@ The fact that it is invariant under translation is clear from the definition, so
 
 Using this one can now easily check that  we have
 
-\begin{lemma}\label{lemma:E2-transform-general}\uses{lemma:disc-cuspform}\leanok \lean{G₂_transform}
+\begin{lemma}\label{lemma:E2-transform-general}\uses{lemma:disc-cuspform}\leanok\lean{G₂_transform}
 \begin{equation}\label{eqn:E2-transform-general}
 (cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix} a & b \\ c & d\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb{Z}).
 \end{equation}
@@ -222,7 +222,7 @@ Using this one can now easily check that  we have
     Now, divide both sides with $\Delta(z)$ proves \eqref{eqn:E2-transform-general}.
 \end{proof}
 
-\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}\leanok \lean{Delta_E4_eqn}
+\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}\leanok\lean{Delta_E4_eqn}
 We have
 \begin{equation}
 \Delta(z) = (E_4^3-E_6^2)/1728.
@@ -230,33 +230,7 @@ We have
 \end{lemma}
 \begin{proof}
 We only need to show its a cuspform, since once we have this, dividing the rhs by $\Delta$ would give a modular form of weight $0$ which is a constant, and so we can determine the constant easily.
-
-To checke its a cuspform, we just look at  the $q$-expansions of $E_4$ and $E_6$ and prove directly that the first term vanishes.
-
-%There are several known proofs of this.
-%One possible proof that we can formalize is from Kohnen \cite{Kohnen}, which prove
-%\begin{equation}\label{eqn:disc-logder}
-%    \frac{1}{2\pi i z} \frac{d}{dz}(\log \Delta) = 1 - 24 \sum_{n \ge 1} \frac{ne^{2 \pi i n z}}{1 - e^{2 \pi i n z}}.
-%\end{equation}
-%by using a multiplicative analogue of the Hecke operator and the valence formula.
-% Here we briefly summarize the proof.
-% First of all, it is enough to prove that the logarithmic derivative of $\Delta$ is given by
-% \begin{equation}\label{eqn:disc-logder}
-%     \frac{1}{2\pi i z} \frac{d}{dz}(\log \Delta) = 1 - 24 \sum_{n \ge 1} \frac{ne^{2 \pi i n z}}{1 - e^{2 \pi i n z}}.
-% \end{equation}
-% Define the slash action of $\gamma = \left(\begin{smallmatrix}a & b \\ c & d\end{smallmatrix}\right) \in \mathrm{GL}_{2}^{+}(\R)$ as
-% \begin{equation}\label{eqn:slash-operator-gl2p}
-% (f|_{k} \gamma)(z) := (\det \gamma)^{k/2} j_k(z, \gamma) f(\gamma z).
-% \end{equation}
-% The ``multiplicative'' Hecke operator $T_{m}^{M}$ of weight $m \ge 1$ is given by
-% \begin{equation}\label{eqn:mult-hecke}
-% T_{m}^{M}(f) := \prod_{\gamma \in \Gamma_1 \backslash \mathcal{M}(m)} (f|_{m}\gamma)(z)
-% \end{equation}
-% where
-% \begin{equation}\label{eqn:matm}
-% \mathcal{M}(m) := \{\gamma in M_{2}(\Z): \det(\gamma) = m\} = \coprod_{\substack{ad = m, d > 0 \\ b\,(\mathrm{mod}\, d)}} \Gamma_1 \begin{pmatrix}a & b \\ 0 & d\end{pmatrix}.
-% \end{equation}
-% Then $\# \Gamma_1 \backslash \mathcal{M}(m) = \sigma_1(m)$, and for $f \in M_{k}(\Gamma_1)$, we have $T_{m}^{M}(f) \in M_{k \sigma_1(m)}(\Gamma_1)$.
+To check its a cuspform, we just look at  the $q$-expansions of $E_4$ and $E_6$ and prove directly that the first term vanishes.
 \end{proof}
 
 %Note that the RHS of \eqref{eqn:disc-logder} is equal to the $E_2(z)$.
@@ -274,7 +248,7 @@ $$
 \end{proof}
 
 The following nonvanishing result, which directly follows from \Cref{def:disc-definition}, will be used in the construction of the magic function.
-\begin{corollary}\label{cor:disc-nonvanishing}\uses{def:disc-definition}\leanok \lean{Δ_ne_zero}
+\begin{corollary}\label{cor:disc-nonvanishing}\uses{def:disc-definition}\leanok\lean{Δ_ne_zero}
 $\Delta(z) \neq 0$ for all $z \in \h$.
 \end{corollary}
 \begin{proof}
@@ -329,7 +303,7 @@ We know that $\dim(M_k(\Gamma_1))$ is finite dimensional from the above, now thi
 % A key fact in the theory of modular forms is that they form a finite-dimensional vector space (for a fixed weight and level).
 % Especially, we use the following dimension results.
 
-\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:dim_mf}\leanok
+\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:dim-mf}\leanok
 We have
 \begin{align}
     \dim M_2(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimM2} \\
@@ -370,22 +344,12 @@ The following lemma shows how the theta functions (and their powers) transform u
 
 \begin{lemma}\label{lemma:theta-transform-S-T}\uses{def:th00-th01-th10, def:H2-H3-H4}\lean{H₂_T_action,H₃_T_action,H₄_T_action,H₂_S_action,H₃_S_action,H₄_S_action}\leanok
 These elements act on the theta functions in the following way
-% \begin{align}
-% z^{-2}\,\theta^4_{00}\Big(\frac{-1}{z}\Big)\,=\,&-\theta_{00}^4(z) \label{eqn: theta transform S}\\
-% z^{-2}\,\theta^4_{01}\Big(\frac{-1}{z}\Big)\,=\,&-\theta_{10}^4(z) \label{eqn: theta01 transform S}\\
-% z^{-2}\,\theta^4_{10}\Big(\frac{-1}{z}\Big)\,=\,&-\theta_{01}^4(z) \label{eqn: theta10 transform S}
-% \end{align}
 \begin{align}
     H_2 | S &= -H_4 \label{eqn:H2-transform-S} \\
     H_3 | S &= -H_3 \label{eqn:H3-transform-S} \\
     H_4 | S &= -H_2 \label{eqn:H4-transform-S}
 \end{align}
 and
-% \begin{align}
-% \theta^4_{00}(z+1)\,=\,&\theta_{01}^4(z) \label{eqn: theta10 transform T}\\
-% \theta^4_{01}(z+1)\,=\,&\theta_{00}^4(z) \label{eqn: theta01 transform T} \\
-% \theta^4_{10}(z+1)\,=\,&-\theta_{10}^4(z). \label{eqn: theta transform T}
-% \end{align}
 \begin{align}
     H_2 | T &= -H_2 \label{eqn:H2-transform-T} \\
     H_3 | T &= H_4 \label{eqn:H3-transform-T} \\
@@ -583,7 +547,7 @@ for all $z \in \mathfrak{H}$ and $\gamma = \left(\begin{smallmatrix} a&b\\c&d \e
 
 By taking $\gamma = \left(\begin{smallmatrix} 1 & 0 \\ 0 & 1 \end{smallmatrix}\right)$, one can check that we should have $f_0 = f$. Thus, a quasimodular form of depth $0$ is just a modular form of same weight and level.
 Also, it is easy to see that the space of quasimodular forms is closed under the normalized derivative.
-\begin{definition}\label{def:derivative}
+\begin{definition}\label{def:derivative} \lean{ModularForms.Derivative.D} \leanok
 Let $F$ be a quasimodular form.
 We define the (normalized) derivative of $F$ as
 \begin{equation}\label{eqn:derivative}
@@ -621,12 +585,20 @@ Directly follows from the definition \eqref{def:derivative}, where $\frac{1}{2 \
 The most important quasimodular form is the weight 2 Eisenstein series $E_2$.
 
 
-\begin{definition}\label{def:serre-der}\uses{def:derivative, def:E2}
+\begin{definition}\label{def:serre-der}\uses{def:derivative, def:E2}\leanok \lean{ModularForms.Derivative.serre_D}
 For $k \in \mathbb{R}$, define the weight $k$ Serre derivative $\partial_{k}$ of a modular form $F$ as
 \begin{equation}\label{eqn:serre-der}
     \partial_{k}F := F' - \frac{k}{12} E_2 F.
 \end{equation}
 \end{definition}
+
+\begin{theorem}
+\label{thm:serre-der-equiv-action}\uses{def:serre-der, def:E2}
+Serre derivative $\partial_{k}$ is equivariant with the slash action of $\mathrm{SL}_{2}(\mathbb{Z})$ in the following sense:
+\begin{equation}
+    \partial_{k} (F|_{k}\gamma) = (\partial_{k+2} F)|_{k}\gamma, \quad \forall \gamma \in \mathrm{SL}_{2}(\mathbb{Z}).
+\end{equation}
+\end{theorem}
 
 \begin{theorem}\label{thm:serre-der-modularity}\uses{def:serre-der, def:holomorphic-modular-form}
 Let $F$ be a modular form of weight $k$ and level $\Gamma$.
@@ -782,31 +754,3 @@ F = \sum_{n \geq n_{0}} a_{n} q^{n} \Rightarrow e^{2 \pi n_{0} t} F(it) = a_{n_{
 and $\lim_{t \to \infty} e^{2 \pi n_{0}t} F(it) = a_{n_0} > 0$, hence the result follows.
 \end{proof}
 
-
-% \begin{definition}\label{def:weakly-holomorphic-modular-form}
-% A \emph{weakly-holomorphic modular form} of integer weight $k$ and congruence subgroup $\Gamma$ is a holomorphic function $f:\h\to\C$ such that:
-% \begin{enumerate}
-%   \item $f|_k\gamma=f$ for all $\gamma\in\Gamma$
-%   \item for each $\alpha\in\Gamma_1\;f|_k\alpha$ has Fourier expansion $f|_k\alpha (z)=\sum_{n=n_0}^\infty c_f(\alpha,\frac{n}{n_\alpha})\,e^{2\pi i \frac{n}{n_\alpha}z}$ for some $n_0\in\Z$ and $n_\alpha\in\N$.
-% \end{enumerate}
-% \end{definition}
-% For an $m$-periodic holomorphic function $f$ and $n\in\frac 1m \Z$, we will denote the $n$-th Fourier coefficient of $f$ by $c_f(n)$, so that
-% $$f(z)=\sum_{n\in\frac 1m \Z} c_f(n)\,e^{2\pi i n z}.$$
-% We denote the space of weakly-holomorphic modular forms of weight $k$ and group $\Gamma$ by $M_k^!(\Gamma)$. The spaces $M_k^!(\Gamma)$ are infinite dimensional.
-% Probably the most famous weakly-holomorphic modular form is the \emph{elliptic j-invariant}
-% $$j\,:=\,\frac{1728\, E_4^3}{E_4^3-E_6^2}. $$
-% This function belongs to $M_0^!(\Gamma_1)$ and has the Fourier expansion
-% $$j(z)\,=\,q^{-1} + 744 + 196884\, q + 21493760\, q^2 + 864299970\, q^3 +
-%   20245856256\, q^4 + O(q^5) $$
-% where $q=e^{2\pi i z}$.
-% % Seewoo: This (lemma below, Hardy-Ramanujan) might be deleted later
-% Using a simple computer algebra system, such as PARI GP or Mathematica, one can compute first hundred terms of this Fourier expansion in just a few seconds. An important question is to find an  asymptotic formula for $c_j(n)$, the $n$-th Fourier coefficient  of $j$. Using the Hardy-Ramanujan circle method \cite{Rademacher38} or the non-holomorphic Poincare series \cite{Petersson32}, one can show that
-% \begin{lemma}\label{lemma: j Fourier asymptotic}
-% % \lean{lemma: j Fourier asymptotic}
-% \begin{equation}\label{eqn: j Fourier asymptotic}
-% c_j(n)=\frac{2\pi}{n}\sum_{k=1}^\infty \frac{A_k(n)}{k}\,I_1\left(\frac{4\pi \sqrt{n}}{k}\right)\qquad n\in\Z_{>0}\end{equation}
-% where
-% $$A_k(n)= \sum_{\substack{h\;\mathrm{mod}\;k\\(h,k)=1}} e^{\frac{-2\pi i}{k}(nh+h')},\quad hh'\equiv -1(\mbox{mod}\;k),$$
-% and $I_\alpha(x)$ denotes the modified Bessel function of the first kind defined as in \cite[Section~9.6]{Abramowitz}.
-% \end{lemma}
-% A similar convergent asymptotic expansion holds for the Fourier coefficients of any weakly holomorphic modular form \cite{Hejhal}, \cite[Propositions~1.10 and~1.12]{Bruinier}. Such a convergent expansion implies effective estimates for the Fourier coefficients.
