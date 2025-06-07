@@ -547,7 +547,7 @@ for all $z \in \mathfrak{H}$ and $\gamma = \left(\begin{smallmatrix} a&b\\c&d \e
 
 By taking $\gamma = \left(\begin{smallmatrix} 1 & 0 \\ 0 & 1 \end{smallmatrix}\right)$, one can check that we should have $f_0 = f$. Thus, a quasimodular form of depth $0$ is just a modular form of same weight and level.
 Also, it is easy to see that the space of quasimodular forms is closed under the normalized derivative.
-\begin{definition}\label{def:derivative} \lean{ModularForms.Derivative.D} \leanok
+\begin{definition}\label{def:derivative} \lean{D} \leanok
 Let $F$ be a quasimodular form.
 We define the (normalized) derivative of $F$ as
 \begin{equation}\label{eqn:derivative}
@@ -564,28 +564,10 @@ In particular, the $q$-series of the derivative of a quasimodular form $F(z) = \
 Directly follows from the definition \eqref{def:derivative}, where $\frac{1}{2 \pi i}\frac{\dd}{\dd z}e^{2\pi i n z} = n e^{2\pi i n z}$.
 \end{proof}
 
-% \begin{theorem}\label{thm:quasimod-der-closed}\uses{def:quasimodform, def:derivative}
-% The space of quasimodular forms is closed under the derivative \eqref{eqn:derivative}.
-% If $F$ is a quasimodular form of weight $k$, level $\Gamma$, and depth $s$, then $F'$ is a quasimodular form of weight $k + 2$, level $\Gamma$, and depth $s + 1$.
-% \end{theorem}
-% \begin{proof}
-% This follows from differentiating the definitional equation \eqref{eqn:quasimod-def}: we get
-% \begin{align}
-%     &-kc(cz + d)^{-k-1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k-2} \frac{\dd F}{\dd z} \left(\frac{az + b}{cz + d}\right) \\
-%     &= \sum_{j=0}^{s} \frac{\dd F_j}{\dd z}(z)\left(\frac{c}{cz + d}\right)^j + F_j(z) \cdot (-j) \left(\frac{c}{cz + d}\right)^{j + 1} \\
-%     &\Rightarrow (cz + d)^{-k-2}F'\left(\frac{az + b}{cz + d}\right) = \sum_{j=0}^{s + 1} G_j(z) \left(\frac{c}{cz + d}\right)^j
-% \end{align}
-% where
-% \begin{equation}
-%     G_j(z) := F_j'(z) - \frac{ikc}{2\pi(cz + d)} F_j(z) + \frac{i(j-1)}{2\pi} F_{j-1}(z), \quad F_{-1} := 0
-% \end{equation}
-% for $0 \le j \le s + 1$, which are holomorphic.
-% \end{proof}
-
 The most important quasimodular form is the weight 2 Eisenstein series $E_2$.
 
 
-\begin{definition}\label{def:serre-der}\uses{def:derivative, def:E2}\leanok \lean{ModularForms.Derivative.serre_D}
+\begin{definition}\label{def:serre-der}\uses{def:derivative, def:E2}\leanok \lean{serre_D}
 For $k \in \mathbb{R}$, define the weight $k$ Serre derivative $\partial_{k}$ of a modular form $F$ as
 \begin{equation}\label{eqn:serre-der}
     \partial_{k}F := F' - \frac{k}{12} E_2 F.
@@ -753,4 +735,3 @@ F = \sum_{n \geq n_{0}} a_{n} q^{n} \Rightarrow e^{2 \pi n_{0} t} F(it) = a_{n_{
 \]
 and $\lim_{t \to \infty} e^{2 \pi n_{0}t} F(it) = a_{n_0} > 0$, hence the result follows.
 \end{proof}
-
