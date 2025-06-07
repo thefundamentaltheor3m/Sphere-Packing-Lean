@@ -54,6 +54,7 @@ import SpherePacking.ModularForms.cotangent
 import SpherePacking.ModularForms.csqrt
 import SpherePacking.ModularForms.equivs
 import SpherePacking.ModularForms.eta
+import SpherePacking.ModularForms.eta_cleanup
 import SpherePacking.ModularForms.exp_lems
 import SpherePacking.ModularForms.iteratedderivs
 import SpherePacking.ModularForms.limunder_lems
@@ -67,3 +68,6 @@ import SpherePacking.ModularForms.tsumderivWithin
 import SpherePacking.ModularForms.uniformcts
 import SpherePacking.ModularForms.upperhalfplane
 import SpherePacking.Tactic.NormNumI
+import SpherePacking.Tactic.NormNumI_Scratch
+import SpherePacking.Tactic.Test.AlphaEvolve_Matmul_Verification
+import SpherePacking.Tactic.Test.NormNumI
