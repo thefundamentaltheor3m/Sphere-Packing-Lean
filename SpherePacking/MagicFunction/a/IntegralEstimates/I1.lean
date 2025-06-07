@@ -15,7 +15,7 @@ The purpose of this file is to construct bounds on the integral `I₁` that is p
 of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 
 ## TODO:
-- [ ] Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
+- Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
 -/
 
 open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
