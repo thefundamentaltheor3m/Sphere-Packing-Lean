@@ -6,10 +6,7 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
-import Mathlib
-
 import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.Tactic.NormNumI
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 

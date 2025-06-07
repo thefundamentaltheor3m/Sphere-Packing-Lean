@@ -1,3 +1,6 @@
+import Mathlib.NumberTheory.LSeries.Dirichlet
+import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
+
 import SpherePacking.ModularForms.Delta
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral

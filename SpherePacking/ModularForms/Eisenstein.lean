@@ -3,9 +3,12 @@ The purpose of this file is to define the Eisenstein series we are interested in
 convenient notation. We will also state results with `sorry`s that should be proved and eventually
 moved elsewhere in the project.
 -/
+import Mathlib.Data.Rat.Star
+import Mathlib.LinearAlgebra.Dimension.Localization
+import Mathlib.NumberTheory.ModularForms.LevelOne
+
 import SpherePacking.ModularForms.Eisensteinqexpansions
 import SpherePacking.ModularForms.IsCuspForm
-
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups

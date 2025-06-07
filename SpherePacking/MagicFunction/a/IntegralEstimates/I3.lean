@@ -6,11 +6,8 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
-import Mathlib
-
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
-import SpherePacking.Tactic.NormNumI
 
 /-! # Constructing Upper-Bounds for I₃
 
