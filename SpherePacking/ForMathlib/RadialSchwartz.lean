@@ -64,6 +64,8 @@ local notation "f" => fun (x : EuclideanSpace ℝ (Fin d)) ↦ ‖x‖ ^ 2
 local notation "s" => (⊤ : Set (EuclideanSpace ℝ (Fin d)))
 local notation "t" => (Ici (0 : ℝ) : Set ℝ)
 
+private lemma hf : ContDiffOn ℝ ∞ f s := (contDiff_norm_sq ℝ).contDiffOn
+private lemma hn (n : ℕ) : n ≤ ∞ := right_eq_inf.mp rfl
 private lemma ht : UniqueDiffOn ℝ t := uniqueDiffOn_Ici 0
 private lemma hs : UniqueDiffOn ℝ s := uniqueDiffOn_univ
 private lemma hst : Set.MapsTo f s t := fun _ _ => by simp
@@ -88,8 +90,8 @@ private lemma hD (x : EuclideanSpace ℝ (Fin d)) (n : ℕ) : ∀ i : ℕ, 1 ≤
       -- Why is this not obvious?
       sorry
     simp only [h₅, mul_one]
-    -- This isn't in the library?!
-    sorry
+    norm_cast
+    rw [Nat.sum_range_choose i]
   · exact uniqueDiffOn_univ
   · exact (contDiff_norm_sq ℝ).contDiffAt
   · trivial
@@ -101,7 +103,7 @@ private lemma h_pow (x : EuclideanSpace ℝ (Fin d)) (k : ℕ) :
   field_simp
 
 include hdecay in
-private lemma hC (x : EuclideanSpace ℝ (Fin d)) (n k : ℕ) : ∃ C : ℝ, ∀ i ≤ n,
+private lemma hC (n k : ℕ) : ∃ C : ℝ, ∀ (x : EuclideanSpace ℝ (Fin d)), ∀ i ≤ n,
     (‖x‖ ^ k) * ‖iteratedFDerivWithin ℝ i g t (f x)‖ ≤ C := by
   -- I know that given some k, for all n, there is a Cₙ such that ‖deriv‖ ≤ Cₙ / (‖x‖ ^ (k / 2))
   -- Simply define C to be the max of all Cᵢ for 0 ≤ i ≤ n
@@ -109,7 +111,7 @@ private lemma hC (x : EuclideanSpace ℝ (Fin d)) (n k : ℕ) : ∃ C : ℝ, ∀
   choose! C hC using hdecay k
   let Cmax := Finset.range (n + 1) |>.sup' (by simp) C
   use Cmax
-  intro i hi
+  intro x i hi
   specialize hC i (‖x‖ ^ 2)
   simp only [mem_Ici, norm_nonneg, pow_nonneg, norm_pow, norm_norm, forall_const, h_pow] at hC
   have hCi : C i ≤ Cmax := Finset.le_sup' C <| Finset.mem_range_succ_iff.mpr hi
@@ -117,70 +119,53 @@ private lemma hC (x : EuclideanSpace ℝ (Fin d)) (n k : ℕ) : ∃ C : ℝ, ∀
   have := hC.trans hCi
   norm_cast at this
 
+include hContDiffOn in
+private lemma hsmooth : ContDiff ℝ ∞ fun (x : EuclideanSpace ℝ (Fin d)) ↦ g (‖x‖ ^ 2) :=
+  hContDiffOn.comp_norm_sq_smooth d
 
 noncomputable def schwartzMap_multidimensional_of_schwartzLike_real :
     𝓢(EuclideanSpace ℝ (Fin d), ℂ) where
   toFun := fun x ↦ g (f x)
-  smooth' := hContDiffOn.comp_norm_sq_smooth d
+  smooth' := hsmooth d hContDiffOn
   decay' := by
     intro k n
-    obtain ⟨C, hC⟩ := hdecay k n
+    obtain ⟨C, hC⟩ := hC d hdecay n k
     use n.factorial * C * 2 ^ n
     intro x
+    specialize hC x
     -- specialize hC (‖x‖ ^ 2)
     -- simp only [mem_Ici, norm_nonneg, pow_nonneg, norm_pow, norm_norm, forall_const] at hC
     -- rw [h_pow d x k, Real.rpow_natCast] at hC
-    rw [← iteratedFDerivWithin_eq_iteratedFDeriv uniqueDiffOn_univ]
+    rw [← iteratedFDerivWithin_eq_iteratedFDeriv uniqueDiffOn_univ
+      (ContDiff.contDiffAt <| (contDiff_infty.mp (hsmooth d hContDiffOn)) n) (mem_univ x)]
     wlog hk_ne_zero : k ≠ 0
     · simp only [ne_eq, Decidable.not_not] at hk_ne_zero
       simp only [hk_ne_zero, pow_zero, one_mul] at hC ⊢
+      exact norm_iteratedFDerivWithin_comp_le hContDiffOn (hf d) (hn n) ht (hs d) (hst d) (x := x)
+        (by simp) hC (hD d x n)
+    wlog hx_ne_zero : x ≠ 0
+    · simp only [ne_eq, Decidable.not_not] at hx_ne_zero
+      specialize hC n le_rfl
+      rw [hx_ne_zero, norm_zero, zero_pow hk_ne_zero, zero_mul] at hC ⊢
+      positivity
+    have hx_pos : 0 < ‖x‖ ^ k := by positivity
+    have hC' : ∀ i ≤ n,
+        ‖iteratedFDerivWithin ℝ i g (Ici 0) ((fun x ↦ ‖x‖ ^ 2) x)‖ ≤ C / (‖x‖ ^ k) := by
+      intro i hi
+      specialize hC i hi
+      rw [mul_comm, ← le_div_iff₀ hx_pos (c := ‖x‖ ^ k) (b := C)] at hC
+      exact hC
+    conv_lhs => rw [mul_comm]
+    rw [← le_div_iff₀ hx_pos (c := ‖x‖ ^ k)]
+    have hrearrange : n.factorial * C * 2 ^ n / ‖x‖ ^ k = ↑n.factorial * (C / ‖x‖ ^ k) * 2 ^ n := by
+      field_simp
+    rw [hrearrange]
+    exact norm_iteratedFDerivWithin_comp_le hContDiffOn (hf d) (hn n) ht (hs d) (hst d) (x := x)
+      (by simp) hC' (hD d x n)
 
-      sorry
-    stop
-    have hnorm_eq (y : EuclideanSpace ℝ (Fin d)) : ‖y‖ ^ 2 = inner ℝ y y := by
-      simp only [PiLp.norm_sq_eq_of_L2, Real.norm_eq_abs, sq_abs, PiLp.inner_apply, inner_apply,
-        conj_trivial]
-      congr; ext; ring
-    have hrw : (fun (x : EuclideanSpace ℝ (Fin d)) ↦ g (‖x‖ ^ 2)) = (fun x ↦ g (inner ℝ x x)) := by
-      ext x
-      congr
-      exact hnorm_eq x
-    rw [hrw]
-    have hbilin : ‖innerSL ℝ (E := EuclideanSpace ℝ (Fin d))‖ ≤ 1 := norm_innerSL_le ℝ
-    have hinner_eq_innerSL (a b : EuclideanSpace ℝ (Fin d)) : inner ℝ a b = innerSL ℝ a b := rfl
-    change ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x ↦ g (innerSL ℝ x x)) x‖ ≤ ↑n.factorial * C * 2 ^ n
-
-      sorry
-    -- wlog hne_zero : x ≠ 0
-    -- · simp only [ne_eq, Decidable.not_not] at hne_zero
-    --   rw [hne_zero, norm_zero, zero_pow, zero_mul]
-    --   sorry
-    stop
-
-    -- norm_iteratedFDeriv_comp_le hcontdiff (contDiff_norm_sq ℝ) (n := n) ?_ x ?_ ?_
-
-    -- stop
-    -- use C
-    induction' n with n hn
-    · simp only [norm_iteratedFDeriv_zero, Nat.factorial_zero, Nat.cast_one, one_mul, pow_zero,
-        mul_one]
-      intro x
-      simp only [mem_Ici, Real.norm_eq_abs, norm_iteratedFDeriv_zero] at hC
-
-      specialize hC (‖x‖ ^ 2) (by positivity)
-      simp only [abs_pow, abs_norm] at hC
-      have h₁ : (‖x‖ ^ 2) ^ k = ‖x‖ ^ (2 * k) := by rw [pow_mul, pow_two]
-      rw [h₁] at hC
-      have h₂ : ‖x‖ ^ k ≤ ‖x‖ ^ (2 * k) := by
-        -- gcongr
-        sorry
-      sorry
-    · intro x
-      simp only [← norm_fderiv_iteratedFDeriv] at hC ⊢
-      sorry
-
--- example (n : ℕ) (x : F) : ‖iteratedFDeriv ℝ n (fun (v : F) ↦ ‖v‖^2) x‖ < 2 ^ n := by
---   sorry
+example (h : ℝ → ℝ) : ContDiff ℝ ∞ h → ∀ n : ℕ, ContDiff ℝ ↑n h := by
+  rw [contDiff_infty]
+  exact fun h n ↦ h n
 
 example (n d : ℕ) (x : EuclideanSpace ℝ (Fin d)) (g : EuclideanSpace ℝ (Fin d) → ℝ)
     (h : ContDiffOn ℝ n g ⊤) :
