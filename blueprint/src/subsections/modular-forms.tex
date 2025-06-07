@@ -547,7 +547,7 @@ for all $z \in \mathfrak{H}$ and $\gamma = \left(\begin{smallmatrix} a&b\\c&d \e
 
 By taking $\gamma = \left(\begin{smallmatrix} 1 & 0 \\ 0 & 1 \end{smallmatrix}\right)$, one can check that we should have $f_0 = f$. Thus, a quasimodular form of depth $0$ is just a modular form of same weight and level.
 Also, it is easy to see that the space of quasimodular forms is closed under the normalized derivative.
-\begin{definition}\label{def:derivative} \lean{SpherePacking.ModularForms.Derivative.D} \leanok
+\begin{definition}\label{def:derivative} \lean{D} \leanok
 Let $F$ be a quasimodular form.
 We define the (normalized) derivative of $F$ as
 \begin{equation}\label{eqn:derivative}
@@ -567,7 +567,7 @@ Directly follows from the definition \eqref{def:derivative}, where $\frac{1}{2 \
 The most important quasimodular form is the weight 2 Eisenstein series $E_2$.
 
 
-\begin{definition}\label{def:serre-der}\uses{def:derivative, def:E2}\leanok \lean{SpherePacking.ModularForms.Derivative.serre_D}
+\begin{definition}\label{def:serre-der}\uses{def:derivative, def:E2}\leanok \lean{serre_D}
 For $k \in \mathbb{R}$, define the weight $k$ Serre derivative $\partial_{k}$ of a modular form $F$ as
 \begin{equation}\label{eqn:serre-der}
     \partial_{k}F := F' - \frac{k}{12} E_2 F.
