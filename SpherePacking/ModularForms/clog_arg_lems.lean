@@ -169,7 +169,7 @@ lemma log_summable_pow (f : ℕ → ℂ)  (hf : Summable f)  (m : ℕ) :
     Summable (fun n => Complex.log ((1 + f n)^m)) := by
   have hfl := Complex.summable_log_one_add_of_summable hf
   have := (Summable.mul_left m (f := (fun n => Complex.log (1 + f n))) hfl).norm
-  apply Summable.of_norm_bounded_eventually_nat _ this
+  apply Summable.of_norm_bounded_eventually_nat this
   have hft := hf.tendsto_atTop_zero
   have H := clog_pow m f hft
   simp only [norm_mul, Complex.norm_natCast, eventually_atTop, ge_iff_le] at *

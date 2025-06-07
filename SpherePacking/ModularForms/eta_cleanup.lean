@@ -43,10 +43,10 @@ local notation "η" => ModularForm.eta
 /-this is being PRd-/
 lemma prod_tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ → α → ℂ} {K : Set α}
     (hK : IsCompact K) {u : ℕ → ℝ} (hu : Summable u) (h : ∀ n x, x ∈ K → (‖(f n x)‖) ≤ u n)
-    (hfn : ∀ x : K, ∀ n : ℕ, 1 + f n x ≠ 0) (hcts : ∀ n, ContinuousOn (fun x => (f n x)) K) :
+     (hcts : ∀ n, ContinuousOn (fun x => (f n x)) K) :
     TendstoUniformlyOn (fun n : ℕ => fun a : α => ∏ i ∈ Finset.range n, (1 + (f i a)))
     (fun a => ∏' i, (1 + (f i a))) atTop K := by
-    apply tendstoUniformlyOn_tprod' hK hu h hfn hcts
+    apply tendstoUniformlyOn_tprod' hK hu h hcts
 
 theorem Summable_eta_q (z : ℍ) : Summable fun n : ℕ ↦ ‖eta_q n z‖ := by
     simp_rw  [eta_q, eta_q_eq_pow, norm_neg, norm_pow, summable_nat_add_iff 1]
@@ -63,12 +63,12 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn
   · have hc : ContinuousOn (fun x ↦ ‖cexp (2 * ↑π * Complex.I * x)‖) K := by fun_prop
     obtain ⟨z, hz, hB, HB⟩ := IsCompact.exists_sSup_image_eq_and_ge hK2 (by simpa using hN) hc
     refine prod_tendstoUniformlyOn_tprod' hK2 (Summable_eta_q ⟨z, by simpa using (hK hz)⟩)
-      (f := eta_q) ?_ ?_ (by simp_rw [eta_q_eq_pow]; fun_prop)
+      (f := eta_q) ?_  (by simp_rw [eta_q_eq_pow]; fun_prop)
     · intro n x hx
       simpa only [eta_q, eta_q_eq_pow n x, norm_neg, norm_pow, coe_mk_subtype,
         eta_q_eq_pow n (⟨z, hK hz⟩ : ℍ)] using
         pow_le_pow_left₀ (by simp [norm_nonneg]) (HB x hx) (n + 1)
-    · refine fun x k => one_add_eta_q_ne_zero k ⟨x, hK x.2⟩
+
 
 lemma tprod_ne_zero' {ι α : Type*} (x : α) (f : ι → α → ℂ) (hf : ∀ i x, 1 + f i x ≠ 0)
   (hu : ∀ x : α, Summable fun n => f n x) : (∏' i : ι, (1 + f i) x) ≠ 0 := by
