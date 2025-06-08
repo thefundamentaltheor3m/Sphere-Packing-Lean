@@ -8,7 +8,7 @@ M4R File
 
 import Mathlib
 
-import SpherePacking.ForMathlib.RadialSchwartz
+import SpherePacking.ForMathlib.RadialSchwartz.RadialSchwartz
 import SpherePacking.MagicFunction.a.Basic
 
 /-! # `a` is a Schwartz Function

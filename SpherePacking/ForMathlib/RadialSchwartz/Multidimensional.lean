@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sidharth Hariharan
+-/
+
 import Mathlib.Analysis.Distribution.SchwartzSpace
 import Mathlib.Analysis.InnerProductSpace.Calculus
 import Mathlib.Data.Real.StarOrdered
@@ -6,6 +12,8 @@ import Mathlib.Analysis.Calculus.ContDiff.Bounds
 open SchwartzMap Function RCLike
 
 section SchwartzMap_multidimensional_of_schwartzMap_real
+
+-- Credit to Heather for helping me golf these
 
 variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
 
@@ -45,12 +53,12 @@ end SchwartzMap_multidimensional_of_schwartzMap_real
 
 section SchwartzMap_multidimensional_of_schwartzLike_real
 
-open Set
+open Set SchwartzMap Function RCLike
 
 open scoped ContDiff
 
--- variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
-variable {g : ℝ → ℂ} (d : ℕ) (hContDiffOn : ContDiffOn ℝ ∞ g (Ici (0 : ℝ)))
+variable {g : ℝ → ℂ} (d : ℕ)
+variable (hContDiffOn : ContDiffOn ℝ ∞ g (Ici (0 : ℝ)))
   (hdecay : ∀ k n : ℕ, ∃ C : ℝ, ∀ x ∈ (Ici (0 : ℝ)), ‖x‖ ^ ((k : ℝ) / 2) *
     ‖iteratedFDerivWithin ℝ n g (Ici 0) x‖ ≤ C)
 
