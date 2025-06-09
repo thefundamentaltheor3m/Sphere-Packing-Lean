@@ -94,12 +94,30 @@ private lemma hD (x : EuclideanSpace ℝ (Fin d)) (n : ℕ) : ∀ i : ℕ, 1 ≤
     have h₄ :=
       ContinuousLinearMap.norm_iteratedFDeriv_le_of_bilinear_of_le_one (innerSL ℝ) h₁ h₁ x h₃ h₂
     apply h₄.trans
-    have h₅ (j : ℕ) : ‖iteratedFDeriv ℝ j (fun (x : EuclideanSpace ℝ (Fin d)) ↦ x) x‖ = 1 := by
-      -- Why is this not obvious?
+    have h₅ (j : ℕ) (hj : 1 ≤ j) :
+        ‖iteratedFDeriv ℝ j (fun (x : EuclideanSpace ℝ (Fin d)) ↦ x) x‖ ≤ 1 := by
+      -- Basically: if j = 1, then the derivative is the map that takes any x to the identity map.
+      -- Applying this map to any x then gives us the identity map, which has norm 1.
+      -- If j > 1, then the jth derivative is the derivative of a map that takes any x to a constant
+      -- and is therefore 0. Applying this map to any x then gives us 0, which has norm 0.
+      -- The 1 ≤ j assumption is ESSENTIAL here. Note that in the sum below, we have terms of the
+      -- form ‖i_1th derivative‖ * ‖(i - i_1)th derivative‖, and either one of these will be 0 as
+      -- long as i > 1. If i = 1, then we have to use a different argument.
       sorry
-    simp only [h₅, mul_one]
-    norm_cast
-    rw [Nat.sum_range_choose i]
+    calc ∑ i_1 ∈ Finset.range (i + 1), ↑(i.choose i_1) * ‖iteratedFDeriv ℝ i_1 (fun x ↦ x) x‖ *
+      ‖iteratedFDeriv ℝ (i - i_1) (fun x ↦ x) x‖
+    _ ≤ ∑ i_1 ∈ Finset.range (i + 1), ↑(i.choose i_1) := by
+        apply Finset.sum_le_sum
+        intro j hj
+        -- conv_rhs => rw [← mul_one (i.choose j), ← mul_one (i.choose j)]; push_cast
+        -- simp [h₅]
+
+        sorry
+    _ ≤ 2 ^ i := by sorry
+    -- stop
+    -- simp only [h₅, mul_one]
+    -- norm_cast
+    -- rw [Nat.sum_range_choose i]
   · exact uniqueDiffOn_univ
   · exact (contDiff_norm_sq ℝ).contDiffAt
   · trivial
@@ -149,8 +167,11 @@ noncomputable def schwartzMap_multidimensional_of_schwartzLike_real :
     wlog hk_ne_zero : k ≠ 0
     · simp only [ne_eq, Decidable.not_not] at hk_ne_zero
       simp only [hk_ne_zero, pow_zero, one_mul] at hC ⊢
-      exact norm_iteratedFDerivWithin_comp_le hContDiffOn (hf d) (hn n) ht (hs d) (hst d) (x := x)
-        (by simp) hC (hD d x n)
+      refine norm_iteratedFDerivWithin_comp_le hContDiffOn (hf d) (hn n) ht (hs d) (hst d) (x := x)
+        (by simp) hC ?_
+      intro i hi₁ hi₂
+
+      sorry
     wlog hx_ne_zero : x ≠ 0
     · simp only [ne_eq, Decidable.not_not] at hx_ne_zero
       specialize hC n le_rfl
