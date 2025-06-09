@@ -6,87 +6,12 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
-import Mathlib
-
 import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.Tactic.NormNumI
+import SpherePacking.MagicFunction.IntegralParametrisations
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 
-open Set Complex Real
-
-namespace MagicFunction.a.Parametrisations
-
-noncomputable section Parametrisations
-
-def z₁ (t : Icc (0 : ℝ) 1) : ℂ := -1 + I * t
-
-def z₁' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₁ t -- `by norm_num` also works
-
-def z₂ (t : Icc (0 : ℝ) 1) : ℂ := -1 + t + I
-
-def z₂' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₂ t -- `by norm_num` also works
-
-def z₃ (t : Icc (0 : ℝ) 1) : ℂ := 1 + I * t
-
-def z₃' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₃ t -- `by norm_num` also works
-
-def z₄ (t : Icc (0 : ℝ) 1) : ℂ := 1 - t + I
-
-def z₄' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₄ t -- `by norm_num` also works
-
-def z₅ (t : Icc (0 : ℝ) 1) : ℂ := I * t
-
-def z₅' (t : ℝ) : ℂ := IccExtend (zero_le_one) z₅ t -- `by norm_num` also works
-
-def z₆ (t : Ici (1 : ℝ)) : ℂ := I * t
-
-def z₆' (t : ℝ) : ℂ := IciExtend z₆ t -- `by norm_num` also works
-
-end Parametrisations
-
-section UpperHalfPlane
-
--- Show that the things that go into φ₀ are in the upper half plane
-
-lemma z₁_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₁' t).im := by
-  have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
-  simp only [z₁', IccExtend_of_mem zero_le_one z₁ ht', z₁, add_im, neg_im, one_im, neg_zero, mul_im,
-    I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, gt_iff_lt]
-  exact ht.1
-
-lemma z₂_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₂' t).im := by
-  have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
-  simp [z₂', IccExtend_of_mem zero_le_one z₂ ht', z₂]
-
-lemma z₃_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₃' t).im := by
-  have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
-  simp only [z₃', IccExtend_of_mem zero_le_one z₃ ht', z₃, add_im, one_im, mul_im, I_re, ofReal_im,
-    mul_zero, I_im, ofReal_re, one_mul, zero_add, gt_iff_lt]
-  exact ht.1
-
-lemma z₄_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₄' t).im := by
-  have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
-  simp [z₄', IccExtend_of_mem zero_le_one z₄ ht', z₄]
-
-lemma z₅_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioo 0 1) : 0 < (z₅' t).im := by
-  have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
-  simp only [z₅', IccExtend_of_mem zero_le_one z₅ ht', z₅, mul_im, I_re, ofReal_im, mul_zero, I_im,
-    ofReal_re, one_mul, zero_add, gt_iff_lt]
-  exact ht.1
-
-lemma z₆_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioi (1 : ℝ)) : 0 < (z₆' t).im := by
-  have ht' : t ∈ Ici 1 := mem_Ici_of_Ioi ht
-  simp only [z₆', IciExtend_of_mem z₆ ht', z₆, mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re,
-    one_mul, zero_add, gt_iff_lt]
-  rw [mem_Ioi] at ht
-  exact zero_lt_one.trans ht
-
-end UpperHalfPlane
-
-end MagicFunction.a.Parametrisations
-
-open MagicFunction.a.Parametrisations
+open Set Complex Real MagicFunction.Parametrisations
 
 namespace MagicFunction.a.RealIntegrals
 
@@ -155,9 +80,6 @@ section Eq
 
 lemma a_eq (x : V) : a x = I₁ x + I₂ x + I₃ x + I₄ x + I₅ x + I₆ x := rfl
 
-lemma z₁'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₁' t = -1 + I * t := by
-  rw [z₁', IccExtend_of_mem zero_le_one z₁ ht, z₁]
-
 lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, -I
     * φ₀'' (-1 / (I * t))
     * t ^ 2
@@ -207,9 +129,6 @@ lemma I₁'_eq'_Ioc (r : ℝ) : I₁' r = -I * ∫ t in (0 : ℝ)..1,
     * cexp (-π * I * r)
     * cexp (-π * r * t) := by simp [I₁'_eq', intervalIntegral_eq_integral_uIoc]
 
-lemma z₂'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₂' t = -1 + t + I := by
-  rw [z₂', IccExtend_of_mem zero_le_one z₂ ht, z₂]
-
 lemma I₂'_eq (r : ℝ) : I₂' r = ∫ t in (0 : ℝ)..1,
     φ₀'' (-1 / (t + I))
     * (t + I) ^ 2
@@ -232,9 +151,6 @@ lemma I₂'_eq (r : ℝ) : I₂' r = ∫ t in (0 : ℝ)..1,
       ring_nf
       rw [I_sq]
       ring_nf
-
-lemma z₃'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₃' t = 1 + I * t := by
-  rw [z₃', IccExtend_of_mem zero_le_one z₃ ht, z₃]
 
 lemma I₃'_eq (r : ℝ) : I₃' r = ∫ t in (0 : ℝ)..1, -I
   * φ₀'' (-1 / (I * t))
@@ -287,9 +203,6 @@ lemma I₃'_eq' (r : ℝ) : I₃' r = -I * ∫ t in (0 : ℝ)..1,
       * cexp (-π * r * t) := by
     simp [I₃'_eq', intervalIntegral_eq_integral_uIoc]
 
-lemma z₄'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₄' t = 1 - t + I := by
-  rw [z₄', IccExtend_of_mem zero_le_one z₄ ht, z₄]
-
 lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1,
     φ₀'' (-1 / (-t + I))
     * (-t + I) ^ 2
@@ -312,9 +225,6 @@ lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1,
       ring_nf
       rw [I_sq]
       ring_nf
-
-lemma z₅'_eq_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) : z₅' t = I * t := by
-  rw [z₅', IccExtend_of_mem zero_le_one z₅ ht, z₅]
 
 lemma I₅'_eq (r : ℝ) : I₅' r = -2 * ∫ t in (0 : ℝ)..1, -I
     * φ₀'' (-1 / (I * t))
@@ -359,9 +269,6 @@ lemma I₅'_eq' (r : ℝ) : I₅' r = 2 * I * ∫ t in (0 : ℝ)..1,
     * cexp (-π * r * t) := by
     simp [I₅'_eq', intervalIntegral_eq_integral_uIoc]
 
-lemma z₆'_eq_of_mem {t : ℝ} (ht : t ∈ Ici 1) : z₆' t = I * t := by
-  rw [z₆', IciExtend_of_mem z₆ ht, z₆]
-
 lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
     * φ₀'' (I * t)
     * cexp (-π * r * t) := by
@@ -371,19 +278,18 @@ lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
   intro t ht
   rw [z₆'_eq_of_mem ht]
   congr
-  -- conv_lhs => norm_numI -- Doesn't work
   ring_nf
   simp
 
-  lemma I₆'_eq' (r : ℝ) : I₆' r = 2 * I * ∫ t in Ici (1 : ℝ),
-    φ₀'' (I * t)
-    * cexp (-π * r * t) := by
-    rw [I₆'_eq r]
-    simp only [mul_assoc, ← smul_eq_mul I]
-    rw [← MeasureTheory.integral_smul]
-    congr; ext t
-    simp only [smul_eq_mul I]
-    ring_nf
+lemma I₆'_eq' (r : ℝ) : I₆' r = 2 * I * ∫ t in Ici (1 : ℝ),
+  φ₀'' (I * t)
+  * cexp (-π * r * t) := by
+  rw [I₆'_eq r]
+  simp only [mul_assoc, ← smul_eq_mul I]
+  rw [← MeasureTheory.integral_smul]
+  congr; ext t
+  simp only [smul_eq_mul I]
+  ring_nf
 
 end Eq
 

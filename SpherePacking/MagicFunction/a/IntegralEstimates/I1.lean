@@ -6,11 +6,8 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
-import Mathlib
-
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
-import SpherePacking.Tactic.NormNumI
 
 /-! # Constructing Upper-Bounds for I₁
 
@@ -21,7 +18,7 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 - [ ] Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
 -/
 
-open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
+open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
 open scoped Function UpperHalfPlane
