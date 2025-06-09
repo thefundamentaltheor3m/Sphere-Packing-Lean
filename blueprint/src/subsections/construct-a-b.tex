@@ -78,10 +78,9 @@ Then there exists a constant $C_f > 0$ such that
 \end{equation}
 for all $z$ with $\Im z > 1/2$.
 \end{lemma}
-\todo{
-Note that the assumption on the polynomial growth holds when $f$ is a holomorphic modular form, where the proof can be found in \cite[p. 94]{Serre73} for the case of level 1 modular forms.
-But we just add this for simplicity, and we can prove it for ``specific'' $f$ such as Eisenstein series, theta functions, and their combinations.
-}
+
+Note that the assumption on the polynomial growth holds when $f$ is a holomorphic modular form, where the proof can be found in \cite[p. 94]{Serre73} for the case of level 1 modular forms. This has been done in Lean 4 by David Loeffler.
+
 \begin{proof}\uses{lemma:disc-prodformula}\leanok
 By the product formula \eqref{eqn:disc-prodformula},
 \begin{align}
