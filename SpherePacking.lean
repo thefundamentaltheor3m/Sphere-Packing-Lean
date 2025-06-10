@@ -20,7 +20,6 @@ import SpherePacking.ForMathlib.InnerProductSpace
 import SpherePacking.ForMathlib.InvPowSummability
 import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 import SpherePacking.ForMathlib.RadialSchwartz.Radial
-import SpherePacking.ForMathlib.RadialSchwartz.SchwartzLike
 import SpherePacking.ForMathlib.Real
 import SpherePacking.ForMathlib.SlashActions
 import SpherePacking.ForMathlib.SpecificLimits
