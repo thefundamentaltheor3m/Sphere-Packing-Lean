@@ -65,6 +65,7 @@ We observe that the contour integrals in \eqref{eqn:a-definition} converge absol
 Indeed, $\phi_0(z)=O(e^{-2\pi i z})$ as $\Im(z)\to \infty$. Therefore, $a(x)$ is well defined. Now we prove that $a$ satisfies condition \eqref{eqn:a-fourier}.
 The following lemma will be used to prove Schwartzness of $a$ and $b$.
 
+
 \begin{lemma}\label{lemma:mod-div-disc-bound}\lean{MagicFunction.PolyFourierCoeffBound.DivDiscBoundOfPolyFourierCoeff}\leanok
 Let $f(z)$ be a holomorphic function with a Fourier expansion
 \begin{equation}
@@ -79,7 +80,12 @@ Then there exists a constant $C_f > 0$ such that
 for all $z$ with $\Im z > 1/2$.
 \end{lemma}
 
+\begin{lemma}\label{lemma:mod_form_poly_growth} : Let $\Gamma$ be a finite index subgroup of $\SL_2(\Z)$ and $f \in \mathcal{M}_k(\Gamma)$ be a modular form of weight $k$. Then the Fourier coefficients $a_n(f)$ has a polynomial growth, i.e. $|a_n(f)| = O(n^k)$.
+\end{lemma}
+
+\begin{proof}\leanok
 Note that the assumption on the polynomial growth holds when $f$ is a holomorphic modular form, where the proof can be found in \cite[p. 94]{Serre73} for the case of level 1 modular forms. This has been done in Lean 4 by David Loeffler.
+\end{proof}
 
 \begin{proof}\uses{lemma:disc-prodformula}\leanok
 By the product formula \eqref{eqn:disc-prodformula},
@@ -100,7 +106,7 @@ The denominator also converges, which is simiply $e^{\pi} \cdot \Delta(i/2)$.
 
 As corollaries, we have the following bound for $\phi_0$, $\phi_{-2}$, and $\phi_{-4}$.
 
-\begin{corollary}\label{cor:phi0-bound}\uses{thm:ramanujan-formula, lemma:mod-div-disc-bound, lemma:Ek-Fourier}
+\begin{corollary}\label{cor:phi0-bound}\uses{thm:ramanujan-formula, lemma:mod-div-disc-bound, lemma:Ek-Fourier, lemma:mod_form_poly_growth}
 There exists a constant $C_0 > 0$ such that
 \begin{equation}\label{eqn:phi0-bound}
 |\phi_0(z)| \le C_0 e^{-2 \pi \Im z}
