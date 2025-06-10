@@ -12,8 +12,11 @@ import Mathlib.Analysis.Distribution.SchwartzSpace
 
 /-! # Schwartz-Like Functions
 
-The purpose of this file is to develop a rigorous theory of Schwartz-like functions to build the
-dimension bridge from 1 to 8 and in the future, higher dimensions (24, I'm looking at you).
+The purpose of this file is to fix the dimension bridge for Schwartz functions. It is not a priori
+clear that this is the right way to go about it (might be easier to relax conditions in
+`SchwartzMap.compCLM` and compose a function in r² with the norm instead of composing a function in
+r with the norm squared), but based on a few discussions, I feel like this may be useful to do. We
+can decide at a later stage if we want to do this here or elsewhere.
 -/
 
 open Set SchwartzMap Function RCLike Real
