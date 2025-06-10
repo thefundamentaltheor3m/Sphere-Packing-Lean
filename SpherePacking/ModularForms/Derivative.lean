@@ -34,8 +34,7 @@ noncomputable def serre_D (k : ℂ) (F : ℍ → ℂ) : ℍ → ℂ := λ (z : �
 Basic properties of Serre derivative: linearity, Leibniz rule, etc.
 -/
 theorem serre_D_add (k : ℤ) (F G : ℍ → ℂ) (z : ℍ) :
-    serre_D k (F + G) z = serre_D k F z + serre_D k G z
-  := by
+    serre_D k (F + G) z = serre_D k F z + serre_D k G z := by
   simp only [serre_D, D_add]
   simp
   ring_nf
