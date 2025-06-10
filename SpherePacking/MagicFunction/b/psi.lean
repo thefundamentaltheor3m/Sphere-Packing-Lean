@@ -4,10 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 
-import Mathlib
+-- import Mathlib
 
 import SpherePacking.ModularForms.JacobiTheta
-import SpherePacking.Tactic.NormNumI
 
 /-! # The ψ Functions
 
@@ -96,3 +95,5 @@ lemma ψT_eq : ψT = 128 * ((H₄_MF - H₂_MF) / (H₃_MF ^ 2) - (H₂_MF + H�
   sorry
 
 end eq
+
+-- TODO: Define all the slash relations between the `ψ` functions.
