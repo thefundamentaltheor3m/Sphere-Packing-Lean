@@ -35,7 +35,10 @@ section Smooth
 /-! # `a` is smooth.
 
 There is no reference for this in the blueprint. The idea is to use integrability to differentiate
-inside the integrals.
+inside the integrals. The proof path I have in mind is the following.
+
+We need to use the Leibniz Integral Rule to differentiate under the integral sign. This is stated as
+`hasDerivAt_integral_of_dominated_loc_of_deriv_le` in `Mathlib.Analysis.Calculus.ParametricIntegral`
 -/
 
 theorem I₁'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₁' := by
