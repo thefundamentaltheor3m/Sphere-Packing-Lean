@@ -72,6 +72,7 @@ theorem re_eq_of_eq {z : ℂ} {a b : ℝ} (hz : z = ⟨a, b⟩) : Complex.re z =
 theorem im_eq_of_eq {z : ℂ} {a b : ℝ} (hz : z = ⟨a, b⟩) : Complex.im z = b := by
   simp [hz]
 
+set_option pp.showLetValues true
 partial def parse (z : Q(ℂ)) :
     MetaM (Σ a b : Q(ℝ),  Q($z = ⟨$a, $b⟩)) := do
   match z with
@@ -133,16 +134,15 @@ partial def parse (z : Q(ℂ)) :
   /- parse `(I:ℂ)` -/
   | ~q(Complex.I) =>
     pure ⟨q(0), q(1), q(split_I)⟩
+  /- parse `(0:ℂ)` -/
+  | ~q(0) =>
+    pure ⟨q(0), q(0), q(split_zero)⟩
+  /- parse `(1:ℂ)` -/
+  | ~q(1) =>
+    pure ⟨q(1), q(0), q(split_one)⟩
   /- anything else needs to be on the list of atoms -/
-  | ~q(OfNat.ofNat $n (self := _)) =>
-    let some n := n.rawNatLit? | throwError "{n} is not a natural number"
-    if n == 0 then
-      return ⟨q(0), q(0), (q(split_zero):)⟩
-    else if n == 1 then
-      return ⟨q(1), q(0), (q(split_one):)⟩
-    else
-      let _i : Q(Nat.AtLeastTwo $n) ← synthInstanceQ q(Nat.AtLeastTwo $n)
-      return ⟨q(OfNat.ofNat $n), q(0), (q(split_num $n):)⟩
+  | ~q(OfNat.ofNat $en (self := @instOfNatAtLeastTwo ℂ _ _ $inst)) =>
+    return ⟨q(OfNat.ofNat $en), q(0), q(split_num $en)⟩
   | ~q(OfScientific.ofScientific $m $x $exp) =>
     return ⟨q(OfScientific.ofScientific $m $x $exp), q(0), q(split_scientific _ _ _)⟩
   -- /- parse a constructor type -/
@@ -226,3 +226,7 @@ such that `norm_num` successfully recognises the imaginary part of `z`.
 end NormNum
 
 end Mathlib.Meta
+
+-- we need to solve this but no rush
+-- example: ⟨1, 0⟩ + ⟨38, 0⟩ - 1 = (⟨37, 0⟩ : ℂ) := by
+--   conv_lhs => norm_numI
