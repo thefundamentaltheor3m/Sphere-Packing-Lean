@@ -40,15 +40,13 @@ theorem serre_D_add (k : ℤ) (F G : ℍ → ℂ) (z : ℍ) :
   ring_nf
 
 theorem serre_D_smul (k : ℤ) (c : ℂ) (F : ℍ → ℂ) (z : ℍ) :
-    serre_D k (c • F) z = c * serre_D k F z
-  := by
+    serre_D k (c • F) z = c * serre_D k F z := by
   simp only [serre_D, D_smul]
   simp
   ring_nf
 
 theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (z : ℍ) :
-    serre_D (k₁ + k₂) (F * G) z = F z * serre_D k₁ G z + G z * serre_D k₂ F z
-  := by
+    serre_D (k₁ + k₂) (F * G) z = F z * serre_D k₁ G z + G z * serre_D k₂ F z := by
   simp only [serre_D, D_mul]
   simp
   ring_nf
@@ -59,8 +57,7 @@ Serre derivative is equivariant under the slash action. More precisely, if `F` i
 of weight `k`, then `serre_D k F` is invariant under the slash action of weight `k + 2`.
 -/
 theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) :
-    ∀ γ : SL(2,ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ)
-  := by sorry
+    ∀ γ : SL(2,ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by sorry
 
 theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (γ : SL(2,ℤ)) (h : F ∣[k] γ = F) :
     serre_D k F ∣[k + 2] γ = serre_D k F := by
