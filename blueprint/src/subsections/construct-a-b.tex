@@ -80,12 +80,6 @@ Then there exists a constant $C_f > 0$ such that
 for all $z$ with $\Im z > 1/2$.
 \end{lemma}
 
-\begin{lemma}\label{lemma:mod_form_poly_growth} : Let $\Gamma$ be a finite index subgroup of $\SL_2(\Z)$ and $f \in \mathcal{M}_k(\Gamma)$ be a modular form of weight $k$. Then the Fourier coefficients $a_n(f)$ has a polynomial growth, i.e. $|a_n(f)| = O(n^k)$.
-\end{lemma}
-
-\begin{proof}\leanok
-Note that the assumption on the polynomial growth holds when $f$ is a holomorphic modular form, where the proof can be found in \cite[p. 94]{Serre73} for the case of level 1 modular forms. This has been done in Lean 4 by David Loeffler.
-\end{proof}
 
 \begin{proof}\uses{lemma:disc-prodformula}\leanok
 By the product formula \eqref{eqn:disc-prodformula},

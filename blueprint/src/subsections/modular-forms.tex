@@ -131,6 +131,18 @@ This follows from the fact that the sum converges absolutely.
 Now apply slash operator with $\gamma = \left(\begin{smallmatrix} 0 & -1 \\ 1 & 0 \end{smallmatrix}\right)$ gives \eqref{eqn:Ek-trans-S}.
 \end{proof}
 
+Since modular forms are holomorphic and periodic they have a Fourier expansions. One thing that we
+will need is the growth of the Fourier coefficients, which is given by the following lemma.
+
+\begin{lemma}\label{lemma:mod_form_poly_growth} : Let $\Gamma$ be a finite index subgroup of $\mathrm{SL}_2(\Z)$ and $f \in \mathcal{M}_k(\Gamma)$ be a modular form of weight $k$. Then the Fourier coefficients $a_n(f)$ has a polynomial growth, i.e. $|a_n(f)| = O(n^k)$.
+\end{lemma}
+
+\begin{proof}\leanok
+Note that the assumption on the polynomial growth holds when $f$ is a holomorphic modular form, where the proof can be found in \cite[p. 94]{Serre73} for the case of level 1 modular forms. This has been done in Lean 4 by David Loeffler.
+\end{proof}
+
+For Eisenstein series, we can see this directly from the following:
+
 \begin{lemma}\label{lemma:Ek-Fourier}\uses{def:Ek}\lean{E_k_q_expansion}\leanok
 % \lean{lemma:Ek-Fourier}\uses{def:Ek}
 The Eisenstein series possesses the Fourier expansion
