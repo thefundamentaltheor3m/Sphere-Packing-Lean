@@ -3,7 +3,7 @@ Copyright (c) 2025 Heather Macbeth. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Heather Macbeth, Yunzhou Xie, Sidharth Hariharan
 -/
-import Mathlib.Data.Complex.Basic
+import Mathlib
 
 open Lean Meta Elab Qq Tactic Complex Mathlib.Tactic
 open ComplexConjugate
@@ -66,8 +66,11 @@ theorem ne_of_im_ne {z w : ℂ} {az bz aw bw : ℝ} (hz : z = ⟨az, bz⟩) (hw 
     (hb : bz ≠ bw) : z ≠ w := by
   simp [hz, hw, hb]
 
-theorem re_eq_of_eq {z : ℂ} {a b : ℝ} (hz : z = ⟨a, b⟩) : Complex.re z = a := by simp [hz]
-theorem im_eq_of_eq {z : ℂ} {a b : ℝ} (hz : z = ⟨a, b⟩) : Complex.im z = b := by simp [hz]
+theorem re_eq_of_eq {z : ℂ} {a b : ℝ} (hz : z = ⟨a, b⟩) : Complex.re z = a := by
+  simp [hz]
+
+theorem im_eq_of_eq {z : ℂ} {a b : ℝ} (hz : z = ⟨a, b⟩) : Complex.im z = b := by
+  simp [hz]
 
 partial def parse (z : Q(ℂ)) :
     MetaM (Σ a b : Q(ℝ),  Q($z = ⟨$a, $b⟩)) := do
@@ -87,23 +90,46 @@ partial def parse (z : Q(ℂ)) :
     let ⟨x, y, pf⟩ ← parse z
     pure ⟨q($x / ($x * $x + $y * $y)), q(-$y / ($x * $x + $y * $y)), q(split_inv $pf)⟩
   /- parse `z₁/z₂` -/
-  | ~q($z₁ / $z₂) => parse q($z₁ * $z₂⁻¹)
+  | ~q($z₁ / $z₂) => do
+    let ⟨a, b, pf⟩ ← parse q($z₁ * $z₂⁻¹)
+    return ⟨q($a), q($b), q($pf)⟩
   /- parse `-z` -/
-  | ~q(-$w) =>
+  | ~q(-$w) => do
     let ⟨a, b, pf⟩ ← parse w
-    pure ⟨q(-$a), q(-$b), q(split_neg $pf)⟩
+    return ⟨q(-$a), q(-$b), q(split_neg $pf)⟩
   /- parse a subtraction `z₁ - z₂` -/
   | ~q($z₁ - $z₂) => parse q($z₁ + -$z₂)
   /- parse conjugate `conj z` -/
   | ~q(conj $w) =>
     let ⟨a, b, pf⟩ ← parse w
     return ⟨q($a), q(-$b), q(split_conj $pf)⟩
-  | ~q(@HPow.hPow ℂ ℕ ℂ instHPow $w $n) =>
-    match n.nat? with
-    | some 0 =>
-      return ⟨q(1), q(0), (q(pow_zero $w) :)⟩
-    | some (n + 1) => parse q($w ^ $n * $w)
-    | none => throwError "exponent {n} not handled by norm_numI"
+  /- parse natural number power -/
+  | ~q(@HPow.hPow ℂ ℕ ℂ instHPow $w $n') =>
+    let ⟨n, hn⟩ ← NormNum.deriveNat q($n') q(inferInstance)
+    match n.natLit! with
+    | 0 =>
+      let _i : $n =Q 0 := ⟨⟩
+      return ⟨q(1), q(0), q(show $w ^ $n' = _ from $(hn).out ▸ pow_zero _)⟩
+    | n + 1 =>
+      parse q($w^$n * $w)
+  /- parse integer power -/
+  | ~q(@HPow.hPow ℂ ℤ ℂ instHPow $w $k) =>
+    let ⟨k', hm⟩ ← NormNum.deriveInt q($k) q(inferInstance)
+    match k'.intLit! with
+    | Int.ofNat n =>
+      let ⟨a, b, pf⟩ ← parse q(@HPow.hPow ℂ ℕ ℂ instHPow $w $n)
+      let _i : $k' =Q $n := ⟨⟩
+      return ⟨a, b, q(by
+        dsimp [«$z»]
+        rw [($hm).out]
+        exact $pf)⟩
+    | Int.negSucc n =>
+      let ⟨a, b, pf⟩ ← parse q(($w ^ ($n + 1))⁻¹)
+      let _i : $k' =Q Int.negSucc $n := ⟨⟩
+      return ⟨a, b, q(by
+        dsimp [«$z»]
+        erw [($hm).out, zpow_negSucc]
+        exact $pf)⟩
   /- parse `(I:ℂ)` -/
   | ~q(Complex.I) =>
     pure ⟨q(0), q(1), q(split_I)⟩
@@ -139,13 +165,13 @@ elab "norm_numI" : conv => do
   let ⟨a, b, pf⟩ ← normalize z
   Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }
 
--- Testing the `parse` function
-elab "norm_numI_parse" : conv => do
-  let z ← Conv.getLhs
-  unless (q(ℂ) == (← inferType z)) do throwError "{z} is not a complex number"
-  have z : Q(ℂ) := z
-  let ⟨a, b, pf⟩ ← parse z
-  Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }
+-- -- Testing the `parse` function
+-- elab "norm_numI_parse" : conv => do
+--   let z ← Conv.getLhs
+--   unless (q(ℂ) == (← inferType z)) do throwError "{z} is not a complex number"
+--   have z : Q(ℂ) := z
+--   let ⟨a, b, pf⟩ ← parse z
+--   Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }
 
 end NormNumI
 namespace NormNum
@@ -162,7 +188,9 @@ such that `norm_num` successfully recognises both the real and imaginary parts o
   haveI' : $e =Q ($z = $w) := ⟨⟩
   let ⟨az, bz, pfz⟩ ← NormNumI.parse z
   let ⟨aw, bw, pfw⟩ ← NormNumI.parse w
-  let ⟨ba, ra⟩ ← deriveBool q($az = $aw)
+  let ⟨ba, ra⟩ ←  withTraceNode `debug (fun x => return m!"{exceptEmoji x} norm_numI.evalComplexEq: z = {az} + {bz}i {q($az = $aw)}") do
+    deriveBool q($az = $aw)
+  trace[debug] "norm_numI.evalComplexEq output: {ba} {ra}"
   match ba with
   | true =>
     let ⟨bb, rb⟩ ← deriveBool q($bz = $bw)
