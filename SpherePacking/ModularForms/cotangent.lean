@@ -140,7 +140,6 @@ theorem tendstoUniformlyOn_compact_euler_sin_prod (Z : Set ℂ_ℤ) (hZ : IsComp
     rw [← euler_sin_tprod y y.2]
   obtain ⟨u, hu, hu2⟩ := sinTerm_bound_aux Z hZ
   apply tendstoUniformlyOn_tprod' hZ hu hu2
-  · refine fun x n => by apply sinTerm_ne_zero (by simp)
   · intro n
     apply ContinuousOn.div_const
     apply (ContinuousOn.neg (ContinuousOn.pow (Continuous.continuousOn continuous_subtype_val) 2))

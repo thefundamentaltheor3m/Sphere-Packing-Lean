@@ -137,7 +137,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
   by_contra hantisymm₁
   have hantisymm₂ : 0 ≤ ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := integral_nonneg hCohnElkies₂
   have hintzero : 0 = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := by
-    rw [ge_iff_le] at hantisymm₁
+    --rw [ge_iff_le] at hantisymm₁
     exact antisymm' hantisymm₁ hantisymm₂
   have h𝓕frezero : ∀ x, (𝓕 f x).re = 0 := by
     -- Integral of a nonneg continuous function is zero iff the function is zero

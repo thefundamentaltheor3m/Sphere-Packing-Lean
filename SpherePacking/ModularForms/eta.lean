@@ -20,10 +20,10 @@ noncomputable def η (z : ℂ) := cexp (2 * π * Complex.I * z / 24) * ∏' (n :
 /-this is being PRd-/
 lemma prod_tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ → α → ℂ} (K : Set α)
     (hK : IsCompact K) (u : ℕ → ℝ) (hu : Summable u) (h : ∀ n x, x ∈ K → (‖(f n x)‖) ≤ u n)
-    (hfn : ∀ x : K, ∀ n : ℕ, 1 + f n x ≠ 0) (hcts : ∀ n, ContinuousOn (fun x => (f n x)) K) :
+    (hcts : ∀ n, ContinuousOn (fun x => (f n x)) K) :
     TendstoUniformlyOn (fun n : ℕ => fun a : α => ∏ i ∈ Finset.range n, (1 + (f i a)))
     (fun a => ∏' i, (1 + (f i a))) atTop K := by
-    apply tendstoUniformlyOn_tprod' hK hu h hfn hcts
+    apply tendstoUniformlyOn_tprod' hK hu h hcts
 
 lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.range n,
     fun x_1 ↦ 1 + -cexp (2 * ↑π * Complex.I *  (↑x + 1) * x_1))
@@ -40,7 +40,7 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
   obtain ⟨z, hz, hB, HB⟩ := this
   have :=  prod_tendstoUniformlyOn_tprod'  K  hK2 (f := (fun i ↦
     fun x_1 ↦ -cexp (2 * ↑π * Complex.I *  (i + 1) * x_1)))
-    (fun n=> ‖cexp (2 * ↑π * Complex.I * z)^(n + 1)‖) ?_ ?_ ?_ ?_
+    (fun n=> ‖cexp (2 * ↑π * Complex.I * z)^(n + 1)‖) ?_ ?_ ?_
   simp at *
   convert this
   simp only [Finset.prod_apply]
@@ -58,8 +58,6 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
     simp_rw [norm_pow]
     apply pow_le_pow_left₀ _  HB2
     simp only [norm_nonneg]
-  · intro x k
-    simpa using term_ne_zero ⟨x.1, by simpa using (hK x.2)⟩ k
   · intro n
     fun_prop
   · apply (isOpen_lt continuous_const Complex.continuous_im)

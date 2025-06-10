@@ -1,8 +1,8 @@
-import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
-import Mathlib.NumberTheory.ModularForms.Basic
+import Mathlib.Algebra.Field.ZMod
+import Mathlib.Analysis.CStarAlgebra.Classes
+import Mathlib.LinearAlgebra.Matrix.FixedDetMatrices
 import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
-import Mathlib.NumberTheory.ModularForms.SlashInvariantForms
-import Mathlib
+import Mathlib.NumberTheory.ModularForms.SlashActions
 
 /-!
 # Auxiliary theorems for the slash actions groups SL(2, ℤ) and Γ(2)

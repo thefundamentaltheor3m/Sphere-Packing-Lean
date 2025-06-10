@@ -85,7 +85,7 @@ lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fun n : �
   simp only [gt_iff_lt, ge_iff_le, Pi.div_apply, one_div, ne_eq, one_ne_zero, not_false_eq_true,
     div_self, dist_eq_norm] at h2
   have h3 := h2 1 (by norm_num)
-  apply Summable.of_norm_bounded_eventually_nat (fun n => 2 * ‖n * r^n‖)
+  apply Summable.of_norm_bounded_eventually_nat (g := fun n => 2 * ‖n * r^n‖)
   apply Summable.mul_left
   simp
   · have := (summable_norm_pow_mul_geometric_of_norm_lt_one 1 hr)
