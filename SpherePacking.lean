@@ -19,7 +19,7 @@ import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 import SpherePacking.ForMathlib.InnerProductSpace
 import SpherePacking.ForMathlib.InvPowSummability
 import SpherePacking.ForMathlib.RadialSchwartz.Radial
-import SpherePacking.ForMathlib.RadialSchwartz.RadialSchwartz
+import SpherePacking.ForMathlib.RadialSchwartz.Radial
 import SpherePacking.ForMathlib.SchwartzLike
 import SpherePacking.ForMathlib.Real
 import SpherePacking.ForMathlib.SlashActions
@@ -38,6 +38,9 @@ import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 import SpherePacking.MagicFunction.a.IntegralEstimates.I5
 import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 import SpherePacking.MagicFunction.a.Schwartz
+import SpherePacking.MagicFunction.b.Basic
+import SpherePacking.MagicFunction.b.Schwartz
+import SpherePacking.MagicFunction.g.Basic
 import SpherePacking.ModularForms.AtImInfty
 import SpherePacking.ModularForms.BigO
 import SpherePacking.ModularForms.Cauchylems
