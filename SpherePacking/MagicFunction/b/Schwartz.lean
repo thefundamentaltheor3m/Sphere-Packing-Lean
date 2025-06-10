@@ -6,7 +6,7 @@ Authors: Sidharth Hariharan
 
 -- import Mathlib
 
--- import SpherePacking.ForMathlib.RadialSchwartz.RadialSchwartz
+import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 import SpherePacking.MagicFunction.b.Basic
 
 /-! # `b` is a Schwartz Function
@@ -17,7 +17,7 @@ The purpose of this file is to prove that `b` is a Schwartz function. It collect
 -- NOTE: We are not ready for the contents of this file. We first need to fix
 -- the dimension bridge for Schwartz functions.
 
-#exit
+-- #exit
 
 open MagicFunction MagicFunction.b MagicFunction.b.RadialFunctions MagicFunction.b.RealIntegrals
   MagicFunction.Parametrisations
@@ -48,10 +48,10 @@ theorem J₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₂' := by
 theorem J₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₃' := by
   sorry
 
-theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' := by
+theorem J₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₄' := by
   sorry
 
-theorem I₅'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₅' := by
+theorem J₅'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₅' := by
   sorry
 
 theorem J₆'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₆' := by
@@ -78,12 +78,12 @@ theorem J₃'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₃' x‖ ≤ C := by
   sorry
 
-theorem I₄'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₄' x‖ ≤ C := by
+theorem J₄'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₄' x‖ ≤ C := by
   sorry
 
-theorem I₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₅' x‖ ≤ C := by
+theorem J₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₅' x‖ ≤ C := by
   sorry
 
 theorem J₆'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
@@ -113,15 +113,15 @@ def J₃' : 𝓢(ℝ, ℂ) where
   smooth' := MagicFunction.b.SchwartzProperties.J₃'_smooth'
   decay' := MagicFunction.b.SchwartzProperties.J₃'_decay'
 
-def I₄' : 𝓢(ℝ, ℂ) where
-  toFun := MagicFunction.b.RealIntegrals.I₄'
-  smooth' := MagicFunction.b.SchwartzProperties.I₄'_smooth'
-  decay' := MagicFunction.b.SchwartzProperties.I₄'_decay'
+def J₄' : 𝓢(ℝ, ℂ) where
+  toFun := MagicFunction.b.RealIntegrals.J₄'
+  smooth' := MagicFunction.b.SchwartzProperties.J₄'_smooth'
+  decay' := MagicFunction.b.SchwartzProperties.J₄'_decay'
 
-def I₅' : 𝓢(ℝ, ℂ) where
-  toFun := MagicFunction.b.RealIntegrals.I₅'
-  smooth' := MagicFunction.b.SchwartzProperties.I₅'_smooth'
-  decay' := MagicFunction.b.SchwartzProperties.I₅'_decay'
+def J₅' : 𝓢(ℝ, ℂ) where
+  toFun := MagicFunction.b.RealIntegrals.J₅'
+  smooth' := MagicFunction.b.SchwartzProperties.J₅'_smooth'
+  decay' := MagicFunction.b.SchwartzProperties.J₅'_decay'
 
 def J₆' : 𝓢(ℝ, ℂ) where
   toFun := MagicFunction.b.RealIntegrals.J₆'
@@ -137,11 +137,11 @@ def J₂ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
 def J₃ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
   schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) J₃'
 
-def I₄ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) I₄'
+def J₄ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
+  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) J₄'
 
-def I₅ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) I₅'
+def J₅ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
+  schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) J₅'
 
 def J₆ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
   schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) J₆'
@@ -152,41 +152,41 @@ namespace MagicFunction.FourierEigenfunctions
 
 /-- The radial component of the -1-Fourier Eigenfunction of Viazovska's Magic Function. -/
 @[simps!]
-def a' : 𝓢(ℝ, ℂ) :=
+def b' : 𝓢(ℝ, ℂ) :=
     MagicFunction.b.SchwartzIntegrals.J₁'
   + MagicFunction.b.SchwartzIntegrals.J₂'
   + MagicFunction.b.SchwartzIntegrals.J₃'
-  + MagicFunction.b.SchwartzIntegrals.I₄'
-  + MagicFunction.b.SchwartzIntegrals.I₅'
+  + MagicFunction.b.SchwartzIntegrals.J₄'
+  + MagicFunction.b.SchwartzIntegrals.J₅'
   + MagicFunction.b.SchwartzIntegrals.J₆'
 
 /-- The -1-Fourier Eigenfunction of Viazovska's Magic Function. -/
 @[simps!]
 def b : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := schwartzMap_multidimensional_of_schwartzMap_real
-  (EuclideanSpace ℝ (Fin 8)) a'
+  (EuclideanSpace ℝ (Fin 8)) b'
 
 theorem b_eq_sum_integrals_RadialFunctions : b =
     MagicFunction.b.RadialFunctions.J₁
   + MagicFunction.b.RadialFunctions.J₂
   + MagicFunction.b.RadialFunctions.J₃
-  + MagicFunction.b.RadialFunctions.I₄
-  + MagicFunction.b.RadialFunctions.I₅
+  + MagicFunction.b.RadialFunctions.J₄
+  + MagicFunction.b.RadialFunctions.J₅
   + MagicFunction.b.RadialFunctions.J₆ := rfl
 
 theorem b_eq_sum_integrals_SchwartzIntegrals : b =
     MagicFunction.b.SchwartzIntegrals.J₁
   + MagicFunction.b.SchwartzIntegrals.J₂
   + MagicFunction.b.SchwartzIntegrals.J₃
-  + MagicFunction.b.SchwartzIntegrals.I₄
-  + MagicFunction.b.SchwartzIntegrals.I₅
+  + MagicFunction.b.SchwartzIntegrals.J₄
+  + MagicFunction.b.SchwartzIntegrals.J₅
   + MagicFunction.b.SchwartzIntegrals.J₆ := rfl
 
-theorem b'_eq_sum_RealIntegrals : a' =
+theorem b'_eq_sum_RealIntegrals : b' =
     MagicFunction.b.RealIntegrals.J₁'
   + MagicFunction.b.RealIntegrals.J₂'
   + MagicFunction.b.RealIntegrals.J₃'
-  + MagicFunction.b.RealIntegrals.I₄'
-  + MagicFunction.b.RealIntegrals.I₅'
+  + MagicFunction.b.RealIntegrals.J₄'
+  + MagicFunction.b.RealIntegrals.J₅'
   + MagicFunction.b.RealIntegrals.J₆' := rfl
 
 end MagicFunction.FourierEigenfunctions

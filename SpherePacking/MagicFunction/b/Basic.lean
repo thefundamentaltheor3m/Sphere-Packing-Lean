@@ -47,7 +47,7 @@ end MagicFunction.b.RealIntegrals
 
 open MagicFunction.b.RealIntegrals
 
-namespace MagicFunction.a.RadialFunctions
+namespace MagicFunction.b.RadialFunctions
 
 noncomputable section Vector_Input
 
@@ -80,4 +80,4 @@ Express the Jⱼ in a similar manner to the Iⱼ, with ψS being the analogue of
 
 end Eq
 
-end MagicFunction.a.RadialFunctions
+end MagicFunction.b.RadialFunctions

@@ -8,7 +8,7 @@ M4R File
 
 -- import Mathlib
 
--- import SpherePacking.ForMathlib.RadialSchwartz.RadialSchwartz
+import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 import SpherePacking.MagicFunction.a.Basic
 
 /-! # `a` is a Schwartz Function
@@ -19,7 +19,7 @@ The purpose of this file is to prove that `a` is a Schwartz function. It collect
 -- NOTE: We are not ready for the contents of this file. We first need to fix
 -- the dimension bridge for Schwartz functions.
 
-#exit
+-- #exit
 
 open MagicFunction MagicFunction.a MagicFunction.a.RadialFunctions MagicFunction.a.RealIntegrals
   MagicFunction.Parametrisations
