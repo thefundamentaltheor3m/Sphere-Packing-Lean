@@ -12,7 +12,12 @@ import SpherePacking.MagicFunction.b.Schwartz
 In this file, we define Viazovska's magic funtction `g`.
 -/
 
+local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
+
 open SchwartzMap Complex Real MagicFunction.FourierEigenfunctions
 
 /-- The Magic Function, `g`. -/
-noncomputable def g : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := ((π * I) / 8640) • a + (I / (240 * π)) • b
+noncomputable def g : 𝓢(ℝ⁸, ℂ) := ((π * I) / 8640) • a + (I / (240 * π)) • b
+
+-- Note that in the proof, we need `g` to be Real-valued. We need to decide how we want to state
+-- this: either `g ∘ Complex.im = 0` or we actually construct an element of `𝓢(ℝ⁸, ℝ)`...
