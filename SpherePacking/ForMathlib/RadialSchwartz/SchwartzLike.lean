@@ -4,7 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 
-import Mathlib
+import Mathlib.Analysis.CStarAlgebra.Classes
+import Mathlib.Analysis.Calculus.ContDiff.Defs
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Analysis.Distribution.SchwartzSpace
 
 /-! # Schwartz-Like Functions
 
@@ -85,3 +89,5 @@ end Preliminaries
 --       (by simp) hC' (hD d x n)
 
 -- end SchwartzMap
+
+#min_imports
