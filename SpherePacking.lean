@@ -28,8 +28,10 @@ import SpherePacking.ForMathlib.Vec
 import SpherePacking.ForMathlib.VolumeOfBalls
 import SpherePacking.ForMathlib.ZLattice
 import SpherePacking.ForMathlib.tprod
+import SpherePacking.MagicFunction.IntegralParametrisations
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
+import SpherePacking.MagicFunction.a.Eigenfunction
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 import SpherePacking.MagicFunction.a.IntegralEstimates.I2
 import SpherePacking.MagicFunction.a.IntegralEstimates.I3
@@ -37,9 +39,14 @@ import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 import SpherePacking.MagicFunction.a.IntegralEstimates.I5
 import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 import SpherePacking.MagicFunction.a.Schwartz
+import SpherePacking.MagicFunction.a.SpecialValues
 import SpherePacking.MagicFunction.b.Basic
+import SpherePacking.MagicFunction.b.Eigenfunction
 import SpherePacking.MagicFunction.b.Schwartz
+import SpherePacking.MagicFunction.b.SpecialValues
+import SpherePacking.MagicFunction.b.psi
 import SpherePacking.MagicFunction.g.Basic
+import SpherePacking.MainTheorem
 import SpherePacking.ModularForms.AtImInfty
 import SpherePacking.ModularForms.BigO
 import SpherePacking.ModularForms.Cauchylems
