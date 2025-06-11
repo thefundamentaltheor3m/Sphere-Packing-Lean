@@ -3,7 +3,7 @@ Copyright (c) 2025 Heather Macbeth. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Heather Macbeth, Yunzhou Xie, Sidharth Hariharan
 -/
-import Mathlib
+import Mathlib.Data.Complex.Basic
 
 open Lean Meta Elab Qq Tactic Complex Mathlib.Tactic
 open ComplexConjugate
@@ -227,6 +227,6 @@ end NormNum
 
 end Mathlib.Meta
 
--- we need to solve this but no rush
+-- The tactic cannot handle the following, but this is a conscious design decision.
 -- example: ⟨1, 0⟩ + ⟨38, 0⟩ - 1 = (⟨37, 0⟩ : ℂ) := by
 --   conv_lhs => norm_numI
