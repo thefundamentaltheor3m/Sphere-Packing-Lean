@@ -47,7 +47,7 @@ The following two lemmas tell us the group structure of $\Gamma(1) = \Gamma_1$ a
   See~\cite[Exercise 1.1.1]{first course}.
 \end{proof}
 
-\begin{lemma}\label{lemma:Gamma-2-generators}\uses{def:Gamma-generators}\lean{Γ2_generate}
+\begin{lemma}\label{lemma:Gamma-2-generators}\uses{def:Gamma-generators}\lean{Γ2_generate}\leanok
   We have $\Gamma(2) = \langle \alpha, \beta, -I \rangle$.
 \end{lemma}
 \begin{proof}
@@ -92,12 +92,20 @@ $(F|_{k}(-I))(z) = (-1)^{-k}F((-I)z) = F(z)$.
 \end{proof}
 
 \begin{definition}\label{def:holomorphic-modular-form}\uses{def:congruence-subgroup}\lean{ModularForm}\leanok
-A \emph{(holomorphic) modular form} of integer weight $k$ and congruence subgroup $\Gamma$ is a holomorphic function $f:\h\to\C$ such that:
-\begin{enumerate}
-  \item{(Slash invariant)} $f|_k\gamma=f$ for all $\gamma\in\Gamma$
-  \item{(Holomorphic at $i\infty$)} for each $\alpha\in\Gamma_1\;f|_k\alpha$ has the Fourier expansion $f|_k\alpha (z)=\sum_{n=0}^\infty c_f(\alpha,\frac{n}{n_\alpha})\,e^{2\pi i \frac{n}{n_\alpha}z}$ for some $n_\alpha\in\N$ and Fourier coefficients $c_f(\alpha,m)\in\C$.
-\end{enumerate}
+	Let  $\Gamma$ denote a subgroup of $\mathrm{SL}_2(\mathbb{Z})$, then a modular form  of level $\Gamma$ and weight $k \in \mathbb{Z}$ is a function $f : \mathbb{H} \to \mathbb{C}$ such that:
+	\begin{enumerate}
+		\item For all $\gamma \in \Gamma$ we have $f\mid_k \gamma = f$  (such functions are called slash invariant).
+		\item $f$ is holomorphic on $\mathbb{H}$.
+		\item For all $\gamma \in \mathrm{SL}_2(\mathbb{Z})$, there exist $A, B \in \mathbb{R}$ such that for all $z \in \mathbb{H}$, with $ A \le \mathrm{Im}(z)$, we have $|(f \mid_k \gamma) (z) |\le B$. Here $| - |$ denotes the standard complex absolute value.
+	\end{enumerate}
 \end{definition}
+This defines a complex vector space which we denote by $M_{k}(\Gamma)$. By replacing condition $(3)$ above with (4) below defines the subspace of cusp forms, which we denote by $S_k(\Gamma)$.
+
+\begin{enumerate}
+	 \setcounter{enumi}{3}
+	\item  For all $\gamma \in \mathrm{SL}_2(\mathbb{Z})$, and all  $0 < \epsilon$, there exists $A \in \mathbb{R}$ such that for all $z \in \mathbb{H}$, with $ A \le \mathrm{Im}(z)$, we have $|(f \mid_k \gamma) (z) |\le \epsilon$.
+\end{enumerate}
+
 
 \begin{definition}\label{def:Mk}\uses{def:holomorphic-modular-form}\lean{ModularForm}\leanok
     Let $M_k(\Gamma)$ be the space of modular forms of weight $k$ and congruence subgroup $\Gamma$.
@@ -108,12 +116,12 @@ Let us consider several examples of modular forms.
 \begin{definition}\label{def:Ek} \lean{ModularForm.eisensteinSeries_MF }
 For an even integer $k\geq 4$ we define the \emph{weight $k$ Eisenstein series} as
 \begin{equation}\label{eqn:Ek-definition}
-E_k(z):=\frac{1}{2\zeta(k)}\sum_{(c,d)\in\Z^2\backslash(0,0)}(cz+d)^{-k}.\end{equation}
+E_k(z):=\frac{1}{2}\sum_{(c,d)\in\Z^2, (c,d)=1}(cz+d)^{-k}.\end{equation}
 \end{definition}
 \begin{lemma}\label{lemma:Ek-is-modular-form}\uses{def:Mk, def:Ek}\lean{EisensteinSeries.eisensteinSeries_SIF}
 For all $k$, $E_k\in M_k(\Gamma_1)$.
 Especially, we have
-\begin{equation}\label{eqn:Ek-trans-S}\leanok
+\begin{equation}\label{eqn:Ek-trans-S}
     E_k \left(-\frac{1}{z}\right) = z^k E_k(z).
 \end{equation}
 \end{lemma}
@@ -122,6 +130,18 @@ Especially, we have
 This follows from the fact that the sum converges absolutely.
 Now apply slash operator with $\gamma = \left(\begin{smallmatrix} 0 & -1 \\ 1 & 0 \end{smallmatrix}\right)$ gives \eqref{eqn:Ek-trans-S}.
 \end{proof}
+
+Since modular forms are holomorphic and periodic they have a Fourier expansions. One thing that we
+will need is the growth of the Fourier coefficients, which is given by the following lemma.
+
+\begin{lemma}\label{lemma:mod_form_poly_growth} : Let $\Gamma$ be a finite index subgroup of $\mathrm{SL}_2(\Z)$ and $f \in \mathcal{M}_k(\Gamma)$ be a modular form of weight $k$. Then the Fourier coefficients $a_n(f)$ has a polynomial growth, i.e. $|a_n(f)| = O(n^k)$.
+\end{lemma}
+
+\begin{proof}\leanok
+Note that the assumption on the polynomial growth holds when $f$ is a holomorphic modular form, where the proof can be found in \cite[p. 94]{Serre73} for the case of level 1 modular forms. This has been done in Lean 4 by David Loeffler.
+\end{proof}
+
+For Eisenstein series, we can see this directly from the following:
 
 \begin{lemma}\label{lemma:Ek-Fourier}\uses{def:Ek}\lean{E_k_q_expansion}\leanok
 % \lean{lemma:Ek-Fourier}\uses{def:Ek}
@@ -202,7 +222,7 @@ Also, it vanishes at the unique cusp, i.e. it is a cusp form of level $\Gamma_1$
 \end{lemma}
 \begin{proof}
     \leanok
-The fact that it is invariant under translation is clear from the definition, so we only need to check transformation under $S$. Now, note that $\eta^24 = \Delta$, and from \ref{lemma:dedekind_eta_transformation} we have $\eta(-1/z) = \sqrt{-iz} \eta(z)$, so $\Delta(-1/z) = z^{12} \Delta(z)$ as required.
+The fact that it is invariant under translation is clear from the definition, so we only need to check transformation under $S$. Now, note that $\eta^{24} = \Delta$, and from \ref{lemma:dedekind_eta_transformation} we have $\eta(-1/z) = \sqrt{-iz} \eta(z)$, so $\Delta(-1/z) = z^{12} \Delta(z)$ as required.
 
 \end{proof}
 
@@ -263,7 +283,7 @@ To checke its a cuspform, we just look at  the $q$-expansions of $E_4$ and $E_6$
 %As a side note, we can also consider defining $\Delta$ as \eqref{eqn:disc-prodformula}, and prove that it coincides with \eqref{eqn:disc-definition}.
 %Such an argument can be found in \cite[Section 2.4]{Bruinier}.
 
-\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition} % \leanok \lean{aux_8}
+\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition}  \leanok \lean{Delta_im_line}
 $\Delta(it) > 0$ for all $t > 0$.
 \end{corollary}
 \begin{proof}
