@@ -1,18 +1,15 @@
 In 2003 Cohn and Elkies \cite{ElkiesCohn}  developed  linear programming bounds that apply directly to sphere packings. The goal of this section is to formalize the Cohn--Elkies linear programming bound.
 
-The following theorem is the key result of \cite{ElkiesCohn}. (The original theorem is stated for a   class of functions more general then Schwartz functions)
-\begin{theorem}\label{thm:Cohn-Elkies}\uses{def:Fourier-Transform, SpherePacking.density}\leanok
-(Cohn--Elkies \cite{ElkiesCohn}) Suppose that  $f:\R^d\to\R$ is a Schwartz function that is not identically zero and satisfies the following conditions:
+The following theorem is the key result of \cite{ElkiesCohn}. (Note that the original theorem is stated for a class of functions more general then Schwartz functions.)
+\begin{theorem}[Cohn--Elkies {\cite{ElkiesCohn}}]\label{thm:Cohn-Elkies}\uses{def:Fourier-Transform, SpherePacking.density}\lean{LinearProgrammingBound'}\leanok
+
+Let $X\subset\mathbb{R}^d$ be a discrete subset such that $\|x-y\|\geq 1$ for any distinct $x,y\in X$. Suppose that $X$ is $\Lambda$-periodic with respect to some lattice $\Lambda\subset\mathbb{R}^d$. Let $f:\R^d\to\R$ be a Schwartz function that is not identically zero and satisfies the following conditions:
 \begin{equation}\label{eqn:Cohn-Elkies-condition-1}f(x)\leq 0\mbox{ for } \|x\|\geq 1\end{equation} and
 \begin{equation}\label{eqn:Cohn-Elkies-condition-2}\widehat{f}(x)\geq0\mbox{ for all } x\in\R^d.\end{equation}
-  Then the density of $d$-dimensional
-  sphere packings is bounded above by $$\frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)).$$
+  Then the density of any $\Lambda$-periodic sphere packing is bounded above by $$\frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)).$$
 \end{theorem}
-\begin{proof}\uses{thm:Poisson-summation-formula, periodic_constant_eq_constant, periodic_constant_eq_periodic_constant_normalized}\leanok
-Here we reproduce the proof given in \cite{ElkiesCohn}. We will first prove the theorem for periodic packings.
-
-Let $X\subset\mathbb{R}^d$ be a discrete subset  such that $\|x-y\|\geq 1$ for any distinct $x,y\in X$.
-Suppose that $X$ is $\Lambda$-periodic with respect to some lattice $\Lambda\subset\mathbb{R}^d$.
+\begin{proof}\uses{thm:Poisson-summation-formula}\leanok
+Here we reproduce the proof given in \cite{ElkiesCohn}.
 
 The inequality
 \begin{equation}\label{eqn: sharp X 1}
@@ -33,7 +30,14 @@ $$\frac{\sharp (X/\Lambda)}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\leq \frac{f(0)}{
 Now we see that the density of the periodic packing $\mathcal{P}_X$ with balls of radius $1/2$ is bounded by
 $$\Delta(\mathcal{P}_X)=\frac{\sharp (X/\Lambda)}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\cdot{\mathrm{vol}(B_d(0,1/2))}\leq
 \frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)).$$
-This finishes the proof of the theorem for periodic packings. Theorem~\ref{periodic-packing-optimal} implies the desired  result for arbitrary packings.
+This finishes the proof of the theorem for periodic packings.
+\end{proof}
+
+\begin{theorem}[Cohn--Elkies {\cite{ElkiesCohn}}]\label{thm:Cohn-Elkies-general}\lean{LinearProgrammingBound}\leanok
+  Let $f:\R^d\to\R$ be a Schwartz function that is not identically zero and satisfies \eqref{eqn:Cohn-Elkies-condition-1} and \eqref{eqn:Cohn-Elkies-condition-2}. Then the density of any $\Lambda$-periodic sphere packing is bounded above by $$\frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)).$$
+\end{theorem}
+\begin{proof}\uses{thm:Cohn-Elkies, periodic_constant_eq_constant, periodic_constant_eq_periodic_constant_normalized}\leanok
+  The result follows immediately from Theorem~\ref{periodic-packing-optimal} and \Cref{thm:Cohn-Elkies}.
 \end{proof}
 
 The main step in our proof of \cref{theorem:Main} is the explicit construction of an optimal function. It will be convenient for us to scale this function by $\sqrt{2}$.
