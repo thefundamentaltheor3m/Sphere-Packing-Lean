@@ -495,7 +495,7 @@ theorem extracted_abs_norm_summable (z : ℍ) (i : ℤ) :
   rfl
 
 
-lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ ≤ c * b⁻¹ ↔ b ≤ c * a := by
+private lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ ≤ c * b⁻¹ ↔ b ≤ c * a := by
   constructor
   intro h
   simp_rw [inv_eq_one_div] at h
