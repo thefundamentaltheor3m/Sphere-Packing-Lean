@@ -108,9 +108,9 @@ In this section, we establish basic properties of the $E_8$ lattice and the $\B_
   \todo{In theory this should follow directly from $\det(\Lambda_8) = 1$, but Lean hates me and \texttt{EuclideanSpace} is being annoying.}
 \end{proof}
 
-\begin{theorem}\label{E8Packing-density}\uses{theorem:psp-density,E8Packing-covol}
+\begin{theorem}\label{E8Packing-density}\uses{theorem:psp-density,E8Packing-covol}\lean{E8.E8Packing_density}\leanok
   We have $\Delta_{\mathcal{P}(E_8)} = \frac{\pi^4}{384}$.
 \end{theorem}
-\begin{proof}
+\begin{proof}\leanok
   By \cref{theorem:psp-density}, we have $\Delta_{\mathcal{P}(E_8)} = |E_8 / E_8| \cdot \frac{\Vol{\mathcal{B}_8(\sqrt{2} / 2)}}{\mathrm{Covol}(E_8)} = \frac{\pi^4}{384}$, where the last equality follows from \cref{E8Packing-covol} and the formula for volume of a ball: $\Vol{\mathcal{B}_d(R)} = R^d \pi^{d / 2} / \Gamma\left(\frac{d}{2} + 1\right)$.
 \end{proof}

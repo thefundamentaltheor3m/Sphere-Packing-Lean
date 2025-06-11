@@ -332,7 +332,7 @@ but $a_0(f) \ne 0$ (since its assumed to not be a cuspform), this would mean $\D
 
 \end{proof}
 
-\begin{theorem}\label{thm:dim-mf}\uses{def:Mk, thm:lvl1_dims}\leanok \lean{dim_gen_cong_levels}
+\begin{theorem}\label{thm:dim-mf-general-level}\uses{def:Mk, thm:lvl1_dims}\leanok \lean{dim_gen_cong_levels}
 Let $\Gamma$ be a congruence subgroup. Then $M_k(\Gamma)$ is finite-dimensional.
 \end{theorem}
 \begin{proof}
@@ -349,7 +349,7 @@ We know that $\dim(M_k(\Gamma_1))$ is finite dimensional from the above, now thi
 % A key fact in the theory of modular forms is that they form a finite-dimensional vector space (for a fixed weight and level).
 % Especially, we use the following dimension results.
 
-\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:dim_mf}\leanok
+\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:lvl1_dims}\leanok
 We have
 \begin{align}
     \dim M_2(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimM2} \\
