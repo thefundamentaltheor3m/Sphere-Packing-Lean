@@ -20,7 +20,7 @@ In this file, we define Viazovska's magic funtction `g`.
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
 open SchwartzMap Complex Real MagicFunction.FourierEigenfunctions MagicFunction.a.Fourier
-  MagicFunction.b.Fourier
+  MagicFunction.b.Fourier MagicFunction.a.SpecialValues MagicFunction.b.SpecialValues
 
 /-- The Magic Function, `g`. -/
 noncomputable def g : 𝓢(ℝ⁸, ℂ) := ((π * I) / 8640) • a + (I / (240 * π)) • b
