@@ -2,6 +2,7 @@ import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.clog_arg_lems
 import SpherePacking.ModularForms.eta
 import Mathlib.NumberTheory.ModularForms.QExpansion
+import SpherePacking.Tactic.NormNumI
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
@@ -121,8 +122,6 @@ theorem natPosSMul_apply (c : ℕ+) (z : ℍ) : ((c  • z : ℍ) : ℂ) = (c : 
 
 def pnat_smul_stable (S : Set ℍ) := ∀ n : ℕ+, ∀ (s : ℍ), s ∈ S → n • s ∈ S
 
-
-
 lemma atImInfy_pnat_mono (S : Set ℍ) (hS : S ∈ atImInfty) (B : ℝ) : ∃ A : ℝ,
     pnat_smul_stable (S ∩ {z : ℍ | max A B ≤ z.im}) ∧ S ∩ {z : ℍ | max A B ≤ z.im} ∈ atImInfty := by
   have hS2 := hS
@@ -154,8 +153,6 @@ lemma atImInfy_pnat_mono (S : Set ℍ) (hS : S ∈ atImInfty) (B : ℝ) : ∃ A 
   · exact K
   · simp only [ inter_mem_iff, hS2, true_and]
     apply I_in_atImInfty
-
-
 
 lemma cexp_two_pi_I_im_antimono (a b : ℍ) (h : a.im ≤ b.im) (n : ℕ) :
     ‖(cexp (2 * ↑π * Complex.I * n * b))‖
@@ -453,10 +450,42 @@ theorem CuspForm_div_Discriminant_Add (k : ℤ) (x y : CuspForm (CongruenceSubgr
   simp only [CuspForm_div_Discriminant_apply, CuspForm.add_apply, ModularForm.add_apply]
   ring
 
-lemma Delta_im_line_im_part {t : ℝ} (ht : 0 < t) : (Delta ⟨(Complex.I*t), by simp [ht]⟩).im =0 := by
+lemma Delta_im_line_im_part {t : ℝ} (ht : 0 < t) : (Delta ⟨(Complex.I * t), by simp [ht]⟩).im =0 := by
   rw [Delta_apply, Δ]
   sorry
 
-lemma Delta_im_line {t : ℝ} (ht : 0 < t) : 0 < ‖Delta ⟨(Complex.I*t), by simp [ht]⟩‖ := by
-  rw [Delta_apply, Δ]
-  sorry
+lemma Delta_im_line {t : ℝ} (ht : 0 < t) : 0 < ‖Delta ⟨(Complex.I * t), by simp [ht]⟩‖ := by
+  rw [Delta_apply, Δ, norm_mul]
+  simp_rw [Complex.norm_exp]
+  simp
+  have (i : ℕ) : cexp (2 * ↑π * Complex.I * (↑i + 1) * (Complex.I * ↑t)) =
+      cexp (-2 * ↑π  * (↑i + 1) * (↑t)) := by
+      congr 1
+      linear_combination π * (i + 1) * 2 * t * I_sq
+  conv =>
+    enter [2,2,1,1]
+    intro i
+    rw [this i]
+    rw [sub_eq_add_neg]
+  apply mul_pos
+  exact exp_pos (-(2 * π * t))
+  have H := Complex.cexp_tsum_eq_tprod (f := fun (i : ℕ) => (1 + -cexp (-2 * ↑π * (↑i + 1) * ↑t))^24) ?_ ?_
+  rw [← H]
+  simp
+  · intro i
+    simp
+    norm_cast
+    have := Real.exp_lt_one_iff (x := -(2 * π * (i + 1) * t)).2 ?_
+    rw [← sub_eq_add_neg]
+    rw [@sub_eq_zero]
+    intro h
+    norm_cast at *
+    rw [← h] at this
+    exact (lt_self_iff_false 1).mp this
+    simp
+    positivity
+
+  · simp_rw [← sub_eq_add_neg]
+    norm_cast
+
+    sorry
