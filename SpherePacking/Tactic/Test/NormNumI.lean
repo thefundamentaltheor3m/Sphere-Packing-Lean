@@ -40,12 +40,13 @@ example : (1 + I) * (1 + I * I * I) = 2 := by norm_num1
 -- #conv norm_numI => ((1 + I) * (1 + I * I * I))
 
 example : (1 + I) * (1 + I * I * I) = 2 := by
-  conv_lhs => norm_numI_parse
-  conv_rhs => norm_numI_parse
+  -- conv_lhs => norm_numI
+  -- conv_rhs => norm_numI
+  norm_num1
   -- rfl -- obviously this fails, demonstrating that `normalize` is necessary
   -- (a cool example if we ever want to explain how `parse` and `normalize` interact)
   -- conv_lhs => norm_numI -- Interestingly also fails
-  conv_lhs => norm_num
+  -- conv_lhs => norm_num
 
 example : (1 + I) * (1 + I * I * I) = 2 := by --norm_num1
   conv_lhs => norm_numI
