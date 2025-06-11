@@ -14,6 +14,8 @@ import SpherePacking.MagicFunction.b.Schwartz
 
 open SchwartzMap Real Complex MagicFunction.FourierEigenfunctions
 
+namespace MagicFunction.b.SpecialValues
+
 section Zero
 
 theorem b_zero : b 0 = 0 := by sorry

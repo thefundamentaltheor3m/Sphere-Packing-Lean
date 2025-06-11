@@ -8,6 +8,8 @@ import SpherePacking.MagicFunction.a.Schwartz
 
 open SchwartzMap Real Complex MagicFunction.FourierEigenfunctions
 
+namespace MagicFunction.a.SpecialValues
+
 section Zero
 
 theorem a_zero : a 0 = -8640 * I / π := by sorry
