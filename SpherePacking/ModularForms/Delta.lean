@@ -452,3 +452,11 @@ theorem CuspForm_div_Discriminant_Add (k : ℤ) (x y : CuspForm (CongruenceSubgr
   ext z
   simp only [CuspForm_div_Discriminant_apply, CuspForm.add_apply, ModularForm.add_apply]
   ring
+
+lemma Delta_im_line_im_part {t : ℝ} (ht : 0 < t) : (Delta ⟨(Complex.I*t), by simp [ht]⟩).im =0 := by
+  rw [Delta_apply, Δ]
+  sorry
+
+lemma Delta_im_line {t : ℝ} (ht : 0 < t) : 0 < ‖Delta ⟨(Complex.I*t), by simp [ht]⟩‖ := by
+  rw [Delta_apply, Δ]
+  sorry
