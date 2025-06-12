@@ -83,14 +83,14 @@ The decaying property of Schwartz functions means that they can be compared to t
 
 We end with a crucial result on Schwartz functions, the statement of which only makes sense because of the above result.
 % Should probably include something about multiplying a Schwartz function by a negative exponential, either saying that the result is Schwartz (??) or by saying that it is summable. Both would be enough to make the RHS of the sum below converge absolutely.
-\begin{theorem}[Poisson summation formula]\label{thm:Poisson-summation-formula}\uses{def:Fourier-Transform, def:Schwartz-Space, lemma:Schwartz-summable, lemma:inv-power-summable}
+\begin{theorem}[Poisson summation formula]\label{thm:Poisson-summation-formula}\uses{def:Fourier-Transform, def:Schwartz-Space, lemma:Schwartz-summable, lemma:inv-power-summable, def:dual-lattice}
   Let $\Lambda$ be a lattice in $\R^d$, and let $f:\R^d\to\R$ be a Schwartz function. Then, for all $v \in \R^d$,
   \[
     \sum_{\ell\in\Lambda}f(\ell + v) = \frac{1}{\Vol{\R^d/\Lambda}} \sum_{m\in\Lambda^*}\widehat{f}(m) e^{-2\pi i \ang{v, m}}.
   \]
 \end{theorem}
 \begin{proof}
-  \todo{Fill in proof.}
+  One possible proof would be by induction on $d$. However, there are numerous nuances involved, particularly in manipulating nested infinite sums. Ideas would be appreciated.
 \end{proof}
 
 While the Poisson Summation Formula over lattices can be stated in greater generality (and probably should be formalised as such in Mathlib due to the many applications it admits), we stick with Schwartz functions because that should be sufficient for our purposes.
