@@ -81,10 +81,25 @@ jobs:
           cp -r docbuild/.lake/build/doc home_page/docs
         # if: github.ref == 'refs/heads/main'
 
+      - name: Bundle dependencies
+        uses: ruby/setup-ruby@13e7a03dc3ac6c3798f4570bfead2aed4d96abfb # v1.244.0
+        with:
+          working-directory: home_page
+          ruby-version: "3.1"  # Specify Ruby version
+          bundler-cache: true  # Enable caching for bundler
+        if: github.ref == 'refs/heads/main'
+
+      - name: Build website using Jekyll
+        working-directory: home_page
+        env:
+            JEKYLL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.ref == 'refs/heads/main'
+        run: JEKYLL_ENV=production bundle exec jekyll build
+
       - name: Upload docs & blueprint artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: home_page/_site/
+          path: home_page/
         # if: github.ref == 'refs/heads/main'
 
       - name: Deploy to GitHub Pages
