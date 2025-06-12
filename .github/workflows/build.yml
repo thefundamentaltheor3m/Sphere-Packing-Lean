@@ -46,11 +46,11 @@ jobs:
             docbuild/.lake/build/doc/Mathlib
             docbuild/.lake/build/doc/Std
           key: Docs-${{ hashFiles('lake-manifest.json') }}
-        if: github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
 
       - name: Build Documentation
         run: scripts/build_docs.sh
-        if: github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
 
       - name: Build blueprint and copy to `home_page/blueprint`
         uses: xu-cheng/texlive-action@v2
@@ -79,15 +79,15 @@ jobs:
         run: |
           sudo chown -R runner home_page
           cp -r docbuild/.lake/build/doc home_page/docs
-        if: github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
 
       - name: Upload docs & blueprint artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: home_page/
-        if: github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        if: github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
