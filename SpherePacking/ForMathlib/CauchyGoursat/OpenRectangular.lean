@@ -18,7 +18,7 @@ In this file, we prove that if a function tends to zero as the imaginary part of
 infinity and satisfies Cauchy-Goursat-type conditions, then we can deform paths of integration along
 rectangular contours that extend infinitely in the vertical direction.
 
-NOTE: Use `atImInfty` for vanishing as imaginary part tends to i infinity!
+TODO: Use `atImInfty` for vanishing as imaginary part tends to i infinity!
 -/
 
 open Set Real Complex intervalIntegral Metric Filter MeasureTheory

@@ -8,7 +8,6 @@ M4R File
 
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
-import SpherePacking.Tactic.NormNumI
 
 /-! # Constructing Upper-Bounds for I₄
 
@@ -19,7 +18,7 @@ of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
 - Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
 -/
 
-open MagicFunction.a.Parametrisations MagicFunction.a.RealIntegrals
+open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
   MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
 open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
 open scoped Function UpperHalfPlane
@@ -86,7 +85,7 @@ lemma parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1,
       conv at h => rw [sub_eq_add_neg, add_comm, ← sub_eq_add_neg, sub_eq_zero]
       -- This has to be the most ridiculous proof ever. It should never have to go down to 0 ≠ 1 :(
       have h₁ : (ofReal t).im = 0 := ofReal_im t
-      have h₂ : (ofReal t).im = -1 := by rw [← h]; norm_num1 -- `simp` works too
+      have h₂ : (ofReal t).im = -1 := by rw [← h]; simp -- `simp` works too
       rw [h₁] at h₂
       norm_num1 at h₂
   _ = _ := by

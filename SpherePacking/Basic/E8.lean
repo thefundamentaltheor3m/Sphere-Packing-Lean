@@ -511,11 +511,5 @@ theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := b
       simp_rw [Fin.sum_univ_eight, E8_Basis_apply_norm]
       ring_nf
 
-theorem Main : PeriodicSpherePackingConstant 8 = E8Packing.density :=
-  sorry
-
-theorem Main' : SpherePackingConstant 8 = E8Packing.density :=
-  sorry
-
 end Packing
 end E8

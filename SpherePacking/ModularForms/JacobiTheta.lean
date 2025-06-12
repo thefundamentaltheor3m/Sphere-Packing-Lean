@@ -9,6 +9,7 @@ import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 import SpherePacking.ForMathlib.SlashActions
 import SpherePacking.ForMathlib.UpperHalfPlane
 import SpherePacking.ModularForms.SlashActionAuxil
+import SpherePacking.ModularForms.Delta
 
 /-!
 # Jacobi theta functions
@@ -484,5 +485,10 @@ noncomputable def H₄_MF : ModularForm (Γ 2) 2 := {
 /-- Jacobi identity -/
 theorem jacobi_identity (τ : ℍ) : (Θ₂ τ) ^ 4 + (Θ₄ τ) ^ 4 = (Θ₃ τ) ^ 4 := by
   rw [← H₂, ← H₃, ← H₄]
-  -- prove that the dimension of M₂(Γ(2)) is 2. Compare the first two q-coefficients.
+
+  sorry
+
+lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
+    Delta τ = ((H₂ τ) * (H₃ τ) * (H₄ τ))^2 / (256 : ℂ) := by
+
   sorry

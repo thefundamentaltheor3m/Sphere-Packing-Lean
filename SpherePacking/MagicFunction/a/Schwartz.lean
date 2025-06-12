@@ -6,7 +6,9 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
-import SpherePacking.ForMathlib.RadialSchwartz
+-- import Mathlib
+
+import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 import SpherePacking.MagicFunction.a.Basic
 
 /-! # `a` is a Schwartz Function
@@ -14,8 +16,13 @@ import SpherePacking.MagicFunction.a.Basic
 The purpose of this file is to prove that `a` is a Schwartz function. It collects results stated elsewhere and presents them concisely.
 -/
 
+-- NOTE: We are not ready for the contents of this file. We first need to fix
+-- the dimension bridge for Schwartz functions.
+
+-- #exit
+
 open MagicFunction MagicFunction.a MagicFunction.a.RadialFunctions MagicFunction.a.RealIntegrals
-  MagicFunction.a.Parametrisations
+  MagicFunction.Parametrisations
 
 open Set Complex Real SchwartzMap
 
@@ -28,7 +35,10 @@ section Smooth
 /-! # `a` is smooth.
 
 There is no reference for this in the blueprint. The idea is to use integrability to differentiate
-inside the integrals.
+inside the integrals. The proof path I have in mind is the following.
+
+We need to use the Leibniz Integral Rule to differentiate under the integral sign. This is stated as
+`hasDerivAt_integral_of_dominated_loc_of_deriv_le` in `Mathlib.Analysis.Calculus.ParametricIntegral`
 -/
 
 theorem I₁'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₁' := by

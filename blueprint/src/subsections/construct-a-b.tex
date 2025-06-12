@@ -65,6 +65,7 @@ We observe that the contour integrals in \eqref{eqn:a-definition} converge absol
 Indeed, $\phi_0(z)=O(e^{-2\pi i z})$ as $\Im(z)\to \infty$. Therefore, $a(x)$ is well defined. Now we prove that $a$ satisfies condition \eqref{eqn:a-fourier}.
 The following lemma will be used to prove Schwartzness of $a$ and $b$.
 
+
 \begin{lemma}\label{lemma:mod-div-disc-bound}\lean{MagicFunction.PolyFourierCoeffBound.DivDiscBoundOfPolyFourierCoeff}\leanok
 Let $f(z)$ be a holomorphic function with a Fourier expansion
 \begin{equation}
@@ -78,12 +79,10 @@ Then there exists a constant $C_f > 0$ such that
 \end{equation}
 for all $z$ with $\Im z > 1/2$.
 \end{lemma}
-\todo{
-Note that the assumption on the polynomial growth holds when $f$ is a holomorphic modular form, where the proof can be found in \cite[p. 94]{Serre73} for the case of level 1 modular forms.
-But we just add this for simplicity, and we can prove it for ``specific'' $f$ such as Eisenstein series, theta functions, and their combinations.
-}
-\begin{proof}\uses{def:disc-definition}\leanok
-By definition of $\Delta(z)$ \eqref{eqn:disc-definition}, we have
+
+
+\begin{proof}\uses{lemma:disc-prodformula}\leanok
+By the product formula \eqref{eqn:disc-prodformula},
 \begin{align}
     \left|\frac{f(z)}{\Delta(z)}\right| &= \left|\frac{\sum_{n \ge n_0} c_f(n) e^{\pi i n z}}{e^{2 \pi i z}\prod_{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\
     &= |e^{\pi i (n_0 - 2)z}| \cdot \frac{|\sum_{n \ge n_0} c_f(n) e^{\pi i (n - n_0) z}|}{\prod_{n \ge 1} |1 - e^{2\pi i n z}|^{24}} \\
@@ -101,7 +100,7 @@ The denominator also converges, which is simiply $e^{\pi} \cdot \Delta(i/2)$.
 
 As corollaries, we have the following bound for $\phi_0$, $\phi_{-2}$, and $\phi_{-4}$.
 
-\begin{corollary}\label{cor:phi0-bound}\uses{thm:ramanujan-formula, lemma:mod-div-disc-bound, lemma:Ek-Fourier}
+\begin{corollary}\label{cor:phi0-bound}\uses{thm:ramanujan-formula, lemma:mod-div-disc-bound, lemma:Ek-Fourier, lemma:mod_form_poly_growth}
 There exists a constant $C_0 > 0$ such that
 \begin{equation}\label{eqn:phi0-bound}
 |\phi_0(z)| \le C_0 e^{-2 \pi \Im z}
@@ -139,7 +138,7 @@ Note that we can take the constants $C_0$, $C_{-2}$, and $C_{-4}$ as
     C_{-4} &= e^{-\pi} \cdot \frac{E_4(i/2)^{2}}{\Delta(i/2)}. \notag
 \end{align}
 
-\begin{proposition}\label{prop:a-schwartz}
+\begin{proposition}\label{prop:a-schwartz}\lean{MagicFunction.FourierEigenfunctions.a}\leanok
 \uses{def:a-definition, cor:phi0-bound}
 $a(x)$ is a Schwartz function.
 \end{proposition}
@@ -163,7 +162,7 @@ It is easy to see that the left hand side of this inequality decays faster then 
 \end{proof}
 
 \begin{proposition}\label{prop:a-fourier}
-\uses{lemma:Ek-Fourier, def:E2, def:a-definition, lemma:Gaussian-Fourier, prop:a-schwartz}
+\uses{lemma:Ek-Fourier, def:E2, def:a-definition, lemma:Gaussian-Fourier, prop:a-schwartz}\lean{MagicFunction.a.Fourier.eig_a}
 $a(x)$ satisfies \eqref{eqn:a-fourier}.
 \end{proposition}
 \begin{proof}
@@ -285,7 +284,7 @@ On the other hand, from the definition~\eqref{eqn:a-definition} we see that $a(r
 \end{proof}
 From the identity~\eqref{eqn:a-another-integral} we see that the values $a(r)$ are in $i\R$ for all $r\in\R_{\geq0}$.
 % In particular, we have
-\begin{proposition}\label{prop:a0}\uses{prop:a-another-integral}
+\begin{proposition}\label{prop:a0}\uses{prop:a-another-integral}\lean{MagicFunction.a.SpecialValues.a_zero}\leanok
 We have $a(0) = -\frac{i}{8640}$.
 % \begin{equation}
 % a(0)=\frac{-i\,8640}{\pi}\qquad
@@ -327,7 +326,7 @@ We define the following three functions
     \psi_S\,:=\,&\psi_I|_{-2}S. \label{eqn:psiS-define}
 \end{align}
 \end{definition}
-\begin{lemma}\label{lemma: psi I psi T psi S explicit}\uses{def:psiI-psiT-psiS}
+\begin{lemma}\label{lemma: psi I psi T psi S explicit}\uses{def:psiI-psiT-psiS}\lean{ψI_eq}
 More explicitly, we have
 % \begin{align}
 % \psi_I(z)\,=\,&128\,\frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}\,+\,128
@@ -399,7 +398,7 @@ with $a_3 = 16^3 \cdot 5 = 20480$ and $a_n = O(n^k)$ for some $k > 0$.
 Now the result follows from Lemma \ref{lemma:mod-div-disc-bound}.
 \end{proof}
 
-\begin{proposition}\label{prop:b-schwartz}\uses{lemma:psiS-bound}
+\begin{proposition}\label{prop:b-schwartz}\uses{lemma:psiS-bound}\lean{MagicFunction.FourierEigenfunctions.b}\leanok
 $b(x)$ is a Schwartz function.
 \end{proposition}
 \begin{proof}
@@ -419,7 +418,7 @@ We combine this inequality with analogous estimates for the other three summands
 Here $C_1$, $C_2$, and $C_3$ are some positive constants. Similar estimates hold for all derivatives $\frac{\dd^k}{\dd^k r} b(r)$.
 \end{proof}
 
-\begin{proposition}\label{prop:b-fourier}\uses{def:b-definition, lemma:Gaussian-Fourier, def:psiI-psiT-psiS, prop:b-schwartz}
+\begin{proposition}\label{prop:b-fourier}\uses{def:b-definition, lemma:Gaussian-Fourier, def:psiI-psiT-psiS, prop:b-schwartz}\lean{MagicFunction.b.Fourier.eig_b}\leanok
 $b(x)$ satisfies \eqref{eqn:b-fourier}.
 \end{proposition}
 \begin{proof}
@@ -555,7 +554,7 @@ On the other hand, from the definition \eqref{eqn:b-definition} we see that $b(r
 We see from \eqref{eqn:b-another-integral} that $b(r)\in i\R$ far all $r\in\R_\geq{0}$.
 Another immediate corollary of this proposition is
 
-\begin{proposition}\label{prop:b0}\uses{prop:b-another-integral}
+\begin{proposition}\label{prop:b0}\uses{prop:b-another-integral}\lean{MagicFunction.b.SpecialValues.b_zero}\leanok
 We have $b(0) = 0$.
 % \begin{equation}\label{eqn: b values}
 % b(0)=0\qquad
@@ -563,3 +562,6 @@ We have $b(0) = 0$.
 % % b^\prime(\sqrt{2})=\frac{i}{2\sqrt{2}\,\pi}.
 % \end{equation}
 \end{proposition}
+\begin{proof}
+    These identities follow immediately from the previous proposition. % Mentioning this here because this should not be \leanok-ed (yet).
+\end{proof}
