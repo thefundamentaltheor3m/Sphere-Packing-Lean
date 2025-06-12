@@ -10,22 +10,50 @@
 % It is otherwise a very minimal preamble (you should probably at least
 % add cleveref and tikz-cd).
 
-\documentclass[a4paper]{report}
-
-\usepackage{geometry}
+\documentclass[a4paper]{article}
 
 \usepackage{expl3}
 
-\usepackage{amssymb, amsthm, mathtools}
+\usepackage{amsmath, amssymb, amsthm, mathtools}
 \usepackage[unicode,colorlinks=true,linkcolor=blue,urlcolor=magenta, citecolor=blue]{hyperref}
 
-\usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
+% \usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
+% \usepackage{fontspec}
+% \setmathfont{latinmodern-math.otf}
+% \setmathfont[range=\varnothing]{Asana-Math.otf}
+% \setmathfont[range=\pitchfork]{Asana-Math.otf}
+% \setmathfont[range=\intprod]{Asana-Math.otf}
+% \setmathfont[range=\int]{latinmodern-math.otf}
+
+\usepackage[capitalize,noabbrev]{cleveref}
+\usepackage{autonum}
+
+% \usepackage{tikz}
+% \usepackage{tikz-cd}
+\usepackage{graphicx} % Required for inserting images
+% \usepackage{verbatim}
+
+\usepackage{environ}
+
+% Spacing and indentation
+
+\usepackage{setspace}
+\renewcommand{\baselinestretch}{1.5}
+
+\usepackage[skip=12pt, indent=0pt]{parskip}
+%\usepackage{indentfirst}
+
+\allowdisplaybreaks  % Allows align environments to continue for several pages
+
+% NOTE: PUT ALL MACROS IN macros/common.tex, macros/print.tex or macros/web.tex.
 
 \input{macros/common}
 \input{macros/print}
 
+\plastexfalse
+
 \title{Sphere Packing in Lean}
-\author{Chris Birkbeck, Sidharth Hariharan, Gareth Ma, Bhavik Mehta, Seewoo Lee, Maryna Viazovska}
+\author{Christopher Birkbeck, Sidharth Hariharan, Seewoo Lee, \\ Gareth Ma, Bhavik Mehta and Maryna Viazovska}
 
 \begin{document}
 \maketitle

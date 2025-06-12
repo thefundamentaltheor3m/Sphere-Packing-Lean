@@ -4,22 +4,31 @@
 % It is otherwise a very minimal preamble (you should probably at least
 % add cleveref and tikz-cd).
 
-\documentclass{report}
+\documentclass{article}
 
 \usepackage{amssymb, amsthm, amsmath}
 \usepackage{hyperref}
 \usepackage[showmore, dep_graph]{blueprint}
 
+% NEW PACKAGES
+
+\usepackage[capitalize,noabbrev]{cleveref}
+% \usepackage{autonum}
+% \usepackage{graphics} % Required for inserting images
+\usepackage{graphicx}
+
 
 \input{macros/common}
 \input{macros/web}
+
+\plastextrue
 
 \home{https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean}
 \github{https://github.com/thefundamentaltheor3m/Sphere-Packing-Lean}
 \dochome{https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/docs}
 
 \title{Sphere Packing in Lean}
-\author{Chris Birkbeck, Sidharth Hariharan, Gareth Ma, Bhavik Mehta, Seewoo Lee, Maryna Viazovska}
+\author{Christopher Birkbeck, Sidharth Hariharan, Gareth Ma, \\ Bhavik Mehta, Seewoo Lee and  Maryna Viazovska}
 
 \begin{document}
 \maketitle
