@@ -84,7 +84,7 @@ jobs:
       - name: Upload docs & blueprint artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: home_page/
+          path: home_page/_site/
         # if: github.ref == 'refs/heads/main'
 
       - name: Deploy to GitHub Pages
