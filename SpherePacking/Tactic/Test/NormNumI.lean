@@ -27,9 +27,8 @@ example : (1.0:ℂ) + 0.5 = 3/2 := by norm_num1
 example : I + (3/2:ℂ) = 3/2 + I := by norm_num1
 
 example : I + (3/2:ℂ) = 3/2 + I := by
-  conv_lhs => norm_num1
-  conv_rhs => norm_num1
-  sorry
+  conv_lhs => norm_numI
+  conv_rhs => norm_numI
 
 example : 2 * (2.5:ℂ) = 5 := by norm_num1
 
