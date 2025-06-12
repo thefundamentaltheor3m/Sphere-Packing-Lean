@@ -67,7 +67,6 @@ jobs:
             pip install pygraphviz --global-option=build_ext --global-option="-L/usr/lib/graphviz/" --global-option="-R/usr/lib/graphviz/"
             pip install leanblueprint
             leanblueprint pdf
-            mkdir home_page
             cp blueprint/print/print.pdf home_page/blueprint.pdf
             leanblueprint web
             cp -r blueprint/web home_page/blueprint
