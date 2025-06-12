@@ -11,7 +11,7 @@ package SpherePacking where
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"
 
+require checkdecls from git "https://github.com/PatrickMassot/checkdecls.git"
+
 @[default_target]
 lean_lib SpherePacking
-
-require checkdecls from git "https://github.com/PatrickMassot/checkdecls.git"
