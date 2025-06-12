@@ -2,7 +2,6 @@ import SpherePacking.Basic.E8
 import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.Basic.SpherePacking
 import SpherePacking.CohnElkies.LPBound
-import SpherePacking.CohnElkies.PoissonSummation.SchwartzMap
 import SpherePacking.CohnElkies.Prereqs
 import SpherePacking.ForMathlib.Asymptotics
 import SpherePacking.ForMathlib.AtImInfty

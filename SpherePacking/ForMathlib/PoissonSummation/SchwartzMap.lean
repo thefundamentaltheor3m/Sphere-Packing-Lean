@@ -102,6 +102,7 @@ theorem coordinateEmbedding₁₂_smooth (x : ℝ) : ContDiff ℝ ⊤ (coordinat
   · rw [hi₁]
     simp only [Fin.isValue, Matrix.cons_val_one, Matrix.head_cons]
     have : (fun (x : Euc(1)) ↦ x 0) = ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ := rfl
+    stop
     rw [this]
     exact ContinuousLinearEquiv.contDiff _
   else
