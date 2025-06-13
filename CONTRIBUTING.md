@@ -25,8 +25,7 @@ The following instructions detail the process for claiming and completing tasks.
 
 ### 3. Working on the Task
 
-Once you are assigned to an issue, begin working on the corresponding task. You should create a new branch from the `main` branch to develop your solution.
-
+Once you are assigned to an issue, begin working on the corresponding task. You should create a new branch from the `main` branch to develop your solution. After adding new files, run `lake exe mk_all` to update the project "directory".
 <!---
 > [!WARNING]
 > Before pushing any changes, you have the following options:
