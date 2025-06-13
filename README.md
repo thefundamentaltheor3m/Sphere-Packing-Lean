@@ -2,7 +2,9 @@
 
 This project attempts to formalise some notions about Sphere Packing in Lean. Important links:
 
-* [Project Dashboard](https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/)
+* [Landing Page](https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/)
+* [Zulip Chat](https://leanprover.zulipchat.com/#narrow/channel/509682-Sphere-packing-in-8-dimensions)
+* [GitHub Project Page](https://github.com/users/thefundamentaltheor3m/projects/2/views/1)
 * [Blueprint (web version)](https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/blueprint/)
 * [Dependency Graph (web version)](https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/blueprint/dep_graph_document.html)
 * [Blueprint (PDF version)](https://thefundamentaltheor3m.github.io/Sphere-Packing-Lean/blueprint.pdf)
