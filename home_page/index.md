@@ -17,13 +17,6 @@ In 2022, Maryna Viazovska was awarded the Fields Medal for solving the sphere pa
 * [Doc pages for this repository]({{ site.url }}/docs/)
 * [Viazovska's original paper](https://doi.org/10.4007/annals.2017.185.3.7)
 
-
-<!-- At first, the task of optimisng the density of packings of eight-dimensional spheres seems immensely daunting: how does one even visualise one eight-dimensional sphere, let alone an infinite arrangement of them, and how does one prove that one particular arrangement of them, the $$E_8$$ lattice packing, cannot further be improved? In 2003, Henry Cohn and Noam Elkies overcame this geometric challenge by constructing, for any $$n \in \mathbb{N}$$, a family of upper-bounds on all sphere packings in $$\mathbb{R}^n$$ indexed by functions $$f : \mathbb{R}^n \to \mathbb{R}$$ that satisfy certain properties. This offered a new approach to solving the sphere packing problem in $$\mathbb{R}^n$$: finding a 'magic function' $$f : \mathbb{R}^n \to \mathbb{R}$$ satisfying these properties with its corresponding upper-bound being exactly equal to the density of a known sphere packing in $$\mathbb{R}^n$$.
-
-Despite numerical evidence suggesting strongly that this approach was viable in dimensions $$8$$ and $$24$$, it turned out to be immensely difficult to construct magic functions whose corresponding upper-bounds were respectively the densities of the $$E_8$$ and Leech lattices. One reason for this is that such functions need to exhibit a degree of symmetry in order to satisfy Cohn and Elkies's conditions. Viazovska's solution was to construct such a function using modular forms, and has since developed a rich theory of magic functions and universal optimality.
-
-Even before Viazovska was awarded the Fields Medal, her work received wide acclaim from eminent mathematicians across the world: Peter Sarnak described it as "stunningly simple, as all great things are"; Akshay Venkatesh remarked that her Magic Function is very likely "part of some richer story" that connects to other areas of mathematics and physics; and Henry Cohn described her as a "master of special functions", comparing her to historical giants like Ramanujan and Jacobi. Formalising work as significant as Viazovska's, at the very forefront of modern mathematics, so soon after it received the most coveted honour in the mathematical world, will be a landmark achievement in formal theorem proving. -->
-
 ## Contributing
 
 1. Make sure you have [installed Lean](https://leanprover-community.github.io/get_started.html).
