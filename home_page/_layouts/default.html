@@ -17,6 +17,7 @@
   {% else %}
   <link rel="stylesheet" href="{{ 'assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
   {% endif %}
+  {% include mathjax.html %}
   {% include head-custom.html %}
 </head>
 

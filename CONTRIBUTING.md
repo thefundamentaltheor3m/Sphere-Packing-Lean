@@ -5,7 +5,7 @@ This guide provides detailed instructions on how to effectively and efficiently 
 
 ## Project Coordination
 
-The project is managed using a [GitHub project dashboard]([https://github.com/orgs/ImperialCollegeLondon/projects/102](https://github.com/users/thefundamentaltheor3m/projects/2)), which tracks tasks through various stages, from assignment to completion.
+The project is managed using a [GitHub project dashboard](https://github.com/users/thefundamentaltheor3m/projects/2/views/1), which tracks tasks through various stages, from assignment to completion.
 
 ## How to Contribute
 
@@ -25,8 +25,7 @@ The following instructions detail the process for claiming and completing tasks.
 
 ### 3. Working on the Task
 
-Once you are assigned to an issue, begin working on the corresponding task. You should create a new branch from the `main` branch to develop your solution.
-
+Once you are assigned to an issue, begin working on the corresponding task. You should create a new branch from the `main` branch to develop your solution. After adding new files, run `lake exe mk_all` to update the project "directory".
 <!---
 > [!WARNING]
 > Before pushing any changes, you have the following options:
@@ -72,5 +71,5 @@ Once you are assigned to an issue, begin working on the corresponding task. You 
 ### Additional Guidelines and Notes
 
 1. Please adhere to the issue claiming process. If an issue is already assigned to another contributor, refrain from working on it without prior communication with the current claimant. This ensures a collaborative and respectful workflow that values each contributor’s efforts.
-2. Be aware that this contribution process is still in an experimental phase. As a result, occasional issues and inefficiencies may arise. We are committed to continuously refining the process, and your constructive feedback is highly appreciated. You can share your thoughts and suggestions on the [Lean Zulip chat channel](https://leanprover.zulipchat.com/#narrow/channel/447466-Sphere-packing-in-high-dimensions).
+2. Be aware that this contribution process is still in an experimental phase. As a result, occasional issues and inefficiencies may arise. We are committed to continuously refining the process, and your constructive feedback is highly appreciated. You can share your thoughts and suggestions on the [Lean Zulip chat channel](https://leanprover.zulipchat.com/#narrow/channel/509682-Sphere-packing-in-8-dimensions).
 3. Until the integration of sufficient CI automation, the management of the project dashboard is handled manually by the maintainers. We ask for your patience and understanding as we work to keep the process running smoothly.
