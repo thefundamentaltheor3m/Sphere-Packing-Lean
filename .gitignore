@@ -6,7 +6,6 @@
 # LaTeX Local
 blueprint/TeX_Outputs/
 blueprint/print/*
-blueprint/print/print.pdf
 blueprint/web/
 blueprint/src/web.paux
 blueprint/lean_decls
