@@ -10,7 +10,7 @@ usemathjax: true
 
 In 2022, Maryna Viazovska was awarded the Fields Medal for solving the sphere packing problem in dimension $$8$$. This project formalises this result in the [Lean Theorem Prover](https://leanprover-community.github.io) following her [original paper](https://doi.org/10.4007/annals.2017.185.3.7) and [followup calculations by Lee](https://doi.org/10.48550/arXiv.2406.14659). It is an online, open-source collaboration currently being led by Christopher Birkbeck, Sidharth Hariharan, Bhavik Mehta and Seewoo Lee. If you'd like to contribute, you may find the following links useful!
 
-* [Zulip chat](https://leanprover.zulipchat.com/) for coordination
+* [Zulip chat](https://leanprover.zulipchat.com/#narrow/channel/509682-Sphere-packing-in-8-dimensions) for coordination
 * [Blueprint]({{ site.url }}/blueprint/)
 * [Blueprint as pdf]({{ site.url }}/blueprint.pdf)
 * [Dependency graph]({{ site.url }}/blueprint/dep_graph_document.html)
