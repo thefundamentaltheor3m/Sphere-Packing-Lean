@@ -87,13 +87,13 @@ jobs:
           working-directory: home_page
           ruby-version: "3.1"  # Specify Ruby version
           bundler-cache: true  # Enable caching for bundler
-        if: github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
 
       - name: Build website using Jekyll
         working-directory: home_page
         env:
             JEKYLL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
         run: JEKYLL_ENV=production bundle exec jekyll build
 
       - name: Upload docs & blueprint artifact
