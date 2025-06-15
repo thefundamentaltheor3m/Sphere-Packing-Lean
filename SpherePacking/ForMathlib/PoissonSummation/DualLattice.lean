@@ -68,7 +68,7 @@ include hB in
 instance instIsZLattice [DiscreteTopology (Dual B Λ)] : IsZLattice ℝ (Dual B Λ) := by
   simp only [eq_ZSpan B hB Λ (Module.Free.chooseBasis ℤ Λ)]
   -- infer_instance
-  exact ZSpan.isZLattice (B.dualBasis hB (Basis.ofZLatticeBasis ℝ Λ (Module.Free.chooseBasis ℤ ↥Λ)))
+  exact instIsZLatticeRealSpan (B.dualBasis hB (Basis.ofZLatticeBasis ℝ Λ (Module.Free.chooseBasis ℤ ↥Λ)))
 
 end ZLattice
 
