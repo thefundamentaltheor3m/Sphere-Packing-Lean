@@ -103,7 +103,7 @@ theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
     simp only
     split_ifs with hk
     · subst hk
-      simpa using tendsto_const_nhds
+      simp
     · rw [tendsto_zero_iff_norm_tendsto_zero]
       simp_rw [mul_right_comm _ I, norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← ofReal_intCast,
         ← ofReal_pow, im_ofReal_mul, ← mul_assoc]
@@ -137,7 +137,7 @@ theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     simp only
     split_ifs with hk
     · subst hk
-      simpa using tendsto_const_nhds
+      simp
     · rw [tendsto_zero_iff_norm_tendsto_zero]
       simp_rw [mul_right_comm _ I, norm_mul, norm_zpow, norm_neg, norm_one, one_zpow, one_mul,
         norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← ofReal_intCast, ← ofReal_pow, im_ofReal_mul,
