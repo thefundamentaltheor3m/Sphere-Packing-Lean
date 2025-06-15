@@ -259,21 +259,15 @@ instance (S : PeriodicSpherePacking 0) : Subsingleton S.centers := inferInstance
 instance (S : PeriodicSpherePacking 0) : Finite S.centers := inferInstance
 
 noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
-    Finite (Quotient S.addAction.orbitRel) :=
+    Finite (Quotient S.addAction.orbitRel) := by
   -- We choose an arbitrary ℤ-basis of S.lattice
   let b : Basis _ ℤ S.lattice := (ZLattice.module_free ℝ S.lattice).chooseBasis
-  if hd : 0 < d then
-    -- by
-    -- refine Finite.of_equiv (h := ?_) ?_ ?_
-    -- · sorry
-    -- · sorry
-    -- · sorry
-    -- (S.addActionOrbitRelEquiv' b).symm
-    sorry
-  else
-    have hd : d = 0 := Nat.eq_zero_of_not_pos hd
-    have : Finite S.centers := by subst hd; infer_instance
-    inferInstance
+  by_cases hd : 0 < d
+  · have : Finite ↑(S.centers ∩ fundamentalDomain (b.ofZLatticeBasis ℝ _)) := aux4' S b hd
+    exact (Finite.of_equiv _ (S.addActionOrbitRelEquiv' b).symm)
+  · have : d = 0 := Nat.eq_zero_of_not_pos hd
+    subst this
+    exact Quotient.finite (AddAction.orbitRel ..)
 
 noncomputable instance : Fintype (Quotient S.addAction.orbitRel) :=
   Fintype.ofFinite _
