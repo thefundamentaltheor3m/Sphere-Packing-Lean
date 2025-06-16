@@ -99,7 +99,7 @@ lemma Submodule.coe_E8 (R : Type*) [Field R] [CharZero R] :
   rw [E8]
   refine le_antisymm ?_ ?_
   · sorry
-  intro x
+  intro (x : Fin 8 → R)
   simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, SetLike.mem_coe, and_imp]
   rintro (hx | hx)
   · intro hx'
@@ -107,13 +107,27 @@ lemma Submodule.coe_E8 (R : Type*) [Field R] [CharZero R] :
       rw [← SetLike.mem_coe, coe_evenLattice]
       exact ⟨hx, hx'⟩
     exact mem_sup_left this
+  intro hx'
+  simp only [Odd] at hx
+  choose y hy hy' using hx
+  choose z hz using hy
+  simp only [hz, Int.cast_add, Int.cast_mul, Int.cast_one, Int.cast_ofNat] at *
+  clear y hz
+  have hi (i : Fin 8) : x i = z i + 2⁻¹ := by linear_combination - 2⁻¹ * hy' i
   have : span ℤ (evenLattice R) = evenLattice R := by simp
-  rw [← this, sup_comm, ← Submodule.span_insert]
-
-
-#exit
-
-
+  rw [← this, sup_comm, ← Submodule.span_insert, Submodule.mem_span_insert, this]
+  refine ⟨1, LinearMap.intCast R z, ?_, ?_⟩
+  · rw [← SetLike.mem_coe, coe_evenLattice]
+    constructor
+    · simp
+    simp only [LinearMap.intCast_apply]
+    simp_rw [hi] at hx'
+    rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+      nsmul_eq_mul, Nat.cast_ofNat, (show (8 : R) * 2⁻¹ = 2 • 2 by norm_num)] at hx'
+    exact (AddCommGroup.add_nsmul_modEq _).symm.trans hx'
+  · ext i
+    rw [Pi.add_apply, LinearMap.intCast_apply, Pi.smul_apply, one_smul]
+    linear_combination - 2⁻¹ * hy' i
 
 #exit
 
