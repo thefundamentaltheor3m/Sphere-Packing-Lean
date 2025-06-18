@@ -179,7 +179,8 @@ bounded above by the Cohn-Elkies bound.
 -/
 
 include hP
-private theorem calc_aux_1 (hd : 0 < d) :
+open Classical in
+private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f)  :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
   ≤ ↑(P.numReps' hd hD_isBounded) * (f 0).re := calc
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
@@ -187,10 +188,104 @@ private theorem calc_aux_1 (hd : 0 < d) :
       if h : x - (y : EuclideanSpace ℝ (Fin d)) = 0 then 0 else (f (x - ↑y)).re) +
       (∑' (x : ↑(P.centers ∩ D)), (f (0 : EuclideanSpace ℝ (Fin d))).re)
         := by
+            have sum_finite := aux4 P D hD_isBounded hd
+            have fintype_centers: Fintype ↑(P.centers ∩ D) := by apply Fintype.ofFinite
+            conv =>
+              rhs
+              rhs
+              equals ∑' (x : ↑(P.centers)), if x.val ∈ D then (f 0).re else 0 =>
+                rw [tsum_subtype  (f := fun x => (f 0).re)]
+                rw [tsum_subtype (f := fun x => if ↑x ∈ D then (f 0).re else 0)]
+                apply tsum_congr
+                intro p
+                simp [Set.indicator, ite_and]
             -- First, we need to un-distribute the tsums on the RHS.
             -- Then, we need to use some sort of `tsum_ite_eq`.
             -- Both of the above require some summability stuff.
-            sorry
+            rw [← Summable.tsum_add]
+            .
+              apply tsum_congr
+              intro x
+              split_ifs with hx
+              .
+                let x_in: ↑(P.centers ∩ D) := ⟨x, by simp [hx]⟩
+                simp only [dite_eq_ite, hx, ↓reduceIte]
+                rw [← tsum_ite_eq (b := x_in) (a := (f 0).re)]
+                simp_rw [← Subtype.val_inj]
+                rw [← Summable.tsum_add]
+                . apply tsum_congr
+                  intro y
+                  dsimp [x_in]
+                  simp_rw [eq_comm (a := y.val), ← sub_eq_zero (a := x.val)]
+                  split_ifs with x_eq_y <;> simp [x_eq_y]
+                . apply Summable.of_finite
+                .
+                  simp_rw [Subtype.val_inj]
+                  apply (hasSum_ite_eq _ _).summable
+              .
+                simp only [dite_eq_ite, add_zero]
+                apply tsum_congr
+                intro b
+                have x_neq_b: x.val ≠ b.val := by
+                  by_contra!
+                  rw [this] at hx
+                  have b_in_d := b.property.right
+                  contradiction
+
+                dsimp [Ne] at x_neq_b
+                rw [← sub_eq_zero] at x_neq_b
+                simp [x_neq_b]
+            .
+              rw [← summable_abs_iff]
+              apply Summable.of_nonneg_of_le (by simp) (?_) (f := fun x => ∑' (y : ↑(P.centers ∩ D)), ‖if h : x.val - y.val = 0 then 0 else (f (x.val - y.val)).re‖) ?_
+              . intro b
+                rw [← Real.norm_eq_abs]
+                apply norm_tsum_le_tsum_norm
+                apply Summable.of_norm_bounded (g := fun x => |(f (b.val - x.val)).re|)
+                . apply Summable.of_finite
+                . intro a
+                  split_ifs <;> simp
+              .
+                simp_rw [tsum_fintype]
+                apply Summable.of_nonneg_of_le (f := fun x => ∑ (y: ↑(P.centers ∩ D)), |(f (x.val - y.val)).re|)
+                . intro b
+                  refine Fintype.sum_nonneg ?_
+                  rw [Pi.le_def]
+                  simp
+                . intro b
+                  apply Finset.sum_le_sum
+                  intro x hx
+                  split_ifs <;> simp
+                .
+                  apply summable_sum
+                  intro y hy
+                  have summable_f_re: Summable (fun x => (f x).re) := by
+                    apply (Complex.hasSum_re (hf.choose_spec)).summable
+                  rw [summable_abs_iff]
+                  apply Summable.comp_injective summable_f_re
+                  -- TODO - find a simpler injectivity proof
+                  intro a b hab
+                  field_simp at hab
+                  exact SetCoe.ext hab
+            .
+              apply summable_of_finite_support
+              -- TODO - is there a better way of writing (P.centers ∩ D) when dealing with subtypes?
+              apply Set.Finite.subset  (s := {x: ↑P.centers | x.val ∈ D})
+              . rw [Set.finite_coe_iff] at sum_finite
+                apply Set.Finite.of_finite_image (f := Subtype.val)
+                .
+                  conv =>
+                    arg 1
+                    equals (P.centers ∩ D) =>
+                      ext a
+                      rw [Set.inter_comm]
+                      simp
+                  exact sum_finite
+                . simp
+              .
+                intro x hx
+                simp only [Function.mem_support, ne_eq, ite_eq_right_iff, Classical.not_imp] at hx
+                simp [hx.1]
   _ ≤ ∑' (x : ↑(P.centers ∩ D)), (f (0 : EuclideanSpace ℝ (Fin d))).re
         := by
             rw [← tsub_nonpos]
@@ -232,7 +327,7 @@ private theorem calc_aux_1 (hd : 0 < d) :
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
 -- If there are assumptions needed beyond PSF, we should require them here, not in `PSF_Conditions`.
 set_option maxHeartbeats 200000
-private theorem calc_steps (hd : 0 < d) :
+private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥ ↑(P.numReps' hd hD_isBounded) ^ 2 *
     (𝓕 f 0).re / ZLattice.covolume P.lattice := by
   have : Fact (0 < d) := ⟨hd⟩
@@ -243,7 +338,7 @@ private theorem calc_steps (hd : 0 < d) :
         := by
             rw [ge_iff_le]
             exact calc_aux_1 hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
-              hD_isBounded hd
+              hD_isBounded hd hf
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
         :=  by
@@ -467,7 +562,7 @@ variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
 
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded hD_unique_covers
 
-theorem LinearProgrammingBound' (hd : 0 < d) :
+theorem LinearProgrammingBound' (hd : 0 < d) (hf: Summable f) :
   P.density ≤ (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
   volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   -- HUGE TODO: Get the periodic density formula in terms of some `D`.
@@ -568,7 +663,7 @@ theorem LinearProgrammingBound' (hd : 0 < d) :
       -- We can now get rid of the `toNNReal`s and use `hCalc` to finish the proof!
       rw [hRHSCast, hLHSCast, ENNReal.coe_le_coe]
       exact Real.toNNReal_le_toNNReal hCalc
-  exact calc_steps hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hd
+  exact calc_steps hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hd hf
 
 end Main_Theorem_For_One_Packing
 
@@ -576,7 +671,7 @@ section Main_Theorem
 
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
-theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
+theorem LinearProgrammingBound (hd : 0 < d) (hf: Summable f) : SpherePackingConstant d ≤
   (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))
   := by
   rw [← periodic_constant_eq_constant hd,
@@ -594,6 +689,6 @@ theorem LinearProgrammingBound (hd : 0 < d) : SpherePackingConstant d ≤
       (P.basis_index_equiv)
     exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
       (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ P.lattice b))
-      (P.fundamental_domain_unique_covers b) hd
+      (P.fundamental_domain_unique_covers b) hd hf
 
 end Main_Theorem

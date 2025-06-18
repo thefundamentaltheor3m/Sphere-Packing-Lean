@@ -234,7 +234,7 @@ theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Con
         suffices hInclusion : U ⊆ {x | f x ≠ 0}
         · have : (volume.restrict U) U ≤ (volume.restrict U) {x | f x ≠ 0} := by
             rw [Measure.restrict_apply_self, Measure.restrict_apply_superset hInclusion]
-          exact gt_of_ge_of_gt this hUpos
+          exact lt_of_lt_of_le hUpos this
         intro y hy
         rw [Set.mem_setOf_eq]
         specialize hU₃ y hy

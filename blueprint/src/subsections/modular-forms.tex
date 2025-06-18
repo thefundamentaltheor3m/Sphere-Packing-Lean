@@ -187,8 +187,7 @@ This function is not modular, however it satisfies
 \end{lemma}
 
 \begin{proof}\leanok
-This is excercise 1.2.8 of \cite{first course}.
-\end{proof}
+This is exercise 1.2.8 of \cite{first course}.
 
 More generally, we have
 \begin{lemma}\label{lemma:E2-transform-general}\leanok\lean{G₂_transform}\uses{lemma:E2-transform-S, def:E2}
@@ -249,6 +248,7 @@ We have
 \end{lemma}
 \begin{proof}
 We only need to show its a cuspform, since once we have this, dividing the rhs by $\Delta$ would give a modular form of weight $0$ which is a constant, and so we can determine the constant easily.
+
 To check its a cuspform, we just look at  the $q$-expansions of $E_4$ and $E_6$ and prove directly that the first term vanishes.
 \end{proof}
 
@@ -293,7 +293,7 @@ To prove this we will do use the following non-standard proof. First we have the
 \end{theorem}
 \begin{proof}
 \leanok
-First we note that for $2 < k$ we have $\dim(M_k(\Gamma_1)) = 1 + \dim S_k(\Gamma_1)$. This follows since we know the $E_k$ are in $M_k$ so by scalling appropriately, any non-cuspform $f \in M_k$ we would have $f - a E_k \in S_k$ for some $a$.
+First we note that for $2 < k$ we have $\dim(M_k(\Gamma_1)) = 1 + \dim S_k(\Gamma_1)$. This follows since we know the $E_k$ are in $M_k$ so by scaling appropriately, any non-cuspform $f \in M_k$ we would have $f - a E_k \in S_k$ for some $a$.
 
 Next, note that  $S_k(\Gamma_1)$ is isomorphic to $M_{k-12}(\Gamma_1)$, since if $f \in S_k$ then $f/ \Delta$ is now a modular form (using the product expansion of $\Delta$ and its non-vanishing on $\mathfrak{H}$) of weight $k-12$. Note its important that $f$ is a cuspform so that the quotient by $\Delta$ is a modular form.
 
@@ -395,7 +395,8 @@ This function specialize to the theta functions as
     \Theta_{3}(\tau) &= \theta(0, \tau) \label{eqn:Th3-as-jacobi2} \\
     \Theta_{4}(\tau) &= \theta(1/2, \tau) \label{eqn:Th4-as-jacobi2} \\
 \end{align}
-Possion summation formula gives
+
+Poisson summation formula gives
 \begin{equation}
     \theta(z, \tau) = \frac{1}{\sqrt{-i \tau}} e^{-\frac{\pi i z^2}{\tau}} \theta\left(\frac{z}{\tau}, -\frac{1}{\tau}\right) \label{eqn:jacobi2transform}
 \end{equation}
@@ -644,7 +645,7 @@ In terms of Serre derivatives, these are equivalent to
     \partial_{4}E_4 &= -\frac{1}{3} E_6 \label{eqn:SE4} \\
     \partial_{6}E_6 &= -\frac{1}{2} E_4^2 \label{eqn:SE6}
 \end{align}
-By Theorem \ref{thm:serre-der-modularity}, all the serre derivatives are, in fact, modular.
+By Theorem \ref{thm:serre-der-modularity}, all the Serre derivatives are, in fact, modular.
 To be precise, the modularity of $\partial_{4} E_4$ and $\partial_6 E_6$ directly follows from Theorem \ref{thm:serre-der-modularity}, and that of $\partial_{1}E_2$ follows from \eqref{eqn:E2-transform-general}.
 Differentiating and squaring then gives us the following:
 \begin{align}

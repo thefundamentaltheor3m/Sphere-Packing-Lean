@@ -200,7 +200,7 @@ instance instDiscreteTopology_Zn (n : ℕ) : DiscreteTopology (ℤ^n) := by
 /-- `ℤ^n` is a lattice. -/
 instance isZLattice_Zn (n : ℕ) : IsZLattice ℝ (ℤ^n) := by
   simp only [Zn_eq_ZSpan_Pi_basisFun]
-  exact isZLattice (Pi.basisFun ℝ (Fin n))
+  exact instIsZLatticeRealSpan (Pi.basisFun ℝ (Fin n))
   -- exact isZLattice (PiLp.basisFun 2 ℝ (Fin n))
 
 end ZLattice

@@ -37,7 +37,7 @@ lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * r
         exact Finset.mem_zero.mp hn
   · intro k
     rcases eq_or_ne k 0 with (rfl | hk)
-    · simpa using tendsto_const_nhds
+    · simp
     · simp only [Set.mem_singleton_iff, hk, not_false_eq_true, Set.indicator_of_notMem]
       apply tendsto_zero_iff_norm_tendsto_zero.mpr
       simp_rw [norm_mul, mul_right_comm _ I, norm_exp_mul_I]
