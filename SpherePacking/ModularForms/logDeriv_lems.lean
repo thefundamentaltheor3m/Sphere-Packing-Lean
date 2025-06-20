@@ -73,7 +73,7 @@ lemma logDeriv_one_sub_exp_comp (r : ℂ) (g : ℂ → ℂ) (hg : Differentiable
   simp only [neg_mul]
   ring
   simp only [differentiableAt_const, differentiableAt_exp, DifferentiableAt.mul,
-    DifferentiableAt.sub]
+    DifferentiableAt.fun_sub]
   exact hg y
 
 lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fun n : ℕ =>
