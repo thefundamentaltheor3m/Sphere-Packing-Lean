@@ -10,12 +10,7 @@ Definition of (Serre) derivative of modular forms.
 Prove Ramanujan's formulas on derivatives of Eisenstein series.
 -/
 
-noncomputable def E₄_fun : ℍ → ℂ := E₄.toFun
-
-noncomputable def E₆_fun : ℍ → ℂ := E₆.toFun
-
 noncomputable def D (F : ℍ → ℂ) : ℍ → ℂ := λ (z : ℍ) => (2 * π * I)⁻¹ * ((deriv (F ∘ ofComplex)) z)
-
 
 /--
 TODO: Remove this or move this to somewhere more appropriate.
@@ -180,14 +175,14 @@ theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (γ : SL(2,ℤ)) (h 
 Serre derivative of Eisenstein series. Use `serre_D_slash_invariant` and compare constant terms.
 Note that the dimensions of the spaces of modular forms are all 1.
 -/
-theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄_fun := by sorry
+theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by sorry
 
-theorem ramanujan_E₄' : serre_D 4 E₄_fun = - 3⁻¹ * E₆_fun := by sorry
+theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by sorry
 
-theorem ramanujan_E₆' : serre_D 6 E₆_fun = - 2⁻¹ * E₄_fun * E₄_fun := by sorry
+theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by sorry
 
 @[simp]
-theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄_fun) := by
+theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
   ext z
   have h := ramanujan_E₂'
   unfold serre_D at h
@@ -197,7 +192,7 @@ theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄_fun) := by
   simpa [add_comm, sub_eq_iff_eq_add] using h1
 
 @[simp]
-theorem ramanujan_E₄ : D E₄_fun = 3⁻¹ * (E₂ * E₄_fun - E₆_fun) := by
+theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
   ext z
   have h := ramanujan_E₄'
   unfold serre_D at h
@@ -212,7 +207,7 @@ theorem ramanujan_E₄ : D E₄_fun = 3⁻¹ * (E₂ * E₄_fun - E₆_fun) := b
   simpa [add_comm, sub_eq_iff_eq_add] using h1
 
 @[simp]
-theorem ramanujan_E₆ : D E₆_fun = 2⁻¹ * (E₂ * E₆_fun - E₄_fun * E₄_fun) := by
+theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
   ext z
   have h := ramanujan_E₆'
   unfold serre_D at h
@@ -230,14 +225,14 @@ theorem ramanujan_E₆ : D E₆_fun = 2⁻¹ * (E₂ * E₆_fun - E₄_fun * E�
 /--
 Prove modular linear differential equation satisfied by $F$.
 -/
-noncomputable def X₄₂ := 288⁻¹ * (E₄_fun - E₂ * E₂)
+noncomputable def X₄₂ := 288⁻¹ * (E₄.toFun - E₂ * E₂)
 
-noncomputable def Δ_fun := 1728⁻¹ * (E₄_fun ^ 3 - E₆_fun ^ 2)
+noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
 
-noncomputable def F  := (E₂ * E₄_fun - E₆_fun) ^ 2
+noncomputable def F  := (E₂ * E₄.toFun - E₆.toFun) ^ 2
 
-theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄_fun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄_fun * E₆_fun
-    + 5 * 6⁻¹ * E₂ * E₄_fun ^ 3 + 5 * 3⁻¹ * E₂ * E₆_fun ^ 2 - 5 * 6⁻¹ * E₄_fun^2 * E₆_fun := by
+theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
+    + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun := by
   rw [F, D_sq, D_sub, D_mul]
   ring_nf
   rw [ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
@@ -265,9 +260,9 @@ theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 172800 * Δ_fun * 
   rw [F_aux]
   sorry
 
-example : D (E₄_fun * E₄_fun) = 2 * 3⁻¹ * E₄_fun * (E₂ * E₄_fun - E₆_fun) :=
+example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.toFun - E₆.toFun) :=
   by
-  rw [D_mul E₄_fun E₄_fun]
+  rw [D_mul E₄.toFun E₄.toFun]
   simp only [ramanujan_E₄, ramanujan_E₂, ramanujan_E₆]
   ring_nf
   exact E₄.holo'
