@@ -36,11 +36,11 @@ This finishes the proof of the theorem for periodic packings.
 \begin{theorem}[Cohn--Elkies {\cite{ElkiesCohn}}]\label{thm:Cohn-Elkies-general}\lean{LinearProgrammingBound}\leanok
   Let $f:\R^d\to\R$ be a Schwartz function that is not identically zero and satisfies \eqref{eqn:Cohn-Elkies-condition-1} and \eqref{eqn:Cohn-Elkies-condition-2}. Then the density of any $\Lambda$-periodic sphere packing is bounded above by $$\frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)).$$
 \end{theorem}
-\begin{proof}\uses{thm:Cohn-Elkies-periodic, periodic_constant_eq_constant, periodic_constant_eq_periodic_constant_normalized}\leanok
-  The result follows immediately from Theorem~\ref{periodic-packing-optimal} and \Cref{thm:Cohn-Elkies-periodic}.
+\begin{proof}\uses{thm:Cohn-Elkies-periodic,thm:periodic-packing-optimal}\lean{periodic_constant_eq_constant, periodic_constant_eq_periodic_constant_normalized}\leanok
+  The result follows immediately from Theorem~\ref{thm:periodic-packing-optimal} and \Cref{thm:Cohn-Elkies-periodic}.
 \end{proof}
 
-The main step in our proof of \cref{theorem:Main} is the explicit construction of an optimal function. It will be convenient for us to scale this function by $\sqrt{2}$.
+The main step in our proof of \cref{MainTheorem} is the explicit construction of an optimal function. It will be convenient for us to scale this function by $\sqrt{2}$.
 \begin{theorem}\label{thm:g}\uses{thm:g1}
 There exists a radial Schwartz function $g:\R^8\to\R$ which satisfies:
 \begin{align}
@@ -49,4 +49,4 @@ g(x)&\leq 0\mbox{ for } \|x\|\geq \sqrt{2} \label{eqn:g1}\\
 g(0)&=\widehat{g}(0)=1.\label{eqn:g3}
 \end{align}
 \end{theorem}
-Theorem \ref{thm:Cohn-Elkies-general} applied to the optimal function $f(x)=g(x/\sqrt{2})$ immediately implies \cref{theorem:Main}.
+Theorem \ref{thm:Cohn-Elkies-general} applied to the optimal function $f(x)=g(x/\sqrt{2})$ immediately implies \cref{MainTheorem}.
