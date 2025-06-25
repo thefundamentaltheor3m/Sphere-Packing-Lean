@@ -81,8 +81,8 @@ for all $z$ with $\Im z > 1/2$.
 \end{lemma}
 
 
-\begin{proof}\uses{lemma:disc-prodformula}\leanok
-By the product formula \eqref{eqn:disc-prodformula},
+\begin{proof}\uses{def:disc-definition}\leanok
+By the product formula \eqref{eqn:disc-definition},
 \begin{align}
     \left|\frac{f(z)}{\Delta(z)}\right| &= \left|\frac{\sum_{n \ge n_0} c_f(n) e^{\pi i n z}}{e^{2 \pi i z}\prod_{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\
     &= |e^{\pi i (n_0 - 2)z}| \cdot \frac{|\sum_{n \ge n_0} c_f(n) e^{\pi i (n - n_0) z}|}{\prod_{n \ge 1} |1 - e^{2\pi i n z}|^{24}} \\
