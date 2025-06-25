@@ -164,12 +164,14 @@ theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 
 Serre derivative is equivariant under the slash action. More precisely, if `F` is invariant under the slash action
 of weight `k`, then `serre_D k F` is invariant under the slash action of weight `k + 2`.
 -/
-theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) :
+theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     ∀ γ : SL(2,ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by sorry
 
-theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (γ : SL(2,ℤ)) (h : F ∣[k] γ = F) :
+theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (γ : SL(2,ℤ)) (h : F ∣[k] γ = F) :
     serre_D k F ∣[k + 2] γ = serre_D k F := by
   rw [serre_D_slash_equivariant, h]
+  exact hF
 
 /--
 Serre derivative of Eisenstein series. Use `serre_D_slash_invariant` and compare constant terms.
