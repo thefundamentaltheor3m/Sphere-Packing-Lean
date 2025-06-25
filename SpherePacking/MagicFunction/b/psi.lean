@@ -108,7 +108,7 @@ private lemma slashS' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S)) (z
   have pow_coe_nat (a : ℂ) : a ^ (2 : ℕ) = a^(2 : ℤ) := by
     rw [zpow_two, pow_two]
   left
-    rw [pow_coe_nat]
+  rw [pow_coe_nat]
 
 private lemma slashS'' (z : ℍ) (F : ℍ → ℂ): F (S • z) =
                        (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ)^(2 : ℕ) := by
