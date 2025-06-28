@@ -351,34 +351,41 @@ theorem E8_Matrix_inner {i j : Fin 8} :
 
 section E8_norm_bounds
 
+example {v : Fin 8 → ℝ} (z : ℤ) : z • v = (z : ℝ) • v := by
+  rw [Int.cast_smul_eq_zsmul]
+
 set_option maxHeartbeats 2000000 in
 /-- All vectors in E₈ have norm √(2n) -/
 theorem E8_norm_eq_sqrt_even (v : E8_Lattice) :
     ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n := by
   -- TODO: un-sorry (slow)
-  sorry
-  -- rcases v with ⟨v, hv⟩
-  -- change ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n
+  -- sorry
+  rcases v with ⟨v, hv⟩
+  change ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n
+  rw [← real_inner_self_eq_norm_sq]
   -- rw [norm_sq_eq_inner (𝕜 := ℝ) v]
-  -- simp_rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe,← Finsupp.range_total,
-  --   LinearMap.mem_range] at hv
-  -- replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by
-  --   convert hv
-  --   rw [← Finsupp.linearCombination_eq_sum E8_Matrix _]
-  --   rfl
-  -- obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv
-  -- simp_rw [re_to_real, sum_inner, inner_sum, intCast_smul_left, intCast_smul_right, zsmul_eq_mul,
-  --   Fin.sum_univ_eight]
-  -- repeat rw [E8_Matrix_inner]
-  -- repeat rw [Fin.sum_univ_eight]
-  -- -- compute the dot products
-  -- norm_num
-  -- -- normalise the goal to ∃ n, Even n ∧ _ = n
-  -- norm_cast
-  -- rw [exists_eq_right']
-  -- -- now simplify the rest algebraically
-  -- ring_nf
-  -- simp [Int.even_sub, Int.even_add]
+  simp_rw [E8_Lattice, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk] at hv
+  simp_rw [E8_Set_eq_span, SetLike.mem_coe, ← Finsupp.range_linearCombination,
+    LinearMap.mem_range] at hv
+  replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by
+    convert hv
+    rw [← Finsupp.linearCombination_eq_sum E8_Matrix _]
+    rfl
+  obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv
+  simp_rw [sum_inner, inner_sum, ← Int.cast_smul_eq_zsmul ℝ, real_inner_smul_left,
+    real_inner_smul_right,
+    Fin.sum_univ_eight]
+  repeat rw [E8_Matrix_inner]
+  repeat rw [Fin.sum_univ_eight]
+  -- compute the dot products
+  simp [E8']
+  norm_num
+  -- normalise the goal to ∃ n, Even n ∧ _ = n
+  norm_cast
+  rw [exists_eq_right']
+  -- now simplify the rest algebraically
+  ring_nf
+  simp [Int.even_sub, Int.even_add]
 
 theorem E8_norm_lower_bound (v : E8_Lattice) : v = 0 ∨ √2 ≤ ‖v‖ := by
   rw [or_iff_not_imp_left]
