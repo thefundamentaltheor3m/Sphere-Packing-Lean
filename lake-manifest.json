@@ -18,7 +18,7 @@
    "rev": "087a0dcf4e085d7b18f0edfa58feec58455e4811",
    "name": "mathlib",
    "manifestFile": "lake-manifest.json",
-   "inputRev": "master",
+   "inputRev": null,
    "inherited": false,
    "configFile": "lakefile.lean"},
   {"url": "https://github.com/leanprover-community/plausible",

@@ -596,10 +596,10 @@ For $k \in \mathbb{R}$, define the weight $k$ Serre derivative $\partial_{k}$ of
 \end{definition}
 
 \begin{theorem}
-\label{thm:serre-der-equiv-action}\uses{def:serre-der, def:E2}
+\label{thm:serre-der-equiv-action}\uses{def:serre-der, def:E2, lemma:E2-transform-general}\lean{serre_D_slash_equivariant}\leanok
 Serre derivative $\partial_{k}$ is equivariant with the slash action of $\mathrm{SL}_{2}(\mathbb{Z})$ in the following sense:
 \begin{equation}
-    \partial_{k} (F|_{k}\gamma) = (\partial_{k+2} F)|_{k}\gamma, \quad \forall \gamma \in \mathrm{SL}_{2}(\mathbb{Z}).
+    \partial_{k} (F|_{k}\gamma) = (\partial_{k} F)|_{k+2}\gamma, \quad \forall \gamma \in \mathrm{SL}_{2}(\mathbb{Z}).
 \end{equation}
 \end{theorem}
 \begin{proof}
@@ -611,21 +611,27 @@ From $F \in M_k(\Gamma)$, we have
 By taking the derivative of the above equation, we get
 \begin{align}
     \frac{\dd}{\dd z}(F|_{k} \gamma)(z) &= -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k} (cz + d)^{-2} \frac{\dd F}{\dd z}\left(\frac{az + b}{cz + d}\right) \\
-    &= -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k - 2} \frac{\dd F}{\dd z}\left(\frac{az + b}{cz + d}\right).
+    &= -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k - 2} \frac{\dd F}{\dd z}\left(\frac{az + b}{cz + d}\right) \\
+    &= -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + 2 \pi i (cz + d)^{-k - 2} F'\left(\frac{az + b}{cz + d}\right) \\
+    \Leftrightarrow (F|_{k} \gamma)'(z) &= -\frac{kc}{2 \pi i} (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k - 2} F'\left(\frac{az + b}{cz + d}\right).
 \end{align}
 Combined with \eqref{eqn:E2-transform-general}, we get
 \begin{align}
     ((\partial_k F)|_{k+2}\gamma)(z) &= (cz + d)^{-k-2} \left(F'\left(\frac{az + b}{cz + d}\right) - \frac{k}{12}E_2\left(\frac{az + b}{cz + d}\right)F\left(\frac{az + b}{cz + d}\right)\right) \\
-    &= F'(z) - \frac{ikc}{2 \pi(cz + d)} F(z) - \frac{k}{12} \left(E_2(z) - \frac{6ic}{\pi(cz + d)}\right) F(z) \\
-    &= F'(z) - \frac{k}{12} E_2(z) F(z) = (\partial_{k} F)(z).
+    &= (cz + d)^{-k-2} F'\left(\frac{az + b}{cz + d}\right) - \frac{k}{12} \left(E_2(z) - \frac{6ic}{\pi(cz + d)}\right) \cdot (cz + d)^{-k} F\left(\frac{az + b}{cz + d}\right) \\
+    &= (F|_{k}\gamma)'(z) - \frac{k}{12} E_2(z) (F|_{k}\gamma)(z) \\
+    &= \partial_{k} (F|_{k}\gamma)(z).
 \end{align}
 \end{proof}
 
 As a direct consequence of Theorem \ref{thm:serre-der-equiv-action}, we can check that the Serre derivative preserves the modularity of a modular form.
-\begin{theorem}\label{thm:serre-der-modularity}\uses{def:serre-der, def:holomorphic-modular-form, thm:serre-der-equiv-action}
+\begin{theorem}\label{thm:serre-der-modularity}\uses{def:serre-der, def:holomorphic-modular-form, thm:serre-der-equiv-action}\lean{serre_D_slash_invariant}\leanok
 Let $F$ be a modular form of weight $k$ and level $\Gamma$.
 Then, $\partial_{k}F$ is a modular form of weight $k + 2$ of the same level.
 \end{theorem}
+\begin{proof}
+    Immediate from Theorem \ref{thm:serre-der-equiv-action} since $F|_k\gamma = F$ for all $\gamma \in \Gamma$.
+\end{proof}
 
 \begin{remark}
 More generally, the following theorem holds: if $F$ is a quasimodular form of weight $k$ and depth $s$, then $\partial_{k-s}F$ is a quasimodular form of weight $k + 2$ \emph{and depth $\le s$} of the same level. We will not prove this here.
