@@ -68,18 +68,10 @@ private lemma z_nonzero (z : ℍ): (z : ℂ) ≠ 0 := by
   exact (lt_self_iff_false 0).mp hh
 
 private lemma z_plus_one_nonzero (z : ℍ) : (z + 1 : ℂ) ≠ 0 := by
-  have hh : 0 < (z+1 : ℂ).im  := by
-    have zero_le_zero : (0 : ℝ) ≤ 0 := by
-      norm_num
-    have zero_eq_one_im: (0 : ℝ) = (1 : ℂ).im := by
-      exact rfl
-    have im_add_im_eq_add_im (a b : ℂ) : a.im + b.im = (a + b).im := by
-      exact rfl
+  have hh : 0 < (z + 1 : ℂ).im  := by
     calc
       0 < z.im := z.2
-      _ ≤ z.im + (0 : ℝ) := le_add_of_nonneg_right (zero_le_zero) --  sorry -- le_add_of_nonneg_right (zero_le_zero ℝ ) --apply le_add_of_nonneg_right (Real.zero_lt_one)
-      _ ≤ z.im + (1 : ℂ).im := by rw [← zero_eq_one_im]
-      _ = (z + 1 : ℂ).im := im_add_im_eq_add_im z 1
+      _ = (z + 1 : ℂ).im := by simp
   by_contra hz
   rw [hz] at hh
   exact (lt_self_iff_false 0).mp hh
