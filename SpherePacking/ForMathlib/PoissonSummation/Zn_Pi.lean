@@ -26,9 +26,6 @@ open Submodule Set ZLattice IsZLattice LinearMap BilinForm Module MeasureTheory 
 /-- We denote by `ℝ^n` the Pi type `Fin n → ℝ`. -/
 notation "ℝ^" n:arg => Fin n → ℝ
 
-#check ℝ^2
-#check ℝ^5
-
 section Submodule
 
 /-! We now develop the theory of ℤ^n as a submodule of Euclidean space. -/
@@ -56,9 +53,6 @@ end Submodule
 -- `ℝ`, we define the following notation for it.
 /-- We denote by `ℤ^n` the canonical free `ℤ`-submodule living inside `Fin n → ℝ`. -/
 notation "ℤ^" n:arg => Zn_Submodule n
-
-#check ℤ^2
-#check ℤ^5
 
 noncomputable section Basis
 
@@ -229,7 +223,7 @@ section Covolume
 /-! In this section, we show that the covolume of the canonical lattice in `Fin n → ℝ` is `1`. -/
 
 -- The key ingredient:
-#check ZLattice.covolume_eq_det
+-- #check ZLattice.covolume_eq_det
 
 /-- The lattice `ℤ^n` has covolume `1`. -/
 theorem Zn_covolume (n : ℕ) : covolume (ℤ^n) = 1 := by
