@@ -38,8 +38,6 @@ namespace SchwartzMap
 
 section Equivalence
 
-#check compCLMOfContinuousLinearEquiv
-
 /-- Given a linear equivalence between finite-dimensional real vector spaces, composition on the
 left with this equivalence gives a continuous linear isomorphism between any two Schwartz spaces
 that have these equivalent spaces for a domain. -/
@@ -62,7 +60,7 @@ Formula over the canonical lattice `ℤ^n`, which is used to prove the result fo
 -/
 
 -- The key ingredient we use is the following.
-#check SchwartzMap.compCLMOfAntilipschitz
+-- #check SchwartzMap.compCLMOfAntilipschitz
 -- We therefore construct a map from `Euc(1)` to `Euc(2)` that is antilipschitz and has temperate
 -- growth. We inform our construction by the fact that the map we desire on the Schwartz spaces is
 -- precisely given by composing with this map.
@@ -110,10 +108,10 @@ theorem coordinateEmbedding₁₂_smooth (x : ℝ) : ContDiff ℝ ⊤ (coordinat
     interval_cases i <;> contradiction
 
 -- We first show temperate growth.
-#check Function.HasTemperateGrowth
+-- #check Function.HasTemperateGrowth
 
 -- We can use the following tool to show temperate growth.
-#check Function.HasTemperateGrowth.of_fderiv
+-- #check Function.HasTemperateGrowth.of_fderiv
 
 -- Note: We can probably do away with the `x` here as I doubt any of the proofs will need it.
 /-- The Jacobian of `coordinateEmbedding₁₂ x` for all `x : ℝ`. -/
@@ -131,7 +129,7 @@ theorem coordinateEmbedding₁₂_hasDerivAt (x : ℝ) (p : Euc(1)) :
   sorry
 
 -- We need to use the following to get an expression for the `fderiv` of `coordinateEmbedding₁₂ x`.
-#check HasFDerivAt.fderiv
+-- #check HasFDerivAt.fderiv
 
 /-- The Jacobian of `coordinateEmbedding₁₂` has temperate growth. -/
 theorem fderiv_coordinateEmbedding₁₂_hasTemperateGrowth (x : ℝ) :
@@ -157,7 +155,7 @@ theorem coordinateEmbedding₁₂_hasTemperateGrowth (x : ℝ) :
   sorry
 
 -- Next, we show the antilipschitz condition. This is significantly easier.
-#check AntilipschitzWith
+-- #check AntilipschitzWith
 
 /-- `coordinateEmbedding₁₂` is `AntilipschitzWith 1`. -/
 theorem coordinateEmbedding₁₂_antiLipschitzWith (x : ℝ) :
