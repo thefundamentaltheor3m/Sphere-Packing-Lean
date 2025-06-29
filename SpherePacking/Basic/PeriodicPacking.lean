@@ -10,6 +10,7 @@ import SpherePacking.Basic.SpherePacking
 import SpherePacking.ForMathlib.Bornology
 import SpherePacking.ForMathlib.ENNReal
 import SpherePacking.ForMathlib.Encard
+import SpherePacking.ForMathlib.ENat
 import SpherePacking.ForMathlib.ZLattice
 
 -- import Mathlib
@@ -426,8 +427,7 @@ theorem PeriodicSpherePacking.aux_ge
   rw [Set.encard_iUnion_of_pairwiseDisjoint] at this
   simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
   · convert this.ge
-    -- rw [nsmul_eq_mul, ENat.tsum_const_eq', mul_comm]
-    sorry
+    rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
   · intro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     simp only [Set.disjoint_iff, Set.subset_empty_iff]
     ext u
@@ -444,16 +444,14 @@ theorem PeriodicSpherePacking.aux_ge
       apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
       · rw [S.basis_Z_span]
       · exact hy.left
-    · sorry
-      -- simp_rw [S.lattice.mk_vadd, vadd_eq_add, neg_add_eq_sub]
-      -- exact huy
+    · simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
+      exact huy
     · apply neg_mem
       apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
       · rw [S.basis_Z_span]
       · exact hx.left
-    · sorry
-      -- simp_rw [AddSubmonoid.mk_vadd, vadd_eq_add, neg_add_eq_sub]
-      -- exact hux
+    · simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
+      exact hux
 
 private theorem aux'
     {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice)
@@ -492,8 +490,7 @@ theorem PeriodicSpherePacking.aux_le
   rw [Set.encard_iUnion_of_pairwiseDisjoint] at this
   simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
   · convert this
-    -- rw [nsmul_eq_mul, ENat.tsum_const_eq', mul_comm]
-    sorry
+    rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
   · intro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     simp only [Set.disjoint_iff, Set.subset_empty_iff]
     ext u
@@ -501,25 +498,25 @@ theorem PeriodicSpherePacking.aux_le
     intro ⟨_, hux⟩ ⟨_, huy⟩
     obtain ⟨w, hw, hw_unique⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) u
     rw [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub] at hux huy
-    have hx := hw_unique ⟨-x, ?_⟩ ?_
-    have hy := hw_unique ⟨-y, ?_⟩ ?_
-    · apply hxy
-      rw [Subtype.ext_iff, ← neg_inj]
-      exact Subtype.ext_iff.mp (hx.trans hy.symm)
-    · apply neg_mem
-      apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
-      · rw [S.basis_Z_span]
-      · exact hy.left
-    · -- simp_rw [AddSubmonoid.mk_vadd, vadd_eq_add, neg_add_eq_sub]
-      -- exact huy
-      sorry
-    · apply neg_mem
+    have hx := hw_unique ⟨-x, ?hx'⟩ ?_
+    have hy := hw_unique ⟨-y, ?hy'⟩ ?_
+    case hx' =>
+      apply neg_mem
       apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
       · rw [S.basis_Z_span]
       · exact hx.left
-    · -- simp_rw [AddSubmonoid.mk_vadd, vadd_eq_add, neg_add_eq_sub]
-      -- exact hux
-      sorry
+    case hy' =>
+      apply neg_mem
+      apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
+      · rw [S.basis_Z_span]
+      · exact hy.left
+    · apply hxy
+      rw [Subtype.ext_iff, ← neg_inj]
+      exact Subtype.ext_iff.mp (hx.trans hy.symm)
+    · simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
+      exact huy
+    · simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
+      exact hux
 
 end theorem_2_3
 
@@ -843,15 +840,14 @@ theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0 ≤ C)
       <;> positivity
     rw [ENNReal.tendsto_atTop (by decide)]
     intro ε hε
-    sorry
-    -- obtain ⟨k, ⟨hk₁, hk₂⟩⟩ := aux_bhavik' hε
-    -- use k * C
-    -- intro n hn
-    -- rw [this _ ((by positivity : 0 ≤ k * C).trans hn)]
-    -- convert hk₂ (n / C) ((le_div_iff₀ hC).mpr hn)
-    -- rw [div_add_one, div_div_div_cancel_right, div_pow]  -- This line is breaking down
-    -- · positivity
-    -- · positivity
+    obtain ⟨k, ⟨hk₁, hk₂⟩⟩ := aux_bhavik' (d := d) hε
+    use k * C
+    intro n hn
+    rw [this _ ((by positivity : 0 ≤ k * C).trans hn)]
+    convert hk₂ (n / C) ((le_div_iff₀ hC).mpr hn)
+    rw [div_add_one, div_div_div_cancel_right₀, div_pow]
+    · positivity
+    · positivity
 
 theorem volume_ball_ratio_tendsto_nhds_one'
     {d : ℕ} {C C' : ℝ} (hd : 0 < d) (hC : 0 ≤ C) (hC' : 0 ≤ C') :
