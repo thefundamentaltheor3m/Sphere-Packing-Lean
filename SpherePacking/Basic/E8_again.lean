@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2025 Bhavik Mehta. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Bhavik Mehta
+Authors: Bhavik Mehta, Gareth Ma
 -/
 import SpherePacking.Basic.PeriodicPacking
 -- import SpherePacking.ForMathlib.Finsupp
@@ -18,16 +18,27 @@ properties about the E₈ lattice.
 
 See also earlier work which inspired this one, by Gareth Ma: https://github.com/thefundamentaltheor3m/Sphere-Packing-Lean/blob/42c839d1002f5bcc1f8d2eb73190d97cd9c52852/SpherePacking/Basic/E8.lean
 
-## Main theorems
+## Main declarations
 
-* `E8Matrix`: a fixed ℤ-basis for the E₈ lattice
-* `E8_is_basis`: `E8Matrix` forms a ℝ-basis of ℝ⁸
-* `E8_Set`: the set of vectors in E₈, characterised by relations of their coordinates
-* `E8_Set_eq_span`: the ℤ-span of `E8Matrix` coincides with `E8_Set`
-* `E8_norm_eq_sqrt_even`: E₈ is even
-* `E8_unimodular`: E₈ is unimodular
-* `E8_posDef`: E₈ is positive definite
-
+* `Submodule.E8`: The E₈ lattice as a submodule of `Fin 8 → R` for a field `R` in which `2` is
+  nonzero. We define it to be the set of vectors in `Fin 8 → R` such that the sum of coordinates is
+  even, and either all coordinates are integers, or all coordinates are half of an odd integer.
+* `Submodule.E8_eq_sup`: The E₈ lattice can be seen as the smallest submodule containing both:
+  the even lattice (the lattice of all integer points whose sum of coordinates is even); and the
+  submodule spanned by the vector which is 2⁻¹ in each coordinate.
+* `E8Matrix`: An explicit matrix whose rows form a basis for the E₈ lattice over ℤ.
+* `E8Matrix_unimodular`: A proof that `E8Matrix` has determinant 1.
+* `span_E8Matrix_eq_top`: The `ℝ`-span of `E8Matrix` is the whole of `ℝ⁸`.
+* `span_E8Matrix`: The `ℤ`-span of `E8Matrix` is the E₈ lattice. This is the third characterisation
+  of the E₈ lattice given in this file.
+* `E8_integral`: The E₈ lattice is integral, i.e., the dot product of any two vectors in E₈ is an
+  integer.
+* `E8_integral_self`: The E₈ lattice is even, i.e., the norm-squared of any vector in E₈ is an even
+  integer.
+* `E8Lattice`: The E₈ lattice as a submodule of eight-dimensional Euclidean space. This additional
+  definition is valuable, since it now puts the correct metric space structure on the lattice.
+* `E8Packing`: The E₈ packing as a periodic sphere packing.
+* `E8Packing_density`: The density of the E₈ packing is `π ^ 4 / 384`.
 -/
 
 variable {R : Type*}
@@ -549,7 +560,7 @@ lemma span_E8_eq_top' :
   rw [Submodule.span_image, span_E8_eq_top]
   simp
 
-theorem span_E8_eq_E8Lattice :
+lemma span_E8Matrix_eq_E8Lattice :
     Submodule.span ℤ
       (Set.range fun i ↦ (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i)) =
       E8Lattice := by
@@ -583,7 +594,7 @@ noncomputable def E8_ℤBasis : Basis (Fin 8) ℤ E8Lattice := by
   · rw [← Submodule.map_le_map_iff_of_injective (f := E8Lattice.subtype) (by simp)]
     simp only [Submodule.map_top, Submodule.range_subtype]
     rw [Submodule.map_span, ← Set.range_comp]
-    exact span_E8_eq_E8Lattice.ge
+    exact span_E8Matrix_eq_E8Lattice.ge
 
 lemma coe_E8_ℤBasis_apply (i : Fin 8) :
     E8_ℤBasis i = (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i) := by
