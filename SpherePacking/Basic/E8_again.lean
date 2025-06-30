@@ -16,7 +16,7 @@ of vectors in ℝ^8 with sum of coordinates an even integer and coordinates eith
 half-integers (`E8_Set`). We prove these two definitions are equivalent, and prove various
 properties about the E₈ lattice.
 
-See also earlier work which inspired this one by Gareth Ma (TODO: add permalink to old file)
+See also earlier work which inspired this one, by Gareth Ma: https://github.com/thefundamentaltheor3m/Sphere-Packing-Lean/blob/42c839d1002f5bcc1f8d2eb73190d97cd9c52852/SpherePacking/Basic/E8.lean
 
 ## Main theorems
 
@@ -166,7 +166,7 @@ noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
     · rw [← Finset.mul_sum, ← zsmul_eq_mul]
       exact has.zsmul'.trans (by simp)
 
-theorem Submodule.mem_E8 {R : Type*} [Field R] [NeZero (2 : R)]
+lemma Submodule.mem_E8 {R : Type*} [Field R] [NeZero (2 : R)]
     {v : Fin 8 → R} :
     v ∈ E8 R ↔
       ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 • v i))
@@ -174,7 +174,7 @@ theorem Submodule.mem_E8 {R : Type*} [Field R] [NeZero (2 : R)]
   rw [E8]
   simp
 
-theorem Submodule.mem_E8' {R : Type*} [Field R] [NeZero (2 : R)]
+lemma Submodule.mem_E8' {R : Type*} [Field R] [NeZero (2 : R)]
     {v : Fin 8 → R} :
     v ∈ E8 R ↔
       ((∀ i, ∃ n : ℤ, Even n ∧ n = 2 • v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 • v i))
@@ -184,7 +184,7 @@ theorem Submodule.mem_E8' {R : Type*} [Field R] [NeZero (2 : R)]
      fun ⟨n, hn⟩ ↦ ⟨2 * n, ⟨even_two_mul n, by simp [hn]⟩⟩⟩
   simp_rw [this, mem_E8]
 
-theorem Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)]
+lemma Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)]
     {v : Fin 8 → R} :
     v ∈ E8 R ↔
       ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, n + 2⁻¹ = v i))
@@ -205,7 +205,7 @@ theorem Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)]
     rw [← hk]
     simp [mul_inv_cancel₀, NeZero.ne]
 
-lemma Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
+theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     E8 R = (evenLattice R 8 ⊔ Submodule.span ℤ {fun _ ↦ (2⁻¹ : R)}) := by
   refine le_antisymm ?h1 ?h2
   case h2 =>
@@ -287,21 +287,21 @@ lemma lowerTriangular_E8Matrix {R : Type*} [Field R] :
     (E8Matrix R).BlockTriangular OrderDual.toDual := by
   simp [Matrix.BlockTriangular, E8Matrix, Fin.forall_fin_succ]
 
-theorem E8Matrix_det_eq_one (R : Type*) [Field R] [NeZero (2 : R)] : (E8Matrix R).det = 1 := by
+theorem E8Matrix_unimodular (R : Type*) [Field R] [NeZero (2 : R)] : (E8Matrix R).det = 1 := by
   rw [Matrix.det_of_lowerTriangular _ lowerTriangular_E8Matrix]
   simp [E8Matrix, Fin.prod_univ_eight, (NeZero.ne (2 : R))]
 
-private theorem E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
+private lemma E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row ∧
     Submodule.span R (Set.range (E8Matrix R).row) = ⊤ := by
   rw [is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det, ← Matrix.det, Matrix.row,
-    E8Matrix_det_eq_one]
+    E8Matrix_unimodular]
   simp
 
-private theorem linearIndependent_E8Matrix (R : Type*) [Field R] [NeZero (2 : R)] :
+lemma linearIndependent_E8Matrix (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row := (E8Matrix_is_basis _).1
 
-theorem span_E8Matrix_eq_top (R : Type*) [Field R] [NeZero (2 : R)] :
+lemma span_E8Matrix_eq_top (R : Type*) [Field R] [NeZero (2 : R)] :
     Submodule.span R (Set.range (E8Matrix R).row) = ⊤ := (E8Matrix_is_basis _).2
 
 noncomputable def E8Basis (R : Type*) [Field R] [NeZero (2 : R)] : Basis (Fin 8) R (Fin 8 → R) :=
@@ -319,7 +319,7 @@ theorem range_E8Matrix_row_subset (R : Type*) [Field R] [CharZero R] :
     Set.range (E8Matrix R).row ⊆ Submodule.E8 R := by
   simpa [Set.subset_def] using E8Matrix_row_mem_E8 (R := R)
 
-def E8Inverse (R : Type*) [Field R] [NeZero (2 : R)] : Matrix (Fin 8) (Fin 8) R := !![
+private def E8Inverse (R : Type*) [Field R] [NeZero (2 : R)] : Matrix (Fin 8) (Fin 8) R := !![
   2⁻¹, 0, 0, 0, 0, 0, 0, 0;
   2⁻¹, 1, 0, 0, 0, 0, 0, 0;
   2⁻¹, 1, 1, 0, 0, 0, 0, 0;
@@ -329,23 +329,23 @@ def E8Inverse (R : Type*) [Field R] [NeZero (2 : R)] : Matrix (Fin 8) (Fin 8) R 
   2⁻¹, 1, 1, 1, 1, 1, 1, 0;
   -7 * 2⁻¹, -6, -5, -4, -3, -2, -1, 2]
 
-lemma E8Inverse_eq_cast (R : Type*) [Field R] [CharZero R] :
+private lemma E8Inverse_eq_cast (R : Type*) [Field R] [CharZero R] :
     E8Inverse R = (E8Inverse ℚ).map (Rat.castHom R) := by
   rw [← Matrix.ext_iff]
   norm_num [Fin.forall_fin_succ, E8Inverse]
 
-lemma E8Inverse_mul_E8Matrix_rat : E8Inverse ℚ * E8Matrix ℚ = 1 := by decide +kernel
+private lemma E8Inverse_mul_E8Matrix_rat : E8Inverse ℚ * E8Matrix ℚ = 1 := by decide +kernel
 
-lemma E8Inverse_mul_E8Matrix {R : Type*} [Field R] [CharZero R] :
+private lemma E8Inverse_mul_E8Matrix {R : Type*} [Field R] [CharZero R] :
     E8Inverse R * E8Matrix R = 1 := by
   rw [E8Matrix_eq_cast, E8Inverse_eq_cast, ← Matrix.map_mul, E8Inverse_mul_E8Matrix_rat]
   simp
 
-lemma E8Matrix_mul_E8Inverse {R : Type*} [Field R] [CharZero R] :
+private lemma E8Matrix_mul_E8Inverse {R : Type*} [Field R] [CharZero R] :
     E8Matrix R * E8Inverse R = 1 := by
   rw [Matrix.mul_eq_one_comm, E8Inverse_mul_E8Matrix]
 
-lemma exists_cast_eq_vecMul_E8Inverse_aux {R : Type*} [Field R] [CharZero R]
+private lemma exists_cast_eq_vecMul_E8Inverse_aux {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (w : Fin 8 → ℤ) (hv : v ∈ Submodule.E8 R)
     (hw : ∑ i, w i = 0) :
     ∃ c : ℤ, c = ∑ i, v i * w i := by
@@ -361,7 +361,7 @@ lemma exists_cast_eq_vecMul_E8Inverse_aux {R : Type*} [Field R] [CharZero R]
     norm_cast
     simp
 
-lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
+private lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (hv : v ∈ Submodule.E8 R) :
     ∃ c : Fin 8 → ℤ, LinearMap.intCast R c = Matrix.vecMul v (E8Inverse R) := by
   set c' := Matrix.vecMul v (E8Inverse R)
@@ -438,8 +438,9 @@ def E8.inn : Matrix (Fin 8) (Fin 8) ℤ :=
     0, 0, 0, 0, 0, -1, 2, 0;
     1, 0, 0, 0, 0, 0, 0, 2]
 
-lemma E8Matrix_mul_E8Matrix_transpose_rat : E8Matrix ℚ * (E8Matrix ℚ).transpose =
-    E8.inn.map (↑) := by decide +kernel
+lemma E8Matrix_mul_E8Matrix_transpose_rat :
+    E8Matrix ℚ * (E8Matrix ℚ).transpose = E8.inn.map (↑) := by
+  decide +kernel
 
 lemma E8Matrix_mul_E8Matrix_transpose [Field R] [CharZero R] :
     E8Matrix R * (E8Matrix R).transpose = E8.inn.map (↑) := by
@@ -473,7 +474,7 @@ lemma dotProduct_sum {α β γ : Type*} [Fintype β] [CommSemiring γ]
   simp_rw [dotProduct, Finset.sum_apply, Finset.mul_sum]
   exact Finset.sum_comm
 
-lemma E8_integral {R : Type*} [Field R] [CharZero R] (v w : Fin 8 → R)
+theorem E8_integral {R : Type*} [Field R] [CharZero R] (v w : Fin 8 → R)
     (hv : v ∈ Submodule.E8 R) (hw : w ∈ Submodule.E8 R) :
     ∃ z : ℤ, z = v ⬝ᵥ w := by
   rw [← span_E8Matrix, Submodule.mem_span_range_iff_exists_fun] at hv hw
@@ -484,7 +485,7 @@ lemma E8_integral {R : Type*} [Field R] [CharZero R] (v w : Fin 8 → R)
   norm_cast
   simp
 
-lemma E8_integral_self {R : Type*} [Field R] [CharZero R] (v : Fin 8 → R)
+theorem E8_integral_self {R : Type*} [Field R] [CharZero R] (v : Fin 8 → R)
     (hv : v ∈ Submodule.E8 R) :
     ∃ z : ℤ, Even z ∧ z = v ⬝ᵥ v := by
   have h4 : Even (4 : ℤ) := ⟨2, rfl⟩
@@ -501,13 +502,13 @@ lemma E8_integral_self {R : Type*} [Field R] [CharZero R] (v : Fin 8 → R)
 
 open InnerProductSpace RCLike
 
-theorem E8_norm_eq_sqrt_even
+lemma E8_norm_eq_sqrt_even
     (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
     ∃ n : ℤ, Even n ∧ n = ‖(WithLp.equiv 2 _).symm v‖ ^ 2 := by
   rw [← real_inner_self_eq_norm_sq, EuclideanSpace.inner_piLp_equiv_symm, star_trivial]
   exact E8_integral_self _ hv
 
-theorem E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
+lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
     v = 0 ∨ √2 ≤ ‖(WithLp.equiv 2 _).symm v‖ := by
   rw [or_iff_not_imp_left, ← ne_eq]
   intro hv'
@@ -536,13 +537,13 @@ instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   have : 1 < √2 := by rw [Real.lt_sqrt zero_le_one, sq, mul_one]; exact one_lt_two
   linarith
 
-theorem span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ := by
+lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ := by
   simp only [Submodule.span, sInf_eq_top, Set.mem_setOf_eq]
   intros M hM
   rw [eq_top_iff, ← span_E8Matrix_eq_top ℝ, Submodule.span_le]
   exact (range_E8Matrix_row_subset ℝ).trans hM
 
-theorem span_E8_eq_top' :
+lemma span_E8_eq_top' :
     Submodule.span ℝ (E8Lattice : Set (EuclideanSpace ℝ (Fin 8))) = ⊤ := by
   change Submodule.span ℝ ((WithLp.linearEquiv 2 ℝ (Fin 8 → ℝ)).symm '' _) = _
   rw [Submodule.span_image, span_E8_eq_top]
@@ -560,24 +561,6 @@ theorem span_E8_eq_E8Lattice :
 
 instance instIsZLatticeE8Lattice : IsZLattice ℝ E8Lattice where
   span_top := by rw [span_E8_eq_top']
-
--- noncomputable def E8_Basis : Basis (Fin 8) ℤ E8_Lattice := by
---   have af := E8_is_basis.left.restrict_scalars' ℤ
---   have : LinearIndependent ℤ (fun i ↦ (⟨E8_Matrix i, E8_Matrix_mem i⟩ : E8_Lattice)) := by
---     apply linearIndependent_subtype_thing af
---     simp_rw [E8_Lattice, E8_Set_eq_span]
---     rfl
---   apply Basis.mk this
---     -- This is the worst proof ever but I don't want to waste my time on this
---   change (_ : Set E8_Lattice) ⊆ _
---   intro ⟨x, hx⟩ _
---   simp_rw [E8_Lattice, E8_Set_eq_span, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk] at hx
---   rw [SetLike.mem_coe, Finsupp.mem_span_range_iff_exists_finsupp] at hx ⊢
---   obtain ⟨c, hc⟩ := hx
---   use c
---   apply Subtype.ext_iff.mpr
---   simp only [Finsupp.sum, ← hc, AddSubgroup.val_finset_sum, AddSubgroupClass.coe_zsmul]
---   exact Submodule.coe_sum E8_Lattice (fun i ↦ c i • ⟨E8_Matrix i, E8_Matrix_mem i⟩) c.support
 
 lemma Submodule.span_restrict {ι M : Type*}
     [AddCommMonoid M] [Module ℤ M]
@@ -633,7 +616,7 @@ noncomputable def E8Packing : PeriodicSpherePacking 8 where
 example : E8Packing.separation = √2 := rfl
 example : E8Packing.lattice = E8Lattice := rfl
 
-theorem E8Packing_numReps : E8Packing.numReps = 1 :=
+lemma E8Packing_numReps : E8Packing.numReps = 1 :=
   PeriodicSpherePacking.numReps_eq_one _ rfl
 
 lemma E8Basis_apply_norm : ∀ i : Fin 8, ‖(WithLp.equiv 2 _).symm (E8Basis ℝ i)‖ ≤ 2 := by
@@ -654,17 +637,17 @@ section hack
 def Matrix.myDet {n : Type*} [DecidableEq n] [Fintype n] {R : Type*} [CommRing R]
     (M : Matrix n n R) : R := M.det
 
-theorem E8Matrix_myDet_eq_one (R : Type*) [Field R] [NeZero (2 : R)] : (E8Matrix R).myDet = 1 :=
-  E8Matrix_det_eq_one R
+lemma E8Matrix_myDet_eq_one (R : Type*) [Field R] [NeZero (2 : R)] : (E8Matrix R).myDet = 1 :=
+  E8Matrix_unimodular R
 
 open MeasureTheory ZSpan
 
 lemma ZSpan.volume_fundamentalDomain' {ι : Type*} [Fintype ι] [DecidableEq ι]
     (b : Basis ι ℝ (ι → ℝ)) :
     volume (fundamentalDomain b) = ENNReal.ofReal |(Matrix.of b).myDet| :=
-  ZSpan.volume_fundamentalDomain b
+  volume_fundamentalDomain b
 
-theorem E8Basis_volume: volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
+lemma E8Basis_volume : volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
   rw [volume_fundamentalDomain', of_basis_eq_matrix, E8Matrix_myDet_eq_one]
   simp
 
@@ -694,7 +677,7 @@ lemma same_domain :
   simp [E8_ℤBasis, E8Basis_apply]
 
 open MeasureTheory ZSpan in
-theorem E8_Basis_volume :
+lemma E8_Basis_volume :
     volume (fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice)) = 1 := by
   rw [← test'']
   erw [same_domain]
