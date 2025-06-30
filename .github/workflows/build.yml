@@ -28,15 +28,18 @@ jobs:
         with:
           fetch-depth: 0 # Fetch all history for all branches and tags
 
-      - name: Don't 'import Mathlib', use precise imports
+      - name: Don't 'import Mathlib', don't "#check"
         run: |
-          ! (find SpherePacking -name "*.lean" -type f -print0 | xargs -0 grep -E -n '^import Mathlib$')
+          ! (find SpherePacking -type f -name "*.lean" -exec grep -Hn '^import Mathlib$' {} +)
+          ! (find SpherePacking -type f -name "*.lean" -exec grep -Hn '^#check' {} +)
 
       - name: Build the project
         uses: leanprover/lean-action@f807b338d95de7813c5c50d018f1c23c9b93b4ec # v1.2.0
+        with:
+          use-github-cache: false
 
       - name: Compile blueprint and documentation
-        uses: leanprover-community/docgen-action@b210116d3e6096c0c7146f7a96a6d56b6884fef5 # 2025-06-12
+        uses: leanprover-community/docgen-action@f78d5a9a1a728288aef64bde6f133d30a8511cb7 # 2025-06-27
         with:
           blueprint: true
           homepage: home_page
