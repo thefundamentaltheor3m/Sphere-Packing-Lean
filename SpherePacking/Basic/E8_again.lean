@@ -612,9 +612,8 @@ noncomputable def E8Packing : PeriodicSpherePacking 8 where
       E8_norm_lower_bound _ (Submodule.sub_mem _ ha hb)
   lattice_action x y := add_mem
 
--- sanity checks
-example : E8Packing.separation = √2 := rfl
-example : E8Packing.lattice = E8Lattice := rfl
+lemma E8Packing_separation : E8Packing.separation = √2 := rfl
+lemma E8Packing_lattice : E8Packing.lattice = E8Lattice := rfl
 
 lemma E8Packing_numReps : E8Packing.numReps = 1 :=
   PeriodicSpherePacking.numReps_eq_one _ rfl
