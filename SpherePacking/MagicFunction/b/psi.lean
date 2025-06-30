@@ -59,36 +59,20 @@ section eq
 
 section aux
 
-private lemma z_nonzero (z : ℍ): (z : ℂ) ≠ 0 := by
-  simp only [ne_eq]
-  by_contra hz
-  have hh : 0 < (z : ℂ).im := by
-    exact z.2
-  rw [hz] at hh
-  exact (lt_self_iff_false 0).mp hh
+private lemma z_nonzero (z : ℍ): (z : ℂ) ≠ 0 := UpperHalfPlane.ne_zero z
 
 private lemma z_plus_one_nonzero (z : ℍ) : (z + 1 : ℂ) ≠ 0 := by
-  have hh : 0 < (z+1 : ℂ).im  := by
-    have zero_le_zero : (0 : ℝ) ≤ 0 := by
-      norm_num
-    have zero_eq_one_im: (0 : ℝ) = (1 : ℂ).im := by
-      exact rfl
-    have im_add_im_eq_add_im (a b : ℂ) : a.im + b.im = (a + b).im := by
-      exact rfl
+  have hh : 0 < (z + 1 : ℂ).im  := by
     calc
       0 < z.im := z.2
-      _ ≤ z.im + (0 : ℝ) := le_add_of_nonneg_right (zero_le_zero) --  sorry -- le_add_of_nonneg_right (zero_le_zero ℝ ) --apply le_add_of_nonneg_right (Real.zero_lt_one)
-      _ ≤ z.im + (1 : ℂ).im := by rw [← zero_eq_one_im]
-      _ = (z + 1 : ℂ).im := im_add_im_eq_add_im z 1
+      _ = (z + 1 : ℂ).im := by simp
   by_contra hz
   rw [hz] at hh
   exact (lt_self_iff_false 0).mp hh
 
 private lemma slashS (z :ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (S)) (z) =
                          (F) (S • z) * (z : ℂ)^(-2 : ℤ) := by
-  rw [SL_slash_apply]
-  rw [S]
-  rw [denom]
+  rw [SL_slash_apply, S, denom]
   simp only [Int.reduceNeg, sl_moeb, coe2_smul, Fin.isValue,
     SpecialLinearGroup.coe_GL_coe_matrix, SpecialLinearGroup.map_apply_coe,
     RingHom.mapMatrix_apply, Int.coe_castRingHom, map_apply, of_apply, cons_val', cons_val_zero,
@@ -97,9 +81,7 @@ private lemma slashS (z :ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (S)) (z) =
 
 private lemma slashS' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S)) (z) =
                          (F) (S • z) * (z : ℂ)^(2 : ℕ) := by
-  rw [SL_slash_apply]
-  rw [S]
-  rw [denom]
+  rw [SL_slash_apply, S, denom]
   simp only [Int.reduceNeg, sl_moeb, coe2_smul, Fin.isValue,
     SpecialLinearGroup.coe_GL_coe_matrix, SpecialLinearGroup.map_apply_coe,
     RingHom.mapMatrix_apply, Int.coe_castRingHom, map_apply, of_apply, cons_val', cons_val_zero,
@@ -108,7 +90,7 @@ private lemma slashS' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S)) (z
   have pow_coe_nat (a : ℂ) : a ^ (2 : ℕ) = a^(2 : ℤ) := by
     rw [zpow_two, pow_two]
   left
-    rw [pow_coe_nat]
+  rw [pow_coe_nat]
 
 private lemma slashS'' (z : ℍ) (F : ℍ → ℂ): F (S • z) =
                        (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ)^(2 : ℕ) := by
