@@ -579,6 +579,27 @@ theorem aux7 (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hL 
   · rw [Set.mem_vadd_set_iff_neg_vadd_mem, neg_neg]
     exact hg
 
+-- instance (s : Submodule ℤ (ι → ℝ)) : VAddInvariantMeasure s (ι → ℝ) volume where
+--   measure_preimage_vadd := by
+--     intro c t ht
+--     simp only [Submodule.vadd_def, vadd_eq_add]
+--     simp only [measure_preimage_add]
+
+-- instance (s : Submodule ℤ (EuclideanSpace ℝ ι)) :
+--     VAddInvariantMeasure s (EuclideanSpace ℝ ι) volume where
+--   measure_preimage_vadd := by
+--     intro c t ht
+--     simp only [Submodule.vadd_def, vadd_eq_add]
+--     simp only [measure_preimage_add]
+
+instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Module ℤ E]
+    [Module ℝ E] (μ : Measure E) [μ.IsAddLeftInvariant] [IsScalarTower ℤ ℝ E] (s : Submodule ℤ E) :
+    VAddInvariantMeasure s E μ where
+  measure_preimage_vadd := by
+    intro c t ht
+    simp only [Submodule.vadd_def, vadd_eq_add]
+    rw [measure_preimage_add μ (c : E)]
+
 -- Theorem 2.2, lower bound
 -- set_option diagnostics true in
 theorem PeriodicSpherePacking.aux2_ge
@@ -606,14 +627,7 @@ theorem PeriodicSpherePacking.aux2_ge
       exact hxy (hx'.trans hy'.symm)
     · intro i
       exact MeasurableSet.const_vadd hD_measurable i.val
-  · haveI h : VAddInvariantMeasure (↥S.lattice) (EuclideanSpace ℝ (Fin d)) volume := by
-      -- WHY DOES THIS NOT EXIST???
-      rw [(vaddInvariantMeasure_iff (↥S.lattice) (EuclideanSpace ℝ (Fin d)) volume)]
-      intros l s hs
-      refine Measure.measure_preimage_of_map_eq_self ?_ (MeasurableSet.nullMeasurableSet hs)
-      ext x hx
-      sorry
-    exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
+  · exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
   · have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]
     exact Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)
@@ -659,8 +673,7 @@ theorem PeriodicSpherePacking.aux2_le
     · intro i
       exact MeasurableSet.const_vadd hD_measurable i.val
   · left
-    -- exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
-    sorry
+    exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
   · left
     have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]
