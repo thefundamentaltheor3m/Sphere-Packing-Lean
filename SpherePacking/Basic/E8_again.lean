@@ -307,6 +307,14 @@ theorem span_E8Matrix_eq_top (R : Type*) [Field R] [NeZero (2 : R)] :
 noncomputable def E8Basis (R : Type*) [Field R] [NeZero (2 : R)] : Basis (Fin 8) R (Fin 8 → R) :=
   Basis.mk (linearIndependent_E8Matrix R) (span_E8Matrix_eq_top R).ge
 
+lemma E8Basis_apply [Field R] [NeZero (2 : R)] (i : Fin 8) :
+    E8Basis R i = (E8Matrix R).row i := by
+  rw [E8Basis, Basis.coe_mk, Matrix.row]
+
+lemma of_basis_eq_matrix [Field R] [CharZero R] : Matrix.of (E8Basis R) = E8Matrix R := by
+  simp only [E8Basis, Basis.coe_mk]
+  rfl
+
 theorem range_E8Matrix_row_subset (R : Type*) [Field R] [CharZero R] :
     Set.range (E8Matrix R).row ⊆ Submodule.E8 R := by
   simpa [Set.subset_def] using E8Matrix_row_mem_E8 (R := R)
@@ -594,6 +602,17 @@ noncomputable def E8_ℤBasis : Basis (Fin 8) ℤ E8Lattice := by
     rw [Submodule.map_span, ← Set.range_comp]
     exact span_E8_eq_E8Lattice.ge
 
+lemma coe_E8_ℤBasis_apply (i : Fin 8) :
+    E8_ℤBasis i = (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i) := by
+  rw [E8_ℤBasis, Basis.coe_mk]
+
+lemma E8_ℤBasis_ofZLatticeBasis_apply (i : Fin 8) :
+    E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice i =
+      (WithLp.equiv 2 (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i) := by
+  simp only [Basis.ofZLatticeBasis_apply]
+  rw [coe_E8_ℤBasis_apply]
+  simp
+
 section Packing
 
 open scoped Real
@@ -624,9 +643,11 @@ lemma E8Basis_apply_norm : ∀ i : Fin 8, ‖(WithLp.equiv 2 _).symm (E8Basis �
   simp [E8Basis, E8Matrix, EuclideanSpace.norm_eq, Fin.forall_fin_succ, Fin.sum_univ_eight]
   norm_num [this]
 
-lemma of_basis_eq_matrix [Field R] [CharZero R] : Matrix.of (E8Basis R) = E8Matrix R := by
-  simp only [E8Basis, Basis.coe_mk]
-  rfl
+lemma E8_ℤBasis_apply_norm : ∀ i : Fin 8, ‖E8_ℤBasis i‖ ≤ 2 := by
+  intro i
+  simp only [AddSubgroupClass.coe_norm]
+  rw [coe_E8_ℤBasis_apply, ← E8Basis_apply]
+  exact E8Basis_apply_norm i
 
 section hack
 
@@ -643,25 +664,47 @@ lemma ZSpan.volume_fundamentalDomain' {ι : Type*} [Fintype ι] [DecidableEq ι]
     volume (fundamentalDomain b) = ENNReal.ofReal |(Matrix.of b).myDet| :=
   ZSpan.volume_fundamentalDomain b
 
-theorem E8Basis_volume : volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
+theorem E8Basis_volume: volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
   rw [volume_fundamentalDomain', of_basis_eq_matrix, E8Matrix_myDet_eq_one]
   simp
 
 end hack
 
--- open MeasureTheory ZSpan in
--- theorem E8_Basis_volume : volume (fundamentalDomain ((E8Basis ℝ).ofZLatticeBasis ℝ E8Lattice)) = 1 := by
---   sorry
+lemma test : MeasureTheory.volume (Set.Icc (0 : Fin 2 → ℝ) 1) = 1 := by
+  rw [Real.volume_Icc_pi]
+  simp
 
--- #exit
+lemma test' {ι : Type*} [Fintype ι] (s : Set (ι → ℝ)) :
+    MeasureTheory.volume (WithLp.equiv 2 _ ⁻¹' s) = MeasureTheory.volume s := by
+  rw [← (EuclideanSpace.volume_preserving_measurableEquiv ι).measure_preimage_equiv]
+  rfl
+
+lemma test'' {ι : Type*} [Fintype ι] (s : Set (EuclideanSpace ℝ ι)) :
+    MeasureTheory.volume ((WithLp.equiv 2 _).symm ⁻¹' s) = MeasureTheory.volume s := by
+  rw [← (EuclideanSpace.volume_preserving_measurableEquiv ι).symm.measure_preimage_equiv]
+  rfl
+
+open MeasureTheory ZSpan in
+lemma same_domain :
+    (WithLp.linearEquiv 2 ℝ _).symm ⁻¹' fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) =
+      fundamentalDomain (E8Basis ℝ) := by
+  rw [← LinearEquiv.image_eq_preimage, ZSpan.map_fundamentalDomain]
+  congr! 1
+  ext i : 1
+  simp [E8_ℤBasis, E8Basis_apply]
+
+open MeasureTheory ZSpan in
+theorem E8_Basis_volume :
+    volume (fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice)) = 1 := by
+  rw [← test'']
+  erw [same_domain]
+  rw [E8Basis_volume]
 
 open MeasureTheory ZSpan in
 theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
-  #check PeriodicSpherePacking.density_eq (S := E8Packing)
-
-  #exit
-  rw [PeriodicSpherePacking.density_eq E8Basis ?_ (by omega) (L := 8 • √2)]
-  · rw [E8Packing_numReps, Nat.cast_one, one_mul, volume_ball, Fintype.card_fin]
+  rw [PeriodicSpherePacking.density_eq E8_ℤBasis ?_ (by omega) (L := 16)]
+  · rw [E8Packing_numReps, Nat.cast_one, one_mul, volume_ball, finrank_euclideanSpace,
+      Fintype.card_fin, Nat.cast_ofNat]
     simp only [E8Packing]
     have {x : ℝ} (hx : 0 ≤ x := by positivity) : √x ^ 8 = x ^ 4 := calc
       √x ^ 8 = (√x ^ 2) ^ 4 := by rw [← pow_mul]
@@ -675,12 +718,11 @@ theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := b
     · positivity
     · positivity
   · intro x hx
-    trans ∑ i, ‖E8_Basis i‖
+    trans ∑ i, ‖E8_ℤBasis i‖
     · rw [← fract_eq_self.mpr hx]
       convert norm_fract_le (K := ℝ) _ _
       simp; rfl
-    · apply le_of_eq
-      simp_rw [Fin.sum_univ_eight, E8_Basis_apply_norm]
-      ring_nf
+    · refine (Finset.sum_le_sum (fun i hi ↦ E8_ℤBasis_apply_norm i)).trans ?_
+      norm_num
 
 end Packing
