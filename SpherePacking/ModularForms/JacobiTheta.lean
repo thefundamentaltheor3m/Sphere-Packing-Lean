@@ -130,13 +130,13 @@ lemma H₄_T_inv_action : (H₄ ∣[(2 : ℤ)] T⁻¹) = H₃ := by
 
 /-- Use α = T * T -/
 lemma H₂_α_action : (H₂ ∣[(2 : ℤ)] α.1) = H₂ := by
-  simp [α_eq_T_sq, ← SL_slash, sq, slash_mul, H₂_T_action]
+  simp [α_eq_T_sq, sq, slash_mul, H₂_T_action]
 
 lemma H₃_α_action : (H₃ ∣[(2 : ℤ)] α.1) = H₃ := by
-  simp [α_eq_T_sq, ← SL_slash, sq, slash_mul, H₃_T_action, H₄_T_action]
+  simp [α_eq_T_sq, sq, slash_mul, H₃_T_action, H₄_T_action]
 
 lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α.1) = H₄ := by
-  simp [α_eq_T_sq, ← SL_slash, sq, slash_mul, H₃_T_action, H₄_T_action]
+  simp [α_eq_T_sq, sq, slash_mul, H₃_T_action, H₄_T_action]
 
 /-- Use jacobiTheta₂_functional_equation -/
 lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
@@ -145,7 +145,9 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
   calc
   _ = cexp (-π * I / x) * jacobiTheta₂ (-1 / (2 * x)) (-1 / x) ^ 4 * x ^ (-2 : ℤ) := by
     rw [modular_slash_S_apply, H₂, Θ₂_as_jacobiTheta₂]
-    simp [← neg_inv, mul_pow, ← Complex.exp_nat_mul]
+    simp only [coe_mk_subtype, inv_neg, UpperHalfPlane.coe_mk, mul_neg, mul_pow, ←
+      Complex.exp_nat_mul, Nat.cast_ofNat, Int.reduceNeg, zpow_neg, neg_mul, mul_eq_mul_right_iff,
+      inv_eq_zero]
     rw [mul_comm 4, div_mul_cancel₀ _ (by norm_num)]
     left
     congr 3
@@ -160,7 +162,7 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     · congr 1
       rw [neg_mul, neg_div, one_div, neg_div, div_neg, neg_mul, neg_div, neg_neg]
       ring_nf
-      simp [div_div, sq, ← mul_assoc, inv_mul_cancel_right₀ hx']
+      simp [sq, ← mul_assoc, inv_mul_cancel_right₀ hx']
     · ring_nf; simp [hx']
     · ring_nf; simp [inv_inv]
   _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
@@ -222,24 +224,24 @@ lemma H₄_S_inv_action : (H₄ ∣[(2 : ℤ)] S⁻¹) = -H₂ := by
 /-- Use β = -S * α^(-1) * S -/
 lemma H₂_β_action : (H₂ ∣[(2 : ℤ)] β.1) = H₂ := calc
   _ = (((H₂ ∣[(2 : ℤ)] negI.1) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α.1⁻¹) ∣[(2 : ℤ)] S := by
-    simp [β_eq_negI_mul_S_mul_α_inv_mul_S, ← SL_slash, slash_mul]
+    simp [β_eq_negI_mul_S_mul_α_inv_mul_S, slash_mul]
   _ = _ := by
     rw [H₂_negI_action, H₂_S_action, neg_slash, neg_slash, α_eq_T_sq]
-    simp [← SL_slash, sq, slash_mul, H₄_T_inv_action, H₃_T_inv_action, H₄_S_action]
+    simp [sq, slash_mul, H₄_T_inv_action, H₃_T_inv_action, H₄_S_action]
 
 lemma H₃_β_action : (H₃ ∣[(2 : ℤ)] β.1) = H₃ := calc
   _ = (((H₃ ∣[(2 : ℤ)] negI.1) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α.1⁻¹) ∣[(2 : ℤ)] S := by
-    simp [β_eq_negI_mul_S_mul_α_inv_mul_S, ← SL_slash, slash_mul]
+    simp [β_eq_negI_mul_S_mul_α_inv_mul_S, slash_mul]
   _ = _ := by
     rw [H₃_negI_action, H₃_S_action, neg_slash, neg_slash, α_eq_T_sq]
-    simp [← SL_slash, sq, slash_mul, H₄_T_inv_action, H₃_T_inv_action, H₃_S_action]
+    simp [sq, slash_mul, H₄_T_inv_action, H₃_T_inv_action, H₃_S_action]
 
 lemma H₄_β_action : (H₄ ∣[(2 : ℤ)] β.1) = H₄ := calc
   _ = (((H₄ ∣[(2 : ℤ)] negI.1) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α.1⁻¹) ∣[(2 : ℤ)] S := by
-    simp [β_eq_negI_mul_S_mul_α_inv_mul_S, ← SL_slash, slash_mul]
+    simp [β_eq_negI_mul_S_mul_α_inv_mul_S, slash_mul]
   _ = _ := by
     rw [H₄_negI_action, H₄_S_action, neg_slash, neg_slash, α_eq_T_sq]
-    simp [← SL_slash, sq, slash_mul, H₂_T_inv_action, H₂_S_action]
+    simp [sq, slash_mul, H₂_T_inv_action, H₂_S_action]
 
 /-- H₂, H₃, H₄ are modular forms of weight 2 and level Γ(2) -/
 noncomputable def H₂_SIF : SlashInvariantForm (Γ 2) 2 where
