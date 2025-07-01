@@ -218,7 +218,7 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
           enter [1]
           intro n
           rw [hqq2]
-        simp only [PowerSeries.coeff_mk,  qExpansion2, qq]
+        simp only [PowerSeries.coeff_mk, qExpansion2]
         by_cases hr0 : r = 0
         rw [hr0]
         apply summable_zero_pow
@@ -242,9 +242,9 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
     congr
     rw [FormalMultilinearSeries.coeff.eq_1 ]
     simp only [ContinuousMultilinearMap.smul_apply, ContinuousMultilinearMap.mkPiAlgebraFin_apply,
-      smul_eq_mul, qExpansion2, qq]
+      smul_eq_mul]
     rw [@Fin.prod_ofFn]
-    simp only [Pi.one_apply, Finset.prod_const_one, mul_one, qExpansion2, qq]
+    simp only [Pi.one_apply, Finset.prod_const_one, mul_one]
   have h3 : HasFPowerSeriesAt (cuspFunction n f) qq 0 := by
     rw [HasFPowerSeriesAt]
     use 1
@@ -448,9 +448,9 @@ lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff ℂ m) =
   next h =>
     simp_all only [mul_eq_mul_right_iff, Nat.cast_eq_zero]
     left
-    simp [inv_pow, bernoulli, bernoulli'_four, Rat.cast_mul, Rat.cast_pow, Rat.cast_neg,
-    Rat.cast_one, Rat.cast_div, Rat.cast_ofNat, mul_inv_rev, inv_div, Nat.factorial,
-    Nat.succ_eq_add_one, Nat.reduceAdd, zero_add, mul_one, Nat.reduceMul, Nat.cast_ofNat, inv_inv]
+    simp only [Nat.factorial, Nat.succ_eq_add_one, Nat.reduceAdd, zero_add, mul_one, Nat.reduceMul,
+      Nat.cast_ofNat, bernoulli, bernoulli'_four, Rat.cast_mul, Rat.cast_pow, Rat.cast_neg,
+      Rat.cast_one, Rat.cast_div, Rat.cast_ofNat]
     ring_nf
     rw [Complex.I_pow_four ]
     have pin : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
@@ -656,7 +656,7 @@ lemma Delta_q_one_term : (qExpansion 1 Delta).coeff ℂ 1 = 1 := by
   simp
   rw [← derivWithin_of_isOpen (s := Metric.ball 0 (1 / 2 : ℝ)) (isOpen_ball) (by simp) ]
   rw [derivWithin_congr Delta_cuspFuntion_eq ]
-  rw [derivWithin_mul ]
+  rw [derivWithin_fun_mul]
   simp
   have := derivWithin_id' ( 0 * ∏' (i : ℕ), (1 - 0 ^ (i + 1)) ^ 24 : ℂ) (Metric.ball 0 (1 / 2 : ℝ)) ?_
   simp at *
