@@ -145,7 +145,7 @@ private theorem E8'_det_aux_3 : (∑ k : Fin 8, c₇ k • (E8'.updateRow 6 (∑
     = ![0, 0, 0, 0, 0, 0, 0, -2/5] := by
   ext i
   simp_rw [E8'_det_aux_2, Fin.sum_univ_eight]
-  simp only [Fin.reduceEq, ↓reduceIte, smul_eq_mul, mul_zero, Pi.add_apply, Pi.smul_apply]
+  simp only [Fin.reduceEq, ↓reduceIte, smul_eq_mul, Pi.add_apply, Pi.smul_apply]
   simp [c₇, E8']
   fin_cases i <;> simp <;> norm_num
 
