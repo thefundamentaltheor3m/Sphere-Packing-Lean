@@ -492,10 +492,9 @@ lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff ℂ m) =
   simp_all only [inv_div]
   split
   rfl
-  simp only [inv_pow, bernoulli, bernoulli'_six, one_div, Rat.cast_mul, Rat.cast_pow, Rat.cast_neg,
-    Rat.cast_one, Rat.cast_inv, Rat.cast_ofNat, mul_inv_rev, inv_inv, Nat.factorial,
-    Nat.succ_eq_add_one, Nat.reduceAdd, zero_add, mul_one, Nat.reduceMul, Nat.cast_ofNat, mul_neg,
-    neg_mul, neg_inj]
+  simp only [bernoulli, bernoulli'_six, one_div, Rat.cast_mul, Rat.cast_pow, Rat.cast_neg,
+    Rat.cast_one, Rat.cast_inv, Rat.cast_ofNat, Nat.factorial,
+    Nat.succ_eq_add_one, Nat.reduceAdd, zero_add, mul_one, Nat.reduceMul, Nat.cast_ofNat]
   ring_nf
   rw [Complex.I_pow_six ]
   have pin : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
@@ -530,7 +529,7 @@ theorem E4E6_coeff_zero_eq_zero  :
   rw [hds, hd6]
   rw [qExpansion_mul_coeff, qExpansion_mul_coeff, qExpansion_mul_coeff, PowerSeries.coeff_mul, PowerSeries.coeff_mul,]
   simp only [Finset.antidiagonal_zero, Prod.mk_zero_zero, Finset.sum_singleton, Prod.fst_zero,
-    Prod.snd_zero, map_mul]
+    Prod.snd_zero]
   simp_rw [E4_q_exp_zero, E6_q_exp_zero]
   rw [PowerSeries.coeff_mul]
   simp only [Finset.antidiagonal_zero, Prod.mk_zero_zero, Finset.sum_singleton, Prod.fst_zero,
