@@ -93,8 +93,8 @@ def GammaSet_one_Equiv : (Fin 2 → ℤ) ≃ (Σn : ℕ, gammaSetN n) where
   simp only [singleton_smul, Nat.succ_eq_add_one, Nat.reduceAdd, Fin.isValue,
     CharP.cast_eq_zero, EuclideanDomain.div_zero, zero_smul, gammaSetN]
   use ![1,1]
-  simp only [gammaSet_top_mem, Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.head_cons, zero_smul, and_true]
+  simp only [gammaSet_top_mem, Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, zero_smul,
+    and_true]
   exact Int.isCoprime_iff_gcd_eq_one.mpr rfl ⟩⟩
   invFun v := v.2
   left_inv v := by
@@ -130,22 +130,21 @@ theorem q_exp_iden_2 (k : ℕ) (hk : 3 ≤ k) (hk2 : Even k) (z : ℍ) :
   rw [Summable.tsum_prod, sum_int_even]
   · simp only [Int.cast_zero, zero_mul, zero_add, one_div, Int.cast_natCast, add_left_inj]
     rw [sum_int_even]
-    simp  [algebraMap.coe_zero, Int.cast_ofNat, one_div]
+    simp only [Int.cast_zero, Int.cast_natCast]
     have h0 : ((0 : ℂ) ^ k)⁻¹ = 0 := by simp; omega
     have h00 : ((0 ^ k : ℕ) : ℝ)⁻¹ = 0 := by simp; omega
     norm_cast at *
     rw [h0]
-    simp  [zero_add, mul_eq_mul_left_iff,  one_ne_zero]
+    simp  [zero_add, mul_eq_mul_left_iff]
     norm_cast
     simp only [PNat.pow_coe, Nat.cast_pow]
     rw [zeta_nat_eq_tsum_of_gt_one hkk, ← tsum_pNat _ (by simp; omega)]
-    simp only [CharP.cast_eq_zero, one_div, right_eq_add, inv_eq_zero, pow_eq_zero_iff', ne_eq,
-      true_and]
+    simp only [one_div]
     intro n
     simp only [Int.cast_neg, inv_inj]
     rw [Even.neg_pow hk2]
     have := (Complex.summable_one_div_nat_cpow  (p := k)).mpr (by simp [hkk])
-    simp only [cpow_ofNat, one_div, re_ofNat, Nat.one_lt_ofNat, iff_true] at *
+    simp only [one_div] at *
     norm_cast at *
     apply  Summable.of_nat_of_neg_add_one
     apply this.congr
