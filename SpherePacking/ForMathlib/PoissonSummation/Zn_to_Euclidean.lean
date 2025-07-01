@@ -105,7 +105,7 @@ theorem Zn_dualSubmodule_eq_Zn (n : ℕ) :
     obtain ⟨m, hm⟩ := hx (PiLp.basisFun 2 ℝ (Fin n) i) (PiLp_basisFun_mem_EucLattice n i)
     use m
     simp only [PiLp.basisFun_apply] at hm
-    exact hm.symm
+    rw [Finset.sum_eq_single i] at hm <;> simp_all
   · intro y hy
     rw [EuclideanSpace.mem_Zn_Submodule_iff] at hx hy
     obtain ⟨m₁, hm₁⟩ := hx
