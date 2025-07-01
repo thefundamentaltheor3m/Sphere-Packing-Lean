@@ -211,7 +211,5 @@ lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn
     have HJ := deriv_EqOn_congr s hz hs2 hx
     rw [HJ, h]
     nth_rw 1 [show z • g = fun x => z • g x by rfl]
-    rw [deriv_const_smul]
     simp
     rw [mul_div_mul_left (deriv g x) (g x) hz0]
-    exact hg.differentiableAt (x := x) (IsOpen.mem_nhds hs2 hx)
