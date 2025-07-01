@@ -65,7 +65,6 @@ lemma qExpansion_mul_coeff_zero (a b : ℤ) (f : ModularForm Γ(n) a) (g : Modul
     simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul]
     apply cuspFunction_mul_zero
 
-
 lemma cuspFunction_mul (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b)
     [NeZero n] : cuspFunction n (f.mul g) = cuspFunction n f * cuspFunction n g := by
     ext z
@@ -81,11 +80,8 @@ theorem derivWithin_mul2 (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableO
     s.restrict (derivWithin (fun y => f y * g y) s) =
       s.restrict (derivWithin f s * g  + f  * derivWithin g s)  := by
   ext y
-  simp
-  rw [derivWithin_mul]
-  exact hf y y.2
-  exact hd y y.2
-
+  simp only [restrict_apply, Pi.add_apply, Pi.mul_apply]
+  rw [derivWithin_fun_mul (hf y y.2) (hd y y.2)]
 
 lemma iteratedDerivWithin_mul (f g : ℂ → ℂ) (s : Set ℂ) (hs : IsOpen s) (x : ℂ) (hx : x ∈ s) (m : ℕ)
     (hf : ContDiffOn ℂ ⊤ f s)(hg : ContDiffOn ℂ ⊤ g s) :
