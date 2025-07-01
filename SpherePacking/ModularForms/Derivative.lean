@@ -265,7 +265,7 @@ theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 172800 * Δ_fun * 
 example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.toFun - E₆.toFun) :=
   by
   rw [D_mul E₄.toFun E₄.toFun]
-  simp only [ramanujan_E₄, ramanujan_E₂, ramanujan_E₆]
+  simp only [ramanujan_E₄]
   ring_nf
   exact E₄.holo'
   exact E₄.holo'
