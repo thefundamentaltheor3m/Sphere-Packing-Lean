@@ -29,8 +29,7 @@ lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻
     use 0
     intro n hn
     have := EisensteinSeries.summand_bound z (k := 1) (by norm_num) ![m, n]
-    simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
-      ge_iff_le] at *
+    simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, ge_iff_le] at *
     nth_rw 2 [mul_comm]
     simp_rw [Real.rpow_neg_one] at this
     have hr : (r z)⁻¹ = |r z|⁻¹ := by
@@ -38,7 +37,7 @@ lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻
       apply symm
       rw [abs_eq_self]
       exact (r_pos z).le
-    rw [← hr, norm_symm]
+    rw [← hr, _root_.norm_symm]
     exact this}
   apply  Asymptotics.IsBigO.trans  h1
   rw [@Asymptotics.isBigO_iff']
@@ -119,20 +118,19 @@ lemma linear_bigO' (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((n : ℂ) * z + m)�
     simp
     constructor
     repeat{
-    use 0
-    intro n hn
-    have := EisensteinSeries.summand_bound z (k := 1) (by norm_num) ![n, m]
-    simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
-      ge_iff_le] at *
-    nth_rw 2 [mul_comm]
-    simp_rw [Real.rpow_neg_one] at this
-    have hr : (r z)⁻¹ = |r z|⁻¹ := by
-      simp only [inv_inj]
-      apply symm
-      rw [abs_eq_self]
-      exact (r_pos z).le
-    rw [← hr, norm_symm]
-    exact this}
+      use 0
+      intro n hn
+      have := EisensteinSeries.summand_bound z (k := 1) (by norm_num) ![n, m]
+      simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, ge_iff_le] at *
+      nth_rw 2 [mul_comm]
+      simp_rw [Real.rpow_neg_one] at this
+      have hr : (r z)⁻¹ = |r z|⁻¹ := by
+        simp only [inv_inj]
+        apply symm
+        rw [abs_eq_self]
+        exact (r_pos z).le
+      rw [← hr, _root_.norm_symm]
+      exact this}
   apply  Asymptotics.IsBigO.trans  h1
   rw [@Asymptotics.isBigO_iff']
   use (r z)⁻¹
