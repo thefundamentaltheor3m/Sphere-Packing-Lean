@@ -457,14 +457,33 @@ lemma cexp_aux1 (t : ℝ) : cexp (2 * ↑π * Complex.I * (Complex.I * t)) = rex
     _ = cexp (-2 * ↑π * t) := by field_simp
     _ = rexp (-2 * π * t) := by simp [Complex.exp_ofReal_re]
 
+lemma cexp_aux2 (t : ℝ) (n : ℕ)
+    : cexp (2 * π * Complex.I * (n + 1) * (Complex.I * t)) = rexp (-(2 * π * (n + 1) * t)) := by
+  calc
+    _ = cexp (2 * ↑π * (n + 1) * (Complex.I * Complex.I) * t) := by ring_nf
+    _ = cexp (-2 * ↑π * (n + 1) * t) := by field_simp
+    _ = rexp (-(2 * π * (n + 1) * t)) := by simp [Complex.exp_ofReal_re]
+
+lemma cexp_aux3 (t : ℝ) (n : ℕ) (ht : 0 < t) : 0 < 1 - rexp (-(2 * π * (n + 1) * t)) := by
+  have _ : rexp (-(2 * π * (n + 1) * t)) < 1 := exp_lt_one_iff.mpr (by simp; positivity)
+  linarith
+
+lemma cexp_aux4 (t : ℝ) (n : ℕ) : (cexp (-2 * π * (n + 1) * t)).im = 0 := by
+  simpa [Complex.ofReal_mul, Complex.ofReal_neg] using exp_ofReal_im (-2 * π * (n + 1) * t)
+
+lemma cexp_aux5 (t : ℝ) : (cexp (-(2 * π * t))).im = 0 := by
+  simpa [Complex.ofReal_mul, Complex.ofReal_neg] using exp_ofReal_im (-(2 * π * t))
+
+/- Δ(it) is real on the (positive) imaginary axis. -/
 lemma Delta_imag_axis_real {t : ℝ} (ht : 0 < t) : (ResToImagAxis Delta t).im = 0 := by
   simp [ResToImagAxis, ht]
   rw [Delta_apply, Δ]
-  simp [Subtype.coe_mk, cexp_aux1]
+  simp [Subtype.coe_mk, cexp_aux1, cexp_aux2, cexp_aux5]
   sorry
 
+/- Δ(it) is positive on the (positive) imaginary axis. -/
 lemma Delta_imag_axis_pos {t : ℝ} (ht : 0 < t) : 0 < (ResToImagAxis Delta t).re := by
   simp [ResToImagAxis, ht]
   rw [Delta_apply, Δ]
-  simp [Subtype.coe_mk, cexp_aux1]
+  simp [Subtype.coe_mk, cexp_aux1, cexp_aux2, cexp_aux5]
   sorry
