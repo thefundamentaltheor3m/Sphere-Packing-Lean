@@ -59,8 +59,6 @@ section eq
 
 section aux
 
-private lemma z_nonzero (z : ℍ) : (z : ℂ) ≠ 0 := UpperHalfPlane.ne_zero z
-
 private lemma z_plus_one_nonzero (z : ℍ) : (z + 1 : ℂ) ≠ 0 := by
   have hh : 0 < (z + 1 : ℂ).im  := by
     calc
@@ -104,7 +102,7 @@ private lemma slashS'' (z : ℍ) (F : ℍ → ℂ): F (S • z) =
     apply inv_mul_cancel ((z : ℂ) ^ (2 : ℤ))
     simp only [ne_eq]
     intro hP
-    apply z_nonzero z
+    apply UpperHalfPlane.ne_zero z
     apply helper
     rw [← pow_two]
     exact hP
@@ -123,7 +121,8 @@ private lemma slashT' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (T)) (z
 private lemma S_mul_T : S * T = ⟨!![0, -1; 1, 1], by norm_num [det_fin_two_of]⟩ := by
   ext (i : Fin 2) (j : Fin 2)
   fin_cases i; fin_cases j <;>
-    simp [mul_apply, S, T]
+  · simp [mul_apply, S, T]
+  · simp [mul_apply, S, T]
 
 -- the following statements will be applied of F = H₂, H₃, H₄ or (H₃+H₄)/H₂^2
 private lemma slashST (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (S * T)) (z) =
@@ -293,9 +292,9 @@ lemma ψS_eq' : ψS = 128 * ((H₄_MF - H₂_MF) / (H₃_MF ^ 2) - (H₂_MF + H�
       · rw [div_one, ← mul_neg, ← mul_add, add_comm]
         simp only [mul_eq_mul_left_iff, OfNat.ofNat_ne_zero, or_false]
         rw [@Mathlib.Tactic.RingNF.add_neg]
-      · exact pow_ne_zero 2 (z_nonzero z)
-    · exact pow_ne_zero 2 (z_nonzero z)
-  · exact pow_ne_zero 2 (z_nonzero z)
+      · exact pow_ne_zero 2 (UpperHalfPlane.ne_zero z)
+    · exact pow_ne_zero 2 (UpperHalfPlane.ne_zero z)
+  · exact pow_ne_zero 2 (UpperHalfPlane.ne_zero z)
 -- proof of ψS_eq' complete.
 
 lemma ψS_eq : ψS = 128 * (- ((H₂_MF + H₃_MF) / H₄_MF ^ 2) - (H₂_MF - H₄_MF) / (H₃_MF ^ 2)) := by
@@ -350,10 +349,10 @@ lemma ψS_slash_S : ψS ∣[-2] S = ψI := by
       · exact d_nonzero
     rw [resolve']
     · rw [sub_neg_eq_add, ← add_div, mul_assoc, div_mul, div_self]
-      · rw [div_one, left_distrib, add_comm, add_comm (H₄ z) (H₃ z), ← mul_div, ← mul_div]
-      · exact pow_ne_zero 2 (z_nonzero z)
-    · exact pow_ne_zero 2 (z_nonzero z)
-  · exact pow_ne_zero 2 (z_nonzero z)
+      · rw [div_one, left_distrib, add_comm, add_comm (H₄ z) (H₃ z)]
+      · exact pow_ne_zero 2 (UpperHalfPlane.ne_zero z)
+    · exact pow_ne_zero 2 (UpperHalfPlane.ne_zero z)
+  · exact pow_ne_zero 2 (UpperHalfPlane.ne_zero z)
 -- proof of ψS_slash_S complete
 
 lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
@@ -429,9 +428,9 @@ lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
     · rw [neg_div', neg_div', neg_div', ← add_div, mul_div_assoc', div_mul, div_self]
       · rw [div_one, neg_div, ← sub_eq_add_neg, ← neg_add', mul_neg, add_comm,
           add_comm (H₄ z) _, add_comm (H₃ z) (H₂  z)]
-      · exact pow_ne_zero 2 (z_nonzero z)
-    · exact pow_ne_zero 2 (z_nonzero z)
-  · exact pow_ne_zero 2 (z_nonzero z)
+      · exact pow_ne_zero 2 (UpperHalfPlane.ne_zero z)
+    · exact pow_ne_zero 2 (UpperHalfPlane.ne_zero z)
+  · exact pow_ne_zero 2 (UpperHalfPlane.ne_zero z)
 -- proof of ψT_slash_S complete
 
 lemma ψI_slash_TS : ψI ∣[-2] (T * S) = -ψT := by
