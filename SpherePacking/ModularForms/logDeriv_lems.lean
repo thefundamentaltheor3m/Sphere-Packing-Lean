@@ -70,7 +70,7 @@ lemma logDeriv_one_sub_exp_comp (r : ℂ) (g : ℂ → ℂ) (hg : Differentiable
   rw  [logDeriv_comp, logDeriv_one_sub_exp]
   simp only [neg_mul]
   ring
-  simp only [differentiableAt_const, differentiableAt_exp, DifferentiableAt.mul,
+  simp only [differentiableAt_const, differentiableAt_exp, DifferentiableAt.fun_mul,
     DifferentiableAt.fun_sub]
   exact hg y
 
