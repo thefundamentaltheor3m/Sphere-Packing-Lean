@@ -82,7 +82,7 @@ lemma tprod_ne_zero (x : ℍ) (f : ℕ → ℍ → ℂ) (hf : ∀ i x, 1 + f i x
   have := Complex.cexp_tsum_eq_tprod (f := fun n => 1 + f n x) ?_
   simp
   rw [← this]
-  simp only [comp_apply, exp_ne_zero, not_false_eq_true]
+  simp only [exp_ne_zero, not_false_eq_true]
   apply Complex.summable_log_one_add_of_summable
   apply hu x
   intro n
