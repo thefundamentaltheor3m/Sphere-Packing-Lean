@@ -156,7 +156,7 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
   S.toSpherePacking.scale hc with
   lattice := c • S.lattice
   lattice_action := fun x y hx hy ↦ by
-    simp_all only [SpherePacking.scale, Set.mem_smul_set, AddSubgroup.mem_smul_pointwise_iff_exists]
+    simp_all only [SpherePacking.scale, Set.mem_smul_set]
     obtain ⟨x, hx, rfl⟩ := hx
     obtain ⟨y, hy, rfl⟩ := hy
     use x + y, S.lattice_action hx hy, smul_add ..

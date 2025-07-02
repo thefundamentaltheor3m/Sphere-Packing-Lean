@@ -257,14 +257,14 @@ theorem Delta_boundedfactor :
     simp only [forall_exists_index, and_imp, gt_iff_lt, CharP.cast_eq_zero, zero_add, mul_one,
       dist_zero_right, norm_neg, inf_eq_inter, inter_mem_iff, sup_le_iff, mem_inter_iff,
       mem_setOf_eq, one_div, Complex.norm_mul, norm_ofNat, Nat.ofNat_pos, mul_le_mul_left,
-      ge_iff_le, K] at *
+      ge_iff_le] at *
     apply le_trans (this ?_)
     simp only [Nat.ofNat_pos, div_pos_iff_of_pos_left, mul_le_mul_left]
     have hr := cexp_two_pi_I_im_antimono UpperHalfPlane.I b (n := k + 1) ?_
     simpa using hr
     simp only [UpperHalfPlane.I_im, hb.2.2]
-    have HH := ha3 (K • b) (by have h8 := hA K b hb; simp only [inf_eq_inter, sup_le_iff,
-      mem_inter_iff, mem_setOf_eq] at h8; exact h8.1.2)
+    have HH := ha3 (K • b) (by
+      have h8 := hA K b hb; simp only [mem_inter_iff, mem_setOf_eq] at h8; exact h8.1.2)
     simp only [natPosSMul_apply, PNat.mk_coe, Nat.cast_add, Nat.cast_one, ← mul_assoc, K] at HH
     exact HH.le
   · intro x n

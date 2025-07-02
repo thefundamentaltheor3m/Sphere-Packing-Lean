@@ -160,8 +160,7 @@ lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff ℂ 1 = 
   ring_nf
   rw [antidiagonal_one]
   simp  [Finset.mem_singleton, Prod.mk.injEq, one_ne_zero, zero_ne_one, and_self,
-    not_false_eq_true, Finset.sum_insert, Finset.antidiagonal_zero, Prod.mk_zero_zero,
-    Finset.sum_singleton, Prod.fst_zero, Prod.snd_zero]
+    not_false_eq_true, Finset.sum_insert, Finset.sum_singleton]
   simp_rw [E4_q_exp_one, he4, E6_q_exp_one]
   ring
 
@@ -305,8 +304,7 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
       rw [← hc6] at this
       rw [← qExpansion_smul2 1 c6, h2] at this
       have hh := congr_arg (fun x => x.coeff ℂ 0) this
-      simp only [_root_.map_smul, smul_eq_mul,
-        map_mul] at hh
+      simp only [_root_.map_smul, smul_eq_mul] at hh
       rw [E6_q_exp_zero] at hh
       rw [pow_three]
       simp only [PowerSeries.coeff_zero_eq_constantCoeff, ne_eq, Int.reduceAdd, mul_one,
@@ -323,8 +321,7 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
       rw [← hc4] at this
       rw [← qExpansion_smul2 1 c4] at this
       have hh := congr_arg (fun x => x.coeff ℂ 0) this
-      simp only [_root_.map_smul, smul_eq_mul,
-        map_mul] at hh
+      simp only [_root_.map_smul, smul_eq_mul] at hh
       rw [E4_q_exp_zero] at hh
       rw [pow_two]
       simpa using hh
@@ -350,44 +347,44 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
       rw [DirectSum.of_mul_of, DirectSum.of_mul_of, hc4e, smul_smul, smul_smul]
       ring_nf
       rw [@DirectSum.smul_apply]
-      simp only [PowerSeries.coeff_zero_eq_constantCoeff, Int.reduceAdd, DirectSum.of_eq_same, F]
+      simp only [PowerSeries.coeff_zero_eq_constantCoeff, Int.reduceAdd, DirectSum.of_eq_same]
       rfl
     have hF2 : (((F^3)^2) 12) = ((qExpansion 1 f).coeff ℂ 0)^6 • ((E₆.mul E₆)) := by
       rw [HF3, pow_two]
       simp only [Algebra.mul_smul_comm, Algebra.smul_mul_assoc, Int.reduceAdd,
-        PowerSeries.coeff_zero_eq_constantCoeff, F]
+        PowerSeries.coeff_zero_eq_constantCoeff]
       rw [DirectSum.of_mul_of, hc6e, smul_smul]
       ring_nf
       rw [@DirectSum.smul_apply]
-      simp only [PowerSeries.coeff_zero_eq_constantCoeff, Int.reduceAdd, DirectSum.of_eq_same, F]
+      simp only [PowerSeries.coeff_zero_eq_constantCoeff, Int.reduceAdd, DirectSum.of_eq_same]
       rfl
     have V : (1 / 1728 : ℂ) • ((((F^2)^3) 12) - (((F^3)^2) 12)) =  ((qExpansion 1 f).coeff ℂ 0)^6 • D := by
       rw [HF12, hF2]
       simp only [one_div, Int.reduceAdd, PowerSeries.coeff_zero_eq_constantCoeff,
-        DirectSum.of_eq_same, D, F]
+        DirectSum.of_eq_same, D]
       rw [Delta_E4_eqn, Delta_E4_E6_eq, pow_two, pow_three, DirectSum.of_mul_of,
         DirectSum.of_mul_of,DirectSum.of_mul_of]
-      simp only [one_div, Int.reduceAdd, DirectSum.sub_apply, DirectSum.of_eq_same, D, F]
+      simp only [one_div, Int.reduceAdd, DirectSum.sub_apply, DirectSum.of_eq_same]
       ext y
-      simp only [ModularForm.smul_apply, sub_apply, Int.reduceAdd, smul_eq_mul, D, F]
+      simp only [ModularForm.smul_apply, sub_apply, Int.reduceAdd, smul_eq_mul]
       ring_nf
       rfl
     have ht : (1 / 1728 : ℂ) • ((((F^2)^3) 12) - (((F^3)^2) 12)) = 0 := by
       ext y
       simp only [one_div, ModularForm.smul_apply, sub_apply, smul_eq_mul, ModularForm.zero_apply,
-        mul_eq_zero, inv_eq_zero, OfNat.ofNat_ne_zero, false_or, F, D]
+        mul_eq_zero, inv_eq_zero, OfNat.ofNat_ne_zero, false_or, F]
       ring_nf
     rw [ht] at V
     have hr := congr_fun (congr_arg (fun x ↦ x.toFun) V) UpperHalfPlane.I
     simp only [SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe, ModularForm.zero_apply,
       PowerSeries.coeff_zero_eq_constantCoeff, ModularForm.smul_apply, smul_eq_mul, zero_eq_mul,
-      ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff, F, D] at hr
+      ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff, D] at hr
     rcases hr with h | h
     · simp only [PowerSeries.coeff_zero_eq_constantCoeff, ne_eq, Int.reduceAdd, one_div,
       isUnit_iff_ne_zero, inv_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, IsUnit.smul_eq_zero,
       F, D] at *
       exact hc1 h
-    · simp only [ModForm_mk, DirectSum.of_eq_same, F, D] at h
+    · simp only [ModForm_mk, DirectSum.of_eq_same] at h
       have hDelta := Δ_ne_zero UpperHalfPlane.I
       rw [← Delta_apply] at hDelta
       exact hDelta h
@@ -485,23 +482,19 @@ lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k)  :
         decide
     rw [this] at hkop
     fin_cases hkop
-    · simp only [Nat.cast_ofNat, Int.reduceSub, Int.reduceNeg, Nat.reduceDiv, Nat.floor_zero,
-      zero_add, Nat.cast_ite, CharP.cast_eq_zero, Nat.cast_one]
+    · simp only [Nat.cast_ofNat, Int.reduceSub, Int.reduceNeg, Nat.cast_ite]
       have h8 : -8 < 0 := by norm_num
       rw [ModularForm.levelOne_neg_weight_rank_zero h8]
       norm_cast
-    · simp only [Nat.cast_ofNat, Int.reduceSub, Int.reduceNeg, Nat.reduceDiv, Nat.floor_zero,
-      zero_add, Nat.cast_ite, CharP.cast_eq_zero, Nat.cast_one]
+    · simp only [Nat.cast_ofNat, Int.reduceSub, Int.reduceNeg, Nat.cast_ite]
       have h8 : -6 < 0 := by norm_num
       rw [ModularForm.levelOne_neg_weight_rank_zero h8]
       norm_cast
-    · simp only [Nat.cast_ofNat, Int.reduceSub, Int.reduceNeg, Nat.reduceDiv, Nat.floor_zero,
-      zero_add, Nat.cast_ite, CharP.cast_eq_zero, Nat.cast_one]
+    · simp only [Nat.cast_ofNat, Int.reduceSub, Int.reduceNeg, Nat.cast_ite]
       have h8 : -4 < 0 := by norm_num
       rw [ModularForm.levelOne_neg_weight_rank_zero h8]
       norm_cast
-    · simp only [Nat.cast_ofNat, Int.reduceSub, Int.reduceNeg, Nat.reduceDiv, Nat.floor_zero,
-      zero_add, Nat.cast_ite, CharP.cast_eq_zero, Nat.cast_one]
+    · simp only [Nat.cast_ofNat, Int.reduceSub, Int.reduceNeg, Nat.cast_ite]
       have h8 : -2 < 0 := by norm_num
       rw [ModularForm.levelOne_neg_weight_rank_zero h8]
       norm_cast

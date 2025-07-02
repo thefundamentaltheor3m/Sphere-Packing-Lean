@@ -54,16 +54,14 @@ theorem logDeriv_tprod_eq_tsum  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ �
       exact IsOpen.mem_nhds hs hz
     have := DifferentiableAt.finset_prod hp
     convert this
-    simp only [Finset.prod_apply]
-    · exact hnez
+    aesop
 
 
 lemma logDeriv_one_sub_exp (r : ℂ) : logDeriv (fun z => 1 - r * cexp (z)) =
     fun z => -r * cexp z / (1 - r * cexp ( z)) := by
   ext z
   rw [logDeriv]
-  simp only [Pi.div_apply, differentiableAt_const, differentiableAt_exp, DifferentiableAt.mul,
-    deriv_sub, deriv_const', deriv_mul, zero_mul, Complex.deriv_exp, zero_add, zero_sub, neg_mul]
+  aesop
 
 lemma logDeriv_one_sub_exp_comp (r : ℂ) (g : ℂ → ℂ) (hg : Differentiable ℂ g) :
     logDeriv ((fun z => 1 - r * cexp (z)) ∘ g) =
@@ -72,7 +70,7 @@ lemma logDeriv_one_sub_exp_comp (r : ℂ) (g : ℂ → ℂ) (hg : Differentiable
   rw  [logDeriv_comp, logDeriv_one_sub_exp]
   simp only [neg_mul]
   ring
-  simp only [differentiableAt_const, differentiableAt_exp, DifferentiableAt.mul,
+  simp only [differentiableAt_const, differentiableAt_exp, DifferentiableAt.fun_mul,
     DifferentiableAt.fun_sub]
   exact hg y
 
@@ -108,8 +106,6 @@ lemma func_div (a b c d : ℂ → ℂ) (x : ℂ) (hb : b x ≠ 0) (hd :  d x ≠
      (a / b) x = (c /d) x ↔ (a * d) x = (b * c) x := by
   constructor
   intro h
-  simp only [Pi.sub_apply, Pi.zero_apply] at *
-  simp only [Pi.mul_apply]
   simp only [Pi.div_apply] at h
   rw [div_eq_div_iff] at h
   nth_rw 2 [mul_comm]
@@ -151,7 +147,7 @@ lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn
     have hfg : f * g⁻¹ = fun x => f x * (g⁻¹ x) := by rfl
     rw [hfg]
     intro z hz
-    rw [deriv_mul]
+    rw [deriv_fun_mul]
     have hgi : g⁻¹ = (fun x => x⁻¹) ∘ g := by
       ext y
       simp only [Pi.inv_apply, comp_apply]
@@ -211,7 +207,5 @@ lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn
     have HJ := deriv_EqOn_congr s hz hs2 hx
     rw [HJ, h]
     nth_rw 1 [show z • g = fun x => z • g x by rfl]
-    rw [deriv_const_smul]
     simp
     rw [mul_div_mul_left (deriv g x) (g x) hz0]
-    exact hg.differentiableAt (x := x) (IsOpen.mem_nhds hs2 hx)

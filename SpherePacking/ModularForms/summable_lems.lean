@@ -239,7 +239,8 @@ lemma pnat_inv_sub_squares (z : ℍ) :
   norm_cast
   ring_nf
   have h2 := upp_half_not_ints z n
-  simp [h2] at *
+  simp only [Int.cast_natCast, ne_eq, PNat.pow_coe, Nat.cast_pow, mul_eq_mul_right_iff, inv_eq_zero,
+    OfNat.ofNat_ne_zero, or_false] at *
   have h1 := upp_half_not_ints z (n)
   norm_cast at *
   rw [sub_eq_zero]
@@ -288,7 +289,7 @@ theorem upbnd (z : ℍ) (d : ℤ) : (d ^ 2 : ℝ) * r z ^ 2 ≤ ‖((z : ℂ) ^ 
     apply le_trans h1
     apply le_of_eq
     congr
-    simp only [ofReal_inv, ofReal_intCast, ofReal_neg, ofReal_one]
+    simp only [ofReal_inv, ofReal_intCast]
   · simp only [ne_eq, Decidable.not_not] at hd
     simp only [hd, Int.cast_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, zero_mul,
       sub_zero, norm_pow, norm_nonneg, pow_nonneg]
@@ -454,16 +455,15 @@ theorem extracted_abs_norm_summable (z : ℍ) (i : ℤ) :
   apply hS.of_norm_bounded_eventually
   rw [Filter.eventually_iff_exists_mem ]
   use (Finset.Icc (-|i|) (|i|))ᶜ
-  simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Int.reduceNeg, mem_cofinite, compl_compl,
-    finite_singleton, Finite.insert, mem_compl_iff, mem_insert_iff, mem_singleton_iff, not_or,
-    Fin.isValue, one_div, mul_inv_rev, norm_mul, norm_inv, norm_pow, and_imp, true_and]
-  simp only [Finset.coe_Icc, norm_norm, Real.norm_ofNat, inv_inv,
+  simp only [Nat.succ_eq_add_one, Nat.reduceAdd, mem_cofinite, compl_compl,
+    mem_compl_iff, one_div, mul_inv_rev, norm_mul, norm_inv, norm_pow]
+  simp only [Finset.coe_Icc, Real.norm_ofNat, inv_inv,
     Real.norm_eq_abs, _root_.sq_abs]
   constructor
   exact finite_Icc (-|i|) |i|
   intro y hy
   apply le_of_eq
-  simp only [mul_eq_mul_right_iff, inv_inj, norm_nonneg, mul_eq_zero, OfNat.ofNat_ne_zero,
+  simp only [mul_eq_mul_right_iff, inv_inj, mul_eq_zero, OfNat.ofNat_ne_zero,
     inv_eq_zero, ne_eq, not_false_eq_true, pow_eq_zero_iff, false_or]
   left
   simp [norm_eq_max_natAbs]
@@ -488,7 +488,7 @@ theorem extracted_abs_norm_summable (z : ℍ) (i : ℤ) :
     zify
     aesop
   rw [hg2]
-  simp only [Nat.cast_pow, Nat.cast_nonneg]
+  simp only [Nat.cast_pow]
   have := Int.natAbs_pow_two y
   norm_cast
   rw [← this]
@@ -568,7 +568,7 @@ lemma summable_pain (z : ℍ) (i : ℤ) :
     aesop
     have h2 := linear_ne_zero (cd := ![m, i + 1]) z ?_
     simp only [Fin.isValue, Matrix.cons_val_zero, ofReal_intCast, Matrix.cons_val_one,
-      Matrix.head_cons, ofReal_add, ofReal_one, ne_eq] at h2
+      ofReal_add, ofReal_one, ne_eq] at h2
     rw [add_assoc]
     exact h2
     aesop
@@ -593,7 +593,7 @@ theorem vector_norm_bound (b : Fin 2 → ℤ) (hb : b ≠ 0) (HB1 : b ≠ ![0, -
   · simp_rw [Real.rpow_neg_one]
     rw [aux]
     · simp only [norm_eq_max_natAbs, Nat.cast_max, Nat.succ_eq_add_one, Nat.reduceAdd,
-        Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, max_le_iff]
+        Matrix.cons_val_zero, Matrix.cons_val_one, max_le_iff]
       have : 2 * max ↑(b 0).natAbs ↑(b 1 + 1).natAbs = max (2*(b 0)).natAbs (2*(b 1 + 1)).natAbs := by
         simp_rw [Int.natAbs_mul]
         exact (Nat.mul_max_mul_left 2 (b 0).natAbs (b 1 + 1).natAbs).symm
@@ -652,8 +652,7 @@ lemma G_2_alt_summable (z : ℍ) : Summable fun  (m : Fin 2 → ℤ) =>
   let b' : Fin 2 → ℤ := ![b 0, b 1 + 1]
   have p2 := summand_bound z hk0' b'
   simp only [Nat.ofNat_nonneg, zero_le_one, Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.head_cons, Int.cast_add, Int.cast_one, one_div, mul_inv_rev, map_mul, map_inv₀, map_pow,
-     ge_iff_le, b'] at *
+    Int.cast_add, Int.cast_one, ge_iff_le, b'] at *
   have := mul_le_mul p2 p1 ?_ ?_
   have hpow : ‖(↑((b 0) : ℂ) * (z : ℂ) + ↑(b 1))‖ ^ (-2 : ℝ) =
     (‖(↑((b 0) : ℂ) * (z : ℂ) + ↑(b 1))‖ ^ 2)⁻¹ :=
@@ -694,7 +693,7 @@ lemma G_2_alt_summable (z : ℍ) : Summable fun  (m : Fin 2 → ℤ) =>
       (Real.rpow_nonneg (norm_nonneg ![b 0, b 1 + 1]) (-1))
 
 
-def δ (a b : ℤ): ℂ := if a = 0 ∧ b = 0 then 1 else if a = 0 ∧ b = -1 then 2 else 0
+noncomputable def δ (a b : ℤ): ℂ := if a = 0 ∧ b = 0 then 1 else if a = 0 ∧ b = -1 then 2 else 0
 
 @[simp]
 lemma δ_eq : δ 0 0 = 1 := by simp [δ]
@@ -790,7 +789,7 @@ lemma G2_alt_indexing2_δ (z : ℍ) : ∑' (m : Fin 2 → ℤ),
   rw [← swap_equiv.summable_iff] at H
   rw [← (finTwoArrowEquiv _).symm.summable_iff] at H
   simp [Fin.isValue, one_div, mul_inv_rev, swap_equiv, Equiv.coe_fn_mk,
-    finTwoArrowEquiv_symm_apply, swap_apply] at H
+    finTwoArrowEquiv_symm_apply] at H
   have := H.prod_factor c
   simp at this
   apply this
@@ -1074,7 +1073,7 @@ theorem tsum_uexp_contDiffOn (k : ℕ) :
   apply le_of_eq
   norm_cast
   simp
-  rw [derivWithin_mul]
+  rw [derivWithin_fun_mul]
   rw [derivWithin_cexp ]
   rw [derivWithin_const_mul]
   simp
@@ -1102,8 +1101,7 @@ theorem iter_der_within_add (k : ℕ+) (x : {z : ℂ | 0 < z.im}) :
       Complex.exp (2 * ↑π * Complex.I * n * x) := by
   rw [iteratedDerivWithin_const_sub (PNat.pos k) ]
   simp
-  rw [iteratedDerivWithin_neg' ]
-  rw [iteratedDerivWithin_const_mul]
+  rw [iteratedDerivWithin_fun_neg, iteratedDerivWithin_const_mul]
   congr
   have :=  exp_series_ite_deriv_uexp2 k x
   rw [this]
@@ -1550,7 +1548,7 @@ theorem q_exp_iden'' (k : ℕ) (hk : 2 ≤ k) :
     apply Nat.sub_pos_of_lt
     linarith
   have h2 := (iter_exp_eqOn (⟨k - 1, hkpos⟩ : ℕ+)).symm
-  simp  [one_div,  Subtype.coe_mk, neg_mul, Algebra.id.smul_eq_mul] at *
+  simp  [one_div, neg_mul] at *
   have h3 := pos_sum_eq (k - 1) hkpos
   simp at h3
   rw [h3] at h2
@@ -1780,7 +1778,7 @@ lemma t9 (z : ℍ) : ∑' m : ℕ,
   congr 1
   ring
   · have := (a4 2 z).prod_symm
-    simp [_root_.swap] at *
+    simp only [Nat.add_one_sub_one, pow_one] at *
     apply this.congr
     intro b
     rw [Prod.swap]

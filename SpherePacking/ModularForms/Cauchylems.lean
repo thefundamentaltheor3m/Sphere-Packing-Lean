@@ -148,8 +148,7 @@ theorem telescope_aux (z : ℍ) (m : ℤ) (b : ℕ) :
     1 / (↑m * ↑z - ↑b) - 1 / (↑m * ↑z + ↑b) := by
   induction' b  with b ihb
   aesop
-  simp only [Nat.cast_add, Nat.cast_one, Int.reduceNeg, one_div,
-      Finset.sum_sub_distrib] at *
+  simp only [Nat.cast_add, Nat.cast_one, one_div, Finset.sum_sub_distrib] at *
   rw [fsb, Finset.sum_union, Finset.sum_union, Finset.sum_pair, Finset.sum_pair,add_sub_add_comm, ihb]
   simp only [neg_add_rev, Int.reduceNeg, Int.cast_add, Int.cast_neg, Int.cast_one, Int.cast_natCast]
   ring
@@ -308,16 +307,14 @@ lemma cauchy_seq_mul_const (f : ℕ → ℂ) (c : ℂ) (hc  : c ≠ 0) :
   rw [Metric.cauchySeq_iff' ] at *
   simp only [ne_eq, gt_iff_lt, ge_iff_le, Pi.smul_apply, smul_eq_mul] at *
   intro ε hε
-  have hcc : 0 < ‖c‖ := by
-    simp  [AbsoluteValue.pos_iff, ne_eq, hc, not_false_eq_true]
-  have hC : 0 < ‖c‖ := by
-    simp [AbsoluteValue.pos_iff, ne_eq, hc, not_false_eq_true]
+  have hcc : 0 < ‖c‖ := by simp [ne_eq, hc, not_false_eq_true]
+  have hC : 0 < ‖c‖ := by simp [ne_eq, hc, not_false_eq_true]
   have H := hf (ε / ‖c‖) (by rw [lt_div_iff₀' hC]; simp [hε] )
   obtain ⟨N, hN⟩ := H
   use N
   intro n hn
   have h1 := hN n hn
-  simp only [dist_eq_norm,  AbsoluteValue.pos_iff, ne_eq, gt_iff_lt] at *
+  simp only [dist_eq_norm, gt_iff_lt] at *
   rw [← mul_sub]
   simp only [Complex.norm_mul]
   rw [lt_div_iff₀' (by simp [hc])] at h1

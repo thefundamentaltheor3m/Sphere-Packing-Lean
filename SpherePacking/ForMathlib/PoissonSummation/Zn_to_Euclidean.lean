@@ -83,10 +83,9 @@ basis of `Euc(n)`.
 theorem PiLp_basisFun_mem_EucLattice (n : ℕ) :
     ∀ i : Fin n, (PiLp.basisFun 2 ℝ (Fin n)) i ∈ (ℤ^n) := by
   intro i
-  simp only [PiLp.basisFun_apply, WithLp.equiv_symm_single]
+  simp only [PiLp.basisFun_apply]
   use fun j ↦ (if j = i then 1 else 0)
-  intro i
-  simp only [EuclideanSpace.single_apply, Int.cast_ite, Int.cast_one, Int.cast_zero]
+  aesop
 
 end Basis
 
@@ -105,9 +104,8 @@ theorem Zn_dualSubmodule_eq_Zn (n : ℕ) :
     intro i
     obtain ⟨m, hm⟩ := hx (PiLp.basisFun 2 ℝ (Fin n) i) (PiLp_basisFun_mem_EucLattice n i)
     use m
-    simp only [PiLp.basisFun_apply, WithLp.equiv_symm_pi_apply, Pi.single_apply, ite_mul, one_mul,
-      zero_mul, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte] at hm
-    exact hm.symm
+    simp only [PiLp.basisFun_apply] at hm
+    rw [Finset.sum_eq_single i] at hm <;> simp_all
   · intro y hy
     rw [EuclideanSpace.mem_Zn_Submodule_iff] at hx hy
     obtain ⟨m₁, hm₁⟩ := hx

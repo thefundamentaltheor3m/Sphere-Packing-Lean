@@ -119,14 +119,14 @@ private lemma sinTerm_bound_aux (Z : Set ℂ_ℤ) (hZ : IsCompact Z) : ∃ u : �
     apply (ContinuousOn.neg (ContinuousOn.pow (Continuous.continuousOn continuous_subtype_val) 2))
     exact Set.mapsTo_image (fun x ↦ -x.1 ^ 2) Z
   have := IsCompact.bddAbove_image hZ hf
-  simp only [map_neg_eq_map, map_pow, bddAbove_def, Set.mem_image, Subtype.exists, not_exists,
+  simp only [bddAbove_def, Set.mem_image, Subtype.exists,
     exists_and_right, forall_exists_index, and_imp] at this
   obtain ⟨s, hs⟩ := this
   use (fun n : ℕ => ‖((s / (n + 1) ^ 2) : ℂ)‖ )
   constructor
   · simpa using summable_pow_div_add (s : ℂ) 2 1 (by omega)
   · intro n x hx
-    simp only [norm_div, norm_neg, norm_pow,  map_div₀, Complex.norm_real, map_pow]
+    simp only [norm_div, norm_neg, norm_pow, Complex.norm_real]
     gcongr
     apply le_trans (hs _ x x.2 (by simp [hx]) (by simp)) (le_abs_self s)
 
@@ -168,14 +168,14 @@ theorem tendsto_logDeriv_euler_sin_div (x : ℂ) (hx : x ∈ ℂ_ℤ) :
       have hZ := IsCompact.image (isCompact_iff_isCompact_univ.mp hK2) (continuous_inclusion hK)
       have := tendstoUniformlyOn_compact_euler_sin_prod ((Set.inclusion hK)'' ⊤) hZ
       rw [Metric.tendstoUniformlyOn_iff] at *
-      simp only [Set.coe_setOf, Set.mem_setOf_eq, Set.image_univ, Set.range_inclusion, gt_iff_lt,
-        Set.top_eq_univ, Subtype.forall, not_exists, eventually_atTop, ge_iff_le] at *
+      simp only [Set.mem_setOf_eq, Set.image_univ, Set.range_inclusion, gt_iff_lt,
+        Set.top_eq_univ, Subtype.forall, eventually_atTop, ge_iff_le] at *
       intro ε hε
       obtain ⟨N, hN⟩ := this ε hε
       refine ⟨N, fun n hn y hy => hN n hn y (by simpa using hK hy) (by aesop)⟩
-  · simp only [not_exists, eventually_atTop, ge_iff_le]
+  · simp only [eventually_atTop, ge_iff_le]
     refine ⟨1, fun b _ => by simpa using (by simp only [sinTerm]; fun_prop)⟩
-  · simp only [Set.mem_setOf_eq, ne_eq, div_eq_zero_iff, mul_eq_zero, ofReal_eq_zero, not_or]
+  · simp only [ne_eq, div_eq_zero_iff, mul_eq_zero, ofReal_eq_zero, not_or]
     refine ⟨sin_pi_z_ne_zero hx, Real.pi_ne_zero , integerComplement.ne_zero hx⟩
 
 theorem logDeriv_sin_div (z : ℂ) (hz : z ∈ ℂ_ℤ) :
@@ -183,14 +183,14 @@ theorem logDeriv_sin_div (z : ℂ) (hz : z ∈ ℂ_ℤ) :
   have : (fun t => (Complex.sin (π * t)/ (π * t))) = fun z =>
     (Complex.sin ∘ fun t => π * t) z / (π * z) := by
     ext1
-    simp only [Pi.div_apply, Function.comp_apply]
+    simp only [Function.comp_apply]
   rw [this, logDeriv_div _ (by apply sin_pi_z_ne_zero hz) ?_
     (DifferentiableAt.comp _ (Complex.differentiableAt_sin) (by fun_prop)) (by fun_prop),
     logDeriv_comp (Complex.differentiableAt_sin) (by fun_prop), Complex.logDeriv_sin,
     deriv_const_mul _ (by fun_prop), deriv_id'', logDeriv_const_mul, logDeriv_id']
   · field_simp [mul_comm]
   · simpa only [ne_eq, ofReal_eq_zero] using Real.pi_ne_zero
-  · simp only [Set.mem_setOf_eq, ne_eq, mul_eq_zero, ofReal_eq_zero, not_or]
+  · simp only [ne_eq, mul_eq_zero, ofReal_eq_zero, not_or]
     refine ⟨Real.pi_ne_zero, integerComplement.ne_zero hz⟩
 
 /--The term in the infinite series expansion of cot. -/
@@ -198,9 +198,7 @@ noncomputable def cotTerm (x : ℂ) (n : ℕ) : ℂ := 1 / (x - (n + 1)) + 1 / (
 
 theorem logDeriv_sinTerm_eq_cotTerm (x : ℂ) (hx: x ∈ ℂ_ℤ) (i : ℕ) :
     logDeriv (fun (z : ℂ) ↦ sinTerm z i) x = cotTerm x i := by
-  simp only [sinTerm, logDeriv_apply, differentiableAt_const, deriv_const_add', deriv_div_const,
-    deriv.neg', differentiableAt_id', deriv_pow'', Nat.cast_ofNat, Nat.add_one_sub_one, pow_one,
-    deriv_id'', mul_one, cotTerm, one_div]
+  simp only [sinTerm, logDeriv_apply, deriv_const_add', deriv_div_const, cotTerm, one_div]
   rw [div_div]
   conv =>
     enter [1,2]
@@ -237,9 +235,7 @@ lemma logDeriv_of_prod {x : ℂ} (hx : x ∈ ℂ_ℤ) (n : ℕ) :
     apply logDeriv_sinTerm_eq_cotTerm x hx i
   · exact fun i _ ↦ sinTerm_ne_zero hx i
   · intro i hi
-    simp only [sinTerm, differentiableAt_const, differentiableAt_const_add_iff,
-      differentiableAt_fun_neg_iff, differentiableAt_id', DifferentiableAt.pow,
-      DifferentiableAt.div_const]
+    simp [sinTerm]
 
 theorem tendsto_logDeriv_euler_cot_sub (x : ℂ) (hx : x ∈ ℂ_ℤ) :
     Tendsto (fun n : ℕ => ∑ j ∈ Finset.range n, cotTerm x j)

@@ -274,7 +274,7 @@ lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
     * cexp (-π * r * t) := by
   rw [I₆']; congr 1
   apply MeasureTheory.setIntegral_congr_fun (X := ℝ) (E := ℂ) (measurableSet_Ici)
-  simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
+  simp only [EqOn, neg_mul]
   intro t ht
   rw [z₆'_eq_of_mem ht]
   congr

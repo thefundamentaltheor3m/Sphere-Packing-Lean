@@ -31,7 +31,7 @@ section Preliminaries
 end Preliminaries
 
 /-- The dual of a `ZLattice` is its dual as a ℤ-submodule. -/
-def ZLattice.Dual : Submodule ℤ E := LinearMap.BilinForm.dualSubmodule B Λ
+noncomputable def ZLattice.Dual : Submodule ℤ E := LinearMap.BilinForm.dualSubmodule B Λ
 
 namespace ZLattice.Dual
 

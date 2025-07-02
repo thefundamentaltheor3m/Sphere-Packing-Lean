@@ -127,7 +127,7 @@ lemma aux_9 (i : ℕ) :
 
 include hcsum in
 lemma aux_10 : Summable fun (n : ℕ) ↦ norm (c (n + n₀)) * rexp (-π * ↑n * z.im) := by
-  simp only [← aux_9, aux_ring]
+  simp only [← aux_9]
   exact aux_3 z c n₀ hcsum
 
 lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
@@ -515,8 +515,7 @@ theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     _ ≤ R * n.toNat ^ 5 := hR
       -- rwa [Real.norm_natCast] at hR
     _ = R * |↑n| ^ 5 := by
-      simp only [mul_eq_mul_left_iff, Nat.cast_nonneg, norm_nonneg, ne_eq, OfNat.ofNat_ne_zero,
-        not_false_eq_true, pow_left_inj₀]
+      simp only [mul_eq_mul_left_iff]
       norm_cast
       left
       rw [cast_pow, hnnat]
@@ -531,7 +530,7 @@ theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     have : ¬((σ 3) 4 = 0) ↔ ¬ (∑ d ∈ divisors 4, d ^ 3 = 0) := by rfl
     rw [this]
     simp only [Finset.sum_eq_zero_iff, mem_divisors, ne_eq, OfNat.ofNat_ne_zero,
-      not_false_eq_true, and_true, pow_eq_zero_iff, not_forall, Classical.not_imp]
+      not_false_eq_true, and_true, pow_eq_zero_iff, not_forall]
     exact ⟨2, (by norm_num), (by norm_num)⟩
   · simp only [φ₀]
     intro z hz
