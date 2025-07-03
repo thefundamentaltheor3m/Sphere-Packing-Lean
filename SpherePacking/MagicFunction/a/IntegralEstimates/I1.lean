@@ -69,7 +69,7 @@ lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioc 0 1) : HasDerivWithinAt f (f' x) (I
 
 lemma aux_injOn : InjOn f (Ioc 0 1) := by
   intro _ _ _ _ hf
-  simp only [f, div_eq_mul_inv, neg_mul, one_mul, neg_inj, inv_inj] at hf
+  simp only [f, div_eq_mul_inv, one_mul, inv_inj] at hf
   exact hf
 
 end Setup
@@ -82,7 +82,7 @@ lemma Changing_Domain_of_Integration (r : ℝ) :
   ext x
   constructor <;> intro hx
   · use x⁻¹
-    simp only [mem_Ici, mem_Icc] at hx ⊢
+    simp only [mem_Ici] at hx ⊢
     constructor
     · refine ⟨by positivity, ?_⟩
       rw [← mul_one x⁻¹, inv_mul_le_one₀ (by positivity)]
@@ -90,7 +90,7 @@ lemma Changing_Domain_of_Integration (r : ℝ) :
     · rw [f, div_inv_eq_mul, one_mul]
   · obtain ⟨y, hy₁, hy₂⟩ := hx
     rw [← hy₂, f]
-    simp only [one_div, mul_inv_rev, mem_Ici, inv_pos, Nat.ofNat_pos, lt_mul_iff_one_lt_left]
+    simp only [one_div, mem_Ici]
     exact one_le_inv_iff₀.mpr hy₁
 
 lemma Changing_Variables (r : ℝ) : ∫ (s : ℝ) in f '' (Ioc (0 : ℝ) (1 : ℝ)), (g r s) =
@@ -108,7 +108,7 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
   apply ae_of_all
   intro t ht
   obtain ⟨ht₀, ht₁⟩ := ht
-  simp only [Int.reduceNeg, zpow_neg, smul_neg, real_smul, neg_inj]
+  simp only [Int.reduceNeg, zpow_neg, real_smul]
   have h₁ : |-1 / t ^ 2| = 1 / t ^ 2 := by rw [neg_div, abs_neg, abs_of_nonneg (by positivity)]
   have h₃ : -1 / (I * t) = I / t := by
     rw [div_mul_eq_div_div_swap, div_I, neg_div, neg_mul, neg_neg, mul_comm, mul_div, mul_one]
@@ -166,7 +166,7 @@ lemma I₁'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀
   specialize hC₀ z him'_gt_half
   simp only [z, him'] at hC₀
   simp only [φ₀'', mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, hpos,
-    ↓reduceDIte, z]
+    ↓reduceDIte]
   exact hC₀
 
 end Bounding_Integrand

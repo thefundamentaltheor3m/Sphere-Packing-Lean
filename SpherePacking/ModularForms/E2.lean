@@ -151,7 +151,7 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
   have := tendsto_tsum_of_dominated_convergence (𝓕 := atTop) (g := fun (n : ℕ+) => (0 : ℂ))
     (f := fun d : ℕ+ => fun n : ℕ+ => cexp (2 * ↑π * Complex.I * (-↑↑d / ↑z) * n) )
     (bound := fun n : ℕ+ => (‖(cexp (2 * ↑π * Complex.I * (-1 / ↑z)))^ (Subtype.val n)‖))
-  simp only [ge_iff_le, tsum_zero, forall_exists_index] at this
+  simp only [tsum_zero] at this
   apply this
   · have hs : Summable fun n : ℕ ↦ ‖cexp (2 * ↑π * Complex.I * (-1 / ↑z)) ^ n‖ := by
       simpa [summable_geometric_iff_norm_lt_one, Real.norm_eq_abs] using
@@ -326,7 +326,7 @@ theorem poly_id (z : ℍ) (b n : ℤ) :
   ring
   have hj := h hb
   have hd : δ 0 n = 0 := by
-    simp [δ, hb, hj, hn]
+    simp [δ, hj, hn]
   simp [hd, hb]
   have hn0 : (n : ℂ) ≠ 0 := by aesop
   have hn1 : (n : ℂ) + 1 ≠ 0 := by
@@ -442,7 +442,7 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
     rw [← swap_equiv.summable_iff, ← (finTwoArrowEquiv _).symm.summable_iff] at this
     have ht := Summable.prod this
     simp only [Fin.isValue, swap_equiv, Equiv.coe_fn_mk, finTwoArrowEquiv_symm_apply, comp_apply,
-      swap_apply, Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.cons_val_one, Matrix.head_cons,
+      swap_apply, Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.cons_val_one,
       Matrix.cons_val_zero, one_div, mul_inv_rev] at *
     exact ht
 
@@ -524,7 +524,7 @@ lemma G2_alt_eq (z : ℍ) : G₂ z = ∑' m : ℤ, ∑' n : ℤ, (1 / (((m : ℂ
       apply ha.congr
       intro b
       simp only [Fin.isValue, one_div, mul_inv_rev, finTwoArrowEquiv_symm_apply, comp_apply,
-        Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]
+        Matrix.cons_val_zero, Matrix.cons_val_one]
     · have HS : Summable fun m : ℤ => (0 : ℂ) := by apply summable_zero
       apply HS.congr
       intro b
@@ -573,10 +573,8 @@ lemma D2_mul (A B : SL(2,ℤ)) : D₂ (A * B) = ((D₂ A) ∣[(2 : ℤ)] B) + (D
   have := denom_cocycle A B z.im_ne_zero
   simp_rw [SL_slash_def]
   simp_rw [denom_sim]
-  simp only [D₂, Fin.isValue, Matrix.SpecialLinearGroup.coe_mul, map_mul,
-    map_div₀, σ_ofReal, map_intCast, map_add,
-    Matrix.SpecialLinearGroup.coeToGL_det, Units.val_one, ofReal_one, Int.reduceSub, zpow_one,
-    mul_one, Int.reduceNeg, zpow_neg, Pi.add_apply]
+  simp only [D₂, Fin.isValue, Matrix.SpecialLinearGroup.coe_mul, Int.reduceNeg, zpow_neg,
+    Pi.add_apply]
   simp_rw [coe2_mul]
   simp_rw [← mul_div, mul_assoc, ← mul_add]
   congr
@@ -678,13 +676,12 @@ lemma G2_q_exp (z : ℍ) : G₂ z = (2 * riemannZeta 2)  - 8 * π ^ 2 *
 
 lemma G2_periodic :  (G₂ ∣[(2 : ℤ)] ModularGroup.T) = G₂ := by
   ext z
-  simp only [ SL_slash_def, slash, ModularGroup.det_coe, ofReal_one, Int.reduceSub, zpow_one,
-    mul_one, Int.reduceNeg, zpow_neg]
+  simp only [ SL_slash_def, Int.reduceNeg, zpow_neg]
   have := UpperHalfPlane.modular_T_smul z
   rw [this, ModularGroup.denom_apply]
   simp only [G2_q_exp, coe_vadd, ofReal_one, ModularGroup.T, Fin.isValue, Matrix.of_apply,
     Matrix.cons_val', Matrix.cons_val_zero, Matrix.empty_val', Matrix.cons_val_fin_one,
-    Matrix.cons_val_one, Matrix.head_fin_const, Int.cast_zero, zero_mul, Matrix.head_cons,
+    Matrix.cons_val_one, Int.cast_zero, zero_mul,
     Int.cast_one, zero_add, one_zpow, inv_one, mul_one, sub_right_inj, mul_eq_mul_left_iff,
     mul_eq_zero, OfNat.ofNat_ne_zero, ne_eq, not_false_eq_true, pow_eq_zero_iff, ofReal_eq_zero,
     false_or]
@@ -747,7 +744,7 @@ lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
   have := G₂_transform (ModularGroup.S)
   have hsm := ModularForm.SL_smul_slash (2 : ℤ) ModularGroup.S G₂ (1 / (2 * riemannZeta 2))
   rw [hsm]
-  simp only [SL_slash, one_div, mul_inv_rev, Pi.smul_apply, smul_eq_mul, hsm] at *
+  simp only [SL_slash, one_div, mul_inv_rev, Pi.smul_apply, smul_eq_mul] at *
   rw [this]
   simp only [Pi.sub_apply]
   rw [D2_S]

@@ -54,14 +54,14 @@ open ModularForm
 
 theorem modular_negI_smul : negI.1 • z = z := by
   rw [specialLinearGroup_apply]
-  simp [negI, num, denom]
+  simp [negI]
 
 theorem modular_slash_negI_of_even (hk : Even k) : f ∣[k] negI.1 = f := by
   ext x
   rw [slash_action_eq'_iff]
   rw [modular_negI_smul]
   simp only [negI, Int.reduceNeg, Fin.isValue, of_apply, cons_val', cons_val_zero, empty_val',
-    cons_val_fin_one, cons_val_one, head_fin_const, Int.cast_zero, zero_mul, head_cons,
+    cons_val_fin_one, cons_val_one, Int.cast_zero, zero_mul,
     Int.cast_neg, Int.cast_one, zero_add, hk.neg_one_zpow, one_mul]
 
 theorem modular_slash_S_apply :
@@ -86,7 +86,7 @@ theorem SL2Z_generate : (⊤ : Subgroup SL(2, ℤ)) = Subgroup.closure {S, T} :=
 
 theorem Γ2_generate : (⊤ : Subgroup (Γ 2)) = Subgroup.closure {α, β, negI} := by
   ext ⟨x, hx_det⟩
-  simp only [Subgroup.mem_top, Set.mem_univ, SetLike.mem_coe, true_iff]
+  simp only [Subgroup.mem_top, true_iff]
   -- now prove that all 2x2 matrices with det 1 and equivalent to I modulo 2
   -- is in closure of α, β, and -I
   sorry

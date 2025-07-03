@@ -32,7 +32,7 @@ variable [NormedAddCommGroup F] [NormedSpace ℝ F] [FiniteDimensional ℝ F]
 variable [NormedAddCommGroup H] [NormedSpace ℝ H] [FiniteDimensional ℝ H]
 
 -- In finite-dimensional spaces, any linear equivalence is a continuous linear equivalence.
-example (eq : E ≃ₗ[ℝ] H) : E ≃L[ℝ] H := eq.toContinuousLinearEquiv
+noncomputable example (eq : E ≃ₗ[ℝ] H) : E ≃L[ℝ] H := eq.toContinuousLinearEquiv
 
 namespace SchwartzMap
 
@@ -41,7 +41,7 @@ section Equivalence
 /-- Given a linear equivalence between finite-dimensional real vector spaces, composition on the
 left with this equivalence gives a continuous linear isomorphism between any two Schwartz spaces
 that have these equivalent spaces for a domain. -/
-def linearEquiv_of_linearEquiv_domain (eq_l : E ≃ₗ[ℝ] H) : 𝓢(H, F) ≃L[ℝ] 𝓢(E, F) where
+noncomputable def linearEquiv_of_linearEquiv_domain (eq_l : E ≃ₗ[ℝ] H) : 𝓢(H, F) ≃L[ℝ] 𝓢(E, F) where
   toFun := compCLMOfContinuousLinearEquiv ℝ eq_l.toContinuousLinearEquiv
   invFun := compCLMOfContinuousLinearEquiv ℝ eq_l.symm.toContinuousLinearEquiv
   left_inv := by intro f; ext x; simp
@@ -77,11 +77,9 @@ def coordinateEmbedding₁₂ (x : ℝ) : Euc(1) → Euc(2) :=
 /-- `coordinateEmbedding₁₂` is injective. -/
 theorem coordinateEmbedding₁₂_injective (x : ℝ) : (coordinateEmbedding₁₂ x).Injective := by
   intro y₁ y₂ h
-  simp only [coordinateEmbedding₁₂, coe_funUnique, eval, Fin.default_eq_zero, Fin.isValue,
-    EmbeddingLike.apply_eq_iff_eq] at h
+  simp only [coordinateEmbedding₁₂, coe_funUnique, eval, Fin.default_eq_zero, Fin.isValue] at h
   have : !₂[x, y₁ 0] 1 = !₂[x, y₂ 0] 1 := by rw [h]
-  simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Fin.isValue, Matrix.cons_val_one,
-    Matrix.head_cons] at this
+  simp only [Fin.isValue] at this
   ext i
   rw [Fin.fin_one_eq_zero i]
   exact this
@@ -90,15 +88,14 @@ theorem coordinateEmbedding₁₂_injective (x : ℝ) : (coordinateEmbedding₁�
 theorem coordinateEmbedding₁₂_smooth (x : ℝ) : ContDiff ℝ ⊤ (coordinateEmbedding₁₂ x) := by
   rw [contDiff_euclidean]
   intro i
-  simp only [coordinateEmbedding₁₂, coe_funUnique, eval, Fin.default_eq_zero, Fin.isValue,
-    WithLp.equiv_symm_pi_apply]
+  simp only [coordinateEmbedding₁₂, coe_funUnique, eval, Fin.default_eq_zero, Fin.isValue]
   if hi₀ : i = 0 then
   · rw [hi₀]
-    simp only [Fin.isValue, Matrix.cons_val_zero]
+    simp only [Fin.isValue, toLp_apply, Matrix.cons_val_zero]
     exact contDiff_const
   else if hi₁ : i = 1 then
   · rw [hi₁]
-    simp only [Fin.isValue, Matrix.cons_val_one, Matrix.head_cons]
+    simp only [Fin.isValue, toLp_apply, Matrix.cons_val_one, Matrix.cons_val_fin_one]
     have : (fun (x : Euc(1)) ↦ x 0) = ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ := rfl
     stop
     rw [this]
@@ -148,10 +145,8 @@ theorem coordinateEmbedding₁₂_hasTemperateGrowth (x : ℝ) :
     ((coordinateEmbedding₁₂_smooth x).differentiable le_top) (k := 1) (C := max ‖x‖ 1) ?_
   intro y
   simp only [coordinateEmbedding₁₂, coe_funUnique, eval, Fin.default_eq_zero, Fin.isValue,
-    ENNReal.toReal_ofNat, Nat.ofNat_pos, norm_eq_sum, WithLp.equiv_symm_pi_apply, Real.norm_eq_abs,
-    rpow_two, _root_.sq_abs, Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.head_cons, one_div, Finset.univ_unique, Finset.sum_singleton, pow_one]
-
+    ENNReal.toReal_ofNat, Nat.ofNat_pos, norm_eq_sum, Real.norm_eq_abs, rpow_two, _root_.sq_abs,
+    Fin.sum_univ_two, one_div, Finset.univ_unique, Finset.sum_singleton, pow_one]
   sorry
 
 -- Next, we show the antilipschitz condition. This is significantly easier.

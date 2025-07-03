@@ -24,7 +24,6 @@ lemma csqrt_deriv (z : ℍ) : deriv (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log 
     rw [@mem_slitPlane_iff]
     right
     have hz := z.2
-    simp only [UpperHalfPlane.coe] at hz
     exact Ne.symm (ne_of_lt hz)
   rw [this, deriv_comp]
   simp
@@ -51,7 +50,6 @@ lemma csqrt_differentiableAt (z : ℍ) : DifferentiableAt ℂ csqrt z := by
   rw [@mem_slitPlane_iff]
   right
   have hz := z.2
-  simp only [UpperHalfPlane.coe] at hz
   exact Ne.symm (ne_of_lt hz)
 
 

@@ -209,7 +209,7 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f)  :
               split_ifs with hx
               .
                 let x_in: ↑(P.centers ∩ D) := ⟨x, by simp [hx]⟩
-                simp only [dite_eq_ite, hx, ↓reduceIte]
+                simp only [dite_eq_ite]
                 rw [← tsum_ite_eq (b := x_in) (a := (f 0).re)]
                 simp_rw [← Subtype.val_inj]
                 rw [← Summable.tsum_add]
@@ -531,14 +531,11 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
         := by
             apply congrArg _ _
             let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
-            simp only [inner_zero_right, zero_mul, ofReal_zero, mul_zero, Complex.exp_zero,
-                       tsum_const, nsmul_eq_mul, mul_one, Complex.norm_natCast, Nat.cast_nonneg,
-                       ne_eq, not_false_eq_true, pow_left_inj, Nat.cast_inj,
-                       PeriodicSpherePacking.numReps', Set.toFinset_card] -- ↑(P.centers ∩ D)]
+            simp only [PeriodicSpherePacking.numReps'] -- ↑(P.centers ∩ D)]
             simp only [RCLike.wInner_zero_right, ofReal_zero, mul_zero, Complex.exp_zero,
               tsum_const, Nat.card_eq_fintype_card, nsmul_eq_mul, mul_one, Complex.norm_natCast]
   _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume
-        := by simp only [div_eq_mul_inv, one_div, mul_comm, one_mul, ← mul_assoc]
+        := by simp only [div_eq_mul_inv, mul_comm, one_mul, ← mul_assoc]
 
 
 -- And now, the main result of this section:
@@ -642,7 +639,7 @@ theorem LinearProgrammingBound' (hd : 0 < d) (hf: Summable f) :
       have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) /
         ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
         (𝓕 (⇑f) 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
-        simp only [mul_div_assoc, div_eq_mul_inv]
+        simp only [div_eq_mul_inv]
         have haux₁ : 0 ≤ ↑P.numReps ^ 2 * (𝓕 (⇑f) 0).re * (ZLattice.covolume P.lattice volume)⁻¹
         := by
           refine mul_nonneg (mul_nonneg (sq_nonneg (P.numReps : ℝ)) (hCohnElkies₂ 0)) ?_
