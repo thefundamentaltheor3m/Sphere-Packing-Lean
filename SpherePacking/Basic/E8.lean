@@ -145,7 +145,7 @@ private theorem E8'_det_aux_3 : (∑ k : Fin 8, c₇ k • (E8'.updateRow 6 (∑
     = ![0, 0, 0, 0, 0, 0, 0, -2/5] := by
   ext i
   simp_rw [E8'_det_aux_2, Fin.sum_univ_eight]
-  simp only [Fin.reduceEq, ↓reduceIte, smul_eq_mul, mul_zero, Pi.add_apply, Pi.smul_apply]
+  simp only [Fin.reduceEq, ↓reduceIte, smul_eq_mul, Pi.add_apply, Pi.smul_apply]
   simp [c₇, E8']
   fin_cases i <;> simp <;> norm_num
 
@@ -228,7 +228,7 @@ lemma E8_sum_apply_1 :
 
 lemma E8_sum_apply_2 :
     (∑ j : Fin 8, y j • E8_Matrix j) 2 = y 1 • (-1) + y 2 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_3 :
     (∑ j : Fin 8, y j • E8_Matrix j) 3 = y 2 • (-1) + y 3 • 1 - y 6 • ((1 : ℝ) / 2) := by
@@ -236,15 +236,15 @@ lemma E8_sum_apply_3 :
 
 lemma E8_sum_apply_4 :
     (∑ j : Fin 8, y j • E8_Matrix j) 4 = y 3 • (-1) + y 4 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_5 :
     (∑ j : Fin 8, y j • E8_Matrix j) 5 = y 4 • (-1) + y 5 • 1 - y 6 • ((1 : ℝ) / 2) + y 7 • 1 := by
-  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_6 :
     (∑ j : Fin 8, y j • E8_Matrix j) 6 = y 5 • 1 - y 6 • ((1 : ℝ) / 2) - y 7 • 1 := by
-  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_7 :
     (∑ j : Fin 8, y j • E8_Matrix j) 7 = y 6 • (-(1 : ℝ) / 2) := by
@@ -467,7 +467,7 @@ noncomputable def E8_Basis : Basis (Fin 8) ℤ E8_Lattice := by
   obtain ⟨c, hc⟩ := hx
   use c
   apply Subtype.ext_iff.mpr
-  simp only [Finsupp.sum, ← hc, AddSubgroup.val_finset_sum, AddSubgroupClass.coe_zsmul]
+  simp only [Finsupp.sum, ← hc]
   exact Submodule.coe_sum E8_Lattice (fun i ↦ c i • ⟨E8_Matrix i, E8_Matrix_mem i⟩) c.support
 
 -- sanity check

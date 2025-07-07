@@ -65,7 +65,6 @@ lemma qExpansion_mul_coeff_zero (a b : ℤ) (f : ModularForm Γ(n) a) (g : Modul
     simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul]
     apply cuspFunction_mul_zero
 
-
 lemma cuspFunction_mul (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b)
     [NeZero n] : cuspFunction n (f.mul g) = cuspFunction n f * cuspFunction n g := by
     ext z
@@ -81,11 +80,8 @@ theorem derivWithin_mul2 (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableO
     s.restrict (derivWithin (fun y => f y * g y) s) =
       s.restrict (derivWithin f s * g  + f  * derivWithin g s)  := by
   ext y
-  simp
-  rw [derivWithin_mul]
-  exact hf y y.2
-  exact hd y y.2
-
+  simp only [restrict_apply, Pi.add_apply, Pi.mul_apply]
+  rw [derivWithin_fun_mul (hf y y.2) (hd y y.2)]
 
 lemma iteratedDerivWithin_mul (f g : ℂ → ℂ) (s : Set ℂ) (hs : IsOpen s) (x : ℂ) (hx : x ∈ s) (m : ℕ)
     (hf : ContDiffOn ℂ ⊤ f s)(hg : ContDiffOn ℂ ⊤ g s) :
@@ -199,29 +195,29 @@ lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularFor
 
 lemma cuspFunction_sub [NeZero n] (f g : ModularForm Γ(n) k) :
     cuspFunction n (f - g) = cuspFunction n f - cuspFunction n g := by
-  simp only [cuspFunction, Periodic.cuspFunction, coe_add]
+  simp only [cuspFunction, Periodic.cuspFunction]
   ext y
   by_cases hy : y = 0
   conv =>
     enter [1]
     rw [hy]
   rw [hy]
-  simp only [update_self, Pi.add_apply ]
+  simp only [update_self]
   have : ((⇑f - ⇑g) ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n = (⇑f ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n
       - (⇑g ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n := by
     ext y
     simp
-  simp only [coe_sub, Nat.cast_one, Pi.sub_apply, update_self] at *
+  simp only [coe_sub, Pi.sub_apply, update_self] at *
   rw [this]
   rw [Filter.Tendsto.limUnder_eq]
   apply Tendsto.sub
   · apply tendsto_nhds_limUnder
     have := modform_tendto_ndhs_zero f n
-    simp only [Nat.cast_one, comp_apply] at *
+    simp only [comp_apply] at *
     aesop
   · apply tendsto_nhds_limUnder
     have := modform_tendto_ndhs_zero g n
-    simp only [Nat.cast_one, comp_apply] at *
+    simp only [comp_apply] at *
     aesop
   · simp [hy]
 
@@ -300,17 +296,14 @@ lemma cuspFunction_add [NeZero n] (f g : ModularForm Γ(n) k) :
       + (⇑g ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n := by
     ext y
     simp
-  simp only [Nat.cast_one] at *
   rw [this]
   rw [Filter.Tendsto.limUnder_eq]
   apply Tendsto.add
   · apply tendsto_nhds_limUnder
     have := modform_tendto_ndhs_zero f n
-    simp only [Nat.cast_one, comp_apply] at *
     aesop
   · apply tendsto_nhds_limUnder
     have := modform_tendto_ndhs_zero g n
-    simp only [Nat.cast_one, comp_apply] at *
     aesop
   · simp [hy]
 
@@ -389,7 +382,6 @@ lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
       simp
       rw [Filter.limUnder_eq_iff ]
       have hl : ((a • ⇑f) ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n = fun x => a * (f ∘ ↑ofComplex) (Periodic.invQParam ↑n x) := by
-        simp only [comp_apply, smul_eq_mul]
         ext y
         simp
       rw [hl]
@@ -403,10 +395,9 @@ lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
       aesop
       have := modform_tendto_ndhs_zero (a • f) _
       aesop
-    · simp only [cuspFunction, CuspForm.coe_smul, Pi.smul_apply, smul_eq_mul]
+    · simp only [cuspFunction, Pi.smul_apply, smul_eq_mul]
       rw [Function.Periodic.cuspFunction_eq_of_nonzero _ _ h,
         Function.Periodic.cuspFunction_eq_of_nonzero _ _ h]
-      simp only [comp_apply, Pi.smul_apply, smul_eq_mul]
       simp
   rw [this]
   simp only [PowerSeries.coeff_mk]

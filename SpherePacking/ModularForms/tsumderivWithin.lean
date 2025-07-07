@@ -31,11 +31,7 @@ theorem derivWithin_tsum_fun' {α : Type _} (f : α → ℂ → ℂ) {s : Set �
       x ∈ s →
         Tendsto (fun t : Finset α => ∑ n ∈ t, (fun z => f n z) x) atTop
           (𝓝 (∑' n : α, (fun z => f n z) x)) :=
-    by
-    intro y hy
-    apply Summable.hasSum
-    simp
-    apply hf y hy
+        fun y hy ↦ Summable.hasSum <| hf y hy
   apply hasDerivAt_of_tendstoLocallyUniformlyOn hs _ _ A hx
   use fun n : Finset α => fun a => ∑ i ∈ n, derivWithin (fun z => f i z) s a
   rw [tendstoLocallyUniformlyOn_iff_forall_isCompact hs]
@@ -47,7 +43,7 @@ theorem derivWithin_tsum_fun' {α : Type _} (f : α → ℂ → ℂ) {s : Set �
   apply hu2 n ⟨x, hx⟩
   filter_upwards
   intro t r hr
-  apply HasDerivAt.sum
+  apply HasDerivAt.fun_sum
   intro q hq
   apply HasDerivWithinAt.hasDerivAt
   apply DifferentiableWithinAt.hasDerivWithinAt
@@ -123,8 +119,9 @@ noncomputable def cts_exp_two_pi_n (K : Set ℂ) : ContinuousMap K ℂ where
       ‖((2 * ↑π * Complex.I * n) ^ (k + 1) * r ^ n)‖ := by
         intro n
         norm_cast
-        simp [BoundedContinuousFunction.norm_mkOfCompact, Nat.cast_pow, map_pow,
-          abs_norm, map_mul, mul_eq_mul_right_iff]
+        simp only [Nat.cast_pow, norm_mul, norm_pow, Real.norm_eq_abs,
+          ofReal_mul, ofReal_ofNat, ofReal_pow, norm_ofNat, norm_real, norm_I,
+          mul_one, norm_natCast]
         norm_cast
         simp only [Nat.cast_pow]
         have hh : |π| = π := by simp [Real.pi_pos.le]
@@ -206,7 +203,7 @@ theorem hasDerivAt_tsum_fun {α : Type _} (f : α → ℂ → ℂ)
   apply hu2 n ⟨x, hx⟩
   filter_upwards
   intro t r hr
-  apply HasDerivAt.sum
+  apply HasDerivAt.fun_sum
   intro q hq
   apply HasDerivWithinAt.hasDerivAt
   apply DifferentiableWithinAt.hasDerivWithinAt
@@ -251,8 +248,9 @@ theorem iter_deriv_comp_bound3 (K : Set ℂ) (hK1 : K ⊆ ℍ') (hK2 : IsCompact
       ‖((2 * ↑π * Complex.I * n) ^ (k) * r ^ n)‖ := by
         intro n
         norm_cast
-        simp [BoundedContinuousFunction.norm_mkOfCompact, Nat.cast_pow, map_pow,
-          abs_norm, map_mul, mul_eq_mul_right_iff]
+        simp only [Nat.cast_pow, norm_mul, norm_pow, Real.norm_eq_abs,
+          ofReal_mul, ofReal_ofNat, ofReal_pow, norm_ofNat, norm_real, norm_I,
+          mul_one, norm_natCast]
         norm_cast
         simp only [Nat.cast_pow]
         have hh : |π| = π := by simp [Real.pi_pos.le]

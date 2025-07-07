@@ -99,8 +99,8 @@ lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) :
   have h3 := h2.comp hf1
   simp only [arg_one] at h3
   rw [Metric.tendsto_nhds] at *
-  simp only [gt_iff_lt, dist_zero_right, eventually_atTop, ge_iff_le,
-    dist_self_add_left, arg_one, Real.norm_eq_abs, comp_apply] at *
+  simp only [gt_iff_lt, dist_zero_right, dist_self_add_left, arg_one, Real.norm_eq_abs,
+    comp_apply] at *
   by_cases hn0 : n = 0
   · simp_rw [hn0]
     simp only [pow_zero, arg_one, CharP.cast_eq_zero, zero_mul, implies_true, and_true]
@@ -157,8 +157,7 @@ lemma clog_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) 
   refine ⟨ha0, ?_⟩
   intro b hb
   have h2 := ha hb
-  simp only [mem_atTop_sets, ge_iff_le, mem_preimage, mem_setOf_eq, AbsoluteValue.map_pow, Real.log_pow,
-    ofReal_mul, ofReal_natCast] at *
+  simp only [mem_atTop_sets, ge_iff_le, mem_preimage, mem_setOf_eq] at *
   rw [h2]
   simp only [norm_pow, Real.log_pow, ofReal_mul, ofReal_natCast]
   ring
