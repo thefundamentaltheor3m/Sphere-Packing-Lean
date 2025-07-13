@@ -322,6 +322,25 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f)  :
               rw [PeriodicSpherePacking.numReps']
               exact Nat.card_eq_fintype_card
 
+include hD_isBounded
+lemma calc_steps' (hd : 0 < d) (hf: Summable f) :
+    ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), (f (↑x - ↑y + ↑ℓ)).re =
+    (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), f (↑x - ↑y + ↑ℓ)).re := by
+  have sum_finite := aux4 P D hD_isBounded hd
+  rw [re_tsum]
+  · apply tsum_congr
+    intro x
+    rw [re_tsum]
+    · apply tsum_congr
+      intro y
+      rw [re_tsum]
+      apply Summable.comp_injective hf
+      intro a b hab
+      field_simp at hab
+      exact hab
+    · apply Summable.of_finite
+  apply Summable.of_finite
+
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following theorem.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
@@ -355,8 +374,9 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       f (↑x - ↑y + ↑ℓ)).re
         := by
-            -- rw [re_tsum hPSF.1] -- Needs some sort of summability over subsets...?
-            sorry
+            exact
+              calc_steps' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hd
+                hf
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice) *
       ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m) *
