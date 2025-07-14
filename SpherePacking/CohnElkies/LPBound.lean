@@ -327,19 +327,16 @@ lemma calc_steps' (hd : 0 < d) (hf: Summable f) :
     ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), (f (↑x - ↑y + ↑ℓ)).re =
     (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), f (↑x - ↑y + ↑ℓ)).re := by
   have sum_finite := aux4 P D hD_isBounded hd
+  rw [re_tsum Summable.of_finite]
+  apply tsum_congr
+  intro x
+  rw [re_tsum Summable.of_finite]
+  apply tsum_congr
+  intro y
   rw [re_tsum]
-  · apply tsum_congr
-    intro x
-    rw [re_tsum]
-    · apply tsum_congr
-      intro y
-      rw [re_tsum]
-      apply Summable.comp_injective hf
-      intro a b hab
-      field_simp at hab
-      exact hab
-    · apply Summable.of_finite
-  apply Summable.of_finite
+  apply Summable.comp_injective hf
+  intro a b
+  field_simp
 
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following theorem.
