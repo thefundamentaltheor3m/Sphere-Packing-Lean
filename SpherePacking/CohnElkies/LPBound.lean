@@ -420,8 +420,10 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             apply congrArg _ _
             ext y
             simp only [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg, mul_comm]
-            -- push_cast  -- Can this be condensed into a rw so that there's just a bunch of rws?
-            sorry
+            rw [RCLike.wInner_add_left]
+            simp only [RCLike.wInner_neg_left, ofReal_add, ofReal_neg]
+            rw [mul_add, Complex.exp_add, mul_comm]
+            simp
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
