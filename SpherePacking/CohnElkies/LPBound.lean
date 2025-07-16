@@ -180,7 +180,7 @@ bounded above by the Cohn-Elkies bound.
 
 include hP
 open Classical in
-private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f)  :
+private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
   ≤ ↑(P.numReps' hd hD_isBounded) * (f 0).re := calc
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
@@ -194,7 +194,7 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f)  :
               rhs
               rhs
               equals ∑' (x : ↑(P.centers)), if x.val ∈ D then (f 0).re else 0 =>
-                rw [tsum_subtype  (f := fun x => (f 0).re)]
+                rw [tsum_subtype (f := fun x => (f 0).re)]
                 rw [tsum_subtype (f := fun x => if ↑x ∈ D then (f 0).re else 0)]
                 apply tsum_congr
                 intro p
@@ -270,7 +270,7 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f)  :
             .
               apply summable_of_finite_support
               -- TODO - is there a better way of writing (P.centers ∩ D) when dealing with subtypes?
-              apply Set.Finite.subset  (s := {x: ↑P.centers | x.val ∈ D})
+              apply Set.Finite.subset (s := {x: ↑P.centers | x.val ∈ D})
               . rw [Set.finite_coe_iff] at sum_finite
                 apply Set.Finite.of_finite_image (f := Subtype.val)
                 .
@@ -308,7 +308,7 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f)  :
                 exact hy₁
               · exact sub_ne_zero.mp h
     -- _ = ∑' (y : ↑(P.centers ∩ D)), (f (y - ↑y)).re
-    --     := by simp only [sub_self]
+    -- := by simp only [sub_self]
     _ = ↑(P.numReps' hd hD_isBounded) * (f 0).re
         := by
             simp only [tsum_const, nsmul_eq_mul, mul_eq_mul_right_iff, Nat.cast_inj]
@@ -357,7 +357,7 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
               hD_isBounded hd hf
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
-        :=  by
+        := by
               -- We need to use `PeriodocSpherePacking.unique_covers_of_centers` to split up the
               -- `tsum` in `x` by writing `P.centers` as a union of translates of `P.centers ∩ D`.
               -- We'd need disjointedness so we can apply `tsum_finset_bUnion_disjoint`.
@@ -410,7 +410,7 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             -- have hSummable₂ : Summable (Function.uncurry fun
             -- (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x_1 : ↑(P.centers ∩ D)) ↦
             -- ↑(𝓕 f ↑m).re * exp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)) - ↑x_1, ↑m⟫_[ℝ])) := by
-            --   sorry
+            -- sorry
             -- rw [← Summable.tsum_comm hSummable₂]
             -- apply congrArg _ _
             -- ext y
@@ -418,7 +418,7 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             -- ext m
             -- refine (IsUnit.mul_left_inj ?h.h).mpr ?h.a
             -- · rw [isUnit_iff_ne_zero]
-            --   exact Complex.exp_ne_zero _
+            -- exact Complex.exp_ne_zero _
             -- · exact (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
@@ -484,9 +484,9 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             -- The following broke after the bump
             -- We need to turn the RHS into the real part of a complex number
             -- rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
-            --                    ∑' (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)),
-            --                    (𝓕 f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
-            --                    cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
+            -- ∑' (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)),
+            -- (𝓕 f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
+            -- cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
             -- -- Now we can apply the fact that the real parts of both expressions are equal if they
             -- -- are equal in ℂ.
             -- apply congrArg re

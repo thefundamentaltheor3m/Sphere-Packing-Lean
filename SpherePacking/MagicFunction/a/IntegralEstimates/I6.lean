@@ -152,8 +152,8 @@ theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), ‖x‖ ^ k * ‖iterate
 end Higher_iteratedFDerivs
 
 -- def I₆'_Schwartz : 𝓢(ℝ, ℂ) where
---   toFun := I₆'
---   smooth' := sorry
---   decay' := by extract_goal; sorry
+-- toFun := I₆'
+-- smooth' := sorry
+-- decay' := by extract_goal; sorry
 
 end Schwartz_Decay

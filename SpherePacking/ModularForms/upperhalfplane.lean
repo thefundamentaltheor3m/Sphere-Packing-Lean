@@ -1,7 +1,7 @@
 import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 import Mathlib.Data.Real.StarOrdered
 
-open  UpperHalfPlane TopologicalSpace Set
+open UpperHalfPlane TopologicalSpace Set
   Metric Filter Function Complex
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical

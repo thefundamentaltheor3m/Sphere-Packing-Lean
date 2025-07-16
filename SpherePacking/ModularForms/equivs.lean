@@ -5,7 +5,7 @@ import Mathlib.Tactic
 
 
 
-open  TopologicalSpace Set
+open TopologicalSpace Set
   Metric Filter Function Complex
 
 

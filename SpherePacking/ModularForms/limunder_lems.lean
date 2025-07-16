@@ -1,7 +1,7 @@
 import Mathlib.Analysis.CStarAlgebra.Classes
 import SpherePacking.ModularForms.Icc_Ico_lems
 
-open   TopologicalSpace Set
+open TopologicalSpace Set
   Metric Filter Function Complex
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
@@ -36,7 +36,7 @@ lemma limUnder_sub {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f g :
 
 
 lemma limUnder_congr_eventually (f g : ℕ → ℂ) (h : ∀ᶠ n in atTop, f n = g n)
-  (hf : CauchySeq f) (hg : CauchySeq g)  :
+  (hf : CauchySeq f) (hg : CauchySeq g) :
   limUnder atTop f = limUnder atTop g := by
   have h0 := CauchySeq.tendsto_limUnder hf
   have h1 := CauchySeq.tendsto_limUnder hg
@@ -51,6 +51,6 @@ lemma limUnder_congr_eventually (f g : ℕ → ℂ) (h : ∀ᶠ n in atTop, f n 
 lemma tsum_limUnder_atTop (f : ℤ → ℂ) (hf : Summable f) : ∑' n, f n =
     limUnder atTop (fun N : ℕ => ∑ n ∈ Finset.Ico (-N : ℤ) N, f n) := by
   rw [Filter.Tendsto.limUnder_eq]
-  have  := hf.hasSum
+  have := hf.hasSum
   have V := this.comp verga
   apply V

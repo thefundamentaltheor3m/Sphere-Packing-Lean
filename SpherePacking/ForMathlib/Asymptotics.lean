@@ -19,19 +19,19 @@ variable [NormedDivisionRing E]
 theorem mul_isBigO_mul {f g F G : α → E} (hf : f =O[atTop] F) (hg : g =O[atTop] G) :
     (f * g) =O[atTop] (F * G) := IsBigO.mul hf hg
 -- by
---   simp [isBigO_iff] at hf hg ⊢
---   obtain ⟨cf, af, hf⟩ := hf
---   obtain ⟨cg, ag, hg⟩ := hg
---   use cf * cg, max af ag
---   intro n hn
---   specialize hf n (le_of_max_le_left hn)
---   specialize hg n (le_of_max_le_right hn)
---   calc ‖f n‖ * ‖g n‖
---   _ ≤ cf * ‖F n‖ * ‖g n‖ := by gcongr
---   _ ≤ cf * ‖F n‖ * (cg * ‖G n‖) := by
---         gcongr
---         exact Preorder.le_trans 0 ‖f n‖ (cf * ‖F n‖) (norm_nonneg _) hf
---   _ = cf * cg * (‖F n‖ * ‖G n‖) := by ring
+-- simp [isBigO_iff] at hf hg ⊢
+-- obtain ⟨cf, af, hf⟩ := hf
+-- obtain ⟨cg, ag, hg⟩ := hg
+-- use cf * cg, max af ag
+-- intro n hn
+-- specialize hf n (le_of_max_le_left hn)
+-- specialize hg n (le_of_max_le_right hn)
+-- calc ‖f n‖ * ‖g n‖
+-- _ ≤ cf * ‖F n‖ * ‖g n‖ := by gcongr
+-- _ ≤ cf * ‖F n‖ * (cg * ‖G n‖) := by
+-- gcongr
+-- exact Preorder.le_trans 0 ‖f n‖ (cf * ‖F n‖) (norm_nonneg _) hf
+-- _ = cf * cg * (‖F n‖ * ‖G n‖) := by ring
 
 example {f g F G : α → ℝ} (hf : f =O[atTop] F) (hg : g =O[atTop] G) :
     (f * g) =O[atTop] (F * G) := mul_isBigO_mul hf hg
@@ -46,6 +46,6 @@ theorem isBigO_pow {f F : α → E} {n : ℕ} (hf : f =O[atTop] F) :
   exact IsBigO.pow hf n
   -- induction' n with n hn
   -- · simp only [pow_zero]
-  --   exact (isBigO_const_const_iff atTop).mpr fun a ↦ a
+  -- exact (isBigO_const_const_iff atTop).mpr fun a ↦ a
   -- · simp only [pow_succ]
-  --   exact IsBigO.mul hn hf
+  -- exact IsBigO.mul hn hf

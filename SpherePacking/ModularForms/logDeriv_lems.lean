@@ -16,7 +16,7 @@ open ArithmeticFunction
 
 
 
-theorem logDeriv_tprod_eq_tsum  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ → ℂ → ℂ)
+theorem logDeriv_tprod_eq_tsum {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ → ℂ → ℂ)
     (hf : ∀ i, f i x ≠ 0)
     (hd : ∀ i : ℕ, DifferentiableOn ℂ (f i) s) (hm : Summable fun i ↦ logDeriv (f i) ↑x)
     (htend : TendstoLocallyUniformlyOn (fun n ↦ ∏ i ∈ Finset.range n, f i)
@@ -47,7 +47,7 @@ theorem logDeriv_tprod_eq_tsum  {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ �
     rw [DifferentiableOn]
     intro z hz
     apply DifferentiableAt.differentiableWithinAt
-    have hp : ∀ (i : ℕ), i ∈ Finset.range b →  DifferentiableAt ℂ (f i) z := by
+    have hp : ∀ (i : ℕ), i ∈ Finset.range b → DifferentiableAt ℂ (f i) z := by
       intro i hi
       have := (hd i z hz).differentiableAt
       apply this
@@ -67,7 +67,7 @@ lemma logDeriv_one_sub_exp_comp (r : ℂ) (g : ℂ → ℂ) (hg : Differentiable
     logDeriv ((fun z => 1 - r * cexp (z)) ∘ g) =
     fun z => -r * ((deriv g) z) * cexp (g z) / (1 - r * cexp (g (z))) := by
   ext y
-  rw  [logDeriv_comp, logDeriv_one_sub_exp]
+  rw [logDeriv_comp, logDeriv_one_sub_exp]
   simp only [neg_mul]
   ring
   simp only [differentiableAt_const, differentiableAt_exp, DifferentiableAt.fun_mul,
@@ -102,7 +102,7 @@ lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fun n : �
     apply le_trans this.le
     norm_cast
 
-lemma func_div (a b c d : ℂ → ℂ) (x : ℂ) (hb : b x ≠ 0) (hd :  d x ≠ 0) :
+lemma func_div (a b c d : ℂ → ℂ) (x : ℂ) (hb : b x ≠ 0) (hd : d x ≠ 0) :
      (a / b) x = (c /d) x ↔ (a * d) x = (b * c) x := by
   constructor
   intro h
@@ -131,8 +131,8 @@ lemma deriv_EqOn_congr {f g : ℂ → ℂ} (s : Set ℂ) (hfg : s.EqOn f g) (hs 
 
 lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn ℂ f s)
     (hg : DifferentiableOn ℂ g s) (hs : s.Nonempty) (hs2 : IsOpen s) (hsc : Convex ℝ s)
-    (hgn : ∀ x, x ∈ s →  g x ≠ 0) (hfn : ∀ x, x ∈ s → f x ≠ 0) : EqOn (logDeriv f) (logDeriv g) s ↔
-    ∃( z : ℂ),  z ≠ 0 ∧  EqOn (f) (z • g) s := by
+    (hgn : ∀ x, x ∈ s → g x ≠ 0) (hfn : ∀ x, x ∈ s → f x ≠ 0) : EqOn (logDeriv f) (logDeriv g) s ↔
+    ∃( z : ℂ), z ≠ 0 ∧ EqOn (f) (z • g) s := by
   constructor
   simp_rw [logDeriv]
   intro h
@@ -143,7 +143,7 @@ lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn
   intro y hy
   have h2 := h hy
   rw [func_div] at h2
-  have hderiv : EqOn (deriv (f * g⁻¹))  (deriv f * g⁻¹ - f * deriv g / g ^ 2) s := by
+  have hderiv : EqOn (deriv (f * g⁻¹)) (deriv f * g⁻¹ - f * deriv g / g ^ 2) s := by
     have hfg : f * g⁻¹ = fun x => f x * (g⁻¹ x) := by rfl
     rw [hfg]
     intro z hz
@@ -171,7 +171,7 @@ lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn
     apply DifferentiableOn.inv
     exact hg
     exact hgn
-  have he : s.EqOn  (deriv f * g⁻¹ - f * deriv g / g ^ 2)  0 := by
+  have he : s.EqOn (deriv f * g⁻¹ - f * deriv g / g ^ 2) 0 := by
     intro z hz
     simp only [Pi.sub_apply, Pi.mul_apply, Pi.inv_apply, Pi.div_apply, Pi.pow_apply, Pi.zero_apply]
     have hgg : g z ≠ 0 := by apply hgn z hz
@@ -195,9 +195,9 @@ lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn
   simp only [Pi.zero_apply] at ha
   rw [fderivWithin_of_isOpen hs2 hv]
   exact Eq.symm (ContinuousLinearMap.ext_ring (_root_.id (Eq.symm ha)))
-  exact  hfn v hv
-  exact  hgn v hv
-  exact  hfn y hy
+  exact hfn v hv
+  exact hgn v hv
+  exact hfn y hy
   exact hgn y hy
   · intro h
     obtain ⟨z, hz0, hz⟩ := h

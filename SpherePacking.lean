@@ -8,8 +8,6 @@ import SpherePacking.ForMathlib.AtImInfty
 import SpherePacking.ForMathlib.Bornology
 import SpherePacking.ForMathlib.Cardinal
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
-import SpherePacking.ForMathlib.CauchyGoursat.Triangular
-import SpherePacking.ForMathlib.Dual
 import SpherePacking.ForMathlib.ENNReal
 import SpherePacking.ForMathlib.ENat
 import SpherePacking.ForMathlib.Encard
@@ -25,7 +23,6 @@ import SpherePacking.ForMathlib.PoissonSummation.Zn_Pi
 import SpherePacking.ForMathlib.PoissonSummation.Zn_to_Euclidean
 import SpherePacking.ForMathlib.PoissonSummation.SchwartzMap
 import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
-import SpherePacking.ForMathlib.RadialSchwartz.Radial
 import SpherePacking.ForMathlib.Real
 import SpherePacking.ForMathlib.SlashActions
 import SpherePacking.ForMathlib.SpecificLimits

@@ -44,7 +44,7 @@ variable (z : ℍ) (hz : 1 / 2 < z.im)
 variable (c : ℤ → ℂ) (n₀ : ℤ) (hcn₀ : c n₀ ≠ 0) -- (hn₀ : ∀ (n : ℤ), n < n₀ → c n = 0)
 variable (hcsum : Summable fun (i : ℕ) ↦ (fouterm c z (i + n₀)))
 variable (k : ℕ) (hpoly : c =O[atTop] (fun n ↦ (n ^ k : ℝ)))
---  Change to just `c n` is polynomial. Should work!
+-- Change to just `c n` is polynomial. Should work!
 variable (f : ℍ → ℂ) (hf : ∀ x : ℍ, f x = ∑' (n : ℕ), (fouterm c x (n + n₀)))
 
 noncomputable def DivDiscBound : ℝ :=
@@ -190,7 +190,7 @@ private lemma step_5 :
     norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   simp only [norm_div, norm_mul]
 
-private lemma step_6  :
+private lemma step_6 :
     norm (cexp (π * I * (n₀ - 2) * z)) *
     norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) =
@@ -209,7 +209,7 @@ private lemma step_7 :
     exact aux_7 z (n₀ - 2)
 
 include hcsum in
-private lemma step_8  :
+private lemma step_8 :
     rexp (-π * (n₀ - 2) * z.im) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (π * I * n * z))) /
@@ -297,12 +297,12 @@ private lemma step_11 :
     exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
     sorry
   -- · next j =>
-  --   have : -π * ↑j / 2 = -π * ↑j  * (1 / 2) := by
-  --     rw [@mul_one_div]
-  --   rw [this]
-  --   simp at *
-  --   have hz2 := hz.le
-  --   gcongr
+  -- have : -π * ↑j / 2 = -π * ↑j * (1 / 2) := by
+  -- rw [@mul_one_div]
+  -- rw [this]
+  -- simp at *
+  -- have hz2 := hz.le
+  -- gcongr
 
 include hz in
 private lemma step_12 :
@@ -427,11 +427,11 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
     -- calc 0
     -- _ < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * (1 / 2 * I).im)) ^ 24 := aux_8 (1 / 2 * I) (by sorry)
     -- _ = ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
-    --   congr
-    --   ext n
-    --   congr 3
-    --   simp
-    --   ring
+    -- congr
+    -- ext n
+    -- congr 3
+    -- simp
+    -- ring
 
 end positivity
 

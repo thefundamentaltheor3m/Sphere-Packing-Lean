@@ -126,7 +126,7 @@ lemma I₂'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ioo (0 : ℝ) 1,
   simp only [φ₀'', hpos, ↓reduceDIte]
   exact hC₀
 
-lemma I₂'_bounding_aux_3 (r : ℝ) :  ∃ C₀ > 0, ∀ t ∈ Ioo (0 : ℝ) 1,
+lemma I₂'_bounding_aux_3 (r : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ioo (0 : ℝ) 1,
     ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₂'_bounding_aux_2 r -- The `PolyFourierCoeffBound` of `φ₀`
   use C₀, hC₀_pos
@@ -154,7 +154,7 @@ end Integrability
 
 section Bounding_Integral
 
-lemma I₂'_bounding_aux_4 (r : ℝ) :  ∃ C₀ > 0,
+lemma I₂'_bounding_aux_4 (r : ℝ) : ∃ C₀ > 0,
     ∫ t in Ioo (0 : ℝ) 1, ‖g r t‖ ≤ ∫ _ in Ioo (0 : ℝ) 1, C₀ * rexp (-π) * 2 * rexp (-π * r) := by
   wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ioo (0 : ℝ) 1) volume
   · refine ⟨1, by positivity, ?_⟩
@@ -215,8 +215,8 @@ theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), ‖x‖ ^ k * ‖iterate
 end Higher_iteratedFDerivs
 
 -- def I₂'_Schwartz : 𝓢(ℝ, ℂ) where
---   toFun := I₂'
---   smooth' := sorry
---   decay' := by extract_goal; sorry
+-- toFun := I₂'
+-- smooth' := sorry
+-- decay' := by extract_goal; sorry
 
 end Schwartz_Decay
