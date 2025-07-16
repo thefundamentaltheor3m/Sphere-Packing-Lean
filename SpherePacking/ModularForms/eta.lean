@@ -17,7 +17,6 @@ noncomputable def η (z : ℂ) := cexp (2 * π * Complex.I * z / 24) * ∏' (n :
     (1 - cexp (2 * π * Complex.I * (n + 1) * z))
 
 
-/-this is being PRd-/
 lemma prod_tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ → α → ℂ} (K : Set α)
     (hK : IsCompact K) (u : ℕ → ℝ) (hu : Summable u) (h : ∀ n x, x ∈ K → (‖(f n x)‖) ≤ u n)
     (hcts : ∀ n, ContinuousOn (fun x => (f n x)) K) :
@@ -74,7 +73,7 @@ theorem eta_tprod_ne_zero (z : ℍ) :
   rw [←summable_norm_iff]
   simpa using summable_exp_pow x
 
-/--Eta is non-vanishing!-/
+/- η is non-vanishing! -/
 lemma eta_nonzero_on_UpperHalfPlane (z : ℍ) : η z ≠ 0 := by
   rw [η]
   have := eta_tprod_ne_zero z

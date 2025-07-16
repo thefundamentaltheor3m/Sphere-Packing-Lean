@@ -9,7 +9,8 @@ import SpherePacking.ModularForms.tendstolems
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups Matrix.SpecialLinearGroup
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical Matrix.SpecialLinearGroup
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+  Matrix.SpecialLinearGroup
 
 
 open ArithmeticFunction
@@ -17,7 +18,7 @@ open ArithmeticFunction
 noncomputable section Definitions
 
 
-/--Maybe this is the definition we want as I cant see how to easily show the other outer sum is
+/- Maybe this is the definition we want as I cant see how to easily show the other outer sum is
 absolutely convergent. -/
 def G₂ : ℍ → ℂ := fun z => limUnder (atTop)
     (fun N : ℕ => ∑ m ∈ Finset.Ico (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
@@ -41,11 +42,14 @@ lemma coe2_mul (A B : SL(2, ℤ)) :
 
 def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := fun z => (2 * π * Complex.I * γ 1 0) / (denom γ z)
 
-lemma D₂_apply (γ : SL(2, ℤ)) (z : ℍ) : D₂ γ z =  (2 * π * Complex.I * γ 1 0) / (γ 1 0 * z + γ 1 1) :=
+lemma D₂_apply (γ : SL(2, ℤ)) (z : ℍ) :
+    D₂ γ z =  (2 * π * Complex.I * γ 1 0) / (γ 1 0 * z + γ 1 1) :=
   by rfl
 
 lemma extracted_77 (z : ℍ) (n : ℤ) : Summable fun b : ℤ ↦ (((b : ℂ) * ↑z + ↑n) ^ 2)⁻¹ := by
-  have := (G2_summable_aux (-n) ⟨-1 /z, by simpa using pnat_div_upper 1 z⟩  2 (by norm_num)).mul_left ((z : ℂ)^2)⁻¹
+  have := (
+      G2_summable_aux (-n) ⟨-1 /z, by simpa using pnat_div_upper 1 z⟩ 2 (by norm_num)
+    ).mul_left ((z : ℂ)^2)⁻¹
   apply this.congr
   intro b
   simp only [UpperHalfPlane.coe, Int.cast_neg, neg_mul]
@@ -143,7 +147,10 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
     ext n
     rw [← tsum_pnat_eq_tsum_succ4 _ (by apply extracted_summable z n), mul_add]
   simp only [CharP.cast_eq_zero, mul_zero, exp_zero, mul_one, add_zero]
-  nth_rw 3 [show  2 / ↑z * 2 * ↑π * Complex.I =  2 / ↑z * 2 * ↑π * Complex.I +  2 / ↑z * 2 * ↑π * Complex.I*0 by ring]
+  nth_rw 3 [
+      show 2 / ↑z * 2 * ↑π * Complex.I =
+        2 / ↑z * 2 * ↑π * Complex.I + 2 / ↑z * 2 * ↑π * Complex.I * 0 by ring
+    ]
   apply Tendsto.add
   simp only [tendsto_const_nhds_iff]
   apply Tendsto.mul
@@ -266,7 +273,7 @@ theorem PS3tn22 (z : ℍ) :
   have : (fun N : ℕ+ => ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     ∑' m : ℤ , (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) =
     (fun N : ℕ+ =>
-    ∑' m : ℤ ,  ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) -  1 / (m * z + n + 1))) := by
+    ∑' m : ℤ , ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) - 1 / (m * z + n + 1))) := by
     ext n
     rw [Summable.tsum_finsetSum]
     intro i hi
@@ -822,7 +829,7 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ,
     simp at *
     apply this.subtype
 
-/--This we should get from the modular forms repo stuff. Will port these things soon. -/
+/- This we should get from the modular forms repo stuff. Will port these things soon. -/
 lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
     1 - 24 * ∑' (n : ℕ+),
     ↑n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)) := by
