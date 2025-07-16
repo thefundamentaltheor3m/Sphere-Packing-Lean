@@ -193,7 +193,7 @@ theorem logDeriv_sin_div (z : ℂ) (hz : z ∈ ℂ_ℤ ) :
   · simp only [ne_eq, mul_eq_zero, ofReal_eq_zero, not_or]
     refine ⟨Real.pi_ne_zero, integerComplement.ne_zero hz⟩
 
-/- The term in the infinite series expansion of cot. -/
+/-- The term in the infinite series expansion of cot. -/
 noncomputable def cotTerm (x : ℂ) (n : ℕ) : ℂ := 1 / (x - (n + 1)) + 1 / (x + (n + 1))
 
 theorem logDeriv_sinTerm_eq_cotTerm (x : ℂ) (hx : x ∈ ℂ_ℤ ) (i : ℕ) :
