@@ -18,7 +18,7 @@ lemma norm_symm (x y : ℤ) : ‖![x, y]‖ = ‖![y,x]‖ := by
 
 
 lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻¹) =O[cofinite]
-    fun n => (|(n : ℝ)|⁻¹)  := by
+    fun n => (|(n : ℝ)|⁻¹) := by
   have h1 : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻¹) =O[cofinite]
     (fun n : ℤ => ((r z * ‖![n, m]‖))⁻¹) := by
     rw [@Asymptotics.isBigO_iff']
@@ -39,7 +39,7 @@ lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻
       exact (r_pos z).le
     rw [← hr, _root_.norm_symm]
     exact this}
-  apply  Asymptotics.IsBigO.trans  h1
+  apply Asymptotics.IsBigO.trans h1
   rw [@Asymptotics.isBigO_iff']
   use (r z)⁻¹
   refine ⟨by simp; exact r_pos z, ?_⟩
@@ -77,7 +77,7 @@ lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻
     rfl
 
 lemma linear_bigO_pow (m : ℤ) (z : ℍ) (k : ℕ) : (fun (n : ℤ) => ((((m : ℂ) * z + n)) ^ k )⁻¹) =O[cofinite]
-    fun n => ((|(n : ℝ)| ^ k)⁻¹)  := by
+    fun n => ((|(n : ℝ)| ^ k)⁻¹) := by
   simp_rw [← inv_pow]
   apply Asymptotics.IsBigO.pow
   apply linear_bigO m z
@@ -90,7 +90,7 @@ lemma Asymptotics.IsBigO.zify {α β: Type*} [Norm α] [Norm β] {f : ℤ → α
   use C
   rw [Int.cofinite_eq] at hC
   rw [Nat.cofinite_eq_atTop]
-  apply Filter.Eventually.natCast_atTop  (p := fun n => ‖f n‖ ≤ C * ‖g n‖)
+  apply Filter.Eventually.natCast_atTop (p := fun n => ‖f n‖ ≤ C * ‖g n‖)
   simp_all only [eventually_sup, eventually_atBot, eventually_atTop, ge_iff_le]
 
 
@@ -102,7 +102,7 @@ lemma Asymptotics.IsBigO.of_neg {α β: Type*} [Norm α] [Norm β] {f : ℤ → 
 
 
 lemma linear_bigO_nat (m : ℤ) (z : ℍ) : (fun (n : ℕ) => ((m : ℂ) * z + n)⁻¹) =O[cofinite]
-    fun n => (|(n : ℝ)|⁻¹)  := by
+    fun n => (|(n : ℝ)|⁻¹) := by
   have := linear_bigO (m : ℤ) z
   apply this.zify
 
@@ -110,7 +110,7 @@ lemma linear_bigO_nat (m : ℤ) (z : ℍ) : (fun (n : ℕ) => ((m : ℂ) * z + n
 
 
 lemma linear_bigO' (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((n : ℂ) * z + m)⁻¹) =O[cofinite]
-    fun n => (|(n : ℝ)|⁻¹)  := by
+    fun n => (|(n : ℝ)|⁻¹) := by
   have h1 : (fun (n : ℤ) => ((n : ℂ) * z + m)⁻¹) =O[cofinite]
     (fun n : ℤ => ((r z * ‖![m, n]‖))⁻¹) := by
     rw [@Asymptotics.isBigO_iff']
@@ -131,7 +131,7 @@ lemma linear_bigO' (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((n : ℂ) * z + m)�
         exact (r_pos z).le
       rw [← hr, _root_.norm_symm]
       exact this}
-  apply  Asymptotics.IsBigO.trans  h1
+  apply Asymptotics.IsBigO.trans h1
   rw [@Asymptotics.isBigO_iff']
   use (r z)⁻¹
   refine ⟨by simp; exact r_pos z, ?_⟩

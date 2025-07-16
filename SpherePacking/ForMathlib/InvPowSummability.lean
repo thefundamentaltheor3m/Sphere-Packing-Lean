@@ -249,8 +249,8 @@ theorem Summable_Inverse_Powers_of_Finite_Orbits
   sorry
 
 -- theorem Summable_Inverse_Powers_over_Periodic_Packing_Centres (P : PeriodicSpherePacking d) :
---   Inv_Pow_Norm_Summable_Over_Set_Euclidean P.centers :=
---   Summable_Inverse_Powers_of_Finite_Orbits P.addAction -- P.finiteOrbitRelQuotient
+-- Inv_Pow_Norm_Summable_Over_Set_Euclidean P.centers :=
+-- Summable_Inverse_Powers_of_Finite_Orbits P.addAction -- P.finiteOrbitRelQuotient
 
 /- *TODO:* Move to `SpherePacking/CohnElkies/Prereqs.lean` -/
 

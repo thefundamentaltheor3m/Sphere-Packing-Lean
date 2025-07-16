@@ -25,7 +25,7 @@ lemma prod_tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ
     apply tendstoUniformlyOn_tprod' hK hu h hcts
 
 lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.range n,
-    fun x_1 ↦ 1 + -cexp (2 * ↑π * Complex.I *  (↑x + 1) * x_1))
+    fun x_1 ↦ 1 + -cexp (2 * ↑π * Complex.I * (↑x + 1) * x_1))
     (fun x ↦ ∏' (i : ℕ), (1 + -cexp (2 * ↑π * Complex.I * (↑i + 1) * x))) atTop {x | 0 < x.im} := by
   rw [tendstoLocallyUniformlyOn_iff_forall_isCompact]
   intro K hK hK2
@@ -37,8 +37,8 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
     fun_prop
   have := IsCompact.exists_sSup_image_eq_and_ge hK2 (by simpa using hN) hc
   obtain ⟨z, hz, hB, HB⟩ := this
-  have :=  prod_tendstoUniformlyOn_tprod'  K  hK2 (f := (fun i ↦
-    fun x_1 ↦ -cexp (2 * ↑π * Complex.I *  (i + 1) * x_1)))
+  have := prod_tendstoUniformlyOn_tprod' K hK2 (f := (fun i ↦
+    fun x_1 ↦ -cexp (2 * ↑π * Complex.I * (i + 1) * x_1)))
     (fun n=> ‖cexp (2 * ↑π * Complex.I * z)^(n + 1)‖) ?_ ?_ ?_
   simp at *
   convert this
@@ -46,16 +46,16 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
   · simp_rw [norm_pow]
     rw [summable_nat_add_iff 1]
     simp only [summable_geometric_iff_norm_lt_one, norm_norm]
-    apply  exp_upperHalfPlane_lt_one ⟨z, by simpa using (hK hz)⟩
+    apply exp_upperHalfPlane_lt_one ⟨z, by simpa using (hK hz)⟩
   · intro n
     intro x hx
     simp only [norm_neg]
-    rw [show 2 * ↑π * Complex.I * (↑n + 1) * x = (n+1)* (2 * ↑π * Complex.I  * x) by ring ]
+    rw [show 2 * ↑π * Complex.I * (↑n + 1) * x = (n+1)* (2 * ↑π * Complex.I * x) by ring ]
     rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp]
     rw [Complex.exp_nat_mul]
     have HB2 := HB x hx
     simp_rw [norm_pow]
-    apply pow_le_pow_left₀ _  HB2
+    apply pow_le_pow_left₀ _ HB2
     simp only [norm_nonneg]
   · intro n
     fun_prop
@@ -81,8 +81,8 @@ lemma eta_nonzero_on_UpperHalfPlane (z : ℍ) : η z ≠ 0 := by
   apply this
 
 lemma tsum_log_deriv_eqn (z : ℍ) :
-  ∑' (i : ℕ), logDeriv (fun x ↦ 1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x)) ↑z  =  ∑' n : ℕ,
-    -(2 * ↑π * Complex.I * (↑n + 1)) * cexp (2 * π * Complex.I * (n + 1) * z) / (1 - cexp (2 * π *  Complex.I * (n + 1) * z)) := by
+  ∑' (i : ℕ), logDeriv (fun x ↦ 1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x)) ↑z = ∑' n : ℕ,
+    -(2 * ↑π * Complex.I * (↑n + 1)) * cexp (2 * π * Complex.I * (n + 1) * z) / (1 - cexp (2 * π * Complex.I * (n + 1) * z)) := by
   congr
   ext i
   have h0 : ∀ i : ℕ, Differentiable ℂ (fun x => (2 * π * Complex.I * (i + 1) * x)) := by
@@ -105,8 +105,8 @@ lemma tsum_log_deriv_eqn (z : ℍ) :
   rw [h2 i, h1 i, h3 i]
   simp
 
-lemma logDeriv_z_term (z : ℍ) : logDeriv (fun z ↦ cexp (2 * ↑π * Complex.I * z / 24)) ↑z  = 2* ↑π * Complex.I / 24 := by
-  have : (fun z ↦ cexp (2 * ↑π * Complex.I * z / 24)) = (fun z ↦ cexp (z)) ∘ (fun z => (2 * ↑π * Complex.I / 24) * z)  := by
+lemma logDeriv_z_term (z : ℍ) : logDeriv (fun z ↦ cexp (2 * ↑π * Complex.I * z / 24)) ↑z = 2* ↑π * Complex.I / 24 := by
+  have : (fun z ↦ cexp (2 * ↑π * Complex.I * z / 24)) = (fun z ↦ cexp (z)) ∘ (fun z => (2 * ↑π * Complex.I / 24) * z) := by
     ext y
     simp
     congr
@@ -125,7 +125,7 @@ theorem eta_differentiableAt (z : ℍ) :
   rw [DifferentiableOn] at hD
   have hDz := (hD z (by apply z.2)).differentiableAt
   apply hDz
-  · apply IsOpen.mem_nhds  (isOpen_lt continuous_const Complex.continuous_im)
+  · apply IsOpen.mem_nhds (isOpen_lt continuous_const Complex.continuous_im)
     apply z.2
   · simp
     use 0
@@ -167,7 +167,7 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
     conv =>
       enter [1,2,1]
       ext n
-      rw [show  -(2 * ↑π * Complex.I * (↑n + 1) * cexp (2 * ↑π * Complex.I * (↑n + 1) * z.1)) /
+      rw [show -(2 * ↑π * Complex.I * (↑n + 1) * cexp (2 * ↑π * Complex.I * (↑n + 1) * z.1)) /
         (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * z.1)) =
         (-2 * ↑π * Complex.I) * (((↑n + 1) * cexp (2 * ↑π * Complex.I * (↑n + 1) * z.1)) /
         (1 - cexp (2 * ↑π * Complex.I * (n + 1) * z.1))) by ring]
@@ -182,7 +182,7 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
       field_simp
       ring
     ·
-      have hr :    ↑π * Complex.I / 12 *
+      have hr : ↑π * Complex.I / 12 *
          -((↑π ^ 2 / (6 : ℂ))⁻¹ * 2⁻¹ * (8 * ↑π ^ 2 * ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (2 * ↑π * Complex.I * ↑↑n * ↑z))) =
         (↑π * Complex.I * (1 / 12) * -(((π : ℂ) ^ 2 * (1 / 6))⁻¹ * (1 / 2) * (↑π ^ 2 * 8)) *
         ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1)) := by
@@ -309,7 +309,7 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
   have E := E₂_transform z
   simp only [one_div, neg_mul, smul_eq_mul, SL_slash_def, modular_S_smul, ModularGroup.denom_S,
     Int.reduceNeg, zpow_neg] at *
-  have h00 :  (UpperHalfPlane.mk (-z : ℂ)⁻¹ z.im_inv_neg_coe_pos) = (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) := by
+  have h00 : (UpperHalfPlane.mk (-z : ℂ)⁻¹ z.im_inv_neg_coe_pos) = (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) := by
     simp [UpperHalfPlane.mk]
     ring_nf
   rw [h00] at E
@@ -411,7 +411,7 @@ lemma eta_equality : {z : ℂ | 0 < z.im}.EqOn ((η ∘ (fun z : ℂ => -1/z)))
     enter [2]
     rw [← mul_assoc]
   have he : η Complex.I ≠ 0 := by
-    have h:=  eta_nonzero_on_UpperHalfPlane UpperHalfPlane.I
+    have h:= eta_nonzero_on_UpperHalfPlane UpperHalfPlane.I
     convert h
   have hcd := (mul_eq_right₀ he).mp (_root_.id (Eq.symm h3))
   rw [mul_eq_one_iff_inv_eq₀ hz] at hcd

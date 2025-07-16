@@ -961,7 +961,7 @@ end ConstantEqNormalizedConstant
 section Disjoint_Covering_of_Centers
 
 theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
+  {D : Set (EuclideanSpace ℝ (Fin d))} -- (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
   :
   ∀ x : S.centers, ∃! g : S.lattice, (g +ᵥ x : EuclideanSpace ℝ (Fin d)) ∈ S.centers ∩ D := by
@@ -975,7 +975,7 @@ theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePackin
     exact hg₂ a ha hmem
 
 theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
+  {D : Set (EuclideanSpace ℝ (Fin d))} -- (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
   : S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
   ext x
@@ -991,7 +991,7 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
     suffices : x = -g +ᵥ (y : EuclideanSpace ℝ (Fin d))
     · rw [this]
       have hy' := Subtype.coe_prop y
-      use True.intro  -- so weird
+      use True.intro -- so weird
       refine Set.vadd_mem_vadd_set ?h.intro.intro.a
       simp only [Set.mem_inter_iff, hy', and_true]
       rw [hy]
@@ -1012,20 +1012,20 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
 -- union over points in X / Λ = X ∩ D of translates of the lattice by points in X / Λ = X ∩ D or
 -- something like that, because that's what's needed for `tsum_finset_bUnion_disjoint`.
 -- theorem PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) -- (hd : 0 < d)
---   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
---   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
---   : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
---   -- True
---   := by
---   intro x hx y hy hxy
---   obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers x
---   specialize hg₂ y
---   simp only  at hg₂
---   simp only [Set.disjoint_iff_inter_eq_empty]
---   ext z
---   simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
---   intro hz₁ hz₂
---   sorry
+-- {D : Set (EuclideanSpace ℝ (Fin d))} -- (hD_isBounded : IsBounded D)
+-- (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
+-- : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
+-- -- True
+-- := by
+-- intro x hx y hy hxy
+-- obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers x
+-- specialize hg₂ y
+-- simp only at hg₂
+-- simp only [Set.disjoint_iff_inter_eq_empty]
+-- ext z
+-- simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
+-- intro hz₁ hz₂
+-- sorry
 
 -- Can we use some sort of orbit disjointedness result and factor through the equivalence between
 -- the `Quotient` and `S.centers ∩ D`?

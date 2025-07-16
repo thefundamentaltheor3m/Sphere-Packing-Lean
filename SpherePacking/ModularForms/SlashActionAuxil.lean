@@ -15,7 +15,7 @@ These theorems will be used to prove that 4-th powers of Jacobi theta functions 
 are modular forms of weight 2 and level Γ(2).
 -/
 
-open scoped  ModularForm MatrixGroups
+open scoped ModularForm MatrixGroups
 open Matrix UpperHalfPlane CongruenceSubgroup ModularGroup
 
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
@@ -27,7 +27,7 @@ def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp⟩, by simp; decide⟩
 def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp⟩, by simp; decide⟩
 def negI : Γ 2 := ⟨⟨!![-1, 0; 0, -1], by simp⟩, by simp⟩
 
-theorem α_eq_T_sq : α = ⟨T ^ 2,  by simp [sq, T]; decide⟩ := by
+theorem α_eq_T_sq : α = ⟨T ^ 2, by simp [sq, T]; decide⟩ := by
   ext
   simp [α, T, sq]
 

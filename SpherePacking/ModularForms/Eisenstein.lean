@@ -13,7 +13,7 @@ noncomputable section Definitions
 /- The Eisenstein Series E₄ and E₆ -/
 
 def E₄ : ModularForm (CongruenceSubgroup.Gamma ↑1) 4 :=
-  (1/2 : ℂ) • eisensteinSeries_MF (by norm_num) standardcongruencecondition /-they need  1/2 for the
+  (1/2 : ℂ) • eisensteinSeries_MF (by norm_num) standardcongruencecondition /-they need 1/2 for the
     normalization to match up (since the sum here is taken over coprime integers).-/
 
 def E₆ : ModularForm (CongruenceSubgroup.Gamma ↑1) 6 :=
@@ -110,12 +110,12 @@ lemma cuspfunc_Zero [NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0
     zero_pow, mul_zero]
   apply summable_zero
 
-lemma modfom_q_exp_cuspfunc  (c : ℕ → ℂ) (f : F) [ModularFormClass F Γ(n) k] [NeZero n]
-    (hf : ∀ τ : ℍ,  HasSum (fun m : ℕ ↦ (c m) • 𝕢 n τ ^ m) (f τ)) : ∀ q : ℂ, ‖q‖ < 1 →
+lemma modfom_q_exp_cuspfunc (c : ℕ → ℂ) (f : F) [ModularFormClass F Γ(n) k] [NeZero n]
+    (hf : ∀ τ : ℍ, HasSum (fun m : ℕ ↦ (c m) • 𝕢 n τ ^ m) (f τ)) : ∀ q : ℂ, ‖q‖ < 1 →
     HasSum (fun m : ℕ ↦ c m • q ^ m) (cuspFunction n f q) := by
   intro q hq
   by_cases hq1 : q ≠ 0
-  ·  apply cuspfunc_lim_coef n c f hf q hq hq1
+  · apply cuspfunc_lim_coef n c f hf q hq hq1
   · have h2 : cuspFunction n f 0 = c 0 := by
       rw [cuspFunction, Function.Periodic.cuspFunction_zero_eq_limUnder_nhds_ne]
       apply Filter.Tendsto.limUnder_eq
@@ -195,14 +195,14 @@ lemma qParam_surj_onto_ball (r : ℝ) (hr : 0 < r) (hr2 : r < 1) [NeZero n] : �
 
 
 lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
-    (hf : ∀ τ : ℍ,  HasSum (fun m : ℕ ↦ (c m) • 𝕢 n τ ^ m) (f τ))  :
+    (hf : ∀ τ : ℍ, HasSum (fun m : ℕ ↦ (c m) • 𝕢 n τ ^ m) (f τ)) :
     c = (fun m => (qExpansion n f).coeff ℂ m) := by
   ext m
   have h := hasFPowerSeries_cuspFunction n f
   let qExpansion2 : PowerSeries ℂ := .mk fun m ↦ c m
   let qq : FormalMultilinearSeries ℂ ℂ ℂ :=
     fun m ↦ (qExpansion2).coeff ℂ m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m _
-  have hqq2 :  ∀ m , ‖qq m‖ = ‖(qExpansion2).coeff ℂ m‖ := by
+  have hqq2 : ∀ m , ‖qq m‖ = ‖(qExpansion2).coeff ℂ m‖ := by
     intro m
     simp only [qq]
     rw [
@@ -222,7 +222,7 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
         by_cases hr0 : r = 0
         rw [hr0]
         apply summable_zero_pow
-        obtain ⟨z, hz⟩ :=  qParam_surj_onto_ball n r (by simp; exact pos_iff_ne_zero.mpr hr0 )
+        obtain ⟨z, hz⟩ := qParam_surj_onto_ball n r (by simp; exact pos_iff_ne_zero.mpr hr0 )
           (by simpa using hr)
         rw [← hz]
         have hfz := summable_norm_iff.mpr (hf z).summable
@@ -256,7 +256,7 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
   have h5 := this m
   simp only [PowerSeries.coeff_mk, qExpansionFormalMultilinearSeries, qq, qExpansion2] at h5
   let t := c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ m
-  let v :=   (PowerSeries.coeff ℂ m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ m
+  let v := (PowerSeries.coeff ℂ m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ m
   have htv : (c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ).toFun =
     ( (PowerSeries.coeff ℂ m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ).toFun := by
     rw [h5]
@@ -268,7 +268,7 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
     or_false, qExpansion2, qq] using h6
 
 lemma deriv_mul_eq (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
-    deriv (f * g) = deriv f *  g + f * deriv g := by
+    deriv (f * g) = deriv f * g + f * deriv g := by
   ext y
   exact deriv_mul (hf y) (hg y)
 
@@ -279,7 +279,7 @@ lemma auxasdf (n : ℕ) : (PowerSeries.coeff ℂ n) ((qExpansion 1 E₄) * (qExp
 
 lemma sigma_bound (k n : ℕ) : sigma k n ≤ n ^ (k + 1) := by
   rw [ArithmeticFunction.sigma_apply]
-  have :  ∑ d ∈ n.divisors, d ^ k ≤  ∑ d ∈ n.divisors, n ^ k := by
+  have : ∑ d ∈ n.divisors, d ^ k ≤ ∑ d ∈ n.divisors, n ^ k := by
     apply Finset.sum_le_sum
     intro i hi
     gcongr
@@ -292,7 +292,7 @@ lemma sigma_bound (k n : ℕ) : sigma k n ≤ n ^ (k + 1) := by
   simp
   exact Nat.card_divisors_le_self n
 
-def Ek_q (k : ℕ) : ℕ → ℂ :=  fun m => if m = 0 then 1 else
+def Ek_q (k : ℕ) : ℕ → ℂ := fun m => if m = 0 then 1 else
     (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m)
 
 lemma qexpsummable (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
@@ -330,7 +330,7 @@ lemma qexpsummable (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
     ‖∑ x ∈ (b + 1).divisors, ((b + 1) : ℂ) ^ (k - 1)‖ := by
     apply le_trans (norm_sum_le (b + 1).divisors _ )
     simp only [norm_pow, Complex.norm_natCast, Finset.sum_const, nsmul_eq_mul, Complex.norm_mul]
-    have h2 :  ∑ x ∈ (b + 1).divisors, (x : ℝ) ^ (k - 1) ≤
+    have h2 : ∑ x ∈ (b + 1).divisors, (x : ℝ) ^ (k - 1) ≤
       ∑ x ∈ (b + 1).divisors, (b + 1) ^ (k - 1) := by
       norm_cast
       apply Finset.sum_le_sum
@@ -354,7 +354,7 @@ lemma qexpsummable (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
   simpa using Nat.card_divisors_le_self (b + 1)
 
 
-lemma Ek_q_exp_zero (k : ℕ) (hk :  3 ≤ (k : ℤ)) (hk2 : Even k) : (qExpansion 1 (E k hk)).coeff ℂ 0 = 1 := by
+lemma Ek_q_exp_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : (qExpansion 1 (E k hk)).coeff ℂ 0 = 1 := by
   let c : ℕ → ℂ := fun m => if m = 0 then 1 else
     (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m)
   have h := q_exp_unique 1 c (E k hk) ?_
@@ -384,15 +384,15 @@ lemma Ek_q_exp_zero (k : ℕ) (hk :  3 ≤ (k : ℤ)) (hk2 : Even k) : (qExpansi
   have hr := (summable_nat_add_iff 1 (f := fun n : ℕ ↦ c (n) • 𝕢 (1 : ℝ) ↑z ^ (n)))
   simp at *
   rw [hr]
-  have :=  qexpsummable k hk z
+  have := qexpsummable k hk z
   simp [c, Ek_q] at *
   apply this
-  have :=  qexpsummable k hk z
+  have := qexpsummable k hk z
   simp [c, Ek_q] at *
   apply this
 
 
-lemma Ek_q_exp (k : ℕ) (hk :  3 ≤ (k : ℤ)) (hk2 : Even k) : (fun m => (qExpansion 1 (E k hk)).coeff ℂ m) =
+lemma Ek_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : (fun m => (qExpansion 1 (E k hk)).coeff ℂ m) =
   fun m => if m = 0 then 1 else
     (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m) := by
   let c : ℕ → ℂ := fun m => if m = 0 then 1 else
@@ -422,10 +422,10 @@ lemma Ek_q_exp (k : ℕ) (hk :  3 ≤ (k : ℤ)) (hk2 : Even k) : (fun m => (qEx
   have hr := (summable_nat_add_iff 1 (f := fun n : ℕ ↦ c (n) • 𝕢 (1 : ℝ) ↑z ^ (n)))
   simp at *
   rw [hr]
-  have :=  qexpsummable k hk z
+  have := qexpsummable k hk z
   simp [c, Ek_q] at *
   apply this
-  have :=  qexpsummable k hk z
+  have := qexpsummable k hk z
   simp [c, Ek_q] at *
   apply this
 
@@ -479,7 +479,7 @@ theorem bernoulli'_six : bernoulli' 6 = 1 / 42 := by
   norm_num [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_zero, h1, h2]
 
 lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff ℂ m) =
-    fun m => if m = 0 then 1 else  -(504 : ℂ) * (sigma 5 m) := by
+    fun m => if m = 0 then 1 else -(504 : ℂ) * (sigma 5 m) := by
   have HH := Ek_q_exp 6 (by norm_num) (by exact Nat.even_iff.mpr rfl)
   rw [E6_eq]
   simp at *
@@ -503,14 +503,14 @@ lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff ℂ m) =
 lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff ℂ 0 = 1 := by
   simpa using congr_fun E6_q_exp 0
 
-theorem E4E6_coeff_zero_eq_zero  :
+theorem E4E6_coeff_zero_eq_zero :
   (PowerSeries.coeff ℂ 0)
       (qExpansion 1
         ((1 / 1728 : ℂ) • ((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3 - (DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)) =
     0 := by
   simp only [one_div, DirectSum.sub_apply]
   rw [← qExpansion_smul2, qExpansion_sub]
-  simp only [_root_.map_smul,  map_sub, smul_eq_mul,
+  simp only [_root_.map_smul, map_sub, smul_eq_mul,
     mul_eq_zero, inv_eq_zero, OfNat.ofNat_ne_zero, false_or]
   have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
     ext z
@@ -546,8 +546,8 @@ def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 := by
   rw [IsCuspForm_iff_coeffZero_eq_zero]
   exact E4E6_coeff_zero_eq_zero
 
-lemma Delta_cuspFuntion_eq : Set.EqOn  (cuspFunction 1 Delta)
-     (fun y  => (y : ℂ) * ∏' i, ((1 : ℂ) - y ^ (i + 1)) ^ 24)  (Metric.ball 0 (1/2)) := by
+lemma Delta_cuspFuntion_eq : Set.EqOn (cuspFunction 1 Delta)
+     (fun y => (y : ℂ) * ∏' i, ((1 : ℂ) - y ^ (i + 1)) ^ 24) (Metric.ball 0 (1/2)) := by
   rw [cuspFunction]
   intro y hy
   by_cases hyn0 : y = 0
@@ -572,7 +572,7 @@ lemma Delta_cuspFuntion_eq : Set.EqOn  (cuspFunction 1 Delta)
     ext n
     congr
     have : cexp (2 * ↑π * Complex.I * (↑n + 1) * Periodic.invQParam 1 y) =
-      (cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y)) ^ (n+1)  := by
+      (cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y)) ^ (n+1) := by
       rw [← Complex.exp_nsmul]
       congr
       ring
@@ -593,7 +593,7 @@ lemma Delta_ne_zero : Delta ≠ 0 := by
 lemma asdf : TendstoLocallyUniformlyOn (fun n : ℕ ↦ ∏ x ∈ Finset.range n,
     fun y : ℂ ↦ (1 - y ^ (x + 1))) (fun x ↦ ∏' i, (1 - x ^ (i + 1))) atTop (Metric.ball 0 (1/2 : ℝ)) := by
   have := prod_tendstoUniformlyOn_tprod' ( Metric.closedBall 0 (1/2)) (f:= fun x : ℕ => fun y : ℂ => -y ^ (x + 1) )
-    (by exact isCompact_closedBall 0 (1 / 2)) (fun n => (1/2)^(n +1)) ?_  ?_ ?_
+    (by exact isCompact_closedBall 0 (1 / 2)) (fun n => (1/2)^(n +1)) ?_ ?_ ?_
   apply TendstoLocallyUniformlyOn.mono (s := Metric.closedBall 0 (1/2))
   simp at *
   have H:= this.tendstoLocallyUniformlyOn
@@ -630,7 +630,7 @@ theorem diffwithinat_prod_1 :
   suffices DifferentiableWithinAt ℂ (fun (n : ℂ) ↦ (∏' (i : ℕ), (1 - n ^ (i + 1))) ^ 24) (ball 0 (1 / 2)) 0 by
     apply this.congr
     intro x hx
-    rw [← tprod_pow _ (by apply multipliable_lt_one  x (by simp at *; apply lt_trans hx; exact
+    rw [← tprod_pow _ (by apply multipliable_lt_one x (by simp at *; apply lt_trans hx; exact
       two_inv_lt_one))]
     simp
   apply DifferentiableWithinAt.pow
@@ -704,7 +704,7 @@ lemma E4_pow_q_exp_one : (qExpansion 1 ((E₄).mul ((E₄).mul E₄))).coeff ℂ
   simp_rw [E4_q_exp_one, this]
   ring
 
-lemma Ek_ne_zero (k : ℕ) (hk :  3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
+lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
   have := Ek_q_exp_zero k hk hk2
   intro h
   rw [h, qExpansion_zero] at this
@@ -718,7 +718,7 @@ lemma E6_ne_zero : E₆ ≠ 0 := by
     apply Ek_ne_zero 6 (by norm_num) (by exact Nat.even_iff.mpr rfl)
 
 lemma modularForm_normalise (f : ModularForm Γ(1) k) (hf : ¬ IsCuspForm Γ(1) k f) :
-    (qExpansion 1 (((qExpansion 1 f).coeff ℂ 0)⁻¹ • f)).coeff ℂ 0  = 1 := by
+    (qExpansion 1 (((qExpansion 1 f).coeff ℂ 0)⁻¹ • f)).coeff ℂ 0 = 1 := by
   rw [← qExpansion_smul2]
   refine inv_mul_cancel₀ ?_
   intro h

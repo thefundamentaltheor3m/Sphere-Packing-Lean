@@ -300,7 +300,7 @@ lemma jacobiTheta₂_rel_aux (n : ℤ) (t : ℝ) :
   ring_nf!
 
 -- lemma Complex.norm_exp (z : ℂ) : ‖cexp z‖ = rexp z.re := by
---   simp [abs_exp]
+-- simp [abs_exp]
 
 lemma Complex.norm_exp_mul_I (z : ℂ) : ‖cexp (z * I)‖ = rexp (-z.im) := by
   simp [norm_exp]

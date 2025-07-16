@@ -100,7 +100,7 @@ theorem multipliable_sinTerm (x : ℂ) :
   apply Complex.multipliable_one_add_of_summable
   · rw [← summable_norm_iff]
     have := (summable_pow_div_add (x^2) 2 1 (by omega))
-    simpa only [norm_div, norm_neg, norm_pow,  Nat.cast_one]
+    simpa only [norm_div, norm_neg, norm_pow, Nat.cast_one]
 
 
 lemma euler_sin_tprod (x : ℂ) (hx : x ∈ ℂ_ℤ) :
@@ -203,7 +203,7 @@ theorem logDeriv_sinTerm_eq_cotTerm (x : ℂ) (hx: x ∈ ℂ_ℤ) (i : ℕ) :
   conv =>
     enter [1,2]
     rw [mul_add, mul_div]
-  have : (↑i + 1) ^ 2 * -x ^ 2 / (↑i + 1) ^ 2 =  -x ^ 2 := by
+  have : (↑i + 1) ^ 2 * -x ^ 2 / (↑i + 1) ^ 2 = -x ^ 2 := by
     apply IsUnit.mul_div_cancel_left
     simp only [isUnit_iff_ne_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff]
     exact Nat.cast_add_one_ne_zero i
@@ -219,7 +219,7 @@ theorem logDeriv_sinTerm_eq_cotTerm (x : ℂ) (hx: x ∈ ℂ_ℤ) (i : ℕ) :
     ring
   rw [hr]
   have h4 : (((i + 1 : ℂ)^2) + -x^2) ≠ 0 := by
-    rw [show  (((i + 1 : ℂ)^2) + -x^2) = -(((x - (i + 1 : ℂ))) * (x +(((i + 1 : ℂ))))) by ring,
+    rw [show (((i + 1 : ℂ)^2) + -x^2) = -(((x - (i + 1 : ℂ))) * (x +(((i + 1 : ℂ))))) by ring,
       neg_ne_zero]
     simp only [ne_eq, mul_eq_zero, not_or]
     refine ⟨h2, h1⟩

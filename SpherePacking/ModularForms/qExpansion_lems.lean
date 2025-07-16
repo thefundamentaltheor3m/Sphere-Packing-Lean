@@ -78,7 +78,7 @@ lemma cuspFunction_mul (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ
 theorem derivWithin_mul2 (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn ℂ f s)
     (hd : DifferentiableOn ℂ g s) :
     s.restrict (derivWithin (fun y => f y * g y) s) =
-      s.restrict (derivWithin f s * g  + f  * derivWithin g s)  := by
+      s.restrict (derivWithin f s * g + f * derivWithin g s) := by
   ext y
   simp only [restrict_apply, Pi.add_apply, Pi.mul_apply]
   rw [derivWithin_fun_mul (hf y y.2) (hd y y.2)]
@@ -157,7 +157,7 @@ lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularFor
       (by simp)]
   rw [this]
   simp only [Nat.succ_eq_add_one]
-  have h0 : ((m+1)! : ℂ) ≠  0 := by
+  have h0 : ((m+1)! : ℂ) ≠ 0 := by
     norm_cast
     exact Nat.factorial_ne_zero (m + 1)
   rw [inv_mul_eq_iff_eq_mul₀ h0, Finset.Nat.sum_antidiagonal_eq_sum_range_succ_mk, Finset.mul_sum]
@@ -225,7 +225,7 @@ lemma cuspFunction_sub [NeZero n] (f g : ModularForm Γ(n) k) :
 variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
 variable {F : Type*} [NormedAddCommGroup F] [NormedSpace 𝕜 F]
 
-theorem iteratedDerivWithin_eq_iteratedDeriv  {n : ℕ} (f : 𝕜 → F) (s : Set 𝕜) (x : 𝕜)
+theorem iteratedDerivWithin_eq_iteratedDeriv {n : ℕ} (f : 𝕜 → F) (s : Set 𝕜) (x : 𝕜)
     (hs : UniqueDiffOn 𝕜 s) (h : ContDiffAt 𝕜 n f x) (hx : x ∈ s) :
     iteratedDerivWithin n f s x = iteratedDeriv n f x := by
     rw [iteratedDerivWithin, iteratedDeriv]
@@ -251,14 +251,14 @@ lemma qExpansion_sub (f g : ModularForm Γ(1) k) : (qExpansion 1 (f - g)) =
     refine DifferentiableAt.differentiableWithinAt ?_
     refine differentiableAt_cuspFunction 1 f ?_
     simpa using hx
-    exact  isOpen_ball
+    exact isOpen_ball
     simp
   · refine (DifferentiableOn.contDiffOn (E := ℂ) ?_ ?_).contDiffWithinAt ?_
     intro x hx
     refine DifferentiableAt.differentiableWithinAt ?_
     refine differentiableAt_cuspFunction 1 g ?_
     simpa using hx
-    exact  isOpen_ball
+    exact isOpen_ball
     simp
   · refine IsOpen.uniqueDiffOn ?_
     exact isOpen_ball
@@ -328,14 +328,14 @@ lemma qExpansion_add (f g : ModularForm Γ(1) k) : (qExpansion 1 (f + g)) =
     refine DifferentiableAt.differentiableWithinAt ?_
     refine differentiableAt_cuspFunction 1 f ?_
     simpa using hx
-    exact  isOpen_ball
+    exact isOpen_ball
     simp
   · refine (DifferentiableOn.contDiffOn (E := ℂ) ?_ ?_).contDiffWithinAt ?_
     intro x hx
     refine DifferentiableAt.differentiableWithinAt ?_
     refine differentiableAt_cuspFunction 1 g ?_
     simpa using hx
-    exact  isOpen_ball
+    exact isOpen_ball
     simp
   · refine IsOpen.uniqueDiffOn ?_
     exact isOpen_ball
@@ -359,8 +359,8 @@ lemma qExpansion_add (f g : ModularForm Γ(1) k) : (qExpansion 1 (f + g)) =
     exact Real.zero_lt_one
 
 
-lemma IteratedDeriv_smul (a : ℂ)  (f : ℂ → ℂ) (m : ℕ) :
-    iteratedDeriv m (a • f) = a • iteratedDeriv m f  := by
+lemma IteratedDeriv_smul (a : ℂ) (f : ℂ → ℂ) (m : ℕ) :
+    iteratedDeriv m (a • f) = a • iteratedDeriv m f := by
   induction' m with m hm
   simp
   rw [iteratedDeriv_succ, iteratedDeriv_succ]
