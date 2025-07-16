@@ -299,7 +299,7 @@ theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice) : S.nu
     intro ⟨x, hx⟩ ⟨y, hy⟩
     rw [hS] at hx hy
     use ⟨y - x, sub_mem hy hx⟩
-    simp [addAction_vadd, Subtype.ext_iff.mpr]
+    simp [addAction_vadd]
   · rw [Fintype.card, Finset.one_le_card]
     let zero : S.centers := ⟨0, by rw [hS]; exact zero_mem _⟩
     use ⟦zero⟧, by simp [zero]
@@ -676,7 +676,7 @@ theorem PeriodicSpherePacking.aux2_ge'
   refine S.aux2_ge _ R ?_ (fundamentalDomain_measurableSet _) hL hd
   intro x
   obtain ⟨⟨v, hv⟩, hv'⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
-  simp only [S.basis_Z_span, AddSubmonoid.mk_vadd] at hv hv' ⊢
+  simp only [S.basis_Z_span] at hv hv' ⊢
   use ⟨v, hv⟩, hv'.left, ?_
   intro ⟨y, hy⟩ hy'
   have := hv'.right ⟨y, ?_⟩ hy'
@@ -693,7 +693,7 @@ theorem PeriodicSpherePacking.aux2_le'
   refine S.aux2_le _ R ?_ (fundamentalDomain_measurableSet _) hL hd
   intro x
   obtain ⟨⟨v, hv⟩, hv'⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
-  simp only [S.basis_Z_span, AddSubmonoid.mk_vadd] at hv hv' ⊢
+  simp only [S.basis_Z_span] at hv hv' ⊢
   use ⟨v, hv⟩, hv'.left, ?_
   intro ⟨y, hy⟩ hy'
   have := hv'.right ⟨y, ?_⟩ hy'
@@ -976,12 +976,12 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
   : S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
   ext x
-  simp only [Set.mem_iUnion, Subtype.exists, AddSubmonoid.mk_vadd, exists_prop]
+  simp only [Set.mem_iUnion, Subtype.exists]
   constructor
   · intro hx
     obtain ⟨g, hg₁, _⟩ := S.unique_covers_of_centers hD_unique_covers ⟨x, hx⟩
     use -g
-    simp only [neg_mem_iff, SetLike.coe_mem, true_and]
+    simp only [neg_mem_iff, SetLike.coe_mem]
     obtain ⟨hy₁, hy₂⟩ := hg₁
     have : ∃ y : D, ↑y = g +ᵥ x := by use ⟨g +ᵥ x, hy₂⟩
     obtain ⟨y, hy⟩ := this
@@ -1002,7 +1002,6 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
     -- Idea: x = g +ᵥ y for some y in the set of centers
     -- Then apply closure under action
     obtain ⟨y, hy₁, hy₂⟩ := hg₂
-    simp only [vadd_eq_add] at hy₂
     rw [← hy₂]
     exact S.lattice_action hg₁ hy₁
 
@@ -1056,7 +1055,7 @@ theorem PeriodicSpherePacking.fundamental_domain_unique_covers :
   -- The `g` we need should be the negative of the floor of `x`, but we can obtain it from the
   -- existing library result.
   obtain ⟨g, hg₁, hg₂⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
-  have hg_mem : ↑g ∈ S.lattice := by simp only [this, mem_toAddSubgroup, SetLike.coe_mem]
+  have hg_mem : ↑g ∈ S.lattice := by simp only [this, SetLike.coe_mem]
   use ⟨↑g, hg_mem⟩
   constructor
   · exact hg₁

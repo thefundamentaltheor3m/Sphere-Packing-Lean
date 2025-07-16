@@ -90,7 +90,7 @@ theorem Summable_of_Inv_Pow_Summable'
     rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean] at hX
     simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs] at hX
     obtain ⟨C, hC⟩ := hf k
-    simp only [Set.top_eq_univ, Real.norm_eq_abs, Subtype.forall, Set.mem_univ, true_implies] at hC
+    simp only [Real.norm_eq_abs] at hC
     have hC_nonneg : 0 ≤ C := by
       obtain ⟨i, hi⟩ := hX'
       specialize hC i hi
@@ -194,7 +194,7 @@ lemma IsDecaying : IsDecayingMap Set.univ f := by
   obtain ⟨C, hC⟩ := f.decay' k 0
   use C
   simp only [norm_iteratedFDeriv_zero, Real.norm_eq_abs] at hC
-  simp only [Set.top_eq_univ, Real.norm_eq_abs, Subtype.forall, Set.mem_univ, true_implies]
+  simp only [Real.norm_eq_abs, Set.mem_univ, true_implies]
   exact hC
 
 theorem Summable_of_Inv_Pow_Summable'

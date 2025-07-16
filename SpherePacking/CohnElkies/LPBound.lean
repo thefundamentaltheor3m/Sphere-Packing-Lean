@@ -209,7 +209,7 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f)  :
               split_ifs with hx
               .
                 let x_in: ↑(P.centers ∩ D) := ⟨x, by simp [hx]⟩
-                simp only [dite_eq_ite, hx, ↓reduceIte]
+                simp only [dite_eq_ite]
                 rw [← tsum_ite_eq (b := x_in) (a := (f 0).re)]
                 simp_rw [← Subtype.val_inj]
                 rw [← Summable.tsum_add]
@@ -322,6 +322,22 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f)  :
               rw [PeriodicSpherePacking.numReps']
               exact Nat.card_eq_fintype_card
 
+include hD_isBounded
+lemma calc_steps' (hd : 0 < d) (hf: Summable f) :
+    ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), (f (↑x - ↑y + ↑ℓ)).re =
+    (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), f (↑x - ↑y + ↑ℓ)).re := by
+  have sum_finite := aux4 P D hD_isBounded hd
+  rw [re_tsum Summable.of_finite]
+  apply tsum_congr
+  intro x
+  rw [re_tsum Summable.of_finite]
+  apply tsum_congr
+  intro y
+  rw [re_tsum]
+  apply Summable.comp_injective hf
+  intro a b
+  field_simp
+
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following theorem.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
@@ -355,8 +371,9 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       f (↑x - ↑y + ↑ℓ)).re
         := by
-            -- rw [re_tsum hPSF.1] -- Needs some sort of summability over subsets...?
-            sorry
+            exact
+              calc_steps' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hd
+                hf
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice) *
       ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m) *
@@ -420,8 +437,10 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             apply congrArg _ _
             ext y
             simp only [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg, mul_comm]
-            -- push_cast  -- Can this be condensed into a rw so that there's just a bunch of rws?
-            sorry
+            rw [RCLike.wInner_add_left]
+            simp only [RCLike.wInner_neg_left, ofReal_add, ofReal_neg]
+            rw [mul_add, Complex.exp_add, mul_comm]
+            simp
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
@@ -531,14 +550,11 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
         := by
             apply congrArg _ _
             let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
-            simp only [inner_zero_right, zero_mul, ofReal_zero, mul_zero, Complex.exp_zero,
-                       tsum_const, nsmul_eq_mul, mul_one, Complex.norm_natCast, Nat.cast_nonneg,
-                       ne_eq, not_false_eq_true, pow_left_inj, Nat.cast_inj,
-                       PeriodicSpherePacking.numReps', Set.toFinset_card] -- ↑(P.centers ∩ D)]
+            simp only [PeriodicSpherePacking.numReps'] -- ↑(P.centers ∩ D)]
             simp only [RCLike.wInner_zero_right, ofReal_zero, mul_zero, Complex.exp_zero,
               tsum_const, Nat.card_eq_fintype_card, nsmul_eq_mul, mul_one, Complex.norm_natCast]
   _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume
-        := by simp only [div_eq_mul_inv, one_div, mul_comm, one_mul, ← mul_assoc]
+        := by simp only [div_eq_mul_inv, mul_comm, one_mul, ← mul_assoc]
 
 
 -- And now, the main result of this section:
@@ -642,7 +658,7 @@ theorem LinearProgrammingBound' (hd : 0 < d) (hf: Summable f) :
       have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) /
         ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
         (𝓕 (⇑f) 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
-        simp only [mul_div_assoc, div_eq_mul_inv]
+        simp only [div_eq_mul_inv]
         have haux₁ : 0 ≤ ↑P.numReps ^ 2 * (𝓕 (⇑f) 0).re * (ZLattice.covolume P.lattice volume)⁻¹
         := by
           refine mul_nonneg (mul_nonneg (sq_nonneg (P.numReps : ℝ)) (hCohnElkies₂ 0)) ?_
