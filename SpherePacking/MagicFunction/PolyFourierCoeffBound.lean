@@ -44,7 +44,7 @@ variable (z : ℍ) (hz : 1 / 2 < z.im)
 variable (c : ℤ → ℂ) (n₀ : ℤ) (hcn₀ : c n₀ ≠ 0) -- (hn₀ : ∀ (n : ℤ), n < n₀ → c n = 0)
 variable (hcsum : Summable fun (i : ℕ) ↦ (fouterm c z (i + n₀)))
 variable (k : ℕ) (hpoly : c =O[atTop] (fun n ↦ (n ^ k : ℝ)))
---  Change to just `c n` is polynomial. Should work!
+-- Change to just `c n` is polynomial. Should work!
 variable (f : ℍ → ℂ) (hf : ∀ x : ℍ, f x = ∑' (n : ℕ), (fouterm c x (n + n₀)))
 
 noncomputable def DivDiscBound : ℝ :=
@@ -127,7 +127,7 @@ lemma aux_9 (i : ℕ) :
 
 include hcsum in
 lemma aux_10 : Summable fun (n : ℕ) ↦ norm (c (n + n₀)) * rexp (-π * ↑n * z.im) := by
-  simp only [← aux_9, aux_ring]
+  simp only [← aux_9]
   exact aux_3 z c n₀ hcsum
 
 lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
@@ -190,7 +190,7 @@ private lemma step_5 :
     norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   simp only [norm_div, norm_mul]
 
-private lemma step_6  :
+private lemma step_6 :
     norm (cexp (π * I * (n₀ - 2) * z)) *
     norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) =
@@ -209,7 +209,7 @@ private lemma step_7 :
     exact aux_7 z (n₀ - 2)
 
 include hcsum in
-private lemma step_8  :
+private lemma step_8 :
     rexp (-π * (n₀ - 2) * z.im) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
     (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (π * I * n * z))) /
@@ -297,12 +297,12 @@ private lemma step_11 :
     exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
     sorry
   -- · next j =>
-  --   have : -π * ↑j / 2 = -π * ↑j  * (1 / 2) := by
-  --     rw [@mul_one_div]
-  --   rw [this]
-  --   simp at *
-  --   have hz2 := hz.le
-  --   gcongr
+  -- have : -π * ↑j / 2 = -π * ↑j * (1 / 2) := by
+  -- rw [@mul_one_div]
+  -- rw [this]
+  -- simp at *
+  -- have hz2 := hz.le
+  -- gcongr
 
 include hz in
 private lemma step_12 :
@@ -427,11 +427,11 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
     -- calc 0
     -- _ < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * (1 / 2 * I).im)) ^ 24 := aux_8 (1 / 2 * I) (by sorry)
     -- _ = ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
-    --   congr
-    --   ext n
-    --   congr 3
-    --   simp
-    --   ring
+    -- congr
+    -- ext n
+    -- congr 3
+    -- simp
+    -- ring
 
 end positivity
 
@@ -515,8 +515,7 @@ theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     _ ≤ R * n.toNat ^ 5 := hR
       -- rwa [Real.norm_natCast] at hR
     _ = R * |↑n| ^ 5 := by
-      simp only [mul_eq_mul_left_iff, Nat.cast_nonneg, norm_nonneg, ne_eq, OfNat.ofNat_ne_zero,
-        not_false_eq_true, pow_left_inj₀]
+      simp only [mul_eq_mul_left_iff]
       norm_cast
       left
       rw [cast_pow, hnnat]
@@ -531,7 +530,7 @@ theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     have : ¬((σ 3) 4 = 0) ↔ ¬ (∑ d ∈ divisors 4, d ^ 3 = 0) := by rfl
     rw [this]
     simp only [Finset.sum_eq_zero_iff, mem_divisors, ne_eq, OfNat.ofNat_ne_zero,
-      not_false_eq_true, and_true, pow_eq_zero_iff, not_forall, Classical.not_imp]
+      not_false_eq_true, and_true, pow_eq_zero_iff, not_forall]
     exact ⟨2, (by norm_num), (by norm_num)⟩
   · simp only [φ₀]
     intro z hz

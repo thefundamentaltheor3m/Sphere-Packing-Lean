@@ -1,17 +1,10 @@
 import Mathlib.Data.Set.Card
 import Mathlib.Topology.Algebra.InfiniteSum.Defs
 import Mathlib.Topology.Instances.ENat
-import SpherePacking.ForMathlib.ENat
-
 import Mathlib.Data.ENat.Lattice
-import Mathlib.Data.Set.Card
-import Mathlib.Topology.Instances.Discrete
-import Mathlib.Topology.Order.T5
-import Mathlib.Order.Interval.Set.WithBotTop
-import Mathlib.Order.Filter.Pointwise
-import Mathlib.Topology.Algebra.Monoid.Defs
-import Mathlib.Topology.Algebra.InfiniteSum.Constructions
 import Mathlib.Topology.Algebra.InfiniteSum.Order
+import Mathlib.Topology.Order.T5
+import SpherePacking.ForMathlib.ENat
 
 
 -- TODO (BM): make `Scott` a def so we don't end up with a weird topology on ENat

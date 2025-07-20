@@ -14,14 +14,14 @@ variable {β : Type*} {f g : β → ℝ} (hg : Multipliable g)
 -- -- This has nothing to do with the fact that the product exists because if it's not
 -- -- multipliable, the product is 1. So, we just need to show that all the terms are positive.
 -- lemma tprod_pos_of_pos (hf : ∀ b, 0 < f b) : 0 < ∏' b, f b := by
---   if hmul : Multipliable f then
---   · unfold Multipliable at hmul
---     obtain ⟨a, ha⟩ := hmul
---     -- rw [HasProd_iff]
---     sorry
---   else
---   · rw [tprod_eq_one_of_not_multipliable hmul]
---     exact zero_lt_one
+-- if hmul : Multipliable f then
+-- · unfold Multipliable at hmul
+-- obtain ⟨a, ha⟩ := hmul
+-- -- rw [HasProd_iff]
+-- sorry
+-- else
+-- · rw [tprod_eq_one_of_not_multipliable hmul]
+-- exact zero_lt_one
 
 
 lemma tprod_le_of_nonneg_of_multipliable (hfnn : 0 ≤ f) (hfg : f ≤ g) (hf : Multipliable f)

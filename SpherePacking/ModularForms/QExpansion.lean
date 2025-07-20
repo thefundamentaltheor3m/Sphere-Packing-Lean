@@ -52,7 +52,7 @@ lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * r
     intro z hz k
     simp_rw [norm_mul, mul_right_comm _ I, norm_exp_mul_I, mul_right_comm]
     simp only [mul_im, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero,
-      sub_zero, coe_re, zero_mul, add_zero, coe_im, natCast_im, natCast_re, zero_add, neg_mul]
+      sub_zero, coe_re, zero_mul, add_zero, coe_im, natCast_im, natCast_re, neg_mul]
     nth_rw 4 [← mul_one k]
     rw [Nat.cast_mul, Nat.cast_one, ← mul_assoc]
     gcongr
@@ -72,7 +72,7 @@ lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * r
   rw [EventuallyEq, eventually_atImInfty]
   use 1, fun z hz ↦ ?_
   rw [← tsum_nat_add_neg_add_one]
-  rfl
+  · rfl
   rw [← summable_norm_iff]
   convert_to Summable fun n ↦ ‖a n‖ * rexp (z.im * -2 * π * n)
   · ext n
@@ -88,3 +88,5 @@ lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * r
       gcongr
     · norm_num at hb
       simp [ha' _ hb]
+
+end QExp

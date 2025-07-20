@@ -2,7 +2,7 @@ import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Data.Real.StarOrdered
 import Mathlib.NumberTheory.LSeries.RiemannZeta
 
-open  TopologicalSpace Set MeasureTheory intervalIntegral
+open TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
@@ -18,14 +18,14 @@ lemma zeta_two_eqn : ∑' (n : ℤ), ((n : ℂ) ^ 2)⁻¹ = 2 * riemannZeta 2 :=
   rw [hr, Summable.tsum_add]
   ring
   repeat{
-  have := Complex.summable_one_div_nat_cpow  (p := 2)
+  have := Complex.summable_one_div_nat_cpow (p := 2)
   simp only [cpow_ofNat, one_div, re_ofNat, Nat.one_lt_ofNat, iff_true] at this
   exact this}
   simp only [one_div]
-  have := Complex.summable_one_div_nat_cpow  (p := 2)
+  have := Complex.summable_one_div_nat_cpow (p := 2)
   simp only [cpow_ofNat, one_div, re_ofNat, Nat.one_lt_ofNat, iff_true] at *
   norm_cast at *
-  apply  Summable.of_nat_of_neg_add_one
+  apply Summable.of_nat_of_neg_add_one
   apply this
   rw [← summable_nat_add_iff 1] at this
   apply this.congr

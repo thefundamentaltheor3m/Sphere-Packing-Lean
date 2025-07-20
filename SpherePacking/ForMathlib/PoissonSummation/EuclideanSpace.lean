@@ -24,7 +24,7 @@ Euclidean inner product, norm, and metric). These are still nice results, though
 theorem smul_single (i : ι) (r s : 𝕜) :
     s • EuclideanSpace.single i r = EuclideanSpace.single i (s * r) := by
   ext i
-  simp only [PiLp.smul_apply, EuclideanSpace.single_apply, smul_eq_mul, mul_ite, mul_one, mul_zero]
+  simp only [PiLp.smul_apply, EuclideanSpace.single_apply, smul_eq_mul, mul_ite, mul_zero]
 
 
 -- We also add a version of this that is compatible with `EuclideanSpace.single i 1`, because such

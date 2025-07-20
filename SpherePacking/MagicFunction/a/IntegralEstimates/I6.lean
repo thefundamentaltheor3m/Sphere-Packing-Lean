@@ -44,7 +44,7 @@ section Bounding
 section Bounding_Integrand
 
 lemma I₆'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ici 1, ‖g r t‖ = ‖φ₀'' (I * t)‖ * rexp (-π * r * t) := by
-  simp [g, neg_mul, Complex.norm_mul, norm_I, one_mul, norm_exp]
+  simp [g, neg_mul, norm_I, one_mul, norm_exp]
 
 lemma I₆'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ t ∈ Ici (1 : ℝ),
     ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
@@ -96,7 +96,7 @@ theorem I₆'_bounding (r : ℝ) : ∃ C₁ > 0,
   calc
   _ = ‖2 * ∫ t in Ici (1 : ℝ), g r t‖ := by simp only [I₆'_eq_integral_g_Ioo, g]
   _ ≤ 2 * ∫ t in Ici (1 : ℝ), ‖g r t‖ := by
-      simp only [norm_mul, norm_two, Complex.norm_ofNat, Nat.ofNat_pos, mul_le_mul_left]
+      simp only [norm_mul, Complex.norm_ofNat, Nat.ofNat_pos, mul_le_mul_left]
       exact norm_integral_le_integral_norm (g r)
   _ ≤ 2 * ∫ t in Ici (1 : ℝ), C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by gcongr
   _ = _ := by
@@ -152,8 +152,8 @@ theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), ‖x‖ ^ k * ‖iterate
 end Higher_iteratedFDerivs
 
 -- def I₆'_Schwartz : 𝓢(ℝ, ℂ) where
---   toFun := I₆'
---   smooth' := sorry
---   decay' := by extract_goal; sorry
+-- toFun := I₆'
+-- smooth' := sorry
+-- decay' := by extract_goal; sorry
 
 end Schwartz_Decay

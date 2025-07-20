@@ -50,7 +50,7 @@ lemma arg_pow_aux (n : ℕ) (x : ℂ) (hx : x ≠ 0) (hna : |arg x| < π / n) :
     gcongr
     exact (lt_add_one n)
 
-lemma one_add_abs_half_ne_zero {x : ℂ} (hb :  ‖x‖ < 1 / 2) : 1 + x ≠ 0 := by
+lemma one_add_abs_half_ne_zero {x : ℂ} (hb : ‖x‖ < 1 / 2) : 1 + x ≠ 0 := by
   by_contra h
   rw [@add_eq_zero_iff_neg_eq] at h
   rw [← h] at hb
@@ -67,7 +67,7 @@ lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀�
   have h3 := h2.comp hf1
   simp only [arg_one] at h3
   rw [Metric.tendsto_nhds] at *
-  simp only [gt_iff_lt, dist_zero_right,  eventually_atTop, ge_iff_le,
+  simp only [gt_iff_lt, dist_zero_right, eventually_atTop, ge_iff_le,
     dist_self_add_left, arg_one, Real.norm_eq_abs, comp_apply] at *
   by_cases hn0 : n = 0
   · rw [hn0]
@@ -99,14 +99,14 @@ lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) :
   have h3 := h2.comp hf1
   simp only [arg_one] at h3
   rw [Metric.tendsto_nhds] at *
-  simp only [gt_iff_lt, dist_zero_right, eventually_atTop, ge_iff_le,
-    dist_self_add_left, arg_one, Real.norm_eq_abs, comp_apply] at *
+  simp only [gt_iff_lt, dist_zero_right, dist_self_add_left, arg_one, Real.norm_eq_abs,
+    comp_apply] at *
   by_cases hn0 : n = 0
   · simp_rw [hn0]
     simp only [pow_zero, arg_one, CharP.cast_eq_zero, zero_mul, implies_true, and_true]
     rw [atImInfty]
     simp only [mem_comap, mem_atTop_sets, ge_iff_le]
-    use {n  | 1 ≤ n.im}
+    use {n | 1 ≤ n.im}
     use {r : ℝ | 1 ≤ r}
     refine ⟨?_, ?_⟩
     use 1
@@ -157,15 +157,14 @@ lemma clog_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) 
   refine ⟨ha0, ?_⟩
   intro b hb
   have h2 := ha hb
-  simp only [mem_atTop_sets, ge_iff_le, mem_preimage, mem_setOf_eq, AbsoluteValue.map_pow, Real.log_pow,
-    ofReal_mul, ofReal_natCast] at *
+  simp only [mem_atTop_sets, ge_iff_le, mem_preimage, mem_setOf_eq] at *
   rw [h2]
   simp only [norm_pow, Real.log_pow, ofReal_mul, ofReal_natCast]
   ring
 
 
 
-lemma log_summable_pow (f : ℕ → ℂ)  (hf : Summable f)  (m : ℕ) :
+lemma log_summable_pow (f : ℕ → ℂ) (hf : Summable f) (m : ℕ) :
     Summable (fun n => Complex.log ((1 + f n)^m)) := by
   have hfl := Complex.summable_log_one_add_of_summable hf
   have := (Summable.mul_left m (f := (fun n => Complex.log (1 + f n))) hfl).norm

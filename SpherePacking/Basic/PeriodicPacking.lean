@@ -299,7 +299,7 @@ theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice) : S.nu
     intro ⟨x, hx⟩ ⟨y, hy⟩
     rw [hS] at hx hy
     use ⟨y - x, sub_mem hy hx⟩
-    simp [addAction_vadd, Subtype.ext_iff.mpr]
+    simp [addAction_vadd]
   · rw [Fintype.card, Finset.one_le_card]
     let zero : S.centers := ⟨0, by rw [hS]; exact zero_mem _⟩
     use ⟦zero⟧, by simp [zero]
@@ -579,29 +579,13 @@ theorem aux7 (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hL 
   · rw [Set.mem_vadd_set_iff_neg_vadd_mem, neg_neg]
     exact hg
 
--- instance (s : Submodule ℤ (ι → ℝ)) : VAddInvariantMeasure s (ι → ℝ) volume where
---   measure_preimage_vadd := by
---     intro c t ht
---     simp only [Submodule.vadd_def, vadd_eq_add]
---     simp only [measure_preimage_add]
-
--- instance (s : Submodule ℤ (EuclideanSpace ℝ ι)) :
---     VAddInvariantMeasure s (EuclideanSpace ℝ ι) volume where
---   measure_preimage_vadd := by
---     intro c t ht
---     simp only [Submodule.vadd_def, vadd_eq_add]
---     simp only [measure_preimage_add]
-
 instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Module ℤ E]
     [Module ℝ E] (μ : Measure E) [μ.IsAddLeftInvariant] [IsScalarTower ℤ ℝ E] (s : Submodule ℤ E) :
     VAddInvariantMeasure s E μ where
-  measure_preimage_vadd := by
-    intro c t ht
-    simp only [Submodule.vadd_def, vadd_eq_add]
-    rw [measure_preimage_add μ (c : E)]
+  measure_preimage_vadd c t ht := by
+    simp only [Submodule.vadd_def, vadd_eq_add, measure_preimage_add]
 
 -- Theorem 2.2, lower bound
--- set_option diagnostics true in
 theorem PeriodicSpherePacking.aux2_ge
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
     (hL : ∀ x ∈ D, ‖x‖ ≤ L) (hd : 0 < d) :
@@ -692,7 +676,7 @@ theorem PeriodicSpherePacking.aux2_ge'
   refine S.aux2_ge _ R ?_ (fundamentalDomain_measurableSet _) hL hd
   intro x
   obtain ⟨⟨v, hv⟩, hv'⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
-  simp only [S.basis_Z_span, AddSubmonoid.mk_vadd] at hv hv' ⊢
+  simp only [S.basis_Z_span] at hv hv' ⊢
   use ⟨v, hv⟩, hv'.left, ?_
   intro ⟨y, hy⟩ hy'
   have := hv'.right ⟨y, ?_⟩ hy'
@@ -709,7 +693,7 @@ theorem PeriodicSpherePacking.aux2_le'
   refine S.aux2_le _ R ?_ (fundamentalDomain_measurableSet _) hL hd
   intro x
   obtain ⟨⟨v, hv⟩, hv'⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
-  simp only [S.basis_Z_span, AddSubmonoid.mk_vadd] at hv hv' ⊢
+  simp only [S.basis_Z_span] at hv hv' ⊢
   use ⟨v, hv⟩, hv'.left, ?_
   intro ⟨y, hy⟩ hy'
   have := hv'.right ⟨y, ?_⟩ hy'
@@ -974,7 +958,7 @@ end ConstantEqNormalizedConstant
 section Disjoint_Covering_of_Centers
 
 theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
+  {D : Set (EuclideanSpace ℝ (Fin d))} -- (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
   :
   ∀ x : S.centers, ∃! g : S.lattice, (g +ᵥ x : EuclideanSpace ℝ (Fin d)) ∈ S.centers ∩ D := by
@@ -988,23 +972,23 @@ theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePackin
     exact hg₂ a ha hmem
 
 theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
+  {D : Set (EuclideanSpace ℝ (Fin d))} -- (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
   : S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
   ext x
-  simp only [Set.mem_iUnion, Subtype.exists, AddSubmonoid.mk_vadd, exists_prop]
+  simp only [Set.mem_iUnion, Subtype.exists]
   constructor
   · intro hx
     obtain ⟨g, hg₁, _⟩ := S.unique_covers_of_centers hD_unique_covers ⟨x, hx⟩
     use -g
-    simp only [neg_mem_iff, SetLike.coe_mem, true_and]
+    simp only [neg_mem_iff, SetLike.coe_mem]
     obtain ⟨hy₁, hy₂⟩ := hg₁
     have : ∃ y : D, ↑y = g +ᵥ x := by use ⟨g +ᵥ x, hy₂⟩
     obtain ⟨y, hy⟩ := this
     suffices : x = -g +ᵥ (y : EuclideanSpace ℝ (Fin d))
     · rw [this]
       have hy' := Subtype.coe_prop y
-      use True.intro  -- so weird
+      use True.intro -- so weird
       refine Set.vadd_mem_vadd_set ?h.intro.intro.a
       simp only [Set.mem_inter_iff, hy', and_true]
       rw [hy]
@@ -1018,7 +1002,6 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
     -- Idea: x = g +ᵥ y for some y in the set of centers
     -- Then apply closure under action
     obtain ⟨y, hy₁, hy₂⟩ := hg₂
-    simp only [vadd_eq_add] at hy₂
     rw [← hy₂]
     exact S.lattice_action hg₁ hy₁
 
@@ -1026,20 +1009,20 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
 -- union over points in X / Λ = X ∩ D of translates of the lattice by points in X / Λ = X ∩ D or
 -- something like that, because that's what's needed for `tsum_finset_bUnion_disjoint`.
 -- theorem PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) -- (hd : 0 < d)
---   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
---   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
---   : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
---   -- True
---   := by
---   intro x hx y hy hxy
---   obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers x
---   specialize hg₂ y
---   simp only  at hg₂
---   simp only [Set.disjoint_iff_inter_eq_empty]
---   ext z
---   simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
---   intro hz₁ hz₂
---   sorry
+-- {D : Set (EuclideanSpace ℝ (Fin d))} -- (hD_isBounded : IsBounded D)
+-- (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
+-- : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
+-- -- True
+-- := by
+-- intro x hx y hy hxy
+-- obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers x
+-- specialize hg₂ y
+-- simp only at hg₂
+-- simp only [Set.disjoint_iff_inter_eq_empty]
+-- ext z
+-- simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
+-- intro hz₁ hz₂
+-- sorry
 
 -- Can we use some sort of orbit disjointedness result and factor through the equivalence between
 -- the `Quotient` and `S.centers ∩ D`?
@@ -1072,7 +1055,7 @@ theorem PeriodicSpherePacking.fundamental_domain_unique_covers :
   -- The `g` we need should be the negative of the floor of `x`, but we can obtain it from the
   -- existing library result.
   obtain ⟨g, hg₁, hg₂⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
-  have hg_mem : ↑g ∈ S.lattice := by simp only [this, mem_toAddSubgroup, SetLike.coe_mem]
+  have hg_mem : ↑g ∈ S.lattice := by simp only [this, SetLike.coe_mem]
   use ⟨↑g, hg_mem⟩
   constructor
   · exact hg₁
