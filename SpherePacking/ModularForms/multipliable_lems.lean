@@ -108,7 +108,8 @@ lemma MultipliableDeltaProductExpansion_pnat (z : ℍ) :
   apply MultipliableEtaProductExpansion_pnat z
 
 
-lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) : (∏' (i : ℕ), f i) ^ n = ∏' (i : ℕ), (f i) ^ n := by
+lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) : (∏' (i : ℕ), f i) ^ n = ∏' (i : ℕ), (f
+  i) ^ n := by
   induction' n with n hn
   · simp
   · rw [pow_succ]

@@ -226,7 +226,8 @@ theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))}
   let bℝ := Basis.ofZLatticeBasis ℝ Λ bℤ;
   let D := {m | ∀ (i : Fin d), (bℝ.repr m) i ∈ Set.Ico (-1) 1};
   Finite ↑(X ∩ D) :=
-  -- Consider function from this thing to set of orbits. Show preimage of any singleton in `Quotient` consists of 2^d elements. Then card is card of 2^d
+  -- Consider function from this thing to set of orbits. Show preimage of any singleton in
+  -- `Quotient` consists of 2^d elements. Then card is card of 2^d
   sorry
 
 -- set_option diagnostics true
@@ -255,7 +256,8 @@ theorem Summable_Inverse_Powers_of_Finite_Orbits
 /- *TODO:* Move to `SpherePacking/CohnElkies/Prereqs.lean` -/
 
 /-
-# CHECK OUT https://github.com/leanprover-community/mathlib4/blob/9d883e2896b1b16d8e646c336c647da4fc1cacd5/Mathlib/NumberTheory/ModularForms/EisensteinSeries/UniformConvergence.lean#L146!
+# CHECK OUT
+https://github.com/leanprover-community/mathlib4/blob/9d883e2896b1b16d8e646c336c647da4fc1cacd5/Mathlib/NumberTheory/ModularForms/EisensteinSeries/UniformConvergence.lean#L146!
 
 What's wild is that this is CHRIS's file! **ASK ABOUT IT**
 -/

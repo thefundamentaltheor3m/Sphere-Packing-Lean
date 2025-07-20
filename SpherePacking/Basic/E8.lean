@@ -462,7 +462,8 @@ noncomputable def E8_Basis : Basis (Fin 8) ℤ E8_Lattice := by
     -- This is the worst proof ever but I don't want to waste my time on this
   change (_ : Set E8_Lattice) ⊆ _
   intro ⟨x, hx⟩ _
-  simp_rw [E8_Lattice, E8_Set_eq_span, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk] at hx
+  simp_rw [E8_Lattice, E8_Set_eq_span, Submodule.mem_mk, AddSubmonoid.mem_mk,
+    AddSubsemigroup.mem_mk] at hx
   rw [SetLike.mem_coe, Finsupp.mem_span_range_iff_exists_finsupp] at hx ⊢
   obtain ⟨c, hc⟩ := hx
   use c

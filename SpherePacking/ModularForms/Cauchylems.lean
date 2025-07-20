@@ -149,7 +149,8 @@ theorem telescope_aux (z : ℍ) (m : ℤ) (b : ℕ) :
   induction' b with b ihb
   aesop
   simp only [Nat.cast_add, Nat.cast_one, one_div, Finset.sum_sub_distrib] at *
-  rw [fsb, Finset.sum_union, Finset.sum_union, Finset.sum_pair, Finset.sum_pair,add_sub_add_comm, ihb]
+  rw [fsb, Finset.sum_union, Finset.sum_union, Finset.sum_pair, Finset.sum_pair,add_sub_add_comm,
+    ihb]
   simp only [neg_add_rev, Int.reduceNeg, Int.cast_add, Int.cast_neg, Int.cast_one, Int.cast_natCast]
   ring
   · omega
@@ -289,7 +290,8 @@ theorem extracted_5 (z : ℍ) (b : ℤ) :
   have hA:= (haa).hasSum
   have ht := hA.comp verga
   simp at *
-  have := ht.congr' (f₂ := fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, (1 / ((b : ℂ) * ↑z - ↑n) ^ 2 )) ?_
+  have := ht.congr' (f₂ := fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, (1 / ((b : ℂ) * ↑z - ↑n) ^ 2
+    )) ?_
   simp at this
   apply this
   apply Filter.Eventually.of_forall
@@ -321,9 +323,10 @@ lemma cauchy_seq_mul_const (f : ℕ → ℂ) (c : ℂ) (hc : c ≠ 0) :
   exact h1
 
 
-lemma auxer (a c : ℂ) : a + 2*2*c - 2*c =a + 2*c := by ring
+lemma auxer (a c : ℂ) : a + 2*2*c - 2*c = a + 2*c := by ring
 
-noncomputable def summable_term (z : ℍ) : ℤ → ℂ := (fun m : ℤ => (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
+noncomputable def summable_term (z : ℍ) : ℤ → ℂ :=
+  (fun m : ℤ => (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
 
 lemma term_evem (z : ℍ) (m : ℤ) : summable_term z m = summable_term z (-m) := by
   simp [summable_term]
@@ -372,7 +375,8 @@ theorem G2_c_tendsto (z : ℍ) :
   Tendsto
     (fun N ↦
       ∑ x ∈ Finset.range N,
-        2 * (2 * ↑π * Complex.I) ^ 2 * ∑' (n : ℕ+), ↑↑n * cexp (2 * ↑π * Complex.I * (↑x + 1) * ↑z * ↑↑n))
+        2 * (2 * ↑π * Complex.I) ^ 2 * ∑' (n : ℕ+), ↑↑n * cexp (2 * ↑π * Complex.I * (↑x + 1) * ↑z *
+          ↑↑n))
     atTop (𝓝 (-8 * ↑π ^ 2 * ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (2 * ↑π * Complex.I * ↑↑n * ↑z))) := by
     rw [← t9]
     have hf : Summable fun m : ℕ => ( 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
@@ -395,7 +399,8 @@ theorem G2_c_tendsto (z : ℍ) :
     apply V
 
 lemma G2_cauchy (z : ℍ) :
-  CauchySeq (fun N : ℕ => ∑ m ∈ Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) := by
+    CauchySeq (fun N : ℕ => ∑ m ∈ Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
+    := by
   rw [t8]
   simp
   apply CauchySeq.const_add

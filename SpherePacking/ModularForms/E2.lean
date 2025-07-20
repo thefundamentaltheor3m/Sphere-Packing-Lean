@@ -140,7 +140,8 @@ theorem extracted_summable (z : ℍ) (n : ℕ+) : Summable fun m : ℕ ↦
 
 theorem tsum_exp_tendsto_zero (z : ℍ) :
     Tendsto (fun x : ℕ+ ↦ 2 / ↑z * 2 * ↑π * Complex.I *
-    ∑' (n : ℕ), cexp (2 * ↑π * Complex.I * (-↑↑x / ↑z) * ↑n)) atTop (𝓝 (4 * ↑π * Complex.I / ↑z)) := by
+    ∑' (n : ℕ), cexp (2 * ↑π * Complex.I * (-↑↑x / ↑z) * ↑n)) atTop (𝓝 (4 * ↑π * Complex.I / ↑z)) :=
+      by
   rw [show 4 * ↑π * Complex.I / ↑z = 2 / ↑z * 2 * ↑π * Complex.I + 0 by ring]
   conv =>
     enter [1]
@@ -203,9 +204,11 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
 
 theorem extracted_12 (z : ℍ) :
     Tendsto (fun n : ℕ => (2 / (z : ℂ) * ∑' (m : ℕ+),
-     (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) atTop (𝓝 (-2 * ↑π * Complex.I / ↑z)) := by
+     (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) atTop (𝓝 (-2 * ↑π * Complex.I / ↑z)) :=
+       by
   have : Tendsto (fun n : ℕ+ => (2 / (z : ℂ) * ∑' (m : ℕ+),
-     (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) atTop (𝓝 (-2 * ↑π * Complex.I / ↑z)) := by
+     (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) atTop (𝓝 (-2 * ↑π * Complex.I / ↑z)) :=
+       by
     have : (fun n : ℕ+ => (2 / (z : ℂ) * ∑' (m : ℕ+),
      (1 / (-(n : ℂ) / ↑z - ↑↑m) + 1 / (-↑↑n / ↑z + ↑↑m)))) = (fun N : ℕ+ =>
       (2 / (z : ℂ) * (↑π * Complex.I - 2 * ↑π * Complex.I *
@@ -231,7 +234,8 @@ theorem extracted_12 (z : ℍ) :
         rw [hz]
         ring
     rw [h3]
-    rw [show -2 * ↑π * Complex.I / ↑z = 2 * ↑π * Complex.I / ↑z - 4 * ↑π * Complex.I / ↑z - 0 by ring]
+    rw [show -2 * ↑π * Complex.I / ↑z = 2 * ↑π * Complex.I / ↑z - 4 * ↑π * Complex.I / ↑z - 0 by
+      ring]
     apply Tendsto.sub
     apply Tendsto.sub
     simp only [tendsto_const_nhds_iff]
@@ -273,7 +277,8 @@ theorem PS3tn22 (z : ℍ) :
   have : (fun N : ℕ+ => ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)),
     ∑' m : ℤ , (1 / ((m : ℂ) * z + n) - 1 / (m * z + n + 1))) =
     (fun N : ℕ+ =>
-    ∑' m : ℤ , ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) - 1 / (m * z + n + 1))) := by
+    ∑' m : ℤ , ∑ n ∈ (Finset.Ico (-(N : ℤ)) (N : ℤ)), (1 / ((m : ℂ) * z + n) - 1 / (m * z + n + 1)))
+      := by
     ext n
     rw [Summable.tsum_finsetSum]
     intro i hi
@@ -296,7 +301,8 @@ theorem PS3tn22 (z : ℍ) :
   apply Tendsto.add
   ·
     have : Tendsto (fun x : ℕ ↦ -2 / (x : ℂ)) atTop (𝓝 0) := by
-        have := Filter.Tendsto.const_div_atTop (g := fun n : ℕ => ‖(n : ℂ)‖) (r := 2) (l := atTop) ?_
+        have := Filter.Tendsto.const_div_atTop (g := fun n : ℕ => ‖(n : ℂ)‖) (r := 2) (l := atTop)
+          ?_
         rw [tendsto_zero_iff_norm_tendsto_zero]
         simpa only [norm_div, norm_neg, norm_ofNat, norm_natCast] using this
         simp only [norm_natCast]
@@ -502,7 +508,8 @@ lemma auxr (z : ℍ) (b : ℤ):
 
 
 --this sum is now abs convergent. Idea is to subtract PS1 from the G₂ defn.
-lemma G2_alt_eq (z : ℍ) : G₂ z = ∑' m : ℤ, ∑' n : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m n) := by
+lemma G2_alt_eq (z : ℍ) : G₂ z = ∑' m : ℤ, ∑' n : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m
+  n) := by
     rw [G₂]
     have := PS2 z
     set t := ∑' m : ℤ, ∑' n : ℤ, (1 / (((m : ℂ)* z +n)^2 * (m * z + n +1)) + δ m n)
@@ -545,10 +552,12 @@ lemma G2_transf_aux (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -
 
 lemma ModularGroup.coe_mul (A B : SL(2, ℤ)) :
     (ModularGroup.coe A) * B = ModularGroup.coe (A * B) := by
-  have : Matrix.SpecialLinearGroup.toGLPos ∘ (Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) = ModularGroup.coe := by
+  have : Matrix.SpecialLinearGroup.toGLPos ∘ (Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) =
+    ModularGroup.coe := by
     funext A
     rfl
-  let C := MonoidHom.comp Matrix.SpecialLinearGroup.toGLPos (Matrix.SpecialLinearGroup.map (n := Fin 2) (Int.castRingHom ℝ))
+  let C := MonoidHom.comp Matrix.SpecialLinearGroup.toGLPos (Matrix.SpecialLinearGroup.map (n := Fin
+    2) (Int.castRingHom ℝ))
   have hC : C = ModularGroup.coe := by
     rw [← this]
     rfl
@@ -569,7 +578,8 @@ lemma denom_diff (A B : SL(2,ℤ)) (z : ℍ) : ((A * B) 1 0) * (denom B z) =
 
 @[simp]
 lemma denom_sim (A : SL(2,ℤ)) (z : ℍ) :
-    denom (toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) A)) z = denom (coe2 A) z := by rfl
+    denom (toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) A)) z = denom (coe2 A) z := by
+      rfl
 
 @[simp]
 lemma coe2_smul (A : SL(2,ℤ)) (z : ℍ) :
@@ -769,9 +779,11 @@ lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
 
 
 lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ,
-    (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) / (1 - cexp (2 * π * Complex.I * (n + 1) * z)) =
+    (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) / (1 - cexp (2 * π * Complex.I * (n + 1) * z))
+      =
     ∑' n : ℕ, sigma 1 (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) := by
-  have := fun m : ℕ => tsum_choose_mul_geometric_of_norm_lt_one (r := (cexp (2 * ↑π * Complex.I * ↑z))^(m+1)) 0 (by rw [← exp_aux]; simpa using exp_upperHalfPlane_lt_one_nat z m)
+  have := fun m : ℕ => tsum_choose_mul_geometric_of_norm_lt_one (r := (cexp (2 * ↑π * Complex.I *
+    ↑z))^(m+1)) 0 (by rw [← exp_aux]; simpa using exp_upperHalfPlane_lt_one_nat z m)
   simp only [add_zero, Nat.choose_zero_right, Nat.cast_one, one_mul, zero_add, pow_one,
     one_div] at this
   conv =>
@@ -850,7 +862,8 @@ lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
       field_simp
       ring
     · have hl := tsum_pnat_eq_tsum_succ3 (fun n => sigma 1 n * cexp (2 * π * Complex.I * n * z))
-      have hr := tsum_pnat_eq_tsum_succ3 (fun n => n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)))
+      have hr := tsum_pnat_eq_tsum_succ3 (fun n => n * cexp (2 * π * Complex.I * n * z) / (1 - cexp
+        (2 * π * Complex.I * n * z)))
       rw [hl, hr]
       have ht := tsum_eq_tsum_sigma z
       simp at *

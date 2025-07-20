@@ -971,10 +971,10 @@ theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePackin
   · intro a ha hmem
     exact hg₂ a ha hmem
 
-theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))} -- (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
-  : S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
+theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d)
+    {D : Set (EuclideanSpace ℝ (Fin d))}
+    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
+    S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
   ext x
   simp only [Set.mem_iUnion, Subtype.exists]
   constructor
@@ -1082,7 +1082,8 @@ noncomputable instance HDivENNReal : HDiv NNReal ENNReal ENNReal where
 noncomputable instance HMulENNReal : HMul NNReal ENNReal ENNReal where
   hMul := fun x y => x * y
 
-noncomputable def ZLattice.basis_index_equiv (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
+noncomputable def ZLattice.basis_index_equiv (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)))
+  [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
   (Module.Free.ChooseBasisIndex ℤ Λ) ≃ (Fin d) := by
   refine Fintype.equivFinOfCardEq ?h
   rw [← Module.finrank_eq_card_chooseBasisIndex,
@@ -1129,7 +1130,8 @@ theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePackin
   rw [S.density_eq' hd]
   let b := ((ZLattice.module_free ℝ S.lattice).chooseBasis).reindex (S.basis_index_equiv)
   let D := fundamentalDomain (Basis.ofZLatticeBasis ℝ S.lattice b)
-  have hD_isBounded : IsBounded D := fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b)
+  have hD_isBounded : IsBounded D := fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice
+    b)
   have hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D :=
     S.fundamental_domain_unique_covers b
   rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers hd]

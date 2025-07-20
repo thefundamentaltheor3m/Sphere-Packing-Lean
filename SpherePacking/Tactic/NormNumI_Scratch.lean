@@ -31,7 +31,8 @@ lemma congr_aux_1' (x : ℝ) :
 -- return (_ : Result e)
 
 set_option push_neg.use_distrib true in
-lemma _root_.Complex.ne_iff (a b : ℂ) : a ≠ b ↔ (a.re ≠ b.re ∨ a.im ≠ b.im) := by rw [ne_eq, Complex.ext_iff]; push_neg; rfl
+lemma _root_.Complex.ne_iff (a b : ℂ) : a ≠ b ↔ (a.re ≠ b.re ∨ a.im ≠ b.im) := by
+  rw [ne_eq, Complex.ext_iff]; push_neg; rfl
 
 example (z:ℂ) :z = ⟨z.re,z.im⟩ := by rw [Complex.eta]
 example : 1 + I ≠ 0 := by rw [Complex.ne_iff]; norm_num

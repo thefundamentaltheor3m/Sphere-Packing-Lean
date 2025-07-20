@@ -13,7 +13,8 @@ import SpherePacking.MagicFunction.a.Basic
 
 /-! # `a` is a Schwartz Function
 
-The purpose of this file is to prove that `a` is a Schwartz function. It collects results stated elsewhere and presents them concisely.
+The purpose of this file is to prove that `a` is a Schwartz function. It collects results stated
+  elsewhere and presents them concisely.
 -/
 
 -- NOTE: We are not ready for the contents of this file. We first need to fix

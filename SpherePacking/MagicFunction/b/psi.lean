@@ -93,7 +93,8 @@ lemma ψI_eq : ψI = 128 • ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₄_MF - H
 lemma ψS_eq : ψS = 128 * ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₂_MF + H₃_MF) / H₄_MF ^ 2) := by
   sorry
 
-lemma ψT_eq : ψT = 128 * ((H₄_MF - H₂_MF) / (H₃_MF ^ 2) - (H₂_MF + H₃_MF) / H₄_MF ^ 2 + (H₂_MF + H₃_MF) / H₄_MF ^ 2) := by
+lemma ψT_eq : ψT = 128 * ((H₄_MF - H₂_MF) / (H₃_MF ^ 2) - (H₂_MF + H₃_MF) / H₄_MF ^ 2 +
+    (H₂_MF + H₃_MF) / H₄_MF ^ 2) := by
   sorry
 
 end eq

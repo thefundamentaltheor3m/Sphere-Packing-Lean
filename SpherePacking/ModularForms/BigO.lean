@@ -76,14 +76,16 @@ lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻
     rw [Int.abs_eq_natAbs]
     rfl
 
-lemma linear_bigO_pow (m : ℤ) (z : ℍ) (k : ℕ) : (fun (n : ℤ) => ((((m : ℂ) * z + n)) ^ k )⁻¹) =O[cofinite]
+lemma linear_bigO_pow (m : ℤ) (z : ℍ) (k : ℕ) : (fun (n : ℤ) => ((((m : ℂ) * z + n)) ^ k )⁻¹)
+  =O[cofinite]
     fun n => ((|(n : ℝ)| ^ k)⁻¹) := by
   simp_rw [← inv_pow]
   apply Asymptotics.IsBigO.pow
   apply linear_bigO m z
 
 
-lemma Asymptotics.IsBigO.zify {α β: Type*} [Norm α] [Norm β] {f : ℤ → α} {g : ℤ → β} (hf : f =O[cofinite] g) :
+lemma Asymptotics.IsBigO.zify {α β: Type*} [Norm α] [Norm β] {f : ℤ → α} {g : ℤ → β} (hf : f
+  =O[cofinite] g) :
     (fun (n : ℕ) => f n) =O[cofinite] fun n => g n := by
   rw [@isBigO_iff] at *
   obtain ⟨C, hC⟩ := hf
