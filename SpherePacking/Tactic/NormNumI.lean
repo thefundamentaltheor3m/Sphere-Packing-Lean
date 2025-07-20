@@ -70,7 +70,7 @@ theorem re_eq_of_eq {z : ℂ} {a b : ℝ} (hz : z = ⟨a, b⟩) : Complex.re z =
 theorem im_eq_of_eq {z : ℂ} {a b : ℝ} (hz : z = ⟨a, b⟩) : Complex.im z = b := by simp [hz]
 
 partial def parse (z : Q(ℂ)) :
-    MetaM (Σ a b : Q(ℝ),  Q($z = ⟨$a, $b⟩)) := do
+    MetaM (Σ a b : Q(ℝ), Q($z = ⟨$a, $b⟩)) := do
   match z with
   /- parse an addition: `z₁ + z₂` -/
   | ~q($z₁ + $z₂) =>
@@ -121,7 +121,7 @@ partial def parse (z : Q(ℂ)) :
     return ⟨q(OfScientific.ofScientific $m $x $exp), q(0), q(split_scientific _ _ _)⟩
   -- /- parse a constructor type -/
   -- |~q(Complex.mk $a $b) =>
-  --   pure ⟨a, b, q(rfl)⟩
+  -- pure ⟨a, b, q(rfl)⟩
   | _ => throwError "found the atom {z} which is not a numeral"
 
 def normalize (z : Q(ℂ)) : MetaM (Σ a b : Q(ℝ), Q($z = ⟨$a, $b⟩)) := do
