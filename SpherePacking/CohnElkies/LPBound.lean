@@ -391,9 +391,8 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             ext y
             -- Now that we've isolated the innermost sum, we can use the PSF-L.
             exact SchwartzMap.PoissonSummation_Lattices P.lattice f (x - ↑y)
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
-    m).re * (
-      ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
+      (𝓕 f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
         := by
             apply congrArg re
@@ -447,9 +446,8 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             simp only [RCLike.wInner_neg_left, ofReal_add, ofReal_neg]
             rw [mul_add, Complex.exp_add, mul_comm]
             simp
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
-    m).re *
-      (∑' x : ↑(P.centers ∩ D),
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
+      (𝓕 f m).re * (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       (∑' y : ↑(P.centers ∩ D),
       exp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])))).re
@@ -484,9 +482,8 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             apply congrArg _ _
             ext x
             exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
-  _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
-    m).re *
-      (norm (∑' x : ↑(P.centers ∩ D),
+  _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
+      (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
             sorry
@@ -509,9 +506,9 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             -- norm_cast
   -- We split the sum up into the `m = 0` and `m ≠ 0` parts.
   _ = (1 / ZLattice.covolume P.lattice) * (
-      (∑' (m : bilinFormOfRealInner.dualSubmodule P.lattice), if hm : m = (0 : EuclideanSpace ℝ (Fin
-        d)) then 0 else
-      (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
+      (∑' (m : bilinFormOfRealInner.dualSubmodule P.lattice),
+        if hm : m = (0 : EuclideanSpace ℝ (Fin d)) then 0
+        else (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
       +
       (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *

@@ -308,12 +308,12 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
   rw [this]
   simp only [one_div, neg_mul, smul_eq_mul]
   nth_rw 2 [div_eq_mul_inv]
-  rw [← Complex.exp_neg, show 2⁻¹ * cexp (-(2⁻¹ * Complex.log ↑z)) * cexp (-(2⁻¹ * Complex.log ↑z))
-    =
-   (cexp (-(2⁻¹ * Complex.log ↑z)) * cexp (-(2⁻¹ * Complex.log ↑z)))* 2⁻¹ by ring,
-   ← Complex.exp_add,
-   ← sub_eq_add_neg, show -(2⁻¹ * Complex.log ↑z) - 2⁻¹ * Complex.log ↑z = -Complex.log ↑z by ring,
-     Complex.exp_neg, Complex.exp_log, eta_logDeriv z]
+  rw [← Complex.exp_neg,
+    show 2⁻¹ * cexp (-(2⁻¹ * Complex.log ↑z)) * cexp (-(2⁻¹ * Complex.log ↑z)) =
+    (cexp (-(2⁻¹ * Complex.log ↑z)) * cexp (-(2⁻¹ * Complex.log ↑z)))* 2⁻¹ by ring,
+    ← Complex.exp_add,
+    ← sub_eq_add_neg, show -(2⁻¹ * Complex.log ↑z) - 2⁻¹ * Complex.log ↑z = -Complex.log ↑z by ring,
+    Complex.exp_neg, Complex.exp_log, eta_logDeriv z]
   have Rb := eta_logDeriv (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ)
   simp only [coe_mk_subtype] at Rb
   rw [Rb]

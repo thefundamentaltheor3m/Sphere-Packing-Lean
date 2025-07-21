@@ -107,7 +107,7 @@ theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
 
 -- The version below is on the blueprint. I'm pretty sure it can be removed.
 theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
-  ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m)
+    ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m)
     := by
   simpa using PSF_L Λ hf 0
 

@@ -115,8 +115,8 @@ noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
 
 theorem PeriodicSpherePacking.basis_Z_span
     (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
-    Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) = S.lattice := Basis.ofZLatticeBasis_span ℝ
-      S.lattice b
+    Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) = S.lattice :=
+  Basis.ofZLatticeBasis_span ℝ S.lattice b
 
 theorem PeriodicSpherePacking.mem_basis_Z_span
     (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (v) :

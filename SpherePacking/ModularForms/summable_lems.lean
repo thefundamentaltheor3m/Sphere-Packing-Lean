@@ -21,7 +21,7 @@ import SpherePacking.ModularForms.tsumderivWithin
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set
   Metric Filter Function Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 open ArithmeticFunction
 
@@ -36,9 +36,8 @@ theorem int_sum_neg {α : Type*} [AddCommMonoid α] [TopologicalSpace α] [T2Spa
   apply symm
   apply negEquiv.tsum_eq
 
-theorem summable_neg {α : Type*} [TopologicalSpace α] [AddCommMonoid α] (f : ℤ → α) (hf : Summable
-  f) :
-  Summable fun d => f (-d) := by
+theorem summable_neg {α : Type*} [TopologicalSpace α] [AddCommMonoid α] (f : ℤ → α)
+    (hf : Summable f) : Summable fun d => f (-d) := by
   have h : (fun d => f (-d)) = (fun d => f d) ∘ negEquiv.toFun :=
     by
     funext
@@ -334,9 +333,8 @@ theorem lhs_summable (z : ℍ) : Summable fun n : ℕ+ => 1 / ((z : ℂ) - n) + 
   simpa using hb
 
 
-theorem sum_int_even {α : Type*} [UniformSpace α] [CommRing α] [IsUniformAddGroup α] [CompleteSpace
-  α]
-  [T2Space α] (f : ℤ → α) (hf : ∀ n : ℤ, f n = f (-n)) (hf2 : Summable f) :
+theorem sum_int_even {α : Type*} [UniformSpace α] [CommRing α] [IsUniformAddGroup α]
+    [CompleteSpace α] [T2Space α] (f : ℤ → α) (hf : ∀ n : ℤ, f n = f (-n)) (hf2 : Summable f) :
     ∑' n, f n = f 0 + 2 * ∑' n : ℕ+, f n := by
   have hpos : HasSum (fun n : ℕ => f (n + 1)) (∑' n : ℕ+, f n) :=
     by
@@ -410,9 +408,8 @@ theorem summable_diff (z : ℍ) (d : ℤ) :
   rw [neg_div_neg_aux]
   ring
 
-lemma arg1 (a b c d e f g h : ℂ) : e/ f + g /h - a / b - c / d = e / f + g / h + a / -b + c / -d :=
-  by
-  ring
+lemma arg1 (a b c d e f g h : ℂ) : e / f + g / h - a / b - c / d = e / f + g / h + a / -b + c / -d
+    := by ring
 
 lemma sum_int_pnat3 (z : ℍ) (d : ℤ) :
   ∑' m : ℕ+,
@@ -504,7 +501,7 @@ theorem extracted_abs_norm_summable (z : ℍ) (i : ℤ) :
 
 
 private lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ ≤ c * b⁻¹ ↔ b ≤ c * a :=
-  by
+    by
   constructor
   intro h
   simp_rw [inv_eq_one_div] at h
@@ -523,8 +520,8 @@ private lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ 
   apply mul_pos hc (inv_pos.mpr hb)
 
 
-lemma summable_hammerTime {α : Type} [NormedField α] [CompleteSpace α] (f : ℤ → α) (a : ℝ) (hab : 1
-  < a)
+lemma summable_hammerTime {α : Type} [NormedField α] [CompleteSpace α] (f : ℤ → α) (a : ℝ)
+    (hab : 1 < a)
     (hf : (fun n => (f n)⁻¹) =O[cofinite] fun n => (|(n : ℝ)| ^ (a : ℝ))⁻¹) :
     Summable fun n => (f n)⁻¹ := by
   apply summable_of_isBigO _ hf
@@ -571,8 +568,8 @@ lemma summable_pain (z : ℍ) (i : ℤ) :
   rw [← Finset.summable_compl_iff (s := {0})]
   have h1 : (fun m : { x // x ∉ ({0} : Finset ℤ) } ↦ 1 / ((m : ℂ) * ↑z + ↑i) - 1 / (↑m * ↑z + ↑i +
     1)) =
-    (fun m : { x // x ∉ ({0} : Finset ℤ) } ↦ 1 / (((m.1 : ℂ) * ↑z + ↑i)*((m : ℂ) * ↑z + ↑i + 1))) :=
-      by
+    (fun m : { x // x ∉ ({0} : Finset ℤ) } ↦ 1 / (((m.1 : ℂ) * ↑z + ↑i)*((m : ℂ) * ↑z + ↑i + 1)))
+    := by
     funext m
     rw [ div_sub_div]
     simp only [one_mul, mul_one, add_sub_cancel_left, one_div, mul_inv_rev]
@@ -925,10 +922,7 @@ theorem a33 (k : ℕ) (e : ℕ+) (z : ℍ) :
     enter [1]
     ext a
     rw [show cexp (2 * ↑π * Complex.I * ↑e * z * ↑a) = cexp (2 * ↑π * Complex.I * (↑e)* z) ^ (a : ℕ)
-      by
-      rw [← Complex.exp_nsmul]
-      congr
-      ring]
+      by rw [← Complex.exp_nsmul]; congr; ring]
   have := summable_norm_pow_mul_geometric_of_norm_lt_one
     (r := cexp (2 * ↑π * Complex.I * (↑e)* z)) k ?_
   apply this.subtype
@@ -1008,11 +1002,10 @@ lemma sum_range_zero (f : ℤ → ℂ) (n : ℕ) : ∑ m ∈ Finset.range (n+1),
 
 
 theorem exp_series_ite_deriv_uexp2 (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
-    iteratedDerivWithin k (fun z => ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * n * z)) {z : ℂ | 0 <
-      z.im} x =
-      ∑' n : ℕ, iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) {z : ℂ
-        | 0 < z.im} x :=
-  by
+    iteratedDerivWithin k (fun z => ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * n * z))
+    {z : ℂ | 0 < z.im} x =
+    ∑' n : ℕ, iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s))
+    {z : ℂ | 0 < z.im} x := by
   induction' k with k IH generalizing x
   simp only [iteratedDerivWithin_zero]
   rw [iteratedDerivWithin_succ]
@@ -1054,9 +1047,9 @@ theorem exp_series_ite_deriv_uexp2 (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
   apply der_iter_eq_der_aux2
 
 theorem exp_series_ite_deriv_uexp'' (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
-    iteratedDerivWithin k (fun z => ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * n * z)) {z : ℂ | 0 <
-      z.im} x =
-      ∑' n : ℕ, (2 * ↑π * Complex.I * n) ^ k * Complex.exp (2 * ↑π * Complex.I * n * x) :=
+    iteratedDerivWithin k (fun z => ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * n * z))
+    {z : ℂ | 0 < z.im} x =
+    ∑' n : ℕ, (2 * ↑π * Complex.I * n) ^ k * Complex.exp (2 * ↑π * Complex.I * n * x) :=
   by
   rw [exp_series_ite_deriv_uexp2 k x]
   apply tsum_congr
@@ -1342,9 +1335,8 @@ theorem aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ) :
   simp only [iteratedDerivWithin_zero]
   rw [iteratedDerivWithin_succ]
   have HH :
-    derivWithin (iteratedDerivWithin k (fun z : ℂ => ∑' n : ℕ+, (1 / (z - n) + 1 / (z + n))) {z : ℂ
-      | 0 < z.im} ) {z : ℂ | 0 < z.im}
-        x =
+    derivWithin (iteratedDerivWithin k (fun z : ℂ => ∑' n : ℕ+, (1 / (z - n) + 1 / (z + n)))
+      {z : ℂ | 0 < z.im} ) {z : ℂ | 0 < z.im} x =
       derivWithin
         (fun z => ∑' n : ℕ+, iteratedDerivWithin k (fun z : ℂ => 1 / (z - n) + 1 / (z + n)) {z : ℂ |
           0 < z.im} z) {z : ℂ | 0 < z.im}
@@ -1394,12 +1386,12 @@ theorem tsum_ider_der_eq (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
 
 
 theorem auxp_series_ite_deriv_uexp''' (k : ℕ) :
-    EqOn (iteratedDerivWithin k (fun z : ℂ => ∑' n : ℕ+, (1 / (z - n) + 1 / (z + n))) {z : ℂ | 0 <
-      z.im})
-      (fun x : ℂ =>
-        ∑' n : ℕ+,
-          ((-1 : ℂ) ^ k * k ! * (1 / (x - n) ^ (k + 1)) + (-1) ^ k * k ! * (1 / (x + n) ^ (k + 1))))
-      {z : ℂ | 0 < z.im} := by
+    EqOn (iteratedDerivWithin k (fun z : ℂ => ∑' n : ℕ+, (1 / (z - n) + 1 / (z + n)))
+    {z : ℂ | 0 < z.im})
+    (fun x : ℂ =>
+      ∑' n : ℕ+,
+        ((-1 : ℂ) ^ k * k ! * (1 / (x - n) ^ (k + 1)) + (-1) ^ k * k ! * (1 / (x + n) ^ (k + 1))))
+    {z : ℂ | 0 < z.im} := by
   intro x hx
   have := aut_series_ite_deriv_uexp2 k ⟨x, hx⟩
   simp at *
@@ -1519,13 +1511,10 @@ theorem aux_iter_der_tsum (k : ℕ) (hk : 1 ≤ k) (x : ℍ) :
     · fun_prop
 
 theorem aux_iter_der_tsum_eqOn (k : ℕ) (hk : 2 ≤ k) :
-    EqOn
-      (iteratedDerivWithin (k - 1)
-        ((fun z : ℂ => 1 / z) + fun z : ℂ => ∑' n : ℕ+, (1 / (z - n) + 1 / (z + n))) {z : ℂ | 0 <
-          z.im})
-      (fun z : ℂ => (-1) ^ (k - 1) * (k - 1)! * ∑' n : ℤ, 1 / (z + n) ^ (k : ℕ)) {z : ℂ | 0 < z.im}
-        :=
-  by
+    EqOn (iteratedDerivWithin (k - 1)
+    ((fun z : ℂ => 1 / z) + fun z : ℂ => ∑' n : ℕ+, (1 / (z - n) + 1 / (z + n))) {z : ℂ | 0 < z.im})
+    (fun z : ℂ => (-1) ^ (k - 1) * (k - 1)! * ∑' n : ℤ, 1 / (z + n) ^ (k : ℕ)) {z : ℂ | 0 < z.im}
+    := by
   intro z hz
   have hk0 : 1 ≤ k - 1 := le_tsub_of_add_le_left hk
   have := aux_iter_der_tsum (k - 1) hk0 ⟨z, hz⟩
@@ -1653,8 +1642,8 @@ theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
   simp at *
   rw [h3]
   have hee :
-    ∑' n : ℕ+, (2 * ↑π * Complex.I * ((n : ℕ) : ℂ)) ^ ((k - 1) : ℕ) * exp (2 * ↑π * Complex.I * ((n
-      : ℕ) : ℂ) * ↑z) =
+    ∑' n : ℕ+, (2 * ↑π * Complex.I * ((n : ℕ) : ℂ)) ^ ((k - 1) : ℕ) *
+      exp (2 * ↑π * Complex.I * ((n : ℕ) : ℂ) * ↑z) =
       (2 * ↑π * Complex.I) ^ (k - 1) * ∑' n : ℕ+, n ^ (k - 1) * exp (2 * ↑π * Complex.I * ↑z * n) :=
     by
     rw [← tsum_mul_left]

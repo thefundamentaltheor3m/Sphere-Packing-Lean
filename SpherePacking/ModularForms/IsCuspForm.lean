@@ -58,8 +58,8 @@ def CuspForm_iso_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) :
   have := congr_fun (congr_arg (fun x => x.toFun) hf ) z
   simpa using this
 
-lemma mem_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k) (hf : f ∈
-  CuspFormSubmodule Γ k) :
+lemma mem_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k)
+    (hf : f ∈ CuspFormSubmodule Γ k) :
     ∃ g : CuspForm Γ k, f = CuspForm_to_ModularForm Γ k g := by
   rw [CuspFormSubmodule, LinearMap.mem_range] at hf
   aesop

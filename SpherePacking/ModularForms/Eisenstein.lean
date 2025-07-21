@@ -101,8 +101,8 @@ lemma tsum_zero_pow (f : ℕ → ℂ) : (∑' m, f m * 0 ^ m) = f 0 := by
     not_false_eq_true, zero_pow, mul_zero, tsum_zero, add_zero]
   apply summable_zero_pow
 
-lemma cuspfunc_Zero [NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0 = (qExpansion n
-  f).coeff ℂ 0 := by
+lemma cuspfunc_Zero [NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0 =
+    (qExpansion n f).coeff ℂ 0 := by
   have := hasSum_qExpansion_of_abs_lt n f (q := 0) (by simp)
   simp at this
   rw [Summable.hasSum_iff] at this
@@ -176,7 +176,7 @@ lemma modfom_q_exp_cuspfunc (c : ℕ → ℂ) (f : F) [ModularFormClass F Γ(n) 
 
 
 lemma qParam_surj_onto_ball (r : ℝ) (hr : 0 < r) (hr2 : r < 1) [NeZero n] : ∃ (z : ℍ), ‖𝕢 n z‖ = r
-  := by
+    := by
   use ⟨(Periodic.invQParam n r), ?_⟩
   have hq := Function.Periodic.qParam_right_inv (h := n) (q := r) ?_ ?_
   simp only [UpperHalfPlane.coe]
@@ -261,8 +261,8 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
   have h5 := this m
   simp only [PowerSeries.coeff_mk, qExpansionFormalMultilinearSeries, qq, qExpansion2] at h5
   let t := c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ m
-  let v := (PowerSeries.coeff ℂ m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ
-    m
+  let v := (PowerSeries.coeff ℂ m) (qExpansion n f) •
+    ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ m
   have htv : (c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ).toFun =
     ( (PowerSeries.coeff ℂ m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m
       ℂ).toFun := by
@@ -362,7 +362,7 @@ lemma qexpsummable (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
 
 
 lemma Ek_q_exp_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : (qExpansion 1 (E k hk)).coeff ℂ 0 =
-  1 := by
+    1 := by
   let c : ℕ → ℂ := fun m => if m = 0 then 1 else
     (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m)
   have h := q_exp_unique 1 c (E k hk) ?_
@@ -400,9 +400,9 @@ lemma Ek_q_exp_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : (qExpansio
   apply this
 
 
-lemma Ek_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : (fun m => (qExpansion 1 (E k hk)).coeff ℂ
-  m) =
-  fun m => if m = 0 then 1 else
+lemma Ek_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
+    (fun m => (qExpansion 1 (E k hk)).coeff ℂ m) =
+    fun m => if m = 0 then 1 else
     (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m) := by
   let c : ℕ → ℂ := fun m => if m = 0 then 1 else
       (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m)
@@ -640,8 +640,8 @@ lemma asdf : TendstoLocallyUniformlyOn (fun n : ℕ ↦ ∏ x ∈ Finset.range n
   fun_prop
 
 theorem diffwithinat_prod_1 :
-  DifferentiableWithinAt ℂ (fun (y : ℂ) ↦ ∏' (i : ℕ), (1 - y ^ (i + 1)) ^ 24) (ball 0 (1 / 2)) 0 :=
-    by
+    DifferentiableWithinAt ℂ (fun (y : ℂ) ↦ ∏' (i : ℕ), (1 - y ^ (i + 1)) ^ 24) (ball 0 (1 / 2)) 0
+    := by
   suffices DifferentiableWithinAt ℂ (fun (n : ℂ) ↦ (∏' (i : ℕ), (1 - n ^ (i + 1))) ^ 24) (ball 0 (1
     / 2)) 0 by
     apply this.congr
@@ -754,8 +754,8 @@ section Ramanujan_Formula
 -- In this section, we state some simplifications that are used in Cor 7.5-7.7 of the blueprint
 
 theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
-    (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) :=
-      by
+    (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)
+    := by
   sorry
 
 end Ramanujan_Formula

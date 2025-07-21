@@ -292,8 +292,8 @@ lemma EQ22 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
   apply (EisensteinSeries.summable_norm_eisSummand hk z).of_norm
 
 lemma EQ2 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) : ∑' (x : Fin 2 → ℤ),
-  1 / (x 0 * (z : ℂ) + x 1) ^ ↑k = (riemannZeta (k)) * ∑' (c : gammaSet 1 0), 1 / ((c.1 0) * (z : ℂ)
-    + (c.1 1)) ^ k := by
+    1 / (x 0 * (z : ℂ) + x 1) ^ ↑k = (riemannZeta (k)) * ∑' (c : gammaSet 1 0),
+    1 / ((c.1 0) * (z : ℂ) + (c.1 1)) ^ k := by
   have := EQ22 k hk z
   simp_rw [eisSummand] at this
   simp [ UpperHalfPlane.coe] at *

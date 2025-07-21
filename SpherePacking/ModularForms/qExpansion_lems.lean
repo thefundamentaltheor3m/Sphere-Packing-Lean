@@ -87,8 +87,8 @@ theorem derivWithin_mul2 (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableO
 lemma iteratedDerivWithin_mul (f g : ℂ → ℂ) (s : Set ℂ) (hs : IsOpen s) (x : ℂ) (hx : x ∈ s) (m : ℕ)
     (hf : ContDiffOn ℂ ⊤ f s)(hg : ContDiffOn ℂ ⊤ g s) :
     iteratedDerivWithin m (f * g) s x =
-    ∑ i ∈ Finset.range m.succ, (m.choose i) * (iteratedDerivWithin i f s x) * (iteratedDerivWithin
-      (m - i) g s x) := by
+    ∑ i ∈ Finset.range m.succ, (m.choose i) * (iteratedDerivWithin i f s x) *
+    (iteratedDerivWithin (m - i) g s x) := by
   induction' m with m hm generalizing f g
   simp only [iteratedDerivWithin_zero, Pi.mul_apply, Nat.succ_eq_add_one, zero_add,
     Finset.range_one, zero_le, Nat.sub_eq_zero_of_le, Finset.sum_singleton, Nat.choose_self,

@@ -1083,8 +1083,8 @@ noncomputable instance HMulENNReal : HMul NNReal ENNReal ENNReal where
   hMul := fun x y => x * y
 
 noncomputable def ZLattice.basis_index_equiv (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)))
-  [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
-  (Module.Free.ChooseBasisIndex ℤ Λ) ≃ (Fin d) := by
+    [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
+    (Module.Free.ChooseBasisIndex ℤ Λ) ≃ (Fin d) := by
   refine Fintype.equivFinOfCardEq ?h
   rw [← Module.finrank_eq_card_chooseBasisIndex,
       ZLattice.rank ℝ Λ,
@@ -1130,8 +1130,8 @@ theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePackin
   rw [S.density_eq' hd]
   let b := ((ZLattice.module_free ℝ S.lattice).chooseBasis).reindex (S.basis_index_equiv)
   let D := fundamentalDomain (Basis.ofZLatticeBasis ℝ S.lattice b)
-  have hD_isBounded : IsBounded D := fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice
-    b)
+  have hD_isBounded : IsBounded D :=
+    fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b)
   have hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D :=
     S.fundamental_domain_unique_covers b
   rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers hd]

@@ -256,8 +256,7 @@ theorem Summable_Inverse_Powers_of_Finite_Orbits
 /- *TODO:* Move to `SpherePacking/CohnElkies/Prereqs.lean` -/
 
 /-
-# CHECK OUT
-https://github.com/leanprover-community/mathlib4/blob/9d883e2896b1b16d8e646c336c647da4fc1cacd5/Mathlib/NumberTheory/ModularForms/EisensteinSeries/UniformConvergence.lean#L146!
+# CHECK OUT https://github.com/leanprover-community/mathlib4/blob/9d883e2896b1b16d8e646c336c647da4fc1cacd5/Mathlib/NumberTheory/ModularForms/EisensteinSeries/UniformConvergence.lean#L146!
 
 What's wild is that this is CHRIS's file! **ASK ABOUT IT**
 -/
