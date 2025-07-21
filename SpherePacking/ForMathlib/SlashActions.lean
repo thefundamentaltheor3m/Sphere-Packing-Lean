@@ -19,7 +19,7 @@ theorem ModularForm.slash_neg_one {k : ℤ} (f : ℍ → ℂ) (hk : Even k) :
     f ∣[k] (-1 : (GL (Fin 2) ℝ)) =
     f ∣[k] (1 : (GL (Fin 2) ℝ)) := by
   ext x
-  simp [slash_def, slash, denom, hk.neg_one_zpow, Matrix.det_neg, σ]
+  simp [slash_def, denom, hk.neg_one_zpow, Matrix.det_neg, σ]
 
 /-- Slash action under -I₂ as a SL(2, ℤ) matrix. See `ModularForm.slash_neg_one` for the GL(n, ℝ)⁺
 version. -/
@@ -31,7 +31,7 @@ theorem ModularForm.slash_neg_one' {k : ℤ} (f : ℍ → ℂ) (hk : Even k) :
      ext
      rw [UpperHalfPlane.coe_smul ]
      simp [σ, num, denom]
-  simp [SL_slash_def, slash, denom, hk.neg_one_zpow, this]
+  simp [SL_slash_def, denom, hk.neg_one_zpow]
 
 /-- See `ModularForm.slash_neg'` for the version where `g` is a SL(2, ℤ) matrix. -/
 theorem ModularForm.slash_neg {k : ℤ} (g : GL (Fin 2) ℝ) (f : ℍ → ℂ) (hk : Even k) :
@@ -43,5 +43,4 @@ theorem ModularForm.slash_neg' {k : ℤ} (g : SL(2, ℤ)) (f : ℍ → ℂ) (hk 
     f ∣[k] (-g) = f ∣[k] g := by
   rw [SL_slash, ← slash_neg _ _ hk]
   congr
-  ext
-  simp [ModularGroup.coe]
+  aesop

@@ -22,13 +22,13 @@ lemma congr_aux_1' (x : ℝ) :
 -- /-- Evaluates the `Int.lcm` function. -/
 -- @[norm_num HAdd.hAdd _ _]
 -- def Tactic.NormNum.evalComplexAdd : NormNumExt where eval {u α} e := do
---   let .app (.app _ (x : Q(ℂ))) (y : Q(ℂ)) ← Meta.whnfR e | failure
---   haveI' : u =QL 0 := ⟨⟩; haveI' : $α =Q ℂ := ⟨⟩
---   let i : Q(DivisionRing ℂ) := q(NormedDivisionRing.toDivisionRing)
---   let ⟨ex, p⟩ ← deriveRat x i
---   let ⟨ey, q⟩ ← deriveRat y i
---   -- let ⟨ed, pf⟩ := proveIntLCM ex ey
---   return (_ : Result e)
+-- let .app (.app _ (x : Q(ℂ))) (y : Q(ℂ)) ← Meta.whnfR e | failure
+-- haveI' : u =QL 0 := ⟨⟩; haveI' : $α =Q ℂ := ⟨⟩
+-- let i : Q(DivisionRing ℂ) := q(NormedDivisionRing.toDivisionRing)
+-- let ⟨ex, p⟩ ← deriveRat x i
+-- let ⟨ey, q⟩ ← deriveRat y i
+-- -- let ⟨ed, pf⟩ := proveIntLCM ex ey
+-- return (_ : Result e)
 
 set_option push_neg.use_distrib true in
 lemma _root_.Complex.ne_iff (a b : ℂ) : a ≠ b ↔ (a.re ≠ b.re ∨ a.im ≠ b.im) := by rw [ne_eq, Complex.ext_iff]; push_neg; rfl
@@ -36,12 +36,12 @@ lemma _root_.Complex.ne_iff (a b : ℂ) : a ≠ b ↔ (a.re ≠ b.re ∨ a.im �
 example (z:ℂ) :z = ⟨z.re,z.im⟩ := by rw [Complex.eta]
 example : 1 + I ≠ 0 := by rw [Complex.ne_iff]; norm_num
 
-example : 1  = 3 * I ^ 2 + 4 := by
+example : 1 = 3 * I ^ 2 + 4 := by
   refine Eq.trans ((Complex.eta _)).symm ?_
   refine Eq.trans ?_ (Complex.eta _)
-  simp only [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im,
-    Complex.sub_re, Complex.sub_im, Complex.I_re, Complex.I_im, Complex.neg_re, Complex.neg_im, pow_succ, pow_zero]
-  simp only [one_re, one_im, zero_re, zero_im, Complex.re_ofNat, Complex.im_ofNat]
+  simp only [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im, Complex.I_re,
+    Complex.I_im, pow_succ, pow_zero]
+  simp only [one_re, one_im, Complex.re_ofNat, Complex.im_ofNat]
   norm_num1
   rfl
 
@@ -50,7 +50,7 @@ example : -2 = (I - 1) * (1 + I) := by
   refine Eq.trans ?_ (Complex.eta _)
   simp only [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im,
     Complex.sub_re, Complex.sub_im, Complex.I_re, Complex.I_im, Complex.neg_re, Complex.neg_im,
-    one_re, one_im, zero_re, zero_im, Complex.re_ofNat, Complex.im_ofNat]
+    one_re, one_im, Complex.re_ofNat, Complex.im_ofNat]
   norm_num1
   rfl
 

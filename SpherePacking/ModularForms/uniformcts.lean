@@ -28,7 +28,7 @@ variable {α β ι : Type*}
 
 
 
-/--This is the version for infinite products of with terms of the from `1 + f n x`. -/
+/-- This is the version for infinite products of with terms of the from `1 + f n x`. -/
 lemma tendstoUniformlyOn_tprod' [TopologicalSpace α] {f : ℕ → α → ℂ} {K : Set α}
     (hK : IsCompact K) {u : ℕ → ℝ} (hu : Summable u) (h : ∀ n x, x ∈ K → ‖f n x‖ ≤ u n)
     (hcts : ∀ n, ContinuousOn (fun x => (f n x)) K) :

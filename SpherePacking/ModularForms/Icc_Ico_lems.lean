@@ -2,7 +2,7 @@ import Mathlib.Algebra.Order.Group.Int
 import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Data.Int.Star
 
-open  TopologicalSpace Set
+open TopologicalSpace Set
   Metric Filter Function Complex
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
@@ -18,7 +18,7 @@ lemma Icc_succ (n : ℕ) : Finset.Icc (-(n + 1) : ℤ) (n + 1) = Finset.Icc (-n 
 
 
 lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m ∈ Finset.Icc (-N : ℤ) N, f m =
-  f N + f (-N : ℤ)  + ∑ m ∈ Finset.Icc (-(N - 1) : ℤ) (N - 1), f m := by
+  f N + f (-N : ℤ) + ∑ m ∈ Finset.Icc (-(N - 1) : ℤ) (N - 1), f m := by
   induction' N with N ih
   simp
   aesop
@@ -35,13 +35,13 @@ lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m ∈ Finset.Icc (-N
 
 
 lemma Icc_sum_even (f : ℤ → ℂ) (hf : ∀ n, f n = f (-n)) (N : ℕ):
-    ∑ m ∈  Finset.Icc (-N : ℤ) N, f m =  2 * ∑ m ∈ Finset.range (N + 1), f m  - f 0 := by
+    ∑ m ∈ Finset.Icc (-N : ℤ) N, f m = 2 * ∑ m ∈ Finset.range (N + 1), f m - f 0 := by
   induction' N with N ih
   simp only [CharP.cast_eq_zero, neg_zero, Finset.Icc_self, Finset.sum_singleton, zero_add,
     Finset.range_one]
   ring
   have := Icc_succ N
-  simp only [neg_add_rev, Int.reduceNeg,  Nat.cast_add, Nat.cast_one] at *
+  simp only [neg_add_rev, Int.reduceNeg, Nat.cast_add, Nat.cast_one] at *
   rw [this, Finset.sum_union, Finset.sum_pair, ih]
   nth_rw 2 [Finset.sum_range_succ]
   have HF:= hf (N + 1)
@@ -69,10 +69,11 @@ lemma int_add_abs_self_nonneg (n : ℤ) : 0 ≤ n + |n| := by
   simp
 
 lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
-  apply  tendsto_atTop_finset_of_monotone (fun _ _ _ ↦ Finset.Ico_subset_Ico (by omega) (by gcongr))
+  apply tendsto_atTop_finset_of_monotone (fun _ _ _ ↦ Finset.Ico_subset_Ico (by omega) (by gcongr))
   intro x
   use (x).natAbs + 1
-  simp [le_abs]
+  simp only [Nat.cast_add, Int.natCast_natAbs, Nat.cast_one, neg_add_rev, Int.reduceNeg,
+    Finset.mem_Ico, add_neg_le_iff_le_add]
   constructor
   apply le_trans _ (int_add_abs_self_nonneg x)
   omega
@@ -80,7 +81,7 @@ lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
   exact le_abs_self x
 
 lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) = Finset.Ico (-(b : ℤ)) (b) ∪
-    {-((b+1) : ℤ), (b : ℤ)} :=  by
+    {-((b+1) : ℤ), (b : ℤ)} := by
   ext n
   simp
   omega

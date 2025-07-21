@@ -18,7 +18,7 @@ lemma Complex.summable_nat_multipliable_one_add (f : ℕ → ℂ) (hf : Summable
 theorem term_ne_zero (z : ℍ) (n : ℕ) : 1 -cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑z) ≠ 0 := by
   rw [@sub_ne_zero]
   intro h
-  have :=  exp_upperHalfPlane_lt_one_nat z n
+  have := exp_upperHalfPlane_lt_one_nat z n
   rw [← h] at this
   simp only [norm_one, lt_self_iff_false] at *
 
@@ -34,7 +34,7 @@ theorem ball_pow_ne_1 (x : ℂ) (hx : x ∈ ball 0 1) (n : ℕ) : 1 + (fun n ↦
   rw [← h] at hxn
   simp only [norm_one, lt_self_iff_false] at hxn
 
-theorem multipliable_lt_one (x : ℂ)  (hx : x ∈ ball 0 1) :
+theorem multipliable_lt_one (x : ℂ) (hx : x ∈ ball 0 1) :
   Multipliable fun i ↦ 1 - x ^ (i+ 1) := by
   have := Complex.summable_nat_multipliable_one_add (fun (n : ℕ) => (- x ^ (n + 1) )) ?_
   conv =>
@@ -82,7 +82,7 @@ lemma tprod_ne_zero (x : ℍ) (f : ℕ → ℍ → ℂ) (hf : ∀ i x, 1 + f i x
   have := Complex.cexp_tsum_eq_tprod (f := fun n => 1 + f n x) ?_
   simp
   rw [← this]
-  simp only [comp_apply, exp_ne_zero, not_false_eq_true]
+  simp only [exp_ne_zero, not_false_eq_true]
   apply Complex.summable_log_one_add_of_summable
   apply hu x
   intro n
@@ -120,10 +120,10 @@ lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) : (∏' (i : �
 
 
 
-variable  {a a₁ a₂ : ℝ} {ι : Type*}
+variable {a a₁ a₂ : ℝ} {ι : Type*}
 
 @[to_additive]
-theorem hasProd_le_nonneg (f g : ι → ℝ) (h : ∀ i, f i ≤ g i)  (h0 : ∀ i, 0 ≤ f i)
+theorem hasProd_le_nonneg (f g : ι → ℝ) (h : ∀ i, f i ≤ g i) (h0 : ∀ i, 0 ≤ f i)
   (hf : HasProd f a₁) (hg : HasProd g a₂) : a₁ ≤ a₂ := by
   apply le_of_tendsto_of_tendsto' hf hg
   intro s
@@ -139,7 +139,7 @@ theorem HasProd.le_one_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀
   apply hasProd_le_nonneg (f := g) (g := fun _ => 1) h h0 ha hasProd_one
 
 @[to_additive]
-theorem one_le_tprod_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i)  : ∏' i, g i ≤ 1 := by
+theorem one_le_tprod_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i) : ∏' i, g i ≤ 1 := by
   by_cases hg : Multipliable g
   · apply hg.hasProd.le_one_nonneg g h h0
   · rw [tprod_eq_one_of_not_multipliable hg]

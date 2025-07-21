@@ -24,11 +24,11 @@ theorem ENat.tsum_const {α : Type*} (c : ENat) :
       _ = t.card * 1 := by simp
       _ ≤ t.card * c := mul_le_mul_left' (ENat.one_le_iff_ne_zero.2 hc) _
 
+theorem ENat.tsum_set_const {α : Type*} (s : Set α) (c : ENat) :
+    ∑' (_ : s), c = s.encard * c := by
+  rw [ENat.tsum_const, Set.encard]
+
 theorem ENat.tsum_one {α : Type*} : ∑' (_ : α), 1 = ENat.card α := by simp [ENat.tsum_const]
 
 theorem ENat.tsum_set_one {α : Type*} (s : Set α) : ∑' (_ : s), 1 = s.encard := by
   rw [ENat.tsum_one, Set.encard]
-
-theorem ENat.tsum_set_const {α : Type*} (s : Set α) (c : ENat) :
-    ∑' (_ : s), c = s.encard * c := by
-  rw [ENat.tsum_const, Set.encard]

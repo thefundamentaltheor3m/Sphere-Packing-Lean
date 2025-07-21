@@ -10,7 +10,8 @@ Definition of (Serre) derivative of modular forms.
 Prove Ramanujan's formulas on derivatives of Eisenstein series.
 -/
 
-noncomputable def D (F : ℍ → ℂ) : ℍ → ℂ := λ (z : ℍ) => (2 * π * I)⁻¹ * ((deriv (F ∘ ofComplex)) z)
+noncomputable def D (F : ℍ → ℂ) : ℍ → ℂ :=
+  fun (z : ℍ) => (2 * π * I)⁻¹ * ((deriv (F ∘ ofComplex)) z)
 
 /--
 TODO: Remove this or move this to somewhere more appropriate.
@@ -97,7 +98,8 @@ theorem D_mul (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (
     _ = (2 * π * I)⁻¹ * deriv (F ∘ ofComplex * G ∘ ofComplex) z := by rfl
     _ = (2 * π * I)⁻¹ * (F z * deriv (G ∘ ofComplex) z + deriv (F ∘ ofComplex) z * G z)
       := by rw [h]
-    _ = F z * ((2 * π * I)⁻¹ * deriv (G ∘ ofComplex) z) + (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z * G z
+    _ = F z * ((2 * π * I)⁻¹ * deriv (G ∘ ofComplex) z) +
+        (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z * G z
       := by ring_nf
     _ = F z * D G z + D F z * G z := by rfl
 
@@ -135,7 +137,8 @@ theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
 /--
 Serre derivative of weight `k`.
 -/
-noncomputable def serre_D (k : ℂ) : (ℍ → ℂ) → (ℍ → ℂ) := λ (F : ℍ → ℂ) => (λ z => D F z - k * 12⁻¹ * E₂ z * F z)
+noncomputable def serre_D (k : ℂ) : (ℍ → ℂ) → (ℍ → ℂ) :=
+  fun (F : ℍ → ℂ) => (fun z => D F z - k * 12⁻¹ * E₂ z * F z)
 
 /--
 Basic properties of Serre derivative: linearity, Leibniz rule, etc.
@@ -161,14 +164,15 @@ theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 
 
 
 /--
-Serre derivative is equivariant under the slash action. More precisely, if `F` is invariant under the slash action
-of weight `k`, then `serre_D k F` is invariant under the slash action of weight `k + 2`.
+Serre derivative is equivariant under the slash action. More precisely, if `F` is invariant
+under the slash action of weight `k`, then `serre_D k F` is invariant under the slash action
+of weight `k + 2`.
 -/
 theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
-    ∀ γ : SL(2,ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by sorry
+    ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by sorry
 
 theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
-    (γ : SL(2,ℤ)) (h : F ∣[k] γ = F) :
+    (γ : SL(2, ℤ)) (h : F ∣[k] γ = F) :
     serre_D k F ∣[k + 2] γ = serre_D k F := by
   rw [serre_D_slash_equivariant, h]
   exact hF
@@ -231,7 +235,7 @@ noncomputable def X₄₂ := 288⁻¹ * (E₄.toFun - E₂ * E₂)
 
 noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
 
-noncomputable def F  := (E₂ * E₄.toFun - E₆.toFun) ^ 2
+noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
 
 theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
     + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun := by
@@ -243,10 +247,10 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
   ring_nf
 
   -- Holomorphicity of the terms
-  exact E₂_holo'
-  exact E₄.holo'
-  exact MDifferentiable.mul E₂_holo' E₄.holo'
-  exact E₆.holo'
+  · exact E₂_holo'
+  · exact E₄.holo'
+  · exact MDifferentiable.mul E₂_holo' E₄.holo'
+  · exact E₆.holo'
   have h24 := MDifferentiable.mul E₂_holo' E₄.holo'
   exact MDifferentiable.sub h24 E₆.holo'
 
@@ -265,7 +269,7 @@ theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 172800 * Δ_fun * 
 example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.toFun - E₆.toFun) :=
   by
   rw [D_mul E₄.toFun E₄.toFun]
-  simp only [ramanujan_E₄, ramanujan_E₂, ramanujan_E₆]
+  simp only [ramanujan_E₄]
   ring_nf
   exact E₄.holo'
   exact E₄.holo'

@@ -42,7 +42,7 @@ def Zn_Submodule (n : ℕ) : Submodule ℤ (ℝ^n) where
     simp [hm₁, hm₂]
   zero_mem' := ⟨0, by simp⟩
   smul_mem' := by
-    simp only [mem_setOf_eq, PiLp.smul_apply, zsmul_eq_mul, forall_exists_index]
+    simp only [mem_setOf_eq, zsmul_eq_mul, forall_exists_index]
     intro c x v hxv
     use c • v
     simp [hxv]
@@ -64,8 +64,7 @@ submodule `ℤ^n`. We will then be able to use this basis to show that `ℤ^n` h
 /-- The canonical basis of `ℝ^n` embeds into `ℤ^n`. -/
 theorem Pi_basisFun_mem_Zn (n : ℕ) : ∀ i : Fin n, (Pi.basisFun ℝ (Fin n)) i ∈ (ℤ^n) := by
   intro i
-  simp only [Zn_Submodule, PiLp.basisFun_apply, WithLp.equiv_symm_single, mem_mk,
-    AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, mem_setOf_eq, EuclideanSpace.single_apply]
+  simp only [Zn_Submodule, mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, mem_setOf_eq]
   use fun j ↦ (if j = i then 1 else 0)
   simp only [Pi.basisFun_apply, Int.cast_ite, Int.cast_one, Int.cast_zero]
   -- Below courtesy `aesop`
@@ -151,7 +150,7 @@ def Pi_BasisFun_Z_basis (n : ℕ) : Basis (Fin n) ℤ (ℤ^n) := Basis.mk
 theorem Pi_BasisFun_basis.toMatrix (n : ℕ) :
     (Matrix.of (Pi.basisFun ℝ (Fin n))) = (1 : Matrix (Fin n) (Fin n) ℝ) := by
   ext i j
-  simp only [Matrix.of_apply, PiLp.basisFun_apply, WithLp.equiv_symm_pi_apply, Matrix.one_apply]
+  simp only [Matrix.of_apply, Matrix.one_apply]
   -- Below courtesy `aesop`
   simp_all only [Pi.basisFun_apply]
   split

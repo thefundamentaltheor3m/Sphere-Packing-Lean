@@ -80,7 +80,7 @@ lemma ψI_eq : ψI = 128 • ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₄_MF - H
   rw [ψI, h]
   conv_rhs => rw [smul_add]
   conv_lhs => rw [sub_eq_add_neg, smul_div_assoc 128 (⇑H₃_MF + ⇑H₄_MF) (⇑H₂_MF ^ 2)]
-  simp only [Nat.cast_ofNat, Int.reduceNeg, add_right_inj]
+  simp only [Int.reduceNeg, add_right_inj]
   calc
   _ = (-(128 • (H₃_MF + H₄_MF) / ((H₂_MF : ℍ → ℂ) ^ 2))) ∣[-2] (S * T) := by sorry
   _ = (128 • -(H₃_MF + H₄_MF) / ((H₂_MF : ℍ → ℂ) ^ 2)) ∣[-2] (S * T) := by field_simp

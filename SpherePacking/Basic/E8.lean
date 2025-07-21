@@ -145,7 +145,7 @@ private theorem E8'_det_aux_3 : (∑ k : Fin 8, c₇ k • (E8'.updateRow 6 (∑
     = ![0, 0, 0, 0, 0, 0, 0, -2/5] := by
   ext i
   simp_rw [E8'_det_aux_2, Fin.sum_univ_eight]
-  simp only [Fin.reduceEq, ↓reduceIte, smul_eq_mul, mul_zero, Pi.add_apply, Pi.smul_apply]
+  simp only [Fin.reduceEq, ↓reduceIte, smul_eq_mul, Pi.add_apply, Pi.smul_apply]
   simp [c₇, E8']
   fin_cases i <;> simp <;> norm_num
 
@@ -195,7 +195,7 @@ theorem E8_Matrix_apply_row {i : Fin 8} : E8_Matrix i = (fun j ↦ (E8' i j : �
 @[simp]
 theorem E8_mul_F8_eq_one_R : E8_Matrix * F8_Matrix = 1 := by
   rw [E8_Matrix, F8_Matrix, RingHom.mapMatrix_apply, RingHom.mapMatrix_apply, ← Matrix.map_mul,
-    E8_mul_F8_eq_one_Q] --, map_one _ coe_zero coe_one]  -- Doesn't work for some reason
+    E8_mul_F8_eq_one_Q] --, map_one _ coe_zero coe_one] -- Doesn't work for some reason
   simp only [map_zero, _root_.map_one, Matrix.map_one]
 
 @[simp]
@@ -210,7 +210,7 @@ theorem E8_is_basis :
   -- rw [is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det]
   -- change IsUnit E8_Matrix.det
   -- have : E8_Matrix.det * F8_Matrix.det = 1 := by
-  --   rw [← det_mul, E8_mul_F8_eq_one_R, det_one]
+  -- rw [← det_mul, E8_mul_F8_eq_one_R, det_one]
   -- exact isUnit_of_mul_eq_one _ _ this
   sorry
 
@@ -228,7 +228,7 @@ lemma E8_sum_apply_1 :
 
 lemma E8_sum_apply_2 :
     (∑ j : Fin 8, y j • E8_Matrix j) 2 = y 1 • (-1) + y 2 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_3 :
     (∑ j : Fin 8, y j • E8_Matrix j) 3 = y 2 • (-1) + y 3 • 1 - y 6 • ((1 : ℝ) / 2) := by
@@ -236,15 +236,15 @@ lemma E8_sum_apply_3 :
 
 lemma E8_sum_apply_4 :
     (∑ j : Fin 8, y j • E8_Matrix j) 4 = y 3 • (-1) + y 4 • 1 - y 6 • ((1 : ℝ) / 2) := by
-  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_5 :
     (∑ j : Fin 8, y j • E8_Matrix j) 5 = y 4 • (-1) + y 5 • 1 - y 6 • ((1 : ℝ) / 2) + y 7 • 1 := by
-  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_6 :
     (∑ j : Fin 8, y j • E8_Matrix j) 6 = y 5 • 1 - y 6 • ((1 : ℝ) / 2) - y 7 • 1 := by
-  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, mul_neg, ← sub_eq_add_neg]
+  simp [E8', E8_Matrix, Fin.sum_univ_eight, neg_div, ← sub_eq_add_neg]
 
 lemma E8_sum_apply_7 :
     (∑ j : Fin 8, y j • E8_Matrix j) 7 = y 6 • (-(1 : ℝ) / 2) := by
@@ -280,20 +280,20 @@ theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Se
         sorry
         -- fin_cases i
         -- <;> [use y 0 - k; use -y 0 + y 1 - k; use -y 1 + y 2 - k; use -y 2 + y 3 - k;
-        --   use -y 3 + y 4 - k; use -y 4 + y 5 - k + y 7; use y 5 - k - y 7; use -k]
+        -- use -y 3 + y 4 - k; use -y 4 + y 5 - k + y 7; use y 5 - k - y 7; use -k]
         -- <;> convert congrFun hy _
         -- all_goals
-        --   simp_rw [Fintype.sum_apply, Pi.smul_apply, Fin.sum_univ_eight, E8_Matrix_apply]
-        --   simp [hk]
-        --   ring_nf
+        -- simp_rw [Fintype.sum_apply, Pi.smul_apply, Fin.sum_univ_eight, E8_Matrix_apply]
+        -- simp [hk]
+        -- ring_nf
       · right
         intro i
         -- TODO: un-sorry (slow)
         sorry
         -- fin_cases i
         -- <;> [use 2 * y 0 - y 6; use -2 * y 0 + 2 * y 1 - y 6; use -2 * y 1 + 2 * y 2 - y 6;
-        --   use -2 * y 2 + 2 * y 3 - y 6; use -2 * y 3 + 2 * y 4 - y 6;
-        --   use -2 * y 4 + 2 * y 5 - y 6 + 2 * y 7; use 2 * y 5 - y 6 - 2 * y 7; use -y 6]
+        -- use -2 * y 2 + 2 * y 3 - y 6; use -2 * y 3 + 2 * y 4 - y 6;
+        -- use -2 * y 4 + 2 * y 5 - y 6 + 2 * y 7; use 2 * y 5 - y 6 - 2 * y 7; use -y 6]
         -- <;> simp [Int.even_sub, Int.even_add, hy']
         -- <;> subst hy
         -- <;> simp_E8_sum_apply
@@ -361,14 +361,14 @@ theorem E8_norm_eq_sqrt_even (v : E8_Lattice) :
   -- change ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n
   -- rw [norm_sq_eq_inner (𝕜 := ℝ) v]
   -- simp_rw [E8_Lattice, AddSubgroup.mem_mk, E8_Set_eq_span, SetLike.mem_coe,← Finsupp.range_total,
-  --   LinearMap.mem_range] at hv
+  -- LinearMap.mem_range] at hv
   -- replace hv : ∃ y : Fin 8 →₀ ℤ, ∑ i, y i • E8_Matrix i = v := by
-  --   convert hv
-  --   rw [← Finsupp.linearCombination_eq_sum E8_Matrix _]
-  --   rfl
+  -- convert hv
+  -- rw [← Finsupp.linearCombination_eq_sum E8_Matrix _]
+  -- rfl
   -- obtain ⟨y, ⟨⟨w, hw⟩, rfl⟩⟩ := hv
   -- simp_rw [re_to_real, sum_inner, inner_sum, intCast_smul_left, intCast_smul_right, zsmul_eq_mul,
-  --   Fin.sum_univ_eight]
+  -- Fin.sum_univ_eight]
   -- repeat rw [E8_Matrix_inner]
   -- repeat rw [Fin.sum_univ_eight]
   -- -- compute the dot products
@@ -467,7 +467,7 @@ noncomputable def E8_Basis : Basis (Fin 8) ℤ E8_Lattice := by
   obtain ⟨c, hc⟩ := hx
   use c
   apply Subtype.ext_iff.mpr
-  simp only [Finsupp.sum, ← hc, AddSubgroup.val_finset_sum, AddSubgroupClass.coe_zsmul]
+  simp only [Finsupp.sum, ← hc]
   exact Submodule.coe_sum E8_Lattice (fun i ↦ c i • ⟨E8_Matrix i, E8_Matrix_mem i⟩) c.support
 
 -- sanity check

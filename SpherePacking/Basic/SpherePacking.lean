@@ -104,14 +104,14 @@ noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
 -- Here is one way to choose a basis, but I think for our purpose we can just supply one.
 -- /-- Returns a ℝ-basis of ℝ^d such that the its ℤ-span is `S.lattice`. -/
 -- noncomputable def PeriodicSpherePacking.lattice_basis (S : PeriodicSpherePacking d) :
---     Basis (Module.Free.ChooseBasisIndex ℤ S.lattice) ℝ (EuclideanSpace ℝ (Fin d)) :=
---   ((ZLattice.module_free ℝ S.lattice).chooseBasis).ofZLatticeBasis _ _
+-- Basis (Module.Free.ChooseBasisIndex ℤ S.lattice) ℝ (EuclideanSpace ℝ (Fin d)) :=
+-- ((ZLattice.module_free ℝ S.lattice).chooseBasis).ofZLatticeBasis _ _
 
 -- Rendered unnecessary by bump to 4.13.0-rc3
 -- theorem Submodule.toIntSubmodule_eq_iff_eq_toAddSubgroup {G : Type*} [AddCommGroup G]
---     {A : AddSubgroup G} {B : Submodule ℤ G} :
---     AddSubgroup.toIntSubmodule A = B ↔ A = B.toAddSubgroup := by
---   constructor <;> rintro rfl <;> rfl
+-- {A : AddSubgroup G} {B : Submodule ℤ G} :
+-- AddSubgroup.toIntSubmodule A = B ↔ A = B.toAddSubgroup := by
+-- constructor <;> rintro rfl <;> rfl
 
 theorem PeriodicSpherePacking.basis_Z_span
     (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
@@ -156,7 +156,7 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
   S.toSpherePacking.scale hc with
   lattice := c • S.lattice
   lattice_action := fun x y hx hy ↦ by
-    simp_all only [SpherePacking.scale, Set.mem_smul_set, AddSubgroup.mem_smul_pointwise_iff_exists]
+    simp_all only [SpherePacking.scale, Set.mem_smul_set]
     obtain ⟨x, hx, rfl⟩ := hx
     obtain ⟨y, hy, rfl⟩ := hy
     use x + y, S.lattice_action hx hy, smul_add ..

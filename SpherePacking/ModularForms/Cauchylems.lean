@@ -11,7 +11,7 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
 open ArithmeticFunction
 
 
-lemma cc(f : ℤ → ℂ) (hc :  CauchySeq fun N : ℕ => ∑ m ∈ Finset.Icc (-N : ℤ) N, f m)
+lemma cc(f : ℤ → ℂ) (hc : CauchySeq fun N : ℕ => ∑ m ∈ Finset.Icc (-N : ℤ) N, f m)
   (hs : ∀ n , f n = f (-n)) :
   Tendsto f atTop (𝓝 0) := by
   have h := cauchySeq_iff_tendsto_dist_atTop_0.mp hc
@@ -83,7 +83,7 @@ lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n , f n = f (-
     have hy := hN n
     apply hy
     omega
-  have h1 := Filter.Tendsto.mul_const  2 h0
+  have h1 := Filter.Tendsto.mul_const 2 h0
   have hff : Tendsto (fun n : ℕ => 2 * ‖f n‖) atTop (𝓝 0) := by
     rw [Metric.tendsto_atTop] at *
     simp [dist_eq_norm] at *
@@ -127,7 +127,7 @@ lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n , f n = f (-
 theorem extracted_2 (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
   ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, 1 / (((b : ℂ) * ↑z + ↑n) ^ 2 * (↑b * ↑z + ↑n + 1)) := by
   apply Filter.Tendsto.cauchySeq (x := ∑' (x : ℤ),
-        ((b  : ℂ) * ↑z + ↑x + 1)⁻¹ * (((b : ℂ) * ↑z + ↑x) ^ 2)⁻¹)
+        ((b : ℂ) * ↑z + ↑x + 1)⁻¹ * (((b : ℂ) * ↑z + ↑x) ^ 2)⁻¹)
   have hA:= (G2_prod_summable1 z b).hasSum
   have ht := hA.comp verga
   simp at *
@@ -136,7 +136,7 @@ theorem extracted_2 (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
 theorem extracted_2_δ (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
   ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, (1 / (((b : ℂ) * ↑z + ↑n) ^ 2 * (↑b * ↑z + ↑n + 1)) + δ b n) := by
   apply Filter.Tendsto.cauchySeq (x := ∑' (x : ℤ),
-        (((b  : ℂ) * ↑z + ↑x + 1)⁻¹ * (((b : ℂ) * ↑z + ↑x) ^ 2)⁻¹  + δ b x))
+        (((b : ℂ) * ↑z + ↑x + 1)⁻¹ * (((b : ℂ) * ↑z + ↑x) ^ 2)⁻¹ + δ b x))
   have hA:= (G2_prod_summable1_δ z b).hasSum
   have ht := hA.comp verga
   simp at *
@@ -146,10 +146,9 @@ theorem extracted_2_δ (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
 theorem telescope_aux (z : ℍ) (m : ℤ) (b : ℕ) :
   ∑ n ∈ Finset.Ico (-b : ℤ) b, (1 / ((m : ℂ) * ↑z + ↑n) - 1 / (↑m * ↑z + ↑n + 1)) =
     1 / (↑m * ↑z - ↑b) - 1 / (↑m * ↑z + ↑b) := by
-  induction' b  with b ihb
+  induction' b with b ihb
   aesop
-  simp only [Nat.cast_add, Nat.cast_one, Int.reduceNeg, one_div,
-      Finset.sum_sub_distrib] at *
+  simp only [Nat.cast_add, Nat.cast_one, one_div, Finset.sum_sub_distrib] at *
   rw [fsb, Finset.sum_union, Finset.sum_union, Finset.sum_pair, Finset.sum_pair,add_sub_add_comm, ihb]
   simp only [neg_add_rev, Int.reduceNeg, Int.cast_add, Int.cast_neg, Int.cast_one, Int.cast_natCast]
   ring
@@ -164,7 +163,7 @@ theorem telescope_aux (z : ℍ) (m : ℤ) (b : ℕ) :
     not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
     lt_self_iff_false, and_false, and_self]
 
-theorem tendstozero_inv_linear (z : ℍ) (b : ℤ)  :
+theorem tendstozero_inv_linear (z : ℍ) (b : ℤ) :
   Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z + ↑d)) atTop (𝓝 0) := by
     rw [@tendsto_zero_iff_norm_tendsto_zero]
     conv =>
@@ -173,7 +172,7 @@ theorem tendstozero_inv_linear (z : ℍ) (b : ℤ)  :
     apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, n]‖ ^ (-1 : ℝ))
     simp
     intro t
-    have := EisensteinSeries.summand_bound z (k := 1)  (by simp) ![b, t]
+    have := EisensteinSeries.summand_bound z (k := 1) (by simp) ![b, t]
     simp at *
     apply le_trans _ this
     apply le_of_eq
@@ -207,7 +206,7 @@ theorem tendstozero_inv_linear (z : ℍ) (b : ℤ)  :
     have := r_pos z
     exact (ne_of_lt this).symm
 
-theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ)  :
+theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ) :
   Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z - ↑d)) atTop (𝓝 0) := by
     rw [@tendsto_zero_iff_norm_tendsto_zero]
     conv =>
@@ -216,7 +215,7 @@ theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ)  :
     apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, -n]‖ ^ (-1 : ℝ))
     simp
     intro t
-    have := EisensteinSeries.summand_bound z (k := 1)  (by simp) ![b, -t]
+    have := EisensteinSeries.summand_bound z (k := 1) (by simp) ![b, -t]
     simp at *
     apply le_trans _ this
     apply le_of_eq
@@ -302,22 +301,20 @@ theorem extracted_5 (z : ℍ) (b : ℤ) :
   rw [hf]
   exact hh
 
-lemma cauchy_seq_mul_const (f : ℕ → ℂ) (c : ℂ) (hc  : c ≠ 0) :
+lemma cauchy_seq_mul_const (f : ℕ → ℂ) (c : ℂ) (hc : c ≠ 0) :
   CauchySeq f → CauchySeq (c • f) := by
   intro hf
   rw [Metric.cauchySeq_iff' ] at *
   simp only [ne_eq, gt_iff_lt, ge_iff_le, Pi.smul_apply, smul_eq_mul] at *
   intro ε hε
-  have hcc : 0 < ‖c‖ := by
-    simp  [AbsoluteValue.pos_iff, ne_eq, hc, not_false_eq_true]
-  have hC : 0 < ‖c‖ := by
-    simp [AbsoluteValue.pos_iff, ne_eq, hc, not_false_eq_true]
+  have hcc : 0 < ‖c‖ := by simp [ne_eq, hc, not_false_eq_true]
+  have hC : 0 < ‖c‖ := by simp [ne_eq, hc, not_false_eq_true]
   have H := hf (ε / ‖c‖) (by rw [lt_div_iff₀' hC]; simp [hε] )
   obtain ⟨N, hN⟩ := H
   use N
   intro n hn
   have h1 := hN n hn
-  simp only [dist_eq_norm,  AbsoluteValue.pos_iff, ne_eq, gt_iff_lt] at *
+  simp only [dist_eq_norm, gt_iff_lt] at *
   rw [← mul_sub]
   simp only [Complex.norm_mul]
   rw [lt_div_iff₀' (by simp [hc])] at h1
@@ -326,7 +323,7 @@ lemma cauchy_seq_mul_const (f : ℕ → ℂ) (c : ℂ) (hc  : c ≠ 0) :
 
 lemma auxer (a c : ℂ) : a + 2*2*c - 2*c =a + 2*c := by ring
 
-noncomputable def summable_term (z : ℍ) : ℤ → ℂ :=  (fun m : ℤ => (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
+noncomputable def summable_term (z : ℍ) : ℤ → ℂ := (fun m : ℤ => (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2)))
 
 lemma term_evem (z : ℍ) (m : ℤ) : summable_term z m = summable_term z (-m) := by
   simp [summable_term]
@@ -348,7 +345,7 @@ lemma t8 (z : ℍ) :
   simp only [Int.cast_natCast, Int.cast_zero, zero_mul, zero_add]
   rw [ zeta_two_eqn]
   nth_rw 2 [add_comm]
-  have := sum_range_zero (fun m =>  (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) m
+  have := sum_range_zero (fun m => (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) m
   simp only [Int.cast_natCast, one_div, Int.cast_zero, zero_mul, zero_add, Int.cast_add,
     Int.cast_one] at this
   rw [this, zeta_two_eqn, add_comm, mul_add, ← mul_assoc, auxer]
@@ -383,10 +380,10 @@ theorem G2_c_tendsto (z : ℍ) :
         conv =>
           enter [1]
           ext m
-          rw [show (m : ℂ) +  1 = (((m + 1) : ℕ) : ℂ) by simp]
+          rw [show (m : ℂ) + 1 = (((m + 1) : ℕ) : ℂ) by simp]
         have := nat_pos_tsum2' (f := fun m : ℕ => ( 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
         ∑' n : ℕ+, n ^ ((2 - 1) ) * Complex.exp (2 * ↑π * Complex.I * (m) * z * n)) )
-        rw  [← this]
+        rw [← this]
         have := (a4 2 z).prod_symm.prod
         apply Summable.mul_left
         apply this.congr
@@ -398,10 +395,10 @@ theorem G2_c_tendsto (z : ℍ) :
     apply V
 
 lemma G2_cauchy (z : ℍ) :
-  CauchySeq  (fun N : ℕ => ∑ m ∈ Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) := by
+  CauchySeq (fun N : ℕ => ∑ m ∈ Finset.Icc (-N : ℤ) N, (∑' (n : ℤ), (1 / ((m : ℂ) * z + n) ^ 2))) := by
   rw [t8]
   simp
   apply CauchySeq.const_add
-  apply Filter.Tendsto.cauchySeq (x :=  -
+  apply Filter.Tendsto.cauchySeq (x := -
     8 * π ^ 2 * ∑' (n : ℕ+), (sigma 1 n) * cexp (2 * π * Complex.I * n * z))
   apply G2_c_tendsto z
