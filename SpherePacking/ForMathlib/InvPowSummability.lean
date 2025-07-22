@@ -235,7 +235,6 @@ theorem Summable_Inverse_Powers_of_Finite_Orbits
   {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
   [DiscreteTopology Λ] [IsZLattice ℝ Λ] (ρ : AddAction Λ X)
   [Fintype (Quotient ρ.orbitRel)]
-  -- (hFin : Finite ((X ∩ (fundamentalDomain (Basis.ofZLatticeBasis ℝ Λ ((ZLattice.module_free ℝ Λ).chooseBasis)))) : Set (EuclideanSpace ℝ (Fin d))))
   : Inv_Pow_Norm_Summable_Over_Set_Euclidean X := by
   rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean]
   simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs]
