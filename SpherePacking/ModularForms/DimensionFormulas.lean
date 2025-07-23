@@ -49,8 +49,8 @@ def Modform_mul_Delta' (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (
 theorem mul_apply {k₁ k₂ : ℤ} {Γ : Subgroup SL(2, ℤ)} (f : SlashInvariantForm Γ k₁)
     (g : SlashInvariantForm Γ k₂) (z : ℍ) : (f.mul g) z = f z * g z := rfl
 
-lemma Modform_mul_Delta_apply (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) (z : ℍ) :
-  (Modform_mul_Delta' k f) z = f z * Delta z := by
+lemma Modform_mul_Delta_apply (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12))
+    (z : ℍ) : (Modform_mul_Delta' k f) z = f z * Delta z := by
   rw [Modform_mul_Delta']
   have := congr_fun
     (CuspForm_to_ModularForm_Fun_coe _ _ (mul_Delta_map k f) (mul_Delta_IsCuspForm k f)) z
@@ -120,7 +120,8 @@ lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
   ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 - (DirectSum.of _ 6 E₆)^2) 12 )) := by
   rw [ModForm_mk]
   rw [Delta_E4_E6_aux]
-  have := CuspForm_to_ModularForm_Fun_coe _ _ ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 - (DirectSum.of _ 6 E₆)^2) 12 )) ?_
+  have := CuspForm_to_ModularForm_Fun_coe _ _ ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 -
+    (DirectSum.of _ 6 E₆)^2) 12 )) ?_
   simp at *
   ext z
   have hg := congr_fun this z
@@ -358,7 +359,8 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
       rw [@DirectSum.smul_apply]
       simp only [PowerSeries.coeff_zero_eq_constantCoeff, Int.reduceAdd, DirectSum.of_eq_same]
       rfl
-    have V : (1 / 1728 : ℂ) • ((((F^2)^3) 12) - (((F^3)^2) 12)) = ((qExpansion 1 f).coeff ℂ 0)^6 • D := by
+    have V : (1 / 1728 : ℂ) • ((((F^2)^3) 12) - (((F^3)^2) 12)) = ((qExpansion 1 f).coeff ℂ 0)^6 • D
+      := by
       rw [HF12, hF2]
       simp only [one_div, Int.reduceAdd, PowerSeries.coeff_zero_eq_constantCoeff,
         DirectSum.of_eq_same, D]

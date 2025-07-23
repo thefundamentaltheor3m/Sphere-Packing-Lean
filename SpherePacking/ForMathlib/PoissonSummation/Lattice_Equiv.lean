@@ -24,7 +24,8 @@ noncomputable def Zn_equiv : (ℤ^n) ≃ₗ[ℤ] Λ := (equiv_Zn Λ).symm
 
 /- The point of the above is that we now have an element of GLₙ(ℤ) using which we can identify any
 lattice with ℤ^n, the canonical free ℤ-submodule of the Euclidean space ℝ^n. This includes their
-dual lattices, which we have shown to be lattices in `SpherePacking.ForMathlib.PoissonSummation.DualLattice`. This is a crucial
+dual lattices, which we have shown to be lattices in
+`SpherePacking.ForMathlib.PoissonSummation.DualLattice`. This is a crucial
 step in the reduction of the general Poisson Summation Formula to the case where we only deal with
 the canonical lattice ℤ^n. -/
 

@@ -7,7 +7,7 @@ import SpherePacking.Tactic.NormNumI
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 open ArithmeticFunction
 
@@ -177,9 +177,10 @@ theorem log_one_neg_cexp_tendto_zero (k : ℕ) :
   Tendsto (fun x : ℍ ↦ Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) ^ 24))
     atImInfty (𝓝 0) := by
   have : (fun x : ℍ ↦ Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) ^ 24)) =
-     (Complex.log) ∘ ( (fun x => x ^ 24) ∘ (fun x : ℍ ↦((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x))))) :=by
-     ext x
-     simp
+      (Complex.log) ∘ ((fun x => x ^ 24) ∘ (fun x : ℍ ↦ ((1 - cexp (2 * π * Complex.I *
+      (k + 1) * x))))) := by
+    ext x
+    simp
   rw [this]
   apply Tendsto.comp (y := 𝓝 1)
   · nth_rw 1 [← Complex.log_one]
@@ -211,8 +212,10 @@ lemma Complex.cexp_tsum_eq_tprod_func (f : ι → α → ℂ) (hfn : ∀ x n, f 
   exact funext fun x ↦ exp_log (hfn a x)
 
 theorem Delta_boundedfactor :
-  Tendsto (fun x : ℍ ↦ ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x)) ^ 24) atImInfty (𝓝 1) := by
-  have := Complex.cexp_tsum_eq_tprod_func (fun n : ℕ => fun x : ℍ => (1 - (cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x))) ^ 24 ) ?_ ?_
+  Tendsto (fun x : ℍ ↦ ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x)) ^ 24) atImInfty
+    (𝓝 1) := by
+  have := Complex.cexp_tsum_eq_tprod_func (fun n : ℕ => fun x : ℍ => (1 - (cexp (2 * ↑π * Complex.I
+    * (↑n + 1) * ↑x))) ^ 24 ) ?_ ?_
   conv =>
     enter [1]
     rw [← this]
@@ -221,7 +224,8 @@ theorem Delta_boundedfactor :
   exact Complex.continuous_exp
   exact Complex.exp_zero
   have := tendsto_tsum_of_dominated_convergence (𝓕 := atImInfty) (g := fun (x : ℕ) => (0 : ℂ))
-      (f := (fun x : ℍ ↦ fun (n : ℕ) => Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * (x : ℂ))) ^ 24)))
+      (f := (fun x : ℍ ↦ fun (n : ℕ) => Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * (x :
+        ℂ))) ^ 24)))
       (bound := fun k => ‖(24 *((3/2)* cexp (2 * ↑π * Complex.I * (↑k + 1) * Complex.I)))‖)
   simp at this
   apply this
@@ -440,8 +444,8 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
       · apply hB3
         apply hz.2
 
-lemma CuspForm_div_Discriminant_apply (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (z : ℍ) :
-  (CuspForm_div_Discriminant k f) z = f z / Δ z := rfl
+lemma CuspForm_div_Discriminant_apply (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k)
+    (z : ℍ) : (CuspForm_div_Discriminant k f) z = f z / Δ z := rfl
 
 theorem CuspForm_div_Discriminant_Add (k : ℤ) (x y : CuspForm (CongruenceSubgroup.Gamma 1) k) :
   (fun f ↦ CuspForm_div_Discriminant k f) (x + y) =
@@ -450,7 +454,8 @@ theorem CuspForm_div_Discriminant_Add (k : ℤ) (x y : CuspForm (CongruenceSubgr
   simp only [CuspForm_div_Discriminant_apply, CuspForm.add_apply, ModularForm.add_apply]
   ring
 
-lemma Delta_im_line_im_part {t : ℝ} (ht : 0 < t) : (Delta ⟨(Complex.I * t), by simp [ht]⟩).im =0 := by
+lemma Delta_im_line_im_part {t : ℝ} (ht : 0 < t) : (Delta ⟨(Complex.I * t), by simp [ht]⟩ ).im =0 :=
+    by
   rw [Delta_apply, Δ]
   sorry
 
@@ -469,7 +474,8 @@ lemma Delta_im_line {t : ℝ} (ht : 0 < t) : 0 < ‖Delta ⟨(Complex.I * t), by
     rw [sub_eq_add_neg]
   apply mul_pos
   exact exp_pos (-(2 * π * t))
-  have H := Complex.cexp_tsum_eq_tprod (f := fun (i : ℕ) => (1 + -cexp (-2 * ↑π * (↑i + 1) * ↑t))^24) ?_ ?_
+  have H := Complex.cexp_tsum_eq_tprod (f := fun (i : ℕ) => (1 + -cexp (-2 * ↑π * (↑i + 1) *
+    ↑t))^24) ?_ ?_
   rw [← H]
   simp
   · intro i

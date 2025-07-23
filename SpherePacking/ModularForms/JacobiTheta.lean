@@ -370,7 +370,8 @@ lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
   have h_sum (z : ℍ) : Summable fun n : ℤ ↦ rexp (-π * n ^ 2 * z.im) := by
     have := (summable_jacobiTheta₂_term_iff 0 z).mpr z.prop
     rw [← summable_norm_iff, ← summable_ofReal] at this
-    simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, norm_exp_mul_I, h_rw] at this
+    simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, norm_exp_mul_I, h_rw]
+      at this
     simpa using summable_ofReal.mp this
   calc
     _ = ∑' (n : ℤ), ‖cexp (π * (n : ℂ) ^ 2 * z * I)‖ := by simp_rw [Θ₃_term, mul_right_comm _ I]

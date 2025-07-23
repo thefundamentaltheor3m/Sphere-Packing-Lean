@@ -425,7 +425,8 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
   · sorry
     -- Use new result that Δ(iz) > 0 [TODO: BUMP]
     -- calc 0
-    -- _ < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * (1 / 2 * I).im)) ^ 24 := aux_8 (1 / 2 * I) (by sorry)
+    -- _ < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * (1 / 2 * I).im)) ^ 24 := aux_8 (1 / 2 * I)
+    --   (by sorry)
     -- _ = ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
     -- congr
     -- ext n

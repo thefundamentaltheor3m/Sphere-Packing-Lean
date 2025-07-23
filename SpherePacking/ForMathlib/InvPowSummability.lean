@@ -226,7 +226,8 @@ theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))}
   let bℝ := Basis.ofZLatticeBasis ℝ Λ bℤ;
   let D := {m | ∀ (i : Fin d), (bℝ.repr m) i ∈ Set.Ico (-1) 1};
   Finite ↑(X ∩ D) :=
-  -- Consider function from this thing to set of orbits. Show preimage of any singleton in `Quotient` consists of 2^d elements. Then card is card of 2^d
+  -- Consider function from this thing to set of orbits. Show preimage of any singleton in
+  -- `Quotient` consists of 2^d elements. Then card is card of 2^d
   sorry
 
 -- set_option diagnostics true
@@ -234,7 +235,6 @@ theorem Summable_Inverse_Powers_of_Finite_Orbits
   {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
   [DiscreteTopology Λ] [IsZLattice ℝ Λ] (ρ : AddAction Λ X)
   [Fintype (Quotient ρ.orbitRel)]
-  -- (hFin : Finite ((X ∩ (fundamentalDomain (Basis.ofZLatticeBasis ℝ Λ ((ZLattice.module_free ℝ Λ).chooseBasis)))) : Set (EuclideanSpace ℝ (Fin d))))
   : Inv_Pow_Norm_Summable_Over_Set_Euclidean X := by
   rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean]
   simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs]
