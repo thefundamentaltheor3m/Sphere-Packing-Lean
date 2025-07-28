@@ -19,9 +19,9 @@ import SpherePacking.ForMathlib.InvPowSummability
 import SpherePacking.ForMathlib.PoissonSummation.DualLattice
 import SpherePacking.ForMathlib.PoissonSummation.EuclideanSpace
 import SpherePacking.ForMathlib.PoissonSummation.Lattice_Equiv
+import SpherePacking.ForMathlib.PoissonSummation.SchwartzMap
 import SpherePacking.ForMathlib.PoissonSummation.Zn_Pi
 import SpherePacking.ForMathlib.PoissonSummation.Zn_to_Euclidean
-import SpherePacking.ForMathlib.PoissonSummation.SchwartzMap
 import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 import SpherePacking.ForMathlib.Real
 import SpherePacking.ForMathlib.SlashActions
@@ -65,7 +65,6 @@ import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.clog_arg_lems
-import SpherePacking.ModularForms.cotangent
 import SpherePacking.ModularForms.csqrt
 import SpherePacking.ModularForms.equivs
 import SpherePacking.ModularForms.eta
