@@ -55,7 +55,7 @@ def CuspForm_iso_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) :
   rw [CuspForm_to_ModularForm] at hf
   simp [ModForm_mk] at hf
   ext z
-  have := congr_fun (congr_arg (fun x => x.toFun) hf ) z
+  have := congr_fun (congr_arg (fun x => x.toFun) hf) z
   simpa using this
 
 lemma mem_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k)

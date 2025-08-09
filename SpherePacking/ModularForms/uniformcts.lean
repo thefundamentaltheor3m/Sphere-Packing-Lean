@@ -34,8 +34,7 @@ lemma tendstoUniformlyOn_tprod' [TopologicalSpace α] {f : ℕ → α → ℂ} {
     (hcts : ∀ n, ContinuousOn (fun x => (f n x)) K) :
     TendstoUniformlyOn (fun n : ℕ => fun a : α => ∏ i ∈ Finset.range n, (1 + (f i a)))
     (fun a => ∏' i, (1 + (f i a))) atTop K := by
-  apply HasProdUniformlyOn.tendstoUniformlyOn_finsetRange
-  apply Summable.hasProdUniformlyOn_nat_one_add hK hu ?_ hcts
+  refine (hu.hasProdUniformlyOn_nat_one_add hK  ?_ hcts).tendstoUniformlyOn_finsetRange (by simp)
   filter_upwards with n x hx using h n x hx
   simp
  -/
