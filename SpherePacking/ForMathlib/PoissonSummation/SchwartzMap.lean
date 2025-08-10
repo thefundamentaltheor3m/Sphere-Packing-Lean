@@ -169,3 +169,4 @@ def SchwartzMap_one_of_SchwartzMap_two (x : ℝ) : 𝓢(Euc(2), ℂ) →L[ℝ] �
     (coordinateEmbedding₁₂_antiLipschitzWith x)
 
 end Inductive_Dimensions
+end SchwartzMap

@@ -27,12 +27,11 @@ lemma prod_tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ
 lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.range n,
     fun x_1 ↦ 1 + -cexp (2 * ↑π * Complex.I * (↑x + 1) * x_1))
     (fun x ↦ ∏' (i : ℕ), (1 + -cexp (2 * ↑π * Complex.I * (↑i + 1) * x))) atTop {x | 0 < x.im} := by
-  rw [tendstoLocallyUniformlyOn_iff_forall_isCompact]
+  rw [tendstoLocallyUniformlyOn_iff_forall_isCompact
+    (isOpen_lt continuous_const Complex.continuous_im)]
   intro K hK hK2
-  by_cases hN : ¬ Nonempty K
-  rw [@not_nonempty_iff_eq_empty'] at hN
-  rw [hN]
-  exact tendstoUniformlyOn_empty
+  obtain rfl | hN := K.eq_empty_or_nonempty
+  · exact tendstoUniformlyOn_empty
   have hc : ContinuousOn (fun x ↦ ‖cexp (2 * ↑π * Complex.I * x)‖) K := by
     fun_prop
   have := IsCompact.exists_sSup_image_eq_and_ge hK2 (by simpa using hN) hc
@@ -40,9 +39,9 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
   have := prod_tendstoUniformlyOn_tprod' K hK2 (f := (fun i ↦
     fun x_1 ↦ -cexp (2 * ↑π * Complex.I * (i + 1) * x_1)))
     (fun n=> ‖cexp (2 * ↑π * Complex.I * z)^(n + 1)‖) ?_ ?_ ?_
-  simp at *
-  convert this
-  simp only [Finset.prod_apply]
+  · simp at *
+    convert this
+    simp only [Finset.prod_apply]
   · simp_rw [norm_pow]
     rw [summable_nat_add_iff 1]
     simp only [summable_geometric_iff_norm_lt_one, norm_norm]
@@ -59,16 +58,15 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
     simp only [norm_nonneg]
   · intro n
     fun_prop
-  · apply (isOpen_lt continuous_const Complex.continuous_im)
 
 theorem eta_tprod_ne_zero (z : ℍ) :
   ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑z)) ≠ 0 := by
   simp_rw [sub_eq_add_neg]
   have := tprod_ne_zero z (fun n x => -cexp (2 * ↑π * Complex.I * (n + 1) * x)) ?_ ?_
-  simp only [Pi.add_apply, Pi.one_apply, ne_eq] at *
-  apply this
-  intro i x
-  simpa using (term_ne_zero x i)
+  · simp only [Pi.add_apply, Pi.one_apply, ne_eq] at *
+    apply this
+  · intro i x
+    simpa using (term_ne_zero x i)
   intro x
   rw [←summable_norm_iff]
   simpa using summable_exp_pow x
@@ -116,7 +114,7 @@ lemma logDeriv_z_term (z : ℍ) : logDeriv (fun z ↦ cexp (2 * ↑π * Complex.
     congr
     ring
   rw [this, logDeriv_comp, deriv_const_mul]
-  simp only [LogDeriv_exp, Pi.one_apply, deriv_id'', mul_one, one_mul]
+  · simp only [LogDeriv_exp, Pi.one_apply, deriv_id'', mul_one, one_mul]
   · fun_prop
   · fun_prop
   · fun_prop
@@ -124,25 +122,24 @@ lemma logDeriv_z_term (z : ℍ) : logDeriv (fun z ↦ cexp (2 * ↑π * Complex.
 
 theorem eta_differentiableAt (z : ℍ) :
   DifferentiableAt ℂ (fun z ↦ ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * z))) ↑z := by
-  have hD := eta_tndntunif.differentiableOn ?_ ?_
-  simp_rw [sub_eq_add_neg]
-  rw [DifferentiableOn] at hD
-  have hDz := (hD z (by apply z.2)).differentiableAt
-  apply hDz
-  · apply IsOpen.mem_nhds (isOpen_lt continuous_const Complex.continuous_im)
-    apply z.2
-  · simp
-    use 0
-    intro b hb
-    have := DifferentiableOn.finset_prod (u := Finset.range b)
-      (f := fun i : ℕ => fun x => 1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x))
-      (s := {x : ℂ | 0 < x.im}) ?_
-    · apply this.congr
-      intro x hx
-      simp [sub_eq_add_neg]
-    · intro i hi
-      fun_prop
-  · apply isOpen_lt continuous_const Complex.continuous_im
+  have hD := eta_tndntunif.differentiableOn ?_ (isOpen_lt continuous_const Complex.continuous_im)
+  · simp_rw [sub_eq_add_neg]
+    rw [DifferentiableOn] at hD
+    have hDz := (hD z (by apply z.2)).differentiableAt
+    apply hDz
+    · apply IsOpen.mem_nhds (isOpen_lt continuous_const Complex.continuous_im)
+      apply z.2
+  simp
+  use 0
+  intro b hb
+  have := DifferentiableOn.finset_prod (u := Finset.range b)
+    (f := fun i : ℕ => fun x => 1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x))
+    (s := {x : ℂ | 0 < x.im}) ?_
+  · apply this.congr
+    intro x hx
+    simp [sub_eq_add_neg]
+  · intro i hi
+    fun_prop
 
 lemma eta_DifferentiableAt_UpperHalfPlane (z : ℍ) : DifferentiableAt ℂ η z := by
   unfold η

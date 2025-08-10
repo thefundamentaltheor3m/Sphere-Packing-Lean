@@ -15,3 +15,4 @@ section Zero
 theorem a_zero : a 0 = -8640 * I / π := by sorry
 
 end Zero
+end MagicFunction.a.SpecialValues

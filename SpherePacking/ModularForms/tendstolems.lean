@@ -5,7 +5,7 @@ import Mathlib.Topology.EMetricSpace.Paracompact
 open TopologicalSpace Set
   Metric Filter Function Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 
 lemma int_tendsto_nat {f : ℤ → ℂ} {x : ℂ} (hf : Tendsto f atTop (𝓝 x)) :
@@ -34,7 +34,4 @@ lemma rest (f g : ℕ → ℂ) (x : ℂ) (hf : Tendsto f atTop (𝓝 x)) (hfg : 
 
 
 lemma aux47 (r : ℂ) (hr : ‖r‖ < 1) : Tendsto (fun n : ℕ => 1 - r^n) atTop (𝓝 1) := by
-  rw [show (1 : ℂ) = 1 - 0 by ring]
-  apply Filter.Tendsto.sub
-  simp
-  apply tendsto_pow_atTop_nhds_zero_of_norm_lt_one hr
+  simpa using tendsto_const_nhds.sub <| tendsto_pow_atTop_nhds_zero_of_norm_lt_one hr

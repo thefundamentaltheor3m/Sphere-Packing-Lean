@@ -57,3 +57,4 @@ noncomputable def ofIsEmpty : EuclideanSpace 𝕜 ι ≃ₗ[𝕜] (0 : Submodule
   _ = Module.finrank 𝕜 (0 : Submodule 𝕜 (EuclideanSpace 𝕜 ι)) := by simp
 
 end zero
+end EuclideanSpace
