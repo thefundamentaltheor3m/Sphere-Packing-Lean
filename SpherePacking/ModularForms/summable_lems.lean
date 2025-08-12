@@ -10,7 +10,7 @@ import Mathlib.Order.CompletePartialOrder
 import Mathlib.Topology.Algebra.Module.ModuleTopology
 import Mathlib.Topology.EMetricSpace.Paracompact
 import Mathlib.Topology.Separation.CompletelyRegular
-import SpherePacking.ModularForms.cotangent
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Cotangent
 import SpherePacking.ModularForms.exp_lems
 import SpherePacking.ModularForms.upperhalfplane
 import SpherePacking.ModularForms.BigO
