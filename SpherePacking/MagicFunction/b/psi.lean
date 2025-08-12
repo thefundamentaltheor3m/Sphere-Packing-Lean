@@ -222,10 +222,6 @@ lemma ψI_eq : ψI = 128 • ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₄_MF - H
   · exact h z
 -- this completes the proof of ψI_eq
 
--- the following two Lemma statements were wrong in this file at first:
--- lemma ψS_eq : ψS = 128 * ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₂_MF + H₃_MF) / H₄_MF ^ 2) := by
--- lemma ψT_eq : ψT = 128 * ((H₄_MF - H₂_MF) / (H₃_MF ^ 2) - (H₂_MF + H₃_MF) / H₄_MF ^ 2
---   + (H₂_MF + H₃_MF) / H₄_MF ^ 2) := by
 lemma ψT_eq : ψT = 128 * ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₂_MF + H₃_MF) / H₄_MF ^ 2) := by
   rw [ψT, ψI_eq]
   ext z
@@ -451,8 +447,6 @@ lemma ψS_slash_STS : ψS ∣[-2] (S * T * S) = -ψT := by
   have def_ψT : ψT = ψI ∣[-2] (T) := rfl
   rw [← def_ψT, ψT_slash_S]
 
--- original statement of this lemm contained a sign error:
--- lemma ψS_slash_TSTS : ψS ∣[-2] (T * S * T * S) = -ψT
 lemma ψS_slash_TSTS : ψS ∣[-2] (T * S * T * S) = ψT := by
   ext z
   rw [slash_mul, slash_mul, slash_mul, ψS_slash_T, neg_slash, ψS_slash_S, neg_slash]
