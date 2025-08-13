@@ -68,7 +68,7 @@ private lemma z_plus_one_nonzero (z : ℍ) : (z + 1 : ℂ) ≠ 0 := by
   rw [hz] at hh
   exact (lt_self_iff_false 0).mp hh
 
-private lemma slashS (z :ℍ) (F : ℍ → ℂ) : (F ∣[(2 : ℤ)] (S)) (z) =
+private lemma slashS (z : ℍ) (F : ℍ → ℂ) : (F ∣[(2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (-2 : ℤ) := by
   rw [SL_slash_apply, S, denom]
   simp
@@ -86,7 +86,7 @@ private lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) 
   left
   rw [pow_coe_nat]
 
-private lemma slashS'' (z : ℍ) (F : ℍ → ℂ): F (S • z) =
+private lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
     (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
   rw [slashS, mul_assoc]
   simp only [sl_moeb, Int.reduceNeg, zpow_neg]
@@ -141,7 +141,7 @@ private lemma slashST' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S * T
     rw [zpow_two, pow_two]
   rw [pow_coe_nat]
 
-private lemma slashST'' (z : ℍ) (F : ℍ → ℂ): F ((S * T) • z) =
+private lemma slashST'' (z : ℍ) (F : ℍ → ℂ) : F ((S * T) • z) =
     (F ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
   rw [slashST, mul_assoc]
   simp only [sl_moeb, map_mul, Int.reduceNeg, zpow_neg]
@@ -304,8 +304,6 @@ lemma ψS_eq : ψS = 128 * (- ((H₂_MF + H₃_MF) / H₄_MF ^ 2) - (H₂_MF - H
 
 end eq
 
--- TODO: Define all the slash relations between the `ψ` functions. -- I guess this is done now?
-
 section rels
 
 lemma ψT_slash_T : ψT ∣[-2] T = ψI := by
@@ -388,9 +386,6 @@ lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
   · exact pow_ne_zero 2 (z_plus_one_nonzero z)
 -- proof of ψS_slash_ST complete
 
--- The following lemma first was
--- lemma ψS_slash_T : ψS ∣[-2] T = ψS := by
--- but it turns out there needs to be a -
 lemma ψS_slash_T : ψS ∣[-2] T = -ψS := by
   ext z
   rw [ψS_eq', slashT']
@@ -457,7 +452,5 @@ lemma ψS_slash_TSTS : ψS ∣[-2] (T * S * T * S) = ψT := by
 end rels
 
 section rels_explicit
-
--- TODO: State the important relations explicitly. Most important: `ψS_slash_TSTS`!
 
 end rels_explicit
