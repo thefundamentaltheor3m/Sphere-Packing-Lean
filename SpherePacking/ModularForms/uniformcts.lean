@@ -28,7 +28,7 @@ variable {α β ι : Type*}
 
 
 
-/-- This is the version for infinite products of with terms of the from `1 + f n x`. -/
+/- /-- This is the version for infinite products of with terms of the from `1 + f n x`. -/
 lemma tendstoUniformlyOn_tprod' [TopologicalSpace α] {f : ℕ → α → ℂ} {K : Set α}
     (hK : IsCompact K) {u : ℕ → ℝ} (hu : Summable u) (h : ∀ n x, x ∈ K → ‖f n x‖ ≤ u n)
     (hcts : ∀ n, ContinuousOn (fun x => (f n x)) K) :
@@ -38,7 +38,7 @@ lemma tendstoUniformlyOn_tprod' [TopologicalSpace α] {f : ℕ → α → ℂ} {
   apply Summable.hasProdUniformlyOn_nat_one_add hK hu ?_ hcts
   filter_upwards with n x hx using h n x hx
   simp
-
+ -/
 
 /- variable {𝕜 𝕜': Type*} [NormedAddCommGroup 𝕜'] [CompleteSpace 𝕜'] [TopologicalSpace 𝕜]
   [LocallyCompactSpace 𝕜]
