@@ -579,8 +579,13 @@ theorem aux7 (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hL 
   · rw [Set.mem_vadd_set_iff_neg_vadd_mem, neg_neg]
     exact hg
 
+instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Module ℤ E]
+    [Module ℝ E] (μ : Measure E) [μ.IsAddLeftInvariant] [IsScalarTower ℤ ℝ E] (s : Submodule ℤ E) :
+    VAddInvariantMeasure s E μ where
+  measure_preimage_vadd c t ht := by
+    simp only [Submodule.vadd_def, vadd_eq_add, measure_preimage_add]
+
 -- Theorem 2.2, lower bound
--- set_option diagnostics true in
 theorem PeriodicSpherePacking.aux2_ge
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
     (hL : ∀ x ∈ D, ‖x‖ ≤ L) (hd : 0 < d) :
@@ -606,14 +611,7 @@ theorem PeriodicSpherePacking.aux2_ge
       exact hxy (hx'.trans hy'.symm)
     · intro i
       exact MeasurableSet.const_vadd hD_measurable i.val
-  · haveI h : VAddInvariantMeasure (↥S.lattice) (EuclideanSpace ℝ (Fin d)) volume := by
-      -- WHY DOES THIS NOT EXIST???
-      rw [(vaddInvariantMeasure_iff (↥S.lattice) (EuclideanSpace ℝ (Fin d)) volume)]
-      intros l s hs
-      refine Measure.measure_preimage_of_map_eq_self ?_ (MeasurableSet.nullMeasurableSet hs)
-      ext x hx
-      sorry
-    exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
+  · exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
   · have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]
     exact Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)
@@ -659,8 +657,7 @@ theorem PeriodicSpherePacking.aux2_le
     · intro i
       exact MeasurableSet.const_vadd hD_measurable i.val
   · left
-    -- exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
-    sorry
+    exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
   · left
     have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]
@@ -961,7 +958,7 @@ end ConstantEqNormalizedConstant
 section Disjoint_Covering_of_Centers
 
 theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
+  {D : Set (EuclideanSpace ℝ (Fin d))} -- (hD_isBounded : IsBounded D)
   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
   :
   ∀ x : S.centers, ∃! g : S.lattice, (g +ᵥ x : EuclideanSpace ℝ (Fin d)) ∈ S.centers ∩ D := by
@@ -974,10 +971,10 @@ theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePackin
   · intro a ha hmem
     exact hg₂ a ha hmem
 
-theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
-  : S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
+theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d)
+    {D : Set (EuclideanSpace ℝ (Fin d))}
+    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
+    S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
   ext x
   simp only [Set.mem_iUnion, Subtype.exists]
   constructor
@@ -991,7 +988,7 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
     suffices : x = -g +ᵥ (y : EuclideanSpace ℝ (Fin d))
     · rw [this]
       have hy' := Subtype.coe_prop y
-      use True.intro  -- so weird
+      use True.intro -- so weird
       refine Set.vadd_mem_vadd_set ?h.intro.intro.a
       simp only [Set.mem_inter_iff, hy', and_true]
       rw [hy]
@@ -1012,20 +1009,20 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
 -- union over points in X / Λ = X ∩ D of translates of the lattice by points in X / Λ = X ∩ D or
 -- something like that, because that's what's needed for `tsum_finset_bUnion_disjoint`.
 -- theorem PeriodicSpherePacking.translates_disjoint (S : PeriodicSpherePacking d) -- (hd : 0 < d)
---   {D : Set (EuclideanSpace ℝ (Fin d))}  -- (hD_isBounded : IsBounded D)
---   (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
---   : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
---   -- True
---   := by
---   intro x hx y hy hxy
---   obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers x
---   specialize hg₂ y
---   simp only  at hg₂
---   simp only [Set.disjoint_iff_inter_eq_empty]
---   ext z
---   simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
---   intro hz₁ hz₂
---   sorry
+-- {D : Set (EuclideanSpace ℝ (Fin d))} -- (hD_isBounded : IsBounded D)
+-- (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
+-- : Set.Pairwise ⊤ (Disjoint on (fun (g : S.lattice) => g +ᵥ S.centers ∩ D)) -- why the error?
+-- -- True
+-- := by
+-- intro x hx y hy hxy
+-- obtain ⟨g, hg₁, hg₂⟩ := hD_unique_covers x
+-- specialize hg₂ y
+-- simp only at hg₂
+-- simp only [Set.disjoint_iff_inter_eq_empty]
+-- ext z
+-- simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false, not_and]
+-- intro hz₁ hz₂
+-- sorry
 
 -- Can we use some sort of orbit disjointedness result and factor through the equivalence between
 -- the `Quotient` and `S.centers ∩ D`?
@@ -1085,8 +1082,9 @@ noncomputable instance HDivENNReal : HDiv NNReal ENNReal ENNReal where
 noncomputable instance HMulENNReal : HMul NNReal ENNReal ENNReal where
   hMul := fun x y => x * y
 
-noncomputable def ZLattice.basis_index_equiv (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
-  (Module.Free.ChooseBasisIndex ℤ Λ) ≃ (Fin d) := by
+noncomputable def ZLattice.basis_index_equiv (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)))
+    [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
+    (Module.Free.ChooseBasisIndex ℤ Λ) ≃ (Fin d) := by
   refine Fintype.equivFinOfCardEq ?h
   rw [← Module.finrank_eq_card_chooseBasisIndex,
       ZLattice.rank ℝ Λ,
@@ -1132,7 +1130,8 @@ theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePackin
   rw [S.density_eq' hd]
   let b := ((ZLattice.module_free ℝ S.lattice).chooseBasis).reindex (S.basis_index_equiv)
   let D := fundamentalDomain (Basis.ofZLatticeBasis ℝ S.lattice b)
-  have hD_isBounded : IsBounded D := fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b)
+  have hD_isBounded : IsBounded D :=
+    fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b)
   have hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D :=
     S.fundamental_domain_unique_covers b
   rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers hd]

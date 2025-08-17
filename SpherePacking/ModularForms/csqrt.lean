@@ -13,11 +13,11 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
 open ArithmeticFunction
 
 
-noncomputable def csqrt : ℂ → ℂ :=  (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log a)))
+noncomputable def csqrt : ℂ → ℂ := (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log a)))
 
 lemma csqrt_deriv (z : ℍ) : deriv (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log a))) z =
     (2 : ℂ)⁻¹ • (fun a : ℂ => cexp (-(1 / (2 : ℂ)) * (log a))) z:= by
-  have :  (fun a ↦ cexp (1 / 2 * Complex.log a)) =  cexp ∘ (fun a ↦ (1 / 2 * Complex.log a)) := by
+  have : (fun a ↦ cexp (1 / 2 * Complex.log a)) = cexp ∘ (fun a ↦ (1 / 2 * Complex.log a)) := by
     ext z
     simp
   have hzz : ↑z ∈ slitPlane := by
@@ -53,7 +53,7 @@ lemma csqrt_differentiableAt (z : ℍ) : DifferentiableAt ℂ csqrt z := by
   exact Ne.symm (ne_of_lt hz)
 
 
-lemma csqrt_I : (csqrt (Complex.I)) ^ 24  = 1 := by
+lemma csqrt_I : (csqrt (Complex.I)) ^ 24 = 1 := by
   unfold csqrt
   rw [← Complex.exp_nat_mul]
   conv =>

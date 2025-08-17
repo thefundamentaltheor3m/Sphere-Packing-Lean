@@ -9,7 +9,7 @@ import SpherePacking.ModularForms.iteratedderivs
 open UpperHalfPlane TopologicalSpace Set
   Metric Filter Function Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 
 abbrev ℍ' := {z : ℂ | 0 < z.im}
@@ -58,7 +58,8 @@ theorem der_iter_eq_der_aux2 (k n : ℕ) (r : ℍ') :
       iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) ℍ' z) ↑r :=
   by
   have hh :
-    DifferentiableOn ℂ (fun t => (2 * ↑π * Complex.I * n) ^ k * Complex.exp (2 * ↑π * Complex.I * n * t)) ℍ' := by
+      DifferentiableOn ℂ (fun t => (2 * ↑π * Complex.I * n) ^ k *
+      Complex.exp (2 * ↑π * Complex.I * n * t)) ℍ' := by
     apply Differentiable.differentiableOn;
     apply Differentiable.const_mul
     apply Differentiable.cexp
@@ -74,7 +75,8 @@ theorem der_iter_eq_der_aux2 (k n : ℕ) (r : ℍ') :
 
   theorem der_iter_eq_der2 (k n : ℕ) (r : ℍ') :
     deriv (iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) ℍ') ↑r =
-      derivWithin (iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) ℍ') ℍ'
+      derivWithin (iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) ℍ')
+        ℍ'
         ↑r :=
   by
   simp
@@ -85,7 +87,8 @@ theorem der_iter_eq_der_aux2 (k n : ℕ) (r : ℍ') :
   apply r.2
 
   theorem der_iter_eq_der2' (k n : ℕ) (r : ℍ') :
-    derivWithin (iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) ℍ') ℍ' ↑r =
+    derivWithin (iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) ℍ')
+      ℍ' ↑r =
       iteratedDerivWithin (k + 1) (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) ℍ' ↑r :=
   by
   rw [iteratedDerivWithin_succ]
@@ -99,8 +102,8 @@ noncomputable def cts_exp_two_pi_n (K : Set ℂ) : ContinuousMap K ℂ where
     ∃ u : ℕ → ℝ,
       Summable u ∧
         ∀ (n : ℕ) (r : K),
-        ‖(derivWithin (iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) ℍ') ℍ' r)‖ ≤
-            u n := by
+        ‖(derivWithin (iteratedDerivWithin k
+          (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) ℍ') ℍ' r)‖ ≤ u n := by
   have : CompactSpace K := by
     rw [← isCompact_univ_iff]
     rw [isCompact_iff_isCompact_univ] at hK2
@@ -218,7 +221,8 @@ theorem hasDerivWithinAt_tsum_fun {α : Type _} (f : α → ℂ → ℂ)
       ∀ K ⊆ s, IsCompact K →
           ∃ u : α → ℝ, Summable u ∧ ∀ (n : α) (k : K), ‖(derivWithin (f n) s k)‖ ≤ u n)
     (hf2 : ∀ (n : α) (r : s), DifferentiableAt ℂ (f n) r) :
-    HasDerivWithinAt (fun z => ∑' n : α, f n z) (∑' n : α, derivWithin (fun z => f n z) s x) s x := by
+    HasDerivWithinAt (fun z => ∑' n : α, f n z) (∑' n : α, derivWithin (fun z => f n z) s x) s x :=
+      by
   apply (hasDerivAt_tsum_fun f hs x hx hf hu hf2).hasDerivWithinAt
 
 

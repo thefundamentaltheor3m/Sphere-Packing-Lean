@@ -17,6 +17,16 @@ noncomputable def η (z : ℂ) := cexp (2 * π * Complex.I * z / 24) * ∏' (n :
     (1 - cexp (2 * π * Complex.I * (n + 1) * z))
 
 
+lemma tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ → α → ℂ} {K : Set α}
+    (hK : IsCompact K) {u : ℕ → ℝ} (hu : Summable u) (h : ∀ n x, x ∈ K → ‖f n x‖ ≤ u n)
+    (hcts : ∀ n, ContinuousOn (fun x => (f n x)) K) :
+    TendstoUniformlyOn (fun n : ℕ => fun a : α => ∏ i ∈ Finset.range n, (1 + (f i a)))
+    (fun a => ∏' i, (1 + (f i a))) atTop K := by
+  apply HasProdUniformlyOn.tendstoUniformlyOn_finsetRange
+  apply Summable.hasProdUniformlyOn_nat_one_add hK hu ?_ hcts
+  filter_upwards with n x hx using h n x hx
+  simp
+
 /-this is being PRd-/
 lemma prod_tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ → α → ℂ} (K : Set α)
     (hK : IsCompact K) (u : ℕ → ℝ) (hu : Summable u) (h : ∀ n x, x ∈ K → (‖(f n x)‖) ≤ u n)
@@ -100,9 +110,9 @@ lemma tsum_log_deriv_eqn (z : ℍ) :
       intro i
       ext y
       rw [deriv_fun_mul]
-      · simp
-      · simp
-      · simp
+      · simp only [deriv_const', zero_mul, deriv_id'', mul_one, zero_add]
+      · simp only [differentiableAt_const]
+      · simp only [differentiableAt_fun_id]
   rw [h2 i, h1 i, h3 i]
   simp
 
@@ -235,9 +245,9 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
       intro i
       ext y
       rw [deriv_fun_mul]
-      · simp
-      · simp
-      · simp
+      · simp only [deriv_const', zero_mul, deriv_id'', mul_one, zero_add]
+      · simp only [differentiableAt_const]
+      · simp only [differentiableAt_fun_id]
     conv =>
       enter [1]
       ext i
@@ -340,6 +350,7 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
     rw [@mem_slitPlane_iff]
     right
     have hz := z.2
+    simp only at hz
     exact Ne.symm (ne_of_lt hz)
   · apply eta_DifferentiableAt_UpperHalfPlane z
 

@@ -8,8 +8,6 @@ import SpherePacking.ForMathlib.AtImInfty
 import SpherePacking.ForMathlib.Bornology
 import SpherePacking.ForMathlib.Cardinal
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
-import SpherePacking.ForMathlib.CauchyGoursat.Triangular
-import SpherePacking.ForMathlib.Dual
 import SpherePacking.ForMathlib.ENNReal
 import SpherePacking.ForMathlib.ENat
 import SpherePacking.ForMathlib.Encard
@@ -21,11 +19,10 @@ import SpherePacking.ForMathlib.InvPowSummability
 import SpherePacking.ForMathlib.PoissonSummation.DualLattice
 import SpherePacking.ForMathlib.PoissonSummation.EuclideanSpace
 import SpherePacking.ForMathlib.PoissonSummation.Lattice_Equiv
+import SpherePacking.ForMathlib.PoissonSummation.SchwartzMap
 import SpherePacking.ForMathlib.PoissonSummation.Zn_Pi
 import SpherePacking.ForMathlib.PoissonSummation.Zn_to_Euclidean
-import SpherePacking.ForMathlib.PoissonSummation.SchwartzMap
 import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
-import SpherePacking.ForMathlib.RadialSchwartz.Radial
 import SpherePacking.ForMathlib.Real
 import SpherePacking.ForMathlib.SlashActions
 import SpherePacking.ForMathlib.SpecificLimits
@@ -68,7 +65,6 @@ import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.clog_arg_lems
-import SpherePacking.ModularForms.cotangent
 import SpherePacking.ModularForms.csqrt
 import SpherePacking.ModularForms.equivs
 import SpherePacking.ModularForms.eta
@@ -86,5 +82,4 @@ import SpherePacking.ModularForms.uniformcts
 import SpherePacking.ModularForms.upperhalfplane
 import SpherePacking.Tactic.NormNumI
 import SpherePacking.Tactic.NormNumI_Scratch
-import SpherePacking.Tactic.Test.AlphaEvolve_Matmul_Verification
 import SpherePacking.Tactic.Test.NormNumI

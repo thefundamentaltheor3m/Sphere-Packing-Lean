@@ -72,7 +72,7 @@ lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * r
   rw [EventuallyEq, eventually_atImInfty]
   use 1, fun z hz ↦ ?_
   rw [← tsum_nat_add_neg_add_one]
-  rfl
+  · rfl
   rw [← summable_norm_iff]
   convert_to Summable fun n ↦ ‖a n‖ * rexp (z.im * -2 * π * n)
   · ext n
@@ -88,3 +88,5 @@ lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * r
       gcongr
     · norm_num at hb
       simp [ha' _ hb]
+
+end QExp

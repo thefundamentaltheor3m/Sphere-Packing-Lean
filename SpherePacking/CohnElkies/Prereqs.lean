@@ -31,27 +31,28 @@ variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ]
 -- noncomputable section Dual_Lattice
 
 -- /-
--- This section defines the Dual Lattice of a Lattice. Taken from `SpherePacking/ForMathlib/Dual.lean`.
+-- This section defines the Dual Lattice of a Lattice. Taken from
+-- `SpherePacking/ForMathlib/Dual.lean`.
 -- -/
 
 -- def bilinFormOfRealInner.dualSubmodule : AddSubgroup (EuclideanSpace ℝ (Fin d)) where
---   carrier := { x | ∀ l : Λ, ∃ n : ℤ, ⟪x, l⟫_[ℝ] = ↑n }
---   zero_mem' := by
---     simp only [Subtype.forall, Set.mem_setOf_eq, inner_zero_left]
---     intro a _
---     use 0
---     rw [Int.cast_zero]
---   add_mem' := by
---     intros x y hx hy l
---     obtain ⟨n, hn⟩ := hx l
---     obtain ⟨m, hm⟩ := hy l
---     use n + m
---     simp only [inner_add_left, hn, hm, Int.cast_add]
---   neg_mem' := by
---     intros x hx l
---     obtain ⟨n, hn⟩ := hx l
---     use -n
---     simp only [inner_neg_left, hn, Int.cast_neg]
+-- carrier := { x | ∀ l : Λ, ∃ n : ℤ, ⟪x, l⟫_[ℝ] = ↑n }
+-- zero_mem' := by
+-- simp only [Subtype.forall, Set.mem_setOf_eq, inner_zero_left]
+-- intro a _
+-- use 0
+-- rw [Int.cast_zero]
+-- add_mem' := by
+-- intros x y hx hy l
+-- obtain ⟨n, hn⟩ := hx l
+-- obtain ⟨m, hm⟩ := hy l
+-- use n + m
+-- simp only [inner_add_left, hn, hm, Int.cast_add]
+-- neg_mem' := by
+-- intros x hx l
+-- obtain ⟨n, hn⟩ := hx l
+-- use -n
+-- simp only [inner_neg_left, hn, Int.cast_neg]
 
 -- end Dual_Lattice
 
@@ -62,10 +63,10 @@ instance instNonemptyFin : Nonempty (Fin d) := ⟨0, Fact.out⟩
   -- exact Fact.out
 
 -- noncomputable instance : DivisionCommMonoid ENNReal where
---   inv_inv := inv_inv
---   mul_inv_rev := sorry
---   inv_eq_of_mul := sorry
---   mul_comm := sorry
+-- inv_inv := inv_inv
+-- mul_inv_rev := sorry
+-- inv_eq_of_mul := sorry
+-- mul_comm := sorry
 
 
 end Euclidean_Space
@@ -106,7 +107,8 @@ theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
 
 -- The version below is on the blueprint. I'm pretty sure it can be removed.
 theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
-  ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m) := by
+    ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m)
+    := by
   simpa using PSF_L Λ hf 0
 
 namespace SchwartzMap
@@ -117,8 +119,9 @@ theorem PoissonSummation_Lattices (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) 
   sorry
 
 -- theorem PoissonSummation_Lattices' (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) :
---   ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m) := by
---   sorry
+-- ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m)
+--   := by
+-- sorry
 
 end SchwartzMap
 
@@ -131,7 +134,8 @@ section FourierSchwartz
 namespace SchwartzMap
 
 variable (𝕜 : Type*) [RCLike 𝕜]
-  {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [NormedSpace 𝕜 E] [SMulCommClass ℂ 𝕜 E] [CompleteSpace E]
+  {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [NormedSpace 𝕜 E] [SMulCommClass ℂ 𝕜 E]
+    [CompleteSpace E]
   {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
   [MeasurableSpace V] [BorelSpace V]
   (f : 𝓢(V, E))
