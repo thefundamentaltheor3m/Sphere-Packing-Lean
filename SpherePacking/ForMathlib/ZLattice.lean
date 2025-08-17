@@ -1,6 +1,6 @@
 import Mathlib.Algebra.Module.ZLattice.Basic
 
-open ZSpan
+open ZSpan Module
 
 variable {E ι K : Type*} [NormedField K] [LinearOrder K] [IsStrictOrderedRing K]
   [NormedAddCommGroup E] [NormedSpace K E]

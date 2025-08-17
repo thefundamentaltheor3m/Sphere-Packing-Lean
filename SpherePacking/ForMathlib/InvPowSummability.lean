@@ -16,7 +16,7 @@ inverse powers of the norm function on subsets of Euclidean space.
 
 variable {d : ℕ}
 
-open BigOperators Complex Real
+open BigOperators Complex Real Module
 
 section Definitions
 

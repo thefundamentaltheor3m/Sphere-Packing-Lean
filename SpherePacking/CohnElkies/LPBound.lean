@@ -15,7 +15,7 @@ import SpherePacking.Basic.PeriodicPacking
 
 open scoped FourierTransform ENNReal SchwartzMap
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan
-  Bornology Summable
+  Bornology Summable Module
 
 variable {d : ℕ}
 
@@ -204,27 +204,23 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
             -- Then, we need to use some sort of `tsum_ite_eq`.
             -- Both of the above require some summability stuff.
             rw [← Summable.tsum_add]
-            .
-              apply tsum_congr
+            · apply tsum_congr
               intro x
               split_ifs with hx
-              .
-                let x_in: ↑(P.centers ∩ D) := ⟨x, by simp [hx]⟩
+              · let x_in: ↑(P.centers ∩ D) := ⟨x, by simp [hx]⟩
                 simp only [dite_eq_ite]
                 rw [← tsum_ite_eq (b := x_in) (a := (f 0).re)]
                 simp_rw [← Subtype.val_inj]
                 rw [← Summable.tsum_add]
-                . apply tsum_congr
+                · apply tsum_congr
                   intro y
                   dsimp [x_in]
                   simp_rw [eq_comm (a := y.val), ← sub_eq_zero (a := x.val)]
                   split_ifs with x_eq_y <;> simp [x_eq_y]
-                . apply Summable.of_finite
-                .
-                  simp_rw [Subtype.val_inj]
+                · apply Summable.of_finite
+                · simp_rw [Subtype.val_inj]
                   apply (hasSum_ite_eq _ _).summable
-              .
-                simp only [dite_eq_ite, add_zero]
+              · simp only [dite_eq_ite, add_zero]
                 apply tsum_congr
                 intro b
                 have x_neq_b: x.val ≠ b.val := by
@@ -236,31 +232,28 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
                 dsimp [Ne] at x_neq_b
                 rw [← sub_eq_zero] at x_neq_b
                 simp [x_neq_b]
-            .
-              rw [← summable_abs_iff]
+            · rw [← summable_abs_iff]
               apply Summable.of_nonneg_of_le (by simp) (?_) (f := fun x => ∑' (y : ↑(P.centers ∩
                 D)), ‖if h : x.val - y.val = 0 then 0 else (f (x.val - y.val)).re‖) ?_
-              . intro b
+              · intro b
                 rw [← Real.norm_eq_abs]
                 apply norm_tsum_le_tsum_norm
                 apply Summable.of_norm_bounded (g := fun x => |(f (b.val - x.val)).re|)
-                . apply Summable.of_finite
-                . intro a
+                · apply Summable.of_finite
+                · intro a
                   split_ifs <;> simp
-              .
-                simp_rw [tsum_fintype]
+              · simp_rw [tsum_fintype]
                 apply Summable.of_nonneg_of_le (f := fun x => ∑ (y: ↑(P.centers ∩ D)), |(f (x.val -
                   y.val)).re|)
-                . intro b
+                · intro b
                   refine Fintype.sum_nonneg ?_
                   rw [Pi.le_def]
                   simp
-                . intro b
+                · intro b
                   apply Finset.sum_le_sum
                   intro x hx
                   split_ifs <;> simp
-                .
-                  apply summable_sum
+                · apply summable_sum
                   intro y hy
                   have summable_f_re: Summable (fun x => (f x).re) := by
                     apply (Complex.hasSum_re (hf.choose_spec)).summable
@@ -270,23 +263,20 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
                   intro a b hab
                   field_simp at hab
                   exact SetCoe.ext hab
-            .
-              apply summable_of_finite_support
+            · apply summable_of_finite_support
               -- TODO - is there a better way of writing (P.centers ∩ D) when dealing with subtypes?
               apply Set.Finite.subset (s := {x: ↑P.centers | x.val ∈ D})
-              . rw [Set.finite_coe_iff] at sum_finite
+              · rw [Set.finite_coe_iff] at sum_finite
                 apply Set.Finite.of_finite_image (f := Subtype.val)
-                .
-                  conv =>
+                · conv =>
                     arg 1
                     equals (P.centers ∩ D) =>
                       ext a
                       rw [Set.inter_comm]
                       simp
                   exact sum_finite
-                . simp
-              .
-                intro x hx
+                · simp
+              · intro x hx
                 simp only [Function.mem_support, ne_eq, ite_eq_right_iff, Classical.not_imp] at hx
                 simp [hx.1]
   _ ≤ ∑' (x : ↑(P.centers ∩ D)), (f (0 : EuclideanSpace ℝ (Fin d))).re
@@ -586,7 +576,7 @@ variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded
   hD_unique_covers
 
-theorem LinearProgrammingBound' (hd : 0 < d) (hf: Summable f) :
+theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
   P.density ≤ (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
   volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   -- HUGE TODO: Get the periodic density formula in terms of some `D`.
@@ -695,7 +685,7 @@ section Main_Theorem
 
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
-theorem LinearProgrammingBound (hd : 0 < d) (hf: Summable f) : SpherePackingConstant d ≤
+theorem LinearProgrammingBound (hd : 0 < d) (hf : Summable f) : SpherePackingConstant d ≤
   (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))
   := by
   rw [← periodic_constant_eq_constant hd,
