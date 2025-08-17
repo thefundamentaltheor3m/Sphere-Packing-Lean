@@ -31,7 +31,7 @@ properties about the E₈ lattice.
 
 -/
 
-open EuclideanSpace BigOperators SpherePacking Matrix algebraMap Pointwise
+open EuclideanSpace BigOperators SpherePacking Matrix algebraMap Pointwise Module
 
 /-
 * NOTE: *

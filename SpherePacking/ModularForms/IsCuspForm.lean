@@ -4,27 +4,27 @@ import SpherePacking.ModularForms.qExpansion_lems
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 
 noncomputable section Definitions
 
 
 
-variable {α ι: Type*}
+variable {α ι : Type*}
 
 open SlashInvariantFormClass ModularFormClass
 variable {k : ℤ} {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup SL(2, ℤ)} (n : ℕ) (f : F)
 
 open scoped Real MatrixGroups CongruenceSubgroup
 
-def ModForm_mk (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k ) : ModularForm Γ k where
+def ModForm_mk (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) : ModularForm Γ k where
   toFun := f
   slash_action_eq' := f.slash_action_eq'
   holo' := f.holo'
   bdd_at_infty' A := (f.zero_at_infty' A).boundedAtFilter
 
-lemma ModForm_mk_inj (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k ) (hf : f ≠ 0) :
+lemma ModForm_mk_inj (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) (hf : f ≠ 0) :
   ModForm_mk _ _ f ≠ 0 := by
   rw [@DFunLike.ne_iff] at *
   obtain ⟨x, hx⟩ := hf
