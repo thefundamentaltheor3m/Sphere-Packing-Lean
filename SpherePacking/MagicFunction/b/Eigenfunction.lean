@@ -35,3 +35,5 @@ theorem eig_b : fourierTransformCLE ℂ b = -b := by
   abel
 
 end Eigenfunction
+
+end MagicFunction.b.Fourier

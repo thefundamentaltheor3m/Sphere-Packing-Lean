@@ -22,7 +22,7 @@ sequence `f n x` or complex numbers.
 
 open Filter Function Complex Real
 
-open scoped Interval Topology BigOperators Nat Classical Complex
+open scoped Interval Topology BigOperators Nat Complex
 
 variable {α β ι : Type*}
 
