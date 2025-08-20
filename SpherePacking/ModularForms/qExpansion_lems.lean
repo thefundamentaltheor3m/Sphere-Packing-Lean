@@ -430,40 +430,41 @@ lemma qExpansion_smul (a : ℂ) (f : CuspForm Γ(n) k) [NeZero n] :
   simp only [Pi.smul_apply, smul_eq_mul]
   ring
 
-
 instance : FunLike (ℍ → ℂ) ℍ ℂ := { coe := fun ⦃a₁⦄ ↦ a₁, coe_injective' := fun ⦃_ _⦄ a ↦ a}
 
 lemma qExpansion_ext (f g : ℍ → ℂ) (h : f = g) : qExpansion 1 f =
     qExpansion 1 g := by
   rw [h]
 
+lemma cuspFunction_congr_funLike
+    {α β : Type*} [FunLike α ℍ ℂ] [FunLike β ℍ ℂ] (n : ℕ) (f : α) (g : β) (h : ⇑f = ⇑g) :
+    cuspFunction n f = cuspFunction n g := by
+  ext z
+  by_cases hz : z = 0
+  · simp [cuspFunction, Periodic.cuspFunction, h]
+  · simp [cuspFunction, Periodic.cuspFunction, h, hz]
+
 lemma qExpansion_ext2 {α β : Type*} [FunLike α ℍ ℂ] [FunLike β ℍ ℂ] (f : α) (g : β) (h : ⇑f = ⇑g) :
     qExpansion 1 f = qExpansion 1 g := by
-  simp_rw [qExpansion]
+  have hcf : cuspFunction 1 f = cuspFunction 1 g :=
+      cuspFunction_congr_funLike 1 f g h
   ext m
-  simp
-  left
-  congr
-  simp_rw [cuspFunction, Periodic.cuspFunction]
-  rw [h]
+  simp [qExpansion_coeff, hcf]
 
 lemma qExpansion_of_mul (a b : ℤ) (f : ModularForm Γ(1) a) (g : ModularForm Γ(1) b) :
   qExpansion 1 (((((DirectSum.of (ModularForm Γ(1)) a ) f)) * ((DirectSum.of (ModularForm Γ(1)) b )
     g)) (a + b)) =
     (qExpansion 1 f) * (qExpansion 1 g) := by
-  rw [DirectSum.of_mul_of]
-  rw [← qExpansion_mul_coeff]
-  apply qExpansion_ext2
-  ext z
-  simp
+  rw [DirectSum.of_mul_of, ← qExpansion_mul_coeff]
+  simp only [DirectSum.of_eq_same]
   rfl
 
 @[simp] --generalize this away from ℂ
-lemma IteratedDeriv_zero_fun (n : ℕ) (z : ℂ): iteratedDeriv n (fun _ : ℂ => (0 : ℂ)) z = 0 := by
+lemma IteratedDeriv_zero_fun (n : ℕ) (z : ℂ) : iteratedDeriv n (fun _ : ℂ => (0 : ℂ)) z = 0 := by
   induction' n with n hn
-  simp
-  rw [iteratedDeriv_succ']
-  simp [hn]
+  · simp only [iteratedDeriv_zero]
+  · rw [iteratedDeriv_succ']
+    simp [hn]
 
 lemma iteratedDeriv_const_eq_zero (m : ℕ) (hm : 0 < m) (c : ℂ) :
     iteratedDeriv m (fun _ : ℂ => c) = fun _ : ℂ => 0 := by
@@ -514,34 +515,13 @@ lemma qExpansion_pow (f : ModularForm Γ(1) k) (n : ℕ) :
   rw [show n * k = n • k by rfl]
   simp
 
-
-lemma qExpansion_injective (n : ℕ) [NeZero n] (f : ModularForm Γ(n) k) :
-    qExpansion n f = 0 ↔ f = 0 := by
-  constructor
-  intro h
-  ext z
-  have := (hasSum_qExpansion n f z).tsum_eq
-  rw [← this]
-  rw [h]
-  simp
-  intro h
-  have : Periodic.cuspFunction n 0 = 0 := by
-    ext z
-    rw [Periodic.cuspFunction]
-    by_cases hz : z = 0
-    rw [hz]
-    simp
-    apply Filter.Tendsto.limUnder_eq
-    refine NormedAddCommGroup.tendsto_nhds_zero.mpr ?_
-    simp
-    simp [hz]
-  rw [qExpansion, cuspFunction, h]
-  simp
-  rw [this]
-  ext y
-  simp
-  right
-  apply IteratedDeriv_zero_fun
-
+@[simp]
 lemma qExpansion_zero [NeZero n] : qExpansion n (0 : ModularForm Γ(n) k) = 0 := by
-  rw [qExpansion_injective]
+  simpa using (qExpansion_smul2 (a := (0 : ℂ)) (f := (0 : ModularForm Γ(n) k))).symm
+
+lemma qExpansion_injective [NeZero n] (f : ModularForm Γ(n) k) :
+    qExpansion n f = 0 ↔ f = 0 := by
+  refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
+  · ext z
+    simp [← (hasSum_qExpansion n f z).tsum_eq, h]
+  · simp [h]
