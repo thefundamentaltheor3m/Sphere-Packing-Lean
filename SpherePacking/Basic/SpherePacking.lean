@@ -25,7 +25,7 @@ We also define the *density* of the configuration.
 -/
 
 open scoped ENNReal
-open BigOperators Pointwise Filter
+open BigOperators Pointwise Filter Module
 
 section Definitions
 

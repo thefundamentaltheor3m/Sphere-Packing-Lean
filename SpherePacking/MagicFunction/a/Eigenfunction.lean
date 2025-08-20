@@ -35,3 +35,4 @@ theorem eig_a : fourierTransformCLE ℂ a = a := by
   ac_rfl
 
 end Eigenfunction
+end MagicFunction.a.Fourier
