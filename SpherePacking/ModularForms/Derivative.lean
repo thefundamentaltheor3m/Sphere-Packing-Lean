@@ -92,7 +92,9 @@ theorem D_mul (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (
       F z * deriv (G ∘ ofComplex) z + deriv (F ∘ ofComplex) z * G z:= by
     have hFz := MDifferentiableAt_DifferentiableAt (hF z)
     have hGz := MDifferentiableAt_DifferentiableAt (hG z)
-    sorry -- something with deriv_mul or deriv_smul
+    rw [deriv_mul hFz hGz]
+    simp only [Function.comp_apply, ofComplex_apply]
+    group
   calc
     D (F * G) z
     _ = (2 * π * I)⁻¹ * deriv (F ∘ ofComplex * G ∘ ofComplex) z := by rfl
