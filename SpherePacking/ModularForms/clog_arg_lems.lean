@@ -2,15 +2,14 @@ import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
 import Mathlib.Analysis.SpecialFunctions.Log.Summable
-import Mathlib.Data.Complex.FiniteDimensional
-import Mathlib.NumberTheory.ArithmeticFunction
-import Mathlib.NumberTheory.ModularForms.Basic
-import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+
+import Mathlib
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 open ArithmeticFunction
 

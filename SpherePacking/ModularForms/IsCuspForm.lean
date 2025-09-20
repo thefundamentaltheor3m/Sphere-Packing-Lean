@@ -111,7 +111,7 @@ lemma CuspForm_to_ModularForm_Fun_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : 
 
 
 lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
-    IsCuspForm Γ(1) k f ↔ (qExpansion 1 f).coeff ℂ 0 = 0 := by
+    IsCuspForm Γ(1) k f ↔ (qExpansion 1 f).coeff 0 = 0 := by
   constructor
   · intro h
     rw [qExpansion_coeff]
@@ -159,6 +159,6 @@ lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
 
 
 lemma CuspFormSubmodule_mem_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
-    f ∈ CuspFormSubmodule Γ(1) k ↔ (qExpansion 1 f).coeff ℂ 0 = 0 := by
+    f ∈ CuspFormSubmodule Γ(1) k ↔ (qExpansion 1 f).coeff 0 = 0 := by
   have := IsCuspForm_iff_coeffZero_eq_zero k f
   apply this
