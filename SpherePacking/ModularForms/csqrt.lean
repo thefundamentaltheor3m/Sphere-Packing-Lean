@@ -30,15 +30,10 @@ lemma csqrt_deriv (z : ℍ) : deriv (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log 
   · simp
     rw [Complex.exp_neg]
     field_simp
-    rw [show cexp (Complex.log ↑z / 2) * deriv Complex.log ↑z * (2 * cexp (Complex.log ↑z / 2)) =
-      cexp (Complex.log ↑z / 2) * (cexp (Complex.log ↑z / 2)) * 2 * deriv Complex.log ↑z by ring]
-    rw [← Complex.exp_add]
-    ring_nf
-    rw [Complex.exp_log]
-    · have hl := (Complex.hasDerivAt_log (z := z) hzz).deriv
-      rw [hl]
-      field_simp [ne_zero z]
-    · apply ne_zero z
+    have hsq : cexp (Complex.log (z : ℂ) / 2) ^ 2 = cexp (Complex.log (z : ℂ)) := by
+      rw [← Complex.exp_nat_mul]; grind
+    simpa [hsq, (Complex.hasDerivAt_log hzz).deriv, Complex.exp_log <| ne_zero z]
+      using Complex.mul_inv_cancel <| ne_zero z
   · fun_prop
   · apply DifferentiableAt.const_mul
     refine Complex.differentiableAt_log hzz

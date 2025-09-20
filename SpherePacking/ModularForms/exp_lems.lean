@@ -5,7 +5,7 @@ import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 open UpperHalfPlane TopologicalSpace Set
   Metric Filter Function Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 theorem exp_upperHalfPlane_lt_one (z : ℍ) :
     ‖(Complex.exp (2 * ↑π * Complex.I * z))‖ < 1 := by

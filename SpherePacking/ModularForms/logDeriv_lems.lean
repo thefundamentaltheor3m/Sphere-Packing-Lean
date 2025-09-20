@@ -170,7 +170,7 @@ lemma deriv_EqOn_congr {f g : ℂ → ℂ} (s : Set ℂ) (hfg : s.EqOn f g) (hs 
   apply derivWithin_congr hfg
   apply hfg hx
 
-lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn ℂ f s)
+lemma logDeriv_eqOn_iff' (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn ℂ f s)
     (hg : DifferentiableOn ℂ g s) (hs : s.Nonempty) (hs2 : IsOpen s) (hsc : Convex ℝ s)
     (hgn : ∀ x, x ∈ s → g x ≠ 0) (hfn : ∀ x, x ∈ s → f x ≠ 0) : EqOn (logDeriv f) (logDeriv g) s ↔
     ∃( z : ℂ),  z ≠ 0 ∧  EqOn (f) (z • g) s := by
@@ -206,6 +206,7 @@ lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn
         · simp only [Pi.mul_apply, Pi.inv_apply] at H3
           rw [← H3]
           field_simp [hgn y hy]
+          simp_all
         · exact hsc
         · apply DifferentiableOn.mul
           · exact hf
@@ -214,20 +215,12 @@ lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn
             · exact hgn
         · have he : s.EqOn  (deriv f * g⁻¹ - f * deriv g / g ^ 2)  0 := by
             intro z hz
-            simp only [Pi.sub_apply, Pi.mul_apply, Pi.inv_apply, Pi.div_apply, Pi.pow_apply,
-            Pi.zero_apply]
-            have hgg : g z ≠ 0 := by apply hgn z hz
-            field_simp
-            rw [pow_two, mul_comm, mul_assoc, ← mul_sub]
-            simp only [mul_eq_zero]
-            right
-            have H := h hz
-            rw [func_div] at H
-            simp only [Pi.mul_apply] at H
-            rw [← H]
-            ring
-            exact hfn z hz
-            exact hgn z hz
+            have Hmul : (deriv f z) * (g z) = (f z) * (deriv g z) :=
+                (func_div (deriv f) f (deriv g) g z (hfn z hz) (hgn z hz)) |>.1 (by
+                  simpa [logDeriv, Pi.div_apply] using h hz)
+            have : (deriv f z) * (g z)⁻¹ - (f z) * (deriv g z) / (g z) ^ 2 = 0 := by
+              grind
+            exact this
           · intro v hv
             have H := h hv
             rw [func_div] at H

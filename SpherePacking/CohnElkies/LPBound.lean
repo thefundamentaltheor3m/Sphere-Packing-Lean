@@ -262,7 +262,7 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
                   -- TODO - find a simpler injectivity proof
                   intro a b hab
                   field_simp at hab
-                  exact SetCoe.ext hab
+                  aesop
             · apply summable_of_finite_support
               -- TODO - is there a better way of writing (P.centers ∩ D) when dealing with subtypes?
               apply Set.Finite.subset (s := {x: ↑P.centers | x.val ∈ D})
@@ -329,7 +329,7 @@ lemma calc_steps' (hd : 0 < d) (hf: Summable f) :
   rw [re_tsum]
   apply Summable.comp_injective hf
   intro a b
-  field_simp
+  simp_all
 
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following theorem.
