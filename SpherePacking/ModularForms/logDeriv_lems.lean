@@ -80,14 +80,14 @@ theorem logDeriv_tprod_eq_tsum {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ �
       intro m
       congr
       ext i
-      simp
+      simp only [Finset.prod_apply]
     · exact htend
     · use 0
     · intro b hb
       rw [DifferentiableOn]
       intro z hz
       apply DifferentiableAt.differentiableWithinAt
-      have hp : ∀ (i : ℕ), i ∈ Finset.range b →  DifferentiableAt ℂ (f i) z := by
+      have hp : ∀ (i : ℕ), i ∈ Finset.range b → DifferentiableAt ℂ (f i) z := by
         intro i hi
         have := (hd i z hz).differentiableAt
         apply this
@@ -95,7 +95,6 @@ theorem logDeriv_tprod_eq_tsum {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ �
       have := DifferentiableAt.finset_prod hp
       convert this
     · exact hnez
-
 
 lemma logDeriv_one_sub_exp (r : ℂ) : logDeriv (fun z => 1 - r * cexp (z)) =
     fun z => -r * cexp z / (1 - r * cexp ( z)) := by
@@ -109,11 +108,11 @@ lemma logDeriv_one_sub_exp_comp (r : ℂ) (g : ℂ → ℂ) (hg : Differentiable
     logDeriv ((fun z => 1 - r * cexp (z)) ∘ g) =
     fun z => -r * ((deriv g) z) * cexp (g z) / (1 - r * cexp (g (z))) := by
   ext y
-  rw [logDeriv_comp, logDeriv_one_sub_exp]
+  rw [logDeriv_comp _ (hg y), logDeriv_one_sub_exp]
   · simp only [neg_mul]
     ring
-  · simp
-  exact hg y
+  simp only [differentiableAt_const, differentiableAt_exp, DifferentiableAt.fun_mul,
+    DifferentiableAt.fun_sub]
 
 lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fun n : ℕ =>
     (n * r^n / (1 - r^n)) := by
@@ -127,9 +126,9 @@ lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fun n : �
   apply Summable.of_norm_bounded_eventually_nat (g := fun n => 2 * ‖n * r^n‖)
   · apply Summable.mul_left
     simp
-    · have := (summable_norm_pow_mul_geometric_of_norm_lt_one 1 hr)
-      simp at this
-      apply this
+    have := (summable_norm_pow_mul_geometric_of_norm_lt_one 1 hr)
+    simp at this
+    apply this
   · simp
     obtain ⟨N, hN⟩ := h3
     use N
@@ -147,12 +146,12 @@ lemma func_div (a b c d : ℂ → ℂ) (x : ℂ) (hb : b x ≠ 0) (hd : d x ≠ 
      (a / b) x = (c /d) x ↔ (a * d) x = (b * c) x := by
   constructor
   · intro h
-    simp only [ne_eq, Pi.div_apply, Pi.mul_apply] at *
+    simp only [Pi.div_apply] at h
     rw [div_eq_div_iff] at h
     · nth_rw 2 [mul_comm]
       exact h
     · exact hb
-    · exact hd
+    exact hd
   intro h
   simp only [Pi.div_apply]
   rw [div_eq_div_iff]
@@ -160,7 +159,7 @@ lemma func_div (a b c d : ℂ → ℂ) (x : ℂ) (hb : b x ≠ 0) (hd : d x ≠ 
     nth_rw 2 [mul_comm]
     exact h
   · apply hb
-  · apply hd
+  apply hd
 
 lemma deriv_EqOn_congr {f g : ℂ → ℂ} (s : Set ℂ) (hfg : s.EqOn f g) (hs : IsOpen s) :
     s.EqOn (deriv f) ( deriv g) := by
@@ -172,78 +171,70 @@ lemma deriv_EqOn_congr {f g : ℂ → ℂ} (s : Set ℂ) (hfg : s.EqOn f g) (hs 
 
 lemma logDeriv_eqOn_iff (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn ℂ f s)
     (hg : DifferentiableOn ℂ g s) (hs : s.Nonempty) (hs2 : IsOpen s) (hsc : Convex ℝ s)
-    (hgn : ∀ x, x ∈ s → g x ≠ 0) (hfn : ∀ x, x ∈ s → f x ≠ 0) : EqOn (logDeriv f) (logDeriv g) s ↔
-    ∃( z : ℂ),  z ≠ 0 ∧  EqOn (f) (z • g) s := by
-  constructor
-  · simp_rw [logDeriv]
-    intro h
+    (hgn : ∀ x, x ∈ s → g x ≠ 0) (hfn : ∀ x, x ∈ s → f x ≠ 0) :
+    EqOn (logDeriv f) (logDeriv g) s ↔ ∃ z : ℂ, z ≠ 0 ∧ EqOn (f) (z • g) s where
+  mp h := by
+    simp_rw [logDeriv] at h
     rw [@nonempty_def] at hs
     obtain ⟨t, ht⟩ := hs
     use (f t) * (g t)⁻¹
     refine ⟨by apply mul_ne_zero (hfn t ht) (by simpa using (hgn t ht)) , ?_⟩
     intro y hy
     have h2 := h hy
-    rw [func_div] at h2
-    · have hderiv : EqOn (deriv (f * g⁻¹))  (deriv f * g⁻¹ - f * deriv g / g ^ 2) s := by
-        intro z hz
-        rw [deriv_mul]
-        have hgi : g⁻¹ = (fun x => x⁻¹) ∘ g := by
-          ext y
-          simp only [Pi.inv_apply, comp_apply]
-        rw [hgi, deriv_comp, deriv_inv]
-        simp only [comp_apply, neg_mul, mul_neg, Pi.sub_apply, Pi.mul_apply, Pi.div_apply,
-          Pi.pow_apply]
-        ring
-        · refine differentiableAt_inv ?_
-          exact hgn z hz
-        · apply hg.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
-        · exact hf.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
-        · apply DifferentiableAt.inv
-          exact hg.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
-          exact hgn z hz
-      · have H3 :=
-          Convex.is_const_of_fderivWithin_eq_zero (f := f * g⁻¹) (𝕜 := ℂ) (s := s) ?_ ?_ ?_ hy ht
-        · simp only [Pi.mul_apply, Pi.inv_apply] at H3
-          rw [← H3]
-          field_simp [hgn y hy]
-        · exact hsc
-        · apply DifferentiableOn.mul
-          · exact hf
-          · apply DifferentiableOn.inv
-            · exact hg
-            · exact hgn
-        · have he : s.EqOn  (deriv f * g⁻¹ - f * deriv g / g ^ 2)  0 := by
-            intro z hz
-            simp only [Pi.sub_apply, Pi.mul_apply, Pi.inv_apply, Pi.div_apply, Pi.pow_apply,
-            Pi.zero_apply]
-            have hgg : g z ≠ 0 := by apply hgn z hz
-            field_simp
-            rw [pow_two, mul_comm, mul_assoc, ← mul_sub]
-            simp only [mul_eq_zero]
-            right
-            have H := h hz
-            rw [func_div] at H
-            simp only [Pi.mul_apply] at H
-            rw [← H]
-            ring
-            exact hfn z hz
-            exact hgn z hz
-          · intro v hv
-            have H := h hv
-            rw [func_div] at H
-            · have ha := hderiv hv
-              have hb := he hv
-              rw [hb] at ha
-              simp only [Pi.zero_apply] at ha
-              rw [fderivWithin_of_isOpen hs2 hv]
-              exact Eq.symm (ContinuousLinearMap.ext_ring (_root_.id (Eq.symm ha)))
-            · exact  hfn v hv
-            · exact  hgn v hv
-    · exact  hfn y hy
-    · exact hgn y hy
-  · intro h
-    obtain ⟨z, hz0, hz⟩ := h
-    intro x hx
+    rw [func_div _ _ _ _ _ (hfn y hy) (hgn y hy)] at h2
+    have hderiv : EqOn (deriv (f * g⁻¹)) (deriv f * g⁻¹ - f * deriv g / g ^ 2) s := by
+      have hfg : f * g⁻¹ = fun x => f x * (g⁻¹ x) := by rfl
+      rw [hfg]
+      intro z hz
+      rw [deriv_fun_mul]
+      have hgi : g⁻¹ = (fun x => x⁻¹) ∘ g := by
+        ext y
+        simp only [Pi.inv_apply, comp_apply]
+      rw [hgi, deriv_comp, deriv_inv]
+      simp only [comp_apply, neg_mul, mul_neg, Pi.sub_apply, Pi.mul_apply, Pi.div_apply,
+        Pi.pow_apply]
+      ring
+      · refine differentiableAt_inv ?_
+        exact hgn z hz
+      · apply hg.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
+      · exact hf.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
+      · apply DifferentiableAt.inv
+        exact hg.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
+        exact hgn z hz
+    have H3 := Convex.is_const_of_fderivWithin_eq_zero (f := f * g⁻¹) (𝕜 := ℂ) (s := s) ?_ ?_ ?_
+      hy ht
+    · simp only [Pi.mul_apply, Pi.inv_apply] at H3
+      rw [← H3]
+      field_simp [hgn y hy]
+    · exact hsc
+    · fun_prop (disch := assumption)
+    have he : s.EqOn (deriv f * g⁻¹ - f * deriv g / g ^ 2) 0 := by
+      intro z hz
+      simp only [Pi.sub_apply, Pi.mul_apply, Pi.inv_apply, Pi.div_apply, Pi.pow_apply,
+        Pi.zero_apply]
+      have hgg : g z ≠ 0 := by apply hgn z hz
+      field_simp
+      rw [pow_two, mul_comm, mul_assoc, ← mul_sub]
+      simp only [mul_eq_zero]
+      right
+      have H := h hz
+      rw [func_div] at H
+      simp only [Pi.mul_apply] at H
+      rw [← H]
+      ring
+      exact hfn z hz
+      exact hgn z hz
+    · intro v hv
+      have H := h hv
+      rw [func_div _ _ _ _ _ (hfn v hv) (hgn v hv)] at H
+      have ha := hderiv hv
+      have hb := he hv
+      rw [hb] at ha
+      simp only [Pi.zero_apply] at ha
+      rw [fderivWithin_of_isOpen hs2 hv]
+      exact ContinuousLinearMap.ext_ring ha
+  mpr := by
+    rintro ⟨z, hz0, hz⟩ x hx
     have h := hz hx
     simp_rw [logDeriv_apply]
     have HJ := deriv_EqOn_congr s hz hs2 hx
