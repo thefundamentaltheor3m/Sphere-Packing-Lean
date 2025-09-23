@@ -58,13 +58,10 @@ lemma csqrt_I : (csqrt (Complex.I)) ^ 24 = 1 := by
     rw [show ((24 : ℕ) : ℂ) * (1 / 2) = (12 : ℕ) by
       field_simp; ring]
   rw [Complex.exp_nat_mul]
-  rw [Complex.exp_log]
-  · have hi4 := Complex.I_pow_four
-    have : Complex.I ^ 12 = (Complex.I ^ 4) ^ 3 := by
-      rw [← @npow_mul]
-    rw [this, hi4]
-    simp
-  exact I_ne_zero
+  rw [Complex.exp_log I_ne_zero]
+  have hi4 := Complex.I_pow_four
+  have : Complex.I ^ 12 = (.I ^ 4) ^ 3 := by rw [← @npow_mul]
+  simp [this, hi4]
 
 lemma csqrt_pow_24 (z : ℂ) (hz : z ≠ 0) : (csqrt z) ^ 24 = z ^ 12 := by
   unfold csqrt
