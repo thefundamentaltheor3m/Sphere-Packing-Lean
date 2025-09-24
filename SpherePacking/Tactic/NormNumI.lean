@@ -38,12 +38,12 @@ theorem split_neg {z : ℂ} {a b : ℝ} (h : z = ⟨a, b⟩) :
   subst h
   rfl
 
-theorem split_conj {w : ℂ} {a b : ℝ} (hw : w = ⟨a, b⟩):
+theorem split_conj {w : ℂ} {a b : ℝ} (hw : w = ⟨a, b⟩) :
     conj w = ⟨a, -b⟩ := by
   rw [hw]
   rfl
 
-theorem split_num (n : ℕ) [n.AtLeastTwo]:
+theorem split_num (n : ℕ) [n.AtLeastTwo] :
     OfNat.ofNat (α := ℂ) n = ⟨OfNat.ofNat n, 0⟩ := rfl
 
 theorem split_scientific (m exp : ℕ) (x : Bool) :
