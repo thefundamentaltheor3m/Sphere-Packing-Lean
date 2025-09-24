@@ -4,7 +4,7 @@ import SpherePacking.ModularForms.Icc_Ico_lems
 open TopologicalSpace Set
   Metric Filter Function Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 
 lemma limUnder_add {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f g : α → ℂ)
@@ -13,7 +13,7 @@ lemma limUnder_add {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f g :
   nth_rw 3 [Filter.Tendsto.limUnder_eq]
   rw [@Pi.add_def]
   apply Filter.Tendsto.add
-  refine CauchySeq.tendsto_limUnder hf
+  · refine CauchySeq.tendsto_limUnder hf
   refine CauchySeq.tendsto_limUnder hg
 
 
@@ -31,7 +31,7 @@ lemma limUnder_sub {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f g :
   nth_rw 3 [Filter.Tendsto.limUnder_eq]
   rw [@Pi.sub_def]
   apply Filter.Tendsto.sub
-  refine CauchySeq.tendsto_limUnder hf
+  · refine CauchySeq.tendsto_limUnder hf
   refine CauchySeq.tendsto_limUnder hg
 
 
@@ -41,10 +41,10 @@ lemma limUnder_congr_eventually (f g : ℕ → ℂ) (h : ∀ᶠ n in atTop, f n 
   have h0 := CauchySeq.tendsto_limUnder hf
   have h1 := CauchySeq.tendsto_limUnder hg
   rw [Filter.Tendsto.limUnder_eq (x := (limUnder atTop f)) ]
-  rw [Filter.Tendsto.limUnder_eq ]
-  apply Filter.Tendsto.congr' _ h1
-  symm
-  apply h
+  · rw [Filter.Tendsto.limUnder_eq ]
+    apply Filter.Tendsto.congr' _ h1
+    symm
+    apply h
   exact h0
 
 

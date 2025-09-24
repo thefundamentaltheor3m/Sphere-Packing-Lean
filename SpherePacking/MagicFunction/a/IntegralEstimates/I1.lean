@@ -149,8 +149,8 @@ lemma I₁'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀
   apply inv_le_one_of_one_le₀
   exact one_le_zpow₀ hs <| Int.zero_le_ofNat 4
 
-  lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
-      ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x) := by
+lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
+    ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
   use C₀, hC₀_pos
   intro s hs
@@ -210,5 +210,13 @@ theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
 end Bounding_Integral
 
 end Bounding
+
+end I₁
+
+end IntegralEstimates
+
+end a
+
+end MagicFunction
 
 ----------------------------------------------------------------
