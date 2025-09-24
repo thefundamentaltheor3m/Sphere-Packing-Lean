@@ -38,3 +38,4 @@ variable {n : ℕ} (Λ : Submodule ℤ (ℝ^n)) [DiscreteTopology Λ] [IsZLattic
 -- It'd be nice to show that the covolume of Λ is the determinant of its `Zn_equiv`.
 
 end Covolume
+end ZLattice
