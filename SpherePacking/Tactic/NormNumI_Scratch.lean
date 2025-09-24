@@ -15,7 +15,7 @@ lemma congr_aux_1' (x : ℝ) :
   have : (x:ℂ) ≠ 0 := mod_cast hx
   have : 1 + I ≠ 0 := sorry -- ought to be by done by a norm_num extension
   field_simp
-  linear_combination - x * I_sq
+  linear_combination - I_sq
 
 -- #check Mathlib.Meta.NormNum.Result
 -- open Lean Mathlib.Meta.NormNum Qq in

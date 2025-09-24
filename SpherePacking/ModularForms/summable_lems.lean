@@ -2,7 +2,6 @@ import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Analysis.Normed.Field.Instances
-import Mathlib.Data.Complex.FiniteDimensional
 import Mathlib.Data.Int.Star
 import Mathlib.NumberTheory.ArithmeticFunction
 import Mathlib.NumberTheory.ModularForms.EisensteinSeries.UniformConvergence
@@ -393,11 +392,7 @@ theorem summable_diff (z : ℍ) (d : ℤ) :
   apply this.congr
   intro b
   field_simp
-  congr 1
-  · rw [neg_div_neg_aux]
-    ring
-  rw [neg_div_neg_aux]
-  ring
+  congr 1 <;> grind
 
 lemma arg1 (a b c d e f g h : ℂ) : e / f + g / h - a / b - c / d = e / f + g / h + a / -b + c / -d
     := by ring
@@ -417,16 +412,13 @@ lemma sum_int_pnat3 (z : ℍ) (d : ℤ) :
       have : (z : ℂ) ≠ (0 : ℂ) := by
         exact ne_zero z
       field_simp
+      exact fun _ ↦ trivial
     rw [arg1]
     ring_nf
     rw [add_comm]
-    have h4 := ne_zero z
-    simp [UpperHalfPlane.coe] at *
-    congr 1
-    · field_simp
-    · field_simp
+    have : (z : ℂ) ≠ (0 : ℂ) := ne_zero z
+    field_simp
   · apply summable_diff
-
 
 lemma pow_max (x y : ℕ) : (max x y)^2 = max (x^2) (y ^ 2) := by
   by_cases h: max x y = x
@@ -1646,21 +1638,14 @@ theorem tsum_sigma_eqn {k : ℕ} (z : ℍ) :
       ∑' e : ℕ+, sigma k e * Complex.exp (2 * ↑π * Complex.I * e * z) := by
   rw [← (piFinTwoEquiv fun _ => ℕ+).tsum_eq]
   have := tsum_sigma_eqn2 k z
-  simp
-  rw [this]
-  congr
-  ext n
-  congr 1
-  ring_nf
+  simp only [piFinTwoEquiv_apply, Fin.isValue]
+  grind
 
 lemma exp_aux (z : ℍ) (n : ℕ) : cexp (2 * ↑π * Complex.I * n * ↑z) =
     cexp (2 * ↑π * Complex.I * ↑z) ^ n := by
   rw [← Complex.exp_nat_mul]
   congr 1
   ring
-
-
-
 
 theorem summable_exp_pow (z : ℍ) : Summable fun i : ℕ ↦
      ‖(cexp (2 * ↑π * Complex.I * (↑i + 1) * z))‖ := by
@@ -1703,7 +1688,6 @@ theorem a4 (k : ℕ) (z : ℍ) :
   simp
   left
   ring_nf
-
 
 lemma t9 (z : ℍ) : ∑' m : ℕ,
   ( 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
@@ -1774,9 +1758,7 @@ theorem summable_diff_right_a (z : ℍ) (d : ℕ+) :
   intro b
   have hz := ne_zero z
   simp [UpperHalfPlane.coe] at *
-  field_simp
-  rw [auxf]
-  ring
+  grind
 
 theorem summable_diff_right (z : ℍ) (d : ℕ+) :
   Summable fun m : ℤ ↦ 1 / ((m : ℂ) * ↑z - ↑↑d) - 1 / (↑m * ↑z + ↑↑d) := by
@@ -1789,8 +1771,7 @@ theorem summable_diff_right (z : ℍ) (d : ℕ+) :
     intro b
     have hz := ne_zero z
     simp [UpperHalfPlane.coe] at *
-    field_simp [auxf]
-    ring
+    grind
 
 lemma sum_int_pnatt (z : ℍ) (d : ℕ+) :
   2/ d + ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z - d) - 1 / (↑m * ↑z + d)) = ∑' m : ℕ+,
