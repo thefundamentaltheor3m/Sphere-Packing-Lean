@@ -194,7 +194,7 @@ lemma I₃'_eq_Ioc (r : ℝ) : I₃' r = ∫ (t : ℝ) in Ioc 0 1, -I
   * t ^ 2
   * cexp (π * I * r)
   * cexp (-π * r * t) := by
-  simp [I₃'_eq, intervalIntegral_eq_integral_uIoc]
+    simp [I₃'_eq, intervalIntegral_eq_integral_uIoc]
 
 lemma I₃'_eq'_Ioc (r : ℝ) : I₃' r = -I * ∫ (t : ℝ) in Ioc 0 1,
     φ₀'' (-1 / (I * t))
@@ -258,15 +258,15 @@ lemma I₅'_eq' (r : ℝ) : I₅' r = 2 * I * ∫ t in (0 : ℝ)..1,
   ring_nf
 
 lemma I₅'_eq_Ioc (r : ℝ) : I₅' r = -2 * ∫ (t : ℝ) in Ioc 0 1, -I
-  * φ₀'' (-1 / (I * t))
-  * t ^ 2
-  * cexp (-π * r * t) := by
+    * φ₀'' (-1 / (I * t))
+    * t ^ 2
+    * cexp (-π * r * t) := by
   simp [I₅'_eq, intervalIntegral_eq_integral_uIoc]
 
 lemma I₅'_eq'_Ioc (r : ℝ) : I₅' r = 2 * I * ∫ (t : ℝ) in Ioc 0 1,
-  φ₀'' (-1 / (I * t))
-  * t ^ 2
-  * cexp (-π * r * t) := by
+    φ₀'' (-1 / (I * t))
+    * t ^ 2
+    * cexp (-π * r * t) := by
   simp [I₅'_eq', intervalIntegral_eq_integral_uIoc]
 
 lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I

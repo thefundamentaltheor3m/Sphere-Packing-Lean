@@ -22,11 +22,6 @@ The only `sorry`s are in the section `calc_aux`, which consists of auxiliary lem
 various `calc_steps` lemmas, which in turn make up the proof of the main theorem. Below, we give a
 comprehensive list of things to be done, including but not limited to the `sorry`s in this file.
 - [ ] `aux_5`: prove `fun i ↦ (1 - cexp (2 * ↑π * I * ↑↑i * z)) ^ 24` is Multipliable
-- [ ] `aux_8` and `aux_11`: prove `0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24` and
-      `0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24` using the specific properties of the function
-      `fun (n : ℕ+) ↦ (1 - rexp (-n * k))` for some parameter `k : ℝ` (there's no general
-      `tprod_pos` result for the positivity of infinite products)
-- [ ] `aux_11`: prove `0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24` in similar fashion
 - [ ] `step_10`, `step_12`: prove `tprod_le_tprod` in SpherePacking.ForMathlib.tprod
 - [ ] `step_11`: prove `summable_real_norm_mul_geometric_of_norm_lt_one` in
       SpherePacking.ForMathlib.SpecificLimits
@@ -113,9 +108,25 @@ lemma aux_7 (a : ℤ) :
   refine exp_le_exp.2 ?_
   simp; linarith
 
-include hz in
 lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 := by
-  sorry
+  rw [← Real.rexp_tsum_eq_tprod]
+  · apply Real.exp_pos
+  · intro i
+    apply pow_pos
+    simp [pi_pos, UpperHalfPlane.im_pos]
+  · simp only [log_pow, Nat.cast_ofNat, ← smul_eq_mul]
+    apply Summable.const_smul
+    simp_rw [sub_eq_add_neg]
+    apply Real.summable_log_one_add_of_summable
+    apply Summable.neg
+    simp_rw [smul_eq_mul]
+    conv =>
+      rhs
+      equals (fun (b : ℕ) => Real.exp (-2 * π * b * z.im)) ∘ (PNat.val) => rfl
+
+    apply Summable.subtype
+    simp_rw [mul_comm, mul_assoc, Real.summable_exp_nat_mul_iff]
+    simp [pi_pos, UpperHalfPlane.im_pos]
 
 lemma aux_ring (i : ℕ) : (I * ↑π * ↑i * z) = I * ((↑π * ↑i) * z) := by ring
 
@@ -131,7 +142,24 @@ lemma aux_10 : Summable fun (n : ℕ) ↦ norm (c (n + n₀)) * rexp (-π * ↑n
   exact aux_3 z c n₀ hcsum
 
 lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
-  sorry
+  rw [← Real.rexp_tsum_eq_tprod]
+  · apply Real.exp_pos
+  · intro i
+    apply pow_pos
+    simp [pi_pos]
+  · simp only [log_pow, Nat.cast_ofNat, ← smul_eq_mul]
+    apply Summable.const_smul
+    simp_rw [sub_eq_add_neg]
+    apply Real.summable_log_one_add_of_summable
+    apply Summable.neg
+    simp_rw [smul_eq_mul]
+    conv =>
+      rhs
+      equals (fun (b : ℕ) => Real.exp (-π * b)) ∘ (PNat.val) => rfl
+
+    apply Summable.subtype
+    simp_rw [mul_comm, Real.summable_exp_nat_mul_iff]
+    simp [pi_pos]
 
 lemma aux_misc (x : ℍ) : norm (cexp (I * x)) ≤ rexp (x.im) := by
   rw [aux_1 x]
@@ -244,7 +272,7 @@ private lemma step_10 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
     (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
-  · exact aux_8 z hz
+  · exact aux_8 z
   · apply tprod_le_of_nonneg_of_multipliable
     · intro n; simp
       have :
@@ -269,7 +297,7 @@ private lemma step_11 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
-  · exact le_of_lt (aux_8 z hz)
+  · exact le_of_lt (aux_8 z)
   · sorry
   · sorry
   · simp only [div_eq_mul_inv]

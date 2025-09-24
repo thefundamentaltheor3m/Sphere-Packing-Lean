@@ -6,7 +6,7 @@ import SpherePacking.ModularForms.Eisenstein
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups SlashInvariantFormClass ModularFormClass
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
   Real MatrixGroups CongruenceSubgroup
 
 noncomputable section
@@ -122,12 +122,12 @@ lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
   rw [Delta_E4_E6_aux]
   have := CuspForm_to_ModularForm_Fun_coe _ _ ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 -
     (DirectSum.of _ 6 E₆)^2) 12 )) ?_
-  simp at *
-  ext z
-  have hg := congr_fun this z
-  simp at *
-  rw [← hg]
-  rfl
+  · simp at *
+    ext z
+    have hg := congr_fun this z
+    simp at *
+    rw [← hg]
+    rfl
   rw [IsCuspForm_iff_coeffZero_eq_zero]
   exact E4E6_coeff_zero_eq_zero
 
@@ -241,7 +241,7 @@ lemma weight_four_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 4) = 1 :=
     rw [@sub_eq_zero] at this
     aesop
 
-lemma weight_eight_one_dimensional (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (hk3 : k < 12):
+lemma weight_eight_one_dimensional (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (hk3 : k < 12) :
     Module.rank ℂ (ModularForm Γ(1) k) = 1 := by
   rw [rank_eq_one_iff ]
   refine ⟨E k hk ,Ek_ne_zero k hk hk2, ?_⟩
@@ -402,13 +402,13 @@ lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk
     rw [← h1, ← Submodule.rank_quotient_add_rank (CuspFormSubmodule (CongruenceSubgroup.Gamma 1) k)]
     congr
     rw [rank_eq_one_iff ]
-    refine ⟨ Submodule.Quotient.mk (E k (by linarith)), ?_, ?_⟩
-    intro hq
-    rw [Submodule.Quotient.mk_eq_zero] at hq
-    have := IsCuspForm_iff_coeffZero_eq_zero k (E k (by linarith))
-    rw [IsCuspForm] at this
-    rw [this, Ek_q_exp_zero k hk hk2] at hq
-    aesop
+    refine ⟨Submodule.Quotient.mk (E k (by linarith)), ?_, ?_⟩
+    · intro hq
+      rw [Submodule.Quotient.mk_eq_zero] at hq
+      have := IsCuspForm_iff_coeffZero_eq_zero k (E k (by linarith))
+      rw [IsCuspForm] at this
+      rw [this, Ek_q_exp_zero k hk hk2] at hq
+      aesop
     intro v
     have := Quotient.exists_rep v
     obtain ⟨f, hf⟩ := this
@@ -473,7 +473,7 @@ lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
         omega
     · omega
     · refine (Nat.even_sub ?_).mpr ?_
-      omega
+      · omega
       simp only [hk2, true_iff]
       decide
   · simp only [not_le] at HK
