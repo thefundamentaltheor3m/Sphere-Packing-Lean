@@ -360,6 +360,8 @@ lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
   rw [div_self (z_plus_one_squared_nonzero z), mul_one, mul_assoc, ← pow_two, ← mul_div,
      ← div_div, mul_div, div_self (z_plus_one_squared_nonzero z), mul_one]
 
+-- In my thesis, the - sign before ψS is missing. Makes no difference because we bound integrals in
+-- absolute value, but point is that this way the Js look even more similar to the Is!
 lemma ψS_slash_T : ψS ∣[-2] T = -ψS := by
   ext z
   rw [ψS_eq', slashT']
