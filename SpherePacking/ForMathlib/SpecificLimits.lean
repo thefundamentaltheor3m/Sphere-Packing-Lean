@@ -14,4 +14,12 @@ open Filter
 theorem summable_real_norm_mul_geometric_of_norm_lt_one {k : ℕ} {r : ℂ}
     (hr : ‖r‖ < 1) {u : ℕ → ℂ} (hu : u =O[atTop] (fun n ↦ (↑(n ^ k) : ℝ))) :
     Summable fun n : ℕ ↦ ‖u n * r ^ n‖ := by
-  sorry
+  apply summable_of_isBigO_nat (g :=  (fun n ↦ ‖(↑(n ^ k) : ℂ ) * r ^ n‖))
+  · push_cast
+    apply summable_norm_pow_mul_geometric_of_norm_lt_one _ hr
+  · simp_rw [norm_mul]
+    apply Asymptotics.IsBigO.mul
+    · push_cast at hu
+      simp [hu]
+    · apply Asymptotics.isBigO_refl
+
