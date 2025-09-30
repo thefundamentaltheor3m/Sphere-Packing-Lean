@@ -122,7 +122,7 @@ def _root_.ZLattice.mFourier (n : Λ) : C(UnitAddTorus d, ℂ) where
   continuous_toFun := sorry
 
 /-- **Poisson summation formula** for a general lattice. We need to use
-`integral_image_eq_integral_abs_det_fderiv_smul`. I am not sure how to change the type of -/
+`integral_image_eq_integral_abs_det_fderiv_smul`. -/
 theorem _root_.ZLattice.tsum_mFourier_coeff_eq_tsum_fourierIntegral (f : 𝓢(EuclideanSpace ℝ d, ℂ))
   (x : EuclideanSpace ℝ d) :
   ∑' n : Λ, f (fun i => n.val i + x i) =
