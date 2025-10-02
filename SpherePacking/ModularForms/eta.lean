@@ -82,7 +82,7 @@ theorem eta_tprod_ne_zero (z : ℍ) :
   rw [←summable_norm_iff]
   simpa using summable_exp_pow x
 
-/--Eta is non-vanishing!-/
+/-- Eta is non-vanishing! -/
 lemma eta_nonzero_on_UpperHalfPlane (z : ℍ) : η z ≠ 0 := by
   rw [η]
   have := eta_tprod_ne_zero z
@@ -189,7 +189,6 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
     · have hpi : (π : ℂ) ≠ 0 := by simpa using Real.pi_ne_zero
       ring_nf
       field_simp
-      ring
     ·
       have hr :    ↑π * Complex.I / 12 *
          -((↑π ^ 2 / (6 : ℂ))⁻¹ * 2⁻¹ * (8 * ↑π ^ 2 * ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (2 * ↑π * Complex.I * ↑↑n * ↑z))) =
@@ -393,10 +392,9 @@ lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn (
     simp only [DifferentiableOn, mem_setOf_eq]
     intro x hx
     apply (eta_DifferentiableAt_UpperHalfPlane ⟨x, hx⟩).differentiableWithinAt
-  · use UpperHalfPlane.I
-    simp only [coe_I, mem_setOf_eq, Complex.I_im, zero_lt_one]
   · exact isOpen_lt continuous_const Complex.continuous_im
-  · exact convex_halfSpace_im_gt 0
+  · apply Convex.isPreconnected
+    exact convex_halfSpace_im_gt 0
   · intro x hx
     simp only [Pi.mul_apply, ne_eq, mul_eq_zero, not_or]
     refine ⟨ ?_ , by apply eta_nonzero_on_UpperHalfPlane ⟨x, hx⟩⟩
