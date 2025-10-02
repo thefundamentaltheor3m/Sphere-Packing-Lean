@@ -598,26 +598,24 @@ lemma D2_mul (A B : SL(2,ℤ)) : D₂ (A * B) = ((D₂ A) ∣[(2 : ℤ)] B) + (D
   simp_rw [coe2_mul]
   simp_rw [← mul_div, mul_assoc, ← mul_add]
   congr
-  simp
+  simp only [Fin.isValue, ModularGroup.sl_moeb, coe2_smul]
   have hde : denom B z ≠ 0 := by exact denom_ne_zero (↑B) z
   field_simp [hde]
   have hd := denom_diff A B z
   rw [ ← sub_eq_iff_eq_add] at hd
   simp only [Fin.isValue, Matrix.SpecialLinearGroup.coe_mul, Matrix.SpecialLinearGroup.det_coe,
     Int.cast_one, mul_one] at hd
-  simp only [Fin.isValue, ← hd, this, zpow_two]
-  rw [sub_mul, sub_div, ← mul_assoc, ← mul_assoc]
+  simp only [Fin.isValue, ← hd, this, pow_two]
   have : denom (↑A) (num ↑B ↑z / denom ↑B ↑z) = denom ↑A ↑(↑B • z) := by
     congr 1
     simp [UpperHalfPlane.specialLinearGroup_apply]
     congr
-  simp_rw [mul_div_mul_right _ _ hde ]
   rw [this]
-  simp
-  rw [ mul_div_cancel_right₀]
+  rw [sub_div, ← mul_assoc, mul_div_assoc _ (denom _ _ * denom _ _)]
+  simp_rw [mul_div_mul_right _ _ hde]
+  simp only [Fin.isValue, ModularGroup.sl_moeb, coe2_smul]
+  rw [mul_div_cancel_left₀ _ (denom_ne_zero _ _)]
   ring
-  exact denom_ne_zero (↑A) (↑B • z)
-
 
 
 lemma D2_one : D₂ 1 = 0 := by
