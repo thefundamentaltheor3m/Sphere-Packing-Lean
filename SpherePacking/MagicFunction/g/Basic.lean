@@ -30,16 +30,13 @@ noncomputable def g : 𝓢(ℝ⁸, ℂ) := ((π * I) / 8640) • a + (I / (240 *
 
 section Zero
 
--- Why are numerals such a pain?!
-private lemma aux : π ≠ 0 := (ne_of_lt (three_pos.trans pi_gt_three)).symm
-
 theorem g_zero : g 0 = 1 := by
   simp only [g, add_apply, smul_apply, a_zero, neg_mul, smul_eq_mul, b_zero, mul_zero, add_zero]
   ring_nf
   simp only [I_sq, mul_neg, mul_one, neg_mul, neg_neg]
   apply Complex.mul_inv_cancel
   norm_cast
-  exact aux
+  exact pi_ne_zero
 
 theorem fourier_g_zero : fourierTransformCLE ℂ g 0 = 1 := by
   simp only [g, map_add, map_smul, eig_a, eig_b, add_apply, smul_apply, a_zero, smul_eq_mul]
@@ -49,7 +46,7 @@ theorem fourier_g_zero : fourierTransformCLE ℂ g 0 = 1 := by
     zero_mul, add_zero]
   apply Complex.mul_inv_cancel
   norm_cast
-  exact aux
+  exact pi_ne_zero
 
 theorem g_zero_eq_fourier_g_zero : g 0 = fourierTransformCLE ℂ g 0 := by rw [g_zero, fourier_g_zero]
 
