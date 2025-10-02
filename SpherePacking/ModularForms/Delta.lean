@@ -34,7 +34,7 @@ lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
   congr
   · rw [← Complex.exp_nat_mul]
     congr 1
-    field_simp
+    simp [field]
   rw [tprod_pow]
   apply MultipliableEtaProductExpansion
 
