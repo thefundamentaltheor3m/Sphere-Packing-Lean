@@ -87,6 +87,8 @@ theorem extracted_66 (z : ℍ) :
   rw [mul_add]
   field_simp
   ring
+  simp_all only [ne_eq, Int.cast_neg, mul_neg]
+  rfl
   · intro i hi
     exact extracted_77 z i
 
@@ -388,6 +390,8 @@ theorem extracted_66c (z : ℍ) :
   field_simp
   simp only [UpperHalfPlane.coe]
   ring
+  simp_all only [ne_eq, Int.cast_neg, mul_neg]
+  rfl
   · intro i hi
     exact extracted_77 z i
 
@@ -594,26 +598,24 @@ lemma D2_mul (A B : SL(2,ℤ)) : D₂ (A * B) = ((D₂ A) ∣[(2 : ℤ)] B) + (D
   simp_rw [coe2_mul]
   simp_rw [← mul_div, mul_assoc, ← mul_add]
   congr
-  simp
+  simp only [Fin.isValue, ModularGroup.sl_moeb, coe2_smul]
   have hde : denom B z ≠ 0 := by exact denom_ne_zero (↑B) z
   field_simp [hde]
   have hd := denom_diff A B z
   rw [ ← sub_eq_iff_eq_add] at hd
   simp only [Fin.isValue, Matrix.SpecialLinearGroup.coe_mul, Matrix.SpecialLinearGroup.det_coe,
     Int.cast_one, mul_one] at hd
-  simp only [Fin.isValue, ← hd, this, zpow_two]
-  rw [sub_mul, sub_div, ← mul_assoc, ← mul_assoc]
-  simp_rw [mul_div_mul_right _ _ hde ]
+  simp only [Fin.isValue, ← hd, this, pow_two]
   have : denom (↑A) (num ↑B ↑z / denom ↑B ↑z) = denom ↑A ↑(↑B • z) := by
     congr 1
     simp [UpperHalfPlane.specialLinearGroup_apply]
     congr
   rw [this]
-  simp
-  rw [ mul_div_cancel_right₀]
+  rw [sub_div, ← mul_assoc, mul_div_assoc _ (denom _ _ * denom _ _)]
+  simp_rw [mul_div_mul_right _ _ hde]
+  simp only [Fin.isValue, ModularGroup.sl_moeb, coe2_smul]
+  rw [mul_div_cancel_left₀ _ (denom_ne_zero _ _)]
   ring
-  exact denom_ne_zero (↑A) (↑B • z)
-
 
 
 lemma D2_one : D₂ 1 = 0 := by
@@ -851,14 +853,11 @@ lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
   · rw [riemannZeta_two]
     have hpi : (π : ℂ) ≠ 0 := by simp
     field_simp
-    ring
   · rw [← mul_assoc]
     congr 1
     · rw [riemannZeta_two]
       have hpi : (π : ℂ) ≠ 0 := by simp
-      norm_cast
-      field_simp
-      ring
+      grind
     · have hl := tsum_pnat_eq_tsum_succ3 (fun n => sigma 1 n * cexp (2 * π * Complex.I * n * z))
       have hr := tsum_pnat_eq_tsum_succ3 (fun n => n * cexp (2 * π * Complex.I * n * z) / (1 - cexp
         (2 * π * Complex.I * n * z)))

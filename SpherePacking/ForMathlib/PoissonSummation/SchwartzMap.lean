@@ -2,6 +2,7 @@ import Mathlib.Analysis.Distribution.SchwartzSpace
 import Mathlib.Analysis.InnerProductSpace.Calculus
 import Mathlib.Data.Real.CompleteField
 import Mathlib.Topology.MetricSpace.Polish
+import Mathlib.Tactic.Cases
 
 import SpherePacking.ForMathlib.PoissonSummation.Zn_to_Euclidean
 

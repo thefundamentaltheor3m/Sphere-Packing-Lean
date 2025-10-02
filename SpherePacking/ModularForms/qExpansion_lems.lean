@@ -2,6 +2,7 @@ import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Data.Real.StarOrdered
 import Mathlib.NumberTheory.ModularForms.QExpansion
 import Mathlib.Order.CompletePartialOrder
+import Mathlib.Tactic.Cases
 
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
@@ -58,9 +59,9 @@ theorem cuspFunction_mul_zero (n : ℕ) (a b : ℤ) (f : ModularForm Γ(n) a) (g
   · apply modform_tendto_ndhs_zero
 
 lemma qExpansion_mul_coeff_zero (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b)
-    [NeZero n] : (qExpansion n (f.mul g)).coeff ℂ 0 =
-      (((qExpansion n f)).coeff ℂ 0) * ((qExpansion n g)).coeff ℂ 0 := by
-    simp_rw [qExpansion_coeff ]
+    [NeZero n] : (qExpansion n (f.mul g)).coeff 0 =
+      (((qExpansion n f)).coeff 0) * ((qExpansion n g)).coeff 0 := by
+    simp_rw [qExpansion_coeff]
     simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul]
     apply cuspFunction_mul_zero
 

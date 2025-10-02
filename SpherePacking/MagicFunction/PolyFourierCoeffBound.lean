@@ -82,7 +82,7 @@ private lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π *
   simp [fouterm, mul_add, add_mul, Complex.exp_add] at h₁
   have h₂ : ∀ (i : ℕ), c (↑i + n₀) * (cexp (↑π * I * ↑i * z) * cexp (↑π * I * ↑n₀ * z)) *
       (cexp (↑π * I * ↑n₀ * z))⁻¹ = c (↑i + n₀) * cexp (↑π * I * ↑i * z) := by
-    intro i; field_simp; ac_rfl
+    intro i; field_simp
   simp only [h₂] at h₁
   exact h₁
 
@@ -283,7 +283,7 @@ private lemma step_10 :
     · intro n; simp only [neg_mul]
       gcongr
       · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
-      · have hre : -(2 * π * n * z.im) = (2 * π * I * n * z).re := by field_simp
+      · have hre : -(2 * π * n * z.im) = (2 * π * I * n * z).re := by simp
         rw [hre]
         exact aux_2 (2 * π * I * n * z)
     · sorry

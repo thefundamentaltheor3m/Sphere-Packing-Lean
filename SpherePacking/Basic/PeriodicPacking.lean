@@ -1185,3 +1185,6 @@ theorem periodic_constant_eq_constant (hd : 0 < d) :
   sorry
 
 end Periodic_Constant_Eq_Constant
+end finiteDensity_limit
+
+end theorem_2_2
