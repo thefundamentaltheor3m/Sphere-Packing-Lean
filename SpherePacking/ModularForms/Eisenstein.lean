@@ -102,7 +102,7 @@ lemma tsum_zero_pow (f : ℕ → ℂ) : (∑' m, f m * 0 ^ m) = f 0 := by
   apply summable_zero_pow
 
 lemma cuspfunc_Zero [NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0 =
-    (qExpansion n f).coeff ℂ 0 := by
+    (qExpansion n f).coeff 0 := by
   have := hasSum_qExpansion_of_abs_lt n f (q := 0) (by simp)
   simp at this
   rw [Summable.hasSum_iff] at this
@@ -200,13 +200,13 @@ lemma qParam_surj_onto_ball (r : ℝ) (hr : 0 < r) (hr2 : r < 1) [NeZero n] : �
 
 lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
     (hf : ∀ τ : ℍ, HasSum (fun m : ℕ ↦ (c m) • 𝕢 n τ ^ m) (f τ)) :
-    c = (fun m => (qExpansion n f).coeff ℂ m) := by
+    c = (fun m => (qExpansion n f).coeff m) := by
   ext m
   have h := hasFPowerSeries_cuspFunction n f
   let qExpansion2 : PowerSeries ℂ := .mk fun m ↦ c m
   let qq : FormalMultilinearSeries ℂ ℂ ℂ :=
-    fun m ↦ (qExpansion2).coeff ℂ m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m _
-  have hqq2 : ∀ m , ‖qq m‖ = ‖(qExpansion2).coeff ℂ m‖ := by
+    fun m ↦ (qExpansion2).coeff m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m _
+  have hqq2 : ∀ m , ‖qq m‖ = ‖(qExpansion2).coeff m‖ := by
     intro m
     simp only [qq]
     rw [
@@ -261,10 +261,10 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [NeZero n]
   have h5 := this m
   simp only [PowerSeries.coeff_mk, qExpansionFormalMultilinearSeries, qq, qExpansion2] at h5
   let t := c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ m
-  let v := (PowerSeries.coeff ℂ m) (qExpansion n f) •
+  let v := (PowerSeries.coeff m) (qExpansion n f) •
     ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ m
   have htv : (c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ).toFun =
-    ( (PowerSeries.coeff ℂ m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m
+    ( (PowerSeries.coeff m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m
       ℂ).toFun := by
     rw [h5]
   have h6 := congrFun htv m
@@ -279,9 +279,9 @@ lemma deriv_mul_eq (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differe
   ext y
   exact deriv_mul (hf y) (hg y)
 
-lemma auxasdf (n : ℕ) : (PowerSeries.coeff ℂ n) ((qExpansion 1 E₄) * (qExpansion 1 E₆)) =
-    ∑ p ∈ Finset.antidiagonal n, (PowerSeries.coeff ℂ p.1)
-    ((qExpansion 1 E₄)) * (PowerSeries.coeff ℂ p.2) ((qExpansion 1 E₆)) := by
+lemma auxasdf (n : ℕ) : (PowerSeries.coeff n) ((qExpansion 1 E₄) * (qExpansion 1 E₆)) =
+    ∑ p ∈ Finset.antidiagonal n, (PowerSeries.coeff p.1)
+    ((qExpansion 1 E₄)) * (PowerSeries.coeff p.2) ((qExpansion 1 E₆)) := by
   apply PowerSeries.coeff_mul
 
 lemma sigma_bound (k n : ℕ) : sigma k n ≤ n ^ (k + 1) := by
@@ -349,7 +349,7 @@ lemma qexpsummable (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
     apply le_trans h2
     simp only [Finset.sum_const, smul_eq_mul, Nat.cast_mul, Nat.cast_pow, Nat.cast_add,
       Nat.cast_one, Nat.cast_pos, Finset.card_pos, Nat.nonempty_divisors, ne_eq, Nat.add_eq_zero,
-      one_ne_zero, and_false, not_false_eq_true, mul_le_mul_left]
+      one_ne_zero, and_false, not_false_eq_true, mul_le_mul_iff_right₀]
     norm_cast
   apply le_trans hr
   simp
@@ -361,7 +361,7 @@ lemma qexpsummable (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
   simpa using Nat.card_divisors_le_self (b + 1)
 
 
-lemma Ek_q_exp_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : (qExpansion 1 (E k hk)).coeff ℂ 0 =
+lemma Ek_q_exp_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : (qExpansion 1 (E k hk)).coeff 0 =
     1 := by
   let c : ℕ → ℂ := fun m => if m = 0 then 1 else
     (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m)
@@ -401,7 +401,7 @@ lemma Ek_q_exp_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : (qExpansio
 
 
 lemma Ek_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
-    (fun m => (qExpansion 1 (E k hk)).coeff ℂ m) =
+    (fun m => (qExpansion 1 (E k hk)).coeff m) =
     fun m => if m = 0 then 1 else
     (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (sigma (k-1) m) := by
   let c : ℕ → ℂ := fun m => if m = 0 then 1 else
@@ -438,7 +438,7 @@ lemma Ek_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
   simp [c, Ek_q] at *
   apply this
 
-lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff ℂ m) =
+lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff m) =
     fun m => if m = 0 then 1 else (240 : ℂ) * (sigma 3 m) := by
   have HH := Ek_q_exp 4 (by norm_num) (by exact Nat.even_iff.mpr rfl)
   rw [E4_eq]
@@ -465,7 +465,7 @@ lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff ℂ m) =
     have pin : (π : ℂ) ≠ 0 := by simp
     field_simp
 
-lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff ℂ 0 = 1 := by
+lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 := by
   simpa using congr_fun E4_q_exp 0
 
 
@@ -487,7 +487,7 @@ theorem bernoulli'_six : bernoulli' 6 = 1 / 42 := by
   rw [bernoulli'_def]
   norm_num [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_zero, h1, h2]
 
-lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff ℂ m) =
+lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff m) =
     fun m => if m = 0 then 1 else -(504 : ℂ) * (sigma 5 m) := by
   have HH := Ek_q_exp 6 (by norm_num) (by exact Nat.even_iff.mpr rfl)
   rw [E6_eq]
@@ -509,11 +509,11 @@ lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff ℂ m) =
   have pin : (π : ℂ) ≠ 0 := by simp
   field_simp
 
-lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff ℂ 0 = 1 := by
+lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 := by
   simpa using congr_fun E6_q_exp 0
 
 theorem E4E6_coeff_zero_eq_zero :
-  (PowerSeries.coeff ℂ 0)
+  (PowerSeries.coeff 0)
       (qExpansion 1
         ((1 / 1728 : ℂ) • ((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3 - (DirectSum.of (ModularForm
           Γ(1)) 6) E₆ ^ 2) 12)) =
@@ -667,7 +667,7 @@ theorem diffwithinat_prod_1 :
   exact isOpen_ball
 
 
-lemma Delta_q_one_term : (qExpansion 1 Delta).coeff ℂ 1 = 1 := by
+lemma Delta_q_one_term : (qExpansion 1 Delta).coeff 1 = 1 := by
   rw [qExpansion_coeff]
   simp
   rw [← derivWithin_of_isOpen (s := Metric.ball 0 (1 / 2 : ℝ)) (isOpen_ball) (by simp) ]
@@ -691,28 +691,24 @@ variable {α β γ : Type*}
 
 variable [CommMonoid α] [TopologicalSpace α] [UniformSpace α]
 
-lemma E4_q_exp_one : (qExpansion 1 E₄).coeff ℂ 1 = 240 := by
+lemma E4_q_exp_one : (qExpansion 1 E₄).coeff 1 = 240 := by
   have := E4_q_exp
   have H := congr_fun this 1
   simp at H
   rw [H]
-  simp
-  exact rfl
 
-lemma E6_q_exp_one : (qExpansion 1 E₆).coeff ℂ 1 = -504 := by
+lemma E6_q_exp_one : (qExpansion 1 E₆).coeff 1 = -504 := by
   have := E6_q_exp
   have H := congr_fun this 1
   simp at H
   rw [H]
-  simp
-  exact rfl
 
 lemma antidiagonal_one : Finset.antidiagonal 1 = {(1,0), (0,1)} := by
   ext ⟨x,y⟩
   simp
   omega
 
-lemma E4_pow_q_exp_one : (qExpansion 1 ((E₄).mul ((E₄).mul E₄))).coeff ℂ 1 = 3 * 240 := by
+lemma E4_pow_q_exp_one : (qExpansion 1 ((E₄).mul ((E₄).mul E₄))).coeff 1 = 3 * 240 := by
   rw [qExpansion_mul_coeff, qExpansion_mul_coeff]
   rw [PowerSeries.coeff_mul, antidiagonal_one]
   simp
@@ -736,7 +732,7 @@ lemma E6_ne_zero : E₆ ≠ 0 := by
     apply Ek_ne_zero 6 (by norm_num) (by exact Nat.even_iff.mpr rfl)
 
 lemma modularForm_normalise (f : ModularForm Γ(1) k) (hf : ¬ IsCuspForm Γ(1) k f) :
-    (qExpansion 1 (((qExpansion 1 f).coeff ℂ 0)⁻¹ • f)).coeff ℂ 0 = 1 := by
+    (qExpansion 1 (((qExpansion 1 f).coeff 0)⁻¹ • f)).coeff 0 = 1 := by
   rw [← qExpansion_smul2]
   refine inv_mul_cancel₀ ?_
   intro h
@@ -744,7 +740,7 @@ lemma modularForm_normalise (f : ModularForm Γ(1) k) (hf : ¬ IsCuspForm Γ(1) 
   exact hf h
 
 lemma PowerSeries.coeff_add (f g : PowerSeries ℂ) (n : ℕ) :
-    (f + g).coeff ℂ n = (f.coeff ℂ n) + (g.coeff ℂ n) := by
+    (f + g).coeff n = (f.coeff n) + (g.coeff n) := by
   exact rfl
 
 open ArithmeticFunction
