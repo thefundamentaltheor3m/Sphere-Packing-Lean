@@ -19,7 +19,6 @@ open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix
   ModularForm SlashAction MatrixGroups
 
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
-local notation "SL(" n ", " R ")" "⁺" => Matrix.SLPos (Fin n) R
 
 -- namespace MagicFunction.b.psi
 
