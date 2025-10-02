@@ -223,7 +223,7 @@ lemma ψT_eq : ψT = 128 * ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₂_MF + H�
   have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
   have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
   rw [hh2, hh3, hh4, H₂_T_action, H₃_T_action, H₄_T_action]
-  field_simp [← mul_div_assoc', ← mul_add, add_comm (H₄ z) (H₃ z), add_comm (H₃ z) (H₂ z)]
+  simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm (H₃ z) (H₂ z)]
 -- proof of ψT_eq complete.
 
 -- there was a typo in the blueprint, thats why we first formalized the following version of ψS_eq
@@ -292,8 +292,7 @@ lemma ψT_slash_T : ψT ∣[-2] T = ψI := by
   have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
   have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
   rw [hh2, hh3, hh4, H₂_T_action, H₃_T_action, H₄_T_action]
-  field_simp [← mul_div_assoc', ← mul_add, add_comm (H₄ z) (H₃ z), add_comm  (- (H₂ z)) (H₄ z),
-    sub_eq_add_neg]
+  simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm  (- (H₂ z)) (H₄ z), sub_eq_add_neg]
 -- proof of ψT_slash_T complete.
 
 lemma ψS_slash_S : ψS ∣[-2] S = ψI := by
