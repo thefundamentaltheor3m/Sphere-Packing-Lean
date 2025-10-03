@@ -298,7 +298,7 @@ private lemma step_11 :
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · exact le_of_lt (aux_8 z)
-  · sorry
+  · exact aux_10 z c n₀ hcsum
   · sorry
   · simp only [div_eq_mul_inv]
     -- **This is where we use the fact that c is eventually polynomial in n.**
@@ -450,17 +450,7 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
     · intro i
       positivity
     · simp [hcn₀]
-  · sorry
-    -- Use new result that Δ(iz) > 0 [TODO: BUMP]
-    -- calc 0
-    -- _ < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * (1 / 2 * I).im)) ^ 24 := aux_8 (1 / 2 * I)
-    --   (by sorry)
-    -- _ = ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
-    -- congr
-    -- ext n
-    -- congr 3
-    -- simp
-    -- ring
+  · exact aux_11
 
 end positivity
 
