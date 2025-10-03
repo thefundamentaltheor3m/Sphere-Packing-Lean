@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 
-import Mathlib.Data.Real.Pi.Bounds
+import Mathlib.Analysis.Real.Pi.Bounds
 
 import SpherePacking.MagicFunction.a.Eigenfunction
 import SpherePacking.MagicFunction.a.SpecialValues

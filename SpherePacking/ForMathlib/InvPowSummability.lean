@@ -136,8 +136,6 @@ theorem Summable_of_Inv_Pow_Summable'
       rw [le_add_iff_nonneg_right]
       exact zero_le_one
 
-set_option pp.funBinderTypes true
-
 -- should be in mathlib!!
 lemma Summable.subset {α β : Type*}
     [AddCommGroup β] [UniformSpace β] [IsUniformAddGroup β] [CompleteSpace β]

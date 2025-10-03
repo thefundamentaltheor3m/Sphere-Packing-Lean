@@ -266,7 +266,7 @@ theorem E8_Set_eq_span : E8_Set = (Submodule.span ℤ (Set.range E8_Matrix) : Se
     · ext y
       rw [← Finsupp.linearCombination_eq_sum]
       rfl
-    · cases' hv₁ with hv₁ hv₁
+    · obtain hv₁ | hv₁ := hv₁
       -- TODO (the y is just F8_Matrix * v, need to prove it has integer coefficients)
       <;> sorry
   · obtain ⟨y, hy⟩ := hv
@@ -351,7 +351,6 @@ theorem E8_Matrix_inner {i j : Fin 8} :
 
 section E8_norm_bounds
 
-set_option maxHeartbeats 2000000 in
 /-- All vectors in E₈ have norm √(2n) -/
 theorem E8_norm_eq_sqrt_even (v : E8_Lattice) :
     ∃ n : ℤ, Even n ∧ ‖v‖ ^ 2 = n := by
@@ -497,10 +496,10 @@ theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := b
       _ = x ^ 4 := by rw [Real.sq_sqrt hx]
     rw [← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul, div_pow, this, this, ← mul_div_assoc,
       div_mul_eq_mul_div, mul_comm, mul_div_assoc, mul_div_assoc]
-    norm_num [Nat.factorial, mul_one_div]
-    convert div_one _
-    · rw [E8_Basis_volume]
-    · rw [← ENNReal.ofReal_pow, ENNReal.ofReal_div_of_pos, ENNReal.ofReal_ofNat] <;> positivity
+    · norm_num [Nat.factorial, mul_one_div]
+      convert div_one _
+      · rw [E8_Basis_volume]
+      · rw [← ENNReal.ofReal_pow, ENNReal.ofReal_div_of_pos, ENNReal.ofReal_ofNat] <;> positivity
     · positivity
     · positivity
   · intro x hx

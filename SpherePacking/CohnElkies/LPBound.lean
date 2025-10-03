@@ -181,7 +181,7 @@ bounded above by the Cohn-Elkies bound.
 
 include hP
 open Classical in
-private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
+private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
   ≤ ↑(P.numReps' hd hD_isBounded) * (f 0).re := calc
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
@@ -316,7 +316,7 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
               exact Nat.card_eq_fintype_card
 
 include hD_isBounded
-lemma calc_steps' (hd : 0 < d) (hf: Summable f) :
+lemma calc_steps' (hd : 0 < d) (hf : Summable f) :
     ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), (f (↑x - ↑y + ↑ℓ)).re =
     (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), f (↑x - ↑y + ↑ℓ)).re := by
   have sum_finite := aux4 P D hD_isBounded hd
@@ -335,8 +335,8 @@ lemma calc_steps' (hd : 0 < d) (hf: Summable f) :
 -- There are several summability results stated as intermediate `have`s in the following theorem.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
 -- If there are assumptions needed beyond PSF, we should require them here, not in `PSF_Conditions`.
-set_option maxHeartbeats 200000
-private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
+set_option maxHeartbeats 200000 in
+private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥ ↑(P.numReps' hd hD_isBounded) ^ 2 *
     (𝓕 f 0).re / ZLattice.covolume P.lattice := by
   have : Fact (0 < d) := ⟨hd⟩
