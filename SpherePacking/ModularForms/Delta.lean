@@ -17,7 +17,7 @@ noncomputable section Definitions
 def Δ (z : UpperHalfPlane) := cexp (2 * π * Complex.I * z) * ∏' (n : ℕ),
     (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24
 
-lemma DiscriminantProductFormula ( z : ℍ) : Δ z = cexp (2 * π * Complex.I * z) * ∏' (n : ℕ+),
+lemma DiscriminantProductFormula (z : ℍ) : Δ z = cexp (2 * π * Complex.I * z) * ∏' (n : ℕ+),
     (1 - cexp (2 * π * Complex.I * (n) * z)) ^ 24 := by
     simp [Δ]
     conv =>
@@ -109,7 +109,7 @@ instance : atImInfty.NeBot := by
   simp only [le_add_iff_nonneg_right, zero_le_one, z]
 
 
-lemma I_in_atImInfty (A: ℝ) : { z : ℍ | A ≤ z.im} ∈ atImInfty := by
+lemma I_in_atImInfty (A : ℝ) : { z : ℍ | A ≤ z.im} ∈ atImInfty := by
   rw [atImInfty_mem]
   use A
   simp only [mem_setOf_eq, imp_self, implies_true]
@@ -253,10 +253,10 @@ theorem Delta_boundedfactor :
       rw [haa]
       simp only [forall_exists_index, and_imp, gt_iff_lt, CharP.cast_eq_zero, zero_add, mul_one,
         dist_zero_right, norm_neg, inf_eq_inter, inter_mem_iff, sup_le_iff, mem_inter_iff,
-        mem_setOf_eq, one_div, Complex.norm_mul, norm_ofNat, Nat.ofNat_pos, mul_le_mul_left,
+        mem_setOf_eq, one_div, Complex.norm_mul, norm_ofNat, Nat.ofNat_pos, mul_le_mul_iff_right₀,
         ge_iff_le] at *
       apply le_trans (this ?_)
-      · simp only [Nat.ofNat_pos, div_pos_iff_of_pos_left, mul_le_mul_left]
+      · simp only [Nat.ofNat_pos, div_pos_iff_of_pos_left, mul_le_mul_iff_right₀]
         have hr := cexp_two_pi_I_im_antimono UpperHalfPlane.I b (n := k + 1) ?_
         · simpa using hr
         simp only [UpperHalfPlane.I_im, hb.2.2]
@@ -278,7 +278,7 @@ theorem Delta_boundedfactor :
 
 open Real
 
-lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)): IsZeroAtImInfty
+lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)) : IsZeroAtImInfty
     (Discriminant_SIF ∣[(12 : ℤ)] γ) := by
   rw [IsZeroAtImInfty, ZeroAtFilter]
   have := Discriminant_SIF.slash_action_eq' γ (CongruenceSubgroup.mem_Gamma_one γ)

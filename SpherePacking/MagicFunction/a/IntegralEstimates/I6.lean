@@ -96,7 +96,7 @@ theorem I₆'_bounding (r : ℝ) : ∃ C₁ > 0,
   calc
   _ = ‖2 * ∫ t in Ici (1 : ℝ), g r t‖ := by simp only [I₆'_eq_integral_g_Ioo, g]
   _ ≤ 2 * ∫ t in Ici (1 : ℝ), ‖g r t‖ := by
-      simp only [norm_mul, Complex.norm_ofNat, Nat.ofNat_pos, mul_le_mul_left]
+      simp only [norm_mul, Complex.norm_ofNat, Nat.ofNat_pos, mul_le_mul_iff_right₀]
       exact norm_integral_le_integral_norm (g r)
   _ ≤ 2 * ∫ t in Ici (1 : ℝ), C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by gcongr
   _ = _ := by
@@ -157,3 +157,11 @@ end Higher_iteratedFDerivs
 -- decay' := by extract_goal; sorry
 
 end Schwartz_Decay
+
+end I₆
+
+end IntegralEstimates
+
+end a
+
+end MagicFunction

@@ -566,8 +566,7 @@ theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     calc _ ≤ _ := DivDiscBoundOfPolyFourierCoeff z hz c 4 ?_ 5 hcpoly
           (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) ?_
       _ = _ := by congr 2; ring
-    ·
-      sorry
+    · sorry
     · -- This is where I need to use Bhavik's result
 
       sorry
@@ -590,3 +589,7 @@ example {m n : ℕ} {f : (EuclideanSpace ℝ (Fin m)) × (EuclideanSpace ℝ (Fi
   sorry
 
 end Scratch
+
+end PolyFourierCoeffBound
+
+end MagicFunction
