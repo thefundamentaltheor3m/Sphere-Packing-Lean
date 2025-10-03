@@ -349,17 +349,7 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
       simpa only [UpperHalfPlane.coe, ne_eq] using (ne_zero z)
   · simp only [csqrt, one_div, ne_eq, Complex.exp_ne_zero, not_false_eq_true]
   · apply eta_nonzero_on_UpperHalfPlane z
-  · unfold csqrt
-    rw [show (fun a ↦ cexp (1 / 2 * Complex.log a)) = cexp ∘ (fun a ↦ 1 / 2 * Complex.log a) by rfl]
-    apply DifferentiableAt.comp
-    · simp
-    apply DifferentiableAt.const_mul
-    apply Complex.differentiableAt_log
-    rw [mem_slitPlane_iff]
-    right
-    have hz := z.2
-    simp only at hz
-    exact Ne.symm (ne_of_lt hz)
+  · exact csqrt_differentiableAt z
   · apply eta_DifferentiableAt_UpperHalfPlane z
 
 lemma eta_logderivs : {z : ℂ | 0 < z.im}.EqOn (logDeriv (η ∘ (fun z : ℂ => -1/z)))
