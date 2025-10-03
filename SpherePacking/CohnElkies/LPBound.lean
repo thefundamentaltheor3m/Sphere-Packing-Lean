@@ -168,8 +168,6 @@ end Nonnegativity
 
 section Fundamental_Domain_Dependent
 
-include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
-
 variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.centers]
 variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
 variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
@@ -179,7 +177,7 @@ In this section, we will prove that the density of every periodic sphere packing
 bounded above by the Cohn-Elkies bound.
 -/
 
-include hP
+include hP hCohnElkies₁ in
 open Classical in
 private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
@@ -315,7 +313,8 @@ private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
               rw [PeriodicSpherePacking.numReps']
               exact Nat.card_eq_fintype_card
 
-include hD_isBounded
+omit [Nonempty ↑P.centers] in
+include hD_isBounded in
 lemma calc_steps' (hd : 0 < d) (hf : Summable f) :
     ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), (f (↑x - ↑y + ↑ℓ)).re =
     (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), f (↑x - ↑y + ↑ℓ)).re := by
@@ -335,7 +334,7 @@ lemma calc_steps' (hd : 0 < d) (hf : Summable f) :
 -- There are several summability results stated as intermediate `have`s in the following theorem.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
 -- If there are assumptions needed beyond PSF, we should require them here, not in `PSF_Conditions`.
-set_option maxHeartbeats 200000 in
+include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ in
 private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥ ↑(P.numReps' hd hD_isBounded) ^ 2 *
     (𝓕 f 0).re / ZLattice.covolume P.lattice := by
@@ -346,8 +345,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
       (f (x - ↑y)).re
         := by
             rw [ge_iff_le]
-            exact calc_aux_1 hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
-              hD_isBounded hd hf
+            exact calc_aux_1 hCohnElkies₁ hP hD_isBounded hd hf
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
         := by
@@ -363,10 +361,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
   -- other complex-valued stuff.
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       f (↑x - ↑y + ↑ℓ)).re
-        := by
-            exact
-              calc_steps' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hd
-                hf
+        := calc_steps' hD_isBounded hd hf
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice) *
       ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m) *
