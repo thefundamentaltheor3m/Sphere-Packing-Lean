@@ -684,7 +684,7 @@ theorem PeriodicSpherePacking.aux2_ge'
   intro ⟨y, hy⟩ hy'
   have := hv'.right ⟨y, ?_⟩ hy'
   · rwa [Subtype.ext_iff] at this ⊢
-    rw [S.basis_Z_span]
+  · rw [S.basis_Z_span]
     exact hy
 
 -- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice
@@ -701,7 +701,7 @@ theorem PeriodicSpherePacking.aux2_le'
   intro ⟨y, hy⟩ hy'
   have := hv'.right ⟨y, ?_⟩ hy'
   · rwa [Subtype.ext_iff] at this ⊢
-    rw [S.basis_Z_span]
+  · rw [S.basis_Z_span]
     exact hy
 
 section finiteDensity_limit
