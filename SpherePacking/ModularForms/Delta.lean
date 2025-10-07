@@ -451,15 +451,13 @@ theorem CuspForm_div_Discriminant_Add (k : ℤ) (x y : CuspForm (CongruenceSubgr
 lemma cexp_aux1 (t : ℝ) : cexp (2 * ↑π * Complex.I * (Complex.I * t)) = rexp (-2 * π * t) := by
   calc
     _ = cexp (2 * ↑π * (Complex.I * Complex.I) * t) := by ring_nf
-    _ = cexp (-2 * ↑π * t) := by field_simp
-    _ = rexp (-2 * π * t) := by simp [Complex.exp_ofReal_re]
+    _ = rexp (-2 * π * t) := by simp
 
 lemma cexp_aux2 (t : ℝ) (n : ℕ)
     : cexp (2 * π * Complex.I * (n + 1) * (Complex.I * t)) = rexp (-(2 * π * (n + 1) * t)) := by
   calc
     _ = cexp (2 * ↑π * (n + 1) * (Complex.I * Complex.I) * t) := by ring_nf
-    _ = cexp (-2 * ↑π * (n + 1) * t) := by field_simp
-    _ = rexp (-(2 * π * (n + 1) * t)) := by simp [Complex.exp_ofReal_re]
+    _ = rexp (-(2 * π * (n + 1) * t)) := by simp
 
 lemma cexp_aux3 (t : ℝ) (n : ℕ) (ht : 0 < t) : 0 < 1 - rexp (-(2 * π * (n + 1) * t)) := by
   have _ : rexp (-(2 * π * (n + 1) * t)) < 1 := exp_lt_one_iff.mpr (by simp; positivity)
