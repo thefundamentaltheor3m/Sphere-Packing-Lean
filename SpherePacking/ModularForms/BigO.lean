@@ -3,12 +3,10 @@ import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Data.Int.Star
 import Mathlib.NumberTheory.ModularForms.EisensteinSeries.UniformConvergence
 
-
-
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set
   Metric Filter Function Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 
 lemma norm_symm (x y : ℤ) : ‖![x, y]‖ = ‖![y,x]‖ := by
@@ -45,21 +43,17 @@ lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻
   refine ⟨by simp; exact r_pos z, ?_⟩
   simp
   constructor
-  use min (-1) m
-  intro n hn
-  --have := EisensteinSeries.summand_bound z (k := 1) (by norm_num) ![n, m]
-  rw [mul_comm]
-  gcongr
-  · simp [(r_pos z).le]
-  · exact r_pos z
-  · exact le_abs_self (r z)
-  · simp; omega
-  · rw [EisensteinSeries.norm_eq_max_natAbs]
-    simp
-    left
-    norm_cast
-    rw [Int.abs_eq_natAbs]
-    rfl
+  · use min (-1) m
+    intro n hn
+    --have := EisensteinSeries.summand_bound z (k := 1) (by norm_num) ![n, m]
+    rw [mul_comm]
+    gcongr
+    · simp [(r_pos z).le]
+    · exact r_pos z
+    · exact le_abs_self (r z)
+    · simp; omega
+    · rw [EisensteinSeries.norm_eq_max_natAbs]
+      simp
   use max 1 m
   intro b hb
   rw [EisensteinSeries.norm_eq_max_natAbs]
@@ -69,23 +63,17 @@ lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻
   · simp [(r_pos z).le]
   · exact r_pos z
   · exact le_abs_self (r z)
-  · simp; omega
-  · simp at *;
-    left
-    norm_cast
-    rw [Int.abs_eq_natAbs]
-    rfl
+  · simp only [abs_pos, ne_eq, Int.cast_eq_zero]; omega
+  · simp
 
 lemma linear_bigO_pow (m : ℤ) (z : ℍ) (k : ℕ) : (fun (n : ℤ) => ((((m : ℂ) * z + n)) ^ k )⁻¹)
   =O[cofinite]
     fun n => ((|(n : ℝ)| ^ k)⁻¹) := by
   simp_rw [← inv_pow]
-  apply Asymptotics.IsBigO.pow
-  apply linear_bigO m z
+  apply Asymptotics.IsBigO.pow <| linear_bigO m z
 
-
-lemma Asymptotics.IsBigO.zify {α β: Type*} [Norm α] [Norm β] {f : ℤ → α} {g : ℤ → β} (hf : f
-  =O[cofinite] g) :
+lemma Asymptotics.IsBigO.zify {α β : Type*} [Norm α] [Norm β] {f : ℤ → α} {g : ℤ → β}
+    (hf : f =O[cofinite] g) :
     (fun (n : ℕ) => f n) =O[cofinite] fun n => g n := by
   rw [@isBigO_iff] at *
   obtain ⟨C, hC⟩ := hf
@@ -95,21 +83,16 @@ lemma Asymptotics.IsBigO.zify {α β: Type*} [Norm α] [Norm β] {f : ℤ → α
   apply Filter.Eventually.natCast_atTop (p := fun n => ‖f n‖ ≤ C * ‖g n‖)
   simp_all only [eventually_sup, eventually_atBot, eventually_atTop, ge_iff_le]
 
-
-lemma Asymptotics.IsBigO.of_neg {α β: Type*} [Norm α] [Norm β] {f : ℤ → α} {g : ℤ → β}
+lemma Asymptotics.IsBigO.of_neg {α β : Type*} [Norm α] [Norm β] {f : ℤ → α} {g : ℤ → β}
     (hf : f =O[cofinite] g) : (fun n => f (-n)) =O[cofinite] fun n => g (-n) := by
   rw [← Equiv.neg_apply]
   apply Asymptotics.IsBigO.comp_tendsto hf
   refine Injective.tendsto_cofinite (Equiv.injective (Equiv.neg ℤ))
 
-
 lemma linear_bigO_nat (m : ℤ) (z : ℍ) : (fun (n : ℕ) => ((m : ℂ) * z + n)⁻¹) =O[cofinite]
     fun n => (|(n : ℝ)|⁻¹) := by
   have := linear_bigO (m : ℤ) z
   apply this.zify
-
-
-
 
 lemma linear_bigO' (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((n : ℂ) * z + m)⁻¹) =O[cofinite]
     fun n => (|(n : ℝ)|⁻¹) := by
@@ -139,21 +122,16 @@ lemma linear_bigO' (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((n : ℂ) * z + m)�
   refine ⟨by simp; exact r_pos z, ?_⟩
   simp
   constructor
-  use min (-1) m
-  intro n hn
-  --have := EisensteinSeries.summand_bound z (k := 1) (by norm_num) ![n, m]
-  rw [mul_comm]
-  gcongr
-  · simp [(r_pos z).le]
-  · exact r_pos z
-  · exact le_abs_self (r z)
-  · simp; omega
-  · rw [EisensteinSeries.norm_eq_max_natAbs]
-    simp
-    right
-    norm_cast
-    rw [Int.abs_eq_natAbs]
-    rfl
+  · use min (-1) m
+    intro n hn
+    --have := EisensteinSeries.summand_bound z (k := 1) (by norm_num) ![n, m]
+    rw [mul_comm]
+    gcongr
+    · simp [(r_pos z).le]
+    · exact r_pos z
+    · exact le_abs_self (r z)
+    · simp; omega
+    · simp [EisensteinSeries.norm_eq_max_natAbs]
   use max 1 m
   intro b hb
   rw [EisensteinSeries.norm_eq_max_natAbs]
@@ -164,8 +142,4 @@ lemma linear_bigO' (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((n : ℂ) * z + m)�
   · exact r_pos z
   · exact le_abs_self (r z)
   · simp; omega
-  · simp at *;
-    right
-    norm_cast
-    rw [Int.abs_eq_natAbs]
-    rfl
+  · simp

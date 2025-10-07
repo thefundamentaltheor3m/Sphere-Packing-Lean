@@ -113,8 +113,8 @@ lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (-↑t
 lemma im_parametrisation_upper : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (-↑t + I)).im < 1 := by
   intro t ht
   rw [im_parametrisation_eq t ht, one_div, ← inv_one, inv_lt_inv₀]
-  obtain ⟨ht₀, ht₁⟩ := ht
-  · simp_all only [inv_one, lt_add_iff_pos_left, pow_pos]
+  · obtain ⟨ht₀, ht₁⟩ := ht
+    simp_all [inv_one, lt_add_iff_pos_left]
   · positivity
   · exact one_pos
 
@@ -207,7 +207,6 @@ open SchwartzMap
 section Zeroth_Derivative
 
 theorem decay'₀ : ∀ (k : ℕ), ∃ C, ∀ (x : ℝ), ‖x‖ ^ k * ‖I₄' x‖ ≤ C := by
-
   sorry
 
 end Zeroth_Derivative
@@ -215,7 +214,6 @@ end Zeroth_Derivative
 section Higher_iteratedFDerivs
 
 theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₄' x‖ ≤ C := by
-
   sorry
 
 end Higher_iteratedFDerivs
@@ -226,3 +224,4 @@ end Higher_iteratedFDerivs
 -- decay' := by extract_goal; sorry
 
 end Schwartz_Decay
+end MagicFunction.a.IntegralEstimates.I₄

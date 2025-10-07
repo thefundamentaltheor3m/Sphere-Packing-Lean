@@ -16,7 +16,7 @@ inverse powers of the norm function on subsets of Euclidean space.
 
 variable {d : ℕ}
 
-open BigOperators Complex Real
+open BigOperators Complex Real Module
 
 section Definitions
 
@@ -135,8 +135,6 @@ theorem Summable_of_Inv_Pow_Summable'
       refine LE.le.trans (hC x.2) ?_
       rw [le_add_iff_nonneg_right]
       exact zero_le_one
-
-set_option pp.funBinderTypes true
 
 -- should be in mathlib!!
 lemma Summable.subset {α β : Type*}

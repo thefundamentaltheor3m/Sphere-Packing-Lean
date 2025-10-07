@@ -15,7 +15,7 @@ lemma congr_aux_1' (x : ℝ) :
   have : (x:ℂ) ≠ 0 := mod_cast hx
   have : 1 + I ≠ 0 := sorry -- ought to be by done by a norm_num extension
   field_simp
-  linear_combination - x * I_sq
+  linear_combination - I_sq
 
 -- #check Mathlib.Meta.NormNum.Result
 -- open Lean Mathlib.Meta.NormNum Qq in
@@ -34,7 +34,7 @@ set_option push_neg.use_distrib true in
 lemma _root_.Complex.ne_iff (a b : ℂ) : a ≠ b ↔ (a.re ≠ b.re ∨ a.im ≠ b.im) := by
   rw [ne_eq, Complex.ext_iff]; push_neg; rfl
 
-example (z:ℂ) :z = ⟨z.re,z.im⟩ := by rw [Complex.eta]
+example (z : ℂ) :z = ⟨z.re,z.im⟩ := by rw [Complex.eta]
 example : 1 + I ≠ 0 := by rw [Complex.ne_iff]; norm_num
 
 example : 1 = 3 * I ^ 2 + 4 := by

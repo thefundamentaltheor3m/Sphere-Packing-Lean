@@ -20,3 +20,5 @@ theorem cons_val_six (x : α) (u : Fin m.succ.succ.succ.succ.succ.succ → α) :
 theorem cons_val_seven (x : α) (u : Fin m.succ.succ.succ.succ.succ.succ.succ → α) :
     vecCons x u 7 = vecHead (vecTail (vecTail (vecTail (vecTail (vecTail (vecTail u)))))) :=
   rfl
+
+end Matrix

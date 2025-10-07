@@ -107,8 +107,8 @@ lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (↑t 
 lemma im_parametrisation_upper : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (↑t + I)).im < 1 := by
   intro t ht
   rw [im_parametrisation_eq t ht, one_div, ← inv_one, inv_lt_inv₀]
-  obtain ⟨ht₀, ht₁⟩ := ht
-  · simp_all only [inv_one, lt_add_iff_pos_left, pow_pos]
+  · obtain ⟨ht₀, ht₁⟩ := ht
+    simp_all only [inv_one, lt_add_iff_pos_left, pow_pos]
   · positivity
   · exact one_pos
 
@@ -220,3 +220,11 @@ end Higher_iteratedFDerivs
 -- decay' := by extract_goal; sorry
 
 end Schwartz_Decay
+
+end I₂
+
+end IntegralEstimates
+
+end a
+
+end MagicFunction
