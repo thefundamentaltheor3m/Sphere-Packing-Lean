@@ -50,48 +50,22 @@ section hpoly_aux
 
 include hpoly in
 theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)) := by
-  simp [isBigO_iff] at hpoly ⊢
-  obtain ⟨C, m, hCa⟩ := hpoly
-  have hC : 0 ≤ C := by
-    have hmm : 0 < max m 1 := by grind
-    specialize hCa (max m 1) (Int.le_max_left m 1)
-    have h1 : 0 ≤ ‖c (max m 1)‖ := norm_nonneg _
-    have h2 : 0 < |(((max m 1):ℤ):ℝ)| ^ k := by positivity
-    exact (mul_nonneg_iff_of_pos_right h2).mp (h1.trans hCa)
-  let M := max 1 (m - n₀)
-  let a : ℕ := M.toNat
-  let c₁ : ℝ := C * (1 + |(n₀:ℝ)|) ^ k
-  use c₁, a
-  intro b hb
-  have hb_ge_1 : (1 : ℤ) ≤ ↑b := by
-    let M := max 1 (m - n₀)
-    have hM_ge_1 : 1 ≤ M := le_max_left 1 (m - n₀)
-    have hM_nonneg : 0 ≤ M := le_trans zero_le_one hM_ge_1
-    have h_a_val : (a : ℤ) = M := by rw [Int.toNat_of_nonneg hM_nonneg]
-    calc
-      (1 : ℤ) ≤ M         := hM_ge_1
-      _       = (a : ℤ)   := h_a_val.symm
-      _       ≤ (b : ℤ)   := Int.ofNat_le.2 hb
-
-  have hm_le_b_plus_n₀ : m ≤ ↑b + n₀ := by grind
-
-  specialize hCa (↑b + n₀) hm_le_b_plus_n₀
-  calc
-    ‖c (↑b + n₀)‖
-    _ ≤ C * |((↑b + n₀) : ℝ)| ^ k := by norm_cast at hCa ⊢
-    _ ≤ C * (|(b : ℝ)| + |(n₀ : ℝ)|) ^ k := by
-      gcongr
-      exact abs_add (b : ℝ) (n₀ : ℝ)
-    _ = C * ((b : ℝ) + |(n₀ : ℝ)|) ^ k := by simp
-    _ ≤ C * ((b : ℝ) * (1 + |(n₀ : ℝ)|)) ^ k := by
-      gcongr
-      rw [mul_add, mul_one]
-      apply add_le_add_left
-      have b_ge_1_real : (1 : ℝ) ≤ (b : ℝ) := by
-        suffices 1 ≤ b by norm_cast
-        grind
-      exact le_mul_of_one_le_left (abs_nonneg _) b_ge_1_real
-    _ = c₁ * (b : ℝ) ^ k := by rw [mul_pow]; ring
+  have h_shift : (fun n : ℕ => c (n + n₀)) =O[atTop] (fun n : ℕ => (n + n₀ : ℂ) ^ k) := by
+    simp only [isBigO_iff, eventually_atTop] at hpoly ⊢
+    obtain ⟨C, w, h⟩ := hpoly
+    use C;
+    simp only [norm_pow, norm_eq_abs] at h ⊢
+    refine ⟨(w - n₀).toNat, fun n hn ↦ ?_⟩
+    exact_mod_cast h (n + n₀) (by grind)
+  refine h_shift.trans ?_
+  simp only [isBigO_iff, eventually_atTop]
+  use 2 ^ k;
+  simp only [norm_pow, RCLike.norm_natCast]
+  refine ⟨n₀.natAbs, fun n hn => ?_⟩
+  rw [← mul_pow]
+  apply pow_le_pow_left₀ (norm_nonneg _)
+  norm_cast
+  cases abs_cases (n + n₀ : ℤ) <;> grind
 
 end hpoly_aux
 
