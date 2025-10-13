@@ -52,11 +52,11 @@ include hpoly in
 theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)) := by
   have h_shift : (fun n : ℕ => c (n + n₀)) =O[atTop] (fun n : ℕ => (n + n₀ : ℂ) ^ k) := by
     simp only [isBigO_iff, eventually_atTop] at hpoly ⊢
-    obtain ⟨C, w, h⟩ := hpoly
+    obtain ⟨C, m, hCa⟩ := hpoly
     use C;
-    simp only [norm_pow, norm_eq_abs] at h ⊢
-    refine ⟨(w - n₀).toNat, fun n hn ↦ ?_⟩
-    exact_mod_cast h (n + n₀) (by grind)
+    simp only [norm_pow, norm_eq_abs] at hCa ⊢
+    refine ⟨(m - n₀).toNat, fun n hn ↦ ?_⟩
+    exact_mod_cast hCa (n + n₀) (by grind)
   refine h_shift.trans ?_
   simp only [isBigO_iff, eventually_atTop]
   use 2 ^ k;
