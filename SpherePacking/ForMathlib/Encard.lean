@@ -202,8 +202,8 @@ protected theorem tsum_subtype_biUnion_le (f : α → ℕ∞) (s : Finset ι) (t
 
 protected theorem tsum_subtype_iUnion_le [Fintype ι] (f : α → ℕ∞) (t : ι → Set α) :
     ∑' x : ⋃ i, t i, f x ≤ ∑ i, ∑' x : t i, f x := by
-  rw [← tsum_fintype]
-  exact ENat.tsum_subtype_iUnion_le_tsum f t
+  have : ∑ i, ∑' x : t i, f x = ∑' i, ∑' x : t i, f x := by rw [tsum_fintype]
+  exact this ▸ ENat.tsum_subtype_iUnion_le_tsum f t
 
 theorem tsum_subtype_iUnion_eq_tsum (f : α → ℕ∞) (t : ι → Set α) (ht : Pairwise (Disjoint on t)) :
     ∑' x : ⋃ i, t i, f x = ∑' i, ∑' x : t i, f x :=

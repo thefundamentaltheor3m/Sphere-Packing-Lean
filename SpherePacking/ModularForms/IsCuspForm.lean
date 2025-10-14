@@ -10,7 +10,6 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 noncomputable section Definitions
 
 
-
 variable {α ι : Type*}
 
 open SlashInvariantFormClass ModularFormClass
@@ -22,7 +21,7 @@ def ModForm_mk (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) : Modula
   toFun := f
   slash_action_eq' := f.slash_action_eq'
   holo' := f.holo'
-  bdd_at_infty' A := (f.zero_at_infty' A).boundedAtFilter
+  bdd_at_cusps' := fun hc ↦ bdd_at_cusps f hc
 
 lemma ModForm_mk_inj (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) (hf : f ≠ 0) :
   ModForm_mk _ _ f ≠ 0 := by
@@ -41,7 +40,7 @@ def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspForm Γ k
     rfl
   map_smul' := by
     intro m f
-    simp only [ModForm_mk, CuspForm.coe_smul, RingHom.id_apply]
+    simp only [ModForm_mk, RingHom.id_apply]
     rfl
 
 def CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : Submodule ℂ (ModularForm Γ k) :=
@@ -71,13 +70,9 @@ instance (priority := 100) CuspFormSubmodule.funLike : FunLike (CuspFormSubmodul
 instance (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspFormClass (CuspFormSubmodule Γ k) Γ k where
   slash_action_eq f := f.1.slash_action_eq'
   holo f := f.1.holo'
-  zero_at_infty f := by
-    have hf := f.2
-    have := mem_CuspFormSubmodule Γ k f hf
-    obtain ⟨g, hg⟩ := this
-    convert g.zero_at_infty'
-    ext y
-    aesop
+  zero_at_cusps := by
+    rintro ⟨_, ⟨g, rfl⟩⟩ c hc
+    simpa [CuspForm_to_ModularForm, ModForm_mk] using g.zero_at_cusps' hc
 
 def IsCuspForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k) : Prop :=
   f ∈ CuspFormSubmodule Γ k
