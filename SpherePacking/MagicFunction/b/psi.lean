@@ -7,6 +7,7 @@ Authors: Sidharth Hariharan, Raphael Appenzeller
 -- import Mathlib
 
 import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.MagicFunction.IntegralParametrisations
 
 /-! # The ψ Functions
 
@@ -89,7 +90,7 @@ private lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) 
 private lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
     (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
   rw [slashS, mul_assoc]
-  simp only [sl_moeb, Int.reduceNeg, zpow_neg]
+  simp only [sl_moeb, Int.reduceNeg, _root_.zpow_neg]
   have inv_mul_cancel (a : ℂ) (nonzero : a ≠ 0) : a⁻¹ * a = (1 : ℂ) := by
     rw [mul_comm]
     apply Complex.mul_inv_cancel
@@ -140,7 +141,7 @@ private lemma slashST' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S * T
 private lemma slashST'' (z : ℍ) (F : ℍ → ℂ) : F ((S * T) • z) =
     (F ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
   rw [slashST, mul_assoc]
-  simp only [sl_moeb, map_mul, Int.reduceNeg, zpow_neg]
+  simp only [sl_moeb, map_mul, Int.reduceNeg, _root_.zpow_neg]
   have inv_mul_cancel (a : ℂ) (nonzero : a ≠ 0) : a⁻¹ * a = (1 : ℂ) := by
     rw [mul_comm]
     exact Complex.mul_inv_cancel nonzero
@@ -384,9 +385,9 @@ lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply, Pi.neg_apply]
   rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := by exact rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
+  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
+  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
+  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
   rw [hh2 , hh3, hh4, H₂_S_action, H₃_S_action, H₄_S_action]
   simp only [Pi.neg_apply, neg_mul, even_two, Even.neg_pow]
   have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
@@ -433,6 +434,55 @@ lemma ψS_slash_TSTS : ψS ∣[-2] (T * S * T * S) = ψT := by
 
 end rels
 
+open MagicFunction.Parametrisations Set
+
+example {t : ℝ} (ht : t ∈ Ioc 0 1) : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
+
+section eq_of_mem
+
+lemma ψI'_eq_ψI_of_mem {z : ℂ} (hz : 0 < z.im) : ψI' z = ψI ⟨z, hz⟩ := by simp [ψI', hz]
+
+lemma ψS'_eq_ψS_of_mem {z : ℂ} (hz : 0 < z.im) : ψS' z = ψS ⟨z, hz⟩ := by simp [ψS', hz]
+
+lemma ψT'_eq_ψT_of_mem {z : ℂ} (hz : 0 < z.im) : ψT' z = ψT ⟨z, hz⟩ := by simp [ψT', hz]
+
+lemma ψT'_comp_z₁'_eq_ψT_comp_z₁'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+    ψT' (z₁' t) = ψT ⟨z₁' t, z₁'_in_upper_half_plane ht⟩ :=
+  ψT'_eq_ψT_of_mem (z₁'_in_upper_half_plane ht)
+
+lemma ψS'_comp_z₁'_eq_ψS_comp_z₁'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+    ψS' (z₁' t) = ψS ⟨z₁' t, z₁'_in_upper_half_plane ht⟩ :=
+  ψS'_eq_ψS_of_mem (z₁'_in_upper_half_plane ht)
+
+lemma ψI'_comp_z₁'_eq_ψI_comp_z₁'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+    ψI' (z₁' t) = ψI ⟨z₁' t, z₁'_in_upper_half_plane ht⟩ :=
+  ψI'_eq_ψI_of_mem (z₁'_in_upper_half_plane ht)
+
+end eq_of_mem
+
+section slash_explicit
+
+lemma ψS_slash_ST_apply (z : ℍ) :
+    (ψS ∣[-2] (S * T)) z = ψS ⟨-1 / (z + 1), neg_inv_one_add_mem z⟩ * (z + 1) ^ 2 := by
+  rw [SL_slash_apply ψS (S * T) z, ← neg_inv_one_add_eq_ST z]
+  congr 1
+  rw [denom, ModularGroup.ST_eq']
+  simp only [Int.reduceNeg, Fin.isValue, SpecialLinearGroup.coe_GL_coe_matrix,
+    SpecialLinearGroup.map_apply_coe, RingHom.mapMatrix_apply, Int.coe_castRingHom, map_apply,
+    of_apply, cons_val', cons_val_zero, cons_val_fin_one, cons_val_one, Int.cast_one, ofReal_one,
+    one_mul, neg_neg]
+  norm_cast
+
+lemma ψS_slash_ST_apply' (z : ℍ) : (ψS ∣[-2] (S * T)) z = ψS' (-1 / (z + 1)) * (z + 1) ^ 2 := by
+  rw [ψS_slash_ST_apply, ← ψS'_eq_ψS_of_mem]
+
+end slash_explicit
+
 section rels_explicit
+
+lemma ψS_slash_ST_explicit {t : ℝ} (ht : t ∈ Ioc 0 1) :
+    ψT' (z₁' t) = ψS' (-1 / (z₁' t + 1)) * (z₁' t + 1) ^ 2 := by
+  rw [ψT'_comp_z₁'_eq_ψT_comp_z₁'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
+  congr
 
 end rels_explicit

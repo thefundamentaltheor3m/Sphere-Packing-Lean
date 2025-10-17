@@ -69,7 +69,7 @@ end Vector_Input
 
 open intervalIntegral
 
-section Eq
+section Eq₀
 
 lemma b_eq (x : V) : b x = J₁ x + J₂ x + J₃ x + J₄ x + J₅ x + J₆ x := rfl
 
@@ -78,12 +78,20 @@ lemma b_eq (x : V) : b x = J₁ x + J₂ x + J₃ x + J₄ x + J₅ x + J₆ x :
 Express the Jⱼ in a similar manner to the Iⱼ, with ψS being the analogue of φ₀.
 -/
 
+private lemma aux_I :  I ≠ 0 := by norm_num
+
 lemma J₁'_eq₀ (r : ℝ) : J₁' r = ∫ t in (0 : ℝ)..1, I -- Added factor due to variable change!!
     * ψS' (-1 / ((z₁' t) + (1 : ℂ)))
     * ((z₁' t) + (1 : ℂ)) ^ 2
     * cexp (π * I * r * (z₁' t)) := by
-  sorry
+  rw [J₁']
+  apply integral_congr_ae
+  apply MeasureTheory.ae_of_all
+  intro t ht
+  rw [uIoc_of_le zero_le_one] at ht
+  rw [ψS_slash_ST_explicit ht]
+  ac_rfl
 
-end Eq
+end Eq₀
 
 end MagicFunction.b.RadialFunctions
