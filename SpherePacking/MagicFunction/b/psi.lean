@@ -480,9 +480,14 @@ end slash_explicit
 
 section rels_explicit
 
-lemma ψS_slash_ST_explicit {t : ℝ} (ht : t ∈ Ioc 0 1) :
+lemma ψS_slash_ST_explicit₁ {t : ℝ} (ht : t ∈ Ioc 0 1) :
     ψT' (z₁' t) = ψS' (-1 / (z₁' t + 1)) * (z₁' t + 1) ^ 2 := by
   rw [ψT'_comp_z₁'_eq_ψT_comp_z₁'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
   congr
+
+-- lemma ψS_slash_ST_explicit₂ {t : ℝ} (ht : t ∈ Ioc 0 1) :
+--     ψT' (z₂' t) = ψS' (-1 / (z₂' t + 1)) * (z₂' t + 1) ^ 2 := by
+--   rw [ψT'_comp_z₂'_eq_ψT_comp_z₂'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
+--   congr
 
 end rels_explicit

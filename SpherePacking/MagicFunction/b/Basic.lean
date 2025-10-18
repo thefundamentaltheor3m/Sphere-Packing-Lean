@@ -92,6 +92,18 @@ lemma J₁'_eq₀ (r : ℝ) : J₁' r = ∫ t in (0 : ℝ)..1, I -- Added factor
   rw [ψS_slash_ST_explicit ht]
   ac_rfl
 
+lemma J₂'_eq₀ (r : ℝ) : J₂' r = ∫ t in (0 : ℝ)..1,
+    ψS' (-1 / ((z₂' t) + (1 : ℂ)))
+    * ((z₂' t) + (1 : ℂ)) ^ 2
+    * cexp (π * I * r * (z₂' t)) := by
+  rw [J₂']
+  apply integral_congr_ae
+  apply MeasureTheory.ae_of_all
+  intro t ht
+  rw [uIoc_of_le zero_le_one] at ht
+  rw [ψS_slash_ST_explicit ht]
+  sorry
+
 end Eq₀
 
 end MagicFunction.b.RadialFunctions
