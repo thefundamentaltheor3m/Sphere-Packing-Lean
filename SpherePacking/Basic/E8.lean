@@ -4,9 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bhavik Mehta, Gareth Ma
 -/
 import SpherePacking.Basic.PeriodicPacking
--- import SpherePacking.ForMathlib.Finsupp
-import Mathlib
-
 
 /-!
 # Basic properties of the E₈ lattice
@@ -214,7 +211,7 @@ lemma Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)]
   · rintro ⟨k, hk⟩
     refine ⟨2 * k + 1, by simp, ?_⟩
     rw [← hk]
-    simp [mul_inv_cancel₀, NeZero.ne]
+    simp [NeZero.ne]
 
 theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     E8 R = (evenLattice R 8 ⊔ Submodule.span ℤ {fun _ ↦ (2⁻¹ : R)}) := by
@@ -665,15 +662,6 @@ lemma E8Basis_volume : volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
   simp
 
 end hack
-
-lemma test : MeasureTheory.volume (Set.Icc (0 : Fin 2 → ℝ) 1) = 1 := by
-  rw [Real.volume_Icc_pi]
-  simp
-
-lemma test' {ι : Type*} [Fintype ι] (s : Set (ι → ℝ)) :
-    MeasureTheory.volume (WithLp.equiv 2 _ ⁻¹' s) = MeasureTheory.volume s := by
-  rw [← (EuclideanSpace.volume_preserving_measurableEquiv ι).measure_preimage_equiv]
-  rfl
 
 lemma test'' {ι : Type*} [Fintype ι] (s : Set (EuclideanSpace ℝ ι)) :
     MeasureTheory.volume ((WithLp.equiv 2 _).symm ⁻¹' s) = MeasureTheory.volume s := by
