@@ -10,6 +10,7 @@ import Mathlib.Topology.Algebra.Module.ModuleTopology
 import Mathlib.Topology.EMetricSpace.Paracompact
 import Mathlib.Topology.Separation.CompletelyRegular
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Cotangent
+import Mathlib.NumberTheory.TsumDivsorsAntidiagonal
 import SpherePacking.ModularForms.exp_lems
 import SpherePacking.ModularForms.upperhalfplane
 import SpherePacking.ModularForms.BigO
@@ -1595,7 +1596,7 @@ theorem tsum_sigma_eqn2 (k : ℕ) (z : ℍ) :
       ∑' e : ℕ+, sigma k e * Complex.exp (2 * ↑π * Complex.I * z * e) := by
   rw [← (piFinTwoEquiv fun _ => ℕ+).symm.tsum_eq]
   rw [← sigmaAntidiagonalEquivProd.tsum_eq]
-  simp [sigmaAntidiagonalEquivProd, mapdiv]
+  simp [sigmaAntidiagonalEquivProd, divisorsAntidiagonalFactors]
   simp_rw [sigma_eq_sum_div']
   simp
   rw [(summable_auxil_1 k z).tsum_sigma]
@@ -1682,7 +1683,7 @@ theorem a1 (k : ℕ) (e : ℕ+) (z : ℍ) :
 theorem a4 (k : ℕ) (z : ℍ) :
     Summable (uncurry fun b c : ℕ+ => ↑b ^ (k - 1) * exp (2 * ↑π * Complex.I * ↑c * ↑z * ↑b)) := by
   rw [sigmaAntidiagonalEquivProd.summable_iff.symm]
-  simp [sigmaAntidiagonalEquivProd, mapdiv]
+  simp [sigmaAntidiagonalEquivProd, divisorsAntidiagonalFactors]
   apply (summable_auxil_1 (k - 1) z).congr
   intro b
   simp

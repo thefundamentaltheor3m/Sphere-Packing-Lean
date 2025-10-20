@@ -223,13 +223,13 @@ lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : 
       simp [sigmaAntidiagonalEquivProd]
       apply (summable_auxil_1 (k - 1) z).congr
       intro b
-      simp [mapdiv]
+      simp [divisorsAntidiagonalFactors]
     simp
     intro b
     have A3 := a1 k b z
     apply A3.subtype
   rw [sigmaAntidiagonalEquivProd.summable_iff.symm]
-  simp [sigmaAntidiagonalEquivProd, mapdiv]
+  simp [sigmaAntidiagonalEquivProd, divisorsAntidiagonalFactors]
   apply (summable_auxil_1 (k - 1) z).congr
   intro b
   simp
