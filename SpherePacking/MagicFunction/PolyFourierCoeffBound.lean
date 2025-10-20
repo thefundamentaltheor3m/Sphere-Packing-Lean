@@ -46,17 +46,26 @@ noncomputable def DivDiscBound : ℝ :=
   (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24)
 
--- #check DivDiscBound
-
 section hpoly_aux
 
 include hpoly in
 theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)) := by
-  simp [isBigO_iff] at hpoly ⊢
-  obtain ⟨C, m, hCa⟩ := hpoly
-  use C
-  use (m - n₀).toNat
-  sorry
+  have h_shift : (fun n : ℕ => c (n + n₀)) =O[atTop] (fun n : ℕ => (n + n₀ : ℂ) ^ k) := by
+    simp only [isBigO_iff, eventually_atTop] at hpoly ⊢
+    obtain ⟨C, m, hCa⟩ := hpoly
+    use C
+    simp only [norm_pow, norm_eq_abs] at hCa ⊢
+    refine ⟨(m - n₀).toNat, fun n hn ↦ ?_⟩
+    exact_mod_cast hCa (n + n₀) (by grind)
+  refine h_shift.trans ?_
+  simp only [isBigO_iff, eventually_atTop]
+  use 2 ^ k
+  simp only [norm_pow, RCLike.norm_natCast]
+  refine ⟨n₀.natAbs, fun n hn => ?_⟩
+  rw [← mul_pow]
+  apply pow_le_pow_left₀ (norm_nonneg _)
+  norm_cast
+  cases abs_cases (n + n₀ : ℤ) <;> grind
 
 end hpoly_aux
 
