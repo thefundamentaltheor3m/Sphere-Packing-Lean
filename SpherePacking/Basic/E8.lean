@@ -152,15 +152,15 @@ noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
       mul_zero, Finset.sum_const_zero, AddCommGroup.modEq_refl, and_true]
     refine Or.inl ⟨0, by simp⟩
   smul_mem' := by
-    simp only [nsmul_eq_mul, Nat.cast_ofNat, Equiv.symm_symm, Set.mem_setOf_eq, PiLp.ofLp_apply,
-      zsmul_eq_mul, Pi.mul_apply, Pi.intCast_apply, and_imp]
+    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, zsmul_eq_mul, Pi.mul_apply,
+      Pi.intCast_apply, and_imp]
     intro c a ha has
     constructor
     · obtain ha | ha := ha
       · left
         intro i
         obtain ⟨a, ha⟩ := ha i
-        simp only [← ha, ← Int.cast_mul, exists_eq]
+        simp only [← ha, ← Int.cast_mul]
         exact ⟨_, rfl⟩
       · obtain ⟨c, rfl⟩ | hc := c.even_or_odd
         · left
@@ -231,7 +231,7 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
   case h1 =>
     intro x
     rw [mem_E8]
-    simp only [Set.mem_setOf_eq, and_imp]
+    simp only [and_imp]
     rintro (hx | hx)
     · intro hx'
       apply mem_sup_left
@@ -286,8 +286,7 @@ lemma E8Matrix_row_mem_E8 [Field R] [CharZero R] :
   revert i
   have h2 : ∃ n : ℤ, (n : R) = 2 := ⟨2, by simp⟩
   have hneg1 : ∃ n : ℤ, (n : R) = -1 := ⟨-1, by simp⟩
-  have h1 : ∃ n : ℤ, (n : R) = 1 := ⟨1, by simp⟩
-  simp [Fin.forall_fin_succ, E8Matrix, Submodule.mem_evenLattice, h1, h2, hneg1, Fin.sum_univ_eight]
+  simp [Fin.forall_fin_succ, E8Matrix, Submodule.mem_evenLattice, h2, hneg1, Fin.sum_univ_eight]
 
 lemma E8Matrix_eq_cast (R : Type*) [Field R] [CharZero R] :
     E8Matrix R = (E8Matrix ℚ).map (Rat.castHom R) := by
@@ -545,7 +544,6 @@ instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   simp only [Submodule.mk_eq_zero]
   simp only [Submodule.mem_map, WithLp.linearEquiv_symm_apply] at hv
   obtain ⟨v, hv, rfl⟩ := hv
-  -- simp only [WithLp.equiv_symm_eq_zero_iff]
   apply (E8_norm_lower_bound v hv).resolve_right ?_
   have : 1 < √2 := by rw [Real.lt_sqrt zero_le_one, sq, mul_one]; exact one_lt_two
   linarith
