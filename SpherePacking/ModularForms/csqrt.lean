@@ -1,3 +1,4 @@
+import Mathlib.Algebra.Group.NatPowAssoc
 import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 import Mathlib.Analysis.SpecialFunctions.Complex.LogDeriv
@@ -8,7 +9,7 @@ import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 open ArithmeticFunction
 
@@ -26,18 +27,13 @@ lemma csqrt_deriv (z : ℍ) : deriv (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log 
     have hz := z.2
     exact Ne.symm (ne_of_lt hz)
   rw [this, deriv_comp]
-  simp
-  rw [Complex.exp_neg]
-  field_simp
-  rw [show cexp (Complex.log ↑z / 2) * deriv Complex.log ↑z * (2 * cexp (Complex.log ↑z / 2)) =
-    cexp (Complex.log ↑z / 2) * (cexp (Complex.log ↑z / 2)) * 2 * deriv Complex.log ↑z by ring]
-  rw [← Complex.exp_add]
-  ring_nf
-  rw [Complex.exp_log]
-  have hl := (Complex.hasDerivAt_log (z := z) hzz).deriv
-  rw [hl]
-  field_simp [ne_zero z]
-  · apply ne_zero z
+  · simp
+    rw [Complex.exp_neg]
+    field_simp
+    have hsq : cexp (Complex.log (z : ℂ) / 2) ^ 2 = cexp (Complex.log (z : ℂ)) := by
+      rw [← Complex.exp_nat_mul]; grind
+    simpa [hsq, (Complex.hasDerivAt_log hzz).deriv, Complex.exp_log <| ne_zero z]
+      using Complex.mul_inv_cancel <| ne_zero z
   · fun_prop
   · apply DifferentiableAt.const_mul
     refine Complex.differentiableAt_log hzz
@@ -62,13 +58,10 @@ lemma csqrt_I : (csqrt (Complex.I)) ^ 24 = 1 := by
     rw [show ((24 : ℕ) : ℂ) * (1 / 2) = (12 : ℕ) by
       field_simp; ring]
   rw [Complex.exp_nat_mul]
-  rw [Complex.exp_log]
+  rw [Complex.exp_log I_ne_zero]
   have hi4 := Complex.I_pow_four
-  have : Complex.I ^ 12 = (Complex.I ^ 4) ^ 3 :=by
-    rw [← @npow_mul]
-  rw [this, hi4]
-  simp
-  exact I_ne_zero
+  have : Complex.I ^ 12 = (.I ^ 4) ^ 3 := by rw [← @npow_mul]
+  simp [this, hi4]
 
 lemma csqrt_pow_24 (z : ℂ) (hz : z ≠ 0) : (csqrt z) ^ 24 = z ^ 12 := by
   unfold csqrt

@@ -26,7 +26,7 @@ density within a fundamental domain w.r.t. any basis.
 -/
 
 open scoped ENNReal
-open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology
+open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module
 
 section aux_lemmas
 
@@ -220,7 +220,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
       · rw [sub_eq_neg_add]
         apply S.lattice_action ?_ hu_centers
         apply Submodule.neg_mem
-        exact (mem_basis_Z_span ..).mp $ Submodule.coe_mem _
+        exact (mem_basis_Z_span ..).mp <| Submodule.coe_mem _
       · rw [Set.mem_vadd_set]
         use fract (b.ofZLatticeBasis ℝ _) (u - v), fract_mem_fundamentalDomain _ _, ?_
         rw [fract, vadd_eq_add]
@@ -231,7 +231,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
       · rw [fract, sub_eq_neg_add]
         apply S.lattice_action ?_ hu_centers
         apply Submodule.neg_mem
-        exact (mem_basis_Z_span ..).mp $ Submodule.coe_mem _
+        exact (mem_basis_Z_span ..).mp <| Submodule.coe_mem _
       · exact fract_mem_fundamentalDomain _ _
     left_inv := fun ⟨u, ⟨hu_centers, hu_fd⟩⟩ ↦ by
       simp_rw [Subtype.mk.injEq]
@@ -425,9 +425,9 @@ theorem PeriodicSpherePacking.aux_ge
   rw [Set.biUnion_eq_iUnion, Set.inter_iUnion] at this
   have := Set.encard_mono this
   rw [Set.encard_iUnion_of_pairwiseDisjoint] at this
-  simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
-  · convert this.ge
-    rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
+  · simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
+    · convert this.ge
+      rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
   · intro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     simp only [Set.disjoint_iff, Set.subset_empty_iff]
     ext u
@@ -436,16 +436,16 @@ theorem PeriodicSpherePacking.aux_ge
     obtain ⟨w, hw, hw_unique⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) u
     rw [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub] at hux huy
     have hx := hw_unique ⟨-x, ?_⟩ ?_
-    have hy := hw_unique ⟨-y, ?_⟩ ?_
-    · apply hxy
-      rw [Subtype.ext_iff, ← neg_inj]
-      exact Subtype.ext_iff.mp (hx.trans hy.symm)
-    · apply neg_mem
-      apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
-      · rw [S.basis_Z_span]
-      · exact hy.left
-    · simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
-      exact huy
+    · have hy := hw_unique ⟨-y, ?_⟩ ?_
+      · apply hxy
+        rw [Subtype.ext_iff, ← neg_inj]
+        exact Subtype.ext_iff.mp (hx.trans hy.symm)
+      · apply neg_mem
+        apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
+        · rw [S.basis_Z_span]
+        · exact hy.left
+      · simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
+        exact huy
     · apply neg_mem
       apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
       · rw [S.basis_Z_span]
@@ -488,9 +488,9 @@ theorem PeriodicSpherePacking.aux_le
   rw [Set.biUnion_eq_iUnion, Set.inter_iUnion] at this
   have := Set.encard_mono this
   rw [Set.encard_iUnion_of_pairwiseDisjoint] at this
-  simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
-  · convert this
-    rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
+  · simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
+    · convert this
+      rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
   · intro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     simp only [Set.disjoint_iff, Set.subset_empty_iff]
     ext u
@@ -498,25 +498,28 @@ theorem PeriodicSpherePacking.aux_le
     intro ⟨_, hux⟩ ⟨_, huy⟩
     obtain ⟨w, hw, hw_unique⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) u
     rw [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub] at hux huy
-    have hx := hw_unique ⟨-x, ?hx'⟩ ?_
-    have hy := hw_unique ⟨-y, ?hy'⟩ ?_
-    case hx' =>
+    have hx := hw_unique ⟨-x, ?hx₁⟩ ?hx₂
+    case hx₁ =>
       apply neg_mem
       apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
       · rw [S.basis_Z_span]
       · exact hx.left
-    case hy' =>
+    case hx₂ =>
+      simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
+      exact hux
+    have hy := hw_unique ⟨-y, ?hy₁⟩ ?hy₂
+    case hy₁ =>
       apply neg_mem
       apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
       · rw [S.basis_Z_span]
       · exact hy.left
-    · apply hxy
-      rw [Subtype.ext_iff, ← neg_inj]
-      exact Subtype.ext_iff.mp (hx.trans hy.symm)
-    · simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
+    case hy₂ =>
+      simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
       exact huy
-    · simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
-      exact hux
+    apply hxy
+    rw [Subtype.ext_iff, ← neg_inj]
+    exact Subtype.ext_iff.mp (hx.trans hy.symm)
+
 
 end theorem_2_3
 
@@ -680,9 +683,9 @@ theorem PeriodicSpherePacking.aux2_ge'
   use ⟨v, hv⟩, hv'.left, ?_
   intro ⟨y, hy⟩ hy'
   have := hv'.right ⟨y, ?_⟩ hy'
-  rwa [Subtype.ext_iff] at this ⊢
-  rw [S.basis_Z_span]
-  exact hy
+  · rwa [Subtype.ext_iff] at this ⊢
+  · rw [S.basis_Z_span]
+    exact hy
 
 -- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice
 theorem PeriodicSpherePacking.aux2_le'
@@ -697,9 +700,9 @@ theorem PeriodicSpherePacking.aux2_le'
   use ⟨v, hv⟩, hv'.left, ?_
   intro ⟨y, hy⟩ hy'
   have := hv'.right ⟨y, ?_⟩ hy'
-  rwa [Subtype.ext_iff] at this ⊢
-  rw [S.basis_Z_span]
-  exact hy
+  · rwa [Subtype.ext_iff] at this ⊢
+  · rw [S.basis_Z_span]
+    exact hy
 
 section finiteDensity_limit
 
@@ -889,8 +892,12 @@ theorem volume_ball_ratio_tendsto_nhds_one'' {d : ℕ} {C C' : ℝ} (hd : 0 < d)
   apply (Filter.map_add_atTop_eq (max (-C) (-C')) _).mpr
   simp_rw [add_assoc]
   convert volume_ball_ratio_tendsto_nhds_one' hd ?_ ?_
-  · trans (-C) + C; linarith; gcongr; simp
-  · trans (-C') + C'; linarith; gcongr; simp
+  · trans (-C) + C
+    · linarith
+    · gcongr; simp
+  · trans (-C') + C'
+    · linarith
+    · gcongr; simp
 
 end VolumeBallRatio
 
@@ -971,10 +978,10 @@ theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpherePackin
   · intro a ha hmem
     exact hg₂ a ha hmem
 
-theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d) -- (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))} -- (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) -- (hD_measurable : MeasurableSet D)
-  : S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
+theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePacking d)
+    {D : Set (EuclideanSpace ℝ (Fin d))}
+    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
+    S.centers = ⋃ (g : S.lattice), (g +ᵥ S.centers ∩ D) := by
   ext x
   simp only [Set.mem_iUnion, Subtype.exists]
   constructor
@@ -1082,8 +1089,9 @@ noncomputable instance HDivENNReal : HDiv NNReal ENNReal ENNReal where
 noncomputable instance HMulENNReal : HMul NNReal ENNReal ENNReal where
   hMul := fun x y => x * y
 
-noncomputable def ZLattice.basis_index_equiv (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
-  (Module.Free.ChooseBasisIndex ℤ Λ) ≃ (Fin d) := by
+noncomputable def ZLattice.basis_index_equiv (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)))
+    [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
+    (Module.Free.ChooseBasisIndex ℤ Λ) ≃ (Fin d) := by
   refine Fintype.equivFinOfCardEq ?h
   rw [← Module.finrank_eq_card_chooseBasisIndex,
       ZLattice.rank ℝ Λ,
@@ -1129,7 +1137,8 @@ theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePackin
   rw [S.density_eq' hd]
   let b := ((ZLattice.module_free ℝ S.lattice).chooseBasis).reindex (S.basis_index_equiv)
   let D := fundamentalDomain (Basis.ofZLatticeBasis ℝ S.lattice b)
-  have hD_isBounded : IsBounded D := fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b)
+  have hD_isBounded : IsBounded D :=
+    fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ S.lattice b)
   have hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D :=
     S.fundamental_domain_unique_covers b
   rw [← S.card_centers_inter_isFundamentalDomain D hD_isBounded hD_unique_covers hd]
@@ -1179,3 +1188,6 @@ theorem periodic_constant_eq_constant (hd : 0 < d) :
   sorry
 
 end Periodic_Constant_Eq_Constant
+end finiteDensity_limit
+
+end theorem_2_2

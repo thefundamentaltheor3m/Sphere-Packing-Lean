@@ -43,6 +43,8 @@ See also earlier work which inspired this one, by Gareth Ma: https://github.com/
 
 variable {R : Type*}
 
+open Module
+
 lemma AddCommGroup.ModEq.zsmul' {α : Type*} [AddCommGroup α] {p a b : α} {n : ℤ}
     (h : a ≡ b [PMOD p]) :
     n • a ≡ n • b [PMOD p] := by
@@ -97,7 +99,7 @@ lemma Submodule.coe_evenLattice (R : Type*) (n : ℕ) [Ring R] [CharZero R] :
   constructor
   · simp_rw [← hw, ← Int.cast_sum] at hv'
     obtain ⟨a, ha⟩ := hv'
-    simp only [sub_zero, zsmul_eq_mul] at ha ⊢
+    simp only [zsmul_eq_mul] at ha ⊢
     use a
     norm_cast at ha
   · simpa [funext_iff]
@@ -146,21 +148,19 @@ noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
     · rw [Finset.sum_add_distrib]
       exact ((has.add_right _).trans (hbs.add_left _)).trans (by simp)
   zero_mem' := by
-    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_image_equiv, Equiv.symm_symm,
-      WithLp.equiv_zero, Set.mem_setOf_eq, Pi.zero_apply, forall_const, mul_zero,
-      Finset.sum_const_zero, AddCommGroup.modEq_refl, and_true]
+    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, Pi.zero_apply, forall_const,
+      mul_zero, Finset.sum_const_zero, AddCommGroup.modEq_refl, and_true]
     refine Or.inl ⟨0, by simp⟩
   smul_mem' := by
-    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_image_equiv, Equiv.symm_symm, Set.mem_setOf_eq,
-      WithLp.equiv_pi_apply, WithLp.equiv_smul, zsmul_eq_mul, Pi.mul_apply, Pi.intCast_apply,
-      and_imp]
+    simp only [nsmul_eq_mul, Nat.cast_ofNat, Equiv.symm_symm, Set.mem_setOf_eq, PiLp.ofLp_apply,
+      zsmul_eq_mul, Pi.mul_apply, Pi.intCast_apply, and_imp]
     intro c a ha has
     constructor
     · obtain ha | ha := ha
       · left
         intro i
         obtain ⟨a, ha⟩ := ha i
-        simp only [← ha, ← Int.cast_mul, Int.cast_inj, exists_eq]
+        simp only [← ha, ← Int.cast_mul, exists_eq]
         exact ⟨_, rfl⟩
       · obtain ⟨c, rfl⟩ | hc := c.even_or_odd
         · left
@@ -305,7 +305,7 @@ theorem E8Matrix_unimodular (R : Type*) [Field R] [NeZero (2 : R)] : (E8Matrix R
 private lemma E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row ∧
     Submodule.span R (Set.range (E8Matrix R).row) = ⊤ := by
-  rw [is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det, ← Matrix.det, Matrix.row,
+  rw [Module.Basis.is_basis_iff_det (Pi.basisFun _ _), Pi.basisFun_det, ← Matrix.det, Matrix.row,
     E8Matrix_unimodular]
   simp
 
@@ -511,16 +511,18 @@ theorem E8_integral_self {R : Type*} [Field R] [CharZero R] (v : Fin 8 → R)
   ring_nf
   simp [h4, parity_simps]
 
+end E8_basis
+
 open InnerProductSpace RCLike
 
 lemma E8_norm_eq_sqrt_even
     (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
-    ∃ n : ℤ, Even n ∧ n = ‖(WithLp.equiv 2 _).symm v‖ ^ 2 := by
-  rw [← real_inner_self_eq_norm_sq, EuclideanSpace.inner_piLp_equiv_symm, star_trivial]
+    ∃ n : ℤ, Even n ∧ n = ‖WithLp.toLp 2 v‖ ^ 2 := by
+  rw [← real_inner_self_eq_norm_sq, EuclideanSpace.inner_toLp_toLp, star_trivial]
   exact E8_integral_self _ hv
 
 lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
-    v = 0 ∨ √2 ≤ ‖(WithLp.equiv 2 _).symm v‖ := by
+    v = 0 ∨ √2 ≤ ‖WithLp.toLp 2 v‖ := by
   rw [or_iff_not_imp_left, ← ne_eq]
   intro hv'
   obtain ⟨n, hn, hn'⟩ := E8_norm_eq_sqrt_even v hv
@@ -543,7 +545,7 @@ instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   simp only [Submodule.mk_eq_zero]
   simp only [Submodule.mem_map, WithLp.linearEquiv_symm_apply] at hv
   obtain ⟨v, hv, rfl⟩ := hv
-  simp only [WithLp.equiv_symm_eq_zero_iff]
+  -- simp only [WithLp.equiv_symm_eq_zero_iff]
   apply (E8_norm_lower_bound v hv).resolve_right ?_
   have : 1 < √2 := by rw [Real.lt_sqrt zero_le_one, sq, mul_one]; exact one_lt_two
   linarith
@@ -602,7 +604,7 @@ lemma coe_E8_ℤBasis_apply (i : Fin 8) :
 
 lemma E8_ℤBasis_ofZLatticeBasis_apply (i : Fin 8) :
     E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice i =
-      (WithLp.equiv 2 (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i) := by
+      (WithLp.toLp 2) ((E8Matrix ℝ).row i) := by
   simp only [Basis.ofZLatticeBasis_apply]
   rw [coe_E8_ℤBasis_apply]
   simp
@@ -617,10 +619,13 @@ noncomputable def E8Packing : PeriodicSpherePacking 8 where
   centers := E8Lattice
   centers_dist := by
     simp only [Pairwise, E8Lattice, Submodule.map_coe, WithLp.linearEquiv_symm_apply, ne_eq,
-      Subtype.forall, Set.mem_image_equiv, Subtype.mk.injEq]
-    intro a ha b hb hab
-    simpa [sub_eq_zero, hab, Subtype.dist_eq] using
-      E8_norm_lower_bound _ (Submodule.sub_mem _ ha hb)
+      Subtype.forall, Subtype.mk.injEq, Set.mem_image, SetLike.mem_coe, forall_exists_index,
+      forall_and_index]
+    intro _ a ha rfl _ b hb rfl hab
+    rw [(WithLp.toLp_injective _).eq_iff] at hab
+    have : a - b ∈ Submodule.E8 ℝ := Submodule.sub_mem _ ha hb
+    simpa [Subtype.dist_eq, WithLp.ofLp_eq_zero, sub_eq_zero, hab] using
+      E8_norm_lower_bound _ this
   lattice_action x y := add_mem
 
 lemma E8Packing_separation : E8Packing.separation = √2 := rfl
@@ -629,7 +634,7 @@ lemma E8Packing_lattice : E8Packing.lattice = E8Lattice := rfl
 lemma E8Packing_numReps : E8Packing.numReps = 1 :=
   PeriodicSpherePacking.numReps_eq_one _ rfl
 
-lemma E8Basis_apply_norm : ∀ i : Fin 8, ‖(WithLp.equiv 2 _).symm (E8Basis ℝ i)‖ ≤ 2 := by
+lemma E8Basis_apply_norm : ∀ i : Fin 8, ‖WithLp.toLp 2 (E8Basis ℝ i)‖ ≤ 2 := by
   have : √2 ≤ 2 := by
     rw [Real.sqrt_le_iff]
     norm_num
@@ -704,10 +709,10 @@ theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := b
       _ = x ^ 4 := by rw [Real.sq_sqrt hx]
     rw [← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul, div_pow, this, this, ← mul_div_assoc,
       div_mul_eq_mul_div, mul_comm, mul_div_assoc, mul_div_assoc]
-    norm_num [Nat.factorial, mul_one_div]
-    convert div_one _
-    · rw [E8_Basis_volume]
-    · rw [← ENNReal.ofReal_pow, ENNReal.ofReal_div_of_pos, ENNReal.ofReal_ofNat] <;> positivity
+    · norm_num [Nat.factorial, mul_one_div]
+      convert div_one _
+      · rw [E8_Basis_volume]
+      · rw [← ENNReal.ofReal_pow, ENNReal.ofReal_div_of_pos, ENNReal.ofReal_ofNat] <;> positivity
     · positivity
     · positivity
   · intro x hx

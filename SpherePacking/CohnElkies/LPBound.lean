@@ -15,7 +15,7 @@ import SpherePacking.Basic.PeriodicPacking
 
 open scoped FourierTransform ENNReal SchwartzMap
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan
-  Bornology Summable
+  Bornology Summable Module
 
 variable {d : ℕ}
 
@@ -135,7 +135,8 @@ theorem f_zero_pos : 0 < (f 0).re := by
   norm_cast at haux₁
   rw [haux₁, lt_iff_not_ge]
   by_contra hantisymm₁
-  have hantisymm₂ : 0 ≤ ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := integral_nonneg hCohnElkies₂
+  have hantisymm₂ : 0 ≤ ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := integral_nonneg
+    hCohnElkies₂
   have hintzero : 0 = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := by
     --rw [ge_iff_le] at hantisymm₁
     exact antisymm' hantisymm₁ hantisymm₂
@@ -167,8 +168,6 @@ end Nonnegativity
 
 section Fundamental_Domain_Dependent
 
-include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
-
 variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.centers]
 variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
 variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
@@ -178,9 +177,9 @@ In this section, we will prove that the density of every periodic sphere packing
 bounded above by the Cohn-Elkies bound.
 -/
 
-include hP
+include hP hCohnElkies₁ in
 open Classical in
-private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
+private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
   ≤ ↑(P.numReps' hd hD_isBounded) * (f 0).re := calc
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
@@ -203,27 +202,23 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
             -- Then, we need to use some sort of `tsum_ite_eq`.
             -- Both of the above require some summability stuff.
             rw [← Summable.tsum_add]
-            .
-              apply tsum_congr
+            · apply tsum_congr
               intro x
               split_ifs with hx
-              .
-                let x_in: ↑(P.centers ∩ D) := ⟨x, by simp [hx]⟩
+              · let x_in: ↑(P.centers ∩ D) := ⟨x, by simp [hx]⟩
                 simp only [dite_eq_ite]
                 rw [← tsum_ite_eq (b := x_in) (a := (f 0).re)]
                 simp_rw [← Subtype.val_inj]
                 rw [← Summable.tsum_add]
-                . apply tsum_congr
+                · apply tsum_congr
                   intro y
                   dsimp [x_in]
                   simp_rw [eq_comm (a := y.val), ← sub_eq_zero (a := x.val)]
                   split_ifs with x_eq_y <;> simp [x_eq_y]
-                . apply Summable.of_finite
-                .
-                  simp_rw [Subtype.val_inj]
+                · apply Summable.of_finite
+                · simp_rw [Subtype.val_inj]
                   apply (hasSum_ite_eq _ _).summable
-              .
-                simp only [dite_eq_ite, add_zero]
+              · simp only [dite_eq_ite, add_zero]
                 apply tsum_congr
                 intro b
                 have x_neq_b: x.val ≠ b.val := by
@@ -235,29 +230,28 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
                 dsimp [Ne] at x_neq_b
                 rw [← sub_eq_zero] at x_neq_b
                 simp [x_neq_b]
-            .
-              rw [← summable_abs_iff]
-              apply Summable.of_nonneg_of_le (by simp) (?_) (f := fun x => ∑' (y : ↑(P.centers ∩ D)), ‖if h : x.val - y.val = 0 then 0 else (f (x.val - y.val)).re‖) ?_
-              . intro b
+            · rw [← summable_abs_iff]
+              apply Summable.of_nonneg_of_le (by simp) (?_) (f := fun x => ∑' (y : ↑(P.centers ∩
+                D)), ‖if h : x.val - y.val = 0 then 0 else (f (x.val - y.val)).re‖) ?_
+              · intro b
                 rw [← Real.norm_eq_abs]
                 apply norm_tsum_le_tsum_norm
                 apply Summable.of_norm_bounded (g := fun x => |(f (b.val - x.val)).re|)
-                . apply Summable.of_finite
-                . intro a
+                · apply Summable.of_finite
+                · intro a
                   split_ifs <;> simp
-              .
-                simp_rw [tsum_fintype]
-                apply Summable.of_nonneg_of_le (f := fun x => ∑ (y: ↑(P.centers ∩ D)), |(f (x.val - y.val)).re|)
-                . intro b
+              · simp_rw [tsum_fintype]
+                apply Summable.of_nonneg_of_le (f := fun x => ∑ (y: ↑(P.centers ∩ D)), |(f (x.val -
+                  y.val)).re|)
+                · intro b
                   refine Fintype.sum_nonneg ?_
                   rw [Pi.le_def]
                   simp
-                . intro b
+                · intro b
                   apply Finset.sum_le_sum
                   intro x hx
                   split_ifs <;> simp
-                .
-                  apply summable_sum
+                · apply summable_sum
                   intro y hy
                   have summable_f_re: Summable (fun x => (f x).re) := by
                     apply (Complex.hasSum_re (hf.choose_spec)).summable
@@ -266,24 +260,21 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
                   -- TODO - find a simpler injectivity proof
                   intro a b hab
                   field_simp at hab
-                  exact SetCoe.ext hab
-            .
-              apply summable_of_finite_support
+                  aesop
+            · apply summable_of_finite_support
               -- TODO - is there a better way of writing (P.centers ∩ D) when dealing with subtypes?
               apply Set.Finite.subset (s := {x: ↑P.centers | x.val ∈ D})
-              . rw [Set.finite_coe_iff] at sum_finite
+              · rw [Set.finite_coe_iff] at sum_finite
                 apply Set.Finite.of_finite_image (f := Subtype.val)
-                .
-                  conv =>
+                · conv =>
                     arg 1
                     equals (P.centers ∩ D) =>
                       ext a
                       rw [Set.inter_comm]
                       simp
                   exact sum_finite
-                . simp
-              .
-                intro x hx
+                · simp
+              · intro x hx
                 simp only [Function.mem_support, ne_eq, ite_eq_right_iff, Classical.not_imp] at hx
                 simp [hx.1]
   _ ≤ ∑' (x : ↑(P.centers ∩ D)), (f (0 : EuclideanSpace ℝ (Fin d))).re
@@ -322,8 +313,9 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
               rw [PeriodicSpherePacking.numReps']
               exact Nat.card_eq_fintype_card
 
-include hD_isBounded
-lemma calc_steps' (hd : 0 < d) (hf: Summable f) :
+omit [Nonempty ↑P.centers] in
+include hD_isBounded in
+lemma calc_steps' (hd : 0 < d) (hf : Summable f) :
     ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), (f (↑x - ↑y + ↑ℓ)).re =
     (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), f (↑x - ↑y + ↑ℓ)).re := by
   have sum_finite := aux4 P D hD_isBounded hd
@@ -336,14 +328,14 @@ lemma calc_steps' (hd : 0 < d) (hf: Summable f) :
   rw [re_tsum]
   apply Summable.comp_injective hf
   intro a b
-  field_simp
+  simp_all
 
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following theorem.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
 -- If there are assumptions needed beyond PSF, we should require them here, not in `PSF_Conditions`.
-set_option maxHeartbeats 200000
-private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
+include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ in
+private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥ ↑(P.numReps' hd hD_isBounded) ^ 2 *
     (𝓕 f 0).re / ZLattice.covolume P.lattice := by
   have : Fact (0 < d) := ⟨hd⟩
@@ -353,8 +345,7 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
       (f (x - ↑y)).re
         := by
             rw [ge_iff_le]
-            exact calc_aux_1 hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
-              hD_isBounded hd hf
+            exact calc_aux_1 hCohnElkies₁ hP hD_isBounded hd hf
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
         := by
@@ -370,10 +361,7 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
   -- other complex-valued stuff.
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       f (↑x - ↑y + ↑ℓ)).re
-        := by
-            exact
-              calc_steps' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hd
-                hf
+        := calc_steps' hD_isBounded hd hf
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice) *
       ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m) *
@@ -388,8 +376,8 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             ext y
             -- Now that we've isolated the innermost sum, we can use the PSF-L.
             exact SchwartzMap.PoissonSummation_Lattices P.lattice f (x - ↑y)
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re * (
-      ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
+      (𝓕 f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
         := by
             apply congrArg re
@@ -409,7 +397,8 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             -- ext x
             -- have hSummable₂ : Summable (Function.uncurry fun
             -- (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x_1 : ↑(P.centers ∩ D)) ↦
-            -- ↑(𝓕 f ↑m).re * exp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)) - ↑x_1, ↑m⟫_[ℝ])) := by
+            -- ↑(𝓕 f ↑m).re * exp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)) - ↑x_1, ↑m⟫_[ℝ]))
+            --   := by
             -- sorry
             -- rw [← Summable.tsum_comm hSummable₂]
             -- apply congrArg _ _
@@ -420,7 +409,8 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             -- · rw [isUnit_iff_ne_zero]
             -- exact Complex.exp_ne_zero _
             -- · exact (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re * (
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
+    m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
       exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
@@ -441,8 +431,8 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             simp only [RCLike.wInner_neg_left, ofReal_add, ofReal_neg]
             rw [mul_add, Complex.exp_add, mul_comm]
             simp
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re *
-      (∑' x : ↑(P.centers ∩ D),
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
+      (𝓕 f m).re * (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       (∑' y : ↑(P.centers ∩ D),
       exp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])))).re
@@ -460,7 +450,8 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             apply congrArg _ _
             ext y
             simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re *
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
+    m).re *
       (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       conj (∑' x : ↑(P.centers ∩ D),
@@ -476,8 +467,8 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             apply congrArg _ _
             ext x
             exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
-  _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re *
-      (norm (∑' x : ↑(P.centers ∩ D),
+  _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
+      (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
             sorry
@@ -487,8 +478,8 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             -- ∑' (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)),
             -- (𝓕 f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
             -- cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
-            -- -- Now we can apply the fact that the real parts of both expressions are equal if they
-            -- -- are equal in ℂ.
+            -- -- Now we can apply the fact that the real parts of both expressions are equal if
+            -- -- they are equal in ℂ.
             -- apply congrArg re
             -- push_cast
             -- apply congrArg _ _
@@ -500,8 +491,9 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             -- norm_cast
   -- We split the sum up into the `m = 0` and `m ≠ 0` parts.
   _ = (1 / ZLattice.covolume P.lattice) * (
-      (∑' (m : bilinFormOfRealInner.dualSubmodule P.lattice), if hm : m = (0 : EuclideanSpace ℝ (Fin d)) then 0 else
-      (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
+      (∑' (m : bilinFormOfRealInner.dualSubmodule P.lattice),
+        if hm : m = (0 : EuclideanSpace ℝ (Fin d)) then 0
+        else (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
       +
       (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
@@ -576,9 +568,10 @@ variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.cente
 variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
 variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
 
-include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded hD_unique_covers
+include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded
+  hD_unique_covers
 
-theorem LinearProgrammingBound' (hd : 0 < d) (hf: Summable f) :
+theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
   P.density ≤ (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
   volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   -- HUGE TODO: Get the periodic density formula in terms of some `D`.
@@ -687,7 +680,7 @@ section Main_Theorem
 
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
-theorem LinearProgrammingBound (hd : 0 < d) (hf: Summable f) : SpherePackingConstant d ≤
+theorem LinearProgrammingBound (hd : 0 < d) (hf : Summable f) : SpherePackingConstant d ≤
   (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))
   := by
   rw [← periodic_constant_eq_constant hd,

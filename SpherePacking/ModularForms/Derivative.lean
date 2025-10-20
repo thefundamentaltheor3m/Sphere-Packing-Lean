@@ -92,7 +92,9 @@ theorem D_mul (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (
       F z * deriv (G ∘ ofComplex) z + deriv (F ∘ ofComplex) z * G z:= by
     have hFz := MDifferentiableAt_DifferentiableAt (hF z)
     have hGz := MDifferentiableAt_DifferentiableAt (hG z)
-    sorry -- something with deriv_mul or deriv_smul
+    rw [deriv_mul hFz hGz]
+    simp only [Function.comp_apply, ofComplex_apply]
+    group
   calc
     D (F * G) z
     _ = (2 * π * I)⁻¹ * deriv (F ∘ ofComplex * G ∘ ofComplex) z := by rfl
@@ -104,7 +106,7 @@ theorem D_mul (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (
     _ = F z * D G z + D F z * G z := by rfl
 
 @[simp]
-theorem D_sq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F):
+theorem D_sq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     D (F ^ 2) = 2 * F * D F := by
   calc
     D (F ^ 2) = D (F * F) := by rw [pow_two]
@@ -112,7 +114,7 @@ theorem D_sq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F):
     _ = 2 * F * D F := by ring_nf
 
 @[simp]
-theorem D_cube (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F):
+theorem D_cube (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     D (F ^ 3) = 3 * F ^ 2 * D F := by
   have hF2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (F ^ 2) := by rw [pow_two]; exact MDifferentiable.mul hF hF
   calc
@@ -193,7 +195,7 @@ theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
   have h := ramanujan_E₂'
   unfold serre_D at h
   have h1 := congrFun h z
-  field_simp
+  simp [field]
   field_simp at h1
   simpa [add_comm, sub_eq_iff_eq_add] using h1
 
@@ -203,8 +205,8 @@ theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun
   have h := ramanujan_E₄'
   unfold serre_D at h
   have h1 := congrFun h z
-  field_simp
-  field_simp at h1
+  simp [field]
+  simp [field] at h1
   ring_nf
   ring_nf at h1
   have hc : (12 : ℂ) ≠ 0 := by norm_num
@@ -218,8 +220,8 @@ theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun
   have h := ramanujan_E₆'
   unfold serre_D at h
   have h1 := congrFun h z
-  field_simp
-  field_simp at h1
+  simp [field]
+  simp [field] at h1
   ring_nf
   ring_nf at h1
   have hc : (12 : ℂ) ≠ 0 := by norm_num
@@ -238,13 +240,14 @@ noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
 noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
 
 theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
-    + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun := by
+    + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun
+    := by
   rw [F, D_sq, D_sub, D_mul]
-  ring_nf
-  rw [ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
-  ext z
-  simp
-  ring_nf
+  · ring_nf
+    rw [ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
+    ext z
+    simp
+    ring_nf
 
   -- Holomorphicity of the terms
   · exact E₂_holo'
@@ -269,7 +272,7 @@ theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 172800 * Δ_fun * 
 example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.toFun - E₆.toFun) :=
   by
   rw [D_mul E₄.toFun E₄.toFun]
-  simp only [ramanujan_E₄]
-  ring_nf
-  exact E₄.holo'
-  exact E₄.holo'
+  · simp only [ramanujan_E₄]
+    ring_nf
+  · exact E₄.holo'
+  · exact E₄.holo'

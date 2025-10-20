@@ -20,7 +20,7 @@ Note that parts of this file can probably be generalised to `RCLike 𝕜`. We do
 -/
 
 open LinearMap (BilinForm)
-open ZLattice Submodule LinearMap
+open ZLattice Submodule LinearMap Module
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
 variable (B : BilinForm ℝ E) (hB : B.Nondegenerate)

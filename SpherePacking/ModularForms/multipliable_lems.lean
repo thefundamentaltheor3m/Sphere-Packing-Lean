@@ -3,7 +3,7 @@ import SpherePacking.ModularForms.summable_lems
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 open ArithmeticFunction
 
@@ -41,7 +41,7 @@ theorem multipliable_lt_one (x : ℂ) (hx : x ∈ ball 0 1) :
     enter [1]
     ext n
     rw [sub_eq_add_neg]
-  exact this
+  · exact this
   rw [@summable_neg_iff]
   rw [@summable_nat_add_iff]
   rw [@summable_geometric_iff_norm_lt_one]
@@ -51,10 +51,10 @@ lemma MultipliableEtaProductExpansion (z : ℍ) :
     Multipliable (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ) := by
   have := Complex.summable_nat_multipliable_one_add (fun (n : ℕ) =>
     (-cexp (2 * π * Complex.I * (n + 1) * z)) ) ?_
-  simp at this
-  apply this.congr
-  intro n
-  ring
+  · simp at this
+    apply this.congr
+    intro n
+    ring
   rw [←summable_norm_iff]
   simpa using summable_exp_pow z
 
@@ -80,11 +80,11 @@ lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
 lemma tprod_ne_zero (x : ℍ) (f : ℕ → ℍ → ℂ) (hf : ∀ i x, 1 + f i x ≠ 0)
   (hu : ∀ x : ℍ, Summable fun n => f n x) : (∏' i : ℕ, (1 + f i) x) ≠ 0 := by
   have := Complex.cexp_tsum_eq_tprod (f := fun n => 1 + f n x) ?_
-  simp
-  rw [← this]
-  simp only [exp_ne_zero, not_false_eq_true]
-  apply Complex.summable_log_one_add_of_summable
-  apply hu x
+  · simp
+    rw [← this]
+    · simp only [exp_ne_zero, not_false_eq_true]
+    apply Complex.summable_log_one_add_of_summable
+    apply hu x
   intro n
   apply hf n x
 
@@ -108,14 +108,15 @@ lemma MultipliableDeltaProductExpansion_pnat (z : ℍ) :
   apply MultipliableEtaProductExpansion_pnat z
 
 
-lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) : (∏' (i : ℕ), f i) ^ n = ∏' (i : ℕ), (f i) ^ n := by
+lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) : (∏' (i : ℕ), f i) ^ n = ∏' (i : ℕ),
+    (f i) ^ n := by
   induction' n with n hn
   · simp
   · rw [pow_succ]
     rw [hn]
     rw [← Multipliable.tprod_mul]
-    congr
-    apply Multipliable_pow f hf n
+    · congr
+    · apply Multipliable_pow f hf n
     exact hf
 
 
@@ -129,7 +130,7 @@ theorem hasProd_le_nonneg (f g : ι → ℝ) (h : ∀ i, f i ≤ g i) (h0 : ∀ 
   intro s
   apply Finset.prod_le_prod
   intros i hi
-  exact h0 i
+  · exact h0 i
   intros i hi
   exact h i
 

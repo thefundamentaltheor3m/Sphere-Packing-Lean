@@ -194,7 +194,7 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
 
 lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   ext x
-  have hx' : (x : ℂ) ≠ 0 := by cases' x with x hx; change x ≠ 0; simp [Complex.ext_iff, hx.ne.symm]
+  have hx' : (x : ℂ) ≠ 0 := by obtain ⟨x, hx⟩ := x; change x ≠ 0; simp [Complex.ext_iff, hx.ne.symm]
   have := jacobiTheta₂_functional_equation 0
   simp [-one_div] at this
   simp [modular_slash_S_apply, Pi.neg_apply, H₃, Θ₃_as_jacobiTheta₂]
@@ -345,7 +345,7 @@ theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
       have : (2 * b : ℝ) = -1 := by simp [hb]
       norm_cast at this
       exact Int.not_odd_iff_even.mpr (even_two_mul b) (by rw [this]; simp)
-    convert (mul_le_mul_left (mul_pos pi_pos (sq_pos_of_ne_zero this))).mpr hz using 1
+    convert (mul_le_mul_iff_right₀ (mul_pos pi_pos (sq_pos_of_ne_zero this))).mpr hz using 1
     rw [mul_one]
   · apply Summable.norm
     apply summable_ofReal.mp
@@ -370,7 +370,8 @@ lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
   have h_sum (z : ℍ) : Summable fun n : ℤ ↦ rexp (-π * n ^ 2 * z.im) := by
     have := (summable_jacobiTheta₂_term_iff 0 z).mpr z.prop
     rw [← summable_norm_iff, ← summable_ofReal] at this
-    simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, norm_exp_mul_I, h_rw] at this
+    simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, norm_exp_mul_I, h_rw]
+      at this
     simpa using summable_ofReal.mp this
   calc
     _ = ∑' (n : ℤ), ‖cexp (π * (n : ℂ) ^ 2 * z * I)‖ := by simp_rw [Θ₃_term, mul_right_comm _ I]

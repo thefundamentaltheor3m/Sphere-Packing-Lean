@@ -25,7 +25,7 @@ We also define the *density* of the configuration.
 -/
 
 open scoped ENNReal
-open BigOperators Pointwise Filter
+open BigOperators Pointwise Filter Module
 
 section Definitions
 
@@ -115,7 +115,8 @@ noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
 
 theorem PeriodicSpherePacking.basis_Z_span
     (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
-    Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) = S.lattice := Basis.ofZLatticeBasis_span ℝ S.lattice b
+    Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) = S.lattice :=
+  Basis.ofZLatticeBasis_span ℝ S.lattice b
 
 theorem PeriodicSpherePacking.mem_basis_Z_span
     (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (v) :
@@ -148,7 +149,7 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
     have : x' ≠ y' := by rintro rfl; tauto
     have : (⟨x', hx'⟩ : S.centers) ≠ ⟨y', hy'⟩ := by simp [this]
     have := S.centers_dist this
-    exact (mul_le_mul_left hc).mpr this
+    exact (mul_le_mul_iff_right₀ hc).mpr this
 
 
 noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
