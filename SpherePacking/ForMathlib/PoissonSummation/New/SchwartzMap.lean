@@ -26,7 +26,10 @@ InnerProductSpace. We need this instance for Real.fourierIntegral 𝓕.
 
 namespace RpowDecay
 
+#check Function.Periodic.lift
+
 def Periodicization (f : EuclideanSpace ℝ d → ℂ) : UnitAddTorus d → ℂ :=
+  -- fun x ↦ Quotient.liftOn' x f
   sorry
   /- In the proof of the one dimensional case for the Poisson summation formula. They first use
   `f : ℝ → ℂ` to get a periodic function defined by `∑' (n : ℤ), f (x + n)`. They then use
@@ -39,16 +42,17 @@ def Periodicization (f : EuclideanSpace ℝ d → ℂ) : UnitAddTorus d → ℂ 
   We need to use an isomorphism between ℝᵈ/ℤᵈ and (ℝ/ℤ)ᵈ to get a function in UnitAddTorus d → ℂ.
   -/
 
-/- For each (n : d → ℤ) 𝓕 f (fun i => n i)) = mFourierCoeff (Periodicization f) n. -/
-lemma mFourierCoeff_Periodicization_eq_FourierTransform {b : ℝ} (hb : Fintype.card d < b)
-    (hf : f =O[cocompact (EuclideanSpace ℝ d)] (‖·‖ ^ (-b))) (n : d → ℤ) :
-    𝓕 f (fun i => n i) = mFourierCoeff (Periodicization f) n := by sorry
-
 lemma Summable_mFourier_coeff {b : ℝ} (hb : Fintype.card d < b)
     (hf : f =O[cocompact (EuclideanSpace ℝ d)] (‖·‖ ^ (-b)))
     (h_sum : Summable fun n : d → ℤ => 𝓕 f fun i => n i) :
     Summable (mFourierCoeff (Periodicization f)) := by
+  -- Use `tendstoUniformly_tsum_nat` but somehow generalise statement by replacing ℕ with countable
   sorry
+
+/- For each (n : d → ℤ) 𝓕 f (fun i => n i)) = mFourierCoeff (Periodicization f) n. -/
+lemma mFourierCoeff_Periodicization_eq_FourierTransform {b : ℝ} (hb : Fintype.card d < b)
+    (hf : f =O[cocompact (EuclideanSpace ℝ d)] (‖·‖ ^ (-b))) (n : d → ℤ) :
+    𝓕 f (fun i => n i) = mFourierCoeff (Periodicization f) n := by sorry
 
 /- Periodicization is continuous. -/
 lemma cont_Periodicization {b : ℝ} (hb : Fintype.card d < b)
