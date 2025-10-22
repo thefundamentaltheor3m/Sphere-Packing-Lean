@@ -328,11 +328,10 @@ private lemma step_11 :
     norm_cast at this
     exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
   · next j =>
-      have : -π * ↑j / 2 = -π * ↑j * (1 / 2) := by rw [mul_one_div]
-      rw [this]
-      simp at *
-      have hz2 := hz.le
-      gcongr
+    have : -π * ↑j / 2 = -π * ↑j * (1 / 2) := by rw [mul_one_div]
+    rw [this]
+    simp only [neg_mul]
+    gcongr
 
 include hz in
 private lemma step_12 :
