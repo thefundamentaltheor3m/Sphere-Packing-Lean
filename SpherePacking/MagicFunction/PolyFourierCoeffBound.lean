@@ -298,7 +298,6 @@ private lemma step_10 :
     · sorry
     · sorry
 
--- set_option maxHeartbeats 100000 in
 include hz hcsum hpoly in
 private lemma step_11 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
@@ -308,7 +307,6 @@ private lemma step_11 :
   gcongr
   · exact le_of_lt (aux_8 z)
   · exact aux_10 z c n₀ hcsum
-  · sorry
   · simp only [div_eq_mul_inv]
     -- **This is where we use the fact that c is eventually polynomial in n.**
     have hnorm : ‖(rexp (-π * 2⁻¹) : ℂ)‖ < 1 := by
@@ -325,21 +323,16 @@ private lemma step_11 :
         ‖c (↑n + n₀) * rexp (-π * 2⁻¹) ^ n‖ := fun n => by
       rw [norm_mul, neg_mul, norm_pow, Complex.norm_real]
       simp
-    -- Something's broken here... let's fix it later...
-    stop
     simp only [h₁, h₂]
-    -- norm_cast at hpoly
     have := hpoly' c n₀ k hpoly
     norm_cast at this
     exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
-    sorry
-  -- · next j =>
-  -- have : -π * ↑j / 2 = -π * ↑j * (1 / 2) := by
-  -- rw [@mul_one_div]
-  -- rw [this]
-  -- simp at *
-  -- have hz2 := hz.le
-  -- gcongr
+  · next j =>
+      have : -π * ↑j / 2 = -π * ↑j * (1 / 2) := by rw [mul_one_div]
+      rw [this]
+      simp at *
+      have hz2 := hz.le
+      gcongr
 
 include hz in
 private lemma step_12 :
