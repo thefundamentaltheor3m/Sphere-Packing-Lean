@@ -105,7 +105,7 @@ lemma Submodule.mem_evenLattice {R : Type*} [Ring R] [CharZero R] (n : ℕ)
     {v : Fin n → R} :
     v ∈ Submodule.evenLattice R n ↔
       (∀ i, ∃ n : ℤ, (n : R) = v i) ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
-  rw [← SetLike.mem_coe, Submodule.coe_evenLattice];
+  rw [← SetLike.mem_coe, Submodule.coe_evenLattice]
   rfl
 
 -- TODO (BM): this shouldn't be noncomputable... check with @zwarich
