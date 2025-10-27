@@ -137,7 +137,8 @@ theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
 
 
 /--
-Serre derivative of weight `k`.
+Serre derivative of weight $k$.
+Note that the definition makes sense for any analytic function $F : \mathbb{H} \to \mathbb{C}$.
 -/
 noncomputable def serre_D (k : ℂ) : (ℍ → ℂ) → (ℍ → ℂ) :=
   fun (F : ℍ → ℂ) => (fun z => D F z - k * 12⁻¹ * E₂ z * F z)
@@ -276,3 +277,24 @@ example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.t
     ring_nf
   · exact E₄.holo'
   · exact E₄.holo'
+
+/-
+Interaction between (Serre) derivative and restriction to the imaginary axis.
+-/
+
+/--
+If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
+is positive) and the derivative is positive, then $F$ is also positive.
+-/
+theorem antiDerPos {F : ℍ → ℂ} {k : ℤ} (hF : ResToImagAxisEventuallyPos F)
+    (hDF : ResToImagAxisPos (D F)) : ResToImagAxisPos F := by
+  sorry
+
+/--
+Let $F : \mathbb{H} \to \mathbb{C}$ be a holomorphic function where $F(it)$ is real for all $t > 0$.
+Assume that Serre derivative $\partial_k F$ is positive on the imaginary axis.
+If $F(it)$ is positive for sufficiently large $t$, then $F(it)$ is positive for all $t > 0$.
+-/
+theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hSDF : ResToImagAxisPos (serre_D k F))
+    (hF : ResToImagAxisEventuallyPos F) : ResToImagAxisPos F := by
+  sorry
