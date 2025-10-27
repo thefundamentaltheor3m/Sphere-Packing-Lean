@@ -46,17 +46,26 @@ noncomputable def DivDiscBound : ℝ :=
   (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24)
 
--- #check DivDiscBound
-
 section hpoly_aux
 
 include hpoly in
 theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)) := by
-  simp [isBigO_iff] at hpoly ⊢
-  obtain ⟨C, m, hCa⟩ := hpoly
-  use C
-  use (m - n₀).toNat
-  sorry
+  have h_shift : (fun n : ℕ => c (n + n₀)) =O[atTop] (fun n : ℕ => (n + n₀ : ℂ) ^ k) := by
+    simp only [isBigO_iff, eventually_atTop] at hpoly ⊢
+    obtain ⟨C, m, hCa⟩ := hpoly
+    use C
+    simp only [norm_pow, norm_eq_abs] at hCa ⊢
+    refine ⟨(m - n₀).toNat, fun n hn ↦ ?_⟩
+    exact_mod_cast hCa (n + n₀) (by grind)
+  refine h_shift.trans ?_
+  simp only [isBigO_iff, eventually_atTop]
+  use 2 ^ k
+  simp only [norm_pow, RCLike.norm_natCast]
+  refine ⟨n₀.natAbs, fun n hn => ?_⟩
+  rw [← mul_pow]
+  apply pow_le_pow_left₀ (norm_nonneg _)
+  norm_cast
+  cases abs_cases (n + n₀ : ℤ) <;> grind
 
 end hpoly_aux
 
@@ -289,7 +298,6 @@ private lemma step_10 :
     · sorry
     · sorry
 
--- set_option maxHeartbeats 100000 in
 include hz hcsum hpoly in
 private lemma step_11 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
@@ -299,7 +307,6 @@ private lemma step_11 :
   gcongr
   · exact le_of_lt (aux_8 z)
   · exact aux_10 z c n₀ hcsum
-  · sorry
   · simp only [div_eq_mul_inv]
     -- **This is where we use the fact that c is eventually polynomial in n.**
     have hnorm : ‖(rexp (-π * 2⁻¹) : ℂ)‖ < 1 := by
@@ -316,21 +323,15 @@ private lemma step_11 :
         ‖c (↑n + n₀) * rexp (-π * 2⁻¹) ^ n‖ := fun n => by
       rw [norm_mul, neg_mul, norm_pow, Complex.norm_real]
       simp
-    -- Something's broken here... let's fix it later...
-    stop
     simp only [h₁, h₂]
-    -- norm_cast at hpoly
     have := hpoly' c n₀ k hpoly
     norm_cast at this
     exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
-    sorry
-  -- · next j =>
-  -- have : -π * ↑j / 2 = -π * ↑j * (1 / 2) := by
-  -- rw [@mul_one_div]
-  -- rw [this]
-  -- simp at *
-  -- have hz2 := hz.le
-  -- gcongr
+  · next j =>
+    have : -π * ↑j / 2 = -π * ↑j * (1 / 2) := by rw [mul_one_div]
+    rw [this]
+    simp only [neg_mul]
+    gcongr
 
 include hz in
 private lemma step_12 :
