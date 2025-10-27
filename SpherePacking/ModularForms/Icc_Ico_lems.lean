@@ -1,11 +1,12 @@
 import Mathlib.Algebra.Order.Group.Int
 import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Data.Int.Star
+import Mathlib.Tactic.Cases
 
 open TopologicalSpace Set
   Metric Filter Function Complex
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Classical
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 
 lemma Icc_succ (n : ℕ) : Finset.Icc (-(n + 1) : ℤ) (n + 1) = Finset.Icc (-n : ℤ) n ∪
@@ -20,36 +21,35 @@ lemma Icc_succ (n : ℕ) : Finset.Icc (-(n + 1) : ℤ) (n + 1) = Finset.Icc (-n 
 lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m ∈ Finset.Icc (-N : ℤ) N, f m =
   f N + f (-N : ℤ) + ∑ m ∈ Finset.Icc (-(N - 1) : ℤ) (N - 1), f m := by
   induction' N with N ih
-  simp
-  aesop
+  · aesop
   zify
   rw [Icc_succ]
   rw [Finset.sum_union]
-  ring_nf
-  rw [add_assoc]
-  congr
-  rw [ Finset.sum_pair]
-  ring
-  omega
+  · ring_nf
+    rw [add_assoc]
+    congr
+    rw [Finset.sum_pair]
+    · ring
+    omega
   simp
 
 
-lemma Icc_sum_even (f : ℤ → ℂ) (hf : ∀ n, f n = f (-n)) (N : ℕ):
+lemma Icc_sum_even (f : ℤ → ℂ) (hf : ∀ n, f n = f (-n)) (N : ℕ) :
     ∑ m ∈ Finset.Icc (-N : ℤ) N, f m = 2 * ∑ m ∈ Finset.range (N + 1), f m - f 0 := by
   induction' N with N ih
-  simp only [CharP.cast_eq_zero, neg_zero, Finset.Icc_self, Finset.sum_singleton, zero_add,
-    Finset.range_one]
-  ring
+  · simp only [CharP.cast_eq_zero, neg_zero, Finset.Icc_self, Finset.sum_singleton, zero_add,
+      Finset.range_one]
+    ring
   have := Icc_succ N
   simp only [neg_add_rev, Int.reduceNeg, Nat.cast_add, Nat.cast_one] at *
   rw [this, Finset.sum_union, Finset.sum_pair, ih]
-  nth_rw 2 [Finset.sum_range_succ]
-  have HF:= hf (N + 1)
-  simp only [neg_add_rev, Int.reduceNeg] at HF
-  rw [← HF]
-  ring_nf
-  norm_cast
-  omega
+  · nth_rw 2 [Finset.sum_range_succ]
+    have HF:= hf (N + 1)
+    simp only [neg_add_rev, Int.reduceNeg] at HF
+    rw [← HF]
+    ring_nf
+    norm_cast
+  · omega
   simp only [Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Icc, le_add_iff_nonneg_left,
     Left.nonneg_neg_iff, Int.reduceLE, add_neg_le_iff_le_add, false_and, not_false_eq_true,
     Finset.disjoint_singleton_right, add_le_iff_nonpos_right, and_false, and_self]
@@ -62,8 +62,8 @@ lemma verga2 : Tendsto (fun N : ℕ => Finset.Icc (-N : ℤ) N) atTop atTop :=
 
 lemma int_add_abs_self_nonneg (n : ℤ) : 0 ≤ n + |n| := by
   by_cases h : 0 ≤ n
-  apply add_nonneg h
-  exact abs_nonneg n
+  · apply add_nonneg h
+    exact abs_nonneg n
   simp at *
   rw [abs_of_neg h]
   simp
@@ -75,8 +75,8 @@ lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
   simp only [Nat.cast_add, Int.natCast_natAbs, Nat.cast_one, neg_add_rev, Int.reduceNeg,
     Finset.mem_Ico, add_neg_le_iff_le_add]
   constructor
-  apply le_trans _ (int_add_abs_self_nonneg x)
-  omega
+  · apply le_trans _ (int_add_abs_self_nonneg x)
+    omega
   refine Int.lt_add_one_iff.mpr ?_
   exact le_abs_self x
 

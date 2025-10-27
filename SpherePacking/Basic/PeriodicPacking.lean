@@ -498,25 +498,28 @@ theorem PeriodicSpherePacking.aux_le
     intro ⟨_, hux⟩ ⟨_, huy⟩
     obtain ⟨w, hw, hw_unique⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) u
     rw [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub] at hux huy
-    have hx := hw_unique ⟨-x, ?hx'⟩ ?_
-    have hy := hw_unique ⟨-y, ?hy'⟩ ?_
-    case hx' =>
+    have hx := hw_unique ⟨-x, ?hx₁⟩ ?hx₂
+    case hx₁ =>
       apply neg_mem
       apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
       · rw [S.basis_Z_span]
       · exact hx.left
-    case hy' =>
+    case hx₂ =>
+      simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
+      exact hux
+    have hy := hw_unique ⟨-y, ?hy₁⟩ ?hy₂
+    case hy₁ =>
       apply neg_mem
       apply Set.mem_of_subset_of_mem (s₁ := S.lattice)
       · rw [S.basis_Z_span]
       · exact hy.left
-    · apply hxy
-      rw [Subtype.ext_iff, ← neg_inj]
-      exact Subtype.ext_iff.mp (hx.trans hy.symm)
-    · simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
+    case hy₂ =>
+      simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
       exact huy
-    · simp_rw [Submodule.vadd_def, vadd_eq_add, neg_add_eq_sub]
-      exact hux
+    apply hxy
+    rw [Subtype.ext_iff, ← neg_inj]
+    exact Subtype.ext_iff.mp (hx.trans hy.symm)
+
 
 end theorem_2_3
 
@@ -681,7 +684,7 @@ theorem PeriodicSpherePacking.aux2_ge'
   intro ⟨y, hy⟩ hy'
   have := hv'.right ⟨y, ?_⟩ hy'
   · rwa [Subtype.ext_iff] at this ⊢
-    rw [S.basis_Z_span]
+  · rw [S.basis_Z_span]
     exact hy
 
 -- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice
@@ -698,7 +701,7 @@ theorem PeriodicSpherePacking.aux2_le'
   intro ⟨y, hy⟩ hy'
   have := hv'.right ⟨y, ?_⟩ hy'
   · rwa [Subtype.ext_iff] at this ⊢
-    rw [S.basis_Z_span]
+  · rw [S.basis_Z_span]
     exact hy
 
 section finiteDensity_limit
@@ -1185,3 +1188,6 @@ theorem periodic_constant_eq_constant (hd : 0 < d) :
   sorry
 
 end Periodic_Constant_Eq_Constant
+end finiteDensity_limit
+
+end theorem_2_2

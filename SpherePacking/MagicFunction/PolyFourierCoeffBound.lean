@@ -46,17 +46,26 @@ noncomputable def DivDiscBound : ℝ :=
   (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24)
 
--- #check DivDiscBound
-
 section hpoly_aux
 
 include hpoly in
 theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)) := by
-  simp [isBigO_iff] at hpoly ⊢
-  obtain ⟨C, m, hCa⟩ := hpoly
-  use C
-  use (m - n₀).toNat
-  sorry
+  have h_shift : (fun n : ℕ => c (n + n₀)) =O[atTop] (fun n : ℕ => (n + n₀ : ℂ) ^ k) := by
+    simp only [isBigO_iff, eventually_atTop] at hpoly ⊢
+    obtain ⟨C, m, hCa⟩ := hpoly
+    use C
+    simp only [norm_pow, norm_eq_abs] at hCa ⊢
+    refine ⟨(m - n₀).toNat, fun n hn ↦ ?_⟩
+    exact_mod_cast hCa (n + n₀) (by grind)
+  refine h_shift.trans ?_
+  simp only [isBigO_iff, eventually_atTop]
+  use 2 ^ k
+  simp only [norm_pow, RCLike.norm_natCast]
+  refine ⟨n₀.natAbs, fun n hn => ?_⟩
+  rw [← mul_pow]
+  apply pow_le_pow_left₀ (norm_nonneg _)
+  norm_cast
+  cases abs_cases (n + n₀ : ℤ) <;> grind
 
 end hpoly_aux
 
@@ -82,7 +91,7 @@ private lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π *
   simp [fouterm, mul_add, add_mul, Complex.exp_add] at h₁
   have h₂ : ∀ (i : ℕ), c (↑i + n₀) * (cexp (↑π * I * ↑i * z) * cexp (↑π * I * ↑n₀ * z)) *
       (cexp (↑π * I * ↑n₀ * z))⁻¹ = c (↑i + n₀) * cexp (↑π * I * ↑i * z) := by
-    intro i; field_simp; ac_rfl
+    intro i; field_simp
   simp only [h₂] at h₁
   exact h₁
 
@@ -283,13 +292,12 @@ private lemma step_10 :
     · intro n; simp only [neg_mul]
       gcongr
       · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
-      · have hre : -(2 * π * n * z.im) = (2 * π * I * n * z).re := by field_simp
+      · have hre : -(2 * π * n * z.im) = (2 * π * I * n * z).re := by simp
         rw [hre]
         exact aux_2 (2 * π * I * n * z)
     · sorry
     · sorry
 
--- set_option maxHeartbeats 100000 in
 include hz hcsum hpoly in
 private lemma step_11 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
@@ -298,8 +306,7 @@ private lemma step_11 :
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · exact le_of_lt (aux_8 z)
-  · sorry
-  · sorry
+  · exact aux_10 z c n₀ hcsum
   · simp only [div_eq_mul_inv]
     -- **This is where we use the fact that c is eventually polynomial in n.**
     have hnorm : ‖(rexp (-π * 2⁻¹) : ℂ)‖ < 1 := by
@@ -316,21 +323,15 @@ private lemma step_11 :
         ‖c (↑n + n₀) * rexp (-π * 2⁻¹) ^ n‖ := fun n => by
       rw [norm_mul, neg_mul, norm_pow, Complex.norm_real]
       simp
-    -- Something's broken here... let's fix it later...
-    stop
     simp only [h₁, h₂]
-    -- norm_cast at hpoly
     have := hpoly' c n₀ k hpoly
     norm_cast at this
     exact summable_real_norm_mul_geometric_of_norm_lt_one hnorm this
-    sorry
-  -- · next j =>
-  -- have : -π * ↑j / 2 = -π * ↑j * (1 / 2) := by
-  -- rw [@mul_one_div]
-  -- rw [this]
-  -- simp at *
-  -- have hz2 := hz.le
-  -- gcongr
+  · next j =>
+    have : -π * ↑j / 2 = -π * ↑j * (1 / 2) := by rw [mul_one_div]
+    rw [this]
+    simp only [neg_mul]
+    gcongr
 
 include hz in
 private lemma step_12 :
@@ -450,17 +451,7 @@ theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
     · intro i
       positivity
     · simp [hcn₀]
-  · sorry
-    -- Use new result that Δ(iz) > 0 [TODO: BUMP]
-    -- calc 0
-    -- _ < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * (1 / 2 * I).im)) ^ 24 := aux_8 (1 / 2 * I)
-    --   (by sorry)
-    -- _ = ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
-    -- congr
-    -- ext n
-    -- congr 3
-    -- simp
-    -- ring
+  · exact aux_11
 
 end positivity
 
@@ -566,8 +557,7 @@ theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     calc _ ≤ _ := DivDiscBoundOfPolyFourierCoeff z hz c 4 ?_ 5 hcpoly
           (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) ?_
       _ = _ := by congr 2; ring
-    ·
-      sorry
+    · sorry
     · -- This is where I need to use Bhavik's result
 
       sorry
@@ -590,3 +580,7 @@ example {m n : ℕ} {f : (EuclideanSpace ℝ (Fin m)) × (EuclideanSpace ℝ (Fi
   sorry
 
 end Scratch
+
+end PolyFourierCoeffBound
+
+end MagicFunction
