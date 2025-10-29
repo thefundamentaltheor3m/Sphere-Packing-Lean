@@ -89,7 +89,7 @@ lemma J₁'_eq₀ (r : ℝ) : J₁' r = ∫ t in (0 : ℝ)..1, I -- Added factor
   apply MeasureTheory.ae_of_all
   intro t ht
   rw [uIoc_of_le zero_le_one] at ht
-  rw [ψS_slash_ST_explicit ht]
+  rw [ψS_slash_ST_explicit₁ ht]
   ac_rfl
 
 lemma J₂'_eq₀ (r : ℝ) : J₂' r = ∫ t in (0 : ℝ)..1,
@@ -101,7 +101,8 @@ lemma J₂'_eq₀ (r : ℝ) : J₂' r = ∫ t in (0 : ℝ)..1,
   apply MeasureTheory.ae_of_all
   intro t ht
   rw [uIoc_of_le zero_le_one] at ht
-  rw [ψS_slash_ST_explicit ht]
+  rw [ψS_slash_ST_explicit₁ ht]
+  
   sorry
 
 end Eq₀

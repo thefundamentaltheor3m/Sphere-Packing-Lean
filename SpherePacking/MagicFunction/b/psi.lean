@@ -445,16 +445,76 @@ lemma ψS'_eq_ψS_of_mem {z : ℂ} (hz : 0 < z.im) : ψS' z = ψS ⟨z, hz⟩ :=
 lemma ψT'_eq_ψT_of_mem {z : ℂ} (hz : 0 < z.im) : ψT' z = ψT ⟨z, hz⟩ := by simp [ψT', hz]
 
 lemma ψT'_comp_z₁'_eq_ψT_comp_z₁'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
-    ψT' (z₁' t) = ψT ⟨z₁' t, z₁'_in_upper_half_plane ht⟩ :=
+  ψT' (z₁' t) = ψT ⟨z₁' t, z₁'_in_upper_half_plane ht⟩ :=
   ψT'_eq_ψT_of_mem (z₁'_in_upper_half_plane ht)
 
 lemma ψS'_comp_z₁'_eq_ψS_comp_z₁'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
-    ψS' (z₁' t) = ψS ⟨z₁' t, z₁'_in_upper_half_plane ht⟩ :=
+  ψS' (z₁' t) = ψS ⟨z₁' t, z₁'_in_upper_half_plane ht⟩ :=
   ψS'_eq_ψS_of_mem (z₁'_in_upper_half_plane ht)
 
 lemma ψI'_comp_z₁'_eq_ψI_comp_z₁'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
-    ψI' (z₁' t) = ψI ⟨z₁' t, z₁'_in_upper_half_plane ht⟩ :=
+  ψI' (z₁' t) = ψI ⟨z₁' t, z₁'_in_upper_half_plane ht⟩ :=
   ψI'_eq_ψI_of_mem (z₁'_in_upper_half_plane ht)
+
+lemma ψT'_comp_z₂'_eq_ψT_comp_z₂'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψT' (z₂' t) = ψT ⟨z₂' t, z₂'_in_upper_half_plane ht⟩ :=
+  ψT'_eq_ψT_of_mem (z₂'_in_upper_half_plane ht)
+
+lemma ψS'_comp_z₂'_eq_ψS_comp_z₂'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψS' (z₂' t) = ψS ⟨z₂' t, z₂'_in_upper_half_plane ht⟩ :=
+  ψS'_eq_ψS_of_mem (z₂'_in_upper_half_plane ht)
+
+lemma ψI'_comp_z₂'_eq_ψI_comp_z₂'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψI' (z₂' t) = ψI ⟨z₂' t, z₂'_in_upper_half_plane ht⟩ :=
+  ψI'_eq_ψI_of_mem (z₂'_in_upper_half_plane ht)
+
+lemma ψT'_comp_z₃'_eq_ψT_comp_z₃'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψT' (z₃' t) = ψT ⟨z₃' t, z₃'_in_upper_half_plane ht⟩ :=
+  ψT'_eq_ψT_of_mem (z₃'_in_upper_half_plane ht)
+
+lemma ψS'_comp_z₃'_eq_ψS_comp_z₃'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψS' (z₃' t) = ψS ⟨z₃' t, z₃'_in_upper_half_plane ht⟩ :=
+  ψS'_eq_ψS_of_mem (z₃'_in_upper_half_plane ht)
+
+lemma ψI'_comp_z₃'_eq_ψI_comp_z₃'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψI' (z₃' t) = ψI ⟨z₃' t, z₃'_in_upper_half_plane ht⟩ :=
+  ψI'_eq_ψI_of_mem (z₃'_in_upper_half_plane ht)
+
+lemma ψT'_comp_z₄'_eq_ψT_comp_z₄'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψT' (z₄' t) = ψT ⟨z₄' t, z₄'_in_upper_half_plane ht⟩ :=
+  ψT'_eq_ψT_of_mem (z₄'_in_upper_half_plane ht)
+
+lemma ψS'_comp_z₄'_eq_ψS_comp_z₄'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψS' (z₄' t) = ψS ⟨z₄' t, z₄'_in_upper_half_plane ht⟩ :=
+  ψS'_eq_ψS_of_mem (z₄'_in_upper_half_plane ht)
+
+lemma ψI'_comp_z₄'_eq_ψI_comp_z₄'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψI' (z₄' t) = ψI ⟨z₄' t, z₄'_in_upper_half_plane ht⟩ :=
+  ψI'_eq_ψI_of_mem (z₄'_in_upper_half_plane ht)
+
+lemma ψT'_comp_z₅'_eq_ψT_comp_z₅'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψT' (z₅' t) = ψT ⟨z₅' t, z₅'_in_upper_half_plane ht⟩ :=
+  ψT'_eq_ψT_of_mem (z₅'_in_upper_half_plane ht)
+
+lemma ψS'_comp_z₅'_eq_ψS_comp_z₅'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψS' (z₅' t) = ψS ⟨z₅' t, z₅'_in_upper_half_plane ht⟩ :=
+  ψS'_eq_ψS_of_mem (z₅'_in_upper_half_plane ht)
+
+lemma ψI'_comp_z₅'_eq_ψI_comp_z₅'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψI' (z₅' t) = ψI ⟨z₅' t, z₅'_in_upper_half_plane ht⟩ :=
+  ψI'_eq_ψI_of_mem (z₅'_in_upper_half_plane ht)
+
+lemma ψT'_comp_z₆'_eq_ψT_comp_z₆'_of_mem {t : ℝ} (ht : t ∈ Ioi 1) :
+  ψT' (z₆' t) = ψT ⟨z₆' t, z₆'_in_upper_half_plane ht⟩ :=
+  ψT'_eq_ψT_of_mem (z₆'_in_upper_half_plane ht)
+
+lemma ψS'_comp_z₆'_eq_ψS_comp_z₆'_of_mem {t : ℝ} (ht : t ∈ Ioi 1) :
+  ψS' (z₆' t) = ψS ⟨z₆' t, z₆'_in_upper_half_plane ht⟩ :=
+  ψS'_eq_ψS_of_mem (z₆'_in_upper_half_plane ht)
+
+lemma ψI'_comp_z₆'_eq_ψI_comp_z₆'_of_mem {t : ℝ} (ht : t ∈ Ioi 1) :
+  ψI' (z₆' t) = ψI ⟨z₆' t, z₆'_in_upper_half_plane ht⟩ :=
+  ψI'_eq_ψI_of_mem (z₆'_in_upper_half_plane ht)
 
 end eq_of_mem
 
@@ -483,9 +543,29 @@ lemma ψS_slash_ST_explicit₁ {t : ℝ} (ht : t ∈ Ioc 0 1) :
   rw [ψT'_comp_z₁'_eq_ψT_comp_z₁'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
   congr
 
--- lemma ψS_slash_ST_explicit₂ {t : ℝ} (ht : t ∈ Ioc 0 1) :
---     ψT' (z₂' t) = ψS' (-1 / (z₂' t + 1)) * (z₂' t + 1) ^ 2 := by
---   rw [ψT'_comp_z₂'_eq_ψT_comp_z₂'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
---   congr
+lemma ψS_slash_ST_explicit₂ {t : ℝ} (ht : t ∈ Icc 0 1) :
+    ψT' (z₂' t) = ψS' (-1 / (z₂' t + 1)) * (z₂' t + 1) ^ 2 := by
+  rw [ψT'_comp_z₂'_eq_ψT_comp_z₂'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
+  congr
+
+lemma ψS_slash_ST_explicit₃ {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψT' (z₃' t) = ψS' (-1 / (z₃' t + 1)) * (z₃' t + 1) ^ 2 := by
+  rw [ψT'_comp_z₃'_eq_ψT_comp_z₃'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
+  congr
+
+lemma ψS_slash_ST_explicit₄ {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψT' (z₄' t) = ψS' (-1 / (z₄' t + 1)) * (z₄' t + 1) ^ 2 := by
+  rw [ψT'_comp_z₄'_eq_ψT_comp_z₄'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
+  congr
+
+lemma ψS_slash_ST_explicit₅ {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψT' (z₅' t) = ψS' (-1 / (z₅' t + 1)) * (z₅' t + 1) ^ 2 := by
+  rw [ψT'_comp_z₅'_eq_ψT_comp_z₅'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
+  congr
+
+lemma ψS_slash_ST_explicit₆ {t : ℝ} (ht : t ∈ Ioi 1) :
+  ψT' (z₆' t) = ψS' (-1 / (z₆' t + 1)) * (z₆' t + 1) ^ 2 := by
+  rw [ψT'_comp_z₆'_eq_ψT_comp_z₆'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
+  congr
 
 end rels_explicit
