@@ -105,7 +105,7 @@ lemma tsum_pnat_eq_tsum_succ4 {α : Type*} [TopologicalSpace α] [AddCommGroup �
   (f : ℕ → α) (hf : Summable f) : f 0 + ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f n := by
   rw [Summable.tsum_eq_zero_add hf]
   simp
-  exact tsum_pnat_eq_tsum_succ f
+  exact tsum_pnat_eq_tsum_succ3 f
 
 
 
@@ -1102,7 +1102,7 @@ theorem summable_iter_aut (k : ℕ) (z : ℍ) :
   by
   have := fun d : ℕ+ => iter_div_aut_add d k z.2
   simp only [Int.cast_natCast, one_div, Pi.add_apply] at *
-  have ht := (summable_congr this).2 ?_
+  have ht := (summable_congr (L := SummationFilter.unconditional _) this).2 ?_
   · norm_cast at *
   by_cases hk : 1 ≤ k
   · conv =>

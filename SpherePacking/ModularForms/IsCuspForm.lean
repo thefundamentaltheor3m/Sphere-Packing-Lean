@@ -22,7 +22,7 @@ def ModForm_mk (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) : Modula
   toFun := f
   slash_action_eq' := f.slash_action_eq'
   holo' := f.holo'
-  bdd_at_infty' A := (f.zero_at_infty' A).boundedAtFilter
+  bdd_at_cusps' := fun hc ↦ bdd_at_cusps f hc
 
 lemma ModForm_mk_inj (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) (hf : f ≠ 0) :
   ModForm_mk _ _ f ≠ 0 := by
@@ -41,7 +41,7 @@ def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspForm Γ k
     rfl
   map_smul' := by
     intro m f
-    simp only [ModForm_mk, CuspForm.coe_smul, RingHom.id_apply]
+    simp only [ModForm_mk, RingHom.id_apply]
     rfl
 
 def CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : Submodule ℂ (ModularForm Γ k) :=
@@ -71,13 +71,9 @@ instance (priority := 100) CuspFormSubmodule.funLike : FunLike (CuspFormSubmodul
 instance (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspFormClass (CuspFormSubmodule Γ k) Γ k where
   slash_action_eq f := f.1.slash_action_eq'
   holo f := f.1.holo'
-  zero_at_infty f := by
-    have hf := f.2
-    have := mem_CuspFormSubmodule Γ k f hf
-    obtain ⟨g, hg⟩ := this
-    convert g.zero_at_infty'
-    ext y
-    aesop
+  zero_at_cusps := by
+    rintro ⟨_, ⟨g, rfl⟩⟩ c hc
+    simpa [CuspForm_to_ModularForm, ModForm_mk] using g.zero_at_cusps' hc
 
 def IsCuspForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k) : Prop :=
   f ∈ CuspFormSubmodule Γ k
@@ -128,9 +124,35 @@ lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     use ⟨f.toSlashInvariantForm , f.holo', ?_⟩
     · simp only [CuspForm_to_ModularForm, ModForm_mk]
       rfl
-    · intro A
-      have hf := f.slash_action_eq' A (CongruenceSubgroup.mem_Gamma_one A)
-      simp only [ SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe, SL_slash] at *
+    · intro c hc
+      obtain ⟨A, hA⟩ : ∃ A : Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) Γ(1),
+           A • OnePoint.infty = c := by
+        rw [Subgroup.IsArithmetic.isCusp_iff_isCusp_SL2Z
+            (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) Γ(1))] at hc
+        rw [isCusp_SL2Z_iff'] at hc
+        obtain ⟨A, hA⟩ := hc
+        rw [Subtype.exists]
+        use A
+        have h1 : Matrix.SpecialLinearGroup.toGL
+           ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) A)
+             ∈ Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) Γ(1) := by
+          simp only [Subgroup.mem_map]
+          exact ⟨A, CongruenceSubgroup.mem_Gamma_one A, rfl⟩
+        use h1
+        symm at hA
+        have : Matrix.SpecialLinearGroup.toGL
+          ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) A) =
+            (Matrix.SpecialLinearGroup.mapGL ℝ) A := rfl
+        simp [this, hA]
+      rw [OnePoint.isZeroAt_iff hA]
+      have hf : (f.toFun ∣[k] (A : GL (Fin 2) ℝ)) = f.toFun := by
+        simp only [SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe]
+        apply f.slash_action_eq'
+        simp
+
+      simp only [Subgroup.map_toSubmonoid, SlashInvariantForm.toFun_eq_coe,
+        toSlashInvariantForm_coe]
+      simp only [ SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe] at *
       rw [hf]
       rw [qExpansion_coeff] at h
       simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul] at h

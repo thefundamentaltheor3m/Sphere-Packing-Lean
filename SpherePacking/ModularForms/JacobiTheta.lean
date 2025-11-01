@@ -470,19 +470,22 @@ end H_isBoundedAtImInfty
 noncomputable def H₂_MF : ModularForm (Γ 2) 2 := {
   H₂_SIF with
   holo' := H₂_SIF_MDifferentiable
-  bdd_at_infty' := isBoundedAtImInfty_H₂_slash
+  bdd_at_cusps' := sorry -- TODO(bump)
+  -- bdd_at_infty' := isBoundedAtImInfty_H₂_slash
 }
 
 noncomputable def H₃_MF : ModularForm (Γ 2) 2 := {
   H₃_SIF with
   holo' := H₃_SIF_MDifferentiable
-  bdd_at_infty' := isBoundedAtImInfty_H₃_slash
+  bdd_at_cusps' := sorry -- TODO(bump)
+  --bdd_at_infty' := isBoundedAtImInfty_H₃_slash
 }
 
 noncomputable def H₄_MF : ModularForm (Γ 2) 2 := {
   H₄_SIF with
   holo' := H₄_SIF_MDifferentiable
-  bdd_at_infty' := isBoundedAtImInfty_H₄_slash
+  bdd_at_cusps' := sorry -- TODO(bump)
+  --bdd_at_infty' := isBoundedAtImInfty_H₄_slash
 }
 
 /-- Jacobi identity -/

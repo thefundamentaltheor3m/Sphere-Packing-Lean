@@ -370,9 +370,9 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             -- First, we apply the fact that two sides are equal if they're equal in ℂ.
             apply congrArg re
             -- Next, we apply the fact that two sums are equal if their summands are.
-            apply congrArg _ _
+            congr 1
             ext x
-            apply congrArg _ _
+            congr 1
             ext y
             -- Now that we've isolated the innermost sum, we can use the PSF-L.
             exact SchwartzMap.PoissonSummation_Lattices P.lattice f (x - ↑y)
@@ -419,12 +419,12 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             -- are really trying to show are equal.
             apply congrArg re
             apply congrArg _ _
-            apply congrArg _ _
+            congr 1
             ext m
             apply congrArg _ _
-            apply congrArg _ _
+            congr 1
             ext x
-            apply congrArg _ _
+            congr 1
             ext y
             simp only [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg, mul_comm]
             rw [RCLike.wInner_add_left]
@@ -439,15 +439,15 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
         := by
             apply congrArg re
             apply congrArg _ _
-            apply congrArg _ _
+            congr 1
             ext m
             simp only [mul_assoc]
             apply congrArg _ _
             rw [← tsum_mul_right]
-            apply congrArg _ _
+            congr 1
             ext x
             rw [← tsum_mul_left]
-            apply congrArg _ _
+            congr 1
             ext y
             simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
@@ -460,11 +460,11 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
         := by
             apply congrArg re
             apply congrArg _ _
-            apply congrArg _ _
+            congr 1
             ext m
             apply congrArg _ _
             rw [conj_tsum]
-            apply congrArg _ _
+            congr 1
             ext x
             exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
   _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,

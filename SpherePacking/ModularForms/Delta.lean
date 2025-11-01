@@ -25,7 +25,7 @@ lemma DiscriminantProductFormula (z : ℍ) : Δ z = cexp (2 * π * Complex.I * z
       ext n
       rw [show (n : ℂ) + 1 = ((n + 1) : ℕ) by simp]
 
-    have := tprod_pnat_eq_tprod_succ (fun n => (1 - cexp (2 * π * Complex.I * (n) * z)) ^ 24)
+    have := tprod_pnat_eq_tprod_succ (f := (fun n => (1 - cexp (2 * π * Complex.I * (n) * z)) ^ 24))
     rw [this]
 
 
@@ -86,8 +86,7 @@ def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun := Δ
   slash_action_eq' A := by
     intro hA
-    exact slashaction_generators_SL2Z Δ 12 (Discriminant_S_invariant) (Discriminant_T_invariant) A
-
+    exact slashaction_generators_GL2R Δ 12 Discriminant_S_invariant Discriminant_T_invariant A hA
 
 
 instance : atImInfty.NeBot := by
@@ -278,10 +277,36 @@ theorem Delta_boundedfactor :
 
 open Real
 
-lemma Discriminant_zeroAtImInfty (γ : SL(2, ℤ)) : IsZeroAtImInfty
-    (Discriminant_SIF ∣[(12 : ℤ)] γ) := by
+lemma Discriminant_zeroAtCusps {c : OnePoint ℝ}
+    (hc : IsCusp c (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
+                   (CongruenceSubgroup.Gamma 1))) :
+    c.IsZeroAt (Discriminant_SIF) 12 := by
+  obtain ⟨γ, hγ⟩ : ∃ A : Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
+                                      (CongruenceSubgroup.Gamma 1),
+           A • OnePoint.infty = c := by
+    rw [Subgroup.IsArithmetic.isCusp_iff_isCusp_SL2Z
+        (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) (CongruenceSubgroup.Gamma 1))] at hc
+    rw [isCusp_SL2Z_iff'] at hc
+    obtain ⟨A, hA⟩ := hc
+    rw [Subtype.exists]
+    use A
+    have h1 : Matrix.SpecialLinearGroup.toGL
+       ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) A)
+         ∈ Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) (CongruenceSubgroup.Gamma 1) := by
+      simp only [Subgroup.mem_map]
+      exact ⟨A, CongruenceSubgroup.mem_Gamma_one A, rfl⟩
+    use h1
+    symm at hA
+    have : Matrix.SpecialLinearGroup.toGL
+      ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) A) =
+        (Matrix.SpecialLinearGroup.mapGL ℝ) A := rfl
+    simp [this, hA]
+  rw [OnePoint.isZeroAt_iff hγ]
+  clear! c
   rw [IsZeroAtImInfty, ZeroAtFilter]
-  have := Discriminant_SIF.slash_action_eq' γ (CongruenceSubgroup.mem_Gamma_one γ)
+  have : ⇑Discriminant_SIF ∣[(12:ℤ)] (γ: GL (Fin 2) ℝ) = Discriminant_SIF := by
+    apply Discriminant_SIF.slash_action_eq'
+    simp
   simp at *
   rw [this]
   simp [Discriminant_SIF]
@@ -304,7 +329,7 @@ def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
   slash_action_eq' := Discriminant_SIF.slash_action_eq'
   holo' := by
     rw [mdifferentiable_iff]
-    simp
+    simp only [SlashInvariantForm.coe_mk]
     have := eta_DifferentiableAt_UpperHalfPlane
     have he2 : DifferentiableOn ℂ (fun z => (η z) ^ 24) {z | 0 < z.im} := by
       apply DifferentiableOn.pow
@@ -312,14 +337,14 @@ def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
       apply DifferentiableAt.differentiableWithinAt
       exact this ⟨x, hx⟩
     rw [Discriminant_SIF]
-    simp
+    simp only [SlashInvariantForm.coe_mk]
     apply he2.congr
     intro z hz
     have := Delta_eq_eta_pow (⟨z, hz⟩ : ℍ)
-    simp at *
+    simp only [coe_mk_subtype, comp_apply] at *
     rw [ofComplex_apply_of_im_pos hz]
     exact this
-  zero_at_infty' := fun A => Discriminant_zeroAtImInfty A
+  zero_at_cusps' hc := Discriminant_zeroAtCusps hc
 
 lemma Delta_apply (z : ℍ) : Delta z = Δ z := by rfl
 
@@ -361,14 +386,26 @@ lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ => Real.exp (-2 * π * �
 lemma CuspForm_apply (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (z : ℍ) :
   f.toFun z = f z := by rfl
 
-theorem div_Delta_is_SIF (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (γ : SL(2, ℤ)) :
-  (⇑f / ⇑Delta) ∣[k - 12] γ = ⇑f / ⇑Delta := by
+theorem div_Delta_is_SIF (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k)
+    (γ : GL (Fin 2) ℝ)
+    (hγ : γ ∈ Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) (CongruenceSubgroup.Gamma 1)) :
+    (⇑f / ⇑Delta) ∣[k - 12] γ = ⇑f / ⇑Delta := by
+  simp only [Subgroup.mem_map] at hγ
+  obtain ⟨γ, hA₁, hA₂⟩ := hγ
+  rw [←hA₂]
   ext z
+  change ((⇑f / ⇑Delta) ∣[k - 12] γ) z = (⇑f / ⇑Delta) z
   rw [ModularForm.slash_action_eq'_iff (k -12) _ γ]
   have h0 : (⇑f / ⇑Delta) z = (⇑f z / ⇑Delta z) := rfl
   have h1 : (⇑f / ⇑Delta) (γ • z) = (⇑f (γ • z) / ⇑Delta (γ • z)) := rfl
-  have h2 := congrFun (f.slash_action_eq' γ (CongruenceSubgroup.mem_Gamma_one γ)) z
-  have h3 := congrFun (Delta.slash_action_eq' γ (CongruenceSubgroup.mem_Gamma_one γ)) z
+  have h2 : (f.toFun ∣[k] γ) z = f.toFun z := by
+    apply congrFun
+    apply f.slash_action_eq'
+    exact Subgroup.mem_map_of_mem (Matrix.SpecialLinearGroup.mapGL ℝ) hA₁
+  have h3 : (Delta.toFun ∣[(12:ℤ)] γ) z = Delta.toFun z := by
+    apply congrFun
+    apply Delta.slash_action_eq'
+    exact Subgroup.mem_map_of_mem (Matrix.SpecialLinearGroup.mapGL ℝ) hA₁
   rw [ModularForm.slash_action_eq'_iff, CuspForm_apply, CuspForm_apply] at h2 h3
   rw [h0, h1, h2, h3, Delta_apply]
   have hD := Δ_ne_zero z
@@ -385,8 +422,8 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
   ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) where
     toFun := f / Delta
     slash_action_eq' := by
-      intro γ _
-      apply div_Delta_is_SIF
+      intro γ hγ
+      exact div_Delta_is_SIF _ _ γ hγ
     holo' := by
       rw [mdifferentiable_iff]
       simp only [SlashInvariantForm.coe_mk]
@@ -402,6 +439,8 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
         simp only [comp_apply, ne_eq]
         rw [ofComplex_apply_of_im_pos hx]
         apply this
+    bdd_at_cusps' := sorry
+/- TODO(bump)
     bdd_at_infty' := by
       intro A
       have h1 := CuspFormClass.exp_decay_atImInfty 1 f
@@ -436,6 +475,7 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
       · positivity
       · apply hB3
         apply hz.2
+-/
 
 lemma CuspForm_div_Discriminant_apply (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k)
     (z : ℍ) : (CuspForm_div_Discriminant k f) z = f z / Δ z := rfl
