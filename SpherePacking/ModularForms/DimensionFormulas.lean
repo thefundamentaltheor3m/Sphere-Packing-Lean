@@ -65,11 +65,9 @@ def CuspForms_iso_Modforms (k : ℤ) : CuspForm (CongruenceSubgroup.Gamma 1) k �
       map_smul' := by
         intro m a
         ext z
-        sorry
-        /- TODO(bump)
-        simp only [CuspForm_div_Discriminant_apply, CuspForm.smul_apply, smul_eq_mul,
-          RingHom.id_apply, ModularForm.smul_apply]
-        ring -/
+        simp only [CuspForm_div_Discriminant_apply, CuspForm.IsGLPos.smul_apply, smul_eq_mul,
+          RingHom.id_apply, IsGLPos.smul_apply]
+        exact mul_div_assoc m (a z) (Δ z)
       invFun := Modform_mul_Delta' k
       left_inv := by
         intro f
@@ -370,17 +368,14 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
         DirectSum.of_mul_of,DirectSum.of_mul_of]
       simp only [one_div, Int.reduceAdd, DirectSum.sub_apply, DirectSum.of_eq_same]
       ext y
-      sorry
-      /- TODO(bump) simp only [ModularForm.smul_apply, sub_apply, Int.reduceAdd, smul_eq_mul]
+      simp only [IsGLPos.smul_apply, sub_apply, Int.reduceAdd, smul_eq_mul]
       ring_nf
-      rfl -/
+      rfl
     have ht : (1 / 1728 : ℂ) • ((((F^2)^3) 12) - (((F^3)^2) 12)) = 0 := by
       ext y
-      sorry
-      /- TODO(bump)
-      simp only [one_div, ModularForm.smul_apply, sub_apply, smul_eq_mul, ModularForm.zero_apply,
-        mul_eq_zero, inv_eq_zero, OfNat.ofNat_ne_zero, false_or, F]
-      ring_nf -/
+      simp only [one_div, IsGLPos.smul_apply, sub_apply, smul_eq_mul, zero_apply, mul_eq_zero,
+        inv_eq_zero, OfNat.ofNat_ne_zero, false_or, F]
+      ring_nf
     rw [ht] at V
     have hr := congr_fun (congr_arg (fun x ↦ x.toFun) V) UpperHalfPlane.I
     sorry
