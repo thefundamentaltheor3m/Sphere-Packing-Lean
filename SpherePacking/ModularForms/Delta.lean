@@ -25,7 +25,7 @@ lemma DiscriminantProductFormula (z : ℍ) : Δ z = cexp (2 * π * Complex.I * z
       ext n
       rw [show (n : ℂ) + 1 = ((n + 1) : ℕ) by simp]
 
-    have := tprod_pnat_eq_tprod_succ (fun n => (1 - cexp (2 * π * Complex.I * (n) * z)) ^ 24)
+    have := tprod_pnat_eq_tprod_succ (f := (fun n => (1 - cexp (2 * π * Complex.I * (n) * z)) ^ 24))
     rw [this]
 
 

@@ -10,6 +10,7 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 noncomputable section Definitions
 
 
+
 variable {α ι : Type*}
 
 open SlashInvariantFormClass ModularFormClass
@@ -123,9 +124,35 @@ lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     use ⟨f.toSlashInvariantForm , f.holo', ?_⟩
     · simp only [CuspForm_to_ModularForm, ModForm_mk]
       rfl
-    · intro A
-      have hf := f.slash_action_eq' A (CongruenceSubgroup.mem_Gamma_one A)
-      simp only [ SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe, SL_slash] at *
+    · intro c hc
+      obtain ⟨A, hA⟩ : ∃ A : Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) Γ(1),
+           A • OnePoint.infty = c := by
+        rw [Subgroup.IsArithmetic.isCusp_iff_isCusp_SL2Z
+            (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) Γ(1))] at hc
+        rw [isCusp_SL2Z_iff'] at hc
+        obtain ⟨A, hA⟩ := hc
+        rw [Subtype.exists]
+        use A
+        have h1 : Matrix.SpecialLinearGroup.toGL
+           ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) A)
+             ∈ Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) Γ(1) := by
+          simp only [Subgroup.mem_map]
+          exact ⟨A, CongruenceSubgroup.mem_Gamma_one A, rfl⟩
+        use h1
+        symm at hA
+        have : Matrix.SpecialLinearGroup.toGL
+          ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) A) =
+            (Matrix.SpecialLinearGroup.mapGL ℝ) A := rfl
+        simp [this, hA]
+      rw [OnePoint.isZeroAt_iff hA]
+      have hf : (f.toFun ∣[k] (A : GL (Fin 2) ℝ)) = f.toFun := by
+        simp only [SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe]
+        apply f.slash_action_eq'
+        simp
+
+      simp only [Subgroup.map_toSubmonoid, SlashInvariantForm.toFun_eq_coe,
+        toSlashInvariantForm_coe]
+      simp only [ SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe] at *
       rw [hf]
       rw [qExpansion_coeff] at h
       simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul] at h
