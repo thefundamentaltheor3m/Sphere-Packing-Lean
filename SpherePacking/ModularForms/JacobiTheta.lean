@@ -246,15 +246,15 @@ lemma H₄_β_action : (H₄ ∣[(2 : ℤ)] β.1) = H₄ := calc
 /-- H₂, H₃, H₄ are modular forms of weight 2 and level Γ(2) -/
 noncomputable def H₂_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₂
-  slash_action_eq' := sorry -- TODO(bump) slashaction_generators_Γ2 H₂ (2 : ℤ) H₂_α_action H₂_β_action H₂_negI_action
+  slash_action_eq' := slashaction_generators_Γ2 H₂ (2 : ℤ) H₂_α_action H₂_β_action H₂_negI_action
 
 noncomputable def H₃_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₃
-  slash_action_eq' := sorry -- TODO(bump) slashaction_generators_Γ2 H₃ (2 : ℤ) H₃_α_action H₃_β_action H₃_negI_action
+  slash_action_eq' := slashaction_generators_Γ2 H₃ (2 : ℤ) H₃_α_action H₃_β_action H₃_negI_action
 
 noncomputable def H₄_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₄
-  slash_action_eq' := sorry -- TODO(bump) slashaction_generators_Γ2 H₄ (2 : ℤ) H₄_α_action H₄_β_action H₄_negI_action
+  slash_action_eq' := slashaction_generators_Γ2 H₄ (2 : ℤ) H₄_α_action H₄_β_action H₄_negI_action
 
 end H_SlashInvariant
 

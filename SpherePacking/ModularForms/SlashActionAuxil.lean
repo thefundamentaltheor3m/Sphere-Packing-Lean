@@ -157,9 +157,13 @@ theorem slashaction_generators_GL2R
 
 theorem slashaction_generators_Γ2
     (f : ℍ → ℂ) (k : ℤ) (hα : f ∣[k] α.1 = f) (hβ : f ∣[k] β.1 = f) (hnegI : f ∣[k] negI.1 = f) :
-    (∀ γ ∈ Γ 2, f ∣[k] γ = f) := by
+    (∀ γ ∈ Subgroup.map (SpecialLinearGroup.mapGL ℝ) (Γ 2), f ∣[k] γ = f) := by
   intro γ hγ
-  refine (slashaction_generators' f {α, β, negI} Γ2_generate k).mpr ?_ ⟨_, hγ⟩
+  simp only [Subgroup.mem_map] at hγ
+  obtain ⟨A, hA₁, hA₂⟩ := hγ
+  rw [←hA₂]
+  change f ∣[k] A = f
+  refine (slashaction_generators' f {α, β, negI} Γ2_generate k).mpr ?_ ⟨_, hA₁⟩
   intro γ hγ
   rcases hγ with (rfl | rfl | rfl | _) <;> assumption
 
