@@ -378,20 +378,19 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
       ring_nf
     rw [ht] at V
     have hr := congr_fun (congr_arg (fun x ↦ x.toFun) V) UpperHalfPlane.I
-    sorry
-    /- TODO(bump)
-    simp only [SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe, ModularForm.zero_apply,
-      PowerSeries.coeff_zero_eq_constantCoeff, ModularForm.smul_apply, smul_eq_mul, zero_eq_mul,
-      ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff, D] at hr
+    simp only [SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe, zero_apply,
+      PowerSeries.coeff_zero_eq_constantCoeff, DirectSum.of_eq_same, IsGLPos.smul_apply,
+      smul_eq_mul, zero_eq_mul, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff,
+      D] at hr
     rcases hr with h | h
     · simp only [PowerSeries.coeff_zero_eq_constantCoeff, ne_eq, Int.reduceAdd, one_div,
       isUnit_iff_ne_zero, inv_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, IsUnit.smul_eq_zero,
       F, D] at *
       exact hc1 h
-    · simp only [ModForm_mk, DirectSum.of_eq_same] at h
+    · simp only [ModForm_mk] at h
       have hDelta := Δ_ne_zero UpperHalfPlane.I
       rw [← Delta_apply] at hDelta
-      exact hDelta h -/
+      exact hDelta h
 
 lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
     Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) k) =
