@@ -146,19 +146,25 @@ $a(x)$ is a Schwartz function.
 We estimate the first summand in the right-hand side of \eqref{eqn:a-definition}.
 By \eqref{eqn:phi0-bound}, we have
 \begin{align}
-    &\left|\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 z}\,dz\right|=\left|\int\limits_{i\infty}^{-1/(i+1)}\phi_0(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz\right|\leq \notag\\
-    &C_1\int\limits_{1/2}^{\infty}e^{-2\pi t}\,e^{-\pi    r^2/t}\,dt\leq C_1\int\limits_{0}^{\infty}e^{-2\pi t}\,e^{-\pi    r^2/t}\,dt=C_2\,r\,K_1(2\sqrt{2}\,\pi\,r)\notag
+    \left|\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 z}\,dz\right| &=\left|\int\limits_{i\infty}^{-1/(i+1)}\phi_0(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,\dd z\right| \notag\\
+    &= \left|\int_{1/2}^{\infty} \phi_0\left(-\frac{1}{2} + it\right) \left(- \frac{1}{2} + it\right)^{-4} e^{\pi i r^2 \left(\frac{1 - 4t^2}{1 + 4t^2} + i \frac{4t}{1 + 4t^2}\right)}\,\dd t\right| \\
+    &\le \int\limits_{1/2}^{\infty}C_0 e^{-2\pi t} \cdot \left(\frac{1}{2}\right)^{-4}\cdot e^{-\pi r^2 \frac{4t}{1 + 4t^2}}\,\dd t \notag \\
+    &\leq C\int\limits_{0}^{\infty}e^{-2\pi t}\,e^{-\pi r^2/t}\,\dd t
 \end{align}
-where $C_1$ and $C_2$ are some positive constants and $K_\alpha(x)$ is the modified Bessel function of the second kind defined as in \cite[Section~9.6]{Abramowitz}. This estimate also holds for the second and third summand in \eqref{eqn:a-definition}.
-For the last summand we have
-\begin{equation}
-\left|\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i r^2 z}\,dz\right|\leq C\,\int\limits_{1}^{\infty} e^{-2\pi t}\,e^{-\pi r^2 t}\,dt=C_3\frac{e^{\pi(r^2+2)}}{r^2+2}.
-\end{equation}
-Therefore, we arrive at
-\begin{equation}
-    |a(r)|\leq 4C_2\,r\,K_1(2\sqrt{2}\pi r)+2C_3\frac{e^{-\pi(r^2+2)}}{r^2+2}.
-\end{equation}
-It is easy to see that the left hand side of this inequality decays faster then any inverse power of $r$. Analogous estimates can be obtained for all derivatives $\frac{\dd^k}{\dd r^k}a(r)$.
+where $C = 16 C_0$.
+The last integral can be expressed in terms of the modified Bessel function $K_1$, which has exponential decay and hence so does the integral.
+Instead of appealing the fact, we follow more elementary argument by Slipper \cite[Proposition 4.4.3]{Slipper}.
+The integral can be break up into two parts as
+\[
+\int_0^\infty e^{-2 \pi t} e^{\pi r^2 / t} \dd t = \int_0^{r / \sqrt{2}} e^{-\pi (2t + r^2 / t)} \dd t + \int_{r / \sqrt{2}}^{\infty} e^{-\pi (2t + r^2 / t)} \dd t
+\]
+and each part can be bounded as
+\begin{align}
+    \int_0^{r /\sqrt{2}} e^{-\pi(2t + r^2 / t)} \dd t &\le \int_0^{r / \sqrt{2}} e^{-\pi r^2 / t} \dd t = \int_{\sqrt{2} / r}^{\infty} e^{-\pi r^2 t} \frac{\dd t}{t^2} \dd t \le \frac{r^2}{2} \int_{\sqrt{2} / r}^{\infty} e^{-\pi r^2 t} \dd t = \frac{e^{-\sqrt{2} \pi r}}{2 \pi}, \\
+    \int_{r / \sqrt{2}}^{\infty} e^{-\pi (2t + r^2 / t)} \dd t &\le \int_{r / \sqrt{2}}^{\infty} e^{-2 \pi t} \dd t = \frac{e^{-\sqrt{2} \pi r}}{2 \pi},
+\end{align}
+so the entire integral is bounded by $e^{-\sqrt{2} \pi r} / \pi$, which decays exponentially as $r \to \infty$.
+The other integrals \eqref{eqn:a-definition} can be treated similarly.
 \end{proof}
 
 \begin{proposition}\label{prop:a-fourier}
