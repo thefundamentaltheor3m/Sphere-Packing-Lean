@@ -86,10 +86,7 @@ def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun := Δ
   slash_action_eq' A := by
     intro hA
-    -- TODO(bump)
-    sorry
-    --exact slashaction_generators_SL2Z Δ 12 (Discriminant_S_invariant) (Discriminant_T_invariant) A
-
+    exact slashaction_generators_GL2R Δ 12 Discriminant_S_invariant Discriminant_T_invariant A hA
 
 
 instance : atImInfty.NeBot := by
