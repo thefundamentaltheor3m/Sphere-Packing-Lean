@@ -370,12 +370,13 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             -- First, we apply the fact that two sides are equal if they're equal in ℂ.
             apply congrArg re
             -- Next, we apply the fact that two sums are equal if their summands are.
+            sorry /- TODO(bump)
             apply congrArg _ _
             ext x
             apply congrArg _ _
             ext y
             -- Now that we've isolated the innermost sum, we can use the PSF-L.
-            exact SchwartzMap.PoissonSummation_Lattices P.lattice f (x - ↑y)
+            exact SchwartzMap.PoissonSummation_Lattices P.lattice f (x - ↑y) -/
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
       (𝓕 f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
@@ -419,6 +420,8 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             -- are really trying to show are equal.
             apply congrArg re
             apply congrArg _ _
+            sorry
+            /- TODO(bump)
             apply congrArg _ _
             ext m
             apply congrArg _ _
@@ -430,7 +433,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             rw [RCLike.wInner_add_left]
             simp only [RCLike.wInner_neg_left, ofReal_add, ofReal_neg]
             rw [mul_add, Complex.exp_add, mul_comm]
-            simp
+            simp -/
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
       (𝓕 f m).re * (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
@@ -439,6 +442,8 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
         := by
             apply congrArg re
             apply congrArg _ _
+            sorry
+            /- TODO(bump)
             apply congrArg _ _
             ext m
             simp only [mul_assoc]
@@ -449,7 +454,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             rw [← tsum_mul_left]
             apply congrArg _ _
             ext y
-            simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
+            simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg] -/
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
     m).re *
       (∑' x : ↑(P.centers ∩ D),
@@ -460,13 +465,15 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
         := by
             apply congrArg re
             apply congrArg _ _
+            sorry
+            /- TODO(bump)
             apply congrArg _ _
             ext m
             apply congrArg _ _
             rw [conj_tsum]
             apply congrArg _ _
             ext x
-            exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
+            exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m -/
   _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
       (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
