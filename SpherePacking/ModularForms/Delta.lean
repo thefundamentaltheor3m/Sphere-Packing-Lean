@@ -386,15 +386,26 @@ lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ => Real.exp (-2 * π * �
 lemma CuspForm_apply (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (z : ℍ) :
   f.toFun z = f z := by rfl
 
-theorem div_Delta_is_SIF (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (γ : SL(2, ℤ)) :
-  (⇑f / ⇑Delta) ∣[k - 12] γ = ⇑f / ⇑Delta := by
+theorem div_Delta_is_SIF (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k)
+    (γ : GL (Fin 2) ℝ)
+    (hγ : γ ∈ Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) (CongruenceSubgroup.Gamma 1)) :
+    (⇑f / ⇑Delta) ∣[k - 12] γ = ⇑f / ⇑Delta := by
+  simp only [Subgroup.mem_map] at hγ
+  obtain ⟨γ, hA₁, hA₂⟩ := hγ
+  rw [←hA₂]
   ext z
+  change ((⇑f / ⇑Delta) ∣[k - 12] γ) z = (⇑f / ⇑Delta) z
   rw [ModularForm.slash_action_eq'_iff (k -12) _ γ]
   have h0 : (⇑f / ⇑Delta) z = (⇑f z / ⇑Delta z) := rfl
   have h1 : (⇑f / ⇑Delta) (γ • z) = (⇑f (γ • z) / ⇑Delta (γ • z)) := rfl
-  sorry /- TODO(bump)
-  have h2 := congrFun (f.slash_action_eq' γ (CongruenceSubgroup.mem_Gamma_one γ)) z
-  have h3 := congrFun (Delta.slash_action_eq' γ (CongruenceSubgroup.mem_Gamma_one γ)) z
+  have h2 : (f.toFun ∣[k] γ) z = f.toFun z := by
+    apply congrFun
+    apply f.slash_action_eq'
+    exact Subgroup.mem_map_of_mem (Matrix.SpecialLinearGroup.mapGL ℝ) hA₁
+  have h3 : (Delta.toFun ∣[(12:ℤ)] γ) z = Delta.toFun z := by
+    apply congrFun
+    apply Delta.slash_action_eq'
+    exact Subgroup.mem_map_of_mem (Matrix.SpecialLinearGroup.mapGL ℝ) hA₁
   rw [ModularForm.slash_action_eq'_iff, CuspForm_apply, CuspForm_apply] at h2 h3
   rw [h0, h1, h2, h3, Delta_apply]
   have hD := Δ_ne_zero z
@@ -405,19 +416,15 @@ theorem div_Delta_is_SIF (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k)
   rw [← inv_zpow, inv_zpow']
   simp_rw [← mul_assoc]
   rw [zpow_add₀ (by apply (denom_ne_zero γ z))]
-  ring-/
+  ring
 
 def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) :
   ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) where
     toFun := f / Delta
     slash_action_eq' := by
-      sorry /- TODO(bump)
-      intro γ _
-      apply div_Delta_is_SIF -/
+      intro γ hγ
+      exact div_Delta_is_SIF _ _ γ hγ
     holo' := by
-      -- TODO(bump)
-      sorry
-      /-
       rw [mdifferentiable_iff]
       simp only [SlashInvariantForm.coe_mk]
       have : (⇑f / ⇑Delta) ∘ ↑ofComplex = (⇑f ∘ ↑ofComplex) / (Delta ∘ ↑ofComplex) := by rfl
@@ -432,6 +439,8 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
         simp only [comp_apply, ne_eq]
         rw [ofComplex_apply_of_im_pos hx]
         apply this
+    bdd_at_cusps' := sorry
+/- TODO(bump)
     bdd_at_infty' := by
       intro A
       have h1 := CuspFormClass.exp_decay_atImInfty 1 f
@@ -467,7 +476,6 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
       · apply hB3
         apply hz.2
 -/
-    bdd_at_cusps' := sorry
 
 lemma CuspForm_div_Discriminant_apply (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k)
     (z : ℍ) : (CuspForm_div_Discriminant k f) z = f z / Δ z := rfl
