@@ -22,7 +22,22 @@ theorem perm_I₅ : fourierTransformCLE ℂ (I₅) = I₆ := by sorry
 
 theorem perm_₃_I₄ : fourierTransformCLE ℂ (I₃ + I₄) = I₁ + I₂ := by sorry
 
-theorem perm_I₆ : fourierTransformCLE ℂ (I₆) = I₅ := by sorry
+theorem perm_I₆ : fourierTransformCLE ℂ (I₆) = I₅ :=
+by
+  calc
+    fourierTransformCLE ℂ I₆
+        = (SchwartzMap.fourierTransformCLE ℂ).symm I₆ := by
+          ext x
+          have h := congrArg (fun f => f x)
+            (Real.fourierIntegralInv_eq_fourierIntegral_comp_neg
+              (I₆ : EuclideanSpace ℝ (Fin 8) → ℂ))
+          simpa [SchwartzMap.fourierTransformCLE_symm_apply,
+            SchwartzMap.fourierTransformCLE_apply, I₆,
+            schwartzMap_multidimensional_of_schwartzMap_real,
+            SchwartzMap.compCLM_apply] using h.symm
+    _ = I₅ := by
+          simpa [ContinuousLinearEquiv.symm_apply_apply] using
+            (congrArg ((SchwartzMap.fourierTransformCLE ℂ).symm) perm_I₅).symm
 
 end Integral_Permutations
 

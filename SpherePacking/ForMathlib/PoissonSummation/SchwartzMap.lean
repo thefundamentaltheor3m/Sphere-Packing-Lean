@@ -86,24 +86,17 @@ theorem coordinateEmbedding₁₂_injective (x : ℝ) : (coordinateEmbedding₁�
   exact this
 
 /-- `coordinateEmbedding₁₂` is smooth. -/
-theorem coordinateEmbedding₁₂_smooth (x : ℝ) : ContDiff ℝ ⊤ (coordinateEmbedding₁₂ x) := by
+theorem coordinateEmbedding₁₂_smooth (x : ℝ) : ContDiff ℝ ⊤ (coordinateEmbedding₁₂ x) :=
+by
+  classical
   rw [contDiff_euclidean]
   intro i
-  simp only [coordinateEmbedding₁₂, coe_funUnique, eval, Fin.default_eq_zero, Fin.isValue]
-  if hi₀ : i = 0 then
-  · rw [hi₀]
-    simp only [Fin.isValue, toLp_apply, Matrix.cons_val_zero]
-    exact contDiff_const
-  else if hi₁ : i = 1 then
-  · rw [hi₁]
-    simp only [Fin.isValue, toLp_apply, Matrix.cons_val_one, Matrix.cons_val_fin_one]
-    have : (fun (x : Euc(1)) ↦ x 0) = ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ := rfl
-    stop
-    rw [this]
-    exact ContinuousLinearEquiv.contDiff _
-  else
-  · induction' i with i hi
-    interval_cases i <;> contradiction
+  fin_cases i
+  · simpa [coordinateEmbedding₁₂, Fin.isValue, Matrix.cons_val_zero]
+      using (contDiff_const : ContDiff ℝ ⊤ (fun _ : Euc(1) => (x : ℝ)))
+  · simpa [coordinateEmbedding₁₂, Fin.isValue, Matrix.cons_val_one, Matrix.cons_val_fin_one,
+        EuclideanSpace.proj, PiLp.proj]
+      using ((EuclideanSpace.proj (ι := Fin 1) (𝕜 := ℝ) 0 : Euc(1) →L[ℝ] ℝ).contDiff)
 
 -- We first show temperate growth.
 -- #check Function.HasTemperateGrowth
@@ -131,10 +124,10 @@ theorem coordinateEmbedding₁₂_hasDerivAt (x : ℝ) (p : Euc(1)) :
 
 /-- The Jacobian of `coordinateEmbedding₁₂` has temperate growth. -/
 theorem fderiv_coordinateEmbedding₁₂_hasTemperateGrowth (x : ℝ) :
-    Function.HasTemperateGrowth (fderiv ℝ (coordinateEmbedding₁₂ x)) := by
-  constructor
-  · sorry
-  · sorry
+    Function.HasTemperateGrowth (fderiv ℝ (coordinateEmbedding₁₂ x)) :=
+by
+  simpa [funext (fun p => by simpa using (coordinateEmbedding₁₂_hasDerivAt x p).fderiv)]
+    using Function.HasTemperateGrowth.const (coordinateEmbedding₁₂_fderiv x)
 
 example {a b : ℝ} : 0 ≤ a → 0 ≤ b → (a ≤ b ↔ a ^ 2 ≤ b ^ 2) := by
   exact fun a_1 a_2 ↦ Iff.symm (sq_le_sq₀ a_1 a_2)
