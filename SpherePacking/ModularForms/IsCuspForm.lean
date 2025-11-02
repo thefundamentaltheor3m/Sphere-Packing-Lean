@@ -1,6 +1,8 @@
 import Mathlib.Analysis.CStarAlgebra.Module.Defs
 import SpherePacking.ModularForms.qExpansion_lems
 
+import SpherePacking.ForMathlib.Cusps
+
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
 
@@ -8,6 +10,7 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 
 noncomputable section Definitions
+
 
 
 variable {α ι : Type*}
@@ -104,7 +107,6 @@ lemma CuspForm_to_ModularForm_Fun_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : 
   simp [ModForm_mk] at *
   exact hgg
 
-
 lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     IsCuspForm Γ(1) k f ↔ (qExpansion 1 f).coeff 0 = 0 := by
   constructor
@@ -123,9 +125,18 @@ lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     use ⟨f.toSlashInvariantForm , f.holo', ?_⟩
     · simp only [CuspForm_to_ModularForm, ModForm_mk]
       rfl
-    · intro A
-      have hf := f.slash_action_eq' A (CongruenceSubgroup.mem_Gamma_one A)
-      simp only [ SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe, SL_slash] at *
+    · intro c hc
+      obtain ⟨A, hA⟩ : ∃ A : Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) Γ(1),
+           A • OnePoint.infty = c := smul_infty_eq_cusp_gamma_one hc
+      rw [OnePoint.isZeroAt_iff hA]
+      have hf : (f.toFun ∣[k] (A : GL (Fin 2) ℝ)) = f.toFun := by
+        simp only [SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe]
+        apply f.slash_action_eq'
+        simp
+
+      simp only [Subgroup.map_toSubmonoid, SlashInvariantForm.toFun_eq_coe,
+        toSlashInvariantForm_coe]
+      simp only [ SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe] at *
       rw [hf]
       rw [qExpansion_coeff] at h
       simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul] at h
