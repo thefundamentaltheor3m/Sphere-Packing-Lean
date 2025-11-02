@@ -14,7 +14,7 @@ import Mathlib
 
 open Set Algebra Submodule MeasureTheory UnitAddTorus FourierTransform Asymptotics
 
-open Asymptotics Topology Real Filter ContinuousMap ZLattice Submodule
+open Asymptotics Topology Real Filter ContinuousMap ZLattice Submodule WithLp
 
 variable {d : Type*} [Fintype d] {f : EuclideanSpace ℝ d → ℂ}
 
@@ -76,21 +76,17 @@ theorem tsum_mFourier_coeff_eq_tsum_fourierIntegralof_rpow_decay_of_summable {b 
 
 /-- d-dimensional analogue of the absolute convergence of p-series. -/
 lemma summable_abs_int_rpow {b : ℝ} (hb : Fintype.card d < b) :
-    Summable (fun (n : d → ℤ) =>
-    @Norm.norm (EuclideanSpace ℝ d) (PiLp.instNorm 2 fun x ↦ ℝ) (fun i => n i) ^ (-b)) := by
+    Summable (fun (n : d → ℤ) => ‖toLp 2 (fun i => n i)‖^ (-b)) := by
   sorry
-  /-There should be a better way to write this. -/
 
 /-- The inclusion from ℤᵈ to ℝᵈ maps the filter of cofinite sets to the filter of cocompact sets.
 This is the d-dimensional analogue of `Int.tendsto_coe_cofinite`. -/
 lemma IntLattice.tendsto_coe_cofinite :
-    Filter.Tendsto (fun n : d → ℤ => fun i => (n i : ℝ))
+    Filter.Tendsto (fun n : d → ℤ => toLp 2 fun i => (n i : ℝ))
     Filter.cofinite (Filter.cocompact (EuclideanSpace ℝ d)) := by
   apply tendsto_cofinite_cocompact_iff.mpr ?_
   intro K hK
-  obtain ⟨M, hM⟩ : ∃ M > 0, ∀ x ∈ K, @Norm.norm (EuclideanSpace ℝ d)
-    SeminormedAddCommGroup.toSeminormedAddGroup.toNorm x ≤ M :=
-    hK.isBounded.exists_pos_norm_le (E := EuclideanSpace ℝ d)
+  obtain ⟨M, hM⟩ : ∃ M > 0, ∀ x ∈ K, ‖x‖ ≤ M := hK.isBounded.exists_pos_norm_le
   have h_bound : ∀ n : d → ℤ, (fun i => (n i : ℝ)) ∈ K → ∀ i, |(n i : ℝ)| ≤ M := by
     intro n hn i
     simp [EuclideanSpace.norm_eq] at hM
