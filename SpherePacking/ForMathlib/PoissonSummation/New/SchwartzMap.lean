@@ -14,7 +14,7 @@ import Mathlib
 
 open Set Algebra Submodule MeasureTheory UnitAddTorus FourierTransform Asymptotics
 
-open Asymptotics TopologicalSpace Real Filter ContinuousMap ZLattice Submodule
+open Asymptotics Topology Real Filter ContinuousMap ZLattice Submodule
 
 variable {d : Type*} [Fintype d] {f : EuclideanSpace ℝ d → ℂ}
 
@@ -85,7 +85,22 @@ lemma summable_abs_int_rpow {b : ℝ} (hb : Fintype.card d < b) :
 This is the d-dimensional analogue of `Int.tendsto_coe_cofinite`. -/
 lemma IntLattice.tendsto_coe_cofinite :
     Filter.Tendsto (fun n : d → ℤ => fun i => (n i : ℝ))
-    Filter.cofinite (Filter.cocompact (EuclideanSpace ℝ d)) := by sorry
+    Filter.cofinite (Filter.cocompact (EuclideanSpace ℝ d)) := by
+  apply tendsto_cofinite_cocompact_iff.mpr ?_
+  intro K hK
+  obtain ⟨M, hM⟩ : ∃ M > 0, ∀ x ∈ K, @Norm.norm (EuclideanSpace ℝ d)
+    SeminormedAddCommGroup.toSeminormedAddGroup.toNorm x ≤ M :=
+    hK.isBounded.exists_pos_norm_le (E := EuclideanSpace ℝ d)
+  have h_bound : ∀ n : d → ℤ, (fun i => (n i : ℝ)) ∈ K → ∀ i, |(n i : ℝ)| ≤ M := by
+    intro n hn i
+    simp [EuclideanSpace.norm_eq] at hM
+    exact le_trans (Real.abs_le_sqrt (Finset.single_le_sum (fun a _ => sq_nonneg (n a : ℝ))
+      (Finset.mem_univ i))) (hM.2 _ hn)
+  have h_finite_components : ∀ i : d, Set.Finite {n : ℤ | |(n : ℝ)| ≤ M} := by
+    refine fun i => Set.Finite.subset (Set.finite_Icc (-⌈M⌉) ⌈M⌉) ?_
+    exact fun n hn => ⟨neg_le_of_abs_le <| by exact_mod_cast hn.out.trans <| Int.le_ceil _,
+      le_of_abs_le <| by exact_mod_cast hn.out.trans <| Int.le_ceil _⟩
+  exact Finite.subset (Finite.pi fun i => h_finite_components i) fun n hn => by aesop
 
 /-- **Poisson summation formula**, assuming that both `f` and its Fourier transform decay fast. -/
 theorem tsum_mFourier_coeff_eq_tsum_fourierIntegralof_rpow_decay {b : ℝ}
