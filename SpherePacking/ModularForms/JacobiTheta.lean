@@ -466,43 +466,13 @@ theorem isBoundedAtImInfty_H₃_slash (A : Subgroup.map (SpecialLinearGroup.mapG
     IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] (A : GL (Fin 2) ℝ)) := by
   obtain ⟨A, A', hA₁, hA₂⟩ := A
   simp_rw [←hA₂]
-  exact   (isBoundedAtImInfty_H_slash _).right.left
+  exact (isBoundedAtImInfty_H_slash _).right.left
 
 theorem isBoundedAtImInfty_H₄_slash (A : Subgroup.map (SpecialLinearGroup.mapGL ℝ) (Γ 2)) :
     IsBoundedAtImInfty (H₄ ∣[(2 : ℤ)] (A : GL (Fin 2) ℝ)) := by
   obtain ⟨A, A', hA₁, hA₂⟩ := A
   simp_rw [←hA₂]
-  exact   (isBoundedAtImInfty_H_slash _).right.right
-
-theorem isBoundedAtCusps_H₂_slash
-    {c : OnePoint ℝ}
-    (hc : IsCusp c (Subgroup.map (SpecialLinearGroup.mapGL ℝ) (Γ 2))) :
-    c.IsBoundedAt H₂ 2 := by
-  obtain ⟨A, hA⟩ :
-    ∃ A : Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) (CongruenceSubgroup.Gamma 2),
-             A • OnePoint.infty = c := smul_infty_eq_cusp_gamma hc
-  rw [OnePoint.isBoundedAt_iff hA]
-  exact isBoundedAtImInfty_H₂_slash A
-
-theorem isBoundedAtCusps_H₃_slash
-    {c : OnePoint ℝ}
-    (hc : IsCusp c (Subgroup.map (SpecialLinearGroup.mapGL ℝ) (Γ 2))) :
-    c.IsBoundedAt H₃_SIF.toFun 2 := by
-  obtain ⟨A, hA⟩ :
-    ∃ A : Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) (CongruenceSubgroup.Gamma 2),
-             A • OnePoint.infty = c := smul_infty_eq_cusp_gamma hc
-  rw [OnePoint.isBoundedAt_iff hA]
-  exact isBoundedAtImInfty_H₃_slash A
-
-theorem isBoundedAtCusps_H₄_slash
-    {c : OnePoint ℝ}
-    (hc : IsCusp c (Subgroup.map (SpecialLinearGroup.mapGL ℝ) (Γ 2))) :
-    c.IsBoundedAt H₄_SIF.toFun 2 := by
-  obtain ⟨A, hA⟩ :
-    ∃ A : Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) (CongruenceSubgroup.Gamma 2),
-             A • OnePoint.infty = c := smul_infty_eq_cusp_gamma hc
-  rw [OnePoint.isBoundedAt_iff hA]
-  exact isBoundedAtImInfty_H₄_slash A
+  exact (isBoundedAtImInfty_H_slash _).right.right
 
 end H_isBoundedAtImInfty
 
@@ -510,19 +480,19 @@ end H_isBoundedAtImInfty
 noncomputable def H₂_MF : ModularForm (Γ 2) 2 := {
   H₂_SIF with
   holo' := H₂_SIF_MDifferentiable
-  bdd_at_cusps' := isBoundedAtCusps_H₂_slash
+  bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_H₂_slash
 }
 
 noncomputable def H₃_MF : ModularForm (Γ 2) 2 := {
   H₃_SIF with
   holo' := H₃_SIF_MDifferentiable
-  bdd_at_cusps' := isBoundedAtCusps_H₃_slash
+  bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_H₃_slash
 }
 
 noncomputable def H₄_MF : ModularForm (Γ 2) 2 := {
   H₄_SIF with
   holo' := H₄_SIF_MDifferentiable
-  bdd_at_cusps' := isBoundedAtCusps_H₄_slash
+  bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_H₄_slash
 }
 
 /-- Jacobi identity -/
