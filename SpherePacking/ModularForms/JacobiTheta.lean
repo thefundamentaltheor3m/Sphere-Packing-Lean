@@ -456,43 +456,56 @@ theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
     simp only [top_le_iff.mp <| SL2Z_generate.symm ▸ (Subgroup.closure_le s).mpr hs2,
       Subgroup.mem_top]
 
-theorem isBoundedAtImInfty_H₂_slash (A : Subgroup.map (SpecialLinearGroup.mapGL ℝ) (Γ 2)) :
-    IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] (A : GL (Fin 2) ℝ)) := by
-  obtain ⟨A, A', hA₁, hA₂⟩ := A
-  simp_rw [←hA₂]
-  exact (isBoundedAtImInfty_H_slash _).left
+open scoped MatrixGroups
 
-theorem isBoundedAtImInfty_H₃_slash (A : Subgroup.map (SpecialLinearGroup.mapGL ℝ) (Γ 2)) :
-    IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] (A : GL (Fin 2) ℝ)) := by
-  obtain ⟨A, A', hA₁, hA₂⟩ := A
-  simp_rw [←hA₂]
-  exact (isBoundedAtImInfty_H_slash _).right.left
+theorem isBoundedAtImInfty_H₂_slash :
+    ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] (A : GL (Fin 2) ℝ)) := by
+  intro a ⟨a', Ha⟩
+  have := (isBoundedAtImInfty_H_slash a').left
+  rwa [←Ha]
 
-theorem isBoundedAtImInfty_H₄_slash (A : Subgroup.map (SpecialLinearGroup.mapGL ℝ) (Γ 2)) :
-    IsBoundedAtImInfty (H₄ ∣[(2 : ℤ)] (A : GL (Fin 2) ℝ)) := by
-  obtain ⟨A, A', hA₁, hA₂⟩ := A
-  simp_rw [←hA₂]
-  exact (isBoundedAtImInfty_H_slash _).right.right
+theorem isBoundedAtImInfty_H₃_slash :
+    ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] (A : GL (Fin 2) ℝ)) := by
+  intro a ⟨a', Ha⟩
+  have := (isBoundedAtImInfty_H_slash a').right.left
+  rwa [←Ha]
+
+theorem isBoundedAtImInfty_H₄_slash :
+    ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (H₄ ∣[(2 : ℤ)] (A : GL (Fin 2) ℝ)) := by
+  intro a ⟨a', Ha⟩
+  have := (isBoundedAtImInfty_H_slash a').right.right
+  rwa [←Ha]
 
 end H_isBoundedAtImInfty
-
 
 noncomputable def H₂_MF : ModularForm (Γ 2) 2 := {
   H₂_SIF with
   holo' := H₂_SIF_MDifferentiable
-  bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_H₂_slash
+  bdd_at_cusps' {c} hc := by
+    apply bounded_at_cusps_of_bounded_at_infty hc
+    intro A hA
+    apply isBoundedAtImInfty_H₂_slash
+    simp_all only [MonoidHom.mem_range]
 }
 
 noncomputable def H₃_MF : ModularForm (Γ 2) 2 := {
   H₃_SIF with
   holo' := H₃_SIF_MDifferentiable
-  bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_H₃_slash
+  bdd_at_cusps' hc := by
+    apply bounded_at_cusps_of_bounded_at_infty hc
+    intro A hA
+    apply isBoundedAtImInfty_H₃_slash
+    simp_all only [MonoidHom.mem_range]
 }
 
 noncomputable def H₄_MF : ModularForm (Γ 2) 2 := {
   H₄_SIF with
   holo' := H₄_SIF_MDifferentiable
-  bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_H₄_slash
+  bdd_at_cusps' hc := by
+    apply bounded_at_cusps_of_bounded_at_infty hc
+    intro A hA
+    apply isBoundedAtImInfty_H₄_slash
+    simp_all only [MonoidHom.mem_range]
 }
 
 /-- Jacobi identity -/
