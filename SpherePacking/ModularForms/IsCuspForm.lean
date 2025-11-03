@@ -126,16 +126,9 @@ lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     · simp only [CuspForm_to_ModularForm, ModForm_mk]
       rfl
     · intro c hc
-      obtain ⟨A, hA⟩ : ∃ A : Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) Γ(1),
-           A • OnePoint.infty = c := smul_infty_eq_cusp_gamma_one hc
-      rw [OnePoint.isZeroAt_iff hA]
-      have hf : (f.toFun ∣[k] (A : GL (Fin 2) ℝ)) = f.toFun := by
-        simp only [SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe]
-        apply f.slash_action_eq'
-        simp
-
-      simp only [Subgroup.map_toSubmonoid, SlashInvariantForm.toFun_eq_coe,
-        toSlashInvariantForm_coe]
+      apply zero_at_cusps_of_zero_at_infty hc
+      intro A ⟨A', hA'⟩
+      have hf := f.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩
       simp only [ SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe] at *
       rw [hf]
       rw [qExpansion_coeff] at h
@@ -162,7 +155,6 @@ lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
       simp only [Nat.cast_one, comp_apply, Periodic, ofReal_one, mul_one, ofComplex_apply] at *
       rw [← hm] at h6
       exact h6
-
 
 lemma CuspFormSubmodule_mem_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     f ∈ CuspFormSubmodule Γ(1) k ↔ (qExpansion 1 f).coeff 0 = 0 := by

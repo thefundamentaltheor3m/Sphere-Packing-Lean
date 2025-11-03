@@ -279,19 +279,11 @@ theorem Delta_boundedfactor :
 
 open Real
 
-lemma Discriminant_zeroAtCusps {c : OnePoint ℝ}
-    (hc : IsCusp c (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
-                   (CongruenceSubgroup.Gamma 1))) :
-    c.IsZeroAt (Discriminant_SIF) 12 := by
-  obtain ⟨γ, hγ⟩ : ∃ A : Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
-                                      (CongruenceSubgroup.Gamma 1),
-           A • OnePoint.infty = c := smul_infty_eq_cusp_gamma_one hc
-  rw [OnePoint.isZeroAt_iff hγ]
-  clear! c
+lemma Discriminant_zeroAtImInfty :
+    ∀ γ ∈ 𝒮ℒ, IsZeroAtImInfty (Discriminant_SIF ∣[(12 : ℤ)] (γ : GL (Fin 2) ℝ)) := by
+  intro γ ⟨γ', hγ⟩
   rw [IsZeroAtImInfty, ZeroAtFilter]
-  have : ⇑Discriminant_SIF ∣[(12:ℤ)] (γ: GL (Fin 2) ℝ) = Discriminant_SIF := by
-    apply Discriminant_SIF.slash_action_eq'
-    simp
+  have := Discriminant_SIF.slash_action_eq' γ ⟨γ', CongruenceSubgroup.mem_Gamma_one γ', hγ⟩
   simp at *
   rw [this]
   simp [Discriminant_SIF]
@@ -329,7 +321,7 @@ def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
     simp only [coe_mk_subtype, comp_apply] at *
     rw [ofComplex_apply_of_im_pos hz]
     exact this
-  zero_at_cusps' hc := Discriminant_zeroAtCusps hc
+  zero_at_cusps' hc := zero_at_cusps_of_zero_at_infty hc Discriminant_zeroAtImInfty
 
 lemma Delta_apply (z : ℍ) : Delta z = Δ z := by rfl
 
@@ -424,13 +416,9 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
         simp only [comp_apply, ne_eq]
         rw [ofComplex_apply_of_im_pos hx]
         apply this
-    bdd_at_cusps' := by
-      intro c hc
-      obtain ⟨A, hA⟩ :
-          ∃ A : Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) (CongruenceSubgroup.Gamma 1),
-             A • OnePoint.infty = c := smul_infty_eq_cusp_gamma_one hc
-      rw [OnePoint.isBoundedAt_iff hA]
-      clear! c
+    bdd_at_cusps' {c} hc := by
+      apply bounded_at_cusps_of_bounded_at_infty hc
+      intro A ⟨A', hA'⟩
       have h1 := CuspFormClass.exp_decay_atImInfty 1 f
       have h2 := Delta_isTheta_rexp.2
       rw [IsBoundedAtImInfty, BoundedAtFilter] at *
@@ -449,9 +437,10 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
       refine ⟨by simp [hA, hB2], ?_⟩
       intro z hz
       have : ((⇑f / ⇑Delta) ∣[k - 12] (A: GL (Fin 2) ℝ)) z = ((⇑f z / ⇑Delta z)) := by
-        obtain ⟨A, hA⟩ := A
-        have := congrFun (div_Delta_is_SIF k f A hA) z
-        simpa only [SL_slash, Pi.div_apply] using this
+        have := congrFun (div_Delta_is_SIF k f A'
+                            (Subgroup.mem_map.mp ⟨A', CongruenceSubgroup.mem_Gamma_one A', rfl⟩)) z
+        rw [←hA']
+        simpa [SL_slash, Pi.div_apply] using this
       rw [this]
       simp
       have he1e2 : e1 / e2 = (e1 * rexp (-(2 * π * z.im))) / (e2 * rexp (-(2 * π * z.im))) := by
