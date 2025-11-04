@@ -70,7 +70,7 @@ lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
     enter [1]
     ext n
     rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp]
-  rw [ ← pnat_multipliable_iff_multipliable_succ (f := g)] at this
+  rw [ ← multipliable_pnat_iff_multipliable_succ (f := g)] at this
   apply this.congr
   intro b
   rfl
