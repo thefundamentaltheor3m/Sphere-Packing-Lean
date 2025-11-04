@@ -369,7 +369,7 @@ theorem div_Delta_is_SIF (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k)
     (⇑f / ⇑Delta) ∣[k - 12] γ = ⇑f / ⇑Delta := by
   simp only [Subgroup.mem_map] at hγ
   obtain ⟨γ, hA₁, hA₂⟩ := hγ
-  rw [←hA₂]
+  rw [← hA₂]
   ext z
   change ((⇑f / ⇑Delta) ∣[k - 12] γ) z = (⇑f / ⇑Delta) z
   rw [ModularForm.slash_action_eq'_iff (k -12) _ γ]
@@ -439,7 +439,7 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
       have : ((⇑f / ⇑Delta) ∣[k - 12] (A: GL (Fin 2) ℝ)) z = ((⇑f z / ⇑Delta z)) := by
         have := congrFun (div_Delta_is_SIF k f A'
                             (Subgroup.mem_map.mp ⟨A', CongruenceSubgroup.mem_Gamma_one A', rfl⟩)) z
-        rw [←hA']
+        rw [← hA']
         simpa [SL_slash, Pi.div_apply] using this
       rw [this]
       simp
