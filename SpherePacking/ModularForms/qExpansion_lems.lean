@@ -447,7 +447,7 @@ lemma iteratedDeriv_const_eq_zero (m : ℕ) (hm : 0 < m) (c : ℂ) :
 
 lemma qExpansion_pow (f : ModularForm Γ(1) k) (n : ℕ) :
   qExpansion 1 ((((DirectSum.of (ModularForm Γ(1)) k ) f) ^ n) (n * k)) = (qExpansion 1 f) ^ n := by
-  induction n with --n hn
+  induction n with
   | zero =>
     simp
     rw [show 0 * k = 0 by ring]
