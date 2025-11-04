@@ -86,9 +86,8 @@ lemma Discriminant_S_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.S) = Δ := by
 
 def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun := Δ
-  slash_action_eq' A := by
-    intro hA
-    exact slashaction_generators_GL2R Δ 12 Discriminant_S_invariant Discriminant_T_invariant A hA
+  slash_action_eq' :=
+    slashaction_generators_GL2R Δ 12 Discriminant_S_invariant Discriminant_T_invariant
 
 
 instance : atImInfty.NeBot := by
