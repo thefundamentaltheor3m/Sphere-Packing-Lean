@@ -78,8 +78,8 @@ theorem aux3 {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ
     have h_volume' := volume.mono hL
     rw [OuterMeasure.measureOf_eq_coe, Measure.coe_toOuterMeasure, Set.biUnion_eq_iUnion,
       measure_iUnion] at h_volume'
-    · have h_le := Summable.tsum_mono (L := SummationFilter.unconditional _)
-                     (f := fun _ ↦ c) (g := fun (x : s) ↦ volume (f x)) ?_ ?_ ?_
+    · have h_le : ∑' (n : ↑s), c ≤ ∑' (n : ↑s), volume (f ↑n) :=
+          Summable.tsum_mono (f := fun _ ↦ c) (g := fun (x : s) ↦ volume (f x)) ?_ ?_ ?_
       · have h₁ := (ENNReal.tsum_set_const _ _ ▸ h_le).trans h_volume'
         rw [← Set.encard_lt_top_iff, ← ENat.toENNReal_lt, ENat.toENNReal_top]
         refine lt_of_le_of_lt ((ENNReal.le_div_iff_mul_le ?_ ?_).mpr h₁) <|
