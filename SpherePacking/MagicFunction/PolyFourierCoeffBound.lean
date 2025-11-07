@@ -302,7 +302,7 @@ by
         · simp_rw [sub_eq_add_neg]
           apply Real.summable_log_one_add_of_summable
           apply Summable.neg
-          conv => rhs; equals (fun (b : ℕ) => Real.exp (-2 * π * b * z.im)) ∘ (PNat.val) => rfl
+          conv => lhs; equals (fun (b : ℕ) => Real.exp (-2 * π * b * z.im)) ∘ (PNat.val) => rfl
           apply Summable.subtype
           simp_rw [mul_comm, mul_assoc, Real.summable_exp_nat_mul_iff]
           simp [pi_pos, UpperHalfPlane.im_pos]
