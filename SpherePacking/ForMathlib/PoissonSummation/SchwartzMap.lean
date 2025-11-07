@@ -90,19 +90,17 @@ theorem coordinateEmbedding₁₂_injective (x : ℝ) : (coordinateEmbedding₁�
   exact this
 
 /-- `coordinateEmbedding₁₂` is smooth. -/
-theorem coordinateEmbedding₁₂_smooth (x : ℝ) : ContDiff ℝ ⊤ (coordinateEmbedding₁₂ x) := by
-  have h_proj :
-      ContDiff ℝ ⊤ (fun y : Euc(1) => !₂[x, ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ (y)]) := by
-    have h_sum : ContDiff ℝ ⊤ (fun y : Euc(1) => x) ∧ ContDiff ℝ ⊤ (fun y : Euc(1) =>
-        ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ y) := ⟨contDiff_const, contDiff _⟩
-    simp only [coe_funUnique, eval, Fin.default_eq_zero, Fin.isValue]
-    obtain ⟨_, right⟩ := h_sum
-    have h_sum :
-        (fun y : Euc(1) => !₂[x, y 0]) = fun y : Euc(1) => x • ![1, 0] + y 0 • ![0, 1] := by
-      funext y; simp
-      ext i; fin_cases i <;> norm_num [Algebra.smul_def]
-    exact h_sum.symm ▸ (contDiff_const.smul contDiff_const).add (right.smul contDiff_const)
-  exact h_proj
+theorem coordinateEmbedding₁₂_smooth (x : ℝ) : ContDiff ℝ ⊤ (coordinateEmbedding₁₂ x) :=
+by
+  classical
+  rw [contDiff_euclidean]
+  intro i
+  fin_cases i
+  · simpa [coordinateEmbedding₁₂, Fin.isValue, Matrix.cons_val_zero]
+      using (contDiff_const : ContDiff ℝ ⊤ (fun _ : Euc(1) => (x : ℝ)))
+  · simpa [coordinateEmbedding₁₂, Fin.isValue, Matrix.cons_val_one, Matrix.cons_val_fin_one,
+        EuclideanSpace.proj, PiLp.proj]
+      using ((EuclideanSpace.proj (ι := Fin 1) (𝕜 := ℝ) 0 : Euc(1) →L[ℝ] ℝ).contDiff)
 
 def coordinateEmbedding₁₂_fderiv (_x : ℝ) : Euc(1) →L[ℝ] Euc(2) where
   toFun := fun y => (ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ y) • !₂[(0 : ℝ), 1]
@@ -120,10 +118,9 @@ theorem coordinateEmbedding₁₂_hasDerivAt (x : ℝ) (p : Euc(1)) :
   simp_all [hasFDerivAt_iff_tendsto]
 
 theorem fderiv_coordinateEmbedding₁₂_hasTemperateGrowth (x : ℝ) :
-    HasTemperateGrowth (fderiv ℝ (coordinateEmbedding₁₂ x)) := by
-  simp_all [show fderiv ℝ (coordinateEmbedding₁₂ x) =
-    _ from funext fun p => HasFDerivAt.fderiv (coordinateEmbedding₁₂_hasDerivAt x p),
-      HasTemperateGrowth.const ..]
+    Function.HasTemperateGrowth (fderiv ℝ (coordinateEmbedding₁₂ x)) := by
+  simpa [funext (fun p => by simpa using (coordinateEmbedding₁₂_hasDerivAt x p).fderiv)]
+    using Function.HasTemperateGrowth.const (coordinateEmbedding₁₂_fderiv x)
 
 example {a b : ℝ} : 0 ≤ a → 0 ≤ b → (a ≤ b ↔ a ^ 2 ≤ b ^ 2) := by
   exact fun a_1 a_2 ↦ Iff.symm (sq_le_sq₀ a_1 a_2)
