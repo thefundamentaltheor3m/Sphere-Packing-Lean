@@ -91,52 +91,39 @@ theorem coordinateEmbedding₁₂_injective (x : ℝ) : (coordinateEmbedding₁�
 
 /-- `coordinateEmbedding₁₂` is smooth. -/
 theorem coordinateEmbedding₁₂_smooth (x : ℝ) : ContDiff ℝ ⊤ (coordinateEmbedding₁₂ x) := by
-  -- The coordinate embedding is the sum of the two projections, which are both linear maps and hence continuously differentiable.
-  have h_proj : ContDiff ℝ ⊤ (fun y : Euc(1) => !₂[x, ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ (y)]) := by
-    -- The function !₂[x, y 0] is the sum of two continuously differentiable functions: the constant function x and the projection function y ↦ y 0.
-    have h_sum : ContDiff ℝ ⊤ (fun y : Euc(1) => x) ∧ ContDiff ℝ ⊤ (fun y : Euc(1) => ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ y) := by
-      exact ⟨ contDiff_const, ContinuousLinearEquiv.contDiff _ ⟩;
-    aesop;
-    -- The function !₂[x, y 0] can be written as the sum of the constant function x and the projection function y ↦ y 0.
-    have h_sum : (fun y : Euc(1) => !₂[x, y 0]) = fun y : Euc(1) => x • ![1, 0] + y 0 • ![0, 1] := by
-      -- To prove the equality of the two functions, we can show that they produce the same output for any input.
-      funext y; simp [Pi.smul_apply, Pi.add_apply];
-      ext i; fin_cases i <;> norm_num [ Algebra.smul_def ] ;
-    exact h_sum.symm ▸ ContDiff.add ( ContDiff.smul contDiff_const contDiff_const ) ( ContDiff.smul right contDiff_const );
-  -- Since the sum of two continuously differentiable functions is continuously differentiable, the coordinate embedding is continuously differentiable.
-  convert h_proj using 1
+  have h_proj :
+      ContDiff ℝ ⊤ (fun y : Euc(1) => !₂[x, ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ (y)]) := by
+    have h_sum : ContDiff ℝ ⊤ (fun y : Euc(1) => x) ∧ ContDiff ℝ ⊤ (fun y : Euc(1) =>
+        ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ y) := ⟨contDiff_const, contDiff _⟩
+    simp only [coe_funUnique, eval, Fin.default_eq_zero, Fin.isValue]
+    obtain ⟨_, right⟩ := h_sum
+    have h_sum :
+        (fun y : Euc(1) => !₂[x, y 0]) = fun y : Euc(1) => x • ![1, 0] + y 0 • ![0, 1] := by
+      funext y; simp
+      ext i; fin_cases i <;> norm_num [Algebra.smul_def]
+    exact h_sum.symm ▸ (contDiff_const.smul contDiff_const).add (right.smul contDiff_const)
+  exact h_proj
 
-def coordinateEmbedding₁₂_fderiv (x : ℝ) : Euc(1) →L[ℝ] Euc(2) where
+def coordinateEmbedding₁₂_fderiv (_x : ℝ) : Euc(1) →L[ℝ] Euc(2) where
   toFun := fun y => (ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ y) • !₂[(0 : ℝ), 1]
-  cont := by
-    -- The function y ↦ y Inhabited.default • !₂[0, 1] is continuous because it is a product of continuous functions.
-    apply Continuous.smul;
-    · exact continuous_apply _;
-    · -- The constant function !₂[0, 1] is continuous because it maps every element to the same value.
-      apply continuous_const
-  map_add' := by
-    -- By definition of scalar multiplication in Euclidean space, we can expand both sides.
-    simp [Pi.add_apply, add_smul]
-  map_smul' := by
-    -- By definition of scalar multiplication in Euclidean space, we can simplify the expression.
-    simp [smul_smul]
+  cont := (continuous_apply _).smul continuous_const
+  map_add' := by simp [add_smul]
+  map_smul' := by simp [smul_smul]
 
 /-- The Jacobian of `coordinateEmbedding₁₂ x` is the constant `!₂[0, 1]`. -/
 theorem coordinateEmbedding₁₂_hasDerivAt (x : ℝ) (p : Euc(1)) :
     HasFDerivAt (𝕜 := ℝ) (coordinateEmbedding₁₂ x) (coordinateEmbedding₁₂_fderiv x) p := by
-  -- The difference between the function and its linear approximation is zero, so the derivative exists and is equal to coordinateEmbedding₁₂_fderiv x.
-  have h_diff_zero : ∀ y : Euc(1), coordinateEmbedding₁₂ x y - coordinateEmbedding₁₂ x p - coordinateEmbedding₁₂_fderiv x (y - p) = 0 := by
-    intro y; ext i; fin_cases i <;> simp +decide [ SchwartzMap.coordinateEmbedding₁₂, SchwartzMap.coordinateEmbedding₁₂_fderiv ] ;
-  rw [ hasFDerivAt_iff_tendsto ];
-  aesop
+  have h_diff_zero (y : Euc(1)):
+    coordinateEmbedding₁₂ x y - coordinateEmbedding₁₂ x p -
+      coordinateEmbedding₁₂_fderiv x (y - p) = 0 := by
+      ext i; fin_cases i <;> simp [coordinateEmbedding₁₂, coordinateEmbedding₁₂_fderiv]
+  simp_all [hasFDerivAt_iff_tendsto]
 
 theorem fderiv_coordinateEmbedding₁₂_hasTemperateGrowth (x : ℝ) :
-    Function.HasTemperateGrowth (fderiv ℝ (coordinateEmbedding₁₂ x)) := by
-  -- Since the derivative is a constant function, we can apply the theorem that states constant functions have temperate growth.
-  have h_const : Function.HasTemperateGrowth (fun _ : Euc(1) => coordinateEmbedding₁₂_fderiv x) := by
-    -- Apply the fact that constant functions have temperate growth.
-    apply Function.HasTemperateGrowth.const;
-  rw [ show fderiv ℝ ( SchwartzMap.coordinateEmbedding₁₂ x ) = _ from funext fun p => HasFDerivAt.fderiv ( coordinateEmbedding₁₂_hasDerivAt x p ) ] ; aesop
+    HasTemperateGrowth (fderiv ℝ (coordinateEmbedding₁₂ x)) := by
+  simp_all [show fderiv ℝ (coordinateEmbedding₁₂ x) =
+    _ from funext fun p => HasFDerivAt.fderiv (coordinateEmbedding₁₂_hasDerivAt x p),
+      HasTemperateGrowth.const ..]
 
 example {a b : ℝ} : 0 ≤ a → 0 ≤ b → (a ≤ b ↔ a ^ 2 ≤ b ^ 2) := by
   exact fun a_1 a_2 ↦ Iff.symm (sq_le_sq₀ a_1 a_2)
@@ -144,24 +131,15 @@ example {a b : ℝ} : 0 ≤ a → 0 ≤ b → (a ≤ b ↔ a ^ 2 ≤ b ^ 2) := b
 /-- `coordinateEmbedding₁₂` has temperate growth. -/
 theorem coordinateEmbedding₁₂_hasTemperateGrowth (x : ℝ) :
     (coordinateEmbedding₁₂ x).HasTemperateGrowth := by
-  -- Apply the theorem that states if the derivative of a function is temperate, then the function itself is temperate.
-  have h_temperate : Function.HasTemperateGrowth (coordinateEmbedding₁₂ x) := by
-    have h_deriv_temperate : Function.HasTemperateGrowth (fderiv ℝ (coordinateEmbedding₁₂ x)) := by
-      exact fderiv_coordinateEmbedding₁₂_hasTemperateGrowth x
-    -- Apply the theorem that states if the derivative of a function is temperate, then the function itself is temperate. Use `Function.HasTemperateGrowth.of_fderiv`.
-    apply Function.HasTemperateGrowth.of_fderiv; assumption;
-    -- The function `coordinateEmbedding₁₂ x` is differentiable because it is a linear map.
-    have h_diff : Differentiable ℝ (coordinateEmbedding₁₂ x) := by
-      exact fun y => (coordinateEmbedding₁₂_hasDerivAt x y).differentiableAt
-    exact h_diff;
-    case k => exact 1;
-    simp [SchwartzMap.coordinateEmbedding₁₂];
-    intro y; rw [ EuclideanSpace.norm_eq ] ; norm_num;
-    case C => exact ( |x| + 1 );
-    rw [ Real.sqrt_le_left ] <;> ring <;> norm_num [ EuclideanSpace.norm_eq ];
-    · nlinarith [ abs_nonneg x, Real.sqrt_nonneg ( y 0 ^ 2 ), Real.mul_self_sqrt ( sq_nonneg ( y 0 ) ) ];
-    · positivity;
-  exact h_temperate
+  apply HasTemperateGrowth.of_fderiv <| fderiv_coordinateEmbedding₁₂_hasTemperateGrowth x
+  exact fun y => (coordinateEmbedding₁₂_hasDerivAt x y).differentiableAt
+  case k => exact 1
+  simp only [coordinateEmbedding₁₂, coe_funUnique, Fin.default_eq_zero]
+  intro y; rw [EuclideanSpace.norm_eq]; norm_num
+  case C => exact (|x| + 1);
+  rw [sqrt_le_left ] <;> ring_nf <;> norm_num [EuclideanSpace.norm_eq]
+  · nlinarith [abs_nonneg x, sqrt_nonneg (y 0 ^ 2), mul_self_sqrt (sq_nonneg (y 0))]
+  · positivity
 
 -- Next, we show the antilipschitz condition. This is significantly easier.
 -- #check AntilipschitzWith
