@@ -274,29 +274,40 @@ private lemma step_9 :
     rw [Complex.norm_exp]
     simp
 
-include hz in
 private lemma step_10 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
     (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
-    (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
+    (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) :=
+by
+  have hpow : ∀ {ι} (f : ι → ℝ), Multipliable f → ∀ n, Multipliable (fun i => f i ^ n) := by
+    intro ι f hf n
+    induction' n with n hn
+    · simpa using (multipliable_one : Multipliable (fun _ : ι => (1 : ℝ)))
+    · simpa [pow_succ] using (hn.mul hf)
   gcongr
   · exact aux_8 z
   · apply tprod_le_of_nonneg_of_multipliable
     · intro n; simp
-      have :
-        (1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 24 = ((1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 12) ^ 2 :=
-        by ring_nf
-      rw [this]
-      exact sq_nonneg ((1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 12)
-    · intro n; simp only [neg_mul]
-      gcongr
+      have : (1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 24 =
+          ((1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 12) ^ 2 := by ring_nf
+      rw [this]; exact sq_nonneg _
+    · intro n; simp only [neg_mul]; gcongr
       · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
       · have hre : -(2 * π * n * z.im) = (2 * π * I * n * z).re := by simp
-        rw [hre]
-        exact aux_2 (2 * π * I * n * z)
-    · sorry
-    · sorry
+        rw [hre]; exact aux_2 (2 * π * I * n * z)
+    · have h_base : Multipliable (fun b : ℕ+ => 1 - rexp (-2 * π * ↑↑b * z.im)) := by
+        apply Real.multipliable_of_summable_log
+        · intro i; simp [pi_pos, UpperHalfPlane.im_pos]
+        · simp_rw [sub_eq_add_neg]
+          apply Real.summable_log_one_add_of_summable
+          apply Summable.neg
+          conv => rhs; equals (fun (b : ℕ) => Real.exp (-2 * π * b * z.im)) ∘ (PNat.val) => rfl
+          apply Summable.subtype
+          simp_rw [mul_comm, mul_assoc, Real.summable_exp_nat_mul_iff]
+          simp [pi_pos, UpperHalfPlane.im_pos]
+      exact hpow _ h_base 24
+    · exact hpow _ (MultipliableEtaProductExpansion_pnat z).norm 24
 
 include hz hcsum hpoly in
 private lemma step_11 :
@@ -406,7 +417,7 @@ theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
       (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := step_9 z c n₀ hcsum
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
-      (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_10 z hz c n₀
+      (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_10 z c n₀
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
       (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := step_11 z hz c n₀ hcsum k hpoly
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
