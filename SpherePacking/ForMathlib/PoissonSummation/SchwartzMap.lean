@@ -25,11 +25,15 @@ apply to cases more general than just ℝ-vector spaces, but we do not worry abo
 open SchwartzMap
 
 open Real Complex BigOperators SchwartzMap Function PiLp
+
 open LinearMap LinearEquiv ContinuousLinearEquiv ContinuousLinearMap
 
 variable {E F H : Type*}
+
 variable [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+
 variable [NormedAddCommGroup F] [NormedSpace ℝ F] [FiniteDimensional ℝ F]
+
 variable [NormedAddCommGroup H] [NormedSpace ℝ H] [FiniteDimensional ℝ H]
 
 -- In finite-dimensional spaces, any linear equivalence is a continuous linear equivalence.
@@ -99,33 +103,28 @@ by
       using ((EuclideanSpace.proj (ι := Fin 1) (𝕜 := ℝ) 0 : Euc(1) →L[ℝ] ℝ).contDiff)
 
 -- We first show temperate growth.
--- #check Function.HasTemperateGrowth
-
--- We can use the following tool to show temperate growth.
--- #check Function.HasTemperateGrowth.of_fderiv
 
 -- Note: We can probably do away with the `x` here as I doubt any of the proofs will need it.
-/-- The Jacobian of `coordinateEmbedding₁₂ x` for all `x : ℝ`. -/
-def coordinateEmbedding₁₂_fderiv (x : ℝ) : Euc(1) →L[ℝ] Euc(2) where
-  toFun := fun y => (ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ y) • !₂[(0 : ℝ), 1]
-  cont := by
 
-    sorry
-  map_add' := sorry
-  map_smul' := sorry
+/-- The Jacobian of `coordinateEmbedding₁₂ x` for all `x : ℝ`. -/
+def coordinateEmbedding₁₂_fderiv (_x : ℝ) : Euc(1) →L[ℝ] Euc(2) where
+  toFun := fun y => (ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ y) • !₂[(0 : ℝ), 1]
+  cont := (continuous_apply _).smul continuous_const
+  map_add' := by simp [add_smul]
+  map_smul' := by simp [smul_smul]
 
 /-- The Jacobian of `coordinateEmbedding₁₂ x` is the constant `!₂[0, 1]`. -/
 theorem coordinateEmbedding₁₂_hasDerivAt (x : ℝ) (p : Euc(1)) :
     HasFDerivAt (𝕜 := ℝ) (coordinateEmbedding₁₂ x) (coordinateEmbedding₁₂_fderiv x) p := by
-  sorry
-
--- We need to use the following to get an expression for the `fderiv` of `coordinateEmbedding₁₂ x`.
--- #check HasFDerivAt.fderiv
+  have h_diff_zero (y : Euc(1)):
+    coordinateEmbedding₁₂ x y - coordinateEmbedding₁₂ x p -
+      coordinateEmbedding₁₂_fderiv x (y - p) = 0 := by
+      ext i; fin_cases i <;> simp [coordinateEmbedding₁₂, coordinateEmbedding₁₂_fderiv]
+  simp_all [hasFDerivAt_iff_tendsto]
 
 /-- The Jacobian of `coordinateEmbedding₁₂` has temperate growth. -/
 theorem fderiv_coordinateEmbedding₁₂_hasTemperateGrowth (x : ℝ) :
-    Function.HasTemperateGrowth (fderiv ℝ (coordinateEmbedding₁₂ x)) :=
-by
+    Function.HasTemperateGrowth (fderiv ℝ (coordinateEmbedding₁₂ x)) := by
   simpa [funext (fun p => by simpa using (coordinateEmbedding₁₂_hasDerivAt x p).fderiv)]
     using Function.HasTemperateGrowth.const (coordinateEmbedding₁₂_fderiv x)
 
@@ -135,13 +134,18 @@ example {a b : ℝ} : 0 ≤ a → 0 ≤ b → (a ≤ b ↔ a ^ 2 ≤ b ^ 2) := b
 /-- `coordinateEmbedding₁₂` has temperate growth. -/
 theorem coordinateEmbedding₁₂_hasTemperateGrowth (x : ℝ) :
     (coordinateEmbedding₁₂ x).HasTemperateGrowth := by
-  refine Function.HasTemperateGrowth.of_fderiv (fderiv_coordinateEmbedding₁₂_hasTemperateGrowth x)
+  refine (fderiv_coordinateEmbedding₁₂_hasTemperateGrowth x).of_fderiv
     ((coordinateEmbedding₁₂_smooth x).differentiable le_top) (k := 1) (C := max ‖x‖ 1) ?_
   intro y
   simp only [coordinateEmbedding₁₂, coe_funUnique, eval, Fin.default_eq_zero, Fin.isValue,
     ENNReal.toReal_ofNat, Nat.ofNat_pos, norm_eq_sum, Real.norm_eq_abs, rpow_two, _root_.sq_abs,
-    Fin.sum_univ_two, one_div, Finset.univ_unique, Finset.sum_singleton, pow_one]
-  sorry
+      Fin.sum_univ_two, one_div, Finset.univ_unique, Finset.sum_singleton, pow_one]
+  have h_triangle : Real.sqrt (x^2 + y 0^2) ≤ |x| + |y 0| :=
+    Real.sqrt_le_iff.mpr
+      ⟨by positivity, by cases abs_cases x <;> cases abs_cases ( y 0 ) <;> nlinarith⟩
+  have h_bound : Real.sqrt (x^2 + y 0^2) ≤ max |x| 1 * (1 + |y 0|) := by
+    cases max_cases |x| 1 <;> nlinarith [abs_nonneg x, abs_nonneg (y 0)]
+  norm_num [← Real.sqrt_eq_rpow, Real.sqrt_sq_eq_abs] at * ; linarith!
 
 -- Next, we show the antilipschitz condition. This is significantly easier.
 -- #check AntilipschitzWith
@@ -163,4 +167,5 @@ def SchwartzMap_one_of_SchwartzMap_two (x : ℝ) : 𝓢(Euc(2), ℂ) →L[ℝ] �
     (coordinateEmbedding₁₂_antiLipschitzWith x)
 
 end Inductive_Dimensions
+
 end SchwartzMap
