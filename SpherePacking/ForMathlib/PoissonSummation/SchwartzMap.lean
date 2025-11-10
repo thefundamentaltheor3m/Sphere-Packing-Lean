@@ -102,6 +102,11 @@ by
         EuclideanSpace.proj, PiLp.proj]
       using ((EuclideanSpace.proj (ι := Fin 1) (𝕜 := ℝ) 0 : Euc(1) →L[ℝ] ℝ).contDiff)
 
+-- We first show temperate growth.
+
+-- Note: We can probably do away with the `x` here as I doubt any of the proofs will need it.
+
+/-- The Jacobian of `coordinateEmbedding₁₂ x` for all `x : ℝ`. -/
 def coordinateEmbedding₁₂_fderiv (_x : ℝ) : Euc(1) →L[ℝ] Euc(2) where
   toFun := fun y => (ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ y) • !₂[(0 : ℝ), 1]
   cont := (continuous_apply _).smul continuous_const
@@ -117,6 +122,7 @@ theorem coordinateEmbedding₁₂_hasDerivAt (x : ℝ) (p : Euc(1)) :
       ext i; fin_cases i <;> simp [coordinateEmbedding₁₂, coordinateEmbedding₁₂_fderiv]
   simp_all [hasFDerivAt_iff_tendsto]
 
+/-- The Jacobian of `coordinateEmbedding₁₂` has temperate growth. -/
 theorem fderiv_coordinateEmbedding₁₂_hasTemperateGrowth (x : ℝ) :
     Function.HasTemperateGrowth (fderiv ℝ (coordinateEmbedding₁₂ x)) := by
   simpa [funext (fun p => by simpa using (coordinateEmbedding₁₂_hasDerivAt x p).fderiv)]
