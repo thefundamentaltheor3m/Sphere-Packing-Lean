@@ -47,11 +47,7 @@ theorem SpherePacking.centers_dist' (S : SpherePacking d) (x y : EuclideanSpace 
     (hx : x ∈ S.centers) (hy : y ∈ S.centers) (hxy : x ≠ y) :
     S.separation ≤ dist x y := by
   have : (⟨x, hx⟩ : S.centers) ≠ ⟨y, hy⟩ := Subtype.coe_ne_coe.mp hxy
-  -- The following fails. Reason unknown.
-  -- exact S.centers_dist this
-  have := S.centers_dist this
-  simp only at this
-  exact this
+  simpa using S.centers_dist this
 
 instance PeriodicSpherePacking.instLatticeDiscrete (S : PeriodicSpherePacking d) :
     DiscreteTopology S.lattice :=
@@ -150,7 +146,6 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
     have : (⟨x', hx'⟩ : S.centers) ≠ ⟨y', hy'⟩ := by simp [this]
     have := S.centers_dist this
     exact (mul_le_mul_iff_right₀ hc).mpr this
-
 
 noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
   PeriodicSpherePacking d := {
