@@ -3,6 +3,313 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+import SpherePacking.CohnElkies.Prereqs
+
+open scoped ComplexOrder FourierTransform SchwartzMap
+open Bornology Complex MeasureTheory
+
+/-!
+# Potential Design Complications:
+
+* As mentioned in `section theorem_2_2` of `SpherePacking/Basic/PeriodicPacking.lean`, we have to
+  use a hack for fundamental domains by supplying the two necessary assumptions ourselves. One day,
+  when it's a bit better developed in Mathlib, we can either modify our file or let people feed in
+  those assumptions as inputs.
+
+# TODOs:
+
+* Everything in `Prereqs.lean` is either a TODO or has already been done (eg. in #25) (to reflect
+  which the corresponding refs must be updated).
+* Add some lemmas about when the set of centres of a sphere packing is empty. Then, do cases here
+  and remove the `Nonempty` instance in the assumptions.
+
+-/
+
+variable {d : ℕ}
+variable {f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)}
+variable {P : PeriodicSpherePacking d}
+variable {D : Set (EuclideanSpace ℝ (Fin d))}
+
+/-- The real part of the second Cohn-Elkies condition. -/
+lemma hCE₂_re (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ (re ∘ 𝓕 f) :=
+  Pi.le_def.2 (fun x ↦ (Complex.le_def.1 (Pi.le_def.1 hCE₂ <| x)).1)
+
+/-- The imaginary part of the second Cohn-Elkies condition. -/
+lemma hCE₂_im (hCE₂ : 0 ≤ 𝓕 f) : (im ∘ 𝓕 f) = 0 := by
+  ext x; exact (Complex.le_def.1 (Pi.le_def.1 hCE₂ <| x)).2.symm
+
+section Properties
+
+variable (f) in
+/-- The Fourier transform of a Schwartz function is integrable. -/
+theorem integrable_fourier : Integrable (𝓕 f) :=
+  ((SchwartzMap.fourierTransformCLE ℝ) f).integrable
+
+/-- The Fourier transform of a Schwartz function is non-zero if the function is non-zero. -/
+theorem fourier_ne_zero_of_f_ne_zero (hne_zero : f ≠ 0) : 𝓕 f ≠ 0 := by
+  intro hfourier_zero
+  apply hne_zero
+  rw [← ContinuousLinearEquiv.map_eq_zero_iff (SchwartzMap.fourierTransformCLE ℝ)]
+  exact (SchwartzMap.ext (congrFun (id hfourier_zero)))
+
+/-- If the Fourier transform is non-negative, then the Schwartz function is non-negative at 0. -/
+theorem f_zero_nonneg_of_fourier_nonneg (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ f 0 := by
+  rw [← f.fourierInversion ℝ]
+  simp[Real.fourierIntegralInv_eq, ← integral_re_add_im (integrable_fourier f)]
+  have := funext_iff.1 (hCE₂_im hCE₂)
+  simp at this
+  simp[this]
+  norm_cast
+  exact integral_nonneg_of_ae (Filter.Eventually.of_forall (hCE₂_re hCE₂))
+
+/-- If the Fourier transform is non-negative and the Schwartz function is non-zero,
+then the latter is positive at 0. -/
+theorem f_zero_pos_of_fourier_nonneg (hne_zero : f ≠ 0) (hCE₂ : 0 ≤ 𝓕 f) : 0 < f 0 := by
+  suffices f_zero_ne_zero : f 0 ≠ 0 by
+    exact lt_of_le_of_ne (f_zero_nonneg_of_fourier_nonneg hCE₂) (f_zero_ne_zero).symm
+  by_contra h_zero
+  rw [← f.fourierInversion ℝ] at h_zero
+  simp [Real.fourierIntegralInv_eq, ← integral_re_add_im (integrable_fourier f)] at h_zero
+  have := funext_iff.1 (hCE₂_im hCE₂)
+  simp at this
+  simp [this] at h_zero
+  norm_cast at h_zero
+  have fourier_eq_zero : 𝓕 f = 0 := by
+    have fourier_re_f_ae_zero : re ∘ 𝓕 f =ᶠ[ae volume] 0 := by
+      refine (integral_eq_zero_iff_of_nonneg (hCE₂_re hCE₂) ?_).1 h_zero
+      exact Integrable.re (integrable_fourier f)
+    have re_fourier_eq_zero := by
+      refine (Continuous.ae_eq_iff_eq volume ?_ continuous_zero).1 fourier_re_f_ae_zero
+      refine Continuous.comp continuous_re (VectorFourier.fourierIntegral_continuous ?_ ?_ ?_)
+      · exact Real.continuous_fourierChar
+      · exact continuous_inner
+      · exact f.integrable
+    exact funext (fun x ↦ by
+      rw[← re_add_im (𝓕 f x)]; simp[this]; exact (funext_iff.1 re_fourier_eq_zero) x)
+  have fourier_ne_zero := fourier_ne_zero_of_f_ne_zero hne_zero
+  contradiction
+
+end Properties
+
+section PreparationLemmata
+/- In this section, we provide auxiliary lemmata to make it easier to prove that the density of
+every periodic sphere packing of separation 1 is bounded above by the Cohn-Elkies bound. -/
+
+lemma one (hd : 0 < d) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0)
+    (hP : P.separation = 1) [Nonempty P.centers] (hD_isBounded : IsBounded D) :
+    ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), f (x - y) ≤ P.numReps * f 0 := by
+  sorry
+
+lemma two (hd : 0 < d) (hne_zero : f ≠ 0) (hf : Summable f)
+    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
+    (hP : P.separation = 1) [Nonempty P.centers] (hD_isBounded : IsBounded D) :
+    ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), f (x - y) =
+    ∑' (x : P.centers) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice), f (x - y + ℓ) := by
+  sorry
+
+--put Poisson summation here
+--lemma three
+
+--put the other equality here with the dual lattice bussiness
+--lemma four
+
+lemma five (hd : 0 < d) (hne_zero : f ≠ 0) (hf : Summable f)
+    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
+    (hP : P.separation = 1) [Nonempty P.centers] (hD_isBounded : IsBounded D) :
+    (P.numReps / ZLattice.covolume P.lattice) ≤ f 0 / 𝓕 f 0 := by
+  sorry
+
+end PreparationLemmata
+
+section Main_Theorems
+
+/-- The volume of a set in d-dimensional Euclidean space as a real number. -/
+noncomputable def vol (S : Set (EuclideanSpace ℝ (Fin d))) : ℝ := (volume S).toReal
+
+/-- The density of a periodic sphere packing as a real number. -/
+noncomputable def Δ (P : PeriodicSpherePacking d) : ℝ := (P.density).toReal
+
+/-- The sphere packing constant in dimension d as a real number. -/
+noncomputable def SPconst (d : ℕ) : ℝ := (SpherePackingConstant d).toReal
+
+variable (d) in
+/-- The ball of radius r around x in d-dimensional Euclidean space. -/
+def B (x : EuclideanSpace ℝ (Fin d)) (r : ℝ) : Set (EuclideanSpace ℝ (Fin d)) := Metric.ball x r
+
+/-- The Cohn-Elkies linear programming bound for unit spaced sphere packings. -/
+theorem LinearProgrammingBound' (hd : 0 < d) (hne_zero : f ≠ 0) (hf : Summable f)
+    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
+    (hP : P.separation = 1) [Nonempty P.centers] (hD_isBounded : IsBounded D)
+    (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) :
+    Δ P ≤ f 0 / 𝓕 f 0 * vol (B d 0 (1 / 2)) := by
+  simp [Δ, P.density_eq' hd, hP, mul_div_right_comm]
+  exact mul_le_mul_of_nonneg_right sorry (by simp)
+
+/-- The Cohn-Elkies linear programming bound for sphere packing density. -/
+theorem LinearProgrammingBound (hd : 0 < d) (hne_zero : f ≠ 0) (hf : Summable f)
+    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f) :
+    SPconst d ≤ f 0 / 𝓕 f 0 * vol (B d 0 (1 / 2)) := by
+  rw [SPconst, ← periodic_constant_eq_constant hd]
+  simp [periodic_constant_eq_periodic_constant_normalized hd, Complex.le_def]
+  have div_re_nonneg : 0 ≤ (f 0 / 𝓕 (⇑f) 0).re := by
+    simp [Complex.div_re, (Complex.le_def.1 (hCE₂ 0)).2.symm]
+    refine div_nonneg (mul_nonneg ?_ ?_) (normSq_nonneg _)
+    · exact (Complex.le_def.1 (f_zero_nonneg_of_fourier_nonneg hCE₂)).1
+    · exact (Complex.le_def.1 (hCE₂ 0)).1
+  constructor
+  · rw[← ENNReal.le_ofReal_iff_toReal_le sorry (mul_nonneg div_re_nonneg (by simp[vol]))]
+    apply iSup_le
+    intro P
+    rw [iSup_le_iff]
+    intro hP
+    cases isEmpty_or_nonempty ↑P.centers
+    · case inl instEmpty =>
+      rw [P.density_of_centers_empty hd]
+      exact zero_le _
+    · case inr instNonempty =>
+      let b : Module.Basis (Fin d) ℤ P.lattice :=
+        ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex (P.basis_index_equiv)
+      rw[ENNReal.le_ofReal_iff_toReal_le sorry (mul_nonneg div_re_nonneg (by simp[vol]))]
+      simpa using (Complex.le_def.1 (LinearProgrammingBound' hd hne_zero hf hCE₁ hCE₂ hP
+        (ZSpan.fundamentalDomain_isBounded (Module.Basis.ofZLatticeBasis ℝ P.lattice b))
+        (P.fundamental_domain_unique_covers b))).1
+  · left
+    simp [div_im, (Complex.le_def.1 (f_zero_nonneg_of_fourier_nonneg hCE₂)).2.symm]
+    simp [(Complex.le_def.1 (hCE₂ 0)).2.symm]
+
+end Main_Theorems
+
+
+/-!
+# The real pushforward version people at the meeting where referring to. The workaround being
+# to define an operator 𝓕' doing 𝓕's job on real codomain functions.
+
+/-- The map pushing forward Schwartz functions with codomain ℝ to
+Schwartz functions with codomain ℂ, along the natural inclusion ℝ → ℂ. -/
+noncomputable def SchwartzMap.ofRealRange (f : 𝓢(EuclideanSpace ℝ (Fin d), ℝ)) :
+    𝓢(EuclideanSpace ℝ (Fin d), ℂ) :=
+  {
+    toFun := ofRealCLM ∘ f
+    smooth' := ContDiff.comp (ContinuousLinearMap.contDiff ofRealCLM) f.smooth'
+    decay' (k : ℕ) (n : ℕ) := by
+      obtain ⟨C, hC⟩ := f.decay' k n
+      use C
+      have : ∀ x, ‖iteratedFDeriv ℝ n f.toFun x‖ = ‖iteratedFDeriv ℝ n (ofRealLI ∘ f) x‖ := by
+        intro x
+        refine (LinearIsometry.norm_iteratedFDeriv_comp_left ofRealLI ?_ (by rfl)).symm
+        exact ContDiff.contDiffAt (ContDiff.of_le f.smooth' (by norm_cast; simp))
+      simp [this] at hC
+      exact hC
+  }
+
+/-- The Fourier transform of a Schwartz function with codomain ℝ. -/
+noncomputable def Real.fourierIntegral' (f : 𝓢(EuclideanSpace ℝ (Fin d), ℝ))
+    (w : EuclideanSpace ℝ (Fin d)) : ℂ := 𝓕 (f.ofRealRange) w
+
+notation "𝓕'" => fourierIntegral'
+
+lemma ext_RealRange : ∀ x, f.ofRealRange x = f x := fun _ ↦ rfl
+
+lemma simp_𝓕' : 𝓕' f = 𝓕 f.ofRealRange := rfl
+
+/-- The pushforward of a Schwartz function is identically 0 if and only if
+the original function is identically 0. -/
+lemma zero_iff_zero : f.ofRealRange = 0 ↔ f = 0 := by
+  simp_all[SchwartzMap.ext_iff]
+  apply forall_congr'
+  exact fun x ↦ by simp [ext_RealRange x]
+
+/-- The real part of the second Cohn-Elkies condition. -/
+lemma hCE₂_re (hCE₂ : 0 ≤ 𝓕' f) : 0 ≤ (re ∘ (𝓕' f)) :=
+  Pi.le_def.2 (fun x ↦ (Complex.le_def.1 (Pi.le_def.1 hCE₂ <| x)).1)
+
+/-- The imaginary part of the second Cohn-Elkies condition. -/
+lemma hCE₂_im (hCE₂ : 0 ≤ 𝓕' f) : (im ∘ (𝓕' f)) = 0 := by
+  ext x
+  exact (Complex.le_def.1 (Pi.le_def.1 hCE₂ <| x)).2.symm
+
+section Nonnegativity
+
+private theorem integrable_fourier (f : 𝓢(EuclideanSpace ℝ (Fin d), ℝ)) : Integrable (𝓕' f) :=
+  ((SchwartzMap.fourierTransformCLE ℝ) (f.ofRealRange)).integrable
+
+theorem fourier_ne_zero_of_f_ne_zero (hne_zero : f ≠ 0) : 𝓕' f ≠ 0 := by
+  intro hfourier_zero
+  apply hne_zero
+  rw [← zero_iff_zero, ← ContinuousLinearEquiv.map_eq_zero_iff (SchwartzMap.fourierTransformCLE ℝ)]
+  exact (SchwartzMap.ext (congrFun (id hfourier_zero)))
+
+theorem f_zero_nonneg_of_fourier_nonneg (hCE₂ : 0 ≤ 𝓕' f) : 0 ≤ f 0 := by
+  have haux : f 0 = 𝓕⁻ (𝓕' f) 0 := by
+    simp [simp_𝓕', f.ofRealRange.fourierInversion ℝ, ext_RealRange]
+  simp[fourierIntegralInv_eq, ← integral_re_add_im (integrable_fourier f)] at haux
+  have := funext_iff.1 (hCE₂_im hCE₂)
+  simp at this
+  simp[this] at haux
+  rw[haux]
+  exact integral_nonneg_of_ae (Eventually.of_forall (hCE₂_re hCE₂))
+
+theorem f_zero_pos_of_fourier_nonneg (hne_zero : f ≠ 0) (hCE₂ : 0 ≤ 𝓕' f) : 0 < f 0 := by
+  suffices f_zero_ne_zero : f 0 ≠ 0 by
+    exact lt_of_le_of_ne (f_zero_nonneg_of_fourier_nonneg hCE₂) (f_zero_ne_zero).symm
+  by_contra h_zero
+  have haux : f 0 = 𝓕⁻ (𝓕' f) 0 := by
+    simp [simp_𝓕', f.ofRealRange.fourierInversion ℝ, ext_RealRange]
+  simp [fourierIntegralInv_eq, h_zero, ← integral_re_add_im (integrable_fourier f)] at haux
+  have := funext_iff.1 (hCE₂_im hCE₂)
+  simp at this
+  simp[this] at haux
+  norm_cast at haux
+  have fourier_eq_zero : 𝓕' f = 0 := by
+    have fourier_re_f_ae_zero : (re ∘ (𝓕' f)) =ᶠ[ae volume] 0 := by
+      refine (integral_eq_zero_iff_of_nonneg (hCE₂_re hCE₂) ?_).1 haux.symm
+      exact Integrable.re (integrable_fourier f)
+    have re_fourier_eq_zero := by
+      refine (Continuous.ae_eq_iff_eq volume ?_ continuous_zero).1 fourier_re_f_ae_zero
+      refine Continuous.comp continuous_re (VectorFourier.fourierIntegral_continuous ?_ ?_ ?_)
+      · exact continuous_fourierChar
+      · exact continuous_inner
+      · exact f.ofRealRange.integrable
+    exact funext (fun x ↦ by
+      rw[← re_add_im (𝓕' f x)]; simp[this]; exact (funext_iff.1 re_fourier_eq_zero) x)
+  have fourier_ne_zero := fourier_ne_zero_of_f_ne_zero hne_zero
+  contradiction
+
+end Nonnegativity
+
+## Not sure how to get rid of the .re for Fourier in the main theorem tho
+section Main_Theorem
+
+theorem LinearProgrammingBound (hd : 0 < d) (hne_zero : f ≠ 0) (hf : Summable f)
+    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : ∀ x, 𝓕' f x ≥ 0) : SpherePackingConstant d ≤
+    (f 0 / (re ∘ 𝓕' f) 0).toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
+  rw [← periodic_constant_eq_constant hd, periodic_constant_eq_periodic_constant_normalized hd]
+  apply iSup_le
+  intro P
+  rw [iSup_le_iff]
+  intro hP
+  cases isEmpty_or_nonempty ↑P.centers
+  · case inl instEmpty =>
+    rw [P.density_of_centers_empty hd]
+    exact zero_le _
+  · case inr instNonempty =>
+    let b : Module.Basis (Fin d) ℤ P.lattice :=
+      ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex (P.basis_index_equiv)
+    exact LinearProgrammingBound' hd hne_zero hf hCE₁ hCE₂ hP
+      (ZSpan.fundamentalDomain_isBounded (Module.Basis.ofZLatticeBasis ℝ P.lattice b))
+      (P.fundamental_domain_unique_covers b)
+
+end Main_Theorem
+
+
+
+
+
+
+
+
+# Previous version by Sid
+
 import Mathlib.Logic.IsEmpty
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
@@ -18,28 +325,6 @@ open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Re
   Bornology Summable Module
 
 variable {d : ℕ}
-
-/-
-# Potential Design Complications:
-
-* What we have in Mathlib on Fourier Transforms seems to deal with complex-valued functions. I've
-  dealt with it for now by giving an assumption that the imaginary part of `f` is always zero and
-  stating everything else in terms of the real part of `f`. The real-valuedness may not even be
-  necessary, as we could simply apply the Cohn-Elkies theorem to the real part of any complex-valued
-  function whose real part satisfies the Cohn-Elkies Conditions `hCohnElkies₁` and `hCohnElkies₂`.
-  If the hypothesis does go unused (as I expect it will), I will remove it.
-* As mentioned in `section theorem_2_2` of `SpherePacking/Basic/PeriodicPacking.lean`, we have to
-  use a hack for fundamental domains by supplying the two necessary assumptions ourselves. One day,
-  when it's a bit better developed in Mathlib, we can either modify our file or let people feed in
-  those assumptions as inputs.
-
-# TODOs:
-
-* Everything in `Prereqs.lean` is either a TODO or has already been done (eg. in #25) (to reflect
-  which the corresponding refs must be updated).
-* Add some lemmas about when the set of centres of a sphere packing is empty. Then, do cases here
-  and remove the `Nonempty` instance in the assumptions.
--/
 
 -- Once we sort out the whole 'including variables' thing, we should remove all the variables from
 -- the various lemmas and leave these as they are. Else, we should remove these and keep those.
@@ -700,4 +985,4 @@ theorem LinearProgrammingBound (hd : 0 < d) (hf : Summable f) : SpherePackingCon
       (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ P.lattice b))
       (P.fundamental_domain_unique_covers b) hd hf
 
-end Main_Theorem
+end Main_Theorem -/
