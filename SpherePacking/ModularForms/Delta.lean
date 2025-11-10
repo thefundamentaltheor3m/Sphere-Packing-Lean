@@ -489,12 +489,12 @@ lemma cexp_aux5 (t : ℝ) : (cexp (-(2 * π * t))).im = 0 := by
 lemma Delta_imag_axis_real {t : ℝ} (ht : 0 < t) : (ResToImagAxis Delta t).im = 0 := by
   simp [ResToImagAxis, ht]
   rw [Delta_apply, Δ]
-  simp [Subtype.coe_mk, cexp_aux1, cexp_aux2, cexp_aux5]
+  simp [cexp_aux1, cexp_aux2, cexp_aux5]
   sorry
 
 /- Δ(it) is positive on the (positive) imaginary axis. -/
 lemma Delta_imag_axis_pos {t : ℝ} (ht : 0 < t) : 0 < (ResToImagAxis Delta t).re := by
   simp [ResToImagAxis, ht]
   rw [Delta_apply, Δ]
-  simp [Subtype.coe_mk, cexp_aux1, cexp_aux2, cexp_aux5]
+  simp [cexp_aux1, cexp_aux2, cexp_aux5]
   sorry

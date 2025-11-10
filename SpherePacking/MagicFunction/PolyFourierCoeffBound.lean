@@ -282,9 +282,9 @@ private lemma step_10 :
 by
   have hpow : ∀ {ι} (f : ι → ℝ), Multipliable f → ∀ n, Multipliable (fun i => f i ^ n) := by
     intro ι f hf n
-    induction' n with n hn
-    · simpa using (multipliable_one : Multipliable (fun _ : ι => (1 : ℝ)))
-    · simpa [pow_succ] using (hn.mul hf)
+    induction n with
+    | zero => simpa using (multipliable_one : Multipliable (fun _ : ι => (1 : ℝ)))
+    | succ n hn => simpa [pow_succ] using (hn.mul hf)
   gcongr
   · exact aux_8 z
   · apply tprod_le_of_nonneg_of_multipliable
