@@ -128,15 +128,18 @@ example {a b : ℝ} : 0 ≤ a → 0 ≤ b → (a ≤ b ↔ a ^ 2 ≤ b ^ 2) := b
 /-- `coordinateEmbedding₁₂` has temperate growth. -/
 theorem coordinateEmbedding₁₂_hasTemperateGrowth (x : ℝ) :
     (coordinateEmbedding₁₂ x).HasTemperateGrowth := by
-  apply HasTemperateGrowth.of_fderiv <| fderiv_coordinateEmbedding₁₂_hasTemperateGrowth x
-  exact fun y => (coordinateEmbedding₁₂_hasDerivAt x y).differentiableAt
-  case k => exact 1
-  simp only [coordinateEmbedding₁₂, coe_funUnique, Fin.default_eq_zero]
-  intro y; rw [EuclideanSpace.norm_eq]; norm_num
-  case C => exact (|x| + 1);
-  rw [sqrt_le_left ] <;> ring_nf <;> norm_num [EuclideanSpace.norm_eq]
-  · nlinarith [abs_nonneg x, sqrt_nonneg (y 0 ^ 2), mul_self_sqrt (sq_nonneg (y 0))]
-  · positivity
+  refine (fderiv_coordinateEmbedding₁₂_hasTemperateGrowth x).of_fderiv
+    ((coordinateEmbedding₁₂_smooth x).differentiable le_top) (k := 1) (C := max ‖x‖ 1) ?_
+  intro y
+  simp only [coordinateEmbedding₁₂, coe_funUnique, eval, Fin.default_eq_zero, Fin.isValue,
+    ENNReal.toReal_ofNat, Nat.ofNat_pos, norm_eq_sum, Real.norm_eq_abs, rpow_two, _root_.sq_abs,
+      Fin.sum_univ_two, one_div, Finset.univ_unique, Finset.sum_singleton, pow_one]
+  have h_triangle : Real.sqrt (x^2 + y 0^2) ≤ |x| + |y 0| :=
+    Real.sqrt_le_iff.mpr
+      ⟨by positivity, by cases abs_cases x <;> cases abs_cases ( y 0 ) <;> nlinarith⟩
+  have h_bound : Real.sqrt (x^2 + y 0^2) ≤ max |x| 1 * (1 + |y 0|) := by
+    cases max_cases |x| 1 <;> nlinarith [abs_nonneg x, abs_nonneg (y 0)]
+  norm_num [← Real.sqrt_eq_rpow, Real.sqrt_sq_eq_abs] at * ; linarith!
 
 -- Next, we show the antilipschitz condition. This is significantly easier.
 -- #check AntilipschitzWith
