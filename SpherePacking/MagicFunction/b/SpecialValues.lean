@@ -21,3 +21,9 @@ section Zero
 theorem b_zero : b 0 = 0 := by sorry
 
 end Zero
+
+end SpecialValues
+
+end b
+
+end MagicFunction

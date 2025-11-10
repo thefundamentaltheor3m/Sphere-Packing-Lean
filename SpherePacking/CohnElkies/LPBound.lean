@@ -168,8 +168,6 @@ end Nonnegativity
 
 section Fundamental_Domain_Dependent
 
-include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
-
 variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.centers]
 variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
 variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
@@ -179,9 +177,9 @@ In this section, we will prove that the density of every periodic sphere packing
 bounded above by the Cohn-Elkies bound.
 -/
 
-include hP
+include hP hCohnElkies₁ in
 open Classical in
-private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
+private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
   ≤ ↑(P.numReps' hd hD_isBounded) * (f 0).re := calc
   ∑' x : P.centers, ∑' y : ↑(P.centers ∩ D), (f (x - ↑y)).re
@@ -262,7 +260,7 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
                   -- TODO - find a simpler injectivity proof
                   intro a b hab
                   field_simp at hab
-                  exact SetCoe.ext hab
+                  aesop
             · apply summable_of_finite_support
               -- TODO - is there a better way of writing (P.centers ∩ D) when dealing with subtypes?
               apply Set.Finite.subset (s := {x: ↑P.centers | x.val ∈ D})
@@ -315,8 +313,9 @@ private theorem calc_aux_1 (hd : 0 < d) (hf: Summable f) :
               rw [PeriodicSpherePacking.numReps']
               exact Nat.card_eq_fintype_card
 
-include hD_isBounded
-lemma calc_steps' (hd : 0 < d) (hf: Summable f) :
+omit [Nonempty ↑P.centers] in
+include hD_isBounded in
+lemma calc_steps' (hd : 0 < d) (hf : Summable f) :
     ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), (f (↑x - ↑y + ↑ℓ)).re =
     (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), f (↑x - ↑y + ↑ℓ)).re := by
   have sum_finite := aux4 P D hD_isBounded hd
@@ -329,14 +328,14 @@ lemma calc_steps' (hd : 0 < d) (hf: Summable f) :
   rw [re_tsum]
   apply Summable.comp_injective hf
   intro a b
-  field_simp
+  simp_all
 
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following theorem.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
 -- If there are assumptions needed beyond PSF, we should require them here, not in `PSF_Conditions`.
-set_option maxHeartbeats 200000
-private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
+include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ in
+private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥ ↑(P.numReps' hd hD_isBounded) ^ 2 *
     (𝓕 f 0).re / ZLattice.covolume P.lattice := by
   have : Fact (0 < d) := ⟨hd⟩
@@ -346,8 +345,7 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
       (f (x - ↑y)).re
         := by
             rw [ge_iff_le]
-            exact calc_aux_1 hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
-              hD_isBounded hd hf
+            exact calc_aux_1 hCohnElkies₁ hP hD_isBounded hd hf
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
         := by
@@ -363,10 +361,7 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
   -- other complex-valued stuff.
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       f (↑x - ↑y + ↑ℓ)).re
-        := by
-            exact
-              calc_steps' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hd
-                hf
+        := calc_steps' hD_isBounded hd hf
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice) *
       ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m) *
@@ -375,9 +370,9 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             -- First, we apply the fact that two sides are equal if they're equal in ℂ.
             apply congrArg re
             -- Next, we apply the fact that two sums are equal if their summands are.
-            apply congrArg _ _
+            congr 1
             ext x
-            apply congrArg _ _
+            congr 1
             ext y
             -- Now that we've isolated the innermost sum, we can use the PSF-L.
             exact SchwartzMap.PoissonSummation_Lattices P.lattice f (x - ↑y)
@@ -424,12 +419,12 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
             -- are really trying to show are equal.
             apply congrArg re
             apply congrArg _ _
-            apply congrArg _ _
+            congr 1
             ext m
             apply congrArg _ _
-            apply congrArg _ _
+            congr 1
             ext x
-            apply congrArg _ _
+            congr 1
             ext y
             simp only [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg, mul_comm]
             rw [RCLike.wInner_add_left]
@@ -444,15 +439,15 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
         := by
             apply congrArg re
             apply congrArg _ _
-            apply congrArg _ _
+            congr 1
             ext m
             simp only [mul_assoc]
             apply congrArg _ _
             rw [← tsum_mul_right]
-            apply congrArg _ _
+            congr 1
             ext x
             rw [← tsum_mul_left]
-            apply congrArg _ _
+            congr 1
             ext y
             simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
@@ -465,11 +460,11 @@ private theorem calc_steps (hd : 0 < d) (hf: Summable f) :
         := by
             apply congrArg re
             apply congrArg _ _
-            apply congrArg _ _
+            congr 1
             ext m
             apply congrArg _ _
             rw [conj_tsum]
-            apply congrArg _ _
+            congr 1
             ext x
             exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
   _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,

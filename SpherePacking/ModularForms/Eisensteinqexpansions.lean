@@ -20,18 +20,18 @@ def E (k : ℤ) (hk : 3 ≤ k) : ModularForm (CongruenceSubgroup.Gamma ↑1) k :
 
 open Pointwise
 
-def gammaSetN (N : ℕ) : Set (Fin 2 → ℤ) := ({N} : Set ℕ) • gammaSet 1 0
+def gammaSetN (N : ℕ) : Set (Fin 2 → ℤ) := ({N} : Set ℕ) • gammaSet 1 1 0
 
-def gammaSetN_map (N : ℕ) (v : gammaSetN N) : gammaSet 1 0 := by
+def gammaSetN_map (N : ℕ) (v : gammaSetN N) : gammaSet 1 1 0 := by
   have hv2 := v.2
   simp [gammaSetN] at hv2
   rw [@mem_smul_set] at hv2
   use hv2.choose
   exact hv2.choose_spec.1
 
-lemma gammaSet_top_mem (v : Fin 2 → ℤ) : v ∈ gammaSet 1 0 ↔ IsCoprime (v 0) (v 1) := by
+lemma gammaSet_top_mem (v : Fin 2 → ℤ) : v ∈ gammaSet 1 1 0 ↔ IsCoprime (v 0) (v 1) := by
   rw [gammaSet]
-  simp only [Fin.isValue, mem_setOf_eq, and_iff_right_iff_imp]
+  simp only [Fin.isValue, mem_setOf_eq, ←Int.isCoprime_iff_gcd_eq_one, and_iff_right_iff_imp]
   intro h
   exact Subsingleton.eq_zero (Int.cast ∘ v)
 
@@ -42,7 +42,7 @@ lemma gammaSetN_map_eq (N : ℕ) (v : gammaSetN N) : v.1 = N • gammaSetN_map N
   have h1 := hv2.choose_spec.2
   exact h1.symm
 
-def gammaSetN_Equiv (N : ℕ) (hN : N ≠ 0) : gammaSetN N ≃ gammaSet 1 0 where
+def gammaSetN_Equiv (N : ℕ) (hN : N ≠ 0) : gammaSetN N ≃ gammaSet 1 1 0 where
   toFun v := gammaSetN_map N v
   invFun v := by
     use N • v
@@ -111,7 +111,6 @@ def GammaSet_one_Equiv : (Fin 2 → ℤ) ≃ (Σn : ℕ, gammaSetN n) where
              simp_rw [← hx.2]
              simp only [Fin.isValue, Pi.smul_apply, nsmul_eq_mul]
              have hg := hx.1.2
-             rw [@Int.isCoprime_iff_gcd_eq_one] at hg
              rw [Int.gcd_mul_left, hg]
              omega
            · fin_cases i
@@ -240,7 +239,7 @@ lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : 
 
 lemma EQ22 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
     ∑' (x : Fin 2 → ℤ), eisSummand k x z =
-    (riemannZeta (k)) * ∑' (c : gammaSet 1 0), eisSummand k c z := by
+    (riemannZeta (k)) * ∑' (c : gammaSet 1 1 0), eisSummand k c z := by
   rw [← GammaSet_one_Equiv.symm.tsum_eq]
   have hk1 : 1 < k := by omega
   have hr := zeta_nat_eq_tsum_of_gt_one hk1
@@ -275,7 +274,7 @@ lemma EQ22 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
       left
       exact this
     · apply summable_mul_of_summable_norm (f := fun (n : ℕ) => ((n : ℂ)^k)⁻¹)
-        (g := fun (v : (gammaSet 1 0) ) => eisSummand k v z)
+        (g := fun (v : (gammaSet 1 1 0) ) => eisSummand k v z)
       · simp only [norm_inv, norm_pow, norm_natCast, Real.summable_nat_pow_inv, hk1]
       apply (EisensteinSeries.summable_norm_eisSummand hk z).subtype
     intro b
@@ -290,7 +289,7 @@ lemma EQ22 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
   exact (EisensteinSeries.summable_norm_eisSummand hk z).of_norm
 
 lemma EQ2 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) : ∑' (x : Fin 2 → ℤ),
-    1 / (x 0 * (z : ℂ) + x 1) ^ ↑k = (riemannZeta (k)) * ∑' (c : gammaSet 1 0),
+    1 / (x 0 * (z : ℂ) + x 1) ^ ↑k = (riemannZeta (k)) * ∑' (c : gammaSet 1 1 0),
     1 / ((c.1 0) * (z : ℂ) + (c.1 1)) ^ k := by
   have := EQ22 k hk z
   simp_rw [eisSummand] at this
@@ -304,8 +303,8 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
     (E k hk) z = 1 +
         (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
         ∑' n : ℕ+, sigma (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by
-  rw [E]
-  rw [ModularForm.smul_apply]
+  rw [_root_.E]
+  rw [IsGLPos.smul_apply]
   have : (eisensteinSeries_MF hk standardcongruencecondition) z =
     (eisensteinSeries_SIF standardcongruencecondition k) z := rfl
   rw [this]

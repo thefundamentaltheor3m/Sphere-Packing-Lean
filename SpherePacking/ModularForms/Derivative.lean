@@ -195,7 +195,7 @@ theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
   have h := ramanujan_E₂'
   unfold serre_D at h
   have h1 := congrFun h z
-  field_simp
+  simp [field]
   field_simp at h1
   simpa [add_comm, sub_eq_iff_eq_add] using h1
 
@@ -205,8 +205,8 @@ theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun
   have h := ramanujan_E₄'
   unfold serre_D at h
   have h1 := congrFun h z
-  field_simp
-  field_simp at h1
+  simp [field]
+  simp [field] at h1
   ring_nf
   ring_nf at h1
   have hc : (12 : ℂ) ≠ 0 := by norm_num
@@ -220,8 +220,8 @@ theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun
   have h := ramanujan_E₆'
   unfold serre_D at h
   have h1 := congrFun h z
-  field_simp
-  field_simp at h1
+  simp [field]
+  simp [field] at h1
   ring_nf
   ring_nf at h1
   have hc : (12 : ℂ) ≠ 0 := by norm_num

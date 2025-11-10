@@ -65,9 +65,9 @@ def CuspForms_iso_Modforms (k : ℤ) : CuspForm (CongruenceSubgroup.Gamma 1) k �
       map_smul' := by
         intro m a
         ext z
-        simp only [CuspForm_div_Discriminant_apply, CuspForm.smul_apply, smul_eq_mul,
-          RingHom.id_apply, ModularForm.smul_apply]
-        ring
+        simp only [CuspForm_div_Discriminant_apply, CuspForm.IsGLPos.smul_apply, smul_eq_mul,
+          RingHom.id_apply, IsGLPos.smul_apply]
+        exact mul_div_assoc m (a z) (Δ z)
       invFun := Modform_mul_Delta' k
       left_inv := by
         intro f
@@ -131,7 +131,7 @@ lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
   rw [IsCuspForm_iff_coeffZero_eq_zero]
   exact E4E6_coeff_zero_eq_zero
 
-lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff ℂ 1 = 1 := by
+lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff 1 = 1 := by
   have := Delta_E4_E6_eq
   have h1 : (qExpansion 1 Delta_E4_E6_aux) = qExpansion 1 (ModForm_mk Γ(1) 12 Delta_E4_E6_aux) := by
     apply qExpansion_ext2 Delta_E4_E6_aux (ModForm_mk Γ(1) 12 Delta_E4_E6_aux) ?_
@@ -193,11 +193,11 @@ lemma weight_six_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 6) = 1 := 
     simp at *
     have := IsCuspForm_weight_lt_eq_zero 6 (by norm_num) f hf2
     aesop
-  · have hc1 : (qExpansion 1 f).coeff ℂ 0 ≠ 0 := by
+  · have hc1 : (qExpansion 1 f).coeff 0 ≠ 0 := by
       intro h
       rw [← IsCuspForm_iff_coeffZero_eq_zero] at h
       exact hf2 h
-    set c := (qExpansion 1 f).coeff ℂ 0 with hc
+    set c := (qExpansion 1 f).coeff 0 with hc
     have hcusp : IsCuspForm Γ(1) 6 (E₆ - c⁻¹• f) := by
       rw [IsCuspForm_iff_coeffZero_eq_zero]
       rw [qExpansion_sub]
@@ -223,11 +223,11 @@ lemma weight_four_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 4) = 1 :=
     simp at *
     have := IsCuspForm_weight_lt_eq_zero 4 (by norm_num) f hf2
     aesop
-  · have hc1 : (qExpansion 1 f).coeff ℂ 0 ≠ 0 := by
+  · have hc1 : (qExpansion 1 f).coeff 0 ≠ 0 := by
       intro h
       rw [← IsCuspForm_iff_coeffZero_eq_zero] at h
       exact hf2 h
-    set c := (qExpansion 1 f).coeff ℂ 0 with hc
+    set c := (qExpansion 1 f).coeff 0 with hc
     have hcusp : IsCuspForm Γ(1) 4 (E₄ - c⁻¹• f) := by
       rw [IsCuspForm_iff_coeffZero_eq_zero]
       rw [qExpansion_sub]
@@ -253,11 +253,11 @@ lemma weight_eight_one_dimensional (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even 
     simp at *
     have := IsCuspForm_weight_lt_eq_zero k (by simpa using hk3) f hf2
     aesop
-  · have hc1 : (qExpansion 1 f).coeff ℂ 0 ≠ 0 := by
+  · have hc1 : (qExpansion 1 f).coeff 0 ≠ 0 := by
       intro h
       rw [← IsCuspForm_iff_coeffZero_eq_zero] at h
       exact hf2 h
-    set c := (qExpansion 1 f).coeff ℂ 0 with hc
+    set c := (qExpansion 1 f).coeff 0 with hc
     have hcusp : IsCuspForm Γ(1) k (E k hk - c⁻¹• f) := by
       rw [IsCuspForm_iff_coeffZero_eq_zero]
       rw [qExpansion_sub]
@@ -290,7 +290,7 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
       (IsCuspForm_to_CuspForm Γ(1) 2 f hf)
     rw [this]
     simp only [CuspForm.zero_apply]
-  · have hc1 : (qExpansion 1 f).coeff ℂ 0 ≠ 0 := by
+  · have hc1 : (qExpansion 1 f).coeff 0 ≠ 0 := by
       intro h
       rw [← IsCuspForm_iff_coeffZero_eq_zero] at h
       exact hf h
@@ -299,12 +299,12 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
     rw [finrank_eq_one_iff_of_nonzero' E₆ E6_ne_zero] at r6
     have r6f := r6 ((f.mul f).mul f)
     obtain ⟨c6, hc6⟩ := r6f
-    have hc6e : c6 = ((qExpansion 1 f).coeff ℂ 0)^3 := by
+    have hc6e : c6 = ((qExpansion 1 f).coeff 0)^3 := by
       have := qExpansion_mul_coeff 1 4 2 (f.mul f) f
       have h2 := qExpansion_mul_coeff 1 2 2 f f
       rw [← hc6] at this
       rw [← qExpansion_smul2 1 c6, h2] at this
-      have hh := congr_arg (fun x => x.coeff ℂ 0) this
+      have hh := congr_arg (fun x => x.coeff 0) this
       simp only [_root_.map_smul, smul_eq_mul] at hh
       rw [E6_q_exp_zero] at hh
       rw [pow_three]
@@ -317,11 +317,11 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
     rw [finrank_eq_one_iff_of_nonzero' E₄ E4_ne_zero] at r4
     have r4f := r4 (f.mul f)
     obtain ⟨c4, hc4⟩ := r4f
-    have hc4e : c4 = ((qExpansion 1 f).coeff ℂ 0)^2 := by
+    have hc4e : c4 = ((qExpansion 1 f).coeff 0)^2 := by
       have := qExpansion_mul_coeff 1 2 2 f f
       rw [← hc4] at this
       rw [← qExpansion_smul2 1 c4] at this
-      have hh := congr_arg (fun x => x.coeff ℂ 0) this
+      have hh := congr_arg (fun x => x.coeff 0) this
       simp only [_root_.map_smul, smul_eq_mul] at hh
       rw [E4_q_exp_zero] at hh
       rw [pow_two]
@@ -342,7 +342,7 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
       simp [F]
       rw [pow_three, ← mul_assoc, DirectSum.of_mul_of, DirectSum.of_mul_of]
       rfl
-    have HF12 : (((F^2)^3) 12) = ((qExpansion 1 f).coeff ℂ 0)^6 • (E₄.mul (E₄.mul E₄)) := by
+    have HF12 : (((F^2)^3) 12) = ((qExpansion 1 f).coeff 0)^6 • (E₄.mul (E₄.mul E₄)) := by
       rw [HF2, pow_three]
       simp
       rw [DirectSum.of_mul_of, DirectSum.of_mul_of, hc4e, smul_smul, smul_smul]
@@ -350,7 +350,7 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
       rw [@DirectSum.smul_apply]
       simp only [PowerSeries.coeff_zero_eq_constantCoeff, Int.reduceAdd, DirectSum.of_eq_same]
       rfl
-    have hF2 : (((F^3)^2) 12) = ((qExpansion 1 f).coeff ℂ 0)^6 • ((E₆.mul E₆)) := by
+    have hF2 : (((F^3)^2) 12) = ((qExpansion 1 f).coeff 0)^6 • ((E₆.mul E₆)) := by
       rw [HF3, pow_two]
       simp only [Algebra.mul_smul_comm, Algebra.smul_mul_assoc, Int.reduceAdd,
         PowerSeries.coeff_zero_eq_constantCoeff]
@@ -359,7 +359,7 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
       rw [@DirectSum.smul_apply]
       simp only [PowerSeries.coeff_zero_eq_constantCoeff, Int.reduceAdd, DirectSum.of_eq_same]
       rfl
-    have V : (1 / 1728 : ℂ) • ((((F^2)^3) 12) - (((F^3)^2) 12)) = ((qExpansion 1 f).coeff ℂ 0)^6 • D
+    have V : (1 / 1728 : ℂ) • ((((F^2)^3) 12) - (((F^3)^2) 12)) = ((qExpansion 1 f).coeff 0)^6 • D
       := by
       rw [HF12, hF2]
       simp only [one_div, Int.reduceAdd, PowerSeries.coeff_zero_eq_constantCoeff,
@@ -368,25 +368,26 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
         DirectSum.of_mul_of,DirectSum.of_mul_of]
       simp only [one_div, Int.reduceAdd, DirectSum.sub_apply, DirectSum.of_eq_same]
       ext y
-      simp only [ModularForm.smul_apply, sub_apply, Int.reduceAdd, smul_eq_mul]
+      simp only [IsGLPos.smul_apply, sub_apply, Int.reduceAdd, smul_eq_mul]
       ring_nf
       rfl
     have ht : (1 / 1728 : ℂ) • ((((F^2)^3) 12) - (((F^3)^2) 12)) = 0 := by
       ext y
-      simp only [one_div, ModularForm.smul_apply, sub_apply, smul_eq_mul, ModularForm.zero_apply,
-        mul_eq_zero, inv_eq_zero, OfNat.ofNat_ne_zero, false_or, F]
+      simp only [one_div, IsGLPos.smul_apply, sub_apply, smul_eq_mul, zero_apply, mul_eq_zero,
+        inv_eq_zero, OfNat.ofNat_ne_zero, false_or, F]
       ring_nf
     rw [ht] at V
     have hr := congr_fun (congr_arg (fun x ↦ x.toFun) V) UpperHalfPlane.I
-    simp only [SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe, ModularForm.zero_apply,
-      PowerSeries.coeff_zero_eq_constantCoeff, ModularForm.smul_apply, smul_eq_mul, zero_eq_mul,
-      ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff, D] at hr
+    simp only [SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe, zero_apply,
+      PowerSeries.coeff_zero_eq_constantCoeff, DirectSum.of_eq_same, IsGLPos.smul_apply,
+      smul_eq_mul, zero_eq_mul, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff,
+      D] at hr
     rcases hr with h | h
     · simp only [PowerSeries.coeff_zero_eq_constantCoeff, ne_eq, Int.reduceAdd, one_div,
       isUnit_iff_ne_zero, inv_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, IsUnit.smul_eq_zero,
       F, D] at *
       exact hc1 h
-    · simp only [ModForm_mk, DirectSum.of_eq_same] at h
+    · simp only [ModForm_mk] at h
       have hDelta := Δ_ne_zero UpperHalfPlane.I
       rw [← Delta_apply] at hDelta
       exact hDelta h
@@ -412,7 +413,7 @@ lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk
     intro v
     have := Quotient.exists_rep v
     obtain ⟨f, hf⟩ := this
-    use ((qExpansion 1 f).coeff ℂ 0)
+    use ((qExpansion 1 f).coeff 0)
     rw [← Submodule.Quotient.mk_smul, ← hf ]
     have : ⟦f⟧ = Submodule.Quotient.mk f
       (p := (CuspFormSubmodule (CongruenceSubgroup.Gamma 1) k) ):= by rfl
