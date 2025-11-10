@@ -1,6 +1,7 @@
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.clog_arg_lems
 import SpherePacking.ModularForms.eta
+import SpherePacking.ModularForms.ResToImagAxis
 import Mathlib.NumberTheory.ModularForms.QExpansion
 import SpherePacking.Tactic.NormNumI
 
@@ -463,44 +464,37 @@ theorem CuspForm_div_Discriminant_Add (k : ℤ) (x y : CuspForm (CongruenceSubgr
   simp only [CuspForm_div_Discriminant_apply, CuspForm.add_apply, ModularForm.add_apply]
   ring
 
-lemma Delta_im_line_im_part {t : ℝ} (ht : 0 < t) : (Delta ⟨(Complex.I * t), by simp [ht]⟩ ).im =0 :=
-    by
+lemma cexp_aux1 (t : ℝ) : cexp (2 * ↑π * Complex.I * (Complex.I * t)) = rexp (-2 * π * t) := by
+  calc
+    _ = cexp (2 * ↑π * (Complex.I * Complex.I) * t) := by ring_nf
+    _ = rexp (-2 * π * t) := by simp
+
+lemma cexp_aux2 (t : ℝ) (n : ℕ)
+    : cexp (2 * π * Complex.I * (n + 1) * (Complex.I * t)) = rexp (-(2 * π * (n + 1) * t)) := by
+  calc
+    _ = cexp (2 * ↑π * (n + 1) * (Complex.I * Complex.I) * t) := by ring_nf
+    _ = rexp (-(2 * π * (n + 1) * t)) := by simp
+
+lemma cexp_aux3 (t : ℝ) (n : ℕ) (ht : 0 < t) : 0 < 1 - rexp (-(2 * π * (n + 1) * t)) := by
+  have _ : rexp (-(2 * π * (n + 1) * t)) < 1 := exp_lt_one_iff.mpr (by simp; positivity)
+  linarith
+
+lemma cexp_aux4 (t : ℝ) (n : ℕ) : (cexp (-2 * π * (n + 1) * t)).im = 0 := by
+  simpa [Complex.ofReal_mul, Complex.ofReal_neg] using exp_ofReal_im (-2 * π * (n + 1) * t)
+
+lemma cexp_aux5 (t : ℝ) : (cexp (-(2 * π * t))).im = 0 := by
+  simpa [Complex.ofReal_mul, Complex.ofReal_neg] using exp_ofReal_im (-(2 * π * t))
+
+/- Δ(it) is real on the (positive) imaginary axis. -/
+lemma Delta_imag_axis_real {t : ℝ} (ht : 0 < t) : (ResToImagAxis Delta t).im = 0 := by
+  simp [ResToImagAxis, ht]
   rw [Delta_apply, Δ]
+  simp [Subtype.coe_mk, cexp_aux1, cexp_aux2, cexp_aux5]
   sorry
 
-lemma Delta_im_line {t : ℝ} (ht : 0 < t) : 0 < ‖Delta ⟨(Complex.I * t), by simp [ht]⟩‖ := by
-  rw [Delta_apply, Δ, norm_mul]
-  simp_rw [Complex.norm_exp]
-  simp
-  have (i : ℕ) : cexp (2 * ↑π * Complex.I * (↑i + 1) * (Complex.I * ↑t)) =
-      cexp (-2 * ↑π * (↑i + 1) * (↑t)) := by
-      congr 1
-      linear_combination π * (i + 1) * 2 * t * I_sq
-  conv =>
-    enter [2,2,1,1]
-    intro i
-    rw [this i]
-    rw [sub_eq_add_neg]
-  apply mul_pos
-  · exact exp_pos (-(2 * π * t))
-  have H := Complex.cexp_tsum_eq_tprod (f := fun (i : ℕ) => (1 + -cexp (-2 * ↑π * (↑i + 1) *
-    ↑t))^24) ?_ ?_
-  · rw [← H]
-    simp
-  · intro i
-    simp
-    norm_cast
-    have := Real.exp_lt_one_iff (x := -(2 * π * (i + 1) * t)).2 ?_
-    · rw [← sub_eq_add_neg]
-      rw [@sub_eq_zero]
-      intro h
-      norm_cast at *
-      rw [← h] at this
-      exact (lt_self_iff_false 1).mp this
-    simp
-    positivity
-
-  · simp_rw [← sub_eq_add_neg]
-    norm_cast
-
-    sorry
+/- Δ(it) is positive on the (positive) imaginary axis. -/
+lemma Delta_imag_axis_pos {t : ℝ} (ht : 0 < t) : 0 < (ResToImagAxis Delta t).re := by
+  simp [ResToImagAxis, ht]
+  rw [Delta_apply, Δ]
+  simp [Subtype.coe_mk, cexp_aux1, cexp_aux2, cexp_aux5]
+  sorry
