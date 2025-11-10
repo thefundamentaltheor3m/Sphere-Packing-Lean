@@ -46,8 +46,10 @@ variable [RCLike 𝕜]
 variable [NormedAddCommGroup D] [NormedSpace ℝ D]
 variable [NormedSpace 𝕜 F] [SMulCommClass ℝ 𝕜 F]
 
-def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D}
-  (hf : ∀ x ∈ S, ∀ n : ℕ, iteratedFDeriv ℝ n f (g x) = 0) (hg : g.HasTemperateGrowthOn S)
+example (x : E) : x ∈ (⊤ : Set E) := trivial
+
+def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D} (hS : UniqueDiffOn ℝ S)
+  (hf : ∀ x ∈ Sᶜ, ∀ n : ℕ, iteratedFDeriv ℝ n f (g x) = 0) (hg : g.HasTemperateGrowthOn S)
   (hg_upper : ∃ (k : ℕ) (C : ℝ), ∀ x, ‖x‖ ≤ C * (1 + ‖g x‖) ^ k) : 𝓢(D, F) where
   toFun := f ∘ g
   smooth' := by sorry
@@ -61,8 +63,10 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D}
       rw [norm_zero] at hg_upper'
       exact nonneg_of_mul_nonneg_left hg_upper' (by positivity)
     let k' := kg * (k + l * n)
-    use Finset.Iic (k', n), (1 + Cg) ^ (k + l * n) * ((C + 1) ^ n * n ! * 2 ^ k'), by positivity
-    intro f x
+    use  (1 + Cg) ^ (k + l * n) * ((C + 1) ^ n * n ! * 2 ^ k')
+    -- use Finset.Iic (k', n), (1 + Cg) ^ (k + l * n) * ((C + 1) ^ n * n ! * 2 ^ k'), by positivity
+    -- intro f x
+    intro x
     let seminorm_f := ((Finset.Iic (k', n)).sup (schwartzSeminormFamily 𝕜 _ _)) f
     have hg_upper'' : (1 + ‖x‖) ^ (k + l * n) ≤ (1 + Cg) ^ (k + l * n) * (1 + ‖g x‖) ^ k' := by
       rw [pow_mul, ← mul_pow]
@@ -81,6 +85,7 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D}
       exact one_add_le_sup_seminorm_apply le_rfl hi _ _
     have hgrowth' (N : ℕ) (hN₁ : 1 ≤ N) (hN₂ : N ≤ n) :
         ‖iteratedFDeriv ℝ N g x‖ ≤ ((C + 1) * (1 + ‖x‖) ^ l) ^ N := by
+      stop
       refine (hgrowth N hN₂ x).trans ?_
       rw [mul_pow]
       have hN₁' := (lt_of_lt_of_le zero_lt_one hN₁).ne'
@@ -88,7 +93,8 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D}
       · exact le_trans (by simp) (le_self_pow₀ (by simp [hC]) hN₁')
       · refine le_self_pow₀ (one_le_pow₀ ?_) hN₁'
         simp only [le_add_iff_nonneg_right, norm_nonneg]
-    have := norm_iteratedFDeriv_comp_le (f.smooth ⊤) hg.1 (mod_cast le_top) x hbound hgrowth'
+    stop
+    have := norm_iteratedFDerivWithin_comp_le (f.smooth ⊤).contDiffOn hg.1 (mod_cast le_top) (by sorry) hS (by sorry) trivial hbound hgrowth'
     have hxk : ‖x‖ ^ k ≤ (1 + ‖x‖) ^ k :=
       pow_le_pow_left₀ (norm_nonneg _) (by simp only [zero_le_one, le_add_iff_nonneg_left]) _
     grw [hxk, this]
@@ -103,6 +109,7 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D}
     have hgxk' : 0 < (1 + ‖g x‖) ^ k' := by positivity
     rw [← div_le_iff₀ hgxk'] at hg_upper''
     grw [hg_upper'', ← mul_assoc]
+
     sorry
 
 def compCLM_original {g : D → E} (hg : g.HasTemperateGrowth)
