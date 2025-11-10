@@ -106,18 +106,34 @@ by
 
 -- Note: We can probably do away with the `x` here as I doubt any of the proofs will need it.
 /-- The Jacobian of `coordinateEmbedding₁₂ x` for all `x : ℝ`. -/
-def coordinateEmbedding₁₂_fderiv (x : ℝ) : Euc(1) →L[ℝ] Euc(2) where
-  toFun := fun y => (ContinuousLinearEquiv.funUnique (Fin 1) ℝ ℝ y) • !₂[(0 : ℝ), 1]
-  cont := by
-
-    sorry
-  map_add' := sorry
-  map_smul' := sorry
+def coordinateEmbedding₁₂_fderiv (_ : ℝ) : Euc(1) →L[ℝ] Euc(2) :=
+  -- Use the projection onto the unique coordinate and scale the fixed vector
+  ContinuousLinearMap.smulRight
+    (EuclideanSpace.proj (ι := Fin 1) (𝕜 := ℝ) 0 : Euc(1) →L[ℝ] ℝ)
+    (!₂[(0 : ℝ), 1] : Euc(2))
 
 /-- The Jacobian of `coordinateEmbedding₁₂ x` is the constant `!₂[0, 1]`. -/
 theorem coordinateEmbedding₁₂_hasDerivAt (x : ℝ) (p : Euc(1)) :
     HasFDerivAt (𝕜 := ℝ) (coordinateEmbedding₁₂ x) (coordinateEmbedding₁₂_fderiv x) p := by
-  sorry
+  classical
+  have hlin :
+      HasFDerivAt (fun y : Euc(1) => coordinateEmbedding₁₂_fderiv x y)
+        (coordinateEmbedding₁₂_fderiv x) p :=
+    ContinuousLinearMap.hasFDerivAt (coordinateEmbedding₁₂_fderiv x) (x := p)
+  have hfd :
+      HasFDerivAt
+        (fun y : Euc(1) =>
+          !₂[(x : ℝ), (0 : ℝ)] + coordinateEmbedding₁₂_fderiv x y)
+        (coordinateEmbedding₁₂_fderiv x) p :=
+    hlin.const_add (!₂[(x : ℝ), (0 : ℝ)] : Euc(2))
+  have hpoint :
+      (fun y : Euc(1) =>
+          !₂[(x : ℝ), (0 : ℝ)] + coordinateEmbedding₁₂_fderiv x y)
+        = coordinateEmbedding₁₂ x := by
+    funext y
+    ext i
+    fin_cases i <;> simp [coordinateEmbedding₁₂, coordinateEmbedding₁₂_fderiv, Fin.isValue]
+  exact hpoint ▸ hfd
 
 -- We need to use the following to get an expression for the `fderiv` of `coordinateEmbedding₁₂ x`.
 -- #check HasFDerivAt.fderiv
@@ -135,13 +151,28 @@ example {a b : ℝ} : 0 ≤ a → 0 ≤ b → (a ≤ b ↔ a ^ 2 ≤ b ^ 2) := b
 /-- `coordinateEmbedding₁₂` has temperate growth. -/
 theorem coordinateEmbedding₁₂_hasTemperateGrowth (x : ℝ) :
     (coordinateEmbedding₁₂ x).HasTemperateGrowth := by
-  refine Function.HasTemperateGrowth.of_fderiv (fderiv_coordinateEmbedding₁₂_hasTemperateGrowth x)
-    ((coordinateEmbedding₁₂_smooth x).differentiable le_top) (k := 1) (C := max ‖x‖ 1) ?_
+  classical
+  set c : Euc(2) := !₂[(x : ℝ), (0 : ℝ)]
+  set L : Euc(1) →L[ℝ] Euc(2) := coordinateEmbedding₁₂_fderiv x
+  set C : ℝ := ‖c‖ + ‖L‖
+  refine Function.HasTemperateGrowth.of_fderiv
+    (fderiv_coordinateEmbedding₁₂_hasTemperateGrowth x)
+    ((coordinateEmbedding₁₂_smooth x).differentiable le_top) (k := 1) (C := C) ?_
   intro y
-  simp only [coordinateEmbedding₁₂, coe_funUnique, eval, Fin.default_eq_zero, Fin.isValue,
-    ENNReal.toReal_ofNat, Nat.ofNat_pos, norm_eq_sum, Real.norm_eq_abs, rpow_two, _root_.sq_abs,
-    Fin.sum_univ_two, one_div, Finset.univ_unique, Finset.sum_singleton, pow_one]
-  sorry
+  have hpoint : coordinateEmbedding₁₂ x y = c + L y := by
+    ext i
+    fin_cases i <;> simp [coordinateEmbedding₁₂, coordinateEmbedding₁₂_fderiv, c, L, Fin.isValue]
+  have hC_c : ‖c‖ ≤ C := le_add_of_nonneg_right (norm_nonneg _)
+  have hC_L : ‖L‖ ≤ C := le_add_of_nonneg_left (norm_nonneg _)
+  calc
+    ‖coordinateEmbedding₁₂ x y‖
+        = ‖c + L y‖ := by simp [hpoint]
+    _ ≤ ‖c‖ + ‖L y‖ := norm_add_le _ _
+    _ ≤ ‖c‖ + ‖L‖ * ‖y‖ := add_le_add_left (L.le_opNorm y) _
+    _ ≤ C + C * ‖y‖ :=
+          add_le_add hC_c (mul_le_mul_of_nonneg_right hC_L (norm_nonneg _))
+    _ = C * (1 + ‖y‖) := by simp [C, mul_add]
+    _ = C * (1 + ‖y‖) ^ (1 : ℕ) := by simp [pow_one]
 
 -- Next, we show the antilipschitz condition. This is significantly easier.
 -- #check AntilipschitzWith

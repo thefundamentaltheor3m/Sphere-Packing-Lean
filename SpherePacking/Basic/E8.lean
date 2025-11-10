@@ -433,7 +433,8 @@ example : E8Packing.lattice = E8_Lattice := rfl
 
 -- We need a theorem for when centers = lattice
 theorem E8Packing_numReps : E8Packing.numReps = 1 := by
-  sorry
+  classical
+  exact PeriodicSpherePacking.numReps_eq_one (S := E8Packing) rfl
 
 lemma E8_Matrix_mem (i : Fin 8) : E8_Matrix i ∈ E8_Lattice := by
   rw [E8_Lattice, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, E8_Set_eq_span,

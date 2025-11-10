@@ -453,38 +453,10 @@ lemma Delta_im_line_im_part {t : ℝ} (ht : 0 < t) : (Delta ⟨(Complex.I * t), 
   sorry
 
 lemma Delta_im_line {t : ℝ} (ht : 0 < t) : 0 < ‖Delta ⟨(Complex.I * t), by simp [ht]⟩‖ := by
-  rw [Delta_apply, Δ, norm_mul]
-  simp_rw [Complex.norm_exp]
-  simp
-  have (i : ℕ) : cexp (2 * ↑π * Complex.I * (↑i + 1) * (Complex.I * ↑t)) =
-      cexp (-2 * ↑π * (↑i + 1) * (↑t)) := by
-      congr 1
-      linear_combination π * (i + 1) * 2 * t * I_sq
-  conv =>
-    enter [2,2,1,1]
-    intro i
-    rw [this i]
-    rw [sub_eq_add_neg]
-  apply mul_pos
-  · exact exp_pos (-(2 * π * t))
-  have H := Complex.cexp_tsum_eq_tprod (f := fun (i : ℕ) => (1 + -cexp (-2 * ↑π * (↑i + 1) *
-    ↑t))^24) ?_ ?_
-  · rw [← H]
-    simp
-  · intro i
-    simp
-    norm_cast
-    have := Real.exp_lt_one_iff (x := -(2 * π * (i + 1) * t)).2 ?_
-    · rw [← sub_eq_add_neg]
-      rw [@sub_eq_zero]
-      intro h
-      norm_cast at *
-      rw [← h] at this
-      exact (lt_self_iff_false 1).mp this
-    simp
-    positivity
-
-  · simp_rw [← sub_eq_add_neg]
-    norm_cast
-
-    sorry
+  have hne : Δ ⟨(Complex.I * t), by simp [ht]⟩ ≠ 0 := Δ_ne_zero ⟨(Complex.I * t), by simp [ht]⟩
+  have hne' : Delta ⟨(Complex.I * t), by simp [ht]⟩ ≠ 0 := by
+    change Δ ⟨(Complex.I * t), by simp [ht]⟩ ≠ 0
+    exact hne
+  have hpos : 0 < ‖Delta ⟨(Complex.I * t), by simp [ht]⟩‖ :=
+    norm_pos_iff.mpr hne'
+  exact hpos
