@@ -63,7 +63,7 @@ instance PeriodicSpherePacking.instIsZLattice (S : PeriodicSpherePacking d) :
 
 instance SpherePacking.instCentersDiscrete (S : SpherePacking d) :
     DiscreteTopology S.centers := by
-  simp_rw [← singletons_open_iff_discrete, Metric.isOpen_iff]
+  simp_rw [discreteTopology_iff_isOpen_singleton, Metric.isOpen_iff]
   intro ⟨u, hu⟩ ⟨v, hv⟩ huv
   simp_rw [Set.subset_singleton_iff, mem_ball, Subtype.forall, Subtype.mk.injEq]
   rw [Set.mem_singleton_iff, Subtype.mk.injEq] at huv
@@ -175,7 +175,7 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
     specialize hε' x hx
     simp only [DistribMulAction.toLinearMap_apply, AddSubgroupClass.coe_norm,
       Submodule.mk_eq_zero] at hx' hε'
-    rw [norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le, mul_lt_mul_left hc] at hx'
+    rw [norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le, mul_lt_mul_iff_right₀ hc] at hx'
     exact hε' hx'
   lattice_isZLattice := by
     use ?_
@@ -219,7 +219,7 @@ lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
       rw [dist_eq_norm] at hxy ⊢
       rw [← smul_sub, norm_smul, Real.norm_eq_abs, abs_eq_self.mpr this]
       apply lt_of_lt_of_le (b := c⁻¹ * (c * S.separation / 2))
-      · exact (mul_lt_mul_left h).mpr hxy
+      · exact (mul_lt_mul_iff_right₀ h).mpr hxy
       · rw [mul_div_assoc, ← mul_assoc, inv_mul_cancel₀ hc.ne.symm, one_mul]
     · rw [smul_smul, mul_inv_cancel₀ hc.ne.symm, one_smul]
   · intro h

@@ -1,6 +1,8 @@
 import Mathlib.Analysis.CStarAlgebra.Module.Defs
 import SpherePacking.ModularForms.qExpansion_lems
 
+import SpherePacking.ForMathlib.Cusps
+
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
 
@@ -22,7 +24,7 @@ def ModForm_mk (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) : Modula
   toFun := f
   slash_action_eq' := f.slash_action_eq'
   holo' := f.holo'
-  bdd_at_infty' A := (f.zero_at_infty' A).boundedAtFilter
+  bdd_at_cusps' := fun hc ↦ bdd_at_cusps f hc
 
 lemma ModForm_mk_inj (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) (hf : f ≠ 0) :
   ModForm_mk _ _ f ≠ 0 := by
@@ -41,7 +43,7 @@ def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspForm Γ k
     rfl
   map_smul' := by
     intro m f
-    simp only [ModForm_mk, CuspForm.coe_smul, RingHom.id_apply]
+    simp only [ModForm_mk, RingHom.id_apply]
     rfl
 
 def CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : Submodule ℂ (ModularForm Γ k) :=
@@ -71,13 +73,9 @@ instance (priority := 100) CuspFormSubmodule.funLike : FunLike (CuspFormSubmodul
 instance (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspFormClass (CuspFormSubmodule Γ k) Γ k where
   slash_action_eq f := f.1.slash_action_eq'
   holo f := f.1.holo'
-  zero_at_infty f := by
-    have hf := f.2
-    have := mem_CuspFormSubmodule Γ k f hf
-    obtain ⟨g, hg⟩ := this
-    convert g.zero_at_infty'
-    ext y
-    aesop
+  zero_at_cusps := by
+    rintro ⟨_, ⟨g, rfl⟩⟩ c hc
+    simpa [CuspForm_to_ModularForm, ModForm_mk] using g.zero_at_cusps' hc
 
 def IsCuspForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k) : Prop :=
   f ∈ CuspFormSubmodule Γ k
@@ -109,7 +107,6 @@ lemma CuspForm_to_ModularForm_Fun_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : 
   simp [ModForm_mk] at *
   exact hgg
 
-
 lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     IsCuspForm Γ(1) k f ↔ (qExpansion 1 f).coeff 0 = 0 := by
   constructor
@@ -128,9 +125,11 @@ lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     use ⟨f.toSlashInvariantForm , f.holo', ?_⟩
     · simp only [CuspForm_to_ModularForm, ModForm_mk]
       rfl
-    · intro A
-      have hf := f.slash_action_eq' A (CongruenceSubgroup.mem_Gamma_one A)
-      simp only [ SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe, SL_slash] at *
+    · intro c hc
+      apply zero_at_cusps_of_zero_at_infty hc
+      intro A ⟨A', hA'⟩
+      have hf := f.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩
+      simp only [ SlashInvariantForm.toFun_eq_coe, toSlashInvariantForm_coe] at *
       rw [hf]
       rw [qExpansion_coeff] at h
       simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul] at h
@@ -156,7 +155,6 @@ lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
       simp only [Nat.cast_one, comp_apply, Periodic, ofReal_one, mul_one, ofComplex_apply] at *
       rw [← hm] at h6
       exact h6
-
 
 lemma CuspFormSubmodule_mem_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     f ∈ CuspFormSubmodule Γ(1) k ↔ (qExpansion 1 f).coeff 0 = 0 := by
