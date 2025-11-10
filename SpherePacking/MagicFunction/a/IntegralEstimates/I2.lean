@@ -84,7 +84,7 @@ lemma parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1,
       exact zero_ne_one ((h₁.symm).trans h₂)
   _ = _ := by
       conv_lhs => rw [div_mul_div_comm (-1) (t + I)]
-      simp only [neg_mul, one_mul, neg_sub, div_mul_eq_mul_div, div_add_div_same]
+      simp only [neg_mul, one_mul, neg_sub, div_mul_eq_mul_div, ← add_div]
       congr
       · ac_rfl
       · ring_nf

@@ -217,8 +217,8 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
           rw [ hl]
           apply tsum_congr
           intro b
-          simp
-          left
+          simp only [Nat.cast_add, Nat.cast_one, mul_eq_mul_left_iff, Nat.cast_eq_zero,
+            sigma_eq_zero, Nat.add_eq_zero, one_ne_zero, and_false, or_false]
           congr 1
           ring
     · exact isOpen_lt continuous_const Complex.continuous_im

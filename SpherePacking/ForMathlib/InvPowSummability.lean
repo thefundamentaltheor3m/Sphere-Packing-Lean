@@ -76,8 +76,8 @@ theorem Summable_of_Inv_Pow_Summable'
     dsimp only [Summable, HasSum]
     use 0
     intro ε hε
-    simp only [Filter.mem_map, Filter.mem_atTop_sets, ge_iff_le, le_of_subsingleton,
-      Set.mem_preimage, true_implies, exists_const]
+    simp only [SummationFilter.unconditional_filter, Filter.mem_map, Filter.mem_atTop_sets,
+      ge_iff_le, le_of_subsingleton, Set.mem_preimage, forall_const, exists_const]
     intro b
     rw [eq_top_of_bot_eq_top rfl b]
     simp only [Finset.top_eq_univ, Finset.univ_eq_empty, Finset.sum_empty]

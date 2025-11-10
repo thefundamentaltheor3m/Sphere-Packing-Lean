@@ -78,7 +78,8 @@ theorem aux3 {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ
     have h_volume' := volume.mono hL
     rw [OuterMeasure.measureOf_eq_coe, Measure.coe_toOuterMeasure, Set.biUnion_eq_iUnion,
       measure_iUnion] at h_volume'
-    · have h_le := Summable.tsum_mono (f := fun _ ↦ c) (g := fun (x : s) ↦ volume (f x)) ?_ ?_ ?_
+    · have h_le : ∑' (n : ↑s), c ≤ ∑' (n : ↑s), volume (f ↑n) :=
+          Summable.tsum_mono (f := fun _ ↦ c) (g := fun (x : s) ↦ volume (f x)) ?_ ?_ ?_
       · have h₁ := (ENNReal.tsum_set_const _ _ ▸ h_le).trans h_volume'
         rw [← Set.encard_lt_top_iff, ← ENat.toENNReal_lt, ENat.toENNReal_top]
         refine lt_of_le_of_lt ((ENNReal.le_div_iff_mul_le ?_ ?_).mpr h₁) <|
@@ -871,7 +872,7 @@ theorem volume_ball_ratio_tendsto_nhds_one'
   · convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
       (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
 
-theorem Filter.map_add_atTop_eq {β : Type*} {f : ℝ → β} (C : ℝ) (α : Filter β) :
+theorem Filter.map_add_atTop_eq' {β : Type*} {f : ℝ → β} (C : ℝ) (α : Filter β) :
     Tendsto f atTop α ↔ Tendsto (fun x ↦ f (x + C)) atTop α := by
   constructor <;> intro hf
   · apply tendsto_map'_iff.mp
@@ -889,7 +890,7 @@ theorem Filter.map_add_atTop_eq {β : Type*} {f : ℝ → β} (C : ℝ) (α : Fi
 theorem volume_ball_ratio_tendsto_nhds_one'' {d : ℕ} {C C' : ℝ} (hd : 0 < d) :
     Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) atTop (𝓝 1) := by
-  apply (Filter.map_add_atTop_eq (max (-C) (-C')) _).mpr
+  apply (Filter.map_add_atTop_eq' (max (-C) (-C')) _).mpr
   simp_rw [add_assoc]
   convert volume_ball_ratio_tendsto_nhds_one' hd ?_ ?_
   · trans (-C) + C

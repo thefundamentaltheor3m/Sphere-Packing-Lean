@@ -130,7 +130,7 @@ lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 :=
     apply Summable.neg
     simp_rw [smul_eq_mul]
     conv =>
-      rhs
+      lhs
       equals (fun (b : ℕ) => Real.exp (-2 * π * b * z.im)) ∘ (PNat.val) => rfl
 
     apply Summable.subtype
@@ -163,7 +163,7 @@ lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
     apply Summable.neg
     simp_rw [smul_eq_mul]
     conv =>
-      rhs
+      lhs
       equals (fun (b : ℕ) => Real.exp (-π * b)) ∘ (PNat.val) => rfl
 
     apply Summable.subtype
@@ -302,7 +302,7 @@ by
         · simp_rw [sub_eq_add_neg]
           apply Real.summable_log_one_add_of_summable
           apply Summable.neg
-          conv => rhs; equals (fun (b : ℕ) => Real.exp (-2 * π * b * z.im)) ∘ (PNat.val) => rfl
+          conv => lhs; equals (fun (b : ℕ) => Real.exp (-2 * π * b * z.im)) ∘ (PNat.val) => rfl
           apply Summable.subtype
           simp_rw [mul_comm, mul_assoc, Real.summable_exp_nat_mul_iff]
           simp [pi_pos, UpperHalfPlane.im_pos]
@@ -372,7 +372,7 @@ private lemma step_12 :
       calc π * ↑↑n
       _ ≤ π * ↑↑n * 1 := by rw [mul_one]
       _ < π * ↑↑n * z.im * 2 := by
-        rw [mul_assoc (π * ↑↑n), mul_lt_mul_left (by positivity)]
+        rw [mul_assoc (π * ↑↑n), mul_lt_mul_iff_right₀ (by positivity)]
         linarith
     · sorry
     · sorry

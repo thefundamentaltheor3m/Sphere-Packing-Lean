@@ -469,18 +469,6 @@ lemma dotProduct_is_integer {R : Type*} [Field R] [CharZero R] (i j : Fin 8) :
     ∃ z : ℤ, z = (E8Matrix R).row i ⬝ᵥ (E8Matrix R).row j :=
   ⟨_, (dotProduct_eq_inn _ _).symm⟩
 
-lemma sum_dotProduct {α β γ : Type*} [Fintype β] [CommSemiring γ]
-    {s : Finset α} {v : α → β → γ} {w : β → γ} :
-    (∑ i ∈ s, v i) ⬝ᵥ w = ∑ i ∈ s, v i ⬝ᵥ w := by
-  simp_rw [dotProduct, Finset.sum_apply, Finset.sum_mul]
-  exact Finset.sum_comm
-
-lemma dotProduct_sum {α β γ : Type*} [Fintype β] [CommSemiring γ]
-    {s : Finset α} {v : β → γ} {w : α → β → γ} :
-    v ⬝ᵥ (∑ i ∈ s, w i) = ∑ i ∈ s, v ⬝ᵥ w i := by
-  simp_rw [dotProduct, Finset.sum_apply, Finset.mul_sum]
-  exact Finset.sum_comm
-
 theorem E8_integral {R : Type*} [Field R] [CharZero R] (v w : Fin 8 → R)
     (hv : v ∈ Submodule.E8 R) (hw : w ∈ Submodule.E8 R) :
     ∃ z : ℤ, z = v ⬝ᵥ w := by

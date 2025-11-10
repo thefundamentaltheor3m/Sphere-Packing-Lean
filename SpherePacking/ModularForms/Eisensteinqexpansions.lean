@@ -304,7 +304,7 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
         (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) *
         ∑' n : ℕ+, sigma (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by
   rw [_root_.E]
-  rw [ModularForm.smul_apply]
+  rw [IsGLPos.smul_apply]
   have : (eisensteinSeries_MF hk standardcongruencecondition) z =
     (eisensteinSeries_SIF standardcongruencecondition k) z := rfl
   rw [this]
