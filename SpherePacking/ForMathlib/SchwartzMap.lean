@@ -54,7 +54,15 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D} (hS : UniqueDiffOn ℝ S)
   toFun := f ∘ g
   smooth' := by sorry
   decay' := by
-    intro k n
+    suffices ∀ n : ℕ × ℕ, ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 ≤ C ∧ ∀ (x : D),
+        ‖x‖ ^ n.fst * ‖iteratedFDeriv ℝ n.snd (f ∘ g) x‖ ≤
+        C * s.sup (schwartzSeminormFamily 𝕜 E F) f by
+      -- sorry
+      intro k n
+      rcases this ⟨k, n⟩ with ⟨s, C, _, h⟩
+      exact ⟨C * (s.sup (schwartzSeminormFamily 𝕜 E F)) f, h⟩
+    -- stop
+    rintro ⟨k, n⟩
     rcases hg.norm_iteratedFDeriv_le_uniform_aux n with ⟨l, C, hC, hgrowth⟩
     rcases hg_upper with ⟨kg, Cg, hg_upper'⟩
     have hCg : 1 ≤ 1 + Cg := by
@@ -63,9 +71,7 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D} (hS : UniqueDiffOn ℝ S)
       rw [norm_zero] at hg_upper'
       exact nonneg_of_mul_nonneg_left hg_upper' (by positivity)
     let k' := kg * (k + l * n)
-    use  (1 + Cg) ^ (k + l * n) * ((C + 1) ^ n * n ! * 2 ^ k')
-    -- use Finset.Iic (k', n), (1 + Cg) ^ (k + l * n) * ((C + 1) ^ n * n ! * 2 ^ k'), by positivity
-    -- intro f x
+    use Finset.Iic (k', n), (1 + Cg) ^ (k + l * n) * ((C + 1) ^ n * n ! * 2 ^ k'), by positivity
     intro x
     let seminorm_f := ((Finset.Iic (k', n)).sup (schwartzSeminormFamily 𝕜 _ _)) f
     have hg_upper'' : (1 + ‖x‖) ^ (k + l * n) ≤ (1 + Cg) ^ (k + l * n) * (1 + ‖g x‖) ^ k' := by
@@ -93,7 +99,27 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D} (hS : UniqueDiffOn ℝ S)
       · exact le_trans (by simp) (le_self_pow₀ (by simp [hC]) hN₁')
       · refine le_self_pow₀ (one_le_pow₀ ?_) hN₁'
         simp only [le_add_iff_nonneg_right, norm_nonneg]
+    stop -- Proof I'm trying to generalise
+    have := norm_iteratedFDeriv_comp_le (f.smooth ⊤) hg.1 (mod_cast le_top) x hbound hgrowth'
+    have hxk : ‖x‖ ^ k ≤ (1 + ‖x‖) ^ k :=
+      pow_le_pow_left₀ (norm_nonneg _) (by simp only [zero_le_one, le_add_iff_nonneg_left]) _
+    grw [hxk, this]
+    have rearrange :
+      (1 + ‖x‖) ^ k *
+          (n ! * (2 ^ k' * seminorm_f / (1 + ‖g x‖) ^ k') * ((C + 1) * (1 + ‖x‖) ^ l) ^ n) =
+        (1 + ‖x‖) ^ (k + l * n) / (1 + ‖g x‖) ^ k' *
+          ((C + 1) ^ n * n ! * 2 ^ k' * seminorm_f) := by
+      rw [mul_pow, pow_add, ← pow_mul]
+      ring
+    rw [rearrange]
+    have hgxk' : 0 < (1 + ‖g x‖) ^ k' := by positivity
+    rw [← div_le_iff₀ hgxk'] at hg_upper''
+    grw [hg_upper'', ← mul_assoc]
+    -- End of proof
     stop
+    sorry
+    stop
+    -- Proof I tried before I realised I had to do suffices hbound
     have := norm_iteratedFDerivWithin_comp_le (f.smooth ⊤).contDiffOn hg.1 (mod_cast le_top) (by sorry) hS (by sorry) trivial hbound hgrowth'
     have hxk : ‖x‖ ^ k ≤ (1 + ‖x‖) ^ k :=
       pow_le_pow_left₀ (norm_nonneg _) (by simp only [zero_le_one, le_add_iff_nonneg_left]) _
