@@ -54,13 +54,20 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D} (hS : UniqueDiffOn ℝ S)
   toFun := f ∘ g
   smooth' := by sorry
   decay' := by
-    suffices ∀ n : ℕ × ℕ, ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 ≤ C ∧ ∀ (x : D),
+    suffices ∀ n : ℕ × ℕ, ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 ≤ C ∧ ∀ x ∈ S,
         ‖x‖ ^ n.fst * ‖iteratedFDeriv ℝ n.snd (f ∘ g) x‖ ≤
         C * s.sup (schwartzSeminormFamily 𝕜 E F) f by
       -- sorry
       intro k n
       rcases this ⟨k, n⟩ with ⟨s, C, _, h⟩
-      exact ⟨C * (s.sup (schwartzSeminormFamily 𝕜 E F)) f, h⟩
+      use C * (s.sup (schwartzSeminormFamily 𝕜 E F)) f
+      intro x
+      if hx : x ∈ S then
+      · exact h x hx
+      else
+      · specialize hf x hx n
+        -- This simplifies greatly when Sᶜ = {0}, but I want to do it in general
+        sorry
     -- stop
     rintro ⟨k, n⟩
     rcases hg.norm_iteratedFDeriv_le_uniform_aux n with ⟨l, C, hC, hgrowth⟩
@@ -72,7 +79,7 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D} (hS : UniqueDiffOn ℝ S)
       exact nonneg_of_mul_nonneg_left hg_upper' (by positivity)
     let k' := kg * (k + l * n)
     use Finset.Iic (k', n), (1 + Cg) ^ (k + l * n) * ((C + 1) ^ n * n ! * 2 ^ k'), by positivity
-    intro x
+    intro x hx
     let seminorm_f := ((Finset.Iic (k', n)).sup (schwartzSeminormFamily 𝕜 _ _)) f
     have hg_upper'' : (1 + ‖x‖) ^ (k + l * n) ≤ (1 + Cg) ^ (k + l * n) * (1 + ‖g x‖) ^ k' := by
       rw [pow_mul, ← mul_pow]
@@ -89,8 +96,12 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D} (hS : UniqueDiffOn ℝ S)
       rw [le_div_iff₀' hpos]
       change i ≤ (k', n).snd at hi
       exact one_add_le_sup_seminorm_apply le_rfl hi _ _
+    have hbound' (i) (hi : i ≤ n) :
+        ‖iteratedFDerivWithin ℝ i f ⊤ (g x)‖ ≤ 2 ^ k' * seminorm_f / (1 + ‖g x‖) ^ k' := by
+      -- This must be trivial, surely...
+      sorry
     have hgrowth' (N : ℕ) (hN₁ : 1 ≤ N) (hN₂ : N ≤ n) :
-        ‖iteratedFDeriv ℝ N g x‖ ≤ ((C + 1) * (1 + ‖x‖) ^ l) ^ N := by
+        ‖iteratedFDerivWithin ℝ N g S x‖ ≤ ((C + 1) * (1 + ‖x‖) ^ l) ^ N := by
       stop
       refine (hgrowth N hN₂ x).trans ?_
       rw [mul_pow]
@@ -99,10 +110,16 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D} (hS : UniqueDiffOn ℝ S)
       · exact le_trans (by simp) (le_self_pow₀ (by simp [hC]) hN₁')
       · refine le_self_pow₀ (one_le_pow₀ ?_) hN₁'
         simp only [le_add_iff_nonneg_right, norm_nonneg]
-    stop -- Proof I'm trying to generalise
-    have := norm_iteratedFDeriv_comp_le (f.smooth ⊤) hg.1 (mod_cast le_top) x hbound hgrowth'
+    have hbound_aux_1 : UniqueDiffOn ℝ (⊤ : Set E) := by sorry
+    have hbound_aux_2 : Set.MapsTo g S (⊤ : Set E) := fun _ _ ↦ trivial
+    -- stop -- Proof I'm trying to generalise
+    have := norm_iteratedFDerivWithin_comp_le (f.smooth ⊤).contDiffOn hg.1 (mod_cast le_top) hbound_aux_1 hS hbound_aux_2 hx hbound' hgrowth'
     have hxk : ‖x‖ ^ k ≤ (1 + ‖x‖) ^ k :=
       pow_le_pow_left₀ (norm_nonneg _) (by simp only [zero_le_one, le_add_iff_nonneg_left]) _
+    stop
+    -- I think the cases on whether x ∈ S or not should be done way earlier.
+    -- Also maybe S should just be the complement of zero... for convenience, if
+    -- nothing else...
     grw [hxk, this]
     have rearrange :
       (1 + ‖x‖) ^ k *
