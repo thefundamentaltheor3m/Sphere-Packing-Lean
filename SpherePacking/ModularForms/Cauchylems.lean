@@ -143,24 +143,25 @@ theorem extracted_2_δ (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
 theorem telescope_aux (z : ℍ) (m : ℤ) (b : ℕ) :
   ∑ n ∈ Finset.Ico (-b : ℤ) b, (1 / ((m : ℂ) * ↑z + ↑n) - 1 / (↑m * ↑z + ↑n + 1)) =
     1 / (↑m * ↑z - ↑b) - 1 / (↑m * ↑z + ↑b) := by
-  induction' b with b ihb
-  · aesop
-  simp only [Nat.cast_add, Nat.cast_one, one_div, Finset.sum_sub_distrib] at *
-  rw [fsb, Finset.sum_union, Finset.sum_union, Finset.sum_pair, Finset.sum_pair,add_sub_add_comm,
-    ihb]
-  · simp only [neg_add_rev, Int.reduceNeg, Int.cast_add, Int.cast_neg,
-               Int.cast_one, Int.cast_natCast]
-    ring
-  · omega
-  · omega
-  · simp only [neg_add_rev, Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Ico,
-    le_add_iff_nonneg_left, Left.nonneg_neg_iff, Int.reduceLE, add_neg_lt_iff_lt_add, false_and,
-    not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
-    lt_self_iff_false, and_false, and_self]
-  · simp only [neg_add_rev, Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Ico,
-    le_add_iff_nonneg_left, Left.nonneg_neg_iff, Int.reduceLE, add_neg_lt_iff_lt_add, false_and,
-    not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
-    lt_self_iff_false, and_false, and_self]
+  induction b with
+  | zero => aesop
+  | succ b ihb =>
+    simp only [Nat.cast_add, Nat.cast_one, one_div, Finset.sum_sub_distrib] at *
+    rw [fsb, Finset.sum_union, Finset.sum_union, Finset.sum_pair, Finset.sum_pair,add_sub_add_comm,
+      ihb]
+    · simp only [neg_add_rev, Int.reduceNeg, Int.cast_add, Int.cast_neg,
+                 Int.cast_one, Int.cast_natCast]
+      ring
+    · omega
+    · omega
+    · simp only [neg_add_rev, Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Ico,
+      le_add_iff_nonneg_left, Left.nonneg_neg_iff, Int.reduceLE, add_neg_lt_iff_lt_add, false_and,
+      not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
+      lt_self_iff_false, and_false, and_self]
+    · simp only [neg_add_rev, Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Ico,
+      le_add_iff_nonneg_left, Left.nonneg_neg_iff, Int.reduceLE, add_neg_lt_iff_lt_add, false_and,
+      not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
+      lt_self_iff_false, and_false, and_self]
 
 theorem tendstozero_inv_linear (z : ℍ) (b : ℤ) :
   Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z + ↑d)) atTop (𝓝 0) := by
