@@ -485,16 +485,117 @@ lemma cexp_aux4 (t : ℝ) (n : ℕ) : (cexp (-2 * π * (n + 1) * t)).im = 0 := b
 lemma cexp_aux5 (t : ℝ) : (cexp (-(2 * π * t))).im = 0 := by
   simpa [Complex.ofReal_mul, Complex.ofReal_neg] using exp_ofReal_im (-(2 * π * t))
 
+/- Auxiliary lemmas for imaginary part of products and powers -/
+lemma Complex.im_finset_prod_eq_zero_of_im_eq_zero {ι : Type*} (s : Finset ι)
+    (f : ι → ℂ) (h : ∀ i ∈ s, (f i).im = 0) :
+    (∏ i ∈ s, f i).im = 0 :=
+by
+  classical
+  revert h; refine Finset.induction_on s (fun _ => by simp) ?_; intro a s ha ih h
+  simpa [Finset.prod_insert, ha, Complex.mul_im, h a (by simp),
+    ih (fun i hi => h i (by simp [hi]))]
+
+lemma Complex.im_pow_eq_zero_of_im_eq_zero {z : ℂ} (hz : z.im = 0) (m : ℕ) :
+    (z ^ m).im = 0 :=
+by
+  induction' m with m ih <;> simp [pow_succ, Complex.mul_im, *]
+
+lemma Complex.im_tprod_eq_zero_of_im_eq_zero (f : ℕ → ℂ)
+    (hf : Multipliable f) (him : ∀ n, (f n).im = 0) :
+    (∏' n : ℕ, f n).im = 0 :=
+by
+  classical
+  have hz : ∀ n, (∏ i ∈ Finset.range n, f i).im = 0 := fun n =>
+    Complex.im_finset_prod_eq_zero_of_im_eq_zero (s := Finset.range n) (f := f)
+      (by intro i _; simpa using him i)
+  have h1 := ((Complex.continuous_im.tendsto _).comp hf.hasProd.tendsto_prod_nat)
+  have h2 : Tendsto (fun n => (∏ i ∈ Finset.range n, f i).im) atTop (𝓝 (0 : ℝ)) := by
+    simpa [hz] using (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ)) atTop (𝓝 0))
+  exact tendsto_nhds_unique h1 h2
+
 /- Δ(it) is real on the (positive) imaginary axis. -/
-lemma Delta_imag_axis_real {t : ℝ} (ht : 0 < t) : (ResToImagAxis Delta t).im = 0 := by
-  simp [ResToImagAxis, ht]
-  rw [Delta_apply, Δ]
-  simp [cexp_aux1, cexp_aux2, cexp_aux5]
-  sorry
+lemma Delta_imag_axis_real {t : ℝ} (ht : 0 < t) : (ResToImagAxis Delta t).im = 0 :=
+by
+  simp [ResToImagAxis, ht, Delta_apply, Δ]
+  set g : ℕ → ℂ := fun n => (1 - cexp (2 * π * Complex.I * (n + 1) * (Complex.I * t))) ^ 24
+  have hArg (n : ℕ) :
+      2 * (π : ℂ) * Complex.I * (n + 1) * (Complex.I * t) = -(2 * (π : ℂ) * (n + 1) * t) := by
+    have : Complex.I * (Complex.I : ℂ) = (-1 : ℂ) := by simpa [pow_two] using Complex.I_mul_I
+    calc
+      2 * (π : ℂ) * Complex.I * (n + 1) * (Complex.I * t)
+          = 2 * (π : ℂ) * (Complex.I * Complex.I) * (n + 1) * t := by ring
+      _ = 2 * (π : ℂ) * (-1) * (n + 1) * t := by simpa [this]
+      _ = -(2 * (π : ℂ) * (n + 1) * t) := by ring
+  have him_g : ∀ n, (g n).im = 0 := fun n => by
+    have : (cexp (-(2 * (π : ℂ) * ((n + 1) : ℂ) * t))).im = 0 := by
+      simpa [mul_comm, mul_left_comm, mul_assoc] using (cexp_aux4 t n)
+    have : ((1 - cexp (2 * (π : ℂ) * Complex.I * (n + 1) * (Complex.I * t))) : ℂ).im = 0 := by
+      simpa [Complex.sub_im, hArg n] using this
+    simpa [g] using Complex.im_pow_eq_zero_of_im_eq_zero this 24
+  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  have hmul : Multipliable g := by
+    have hz : (z : ℂ) = Complex.I * t := rfl
+    simpa [g, hz] using
+      (Multipliable_pow _ (by simpa using MultipliableEtaProductExpansion z) 24)
+  have htprod_im : (∏' n : ℕ, g n).im = 0 :=
+    Complex.im_tprod_eq_zero_of_im_eq_zero g hmul him_g
+  have him_pref : (cexp (2 * π * Complex.I * (Complex.I * t))).im = 0 := by
+    have : (cexp (-(2 * (π : ℂ) * t))).im = 0 := by simpa using cexp_aux5 t
+    simpa [by simpa using hArg 0] using this
+  simp [g, him_pref, htprod_im]
+
+lemma re_ResToImagAxis_Delta_eq_real_prod (t : ℝ) (ht : 0 < t) :
+  (ResToImagAxis Delta t).re =
+    Real.exp (-2 * π * t) *
+      ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 :=
+by
+  set fR : ℕ → ℝ := fun n => (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24
+  have hMap' :
+      Complex.ofReal (∏' n : ℕ, fR n) = ∏' n : ℕ, ((fR n : ℝ) : ℂ) := by
+    simpa using
+      (Function.LeftInverse.map_tprod (f := fR)
+        (g := Complex.ofRealHom.toMonoidHom)
+        (hg := by simpa using Complex.continuous_ofReal)
+        (hg' := Complex.continuous_re)
+        (hgg' := by intro x; simp))
+  simpa [ResToImagAxis, ht, Delta_apply, Δ, cexp_aux1, cexp_aux2, hMap', fR] using
+    Complex.ofReal_re (Real.exp (-2 * π * t) * ∏' n : ℕ, fR n)
+
+lemma tprod_pos_nat_im (z : ℍ) :
+  0 < ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24 :=
+by
+  have ht : 0 < z.im := by simpa using z.2
+  have hpos_pow : ∀ n : ℕ, 0 < (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24 :=
+    fun n =>
+      pow_pos (by simpa [mul_comm, mul_left_comm, mul_assoc] using cexp_aux3 (t := z.im) n ht) _
+  have hsum_log :
+      Summable (fun n : ℕ =>
+        Real.log ((1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24)) := by
+    simp only [Real.log_pow, Nat.cast_ofNat, ← smul_eq_mul]
+    apply Summable.const_smul
+    simp [sub_eq_add_neg]
+    apply Real.summable_log_one_add_of_summable
+    apply Summable.neg
+    have h0 : Summable (fun n : ℕ => Real.exp (n * (-(2 * π * z.im)))) :=
+      (Real.summable_exp_nat_mul_iff.mpr
+        (by simpa using (neg_lt_zero.mpr (by positivity : 0 < 2 * π * z.im))))
+    simpa [Nat.cast_add, Nat.cast_one, mul_comm, mul_left_comm, mul_assoc] using
+      ((summable_nat_add_iff 1).2 h0)
+  rw [← Real.rexp_tsum_eq_tprod
+        (f := fun n : ℕ =>
+          (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24)
+        hpos_pow hsum_log]
+  exact Real.exp_pos _
 
 /- Δ(it) is positive on the (positive) imaginary axis. -/
-lemma Delta_imag_axis_pos {t : ℝ} (ht : 0 < t) : 0 < (ResToImagAxis Delta t).re := by
-  simp [ResToImagAxis, ht]
-  rw [Delta_apply, Δ]
-  simp [cexp_aux1, cexp_aux2, cexp_aux5]
-  sorry
+lemma Delta_imag_axis_pos {t : ℝ} (ht : 0 < t) : 0 < (ResToImagAxis Delta t).re :=
+by
+  have hprod :
+      0 < ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 := by
+    let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+    have hz : z.im = t := by
+      change (Complex.I * (t : ℂ)).im = t
+      simp
+    simpa [hz] using tprod_pos_nat_im z
+  simpa [re_ResToImagAxis_Delta_eq_real_prod t ht] using
+    mul_pos (Real.exp_pos _) hprod
