@@ -488,24 +488,21 @@ lemma cexp_aux5 (t : ℝ) : (cexp (-(2 * π * t))).im = 0 := by
 /- Auxiliary lemmas for imaginary part of products and powers -/
 lemma Complex.im_finset_prod_eq_zero_of_im_eq_zero {ι : Type*} (s : Finset ι)
     (f : ι → ℂ) (h : ∀ i ∈ s, (f i).im = 0) :
-    (∏ i ∈ s, f i).im = 0 :=
-by
+    (∏ i ∈ s, f i).im = 0 := by
   classical
   revert h; refine Finset.induction_on s (fun _ => by simp) ?_; intro a s ha ih h
   simp [Finset.prod_insert, ha, Complex.mul_im, h a (by simp),
     ih (fun i hi => h i (by simp [hi]))]
 
 lemma Complex.im_pow_eq_zero_of_im_eq_zero {z : ℂ} (hz : z.im = 0) (m : ℕ) :
-    (z ^ m).im = 0 :=
-by
+    (z ^ m).im = 0 := by
   induction m with
   | zero => simp
   | succ m ih => simp [pow_succ, Complex.mul_im, *]
 
 lemma Complex.im_tprod_eq_zero_of_im_eq_zero (f : ℕ → ℂ)
     (hf : Multipliable f) (him : ∀ n, (f n).im = 0) :
-    (∏' n : ℕ, f n).im = 0 :=
-by
+    (∏' n : ℕ, f n).im = 0 := by
   classical
   have hz : ∀ n, (∏ i ∈ Finset.range n, f i).im = 0 := fun n =>
     Complex.im_finset_prod_eq_zero_of_im_eq_zero (s := Finset.range n) (f := f)
@@ -515,8 +512,7 @@ by
   exact tendsto_nhds_unique h1 h2
 
 /- Δ(it) is real on the (positive) imaginary axis. -/
-lemma Delta_imag_axis_real {t : ℝ} (ht : 0 < t) : (ResToImagAxis Delta t).im = 0 :=
-by
+lemma Delta_imag_axis_real {t : ℝ} (ht : 0 < t) : (ResToImagAxis Delta t).im = 0 := by
   simp [ResToImagAxis, ht, Delta_apply, Δ]
   set g : ℕ → ℂ := fun n => (1 - cexp (2 * π * Complex.I * (n + 1) * (Complex.I * t))) ^ 24
   have hArg (n : ℕ) :
@@ -546,8 +542,7 @@ by
 lemma re_ResToImagAxis_Delta_eq_real_prod (t : ℝ) (ht : 0 < t) :
   (ResToImagAxis Delta t).re =
     Real.exp (-2 * π * t) *
-      ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 :=
-by
+      ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 := by
   set fR : ℕ → ℝ := fun n => (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24
   have hMap' :
       Complex.ofReal (∏' n : ℕ, fR n) = ∏' n : ℕ, ((fR n : ℝ) : ℂ) := by
@@ -561,12 +556,10 @@ by
     Complex.ofReal_re (Real.exp (-2 * π * t) * ∏' n : ℕ, fR n)
 
 lemma tprod_pos_nat_im (z : ℍ) :
-  0 < ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24 :=
-by
-  have ht : 0 < z.im := by simpa using z.2
+  0 < ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24 := by
   have hpos_pow : ∀ n : ℕ, 0 < (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24 :=
     fun n =>
-      pow_pos (by simpa [mul_comm, mul_left_comm, mul_assoc] using cexp_aux3 (t := z.im) n ht) _
+      pow_pos (by simpa [mul_comm, mul_left_comm, mul_assoc] using cexp_aux3 (t := z.im) n z.2) _
   have hsum_log :
       Summable (fun n : ℕ =>
         Real.log ((1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24)) := by
@@ -587,14 +580,11 @@ by
   exact Real.exp_pos _
 
 /- Δ(it) is positive on the (positive) imaginary axis. -/
-lemma Delta_imag_axis_pos {t : ℝ} (ht : 0 < t) : 0 < (ResToImagAxis Delta t).re :=
-by
+lemma Delta_imag_axis_pos {t : ℝ} (ht : 0 < t) : 0 < (ResToImagAxis Delta t).re := by
   have hprod :
       0 < ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 := by
     let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
-    have hz : z.im = t := by
-      change (Complex.I * (t : ℂ)).im = t
-      simp
+    have hz : z.im = t := by simp [UpperHalfPlane.im, z]
     simpa [hz] using tprod_pos_nat_im z
   simpa [re_ResToImagAxis_Delta_eq_real_prod t ht] using
     mul_pos (Real.exp_pos _) hprod
