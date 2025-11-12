@@ -5,7 +5,6 @@ import SpherePacking.CohnElkies.LPBound
 import SpherePacking.CohnElkies.Prereqs
 import SpherePacking.ForMathlib.Asymptotics
 import SpherePacking.ForMathlib.AtImInfty
-import SpherePacking.ForMathlib.Bornology
 import SpherePacking.ForMathlib.Cardinal
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 import SpherePacking.ForMathlib.ENNReal
