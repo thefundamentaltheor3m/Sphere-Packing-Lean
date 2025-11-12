@@ -3,10 +3,13 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+import SpherePacking.Basic.SpherePacking
+import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.CohnElkies.Prereqs
+import SpherePacking.ForMathlib.PoissonSummation.DualLattice
 
-open scoped ComplexOrder FourierTransform SchwartzMap
-open Bornology Complex MeasureTheory
+open scoped ComplexOrder FourierTransform Real RealInnerProductSpace SchwartzMap
+open Bornology Complex Finset MeasureTheory ZLattice ZSpan
 
 /-!
 # Potential Design Complications:
@@ -20,37 +23,38 @@ open Bornology Complex MeasureTheory
 
 * Everything in `Prereqs.lean` is either a TODO or has already been done (eg. in #25) (to reflect
   which the corresponding refs must be updated).
-* Add some lemmas about when the set of centres of a sphere packing is empty. Then, do cases here
-  and remove the `Nonempty` instance in the assumptions.
-
+* Find the correct tactic to avoid the repetition of the refines in the first bullet point in the
+proof of `LinearProgrammingBound`. Likely change the structure of the statement
+`periodic_constant_eq_periodic_constant_normalized'` in `SpherePacking/Basic/SpherePacking.lean`.
+* Disambiguation of fundamental domain in sphere packing definition. One should be able to
+understand what is the fundamental domain of the lattice or of X
+* Merge the lemmata in SpherePacking.lean and correct the " name' " in " name ".
 -/
 
 variable {d : ℕ}
 variable {f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)}
-variable {P : PeriodicSpherePacking d}
-variable {D : Set (EuclideanSpace ℝ (Fin d))}
+variable {P : SpherePacking d}
 
 /-- The real part of the second Cohn-Elkies condition. -/
 lemma hCE₂_re (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ (re ∘ 𝓕 f) :=
-  Pi.le_def.2 (fun x ↦ (Complex.le_def.1 (Pi.le_def.1 hCE₂ <| x)).1)
+  Pi.le_def.2 <| fun x ↦ (Complex.le_def.1 <| Pi.le_def.1 hCE₂ x).1
 
 /-- The imaginary part of the second Cohn-Elkies condition. -/
 lemma hCE₂_im (hCE₂ : 0 ≤ 𝓕 f) : (im ∘ 𝓕 f) = 0 := by
-  ext x; exact (Complex.le_def.1 (Pi.le_def.1 hCE₂ <| x)).2.symm
+  ext x; exact (Complex.le_def.1 <| Pi.le_def.1 hCE₂ x).2.symm
 
 section Properties
 
 variable (f) in
 /-- The Fourier transform of a Schwartz function is integrable. -/
-theorem integrable_fourier : Integrable (𝓕 f) :=
-  ((SchwartzMap.fourierTransformCLE ℝ) f).integrable
+theorem integrable_fourier : Integrable (𝓕 f) := (SchwartzMap.fourierTransformCLE ℝ f).integrable
 
 /-- The Fourier transform of a Schwartz function is non-zero if the function is non-zero. -/
 theorem fourier_ne_zero_of_f_ne_zero (hne_zero : f ≠ 0) : 𝓕 f ≠ 0 := by
   intro hfourier_zero
   apply hne_zero
   rw [← ContinuousLinearEquiv.map_eq_zero_iff (SchwartzMap.fourierTransformCLE ℝ)]
-  exact (SchwartzMap.ext (congrFun (id hfourier_zero)))
+  exact SchwartzMap.ext <| congrFun (id hfourier_zero)
 
 /-- If the Fourier transform is non-negative, then the Schwartz function is non-negative at 0. -/
 theorem f_zero_nonneg_of_fourier_nonneg (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ f 0 := by
@@ -60,7 +64,7 @@ theorem f_zero_nonneg_of_fourier_nonneg (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ f 0 := b
   simp at this
   simp[this]
   norm_cast
-  exact integral_nonneg_of_ae (Filter.Eventually.of_forall (hCE₂_re hCE₂))
+  exact integral_nonneg_of_ae (Filter.Eventually.of_forall <| hCE₂_re hCE₂)
 
 /-- If the Fourier transform is non-negative and the Schwartz function is non-zero,
 then the latter is positive at 0. -/
@@ -89,93 +93,131 @@ theorem f_zero_pos_of_fourier_nonneg (hne_zero : f ≠ 0) (hCE₂ : 0 ≤ 𝓕 f
   have fourier_ne_zero := fourier_ne_zero_of_f_ne_zero hne_zero
   contradiction
 
+theorem div_fourier_re_nonneg (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ (f 0 / 𝓕 f 0).re := by
+    simp [Complex.div_re, (Complex.le_def.1 <| hCE₂ 0).2.symm]
+    refine div_nonneg (mul_nonneg ?_ ?_) (normSq_nonneg _)
+    · exact (Complex.le_def.1 <| f_zero_nonneg_of_fourier_nonneg hCE₂).1
+    · exact (Complex.le_def.1 <| hCE₂ 0).1
+
 end Properties
 
 section PreparationLemmata
-/- In this section, we provide auxiliary lemmata to make it easier to prove that the density of
-every periodic sphere packing of separation 1 is bounded above by the Cohn-Elkies bound. -/
 
-lemma one (hd : 0 < d) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0)
-    (hP : P.separation = 1) [Nonempty P.centers] (hD_isBounded : IsBounded D) :
-    ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), f (x - y) ≤ P.numReps * f 0 := by
+lemma one (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
+    [hP : IsPeriodic P] (h : P.separation = 1) :
+    ∑' (y : hP.fundDom) (x : P.centers), f (x - y) ≤ (hP.fundDom).card • f 0 := by
+  rw [@tsum_eq_sum' _ _ _ _ _ _ _ hP.fundDom.attach (by simp)]
+  rw [sum_attach _ (fun b => ∑' (c : P.centers), f (c - b))]
+  refine le_of_le_of_eq (Finset.sum_le_sum ?_) (Finset.sum_const <| f 0)
+  refine fun y hy ↦ Summable.tsum_le_of_sum_le ?_ ?_
+  · sorry
+  · exact fun s ↦ by sorry
+
+/-- The thing I cannot work out on top of my head is how to split P.centers ≅ P.fundDom × P.lattice
+in a meaningful way, i.e. avoiding to write a lot of lines to do it. I was thinking whether Mathlib
+has a definition of G-set and the relative notion of G-coset, but i am not sure. -/
+lemma two' (hne_zero : f ≠ 0) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
+    [hP : IsPeriodic P] (h : P.separation = 1) (y : hP.fundDom) :
+    ∑' (x : P.centers), f (x - y) = ∑' (x : hP.fundDom) (ℓ : hP.lattice), f (x - y + ℓ) := by
+  rw [← @Summable.tsum_prod _ hP.fundDom hP.lattice _ _ _ _ _ (fun e => f (e.1 - y + e.2)) sorry]
+  apply Equiv.tsum_eq_tsum_of_support
+  · intro x
+    sorry
+  · sorry
+
+lemma two (hne_zero : f ≠ 0) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
+    [hP : IsPeriodic P] (h : P.separation = 1) :
+    ∑' (y : hP.fundDom) (x : P.centers) , f (x - y) =
+    ∑' (y : hP.fundDom) (x : hP.fundDom) (ℓ : hP.lattice), f (x - y + ℓ) := by
+  congr
+  simp [two' hne_zero hf hCE₁ hCE₂ h]
+
+lemma poisson_summation (hne_zero : f ≠ 0) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0)
+    (hCE₂ : 0 ≤ 𝓕 f) [hP : IsPeriodic P] (h : P.separation = 1) (y : hP.fundDom) (x : hP.fundDom) :
+    ∑' (ℓ : hP.lattice), f (x - y + ℓ) =
+    1 / covolume hP.lattice *
+      ∑' (m : hP.lattice*_[bilinFormOfRealInner]), 𝓕 f m * 𝐞 ⟪m.val, x.val - y.val⟫ := by
   sorry
 
-lemma two (hd : 0 < d) (hne_zero : f ≠ 0) (hf : Summable f)
-    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
-    (hP : P.separation = 1) [Nonempty P.centers] (hD_isBounded : IsBounded D) :
-    ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), f (x - y) =
-    ∑' (x : P.centers) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice), f (x - y + ℓ) := by
-  sorry
+lemma three (hne_zero : f ≠ 0) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
+    [hP : IsPeriodic P] (h : P.separation = 1) :
+    ∑' (y : hP.fundDom) (x : hP.fundDom) (ℓ : hP.lattice), f (x - y + ℓ) =
+    ∑' (y : hP.fundDom) (x : hP.fundDom), 1 / covolume hP.lattice *
+      ∑' (m : hP.lattice*_[bilinFormOfRealInner]), 𝓕 f m * 𝐞 ⟪m.val, x.val - y.val⟫ := by
+  simp_rw [poisson_summation hne_zero hf hCE₁ hCE₂ h]
 
---put Poisson summation here
---lemma three
+lemma four (hne_zero : f ≠ 0) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
+    [hP : IsPeriodic P] (h : P.separation = 1) :
+    ∑' (y : hP.fundDom) (x : hP.fundDom), 1 / covolume hP.lattice *
+      ∑' (m : hP.lattice*_[bilinFormOfRealInner]), 𝓕 f m * 𝐞 ⟪m.val, x.val - y.val⟫ =
+    1 / covolume hP.lattice *
+      ∑' (m : hP.lattice*_[bilinFormOfRealInner]), 𝓕 f m * normSq (∑' (x : hP.fundDom),
+        𝐞 ⟪m.val, x.val⟫) := by
+  simp_rw [Summable.tsum_mul_left _ sorry]
+  have : ∀ (y : hP.fundDom), Summable (Function.uncurry
+    fun (m : hP.lattice*_[bilinFormOfRealInner]) (x : hP.fundDom) ↦
+      𝓕 f m * 𝐞 ⟪m.val, x.val - y.val⟫) := by sorry
+  simp only [fun x ↦ Summable.tsum_comm <| this x]
+  rw [Summable.tsum_comm sorry]
+  simp_rw [Summable.tsum_mul_left _ sorry]
+  congr
+  refine funext_iff.2 (fun m ↦ congrArg (fun x ↦ (𝓕 f m) * x) ?_)
+  simp[← mul_conj, conj_tsum, Summable.tsum_mul_tsum sorry sorry sorry, Summable.tsum_prod sorry]
+  rw [Summable.tsum_comm sorry]
+  congr
+  refine funext_iff.2 (fun x ↦ by
+    congr; exact funext_iff.2 (fun y ↦ by
+      norm_cast; simp[inner_sub_right, ← AddChar.map_add_eq_mul 𝐞]; ring_nf))
 
---put the other equality here with the dual lattice bussiness
---lemma four
+lemma five (hf : Summable f) (hCE₂ : 0 ≤ 𝓕 f) [hP : IsPeriodic P] (h : P.separation = 1) :
+    (hP.fundDom).card ^ 2 / covolume hP.lattice * 𝓕 f 0 ≤
+    1 / covolume hP.lattice *
+      ∑' (m : hP.lattice*_[bilinFormOfRealInner]), 𝓕 f m * normSq (∑' (x : hP.fundDom),
+        𝐞 ⟪m.val, x.val⟫) := by
+  rw[div_mul_eq_mul_div, ← one_div_mul_eq_div]
+  gcongr
+  · exact le_of_lt (by simp[covolume_pos hP.lattice])
+  · refine le_of_eq_of_le (by simp; ring) (Summable.le_tsum ?_ 0 ?_)
+    · sorry
+    · exact fun m hm ↦ mul_nonneg (hCE₂ m) (by simp[normSq_nonneg])
 
-lemma five (hd : 0 < d) (hne_zero : f ≠ 0) (hf : Summable f)
-    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
-    (hP : P.separation = 1) [Nonempty P.centers] (hD_isBounded : IsBounded D) :
-    (P.numReps / ZLattice.covolume P.lattice) ≤ f 0 / 𝓕 f 0 := by
+lemma six (hne_zero : f ≠ 0) (hf : Summable f)
+    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f) [hP : IsPeriodic P] (h : P.separation = 1) :
+    (hP.fundDom).card / covolume hP.lattice ≤ f 0 / 𝓕 f 0 := by
+  have := one hf hCE₁ hCE₂ h
+  rw [two hne_zero hf hCE₁ hCE₂ h, three hne_zero hf hCE₁ hCE₂ h] at this
+  rw [four hne_zero hf hCE₁ hCE₂ h] at this
+  have this' := le_trans (five hf hCE₂ h) this
+  simp at this'
   sorry
 
 end PreparationLemmata
 
 section Main_Theorems
 
-/-- The volume of a set in d-dimensional Euclidean space as a real number. -/
-noncomputable def vol (S : Set (EuclideanSpace ℝ (Fin d))) : ℝ := (volume S).toReal
-
-/-- The density of a periodic sphere packing as a real number. -/
-noncomputable def Δ (P : PeriodicSpherePacking d) : ℝ := (P.density).toReal
-
-/-- The sphere packing constant in dimension d as a real number. -/
-noncomputable def SPconst (d : ℕ) : ℝ := (SpherePackingConstant d).toReal
-
-variable (d) in
-/-- The ball of radius r around x in d-dimensional Euclidean space. -/
-def B (x : EuclideanSpace ℝ (Fin d)) (r : ℝ) : Set (EuclideanSpace ℝ (Fin d)) := Metric.ball x r
-
 /-- The Cohn-Elkies linear programming bound for unit spaced sphere packings. -/
-theorem LinearProgrammingBound' (hd : 0 < d) (hne_zero : f ≠ 0) (hf : Summable f)
-    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
-    (hP : P.separation = 1) [Nonempty P.centers] (hD_isBounded : IsBounded D)
-    (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) :
-    Δ P ≤ f 0 / 𝓕 f 0 * vol (B d 0 (1 / 2)) := by
-  simp [Δ, P.density_eq' hd, hP, mul_div_right_comm]
-  exact mul_le_mul_of_nonneg_right sorry (by simp)
+theorem LinearProgrammingBound' (hne_zero : f ≠ 0) (hf : Summable f)
+    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f) [hP : IsPeriodic P] (h : P.separation = 1) :
+    P.density' ≤ f 0 / 𝓕 f 0 * vol (B d 0 (1 / 2)) := by
+  simp [P.density_eq'', h, mul_div_right_comm]
+  exact mul_le_mul_of_nonneg_right (six hne_zero hf hCE₁ hCE₂ h) (by simp[vol])
 
 /-- The Cohn-Elkies linear programming bound for sphere packing density. -/
-theorem LinearProgrammingBound (hd : 0 < d) (hne_zero : f ≠ 0) (hf : Summable f)
+theorem LinearProgrammingBound (hne_zero : f ≠ 0) (hf : Summable f)
     (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f) :
-    SPconst d ≤ f 0 / 𝓕 f 0 * vol (B d 0 (1 / 2)) := by
-  rw [SPconst, ← periodic_constant_eq_constant hd]
-  simp [periodic_constant_eq_periodic_constant_normalized hd, Complex.le_def]
-  have div_re_nonneg : 0 ≤ (f 0 / 𝓕 (⇑f) 0).re := by
-    simp [Complex.div_re, (Complex.le_def.1 (hCE₂ 0)).2.symm]
-    refine div_nonneg (mul_nonneg ?_ ?_) (normSq_nonneg _)
-    · exact (Complex.le_def.1 (f_zero_nonneg_of_fourier_nonneg hCE₂)).1
-    · exact (Complex.le_def.1 (hCE₂ 0)).1
+    SpherePackingConstant' d ≤ f 0 / 𝓕 f 0 * vol (B d 0 (1 / 2)) := by
+  simp [← periodic_const_eq_const', periodic_const_eq_periodic_const_normalized', Complex.le_def]
   constructor
-  · rw[← ENNReal.le_ofReal_iff_toReal_le sorry (mul_nonneg div_re_nonneg (by simp[vol]))]
-    apply iSup_le
+  · refine Real.iSup_le ?_ <| mul_nonneg (div_fourier_re_nonneg hCE₂)  (by simp[vol])
     intro P
-    rw [iSup_le_iff]
+    refine Real.iSup_le ?_ <| mul_nonneg (div_fourier_re_nonneg hCE₂) (by simp[vol])
+    intro h
+    refine Real.iSup_le ?_ <| mul_nonneg (div_fourier_re_nonneg hCE₂) (by simp[vol])
     intro hP
-    cases isEmpty_or_nonempty ↑P.centers
-    · case inl instEmpty =>
-      rw [P.density_of_centers_empty hd]
-      exact zero_le _
-    · case inr instNonempty =>
-      let b : Module.Basis (Fin d) ℤ P.lattice :=
-        ((ZLattice.module_free ℝ P.lattice).chooseBasis).reindex (P.basis_index_equiv)
-      rw[ENNReal.le_ofReal_iff_toReal_le sorry (mul_nonneg div_re_nonneg (by simp[vol]))]
-      simpa using (Complex.le_def.1 (LinearProgrammingBound' hd hne_zero hf hCE₁ hCE₂ hP
-        (ZSpan.fundamentalDomain_isBounded (Module.Basis.ofZLatticeBasis ℝ P.lattice b))
-        (P.fundamental_domain_unique_covers b))).1
+    simpa using (Complex.le_def.1 <| LinearProgrammingBound' hne_zero hf hCE₁ hCE₂ h).1
   · left
-    simp [div_im, (Complex.le_def.1 (f_zero_nonneg_of_fourier_nonneg hCE₂)).2.symm]
-    simp [(Complex.le_def.1 (hCE₂ 0)).2.symm]
+    simp [div_im, (Complex.le_def.1 <| f_zero_nonneg_of_fourier_nonneg hCE₂).2.symm]
+    simp [(Complex.le_def.1 <| hCE₂ 0).2.symm]
 
 end Main_Theorems
 
@@ -303,13 +345,13 @@ end Main_Theorem
 
 
 
+# Sid's version
 
-
-
-
-
-# Previous version by Sid
-
+/-
+Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Sidharth Hariharan
+-/
 import Mathlib.Logic.IsEmpty
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
@@ -325,6 +367,28 @@ open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Re
   Bornology Summable Module
 
 variable {d : ℕ}
+
+/-
+# Potential Design Complications:
+
+* What we have in Mathlib on Fourier Transforms seems to deal with complex-valued functions. I've
+  dealt with it for now by giving an assumption that the imaginary part of `f` is always zero and
+  stating everything else in terms of the real part of `f`. The real-valuedness may not even be
+  necessary, as we could simply apply the Cohn-Elkies theorem to the real part of any complex-valued
+  function whose real part satisfies the Cohn-Elkies Conditions `hCohnElkies₁` and `hCohnElkies₂`.
+  If the hypothesis does go unused (as I expect it will), I will remove it.
+* As mentioned in `section theorem_2_2` of `SpherePacking/Basic/PeriodicPacking.lean`, we have to
+  use a hack for fundamental domains by supplying the two necessary assumptions ourselves. One day,
+  when it's a bit better developed in Mathlib, we can either modify our file or let people feed in
+  those assumptions as inputs.
+
+# TODOs:
+
+* Everything in `Prereqs.lean` is either a TODO or has already been done (eg. in #25) (to reflect
+  which the corresponding refs must be updated).
+* Add some lemmas about when the set of centres of a sphere packing is empty. Then, do cases here
+  and remove the `Nonempty` instance in the assumptions.
+-/
 
 -- Once we sort out the whole 'including variables' thing, we should remove all the variables from
 -- the various lemmas and leave these as they are. Else, we should remove these and keep those.
@@ -954,4 +1018,4 @@ theorem LinearProgrammingBound (hd : 0 < d) (hf : Summable f) : SpherePackingCon
       (fundamentalDomain_isBounded (Basis.ofZLatticeBasis ℝ P.lattice b))
       (P.fundamental_domain_unique_covers b) hd hf
 
-end Main_Theorem -/
+end Main_Theorem-/
