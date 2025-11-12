@@ -492,13 +492,15 @@ lemma Complex.im_finset_prod_eq_zero_of_im_eq_zero {ι : Type*} (s : Finset ι)
 by
   classical
   revert h; refine Finset.induction_on s (fun _ => by simp) ?_; intro a s ha ih h
-  simpa [Finset.prod_insert, ha, Complex.mul_im, h a (by simp),
+  simp [Finset.prod_insert, ha, Complex.mul_im, h a (by simp),
     ih (fun i hi => h i (by simp [hi]))]
 
 lemma Complex.im_pow_eq_zero_of_im_eq_zero {z : ℂ} (hz : z.im = 0) (m : ℕ) :
     (z ^ m).im = 0 :=
 by
-  induction' m with m ih <;> simp [pow_succ, Complex.mul_im, *]
+  induction m with
+  | zero => simp
+  | succ m ih => simp [pow_succ, Complex.mul_im, *]
 
 lemma Complex.im_tprod_eq_zero_of_im_eq_zero (f : ℕ → ℂ)
     (hf : Multipliable f) (him : ∀ n, (f n).im = 0) :
@@ -509,8 +511,7 @@ by
     Complex.im_finset_prod_eq_zero_of_im_eq_zero (s := Finset.range n) (f := f)
       (by intro i _; simpa using him i)
   have h1 := ((Complex.continuous_im.tendsto _).comp hf.hasProd.tendsto_prod_nat)
-  have h2 : Tendsto (fun n => (∏ i ∈ Finset.range n, f i).im) atTop (𝓝 (0 : ℝ)) := by
-    simpa [hz] using (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ)) atTop (𝓝 0))
+  have h2 : Tendsto (fun n => (∏ i ∈ Finset.range n, f i).im) atTop (𝓝 (0 : ℝ)) := by simp [hz]
   exact tendsto_nhds_unique h1 h2
 
 /- Δ(it) is real on the (positive) imaginary axis. -/
@@ -520,12 +521,10 @@ by
   set g : ℕ → ℂ := fun n => (1 - cexp (2 * π * Complex.I * (n + 1) * (Complex.I * t))) ^ 24
   have hArg (n : ℕ) :
       2 * (π : ℂ) * Complex.I * (n + 1) * (Complex.I * t) = -(2 * (π : ℂ) * (n + 1) * t) := by
-    have : Complex.I * (Complex.I : ℂ) = (-1 : ℂ) := by simpa [pow_two] using Complex.I_mul_I
     calc
       2 * (π : ℂ) * Complex.I * (n + 1) * (Complex.I * t)
-          = 2 * (π : ℂ) * (Complex.I * Complex.I) * (n + 1) * t := by ring
-      _ = 2 * (π : ℂ) * (-1) * (n + 1) * t := by simpa [this]
-      _ = -(2 * (π : ℂ) * (n + 1) * t) := by ring
+        = 2 * (π : ℂ) * (Complex.I * Complex.I) * (n + 1) * t := by ring
+      _ = -(2 * (π : ℂ) * (n + 1) * t) := by simp
   have him_g : ∀ n, (g n).im = 0 := fun n => by
     have : (cexp (-(2 * (π : ℂ) * ((n + 1) : ℂ) * t))).im = 0 := by
       simpa [mul_comm, mul_left_comm, mul_assoc] using (cexp_aux4 t n)
