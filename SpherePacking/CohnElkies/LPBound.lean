@@ -128,8 +128,8 @@ theorem f_zero_pos : 0 < (f 0).re := by
     _ = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re
       := by
          rw [add_eq_left]
-         suffices hwhat : ∀ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).im = 0
-         · simp only [hwhat, ofReal_zero, zero_mul, integral_zero]
+         suffices hwhat : ∀ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).im = 0 by
+           simp only [hwhat, ofReal_zero, zero_mul, integral_zero]
          exact hFourierImZero hRealFourier
   rw [haux₂] at haux₁
   norm_cast at haux₁
@@ -142,9 +142,9 @@ theorem f_zero_pos : 0 < (f 0).re := by
     exact antisymm' hantisymm₁ hantisymm₂
   have h𝓕frezero : ∀ x, (𝓕 f x).re = 0 := by
     -- Integral of a nonneg continuous function is zero iff the function is zero
-    suffices hfun : (fun x => (𝓕 f x).re) = 0
-    -- (This is the function actually being integrated)
-    · intro x
+    suffices hfun : (fun x => (𝓕 f x).re) = 0 by
+      -- (This is the function actually being integrated)
+      intro x
       calc (𝓕 (⇑f) x).re
       _ = (fun x => (𝓕 f x).re) x := rfl
       _ = (0 : (EuclideanSpace ℝ (Fin d)) → ℝ) x := by rw [hfun]
@@ -547,8 +547,8 @@ theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
   have : Fact (0 < d) := ⟨hd⟩
   rw [P.density_eq' hd]
   suffices hCalc : (P.numReps' hd hD_isBounded) * (f 0).re ≥
-    (P.numReps' hd hD_isBounded)^2 * (𝓕 f 0).re / ZLattice.covolume P.lattice
-  · rw [hP]
+    (P.numReps' hd hD_isBounded)^2 * (𝓕 f 0).re / ZLattice.covolume P.lattice by
+    rw [hP]
     rw [ge_iff_le] at hCalc
     have vol_pos := EuclideanSpace.volume_ball_pos (0 : EuclideanSpace ℝ (Fin d)) one_half_pos
     have vol_ne_zero : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ 0 :=
