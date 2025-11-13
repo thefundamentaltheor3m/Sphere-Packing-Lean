@@ -43,8 +43,7 @@ We need to use the Leibniz Integral Rule to differentiate under the integral sig
 theorem J₁'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₁' := by
   sorry
 
-theorem J₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₂' :=
-by
+theorem J₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₂' := by
   have hJ : RealIntegrals.J₁' = fun x : ℝ => (I : ℂ) * RealIntegrals.J₂' x := by
     funext x
     simp [RealIntegrals.J₁', RealIntegrals.J₂', mul_comm, mul_left_comm, mul_assoc]
@@ -59,8 +58,7 @@ by
   simpa [hJ₂] using
     ((contDiff_const : ContDiff ℝ ∞ (fun _ : ℝ => (-I : ℂ))).mul J₁'_smooth')
 
-theorem J₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₃' :=
-by
+theorem J₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.J₃' := by
   have hJ : RealIntegrals.J₃' = fun x : ℝ => cexp (2 * π * I * x) * RealIntegrals.J₁' x := by
     funext x
     have hEqOn : EqOn (fun t : ℝ => I * ψT' (z₁' t) * cexp (π * I * x * (z₃' t)))
@@ -107,8 +105,7 @@ theorem J₁'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
   sorry
 
 theorem J₂'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ),
-    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₂' x‖ ≤ C :=
-by
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₂' x‖ ≤ C := by
   intro k n
   have hJ₂ : RealIntegrals.J₂' = fun x : ℝ => (-I : ℂ) * RealIntegrals.J₁' x := by
     funext x
