@@ -33,7 +33,7 @@ structure SpherePacking (d : ℕ) where
   centers : Set (EuclideanSpace ℝ (Fin d))
   separation : ℝ
   separation_pos : 0 < separation := by positivity
-  centers_dist : Pairwise (separation ≤ dist · · : centers → centers → Prop)
+  centers_dist : Pairwise (separation ≤ ‖·.val - ·.val‖ : centers → centers → Prop)
 
 structure PeriodicSpherePacking (d : ℕ) extends SpherePacking d where
   lattice : Submodule ℤ (EuclideanSpace ℝ (Fin d))
@@ -485,29 +485,32 @@ is defined in Mathlib since it says that it is Fintype but it should not be.
 The fundamental domain part is important to be able to prove Poission summation & lemma3 in
 Cohn-Elkies. The plan is to get back to your original structure as soon as the fintype part
 is worked out. -/
-class IsPeriodic (S : SpherePacking d) where
+structure PeriodicSpherePacking' (d : ℕ) extends SpherePacking d where
   b : Module.Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d))
   hb := instIsZLatticeRealSpan b
   lattice := Submodule.span ℤ (Set.range b)
-  haction : ∀ ⦃x y⦄, x ∈ lattice → y ∈ S.centers → x + y ∈ S.centers
-  hfintype : Fintype <| ↑(S.centers ∩ fundamentalDomain b) := by apply Fintype.ofFinite
-  fundDom := (S.centers ∩ fundamentalDomain b).toFinset
+  hvadd : ∀ ⦃x y⦄, x ∈ lattice → y ∈ centers → x +ᵥ y ∈ centers
+  hfintype : Fintype <| ↑(centers ∩ fundamentalDomain b) := by apply Fintype.ofFinite
+  fundDom := (centers ∩ fundamentalDomain b).toFinset
   hDiscrete : DiscreteTopology lattice := by infer_instance
   hIsZLattice : IsZLattice ℝ lattice := by infer_instance
 
-instance (S : SpherePacking d) [hS : IsPeriodic S] :
-    DiscreteTopology hS.lattice := hS.hDiscrete
+instance PeriodicSpherePacking'.instLatticeDiscrete (S : PeriodicSpherePacking' d) :
+    DiscreteTopology S.lattice := S.hDiscrete
 
-instance (S : SpherePacking d) [hS : IsPeriodic S] :
-    IsZLattice ℝ hS.lattice := hS.hIsZLattice
+instance PeriodicSpherePacking'.instIsZLattice (S : PeriodicSpherePacking' d) :
+    IsZLattice ℝ S.lattice := S.hIsZLattice
 
-def SpherePacking.density' (S : SpherePacking d) [hs : IsPeriodic S] : ℝ := sorry
+def coe {S : PeriodicSpherePacking' d} : S.fundDom → S.centers :=
+  fun y ↦ ⟨y.val, sorry⟩
+
+def PeriodicSpherePacking'.density' (S : PeriodicSpherePacking' d) : ℝ := sorry
 def SpherePackingConstant' (d : ℕ) : ℝ := sorry
 def PeriodicSpherePackingConstant' (d : ℕ) : ℝ := sorry
 
 lemma periodic_const_eq_periodic_const_normalized' :
   PeriodicSpherePackingConstant' d =
-  ⨆ (S : SpherePacking d), ⨆ (_ : S.separation = 1), ⨆ (_ : IsPeriodic S), S.density' := by sorry
+  ⨆ (P : {S : PeriodicSpherePacking' d // S.separation = 1}), P.val.density' := by sorry
 
 lemma periodic_const_eq_const' :
   PeriodicSpherePackingConstant' d = SpherePackingConstant' d := by sorry

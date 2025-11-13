@@ -9,7 +9,7 @@ import SpherePacking.CohnElkies.Prereqs
 import SpherePacking.ForMathlib.PoissonSummation.DualLattice
 
 open scoped ComplexOrder FourierTransform Real RealInnerProductSpace SchwartzMap
-open Bornology Complex Finset MeasureTheory ZLattice ZSpan
+open Bornology Complex Finset MeasureTheory SchwartzMap ZLattice ZSpan
 
 /-!
 # Potential Design Complications:
@@ -23,17 +23,12 @@ open Bornology Complex Finset MeasureTheory ZLattice ZSpan
 
 * Everything in `Prereqs.lean` is either a TODO or has already been done (eg. in #25) (to reflect
   which the corresponding refs must be updated).
-* Find the correct tactic to avoid the repetition of the refines in the first bullet point in the
-proof of `LinearProgrammingBound`. Likely change the structure of the statement
-`periodic_constant_eq_periodic_constant_normalized'` in `SpherePacking/Basic/SpherePacking.lean`.
-* Disambiguation of fundamental domain in sphere packing definition. One should be able to
-understand what is the fundamental domain of the lattice or of X
 * Merge the lemmata in SpherePacking.lean and correct the " name' " in " name ".
+* The theorem `f_zero_pos_of_fourier_nonneg` not used (yet).
 -/
 
 variable {d : ℕ}
 variable {f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)}
-variable {P : SpherePacking d}
 
 /-- The real part of the second Cohn-Elkies condition. -/
 lemma hCE₂_re (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ (re ∘ 𝓕 f) :=
@@ -47,19 +42,23 @@ section Properties
 
 variable (f) in
 /-- The Fourier transform of a Schwartz function is integrable. -/
-theorem integrable_fourier : Integrable (𝓕 f) := (SchwartzMap.fourierTransformCLE ℝ f).integrable
+theorem SchwartzMap.integrable_fourier : Integrable (𝓕 f) :=
+  (SchwartzMap.fourierTransformCLE ℝ f).integrable
+
+theorem SchwartzMap.summable : Summable f := by sorry
+theorem SchwartzMap.summable_fourier : Summable (𝓕 f) := by sorry
 
 /-- The Fourier transform of a Schwartz function is non-zero if the function is non-zero. -/
 theorem fourier_ne_zero_of_f_ne_zero (hne_zero : f ≠ 0) : 𝓕 f ≠ 0 := by
   intro hfourier_zero
   apply hne_zero
-  rw [← ContinuousLinearEquiv.map_eq_zero_iff (SchwartzMap.fourierTransformCLE ℝ)]
+  rw [← ContinuousLinearEquiv.map_eq_zero_iff <| fourierTransformCLE ℝ]
   exact SchwartzMap.ext <| congrFun (id hfourier_zero)
 
 /-- If the Fourier transform is non-negative, then the Schwartz function is non-negative at 0. -/
 theorem f_zero_nonneg_of_fourier_nonneg (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ f 0 := by
   rw [← f.fourierInversion ℝ]
-  simp[Real.fourierIntegralInv_eq, ← integral_re_add_im (integrable_fourier f)]
+  simp[Real.fourierIntegralInv_eq, ← integral_re_add_im <| integrable_fourier f]
   have := funext_iff.1 (hCE₂_im hCE₂)
   simp at this
   simp[this]
@@ -73,7 +72,7 @@ theorem f_zero_pos_of_fourier_nonneg (hne_zero : f ≠ 0) (hCE₂ : 0 ≤ 𝓕 f
     exact lt_of_le_of_ne (f_zero_nonneg_of_fourier_nonneg hCE₂) (f_zero_ne_zero).symm
   by_contra h_zero
   rw [← f.fourierInversion ℝ] at h_zero
-  simp [Real.fourierIntegralInv_eq, ← integral_re_add_im (integrable_fourier f)] at h_zero
+  simp [Real.fourierIntegralInv_eq, ← integral_re_add_im <| integrable_fourier f] at h_zero
   have := funext_iff.1 (hCE₂_im hCE₂)
   simp at this
   simp [this] at h_zero
@@ -103,104 +102,154 @@ end Properties
 
 section PreparationLemmata
 
-lemma one (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
-    [hP : IsPeriodic P] (h : P.separation = 1) :
-    ∑' (y : hP.fundDom) (x : P.centers), f (x - y) ≤ (hP.fundDom).card • f 0 := by
-  rw [@tsum_eq_sum' _ _ _ _ _ _ _ hP.fundDom.attach (by simp)]
-  rw [sum_attach _ (fun b => ∑' (c : P.centers), f (c - b))]
-  refine le_of_le_of_eq (Finset.sum_le_sum ?_) (Finset.sum_const <| f 0)
-  refine fun y hy ↦ Summable.tsum_le_of_sum_le ?_ ?_
-  · sorry
-  · exact fun s ↦ by sorry
+variable {P : PeriodicSpherePacking' d}
 
-/-- The thing I cannot work out on top of my head is how to split P.centers ≅ P.fundDom × P.lattice
-in a meaningful way, i.e. avoiding to write a lot of lines to do it. I was thinking whether Mathlib
-has a definition of G-set and the relative notion of G-coset, but i am not sure. -/
-lemma two' (hne_zero : f ≠ 0) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
-    [hP : IsPeriodic P] (h : P.separation = 1) (y : hP.fundDom) :
-    ∑' (x : P.centers), f (x - y) = ∑' (x : hP.fundDom) (ℓ : hP.lattice), f (x - y + ℓ) := by
-  rw [← @Summable.tsum_prod _ hP.fundDom hP.lattice _ _ _ _ _ (fun e => f (e.1 - y + e.2)) sorry]
-  apply Equiv.tsum_eq_tsum_of_support
-  · intro x
-    sorry
-  · sorry
+lemma one (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hP : P.separation = 1) :
+    ∑' (y : P.fundDom) (x : P.centers), f (x - y) ≤ (P.fundDom).card * f 0 := by
+  have : ∀ y : P.fundDom, Summable fun (x : P.centers) ↦ f (x - y):=
+    fun y ↦ Summable.comp_injective summable (fun x y hxy ↦ by simp at hxy; exact Subtype.ext hxy)
+  simp [fun y ↦ Summable.tsum_eq_add_tsum_ite (this y) (coe y)]
+  simp [Summable.tsum_add sorry sorry, coe]
+  rw [@tsum_eq_sum' _ _ _ _ _ _ _ P.fundDom.attach (by simp)]
+  refine Finset.sum_nonpos (fun y hy ↦ tsum_nonpos (fun x ↦ ?_))
+  by_cases h' : x = coe y
+  all_goals simp [coe] at h'; simp[h']
+  have := (P.centers_dist)
+  unfold Pairwise at this
+  exact (hCE₁ _ (by simpa only [coe, hP] using this h'))
 
-lemma two (hne_zero : f ≠ 0) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
-    [hP : IsPeriodic P] (h : P.separation = 1) :
-    ∑' (y : hP.fundDom) (x : P.centers) , f (x - y) =
-    ∑' (y : hP.fundDom) (x : hP.fundDom) (ℓ : hP.lattice), f (x - y + ℓ) := by
+lemma two :
+    ∑' (y : P.fundDom) (x : P.centers) , f (x - y) =
+    ∑' (y : P.fundDom) (x : P.fundDom) (ℓ : P.lattice), f (x - y + ℓ) := by
   congr
-  simp [two' hne_zero hf hCE₁ hCE₂ h]
+  funext y
+  rw [← @Summable.tsum_prod _ P.fundDom P.lattice _ _ _ _ _ (fun e => f (e.1 - y + e.2)) sorry]
+  let η : P.fundDom × P.lattice → P.centers :=
+    fun p ↦ ⟨p.2.val +ᵥ p.1.val, P.hvadd p.2.prop (coe p.1).prop⟩
+  have η_bij : Function.Bijective η := by
+    refine ⟨?_, ?_⟩
+    · intro x y hxy
+      simp [η] at hxy
+      sorry
+    · intro z
+      simp only [η]
+      use ⟨⟨fract P.b z.val, by sorry⟩, ⟨floor P.b z.val, sorry⟩⟩ -- (floor P.b z.val).prop
+      simp[fract]
+  simp[← Equiv.tsum_eq (Equiv.ofBijective η η_bij) _, η, add_sub_right_comm, sub_add_comm]
 
-lemma poisson_summation (hne_zero : f ≠ 0) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0)
-    (hCE₂ : 0 ≤ 𝓕 f) [hP : IsPeriodic P] (h : P.separation = 1) (y : hP.fundDom) (x : hP.fundDom) :
-    ∑' (ℓ : hP.lattice), f (x - y + ℓ) =
-    1 / covolume hP.lattice *
-      ∑' (m : hP.lattice*_[bilinFormOfRealInner]), 𝓕 f m * 𝐞 ⟪m.val, x.val - y.val⟫ := by
+section Poisson
+
+open LinearMap (BilinForm)
+open ZLattice Submodule LinearMap Module
+
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
+    [MeasurableSpace V] [BorelSpace V]
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+variable (Λ : Submodule ℤ V) [hdiscrete : DiscreteTopology Λ] [hlattice : IsZLattice ℝ Λ]
+variable (L : V →ₗ[ℝ] V →ₗ[ℝ] ℝ)
+
+notation Λ"*["B"]" => Dual B Λ
+notation "𝓕v" => VectorFourier.fourierIntegral
+
+lemma general_poisson_summation (e : AddChar ℝ Circle) (μ : Measure V)
+    (f : C(V, E)) (h_sum : Summable (𝓕v e μ L f)) (x : V) :
+    ∑' (ℓ : Λ), f (x + ℓ) = (1 / covolume Λ μ) • ∑' (m : Λ*[L]), e (L m x) • 𝓕v e μ L f m := by
   sorry
 
-lemma three (hne_zero : f ≠ 0) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
-    [hP : IsPeriodic P] (h : P.separation = 1) :
-    ∑' (y : hP.fundDom) (x : hP.fundDom) (ℓ : hP.lattice), f (x - y + ℓ) =
-    ∑' (y : hP.fundDom) (x : hP.fundDom), 1 / covolume hP.lattice *
-      ∑' (m : hP.lattice*_[bilinFormOfRealInner]), 𝓕 f m * 𝐞 ⟪m.val, x.val - y.val⟫ := by
-  simp_rw [poisson_summation hne_zero hf hCE₁ hCE₂ h]
+protected lemma SchwartzMap.general_poisson_summation (f : 𝓢(V, E)) (x : V) :
+    ∑' (ℓ : Λ), f (x + ℓ) =
+    (1 / covolume Λ) • ∑' (m : Λ*[bilinFormOfRealInner]), (𝐞 ⟪m.val, x⟫).val • 𝓕 f m := by
+  sorry
 
-lemma four (hne_zero : f ≠ 0) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
-    [hP : IsPeriodic P] (h : P.separation = 1) :
-    ∑' (y : hP.fundDom) (x : hP.fundDom), 1 / covolume hP.lattice *
-      ∑' (m : hP.lattice*_[bilinFormOfRealInner]), 𝓕 f m * 𝐞 ⟪m.val, x.val - y.val⟫ =
-    1 / covolume hP.lattice *
-      ∑' (m : hP.lattice*_[bilinFormOfRealInner]), 𝓕 f m * normSq (∑' (x : hP.fundDom),
-        𝐞 ⟪m.val, x.val⟫) := by
+end Poisson
+
+lemma three :
+    ∑' (y : P.fundDom) (x : P.fundDom) (ℓ : P.lattice), f (x - y + ℓ) =
+    ∑' (y : P.fundDom) (x : P.fundDom), 1 / covolume P.lattice *
+      ∑' (m : P.lattice*[bilinFormOfRealInner]), 𝓕 f m * 𝐞 ⟪m.val, x - y⟫ := by
+  simp [SchwartzMap.general_poisson_summation]
+  congr
+  exact funext_iff.2 (fun y ↦ by congr; funext x; congr; funext m; ring_nf)
+
+lemma four :
+    ∑' (y : P.fundDom) (x : P.fundDom), 1 / covolume P.lattice *
+      ∑' (m : P.lattice*[bilinFormOfRealInner]), 𝓕 f m * 𝐞 ⟪m.val, x - y⟫ =
+    1 / covolume P.lattice *
+      ∑' (m : P.lattice*[bilinFormOfRealInner]),
+        𝓕 f m * normSq (∑' (x : P.fundDom), 𝐞 ⟪m.val, x⟫) := by
   simp_rw [Summable.tsum_mul_left _ sorry]
-  have : ∀ (y : hP.fundDom), Summable (Function.uncurry
-    fun (m : hP.lattice*_[bilinFormOfRealInner]) (x : hP.fundDom) ↦
-      𝓕 f m * 𝐞 ⟪m.val, x.val - y.val⟫) := by sorry
+  have : ∀ (y : P.fundDom), Summable (Function.uncurry
+    fun (m : P.lattice*[bilinFormOfRealInner]) (x : P.fundDom) ↦
+      𝓕 f m * 𝐞 ⟪m.val, x - y⟫) := by sorry
   simp only [fun x ↦ Summable.tsum_comm <| this x]
   rw [Summable.tsum_comm sorry]
   simp_rw [Summable.tsum_mul_left _ sorry]
   congr
   refine funext_iff.2 (fun m ↦ congrArg (fun x ↦ (𝓕 f m) * x) ?_)
   simp[← mul_conj, conj_tsum, Summable.tsum_mul_tsum sorry sorry sorry, Summable.tsum_prod sorry]
-  rw [Summable.tsum_comm sorry]
+  rw [Summable.tsum_comm (by sorry)]
   congr
   refine funext_iff.2 (fun x ↦ by
     congr; exact funext_iff.2 (fun y ↦ by
       norm_cast; simp[inner_sub_right, ← AddChar.map_add_eq_mul 𝐞]; ring_nf))
 
-lemma five (hf : Summable f) (hCE₂ : 0 ≤ 𝓕 f) [hP : IsPeriodic P] (h : P.separation = 1) :
-    (hP.fundDom).card ^ 2 / covolume hP.lattice * 𝓕 f 0 ≤
-    1 / covolume hP.lattice *
-      ∑' (m : hP.lattice*_[bilinFormOfRealInner]), 𝓕 f m * normSq (∑' (x : hP.fundDom),
-        𝐞 ⟪m.val, x.val⟫) := by
+lemma five (hCE₂ : 0 ≤ 𝓕 f) :
+    (P.fundDom).card ^ 2 / covolume P.lattice * 𝓕 f 0 ≤
+    1 / covolume P.lattice *
+      ∑' (m : P.lattice*[bilinFormOfRealInner]),
+        𝓕 f m * normSq (∑' (x : P.fundDom), 𝐞 ⟪m.val, x⟫) := by
   rw[div_mul_eq_mul_div, ← one_div_mul_eq_div]
   gcongr
-  · exact le_of_lt (by simp[covolume_pos hP.lattice])
+  · exact le_of_lt (by simp[covolume_pos P.lattice])
   · refine le_of_eq_of_le (by simp; ring) (Summable.le_tsum ?_ 0 ?_)
-    · sorry
-    · exact fun m hm ↦ mul_nonneg (hCE₂ m) (by simp[normSq_nonneg])
+    · simp [normSq_eq_norm_sq]
+      simp [@tsum_eq_sum' _ _ _ _ _ _ _ P.fundDom.attach (by simp)]
 
-lemma six (hne_zero : f ≠ 0) (hf : Summable f)
-    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f) [hP : IsPeriodic P] (h : P.separation = 1) :
-    (hP.fundDom).card / covolume hP.lattice ≤ f 0 / 𝓕 f 0 := by
-  have := one hf hCE₁ hCE₂ h
-  rw [two hne_zero hf hCE₁ hCE₂ h, three hne_zero hf hCE₁ hCE₂ h] at this
-  rw [four hne_zero hf hCE₁ hCE₂ h] at this
-  have this' := le_trans (five hf hCE₂ h) this
-  simp at this'
-  sorry
+      sorry
+    · exact fun m hm ↦ mul_nonneg (hCE₂ m) (by simp[normSq_nonneg])
 
 end PreparationLemmata
 
 section Main_Theorems
 
+protected lemma Complex.le_div_iff₀ {a b c : ℂ} (hc : 0 < c) :
+    a ≤ b / c ↔ a * c ≤ b := by
+  simp [le_def]
+  constructor
+  all_goals intro h; simp[div_re, div_im, (le_def.1 (le_of_lt hc)).2.symm] at h ⊢
+  · sorry
+  · sorry
+
+protected lemma Complex.mul_le_mul_iff_of_pos_right {a b c : ℂ} (hc : 0 < c) :
+    a * c ≤ b * c ↔ a ≤ b := by
+  simp [le_def, ← (lt_def.1 hc).2]
+  constructor
+  all_goals intro h;
+  · refine ⟨(mul_le_mul_iff_of_pos_right (lt_def.1 hc).1).mp h.1, ?_⟩
+    obtain ⟨h₁, h_re | h_im⟩ := h
+    · exact h_re
+    · exfalso; rw[lt_def] at hc; simp[h_im] at hc
+  · exact ⟨(mul_le_mul_iff_of_pos_right (lt_def.1 hc).1).mpr h.1, by simp[h.2]⟩
+
+protected lemma Complex.mul_le_mul_iff_of_pos_left {a b c : ℂ} (hc : 0 < c) :
+    c * a ≤ c * b ↔ a ≤ b := by
+  sorry
+
 /-- The Cohn-Elkies linear programming bound for unit spaced sphere packings. -/
-theorem LinearProgrammingBound' (hne_zero : f ≠ 0) (hf : Summable f)
-    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f) [hP : IsPeriodic P] (h : P.separation = 1) :
+theorem LinearProgrammingBound' {P : PeriodicSpherePacking' d} (hP : P.separation = 1)
+    (hne_zero : f ≠ 0) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f) :
     P.density' ≤ f 0 / 𝓕 f 0 * vol (B d 0 (1 / 2)) := by
-  simp [P.density_eq'', h, mul_div_right_comm]
-  exact mul_le_mul_of_nonneg_right (six hne_zero hf hCE₁ hCE₂ h) (by simp[vol])
+  rw [P.density_eq'', hP, mul_div_right_comm]
+  push_cast
+  refine mul_le_mul_of_nonneg_right ?_ (by simp[vol])
+  --this is a problem also in the blueprint. How can we conclude the inequality if we
+  --cannot conclude 𝓕 f 0 > 0?
+  rw[Complex.le_div_iff₀ sorry]
+  rw[← @Complex.mul_le_mul_iff_of_pos_left _ _ (#P.fundDom) sorry]
+  rw[← mul_assoc, ← mul_div_assoc, ← sq]
+  refine le_trans ?_ (one hCE₁ hP)
+  rw[two, three, four]
+  exact five hCE₂
 
 /-- The Cohn-Elkies linear programming bound for sphere packing density. -/
 theorem LinearProgrammingBound (hne_zero : f ≠ 0) (hf : Summable f)
@@ -209,18 +258,12 @@ theorem LinearProgrammingBound (hne_zero : f ≠ 0) (hf : Summable f)
   simp [← periodic_const_eq_const', periodic_const_eq_periodic_const_normalized', Complex.le_def]
   constructor
   · refine Real.iSup_le ?_ <| mul_nonneg (div_fourier_re_nonneg hCE₂)  (by simp[vol])
-    intro P
-    refine Real.iSup_le ?_ <| mul_nonneg (div_fourier_re_nonneg hCE₂) (by simp[vol])
-    intro h
-    refine Real.iSup_le ?_ <| mul_nonneg (div_fourier_re_nonneg hCE₂) (by simp[vol])
-    intro hP
-    simpa using (Complex.le_def.1 <| LinearProgrammingBound' hne_zero hf hCE₁ hCE₂ h).1
+    rintro ⟨P, hP⟩
+    simpa using (Complex.le_def.1 <| LinearProgrammingBound' hP hne_zero hf hCE₁ hCE₂).1
   · left
-    simp [div_im, (Complex.le_def.1 <| f_zero_nonneg_of_fourier_nonneg hCE₂).2.symm]
-    simp [(Complex.le_def.1 <| hCE₂ 0).2.symm]
+    simp [div_im, ← (le_def.1 (f_zero_nonneg_of_fourier_nonneg hCE₂)).2, ← (le_def.1 <| hCE₂ 0).2]
 
 end Main_Theorems
-
 
 /-!
 # The real pushforward version people at the meeting where referring to. The workaround being
