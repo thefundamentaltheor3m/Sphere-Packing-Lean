@@ -4,6 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 
+import Mathlib
+
+-- TODO: run #min_imports once file completed
 import Mathlib.Analysis.Distribution.SchwartzSpace
 
 open scoped Nat NNReal ContDiff
@@ -21,14 +24,14 @@ def Function.HasTemperateGrowthOn (f : E → F) (S : Set E) : Prop :=
 theorem Function.HasTemperateGrowthOn.norm_iteratedFDeriv_le_uniform_aux {f : E → F} {S : Set E}
     (hf_temperate : f.HasTemperateGrowthOn S) (n : ℕ) :
     ∃ (k : ℕ) (C : ℝ), 0 ≤ C ∧ ∀ N ≤ n, ∀ x ∈ S, ‖iteratedFDeriv ℝ N f x‖ ≤ C * (1 + ‖x‖) ^ k := by
-  choose k C f using hf_temperate.2
+  choose k C hf using hf_temperate.2
   use (Finset.range (n + 1)).sup k
   let C' := max (0 : ℝ) ((Finset.range (n + 1)).sup' (by simp) C)
   have hC' : 0 ≤ C' := le_max_left _ _
   use C', hC'
   intro N hN x hx
   rw [← Finset.mem_range_succ_iff] at hN
-  grw [f]
+  grw [hf]
   gcongr
   · simp only [C', Finset.le_sup'_iff, le_max_iff]
     right
@@ -38,6 +41,47 @@ theorem Function.HasTemperateGrowthOn.norm_iteratedFDeriv_le_uniform_aux {f : E 
   · exact hx
 
 end TemperateGrowthOn
+
+section Even
+
+/-! Let's try proving smoothness here. First, a famous result of Whitney: https://projecteuclid.org/journals/duke-mathematical-journal/volume-10/issue-1/Differentiable-even-functions/10.1215/S0012-7094-43-01015-4.full -/
+
+open Function Real
+
+variable {f : ℝ → ℝ} (hsmooth : ContDiff ℝ ∞ f) (heven : f.Even)
+
+example (x : ℝ) : √(x ^ 2) = |x| := sqrt_sq_eq_abs x
+
+include heven in
+lemma Function.Even.comp_abs : f = f ∘ abs := by
+  ext x; by_cases hx : x ≥ 0
+  · congr; exact (abs_of_nonneg hx).symm
+  · rw [ge_iff_le, not_le] at hx
+    rw [comp_apply, abs_of_neg hx]
+    exact (heven x).symm
+
+include heven in
+lemma Function.Even.comp_abs_apply (x : ℝ) : f x = f |x| := by
+  conv_lhs => rw [heven.comp_abs]
+  rw [comp_apply]
+
+#check Real.contDiffAt_sqrt
+
+include hsmooth heven in
+theorem Function.Even.eq_smooth_comp_sq_of_smooth : ∃ g : ℝ → ℝ, f = g ∘ (fun x => x ^ 2) ∧
+    ContDiff ℝ ∞ g := by
+  refine ⟨f ∘ sqrt, ?_, ?_⟩
+  · ext x
+    simp only [heven.comp_abs_apply x, comp_apply, sqrt_sq_eq_abs x]
+  · -- Reduce to zero case
+    rw [contDiff_iff_contDiffAt]
+    intro x
+    by_cases hx : x ≠ 0
+    · exact ContDiff.comp_contDiffAt x hsmooth <| contDiffAt_sqrt hx
+    · rw [ne_eq, Decidable.not_not] at hx
+      sorry
+
+end Even
 
 namespace SchwartzMap
 
@@ -52,7 +96,10 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D} (hS : UniqueDiffOn ℝ S)
   (hf : ∀ x ∈ Sᶜ, ∀ n : ℕ, iteratedFDeriv ℝ n f (g x) = 0) (hg : g.HasTemperateGrowthOn S)
   (hg_upper : ∃ (k : ℕ) (C : ℝ), ∀ x, ‖x‖ ≤ C * (1 + ‖g x‖) ^ k) : 𝓢(D, F) where
   toFun := f ∘ g
-  smooth' := by sorry
+  smooth' := by
+    refine (f.smooth _).comp ?_
+
+    sorry
   decay' := by
     suffices ∀ n : ℕ × ℕ, ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 ≤ C ∧ ∀ x ∈ S,
         ‖x‖ ^ n.fst * ‖iteratedFDeriv ℝ n.snd (f ∘ g) x‖ ≤
@@ -113,7 +160,8 @@ def comp (f : 𝓢(E, F)) {g : D → E} {S : Set D} (hS : UniqueDiffOn ℝ S)
     have hbound_aux_1 : UniqueDiffOn ℝ (⊤ : Set E) := by sorry
     have hbound_aux_2 : Set.MapsTo g S (⊤ : Set E) := fun _ _ ↦ trivial
     -- stop -- Proof I'm trying to generalise
-    have := norm_iteratedFDerivWithin_comp_le (f.smooth ⊤).contDiffOn hg.1 (mod_cast le_top) hbound_aux_1 hS hbound_aux_2 hx hbound' hgrowth'
+    have := norm_iteratedFDerivWithin_comp_le (f.smooth ⊤).contDiffOn hg.1 (mod_cast le_top)
+      hbound_aux_1 hS hbound_aux_2 hx hbound' hgrowth'
     have hxk : ‖x‖ ^ k ≤ (1 + ‖x‖) ^ k :=
       pow_le_pow_left₀ (norm_nonneg _) (by simp only [zero_le_one, le_add_iff_nonneg_left]) _
     stop
