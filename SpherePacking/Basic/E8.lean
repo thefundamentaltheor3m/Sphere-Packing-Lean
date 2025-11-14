@@ -50,31 +50,31 @@ lemma AddCommGroup.ModEq.zsmul' {α : Type*} [AddCommGroup α] {p a b : α} {n :
   rw [← zsmul_sub, hk, mul_smul]
 
 @[simps]
-def LinearMap.intCast {ι : Type*} (R : Type*) [Ring R] : (ι → ℤ) →ₗ[ℤ] (ι → R) where
-  toFun f := fun i ↦ Int.cast (f i)
-  map_add' f g := by ext i; simp
+def LinearMap.intCast {ι : Type*} (R : Type*) [Ring R] :
+    EuclideanSpace ℤ ι →ₗ[ℤ] EuclideanSpace R ι where
+  toFun f := WithLp.toLp 2 (fun i ↦ Int.cast (f i))
+  map_add' f g := by simp; rfl
   map_smul' c f := by ext i; simp
 
-def Submodule.evenLatticeInt (n : ℕ) : Submodule ℤ (Fin n → ℤ) where
+def Submodule.evenLatticeInt (n : ℕ) : Submodule ℤ (EuclideanSpace ℤ (Fin n)) where
   carrier := {v | ∑ i, v i ≡ 0 [PMOD 2]}
   add_mem' := by
-    simp only [AddCommGroup.modEq_iff_int_modEq, Set.mem_setOf_eq, Pi.add_apply,
+    simp only [AddCommGroup.modEq_iff_int_modEq, Set.mem_setOf_eq, PiLp.add_apply,
       Finset.sum_add_distrib]
     intro a b ha hb
     exact (ha.add hb).trans (by simp)
   zero_mem' := by simp
   smul_mem' := by
-    simp only [Set.mem_setOf_eq, zsmul_eq_mul, Pi.mul_apply,
-      Pi.intCast_apply, Int.cast_eq]
+    simp only [Set.mem_setOf_eq, PiLp.smul_apply, Int.zsmul_eq_mul]
     intro c a ha
     rw [← Finset.mul_sum]
     exact ha.zsmul'.trans (by simp)
 
-def Submodule.evenLattice (R : Type*) (n : ℕ) [Ring R] : Submodule ℤ (Fin n → R) :=
+def Submodule.evenLattice (R : Type*) (n : ℕ) [Ring R] : Submodule ℤ (EuclideanSpace R (Fin n)) :=
   (evenLatticeInt n).map (LinearMap.intCast R)
 
 lemma Submodule.coe_evenLattice (R : Type*) (n : ℕ) [Ring R] [CharZero R] :
-    (Submodule.evenLattice R n : Set (Fin n → R)) =
+    (Submodule.evenLattice R n : Set (EuclideanSpace R (Fin n))) =
     {v | (∀ i, ∃ n : ℤ, (n : R) = v i) ∧ ∑ i, v i ≡ 0 [PMOD 2]} := by
   ext v
   simp only [evenLattice, map_coe, Set.mem_image, SetLike.mem_coe, Set.mem_setOf_eq]
@@ -92,17 +92,18 @@ lemma Submodule.coe_evenLattice (R : Type*) (n : ℕ) [Ring R] [CharZero R] :
   simp only [evenLatticeInt, mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, Set.mem_setOf_eq]
   rintro ⟨hv, hv'⟩
   choose w hw using hv
-  use w
+  use WithLp.toLp 2 w
   constructor
   · simp_rw [← hw, ← Int.cast_sum] at hv'
     obtain ⟨a, ha⟩ := hv'
     simp only [zsmul_eq_mul] at ha ⊢
     use a
     norm_cast at ha
-  · simpa [funext_iff]
+  · ext i
+    simp_all
 
 lemma Submodule.mem_evenLattice {R : Type*} [Ring R] [CharZero R] (n : ℕ)
-    {v : Fin n → R} :
+    {v : EuclideanSpace R (Fin n)} :
     v ∈ Submodule.evenLattice R n ↔
       (∀ i, ∃ n : ℤ, (n : R) = v i) ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
   rw [← SetLike.mem_coe, Submodule.coe_evenLattice]
@@ -110,11 +111,11 @@ lemma Submodule.mem_evenLattice {R : Type*} [Ring R] [CharZero R] (n : ℕ)
 
 -- TODO (BM): this shouldn't be noncomputable... check with @zwarich
 noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
-    Submodule ℤ (Fin 8 → R) where
+    Submodule ℤ (EuclideanSpace R (Fin 8)) where
   carrier :=
     {v | ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 • v i)) ∧ ∑ i, v i ≡ 0 [PMOD 2]}
   add_mem' := by
-    simp only [Set.mem_setOf_eq, and_imp, nsmul_eq_mul, Nat.cast_ofNat, Pi.add_apply]
+    simp only [Set.mem_setOf_eq, and_imp, nsmul_eq_mul, Nat.cast_ofNat]
     rintro a b ha has hb hbs
     constructor
     · obtain ha | ha := ha
@@ -123,11 +124,14 @@ noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
           obtain ⟨a', ha⟩ := ha i
           obtain ⟨b', hb⟩ := hb i
           use a' + b'
-          simp [ha, hb]
+          rw [Int.cast_add, ha, hb]
+          exact rfl
         · intro hb i
           obtain ⟨a', ha⟩ := ha i
           obtain ⟨b', hb', hb⟩ := hb i
-          exact ⟨2 * a' + b', Even.add_odd (by simp) hb', by simp [← ha, ← hb, mul_add]⟩
+          refine ⟨2 * a' + b', Even.add_odd (by simp) hb', ?_⟩
+          rw [Int.cast_add, Int.cast_mul, ha, hb, WithLp.ofLp_add, Pi.add_apply]
+          ring
       · refine hb.symm.imp ?_ ?_
         · intro hb i
           obtain ⟨a', ha', ha⟩ := ha i
@@ -136,21 +140,25 @@ noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
           rw [Int.cast_div _ (by simpa using NeZero.ne 2), Int.cast_add, add_div (K := R), ha, hb,
             Int.cast_ofNat,
             mul_div_cancel_left₀ _ (NeZero.ne 2), mul_div_cancel_left₀ _ (NeZero.ne _)]
+          · rw [WithLp.ofLp_add, Pi.add_apply]
           rw [← even_iff_two_dvd]
           apply ha'.add_odd hb'
         · intro hb i
           obtain ⟨a', ha', ha⟩ := ha i
           obtain ⟨b', hb⟩ := hb i
-          exact ⟨a' + 2 * b', ha'.add_even (by simp), by simp [ha, hb, mul_add]⟩
-    · rw [Finset.sum_add_distrib]
+          refine ⟨a' + 2 * b', ha'.add_even (by simp), ?_⟩
+          rw [Int.cast_add, Int.cast_mul, ha, hb, WithLp.ofLp_add, Pi.add_apply]
+          ring
+    · simp_rw [WithLp.ofLp_add, Pi.add_apply]
+      rw [Finset.sum_add_distrib]
       exact ((has.add_right _).trans (hbs.add_left _)).trans (by simp)
   zero_mem' := by
-    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, Pi.zero_apply, forall_const,
-      mul_zero, Finset.sum_const_zero, AddCommGroup.modEq_refl, and_true]
+    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, WithLp.ofLp_zero, Pi.zero_apply,
+      forall_const, mul_zero, Finset.sum_const_zero, AddCommGroup.modEq_refl, and_true]
     refine Or.inl ⟨0, by simp⟩
   smul_mem' := by
-    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, zsmul_eq_mul, Pi.mul_apply,
-      Pi.intCast_apply, and_imp]
+    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, WithLp.ofLp_smul, zsmul_eq_mul,
+      Pi.mul_apply, Pi.intCast_apply, and_imp]
     intro c a ha has
     constructor
     · obtain ha | ha := ha
@@ -175,7 +183,7 @@ noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
       exact has.zsmul'.trans (by simp)
 
 lemma Submodule.mem_E8 {R : Type*} [Field R] [NeZero (2 : R)]
-    {v : Fin 8 → R} :
+    {v : EuclideanSpace R (Fin 8)} :
     v ∈ E8 R ↔
       ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 • v i))
         ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
@@ -183,7 +191,7 @@ lemma Submodule.mem_E8 {R : Type*} [Field R] [NeZero (2 : R)]
   simp
 
 lemma Submodule.mem_E8' {R : Type*} [Field R] [NeZero (2 : R)]
-    {v : Fin 8 → R} :
+    {v : EuclideanSpace R (Fin 8)} :
     v ∈ E8 R ↔
       ((∀ i, ∃ n : ℤ, Even n ∧ n = 2 • v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 • v i))
         ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
@@ -193,7 +201,7 @@ lemma Submodule.mem_E8' {R : Type*} [Field R] [NeZero (2 : R)]
   simp_rw [this, mem_E8]
 
 lemma Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)]
-    {v : Fin 8 → R} :
+    {v : EuclideanSpace R (Fin 8)} :
     v ∈ E8 R ↔
       ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, n + 2⁻¹ = v i))
         ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
@@ -214,7 +222,7 @@ lemma Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)]
     simp [NeZero.ne]
 
 theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
-    E8 R = (evenLattice R 8 ⊔ Submodule.span ℤ {fun _ ↦ (2⁻¹ : R)}) := by
+    E8 R = (evenLattice R 8 ⊔ Submodule.span ℤ {WithLp.toLp 2 fun _ ↦ (2⁻¹ : R)}) := by
   refine le_antisymm ?h1 ?h2
   case h2 =>
     rw [sup_le_iff]
@@ -243,17 +251,17 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     have hi (i : Fin 8) : x i = z i + 2⁻¹ := by linear_combination - 2⁻¹ * hy' i
     have : span ℤ (evenLattice R 8) = evenLattice R 8 := by simp
     rw [← this, sup_comm, ← Submodule.span_insert, Submodule.mem_span_insert, this]
-    refine ⟨1, LinearMap.intCast R z, ?_, ?_⟩
+    refine ⟨1, LinearMap.intCast R (WithLp.toLp 2 z), ?_, ?_⟩
     · rw [← SetLike.mem_coe, coe_evenLattice]
       constructor
       · simp
-      simp only [LinearMap.intCast_apply]
+      simp only [LinearMap.intCast_apply_ofLp]
       simp_rw [hi] at hx'
       rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
         nsmul_eq_mul, Nat.cast_ofNat, (show (8 : R) * 2⁻¹ = 2 • 2 by norm_num)] at hx'
       exact (AddCommGroup.add_nsmul_modEq _).symm.trans hx'
     · ext i
-      rw [Pi.add_apply, LinearMap.intCast_apply, Pi.smul_apply, one_smul]
+      rw [WithLp.ofLp_add, Pi.add_apply, LinearMap.intCast_apply_ofLp, one_smul]
       linear_combination - 2⁻¹ * hy' i
 
 section E8_basis
@@ -269,7 +277,7 @@ def E8Matrix (R : Type*) [Field R] : Matrix (Fin 8) (Fin 8) R := !![
   2⁻¹, 2⁻¹, 2⁻¹, 2⁻¹, 2⁻¹, 2⁻¹, 2⁻¹, 2⁻¹]
 
 lemma E8Matrix_row_mem_E8 [Field R] [CharZero R] :
-    ∀ i, (E8Matrix R).row i ∈ Submodule.E8 R := by
+    ∀ i, WithLp.toLp 2 ((E8Matrix R).row i) ∈ Submodule.E8 R := by
   rw [Fin.forall_fin_succ']
   refine ⟨?h1, ?h2⟩
   case h2 =>

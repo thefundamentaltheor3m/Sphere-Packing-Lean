@@ -200,7 +200,7 @@ theorem tendstozero_inv_linear (z : ℍ) (b : ℤ) :
         rw [EisensteinSeries.norm_eq_max_natAbs ]
         simp [hx]
       simp
-      apply tendsto_inverse_atTop_nhds_zero_nat.congr
+      apply tendsto_inv_atTop_nhds_zero_nat.congr
       intro x
       exact Eq.symm (Real.rpow_neg_one ↑x)
     have := r_pos z
@@ -244,7 +244,7 @@ theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ) :
         rw [EisensteinSeries.norm_eq_max_natAbs ]
         simp [hx]
       simp
-      apply tendsto_inverse_atTop_nhds_zero_nat.congr
+      apply tendsto_inv_atTop_nhds_zero_nat.congr
       intro x
       exact Eq.symm (Real.rpow_neg_one ↑x)
     have := r_pos z
@@ -261,13 +261,13 @@ theorem extracted_3 (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
   have h1 : Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z - ↑d)) atTop (𝓝 0) := by
     have := tendstozero_inv_linear z (-b)
     rw [← tendsto_const_smul_iff₀ (c := (-1 : ℂ) ) ] at this
-    simp at *
-    apply this.congr
-    intro x
-    rw [neg_inv]
-    congr
-    ring
-    norm_cast
+    · simp at *
+      · apply this.congr
+        intro x
+        rw [neg_inv]
+        congr
+        ring
+    · norm_cast
   have h2 : Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z + ↑d)) atTop (𝓝 0) := by
     apply tendstozero_inv_linear z b
   have := Filter.Tendsto.sub h1 h2
@@ -355,7 +355,7 @@ lemma t8 (z : ℍ) :
     rw [Finset.mul_sum]
     congr
     ext d
-    let Z : ℍ := ⟨(d +1)* z, by simp; apply mul_pos; linarith; exact z.2⟩
+    let Z : ℍ := ⟨(d +1)* z, by simp; exact mul_pos (by linarith) z.2⟩
     have := q_exp_iden 2 (by norm_num) (z := Z)
     simp only [coe_mk_subtype, one_div, neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one,
       Nat.factorial_one, Nat.cast_one, div_one, pow_one, Z] at *
