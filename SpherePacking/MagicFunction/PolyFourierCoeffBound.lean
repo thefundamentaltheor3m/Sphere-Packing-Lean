@@ -355,8 +355,7 @@ private lemma natplus_summable_of_nat_summable {a : ℕ → ℝ} (h : Summable a
 private lemma step_12a {r : ℝ} (cpos : r > 0)
     : Multipliable fun (b : ℕ+) ↦ (1 - rexp (-r * ↑↑b)) ^ 24 := by
 -- Convert goal of Multipliablity to question of Summablility
-  conv =>
-    enter [1]
+  conv_lhs =>
     intro b
     rw [← add_sub_cancel 1 ((1 - rexp (-r * ↑↑b)) ^ 24)]
   apply Real.multipliable_one_add_of_summable _
@@ -403,9 +402,8 @@ private lemma step_12a {r : ℝ} (cpos : r > 0)
 -- Show that the bound is itself summable
   have h_bound_summable : Summable fun (i : ℕ) ↦ 24 * rexp (-r * i) := by
     apply (summable_mul_left_iff (a := 24) (by norm_num)).mpr
-    conv =>
-      enter [1]
-      intro b
+    conv_lhs =>
+      intro i
       rw [mul_comm]
     apply Real.summable_exp_nat_mul_iff.mpr
     exact neg_neg_of_pos cpos
