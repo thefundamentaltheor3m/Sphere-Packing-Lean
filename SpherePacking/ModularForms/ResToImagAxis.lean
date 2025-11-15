@@ -60,10 +60,7 @@ theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDifferentiable �
   apply h_diff.congr_of_eventuallyEq
   filter_upwards [lt_mem_nhds ht] with t ht
   simp_all only [coe_mk_subtype, ResToImagAxis, ↓reduceDIte]
-  have h_eq : ofComplex (Complex.I * t) = ⟨Complex.I * t, by aesop⟩ := by
-    all_goals generalize_proofs at *
-    (expose_names; exact ofComplex_apply_of_im_pos pf)
-  rw [h_eq]
+  rw [ofComplex_apply_of_im_pos _]
 
 /--
 Restriction and slash action under S: $(F |_k S) (it) = t^{-k} * F(it)$
