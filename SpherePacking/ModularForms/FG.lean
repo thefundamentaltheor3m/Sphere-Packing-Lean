@@ -30,12 +30,19 @@ noncomputable def GReal (t : ℝ) : ℝ := (G.resToImagAxis t).re
 
 noncomputable def FmodGReal (t : ℝ) : ℝ := (FReal t) / (GReal t)
 
-theorem F_eq_FReal (t : ℝ) (ht : 0 < t) : F.resToImagAxis t = FReal t := by sorry
+theorem F_eq_FReal {t : ℝ} (ht : 0 < t) : F.resToImagAxis t = FReal t := by sorry
 
-theorem G_eq_GReal (t : ℝ) (ht : 0 < t) : G.resToImagAxis t = GReal t := by sorry
+theorem G_eq_GReal {t : ℝ} (ht : 0 < t) : G.resToImagAxis t = GReal t := by sorry
 
-theorem FmodG_eq_FmodGReal (t : ℝ) (ht : 0 < t) :
+theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
     FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by sorry
+
+/- Some basic facts -/
+theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
+  sorry
+
+theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ GReal t := by
+  sorry
 
 theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
     + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun
@@ -54,7 +61,6 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
   · exact E₆.holo'
   have h24 := MDifferentiable.mul E₂_holo' E₄.holo'
   exact MDifferentiable.sub h24 E₆.holo'
-
 
 /--
 Modular linear differential equation satisfied by $F$.
