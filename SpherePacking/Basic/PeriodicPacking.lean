@@ -25,7 +25,7 @@ density within a fundamental domain w.r.t. any basis.
 -/
 
 open scoped ENNReal
-open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module
+open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module ZLattice
 
 section aux_lemmas
 
@@ -1125,6 +1125,10 @@ theorem PeriodicSpherePacking.density_eq'
   · rw [ENNReal.coe_toReal, NNReal.coe_mk]
     refine Eq.symm (ZLattice.covolume_eq_measure_fundamentalDomain S.lattice volume ?h)
     exact ZLattice.isAddFundamentalDomain b volume
+
+theorem PeriodicSpherePacking'.density_eq'' (S : PeriodicSpherePacking' d) :
+    S.density' = (S.fundDom).card * vol (B d 0 (S.separation / 2)) / covolume S.lattice := by
+  sorry
 
 end Periodic_Density_Formula
 

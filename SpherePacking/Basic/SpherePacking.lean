@@ -12,14 +12,14 @@ import Mathlib.Topology.EMetricSpace.Paracompact
 
 import SpherePacking.ForMathlib.VolumeOfBalls
 
-open BigOperators MeasureTheory Metric
+open BigOperators MeasureTheory Metric ZSpan ZLattice
 
 /-!
 # Density of Sphere Packings
 
-Let `X ⊆ ℝ^d` be a set of points such that distinct points are at least distance `r` apart. Putting
-a ball of radius `r / 2` around each point, we have a configuration of *sphere packing*. We call `X`
-the sphere packing centers.
+Let `X ⊆ ℝ^d` be a set of points such that distinct points are at least distance `r` apart.
+Putting a ball of radius `r / 2` around each point, we have a configuration of *sphere packing*.
+We call `X` the sphere packing centers.
 
 We also define the *density* of the configuration.
 -/
@@ -33,7 +33,7 @@ structure SpherePacking (d : ℕ) where
   centers : Set (EuclideanSpace ℝ (Fin d))
   separation : ℝ
   separation_pos : 0 < separation := by positivity
-  centers_dist : Pairwise (separation ≤ dist · · : centers → centers → Prop)
+  centers_dist : Pairwise (separation ≤ ‖·.val - ·.val‖ : centers → centers → Prop)
 
 structure PeriodicSpherePacking (d : ℕ) extends SpherePacking d where
   lattice : Submodule ℤ (EuclideanSpace ℝ (Fin d))
@@ -47,11 +47,7 @@ theorem SpherePacking.centers_dist' (S : SpherePacking d) (x y : EuclideanSpace 
     (hx : x ∈ S.centers) (hy : y ∈ S.centers) (hxy : x ≠ y) :
     S.separation ≤ dist x y := by
   have : (⟨x, hx⟩ : S.centers) ≠ ⟨y, hy⟩ := Subtype.coe_ne_coe.mp hxy
-  -- The following fails. Reason unknown.
-  -- exact S.centers_dist this
-  have := S.centers_dist this
-  simp only at this
-  exact this
+  simpa using S.centers_dist this
 
 instance PeriodicSpherePacking.instLatticeDiscrete (S : PeriodicSpherePacking d) :
     DiscreteTopology S.lattice :=
@@ -150,7 +146,6 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
     have : (⟨x', hx'⟩ : S.centers) ≠ ⟨y', hy'⟩ := by simp [this]
     have := S.centers_dist this
     exact (mul_le_mul_iff_right₀ hc).mpr this
-
 
 noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
   PeriodicSpherePacking d := {
@@ -464,5 +459,61 @@ theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
     rwa [add_sub_cancel_right] at this
   · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
   · exact (volume_ball_lt_top _).ne
+
+
+
+
+
+
+
+
+/-Code by Stefano to make Cohn-Elkies work domain independently. To be merged with the rest. -/
+
+/-- The volume of a set in d-dimensional Euclidean space as a real number. -/
+noncomputable def vol (S : Set (EuclideanSpace ℝ (Fin d))) : ℝ := (volume S).toReal
+
+variable (d) in
+/-- The ball of radius r around x in d-dimensional Euclidean space. -/
+def B (x : EuclideanSpace ℝ (Fin d)) (r : ℝ) : Set (EuclideanSpace ℝ (Fin d)) := Metric.ball x r
+
+
+/-- I created a class IsPeriodic here to avoid confusion with the
+PeriodicSpherePacking extension of the structure. It is essentially the same as before,
+except that, phrased as below, it avoid domain dependent statements in Cohn-Elkies.
+This is not a good definition yet. Something is off about how the fundamental domain of a lattice
+is defined in Mathlib since it says that it is Fintype but it should not be.
+The fundamental domain part is important to be able to prove Poission summation & lemma3 in
+Cohn-Elkies. The plan is to get back to your original structure as soon as the fintype part
+is worked out. -/
+structure PeriodicSpherePacking' (d : ℕ) extends SpherePacking d where
+  b : Module.Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d))
+  hb := instIsZLatticeRealSpan b
+  lattice := Submodule.span ℤ (Set.range b)
+  hvadd : ∀ ⦃x y⦄, x ∈ lattice → y ∈ centers → x +ᵥ y ∈ centers
+  hfintype : Fintype <| ↑(centers ∩ fundamentalDomain b) := by apply Fintype.ofFinite
+  fundDom := (centers ∩ fundamentalDomain b).toFinset
+  hDiscrete : DiscreteTopology lattice := by infer_instance
+  hIsZLattice : IsZLattice ℝ lattice := by infer_instance
+
+instance PeriodicSpherePacking'.instLatticeDiscrete (S : PeriodicSpherePacking' d) :
+    DiscreteTopology S.lattice := S.hDiscrete
+
+instance PeriodicSpherePacking'.instIsZLattice (S : PeriodicSpherePacking' d) :
+    IsZLattice ℝ S.lattice := S.hIsZLattice
+
+def coe {S : PeriodicSpherePacking' d} : S.fundDom → S.centers :=
+  fun y ↦ ⟨y.val, sorry⟩
+
+def PeriodicSpherePacking'.density' (S : PeriodicSpherePacking' d) : ℝ := sorry
+def SpherePackingConstant' (d : ℕ) : ℝ := sorry
+def PeriodicSpherePackingConstant' (d : ℕ) : ℝ := sorry
+
+lemma periodic_const_eq_periodic_const_normalized' :
+  PeriodicSpherePackingConstant' d =
+  ⨆ (P : {S : PeriodicSpherePacking' d // S.separation = 1}), P.val.density' := by sorry
+
+lemma periodic_const_eq_const' :
+  PeriodicSpherePackingConstant' d = SpherePackingConstant' d := by sorry
+
 
 end BasicResults
