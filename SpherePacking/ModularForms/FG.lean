@@ -72,6 +72,21 @@ Modular linear differential equation satisfied by $G$.
 theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
   sorry
 
+theorem F_pos : ResToImagAxis.Pos F := by
+  sorry
+
+theorem G_pos : ResToImagAxis.Pos G := by
+  sorry
+
+theorem X₄₂_pos : ResToImagAxis.Pos X₄₂ := by
+  sorry
+
+theorem Δ_fun_pos : ResToImagAxis.Pos Δ_fun := by
+  sorry
+
+theorem H₂_pos : ResToImagAxis.Pos H₂ := by
+  sorry
+
 theorem L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
   sorry
 
@@ -81,7 +96,20 @@ sorry
 
 /- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
 theorem SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
-  sorry
+  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, ResToImagAxis.Pos]
+  ring_nf
+  intro t ht
+  obtain ⟨Ft, hFtpos, hFtres⟩ := F_pos t ht
+  obtain ⟨Gt, hGtpos, hGtres⟩ := G_pos t ht
+  obtain ⟨X₄₂t, hX₄₂tpos, hX₄₂tres⟩ := X₄₂_pos t ht
+  obtain ⟨Δt, hΔtpos, hΔtres⟩ := Δ_fun_pos t ht
+  obtain ⟨H₂t, hH₂tpos, hH₂tres⟩ := H₂_pos t ht
+  let r := Ft * Δt * H₂t * 640 + Δt * X₄₂t * Gt * 172800
+  have hr_pos : 0 < r := by positivity
+  use r
+  constructor
+  · exact hr_pos
+  · sorry
 
 /- $\mathcal{L}_{1, 0}$ is eventually positive on the imaginary axis. -/
 theorem L₁₀_eventuallyPos : ResToImagAxis.EventuallyPos L₁₀ := by
