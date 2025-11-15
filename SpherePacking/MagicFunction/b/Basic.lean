@@ -63,21 +63,48 @@ def J₅ (x : V) : ℂ := J₅' (‖x‖ ^ 2)
 
 def J₆ (x : V) : ℂ := J₆' (‖x‖ ^ 2)
 
-def a (x : V) : ℂ := b' (‖x‖ ^ 2)
+def b (x : V) : ℂ := b' (‖x‖ ^ 2)
 
 end Vector_Input
 
 open intervalIntegral
 
-section Eq
+section Eq₀
 
-lemma a_eq (x : V) : a x = J₁ x + J₂ x + J₃ x + J₄ x + J₅ x + J₆ x := rfl
+lemma b_eq (x : V) : b x = J₁ x + J₂ x + J₃ x + J₄ x + J₅ x + J₆ x := rfl
 
 /- # TODO:
 
 Express the Jⱼ in a similar manner to the Iⱼ, with ψS being the analogue of φ₀.
 -/
 
-end Eq
+private lemma aux_I :  I ≠ 0 := by norm_num
+
+lemma J₁'_eq₀ (r : ℝ) : J₁' r = ∫ t in (0 : ℝ)..1, I -- Added factor due to variable change!!
+    * ψS' (-1 / ((z₁' t) + (1 : ℂ)))
+    * ((z₁' t) + (1 : ℂ)) ^ 2
+    * cexp (π * I * r * (z₁' t)) := by
+  rw [J₁']
+  apply integral_congr_ae
+  apply MeasureTheory.ae_of_all
+  intro t ht
+  rw [uIoc_of_le zero_le_one] at ht
+  rw [ψS_slash_ST_explicit₁ ht]
+  ac_rfl
+
+lemma J₂'_eq₀ (r : ℝ) : J₂' r = ∫ t in (0 : ℝ)..1,
+    ψS' (-1 / ((z₂' t) + (1 : ℂ)))
+    * ((z₂' t) + (1 : ℂ)) ^ 2
+    * cexp (π * I * r * (z₂' t)) := by
+  rw [J₂']
+  apply integral_congr_ae
+  apply MeasureTheory.ae_of_all
+  intro t ht
+  rw [uIoc_of_le zero_le_one] at ht
+  rw [ψS_slash_ST_explicit₁ ht]
+  
+  sorry
+
+end Eq₀
 
 end MagicFunction.b.RadialFunctions
