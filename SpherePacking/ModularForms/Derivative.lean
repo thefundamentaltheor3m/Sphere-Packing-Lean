@@ -231,44 +231,7 @@ theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun
   simpa [add_comm, sub_eq_iff_eq_add] using h1
 
 
-/--
-Prove modular linear differential equation satisfied by $F$.
--/
-noncomputable def X₄₂ := 288⁻¹ * (E₄.toFun - E₂ * E₂)
 
-noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
-
-noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
-
-theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
-    + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun
-    := by
-  rw [F, D_sq, D_sub, D_mul]
-  · ring_nf
-    rw [ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
-    ext z
-    simp
-    ring_nf
-
-  -- Holomorphicity of the terms
-  · exact E₂_holo'
-  · exact E₄.holo'
-  · exact MDifferentiable.mul E₂_holo' E₄.holo'
-  · exact E₆.holo'
-  have h24 := MDifferentiable.mul E₂_holo' E₄.holo'
-  exact MDifferentiable.sub h24 E₆.holo'
-
-
-/--
-Modular linear differential equation satisfied by `F`.
-TODO: Move this to a more appropriate place.
--/
-theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 172800 * Δ_fun * X₄₂ := by
-  ext x
-  rw [X₄₂, Δ_fun, serre_D, serre_D, F_aux]
-  unfold serre_D
-  rw [F_aux]
-  sorry
 
 example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.toFun - E₆.toFun) :=
   by
