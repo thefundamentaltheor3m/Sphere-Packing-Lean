@@ -35,7 +35,7 @@ Define two (quasi) modular forms as
 \end{align}
 \end{definition}
 
-\begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{def:FG-definition, lemma:psiS-new}
+\begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{def:FG-definition, lemma:psi-new}
 We have
 \begin{align}
     \phi_0 &= \frac{F}{\Delta} \label{eqn:phi0-F} \\
@@ -44,7 +44,7 @@ We have
 \end{lemma}
 \begin{proof}
 \eqref{eqn:phi0-F} is clear.
-\eqref{eqn:psiS-G} is already shown in Lemma \ref{lemma:psiS-new}.
+\eqref{eqn:psiS-G} is already shown in Lemma \ref{lemma:psi-new}.
 \end{proof}
 
 \begin{lemma}\label{lemma:ineqABnew-equiv}\uses{lemma:F-G-phi-psi-identities, def:psiI-psiT-psiS, cor:disc-pos}
@@ -172,7 +172,20 @@ From $\lim_{t \to \infty} E_4(it) = 1 = \lim_{t \to \infty}H_{4}(it)$, we get
 \end{align}
 \end{proof}
 
-\begin{proposition}\label{prop:Qdec}\uses{thm:ramanujan-formula, thm:serre-der-prod-rule, cor:F-G-de, thm:anti-serre-der-pos}
+\begin{lemma}\label{lemma:log-der-inf}\uses{lemma:der-q-series}
+Let $F$ be a quasimodular form where the vanishing order of $F$ at infinity is $n_0 > 0$, i.e. $F(z) = \sum_{n \geq n_0} a_n q^{n}$ with $a_{n_0} \ne 0$. Then
+\begin{equation}
+    \lim_{t \to \infty} \frac{F'(it)}{F(it)} = n_0.
+\end{equation}
+\end{lemma}
+\begin{proof}
+    By Lemma \ref{lemma:der-q-series},
+    \begin{equation}
+        \lim_{t \to \infty} \frac{F'(it)}{F(it)} = \lim_{t \to \infty} \frac{\sum_{n \ge n_0} n a_n e^{-2 \pi n t}}{\sum_{n \ge n_0} a_n e^{-2 \pi n t}} = \lim_{t \to \infty} \frac{n_0 a_{n_0} e^{-2 \pi n_0 t} + O(e^{-2 \pi (n_0 + 1) t})}{a_{n_0} e^{-2 \pi n_0 t} + O(e^{-2 \pi (n_0 + 1) t})} = n_0.
+    \end{equation}
+\end{proof}
+
+\begin{proposition}\label{prop:Qdec}\uses{thm:ramanujan-formula, thm:serre-der-prod-rule, cor:F-G-de, thm:anti-serre-der-pos, lemma:log-der-inf}
 The function $t \mapsto Q(t)$ is monotone decreasing.
 \end{proposition}
 
@@ -183,12 +196,17 @@ It is enough to show that
     &\Leftrightarrow F'(it) G(it) - F(it) G'(it) > 0 \\
     &\Leftrightarrow (\partial_{10}F)(it) G(it) - F(it) (\partial_{10}G)(it) > 0.
 \end{align}
-Let $\mathcal{L}_{1, 0} := (\partial_{10}F) G - F (\partial_{10} G)$.
-Then its Fourier expansion starts with
-\begin{equation}
-    \mathcal{L}_{1, 0} = 5308416000 q^{\frac{7}{2}} + O(q^{\frac{9}{2}}) \notag
-\end{equation}
-and its Serre derivative $\partial_{22} \mathcal{L}_{1, 0}$ is positive by Corollary \ref{cor:F-G-de}:
+Let $\mathcal{L}_{1, 0} := (\partial_{10}F) G - F (\partial_{10} G) = F'G - FG'$.
+Then
+\begin{align}
+\frac{\mathcal{L}_{1, 0}}{FG} = \frac{F'G - FG'}{FG} = \frac{F'}{F} - \frac{G'}{G}
+\end{align}
+The vanishing order of $F$ and $G$ at the infinity are $2$ and $\frac{3}{2}$ respectively, so by Lemma \ref{lemma:log-der-inf}, we have
+\begin{align}
+    \lim_{t \to \infty} \frac{\mathcal{L}_{1, 0}(it)}{F(it) G(it)} = \lim_{t \to \infty} \left(\frac{F'(it)}{F(it)} - \frac{G'(it)}{G(it)}\right) = 2 - \frac{3}{2} = \frac{1}{2} > 0
+\end{align}
+so $\mathcal{L}_{1, 0}(it) > 0$ for sufficiently large $t$.
+Its Serre derivative $\partial_{22} \mathcal{L}_{1, 0}$ is positive by Corollary \ref{cor:F-G-de}:
 \begin{align}
     \partial_{22} \mathcal{L}_{1, 0} = (\partial_{12} \partial_{10} F) G - F (\partial_{12}\partial_{10} G)
     = \Delta (7200 (-E_{2}') G + 640 H_2 F) > 0.

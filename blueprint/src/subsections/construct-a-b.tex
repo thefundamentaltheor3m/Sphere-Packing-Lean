@@ -6,7 +6,15 @@ In this section we construct two radial Schwartz functions $a,b:\R^8\to i\R$ suc
 \begin{align}\mathcal{F}(a)&=a\label{eqn:a-fourier}\\
     \mathcal{F}(b)&=-b\label{eqn:b-fourier}
 \end{align}
-which double zeroes at all $\Lambda_8$-vectors of length greater than $\sqrt{2}$. Recall that each vector of $\Lambda_8$ has length $\sqrt{2n}$ for some $n\in\N_{\geq 0}$. We define $a$ and $b$ so that their values are purely imaginary because this simplifies some of our computations. We will show in Section \ref{sec: g} that an appropriate linear combination of functions $a$ and $b$ satisfies conditions \eqref{eqn:g1}--\eqref{eqn:g3}.
+which double zeroes at all $\Lambda_8$-vectors of length greater than $\sqrt{2}$. Recall that each vector of $\Lambda_8$ has length $\sqrt{2n}$ for some $n\in\N_{\geq 0}$.
+We define $a$ and $b$ so that their values are purely imaginary because this simplifies some of our computations.
+We will show in Section \ref{sec: g} that an appropriate linear combination of functions $a$ and $b$ satisfies conditions \eqref{eqn:g1}--\eqref{eqn:g3}.
+
+Both of the functions will be defined via certain integrals of (quasi)modular forms.
+Then the eigenfunction property mainly follows from the Poisson summation formula (Theorem \ref{thm:Poisson-summation-formula}) and the transformation laws of (quasi)modular forms.
+To apply Theorem \ref{thm:Poisson-summation-formula}, we will show that $a(x)$ and $b(x)$ are Schwartz functions, and this can be proved by verifying fast decay of the integrals.
+
+
 
 First, we will define function $a$. To this end we consider the following functions:
 \begin{definition}\label{def:phi4-phi2-phi0}
@@ -50,19 +58,38 @@ For \eqref{eqn:phi0-trans-S},
 \end{align}
 \end{proof}
 
-\begin{definition}\label{def:a-definition}\lean{MagicFunction.a.RadialFunctions.a}\leanok
+% The original expression of $a(x)$ in \cite{Via2017} is given by
+% \begin{align}\label{eqn:a-definition-orig}
+%     a(x):=&\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i \|x\|^2 z}\,dz
+%     +\int\limits_{1}^i\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i \|x\|^2 z}\,dz\\
+%     -&2\int\limits_{0}^i\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i \|x\|^2 z}\,dz
+%     +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i \|x\|^2 z}\,dz.\nonumber
+% \end{align}
+For our formalization, we choose rectangular contours for the first and the second integral, and write it as follows.
+\begin{definition}\label{def:a-definition}\lean{MagicFunction.a.RealIntegrals.a',MagicFunction.a.RadialFunctions.a}\leanok
 \uses{def:phi4-phi2-phi0}
-For $x\in\R^8$ we define
-\begin{align}\label{eqn:a-definition}
-    a(x):=&\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i \|x\|^2 z}\,dz
-    +\int\limits_{1}^i\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i \|x\|^2 z}\,dz\\
-    -&2\int\limits_{0}^i\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,e^{\pi i \|x\|^2 z}\,dz
-    +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i \|x\|^2 z}\,dz.\nonumber
+Define $a_{\rad} : \R \to \C$ by
+\begin{align}\label{eqn:a-rad-definition}
+    a_\rad(r) := I_1(r) + I_2(r) + I_3(r) + I_4(r) + I_5(r) + I_6(r)
 \end{align}
+where
+\begin{align}
+    I_1(r) &:= \int_{-1}^{-1 + i} \phi_0 \left(\frac{-1}{z+1}\right) (z + 1)^2 e^{\pi i r z} \dd z \label{eqn:a-I1} \\
+    I_2(r) &:= \int_{-1 + i}^{i} \phi_0 \left(\frac{-1}{z+1}\right) (z + 1)^2 e^{\pi i r z} \dd z \label{eqn:a-I2} \\
+    I_3(r) &:= \int_{1}^{1 + i} \phi_0 \left(\frac{-1}{z-1}\right) (z - 1)^2 e^{\pi i r z} \dd z \label{eqn:a-I3} \\
+    I_4(r) &:= \int_{1 + i}^{i} \phi_0 \left(\frac{-1}{z-1}\right) (z - 1)^2 e^{\pi i r z} \dd z \label{eqn:a-I4} \\
+    I_5(r) &:= -2 \int_{0}^{i} \phi_0 \left(\frac{-1}{z}\right) z^2 e^{\pi i r z} \dd z \label{eqn:a-I5} \\
+    I_6(r) &:= 2 \int_{i}^{i\infty} \phi_0(z) e^{\pi i r z} \dd z \label{eqn:a-I6}
+\end{align}
+Here all the contours are chosen to be straight line segments.
+Now, define $a(x) := a_{\rad}(\|x\|^2)$ for $x \in \R^8$.
 \end{definition}
+In the original paper, the integrals $I_1$ and $I_2$ are combined, as well as $I_3$ and $I_4$.
+We choose to write them separately to simplify the formalization.
 
-We observe that the contour integrals in \eqref{eqn:a-definition} converge absolutely and uniformly for $x\in\R^8$.
-Indeed, $\phi_0(z)=O(e^{2\pi i z})$ as $\Im(z)\to \infty$. Therefore, $a(x)$ is well defined. Now we prove that $a$ satisfies condition \eqref{eqn:a-fourier}.
+% We observe that the contour integrals in \eqref{eqn:a-definition} converge absolutely and uniformly for $x\in\R^8$.
+% Indeed, $\phi_0(z)=O(e^{2\pi i z})$ as $\Im(z)\to \infty$. Therefore, $a(x)$ is well defined.
+Now we prove that $a$ satisfies condition \eqref{eqn:a-fourier}.
 The following lemma will be used to prove Schwartzness of $a$ and $b$.
 
 
@@ -79,6 +106,7 @@ Then there exists a constant $C_f > 0$ such that
 \end{equation}
 for all $z$ with $\Im z > 1/2$.
 \end{lemma}
+When $f(z)$ is a (quasi)modular form, we can take $k$ to be the weight of $f$.
 
 
 \begin{proof}\uses{def:disc-definition}\leanok
@@ -138,29 +166,107 @@ Note that we can take the constants $C_0$, $C_{-2}$, and $C_{-4}$ as
     C_{-4} &= e^{-\pi} \cdot \frac{E_4(i/2)^{2}}{\Delta(i/2)}. \notag
 \end{align}
 
+\begin{lemma}\label{lem:integral-bound}
+    For all $n \in \N$, there exists a constant $C'$ such that for all $r \geq 0$,
+    \begin{align}
+        r^n \cdot \int_{1}^{\infty} e^{-2\pi s} \, e^{-\pi r /s} \, \dd s \leq C'
+    \end{align}
+\end{lemma}
+\begin{proof}
+    Fix $n \in \N$. We know there exists a constant $C$ such that for all $x \geq 0$, $\abs{x}^n \cdot \abs{e^{-\pi x}} \leq C$. In particular, for all $r \geq 0$ and $s \geq 1$, $r^n \cdot e^{-\pi r/s} \leq C s^n$. Hence, for all $r \in \R$, we can write
+    \begin{align}
+        r^n \cdot \int_{1}^{\infty} e^{-2\pi s} \, e^{-\pi r /s} \, \dd{s}
+        = \int_{1}^{\infty} e^{-2\pi s} \, \left(\abs{r}^n \cdot e^{-\pi r /s}\right) \, \dd{s}
+        \leq C \int_{1}^{\infty} e^{-2\pi s} \, s^n \, \dd{s}
+    \end{align}
+    % It was \href{https://github.com/leanprover-community/mathlib4/blob/5a2eaa85c555c4263e15928cef249cbaad2eb2d2/Mathlib/Analysis/SpecialFunctions/Gamma/Basic.lean#L403}{previously known in \mathlib}
+    % that the $\Gamma$ function is given by
+    The $\Gamma$ function is given by
+    \begin{align}
+        \Gamma(x) = \int_{0}^{\infty} e^{-u} \, u^{x-1} \, \dd{u}
+    \end{align}
+    for all $x > 0$. Hence, writing $u = 2\pi s$ and using $\Gamma(n+1) = n!$, we get
+    % \href{https://github.com/leanprover-community/mathlib4/blob/5a2eaa85c555c4263e15928cef249cbaad2eb2d2/Mathlib/Analysis/SpecialFunctions/Gamma/Basic.lean#L430}{relating $\Gamma$ with the factorial}, we get
+    \begin{align}
+        C \int_{1}^{\infty} e^{-2\pi s} \, s^n \, \dd{s}
+        \leq C \int_{0}^{\infty} e^{-2\pi s} \, s^n \, \dd{s}
+        = C \int_{0}^{\infty} \frac{1}{(2\pi)^{n+1}} e^{-u} \, u^n \, \dd{u}
+        = \frac{C}{(2\pi)^n} \Gamma(n+1)
+        = \frac{C \cdot n!}{(2\pi)^n}
+    \end{align}
+    Defining $C' := \frac{C \cdot n!}{(2\pi)^n}$ finishes the proof.
+\end{proof}
+
+\begin{lemma}\label{lem:bound-I1-I3-I5}
+    There exists $C > 0$ such that for all $r \geq 0$,
+    \begin{equation}
+        |I_1(r)|, |I_3(r)|, |I_5(r)| \leq C \int_1^{\infty} e^{-2\pi s} \, e^{-\pi r / s} \, \dd s.
+    \end{equation}
+\end{lemma}
+\begin{proof}
+    We only prove the bound for $I_1(r)$, as the other two are similar.
+    By the change of variable $z = -1 + i t$ for $t \in [0,1]$, we have
+    $$
+    I_1(r) = -i \int_0^1 \phi_0\left(\frac{-1}{i t}\right) t^2 e^{-\pi i r} \cdot e^{-\pi r t} \, \dd t.
+    $$
+    With the change of variable $s = 1 / t$, we get
+    $$
+    I_1(r) = i \int_1^{\infty} \phi_0(i s) \cdot s^{-4} \cdot e^{-\pi i r} \cdot e^{-\pi r / s} \, \dd s
+    $$
+    and the absolute value can be bounded as
+    $$
+    |I_1(r)| \leq \int_1^{\infty} |\phi_0(i s)| \cdot s^{-4} \cdot |e^{-\pi i r}| \cdot e^{-\pi r / s} \, \dd s \le \int_1^{\infty} |\phi_0(is)| \cdot e^{-\pi r / s} \, \dd s.
+    $$
+    Now, Corollary~\ref{cor:phi0-bound} shows
+    $$
+    |I_1(r)| \leq C_0 \int_1^{\infty} e^{-2\pi s} \, e^{-\pi r / s} \, \dd s.
+    $$
+\end{proof}
+Combined with Lemma~\ref{lem:integral-bound}, this shows that the integrals $I_1$, $I_3$, and $I_5$ decay faster than any polynomial as $r \to \infty$.
+For the integrals $I_2$, $I_4$, and $I_6$, it is easier to see this since the contours are not touching the real axis.
+\begin{lemma}\label{lem:bound-I2-I4-I6}
+    There exist $C_1, C_2 > 0$ such that for all $r \geq 0$,
+    \begin{equation}
+        |I_2(r)|, |I_4(r)| \leq C_1 e^{-\pi r}
+    \end{equation}
+    and
+    \begin{equation}
+        |I_6(r)| \leq C_2 \frac{e^{-\pi(r + 2)}}{r + 2}
+    \end{equation}
+\end{lemma}
+\begin{proof}
+    For $I_2(r)$, parametrize $z$ as $z = t + i$ for $t \in [-1,0]$, and we have
+    $$
+        I_2(r) = \int_{-1}^0 \phi_0\left(\frac{-1}{t + 1 + i}\right) (t + 1 + i)^2 e^{\pi i r t} e^{-\pi r} \, \dd t.
+    $$
+    Since the function $z \mapsto \phi_0\left(\frac{-1}{z+1}\right) (z+1)^2$ is holomorphic and bounded on the contour,
+    there exists $C > 0$ such that $|\phi_0\left(\frac{-1}{z+1}\right) (z + 1)^2| \leq C$, and the absolute value of the integral can be bounded by
+    $$
+        |I_2(r)| \le \int_{-1}^{0} C e^{-\pi r} \, \dd t = C e^{-\pi r}.
+    $$
+    The bound for $I_4(r)$ is similar.
+    For $I_6(r)$, parametrize $z$ as $z = i t$ for $t \in [1, \infty)$, and we have
+    $$
+        I_6(r) = 2 i \int_1^{\infty} \phi_0(i t) e^{-\pi r t} \, \dd t
+    $$
+    and the absolute value can be bounded as (using Corollary~\ref{cor:phi0-bound})
+    $$
+        |I_6(r)| \leq 2 \int_1^{\infty} |\phi_0(i t)| e^{-\pi r t} \, \dd t \leq \frac{2C_0}{\pi} \int_1^{\infty} e^{-2\pi t} e^{-\pi r t} \, \dd t = \frac{2C_0}{\pi} \frac{e^{-\pi (r + 2)}}{r + 2}.
+    $$
+\end{proof}
+
+Combining these, one can show that $a$ is a Schwartz function.
 \begin{proposition}\label{prop:a-schwartz}\lean{MagicFunction.FourierEigenfunctions.a}\leanok
 \uses{def:a-definition, cor:phi0-bound}
 $a(x)$ is a Schwartz function.
 \end{proposition}
 \begin{proof}
-We estimate the first summand in the right-hand side of \eqref{eqn:a-definition}.
-By \eqref{eqn:phi0-bound}, we have
-\begin{align}
-    &\left|\int\limits_{-1}^{i}\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i r^2 z}\,dz\right|=\left|\int\limits_{i\infty}^{-1/(i+1)}\phi_0(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz\right|\leq \notag\\
-    &C_1\int\limits_{1/2}^{\infty}e^{-2\pi t}\,e^{-\pi    r^2/t}\,dt\leq C_1\int\limits_{0}^{\infty}e^{-2\pi t}\,e^{-\pi    r^2/t}\,dt=C_2\,r\,K_1(2\sqrt{2}\,\pi\,r)\notag
-\end{align}
-where $C_1$ and $C_2$ are some positive constants and $K_\alpha(x)$ is the modified Bessel function of the second kind defined as in \cite[Section~9.6]{Abramowitz}. This estimate also holds for the second and third summand in \eqref{eqn:a-definition}.
-For the last summand we have
-\begin{equation}
-\left|\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i r^2 z}\,dz\right|\leq C\,\int\limits_{1}^{\infty} e^{-2\pi t}\,e^{-\pi r^2 t}\,dt=C_3\frac{e^{\pi(r^2+2)}}{r^2+2}.
-\end{equation}
-Therefore, we arrive at
-\begin{equation}
-    |a(r)|\leq 4C_2\,r\,K_1(2\sqrt{2}\pi r)+2C_3\frac{e^{-\pi(r^2+2)}}{r^2+2}.
-\end{equation}
-It is easy to see that the left hand side of this inequality decays faster then any inverse power of $r$. Analogous estimates can be obtained for all derivatives $\frac{\dd^k}{\dd r^k}a(r)$.
+By Theorem \ref{thm:smooth-fast-decay-schwartz}, it suffices to show that the function is smooth and decays faster than any polynomial.
+The smoothness follows from the ``differentiation under the integral'', which is already formalized in \texttt{mathlib}.
+The decay follows from Lemmas \ref{lem:bound-I1-I3-I5} and \ref{lem:bound-I2-I4-I6}, together with Lemma \ref{lem:integral-bound}.
 \end{proof}
 
+% TODO: Update the proof
 \begin{proposition}\label{prop:a-fourier}
 \uses{lemma:Ek-Fourier, def:E2, def:a-definition, lemma:Gaussian-Fourier, prop:a-schwartz}\lean{MagicFunction.a.Fourier.eig_a}
 $a(x)$ satisfies \eqref{eqn:a-fourier}.
@@ -326,97 +432,184 @@ We define the following three functions
     \psi_S\,:=\,&\psi_I|_{-2}S. \label{eqn:psiS-define}
 \end{align}
 \end{definition}
-\begin{lemma}\label{lemma: psi I psi T psi S explicit}\uses{def:psiI-psiT-psiS}\lean{ψI_eq}
-More explicitly, we have
-% \begin{align}
-% \psi_I(z)\,=\,&128\,\frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}\,+\,128
-%                             \frac{\theta_{01}^4(z)-\theta_{10}^4(z)}{\theta_{00}^8(z)}\label{eqn:psiI-explicit}\\
-% \psi_T(z)\,=\,&128\,\frac{\theta_{00}^4(z)+\theta_{01}^4(z)}{\theta_{10}^8(z)}\,+
-%                             \,128\,\frac{\theta_{00}^4(z)+\theta_{10}^4(z)}{\theta_{01}^8(z)}\label{eqn:psiT-explicit}\\
-% \psi_S(z)\,=\,&-128\,\frac{\theta_{00}^4(z)+\theta_{10}^4(z)}{\theta_{01}^8(z)}-128\,
-%                             \frac{\theta_{10}^4(z)-\theta_{01}^4(z)}{\theta_{00}^8(z)}.\label{eqn:psiS-explicit}
-% \end{align}
-\begin{align}
-    \psi_I(z) &= 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2} + 128 \frac{H_4(z) - H_2(z)}{H_3(z)^2} \label{eqn:psiI-explicit} \\
-    \psi_T(z) &= 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2} + 128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} \label{eqn:psiT-explicit} \\
-    \psi_S(z) &= -128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} - 128 \frac{H_2(z) - H_4(z)}{H_3(z)^2} \label{eqn:psiS-explicit}
-\end{align}
-\end{lemma}
 
-\begin{lemma}\label{lemma:psiI-psiT-psiS-fourier}\uses{lemma: psi I psi T psi S explicit}
-The Fourier expansions of these functions are
-\begin{align}
-    \psi_I(z)\,=\,&q^{-1} + 144 - 5120 q^{1/2} + 70524 q - 626688 q^{3/2} + 4265600 q^2 + O(q^{5/2}) \label{eqn: psi fourier I}\\
-    \psi_T(z)\,=\,&q^{-1} + 144 + 5120 q^{1/2} + 70524 q + 626688 q^{3/2} + 4265600 q^2 + O(q^{5/2}) \label{eqn: psi fourier T}\\
-    \psi_S(z)\,=\,&-10240 q^{1/2} - 1253376 q^{3/2} - 48328704 q^{5/2} - 1059078144 q^{7/2}+O(q^{9/2}).\label{eqn: psi fourier S}
-\end{align}
+\begin{lemma}\label{lemma:psi-new}
+    $\psi_I(z), \psi_S(z), \psi_T(z)$ can be written as
+    \begin{align}
+        \psi_I(z) &= \frac{H_4^3 (5 H_2^2 + 5 H_2 H_4 + 2 H_4^2)}{2\Delta}, \label{eqn:psiI-new} \\
+        \psi_S(z) &= -\frac{H_2^3 (2 H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{2 \Delta}. \label{eqn:psiS-new} \\
+        \psi_T(z) &= \frac{H_3^3 (5 H_2^2 - 5 H_2 H_3 + 2 H_3^2)}{2 \Delta}\label{eqn:psiT-new}
+    \end{align}
 \end{lemma}
-\begin{definition}\label{def:b-definition}\uses{def:psiI-psiT-psiS}
-For $x\in\R^8$ define
-\begin{align}\label{eqn:b-definition}
-    b(x):= & \int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz
-        + \int\limits_{1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz \\
-    -& 2\,\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i \|x\|^2 z}\,dz
-    - 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i \|x\|^2 z}\,dz \nonumber.
+\begin{proof}
+% Use Lemma \ref{lemma:theta-transform-S-T} and the identities Lemma \ref{lemma:lv1-lv2-identities}.
+By Lemma \ref{lemma:theta-transform-S-T}, we have
+\begin{align}
+    H_2|_{-2}ST = (-H_4)|_{-2}T = -H_3, \\
+    H_3|_{-2}ST = (-H_3)|_{-2}T = -H_4, \\
+    H_4|_{-2}ST = (-H_2)|_{-2}T = H_2.
 \end{align}
+Using these equations and Lemma \ref{lemma:lv1-lv2-identities}, we can rewrite $\psi_I(z)$ as
+\begin{align}
+    \psi_I(z) &= h(z) - h|_{-2}ST(z) \\
+    &= 128 \frac{H_3 + H_4}{H_2^2} - 128 \frac{-H_4 + H_2}{H_3^2} \\
+    &= 128 \frac{H_3^2 (H_3 + H_4) - H_2^2 (H_2 - H_4)}{H_2^2 H_3^2} \\
+    &= 128 \frac{(H_2 + H_4)^2 (H_2 + 2 H_4) - H_2^2 (H_2 - H_4)}{H_2^2 H_3^2} \\
+    &= 128 \frac{H_4(5 H_2^2 + 5 H_2 H_4 + 2 H_4^2)}{ H_2^2 H_3^2} \\
+    &= 128 \frac{H_4^3(5 H_2^2 + 5 H_2 H_4 + 2 H_4^2)}{ H_2^2 H_3^2 H_4^3} \\
+    &= \frac{H_4^3 (5 H_2^2 + 5 H_2 H_4 + 2 H_4^2)}{2\Delta}.
+\end{align}
+Applying $|_{-2}S$ and $|_{-2}T$ to the expression of $\psi_I$ proves \eqref{eqn:psiS-new} and \eqref{eqn:psiT-new}.
+\end{proof}
+
+% \begin{lemma}\label{lemma: psi I psi T psi S explicit}\uses{def:psiI-psiT-psiS}\lean{ψI_eq}
+% More explicitly, we have
+% \begin{align}
+%     \psi_I(z) &= 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2} + 128 \frac{H_4(z) - H_2(z)}{H_3(z)^2} \label{eqn:psiI-explicit} \\
+%     \psi_T(z) &= 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2} + 128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} \label{eqn:psiT-explicit} \\
+%     \psi_S(z) &= -128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} - 128 \frac{H_2(z) - H_4(z)}{H_3(z)^2} \label{eqn:psiS-explicit}
+% \end{align}
+% \end{lemma}
+
+% \begin{lemma}\label{lemma:psiI-psiT-psiS-fourier}\uses{lemma: psi I psi T psi S explicit}
+% The Fourier expansions of these functions are
+% \begin{align}
+%     \psi_I(z)\,=\,&q^{-1} + 144 - 5120 q^{1/2} + 70524 q - 626688 q^{3/2} + 4265600 q^2 + O(q^{5/2}) \label{eqn: psi fourier I}\\
+%     \psi_T(z)\,=\,&q^{-1} + 144 + 5120 q^{1/2} + 70524 q + 626688 q^{3/2} + 4265600 q^2 + O(q^{5/2}) \label{eqn: psi fourier T}\\
+%     \psi_S(z)\,=\,&-10240 q^{1/2} - 1253376 q^{3/2} - 48328704 q^{5/2} - 1059078144 q^{7/2}+O(q^{9/2}).\label{eqn: psi fourier S}
+% \end{align}
+% \end{lemma}
+
+Now, we are ready to define function $b$.
+Again, the definition here is slightly different from that in \cite{Via2017}, where all the contours are chosen to be the straight lines.
+
+
+\begin{definition}\label{def:b-definition}\uses{def:psiI-psiT-psiS}
+Define $b_\rad : \R \to \C$ by
+\begin{equation}
+    b_\rad(r) := J_1(r) + J_2(r) + J_3(r) + J_4(r) + J_5(r) + J_6(r)
+\end{equation}
+where for $r \in \R$,
+\begin{align}
+    J_1(r) &:= \int_{-1}^{-1 + i} \psi_T(z) e^{\pi i r z} \, \dd z, \label{eqn:J1} \\
+    J_2(r) &:= \int_{-1 + i}^{i} \psi_T(z) e^{\pi i r z} \, \dd z, \label{eqn:J2} \\
+    J_3(r) &:= \int_{1}^{1 + i} \psi_T(z) e^{\pi i r z} \, \dd z, \label{eqn:J3} \\
+    J_4(r) &:= \int_{1 + i}^{i} \psi_T(z) e^{\pi i r z} \, \dd z, \label{eqn:J4} \\
+    J_5(r) &:= -2 \int_{0}^{i} \psi_I(z) e^{\pi i r z} \, \dd z, \label{eqn:J5} \\
+    J_6(r) &:= -2 \int_{i}^{i \infty} \psi_S(z) e^{\pi i r z} \, \dd z. \label{eqn:J6}
+\end{align}
+Here all the contours are straight line segments.
+Then we define $b : \R^8 \to \C$ by $b(x) := b_\rad(\|x\|^2)$.
+% For $x\in\R^8$ define
+% \begin{align}\label{eqn:b-definition}
+%     b(x):= & \int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz
+%         + \int\limits_{1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz \\
+%     -& 2\,\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i \|x\|^2 z}\,dz
+%     - 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i \|x\|^2 z}\,dz \nonumber.
+% \end{align}
 \end{definition}
 
 Now we prove that $b$ is a Schwartz function and satisfies condition \eqref{eqn:b-fourier}.
+As in the case of $a(x)$, we start with the following exponential bound of $\psi_S(z)$ and $\psi_I(z)$.
 
-\begin{lemma}\label{lemma:psiS-new}\uses{lemma: psi I psi T psi S explicit, lemma:lv1-lv2-identities, lemma:jacobi-identity}
-$\psi_S(z)$ can be written as
-\begin{equation}\label{eqn:psiS-new}
-    \psi_S(z) = -\frac{H_2^3 (2 H_2^3 + 5 H_2 H_4 + 5 H_4^2)}{2 \Delta}.
-\end{equation}
+
+% \begin{lemma}\label{lemma:psiS-new}\uses{lemma: psi I psi T psi S explicit, lemma:lv1-lv2-identities, lemma:jacobi-identity}
+% $\psi_S(z)$ can be written as
+% \begin{equation}\label{eqn:psiS-new}
+%     \psi_S(z) = -\frac{H_2^3 (2 H_2^3 + 5 H_2 H_4 + 5 H_4^2)}{2 \Delta}.
+% \end{equation}
+% \end{lemma}
+% \begin{proof}
+% Using \eqref{eqn:psiS-explicit} and \eqref{eqn:jacobi-identity} gives
+% \begin{align}
+%     \psi_S &= -128 \frac{H_3 + H_2}{H_4^2} - 128 \frac{H_2 - H_4}{H_3^2} \\
+%     &= -128 \frac{H_3^2 (H_2 - H_4) + H_4^2 (H_2 - H_4)}{H_3^2 H_4^2} \\
+%     &= -128 \frac{(H_2 + H_4)^2 (2H_2 + H_4) + H_4^2(H_2 + H_4)}{H_3^2 H_4^2} \\
+%     &= -128 \frac{H_2 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_3^2 H_4^2} \\
+%     &= -128 \frac{H_2^3 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_2^2 H_3^2 H_4^2} \\
+%     &= - \frac{1}{2} \frac{H_2^3 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{\Delta}.
+% \end{align}
+% \end{proof}
+
+\begin{lemma}\label{lemma:psi-bound}
+    There exist constants $C_I, C_S, C_T > 0$ such that
+    \begin{align}
+        |\psi_I(z)| &\le C_I e^{2\pi \Im z}, \label{eqn:psiI-bound} \\
+        |\psi_T(z)| &\le C_T e^{2\pi \Im z}, \label{eqn:psiT-bound} \\
+        |\psi_S(z)| &\le C_S e^{- \pi \Im z} \label{eqn:psiS-bound}
+    \end{align}
 \end{lemma}
 \begin{proof}
-Using \eqref{eqn:psiS-explicit} and \eqref{eqn:jacobi-identity} gives
+    The proof is similar to that of Lemma \ref{cor:phi0-bound}, follows from Lemma \ref{lemma:mod-div-disc-bound} and the fact that the vanishing orders of the numerators of $\psi_I$, $\psi_T$, and $\psi_S$ at infinity are $0$, $0$ (i.e. not cusp forms), and $\frac{3}{2}$ respectively.
+\end{proof}
+
+\begin{lemma}\label{lemma:bound-J1-J3-J5}
+There exist a constant $C > 0$ such that
 \begin{align}
-    \psi_S &= -128 \frac{H_3 + H_2}{H_4^2} - 128 \frac{H_2 - H_4}{H_3^2} \\
-    &= -128 \frac{H_3^2 (H_2 - H_4) + H_4^2 (H_2 - H_4)}{H_3^2 H_4^2} \\
-    &= -128 \frac{(H_2 + H_4)^2 (2H_2 + H_4) + H_4^2(H_2 + H_4)}{H_3^2 H_4^2} \\
-    &= -128 \frac{H_2 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_3^2 H_4^2} \\
-    &= -128 \frac{H_2^3 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{H_2^2 H_3^2 H_4^2} \\
-    &= - \frac{1}{2} \frac{H_2^3 (2H_2^2 + 5 H_2 H_4 + 5 H_4^2)}{\Delta}.
+    |J_1(r)|, |J_3(r)|, |J_5(r)| &\le C \int_1^{\infty} e^{-\pi s} e^{\pi r / s}\, \dd s.
 \end{align}
-\end{proof}
-
-\begin{lemma}\label{lemma:psiS-bound}\uses{lemma:psiS-new, lemma:mod-div-disc-bound, prop:H2-fourier, prop:H3-fourier, prop:H4-fourier}
-There exists a constant $C_S > 0$ such that
-\begin{equation}\label{eqn:psiS-bound}
-    |\psi_S(z)| \le C_S e^{- \pi \Im z}
-\end{equation}
-for all $z$ with $\Im z > 1/2$.
 \end{lemma}
-\begin{proof}
-Proof is similar to that of Lemma \ref{cor:phi0-bound}.
-By Proposition \ref{prop:H2-fourier}, \ref{prop:H3-fourier} and \ref{prop:H4-fourier}, we can write Fourier expansion of the numerator of $\psi_S$ as
-\begin{equation}
-    H_2(z)^3 (2 H_2(z)^2 + 5 H_2(z) H_4(z) + 5 H_4(z)^2) = \sum_{n \ge 3} a_n e^{\pi i n z}
-\end{equation}
-with $a_3 = 16^3 \cdot 5 = 20480$ and $a_n = O(n^k)$ for some $k > 0$.
-Now the result follows from Lemma \ref{lemma:mod-div-disc-bound}.
-\end{proof}
 
-\begin{proposition}\label{prop:b-schwartz}\uses{lemma:psiS-bound}\lean{MagicFunction.FourierEigenfunctions.b}\leanok
+\begin{lemma}\label{lemma:bound-J2-J4-J6}
+    There exist $C_1, C_2 > 0$ such that
+    \begin{align}
+        |J_2(r)|, |J_4(r)| &\le C_1 e^{-\pi r} \\
+        |J_6(r)| &\le C_2 \frac{e^{\pi (r + 1)}}{r + 1}
+    \end{align}
+\end{lemma}
+
+% \begin{lemma}\label{lemma:psiS-bound}\uses{lemma:psiS-new, lemma:mod-div-disc-bound, prop:H2-fourier, prop:H3-fourier, prop:H4-fourier}
+% There exists a constant $C_S > 0$ such that
+% \begin{equation}\label{eqn:psiS-bound}
+%     |\psi_S(z)| \le C_S e^{- \pi \Im z}
+% \end{equation}
+% for all $z$ with $\Im z > 1/2$.
+% \end{lemma}
+% \begin{proof}
+% Proof is similar to that of Lemma \ref{cor:phi0-bound}.
+% By Proposition \ref{prop:H2-fourier}, \ref{prop:H3-fourier} and \ref{prop:H4-fourier}, we can write Fourier expansion of the numerator of $\psi_S$ as
+% \begin{equation}
+%     H_2(z)^3 (2 H_2(z)^2 + 5 H_2(z) H_4(z) + 5 H_4(z)^2) = \sum_{n \ge 3} a_n e^{\pi i n z}
+% \end{equation}
+% with $a_3 = 16^3 \cdot 5 = 20480$ and $a_n = O(n^k)$ for some $k > 0$.
+% Now the result follows from Lemma \ref{lemma:mod-div-disc-bound}.
+% \end{proof}
+
+% \begin{lemma}\label{lemma:psiI-new}
+
+% \end{lemma}
+% \begin{lemma}\label{lemma:psiI-bound}
+% There exists a constant $C_I > 0$ such that
+% \begin{equation}\label{eqn:psiI-bound}
+%     |\psi_I(z)| \le C_I e^{2\pi \Im z}
+% \end{equation}
+% for all $z$ with $\Im z > 1/2$.
+% \end{lemma}
+% \begin{proof}
+
+% \end{proof}
+
+Combining Lemmas \ref{lemma:bound-J1-J3-J5}, \ref{lemma:bound-J2-J4-J6}, and Theorem \ref{thm:smooth-fast-decay-schwartz}, we can prove that $b(x)$ is a Schwartz function.
+
+\begin{proposition}\label{prop:b-schwartz}\uses{lemma:psi-bound}\lean{MagicFunction.FourierEigenfunctions.b}\leanok
 $b(x)$ is a Schwartz function.
 \end{proposition}
-\begin{proof}
-We have
-\begin{align}
-    &\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r^2 z}\,dz=\int\limits_{0}^{i+1}\psi_I(z)\,e^{\pi i r^2 (z-1)}\,dz=\notag\\
-    &\int\limits_{i\infty}^{-1/(i+1)}\psi_I\Big(\frac{-1}{z}\Big)\,e^{\pi i r^2 (-1/z-1)}\,z^{-2}\,dz=\int\limits_{i\infty}^{-1/(i+1)}\psi_S(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz.\notag
-\end{align}
-Using \eqref{eqn:psiS-bound}, we can estimate the first summand in the left-hand side of~\eqref{eqn:b-definition}
-\begin{equation}
-    \left|\int\limits_{-1}^i \psi_T(z)\,e^{\pi i r^2 z}\,dz \right|\leq C_1\,r\,K_1(2\pi r).
-\end{equation}
-We combine this inequality with analogous estimates for the other three summands and obtain
-\begin{equation}
-    |b(r)|\leq C_2\,r\,K_1(2\pi r)+C_3\,\frac{e^{-\pi(r^2+1)}}{r^2+1}.
-\end{equation}
-Here $C_1$, $C_2$, and $C_3$ are some positive constants. Similar estimates hold for all derivatives $\frac{\dd^k}{\dd^k r} b(r)$.
-\end{proof}
+% \begin{proof}
+% We have
+% \begin{align}
+%     &\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r^2 z}\,dz=\int\limits_{0}^{i+1}\psi_I(z)\,e^{\pi i r^2 (z-1)}\,dz=\notag\\
+%     &\int\limits_{i\infty}^{-1/(i+1)}\psi_I\Big(\frac{-1}{z}\Big)\,e^{\pi i r^2 (-1/z-1)}\,z^{-2}\,dz=\int\limits_{i\infty}^{-1/(i+1)}\psi_S(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz.\notag
+% \end{align}
+% Using \eqref{eqn:psiS-bound}, we can estimate the first summand in the left-hand side of~\eqref{eqn:b-definition}
+% \begin{equation}
+%     \left|\int\limits_{-1}^i \psi_T(z)\,e^{\pi i r^2 z}\,dz \right|\leq C_1\,r\,K_1(2\pi r).
+% \end{equation}
+% We combine this inequality with analogous estimates for the other three summands and obtain
+% \begin{equation}
+%     |b(r)|\leq C_2\,r\,K_1(2\pi r)+C_3\,\frac{e^{-\pi(r^2+1)}}{r^2+1}.
+% \end{equation}
+% Here $C_1$, $C_2$, and $C_3$ are some positive constants. Similar estimates hold for all derivatives $\frac{\dd^k}{\dd^k r} b(r)$.
+% \end{proof}
 
 \begin{proposition}\label{prop:b-fourier}\uses{def:b-definition, lemma:Gaussian-Fourier, def:psiI-psiT-psiS, prop:b-schwartz}\lean{MagicFunction.b.Fourier.eig_b}\leanok
 $b(x)$ satisfies \eqref{eqn:b-fourier}.
@@ -455,22 +648,22 @@ $$ \mathcal{F}(b)(x)=-b(x). $$
 \end{proof}
 Now we regard the radial function $b$ as a function on $\R_{\geq0}$. We check that $b$ has double roots at $\Lambda_8$-points.
 
-\begin{lemma}\label{lemma:psiI-bound}\uses{lemma:mod-div-disc-bound, prop:H2-fourier, prop:H3-fourier, prop:H4-fourier, def:psiI-psiT-psiS, lemma:theta-transform-S-T, lemma:disc-cuspform}
-There exists a constant $C_I > 0$ such that
-\begin{equation}
-    |\psi_I(z)| \le C_I e^{2 \pi \Im z}
-\end{equation}
-for all $z$ with $\Im z > 1/2$.
-\end{lemma}
-\begin{proof}
-By \eqref{eqn:psiS-new}, \eqref{eqn:psiS-define}, \eqref{eqn:H2-transform-S}, and \eqref{eqn:H4-transform-S},
-\begin{equation}
-    \psi_I(z) = \frac{H_4^3(2 H_4^2 + 5 H_4 H_2 + 5 H_2^2)}{2 \Delta}.
-\end{equation}
-The denominator is not a cusp form (i.e. has a nonzero constant term), hence Lemma \ref{lemma:mod-div-disc-bound} concludes the proof with $n_0 = 0$.
-\end{proof}
+% \begin{lemma}\label{lemma:psiI-bound}\uses{lemma:mod-div-disc-bound, prop:H2-fourier, prop:H3-fourier, prop:H4-fourier, def:psiI-psiT-psiS, lemma:theta-transform-S-T, lemma:disc-cuspform}
+% There exists a constant $C_I > 0$ such that
+% \begin{equation}
+%     |\psi_I(z)| \le C_I e^{2 \pi \Im z}
+% \end{equation}
+% for all $z$ with $\Im z > 1/2$.
+% \end{lemma}
+% \begin{proof}
+% By \eqref{eqn:psiS-new}, \eqref{eqn:psiS-define}, \eqref{eqn:H2-transform-S}, and \eqref{eqn:H4-transform-S},
+% \begin{equation}
+%     \psi_I(z) = \frac{H_4^3(2 H_4^2 + 5 H_4 H_2 + 5 H_2^2)}{2 \Delta}.
+% \end{equation}
+% The denominator is not a cusp form (i.e. has a nonzero constant term), hence Lemma \ref{lemma:mod-div-disc-bound} concludes the proof with $n_0 = 0$.
+% \end{proof}
 
-\begin{corollary}\label{cor:psiI-near-0-infty}\uses{lemma:psiI-bound, lemma:psiS-bound, def:psiI-psiT-psiS}
+\begin{corollary}\label{cor:psiI-near-0-infty}\uses{lemma:psi-bound, lemma:psiS-bound, def:psiI-psiT-psiS}
 We have
 \begin{align}
     \psi_I(it) &= O(t^2 e^{\pi/t}) \quad \text{as } t \to 0 \label{eqn:psiI-near-0} \\
@@ -483,7 +676,7 @@ By \eqref{eqn:psiS-define}, we have
     \psi_I(it) = (it)^{-2} \psi_S\left(\frac{-1}{it}\right) = -t^{-2} \psi_S\left(\frac{i}{t}\right).
 \end{equation}
 and combined with \eqref{eqn:psiS-bound} we get \eqref{eqn:psiI-near-0}.
-\eqref{eqn:psiI-near-infty} follows from Lemma \ref{lemma:psiI-bound}.
+\eqref{eqn:psiI-near-infty} follows from Lemma \ref{lemma:psi-bound}.
 \end{proof}
 
 \begin{proposition}\label{prop:b-double-zeros}\uses{lemma:psiI-psiT-psiS-fourier, def:psiI-psiT-psiS, cor:psiI-near-0-infty, cor:disc-nonvanishing}

@@ -94,3 +94,18 @@ We end with a crucial result on Schwartz functions, the statement of which only 
 \end{proof}
 
 While the Poisson Summation Formula over lattices can be stated in greater generality (and probably should be formalised as such in Mathlib due to the many applications it admits), we stick with Schwartz functions because that should be sufficient for our purposes.
+
+Later, we will use Theorem \ref{thm:Poisson-summation-formula} to prove that the certain functions $a(x)$ and $b(x)$ that will be defined later are eigenfunctions of the Fourier transform.
+To apply the theorem, we need to show that these functions are Schwartz functions. We will do so by verifying the following sufficient condition.
+
+\begin{theorem}\label{thm:smooth-fast-decay-schwartz}
+    Assume $f : \R \to \C$ is smooth on $[0, \infty)$ and for all $k, n \in \N$, there exists $C \in \R$ such that
+    $$
+    x^{\frac{k}{2}} \cdot |f^{(n)}(x)| \leq C.
+    $$
+    Then, for all $d \in \N$, the function
+    $$
+    f_d : \R^d \to \C, \quad f_d(x) := f(\|x\|^2)
+    $$
+    is a Schwartz function.
+\end{theorem}
