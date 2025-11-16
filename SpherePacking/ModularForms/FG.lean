@@ -78,51 +78,59 @@ Modular linear differential equation satisfied by $G$.
 theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
   sorry
 
-theorem F_pos : ResToImagAxis.Pos F := by
+/- Positivity of (quasi)modular forms. $F, G, H_2$ are all (sum of) squares. -/
+lemma F_pos : ResToImagAxis.Pos F := by
   sorry
 
-theorem G_pos : ResToImagAxis.Pos G := by
+lemma G_pos : ResToImagAxis.Pos G := by
   sorry
 
-theorem X₄₂_pos : ResToImagAxis.Pos X₄₂ := by
+lemma X₄₂_pos : ResToImagAxis.Pos X₄₂ := by
   sorry
 
-theorem Δ_fun_pos : ResToImagAxis.Pos Δ_fun := by
+lemma Δ_fun_pos : ResToImagAxis.Pos Δ_fun := by
   sorry
 
-theorem H₂_pos : ResToImagAxis.Pos H₂ := by
+lemma H₂_pos : ResToImagAxis.Pos H₂ := by
   sorry
 
-theorem L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
-  sorry
+lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
+  calc
+    L₁₀ = (D F) * G - F * (D G) := rfl
+    _ = (D F - 10 * 12⁻¹ * E₂ * F) * G - F * (D G - 10 * 12⁻¹ * E₂ * G) := by ring_nf
+    _ = (serre_D 10 F) * G - F * (serre_D 10 G) := by ext z; simp [serre_D]
 
-theorem SerreDer_22_L₁₀_SerreDer :
+lemma SerreDer_22_L₁₀_SerreDer :
     SerreDer_22_L₁₀ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by
-sorry
+  calc
+    SerreDer_22_L₁₀ = serre_D 22 L₁₀ := rfl
+    _ = serre_D 22 (serre_D 10 F * G - F * serre_D 10 G) := by rw [L₁₀_SerreDer]
+    _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by sorry
+    _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
+        - (serre_D 10 F) * (serre_D 10 G) - F * (serre_D 12 (serre_D 10 G)) := by sorry
+    _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
 
 /- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
-theorem SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
-  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, ResToImagAxis.Pos]
-  ring_nf
+lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ := by
+  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, ResToImagAxis.Real]
   intro t ht
-  obtain ⟨Ft, hFtpos, hFtres⟩ := F_pos t ht
-  obtain ⟨Gt, hGtpos, hGtres⟩ := G_pos t ht
-  obtain ⟨X₄₂t, hX₄₂tpos, hX₄₂tres⟩ := X₄₂_pos t ht
-  obtain ⟨Δt, hΔtpos, hΔtres⟩ := Δ_fun_pos t ht
-  obtain ⟨H₂t, hH₂tpos, hH₂tres⟩ := H₂_pos t ht
-  let r := Ft * Δt * H₂t * 640 + Δt * X₄₂t * Gt * 172800
-  have hr_pos : 0 < r := by positivity
-  use r
-  constructor
-  · exact hr_pos
-  · sorry
+  ring_nf
+  simp only [Function.resToImagAxis_apply]
+  sorry
+
+lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
+  refine And.intro SerreDer_22_L₁₀_real ?_
+  intro t ht
+  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G]
+  ring_nf
+  sorry
 
 /- $\mathcal{L}_{1, 0}$ is eventually positive on the imaginary axis. -/
-theorem L₁₀_eventuallyPos : ResToImagAxis.EventuallyPos L₁₀ := by
+lemma L₁₀_eventuallyPos : ResToImagAxis.EventuallyPos L₁₀ := by
   sorry
 
 /- $\mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
-theorem L₁₀_pos : ResToImagAxis.Pos L₁₀ := antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventuallyPos
+lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ := antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventuallyPos
 
 /--
 $t \mapsto F(it) / G(it)$ is monotone decreasing.

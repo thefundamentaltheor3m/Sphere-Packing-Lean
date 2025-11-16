@@ -152,6 +152,12 @@ theorem serre_D_add (k : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ
   simp only [serre_D, Pi.add_apply, D_add F G hF hG]
   ring_nf
 
+theorem serre_D_sub (k : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G) : serre_D k (F - G) = serre_D k F - serre_D k G := by
+  ext z
+  simp only [serre_D, Pi.sub_apply, D_sub F G hF hG]
+  ring_nf
+
 theorem serre_D_smul (k : ℤ) (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (z : ℍ) :
     serre_D k (c • F) z = c * serre_D k F z := by
   simp only [serre_D, D_smul c F hF]
@@ -164,7 +170,6 @@ theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 
   simp only [serre_D, D_mul F G hF hG]
   simp
   ring_nf
-
 
 /--
 Serre derivative is equivariant under the slash action. More precisely, if `F` is invariant
@@ -230,9 +235,7 @@ theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun
   ring_nf
   simpa [add_comm, sub_eq_iff_eq_add] using h1
 
-
-
-
+/- TODO: remove later -/
 example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.toFun - E₆.toFun) :=
   by
   rw [D_mul E₄.toFun E₄.toFun]
