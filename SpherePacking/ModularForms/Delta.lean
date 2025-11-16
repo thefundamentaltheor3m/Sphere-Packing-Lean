@@ -583,7 +583,7 @@ lemma tprod_pos_nat_im (z : ℍ) :
 /- Δ(it) is positive on the (positive) imaginary axis. -/
 lemma Delta_imag_axis_pos : ResToImagAxis.Pos Δ := by
   rw [ResToImagAxis.Pos]
-  refine And.intro Delta_imag_axis_real ?h2
+  refine And.intro Delta_imag_axis_real ?_
   intro t ht
   have hprod :
       0 < ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 := by
