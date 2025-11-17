@@ -368,9 +368,9 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])).re
         := by
             congr! 5 with x y
-            exact SchwartzMap.PoissonSummation_Lattices P.lattice f (x - ↑y)
+            exact SchwartzMap.PoissonSummation_Lattices P.lattice f _
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
-      (𝓕 f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
+      (𝓕 ⇑f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
         := by
             apply congrArg re
@@ -380,7 +380,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             -- We want to apply `Summable.tsum_comm`, which requires some summability conditions.
             have hSummable₁ : Summable (Function.uncurry fun
             (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x : ↑(P.centers ∩ D)) ↦
-            ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 f ↑m).re * exp (2 * ↑π * I *
+            ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 ⇑f ↑m).re * exp (2 * ↑π * I *
             ↑⟪(x : EuclideanSpace ℝ (Fin d)) - (x_1 : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) := by
               sorry
             sorry
@@ -402,8 +402,8 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             -- · rw [isUnit_iff_ne_zero]
             -- exact Complex.exp_ne_zero _
             -- · exact (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
-    m).re * (
+  _ = ((1 / ZLattice.covolume P.lattice) *
+      ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 ⇑f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
       exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
@@ -417,7 +417,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             rw [mul_add, Complex.exp_add, mul_comm]
             simp
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
-      (𝓕 f m).re * (∑' x : ↑(P.centers ∩ D),
+      (𝓕 ⇑f m).re * (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       (∑' y : ↑(P.centers ∩ D),
       exp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])))).re
@@ -425,8 +425,8 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             simp_rw [mul_assoc, ← tsum_mul_right, ← tsum_mul_left]
             congr! 9 with m x y
             simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
-    m).re *
+  _ = ((1 / ZLattice.covolume P.lattice) *
+      ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 ⇑f m).re *
       (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       conj (∑' x : ↑(P.centers ∩ D),
@@ -437,7 +437,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             congr! 7 with m x
             exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
   _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
-      (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
+      (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
             sorry
@@ -462,23 +462,23 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
   _ = (1 / ZLattice.covolume P.lattice) * (
       (∑' (m : bilinFormOfRealInner.dualSubmodule P.lattice),
         if hm : m = (0 : EuclideanSpace ℝ (Fin d)) then 0
-        else (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
+        else (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
       +
-      (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
+      (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
       (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
         := by
             apply congrArg _ _
             rw [add_comm]
             have hSummable : Summable (fun (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) =>
-              (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
+              (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
               sorry
             rw [Summable.tsum_eq_add_tsum_ite hSummable
               (0 : ↥(bilinFormOfRealInner.dualSubmodule P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
-  _ ≥ (1 / ZLattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
+  _ ≥ (1 / ZLattice.covolume P.lattice) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
       (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
@@ -506,15 +506,15 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
                   exact hCohnElkies₂ m
                 · -- Providing an explicit argument below gives a deterministic timeout...
                   exact sq_nonneg _
-  _ = (1 / ZLattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
+  _ = (1 / ZLattice.covolume P.lattice) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
       ↑(P.numReps' Fact.out hD_isBounded) ^ 2
         := by
             apply congrArg _ _
             let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
             simp only [PeriodicSpherePacking.numReps'] -- ↑(P.centers ∩ D)]
-            simp only [RCLike.wInner_zero_right, ofReal_zero, mul_zero, Complex.exp_zero,
-              tsum_const, Nat.card_eq_fintype_card, nsmul_eq_mul, mul_one, Complex.norm_natCast]
-  _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume
+            simp [RCLike.wInner_zero_right, ofReal_zero, mul_zero, Complex.exp_zero,
+              tsum_const, Nat.card_eq_fintype_card, nsmul_eq_mul, mul_one]
+  _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 ⇑f 0).re / ZLattice.covolume P.lattice volume
         := by simp only [div_eq_mul_inv, mul_comm, one_mul, ← mul_assoc]
 
 
