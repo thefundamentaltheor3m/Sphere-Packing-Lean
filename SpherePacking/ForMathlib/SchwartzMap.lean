@@ -47,6 +47,7 @@ section Even
 /-! Let's try proving smoothness here. First, a famous result of Whitney: https://projecteuclid.org/journals/duke-mathematical-journal/volume-10/issue-1/Differentiable-even-functions/10.1215/S0012-7094-43-01015-4.full -/
 
 open Function Real
+open Filter
 
 variable {f : ℝ → ℝ} (hsmooth : ContDiff ℝ ∞ f) (heven : f.Even)
 
@@ -65,7 +66,25 @@ lemma Function.Even.comp_abs_apply (x : ℝ) : f x = f |x| := by
   conv_lhs => rw [heven.comp_abs]
   rw [comp_apply]
 
-#check Real.contDiffAt_sqrt
+include heven in
+lemma Function.Even.HasDeriv_at_zero : deriv f (0 : ℝ) = 0 := by
+  wlog hdiff : DifferentiableAt ℝ f 0
+  · rw [← differentiableWithinAt_univ] at hdiff
+    rw [deriv, fderiv, fderivWithin]
+    simp [hdiff]
+  -- simp
+  suffices deriv f 0 = -deriv f 0 by linarith
+  -- apply HasDerivAt.deriv
+  -- rw [hasDerivAt_iff_tendsto_slope_zero]
+  -- have hHasDerivAt : HasDerivAt f (deriv f 0) 0 := hdiff.hasDerivAt
+  have hrw {t : ℝ} : f (-t) - f 0 = f t - f 0 := by rw [heven]
+  have hlim₁ : Tendsto (fun t ↦ t⁻¹ • (f (0 + t) - f 0)) (nhdsWithin 0 {0}ᶜ) (nhds (deriv f 0)) :=
+    hasDerivAt_iff_tendsto_slope_zero.mp hdiff.hasDerivAt
+  simp only [zero_add, smul_eq_mul] at hlim₁
+  have hlim₂ : Tendsto (fun t ↦ -((t)⁻¹ * (f t - f 0))) (nhdsWithin 0 {0}ᶜ) (nhds (-deriv f 0)) :=
+    hlim₁.neg
+  -- do tendsto comp or something - use fact that x ↦ -x tends to 0 as you go to 0 or smth
+  sorry
 
 include hsmooth heven in
 theorem Function.Even.eq_smooth_comp_sq_of_smooth : ∃ g : ℝ → ℝ, f = g ∘ (fun x => x ^ 2) ∧
