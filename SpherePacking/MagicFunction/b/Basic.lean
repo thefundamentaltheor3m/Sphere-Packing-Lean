@@ -21,7 +21,7 @@ def J₁' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, I -- Added factor due to var
 
 def J₂' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1,
   ψT' (z₁' t)
-  * cexp (π * I * x * (z₁' t))
+  * cexp (π * I * x * (z₂' t))
 
 def J₃' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, I -- Added factor due to variable change!!
   * ψT' (z₁' t)
@@ -63,7 +63,7 @@ def J₅ (x : V) : ℂ := J₅' (‖x‖ ^ 2)
 
 def J₆ (x : V) : ℂ := J₆' (‖x‖ ^ 2)
 
-def a (x : V) : ℂ := b' (‖x‖ ^ 2)
+def b (x : V) : ℂ := b' (‖x‖ ^ 2)
 
 end Vector_Input
 
@@ -71,7 +71,7 @@ open intervalIntegral
 
 section Eq
 
-lemma a_eq (x : V) : a x = J₁ x + J₂ x + J₃ x + J₄ x + J₅ x + J₆ x := rfl
+lemma b_eq (x : V) : b x = J₁ x + J₂ x + J₃ x + J₄ x + J₅ x + J₆ x := rfl
 
 /- # TODO:
 
