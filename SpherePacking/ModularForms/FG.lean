@@ -105,9 +105,17 @@ lemma SerreDer_22_L₁₀_SerreDer :
   calc
     SerreDer_22_L₁₀ = serre_D 22 L₁₀ := rfl
     _ = serre_D 22 (serre_D 10 F * G - F * serre_D 10 G) := by rw [L₁₀_SerreDer]
-    _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by sorry
+    _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by
+        apply serre_D_sub _ _ _
+        -- TODO: Differentiability proofs
+        · sorry
+        · sorry
+    _ = serre_D (12 + 10) (serre_D 10 F * G) - serre_D (10 + 12) (F * serre_D 10 G) := by ring_nf
     _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
-        - (serre_D 10 F) * (serre_D 10 G) - F * (serre_D 12 (serre_D 10 G)) := by sorry
+        - ((serre_D 10 F) * (serre_D 10 G) + F * (serre_D 12 (serre_D 10 G))) := by
+        -- This doesn't work?
+        -- apply serre_D_mul 12 10 (serre_D 10 F) G
+        sorry
     _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
 
 /- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/

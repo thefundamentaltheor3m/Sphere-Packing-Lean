@@ -45,11 +45,9 @@ theorem D_add (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (
   calc
     D (F + G) z
     _ = (2 * π * I)⁻¹ * deriv ((F ∘ ofComplex) + (G ∘ ofComplex)) z := by rfl
-    _ = (2 * π * I)⁻¹ * (deriv (F ∘ ofComplex) z + deriv (G ∘ ofComplex) z)
-      := by rw [h]
-    _ = (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z
-        + (2 * π * I)⁻¹ * deriv (G ∘ ofComplex) z
-      := by simp [mul_add]
+    _ = (2 * π * I)⁻¹ * (deriv (F ∘ ofComplex) z + deriv (G ∘ ofComplex) z) := by rw [h]
+    _ = (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z + (2 * π * I)⁻¹ * deriv (G ∘ ofComplex) z := by
+        simp [mul_add]
     _ = D F z + D G z := by rfl
 
 @[simp]
@@ -64,11 +62,9 @@ theorem D_sub (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (
   calc
     D (F - G) z
     _ = (2 * π * I)⁻¹ * deriv ((F ∘ ofComplex) - (G ∘ ofComplex)) z := by rfl
-    _ = (2 * π * I)⁻¹ * (deriv (F ∘ ofComplex) z - deriv (G ∘ ofComplex) z)
-      := by rw [h]
-    _ = (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z
-        - (2 * π * I)⁻¹ * deriv (G ∘ ofComplex) z
-      := by ring_nf
+    _ = (2 * π * I)⁻¹ * (deriv (F ∘ ofComplex) z - deriv (G ∘ ofComplex) z) := by rw [h]
+    _ = (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z - (2 * π * I)⁻¹ * deriv (G ∘ ofComplex) z := by
+        ring_nf
     _ = D F z - D G z := by rfl
 
 @[simp]
@@ -86,31 +82,28 @@ theorem D_smul (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(
 
 @[simp]
 theorem D_mul (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G)
-    : D (F * G) = F * D G + D F * G := by
+    : D (F * G) = D F * G + F * D G := by
   ext z
   have h : deriv ((F ∘ ofComplex) * (G ∘ ofComplex)) z =
-      F z * deriv (G ∘ ofComplex) z + deriv (F ∘ ofComplex) z * G z:= by
+      deriv (F ∘ ofComplex) z * G z + F z * deriv (G ∘ ofComplex) z := by
     have hFz := MDifferentiableAt_DifferentiableAt (hF z)
     have hGz := MDifferentiableAt_DifferentiableAt (hG z)
     rw [deriv_mul hFz hGz]
     simp only [Function.comp_apply, ofComplex_apply]
-    group
   calc
     D (F * G) z
     _ = (2 * π * I)⁻¹ * deriv (F ∘ ofComplex * G ∘ ofComplex) z := by rfl
-    _ = (2 * π * I)⁻¹ * (F z * deriv (G ∘ ofComplex) z + deriv (F ∘ ofComplex) z * G z)
-      := by rw [h]
-    _ = F z * ((2 * π * I)⁻¹ * deriv (G ∘ ofComplex) z) +
-        (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z * G z
-      := by ring_nf
-    _ = F z * D G z + D F z * G z := by rfl
+    _ = (2 * π * I)⁻¹ * (deriv (F ∘ ofComplex) z * G z + F z * deriv (G ∘ ofComplex) z) := by rw [h]
+    _ = (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z * G z
+        + F z * ((2 * π * I)⁻¹ * deriv (G ∘ ofComplex) z) := by ring_nf
+    _ = D F z * G z + F z * D G z := by rfl
 
 @[simp]
 theorem D_sq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     D (F ^ 2) = 2 * F * D F := by
   calc
     D (F ^ 2) = D (F * F) := by rw [pow_two]
-    _ = F * D F + D F * F := by rw [D_mul F F hF hF]
+    _ = D F * F + F * D F := by rw [D_mul F F hF hF]
     _ = 2 * F * D F := by ring_nf
 
 @[simp]
@@ -119,8 +112,8 @@ theorem D_cube (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
   have hF2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (F ^ 2) := by rw [pow_two]; exact MDifferentiable.mul hF hF
   calc
     D (F ^ 3) = D (F * F ^ 2) := by ring_nf
-    _ = F * D (F ^ 2) + D F * F ^ 2 := by rw [D_mul F (F ^ 2) hF hF2]
-    _ = F * (2 * F * D F) + D F * F ^ 2 := by rw [D_sq F hF]
+    _ = D F * F ^ 2 + F * D (F ^ 2) := by rw [D_mul F (F ^ 2) hF hF2]
+    _ = D F * F ^ 2 + F * (2 * F * D F) := by rw [D_sq F hF]
     _ = 3 * F^2 * D F := by ring_nf
 
 @[simp]
@@ -158,18 +151,31 @@ theorem serre_D_sub (k : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ
   simp only [serre_D, Pi.sub_apply, D_sub F G hF hG]
   ring_nf
 
-theorem serre_D_smul (k : ℤ) (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (z : ℍ) :
-    serre_D k (c • F) z = c * serre_D k F z := by
-  simp only [serre_D, D_smul c F hF]
-  simp
-  ring_nf
+theorem serre_D_smul (k : ℤ) (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
+    serre_D k (c • F) = c • (serre_D k F) := by
+  calc
+    serre_D k (c • F) = D (c • F) - k * 12⁻¹ * E₂ * (c • F) := by rfl
+    _ = c • D F - k * 12⁻¹ * E₂ * (c • F) := by rw [D_smul c F hF]
+    _ = c • D F - c • (k * 12⁻¹ * E₂ * F) := by sorry
+    _ = c • (D F - k * 12⁻¹ * E₂ * F) := by sorry
+    _ = c • (serre_D k F) := by rfl
 
 theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
-    (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G) (z : ℍ) :
-    serre_D (k₁ + k₂) (F * G) z = F z * serre_D k₁ G z + G z * serre_D k₂ F z := by
-  simp only [serre_D, D_mul F G hF hG]
-  simp
-  ring_nf
+    (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G) :
+    serre_D (k₁ + k₂) (F * G) = (serre_D k₁ F) * G + F * (serre_D k₂ G) := by
+
+  calc
+    serre_D (k₁ + k₂) (F * G)
+    _ = D (F * G) - (k₁ + k₂) * 12⁻¹ * E₂ * (F * G) := by rfl
+    _ = (D F * G + F * D G) - (k₁ + k₂) * 12⁻¹ * E₂ * (F * G) := by
+        rw [D_mul F G hF hG]
+    _ = (D F - k₁ * 12⁻¹ * E₂ * F) * G
+        + F * (D G - k₂ * 12⁻¹ * E₂ * G) := by ring_nf
+    _ = (serre_D k₁ F) * G + F * (serre_D k₂ G) := by rfl
+
+theorem D_Differentiable_equiv_serre_D_Differentiable {k : ℤ} {F : ℍ → ℂ} :
+    (MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D F)) ↔ (MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D k F)) := by
+  sorry
 
 /--
 Serre derivative is equivariant under the slash action. More precisely, if `F` is invariant
