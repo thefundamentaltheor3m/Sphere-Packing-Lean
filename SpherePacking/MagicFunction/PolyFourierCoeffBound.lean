@@ -388,7 +388,7 @@ private lemma step_12a {r : ℝ} (cpos : r > 0)
     · simp_all only [le_of_neg_le_neg, neg_mul, neg_sub, Nat.cast_pos, PNat.pos]
 -- Show that the bound is itself summable
   have h_bound_summable : Summable fun (i : ℕ) ↦ 24 * rexp (-r * i) := by
-    apply (summable_mul_left_iff (a := 24) (by norm_num)).mpr
+    rw [summable_mul_left_iff (a := 24) (by norm_num)]
     conv_lhs =>
       intro i
       rw [mul_comm]
