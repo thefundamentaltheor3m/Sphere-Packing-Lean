@@ -8,7 +8,7 @@ open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureThe
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
-open ArithmeticFunction
+open scoped ArithmeticFunction.sigma
 
 
 lemma cc (f : ℤ → ℂ) (hc : CauchySeq fun N : ℕ => ∑ m ∈ Finset.Icc (-N : ℤ) N, f m)
@@ -404,5 +404,5 @@ lemma G2_cauchy (z : ℍ) :
   simp
   apply CauchySeq.const_add
   apply Filter.Tendsto.cauchySeq (x := -
-    8 * π ^ 2 * ∑' (n : ℕ+), (sigma 1 n) * cexp (2 * π * Complex.I * n * z))
+    8 * π ^ 2 * ∑' (n : ℕ+), (σ 1 n) * cexp (2 * π * Complex.I * n * z))
   apply G2_c_tendsto z
