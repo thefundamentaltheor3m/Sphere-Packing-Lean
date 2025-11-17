@@ -20,23 +20,23 @@ def J₁' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, I -- Added factor due to var
   * cexp (π * I * x * (z₁' t))
 
 def J₂' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1,
-  ψT' (z₁' t)
+  ψT' (z₂' t)
   * cexp (π * I * x * (z₂' t))
 
 def J₃' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, I -- Added factor due to variable change!!
-  * ψT' (z₁' t)
+  * ψT' (z₃' t)
   * cexp (π * I * x * (z₃' t))
 
 def J₄' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1,
-  ψT' (z₁' t)
+  ψT' (z₄' t)
   * cexp (π * I * x * (z₄' t))
 
 def J₅' (x : ℝ) : ℂ := -2 * ∫ t in (0 : ℝ)..1, I -- Added factor due to variable change!!
-  * ψI' (z₁' t)
+  * ψI' (z₅' t)
   * cexp (π * I * x * (z₅' t))
 
 def J₆' (x : ℝ) : ℂ := 2 * ∫ t in Ici (1 : ℝ), I -- Added factor due to variable change!!
-  * ψS' (z₁' t)
+  * ψS' (z₆' t)
   * cexp (π * I * x * (z₆' t))
 
 def b' (x : ℝ) := J₁' x + J₂' x + J₃' x + J₄' x + J₅' x + J₆' x
