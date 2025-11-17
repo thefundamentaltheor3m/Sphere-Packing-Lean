@@ -347,10 +347,8 @@ private lemma step_11 :
 -- Summability on N implies summability on N+
 private lemma natplus_summable_of_nat_summable {a : ℕ → ℝ} (h : Summable a)
   : Summable (fun (n : ℕ+) => a n) := by
-  have : Summable ((fun i : ℕ+ => a i) ∘ Equiv.pnatEquivNat.symm) := by
-    rw [Equiv.pnatEquivNat_symm_apply]
-    exact (summable_nat_add_iff 1).2 h
-  exact (Equiv.pnatEquivNat.symm.summable_iff).1 this
+  rw [← Equiv.pnatEquivNat.symm.summable_iff, Equiv.pnatEquivNat_symm_apply]
+  exact (summable_nat_add_iff 1).mpr h
 
 private lemma step_12a {r : ℝ} (cpos : r > 0)
     : Multipliable fun (b : ℕ+) ↦ (1 - rexp (-r * ↑↑b)) ^ 24 := by
@@ -358,57 +356,45 @@ private lemma step_12a {r : ℝ} (cpos : r > 0)
   conv_lhs =>
     intro b
     rw [← add_sub_cancel 1 ((1 - rexp (-r * ↑↑b)) ^ 24)]
-  apply Real.multipliable_one_add_of_summable _
-
+  apply Real.multipliable_one_add_of_summable
 -- Establish geometric lower bound for the target series
   have h_lower_bound : ∀ x > 0 , - 24 * rexp (-r * x) ≤ (1 - rexp (-r * x)) ^ 24 - 1 := by
     intro x hx
     apply le_of_add_le_add_left (a := 1)
-    rw [neg_mul_comm, sub_eq_add_neg, add_comm _ (-1), ← add_assoc 1 (-1),
-        add_neg_cancel, zero_add]
+    rw [neg_mul_comm, sub_eq_add_neg, add_comm _ (-1), ←add_assoc 1 (-1), add_neg_cancel, zero_add]
     apply one_add_mul_le_pow _ 24
-    apply le_neg.mp
-    rw [neg_neg]
+    rw [le_neg, neg_neg]
     trans 1
     apply exp_le_one_iff.mpr
-    apply mul_nonpos_of_nonpos_of_nonneg
-    · exact neg_nonpos_of_nonneg (le_of_lt cpos)
-    · exact Std.le_of_lt hx
-    · norm_num
+    apply mul_nonpos_of_nonpos_of_nonneg (neg_nonpos_of_nonneg (le_of_lt cpos)) (le_of_lt hx)
+    norm_num
 -- Establish upper bound of 0 for target series
   have h_upper_bound : ∀ x ≥ 0 , (1 - rexp (-r * x)) ^ 24 - 1 ≤ 0 := by
     intro x hx
     apply sub_nonpos_of_le
     apply pow_le_one₀ (n := 24)
-    · rw [sub_nonneg]
-      apply Real.exp_le_one_iff.mpr
-      apply mul_nonpos_of_nonpos_of_nonneg
-      · exact neg_nonpos_of_nonneg (le_of_lt cpos)
-      · exact hx
-    · apply sub_le_comm.mpr
-      rw [sub_self]
+    · rw [sub_nonneg, exp_le_one_iff]
+      apply mul_nonpos_of_nonpos_of_nonneg (neg_nonpos_of_nonneg (le_of_lt cpos)) hx
+    · rw [sub_le_comm, sub_self]
       exact exp_nonneg (-r * x)
 -- Combine to show norm of target series is bounded by geometric series
   have h_bounded : ∀ i : ℕ+, ‖(1 - rexp (-r * i)) ^ 24 - 1‖ ≤ 24 * rexp (-r * i) := by
     intro i
-    refine abs_sub_le_iff.mpr ?_
+    apply abs_sub_le_iff.mpr
     constructor
     · trans 0
       apply h_upper_bound i (Nat.cast_nonneg i)
-      apply mul_nonneg (by norm_num) _
-      apply le_of_lt (exp_pos _)
-    · apply le_of_neg_le_neg
-      simp_all only [neg_mul, neg_sub, Nat.cast_pos, PNat.pos]
+      apply mul_nonneg (by norm_num) (le_of_lt (exp_pos _))
+    · simp_all only [le_of_neg_le_neg, neg_mul, neg_sub, Nat.cast_pos, PNat.pos]
 -- Show that the bound is itself summable
   have h_bound_summable : Summable fun (i : ℕ) ↦ 24 * rexp (-r * i) := by
     apply (summable_mul_left_iff (a := 24) (by norm_num)).mpr
     conv_lhs =>
       intro i
       rw [mul_comm]
-    apply Real.summable_exp_nat_mul_iff.mpr
-    exact neg_neg_of_pos cpos
+    exact Real.summable_exp_nat_mul_iff.mpr (neg_neg_of_pos cpos)
 -- Series bounded in norm by a summable series is itself summable
-  apply Summable.of_norm_bounded (natplus_summable_of_nat_summable h_bound_summable) h_bounded
+  exact Summable.of_norm_bounded (natplus_summable_of_nat_summable h_bound_summable) h_bounded
 
 include hz in
 private lemma step_12 :
