@@ -427,16 +427,10 @@ private lemma step_12 :
         rw [mul_assoc (π * ↑↑n), mul_lt_mul_iff_right₀ (by positivity)]
         linarith
     · exact step_12a pi_pos
-    · have : 0 < 2 * π * z.im := by
-        apply mul_pos
-        exact two_pi_pos
-        exact UpperHalfPlane.im_pos z
-      conv =>
-        enter [1]
+    · conv_lhs =>
         intro b
-        rw [mul_assoc, mul_comm _ z.im, ←mul_assoc]
-        rw [neg_mul, neg_mul]
-      apply step_12a this
+        rw [mul_assoc, mul_comm _ z.im, ←mul_assoc, neg_mul, neg_mul]
+      apply step_12a (mul_pos two_pi_pos (UpperHalfPlane.im_pos z))
 
 private lemma step_13 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
