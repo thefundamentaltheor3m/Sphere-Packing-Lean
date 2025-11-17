@@ -115,7 +115,8 @@ namespace SchwartzMap
 
 theorem PoissonSummation_Lattices (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
   (v : EuclideanSpace ℝ (Fin d)) : ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
-  ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) := by
+  ∑' m : bilinFormOfRealInner.dualSubmodule Λ,
+    (𝓕 (f : EuclideanSpace ℝ (Fin d) → ℂ) m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) := by
   sorry
 
 -- theorem PoissonSummation_Lattices' (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) :
@@ -142,7 +143,7 @@ variable (𝕜 : Type*) [RCLike 𝕜]
 
 include 𝕜 in
 @[simp]
-theorem fourierInversion : 𝓕⁻ (𝓕 f) = f := by
+theorem fourierInversion : 𝓕⁻ (𝓕 (f : V → E)) = f := by
   rw [← fourierTransformCLE_apply 𝕜 f,
       ← fourierTransformCLE_symm_apply 𝕜 _,
       ContinuousLinearEquiv.symm_apply_apply]
