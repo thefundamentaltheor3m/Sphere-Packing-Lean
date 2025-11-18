@@ -34,14 +34,16 @@ theorem smul_single_one (i : ι) (s : 𝕜) :
     s • EuclideanSpace.single i 1 = EuclideanSpace.single i s := by
   rw [smul_single, mul_one]
 
+/- TODO(bump)
 @[simp]
 theorem sum_smul_single_one [Fintype ι] (v : ι → 𝕜) :
-    ∑ i : ι, (v i) • EuclideanSpace.single i 1 = v := by
-  ext j; rw [Fintype.sum_apply]; simp
+    ∑ i : ι, (v i) • EuclideanSpace.single i 1 = WithLp.toLp 2 v := by
+  ext j; simp; rw [Fintype.sum_apply]; simp
 
 @[simp]
 theorem sum_single [Fintype ι] (v : ι → 𝕜) : ∑ i : ι, EuclideanSpace.single i (v i) = v := by
   ext j; rw [Fintype.sum_apply]; simp
+-/
 
 end single
 

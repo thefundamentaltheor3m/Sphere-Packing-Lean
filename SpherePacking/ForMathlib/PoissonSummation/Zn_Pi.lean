@@ -82,8 +82,8 @@ def Pi_basisFun_Zn (n : ℕ) : Fin n → ℤ^n :=
 /-- The canonical basis of `ℝ^n` is `ℤ`-linearly independent. -/
 theorem Pi_basisFun_Z_linear_independent (n : ℕ) :
     LinearIndependent ℤ (Pi.basisFun ℝ (Fin n)) := by
-  have hLinIndep : LinearIndependent ℝ (PiLp.basisFun 2 ℝ (Fin n)) :=
-    Basis.linearIndependent (PiLp.basisFun 2 ℝ (Fin n))
+  have hLinIndep : LinearIndependent ℝ (Pi.basisFun ℝ (Fin n)) :=
+    Basis.linearIndependent (Pi.basisFun ℝ (Fin n))
   rw [linearIndependent_iff'] at hLinIndep ⊢
   intro s g
   specialize hLinIndep s (fun i => g i)
@@ -188,7 +188,7 @@ section ZLattice
 instance instDiscreteTopology_Zn (n : ℕ) : DiscreteTopology (ℤ^n) := by
   rw [Zn_eq_ZSpan_Pi_basisFun]
   exact ZSpan.instDiscreteTopologySubtypeMemSubmoduleIntSpanRangeCoeBasisRealOfFinite
-    (PiLp.basisFun 2 ℝ (Fin n))
+    (Pi.basisFun ℝ (Fin n))
 
 /-- `ℤ^n` is a lattice. -/
 instance isZLattice_Zn (n : ℕ) : IsZLattice ℝ (ℤ^n) := by
@@ -210,7 +210,7 @@ theorem Zn_free (n : ℕ) : Free ℤ (ℤ^n) := instModuleFree_of_discrete_submo
 /-- The `finrank` of the free `ℤ`-module `ℤ^n` is `n`. -/
 theorem Zn_finrank (n : ℕ) : finrank ℤ (ℤ^n) = n := by
   rw [ZLattice.rank ℝ]
-  exact finrank_euclideanSpace_fin
+  exact finrank_fin_fun ℝ
 
 /-- The `rank` of the free `ℤ`-module `ℤ^n` is `n`. -/
 theorem Zn_rank (n : ℕ) : Module.rank ℤ (ℤ^n) = n := by rw [← finrank_eq_rank, Zn_finrank n]

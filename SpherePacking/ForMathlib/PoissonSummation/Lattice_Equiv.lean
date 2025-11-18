@@ -17,7 +17,7 @@ variable {n : ℕ} (Λ : Submodule ℤ (ℝ^n)) [DiscreteTopology Λ] [IsZLattic
 /-- Any lattice in Euclidean space is `ℤ`-linearly equivalent to `↑ℤ^n`. -/
 noncomputable def equiv_Zn : Λ ≃ₗ[ℤ] (ℤ^n) := LinearEquiv.ofFinrankEq Λ (ℤ^n) <| by
   rw [ZLattice.rank ℝ Λ, Zn_finrank n]
-  exact finrank_euclideanSpace_fin
+  exact Module.finrank_fin_fun ℝ
 
 /-- For any `ZLattice` `Λ` in `ℝ^n`, the `LinearEquiv` from `ℤ^n` to `Λ`. -/
 noncomputable def Zn_equiv : (ℤ^n) ≃ₗ[ℤ] Λ := (equiv_Zn Λ).symm
