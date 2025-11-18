@@ -29,6 +29,7 @@ comprehensive list of things to be done, including but not limited to the `sorry
 
 open Filter Complex Real BigOperators Asymptotics
 open scoped UpperHalfPlane
+open scoped ArithmeticFunction.sigma
 
 namespace MagicFunction.PolyFourierCoeffBound
 
