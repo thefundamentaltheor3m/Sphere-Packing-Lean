@@ -380,7 +380,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             -- We want to apply `Summable.tsum_comm`, which requires some summability conditions.
             have hSummable₁ : Summable (Function.uncurry fun
             (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x : ↑(P.centers ∩ D)) ↦
-            ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 ⇑f ↑m).re * exp (2 * ↑π * I *
+            ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 f ↑m).re * exp (2 * ↑π * I *
             ↑⟪(x : EuclideanSpace ℝ (Fin d)) - (x_1 : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) := by
               sorry
             sorry
@@ -403,7 +403,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             -- exact Complex.exp_ne_zero _
             -- · exact (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
   _ = ((1 / ZLattice.covolume P.lattice) *
-      ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 ⇑f m).re * (
+      ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
       exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
@@ -417,7 +417,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             rw [mul_add, Complex.exp_add, mul_comm]
             simp
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
-      (𝓕 ⇑f m).re * (∑' x : ↑(P.centers ∩ D),
+      (𝓕 f m).re * (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       (∑' y : ↑(P.centers ∩ D),
       exp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])))).re
