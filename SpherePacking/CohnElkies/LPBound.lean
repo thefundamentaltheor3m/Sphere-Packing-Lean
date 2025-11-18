@@ -337,7 +337,7 @@ lemma calc_steps' (hd : 0 < d) (hf : Summable f) :
 include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ in
 private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥ ↑(P.numReps' hd hD_isBounded) ^ 2 *
-    (𝓕 ⇑f 0).re / ZLattice.covolume P.lattice := by
+    (𝓕 f 0).re / ZLattice.covolume P.lattice := by
   have : Fact (0 < d) := ⟨hd⟩
   calc
   ↑(P.numReps' hd hD_isBounded) * (f 0).re
@@ -364,13 +364,13 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
         := calc_steps' hD_isBounded hd hf
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice) *
-      ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 ⇑f m) *
+      ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m) *
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])).re
         := by
             congr! 5 with x y
             exact SchwartzMap.PoissonSummation_Lattices P.lattice f _
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
-      (𝓕 ⇑f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
+      (𝓕 f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
         := by
             apply congrArg re
@@ -425,8 +425,8 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             simp_rw [mul_assoc, ← tsum_mul_right, ← tsum_mul_left]
             congr! 9 with m x y
             simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
-  _ = ((1 / ZLattice.covolume P.lattice) *
-      ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 ⇑f m).re *
+  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
+      m).re *
       (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       conj (∑' x : ↑(P.centers ∩ D),
