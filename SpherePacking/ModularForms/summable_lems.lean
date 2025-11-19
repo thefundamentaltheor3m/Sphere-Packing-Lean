@@ -76,24 +76,8 @@ theorem tsum_pNat {α : Type _} [AddCommGroup α] [UniformSpace α] [IsUniformAd
   [CompleteSpace α] (f : ℕ → α) (hf : f 0 = 0) : ∑' n : ℕ+, f n = ∑' n, f n :=
   by
   by_cases hf2 : Summable f
-  · rw [hf2.tsum_eq_zero_add]
-    rw [hf]
-    simp
-    have hpos : HasSum (fun n : ℕ => f (n + 1)) (∑' n : ℕ+, f n) := by
-      rw [← _root_.Equiv.pnatEquivNat.hasSum_iff]
-      simp_rw [Equiv.pnatEquivNat] at *
-      simp at *
-      have hf3 : Summable ((fun n : ℕ => f (n + 1)) ∘ PNat.natPred) := by
-        have hs : Summable fun n : ℕ+ => f n := by
-          apply hf2.subtype
-        apply Summable.congr hs
-        intro b; simp
-      rw [Summable.hasSum_iff hf3]
-      congr
-      funext
-      simp
-    apply symm
-    apply hpos.tsum_eq
+  · rw [hf2.tsum_eq_zero_add, hf, zero_add]
+    exact tsum_pnat_eq_tsum_succ
   have h1 := tsum_eq_zero_of_not_summable hf2
   rw [← nat_pos_tsum2 f hf] at hf2
   have h2 := tsum_eq_zero_of_not_summable hf2

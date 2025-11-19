@@ -233,10 +233,10 @@ theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Con
       simp only [EventuallyLE, Pi.zero_apply, hnn, eventually_true]
     have hintgpos : 0 < ∫ (v : E) in U, f v := by
       refine (integral_pos_iff_support_of_nonneg hnn (Integrable.restrict hf₂)).mpr ?_
-      suffices hUpos : 0 < (volume.restrict U) U
-      · dsimp [Function.support]
-        suffices hInclusion : U ⊆ {x | f x ≠ 0}
-        · have : (volume.restrict U) U ≤ (volume.restrict U) {x | f x ≠ 0} := by
+      suffices hUpos : 0 < (volume.restrict U) U by
+        dsimp [Function.support]
+        suffices hInclusion : U ⊆ {x | f x ≠ 0} by
+          have : (volume.restrict U) U ≤ (volume.restrict U) {x | f x ≠ 0} := by
             rw [Measure.restrict_apply_self, Measure.restrict_apply_superset hInclusion]
           exact lt_of_lt_of_le hUpos this
         intro y hy

@@ -48,10 +48,19 @@ positive, i.e. there exists $t_0 > 0$ such that for all $t \ge t_0$, $F(it)$ is 
 noncomputable def ResToImagAxis.EventuallyPos (F : ℍ → ℂ) : Prop :=
   ∃ t₀ : ℝ, 0 < t₀ ∧ ∀ t : ℝ, t₀ ≤ t → ∃ r : ℝ, 0 < r ∧ F.resToImagAxis t = r
 
-
 theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (t : ℝ)
     (ht : 0 < t) : DifferentiableAt ℝ F.resToImagAxis t := by
-  sorry
+  rw [Function.resToImagAxis_eq_resToImagAxis]
+  have := hF ⟨Complex.I * t, by norm_num [Complex.I_re, ht]⟩
+  rw [mdifferentiableAt_iff] at this
+  have h_diff :
+      DifferentiableAt ℝ (fun t : ℝ => F (ofComplex (Complex.I * t))) t := by
+    convert this.restrictScalars ℝ |> DifferentiableAt.comp t <|
+      DifferentiableAt.const_mul ofRealCLM.differentiableAt _ using 1
+  apply h_diff.congr_of_eventuallyEq
+  filter_upwards [lt_mem_nhds ht] with t ht
+  simp_all only [coe_mk_subtype, ResToImagAxis, ↓reduceDIte]
+  rw [ofComplex_apply_of_im_pos]
 
 /--
 Restriction and slash action under S: $(F |_k S) (it) = t^{-k} * F(it)$
