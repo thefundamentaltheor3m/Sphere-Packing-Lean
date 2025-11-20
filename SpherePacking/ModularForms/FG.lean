@@ -16,7 +16,7 @@ noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
 
 noncomputable def G := H₂ ^ 3 * (2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2)
 
-noncomputable def X₄₂ := 288⁻¹ * (E₄.toFun - E₂ * E₂)
+noncomputable def negDE₂ := - (D E₂)
 
 noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
 
@@ -65,9 +65,9 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
 /--
 Modular linear differential equation satisfied by $F$.
 -/
-theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 172800 * Δ_fun * X₄₂ := by
+theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 7200 * Δ_fun * negDE₂ := by
   ext x
-  rw [X₄₂, Δ_fun, serre_D, serre_D, F_aux]
+  rw [negDE₂, Δ_fun, serre_D, serre_D, F_aux]
   unfold serre_D
   rw [F_aux]
   sorry
@@ -85,7 +85,7 @@ lemma F_pos : ResToImagAxis.Pos F := by
 lemma G_pos : ResToImagAxis.Pos G := by
   sorry
 
-lemma X₄₂_pos : ResToImagAxis.Pos X₄₂ := by
+lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
   sorry
 
 lemma Δ_fun_pos : ResToImagAxis.Pos Δ_fun := by
