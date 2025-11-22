@@ -30,23 +30,24 @@ noncomputable def resToImagAxis (F : ℍ → ℂ) : ℝ → ℂ :=
 end Function
 
 /--
-Function $F : \mathbb{H} \to \mathbb{C}$ whose restriction to the imaginary axis is real-valued.
+Function $F : \mathbb{H} \to \mathbb{C}$ whose restriction to the imaginary axis is real-valued,
+i.e. imaginary part is zero.
 -/
 noncomputable def ResToImagAxis.Real (F : ℍ → ℂ) : Prop :=
-  ∃ f : ℝ → ℝ, ∀ t : ℝ, ∀ ht : 0 < t, F ⟨(Complex.I * t), by simp [ht]⟩ = f t
+  ∀ t : ℝ, 0 < t → (F.resToImagAxis t).im = 0
 
 /--
-Function $F : \mathbb{H} \to \mathbb{C}$ is postive on the imaginary axis.
+Function $F : \mathbb{H} \to \mathbb{C}$ is real and positive on the imaginary axis.
 -/
 noncomputable def ResToImagAxis.Pos (F : ℍ → ℂ) : Prop :=
-  ∀ t : ℝ, 0 < t → ∃ r : ℝ, 0 < r ∧ F.resToImagAxis t = r
+  ResToImagAxis.Real F ∧ ∀ t : ℝ, 0 < t → 0 < (F.resToImagAxis t).re
 
 /--
 Function $F : \mathbb{H} \to \mathbb{C}$ whose restriction to the imaginary axis is eventually
-positive, i.e. there exists $t_0 > 0$ such that for all $t \ge t_0$, $F(it)$ is positive.
+positive, i.e. there exists $t_0 > 0$ such that for all $t \ge t_0$, $F(it)$ is real and positive.
 -/
 noncomputable def ResToImagAxis.EventuallyPos (F : ℍ → ℂ) : Prop :=
-  ∃ t₀ : ℝ, 0 < t₀ ∧ ∀ t : ℝ, t₀ ≤ t → ∃ r : ℝ, 0 < r ∧ F.resToImagAxis t = r
+  ResToImagAxis.Real F ∧ ∃ t₀ : ℝ, 0 < t₀ ∧ ∀ t : ℝ, t₀ ≤ t → 0 < (F.resToImagAxis t).re
 
 theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (t : ℝ)
     (ht : 0 < t) : DifferentiableAt ℝ F.resToImagAxis t := by
