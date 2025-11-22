@@ -154,8 +154,12 @@ theorem FmodG_rightLimitAt_zero :
   sorry
 
 /--
-Main inequality between $F$ and $G$ on the imaginary axis.
+Main inequalities between $F$ and $G$ on the imaginary axis.
 -/
-theorem FG_inequality {t : ℝ} (ht : 0 < t) :
-    (F.resToImagAxis t).re < 18 * (π ^ (-2 : ℤ)) * (G.resToImagAxis t).re := by
+theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
+    FReal t + 18 * (π ^ (-2 : ℤ)) * GReal t > 0 := by
+  sorry
+
+theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
+    FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
   sorry
