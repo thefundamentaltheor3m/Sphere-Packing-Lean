@@ -271,8 +271,7 @@ noncomputable def H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
       simp [H₂_SIF, ofComplex_apply]
     rw [← this]
     exact h_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
-  have hτ : 0 < τ.val.im := τ.property
-  have hU : {z : ℂ | 0 < z.im} ∈ 𝓝 τ.val := isOpen_upperHalfPlaneSet.mem_nhds hτ
+  have hU : {z : ℂ | 0 < z.im} ∈ 𝓝 τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
   let F : ℂ → ℂ := fun t => (cexp (((π : ℂ) * I / 4) * t) * jacobiTheta₂ (t / 2) t) ^ 4
   have hF : DifferentiableAt ℂ F τ.val := by
     have h_exp : DifferentiableAt ℂ (fun t : ℂ => cexp ((π * I / 4) * t)) τ.val := by
@@ -283,22 +282,21 @@ noncomputable def H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
       let f : ℂ → ℂ × ℂ := fun t : ℂ => (t / 2, t)
       let g : ℂ × ℂ → ℂ := fun p => jacobiTheta₂ p.1 p.2
       have hg : DifferentiableAt ℂ g (f τ.val) := by
-        simpa [f] using (hasFDerivAt_jacobiTheta₂ (z := τ.val / 2) (τ := τ.val) hτ).differentiableAt
+        simpa [f] using (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
       have hf : DifferentiableAt ℂ f τ.val :=
         (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
-      simpa [f, g] using (DifferentiableAt.fun_comp' (x := τ.val) hg hf)
+      simpa [f, g] using (DifferentiableAt.fun_comp' τ.1 hg hf)
     have h_prod : DifferentiableAt ℂ (fun t : ℂ => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t)
         τ.val := h_exp.mul h_theta
     simpa [F] using h_prod.pow 4
   have h_ev : F =ᶠ[𝓝 τ.val] (↑ₕH₂) := by
     refine Filter.eventually_of_mem hU ?_
     intro z hz
-    have hzpos : 0 < z.im := hz
     have h_arg : cexp (((π : ℂ) * I / 4) * z) = cexp (π * I * z / 4) := by
       have : ((π : ℂ) * I / 4) * z = (π * I * z) / 4 := by
         simp [div_eq_mul_inv, mul_comm, mul_assoc]
       simp [this]
-    simp [F, H₂, Θ₂_as_jacobiTheta₂, ofComplex_apply_of_im_pos hzpos, h_arg]
+    simp [F, H₂, Θ₂_as_jacobiTheta₂, ofComplex_apply_of_im_pos hz, h_arg]
   exact (DifferentiableAt.congr_of_eventuallyEq hF h_ev.symm)
 
 noncomputable def H₃_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃_SIF := by
@@ -312,7 +310,7 @@ noncomputable def H₃_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
     intro x hx
     exact hθ x hx
   apply hθ4.congr
-  intro z hz
+  intro _ hz
   simp [Function.comp, H₃, Θ₃_as_jacobiTheta₂, ofComplex_apply_of_im_pos hz]
 
 noncomputable def H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF := by
