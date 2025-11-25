@@ -174,7 +174,54 @@ section Integrability
 
 lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
     (hC₀ : ∀ x ∈ Ici 1, ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x)) :
-    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := sorry
+    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := by
+  set μ := volume.restrict (Ici (1 : ℝ))
+  have h_exp_Ioi : IntegrableOn (fun s : ℝ => rexp ((-2 * π) * s)) (Ioi (1 : ℝ)) volume := by
+    have hneg : (-2 : ℝ) * π < 0 := by
+      have : (0 : ℝ) < π := Real.pi_pos
+      linarith
+    simpa [mul_comm] using (integrableOn_exp_mul_Ioi (a := -2 * π) hneg (1 : ℝ))
+  have h_exp_Ici : IntegrableOn (fun s : ℝ => rexp ((-2 * π) * s)) (Ici (1 : ℝ)) volume :=
+    (integrableOn_Ici_iff_integrableOn_Ioi).mpr h_exp_Ioi
+  have h_exp_int : Integrable (fun s : ℝ => rexp ((-2 * π) * s)) μ := by
+    simpa [IntegrableOn, μ] using h_exp_Ici
+  have h_g_int : Integrable (fun s : ℝ => C₀ * rexp ((-2 * π) * s)) μ :=
+    (MeasureTheory.Integrable.const_mul h_exp_int C₀)
+  have hφ_aesm : AEStronglyMeasurable (fun s : ℝ => rexp (-π * r / s)) μ := by
+    have hmeas : Measurable (fun s : ℝ => rexp (-π * r / s)) := by
+      have h_inv : Measurable (fun s : ℝ => (s)⁻¹) := by
+        simpa using (Measurable.inv measurable_id)
+      have : Measurable (fun s : ℝ => (-π * r) * s⁻¹) :=
+        (measurable_const.mul h_inv)
+      exact Real.continuous_exp.measurable.comp this
+    exact hmeas.aestronglyMeasurable
+  let P : ℝ → Prop := fun s => ‖rexp (-π * r / s)‖ ≤ rexp (π * |r|)
+  have h_bound_global : ∀ᵐ s ∂volume, s ∈ Ici (1 : ℝ) → P s := by
+    refine Filter.Eventually.of_forall ?_;
+    intro s hs
+    have hs_nonneg : (0 : ℝ) ≤ s := (le_trans (by norm_num) hs)
+    have h_le1 : -π * r / s ≤ |(- (π * r)) / s| := by
+      simpa [neg_mul] using (le_abs_self ((-π * r) / s))
+    have habs : |-(π * r) / s| = (π * |r|) / s := by
+      have : |π| = π := by simp [abs_of_nonneg (le_of_lt Real.pi_pos)]
+      have hs' : |s| = s := abs_of_nonneg hs_nonneg
+      simp [div_eq_mul_inv, abs_mul, this, hs', abs_neg, mul_comm, mul_left_comm, mul_assoc]
+    have hfrac : (π * |r|) / s ≤ π * |r| := by
+      have hpos : 0 ≤ π * |r| := by exact mul_nonneg (le_of_lt Real.pi_pos) (abs_nonneg _)
+      have : (1 : ℝ) ≤ s := hs
+      exact div_le_self hpos this
+    have h_abs_bound : -π * r / s ≤ π * |r| := by
+      have : |-(π * r) / s| ≤ π * |r| := by simpa [habs] using hfrac
+      exact le_trans h_le1 this
+    have hexp : rexp (-π * r / s) ≤ rexp (π * |r|) := (Real.exp_le_exp.mpr h_abs_bound)
+    simpa [P, Real.norm_eq_abs, abs_of_nonneg (Real.exp_pos _).le] using hexp
+  have h_bound : ∀ᵐ s ∂μ, P s := by
+    have h := (ae_restrict_iff' (μ := volume) (s := Ici (1 : ℝ)) (p := P) measurableSet_Ici).2
+      h_bound_global
+    simpa [μ] using h
+  have h_prod : Integrable (fun s : ℝ => rexp (-π * r / s) * (C₀ * rexp (-2 * π * s))) μ := by
+    exact MeasureTheory.Integrable.bdd_mul' h_g_int hφ_aesm h_bound
+  simpa [μ, IntegrableOn, mul_comm, mul_left_comm, mul_assoc, div_eq_mul_inv] using h_prod
 
 end Integrability
 

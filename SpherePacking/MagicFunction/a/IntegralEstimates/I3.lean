@@ -175,7 +175,58 @@ section Integrability
 
 lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
     (hC₀ : ∀ x ∈ Ici 1, ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x)) :
-    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := sorry
+    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := by
+  set f : ℝ → ℝ := fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)
+  have hcont : ContinuousOn f (Ici 1) := by
+    have h1 : ContinuousOn (fun s : ℝ ↦ rexp ((-2 * π) * s)) (Ici 1) :=
+      Real.continuous_exp.comp_continuousOn (continuousOn_const.mul continuousOn_id)
+    have h_inv : ContinuousOn (fun s : ℝ ↦ s⁻¹) (Ici 1) :=
+      (continuousOn_id.inv₀ (by intro x hx; exact (ne_of_gt <| lt_of_lt_of_le zero_lt_one hx)))
+    have h2 : ContinuousOn (fun s : ℝ ↦ rexp ((-π * r) * s⁻¹)) (Ici 1) :=
+      Real.continuous_exp.comp_continuousOn (continuousOn_const.mul h_inv)
+    have h12 : ContinuousOn (fun s : ℝ ↦ rexp ((-2 * π) * s) * rexp ((-π * r) * s⁻¹)) (Ici 1) :=
+      h1.mul h2
+    simpa [f, mul_comm, mul_left_comm, mul_assoc, div_eq_mul_inv] using
+      (continuousOn_const.mul h12)
+  have hb : 0 < (2 * π) := by have : (0 : ℝ) < π := Real.pi_pos; linarith
+  have hO : f =O[atTop] (fun s : ℝ ↦ rexp (-(2 * π) * s)) := by
+    refine Asymptotics.IsBigO.of_bound (c := |C₀| * rexp (π * |r|)) ?_
+    have hE : ∀ᶠ s : ℝ in (atTop : Filter ℝ), s ∈ Ici 1 := Filter.Ici_mem_atTop (1 : ℝ)
+    refine hE.mono ?_
+    intro s hs
+    have hpos_pi : 0 ≤ π * |r| := by
+      have : 0 ≤ π := le_of_lt Real.pi_pos
+      have : 0 ≤ |r| := abs_nonneg r
+      nlinarith
+    have hs' : 1 ≤ |s| := by
+      have : |s| = s := abs_of_nonneg (le_trans (le_of_lt zero_lt_one) (by exact hs))
+      simpa [this]
+    have h_inv_le_one : |s|⁻¹ ≤ (1 : ℝ) := inv_le_one_of_one_le₀ hs'
+    have h_abs_div_le : |(-π * r) / s| ≤ π * |r| := by
+      calc
+        |(-π * r) / s| = |(-π * r)| * |s|⁻¹ := by simp [div_eq_mul_inv]
+        _ = π * |r| * |s|⁻¹ := by simp [abs_mul, abs_neg, abs_of_nonneg (le_of_lt Real.pi_pos)]
+        _ ≤ π * |r| * 1 := mul_le_mul_of_nonneg_left h_inv_le_one hpos_pi
+        _ = π * |r| := by ring
+    have h_exp_bound : rexp (-π * r / s) ≤ rexp (π * |r|) :=
+      Real.exp_le_exp.mpr (le_trans (by simpa using le_abs_self ((-π * r) / s)) h_abs_div_le)
+    have hnorm : ‖f s‖ = |C₀| * rexp ((-2 * π) * s) * rexp (-π * r / s) := by
+      simp [f, Real.norm_eq_abs, Real.abs_exp, mul_comm, mul_left_comm, mul_assoc,
+        div_eq_mul_inv]
+    have hposF : 0 ≤ |C₀| * rexp ((-2 * π) * s) :=
+      mul_nonneg (abs_nonneg _) (Real.exp_nonneg _)
+    have hbound_aux : ‖f s‖ ≤ |C₀| * rexp ((-2 * π) * s) * rexp (π * |r|) := by
+      have := mul_le_mul_of_nonneg_left h_exp_bound hposF
+      simpa [hnorm] using this
+    have hbound'' : ‖f s‖ ≤ (|C₀| * rexp (π * |r|)) * ‖rexp (-(2 * π) * s)‖ := by
+      simpa [Real.norm_eq_abs, Real.abs_exp, mul_comm, mul_left_comm, mul_assoc]
+        using hbound_aux
+    simpa [Real.norm_eq_abs] using hbound''
+  have hfIoi : IntegrableOn f (Ioi 1) volume :=
+    integrable_of_isBigO_exp_neg (a := (1 : ℝ)) (b := 2 * π) hb hcont hO
+  have hfIci : IntegrableOn f (Ici 1) volume :=
+    (integrableOn_Ici_iff_integrableOn_Ioi).mpr hfIoi
+  simpa [f, div_eq_mul_inv, neg_mul, mul_neg, mul_comm, mul_left_comm, mul_assoc] using hfIci
 
 end Integrability
 
