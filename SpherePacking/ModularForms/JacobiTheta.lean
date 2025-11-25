@@ -301,7 +301,7 @@ noncomputable def H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
 
 noncomputable def H₃_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃_SIF := by
   rw [mdifferentiable_iff]
-  simp [H₃_SIF]
+  simp only [H₃_SIF, SlashInvariantForm.coe_mk]
   have hθ : DifferentiableOn ℂ (fun z => jacobiTheta₂ (0 : ℂ) z) {z | 0 < z.im} := by
     intro x hx
     exact (differentiableAt_jacobiTheta₂_snd 0 (by simpa using hx)).differentiableWithinAt
