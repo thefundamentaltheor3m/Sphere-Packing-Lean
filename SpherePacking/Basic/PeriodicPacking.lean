@@ -960,6 +960,15 @@ theorem periodic_constant_eq_periodic_constant_normalized (hd : 0 < d) :
     simp only
     exact le_iSup_iff.mpr fun b a ↦ a S
 
+/-- Stefano's toReal adaptation. -/
+lemma periodic_const_eq_periodic_const_normalized' :
+    PeriodicSpherePackingConstant' d =
+    ⨆ (P : {S : PeriodicSpherePacking' d // S.separation = 1}), P.val.density' := by
+  simp [PeriodicSpherePackingConstant', SpherePacking.density']
+  rw [periodic_constant_eq_periodic_constant_normalized sorry]
+
+  sorry
+
 end ConstantEqNormalizedConstant
 
 section Disjoint_Covering_of_Centers
@@ -1190,6 +1199,12 @@ section Periodic_Constant_Eq_Constant
 theorem periodic_constant_eq_constant (hd : 0 < d) :
     PeriodicSpherePackingConstant d = SpherePackingConstant d := by
   sorry
+
+/-- Stefano's toReal adaptation. -/
+lemma periodic_const_eq_const' :
+  PeriodicSpherePackingConstant' d = SpherePackingConstant' d := by sorry
+
+
 
 end Periodic_Constant_Eq_Constant
 end finiteDensity_limit

@@ -9,7 +9,7 @@ import SpherePacking.CohnElkies.Prereqs
 import SpherePacking.ForMathlib.PoissonSummation.DualLattice
 
 open scoped ComplexOrder FourierTransform Real RealInnerProductSpace SchwartzMap
-open Bornology Complex Finset MeasureTheory SchwartzMap ZLattice ZSpan
+open Complex Finset MeasureTheory SchwartzMap ZLattice ZSpan
 
 /-!
 # Potential Design Complications:
@@ -58,10 +58,10 @@ theorem fourier_ne_zero_of_f_ne_zero (hne_zero : f ≠ 0) : 𝓕 f ≠ 0 := by
 /-- If the Fourier transform is non-negative, then the Schwartz function is non-negative at 0. -/
 theorem f_zero_nonneg_of_fourier_nonneg (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ f 0 := by
   rw [← f.fourierInversion ℝ]
-  simp[Real.fourierIntegralInv_eq, ← integral_re_add_im <| integrable_fourier f]
+  simp [Real.fourierIntegralInv_eq, ← integral_re_add_im <| integrable_fourier f]
   have := funext_iff.1 (hCE₂_im hCE₂)
   simp at this
-  simp[this]
+  simp [this]
   norm_cast
   exact integral_nonneg_of_ae (Filter.Eventually.of_forall <| hCE₂_re hCE₂)
 
@@ -69,7 +69,7 @@ theorem f_zero_nonneg_of_fourier_nonneg (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ f 0 := b
 then the latter is positive at 0. -/
 theorem f_zero_pos_of_fourier_nonneg (hne_zero : f ≠ 0) (hCE₂ : 0 ≤ 𝓕 f) : 0 < f 0 := by
   suffices f_zero_ne_zero : f 0 ≠ 0 by
-    exact lt_of_le_of_ne (f_zero_nonneg_of_fourier_nonneg hCE₂) (f_zero_ne_zero).symm
+    exact lt_of_le_of_ne (f_zero_nonneg_of_fourier_nonneg hCE₂) f_zero_ne_zero.symm
   by_contra h_zero
   rw [← f.fourierInversion ℝ] at h_zero
   simp [Real.fourierIntegralInv_eq, ← integral_re_add_im <| integrable_fourier f] at h_zero
@@ -80,7 +80,7 @@ theorem f_zero_pos_of_fourier_nonneg (hne_zero : f ≠ 0) (hCE₂ : 0 ≤ 𝓕 f
   have fourier_eq_zero : 𝓕 f = 0 := by
     have fourier_re_f_ae_zero : re ∘ 𝓕 f =ᶠ[ae volume] 0 := by
       refine (integral_eq_zero_iff_of_nonneg (hCE₂_re hCE₂) ?_).1 h_zero
-      exact Integrable.re (integrable_fourier f)
+      exact Integrable.re <| integrable_fourier f
     have re_fourier_eq_zero := by
       refine (Continuous.ae_eq_iff_eq volume ?_ continuous_zero).1 fourier_re_f_ae_zero
       refine Continuous.comp continuous_re (VectorFourier.fourierIntegral_continuous ?_ ?_ ?_)
@@ -88,7 +88,7 @@ theorem f_zero_pos_of_fourier_nonneg (hne_zero : f ≠ 0) (hCE₂ : 0 ≤ 𝓕 f
       · exact continuous_inner
       · exact f.integrable
     exact funext (fun x ↦ by
-      rw[← re_add_im (𝓕 f x)]; simp[this]; exact (funext_iff.1 re_fourier_eq_zero) x)
+      rw [← re_add_im (𝓕 f x)]; simp [this]; exact (funext_iff.1 re_fourier_eq_zero) x)
   have fourier_ne_zero := fourier_ne_zero_of_f_ne_zero hne_zero
   contradiction
 
@@ -99,6 +99,60 @@ theorem div_fourier_re_nonneg (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ (f 0 / 𝓕 f 0).r
     · exact (Complex.le_def.1 <| hCE₂ 0).1
 
 end Properties
+
+section Poisson
+
+open LinearMap (BilinForm)
+open ZLattice Submodule LinearMap Module
+
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
+    [MeasurableSpace V] [BorelSpace V]
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+variable (Λ : Submodule ℤ V) [hdiscrete : DiscreteTopology Λ] [hlattice : IsZLattice ℝ Λ]
+variable (L : V →ₗ[ℝ] V →ₗ[ℝ] ℝ)
+
+notation Λ"*["B"]" => Dual B Λ
+notation "𝓕v" => VectorFourier.fourierIntegral
+
+lemma general_poisson_summation (e : AddChar ℝ Circle) (μ : Measure V)
+    (f : C(V, E)) (h_sum : Summable (𝓕v e μ L f)) (x : V) :
+    ∑' (ℓ : Λ), f (x + ℓ) = (1 / covolume Λ μ) • ∑' (m : Λ*[L]), e (L m x) • 𝓕v e μ L f m := by
+  sorry
+
+protected lemma SchwartzMap.general_poisson_summation (f : 𝓢(V, E)) (x : V) :
+    ∑' (ℓ : Λ), f (x + ℓ) =
+    (1 / covolume Λ) • ∑' (m : Λ*[bilinFormOfRealInner]), (𝐞 ⟪m.val, x⟫).val • 𝓕 f m := by
+  sorry
+
+end Poisson
+
+section For_Mathlib
+
+protected lemma Complex.le_div_iff₀ {a b c : ℂ} (hc : 0 < c) :
+    a ≤ b / c ↔ a * c ≤ b := by
+  simp [le_def]
+  constructor
+  all_goals intro h; simp [div_re, div_im, (le_def.1 <| le_of_lt hc).2.symm] at h ⊢
+  · sorry
+  · sorry
+
+protected lemma Complex.mul_le_mul_iff_of_pos_right {a b c : ℂ} (hc : 0 < c) :
+    a * c ≤ b * c ↔ a ≤ b := by
+  simp [le_def, ← (lt_def.1 hc).2]
+  constructor
+  all_goals intro h;
+  · refine ⟨(mul_le_mul_iff_of_pos_right (lt_def.1 hc).1).mp h.1, ?_⟩
+    obtain ⟨h₁, h_re | h_im⟩ := h
+    · exact h_re
+    · exfalso; rw [lt_def] at hc; simp [h_im] at hc
+  · exact ⟨(mul_le_mul_iff_of_pos_right (lt_def.1 hc).1).mpr h.1, by simp [h.2]⟩
+
+protected lemma Complex.mul_le_mul_iff_of_pos_left {a b c : ℂ} (hc : 0 < c) :
+    c * a ≤ c * b ↔ a ≤ b := by
+  simp [mul_comm c _]
+  exact Complex.mul_le_mul_iff_of_pos_right hc
+
+end For_Mathlib
 
 section PreparationLemmata
 
@@ -134,34 +188,8 @@ lemma two :
     · intro z
       simp only [η]
       use ⟨⟨fract P.b z.val, by sorry⟩, ⟨floor P.b z.val, sorry⟩⟩ -- (floor P.b z.val).prop
-      simp[fract]
-  simp[← Equiv.tsum_eq (Equiv.ofBijective η η_bij) _, η, add_sub_right_comm, sub_add_comm]
-
-section Poisson
-
-open LinearMap (BilinForm)
-open ZLattice Submodule LinearMap Module
-
-variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
-    [MeasurableSpace V] [BorelSpace V]
-variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
-variable (Λ : Submodule ℤ V) [hdiscrete : DiscreteTopology Λ] [hlattice : IsZLattice ℝ Λ]
-variable (L : V →ₗ[ℝ] V →ₗ[ℝ] ℝ)
-
-notation Λ"*["B"]" => Dual B Λ
-notation "𝓕v" => VectorFourier.fourierIntegral
-
-lemma general_poisson_summation (e : AddChar ℝ Circle) (μ : Measure V)
-    (f : C(V, E)) (h_sum : Summable (𝓕v e μ L f)) (x : V) :
-    ∑' (ℓ : Λ), f (x + ℓ) = (1 / covolume Λ μ) • ∑' (m : Λ*[L]), e (L m x) • 𝓕v e μ L f m := by
-  sorry
-
-protected lemma SchwartzMap.general_poisson_summation (f : 𝓢(V, E)) (x : V) :
-    ∑' (ℓ : Λ), f (x + ℓ) =
-    (1 / covolume Λ) • ∑' (m : Λ*[bilinFormOfRealInner]), (𝐞 ⟪m.val, x⟫).val • 𝓕 f m := by
-  sorry
-
-end Poisson
+      simp [fract]
+  simp [← Equiv.tsum_eq (Equiv.ofBijective η η_bij) _, η, add_sub_right_comm, sub_add_comm]
 
 lemma three :
     ∑' (y : P.fundDom) (x : P.fundDom) (ℓ : P.lattice), f (x - y + ℓ) =
@@ -186,12 +214,12 @@ lemma four :
   simp_rw [Summable.tsum_mul_left _ sorry]
   congr
   refine funext_iff.2 (fun m ↦ congrArg (fun x ↦ (𝓕 f m) * x) ?_)
-  simp[← mul_conj, conj_tsum, Summable.tsum_mul_tsum sorry sorry sorry, Summable.tsum_prod sorry]
+  simp [← mul_conj, conj_tsum, Summable.tsum_mul_tsum sorry sorry sorry, Summable.tsum_prod sorry]
   rw [Summable.tsum_comm (by sorry)]
   congr
   refine funext_iff.2 (fun x ↦ by
     congr; exact funext_iff.2 (fun y ↦ by
-      norm_cast; simp[inner_sub_right, ← AddChar.map_add_eq_mul 𝐞]; ring_nf))
+      norm_cast; simp [inner_sub_right, ← AddChar.map_add_eq_mul 𝐞]; ring_nf))
 
 lemma five (hCE₂ : 0 ≤ 𝓕 f) :
     (P.fundDom).card ^ 2 / covolume P.lattice * 𝓕 f 0 ≤
@@ -200,7 +228,7 @@ lemma five (hCE₂ : 0 ≤ 𝓕 f) :
         𝓕 f m * normSq (∑' (x : P.fundDom), 𝐞 ⟪m.val, x⟫) := by
   rw[div_mul_eq_mul_div, ← one_div_mul_eq_div]
   gcongr
-  · exact le_of_lt (by simp[covolume_pos P.lattice])
+  · exact le_of_lt (by simp [covolume_pos P.lattice])
   · refine le_of_eq_of_le (by simp; ring) (Summable.le_tsum ?_ 0 ?_)
     · simp [normSq_eq_norm_sq]
       simp [@tsum_eq_sum' _ _ _ _ _ _ _ P.fundDom.attach (by simp)]
@@ -212,54 +240,29 @@ end PreparationLemmata
 
 section Main_Theorems
 
-protected lemma Complex.le_div_iff₀ {a b c : ℂ} (hc : 0 < c) :
-    a ≤ b / c ↔ a * c ≤ b := by
-  simp [le_def]
-  constructor
-  all_goals intro h; simp[div_re, div_im, (le_def.1 (le_of_lt hc)).2.symm] at h ⊢
-  · sorry
-  · sorry
-
-protected lemma Complex.mul_le_mul_iff_of_pos_right {a b c : ℂ} (hc : 0 < c) :
-    a * c ≤ b * c ↔ a ≤ b := by
-  simp [le_def, ← (lt_def.1 hc).2]
-  constructor
-  all_goals intro h;
-  · refine ⟨(mul_le_mul_iff_of_pos_right (lt_def.1 hc).1).mp h.1, ?_⟩
-    obtain ⟨h₁, h_re | h_im⟩ := h
-    · exact h_re
-    · exfalso; rw[lt_def] at hc; simp[h_im] at hc
-  · exact ⟨(mul_le_mul_iff_of_pos_right (lt_def.1 hc).1).mpr h.1, by simp[h.2]⟩
-
-protected lemma Complex.mul_le_mul_iff_of_pos_left {a b c : ℂ} (hc : 0 < c) :
-    c * a ≤ c * b ↔ a ≤ b := by
-  sorry
-
 /-- The Cohn-Elkies linear programming bound for unit spaced sphere packings. -/
 theorem LinearProgrammingBound' {P : PeriodicSpherePacking' d} (hP : P.separation = 1)
-    (hne_zero : f ≠ 0) (hf : Summable f) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f) :
+    (hne_zero : f ≠ 0) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f) (h : 𝓕 f 0 ≠ 0) :
     P.density' ≤ f 0 / 𝓕 f 0 * vol (B d 0 (1 / 2)) := by
   rw [P.density_eq'', hP, mul_div_right_comm]
   push_cast
   refine mul_le_mul_of_nonneg_right ?_ (by simp[vol])
-  --this is a problem also in the blueprint. How can we conclude the inequality if we
-  --cannot conclude 𝓕 f 0 > 0?
-  rw[Complex.le_div_iff₀ sorry]
-  rw[← @Complex.mul_le_mul_iff_of_pos_left _ _ (#P.fundDom) sorry]
-  rw[← mul_assoc, ← mul_div_assoc, ← sq]
+  rw [Complex.le_div_iff₀ <| lt_of_le_of_ne (hCE₂ 0) (Ne.symm h)]
+  rw [← @Complex.mul_le_mul_iff_of_pos_left _ _ (#P.fundDom) sorry]
+  rw [← mul_assoc, ← mul_div_assoc, ← sq]
   refine le_trans ?_ (one hCE₁ hP)
-  rw[two, three, four]
+  rw [two, three, four]
   exact five hCE₂
 
 /-- The Cohn-Elkies linear programming bound for sphere packing density. -/
-theorem LinearProgrammingBound (hne_zero : f ≠ 0) (hf : Summable f)
-    (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f) :
+theorem LinearProgrammingBound (hne_zero : f ≠ 0) (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0)
+  (hCE₂ : 0 ≤ 𝓕 f) (h : 𝓕 f 0 ≠ 0) :
     SpherePackingConstant' d ≤ f 0 / 𝓕 f 0 * vol (B d 0 (1 / 2)) := by
   simp [← periodic_const_eq_const', periodic_const_eq_periodic_const_normalized', Complex.le_def]
   constructor
-  · refine Real.iSup_le ?_ <| mul_nonneg (div_fourier_re_nonneg hCE₂)  (by simp[vol])
+  · refine Real.iSup_le ?_ <| mul_nonneg (div_fourier_re_nonneg hCE₂) (by simp[vol])
     rintro ⟨P, hP⟩
-    simpa using (Complex.le_def.1 <| LinearProgrammingBound' hP hne_zero hf hCE₁ hCE₂).1
+    simpa using (Complex.le_def.1 <| LinearProgrammingBound' hP hne_zero hCE₁ hCE₂ h).1
   · left
     simp [div_im, ← (le_def.1 (f_zero_nonneg_of_fourier_nonneg hCE₂)).2, ← (le_def.1 <| hCE₂ 0).2]
 
