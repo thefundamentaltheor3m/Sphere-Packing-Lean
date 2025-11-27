@@ -125,7 +125,7 @@ by
       _ = (|A| / K + 1) * K := by
         have h1 : (|A| / K) * K = |A| := by field_simp [div_eq_mul_inv, hKne]
         have h2 : (|A| / K + 1) * K = (|A| / K) * K + 1 * K := by ring
-        simpa [h2, h1]
+        simp [h2, h1]
   simpa [K, A, mul_div_assoc] using h
 
 end Bounding_Integral

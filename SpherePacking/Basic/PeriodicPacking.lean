@@ -7,7 +7,6 @@ import Mathlib.Algebra.Module.ZLattice.Covolume
 import Mathlib.Dynamics.Ergodic.Action.Regular
 
 import SpherePacking.Basic.SpherePacking
-import SpherePacking.ForMathlib.Bornology
 import SpherePacking.ForMathlib.ENNReal
 import SpherePacking.ForMathlib.Encard
 import SpherePacking.ForMathlib.ENat
@@ -117,7 +116,7 @@ open scoped Pointwise in
 lemma aux4''
     {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (hd : 0 < d) (v : EuclideanSpace ℝ (Fin d)) :
     Finite ↑(S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))) :=
-  aux4 S _ (Bornology.isBounded_vadd_set _ _ <| ZSpan.fundamentalDomain_isBounded _) hd
+  aux4 S _ (IsBounded.vadd (ZSpan.fundamentalDomain_isBounded _) _) hd
 
 end aux_lemmas
 
@@ -993,8 +992,8 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
     obtain ⟨hy₁, hy₂⟩ := hg₁
     have : ∃ y : D, ↑y = g +ᵥ x := by use ⟨g +ᵥ x, hy₂⟩
     obtain ⟨y, hy⟩ := this
-    suffices : x = -g +ᵥ (y : EuclideanSpace ℝ (Fin d))
-    · rw [this]
+    suffices x = -g +ᵥ (y : EuclideanSpace ℝ (Fin d)) by
+      rw [this]
       have hy' := Subtype.coe_prop y
       use True.intro -- so weird
       refine Set.vadd_mem_vadd_set ?h.intro.intro.a
@@ -1153,8 +1152,8 @@ theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePackin
   letI instFintype := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
   rw [Fintype.card_eq_zero_iff]
   refine Set.isEmpty_coe_sort.mpr ?h.a
-  suffices : S.centers = ∅
-  · rw [this]
+  suffices S.centers = ∅ by
+    rw [this]
     exact Set.empty_inter D
   exact Set.isEmpty_coe_sort.mp instEmpty
 

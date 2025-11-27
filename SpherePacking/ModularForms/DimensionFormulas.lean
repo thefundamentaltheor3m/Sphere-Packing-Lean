@@ -444,7 +444,7 @@ lemma floor_lem1 (k a : ℚ) (ha : 0 < a) (hak : a ≤ k) :
 lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
     Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) (k)) = if 12 ∣ ((k) : ℤ) - 2 then
     Nat.floor ((k : ℚ)/ 12) else Nat.floor ((k : ℚ) / 12) + 1 := by
-  induction' k using Nat.strong_induction_on with k ihn
+  induction k using Nat.strong_induction_on with | h k ihn =>
   rw [dim_modforms_eq_one_add_dim_cuspforms (k) (by omega) hk2 ,
     LinearEquiv.rank_eq (CuspForms_iso_Modforms (((k)) : ℤ))]
   by_cases HK : (3 : ℤ) ≤ (((k : ℤ) - 12))

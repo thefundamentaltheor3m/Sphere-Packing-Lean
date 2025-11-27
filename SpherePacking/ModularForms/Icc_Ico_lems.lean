@@ -20,39 +20,42 @@ lemma Icc_succ (n : ℕ) : Finset.Icc (-(n + 1) : ℤ) (n + 1) = Finset.Icc (-n 
 
 lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m ∈ Finset.Icc (-N : ℤ) N, f m =
   f N + f (-N : ℤ) + ∑ m ∈ Finset.Icc (-(N - 1) : ℤ) (N - 1), f m := by
-  induction' N with N ih
-  · aesop
-  zify
-  rw [Icc_succ]
-  rw [Finset.sum_union]
-  · ring_nf
-    rw [add_assoc]
-    congr
-    rw [Finset.sum_pair]
-    · ring
-    omega
-  simp
+  induction N with
+  | zero => aesop
+  | succ N ih =>
+    zify
+    rw [Icc_succ]
+    rw [Finset.sum_union]
+    · ring_nf
+      rw [add_assoc]
+      congr
+      rw [Finset.sum_pair]
+      · ring
+      omega
+    simp
 
 
 lemma Icc_sum_even (f : ℤ → ℂ) (hf : ∀ n, f n = f (-n)) (N : ℕ) :
     ∑ m ∈ Finset.Icc (-N : ℤ) N, f m = 2 * ∑ m ∈ Finset.range (N + 1), f m - f 0 := by
-  induction' N with N ih
-  · simp only [CharP.cast_eq_zero, neg_zero, Finset.Icc_self, Finset.sum_singleton, zero_add,
-      Finset.range_one]
+  induction N with
+  | zero =>
+    simp only [CharP.cast_eq_zero, neg_zero, Finset.Icc_self, Finset.sum_singleton,
+      zero_add, Finset.range_one]
     ring
-  have := Icc_succ N
-  simp only [neg_add_rev, Int.reduceNeg, Nat.cast_add, Nat.cast_one] at *
-  rw [this, Finset.sum_union, Finset.sum_pair, ih]
-  · nth_rw 2 [Finset.sum_range_succ]
-    have HF:= hf (N + 1)
-    simp only [neg_add_rev, Int.reduceNeg] at HF
-    rw [← HF]
-    ring_nf
-    norm_cast
-  · omega
-  simp only [Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Icc, le_add_iff_nonneg_left,
-    Left.nonneg_neg_iff, Int.reduceLE, add_neg_le_iff_le_add, false_and, not_false_eq_true,
-    Finset.disjoint_singleton_right, add_le_iff_nonpos_right, and_false, and_self]
+  | succ N ih =>
+    have := Icc_succ N
+    simp only [neg_add_rev, Int.reduceNeg, Nat.cast_add, Nat.cast_one] at *
+    rw [this, Finset.sum_union, Finset.sum_pair, ih]
+    · nth_rw 2 [Finset.sum_range_succ]
+      have HF:= hf (N + 1)
+      simp only [neg_add_rev, Int.reduceNeg] at HF
+      rw [← HF]
+      ring_nf
+      norm_cast
+    · omega
+    simp only [Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Icc, le_add_iff_nonneg_left,
+      Left.nonneg_neg_iff, Int.reduceLE, add_neg_le_iff_le_add, false_and, not_false_eq_true,
+      Finset.disjoint_singleton_right, add_le_iff_nonpos_right, and_false, and_self]
 
 
 

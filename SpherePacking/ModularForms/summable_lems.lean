@@ -76,24 +76,8 @@ theorem tsum_pNat {α : Type _} [AddCommGroup α] [UniformSpace α] [IsUniformAd
   [CompleteSpace α] (f : ℕ → α) (hf : f 0 = 0) : ∑' n : ℕ+, f n = ∑' n, f n :=
   by
   by_cases hf2 : Summable f
-  · rw [hf2.tsum_eq_zero_add]
-    rw [hf]
-    simp
-    have hpos : HasSum (fun n : ℕ => f (n + 1)) (∑' n : ℕ+, f n) := by
-      rw [← _root_.Equiv.pnatEquivNat.hasSum_iff]
-      simp_rw [Equiv.pnatEquivNat] at *
-      simp at *
-      have hf3 : Summable ((fun n : ℕ => f (n + 1)) ∘ PNat.natPred) := by
-        have hs : Summable fun n : ℕ+ => f n := by
-          apply hf2.subtype
-        apply Summable.congr hs
-        intro b; simp
-      rw [Summable.hasSum_iff hf3]
-      congr
-      funext
-      simp
-    apply symm
-    apply hpos.tsum_eq
+  · rw [hf2.tsum_eq_zero_add, hf, zero_add]
+    exact tsum_pnat_eq_tsum_succ
   have h1 := tsum_eq_zero_of_not_summable hf2
   rw [← nat_pos_tsum2 f hf] at hf2
   have h2 := tsum_eq_zero_of_not_summable hf2
@@ -974,42 +958,44 @@ theorem exp_series_ite_deriv_uexp2 (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
     {z : ℂ | 0 < z.im} x =
     ∑' n : ℕ, iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s))
     {z : ℂ | 0 < z.im} x := by
-  induction' k with k IH generalizing x
-  · simp only [iteratedDerivWithin_zero]
-  rw [iteratedDerivWithin_succ]
-  have HH :
-    derivWithin (iteratedDerivWithin k (fun z => ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * n * z))
-      {z : ℂ | 0 < z.im}) {z : ℂ | 0 < z.im}
-        x =
-      derivWithin
-        (fun z =>
-          ∑' n : ℕ, iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) {z
-            : ℂ | 0 < z.im} z)
-        {z : ℂ | 0 < z.im} x := by
-    apply derivWithin_congr
-    intro y hy
-    apply IH ⟨y, hy⟩
-    apply IH x
-  simp_rw [HH]
-  rw [derivWithin_tsum_fun']
-  · apply tsum_congr
-    intro b
+  induction k generalizing x with
+  | zero => simp only [iteratedDerivWithin_zero]
+  | succ k IH =>
     rw [iteratedDerivWithin_succ]
-  · exact isOpen_lt (by fun_prop) (by fun_prop)
-  · exact x.2
-  · intro y hy
-    apply Summable.congr (summable_iter_derv' k ⟨y, hy⟩)
-    intro b
-    apply symm
-    apply exp_iter_deriv_within k b hy
-  · intro K hK1 hK2
-    let K2 := Set.image (Set.inclusion hK1) univ
-    have hKK2 : IsCompact (Set.image (inclusion hK1) univ) := by
-      apply IsCompact.image_of_continuousOn
-      · exact isCompact_iff_isCompact_univ.mp hK2
-      · exact continuous_inclusion hK1 |>.continuousOn
-    apply iter_deriv_comp_bound2 K hK1 hK2 k
-  apply der_iter_eq_der_aux2
+    have HH :
+      derivWithin (iteratedDerivWithin k (fun z => ∑' n : ℕ,
+                                            Complex.exp (2 * ↑π * Complex.I * n * z))
+        {z : ℂ | 0 < z.im}) {z : ℂ | 0 < z.im}
+          x =
+        derivWithin
+          (fun z =>
+            ∑' n : ℕ, iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s))
+                                          {z : ℂ | 0 < z.im} z)
+          {z : ℂ | 0 < z.im} x := by
+      apply derivWithin_congr
+      intro y hy
+      apply IH ⟨y, hy⟩
+      apply IH x
+    simp_rw [HH]
+    rw [derivWithin_tsum_fun']
+    · apply tsum_congr
+      intro b
+      rw [iteratedDerivWithin_succ]
+    · exact isOpen_lt (by fun_prop) (by fun_prop)
+    · exact x.2
+    · intro y hy
+      apply Summable.congr (summable_iter_derv' k ⟨y, hy⟩)
+      intro b
+      apply symm
+      apply exp_iter_deriv_within k b hy
+    · intro K hK1 hK2
+      let K2 := Set.image (Set.inclusion hK1) univ
+      have hKK2 : IsCompact (Set.image (inclusion hK1) univ) := by
+        apply IsCompact.image_of_continuousOn
+        · exact isCompact_iff_isCompact_univ.mp hK2
+        · exact continuous_inclusion hK1 |>.continuousOn
+      apply iter_deriv_comp_bound2 K hK1 hK2 k
+    apply der_iter_eq_der_aux2
 
 theorem exp_series_ite_deriv_uexp'' (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
     iteratedDerivWithin k (fun z => ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * n * z))
@@ -1258,45 +1244,47 @@ theorem aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ) :
       ∑' n : ℕ+, iteratedDerivWithin k (fun z : ℂ => 1 / (z - n) + 1 / (z + n)) {z : ℂ | 0 < z.im} x
         :=
   by
-  induction' k with k IH generalizing x
-  · simp only [iteratedDerivWithin_zero]
-  rw [iteratedDerivWithin_succ]
-  have HH :
-    derivWithin (iteratedDerivWithin k (fun z : ℂ => ∑' n : ℕ+, (1 / (z - n) + 1 / (z + n)))
-      {z : ℂ | 0 < z.im}) {z : ℂ | 0 < z.im} x =
-      derivWithin
-        (fun z => ∑' n : ℕ+, iteratedDerivWithin k (fun z : ℂ => 1 / (z - n) + 1 / (z + n)) {z : ℂ |
-          0 < z.im} z) {z : ℂ | 0 < z.im}
-        x := by
-    apply derivWithin_congr
-    intro y hy
-    apply IH ⟨y, hy⟩
-    apply IH x
-  simp_rw [HH]
-  simp
-  rw [derivWithin_tsum_fun']
-  · apply tsum_congr
-    intro b
+  induction k generalizing x with
+  | zero => simp only [iteratedDerivWithin_zero]
+  | succ k IH =>
     rw [iteratedDerivWithin_succ]
-  · refine isOpen_lt ?_ ?_
-    · fun_prop
-    · fun_prop
-  · simpa using x.2
-  · intro y hy
-    simpa using summable_iter_aut k ⟨y, hy⟩
-  · intro K hK hK2
-    let K2 := Set.image (Set.inclusion hK) univ
-    have hKK2 : IsCompact (Set.image (inclusion hK) univ) := by
-      apply IsCompact.image_of_continuousOn
-      · exact isCompact_iff_isCompact_univ.mp hK2
-      · exact continuous_inclusion hK |>.continuousOn
-    have := aut_bound_on_comp K2 hKK2 k
-    obtain ⟨u, hu1, hu2⟩ := this
-    refine ⟨u, hu1, ?_⟩
-    intro n s
-    apply hu2 n ⟨⟨s, by aesop⟩, by aesop⟩
-  intro n r
-  apply diff_at_aux
+    have HH :
+      derivWithin (iteratedDerivWithin k (fun z : ℂ => ∑' n : ℕ+, (1 / (z - n) + 1 / (z + n)))
+        {z : ℂ | 0 < z.im}) {z : ℂ | 0 < z.im} x =
+        derivWithin
+          (fun z => ∑' n : ℕ+, iteratedDerivWithin k (fun z : ℂ => 1 / (z - n) + 1 / (z + n))
+                                                     {z : ℂ | 0 < z.im} z)
+          {z : ℂ | 0 < z.im}
+          x := by
+      apply derivWithin_congr
+      intro y hy
+      apply IH ⟨y, hy⟩
+      apply IH x
+    simp_rw [HH]
+    simp
+    rw [derivWithin_tsum_fun']
+    · apply tsum_congr
+      intro b
+      rw [iteratedDerivWithin_succ]
+    · refine isOpen_lt ?_ ?_
+      · fun_prop
+      · fun_prop
+    · simpa using x.2
+    · intro y hy
+      simpa using summable_iter_aut k ⟨y, hy⟩
+    · intro K hK hK2
+      let K2 := Set.image (Set.inclusion hK) univ
+      have hKK2 : IsCompact (Set.image (inclusion hK) univ) := by
+        apply IsCompact.image_of_continuousOn
+        · exact isCompact_iff_isCompact_univ.mp hK2
+        · exact continuous_inclusion hK |>.continuousOn
+      have := aut_bound_on_comp K2 hKK2 k
+      obtain ⟨u, hu1, hu2⟩ := this
+      refine ⟨u, hu1, ?_⟩
+      intro n s
+      apply hu2 n ⟨⟨s, by aesop⟩, by aesop⟩
+    intro n r
+    apply diff_at_aux
 
 theorem tsum_ider_der_eq (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
     ∑' n : ℕ+, iteratedDerivWithin k (fun z : ℂ => 1 / (z - n) + 1 / (z + n)) {z : ℂ | 0 < z.im} x =

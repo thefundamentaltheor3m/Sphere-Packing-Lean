@@ -91,10 +91,12 @@ lemma tprod_ne_zero (x : ℍ) (f : ℕ → ℍ → ℂ) (hf : ∀ i x, 1 + f i x
 
 lemma Multipliable_pow {ι : Type*} (f : ι → ℂ) (hf : Multipliable f) (n : ℕ) :
      Multipliable (fun i => f i ^ n) := by
-  induction' n with n hn
-  · simp
+  induction n with
+  | zero =>
+    simp
     apply multipliable_one
-  · conv =>
+  | succ n hn =>
+    conv =>
       enter [1]
       intro u
       rw [pow_succ]
@@ -110,9 +112,10 @@ lemma MultipliableDeltaProductExpansion_pnat (z : ℍ) :
 
 lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) : (∏' (i : ℕ), f i) ^ n = ∏' (i : ℕ),
     (f i) ^ n := by
-  induction' n with n hn
-  · simp
-  · rw [pow_succ]
+  induction n with
+  | zero => simp
+  | succ n hn =>
+    rw [pow_succ]
     rw [hn]
     rw [← Multipliable.tprod_mul]
     · congr
