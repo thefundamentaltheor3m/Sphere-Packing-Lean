@@ -97,6 +97,10 @@ noncomputable def SpherePacking.finiteDensity (S : SpherePacking d) (R : ℝ) : 
 noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
   limsup S.finiteDensity atTop
 
+/-- Stefano's toReal adaptation. -/
+noncomputable def SpherePacking.density' (S : SpherePacking d) : ℝ :=
+  S.density.toReal
+
 -- Here is one way to choose a basis, but I think for our purpose we can just supply one.
 -- /-- Returns a ℝ-basis of ℝ^d such that the its ℤ-span is `S.lattice`. -/
 -- noncomputable def PeriodicSpherePacking.lattice_basis (S : PeriodicSpherePacking d) :
@@ -240,10 +244,18 @@ periodic packings. See also `<TODO>` for specifying the separation radius of the
 def PeriodicSpherePackingConstant (d : ℕ) : ℝ≥0∞ :=
   ⨆ S : PeriodicSpherePacking d, S.density
 
+/-- Stefano's toReal adaptation. -/
+def PeriodicSpherePackingConstant' (d : ℕ) : ℝ :=
+  (PeriodicSpherePackingConstant d).toReal
+
 /-- The `SpherePackingConstant` in dimension d is the supremum of the density of all packings. See
 also `<TODO>` for specifying the separation radius of the packings. -/
 def SpherePackingConstant (d : ℕ) : ℝ≥0∞ :=
   ⨆ S : SpherePacking d, S.density
+
+/-- Stefano's toReal adaptation. -/
+def SpherePackingConstant' (d : ℕ) : ℝ :=
+  (SpherePackingConstant d).toReal
 
 end Density
 
@@ -461,12 +473,6 @@ theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
   · exact (volume_ball_lt_top _).ne
 
 
-
-
-
-
-
-
 /-Code by Stefano to make Cohn-Elkies work domain independently. To be merged with the rest. -/
 
 /-- The volume of a set in d-dimensional Euclidean space as a real number. -/
@@ -475,7 +481,6 @@ noncomputable def vol (S : Set (EuclideanSpace ℝ (Fin d))) : ℝ := (volume S)
 variable (d) in
 /-- The ball of radius r around x in d-dimensional Euclidean space. -/
 def B (x : EuclideanSpace ℝ (Fin d)) (r : ℝ) : Set (EuclideanSpace ℝ (Fin d)) := Metric.ball x r
-
 
 /-- I created a class IsPeriodic here to avoid confusion with the
 PeriodicSpherePacking extension of the structure. It is essentially the same as before,
@@ -503,17 +508,5 @@ instance PeriodicSpherePacking'.instIsZLattice (S : PeriodicSpherePacking' d) :
 
 def coe {S : PeriodicSpherePacking' d} : S.fundDom → S.centers :=
   fun y ↦ ⟨y.val, sorry⟩
-
-def PeriodicSpherePacking'.density' (S : PeriodicSpherePacking' d) : ℝ := sorry
-def SpherePackingConstant' (d : ℕ) : ℝ := sorry
-def PeriodicSpherePackingConstant' (d : ℕ) : ℝ := sorry
-
-lemma periodic_const_eq_periodic_const_normalized' :
-  PeriodicSpherePackingConstant' d =
-  ⨆ (P : {S : PeriodicSpherePacking' d // S.separation = 1}), P.val.density' := by sorry
-
-lemma periodic_const_eq_const' :
-  PeriodicSpherePackingConstant' d = SpherePackingConstant' d := by sorry
-
 
 end BasicResults
