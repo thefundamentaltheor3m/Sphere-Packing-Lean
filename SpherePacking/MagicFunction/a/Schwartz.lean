@@ -50,71 +50,15 @@ theorem I₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₂' := by
 
 theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' := by
   have hI : RealIntegrals.I₃' = fun x : ℝ => cexp (2 * π * I * x) * RealIntegrals.I₁' x := by
-    funext x
-    have hEqOn : EqOn
-        (fun t : ℝ => I * φ₀'' (-1 / ((z₃' t) - (1 : ℂ))) * ((z₃' t) - (1 : ℂ)) ^ 2
-          * cexp (π * I * x * (z₃' t)))
-        (fun t : ℝ => cexp (2 * π * I * x)
-          * (I * φ₀'' (-1 / ((z₁' t) + (1 : ℂ))) * ((z₁' t) + (1 : ℂ)) ^ 2
-            * cexp (π * I * x * (z₁' t))))
-        (uIcc (0 : ℝ) 1) := by
-      intro t ht
-      have ht' : t ∈ Icc (0 : ℝ) 1 := by
-        simpa [uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
-      have hz1 : z₁' t = -1 + I * t := z₁'_eq_of_mem ht'
-      have hz3 : z₃' t = 1 + I * t := z₃'_eq_of_mem ht'
-      have hzsub1 : (z₃' t) - (1 : ℂ) = I * t := by simp [hz3]
-      have hzadd1 : (z₁' t) + (1 : ℂ) = I * t := by simp [hz1]
-      have hzsub : z₃' t - z₁' t = (2 : ℂ) := by
-        simp [hz1, hz3, one_add_one_eq_two]
-      have hzadd2 : z₃' t = z₁' t + (2 : ℂ) := by
-        have := (sub_eq_iff_eq_add' (a := z₃' t) (b := z₁' t) (c := (2 : ℂ))).1 hzsub
-        simpa [add_comm] using this
-      have hcexp : cexp (π * I * x * (z₃' t))
-            = cexp ((π * I * x) * (z₁' t) + (π * I * x) * (2 : ℂ)) := by
-        simp [hzadd2, mul_add]
-      calc
-        I * φ₀'' (-1 / ((z₃' t) - (1 : ℂ))) * ((z₃' t) - (1 : ℂ)) ^ 2 * cexp (π * I * x * (z₃' t))
-            = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp ((π * I * x) * (z₁' t) + (π * I * x) * (2 : ℂ)) := by
-              simp [hzsub1, hcexp]
-        _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2
-              * (cexp ((π * I * x) * (z₁' t)) * cexp ((π * I * x) * (2 : ℂ))) := by
-              simp [Complex.exp_add]
-        _ = cexp (2 * π * I * x)
-              * (I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (π * I * x * (z₁' t))) := by
-          simp [mul_comm, mul_left_comm, mul_assoc]
-        _ = cexp (2 * π * I * x)
-              * (I * φ₀'' (-1 / ((z₁' t) + (1 : ℂ))) * ((z₁' t) + (1 : ℂ)) ^ 2 * cexp (π * I * x * (z₁' t))) := by
-          simp [hzadd1]
-    have hcongrInt :
-        (∫ t in (0 : ℝ)..1,
-            I * φ₀'' (-1 / ((z₃' t) - (1 : ℂ))) * ((z₃' t) - (1 : ℂ)) ^ 2
-              * cexp (π * I * x * (z₃' t)))
-          = ∫ t in (0 : ℝ)..1,
-              cexp (2 * π * I * x)
-                * (I * φ₀'' (-1 / ((z₁' t) + (1 : ℂ))) * ((z₁' t) + (1 : ℂ)) ^ 2
-                  * cexp (π * I * x * (z₁' t))) :=
-      intervalIntegral.integral_congr (μ := MeasureTheory.MeasureSpace.volume)
-        (a := (0 : ℝ)) (b := (1 : ℝ)) hEqOn
-    have hpull :
-        (∫ t in (0 : ℝ)..1,
-            cexp (2 * π * I * x)
-              * (I * φ₀'' (-1 / ((z₁' t) + (1 : ℂ))) * ((z₁' t) + (1 : ℂ)) ^ 2
-                * cexp (π * I * x * (z₁' t))))
-          = cexp (2 * π * I * x)
-              * (∫ t in (0 : ℝ)..1,
-                  I * φ₀'' (-1 / ((z₁' t) + (1 : ℂ))) * ((z₁' t) + (1 : ℂ)) ^ 2
-                    * cexp (π * I * x * (z₁' t))) := by
-      simp [mul_comm, mul_left_comm, mul_assoc]
-    simpa [RealIntegrals.I₃', RealIntegrals.I₁'] using hcongrInt.trans hpull
-  have h_exp : ContDiff ℝ ∞ (fun x : ℝ => cexp (2 * π * I * x)) := by
-    have hmul : ContDiff ℝ ∞ (fun x : ℝ => (2 * π * I : ℂ) * (x : ℂ)) := by
-      have h1 : ContDiff ℝ ∞ (fun _x : ℝ => (2 * π * I : ℂ)) := contDiff_const
-      have h2 : ContDiff ℝ ∞ (fun x : ℝ => (x : ℂ)) := by
-        simpa using (ofRealCLM.contDiff : ContDiff ℝ ∞ (fun x : ℝ => (x : ℂ)))
-      exact h1.mul h2
-    simpa [mul_comm, mul_left_comm, mul_assoc] using hmul.cexp
-  simpa [hI] using (h_exp.mul I₁'_smooth')
+    ext x; have hEqOn : EqOn (fun t => I * φ₀'' (-1 / (z₃' t - 1)) * (z₃' t - 1) ^ 2 * cexp (π * I * x * z₃' t))
+        (fun t => cexp (2 * π * I * x) * (I * φ₀'' (-1 / (z₁' t + 1)) * (z₁' t + 1) ^ 2 * cexp (π * I * x * z₁' t)))
+        (uIcc 0 1) := fun t ht => by
+      rw [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht; have h1 := z₁'_eq_of_mem ht; have h3 := z₃'_eq_of_mem ht
+      simp_rw [show z₃' t - 1 = I * t by simp [h3], show z₃' t = z₁' t + 2 by simp [h1, h3]; ring,
+        show z₁' t + 1 = I * t by simp [h1], mul_add, Complex.exp_add, mul_comm, mul_left_comm, mul_assoc]
+    simpa [RealIntegrals.I₃', RealIntegrals.I₁', mul_comm, mul_left_comm, mul_assoc] using
+      intervalIntegral.integral_congr (a := 0) (b := 1) hEqOn
+  simpa [hI] using (contDiff_const.mul ofRealCLM.contDiff).cexp.mul I₁'_smooth'
 
 theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' := by
   sorry

@@ -38,40 +38,9 @@ theorem perm_I₅ : fourierTransformCLE ℂ (I₅) = I₆ := by sorry
 -- Should use results from `RadialSchwartz.Radial` to prove the reverse.
 
 theorem perm_₃_I₄ : fourierTransformCLE ℂ (I₃ + I₄) = I₁ + I₂ := by
-  have h_symm' : I₁ + I₂ = (fourierTransformCLE ℂ).symm (I₃ + I₄) := by
-    simpa [ContinuousLinearEquiv.symm_apply_apply]
-      using congrArg ((fourierTransformCLE ℂ).symm) perm_I₁_I₂
-  have h_symm : (fourierTransformCLE ℂ).symm (I₃ + I₄) = I₁ + I₂ := h_symm'.symm
-  have h_inv_eq₃ : (fourierTransformCLE ℂ).symm I₃ = fourierTransformCLE ℂ I₃ := by
-    ext x
-    have hfun : 𝓕⁻ (I₃ : EuclideanSpace ℝ (Fin 8) → ℂ)
-        = 𝓕 (fun y : EuclideanSpace ℝ (Fin 8) => I₃ (-y)) :=
-      Real.fourierIntegralInv_eq_fourierIntegral_comp_neg (I₃ : EuclideanSpace ℝ (Fin 8) → ℂ)
-    have heven : (fun y : EuclideanSpace ℝ (Fin 8) => I₃ (-y))
-        = (I₃ : EuclideanSpace ℝ (Fin 8) → ℂ) := by
-      ext y
-      simp [I₃, schwartzMap_multidimensional_of_schwartzMap_real,
-        compCLM_apply]
-    have hpoint := congrArg (fun f => f x) hfun
-    simpa [fourierTransformCLE_symm_apply, fourierTransformCLE_apply,
-      heven] using hpoint
-  have h_inv_eq₄ : (fourierTransformCLE ℂ).symm I₄ = fourierTransformCLE ℂ I₄ := by
-    ext x
-    have hfun : 𝓕⁻ (I₄ : EuclideanSpace ℝ (Fin 8) → ℂ)
-        = 𝓕 (fun y : EuclideanSpace ℝ (Fin 8) => I₄ (-y)) :=
-      Real.fourierIntegralInv_eq_fourierIntegral_comp_neg (I₄ : EuclideanSpace ℝ (Fin 8) → ℂ)
-    have heven : (fun y : EuclideanSpace ℝ (Fin 8) => I₄ (-y))
-        = (I₄ : EuclideanSpace ℝ (Fin 8) → ℂ) := by
-      ext y
-      simp [I₄, schwartzMap_multidimensional_of_schwartzMap_real,
-        compCLM_apply]
-    have hpoint := congrArg (fun f => f x) hfun
-    simpa [fourierTransformCLE_symm_apply, fourierTransformCLE_apply,
-      heven] using hpoint
-  have h_inv_eq : (fourierTransformCLE ℂ).symm (I₃ + I₄)
-      = fourierTransformCLE ℂ (I₃ + I₄) := by
-    simp [map_add, h_inv_eq₃, h_inv_eq₄]
-  simpa [h_inv_eq] using h_symm
+  simpa [perm_I₁_I₂] using
+    radial_inversion (I₁ + I₂) (fun _ => by
+      simp [I₁, I₂, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply])
 
 -- should use fourier_involution and the radial symmetry of I₅
 theorem perm_I₆ : fourierTransformCLE ℂ (I₆) = I₅ :=
