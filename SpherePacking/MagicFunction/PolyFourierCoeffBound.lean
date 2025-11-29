@@ -374,8 +374,50 @@ private lemma step_12 :
       _ < π * ↑↑n * z.im * 2 := by
         rw [mul_assoc (π * ↑↑n), mul_lt_mul_iff_right₀ (by positivity)]
         linarith
-    · sorry
-    · sorry
+    · have h_prod_conv : Summable (fun n : ℕ+ => (1 - Real.exp (-Real.pi * (n : ℕ))) ^ 24 - 1) := by
+        -- We'll use the fact that |(1 - e^{-πn})^24 - 1| ≤ 24e^{-πn} for all n.
+        have h_bound : ∀ n : ℕ+, |(1 - Real.exp (-Real.pi * (n : ℕ))) ^ 24 - 1| ≤ 24 * Real.exp (-Real.pi * (n : ℕ)) := by
+          -- By the binomial theorem, we can expand $(1 - e^{-\pi n})^{24}$ and show that the absolute value of each term is bounded by $24e^{-\pi n}$.
+          have h_binom : ∀ x : ℝ, 0 < x ∧ x < 1 → |(1 - x) ^ 24 - 1| ≤ 24 * x := by
+            -- By the binomial theorem, we can expand $(1 - x)^{24}$ and show that the absolute value of each term is bounded by $24x$.
+            intro x hx
+            have h_binom : (1 - x) ^ 24 ≤ 1 ∧ (1 - x) ^ 24 ≥ 1 - 24 * x := by
+              exact ⟨ pow_le_one₀ ( by linarith ) ( by linarith ), by exact le_trans ( by norm_num ) ( one_add_mul_le_pow ( by linarith ) _ ) ⟩;
+            exact abs_le.mpr ⟨ by linarith, by linarith ⟩;
+          exact fun n => h_binom _ ⟨ Real.exp_pos _, by rw [ Real.exp_lt_one_iff ] ; norm_num ; positivity ⟩;
+        -- The series $\sum_{n=1}^{\infty} e^{-\pi n}$ is a geometric series with ratio $e^{-\pi}$, which converges since $|e^{-\pi}| < 1$.
+        have h_geo_series : Summable (fun n : ℕ => Real.exp (-Real.pi * n)) := by
+          -- The series $\sum_{n=0}^{\infty} e^{-\pi n}$ is a geometric series with ratio $e^{-\pi}$, which is less than 1.
+          have h_geo_series : Summable (fun n : ℕ => (Real.exp (-Real.pi)) ^ n) := by
+            exact summable_geometric_of_lt_one ( by positivity ) ( by norm_num; positivity );
+          simpa [ Real.exp_neg, Real.exp_mul ] using h_geo_series;
+        -- Since the series $\sum_{n=1}^{\infty} e^{-\pi n}$ is summable, multiplying it by 24 (a constant) should still keep it summable.
+        have h_summable : Summable (fun n : ℕ+ => 24 * Real.exp (-Real.pi * (n : ℕ))) := by
+          exact Summable.mul_left _ <| h_geo_series.comp_injective Subtype.coe_injective;
+        -- Apply the comparison test with the summable series ∑' (n : ℕ+), 24 * Real.exp (-Real.pi * (n : ℕ)).
+        have h_comparison : Summable (fun n : ℕ+ => |(1 - Real.exp (-Real.pi * (n : ℕ))) ^ 24 - 1|) := by
+          exact Summable.of_nonneg_of_le ( fun n => abs_nonneg _ ) h_bound h_summable;
+        exact h_comparison.of_abs;
+      have h_prod_conv : Multipliable (fun n : ℕ+ => 1 + ((1 - Real.exp (-Real.pi * (n : ℕ))) ^ 24 - 1)) := by
+        refine' multipliable_one_add_of_summable _;
+        exact h_prod_conv.norm;
+      aesop
+    · -- The series $\sum_{n=1}^{\infty} \exp(-2\pi n z.im)$ converges as it is a geometric series with common ratio $|\exp(-2\pi z.im)| < 1$.
+      have h_geo_series : Summable (fun n : ℕ+ => Real.exp (-2 * Real.pi * n * z.im)) := by
+        -- The series $\sum_{n=1}^{\infty} \exp(-2\pi n z.im)$ is a geometric series with common ratio $r = \exp(-2\pi z.im)$.
+        have h_geo_series : Summable (fun n : ℕ => (Real.exp (-2 * Real.pi * z.im)) ^ n) := by
+          exact summable_geometric_of_lt_one ( by positivity ) ( by rw [ Real.exp_lt_one_iff ] ; nlinarith [ Real.pi_pos ] );
+        convert h_geo_series.comp_injective ( show Function.Injective ( fun n : ℕ+ => ( n : ℕ ) ) from fun a b h => by simpa using h ) using 2 ; norm_num [ ← Real.exp_nat_mul, mul_assoc, mul_comm, mul_left_comm ];
+      have h_prod_conv : Multipliable (fun n : ℕ+ => 1 - Real.exp (-2 * Real.pi * n * z.im)) := by
+        refine' multipliable_one_add_of_summable _;
+        aesop;
+      -- Apply the fact that if a series is multipliable, then any power of that series is also multipliable.
+      have h_prod_conv_pow : Multipliable (fun n : ℕ+ => (1 - Real.exp (-2 * Real.pi * n * z.im)) ^ 24) := by
+        have := h_prod_conv
+        exact (by
+        obtain ⟨ f, hf ⟩ := this;
+        exact ⟨ f ^ 24, by simpa only [ ← Finset.prod_pow ] using hf.pow 24 ⟩);
+      convert h_prod_conv_pow using 1
 
 private lemma step_13 :
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
