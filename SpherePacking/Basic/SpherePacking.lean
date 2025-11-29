@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Gareth Ma
 -/
 import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.Algebra.Module.ZLattice.Covolume
 import Mathlib.Data.Real.StarOrdered
 import Mathlib.Order.CompletePartialOrder
 import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
@@ -12,7 +13,7 @@ import Mathlib.Topology.EMetricSpace.Paracompact
 
 import SpherePacking.ForMathlib.VolumeOfBalls
 
-open BigOperators MeasureTheory Metric ZSpan ZLattice
+open BigOperators MeasureTheory Metric ZSpan ZLattice Finset
 
 /-!
 # Density of Sphere Packings
@@ -96,10 +97,6 @@ noncomputable def SpherePacking.finiteDensity (S : SpherePacking d) (R : ℝ) : 
 
 noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
   limsup S.finiteDensity atTop
-
-/-- Stefano's toReal adaptation. -/
-noncomputable def SpherePacking.density' (S : SpherePacking d) : ℝ :=
-  S.density.toReal
 
 -- Here is one way to choose a basis, but I think for our purpose we can just supply one.
 -- /-- Returns a ℝ-basis of ℝ^d such that the its ℤ-span is `S.lattice`. -/
@@ -473,40 +470,114 @@ theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
   · exact (volume_ball_lt_top _).ne
 
 
-/-Code by Stefano to make Cohn-Elkies work domain independently. To be merged with the rest. -/
 
-/-- The volume of a set in d-dimensional Euclidean space as a real number. -/
-noncomputable def vol (S : Set (EuclideanSpace ℝ (Fin d))) : ℝ := (volume S).toReal
+
+
+
+
+
+
+/-Code by Stefano to make Cohn-Elkies work domain independently. To be merged with the rest. -/
 
 variable (d) in
 /-- The ball of radius r around x in d-dimensional Euclidean space. -/
 def B (x : EuclideanSpace ℝ (Fin d)) (r : ℝ) : Set (EuclideanSpace ℝ (Fin d)) := Metric.ball x r
 
-/-- I created a class IsPeriodic here to avoid confusion with the
-PeriodicSpherePacking extension of the structure. It is essentially the same as before,
+/-- The volume of a set in d-dimensional Euclidean space as a real number. -/
+noncomputable def vol (S : Set (EuclideanSpace ℝ (Fin d))) : ℝ := volume.real S
+
+/-- The covolume of a lattice in d-dimensional Euclidean space as a real number. -/
+noncomputable def covol (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) : ℝ := ZLattice.covolume Λ
+
+/-- I created a structure SpherePacking' here to avoid to change your SpherePacking structure.
+It is essentially the same as before,
 except that, phrased as below, it avoid domain dependent statements in Cohn-Elkies.
 This is not a good definition yet. Something is off about how the fundamental domain of a lattice
 is defined in Mathlib since it says that it is Fintype but it should not be.
 The fundamental domain part is important to be able to prove Poission summation & lemma3 in
 Cohn-Elkies. The plan is to get back to your original structure as soon as the fintype part
 is worked out. -/
-structure PeriodicSpherePacking' (d : ℕ) extends SpherePacking d where
+structure SpherePacking' (d : ℕ) where
+  X : Set (EuclideanSpace ℝ (Fin d))
+  separation : ℝ
+  X_dist : Pairwise (separation ≤ ‖·.val - ·.val‖ : X → X → Prop)
+
+structure PeriodicSpherePacking' (d : ℕ) extends SpherePacking' d where
   b : Module.Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d))
-  hb := instIsZLatticeRealSpan b
-  lattice := Submodule.span ℤ (Set.range b)
-  hvadd : ∀ ⦃x y⦄, x ∈ lattice → y ∈ centers → x +ᵥ y ∈ centers
-  hfintype : Fintype <| ↑(centers ∩ fundamentalDomain b) := by apply Fintype.ofFinite
-  fundDom := (centers ∩ fundamentalDomain b).toFinset
-  hDiscrete : DiscreteTopology lattice := by infer_instance
-  hIsZLattice : IsZLattice ℝ lattice := by infer_instance
+  inst_b := instIsZLatticeRealSpan b
+  Λ := Submodule.span ℤ (Set.range b)
+  hvadd : ∀ ⦃x y⦄, x ∈ Λ → y ∈ X → x +ᵥ y ∈ X
+  hfintype : Fintype <| ↑(X ∩ fundamentalDomain b) := by apply Fintype.ofFinite
+  X_Λ := (X ∩ fundamentalDomain b).toFinset
+  inst_Discrete : DiscreteTopology Λ := by infer_instance
+  inst_IsZLattice : IsZLattice ℝ Λ := by infer_instance
+
+section density
+
+noncomputable def SpherePacking'.finiteBallDensity (S : SpherePacking' d) (R : ℝ) : ℝ :=
+  vol (⋃ x : S.X, B d x (S.separation / 2) ∩ B d 0 R) / vol (B d 0 R)
+
+noncomputable def SpherePacking'.density (S : SpherePacking' d) : ℝ :=
+  limsup S.finiteBallDensity atTop
+
+protected noncomputable def SpherePacking'.constant (d : ℕ) : ℝ :=
+  ⨆ S : SpherePacking' d, S.density
+
+protected noncomputable def PeriodicSpherePacking'.constant (d : ℕ) : ℝ :=
+  ⨆ S : PeriodicSpherePacking' d, S.density
+
+protected noncomputable def PeriodicSpherePacking'.normalConstant (d : ℕ) : ℝ :=
+  ⨆ S : {S : PeriodicSpherePacking' d // S.separation = 1}, S.val.density
+
+lemma SpherePacking'.density_eq_zero_of_empty_centers (S : SpherePacking' d) (h : S.X = ∅) :
+    S.density = 0 := by
+  sorry
+
+/-- I believe one needs to ask as an axiom of the structure of periodic sphere packing that,
+if X is nonempty, than X ∩ fundamentalDomain Λ must be nonempty,
+otherwise the packing is not periodic. This proves the lemma below -/
+lemma PeriodicSpherePacking'.empty_centers_iff_card_X_Λ_eq_zero (S : PeriodicSpherePacking' d) :
+    S.X = ∅ ↔ S.X_Λ.card = 0 := by
+  sorry
+
+end density
 
 instance PeriodicSpherePacking'.instLatticeDiscrete (S : PeriodicSpherePacking' d) :
-    DiscreteTopology S.lattice := S.hDiscrete
+    DiscreteTopology S.Λ := S.inst_Discrete
 
 instance PeriodicSpherePacking'.instIsZLattice (S : PeriodicSpherePacking' d) :
-    IsZLattice ℝ S.lattice := S.hIsZLattice
+    IsZLattice ℝ S.Λ := S.inst_IsZLattice
 
-def coe {S : PeriodicSpherePacking' d} : S.fundDom → S.centers :=
-  fun y ↦ ⟨y.val, sorry⟩
+def PeriodicSpherePacking'.Λ_def (P : PeriodicSpherePacking' d) :
+    P.Λ = Submodule.span ℤ (Set.range P.b) := by sorry
+
+instance (P : PeriodicSpherePacking' d) : Fintype ↑(P.X ∩ fundamentalDomain P.b) := by sorry
+
+def PeriodicSpherePacking'.X_Λ_def (P : PeriodicSpherePacking' d) :
+    P.X_Λ = (P.X ∩ fundamentalDomain P.b).toFinset := by sorry
+
+
+def Subtype.toX {P : PeriodicSpherePacking' d} (y : P.X_Λ) : P.X :=
+  ⟨y.val, by sorry⟩
+
+theorem PeriodicSpherePacking'.density_eq (S : PeriodicSpherePacking' d) :
+    S.density = #S.X_Λ * vol (B d 0 (S.separation / 2)) / covol S.Λ := by
+  sorry
+
+section Cast
+
+protected lemma PeriodicSpherePacking'.cast_normalConstant (d : ℕ) :
+    PeriodicSpherePacking'.normalConstant d = PeriodicSpherePacking'.constant d := by
+  sorry
+
+lemma SpherePacking'.cast_constant (d : ℕ) :
+    PeriodicSpherePacking'.constant d = SpherePacking'.constant d := by
+  sorry
+
+protected lemma SpherePacking'.cast_normalConstant (d : ℕ) :
+    PeriodicSpherePacking'.normalConstant d = SpherePacking'.constant d := by
+  rw [PeriodicSpherePacking'.cast_normalConstant d, SpherePacking'.cast_constant d]
+
+end Cast
 
 end BasicResults
