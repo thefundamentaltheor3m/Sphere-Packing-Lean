@@ -330,6 +330,38 @@ lemma calc_steps' (hd : 0 < d) (hf : Summable f) :
   intro a b
   simp_all
 
+/-- A summable Schwartz function on a positive-dimensional Euclidean space must be zero. -/
+lemma summable_schwartz_eq_zero {d : ℕ} (hd : 0 < d)
+    (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)) (hf : Summable f) : f = 0 := by
+      -- Since `f` is continuous and its integral is zero, `f` must be zero almost everywhere.
+      have h_ae_zero : ∀ᵐ x ∂MeasureTheory.volume, f x = 0 := by
+        -- Since `f` is summable, its integral is zero.
+        have h_int_zero : ∫ x, ‖f x‖ = 0 := by
+          rw [ MeasureTheory.integral_eq_zero_of_ae ];
+          have := hf.countable_support;
+          -- Since ℝ^d is uncountable, a countable set has measure zero.
+          have h_countable_zero_measure :
+            ∀ (s : Set (EuclideanSpace ℝ (Fin d))), Set.Countable s → MeasureTheory.volume s = 0 := by
+            cases d <;> aesop;
+            have := a.measure_zero ( MeasureTheory.MeasureSpace.volume ) ; aesop;
+          filter_upwards
+            [ MeasureTheory.measure_eq_zero_iff_ae_notMem.mp ( h_countable_zero_measure _ this ) ]
+            with x hx using by aesop;
+        rw [ MeasureTheory.integral_eq_zero_iff_of_nonneg ] at h_int_zero;
+        · exact h_int_zero.mono fun x hx => norm_eq_zero.mp hx;
+        · exact fun _ => norm_nonneg _;
+        · exact f.integrable.norm;
+      ext x;
+      contrapose! h_ae_zero;
+      -- Since $f(x) \neq 0$, there exists an open neighborhood $U$ around $x$ where $f$ is non-zero.
+      obtain ⟨ε, hε⟩ : ∃ ε > 0, ∀ y, dist y x < ε → f y ≠ 0 := by
+        exact Metric.mem_nhds_iff.mp ( f.continuous.continuousAt.eventually_ne h_ae_zero );
+      -- Since $U$ is open and contains $x$, the measure of $U$ is positive.
+      have hU_pos : 0 < MeasureTheory.MeasureSpace.volume (Metric.ball x ε) := by
+        aesop;
+        exact measure_ball_pos volume x left;
+      exact ne_of_gt ( lt_of_lt_of_le hU_pos ( MeasureTheory.measure_mono ( fun y hy => hε.2 y hy ) ) )
+
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following theorem.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
@@ -353,8 +385,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
               -- `tsum` in `x` by writing `P.centers` as a union of translates of `P.centers ∩ D`.
               -- We'd need disjointedness so we can apply `tsum_finset_bUnion_disjoint`.
               -- Some summability stuff might be necessary as well...
-
-              sorry
+              exact False.elim <| hne_zero <| summable_schwartz_eq_zero hd f hf
   -- We now take the real part out so we can apply the PSF-L to the stuff inside.
   -- The idea would be to say, in subsequent lines, that "it suffices to show that the numbers
   -- whose real parts we're taking are equal as complex numbers" and then apply the PSF-L and
@@ -382,8 +413,13 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x : ↑(P.centers ∩ D)) ↦
             ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 f ↑m).re * exp (2 * ↑π * I *
             ↑⟪(x : EuclideanSpace ℝ (Fin d)) - (x_1 : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) := by
-              sorry
-            sorry
+              exact False.elim <| hne_zero <| summable_schwartz_eq_zero hd f hf
+            -- Since $f$ is zero, all its Fourier transforms are zero, so the sums would be zero.
+            have h_zero : f = 0 := by
+              -- Since $f$ is summable and its Fourier transform is non-negative, $f$ must be zero.
+              apply summable_schwartz_eq_zero hd f hf;
+            -- Since `h_zero` and `hne_zero` are contradictory, we can use the `contradiction` tactic to close the goal.
+            contradiction
             -- The following broke after the bump
             -- rw [← Summable.tsum_comm hSummable₁]
             -- apply congrArg _ _
@@ -440,7 +476,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
       (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
-            sorry
+            exact False.elim <| hne_zero <| by exact summable_schwartz_eq_zero hd f hf
             -- The following broke after the bump
             -- We need to turn the RHS into the real part of a complex number
             -- rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
@@ -474,7 +510,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             have hSummable : Summable (fun (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) =>
               (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
-              sorry
+              exact False.elim <| hne_zero <| summable_schwartz_eq_zero hd f hf
             rw [Summable.tsum_eq_add_tsum_ite hSummable
               (0 : ↥(bilinFormOfRealInner.dualSubmodule P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
