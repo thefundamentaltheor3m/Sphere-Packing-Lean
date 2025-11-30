@@ -49,7 +49,7 @@ variable (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
 -- I'm not sure if `hCohnElkies₂` can replace this, because of the 5th step in `calc_steps`.
 -- (The blueprint says that 𝓕 f x ≥ 0, ie, 𝓕 f ∈ [0, ∞) ⊆ ℝ, for all x ∈ ℝᵈ)
 -- We can't simply replace 𝓕 f with its real part everywhere because the PSF-L involves 𝓕 f.
-variable (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 f x).re = (𝓕 f x))
+variable (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 ⇑f x).re = (𝓕 ⇑f x))
 -- The Cohn-Elkies conditions:
 variable (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
 variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
@@ -72,13 +72,13 @@ private theorem hImZero : ∀ x : EuclideanSpace ℝ (Fin d), (f x).im = 0 :=
 
 include hRealFourier in
 private theorem hFourierImZero : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).im = 0 :=
-  helper (𝓕 f) hRealFourier
+  helper (𝓕 ⇑f) hRealFourier
 
 end Complex_Function_Helpers
 
 section Nonnegativity
 
-private theorem hIntegrable : MeasureTheory.Integrable (𝓕 f) :=
+private theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) :=
     ((SchwartzMap.fourierTransformCLE ℝ) f).integrable
 
 include hne_zero in
@@ -87,7 +87,7 @@ theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
   intro hFourierZero
   apply hne_zero
   rw [← ContinuousLinearEquiv.map_eq_zero_iff (SchwartzMap.fourierTransformCLE ℝ)]
-  exact Eq.symm (SchwartzMap.ext (congrFun (id (Eq.symm hFourierZero))))
+  exact hFourierZero
 
 -- include hReal hRealFourier hCohnElkies₂
 
@@ -110,7 +110,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
   -- integral must be pos too, but it's zero, contra). By Schwartz, f is identically zero iff 𝓕 f
   -- is (𝓕 is a linear iso). But 𝓕 f is zero while f is not, contra! So f(0) is positive.
   -- apply ne_of_gt
-  have haux₁ : f 0 = 𝓕⁻ (𝓕 f) 0 := by rw [f.fourierInversion ℝ]
+  have haux₁ : f 0 = 𝓕⁻ (𝓕 ⇑f) 0 := by rw [f.fourierInversion ℝ]
   rw [fourierIntegralInv_eq] at haux₁
   simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul] at haux₁
   -- We need to take real parts at haux₁
@@ -140,16 +140,16 @@ theorem f_zero_pos : 0 < (f 0).re := by
   have hintzero : 0 = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := by
     --rw [ge_iff_le] at hantisymm₁
     exact antisymm' hantisymm₁ hantisymm₂
-  have h𝓕frezero : ∀ x, (𝓕 f x).re = 0 := by
+  have h𝓕frezero : ∀ x, (𝓕 ⇑f x).re = 0 := by
     -- Integral of a nonneg continuous function is zero iff the function is zero
-    suffices hfun : (fun x => (𝓕 f x).re) = 0 by
+    suffices hfun : (fun x => (𝓕 ⇑f x).re) = 0 by
       -- (This is the function actually being integrated)
       intro x
       calc (𝓕 (⇑f) x).re
-      _ = (fun x => (𝓕 f x).re) x := rfl
+      _ = (fun x => (𝓕 ⇑f x).re) x := rfl
       _ = (0 : (EuclideanSpace ℝ (Fin d)) → ℝ) x := by rw [hfun]
       _ = 0 := by rw [Pi.zero_apply]
-    have hcont : Continuous (fun x ↦ (𝓕 (⇑f) x).re) := by
+    have hcont : Continuous (fun x ↦ (𝓕 f x).re) := by
       rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
       exact Continuous.comp' continuous_re ((SchwartzMap.fourierTransformCLE ℝ) f).continuous
     refine (Continuous.integral_zero_iff_zero_of_nonneg hcont ?_ hCohnElkies₂).mp hintzero.symm
@@ -160,7 +160,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
   have h𝓕fzero : 𝓕 f = 0 := by
     ext x
     rw [← re_add_im (𝓕 f x), hFourierImZero hRealFourier, ofReal_zero, zero_mul,
-        add_zero, Pi.zero_apply, ofReal_eq_zero]
+        add_zero, SchwartzMap.zero_apply, ofReal_eq_zero]
     exact h𝓕frezero x
   exact fourier_ne_zero hne_zero h𝓕fzero
 
@@ -207,7 +207,7 @@ private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
               split_ifs with hx
               · let x_in: ↑(P.centers ∩ D) := ⟨x, by simp [hx]⟩
                 simp only [dite_eq_ite]
-                rw [← tsum_ite_eq (b := x_in) (a := (f 0).re)]
+                rw [← tsum_ite_eq (b := x_in) (a := fun _ ↦ (f 0).re)]
                 simp_rw [← Subtype.val_inj]
                 rw [← Summable.tsum_add]
                 · apply tsum_congr
@@ -368,7 +368,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])).re
         := by
             congr! 5 with x y
-            exact SchwartzMap.PoissonSummation_Lattices P.lattice f (x - ↑y)
+            exact SchwartzMap.PoissonSummation_Lattices P.lattice f _
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
       (𝓕 f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
@@ -402,8 +402,8 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             -- · rw [isUnit_iff_ne_zero]
             -- exact Complex.exp_ne_zero _
             -- · exact (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
-    m).re * (
+  _ = ((1 / ZLattice.covolume P.lattice) *
+      ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
       exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
@@ -426,7 +426,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             congr! 9 with m x y
             simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
-    m).re *
+      m).re *
       (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       conj (∑' x : ↑(P.centers ∩ D),
@@ -437,7 +437,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             congr! 7 with m x
             exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
   _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
-      (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
+      (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
             sorry
@@ -462,23 +462,23 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
   _ = (1 / ZLattice.covolume P.lattice) * (
       (∑' (m : bilinFormOfRealInner.dualSubmodule P.lattice),
         if hm : m = (0 : EuclideanSpace ℝ (Fin d)) then 0
-        else (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
+        else (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
       +
-      (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
+      (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
       (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
         := by
             apply congrArg _ _
             rw [add_comm]
             have hSummable : Summable (fun (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) =>
-              (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
+              (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
               sorry
             rw [Summable.tsum_eq_add_tsum_ite hSummable
               (0 : ↥(bilinFormOfRealInner.dualSubmodule P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
-  _ ≥ (1 / ZLattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
+  _ ≥ (1 / ZLattice.covolume P.lattice) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
       (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
@@ -506,15 +506,15 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
                   exact hCohnElkies₂ m
                 · -- Providing an explicit argument below gives a deterministic timeout...
                   exact sq_nonneg _
-  _ = (1 / ZLattice.covolume P.lattice) * (𝓕 f (0 : EuclideanSpace ℝ (Fin d))).re *
+  _ = (1 / ZLattice.covolume P.lattice) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
       ↑(P.numReps' Fact.out hD_isBounded) ^ 2
         := by
             apply congrArg _ _
             let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
             simp only [PeriodicSpherePacking.numReps'] -- ↑(P.centers ∩ D)]
-            simp only [RCLike.wInner_zero_right, ofReal_zero, mul_zero, Complex.exp_zero,
-              tsum_const, Nat.card_eq_fintype_card, nsmul_eq_mul, mul_one, Complex.norm_natCast]
-  _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume
+            simp [RCLike.wInner_zero_right, ofReal_zero, mul_zero, Complex.exp_zero,
+              tsum_const, Nat.card_eq_fintype_card, nsmul_eq_mul, mul_one]
+  _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 ⇑f 0).re / ZLattice.covolume P.lattice volume
         := by simp only [div_eq_mul_inv, mul_comm, one_mul, ← mul_assoc]
 
 
@@ -576,14 +576,14 @@ theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
       -- Next, we simplify `hCalc` by replacing `numReps'` with `numReps`
       rw [← P.numReps_eq_numReps' Fact.out hD_isBounded hD_unique_covers] at hCalc
       -- Next, we multiply both sides by `(𝓕 (⇑f) 0).re.toNNReal`, cancelling accordingly.
-      have hfouaux₁ : ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) ≠ 0 := by
+      have hfouaux₁ : ((𝓕 f 0).re.toNNReal : ENNReal) ≠ 0 := by
         intro hContra
         apply h𝓕f
         simp only [ENNReal.coe_eq_zero, toNNReal_eq_zero] at hContra
         specialize hCohnElkies₂ 0
         rw [ge_iff_le] at hCohnElkies₂
         -- We can't simply do antisymm because we have an equality in ℂ, not ℝ!
-        rw [← re_add_im (𝓕 (⇑f) 0), le_antisymm hContra hCohnElkies₂,
+        rw [← re_add_im (𝓕 f 0), le_antisymm hContra hCohnElkies₂,
             hFourierImZero hRealFourier 0, ofReal_zero, zero_mul, add_zero]
       have hfouaux₂ : ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) ≠ ⊤ := ENNReal.coe_ne_top
       rw [← ENNReal.mul_le_mul_right hfouaux₁ hfouaux₂,
@@ -617,11 +617,11 @@ theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
             Real.toNNReal_of_nonneg haux₁]
         push_cast
         rfl
-      have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) /
+      have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
         ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
-        (𝓕 (⇑f) 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
+        (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
         simp only [div_eq_mul_inv]
-        have haux₁ : 0 ≤ ↑P.numReps ^ 2 * (𝓕 (⇑f) 0).re * (ZLattice.covolume P.lattice volume)⁻¹
+        have haux₁ : 0 ≤ ↑P.numReps ^ 2 * (𝓕 f 0).re * (ZLattice.covolume P.lattice volume)⁻¹
         := by
           refine mul_nonneg (mul_nonneg (sq_nonneg (P.numReps : ℝ)) (hCohnElkies₂ 0)) ?_
           rw [inv_nonneg]
@@ -650,7 +650,7 @@ section Main_Theorem
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
 theorem LinearProgrammingBound (hd : 0 < d) (hf : Summable f) : SpherePackingConstant d ≤
-  (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))
+  (f 0).re.toNNReal / (𝓕 ⇑f 0).re.toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))
   := by
   rw [← periodic_constant_eq_constant hd,
     periodic_constant_eq_periodic_constant_normalized hd]

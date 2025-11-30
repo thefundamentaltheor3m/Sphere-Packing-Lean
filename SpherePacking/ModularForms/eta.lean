@@ -196,9 +196,9 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
           field_simp
         · have hr : ↑π * Complex.I / 12 *
             -((↑π ^ 2 / (6 : ℂ))⁻¹ * 2⁻¹ *
-               (8 * ↑π ^ 2 * ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (2 * ↑π * Complex.I * ↑↑n * ↑z))) =
+               (8 * ↑π ^ 2 * ∑' (n : ℕ+), ↑((sigma 1) ↑n) * cexp (2 * ↑π * Complex.I * ↑↑n * ↑z))) =
             (↑π * Complex.I * (1 / 12) * -(((π : ℂ) ^ 2 * (1 / 6))⁻¹ * (1 / 2) * (↑π ^ 2 * 8)) *
-            ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1)) := by
+            ∑' (n : ℕ+), ↑((sigma 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1)) := by
               ring_nf
               rfl
           simp only [UpperHalfPlane.coe] at *
@@ -212,7 +212,7 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
             ext n
             rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp]
           have hl := tsum_pnat_eq_tsum_succ3
-            (fun n ↦ ↑((σ 1) (n)) * cexp (↑π * Complex.I * 2 * (↑n) * ↑z))
+            (fun n ↦ ↑((sigma 1) (n)) * cexp (↑π * Complex.I * 2 * (↑n) * ↑z))
           simp only [UpperHalfPlane.coe] at hl
           rw [ hl]
           apply tsum_congr
@@ -290,14 +290,14 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
             ((z :ℂ)^(2 : ℤ))⁻¹ *
               (logDeriv η) (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) := by
     rw [logDeriv_comp, mul_comm]
-    congr
-    conv =>
-      enter [1,1]
-      intro z
-      rw [neg_div]
-      simp
-    simp only [deriv.fun_neg', deriv_inv', neg_neg, inv_inj]
-    norm_cast
+    · congr
+      conv =>
+        enter [1,1]
+        intro z
+        rw [neg_div]
+        simp
+      simp only [deriv.fun_neg', deriv_inv', neg_neg, inv_inj]
+      norm_cast
     · simpa only using
       eta_DifferentiableAt_UpperHalfPlane (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ)
     conv =>
@@ -307,8 +307,8 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
       simp
     apply DifferentiableAt.neg
     apply DifferentiableAt.inv
-    simp only [differentiableAt_fun_id]
-    exact ne_zero z
+    · simp only [differentiableAt_fun_id]
+    · exact ne_zero z
   rw [h0, show ((csqrt) * η) = (fun x => (csqrt) x * η x) by rfl, logDeriv_mul]
   · nth_rw 2 [logDeriv_apply]
     unfold csqrt

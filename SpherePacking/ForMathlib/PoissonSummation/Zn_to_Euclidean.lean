@@ -32,20 +32,46 @@ In this section, we develop the theory of ℤⁿ as a submodule of Euclidean spa
 
 /-- The canonical lattice `ℤ^n`, viewed as a submodule of Euclidean space. -/
 def Zn_Submodule_Euclidean (n : ℕ) : Submodule ℤ Euc(n) where
-  carrier := {x | x ∈ ℤ^n}
-  add_mem' := (ℤ^n).add_mem'
-  zero_mem' := (ℤ^n).zero_mem'
-  smul_mem' := (ℤ^n).smul_mem'
+  carrier := {x | x ∈ (ℤ^n).map (WithLp.linearEquiv 2 _ (Fin n → ℝ)).symm}
+  add_mem' := by aesop
+  zero_mem' := by aesop
+  smul_mem' c := by
+    rintro x hx
+    simp only [mem_map, WithLp.linearEquiv_symm_apply, Set.mem_setOf_eq] at hx
+    obtain ⟨y, hy₁, hy₂⟩ := hx
+    rw [← hy₂]
+    simp only [mem_map, WithLp.linearEquiv_symm_apply, Set.mem_setOf_eq]
+    refine ⟨c • y, smul_mem (ℤ^n) c hy₁, ?_⟩
+    rw [WithLp.toLp_smul]
 
 /-- An element of the Euclidean space lies in `ℤ^n` iff it comes from a ℤ-valued vector. -/
 theorem EuclideanSpace.mem_Zn_Submodule_iff (n : ℕ) : ∀ x : Euc(n),
-    x ∈ (Zn_Submodule_Euclidean n) ↔ ∃ m : Fin n → ℤ, ∀ i, x i = m i :=
-  fun _ ↦ ⟨id, id⟩
+    x ∈ (Zn_Submodule_Euclidean n) ↔ ∃ m : Fin n → ℤ, ∀ i, x i = m i := by
+  refine fun x ↦ ⟨fun hx ↦ ?_, fun hx ↦ ?_⟩
+  · simp only [Zn_Submodule_Euclidean, mem_map, WithLp.linearEquiv_symm_apply, mem_mk,
+      AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, Set.mem_setOf_eq] at hx
+    obtain ⟨v, hv₁, hv₂⟩ := hx
+    simp only [Zn_Submodule, mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk,
+      Set.mem_setOf_eq] at hv₁
+    obtain ⟨w, hw⟩ := hv₁
+    use w
+    intro i
+    rw [← hw i, ←hv₂]
+  · obtain ⟨v, hv⟩ := hx
+    simp only [Zn_Submodule_Euclidean, mem_map, WithLp.linearEquiv_symm_apply, mem_mk,
+      AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, Set.mem_setOf_eq]
+    refine ⟨fun i ↦ v i, ?_, ?_⟩
+    · simp only [Zn_Submodule, mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk,
+        Set.mem_setOf_eq, Int.cast_inj]
+      use v
+      simp
+    · aesop
 
 /-- An element of the Euclidean space lies in `ℤ^n` iff all its coordinates are integers. -/
 theorem EuclideanSpace.mem_Zn_Submodule_iff' (n : ℕ) : ∀ x : Euc(n),
     x ∈ (Zn_Submodule_Euclidean n) ↔ ∀ i : Fin n, ∃ m : ℤ, x i = m := by
   intro x
+  rw [EuclideanSpace.mem_Zn_Submodule_iff]
   constructor <;> intro h
   · obtain ⟨m, hm⟩ := h
     exact fun i => ⟨m i, hm i⟩
