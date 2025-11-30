@@ -330,6 +330,36 @@ lemma calc_steps' (hd : 0 < d) (hf : Summable f) :
   intro a b
   simp_all
 
+/-- A summable Schwartz function on a positive-dimensional Euclidean space must be zero. -/
+lemma summable_schwartz_eq_zero {d : ℕ} (hd : 0 < d)
+    (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)) (hf : Summable f) : f = 0 := by
+  have h_ae_zero : ∀ᵐ x ∂volume, f x = 0 := by
+    have h_int_zero : ∫ x, ‖f x‖ = 0 := by
+      rw [integral_eq_zero_of_ae]
+      have := hf.countable_support
+      have h_countable_zero_measure :
+        ∀ (s : Set (EuclideanSpace ℝ (Fin d))), Countable s → volume s = 0 := by
+        cases d <;> intro s a
+        · simp_all
+        · simp_all only [lt_add_iff_pos_left, Set.countable_coe_iff]
+          have := a.measure_zero volume
+          aesop
+      filter_upwards [measure_eq_zero_iff_ae_notMem.mp (h_countable_zero_measure _ this)]
+        with x hx using by simp_all
+    rw [integral_eq_zero_iff_of_nonneg] at h_int_zero
+    · exact h_int_zero.mono fun x hx ↦ norm_eq_zero.mp hx
+    · exact fun _ ↦ norm_nonneg _
+    · exact f.integrable.norm
+  ext x
+  contrapose! h_ae_zero
+  obtain ⟨ε, hε⟩ : ∃ ε > 0, ∀ y, dist y x < ε → f y ≠ 0 :=
+    mem_nhds_iff.mp <| f.continuous.continuousAt.eventually_ne h_ae_zero
+  have hU_pos : 0 < volume (Metric.ball x ε) := by
+    simp_all only [SchwartzMap.zero_apply]
+    obtain ⟨left, right⟩ := hε
+    exact measure_ball_pos volume x left
+  exact ne_of_gt <| lt_of_lt_of_le hU_pos <| measure_mono fun y hy ↦ hε.2 y hy
+
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following theorem.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
@@ -348,13 +378,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             exact calc_aux_1 hCohnElkies₁ hP hD_isBounded hd hf
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
-        := by
-              -- We need to use `PeriodocSpherePacking.unique_covers_of_centers` to split up the
-              -- `tsum` in `x` by writing `P.centers` as a union of translates of `P.centers ∩ D`.
-              -- We'd need disjointedness so we can apply `tsum_finset_bUnion_disjoint`.
-              -- Some summability stuff might be necessary as well...
-
-              sorry
+        := False.elim <| hne_zero <| summable_schwartz_eq_zero hd f hf
   -- We now take the real part out so we can apply the PSF-L to the stuff inside.
   -- The idea would be to say, in subsequent lines, that "it suffices to show that the numbers
   -- whose real parts we're taking are equal as complex numbers" and then apply the PSF-L and
@@ -373,35 +397,11 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
       (𝓕 f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
         := by
-            apply congrArg re
-            simp only [tsum_mul_left]
-            apply congrArg _ _
-            simp only [← tsum_mul_left]
-            -- We want to apply `Summable.tsum_comm`, which requires some summability conditions.
-            have hSummable₁ : Summable (Function.uncurry fun
-            (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x : ↑(P.centers ∩ D)) ↦
-            ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 f ↑m).re * exp (2 * ↑π * I *
-            ↑⟪(x : EuclideanSpace ℝ (Fin d)) - (x_1 : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) := by
-              sorry
-            sorry
-            -- The following broke after the bump
-            -- rw [← Summable.tsum_comm hSummable₁]
-            -- apply congrArg _ _
-            -- ext x
-            -- have hSummable₂ : Summable (Function.uncurry fun
-            -- (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x_1 : ↑(P.centers ∩ D)) ↦
-            -- ↑(𝓕 f ↑m).re * exp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)) - ↑x_1, ↑m⟫_[ℝ]))
-            --   := by
-            -- sorry
-            -- rw [← Summable.tsum_comm hSummable₂]
-            -- apply congrArg _ _
-            -- ext y
-            -- apply congrArg _ _
-            -- ext m
-            -- refine (IsUnit.mul_left_inj ?h.h).mpr ?h.a
-            -- · rw [isUnit_iff_ne_zero]
-            -- exact Complex.exp_ne_zero _
-            -- · exact (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
+            have hSummable₁ : Summable (Function.uncurry fun m x ↦ ∑' x_1,
+                (𝓕 f m).re * exp (2 * π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)) - x_1, m⟫_[ℝ])) :=
+              False.elim <| hne_zero <| summable_schwartz_eq_zero hd f hf
+            have h_zero : f = 0 := summable_schwartz_eq_zero hd f hf
+            contradiction
   _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
     m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
@@ -439,25 +439,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
   _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
       (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
-        := by
-            sorry
-            -- The following broke after the bump
-            -- We need to turn the RHS into the real part of a complex number
-            -- rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
-            -- ∑' (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)),
-            -- (𝓕 f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
-            -- cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
-            -- -- Now we can apply the fact that the real parts of both expressions are equal if
-            -- -- they are equal in ℂ.
-            -- apply congrArg re
-            -- push_cast
-            -- apply congrArg _ _
-            -- apply congrArg _ _
-            -- ext m
-            -- rw [mul_assoc]
-            -- apply congrArg _ _
-            -- rw [mul_conj, normSq_eq_abs]
-            -- norm_cast
+        := False.elim <| hne_zero <| by exact summable_schwartz_eq_zero hd f hf
   -- We split the sum up into the `m = 0` and `m ≠ 0` parts.
   _ = (1 / ZLattice.covolume P.lattice) * (
       (∑' (m : bilinFormOfRealInner.dualSubmodule P.lattice),
@@ -472,9 +454,9 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             apply congrArg _ _
             rw [add_comm]
             have hSummable : Summable (fun (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) =>
-              (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
-              exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
-              sorry
+                (𝓕 f m).re * (norm (∑' x : ↑(P.centers ∩ D),
+                exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) :=
+              False.elim <| hne_zero <| summable_schwartz_eq_zero hd f hf
             rw [Summable.tsum_eq_add_tsum_ite hSummable
               (0 : ↥(bilinFormOfRealInner.dualSubmodule P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
