@@ -25,7 +25,7 @@ density within a fundamental domain w.r.t. any basis.
 -/
 
 open scoped ENNReal
-open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module
+open SpherePacking EuclideanSpace MeasureTheory Metric ZSpan Bornology Module ZLattice
 
 section aux_lemmas
 
