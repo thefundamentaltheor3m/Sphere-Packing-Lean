@@ -287,10 +287,29 @@ lemma Γ2_descent (A : Γ 2) (h : A.1 1 0 ≠ 0) :
       simp_all [Gamma_mem, Fin.isValue]
       obtain ⟨left, right⟩ := property
       exact exists_eq_mul_right_of_dvd <| by erw [← ZMod.intCast_zmod_eq_zero_iff_dvd]; simp_all
-    have := Γ2_reduce_row (A.val.val 0 0) (2 * k) ?_ ?_ ?_ <;> aesop
-    · exact ZMod.intCast_eq_one_iff_odd.mp left
-    · rcases Int.even_or_odd' (val 0 0) with ⟨c, d | d⟩ <;> aesop
-      cases left
+    have := Γ2_reduce_row (A.val.val 0 0) (2 * k) ?_ ?_ ?_ --<;> aesop?
+    · simp_all only [Fin.isValue, ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, false_or, abs_mul,
+        Nat.abs_ofNat]
+    · simp_all only [Fin.isValue, ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, false_or]
+      obtain ⟨val, property⟩ := A
+      simp_all only [Fin.isValue]
+      simp_all only [Gamma_mem, Fin.isValue, Int.cast_mul, Int.cast_ofNat, mul_eq_zero]
+      obtain ⟨left, right⟩ := property
+      obtain ⟨left_1, right⟩ := right
+      obtain ⟨left_2, right⟩ := right
+      cases left_2 with
+      | inl h_1 => exact ZMod.intCast_eq_one_iff_odd.mp left
+      | inr h_2 =>
+        rcases Int.even_or_odd' (val 0 0) with ⟨c, d | d⟩ --<;> aesop
+        · simp_all only [Fin.isValue, Int.cast_mul, Int.cast_ofNat, mul_eq_one]
+          obtain ⟨left, right_1⟩ := left
+          cases left
+        · simp_all only [Fin.isValue, Int.cast_add, Int.cast_mul, Int.cast_ofNat,
+            Int.cast_one, add_eq_right, mul_eq_zero, even_two, Even.mul_right, Even.add_one]
+    · simp_all only [Fin.isValue, ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, false_or, even_two,
+        Even.mul_right]
+    · simp_all only [Fin.isValue, ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, false_or, or_self,
+        not_false_eq_true]
   obtain ⟨m, hm⟩ :
       ∃ m, |(A.val.val 1 0) + 2 * m * ((A.val.val 0 0) + 2 * n * (A.val.val 1 0))|
         < |(A.val.val 0 0) + 2 * n * (A.val.val 1 0)| := by
@@ -334,9 +353,10 @@ lemma Γ2_descent (A : Γ 2) (h : A.1 1 0 ≠ 0) :
           norm_num⟩ := by
       intro n; induction n using Int.induction_on
       · exact Subtype.ext <| by ext i j; fin_cases i <;> fin_cases j <;> rfl;
-      · simp_all [zpow_add, zpow_one]
+      · simp_all only [Gamma_mem, Fin.isValue, ne_eq, zpow_natCast, zpow_add, zpow_one]
         ext i j ; fin_cases i <;> fin_cases j <;> norm_num [Matrix.mul_apply, α]; ring
-      · simp_all [zpow_sub]
+      · simp_all only [Gamma_mem, Fin.isValue, ne_eq, zpow_neg, zpow_natCast, mul_neg, zpow_sub,
+          zpow_one]
         erw [Subtype.ext_iff]
         norm_num [Matrix.mul_apply, Matrix.adjugate_fin_two]
         erw [show (α : Matrix.SpecialLinearGroup (Fin 2) ℤ) = ⟨Matrix.of ![![1, 2], ![0, 1]],
