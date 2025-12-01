@@ -173,27 +173,31 @@ end Bounding_Integrand
 
 section Integrability
 
-lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
-    (hC₀ : ∀ x ∈ Ici 1, ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x)) :
+lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0) :
     IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := by
   set f := fun s : ℝ ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)
   have hcont : ContinuousOn f (Ici 1) := by
     have h1 : ContinuousOn (fun s : ℝ ↦ rexp ((-2 * π) * s)) (Ici 1) :=
       Real.continuous_exp.comp_continuousOn (continuousOn_const.mul continuousOn_id)
-    have h2 : ContinuousOn (fun s : ℝ ↦ rexp ((-π * r) * s⁻¹)) (Ici 1) := Real.continuous_exp.comp_continuousOn
-      (continuousOn_const.mul (continuousOn_id.inv₀ fun _ hx ↦ (zero_lt_one.trans_le hx).ne'))
+    have h2 : ContinuousOn (fun s : ℝ ↦ rexp ((-π * r) * s⁻¹)) (Ici 1) :=
+      Real.continuous_exp.comp_continuousOn
+        (continuousOn_const.mul (continuousOn_id.inv₀ fun _ hx ↦ (zero_lt_one.trans_le hx).ne'))
     simpa [f, mul_comm, mul_left_comm, div_eq_mul_inv] using continuousOn_const.mul (h1.mul h2)
   have hO : f =O[atTop] fun s ↦ rexp (-(2 * π) * s) := .of_bound (c := |C₀| * rexp (π * |r|)) <| by
     filter_upwards [Filter.Ici_mem_atTop 1] with s hs
-    have heb : rexp (-π * r / s) ≤ rexp (π * |r|) := Real.exp_le_exp.mpr <| (le_abs_self _).trans <| by
-      simp [abs_div, abs_mul, abs_of_nonneg Real.pi_pos.le]; exact div_le_self (by positivity) (by rwa [abs_of_nonneg (zero_lt_one.trans_le hs).le])
-    simp only [f, Real.norm_eq_abs, Real.abs_exp, abs_mul, mul_comm, mul_left_comm, mul_assoc, div_eq_mul_inv]
+    have heb : rexp (-π * r / s) ≤ rexp (π * |r|) :=
+      Real.exp_le_exp.mpr <| (le_abs_self _).trans <| by
+        simp [abs_div, abs_mul, abs_of_nonneg Real.pi_pos.le]
+        exact div_le_self (by positivity) (by rwa [abs_of_nonneg (zero_lt_one.trans_le hs).le])
+    simp only [f, Real.norm_eq_abs, Real.abs_exp, abs_mul, mul_comm, mul_left_comm,
+      mul_assoc, div_eq_mul_inv]
     calc |C₀| * (rexp (r * (s⁻¹ * -π)) * rexp (s * (π * -2)))
         = |C₀| * rexp ((-2 * π) * s) * rexp (-π * r / s) := by ring_nf
       _ ≤ _ := mul_le_mul_of_nonneg_left heb (by positivity)
       _ = _ := by ring_nf
   simpa [f, div_eq_mul_inv, neg_mul, mul_neg, mul_comm, mul_left_comm, mul_assoc] using
-    (integrableOn_Ici_iff_integrableOn_Ioi).mpr (integrable_of_isBigO_exp_neg (by positivity) hcont hO)
+    (integrableOn_Ici_iff_integrableOn_Ioi).mpr
+      (integrable_of_isBigO_exp_neg (by positivity) hcont hO)
 
 end Integrability
 
@@ -209,7 +213,7 @@ lemma I₃'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, �
     positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₃'_bounding_aux_2 r
   use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hC₀_pos hC₀) measurableSet_Ici hC₀
+  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hC₀_pos) measurableSet_Ici hC₀
 
 theorem I₃'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₃' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
