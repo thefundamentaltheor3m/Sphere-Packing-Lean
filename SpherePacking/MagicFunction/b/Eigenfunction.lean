@@ -21,9 +21,20 @@ theorem perm_J₅ : fourierTransformCLE ℂ (J₅) = -J₆ := by sorry
 -- Should use results from `RadialSchwartz.Radial` and linearity to prove the reverse.
 
 theorem perm_₃_J₄ : fourierTransformCLE ℂ (J₃ + J₄) = -(J₁ + J₂) := by
-  have h₁ : fourierTransformCLE ℂ (fourierTransformCLE ℂ J₁) = J₁ := by ext x; simpa [J₁, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply, Real.fourierIntegralInv_eq_fourierIntegral_neg] using congrArg (· (-x)) (J₁.continuous.fourier_inversion J₁.integrable (fourierTransformCLE ℂ J₁).integrable)
-  have h₂ : fourierTransformCLE ℂ (fourierTransformCLE ℂ J₂) = J₂ := by ext x; simpa [J₂, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply, Real.fourierIntegralInv_eq_fourierIntegral_neg] using congrArg (· (-x)) (J₂.continuous.fourier_inversion J₂.integrable (fourierTransformCLE ℂ J₂).integrable)
-  simpa [map_add, map_neg, h₁, h₂, add_comm] using congrArg (-fourierTransformCLE ℂ ·) perm_J₁_J₂ |>.symm
+  have h₁ : fourierTransformCLE ℂ (fourierTransformCLE ℂ J₁) = J₁ := by
+    ext x
+    simpa [J₁, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply,
+      Real.fourierIntegralInv_eq_fourierIntegral_neg] using
+        congrArg (· (-x)) (J₁.continuous.fourier_inversion J₁.integrable
+          (fourierTransformCLE ℂ J₁).integrable)
+  have h₂ : fourierTransformCLE ℂ (fourierTransformCLE ℂ J₂) = J₂ := by
+    ext x
+    simpa [J₂, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply,
+      Real.fourierIntegralInv_eq_fourierIntegral_neg] using
+        congrArg (· (-x)) (J₂.continuous.fourier_inversion J₂.integrable
+          (fourierTransformCLE ℂ J₂).integrable)
+  simpa [map_add, map_neg, h₁, h₂, add_comm] using
+    congrArg (-fourierTransformCLE ℂ ·) perm_J₁_J₂ |>.symm
 
 theorem perm_J₆ : fourierTransformCLE ℂ (J₆) = -J₅ := by
   have h : (fourierTransformCLE ℂ).symm J₆ = fourierTransformCLE ℂ J₆ := by
