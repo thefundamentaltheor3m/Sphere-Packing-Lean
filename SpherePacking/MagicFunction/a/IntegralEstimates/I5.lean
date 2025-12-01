@@ -174,7 +174,17 @@ section Integrability
 
 lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
     (hC₀ : ∀ x ∈ Ici 1, ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x)) :
-    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := sorry
+    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := by
+  have h_exp : IntegrableOn (fun s => rexp ((-2 * π) * s)) (Ici 1) := (integrableOn_Ici_iff_integrableOn_Ioi).mpr <|
+    by simpa [mul_comm] using integrableOn_exp_mul_Ioi (by linarith [Real.pi_pos] : -2 * π < 0) 1
+  have h_bnd : ∀ᵐ s ∂volume.restrict (Ici (1:ℝ)), ‖rexp (-π * r / s)‖ ≤ rexp (π * |r|) := by
+    rw [ae_restrict_iff' measurableSet_Ici]; refine .of_forall fun s (hs : 1 ≤ s) ↦ ?_
+    simp only [Real.norm_eq_abs, abs_of_nonneg (Real.exp_pos _).le]; apply Real.exp_le_exp.mpr
+    calc -π * r / s ≤ |-(π * r) / s| := by simpa [neg_mul] using le_abs_self _
+      _ = (π * |r|) / s := by simp [abs_div, abs_neg, abs_mul, abs_of_nonneg Real.pi_pos.le, abs_of_nonneg (zero_le_one.trans hs)]
+      _ ≤ _ := div_le_self (mul_nonneg Real.pi_pos.le (abs_nonneg _)) hs
+  simpa [IntegrableOn, mul_comm, mul_left_comm, mul_assoc, div_eq_mul_inv] using (h_exp.const_mul C₀).bdd_mul'
+    (Real.continuous_exp.measurable.comp (measurable_const.mul measurable_id.inv)).aestronglyMeasurable h_bnd
 
 end Integrability
 
