@@ -70,7 +70,26 @@ Restriction and slash action under S: $(F |_k S) (it) = (it)^{-k} * F(it)$
 -/
 theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0 < t) :
     (F ∣[k] S).resToImagAxis t = (Complex.I) ^ (-k) * t ^ (-k) * F.resToImagAxis (1 / t) := by
-  sorry
+  have ht' : 0 < 1 / t := (one_div_pos).2 ht
+  set z : ℍ := ⟨I * (t : ℂ), by simp [ht]⟩ with hzdef
+  set z' : ℍ := ⟨I * (1 / t : ℝ), by simpa [ht']⟩ with hz'def
+  have h_inv_z : (- (z : ℂ))⁻¹ = I * (1 / t) := by
+    have h1 : (1 / (t : ℂ) : ℂ) = ((1 / t : ℝ) : ℂ) := by simp [one_div]
+    simp [hzdef, h1, inv_neg, one_div, inv_I, mul_comm]
+  have h_arg : mk (-z)⁻¹ z.im_inv_neg_coe_pos = z' := by
+    apply UpperHalfPlane.ext; simp [h_inv_z, hz'def]
+  have hzpow : z ^ (-k) = I ^ (-k) * (t : ℂ) ^ (-k) := by
+    simpa [hzdef] using (mul_zpow (I : ℂ) (t : ℂ) (-k))
+  have hmain : (F ∣[k] S) z = I ^ (-k) * (t : ℂ) ^ (-k) * F z' := by
+    have hslash := modular_slash_S_apply (f := F) (k := k) (z := z)
+    calc
+      (F ∣[k] S) z
+          = F (mk (-z)⁻¹ z.im_inv_neg_coe_pos) * z ^ (-k) := hslash
+      _   = F z' * z ^ (-k) := by
+              simpa using congrArg (fun w : ℍ => F w * z ^ (-k)) h_arg
+      _   = I ^ (-k) * (t : ℂ) ^ (-k) * F z' := by
+              simp [hzpow, mul_comm]
+  simpa [ResToImagAxis, ht, hz'def] using hmain
 
 /--
 Realenss, positivity and essential positivity are closed under the addition and multiplication.
