@@ -2,6 +2,8 @@ import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
 import Mathlib.NumberTheory.ModularForms.SlashActions
 
+import SpherePacking.ModularForms.SlashActionAuxil
+
 open UpperHalfPlane hiding I
 
 open Real Complex ContinuousMap Matrix CongruenceSubgroup ModularGroup
@@ -64,11 +66,10 @@ theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDifferentiable �
   rw [ofComplex_apply_of_im_pos]
 
 /--
-Restriction and slash action under S: $(F |_k S) (it) = t^{-k} * F(it)$
+Restriction and slash action under S: $(F |_k S) (it) = (it)^{-k} * F(it)$
 -/
-theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) (t : ℝ)
-    (ht : 0 < t) : (F ∣[k] S).resToImagAxis t = Complex.I ^ k * t ^ (-k) * F.resToImagAxis (1 / t)
-    := by
+theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0 < t) :
+    (F ∣[k] S).resToImagAxis t = (Complex.I) ^ (-k) * t ^ (-k) * F.resToImagAxis (1 / t) := by
   sorry
 
 /--
