@@ -220,14 +220,21 @@ lemma Γ2_c_eq_zero (A : Γ 2) (h : A.1 1 0 = 0) : A ∈ Subgroup.closure {α, �
           induction k using Int.induction_on <;> aesop?
           · norm_cast
             exact Eq.symm (by induction i + 1 <;> simp_all [pow_succ, Matrix.mul_apply])
-          · induction i <;> simp_all [pow_succ]
-            norm_num [zpow_add, zpow_sub , Matrix.vecMul, Matrix.vecHead, Matrix.vecTail,
-              Matrix.mul_apply]
-            rename_i n
-            exact Nat.recOn n (by norm_num) fun n ih ↦ by
-              simp only [mul_apply, of_apply, cons_val', cons_val_zero, Fin.sum_univ_two,
-                cons_val_one, Nat.succ_eq_add_one, pow_succ]
-              grind
+          · induction i
+            · simp_all only [Fin.isValue, Int.reduceNeg, CharP.cast_eq_zero, neg_zero, zero_sub,
+              mul_neg, mul_one, mul_zero, neg_eq_zero, OfNat.ofNat_ne_zero, pow_zero, one_apply_eq,
+              implies_true, zpow_neg, zpow_one, SpecialLinearGroup.coe_inv, adjugate_fin_two_of,
+              of_apply, cons_val', cons_val_zero, cons_val_fin_one]
+            · simp_all only [Fin.isValue, Int.reduceNeg, Nat.cast_add, Nat.cast_one, neg_add_rev,
+              mul_eq_mul_left_iff, sub_left_inj, add_eq_right, neg_eq_zero, one_ne_zero,
+              OfNat.ofNat_ne_zero, or_self, IsEmpty.forall_iff, implies_true, pow_succ]
+              norm_num [zpow_add, zpow_sub , Matrix.vecMul, Matrix.vecHead, Matrix.vecTail,
+                Matrix.mul_apply]
+              rename_i n
+              exact Nat.recOn n (by norm_num) fun n ih ↦ by
+                simp only [mul_apply, of_apply, cons_val', cons_val_zero, Fin.sum_univ_two,
+                  cons_val_one, Nat.succ_eq_add_one, pow_succ]
+                grind
       simp_all only [zpow_neg, Fin.isValue, Subgroup.mem_closure]
       intro K hK
       convert K.mul_mem (hK <| Set.mem_insert_of_mem _ <| Set.mem_insert_of_mem _
