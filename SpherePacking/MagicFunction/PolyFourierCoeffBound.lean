@@ -564,71 +564,308 @@ end sigma
 
 section Corollaries
 
-theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
-    norm (φ₀ z) ≤ C₀ * rexp (-2 * π * z.im) := by
-  -- This is a reasonable thing to do because all inputs are in nonnegative
-  let c : ℤ → ℂ := fun n ↦ n * (σ 3 n.toNat)
-  let d : ℕ → ℂ := fun n ↦ n * (σ 3 n)
-  have hcd (n : ℕ) : c n = d n := by congr
-  have hdpoly : d =O[atTop] (fun n ↦ (n ^ 5 : ℂ)) := by
-    have h₁ (n : ℕ) : n ^ 5 = n * n ^ 4 := by exact Nat.pow_succ'
-    norm_cast
-    simp only [h₁]
-    push_cast
-    refine IsBigO.mul (isBigO_refl _ atTop) ?_
-    have h := ArithmeticFunction.sigma_asymptotic' 3
-    simp only [Nat.reduceAdd] at h
-    norm_cast at h ⊢
-  have hcpoly : c =O[atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
-    -- Use `Asymptotics.IsBigO.congr'` to relate properties of c to properties of d
-    simp only [isBigO_iff, norm_pow, Complex.norm_natCast, eventually_atTop,
-      ge_iff_le] at hdpoly ⊢
-    obtain ⟨R, m, hR⟩ := hdpoly
-    use R, m
-    intro n hn
-    have hnnonneg : 0 ≤ n := calc 0
-      _ ≤ (m : ℤ) := by positivity
-      _ ≤ ↑n := hn
-    have hnnat : n.toNat = n := by
-      simp only [Int.ofNat_toNat, sup_eq_left, hnnonneg]
-    have hmnnat : m ≤ n.toNat := by
-      zify
-      rw [hnnat]
-      exact hn
-    specialize hR n.toNat hmnnat
-    rw [← hcd, hnnat] at hR
-    calc norm (c n)
-    _ ≤ R * n.toNat ^ 5 := hR
-      -- rwa [Real.norm_natCast] at hR
-    _ = R * |↑n| ^ 5 := by
-      simp only [mul_eq_mul_left_iff]
-      norm_cast
-      left
-      rw [cast_pow, hnnat]
-      simp [hnnonneg, abs_of_nonneg]
-  use DivDiscBound c 4
-  constructor
-  · rw [gt_iff_lt]
-    refine DivDiscBound_pos c 4 ?_ 5 hcpoly
-    have : c 4 = 4 * (σ 3 4) := rfl
-    rw [this]
-    simp only [ne_eq, _root_.mul_eq_zero, OfNat.ofNat_ne_zero, cast_eq_zero, false_or]
-    have : ¬((σ 3) 4 = 0) ↔ ¬ (∑ d ∈ divisors 4, d ^ 3 = 0) := by rfl
-    rw [this]
-    simp only [Finset.sum_eq_zero_iff, mem_divisors, ne_eq, OfNat.ofNat_ne_zero,
-      not_false_eq_true, and_true, pow_eq_zero_iff, not_forall]
-    exact ⟨2, (by norm_num), (by norm_num)⟩
-  · simp only [φ₀]
-    intro z hz
-    calc _ ≤ _ := DivDiscBoundOfPolyFourierCoeff z hz c 4 ?_ 5 hcpoly
-          (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) ?_
-      _ = _ := by congr 2; ring
-    · sorry
-    · -- This is where I need to use Bhavik's result
+/- The coefficients of `E₂ E₄ - E₆`. -/
+noncomputable def coeff_g (n : ℕ) : ℂ := 720 * (n : ℂ) * (sigma 3 n : ℂ)
 
-      sorry
-    -- · sorry
-    -- · sorry
+/- The coefficients of `E₂ E₄ - E₆` are `O(n^5)`. -/
+lemma coeff_g_bound : coeff_g =O[atTop] (fun n ↦ (n : ℝ) ^ 5) := by
+  have h_sigma3 : (fun n ↦ (sigma 3 n : ℝ)) =O[atTop] (fun n ↦ (n : ℝ) ^ 4) :=
+    ArithmeticFunction.sigma_asymptotic 3
+  have h_const : (fun n ↦ 720 * n * (sigma 3 n : ℝ)) =O[atTop]
+      (fun n ↦ n * (n : ℝ) ^ 4) := by
+    rw [isBigO_iff] at *
+    obtain ⟨c, hc⟩ := h_sigma3
+    use 720 * c
+    filter_upwards [hc] with n hn
+    simp only [mul_comm, mul_assoc, norm_mul, RCLike.norm_natCast, Real.norm_ofNat, norm_pow,
+      mul_left_comm] at *
+    nlinarith
+  convert h_const using 2
+  · ext
+    norm_num [coeff_g, isBigO_iff]
+  · ring
+
+/- The coefficients of `(E₂ E₄ - E₆) ^ 2`, defined as the convolution of `coeff_g`. -/
+noncomputable def coeff_sq (n : ℕ) : ℂ := ∑ k ∈ Finset.range (n + 1), coeff_g k * coeff_g (n - k)
+
+/- The coefficients of `(E₂ E₄ - E₆) ^ 2` are `O(n^{11})`. -/
+lemma coeff_sq_bound : coeff_sq =O[atTop] (fun n : ℕ ↦ (n : ℝ) ^ 11) := by
+  rw [Asymptotics.isBigO_iff]
+  obtain ⟨c₁, hc₁⟩ : ∃ c₁, ∀ n, ‖coeff_g n‖ ≤ c₁ * n ^ 5 := by
+    obtain ⟨c, hc⟩ : ∃ c, ∀ n, ‖(sigma 3 n : ℂ)‖ ≤ c * n ^ 4 := by
+      norm_num [sigma]
+      refine ⟨1, fun n ↦ mod_cast (Finset.sum_le_sum_of_subset (Finset.filter_subset _ _)).trans
+        (n.recOn (by norm_num) fun n ih ↦ ?_)⟩
+      norm_num [Finset.sum_Ico_succ_top]
+      nlinarith [sq n]
+    refine ⟨720 * c, fun n ↦ ?_⟩
+    rw [coeff_g]
+    convert mul_le_mul_of_nonneg_left (hc n) (by positivity : (0 : ℝ) ≤ 720 * n) |>.trans ?_
+    · simp
+    · grind
+  have h_sum_bound : ∀ n, ‖coeff_sq n‖ ≤ (n + 1) * c₁ ^ 2 * n ^ 10 := by
+    refine fun n ↦ (norm_sum_le _ _).trans ?_
+    have h_term_bound : ∀ k, k ≤ n → ‖coeff_g k * coeff_g (n - k)‖ ≤ c₁ ^ 2 * n ^ 10 := by
+      intros k hk
+      have h_term_bound : ‖coeff_g k * coeff_g (n - k)‖ ≤ c₁ ^ 2 * k ^ 5 * (n - k) ^ 5 := by
+        have h_norm_prod : ‖coeff_g k * coeff_g (n - k)‖ = ‖coeff_g k‖ * ‖coeff_g (n - k)‖ :=
+          norm_mul _ _
+        convert mul_le_mul (hc₁ k) (hc₁ (n - k)) (norm_nonneg _) ((norm_nonneg _).trans (hc₁ k))
+          using 1
+        rw [Nat.cast_sub hk]
+        ring
+      have h_max : ∀ k : ℕ, k ≤ n → k ^ 5 * (n - k) ^ 5 ≤ (n : ℝ) ^ 10 := by
+        intros k hk
+        have h_max : k ^ 5 ≤ (n : ℝ) ^ 5 ∧ (n - k) ^ 5 ≤ (n : ℝ) ^ 5 :=
+          ⟨by gcongr, pow_le_pow_left₀ (sub_nonneg.mpr <| Nat.cast_le.mpr hk)
+            (sub_le_self _ <| Nat.cast_nonneg _) _⟩
+        refine (mul_le_mul h_max.1 h_max.2 (pow_nonneg (sub_nonneg.2 <| Nat.cast_le.2 hk) _)
+          <| by positivity).trans ?_
+        ring_nf
+        exact le_rfl
+      refine h_term_bound.trans ?_
+      simpa only [mul_assoc] using mul_le_mul_of_nonneg_left (h_max k hk) (sq_nonneg c₁)
+    refine (Finset.sum_le_sum fun i hi ↦ h_term_bound i (Finset.mem_range_succ_iff.mp hi)).trans ?_
+    norm_num
+    nlinarith
+  refine ⟨2 * c₁ ^ 2, ?_⟩
+  filter_upwards [eventually_gt_atTop 1] with n hn
+  refine (h_sum_bound n).trans ?_
+  rw [norm_of_nonneg (by positivity)]
+  nlinarith [show 0 ≤ (n : ℝ) ^ 10 by positivity,
+    mul_le_mul_of_nonneg_left (show 2 ≤ (n : ℝ) by exact_mod_cast hn)
+    (show 0 ≤ (c₁ ^ 2 : ℝ) by positivity)]
+
+/- `(E₂ E₄ - E₆) ^ 2` is equal to the series with coefficients `coeff_sq`. -/
+lemma E2E4mE6_sq_eq_sum (z : ℍ) :
+  ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2 = ∑' n : ℕ, coeff_sq n * cexp (2 * π * I * n * z) := by
+    have h_conv : (E₂ z * E₄ z - E₆ z) ^ 2 = (∑' n, coeff_g n * cexp (2 * π * .I * n * z)) ^ 2 := by
+      rw [E₂_mul_E₄_sub_E₆, ← tsum_mul_left, Eq.comm, tsum_eq_tsum_of_ne_zero_bij]
+      use fun x ↦ x.val
+      · exact fun ⟨_, _⟩ ⟨_, _⟩ h ↦ by simpa using h
+      · intro n hn
+        have : n ≠ 0 := fun h ↦ by norm_num [coeff_g, h] at hn
+        exact ⟨⟨⟨n, pos_of_ne_zero this⟩, by simp [this]⟩, rfl⟩
+      · grind [coeff_g]
+    have h_summable₀ : Summable (fun n : ℕ ↦ n ^ 5 * (rexp (-2 * π * z.im)) ^ n) := by
+      refine summable_of_ratio_norm_eventually_le (r := (1 + rexp (-2 * π * z.im)) / 2) ?_ ?_
+      · linarith [exp_lt_one_iff.mpr (show -2 * π * z.im < 0 by nlinarith [pi_pos, z.im_pos])]
+      · have h_exp_lt_one : rexp (-2 * π * z.im) < 1 :=
+          Real.exp_lt_one_iff.mpr (by nlinarith [pi_pos, z.im_pos])
+        have h_lim : Tendsto (fun n : ℕ ↦ (1 + 1 / n) ^ 5 * rexp (-2 * π * z.im)) atTop
+            (nhds (.exp (-2 * π * z.im))) := by
+          convert ((tendsto_const_nhds.add (tendsto_one_div_atTop_nhds_zero_nat)).pow 5 ).mul
+            tendsto_const_nhds using 2
+          norm_num
+        have ⟨M, hM⟩ : ∃ M : ℕ, ∀ n ≥ M,
+            (1 + 1 / n) ^ 5 * rexp (-2 * π * z.im) ≤ (1 + rexp (-2 * π * z.im)) / 2 :=
+          eventually_atTop.mp (h_lim.eventually (ge_mem_nhds <| by linarith))
+        have ⟨N, hN⟩ : ∃ N : ℕ, ∀ n ≥ N,
+            (n + 1) ^ 5 * rexp (-2 * π * z.im) ≤ (1 + rexp (-2 * π * z.im)) / 2 * n ^ 5 := by
+          refine ⟨M + 1, fun n hn ↦ ?_⟩
+          have := hM n (le_of_succ_le hn)
+          rw [one_add_div (by norm_cast; omega), div_pow, div_mul_eq_mul_div,
+            div_le_iff₀ (by exact mod_cast pow_pos (by omega) _)] at this
+          omega
+        norm_num
+        refine ⟨N, fun n hn ↦ ?_⟩
+        rw [abs_of_nonneg (by positivity)]
+        convert mul_le_mul_of_nonneg_right (hN n hn)
+          (pow_nonneg (exp_nonneg (-(2 * π * z.im))) n) using 1 <;> ring_nf
+    have h_summable₁ : Summable (fun n : ℕ ↦ n ^ 5 * rexp (-2 * π * n * z.im)) := by
+      convert h_summable₀ using 3
+      simp [← Real.exp_nat_mul, mul_assoc, mul_comm, mul_left_comm]
+    have h_summable₂ : Summable (fun n ↦ (720 * n * sigma 3 n) * rexp (-2 * π * n * z.im)) := by
+      refine .of_nonneg_of_le (fun n ↦ by positivity) (fun n ↦ ?_) (h_summable₁.mul_left 720)
+      have h_sigma_bound : sigma 3 n ≤ (n : ℝ) ^ 4 := by
+        norm_cast
+        rcases n.eq_zero_or_pos with hn | hn
+        · norm_num [hn, ArithmeticFunction.map_zero]
+        refine (Finset.sum_le_sum_of_subset (fun x hx ↦ Finset.mem_Icc.mpr
+          ⟨pos_of_mem_divisors hx, le_of_dvd hn (dvd_of_mem_divisors hx)⟩)).trans ?_
+        refine (Finset.sum_le_sum fun i hi ↦ Nat.pow_le_pow_left
+          (Finset.mem_Icc.mp hi).2 3).trans ?_
+        simp [Nat.pow_succ _ 3, mul_comm]
+      grw [h_sigma_bound, mul_assoc 720, mul_assoc]
+      grind
+    have h_summable₃ : Summable (fun n ↦ norm (coeff_g n) * rexp (-2 * π * n * z.im)) := by
+      convert h_summable₂
+      simp [coeff_g]
+    have h_summable : Summable (fun n ↦ coeff_g n * cexp (2 * π * .I * n * z)) := by
+      refine Summable.of_norm ?_
+      convert h_summable₃
+      norm_num [norm_exp]
+    have h_summable' : Summable (fun n ↦ ‖coeff_g n * cexp (2 * π * .I * n * z)‖) := by
+      convert h_summable₂ using 2
+      simp [coeff_g, norm_exp]
+    rw [h_conv, sq, Summable.tsum_mul_tsum_eq_tsum_sum_range h_summable h_summable ?_]
+    · congr with n
+      simp_rw [coeff_sq, Finset.sum_mul]
+      refine Finset.sum_congr rfl fun x hx ↦ ?_
+      rw [Nat.cast_sub (Finset.mem_range_succ_iff.mp hx), mul_mul_mul_comm, ← Complex.exp_add]
+      ring_nf
+    · refine Summable.of_norm ?_
+      convert h_summable'.norm.mul_norm h_summable'.norm
+      simp [mul_assoc, mul_comm, mul_left_comm]
+
+/- Auxiliary coefficients for the bound on `φ₀`. -/
+noncomputable def c_aux (n : ℤ) : ℂ :=
+  if n < 0 then 0 else
+  if n.toNat % 2 = 0 then coeff_sq (n.toNat / 2) else 0
+
+/- `c_aux` is polynomially bounded by `n^{11}`. -/
+lemma c_aux_bound : c_aux =O[atTop] (fun n : ℤ ↦ (n : ℝ)^11) := by
+  have h_coeff_sq_bound : coeff_sq =O[atTop] (fun n : ℕ ↦ (n : ℝ) ^ 11) := coeff_sq_bound
+  rw [Asymptotics.isBigO_iff] at *
+  obtain ⟨c, hc⟩ := h_coeff_sq_bound
+  norm_num at *
+  obtain ⟨a, ha⟩ := hc
+  refine ⟨c, a * 2, fun b hb ↦ ?_⟩
+  rcases b with (_ | _ | b) <;> norm_num [c_aux]
+  · simp_all only [Int.ofNat_eq_coe]
+    split_ifs with h h'
+    · linarith
+    · simp_all only [not_lt, cast_nonneg]
+      rename_i a_1
+      refine (ha _ <| by linarith [Nat.mod_add_div a_1 2]).trans <| mul_le_mul_of_nonneg_left
+        (mod_cast Nat.pow_le_pow_left (Nat.div_le_self _ _) _) (le_of_not_gt fun hc ↦ ?_)
+      have := ha (a + 1) (a.le_add_right 1)
+      norm_num at *
+      nlinarith [norm_nonneg (coeff_sq (a + 1)), pow_pos (cast_add_one_pos (α := ℝ) a) 11]
+    · simp_all only [not_lt, cast_nonneg]
+      rw [norm_zero]
+      exact (norm_nonneg _).trans ((ha _ (by linarith)).trans <| by norm_num)
+  · linarith [Int.negSucc_lt_zero 0]
+  · linarith [Int.negSucc_lt_zero (b + 1)]
+
+/- The square of `E₂ E₄ - E₆` is given by the shifted series of `c_aux`. -/
+lemma E2E4mE6_sq_eq_sum_shifted_c_aux (z : ℍ) :
+    ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2 = ∑' n : ℕ, c_aux (n + 4) * cexp (π * I * (n + 4) * z) := by
+  have := E2E4mE6_sq_eq_sum z
+  unfold c_aux
+  simp only [ite_mul, zero_mul, this]
+  refine tsum_eq_tsum_of_ne_zero_bij (fun x ↦ 2 * x.val - 4) ?_ ?_ ?_ |>.symm
+  · intro ⟨x, hx⟩ ⟨y, hy⟩ a
+    simp only [Subtype.mk.injEq] at a ⊢
+    have h_eq : 2 * x = 2 * y := by
+      unfold coeff_sq at hx hy
+      congr
+      simp only [coeff_g, Finset.sum_range_succ', tsub_zero, Function.mem_support] at hx hy
+      rcases x with (_ | _ | x)
+      · norm_num at hx
+      · norm_num at hx
+      rcases y with (_ | _ | y)
+      · norm_num at hy
+      · norm_num at hy
+      · omega
+    exact mul_left_cancel₀ two_ne_zero h_eq
+  · refine fun x hx ↦ ⟨⟨(x + 4) / 2, ?_⟩, ?_⟩
+    · simp only [Function.mem_support, ne_eq, ite_eq_left_iff, ite_eq_right_iff,
+        Classical.not_imp] at hx
+      simpa using hx.2.2
+    norm_num
+    simp_all only [Function.mem_support, ne_eq, ite_eq_left_iff, not_lt, ite_eq_right_iff,
+      _root_.mul_eq_zero, Complex.exp_ne_zero, or_false, Classical.not_imp]
+    exact Nat.sub_eq_of_eq_add <| Nat.mul_div_cancel' (by omega)
+  · intro ⟨val, property⟩
+    split_ifs with h h
+    · grind
+    · have : 4 ≤ 2 * val := by
+        rcases val with (_ | _ | val)
+        · exact (property <| by norm_num [coeff_sq, coeff_g]).elim
+        · simp only [coeff_g, coeff_sq, zero_add, Function.mem_support, ne_eq,
+            Finset.sum_range_succ] at property
+          norm_num at property
+        · omega
+      rw [Nat.cast_sub this, Nat.cast_sub this]
+      grind
+    · simp_all only [not_lt, mod_two_not_eq_zero, zero_eq_mul, Complex.exp_ne_zero]
+      omega
+
+/- The series for `c_aux` is summable. -/
+lemma c_aux_summable (z : ℍ) : Summable fun n : ℕ ↦ c_aux (n + 4) * cexp (π * I * (n + 4) * z) := by
+  obtain ⟨C, hC⟩ : ∃ C, ∀ n : ℕ, n ≥ 4 → ‖c_aux n‖ ≤ C * n ^ 11 := by
+    obtain ⟨C, hC⟩ : ∃ C, ∀ n : ℕ, ‖coeff_sq n‖ ≤ C * n ^ 11 := by
+      have := coeff_sq_bound
+      simp only [Asymptotics.isBigO_iff, norm_pow, RCLike.norm_natCast, eventually_atTop] at this
+      obtain ⟨w, w', h⟩ := this
+      refine ⟨w ⊔ (∑ n ∈ Finset.range w', ‖coeff_sq n‖ / n ^ 11), fun n ↦ ?_⟩
+      by_cases hn : n < w'
+      · by_cases hn : n = 0
+        · simp [hn, mul_comm, coeff_sq, coeff_g]
+        · have := Finset.single_le_sum (fun a _ ↦ div_nonneg (norm_nonneg (coeff_sq a))
+            (pow_nonneg (cast_nonneg a) 11)) (Finset.mem_range.mpr ‹_›)
+          rw [div_le_iff₀ (by positivity)] at this
+          nlinarith [le_max_right w (∑ n ∈ Finset.range w', ‖coeff_sq n‖ / n ^ 11),
+            pow_pos (by positivity : 0 < (n : ℝ)) 11]
+      · exact (h n (le_of_not_gt hn)).trans
+          (mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity))
+    refine ⟨C, fun n hn ↦ ?_⟩
+    simp only [c_aux]
+    split_ifs
+    · grind
+    · have hC_nonneg : 0 ≤ C := by
+        specialize hC 1
+        norm_num at hC
+        exact (norm_nonneg _).trans hC
+      exact (hC _).trans
+        (mul_le_mul_of_nonneg_left (mod_cast Nat.pow_le_pow_left (div_le_self _ _) _) hC_nonneg)
+    · simp_all only [not_lt, cast_nonneg, mod_two_not_eq_zero, norm_zero]
+      exact le_trans (norm_nonneg _) (hC n) |> le_trans <| by norm_num
+  have h_factor : Summable (fun n : ℕ ↦ (n + 4) ^ 11 * rexp (-π * (n + 4) * z.im)) := by
+    have h_exp : rexp (-π * z.im) < 1 :=
+      Real.exp_lt_one_iff.mpr (mul_neg_of_neg_of_pos (neg_lt_zero.mpr pi_pos) z.im_pos)
+    have h_ratio_test :
+        Tendsto (fun n : ℕ ↦ ((n + 1 + 4) ^ 11 * rexp (-π * (n + 1 + 4) * z.im)) /
+            ((n + 4) ^ 11 * rexp (-π * (n + 4) * z.im)))
+          atTop (nhds (.exp (-π * z.im))) := by
+      suffices h_simplify : Tendsto (fun n : ℕ ↦ ((n + 5) / (n + 4)) ^ 11 * rexp (-π * z.im))
+          atTop (nhds (.exp (-π * z.im))) by
+        convert h_simplify using 2
+        field_simp
+        ring_nf
+        simp only [mul_assoc, ← Real.exp_add]
+        ring_nf
+      suffices h_simplify : Tendsto (fun n : ℕ ↦ (1 + 1 / (n + 4)) ^ 11 * rexp (-π * z.im))
+          atTop (nhds (.exp (-π * z.im))) by
+        refine h_simplify.congr fun n ↦ ?_
+        rw [one_add_div (by positivity)]
+        ring
+      exact (((tendsto_const_nhds.add <| tendsto_const_nhds.div_atTop <|
+        tendsto_atTop_add_const_right _ _ tendsto_natCast_atTop_atTop ).pow _ ).mul
+        tendsto_const_nhds).trans <| by norm_num
+    refine summable_of_ratio_norm_eventually_le
+      (r := (rexp (-π * z.im) + 1) / 2) (by linarith) ?_
+    have : rexp (-π * z.im) < (.exp (-π * z.im) + 1) / 2 := by linarith
+    have := h_ratio_test.eventually (gt_mem_nhds this)
+    simp_all only [ge_iff_le, neg_mul, exp_lt_one_iff, Left.neg_neg_iff, eventually_atTop,
+      cast_add, cast_one, norm_mul, norm_pow, norm_eq_abs, abs_exp]
+    obtain ⟨w, h⟩ := this
+    refine ⟨w, fun n hn ↦ ?_⟩
+    rw [abs_of_nonneg (by positivity), abs_of_nonneg (by positivity)]
+    have := h n hn
+    rw [div_lt_iff₀ (by positivity)] at this
+    grind
+  have h_factor : Summable (fun n : ℕ ↦ C * (n + 4) ^ 11 * rexp (-π * (n + 4) * z.im)) := by
+    simpa only [mul_assoc] using h_factor.mul_left C
+  have h_norm (n : ℕ) : ‖c_aux (n + 4) * cexp (π * .I * (n + 4) * z)‖ ≤
+      C * (n + 4) ^ 11 * rexp (-π * (n + 4) * z.im) := by
+    specialize hC (n + 4) (by norm_num)
+    norm_cast at *
+    simp_all only [cast_pow, cast_add, cast_ofNat, neg_mul, Complex.norm_mul]
+    gcongr
+    · exact (norm_nonneg _).trans hC
+    · simp [Complex.norm_exp]
+  exact (h_factor.of_nonneg_of_le (fun _ ↦ norm_nonneg _) h_norm).of_norm
+
+theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z, 1 / 2 < z.im → norm (φ₀ z) ≤ C₀ * rexp (-2 * π * z.im) := by
+  unfold φ₀
+  refine ⟨(DivDiscBound c_aux 4) ⊔ 1, by norm_num, fun z hz ↦ ?_⟩
+  have := DivDiscBoundOfPolyFourierCoeff z hz c_aux 4 (mod_cast c_aux_summable z) 11
+    c_aux_bound _ (fun x ↦ mod_cast E2E4mE6_sq_eq_sum_shifted_c_aux x)
+  ring_nf at *
+  exact (mul_comm (rexp _) _ ▸ this).trans <|
+    mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.exp_nonneg _)
 
 end Corollaries
 
