@@ -49,7 +49,23 @@ theorem I₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₂' := by
   sorry
 
 theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' := by
-  sorry
+  have hI : RealIntegrals.I₃' = fun x : ℝ => cexp (2 * π * I * x) * RealIntegrals.I₁' x := by
+    ext x
+    have hEqOn : EqOn
+        (fun t => I * φ₀'' (-1 / (z₃' t - 1)) * (z₃' t - 1) ^ 2 * cexp (π * I * x * z₃' t))
+        (fun t => cexp (2 * π * I * x) * (I * φ₀'' (-1 / (z₁' t + 1)) * (z₁' t + 1) ^ 2 *
+                                          cexp (π * I * x * z₁' t)))
+        (uIcc 0 1) := fun t ht => by
+      rw [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht
+      have h1 := z₁'_eq_of_mem ht; have h3 := z₃'_eq_of_mem ht
+      simp_rw [
+        show z₃' t - 1 = I * t by simp [h3],
+        show z₃' t = z₁' t + 2 by simp [h1, h3]; ring,
+        show z₁' t + 1 = I * t by simp [h1],
+        mul_add, Complex.exp_add, mul_comm, mul_left_comm, mul_assoc]
+    simpa [RealIntegrals.I₃', RealIntegrals.I₁', mul_comm, mul_left_comm, mul_assoc] using
+      intervalIntegral.integral_congr (a := 0) (b := 1) hEqOn
+  simpa [hI] using (contDiff_const.mul ofRealCLM.contDiff).cexp.mul I₁'_smooth'
 
 theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' := by
   sorry

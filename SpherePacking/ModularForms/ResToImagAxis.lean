@@ -2,6 +2,8 @@ import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
 import Mathlib.NumberTheory.ModularForms.SlashActions
 
+import SpherePacking.ModularForms.SlashActionAuxil
+
 open UpperHalfPlane hiding I
 
 open Real Complex ContinuousMap Matrix CongruenceSubgroup ModularGroup
@@ -64,12 +66,16 @@ theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDifferentiable �
   rw [ofComplex_apply_of_im_pos]
 
 /--
-Restriction and slash action under S: $(F |_k S) (it) = t^{-k} * F(it)$
+Restriction and slash action under S: $(F |_k S) (it) = (it)^{-k} * F(it)$
 -/
-theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) (t : ℝ)
-    (ht : 0 < t) : (F ∣[k] S).resToImagAxis t = Complex.I ^ k * t ^ (-k) * F.resToImagAxis (1 / t)
-    := by
-  sorry
+theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0 < t) :
+    (F ∣[k] S).resToImagAxis t = (Complex.I) ^ (-k) * t ^ (-k) * F.resToImagAxis (1 / t) := by
+  set z : ℍ := ⟨I * t, by simp [ht]⟩ with hzdef
+  set z' : ℍ := ⟨I * (1 / t : ℝ), by simpa [one_div_pos.2 ht]⟩ with hz'def
+  have h : mk (-z)⁻¹ z.im_inv_neg_coe_pos = z' := UpperHalfPlane.ext (by simp [hzdef, hz'def, mul_comm])
+  simpa [ResToImagAxis, ht, hz'def] using (by
+    rw [modular_slash_S_apply, h]; simp [hzdef, mul_zpow I (t : ℂ) (-k), mul_comm (F z')] :
+    (F ∣[k] S) z = I ^ (-k) * t ^ (-k) * F z')
 
 /--
 Realenss, positivity and essential positivity are closed under the addition and multiplication.
