@@ -70,7 +70,7 @@ lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀�
       simp only [pow_zero, arg_one, CharP.cast_eq_zero, zero_mul, implies_true, exists_const]
     · have hpi : 0 < π / n := by
         apply div_pos
-        exact Real.pi_pos
+        · exact Real.pi_pos
         simp only [Nat.cast_pos]
         omega
       obtain ⟨a, hA⟩ := h3 (π / n) hpi
@@ -111,7 +111,7 @@ lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) :
       simp only [preimage_setOf_eq, subset_refl]
     · have hpi : 0 < π / n := by
         apply div_pos
-        exact Real.pi_pos
+        · exact Real.pi_pos
         simp only [Nat.cast_pos]
         omega
       have hA1 := h3 (π / n) hpi
