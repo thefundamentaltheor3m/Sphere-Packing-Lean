@@ -329,7 +329,7 @@ lemma calc_steps' (hd : 0 < d) (hf : Summable f) :
   apply Summable.comp_injective hf
   intro a b
   simp_all
-
+/-
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following theorem.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
@@ -670,3 +670,5 @@ theorem LinearProgrammingBound (hd : 0 < d) (hf : Summable f) : SpherePackingCon
       (P.fundamental_domain_unique_covers b) hd hf
 
 end Main_Theorem
+-/
+end Fundamental_Domain_Dependent
