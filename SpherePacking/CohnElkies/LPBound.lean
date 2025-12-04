@@ -3,28 +3,22 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
-import SpherePacking.Basic.SpherePacking
-import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.CohnElkies.Prereqs
-import SpherePacking.ForMathlib.Complex
 
-open Complex Finset MeasureTheory SchwartzMap ZLattice ZSpan
+open Complex Finset Function MeasureTheory SchwartzMap ZLattice ZSpan
 open scoped ComplexOrder FourierTransform Real RealInnerProductSpace SchwartzMap
 
 /-!
 
 # TODOs:
 
-* Have a look into `Prereqs.lean` and decide what could be useful (expecially results propedeutical
-  to the PSF) and what became deprecated after the restyling.
-* Fill in the `sorry`s except those in the lemmas about the Poisson Summation Formula, which is
-  being taken care of in a separate PR.
-* Move/merge the entire `Poisson` section to the PSF file once the PSF is done.
-* Try to get rid of `P.Λ_def` and `P.X_Λ_def` which should be a tautology.
-* Move the equivalence `P.X ≃ P.X_Λ × P.Λ` of lemma `two` to `SpherePacking.lean` after it is
-  completed.
-* Fill in the `sorry`s in `SpherePacking.lean` and `PeriodicPacking.lean`, expecially the lemmas
-  used here.
+* `Prereqs.lean` contains all the prerequisites needed here in `LPBound.lean`.
+  All said lemmata and definitions are being proved, generalized and sorted in their
+  correct file in separate PRs. After that, `Prereqs.lean` will be deleted and the correct
+  imports will be added.
+* Get rid of `P.Λ_def` and `P.X_Λ_def` which should be a tautology.
+* Golf lemma `n` with `n ∈ {one, two, three, four, five}`.
+* For now, the hypothesis `f ≠ 0` in Cohn-Elkies is unused.
 
 
 # Design adaptations :
@@ -34,8 +28,8 @@ open scoped ComplexOrder FourierTransform Real RealInnerProductSpace SchwartzMap
   makes sense only when `𝓕 f 0 ≠ 0`.
   Cohn and Elkies avoid this extra assumption implicitly meaning that, when
   `𝓕 f x → 0` for `x → 0`, the `RHS → +∞` and the inequality becomes trivial.
-  Using the standard partial order on `ℂ`, we opted for sharp and minimal statements, but this
-  comes at the cost of `𝓕 f 0 ≠ 0`, given that in Lean `k / 0 = 0` and the inequality would fail.
+  Using the standard partial order on `ℂ` we opted for sharp and minimal statements, this
+  comes at the cost of `𝓕 f 0 ≠ 0` (remember `k / 0 = 0` in `ℂ` hence the inequality would fail).
   One could get rid of this hypothesis, by using `.toNNReal` and `.re` or
   by introducing something like `WithTop Complex`.
 -/
@@ -50,6 +44,7 @@ lemma hCE₂_re (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ (re ∘ 𝓕 f) :=
 /-- The imaginary part of the second Cohn-Elkies condition. -/
 lemma hCE₂_im (hCE₂ : 0 ≤ 𝓕 f) : (im ∘ 𝓕 f) = 0 := by
   ext x; exact (Complex.le_def.1 <| Pi.le_def.1 hCE₂ x).2.symm
+
 
 section Properties
 
@@ -110,33 +105,6 @@ theorem div_fourier_re_nonneg (hCE₂ : 0 ≤ 𝓕 f) : 0 ≤ (f 0 / 𝓕 f 0).r
 
 end Properties
 
-section Poisson
-
-open LinearMap (BilinForm)
-open ZLattice Submodule LinearMap Module
-
-variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
-    [MeasurableSpace V] [BorelSpace V]
-variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
-variable (Λ : Submodule ℤ V) [hdiscrete : DiscreteTopology Λ] [hlattice : IsZLattice ℝ Λ]
-variable (L : BilinForm ℝ V)
-
---notation Λ"*["B"]" => LinearMap.BilinForm.dualSubmodule Λ B
-notation Λ"*" => bilinFormOfRealInner.dualSubmodule Λ
---notation "𝓕v" => VectorFourier.fourierIntegral
-
-/--
-lemma general_poisson_summation (e : AddChar ℝ Circle) (μ : Measure V)
-    (f : C(V, E)) (h_sum : Summable (𝓕v e μ L f)) (x : V) :
-    ∑' (ℓ : Λ), f (x + ℓ) = (1 / covolume Λ μ) • ∑' (m : Λ*[L]), e (L m x) • 𝓕v e μ L f m.val := by
-  sorry
--/
-
-protected lemma SchwartzMap.general_poisson_summation (f : 𝓢(V, E)) (x : V) :
-    ∑' (ℓ : Λ), f (x + ℓ) = (1 / covolume Λ) • ∑' (m : Λ*), (𝐞 ⟪m.val, x⟫).val • 𝓕 f m := by
-  sorry
-
-end Poisson
 
 section PreparationLemmata
 
@@ -144,40 +112,30 @@ variable {P : PeriodicSpherePacking' d}
 
 lemma one (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hP : P.separation = 1) :
     ∑' (y : P.X_Λ) (x : P.X), f (x - y) ≤ #P.X_Λ * f 0 := by
-  have : ∀ y : P.X_Λ, Summable fun (x : P.X) ↦ f (x - y) := by
-    intro y
-    sorry
-  simp [fun y ↦ Summable.tsum_eq_add_tsum_ite (this y) y.toX]
-  rw [Summable.tsum_add Summable.of_finite Summable.of_finite]
+  simp_rw [fun (y : P.X_Λ) ↦
+    Summable.tsum_eq_add_tsum_ite (by simpa using (f.translation y).summable_on_discrete P.X) y.toX]
+  simp_rw [Summable.tsum_add Summable.of_finite Summable.of_finite]
   simp [Subtype.toX]
   rw [@tsum_eq_sum' _ _ _ _ _ _ _ P.X_Λ.attach (by simp)]
-  refine Finset.sum_nonpos (fun y hy ↦ tsum_nonpos (fun x ↦ ?_))
+  refine Finset.sum_nonpos <| fun y hy ↦ tsum_nonpos (fun x ↦ ?_)
   by_cases h' : x = y.toX
   all_goals simp [Subtype.toX] at h'; simp [h']
-  have := (P.X_dist)
+  have := P.X_dist
   unfold Pairwise at this
-  exact (hCE₁ _ (by simpa only [Subtype.toX, hP] using this h'))
+  exact hCE₁ _ <| by simpa only [Subtype.toX, hP] using this h'
 
 lemma two :
     ∑' (y : P.X_Λ) (x : P.X), f (x - y) = ∑' (y : P.X_Λ) (x : P.X_Λ) (ℓ : P.Λ), f (x - y + ℓ) := by
   congr
   funext y
-  rw [← @Summable.tsum_prod _ P.X_Λ P.Λ _ _ _ _ _ (fun e => f (e.1 - y + e.2)) sorry]
-  let η : P.X_Λ × P.Λ → P.X := fun p ↦ ⟨p.2.val +ᵥ p.1.val, P.hvadd p.2.prop p.1.toX.prop⟩
-  have η_bij : Function.Bijective η := by
-    refine ⟨?_, ?_⟩
-    · intro x y hxy
-      simp [η] at hxy
-      sorry
-    · intro z
-      simp only [η]
-      use
-        ⟨⟨fract P.b z.val, by
-          simp only [P.X_Λ_def, Set.mem_toFinset]
-          exact Set.mem_inter sorry (fract_mem_fundamentalDomain _ _)⟩,
-        ⟨floor P.b z.val, by rw [P.Λ_def]; exact (floor P.b z.val).prop⟩⟩
-      simp [fract]
-  simp [← Equiv.tsum_eq (Equiv.ofBijective η η_bij) _, η, add_sub_right_comm, sub_add_comm]
+  simp_rw [add_comm _ _, add_sub_assoc']
+  have := (Equiv.summable_iff (Equiv.ofBijective (e _) (e_bijective _))).2
+    (by simpa using (f.translation y).summable_on_discrete P.X)
+  simp at this
+  rw [Summable.tsum_comm (by simp_rw [uncurry_def]; exact this)]
+  simp [← @Summable.tsum_prod _ P.Λ P.X_Λ _ _ _ _ _ (fun p => f (p.1 + p.2 - y)) this]
+  rw [← Equiv.tsum_eq (Equiv.ofBijective (e _) (e_bijective _)) _]
+  simp [e]
 
 lemma three :
     ∑' (y : P.X_Λ) (x : P.X_Λ) (ℓ : P.Λ), f (x - y + ℓ) =
@@ -190,22 +148,36 @@ lemma four :
     ∑' (y : P.X_Λ) (x : P.X_Λ), (covol P.Λ)⁻¹ * ∑' (m : P.Λ*), 𝓕 f m * 𝐞 ⟪m.val, x - y⟫ =
       (covol P.Λ)⁻¹ * ∑' (m : P.Λ*), 𝓕 f m * normSq (∑' (x : P.X_Λ), 𝐞 ⟪m.val, x⟫) := by
   simp_rw [Summable.tsum_mul_left _ Summable.of_finite]
-  have : ∀ (y : P.X_Λ), Summable (Function.uncurry
-    fun (m : P.Λ*) (x : P.X_Λ) ↦
-      𝓕 f m * 𝐞 ⟪m.val, x - y⟫) := by sorry
-  simp only [fun x ↦ Summable.tsum_comm <| this x]
-  rw [Summable.tsum_comm (by sorry)]
+  have summ₁ : ∀ (y : P.X_Λ),
+      Summable (uncurry fun (m : P.Λ*) (x : P.X_Λ) ↦ 𝓕 f m * 𝐞 ⟪m.val, x - y⟫) := by
+    intro y
+    rw [uncurry_def, ← fourierTransformCLE_apply ℝ f]
+    apply Summable.of_norm
+    simp
+    refine Summable.norm <| @Summable.fst_of_finite _ _ _ (𝓕 f ∘ Subtype.val) _ _ _ ?_
+    exact SchwartzMap.summable_on_discrete (fourierTransformCLE ℝ f) _
+  have summ₂ : Summable (
+      uncurry fun (m : P.Λ*) (y : P.X_Λ) ↦ ∑' (x : P.X_Λ), 𝓕 f m * (𝐞 ⟪m.val, x - y⟫)) := by
+    rw [uncurry_def, ← fourierTransformCLE_apply ℝ f]
+    apply Summable.of_norm
+    simp [tsum_fintype]
+    refine Summable.of_nonneg_of_le (fun p ↦ norm_nonneg _) (fun p ↦ norm_sum_le _ _) ?_
+    simp
+    refine Summable.mul_left _ <| Summable.norm ?_
+    apply @Summable.fst_of_finite _ _ _ (𝓕 f ∘ Subtype.val) _ _ _ ?_
+    exact SchwartzMap.summable_on_discrete (fourierTransformCLE ℝ f) _
+  simp only [fun x ↦ Summable.tsum_comm <| summ₁ x]
+  rw [Summable.tsum_comm summ₂]
   simp_rw [Summable.tsum_mul_left _ Summable.of_finite]
   congr
-  refine funext_iff.2 (fun m ↦ congrArg (fun x ↦ 𝓕 f m * x) ?_)
+  refine funext_iff.2 <| fun m ↦ congrArg (fun x ↦ 𝓕 f m * x) ?_
   simp [← mul_conj, conj_tsum]
   simp [Summable.tsum_mul_tsum Summable.of_finite Summable.of_finite Summable.of_finite]
-  simp [Summable.tsum_prod sorry]
-  rw [Summable.tsum_comm Summable.of_finite]
+  rw [Summable.tsum_prod Summable.of_finite, Summable.tsum_comm Summable.of_finite]
   congr
   refine funext_iff.2 (fun x ↦ by
-    congr; exact funext_iff.2 (fun y ↦ by
-      norm_cast; simp [inner_sub_right, ← AddChar.map_add_eq_mul 𝐞]; ring_nf))
+    congr; exact funext_iff.2
+      (fun y ↦ by norm_cast; simp [inner_sub_right, ← AddChar.map_add_eq_mul 𝐞]; ring_nf))
 
 lemma five (hCE₂ : 0 ≤ 𝓕 f) :
     ((covol P.Λ)⁻¹ * #P.X_Λ ^ 2) * 𝓕 f 0 ≤
@@ -214,13 +186,23 @@ lemma five (hCE₂ : 0 ≤ 𝓕 f) :
   gcongr
   · exact le_of_lt (by simp [covol, covolume_pos P.Λ])
   · refine le_of_eq_of_le (by simp; ring) (Summable.le_tsum ?_ 0 ?_)
-    · simp [normSq_eq_norm_sq]
-      simp [@tsum_eq_sum' _ _ _ _ _ _ _ P.X_Λ.attach (by simp)]
-
-      sorry
+    · simp [normSq_eq_norm_sq, @tsum_eq_sum' _ _ _ _ _ _ _ P.X_Λ.attach (by simp)]
+      apply Summable.of_norm
+      simp
+      apply Summable.of_nonneg_of_le
+      · exact fun p ↦ mul_nonneg (norm_nonneg _) (sq_nonneg _)
+      · have : ∀ p, ‖∑ x ∈ P.X_Λ.attach, (𝐞 ⟪p, x.val⟫).val‖ ^ 2 ≤
+            (∑ x ∈ P.X_Λ.attach, ‖(𝐞 ⟪p, x.val⟫).val‖) ^ 2 := by
+          intro p; gcongr; exact norm_sum_le _ _
+        intro p
+        exact mul_le_mul_of_nonneg_left (this p) (norm_nonneg _)
+      · simp
+        refine Summable.mul_right _ <| Summable.norm ?_
+        exact SchwartzMap.summable_on_discrete (fourierTransformCLE ℝ f) _
     · exact fun m hm ↦ mul_nonneg (hCE₂ m) (by simp [normSq_nonneg])
 
 end PreparationLemmata
+
 
 section Main_Theorems
 
@@ -228,11 +210,11 @@ open PeriodicSpherePacking'
 
 /-- The Cohn-Elkies linear programming bound for the densities of
 normalized periodic sphere packings. -/
-theorem LinearProgrammingBoundDensity {P : PeriodicSpherePacking' d} (hP : P.separation = 1)
+theorem LinearProgrammingBound' {P : PeriodicSpherePacking' d} (hP : P.separation = 1)
     (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f) (h : 𝓕 f 0 ≠ 0) :
     P.density ≤ (f 0 / 𝓕 f 0) * vol (B d 0 (1 / 2)) := by
   by_cases h_emptiness : P.X = ∅
-  · simp [SpherePacking'.density_eq_zero_of_empty_centers _ h_emptiness]
+  · simp [SpherePacking'.density_eq_zero_of_empty_centers h_emptiness]
     exact mul_nonneg (div_nonneg (f_zero_nonneg_of_fourier_nonneg hCE₂) (hCE₂ 0)) (by simp [vol])
   · rw [P.density_eq, hP, mul_div_right_comm]
     push_cast
@@ -247,13 +229,13 @@ theorem LinearProgrammingBoundDensity {P : PeriodicSpherePacking' d} (hP : P.sep
     exact le_trans (by rw [two, three, four]; exact five hCE₂) (one hCE₁ hP)
 
 /-- The Cohn-Elkies linear programming bound for the sphere packing constant. -/
-theorem LinearProgrammingBoundConstant (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
+theorem LinearProgrammingBound (hCE₁ : ∀ x, ‖x‖ ≥ 1 → f x ≤ 0) (hCE₂ : 0 ≤ 𝓕 f)
     (h : 𝓕 f 0 ≠ 0) : SpherePacking'.constant d ≤ (f 0 / 𝓕 f 0) * vol (B d 0 (1 / 2)) := by
   simp [← SpherePacking'.cast_normalConstant, Complex.le_def]
   constructor
   · refine Real.iSup_le ?_ <| mul_nonneg (div_fourier_re_nonneg hCE₂) (by simp [vol])
     rintro ⟨P, hP⟩
-    simpa using (Complex.le_def.1 <| LinearProgrammingBoundDensity hP hCE₁ hCE₂ h).1
+    simpa using (Complex.le_def.1 <| LinearProgrammingBound' hP hCE₁ hCE₂ h).1
   · left
     simp [div_im, ← (le_def.1 (f_zero_nonneg_of_fourier_nonneg hCE₂)).2, ← (le_def.1 <| hCE₂ 0).2]
 

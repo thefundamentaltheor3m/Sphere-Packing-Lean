@@ -14,17 +14,23 @@ import Mathlib.Analysis.Distribution.FourierSchwartz
 import Mathlib.Analysis.RCLike.Inner
 import Mathlib.LinearAlgebra.BilinearForm.DualLattice
 import Mathlib.Order.CompletePartialOrder
-import Mathlib.Topology.Compactness.PseudometrizableLindelof
 import Mathlib.Topology.EMetricSpace.Paracompact
 import Mathlib.Topology.Separation.CompletelyRegular
+import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.Data.Real.StarOrdered
+import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
+import Mathlib.Topology.Compactness.PseudometrizableLindelof
+import Mathlib.Data.Complex.Basic
+import Mathlib.Analysis.Complex.Order
 
+import SpherePacking.ForMathlib.VolumeOfBalls
 import SpherePacking.Basic.SpherePacking
 import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.ForMathlib.InvPowSummability
 
 open BigOperators Bornology
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ} --[Fact (0 < d)]
 variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
 
 
@@ -57,10 +63,11 @@ variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ]
 -- end Dual_Lattice
 
 section Euclidean_Space
-
+/-
 instance instNonemptyFin : Nonempty (Fin d) := ⟨0, Fact.out⟩
   -- rw [← Fintype.card_pos_iff, Fintype.card_fin]
   -- exact Fact.out
+-/
 
 -- noncomputable instance : DivisionCommMonoid ENNReal where
 -- inv_inv := inv_inv
@@ -266,7 +273,6 @@ theorem toFun_eq_zero_iff_zero {E F : Type*}
     rw [hf]
     exact coeFn_zero
 
-omit [Fact (0 < d)] in
 theorem integral_zero_iff_zero_of_nonneg {f : 𝓢(EuclideanSpace ℝ (Fin d), ℝ)}
   (hnn : ∀ x, 0 ≤ f x) : ∫ (v : EuclideanSpace ℝ (Fin d)), f v = 0 ↔ f = 0 := by
   simp [← f.toFun_eq_zero_iff_zero]
@@ -284,7 +290,6 @@ instance (v : EuclideanSpace ℝ (Fin d)) : Decidable (v = 0) := Classical.propD
 instance : DecidableEq (EuclideanSpace ℝ (Fin d)) :=
   Classical.typeDecidableEq (EuclideanSpace ℝ (Fin d))
 
-omit [Fact (0 < d)]
 -- Now a small theorem from Complex analysis:
 local notation "conj" => starRingEnd ℂ
 theorem Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
@@ -305,3 +310,281 @@ theorem Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
           ring_nf
 
 end Misc
+
+
+
+
+
+
+
+section prerequisites
+
+open scoped Finset
+open Filter MeasureTheory ZSpan
+
+variable (d) in
+/-- The ball of radius r around x in d-dimensional Euclidean space. -/
+def B (x : EuclideanSpace ℝ (Fin d)) (r : ℝ) : Set (EuclideanSpace ℝ (Fin d)) := Metric.ball x r
+
+/-- The volume of a set in d-dimensional Euclidean space as a real number. -/
+noncomputable def vol (S : Set (EuclideanSpace ℝ (Fin d))) : ℝ := volume.real S
+
+/-- The covolume of a lattice in d-dimensional Euclidean space as a real number. -/
+noncomputable def covol (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) : ℝ := ZLattice.covolume Λ
+
+section sphere_packing
+
+/-- This structure is already being defined by Sid and Gareth in `SpherePacking.lean`.
+Here I just used `X` instead of `centers` to respect the blueprint notation and changed everything
+else accordingly. -/
+structure SpherePacking' (d : ℕ) where
+  X : Set (EuclideanSpace ℝ (Fin d))
+  separation : ℝ
+  X_dist : Pairwise (separation ≤ ‖·.val - ·.val‖ : X → X → Prop)
+
+namespace SpherePacking'
+
+variable {S : SpherePacking' d}
+
+/-- New -/
+instance : DiscreteTopology S.X := by sorry
+
+variable (S) in
+/-- Identical Sid and Gareth's for SpherePacking' -/
+noncomputable def finiteBallDensity (R : ℝ) : ℝ :=
+  vol (⋃ x : S.X, B d x (S.separation / 2) ∩ B d 0 R) / vol (B d 0 R)
+
+variable (S) in
+/-- Identical Sid and Gareth's for SpherePacking' -/
+noncomputable def density : ℝ :=
+  limsup S.finiteBallDensity atTop
+
+/-- Identical Sid and Gareth's for SpherePacking' -/
+protected noncomputable def constant (d : ℕ) : ℝ :=
+  ⨆ S : SpherePacking' d, S.density
+
+/-- New : If the set of centers of a sphere packing is empty then its density is 0. -/
+lemma density_eq_zero_of_empty_centers (h : S.X = ∅) :
+    S.density = 0 := by
+  sorry
+
+end SpherePacking'
+
+structure PeriodicSpherePacking' (d : ℕ) extends SpherePacking' d where
+  b : Module.Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d))
+  inst_b := instIsZLatticeRealSpan b
+  Λ := Submodule.span ℤ (Set.range b)
+  hvadd : ∀ ⦃x y⦄, x ∈ Λ → y ∈ X → x +ᵥ y ∈ X
+  hfintype : Fintype <| ↑(X ∩ fundamentalDomain b) := by apply Fintype.ofFinite
+  X_Λ := (X ∩ fundamentalDomain b).toFinset
+  inst_Discrete : DiscreteTopology Λ := by infer_instance
+  inst_IsZLattice : IsZLattice ℝ Λ := by infer_instance
+
+def Subtype.toX {P : PeriodicSpherePacking' d} (y : P.X_Λ) : P.X :=
+  ⟨y.val, by sorry⟩
+
+/-- The equivalence Λ × X⧸Λ ≃ X, via (λ, x) ↦ λ +ᵥ x. -/
+noncomputable def e (P : PeriodicSpherePacking' d) : P.Λ × P.X_Λ → P.X :=
+  fun p ↦ ⟨p.1.val +ᵥ p.2.val, P.hvadd p.1.prop p.2.toX.prop⟩
+
+lemma e_bijective (P : PeriodicSpherePacking' d) : Function.Bijective (e P) := by sorry
+/-
+  have η_bij : Function.Bijective η := by
+    refine ⟨?_, ?_⟩
+    · intro x y hxy
+      simp [η] at hxy
+
+      sorry
+    · intro z
+      simp only [η]
+      use
+        ⟨⟨fract P.b z.val, by
+          simp only [P.X_Λ_def, Set.mem_toFinset]
+          exact Set.mem_inter
+            (PeriodicSpherePacking'.fract_mem_centers z) (fract_mem_fundamentalDomain _ _)⟩,
+        ⟨floor P.b z.val, by rw [P.Λ_def]; exact (floor P.b z.val).prop⟩⟩
+      simp [fract]
+-/
+
+namespace PeriodicSpherePacking'
+
+variable {P : PeriodicSpherePacking' d}
+
+/-- New -/
+def Λ_def : P.Λ = Submodule.span ℤ (Set.range P.b) := by sorry
+
+/-- New -/
+instance : Fintype ↑(P.X ∩ fundamentalDomain P.b) := by sorry
+
+/-- New -/
+def X_Λ_def : P.X_Λ = (P.X ∩ fundamentalDomain P.b).toFinset := by sorry
+
+/-- Identical Sid and Gareth's for PeriodicSpherePacking' -/
+instance instDiscrete_Λ :
+    DiscreteTopology P.Λ := P.inst_Discrete
+
+/-- Identical Sid and Gareth's for PeriodicSpherePacking' -/
+instance instIsZLattice_Λ :
+    IsZLattice ℝ P.Λ := P.inst_IsZLattice
+
+/-- New -/
+instance instFinite_X_Λ : Finite P.X_Λ := sorry
+
+/-- New -/
+lemma fract_mem_centers (z : P.X) : fract P.b z ∈ P.X := by sorry
+
+/-- I believe one needs to ask as an axiom of the structure of periodic sphere packing that,
+if X is nonempty, than X ∩ fundamentalDomain Λ must be nonempty,
+otherwise the packing is not periodic. This proves the lemma below -/
+lemma empty_centers_iff_card_X_Λ_eq_zero : P.X = ∅ ↔ P.X_Λ.card = 0 := by sorry
+
+/-- Identical Sid and Gareth's for PeriodicSpherePacking' -/
+protected noncomputable def constant (d : ℕ) : ℝ :=
+  ⨆ S : PeriodicSpherePacking' d, S.density
+
+/-- Identical Sid and Gareth's for PeriodicSpherePacking' -/
+protected noncomputable def normalConstant (d : ℕ) : ℝ :=
+  ⨆ S : {S : PeriodicSpherePacking' d // S.separation = 1}, S.val.density
+
+theorem density_eq : P.density = #P.X_Λ * vol (B d 0 (P.separation / 2)) / covol P.Λ := by sorry
+
+end PeriodicSpherePacking'
+
+section cast
+
+protected lemma PeriodicSpherePacking'.cast_normalConstant (d : ℕ) :
+    PeriodicSpherePacking'.normalConstant d = PeriodicSpherePacking'.constant d := by
+  sorry
+
+lemma SpherePacking'.cast_constant (d : ℕ) :
+    PeriodicSpherePacking'.constant d = SpherePacking'.constant d := by
+  sorry
+
+protected lemma SpherePacking'.cast_normalConstant (d : ℕ) :
+    PeriodicSpherePacking'.normalConstant d = SpherePacking'.constant d := by
+  rw [PeriodicSpherePacking'.cast_normalConstant d, SpherePacking'.cast_constant d]
+
+end cast
+
+end sphere_packing
+
+section for_mathlib
+
+section poisson
+
+/- Poisson Summation fomula is taken care of within a separate PR and there is a dedicated folder
+`ForMathlib\PoissonSummation`. Here you can find the statement needed in `LPBound.lean`. -/
+
+open scoped FourierTransform SchwartzMap RealInnerProductSpace MeasureTheory ZSpan ZLattice
+open LinearMap (BilinForm)
+
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
+variable [MeasurableSpace V] [BorelSpace V]
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+variable {Λ : Submodule ℤ V} [hdiscrete : DiscreteTopology Λ] [hlattice : IsZLattice ℝ Λ]
+variable {L : BilinForm ℝ V}
+
+--notation Λ"*["B"]" => LinearMap.BilinForm.dualSubmodule Λ B
+notation Λ"*" => bilinFormOfRealInner.dualSubmodule Λ
+--notation "𝓕v" => VectorFourier.fourierIntegral
+
+/-- Identical to -/
+instance instDiscreteTopology_dual : DiscreteTopology (L.dualSubmodule Λ) :=
+  sorry
+
+/-- New -/
+instance instDiscreteTopology_dual_set :
+    DiscreteTopology ((L.dualSubmodule Λ) : Set V) := by
+  sorry
+
+/--  -/
+instance instIsZLattice_dual : IsZLattice ℝ (L.dualSubmodule Λ) :=
+  sorry
+
+/-lemma general_poisson_summation (e : AddChar ℝ Circle) (μ : Measure V)
+    (f : C(V, E)) (h_sum : Summable (𝓕v e μ L f)) (x : V) :
+    ∑' (ℓ : Λ), f (x + ℓ) = (1 / covolume Λ μ) • ∑' (m : Λ*[L]), e (L m x) • 𝓕v e μ L f m.val := by
+  sorry
+-/
+
+protected lemma SchwartzMap.general_poisson_summation (f : 𝓢(V, E)) (x : V) :
+    ∑' (ℓ : Λ), f (x + ℓ) =
+      (1 / ZLattice.covolume Λ) • ∑' (m : Λ*), (𝐞 ⟪m.val, x⟫).val • 𝓕 f m := by
+  sorry
+
+end poisson
+
+namespace Multipliable
+
+variable {α β γ : Type*} {f : β → α}
+variable [CommMonoid α] [TopologicalSpace α] [Finite γ]
+
+--todo : extend to the summation filter version of the following lemmas
+variable {L : SummationFilter β}
+
+@[to_additive]
+lemma fst_of_finite (hf : Multipliable f) :
+    Multipliable (fun (x : β × γ) ↦ f x.1) := by
+  sorry
+
+@[to_additive]
+lemma snd_of_finite (hf : Multipliable f) :
+    Multipliable (fun (x : γ × β) ↦ f x.2) := by sorry
+
+end Multipliable
+
+namespace Complex
+
+open scoped ComplexOrder
+
+variable {a b c : ℂ}
+
+protected lemma le_div_iff₀ (hc : 0 < c) :
+    a ≤ b / c ↔ a * c ≤ b := by
+  simp [le_def]
+  constructor
+  all_goals intro h; simp [div_re, div_im, (le_def.1 <| le_of_lt hc).2.symm] at h ⊢
+  · sorry
+  · sorry
+
+protected lemma mul_le_mul_iff_of_pos_right (hc : 0 < c) :
+    a * c ≤ b * c ↔ a ≤ b := by
+  simp [le_def, ← (lt_def.1 hc).2]
+  constructor
+  all_goals intro h;
+  · refine ⟨(mul_le_mul_iff_of_pos_right (lt_def.1 hc).1).mp h.1, ?_⟩
+    obtain ⟨h₁, h_re | h_im⟩ := h
+    · exact h_re
+    · exfalso; rw [lt_def] at hc; simp [h_im] at hc
+  · exact ⟨(mul_le_mul_iff_of_pos_right (lt_def.1 hc).1).mpr h.1, by simp [h.2]⟩
+
+protected lemma mul_le_mul_iff_of_pos_left (hc : 0 < c) :
+    c * a ≤ c * b ↔ a ≤ b := by
+  simp [mul_comm c _]
+  exact Complex.mul_le_mul_iff_of_pos_right hc
+
+end Complex
+
+namespace SchwartzMap
+
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+
+def translation (f : 𝓢(V, E)) (c : V) : 𝓢(V, E) :=
+  { toFun := fun x ↦ f (x - c),
+    smooth' := by sorry,
+    decay' := by sorry }
+
+@[simp]
+theorem translation_def {f : 𝓢(V, E)} {c : V} :
+    f.translation c = fun x ↦ f (x - c) := by rfl
+
+--to do : see if this works for "multipliable" and for maps more general then Schwartz maps
+protected lemma summable_on_discrete (f : 𝓢(V, E))
+  (S : Set V) [hdiscrete : DiscreteTopology S] : Summable (fun (x : S) ↦ f x) := by sorry
+
+end SchwartzMap
+
+end for_mathlib
+
+end prerequisites
