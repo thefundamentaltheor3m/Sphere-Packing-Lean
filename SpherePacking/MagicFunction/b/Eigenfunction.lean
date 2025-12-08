@@ -33,15 +33,20 @@ theorem perm_₃_J₄ : fourierTransformCLE ℂ (J₃ + J₄) = -(J₁ + J₂) :
       Real.fourierIntegralInv_eq_fourierIntegral_neg] using
         congrArg (· (-x)) (J₂.continuous.fourier_inversion J₂.integrable
           (fourierTransformCLE ℂ J₂).integrable)
-  simpa [map_add, map_neg, h₁, h₂, add_comm] using
+  simpa only [neg_add_rev, add_comm, map_add, map_neg, neg_neg, h₁, h₂] using
     congrArg (-fourierTransformCLE ℂ ·) perm_J₁_J₂ |>.symm
 
 theorem perm_J₆ : fourierTransformCLE ℂ (J₆) = -J₅ := by
   have h : (fourierTransformCLE ℂ).symm J₆ = fourierTransformCLE ℂ J₆ := by
-    ext; simp [fourierTransformCLE_symm_apply, fourierTransformCLE_apply,
-      Real.fourierIntegralInv_eq_fourierIntegral_comp_neg]
-    congr 1; ext; simp [J₆, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
-  simpa [← h, neg_eq_iff_eq_neg] using (congrArg (fourierTransformCLE ℂ).symm perm_J₅).symm
+    ext x
+    simp only [fourierTransformCLE_symm_apply, fourierTransformCLE_apply, fourier_coe,
+      fourierInv_coe, Real.fourierIntegralInv_eq_fourierIntegral_comp_neg]
+    suffices (fun x ↦ J₆ (-x)) = ⇑J₆ by exact congr(𝓕 $this x)
+    ext
+    simp [J₆, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
+  have := (congrArg (fourierTransformCLE ℂ).symm perm_J₅).symm
+  simp only [map_neg, ContinuousLinearEquiv.symm_apply_apply, ← h] at this ⊢
+  rw [← this, neg_neg]
 
 end Integral_Permutations
 

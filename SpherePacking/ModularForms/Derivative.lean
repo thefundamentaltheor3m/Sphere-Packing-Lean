@@ -40,8 +40,8 @@ theorem D_add (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (
   have h : deriv ((F ∘ ofComplex) + (G ∘ ofComplex)) z
       = deriv (F ∘ ofComplex) z + deriv (G ∘ ofComplex) z := by
     refine deriv_add ?_ ?_
-    exact MDifferentiableAt_DifferentiableAt (hF z)
-    exact MDifferentiableAt_DifferentiableAt (hG z)
+    · exact MDifferentiableAt_DifferentiableAt (hF z)
+    · exact MDifferentiableAt_DifferentiableAt (hG z)
   calc
     D (F + G) z
     _ = (2 * π * I)⁻¹ * deriv ((F ∘ ofComplex) + (G ∘ ofComplex)) z := by rfl
@@ -57,8 +57,8 @@ theorem D_sub (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (
   have h : deriv ((F ∘ ofComplex) - (G ∘ ofComplex)) z
       = deriv (F ∘ ofComplex) z - deriv (G ∘ ofComplex) z := by
     refine deriv_sub ?_ ?_
-    exact MDifferentiableAt_DifferentiableAt (hF z)
-    exact MDifferentiableAt_DifferentiableAt (hG z)
+    · exact MDifferentiableAt_DifferentiableAt (hF z)
+    · exact MDifferentiableAt_DifferentiableAt (hG z)
   calc
     D (F - G) z
     _ = (2 * π * I)⁻¹ * deriv ((F ∘ ofComplex) - (G ∘ ofComplex)) z := by rfl
