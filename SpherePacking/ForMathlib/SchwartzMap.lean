@@ -93,12 +93,12 @@ lemma Function.Even.HasDeriv_at_zero : deriv f (0 : ℝ) = 0 := by
 /-
 If $\phi$ is a smooth compactly supported bump function, then for any $k < n$, the $k$-th derivative of $x^n \phi(u x)$ tends to 0 uniformly as $u \to \infty$.
 -/
-set_option maxHeartbeats 1000000 in
 set_option linter.style.longLine false in
 lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (hsupp : HasCompactSupport ϕ)
     (n k : ℕ) (hk : k < n) :
     ∀ ε > 0, ∃ R, ∀ u ≥ R, ∀ x, |iteratedDeriv k (fun x => x^n * ϕ (u * x)) x| ≤ ε := by
-      bound;
+      intro ε ε_pos
+      have fwd_1 := le_of_lt hk  -- todo: remove
       -- Using the Leibniz rule, we can express the $k$-th derivative of $x^n \phi(u x)$ as a sum of terms involving derivatives of $x^n$ and $\phi(u x)$.
       have h_leibniz : ∀ u x, iteratedDeriv k (fun x => x ^ n * (ϕ (u * x))) x = ∑ j ∈ Finset.range (k + 1), Nat.choose k j * (Nat.descFactorial n (k - j)) * x ^ (n - (k - j)) * u ^ j * (iteratedDeriv j ϕ) (u * x) := by
         have h_leibniz : ∀ u x, iteratedDeriv k (fun x => x ^ n * (ϕ (u * x))) x = ∑ j ∈ Finset.range (k + 1), Nat.choose k j * iteratedDeriv (k - j) (fun x => x ^ n) x * iteratedDeriv j (fun x => ϕ (u * x)) x := by
@@ -120,9 +120,9 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
                     have h_diff : DifferentiableAt ℝ (fun x => iteratedDeriv (k - j) f x) x ∧ DifferentiableAt ℝ (fun x => iteratedDeriv j g x) x := by
                       constructor;
                       · apply_rules [ ContDiff.differentiable_iteratedDeriv, hf ];
-                        exact?;
+                        exact compareOfLessAndEq_eq_lt.mp rfl
                       · apply_rules [ ContDiff.differentiable_iteratedDeriv, hg ];
-                        exact?;
+                        exact compareOfLessAndEq_eq_lt.mp rfl
                     norm_num [ h_diff.1, h_diff.2, mul_assoc ];
                     ring;
                 -- Apply the linearity of the derivative to the sum.
@@ -131,10 +131,10 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
                   have h_diff : ∀ j ∈ Finset.range (k + 1), DifferentiableAt ℝ (fun x => (Nat.choose k j) * iteratedDeriv (k - j) f x * iteratedDeriv j g x) x := by
                     intro j hj; apply_rules [ DifferentiableAt.mul, DifferentiableAt.pow, differentiableAt_id, differentiableAt_const ] ;
                     · apply_rules [ ContDiff.differentiable_iteratedDeriv, hf ];
-                      exact?;
+                      exact compareOfLessAndEq_eq_lt.mp rfl
                     · apply_rules [ ContDiff.differentiable_iteratedDeriv, hf, hg ];
-                      exact?;
-                  exact?;
+                      exact compareOfLessAndEq_eq_lt.mp rfl
+                  exact deriv_fun_sum h_diff
                 rw [ h_deriv_sum, ← Finset.sum_add_distrib, Finset.sum_congr rfl h_deriv_term ];
             -- Apply the induction hypothesis to rewrite the derivatives of the iterated derivatives.
             have h_ind : ∀ x, ∑ j ∈ Finset.range (k + 1), Nat.choose k j * deriv (fun x => iteratedDeriv (k - j) f x) x * iteratedDeriv j g x +
@@ -143,12 +143,24 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
                            ∑ j ∈ Finset.range (k + 1), Nat.choose k j * iteratedDeriv (k - j) f x * iteratedDeriv (j + 1) g x := by
                              intro x; congr! 2; rw [ Nat.sub_add_comm ( Nat.le_of_lt_succ <| Finset.mem_range.mp <| by assumption ) ] ; simp +decide [ iteratedDeriv_succ ] ; ring;
                              rw [ add_comm, iteratedDeriv_succ ];
-            ext x; rw [ h_prod_rule, h_ind ] ; rw [ Finset.sum_range_succ' ] ; simp +decide [ Nat.choose_succ_succ, add_mul, mul_add, Finset.sum_add_distrib ] ; ring;
-            rw [ show 2 + k = 1 + k + 1 by ring, Finset.sum_range_succ' ] ; simp +decide [ add_comm, add_left_comm, add_assoc, Finset.sum_range_succ ] ; ring;
-            rw [ ← Finset.sum_add_distrib ] ; refine' Finset.sum_congr rfl fun i hi => _ ; rw [ Nat.add_comm 1 k, Nat.add_comm 1 i ] ; rw [ Nat.choose_succ_succ ] ; ring;
+            ext x; rw [ h_prod_rule, h_ind ] ; rw [ Finset.sum_range_succ' ] ;
+            simp +decide only [Nat.reduceSubDiff, Nat.choose_zero_right, Nat.cast_one, tsub_zero,
+              one_mul, iteratedDeriv_zero] ;
+            ring;
+            rw [ show 2 + k = 1 + k + 1 by ring, Finset.sum_range_succ' ] ;
+            simp +decide only [add_comm, Finset.sum_range_succ, Nat.choose_self, Nat.cast_one,
+              tsub_self, iteratedDeriv_zero, one_mul, add_left_comm, add_assoc, Nat.reduceSubDiff,
+              Nat.choose_zero_right, tsub_zero, add_right_inj] ;
+            ring;
+            rw [ ← Finset.sum_add_distrib ] ;
+            refine' Finset.sum_congr rfl fun i hi => _
+            rw [ Nat.add_comm 1 k, Nat.add_comm 1 i ] ; rw [ Nat.choose_succ_succ ] ;
+            ring;
             norm_num [ Nat.choose_succ_succ, add_comm 1 i ] ; ring;
           exact congr_fun ( h_leibniz _ _ ( contDiff_id.pow _ ) ( hϕ.comp ( contDiff_const.mul contDiff_id ) ) _ ) _;
-        intro u x; rw [ h_leibniz u x ] ; refine' Finset.sum_congr rfl fun j hj => _ ; simp +decide [ mul_assoc, mul_comm, mul_left_comm, iteratedDeriv_eq_iterate ];
+        intro u x; rw [ h_leibniz u x ] ; refine' Finset.sum_congr rfl fun j hj => _ ;
+        simp +decide only [iteratedDeriv_eq_iterate, iter_deriv_pow', mul_comm, mul_left_comm,
+          mul_assoc];
         -- By definition of iterated derivative, we know that
         have h_iter_deriv : ∀ j : ℕ, deriv^[j] (fun x => ϕ (u * x)) = fun x => u ^ j * deriv^[j] ϕ (u * x) := by
           intro j; induction j <;> simp_all +decide [ Function.iterate_succ_apply', pow_succ', mul_assoc, mul_comm u ] ;
@@ -156,14 +168,19 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
           apply_rules [ ContDiff.differentiable ];
           apply_rules [ ContDiff.iterate_deriv ];
           decide +revert;
-        simp +decide [ h_iter_deriv, mul_assoc, mul_comm, mul_left_comm, Nat.descFactorial_eq_prod_range ];
+        simp +decide only [h_iter_deriv, mul_left_comm, Nat.descFactorial_eq_prod_range,
+          Nat.cast_prod, mul_eq_mul_left_iff, mul_eq_mul_right_iff, Nat.cast_eq_zero,
+          pow_eq_zero_iff', ne_eq];
         exact Or.inl <| Or.inl <| Or.inl <| Or.inl <| Finset.prod_congr rfl fun i hi => by rw [ Nat.cast_sub <| by linarith [ Finset.mem_range.mp hj, Finset.mem_range.mp hi, Nat.sub_le k j ] ] ;
       -- Since $\phi$ has compact support, there exists $M > 0$ such that $\phi^{(j)}(x) = 0$ for $|x| > M$.
       obtain ⟨M, hM⟩ : ∃ M > 0, ∀ x, abs x > M → ∀ j ≤ k, iteratedDeriv j ϕ x = 0 := by
         -- Since $\phi$ has compact support, there exists $M > 0$ such that $\phi(x) = 0$ for $|x| > M$.
         obtain ⟨M, hM⟩ : ∃ M > 0, ∀ x, abs x > M → ϕ x = 0 := by
-          have := hsupp.isCompact.isBounded.exists_pos_norm_le; aesop;
-          exact ⟨ w, left, fun x hx => Classical.not_not.1 fun hx' => hx.not_le <| right x <| subset_closure <| by aesop ⟩;
+          have := hsupp.isCompact.isBounded.exists_pos_norm_le;
+          simp_all only [gt_iff_lt, norm_eq_abs]
+          obtain ⟨w, h⟩ := this
+          obtain ⟨left, right⟩ := h
+          exact ⟨ w, left, fun x hx => Classical.not_not.1 fun hx' => hx.not_ge <| right x <| subset_closure <| by aesop ⟩;
         refine' ⟨ M, hM.1, fun x hx j hj => _ ⟩;
         induction' j with j ih generalizing x <;> simp_all +decide [ iteratedDeriv_succ ];
         exact HasDerivAt.deriv ( HasDerivAt.congr_of_eventuallyEq ( hasDerivAt_const _ _ ) ( Filter.eventuallyEq_of_mem ( IsOpen.mem_nhds ( isOpen_lt continuous_const continuous_abs ) hx ) fun y hy => ih y hy ( by linarith ) ) );
@@ -175,14 +192,17 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
           exact mul_le_mul_of_nonneg_right ( pow_le_pow_left₀ ( abs_nonneg x ) ( by rw [ le_div_iff₀ ( by positivity ) ] ; cases abs_cases x <;> cases abs_cases ( u * x ) <;> nlinarith ) _ ) ( by positivity );
         convert h_abs using 1 ; norm_cast ; norm_num ; ring;
         rw [ show n - ( k - j ) = n - k + j by omega ] ; ring;
-        simp +decide [ mul_assoc, mul_comm, mul_left_comm, ne_of_gt ( zero_lt_one.trans_le hu ) ];
+        simp? +decide [ mul_assoc, mul_comm, mul_left_comm, ne_of_gt ( zero_lt_one.trans_le hu ) ];
+
       -- Since $\phi^{(j)}$ is bounded (since it is smooth and compactly supported), say by $B_j$, we can bound each term in the sum.
       obtain ⟨B, hB⟩ : ∃ B > 0, ∀ j ≤ k, ∀ x, abs (iteratedDeriv j ϕ x) ≤ B := by
         -- Since $\phi$ is smooth and compactly supported, its derivatives are also compactly supported.
         have h_deriv_compact_support : ∀ j ≤ k, HasCompactSupport (iteratedDeriv j ϕ) := by
           intro j hj;
           rw [ hasCompactSupport_iff_eventuallyEq ] at *;
-          simp_all +decide [ Filter.EventuallyEq, Filter.eventually_inf_principal ];
+          simp_all +decide only [EventuallyEq, Pi.zero_apply, coclosedCompact_eq_cocompact,
+            cocompact_eq_atBot_atTop, eventually_sup, eventually_atBot, eventually_atTop, ge_iff_le,
+            gt_iff_lt, abs_mul, abs_pow, neg_sub];
           exact ⟨ ⟨ -M - 1, fun x hx => hM.2 x ( by cases abs_cases x <;> linarith ) j hj ⟩, ⟨ M + 1, fun x hx => hM.2 x ( by cases abs_cases x <;> linarith ) j hj ⟩ ⟩;
         -- Since $\phi^{(j)}$ is compactly supported, it is bounded.
         have h_deriv_bounded : ∀ j ≤ k, ∃ B > 0, ∀ x, abs (iteratedDeriv j ϕ x) ≤ B := by
@@ -208,7 +228,8 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
         have h_term_bound : ∀ j ≤ k, abs (Nat.choose k j * Nat.descFactorial n (k - j) * x ^ (n - (k - j)) * u ^ j * iteratedDeriv j ϕ (u * x)) ≤ Nat.choose k j * Nat.descFactorial n (k - j) * M ^ (n - (k - j)) * u ^ (-(n - k) : ℤ) * B := by
           intro j hj
           by_cases h_abs : abs (u * x) ≤ M;
-          · simp_all +decide [ abs_mul, mul_assoc ];
+          · simp_all +decide only [gt_iff_lt, mul_assoc, ge_iff_le, abs_mul, abs_pow, neg_sub,
+              Nat.abs_cast];
             exact mul_le_mul_of_nonneg_left ( mul_le_mul_of_nonneg_left ( by nlinarith [ h_bound u hu x h_abs j hj, hB.2 j hj ( u * x ), show 0 ≤ |x| ^ ( n - ( k - j ) ) * |u| ^ j by positivity, show 0 ≤ M ^ ( n - ( k - j ) ) * u ^ ( ( k : ℤ ) - n ) by exact mul_nonneg ( pow_nonneg hM.1.le _ ) ( by positivity ) ] ) ( Nat.cast_nonneg _ ) ) ( Nat.cast_nonneg _ );
           · obtain left := hM.1
             simp_all only [gt_iff_lt, ge_iff_le, abs_mul, abs_pow, neg_sub, not_le, mul_zero, abs_zero,mul_nonneg_iff_of_pos_right]
@@ -218,7 +239,7 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
       have h_lim : Filter.Tendsto (fun u : ℝ => ∑ j ∈ Finset.range (k + 1), Nat.choose k j * Nat.descFactorial n (k - j) * M ^ (n - (k - j)) * u ^ (-(n - k) : ℤ) * B) Filter.atTop (nhds 0) := by
         norm_num [ ← Finset.sum_mul _ _ _ ];
         exact le_trans ( Filter.Tendsto.mul ( Filter.Tendsto.mul tendsto_const_nhds <| tendsto_zpow_atTop_zero <| by linarith ) tendsto_const_nhds ) <| by norm_num;
-      exact Filter.eventually_atTop.mp ( h_lim.eventually ( ge_mem_nhds a ) ) |> fun ⟨ R, hR ⟩ ↦ ⟨ Max.max R 1, fun u hu x ↦ le_trans ( h_sum_bound u ( le_trans ( le_max_right _ _ ) hu ) x ) ( hR u ( le_trans ( le_max_left _ _ ) hu ) ) ⟩
+      exact Filter.eventually_atTop.mp ( h_lim.eventually ( ge_mem_nhds ε_pos ) ) |> fun ⟨ R, hR ⟩ ↦ ⟨ Max.max R 1, fun u hu x ↦ le_trans ( h_sum_bound u ( le_trans ( le_max_right _ _ ) hu ) x ) ( hR u ( le_trans ( le_max_left _ _ ) hu ) ) ⟩
 
 /-
 For any $n, c, \epsilon$, there exists a smooth compactly supported function whose $n$-th derivative at 0 is $c$ (and others 0) and whose derivatives of order less than $n$ are bounded by $\epsilon$.
