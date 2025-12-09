@@ -191,8 +191,12 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
           rw [ abs_mul, abs_pow, abs_of_nonneg ( by positivity : 0 ≤ u ^ j ) ];
           exact mul_le_mul_of_nonneg_right ( pow_le_pow_left₀ ( abs_nonneg x ) ( by rw [ le_div_iff₀ ( by positivity ) ] ; cases abs_cases x <;> cases abs_cases ( u * x ) <;> nlinarith ) _ ) ( by positivity );
         convert h_abs using 1 ; norm_cast ; norm_num ; ring;
-        rw [ show n - ( k - j ) = n - k + j by omega ] ; ring;
-        simp? +decide [ mul_assoc, mul_comm, mul_left_comm, ne_of_gt ( zero_lt_one.trans_le hu ) ];
+        rw [ tsub_tsub_assoc fwd_1 hj ] ;
+        rw [ mul_assoc ]
+        congr
+        rw [mul_comm, inv_pow, inv_pow]
+        rw [← inv_pow_sub_of_lt u (Nat.lt_add_of_pos_left (Nat.zero_lt_sub_of_lt hk)), ←inv_pow]
+        exact congrArg (HPow.hPow u⁻¹) (Nat.add_sub_self_right (n - k) j).symm
 
       -- Since $\phi^{(j)}$ is bounded (since it is smooth and compactly supported), say by $B_j$, we can bound each term in the sum.
       obtain ⟨B, hB⟩ : ∃ B > 0, ∀ j ≤ k, ∀ x, abs (iteratedDeriv j ϕ x) ≤ B := by
@@ -209,7 +213,6 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
           intro j hj; specialize h_deriv_compact_support j hj;
           have := h_deriv_compact_support.exists_bound_of_continuous ( show Continuous ( iteratedDeriv j ϕ ) from ?_ ) ;
           simp_all only [gt_iff_lt, ge_iff_le, abs_mul, abs_pow, neg_sub, Real.norm_eq_abs]
-          obtain left := hM.1
           obtain ⟨w, h⟩ := this
           · exact ⟨ Max.max w 1, by positivity, fun x => le_trans ( h x ) ( le_max_left _ _ ) ⟩;
           · apply_rules [ ContDiff.continuous_iteratedDeriv, hϕ ];
