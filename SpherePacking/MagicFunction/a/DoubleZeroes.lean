@@ -39,9 +39,9 @@ def φ₀_int_1 := ∫ t in Ici (0 : ℝ),
  φ₀'' (-1 / ((-1 + I * t) + 1)) * ((-1 + I * t) + 1) ^ 2 *
  cexp (I * π * r * ((-1 + I * t) + 1))
 
-def φ₀_int_2 := ∫ t in Ici (0 : ℝ),
- φ₀'' (-1 / (I * t - 1)) * (I * t - 1) ^ 2 *
- cexp (I * π * r * (I * t))
+-- def φ₀_int_2 := ∫ t in Ici (0 : ℝ),
+--  φ₀'' (-1 / (I * t - 1)) * (I * t - 1) ^ 2 *
+--  cexp (I * π * r * (I * t))
 
 def φ₀_int_3 := ∫ t in Ici (0 : ℝ),
  φ₀'' (-1 / ((1 + I * t) - 1)) * ((1 + I * t) - 1) ^ 2 *
@@ -55,12 +55,23 @@ lemma φ₀_int_3_eq : φ₀_int_3 r = ∫ t in Ici (0 : ℝ),
  φ₀'' (-1 / (I * t)) * (I * t)^2 *
  cexp (I * π * r * (I * t + 1)) := by sorry
 
-lemma d_eq_2 : d ⟨r, r_gt_1 r⟩ = φ₀_int_1 r + φ₀_int_2 r + φ₀_int_3 r := by
+def φ₀_int_4 := -2 * ∫ t in Ici (0 : ℝ),
+ φ₀'' (-1 / (I * t)) * (I * t)^2 *
+ cexp (I * π * r * (I * t))
+
+def φ₀_int_5 := -2 * ∫ t in Ici (1 : ℝ),
+ φ₀'' (-1 / (I * t)) * (I * t)^2 *
+ cexp (I * π * r * (I * t))
+
+lemma φ₀_int_4_eq : φ₀_int_4 r = I₅' r + φ₀_int_5 r := by sorry
+
+lemma d_eq_2 : d ⟨r, r_gt_1 r⟩ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by
   calc
       _ =  -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *
               ∫ t in Ici (0 : ℝ), φ₀'' (-1 / (I * t)) *
               (I * t)^2 * cexp (I * π * r * (I * t)) := rfl
-      _ = φ₀_int_1 r + φ₀_int_2 r + φ₀_int_3 r := ?_
+      _ = φ₀_int_1 r + φ₀_int_4 r + φ₀_int_3 r := ?_
+      _ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by simp [φ₀_int_4_eq]; ring
   · rw [sin_eq_exp]
     rw [<- integral_const_mul_of_integrable]
     simp [add_mul, sub_mul]
@@ -83,7 +94,7 @@ lemma d_eq_2 : d ⟨r, r_gt_1 r⟩ = φ₀_int_1 r + φ₀_int_2 r + φ₀_int_3
       conv_lhs =>
         pattern cexp (_ + _)
         rw [add_comm, ← neg_one_mul]
-      have : forall a, (-1 * (I * ↑π * ↑r) + I * ↑π * ↑r * (I * ↑a)) = I * ↑π * ↑r * (I * ↑a - 1) := by grind
+      have : forall a, (-1 * (I * ↑π * ↑r) + I * ↑π * ↑r * (I * ↑a)) = I * ↑π * ↑r * (I * ↑a - 1) := by intros; ring
       conv_lhs =>
         pattern cexp _
         rw [this]
@@ -91,37 +102,20 @@ lemma d_eq_2 : d ⟨r, r_gt_1 r⟩ = φ₀_int_1 r + φ₀_int_2 r + φ₀_int_3
     rw [this]
 
     rw [sub_eq_add_neg]
-    have : - ∫ (a : ℝ) in Ici 0, 2 * (φ₀'' (-1 / (I * ↑a)) * (I * ↑a) ^ 2 * cexp (I * ↑π * ↑r * (I * ↑a))) = φ₀_int_2 r := by
-      sorry
-
-    simp [this]
-    grind
+    rw [integral_const_mul, ← neg_mul, ← φ₀_int_4]
+    ring
 
     -- All remaining goals are about Integrability of some functions.
     -- We will probably need to adapt the proofs from IntegralEstimates/*.lean
     all_goals sorry
 
 
-def φ₀_int_4 := -2 * ∫ t in Ici (0 : ℝ),
- φ₀'' (-1 / (I * t)) * (I * t)^2 *
- cexp (I * π * r * (I * t))
 
-def φ₀_int_5 := -2 * ∫ t in Ici (1 : ℝ),
- φ₀'' (-1 / (I * t)) * (I * t)^2 *
- cexp (I * π * r * (I * t))
-
-
-lemma I₅'_eq : I₅' r = φ₀_int_4 r - φ₀_int_5 r := by sorry
-
-lemma from_4_4_1_int_1 : ∫ t in Ici (0 : ℝ),
- φ₀'' (-1 / ((-1 + I * t) + 1)) * ((-1 + I * t) + 1) ^ 2 *
- cexp (I * π * r * ((-1 + I * t) + 1)) = I₁' r + I₂' r + ∫ t in Ici (1 : ℝ),
+lemma from_4_4_1_int_1 : φ₀_int_1 r = I₁' r + I₂' r + ∫ t in Ici (1 : ℝ),
  φ₀'' (-1 / (I * t + 1)) * (I * t + 1)^2 *
  cexp (I * π * r * (I * t)) := by sorry
 
-lemma from_4_4_1_int_3 : ∫ t in Ici (0 : ℝ),
- φ₀'' (-1 / ((1 + I * t) - 1)) * ((1 + I * t) - 1) ^ 2 *
- cexp (I * π * r * ((1 + I * t) - 1)) = I₃' r + I₄' r +  ∫ t in Ici (1 : ℝ),
+lemma from_4_4_1_int_3 : φ₀_int_3 r = I₃' r + I₄' r +  ∫ t in Ici (1 : ℝ),
  φ₀'' (-1 / (I * t - 1)) * (I * t - 1)^2 *
  cexp (I * π * r * (I * t)) := by sorry
 
@@ -132,7 +126,19 @@ lemma d_eq_1 : d ⟨r, r_gt_1 r⟩ = I₁' r + I₂' r + I₃' r + I₄' r + I�
  φ₀'' (-1 / (I * t - 1)) * (I * t - 1)^2 *
  cexp (I * π * r * (I * t)) +
  -2 * φ₀'' (-1 / (I * t)) * (I * t)^2 *
- cexp (I * π * r * (I * t))) := by sorry
+ cexp (I * π * r * (I * t))) := by
+  rw [d_eq_2, from_4_4_1_int_1, from_4_4_1_int_3]
+
+  ac_nf; simp
+  unfold φ₀_int_5; simp
+  rw [← neg_mul, ← integral_const_mul, ← integral_add, ← integral_add]
+
+  refine setIntegral_congr_ae (by measurability) (ae_of_all _ (fun x hx => ?_))
+  -- Lean here says that I should use ring_nf, but `ring` works fine...?
+  ring
+
+  -- Again, integrability conditions for our functions
+  all_goals sorry
 
 lemma integrand_eq_2φ₀ : ∀ z : ℂ, φ₀'' (-1 / (z + 1)) * (z + 1)^2 +
  φ₀'' (-1 / (z - 1)) * (z - 1)^2 +
