@@ -153,10 +153,12 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
               Nat.choose_zero_right, tsub_zero, add_right_inj] ;
             ring;
             rw [ ← Finset.sum_add_distrib ] ;
-            refine' Finset.sum_congr rfl fun i hi => _
-            rw [ Nat.add_comm 1 k, Nat.add_comm 1 i ] ; rw [ Nat.choose_succ_succ ] ;
-            ring;
-            norm_num [ Nat.choose_succ_succ, add_comm 1 i ] ; ring;
+            apply Finset.sum_congr
+            · rfl
+            · intro i hi
+              rw [ Nat.add_comm 1 k, Nat.add_comm 1 i ] ; rw [ Nat.choose_succ_succ ]
+              ring
+              norm_num [ Nat.choose_succ_succ, add_comm 1 i ] ; ring;
           exact congr_fun ( h_leibniz _ _ ( contDiff_id.pow _ ) ( hϕ.comp ( contDiff_const.mul contDiff_id ) ) _ ) _;
         intro u x; rw [ h_leibniz u x ] ; refine' Finset.sum_congr rfl fun j hj => _ ;
         simp +decide only [iteratedDeriv_eq_iterate, iter_deriv_pow', mul_comm, mul_left_comm,
@@ -181,9 +183,14 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
           obtain ⟨w, h⟩ := this
           obtain ⟨left, right⟩ := h
           exact ⟨ w, left, fun x hx => Classical.not_not.1 fun hx' => hx.not_ge <| right x <| subset_closure <| by aesop ⟩;
-        refine' ⟨ M, hM.1, fun x hx j hj => _ ⟩;
-        induction' j with j ih generalizing x <;> simp_all +decide [ iteratedDeriv_succ ];
-        exact HasDerivAt.deriv ( HasDerivAt.congr_of_eventuallyEq ( hasDerivAt_const _ _ ) ( Filter.eventuallyEq_of_mem ( IsOpen.mem_nhds ( isOpen_lt continuous_const continuous_abs ) hx ) fun y hy => ih y hy ( by linarith ) ) );
+        use M
+        constructor
+        · exact hM.1
+        · intro x hx j hj
+          induction' j with j ih generalizing x
+          · simp_all only [gt_iff_lt, zero_le, iteratedDeriv_zero]
+          · simp_all only [gt_iff_lt, iteratedDeriv_succ]
+            exact HasDerivAt.deriv ( HasDerivAt.congr_of_eventuallyEq ( hasDerivAt_const _ _ ) ( Filter.eventuallyEq_of_mem ( IsOpen.mem_nhds ( isOpen_lt     continuous_const continuous_abs ) hx ) fun y hy => ih y hy ( by linarith ) ) );
       -- For $|u x| \leq M$, we have $|x^{n-k+j} u^j| \leq (M/u)^{n-k+j} u^j = M^{n-k+j} u^{-(n-k)}$.
       have h_bound : ∀ u ≥ 1, ∀ x, abs (u * x) ≤ M → ∀ j ≤ k, abs (x ^ (n - (k - j)) * u ^ j) ≤ M ^ (n - (k - j)) * u ^ (-(n - k) : ℤ) := by
         intros u hu x hx j hj
