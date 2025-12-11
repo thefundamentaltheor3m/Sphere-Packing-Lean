@@ -75,16 +75,29 @@ theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
 /--
 `H₂(it)` is real for all `t > 0`.
 Blueprint: Follows from the q-expansion having real coefficients.
+Proof strategy: H₂ = Θ₂^4 where Θ₂(it) = ∑ₙ exp(-π(n+1/2)²t) is a sum of real exponentials.
 -/
 theorem H₂_imag_axis_real : ResToImagAxis.Real H₂ := by
+  intro t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₂]
+  -- H₂ = Θ₂^4, so we need Θ₂(I*t) to be real
+  -- Each term Θ₂_term n (I*t) = cexp(π * I * (n + 1/2)² * I * t) = cexp(-π * (n + 1/2)² * t)
+  -- which is exp of a real number, hence real. Sum of reals is real, power of real is real.
   sorry
 
 /--
 `H₂(it) > 0` for all `t > 0`.
 Blueprint: Lemma 6.43 - H₂ is positive on the imaginary axis.
+Proof strategy: Each term exp(-π(n+1/2)²t) > 0, so Θ₂(it) > 0, hence H₂ = Θ₂^4 > 0.
 -/
 theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
-  sorry
+  constructor
+  · exact H₂_imag_axis_real
+  · intro t ht
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₂]
+    -- H₂ = Θ₂^4 where Θ₂(it) is a sum of positive exponentials
+    -- Each term exp(-π(n+1/2)²t) > 0, sum is positive, fourth power is positive
+    sorry
 
 /--
 `G(it)` is real for all `t > 0`.
