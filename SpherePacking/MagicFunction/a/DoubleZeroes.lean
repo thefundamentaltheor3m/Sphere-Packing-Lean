@@ -5,50 +5,99 @@ Authors: (Add your names here)
 -/
 
 import SpherePacking.ModularForms.Eisenstein
+import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.IntegralParametrisations
+import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 import Mathlib.Analysis.Complex.Norm
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Integral.Bochner.Set
 
+noncomputable section
+
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {f : ℝ → E}
+
+lemma const_add_variable_change [MulOneClass E] {hf : Continuous f} (x₁ x₂ x₁' : ℝ) :
+  ∫ t in x₁..x₂, f t =
+  ∫ t in x₁'..(x₁' + (x₂ - x₁)), f (t - (x₁' - x₁)) := by
+  set g := fun t ↦ t - (x₁' - x₁)
+  have : g x₁' = x₁ := by unfold g; simp
+  rw [← this]
+  have : g (x₁' + (x₂ - x₁)) = x₂ := by unfold g; simp
+  rw [← this]
+  conv_lhs =>
+    pattern (f _)
+    rw [← one_mul (f t)]
+  have : ∀ x, HasDerivAt g 1 x := by
+    intro x
+    unfold g; simp
+    exact hasDerivAt_id' x
+  have : ∀ t, g t = (t - (x₁' - x₁)) := by unfold g; simp
+  rw [← intervalIntegral.integral_comp_smul_deriv (f := g) (f' := fun _ ↦ 1)]
+  · unfold g
+    simp
+  · intro x
+    unfold g; simp; intro
+    exact hasDerivAt_id' x
+  · exact continuousOn_const
+  · simp; assumption
+
+lemma sign_variable_change (x₁ x₂ : ℝ) :
+  ∫ t in x₁..x₂, f t =
+  ∫ t in -x₁..-x₂, - f (- t) := by
+  rw [intervalIntegral.integral_symm]
+  simp
+
+end
+
+noncomputable section parametrization_bugs
+
+open Set Complex Real MeasureTheory MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions MagicFunction.a.IntegralEstimates.I₄
+
+variable (x : ℂ)
+
+def myInt := ∫ t in (0 : ℝ)..1,
+  (fun z ↦ (1 : ℂ)) (z₄' t)
+
+example : myInt = 1 := by
+  unfold myInt; simp
+
+end parametrization_bugs
 
 noncomputable section
 set_option linter.style.longLine false
 set_option linter.style.commandStart false
+set_option linter.style.multiGoal false
 
-open Set Complex Real MeasureTheory MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
+open Set Complex Real MeasureTheory MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions MagicFunction.a.IntegralEstimates.I₄
 
 lemma corollary_7_5 : ∃ C₀ > 0, ∀ z : ℂ, ‖φ₀'' z‖ ≤
-C₀ * Real.exp (-2 * Real.pi * (Complex.im z)) := by sorry
+  C₀ * Real.exp (-2 * Real.pi * (Complex.im z)) := by sorry
 lemma corollary_7_6 : ∃ C₂ > 0, ∀ z : ℂ, ‖φ₂'' z‖ ≤ C₂ := by sorry
-lemma corollary_7_7 : ∃ C₄ > 0, ∀ z : ℂ, ‖φ₄'' z‖ ≤ C₄ * Real.exp (2 * Real.pi * (Complex.im z)) := by sorry
-
+lemma corollary_7_7 : ∃ C₄ > 0, ∀ z : ℂ, ‖φ₄'' z‖ ≤
+  C₄ * Real.exp (2 * Real.pi * (Complex.im z)) := by sorry
 
 def d (r : Ici (1 : ℝ)) := -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *  ∫ t in Ici (0 : ℝ),
- I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
- cexp (I * π * r * (I * t))
+  I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
+  cexp (I * π * r * (I * t))
 
 variable (r : ℝ) (hr : r > 2)
 
-lemma r_gt_1 : r ∈ Ici 1 := by sorry
+include hr in
+lemma r_gt_1 : r ∈ Ici 1 := le_trans (by simp) (le_of_lt hr)
+
 
 lemma sin_eq_exp : -4 * (Complex.sin (Real.pi * r / 2))^2 =
   Complex.exp (I * Real.pi * r) - 2 + Complex.exp (-I * Real.pi * r) := by sorry
 
-def φ₀_int_1 := ∫ t in Ici (0 : ℝ),
- I * φ₀'' (-1 / ((-1 + I * t) + 1)) * ((-1 + I * t) + 1) ^ 2 *
- cexp (I * π * r * ((-1 + I * t) + 1))
+def integrand_1 (z : ℂ) := φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (↑π * I * ↑r * z)
 
--- def φ₀_int_2 := ∫ t in Ici (0 : ℝ),
---  φ₀'' (-1 / (I * t - 1)) * (I * t - 1) ^ 2 *
---  cexp (I * π * r * (I * t))
+def φ₀_int_1 := ∫ t in Ici (0 : ℝ), I * integrand_1 r (-1 + t * I)
 
-def φ₀_int_3 := ∫ t in Ici (0 : ℝ),
- I * φ₀'' (-1 / ((1 + I * t) - 1)) * ((1 + I * t) - 1) ^ 2 *
- cexp (I * π * r * ((1 + I * t) - 1))
+def integrand_3 (z : ℂ) := φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (↑π * I * ↑r * z)
 
-
-#check intervalIntegral.integral_comp_smul_deriv
+def φ₀_int_3 := ∫ t in Ici (0 : ℝ), I * integrand_3 r (1 + t * I)
 
 lemma φ₀_int_1_eq : φ₀_int_1 r = ∫ t in Ici (0 : ℝ),
   I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
@@ -57,20 +106,21 @@ lemma φ₀_int_1_eq : φ₀_int_1 r = ∫ t in Ici (0 : ℝ),
   sorry
 
 lemma φ₀_int_3_eq : φ₀_int_3 r = ∫ t in Ici (0 : ℝ),
- I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
- cexp (I * π * r * (I * t + 1)) := by sorry
+  I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
+  cexp (I * π * r * (I * t + 1)) := by sorry
 
 def φ₀_int_4 := -2 * ∫ t in Ici (0 : ℝ),
- I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
- cexp (I * π * r * (I * t))
+  I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
+  cexp (I * π * r * (I * t))
 
 def φ₀_int_5 := -2 * ∫ t in Ici (1 : ℝ),
- I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
- cexp (I * π * r * (I * t))
+  I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
+  cexp (I * π * r * (I * t))
 
 lemma φ₀_int_4_eq : φ₀_int_4 r = I₅' r + φ₀_int_5 r := by sorry
 
-lemma d_eq_2 : d ⟨r, r_gt_1 r⟩ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by
+include hr in
+lemma d_eq_2 : d ⟨r, r_gt_1 r hr⟩ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by
   calc
       _ =  -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *
               ∫ t in Ici (0 : ℝ), I * φ₀'' (-1 / (I * t)) *
@@ -78,7 +128,7 @@ lemma d_eq_2 : d ⟨r, r_gt_1 r⟩ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + �
       _ = φ₀_int_1 r + φ₀_int_4 r + φ₀_int_3 r := ?_
       _ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by simp [φ₀_int_4_eq]; ring
   · rw [sin_eq_exp]
-    rw [<- integral_const_mul_of_integrable]
+    rw [<- integral_const_mul_of_integrable (by sorry)]
     simp [add_mul, sub_mul]
     rw [integral_add, integral_sub]
 
@@ -90,7 +140,6 @@ lemma d_eq_2 : d ⟨r, r_gt_1 r⟩ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + �
         pattern cexp (_ + _)
         rw [add_comm, ← mul_one_add, add_comm]
       simp [φ₀_int_3_eq r]
-
     rw [this]
 
     have : (∫ (a : ℝ) in Ici 0, (cexp (-(I * ↑π * ↑r)) * (I * φ₀'' (-1 / (I * ↑a)) * (I * ↑a) ^ 2 * cexp (↑I * π * ↑r * (I * ↑a))))) = φ₀_int_1 r := by
@@ -115,33 +164,151 @@ lemma d_eq_2 : d ⟨r, r_gt_1 r⟩ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + �
     -- We will probably need to adapt the proofs from IntegralEstimates/*.lean
     all_goals sorry
 
+lemma cauchy_goursat_int_1 : ∫ (t : ℝ) in Ioi 1, I * integrand_1 r (-1 + t * I) =
+  (∫ (x : ℝ) in -1..0, integrand_1 r (x + 1 * I)) +
+  I • ∫ (t : ℝ) in Ioi 1, integrand_1 r (0 + t * I) := by
+  rw [integral_const_mul]
+  rw [← smul_eq_mul]
+  have : (-1 : ℝ) = (-1 : ℂ) := by simp
+  rw [← this, ← sub_eq_zero.1
+   (integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
+    1 _ ∅ _ _ _ _ _)]
+  · rfl
 
+  -- Need to fill all hypotheses to apply Cauchy-Goursat
+  all_goals sorry
+
+lemma cauchy_goursat_int_3 : ∫ (t : ℝ) in Ioi 1, I * integrand_3 r (1 + t * I) =
+  (∫ (x : ℝ) in 1..0, integrand_3 r (x + 1 * I)) +
+  I • ∫ (t : ℝ) in Ioi 1, integrand_3 r (0 + t * I) := by
+  rw [integral_const_mul]
+  rw [← smul_eq_mul]
+  have : (1 : ℝ) = (1 : ℂ) := by simp
+  rw [← this, ← sub_eq_zero.1
+   (integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
+    1 _ ∅ _ _ _ _ _)]
+  · rfl
+
+  -- Need to fill all hypotheses to apply Cauchy-Goursat
+  all_goals sorry
 
 lemma from_4_4_1_int_1 : φ₀_int_1 r = I₁' r + I₂' r + ∫ t in Ici (1 : ℝ),
  I * φ₀'' (-1 / (I * t + 1)) * (I * t + 1)^2 *
- cexp (I * π * r * (I * t)) := by sorry
+ cexp (I * π * r * (I * t)) := by
+  unfold φ₀_int_1
+  rw [← integral_add_compl (@measurableSet_Ioc _ _ _ _ _ _ 0 1) sorry]
+  simp
+  have : Ioc (0 : ℝ) 1 ∩ Ici 0 = Ioc 0 1 := by grind
+  rw [this]
+  have : (Ioc (0 : ℝ) 1)ᶜ ∩ Ici 0 = {0} ∪ Ioi 1 := by sorry
+  rw [this]
 
-lemma from_4_4_1_int_3 : φ₀_int_3 r = I₃' r + I₄' r +  ∫ t in Ici (1 : ℝ),
- I * φ₀'' (-1 / (I * t - 1)) * (I * t - 1)^2 *
- cexp (I * π * r * (I * t)) := by sorry
+  unfold I₁'
+  rw [intervalIntegral.intervalIntegral_eq_integral_uIoc]
+  simp
+  rw [mul_comm I, add_assoc]
+  congr 1
+  · refine (setIntegral_congr_ae (by measurability) ?_)
+    apply ae_of_all
+    intros a ia
+    rw [z₁'_eq_of_mem (by grind)]
+    unfold integrand_1; ring_nf
 
-lemma d_eq_1 : d ⟨r, r_gt_1 r⟩ = I₁' r + I₂' r + I₃' r + I₄' r + I₅' r +
+  · rw [← singleton_union,
+      integral_union_ae (Disjoint.aedisjoint (by simp)) (nullMeasurableSet_Ioi) sorry sorry]
+    simp
+    rw [cauchy_goursat_int_1]
+    congr 1
+    · rw [MagicFunction.a.RadialFunctions.I₂'_eq]
+      unfold integrand_1
+      rw [const_add_variable_change 0 1 (-1)]
+      simp only [sub_zero, neg_add_cancel]
+      apply intervalIntegral.integral_congr
+      simp [EqOn]; intro x hx hx'
+      conv_rhs =>
+        rw [mul_assoc, mul_assoc, ← Complex.exp_add, ← Complex.exp_add]
+      congr 3
+      · ring
+      · ring
+      · ring_nf; rw [I_sq]; ring
+      · sorry -- Continuity of whatever we have under the integral
+
+    · rw [smul_eq_mul, ← integral_const_mul, integral_Ici_eq_integral_Ioi]
+      refine (setIntegral_congr_ae (by measurability) (ae_of_all _ (fun x hx => ?_)))
+      unfold integrand_1
+      ring_nf
+
+-- We have a BIG problem here: we should have I₄ and we have -I₄.
+-- This is because I₄ lacks a -1 factor to account for the derivative
+-- of the parametrization.
+
+lemma from_4_4_1_int_3 : φ₀_int_3 r = I₃' r + -I₄' r + ∫ t in Ici (1 : ℝ),
+  I * φ₀'' (-1 / (I * t - 1)) * (I * t - 1)^2 *
+  cexp (I * π * r * (I * t)) := by
+  unfold φ₀_int_3
+  rw [← integral_add_compl (@measurableSet_Ioc _ _ _ _ _ _ 0 1) sorry]
+  simp
+  have : Ioc (0 : ℝ) 1 ∩ Ici 0 = Ioc 0 1 := by grind
+  rw [this]
+  have : (Ioc (0 : ℝ) 1)ᶜ ∩ Ici 0 = {0} ∪ Ioi 1 := by sorry
+  rw [this]
+
+  unfold I₃'
+  rw [intervalIntegral.intervalIntegral_eq_integral_uIoc]
+  simp
+  rw [mul_comm I, add_assoc]
+  congr 1
+  · refine (setIntegral_congr_ae (by measurability) ?_)
+    apply ae_of_all
+    intros a ia
+    rw [z₃'_eq_of_mem (by grind)]
+    unfold integrand_3; ring_nf
+
+  · rw [← singleton_union,
+      integral_union_ae (Disjoint.aedisjoint (by simp)) (nullMeasurableSet_Ioi) sorry sorry]
+    simp
+    rw [cauchy_goursat_int_3]
+    congr 1
+    · unfold integrand_3
+      rw [I₄'_eq]
+      rw [const_add_variable_change (hf := by sorry) 1 0 0];
+      simp only [zero_sub, sub_neg_eq_add, ofReal_add,
+        ofReal_one, one_mul, zero_add, neg_mul]
+      rw [sign_variable_change 0 (-1)]
+      simp only [ofReal_neg, neg_zero, neg_neg, intervalIntegral.integral_neg, neg_inj]
+      apply intervalIntegral.integral_congr
+      simp [EqOn]; intro x hx hx'
+      conv_rhs =>
+        rw [mul_assoc, mul_assoc, ← Complex.exp_add, ← Complex.exp_add]
+      congr 3
+      · ring
+      · ring
+      · ring_nf; rw [I_sq]; ring
+
+    · rw [smul_eq_mul, ← integral_const_mul, integral_Ici_eq_integral_Ioi]
+      refine (setIntegral_congr_ae (by measurability) (ae_of_all _ (fun x hx => ?_)))
+      unfold integrand_3
+      ring_nf
+
+include hr in
+lemma d_eq_1 : d ⟨r, r_gt_1 r hr⟩ = I₁' r + I₂' r + I₃' r + -I₄' r + I₅' r +
   ∫ t in Ici (1 : ℝ),
- (I * φ₀'' (-1 / (I * t + 1)) * (I * t + 1)^2 *
- cexp (I * π * r * (I * t)) +
- I * φ₀'' (-1 / (I * t - 1)) * (I * t - 1)^2 *
- cexp (I * π * r * (I * t)) +
- -2 * I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
- cexp (I * π * r * (I * t))) := by
+  (I * φ₀'' (-1 / (I * t + 1)) * (I * t + 1)^2 *
+  cexp (I * π * r * (I * t)) +
+  I * φ₀'' (-1 / (I * t - 1)) * (I * t - 1)^2 *
+  cexp (I * π * r * (I * t)) +
+  -2 * I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
+  cexp (I * π * r * (I * t))) := by
   rw [d_eq_2, from_4_4_1_int_1, from_4_4_1_int_3]
   ac_nf; simp
   unfold φ₀_int_5; simp
 
-  rw [← neg_mul, ← integral_const_mul, ← integral_add, ← integral_add]
+  rw [← neg_mul, ← integral_const_mul, ← integral_add]
+  ac_nf; simp
+  rw [← integral_add]
 
   refine setIntegral_congr_ae (by measurability) (ae_of_all _ (fun x hx => ?_))
-  -- Lean here says that I should use ring_nf, but `ring` works fine...?
-  ring
+  ring_nf
 
   -- Again, integrability conditions for our functions
   all_goals sorry
@@ -150,7 +317,8 @@ lemma integrand_eq_2φ₀ : ∀ z : ℂ, I * φ₀'' (-1 / (z + 1)) * (z + 1)^2 
  I * φ₀'' (-1 / (z - 1)) * (z - 1)^2 +
  -2 * I * φ₀'' (-1 / z) * z^2 = 2 * I * φ₀'' z := by sorry
 
-theorem d_eq_a : d ⟨r, r_gt_1 r⟩ = a' r := by
+include hr in
+theorem d_eq_a : d ⟨r, r_gt_1 r hr⟩ = a' r := by
   rw [d_eq_1]
   conv_lhs =>
     pattern (_ * (cexp _) + _ * (cexp _) + _ * (cexp _))
