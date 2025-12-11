@@ -404,7 +404,7 @@ lemma contDiff_integral_poly_mul_comp (f : ℝ → ℝ) (hf : ContDiff ℝ ∞ f
         · -- By the induction hypothesis, the derivative of the integral is C^n.
           have h_deriv : ContDiff ℝ n (fun x => ∫ t in (0 : ℝ)..1, t * P.eval t * deriv f (t * x)) := by
             convert ih ( deriv f ) ( by
-              exact? ) ( Polynomial.X * P ) using 1;
+              exact ContDiff.deriv' hf ) ( Polynomial.X * P ) using 1;
             norm_num;
           have h_eq_deriv : ∀ x, HasDerivAt (fun x => ∫ t in (0 : ℝ)..1, P.eval t * f (t * x)) (∫ t in (0 : ℝ)..1, t * P.eval t * deriv f (t * x)) x := by
             apply_rules [ hasDerivAt_integral_poly_mul_comp ];
@@ -485,7 +485,7 @@ theorem smooth_realization_jet : ∀ a : ℕ → ℝ, ∃ f : ℝ → ℝ, (Cont
         any_goals exact x;
         · intro n;
           apply_rules [ ContDiff.differentiable_iteratedDeriv, hf1 ];
-          exact?;
+          exact compareOfLessAndEq_eq_lt.mp rfl;
         · intro n y; specialize hM3 ( k + 1 ) n y; simp_all +decide [ iteratedDeriv_succ ] ;
         · -- Since the series of M k n is summable and |iteratedDeriv k (f n) x| ≤ M k n for all n, the series of the k-th derivatives is absolutely summable.
           have h_abs_summable : Summable (fun n => |iteratedDeriv k (f n) x|) := by
@@ -529,7 +529,7 @@ lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ
             -- Combine and simplify the fractions
             field_simp
             ring;
-          exact?;
+          exact fun x a ↦ h_deriv x;
           rotate_left;
           exact Continuous.intervalIntegrable ( by exact Continuous.div_const ( by exact Continuous.neg ( by exact Continuous.pow ( continuous_const.sub continuous_id' ) _ ) ) _ ) _ _;
           rotate_left;
@@ -574,7 +574,7 @@ lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ
           -- The derivative of a sum is the sum of the derivatives, as long as the functions are differentiable.
           have h_deriv_sum : ∀ n ∈ Finset.range (k + 1), DifferentiableAt ℝ (fun x => deriv^[n] g 0 / (n ! : ℝ) * iteratedDeriv m (fun x => x ^ (2 * n)) x) x := by
             intro n hn; norm_num [ iteratedDeriv_eq_iterate ] ;
-          exact?;
+          exact deriv_fun_sum h_deriv_sum;
         exact h_deriv_sum.trans ( Finset.sum_congr rfl fun _ _ => by norm_num ));
       exact congr_fun ( h_poly_deriv ( 2 * k ) ) 0;
     rw [ h_poly_deriv, Finset.sum_eq_single k ] <;> norm_num [ Nat.factorial_ne_zero, iteratedDeriv_eq_iterate ]
@@ -600,7 +600,7 @@ lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ
             have h_cont_diff : ContDiff ℝ ∞ (fun x => deriv^[k + 1] g x) := by
               fun_prop
             have h_int_smooth : ∀ (P : Polynomial ℝ), ContDiff ℝ ∞ (fun x => ∫ t in (0 : ℝ)..1, P.eval t * deriv^[k + 1] g (t * x)) := by
-              exact?;
+              exact fun P ↦ contDiff_integral_poly_mul_comp (deriv^[k + 1] g) h_cont_diff P;
             convert h_int_smooth ( Polynomial.C ( 1 / ( k ! : ℝ ) ) * ( 1 - Polynomial.X ) ^ k ) using 2 ; norm_num ; ring;
             ac_rfl;
           exact h_int_smooth.comp ( contDiff_id.pow 2 );
@@ -653,10 +653,10 @@ lemma exists_smooth_even_approx (f : ℝ → ℝ) (heven : Function.Even f) (hsm
             -- Apply the linearity of the derivative to the difference of the two functions.
             apply funext; intro x; exact deriv_sub (by
             apply_rules [ ContDiff.differentiable_iteratedDeriv, hsmooth ];
-            exact?) (by
+            exact compareOfLessAndEq_eq_lt.mp rfl) (by
             apply_rules [ ContDiff.differentiable_iteratedDeriv, hg.1.comp ];
             · exact contDiff_id.pow 2;
-            · exact?);
+            · exact compareOfLessAndEq_eq_lt.mp rfl);
           exact congr_fun ( h_linearity _ ) _;
         -- Apply the lemma iteratedDeriv_comp_sq with the smooth function g and the natural number k.
         have h_comp : iteratedDeriv (2 * k) (fun x => g (x ^ 2)) 0 = ((Nat.factorial (2 * k) : ℝ) / (Nat.factorial k : ℝ)) * iteratedDeriv k g 0 := by
@@ -754,7 +754,7 @@ lemma contDiff_parametric_integral (F : ℝ → ℝ → ℝ) (hF : ContDiff ℝ 
         have h_cont_diff : ContDiff ℝ n (fun p : ℝ × ℝ => F p.1 p.2) := by
           -- Since $F$ is continuously differentiable up to order infinity, it is also continuously differentiable up to any finite order $n$.
           apply hF.of_le;
-          exact?
+          exact ENat.LEInfty.out
         induction' n with n ih generalizing F <;> aesop;
         · fun_prop;
         · -- The derivative of the integral with respect to x is the integral of the partial derivative of F with respect to x.
@@ -820,7 +820,7 @@ lemma exists_smooth_flat_factor (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f)
           · erw [ Function.iterate_succ_apply' ] ; ring;
             cases n <;> norm_num [ Function.iterate_succ_apply' ] ; ring;
           · have h_diff : ∀ n, ContDiff ℝ ∞ (deriv^[n] g) := by
-              exact?;
+              exact fun n ↦ ContDiff.iterate_deriv n left;
             exact ( h_diff n |> ContDiff.differentiable <| by norm_num ) x;
         · refine' DifferentiableAt.mul differentiableAt_id _;
           apply_rules [ ContDiff.differentiable ];
