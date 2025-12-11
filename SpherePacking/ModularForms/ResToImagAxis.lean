@@ -266,10 +266,10 @@ lemma tendsto_rpow_mul_of_isBigO_exp {g : ℝ → ℂ} {s b : ℝ} (hb : 0 < b)
   use max N₁ (max N₂ 1)
   intro t ht
   have ht₁ : N₁ ≤ t := le_trans (le_max_left _ _) ht
-  have ht₂ : N₂ ≤ t :=
-    le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) ht
-  have ht_pos : 0 < t :=
-    lt_of_lt_of_le one_pos (le_trans (le_max_right _ _) (le_trans (le_max_right _ _) ht))
+  have ht₂ : N₂ ≤ t := le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) ht
+  -- We chose max N₁ (max N₂ 1), so 1 ≤ t
+  have h1_le_t : (1 : ℝ) ≤ t := le_trans (le_max_right _ _) (le_trans (le_max_right _ _) ht)
+  have ht_pos : 0 < t := lt_of_lt_of_le one_pos h1_le_t
   specialize hN₁ t ht₁
   specialize hN₂ t ht₂
   simp only [Real.dist_eq, sub_zero] at hN₁
@@ -315,11 +315,12 @@ This follows from the exponential decay of cusp forms at infinity: `f = O(exp(-2
 theorem cuspForm_rpow_mul_resToImagAxis_tendsto_zero {n : ℕ} {k : ℤ} {F : Type*}
     [NeZero n] [FunLike F ℍ ℂ] [CuspFormClass F Γ(n) k] (f : F) (s : ℝ) :
     Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * (f : ℍ → ℂ).resToImagAxis t) atTop (𝓝 0) := by
+  -- exp_decay_atImInfty gives: f =O[atImInfty] fun τ => rexp (-2 * π * τ.im / n)
   have hdecay := exp_decay_atImInfty n f
-  -- The decay constant is 2π/n > 0
+  -- The decay constant 2π/n is positive (NeZero n ensures n ≠ 0)
   have hn_pos : (0 : ℝ) < n := Nat.cast_pos.mpr (NeZero.pos n)
-  have hc : (0 : ℝ) < 2 * π / n := by positivity
-  -- Rewrite the exponent to match the form required by tendsto_rpow_mul_resToImagAxis_of_isBigO_exp
+  have hc : (0 : ℝ) < 2 * π / n := div_pos (by positivity) hn_pos
+  -- Convert exponent form: -2 * π * τ.im / n = -(2 * π / n) * τ.im
   have hdecay' : (f : ℍ → ℂ) =O[atImInfty] fun τ => rexp (-(2 * π / n) * τ.im) := by
     convert hdecay using 2 with τ
     congr 1
