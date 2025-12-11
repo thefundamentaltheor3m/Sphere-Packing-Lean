@@ -258,7 +258,6 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
 For any $n, c, \epsilon$, there exists a smooth compactly supported function whose $n$-th derivative at 0 is $c$ (and others 0) and whose derivatives of order less than $n$ are bounded by $\epsilon$.
 -/
 set_option linter.style.longLine false in
-set_option maxHeartbeats 500000 in
 lemma exists_smooth_term_with_bound (n : ℕ) (c : ℝ) (ε : ℝ) (hε : 0 < ε) :
     ∃ f : ℝ → ℝ, ContDiff ℝ ∞ f ∧ HasCompactSupport f ∧
     (∀ k, iteratedDeriv k f 0 = if k = n then c else 0) ∧
@@ -273,29 +272,38 @@ lemma exists_smooth_term_with_bound (n : ℕ) (c : ℝ) (ε : ℝ) (hε : 0 < ε
           exact ⟨ w, w.contMDiff.contDiff, fun x hx => left_1 hx, fun x hx => left hx ⟩;
         use ϕ;
         rw [ hasCompactSupport_iff_eventuallyEq ];
-        simp_all +decide [ Filter.EventuallyEq ];
+        simp_all only [ge_iff_le, EventuallyEq, Pi.zero_apply, coclosedCompact_eq_cocompact,
+          cocompact_eq_atBot_atTop, eventually_sup, eventually_atBot, eventually_atTop,
+          implies_true, and_self, and_true, true_and];
         exact ⟨ ⟨ -2, fun x hx => hϕ.2.2 x <| by cases abs_cases x <;> linarith ⟩, ⟨ 2, fun x hx => hϕ.2.2 x <| by cases abs_cases x <;> linarith ⟩ ⟩;
       -- Define the function $f_u(x) = \frac{c}{n!} x^n \phi(u x)$ for some large $u$.
       obtain ⟨u, hu⟩ : ∃ u : ℝ, 0 < u ∧ (∀ k < n, ∀ x, |iteratedDeriv k (fun x => (c / n.factorial) * x^n * ϕ (u * x)) x| ≤ ε) := by
         have h_smooth_bump_scaling_bound : ∀ k < n, ∃ R, ∀ u ≥ R, ∀ x, |iteratedDeriv k (fun x => (c / n.factorial) * x^n * ϕ (u * x)) x| ≤ ε := by
           intro k hk
           have h_bound : ∀ u : ℝ, ∀ x : ℝ, iteratedDeriv k (fun x => (c / Nat.factorial n) * x^n * ϕ (u * x)) x = (c / Nat.factorial n) * iteratedDeriv k (fun x => x^n * ϕ (u * x)) x := by
-            intro u x; simp +decide [ mul_assoc, iteratedDeriv_eq_iterate ] ;
-            induction' k with k ih generalizing x <;> simp_all +decide [ Function.iterate_succ_apply', mul_assoc, mul_comm u ];
+            intro u x
+            simp only [mul_assoc, iteratedDeriv_eq_iterate]
+            induction' k with k ih generalizing x <;> simp_all [ Function.iterate_succ_apply', mul_comm u ];
             rw [ Filter.EventuallyEq.deriv_eq ( Filter.eventuallyEq_of_mem ( Metric.ball_mem_nhds _ zero_lt_one ) fun y hy => ih ( Nat.lt_of_succ_lt hk ) y ) ] ; norm_num [ mul_assoc, mul_comm, mul_left_comm ];
           have := smooth_bump_scaling_bound ϕ hϕ.1 hϕ.2.1 n k hk;
           obtain ⟨ R, hR ⟩ := this ( ε / ( |c / ( n ! : ℝ )| + 1 ) ) ( by positivity ) ; exact ⟨ R, fun u hu x => by rw [ h_bound u x ] ; exact abs_le.mpr ⟨ by cases abs_cases ( c / ( n ! : ℝ ) ) <;> nlinarith [ abs_le.mp ( hR u hu x ), mul_div_cancel₀ ε ( by positivity : ( |c / ( n ! : ℝ )| + 1 ) ≠ 0 ) ], by cases abs_cases ( c / ( n ! : ℝ ) ) <;> nlinarith [ abs_le.mp ( hR u hu x ), mul_div_cancel₀ ε ( by positivity : ( |c / ( n ! : ℝ )| + 1 ) ≠ 0 ) ] ⟩ ⟩ ;
         choose! R hR using h_smooth_bump_scaling_bound;
         exact ⟨ Max.max ( ∑ k ∈ Finset.range n, |R k| + 1 ) 1, by positivity, fun k hk x => hR k hk _ ( le_trans ( le_abs_self _ ) ( le_trans ( Finset.single_le_sum ( fun a _ => abs_nonneg ( R a ) ) ( Finset.mem_range.mpr hk ) ) ( by linarith [ le_max_left ( ∑ k ∈ Finset.range n, |R k| + 1 ) 1, le_max_right ( ∑ k ∈ Finset.range n, |R k| + 1 ) 1 ] ) ) ) x ⟩;
-      refine' ⟨ _, _, _, _, hu.2 ⟩;
+      -- refine' ⟨ _, _, _, _, hu.2 ⟩;
+      use fun x ↦ c / ↑n ! * x ^ n * ϕ (u * x)
+      constructor
       · exact ContDiff.mul ( ContDiff.mul contDiff_const ( contDiff_id.pow n ) ) ( hϕ.1.comp ( contDiff_const.mul contDiff_id ) );
+      constructor
       · rw [ hasCompactSupport_iff_eventuallyEq ] at *;
-        simp_all +decide [ Filter.EventuallyEq ];
+        simp_all only [EventuallyEq, Pi.zero_apply, coclosedCompact_eq_cocompact,
+          cocompact_eq_atBot_atTop, eventually_sup, eventually_atBot, eventually_atTop, ge_iff_le,
+          mul_eq_zero, div_eq_zero_iff, Nat.cast_eq_zero, pow_eq_zero_iff', ne_eq];
         exact ⟨ by obtain ⟨ a, ha ⟩ := hϕ.2.1.1; exact ⟨ a / u, fun x hx => Or.inr <| ha _ <| by nlinarith [ mul_div_cancel₀ a hu.1.ne' ] ⟩, by obtain ⟨ a, ha ⟩ := hϕ.2.1.2; exact ⟨ a / u, fun x hx => Or.inr <| ha _ <| by nlinarith [ mul_div_cancel₀ a hu.1.ne' ] ⟩ ⟩;
-      · intro k;
+      constructor
+      · intro k
         -- By definition of $f$, we know that its $k$-th derivative at 0 is given by the $k$-th derivative of $\frac{c}{n!} x^n \phi(u x)$ at 0.
         have h_deriv : iteratedDeriv k (fun x => (c / n.factorial) * x^n * ϕ (u * x)) 0 = (c / n.factorial) * iteratedDeriv k (fun x => x^n * ϕ (u * x)) 0 := by
-          simp +decide [ mul_assoc, iteratedDeriv_eq_iterate ];
+          simp only [mul_assoc, iteratedDeriv_eq_iterate];
           -- The derivative of a constant times a function is the constant times the derivative of the function.
           have h_const_deriv : ∀ k : ℕ, deriv^[k] (fun x => c / (n ! : ℝ) * (x ^ n * ϕ (u * x))) = fun x => c / (n ! : ℝ) * deriv^[k] (fun x => x ^ n * ϕ (u * x)) x := by
             intro k; induction k <;> simp_all +decide [ Function.iterate_succ_apply', mul_assoc ] ;
@@ -307,11 +315,14 @@ lemma exists_smooth_term_with_bound (n : ℕ) (c : ℝ) (ε : ℝ) (hε : 0 < ε
           rw [ Filter.EventuallyEq.iteratedDeriv_eq ];
           filter_upwards [ Metric.ball_mem_nhds 0 ( inv_pos.mpr hu.1 ) ] with x hx using h_deriv x ( by simpa [ abs_mul, abs_inv, abs_of_pos hu.1 ] using hx.out.le );
         bound;
-        · simp_all +decide [ iteratedDeriv_eq_iterate ];
+        · simp_all only [ge_iff_le, iteratedDeriv_eq_iterate, iter_deriv_pow', tsub_self, pow_zero,
+            mul_one];
           rw [ div_mul_eq_mul_div, div_eq_iff ( by positivity ) ];
           exact congrArg _ ( Nat.recOn k ( by norm_num ) fun n ih => by rw [ Finset.prod_range_succ' ] ; simp +decide [ Nat.factorial_succ, ih, mul_comm ] );
-        · simp_all +decide [ iteratedDeriv_eq_iterate ];
+        · simp_all only [iteratedDeriv_eq_iterate, iter_deriv_pow', ge_iff_le, mul_eq_zero,
+            div_eq_zero_iff, Nat.cast_eq_zero, pow_eq_zero_iff', ne_eq, true_and];
           cases lt_or_gt_of_ne h <;> first | exact Or.inr <| Or.inl <| Finset.prod_eq_zero ( Finset.mem_range.mpr ‹_› ) <| sub_self _ | exact Or.inr <| Or.inr <| Nat.sub_ne_zero_of_lt ‹_›
+      exact hu.2
 
 /-
 The n-th derivative of x^m * f(x) at 0 is 0 if n < m.
