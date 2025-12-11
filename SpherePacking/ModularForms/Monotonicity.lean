@@ -92,14 +92,16 @@ theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
 theorem G_imag_axis_real : ResToImagAxis.Real G := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, G]
-  have h := H₂_imag_axis_real t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at h
-  -- (a + 0*i)^3 has zero imaginary part
-  have : (H₂ ⟨Complex.I * t, by simp [ht]⟩).im = 0 := h
-  rw [pow_three]
-  simp only [mul_im]
-  -- Real * Real * Real has zero imaginary part
-  sorry
+  have him := H₂_imag_axis_real t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at him
+  -- If z.im = 0, then z^3.im = 0
+  set z := H₂ ⟨Complex.I * t, by simp [ht]⟩ with hz_def
+  have hz_real : z.im = 0 := him
+  -- Use that (a + 0*i)^n has zero imaginary part
+  calc (z ^ 3).im = (z * z * z).im := by ring_nf
+    _ = z.re * z.re * z.im + z.re * z.im * z.re + z.im * z.re * z.re
+        - z.im * z.im * z.im := by simp [Complex.mul_im]; ring
+    _ = 0 := by simp [hz_real]
 
 /--
 `G(it) > 0` for all `t > 0`.
@@ -113,8 +115,16 @@ theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
     have hpos := H₂_imag_axis_pos.2 t ht
     have hreal := H₂_imag_axis_pos.1 t ht
     simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hpos hreal
-    -- (positive real)^3 is positive real
-    sorry
+    -- For z with z.im = 0 and z.re > 0, we have (z^3).re = z.re^3 > 0
+    set z := H₂ ⟨Complex.I * t, by simp [ht]⟩ with hz_def
+    have hz_real : z.im = 0 := hreal
+    have hz_pos : 0 < z.re := hpos
+    -- z^3.re = z.re^3 when z.im = 0
+    calc (z ^ 3).re = (z * z * z).re := by ring_nf
+      _ = z.re * z.re * z.re - z.re * z.im * z.im
+          - z.im * z.re * z.im - z.im * z.im * z.re := by simp [Complex.mul_re]; ring
+      _ = z.re ^ 3 := by simp [hz_real]; ring
+      _ > 0 := pow_pos hz_pos 3
 
 /--
 `F(it)` is real for all `t > 0`.
