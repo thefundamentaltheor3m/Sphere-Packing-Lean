@@ -24,6 +24,57 @@ lemma MDifferentiableAt_DifferentiableAt {F : ℍ → ℂ} {z : ℍ}
       MDifferentiableWithinAt.differentiableWithinAt_writtenInExtChartAt h
   exact (differentiableWithinAt_univ.1 h₁)
 
+/--
+The converse direction: `DifferentiableAt` on ℂ implies `MDifferentiableAt` on ℍ.
+-/
+lemma DifferentiableAt_MDifferentiableAt {G : ℂ → ℂ} {z : ℍ}
+    (h : DifferentiableAt ℂ G ↑z) : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (G ∘ (↑) : ℍ → ℂ) z := by
+  rw [mdifferentiableAt_iff]
+  -- Goal: DifferentiableAt ℂ ((G ∘ (↑)) ∘ ofComplex) ↑z
+  -- The functions ((G ∘ (↑)) ∘ ofComplex) and G agree on the upper half-plane
+  -- which is a neighborhood of ↑z
+  apply DifferentiableAt.congr_of_eventuallyEq h
+  have hOpen : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
+  filter_upwards [hOpen.mem_nhds z.im_pos] with w hw
+  simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
+  exact congrArg G (UpperHalfPlane.coe_mk w hw)
+
+/--
+The derivative operator `D` preserves MDifferentiability.
+If `F : ℍ → ℂ` is MDifferentiable, then `D F` is also MDifferentiable.
+-/
+theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D F) := by
+  intro z
+  -- D F z = (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z
+  -- We need to show MDifferentiableAt for z ↦ (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z
+  -- First, show F ∘ ofComplex is differentiable on the upper half-plane (as an open set in ℂ)
+  have hDiff : ∀ w : ℍ, DifferentiableAt ℂ (F ∘ ofComplex) ↑w :=
+    fun w => MDifferentiableAt_DifferentiableAt (hF w)
+  -- The upper half-plane is open
+  have hOpen : IsOpen {z : ℂ | 0 < z.im} := isOpen_lt continuous_const Complex.continuous_im
+  -- F ∘ ofComplex is differentiable on the upper half-plane
+  have hDiffOn : DifferentiableOn ℂ (F ∘ ofComplex) {z : ℂ | 0 < z.im} := by
+    intro w hw
+    exact (hDiff ⟨w, hw⟩).differentiableWithinAt
+  -- Therefore, deriv (F ∘ ofComplex) is differentiable on the upper half-plane
+  have hDerivDiffOn : DifferentiableOn ℂ (deriv (F ∘ ofComplex)) {z : ℂ | 0 < z.im} :=
+    DifferentiableOn.deriv hDiffOn hOpen
+  -- At z, deriv (F ∘ ofComplex) is differentiable
+  have hDerivDiffAt : DifferentiableAt ℂ (deriv (F ∘ ofComplex)) ↑z :=
+    hDerivDiffOn.differentiableAt (hOpen.mem_nhds z.im_pos)
+  -- Now we need to show MDifferentiableAt for the composition with constant multiplication
+  -- The function z ↦ deriv (F ∘ ofComplex) z factors as (deriv (F ∘ ofComplex)) ∘ (↑)
+  have h_deriv_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (fun w : ℍ => deriv (F ∘ ofComplex) w) z := by
+    rw [mdifferentiableAt_iff]
+    apply DifferentiableAt.congr_of_eventuallyEq hDerivDiffAt
+    filter_upwards [hOpen.mem_nhds z.im_pos] with w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
+    exact congrArg (deriv (F ∘ ofComplex)) (UpperHalfPlane.coe_mk w hw)
+  -- Multiplying by a constant preserves MDifferentiability
+  have h_const : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (fun _ : ℍ => (2 * π * I)⁻¹) z :=
+    mdifferentiableAt_const
+  exact MDifferentiableAt.mul h_const h_deriv_mdiff
 
 /--
 TODO: Move this to E2.lean.
@@ -165,6 +216,29 @@ theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 
   simp
   ring_nf
 
+/--
+The Serre derivative preserves MDifferentiability.
+If `F : ℍ → ℂ` is MDifferentiable, then `serre_D k F` is also MDifferentiable.
+-/
+theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
+    (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D k F) := by
+  -- serre_D k F z = D F z - k * 12⁻¹ * E₂ z * F z
+  -- D F is MDifferentiable by D_differentiable
+  have hD : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D F) := D_differentiable hF
+  -- E₂ * F is MDifferentiable (using E₂_holo' and hF)
+  have hE₂F : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => E₂ z * F z) :=
+    MDifferentiable.mul E₂_holo' hF
+  -- k * 12⁻¹ * E₂ * F is MDifferentiable (constant multiple times MDifferentiable function)
+  have h_term : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => k * 12⁻¹ * E₂ z * F z) := by
+    have h_const : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun _ : ℍ => k * 12⁻¹) := mdifferentiable_const
+    have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => (k * 12⁻¹) * (E₂ z * F z)) :=
+      MDifferentiable.mul h_const hE₂F
+    convert h1 using 1
+    ext z
+    ring
+  -- serre_D k F = D F - (k * 12⁻¹ * E₂ * F)
+  exact MDifferentiable.sub hD h_term
 
 /--
 Serre derivative is equivariant under the slash action. More precisely, if `F` is invariant
