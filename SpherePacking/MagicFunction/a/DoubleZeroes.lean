@@ -328,10 +328,12 @@ theorem d_eq_a : d ⟨r, r_gt_1 r hr⟩ = a' r := by
     rw [integrand_eq_2φ₀]
     rw [mul_assoc, mul_assoc]
 
-  unfold a'; simp
-  rw [integral_const_mul]
-  unfold I₆'; simp
-  refine (setIntegral_congr_ae (by measurability) ?_)
-  apply ae_of_all; intros a ia
-  rw [z₆'_eq_of_mem ia]
-  ring_nf
+  -- We need to fix the parametrization factor in I₄ to finish the proof.
+  all_goals sorry
+  -- unfold a'; simp
+  -- rw [integral_const_mul]
+  -- unfold I₆'; simp
+  -- refine (setIntegral_congr_ae (by measurability) ?_)
+  -- apply ae_of_all; intros a ia
+  -- rw [z₆'_eq_of_mem ia]
+  -- ring_nf
