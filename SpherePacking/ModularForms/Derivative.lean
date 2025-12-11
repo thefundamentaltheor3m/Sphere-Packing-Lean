@@ -63,18 +63,16 @@ theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(
   -- At z, deriv (F ∘ ofComplex) is differentiable
   have hDerivDiffAt : DifferentiableAt ℂ (deriv (F ∘ ofComplex)) ↑z :=
     hDerivDiffOn.differentiableAt (hOpen.mem_nhds z.im_pos)
-  -- Now we need to show MDifferentiableAt for the composition with constant multiplication
-  -- The function z ↦ deriv (F ∘ ofComplex) z factors as (deriv (F ∘ ofComplex)) ∘ (↑)
-  have h_deriv_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (fun w : ℍ => deriv (F ∘ ofComplex) w) z := by
-    rw [mdifferentiableAt_iff]
-    apply DifferentiableAt.congr_of_eventuallyEq hDerivDiffAt
-    filter_upwards [hOpen.mem_nhds z.im_pos] with w hw
-    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
-    exact congrArg (deriv (F ∘ ofComplex)) (UpperHalfPlane.coe_mk w hw)
+  -- Use the bridge lemma to get MDifferentiableAt
+  have h_deriv_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) ((deriv (F ∘ ofComplex)) ∘ (↑) : ℍ → ℂ) z :=
+    DifferentiableAt_MDifferentiableAt hDerivDiffAt
+  -- Identify with our original function
+  have h_deriv_mdiff' : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (fun w : ℍ => deriv (F ∘ ofComplex) w) z := by
+    convert h_deriv_mdiff using 1
   -- Multiplying by a constant preserves MDifferentiability
   have h_const : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (fun _ : ℍ => (2 * π * I)⁻¹) z :=
     mdifferentiableAt_const
-  exact MDifferentiableAt.mul h_const h_deriv_mdiff
+  exact MDifferentiableAt.mul h_const h_deriv_mdiff'
 
 /--
 TODO: Move this to E2.lean.
@@ -236,7 +234,7 @@ theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
       MDifferentiable.mul h_const hE₂F
     convert h1 using 1
     ext z
-    ring
+    simp only [mul_assoc]
   -- serre_D k F = D F - (k * 12⁻¹ * E₂ * F)
   exact MDifferentiable.sub hD h_term
 
