@@ -44,18 +44,12 @@ The derivative operator `D` preserves MDifferentiability.
 If `F : ℍ → ℂ` is MDifferentiable, then `D F` is also MDifferentiable.
 -/
 theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
-    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D F) := by
-  intro z
-  -- F ∘ ofComplex is differentiable on the upper half-plane
-  have hDiffOn : DifferentiableOn ℂ (F ∘ ofComplex) {z : ℂ | 0 < z.im} :=
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D F) := fun z =>
+  let hDiffOn : DifferentiableOn ℂ (F ∘ ofComplex) {z : ℂ | 0 < z.im} :=
     fun w hw => (MDifferentiableAt_DifferentiableAt (hF ⟨w, hw⟩)).differentiableWithinAt
-  -- deriv (F ∘ ofComplex) is differentiable at z (key step: DifferentiableOn.deriv)
-  have hDerivDiffAt : DifferentiableAt ℂ (deriv (F ∘ ofComplex)) ↑z :=
+  MDifferentiableAt.mul mdifferentiableAt_const <| DifferentiableAt_MDifferentiableAt <|
     (hDiffOn.deriv isOpen_upperHalfPlaneSet).differentiableAt
       (isOpen_upperHalfPlaneSet.mem_nhds z.im_pos)
-  -- Convert to MDifferentiableAt and multiply by constant
-  exact MDifferentiableAt.mul mdifferentiableAt_const
-    (DifferentiableAt_MDifferentiableAt hDerivDiffAt)
 
 /--
 TODO: Move this to E2.lean.
