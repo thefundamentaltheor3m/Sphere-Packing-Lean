@@ -180,7 +180,7 @@ lemma from_4_4_1_int_1 : φ₀_int_1 r = I₁' r + I₂' r + ∫ t in Ici (1 : �
     congr 1
     · rw [MagicFunction.a.RadialFunctions.I₂'_eq]
       unfold integrand_1
-      rw [const_add_variable_change (hf := by sorry) 0 1 (-1)]
+      rw [const_add_variable_change (hf := sorry) 0 1 (-1)]
       simp only [sub_zero, neg_add_cancel]
       apply intervalIntegral.integral_congr
       simp [EqOn]; intro x hx hx'
@@ -219,7 +219,7 @@ lemma from_4_4_1_int_3 : φ₀_int_3 r = I₃' r + I₄' r + ∫ t in Ici (1 : �
     congr 1
     · unfold integrand_3
       rw [I₄'_eq]
-      rw [const_add_variable_change (hf := by sorry) 1 0 0];
+      rw [const_add_variable_change (hf := sorry) 1 0 0];
       simp only [zero_sub, sub_neg_eq_add, ofReal_add,
         ofReal_one, one_mul, zero_add, neg_mul]
       rw [sign_variable_change 0 (-1)]
@@ -244,10 +244,10 @@ lemma d_eq_2 : d r = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := 
       _ = φ₀_int_1 r + φ₀_int_4 r + φ₀_int_3 r := ?_
       _ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by simp [φ₀_int_4_eq]; ring
   · rw [sin_eq_exp]
-    rw [<- integral_const_mul_of_integrable (by sorry)]
+    rw [<- integral_const_mul_of_integrable sorry]
     simp [add_mul, sub_mul]
-    rw [integral_add (hf := by sorry) (hg := by sorry),
-      integral_sub (hf := by sorry) (hg := by sorry)]
+    rw [integral_add (hf := sorry) (hg := sorry),
+      integral_sub (hf := sorry) (hg := sorry)]
 
     have : (∫ (a : ℝ) in Ici 0, (cexp (I * ↑π * ↑r) * (I * φ₀'' (-1 / (I * ↑a)) *
       (I * ↑a) ^ 2 * cexp (↑I * π * ↑r * (I * ↑a))))) = φ₀_int_3 r := by
@@ -292,9 +292,9 @@ lemma d_eq_1 : d r = I₁' r + I₂' r + I₃' r + I₄' r + I₅' r +
   ac_nf; simp
   unfold φ₀_int_5; simp
 
-  rw [← neg_mul, ← integral_const_mul, ← integral_add (by sorry) (by sorry)]
+  rw [← neg_mul, ← integral_const_mul, ← integral_add sorry sorry]
   ac_nf; simp
-  rw [← integral_add (by sorry) (by sorry)]
+  rw [← integral_add sorry sorry]
 
   refine setIntegral_congr_ae (by measurability) (ae_of_all _ (fun x hx => ?_))
   ring_nf
