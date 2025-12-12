@@ -44,7 +44,6 @@ import SpherePacking.MagicFunction.b.SpecialValues
 import SpherePacking.MagicFunction.b.psi
 import SpherePacking.MagicFunction.g.Basic
 import SpherePacking.MainTheorem
-import SpherePacking.Mathlib.Analysis.Calculus.ContDiff.Operations
 import SpherePacking.ModularForms.AtImInfty
 import SpherePacking.ModularForms.BigO
 import SpherePacking.ModularForms.Cauchylems
