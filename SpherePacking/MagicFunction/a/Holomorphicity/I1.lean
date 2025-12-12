@@ -15,3 +15,4 @@ namespace MagicFunction.a.Holomorphicity
 
 variable {r : ℝ} (hr : r ≥ 0)
 
+end MagicFunction.a.Holomorphicity
