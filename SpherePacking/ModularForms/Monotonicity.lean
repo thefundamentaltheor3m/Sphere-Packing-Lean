@@ -125,6 +125,16 @@ theorem H₂_imag_axis_real : ResToImagAxis.Real H₂ := by
   have hΘ₂_im := Θ₂_imag_axis_im t ht
   exact Complex.im_pow_eq_zero_of_im_eq_zero hΘ₂_im 4
 
+/-- Θ₂(I*t) has positive real part for t > 0.
+Proof: Each term Θ₂_term n (I*t) = exp(-π(n+1/2)²t) is a positive real.
+The sum of positive reals is positive. -/
+lemma Θ₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
+    0 < (Θ₂ ⟨Complex.I * t, by simp [ht]⟩).re := by
+  -- Θ₂(it) = ∑ₙ exp(-π(n+1/2)²t) where each term is positive real
+  -- The sum of positive terms (at least one nonzero) is positive
+  -- Requires: summability (which we have modulo sorry) and positivity of each term
+  sorry
+
 /--
 `H₂(it) > 0` for all `t > 0`.
 Blueprint: Lemma 6.43 - H₂ is positive on the imaginary axis.
@@ -135,9 +145,24 @@ theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
   · exact H₂_imag_axis_real
   · intro t ht
     simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₂]
-    -- H₂ = Θ₂^4 where Θ₂(it) is a sum of positive exponentials
-    -- Each term exp(-π(n+1/2)²t) > 0, sum is positive, fourth power is positive
-    sorry
+    -- H₂ = Θ₂^4 where Θ₂(it) is real and positive
+    -- For z with z.im = 0 and z.re > 0, (z^4).re = (z.re)^4 > 0
+    have hΘ₂_im := Θ₂_imag_axis_im t ht
+    have hΘ₂_re_pos := Θ₂_imag_axis_re_pos t ht
+    -- z^4 for z real equals z.re^4
+    have hpow : (Θ₂ ⟨Complex.I * t, by simp [ht]⟩ ^ 4).re =
+        (Θ₂ ⟨Complex.I * t, by simp [ht]⟩).re ^ 4 := by
+      set z := Θ₂ ⟨Complex.I * t, by simp [ht]⟩ with hz_def
+      have hz_real : z.im = 0 := hΘ₂_im
+      -- When im = 0, z = z.re (as complex), so z^4 = (z.re)^4
+      have hz_eq : z = (z.re : ℂ) := by
+        apply Complex.ext
+        · simp
+        · simp [hz_real]
+      rw [hz_eq]
+      norm_cast
+    rw [hpow]
+    exact pow_pos hΘ₂_re_pos 4
 
 /--
 `G(it)` is real for all `t > 0`.
