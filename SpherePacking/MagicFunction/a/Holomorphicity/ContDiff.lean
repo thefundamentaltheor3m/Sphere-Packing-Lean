@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 
+import SpherePacking.MagicFunction.a.Basic
+
 /-! # Smoothness
 
 In this file, we prove that the integrands of all of the REAL integrals making up a are smooth. That

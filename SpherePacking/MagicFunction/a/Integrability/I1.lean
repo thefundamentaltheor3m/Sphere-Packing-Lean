@@ -10,6 +10,13 @@ import SpherePacking.MagicFunction.a.Holomorphicity.I1
 /-! # Integrability
 
 In this file, we prove that the integrand of `I₁` is integrable.
+
+I'm no quite sure what the best way is to prove intgerability. One way is to prove that `g` is
+`AEStronglyMeasurable` and then use `IntegralEstimates` to prove `HasFiniteIntegral`. Unfortunately,
+maybe the most direct way to prove `AEStronglyMeasurable` is via holomorphicity, but the way we want
+to prove holomorphicity is to differentiate under the integral sign, which requires integrability.
+
+One possible approach is to show that the _double intgeral_ exists. 
 -/
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
@@ -20,9 +27,7 @@ open scoped Function UpperHalfPlane
 namespace MagicFunction.a.Integrability
 
 theorem I₁'_g {r : ℝ} (hr : r ≥ 0) : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume := by
-  constructor
-  · sorry
-  · sorry
+  sorry
 
 theorem I₁_orig {r : ℝ} (hr : r ≥ 0) : IntegrableOn (fun t ↦
     I * φ₀'' (-1 / ((z₁' t) + (1 : ℂ))) * ((z₁' t) + (1 : ℂ)) ^ 2 * cexp (π * I * r * (z₁' t)))
