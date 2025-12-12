@@ -12,6 +12,33 @@ import SpherePacking.MagicFunction.IntegralParametrisations
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 
 open Set Complex Real MagicFunction.Parametrisations
+open scoped UpperHalfPlane
+
+noncomputable section Integrands
+
+variable (r : ℝ)
+
+namespace MagicFunction.a.ComplexIntegrands
+
+def Φ₁ (z : ℂ) : ℂ := φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ))
+
+def Φ₂ (z : ℂ) : ℂ := Φ₁ r z
+
+def Φ₃ (z : ℂ) : ℂ := φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ))
+
+def Φ₄ (z : ℂ) : ℂ := Φ₃ r z
+
+def Φ₅ (z : ℂ) : ℂ := φ₀'' (-1 / z) * z ^ 2 * cexp (π * I * r * (z : ℂ))
+
+def Φ₆ (z : ℂ) : ℂ := φ₀'' (z ^ 2) * cexp (π * I * r * (z : ℂ))
+
+end MagicFunction.a.ComplexIntegrands
+
+namespace MagicFunction.a.RealIntegrands
+
+end MagicFunction.a.RealIntegrands
+
+end Integrands
 
 namespace MagicFunction.a.RealIntegrals
 
