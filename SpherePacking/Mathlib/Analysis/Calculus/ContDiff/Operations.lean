@@ -8,5 +8,7 @@ variable {𝕜 E F 𝔸 : Type*} [NontriviallyNormedField 𝕜]
 /-- Compositional version of `ContDiffOn.mul` for use by `fun_prop`. -/
 @[fun_prop]
 theorem ContDiffOn.mul' (hf : ContDiffOn 𝕜 n ↿f (s ×ˢ .univ)) (hg : ContDiffOn 𝕜 n ↿g (s ×ˢ .univ))
-    (hg : ContDiffOn 𝕜 n h s) :
-    ContDiffOn 𝕜 n (fun x => (f x * g x) (h x)) s := by dsimp; fun_prop
+    (hh : ContDiffOn 𝕜 n h s) :
+    ContDiffOn 𝕜 n (fun x => (f x * g x) (h x)) s :=
+  let hp := contDiffOn_id.prodMk hh
+  (hf.comp hp fun _ hx => ⟨hx, trivial⟩).mul (hg.comp hp fun _ hx => ⟨hx, trivial⟩)
