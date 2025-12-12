@@ -34,8 +34,7 @@ lemma DifferentiableAt_MDifferentiableAt {G : ℂ → ℂ} {z : ℍ}
   -- The functions ((G ∘ (↑)) ∘ ofComplex) and G agree on the upper half-plane
   -- which is a neighborhood of ↑z
   apply DifferentiableAt.congr_of_eventuallyEq h
-  have hOpen : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
-  filter_upwards [hOpen.mem_nhds z.im_pos] with w hw
+  filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
   simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
   exact congrArg G (UpperHalfPlane.coe_mk w hw)
 
