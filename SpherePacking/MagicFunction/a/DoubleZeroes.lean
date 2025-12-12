@@ -69,7 +69,11 @@ def d (r : ℝ) := -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *  ∫ t in Ici (0 :
 variable (r : ℝ) (hr : r > 2)
 
 lemma sin_eq_exp : -4 * (Complex.sin (Real.pi * r / 2))^2 =
-  Complex.exp (I * Real.pi * r) - 2 + Complex.exp (-I * Real.pi * r) := by sorry
+  Complex.exp (I * Real.pi * r) - 2 + Complex.exp (-I * Real.pi * r) := by
+  unfold Complex.sin
+  ring_nf; simp
+  rw [← Complex.exp_add, ← Complex.exp_nat_mul, ← Complex.exp_nat_mul]
+  ring_nf; simp
 
 def integrand_1 (z : ℂ) := φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (↑π * I * ↑r * z)
 
