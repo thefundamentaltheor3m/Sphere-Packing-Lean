@@ -6,6 +6,7 @@ Authors: Cameron Freer
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.ResToImagAxis
+import SpherePacking.ModularForms.Delta
 
 /-!
 # Monotonicity of Q = F/G on the Imaginary Axis
@@ -38,6 +39,46 @@ open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMa
 open scoped ModularForm MatrixGroups Manifold
 
 namespace MonotoneFG
+
+/-!
+## Section 0: Helper Lemmas for Imaginary Axis Properties
+-/
+
+/-- `im` distributes over tsum when each term has zero imaginary part. -/
+lemma Complex.im_tsum_eq_zero_of_im_eq_zero (f : ℤ → ℂ)
+    (hf : Summable f) (him : ∀ n, (f n).im = 0) :
+    (∑' n : ℤ, f n).im = 0 := by
+  rw [Complex.im_tsum hf]
+  simp [him]
+
+/-- Each term Θ₂_term n (I*t) has zero imaginary part for t > 0. -/
+lemma Θ₂_term_imag_axis_im (n : ℤ) (t : ℝ) (ht : 0 < t) :
+    (Θ₂_term n ⟨Complex.I * t, by simp [ht]⟩).im = 0 := by
+  unfold Θ₂_term
+  change (cexp (Real.pi * Complex.I * ((n : ℂ) + 1 / 2) ^ 2 * (Complex.I * t))).im = 0
+  have hexpr : Real.pi * Complex.I * ((n : ℂ) + 1 / 2) ^ 2 * (Complex.I * ↑t) =
+      (-(Real.pi * ((n : ℝ) + 1/2) ^ 2 * t) : ℝ) := by
+    have hI : Complex.I ^ 2 = -1 := I_sq
+    push_cast
+    ring_nf
+    simp only [hI]
+    ring
+  rw [hexpr]
+  exact exp_ofReal_im _
+
+/-- Θ₂(I*t) has zero imaginary part for t > 0. -/
+lemma Θ₂_imag_axis_im (t : ℝ) (ht : 0 < t) :
+    (Θ₂ ⟨Complex.I * t, by simp [ht]⟩).im = 0 := by
+  unfold Θ₂
+  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  have hsum : Summable fun n : ℤ => Θ₂_term n z := by
+    have him : 0 < z.im := by simp [UpperHalfPlane.im, z, mul_im, ht]
+    -- Use the relationship to jacobiTheta₂ and its summability
+    -- Follows from summable_jacobiTheta₂_term_iff applied to z with z.im > 0
+    sorry
+  apply Complex.im_tsum_eq_zero_of_im_eq_zero _ hsum
+  intro n
+  exact Θ₂_term_imag_axis_im n t ht
 
 /-!
 ## Section 1: Definitions of F, G, and Q
@@ -80,10 +121,9 @@ Proof strategy: H₂ = Θ₂^4 where Θ₂(it) = ∑ₙ exp(-π(n+1/2)²t) is a 
 theorem H₂_imag_axis_real : ResToImagAxis.Real H₂ := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₂]
-  -- H₂ = Θ₂^4, so we need Θ₂(I*t) to be real
-  -- Each term Θ₂_term n (I*t) = cexp(π * I * (n + 1/2)² * I * t) = cexp(-π * (n + 1/2)² * t)
-  -- which is exp of a real number, hence real. Sum of reals is real, power of real is real.
-  sorry
+  -- H₂ = Θ₂^4, and Θ₂(I*t) has zero imaginary part, so H₂(I*t) = Θ₂(I*t)^4 has zero imaginary part
+  have hΘ₂_im := Θ₂_imag_axis_im t ht
+  exact Complex.im_pow_eq_zero_of_im_eq_zero hΘ₂_im 4
 
 /--
 `H₂(it) > 0` for all `t > 0`.
@@ -331,14 +371,17 @@ theorem deriv_Q_neg (t : ℝ) (ht : 0 < t) : deriv Q t < 0 := by
 Blueprint: Follows from deriv Q < 0 on (0, ∞).
 -/
 theorem Q_strictAntiOn : StrictAntiOn Q (Set.Ioi 0) := by
-  -- We prove this using the mean value theorem approach:
-  -- If deriv Q < 0 on (0, ∞), then Q is strictly decreasing.
-  intro x hx y hy hxy
-  -- Use that deriv Q < 0 everywhere in (0, ∞) to show Q y < Q x when x < y
-  have h_diff : DifferentiableOn ℝ Q (Set.Ioi 0) := Q_differentiableOn
-  have h_deriv_neg : ∀ t ∈ Set.Ioi (0 : ℝ), deriv Q t < 0 := fun t ht => deriv_Q_neg t ht
-  -- Standard result: negative derivative implies strictly decreasing
-  sorry
+  -- Apply strictAntiOn_of_deriv_neg from Mathlib mean value theorem results
+  apply strictAntiOn_of_deriv_neg
+  · -- Convexity: (0, ∞) is convex
+    exact convex_Ioi 0
+  · -- Continuity: Q is continuous on (0, ∞)
+    exact Q_differentiableOn.continuousOn
+  · -- Negative derivative on interior: deriv Q < 0 on (0, ∞)
+    -- interior (Ioi 0) = Ioi 0 since Ioi is open
+    intro t ht
+    rw [interior_Ioi] at ht
+    exact deriv_Q_neg t ht
 
 /--
 Corollary: `Q` is strictly anti-monotone (decreasing) as a function on positive reals.
