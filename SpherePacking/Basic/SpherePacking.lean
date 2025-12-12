@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Gareth Ma
 -/
 import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.Algebra.Module.ZLattice.Covolume
 import Mathlib.Data.Real.StarOrdered
 import Mathlib.Order.CompletePartialOrder
 import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
@@ -12,14 +13,14 @@ import Mathlib.Topology.EMetricSpace.Paracompact
 
 import SpherePacking.ForMathlib.VolumeOfBalls
 
-open BigOperators MeasureTheory Metric
+open BigOperators MeasureTheory Metric ZSpan ZLattice Finset
 
 /-!
 # Density of Sphere Packings
 
-Let `X ⊆ ℝ^d` be a set of points such that distinct points are at least distance `r` apart. Putting
-a ball of radius `r / 2` around each point, we have a configuration of *sphere packing*. We call `X`
-the sphere packing centers.
+Let `X ⊆ ℝ^d` be a set of points such that distinct points are at least distance `r` apart.
+Putting a ball of radius `r / 2` around each point, we have a configuration of *sphere packing*.
+We call `X` the sphere packing centers.
 
 We also define the *density* of the configuration.
 -/
@@ -33,7 +34,7 @@ structure SpherePacking (d : ℕ) where
   centers : Set (EuclideanSpace ℝ (Fin d))
   separation : ℝ
   separation_pos : 0 < separation := by positivity
-  centers_dist : Pairwise (separation ≤ dist · · : centers → centers → Prop)
+  centers_dist : Pairwise (separation ≤ ‖·.val - ·.val‖ : centers → centers → Prop)
 
 structure PeriodicSpherePacking (d : ℕ) extends SpherePacking d where
   lattice : Submodule ℤ (EuclideanSpace ℝ (Fin d))
@@ -47,11 +48,7 @@ theorem SpherePacking.centers_dist' (S : SpherePacking d) (x y : EuclideanSpace 
     (hx : x ∈ S.centers) (hy : y ∈ S.centers) (hxy : x ≠ y) :
     S.separation ≤ dist x y := by
   have : (⟨x, hx⟩ : S.centers) ≠ ⟨y, hy⟩ := Subtype.coe_ne_coe.mp hxy
-  -- The following fails. Reason unknown.
-  -- exact S.centers_dist this
-  have := S.centers_dist this
-  simp only at this
-  exact this
+  simpa using S.centers_dist this
 
 instance PeriodicSpherePacking.instLatticeDiscrete (S : PeriodicSpherePacking d) :
     DiscreteTopology S.lattice :=
@@ -151,7 +148,6 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
     have := S.centers_dist this
     exact (mul_le_mul_iff_right₀ hc).mpr this
 
-
 noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
   PeriodicSpherePacking d := {
   S.toSpherePacking.scale hc with
@@ -245,10 +241,18 @@ periodic packings. See also `<TODO>` for specifying the separation radius of the
 def PeriodicSpherePackingConstant (d : ℕ) : ℝ≥0∞ :=
   ⨆ S : PeriodicSpherePacking d, S.density
 
+/-- Stefano's toReal adaptation. -/
+def PeriodicSpherePackingConstant' (d : ℕ) : ℝ :=
+  (PeriodicSpherePackingConstant d).toReal
+
 /-- The `SpherePackingConstant` in dimension d is the supremum of the density of all packings. See
 also `<TODO>` for specifying the separation radius of the packings. -/
 def SpherePackingConstant (d : ℕ) : ℝ≥0∞ :=
   ⨆ S : SpherePacking d, S.density
+
+/-- Stefano's toReal adaptation. -/
+def SpherePackingConstant' (d : ℕ) : ℝ :=
+  (SpherePackingConstant d).toReal
 
 end Density
 
