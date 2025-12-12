@@ -51,20 +51,6 @@ lemma sign_variable_change (x₁ x₂ : ℝ) :
 
 end
 
-noncomputable section parametrization_bugs
-
-open Set Complex Real MeasureTheory MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions MagicFunction.a.IntegralEstimates.I₄
-
-variable (x : ℂ)
-
-def myInt := ∫ t in (0 : ℝ)..1,
-  (fun z ↦ (1 : ℂ)) (z₄' t)
-
-example : myInt = 1 := by
-  unfold myInt; simp
-
-end parametrization_bugs
-
 noncomputable section
 set_option linter.style.longLine false
 set_option linter.style.commandStart false
@@ -84,10 +70,6 @@ def d (r : Ici (1 : ℝ)) := -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *  ∫ t i
 
 variable (r : ℝ) (hr : r > 2)
 
-include hr in
-lemma r_gt_1 : r ∈ Ici 1 := le_trans (by simp) (le_of_lt hr)
-
-
 lemma sin_eq_exp : -4 * (Complex.sin (Real.pi * r / 2))^2 =
   Complex.exp (I * Real.pi * r) - 2 + Complex.exp (-I * Real.pi * r) := by sorry
 
@@ -102,12 +84,16 @@ def φ₀_int_3 := ∫ t in Ici (0 : ℝ), I * integrand_3 r (1 + t * I)
 lemma φ₀_int_1_eq : φ₀_int_1 r = ∫ t in Ici (0 : ℝ),
   I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
   cexp (I * π * r * (I * t - 1)) := by
-  -- Apply a change of variables
-  sorry
+  unfold φ₀_int_1 integrand_1
+  refine setIntegral_congr_ae (by measurability) (ae_of_all _ (fun a ha => ?_))
+  ring_nf
 
 lemma φ₀_int_3_eq : φ₀_int_3 r = ∫ t in Ici (0 : ℝ),
   I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
-  cexp (I * π * r * (I * t + 1)) := by sorry
+  cexp (I * π * r * (I * t + 1)) := by
+  unfold φ₀_int_3 integrand_3
+  refine setIntegral_congr_ae (by measurability) (ae_of_all _ (fun a ha => ?_))
+  ring_nf
 
 def φ₀_int_4 := -2 * ∫ t in Ici (0 : ℝ),
   I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
@@ -117,52 +103,27 @@ def φ₀_int_5 := -2 * ∫ t in Ici (1 : ℝ),
   I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
   cexp (I * π * r * (I * t))
 
-lemma φ₀_int_4_eq : φ₀_int_4 r = I₅' r + φ₀_int_5 r := by sorry
+lemma φ₀_int_4_eq : φ₀_int_4 r = I₅' r + φ₀_int_5 r := by
+  unfold φ₀_int_4
+  rw [← integral_add_compl (@measurableSet_Icc _ _ _ _ _ _ 0 1) sorry]
+  simp only [measurableSet_Icc, Measure.restrict_restrict, MeasurableSet.compl_iff]
+  have : Icc (0 : ℝ) 1 ∩ Ici 0 = Icc 0 1 := by grind
+  rw [this]
+  have : (Icc (0 : ℝ) 1)ᶜ ∩ Ici 0 = Ioi 1 := by grind
+  rw [this]
+  rw [I₅'_eq, intervalIntegral.intervalIntegral_eq_integral_uIoc]
+  unfold φ₀_int_5
+  rw [mul_add]
 
-include hr in
-lemma d_eq_2 : d ⟨r, r_gt_1 r hr⟩ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by
-  calc
-      _ =  -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *
-              ∫ t in Ici (0 : ℝ), I * φ₀'' (-1 / (I * t)) *
-              (I * t)^2 * cexp (I * π * r * (I * t)) := rfl
-      _ = φ₀_int_1 r + φ₀_int_4 r + φ₀_int_3 r := ?_
-      _ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by simp [φ₀_int_4_eq]; ring
-  · rw [sin_eq_exp]
-    rw [<- integral_const_mul_of_integrable (by sorry)]
-    simp [add_mul, sub_mul]
-    rw [integral_add, integral_sub]
-
-    have : (∫ (a : ℝ) in Ici 0, (cexp (I * ↑π * ↑r) * (I * φ₀'' (-1 / (I * ↑a)) * (I * ↑a) ^ 2 * cexp (↑I * π * ↑r * (I * ↑a))))) = φ₀_int_3 r := by
-      conv_lhs =>
-        pattern (cexp _ * _)
-        rw [mul_comm, mul_assoc, ← Complex.exp_add]
-      conv_lhs =>
-        pattern cexp (_ + _)
-        rw [add_comm, ← mul_one_add, add_comm]
-      simp [φ₀_int_3_eq r]
-    rw [this]
-
-    have : (∫ (a : ℝ) in Ici 0, (cexp (-(I * ↑π * ↑r)) * (I * φ₀'' (-1 / (I * ↑a)) * (I * ↑a) ^ 2 * cexp (↑I * π * ↑r * (I * ↑a))))) = φ₀_int_1 r := by
-      conv_lhs =>
-        pattern (cexp _ * _)
-        rw [mul_comm, mul_assoc, ← Complex.exp_add]
-      conv_lhs =>
-        pattern cexp (_ + _)
-        rw [add_comm, ← neg_one_mul]
-      have : forall a, (-1 * (I * ↑π * ↑r) + I * ↑π * ↑r * (I * ↑a)) = I * ↑π * ↑r * (I * ↑a - 1) := by intros; ring
-      conv_lhs =>
-        pattern cexp _
-        rw [this]
-      simp [φ₀_int_1_eq r]
-    rw [this]
-
-    rw [sub_eq_add_neg]
-    rw [integral_const_mul, ← neg_mul, ← φ₀_int_4]
-    ring
-
-    -- All remaining goals are about Integrability of some functions.
-    -- We will probably need to adapt the proofs from IntegralEstimates/*.lean
-    all_goals sorry
+  congr 1
+  · simp
+    rw [← integral_Icc_eq_integral_Ioc]
+    refine (setIntegral_congr_ae (by measurability) ?_)
+    apply ae_of_all
+    intros a ia
+    ring_nf; simp
+  · simp
+    rw [← integral_Ici_eq_integral_Ioi]
 
 lemma cauchy_goursat_int_1 : ∫ (t : ℝ) in Ioi 1, I * integrand_1 r (-1 + t * I) =
   (∫ (x : ℝ) in -1..0, integrand_1 r (x + 1 * I)) +
@@ -291,6 +252,52 @@ lemma from_4_4_1_int_3 : φ₀_int_3 r = I₃' r + -I₄' r + ∫ t in Ici (1 : 
       ring_nf
 
 include hr in
+lemma r_gt_1 : r ∈ Ici 1 := le_trans (by simp) (le_of_lt hr)
+
+lemma d_eq_2 : d ⟨r, r_gt_1 r hr⟩ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by
+  calc
+      _ =  -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *
+              ∫ t in Ici (0 : ℝ), I * φ₀'' (-1 / (I * t)) *
+              (I * t)^2 * cexp (I * π * r * (I * t)) := rfl
+      _ = φ₀_int_1 r + φ₀_int_4 r + φ₀_int_3 r := ?_
+      _ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by simp [φ₀_int_4_eq]; ring
+  · rw [sin_eq_exp]
+    rw [<- integral_const_mul_of_integrable (by sorry)]
+    simp [add_mul, sub_mul]
+    rw [integral_add, integral_sub]
+
+    have : (∫ (a : ℝ) in Ici 0, (cexp (I * ↑π * ↑r) * (I * φ₀'' (-1 / (I * ↑a)) * (I * ↑a) ^ 2 * cexp (↑I * π * ↑r * (I * ↑a))))) = φ₀_int_3 r := by
+      conv_lhs =>
+        pattern (cexp _ * _)
+        rw [mul_comm, mul_assoc, ← Complex.exp_add]
+      conv_lhs =>
+        pattern cexp (_ + _)
+        rw [add_comm, ← mul_one_add, add_comm]
+      simp [φ₀_int_3_eq r]
+    rw [this]
+
+    have : (∫ (a : ℝ) in Ici 0, (cexp (-(I * ↑π * ↑r)) * (I * φ₀'' (-1 / (I * ↑a)) * (I * ↑a) ^ 2 * cexp (↑I * π * ↑r * (I * ↑a))))) = φ₀_int_1 r := by
+      conv_lhs =>
+        pattern (cexp _ * _)
+        rw [mul_comm, mul_assoc, ← Complex.exp_add]
+      conv_lhs =>
+        pattern cexp (_ + _)
+        rw [add_comm, ← neg_one_mul]
+      have : forall a, (-1 * (I * ↑π * ↑r) + I * ↑π * ↑r * (I * ↑a)) = I * ↑π * ↑r * (I * ↑a - 1) := by intros; ring
+      conv_lhs =>
+        pattern cexp _
+        rw [this]
+      simp [φ₀_int_1_eq r]
+    rw [this]
+
+    rw [sub_eq_add_neg]
+    rw [integral_const_mul, ← neg_mul, ← φ₀_int_4]
+    ring
+
+    -- All remaining goals are about Integrability of some functions.
+    -- We will probably need to adapt the proofs from IntegralEstimates/*.lean
+    all_goals sorry
+
 lemma d_eq_1 : d ⟨r, r_gt_1 r hr⟩ = I₁' r + I₂' r + I₃' r + -I₄' r + I₅' r +
   ∫ t in Ici (1 : ℝ),
   (I * φ₀'' (-1 / (I * t + 1)) * (I * t + 1)^2 *
