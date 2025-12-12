@@ -247,52 +247,10 @@ This follows from the fact that `t^s * exp(-b * t) → 0` (mathlib's
 lemma tendsto_rpow_mul_of_isBigO_exp {g : ℝ → ℂ} {s b : ℝ} (hb : 0 < b)
     (hg : g =O[atTop] fun t => rexp (-b * t)) :
     Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * g t) atTop (𝓝 0) := by
-  -- We show ‖t^s * g t‖ is bounded by const * ‖t^s * exp(-b t)‖ eventually
-  -- and the latter tends to 0.
-  rw [Metric.tendsto_atTop]
-  intro ε hε
-  -- Get the big-O constant and eventually bound
-  rw [Asymptotics.isBigO_iff] at hg
-  obtain ⟨C, hC⟩ := hg
-  -- Get when t^s * exp(-b t) is small enough
-  have h_core : Tendsto (fun t => t ^ s * rexp (-b * t)) atTop (𝓝 0) :=
-    tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero s b hb
-  rw [Metric.tendsto_atTop] at h_core
-  obtain ⟨N₁, hN₁⟩ := h_core (ε / (max C 1)) (by positivity)
-  -- Combine
-  rw [Filter.Eventually] at hC
-  simp only [Filter.mem_atTop_sets, ge_iff_le, Set.mem_setOf_eq] at hC
-  obtain ⟨N₂, hN₂⟩ := hC
-  use max N₁ (max N₂ 1)
-  intro t ht
-  have ht₁ : N₁ ≤ t := le_trans (le_max_left _ _) ht
-  have ht₂ : N₂ ≤ t := le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) ht
-  -- We chose max N₁ (max N₂ 1), so 1 ≤ t
-  have h1_le_t : (1 : ℝ) ≤ t := le_trans (le_max_right _ _) (le_trans (le_max_right _ _) ht)
-  have ht_pos : 0 < t := lt_of_lt_of_le one_pos h1_le_t
-  specialize hN₁ t ht₁
-  specialize hN₂ t ht₂
-  simp only [Real.dist_eq, sub_zero] at hN₁
-  simp only [dist_zero_right]
-  have hexp_norm : ‖rexp (-b * t)‖ = |rexp (-b * t)| := Real.norm_eq_abs _
-  -- For positive t, |(t : ℂ)^s| = |t|^s = t^s (since t > 0 eventually)
-  have h_cpow_norm : ‖(t : ℂ) ^ (s : ℂ)‖ = t ^ s := by
-    rw [Complex.norm_cpow_eq_rpow_re_of_pos ht_pos]
-    simp only [Complex.ofReal_re]
-  calc ‖(t : ℂ) ^ (s : ℂ) * g t‖
-      = ‖(t : ℂ) ^ (s : ℂ)‖ * ‖g t‖ := norm_mul _ _
-      _ = t ^ s * ‖g t‖ := by rw [h_cpow_norm]
-      _ ≤ t ^ s * (C * ‖rexp (-b * t)‖) := by
-        apply mul_le_mul_of_nonneg_left hN₂ (rpow_nonneg (le_of_lt ht_pos) s)
-      _ = t ^ s * (C * |rexp (-b * t)|) := by rw [hexp_norm]
-      _ = C * (t ^ s * |rexp (-b * t)|) := by ring
-      _ = C * |t ^ s * rexp (-b * t)| := by
-        rw [abs_mul, abs_of_pos (rpow_pos_of_pos ht_pos s), abs_of_pos (exp_pos _)]
-      _ ≤ max C 1 * |t ^ s * rexp (-b * t)| := by
-        apply mul_le_mul_of_nonneg_right (le_max_left C 1) (abs_nonneg _)
-      _ < max C 1 * (ε / max C 1) := by
-        apply mul_lt_mul_of_pos_left hN₁ (lt_of_lt_of_le one_pos (le_max_right C 1))
-      _ = ε := by field_simp
+  refine ((isBigO_refl _ _).mul (Complex.isBigO_ofReal_right.mpr hg)).trans_tendsto ?_
+  refine (tendsto_ofReal_iff.mpr (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero s b hb)).congr' ?_
+  filter_upwards [eventually_gt_atTop 0] with t ht
+  rw [Complex.ofReal_mul, Complex.ofReal_cpow (le_of_lt ht)]
 
 open Filter Asymptotics Real UpperHalfPlane in
 /--
@@ -301,10 +259,8 @@ If `F : ℍ → ℂ` is `O(exp(-c * im τ))` at `atImInfty` for some `c > 0`, th
 -/
 theorem tendsto_rpow_mul_resToImagAxis_of_isBigO_exp {F : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
     (hF : F =O[atImInfty] fun τ => rexp (-c * τ.im)) (s : ℝ) :
-    Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) := by
-  have hF_axis : F.resToImagAxis =O[atTop] fun t => rexp (-c * t) :=
-    isBigO_resToImagAxis_of_isBigO_atImInfty hc hF
-  exact tendsto_rpow_mul_of_isBigO_exp hc hF_axis
+    Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
+  tendsto_rpow_mul_of_isBigO_exp hc (isBigO_resToImagAxis_of_isBigO_atImInfty hc hF)
 
 open Filter Asymptotics Real UpperHalfPlane CuspFormClass in
 /--
@@ -315,14 +271,7 @@ This follows from the exponential decay of cusp forms at infinity: `f = O(exp(-2
 theorem cuspForm_rpow_mul_resToImagAxis_tendsto_zero {n : ℕ} {k : ℤ} {F : Type*}
     [NeZero n] [FunLike F ℍ ℂ] [CuspFormClass F Γ(n) k] (f : F) (s : ℝ) :
     Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * (f : ℍ → ℂ).resToImagAxis t) atTop (𝓝 0) := by
-  -- exp_decay_atImInfty gives: f =O[atImInfty] fun τ => rexp (-2 * π * τ.im / n)
-  have hdecay := exp_decay_atImInfty n f
-  -- The decay constant 2π/n is positive (NeZero n ensures n ≠ 0)
   have hn_pos : (0 : ℝ) < n := Nat.cast_pos.mpr (NeZero.pos n)
-  have hc : (0 : ℝ) < 2 * π / n := div_pos (by positivity) hn_pos
-  -- Convert exponent form: -2 * π * τ.im / n = -(2 * π / n) * τ.im
   have hdecay' : (f : ℍ → ℂ) =O[atImInfty] fun τ => rexp (-(2 * π / n) * τ.im) := by
-    convert hdecay using 2 with τ
-    congr 1
-    field_simp
-  exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp hc hdecay' s
+    convert exp_decay_atImInfty n f using 2 with τ; field_simp
+  exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (div_pos (by positivity) hn_pos) hdecay' s
