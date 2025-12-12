@@ -20,21 +20,35 @@ variable (r : ℝ)
 
 namespace MagicFunction.a.ComplexIntegrands
 
-def Φ₁ (z : ℂ) : ℂ := φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ))
+def Φ₁' (z : ℂ) : ℂ := φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ))
 
-def Φ₂ (z : ℂ) : ℂ := Φ₁ r z
+def Φ₂' (z : ℂ) : ℂ := φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ))
 
-def Φ₃ (z : ℂ) : ℂ := φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ))
+def Φ₃' (z : ℂ) : ℂ := φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ))
 
-def Φ₄ (z : ℂ) : ℂ := Φ₃ r z
+def Φ₄' (z : ℂ) : ℂ := φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ))
 
-def Φ₅ (z : ℂ) : ℂ := φ₀'' (-1 / z) * z ^ 2 * cexp (π * I * r * (z : ℂ))
+def Φ₅' (z : ℂ) : ℂ := φ₀'' (-1 / z) * z ^ 2 * cexp (π * I * r * (z : ℂ))
 
-def Φ₆ (z : ℂ) : ℂ := φ₀'' (z ^ 2) * cexp (π * I * r * (z : ℂ))
+def Φ₆' (z : ℂ) : ℂ := φ₀'' (z) * cexp (π * I * r * (z : ℂ))
 
 end MagicFunction.a.ComplexIntegrands
 
 namespace MagicFunction.a.RealIntegrands
+
+open MagicFunction.a.ComplexIntegrands
+
+def Φ₁ (t : ℝ) : ℂ := I * Φ₁' r (z₁' t)
+
+def Φ₂ (t : ℝ) : ℂ := Φ₂' r (z₂' t)
+
+def Φ₃ (t : ℝ) : ℂ := I * Φ₃' r (z₃' t)
+
+def Φ₄ (t : ℝ) : ℂ := -1 * Φ₄' r (z₄' t)
+
+def Φ₅ (t : ℝ) : ℂ := I * Φ₅' r (z₅' t)
+
+def Φ₆ (t : ℝ) : ℂ := I * Φ₆' r (z₆' t)
 
 end MagicFunction.a.RealIntegrands
 
@@ -44,34 +58,19 @@ namespace MagicFunction.a.RealIntegrals
 
 noncomputable section Real_Input
 
-def I₁' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, I -- Added factor due to variable change!!
-  * φ₀'' (-1 / ((z₁' t) + (1 : ℂ)))
-  * ((z₁' t) + (1 : ℂ)) ^ 2
-  * cexp (π * I * x * (z₁' t))
+open MagicFunction.a.RealIntegrands
 
-def I₂' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1,
-  φ₀'' (-1 / ((z₂' t) + (1 : ℂ)))
-  * ((z₂' t) + (1 : ℂ)) ^ 2
-  * cexp (π * I * x * (z₂' t))
+def I₁' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, Φ₁ x t
 
-def I₃' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, I -- Added factor due to variable change!!
-  * φ₀'' (-1 / ((z₃' t) - (1 : ℂ)))
-  * ((z₃' t) - (1 : ℂ)) ^ 2
-  * cexp (π * I * x * (z₃' t))
+def I₂' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, Φ₂ x t
 
-def I₄' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, -1 -- Added factor due to variable change!!
-  * φ₀'' (-1 / ((z₄' t) - (1 : ℂ)))
-  * ((z₄' t) - (1 : ℂ)) ^ 2
-  * cexp (π * I * x * (z₄' t))
+def I₃' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, Φ₃ x t
 
-def I₅' (x : ℝ) : ℂ := -2 * ∫ t in (0 : ℝ)..1, I -- Added factor due to variable change!!
-  * φ₀'' (-1 / (z₅' t))
-  * (z₅' t) ^ 2
-  * cexp (π * I * x * (z₅' t))
+def I₄' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, Φ₄ x t
 
-def I₆' (x : ℝ) : ℂ := 2 * ∫ t in Ici (1 : ℝ), I -- Added factor due to variable change!!
-  * φ₀'' (z₆' t)
-  * cexp (π * I * x * (z₆' t))
+def I₅' (x : ℝ) : ℂ := -2 * ∫ t in (0 : ℝ)..1, Φ₅ x t
+
+def I₆' (x : ℝ) : ℂ := 2 * ∫ t in Ici (1 : ℝ), Φ₆ x t
 
 def a' (x : ℝ) := I₁' x + I₂' x + I₃' x + I₄' x + I₅' x + I₆' x
 
@@ -105,6 +104,8 @@ open intervalIntegral
 
 section Eq
 
+open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
+
 lemma a_eq (x : V) : a x = I₁ x + I₂ x + I₃ x + I₄ x + I₅ x + I₆ x := rfl
 
 lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, -I
@@ -112,7 +113,7 @@ lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, -I
     * t ^ 2
     * cexp (-π * I * r)
     * cexp (-π * r * t) := by
-  rw [I₁']
+  simp only [I₁', Φ₁, Φ₁']
   apply integral_congr
   simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
   intro t ht₀ ht₁
@@ -120,9 +121,11 @@ lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, -I
   simp only [z₁'_eq_of_mem hmem]
   calc
   _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (-π * r * (I + t)) := by
+      conv_rhs => rw [mul_assoc, mul_assoc]
+      conv_lhs => rw [mul_assoc]
       congr 2 <;> ring_nf
       rw [I_sq]
-      ring
+      ring_nf
   _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (-π * I * r) * cexp (-π * r * t) := by
       conv_rhs => rw [mul_assoc]
       rw [← Complex.exp_add]
@@ -145,16 +148,18 @@ lemma I₁'_eq' (r : ℝ) : I₁' r = -I * ∫ t in (0 : ℝ)..1,
   ring
 
 lemma I₁'_eq_Ioc (r : ℝ) : I₁' r = ∫ (t : ℝ) in Ioc 0 1, -I
-  * φ₀'' (-1 / (I * t))
-  * t ^ 2
-  * cexp (-π * I * r)
-  * cexp (-π * r * t) := by simp [I₁'_eq, intervalIntegral_eq_integral_uIoc]
-
-lemma I₁'_eq'_Ioc (r : ℝ) : I₁' r = -I * ∫ t in (0 : ℝ)..1,
-    φ₀'' (-1 / (I * t))
+    * φ₀'' (-1 / (I * t))
     * t ^ 2
     * cexp (-π * I * r)
-    * cexp (-π * r * t) := by simp [I₁'_eq', intervalIntegral_eq_integral_uIoc]
+    * cexp (-π * r * t) := by
+  simp [I₁'_eq, intervalIntegral_eq_integral_uIoc]
+
+lemma I₁'_eq'_Ioc (r : ℝ) : I₁' r = -I * ∫ t in (0 : ℝ)..1,
+      φ₀'' (-1 / (I * t))
+      * t ^ 2
+      * cexp (-π * I * r)
+      * cexp (-π * r * t) := by
+    simp [I₁'_eq', intervalIntegral_eq_integral_uIoc]
 
 lemma I₂'_eq (r : ℝ) : I₂' r = ∫ t in (0 : ℝ)..1,
     φ₀'' (-1 / (t + I))
@@ -162,7 +167,7 @@ lemma I₂'_eq (r : ℝ) : I₂' r = ∫ t in (0 : ℝ)..1,
     * cexp (-π * I * r)
     * cexp (π * I * r * t)
     * cexp (-π * r) := by
-  rw [I₂']
+  simp only [I₂', Φ₂, Φ₂']
   apply integral_congr
   simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
   intro t ht₀ ht₁
@@ -180,11 +185,11 @@ lemma I₂'_eq (r : ℝ) : I₂' r = ∫ t in (0 : ℝ)..1,
       ring_nf
 
 lemma I₃'_eq (r : ℝ) : I₃' r = ∫ t in (0 : ℝ)..1, -I
-  * φ₀'' (-1 / (I * t))
-  * t ^ 2
-  * cexp (π * I * r)
-  * cexp (-π * r * t) := by
-  rw [I₃']
+    * φ₀'' (-1 / (I * t))
+    * t ^ 2
+    * cexp (π * I * r)
+    * cexp (-π * r * t) := by
+  simp only [I₃', Φ₃, Φ₃']
   apply integral_congr
   simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
   intro t ht₀ ht₁
@@ -192,9 +197,11 @@ lemma I₃'_eq (r : ℝ) : I₃' r = ∫ t in (0 : ℝ)..1, -I
   simp only [z₃'_eq_of_mem hmem]
   calc
   _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (-π * r * (-I + t)) := by
-    congr 2 <;> ring_nf
-    rw [I_sq]
-    ring
+      conv_rhs => rw [mul_assoc, mul_assoc]
+      conv_lhs => rw [mul_assoc]
+      congr 2 <;> ring_nf
+      rw [I_sq]
+      ring_nf
   _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (π * I * r) * cexp (-π * r * t) := by
     conv_rhs => rw [mul_assoc]
     rw [← Complex.exp_add]
@@ -236,7 +243,7 @@ lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1, -1
     * cexp (π * I * r)
     * cexp (-π * I * r * t)
     * cexp (-π * r) := by
-  rw [I₄']
+  simp only [I₄', Φ₄, Φ₄']
   apply integral_congr
   simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
   intro t ht₀ ht₁
@@ -255,7 +262,7 @@ lemma I₅'_eq (r : ℝ) : I₅' r = -2 * ∫ t in (0 : ℝ)..1, -I
     * φ₀'' (-1 / (I * t))
     * t ^ 2
     * cexp (-π * r * t) := by
-  rw [I₅']; congr 1
+  simp only [I₅', Φ₅, Φ₅']; congr 1
   apply integral_congr
   simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, neg_mul, and_imp]
   intro t ht₀ ht₁
@@ -263,10 +270,12 @@ lemma I₅'_eq (r : ℝ) : I₅' r = -2 * ∫ t in (0 : ℝ)..1, -I
   simp only [z₅'_eq_of_mem hmem]
   calc
   _ = I * φ₀'' (-1 / (I * t)) * (I * t) ^ 2 * cexp (-π * r * t) := by
-    congr 2
-    ring_nf
-    rw [I_sq]
-    ring_nf
+      conv_rhs => rw [mul_assoc, mul_assoc]
+      conv_lhs => rw [mul_assoc]
+      congr 2
+      ring_nf
+      rw [I_sq]
+      ring_nf
   _ = _ := by
     rw [mul_pow, I_sq]
     ring_nf
@@ -297,14 +306,17 @@ lemma I₅'_eq'_Ioc (r : ℝ) : I₅' r = 2 * I * ∫ (t : ℝ) in Ioc 0 1,
 lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
     * φ₀'' (I * t)
     * cexp (-π * r * t) := by
-  rw [I₆']; congr 1
+  simp only [I₆', Φ₆, Φ₆']
+  congr 1
   apply MeasureTheory.setIntegral_congr_fun (X := ℝ) (E := ℂ) (measurableSet_Ici)
   simp only [EqOn, neg_mul]
   intro t ht
   rw [z₆'_eq_of_mem ht]
+  conv_rhs => rw [mul_assoc]
   congr
   ring_nf
-  simp
+  rw [I_sq]
+  ring_nf
 
 lemma I₆'_eq' (r : ℝ) : I₆' r = 2 * I * ∫ t in Ici (1 : ℝ),
   φ₀'' (I * t)
