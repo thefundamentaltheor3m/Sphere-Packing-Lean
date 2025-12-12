@@ -51,6 +51,42 @@ lemma Complex.im_tsum_eq_zero_of_im_eq_zero (f : ℤ → ℂ)
   rw [Complex.im_tsum hf]
   simp [him]
 
+/-- `(-1 : ℂ)^n` has zero imaginary part for any integer n. -/
+lemma neg_one_zpow_im_eq_zero (n : ℤ) : ((-1 : ℂ) ^ n).im = 0 := by
+  rcases Int.even_or_odd n with hn | hn
+  · rw [hn.neg_one_zpow]; simp
+  · rw [hn.neg_one_zpow]; simp
+
+/-- For even k, `I^k = (-1)^(k/2)`. -/
+lemma I_pow_even (k : ℕ) (hk : Even k) : Complex.I ^ k = (-1 : ℂ) ^ (k / 2) := by
+  obtain ⟨m, rfl⟩ := hk
+  have h1 : (m + m) / 2 = m := by omega
+  rw [h1]
+  rw [show m + m = 2 * m by ring, pow_mul, I_sq]
+
+/-- `I^k` is real for even k (since `(-1)^m` is `±1`). -/
+lemma I_pow_even_real (k : ℕ) (hk : Even k) : (Complex.I ^ k).im = 0 := by
+  rw [I_pow_even k hk]
+  have : ((-1 : ℂ) ^ (k / 2)).im = 0 := by
+    induction k / 2 with
+    | zero => simp
+    | succ n ih => simp [pow_succ, ih]
+  exact this
+
+/-- `(-2πi)^k` is real for even k. -/
+lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
+    ((-2 * Real.pi * Complex.I) ^ k : ℂ).im = 0 := by
+  have h : (-2 * Real.pi * Complex.I) ^ k = ((-2 * Real.pi) ^ k : ℂ) * Complex.I ^ k := by ring
+  rw [h]
+  have h1 : ((-(2 * Real.pi)) ^ k : ℂ).im = 0 := by
+    have hcast : ((-(2 * Real.pi)) ^ k : ℂ) = (((-2 * Real.pi) ^ k : ℝ) : ℂ) := by push_cast; ring
+    rw [hcast]
+    exact Complex.ofReal_im _
+  have h2 : (Complex.I ^ k : ℂ).im = 0 := I_pow_even_real k hk
+  have heq : (-2 * Real.pi : ℂ) ^ k = (-(2 * Real.pi)) ^ k := by ring
+  rw [heq]
+  simp [Complex.mul_im, h1, h2]
+
 /-- Each term Θ₂_term n (I*t) has zero imaginary part for t > 0. -/
 lemma Θ₂_term_imag_axis_im (n : ℤ) (t : ℝ) (ht : 0 < t) :
     (Θ₂_term n ⟨Complex.I * t, by simp [ht]⟩).im = 0 := by
@@ -109,8 +145,30 @@ theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
   -- G = H₂³ * (2H₂² + 5H₂H₄ + 5H₄²), composition of holomorphic functions
   have hH₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
   have hH₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
-  -- Products and powers of MDifferentiable functions are MDifferentiable
-  sorry
+  unfold G
+  have hH₂_sq' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => H₂ z ^ 2) := by
+    have : (fun z => H₂ z ^ 2) = (fun z => H₂ z * H₂ z) := by ext z; ring
+    rw [this]; exact hH₂.mul hH₂
+  have hH₂_cube : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => H₂ z ^ 3) := by
+    have : (fun z => H₂ z ^ 3) = (fun z => H₂ z ^ 2 * H₂ z) := by ext z; ring
+    rw [this]; exact hH₂_sq'.mul hH₂
+  have hH₄_sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => H₄ z ^ 2) := by
+    have : (fun z => H₄ z ^ 2) = (fun z => H₄ z * H₄ z) := by ext z; ring
+    rw [this]; exact hH₄.mul hH₄
+  have hH₂H₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => H₂ z * H₄ z) := hH₂.mul hH₄
+  have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2) := by
+    have : (fun z => 2 * H₂ z ^ 2) = (fun z => (2 : ℂ) • H₂ z ^ 2) := by ext z; simp [smul_eq_mul]
+    rw [this]; exact hH₂_sq'.const_smul (2 : ℂ)
+  have h2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₂ z * H₄ z) := by
+    have : (fun z => 5 * H₂ z * H₄ z) = (fun z => (5 : ℂ) • (H₂ z * H₄ z)) := by
+      ext z; simp [smul_eq_mul]; ring
+    rw [this]; exact hH₂H₄.const_smul (5 : ℂ)
+  have h3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₄ z ^ 2) := by
+    have : (fun z => 5 * H₄ z ^ 2) = (fun z => (5 : ℂ) • H₄ z ^ 2) := by ext z; simp [smul_eq_mul]
+    rw [this]; exact hH₄_sq.const_smul (5 : ℂ)
+  have hquad : MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
+      (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := (h1.add h2).add h3
+  exact hH₂_cube.mul hquad
 
 /-!
 ## Section 2: Positivity of F and G on the Imaginary Axis
@@ -216,11 +274,21 @@ Similar to H₂, we prove H₄ = Θ₄⁴ is real and positive on the imaginary 
 /-- Each term Θ₄_term n (I*t) has zero imaginary part for t > 0. -/
 lemma Θ₄_term_imag_axis_im (n : ℤ) (t : ℝ) (ht : 0 < t) :
     (Θ₄_term n ⟨Complex.I * t, by simp [ht]⟩).im = 0 := by
-  -- Θ₄_term n z = (-1)^n * exp(πi n² z)
-  -- For z = it: πi n² (it) = -π n² t (real)
-  -- So Θ₄_term n (it) = (-1)^n * exp(-π n² t) = ±exp(-π n² t) which is real
-  -- (-1)^n is ±1 (real), exp(-π n² t) is real, product is real
-  sorry
+  unfold Θ₄_term
+  change ((-1 : ℂ) ^ n * cexp (Real.pi * Complex.I * (n : ℂ) ^ 2 * (Complex.I * t))).im = 0
+  -- Simplify the exponent: π * I * n² * (I*t) = -π * n² * t
+  have hexpr : Real.pi * Complex.I * (n : ℂ) ^ 2 * (Complex.I * t) =
+      (-(Real.pi * (n : ℝ) ^ 2 * t) : ℝ) := by
+    have hI : Complex.I ^ 2 = -1 := I_sq
+    push_cast
+    ring_nf
+    simp only [hI]
+    ring
+  rw [hexpr]
+  -- Now we have (-1)^n * exp(real), both are real
+  have hexp_real : (cexp (-(Real.pi * (n : ℝ) ^ 2 * t) : ℝ)).im = 0 := exp_ofReal_im _
+  have hneg_one_real : ((-1 : ℂ) ^ n).im = 0 := neg_one_zpow_im_eq_zero n
+  simp only [Complex.mul_im, hneg_one_real, hexp_real, mul_zero, zero_mul, add_zero]
 
 /-- Θ₄(I*t) has zero imaginary part for t > 0. -/
 lemma Θ₄_imag_axis_im (t : ℝ) (ht : 0 < t) :
@@ -318,7 +386,29 @@ theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
     -- For real positive complex numbers, products preserve positivity
     -- h₂³ > 0 and (2h₂² + 5h₂h₄ + 5h₄²) > 0
     -- Product of positives is positive
-    sorry
+    -- Convert h₂, h₄ to real form since they have zero imaginary part
+    have h₂_eq : h₂ = (h₂.re : ℂ) := by
+      apply Complex.ext <;> simp [hH₂_real]
+    have h₄_eq : h₄ = (h₄.re : ℂ) := by
+      apply Complex.ext <;> simp [hH₄_real]
+    -- Express G in terms of real values
+    rw [h₂_eq, h₄_eq]
+    -- The expression is now purely real; simplify and extract real part
+    simp only [← Complex.ofReal_pow]
+    -- Combine into single ofReal
+    have h_goal_eq : (↑(h₂.re ^ 3) * (2 * ↑(h₂.re ^ 2) + 5 * ↑h₂.re * ↑h₄.re +
+        5 * ↑(h₄.re ^ 2)) : ℂ).re =
+        h₂.re ^ 3 * (2 * h₂.re ^ 2 + 5 * h₂.re * h₄.re + 5 * h₄.re ^ 2) := by
+      simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,
+        mul_zero, sub_zero, zero_mul, add_zero]
+      ring
+    rw [h_goal_eq]
+    apply mul_pos
+    · exact pow_pos hH₂_pos 3
+    · have hterm1 : 0 < 2 * h₂.re ^ 2 := by positivity
+      have hterm2 : 0 < 5 * h₂.re * h₄.re := by positivity
+      have hterm3 : 0 < 5 * h₄.re ^ 2 := by positivity
+      linarith
 
 /-!
 ### Helper lemmas for Eisenstein series on imaginary axis
@@ -444,15 +534,42 @@ theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun := by
     simp only [hterm_im, tsum_zero]
 
   -- Step 4: Show the coefficient is real and product with sum is real
-  -- (1/ζ(4)) * ((-2πi)^4 / 3!) where (-2πi)^4 = (2π)^4 = 16π^4 (real since i^4 = 1)
-  -- ζ(4) = π^4/90 is real
-  -- So the coefficient = (90/π^4) * (16π^4/6) = 240 is real
-  -- Product of real coefficient with real sum (hsum_im) gives real result
-  -- The full calculation requires showing:
-  -- 1. (-2πi)^4 is real (since i^4 = 1)
-  -- 2. ζ(4) is real (standard)
-  -- 3. Product/quotient of reals with real sum gives real
-  sorry
+  -- The coefficient is (1/ζ(4)) * ((-2πi)^4 / 3!)
+  -- (-2πi)^4 is real (proved in neg_two_pi_I_pow_even_real)
+  -- ζ(4) is real (it's π^4/90)
+  -- So the coefficient is real, and product with real sum is real
+
+  -- Show (-2πi)^4 is real
+  have hpow_im : ((-2 * Real.pi * Complex.I) ^ 4 : ℂ).im = 0 :=
+    neg_two_pi_I_pow_even_real 4 (by norm_num)
+
+  -- Show the factorial term is real
+  have hfact_im : ((4 - 1).factorial : ℂ).im = 0 := by simp
+
+  -- Show 1/ζ(4) is real (ζ(4) = π^4/90 is real)
+  have hzeta_im : (riemannZeta 4).im = 0 := by
+    rw [riemannZeta_four]
+    have h : (↑Real.pi ^ 4 / 90 : ℂ) = ((Real.pi ^ 4 / 90 : ℝ) : ℂ) := by push_cast; ring
+    rw [h]
+    exact ofReal_im _
+
+  have hinv_zeta_im : (1 / riemannZeta 4).im = 0 := by
+    rw [Complex.div_im, Complex.one_im, Complex.one_re, hzeta_im]
+    ring
+
+  -- Now build up: show each factor is real, then product is real
+  have h_prod_im : ∀ a b : ℂ, a.im = 0 → b.im = 0 → (a * b).im = 0 := by
+    intros a b ha hb; simp [Complex.mul_im, ha, hb]
+  have h_div_im : ∀ a b : ℂ, a.im = 0 → b.im = 0 → (a / b).im = 0 := by
+    intros a b ha hb; simp [Complex.div_im, ha, hb]
+
+  -- (-2πi)^4 / 3! is real
+  have hcoeff2_im : ((-2 * Real.pi * Complex.I) ^ 4 / ((4 - 1).factorial : ℂ)).im = 0 :=
+    h_div_im _ _ hpow_im hfact_im
+
+  -- Full product with sum is real (combine all three factors directly)
+  simp only [Complex.mul_im, Complex.div_im, hinv_zeta_im, hsum_im, hpow_im, hfact_im]
+  ring
 
 /-- `E₆(it)` is real for all `t > 0`. -/
 theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun := by
@@ -515,7 +632,57 @@ theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun := by
     simp only [hterm_im, tsum_zero]
 
   -- Step 4: Coefficient is real, product with real sum is real
-  sorry
+  -- Show (-2πi)^6 is real
+  have hpow_im : ((-2 * Real.pi * Complex.I) ^ 6 : ℂ).im = 0 :=
+    neg_two_pi_I_pow_even_real 6 (by norm_num)
+
+  -- Show the factorial term is real
+  have hfact_im : ((6 - 1).factorial : ℂ).im = 0 := by simp
+
+  -- Show 1/ζ(6) is real (ζ(6) = π^6/945 is real)
+  -- Use riemannZeta_two_mul_nat: ζ(2k) is a real multiple of π^(2k)
+  have hzeta_im : (riemannZeta 6).im = 0 := by
+    rw [show (6 : ℂ) = 2 * (3 : ℕ) by norm_num]
+    rw [riemannZeta_two_mul_nat (by norm_num : (3 : ℕ) ≠ 0)]
+    -- Normalize: (3 + 1) = 4, (2 * 3) = 6, (2 * 3).factorial = 720
+    simp only [Nat.add_one_sub_one, show 3 + 1 = 4 by rfl, show 2 * 3 = 6 by rfl]
+    -- All components are real: (-1)^4 = 1, 2^5 = 32, ↑π^6, ↑(bernoulli 6), ↑6!
+    have h1 : ((-1 : ℂ) ^ 4).im = 0 := by norm_num
+    have h2 : ((2 : ℂ) ^ 5).im = 0 := by norm_num
+    have h3 : ((↑Real.pi : ℂ) ^ 6).im = 0 := by
+      have : ((↑Real.pi : ℂ) ^ 6) = ↑(Real.pi ^ 6) := by push_cast; ring
+      rw [this]; exact Complex.ofReal_im _
+    have h4 : (↑(bernoulli 6) : ℂ).im = 0 := Complex.ofReal_im _
+    have h5 : (↑(6 : ℕ).factorial : ℂ).im = 0 := Complex.ofReal_im _
+    simp only [Complex.mul_im, Complex.div_im, h1, h2, h3, h4, h5]
+    ring
+
+  have hinv_zeta_im : (1 / riemannZeta 6).im = 0 := by
+    rw [Complex.div_im, Complex.one_im, Complex.one_re, hzeta_im]
+    ring
+
+  -- (-2πi)^6 / 5! is real
+  have hcoeff2_im : ((-2 * Real.pi * Complex.I) ^ 6 / ((6 - 1).factorial : ℂ)).im = 0 := by
+    -- (-2πi)^6 = -64π^6 is real, and 5! is real, so the quotient is real
+    rw [Complex.div_im, hfact_im]
+    have h6 : Complex.I ^ 6 = -1 := by
+      have : Complex.I ^ 6 = (Complex.I ^ 2) ^ 3 := by ring
+      rw [this, Complex.I_sq]; norm_num
+    have hpi_im : ((↑Real.pi : ℂ) ^ 6 * Complex.I ^ 6 * 64 : ℂ).im = 0 := by
+      rw [h6]
+      have heq : ((↑Real.pi : ℂ) ^ 6 * (-1 : ℂ) * 64 : ℂ) = ↑((-64 : ℝ) * Real.pi ^ 6) := by
+        push_cast; ring
+      rw [heq]
+      exact Complex.ofReal_im _
+    -- The goal has ((-↑2 * ↑π * I) ^ 6).im; show this equals 0 using hpi_im
+    have h_eq : ((-↑(2 : ℕ) * ↑Real.pi * Complex.I) ^ 6 : ℂ) =
+        (↑Real.pi : ℂ) ^ 6 * Complex.I ^ 6 * 64 := by push_cast; ring
+    rw [h_eq, hpi_im]
+    ring
+
+  -- Full product with sum is real (combine all three factors directly)
+  simp only [Complex.mul_im, Complex.div_im, hinv_zeta_im, hsum_im, hpow_im, hfact_im]
+  ring
 
 /-- `E₂(it)` is real for all `t > 0`. -/
 theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
@@ -559,7 +726,8 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
   -- Step 2: Summability of the series
   have hsum : Summable fun n : ℕ+ => ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
       (1 - cexp (2 * ↑Real.pi * Complex.I * n * z)) := by
-    -- This follows from standard bounds on q-series
+    -- For z = it with t > 0, the q-series converges
+    -- TODO: This follows from standard bounds on q-series: |n * q^n / (1 - q^n)| ≤ C * n * |q|^n
     sorry
 
   -- Step 3: The sum has zero imaginary part
