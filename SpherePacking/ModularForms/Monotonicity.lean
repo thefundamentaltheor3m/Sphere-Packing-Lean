@@ -244,12 +244,180 @@ theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
       _ = z.re ^ 3 := by simp [hz_real]; ring
       _ > 0 := pow_pos hz_pos 3
 
+/-!
+### Helper lemmas for Eisenstein series on imaginary axis
+-/
+
+/-- exp(2πinz) is real when z = it (on the imaginary axis). -/
+lemma exp_2pi_I_mul_n_imag_axis_im (n : ℕ+) (t : ℝ) (ht : 0 < t) :
+    (cexp (2 * π * Complex.I * n * (Complex.I * t))).im = 0 := by
+  -- 2πi·n·(it) = 2πi·n·it = -2πnt (real number)
+  have h : 2 * π * Complex.I * n * (Complex.I * t) = (-(2 * π * n * t) : ℝ) := by
+    have hI : Complex.I ^ 2 = -1 := I_sq
+    push_cast
+    ring_nf
+    simp only [hI]
+    ring
+  rw [h]
+  exact exp_ofReal_im _
+
+/-- exp(2πinz) is real and positive when z = it (on the imaginary axis). -/
+lemma exp_2pi_I_mul_n_imag_axis_re_pos (n : ℕ+) (t : ℝ) (ht : 0 < t) :
+    0 < (cexp (2 * π * Complex.I * n * (Complex.I * t))).re := by
+  have h : 2 * π * Complex.I * n * (Complex.I * t) = (-(2 * π * n * t) : ℝ) := by
+    have hI : Complex.I ^ 2 = -1 := I_sq
+    push_cast
+    ring_nf
+    simp only [hI]
+    ring
+  rw [h, Complex.exp_ofReal_re]
+  exact Real.exp_pos _
+
+/-- `E₄(it)` is real for all `t > 0`. -/
+theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun := by
+  intro t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  -- E₄ = 1 + 240 * ∑ σ₃(n) * q^n where q = exp(2πiz) is real on z = it
+  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  change (E₄ z).im = 0
+  -- Use the q-expansion formula for E₄
+  -- E₄(z) = 1 + 240 * ∑ σ₃(n) * q^n where q = exp(2πiz)
+  -- For z = it on the imaginary axis:
+  -- q = exp(2πi·it) = exp(-2πt) which is real and positive
+  -- Since all coefficients (1, 240, σ₃(n)) are real and q^n is real, E₄(it) is real.
+  have hk : (3 : ℤ) ≤ 4 := by norm_num
+  have hk2 : Even (4 : ℕ) := by exact Nat.even_iff.mpr rfl
+  -- Use E_k_q_expansion with explicit proof terms matching E₄'s definition
+  have hq := E_k_q_expansion 4 hk hk2 z
+  -- E₄ z = E 4 hk z by proof irrelevance (both proofs are for 3 ≤ 4)
+  have hE4 : E₄ z = E 4 hk z := rfl
+  -- Note: E_k_q_expansion uses (4 : ℕ) → ℤ coercion, but E₄ uses (4 : ℤ) directly
+  -- Both are definitionally equal since (4 : ℕ) : ℤ = (4 : ℤ)
+  simp only [hE4, Nat.cast_ofNat] at hq ⊢
+  rw [hq]
+  -- Now show the RHS has zero imaginary part
+  simp only [add_im, one_im, zero_add]
+  -- The coefficient (1/ζ(4)) * ((-2πi)^4 / 3!) is real:
+  -- (-2πi)^4 = (2π)^4 * i^4 = (2π)^4 (real)
+  -- ζ(4) = π^4/90 (real)
+  -- So the coefficient is real.
+  -- Each term σ₃(n) * exp(2πinz) for z = it:
+  -- exp(2πin·it) = exp(-2πnt) (real)
+  -- σ₃(n) is a natural number (real)
+  -- Product of reals is real
+  -- Sum of reals is real
+  -- The coefficient (1/ζ(4)) * ((-2πi)^4 / 3!) is real since:
+  -- (-2πi)^4 = (2π)^4 (because i^4 = 1)
+  -- ζ(4) is real
+  -- So the product is real.
+  -- Each term σ₃(n) * exp(2πinz) for z = it:
+  -- exp(2πin·it) = exp(-2πnt) (real)
+  -- σ₃(n) is a natural number (real)
+  -- We will show each component has zero imaginary part.
+
+  -- Step 1: Show exp(2πinz) is real when z = it
+  have hterm_im : ∀ n : ℕ+, (↑((ArithmeticFunction.sigma (4 - 1)) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
+    intro n
+    -- z = I * t, so 2πi·z·n = 2πi·(I*t)·n = -2πnt
+    have hz_eq : (z : ℂ) = Complex.I * t := rfl
+    have hexp_arg : 2 * ↑Real.pi * Complex.I * z * n = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
+      rw [hz_eq]
+      have hI : Complex.I ^ 2 = -1 := I_sq
+      push_cast
+      ring_nf
+      simp only [hI]
+      ring
+    rw [hexp_arg]
+    -- exp of a real number is real
+    have hexp_real : (cexp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := exp_ofReal_im _
+    -- σ_3(n) is a natural number, so its cast to ℂ is real
+    have hsigma_real : (↑((ArithmeticFunction.sigma 3) ↑n) : ℂ).im = 0 := by simp
+    -- Product of reals is real: (a + 0i) * (b + 0i) has im = a*0 + 0*b = 0
+    simp only [Complex.mul_im, hsigma_real, hexp_real, mul_zero, zero_mul, add_zero]
+
+  -- Step 2: Summability of the series
+  have hsum : Summable fun n : ℕ+ => ↑((ArithmeticFunction.sigma 3) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * z * n) := by
+    -- Use that σ_k(n) ≤ n^(k+1) via sigma_bound, and a33 for n^k * q^n summability
+    apply Summable.of_norm
+    apply Summable.of_nonneg_of_le
+    · intro n
+      exact norm_nonneg _
+    · intro n
+      calc ‖↑((ArithmeticFunction.sigma 3) ↑n) * cexp (2 * ↑Real.pi * Complex.I * z * n)‖
+          = ‖(↑((ArithmeticFunction.sigma 3) ↑n) : ℂ)‖ *
+            ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := norm_mul _ _
+        _ ≤ ‖(↑n : ℂ) ^ 4‖ * ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
+          apply mul_le_mul_of_nonneg_right
+          · rw [Complex.norm_natCast, Complex.norm_pow, Complex.norm_natCast]
+            -- Use sigma_bound: σ k n ≤ n ^ (k + 1)
+            have hbound := sigma_bound 3 n
+            exact_mod_cast hbound
+          · exact norm_nonneg _
+        _ = ‖(↑n : ℂ) ^ 4 * cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := (norm_mul _ _).symm
+    · -- The bound n^4 * exp(...) is summable via a33
+      have := a33 4 1 z
+      simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at this
+      exact summable_norm_iff.mpr this
+
+  -- Step 3: The sum has zero imaginary part
+  have hsum_im : (∑' (n : ℕ+), ↑((ArithmeticFunction.sigma (4 - 1)) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
+    rw [Complex.im_tsum hsum]
+    simp only [hterm_im, tsum_zero]
+
+  -- Step 4: Show the coefficient is real and product with sum is real
+  -- (1/ζ(4)) * ((-2πi)^4 / 3!) where (-2πi)^4 = (2π)^4
+  -- The coefficient is real because ζ(4) = π^4/90 is real, and (-2πi)^4 = 16π^4 is real
+  -- Product of real coefficient with real sum (hsum_im) gives real result
+  -- For now, we use sorry for this technical calculation
+  sorry
+
+/-- `E₆(it)` is real for all `t > 0`. -/
+theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun := by
+  intro t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  sorry
+
+/-- `E₂(it)` is real for all `t > 0`. -/
+theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
+  intro t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  -- E₂ = 1 - 24 * ∑ n * q^n / (1 - q^n) where q = exp(2πiz) is real on z = it
+  sorry
+
 /--
 `F(it)` is real for all `t > 0`.
 Blueprint: Follows from E₂, E₄, E₆ having real values on the imaginary axis.
 -/
 theorem F_imag_axis_real : ResToImagAxis.Real F := by
-  sorry
+  -- F = (E₂ * E₄ - E₆)² is real if E₂ * E₄ - E₆ is real
+  -- which follows from E₂, E₄, E₆ being real on the imaginary axis
+  intro t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, F]
+  -- Get realness of E₂, E₄, E₆
+  have hE₂_real := E₂_imag_axis_real t ht
+  have hE₄_real := E₄_imag_axis_real t ht
+  have hE₆_real := E₆_imag_axis_real t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hE₂_real hE₄_real hE₆_real
+  -- If a, b, c are real (im = 0), then (a*b - c)² is real
+  set z₂ := E₂ ⟨Complex.I * t, by simp [ht]⟩ with hz₂_def
+  set z₄ := E₄ ⟨Complex.I * t, by simp [ht]⟩ with hz₄_def
+  set z₆ := E₆ ⟨Complex.I * t, by simp [ht]⟩ with hz₆_def
+  -- Need to establish z₄.im = 0 and z₆.im = 0 from hE₄_real and hE₆_real
+  have hz₄_im : z₄.im = 0 := hE₄_real
+  have hz₆_im : z₆.im = 0 := hE₆_real
+  -- (z₂ * z₄ - z₆)² has zero imaginary part when each has zero imaginary part
+  have h_prod_im : (z₂ * z₄).im = 0 := by
+    simp only [Complex.mul_im]
+    rw [hE₂_real, hz₄_im]
+    ring
+  have h_diff_im : (z₂ * z₄ - z₆).im = 0 := by
+    simp only [Complex.sub_im]
+    rw [h_prod_im, hz₆_im]
+    ring
+  exact Complex.im_pow_eq_zero_of_im_eq_zero h_diff_im 2
 
 /--
 `F(it) > 0` for all `t > 0`.
