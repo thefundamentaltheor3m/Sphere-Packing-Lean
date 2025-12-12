@@ -529,6 +529,22 @@ theorem F_imag_axis_real : ResToImagAxis.Real F := by
 Blueprint: Follows from the q-expansion (E₂E₄ - E₆ = 720 * ...) and positivity.
 -/
 theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
+  refine ⟨F_imag_axis_real, fun t ht => ?_⟩
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, F]
+  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  -- F = (E₂E₄ - E₆)² and we need to show its real part is positive
+  -- Since F_imag_axis_real shows F(it).im = 0, we have F(it) = F(it).re
+  have hF_real_pre := F_imag_axis_real t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, F] at hF_real_pre
+  have hF_real : ((E₂ z * E₄ z - E₆ z) ^ 2).im = 0 := hF_real_pre
+  -- The real part of (...)² equals (...)².re
+  -- Since the base (E₂E₄ - E₆) is real on imaginary axis, we have (real)² > 0 if base ≠ 0
+  -- Use the q-expansion: E₂E₄ - E₆ = 720 * ∑ n * σ₃(n) * q^n
+  have hq_exp := E₂_mul_E₄_sub_E₆ z
+  -- On z = it: q^n = exp(-2πnt) is real and positive
+  -- Each term n * σ₃(n) * exp(-2πnt) > 0 for n ≥ 1
+  -- So the sum is positive, hence E₂E₄ - E₆ = 720 * (positive) > 0
+  -- Therefore F = (positive)² > 0
   sorry
 
 /-!
