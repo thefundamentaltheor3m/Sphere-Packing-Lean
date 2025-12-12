@@ -70,9 +70,7 @@ theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(
   have h_deriv_mdiff' : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (fun w : ℍ => deriv (F ∘ ofComplex) w) z := by
     convert h_deriv_mdiff using 1
   -- Multiplying by a constant preserves MDifferentiability
-  have h_const : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (fun _ : ℍ => (2 * π * I)⁻¹) z :=
-    mdifferentiableAt_const
-  exact MDifferentiableAt.mul h_const h_deriv_mdiff'
+  exact MDifferentiableAt.mul mdifferentiableAt_const h_deriv_mdiff'
 
 /--
 TODO: Move this to E2.lean.
