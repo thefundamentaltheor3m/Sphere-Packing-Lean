@@ -159,17 +159,16 @@ lemma from_4_4_1_int_1 : φ₀_int_1 r = I₁' r + I₂' r + ∫ t in Ici (1 : �
  I * φ₀'' (-1 / (I * t + 1)) * (I * t + 1)^2 *
  cexp (I * π * r * (I * t)) := by
   unfold φ₀_int_1
-  rw [← integral_add_compl (@measurableSet_Ioc _ _ _ _ _ _ 0 1) sorry]
+  rw [← integral_add_compl (@measurableSet_Icc _ _ _ _ _ _ 0 1) sorry]
   simp
-  have : Ioc (0 : ℝ) 1 ∩ Ici 0 = Ioc 0 1 := by grind
+  have : Icc (0 : ℝ) 1 ∩ Ici 0 = Icc 0 1 := by grind
   rw [this]
-  have : (Ioc (0 : ℝ) 1)ᶜ ∩ Ici 0 = {0} ∪ Ioi 1 := by sorry
+  have : (Icc (0 : ℝ) 1)ᶜ ∩ Ici 0 = Ioi 1 := by grind
   rw [this]
 
   unfold I₁'
-  rw [intervalIntegral.intervalIntegral_eq_integral_uIoc]
-  simp
-  rw [mul_comm I, add_assoc]
+  rw [intervalIntegral.intervalIntegral_eq_integral_uIoc, integral_Icc_eq_integral_Ioc]
+  rw [mul_comm I, add_assoc]; simp
   congr 1
   · refine (setIntegral_congr_ae (by measurability) ?_)
     apply ae_of_all
@@ -177,10 +176,7 @@ lemma from_4_4_1_int_1 : φ₀_int_1 r = I₁' r + I₂' r + ∫ t in Ici (1 : �
     rw [z₁'_eq_of_mem (by grind)]
     unfold integrand_1; ring_nf
 
-  · rw [← singleton_union,
-      integral_union_ae (Disjoint.aedisjoint (by simp)) (nullMeasurableSet_Ioi) sorry sorry]
-    simp
-    rw [cauchy_goursat_int_1]
+  · rw [cauchy_goursat_int_1]
     congr 1
     · rw [MagicFunction.a.RadialFunctions.I₂'_eq]
       unfold integrand_1
@@ -190,10 +186,8 @@ lemma from_4_4_1_int_1 : φ₀_int_1 r = I₁' r + I₂' r + ∫ t in Ici (1 : �
       simp [EqOn]; intro x hx hx'
       conv_rhs =>
         rw [mul_assoc, mul_assoc, ← Complex.exp_add, ← Complex.exp_add]
-      congr 3
-      · ring
-      · ring
-      · ring_nf; rw [I_sq]; ring
+      congr 3 <;> ring_nf
+      rw [I_sq]; ring
 
     · rw [smul_eq_mul, ← integral_const_mul, integral_Ici_eq_integral_Ioi]
       refine (setIntegral_congr_ae (by measurability) (ae_of_all _ (fun x hx => ?_)))
@@ -204,17 +198,16 @@ lemma from_4_4_1_int_3 : φ₀_int_3 r = I₃' r + I₄' r + ∫ t in Ici (1 : �
   I * φ₀'' (-1 / (I * t - 1)) * (I * t - 1)^2 *
   cexp (I * π * r * (I * t)) := by
   unfold φ₀_int_3
-  rw [← integral_add_compl (@measurableSet_Ioc _ _ _ _ _ _ 0 1) sorry]
+  rw [← integral_add_compl (@measurableSet_Icc _ _ _ _ _ _ 0 1) sorry]
   simp
-  have : Ioc (0 : ℝ) 1 ∩ Ici 0 = Ioc 0 1 := by grind
+  have : Icc (0 : ℝ) 1 ∩ Ici 0 = Icc 0 1 := by grind
   rw [this]
-  have : (Ioc (0 : ℝ) 1)ᶜ ∩ Ici 0 = {0} ∪ Ioi 1 := by sorry
+  have : (Icc (0 : ℝ) 1)ᶜ ∩ Ici 0 = Ioi 1 := by grind
   rw [this]
 
   unfold I₃'
-  rw [intervalIntegral.intervalIntegral_eq_integral_uIoc]
-  simp
-  rw [mul_comm I, add_assoc]
+  rw [intervalIntegral.intervalIntegral_eq_integral_uIoc, integral_Icc_eq_integral_Ioc]
+  rw [mul_comm I, add_assoc]; simp
   congr 1
   · refine (setIntegral_congr_ae (by measurability) ?_)
     apply ae_of_all
@@ -222,10 +215,7 @@ lemma from_4_4_1_int_3 : φ₀_int_3 r = I₃' r + I₄' r + ∫ t in Ici (1 : �
     rw [z₃'_eq_of_mem (by grind)]
     unfold integrand_3; ring_nf
 
-  · rw [← singleton_union,
-      integral_union_ae (Disjoint.aedisjoint (by simp)) (nullMeasurableSet_Ioi) sorry sorry]
-    simp
-    rw [cauchy_goursat_int_3]
+  · rw [cauchy_goursat_int_3]
     congr 1
     · unfold integrand_3
       rw [I₄'_eq]
@@ -238,10 +228,8 @@ lemma from_4_4_1_int_3 : φ₀_int_3 r = I₃' r + I₄' r + ∫ t in Ici (1 : �
       simp [EqOn]; intro x hx hx'
       conv_rhs =>
         rw [mul_assoc, mul_assoc, ← Complex.exp_add, ← Complex.exp_add]
-      congr 3
-      · ring
-      · ring
-      · ring_nf; rw [I_sq]; ring
+      congr 3 <;> ring_nf
+      rw [I_sq]; ring
 
     · rw [smul_eq_mul, ← integral_const_mul, integral_Ici_eq_integral_Ioi]
       refine (setIntegral_congr_ae (by measurability) (ae_of_all _ (fun x hx => ?_)))
