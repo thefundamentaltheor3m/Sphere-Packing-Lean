@@ -27,8 +27,8 @@ def J₃' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, I -- Added factor due to var
   * ψT' (z₃' t)
   * cexp (π * I * x * (z₃' t))
 
-def J₄' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1,
-  ψT' (z₄' t)
+def J₄' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, -1 -- Added factor due to variable change!!
+  * ψT' (z₄' t)
   * cexp (π * I * x * (z₄' t))
 
 def J₅' (x : ℝ) : ℂ := -2 * ∫ t in (0 : ℝ)..1, I -- Added factor due to variable change!!
