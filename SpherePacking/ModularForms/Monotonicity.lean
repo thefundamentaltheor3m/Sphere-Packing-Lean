@@ -444,10 +444,14 @@ theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun := by
     simp only [hterm_im, tsum_zero]
 
   -- Step 4: Show the coefficient is real and product with sum is real
-  -- (1/ζ(4)) * ((-2πi)^4 / 3!) where (-2πi)^4 = (2π)^4
-  -- The coefficient is real because ζ(4) = π^4/90 is real, and (-2πi)^4 = 16π^4 is real
+  -- (1/ζ(4)) * ((-2πi)^4 / 3!) where (-2πi)^4 = (2π)^4 = 16π^4 (real since i^4 = 1)
+  -- ζ(4) = π^4/90 is real
+  -- So the coefficient = (90/π^4) * (16π^4/6) = 240 is real
   -- Product of real coefficient with real sum (hsum_im) gives real result
-  -- For now, we use sorry for this technical calculation
+  -- The full calculation requires showing:
+  -- 1. (-2πi)^4 is real (since i^4 = 1)
+  -- 2. ζ(4) is real (standard)
+  -- 3. Product/quotient of reals with real sum gives real
   sorry
 
 /-- `E₆(it)` is real for all `t > 0`. -/
