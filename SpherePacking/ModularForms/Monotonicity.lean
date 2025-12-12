@@ -85,30 +85,32 @@ lemma Θ₂_imag_axis_im (t : ℝ) (ht : 0 < t) :
 ## Section 1: Definitions of F, G, and Q
 
 Note: `F = (E₂ * E₄ - E₆)²` is already defined in `Derivative.lean`.
-We define `G = H₂³` here.
+We define `G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²)` here per Definition 8.3 of the blueprint.
+
+TODO: After PR #193 merges, these definitions should be imported from
+`SpherePacking.ModularForms.FG` instead of being defined here.
 -/
 
 /--
-The function `G(z) = H₂(z)³` from Definition 8.3 of the blueprint.
-This is a modular form of weight 6 on Γ(2).
+The function `G(z) = H₂(z)³ (2 H₂(z)² + 5 H₂(z) H₄(z) + 5 H₄(z)²)` from Definition 8.3 of the blueprint.
+
+TODO: After PR #193 merges, import this definition from `SpherePacking.ModularForms.FG`
+instead of defining it here.
 -/
-noncomputable def G (z : ℍ) : ℂ := H₂ z ^ 3
+noncomputable def G (z : ℍ) : ℂ := H₂ z ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
 
 /--
 `G` is holomorphic on the upper half-plane.
-Blueprint: G = H₂³ is holomorphic since H₂ is holomorphic (H₂_SIF_MDifferentiable).
+Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is holomorphic since H₂ and H₄ are holomorphic.
+
+TODO: After PR #193 merges, this should follow from the holomorphicity results there.
 -/
 theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
-  -- G = H₂³, and H₂ is holomorphic, so G is holomorphic
-  -- Proof uses H₂_SIF_MDifferentiable and composition rules for powers
-  rw [mdifferentiable_iff]
-  have hH₂ : DifferentiableOn ℂ (H₂ ∘ ↑ofComplex) {z | 0 < z.im} :=
-    UpperHalfPlane.mdifferentiable_iff.mp H₂_SIF_MDifferentiable
-  have heq : (G ∘ ↑ofComplex) = fun z => (H₂ ∘ ↑ofComplex) z ^ 3 := rfl
-  rw [heq]
-  apply DifferentiableOn.pow
-  intro x hx
-  exact hH₂ x hx
+  -- G = H₂³ * (2H₂² + 5H₂H₄ + 5H₄²), composition of holomorphic functions
+  have hH₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hH₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
+  -- Products and powers of MDifferentiable functions are MDifferentiable
+  sorry
 
 /-!
 ## Section 2: Positivity of F and G on the Imaginary Axis
@@ -204,45 +206,119 @@ theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
     rw [hpow]
     exact pow_pos hΘ₂_re_pos 4
 
+/-!
+### H₄ imaginary axis properties
+
+Similar to H₂, we prove H₄ = Θ₄⁴ is real and positive on the imaginary axis.
+Θ₄_term n (it) = (-1)^n * exp(-π n² t) is real for each n.
+-/
+
+/-- Each term Θ₄_term n (I*t) has zero imaginary part for t > 0. -/
+lemma Θ₄_term_imag_axis_im (n : ℤ) (t : ℝ) (ht : 0 < t) :
+    (Θ₄_term n ⟨Complex.I * t, by simp [ht]⟩).im = 0 := by
+  -- Θ₄_term n z = (-1)^n * exp(πi n² z)
+  -- For z = it: πi n² (it) = -π n² t (real)
+  -- So Θ₄_term n (it) = (-1)^n * exp(-π n² t) = ±exp(-π n² t) which is real
+  -- (-1)^n is ±1 (real), exp(-π n² t) is real, product is real
+  sorry
+
+/-- Θ₄(I*t) has zero imaginary part for t > 0. -/
+lemma Θ₄_imag_axis_im (t : ℝ) (ht : 0 < t) :
+    (Θ₄ ⟨Complex.I * t, by simp [ht]⟩).im = 0 := by
+  unfold Θ₄
+  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  have hsum : Summable fun n : ℤ => Θ₄_term n z := by
+    simp_rw [Θ₄_term_as_jacobiTheta₂_term]
+    rw [summable_jacobiTheta₂_term_iff]
+    exact z.im_pos
+  apply Complex.im_tsum_eq_zero_of_im_eq_zero _ hsum
+  intro n
+  exact Θ₄_term_imag_axis_im n t ht
+
+/--
+`H₄(it)` is real for all `t > 0`.
+Blueprint: Corollary 6.43 - follows from Θ₄ being real on the imaginary axis.
+-/
+theorem H₄_imag_axis_real : ResToImagAxis.Real H₄ := by
+  intro t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₄]
+  have hΘ₄_im := Θ₄_imag_axis_im t ht
+  exact Complex.im_pow_eq_zero_of_im_eq_zero hΘ₄_im 4
+
+/--
+`H₄(it) > 0` for all `t > 0`.
+Blueprint: Corollary 6.43 - H₄ is positive on the imaginary axis.
+
+TODO: The full proof requires showing Θ₄(it) ≠ 0, which follows from theta function
+theory (Θ₄ has no zeros on the imaginary axis). For now we use sorry.
+After PR #193 merges, use the H₄_pos lemma from FG.lean.
+-/
+theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
+  constructor
+  · exact H₄_imag_axis_real
+  · intro t ht
+    -- H₄ = Θ₄^4, so H₄(it) > 0 iff Θ₄(it) ≠ 0
+    -- Θ₄(it) = Σ (-1)^n exp(-πn²t) is nonzero for t > 0
+    sorry
+
 /--
 `G(it)` is real for all `t > 0`.
+Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²), product of real functions.
+
+TODO: After PR #193 merges, this follows from the G_pos lemma structure in FG.lean.
 -/
 theorem G_imag_axis_real : ResToImagAxis.Real G := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, G]
-  have him := H₂_imag_axis_real t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at him
-  -- If z.im = 0, then z^3.im = 0
-  set z := H₂ ⟨Complex.I * t, by simp [ht]⟩ with hz_def
-  have hz_real : z.im = 0 := him
-  -- Use that (a + 0*i)^n has zero imaginary part
-  calc (z ^ 3).im = (z * z * z).im := by ring_nf
-    _ = z.re * z.re * z.im + z.re * z.im * z.re + z.im * z.re * z.re
-        - z.im * z.im * z.im := by simp [Complex.mul_im]; ring
-    _ = 0 := by simp [hz_real]
+  -- H₂ and H₄ are real on the imaginary axis
+  have hH₂_real := H₂_imag_axis_real t ht
+  have hH₄_real := H₄_imag_axis_real t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hH₂_real hH₄_real
+  set h₂ := H₂ ⟨Complex.I * t, by simp [ht]⟩ with hh₂_def
+  set h₄ := H₄ ⟨Complex.I * t, by simp [ht]⟩ with hh₄_def
+  -- Products and sums of real complex numbers are real
+  have h_prod_real : ∀ a b : ℂ, a.im = 0 → b.im = 0 → (a * b).im = 0 := by
+    intros a b ha hb; simp [Complex.mul_im, ha, hb]
+  have h_add_real : ∀ a b : ℂ, a.im = 0 → b.im = 0 → (a + b).im = 0 := by
+    intros a b ha hb; simp [ha, hb]
+  have h_pow_real : ∀ a : ℂ, a.im = 0 → ∀ n : ℕ, (a ^ n).im = 0 := by
+    intros a ha n; exact Complex.im_pow_eq_zero_of_im_eq_zero ha n
+  have h_const_real : ∀ c : ℕ, ((c : ℂ)).im = 0 := by simp
+  -- Build up: 2H₂² + 5H₂H₄ + 5H₄² is real
+  have hterm1 : (2 * h₂ ^ 2).im = 0 := h_prod_real _ _ (h_const_real 2) (h_pow_real h₂ hH₂_real 2)
+  have hterm2 : (5 * h₂ * h₄).im = 0 := by
+    apply h_prod_real; apply h_prod_real; exact h_const_real 5; exact hH₂_real; exact hH₄_real
+  have hterm3 : (5 * h₄ ^ 2).im = 0 := h_prod_real _ _ (h_const_real 5) (h_pow_real h₄ hH₄_real 2)
+  have hquad : (2 * h₂ ^ 2 + 5 * h₂ * h₄ + 5 * h₄ ^ 2).im = 0 :=
+    h_add_real _ _ (h_add_real _ _ hterm1 hterm2) hterm3
+  have hcube : (h₂ ^ 3).im = 0 := h_pow_real h₂ hH₂_real 3
+  exact h_prod_real _ _ hcube hquad
 
 /--
 `G(it) > 0` for all `t > 0`.
-Blueprint: Follows from H₂(it) > 0 since G = H₂³.
+Blueprint: Lemma 8.6 - follows from H₂(it) > 0 and H₄(it) > 0.
+G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is positive since all factors are positive.
+
+TODO: After PR #193 merges, use the G_pos lemma from FG.lean.
 -/
 theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
   constructor
   · exact G_imag_axis_real
   · intro t ht
     simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, G]
-    have hpos := H₂_imag_axis_pos.2 t ht
-    have hreal := H₂_imag_axis_pos.1 t ht
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hpos hreal
-    -- For z with z.im = 0 and z.re > 0, we have (z^3).re = z.re^3 > 0
-    set z := H₂ ⟨Complex.I * t, by simp [ht]⟩ with hz_def
-    have hz_real : z.im = 0 := hreal
-    have hz_pos : 0 < z.re := hpos
-    -- z^3.re = z.re^3 when z.im = 0
-    calc (z ^ 3).re = (z * z * z).re := by ring_nf
-      _ = z.re * z.re * z.re - z.re * z.im * z.im
-          - z.im * z.re * z.im - z.im * z.im * z.re := by simp [Complex.mul_re]; ring
-      _ = z.re ^ 3 := by simp [hz_real]; ring
-      _ > 0 := pow_pos hz_pos 3
+    -- Get positivity and realness of H₂ and H₄
+    have hH₂_pos := H₂_imag_axis_pos.2 t ht
+    have hH₂_real := H₂_imag_axis_pos.1 t ht
+    have hH₄_pos := H₄_imag_axis_pos.2 t ht
+    have hH₄_real := H₄_imag_axis_pos.1 t ht
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hH₂_pos hH₂_real
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hH₄_pos hH₄_real
+    set h₂ := H₂ ⟨Complex.I * t, by simp [ht]⟩ with hh₂_def
+    set h₄ := H₄ ⟨Complex.I * t, by simp [ht]⟩ with hh₄_def
+    -- For real positive complex numbers, products preserve positivity
+    -- h₂³ > 0 and (2h₂² + 5h₂h₄ + 5h₄²) > 0
+    -- Product of positives is positive
+    sorry
 
 /-!
 ### Helper lemmas for Eisenstein series on imaginary axis
