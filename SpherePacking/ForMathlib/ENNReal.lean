@@ -15,7 +15,7 @@ theorem ENNReal.div_div_div_cancel_left {a b c : ENNReal} (ha : a ≠ 0) (ha' : 
     split_ifs with hc
     · simp [hc]
     · simp [eq_comm, div_eq_top, hc]
-  · rw [← toReal_eq_toReal, toReal_div, toReal_div, toReal_div, toReal_div]
+  · rw [← toReal_eq_toReal_iff', toReal_div, toReal_div, toReal_div, toReal_div]
     · rw [div_div_div_cancel_left']
       rw [ne_eq, toReal_eq_zero_iff, not_or]
       tauto

@@ -37,12 +37,15 @@ theorem perm_I₅ : fourierTransformCLE ℂ (I₅) = I₆ := by sorry
 
 -- Should use results from `RadialSchwartz.Radial` to prove the reverse.
 
-theorem perm_₃_I₄ : fourierTransformCLE ℂ (I₃ + I₄) = I₁ + I₂ := by sorry
+theorem perm_₃_I₄ : fourierTransformCLE ℂ (I₃ + I₄) = I₁ + I₂ := by
+  exact perm_I₁_I₂ ▸
+    radial_inversion (I₁ + I₂) (fun _ => by
+      simp [I₁, I₂, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply])
 
 -- should use fourier_involution and the radial symmetry of I₅
 theorem perm_I₆ : fourierTransformCLE ℂ (I₆) = I₅ :=
 by
-  simpa [perm_I₅] using
+  simpa [← perm_I₅] using
     radial_inversion I₅ (fun _ => by
       simp [I₅, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply])
 

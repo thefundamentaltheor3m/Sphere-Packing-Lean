@@ -46,34 +46,34 @@ theorem aut_iter_deriv (d : ℤ) (k : ℕ) :
           rfl
         rw [h1]
         rw [deriv_inv'', deriv_pow, deriv_add_const', deriv_id'']
-        simp only [Nat.cast_add, Nat.cast_one, add_tsub_cancel_right, mul_one]
-        rw [pow_add]
-        simp [pow_one]
+        · simp only [Nat.cast_add, Nat.cast_one, add_tsub_cancel_right, mul_one]
+          rw [pow_add]
+          simp [pow_one]
 
-        have Hw : (-(((k : ℂ) + 1) * (x + ↑d) ^ k) / ((x + ↑d) ^ k * (x + ↑d)) ^ 2) =
-                  -(↑k + 1) / (x + ↑d) ^ (k + 2) :=
-          by
-          rw [div_eq_div_iff]
-          norm_cast
-          simp
+          have Hw : (-(((k : ℂ) + 1) * (x + ↑d) ^ k) / ((x + ↑d) ^ k * (x + ↑d)) ^ 2) =
+                    -(↑k + 1) / (x + ↑d) ^ (k + 2) :=
+            by
+            rw [div_eq_div_iff]
+            · norm_cast
+              simp
+              ring
+            · norm_cast
+              apply pow_ne_zero
+              apply mul_ne_zero
+              · apply pow_ne_zero k (upper_ne_int ⟨x, hx⟩ d)
+              apply upper_ne_int ⟨x, hx⟩ d
+            norm_cast
+            apply pow_ne_zero (k + 2) (upper_ne_int ⟨x, hx⟩ d)
+          rw [Hw]
           ring
-          norm_cast
-          apply pow_ne_zero
-          apply mul_ne_zero
-          apply pow_ne_zero k (upper_ne_int ⟨x, hx⟩ d)
-          apply upper_ne_int ⟨x, hx⟩ d
-          norm_cast
-          apply pow_ne_zero (k + 2) (upper_ne_int ⟨x, hx⟩ d)
-        rw [Hw]
-        ring
-        fun_prop
-        fun_prop
+        · fun_prop
+        · fun_prop
         norm_cast
         apply pow_ne_zero (k + 1) (upper_ne_int ⟨x, hx⟩ d)
       · apply DifferentiableAt.mul
         · fun_prop
         · apply DifferentiableAt.inv
-          fun_prop
+          · fun_prop
           apply pow_ne_zero (k + 1) (upper_ne_int ⟨x, hx⟩ d)
       · apply IsOpen.uniqueDiffWithinAt _ hx
         refine isOpen_lt ?_ ?_

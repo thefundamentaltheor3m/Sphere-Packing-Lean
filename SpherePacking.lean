@@ -7,6 +7,7 @@ import SpherePacking.ForMathlib.Asymptotics
 import SpherePacking.ForMathlib.AtImInfty
 import SpherePacking.ForMathlib.Cardinal
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
+import SpherePacking.ForMathlib.Cusps
 import SpherePacking.ForMathlib.ENNReal
 import SpherePacking.ForMathlib.ENat
 import SpherePacking.ForMathlib.Encard
@@ -15,12 +16,6 @@ import SpherePacking.ForMathlib.Fourier
 import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 import SpherePacking.ForMathlib.InnerProductSpace
 import SpherePacking.ForMathlib.InvPowSummability
-import SpherePacking.ForMathlib.PoissonSummation.DualLattice
-import SpherePacking.ForMathlib.PoissonSummation.EuclideanSpace
-import SpherePacking.ForMathlib.PoissonSummation.Lattice_Equiv
-import SpherePacking.ForMathlib.PoissonSummation.SchwartzMap
-import SpherePacking.ForMathlib.PoissonSummation.Zn_Pi
-import SpherePacking.ForMathlib.PoissonSummation.Zn_to_Euclidean
 import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 import SpherePacking.ForMathlib.Real
 import SpherePacking.ForMathlib.SlashActions
@@ -62,6 +57,7 @@ import SpherePacking.ModularForms.Icc_Ico_lems
 import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.QExpansion
+import SpherePacking.ModularForms.ResToImagAxis
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.clog_arg_lems
 import SpherePacking.ModularForms.csqrt
