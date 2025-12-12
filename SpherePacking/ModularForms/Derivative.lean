@@ -52,7 +52,7 @@ theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(
   have hDiff : ∀ w : ℍ, DifferentiableAt ℂ (F ∘ ofComplex) ↑w :=
     fun w => MDifferentiableAt_DifferentiableAt (hF w)
   -- The upper half-plane is open
-  have hOpen : IsOpen {z : ℂ | 0 < z.im} := isOpen_lt continuous_const Complex.continuous_im
+  have hOpen : IsOpen {z : ℂ | 0 < z.im} := isOpen_upperHalfPlaneSet
   -- F ∘ ofComplex is differentiable on the upper half-plane
   have hDiffOn : DifferentiableOn ℂ (F ∘ ofComplex) {z : ℂ | 0 < z.im} := by
     intro w hw
