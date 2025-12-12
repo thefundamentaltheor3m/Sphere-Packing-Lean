@@ -7,12 +7,6 @@ Authors: Tito Sacchi
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 import SpherePacking.MagicFunction.a.Basic
-import SpherePacking.MagicFunction.IntegralParametrisations
-import SpherePacking.MagicFunction.a.IntegralEstimates.I4
-import Mathlib.Analysis.Complex.Norm
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.MeasureTheory.Integral.Bochner.Basic
-import Mathlib.MeasureTheory.Integral.Bochner.Set
 
 noncomputable section
 
@@ -300,8 +294,10 @@ lemma d_eq_1 : d r = I₁' r + I₂' r + I₃' r + I₄' r + I₅' r +
   ring_nf
 
 lemma integrand_eq_2φ₀ : ∀ z : ℂ, I * φ₀'' (-1 / (z + 1)) * (z + 1)^2 +
- I * φ₀'' (-1 / (z - 1)) * (z - 1)^2 +
- -2 * I * φ₀'' (-1 / z) * z^2 = 2 * I * φ₀'' z := by sorry
+  I * φ₀'' (-1 / (z - 1)) * (z - 1)^2 +
+  -2 * I * φ₀'' (-1 / z) * z^2 = 2 * I * φ₀'' z := by
+
+  sorry
 
 theorem d_eq_a : d r = a' r := by
   rw [d_eq_1 _]
