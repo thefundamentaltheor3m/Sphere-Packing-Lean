@@ -198,21 +198,12 @@ If `F : ℍ → ℂ` is MDifferentiable, then `serre_D k F` is also MDifferentia
 theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
     (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D k F) := by
-  -- serre_D k F z = D F z - k * 12⁻¹ * E₂ z * F z
-  -- D F is MDifferentiable by D_differentiable
-  have hD : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D F) := D_differentiable hF
-  -- E₂ * F is MDifferentiable (using E₂_holo' and hF)
-  have hE₂F : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => E₂ z * F z) :=
-    MDifferentiable.mul E₂_holo' hF
-  -- k * 12⁻¹ * E₂ * F is MDifferentiable (constant multiple times MDifferentiable function)
+  -- serre_D k F = D F - k * 12⁻¹ * E₂ * F
   have h_term : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => k * 12⁻¹ * E₂ z * F z) := by
     have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => (k * 12⁻¹) * (E₂ z * F z)) :=
-      MDifferentiable.mul mdifferentiable_const hE₂F
-    convert h1 using 1
-    ext z
-    simp only [mul_assoc]
-  -- serre_D k F = D F - (k * 12⁻¹ * E₂ * F)
-  exact MDifferentiable.sub hD h_term
+      MDifferentiable.mul mdifferentiable_const (E₂_holo'.mul hF)
+    convert h1 using 1; ext z; simp only [mul_assoc]
+  exact (D_differentiable hF).sub h_term
 
 /--
 Serre derivative is equivariant under the slash action. More precisely, if `F` is invariant
