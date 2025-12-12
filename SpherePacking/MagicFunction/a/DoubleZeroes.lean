@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: (Add your names here)
+Authors: Tito Sacchi
 -/
 
 import SpherePacking.ModularForms.Eisenstein
@@ -62,7 +62,7 @@ lemma corollary_7_6 : ∃ C₂ > 0, ∀ z : ℂ, ‖φ₂'' z‖ ≤ C₂ := by 
 lemma corollary_7_7 : ∃ C₄ > 0, ∀ z : ℂ, ‖φ₄'' z‖ ≤
   C₄ * Real.exp (2 * Real.pi * (Complex.im z)) := by sorry
 
-def d (r : Ici (1 : ℝ)) := -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *  ∫ t in Ici (0 : ℝ),
+def d (r : ℝ) := -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *  ∫ t in Ici (0 : ℝ),
   I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
   cexp (I * π * r * (I * t))
 
@@ -244,10 +244,7 @@ lemma from_4_4_1_int_3 : φ₀_int_3 r = I₃' r + I₄' r + ∫ t in Ici (1 : �
       unfold integrand_3
       ring_nf
 
-include hr in
-lemma r_gt_1 : r ∈ Ici 1 := le_trans (by simp) (le_of_lt hr)
-
-lemma d_eq_2 : d ⟨r, r_gt_1 r hr⟩ = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by
+lemma d_eq_2 : d r = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by
   calc
       _ =  -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *
               ∫ t in Ici (0 : ℝ), I * φ₀'' (-1 / (I * t)) *
@@ -291,7 +288,7 @@ lemma d_eq_2 : d ⟨r, r_gt_1 r hr⟩ = φ₀_int_1 r + I₅' r + φ₀_int_5 r 
     rw [integral_const_mul, ← neg_mul, ← φ₀_int_4]
     ring
 
-lemma d_eq_1 : d ⟨r, r_gt_1 r hr⟩ = I₁' r + I₂' r + I₃' r + I₄' r + I₅' r +
+lemma d_eq_1 : d r = I₁' r + I₂' r + I₃' r + I₄' r + I₅' r +
   ∫ t in Ici (1 : ℝ),
   (I * φ₀'' (-1 / (I * t + 1)) * (I * t + 1)^2 *
   cexp (I * π * r * (I * t)) +
@@ -299,7 +296,7 @@ lemma d_eq_1 : d ⟨r, r_gt_1 r hr⟩ = I₁' r + I₂' r + I₃' r + I₄' r + 
   cexp (I * π * r * (I * t)) +
   -2 * I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
   cexp (I * π * r * (I * t))) := by
-  rw [d_eq_2 _ hr, from_4_4_1_int_1, from_4_4_1_int_3]
+  rw [d_eq_2 _, from_4_4_1_int_1, from_4_4_1_int_3]
   ac_nf; simp
   unfold φ₀_int_5; simp
 
@@ -314,9 +311,8 @@ lemma integrand_eq_2φ₀ : ∀ z : ℂ, I * φ₀'' (-1 / (z + 1)) * (z + 1)^2 
  I * φ₀'' (-1 / (z - 1)) * (z - 1)^2 +
  -2 * I * φ₀'' (-1 / z) * z^2 = 2 * I * φ₀'' z := by sorry
 
-include hr in
-theorem d_eq_a : d ⟨r, r_gt_1 r hr⟩ = a' r := by
-  rw [d_eq_1 _ hr]
+theorem d_eq_a : d r = a' r := by
+  rw [d_eq_1 _]
   conv_lhs =>
     pattern (_ * (cexp _) + _ * (cexp _) + _ * (cexp _))
     rw [← add_mul, ← add_mul]
