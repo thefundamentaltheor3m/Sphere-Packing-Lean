@@ -52,9 +52,9 @@ lemma sign_variable_change (x₁ x₂ : ℝ) :
 end
 
 noncomputable section
-set_option linter.style.longLine false
 
-open Set Complex Real MeasureTheory MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions MagicFunction.a.IntegralEstimates.I₄
+open Set Complex Real MeasureTheory
+open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
 
 lemma corollary_7_5 : ∃ C₀ > 0, ∀ z : ℂ, ‖φ₀'' z‖ ≤
   C₀ * Real.exp (-2 * Real.pi * (Complex.im z)) := by sorry
@@ -260,7 +260,8 @@ lemma d_eq_2 : d ⟨r, r_gt_1 r hr⟩ = φ₀_int_1 r + I₅' r + φ₀_int_5 r 
     rw [integral_add (hf := by sorry) (hg := by sorry),
       integral_sub (hf := by sorry) (hg := by sorry)]
 
-    have : (∫ (a : ℝ) in Ici 0, (cexp (I * ↑π * ↑r) * (I * φ₀'' (-1 / (I * ↑a)) * (I * ↑a) ^ 2 * cexp (↑I * π * ↑r * (I * ↑a))))) = φ₀_int_3 r := by
+    have : (∫ (a : ℝ) in Ici 0, (cexp (I * ↑π * ↑r) * (I * φ₀'' (-1 / (I * ↑a)) *
+      (I * ↑a) ^ 2 * cexp (↑I * π * ↑r * (I * ↑a))))) = φ₀_int_3 r := by
       conv_lhs =>
         pattern (cexp _ * _)
         rw [mul_comm, mul_assoc, ← Complex.exp_add]
@@ -270,14 +271,16 @@ lemma d_eq_2 : d ⟨r, r_gt_1 r hr⟩ = φ₀_int_1 r + I₅' r + φ₀_int_5 r 
       simp [φ₀_int_3_eq r]
     rw [this]
 
-    have : (∫ (a : ℝ) in Ici 0, (cexp (-(I * ↑π * ↑r)) * (I * φ₀'' (-1 / (I * ↑a)) * (I * ↑a) ^ 2 * cexp (↑I * π * ↑r * (I * ↑a))))) = φ₀_int_1 r := by
+    have : (∫ (a : ℝ) in Ici 0, (cexp (-(I * ↑π * ↑r)) * (I * φ₀'' (-1 / (I * ↑a)) *
+      (I * ↑a) ^ 2 * cexp (↑I * π * ↑r * (I * ↑a))))) = φ₀_int_1 r := by
       conv_lhs =>
         pattern (cexp _ * _)
         rw [mul_comm, mul_assoc, ← Complex.exp_add]
       conv_lhs =>
         pattern cexp (_ + _)
         rw [add_comm, ← neg_one_mul]
-      have : forall a, (-1 * (I * ↑π * ↑r) + I * ↑π * ↑r * (I * ↑a)) = I * ↑π * ↑r * (I * ↑a - 1) := by intros; ring
+      have : forall a, (-1 * (I * ↑π * ↑r) + I * ↑π * ↑r * (I * ↑a)) = I * ↑π * ↑r *
+        (I * ↑a - 1) := by intros; ring
       conv_lhs =>
         pattern cexp _
         rw [this]
