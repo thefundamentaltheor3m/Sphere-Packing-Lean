@@ -26,13 +26,13 @@ theorem modform_tendto_ndhs_zero {k : ℤ} (n : ℕ) [ModularFormClass F Γ(n) k
     apply tendsto_nhdsWithin_of_tendsto_nhds
     apply (Function.Periodic.differentiableAt_cuspFunction_zero (h := n)
       (by simp only [Nat.cast_pos]; exact Nat.pos_of_neZero n) ?_ ?_ ?_).continuousAt.tendsto
-    apply SlashInvariantFormClass.periodic_comp_ofComplex
-    simp only [eventually_comap, eventually_atTop, ge_iff_le]
-    use 1
-    intro b hb a ha
-    apply ModularFormClass.differentiableAt_comp_ofComplex (z := a)
-    rw [ha]
-    linarith
+    · apply SlashInvariantFormClass.periodic_comp_ofComplex
+    · simp only [eventually_comap, eventually_atTop, ge_iff_le]
+      use 1
+      intro b hb a ha
+      apply ModularFormClass.differentiableAt_comp_ofComplex (z := a)
+      rw [ha]
+      linarith
     apply ModularFormClass.bounded_at_infty_comp_ofComplex
   apply h2.congr'
   rw [@eventuallyEq_nhdsWithin_iff, eventually_iff_exists_mem]
@@ -355,19 +355,19 @@ lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
     · simp_rw [h, cuspFunction,Periodic.cuspFunction]
       simp
       rw [Filter.limUnder_eq_iff ]
-      have hl : ((a • ⇑f) ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n = fun x => a * (f ∘ ↑ofComplex)
-        (Periodic.invQParam ↑n x) := by
-        ext y
+      · have hl : ((a • ⇑f) ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n = fun x => a * (f ∘ ↑ofComplex)
+          (Periodic.invQParam ↑n x) := by
+          ext y
+          simp
+        rw [hl]
         simp
-      rw [hl]
-      simp
-      apply Filter.Tendsto.const_mul
-      have := modform_tendto_ndhs_zero f _
-      simp at this
-      convert this
-      rw [Filter.limUnder_eq_iff ]
-      apply this
-      aesop
+        apply Filter.Tendsto.const_mul
+        have := modform_tendto_ndhs_zero f _
+        simp at this
+        convert this
+        rw [Filter.limUnder_eq_iff ]
+        · apply this
+        aesop
       have := modform_tendto_ndhs_zero (a • f) _
       aesop
     · simp only [cuspFunction, Pi.smul_apply, smul_eq_mul]
@@ -457,18 +457,18 @@ lemma qExpansion_pow (f : ModularForm Γ(1) k) (n : ℕ) :
         ext z
         simp
         by_cases hz : z = 0
-        rw [hz]
-        simp
-        apply Filter.Tendsto.limUnder_eq
-        apply tendsto_const_nhds
+        · rw [hz]
+          simp
+          apply Filter.Tendsto.limUnder_eq
+          apply tendsto_const_nhds
         simp [hz]
       rw [qExpansion]
       rw [this]
       ext m
       simp
       by_cases hm : m = 0
-      rw [hm]
-      simp
+      · rw [hm]
+        simp
       simp [hm]
       right
       have hmp : 0 < m := by omega

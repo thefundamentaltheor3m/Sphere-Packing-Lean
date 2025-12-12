@@ -138,11 +138,11 @@ lemma atImInfy_pnat_mono (S : Set ℍ) (hS : S ∈ atImInfty) (B : ℝ) : ∃ A 
       have hs2 := hs.2
       simp at *
       constructor
-      apply le_trans hs2.1
-      have hn : (1 : ℝ) ≤ n := by
-        norm_cast
-        exact PNat.one_le n
-      apply (le_mul_iff_one_le_left s.2).mpr hn
+      · apply le_trans hs2.1
+        have hn : (1 : ℝ) ≤ n := by
+          norm_cast
+          exact PNat.one_le n
+        apply (le_mul_iff_one_le_left s.2).mpr hn
       apply le_trans hs2.2
       have hn : (1 : ℝ) ≤ n := by
         norm_cast
