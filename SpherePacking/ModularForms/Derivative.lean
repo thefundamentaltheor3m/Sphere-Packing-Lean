@@ -46,31 +46,16 @@ If `F : ℍ → ℂ` is MDifferentiable, then `D F` is also MDifferentiable.
 theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D F) := by
   intro z
-  -- D F z = (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z
-  -- We need to show MDifferentiableAt for z ↦ (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z
-  -- First, show F ∘ ofComplex is differentiable on the upper half-plane (as an open set in ℂ)
-  have hDiff : ∀ w : ℍ, DifferentiableAt ℂ (F ∘ ofComplex) ↑w :=
-    fun w => MDifferentiableAt_DifferentiableAt (hF w)
-  -- The upper half-plane is open
-  have hOpen : IsOpen {z : ℂ | 0 < z.im} := isOpen_upperHalfPlaneSet
   -- F ∘ ofComplex is differentiable on the upper half-plane
-  have hDiffOn : DifferentiableOn ℂ (F ∘ ofComplex) {z : ℂ | 0 < z.im} := by
-    intro w hw
-    exact (hDiff ⟨w, hw⟩).differentiableWithinAt
-  -- Therefore, deriv (F ∘ ofComplex) is differentiable on the upper half-plane
-  have hDerivDiffOn : DifferentiableOn ℂ (deriv (F ∘ ofComplex)) {z : ℂ | 0 < z.im} :=
-    DifferentiableOn.deriv hDiffOn hOpen
-  -- At z, deriv (F ∘ ofComplex) is differentiable
+  have hDiffOn : DifferentiableOn ℂ (F ∘ ofComplex) {z : ℂ | 0 < z.im} :=
+    fun w hw => (MDifferentiableAt_DifferentiableAt (hF ⟨w, hw⟩)).differentiableWithinAt
+  -- deriv (F ∘ ofComplex) is differentiable at z (key step: DifferentiableOn.deriv)
   have hDerivDiffAt : DifferentiableAt ℂ (deriv (F ∘ ofComplex)) ↑z :=
-    hDerivDiffOn.differentiableAt (hOpen.mem_nhds z.im_pos)
-  -- Use the bridge lemma to get MDifferentiableAt
-  have h_deriv_mdiff : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) ((deriv (F ∘ ofComplex)) ∘ (↑) : ℍ → ℂ) z :=
-    DifferentiableAt_MDifferentiableAt hDerivDiffAt
-  -- Identify with our original function
-  have h_deriv_mdiff' : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (fun w : ℍ => deriv (F ∘ ofComplex) w) z := by
-    convert h_deriv_mdiff using 1
-  -- Multiplying by a constant preserves MDifferentiability
-  exact MDifferentiableAt.mul mdifferentiableAt_const h_deriv_mdiff'
+    (hDiffOn.deriv isOpen_upperHalfPlaneSet).differentiableAt
+      (isOpen_upperHalfPlaneSet.mem_nhds z.im_pos)
+  -- Convert to MDifferentiableAt and multiply by constant
+  exact MDifferentiableAt.mul mdifferentiableAt_const
+    (DifferentiableAt_MDifferentiableAt hDerivDiffAt)
 
 /--
 TODO: Move this to E2.lean.
