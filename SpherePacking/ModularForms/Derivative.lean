@@ -227,9 +227,8 @@ theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
     MDifferentiable.mul E₂_holo' hF
   -- k * 12⁻¹ * E₂ * F is MDifferentiable (constant multiple times MDifferentiable function)
   have h_term : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => k * 12⁻¹ * E₂ z * F z) := by
-    have h_const : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun _ : ℍ => k * 12⁻¹) := mdifferentiable_const
     have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => (k * 12⁻¹) * (E₂ z * F z)) :=
-      MDifferentiable.mul h_const hE₂F
+      MDifferentiable.mul mdifferentiable_const hE₂F
     convert h1 using 1
     ext z
     simp only [mul_assoc]
