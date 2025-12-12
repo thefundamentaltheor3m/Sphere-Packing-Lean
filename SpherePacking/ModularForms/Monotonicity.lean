@@ -72,10 +72,11 @@ lemma Θ₂_imag_axis_im (t : ℝ) (ht : 0 < t) :
   unfold Θ₂
   let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   have hsum : Summable fun n : ℤ => Θ₂_term n z := by
-    have him : 0 < z.im := by simp [UpperHalfPlane.im, z, mul_im, ht]
-    -- Use the relationship to jacobiTheta₂ and its summability
-    -- Follows from summable_jacobiTheta₂_term_iff applied to z with z.im > 0
-    sorry
+    -- Use Θ₂_term_as_jacobiTheta₂_term and summable_jacobiTheta₂_term_iff
+    simp_rw [Θ₂_term_as_jacobiTheta₂_term]
+    apply Summable.mul_left
+    rw [summable_jacobiTheta₂_term_iff]
+    exact z.im_pos
   apply Complex.im_tsum_eq_zero_of_im_eq_zero _ hsum
   intro n
   exact Θ₂_term_imag_axis_im n t ht
@@ -125,6 +126,29 @@ theorem H₂_imag_axis_real : ResToImagAxis.Real H₂ := by
   have hΘ₂_im := Θ₂_imag_axis_im t ht
   exact Complex.im_pow_eq_zero_of_im_eq_zero hΘ₂_im 4
 
+/-- Each term Θ₂_term n (I*t) has positive real part equal to exp(-π(n+1/2)²t) for t > 0. -/
+lemma Θ₂_term_imag_axis_re (n : ℤ) (t : ℝ) (ht : 0 < t) :
+    (Θ₂_term n ⟨Complex.I * t, by simp [ht]⟩).re =
+      Real.exp (-Real.pi * ((n : ℝ) + 1/2) ^ 2 * t) := by
+  unfold Θ₂_term
+  change (cexp (Real.pi * Complex.I * ((n : ℂ) + 1 / 2) ^ 2 * (Complex.I * t))).re = _
+  have hexpr : Real.pi * Complex.I * ((n : ℂ) + 1 / 2) ^ 2 * (Complex.I * ↑t) =
+      (-(Real.pi * ((n : ℝ) + 1/2) ^ 2 * t) : ℝ) := by
+    have hI : Complex.I ^ 2 = -1 := I_sq
+    push_cast
+    ring_nf
+    simp only [hI]
+    ring
+  rw [hexpr]
+  rw [Complex.exp_ofReal_re]
+  ring_nf
+
+/-- Each term Θ₂_term n (I*t) has positive real part for t > 0. -/
+lemma Θ₂_term_imag_axis_re_pos (n : ℤ) (t : ℝ) (ht : 0 < t) :
+    0 < (Θ₂_term n ⟨Complex.I * t, by simp [ht]⟩).re := by
+  rw [Θ₂_term_imag_axis_re n t ht]
+  exact Real.exp_pos _
+
 /-- Θ₂(I*t) has positive real part for t > 0.
 Proof: Each term Θ₂_term n (I*t) = exp(-π(n+1/2)²t) is a positive real.
 The sum of positive reals is positive. -/
@@ -132,8 +156,24 @@ lemma Θ₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
     0 < (Θ₂ ⟨Complex.I * t, by simp [ht]⟩).re := by
   -- Θ₂(it) = ∑ₙ exp(-π(n+1/2)²t) where each term is positive real
   -- The sum of positive terms (at least one nonzero) is positive
-  -- Requires: summability (which we have modulo sorry) and positivity of each term
-  sorry
+  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  -- Summability of the complex series
+  have hsum : Summable fun n : ℤ => Θ₂_term n z := by
+    simp_rw [Θ₂_term_as_jacobiTheta₂_term]
+    apply Summable.mul_left
+    rw [summable_jacobiTheta₂_term_iff]
+    exact z.im_pos
+  -- Convert complex tsum to real part of tsum
+  unfold Θ₂
+  rw [Complex.re_tsum hsum]
+  -- Summability of the real series
+  have hsum_re : Summable fun n : ℤ => (Θ₂_term n z).re := by
+    obtain ⟨x, hx⟩ := hsum
+    exact ⟨x.re, Complex.hasSum_re hx⟩
+  -- Each term is positive
+  have hpos : ∀ n : ℤ, 0 < (Θ₂_term n z).re := fun n => Θ₂_term_imag_axis_re_pos n t ht
+  -- Use that sum of positive terms is positive
+  exact Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 0 (hpos 0)
 
 /--
 `H₂(it) > 0` for all `t > 0`.
