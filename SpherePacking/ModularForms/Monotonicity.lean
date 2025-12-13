@@ -170,6 +170,20 @@ theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
       (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := (h1.add h2).add h3
   exact hH₂_cube.mul hquad
 
+/--
+`F` is holomorphic on the upper half-plane.
+F = (E₂ * E₄ - E₆)² is composed from holomorphic functions.
+-/
+theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
+  unfold F
+  have h_E₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₂ := E₂_holo'
+  have h_E₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₄.toFun := E₄.holo'
+  have h_E₆ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₆.toFun := E₆.holo'
+  have h_prod : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun) := h_E₂.mul h_E₄
+  have h_sub : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) := h_prod.sub h_E₆
+  rw [pow_two]
+  exact h_sub.mul h_sub
+
 /-!
 ## Section 2: Positivity of F and G on the Imaginary Axis
 -/
@@ -982,11 +996,39 @@ We need to compute `∂₂₂ L₁,₀` and show it's positive on the imaginary 
 /--
 The Serre derivative `∂₂₂ L₁,₀`.
 Blueprint: Using the product rule (Theorem 6.53) twice.
+The cross terms `(∂₁₀F)(∂₁₀G)` cancel in the subtraction.
 -/
 theorem serre_D_L₁₀ (z : ℍ) :
     serre_D 22 L₁₀ z = serre_D 12 (serre_D 10 F) z * G z
       - F z * serre_D 12 (serre_D 10 G) z := by
-  sorry
+  -- MDifferentiable hypotheses
+  have hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := F_holo
+  have hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := G_holo
+  have hDF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := serre_D_differentiable hF
+  have hDG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := serre_D_differentiable hG
+  -- Expand L₁₀ and apply serre_D_sub
+  -- Note: L₁₀ z = (serre_D 10 F * G - F * serre_D 10 G) z
+  have hL₁₀_eq : L₁₀ = serre_D 10 F * G - F * serre_D 10 G := rfl
+  rw [hL₁₀_eq]
+  -- Use serre_D_sub: need to align coercions (22 : ℤ) vs (22 : ℂ)
+  have hsub := serre_D_sub (22 : ℤ) _ _ (hDF.mul hG) (hF.mul hDG)
+  simp only [Int.cast_ofNat] at hsub
+  rw [hsub, Pi.sub_apply]
+  -- Apply serre_D_mul to first term: serre_D 22 ((serre_D 10 F) * G)
+  -- 22 = 10 + 12, so serre_D_mul gives: (∂₁₀F) * ∂₁₀G + G * ∂₁₂(∂₁₀F)
+  have h1 : serre_D 22 (serre_D 10 F * G) z =
+      serre_D 10 F z * serre_D 10 G z + G z * serre_D 12 (serre_D 10 F) z := by
+    conv_lhs => rw [show (22 : ℂ) = 10 + 12 by norm_num]
+    exact serre_D_mul 10 12 (serre_D 10 F) G hDF hG z
+  -- Apply serre_D_mul to second term: serre_D 22 (F * (serre_D 10 G))
+  -- 22 = 12 + 10, so serre_D_mul gives: F * ∂₁₂(∂₁₀G) + (∂₁₀G) * ∂₁₀F
+  have h2 : serre_D 22 (F * serre_D 10 G) z =
+      F z * serre_D 12 (serre_D 10 G) z + serre_D 10 G z * serre_D 10 F z := by
+    conv_lhs => rw [show (22 : ℂ) = 12 + 10 by norm_num]
+    exact serre_D_mul 12 10 F (serre_D 10 G) hF hDG z
+  -- Combine: cross terms (∂₁₀F)(∂₁₀G) cancel
+  rw [h1, h2]
+  ring
 
 /--
 `∂₂₂ L₁,₀ = Δ(7200(-E₂')G + 640H₂F)` on the upper half-plane.
@@ -1014,31 +1056,34 @@ Using Lemma 8.11 (vanishing orders), we show L₁,₀(it) > 0 for large t.
 
 /--
 The vanishing order of F at infinity is 2.
-Blueprint: From q-expansion F = 720² * q² * (1 + O(q)).
+Blueprint: From q-expansion F = 720² * q² * (1 + O(q)), so F / q² → 720² as im(z) → ∞.
+Here q = exp(2πiz), so q² = exp(4πiz) = exp(2πi * 2 * z).
 -/
-theorem F_vanishing_order : ∃ (c : ℂ), c ≠ 0 ∧
-    ∀ z : ℍ, F z = c * cexp (2 * π * Complex.I * 2 * z) * (1 + sorry) := by
+theorem F_vanishing_order :
+    Filter.Tendsto (fun z : ℍ => F z / cexp (2 * π * Complex.I * 2 * z))
+      atImInfty (nhds (720 ^ 2 : ℂ)) := by
   sorry
 
 /--
-The vanishing order of G at infinity is 3/2.
-Blueprint: From q-expansion H₂ = 2q^(1/4)(1 + O(q)), so G = H₂³ = 8q^(3/4)(1 + O(q)).
-Note: The "3/2" here refers to the power of q in the full expansion, considering
-that q = e^(2πiz), so q^(3/4) = e^(3πiz/2).
+The vanishing order of G at infinity is 5/2.
+Blueprint: H₂ = Θ₂⁴ ~ 16q^(1/2), H₄ → 1 as im(z) → ∞.
+So G = H₂³(2H₂² + 5H₂H₄ + 5H₄²) ~ H₂³ * 5 = 5 * 16³ * q^(3/2) = 20480 * q^(3/2).
+Here q^(3/2) = exp(3πiz) = exp(2πi * (3/2) * z).
 -/
-theorem G_vanishing_order : ∃ (c : ℂ), c ≠ 0 ∧
-    ∀ z : ℍ, G z = c * cexp (π * Complex.I * 3 / 2 * z) * (1 + (0 : ℂ)) := by
-  -- Placeholder: actual proof needs q-expansion analysis
+theorem G_vanishing_order :
+    Filter.Tendsto (fun z : ℍ => G z / cexp (2 * π * Complex.I * (3/2) * z))
+      atImInfty (nhds (20480 : ℂ)) := by
   sorry
 
 /--
 `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`.
 Blueprint: Lemma 8.11 and vanishing orders 2 and 3/2.
+The difference in vanishing orders is 2 - 3/2 = 1/2.
 -/
 theorem L₁₀_div_FG_tendsto :
-    Filter.Tendsto (fun t : ℝ => (L₁₀ ⟨Complex.I * t, by sorry⟩).re /
-      ((F ⟨Complex.I * t, by sorry⟩).re * (G ⟨Complex.I * t, by sorry⟩).re))
-    Filter.atTop (nhds (1/2)) := by
+    Filter.Tendsto (fun t : ℝ => (L₁₀.resToImagAxis t).re /
+      ((F.resToImagAxis t).re * (G.resToImagAxis t).re))
+      Filter.atTop (nhds (1/2)) := by
   sorry
 
 /--
@@ -1053,10 +1098,109 @@ theorem L₁₀_eventually_pos_imag_axis : ResToImagAxis.EventuallyPos L₁₀ :
 -/
 
 /--
+Chain rule for resToImagAxis: `d/dt F(it) = -2π * (D F)(it)`.
+This is needed for `D_imag_axis_real_of_imag_axis_real`.
+-/
+theorem deriv_resToImagAxis_eq' (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (t : ℝ) (ht : 0 < t) :
+    deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t := by
+  -- The imaginary axis parametrization: g(t) = I * t
+  let g : ℝ → ℂ := fun s => Complex.I * s
+  -- F.resToImagAxis = (F ∘ ofComplex) ∘ g locally near t > 0
+  have h_eq : F.resToImagAxis =ᶠ[nhds t] ((F ∘ ofComplex) ∘ g) := by
+    filter_upwards [lt_mem_nhds ht] with s hs
+    simp only [Function.resToImagAxis_apply, ResToImagAxis, hs, ↓reduceDIte, Function.comp_apply]
+    congr 1
+    rw [ofComplex_apply_of_im_pos (by simp [hs] : 0 < (I * ↑s).im)]
+  rw [h_eq.deriv_eq]
+  -- g has derivative I at t (linear map)
+  have hg_deriv_at : HasDerivAt g I t := by
+    have h1 : HasDerivAt (fun s : ℝ => (s : ℂ)) 1 t := ofRealCLM.hasDerivAt
+    have h2 : HasDerivAt g (I * 1) t := h1.const_mul I
+    simp at h2
+    exact h2
+  -- F ∘ ofComplex has complex derivative at I * t
+  have him : 0 < (I * ↑t).im := by simp [ht]
+  have hFcomp_deriv_at : HasDerivAt (F ∘ ofComplex) (deriv (F ∘ ofComplex) (g t)) (g t) := by
+    exact (MDifferentiableAt_DifferentiableAt (hF ⟨I * t, him⟩)).hasDerivAt
+  -- Chain rule
+  have hchain := hFcomp_deriv_at.scomp t hg_deriv_at
+  rw [hchain.deriv]
+  -- Use definition of D: deriv (F ∘ ofComplex) z = 2πi * D F z
+  have hD_def : deriv (F ∘ ofComplex) (g t) = 2 * π * I * D F ⟨I * t, him⟩ := by
+    simp only [D, g, coe_mk_subtype]
+    field_simp
+  simp only [hD_def, Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, g]
+  simp only [smul_eq_mul]
+  ring_nf
+  simp only [I_sq]
+  ring
+
+/--
+If `F` is real on the imaginary axis and MDifferentiable, then `D F` is also real on the imaginary axis.
+This follows from `deriv F.resToImagAxis t = -2π * (D F).resToImagAxis t` and the fact that
+the derivative of a real-valued function is real.
+-/
+theorem D_imag_axis_real_of_imag_axis_real {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (hreal : ResToImagAxis.Real F) : ResToImagAxis.Real (D F) := by
+  intro t ht
+  -- Use the relation: deriv F.resToImagAxis t = -2π * (D F).resToImagAxis t
+  have hderiv := deriv_resToImagAxis_eq' F hF t ht
+  -- F is real on the imaginary axis, so the derivative is also real
+  have hDiff : DifferentiableAt ℝ F.resToImagAxis t := ResToImagAxis.Differentiable F hF t ht
+  -- The imaginary part of the derivative equals the derivative of the imaginary part
+  have h := Complex.imCLM.hasFDerivAt.comp_hasDerivAt t hDiff.hasDerivAt
+  -- Since F.resToImagAxis has constant zero imaginary part, its derivative has zero imaginary part
+  have hderiv_im : (deriv F.resToImagAxis t).im = 0 := by
+    have : (Complex.imCLM ∘ F.resToImagAxis) = fun _ => 0 := by
+      ext s
+      simp only [Function.comp_apply, Complex.imCLM_apply]
+      by_cases hs : 0 < s
+      · exact hreal s hs
+      · simp only [Function.resToImagAxis_apply, ResToImagAxis, hs, ↓reduceDIte, zero_im]
+    -- deriv (imCLM ∘ resToImagAxis F) t = imCLM (deriv (resToImagAxis F) t)
+    -- Since imCLM ∘ resToImagAxis F = 0, its derivative is 0
+    rw [show (deriv F.resToImagAxis t).im = Complex.imCLM (deriv F.resToImagAxis t) from rfl]
+    rw [← h.deriv, this, deriv_const']
+  -- From hderiv: -2π * (D F)(it) = deriv F.resToImagAxis t
+  -- Taking im: -2π * ((D F)(it)).im = 0 (since π ≠ 0, (D F)(it).im = 0)
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
+  have h2 : (-2 * ↑π * (D F ⟨I * ↑t, by simp [ht]⟩)).im = (deriv F.resToImagAxis t).im := by
+    rw [hderiv]
+    simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
+  -- (-2 * π * z).im = -2 * π * z.im for real coefficients
+  have hsimp : (-2 * ↑π * D F ⟨I * ↑t, by simp [ht]⟩).im =
+      -2 * π * (D F ⟨I * ↑t, by simp [ht]⟩).im := by
+    simp only [neg_mul, neg_im, mul_comm (2 : ℂ), mul_assoc]
+    rw [mul_im, mul_im]
+    simp only [ofReal_re, ofReal_im, mul_zero, sub_zero, zero_mul, add_zero]
+    ring
+  rw [hsimp, hderiv_im] at h2
+  -- h2 : -2 * π * (D F z).im = 0
+  -- Since -2 * π ≠ 0, we have (D F z).im = 0
+  have hcoef : -2 * π ≠ 0 := by positivity
+  exact mul_eq_zero.mp h2 |>.resolve_left hcoef
+
+/--
 `L₁,₀(it)` is real for all `t > 0`.
 -/
 theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
-  sorry
+  intro t ht
+  -- L₁₀ = D F * G - F * D G
+  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  have hL₁₀ := L₁₀_eq_FD_G_sub_F_DG z
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
+  rw [hL₁₀]
+  -- D F, D G, F, G are all real on the imaginary axis
+  have hF_real := F_imag_axis_real t ht
+  have hG_real := G_imag_axis_real t ht
+  have hDF_real := D_imag_axis_real_of_imag_axis_real F_holo F_imag_axis_real t ht
+  have hDG_real := D_imag_axis_real_of_imag_axis_real G_holo G_imag_axis_real t ht
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hF_real hG_real hDF_real hDG_real
+  -- (D F * G - F * D G).im = DF.re * G.im + DF.im * G.re - F.re * DG.im - F.im * DG.re = 0
+  simp only [sub_im, mul_im]
+  have hz : z = ⟨I * ↑t, by simp [ht]⟩ := rfl
+  rw [hz]
+  simp only [hG_real, mul_zero, hDF_real, zero_mul, add_zero, hDG_real, hF_real, sub_zero]
 
 /--
 `L₁,₀(it) > 0` for all `t > 0`.
@@ -1086,23 +1230,6 @@ noncomputable def Q (t : ℝ) : ℝ :=
 theorem Q_eq_F_div_G (t : ℝ) (ht : 0 < t) :
     Q t = (F ⟨Complex.I * t, by simp [ht]⟩).re / (G ⟨Complex.I * t, by simp [ht]⟩).re := by
   simp [Q, ht]
-
-/--
-`F` is holomorphic on the upper half-plane.
-F = (E₂ * E₄ - E₆)² is composed from holomorphic functions.
--/
-theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
-  unfold F
-  have h_E₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₂ := E₂_holo'
-  have h_E₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₄.toFun := E₄.holo'
-  have h_E₆ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₆.toFun := E₆.holo'
-  have h_prod : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun) := h_E₂.mul h_E₄
-  have h_sub : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) := h_prod.sub h_E₆
-  have h_sq : (fun z => (E₂ * E₄.toFun - E₆.toFun) z ^ 2) =
-      fun z => (E₂ * E₄.toFun - E₆.toFun) z * (E₂ * E₄.toFun - E₆.toFun) z := by
-    ext z; ring
-  rw [pow_two]
-  exact h_sub.mul h_sub
 
 /--
 `Q` is differentiable on `(0, ∞)`.
