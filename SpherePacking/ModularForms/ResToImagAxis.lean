@@ -1,8 +1,12 @@
 import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
+import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
 import Mathlib.NumberTheory.ModularForms.SlashActions
+import Mathlib.NumberTheory.ModularForms.QExpansion
 
 import SpherePacking.ModularForms.SlashActionAuxil
+import SpherePacking.ForMathlib.AtImInfty
 
 open UpperHalfPlane hiding I
 
@@ -198,3 +202,167 @@ theorem ResToImagAxis.EventuallyPos.hmul {F : ℍ → ℂ} {c : ℝ}
   simp only [Function.resToImagAxis_apply, ResToImagAxis, htpos, ↓reduceDIte, mul_re, ofReal_re,
     ofReal_im, zero_mul, sub_zero]
   exact mul_pos hc hFpos_t
+
+/-!
+## Polynomial decay of functions with exponential bounds
+
+This section establishes that if a function `F : ℍ → ℂ` is `O(exp(-c * im τ))` at infinity,
+then `t^s * F(it) → 0` as `t → ∞` for any real power `s`.
+
+One application is to cusp forms, which satisfy such exponential decay bounds.
+-/
+
+open Filter Asymptotics in
+/--
+If `F : ℍ → ℂ` is `O(exp(-c * im τ))` at `atImInfty` for some `c > 0`, then
+the restriction to the imaginary axis `t ↦ F(it)` is `O(exp(-c * t))` at `atTop`.
+-/
+lemma isBigO_resToImagAxis_of_isBigO_atImInfty {F : ℍ → ℂ} {c : ℝ} (_hc : 0 < c)
+    (hF : F =O[atImInfty] fun τ => Real.exp (-c * τ.im)) :
+    F.resToImagAxis =O[atTop] fun t => Real.exp (-c * t) := by
+  rw [Asymptotics.isBigO_iff] at hF ⊢
+  obtain ⟨C, hC⟩ := hF; use C
+  rw [Filter.eventually_atImInfty] at hC; obtain ⟨A, hA⟩ := hC
+  filter_upwards [Filter.eventually_ge_atTop (max A 1)] with t ht
+  have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
+  simp only [Function.resToImagAxis, ResToImagAxis, ht_pos, ↓reduceDIte]
+  set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
+  have him : z.im = t := by change (Complex.I * t).im = t; simp
+  simpa [him] using hA z (by simpa [him] using le_of_max_le_left ht)
+
+open Filter Asymptotics Real in
+/--
+The analytic kernel: if `g : ℝ → ℂ` is eventually bounded by `C * exp(-b * t)` for some
+`b > 0`, then `t^s * g(t) → 0` as `t → ∞` for any real power `s`.
+
+This follows from the fact that `t^s * exp(-b * t) → 0` (mathlib's
+`tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero`) combined with the big-O transfer lemma.
+-/
+lemma tendsto_rpow_mul_of_isBigO_exp {g : ℝ → ℂ} {s b : ℝ} (hb : 0 < b)
+    (hg : g =O[atTop] fun t => rexp (-b * t)) :
+    Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * g t) atTop (𝓝 0) := by
+  refine ((isBigO_refl _ _).mul (Complex.isBigO_ofReal_right.mpr hg)).trans_tendsto ?_
+  refine (tendsto_ofReal_iff.mpr (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero s b hb)).congr' ?_
+  filter_upwards [eventually_gt_atTop 0] with t ht
+  rw [Complex.ofReal_mul, Complex.ofReal_cpow (le_of_lt ht)]
+
+open Filter Asymptotics Real UpperHalfPlane in
+/--
+If `F : ℍ → ℂ` is `O(exp(-c * im τ))` at `atImInfty` for some `c > 0`, then
+`t^s * F(it) → 0` as `t → ∞` for any real power `s`.
+-/
+theorem tendsto_rpow_mul_resToImagAxis_of_isBigO_exp {F : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
+    (hF : F =O[atImInfty] fun τ => rexp (-c * τ.im)) (s : ℝ) :
+    Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
+  tendsto_rpow_mul_of_isBigO_exp hc (isBigO_resToImagAxis_of_isBigO_atImInfty hc hF)
+
+open Filter Asymptotics Real UpperHalfPlane CuspFormClass in
+/--
+For a cusp form `f` of level `Γ(n)`, we have `t^s * f(it) → 0` as `t → ∞` for any real power `s`.
+
+This follows from the exponential decay of cusp forms at infinity: `f = O(exp(-2π τ.im / n))`.
+-/
+theorem cuspForm_rpow_mul_resToImagAxis_tendsto_zero {n : ℕ} {k : ℤ} {F : Type*}
+    [NeZero n] [FunLike F ℍ ℂ] [CuspFormClass F Γ(n) k] (f : F) (s : ℝ) :
+    Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * (f : ℍ → ℂ).resToImagAxis t) atTop (𝓝 0) := by
+  have hn_pos : (0 : ℝ) < n := Nat.cast_pos.mpr (NeZero.pos n)
+  have hdecay' : (f : ℍ → ℂ) =O[atImInfty] fun τ => rexp (-(2 * π / n) * τ.im) := by
+    convert exp_decay_atImInfty n f using 2 with τ; field_simp
+  exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (div_pos (by positivity) hn_pos) hdecay' s
+
+/-!
+## Fourier expansion approach for polynomial decay
+
+This section provides an alternative approach to polynomial decay that works directly from
+Fourier expansions. If `F` has a Fourier expansion `∑_{m≥0} a_m exp(2πi(m+n₀)z)` with `n₀ > 0`,
+then `F = O(exp(-2π n₀ · im z))` at `atImInfty`, which gives `t^s * F(it) → 0`.
+
+This is useful for functions with q-expansions starting at a positive index (like `(E₂E₄ - E₆)²`).
+-/
+
+open Filter Asymptotics Real Complex in
+/--
+If `F` has a Fourier expansion `∑_{m≥0} a_m exp(2πi(m+n₀)z)` with `n₀ > 0`,
+and the coefficients are absolutely summable at height `im z = c`,
+then `F = O(exp(-2π n₀ · im z))` at `atImInfty`.
+
+The key bound is: for `im z ≥ c`,
+  `‖F(z)‖ ≤ (∑_m ‖a_m‖ · exp(-2π c m)) · exp(-2π n₀ · im z)`
+-/
+lemma isBigO_atImInfty_of_fourier_shift
+    {F : ℍ → ℂ} {a : ℕ → ℂ} {n₀ : ℕ} {c : ℝ} (_hn₀ : 0 < n₀) (_hc : 0 < c)
+    (hF : ∀ z : ℍ, F z =
+      ∑' m : ℕ, a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * (z : ℂ)))
+    (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π * c) * (m : ℝ)))) :
+    F =O[atImInfty] fun z : ℍ => rexp (-(2 * π * (n₀ : ℝ)) * z.im) := by
+  rw [Asymptotics.isBigO_iff]
+  refine ⟨∑' m, ‖a m‖ * rexp (-(2 * π * c) * m), ?_⟩
+  rw [Filter.eventually_atImInfty]
+  refine ⟨c, fun z hz => ?_⟩
+  rw [hF z, Real.norm_of_nonneg (le_of_lt (Real.exp_pos _))]
+  -- Real part of 2πi(m+n₀)z is -2π(m+n₀)·im z
+  have hexp_re m : (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z).re = -(2 * π) * (m + n₀) * z.im := by
+    simp only [Nat.cast_add, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
+      Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, add_re, natCast_re,
+      add_im, natCast_im, coe_re, zero_add, coe_im, zero_sub, neg_mul]
+  -- Key bound: for y ≥ c, exp(-(2π)(m+n₀)y) ≤ exp(-(2πc)m) * exp(-(2πc)n₀)
+  have hexp_bound (m : ℕ) :
+      rexp (-(2 * π) * (↑m + ↑n₀) * z.im) ≤
+        rexp (-(2 * π * c) * m) * rexp (-(2 * π * c) * n₀) := by
+    rw [← Real.exp_add, Real.exp_le_exp]
+    have key : (↑m + ↑n₀) * z.im ≥ (↑m + ↑n₀) * c := by nlinarith
+    nlinarith [Real.pi_pos, (Nat.cast_nonneg m : (0 : ℝ) ≤ m),
+      (Nat.cast_nonneg n₀ : (0 : ℝ) ≤ n₀), z.im_pos]
+  -- Summability of norms
+  have hsum_norms : Summable fun m => ‖a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ := by
+    refine .of_nonneg_of_le (fun _ => norm_nonneg _) (fun m => ?_)
+      (ha.mul_right (rexp (-(2 * π * c) * n₀)))
+    simp only [norm_mul, norm_exp, hexp_re]
+    calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
+        ≤ ‖a m‖ * (rexp (-(2 * π * c) * m) * rexp (-(2 * π * c) * n₀)) :=
+          mul_le_mul_of_nonneg_left (hexp_bound m) (norm_nonneg _)
+      _ = ‖a m‖ * rexp (-(2 * π * c) * m) * rexp (-(2 * π * c) * n₀) := by ring
+  have hsum_norms' : Summable fun m => ‖a m‖ * rexp (-(2 * π) * (m + n₀) * z.im) := by
+    convert hsum_norms with m; rw [norm_mul, norm_exp, hexp_re]
+  -- Main calculation
+  calc ‖∑' m, a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖
+      ≤ ∑' m, ‖a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ :=
+        norm_tsum_le_tsum_norm hsum_norms
+    _ = ∑' m, ‖a m‖ * rexp (-(2 * π) * (m + n₀) * z.im) := by
+        simp only [norm_mul, norm_exp, hexp_re]
+    _ ≤ ∑' m, ‖a m‖ * rexp (-(2 * π * c) * m) * rexp (-(2 * π) * n₀ * z.im) := by
+        refine Summable.tsum_le_tsum (fun m => ?_) hsum_norms'
+          (ha.mul_right (rexp (-(2 * π) * n₀ * z.im)))
+        have hsplit : rexp (-(2 * π) * (↑m + ↑n₀) * z.im) =
+            rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
+          rw [← Real.exp_add]; ring_nf
+        have hexp_m : rexp (-(2 * π) * m * z.im) ≤ rexp (-(2 * π * c) * m) := by
+          rw [Real.exp_le_exp]
+          have key : (m : ℝ) * z.im ≥ m * c := by nlinarith
+          nlinarith [Real.pi_pos, (Nat.cast_nonneg m : (0 : ℝ) ≤ m), z.im_pos]
+        calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
+            = ‖a m‖ * rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
+              rw [hsplit]; ring
+          _ ≤ ‖a m‖ * rexp (-(2 * π * c) * m) * rexp (-(2 * π) * n₀ * z.im) := by
+              apply mul_le_mul_of_nonneg_right _ (le_of_lt (Real.exp_pos _))
+              exact mul_le_mul_of_nonneg_left hexp_m (norm_nonneg _)
+    _ = (∑' m, ‖a m‖ * rexp (-(2 * π * c) * m)) * rexp (-(2 * π) * n₀ * z.im) := tsum_mul_right
+    _ = _ := by ring_nf
+
+open Filter Asymptotics Real UpperHalfPlane in
+/--
+If `F` has a Fourier expansion starting at index `n₀ > 0` with absolutely summable coefficients
+at height `c > 0`, then `t^s * F(it) → 0` as `t → ∞` for any real power `s`.
+
+This converts a Fourier expansion representation directly into polynomial decay on the
+imaginary axis.
+-/
+theorem tendsto_rpow_mul_resToImagAxis_of_fourier_shift
+    {F : ℍ → ℂ} {a : ℕ → ℂ} {n₀ : ℕ} {c : ℝ} (hn₀ : 0 < n₀) (hc : 0 < c)
+    (hF : ∀ z : ℍ, F z =
+      ∑' m : ℕ, a m * Complex.exp (2 * π * Complex.I * ((m + n₀ : ℕ) : ℂ) * (z : ℂ)))
+    (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π * c) * (m : ℝ))))
+    (s : ℝ) :
+    Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
+  tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity)
+    (isBigO_atImInfty_of_fourier_shift hn₀ hc hF ha) s
