@@ -303,93 +303,64 @@ lemma isBigO_atImInfty_of_fourier_shift
       ∑' m : ℕ, a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * (z : ℂ)))
     (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π) * (m : ℝ)))) :
     F =O[atImInfty] fun z : ℍ => rexp (-(2 * π * (n₀ : ℝ)) * z.im) := by
-  -- Set C := ∑' m, ‖a m‖ * exp(-(2π) * m), the bounding constant
-  set C := ∑' m : ℕ, ‖a m‖ * rexp (-(2 * π) * (m : ℝ)) with hC_def
   rw [Asymptotics.isBigO_iff]
-  use C
+  refine ⟨∑' m, ‖a m‖ * rexp (-(2 * π) * m), ?_⟩
   rw [Filter.eventually_atImInfty]
-  use 1
-  intro z hz
-  -- Goal: ‖F z‖ ≤ C * |exp(-2π n₀ · im z)|
+  refine ⟨1, fun z hz => ?_⟩
   rw [hF z, Real.norm_of_nonneg (le_of_lt (Real.exp_pos _))]
-  -- Key lemma: real part of 2πi(m+n₀)z is -2π(m+n₀)·im z
-  have hexp_re : ∀ m : ℕ, (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z).re = -(2 * π) * (m + n₀) * z.im := by
-    intro m
-    have h1 : ((m + n₀ : ℕ) : ℂ).re = (m + n₀ : ℝ) := by simp
-    have h2 : ((m + n₀ : ℕ) : ℂ).im = 0 := by simp
+  -- Real part of 2πi(m+n₀)z is -2π(m+n₀)·im z
+  have hexp_re m : (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z).re = -(2 * π) * (m + n₀) * z.im := by
+    have : ((m + n₀ : ℕ) : ℂ).re = (m + n₀ : ℝ) := by simp
     simp only [mul_re, mul_im, Complex.I_re, Complex.I_im, ofReal_re, ofReal_im, coe_re, coe_im,
-      h1, h2, mul_zero, sub_zero, zero_mul, add_zero, mul_one, zero_sub, re_ofNat, im_ofNat]
-    ring
-  -- Summability of norms (needed for norm_tsum_le)
-  have hsum_norms :
-      Summable fun m => ‖a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ := by
-    refine Summable.of_nonneg_of_le (fun _ => norm_nonneg _) ?_
+      this, (by simp : ((m + n₀ : ℕ) : ℂ).im = 0), mul_zero, sub_zero, zero_mul, add_zero,
+      mul_one, zero_sub, re_ofNat, im_ofNat]; ring
+  -- Key bound: for y ≥ 1, exp(-(2π)(m+n₀)y) ≤ exp(-(2π)m) * exp(-(2π)n₀)
+  have hexp_bound (m : ℕ) :
+      rexp (-(2 * π) * (↑m + ↑n₀) * z.im) ≤ rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀) := by
+    rw [← Real.exp_add]; apply Real.exp_le_exp.mpr
+    have h1 : (↑m + ↑n₀) * z.im ≥ (↑m + ↑n₀) := by nlinarith
+    calc -(2 * π) * (↑m + ↑n₀) * z.im = -(2 * π) * ((↑m + ↑n₀) * z.im) := by ring
+      _ ≤ -(2 * π) * (↑m + ↑n₀) := by
+          apply mul_le_mul_of_nonpos_left h1; linarith [Real.pi_pos]
+      _ = -(2 * π) * ↑m + -(2 * π) * ↑n₀ := by ring
+  -- Summability of norms
+  have hsum_norms : Summable fun m => ‖a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ := by
+    refine .of_nonneg_of_le (fun _ => norm_nonneg _) (fun m => ?_)
       (ha.mul_right (rexp (-(2 * π) * n₀)))
-    intro m
-    rw [norm_mul, norm_exp, hexp_re]
-    -- Key: exp(-(2π)(m+n₀)*y) ≤ exp(-(2π)(m+n₀)) ≤ exp(-(2π)m) * exp(-(2π)n₀) for y ≥ 1
-    have hπ : 0 < π := Real.pi_pos
-    have hmn : 0 ≤ (m : ℝ) + n₀ := by positivity
-    have hexp_bound :
-        rexp (-(2 * π) * (↑m + ↑n₀) * z.im) ≤ rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀) := by
-      rw [← Real.exp_add]
-      apply Real.exp_le_exp.mpr
-      -- We want: -(2π)(m+n₀)*y ≤ -(2π)m + -(2π)n₀ = -(2π)(m+n₀)
-      -- Since y ≥ 1 and (m+n₀) ≥ 0, we have (m+n₀)*y ≥ (m+n₀), so -(m+n₀)*y ≤ -(m+n₀)
-      have h1 : (↑m + ↑n₀) * z.im ≥ (↑m + ↑n₀) := by nlinarith
-      have h2 : -(2 * π) * ((↑m + ↑n₀) * z.im) ≤ -(2 * π) * (↑m + ↑n₀) := by
-        apply mul_le_mul_of_nonpos_left h1
-        linarith
-      calc -(2 * π) * (↑m + ↑n₀) * z.im
-          = -(2 * π) * ((↑m + ↑n₀) * z.im) := by ring
-        _ ≤ -(2 * π) * (↑m + ↑n₀) := h2
-        _ = -(2 * π) * ↑m + -(2 * π) * ↑n₀ := by ring
+    simp only [norm_mul, norm_exp, hexp_re]
     calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
-        ≤ ‖a m‖ * (rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀)) := by
-          apply mul_le_mul_of_nonneg_left hexp_bound (norm_nonneg _)
-        _ = ‖a m‖ * rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀) := by ring
-  -- Restate summability in terms of the norm expression
+        ≤ ‖a m‖ * (rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀)) :=
+          mul_le_mul_of_nonneg_left (hexp_bound m) (norm_nonneg _)
+      _ = ‖a m‖ * rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀) := by ring
   have hsum_norms' : Summable fun m => ‖a m‖ * rexp (-(2 * π) * (m + n₀) * z.im) := by
     convert hsum_norms with m; rw [norm_mul, norm_exp, hexp_re]
-  -- Main bound on norm of tsum
-  have hbound_main : ‖∑' m, a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖
-      ≤ C * rexp (-(2 * π * n₀) * z.im) := by
-    have hπ : 0 < π := Real.pi_pos
-    calc ‖∑' m, a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖
-        ≤ ∑' m, ‖a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ :=
-          norm_tsum_le_tsum_norm hsum_norms
-      _ = ∑' m, ‖a m‖ * rexp (-(2 * π) * (m + n₀) * z.im) := by
-          congr 1 with m; rw [norm_mul, norm_exp, hexp_re]
-      _ ≤ ∑' m, ‖a m‖ * rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀ * z.im) := by
-          apply Summable.tsum_le_tsum
-          · intro m
-            have hm : 0 ≤ (m : ℝ) := Nat.cast_nonneg m
-            have hsplit : rexp (-(2 * π) * (↑m + ↑n₀) * z.im) =
-                rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
-              rw [← Real.exp_add]; ring_nf
-            rw [hsplit]
-            -- Goal: ‖a m‖ * (exp_m * exp_n) ≤ ‖a m‖ * exp(-(2π)m) * exp_n
-            -- where exp_m = exp(-(2π)m*z.im), exp_n = exp(-(2π)n₀*z.im)
-            have hexp_m : rexp (-(2 * π) * m * z.im) ≤ rexp (-(2 * π) * m) := by
-              apply Real.exp_le_exp.mpr
-              have h1 : (m : ℝ) * z.im ≥ m * 1 := by nlinarith
-              have h2 : -(2 * π) * (m * z.im) ≤ -(2 * π) * (m * 1) := by
-                apply mul_le_mul_of_nonpos_left h1
-                linarith
-              calc -(2 * π) * ↑m * z.im = -(2 * π) * (↑m * z.im) := by ring
-                _ ≤ -(2 * π) * (↑m * 1) := h2
-                _ = -(2 * π) * ↑m := by ring
-            calc ‖a m‖ * (rexp (-(2 * π) * ↑m * z.im) * rexp (-(2 * π) * ↑n₀ * z.im))
-                = (‖a m‖ * rexp (-(2 * π) * ↑m * z.im)) * rexp (-(2 * π) * ↑n₀ * z.im) := by ring
-              _ ≤ (‖a m‖ * rexp (-(2 * π) * ↑m)) * rexp (-(2 * π) * ↑n₀ * z.im) := by
-                  apply mul_le_mul_of_nonneg_right _ (le_of_lt (Real.exp_pos _))
-                  apply mul_le_mul_of_nonneg_left hexp_m (norm_nonneg _)
-              _ = ‖a m‖ * rexp (-(2 * π) * ↑m) * rexp (-(2 * π) * ↑n₀ * z.im) := by ring
-          · exact hsum_norms'
-          · exact ha.mul_right (rexp (-(2 * π) * n₀ * z.im))
-      _ = (∑' m, ‖a m‖ * rexp (-(2 * π) * m)) * rexp (-(2 * π) * n₀ * z.im) := tsum_mul_right
-      _ = C * rexp (-(2 * π * n₀) * z.im) := by rw [hC_def]; ring_nf
-  exact hbound_main
+  -- Main calculation
+  calc ‖∑' m, a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖
+      ≤ ∑' m, ‖a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ :=
+        norm_tsum_le_tsum_norm hsum_norms
+    _ = ∑' m, ‖a m‖ * rexp (-(2 * π) * (m + n₀) * z.im) := by
+        simp only [norm_mul, norm_exp, hexp_re]
+    _ ≤ ∑' m, ‖a m‖ * rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀ * z.im) := by
+        refine Summable.tsum_le_tsum (fun m => ?_) hsum_norms'
+          (ha.mul_right (rexp (-(2 * π) * n₀ * z.im)))
+        have hsplit : rexp (-(2 * π) * (↑m + ↑n₀) * z.im) =
+            rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
+          rw [← Real.exp_add]; ring_nf
+        have hexp_m : rexp (-(2 * π) * m * z.im) ≤ rexp (-(2 * π) * m) := by
+          apply Real.exp_le_exp.mpr
+          have h1 : (m : ℝ) * z.im ≥ m * 1 := by nlinarith
+          calc -(2 * π) * ↑m * z.im = -(2 * π) * (↑m * z.im) := by ring
+            _ ≤ -(2 * π) * (↑m * 1) := by
+                apply mul_le_mul_of_nonpos_left h1; linarith [Real.pi_pos]
+            _ = -(2 * π) * ↑m := by ring
+        calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
+            = ‖a m‖ * rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
+              rw [hsplit]; ring
+          _ ≤ ‖a m‖ * rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀ * z.im) := by
+              apply mul_le_mul_of_nonneg_right _ (le_of_lt (Real.exp_pos _))
+              exact mul_le_mul_of_nonneg_left hexp_m (norm_nonneg _)
+    _ = (∑' m, ‖a m‖ * rexp (-(2 * π) * m)) * rexp (-(2 * π) * n₀ * z.im) := tsum_mul_right
+    _ = _ := by ring_nf
 
 open Filter Asymptotics Real UpperHalfPlane in
 /--
@@ -405,8 +376,6 @@ theorem tendsto_rpow_mul_resToImagAxis_of_fourier_shift
       ∑' m : ℕ, a m * Complex.exp (2 * π * Complex.I * ((m + n₀ : ℕ) : ℂ) * (z : ℂ)))
     (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π) * (m : ℝ))))
     (s : ℝ) :
-    Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) := by
-  have hBigO : F =O[atImInfty] fun z : ℍ => rexp (-(2 * π * (n₀ : ℝ)) * z.im) :=
-    isBigO_atImInfty_of_fourier_shift hn₀ hF ha
-  have hc : 0 < 2 * π * (n₀ : ℝ) := by positivity
-  exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp hc hBigO s
+    Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
+  tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity)
+    (isBigO_atImInfty_of_fourier_shift hn₀ hF ha) s
