@@ -302,10 +302,9 @@ lemma isBigO_atImInfty_of_fourier_shift
   rw [hF z, Real.norm_of_nonneg (le_of_lt (Real.exp_pos _))]
   -- Real part of 2πi(m+n₀)z is -2π(m+n₀)·im z
   have hexp_re m : (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z).re = -(2 * π) * (m + n₀) * z.im := by
-    have : ((m + n₀ : ℕ) : ℂ).re = (m + n₀ : ℝ) := by simp
-    simp only [mul_re, mul_im, Complex.I_re, Complex.I_im, ofReal_re, ofReal_im, coe_re, coe_im,
-      this, (by simp : ((m + n₀ : ℕ) : ℂ).im = 0), mul_zero, sub_zero, zero_mul, add_zero,
-      mul_one, zero_sub, re_ofNat, im_ofNat]; ring
+    simp only [Nat.cast_add, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
+      Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, add_re, natCast_re,
+      add_im, natCast_im, coe_re, zero_add, coe_im, zero_sub, neg_mul]
   -- Key bound: for y ≥ c, exp(-(2π)(m+n₀)y) ≤ exp(-(2πc)m) * exp(-(2πc)n₀)
   have hexp_bound (m : ℕ) :
       rexp (-(2 * π) * (↑m + ↑n₀) * z.im) ≤
