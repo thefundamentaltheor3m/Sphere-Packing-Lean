@@ -209,7 +209,7 @@ theorem ResToImagAxis.EventuallyPos.hmul {F : ℍ → ℂ} {c : ℝ}
 This section establishes that if a function `F : ℍ → ℂ` is `O(exp(-c * im τ))` at infinity,
 then `t^s * F(it) → 0` as `t → ∞` for any real power `s`.
 
-The main application is to cusp forms, which satisfy such exponential decay bounds.
+One application is to cusp forms, which satisfy such exponential decay bounds.
 -/
 
 open Filter Asymptotics in
@@ -221,21 +221,14 @@ lemma isBigO_resToImagAxis_of_isBigO_atImInfty {F : ℍ → ℂ} {c : ℝ} (_hc 
     (hF : F =O[atImInfty] fun τ => Real.exp (-c * τ.im)) :
     F.resToImagAxis =O[atTop] fun t => Real.exp (-c * t) := by
   rw [Asymptotics.isBigO_iff] at hF ⊢
-  obtain ⟨C, hC⟩ := hF
-  use C
-  rw [Filter.eventually_atImInfty] at hC
-  obtain ⟨A, hA⟩ := hC
+  obtain ⟨C, hC⟩ := hF; use C
+  rw [Filter.eventually_atImInfty] at hC; obtain ⟨A, hA⟩ := hC
   filter_upwards [Filter.eventually_ge_atTop (max A 1)] with t ht
   have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
-  have ht_A : A ≤ t := le_of_max_le_left ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht_pos, ↓reduceDIte]
   set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
-  have him : z.im = t := by
-    change (Complex.I * t).im = t
-    simp
-  have hAz : A ≤ z.im := by simpa [him] using ht_A
-  specialize hA z hAz
-  simpa [him] using hA
+  have him : z.im = t := by change (Complex.I * t).im = t; simp
+  simpa [him] using hA z (by simpa [him] using le_of_max_le_left ht)
 
 open Filter Asymptotics Real in
 /--
@@ -367,8 +360,8 @@ open Filter Asymptotics Real UpperHalfPlane in
 If `F` has a Fourier expansion starting at index `n₀ > 0` with absolutely summable coefficients,
 then `t^s * F(it) → 0` as `t → ∞` for any real power `s`.
 
-This is the main theorem the reviewer requested: it converts a Fourier expansion representation
-directly into polynomial decay on the imaginary axis.
+This converts a Fourier expansion representation directly into polynomial decay on the
+imaginary axis.
 -/
 theorem tendsto_rpow_mul_resToImagAxis_of_fourier_shift
     {F : ℍ → ℂ} {a : ℕ → ℂ} {n₀ : ℕ} (hn₀ : 0 < n₀)
