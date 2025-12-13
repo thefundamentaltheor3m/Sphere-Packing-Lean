@@ -1108,48 +1108,167 @@ theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
 `Q` is differentiable on `(0, ∞)`.
 Proof: Q(t) = F(it).re / G(it).re is a quotient of differentiable functions where the denominator
 is positive (from G_imag_axis_pos).
+
+Key steps:
+1. F and G are MDifferentiable (F_holo, G_holo)
+2. ResToImagAxis.Differentiable gives differentiability of F.resToImagAxis and G.resToImagAxis
+3. Complex.reCLM extracts real parts differentiably
+4. Quotient rule applies since G.resToImagAxis(t).re > 0 (from G_imag_axis_pos)
+5. Q coincides with this quotient on (0,∞) by definition
 -/
 theorem Q_differentiableOn : DifferentiableOn ℝ Q (Set.Ioi 0) := by
   intro t ht
-  -- Q(t) = F(it).re / G(it).re for t > 0
   simp only [Set.mem_Ioi] at ht
-  -- Show Q is locally equal to F.resToImagAxis.re / G.resToImagAxis.re
-  have hQ_eq : Q t = (F.resToImagAxis t).re / (G.resToImagAxis t).re := by
-    simp only [Q, ht, ↓reduceDIte, Function.resToImagAxis_apply, ResToImagAxis]
-  -- F.resToImagAxis is differentiable at t (from ResToImagAxis.Differentiable)
-  have hF_diff : DifferentiableAt ℝ F.resToImagAxis t :=
-    ResToImagAxis.Differentiable F F_holo t ht
-  -- G.resToImagAxis is differentiable at t
-  have hG_diff : DifferentiableAt ℝ G.resToImagAxis t :=
-    ResToImagAxis.Differentiable G G_holo t ht
-  -- Complex.re is a continuous linear map, hence differentiable
-  have hRe_diff : ∀ f : ℝ → ℂ, DifferentiableAt ℝ f t → DifferentiableAt ℝ (fun s => (f s).re) t := by
-    intro f hf
-    exact Complex.reCLM.differentiableAt.comp t hf
-  -- F.resToImagAxis.re is differentiable at t
-  have hF_re_diff : DifferentiableAt ℝ (fun s => (F.resToImagAxis s).re) t := hRe_diff _ hF_diff
-  -- G.resToImagAxis.re is differentiable at t
-  have hG_re_diff : DifferentiableAt ℝ (fun s => (G.resToImagAxis s).re) t := hRe_diff _ hG_diff
-  -- G(it).re ≠ 0 (actually > 0) from G_imag_axis_pos
+  -- F.resToImagAxis and G.resToImagAxis are differentiable at t
+  have hF_diff : DifferentiableAt ℝ F.resToImagAxis t := ResToImagAxis.Differentiable F F_holo t ht
+  have hG_diff : DifferentiableAt ℝ G.resToImagAxis t := ResToImagAxis.Differentiable G G_holo t ht
+  -- Their real parts are also differentiable
+  have hF_re_diff : DifferentiableAt ℝ (fun s => (F.resToImagAxis s).re) t :=
+    Complex.reCLM.differentiableAt.comp t hF_diff
+  have hG_re_diff : DifferentiableAt ℝ (fun s => (G.resToImagAxis s).re) t :=
+    Complex.reCLM.differentiableAt.comp t hG_diff
+  -- G.resToImagAxis(t).re > 0, hence ≠ 0
   have hG_pos := G_imag_axis_pos.2 t ht
   simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hG_pos
-  have hG_ne_zero : (G.resToImagAxis t).re ≠ 0 := ne_of_gt hG_pos
-  -- Q is differentiable as quotient of differentiable functions with nonzero denominator
+  have hG_ne_zero : (G.resToImagAxis t).re ≠ 0 := by
+    simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
+    exact ne_of_gt hG_pos
+  -- Quotient is differentiable
   have hQ_diff_at : DifferentiableAt ℝ (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) t :=
     hF_re_diff.div hG_re_diff hG_ne_zero
-  -- Use congr to transfer differentiability from the explicit form to Q
-  apply hQ_diff_at.congr_of_eventuallyEq
-  filter_upwards [Ioi_mem_nhds ht] with s hs
-  simp only [Q, hs, ↓reduceDIte, Function.resToImagAxis_apply, ResToImagAxis]
+  -- Q equals this quotient locally on (0, ∞)
+  apply hQ_diff_at.differentiableWithinAt.congr_of_eventuallyEq_of_mem
+  · filter_upwards [self_mem_nhdsWithin] with s hs
+    simp only [Set.mem_Ioi] at hs
+    simp only [Q, hs, ↓reduceDIte, Function.resToImagAxis_apply, ResToImagAxis]
+  · simp only [Set.mem_Ioi, ht]
+
+/--
+Chain rule for resToImagAxis: `d/dt F(it) = -2π * (D F)(it)`.
+
+For a holomorphic function F : ℍ → ℂ, the derivative of its restriction to the imaginary axis
+satisfies `deriv (F.resToImagAxis) t = -2π * (D F).resToImagAxis t`.
+
+Proof sketch:
+- d/dt F(it) = F'(it) * d/dt(it) = F'(it) * i (chain rule)
+- F' = 2πi * D F (definition of normalized derivative D)
+- So d/dt F(it) = 2πi * D F(it) * i = 2π i² * D F(it) = -2π * D F(it)
+
+TODO: Complete the proof using the chain rule and MDifferentiable → DifferentiableAt correspondence.
+-/
+theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (t : ℝ) (ht : 0 < t) :
+    deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t := by
+  -- The imaginary axis parametrization: g(t) = I * t
+  let g : ℝ → ℂ := fun s => Complex.I * s
+  -- F.resToImagAxis = (F ∘ ofComplex) ∘ g locally near t > 0
+  have h_eq : F.resToImagAxis =ᶠ[nhds t] ((F ∘ ofComplex) ∘ g) := by
+    filter_upwards [lt_mem_nhds ht] with s hs
+    simp only [Function.resToImagAxis_apply, ResToImagAxis, hs, ↓reduceDIte, Function.comp_apply]
+    congr 1
+    rw [ofComplex_apply_of_im_pos (by simp [hs] : 0 < (I * ↑s).im)]
+  -- The derivatives are equal
+  rw [h_eq.deriv_eq]
+  -- g has derivative I at t (linear map)
+  have hg_deriv_at : HasDerivAt g I t := by
+    have h1 : HasDerivAt (fun s : ℝ => (s : ℂ)) 1 t := ofRealCLM.hasDerivAt
+    have h2 : HasDerivAt g (I * 1) t := h1.const_mul I
+    simp at h2
+    exact h2
+  -- F ∘ ofComplex has complex derivative at I * t
+  have him : 0 < (I * ↑t).im := by simp [ht]
+  have hFcomp_deriv_at : HasDerivAt (F ∘ ofComplex) (deriv (F ∘ ofComplex) (g t)) (g t) := by
+    exact (MDifferentiableAt_DifferentiableAt (hF ⟨I * t, him⟩)).hasDerivAt
+  -- Chain rule using scomp: deriv ((F ∘ ofComplex) ∘ g) t = I • deriv (F ∘ ofComplex) (I * t)
+  have hchain := hFcomp_deriv_at.scomp t hg_deriv_at
+  rw [hchain.deriv]
+  -- Use definition of D: deriv (F ∘ ofComplex) z = 2πi * D F z
+  have hD_def : deriv (F ∘ ofComplex) (g t) = 2 * π * I * D F ⟨I * t, him⟩ := by
+    simp only [D, g, coe_mk_subtype]
+    field_simp
+  simp only [hD_def, Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, g]
+  -- Simplify: I • (2πi * D F(it)) = 2π * i² * D F(it) = -2π * D F(it)
+  simp only [smul_eq_mul]
+  ring_nf
+  simp only [I_sq]
+  ring
 
 /--
 The derivative of Q is `(-2π) * L₁,₀(it) / G(it)²`.
 Blueprint: Quotient rule and chain rule.
+
+Proof structure:
+1. Q(t) = F(it).re / G(it).re for t > 0
+2. By quotient rule: deriv Q = (F'·G - F·G') / G² (where F' = deriv of F.re on imaginary axis)
+3. By chain rule: F' = -2π·(D F).re and G' = -2π·(D G).re
+4. L₁₀ = D F · G - F · D G, so L₁₀.re = (D F).re · G.re - F.re · (D G).re
+5. Combining: deriv Q = -2π · L₁₀.re / G.re²
 -/
 theorem deriv_Q (t : ℝ) (ht : 0 < t) :
     deriv Q t = (-2 * π) * (L₁₀ ⟨Complex.I * t, by simp [ht]⟩).re /
       (G ⟨Complex.I * t, by simp [ht]⟩).re ^ 2 := by
-  sorry
+  -- Helper: z = I * t on the upper half-plane
+  set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩ with hz_def
+  -- Differentiability of real parts
+  have hF_diff : DifferentiableAt ℝ F.resToImagAxis t := ResToImagAxis.Differentiable F F_holo t ht
+  have hG_diff : DifferentiableAt ℝ G.resToImagAxis t := ResToImagAxis.Differentiable G G_holo t ht
+  have hF_re_diff : DifferentiableAt ℝ (fun s => (F.resToImagAxis s).re) t :=
+    Complex.reCLM.differentiableAt.comp t hF_diff
+  have hG_re_diff : DifferentiableAt ℝ (fun s => (G.resToImagAxis s).re) t :=
+    Complex.reCLM.differentiableAt.comp t hG_diff
+  -- G(it).re > 0, hence ≠ 0
+  have hG_pos : 0 < (G z).re := by
+    have h := G_imag_axis_pos.2 t ht
+    simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, hz_def,
+               coe_mk_subtype] at h
+    exact h
+  have hG_ne : (G z).re ≠ 0 := ne_of_gt hG_pos
+  -- Q equals F.re / G.re locally
+  have hQ_eq : Q =ᶠ[nhds t] (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) := by
+    filter_upwards [lt_mem_nhds ht] with s hs
+    simp only [Q, hs, ↓reduceDIte, Function.resToImagAxis_apply, ResToImagAxis]
+  -- Apply quotient rule
+  rw [hQ_eq.deriv_eq]
+  have hdiv : deriv (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) t =
+      (deriv (fun s => (F.resToImagAxis s).re) t * (G.resToImagAxis t).re -
+       (F.resToImagAxis t).re * deriv (fun s => (G.resToImagAxis s).re) t) /
+      (G.resToImagAxis t).re ^ 2 := by
+    have hG_ne' : (G.resToImagAxis t).re ≠ 0 := by
+      simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
+      simp only [hz_def, coe_mk_subtype] at hG_ne
+      exact hG_ne
+    exact deriv_div hF_re_diff hG_re_diff hG_ne'
+  rw [hdiv]
+  -- Derivative of real part equals real part of derivative for F, G
+  -- Using HasFDerivAt.comp_hasDerivAt: deriv (reCLM ∘ h) = reCLM ∘ deriv h
+  have hF_deriv_re : deriv (fun s => (F.resToImagAxis s).re) t =
+      (deriv F.resToImagAxis t).re :=
+    (Complex.reCLM.hasFDerivAt.comp_hasDerivAt t hF_diff.hasDerivAt).deriv
+  have hG_deriv_re : deriv (fun s => (G.resToImagAxis s).re) t =
+      (deriv G.resToImagAxis t).re :=
+    (Complex.reCLM.hasFDerivAt.comp_hasDerivAt t hG_diff.hasDerivAt).deriv
+  -- Apply chain rule for resToImagAxis
+  rw [hF_deriv_re, hG_deriv_re, deriv_resToImagAxis_eq F F_holo t ht,
+      deriv_resToImagAxis_eq G G_holo t ht]
+  -- Simplify using realness on imaginary axis
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, hz_def]
+  -- F and G are real on the imaginary axis
+  have hF_real := F_imag_axis_real t ht
+  have hG_real := G_imag_axis_real t ht
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hF_real hG_real
+  -- Use L₁₀ definition: L₁₀ = D F · G - F · D G
+  have hL₁₀ := L₁₀_eq_FD_G_sub_F_DG z
+  -- Simplify: (-2 * π : ℂ).im = 0 since π is real
+  have h2pi_im : (-2 * (π : ℂ)).im = 0 := by simp
+  have h2_re : (-2 : ℂ).re = -2 := by simp
+  -- Unfold z
+  simp only [hz_def] at hL₁₀ hF_real hG_real
+  -- Final simplification
+  simp only [mul_re, ofReal_re, ofReal_im, mul_zero, sub_zero, h2pi_im, h2_re]
+  rw [hL₁₀]
+  simp only [mul_re, sub_re]
+  -- Since F.im = G.im = 0
+  simp only [hF_real, hG_real, mul_zero, sub_zero, zero_mul]
+  ring
 
 /--
 `deriv Q t < 0` for all `t > 0`.
