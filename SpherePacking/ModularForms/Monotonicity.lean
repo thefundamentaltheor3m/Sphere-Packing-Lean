@@ -3,6 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
+import SpherePacking.ModularForms.AtImInfty
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.ResToImagAxis
@@ -956,16 +957,22 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   have hE₄_real := E₄_imag_axis_real t ht
   have hE₆_real := E₆_imag_axis_real t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hE₂_real hE₄_real hE₆_real
+  -- The hypotheses have E₄.toFun, E₆.toFun but we need E₄, E₆
+  -- They're definitionally equal, so use change to match
+  have hE₄_real' : (E₄ z).im = 0 := hE₄_real
+  have hE₆_real' : (E₆ z).im = 0 := hE₆_real
+  have hE₂_real' : (E₂ z).im = 0 := hE₂_real
   have hdiff_real : (E₂ z * E₄ z - E₆ z).im = 0 := by
-    rw [sub_im, mul_im, hE₂_real, hE₄_real, hE₆_real]
-    ring
+    simp only [sub_im, mul_im, hE₂_real', hE₄_real', hE₆_real', mul_zero, zero_mul, add_zero,
+      sub_zero]
   -- For a real number r (im = 0), r² > 0 iff r.re ≠ 0
   -- (E₂E₄ - E₆)² = (E₂E₄ - E₆).re²  since im = 0
   have hsq_eq : ((E₂ z * E₄ z - E₆ z) ^ 2).re = (E₂ z * E₄ z - E₆ z).re ^ 2 := by
-    have h := Complex.sq_abs_eq_sq_re_add_sq_im (E₂ z * E₄ z - E₆ z)
-    simp only [hdiff_real, sq_abs, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow] at h
+    -- (a + 0i)² = a² + 0i, so ((a + 0i)²).re = a²
     have hpow : (E₂ z * E₄ z - E₆ z) ^ 2 = (E₂ z * E₄ z - E₆ z) * (E₂ z * E₄ z - E₆ z) := sq _
-    rw [hpow, Complex.mul_re, hdiff_real, mul_zero, mul_zero, sub_zero, add_zero]
+    rw [hpow, Complex.mul_re]
+    simp only [hdiff_real, mul_zero, sub_zero]
+    ring
   -- Convert function application to pointwise form
   have hgoal_eq : (((E₂ * E₄.toFun - E₆.toFun) ^ 2) z).re = ((E₂ z * E₄ z - E₆ z) ^ 2).re := rfl
   rw [hgoal_eq, hsq_eq]
@@ -1085,6 +1092,39 @@ Using Lemma 8.11 (vanishing orders), we show L₁,₀(it) > 0 for large t.
 -/
 
 /--
+Helper lemma: `Θ₂(z) / exp(πiz/4) → 2` as `im(z) → ∞`.
+This follows from `Θ₂ = exp(πiz/4) * jacobiTheta₂(z/2, z)` and `jacobiTheta₂(z/2, z) → 2`.
+-/
+theorem Θ₂_div_exp_tendsto :
+    Filter.Tendsto (fun z : ℍ => Θ₂ z / cexp (π * Complex.I * z / 4))
+      atImInfty (nhds (2 : ℂ)) := by
+  have h := jacobiTheta₂_half_mul_apply_tendsto_atImInfty
+  convert h using 1
+  ext z
+  rw [Θ₂_as_jacobiTheta₂]
+  field_simp [Complex.exp_ne_zero]
+
+/--
+Helper lemma: `H₂(z) / exp(πiz) → 16` as `im(z) → ∞`.
+Since `H₂ = Θ₂⁴` and `Θ₂ / exp(πiz/4) → 2`, we get `H₂ / exp(πiz) → 2⁴ = 16`.
+-/
+theorem H₂_div_exp_tendsto :
+    Filter.Tendsto (fun z : ℍ => H₂ z / cexp (π * Complex.I * z))
+      atImInfty (nhds (16 : ℂ)) := by
+  have hΘ₂ := Θ₂_div_exp_tendsto
+  -- H₂ = Θ₂⁴, so H₂ / exp(πiz) = (Θ₂ / exp(πiz/4))⁴
+  have h_eq : ∀ z : ℍ, H₂ z / cexp (π * I * z) = (Θ₂ z / cexp (π * I * z / 4)) ^ 4 := by
+    intro z
+    simp only [H₂, div_pow]
+    congr 1
+    rw [← Complex.exp_nat_mul]
+    congr 1
+    ring
+  simp_rw [h_eq]
+  convert hΘ₂.pow 4
+  norm_num
+
+/--
 The vanishing order of F at infinity is 2.
 Blueprint: From q-expansion F = 720² * q² * (1 + O(q)), so F / q² → 720² as im(z) → ∞.
 Here q = exp(2πiz), so q² = exp(4πiz) = exp(2πi * 2 * z).
@@ -1103,7 +1143,60 @@ Here q^(3/2) = exp(3πiz) = exp(2πi * (3/2) * z).
 theorem G_vanishing_order :
     Filter.Tendsto (fun z : ℍ => G z / cexp (2 * π * Complex.I * (3/2) * z))
       atImInfty (nhds (20480 : ℂ)) := by
-  sorry
+  -- G = H₂³ * (2H₂² + 5H₂H₄ + 5H₄²)
+  -- As z → ∞: H₂ / exp(πiz) → 16, H₂ → 0, H₄ → 1
+  -- So G / exp(3πiz) → 16³ * 5 = 20480
+  have hH₂_asymp := H₂_div_exp_tendsto
+  have hH₂_zero := H₂_tendsto_atImInfty
+  have hH₄_one := H₄_tendsto_atImInfty
+  -- Simplify the exponent: 2π * I * (3/2) * z = 3 * π * I * z
+  have h_exp_eq : ∀ z : ℍ, cexp (2 * π * I * (3 / 2) * z) = cexp (3 * π * I * z) := by
+    intro z; congr 1; ring
+  simp_rw [h_exp_eq]
+  -- G / exp(3πiz) = (H₂ / exp(πiz))³ * (2H₂² + 5H₂H₄ + 5H₄²)
+  have h_eq : ∀ z : ℍ, G z / cexp (3 * π * I * z) =
+      (H₂ z / cexp (π * I * z)) ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := by
+    intro z
+    have hne : cexp (π * I * z) ≠ 0 := Complex.exp_ne_zero _
+    have hne3 : cexp (3 * π * I * z) ≠ 0 := Complex.exp_ne_zero _
+    have h_exp_pow : cexp (π * I * z) ^ 3 = cexp (3 * π * I * z) := by
+      rw [← Complex.exp_nat_mul]; congr 1; ring
+    simp only [G, div_pow, h_exp_pow]
+    field_simp [hne, hne3]
+  simp_rw [h_eq]
+  -- The polynomial part: 2H₂² + 5H₂H₄ + 5H₄² → 0 + 0 + 5 = 5
+  have h_poly : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
+      atImInfty (nhds 5) := by
+    have h1 : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2) atImInfty (nhds 0) := by
+      have := hH₂_zero.pow 2
+      simp only [pow_two, mul_zero] at this
+      have := this.const_mul 2
+      simp only [mul_zero] at this
+      convert this using 1
+      ext z; ring
+    have h2 : Filter.Tendsto (fun z : ℍ => 5 * H₂ z * H₄ z) atImInfty (nhds 0) := by
+      have := hH₂_zero.mul hH₄_one
+      simp only [zero_mul] at this
+      have := this.const_mul 5
+      simp only [mul_zero] at this
+      convert this using 1
+      ext z; ring
+    have h3 : Filter.Tendsto (fun z : ℍ => 5 * H₄ z ^ 2) atImInfty (nhds 5) := by
+      have := hH₄_one.pow 2
+      simp only [one_pow] at this
+      have := this.const_mul 5
+      simp only [mul_one] at this
+      convert this using 1
+    have h_add := h1.add (h2.add h3)
+    simp only [zero_add, add_zero] at h_add
+    convert h_add using 1
+    ext z; ring
+  -- Combine: (H₂ / exp(πiz))³ → 16³ = 4096
+  have h_cube : Filter.Tendsto (fun z : ℍ => (H₂ z / cexp (π * I * z)) ^ 3)
+      atImInfty (nhds (16 ^ 3)) := hH₂_asymp.pow 3
+  -- Product: 4096 * 5 = 20480
+  convert h_cube.mul h_poly
+  norm_num
 
 /--
 `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`.
@@ -1120,8 +1213,53 @@ theorem L₁₀_div_FG_tendsto :
 `L₁,₀` is eventually positive on the imaginary axis.
 Blueprint: Follows from L₁,₀/(FG) → 1/2 > 0 and F, G > 0.
 -/
-theorem L₁₀_eventually_pos_imag_axis : ResToImagAxis.EventuallyPos L₁₀ := by
+-- Helper lemma: L₁₀ is real on imaginary axis (uses D_imag_axis_real_of_imag_axis_real from Section 6)
+-- This is a forward reference - the full proof is L₁₀_imag_axis_real in Section 6.
+private theorem L₁₀_imag_axis_real' : ResToImagAxis.Real L₁₀ := by
+  intro t ht
+  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  have hL₁₀ := L₁₀_eq_FD_G_sub_F_DG z
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
+  rw [hL₁₀]
+  have hF_real := F_imag_axis_real t ht
+  have hG_real := G_imag_axis_real t ht
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hF_real hG_real
+  -- D F and D G are real on imaginary axis (proved in D_imag_axis_real_of_imag_axis_real below)
+  -- This creates a forward reference; the proof is complete once Section 6 is reordered.
+  simp only [sub_im, mul_im]
+  -- (D F * G - F * D G).im = DF.re * G.im + DF.im * G.re - F.re * DG.im - F.im * DG.re
+  -- Since G.im = F.im = 0 (by hG_real, hF_real), need DF.im = DG.im = 0
+  -- This follows from D_imag_axis_real_of_imag_axis_real (Section 6)
   sorry
+
+theorem L₁₀_eventually_pos_imag_axis : ResToImagAxis.EventuallyPos L₁₀ := by
+  refine ⟨L₁₀_imag_axis_real', ?_⟩
+  -- From L₁₀_div_FG_tendsto: L₁₀/(FG) → 1/2 > 0
+  -- Since F, G > 0 on imaginary axis (F_imag_axis_pos, G_imag_axis_pos), L₁₀ > 0 eventually
+  have hlim := L₁₀_div_FG_tendsto
+  have hF_pos := F_imag_axis_pos.2
+  have hG_pos := G_imag_axis_pos.2
+  -- The limit 1/2 > 0, so eventually the function is > 0
+  have hpos : (0 : ℝ) < 1 / 2 := by norm_num
+  -- From tendsto to positive limit, we get eventually positive
+  have heven : ∀ᶠ t in Filter.atTop, 0 < (L₁₀.resToImagAxis t).re /
+      ((F.resToImagAxis t).re * (G.resToImagAxis t).re) :=
+    hlim.eventually (Ioi_mem_nhds hpos)
+  rw [Filter.eventually_atTop] at heven
+  obtain ⟨t₀, ht₀⟩ := heven
+  use max t₀ 1
+  refine ⟨by positivity, fun t ht => ?_⟩
+  have ht₀_le : t₀ ≤ t := le_trans (le_max_left _ _) ht
+  have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_trans (le_max_right _ _) ht)
+  have hdiv_pos := ht₀ t ht₀_le
+  have hF_pos_t := hF_pos t ht_pos
+  have hG_pos_t := hG_pos t ht_pos
+  -- L₁₀/(FG) > 0 and FG > 0, so L₁₀ > 0
+  have hFG_pos : 0 < (F.resToImagAxis t).re * (G.resToImagAxis t).re := mul_pos hF_pos_t hG_pos_t
+  have hFG_ne : (F.resToImagAxis t).re * (G.resToImagAxis t).re ≠ 0 := ne_of_gt hFG_pos
+  -- L₁₀.re = (L₁₀.re / FG) * FG > 0
+  have h := mul_pos hdiv_pos hFG_pos
+  rwa [div_mul_cancel₀ _ hFG_ne] at h
 
 /-!
 ## Section 6: Full Positivity of L₁,₀ via Theorem 6.54
