@@ -951,13 +951,43 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   -- Use the q-expansion: E₂E₄ - E₆ = 720 * ∑ n * σ₃(n) * q^n
   -- NOTE: E₂_mul_E₄_sub_E₆ has a sorry in Eisenstein.lean - this proof depends on it
   have hq_exp := E₂_mul_E₄_sub_E₆ z
-  -- Strategy once E₂_mul_E₄_sub_E₆ is proved:
-  -- On z = it: q^n = exp(-2πnt) is real and positive
-  -- Each term n * σ₃(n) * exp(-2πnt) > 0 for n ≥ 1
-  -- Sum of positive terms is positive
-  -- So E₂E₄ - E₆ = 720 * (positive) > 0
-  -- Therefore F = (positive)² > 0
-  sorry
+  -- E₂E₄ - E₆ is real on imaginary axis
+  have hE₂_real := E₂_imag_axis_real t ht
+  have hE₄_real := E₄_imag_axis_real t ht
+  have hE₆_real := E₆_imag_axis_real t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hE₂_real hE₄_real hE₆_real
+  have hdiff_real : (E₂ z * E₄ z - E₆ z).im = 0 := by
+    rw [sub_im, mul_im, hE₂_real, hE₄_real, hE₆_real]
+    ring
+  -- For a real number r (im = 0), r² > 0 iff r.re ≠ 0
+  -- (E₂E₄ - E₆)² = (E₂E₄ - E₆).re²  since im = 0
+  have hsq_eq : ((E₂ z * E₄ z - E₆ z) ^ 2).re = (E₂ z * E₄ z - E₆ z).re ^ 2 := by
+    have h := Complex.sq_abs_eq_sq_re_add_sq_im (E₂ z * E₄ z - E₆ z)
+    simp only [hdiff_real, sq_abs, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow] at h
+    have hpow : (E₂ z * E₄ z - E₆ z) ^ 2 = (E₂ z * E₄ z - E₆ z) * (E₂ z * E₄ z - E₆ z) := sq _
+    rw [hpow, Complex.mul_re, hdiff_real, mul_zero, mul_zero, sub_zero, add_zero]
+  -- Convert function application to pointwise form
+  have hgoal_eq : (((E₂ * E₄.toFun - E₆.toFun) ^ 2) z).re = ((E₂ z * E₄ z - E₆ z) ^ 2).re := rfl
+  rw [hgoal_eq, hsq_eq]
+  -- Now show (E₂E₄ - E₆).re ≠ 0 using the q-expansion
+  -- From hq_exp: E₂E₄ - E₆ = 720 * ∑ n*σ₃(n)*q^n
+  -- On z = it: q = exp(-2πt) > 0, and the sum has positive terms
+  apply sq_pos_of_pos
+  -- Goal: 0 < (E₂ z * E₄ z - E₆ z).re
+  rw [hq_exp]
+  -- Show the sum is positive on imaginary axis
+  -- For z = it, exp(2πinz) = exp(-2πnt) which is positive real
+  have hz_eq : (z : ℂ) = I * t := rfl
+  -- The real part of 720 * (positive sum) is positive
+  -- 720 is real, so (720 * x).re = 720 * x.re
+  have h720_real : (720 : ℂ).im = 0 := by norm_num
+  rw [mul_re, h720_real, zero_mul, sub_zero]
+  apply mul_pos (by norm_num : (0 : ℝ) < 720)
+  -- Show the sum has positive real part
+  -- On z = it, each term n * σ₃(n) * exp(2πinz) = n * σ₃(n) * exp(-2πnt) is positive real
+  -- For n : ℕ+: n > 0, σ₃(n) ≥ 1, exp(-2πnt) > 0
+  -- So each term > 0, and their sum > 0
+  sorry -- needs: tsum_pos for positive terms
 
 /-!
 ## Section 3: Definition and Properties of L₁,₀
@@ -1207,9 +1237,10 @@ theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
 Blueprint: Apply Theorem 6.54 (antiSerreDerPos) with k = 22.
 -/
 theorem L₁₀_pos_imag_axis : ResToImagAxis.Pos L₁₀ := by
-  -- This would use antiSerreDerPos from Derivative.lean once it's proved
-  -- For now, we use the components we've established
-  sorry
+  -- Apply antiSerreDerPos (Theorem 6.54) with k = 22
+  -- Requires: (1) serre_D 22 L₁₀ is positive on imaginary axis
+  --           (2) L₁₀ is eventually positive on imaginary axis
+  exact antiSerreDerPos serre_D_L₁₀_pos_imag_axis L₁₀_eventually_pos_imag_axis
 
 /-!
 ## Section 7: Monotonicity of Q = F/G
