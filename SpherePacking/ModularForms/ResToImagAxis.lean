@@ -232,10 +232,10 @@ lemma isBigO_resToImagAxis_of_isBigO_atImInfty {F : ℍ → ℂ} {c : ℝ} (_hc 
   set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
   have him : z.im = t := by
     change (Complex.I * t).im = t
-    simp only [Complex.mul_im, Complex.I_re, Complex.ofReal_im, mul_zero, Complex.I_im,
-      Complex.ofReal_re, one_mul, zero_add]
-  specialize hA z (by rw [him]; exact ht_A)
-  simpa only [him] using hA
+    simp
+  have hAz : A ≤ z.im := by simpa [him] using ht_A
+  specialize hA z hAz
+  simpa [him] using hA
 
 open Filter Asymptotics Real in
 /--
