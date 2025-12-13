@@ -327,16 +327,68 @@ theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
   · intro t ht
     -- Strategy: Use H₄_S_action and ResToImagAxis.SlashActionS to relate
     -- H₄ positivity to H₂ positivity via the modular S-transformation
+    --
+    -- From SlashActionS at 1/t:
+    -- (H₄ ∣[2] S).resToImagAxis (1/t) = I^(-2) * (1/t)^(-2) * H₄.resToImagAxis t
+    --
     -- From H₄_S_action: (H₄ ∣[2] S) = -H₂
-    -- From SlashActionS: (H₄ ∣[2] S).resToImagAxis (1/t) = I^(-2) * (1/t)^(-2) * H₄.resToImagAxis t
-    -- Since I^(-2) = -1 and (1/t)^(-2) = t^2, we get:
+    -- So: (-H₂).resToImagAxis (1/t) = I^(-2) * (1/t)^(-2) * H₄.resToImagAxis t
+    --
+    -- Since I^(-2) = -1 and (1/t)^(-2) = t^2:
     -- -H₂.resToImagAxis (1/t) = -t^2 * H₄.resToImagAxis t
     -- Thus: H₂.resToImagAxis (1/t) = t^2 * H₄.resToImagAxis t
-    -- Since H₂.resToImagAxis (1/t).re > 0 and t^2 > 0, we get H₄.resToImagAxis t.re > 0
     --
-    -- The type coercion details are complex; using sorry for now.
-    -- TODO: Complete the S-transform proof or use PR #193's FG.lean lemmas
-    sorry
+    -- Since H₂.resToImagAxis (1/t).re > 0 and t^2 > 0, and H₄.resToImagAxis t is real,
+    -- we get H₄.resToImagAxis t.re > 0
+    have h1t_pos : 0 < 1 / t := one_div_pos.mpr ht
+    -- Apply SlashActionS at 1/t
+    have hSlash := ResToImagAxis.SlashActionS H₄ 2 h1t_pos
+    -- Use H₄_S_action: (H₄ ∣[2] S) = -H₂
+    rw [H₄_S_action] at hSlash
+    -- Now hSlash : (-H₂).resToImagAxis (1/t) = I^(-2) * (1/t)^(-2) * H₄.resToImagAxis t
+    -- Simplify: I^(-2) = -1
+    have hI_neg2 : (Complex.I : ℂ) ^ (-2 : ℤ) = -1 := by
+      change (I ^ 2)⁻¹ = -1
+      rw [I_sq]
+      norm_num
+    -- Simplify: (1/t)^(-2) = t^2
+    have h1t_neg2 : ((1 / t : ℝ) : ℂ) ^ (-2 : ℤ) = (t : ℂ) ^ 2 := by
+      change (((1 / t : ℝ) : ℂ) ^ 2)⁻¹ = (t : ℂ) ^ 2
+      simp only [one_div, ofReal_inv, sq, mul_inv_rev, inv_inv]
+    -- Simplify 1/(1/t) = t
+    have h1_div_1t : 1 / (1 / t) = t := by field_simp
+    -- The negation of resToImagAxis
+    have hNeg : (-H₂).resToImagAxis (1 / t) = -(H₂.resToImagAxis (1 / t)) := by
+      simp only [Function.resToImagAxis_apply, ResToImagAxis, h1t_pos, ↓reduceDIte, Pi.neg_apply]
+    -- Substitute into hSlash
+    rw [hNeg, hI_neg2, h1t_neg2, h1_div_1t] at hSlash
+    -- hSlash : -(H₂.resToImagAxis (1/t)) = -1 * t^2 * H₄.resToImagAxis t
+    -- Simplify: H₂.resToImagAxis (1/t) = t^2 * H₄.resToImagAxis t
+    have hEq : H₂.resToImagAxis (1 / t) = (t : ℂ) ^ 2 * H₄.resToImagAxis t := by
+      have h : -H₂.resToImagAxis (1 / t) = -(↑t ^ 2 * H₄.resToImagAxis t) := by
+        simp only [neg_mul, one_mul] at hSlash ⊢
+        exact hSlash
+      exact neg_inj.mp h
+    -- H₂.resToImagAxis (1/t).re > 0 from H₂_imag_axis_pos
+    have hH₂_pos := H₂_imag_axis_pos.2 (1 / t) h1t_pos
+    -- H₄.resToImagAxis t is real (im = 0)
+    have hH₄_real := H₄_imag_axis_real t ht
+    -- From hEq, extract real parts
+    have hRe : (H₂.resToImagAxis (1 / t)).re = ((t : ℂ) ^ 2 * H₄.resToImagAxis t).re := by
+      rw [hEq]
+    -- Since t^2 is real positive and H₄.resToImagAxis t is real:
+    -- (t^2 * H₄.resToImagAxis t).re = t^2 * (H₄.resToImagAxis t).re
+    have hProd_re : ((t : ℂ) ^ 2 * H₄.resToImagAxis t).re =
+        (t : ℝ) ^ 2 * (H₄.resToImagAxis t).re := by
+      simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hH₄_real ⊢
+      simp only [sq, Complex.mul_re, ofReal_re, ofReal_im, zero_mul, sub_zero]
+      ring_nf
+      simp only [hH₄_real, mul_zero, sub_zero]
+    -- Combine: t^2 * (H₄.resToImagAxis t).re > 0 and t^2 > 0 imply (H₄.resToImagAxis t).re > 0
+    rw [hRe, hProd_re] at hH₂_pos
+    have ht2_pos : 0 < (t : ℝ) ^ 2 := sq_pos_of_pos ht
+    rw [mul_comm] at hH₂_pos
+    exact pos_of_mul_pos_left hH₂_pos (le_of_lt ht2_pos)
 
 /--
 `G(it)` is real for all `t > 0`.
