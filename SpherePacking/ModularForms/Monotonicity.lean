@@ -325,8 +325,17 @@ theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
   constructor
   · exact H₄_imag_axis_real
   · intro t ht
-    -- H₄ = Θ₄^4, so H₄(it) > 0 iff Θ₄(it) ≠ 0
-    -- Θ₄(it) = Σ (-1)^n exp(-πn²t) is nonzero for t > 0
+    -- Strategy: Use H₄_S_action and ResToImagAxis.SlashActionS to relate
+    -- H₄ positivity to H₂ positivity via the modular S-transformation
+    -- From H₄_S_action: (H₄ ∣[2] S) = -H₂
+    -- From SlashActionS: (H₄ ∣[2] S).resToImagAxis (1/t) = I^(-2) * (1/t)^(-2) * H₄.resToImagAxis t
+    -- Since I^(-2) = -1 and (1/t)^(-2) = t^2, we get:
+    -- -H₂.resToImagAxis (1/t) = -t^2 * H₄.resToImagAxis t
+    -- Thus: H₂.resToImagAxis (1/t) = t^2 * H₄.resToImagAxis t
+    -- Since H₂.resToImagAxis (1/t).re > 0 and t^2 > 0, we get H₄.resToImagAxis t.re > 0
+    --
+    -- The type coercion details are complex; using sorry for now.
+    -- TODO: Complete the S-transform proof or use PR #193's FG.lean lemmas
     sorry
 
 /--
@@ -724,10 +733,28 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
     ring
 
   -- Step 2: Summability of the series
+  -- Direct bound: |n * q^n / (1 - q^n)| ≤ 2n * |q|^n for |q| < 1/2 or n large
   have hsum : Summable fun n : ℕ+ => ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
       (1 - cexp (2 * ↑Real.pi * Complex.I * n * z)) := by
-    -- For z = it with t > 0, the q-series converges
-    -- TODO: This follows from standard bounds on q-series: |n * q^n / (1 - q^n)| ≤ C * n * |q|^n
+    -- For z = it with t > 0, |exp(2πi·z)| = exp(-2πt) < 1
+    -- The series ∑_{n≥1} n|q|^n is summable when |q| < 1
+    -- Key: |1 - q^n| ≥ 1 - |q| > 0 for |q| < 1
+    -- So |n * q^n / (1 - q^n)| ≤ n * |q|^n / (1 - |q|)
+    -- This is summable as C * ∑ n * |q|^n for C = 1/(1-|q|)
+    have hq_norm : ‖cexp (2 * ↑Real.pi * Complex.I * z)‖ < 1 := exp_upperHalfPlane_lt_one z
+    -- Use comparison with n^2 * q^n series (via a33)
+    have ha33 := a33 2 1 z
+    simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at ha33
+    apply Summable.of_norm
+    apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _ (summable_norm_iff.mpr ha33)
+    intro n
+    -- Goal: ‖n * exp(2πinz) / (1 - exp(2πinz))‖ ≤ ‖n² * exp(2πinz)‖
+    -- Equivalently: 1/‖1 - q^n‖ ≤ n where q = exp(2πiz)
+    -- For z = it with t > 0, q^n = exp(-2πnt) → 0 as n → ∞
+    -- So ‖1 - q^n‖ → 1 as n → ∞
+    -- For large n: ‖1 - q^n‖ ≥ 1/2, so 1/‖1 - q^n‖ ≤ 2 ≤ n
+    -- For small n: the finite sum is bounded regardless
+    -- TODO: Complete using Summable.of_norm_bounded_eventually or split finite/tail
     sorry
 
   -- Step 3: The sum has zero imaginary part
@@ -775,6 +802,9 @@ theorem F_imag_axis_real : ResToImagAxis.Real F := by
 /--
 `F(it) > 0` for all `t > 0`.
 Blueprint: Follows from the q-expansion (E₂E₄ - E₆ = 720 * ...) and positivity.
+
+Note: This depends on `E₂_mul_E₄_sub_E₆` which currently has a sorry in Eisenstein.lean.
+Once that lemma is proved, this proof can be completed.
 -/
 theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   refine ⟨F_imag_axis_real, fun t ht => ?_⟩
@@ -788,10 +818,13 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   -- The real part of (...)² equals (...)².re
   -- Since the base (E₂E₄ - E₆) is real on imaginary axis, we have (real)² > 0 if base ≠ 0
   -- Use the q-expansion: E₂E₄ - E₆ = 720 * ∑ n * σ₃(n) * q^n
+  -- NOTE: E₂_mul_E₄_sub_E₆ has a sorry in Eisenstein.lean - this proof depends on it
   have hq_exp := E₂_mul_E₄_sub_E₆ z
+  -- Strategy once E₂_mul_E₄_sub_E₆ is proved:
   -- On z = it: q^n = exp(-2πnt) is real and positive
   -- Each term n * σ₃(n) * exp(-2πnt) > 0 for n ≥ 1
-  -- So the sum is positive, hence E₂E₄ - E₆ = 720 * (positive) > 0
+  -- Sum of positive terms is positive
+  -- So E₂E₄ - E₆ = 720 * (positive) > 0
   -- Therefore F = (positive)² > 0
   sorry
 
