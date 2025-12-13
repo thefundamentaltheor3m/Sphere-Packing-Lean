@@ -309,12 +309,10 @@ lemma isBigO_atImInfty_of_fourier_shift
   have hexp_bound (m : ℕ) :
       rexp (-(2 * π) * (↑m + ↑n₀) * z.im) ≤
         rexp (-(2 * π * c) * m) * rexp (-(2 * π * c) * n₀) := by
-    rw [← Real.exp_add]; apply Real.exp_le_exp.mpr
-    have h1 : (↑m + ↑n₀) * z.im ≥ (↑m + ↑n₀) * c := by nlinarith
-    calc -(2 * π) * (↑m + ↑n₀) * z.im = -(2 * π) * ((↑m + ↑n₀) * z.im) := by ring
-      _ ≤ -(2 * π) * ((↑m + ↑n₀) * c) := by
-          apply mul_le_mul_of_nonpos_left h1; linarith [Real.pi_pos]
-      _ = -(2 * π * c) * ↑m + -(2 * π * c) * ↑n₀ := by ring
+    rw [← Real.exp_add, Real.exp_le_exp]
+    have key : (↑m + ↑n₀) * z.im ≥ (↑m + ↑n₀) * c := by nlinarith
+    nlinarith [Real.pi_pos, (Nat.cast_nonneg m : (0 : ℝ) ≤ m),
+      (Nat.cast_nonneg n₀ : (0 : ℝ) ≤ n₀), z.im_pos]
   -- Summability of norms
   have hsum_norms : Summable fun m => ‖a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ := by
     refine .of_nonneg_of_le (fun _ => norm_nonneg _) (fun m => ?_)
@@ -339,12 +337,9 @@ lemma isBigO_atImInfty_of_fourier_shift
             rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
           rw [← Real.exp_add]; ring_nf
         have hexp_m : rexp (-(2 * π) * m * z.im) ≤ rexp (-(2 * π * c) * m) := by
-          apply Real.exp_le_exp.mpr
-          have h1 : (m : ℝ) * z.im ≥ m * c := by nlinarith
-          calc -(2 * π) * ↑m * z.im = -(2 * π) * (↑m * z.im) := by ring
-            _ ≤ -(2 * π) * (↑m * c) := by
-                apply mul_le_mul_of_nonpos_left h1; linarith [Real.pi_pos]
-            _ = -(2 * π * c) * ↑m := by ring
+          rw [Real.exp_le_exp]
+          have key : (m : ℝ) * z.im ≥ m * c := by nlinarith
+          nlinarith [Real.pi_pos, (Nat.cast_nonneg m : (0 : ℝ) ≤ m), z.im_pos]
         calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
             = ‖a m‖ * rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
               rw [hsplit]; ring
