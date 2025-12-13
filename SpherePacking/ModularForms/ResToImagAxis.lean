@@ -277,29 +277,28 @@ This section provides an alternative approach to polynomial decay that works dir
 Fourier expansions. If `F` has a Fourier expansion `∑_{m≥0} a_m exp(2πi(m+n₀)z)` with `n₀ > 0`,
 then `F = O(exp(-2π n₀ · im z))` at `atImInfty`, which gives `t^s * F(it) → 0`.
 
-This is useful for functions defined by explicit q-expansions (like `(E₂E₄ - E₆)²`)
-where we know the Fourier expansion starts at a positive index.
+This is useful for functions with q-expansions starting at a positive index (like `(E₂E₄ - E₆)²`).
 -/
 
 open Filter Asymptotics Real Complex in
 /--
 If `F` has a Fourier expansion `∑_{m≥0} a_m exp(2πi(m+n₀)z)` with `n₀ > 0`,
-and the coefficients are absolutely summable at height `im z = 1`,
+and the coefficients are absolutely summable at height `im z = c`,
 then `F = O(exp(-2π n₀ · im z))` at `atImInfty`.
 
-The key bound is: for `im z ≥ 1`,
-  `‖F(z)‖ ≤ (∑_m ‖a_m‖ · exp(-2π m)) · exp(-2π n₀ · im z)`
+The key bound is: for `im z ≥ c`,
+  `‖F(z)‖ ≤ (∑_m ‖a_m‖ · exp(-2π c m)) · exp(-2π n₀ · im z)`
 -/
 lemma isBigO_atImInfty_of_fourier_shift
-    {F : ℍ → ℂ} {a : ℕ → ℂ} {n₀ : ℕ} (_hn₀ : 0 < n₀)
+    {F : ℍ → ℂ} {a : ℕ → ℂ} {n₀ : ℕ} {c : ℝ} (_hn₀ : 0 < n₀) (_hc : 0 < c)
     (hF : ∀ z : ℍ, F z =
       ∑' m : ℕ, a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * (z : ℂ)))
-    (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π) * (m : ℝ)))) :
+    (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π * c) * (m : ℝ)))) :
     F =O[atImInfty] fun z : ℍ => rexp (-(2 * π * (n₀ : ℝ)) * z.im) := by
   rw [Asymptotics.isBigO_iff]
-  refine ⟨∑' m, ‖a m‖ * rexp (-(2 * π) * m), ?_⟩
+  refine ⟨∑' m, ‖a m‖ * rexp (-(2 * π * c) * m), ?_⟩
   rw [Filter.eventually_atImInfty]
-  refine ⟨1, fun z hz => ?_⟩
+  refine ⟨c, fun z hz => ?_⟩
   rw [hF z, Real.norm_of_nonneg (le_of_lt (Real.exp_pos _))]
   -- Real part of 2πi(m+n₀)z is -2π(m+n₀)·im z
   have hexp_re m : (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z).re = -(2 * π) * (m + n₀) * z.im := by
@@ -307,24 +306,25 @@ lemma isBigO_atImInfty_of_fourier_shift
     simp only [mul_re, mul_im, Complex.I_re, Complex.I_im, ofReal_re, ofReal_im, coe_re, coe_im,
       this, (by simp : ((m + n₀ : ℕ) : ℂ).im = 0), mul_zero, sub_zero, zero_mul, add_zero,
       mul_one, zero_sub, re_ofNat, im_ofNat]; ring
-  -- Key bound: for y ≥ 1, exp(-(2π)(m+n₀)y) ≤ exp(-(2π)m) * exp(-(2π)n₀)
+  -- Key bound: for y ≥ c, exp(-(2π)(m+n₀)y) ≤ exp(-(2πc)m) * exp(-(2πc)n₀)
   have hexp_bound (m : ℕ) :
-      rexp (-(2 * π) * (↑m + ↑n₀) * z.im) ≤ rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀) := by
+      rexp (-(2 * π) * (↑m + ↑n₀) * z.im) ≤
+        rexp (-(2 * π * c) * m) * rexp (-(2 * π * c) * n₀) := by
     rw [← Real.exp_add]; apply Real.exp_le_exp.mpr
-    have h1 : (↑m + ↑n₀) * z.im ≥ (↑m + ↑n₀) := by nlinarith
+    have h1 : (↑m + ↑n₀) * z.im ≥ (↑m + ↑n₀) * c := by nlinarith
     calc -(2 * π) * (↑m + ↑n₀) * z.im = -(2 * π) * ((↑m + ↑n₀) * z.im) := by ring
-      _ ≤ -(2 * π) * (↑m + ↑n₀) := by
+      _ ≤ -(2 * π) * ((↑m + ↑n₀) * c) := by
           apply mul_le_mul_of_nonpos_left h1; linarith [Real.pi_pos]
-      _ = -(2 * π) * ↑m + -(2 * π) * ↑n₀ := by ring
+      _ = -(2 * π * c) * ↑m + -(2 * π * c) * ↑n₀ := by ring
   -- Summability of norms
   have hsum_norms : Summable fun m => ‖a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * z)‖ := by
     refine .of_nonneg_of_le (fun _ => norm_nonneg _) (fun m => ?_)
-      (ha.mul_right (rexp (-(2 * π) * n₀)))
+      (ha.mul_right (rexp (-(2 * π * c) * n₀)))
     simp only [norm_mul, norm_exp, hexp_re]
     calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
-        ≤ ‖a m‖ * (rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀)) :=
+        ≤ ‖a m‖ * (rexp (-(2 * π * c) * m) * rexp (-(2 * π * c) * n₀)) :=
           mul_le_mul_of_nonneg_left (hexp_bound m) (norm_nonneg _)
-      _ = ‖a m‖ * rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀) := by ring
+      _ = ‖a m‖ * rexp (-(2 * π * c) * m) * rexp (-(2 * π * c) * n₀) := by ring
   have hsum_norms' : Summable fun m => ‖a m‖ * rexp (-(2 * π) * (m + n₀) * z.im) := by
     convert hsum_norms with m; rw [norm_mul, norm_exp, hexp_re]
   -- Main calculation
@@ -333,42 +333,42 @@ lemma isBigO_atImInfty_of_fourier_shift
         norm_tsum_le_tsum_norm hsum_norms
     _ = ∑' m, ‖a m‖ * rexp (-(2 * π) * (m + n₀) * z.im) := by
         simp only [norm_mul, norm_exp, hexp_re]
-    _ ≤ ∑' m, ‖a m‖ * rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀ * z.im) := by
+    _ ≤ ∑' m, ‖a m‖ * rexp (-(2 * π * c) * m) * rexp (-(2 * π) * n₀ * z.im) := by
         refine Summable.tsum_le_tsum (fun m => ?_) hsum_norms'
           (ha.mul_right (rexp (-(2 * π) * n₀ * z.im)))
         have hsplit : rexp (-(2 * π) * (↑m + ↑n₀) * z.im) =
             rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
           rw [← Real.exp_add]; ring_nf
-        have hexp_m : rexp (-(2 * π) * m * z.im) ≤ rexp (-(2 * π) * m) := by
+        have hexp_m : rexp (-(2 * π) * m * z.im) ≤ rexp (-(2 * π * c) * m) := by
           apply Real.exp_le_exp.mpr
-          have h1 : (m : ℝ) * z.im ≥ m * 1 := by nlinarith
+          have h1 : (m : ℝ) * z.im ≥ m * c := by nlinarith
           calc -(2 * π) * ↑m * z.im = -(2 * π) * (↑m * z.im) := by ring
-            _ ≤ -(2 * π) * (↑m * 1) := by
+            _ ≤ -(2 * π) * (↑m * c) := by
                 apply mul_le_mul_of_nonpos_left h1; linarith [Real.pi_pos]
-            _ = -(2 * π) * ↑m := by ring
+            _ = -(2 * π * c) * ↑m := by ring
         calc ‖a m‖ * rexp (-(2 * π) * (↑m + ↑n₀) * z.im)
             = ‖a m‖ * rexp (-(2 * π) * m * z.im) * rexp (-(2 * π) * n₀ * z.im) := by
               rw [hsplit]; ring
-          _ ≤ ‖a m‖ * rexp (-(2 * π) * m) * rexp (-(2 * π) * n₀ * z.im) := by
+          _ ≤ ‖a m‖ * rexp (-(2 * π * c) * m) * rexp (-(2 * π) * n₀ * z.im) := by
               apply mul_le_mul_of_nonneg_right _ (le_of_lt (Real.exp_pos _))
               exact mul_le_mul_of_nonneg_left hexp_m (norm_nonneg _)
-    _ = (∑' m, ‖a m‖ * rexp (-(2 * π) * m)) * rexp (-(2 * π) * n₀ * z.im) := tsum_mul_right
+    _ = (∑' m, ‖a m‖ * rexp (-(2 * π * c) * m)) * rexp (-(2 * π) * n₀ * z.im) := tsum_mul_right
     _ = _ := by ring_nf
 
 open Filter Asymptotics Real UpperHalfPlane in
 /--
-If `F` has a Fourier expansion starting at index `n₀ > 0` with absolutely summable coefficients,
-then `t^s * F(it) → 0` as `t → ∞` for any real power `s`.
+If `F` has a Fourier expansion starting at index `n₀ > 0` with absolutely summable coefficients
+at height `c > 0`, then `t^s * F(it) → 0` as `t → ∞` for any real power `s`.
 
 This converts a Fourier expansion representation directly into polynomial decay on the
 imaginary axis.
 -/
 theorem tendsto_rpow_mul_resToImagAxis_of_fourier_shift
-    {F : ℍ → ℂ} {a : ℕ → ℂ} {n₀ : ℕ} (hn₀ : 0 < n₀)
+    {F : ℍ → ℂ} {a : ℕ → ℂ} {n₀ : ℕ} {c : ℝ} (hn₀ : 0 < n₀) (hc : 0 < c)
     (hF : ∀ z : ℍ, F z =
       ∑' m : ℕ, a m * Complex.exp (2 * π * Complex.I * ((m + n₀ : ℕ) : ℂ) * (z : ℂ)))
-    (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π) * (m : ℝ))))
+    (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π * c) * (m : ℝ))))
     (s : ℝ) :
     Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
   tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity)
-    (isBigO_atImInfty_of_fourier_shift hn₀ hF ha) s
+    (isBigO_atImInfty_of_fourier_shift hn₀ hc hF ha) s
