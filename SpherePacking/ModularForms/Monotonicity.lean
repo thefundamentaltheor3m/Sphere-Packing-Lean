@@ -1088,10 +1088,59 @@ theorem Q_eq_F_div_G (t : ℝ) (ht : 0 < t) :
   simp [Q, ht]
 
 /--
+`F` is holomorphic on the upper half-plane.
+F = (E₂ * E₄ - E₆)² is composed from holomorphic functions.
+-/
+theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
+  unfold F
+  have h_E₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₂ := E₂_holo'
+  have h_E₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₄.toFun := E₄.holo'
+  have h_E₆ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₆.toFun := E₆.holo'
+  have h_prod : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun) := h_E₂.mul h_E₄
+  have h_sub : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) := h_prod.sub h_E₆
+  have h_sq : (fun z => (E₂ * E₄.toFun - E₆.toFun) z ^ 2) =
+      fun z => (E₂ * E₄.toFun - E₆.toFun) z * (E₂ * E₄.toFun - E₆.toFun) z := by
+    ext z; ring
+  rw [pow_two]
+  exact h_sub.mul h_sub
+
+/--
 `Q` is differentiable on `(0, ∞)`.
+Proof: Q(t) = F(it).re / G(it).re is a quotient of differentiable functions where the denominator
+is positive (from G_imag_axis_pos).
 -/
 theorem Q_differentiableOn : DifferentiableOn ℝ Q (Set.Ioi 0) := by
-  sorry
+  intro t ht
+  -- Q(t) = F(it).re / G(it).re for t > 0
+  simp only [Set.mem_Ioi] at ht
+  -- Show Q is locally equal to F.resToImagAxis.re / G.resToImagAxis.re
+  have hQ_eq : Q t = (F.resToImagAxis t).re / (G.resToImagAxis t).re := by
+    simp only [Q, ht, ↓reduceDIte, Function.resToImagAxis_apply, ResToImagAxis]
+  -- F.resToImagAxis is differentiable at t (from ResToImagAxis.Differentiable)
+  have hF_diff : DifferentiableAt ℝ F.resToImagAxis t :=
+    ResToImagAxis.Differentiable F F_holo t ht
+  -- G.resToImagAxis is differentiable at t
+  have hG_diff : DifferentiableAt ℝ G.resToImagAxis t :=
+    ResToImagAxis.Differentiable G G_holo t ht
+  -- Complex.re is a continuous linear map, hence differentiable
+  have hRe_diff : ∀ f : ℝ → ℂ, DifferentiableAt ℝ f t → DifferentiableAt ℝ (fun s => (f s).re) t := by
+    intro f hf
+    exact Complex.reCLM.differentiableAt.comp t hf
+  -- F.resToImagAxis.re is differentiable at t
+  have hF_re_diff : DifferentiableAt ℝ (fun s => (F.resToImagAxis s).re) t := hRe_diff _ hF_diff
+  -- G.resToImagAxis.re is differentiable at t
+  have hG_re_diff : DifferentiableAt ℝ (fun s => (G.resToImagAxis s).re) t := hRe_diff _ hG_diff
+  -- G(it).re ≠ 0 (actually > 0) from G_imag_axis_pos
+  have hG_pos := G_imag_axis_pos.2 t ht
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hG_pos
+  have hG_ne_zero : (G.resToImagAxis t).re ≠ 0 := ne_of_gt hG_pos
+  -- Q is differentiable as quotient of differentiable functions with nonzero denominator
+  have hQ_diff_at : DifferentiableAt ℝ (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) t :=
+    hF_re_diff.div hG_re_diff hG_ne_zero
+  -- Use congr to transfer differentiability from the explicit form to Q
+  apply hQ_diff_at.congr_of_eventuallyEq
+  filter_upwards [Ioi_mem_nhds ht] with s hs
+  simp only [Q, hs, ↓reduceDIte, Function.resToImagAxis_apply, ResToImagAxis]
 
 /--
 The derivative of Q is `(-2π) * L₁,₀(it) / G(it)²`.
