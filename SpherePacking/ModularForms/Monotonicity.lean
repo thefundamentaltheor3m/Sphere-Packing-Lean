@@ -61,7 +61,7 @@ When PR #193 merges, consider unifying these files.
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
 
-open scoped ModularForm MatrixGroups Manifold
+open scoped ModularForm MatrixGroups Manifold ArithmeticFunction.sigma
 
 namespace MonotoneFG
 
@@ -1410,6 +1410,30 @@ theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) :
 Using Lemma 8.11 (vanishing orders), we show L₁,₀(it) > 0 for large t.
 -/
 
+/-- Helper lemma: σ_k(n) ≤ n^{k+1} for divisor sum. -/
+lemma sigma_le_pow (k n : ℕ) : ArithmeticFunction.sigma k n ≤ n ^ (k + 1) := by
+  rw [ArithmeticFunction.sigma_apply]
+  calc ∑ d ∈ n.divisors, d ^ k
+      ≤ ∑ d ∈ n.divisors, n ^ k := Finset.sum_le_sum (fun d hd =>
+          Nat.pow_le_pow_left (Nat.divisor_le hd) k)
+    _ = n.divisors.card * n ^ k := by rw [Finset.sum_const, smul_eq_mul]
+    _ ≤ n * n ^ k := Nat.mul_le_mul_right _ (Nat.card_divisors_le_self n)
+    _ = n ^ (k + 1) := by rw [pow_succ']
+
+/-- Summability of (m+1)^5 * exp(-2πm) via comparison with shifted sum. -/
+lemma summable_pow5_shift : Summable fun m : ℕ => (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) := by
+  have h := Real.summable_pow_mul_exp_neg_nat_mul 5 (by positivity : 0 < 2 * π)
+  have h_eq : ∀ m : ℕ, (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) =
+      rexp (2 * π) * ((m + 1) ^ 5 * rexp (-2 * π * (m + 1))) := by
+    intro m
+    have h1 : rexp (-2 * π * m) = rexp (2 * π) * rexp (-2 * π * (m + 1)) := by
+      rw [← Real.exp_add]; congr 1; ring
+    rw [h1]; ring
+  simp_rw [h_eq]
+  apply Summable.mul_left
+  convert h.comp_injective Nat.succ_injective using 1
+  ext m; simp only [Function.comp_apply, Nat.succ_eq_add_one]; push_cast; ring
+
 /--
 Helper lemma: `Θ₂(z) / exp(πiz/4) → 2` as `im(z) → ∞`.
 This follows from `Θ₂ = exp(πiz/4) * jacobiTheta₂(z/2, z)` and `jacobiTheta₂(z/2, z) → 2`.
@@ -1448,12 +1472,65 @@ theorem F_vanishing_order :
   -- Dividing by q and using QExp.tendsto_nat: limit is 720 * σ₃(1) = 720
   have h_diff_tendsto : Filter.Tendsto (fun z : ℍ => (E₂ z * E₄ z - E₆ z) / cexp (2 * π * I * z))
       atImInfty (nhds (720 : ℂ)) := by
-    -- Strategy: Use E₂_mul_E₄_sub_E₆ and QExp.tendsto_nat
-    -- E₂E₄ - E₆ = 720 * ∑' n : ℕ+, n * σ₃(n) * q^n
-    -- Divide by q and reindex: = ∑' m : ℕ, 720*(m+1)*σ₃(m+1) * q^m
-    -- By QExp.tendsto_nat: limit = coeff(0) = 720*1*σ₃(1) = 720
-    -- Technical proof: reindexing ℕ+ → ℕ and applying QExp.tendsto_nat
-    sorry
+    -- Use E₂_mul_E₄_sub_E₆ and reindex from ℕ+ to ℕ, then apply QExp.tendsto_nat
+    have h_rw : ∀ z : ℍ, E₂ z * E₄ z - E₆ z =
+        720 * ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
+          cexp (2 * π * Complex.I * n * z) := E₂_mul_E₄_sub_E₆
+    have h_eq : ∀ z : ℍ,
+        (E₂ z * E₄ z - E₆ z) / cexp (2 * π * Complex.I * z) =
+        720 * (∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
+          cexp (2 * π * Complex.I * (n - 1) * z)) := by
+      intro z
+      rw [h_rw z, mul_div_assoc, ← tsum_div_const]
+      congr 1; apply tsum_congr; intro n
+      rw [mul_div_assoc, ← Complex.exp_sub]; congr 2; ring
+    simp_rw [h_eq]
+    -- Reindex using Equiv.pnatEquivNat.symm: n ↦ m+1
+    have h_reindex : ∀ z : ℍ,
+        ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
+          cexp (2 * π * Complex.I * (n - 1) * z) =
+        ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
+          cexp (2 * π * Complex.I * m * z) := by
+      intro z
+      rw [← Equiv.tsum_eq Equiv.pnatEquivNat.symm]
+      congr 1; funext m
+      simp only [Equiv.pnatEquivNat_symm_apply, Nat.succPNat_coe]
+      have h_exp_eq' : ((m.succ : ℕ) : ℂ) - 1 = (m : ℂ) := by
+        simp only [Nat.succ_eq_add_one, Nat.cast_add, Nat.cast_one]; ring
+      simp only [h_exp_eq', Nat.succ_eq_add_one]
+    simp_rw [h_reindex]
+    -- Apply QExp.tendsto_nat with coefficient function a(m) = (m+1) * σ₃(m+1)
+    set a : ℕ → ℂ := fun m => ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) with ha
+    have ha0 : a 0 = 1 := by simp [ha, ArithmeticFunction.sigma_one]
+    have h_tendsto : Filter.Tendsto
+        (fun z : ℍ => ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m))
+        atImInfty (nhds (a 0)) := by
+      apply QExp.tendsto_nat a
+      -- Summability: ‖a m‖ ≤ (m+1)^5, and (m+1)^5 * exp(-2πm) is summable
+      have hbound : ∀ m : ℕ, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 5 := by
+        intro m
+        simp only [ha, norm_mul, Complex.norm_natCast]
+        have h1 : (ArithmeticFunction.sigma 3 (m + 1) : ℝ) ≤ ((m + 1 : ℕ) : ℝ) ^ 4 := by
+          exact_mod_cast sigma_le_pow 3 (m + 1)
+        calc (↑(m + 1) : ℝ) * (ArithmeticFunction.sigma 3 (m + 1) : ℝ)
+            ≤ (↑(m + 1) : ℝ) * (↑(m + 1) : ℝ) ^ 4 :=
+              mul_le_mul_of_nonneg_left h1 (Nat.cast_nonneg _)
+          _ = (↑(m + 1) : ℝ) ^ 5 := by ring
+      apply Summable.of_nonneg_of_le
+      · intro m; positivity
+      · intro m
+        calc ‖a m‖ * rexp (-2 * π * m)
+            ≤ ((m + 1 : ℕ) : ℝ) ^ 5 * rexp (-2 * π * m) :=
+              mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
+          _ = (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) := by simp
+      · exact summable_pow5_shift
+    have h_eq2 : ∀ z : ℍ,
+        ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
+          cexp (2 * π * Complex.I * m * z) =
+        ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m) := by
+      intro z; apply tsum_congr; intro m; simp only [ha]; ring
+    simp_rw [h_eq2, ha0] at h_tendsto ⊢
+    convert h_tendsto.const_mul (720 : ℂ) using 2 <;> ring
   -- F / q² = ((E₂E₄ - E₆) / q)² → 720²
   have h_exp_eq : ∀ z : ℍ, cexp (2 * π * I * 2 * z) = cexp (2 * π * I * z) ^ 2 := by
     intro z; rw [← Complex.exp_nat_mul]; congr 1; ring
