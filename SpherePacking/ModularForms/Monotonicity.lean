@@ -1111,18 +1111,9 @@ Since `H₂ = Θ₂⁴` and `Θ₂ / exp(πiz/4) → 2`, we get `H₂ / exp(πiz
 theorem H₂_div_exp_tendsto :
     Filter.Tendsto (fun z : ℍ => H₂ z / cexp (π * Complex.I * z))
       atImInfty (nhds (16 : ℂ)) := by
-  have hΘ₂ := Θ₂_div_exp_tendsto
-  -- H₂ = Θ₂⁴, so H₂ / exp(πiz) = (Θ₂ / exp(πiz/4))⁴
-  have h_eq : ∀ z : ℍ, H₂ z / cexp (π * I * z) = (Θ₂ z / cexp (π * I * z / 4)) ^ 4 := by
-    intro z
-    simp only [H₂, div_pow]
-    congr 1
-    rw [← Complex.exp_nat_mul]
-    congr 1
-    ring
-  simp_rw [h_eq]
-  convert hΘ₂.pow 4
-  norm_num
+  have h_eq : ∀ z : ℍ, H₂ z / cexp (π * I * z) = (Θ₂ z / cexp (π * I * z / 4)) ^ 4 := fun z => by
+    simp only [H₂, div_pow, ← Complex.exp_nat_mul]; congr 2; ring
+  simp_rw [h_eq]; convert Θ₂_div_exp_tendsto.pow 4; norm_num
 
 /--
 The vanishing order of F at infinity is 2.
@@ -1167,36 +1158,15 @@ theorem G_vanishing_order :
   -- The polynomial part: 2H₂² + 5H₂H₄ + 5H₄² → 0 + 0 + 5 = 5
   have h_poly : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
       atImInfty (nhds 5) := by
-    have h1 : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2) atImInfty (nhds 0) := by
-      have := hH₂_zero.pow 2
-      simp only [pow_two, mul_zero] at this
-      have := this.const_mul 2
-      simp only [mul_zero] at this
-      convert this using 1
-      ext z; ring
-    have h2 : Filter.Tendsto (fun z : ℍ => 5 * H₂ z * H₄ z) atImInfty (nhds 0) := by
-      have := hH₂_zero.mul hH₄_one
-      simp only [zero_mul] at this
-      have := this.const_mul 5
-      simp only [mul_zero] at this
-      convert this using 1
-      ext z; ring
-    have h3 : Filter.Tendsto (fun z : ℍ => 5 * H₄ z ^ 2) atImInfty (nhds 5) := by
-      have := hH₄_one.pow 2
-      simp only [one_pow] at this
-      have := this.const_mul 5
-      simp only [mul_one] at this
-      convert this using 1
-    have h_add := h1.add (h2.add h3)
-    simp only [zero_add, add_zero] at h_add
-    convert h_add using 1
-    ext z; ring
-  -- Combine: (H₂ / exp(πiz))³ → 16³ = 4096
-  have h_cube : Filter.Tendsto (fun z : ℍ => (H₂ z / cexp (π * I * z)) ^ 3)
-      atImInfty (nhds (16 ^ 3)) := hH₂_asymp.pow 3
-  -- Product: 4096 * 5 = 20480
-  convert h_cube.mul h_poly
-  norm_num
+    have h1 : Tendsto (fun z : ℍ => 2 * H₂ z ^ 2) atImInfty (nhds 0) := by
+      simpa using (hH₂_zero.pow 2).const_mul 2
+    have h2 : Tendsto (fun z : ℍ => 5 * H₂ z * H₄ z) atImInfty (nhds 0) := by
+      simpa using (hH₂_zero.mul hH₄_one).const_mul 5
+    have h3 : Tendsto (fun z : ℍ => 5 * H₄ z ^ 2) atImInfty (nhds 5) := by
+      simpa using (hH₄_one.pow 2).const_mul 5
+    simpa using h1.add (h2.add h3)
+  -- (H₂/exp(πiz))³ → 16³, polynomial → 5, product: 16³ * 5 = 20480
+  convert (hH₂_asymp.pow 3).mul h_poly; norm_num
 
 /--
 `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`.
@@ -1234,32 +1204,14 @@ private theorem L₁₀_imag_axis_real' : ResToImagAxis.Real L₁₀ := by
 
 theorem L₁₀_eventually_pos_imag_axis : ResToImagAxis.EventuallyPos L₁₀ := by
   refine ⟨L₁₀_imag_axis_real', ?_⟩
-  -- From L₁₀_div_FG_tendsto: L₁₀/(FG) → 1/2 > 0
-  -- Since F, G > 0 on imaginary axis (F_imag_axis_pos, G_imag_axis_pos), L₁₀ > 0 eventually
-  have hlim := L₁₀_div_FG_tendsto
-  have hF_pos := F_imag_axis_pos.2
-  have hG_pos := G_imag_axis_pos.2
-  -- The limit 1/2 > 0, so eventually the function is > 0
-  have hpos : (0 : ℝ) < 1 / 2 := by norm_num
-  -- From tendsto to positive limit, we get eventually positive
-  have heven : ∀ᶠ t in Filter.atTop, 0 < (L₁₀.resToImagAxis t).re /
-      ((F.resToImagAxis t).re * (G.resToImagAxis t).re) :=
-    hlim.eventually (Ioi_mem_nhds hpos)
-  rw [Filter.eventually_atTop] at heven
-  obtain ⟨t₀, ht₀⟩ := heven
-  use max t₀ 1
-  refine ⟨by positivity, fun t ht => ?_⟩
-  have ht₀_le : t₀ ≤ t := le_trans (le_max_left _ _) ht
+  -- From L₁₀_div_FG_tendsto: L₁₀/(FG) → 1/2 > 0, and F, G > 0, so L₁₀ > 0 eventually
+  obtain ⟨t₀, ht₀⟩ := Filter.eventually_atTop.mp
+    (L₁₀_div_FG_tendsto.eventually (Ioi_mem_nhds (by norm_num : (0:ℝ) < 1/2)))
+  refine ⟨max t₀ 1, by positivity, fun t ht => ?_⟩
   have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_trans (le_max_right _ _) ht)
-  have hdiv_pos := ht₀ t ht₀_le
-  have hF_pos_t := hF_pos t ht_pos
-  have hG_pos_t := hG_pos t ht_pos
-  -- L₁₀/(FG) > 0 and FG > 0, so L₁₀ > 0
-  have hFG_pos : 0 < (F.resToImagAxis t).re * (G.resToImagAxis t).re := mul_pos hF_pos_t hG_pos_t
-  have hFG_ne : (F.resToImagAxis t).re * (G.resToImagAxis t).re ≠ 0 := ne_of_gt hFG_pos
-  -- L₁₀.re = (L₁₀.re / FG) * FG > 0
-  have h := mul_pos hdiv_pos hFG_pos
-  rwa [div_mul_cancel₀ _ hFG_ne] at h
+  have hFG_pos := mul_pos (F_imag_axis_pos.2 t ht_pos) (G_imag_axis_pos.2 t ht_pos)
+  have h := mul_pos (ht₀ t (le_trans (le_max_left _ _) ht)) hFG_pos
+  rwa [div_mul_cancel₀ _ (ne_of_gt hFG_pos)] at h
 
 /-!
 ## Section 6: Full Positivity of L₁,₀ via Theorem 6.54
