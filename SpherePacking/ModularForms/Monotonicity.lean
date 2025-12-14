@@ -160,6 +160,9 @@ instead of defining it here.
 -/
 noncomputable def G (z : ℍ) : ℂ := H₂ z ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
 
+/-- `G` in this namespace equals `G` from Derivative.lean (identical definitions). -/
+theorem G_eq_Derivative_G : G = _root_.G := rfl
+
 /--
 `G` is holomorphic on the upper half-plane.
 Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is holomorphic since H₂ and H₄ are holomorphic.
@@ -1165,15 +1168,31 @@ theorem serre_D_L₁₀_eq (z : ℍ) :
     serre_D 22 L₁₀ z = Δ z * (7200 * (-(D E₂ z)) * G z + 640 * H₂ z * F z) := by
   -- From serre_D_L₁₀: ∂₂₂L₁₀ = (∂₁₂∂₁₀F)G - F(∂₁₂∂₁₀G)
   rw [serre_D_L₁₀]
+  -- Bridge MonotoneFG.G to Derivative.G (identical definitions)
+  rw [G_eq_Derivative_G]
   -- From MLDE_F': ∂₁₂∂₁₀F = (5/6)E₄F + 7200Δ(-E₂')
   -- From MLDE_G: ∂₁₂∂₁₀G = (5/6)E₄G - 640ΔH₂
-  -- Substituting: (5/6)E₄FG + 7200Δ(-E₂')G - F((5/6)E₄G - 640ΔH₂)
-  --             = (5/6)E₄FG + 7200Δ(-E₂')G - (5/6)E₄FG + 640ΔH₂F
-  --             = Δ(7200(-E₂')G + 640H₂F)
   have hF_eq := MLDE_F'
   have hG_eq := MLDE_G
-  -- The substitution and cancellation (uses MLDE_F' and MLDE_G)
-  sorry
+  -- Apply at point z
+  have hF_z := congrFun hF_eq z
+  have hG_z := congrFun hG_eq z
+  simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply] at hF_z hG_z
+  rw [hF_z, hG_z]
+  -- Expand negDE₂ and simplify constant functions
+  simp only [negDE₂, Pi.neg_apply]
+  -- Use Δ_fun_eq_Δ to replace Δ_fun z with Δ z
+  simp only [Δ_fun_eq_Δ]
+  -- Handle constant functions
+  have h5 : (5 : ℍ → ℂ) z = (5 : ℂ) := rfl
+  have h6 : (6⁻¹ : ℍ → ℂ) z = (6 : ℂ)⁻¹ := rfl
+  have h7200 : (7200 : ℍ → ℂ) z = (7200 : ℂ) := rfl
+  have h640 : (640 : ℍ → ℂ) z = (640 : ℂ) := rfl
+  rw [h5, h6, h7200, h640]
+  -- Substituting: (5/6)E₄FG + 7200Δ·(-D E₂)·G - F·((5/6)E₄G - 640·Δ·H₂)
+  --             = (5/6)E₄FG + 7200Δ·(-D E₂)·G - (5/6)E₄FG + 640·Δ·H₂·F
+  --             = Δ·(7200·(-D E₂)·G + 640·H₂·F)
+  ring
 
 /--
 `∂₂₂ L₁,₀(it) > 0` for all `t > 0`.

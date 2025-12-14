@@ -1,5 +1,6 @@
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.DimensionFormulas
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
@@ -283,6 +284,22 @@ noncomputable def X₄₂ := 288⁻¹ * (E₄.toFun - E₂ * E₂)
 
 noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
 
+/--
+`Δ_fun` equals `Δ` as functions.
+This follows from `Delta_E4_eqn : Delta = Delta_E4_E6_aux` and `Delta_apply : Delta z = Δ z`.
+-/
+theorem Δ_fun_eq_Δ (z : ℍ) : Δ_fun z = Δ z := by
+  -- Delta_E4_eqn : Delta = Delta_E4_E6_aux proves that the discriminant equals
+  -- (1/1728) * (E₄³ - E₆²), which is our Δ_fun definition.
+  -- Delta_apply : Delta z = Δ z connects Delta to Δ.
+  rw [← Delta_apply z, Delta_E4_eqn]
+  -- Now we need to show Δ_fun z = Delta_E4_E6_aux z
+  -- Both are (1/1728) * (E₄³ - E₆²) at z
+  simp only [Δ_fun, Pi.mul_apply, Pi.pow_apply, Pi.sub_apply]
+  -- Unfold Delta_E4_E6_aux - needs DirectSum evaluation
+  -- TODO: Complete this proof by unfolding DirectSum operations
+  sorry
+
 noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
 
 theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
@@ -315,8 +332,12 @@ we have X₄₂ = 24⁻¹ * negDE₂ (because 288 = 24 * 12).
 -/
 theorem X42_eq_negDE₂ (z : ℍ) : X₄₂ z = (24 : ℂ)⁻¹ * negDE₂ z := by
   simp only [X₄₂, negDE₂, Pi.neg_apply, ramanujan_E₂, Pi.mul_apply, Pi.sub_apply]
-  -- 288⁻¹ * (E₄ - E₂²) = 24⁻¹ * 12⁻¹ * (E₄ - E₂²) since 288 = 24 * 12
-  sorry
+  -- Goal: 288⁻¹ z * (E₄ z - E₂ z²) = 24⁻¹ * (-(12⁻¹ z * (E₂ z² - E₄ z)))
+  -- The numeric constants 288⁻¹ and 12⁻¹ are constant functions: (c : ℍ → ℂ) z = c
+  have h288 : (288⁻¹ : ℍ → ℂ) z = (288 : ℂ)⁻¹ := rfl
+  have h12 : (12⁻¹ : ℍ → ℂ) z = (12 : ℂ)⁻¹ := rfl
+  rw [h288, h12]
+  ring
 
 /--
 Modular linear differential equation satisfied by `F`.
@@ -336,8 +357,17 @@ theorem MLDE_F' : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 7200
   have hz := congrFun h z
   simp only [Pi.add_apply, Pi.mul_apply] at hz ⊢
   rw [X42_eq_negDE₂] at hz
-  -- 172800 * 24⁻¹ = 7200
-  sorry
+  -- Goal: serre_D 12 (serre_D 10 F) z = 5 z * 6⁻¹ z * E₄.toFun z * F z + 7200 z * Δ_fun z * negDE₂ z
+  -- hz: serre_D 12 (serre_D 10 F) z = 5 z * 6⁻¹ z * E₄.toFun z * F z + 172800 z * Δ_fun z * (24⁻¹ * negDE₂ z)
+  -- Since 7200 = 172800 * 24⁻¹ and constant functions (n : ℍ → ℂ) z = n
+  rw [hz]
+  congr 1
+  -- Now: 7200 z * Δ_fun z * negDE₂ z = 172800 z * Δ_fun z * (24⁻¹ * negDE₂ z)
+  -- Constant functions: (n : ℍ → ℂ) z = n (by rfl for numeric literals)
+  have h7200 : (7200 : ℍ → ℂ) z = (7200 : ℂ) := rfl
+  have h172800 : (172800 : ℍ → ℂ) z = (172800 : ℂ) := rfl
+  rw [h7200, h172800]
+  ring
 
 /--
 The function `G(z) = H₂(z)³ * (2H₂(z)² + 5H₂(z)H₄(z) + 5H₄(z)²)`.
