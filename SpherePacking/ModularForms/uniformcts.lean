@@ -8,7 +8,7 @@ import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
 import Mathlib.Analysis.SpecialFunctions.Log.Summable
 import Mathlib.Analysis.SpecificLimits.Normed
 import Mathlib.Analysis.Normed.Group.FunctionSeries
-import Mathlib.Analysis.NormedSpace.MultipliableUniformlyOn
+import Mathlib.Analysis.Normed.Module.MultipliableUniformlyOn
 import Mathlib.Analysis.Complex.Exponential
 
 

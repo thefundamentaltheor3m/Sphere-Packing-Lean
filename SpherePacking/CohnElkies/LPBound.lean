@@ -94,7 +94,7 @@ theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
 include hCohnElkies₂ in
 theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   -- Building off the previous one, f(0) is an integral of a nonneg function, and hence, also nonneg
-  rw [← f.fourierInversion ℝ, fourierIntegralInv_eq]
+  rw [← f.fourierInversion ℝ, fourierInv_eq]
   simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul]
   have hcalc₁ :
     (∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v).re =
@@ -111,7 +111,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
   -- is (𝓕 is a linear iso). But 𝓕 f is zero while f is not, contra! So f(0) is positive.
   -- apply ne_of_gt
   have haux₁ : f 0 = 𝓕⁻ (𝓕 ⇑f) 0 := by rw [f.fourierInversion ℝ]
-  rw [fourierIntegralInv_eq] at haux₁
+  rw [fourierInv_eq] at haux₁
   simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul] at haux₁
   -- We need to take real parts at haux₁
   rw [← re_add_im (f 0), hImZero hReal, ofReal_zero, zero_mul, add_zero] at haux₁
@@ -226,7 +226,6 @@ private theorem calc_aux_1 (hd : 0 < d) (hf : Summable f) :
                   rw [this] at hx
                   have b_in_d := b.property.right
                   contradiction
-
                 dsimp [Ne] at x_neq_b
                 rw [← sub_eq_zero] at x_neq_b
                 simp [x_neq_b]
@@ -513,7 +512,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
             simp only [PeriodicSpherePacking.numReps'] -- ↑(P.centers ∩ D)]
             simp [RCLike.wInner_zero_right, ofReal_zero, mul_zero, Complex.exp_zero,
-              tsum_const, Nat.card_eq_fintype_card, nsmul_eq_mul, mul_one]
+              nsmul_eq_mul, mul_one]
   _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 ⇑f 0).re / ZLattice.covolume P.lattice volume
         := by simp only [div_eq_mul_inv, mul_comm, one_mul, ← mul_assoc]
 
@@ -572,7 +571,7 @@ theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
     · case inr h𝓕f =>
       -- First, we shift things around and cancel volumes on the right
       rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
-          ← mul_assoc, ENNReal.mul_le_mul_right vol_ne_zero vol_ne_top]
+          ← mul_assoc, ENNReal.mul_le_mul_iff_left vol_ne_zero vol_ne_top]
       -- Next, we simplify `hCalc` by replacing `numReps'` with `numReps`
       rw [← P.numReps_eq_numReps' Fact.out hD_isBounded hD_unique_covers] at hCalc
       -- Next, we multiply both sides by `(𝓕 (⇑f) 0).re.toNNReal`, cancelling accordingly.
@@ -586,7 +585,7 @@ theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
         rw [← re_add_im (𝓕 f 0), le_antisymm hContra hCohnElkies₂,
             hFourierImZero hRealFourier 0, ofReal_zero, zero_mul, add_zero]
       have hfouaux₂ : ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) ≠ ⊤ := ENNReal.coe_ne_top
-      rw [← ENNReal.mul_le_mul_right hfouaux₁ hfouaux₂,
+      rw [← ENNReal.mul_le_mul_iff_left hfouaux₁ hfouaux₂,
           div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _,
           mul_assoc ((f 0).re.toNNReal : ENNReal) _ _, ENNReal.inv_mul_cancel hfouaux₁ hfouaux₂]
       -- We put it in a more desirable form and consolidate.
@@ -602,7 +601,7 @@ theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
           assumption
         exact Fintype.card_ne_zero
       have hnRaux₂ : ENat.toENNReal (P.numReps : ENat) ≠ ⊤ := Ne.symm (ne_of_beq_false rfl)
-      rw [← ENNReal.mul_le_mul_left hnRaux₁ hnRaux₂]
+      rw [← ENNReal.mul_le_mul_iff_right hnRaux₁ hnRaux₂]
       -- We put it in a more desirable form and consolidate.
       rw [ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc]
       -- Now, we use the nonnegativity of... everything... to get the `toNNReal`s to the outside.
