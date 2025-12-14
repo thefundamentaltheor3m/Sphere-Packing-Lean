@@ -1225,17 +1225,126 @@ theorem negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by
   exact neg_eq_zero.mpr hprod_real
 
 /--
+Q-expansion identity: `E₄ - E₂² = 288 * ∑' n : ℕ+, n * σ₁(n) * qⁿ`.
+This follows from the Ramanujan identity `D E₂ = 12⁻¹ * (E₂² - E₄)` and the q-expansion
+of E₂ via termwise differentiation.
+-/
+theorem E₄_sub_E₂_sq_qexp (z : ℍ) :
+    E₄.toFun z - E₂ z * E₂ z =
+      288 * ∑' n : ℕ+, (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
+        cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
+  -- From ramanujan_E₂: D E₂ = 12⁻¹ * (E₂² - E₄)
+  -- So E₄ - E₂² = -12 * D E₂
+  -- E₂ = 1 - 24 * ∑ σ₁(n) qⁿ (from G2_q_exp)
+  -- D E₂ = -24 * ∑ n * σ₁(n) qⁿ (termwise derivative)
+  -- Thus E₄ - E₂² = -12 * (-24 * ∑ n * σ₁(n) qⁿ) = 288 * ∑ n * σ₁(n) qⁿ
+  sorry
+
+/--
 On the imaginary axis, `E₄(it).re > E₂(it).re²` for all `t > 0`.
-This follows from the q-expansion: `E₄ - E₂² = 288q + 1728q² + ...` has positive coefficients,
+This follows from the q-expansion: `E₄ - E₂² = 288 * ∑ n * σ₁(n) * qⁿ` has positive terms,
 and on z = it, q = exp(-2πt) ∈ (0,1) is positive, so each term is positive.
 -/
 theorem hE₄_gt_E₂sq (t : ℝ) (ht : 0 < t) :
     (E₄.toFun ⟨Complex.I * t, by simp [ht]⟩).re > (E₂ ⟨Complex.I * t, by simp [ht]⟩).re ^ 2 := by
-  -- The q-expansion shows E₄ - E₂² = 288q + 1728q² + ... > 0 on imaginary axis
-  -- Strategy: Use the q-expansion. E₄ - E₂² = ∑_{n≥1} c_n q^n where c_n > 0.
-  -- On z = it, q = exp(-2πt) ∈ (0,1), so each term c_n q^n > 0.
-  -- TODO: Complete via q-expansion positivity argument
-  sorry
+  -- Set up z = I*t
+  set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩ with hz_def
+  have hz_eq : (z : ℂ) = Complex.I * t := rfl
+  -- Use the q-expansion identity
+  have hqexp := E₄_sub_E₂_sq_qexp z
+  -- Goal: E₄(z).re > E₂(z).re², i.e., (E₄ - E₂²).re > 0 (after using realness)
+  -- First get realness
+  have hE₂_real : (E₂ z).im = 0 := by
+    have := E₂_imag_axis_real t ht
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this
+    exact this
+  have hE₄_real : (E₄.toFun z).im = 0 := by
+    have := E₄_imag_axis_real t ht
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this
+    exact this
+  -- E₂² real part equals (E₂.re)²
+  have hE₂_sq_re : (E₂ z * E₂ z).re = (E₂ z).re ^ 2 := by
+    rw [Complex.mul_re, hE₂_real, mul_zero, sub_zero, sq]
+  -- Difference real part
+  have hdiff_re : (E₄.toFun z - E₂ z * E₂ z).re = (E₄.toFun z).re - (E₂ z).re ^ 2 := by
+    rw [Complex.sub_re, hE₂_sq_re]
+  -- Need to show the difference is positive via q-expansion
+  rw [gt_iff_lt, ← sub_pos, ← hdiff_re, hqexp]
+  -- Now: (288 * ∑ n * σ₁(n) * qⁿ).re > 0
+  -- 288 is real, so (288 * x).re = 288 * x.re
+  have h288_real : (288 : ℂ).im = 0 := by norm_num
+  rw [mul_re, h288_real, zero_mul, sub_zero]
+  apply mul_pos (by norm_num : (0 : ℝ) < 288)
+  -- Show the sum has positive real part using the pattern from E₂_mul_E₄_sub_E₆
+  -- Step 1: Summability of the series
+  have hsum : Summable fun n : ℕ+ => (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * z * n) := by
+    apply Summable.of_norm
+    apply Summable.of_nonneg_of_le
+    · intro n; exact norm_nonneg _
+    · intro n
+      calc ‖(↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
+              cexp (2 * ↑Real.pi * Complex.I * z * n)‖
+          = ‖(↑↑n : ℂ)‖ * ‖(↑((ArithmeticFunction.sigma 1) ↑n) : ℂ)‖ *
+              ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
+            rw [norm_mul, norm_mul]
+        _ ≤ (↑n : ℝ) * (↑n : ℝ)^2 * ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
+            gcongr
+            · rw [Complex.norm_natCast]
+            · rw [Complex.norm_natCast]
+              have hbound := sigma_bound 1 n
+              exact_mod_cast hbound
+        _ = ‖(↑n : ℂ) ^ 3 * cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
+            rw [norm_mul, Complex.norm_pow, Complex.norm_natCast]
+            ring
+    · have := a33 3 1 z
+      simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at this
+      exact summable_norm_iff.mpr this
+  -- Adjust the exponent form to match the goal
+  have hsum' : Summable fun n : ℕ+ => (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
+    simp_rw [show ∀ n : ℕ+, (2 : ℂ) * ↑Real.pi * Complex.I * ↑n * z =
+        2 * ↑Real.pi * Complex.I * z * n by intro n; ring]
+    exact hsum
+  -- Key simplification: on z = I*t, the exponential becomes real
+  have hexp_simpl : ∀ n : ℕ+, cexp (2 * ↑Real.pi * Complex.I * ↑n * z) =
+      Real.exp (-(2 * π * n * t)) := by
+    intro n
+    rw [hz_eq]
+    have harg : (2 : ℂ) * ↑Real.pi * Complex.I * ↑n * (Complex.I * ↑t) =
+        ↑(-(2 * π * (n : ℕ) * t)) := by
+      push_cast
+      ring_nf
+      rw [Complex.I_sq]
+      ring
+    rw [harg, Complex.ofReal_exp]
+  -- Step 2: Each term is real on imaginary axis: n * σ(1,n) * exp(-2πnt)
+  have hterm_real : ∀ n : ℕ+, ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * ↑n * z)).im = 0 := by
+    intro n
+    rw [hexp_simpl]
+    simp only [mul_im, natCast_re, natCast_im, zero_mul, add_zero,
+      Complex.ofReal_re, Complex.ofReal_im, mul_zero]
+  -- Step 3: Each term is positive
+  have hterm_pos : ∀ n : ℕ+, 0 < ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * ↑n * z)).re := by
+    intro n
+    rw [hexp_simpl]
+    simp only [mul_re, natCast_re, natCast_im, sub_zero,
+      Complex.ofReal_re, Complex.ofReal_im, mul_zero]
+    -- Term is n * σ(1,n) * exp(-2πnt), all factors positive
+    apply mul_pos
+    · apply mul_pos
+      · exact_mod_cast n.pos
+      · exact_mod_cast ArithmeticFunction.sigma_pos 1 n n.ne_zero
+    · exact Real.exp_pos _
+  -- Step 4: Sum of positive terms is positive
+  have hsum_re : Summable fun n : ℕ+ => ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * ↑n * z)).re := by
+    obtain ⟨x, hx⟩ := hsum'
+    exact ⟨x.re, Complex.hasSum_re hx⟩
+  rw [Complex.re_tsum hsum']
+  exact Summable.tsum_pos hsum_re (fun n => le_of_lt (hterm_pos n)) 1 (hterm_pos 1)
 
 /--
 `negDE₂(it) = -(D E₂)(it) > 0` for all `t > 0`.
@@ -1581,6 +1690,177 @@ theorem G_vanishing_order :
   convert (hH₂_asymp.pow 3).mul h_poly; norm_num
 
 /--
+Log-derivative limit for F: `(D F)/F → 2` as `z → i∞`.
+This follows from F having vanishing order 2: F ~ c·q² where q = exp(2πiz).
+Taking logarithmic derivative: D(log F) = (D F)/F → 2.
+-/
+-- Helper: D(E₂E₄ - E₆) / q → 720 (same pattern as f/q → 720)
+-- This follows from D acting as q·d/dq on q-expansions, so D(n·σ₃(n)·qⁿ) = n²·σ₃(n)·qⁿ
+-- and the leading coefficient 1²·σ₃(1) = 1 gives the limit 720·1 = 720
+theorem D_diff_div_q_tendsto :
+    Filter.Tendsto (fun z : ℍ => D (fun w => E₂ w * E₄ w - E₆ w) z /
+      cexp (2 * π * Complex.I * z))
+      atImInfty (nhds (720 : ℂ)) := by
+  -- Strategy: Use q-expansion of D(f) = 720 · Σ n²·σ₃(n)·qⁿ
+  -- and apply QExp.tendsto_nat with coefficient n²·σ₃(n)
+  sorry
+
+theorem D_F_div_F_tendsto :
+    Filter.Tendsto (fun z : ℍ => D F z / F z) atImInfty (nhds (2 : ℂ)) := by
+  -- F = (E₂E₄ - E₆)² = f² where f = E₂E₄ - E₆
+  -- D(f²) = 2f·Df (chain rule), so DF/F = 2·Df/f
+  -- f/q → 720 (from F_vanishing_order proof), and f has vanishing order 1
+  -- Df/f → 1 (the vanishing order), so DF/F → 2
+
+  -- Step 1: Define f and show F = f²
+  set f : ℍ → ℂ := fun z => E₂ z * E₄.toFun z - E₆.toFun z with hf_def
+  have hF_eq : ∀ z, F z = (f z) ^ 2 := fun z => by
+    simp only [F, hf_def, sq, Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe]
+
+  -- Step 2: f is holomorphic
+  have hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+    apply MDifferentiable.sub
+    · exact MDifferentiable.mul E₂_holo' E₄.holo'
+    · exact E₆.holo'
+
+  -- Step 3: D(F) = 2·f·D(f) by chain rule
+  have hDF_eq : ∀ z, D F z = 2 * f z * D f z := by
+    intro z
+    have h := D_sq f hf_holo
+    have hF_eq' : F = f ^ 2 := by
+      ext z
+      simp only [F, hf_def, sq, Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe,
+        Pi.pow_apply]
+    rw [hF_eq']
+    exact congr_fun h z
+
+  -- Step 4: Therefore D(F)/F = 2·D(f)/f
+  have hDF_div_eq : ∀ z, F z ≠ 0 → D F z / F z = 2 * (D f z / f z) := by
+    intro z hFz
+    have hfz : f z ≠ 0 := by
+      intro hf_zero
+      apply hFz
+      rw [hF_eq z, hf_zero, sq, zero_mul]
+    rw [hDF_eq z, hF_eq z, sq]
+    field_simp [hfz]
+
+  -- Step 5: f/q → 720 (from F_vanishing_order proof)
+  have hf_div_q : Filter.Tendsto (fun z : ℍ => f z / cexp (2 * π * Complex.I * z))
+      atImInfty (nhds (720 : ℂ)) := by
+    -- This is exactly h_diff_tendsto from F_vanishing_order proof
+    -- Note: E₄ z = E₄.toFun z by ModularForm.toFun_eq_coe
+    have h_f_eq : ∀ z : ℍ, f z = E₂ z * E₄ z - E₆ z := fun z => by
+      simp only [hf_def, ModularForm.toFun_eq_coe]
+    have h_rw : ∀ z : ℍ, E₂ z * E₄ z - E₆ z =
+        720 * ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
+          cexp (2 * π * Complex.I * n * z) := E₂_mul_E₄_sub_E₆
+    have h_eq : ∀ z : ℍ,
+        f z / cexp (2 * π * Complex.I * z) =
+        720 * (∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
+          cexp (2 * π * Complex.I * (n - 1) * z)) := by
+      intro z
+      rw [h_f_eq z, h_rw z, mul_div_assoc, ← tsum_div_const]
+      congr 1; apply tsum_congr; intro n
+      rw [mul_div_assoc, ← Complex.exp_sub]; congr 2; ring
+    simp_rw [h_eq]
+    have h_reindex : ∀ z : ℍ,
+        ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
+          cexp (2 * π * Complex.I * (n - 1) * z) =
+        ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
+          cexp (2 * π * Complex.I * m * z) := by
+      intro z
+      rw [← Equiv.tsum_eq Equiv.pnatEquivNat.symm]
+      congr 1; funext m
+      simp only [Equiv.pnatEquivNat_symm_apply, Nat.succPNat_coe]
+      have h_exp_eq' : ((m.succ : ℕ) : ℂ) - 1 = (m : ℂ) := by
+        simp only [Nat.succ_eq_add_one, Nat.cast_add, Nat.cast_one]; ring
+      simp only [h_exp_eq', Nat.succ_eq_add_one]
+    simp_rw [h_reindex]
+    set a : ℕ → ℂ := fun m => ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) with ha
+    have ha0 : a 0 = 1 := by simp [ha, ArithmeticFunction.sigma_one]
+    have h_tendsto : Filter.Tendsto
+        (fun z : ℍ => ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m))
+        atImInfty (nhds (a 0)) := by
+      apply QExp.tendsto_nat a
+      have hbound : ∀ m : ℕ, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 5 := by
+        intro m
+        simp only [ha, norm_mul, Complex.norm_natCast]
+        have h1 : (ArithmeticFunction.sigma 3 (m + 1) : ℝ) ≤ ((m + 1 : ℕ) : ℝ) ^ 4 := by
+          exact_mod_cast sigma_le_pow 3 (m + 1)
+        calc (↑(m + 1) : ℝ) * (ArithmeticFunction.sigma 3 (m + 1) : ℝ)
+            ≤ (↑(m + 1) : ℝ) * (↑(m + 1) : ℝ) ^ 4 :=
+              mul_le_mul_of_nonneg_left h1 (Nat.cast_nonneg _)
+          _ = (↑(m + 1) : ℝ) ^ 5 := by ring
+      apply Summable.of_nonneg_of_le
+      · intro m; positivity
+      · intro m
+        calc ‖a m‖ * rexp (-2 * π * m)
+            ≤ ((m + 1 : ℕ) : ℝ) ^ 5 * rexp (-2 * π * m) :=
+              mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
+          _ = (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) := by simp
+      · exact summable_pow5_shift
+    have h_eq2 : ∀ z : ℍ,
+        ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
+          cexp (2 * π * Complex.I * m * z) =
+        ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m) := by
+      intro z; apply tsum_congr; intro m; simp only [ha]; ring_nf
+    simp_rw [h_eq2, ha0] at h_tendsto ⊢
+    convert h_tendsto.const_mul (720 : ℂ) using 2; ring
+
+  -- Step 6: D(f)/q → 720 (by D_diff_div_q_tendsto)
+  have hDf_div_q : Filter.Tendsto (fun z : ℍ => D f z / cexp (2 * π * Complex.I * z))
+      atImInfty (nhds (720 : ℂ)) := D_diff_div_q_tendsto
+
+  -- Step 7: D(f)/f → 1 by dividing limits (720/720 = 1)
+  have h_720_ne : (720 : ℂ) ≠ 0 := by norm_num
+  have hDf_div_f : Filter.Tendsto (fun z : ℍ => D f z / f z) atImInfty (nhds 1) := by
+    have h_eq : ∀ z : ℍ, cexp (2 * π * Complex.I * z) ≠ 0 →
+        D f z / f z = (D f z / cexp (2 * π * Complex.I * z)) /
+          (f z / cexp (2 * π * Complex.I * z)) := by
+      intro z hexp
+      field_simp [hexp]
+    have h_exp_ne : ∀ᶠ z : ℍ in atImInfty, cexp (2 * π * Complex.I * z) ≠ 0 :=
+      Filter.Eventually.of_forall (fun _ => Complex.exp_ne_zero _)
+    have h_f_ne : ∀ᶠ z : ℍ in atImInfty, f z / cexp (2 * π * Complex.I * z) ≠ 0 :=
+      hf_div_q.eventually_ne h_720_ne
+    have h_limit : Filter.Tendsto
+        (fun z => (D f z / cexp (2 * π * Complex.I * z)) /
+          (f z / cexp (2 * π * Complex.I * z)))
+        atImInfty (nhds (720 / 720 : ℂ)) := by
+      apply Filter.Tendsto.div hDf_div_q hf_div_q h_720_ne
+    simp only [div_self h_720_ne] at h_limit
+    apply h_limit.congr'
+    filter_upwards [h_exp_ne, h_f_ne] with z hexp hf_ne
+    exact (h_eq z hexp).symm
+
+  -- Step 8: D(F)/F → 2·1 = 2
+  have h_F_ne : ∀ᶠ z : ℍ in atImInfty, F z ≠ 0 := by
+    have h_limit_ne : (720 ^ 2 : ℂ) ≠ 0 := by norm_num
+    have h_quot_ne := F_vanishing_order.eventually_ne h_limit_ne
+    filter_upwards [h_quot_ne] with z hz
+    intro hF_zero
+    apply hz
+    simp only [hF_zero, zero_div]
+  have h_2_eq : (2 : ℂ) = 2 * 1 := by ring
+  rw [h_2_eq]
+  apply (hDf_div_f.const_mul (2 : ℂ)).congr'
+  filter_upwards [h_F_ne] with z hFz
+  exact (hDF_div_eq z hFz).symm
+
+/--
+Log-derivative limit for G: `(D G)/G → 3/2` as `z → i∞`.
+This follows from G having vanishing order 3/2: G ~ c·q^(3/2) where q = exp(2πiz).
+Taking logarithmic derivative: D(log G) = (D G)/G → 3/2.
+-/
+theorem D_G_div_G_tendsto :
+    Filter.Tendsto (fun z : ℍ => D G z / G z) atImInfty (nhds ((3 : ℂ) / 2)) := by
+  -- G = H₂³ · polynomial(H₂, H₄) where H₂ ~ 16·exp(πiz), H₄ → 1
+  -- The dominant term is H₂³ ~ 16³·exp(3πiz/2), so vanishing order is 3/2
+  -- D(exp(πiz))/exp(πiz) = 1/2, and the polynomial tends to constant
+  -- Therefore DG/G → 3/2
+  sorry
+
+/--
 `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`.
 Blueprint: Lemma 8.11 and vanishing orders 2 and 3/2.
 The difference in vanishing orders is 2 - 3/2 = 1/2.
@@ -1589,21 +1869,54 @@ theorem L₁₀_div_FG_tendsto :
     Filter.Tendsto (fun t : ℝ => (L₁₀.resToImagAxis t).re /
       ((F.resToImagAxis t).re * (G.resToImagAxis t).re))
       Filter.atTop (nhds (1/2)) := by
-  -- Wronskian identity: L₁₀ = (D F)·G - F·(D G), so L₁₀/(FG) = D F/F - D G/G
-  -- Key insight: For f with vanishing order k at ∞, (D f)/f → k on imaginary axis
-  --
-  -- Step 1: F_vanishing_order shows F/q² → c_F (nonzero), so F ~ c_F·q²
-  --   Taking logarithm: log F ~ log c_F + 2·log q = log c_F + 4πiz
-  --   Derivative: (D F)/F ~ 4πi → 4π · i = 4π · im coefficient
-  --   On imaginary axis z = it: the "growth rate" is 2 (the vanishing order)
-  --
-  -- Step 2: G_vanishing_order shows G/q^(3/2) → c_G, so vanishing order is 3/2
-  --   Similarly, (D G)/G → 3/2 on imaginary axis
-  --
-  -- Step 3: L₁₀/(FG) = (D F)/F - (D G)/G → 2 - 3/2 = 1/2
-  --
-  -- Technical: Use deriv_resToImagAxis_eq to connect d/dt on imaginary axis to D
-  -- Need: lemma about vanishing_order → logarithmic derivative limit
+  -- Step 1: Rewrite L₁₀/(FG) as DF/F - DG/G using Wronskian
+  -- L₁₀ = DF·G - F·DG (from L₁₀_eq_FD_G_sub_F_DG)
+  -- So L₁₀/(FG) = DF/F - DG/G (assuming F, G ≠ 0)
+  have h_wronskian : ∀ z : ℍ, F z ≠ 0 → G z ≠ 0 →
+      L₁₀ z / (F z * G z) = D F z / F z - D G z / G z := by
+    intro z hF hG
+    rw [L₁₀_eq_FD_G_sub_F_DG]
+    field_simp [hF, hG]
+
+  -- Step 2: Get the complex limit from D_F_div_F_tendsto and D_G_div_G_tendsto
+  have hF_lim := D_F_div_F_tendsto
+  have hG_lim := D_G_div_G_tendsto
+  have h_complex_limit : Filter.Tendsto (fun z : ℍ => D F z / F z - D G z / G z)
+      atImInfty (nhds ((2 : ℂ) - 3 / 2)) := hF_lim.sub hG_lim
+
+  -- Step 3: F and G are nonzero for large imaginary part (from vanishing order limits)
+  have hF_ne : ∀ᶠ z : ℍ in atImInfty, F z ≠ 0 := by
+    -- F/q² → 720² ≠ 0 implies F/q² ≠ 0 eventually
+    -- Since q² = cexp(...) ≠ 0, we get F ≠ 0
+    have h_limit_ne : (720 ^ 2 : ℂ) ≠ 0 := by norm_num
+    have h_quot_ne := F_vanishing_order.eventually_ne h_limit_ne
+    filter_upwards [h_quot_ne] with z hz
+    intro hF_zero
+    apply hz
+    simp only [hF_zero, zero_div]
+  have hG_ne : ∀ᶠ z : ℍ in atImInfty, G z ≠ 0 := by
+    -- G/q^(3/2) → 20480 ≠ 0 implies G/q^(3/2) ≠ 0 eventually
+    -- Since q^(3/2) = cexp(...) ≠ 0, we get G ≠ 0
+    have h_limit_ne : (20480 : ℂ) ≠ 0 := by norm_num
+    have h_quot_ne := G_vanishing_order.eventually_ne h_limit_ne
+    filter_upwards [h_quot_ne] with z hz
+    intro hG_zero
+    apply hz
+    simp only [hG_zero, zero_div]
+
+  -- Step 4: L₁₀/(FG) → 1/2 in ℂ
+  have h_L_over_FG : Filter.Tendsto (fun z : ℍ => L₁₀ z / (F z * G z))
+      atImInfty (nhds (1 / 2 : ℂ)) := by
+    have h_limit_val : (2 : ℂ) - 3 / 2 = 1 / 2 := by norm_num
+    rw [← h_limit_val]
+    apply h_complex_limit.congr'
+    filter_upwards [hF_ne, hG_ne] with z hF hG using (h_wronskian z hF hG).symm
+
+  -- Step 5: Restrict to imaginary axis and take real parts
+  -- On the imaginary axis, L₁₀, F, G are all real, so the quotient is real
+  -- and the real part limit equals 1/2
+  -- This requires connecting the complex limit at atImInfty to the real limit at atTop
+  -- using the realness properties L₁₀_imag_axis_real, F_imag_axis_pos, G_imag_axis_pos
   sorry
 
 /--
