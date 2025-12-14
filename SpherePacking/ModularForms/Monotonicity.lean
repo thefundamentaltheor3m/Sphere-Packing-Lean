@@ -154,15 +154,9 @@ TODO: After PR #193 merges, these definitions should be imported from
 
 /--
 The function `G(z) = H₂(z)³ (2 H₂(z)² + 5 H₂(z) H₄(z) + 5 H₄(z)²)` from Definition 8.3 of
-the blueprint.
-
-TODO: After PR #193 merges, import this definition from `SpherePacking.ModularForms.FG`
-instead of defining it here.
+the blueprint. Aliased from the root namespace.
 -/
-noncomputable def G (z : ℍ) : ℂ := H₂ z ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
-
-/-- `G` in this namespace equals `G` from Derivative.lean (identical definitions). -/
-theorem G_eq_Derivative_G : G = _root_.G := rfl
+noncomputable abbrev G := _root_.G
 
 /--
 `G` is holomorphic on the upper half-plane.
@@ -479,7 +473,9 @@ theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
   constructor
   · exact G_imag_axis_real
   · intro t ht
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, G]
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+    -- G = _root_.G = H₂³ * (2H₂² + 5H₂H₄ + 5H₄²)
+    unfold G _root_.G
     -- Get positivity and realness of H₂ and H₄
     have hH₂_pos := H₂_imag_axis_pos.2 t ht
     have hH₂_real := H₂_imag_axis_pos.1 t ht
@@ -1169,8 +1165,6 @@ theorem serre_D_L₁₀_eq (z : ℍ) :
     serre_D 22 L₁₀ z = Δ z * (7200 * (-(D E₂ z)) * G z + 640 * H₂ z * F z) := by
   -- From serre_D_L₁₀: ∂₂₂L₁₀ = (∂₁₂∂₁₀F)G - F(∂₁₂∂₁₀G)
   rw [serre_D_L₁₀]
-  -- Bridge MonotoneFG.G to Derivative.G (identical definitions)
-  rw [G_eq_Derivative_G]
   -- From MLDE_F': ∂₁₂∂₁₀F = (5/6)E₄F + 7200Δ(-E₂')
   -- From MLDE_G: ∂₁₂∂₁₀G = (5/6)E₄G - 640ΔH₂
   have hF_eq := MLDE_F'
@@ -1195,22 +1189,220 @@ theorem serre_D_L₁₀_eq (z : ℍ) :
   --             = Δ·(7200·(-D E₂)·G + 640·H₂·F)
   ring
 
+/-!
+### negDE₂ imaginary axis properties
+
+We prove that `negDE₂ = -(D E₂)` is real and positive on the imaginary axis.
+From `ramanujan_E₂`: `D E₂ = 12⁻¹ * (E₂² - E₄)`, so `negDE₂ = 12⁻¹ * (E₄ - E₂²)`.
+The positivity `E₄(it) > E₂(it)²` follows from the q-expansion coefficients being positive.
+-/
+
+/-- `negDE₂(it) = -(D E₂)(it)` is real for all `t > 0`. -/
+theorem negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by
+  intro t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  -- negDE₂ = -(D E₂) = -12⁻¹ * (E₂² - E₄) = 12⁻¹ * (E₄ - E₂²)
+  -- Since E₂, E₄ are real on imaginary axis, so is negDE₂
+  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  -- Get realness hypotheses by unfolding definitions
+  have hE₂_real : (E₂ z).im = 0 := by
+    have := E₂_imag_axis_real t ht
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this
+    exact this
+  have hE₄_real : (E₄ z).im = 0 := by
+    have := E₄_imag_axis_real t ht
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this
+    exact this
+  -- 12⁻¹ is real
+  have h12_real : (12⁻¹ : ℂ).im = 0 := by norm_num
+  -- E₂² is real (product of two reals)
+  have hE₂_sq_real : (E₂ z * E₂ z).im = 0 := by
+    rw [Complex.mul_im]; simp only [hE₂_real]; ring
+  -- E₂² - E₄ is real
+  have hdiff_real : (E₂ z * E₂ z - E₄ z).im = 0 := by
+    rw [Complex.sub_im, hE₂_sq_real, hE₄_real]; ring
+  -- 12⁻¹ * (E₂² - E₄) is real
+  have hprod_real : ((12 : ℂ)⁻¹ * (E₂ z * E₂ z - E₄ z)).im = 0 := by
+    rw [Complex.mul_im, h12_real, hdiff_real]; ring
+  -- negDE₂ z = -(12⁻¹ * (E₂² - E₄))
+  simp only [negDE₂, Pi.neg_apply, ramanujan_E₂, Pi.mul_apply, Pi.sub_apply]
+  have h12 : (12⁻¹ : ℍ → ℂ) z = (12 : ℂ)⁻¹ := rfl
+  rw [h12, neg_im]
+  exact neg_eq_zero.mpr hprod_real
+
+/--
+On the imaginary axis, `E₄(it).re > E₂(it).re²` for all `t > 0`.
+This follows from the q-expansion: `E₄ - E₂² = 288q + 1728q² + ...` has positive coefficients,
+and on z = it, q = exp(-2πt) ∈ (0,1) is positive, so each term is positive.
+-/
+theorem hE₄_gt_E₂sq (t : ℝ) (ht : 0 < t) :
+    (E₄.toFun ⟨Complex.I * t, by simp [ht]⟩).re > (E₂ ⟨Complex.I * t, by simp [ht]⟩).re ^ 2 := by
+  -- The q-expansion shows E₄ - E₂² = 288q + 1728q² + ... > 0 on imaginary axis
+  -- Strategy: Use the q-expansion. E₄ - E₂² = ∑_{n≥1} c_n q^n where c_n > 0.
+  -- On z = it, q = exp(-2πt) ∈ (0,1), so each term c_n q^n > 0.
+  -- TODO: Complete via q-expansion positivity argument
+  sorry
+
+/--
+`negDE₂(it) = -(D E₂)(it) > 0` for all `t > 0`.
+Blueprint: Corollary 8.9 - this follows from the Ramanujan formula `D E₂ = (E₂² - E₄)/12`,
+which gives `negDE₂ = (E₄ - E₂²)/12`. The inequality `E₄(it) > E₂(it)²` holds because
+the q-expansion `E₄ - E₂² = 288q + 1728q² + ...` has positive coefficients, and on the
+imaginary axis `q = exp(-2πt) > 0`.
+-/
+theorem negDE₂_imag_axis_pos : ResToImagAxis.Pos negDE₂ := by
+  refine ⟨negDE₂_imag_axis_real, fun t ht => ?_⟩
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  -- negDE₂ z = -(D E₂ z) = -12⁻¹ * (E₂ z² - E₄ z) = 12⁻¹ * (E₄ z - E₂ z²)
+  -- Use `set` to substitute z in the goal (unlike `let`)
+  set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  -- Get realness hypotheses by unfolding definitions
+  have hE₂_real : (E₂ z).im = 0 := by
+    have := E₂_imag_axis_real t ht
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this
+    exact this
+  have hE₄_real : (E₄.toFun z).im = 0 := by
+    have := E₄_imag_axis_real t ht
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this
+    exact this
+  have h12_real : (12⁻¹ : ℂ).im = 0 := by norm_num
+  have hE₂_sq_real : (E₂ z * E₂ z).im = 0 := by
+    rw [Complex.mul_im]; simp only [hE₂_real]; ring
+  have hdiff_real : (E₂ z * E₂ z - E₄.toFun z).im = 0 := by
+    rw [Complex.sub_im, hE₂_sq_real, hE₄_real]; ring
+  -- Unfold negDE₂
+  simp only [negDE₂, Pi.neg_apply, ramanujan_E₂, Pi.mul_apply, Pi.sub_apply]
+  have h12 : (12⁻¹ : ℍ → ℂ) z = (12 : ℂ)⁻¹ := rfl
+  rw [h12]
+  -- Goal: (-(12⁻¹ * (E₂ z² - E₄ z))).re > 0
+  rw [neg_re, neg_pos]
+  -- Goal: (12⁻¹ * (E₂ z * E₂ z - E₄ z)).re < 0
+  rw [Complex.mul_re, h12_real, hdiff_real, mul_zero, sub_zero]
+  -- Now: 12⁻¹.re * (E₂ z² - E₄.toFun z).re < 0
+  -- Since 12⁻¹.re > 0, we need (E₂ z² - E₄.toFun z).re < 0, i.e., E₄(it).re > E₂(it)².re
+  have h12_pos : (0 : ℝ) < ((12 : ℂ)⁻¹).re := by norm_num
+  have hdiff_neg : (E₂ z * E₂ z - E₄.toFun z).re < 0 := by
+    -- Will prove E₄.toFun z > E₂ z * E₂ z on imaginary axis via q-expansion
+    rw [Complex.sub_re]
+    -- Since E₂ is real on imaginary axis, E₂ z * E₂ z = (E₂ z).re²
+    have hE₂_eq : E₂ z = (E₂ z).re := Complex.ext rfl (by simp [hE₂_real])
+    have hE₂_sq_re : (E₂ z * E₂ z).re = (E₂ z).re ^ 2 := by
+      rw [Complex.mul_re, hE₂_real, mul_zero, sub_zero, sq]
+    rw [hE₂_sq_re]
+    -- Need: E₂(z).re² < E₄.toFun(z).re, i.e., E₄(z).re - E₂(z).re² > 0
+    linarith [hE₄_gt_E₂sq t ht]
+  nlinarith
+
 /--
 `∂₂₂ L₁,₀(it) > 0` for all `t > 0`.
 Blueprint: Corollary 8.9 - both terms in the expression are positive.
-- `-E₂'(it) > 0` (from Ramanujan formula: E₂' = (E₂² - E₄)/12)
+- `-D E₂(it) > 0` (negDE₂_imag_axis_pos)
 - `Δ(it) > 0` (Delta_imag_axis_pos)
 - `G(it) > 0` and `H₂(it) > 0` and `F(it) > 0`
 -/
 theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) := by
-  -- Using serre_D_L₁₀_eq: serre_D 22 L₁₀ z = Δ z * (7200 * (-D E₂ z) * G z + 640 * H₂ z * F z)
-  -- The product is positive since:
-  -- 1. Δ(it) > 0 (Delta_imag_axis_pos)
-  -- 2. Both terms in parentheses are positive:
-  --    - 7200 * (-D E₂(it)) * G(it) > 0 since G(it) > 0 and -D E₂(it) > 0
-  --    - 640 * H₂(it) * F(it) > 0 since H₂(it) > 0 and F(it) > 0
-  -- Key missing lemma: -D E₂(it) > 0, i.e., E₄(it) > E₂(it)² (from Ramanujan formula)
-  sorry
+  -- Using serre_D_L₁₀_eq: serre_D 22 L₁₀ z = Δ z * (7200 * negDE₂ z * G z + 640 * H₂ z * F z)
+  refine ⟨?_, fun t ht => ?_⟩
+  -- Part 1: Real on imaginary axis
+  · intro t ht
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+    set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+    have h_eq := serre_D_L₁₀_eq z
+    rw [h_eq]
+    -- Convert -D E₂ z to negDE₂ z (definitionally equal)
+    show (Δ z * (7200 * negDE₂ z * G z + 640 * H₂ z * F z)).im = 0
+    -- The product of real numbers is real
+    have hΔ_real : (Δ z).im = 0 := by
+      have := Delta_imag_axis_pos.1 t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hG_real : (G z).im = 0 := by
+      have := G_imag_axis_real t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hH₂_real : (H₂ z).im = 0 := by
+      have := H₂_imag_axis_pos.1 t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hF_real : (F z).im = 0 := by
+      have := F_imag_axis_real t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hnegDE₂_real : (negDE₂ z).im = 0 := by
+      have := negDE₂_imag_axis_real t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    -- Build up the product
+    have h1 : (7200 * negDE₂ z * G z).im = 0 := by
+      have h7200 : (7200 : ℂ).im = 0 := by norm_num
+      rw [Complex.mul_im, Complex.mul_im]
+      simp only [h7200, hnegDE₂_real, hG_real]; ring
+    have h2 : (640 * H₂ z * F z).im = 0 := by
+      have h640 : (640 : ℂ).im = 0 := by norm_num
+      rw [Complex.mul_im, Complex.mul_im]
+      simp only [h640, hH₂_real, hF_real]; ring
+    have hsum : (7200 * negDE₂ z * G z + 640 * H₂ z * F z).im = 0 := by
+      rw [Complex.add_im, h1, h2]; ring
+    rw [Complex.mul_im, hΔ_real, hsum]; ring
+  -- Part 2: Positive on imaginary axis
+  · simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+    set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+    have h_eq := serre_D_L₁₀_eq z
+    rw [h_eq]
+    -- Convert -D E₂ z to negDE₂ z (definitionally equal)
+    show 0 < (Δ z * (7200 * negDE₂ z * G z + 640 * H₂ z * F z)).re
+    -- Get positivity and realness hypotheses
+    have hΔ_pos : (Δ z).re > 0 := by
+      have := Delta_imag_axis_pos.2 t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hΔ_real : (Δ z).im = 0 := by
+      have := Delta_imag_axis_pos.1 t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hnegDE₂_pos : (negDE₂ z).re > 0 := by
+      have := negDE₂_imag_axis_pos.2 t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hnegDE₂_real : (negDE₂ z).im = 0 := by
+      have := negDE₂_imag_axis_pos.1 t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hG_pos : (G z).re > 0 := by
+      have := G_imag_axis_pos.2 t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hG_real : (G z).im = 0 := by
+      have := G_imag_axis_real t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hH₂_pos : (H₂ z).re > 0 := by
+      have := H₂_imag_axis_pos.2 t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hH₂_real : (H₂ z).im = 0 := by
+      have := H₂_imag_axis_pos.1 t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hF_pos : (F z).re > 0 := by
+      have := F_imag_axis_pos.2 t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hF_real : (F z).im = 0 := by
+      have := F_imag_axis_real t ht
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    -- The sum 7200 * negDE₂ z * G z + 640 * H₂ z * F z is positive
+    have hsum_pos : (7200 * negDE₂ z * G z + 640 * H₂ z * F z).re > 0 := by
+      have h1_re : (7200 * negDE₂ z * G z).re = 7200 * (negDE₂ z).re * (G z).re := by
+        rw [Complex.mul_re, Complex.mul_re]
+        have h7200_im : (7200 : ℂ).im = 0 := by norm_num
+        simp only [(by norm_num : (7200 : ℂ).re = 7200), h7200_im, hnegDE₂_real, hG_real]; ring
+      have h2_re : (640 * H₂ z * F z).re = 640 * (H₂ z).re * (F z).re := by
+        rw [Complex.mul_re, Complex.mul_re]
+        have h640_im : (640 : ℂ).im = 0 := by norm_num
+        simp only [(by norm_num : (640 : ℂ).re = 640), h640_im, hH₂_real, hF_real]; ring
+      rw [Complex.add_re, h1_re, h2_re]
+      apply add_pos
+      · apply mul_pos (mul_pos (by norm_num : (0 : ℝ) < 7200) hnegDE₂_pos) hG_pos
+      · apply mul_pos (mul_pos (by norm_num : (0 : ℝ) < 640) hH₂_pos) hF_pos
+    have hsum_real : (7200 * negDE₂ z * G z + 640 * H₂ z * F z).im = 0 := by
+      have h1 : (7200 * negDE₂ z * G z).im = 0 := by
+        rw [Complex.mul_im, Complex.mul_im]
+        have h7200_im : (7200 : ℂ).im = 0 := by norm_num
+        simp only [h7200_im, hnegDE₂_real, hG_real]; ring
+      have h2 : (640 * H₂ z * F z).im = 0 := by
+        rw [Complex.mul_im, Complex.mul_im]
+        have h640_im : (640 : ℂ).im = 0 := by norm_num
+        simp only [h640_im, hH₂_real, hF_real]; ring
+      rw [Complex.add_im, h1, h2]; ring
+    rw [Complex.mul_re, hΔ_real, hsum_real, mul_zero, sub_zero]
+    exact mul_pos hΔ_pos hsum_pos
 
 /-!
 ## Section 5: Large-t Positivity of L₁,₀
@@ -1300,7 +1492,8 @@ theorem G_vanishing_order :
     have hne3 : cexp (3 * π * I * z) ≠ 0 := Complex.exp_ne_zero _
     have h_exp_pow : cexp (π * I * z) ^ 3 = cexp (3 * π * I * z) := by
       rw [← Complex.exp_nat_mul]; congr 1; ring
-    simp only [G, div_pow, h_exp_pow]
+    unfold G _root_.G
+    simp only [div_pow, h_exp_pow]
     field_simp [hne, hne3]
   simp_rw [h_eq]
   -- The polynomial part: 2H₂² + 5H₂H₄ + 5H₄² → 0 + 0 + 5 = 5
