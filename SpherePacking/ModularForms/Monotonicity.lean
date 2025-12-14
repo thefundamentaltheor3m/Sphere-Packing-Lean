@@ -994,7 +994,75 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   -- On z = it, each term n * σ₃(n) * exp(2πinz) = n * σ₃(n) * exp(-2πnt) is positive real
   -- For n : ℕ+: n > 0, σ₃(n) ≥ 1, exp(-2πnt) > 0
   -- So each term > 0, and their sum > 0
-  sorry -- needs: tsum_pos for positive terms
+  -- Step 1: Summability of the series
+  have hsum : Summable fun n : ℕ+ => (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * z * n) := by
+    apply Summable.of_norm
+    apply Summable.of_nonneg_of_le
+    · intro n; exact norm_nonneg _
+    · intro n
+      calc ‖(↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
+              cexp (2 * ↑Real.pi * Complex.I * z * n)‖
+          = ‖(↑↑n : ℂ)‖ * ‖(↑((ArithmeticFunction.sigma 3) ↑n) : ℂ)‖ *
+              ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
+            rw [norm_mul, norm_mul]
+        _ ≤ (↑n : ℝ) * (↑n : ℝ)^4 * ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
+            gcongr
+            · rw [Complex.norm_natCast]
+            · rw [Complex.norm_natCast]
+              have hbound := sigma_bound 3 n
+              exact_mod_cast hbound
+        _ = ‖(↑n : ℂ) ^ 5 * cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
+            rw [norm_mul, Complex.norm_pow, Complex.norm_natCast]
+            ring
+    · have := a33 5 1 z
+      simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at this
+      exact summable_norm_iff.mpr this
+  -- Adjust the exponent form to match the goal
+  have hsum' : Summable fun n : ℕ+ => (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
+    simp_rw [show ∀ n : ℕ+, (2 : ℂ) * ↑Real.pi * Complex.I * ↑n * z =
+        2 * ↑Real.pi * Complex.I * z * n by intro n; ring]
+    exact hsum
+  -- Key simplification: on z = I*t, the exponential becomes real
+  have hexp_simpl : ∀ n : ℕ+, cexp (2 * ↑Real.pi * Complex.I * ↑n * z) =
+      Real.exp (-(2 * π * n * t)) := by
+    intro n
+    rw [hz_eq]
+    have harg : (2 : ℂ) * ↑Real.pi * Complex.I * ↑n * (Complex.I * ↑t) =
+        ↑(-(2 * π * (n : ℕ) * t)) := by
+      push_cast
+      ring_nf
+      rw [Complex.I_sq]
+      ring
+    rw [harg, Complex.ofReal_exp]
+  -- Step 2: Each term is real on imaginary axis: n * σ(3,n) * exp(-2πnt)
+  have hterm_real : ∀ n : ℕ+, ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * ↑n * z)).im = 0 := by
+    intro n
+    rw [hexp_simpl]
+    simp only [mul_im, natCast_re, natCast_im, zero_mul, add_zero,
+      Complex.ofReal_re, Complex.ofReal_im, mul_zero]
+  -- Step 3: Each term is positive
+  have hterm_pos : ∀ n : ℕ+, 0 < ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * ↑n * z)).re := by
+    intro n
+    rw [hexp_simpl]
+    simp only [mul_re, natCast_re, natCast_im, sub_zero,
+      Complex.ofReal_re, Complex.ofReal_im, mul_zero]
+    -- Term is n * σ(3,n) * exp(-2πnt), all factors positive
+    apply mul_pos
+    · apply mul_pos
+      · exact_mod_cast n.pos
+      · exact_mod_cast ArithmeticFunction.sigma_pos 3 n n.ne_zero
+    · exact Real.exp_pos _
+  -- Step 4: Sum of positive terms is positive
+  have hsum_re : Summable fun n : ℕ+ => ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * ↑n * z)).re := by
+    obtain ⟨x, hx⟩ := hsum'
+    exact ⟨x.re, Complex.hasSum_re hx⟩
+  rw [Complex.re_tsum hsum']
+  exact Summable.tsum_pos hsum_re (fun n => le_of_lt (hterm_pos n)) 1 (hterm_pos 1)
 
 /-!
 ## Section 3: Definition and Properties of L₁,₀
@@ -1158,13 +1226,13 @@ theorem G_vanishing_order :
   -- The polynomial part: 2H₂² + 5H₂H₄ + 5H₄² → 0 + 0 + 5 = 5
   have h_poly : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
       atImInfty (nhds 5) := by
-    have h1 : Tendsto (fun z : ℍ => 2 * H₂ z ^ 2) atImInfty (nhds 0) := by
+    have h1 : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2) atImInfty (nhds 0) := by
       simpa using (hH₂_zero.pow 2).const_mul 2
-    have h2 : Tendsto (fun z : ℍ => 5 * H₂ z * H₄ z) atImInfty (nhds 0) := by
-      simpa using (hH₂_zero.mul hH₄_one).const_mul 5
-    have h3 : Tendsto (fun z : ℍ => 5 * H₄ z ^ 2) atImInfty (nhds 5) := by
+    have h2 : Filter.Tendsto (fun z : ℍ => 5 * H₂ z * H₄ z) atImInfty (nhds 0) := by
+      simpa [mul_assoc] using (hH₂_zero.mul hH₄_one).const_mul 5
+    have h3 : Filter.Tendsto (fun z : ℍ => 5 * H₄ z ^ 2) atImInfty (nhds 5) := by
       simpa using (hH₄_one.pow 2).const_mul 5
-    simpa using h1.add (h2.add h3)
+    simpa [add_assoc] using h1.add (h2.add h3)
   -- (H₂/exp(πiz))³ → 16³, polynomial → 5, product: 16³ * 5 = 20480
   convert (hH₂_asymp.pow 3).mul h_poly; norm_num
 
@@ -1178,11 +1246,6 @@ theorem L₁₀_div_FG_tendsto :
       ((F.resToImagAxis t).re * (G.resToImagAxis t).re))
       Filter.atTop (nhds (1/2)) := by
   sorry
-
-/--
-`L₁,₀` is eventually positive on the imaginary axis.
-Blueprint: Follows from L₁,₀/(FG) → 1/2 > 0 and F, G > 0.
--/
 
 /--
 Chain rule for resToImagAxis: `d/dt F(it) = -2π * (D F)(it)`.
