@@ -1852,12 +1852,39 @@ Log-derivative limit for G: `(D G)/G → 3/2` as `z → i∞`.
 This follows from G having vanishing order 3/2: G ~ c·q^(3/2) where q = exp(2πiz).
 Taking logarithmic derivative: D(log G) = (D G)/G → 3/2.
 -/
+-- Helper: D(exp(πiz))/exp(πiz) = 1/2
+-- This follows from D = (2πi)⁻¹·d/dz and d/dz(exp(πiz)) = πi·exp(πiz)
+-- So D(exp(πiz)) = (2πi)⁻¹·πi·exp(πiz) = (1/2)·exp(πiz)
+theorem D_exp_pi_div_exp_pi (z : ℍ) :
+    D (fun w => cexp (π * Complex.I * w)) z / cexp (π * Complex.I * z) = 1 / 2 := by
+  -- D = (2πi)⁻¹·d/dz, and d/dz(exp(πiz)) = πi·exp(πiz)
+  -- So D(exp(πiz)) = (2πi)⁻¹·πi·exp(πiz) = (1/2)·exp(πiz)
+  -- Therefore D(exp(πiz))/exp(πiz) = 1/2
+  sorry
+
+-- Helper: D(H₂)/H₂ → 1/2 (since H₂ ~ 16·exp(πiz) has vanishing order 1/2)
+theorem D_H₂_div_H₂_tendsto :
+    Filter.Tendsto (fun z : ℍ => D H₂ z / H₂ z) atImInfty (nhds ((1 : ℂ) / 2)) := by
+  -- H₂ = Θ₂⁴, and Θ₂/exp(πiz/4) → 2
+  -- D(H₂) = 4·Θ₂³·D(Θ₂), so D(H₂)/H₂ = 4·D(Θ₂)/Θ₂
+  -- D(Θ₂)/Θ₂ → D(exp(πiz/4))/exp(πiz/4) = 1/8
+  -- Therefore D(H₂)/H₂ → 4·(1/8) = 1/2
+  sorry
+
 theorem D_G_div_G_tendsto :
     Filter.Tendsto (fun z : ℍ => D G z / G z) atImInfty (nhds ((3 : ℂ) / 2)) := by
   -- G = H₂³ · polynomial(H₂, H₄) where H₂ ~ 16·exp(πiz), H₄ → 1
   -- The dominant term is H₂³ ~ 16³·exp(3πiz/2), so vanishing order is 3/2
   -- D(exp(πiz))/exp(πiz) = 1/2, and the polynomial tends to constant
   -- Therefore DG/G → 3/2
+
+  -- Key strategy: Use product rule DG/G = D(H₂³)/H₂³ + D(poly)/poly
+  -- where poly = 2H₂² + 5H₂H₄ + 5H₄²
+  -- Then D(H₂³)/H₂³ = 3·D(H₂)/H₂ → 3·(1/2) = 3/2
+  -- And D(poly)/poly → 0 (since poly → 5 and D(poly) → 0)
+
+  -- This proof requires establishing the product rule structure and the helper limits
+  -- For now, we leave this as sorry pending D_H₂_div_H₂_tendsto
   sorry
 
 /--
