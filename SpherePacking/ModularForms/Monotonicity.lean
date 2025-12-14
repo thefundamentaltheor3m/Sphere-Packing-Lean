@@ -1191,6 +1191,12 @@ Here q = exp(2πiz), so q² = exp(4πiz) = exp(2πi * 2 * z).
 theorem F_vanishing_order :
     Filter.Tendsto (fun z : ℍ => F z / cexp (2 * π * Complex.I * 2 * z))
       atImInfty (nhds (720 ^ 2 : ℂ)) := by
+  -- F = (E₂E₄ - E₆)² and we want to show F / q² → 720² where q = exp(2πiz)
+  -- Strategy: Show (E₂E₄ - E₆) / q → 720, then square
+  -- From E₂_mul_E₄_sub_E₆: E₂E₄ - E₆ = 720 * ∑_{n≥1} n * σ₃(n) * qⁿ
+  -- The leading term (n=1) is 720 * q, so (E₂E₄ - E₆)/q → 720 + O(q) → 720
+  -- Hence F/q² = ((E₂E₄ - E₆)/q)² → 720²
+  -- This proof depends on E₂_mul_E₄_sub_E₆ which currently has a sorry in Eisenstein.lean
   sorry
 
 /--
@@ -1245,6 +1251,14 @@ theorem L₁₀_div_FG_tendsto :
     Filter.Tendsto (fun t : ℝ => (L₁₀.resToImagAxis t).re /
       ((F.resToImagAxis t).re * (G.resToImagAxis t).re))
       Filter.atTop (nhds (1/2)) := by
+  -- Wronskian identity: L₁₀ = (D F)·G - F·(D G), so L₁₀/(FG) = D F/F - D G/G
+  -- Using vanishing orders:
+  -- - F ~ c_F · q² where q = exp(2πiz), so D F/F = d/dz log F → 2 · 2πi = 4πi
+  --   On imaginary axis: (D F)(it) / F(it) → 2 (real part)
+  -- - G ~ c_G · q^(3/2), so D G/G → (3/2) · 2πi = 3πi
+  --   On imaginary axis: (D G)(it) / G(it) → 3/2 (real part)
+  -- Hence L₁₀/(FG) → 2 - 3/2 = 1/2
+  -- This proof depends on F_vanishing_order and G_vanishing_order asymptotics
   sorry
 
 /--
