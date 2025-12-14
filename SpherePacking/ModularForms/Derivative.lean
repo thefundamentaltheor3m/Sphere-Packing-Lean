@@ -309,21 +309,34 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
 noncomputable def negDE₂ := -(D E₂)
 
 /--
-Modular linear differential equation satisfied by `F`.
+Relation between X₄₂ and negDE₂.
+Since negDE₂ = 12⁻¹ * (E₄ - E₂²) and X₄₂ = 288⁻¹ * (E₄ - E₂²),
+we have X₄₂ = 24⁻¹ * negDE₂ (because 288 = 24 * 12).
 -/
+theorem X42_eq_negDE₂ (z : ℍ) : X₄₂ z = (24 : ℂ)⁻¹ * negDE₂ z := by
+  simp only [X₄₂, negDE₂, Pi.neg_apply, ramanujan_E₂, Pi.mul_apply, Pi.sub_apply]
+  -- 288⁻¹ * (E₄ - E₂²) = 24⁻¹ * 12⁻¹ * (E₄ - E₂²) since 288 = 24 * 12
+  sorry
 
-theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 172800 * Δ_fun * X₄₂ := by
-  ext x
-  rw [X₄₂, Δ_fun, serre_D, serre_D, F_aux]
-  unfold serre_D
-  rw [F_aux]
+/--
+Modular linear differential equation satisfied by `F`.
+Blueprint: Equation (65) in terms of X₄₂.
+-/
+theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 172800 * Δ_fun * X₄₂ := by
   sorry
 
 /--
 Alternate form of MLDE_F using negDE₂.
 Blueprint: Equation (65) - ∂₁₂∂₁₀F = (5/6)E₄F + 7200·Δ·(-E₂')
+Since 172800 * 24⁻¹ = 7200, this follows from MLDE_F and X42_eq_negDE₂.
 -/
 theorem MLDE_F' : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ_fun * negDE₂ := by
+  have h := MLDE_F
+  ext z
+  have hz := congrFun h z
+  simp only [Pi.add_apply, Pi.mul_apply] at hz ⊢
+  rw [X42_eq_negDE₂] at hz
+  -- 172800 * 24⁻¹ = 7200
   sorry
 
 /--
