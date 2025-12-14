@@ -152,7 +152,8 @@ TODO: After PR #193 merges, these definitions should be imported from
 -/
 
 /--
-The function `G(z) = H₂(z)³ (2 H₂(z)² + 5 H₂(z) H₄(z) + 5 H₄(z)²)` from Definition 8.3 of the blueprint.
+The function `G(z) = H₂(z)³ (2 H₂(z)² + 5 H₂(z) H₄(z) + 5 H₄(z)²)` from Definition 8.3 of
+the blueprint.
 
 TODO: After PR #193 merges, import this definition from `SpherePacking.ModularForms.FG`
 instead of defining it here.
@@ -454,7 +455,9 @@ theorem G_imag_axis_real : ResToImagAxis.Real G := by
   -- Build up: 2H₂² + 5H₂H₄ + 5H₄² is real
   have hterm1 : (2 * h₂ ^ 2).im = 0 := h_prod_real _ _ (h_const_real 2) (h_pow_real h₂ hH₂_real 2)
   have hterm2 : (5 * h₂ * h₄).im = 0 := by
-    apply h_prod_real; apply h_prod_real; exact h_const_real 5; exact hH₂_real; exact hH₄_real
+    apply h_prod_real
+    · exact h_prod_real _ _ (h_const_real 5) hH₂_real
+    · exact hH₄_real
   have hterm3 : (5 * h₄ ^ 2).im = 0 := h_prod_real _ _ (h_const_real 5) (h_pow_real h₄ hH₄_real 2)
   have hquad : (2 * h₂ ^ 2 + 5 * h₂ * h₄ + 5 * h₄ ^ 2).im = 0 :=
     h_add_real _ _ (h_add_real _ _ hterm1 hterm2) hterm3
@@ -499,7 +502,7 @@ theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
         5 * ↑(h₄.re ^ 2)) : ℂ).re =
         h₂.re ^ 3 * (2 * h₂.re ^ 2 + 5 * h₂.re * h₄.re + 5 * h₄.re ^ 2) := by
       simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,
-        mul_zero, sub_zero, zero_mul, add_zero]
+        mul_zero, sub_zero, zero_mul]
       ring
     rw [h_goal_eq]
     apply mul_pos
@@ -514,7 +517,7 @@ theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
 -/
 
 /-- exp(2πinz) is real when z = it (on the imaginary axis). -/
-lemma exp_2pi_I_mul_n_imag_axis_im (n : ℕ+) (t : ℝ) (ht : 0 < t) :
+lemma exp_2pi_I_mul_n_imag_axis_im (n : ℕ+) (t : ℝ) (_ht : 0 < t) :
     (cexp (2 * π * Complex.I * n * (Complex.I * t))).im = 0 := by
   -- 2πi·n·(it) = 2πi·n·it = -2πnt (real number)
   have h : 2 * π * Complex.I * n * (Complex.I * t) = (-(2 * π * n * t) : ℝ) := by
@@ -527,7 +530,7 @@ lemma exp_2pi_I_mul_n_imag_axis_im (n : ℕ+) (t : ℝ) (ht : 0 < t) :
   exact exp_ofReal_im _
 
 /-- exp(2πinz) is real and positive when z = it (on the imaginary axis). -/
-lemma exp_2pi_I_mul_n_imag_axis_re_pos (n : ℕ+) (t : ℝ) (ht : 0 < t) :
+lemma exp_2pi_I_mul_n_imag_axis_re_pos (n : ℕ+) (t : ℝ) (_ht : 0 < t) :
     0 < (cexp (2 * π * Complex.I * n * (Complex.I * t))).re := by
   have h : 2 * π * Complex.I * n * (Complex.I * t) = (-(2 * π * n * t) : ℝ) := by
     have hI : Complex.I ^ 2 = -1 := I_sq
@@ -879,7 +882,7 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
         calc 1 - ‖q‖ ≤ 1 - ‖qn‖ := by linarith [hqn_le_q]
           _ ≤ ‖1 - qn‖ := h1
       -- Now bound the quotient
-      show ‖↑↑n * qn / (1 - qn)‖ ≤ bound n
+      change ‖↑↑n * qn / (1 - qn)‖ ≤ bound n
       calc ‖↑↑n * qn / (1 - qn)‖
           = ‖↑↑n * qn‖ / ‖1 - qn‖ := norm_div _ _
         _ ≤ ‖↑↑n * qn‖ / (1 - ‖q‖) := by
@@ -1313,8 +1316,8 @@ theorem L₁₀_div_FG_tendsto :
 /--
 Chain rule for resToImagAxis: `d/dt F(it) = -2π * (D F)(it)`.
 -/
-theorem deriv_resToImagAxis_eq' (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (t : ℝ) (ht : 0 < t) :
-    deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t := by
+theorem deriv_resToImagAxis_eq' (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (t : ℝ) (ht : 0 < t) : deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t := by
   let g : ℝ → ℂ := fun s => Complex.I * s
   have h_eq : F.resToImagAxis =ᶠ[nhds t] ((F ∘ ofComplex) ∘ g) := by
     filter_upwards [lt_mem_nhds ht] with s hs
@@ -1342,7 +1345,8 @@ theorem deriv_resToImagAxis_eq' (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ
   ring
 
 /--
-If `F` is real on the imaginary axis and MDifferentiable, then `D F` is also real on the imaginary axis.
+If `F` is real on the imaginary axis and MDifferentiable, then `D F` is also real on
+the imaginary axis.
 -/
 theorem D_imag_axis_real_of_imag_axis_real {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (hreal : ResToImagAxis.Real F) : ResToImagAxis.Real (D F) := by
@@ -1367,7 +1371,7 @@ theorem D_imag_axis_real_of_imag_axis_real {F : ℍ → ℂ} (hF : MDifferentiab
       -2 * π * (D F ⟨I * ↑t, by simp [ht]⟩).im := by
     simp only [neg_mul, neg_im, mul_comm (2 : ℂ), mul_assoc]
     rw [mul_im, mul_im]
-    simp only [ofReal_re, ofReal_im, mul_zero, sub_zero, zero_mul, add_zero]
+    simp only [ofReal_re, ofReal_im, zero_mul, add_zero]
     ring
   rw [hsimp, hderiv_im] at h2
   have hcoef : -2 * π ≠ 0 := by positivity
@@ -1386,7 +1390,8 @@ theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
   have hG_real := G_imag_axis_real t ht
   have hDF_real := D_imag_axis_real_of_imag_axis_real F_holo F_imag_axis_real t ht
   have hDG_real := D_imag_axis_real_of_imag_axis_real G_holo G_imag_axis_real t ht
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hF_real hG_real hDF_real hDG_real
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
+    at hF_real hG_real hDF_real hDG_real
   simp only [sub_im, mul_im]
   have hz : z = ⟨I * ↑t, by simp [ht]⟩ := rfl
   rw [hz]
@@ -1467,7 +1472,8 @@ theorem Q_differentiableOn : DifferentiableOn ℝ Q (Set.Ioi 0) := by
     simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
     exact ne_of_gt hG_pos
   -- Quotient is differentiable
-  have hQ_diff_at : DifferentiableAt ℝ (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) t :=
+  have hQ_diff_at : DifferentiableAt ℝ
+      (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) t :=
     hF_re_diff.div hG_re_diff hG_ne_zero
   -- Q equals this quotient locally on (0, ∞)
   apply hQ_diff_at.differentiableWithinAt.congr_of_eventuallyEq_of_mem
@@ -1551,8 +1557,7 @@ theorem deriv_Q (t : ℝ) (ht : 0 < t) :
   -- G(it).re > 0, hence ≠ 0
   have hG_pos : 0 < (G z).re := by
     have h := G_imag_axis_pos.2 t ht
-    simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, hz_def,
-               coe_mk_subtype] at h
+    simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at h
     exact h
   have hG_ne : (G z).re ≠ 0 := ne_of_gt hG_pos
   -- Q equals F.re / G.re locally
@@ -1567,7 +1572,7 @@ theorem deriv_Q (t : ℝ) (ht : 0 < t) :
       (G.resToImagAxis t).re ^ 2 := by
     have hG_ne' : (G.resToImagAxis t).re ≠ 0 := by
       simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
-      simp only [hz_def, coe_mk_subtype] at hG_ne
+      simp only [hz_def] at hG_ne
       exact hG_ne
     exact deriv_div hF_re_diff hG_re_diff hG_ne'
   rw [hdiv]
