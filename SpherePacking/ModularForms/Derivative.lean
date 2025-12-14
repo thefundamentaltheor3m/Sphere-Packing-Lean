@@ -1,4 +1,5 @@
 import SpherePacking.ModularForms.Eisenstein
+import SpherePacking.ModularForms.JacobiTheta
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
@@ -303,14 +304,39 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
 
 
 /--
-Modular linear differential equation satisfied by `F`.
-TODO: Move this to a more appropriate place.
+`-D E₂`, which appears in the MLDE for F.
 -/
+noncomputable def negDE₂ := -(D E₂)
+
+/--
+Modular linear differential equation satisfied by `F`.
+-/
+
 theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 172800 * Δ_fun * X₄₂ := by
   ext x
   rw [X₄₂, Δ_fun, serre_D, serre_D, F_aux]
   unfold serre_D
   rw [F_aux]
+  sorry
+
+/--
+Alternate form of MLDE_F using negDE₂.
+Blueprint: Equation (65) - ∂₁₂∂₁₀F = (5/6)E₄F + 7200·Δ·(-E₂')
+-/
+theorem MLDE_F' : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ_fun * negDE₂ := by
+  sorry
+
+/--
+The function `G(z) = H₂(z)³ * (2H₂(z)² + 5H₂(z)H₄(z) + 5H₄(z)²)`.
+Blueprint: Definition 8.3
+-/
+noncomputable def G (z : ℍ) : ℂ := H₂ z ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
+
+/--
+Modular linear differential equation satisfied by `G`.
+Blueprint: Equation (66) - ∂₁₂∂₁₀G = (5/6)E₄G - 640·Δ·H₂
+-/
+theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * E₄.toFun * G - 640 * Δ_fun * H₂ := by
   sorry
 
 example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.toFun - E₆.toFun) :=

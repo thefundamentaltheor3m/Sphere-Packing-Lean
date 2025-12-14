@@ -1164,6 +1164,17 @@ Blueprint: Follows from differential equations (65) and (66).
 -/
 theorem serre_D_L₁₀_eq (z : ℍ) :
     serre_D 22 L₁₀ z = Δ z * (7200 * (-(D E₂ z)) * G z + 640 * H₂ z * F z) := by
+  -- From serre_D_L₁₀: ∂₂₂L₁₀ = (∂₁₂∂₁₀F)G - F(∂₁₂∂₁₀G)
+  rw [serre_D_L₁₀]
+  -- From MLDE_F': ∂₁₂∂₁₀F = (5/6)E₄F + 7200Δ(-E₂')
+  -- From MLDE_G: ∂₁₂∂₁₀G = (5/6)E₄G - 640ΔH₂
+  -- Substituting: (5/6)E₄FG + 7200Δ(-E₂')G - F((5/6)E₄G - 640ΔH₂)
+  --             = (5/6)E₄FG + 7200Δ(-E₂')G - (5/6)E₄FG + 640ΔH₂F
+  --             = Δ(7200(-E₂')G + 640H₂F)
+  have hF_eq := MLDE_F'
+  have hG_eq := MLDE_G
+  -- The substitution and cancellation
+  -- (Uses MLDE_F' and MLDE_G which have sorries)
   sorry
 
 /--
@@ -1216,11 +1227,26 @@ theorem F_vanishing_order :
       atImInfty (nhds (720 ^ 2 : ℂ)) := by
   -- F = (E₂E₄ - E₆)² and we want to show F / q² → 720² where q = exp(2πiz)
   -- Strategy: Show (E₂E₄ - E₆) / q → 720, then square
-  -- From E₂_mul_E₄_sub_E₆: E₂E₄ - E₆ = 720 * ∑_{n≥1} n * σ₃(n) * qⁿ
-  -- The leading term (n=1) is 720 * q, so (E₂E₄ - E₆)/q → 720 + O(q) → 720
-  -- Hence F/q² = ((E₂E₄ - E₆)/q)² → 720²
-  -- This proof depends on E₂_mul_E₄_sub_E₆ which currently has a sorry in Eisenstein.lean
-  sorry
+  -- From E₂_mul_E₄_sub_E₆: E₂E₄ - E₆ = 720 * ∑' n : ℕ+, n * σ₃(n) * q^n
+  -- Dividing by q and using QExp.tendsto_nat: limit is 720 * σ₃(1) = 720
+  have h_diff_tendsto : Filter.Tendsto (fun z : ℍ => (E₂ z * E₄ z - E₆ z) / cexp (2 * π * I * z))
+      atImInfty (nhds (720 : ℂ)) := by
+    -- The key identity from E₂_mul_E₄_sub_E₆:
+    -- (E₂E₄ - E₆)/q = 720 * ∑' n : ℕ+, n * σ₃(n) * q^(n-1)
+    -- Reindexing: = 720 * ∑' m : ℕ, (m+1) * σ₃(m+1) * q^m
+    -- By QExp.tendsto_nat, this → 720 * 1 * σ₃(1) = 720 * 1 = 720
+    -- (Uses E₂_mul_E₄_sub_E₆ which has a sorry in Eisenstein.lean)
+    sorry
+  -- F / q² = ((E₂E₄ - E₆) / q)² → 720²
+  have h_exp_eq : ∀ z : ℍ, cexp (2 * π * I * 2 * z) = cexp (2 * π * I * z) ^ 2 := by
+    intro z; rw [← Complex.exp_nat_mul]; congr 1; ring
+  have h_F_eq : ∀ z : ℍ, F z / cexp (2 * π * I * 2 * z) =
+      ((E₂ z * E₄ z - E₆ z) / cexp (2 * π * I * z)) ^ 2 := by
+    intro z
+    simp only [F, h_exp_eq, sq, div_mul_div_comm, Pi.mul_apply, Pi.sub_apply,
+      ModularForm.toFun_eq_coe]
+  simp_rw [h_F_eq]
+  exact h_diff_tendsto.pow 2
 
 /--
 The vanishing order of G at infinity is 5/2.
