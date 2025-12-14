@@ -1860,7 +1860,15 @@ theorem D_exp_pi_div_exp_pi (z : ℍ) :
   -- D = (2πi)⁻¹·d/dz, and d/dz(exp(πiz)) = πi·exp(πiz)
   -- So D(exp(πiz)) = (2πi)⁻¹·πi·exp(πiz) = (1/2)·exp(πiz)
   -- Therefore D(exp(πiz))/exp(πiz) = 1/2
-  sorry
+  simp only [D]
+  -- Compute deriv ((fun w : ℍ => cexp(π*I*w)) ∘ ofComplex) at (z : ℂ)
+  -- Uses: d/dz(exp(πiz)) = πi·exp(πiz), and ofComplex is identity on upper half plane
+  have h_deriv : deriv ((fun w : ℍ => cexp (π * Complex.I * w)) ∘ ⇑ofComplex) (z : ℂ) =
+      π * Complex.I * cexp (π * Complex.I * z) := by
+    sorry -- Chain rule: deriv exp(πiz) = πi·exp(πiz), composed with ofComplex (identity)
+  rw [h_deriv]
+  have h_exp_ne : cexp (π * Complex.I * z) ≠ 0 := Complex.exp_ne_zero _
+  field_simp [h_exp_ne]
 
 -- Helper: D(H₂)/H₂ → 1/2 (since H₂ ~ 16·exp(πiz) has vanishing order 1/2)
 theorem D_H₂_div_H₂_tendsto :
