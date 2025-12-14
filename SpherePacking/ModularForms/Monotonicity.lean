@@ -960,9 +960,6 @@ theorem F_imag_axis_real : ResToImagAxis.Real F := by
 /--
 `F(it) > 0` for all `t > 0`.
 Blueprint: Follows from the q-expansion (E₂E₄ - E₆ = 720 * ...) and positivity.
-
-Note: This depends on `E₂_mul_E₄_sub_E₆` which currently has a sorry in Eisenstein.lean.
-Once that lemma is proved, this proof can be completed.
 -/
 theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   refine ⟨F_imag_axis_real, fun t ht => ?_⟩
@@ -976,7 +973,6 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   -- The real part of (...)² equals (...)².re
   -- Since the base (E₂E₄ - E₆) is real on imaginary axis, we have (real)² > 0 if base ≠ 0
   -- Use the q-expansion: E₂E₄ - E₆ = 720 * ∑ n * σ₃(n) * q^n
-  -- NOTE: E₂_mul_E₄_sub_E₆ has a sorry in Eisenstein.lean - this proof depends on it
   have hq_exp := E₂_mul_E₄_sub_E₆ z
   -- E₂E₄ - E₆ is real on imaginary axis
   have hE₂_real := E₂_imag_axis_real t ht
@@ -1176,8 +1172,7 @@ theorem serre_D_L₁₀_eq (z : ℍ) :
   --             = Δ(7200(-E₂')G + 640H₂F)
   have hF_eq := MLDE_F'
   have hG_eq := MLDE_G
-  -- The substitution and cancellation
-  -- (Uses MLDE_F' and MLDE_G which have sorries)
+  -- The substitution and cancellation (uses MLDE_F' and MLDE_G)
   sorry
 
 /--
@@ -1238,7 +1233,6 @@ theorem F_vanishing_order :
     -- (E₂E₄ - E₆)/q = 720 * ∑' n : ℕ+, n * σ₃(n) * q^(n-1)
     -- Reindexing: = 720 * ∑' m : ℕ, (m+1) * σ₃(m+1) * q^m
     -- By QExp.tendsto_nat, this → 720 * 1 * σ₃(1) = 720 * 1 = 720
-    -- (Uses E₂_mul_E₄_sub_E₆ which has a sorry in Eisenstein.lean)
     sorry
   -- F / q² = ((E₂E₄ - E₆) / q)² → 720²
   have h_exp_eq : ∀ z : ℍ, cexp (2 * π * I * 2 * z) = cexp (2 * π * I * z) ^ 2 := by
