@@ -32,6 +32,29 @@ This file proves Proposition 8.12 from the blueprint: the function
 * Lemma 8.8: Differential equations (65) and (66)
 * Corollary 8.9: Positivity of RHS of (65) and (66) on imaginary axis
 * Proposition 8.12: Monotonicity of Q
+
+## Relationship to PR #193 (magic-modforms branch)
+
+PR #193 introduces `FG.lean` with similar definitions. Here's a comparison:
+
+| Concept | PR #193 (`FG.lean`) | This file |
+|---------|---------------------|-----------|
+| `F` | `(E₂ * E₄.toFun - E₆.toFun) ^ 2` | Same |
+| `G` | `H₂³ * (2H₂² + 5H₂H₄ + 5H₄²)` | Same (line ~137) |
+| `L₁₀` | `(D F) * G - F * (D G)` | Same (line ~1083) |
+
+**Proofs here that fill PR #193 sorries:**
+- `F_imag_axis_pos` → fills `F_pos`
+- `G_imag_axis_pos` → fills `G_pos`
+- `H₂_imag_axis_pos` → fills `H₂_pos`
+- `L₁₀_eventually_pos_imag_axis` → fills `L₁₀_eventuallyPos`
+- `Q_strictAntiOn` → fills `FmodG_antitone`
+
+**Still blocked (in both):**
+- `MLDE_F`, `MLDE_G` - differential equations
+- `serre_D_L₁₀_eq` / `SerreDer_22_L₁₀_pos` - depend on above
+
+When PR #193 merges, consider unifying these files.
 -/
 
 open UpperHalfPlane hiding I
