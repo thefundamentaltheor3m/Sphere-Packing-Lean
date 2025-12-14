@@ -1865,7 +1865,24 @@ theorem D_exp_pi_div_exp_pi (z : ℍ) :
   -- Uses: d/dz(exp(πiz)) = πi·exp(πiz), and ofComplex is identity on upper half plane
   have h_deriv : deriv ((fun w : ℍ => cexp (π * Complex.I * w)) ∘ ⇑ofComplex) (z : ℂ) =
       π * Complex.I * cexp (π * Complex.I * z) := by
-    sorry -- Chain rule: deriv exp(πiz) = πi·exp(πiz), composed with ofComplex (identity)
+    -- Step 1: Compute derivative of (fun w => cexp(πIw)) using chain rule
+    have h_exp_deriv : HasDerivAt (fun w : ℂ => cexp (π * Complex.I * w))
+        (π * Complex.I * cexp (π * Complex.I * z)) (z : ℂ) := by
+      have h_at_piIz : HasDerivAt cexp (cexp (π * Complex.I * z)) (π * Complex.I * z) :=
+        Complex.hasDerivAt_exp (π * Complex.I * z)
+      have h_linear : HasDerivAt (fun w : ℂ => π * Complex.I * w) (π * Complex.I) (z : ℂ) := by
+        have h := (hasDerivAt_id (z : ℂ)).const_mul (π * Complex.I)
+        simp only [mul_one, id] at h
+        exact h
+      exact h_at_piIz.scomp (z : ℂ) h_linear
+    -- Step 2: Show the composed function equals the simple function in a neighborhood
+    have h_agree : ((fun w : ℍ => cexp (π * Complex.I * w)) ∘ ⇑ofComplex) =ᶠ[nhds (z : ℂ)]
+        (fun w : ℂ => cexp (π * Complex.I * w)) := by
+      have him : 0 < (z : ℂ).im := z.2
+      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
+      filter_upwards [h_open.mem_nhds him] with w hw
+      simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
+    exact h_agree.deriv_eq.trans h_exp_deriv.deriv
   rw [h_deriv]
   have h_exp_ne : cexp (π * Complex.I * z) ≠ 0 := Complex.exp_ne_zero _
   field_simp [h_exp_ne]
