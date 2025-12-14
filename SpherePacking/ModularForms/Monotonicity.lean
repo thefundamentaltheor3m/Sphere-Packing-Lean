@@ -78,25 +78,19 @@ lemma Complex.im_tsum_eq_zero_of_im_eq_zero (f : ℤ → ℂ)
 
 /-- `(-1 : ℂ)^n` has zero imaginary part for any integer n. -/
 lemma neg_one_zpow_im_eq_zero (n : ℤ) : ((-1 : ℂ) ^ n).im = 0 := by
-  rcases Int.even_or_odd n with hn | hn
-  · rw [hn.neg_one_zpow]; simp
-  · rw [hn.neg_one_zpow]; simp
+  rcases Int.even_or_odd n with hn | hn <;> (rw [hn.neg_one_zpow]; simp)
 
 /-- For even k, `I^k = (-1)^(k/2)`. -/
 lemma I_pow_even (k : ℕ) (hk : Even k) : Complex.I ^ k = (-1 : ℂ) ^ (k / 2) := by
   obtain ⟨m, rfl⟩ := hk
-  have h1 : (m + m) / 2 = m := by omega
-  rw [h1]
-  rw [show m + m = 2 * m by ring, pow_mul, I_sq]
+  rw [show (m + m) / 2 = m by omega, show m + m = 2 * m by ring, pow_mul, I_sq]
 
 /-- `I^k` is real for even k (since `(-1)^m` is `±1`). -/
 lemma I_pow_even_real (k : ℕ) (hk : Even k) : (Complex.I ^ k).im = 0 := by
   rw [I_pow_even k hk]
-  have : ((-1 : ℂ) ^ (k / 2)).im = 0 := by
-    induction k / 2 with
-    | zero => simp
-    | succ n ih => simp [pow_succ, ih]
-  exact this
+  induction k / 2 with
+  | zero => simp
+  | succ n ih => simp [pow_succ, ih]
 
 /-- `(-2πi)^k` is real for even k. -/
 lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
@@ -1310,7 +1304,7 @@ theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) :
     have h_eq := serre_D_L₁₀_eq z
     rw [h_eq]
     -- Convert -D E₂ z to negDE₂ z (definitionally equal)
-    show (Δ z * (7200 * negDE₂ z * G z + 640 * H₂ z * F z)).im = 0
+    change (Δ z * (7200 * negDE₂ z * G z + 640 * H₂ z * F z)).im = 0
     -- The product of real numbers is real
     have hΔ_real : (Δ z).im = 0 := by
       have := Delta_imag_axis_pos.1 t ht
@@ -1345,7 +1339,7 @@ theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) :
     have h_eq := serre_D_L₁₀_eq z
     rw [h_eq]
     -- Convert -D E₂ z to negDE₂ z (definitionally equal)
-    show 0 < (Δ z * (7200 * negDE₂ z * G z + 640 * H₂ z * F z)).re
+    change 0 < (Δ z * (7200 * negDE₂ z * G z + 640 * H₂ z * F z)).re
     -- Get positivity and realness hypotheses
     have hΔ_pos : (Δ z).re > 0 := by
       have := Delta_imag_axis_pos.2 t ht
@@ -1432,7 +1426,7 @@ lemma summable_pow5_shift : Summable fun m : ℕ => (m + 1 : ℝ) ^ 5 * rexp (-2
   simp_rw [h_eq]
   apply Summable.mul_left
   convert h.comp_injective Nat.succ_injective using 1
-  ext m; simp only [Function.comp_apply, Nat.succ_eq_add_one]; push_cast; ring
+  ext m; simp only [Function.comp_apply, Nat.succ_eq_add_one]; push_cast; ring_nf
 
 /--
 Helper lemma: `Θ₂(z) / exp(πiz/4) → 2` as `im(z) → ∞`.
@@ -1528,9 +1522,9 @@ theorem F_vanishing_order :
         ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
           cexp (2 * π * Complex.I * m * z) =
         ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m) := by
-      intro z; apply tsum_congr; intro m; simp only [ha]; ring
+      intro z; apply tsum_congr; intro m; simp only [ha]; ring_nf
     simp_rw [h_eq2, ha0] at h_tendsto ⊢
-    convert h_tendsto.const_mul (720 : ℂ) using 2 <;> ring
+    convert h_tendsto.const_mul (720 : ℂ) using 2; ring
   -- F / q² = ((E₂E₄ - E₆) / q)² → 720²
   have h_exp_eq : ∀ z : ℍ, cexp (2 * π * I * 2 * z) = cexp (2 * π * I * z) ^ 2 := by
     intro z; rw [← Complex.exp_nat_mul]; congr 1; ring
