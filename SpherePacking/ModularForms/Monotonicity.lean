@@ -6,6 +6,7 @@ Authors: Cameron Freer
 import SpherePacking.ModularForms.AtImInfty
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.ResToImagAxis
 import SpherePacking.ModularForms.Delta
 
@@ -1202,6 +1203,13 @@ Blueprint: Corollary 8.9 - both terms in the expression are positive.
 - `G(it) > 0` and `H₂(it) > 0` and `F(it) > 0`
 -/
 theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) := by
+  -- Using serre_D_L₁₀_eq: serre_D 22 L₁₀ z = Δ z * (7200 * (-D E₂ z) * G z + 640 * H₂ z * F z)
+  -- The product is positive since:
+  -- 1. Δ(it) > 0 (Delta_imag_axis_pos)
+  -- 2. Both terms in parentheses are positive:
+  --    - 7200 * (-D E₂(it)) * G(it) > 0 since G(it) > 0 and -D E₂(it) > 0
+  --    - 640 * H₂(it) * F(it) > 0 since H₂(it) > 0 and F(it) > 0
+  -- Key missing lemma: -D E₂(it) > 0, i.e., E₄(it) > E₂(it)² (from Ramanujan formula)
   sorry
 
 /-!
@@ -1248,10 +1256,11 @@ theorem F_vanishing_order :
   -- Dividing by q and using QExp.tendsto_nat: limit is 720 * σ₃(1) = 720
   have h_diff_tendsto : Filter.Tendsto (fun z : ℍ => (E₂ z * E₄ z - E₆ z) / cexp (2 * π * I * z))
       atImInfty (nhds (720 : ℂ)) := by
-    -- The key identity from E₂_mul_E₄_sub_E₆:
-    -- (E₂E₄ - E₆)/q = 720 * ∑' n : ℕ+, n * σ₃(n) * q^(n-1)
-    -- Reindexing: = 720 * ∑' m : ℕ, (m+1) * σ₃(m+1) * q^m
-    -- By QExp.tendsto_nat, this → 720 * 1 * σ₃(1) = 720 * 1 = 720
+    -- Strategy: Use E₂_mul_E₄_sub_E₆ and QExp.tendsto_nat
+    -- E₂E₄ - E₆ = 720 * ∑' n : ℕ+, n * σ₃(n) * q^n
+    -- Divide by q and reindex: = ∑' m : ℕ, 720*(m+1)*σ₃(m+1) * q^m
+    -- By QExp.tendsto_nat: limit = coeff(0) = 720*1*σ₃(1) = 720
+    -- Technical proof: reindexing ℕ+ → ℕ and applying QExp.tendsto_nat
     sorry
   -- F / q² = ((E₂E₄ - E₆) / q)² → 720²
   have h_exp_eq : ∀ z : ℍ, cexp (2 * π * I * 2 * z) = cexp (2 * π * I * z) ^ 2 := by
@@ -1317,13 +1326,20 @@ theorem L₁₀_div_FG_tendsto :
       ((F.resToImagAxis t).re * (G.resToImagAxis t).re))
       Filter.atTop (nhds (1/2)) := by
   -- Wronskian identity: L₁₀ = (D F)·G - F·(D G), so L₁₀/(FG) = D F/F - D G/G
-  -- Using vanishing orders:
-  -- - F ~ c_F · q² where q = exp(2πiz), so D F/F = d/dz log F → 2 · 2πi = 4πi
-  --   On imaginary axis: (D F)(it) / F(it) → 2 (real part)
-  -- - G ~ c_G · q^(3/2), so D G/G → (3/2) · 2πi = 3πi
-  --   On imaginary axis: (D G)(it) / G(it) → 3/2 (real part)
-  -- Hence L₁₀/(FG) → 2 - 3/2 = 1/2
-  -- This proof depends on F_vanishing_order and G_vanishing_order asymptotics
+  -- Key insight: For f with vanishing order k at ∞, (D f)/f → k on imaginary axis
+  --
+  -- Step 1: F_vanishing_order shows F/q² → c_F (nonzero), so F ~ c_F·q²
+  --   Taking logarithm: log F ~ log c_F + 2·log q = log c_F + 4πiz
+  --   Derivative: (D F)/F ~ 4πi → 4π · i = 4π · im coefficient
+  --   On imaginary axis z = it: the "growth rate" is 2 (the vanishing order)
+  --
+  -- Step 2: G_vanishing_order shows G/q^(3/2) → c_G, so vanishing order is 3/2
+  --   Similarly, (D G)/G → 3/2 on imaginary axis
+  --
+  -- Step 3: L₁₀/(FG) = (D F)/F - (D G)/G → 2 - 3/2 = 1/2
+  --
+  -- Technical: Use deriv_resToImagAxis_eq to connect d/dt on imaginary axis to D
+  -- Need: lemma about vanishing_order → logarithmic derivative limit
   sorry
 
 /--
