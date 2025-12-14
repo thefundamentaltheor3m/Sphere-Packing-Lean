@@ -1940,10 +1940,10 @@ theorem L₁₀_div_FG_tendsto :
     filter_upwards [hF_ne, hG_ne] with z hF hG using (h_wronskian z hF hG).symm
 
   -- Step 5: Restrict to imaginary axis and take real parts
-  -- On the imaginary axis, L₁₀, F, G are all real, so the quotient is real
-  -- and the real part limit equals 1/2
-  -- This requires connecting the complex limit at atImInfty to the real limit at atTop
-  -- using the realness properties L₁₀_imag_axis_real, F_imag_axis_pos, G_imag_axis_pos
+  -- On the imaginary axis, L₁₀, F, G are all real (L₁₀_imag_axis_real, defined below),
+  -- so the quotient is real and the real part limit equals 1/2.
+  -- Uses: h_L_over_FG (complex limit), L₁₀_imag_axis_real, F_imag_axis_pos, G_imag_axis_pos
+  -- Key: For t > 0, L₁₀(it).re / (F(it).re * G(it).re) = (L₁₀/(FG))(it).re since all are real
   sorry
 
 /--
