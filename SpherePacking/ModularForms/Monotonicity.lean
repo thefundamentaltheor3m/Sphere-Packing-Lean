@@ -1918,9 +1918,37 @@ theorem D_H₂_div_H₂_tendsto :
     have h_pow4 : D (fun w => (Θ₂ w) ^ 4) z = 4 * (Θ₂ z) ^ 3 * D Θ₂ z := by
       -- Θ₂⁴ = (Θ₂²)², use D_sq twice
       have hΘ₂_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₂ := by
-        -- Θ₂ is holomorphic (it's a theta function)
-        -- The direct approach: Θ₂ = exp(πiz/4) · jacobiTheta₂ which is holomorphic.
-        sorry -- MDifferentiable Θ₂ follows from Θ₂_as_jacobiTheta₂
+        -- Θ₂ = exp(πiz/4) · jacobiTheta₂(z/2, z), product of holomorphic functions
+        intro τ
+        suffices h_diff : DifferentiableAt ℂ (Θ₂ ∘ ofComplex) τ.val by
+          have h_eq : (Θ₂ ∘ ofComplex) ∘ UpperHalfPlane.coe = Θ₂ := by
+            ext x; simp [Function.comp, ofComplex_apply]
+          rw [← h_eq]
+          exact h_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
+        have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
+        -- Define the function on ℂ
+        let F : ℂ → ℂ := fun t => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t
+        have hF : DifferentiableAt ℂ F τ.val := by
+          have h_exp : DifferentiableAt ℂ (fun t : ℂ => cexp ((π * I / 4) * t)) τ.val := by
+            exact (differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp
+          have h_theta : DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) τ.val := by
+            let f : ℂ → ℂ × ℂ := fun t : ℂ => (t / 2, t)
+            let g : ℂ × ℂ → ℂ := fun p => jacobiTheta₂ p.1 p.2
+            have hg : DifferentiableAt ℂ g (f τ.val) := by
+              simpa [f] using (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
+            have hf : DifferentiableAt ℂ f τ.val :=
+              (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
+            simpa [f, g] using (DifferentiableAt.fun_comp' τ.1 hg hf)
+          exact h_exp.mul h_theta
+        have h_ev : F =ᶠ[nhds τ.val] (Θ₂ ∘ ofComplex) := by
+          refine Filter.eventually_of_mem hU ?_
+          intro z hz
+          simp only [Function.comp_apply, F]
+          have h_arg : cexp ((π * I / 4) * z) = cexp (π * I * z / 4) := by
+            congr 1; ring
+          rw [h_arg, ofComplex_apply_of_im_pos hz, Θ₂_as_jacobiTheta₂]
+          simp only [coe_mk_subtype]
+        exact DifferentiableAt.congr_of_eventuallyEq hF h_ev.symm
       -- Use D_sq twice: D(Θ₂⁴) = D((Θ₂²)²) = 2·Θ₂²·D(Θ₂²) = 2·Θ₂²·(2·Θ₂·D(Θ₂)) = 4·Θ₂³·D(Θ₂)
       have hΘ₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (Θ₂ ^ 2) := by
         rw [pow_two]; exact MDifferentiable.mul hΘ₂_holo hΘ₂_holo
