@@ -1982,10 +1982,70 @@ theorem D_Θ₂_div_Θ₂_tendsto :
     -- MDifferentiable for f and h
     have hf_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
       -- f = exp(πiz/4) is holomorphic
-      sorry
+      intro τ
+      suffices h_diff : DifferentiableAt ℂ (f ∘ ofComplex) τ.val by
+        have h_eq : (f ∘ ofComplex) ∘ UpperHalfPlane.coe = f := by
+          ext x; simp [Function.comp, ofComplex_apply, f]
+        rw [← h_eq]
+        exact h_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
+      have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
+      have h_exp_diff : DifferentiableAt ℂ (fun t : ℂ => cexp (π * I * t / 4)) τ.val :=
+        ((differentiableAt_id.const_mul (π * I)).div_const 4).cexp
+      have h_ev : (fun t : ℂ => cexp (π * I * t / 4)) =ᶠ[nhds τ.val] (f ∘ ofComplex) := by
+        refine Filter.eventually_of_mem hU ?_
+        intro z hz
+        simp only [Function.comp_apply, f, ofComplex_apply_of_im_pos hz, coe_mk_subtype]
+      exact h_exp_diff.congr_of_eventuallyEq h_ev.symm
     have hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h := by
       -- h = Θ₂ / f, both holomorphic, f ≠ 0
-      sorry
+      intro τ
+      suffices h_diff : DifferentiableAt ℂ (h ∘ ofComplex) τ.val by
+        have h_eq : (h ∘ ofComplex) ∘ UpperHalfPlane.coe = h := by
+          ext x; simp [Function.comp, ofComplex_apply, h]
+        rw [← h_eq]
+        exact h_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
+      -- h ∘ ofComplex = (Θ₂ ∘ ofComplex) / (f ∘ ofComplex)
+      have hΘ₂_diff : DifferentiableAt ℂ (Θ₂ ∘ ofComplex) τ.val := by
+        -- Use the same proof pattern as in hΘ₂_holo below
+        have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
+        let F : ℂ → ℂ := fun t => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t
+        have hF : DifferentiableAt ℂ F τ.val := by
+          have h_exp : DifferentiableAt ℂ (fun t : ℂ => cexp ((π * I / 4) * t)) τ.val :=
+            (differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp
+          have h_theta : DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) τ.val := by
+            let f' : ℂ → ℂ × ℂ := fun t : ℂ => (t / 2, t)
+            let g : ℂ × ℂ → ℂ := fun p => jacobiTheta₂ p.1 p.2
+            have hg : DifferentiableAt ℂ g (f' τ.val) :=
+              (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
+            have hf' : DifferentiableAt ℂ f' τ.val :=
+              (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
+            exact hg.comp τ.val hf'
+          exact h_exp.mul h_theta
+        have h_ev : F =ᶠ[nhds τ.val] (Θ₂ ∘ ofComplex) := by
+          refine Filter.eventually_of_mem hU ?_
+          intro z hz
+          simp only [Function.comp_apply, F]
+          have h_arg : cexp ((π * I / 4) * z) = cexp (π * I * z / 4) := by ring_nf
+          rw [h_arg, ofComplex_apply_of_im_pos hz, Θ₂_as_jacobiTheta₂]
+          simp only [coe_mk_subtype]
+        exact hF.congr_of_eventuallyEq h_ev.symm
+      have hf_diff : DifferentiableAt ℂ (f ∘ ofComplex) τ.val := by
+        have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
+        have h_exp_diff : DifferentiableAt ℂ (fun t : ℂ => cexp (π * I * t / 4)) τ.val :=
+          ((differentiableAt_id.const_mul (π * I)).div_const 4).cexp
+        have h_ev : (fun t : ℂ => cexp (π * I * t / 4)) =ᶠ[nhds τ.val] (f ∘ ofComplex) := by
+          refine Filter.eventually_of_mem hU ?_
+          intro z hz
+          simp only [Function.comp_apply, f, ofComplex_apply_of_im_pos hz, coe_mk_subtype]
+        exact h_exp_diff.congr_of_eventuallyEq h_ev.symm
+      have hf_ne' : (f ∘ ofComplex) τ.val ≠ 0 := by
+        simp only [Function.comp_apply, f]
+        exact Complex.exp_ne_zero _
+      have h_eq' : (h ∘ ofComplex) =ᶠ[nhds τ.val] (Θ₂ ∘ ofComplex) / (f ∘ ofComplex) := by
+        have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
+        filter_upwards [hU] with w hw
+        simp only [Function.comp_apply, h, Pi.div_apply, ofComplex_apply_of_im_pos hw]
+      exact (hΘ₂_diff.div hf_diff hf_ne').congr_of_eventuallyEq h_eq'.symm
     -- Apply product rule: D(f * h) = f * D h + D f * h
     have h_D_prod : D (f * h) = f * D h + D f * h := D_mul f h hf_md hh_md
     -- Rewrite D Θ₂ using h_Θ₂_fn
