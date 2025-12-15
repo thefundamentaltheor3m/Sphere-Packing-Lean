@@ -1887,6 +1887,19 @@ theorem D_exp_pi_div_exp_pi (z : ℍ) :
   have h_exp_ne : cexp (π * Complex.I * z) ≠ 0 := Complex.exp_ne_zero _
   field_simp [h_exp_ne]
 
+-- Helper: D(jacobiTheta₂(z/2, z)) → 0 as im(z) → ∞
+-- jacobiTheta₂(z/2, z) = Σ_{n∈ℤ} exp(π·I·n·(n+1)·z)
+-- D(exp(2πi·k·z)) = k·exp(2πi·k·z), so D(exp(π·I·n·(n+1)·z)) = (n(n+1)/2)·exp(π·I·n·(n+1)·z)
+-- For n ∈ {-1, 0}: n(n+1) = 0, so coefficient = 0, contributing 0 to D(h)
+-- For n ∉ {-1, 0}: term decays exponentially, and polynomial prefactor doesn't affect limit
+theorem D_jacobiTheta₂_half_mul_tendsto_zero :
+    Filter.Tendsto (fun z : ℍ => D (fun w : ℍ => jacobiTheta₂ (w / 2) w) z) atImInfty (nhds 0) := by
+  -- D(Σ exp(π·I·n·(n+1)·z)) = Σ (n(n+1)/2)·exp(π·I·n·(n+1)·z)
+  -- For n ∈ {-1, 0}: coefficient = 0
+  -- For n ∉ {-1, 0}: exponential decay dominates polynomial growth from differentiation
+  -- This follows from tendsto_tsum_of_dominated_convergence with the derivative terms
+  sorry
+
 -- Helper: D(exp(πiz/4))/exp(πiz/4) = 1/8
 -- This follows from D = (2πi)⁻¹·d/dz and d/dz(exp(πiz/4)) = (πi/4)·exp(πiz/4)
 -- So D(exp(πiz/4)) = (2πi)⁻¹·(πi/4)·exp(πiz/4) = (1/8)·exp(πiz/4)
@@ -1939,10 +1952,17 @@ theorem D_Θ₂_div_Θ₂_tendsto :
     exact Θ₂_div_exp_tendsto
 
   -- Step 4: D(h) → 0 as im(z) → ∞ (since h approaches a constant)
+  -- h = Θ₂/f = jacobiTheta₂(z/2, z), so this follows from D_jacobiTheta₂_half_mul_tendsto_zero
   have hDh_tendsto : Filter.Tendsto (fun z => D h z) atImInfty (nhds (0 : ℂ)) := by
-    -- This follows from jacobiTheta₂(z/2, z) → 2 exponentially fast,
-    -- so its derivative also decays exponentially
-    sorry
+    -- h = Θ₂/f = exp(πiz/4)·jacobiTheta₂(z/2,z) / exp(πiz/4) = jacobiTheta₂(z/2,z)
+    have h_eq_jac : h = fun w : ℍ => jacobiTheta₂ (w / 2) w := by
+      ext w
+      simp only [h, f, Θ₂_as_jacobiTheta₂]
+      field_simp [Complex.exp_ne_zero]
+    have hD_eq : (fun z => D h z) = fun z => D (fun w : ℍ => jacobiTheta₂ (w / 2) w) z := by
+      ext z; rw [h_eq_jac]
+    rw [hD_eq]
+    exact D_jacobiTheta₂_half_mul_tendsto_zero
 
   -- Step 5: D(h)/h → 0 since D(h) → 0 and h → 2 ≠ 0
   have hDh_div_h_tendsto : Filter.Tendsto (fun z => D h z / h z) atImInfty (nhds (0 : ℂ)) := by
