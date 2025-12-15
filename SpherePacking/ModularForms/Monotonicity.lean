@@ -2232,11 +2232,72 @@ theorem L₁₀_div_FG_tendsto :
     filter_upwards [hF_ne, hG_ne] with z hF hG using (h_wronskian z hF hG).symm
 
   -- Step 5: Restrict to imaginary axis and take real parts
-  -- On the imaginary axis, L₁₀, F, G are all real (L₁₀_imag_axis_real, defined below),
+  -- On the imaginary axis, L₁₀, F, G are all real (L₁₀_imag_axis_real),
   -- so the quotient is real and the real part limit equals 1/2.
-  -- Uses: h_L_over_FG (complex limit), L₁₀_imag_axis_real, F_imag_axis_pos, G_imag_axis_pos
-  -- Key: For t > 0, L₁₀(it).re / (F(it).re * G(it).re) = (L₁₀/(FG))(it).re since all are real
-  sorry
+
+  -- Since re is continuous, compose with h_L_over_FG to get the real part limit
+  have h_re_limit : Filter.Tendsto (fun z : ℍ => (L₁₀ z / (F z * G z)).re)
+      atImInfty (nhds ((1 / 2 : ℂ).re)) :=
+    Complex.continuous_re.continuousAt.tendsto.comp h_L_over_FG
+  have h_re_half : ((1 / 2 : ℂ).re : ℝ) = 1 / 2 := by norm_num
+  rw [h_re_half] at h_re_limit
+
+  -- Apply Filter.Tendsto with the imaginary axis parametrization
+  rw [Filter.Tendsto, Filter.map_map] at h_re_limit ⊢
+  refine Filter.le_def.mpr fun S hS => ?_
+  rw [Filter.mem_map, Filter.mem_comap] at hS
+  obtain ⟨T, hT_nhds, hT_sub⟩ := hS
+  -- T ∈ nhds (1/2) and S ⊇ (fun z => ...).re ⁻¹' T in atImInfty
+  rw [Filter.eventually_atTop]
+  -- Get the bound from h_re_limit
+  have h_re_mem := Filter.le_def.mp (Filter.map_le_iff_le_comap.mp h_re_limit) T hT_nhds
+  rw [Filter.mem_comap] at h_re_mem
+  obtain ⟨U, hU_atImInfty, hU_sub⟩ := h_re_mem
+  rw [Filter.eventually_atImInfty] at hU_atImInfty
+  obtain ⟨A₁, hA₁⟩ := hU_atImInfty
+  -- Also get bounds where F, G are nonzero
+  obtain ⟨A₂, hA₂⟩ := Filter.eventually_atImInfty.mp hF_ne
+  obtain ⟨A₃, hA₃⟩ := Filter.eventually_atImInfty.mp hG_ne
+  use max (max (max A₁ A₂) A₃) 1
+  intro t ht
+  have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_trans (le_max_right _ _) ht)
+  let z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
+  have hz_im : z.im = t := by simp [z, UpperHalfPlane.im]
+  have hz_in_U : z ∈ U := by
+    apply hA₁
+    rw [hz_im]
+    exact le_trans (le_max_left A₁ A₂) (le_trans (le_max_left _ _) (le_trans (le_max_left _ _) ht))
+  have hz_F_ne : F z ≠ 0 := hA₂ z (by rw [hz_im]; exact le_trans (le_max_right A₁ A₂) (le_trans (le_max_left _ _) (le_trans (le_max_left _ _) ht)))
+  have hz_G_ne : G z ≠ 0 := hA₃ z (by rw [hz_im]; exact le_trans (le_max_right _ A₃) (le_trans (le_max_left _ _) ht))
+  -- Show the target is in S
+  apply hT_sub
+  -- Show the expression equals (L₁₀ z / (F z * G z)).re
+  have h_in_T : (L₁₀ z / (F z * G z)).re ∈ T := hU_sub hz_in_U
+  -- Need: (L₁₀.resToImagAxis t).re / ((F.resToImagAxis t).re * (G.resToImagAxis t).re) ∈ T
+  -- Since L₁₀, F, G are real on imaginary axis, the expression equals (L₁₀ z / (F z * G z)).re
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte]
+  -- Show: (L₁₀ z).re / ((F z).re * (G z).re) = (L₁₀ z / (F z * G z)).re
+  have hL_real := L₁₀_imag_axis_real t ht_pos
+  have hF_real := F_imag_axis_real t ht_pos
+  have hG_real := G_imag_axis_real t ht_pos
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte] at hL_real hF_real hG_real
+  -- z = ⟨I * t, ...⟩
+  have hz_eq : (⟨Complex.I * t, by simp [ht_pos]⟩ : ℍ) = z := rfl
+  rw [hz_eq] at hL_real hF_real hG_real
+  -- Now use that for real complex numbers, (a/b).re = a.re / b.re
+  have h_FG_real : (F z * G z).im = 0 := by
+    rw [Complex.mul_im]; simp [hF_real, hG_real]
+  have h_quot_eq : (L₁₀ z / (F z * G z)).re = (L₁₀ z).re / (F z * G z).re := by
+    rw [Complex.div_re]
+    have h_FG_ne : F z * G z ≠ 0 := mul_ne_zero hz_F_ne hz_G_ne
+    field_simp [h_FG_real, h_FG_ne]
+    ring
+  rw [h_quot_eq]
+  -- Also (F z * G z).re = (F z).re * (G z).re when both are real
+  have h_FG_re : (F z * G z).re = (F z).re * (G z).re := by
+    rw [Complex.mul_re]; simp [hF_real, hG_real]
+  rw [h_FG_re]
+  exact h_in_T
 
 /--
 Chain rule for resToImagAxis: `d/dt F(it) = -2π * (D F)(it)`.
