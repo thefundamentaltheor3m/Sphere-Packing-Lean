@@ -2241,7 +2241,7 @@ theorem D_Θ₄_tendsto_zero :
   -- Use dominated convergence with bound (n²/2) · exp(-π·n²)
   -- Θ₄ = jacobiTheta₂(1/2, z) = Σ (-1)^n · cexp(πin²z)
   -- D differentiates termwise: (2πi)⁻¹ · πin² = n²/2 per term
-  simp only [Θ₄, D]
+  simp only [D]
   -- Term-by-term analysis: for each n, D gives factor n²/2, which decays
   -- Proof sketch: Show D commutes with tsum (via uniform convergence on compacts)
   -- Then apply dominated convergence for the limit
@@ -2303,7 +2303,11 @@ theorem D_G_div_G_tendsto :
   -- DG/G = D(H₂³)/H₂³ + D(poly)/poly
   -- D(H₂³)/H₂³ = 3·D(H₂)/H₂ → 3·(1/2) = 3/2
   -- D(poly)/poly → 0 (since poly → 5 and D(poly) → 0)
-  -- TODO: Full proof requires careful handling of Pi types and MDifferentiable lemmas
+  -- Proof sketch: Use product rule for logarithmic derivative:
+  --   D(G)/G = D(H₂³)/H₂³ + D(poly)/poly
+  -- where poly = 2H₂² + 5H₂H₄ + 5H₄² → 5 and D(poly) → 0
+  -- Uses: D_cube, D_sq, D_mul, D_add, D_smul, D_H₂_div_H₂_tendsto,
+  --       D_H₂_tendsto_zero, D_H₄_tendsto_zero
   sorry
 
 /--
