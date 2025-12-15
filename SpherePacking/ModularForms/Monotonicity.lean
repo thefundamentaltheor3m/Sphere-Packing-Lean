@@ -1976,8 +1976,25 @@ theorem D_Θ₂_div_Θ₂_tendsto :
     filter_upwards [hh_ne] with z hz
     -- Θ₂ = f · h, so D(Θ₂) = D(f·h) = f·D(h) + h·D(f)
     have h_Θ₂_eq : Θ₂ z = f z * h z := by simp only [h, mul_div_cancel₀ _ (hf_ne z)]
-    -- Need product rule for D
-    sorry
+    -- Show Θ₂ = f * h as functions
+    have h_Θ₂_fn : Θ₂ = f * h := by
+      ext w; simp only [h, Pi.mul_apply, mul_div_cancel₀ _ (hf_ne w)]
+    -- MDifferentiable for f and h
+    have hf_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+      -- f = exp(πiz/4) is holomorphic
+      sorry
+    have hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h := by
+      -- h = Θ₂ / f, both holomorphic, f ≠ 0
+      sorry
+    -- Apply product rule: D(f * h) = f * D h + D f * h
+    have h_D_prod : D (f * h) = f * D h + D f * h := D_mul f h hf_md hh_md
+    -- Rewrite D Θ₂ using h_Θ₂_fn
+    have h_D_Θ₂ : D Θ₂ = D (f * h) := by rw [h_Θ₂_fn]
+    calc D Θ₂ z / Θ₂ z
+        = D (f * h) z / (f z * h z) := by rw [h_D_Θ₂, h_Θ₂_eq]
+      _ = (f z * D h z + D f z * h z) / (f z * h z) := by
+          rw [congrFun h_D_prod z]; simp only [Pi.mul_apply, Pi.add_apply]
+      _ = D f z / f z + D h z / h z := by field_simp [hf_ne z, hz]; ring
 
   -- Step 7: Take the limit
   have h_sum_limit : Filter.Tendsto (fun z => D f z / f z + D h z / h z) atImInfty
