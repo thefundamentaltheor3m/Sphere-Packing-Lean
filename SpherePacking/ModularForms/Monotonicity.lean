@@ -2215,27 +2215,77 @@ theorem D_H₂_div_H₂_tendsto :
 -- More precisely: D(H₂) = 4·H₂·(D(Θ₂)/Θ₂) = 4·H₂·(1/8 + o(1)) → 0 since H₂ → 0
 theorem D_H₂_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D H₂ z) atImInfty (nhds 0) := by
-  -- D(H₂) = 4·Θ₂³·D(Θ₂) from power rule
-  -- = 4·Θ₂⁴·(D(Θ₂)/Θ₂) = 4·H₂·(D(Θ₂)/Θ₂)
-  -- H₂ → 0 and D(Θ₂)/Θ₂ → 1/8 (bounded), so D(H₂) → 0
-  sorry
+  -- Strategy: D(H₂) = (D(H₂)/H₂) · H₂, then multiply limits
+  -- H₂ ≠ 0 eventually since H₂/exp → 16 ≠ 0
+  have hH₂_ne : ∀ᶠ z : ℍ in atImInfty, H₂ z ≠ 0 := by
+    have hdiv_ne := H₂_div_exp_tendsto.eventually_ne (by norm_num : (16 : ℂ) ≠ 0)
+    filter_upwards [hdiv_ne] with z hz
+    intro hzero
+    exact hz (by simp [hzero])
+  -- D(H₂) = (D(H₂)/H₂) · H₂ eventually
+  have h_eq : (fun z => D H₂ z) =ᶠ[atImInfty] fun z => (D H₂ z / H₂ z) * H₂ z := by
+    filter_upwards [hH₂_ne] with z hz
+    exact (div_mul_cancel₀ (D H₂ z) hz).symm
+  -- Limits: D(H₂)/H₂ → 1/2, H₂ → 0, so product → (1/2) * 0 = 0
+  have hlim := D_H₂_div_H₂_tendsto.mul H₂_tendsto_atImInfty
+  simp only [mul_zero] at hlim
+  exact hlim.congr' h_eq.symm
 
 -- Helper: D(Θ₄) → 0 (since Θ₄ → 1 and the q-expansion has exponentially decaying terms)
 -- Θ₄ = jacobiTheta₂(1/2, z) = Σ (-1)^n · q^(n²), where n=0 gives constant 1
 -- D of constant is 0, D of other terms decay exponentially
 theorem D_Θ₄_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D Θ₄ z) atImInfty (nhds 0) := by
+  -- D(Θ₄) = Σ (n²/2) · (-1)^n · exp(πin²z)
+  -- Each term tends to 0 as im(z) → ∞ (including n=0 which is 0)
+  -- Use dominated convergence with bound (n²/2) · exp(-π·n²)
+  -- Θ₄ = jacobiTheta₂(1/2, z) = Σ (-1)^n · cexp(πin²z)
+  -- D differentiates termwise: (2πi)⁻¹ · πin² = n²/2 per term
+  simp only [Θ₄, D]
+  -- Term-by-term analysis: for each n, D gives factor n²/2, which decays
+  -- Proof sketch: Show D commutes with tsum (via uniform convergence on compacts)
+  -- Then apply dominated convergence for the limit
+  -- TODO: Full proof requires termwise differentiation lemma for jacobiTheta
   sorry
 
 -- Helper: D(H₄) → 0 (since D(Θ₄) → 0 and Θ₄ → 1)
 theorem D_H₄_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D H₄ z) atImInfty (nhds 0) := by
   -- H₄ = Θ₄⁴, so D(H₄) = 4·Θ₄³·D(Θ₄)
-  -- Θ₄ → 1 and D(Θ₄) → 0, so D(H₄) → 4·1·0 = 0
-  have h_tendsto := D_Θ₄_tendsto_zero.mul (Θ₄_tendsto_atImInfty.pow 3)
-  simp only [zero_mul] at h_tendsto
-  -- Need to connect D(H₄) with 4·Θ₄³·D(Θ₄)
-  sorry
+  -- Θ₄ → 1 and D(Θ₄) → 0, so D(H₄) → 4·1³·0 = 0
+
+  -- Step 1: MDifferentiable for Θ₄
+  have hΘ₄_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₄ := by
+    intro τ
+    have hθ : DifferentiableAt ℂ (fun z : ℂ => jacobiTheta₂ (1 / 2 : ℂ) z) (τ : ℂ) :=
+      differentiableAt_jacobiTheta₂_snd (1 / 2 : ℂ) τ.2
+    have hMD : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ)
+        ((fun z : ℂ => jacobiTheta₂ (1 / 2 : ℂ) z) ∘ UpperHalfPlane.coe) τ :=
+      hθ.mdifferentiableAt.comp τ τ.mdifferentiable_coe
+    convert hMD using 1
+    ext x; simp [Θ₄_as_jacobiTheta₂, Function.comp]
+
+  -- Step 2: D(Θ₄²) = 2·Θ₄·D(Θ₄)
+  have hΘ₄sq_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (Θ₄ ^ 2) := by
+    rw [pow_two]; exact MDifferentiable.mul hΘ₄_holo hΘ₄_holo
+  have h_D_sq : D (Θ₄ ^ 2) = 2 * Θ₄ * D Θ₄ := D_sq Θ₄ hΘ₄_holo
+
+  -- Step 3: D(H₄) = D(Θ₄⁴) = D((Θ₄²)²) = 2·Θ₄²·D(Θ₄²) = 2·Θ₄²·2·Θ₄·D(Θ₄) = 4·Θ₄³·D(Θ₄)
+  have h_D_H₄ : D H₄ = 4 * Θ₄ ^ 3 * D Θ₄ := by
+    have h_H₄_eq : H₄ = (Θ₄ ^ 2) ^ 2 := by ext z; simp [H₄, pow_succ, pow_zero, mul_comm]
+    calc D H₄ = D ((Θ₄ ^ 2) ^ 2) := by rw [h_H₄_eq]
+      _ = 2 * (Θ₄ ^ 2) * D (Θ₄ ^ 2) := D_sq (Θ₄ ^ 2) hΘ₄sq_holo
+      _ = 2 * (Θ₄ ^ 2) * (2 * Θ₄ * D Θ₄) := by rw [h_D_sq]
+      _ = 4 * Θ₄ ^ 3 * D Θ₄ := by ext z; ring
+
+  -- Step 4: Limit calculation
+  -- D(H₄) = 4·Θ₄³·D(Θ₄), Θ₄ → 1 and D(Θ₄) → 0, so D(H₄) → 4·1·0 = 0
+  simp_rw [h_D_H₄]
+  have h_lim := (tendsto_const_nhds (x := (4 : ℂ))).mul
+    ((Θ₄_tendsto_atImInfty.pow 3).mul D_Θ₄_tendsto_zero)
+  simp only [mul_zero] at h_lim
+  convert h_lim using 1
+  ext z; ring
 
 theorem D_G_div_G_tendsto :
     Filter.Tendsto (fun z : ℍ => D G z / G z) atImInfty (nhds ((3 : ℂ) / 2)) := by
@@ -2244,11 +2294,119 @@ theorem D_G_div_G_tendsto :
   -- D(H₂³)/H₂³ = 3·D(H₂)/H₂ → 3·(1/2) = 3/2
   -- D(poly)/poly → 0 (since poly → 5 and D(poly) → 0)
 
-  -- For poly: H₂ → 0, H₄ → 1, so poly → 0 + 0 + 5·1 = 5
-  -- For D(poly): uses D(H₂) → 0 and D(H₄) → 0
+  -- Define poly
+  let poly : ℍ → ℂ := fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2
 
-  -- This requires product rule setup and multiple helper limits
-  sorry
+  -- G = H₂³ · poly
+  have h_G_eq : ∀ z, G z = H₂ z ^ 3 * poly z := fun z => by simp [G, poly]; ring
+
+  -- poly → 5 (H₂ → 0, H₄ → 1)
+  have h_poly_tendsto : Tendsto poly atImInfty (nhds 5) := by
+    simp only [poly]
+    have h := (tendsto_const_nhds.mul (H₂_tendsto_atImInfty.pow 2)).add
+      ((tendsto_const_nhds.mul (H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty)).add
+        (tendsto_const_nhds.mul (H₄_tendsto_atImInfty.pow 2)))
+    simp only [mul_zero, zero_add, mul_one, one_pow, zero_pow (by omega : 2 ≠ 0), zero_mul] at h
+    convert h using 1; norm_num
+
+  -- poly ≠ 0 eventually (poly → 5 ≠ 0)
+  have h_poly_ne : ∀ᶠ z in atImInfty, poly z ≠ 0 := by
+    have h5 : (5 : ℂ) ≠ 0 := by norm_num
+    exact h_poly_tendsto.eventually_ne h5
+
+  -- H₂ ≠ 0 eventually (H₂/exp → 16 ≠ 0)
+  have hH₂_ne : ∀ᶠ z in atImInfty, H₂ z ≠ 0 := by
+    have hdiv_ne := H₂_div_exp_tendsto.eventually_ne (by norm_num : (16 : ℂ) ≠ 0)
+    filter_upwards [hdiv_ne] with z hz hzero
+    exact hz (by simp [hzero])
+
+  -- G ≠ 0 eventually (G = H₂³ · poly)
+  have h_G_ne : ∀ᶠ z in atImInfty, G z ≠ 0 := by
+    filter_upwards [hH₂_ne, h_poly_ne] with z hH₂ hpoly
+    simp only [h_G_eq z, mul_ne_zero (pow_ne_zero 3 hH₂) hpoly, not_false_eq_true]
+
+  -- MDifferentiable hypotheses
+  have hH₂_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
+  have hH₄_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
+  have h_poly_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) poly := by
+    simp only [poly]
+    apply MDifferentiable.add
+    · exact (MDifferentiable.mul (MDifferentiable.const _)
+        (MDifferentiable.pow hH₂_holo 2))
+    · apply MDifferentiable.add
+      · exact MDifferentiable.mul (MDifferentiable.const _)
+          (MDifferentiable.mul hH₂_holo hH₄_holo)
+      · exact MDifferentiable.mul (MDifferentiable.const _)
+          (MDifferentiable.pow hH₄_holo 2)
+  have hH₂cube_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 3) := MDifferentiable.pow hH₂_holo 3
+
+  -- D(H₂³)/H₂³ → 3/2
+  have h_H₂cube_logderiv : Tendsto (fun z => D (H₂ ^ 3) z / H₂ z ^ 3) atImInfty (nhds (3/2)) := by
+    have h_D_cube : D (H₂ ^ 3) = 3 * H₂ ^ 2 * D H₂ := D_cube H₂ hH₂_holo
+    simp_rw [h_D_cube]
+    have h_eq : ∀ᶠ z in atImInfty, 3 * H₂ z ^ 2 * D H₂ z / H₂ z ^ 3 = 3 * (D H₂ z / H₂ z) := by
+      filter_upwards [hH₂_ne] with z hz
+      field_simp
+      ring
+    exact (D_H₂_div_H₂_tendsto.const_mul 3).congr' h_eq.symm
+
+  -- D(poly) → 0
+  have h_D_poly_tendsto : Tendsto (fun z => D poly z) atImInfty (nhds 0) := by
+    -- D(poly) = D(2H₂² + 5H₂H₄ + 5H₄²)
+    -- = 2·D(H₂²) + 5·D(H₂H₄) + 5·D(H₄²)
+    -- = 2·2H₂·D(H₂) + 5·(H₂·D(H₄) + D(H₂)·H₄) + 5·2H₄·D(H₄)
+    -- Each term → 0 since D(H₂) → 0, D(H₄) → 0, and H₂ → 0, H₄ → 1
+    have hH₂sq_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 2) := MDifferentiable.pow hH₂_holo 2
+    have hH₄sq_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 2) := MDifferentiable.pow hH₄_holo 2
+    have hH₂H₄_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ * H₄) := MDifferentiable.mul hH₂_holo hH₄_holo
+
+    have h_D_poly : D poly = 2 * (2 * H₂ * D H₂) + 5 * (H₂ * D H₄ + D H₂ * H₄) +
+        5 * (2 * H₄ * D H₄) := by
+      simp only [poly]
+      rw [D_add, D_add]
+      · rw [D_smul, D_smul, D_smul, D_sq H₂ hH₂_holo, D_mul H₂ H₄ hH₂_holo hH₄_holo,
+            D_sq H₄ hH₄_holo]
+      all_goals first | exact MDifferentiable.mul (MDifferentiable.const _) hH₂sq_holo
+        | exact MDifferentiable.add (MDifferentiable.mul (MDifferentiable.const _) hH₂sq_holo)
+            (MDifferentiable.mul (MDifferentiable.const _) hH₂H₄_holo)
+        | exact MDifferentiable.mul (MDifferentiable.const _) hH₂H₄_holo
+        | exact MDifferentiable.mul (MDifferentiable.const _) hH₄sq_holo
+
+    simp_rw [h_D_poly]
+    -- All terms tend to 0
+    have h1 := (tendsto_const_nhds.mul (H₂_tendsto_atImInfty.mul D_H₂_tendsto_zero)).const_mul 2
+    have h2a := H₂_tendsto_atImInfty.mul D_H₄_tendsto_zero
+    have h2b := D_H₂_tendsto_zero.mul H₄_tendsto_atImInfty
+    have h2 := (h2a.add h2b).const_mul 5
+    have h3 := (tendsto_const_nhds.mul (H₄_tendsto_atImInfty.mul D_H₄_tendsto_zero)).const_mul 5
+    simp only [mul_zero, zero_mul, zero_add, add_zero] at h1 h2 h3
+    convert h1.add (h2.add h3)
+    simp only [zero_add]
+
+  -- D(poly)/poly → 0
+  have h_poly_logderiv : Tendsto (fun z => D poly z / poly z) atImInfty (nhds 0) := by
+    have h5 : (5 : ℂ) ≠ 0 := by norm_num
+    have h_div := h_D_poly_tendsto.div h_poly_tendsto h5
+    simp only [zero_div] at h_div
+    exact h_div.congr' (by filter_upwards [h_poly_ne] with z _; rfl)
+
+  -- D(G)/G = D(H₂³)/H₂³ + D(poly)/poly eventually
+  have h_logderiv_eq : ∀ᶠ z in atImInfty, D G z / G z = D (H₂ ^ 3) z / H₂ z ^ 3 +
+      D poly z / poly z := by
+    filter_upwards [hH₂_ne, h_poly_ne] with z hH₂ hpoly
+    have hH₂cube_ne : H₂ z ^ 3 ≠ 0 := pow_ne_zero 3 hH₂
+    -- D(G) = D(H₂³ · poly) = H₂³ · D(poly) + D(H₂³) · poly
+    have h_G_fn : G = H₂ ^ 3 * poly := by ext w; exact h_G_eq w
+    have h_D_G : D G = H₂ ^ 3 * D poly + D (H₂ ^ 3) * poly := by
+      rw [h_G_fn, D_mul (H₂ ^ 3) poly hH₂cube_holo h_poly_holo]
+    rw [h_G_eq z, h_D_G]
+    field_simp
+    ring
+
+  -- Combine: D(G)/G → 3/2 + 0 = 3/2
+  have h_sum := h_H₂cube_logderiv.add h_poly_logderiv
+  simp only [add_zero] at h_sum
+  exact h_sum.congr' h_logderiv_eq.symm
 
 /--
 If `F` is real on the imaginary axis and MDifferentiable, then `D F` is also real on
