@@ -1887,14 +1887,80 @@ theorem D_exp_pi_div_exp_pi (z : ℍ) :
   have h_exp_ne : cexp (π * Complex.I * z) ≠ 0 := Complex.exp_ne_zero _
   field_simp [h_exp_ne]
 
+-- Helper: D(Θ₂)/Θ₂ → 1/8 (since Θ₂ has vanishing order 1/8 in q = exp(2πiz))
+-- This follows from Θ₂/exp(πiz/4) → 2 and D(exp(πiz/4))/exp(πiz/4) = 1/8.
+-- The vanishing order is preserved under taking logarithmic derivatives.
+theorem D_Θ₂_div_Θ₂_tendsto :
+    Filter.Tendsto (fun z : ℍ => D Θ₂ z / Θ₂ z) atImInfty (nhds ((1 : ℂ) / 8)) := by
+  -- Θ₂ = exp(πiz/4) · jacobiTheta₂(z/2, z), where jacobiTheta₂(z/2, z) → 2
+  -- D(exp(πiz/4))/exp(πiz/4) = 1/8 (since D = (2πi)⁻¹·d/dz, and d/dz(exp(πiz/4)) = πi/4·exp(πiz/4))
+  -- Product rule: D(Θ₂)/Θ₂ = D(exp(πiz/4))/exp(πiz/4) + D(jacobiTheta₂)/jacobiTheta₂
+  -- The second term → 0 since jacobiTheta₂ → constant 2, so its log-derivative → 0
+  -- Therefore D(Θ₂)/Θ₂ → 1/8 + 0 = 1/8
+  sorry
+
 -- Helper: D(H₂)/H₂ → 1/2 (since H₂ ~ 16·exp(πiz) has vanishing order 1/2)
 theorem D_H₂_div_H₂_tendsto :
     Filter.Tendsto (fun z : ℍ => D H₂ z / H₂ z) atImInfty (nhds ((1 : ℂ) / 2)) := by
   -- H₂ = Θ₂⁴, and Θ₂/exp(πiz/4) → 2
   -- D(H₂) = 4·Θ₂³·D(Θ₂), so D(H₂)/H₂ = 4·D(Θ₂)/Θ₂
-  -- D(Θ₂)/Θ₂ → D(exp(πiz/4))/exp(πiz/4) = 1/8
+  -- D(Θ₂)/Θ₂ → 1/8
   -- Therefore D(H₂)/H₂ → 4·(1/8) = 1/2
-  sorry
+
+  -- Step 1: H₂ = Θ₂⁴
+  have hH₂_eq : ∀ z : ℍ, H₂ z = (Θ₂ z) ^ 4 := fun z => rfl
+
+  -- Step 2: D(H₂)/H₂ = 4·D(Θ₂)/Θ₂ when Θ₂ ≠ 0
+  have h_logderiv : ∀ z : ℍ, Θ₂ z ≠ 0 → D H₂ z / H₂ z = 4 * (D Θ₂ z / Θ₂ z) := by
+    intro z hΘ₂
+    rw [hH₂_eq]
+    -- D(Θ₂⁴) = 4·Θ₂³·D(Θ₂) using power rule
+    have h_pow4 : D (fun w => (Θ₂ w) ^ 4) z = 4 * (Θ₂ z) ^ 3 * D Θ₂ z := by
+      -- Θ₂⁴ = (Θ₂²)², use D_sq twice
+      have hΘ₂_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₂ := by
+        -- Θ₂ is holomorphic (it's a theta function)
+        -- The direct approach: Θ₂ = exp(πiz/4) · jacobiTheta₂ which is holomorphic.
+        sorry -- MDifferentiable Θ₂ follows from Θ₂_as_jacobiTheta₂
+      -- Use D_sq twice: D(Θ₂⁴) = D((Θ₂²)²) = 2·Θ₂²·D(Θ₂²) = 2·Θ₂²·(2·Θ₂·D(Θ₂)) = 4·Θ₂³·D(Θ₂)
+      have hΘ₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (Θ₂ ^ 2) := by
+        rw [pow_two]; exact MDifferentiable.mul hΘ₂_holo hΘ₂_holo
+      have h_pow4_eq : (fun w => (Θ₂ w) ^ 4) = (Θ₂ ^ 2) ^ 2 := by
+        ext w; simp only [Pi.pow_apply]; ring
+      have h_D_pow4_fn : D ((Θ₂ ^ 2) ^ 2) = 2 * (Θ₂ ^ 2) * D (Θ₂ ^ 2) := D_sq (Θ₂ ^ 2) hΘ₂sq
+      have h_D_sq_fn : D (Θ₂ ^ 2) = 2 * Θ₂ * D Θ₂ := D_sq Θ₂ hΘ₂_holo
+      calc D (fun w => (Θ₂ w) ^ 4) z
+          = D ((Θ₂ ^ 2) ^ 2) z := by rw [h_pow4_eq]
+        _ = (Θ₂ ^ 2) z * D (Θ₂ ^ 2) z + D (Θ₂ ^ 2) z * (Θ₂ ^ 2) z := by
+            rw [pow_two ((Θ₂ ^ 2) : ℍ → ℂ), D_mul (Θ₂ ^ 2) (Θ₂ ^ 2) hΘ₂sq hΘ₂sq]
+            simp only [Pi.add_apply, Pi.mul_apply]
+        _ = 2 * (Θ₂ z) ^ 2 * D (Θ₂ ^ 2) z := by simp only [Pi.pow_apply]; ring
+        _ = 2 * (Θ₂ z) ^ 2 * (2 * Θ₂ z * D Θ₂ z) := by
+            rw [h_D_sq_fn]; simp only [Pi.mul_apply, Pi.ofNat_apply]
+        _ = 4 * (Θ₂ z) ^ 3 * D Θ₂ z := by ring
+    -- Now compute the quotient
+    -- First show D H₂ = D (fun w => Θ₂ w ^ 4) since H₂ = Θ₂^4
+    have h_H₂_eq_fn : H₂ = fun w => (Θ₂ w) ^ 4 := by ext w; rfl
+    rw [h_H₂_eq_fn, h_pow4]
+    have h_pow4_ne : (Θ₂ z) ^ 4 ≠ 0 := pow_ne_zero 4 hΘ₂
+    field_simp [hΘ₂, h_pow4_ne]
+
+  -- Step 3: Θ₂ ≠ 0 eventually (since Θ₂/exp(πiz/4) → 2 ≠ 0)
+  have hΘ₂_ne : ∀ᶠ z : ℍ in atImInfty, Θ₂ z ≠ 0 := by
+    have h_lim : Filter.Tendsto (fun z : ℍ => Θ₂ z / cexp (π * I * z / 4))
+        atImInfty (nhds (2 : ℂ)) := Θ₂_div_exp_tendsto
+    have h_2_ne : (2 : ℂ) ≠ 0 := by norm_num
+    have h_quot_ne := h_lim.eventually_ne h_2_ne
+    filter_upwards [h_quot_ne] with z hz
+    intro hΘ₂_zero
+    apply hz
+    simp only [hΘ₂_zero, zero_div]
+
+  -- Step 4: Convert limit: 4 * (1/8) = 1/2
+  have h_eq : (4 : ℂ) * (1 / 8) = 1 / 2 := by norm_num
+  rw [← h_eq]
+  apply (D_Θ₂_div_Θ₂_tendsto.const_mul (4 : ℂ)).congr'
+  filter_upwards [hΘ₂_ne] with z hz
+  exact (h_logderiv z hz).symm
 
 theorem D_G_div_G_tendsto :
     Filter.Tendsto (fun z : ℍ => D G z / G z) atImInfty (nhds ((3 : ℂ) / 2)) := by
