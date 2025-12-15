@@ -2183,12 +2183,13 @@ theorem D_H₂_div_H₂_tendsto :
   filter_upwards [hΘ₂_ne] with z hz
   exact (h_logderiv z hz).symm
 
--- Helper: D(H₂) → 0 (since D(H₂)/H₂ → 1/2 and H₂ → 0)
--- More precisely, D(H₂) = (D(H₂)/H₂) · H₂, and both factors are bounded/decay
+-- Helper: D(H₂) → 0 (since D(H₂) = 4·Θ₂³·D(Θ₂) and Θ₂ → 0)
+-- More precisely: D(H₂) = 4·H₂·(D(Θ₂)/Θ₂) = 4·H₂·(1/8 + o(1)) → 0 since H₂ → 0
 theorem D_H₂_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D H₂ z) atImInfty (nhds 0) := by
-  -- D(H₂) = 4·Θ₂³·D(Θ₂), and Θ₂ → 0 as im(z) → ∞
-  -- So D(H₂) → 0
+  -- D(H₂) = 4·Θ₂³·D(Θ₂) from power rule
+  -- = 4·Θ₂⁴·(D(Θ₂)/Θ₂) = 4·H₂·(D(Θ₂)/Θ₂)
+  -- H₂ → 0 and D(Θ₂)/Θ₂ → 1/8 (bounded), so D(H₂) → 0
   sorry
 
 -- Helper: D(Θ₄) → 0 (since Θ₄ → 1 and the q-expansion has exponentially decaying terms)
