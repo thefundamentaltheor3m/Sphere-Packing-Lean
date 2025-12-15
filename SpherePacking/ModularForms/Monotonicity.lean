@@ -2183,20 +2183,42 @@ theorem D_H₂_div_H₂_tendsto :
   filter_upwards [hΘ₂_ne] with z hz
   exact (h_logderiv z hz).symm
 
+-- Helper: D(H₂) → 0 (since D(H₂)/H₂ → 1/2 and H₂ → 0)
+-- More precisely, D(H₂) = (D(H₂)/H₂) · H₂, and both factors are bounded/decay
+theorem D_H₂_tendsto_zero :
+    Filter.Tendsto (fun z : ℍ => D H₂ z) atImInfty (nhds 0) := by
+  -- D(H₂) = 4·Θ₂³·D(Θ₂), and Θ₂ → 0 as im(z) → ∞
+  -- So D(H₂) → 0
+  sorry
+
+-- Helper: D(Θ₄) → 0 (since Θ₄ → 1 and the q-expansion has exponentially decaying terms)
+-- Θ₄ = jacobiTheta₂(1/2, z) = Σ (-1)^n · q^(n²), where n=0 gives constant 1
+-- D of constant is 0, D of other terms decay exponentially
+theorem D_Θ₄_tendsto_zero :
+    Filter.Tendsto (fun z : ℍ => D Θ₄ z) atImInfty (nhds 0) := by
+  sorry
+
+-- Helper: D(H₄) → 0 (since D(Θ₄) → 0 and Θ₄ → 1)
+theorem D_H₄_tendsto_zero :
+    Filter.Tendsto (fun z : ℍ => D H₄ z) atImInfty (nhds 0) := by
+  -- H₄ = Θ₄⁴, so D(H₄) = 4·Θ₄³·D(Θ₄)
+  -- Θ₄ → 1 and D(Θ₄) → 0, so D(H₄) → 4·1·0 = 0
+  have h_tendsto := D_Θ₄_tendsto_zero.mul (Θ₄_tendsto_atImInfty.pow 3)
+  simp only [zero_mul] at h_tendsto
+  -- Need to connect D(H₄) with 4·Θ₄³·D(Θ₄)
+  sorry
+
 theorem D_G_div_G_tendsto :
     Filter.Tendsto (fun z : ℍ => D G z / G z) atImInfty (nhds ((3 : ℂ) / 2)) := by
-  -- G = H₂³ · polynomial(H₂, H₄) where H₂ ~ 16·exp(πiz), H₄ → 1
-  -- The dominant term is H₂³ ~ 16³·exp(3πiz/2), so vanishing order is 3/2
-  -- D(exp(πiz))/exp(πiz) = 1/2, and the polynomial tends to constant
-  -- Therefore DG/G → 3/2
+  -- G = H₂³ · poly where poly = 2H₂² + 5H₂H₄ + 5H₄²
+  -- DG/G = D(H₂³)/H₂³ + D(poly)/poly
+  -- D(H₂³)/H₂³ = 3·D(H₂)/H₂ → 3·(1/2) = 3/2
+  -- D(poly)/poly → 0 (since poly → 5 and D(poly) → 0)
 
-  -- Key strategy: Use product rule DG/G = D(H₂³)/H₂³ + D(poly)/poly
-  -- where poly = 2H₂² + 5H₂H₄ + 5H₄²
-  -- Then D(H₂³)/H₂³ = 3·D(H₂)/H₂ → 3·(1/2) = 3/2
-  -- And D(poly)/poly → 0 (since poly → 5 and D(poly) → 0)
+  -- For poly: H₂ → 0, H₄ → 1, so poly → 0 + 0 + 5·1 = 5
+  -- For D(poly): uses D(H₂) → 0 and D(H₄) → 0
 
-  -- This proof requires establishing the product rule structure and the helper limits
-  -- For now, we leave this as sorry pending D_H₂_div_H₂_tendsto
+  -- This requires product rule setup and multiple helper limits
   sorry
 
 /--
