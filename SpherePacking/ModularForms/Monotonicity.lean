@@ -136,6 +136,55 @@ lemma Θ₂_imag_axis_im (t : ℝ) (ht : 0 < t) :
   intro n
   exact Θ₂_term_imag_axis_im n t ht
 
+/-- If `f/g → c ≠ 0`, then `f ≠ 0` eventually. -/
+lemma eventually_ne_zero_of_tendsto_div {f g : ℍ → ℂ} {c : ℂ} (hc : c ≠ 0)
+    (h : Filter.Tendsto (fun z => f z / g z) atImInfty (nhds c)) :
+    ∀ᶠ z : ℍ in atImInfty, f z ≠ 0 := by
+  have h_quot_ne := h.eventually_ne hc
+  filter_upwards [h_quot_ne] with z hz hf
+  exact hz (by simp [hf])
+
+/-- On imaginary axis z = I*t, the q-expansion exponent 2πi·n·z reduces to -(2πnt).
+Currently unused: existing proofs use let-bound `z` which doesn't unify with this lemma's
+explicit term. Available for future proofs that use `⟨I * t, _⟩` directly. -/
+lemma exp_imag_axis_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
+    2 * Real.pi * Complex.I * (⟨Complex.I * t, by simp [ht]⟩ : ℍ) * n =
+    (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
+  have hI : Complex.I ^ 2 = -1 := I_sq
+  push_cast
+  ring_nf
+  simp only [hI]
+  ring
+
+/-- Product of complex numbers with zero imaginary part has zero imaginary part. -/
+lemma Complex.im_mul_eq_zero' (a b : ℂ) (ha : a.im = 0) (hb : b.im = 0) : (a * b).im = 0 := by
+  simp [Complex.mul_im, ha, hb]
+
+/-- Quotient of complex numbers with zero imaginary part has zero imaginary part. -/
+lemma Complex.im_div_eq_zero' (a b : ℂ) (ha : a.im = 0) (hb : b.im = 0) : (a / b).im = 0 := by
+  rw [div_eq_mul_inv]
+  apply Complex.im_mul_eq_zero'
+  · exact ha
+  · simp [Complex.inv_im, hb]
+
+/-- Difference of complex numbers with zero imaginary part has zero imaginary part.
+Currently unused: available for future refactoring of real-arithmetic proofs. -/
+lemma Complex.im_sub_eq_zero' (a b : ℂ) (ha : a.im = 0) (hb : b.im = 0) : (a - b).im = 0 := by
+  simp [Complex.sub_im, ha, hb]
+
+/-- Sum of complex numbers with zero imaginary part has zero imaginary part.
+Currently unused: available for future refactoring of real-arithmetic proofs. -/
+lemma Complex.im_add_eq_zero' (a b : ℂ) (ha : a.im = 0) (hb : b.im = 0) : (a + b).im = 0 := by
+  simp [ha, hb]
+
+/-- Extract im = 0 from ResToImagAxis.Real.
+Currently unused: available for future refactoring of imag-axis proofs. -/
+lemma ResToImagAxis.Real.im_eq_zero' {f : ℍ → ℂ} (hf : ResToImagAxis.Real f)
+    (t : ℝ) (ht : 0 < t) : (f ⟨Complex.I * t, by simp [ht]⟩).im = 0 := by
+  have := hf t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this
+  exact this
+
 /-!
 ## Section 1: Definitions of F, G, and Q
 
@@ -653,15 +702,8 @@ theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun := by
     rw [Complex.div_im, Complex.one_im, Complex.one_re, hzeta_im]
     ring
 
-  -- Now build up: show each factor is real, then product is real
-  have h_prod_im : ∀ a b : ℂ, a.im = 0 → b.im = 0 → (a * b).im = 0 := by
-    intros a b ha hb; simp [Complex.mul_im, ha, hb]
-  have h_div_im : ∀ a b : ℂ, a.im = 0 → b.im = 0 → (a / b).im = 0 := by
-    intros a b ha hb; simp [Complex.div_im, ha, hb]
-
-  -- (-2πi)^4 / 3! is real
-  have hcoeff2_im : ((-2 * Real.pi * Complex.I) ^ 4 / ((4 - 1).factorial : ℂ)).im = 0 :=
-    h_div_im _ _ hpow_im hfact_im
+  -- (-2πi)^4 / 3! is real (using global helper)
+  have hcoeff2_im := Complex.im_div_eq_zero' _ _ hpow_im hfact_im
 
   -- Full product with sum is real (combine all three factors directly)
   simp only [Complex.mul_im, Complex.div_im, hinv_zeta_im, hsum_im, hpow_im, hfact_im]
@@ -1834,13 +1876,7 @@ theorem D_F_div_F_tendsto :
     exact (h_eq z hexp).symm
 
   -- Step 8: D(F)/F → 2·1 = 2
-  have h_F_ne : ∀ᶠ z : ℍ in atImInfty, F z ≠ 0 := by
-    have h_limit_ne : (720 ^ 2 : ℂ) ≠ 0 := by norm_num
-    have h_quot_ne := F_vanishing_order.eventually_ne h_limit_ne
-    filter_upwards [h_quot_ne] with z hz
-    intro hF_zero
-    apply hz
-    simp only [hF_zero, zero_div]
+  have h_F_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (720^2 : ℂ) ≠ 0) F_vanishing_order
   have h_2_eq : (2 : ℂ) = 2 * 1 := by ring
   rw [h_2_eq]
   apply (hDf_div_f.const_mul (2 : ℂ)).congr'
@@ -2166,15 +2202,7 @@ theorem D_H₂_div_H₂_tendsto :
     field_simp [hΘ₂, h_pow4_ne]
 
   -- Step 3: Θ₂ ≠ 0 eventually (since Θ₂/exp(πiz/4) → 2 ≠ 0)
-  have hΘ₂_ne : ∀ᶠ z : ℍ in atImInfty, Θ₂ z ≠ 0 := by
-    have h_lim : Filter.Tendsto (fun z : ℍ => Θ₂ z / cexp (π * I * z / 4))
-        atImInfty (nhds (2 : ℂ)) := Θ₂_div_exp_tendsto
-    have h_2_ne : (2 : ℂ) ≠ 0 := by norm_num
-    have h_quot_ne := h_lim.eventually_ne h_2_ne
-    filter_upwards [h_quot_ne] with z hz
-    intro hΘ₂_zero
-    apply hz
-    simp only [hΘ₂_zero, zero_div]
+  have hΘ₂_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (2 : ℂ) ≠ 0) Θ₂_div_exp_tendsto
 
   -- Step 4: Convert limit: 4 * (1/8) = 1/2
   have h_eq : (4 : ℂ) * (1 / 8) = 1 / 2 := by norm_num
@@ -2300,24 +2328,8 @@ theorem L₁₀_div_FG_tendsto :
       atImInfty (nhds ((2 : ℂ) - 3 / 2)) := hF_lim.sub hG_lim
 
   -- Step 3: F and G are nonzero for large imaginary part (from vanishing order limits)
-  have hF_ne : ∀ᶠ z : ℍ in atImInfty, F z ≠ 0 := by
-    -- F/q² → 720² ≠ 0 implies F/q² ≠ 0 eventually
-    -- Since q² = cexp(...) ≠ 0, we get F ≠ 0
-    have h_limit_ne : (720 ^ 2 : ℂ) ≠ 0 := by norm_num
-    have h_quot_ne := F_vanishing_order.eventually_ne h_limit_ne
-    filter_upwards [h_quot_ne] with z hz
-    intro hF_zero
-    apply hz
-    simp only [hF_zero, zero_div]
-  have hG_ne : ∀ᶠ z : ℍ in atImInfty, G z ≠ 0 := by
-    -- G/q^(3/2) → 20480 ≠ 0 implies G/q^(3/2) ≠ 0 eventually
-    -- Since q^(3/2) = cexp(...) ≠ 0, we get G ≠ 0
-    have h_limit_ne : (20480 : ℂ) ≠ 0 := by norm_num
-    have h_quot_ne := G_vanishing_order.eventually_ne h_limit_ne
-    filter_upwards [h_quot_ne] with z hz
-    intro hG_zero
-    apply hz
-    simp only [hG_zero, zero_div]
+  have hF_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (720^2 : ℂ) ≠ 0) F_vanishing_order
+  have hG_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (20480 : ℂ) ≠ 0) G_vanishing_order
 
   -- Step 4: L₁₀/(FG) → 1/2 in ℂ
   have h_L_over_FG : Filter.Tendsto (fun z : ℍ => L₁₀ z / (F z * G z))
