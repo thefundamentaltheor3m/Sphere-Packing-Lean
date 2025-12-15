@@ -1887,17 +1887,113 @@ theorem D_exp_pi_div_exp_pi (z : ℍ) :
   have h_exp_ne : cexp (π * Complex.I * z) ≠ 0 := Complex.exp_ne_zero _
   field_simp [h_exp_ne]
 
+-- Helper: D(exp(πiz/4))/exp(πiz/4) = 1/8
+-- This follows from D = (2πi)⁻¹·d/dz and d/dz(exp(πiz/4)) = (πi/4)·exp(πiz/4)
+-- So D(exp(πiz/4)) = (2πi)⁻¹·(πi/4)·exp(πiz/4) = (1/8)·exp(πiz/4)
+theorem D_exp_pi_quarter_div_exp_pi_quarter (z : ℍ) :
+    D (fun w => cexp (π * Complex.I * w / 4)) z / cexp (π * Complex.I * z / 4) = 1 / 8 := by
+  simp only [D]
+  have h_deriv : deriv ((fun w : ℍ => cexp (π * Complex.I * w / 4)) ∘ ⇑ofComplex) (z : ℂ) =
+      (π * Complex.I / 4) * cexp (π * Complex.I * z / 4) := by
+    have h_exp_deriv : HasDerivAt (fun w : ℂ => cexp (π * Complex.I * w / 4))
+        ((π * Complex.I / 4) * cexp (π * Complex.I * z / 4)) (z : ℂ) := by
+      have h_at_arg : HasDerivAt cexp (cexp (π * Complex.I * z / 4)) (π * Complex.I * z / 4) :=
+        Complex.hasDerivAt_exp (π * Complex.I * z / 4)
+      have h_linear : HasDerivAt (fun w : ℂ => π * Complex.I * w / 4)
+          (π * Complex.I / 4) (z : ℂ) := by
+        have h := (hasDerivAt_id (z : ℂ)).const_mul (π * Complex.I / 4)
+        simp only [mul_one, id] at h
+        convert h using 1; ring
+      exact h_at_arg.scomp (z : ℂ) h_linear
+    have h_agree : ((fun w : ℍ => cexp (π * Complex.I * w / 4)) ∘ ⇑ofComplex) =ᶠ[nhds (z : ℂ)]
+        (fun w : ℂ => cexp (π * Complex.I * w / 4)) := by
+      have him : 0 < (z : ℂ).im := z.2
+      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
+      filter_upwards [h_open.mem_nhds him] with w hw
+      simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
+    exact h_agree.deriv_eq.trans h_exp_deriv.deriv
+  rw [h_deriv]
+  have h_exp_ne : cexp (π * Complex.I * z / 4) ≠ 0 := Complex.exp_ne_zero _
+  field_simp [h_exp_ne]
+  ring
+
 -- Helper: D(Θ₂)/Θ₂ → 1/8 (since Θ₂ has vanishing order 1/8 in q = exp(2πiz))
 -- This follows from Θ₂/exp(πiz/4) → 2 and D(exp(πiz/4))/exp(πiz/4) = 1/8.
 -- The vanishing order is preserved under taking logarithmic derivatives.
 theorem D_Θ₂_div_Θ₂_tendsto :
     Filter.Tendsto (fun z : ℍ => D Θ₂ z / Θ₂ z) atImInfty (nhds ((1 : ℂ) / 8)) := by
-  -- Θ₂ = exp(πiz/4) · jacobiTheta₂(z/2, z), where jacobiTheta₂(z/2, z) → 2
-  -- D(exp(πiz/4))/exp(πiz/4) = 1/8 (since D = (2πi)⁻¹·d/dz, and d/dz(exp(πiz/4)) = πi/4·exp(πiz/4))
-  -- Product rule: D(Θ₂)/Θ₂ = D(exp(πiz/4))/exp(πiz/4) + D(jacobiTheta₂)/jacobiTheta₂
-  -- The second term → 0 since jacobiTheta₂ → constant 2, so its log-derivative → 0
-  -- Therefore D(Θ₂)/Θ₂ → 1/8 + 0 = 1/8
-  sorry
+  -- Strategy: Θ₂ = exp(πiz/4) · h where h = jacobiTheta₂(z/2, z)
+  -- D(Θ₂)/Θ₂ = D(exp(πiz/4))/exp(πiz/4) + D(h)/h = 1/8 + D(h)/h
+  -- h → 2 and D(h) → 0, so D(h)/h → 0, hence D(Θ₂)/Θ₂ → 1/8
+
+  -- Step 1: Express Θ₂ as product
+  let f : ℍ → ℂ := fun w => cexp (π * Complex.I * w / 4)
+  let h : ℍ → ℂ := fun w => Θ₂ w / f w  -- = jacobiTheta₂(z/2, z)
+
+  -- Step 2: D(f)/f = 1/8 (constant)
+  have hf_logderiv : ∀ z : ℍ, D f z / f z = 1 / 8 := D_exp_pi_quarter_div_exp_pi_quarter
+
+  -- Step 3: h → 2 as im(z) → ∞
+  have hh_tendsto : Filter.Tendsto h atImInfty (nhds (2 : ℂ)) := by
+    -- h = Θ₂ / exp(πiz/4) → 2
+    exact Θ₂_div_exp_tendsto
+
+  -- Step 4: D(h) → 0 as im(z) → ∞ (since h approaches a constant)
+  have hDh_tendsto : Filter.Tendsto (fun z => D h z) atImInfty (nhds (0 : ℂ)) := by
+    -- This follows from jacobiTheta₂(z/2, z) → 2 exponentially fast,
+    -- so its derivative also decays exponentially
+    sorry
+
+  -- Step 5: D(h)/h → 0 since D(h) → 0 and h → 2 ≠ 0
+  have hDh_div_h_tendsto : Filter.Tendsto (fun z => D h z / h z) atImInfty (nhds (0 : ℂ)) := by
+    have h_ne_zero : ∀ᶠ z : ℍ in atImInfty, h z ≠ 0 := by
+      -- h → 2, and 2 ≠ 0, so eventually h ≠ 0
+      have h_ball : Metric.ball (2 : ℂ) 1 ∈ nhds (2 : ℂ) :=
+        Metric.isOpen_ball.mem_nhds (by norm_num : dist (2 : ℂ) 2 < 1)
+      have := hh_tendsto.eventually h_ball
+      filter_upwards [this] with z hz
+      -- hz : dist (h z) 2 < 1
+      intro h_eq
+      rw [h_eq] at hz
+      have : dist (0 : ℂ) 2 = 2 := by simp [dist_eq_norm]
+      linarith [this]
+    have h2 : (2 : ℂ) ≠ 0 := by norm_num
+    have h_div_tendsto := hDh_tendsto.div hh_tendsto h2
+    simp only [zero_div] at h_div_tendsto
+    exact h_div_tendsto.congr' (by filter_upwards [h_ne_zero] with z hz; rfl)
+
+  -- Step 6: D(Θ₂)/Θ₂ = D(f·h)/(f·h) = D(f)/f + D(h)/h
+  have h_logderiv_eq : ∀ᶠ z : ℍ in atImInfty, D Θ₂ z / Θ₂ z = D f z / f z + D h z / h z := by
+    have hf_ne : ∀ z : ℍ, f z ≠ 0 := fun z => Complex.exp_ne_zero _
+    have hh_ne : ∀ᶠ z : ℍ in atImInfty, h z ≠ 0 := by
+      have h_ball : Metric.ball (2 : ℂ) 1 ∈ nhds (2 : ℂ) :=
+        Metric.isOpen_ball.mem_nhds (by norm_num : dist (2 : ℂ) 2 < 1)
+      have := hh_tendsto.eventually h_ball
+      filter_upwards [this] with z hz
+      intro h_eq; rw [h_eq] at hz
+      have : dist (0 : ℂ) 2 = 2 := by simp [dist_eq_norm]
+      linarith [this]
+    filter_upwards [hh_ne] with z hz
+    -- Θ₂ = f · h, so D(Θ₂) = D(f·h) = f·D(h) + h·D(f)
+    have h_Θ₂_eq : Θ₂ z = f z * h z := by simp only [h, mul_div_cancel₀ _ (hf_ne z)]
+    -- Need product rule for D
+    sorry
+
+  -- Step 7: Take the limit
+  have h_sum_limit : Filter.Tendsto (fun z => D f z / f z + D h z / h z) atImInfty
+      (nhds ((1 : ℂ) / 8 + 0)) := by
+    have hf_const : Filter.Tendsto (fun z => D f z / f z) atImInfty (nhds ((1 : ℂ) / 8)) := by
+      simp_rw [hf_logderiv]
+      exact tendsto_const_nhds
+    exact hf_const.add hDh_div_h_tendsto
+
+  have h_sum_limit' : Filter.Tendsto (fun z => D f z / f z + D h z / h z) atImInfty
+      (nhds ((1 : ℂ) / 8)) := by
+    convert h_sum_limit using 2; ring
+
+  refine h_sum_limit'.congr' ?_
+  filter_upwards [h_logderiv_eq] with z hz
+  exact hz.symm
 
 -- Helper: D(H₂)/H₂ → 1/2 (since H₂ ~ 16·exp(πiz) has vanishing order 1/2)
 theorem D_H₂_div_H₂_tendsto :
