@@ -2300,8 +2300,10 @@ theorem L₁₀_div_FG_tendsto :
   use max (max (max A₀ A₁) A₂) 1
   intro t ht
   have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_trans (le_max_right _ _) ht)
-  have ht_A₀ : A₀ ≤ t := le_trans (le_max_left A₀ A₁) (le_trans (le_max_left _ _) (le_trans (le_max_left _ _) ht))
-  have ht_A₁ : A₁ ≤ t := le_trans (le_max_right A₀ A₁) (le_trans (le_max_left _ _) (le_trans (le_max_left _ _) ht))
+  have ht_A₀ : A₀ ≤ t :=
+    le_trans (le_max_left A₀ A₁) (le_trans (le_max_left _ _) (le_trans (le_max_left _ _) ht))
+  have ht_A₁ : A₁ ≤ t :=
+    le_trans (le_max_right A₀ A₁) (le_trans (le_max_left _ _) (le_trans (le_max_left _ _) ht))
   have ht_A₂ : A₂ ≤ t := le_trans (le_max_right _ A₂) (le_trans (le_max_left _ _) ht)
   let z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
   have hz_im : z.im = t := by simp [z, UpperHalfPlane.im]
@@ -2315,7 +2317,8 @@ theorem L₁₀_div_FG_tendsto :
   have hL_real := L₁₀_imag_axis_real t ht_pos
   have hF_real := F_imag_axis_real t ht_pos
   have hG_real := G_imag_axis_real t ht_pos
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte] at hL_real hF_real hG_real
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte]
+    at hL_real hF_real hG_real
   have hz_eq : (⟨Complex.I * t, by simp [ht_pos]⟩ : ℍ) = z := rfl
   rw [hz_eq] at hL_real hF_real hG_real
   -- The complex quotient is real on the imaginary axis
