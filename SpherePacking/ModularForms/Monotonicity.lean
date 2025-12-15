@@ -2300,14 +2300,12 @@ theorem D_H₄_tendsto_zero :
 theorem D_G_div_G_tendsto :
     Filter.Tendsto (fun z : ℍ => D G z / G z) atImInfty (nhds ((3 : ℂ) / 2)) := by
   -- G = H₂³ · poly where poly = 2H₂² + 5H₂H₄ + 5H₄²
-  -- DG/G = D(H₂³)/H₂³ + D(poly)/poly
-  -- D(H₂³)/H₂³ = 3·D(H₂)/H₂ → 3·(1/2) = 3/2
-  -- D(poly)/poly → 0 (since poly → 5 and D(poly) → 0)
-  -- Proof sketch: Use product rule for logarithmic derivative:
-  --   D(G)/G = D(H₂³)/H₂³ + D(poly)/poly
-  -- where poly = 2H₂² + 5H₂H₄ + 5H₄² → 5 and D(poly) → 0
+  -- DG/G = D(H₂³)/H₂³ + D(poly)/poly → 3/2 + 0 = 3/2
+  -- Strategy:
+  --   1. D(H₂³)/H₂³ = 3·D(H₂)/H₂ → 3·(1/2) = 3/2 (using D_cube)
+  --   2. D(poly)/poly → 0 (poly → 5, D(poly) → 0 since each term has H₂→0 or D(H₂)→0 or D(H₄)→0)
   -- Uses: D_cube, D_sq, D_mul, D_add, D_smul, D_H₂_div_H₂_tendsto,
-  --       D_H₂_tendsto_zero, D_H₄_tendsto_zero
+  --       D_H₂_tendsto_zero, D_H₄_tendsto_zero, H₂_tendsto_atImInfty, H₄_tendsto_atImInfty
   sorry
 
 /--
