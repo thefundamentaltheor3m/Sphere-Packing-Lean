@@ -106,8 +106,7 @@ lemma eventually_ne_zero_of_tendsto_div {f g : ℍ → ℂ} {c : ℂ} (hc : c �
   exact hz (by simp [hf])
 
 /-- On imaginary axis z = I*t, the q-expansion exponent 2πi·n·z reduces to -(2πnt).
-Currently unused: existing proofs use let-bound `z` which doesn't unify with this lemma's
-explicit term. Available for future proofs that use `⟨I * t, _⟩` directly. -/
+This is useful for reusing the same algebraic simplification across `E₂`, `E₄`, `E₆`. -/
 lemma exp_imag_axis_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
     2 * Real.pi * Complex.I * (⟨Complex.I * t, by simp [ht]⟩ : ℍ) * n =
     (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
@@ -127,25 +126,6 @@ lemma Complex.im_div_eq_zero' (a b : ℂ) (ha : a.im = 0) (hb : b.im = 0) : (a /
   apply Complex.im_mul_eq_zero'
   · exact ha
   · simp [Complex.inv_im, hb]
-
-/-- Difference of complex numbers with zero imaginary part has zero imaginary part.
-Currently unused: available for future refactoring of real-arithmetic proofs. -/
-lemma Complex.im_sub_eq_zero' (a b : ℂ) (ha : a.im = 0) (hb : b.im = 0) : (a - b).im = 0 := by
-  simp [Complex.sub_im, ha, hb]
-
-/-- Sum of complex numbers with zero imaginary part has zero imaginary part.
-Currently unused: available for future refactoring of real-arithmetic proofs. -/
-lemma Complex.im_add_eq_zero' (a b : ℂ) (ha : a.im = 0) (hb : b.im = 0) : (a + b).im = 0 := by
-  simp [ha, hb]
-
-/-- Extract im = 0 from ResToImagAxis.Real.
-Currently unused: available for future refactoring of imag-axis proofs. -/
-lemma ResToImagAxis.Real.im_eq_zero' {f : ℍ → ℂ} (hf : ResToImagAxis.Real f)
-    (t : ℝ) (ht : 0 < t) : (f ⟨Complex.I * t, by simp [ht]⟩).im = 0 := by
-  have := hf t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this
-  exact this
-
 /-!
 ## Section 2: Definitions of F, G, and Q
 
@@ -438,43 +418,6 @@ theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
     exact pos_of_mul_pos_left hH₂_pos (le_of_lt ht2_pos)
 
 /--
-`G(it)` is real for all `t > 0`.
-Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²), product of real functions.
-
-TODO: After PR #193 merges, this follows from the G_pos lemma structure in FG.lean.
--/
-theorem G_imag_axis_real : ResToImagAxis.Real G := by
-  intro t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, G]
-  -- H₂ and H₄ are real on the imaginary axis
-  have hH₂_real := H₂_imag_axis_real t ht
-  have hH₄_real := H₄_imag_axis_real t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hH₂_real hH₄_real
-  set h₂ := H₂ ⟨Complex.I * t, by simp [ht]⟩ with hh₂_def
-  set h₄ := H₄ ⟨Complex.I * t, by simp [ht]⟩ with hh₄_def
-  -- Products and sums of real complex numbers are real
-  have h_prod_real : ∀ a b : ℂ, a.im = 0 → b.im = 0 → (a * b).im = 0 := by
-    intros a b ha hb; simp [Complex.mul_im, ha, hb]
-  have h_add_real : ∀ a b : ℂ, a.im = 0 → b.im = 0 → (a + b).im = 0 := by
-    intros a b ha hb; simp [ha, hb]
-  have h_pow_real : ∀ a : ℂ, a.im = 0 → ∀ n : ℕ, (a ^ n).im = 0 := by
-    intros a ha n; exact Complex.im_pow_eq_zero_of_im_eq_zero ha n
-  have h_const_real : ∀ c : ℕ, ((c : ℂ)).im = 0 := by simp
-  -- Build up: 2H₂² + 5H₂H₄ + 5H₄² is real
-  have hterm1 : (2 * h₂ ^ 2).im = 0 :=
-    h_prod_real _ _ (h_const_real 2) (h_pow_real h₂ hH₂_real 2)
-  have hterm2 : (5 * h₂ * h₄).im = 0 := by
-    apply h_prod_real
-    · exact h_prod_real _ _ (h_const_real 5) hH₂_real
-    · exact hH₄_real
-  have hterm3 : (5 * h₄ ^ 2).im = 0 :=
-    h_prod_real _ _ (h_const_real 5) (h_pow_real h₄ hH₄_real 2)
-  have hquad : (2 * h₂ ^ 2 + 5 * h₂ * h₄ + 5 * h₄ ^ 2).im = 0 :=
-    h_add_real _ _ (h_add_real _ _ hterm1 hterm2) hterm3
-  have hcube : (h₂ ^ 3).im = 0 := h_pow_real h₂ hH₂_real 3
-  exact h_prod_real _ _ hcube hquad
-
-/--
 `G(it) > 0` for all `t > 0`.
 Blueprint: Lemma 8.6 - follows from H₂(it) > 0 and H₄(it) > 0.
 G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is positive since all factors are positive.
@@ -482,76 +425,55 @@ G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is positive since all factors are pos
 TODO: After PR #193 merges, use the G_pos lemma from FG.lean.
 -/
 theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
-  constructor
-  · exact G_imag_axis_real
-  · intro t ht
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
-    -- G = _root_.G = H₂³ * (2H₂² + 5H₂H₄ + 5H₄²)
-    unfold G _root_.G
-    -- Get positivity and realness of H₂ and H₄
-    have hH₂_pos := H₂_imag_axis_pos.2 t ht
-    have hH₂_real := H₂_imag_axis_pos.1 t ht
-    have hH₄_pos := H₄_imag_axis_pos.2 t ht
-    have hH₄_real := H₄_imag_axis_pos.1 t ht
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hH₂_pos hH₂_real
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hH₄_pos hH₄_real
-    set h₂ := H₂ ⟨Complex.I * t, by simp [ht]⟩ with hh₂_def
-    set h₄ := H₄ ⟨Complex.I * t, by simp [ht]⟩ with hh₄_def
-    -- For real positive complex numbers, products preserve positivity
-    -- h₂³ > 0 and (2h₂² + 5h₂h₄ + 5h₄²) > 0
-    -- Product of positives is positive
-    -- Convert h₂, h₄ to real form since they have zero imaginary part
-    have h₂_eq : h₂ = (h₂.re : ℂ) := by
-      apply Complex.ext <;> simp [hH₂_real]
-    have h₄_eq : h₄ = (h₄.re : ℂ) := by
-      apply Complex.ext <;> simp [hH₄_real]
-    -- Express G in terms of real values
-    rw [h₂_eq, h₄_eq]
-    -- The expression is now purely real; simplify and extract real part
-    simp only [← Complex.ofReal_pow]
-    -- Combine into single ofReal
-    have h_goal_eq : (↑(h₂.re ^ 3) * (2 * ↑(h₂.re ^ 2) + 5 * ↑h₂.re * ↑h₄.re +
-        5 * ↑(h₄.re ^ 2)) : ℂ).re =
-        h₂.re ^ 3 * (2 * h₂.re ^ 2 + 5 * h₂.re * h₄.re + 5 * h₄.re ^ 2) := by
-      simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,
-        mul_zero, sub_zero, zero_mul]
-      ring
-    rw [h_goal_eq]
-    apply mul_pos
-    · exact pow_pos hH₂_pos 3
-    · have hterm1 : 0 < 2 * h₂.re ^ 2 := by positivity
-      have hterm2 : 0 < 5 * h₂.re * h₄.re := by positivity
-      have hterm3 : 0 < 5 * h₄.re ^ 2 := by positivity
-      linarith
+  unfold G _root_.G
+  have hH₂ : ResToImagAxis.Pos H₂ := H₂_imag_axis_pos
+  have hH₄ : ResToImagAxis.Pos H₄ := H₄_imag_axis_pos
+
+  have hH₂_sq : ResToImagAxis.Pos (fun z : ℍ => H₂ z ^ 2) := by
+    have hmul : ResToImagAxis.Pos (fun z : ℍ => H₂ z * H₂ z) := ResToImagAxis.Pos.mul hH₂ hH₂
+    simpa [pow_two] using hmul
+  have hH₂_cube : ResToImagAxis.Pos (fun z : ℍ => H₂ z ^ 3) := by
+    have hmul : ResToImagAxis.Pos (fun z : ℍ => (H₂ z ^ 2) * H₂ z) :=
+      ResToImagAxis.Pos.mul hH₂_sq hH₂
+    simpa [pow_succ, pow_two, mul_assoc] using hmul
+  have hH₄_sq : ResToImagAxis.Pos (fun z : ℍ => H₄ z ^ 2) := by
+    have hmul : ResToImagAxis.Pos (fun z : ℍ => H₄ z * H₄ z) := ResToImagAxis.Pos.mul hH₄ hH₄
+    simpa [pow_two] using hmul
+
+  have hterm1 : ResToImagAxis.Pos (fun z : ℍ => 2 * H₂ z ^ 2) := by
+    simpa using (ResToImagAxis.Pos.hmul (F := fun z : ℍ => H₂ z ^ 2) hH₂_sq (by norm_num))
+  have hterm2 : ResToImagAxis.Pos (fun z : ℍ => 5 * H₂ z * H₄ z) := by
+    have h5H₂ : ResToImagAxis.Pos (fun z : ℍ => (5 : ℝ) * H₂ z) :=
+      ResToImagAxis.Pos.hmul (F := H₂) hH₂ (by norm_num)
+    have hmul : ResToImagAxis.Pos (fun z : ℍ => ((5 : ℝ) * H₂ z) * H₄ z) :=
+      ResToImagAxis.Pos.mul h5H₂ hH₄
+    simpa [mul_assoc] using hmul
+  have hterm3 : ResToImagAxis.Pos (fun z : ℍ => 5 * H₄ z ^ 2) := by
+    simpa using (ResToImagAxis.Pos.hmul (F := fun z : ℍ => H₄ z ^ 2) hH₄_sq (by norm_num))
+
+  have hquad :
+      ResToImagAxis.Pos
+        (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) :=
+    ResToImagAxis.Pos.add (ResToImagAxis.Pos.add hterm1 hterm2) hterm3
+  have hmul :
+      ResToImagAxis.Pos
+        (fun z : ℍ =>
+          H₂ z ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)) :=
+    ResToImagAxis.Pos.mul hH₂_cube hquad
+  simpa using hmul
+
+/--
+`G(it)` is real for all `t > 0`.
+Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²), product of real functions.
+
+TODO: After PR #193 merges, this should follow from the corresponding lemma in FG.lean.
+-/
+theorem G_imag_axis_real : ResToImagAxis.Real G :=
+  G_imag_axis_pos.1
 
 /-!
 ### Helper lemmas for Eisenstein series on imaginary axis
 -/
-
-/-- exp(2πinz) is real when z = it (on the imaginary axis). -/
-lemma exp_2pi_I_mul_n_imag_axis_im (n : ℕ+) (t : ℝ) (_ht : 0 < t) :
-    (cexp (2 * π * Complex.I * n * (Complex.I * t))).im = 0 := by
-  -- 2πi·n·(it) = 2πi·n·it = -2πnt (real number)
-  have h : 2 * π * Complex.I * n * (Complex.I * t) = (-(2 * π * n * t) : ℝ) := by
-    have hI : Complex.I ^ 2 = -1 := I_sq
-    push_cast
-    ring_nf
-    simp only [hI]
-    ring
-  rw [h]
-  exact exp_ofReal_im _
-
-/-- exp(2πinz) is real and positive when z = it (on the imaginary axis). -/
-lemma exp_2pi_I_mul_n_imag_axis_re_pos (n : ℕ+) (t : ℝ) (_ht : 0 < t) :
-    0 < (cexp (2 * π * Complex.I * n * (Complex.I * t))).re := by
-  have h : 2 * π * Complex.I * n * (Complex.I * t) = (-(2 * π * n * t) : ℝ) := by
-    have hI : Complex.I ^ 2 = -1 := I_sq
-    push_cast
-    ring_nf
-    simp only [hI]
-    ring
-  rw [h, Complex.exp_ofReal_re]
-  exact Real.exp_pos _
 
 /-- `E₄(it)` is real for all `t > 0`. -/
 theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun := by
@@ -599,15 +521,8 @@ theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun := by
   have hterm_im : ∀ n : ℕ+, (↑((ArithmeticFunction.sigma (4 - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
     intro n
-    -- z = I * t, so 2πi·z·n = 2πi·(I*t)·n = -2πnt
-    have hz_eq : (z : ℂ) = Complex.I * t := rfl
     have hexp_arg : 2 * ↑Real.pi * Complex.I * z * n = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-      rw [hz_eq]
-      have hI : Complex.I ^ 2 = -1 := I_sq
-      push_cast
-      ring_nf
-      simp only [hI]
-      ring
+      simpa [z] using exp_imag_axis_arg (t := t) ht n
     rw [hexp_arg]
     -- exp of a real number is real
     have hexp_real : (cexp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := exp_ofReal_im _
@@ -697,14 +612,8 @@ theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun := by
   have hterm_im : ∀ n : ℕ+, (↑((ArithmeticFunction.sigma (6 - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
     intro n
-    have hz_eq : (z : ℂ) = Complex.I * t := rfl
     have hexp_arg : 2 * ↑Real.pi * Complex.I * z * n = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-      rw [hz_eq]
-      have hI : Complex.I ^ 2 = -1 := I_sq
-      push_cast
-      ring_nf
-      simp only [hI]
-      ring
+      simpa [z] using exp_imag_axis_arg (t := t) ht n
     rw [hexp_arg]
     have hexp_real : (cexp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := exp_ofReal_im _
     have hsigma_real : (↑((ArithmeticFunction.sigma 5) ↑n) : ℂ).im = 0 := by simp
@@ -806,15 +715,11 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
   have hterm_im : ∀ n : ℕ+, (↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
       (1 - cexp (2 * ↑Real.pi * Complex.I * n * z))).im = 0 := by
     intro n
-    have hz_eq : (z : ℂ) = Complex.I * t := rfl
     -- exp(2πinz) = exp(2πin·it) = exp(-2πnt) is real
     have hexp_arg : 2 * ↑Real.pi * Complex.I * n * z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-      rw [hz_eq]
-      have hI : Complex.I ^ 2 = -1 := I_sq
-      push_cast
-      ring_nf
-      simp only [hI]
-      ring
+      have h1 : 2 * ↑Real.pi * Complex.I * z * n = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
+        simpa [z] using exp_imag_axis_arg (t := t) ht n
+      simpa [mul_assoc, mul_left_comm, mul_comm] using h1
     have hexp_real : (cexp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := exp_ofReal_im _
     have hone_sub_real : (1 - cexp (2 * ↑Real.pi * Complex.I * ↑↑n * ↑z)).im = 0 := by
       simp only [Complex.sub_im, Complex.one_im]

@@ -518,7 +518,7 @@ theorem F_vanishing_order :
       congr 1; apply tsum_congr; intro n
       rw [mul_div_assoc, ← Complex.exp_sub]; congr 2; ring
     simp_rw [h_eq]
-    -- Reindex using Equiv.pnatEquivNat.symm: n ↦ m+1
+    -- Reindex ℕ+ to ℕ via `tsum_pnat_eq_tsum_succ3`: n ↦ m+1
     have h_reindex : ∀ z : ℍ,
         ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
           cexp (2 * π * Complex.I * (n - 1) * z) =
@@ -838,7 +838,7 @@ theorem D_exp_pi_quarter_div_exp_pi_quarter (z : ℍ) :
           (π * Complex.I / 4) (z : ℂ) := by
         have h := (hasDerivAt_id (z : ℂ)).const_mul (π * Complex.I / 4)
         simp only [mul_one, id] at h
-        convert h using 1; ring
+        convert h using 1; ring_nf
       exact h_at_arg.scomp (z : ℂ) h_linear
     have h_agree : ((fun w : ℍ => cexp (π * Complex.I * w / 4)) ∘ ⇑ofComplex) =ᶠ[nhds (z : ℂ)]
         (fun w : ℂ => cexp (π * Complex.I * w / 4)) := by
