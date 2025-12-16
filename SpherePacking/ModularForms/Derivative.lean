@@ -280,23 +280,28 @@ so D[exp(2πinz)] = (2πi)⁻¹ * 2πin * exp(2πinz) = n * exp(2πinz).
 lemma D_exp_eq_n_mul (n : ℕ) (z : ℍ) :
     D (fun w : ℍ => cexp (2 * π * I * n * w)) z = n * cexp (2 * π * I * n * z) := by
   unfold D
+  -- The key: (f ∘ ofComplex) agrees with f on the upper half-plane
+  -- So their derivatives agree at points in ℍ
+  have hcomp : deriv ((fun w : ℍ => cexp (2 * π * I * n * w)) ∘ ofComplex) z =
+      deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z := by
+    apply Filter.EventuallyEq.deriv_eq
+    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
+    congr 1
+    exact congrArg (↑·) (UpperHalfPlane.coe_mk w hw)
+  rw [hcomp]
   -- deriv of exp(c*z) is c*exp(c*z)
   have hderiv : deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z =
       (2 * π * I * n) * cexp (2 * π * I * n * z) := by
-    have : (fun w : ℂ => cexp (2 * π * I * n * w)) = cexp ∘ (fun w => 2 * π * I * n * w) := rfl
-    rw [this, deriv_cexp (by fun_prop)]
-    simp [mul_comm]
-  -- Connect deriv of (f ∘ ofComplex) to deriv of f
-  have hcomp : deriv ((fun w : ℍ => cexp (2 * π * I * n * w)) ∘ ofComplex) z =
-      deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z := by
-    apply deriv_congr
-    intro w
-    simp [ofComplex]
-    sorry -- need to handle ofComplex properly
-  rw [hcomp, hderiv]
+    have hdiff : DifferentiableAt ℂ (fun w => 2 * π * I * n * w) z := by fun_prop
+    rw [← Function.comp_def, deriv_cexp hdiff, deriv_const_mul]
+    · simp only [deriv_id'', mul_one]
+    · fun_prop
+  rw [hderiv]
   -- Simplify (2πi)⁻¹ * (2πin) = n
   have h2pi : (2 * π * I : ℂ) ≠ 0 := by
-    simp [Complex.ext_iff, Real.pi_pos.ne']
+    simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, ofReal_eq_zero,
+      Real.pi_ne_zero, I_ne_zero, or_self]
   field_simp
   ring
 
