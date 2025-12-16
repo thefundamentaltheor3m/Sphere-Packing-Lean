@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
 import SpherePacking.ModularForms.Monotonicity_ImagAxis
+import SpherePacking.ModularForms.summable_lems
 
 /-!
 Auxiliary lemmas for `SpherePacking.ModularForms.Monotonicity`.
@@ -452,16 +453,6 @@ theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) :
 Using Lemma 8.11 (vanishing orders), we show L₁,₀(it) > 0 for large t.
 -/
 
-/-- Helper lemma: σ_k(n) ≤ n^{k+1} for divisor sum. -/
-lemma sigma_le_pow (k n : ℕ) : ArithmeticFunction.sigma k n ≤ n ^ (k + 1) := by
-  rw [ArithmeticFunction.sigma_apply]
-  calc ∑ d ∈ n.divisors, d ^ k
-      ≤ ∑ d ∈ n.divisors, n ^ k := Finset.sum_le_sum (fun d hd =>
-          Nat.pow_le_pow_left (Nat.divisor_le hd) k)
-    _ = n.divisors.card * n ^ k := by rw [Finset.sum_const, smul_eq_mul]
-    _ ≤ n * n ^ k := Nat.mul_le_mul_right _ (Nat.card_divisors_le_self n)
-    _ = n ^ (k + 1) := by rw [pow_succ']
-
 /-- Summability of (m+1)^5 * exp(-2πm) via comparison with shifted sum. -/
 lemma summable_pow5_shift : Summable fun m : ℕ => (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) := by
   have h := Real.summable_pow_mul_exp_neg_nat_mul 5 (by positivity : 0 < 2 * π)
@@ -534,12 +525,10 @@ theorem F_vanishing_order :
         ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
           cexp (2 * π * Complex.I * m * z) := by
       intro z
-      rw [← Equiv.tsum_eq Equiv.pnatEquivNat.symm]
-      congr 1; funext m
-      simp only [Equiv.pnatEquivNat_symm_apply, Nat.succPNat_coe]
-      have h_exp_eq' : ((m.succ : ℕ) : ℂ) - 1 = (m : ℂ) := by
-        simp only [Nat.succ_eq_add_one, Nat.cast_add, Nat.cast_one]; ring
-      simp only [h_exp_eq', Nat.succ_eq_add_one]
+      simpa [tsum_pnat_eq_tsum_succ3] using
+        (tsum_pnat_eq_tsum_succ3 (f := fun n : ℕ =>
+          (n : ℂ) * (↑(ArithmeticFunction.sigma 3 n) : ℂ) *
+            cexp (2 * π * Complex.I * ((n : ℂ) - 1) * z)))
     simp_rw [h_reindex]
     -- Apply QExp.tendsto_nat with coefficient function a(m) = (m+1) * σ₃(m+1)
     set a : ℕ → ℂ := fun m => ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) with ha
@@ -553,7 +542,7 @@ theorem F_vanishing_order :
         intro m
         simp only [ha, norm_mul, Complex.norm_natCast]
         have h1 : (ArithmeticFunction.sigma 3 (m + 1) : ℝ) ≤ ((m + 1 : ℕ) : ℝ) ^ 4 := by
-          exact_mod_cast sigma_le_pow 3 (m + 1)
+          exact_mod_cast (sigma_bound 3 (m + 1))
         calc (↑(m + 1) : ℝ) * (ArithmeticFunction.sigma 3 (m + 1) : ℝ)
             ≤ (↑(m + 1) : ℝ) * (↑(m + 1) : ℝ) ^ 4 :=
               mul_le_mul_of_nonneg_left h1 (Nat.cast_nonneg _)
@@ -708,12 +697,10 @@ theorem D_F_div_F_tendsto :
         ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
           cexp (2 * π * Complex.I * m * z) := by
       intro z
-      rw [← Equiv.tsum_eq Equiv.pnatEquivNat.symm]
-      congr 1; funext m
-      simp only [Equiv.pnatEquivNat_symm_apply, Nat.succPNat_coe]
-      have h_exp_eq' : ((m.succ : ℕ) : ℂ) - 1 = (m : ℂ) := by
-        simp only [Nat.succ_eq_add_one, Nat.cast_add, Nat.cast_one]; ring
-      simp only [h_exp_eq', Nat.succ_eq_add_one]
+      simpa [tsum_pnat_eq_tsum_succ3] using
+        (tsum_pnat_eq_tsum_succ3 (f := fun n : ℕ =>
+          (n : ℂ) * (↑(ArithmeticFunction.sigma 3 n) : ℂ) *
+            cexp (2 * π * Complex.I * ((n : ℂ) - 1) * z)))
     simp_rw [h_reindex]
     set a : ℕ → ℂ := fun m => ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) with ha
     have ha0 : a 0 = 1 := by simp [ha, ArithmeticFunction.sigma_one]
@@ -725,7 +712,7 @@ theorem D_F_div_F_tendsto :
         intro m
         simp only [ha, norm_mul, Complex.norm_natCast]
         have h1 : (ArithmeticFunction.sigma 3 (m + 1) : ℝ) ≤ ((m + 1 : ℕ) : ℝ) ^ 4 := by
-          exact_mod_cast sigma_le_pow 3 (m + 1)
+          exact_mod_cast (sigma_bound 3 (m + 1))
         calc (↑(m + 1) : ℝ) * (ArithmeticFunction.sigma 3 (m + 1) : ℝ)
             ≤ (↑(m + 1) : ℝ) * (↑(m + 1) : ℝ) ^ 4 :=
               mul_le_mul_of_nonneg_left h1 (Nat.cast_nonneg _)
@@ -936,21 +923,12 @@ theorem D_Θ₂_div_Θ₂_tendsto :
       ext w; simp only [h, Pi.mul_apply, mul_div_cancel₀ _ (hf_ne w)]
     -- MDifferentiable for f and h
     have hf_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
-      -- f = exp(πiz/4) is holomorphic
       intro τ
-      suffices h_diff : DifferentiableAt ℂ (f ∘ ofComplex) τ.val by
-        have h_eq : (f ∘ ofComplex) ∘ UpperHalfPlane.coe = f := by
-          ext x; simp [Function.comp, ofComplex_apply, f]
-        rw [← h_eq]
-        exact h_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
-      have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
-      have h_exp_diff : DifferentiableAt ℂ (fun t : ℂ => cexp (π * I * t / 4)) τ.val :=
+      have h_diff : DifferentiableAt ℂ (fun t : ℂ => cexp (π * I * t / 4)) (τ : ℂ) :=
         ((differentiableAt_id.const_mul (π * I)).div_const 4).cexp
-      have h_ev : (fun t : ℂ => cexp (π * I * t / 4)) =ᶠ[nhds τ.val] (f ∘ ofComplex) := by
-        refine Filter.eventually_of_mem hU ?_
-        intro z hz
-        simp only [Function.comp_apply, f, ofComplex_apply_of_im_pos hz, coe_mk_subtype]
-      exact h_exp_diff.congr_of_eventuallyEq h_ev.symm
+      simpa [f, Function.comp] using
+        (DifferentiableAt_MDifferentiableAt
+          (G := fun t : ℂ => cexp (π * I * t / 4)) (z := τ) h_diff)
     have hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h := by
       -- h = Θ₂ / f, both holomorphic, f ≠ 0
       intro τ
@@ -958,7 +936,8 @@ theorem D_Θ₂_div_Θ₂_tendsto :
         have h_eq : (h ∘ ofComplex) ∘ UpperHalfPlane.coe = h := by
           ext x; simp [Function.comp, ofComplex_apply, h]
         rw [← h_eq]
-        exact h_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
+        exact
+          DifferentiableAt_MDifferentiableAt (G := h ∘ ofComplex) (z := τ) h_diff
       -- h ∘ ofComplex = (Θ₂ ∘ ofComplex) / (f ∘ ofComplex)
       have hΘ₂_diff : DifferentiableAt ℂ (Θ₂ ∘ ofComplex) τ.val := by
         -- Use the same proof pattern as in hΘ₂_holo below
@@ -1052,7 +1031,8 @@ theorem D_H₂_div_H₂_tendsto :
           have h_eq : (Θ₂ ∘ ofComplex) ∘ UpperHalfPlane.coe = Θ₂ := by
             ext x; simp [Function.comp, ofComplex_apply]
           rw [← h_eq]
-          exact h_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
+          exact
+            DifferentiableAt_MDifferentiableAt (G := Θ₂ ∘ ofComplex) (z := τ) h_diff
         have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
         -- Define the function on ℂ
         let F : ℂ → ℂ := fun t => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t
@@ -1161,7 +1141,7 @@ theorem D_H₄_tendsto_zero :
       differentiableAt_jacobiTheta₂_snd (1 / 2 : ℂ) τ.2
     have hMD : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ)
         ((fun z : ℂ => jacobiTheta₂ (1 / 2 : ℂ) z) ∘ UpperHalfPlane.coe) τ :=
-      hθ.mdifferentiableAt.comp τ τ.mdifferentiable_coe
+      DifferentiableAt_MDifferentiableAt (G := fun z : ℂ => jacobiTheta₂ (1 / 2 : ℂ) z) hθ
     convert hMD using 1
     ext x; simp [Θ₄_as_jacobiTheta₂, Function.comp]
 

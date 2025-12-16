@@ -9,6 +9,7 @@ import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.ResToImagAxis
 import SpherePacking.ModularForms.Delta
+import SpherePacking.ModularForms.logDeriv_lems
 
 /-!
 Auxiliary lemmas for `SpherePacking.ModularForms.Monotonicity`.
@@ -830,94 +831,21 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
     ring
 
   -- Step 2: Summability of the series
-  -- Key bound: |n * q^n / (1 - q^n)| ≤ C * |n² * q^n| where C = (1 - |q|)⁻¹
   have hsum : Summable fun n : ℕ+ => ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
       (1 - cexp (2 * ↑Real.pi * Complex.I * n * z)) := by
-    -- Setup: q = exp(2πiz), |q| < 1
-    set q := cexp (2 * ↑Real.pi * Complex.I * z) with hq_def
-    have hq_norm : ‖q‖ < 1 := exp_upperHalfPlane_lt_one z
-    have hq_pos : 0 < 1 - ‖q‖ := by linarith
-    -- The majorant series n² * q^n is summable (from a33)
-    have ha33 := a33 2 1 z
-    simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at ha33
-    -- Define the bound function explicitly
-    let bound : ℕ+ → ℝ := fun n => (1 - ‖q‖)⁻¹ * ‖(↑↑n : ℂ) ^ 2 *
-        cexp (2 * ↑Real.pi * Complex.I * n * z)‖
-    -- Apply comparison test with constant factor (1 - ‖q‖)⁻¹
-    apply Summable.of_norm
-    apply Summable.of_nonneg_of_le (f := bound) (fun n => norm_nonneg _)
-    case hf.hgf =>
-      -- The bound: ‖n * qⁿ / (1 - qⁿ)‖ ≤ (1 - ‖q‖)⁻¹ * ‖n² * qⁿ‖
-      intro n
-      -- qⁿ = q^n in our notation
-      set qn := cexp (2 * ↑Real.pi * Complex.I * n * z) with hqn_def
-      -- Show qn = q^n
-      have hqn_eq : qn = q ^ (n : ℕ) := by
-        simp only [hqn_def, hq_def]
-        rw [← Complex.exp_nat_mul]
-        congr 1; ring
-      -- Norm of qⁿ
-      have hqn_norm : ‖qn‖ = ‖q‖ ^ (n : ℕ) := by rw [hqn_eq, norm_pow]
-      -- Key: ‖qⁿ‖ ≤ ‖q‖ since ‖q‖ < 1 and n ≥ 1
-      have hqn_le_q : ‖qn‖ ≤ ‖q‖ := by
-        rw [hqn_norm]
-        have hn_pos : 1 ≤ (n : ℕ) := n.one_le
-        calc ‖q‖ ^ (n : ℕ) ≤ ‖q‖ ^ 1 := by
-              apply pow_le_pow_of_le_one (norm_nonneg _) (le_of_lt hq_norm) hn_pos
-          _ = ‖q‖ := pow_one _
-      -- Lower bound: ‖1 - qⁿ‖ ≥ 1 - ‖qⁿ‖ ≥ 1 - ‖q‖
-      have hdenom_pos : 0 < ‖1 - qn‖ := by
-        apply norm_pos_iff.mpr
-        intro h
-        -- h : 1 - qn = 0, so qn = 1
-        have heq : qn = 1 := by simp only [sub_eq_zero] at h; exact h.symm
-        rw [hqn_eq] at heq
-        have hnorm_one : ‖q ^ (n : ℕ)‖ = 1 := by rw [heq]; simp
-        rw [norm_pow] at hnorm_one
-        have hlt : ‖q‖ ^ (n : ℕ) < 1 := by
-          calc ‖q‖ ^ (n : ℕ) ≤ ‖q‖ ^ 1 := by
-                apply pow_le_pow_of_le_one (norm_nonneg _) (le_of_lt hq_norm) n.one_le
-            _ = ‖q‖ := pow_one _
-            _ < 1 := hq_norm
-        linarith
-      have hdenom_lower : 1 - ‖q‖ ≤ ‖1 - qn‖ := by
-        have h1 : ‖(1 : ℂ)‖ - ‖qn‖ ≤ ‖1 - qn‖ := norm_sub_norm_le 1 qn
-        simp only [norm_one] at h1
-        calc 1 - ‖q‖ ≤ 1 - ‖qn‖ := by linarith [hqn_le_q]
-          _ ≤ ‖1 - qn‖ := h1
-      -- Now bound the quotient
-      change ‖↑↑n * qn / (1 - qn)‖ ≤ bound n
-      calc ‖↑↑n * qn / (1 - qn)‖
-          = ‖↑↑n * qn‖ / ‖1 - qn‖ := norm_div _ _
-        _ ≤ ‖↑↑n * qn‖ / (1 - ‖q‖) := by
-            apply div_le_div_of_nonneg_left (norm_nonneg _) hq_pos hdenom_lower
-        _ = (1 - ‖q‖)⁻¹ * ‖↑↑n * qn‖ := by rw [div_eq_inv_mul]
-        _ ≤ (1 - ‖q‖)⁻¹ * ‖(↑↑n : ℂ) ^ 2 * qn‖ := by
-            apply mul_le_mul_of_nonneg_left _ (inv_nonneg.mpr (le_of_lt hq_pos))
-            -- Simplify norms: ‖a * b‖ = ‖a‖ * ‖b‖
-            have hlhs : ‖↑↑n * qn‖ = (↑↑n : ℝ) * ‖qn‖ := by
-              rw [norm_mul, Complex.norm_natCast]
-            have hrhs : ‖(↑↑n : ℂ) ^ 2 * qn‖ = (↑↑n : ℝ) ^ 2 * ‖qn‖ := by
-              rw [norm_mul, norm_pow, Complex.norm_natCast]
-            rw [hlhs, hrhs]
-            apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-            have : (↑↑n : ℝ) ≤ (↑↑n : ℝ) ^ 2 := by
-              have hn : 1 ≤ (↑↑n : ℝ) := by exact_mod_cast n.one_le
-              nlinarith
-            exact this
-    case hf.hf =>
-      -- The majorant is summable
-      -- ha33 : Summable (fun c => c^2 * exp(2πi z c))
-      -- We need: Summable (fun n => (1-‖q‖)⁻¹ * ‖n^2 * exp(2πi n z)‖)
-      -- Reorder arguments: 2π*I*n*z = 2π*I*z*n (by commutativity)
-      have ha33' : Summable fun n : ℕ+ => (↑↑n : ℂ) ^ 2 *
-          cexp (2 * ↑Real.pi * Complex.I * n * z) := by
-        convert ha33 using 2 with n
-        ring_nf
-      have ha33_norm : Summable fun n : ℕ+ => ‖(↑↑n : ℂ) ^ 2 *
-          cexp (2 * ↑Real.pi * Complex.I * n * z)‖ :=
-        ha33'.norm
-      exact ha33_norm.mul_left (1 - ‖q‖)⁻¹
+    -- Rewrite in the `n * r^n / (1 - r^n)` form and use `logDeriv_q_expo_summable`.
+    set r : ℂ := cexp (2 * ↑Real.pi * Complex.I * z) with hr
+    have hr_norm : ‖r‖ < 1 := by
+      simpa [hr] using exp_upperHalfPlane_lt_one z
+    have hs : Summable fun n : ℕ => (n : ℂ) * r ^ n / (1 - r ^ n) :=
+      logDeriv_q_expo_summable r hr_norm
+    refine (hs.comp_injective PNat.coe_injective).congr ?_
+    intro n
+    have hpow : r ^ (n : ℕ) = cexp (2 * ↑Real.pi * Complex.I * (↑n : ℂ) * z) := by
+      rw [hr]
+      simpa [mul_assoc, mul_left_comm, mul_comm] using
+        (Complex.exp_nat_mul (2 * ↑Real.pi * Complex.I * z) (n : ℕ)).symm
+    simp [hpow]
 
   -- Step 3: The sum has zero imaginary part
   have hsum_im : (∑' (n : ℕ+), ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
@@ -934,33 +862,17 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
 Blueprint: Follows from E₂, E₄, E₆ having real values on the imaginary axis.
 -/
 theorem F_imag_axis_real : ResToImagAxis.Real F := by
-  -- F = (E₂ * E₄ - E₆)² is real if E₂ * E₄ - E₆ is real
-  -- which follows from E₂, E₄, E₆ being real on the imaginary axis
-  intro t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, F]
-  -- Get realness of E₂, E₄, E₆
-  have hE₂_real := E₂_imag_axis_real t ht
-  have hE₄_real := E₄_imag_axis_real t ht
-  have hE₆_real := E₆_imag_axis_real t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht,
-    ↓reduceDIte] at hE₂_real hE₄_real hE₆_real
-  -- If a, b, c are real (im = 0), then (a*b - c)² is real
-  set z₂ := E₂ ⟨Complex.I * t, by simp [ht]⟩ with hz₂_def
-  set z₄ := E₄ ⟨Complex.I * t, by simp [ht]⟩ with hz₄_def
-  set z₆ := E₆ ⟨Complex.I * t, by simp [ht]⟩ with hz₆_def
-  -- Need to establish z₄.im = 0 and z₆.im = 0 from hE₄_real and hE₆_real
-  have hz₄_im : z₄.im = 0 := hE₄_real
-  have hz₆_im : z₆.im = 0 := hE₆_real
-  -- (z₂ * z₄ - z₆)² has zero imaginary part when each has zero imaginary part
-  have h_prod_im : (z₂ * z₄).im = 0 := by
-    simp only [Complex.mul_im]
-    rw [hE₂_real, hz₄_im]
-    ring
-  have h_diff_im : (z₂ * z₄ - z₆).im = 0 := by
-    simp only [Complex.sub_im]
-    rw [h_prod_im, hz₆_im]
-    ring
-  exact Complex.im_pow_eq_zero_of_im_eq_zero h_diff_im 2
+  unfold F
+  have hProd : ResToImagAxis.Real (E₂ * E₄.toFun) :=
+    ResToImagAxis.Real.mul E₂_imag_axis_real E₄_imag_axis_real
+  have hNeg : ResToImagAxis.Real ((-1 : ℝ) • E₆.toFun) :=
+    ResToImagAxis.Real.hmul (c := (-1 : ℝ)) E₆_imag_axis_real
+  have hSub : ResToImagAxis.Real (E₂ * E₄.toFun - E₆.toFun) := by
+    have hEq : E₂ * E₄.toFun - E₆.toFun = E₂ * E₄.toFun + (-1 : ℝ) • E₆.toFun := by
+      ext z
+      simp [sub_eq_add_neg]
+    simpa [hEq] using ResToImagAxis.Real.add hProd hNeg
+  simpa [pow_two] using ResToImagAxis.Real.mul hSub hSub
 
 /--
 `F(it) > 0` for all `t > 0`.
