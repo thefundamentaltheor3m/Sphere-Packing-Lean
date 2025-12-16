@@ -724,20 +724,148 @@ theorem D_exp_pi_div_exp_pi (z : ℍ) :
   have h_exp_ne : cexp (π * Complex.I * z) ≠ 0 := Complex.exp_ne_zero _
   field_simp [h_exp_ne]
 
+-- Helper: Derivative formula for jacobiTheta₂(z/2, z) with respect to z
+-- Both arguments depend on z, so we get: d/dz = (1/2)·∂_1 + ∂_2
+-- = (1/2)·(2πIn) + πIn² = πIn + πIn² = πIn(n+1)
+private lemma jacobiTheta₂_half_z_deriv (z : ℂ) (hz : 0 < z.im) :
+    HasDerivAt (fun τ => jacobiTheta₂ (τ / 2) τ)
+               (∑' n : ℤ, (π * Complex.I * n * (n + 1)) * jacobiTheta₂_term n (z/2) z) z := by
+  have hf := hasFDerivAt_jacobiTheta₂ (z/2) hz
+  have hg : HasDerivAt (fun t : ℂ => (t / 2, t)) ((1:ℂ)/2, 1) z := by
+    apply HasDerivAt.prod; exact (hasDerivAt_id z).div_const 2; exact hasDerivAt_id z
+  have h := hf.comp_hasDerivAt z hg
+  convert h using 1
+  rw [jacobiTheta₂_fderiv_eq (z/2) hz]
+  congr 1; ext n
+  simp only [jacobiTheta₂_term_fderiv, ContinuousLinearMap.coe_smul',
+             ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
+             ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd',
+             Pi.smul_apply, smul_eq_mul]
+  ring
+
+-- Helper: Express D(jacobiTheta₂(z/2, z)) as a tsum
+private lemma D_jacobiTheta₂_half_mul_eq_tsum (z : ℍ) :
+    D (fun w : ℍ => jacobiTheta₂ (w / 2) w) z =
+      ∑' n : ℤ, ((n : ℂ) * (n + 1) / 2) * jacobiTheta₂_term n (z/2) z := by
+  simp only [D]
+  have hderiv : deriv ((fun τ => jacobiTheta₂ (τ / 2) τ) ∘ ofComplex) z =
+      ∑' n : ℤ, (π * Complex.I * n * (n + 1)) * jacobiTheta₂_term n (z/2) z := by
+    have h_agree : ((fun τ => jacobiTheta₂ (τ / 2) τ) ∘ ofComplex) =ᶠ[nhds (z : ℂ)]
+        (fun τ => jacobiTheta₂ (τ / 2) τ) := by
+      have hU : {w : ℂ | 0 < w.im} ∈ nhds (z : ℂ) := isOpen_upperHalfPlaneSet.mem_nhds z.2
+      filter_upwards [hU] with w hw
+      simp [Function.comp, ofComplex_apply_of_im_pos hw]
+    rw [h_agree.deriv_eq]
+    exact (jacobiTheta₂_half_z_deriv z z.2).deriv
+  rw [hderiv, ← tsum_mul_left]
+  congr 1; ext n
+  have hI : Complex.I ≠ 0 := Complex.I_ne_zero
+  have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr pi_ne_zero
+  field_simp; ring
+
+-- Helper: for |n| ≥ 2, n(n+1) ≥ n²/2
+private lemma n_mul_succ_ge_sq_div_two (n : ℤ) (hn : 2 ≤ |n|) : n^2 / 2 ≤ n * (n + 1) := by
+  have h_cases : n ≤ -2 ∨ n ≥ 2 := by omega
+  rcases h_cases with h | h
+  · have hnn1 : n * (n + 1) = |n| * (|n| - 1) := by omega
+    have hsq : n^2 = |n|^2 := sq_abs n
+    rw [hnn1, hsq]; nlinarith
+  · have : n^2 / 2 ≤ n^2 := Int.div_le_self (sq_nonneg n) (by norm_num)
+    calc n^2 / 2 ≤ n^2 := this
+      _ ≤ n^2 + n := by omega
+      _ = n * (n + 1) := by ring
+
+-- Helper: Summability of |n*(n+1)|/2 · exp(-π·n(n+1)) over ℤ
+private lemma summable_n_mul_n_plus_one_exp :
+    Summable (fun n : ℤ => |n * (n + 1)| / 2 * rexp (-π * (n * (n + 1)))) := by
+  have h_nn1_nonneg : ∀ n : ℤ, 0 ≤ n * (n + 1) := by
+    intro n; by_cases h : n ≤ -1 <;> nlinarith
+  apply Summable.of_nonneg_of_le
+  · intro n; positivity
+  · intro n
+    rw [abs_of_nonneg (h_nn1_nonneg n)]
+    by_cases hn : |n| < 2
+    · interval_cases n <;> simp [Real.exp_nonneg]
+    · push_neg at hn
+      have h_bound := n_mul_succ_ge_sq_div_two n hn
+      calc (n * (n + 1) : ℝ) / 2 * rexp (-π * (n * (n + 1)))
+          ≤ (n^2 : ℝ) * rexp (-π * (n^2 / 2)) := by
+              have hnn1_pos : 0 < n * (n + 1) := by nlinarith [sq_nonneg n, sq_abs n]
+              have hn2 : (n : ℝ)^2 / 2 ≤ n * (n + 1) := by
+                calc (n : ℝ)^2 / 2 = ((n^2 : ℤ) / 2 : ℝ) := by push_cast; ring
+                  _ ≤ (n * (n + 1) : ℤ) := by exact_mod_cast h_bound
+                  _ = (n : ℝ) * (n + 1) := by push_cast; ring
+              gcongr
+              · calc (n * (n + 1) : ℝ) / 2 ≤ (n^2 + |n| : ℝ) / 2 := by
+                      gcongr; calc (n : ℝ) * (n + 1) = n^2 + n := by ring
+                        _ ≤ n^2 + |n| := by gcongr; exact le_abs_self n
+                  _ ≤ n^2 := by nlinarith [sq_nonneg n, abs_nonneg n, sq_abs (n : ℝ)]
+              · exact Real.exp_nonneg _
+              · linarith
+        _ = (n^2 : ℝ) * rexp (-(π / 2) * n^2) := by ring_nf
+  · have h_nat : Summable (fun n : ℕ => (n : ℝ)^2 * rexp (-(π/2) * n^2)) := by
+      have := Real.summable_pow_mul_exp_neg_nat_mul 2 (by positivity : 0 < π/2)
+      simp only [pow_succ, pow_zero, mul_one, Nat.cast_pow] at this
+      convert this using 1; ext n; ring
+    exact summable_int_of_summable_nat h_nat h_nat
+
 -- Helper: D(jacobiTheta₂(z/2, z)) → 0 as im(z) → ∞
 -- jacobiTheta₂(z/2, z) = Σ_{n∈ℤ} exp(π·I·n·(n+1)·z)
--- D(exp(2πi·k·z)) = k·exp(2πi·k·z), so
 -- D(exp(π·I·n·(n+1)·z)) = (n(n+1)/2)·exp(π·I·n·(n+1)·z)
--- For n ∈ {-1, 0}: n(n+1) = 0, so coefficient = 0, contributing 0 to D(h)
--- For n ∉ {-1, 0}: term decays exponentially, and polynomial prefactor doesn't affect limit
+-- For n ∈ {-1, 0}: n(n+1) = 0, so coefficient = 0
+-- For n ∉ {-1, 0}: term decays exponentially
 theorem D_jacobiTheta₂_half_mul_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D (fun w : ℍ => jacobiTheta₂ (w / 2) w) z)
       atImInfty (nhds 0) := by
-  -- D(Σ exp(π·I·n·(n+1)·z)) = Σ (n(n+1)/2)·exp(π·I·n·(n+1)·z)
-  -- For n ∈ {-1, 0}: coefficient = 0
-  -- For n ∉ {-1, 0}: exponential decay dominates polynomial growth from differentiation
-  -- This follows from tendsto_tsum_of_dominated_convergence with the derivative terms
-  sorry
+  simp_rw [D_jacobiTheta₂_half_mul_eq_tsum]
+  have h_term : ∀ z : ℍ, ∀ n : ℤ, jacobiTheta₂_term n (z/2 : ℂ) z =
+      cexp (π * Complex.I * n * (n + 1) * z) := by
+    intro z n
+    simp only [jacobiTheta₂_term]
+    congr 1
+    ring
+  simp_rw [h_term]
+  convert tendsto_tsum_of_dominated_convergence
+    (f := fun z (n : ℤ) =>
+      ((n : ℂ) * (n + 1) / 2) * cexp (π * Complex.I * n * (n + 1) * z))
+    (𝓕 := atImInfty)
+    (g := fun _ => 0)
+    (bound := fun n => |n * (n + 1)| / 2 * rexp (-π * (n * (n + 1))))
+    summable_n_mul_n_plus_one_exp ?_ ?_
+  · simp only [tsum_zero]
+  · -- Each term tends to 0
+    intro n
+    simp only
+    by_cases hn : n = 0 ∨ n = -1
+    · rcases hn with rfl | rfl <;> simp
+    · push_neg at hn
+      rw [tendsto_zero_iff_norm_tendsto_zero]
+      simp_rw [norm_mul, norm_div, Complex.norm_pow, Complex.norm_intCast]
+      simp_rw [mul_right_comm _ Complex.I, mul_assoc _ _ (z : ℂ), Complex.norm_exp_mul_I]
+      have hnn1_pos : 0 < (n : ℝ) * (n + 1) := by nlinarith [sq_nonneg (n : ℝ)]
+      simp_rw [mul_assoc π _, mul_comm _ ((z : ℂ) : ℂ).im, ← mul_assoc,
+               ← Complex.ofReal_intCast, ← Complex.ofReal_one, ← Complex.ofReal_add,
+               ← Complex.ofReal_mul, ← Complex.ofReal_mul, Complex.im_ofReal_mul]
+      have hcoef : 0 < π * ((n : ℝ) * (n + 1)) := by positivity
+      have := tendsto_im_atImInfty.const_mul_atTop hcoef
+      simp only [mul_comm (π * _) _] at this
+      exact this
+  · -- Domination bound
+    rw [eventually_atImInfty]
+    use 1
+    intro z hz n
+    have h_nn1_nonneg : 0 ≤ (n : ℤ) * (n + 1) := by by_cases h : n ≤ -1 <;> nlinarith
+    simp_rw [norm_mul, norm_div, Complex.norm_pow, Complex.norm_intCast,
+             mul_right_comm _ Complex.I, mul_assoc _ _ (z : ℂ), Complex.norm_exp_mul_I,
+             mul_assoc π _, mul_comm _ ((z : ℂ)).im, ← mul_assoc,
+             ← Complex.ofReal_intCast, ← Complex.ofReal_one, ← Complex.ofReal_add,
+             ← Complex.ofReal_mul, ← Complex.ofReal_mul, Complex.im_ofReal_mul]
+    gcongr
+    calc rexp (-(π * ((n : ℝ) * (↑n + 1))) * z.im)
+        ≤ rexp (-(π * ((n : ℝ) * (n + 1))) * 1) := by
+            gcongr
+            exact Real.exp_nonneg _
+      _ = rexp (-π * (n * (n + 1))) := by ring_nf
 
 -- Helper: D(exp(πiz/4))/exp(πiz/4) = 1/8
 -- This follows from D = (2πi)⁻¹·d/dz and d/dz(exp(πiz/4)) = (πi/4)·exp(πiz/4)
