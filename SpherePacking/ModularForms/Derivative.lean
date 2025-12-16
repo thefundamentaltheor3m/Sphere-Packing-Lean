@@ -287,23 +287,27 @@ lemma D_exp_eq_n_mul (n : ℕ) (z : ℍ) :
     apply Filter.EventuallyEq.deriv_eq
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
     simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
-    congr 1
-    exact congrArg (↑·) (UpperHalfPlane.coe_mk w hw)
+    rfl
   rw [hcomp]
   -- deriv of exp(c*z) is c*exp(c*z)
   have hderiv : deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z =
       (2 * π * I * n) * cexp (2 * π * I * n * z) := by
-    have hdiff : DifferentiableAt ℂ (fun w => 2 * π * I * n * w) z := by fun_prop
-    rw [← Function.comp_def, deriv_cexp hdiff, deriv_const_mul]
-    · simp only [deriv_id'', mul_one]
-    · fun_prop
+    -- Use the derivative chain rule lemma directly
+    have hdiff_lin : DifferentiableAt ℂ (fun w => 2 * π * I * n * w) (z : ℂ) := by fun_prop
+    have hderiv_lin : deriv (fun w : ℂ => 2 * π * I * n * w) (z : ℂ) = 2 * π * I * n := by
+      rw [deriv_const_mul _ differentiableAt_id]
+      simp only [deriv_id'', mul_one]
+    calc deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z
+        = cexp (2 * π * I * n * z) * deriv (fun w => 2 * π * I * n * w) z := by
+            exact deriv_cexp hdiff_lin
+      _ = cexp (2 * π * I * n * z) * (2 * π * I * n) := by rw [hderiv_lin]
+      _ = (2 * π * I * n) * cexp (2 * π * I * n * z) := by ring
   rw [hderiv]
   -- Simplify (2πi)⁻¹ * (2πin) = n
   have h2pi : (2 * π * I : ℂ) ≠ 0 := by
     simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, ofReal_eq_zero,
       Real.pi_ne_zero, I_ne_zero, or_self]
   field_simp
-  ring
 
 /--
 The normalized derivative D multiplies q-expansion coefficients by n.
@@ -315,9 +319,14 @@ lemma D_E4_qexp (z : ℍ) :
   -- E₄(z) = 1 + 240 * ∑' n : ℕ+, σ₃(n) * exp(2πi·z·n) from E_k_q_expansion
   have hE4 : ∀ w : ℍ, E₄.toFun w = 1 + 240 * ∑' (n : ℕ+), (σ 3 n) * cexp (2 * π * I * w * n) := by
     intro w
+    -- E₄.toFun = E₄ by coercion, and E₄ = E 4 by definition
+    have hE : E₄.toFun w = E 4 (by norm_num) w := by rfl
     have := E_k_q_expansion 4 (by norm_num) (by exact Nat.even_iff.mpr rfl) w
-    rw [E4_apply] at this ⊢
-    -- The coefficient simplifies to 240
+    rw [hE]
+    -- Now goal is: E 4 _ w = 1 + 240 * ...
+    -- And this : E 4 _ w = 1 + (1/riemannZeta 4) * ((-2πi)^4 / 3!) * ∑'...
+    -- Need to show coefficient = 240
+    -- (1/riemannZeta 4) * ((-2πi)^4 / 6) = (90/π^4) * (16π^4) / 6 = 90*16/6 = 240
     sorry
   -- Step 2: Apply D = (2πi)⁻¹ * d/dz to both sides
   -- D(1) = 0, and D commutes with constant multiplication and sums
@@ -337,13 +346,25 @@ theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
   -- From ramanujan_E₄: D E₄ = (1/3) * (E₂ * E₄ - E₆)
   -- So: E₂ * E₄ - E₆ = 3 * D E₄
   have hRam : (E₂ z) * (E₄ z) - (E₆ z) = 3 * D E₄.toFun z := by
-    have h := congrFun ramanujan_E₄ z
-    simp only [Pi.mul_apply, Pi.sub_apply] at h
-    -- h : D E₄.toFun z = 3⁻¹ * (E₂ z * E₄ z - E₆ z)
+    -- ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)
+    -- Evaluating at z and rearranging gives the result
     have h3 : (3 : ℂ) ≠ 0 := by norm_num
+    have h := congrFun ramanujan_E₄ z
+    -- h : D E₄.toFun z = (3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)) z
+    -- Instead of simp, unfold Pi.mul directly
+    -- (c * f) z where c : ℂ and f : ℍ → ℂ evaluates to c * f z
+    -- But the * here might be Pi.mul with c as constant function
+    -- Let's work around by computing the value directly
     calc E₂ z * E₄ z - E₆ z
-        = 3 * (3⁻¹ * (E₂ z * E₄ z - E₆ z)) := by field_simp
-      _ = 3 * D E₄.toFun z := by rw [← h]
+        = E₂ z * E₄.toFun z - E₆.toFun z := by rfl
+      _ = 3 * (3⁻¹ * (E₂ z * E₄.toFun z - E₆.toFun z)) := by field_simp
+      _ = 3 * D E₄.toFun z := by
+          congr 1
+          -- The RHS of h is (3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)) z
+          -- We need to show this equals 3⁻¹ * (E₂ z * E₄.toFun z - E₆.toFun z)
+          -- This follows from how Pi multiplication works
+          simp only [Pi.mul_apply, Pi.sub_apply] at h
+          exact h.symm
   -- Substitute D(E₄) = 240 * ∑' n, n * σ₃(n) * q^n
   rw [hRam, D_E4_qexp]
   ring
