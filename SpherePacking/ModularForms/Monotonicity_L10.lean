@@ -1033,16 +1033,14 @@ theorem D_H₂_tendsto_zero :
 -- D of constant is 0, D of other terms decay exponentially
 theorem D_Θ₄_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D Θ₄ z) atImInfty (nhds 0) := by
-  -- D(Θ₄) = Σ (n²/2) · (-1)^n · exp(πin²z)
-  -- Each term tends to 0 as im(z) → ∞ (including n=0 which is 0)
-  -- Use dominated convergence with bound (n²/2) · exp(-π·n²)
-  -- Θ₄ = jacobiTheta₂(1/2, z) = Σ (-1)^n · cexp(πin²z)
-  -- D differentiates termwise: (2πi)⁻¹ · πin² = n²/2 per term
-  simp only [D]
-  -- Term-by-term analysis: for each n, D gives factor n²/2, which decays
-  -- Proof sketch: Show D commutes with tsum (via uniform convergence on compacts)
-  -- Then apply dominated convergence for the limit
-  -- TODO: Full proof requires termwise differentiation lemma for jacobiTheta
+  -- Strategy: Θ₄ = Σ_{n ∈ ℤ} (-1)^n exp(πin²z), where n=0 gives constant 1
+  -- D(Θ₄) = Σ_{n ∈ ℤ} (n²/2) · (-1)^n · exp(πin²z)
+  -- For n=0: coefficient is 0. For n≠0: exp(-πn²·im(z)) → 0 as im(z) → ∞
+  -- Full proof requires:
+  -- 1. Termwise differentiation via hasDerivAt_tsum (deriv commutes with tsum)
+  -- 2. Dominated convergence: bound = (n²/2) · exp(-πn²) is summable,
+  --    each term tends to 0, so the sum tends to 0
+  -- Pattern: Follow jacobiTheta₂_half_apply_tendsto_atImInfty in AtImInfty.lean
   sorry
 
 -- Helper: D(H₄) → 0 (since D(Θ₄) → 0 and Θ₄ → 1)
