@@ -355,11 +355,16 @@ lemma iteratedDeriv_mul_pow_eq_zero_of_lt {n m : ℕ} (h : n < m) (f : ℝ → �
           grind;
       cases' h_ind n h.le with g hg ; simp_all +decide [ Function.comp, ne_of_gt ]
 
+set_option linter.style.longLine false in
+lemma deriv_bound {f : ℝ → ℝ} {c x u y : ℝ} (hf : ContDiff ℝ 1 f) (hc : c ∈ Set.Ioo (min (u * x) (u * (x + y))) (max (u * x) (u * (x + y))))
+                              (hu₁ : 0 < u) (hu₂ : u ≤ 1) (hy : |y| < 1) :
+      |deriv f c| ≤ sSup (Set.image (fun t => |deriv f t|) (Set.Icc (-1 - |x|) (1 + |x|))) := by
+    apply le_csSup (IsCompact.bddAbove <| isCompact_Icc.image <| continuous_abs.comp <| hf.continuous_deriv le_rfl) _
+    refine' ⟨ c, ⟨ _, _ ⟩, rfl ⟩ <;> cases max_cases ( u * x ) ( u * ( x + y ) ) <;> cases min_cases ( u * x ) ( u * ( x + y ) ) <;> cases abs_cases x <;> cases abs_cases y <;> nlinarith [ hc.1, hc.2 ];
 
 /-
 The derivative of the integral of P(t) * f(t * x) is the integral of t * P(t) * f'(t * x).
 -/
-set_option maxHeartbeats 300000 in
 set_option linter.style.longLine false in
 lemma hasDerivAt_integral_poly_mul_comp (f : ℝ → ℝ) (hf : ContDiff ℝ 1 f) (P : Polynomial ℝ) (x : ℝ) :
     HasDerivAt (fun x => ∫ t in (0 : ℝ)..1, P.eval t * f (t * x)) (∫ t in (0 : ℝ)..1, t * P.eval t * deriv f (t * x)) x := by
@@ -371,9 +376,8 @@ lemma hasDerivAt_integral_poly_mul_comp (f : ℝ → ℝ) (hf : ContDiff ℝ 1 f
           apply intervalIntegral.tendsto_integral_filter_of_dominated_convergence _ _ _ _ _
           use fun u => ‖P.eval u‖ * ( SupSet.sSup ( Set.image ( fun t => ‖deriv f t‖ ) ( Set.Icc ( -1 - |x| ) ( 1 + |x| ) ) ) ) * |u|;
           · exact Filter.Eventually.of_forall fun n => Continuous.aestronglyMeasurable ( by exact Continuous.div_const ( by exact Continuous.mul ( P.continuous ) ( by exact Continuous.sub ( hf.continuous.comp ( by continuity ) ) ( hf.continuous.comp ( by continuity ) ) ) ) _ );
-          · rw [ eventually_nhdsWithin_iff ];
-            rw [ Metric.eventually_nhds_iff ];
-            refine ⟨ 1, by norm_num, ?_⟩
+          · rw [ eventually_nhdsWithin_iff, Metric.eventually_nhds_iff ]
+            refine ⟨ 1, zero_lt_one, ?_⟩
             apply fun y hy hy' => Filter.Eventually.of_forall fun u hu => _
             intro y hy hy' u hu
             simp_all only [dist_zero_right, norm_eq_abs, Set.mem_compl_iff, Set.mem_singleton_iff, zero_le_one,
@@ -420,12 +424,10 @@ lemma hasDerivAt_integral_poly_mul_comp (f : ℝ → ℝ) (hf : ContDiff ℝ 1 f
                   have hle' : u * (x + y) ≤ u * x := le_of_lt hlt
                   simpa [min_eq_right hle', max_eq_left hle', this] using hderiv
             -- Since $|c| \leq 1 + |x|$, we have $|deriv f c| \leq \sup_{t \in [-1 - |x|, 1 + |x|]} |deriv f t|$.
-            have h_deriv_bound : |deriv f c| ≤ sSup (Set.image (fun t => |deriv f t|) (Set.Icc (-1 - |x|) (1 + |x|))) := by
-              apply le_csSup (IsCompact.bddAbove <| isCompact_Icc.image <| continuous_abs.comp <| hf.continuous_deriv le_rfl) _
-              refine' ⟨ c, ⟨ _, _ ⟩, rfl ⟩ <;> cases max_cases ( u * x ) ( u * ( x + y ) ) <;> cases min_cases ( u * x ) ( u * ( x + y ) ) <;> cases abs_cases x <;> cases abs_cases y <;> nlinarith [ hc.1.1, hc.1.2 ];
-            simp_all only [Set.mem_Ioo, inf_lt_iff, lt_sup_iff, abs_div, abs_mul, abs_pos, ne_eq,
-              not_false_eq_true, div_le_iff₀, ge_iff_le];
-            rw [ div_le_iff₀ ( mul_pos ( abs_pos.mpr left.ne' ) ( abs_pos.mpr hy' ) ) ] at h_deriv_bound ; nlinarith [ abs_nonneg ( P.eval u ) ];
+            let h_deriv_bound := deriv_bound hf hc.1 left right hy
+            simp_all only [abs_pos, ne_eq,not_false_eq_true, div_le_iff₀, ge_iff_le]
+            rw [ hc.2, abs_div, abs_mul, div_le_iff₀ ( mul_pos ( abs_pos.mpr left.ne' ) ( abs_pos.mpr hy' ) ) ] at h_deriv_bound
+            nlinarith [ abs_nonneg ( P.eval u ) ]
           · exact Continuous.intervalIntegrable ( by exact Continuous.mul ( Continuous.mul ( P.continuous.norm ) continuous_const ) continuous_abs ) _ _;
           · apply Filter.Eventually.of_forall
             intro t ht
