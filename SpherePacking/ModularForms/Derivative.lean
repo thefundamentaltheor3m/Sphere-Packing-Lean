@@ -181,8 +181,8 @@ theorem serre_D_smul (k : ℤ) (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable
   calc
     serre_D k (c • F) = D (c • F) - k * 12⁻¹ * E₂ * (c • F) := by rfl
     _ = c • D F - k * 12⁻¹ * E₂ * (c • F) := by rw [D_smul c F hF]
-    _ = c • D F - c • (k * 12⁻¹ * E₂ * F) := by sorry
-    _ = c • (D F - k * 12⁻¹ * E₂ * F) := by sorry
+    _ = c • D F - c • (k * 12⁻¹ * E₂ * F) := by simp
+    _ = c • (D F - k * 12⁻¹ * E₂ * F) := by rw [←smul_sub]
     _ = c • (serre_D k F) := by rfl
 
 theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
@@ -205,7 +205,6 @@ If `F : ℍ → ℂ` is MDifferentiable, then `serre_D k F` is also MDifferentia
 theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
     (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D k F) := by
-  -- serre_D k F = D F - k * 12⁻¹ * E₂ * F
   have h_term : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => k * 12⁻¹ * E₂ z * F z) := by
     have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => (k * 12⁻¹) * (E₂ z * F z)) :=
       MDifferentiable.mul mdifferentiable_const (E₂_holo'.mul hF)
