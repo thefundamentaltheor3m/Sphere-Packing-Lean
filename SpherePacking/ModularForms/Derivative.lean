@@ -268,6 +268,49 @@ theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun
   ring_nf
   simpa [add_comm, sub_eq_iff_eq_add] using h1
 
+section Ramanujan_qExpansion
+
+open scoped ArithmeticFunction.sigma
+
+/--
+The normalized derivative D multiplies q-expansion coefficients by n.
+Since E₄ = 1 + 240·Σσ₃(n)·qⁿ, we have D(E₄) = 240·Σn·σ₃(n)·qⁿ.
+-/
+lemma D_E4_qexp (z : ℍ) :
+    D E₄.toFun z = 240 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) := by
+  -- E₄ = 1 + 240 * ∑' n, σ₃(n) * q^n  (from E_k_q_expansion)
+  -- D = (2πi)⁻¹ * d/dz
+  -- d/dz[q^n] = d/dz[exp(2πinz)] = 2πin * exp(2πinz) = 2πin * q^n
+  -- D[q^n] = (2πi)⁻¹ * 2πin * q^n = n * q^n
+  -- D(E₄) = D(1) + 240 * D(∑' n, σ₃(n) * q^n)
+  --       = 0 + 240 * ∑' n, σ₃(n) * D(q^n)
+  --       = 240 * ∑' n, σ₃(n) * n * q^n
+  --       = 240 * ∑' n, n * σ₃(n) * q^n
+  sorry
+
+/--
+The q-expansion identity E₂E₄ - E₆ = 720·Σn·σ₃(n)·qⁿ.
+This follows from Ramanujan's formula: E₂E₄ - E₆ = 3·D(E₄),
+combined with D(E₄) = 240·Σn·σ₃(n)·qⁿ (since D multiplies q-coefficients by n).
+-/
+theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
+    (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)
+    := by
+  -- From ramanujan_E₄: D E₄ = (1/3) * (E₂ * E₄ - E₆)
+  -- So: E₂ * E₄ - E₆ = 3 * D E₄
+  have hRam : (E₂ z) * (E₄ z) - (E₆ z) = 3 * D E₄.toFun z := by
+    have h := congrFun ramanujan_E₄ z
+    simp only [Pi.mul_apply, Pi.sub_apply] at h
+    -- h : D E₄.toFun z = 3⁻¹ * (E₂ z * E₄ z - E₆ z)
+    have h3 : (3 : ℂ) ≠ 0 := by norm_num
+    calc E₂ z * E₄ z - E₆ z
+        = 3 * (3⁻¹ * (E₂ z * E₄ z - E₆ z)) := by field_simp
+      _ = 3 * D E₄.toFun z := by rw [← h]
+  -- Substitute D(E₄) = 240 * ∑' n, n * σ₃(n) * q^n
+  rw [hRam, D_E4_qexp]
+  ring
+
+end Ramanujan_qExpansion
 
 /--
 Prove modular linear differential equation satisfied by $F$.
