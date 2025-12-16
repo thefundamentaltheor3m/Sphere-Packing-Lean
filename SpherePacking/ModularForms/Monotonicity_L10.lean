@@ -1028,34 +1028,128 @@ theorem D_H₂_tendsto_zero :
   simp only [mul_zero] at hlim
   exact hlim.congr' h_eq.symm
 
--- Helper: D(Θ₄) → 0 (since Θ₄ → 1 and the q-expansion has exponentially decaying terms)
--- Θ₄ = jacobiTheta₂(1/2, z) = Σ (-1)^n · q^(n²), where n=0 gives constant 1
--- D of constant is 0, D of other terms decay exponentially
+-- Helper: Derivative formula for jacobiTheta₂(1/2, z) with respect to z.
+private lemma jacobiTheta₂_half_deriv (z : ℂ) (hz : 0 < z.im) :
+    HasDerivAt (fun τ => jacobiTheta₂ (1/2 : ℂ) τ)
+               (∑' n : ℤ, (π * Complex.I * n ^ 2) * jacobiTheta₂_term n (1/2) z) z := by
+  have hf := hasFDerivAt_jacobiTheta₂ (1/2 : ℂ) hz
+  have hg : HasDerivAt (fun t : ℂ => ((1/2 : ℂ), t)) (0, 1) z := by
+    apply HasDerivAt.prod
+    · exact hasDerivAt_const z (1/2)
+    · exact hasDerivAt_id z
+  have h := hf.comp_hasDerivAt z hg
+  convert h using 1
+  rw [jacobiTheta₂_fderiv_eq (1/2) hz]
+  congr 1
+  ext n
+  simp only [jacobiTheta₂_term_fderiv, zero_add, mul_zero, mul_one]
+  ring
+
+-- Helper: D(Θ₄) expressed as a tsum.
+private lemma D_Θ₄_eq_tsum (z : ℍ) :
+    D Θ₄ z = ∑' n : ℤ, ((n : ℂ) ^ 2 / 2) * jacobiTheta₂_term n (1/2) z := by
+  simp only [D, Θ₄_as_jacobiTheta₂]
+  have hderiv : deriv ((fun τ => jacobiTheta₂ (1/2 : ℂ) τ) ∘ ofComplex) z =
+      ∑' n : ℤ, (π * Complex.I * n ^ 2) * jacobiTheta₂_term n (1/2) z := by
+    have h_agree : ((fun τ => jacobiTheta₂ (1/2 : ℂ) τ) ∘ ofComplex) =ᶠ[nhds (z : ℂ)]
+        (fun τ => jacobiTheta₂ (1/2 : ℂ) τ) := by
+      have hU : {w : ℂ | 0 < w.im} ∈ nhds (z : ℂ) := isOpen_upperHalfPlaneSet.mem_nhds z.2
+      filter_upwards [hU] with w hw
+      simp [Function.comp, ofComplex_apply_of_im_pos hw]
+    rw [h_agree.deriv_eq]
+    exact (jacobiTheta₂_half_deriv z z.2).deriv
+  rw [hderiv, ← tsum_mul_left]
+  congr 1
+  ext n
+  have hI : Complex.I ≠ 0 := Complex.I_ne_zero
+  have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr pi_ne_zero
+  field_simp
+  ring
+
+-- Helper: Summability of |n|² · exp(-πn²) over ℤ.
+private lemma summable_sq_exp_neg_pi_sq :
+    Summable (fun n : ℤ => |n|^2 / 2 * rexp (-π * n ^ 2)) := by
+  apply Summable.of_nonneg_of_le
+  · intro n; positivity
+  · intro n
+    calc |n|^2 / 2 * rexp (-π * n ^ 2)
+        ≤ (n^2 + 1) * rexp (-π * n ^ 2) := by
+          gcongr
+          · calc |n|^2 / 2 = (|n|^2 : ℝ) / 2 := by simp [sq_abs]
+              _ ≤ |n|^2 := by linarith [sq_nonneg (|n| : ℝ)]
+              _ = n^2 := sq_abs n
+              _ ≤ n^2 + 1 := le_add_of_nonneg_right one_nonneg
+          · exact Real.exp_nonneg _
+        _ = (n^2 + 1) * rexp (-π * n ^ 2) := by ring
+  · have h_nat : Summable (fun n : ℕ => (n^2 + 1 : ℝ) * rexp (-π * n ^ 2)) := by
+      have h1 : Summable (fun n : ℕ => (n : ℝ)^2 * rexp (-π * n ^ 2)) := by
+        have := Real.summable_pow_mul_exp_neg_nat_mul 2 (by positivity : 0 < π)
+        simp only [pow_succ, pow_zero, mul_one, Nat.cast_pow] at this
+        convert this using 1
+        ext n; ring
+      have h2 : Summable (fun n : ℕ => (1 : ℝ) * rexp (-π * n ^ 2)) := by
+        simp only [one_mul]
+        have := Real.summable_exp_neg_nat_mul_sq_of_pos (by positivity : 0 < π)
+        simp only [neg_mul, mul_comm π] at this
+        exact this
+      convert h1.add h2 using 1
+      ext n; ring
+    have h_eq : ∀ n : ℤ, |↑(n ^ 2) + 1| * rexp (-π * ↑(n ^ 2)) =
+        (n.natAbs ^ 2 + 1 : ℝ) * rexp (-π * n.natAbs ^ 2) := by
+      intro n
+      simp only [Int.cast_pow, abs_of_nonneg, add_nonneg, sq_nonneg, zero_le_one,
+                 Int.natAbs_sq, Nat.cast_pow]
+    simp_rw [h_eq]
+    exact h_nat.comp_injective (fun a b h => Int.natAbs_inj_of_nonneg_of_nonneg
+      (sq_nonneg a) (sq_nonneg b) (by simp_all [Int.natAbs_sq]))
+
+/-- D(Θ₄) → 0 as im(z) → ∞.
+The proof uses dominated convergence: D(Θ₄) = Σ (n²/2) · (-1)^n · exp(πin²z),
+where for n=0 the coefficient is 0, and for n≠0 each term → 0 exponentially. -/
 theorem D_Θ₄_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D Θ₄ z) atImInfty (nhds 0) := by
-  -- Strategy: D(Θ₄) = (D(Θ₄)/Θ₄) · Θ₄
-  -- Θ₄ → 1, and D(Θ₄)/Θ₄ → 0 since Θ₄ has vanishing order 0
-  -- First show Θ₄ ≠ 0 eventually (since Θ₄ → 1 ≠ 0)
-  have hΘ₄_ne : ∀ᶠ z : ℍ in atImInfty, Θ₄ z ≠ 0 := by
-    have h_ball : Metric.ball (1 : ℂ) (1/2) ∈ nhds (1 : ℂ) :=
-      Metric.isOpen_ball.mem_nhds (by norm_num : dist (1 : ℂ) 1 < 1/2)
-    have := Θ₄_tendsto_atImInfty.eventually h_ball
-    filter_upwards [this] with z hz
-    intro h_eq
-    rw [h_eq] at hz
-    have : dist (0 : ℂ) 1 = 1 := by simp [dist_eq_norm]
-    linarith [this]
-  -- Express D(Θ₄) = (D(Θ₄)/Θ₄) · Θ₄
-  have h_eq : (fun z => D Θ₄ z) =ᶠ[atImInfty] fun z => (D Θ₄ z / Θ₄ z) * Θ₄ z := by
-    filter_upwards [hΘ₄_ne] with z hz
-    exact (div_mul_cancel₀ (D Θ₄ z) hz).symm
-  -- D(Θ₄)/Θ₄ → 0 since Θ₄ approaches constant 1 (vanishing order 0)
-  -- Use: D(Θ₄)/Θ₄ = D(Θ₄ - 1)/Θ₄ (since D(1) = 0)
-  -- And Θ₄ - 1 → 0, Θ₄ → 1, so ratio analysis gives → 0
-  -- For now, use the dominated convergence approach:
-  -- D(Θ₄) = Σ (n²/2)·(-1)ⁿ·exp(πin²z), each term → 0, so sum → 0
-  -- TODO: Complete with hasDerivAt_tsum machinery
-  sorry
+  simp_rw [D_Θ₄_eq_tsum, jacobiTheta₂_term]
+  have h_term : ∀ z : ℍ, ∀ n : ℤ, jacobiTheta₂_term n (1/2 : ℂ) z =
+      (-1 : ℂ) ^ n * cexp (π * Complex.I * n ^ 2 * z) := by
+    intro z n
+    simp only [jacobiTheta₂_term]
+    congr 1
+    · rw [show (2 : ℂ) * π * Complex.I * n * (1/2) = π * Complex.I * n by ring,
+          Complex.exp_int_mul]
+      simp [Complex.exp_pi_mul_I]
+    · ring
+  simp_rw [h_term]
+  convert tendsto_tsum_of_dominated_convergence
+    (f := fun z (n : ℤ) =>
+      ((n : ℂ) ^ 2 / 2) * ((-1 : ℂ) ^ n * cexp (π * Complex.I * n ^ 2 * z)))
+    (𝓕 := atImInfty)
+    (g := fun _ => 0)
+    (bound := fun n => |n|^2 / 2 * rexp (-π * n ^ 2))
+    summable_sq_exp_neg_pi_sq ?_ ?_
+  · simp only [tsum_zero]
+  · intro n
+    simp only
+    by_cases hn : n = 0
+    · simp [hn]
+    · rw [tendsto_zero_iff_norm_tendsto_zero]
+      simp_rw [norm_mul, norm_div, Complex.norm_pow, Complex.norm_zpow, norm_neg,
+               norm_one, one_zpow, one_mul]
+      simp_rw [mul_right_comm _ Complex.I, Complex.norm_exp_mul_I, mul_assoc,
+               Complex.im_ofReal_mul, ← Complex.ofReal_intCast, ← Complex.ofReal_pow,
+               Complex.im_ofReal_mul, ← mul_assoc]
+      have hcoef : 0 < π * (n : ℝ) ^ 2 := by positivity
+      simpa [sq_abs] using tendsto_im_atImInfty.const_mul_atTop hcoef
+  · rw [eventually_atImInfty]
+    use 1
+    intro z hz n
+    simp_rw [norm_mul, norm_div, Complex.norm_pow, Complex.norm_zpow, norm_neg,
+             norm_one, one_zpow, one_mul, mul_right_comm _ Complex.I,
+             Complex.norm_exp_mul_I]
+    gcongr
+    simp [← Complex.ofReal_intCast, ← Complex.ofReal_pow]
+    calc rexp (-(π * ↑(n ^ 2) * z.im))
+        ≤ rexp (-(π * ↑(n ^ 2) * 1)) := by gcongr
+      _ = rexp (-(π * ↑(n ^ 2))) := by ring_nf
 
 -- Helper: D(H₄) → 0 (since D(Θ₄) → 0 and Θ₄ → 1)
 theorem D_H₄_tendsto_zero :
