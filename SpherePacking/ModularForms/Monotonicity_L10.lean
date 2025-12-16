@@ -1033,14 +1033,28 @@ theorem D_H₂_tendsto_zero :
 -- D of constant is 0, D of other terms decay exponentially
 theorem D_Θ₄_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D Θ₄ z) atImInfty (nhds 0) := by
-  -- Strategy: Θ₄ = Σ_{n ∈ ℤ} (-1)^n exp(πin²z), where n=0 gives constant 1
-  -- D(Θ₄) = Σ_{n ∈ ℤ} (n²/2) · (-1)^n · exp(πin²z)
-  -- For n=0: coefficient is 0. For n≠0: exp(-πn²·im(z)) → 0 as im(z) → ∞
-  -- Full proof requires:
-  -- 1. Termwise differentiation via hasDerivAt_tsum (deriv commutes with tsum)
-  -- 2. Dominated convergence: bound = (n²/2) · exp(-πn²) is summable,
-  --    each term tends to 0, so the sum tends to 0
-  -- Pattern: Follow jacobiTheta₂_half_apply_tendsto_atImInfty in AtImInfty.lean
+  -- Strategy: D(Θ₄) = (D(Θ₄)/Θ₄) · Θ₄
+  -- Θ₄ → 1, and D(Θ₄)/Θ₄ → 0 since Θ₄ has vanishing order 0
+  -- First show Θ₄ ≠ 0 eventually (since Θ₄ → 1 ≠ 0)
+  have hΘ₄_ne : ∀ᶠ z : ℍ in atImInfty, Θ₄ z ≠ 0 := by
+    have h_ball : Metric.ball (1 : ℂ) (1/2) ∈ nhds (1 : ℂ) :=
+      Metric.isOpen_ball.mem_nhds (by norm_num : dist (1 : ℂ) 1 < 1/2)
+    have := Θ₄_tendsto_atImInfty.eventually h_ball
+    filter_upwards [this] with z hz
+    intro h_eq
+    rw [h_eq] at hz
+    have : dist (0 : ℂ) 1 = 1 := by simp [dist_eq_norm]
+    linarith [this]
+  -- Express D(Θ₄) = (D(Θ₄)/Θ₄) · Θ₄
+  have h_eq : (fun z => D Θ₄ z) =ᶠ[atImInfty] fun z => (D Θ₄ z / Θ₄ z) * Θ₄ z := by
+    filter_upwards [hΘ₄_ne] with z hz
+    exact (div_mul_cancel₀ (D Θ₄ z) hz).symm
+  -- D(Θ₄)/Θ₄ → 0 since Θ₄ approaches constant 1 (vanishing order 0)
+  -- Use: D(Θ₄)/Θ₄ = D(Θ₄ - 1)/Θ₄ (since D(1) = 0)
+  -- And Θ₄ - 1 → 0, Θ₄ → 1, so ratio analysis gives → 0
+  -- For now, use the dominated convergence approach:
+  -- D(Θ₄) = Σ (n²/2)·(-1)ⁿ·exp(πin²z), each term → 0, so sum → 0
+  -- TODO: Complete with hasDerivAt_tsum machinery
   sorry
 
 -- Helper: D(H₄) → 0 (since D(Θ₄) → 0 and Θ₄ → 1)
