@@ -59,12 +59,6 @@ lemma sum_Icc_eq_sum_Ico_succ {α : Type*} [AddCommMonoid α] (f : ℤ → α)
     Finset.sum_insert]
   rw [add_comm]
 
-lemma auxl2 (a b c : ℂ) : ‖(a - b)‖≤ ‖(a - b + c)‖ + ‖c‖ := by
-  nth_rw 1 [show a - b = (a - b + c) + -c by ring]
-  have : ‖(a - b + c + -c)‖ ≤ ‖(a - b+ c)‖ + ‖-c‖ := by
-    exact norm_add_le (a - b + c) (-c)
-  simpa using this
-
 lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n, f n = f (-n))
   (hc : CauchySeq (fun N : ℕ => ∑ m ∈ Finset.Icc (-N : ℤ) N, f m) ) :
   CauchySeq (fun N : ℕ => ∑ m ∈ Finset.Ico (-N : ℤ) N, f m) := by
@@ -107,11 +101,9 @@ lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n, f n = f (-n
     have H3 := H n m N hn hm
     simp [dist_eq_norm] at *
     rw [sum_Icc_eq_sum_Ico_succ _, sum_Icc_eq_sum_Ico_succ _] at H3
-    · have := auxl2 (∑ m ∈ Finset.Ico (-↑n) ↑n, f m) (∑ m ∈ Finset.Ico (-↑m) ↑m, f m) (f n - f m)
-      apply le_trans this
+    · apply le_trans (norm_le_add_norm_add _ (f n - f m))
       gcongr
-      · simp at *
-        apply le_trans _ H3
+      · apply le_trans _ H3
         apply le_of_eq
         congr
         ring
