@@ -78,7 +78,6 @@ theorem extracted_66 (z : ℍ) :
     congr
     ext d
     have hz := ne_zero z
-
     rw [← mul_inv]
     congr 1
     rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
@@ -192,7 +191,6 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
     rw [this]
     simp only [norm_pow, ge_iff_le]
     rw [← pow_mul]
-
     apply Bound.pow_le_pow_right_of_le_one_or_one_le ?_
     right
     constructor

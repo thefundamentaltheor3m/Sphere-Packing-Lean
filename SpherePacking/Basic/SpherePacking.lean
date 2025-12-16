@@ -7,7 +7,8 @@ import Mathlib.Algebra.Module.ZLattice.Basic
 import Mathlib.Data.Real.StarOrdered
 import Mathlib.Order.CompletePartialOrder
 import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
-import Mathlib.Topology.Compactness.PseudometrizableLindelof
+import Mathlib.Topology.Metrizable.Basic
+import Mathlib.Topology.Compactness.Lindelof
 import Mathlib.Topology.EMetricSpace.Paracompact
 
 import SpherePacking.ForMathlib.VolumeOfBalls
