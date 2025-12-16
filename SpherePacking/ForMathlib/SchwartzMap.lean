@@ -359,7 +359,7 @@ lemma iteratedDeriv_mul_pow_eq_zero_of_lt {n m : ℕ} (h : n < m) (f : ℝ → �
 /-
 The derivative of the integral of P(t) * f(t * x) is the integral of t * P(t) * f'(t * x).
 -/
-set_option maxHeartbeats 1000000 in
+set_option maxHeartbeats 300000 in
 set_option linter.style.longLine false in
 lemma hasDerivAt_integral_poly_mul_comp (f : ℝ → ℝ) (hf : ContDiff ℝ 1 f) (P : Polynomial ℝ) (x : ℝ) :
     HasDerivAt (fun x => ∫ t in (0 : ℝ)..1, P.eval t * f (t * x)) (∫ t in (0 : ℝ)..1, t * P.eval t * deriv f (t * x)) x := by
@@ -368,35 +368,75 @@ lemma hasDerivAt_integral_poly_mul_comp (f : ℝ → ℝ) (hf : ContDiff ℝ 1 f
         rw [ hasDerivAt_iff_tendsto_slope_zero ];
         -- Apply the dominated convergence theorem to interchange the limit and the integral.
         have h_dominate : Filter.Tendsto (fun t => ∫ u in (0 : ℝ)..1, P.eval u * (f (u * (x + t)) - f (u * x)) / t) (nhdsWithin 0 {0}ᶜ) (nhds (∫ u in (0 : ℝ)..1, P.eval u * deriv f (u * x) * u)) := by
-          refine' intervalIntegral.tendsto_integral_filter_of_dominated_convergence _ _ _ _ _;
+          apply intervalIntegral.tendsto_integral_filter_of_dominated_convergence _ _ _ _ _
           use fun u => ‖P.eval u‖ * ( SupSet.sSup ( Set.image ( fun t => ‖deriv f t‖ ) ( Set.Icc ( -1 - |x| ) ( 1 + |x| ) ) ) ) * |u|;
           · exact Filter.Eventually.of_forall fun n => Continuous.aestronglyMeasurable ( by exact Continuous.div_const ( by exact Continuous.mul ( P.continuous ) ( by exact Continuous.sub ( hf.continuous.comp ( by continuity ) ) ( hf.continuous.comp ( by continuity ) ) ) ) _ );
           · rw [ eventually_nhdsWithin_iff ];
             rw [ Metric.eventually_nhds_iff ];
-            refine' ⟨ 1, by norm_num, fun y hy hy' => Filter.Eventually.of_forall fun u hu => _ ⟩ ; aesop;
+            refine ⟨ 1, by norm_num, ?_⟩
+            apply fun y hy hy' => Filter.Eventually.of_forall fun u hu => _
+            intro y hy hy' u hu
+            simp_all only [dist_zero_right, norm_eq_abs, Set.mem_compl_iff, Set.mem_singleton_iff, zero_le_one,
+              Set.uIoc_of_le, Set.mem_Ioc, norm_div, norm_mul]
+            obtain ⟨left, right⟩ := hu
             -- Apply the mean value theorem to the interval $[u * x, u * (x + y)]$.
             obtain ⟨c, hc⟩ : ∃ c ∈ Set.Ioo (min (u * x) (u * (x + y))) (max (u * x) (u * (x + y))), deriv f c = (f (u * (x + y)) - f (u * x)) / (u * y) := by
-              cases max_cases ( u * x ) ( u * ( x + y ) ) <;> cases min_cases ( u * x ) ( u * ( x + y ) ) <;> aesop;
-              · have := exists_deriv_eq_slope f ( show u * ( x + y ) < u * x by nlinarith );
-                exact this ( hf.continuous.continuousOn ) ( hf.contDiffOn.differentiableOn le_rfl ) |> fun ⟨ c, hc₁, hc₂ ⟩ => ⟨ c, hc₁, by rw [ hc₂ ] ; rw [ ← neg_div_neg_eq ] ; ring ⟩;
-              · have := exists_deriv_eq_slope f ( show u * x < u * ( x + y ) by nlinarith );
-                simpa [ mul_add ] using this ( hf.continuous.continuousOn ) ( hf.contDiffOn.differentiableOn le_rfl );
+              have hne : u * x ≠ u * (x + y) := by
+                intro h
+                have : u * y = 0 := by
+                  have := congrArg (fun t => t - u * x) h
+                  -- (u*x - u*x) = (u*(x+y) - u*x) = u*y
+                  simpa [mul_add] using this
+                have : y = 0 := by
+                  rcases mul_eq_zero.mp this with hu | hy0
+                  · exfalso ; exact (ne_of_gt left hu).elim
+                  · exact hy0
+                exact hy' this
+              have hcont : Continuous f := (hf.differentiable le_rfl).continuous
+              by_cases hle : u * x ≤ u * (x + y)
+              · have hlt : u * x < u * (x + y) := lt_of_le_of_ne hle hne
+                rcases exists_deriv_eq_slope (f := f) hlt hcont.continuousOn (hf.differentiable le_rfl).differentiableOn with
+                  ⟨c, hc, hderiv⟩
+                refine ⟨c, ?_, ?_⟩
+                · simpa [min_eq_left hle, max_eq_right hle] using hc
+                · have hsub : u * (x + y) - u * x = u * y := by ring
+                  simpa [min_eq_left hle, max_eq_right hle, hsub] using hderiv
+              · have hlt : u * (x + y) < u * x := lt_of_le_of_ne (le_of_not_ge hle) hne.symm
+                rcases exists_deriv_eq_slope (f := f) hlt hcont.continuousOn (hf.differentiable le_rfl).differentiableOn with
+                  ⟨c, hc, hderiv⟩
+                refine ⟨c, ?_, ?_⟩
+                · have hle' : u * (x + y) ≤ u * x := le_of_lt hlt
+                  simpa [min_eq_right hle', max_eq_left hle'] using hc
+                · have hsub : u * x - u * (x + y) = -(u * y) := by ring
+                  have hsub' : u * x - u * (x + y) = - (u * y) := hsub
+                  -- flip both numerator and denominator
+                  have : (f (u * x) - f (u * (x + y))) / (u * x - u * (x + y))
+                        = (f (u * (x + y)) - f (u * x)) / (u * y) := by
+                    calc
+                      (f (u * x) - f (u * (x + y))) / (u * x - u * (x + y))
+                          = (f (u * x) - f (u * (x + y))) / (-(u * y)) := by simp [hsub']
+                      _   = -((f (u * x) - f (u * (x + y))) / (u * y)) := by simp [div_neg]
+                      _   = (f (u * (x + y)) - f (u * x)) / (u * y) := by ring
+                  have hle' : u * (x + y) ≤ u * x := le_of_lt hlt
+                  simpa [min_eq_right hle', max_eq_left hle', this] using hderiv
             -- Since $|c| \leq 1 + |x|$, we have $|deriv f c| \leq \sup_{t \in [-1 - |x|, 1 + |x|]} |deriv f t|$.
             have h_deriv_bound : |deriv f c| ≤ sSup (Set.image (fun t => |deriv f t|) (Set.Icc (-1 - |x|) (1 + |x|))) := by
-              refine' le_csSup _ _;
-              · exact IsCompact.bddAbove ( isCompact_Icc.image ( continuous_abs.comp ( hf.continuous_deriv le_rfl ) ) );
-              · refine' ⟨ c, ⟨ _, _ ⟩, rfl ⟩ <;> cases max_cases ( u * x ) ( u * ( x + y ) ) <;> cases min_cases ( u * x ) ( u * ( x + y ) ) <;> cases abs_cases x <;> cases abs_cases y <;> nlinarith [ hc.1.1, hc.1.2 ];
-            simp_all +decide [ abs_div, abs_mul, div_le_iff₀ ];
+              apply le_csSup (IsCompact.bddAbove <| isCompact_Icc.image <| continuous_abs.comp <| hf.continuous_deriv le_rfl) _
+              refine' ⟨ c, ⟨ _, _ ⟩, rfl ⟩ <;> cases max_cases ( u * x ) ( u * ( x + y ) ) <;> cases min_cases ( u * x ) ( u * ( x + y ) ) <;> cases abs_cases x <;> cases abs_cases y <;> nlinarith [ hc.1.1, hc.1.2 ];
+            simp_all only [Set.mem_Ioo, inf_lt_iff, lt_sup_iff, abs_div, abs_mul, abs_pos, ne_eq,
+              not_false_eq_true, div_le_iff₀, ge_iff_le];
             rw [ div_le_iff₀ ( mul_pos ( abs_pos.mpr left.ne' ) ( abs_pos.mpr hy' ) ) ] at h_deriv_bound ; nlinarith [ abs_nonneg ( P.eval u ) ];
           · exact Continuous.intervalIntegrable ( by exact Continuous.mul ( Continuous.mul ( P.continuous.norm ) continuous_const ) continuous_abs ) _ _;
-          · refine' Filter.Eventually.of_forall fun t ht => _;
+          · apply Filter.Eventually.of_forall
+            intro t ht
             have h_deriv : HasDerivAt (fun n => f (t * (x + n))) (deriv f (t * x) * t) 0 := by
               convert HasDerivAt.comp 0 ( hf.differentiable le_rfl _ |> DifferentiableAt.hasDerivAt ) ( HasDerivAt.const_mul t ( hasDerivAt_id 0 |> HasDerivAt.const_add x ) ) using 1 ; norm_num;
-            simpa [ div_eq_mul_inv, mul_assoc, mul_comm, mul_left_comm ] using h_deriv.tendsto_slope_zero.const_mul ( P.eval t );
+            simpa only [mul_comm, div_eq_mul_inv, mul_left_comm, zero_add, add_zero, smul_eq_mul,
+              mul_assoc] using h_deriv.tendsto_slope_zero.const_mul (P.eval t);
         convert h_dominate using 2;
         norm_num [ div_eq_inv_mul, mul_sub ];
         rw [ intervalIntegral.integral_sub ( by exact Continuous.intervalIntegrable ( by exact Continuous.mul continuous_const <| by exact Continuous.mul ( P.continuous.comp continuous_id' ) <| hf.continuous.comp <| by continuity ) _ _ ) ( by exact Continuous.intervalIntegrable ( by exact Continuous.mul continuous_const <| by exact Continuous.mul ( P.continuous.comp continuous_id' ) <| hf.continuous.comp <| by continuity ) _ _ ) ] ; norm_num [ mul_assoc, mul_comm, mul_left_comm ];
-        simp +decide only [← intervalIntegral.integral_const_mul, mul_left_comm];
+        simp only [← intervalIntegral.integral_const_mul, mul_left_comm];
       simpa only [ mul_assoc, mul_comm, mul_left_comm ] using h_leibniz
 
 /-
