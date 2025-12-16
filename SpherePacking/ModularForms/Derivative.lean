@@ -357,8 +357,10 @@ theorem MLDE_F' : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 7200
   have hz := congrFun h z
   simp only [Pi.add_apply, Pi.mul_apply] at hz ⊢
   rw [X42_eq_negDE₂] at hz
-  -- Goal: serre_D 12 (serre_D 10 F) z = 5 z * 6⁻¹ z * E₄.toFun z * F z + 7200 z * Δ_fun z * negDE₂ z
-  -- hz: serre_D 12 (serre_D 10 F) z = 5 z * 6⁻¹ z * E₄.toFun z * F z + 172800 z * Δ_fun z * (24⁻¹ * negDE₂ z)
+  -- Goal: serre_D 12 (serre_D 10 F) z =
+  --   5 z * 6⁻¹ z * E₄.toFun z * F z + 7200 z * Δ_fun z * negDE₂ z
+  -- hz: serre_D 12 (serre_D 10 F) z =
+  --   5 z * 6⁻¹ z * E₄.toFun z * F z + 172800 z * Δ_fun z * (24⁻¹ * negDE₂ z)
   -- Since 7200 = 172800 * 24⁻¹ and constant functions (n : ℍ → ℂ) z = n
   rw [hz]
   congr 1
