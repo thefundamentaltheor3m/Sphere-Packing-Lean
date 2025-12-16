@@ -5,7 +5,7 @@ import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.JacobiTheta
 
 open Filter
-open scoped Real
+open scoped Real Manifold
 
 
 /--
@@ -38,6 +38,21 @@ theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
     FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by sorry
 
 /- Some basic facts -/
+theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
+  have h : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) := by
+    exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
+  rw [F, pow_two]
+  exact MDifferentiable.mul h h
+
+theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
+  sorry
+
+theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by
+  exact serre_D_differentiable F_holo
+
+theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := by
+  exact serre_D_differentiable G_holo
+
 theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
   sorry
 
@@ -59,8 +74,7 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
   · exact E₄.holo'
   · exact MDifferentiable.mul E₂_holo' E₄.holo'
   · exact E₆.holo'
-  have h24 := MDifferentiable.mul E₂_holo' E₄.holo'
-  exact MDifferentiable.sub h24 E₆.holo'
+  · exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
 
 /--
 Modular linear differential equation satisfied by $F$.
@@ -107,9 +121,8 @@ lemma SerreDer_22_L₁₀_SerreDer :
     _ = serre_D 22 (serre_D 10 F * G - F * serre_D 10 G) := by rw [L₁₀_SerreDer]
     _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by
         apply serre_D_sub _ _ _
-        -- TODO: Differentiability proofs
-        · sorry
-        · sorry
+        · exact MDifferentiable.mul (serre_D_differentiable F_holo) G_holo
+        · exact MDifferentiable.mul F_holo (serre_D_differentiable G_holo)
     _ = serre_D (12 + 10) (serre_D 10 F * G) - serre_D (10 + 12) (F * serre_D 10 G) := by ring_nf
     _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
         - ((serre_D 10 F) * (serre_D 10 G) + F * (serre_D 12 (serre_D 10 G))) := by
