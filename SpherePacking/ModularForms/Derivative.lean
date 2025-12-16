@@ -273,23 +273,52 @@ section Ramanujan_qExpansion
 open scoped ArithmeticFunction.sigma
 
 /--
+Helper: D applied to exp(2πinz) gives n * exp(2πinz).
+This follows from: d/dz[exp(2πinz)] = 2πin * exp(2πinz),
+so D[exp(2πinz)] = (2πi)⁻¹ * 2πin * exp(2πinz) = n * exp(2πinz).
+-/
+lemma D_exp_eq_n_mul (n : ℕ) (z : ℍ) :
+    D (fun w : ℍ => cexp (2 * π * I * n * w)) z = n * cexp (2 * π * I * n * z) := by
+  unfold D
+  -- deriv of exp(c*z) is c*exp(c*z)
+  have hderiv : deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z =
+      (2 * π * I * n) * cexp (2 * π * I * n * z) := by
+    have : (fun w : ℂ => cexp (2 * π * I * n * w)) = cexp ∘ (fun w => 2 * π * I * n * w) := rfl
+    rw [this, deriv_cexp (by fun_prop)]
+    simp [mul_comm]
+  -- Connect deriv of (f ∘ ofComplex) to deriv of f
+  have hcomp : deriv ((fun w : ℍ => cexp (2 * π * I * n * w)) ∘ ofComplex) z =
+      deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z := by
+    apply deriv_congr
+    intro w
+    simp [ofComplex]
+    sorry -- need to handle ofComplex properly
+  rw [hcomp, hderiv]
+  -- Simplify (2πi)⁻¹ * (2πin) = n
+  have h2pi : (2 * π * I : ℂ) ≠ 0 := by
+    simp [Complex.ext_iff, Real.pi_pos.ne']
+  field_simp
+  ring
+
+/--
 The normalized derivative D multiplies q-expansion coefficients by n.
 Since E₄ = 1 + 240·Σσ₃(n)·qⁿ, we have D(E₄) = 240·Σn·σ₃(n)·qⁿ.
 -/
 lemma D_E4_qexp (z : ℍ) :
     D E₄.toFun z = 240 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) := by
-  -- Strategy:
-  -- 1. E₄(z) = 1 + 240 * ∑' n : ℕ+, σ₃(n) * exp(2πinz)  (from E_k_q_expansion with k=4)
-  -- 2. D = (2πi)⁻¹ * d/dz, so D(constant) = 0
-  -- 3. For exp(2πinz): d/dz[exp(2πinz)] = 2πin * exp(2πinz)
-  --    So D[exp(2πinz)] = (2πi)⁻¹ * 2πin * exp(2πinz) = n * exp(2πinz)
-  -- 4. Therefore D(E₄) = 240 * ∑' n, σ₃(n) * n * exp(2πinz)
-  --                    = 240 * ∑' n, n * σ₃(n) * exp(2πinz)
-  --
-  -- The rigorous proof requires:
-  -- - Showing the sum is uniformly convergent so we can differentiate term by term
-  -- - Using exp_iter_deriv_within with n=1 to get the derivative of exp terms
-  -- - Converting between ℕ and ℕ+ sums
+  -- Step 1: Express E₄ using q-expansion
+  -- E₄(z) = 1 + 240 * ∑' n : ℕ+, σ₃(n) * exp(2πi·z·n) from E_k_q_expansion
+  have hE4 : ∀ w : ℍ, E₄.toFun w = 1 + 240 * ∑' (n : ℕ+), (σ 3 n) * cexp (2 * π * I * w * n) := by
+    intro w
+    have := E_k_q_expansion 4 (by norm_num) (by exact Nat.even_iff.mpr rfl) w
+    rw [E4_apply] at this ⊢
+    -- The coefficient simplifies to 240
+    sorry
+  -- Step 2: Apply D = (2πi)⁻¹ * d/dz to both sides
+  -- D(1) = 0, and D commutes with constant multiplication and sums
+  -- Step 3: For each term, D(σ₃(n) * exp(2πinz)) = σ₃(n) * n * exp(2πinz)
+  -- by D_exp_eq_n_mul
+  -- Step 4: Rearrange to get 240 * Σ n * σ₃(n) * exp(2πinz)
   sorry
 
 /--
