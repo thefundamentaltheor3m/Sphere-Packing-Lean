@@ -349,18 +349,26 @@ lemma iteratedDeriv_mul_pow_eq_zero_of_lt {n m : ℕ} (h : n < m) (f : ℝ → �
             · exact contDiff_id;
             · exact contDiff_const;
             · norm_num;
-          aesop;
+          aesop
           ext x; norm_num [ hg₁.contDiffAt.differentiableAt ] ; ring;
           rw [ Nat.cast_sub ( by linarith ) ] ; rw [ show m - n = m - ( 1 + n ) + 1 by omega ] ; ring;
           grind;
-      cases' h_ind n h.le with g hg ; simp_all +decide [ Function.comp, ne_of_gt ]
+      rcases h_ind n h.le with ⟨g, hg⟩
+      simp_all only [ne_eq, tsub_pos_iff_lt, ne_of_gt, not_false_eq_true, zero_pow, zero_mul]
 
 set_option linter.style.longLine false in
 lemma deriv_bound {f : ℝ → ℝ} {c x u y : ℝ} (hf : ContDiff ℝ 1 f) (hc : c ∈ Set.Ioo (min (u * x) (u * (x + y))) (max (u * x) (u * (x + y))))
                               (hu₁ : 0 < u) (hu₂ : u ≤ 1) (hy : |y| < 1) :
       |deriv f c| ≤ sSup (Set.image (fun t => |deriv f t|) (Set.Icc (-1 - |x|) (1 + |x|))) := by
     apply le_csSup (IsCompact.bddAbove <| isCompact_Icc.image <| continuous_abs.comp <| hf.continuous_deriv le_rfl) _
-    refine' ⟨ c, ⟨ _, _ ⟩, rfl ⟩ <;> cases max_cases ( u * x ) ( u * ( x + y ) ) <;> cases min_cases ( u * x ) ( u * ( x + y ) ) <;> cases abs_cases x <;> cases abs_cases y <;> nlinarith [ hc.1, hc.2 ];
+    have hmem : c ∈ Set.Icc (-1 - |x|) (1 + |x|) := by
+      constructor <;>
+        cases max_cases (u * x) (u * (x + y)) <;>
+        cases min_cases (u * x) (u * (x + y)) <;>
+        cases abs_cases x <;>
+        cases abs_cases y <;>
+        nlinarith [hc.1, hc.2]
+    exact ⟨c, hmem, rfl⟩
 
 /-
 The derivative of the integral of P(t) * f(t * x) is the integral of t * P(t) * f'(t * x).
