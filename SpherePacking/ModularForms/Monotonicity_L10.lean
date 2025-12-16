@@ -8,7 +8,7 @@ import SpherePacking.ModularForms.Monotonicity_ImagAxis
 /-!
 Auxiliary lemmas for `SpherePacking.ModularForms.Monotonicity`.
 
-This file contains Sections 3–5: the definition of `L₁₀`, Serre-derivative computations, and
+This file contains Sections 1–3: the definition of `L₁₀`, Serre-derivative computations, and
 large-t positivity / limit statements used to prove `L₁₀(it) > 0`.
 -/
 
@@ -20,7 +20,7 @@ open scoped ModularForm MatrixGroups Manifold ArithmeticFunction.sigma
 namespace MonotoneFG
 
 /-!
-## Section 3: Definition and Properties of L₁,₀
+## Section 1: Definition and Properties of L₁,₀
 
 The key object in proving monotonicity is:
   `L₁,₀ = (∂₁₀F)G - F(∂₁₀G)`
@@ -48,7 +48,7 @@ theorem L₁₀_eq_FD_G_sub_F_DG (z : ℍ) :
   ring
 
 /-!
-## Section 4: Serre Derivative of L₁,₀
+## Section 2: Serre Derivative of L₁,₀
 
 We need to compute `∂₂₂ L₁,₀` and show it's positive on the imaginary axis.
 -/
@@ -447,7 +447,7 @@ theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) :
     exact mul_pos hΔ_pos hsum_pos
 
 /-!
-## Section 5: Large-t Positivity of L₁,₀
+## Section 3: Large-t Positivity of L₁,₀
 
 Using Lemma 8.11 (vanishing orders), we show L₁,₀(it) > 0 for large t.
 -/
@@ -822,11 +822,13 @@ theorem D_exp_pi_div_exp_pi (z : ℍ) :
 
 -- Helper: D(jacobiTheta₂(z/2, z)) → 0 as im(z) → ∞
 -- jacobiTheta₂(z/2, z) = Σ_{n∈ℤ} exp(π·I·n·(n+1)·z)
--- D(exp(2πi·k·z)) = k·exp(2πi·k·z), so D(exp(π·I·n·(n+1)·z)) = (n(n+1)/2)·exp(π·I·n·(n+1)·z)
+-- D(exp(2πi·k·z)) = k·exp(2πi·k·z), so
+-- D(exp(π·I·n·(n+1)·z)) = (n(n+1)/2)·exp(π·I·n·(n+1)·z)
 -- For n ∈ {-1, 0}: n(n+1) = 0, so coefficient = 0, contributing 0 to D(h)
 -- For n ∉ {-1, 0}: term decays exponentially, and polynomial prefactor doesn't affect limit
 theorem D_jacobiTheta₂_half_mul_tendsto_zero :
-    Filter.Tendsto (fun z : ℍ => D (fun w : ℍ => jacobiTheta₂ (w / 2) w) z) atImInfty (nhds 0) := by
+    Filter.Tendsto (fun z : ℍ => D (fun w : ℍ => jacobiTheta₂ (w / 2) w) z)
+      atImInfty (nhds 0) := by
   -- D(Σ exp(π·I·n·(n+1)·z)) = Σ (n(n+1)/2)·exp(π·I·n·(n+1)·z)
   -- For n ∈ {-1, 0}: coefficient = 0
   -- For n ∉ {-1, 0}: exponential decay dominates polynomial growth from differentiation
@@ -1075,7 +1077,8 @@ theorem D_H₂_div_H₂_tendsto :
           rw [h_arg, ofComplex_apply_of_im_pos hz, Θ₂_as_jacobiTheta₂]
           simp only [coe_mk_subtype]
         exact DifferentiableAt.congr_of_eventuallyEq hF h_ev.symm
-      -- Use D_sq twice: D(Θ₂⁴) = D((Θ₂²)²) = 2·Θ₂²·D(Θ₂²) = 2·Θ₂²·(2·Θ₂·D(Θ₂)) = 4·Θ₂³·D(Θ₂)
+      -- Use D_sq twice: D(Θ₂⁴) = D((Θ₂²)²) = 2·Θ₂²·D(Θ₂²)
+      --   = 2·Θ₂²·(2·Θ₂·D(Θ₂)) = 4·Θ₂³·D(Θ₂)
       have hΘ₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (Θ₂ ^ 2) := by
         rw [pow_two]; exact MDifferentiable.mul hΘ₂_holo hΘ₂_holo
       have h_pow4_eq : (fun w => (Θ₂ w) ^ 4) = (Θ₂ ^ 2) ^ 2 := by

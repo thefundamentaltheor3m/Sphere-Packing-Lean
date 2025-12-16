@@ -13,7 +13,7 @@ import SpherePacking.ModularForms.Delta
 /-!
 Auxiliary lemmas for `SpherePacking.ModularForms.Monotonicity`.
 
-This file contains Sections 0–2: helper lemmas, holomorphicity facts, and imaginary-axis
+This file contains Sections 1–3: helper lemmas, holomorphicity facts, and imaginary-axis
 realness/positivity results.
 -/
 
@@ -25,7 +25,7 @@ open scoped ModularForm MatrixGroups Manifold ArithmeticFunction.sigma
 namespace MonotoneFG
 
 /-!
-## Section 0: Helper Lemmas for Imaginary Axis Properties
+## Section 1: Helper Lemmas for Imaginary Axis Properties
 -/
 
 /-- `im` distributes over tsum when each term has zero imaginary part. -/
@@ -57,7 +57,8 @@ lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
   have h : (-2 * Real.pi * Complex.I) ^ k = ((-2 * Real.pi) ^ k : ℂ) * Complex.I ^ k := by ring
   rw [h]
   have h1 : ((-(2 * Real.pi)) ^ k : ℂ).im = 0 := by
-    have hcast : ((-(2 * Real.pi)) ^ k : ℂ) = (((-2 * Real.pi) ^ k : ℝ) : ℂ) := by push_cast; ring
+    have hcast : ((-(2 * Real.pi)) ^ k : ℂ) = (((-2 * Real.pi) ^ k : ℝ) : ℂ) := by
+      push_cast; ring
     rw [hcast]
     exact Complex.ofReal_im _
   have h2 : (Complex.I ^ k : ℂ).im = 0 := I_pow_even_real k hk
@@ -145,7 +146,7 @@ lemma ResToImagAxis.Real.im_eq_zero' {f : ℍ → ℂ} (hf : ResToImagAxis.Real 
   exact this
 
 /-!
-## Section 1: Definitions of F, G, and Q
+## Section 2: Definitions of F, G, and Q
 
 Note: `F = (E₂ * E₄ - E₆)²` is already defined in `Derivative.lean`.
 We define `G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²)` here per Definition 8.3 of the blueprint.
@@ -155,14 +156,15 @@ TODO: After PR #193 merges, these definitions should be imported from
 -/
 
 /--
-The function `G(z) = H₂(z)³ (2 H₂(z)² + 5 H₂(z) H₄(z) + 5 H₄(z)²)` from Definition 8.3 of
-the blueprint. Aliased from the root namespace.
+The function `G(z) = H₂(z)³ (2 H₂(z)² + 5 H₂(z) H₄(z) + 5 H₄(z)²)` from
+Definition 8.3 of the blueprint. Aliased from the root namespace.
 -/
 noncomputable abbrev G := _root_.G
 
 /--
 `G` is holomorphic on the upper half-plane.
-Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is holomorphic since H₂ and H₄ are holomorphic.
+Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is holomorphic since H₂ and H₄ are
+holomorphic.
 
 TODO: After PR #193 merges, this should follow from the holomorphicity results there.
 -/
@@ -182,14 +184,16 @@ theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
     rw [this]; exact hH₄.mul hH₄
   have hH₂H₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => H₂ z * H₄ z) := hH₂.mul hH₄
   have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2) := by
-    have : (fun z => 2 * H₂ z ^ 2) = (fun z => (2 : ℂ) • H₂ z ^ 2) := by ext z; simp [smul_eq_mul]
+    have : (fun z => 2 * H₂ z ^ 2) = (fun z => (2 : ℂ) • H₂ z ^ 2) := by
+      ext z; simp [smul_eq_mul]
     rw [this]; exact hH₂_sq'.const_smul (2 : ℂ)
   have h2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₂ z * H₄ z) := by
     have : (fun z => 5 * H₂ z * H₄ z) = (fun z => (5 : ℂ) • (H₂ z * H₄ z)) := by
       ext z; simp [smul_eq_mul]; ring
     rw [this]; exact hH₂H₄.const_smul (5 : ℂ)
   have h3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₄ z ^ 2) := by
-    have : (fun z => 5 * H₄ z ^ 2) = (fun z => (5 : ℂ) • H₄ z ^ 2) := by ext z; simp [smul_eq_mul]
+    have : (fun z => 5 * H₄ z ^ 2) = (fun z => (5 : ℂ) • H₄ z ^ 2) := by
+      ext z; simp [smul_eq_mul]
     rw [this]; exact hH₄_sq.const_smul (5 : ℂ)
   have hquad : MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
       (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := (h1.add h2).add h3
@@ -205,23 +209,26 @@ theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
   have h_E₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₄.toFun := E₄.holo'
   have h_E₆ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₆.toFun := E₆.holo'
   have h_prod : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun) := h_E₂.mul h_E₄
-  have h_sub : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) := h_prod.sub h_E₆
+  have h_sub : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) :=
+    h_prod.sub h_E₆
   rw [pow_two]
   exact h_sub.mul h_sub
 
 /-!
-## Section 2: Positivity of F and G on the Imaginary Axis
+## Section 3: Positivity of F and G on the Imaginary Axis
 -/
 
 /--
 `H₂(it)` is real for all `t > 0`.
 Blueprint: Follows from the q-expansion having real coefficients.
-Proof strategy: H₂ = Θ₂^4 where Θ₂(it) = ∑ₙ exp(-π(n+1/2)²t) is a sum of real exponentials.
+Proof strategy: H₂ = Θ₂^4 where Θ₂(it) = ∑ₙ exp(-π(n+1/2)²t) is a sum of real
+exponentials.
 -/
 theorem H₂_imag_axis_real : ResToImagAxis.Real H₂ := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₂]
-  -- H₂ = Θ₂^4, and Θ₂(I*t) has zero imaginary part, so H₂(I*t) = Θ₂(I*t)^4 has zero imaginary part
+  -- H₂ = Θ₂^4, and Θ₂(I*t) has zero imaginary part,
+  -- so H₂(I*t) = Θ₂(I*t)^4 has zero imaginary part
   have hΘ₂_im := Θ₂_imag_axis_im t ht
   exact Complex.im_pow_eq_zero_of_im_eq_zero hΘ₂_im 4
 
@@ -453,12 +460,14 @@ theorem G_imag_axis_real : ResToImagAxis.Real G := by
     intros a ha n; exact Complex.im_pow_eq_zero_of_im_eq_zero ha n
   have h_const_real : ∀ c : ℕ, ((c : ℂ)).im = 0 := by simp
   -- Build up: 2H₂² + 5H₂H₄ + 5H₄² is real
-  have hterm1 : (2 * h₂ ^ 2).im = 0 := h_prod_real _ _ (h_const_real 2) (h_pow_real h₂ hH₂_real 2)
+  have hterm1 : (2 * h₂ ^ 2).im = 0 :=
+    h_prod_real _ _ (h_const_real 2) (h_pow_real h₂ hH₂_real 2)
   have hterm2 : (5 * h₂ * h₄).im = 0 := by
     apply h_prod_real
     · exact h_prod_real _ _ (h_const_real 5) hH₂_real
     · exact hH₄_real
-  have hterm3 : (5 * h₄ ^ 2).im = 0 := h_prod_real _ _ (h_const_real 5) (h_pow_real h₄ hH₄_real 2)
+  have hterm3 : (5 * h₄ ^ 2).im = 0 :=
+    h_prod_real _ _ (h_const_real 5) (h_pow_real h₄ hH₄_real 2)
   have hquad : (2 * h₂ ^ 2 + 5 * h₂ * h₄ + 5 * h₄ ^ 2).im = 0 :=
     h_add_real _ _ (h_add_real _ _ hterm1 hterm2) hterm3
   have hcube : (h₂ ^ 3).im = 0 := h_pow_real h₂ hH₂_real 3
@@ -933,7 +942,8 @@ theorem F_imag_axis_real : ResToImagAxis.Real F := by
   have hE₂_real := E₂_imag_axis_real t ht
   have hE₄_real := E₄_imag_axis_real t ht
   have hE₆_real := E₆_imag_axis_real t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hE₂_real hE₄_real hE₆_real
+  simp only [Function.resToImagAxis, ResToImagAxis, ht,
+    ↓reduceDIte] at hE₂_real hE₄_real hE₆_real
   -- If a, b, c are real (im = 0), then (a*b - c)² is real
   set z₂ := E₂ ⟨Complex.I * t, by simp [ht]⟩ with hz₂_def
   set z₄ := E₄ ⟨Complex.I * t, by simp [ht]⟩ with hz₄_def
@@ -973,7 +983,8 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   have hE₂_real := E₂_imag_axis_real t ht
   have hE₄_real := E₄_imag_axis_real t ht
   have hE₆_real := E₆_imag_axis_real t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hE₂_real hE₄_real hE₆_real
+  simp only [Function.resToImagAxis, ResToImagAxis, ht,
+    ↓reduceDIte] at hE₂_real hE₄_real hE₆_real
   -- The hypotheses have E₄.toFun, E₆.toFun but we need E₄, E₆
   -- They're definitionally equal, so use change to match
   have hE₄_real' : (E₄ z).im = 0 := hE₄_real
@@ -986,12 +997,14 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   -- (E₂E₄ - E₆)² = (E₂E₄ - E₆).re²  since im = 0
   have hsq_eq : ((E₂ z * E₄ z - E₆ z) ^ 2).re = (E₂ z * E₄ z - E₆ z).re ^ 2 := by
     -- (a + 0i)² = a² + 0i, so ((a + 0i)²).re = a²
-    have hpow : (E₂ z * E₄ z - E₆ z) ^ 2 = (E₂ z * E₄ z - E₆ z) * (E₂ z * E₄ z - E₆ z) := sq _
+    have hpow : (E₂ z * E₄ z - E₆ z) ^ 2 =
+        (E₂ z * E₄ z - E₆ z) * (E₂ z * E₄ z - E₆ z) := sq _
     rw [hpow, Complex.mul_re]
     simp only [hdiff_real, mul_zero, sub_zero]
     ring
   -- Convert function application to pointwise form
-  have hgoal_eq : (((E₂ * E₄.toFun - E₆.toFun) ^ 2) z).re = ((E₂ z * E₄ z - E₆ z) ^ 2).re := rfl
+  have hgoal_eq : (((E₂ * E₄.toFun - E₆.toFun) ^ 2) z).re =
+      ((E₂ z * E₄ z - E₆ z) ^ 2).re := rfl
   rw [hgoal_eq, hsq_eq]
   -- Now show (E₂E₄ - E₆).re ≠ 0 using the q-expansion
   -- From hq_exp: E₂E₄ - E₆ = 720 * ∑ n*σ₃(n)*q^n
