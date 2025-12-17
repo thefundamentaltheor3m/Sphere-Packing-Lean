@@ -506,6 +506,21 @@ lemma E₂_slash_transform (γ : SL(2, ℤ)) :
   simp only [one_div, Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
   ring
 
+/-- Helper lemma: The anomaly coefficient vanishes.
+The key identity is: (1/12) * (1/(2ζ(2))) * 2πi + (2πi)⁻¹ = 0
+Using ζ(2) = π²/6, this becomes: i/(2π) + 1/(2πi) = i/(2π) - i/(2π) = 0 -/
+lemma anomaly_coeff_zero : (12 : ℂ)⁻¹ * (2 * riemannZeta 2)⁻¹ * (2 * π * I) + (2 * π * I)⁻¹ = 0 := by
+  rw [riemannZeta_two]
+  have hπ : (π : ℂ) ≠ 0 := ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hI : (I : ℂ) ≠ 0 := I_ne_zero
+  have h2 : (2 : ℂ) ≠ 0 := by norm_num
+  have h6 : (6 : ℂ) ≠ 0 := by norm_num
+  have h12 : (12 : ℂ) ≠ 0 := by norm_num
+  field_simp
+  ring_nf
+  -- Goal: 12 + I ^ 2 * 12 = 0, which is 12 + (-1) * 12 = 0 since I^2 = -1
+  simp only [I_sq, neg_one_mul, add_neg_cancel]
+
 /--
 Serre derivative is equivariant under the slash action. More precisely, if `F` is invariant
 under the slash action of weight `k`, then `serre_D k F` is invariant under the slash action
@@ -514,16 +529,89 @@ of weight `k + 2`.
 theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by
   intro γ
-  -- The anomaly from D_slash cancels with E₂ transformation anomaly using ζ(2) = π²/6.
-  -- D_slash: D(F ∣[k] γ) = D F ∣[k+2] γ - k*(2πi)⁻¹*(c/denom)*(F ∣[k] γ)
-  -- E₂_slash_transform: E₂ ∣[2] γ = E₂ - (1/(2ζ(2)))*D₂ γ, where D₂ γ = 2πi*c/denom
-  -- Key: (k/12) * (1/(2ζ(2))) * 2πi * c/denom = k * (2πi)⁻¹ * c/denom (using ζ(2) = π²/6)
-  -- So the two anomaly terms cancel exactly.
-  --
-  -- For now, admit this result. The mathematical content is verified in comments above.
-  -- A complete proof would require careful manipulation of slash action linearity,
-  -- which is complicated by notation issues (k+2 vs 2+k, etc.)
-  sorry
+  ext z
+  -- Get key transformations
+  have hDslash := congrFun (D_slash k F hF γ) z
+  simp only [Pi.sub_apply] at hDslash
+  have hE₂slash := congrFun (E₂_slash_transform γ) z
+  simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul] at hE₂slash
+  -- Product slash: (E₂ * F) ∣[k+2] γ = (E₂ ∣[2] γ) * (F ∣[k] γ)
+  have hmul : ((E₂ * F) ∣[k + 2] γ) z = (E₂ ∣[(2 : ℤ)] γ) z * (F ∣[k] γ) z := by
+    have h := congrFun (ModularForm.mul_slash_SL2 (2 : ℤ) k γ E₂ F) z
+    simp only [Pi.mul_apply] at h; convert h using 2; ring
+  -- D₂ in terms of c/denom
+  have hD₂ : D₂ γ z = (2 * π * I) * (↑(γ 1 0) / denom γ z) := by
+    simp only [D₂]
+    ring
+  -- LHS: (serre_D k F ∣[k+2] γ) z = (D F - (k/12) * E₂ * F) ∣[k+2] γ
+  -- By linearity of slash: = D F ∣[k+2] γ - (k/12) * (E₂ * F) ∣[k+2] γ
+  have hLHS : (serre_D k F ∣[k + 2] γ) z =
+      (D F ∣[k + 2] γ) z - (k : ℂ) * (12 : ℂ)⁻¹ * ((E₂ * F) ∣[k + 2] γ) z := by
+    simp only [serre_D, ModularForm.SL_slash_apply, Pi.mul_apply]
+    ring
+  -- RHS: serre_D k (F ∣[k] γ) z = D (F ∣[k] γ) z - (k/12) * E₂ z * (F ∣[k] γ) z
+  have hRHS : serre_D k (F ∣[k] γ) z =
+      D (F ∣[k] γ) z - (k : ℂ) * (12 : ℂ)⁻¹ * E₂ z * (F ∣[k] γ) z := by
+    simp only [serre_D]
+  -- Substitute hLHS and hRHS pattern and perform calc
+  rw [hLHS, hRHS]
+  rw [hmul, hE₂slash, hD₂]
+  -- From D_slash: D (F ∣[k] γ) z = (D F ∣[k + 2] γ) z - k*(2πi)⁻¹*(c/denom)*(F ∣[k] γ) z
+  -- Rearranging: (D F ∣[k + 2] γ) z = D (F ∣[k] γ) z + k*(2πi)⁻¹*(c/denom)*(F ∣[k] γ) z
+  have hDslash' : (D F ∣[k + 2] γ) z = D (F ∣[k] γ) z +
+      (k : ℂ) * (2 * π * I)⁻¹ * (↑(γ 1 0) / denom γ z) * (F ∣[k] γ) z := by
+    -- hDslash: D (F ∣[k] γ) z = (D F ∣[k + 2] γ) z - X where X = k*(2πi)⁻¹*(c/denom)*(F ∣[k] γ) z
+    -- So: (D F ∣[k + 2] γ) z = D (F ∣[k] γ) z + X
+    calc (D F ∣[k + 2] γ) z
+        = (D F ∣[k + 2] γ) z - (k : ℂ) * (2 * π * I)⁻¹ * (↑(γ 1 0) / denom γ z) * (F ∣[k] γ) z
+          + (k : ℂ) * (2 * π * I)⁻¹ * (↑(γ 1 0) / denom γ z) * (F ∣[k] γ) z := by ring
+      _ = D (F ∣[k] γ) z + (k : ℂ) * (2 * π * I)⁻¹ * (↑(γ 1 0) / denom γ z) * (F ∣[k] γ) z := by
+          rw [← hDslash]
+  rw [hDslash']
+  -- Now the goal is pure algebra:
+  -- D(F∣γ) + k*(2πi)⁻¹*(c/denom)*F∣γ - k/12*(E₂ - (2ζ(2))⁻¹*2πi*(c/denom))*F∣γ
+  -- = D(F∣γ) - k/12*E₂*F∣γ
+  -- Expanding: D(F∣γ) + k*(2πi)⁻¹*X - k/12*E₂*F∣γ + k/12*(2ζ(2))⁻¹*2πi*X
+  -- = D(F∣γ) - k/12*E₂*F∣γ
+  -- where X = (c/denom)*F∣γ
+  -- So we need: k*(2πi)⁻¹*X + k/12*(2ζ(2))⁻¹*2πi*X = 0
+  -- Factor: k*X*[(2πi)⁻¹ + (12)⁻¹*(2ζ(2))⁻¹*2πi] = 0
+  -- This is anomaly_coeff_zero!
+  have h_cancel := anomaly_coeff_zero
+  have h_factored : ∀ (x : ℂ), (12 : ℂ)⁻¹ * (2 * riemannZeta 2)⁻¹ * (2 * π * I) * x +
+      (2 * π * I)⁻¹ * x = 0 := fun x => by
+    calc (12 : ℂ)⁻¹ * (2 * riemannZeta 2)⁻¹ * (2 * π * I) * x + (2 * π * I)⁻¹ * x
+        = ((12 : ℂ)⁻¹ * (2 * riemannZeta 2)⁻¹ * (2 * π * I) + (2 * π * I)⁻¹) * x := by ring
+      _ = 0 * x := by rw [h_cancel]
+      _ = 0 := by ring
+  -- Use abbreviations for readability
+  set D' := D (F ∣[k] γ) z with hD'
+  set c_div_d := (↑(γ 1 0) : ℂ) / denom γ z with hcd
+  set F' := (F ∣[k] γ) z with hF'
+  set π2I := (2 * π * I : ℂ) with hπ2I
+  set ζ2 := riemannZeta 2 with hζ2
+  -- h_factored using abbreviations
+  have h_app : (12 : ℂ)⁻¹ * (2 * ζ2)⁻¹ * π2I * ((k : ℂ) * c_div_d * F') +
+      π2I⁻¹ * ((k : ℂ) * c_div_d * F') = 0 := h_factored ((k : ℂ) * c_div_d * F')
+  -- Goal: D' + k*π2I⁻¹*c_div_d*F' - k/12*(E₂ z - (2ζ2)⁻¹*π2I*c_div_d)*F'
+  --     = D' - k/12*E₂ z*F'
+  -- Expanding and rearranging:
+  -- need k*π2I⁻¹*c_div_d*F' + k/12*(2ζ2)⁻¹*π2I*c_div_d*F' = 0
+  -- = k * c_div_d * F' * (π2I⁻¹ + 12⁻¹*(2ζ2)⁻¹*π2I)
+  -- = 0 by h_app
+  ring_nf
+  -- h_goal: the anomaly terms sum to 0
+  have h_goal : (k : ℂ) * π2I * c_div_d * F' * ζ2⁻¹ * (1 / 24) + (k : ℂ) * π2I⁻¹ * c_div_d * F' = 0 := by
+    calc (k : ℂ) * π2I * c_div_d * F' * ζ2⁻¹ * (1 / 24) + (k : ℂ) * π2I⁻¹ * c_div_d * F'
+        = (12 : ℂ)⁻¹ * (2 * ζ2)⁻¹ * π2I * ((k : ℂ) * c_div_d * F') +
+          π2I⁻¹ * ((k : ℂ) * c_div_d * F') := by ring
+      _ = 0 := h_app
+  calc D' + ↑k * π2I * c_div_d * F' * ζ2⁻¹ * (1 / 24) + ↑k * π2I⁻¹ * c_div_d * F' +
+      ↑k * F' * E₂ z * (-1 / 12)
+    _ = D' + ↑k * F' * E₂ z * (-1 / 12) +
+        ((k : ℂ) * π2I * c_div_d * F' * ζ2⁻¹ * (1 / 24) + (k : ℂ) * π2I⁻¹ * c_div_d * F') := by ring
+    _ = D' + ↑k * F' * E₂ z * (-1 / 12) + 0 := by rw [h_goal]
+    _ = D' + ↑k * F' * E₂ z * (-1 / 12) := by ring
 
 theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (γ : SL(2, ℤ)) (h : F ∣[k] γ = F) :
@@ -537,7 +625,24 @@ Note that the dimensions of the spaces of modular forms are all 1.
 -/
 theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by sorry
 
-theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by sorry
+theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
+  -- Strategy: Use the dimension argument.
+  -- 1. serre_D 4 E₄ is weight-6 slash-invariant under Γ(1) (by serre_D_slash_invariant)
+  -- 2. E₆ is weight-6 slash-invariant (it's a ModularForm Γ(1) 6)
+  -- 3. The difference f = serre_D 4 E₄ + 3⁻¹ * E₆ has constant term 0:
+  --    - D(E₄) has constant term 0 (D kills constants)
+  --    - E₂ has constant term 1, E₄ has constant term 1
+  --    - serre_D 4 E₄ = D E₄ - (4/12) * E₂ * E₄ has constant term 0 - 1/3 = -1/3
+  --    - 3⁻¹ * E₆ has constant term 1/3
+  --    - Sum has constant term -1/3 + 1/3 = 0
+  -- 4. If f were a ModularForm, it would be a cusp form (IsCuspForm_iff_coeffZero_eq_zero)
+  -- 5. Since CuspForm Γ(1) 6 has dimension 0 (cuspform_weight_lt_12_zero), f = 0
+  --
+  -- The main technical hurdle is showing serre_D 4 E₄ corresponds to a ModularForm.
+  -- This requires: holomorphicity (from serre_D_differentiable) and bounded at cusps.
+  --
+  -- Alternative: Direct q-expansion comparison (requires tsum infrastructure)
+  sorry
 
 theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by sorry
 
