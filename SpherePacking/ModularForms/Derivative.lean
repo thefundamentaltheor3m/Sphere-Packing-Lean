@@ -329,22 +329,35 @@ This is the key computation for proving Serre derivative equivariance.
 lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (γ : SL(2, ℤ)) :
     D (F ∣[k] γ) = (D F ∣[k + 2] γ) -
         (fun z : ℍ => (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z) := by
-  -- Strategy:
-  -- 1. Expand (F ∣[k] γ) z = F(γ•z) * denom(γ,z)^(-k)
-  -- 2. Apply D using Leibniz rule: D(f*g) = f*Dg + Df*g
-  -- 3. For D[F(γ•z)]: chain rule, key fact: d/dz[γ•z] = 1/denom(γ,z)²
-  -- 4. For D[denom(γ,z)^(-k)]: use deriv_zpow, d/dz[denom] = c = γ 1 0
+  -- Strategy (all micro-lemmas proven above):
+  -- 1. SL_slash_apply: (F ∣[k] γ) z = F(γ•z) * denom(γ,z)^(-k)
+  -- 2. coe_smul_of_det_pos: (γ•z : ℂ) = num γ z / denom γ z (since det(SL₂) = 1 > 0)
+  -- 3. Product rule: deriv[f*g] = f*deriv[g] + deriv[f]*g
+  -- 4. Chain rule: deriv[F ∘ mobius] = deriv[F](mobius z) * deriv_moebius
+  -- 5. deriv_moebius: d/dz[num/denom] = 1/denom² (uses det = 1)
+  -- 6. deriv_denom_zpow: d/dz[denom^(-k)] = -k * c * denom^(-k-1)
+  --
+  -- Computation:
+  -- D(F ∣[k] γ) z = (2πi)⁻¹ * deriv[(F ∣[k] γ) ∘ ofComplex] z
+  --   = (2πi)⁻¹ * deriv[w ↦ F(mobius w) * denom(w)^(-k)] z
+  --   = (2πi)⁻¹ * [F(mobius z) * (-k * c * denom^(-k-1)) + deriv[F](mobius z) * (1/denom²) * denom^(-k)]
+  --   = -k*(2πi)⁻¹*(c/denom)*(F ∣[k] γ)(z) + (2πi)⁻¹*deriv[F](γ•z)*denom^(-k-2)
+  --   = (D F ∣[k+2] γ)(z) - k*(2πi)⁻¹*(c/denom)*(F ∣[k] γ)(z)
   ext z
-  -- Work pointwise
   unfold D
   simp only [Pi.sub_apply]
-  -- The derivative on ℍ can be computed on ℂ via Filter.EventuallyEq.deriv_eq
-  -- (F ∣[k] γ) z = F(γ•z) * denom(γ,z)^(-k) on the upper half-plane
-  -- TODO: This proof requires substantial development connecting:
-  -- - The slash action on ℍ to the Möbius formula on ℂ
-  -- - Product rule for derivatives
-  -- - Chain rule with deriv_moebius and deriv_denom_zpow
-  -- The micro-lemmas are ready; the assembly is algebraically involved
+  -- Use Filter.EventuallyEq.deriv_eq to compute on ℂ
+  -- The slash action on ℍ agrees with the Möbius formula on ℂ in a neighborhood
+  have hz_denom_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+  -- Expand the slash action: (F ∣[k] γ) w = F (γ • w) * (denom γ w) ^ (-k)
+  have hslash : ∀ w : ℍ, (F ∣[k] γ) w = F (γ • w) * (denom γ w) ^ (-k) :=
+    fun w => ModularForm.SL_slash_apply (f := F) (k := k) γ w
+  -- The coercion (γ • z : ℂ) = num γ z / denom γ z follows from coe_smul_of_det_pos
+  -- since det(γ) = 1 > 0 for SL(2,ℤ)
+  -- The detailed derivative computation uses the helper lemmas:
+  -- - deriv_moebius for d/dz[num/denom] = 1/denom²
+  -- - deriv_denom_zpow for d/dz[denom^(-k)] = -k * c * denom^(-k-1)
+  -- Assembly requires product rule + chain rule, then algebraic simplification
   sorry
 
 /--
