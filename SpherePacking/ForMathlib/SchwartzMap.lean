@@ -561,7 +561,6 @@ theorem smooth_realization_jet : ∀ a : ℕ → ℝ, ∃ f : ℝ → ℝ, (Cont
   assumption
 
 set_option linter.style.longLine false
-set_option maxHeartbeats 500000 in
 lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ) :
     iteratedDeriv (2 * k) (fun x => g (x ^ 2)) 0 = ((Nat.factorial (2 * k) : ℝ) / (Nat.factorial k : ℝ)) * iteratedDeriv k g 0 := by
   -- By definition of $g$, we know that its Taylor expansion at 0 is given by the Taylor series of $g$.
@@ -569,7 +568,10 @@ lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ
     -- Apply the Taylor series expansion theorem to g at 0.
     have h_taylor : ∀ x, g x = ∑ n ∈ Finset.range (k + 1), deriv^[n] g 0 / n ! * x ^ n + ∫ t in (0 : ℝ)..x, (x - t) ^ k / k ! * deriv^[k + 1] g t := by
       induction' k with k ih;
-      · aesop;
+      · intro x
+        simp_all only [zero_add, Finset.range_one, Finset.sum_singleton, iterate_zero, id_eq, Nat.factorial_zero,
+          Nat.cast_one, div_one, pow_zero, mul_one, ne_eq, one_ne_zero, not_false_eq_true, div_self, iterate_one,
+          one_mul]
         rw [ intervalIntegral.integral_deriv_eq_sub ] <;> norm_num [ hg.contDiffAt.differentiableAt ];
         -- Since $g$ is infinitely differentiable, its derivative $g'$ is continuous.
         have h_cont_diff : Continuous (deriv g) := by
@@ -601,7 +603,8 @@ lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ
           · norm_num [ neg_div, neg_mul ];
           · have h_deriv : ∀ n : ℕ, ContDiff ℝ ∞ (deriv^[n] g) := by
               fun_prop;
-            intro x hx; have := h_deriv ( k + 1 ) ; have := this.differentiable; aesop;
+            intro x hx; have := h_deriv ( k + 1 ) ; have := this.differentiable;
+            simp_all only [iterate_succ, comp_apply, WithTop.one_le_coe, le_top, forall_const]
             convert this.differentiableAt.hasDerivAt using 1;
             erw [ Function.iterate_succ_apply' ];
           · have h_cont_diff : ∀ n, ContDiff ℝ ∞ (deriv^[n] g) := by
@@ -611,10 +614,13 @@ lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ
     intro x; specialize h_taylor x; by_cases hx : x = 0 <;> simp_all +decide [ div_eq_inv_mul, mul_assoc, mul_comm, mul_left_comm ] ;
     -- Perform the substitution $u = \frac{t}{x}$ to transform the integral.
     have h_subst : ∫ t in (0 : ℝ)..x, (x - t) ^ k * ((k ! : ℝ)⁻¹ * deriv^[k] (deriv g) t) = ∫ u in (0 : ℝ)..1, (x - x * u) ^ k * ((k ! : ℝ)⁻¹ * deriv^[k] (deriv g) (x * u)) * x := by
-      simp +decide [ mul_comm x, intervalIntegral.integral_comp_mul_right ( fun u => ( x - u ) ^ k * ( ( k ! : ℝ ) ⁻¹ * deriv^[k] ( deriv g ) u ) ), hx ];
+      simp only [mul_comm x, intervalIntegral.integral_mul_const, ne_eq, hx, not_false_eq_true,
+        intervalIntegral.integral_comp_mul_right
+            (fun u => (x - u) ^ k * ((k ! : ℝ)⁻¹ * deriv^[k] (deriv g) u)),
+        zero_mul, one_mul, smul_eq_mul];
       rw [ inv_mul_eq_div, div_mul_cancel₀ _ hx ];
-    rw [ h_subst ] ; norm_num [ mul_assoc, mul_comm, mul_left_comm, ← intervalIntegral.integral_const_mul ] ; ring;
-    exact intervalIntegral.integral_congr fun u hu => by rw [ show x - x * u = x * ( 1 - u ) by ring ] ; rw [ mul_pow ] ; ring;
+    rw [ h_subst ] ; norm_num [ mul_assoc, mul_comm, mul_left_comm, ← intervalIntegral.integral_const_mul ] ; ring
+    exact intervalIntegral.integral_congr fun u hu => by rw [ show x - x * u = x * ( 1 - u ) by ring ] ; rw [ mul_pow ] ; ring
   -- The remainder term's 2k-th derivative is zero because it's multiplied by x^(2(k+1)), which is a higher power than 2k.
   have h_remainder : iteratedDeriv (2 * k) (fun x => x ^ (2 * (k + 1)) * ∫ t in (0 : ℝ)..1, (1 - t) ^ k / k ! * deriv^[k + 1] g (t * x ^ 2)) 0 = 0 := by
     apply iteratedDeriv_mul_pow_eq_zero_of_lt;
@@ -643,11 +649,17 @@ lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ
       exact congr_fun ( h_poly_deriv ( 2 * k ) ) 0;
     rw [ h_poly_deriv, Finset.sum_eq_single k ] <;> norm_num [ Nat.factorial_ne_zero, iteratedDeriv_eq_iterate ]
     ring_nf
-    aesop ( simp_config := { singlePass := true } )
+    simp_all only [iterate_succ, comp_apply, mul_eq_mul_left_iff, mul_eq_zero, inv_eq_zero, Nat.cast_eq_zero]
     · -- The product $\prod_{x=0}^{2k-1} (k*2 - x)$ is equal to $(2k)!$ because it's the product of the first $2k$ natural numbers in reverse order.
       left; exact (by
       have h_prod : ∀ m : ℕ, ∏ x ∈ Finset.range m, (m - x : ℝ) = Nat.factorial m := by
-        intro m; induction m <;> simp_all +decide [ Nat.factorial_succ, Finset.prod_range_succ' ] ; ring;
+        intro m;
+        induction m
+        · simp_all only [Finset.range_zero, CharP.cast_eq_zero, zero_sub, Finset.prod_empty,
+            Nat.factorial_zero, Nat.cast_one]
+        · simp_all only [Nat.cast_add, Nat.cast_one, Finset.prod_range_succ',
+            add_sub_add_right_eq_sub, CharP.cast_eq_zero, sub_zero, Nat.factorial_succ, Nat.cast_mul]
+          ring
       exact_mod_cast h_prod ( k * 2 ));
     · intro n hn hn'; right; left; rw [ Finset.prod_eq_zero_iff ] ; norm_num [ Nat.sub_eq_zero_of_le ( show n ≤ k from Nat.le_of_lt_succ hn ) ] ;
       exact ⟨ 2 * n, by contrapose! hn'; linarith, by push_cast; ring ⟩;
@@ -656,23 +668,21 @@ lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ
     rw [ ← iteratedDeriv_add ] ; congr ; ext x ; rw [ h_taylor ] ; ring;
     · norm_num [ add_comm ];
     · exact ContDiffAt.sum fun _ _ => ContDiffAt.mul ( contDiffAt_const ) ( contDiffAt_id.pow _ );
-    · refine' ContDiffAt.mul _ _;
-      · exact contDiffAt_id.pow _;
-      · -- The integral of a smooth function is smooth.
-        have h_int_smooth : ContDiff ℝ ∞ (fun x => ∫ t in (0 : ℝ)..1, (1 - t) ^ k / k ! * deriv^[k + 1] g (t * x ^ 2)) := by
-          have h_int_smooth : ContDiff ℝ ∞ (fun x => ∫ t in (0 : ℝ)..1, (1 - t) ^ k / k ! * deriv^[k + 1] g (t * x)) := by
-            have h_cont_diff : ContDiff ℝ ∞ (fun x => deriv^[k + 1] g x) := by
-              fun_prop
-            have h_int_smooth : ∀ (P : Polynomial ℝ), ContDiff ℝ ∞ (fun x => ∫ t in (0 : ℝ)..1, P.eval t * deriv^[k + 1] g (t * x)) := by
-              exact fun P ↦ contDiff_integral_poly_mul_comp (deriv^[k + 1] g) h_cont_diff P;
-            convert h_int_smooth ( Polynomial.C ( 1 / ( k ! : ℝ ) ) * ( 1 - Polynomial.X ) ^ k ) using 2 ; norm_num ; ring;
-            ac_rfl;
-          exact h_int_smooth.comp ( contDiff_id.pow 2 );
-        -- Since ContDiff ℝ ∞ implies ContDiffAt ℝ (2k) for any k, we can conclude that the integral function is ContDiffAt ℝ (2k) at 0.
-        apply h_int_smooth.contDiffAt.of_le; norm_num;
-        exact right_eq_inf.mp rfl;
+    · apply ContDiffAt.mul (contDiffAt_id.pow _) _;
+      have h_int_smooth : ContDiff ℝ ∞ (fun x => ∫ t in (0 : ℝ)..1, (1 - t) ^ k / k ! * deriv^[k + 1] g (t * x ^ 2)) := by
+        have h_int_smooth : ContDiff ℝ ∞ (fun x => ∫ t in (0 : ℝ)..1, (1 - t) ^ k / k ! * deriv^[k + 1] g (t * x)) := by
+          have h_cont_diff : ContDiff ℝ ∞ (fun x => deriv^[k + 1] g x) := by
+            fun_prop
+          have h_int_smooth : ∀ (P : Polynomial ℝ), ContDiff ℝ ∞ (fun x => ∫ t in (0 : ℝ)..1, P.eval t * deriv^[k + 1] g (t * x)) := by
+            exact fun P ↦ contDiff_integral_poly_mul_comp (deriv^[k + 1] g) h_cont_diff P;
+          convert h_int_smooth ( Polynomial.C ( 1 / ( k ! : ℝ ) ) * ( 1 - Polynomial.X ) ^ k ) using 2 ; norm_num ; ring;
+          ac_rfl;
+        exact h_int_smooth.comp ( contDiff_id.pow 2 );
+      -- Since ContDiff ℝ ∞ implies ContDiffAt ℝ (2k) for any k, we can conclude that the integral function is ContDiffAt ℝ (2k) at 0.
+      apply h_int_smooth.contDiffAt.of_le; norm_num;
+      exact right_eq_inf.mp rfl;
   rw [h_final, h_poly, h_remainder]
-  simp;
+  simp only [add_zero, mul_eq_mul_left_iff, div_eq_zero_iff, Nat.cast_eq_zero];
   exact Or.inl <| by rw [ iteratedDeriv_eq_iterate ] ;
 
 set_option linter.style.longLine false in
