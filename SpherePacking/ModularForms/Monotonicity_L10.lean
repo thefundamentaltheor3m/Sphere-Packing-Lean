@@ -1044,24 +1044,41 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
         exact tendsto_const_nhds
       · -- n ≠ 0 and n ≠ -1: exponential decay
         -- n(1+n) > 0 for n ≥ 1 or n ≤ -2, giving exponential decay
-        -- Term = cexp(πin(1+n)z) * πin(1+n), which → 0 since n(1+n) > 0
-        -- Strategy: Use Complex.tendsto_exp_nhds_zero_iff and show Re(exponent) → -∞
-        -- Key lemmas:
-        -- 1. Int.mul_pos_of_neg_of_neg for n < -1: n*(1+n) > 0
-        -- 2. Filter.Tendsto.const_mul: c * f → c * 0 = 0 if f → 0
-        -- 3. Complex.tendsto_exp_nhds_zero_iff: exp(f) → 0 iff Re(f) → -∞
-        -- 4. Filter.tendsto_im_atImInfty: im(z) → +∞
-        -- 5. Filter.Tendsto.atBot_mul_const_of_neg: r < 0 and f → +∞ implies r*f → -∞
-        sorry
+        have hnn : n * (1 + n) > 0 := by
+          rcases Int.lt_or_gt_of_ne hn0 with hn_neg | hn_pos
+          · have h1n : 1 + n < 0 := by omega
+            exact Int.mul_pos_of_neg_of_neg hn_neg h1n
+          · have h1n : 1 + n > 0 := by omega
+            exact Int.mul_pos hn_pos h1n
+        simp only [jacobiTheta₂_term_fderiv, ContinuousLinearMap.smul_apply,
+          ContinuousLinearMap.add_apply, ContinuousLinearMap.coe_fst',
+          ContinuousLinearMap.coe_snd', smul_eq_mul]
+        have h_exp_eq : ∀ x : ℍ, 2 * ↑π * I * ↑n * (↑x / 2) + ↑π * I * ↑n ^ 2 * ↑x =
+            ↑π * I * ↑n * (1 + n) * ↑x := by intro x; ring
+        have h_coeff_eq : 2 * ↑π * I * ↑n * (1 / 2) + ↑π * I * ↑n ^ 2 * 1 =
+            ↑π * I * ↑n * (1 + n) := by ring
+        simp_rw [h_exp_eq, h_coeff_eq]
+        have h_exp_tendsto : Filter.Tendsto (fun x : ℍ => cexp (↑π * I * ↑n * (1 + ↑n) * ↑x))
+            atImInfty (nhds 0) := by
+          rw [Complex.tendsto_exp_nhds_zero_iff]
+          have h_re_eq : ∀ x : ℍ, (↑π * I * ↑n * (1 + ↑n) * ↑x).re =
+              -π * (↑n * (1 + ↑n)) * x.im := by
+            intro x
+            simp only [mul_re, ofReal_re, ofReal_im, Complex.I_re, Complex.I_im,
+              intCast_re, intCast_im, UpperHalfPlane.coe_re, UpperHalfPlane.coe_im,
+              add_re, add_im, one_re, one_im, mul_im]
+            ring
+          simp_rw [h_re_eq]
+          have h_const_neg : -π * (↑n * (1 + ↑n)) < (0 : ℝ) := by
+            have hnn' : (0 : ℝ) < ↑n * (1 + ↑n) := by exact_mod_cast hnn
+            nlinarith [Real.pi_pos]
+          rw [Filter.tendsto_const_mul_atBot_of_neg h_const_neg]
+          exact Filter.tendsto_im_atImInfty
+        convert h_exp_tendsto.mul tendsto_const_nhds using 1
+        simp
     -- 3. Bound condition: ‖f(z,n)‖ ≤ bound(n) eventually (for im(z) ≥ 1)
-    · -- Strategy: For im(z) ≥ 1:
-      -- 1. ‖f((1/2,1))‖ ≤ ‖f‖_op * ‖(1/2,1)‖ ≤ ‖f‖_op * 1 (since ‖(1/2,1)‖ = max(1/2,1) = 1)
-      -- 2. ‖jacobiTheta₂_term_fderiv k (z/2) z‖ ≤ 3π|k|² * ‖jacobiTheta₂_term k (z/2) z‖
-      --    (from norm_jacobiTheta₂_term_fderiv_le)
-      -- 3. ‖jacobiTheta₂_term k (z/2) z‖ ≤ exp(-π*(z.im*k² - z.im*|k|))
-      --    (from norm_jacobiTheta₂_term_le with T=z.im, S=z.im/2)
-      -- 4. exp(-π*z.im*(k²-|k|)) ≤ exp(-π*(k²-|k|)) for z.im ≥ 1 and k²-|k| ≥ 0
-      sorry
+    · -- Strategy: For im(z) ≥ 1, use norm_jacobiTheta₂_term_fderiv_le and norm_jacobiTheta₂_term_le
+      sorry -- Complex type coercions; see standalone proof in test file
   have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
   simp only [mul_zero] at h_mul
   exact h_mul
