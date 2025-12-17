@@ -966,10 +966,41 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
     -- 1. Summability of bound
     · simpa [mul_assoc] using (summable_pow_mul_jacobiTheta₂_term_bound (1/2) one_pos 2).mul_left (3 * π)
     -- 2. Pointwise convergence: each term → 0 as im(z) → ∞
-    -- Key: For n ≠ 0, |term_fderiv| ≤ C|n|²·exp(-π·im(z)·(n² - |n|)) → 0
+    -- Key: For n = 0 or n = -1, coefficient πin(1+n) = 0. For other n, exponential decay.
     · intro n
-      -- Exponential decay: exp(-π·im(z)·(n² - |n|)) → 0 as im(z) → ∞
-      sorry -- Each term tends to 0 via exponential decay bounds
+      -- The term is: cexp(πin(1+n)τ) * πin(1+n) applied to direction (1/2, 1)
+      -- For n = 0 or n = -1: πin(1+n) = 0, so term = 0
+      -- For other n: exponential decay cexp(-π·n(1+n)·im(τ)) → 0
+      by_cases hn0 : n = 0
+      · -- n = 0: the linear map (2πi·0)•fst + (πi·0²)•snd = 0
+        simp only [hn0, jacobiTheta₂_term_fderiv, Int.cast_zero, mul_zero, sq,
+          zero_mul, zero_smul, add_zero, Complex.exp_zero, one_smul]
+        -- Goal: (0 • fst + 0 • snd) (1/2, 1) = 0 for all z
+        -- Goal: (0 • fst + 0 • snd) (1/2, 1) = 0 for all z
+        have h_eq : (fun _ : ℍ => ((0 : ℂ) • ContinuousLinearMap.fst ℂ ℂ ℂ +
+            (0 : ℂ) • ContinuousLinearMap.snd ℂ ℂ ℂ) ((1 : ℂ) / 2, 1)) = fun _ => 0 := by
+          ext x
+          simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
+            ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd',
+            smul_eq_mul, mul_one, mul_comm, zero_add]
+          ring
+        rw [h_eq]
+        exact tendsto_const_nhds
+      by_cases hn1 : n = -1
+      · -- n = -1: applied to (1/2, 1), (-2πi)·(1/2) + (πi)·1 = -πi + πi = 0
+        simp only [hn1, jacobiTheta₂_term_fderiv]
+        -- Simplify: (2πi(-1))•fst + (πi·1)•snd, applied to (1/2, 1)
+        simp only [Int.cast_neg, Int.cast_one, sq, neg_mul, neg_neg,
+          mul_neg, mul_one, ContinuousLinearMap.smul_apply, ContinuousLinearMap.add_apply,
+          ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd', smul_eq_mul]
+        -- Goal: exp(...) * (-(2πi) * (1/2) + πi)
+        -- = exp(...) * (-πi + πi) = exp(...) * 0 = 0
+        have h_sum : -(2 * ↑π * I * ((1 : ℂ) / 2)) + ↑π * I = 0 := by ring
+        simp only [h_sum, mul_zero]
+        exact tendsto_const_nhds
+      · -- n ≠ 0 and n ≠ -1: exponential decay
+        -- n(1+n) > 0 for n ≥ 1 or n ≤ -2, giving exponential decay
+        sorry -- Exponential decay: exp(-π·n(1+n)·im(τ)) → 0
     -- 3. Bound condition: ‖f(z,n)‖ ≤ bound(n) eventually (for im(z) ≥ 1)
     · sorry -- Bound from norm_jacobiTheta₂_term_fderiv_le and norm_jacobiTheta₂_term_le
   have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
