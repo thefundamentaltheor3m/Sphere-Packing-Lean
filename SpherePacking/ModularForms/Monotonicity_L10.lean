@@ -488,6 +488,20 @@ lemma summable_pow5_shift : Summable fun m : ℕ => (m + 1 : ℝ) ^ 5 * rexp (-2
   convert h.comp_injective Nat.succ_injective using 1
   ext m; simp only [Function.comp_apply, Nat.succ_eq_add_one]; push_cast; ring_nf
 
+/-- Summability of (m+1)^6 * exp(-2πm) via comparison with shifted sum. -/
+lemma summable_pow6_shift : Summable fun m : ℕ => (m + 1 : ℝ) ^ 6 * rexp (-2 * π * m) := by
+  have h := Real.summable_pow_mul_exp_neg_nat_mul 6 (by positivity : 0 < 2 * π)
+  have h_eq : ∀ m : ℕ, (m + 1 : ℝ) ^ 6 * rexp (-2 * π * m) =
+      rexp (2 * π) * ((m + 1) ^ 6 * rexp (-2 * π * (m + 1))) := by
+    intro m
+    have h1 : rexp (-2 * π * m) = rexp (2 * π) * rexp (-2 * π * (m + 1)) := by
+      rw [← Real.exp_add]; congr 1; ring
+    rw [h1]; ring
+  simp_rw [h_eq]
+  apply Summable.mul_left
+  convert h.comp_injective Nat.succ_injective using 1
+  ext m; simp only [Function.comp_apply, Nat.succ_eq_add_one]; push_cast; ring_nf
+
 /--
 Helper lemma: `Θ₂(z) / exp(πiz/4) → 2` as `im(z) → ∞`.
 This follows from `Θ₂ = exp(πiz/4) * jacobiTheta₂(z/2, z)` and `jacobiTheta₂(z/2, z) → 2`.
@@ -706,8 +720,38 @@ theorem D_diff_div_q_tendsto :
     split_ifs with h
     · simp [h, ArithmeticFunction.sigma_one_apply]
     · rfl
-  -- Use QExp.tendsto_nat or direct argument
-  sorry -- Final limit argument using existing tendsto_tsum_of_dominated_convergence
+  -- Apply QExp.tendsto_nat with coefficient function a(m) = (m+1)² * σ₃(m+1)
+  set a : ℕ → ℂ := fun m => (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) with ha_def
+  have ha0 : a 0 = 1 := by simp [ha_def, ArithmeticFunction.sigma_one]
+  have h_tendsto : Filter.Tendsto
+      (fun z : ℍ => ∑' m : ℕ, a m * cexp (2 * π * I * z * m))
+      atImInfty (nhds (a 0)) := by
+    apply QExp.tendsto_nat a
+    -- Summability: ‖a m‖ ≤ (m+1)^6, and (m+1)^6 * exp(-2πm) is summable
+    have hbound : ∀ m : ℕ, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 6 := by
+      intro m
+      simp only [ha_def, norm_mul, Complex.norm_natCast, Complex.norm_pow]
+      have h1 : (ArithmeticFunction.sigma 3 (m + 1) : ℝ) ≤ ((m + 1 : ℕ) : ℝ) ^ 4 := by
+        exact_mod_cast (sigma_bound 3 (m + 1))
+      calc (↑(m + 1) : ℝ) ^ 2 * (ArithmeticFunction.sigma 3 (m + 1) : ℝ)
+          ≤ (↑(m + 1) : ℝ) ^ 2 * (↑(m + 1) : ℝ) ^ 4 :=
+            mul_le_mul_of_nonneg_left h1 (pow_nonneg (Nat.cast_nonneg _) _)
+        _ = (↑(m + 1) : ℝ) ^ 6 := by ring
+    apply Summable.of_nonneg_of_le
+    · intro m; positivity
+    · intro m
+      calc ‖a m‖ * rexp (-2 * π * m)
+          ≤ ((m + 1 : ℕ) : ℝ) ^ 6 * rexp (-2 * π * m) :=
+            mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
+        _ = (m + 1 : ℝ) ^ 6 * rexp (-2 * π * m) := by simp
+    · exact summable_pow6_shift
+  have h_eq2 : ∀ z : ℍ,
+      ∑' m : ℕ, (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) *
+        cexp (2 * π * I * m * z) =
+      ∑' m : ℕ, a m * cexp (2 * π * I * z * m) := by
+    intro z; apply tsum_congr; intro m; simp only [ha_def]; ring_nf
+  simp_rw [h_eq2, ha0] at h_tendsto ⊢
+  convert h_tendsto.const_mul (720 : ℂ) using 2; ring
 
 theorem D_F_div_F_tendsto :
     Filter.Tendsto (fun z : ℍ => D F z / F z) atImInfty (nhds (2 : ℂ)) := by
