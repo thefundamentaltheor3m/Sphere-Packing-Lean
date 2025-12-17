@@ -313,7 +313,7 @@ lemma isBigO_atImInfty_of_fourier_shift
       rexp (-(2 * π) * (↑m + ↑n₀) * z.im) ≤
         rexp (-(2 * π * c) * m) * rexp (-(2 * π * c) * n₀) := by
     rw [← Real.exp_add, Real.exp_le_exp]
-    have key : (↑m + ↑n₀) * z.im ≥ (↑m + ↑n₀) * c := by nlinarith
+    have _ : (↑m + ↑n₀) * z.im ≥ (↑m + ↑n₀) * c := by nlinarith
     nlinarith [Real.pi_pos, (Nat.cast_nonneg m : (0 : ℝ) ≤ m),
       (Nat.cast_nonneg n₀ : (0 : ℝ) ≤ n₀), z.im_pos]
   -- Summability of norms
@@ -364,8 +364,7 @@ theorem tendsto_rpow_mul_resToImagAxis_of_fourier_shift
     {F : ℍ → ℂ} {a : ℕ → ℂ} {n₀ : ℕ} {c : ℝ} (hn₀ : 0 < n₀) (hc : 0 < c)
     (hF : ∀ z : ℍ, F z =
       ∑' m : ℕ, a m * Complex.exp (2 * π * Complex.I * ((m + n₀ : ℕ) : ℂ) * (z : ℂ)))
-    (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π * c) * (m : ℝ))))
-    (s : ℝ) :
-    Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
+    (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π * c) * (m : ℝ)))) (s : ℝ) :
+    Tendsto (fun t : ℝ => t ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
   tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity)
     (isBigO_atImInfty_of_fourier_shift hn₀ hc hF ha) s
