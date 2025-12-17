@@ -272,7 +272,7 @@ theorem toFun_eq_zero_iff_zero {E F : Type*}
 omit [Fact (0 < d)] in
 theorem integral_zero_iff_zero_of_nonneg {f : 𝓢(EuclideanSpace ℝ (Fin d), ℝ)}
   (hnn : ∀ x, 0 ≤ f x) : ∫ (v : EuclideanSpace ℝ (Fin d)), f v = 0 ↔ f = 0 := by
-  simp [← f.toFun_eq_zero_iff_zero]
+  simp only [← f.toFun_eq_zero_iff_zero]
   exact f.continuous.integral_zero_iff_zero_of_nonneg f.integrable hnn
 
 end SchwartzMap
