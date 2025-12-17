@@ -204,6 +204,124 @@ theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
     convert h1 using 1; ext z; simp only [mul_assoc]
   exact (D_differentiable hF).sub h_term
 
+/-! ### Helper lemmas for D_slash
+
+These micro-lemmas compute derivatives of the components in the slash action formula.
+-/
+
+open ModularGroup in
+/-- Derivative of the denominator function: d/dz[cz + d] = c. -/
+lemma deriv_denom (γ : SL(2, ℤ)) (z : ℂ) :
+    deriv (fun w => denom γ w) z = ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) := by
+  -- denom γ w = (γ : GL) 1 0 * w + (γ : GL) 1 1
+  -- The GL entries come from ℤ via ℤ → ℝ → GL
+  have hc : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 0 : ℂ) =
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) := by simp
+  have hd : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 1 : ℂ) =
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ) := by simp
+  simp only [denom]
+  have h : (fun w => (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 0 : ℂ) * w +
+      (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 1 : ℂ)) =
+      (fun w => ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * w + ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ)) := by
+    ext w; rw [hc, hd]
+  rw [h, deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]
+
+open ModularGroup in
+/-- Derivative of the numerator function: d/dz[az + b] = a. -/
+lemma deriv_num (γ : SL(2, ℤ)) (z : ℂ) :
+    deriv (fun w => num γ w) z = ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) := by
+  have ha : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 0 : ℂ) =
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) := by simp
+  have hb : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 1 : ℂ) =
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) := by simp
+  simp only [num]
+  have h : (fun w => (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 0 : ℂ) * w +
+      (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 1 : ℂ)) =
+      (fun w => ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * w + ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ)) := by
+    ext w; rw [ha, hb]
+  rw [h, deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]
+
+open ModularGroup in
+/-- Differentiability of denom. -/
+lemma differentiableAt_denom (γ : SL(2, ℤ)) (z : ℂ) :
+    DifferentiableAt ℂ (fun w => denom γ w) z := by
+  simp only [denom]
+  fun_prop
+
+open ModularGroup in
+/-- Differentiability of num. -/
+lemma differentiableAt_num (γ : SL(2, ℤ)) (z : ℂ) :
+    DifferentiableAt ℂ (fun w => num γ w) z := by
+  simp only [num]
+  fun_prop
+
+open ModularGroup in
+/-- Derivative of the Möbius transformation: d/dz[(az+b)/(cz+d)] = 1/(cz+d)².
+This uses det(γ) = 1, so (a(cz+d) - c(az+b)) = ad - bc = 1. -/
+lemma deriv_moebius (γ : SL(2, ℤ)) (z : ℂ) (hz : denom γ z ≠ 0) :
+    deriv (fun w => num γ w / denom γ w) z = 1 / (denom γ z) ^ 2 := by
+  have hdiff_num : DifferentiableAt ℂ (fun w => num γ w) z := differentiableAt_num γ z
+  have hdiff_denom : DifferentiableAt ℂ (fun w => denom γ w) z := differentiableAt_denom γ z
+  have hderiv : HasDerivAt (fun w => num γ w / denom γ w)
+      ((deriv (fun w => num γ w) z * denom γ z - num γ z * deriv (fun w => denom γ w) z)
+        / (denom γ z) ^ 2) z :=
+    hdiff_num.hasDerivAt.div hdiff_denom.hasDerivAt hz
+  rw [hderiv.deriv, deriv_num, deriv_denom]
+  -- Use det γ = 1: γ 0 0 * γ 1 1 - γ 0 1 * γ 1 0 = 1
+  have hdet : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ)
+      - ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) = 1 := by
+    simp only [← Int.cast_mul, ← Int.cast_sub]
+    have hdet' := Matrix.SpecialLinearGroup.det_coe γ
+    simp only [Matrix.det_fin_two] at hdet'
+    norm_cast
+  -- Normalize coercions between GL and Matrix ℤ
+  have ha : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 0 : ℂ) =
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) := by simp
+  have hb : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 1 : ℂ) =
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) := by simp
+  have hc : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 0 : ℂ) =
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) := by simp
+  have hd' : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 1 : ℂ) =
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ) := by simp
+  simp only [num, denom, ha, hb, hc, hd']
+  -- Goal: (a * (c*z+d) - (a*z+b) * c) / (c*z+d)^2 = 1 / (c*z+d)^2
+  -- Numerator: a*(cz+d) - c*(az+b) = acz + ad - acz - bc = ad - bc = 1 (det)
+  have hdenom_eq : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * z +
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ) = denom γ z := by simp only [denom, hc, hd']
+  rw [hdenom_eq]
+  have hdenom_sq_ne : (denom γ z) ^ 2 ≠ 0 := pow_ne_zero 2 hz
+  rw [div_eq_div_iff hdenom_sq_ne hdenom_sq_ne, one_mul]
+  -- Goal: (a * denom - (az+b) * c) * denom^2 = denom^2
+  -- This is 1 * denom^2 = denom^2 if we can show numerator = 1
+  have hnum_eq : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * denom γ z -
+      (((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * z + ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ)) *
+        ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) = 1 := by
+    simp only [denom, hc, hd']
+    linear_combination hdet
+  rw [hnum_eq, one_mul]
+
+open ModularGroup in
+/-- Derivative of denom^(-k): d/dz[(cz+d)^(-k)] = -k * c * (cz+d)^(-k-1). -/
+lemma deriv_denom_zpow (γ : SL(2, ℤ)) (k : ℤ) (z : ℂ) (hz : denom γ z ≠ 0) :
+    deriv (fun w => (denom γ w) ^ (-k)) z =
+        (-k : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * (denom γ z) ^ (-k - 1) := by
+  have hdiff : DifferentiableAt ℂ (fun w => denom γ w) z := differentiableAt_denom γ z
+  -- Use chain rule: d/dz[f(z)^m] = m * f(z)^(m-1) * f'(z)
+  have hderiv_zpow : HasDerivAt (fun w => w ^ (-k)) (((-k : ℤ) : ℂ) * (denom γ z) ^ (-k - 1))
+      (denom γ z) := hasDerivAt_zpow (-k) (denom γ z) (Or.inl hz)
+  have hderiv_denom : HasDerivAt (fun w => denom γ w)
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) z := by
+    rw [← deriv_denom]
+    exact hdiff.hasDerivAt
+  -- Chain rule
+  have hcomp := hderiv_zpow.comp z hderiv_denom
+  -- The composition equals fun w => (denom γ w) ^ (-k)
+  have heq : (fun w => w ^ (-k)) ∘ (fun w => denom γ w) = (fun w => (denom γ w) ^ (-k)) := by
+    ext w; simp only [Function.comp_apply]
+  rw [← heq, hcomp.deriv]
+  simp only [Int.cast_neg]
+  ring
+
 /--
 The derivative anomaly: how D interacts with the slash action.
 This is the key computation for proving Serre derivative equivariance.
@@ -216,6 +334,17 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
   -- 2. Apply D using Leibniz rule: D(f*g) = f*Dg + Df*g
   -- 3. For D[F(γ•z)]: chain rule, key fact: d/dz[γ•z] = 1/denom(γ,z)²
   -- 4. For D[denom(γ,z)^(-k)]: use deriv_zpow, d/dz[denom] = c = γ 1 0
+  ext z
+  -- Work pointwise
+  unfold D
+  simp only [Pi.sub_apply]
+  -- The derivative on ℍ can be computed on ℂ via Filter.EventuallyEq.deriv_eq
+  -- (F ∣[k] γ) z = F(γ•z) * denom(γ,z)^(-k) on the upper half-plane
+  -- TODO: This proof requires substantial development connecting:
+  -- - The slash action on ℍ to the Möbius formula on ℂ
+  -- - Product rule for derivatives
+  -- - Chain rule with deriv_moebius and deriv_denom_zpow
+  -- The micro-lemmas are ready; the assembly is algebraically involved
   sorry
 
 /--
