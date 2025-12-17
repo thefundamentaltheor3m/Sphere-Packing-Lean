@@ -625,23 +625,30 @@ Note that the dimensions of the spaces of modular forms are all 1.
 -/
 theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by sorry
 
+/-- The Serre derivative of E₄ is a scalar multiple of E₆.
+This uses the dimension formula: weight 6 modular forms are 1-dimensional, spanned by E₆.
+The scalar is determined by comparing constant terms. -/
 theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   -- Strategy: Use the dimension argument.
   -- 1. serre_D 4 E₄ is weight-6 slash-invariant under Γ(1) (by serre_D_slash_invariant)
   -- 2. E₆ is weight-6 slash-invariant (it's a ModularForm Γ(1) 6)
-  -- 3. The difference f = serre_D 4 E₄ + 3⁻¹ * E₆ has constant term 0:
-  --    - D(E₄) has constant term 0 (D kills constants)
+  -- 3. Weight-6 modular forms are 1-dimensional (weight_six_one_dimensional)
+  -- 4. The constant term of serre_D 4 E₄ is -1/3:
+  --    - D(E₄) has constant term 0 (D kills constants, or equivalently, the q-expansion
+  --      of D(E₄) = 240*∑n*σ₃(n)*q^n has no q^0 term)
   --    - E₂ has constant term 1, E₄ has constant term 1
-  --    - serre_D 4 E₄ = D E₄ - (4/12) * E₂ * E₄ has constant term 0 - 1/3 = -1/3
-  --    - 3⁻¹ * E₆ has constant term 1/3
-  --    - Sum has constant term -1/3 + 1/3 = 0
-  -- 4. If f were a ModularForm, it would be a cusp form (IsCuspForm_iff_coeffZero_eq_zero)
-  -- 5. Since CuspForm Γ(1) 6 has dimension 0 (cuspform_weight_lt_12_zero), f = 0
+  --    - serre_D 4 E₄ = D E₄ - (4/12) * E₂ * E₄ has constant term 0 - 1/3 * 1 = -1/3
+  -- 5. E₆ has constant term 1, so -1/3 * E₆ has constant term -1/3
+  -- 6. They match! And since weight-6 modular forms are spanned by E₆, we're done.
   --
-  -- The main technical hurdle is showing serre_D 4 E₄ corresponds to a ModularForm.
-  -- This requires: holomorphicity (from serre_D_differentiable) and bounded at cusps.
+  -- Technical note: To apply the dimension formula formally, we need to either:
+  -- (a) Construct a ModularForm from serre_D 4 E₄ (requires bounded at cusps), or
+  -- (b) Use q-expansion comparison directly
   --
-  -- Alternative: Direct q-expansion comparison (requires tsum infrastructure)
+  -- The bounded-at-cusps condition holds because:
+  -- - D(E₄) vanishes at the cusp (no constant term in q-expansion)
+  -- - E₂ * E₄ is bounded at the cusp (both have constant term 1)
+  -- - So serre_D 4 E₄ → -1/3 at the cusp
   sorry
 
 theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by sorry
