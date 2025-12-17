@@ -205,12 +205,51 @@ theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
   exact (D_differentiable hF).sub h_term
 
 /--
+The derivative anomaly: how D interacts with the slash action.
+This is the key computation for proving Serre derivative equivariance.
+-/
+lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (γ : SL(2, ℤ)) :
+    D (F ∣[k] γ) = (D F ∣[k + 2] γ) -
+        (fun z : ℍ => (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z) := by
+  -- Strategy:
+  -- 1. Expand (F ∣[k] γ) z = F(γ•z) * denom(γ,z)^(-k)
+  -- 2. Apply D using Leibniz rule: D(f*g) = f*Dg + Df*g
+  -- 3. For D[F(γ•z)]: chain rule, key fact: d/dz[γ•z] = 1/denom(γ,z)²
+  -- 4. For D[denom(γ,z)^(-k)]: use deriv_zpow, d/dz[denom] = c = γ 1 0
+  sorry
+
+/--
+E₂ transformation under slash action, derived from G₂_transform.
+E₂ = G₂ / (2*ζ(2)), and G₂ ∣[2] γ = G₂ - D₂ γ.
+-/
+lemma E₂_slash_transform (γ : SL(2, ℤ)) :
+    E₂ ∣[(2 : ℤ)] γ = E₂ - (1 / (2 * riemannZeta 2)) • D₂ γ := by
+  -- Use G₂_transform and E₂ = (1/(2*ζ(2))) • G₂
+  have hG := G₂_transform γ
+  rw [E₂]
+  -- E₂ ∣[2] γ = (1/(2ζ(2)) • G₂) ∣[2] γ = 1/(2ζ(2)) • (G₂ ∣[2] γ)
+  rw [ModularForm.SL_smul_slash (2 : ℤ) γ G₂ (1 / (2 * riemannZeta 2))]
+  rw [hG]
+  ext z
+  simp only [one_div, Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
+  ring
+
+/--
 Serre derivative is equivariant under the slash action. More precisely, if `F` is invariant
 under the slash action of weight `k`, then `serre_D k F` is invariant under the slash action
 of weight `k + 2`.
 -/
 theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
-    ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by sorry
+    ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by
+  intro γ
+  -- Expand serre_D: serre_D k F = D F - k/12 * E₂ * F
+  ext z
+  simp only [serre_D, ModularForm.SL_slash_apply]
+  -- This is a substantial calculation involving:
+  -- 1. D_slash for D(F ∣[k] γ)
+  -- 2. E₂_slash_transform for (E₂ * F) ∣[k+2] γ
+  -- 3. The anomaly terms should cancel
+  sorry
 
 theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (γ : SL(2, ℤ)) (h : F ∣[k] γ = F) :
