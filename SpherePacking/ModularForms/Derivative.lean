@@ -162,6 +162,84 @@ theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
     _ = (2 * π * I)⁻¹ * 0 := by rw [h]
     _ = 0 := by ring_nf
 
+/--
+**Lemma 6.45 (Blueprint)**: The Serre derivative D acts as q·d/dq on q-series.
+For a single q-power term: D(a·qⁿ) = n·a·qⁿ where q = exp(2πiz).
+
+The key calculation:
+- d/dz(exp(2πinz)) = 2πin·exp(2πinz)
+- D(exp(2πinz)) = (2πi)⁻¹·(2πin·exp(2πinz)) = n·exp(2πinz)
+-/
+theorem D_qexp_term (n : ℕ) (a : ℂ) (z : ℍ) :
+    D (fun w => a * cexp (2 * π * I * n * w)) z =
+      n * a * cexp (2 * π * I * n * z) := by
+  simp only [D]
+  -- Compute the derivative of a * exp(2πinz)
+  have h_deriv : deriv ((fun w : ℍ => a * cexp (2 * π * I * n * w)) ∘ ofComplex) (z : ℂ) =
+      a * (2 * π * I * n) * cexp (2 * π * I * n * z) := by
+    -- Step 1: Derivative of exp(2πinz) using chain rule
+    have h_exp_deriv : HasDerivAt (fun w : ℂ => a * cexp (2 * π * I * n * w))
+        (a * (2 * π * I * n) * cexp (2 * π * I * n * z)) (z : ℂ) := by
+      have h_at_arg : HasDerivAt cexp (cexp (2 * π * I * n * z)) (2 * π * I * n * z) :=
+        Complex.hasDerivAt_exp (2 * π * I * n * z)
+      have h_linear : HasDerivAt (fun w : ℂ => 2 * π * I * n * w) (2 * π * I * n) (z : ℂ) := by
+        have h := (hasDerivAt_id (z : ℂ)).const_mul (2 * π * I * n)
+        simp only [mul_one, id] at h
+        exact h
+      have h_comp := h_at_arg.scomp (z : ℂ) h_linear
+      -- Rewrite the scalar multiplication as multiplication
+      simp only [smul_eq_mul] at h_comp
+      have h_const_mul := h_comp.const_mul a
+      convert h_const_mul using 1 <;> ring
+    -- Step 2: The composed function equals the ℂ function in a neighborhood of z
+    have h_agree : ((fun w : ℍ => a * cexp (2 * π * I * n * w)) ∘ ofComplex) =ᶠ[nhds (z : ℂ)]
+        (fun w : ℂ => a * cexp (2 * π * I * n * w)) := by
+      have him : 0 < (z : ℂ).im := z.2
+      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
+      filter_upwards [h_open.mem_nhds him] with w hw
+      simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
+    exact h_agree.deriv_eq.trans h_exp_deriv.deriv
+  rw [h_deriv]
+  -- Simplify: (2πi)⁻¹ * a * (2πin) * exp(...) = n * a * exp(...)
+  have h_2piI_ne : (2 : ℂ) * π * I ≠ 0 := by
+    simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, ofReal_eq_zero, pi_ne_zero, I_ne_zero,
+      or_self, not_false_eq_true]
+  field_simp [h_2piI_ne]
+
+/--
+Variant of `D_qexp_term` for integer exponents, covering negative powers in theta series.
+D(a·q^n) = n·a·q^n where q = exp(2πiz) and n ∈ ℤ.
+-/
+theorem D_qexp_term_int (n : ℤ) (a : ℂ) (z : ℍ) :
+    D (fun w => a * cexp (2 * π * I * n * w)) z =
+      n * a * cexp (2 * π * I * n * z) := by
+  simp only [D]
+  have h_deriv : deriv ((fun w : ℍ => a * cexp (2 * π * I * n * w)) ∘ ofComplex) (z : ℂ) =
+      a * (2 * π * I * n) * cexp (2 * π * I * n * z) := by
+    have h_exp_deriv : HasDerivAt (fun w : ℂ => a * cexp (2 * π * I * n * w))
+        (a * (2 * π * I * n) * cexp (2 * π * I * n * z)) (z : ℂ) := by
+      have h_at_arg : HasDerivAt cexp (cexp (2 * π * I * n * z)) (2 * π * I * n * z) :=
+        Complex.hasDerivAt_exp (2 * π * I * n * z)
+      have h_linear : HasDerivAt (fun w : ℂ => 2 * π * I * n * w) (2 * π * I * n) (z : ℂ) := by
+        have h := (hasDerivAt_id (z : ℂ)).const_mul (2 * π * I * n)
+        simp only [mul_one, id] at h
+        exact h
+      have h_comp := h_at_arg.scomp (z : ℂ) h_linear
+      simp only [smul_eq_mul] at h_comp
+      have h_const_mul := h_comp.const_mul a
+      convert h_const_mul using 1 <;> ring
+    have h_agree : ((fun w : ℍ => a * cexp (2 * π * I * n * w)) ∘ ofComplex) =ᶠ[nhds (z : ℂ)]
+        (fun w : ℂ => a * cexp (2 * π * I * n * w)) := by
+      have him : 0 < (z : ℂ).im := z.2
+      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
+      filter_upwards [h_open.mem_nhds him] with w hw
+      simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
+    exact h_agree.deriv_eq.trans h_exp_deriv.deriv
+  rw [h_deriv]
+  have h_2piI_ne : (2 : ℂ) * π * I ≠ 0 := by
+    simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, ofReal_eq_zero, pi_ne_zero, I_ne_zero,
+      or_self, not_false_eq_true]
+  field_simp [h_2piI_ne]
 
 /--
 Serre derivative of weight $k$.
