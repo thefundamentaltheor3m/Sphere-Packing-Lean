@@ -1111,65 +1111,43 @@ theorem D_H₂_tendsto_zero :
   simp only [mul_zero] at hlim
   exact hlim.congr' h_eq.symm
 
+-- Helper: Summability of n² · exp(-πn²) (Gaussian decay dominates polynomial)
+-- This is a special case of summable_pow_mul_jacobiTheta₂_term_bound with S = 0, T = 1, k = 2
+lemma summable_sq_mul_exp_neg_pi_sq :
+    Summable fun n : ℤ ↦ (n : ℝ) ^ 2 * rexp (-π * n ^ 2) := by
+  have h := summable_pow_mul_jacobiTheta₂_term_bound 0 (by norm_num : (0 : ℝ) < 1) 2
+  simp only [mul_zero, one_mul] at h
+  convert h using 1
+  ext n
+  -- Show: (n : ℝ)² * exp(-πn²) = |n|² * exp(-π(n² - 0·|n|))
+  congr 1
+  · -- (n : ℝ)² = (|n| : ℤ→ℝ)² since x² = |x|² and ↑|n| = |↑n|
+    rw [← sq_abs, Int.cast_abs]
+  · -- -π * n² = -π * (n² - 0 * |n|)
+    ring_nf
+
 -- Helper: D(Θ₄) → 0 (since Θ₄ → 1 and the q-expansion has exponentially decaying terms)
 -- Θ₄ = jacobiTheta₂(1/2, z) = Σ (-1)^n · q^(n²), where n=0 gives constant 1
 -- D of constant is 0, D of other terms decay exponentially
+--
+-- Proof strategy (dominated convergence):
+-- 1. D(Θ₄) = (2πi)⁻¹ · d/dτ[jacobiTheta₂(1/2, τ)]
+-- 2. d/dτ = (jacobiTheta₂_fderiv (1/2) τ) (0, 1) = Σₙ (term_fderiv n (1/2) τ) (0, 1)
+-- 3. Each term → 0 as im(τ) → ∞ (by norm_jacobiTheta₂_term_fderiv_le and exp decay)
+-- 4. Summable bound from summable_pow_mul_jacobiTheta₂_term_bound
 theorem D_Θ₄_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D Θ₄ z) atImInfty (nhds 0) := by
-  -- Strategy: Use algebraic decomposition
-  -- D(Θ₄)/Θ₄ is eventually bounded (log-derivative of Θ₄ is well-defined)
-  -- Θ₄ → 1, so D(Θ₄) = (D(Θ₄)/Θ₄) · Θ₄
-  -- If D(Θ₄)/Θ₄ → c, then D(Θ₄) → c · 1 = c
-  -- For Θ₄ = jacobiTheta₂(1/2, z), the log-derivative involves only the decaying terms
-  -- Since Θ₄ → 1 (constant), any limiting behavior of D(Θ₄) must satisfy D(1) = 0
-
-  -- Use the fact that Θ₄ = 1 + h where h → 0 exponentially
-  -- D(Θ₄) = D(1 + h) = D(h) since D(1) = 0 for a constant
-  -- Show D(h) → 0 using the decay of h and its derivatives
-
-  -- Simpler approach: Θ₄ is MDifferentiable and Θ₄ → 1
-  -- D is continuous on MDifferentiable functions
-  -- Since the limit of Θ₄ is constant 1, and D(constant) = 0, we expect D(Θ₄) → 0
-  -- This requires showing uniform convergence of derivatives, which follows from
-  -- the exponential decay of the non-constant terms in the theta series
-
-  -- Technical proof using dominated convergence on the derivative series
-  -- Each term: d/dz((-1)^n · exp(πin²z)) = πin² · (-1)^n · exp(πin²z)
-  -- D factor: (2πi)⁻¹ · πin² = n²/2
-  -- So D(term n) = (n²/2) · (-1)^n · exp(πin²z)
-  -- For n=0: = 0
-  -- For n≠0: |exp(πin²z)| = exp(-πn²·im(z)) → 0
-
-  -- Strategy: D(Θ₄) = (D(Θ₄)/Θ₄) · Θ₄, and show D(Θ₄)/Θ₄ → 0
-  -- D(Θ₄)/Θ₄ = (1/4) · D(H₄)/H₄ since H₄ = Θ₄⁴
-  -- D(H₄)/H₄ = D(H₄·1)/H₄ = D(H₄)/H₄ where H₄ is "mostly constant" at i∞
-
-  -- Alternative direct approach: Express Θ₄ = 1 + h where h → 0
-  -- Then D(Θ₄) = D(1) + D(h) = D(h)
-  -- Show D(h) → 0 using dominated convergence on the derivative series
-
-  -- Key fact: Θ₄ = jacobiTheta₂(1/2, z) = Σₙ (-1)^n · exp(π·I·n²·z)
-  -- Term n=0 gives 1, all other terms decay exponentially
-  -- D of term n involves factor n²/2, still dominated by exponential decay
-
-  -- Use the fact that the derivative of jacobiTheta₂ is expressible as a sum
-  -- and apply tendsto_tsum_of_dominated_convergence
-
-  -- For now, we use the q-expansion approach:
-  -- Θ₄ terms: exp(π·I·n²·z) for n ∈ ℤ, weighted by (-1)^n
-  -- D(exp(π·I·n²·z)) = (2πi)⁻¹ · (πin²) · exp(π·I·n²·z) = (n²/2) · exp(π·I·n²·z)
-  -- Sum: D(Θ₄) = Σₙ (n²/2) · (-1)^n · exp(π·I·n²·z)
-  -- For n=0: term = 0
-  -- For n≠0: |term| = (n²/2) · exp(-π·n²·im(z)) → 0 as im(z) → ∞
-
-  -- The dominated convergence setup requires significant infrastructure
-  -- We use a simpler algebraic bound instead
-
-  -- Approach: Show D(Θ₄) is bounded in a neighborhood of i∞, and tends to a limit
-  -- Since Θ₄ → 1 and is "almost constant", D(Θ₄) → D(1) = 0 in a suitable sense
-
-  -- This requires the derivative-at-infinity machinery which is complex
-  -- Leaving as sorry pending infrastructure for termwise tsum differentiation
+  -- Proof strategy (dominated convergence):
+  -- 1. D(Θ₄) = (2πi)⁻¹ · d/dτ[jacobiTheta₂(1/2, τ)]
+  -- 2. d/dτ = (jacobiTheta₂_fderiv (1/2) τ) (0, 1) = ∑' n, (term_fderiv n (1/2) τ) (0, 1)
+  --    via hasFDerivAt_jacobiTheta₂ composed with τ ↦ (1/2, τ)
+  --    and hasSum_jacobiTheta₂_term_fderiv.mapL
+  -- 3. Each term → 0:
+  --    ‖term_fderiv(n)‖ ≤ 3π|n|² · ‖term(n)‖ by norm_jacobiTheta₂_term_fderiv_le
+  --    ‖term(n)‖ = exp(-π·n²·im(τ)) → 0 as im(τ) → ∞
+  -- 4. Apply tendsto_tsum_of_dominated_convergence with:
+  --    bound(n) = 3π|n|² · exp(-πn²)
+  --    summable by summable_sq_mul_exp_neg_pi_sq
   sorry
 
 -- Helper: D(H₄) → 0 (since D(Θ₄) → 0 and Θ₄ → 1)
