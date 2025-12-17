@@ -10,7 +10,7 @@ import SpherePacking.ForMathlib.AtImInfty
 
 open UpperHalfPlane hiding I
 
-open Real Complex ContinuousMap Matrix CongruenceSubgroup ModularGroup
+open Real Complex ContinuousMap Matrix CongruenceSubgroup ModularGroup Filter Asymptotics
 
 open scoped Interval Real Topology Manifold ModularForm MatrixGroups
 
@@ -212,7 +212,6 @@ then `t^s * F(it) → 0` as `t → ∞` for any real power `s`.
 One application is to cusp forms, which satisfy such exponential decay bounds.
 -/
 
-open Filter Asymptotics in
 /--
 If `F : ℍ → ℂ` is `O(exp(-c * im τ))` at `atImInfty` for some `c > 0`, then
 the restriction to the imaginary axis `t ↦ F(it)` is `O(exp(-c * t))` at `atTop`.
@@ -230,7 +229,6 @@ lemma isBigO_resToImagAxis_of_isBigO_atImInfty {F : ℍ → ℂ} {c : ℝ} (_hc 
   have him : z.im = t := by change (Complex.I * t).im = t; simp
   simpa [him] using hA z (by simpa [him] using le_of_max_le_left ht)
 
-open Filter Asymptotics Real in
 /--
 The analytic kernel: if `g : ℝ → ℂ` is eventually bounded by `C * exp(-b * t)` for some
 `b > 0`, then `t^s * g(t) → 0` as `t → ∞` for any real power `s`.
@@ -246,7 +244,6 @@ lemma tendsto_rpow_mul_of_isBigO_exp {g : ℝ → ℂ} {s b : ℝ} (hb : 0 < b)
   filter_upwards [eventually_gt_atTop 0] with t ht
   rw [Complex.ofReal_mul, Complex.ofReal_cpow (le_of_lt ht)]
 
-open Filter Asymptotics Real UpperHalfPlane in
 /--
 If `F : ℍ → ℂ` is `O(exp(-c * im τ))` at `atImInfty` for some `c > 0`, then
 `t^s * F(it) → 0` as `t → ∞` for any real power `s`.
@@ -256,7 +253,6 @@ theorem tendsto_rpow_mul_resToImagAxis_of_isBigO_exp {F : ℍ → ℂ} {c : ℝ}
     Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
   tendsto_rpow_mul_of_isBigO_exp hc (isBigO_resToImagAxis_of_isBigO_atImInfty hc hF)
 
-open Filter Asymptotics Real UpperHalfPlane CuspFormClass in
 /--
 For a cusp form `f` of level `Γ(n)`, we have `t^s * f(it) → 0` as `t → ∞` for any real power `s`.
 
@@ -270,7 +266,7 @@ theorem cuspForm_rpow_mul_resToImagAxis_tendsto_zero {n : ℕ} {k : ℤ} {F : Ty
     simp only [strictPeriods_Gamma]
     exact AddSubgroup.mem_zmultiples (n : ℝ)
   have hdecay' : (f : ℍ → ℂ) =O[atImInfty] fun τ => rexp (-(2 * π / n) * τ.im) := by
-    convert exp_decay_atImInfty hn_pos hmem (f := f) using 2 with τ; field_simp
+    convert CuspFormClass.exp_decay_atImInfty hn_pos hmem (f := f) using 2 with τ; field_simp
   exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (div_pos (by positivity) hn_pos) hdecay' s
 
 /-!
@@ -283,7 +279,6 @@ then `F = O(exp(-2π n₀ · im z))` at `atImInfty`, which gives `t^s * F(it) �
 This is useful for functions with q-expansions starting at a positive index (like `(E₂E₄ - E₆)²`).
 -/
 
-open Filter Asymptotics Real Complex in
 /--
 If `F` has a Fourier expansion `∑_{m≥0} a_m exp(2πi(m+n₀)z)` with `n₀ > 0`,
 and the coefficients are absolutely summable at height `im z = c`,
@@ -352,7 +347,6 @@ lemma isBigO_atImInfty_of_fourier_shift
     _ = (∑' m, ‖a m‖ * rexp (-(2 * π * c) * m)) * rexp (-(2 * π) * n₀ * z.im) := tsum_mul_right
     _ = _ := by ring_nf
 
-open Filter Asymptotics Real UpperHalfPlane in
 /--
 If `F` has a Fourier expansion starting at index `n₀ > 0` with absolutely summable coefficients
 at height `c > 0`, then `t^s * F(it) → 0` as `t → ∞` for any real power `s`.
