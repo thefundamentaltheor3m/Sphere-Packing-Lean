@@ -16,9 +16,10 @@ theorem exp_upperHalfPlane_lt_one (z : ℍ) :
 
 theorem exp_upperHalfPlane_lt_one_nat (z : ℍ) (n : ℕ) :
     ‖(Complex.exp (2 * ↑π * Complex.I * (n+1) * z))‖ < 1 := by
-  simp [norm_exp, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
-    Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, coe_re, coe_im,
-    zero_sub, Real.exp_lt_one_iff, Left.neg_neg_iff]
+  simp only [norm_exp, mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero,
+    Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, add_re, natCast_re,
+    one_re, add_im, natCast_im, one_im, coe_re, zero_add, coe_im, zero_sub, Real.exp_lt_one_iff,
+    Left.neg_neg_iff]
   positivity
 
 lemma exp_periodo (z : ℍ) (n : ℕ) :
