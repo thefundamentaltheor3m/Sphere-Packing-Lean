@@ -1137,18 +1137,48 @@ lemma summable_sq_mul_exp_neg_pi_sq :
 -- 4. Summable bound from summable_pow_mul_jacobiTheta₂_term_bound
 theorem D_Θ₄_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D Θ₄ z) atImInfty (nhds 0) := by
-  -- Proof strategy (dominated convergence):
-  -- 1. D(Θ₄) = (2πi)⁻¹ · d/dτ[jacobiTheta₂(1/2, τ)]
-  -- 2. d/dτ = (jacobiTheta₂_fderiv (1/2) τ) (0, 1) = ∑' n, (term_fderiv n (1/2) τ) (0, 1)
-  --    via hasFDerivAt_jacobiTheta₂ composed with τ ↦ (1/2, τ)
-  --    and hasSum_jacobiTheta₂_term_fderiv.mapL
-  -- 3. Each term → 0:
-  --    ‖term_fderiv(n)‖ ≤ 3π|n|² · ‖term(n)‖ by norm_jacobiTheta₂_term_fderiv_le
-  --    ‖term(n)‖ = exp(-π·n²·im(τ)) → 0 as im(τ) → ∞
-  -- 4. Apply tendsto_tsum_of_dominated_convergence with:
-  --    bound(n) = 3π|n|² · exp(-πn²)
-  --    summable by summable_sq_mul_exp_neg_pi_sq
-  sorry
+  -- Step 1: Express D(Θ₄) in terms of deriv
+  -- D(Θ₄) z = (2πi)⁻¹ · deriv (jacobiTheta₂ (1/2)) z
+  -- Express D(Θ₄) as (2πi)⁻¹ * (tsum of term_fderiv applied to (0,1))
+  have h_D_eq_tsum : ∀ z : ℍ, D Θ₄ z = (2 * π * I)⁻¹ *
+      ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (1/2) z) (0, 1) := by
+    intro z
+    simp only [D, Θ₄_as_jacobiTheta₂, Function.comp_def]
+    congr 1
+    -- Key: coe ∘ ofComplex =ᶠ id near z (since im(z) > 0)
+    -- So deriv (jacobiTheta₂ (1/2) ∘ coe ∘ ofComplex) z = deriv (jacobiTheta₂ (1/2)) z
+    have h_eq : (fun x => jacobiTheta₂ (1/2) (↑(ofComplex x) : ℂ)) =ᶠ[nhds (z : ℂ)]
+        (fun x => jacobiTheta₂ (1/2) x) := by
+      have hcoe := UpperHalfPlane.eventuallyEq_coe_comp_ofComplex z.2
+      exact hcoe.fun_comp (jacobiTheta₂ (1/2))
+    rw [h_eq.deriv_eq]
+    -- Now: deriv (jacobiTheta₂ (1/2)) z = (fderiv)(0, 1) = Σ (term_fderiv)(0, 1)
+    have hFD := hasFDerivAt_jacobiTheta₂ (1/2 : ℂ) z.2
+    have h_embed : HasDerivAt (fun t : ℂ => ((1 : ℂ)/2, t)) (0, 1) (z : ℂ) :=
+      (hasDerivAt_const (z : ℂ) (1/2)).prodMk (hasDerivAt_id (z : ℂ))
+    have h_deriv := (hFD.comp_hasDerivAt (z : ℂ) h_embed).deriv
+    simp only [Function.comp_def] at h_deriv
+    rw [h_deriv]
+    have hsum := hasSum_jacobiTheta₂_term_fderiv (1/2 : ℂ) z.2
+    have hsum' := hsum.mapL (ContinuousLinearMap.apply ℂ ℂ (0, 1))
+    simp only [ContinuousLinearMap.apply_apply] at hsum'
+    exact hsum'.tsum_eq.symm
+  simp_rw [h_D_eq_tsum]
+
+  -- Show the tsum → 0 via dominated convergence with bound 6π|n|²exp(-πn²)
+  -- Uses tendsto_tsum_of_dominated_convergence, norm_jacobiTheta₂_term_fderiv_le,
+  -- norm_jacobiTheta₂_term_le, and summable_sq_mul_exp_neg_pi_sq
+  have h_tsum_tendsto : Filter.Tendsto
+      (fun z : ℍ => ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (1/2) z) (0, 1)) atImInfty (nhds 0) := by
+    -- Dominated convergence: f z n = (term_fderiv n)(0,1), g n = 0, bound n = 6π|n|²exp(-πn²)
+    -- term_tendsto: each term → 0 by exponential decay (n ≠ 0) or being 0 (n = 0)
+    -- eventually_bound: ‖term‖ ≤ 3π|n|²‖jacobi_term‖·2 ≤ 6π|n|²exp(-πn²) for im(z) ≥ 1
+    -- summability: from summable_sq_mul_exp_neg_pi_sq.const_smul (6 * π)
+    sorry
+  -- Final: D(Θ₄) = (2πi)⁻¹ * tsum → (2πi)⁻¹ * 0 = 0
+  have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
+  simp only [mul_zero] at h_mul
+  exact h_mul
 
 -- Helper: D(H₄) → 0 (since D(Θ₄) → 0 and Θ₄ → 1)
 theorem D_H₄_tendsto_zero :
