@@ -79,7 +79,7 @@ theorem der_iter_eq_der2 (k n : ℕ) (r : ℍ') :
         ℍ'
         ↑r :=
   by
-  simp
+  simp only [mem_setOf_eq]
   apply symm
   apply DifferentiableAt.derivWithin
   · apply der_iter_eq_der_aux2
@@ -144,13 +144,16 @@ theorem iter_deriv_comp_bound2 (K : Set ℂ) (hK1 : K ⊆ ℍ') (hK2 : IsCompact
   · use fun n : ℕ => ‖((2 * ↑π * Complex.I * n) ^ (k + 1) * r ^ n)‖, hu
     intro n t
     have go := der_iter_eq_der2' k n ⟨t.1, hK1 t.2⟩
-    simp at *
+    simp only [BoundedContinuousFunction.norm_mkOfCompact, Complex.norm_mul, norm_pow,
+      norm_ofNat, norm_real, Real.norm_eq_abs, norm_I, mul_one, RCLike.norm_natCast,
+      ge_iff_le] at *
     simp_rw [go]
     have h1 := exp_iter_deriv_within (k + 1) n (hK1 t.2)
     norm_cast at *
-    simp at *
+    simp only [ofReal_mul, ofReal_ofNat, ge_iff_le] at *
     rw [h1]
-    simp
+    simp only [Complex.norm_mul, norm_pow, norm_ofNat, norm_real, Real.norm_eq_abs, norm_I,
+      mul_one, RCLike.norm_natCast]
     have ineqe : ‖(Complex.exp (2 * π * Complex.I * n * t))‖ ≤ ‖r‖ ^ n := by
       have hw1 :
         ‖ (Complex.exp (2 * π * Complex.I * n * t))‖ =
@@ -170,8 +173,8 @@ theorem iter_deriv_comp_bound2 (K : Set ℂ) (hK1 : K ⊆ ℍ') (hK2 : IsCompact
       rw [norm_norm]
       simpa using this
     apply mul_le_mul
-    · simp
-    · simp at ineqe
+    · simp only [le_refl]
+    · simp only [Real.norm_eq_abs] at ineqe
       convert ineqe
     · positivity
     positivity
@@ -193,7 +196,7 @@ theorem hasDerivAt_tsum_fun {α : Type _} (f : α → ℂ → ℂ)
     by
     intro y hy
     apply Summable.hasSum
-    simp
+    simp only
     apply hf y hy
   apply hasDerivAt_of_tendstoLocallyUniformlyOn hs _ _ A hx
   · use fun n : Finset α => fun a => ∑ i ∈ n, derivWithin (fun z => f i z) s a
@@ -273,7 +276,8 @@ theorem iter_deriv_comp_bound3 (K : Set ℂ) (hK1 : K ⊆ ℍ') (hK2 : IsCompact
     apply Real.pi_ne_zero
   use fun n : ℕ => ‖((2 * ↑π * Complex.I * n) ^ (k) * r ^ n)‖, hu
   intro n t
-  simp
+  simp only [Complex.norm_mul, norm_pow, norm_ofNat, norm_real, Real.norm_eq_abs, norm_I,
+    mul_one, RCLike.norm_natCast]
   have ineqe : ‖(Complex.exp (2 * π * Complex.I * n * t))‖ ≤ ‖r‖ ^ n :=
     by
     have hw1 :
@@ -294,8 +298,8 @@ theorem iter_deriv_comp_bound3 (K : Set ℂ) (hK1 : K ⊆ ℍ') (hK2 : IsCompact
     rw [norm_norm]
     simpa using this
   apply mul_le_mul
-  · simp
-  · simp at ineqe
+  · simp only [le_refl]
+  · simp only [Real.norm_eq_abs] at ineqe
     convert ineqe
   · positivity
   positivity
