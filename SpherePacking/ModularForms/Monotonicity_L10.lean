@@ -169,16 +169,37 @@ Q-expansion identity: `E₄ - E₂² = 288 * ∑' n : ℕ+, n * σ₁(n) * qⁿ`
 This follows from the Ramanujan identity `D E₂ = 12⁻¹ * (E₂² - E₄)` and the q-expansion
 of E₂ via termwise differentiation.
 -/
+-- Auxiliary lemma: D(E₂) equals a specific q-expansion
+-- This follows from E₂ = 1 - 24 * ∑ σ₁(n) qⁿ (from G2_q_exp) and D multiplying coefficients by n
+-- D(1) = 0, D(σ₁(n) qⁿ) = n·σ₁(n) qⁿ, so D(E₂) = -24 ∑ n·σ₁(n) qⁿ
+theorem D_E₂_qexp (z : ℍ) :
+    D E₂ z = -24 * ∑' n : ℕ+, (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
+        cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
+  -- Strategy: Use E₂ q-expansion from G2_q_exp and apply D_qexp_tsum
+  -- E₂ = 1 - 24 * (series in σ₁ form) requires rewriting from G2_q_exp form
+  -- D(1) = 0 by D_const, D commutes with tsum by D_qexp_tsum
+  sorry
+
 theorem E₄_sub_E₂_sq_qexp (z : ℍ) :
     E₄.toFun z - E₂ z * E₂ z =
       288 * ∑' n : ℕ+, (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
         cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
   -- From ramanujan_E₂: D E₂ = 12⁻¹ * (E₂² - E₄)
-  -- So E₄ - E₂² = -12 * D E₂
-  -- E₂ = 1 - 24 * ∑ σ₁(n) qⁿ (from G2_q_exp)
-  -- D E₂ = -24 * ∑ n * σ₁(n) qⁿ (termwise derivative)
-  -- Thus E₄ - E₂² = -12 * (-24 * ∑ n * σ₁(n) qⁿ) = 288 * ∑ n * σ₁(n) qⁿ
-  sorry
+  -- Rearranging: E₄ - E₂² = -12 * D E₂
+  have h_ram : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := ramanujan_E₂
+  have h_ram_z : D E₂ z = 12⁻¹ * (E₂ z * E₂ z - E₄.toFun z) := congrFun h_ram z
+  -- Rearrange: E₄ - E₂² = -12 * D E₂
+  have h_rearr : E₄.toFun z - E₂ z * E₂ z = -12 * D E₂ z := by
+    have h12_ne : (12 : ℂ)⁻¹ ≠ 0 := by norm_num
+    calc E₄.toFun z - E₂ z * E₂ z
+        = -(E₂ z * E₂ z - E₄.toFun z) := by ring
+      _ = -(12 * (12⁻¹ * (E₂ z * E₂ z - E₄.toFun z))) := by field_simp
+      _ = -12 * (12⁻¹ * (E₂ z * E₂ z - E₄.toFun z)) := by ring
+      _ = -12 * D E₂ z := by rw [← h_ram_z]
+  rw [h_rearr, D_E₂_qexp z]
+  -- -12 * (-24 * ∑...) = 288 * ∑...
+  have h288 : (-12 : ℂ) * -24 = 288 := by norm_num
+  rw [← mul_assoc, h288]
 
 /--
 On the imaginary axis, `E₄(it).re > E₂(it).re²` for all `t > 0`.
@@ -622,6 +643,18 @@ Log-derivative limit for F: `(D F)/F → 2` as `z → i∞`.
 This follows from F having vanishing order 2: F ~ c·q² where q = exp(2πiz).
 Taking logarithmic derivative: D(log F) = (D F)/F → 2.
 -/
+-- Auxiliary: D(E₂E₄ - E₆) equals n² times the q-expansion coefficients
+-- From E₂_mul_E₄_sub_E₆: E₂E₄ - E₆ = 720 * ∑' n : ℕ+, n * σ₃(n) * q^n
+-- Applying D (which multiplies coefficients by n): D(E₂E₄ - E₆) = 720 * ∑' n : ℕ+, n² * σ₃(n) * q^n
+theorem D_diff_qexp (z : ℍ) :
+    D (fun w => E₂ w * E₄ w - E₆ w) z =
+      720 * ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
+        cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
+  -- Strategy: Use E₂_mul_E₄_sub_E₆ and apply D_qexp_tsum_pnat
+  -- E₂E₄ - E₆ = 720 * ∑ n·σ₃(n)·q^n
+  -- D commutes with tsum and multiplies coefficients by n
+  sorry
+
 -- Helper: D(E₂E₄ - E₆) / q → 720 (same pattern as f/q → 720)
 -- This follows from D acting as q·d/dq on q-expansions, so D(n·σ₃(n)·qⁿ) = n²·σ₃(n)·qⁿ
 -- and the leading coefficient 1²·σ₃(1) = 1 gives the limit 720·1 = 720
@@ -629,9 +662,52 @@ theorem D_diff_div_q_tendsto :
     Filter.Tendsto (fun z : ℍ => D (fun w => E₂ w * E₄ w - E₆ w) z /
       cexp (2 * π * Complex.I * z))
       atImInfty (nhds (720 : ℂ)) := by
-  -- Strategy: Use q-expansion of D(f) = 720 · Σ n²·σ₃(n)·qⁿ
-  -- and apply QExp.tendsto_nat with coefficient n²·σ₃(n)
-  sorry
+  -- Use D_diff_qexp and the QExp.tendsto_nat pattern
+  -- D(f) = 720 * ∑ n² * σ₃(n) * q^n
+  -- D(f)/q = 720 * ∑ n² * σ₃(n) * q^(n-1)
+  -- Leading term (n=1): 1² * σ₃(1) = 1, so limit is 720 * 1 = 720
+  have h_rw : ∀ z : ℍ, D (fun w => E₂ w * E₄ w - E₆ w) z =
+      720 * ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
+        cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := D_diff_qexp
+  simp_rw [h_rw]
+  -- Divide by q and reindex
+  have h_eq : ∀ z : ℍ,
+      (720 * ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
+        cexp (2 * ↑Real.pi * Complex.I * ↑n * z)) / cexp (2 * π * I * z) =
+      720 * (∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
+        cexp (2 * π * I * (↑n - 1) * z)) := by
+    intro z
+    rw [mul_div_assoc, ← tsum_div_const]
+    congr 1; apply tsum_congr; intro n
+    rw [mul_div_assoc, ← Complex.exp_sub]
+    congr 2; ring
+  simp_rw [h_eq]
+  -- Reindex ℕ+ to ℕ via n ↦ m+1
+  have h_reindex : ∀ z : ℍ,
+      ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
+        cexp (2 * π * I * (↑n - 1) * z) =
+      ∑' m : ℕ, (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) *
+        cexp (2 * π * I * m * z) := by
+    intro z
+    rw [← Equiv.tsum_eq (Equiv.pnatEquivNat)]
+    apply tsum_congr; intro m
+    simp only [Equiv.pnatEquivNat_apply, PNat.natPred_add_one]
+    congr 2
+    -- Need: ↑↑m - 1 = ↑m.natPred in ℂ
+    -- From PNat.natPred_add_one: m.natPred + 1 = ↑m
+    have h := PNat.natPred_add_one m
+    simp only [← h, Nat.cast_add, Nat.cast_one, add_sub_cancel_right]
+  simp_rw [h_reindex]
+  -- Apply QExp.tendsto_nat pattern
+  -- a(m) = (m+1)² * σ₃(m+1), a(0) = 1² * σ₃(1) = 1 * 1 = 1
+  have ha : ∀ m : ℕ, (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) =
+      if m = 0 then 1 else (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) := by
+    intro m
+    split_ifs with h
+    · simp [h, ArithmeticFunction.sigma_one_apply]
+    · rfl
+  -- Use QExp.tendsto_nat or direct argument
+  sorry -- Final limit argument using existing tendsto_tsum_of_dominated_convergence
 
 theorem D_F_div_F_tendsto :
     Filter.Tendsto (fun z : ℍ => D F z / F z) atImInfty (nhds (2 : ℂ)) := by
@@ -836,11 +912,37 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
     -- = jacobiTheta₂_fderiv(z/2, z)(1/2, 1) = Σ term_fderiv(n, z/2, z)(1/2, 1)
     have h_deriv_eq : deriv (fun t => jacobiTheta₂ (t / 2) t) (z : ℂ) =
         (jacobiTheta₂_fderiv ((z : ℂ) / 2) z) ((1 : ℂ) / 2, 1) := by
-      -- Chain rule for diagonal embedding t ↦ (t/2, t):
-      -- deriv(g ∘ f) = fderiv(g)(fderiv(f)(1)) where f(t) = (t/2, t), g = jacobiTheta₂
-      -- fderiv(f)(h) = (h/2, h), so fderiv(f)(1) = (1/2, 1)
-      -- Hence deriv = jacobiTheta₂_fderiv(z/2, z)(1/2, 1)
-      sorry -- Chain rule for diagonal embedding; mathematically straightforward
+      -- Chain rule: deriv(g ∘ f) = (fderiv g) (fderiv f 1)
+      -- f(t) = (t/2, t), g(p) = jacobiTheta₂ p.1 p.2
+      set f : ℂ → ℂ × ℂ := fun t => (t / 2, t)
+      set g : ℂ × ℂ → ℂ := fun p => jacobiTheta₂ p.1 p.2
+      -- Fréchet derivative of f
+      let f' : ℂ →L[ℂ] ℂ × ℂ := {
+        toFun := fun h => (h / 2, h)
+        map_add' := by intro x y; simp only [add_div, Prod.mk_add_mk]
+        map_smul' := by intro c x; simp only [RingHom.id_apply, Prod.smul_mk, smul_eq_mul, mul_div_assoc]
+        cont := by continuity }
+      have hf_1 : f' 1 = ((1 : ℂ) / 2, 1) := by simp only [f', ContinuousLinearMap.coe_mk',
+        LinearMap.coe_mk, AddHom.coe_mk, one_div]
+      have hf : HasFDerivAt f f' (z : ℂ) := by
+        have h1 : HasDerivAt (fun t : ℂ => t / 2) (1 / 2 : ℂ) (z : ℂ) := (hasDerivAt_id _).div_const 2
+        have h2 : HasDerivAt (fun t : ℂ => t) 1 (z : ℂ) := hasDerivAt_id _
+        have hprod := h1.prodMk h2
+        convert hprod.hasFDerivAt using 1
+        ext x : 1
+        simp only [f', ContinuousLinearMap.coe_mk', LinearMap.coe_mk, AddHom.coe_mk,
+          ContinuousLinearMap.smulRight_apply, ContinuousLinearMap.one_apply,
+          Prod.smul_mk, smul_eq_mul, mul_one, Prod.mk.injEq]
+        exact ⟨(one_mul _).symm, trivial⟩
+      -- Fréchet derivative of g at f(z)
+      have hf_val : f (z : ℂ) = ((z : ℂ) / 2, (z : ℂ)) := by simp [f]
+      have hg : HasFDerivAt g (jacobiTheta₂_fderiv ((z : ℂ) / 2) z) (f (z : ℂ)) := by
+        rw [hf_val]; exact hasFDerivAt_jacobiTheta₂ ((z : ℂ) / 2) z.2
+      -- Compose and extract deriv
+      have h_comp := hg.comp (z : ℂ) hf
+      simp only [Function.comp_def, g, f] at h_comp
+      rw [h_comp.hasDerivAt.deriv]
+      simp only [ContinuousLinearMap.coe_comp', Function.comp_apply, hf_1]
     rw [h_deriv_eq]
     exact ((hasSum_jacobiTheta₂_term_fderiv ((z : ℂ) / 2) z.2).mapL
       (ContinuousLinearMap.apply ℂ ℂ ((1 : ℂ) / 2, 1))).tsum_eq.symm
@@ -850,7 +952,26 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
   have h_tsum_tendsto : Filter.Tendsto
       (fun z : ℍ => ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (z / 2) z) ((1 : ℂ) / 2, 1))
       atImInfty (nhds 0) := by
-    sorry -- Dominated convergence; each term → 0, summable bound exists
+    -- Apply dominated convergence with:
+    -- f(z, n) = (term_fderiv n (z/2) z)((1/2, 1))
+    -- g(n) = 0 (each term → 0)
+    -- bound(n) = 3π|n|² exp(-π(1·n² - 1·|n|)) for im(z) ≥ 1
+    -- Strategy: For im(z) ≥ 1, use norm_jacobiTheta₂_term_fderiv_le and norm_jacobiTheta₂_term_le
+    -- with T = im(z), S = im(z)/2, giving bound decaying as exp(-π·im(z)·(n² - |n|))
+    rw [show (0 : ℂ) = ∑' (k : ℤ), (0 : ℂ) from tsum_zero.symm]
+    apply tendsto_tsum_of_dominated_convergence (α := ℍ) (𝓕 := atImInfty)
+      (f := fun z n => (jacobiTheta₂_term_fderiv n ((z : ℂ) / 2) z) ((1 : ℂ) / 2, 1))
+      (g := fun _ => 0)
+      (bound := fun n => 3 * π * |n| ^ 2 * Real.exp (-π * (1 * n ^ 2 - 1 * |n|)))
+    -- 1. Summability of bound
+    · simpa [mul_assoc] using (summable_pow_mul_jacobiTheta₂_term_bound (1/2) one_pos 2).mul_left (3 * π)
+    -- 2. Pointwise convergence: each term → 0 as im(z) → ∞
+    -- Key: For n ≠ 0, |term_fderiv| ≤ C|n|²·exp(-π·im(z)·(n² - |n|)) → 0
+    · intro n
+      -- Exponential decay: exp(-π·im(z)·(n² - |n|)) → 0 as im(z) → ∞
+      sorry -- Each term tends to 0 via exponential decay bounds
+    -- 3. Bound condition: ‖f(z,n)‖ ≤ bound(n) eventually (for im(z) ≥ 1)
+    · sorry -- Bound from norm_jacobiTheta₂_term_fderiv_le and norm_jacobiTheta₂_term_le
   have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
   simp only [mul_zero] at h_mul
   exact h_mul
