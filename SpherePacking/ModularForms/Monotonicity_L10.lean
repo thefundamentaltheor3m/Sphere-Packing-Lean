@@ -1140,10 +1140,36 @@ theorem D_Θ₄_tendsto_zero :
   -- For n=0: = 0
   -- For n≠0: |exp(πin²z)| = exp(-πn²·im(z)) → 0
 
-  -- TODO: Full proof requires either:
-  -- 1. hasDerivAt_tsum for termwise differentiation of Θ₄, or
-  -- 2. Direct use of jacobiTheta₂_fderiv and dominated convergence
-  -- Both approaches need careful setup - leaving as sorry for now
+  -- Strategy: D(Θ₄) = (D(Θ₄)/Θ₄) · Θ₄, and show D(Θ₄)/Θ₄ → 0
+  -- D(Θ₄)/Θ₄ = (1/4) · D(H₄)/H₄ since H₄ = Θ₄⁴
+  -- D(H₄)/H₄ = D(H₄·1)/H₄ = D(H₄)/H₄ where H₄ is "mostly constant" at i∞
+
+  -- Alternative direct approach: Express Θ₄ = 1 + h where h → 0
+  -- Then D(Θ₄) = D(1) + D(h) = D(h)
+  -- Show D(h) → 0 using dominated convergence on the derivative series
+
+  -- Key fact: Θ₄ = jacobiTheta₂(1/2, z) = Σₙ (-1)^n · exp(π·I·n²·z)
+  -- Term n=0 gives 1, all other terms decay exponentially
+  -- D of term n involves factor n²/2, still dominated by exponential decay
+
+  -- Use the fact that the derivative of jacobiTheta₂ is expressible as a sum
+  -- and apply tendsto_tsum_of_dominated_convergence
+
+  -- For now, we use the q-expansion approach:
+  -- Θ₄ terms: exp(π·I·n²·z) for n ∈ ℤ, weighted by (-1)^n
+  -- D(exp(π·I·n²·z)) = (2πi)⁻¹ · (πin²) · exp(π·I·n²·z) = (n²/2) · exp(π·I·n²·z)
+  -- Sum: D(Θ₄) = Σₙ (n²/2) · (-1)^n · exp(π·I·n²·z)
+  -- For n=0: term = 0
+  -- For n≠0: |term| = (n²/2) · exp(-π·n²·im(z)) → 0 as im(z) → ∞
+
+  -- The dominated convergence setup requires significant infrastructure
+  -- We use a simpler algebraic bound instead
+
+  -- Approach: Show D(Θ₄) is bounded in a neighborhood of i∞, and tends to a limit
+  -- Since Θ₄ → 1 and is "almost constant", D(Θ₄) → D(1) = 0 in a suitable sense
+
+  -- This requires the derivative-at-infinity machinery which is complex
+  -- Leaving as sorry pending infrastructure for termwise tsum differentiation
   sorry
 
 -- Helper: D(H₄) → 0 (since D(Θ₄) → 0 and Θ₄ → 1)
