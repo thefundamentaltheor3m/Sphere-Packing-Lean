@@ -816,11 +816,44 @@ theorem D_exp_pi_div_exp_pi (z : ℍ) :
 theorem D_jacobiTheta₂_half_mul_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D (fun w : ℍ => jacobiTheta₂ (w / 2) w) z)
       atImInfty (nhds 0) := by
-  -- D(Σ exp(π·I·n·(n+1)·z)) = Σ (n(n+1)/2)·exp(π·I·n·(n+1)·z)
-  -- For n ∈ {-1, 0}: coefficient = 0
-  -- For n ∉ {-1, 0}: exponential decay dominates polynomial growth from differentiation
-  -- This follows from tendsto_tsum_of_dominated_convergence with the derivative terms
-  sorry
+  -- Express D as (2πi)⁻¹ * (tsum of term_fderiv applied to (1/2, 1))
+  -- Key: chain rule for τ ↦ (τ/2, τ) gives direction (1/2, 1)
+  have h_D_eq_tsum : ∀ z : ℍ, D (fun w : ℍ => jacobiTheta₂ (w / 2) w) z = (2 * π * I)⁻¹ *
+      ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (z / 2) z) ((1 : ℂ) / 2, 1) := by
+    intro z
+    simp only [D, Function.comp_def]
+    congr 1
+    -- Key: coe ∘ ofComplex =ᶠ id near z (since im(z) > 0)
+    have h_eq : (fun x => jacobiTheta₂ (↑(ofComplex x) / 2) (↑(ofComplex x) : ℂ)) =ᶠ[nhds (z : ℂ)]
+        (fun x => jacobiTheta₂ (x / 2) x) := by
+      have him : 0 < (z : ℂ).im := z.2
+      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
+      filter_upwards [h_open.mem_nhds him] with w hw
+      simp only [ofComplex_apply_of_im_pos hw, coe_mk_subtype]
+    rw [h_eq.deriv_eq]
+    -- deriv jacobiTheta₂(t/2, t) at t = z
+    -- By chain rule: ∂/∂z + (1/2)·∂/∂w applied to jacobiTheta₂(w, z)
+    -- = jacobiTheta₂_fderiv(z/2, z)(1/2, 1) = Σ term_fderiv(n, z/2, z)(1/2, 1)
+    have h_deriv_eq : deriv (fun t => jacobiTheta₂ (t / 2) t) (z : ℂ) =
+        (jacobiTheta₂_fderiv ((z : ℂ) / 2) z) ((1 : ℂ) / 2, 1) := by
+      -- Chain rule for diagonal embedding t ↦ (t/2, t):
+      -- deriv(g ∘ f) = fderiv(g)(fderiv(f)(1)) where f(t) = (t/2, t), g = jacobiTheta₂
+      -- fderiv(f)(h) = (h/2, h), so fderiv(f)(1) = (1/2, 1)
+      -- Hence deriv = jacobiTheta₂_fderiv(z/2, z)(1/2, 1)
+      sorry -- Chain rule for diagonal embedding; mathematically straightforward
+    rw [h_deriv_eq]
+    exact ((hasSum_jacobiTheta₂_term_fderiv ((z : ℂ) / 2) z.2).mapL
+      (ContinuousLinearMap.apply ℂ ℂ ((1 : ℂ) / 2, 1))).tsum_eq.symm
+  simp_rw [h_D_eq_tsum]
+  -- Tsum → 0 via dominated convergence
+  -- Key: im(z/2) = im(z)/2 > 0, and both im(z/2) and im(z) grow as im(z) → ∞
+  have h_tsum_tendsto : Filter.Tendsto
+      (fun z : ℍ => ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (z / 2) z) ((1 : ℂ) / 2, 1))
+      atImInfty (nhds 0) := by
+    sorry -- Dominated convergence; each term → 0, summable bound exists
+  have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
+  simp only [mul_zero] at h_mul
+  exact h_mul
 
 -- Helper: D(exp(πiz/4))/exp(πiz/4) = 1/8
 -- This follows from D = (2πi)⁻¹·d/dz and d/dz(exp(πiz/4)) = (πi/4)·exp(πiz/4)
