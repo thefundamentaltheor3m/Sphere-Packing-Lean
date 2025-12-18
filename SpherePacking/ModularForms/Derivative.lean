@@ -890,14 +890,14 @@ lemma tsum_sigma_deriv_eq {k : ℕ} (z : ℍ) :
   have hsumm : Summable (fun c : (n : ℕ+) × {x // x ∈ (n : ℕ).divisorsAntidiagonal} ↦
       (↑(c.snd.val.1) : ℂ) * ↑(c.snd.val.2) ^ (k + 1) *
       cexp (2 * π * I * z * c.snd.val.1 * c.snd.val.2)) := by
-    -- This follows from summable_auxil_1 by polynomial bounds
-    apply Summable.of_norm
-    rw [summable_sigma_of_nonneg (fun _ => by positivity)]
-    constructor
-    · exact fun n => (hasSum_fintype _).summable
-    · simp only [norm_mul, norm_pow, RCLike.norm_natCast, tsum_fintype, Finset.univ_eq_attach]
-      -- Bound by polynomial * geometric using the same technique as summable_auxil_1
-      sorry
+    -- This follows from `hsum` by polynomial bounds:
+    -- For (c,d) ∈ divisorsAntidiagonal n, we have c * d = n, so:
+    --   c * d^(k+1) = c * d * d^k = n * d^k ≤ n * n^k = n^(k+1)
+    -- and |exp(2πi*z*c*d)| = |exp(2πi*n*z)| since c*d = n.
+    -- Total bound: ∑_{(c,d) with cd=n} c * d^(k+1) * |exp| ≤ card(divisors) * n^(k+1) * |exp(2πinz)|
+    --            ≤ n * n^(k+1) * |exp| = n^(k+2) * |exp|
+    -- Then use `hsum (k+2) z` for summability over n.
+    sorry
   rw [hsumm.tsum_sigma]
   apply tsum_congr
   intro n
