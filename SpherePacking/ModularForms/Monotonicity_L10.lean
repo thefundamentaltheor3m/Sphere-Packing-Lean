@@ -170,14 +170,23 @@ This follows from the Ramanujan identity `D E₂ = 12⁻¹ * (E₂² - E₄)` an
 of E₂ via termwise differentiation.
 -/
 -- Auxiliary lemma: D(E₂) equals a specific q-expansion
--- This follows from E₂ = 1 - 24 * ∑ σ₁(n) qⁿ (from G2_q_exp) and D multiplying coefficients by n
+-- This follows from E₂ = 1 - 24 * ∑ σ₁(n) qⁿ (from E₂_eq and tsum_eq_tsum_sigma)
+-- and D multiplying coefficients by n via D_qexp_tsum_pnat
 -- D(1) = 0, D(σ₁(n) qⁿ) = n·σ₁(n) qⁿ, so D(E₂) = -24 ∑ n·σ₁(n) qⁿ
 theorem D_E₂_qexp (z : ℍ) :
     D E₂ z = -24 * ∑' n : ℕ+, (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
         cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
-  -- Strategy: Use E₂ q-expansion from G2_q_exp and apply D_qexp_tsum
-  -- E₂ = 1 - 24 * (series in σ₁ form) requires rewriting from G2_q_exp form
-  -- D(1) = 0 by D_const, D commutes with tsum by D_qexp_tsum
+  -- Proof strategy:
+  -- 1. From E₂_eq_sigma: E₂ z = 1 - 24 * ∑' σ₁(n) * qⁿ
+  -- 2. Apply D: D(E₂) = D(1) - 24 * D(∑' σ₁(n) * qⁿ)
+  --    - D(1) = 0 by D_const
+  --    - D(∑' σ₁(n) * qⁿ) = ∑' n * σ₁(n) * qⁿ by D_qexp_tsum_pnat
+  -- 3. Result: D(E₂) = -24 * ∑' n * σ₁(n) * qⁿ
+  --
+  -- Technical requirements for D_qexp_tsum_pnat:
+  --   - Summability of σ₁(n) * qⁿ: Use σ₁(n) ≤ n² (sigma_bound), then a33 gives summability
+  --   - Uniform bound on compact sets: On K ⊂ ℍ, im(z) ≥ y_min > 0, so
+  --     ‖σ₁(n) * n * qⁿ‖ ≤ n³ * exp(-2π·y_min·n), which is summable
   sorry
 
 theorem E₄_sub_E₂_sq_qexp (z : ℍ) :
@@ -664,9 +673,19 @@ theorem D_diff_qexp (z : ℍ) :
     D (fun w => E₂ w * E₄ w - E₆ w) z =
       720 * ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
         cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
-  -- Strategy: Use E₂_mul_E₄_sub_E₆ and apply D_qexp_tsum_pnat
-  -- E₂E₄ - E₆ = 720 * ∑ n·σ₃(n)·q^n
-  -- D commutes with tsum and multiplies coefficients by n
+  -- Proof strategy:
+  -- 1. From E₂_mul_E₄_sub_E₆: E₂E₄ - E₆ = 720 * ∑' n·σ₃(n)·qⁿ
+  -- 2. Apply D_qexp_tsum_pnat with a(n) = n·σ₃(n):
+  --    D(∑' a(n)·qⁿ) = ∑' n·a(n)·qⁿ = ∑' n·(n·σ₃(n))·qⁿ = ∑' n²·σ₃(n)·qⁿ
+  -- 3. D(720 * ∑') = 720 * D(∑') by linearity
+  -- 4. Result: D(E₂E₄ - E₆) = 720 * ∑' n²·σ₃(n)·qⁿ
+  --
+  -- Technical requirements for D_qexp_tsum_pnat:
+  --   - Summability of n·σ₃(n)·qⁿ: Use σ₃(n) ≤ n⁴ (sigma_bound), so n·σ₃(n) ≤ n⁵
+  --     Then a33 gives summability of n^5 * q^n
+  --   - Uniform derivative bound on compact K ⊂ ℍ:
+  --     On K, im(z) ≥ y_min > 0, so ‖n·σ₃(n)·n·qⁿ‖ ≤ n⁶ * exp(-2π·y_min·n)
+  --     which is summable by summable_pow_mul_exp_neg_nat_mul
   sorry
 
 -- Helper: D(E₂E₄ - E₆) / q → 720 (same pattern as f/q → 720)
@@ -1472,12 +1491,19 @@ theorem D_Θ₄_tendsto_zero :
   -- summable_sq_mul_exp_neg_pi_sq, tendsto_tsum_of_dominated_convergence
   have h_tsum_tendsto : Filter.Tendsto
       (fun z : ℍ => ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (1/2) z) (0, 1)) atImInfty (nhds 0) := by
-    -- Dominated convergence with bound 3π|n|²exp(-πn²)
-    -- Same structure as D_jacobiTheta₂_half_mul_tendsto_zero
-    -- - Summability: summable_sq_mul_exp_neg_pi_sq.mul_left (3 * π)
-    -- - Pointwise: n = 0 → term = 0; n ≠ 0 → exp decay (n² > 0)
-    -- - Bound: norm_jacobiTheta₂_term_fderiv_le + norm_jacobiTheta₂_term_le with S = 0
-    sorry -- Dominated convergence; structure same as D_jacobiTheta₂_half_mul_tendsto_zero
+    -- Proof strategy: Apply tendsto_tsum_of_dominated_convergence
+    --
+    -- Key components:
+    -- 1. Bound: b(n) = 3π|n|²exp(-πn²), which is summable (summable_sq_mul_exp_neg_pi_sq)
+    -- 2. Pointwise: Each term → 0 as z.im → ∞
+    --    - n = 0: term is 0 (constant 0)
+    --    - n ≠ 0: term = π*I*n² * exp(-π*z.im*n² + imaginary parts) → 0 (exp decay)
+    -- 3. Uniform bound: For z.im ≥ 1, ‖term n z‖ ≤ b(n)
+    --    - Uses norm_jacobiTheta₂_term_fderiv_le and norm_jacobiTheta₂_term_le
+    --    - exp(-π*z.im*n²) ≤ exp(-π*n²) when z.im ≥ 1
+    --
+    -- Same structure as D_jacobiTheta₂_half_mul_tendsto_zero (lines ~1046)
+    sorry
   have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
   simp only [mul_zero] at h_mul
   exact h_mul

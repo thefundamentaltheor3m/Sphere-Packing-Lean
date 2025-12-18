@@ -266,10 +266,54 @@ theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
   -- Summability at each point
   have hf_sum : ∀ y : ℂ, y ∈ {w : ℂ | 0 < w.im} → Summable (fun n => a n * cexp (2 * π * I * n * y)) := by
     intro y hy
-    -- Use summability hypothesis (need to verify this transfers)
-    have hz' : (⟨y, hy⟩ : ℍ) ∈ Set.univ := Set.mem_univ _
-    -- This follows from hsum by continuity/compactness argument
-    sorry -- Summability at arbitrary y in upper half-plane
+    -- Singleton {y} is compact
+    have hK_compact : IsCompact ({y} : Set ℂ) := isCompact_singleton
+    have hK_sub : ({y} : Set ℂ) ⊆ {w : ℂ | 0 < w.im} := Set.singleton_subset_iff.mpr hy
+    -- Apply hsum_deriv to get bound on derivative terms
+    obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv {y} hK_sub hK_compact
+    -- For n ≥ 1: ‖a n * exp(...)‖ ≤ u n / ‖2πin‖ ≤ u n / (2π)
+    -- For n = 0: term is just a(0), handle via cofinite filter (only finitely many exceptions)
+    apply Summable.of_norm_bounded_eventually (g := fun n => u n / (2 * π))
+        (hu_sum.div_const (2 * π))
+    -- Bound holds eventually (i.e., for all but finitely many n)
+    -- In fact, it holds for all n ≥ 1, so the exception set ⊆ {0}
+    rw [Filter.eventually_cofinite]
+    apply Set.Finite.subset (Set.finite_singleton 0)
+    intro n hn
+    simp only [Set.mem_setOf_eq, not_le] at hn
+    simp only [Set.mem_singleton_iff]
+    by_contra h_ne
+    -- n ≥ 1, so we can derive the bound and get a contradiction
+    have h_deriv_bound := hu_bound n ⟨y, Set.mem_singleton y⟩
+    have h_n_ge_1 : (1 : ℝ) ≤ n := Nat.one_le_cast.mpr (Nat.one_le_iff_ne_zero.mpr h_ne)
+    have h_2pi_pos : (0 : ℝ) < 2 * π := by positivity
+    have hu_nn : 0 ≤ u n := le_trans (norm_nonneg _) h_deriv_bound
+    -- Key bound: ‖a n * exp(2πiny)‖ ≤ u n / (2πn) ≤ u n / (2π)
+    have h_bound : ‖a n * cexp (2 * π * I * n * y)‖ ≤ u n / (2 * π) := by
+      -- ‖a n * exp(...)‖ ≤ ‖a n * 2πin * exp(...)‖ / ‖2πin‖ ≤ u n / (2πn)
+      have h_factor_pos : (0 : ℝ) < 2 * π * n := by positivity
+      -- ‖2πin‖ = 2πn
+      have h_norm_2pin : ‖(2 : ℂ) * π * I * n‖ = 2 * π * n := by
+        rw [norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real,
+            Complex.norm_I, mul_one, Complex.norm_natCast, Real.norm_of_nonneg (le_of_lt pi_pos)]
+      -- The key algebraic step
+      have h_mul_div : ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) =
+          ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ := by
+        rw [← h_norm_2pin]
+        simp only [norm_mul]
+        ring
+      calc ‖a n * cexp (2 * π * I * n * y)‖
+          = ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) / (2 * π * n) := by
+            field_simp
+        _ = ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ / (2 * π * n) := by
+            rw [h_mul_div]
+        _ ≤ u n / (2 * π * n) := by
+            apply div_le_div_of_nonneg_right h_deriv_bound (le_of_lt h_factor_pos)
+        _ ≤ u n / (2 * π) := by
+            apply div_le_div_of_nonneg_left hu_nn h_2pi_pos
+            have h2 : 2 * π * 1 ≤ 2 * π * n := by nlinarith
+            linarith
+    exact hn.not_le h_bound
   -- Derivative bound for uniform convergence
   have hu : ∀ K ⊆ {w : ℂ | 0 < w.im}, IsCompact K →
       ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K),
@@ -337,8 +381,102 @@ theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
           cexp (2 * π * I * n * k.1)‖ ≤ u n) :
     D (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) z =
       ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
-  -- Similar proof to D_qexp_tsum but indexed over ℕ+
-  sorry -- Uses same pattern as D_qexp_tsum
+  simp only [D]
+  -- Use hasDerivAt_tsum_fun on the upper half-plane
+  have hs : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
+  have hx : (z : ℂ) ∈ {w : ℂ | 0 < w.im} := z.2
+  -- Each term is differentiable
+  have hf_diff : ∀ (n : ℕ+) (r : {w : ℂ | 0 < w.im}), DifferentiableAt ℂ
+      (fun w => a n * cexp (2 * π * I * n * w)) r := fun n r =>
+    ((differentiableAt_id.const_mul (2 * π * I * n)).cexp).const_mul (a n)
+  -- Summability at each point - simpler than ℕ case since all n ≥ 1
+  have hf_sum : ∀ y : ℂ, y ∈ {w : ℂ | 0 < w.im} →
+      Summable (fun n : ℕ+ => a n * cexp (2 * π * I * n * y)) := by
+    intro y hy
+    have hK_compact : IsCompact ({y} : Set ℂ) := isCompact_singleton
+    have hK_sub : ({y} : Set ℂ) ⊆ {w : ℂ | 0 < w.im} := Set.singleton_subset_iff.mpr hy
+    obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv {y} hK_sub hK_compact
+    -- For ℕ+, every n ≥ 1, so bound holds uniformly
+    apply Summable.of_norm_bounded (g := fun n => u n / (2 * π)) (hu_sum.div_const (2 * π))
+    intro n
+    have h_deriv_bound := hu_bound n ⟨y, Set.mem_singleton y⟩
+    have h_n_ge_1 : (1 : ℝ) ≤ n := by exact_mod_cast n.one_le
+    have h_2pi_pos : (0 : ℝ) < 2 * π := by positivity
+    have hu_nn : 0 ≤ u n := le_trans (norm_nonneg _) h_deriv_bound
+    -- Key bound: ‖a n * exp(2πiny)‖ ≤ u n / (2πn) ≤ u n / (2π)
+    have h_factor_pos : (0 : ℝ) < 2 * π * n := by positivity
+    have h_norm_2pin : ‖(2 : ℂ) * π * I * n‖ = 2 * π * n := by
+      rw [norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real,
+          Complex.norm_I, mul_one, Complex.norm_natCast,
+          Real.norm_of_nonneg (le_of_lt pi_pos)]
+    have h_mul_div : ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) =
+        ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ := by
+      rw [← h_norm_2pin]
+      simp only [norm_mul]
+      ring
+    calc ‖a n * cexp (2 * π * I * n * y)‖
+        = ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) / (2 * π * n) := by field_simp
+      _ = ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ / (2 * π * n) := by rw [h_mul_div]
+      _ ≤ u n / (2 * π * n) := by
+          apply div_le_div_of_nonneg_right h_deriv_bound (le_of_lt h_factor_pos)
+      _ ≤ u n / (2 * π) := by
+          apply div_le_div_of_nonneg_left hu_nn h_2pi_pos
+          have h2 : 2 * π * 1 ≤ 2 * π * n := by nlinarith
+          linarith
+  -- Derivative bound for uniform convergence
+  have hu : ∀ K ⊆ {w : ℂ | 0 < w.im}, IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ n (k : K),
+        ‖derivWithin (fun w => a n * cexp (2 * π * I * n * w)) {w : ℂ | 0 < w.im} k‖ ≤ u n := by
+    intro K hK1 hK2
+    have h_deriv_eq : ∀ n (k : K), derivWithin (fun w => a n * cexp (2 * π * I * n * w))
+        {w : ℂ | 0 < w.im} k = a n * (2 * π * I * n) * cexp (2 * π * I * n * k.1) := by
+      intro n k
+      have h_chain : HasDerivAt (fun w : ℂ => a n * cexp (2 * π * I * n * w))
+          (a n * (2 * π * I * n) * cexp (2 * π * I * n * k.1)) k.1 := by
+        have h_exp := Complex.hasDerivAt_exp (2 * π * I * n * k.1)
+        have h_lin' := (hasDerivAt_id k.1).const_mul (2 * π * I * n)
+        simp only [id, mul_one] at h_lin'
+        have h_comp := h_exp.scomp k.1 h_lin'
+        simp only [smul_eq_mul] at h_comp
+        convert h_comp.const_mul (a n) using 1; ring
+      exact (h_chain.hasDerivWithinAt (s := {w : ℂ | 0 < w.im})).derivWithin
+        (hs.uniqueDiffWithinAt (hK1 k.2))
+    obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK1 hK2
+    refine ⟨u, hu_sum, fun n k => ?_⟩
+    rw [h_deriv_eq]
+    exact hu_bound n k
+  -- Apply termwise differentiation
+  have h_tsum_deriv := hasDerivAt_tsum_fun (fun n w => a n * cexp (2 * π * I * n * w))
+    hs (z : ℂ) hx hf_sum hu hf_diff
+  -- The composed function with ofComplex equals the ℂ function in a neighborhood
+  have h_agree : ((fun w : ℍ => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) ∘ ofComplex) =ᶠ[nhds (z : ℂ)]
+      (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) := by
+    filter_upwards [hs.mem_nhds hx] with w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
+  rw [h_agree.deriv_eq, h_tsum_deriv.deriv]
+  -- Simplify: derivWithin equals 2πin * (term) on open set, factor out (2πi)⁻¹
+  have h_deriv_simp : ∀ n : ℕ+, derivWithin (fun w => a n * cexp (2 * π * I * n * w))
+      {w : ℂ | 0 < w.im} (z : ℂ) = a n * (2 * π * I * n) * cexp (2 * π * I * n * z) := by
+    intro n
+    have h_chain : HasDerivAt (fun w : ℂ => a n * cexp (2 * π * I * n * w))
+        (a n * (2 * π * I * n) * cexp (2 * π * I * n * z)) (z : ℂ) := by
+      have h_exp := Complex.hasDerivAt_exp (2 * π * I * n * z)
+      have h_lin' := (hasDerivAt_id (z : ℂ)).const_mul (2 * π * I * n)
+      simp only [id, mul_one] at h_lin'
+      have h_comp := h_exp.scomp (z : ℂ) h_lin'
+      simp only [smul_eq_mul] at h_comp
+      convert h_comp.const_mul (a n) using 1; ring
+    exact (h_chain.hasDerivWithinAt (s := {w : ℂ | 0 < w.im})).derivWithin
+      (hs.uniqueDiffWithinAt hx)
+  simp_rw [h_deriv_simp]
+  -- Factor out (2πi)⁻¹ from the tsum
+  have h_2piI_ne : (2 : ℂ) * π * I ≠ 0 := by
+    simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, ofReal_eq_zero, pi_ne_zero, I_ne_zero,
+      or_self, not_false_eq_true]
+  rw [← tsum_mul_left]
+  congr 1
+  funext n
+  field_simp [h_2piI_ne]
 
 /--
 Serre derivative of weight $k$.
