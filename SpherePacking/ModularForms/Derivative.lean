@@ -684,14 +684,40 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- E₂ → 1 as im(z) → ∞, so it must be bounded.
   suffices h : 24 * ‖∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
       (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ ≤ 1 by linarith
-  -- The proof requires:
-  -- 1. Summability: Use summable_norm_pow_mul_geometric_div_one_sub from TsumDivsorsAntidiagonal
-  -- 2. norm_tsum_le_tsum_norm: ‖∑' f‖ ≤ ∑' ‖f‖
-  -- 3. Term bound: ‖n·q^n/(1-q^n)‖ ≤ n·|q|^n/(1-|q|) since |1-q^n| ≥ 1-|q|
-  -- 4. Geometric series: ∑' n·r^n = r/(1-r)² (tsum_coe_mul_geometric_of_norm_lt_one)
-  -- 5. Final bound: |q|/(1-|q|)³ < 0.002 < 1/24 for |q| ≤ exp(-2π)
+  -- Strategy: Use norm_tsum_le_tsum_norm + term bound + geometric series
+  -- Let q = exp(2πiz). We need to bound the tsum.
+  set q : ℂ := cexp (2 * π * Complex.I * z) with hq_def
+  -- Rewrite the sum in terms of q: exp(2πinz) = (exp(2πiz))^n = q^n
+  have hexp_pow : ∀ n : ℕ, cexp (2 * π * Complex.I * n * z) = q ^ n := fun n => by
+    rw [hq_def, ← Complex.exp_nat_mul]
+    congr 1
+    ring
+  have hsum_eq : (fun n : ℕ+ => ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+      (1 - cexp (2 * π * Complex.I * ↑n * ↑z))) =
+      (fun n : ℕ+ => ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))) := by
+    ext n
+    simp only [hexp_pow]
+  rw [hsum_eq]
+  -- **Proof strategy** (mathematical argument is complete):
   --
-  -- The bound exp(-2π)/(1-exp(-2π))³ ≈ 0.00189 < 1/24 ≈ 0.042
+  -- Step 1 (Summability): For ‖q‖ < 1, the sum ∑' n * q^n / (1 - q^n) is summable.
+  --   This follows from `summable_norm_pow_mul_geometric_of_norm_lt_one` in mathlib:
+  --   ∑ n * ‖q‖^n is summable, and |1 - q^n| ≥ 1 - ‖q‖ > 0 provides a uniform denominator bound.
+  --
+  -- Step 2 (Term bound): For n ≥ 1 and ‖q‖ < 1:
+  --   ‖n * q^n / (1 - q^n)‖ ≤ n * ‖q‖^n / |1 - q^n|
+  --                        ≤ n * ‖q‖^n / (1 - ‖q‖^n)  [reverse triangle: |1 - z| ≥ 1 - |z|]
+  --                        ≤ n * ‖q‖^n / (1 - ‖q‖)    [since ‖q‖^n ≤ ‖q‖ for n ≥ 1]
+  --
+  -- Step 3 (Sum bound): Using `tsum_coe_mul_geometric_of_norm_lt_one`:
+  --   ∑' n * ‖q‖^n = ‖q‖ / (1 - ‖q‖)²
+  --   So ∑' n * ‖q‖^n / (1 - ‖q‖) = ‖q‖ / (1 - ‖q‖)³
+  --
+  -- Step 4 (Final bound): With ‖q‖ ≤ exp(-2π) from hq_bound:
+  --   24 * exp(-2π) / (1 - exp(-2π))³ ≈ 24 * 0.00187 / 0.994³ ≈ 0.046 < 1
+  --
+  -- The numerical verification requires interval arithmetic (native_decide).
+  -- See `E₂_eq` (E2.lean) for the q-expansion definition.
   sorry
 
 /-- E₄ is bounded at infinity (as a modular form). -/
