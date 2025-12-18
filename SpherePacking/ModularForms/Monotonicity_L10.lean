@@ -1472,10 +1472,11 @@ theorem D_Θ₄_tendsto_zero :
   -- summable_sq_mul_exp_neg_pi_sq, tendsto_tsum_of_dominated_convergence
   have h_tsum_tendsto : Filter.Tendsto
       (fun z : ℍ => ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (1/2) z) (0, 1)) atImInfty (nhds 0) := by
-    -- Apply tendsto_tsum_of_dominated_convergence with:
-    -- - bound: 3π|n|²exp(-π(n² - |n|)) (summable since n² - |n| ≥ |n| for |n| ≥ 2)
-    -- - Each term → 0: exponential decay (same structure as D_jacobiTheta₂_half_mul_tendsto_zero)
-    -- - Bound condition: norm_jacobiTheta₂_term_fderiv_le + norm_jacobiTheta₂_term_le
+    -- Dominated convergence with bound 3π|n|²exp(-πn²)
+    -- Same structure as D_jacobiTheta₂_half_mul_tendsto_zero
+    -- - Summability: summable_sq_mul_exp_neg_pi_sq.mul_left (3 * π)
+    -- - Pointwise: n = 0 → term = 0; n ≠ 0 → exp decay (n² > 0)
+    -- - Bound: norm_jacobiTheta₂_term_fderiv_le + norm_jacobiTheta₂_term_le with S = 0
     sorry -- Dominated convergence; structure same as D_jacobiTheta₂_half_mul_tendsto_zero
   have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
   simp only [mul_zero] at h_mul
