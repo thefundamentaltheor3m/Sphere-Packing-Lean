@@ -379,33 +379,15 @@ open ModularGroup in
 /-- Derivative of the denominator function: d/dz[cz + d] = c. -/
 lemma deriv_denom (γ : SL(2, ℤ)) (z : ℂ) :
     deriv (fun w => denom γ w) z = ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) := by
-  -- denom γ w = (γ : GL) 1 0 * w + (γ : GL) 1 1
-  -- The GL entries come from ℤ via ℤ → ℝ → GL
-  have hc : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 0 : ℂ) =
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) := by simp
-  have hd : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 1 : ℂ) =
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ) := by simp
   simp only [denom]
-  have h : (fun w => (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 0 : ℂ) * w +
-      (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 1 : ℂ)) =
-      (fun w => ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * w + ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ)) := by
-    ext w; rw [hc, hd]
-  rw [h, deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]
+  rw [deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]; simp
 
 open ModularGroup in
 /-- Derivative of the numerator function: d/dz[az + b] = a. -/
 lemma deriv_num (γ : SL(2, ℤ)) (z : ℂ) :
     deriv (fun w => num γ w) z = ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) := by
-  have ha : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 0 : ℂ) =
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) := by simp
-  have hb : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 1 : ℂ) =
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) := by simp
   simp only [num]
-  have h : (fun w => (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 0 : ℂ) * w +
-      (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 1 : ℂ)) =
-      (fun w => ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * w + ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ)) := by
-    ext w; rw [ha, hb]
-  rw [h, deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]
+  rw [deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]; simp
 
 open ModularGroup in
 /-- Differentiability of denom. -/
