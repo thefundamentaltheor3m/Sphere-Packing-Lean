@@ -185,15 +185,15 @@ lemma qParam_surj_onto_ball (r : ℝ) (hr : 0 < r) (hr2 : r < 1) [NeZero n] : �
       rw [hq]
       simp [hr.le]
     · exact Ne.symm (NeZero.ne' _)
-    simp
+    simp only [ne_eq, ofReal_eq_zero]
     exact ne_of_gt hr
   rw [Function.Periodic.im_invQParam]
-  simp
+  simp only [norm_real, norm_eq_abs, log_abs]
   rw [mul_pos_iff]
   right
   constructor
   · refine div_neg_of_neg_of_pos ?_ ?_
-    · simp
+    · simp only [Left.neg_neg_iff, Nat.cast_pos]
       exact Nat.pos_of_neZero n
     exact two_pi_pos
   rw [propext (log_neg_iff hr)]
@@ -228,8 +228,8 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
         by_cases hr0 : r = 0
         · rw [hr0]
           apply summable_zero_pow
-        obtain ⟨z, hz⟩ := qParam_surj_onto_ball n r (by simp; exact pos_iff_ne_zero.mpr hr0 )
-          (by simpa using hr)
+        obtain ⟨z, hz⟩ := qParam_surj_onto_ball n r
+          (by simp only [NNReal.coe_pos]; exact pos_iff_ne_zero.mpr hr0) (by simpa using hr)
         rw [← hz]
         have hfz := summable_norm_iff.mpr (hf z).summable
         simpa using hfz
@@ -238,7 +238,8 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
     rw [EMetric.mem_ball, edist_zero_right, enorm_eq_nnnorm, ENNReal.coe_lt_one_iff, ←
       NNReal.coe_lt_one,
     coe_nnnorm] at hy
-    simp
+    simp only [FormalMultilinearSeries.apply_eq_prod_smul_coeff, Finset.prod_const,
+      Finset.card_univ, Fintype.card_fin, smul_eq_mul, zero_add]
     have := modfom_q_exp_cuspfunc n c f hf y hy
     apply this.congr
     intro S
@@ -294,11 +295,11 @@ lemma sigma_bound (k n : ℕ) : σ k n ≤ n ^ (k + 1) := by
     gcongr
     exact Nat.divisor_le hi
   apply le_trans this
-  simp
+  simp only [Finset.sum_const, smul_eq_mul]
   rw [pow_add]
   rw [mul_comm]
   gcongr
-  simp
+  simp only [pow_one]
   exact Nat.card_divisors_le_self n
 
 def Ek_q (k : ℕ) : ℕ → ℂ := fun m => if m = 0 then 1 else
@@ -307,14 +308,15 @@ def Ek_q (k : ℕ) : ℕ → ℂ := fun m => if m = 0 then 1 else
 lemma qexpsummable (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
   Summable fun m ↦ Ek_q k m • 𝕢 ↑1 ↑z ^ m := by
   rw [← summable_nat_add_iff 1]
-  simp [Ek_q, Function.Periodic.qParam]
+  simp only [Ek_q, Nat.add_eq_zero_iff, one_ne_zero, and_false, ↓reduceIte, one_div, neg_mul,
+    Periodic.qParam, ofReal_one, div_one, smul_eq_mul]
   conv =>
     enter [1]
     ext m
     rw [mul_assoc]
   apply Summable.mul_left
   rw [ArithmeticFunction.sigma]
-  simp
+  simp only [ArithmeticFunction.coe_mk, Nat.cast_sum, Nat.cast_pow]
   apply Summable.of_norm
   have hs : Summable fun a : ℕ ↦ ((a + 1) ^ k) * ‖cexp (2 * ↑π * Complex.I * ↑z) ^ (a + 1)‖ := by
     conv =>
@@ -323,17 +325,19 @@ lemma qexpsummable (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
       rw [show ((a : ℝ) + 1) = ((a + 1) : ℕ) by simp]
     have := summable_nat_add_iff 1
         (f := fun a : ℕ ↦ (((a) : ℝ) ^ k) * ‖cexp (2 * ↑π * Complex.I * ↑z) ^ (a)‖)
-    simp at *
+    simp only [Nat.ofNat_le_cast, Nat.cast_add, Nat.cast_one, norm_pow] at *
     rw [this]
     have ht : ‖cexp (2 * ↑π * Complex.I * ↑z)‖ < 1 := by
       exact norm_exp_two_pi_I_lt_one z
     have := summable_norm_pow_mul_geometric_of_norm_lt_one k ht
-    simp at *
+    simp only [Complex.norm_mul, norm_pow, RCLike.norm_natCast] at *
     apply this
   apply Summable.of_nonneg_of_le _ _ hs
-  · simp
+  · simp only [Complex.norm_mul, norm_pow, norm_pos_iff, ne_eq, Complex.exp_ne_zero,
+      not_false_eq_true, pow_succ_pos, mul_nonneg_iff_of_pos_right, norm_nonneg, implies_true]
   intro b
-  simp at *
+  simp only [Nat.ofNat_le_cast, norm_pow, Complex.norm_mul, norm_pos_iff, ne_eq,
+    Complex.exp_ne_zero, not_false_eq_true, pow_succ_pos, mul_le_mul_iff_left₀] at *
   have hr : ‖∑ x ∈ (b + 1).divisors, (x : ℂ) ^ (k - 1)‖ ≤
     ‖∑ x ∈ (b + 1).divisors, ((b + 1) : ℂ) ^ (k - 1)‖ := by
     apply le_trans (norm_sum_le (b + 1).divisors _ )
