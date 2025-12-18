@@ -668,18 +668,30 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
           (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := by
         simp only [norm_one, norm_mul, RCLike.norm_ofNat]
     _ ≤ 2 := ?_
-  -- Step 2: Bound the tsum norm. Need: 24 * ‖tsum‖ ≤ 1, i.e., ‖tsum‖ ≤ 1/24
-  -- Key bound: For n ≥ 1, |n * q^n / (1 - q^n)| ≤ n * |q|^n / (1 - |q|)
-  -- since |1 - q^n| ≥ 1 - |q|^n ≥ 1 - |q| for n ≥ 1.
+  -- Step 2: Need to show 1 + 24 * ‖tsum‖ ≤ 2, i.e., ‖tsum‖ ≤ 1/24 ≈ 0.042
   --
-  -- The tsum is bounded by (1/(1-|q|)) * ∑ n * |q|^n = |q| / (1-|q|)³
-  -- With |q| ≤ exp(-2π) < 0.002, we get |q|/(1-|q|)³ < 0.003 < 1/24 ≈ 0.042
-  -- So 1 + 24 * (< 0.003) < 1 + 0.072 < 2. ✓
+  -- Key bounds:
+  -- 1. For n ≥ 1: |1 - q^n| ≥ 1 - |q|^n ≥ 1 - |q| (since |q|^n ≤ |q| for n ≥ 1)
+  -- 2. So |n·q^n/(1-q^n)| ≤ n·|q|^n / (1 - |q|)
+  -- 3. ∑' n : ℕ+, n·|q|^n = |q| / (1-|q|)²  (tsum_coe_mul_geometric_of_norm_lt_one)
+  -- 4. The tsum is bounded by |q| / (1-|q|)³
+  -- 5. With |q| ≤ exp(-2π) ≈ 0.00187, we get |q|/(1-|q|)³ ≈ 0.00189 < 1/24
   --
-  -- Technical requirements:
-  -- - `summable_norm_pow_mul_geometric_div_one_sub` for summability
-  -- - `norm_tsum_le_tsum_norm` for ‖∑'‖ ≤ ∑' ‖...‖
-  -- - Geometric series: ∑ n * r^n = r/(1-r)²
+  -- This is a computational exercise. The bound exp(-2π)/(1-exp(-2π))³ < 1/24 can be
+  -- verified using native_decide or interval arithmetic.
+  --
+  -- For now, we leave this as a computational sorry. The mathematical argument is clear:
+  -- E₂ → 1 as im(z) → ∞, so it must be bounded.
+  suffices h : 24 * ‖∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+      (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ ≤ 1 by linarith
+  -- The proof requires:
+  -- 1. Summability: Use summable_norm_pow_mul_geometric_div_one_sub from TsumDivsorsAntidiagonal
+  -- 2. norm_tsum_le_tsum_norm: ‖∑' f‖ ≤ ∑' ‖f‖
+  -- 3. Term bound: ‖n·q^n/(1-q^n)‖ ≤ n·|q|^n/(1-|q|) since |1-q^n| ≥ 1-|q|
+  -- 4. Geometric series: ∑' n·r^n = r/(1-r)² (tsum_coe_mul_geometric_of_norm_lt_one)
+  -- 5. Final bound: |q|/(1-|q|)³ < 0.002 < 1/24 for |q| ≤ exp(-2π)
+  --
+  -- The bound exp(-2π)/(1-exp(-2π))³ ≈ 0.00189 < 1/24 ≈ 0.042
   sorry
 
 /-- E₄ is bounded at infinity (as a modular form). -/
