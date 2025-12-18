@@ -24,7 +24,7 @@ def gammaSetN (N : ℕ) : Set (Fin 2 → ℤ) := ({N} : Set ℕ) • gammaSet 1 
 
 def gammaSetN_map (N : ℕ) (v : gammaSetN N) : gammaSet 1 1 0 := by
   have hv2 := v.2
-  simp [gammaSetN] at hv2
+  simp only [gammaSetN, singleton_smul] at hv2
   rw [@mem_smul_set] at hv2
   use hv2.choose
   exact hv2.choose_spec.1
@@ -37,7 +37,7 @@ lemma gammaSet_top_mem (v : Fin 2 → ℤ) : v ∈ gammaSet 1 1 0 ↔ IsCoprime 
 
 lemma gammaSetN_map_eq (N : ℕ) (v : gammaSetN N) : v.1 = N • gammaSetN_map N v := by
   have hv2 := v.2
-  simp [gammaSetN] at hv2
+  simp only [gammaSetN, singleton_smul] at hv2
   rw [@mem_smul_set] at hv2
   have h1 := hv2.choose_spec.2
   exact h1.symm
@@ -52,14 +52,14 @@ def gammaSetN_Equiv (N : ℕ) (hN : N ≠ 0) : gammaSetN N ≃ gammaSet 1 1 0 wh
   left_inv v := by
     simp_rw [← gammaSetN_map_eq N v]
   right_inv v := by
-    simp
+    simp only [nsmul_eq_mul]
     have H : N • v.1 ∈ gammaSetN N := by
-      simp [gammaSetN]
+      simp only [gammaSetN, singleton_smul, nsmul_eq_mul]
       rw [@mem_smul_set]
       use v.1
       simp
     rw [gammaSetN] at H
-    simp at H
+    simp only [singleton_smul, nsmul_eq_mul] at H
     rw [@mem_smul_set] at H
     simp at H
     let x := H.choose
@@ -67,7 +67,8 @@ def gammaSetN_Equiv (N : ℕ) (hN : N ≠ 0) : gammaSetN N ≃ gammaSet 1 1 0 wh
     have hxv : ⟨x, hx.1⟩ = v := by
       ext i
       have hhxi := congr_fun hx.2 i
-      simp [hN] at hhxi
+      simp only [Pi.mul_apply, Pi.natCast_apply, mul_eq_mul_left_iff, Int.natCast_eq_zero, hN,
+        or_false] at hhxi
       exact hhxi
     simp_rw [← hxv]
     rw [gammaSetN_map]
@@ -115,9 +116,10 @@ def GammaSet_one_Equiv : (Fin 2 → ℤ) ≃ (Σn : ℕ, gammaSetN n) where
              omega
            · fin_cases i
              · refine Int.mul_ediv_cancel' ?_
-               simp
+               simp only [Fin.isValue]
                exact Int.gcd_dvd_left _ _
-             · simp
+             · simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Fin.isValue, Fin.mk_one,
+                 Pi.smul_apply, Matrix.cons_val_one, Matrix.cons_val_fin_one, Int.nsmul_eq_mul]
                exact Int.mul_ediv_cancel' (Int.gcd_dvd_right _ _)
 
 
@@ -135,7 +137,8 @@ theorem q_exp_iden_2 (k : ℕ) (hk : 3 ≤ k) (hk2 : Even k) (z : ℍ) :
       have h00 : ((0 ^ k : ℕ) : ℝ)⁻¹ = 0 := by simp; omega
       norm_cast at *
       rw [h0]
-      simp [zero_add, mul_eq_mul_left_iff]
+      simp only [PNat.pow_coe, Nat.cast_pow, zero_add, mul_eq_mul_left_iff, OfNat.ofNat_ne_zero,
+        or_false]
       norm_cast
       simp only [PNat.pow_coe, Nat.cast_pow]
       rw [zeta_nat_eq_tsum_of_gt_one hkk, ← tsum_pNat _ (by simp; omega)]
@@ -198,9 +201,9 @@ lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : 
     2 * ((-2 * ↑π * Complex.I) ^ k / ↑(k - 1)!) *
      ∑' (n : ℕ+), ↑((σ (k - 1)) ↑n) * cexp (2 * ↑π * Complex.I * ↑z * ↑↑n) := by
   rw [EQ0, q_exp_iden_2 k (by linarith) hk2]
-  simp
+  simp only [one_div, neg_mul, add_right_inj]
   have h1 (c : ℕ+) := q_exp_iden k (by linarith) (c • z)
-  simp [natPosSMul_apply] at *
+  simp only [Nat.ofNat_le_cast, natPosSMul_apply, one_div, neg_mul] at *
   conv =>
     enter [1,2,1]
     ext c
@@ -212,27 +215,28 @@ lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : 
   · rw [← tsum_sigma_eqn2]
     rw [← (piFinTwoEquiv fun _ => ℕ+).symm.tsum_eq]
     rw [Summable.tsum_prod']
-    · simp
+    · simp only [Fin.isValue, piFinTwoEquiv_symm_apply, Fin.cons_zero, Fin.cons_one]
       congr
       ext i
       congr
       ext j
       ring_nf
-    · simp
+    · simp only [Fin.isValue, piFinTwoEquiv_symm_apply, Fin.cons_zero, Fin.cons_one]
       rw [← sigmaAntidiagonalEquivProd.summable_iff]
-      simp [sigmaAntidiagonalEquivProd]
+      simp only [sigmaAntidiagonalEquivProd, PNat.mk_coe, Equiv.coe_fn_mk]
       apply (summable_auxil_1 (k - 1) z).congr
       intro b
-      simp [mapdiv]
-    simp
+      simp only [mapdiv, PNat.mk_coe, comp_apply]
+    simp only [Fin.isValue, piFinTwoEquiv_symm_apply, Fin.cons_zero, Fin.cons_one]
     intro b
     have A3 := a1 k b z
     apply A3.subtype
   rw [sigmaAntidiagonalEquivProd.summable_iff.symm]
-  simp [sigmaAntidiagonalEquivProd, mapdiv]
+  simp only [sigmaAntidiagonalEquivProd, mapdiv, PNat.mk_coe, Equiv.coe_fn_mk]
   apply (summable_auxil_1 (k - 1) z).congr
   intro b
-  simp
+  simp only [comp_apply, uncurry_apply_pair, PNat.mk_coe, mul_eq_mul_left_iff, pow_eq_zero_iff',
+    Nat.cast_eq_zero, ne_eq]
   left
   ring_nf
 
@@ -245,7 +249,8 @@ lemma EQ22 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
   have hr := zeta_nat_eq_tsum_of_gt_one hk1
   rw [Summable.tsum_sigma, GammaSet_one_Equiv, hr, tsum_mul_tsum_of_summable_norm (by simp [hk1])
     (by apply(EisensteinSeries.summable_norm_eisSummand hk z).subtype) ]
-  · simp
+  · simp only [Fin.isValue, Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.smul_cons, Int.nsmul_eq_mul,
+      Matrix.smul_empty, Equiv.coe_fn_symm_mk, one_div]
     rw [Summable.tsum_prod' ]
     · apply tsum_congr
       intro b
@@ -256,13 +261,13 @@ lemma EQ22 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
           enter [2,1]
           ext c
           rw [show ((0 : ℂ)^ k)⁻¹ = 0 by simp; omega]
-          simp
+          simp only [mul_zero]
         conv =>
           enter [1,1]
           ext c
           rw [gammaSetN_eisSummand k z, show (((0 : ℕ) : ℂ)^ (k : ℤ))⁻¹ = 0 by simp; omega]
-          simp
-        simp
+          simp only [mul_zero]
+        simp only [zero_mul, tsum_zero]
       conv =>
         enter [1,1]
         ext c
@@ -275,7 +280,7 @@ lemma EQ22 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
       exact this
     · apply summable_mul_of_summable_norm (f := fun (n : ℕ) => ((n : ℂ)^k)⁻¹)
         (g := fun (v : (gammaSet 1 1 0) ) => eisSummand k v z)
-      · simp only [norm_inv, norm_pow, norm_natCast, Real.summable_nat_pow_inv, hk1]
+      · simp only [norm_inv, norm_pow, _root_.norm_natCast, Real.summable_nat_pow_inv, hk1]
       apply (EisensteinSeries.summable_norm_eisSummand hk z).subtype
     intro b
     simp only
@@ -285,7 +290,7 @@ lemma EQ22 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
   have := (GammaSet_one_Equiv.symm.summable_iff ( f := fun v => eisSummand k v z)).mpr ?_
   · apply this.congr
     intro b
-    simp
+    simp only [comp_apply]
   exact (EisensteinSeries.summable_norm_eisSummand hk z).of_norm
 
 lemma EQ2 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) : ∑' (x : Fin 2 → ℤ),
@@ -293,7 +298,8 @@ lemma EQ2 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) : ∑' (x : Fin 2 → ℤ),
     1 / ((c.1 0) * (z : ℂ) + (c.1 1)) ^ k := by
   have := EQ22 k hk z
   simp_rw [eisSummand] at this
-  simp [ UpperHalfPlane.coe] at *
+  simp only [Nat.ofNat_le_cast, Fin.isValue, UpperHalfPlane.coe, zpow_neg, zpow_natCast,
+    one_div] at *
   convert this
 
 
@@ -310,16 +316,17 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
   rw [this]
   have := eisensteinSeries_SIF_apply standardcongruencecondition k z
   rw [this, eisensteinSeries, standardcongruencecondition]
-  simp
+  simp only [one_div, PNat.val_ofNat, smul_eq_mul, neg_mul]
   simp_rw [eisSummand]
   have HE1 := EQ1 k hk hk2 z
   have HE2 := EQ2 k hk z
   have z2 : (riemannZeta (k)) ≠ 0 := by
     refine riemannZeta_ne_zero_of_one_lt_re ?_
-    simp
+    simp only [natCast_re, Nat.one_lt_cast]
     omega
   rw [← inv_mul_eq_iff_eq_mul₀ z2 ] at HE2
-  simp [UpperHalfPlane.coe] at *
+  simp only [PNat.val_ofNat, Fin.isValue, UpperHalfPlane.coe, one_div, neg_mul, ne_eq, zpow_neg,
+    zpow_natCast] at *
   conv =>
     enter [1,2]
     rw [← HE2]
