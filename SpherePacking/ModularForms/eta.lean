@@ -49,7 +49,7 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
   have :=  prod_tendstoUniformlyOn_tprod'  K  hK2 (f := (fun i ↦
     fun x_1 ↦ -cexp (2 * ↑π * Complex.I *  (i + 1) * x_1)))
     (fun n=> ‖cexp (2 * ↑π * Complex.I * z)^(n + 1)‖) ?_ ?_ ?_
-  · simp at *
+  · simp only at *
     convert this
     simp only [Finset.prod_apply]
   · simp_rw [norm_pow]
@@ -84,7 +84,7 @@ theorem eta_tprod_ne_zero (z : ℍ) :
 lemma eta_nonzero_on_UpperHalfPlane (z : ℍ) : η z ≠ 0 := by
   rw [η]
   have := eta_tprod_ne_zero z
-  simp at *
+  simp only [ne_eq, mul_eq_zero, exp_ne_zero, false_or] at *
   apply this
 
 lemma tsum_log_deriv_eqn (z : ℍ) :
@@ -139,7 +139,7 @@ theorem eta_differentiableAt (z : ℍ) :
     apply hDz
     · apply IsOpen.mem_nhds (isOpen_lt continuous_const Complex.continuous_im)
       apply z.2
-  simp
+  simp only [eventually_atTop, ge_iff_le]
   use 0
   intro b hb
   have := DifferentiableOn.finset_prod (u := Finset.range b)
@@ -174,7 +174,7 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
         have h0 := logDeriv_z_term z
         simp only [UpperHalfPlane.coe] at *
         rw [this, E₂, h0]
-        simp
+        simp only [neg_mul, one_div, mul_inv_rev, Pi.smul_apply, smul_eq_mul]
         rw [G2_q_exp]
         rw [riemannZeta_two]
         conv =>
@@ -376,14 +376,14 @@ lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn (
       have hx2 := ne_zero (⟨x, hx⟩ : ℍ)
       norm_cast at *
     · intro y hy
-      simp
+      simp only [mem_setOf_eq]
       have := UpperHalfPlane.im_inv_neg_coe_pos (⟨y, hy⟩ : ℍ)
       conv =>
         enter [2,1]
         rw [neg_div]
         rw [div_eq_mul_inv]
-        simp
-      simp at *
+        simp only [one_mul]
+      simp only [coe_mk_subtype, inv_neg, neg_im, inv_im, Left.neg_pos_iff] at *
       exact this
   · apply DifferentiableOn.mul
     · simp only [DifferentiableOn, mem_setOf_eq]
@@ -414,7 +414,8 @@ lemma eta_equality : {z : ℂ | 0 < z.im}.EqOn ((η ∘ (fun z : ℂ => -1/z)))
   have hI : (Complex.I) ∈ {z : ℂ | 0 < z.im} := by
     simp only [mem_setOf_eq, Complex.I_im, zero_lt_one]
   have h3 := h hI
-  simp at h3
+  simp only [comp_apply, div_I, neg_mul, one_mul, neg_neg, Pi.smul_apply, Pi.mul_apply,
+    smul_eq_mul] at h3
   conv at h3 =>
     enter [2]
     rw [← mul_assoc]
