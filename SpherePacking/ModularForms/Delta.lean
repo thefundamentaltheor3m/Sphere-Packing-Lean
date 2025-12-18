@@ -116,7 +116,10 @@ lemma I_in_atImInfty (A : ℝ) : { z : ℍ | A ≤ z.im} ∈ atImInfty := by
 
 
 instance natPosSMul : SMul ℕ+ ℍ where
-  smul x z := UpperHalfPlane.mk (x * z) <| by simp; apply z.2
+  smul x z := UpperHalfPlane.mk (x * z) <| by
+    simp only [mul_im, natCast_re, coe_im, natCast_im, coe_re, zero_mul, add_zero, Nat.cast_pos,
+      PNat.pos, mul_pos_iff_of_pos_left]
+    apply z.2
 
 theorem natPosSMul_apply (c : ℕ+) (z : ℍ) : ((c • z : ℍ) : ℂ) = (c : ℂ) * (z : ℂ) := by rfl
 
@@ -135,7 +138,7 @@ lemma atImInfy_pnat_mono (S : Set ℍ) (hS : S ∈ atImInfty) (B : ℝ) : ∃ A 
       rw [UpperHalfPlane.im, natPosSMul_apply]
       simp only [mul_im, natCast_re, coe_im, natCast_im, coe_re, zero_mul, add_zero]
       have hs2 := hs.2
-      simp at *
+      simp only [sup_le_iff] at *
       constructor
       · apply le_trans hs2.1
         have hn : (1 : ℝ) ≤ n := by
@@ -148,7 +151,7 @@ lemma atImInfy_pnat_mono (S : Set ℍ) (hS : S ∈ atImInfty) (B : ℝ) : ∃ A 
         exact PNat.one_le n
       apply (le_mul_iff_one_le_left s.2).mpr hn
     refine ⟨?_, K⟩
-    simp at K
+    simp only [sup_le_iff] at K
     apply hA _ K.1
   · simp only [ inter_mem_iff, hS2, true_and]
     apply I_in_atImInfty
@@ -157,7 +160,9 @@ lemma cexp_two_pi_I_im_antimono (a b : ℍ) (h : a.im ≤ b.im) (n : ℕ) :
     ‖(cexp (2 * ↑π * Complex.I * n * b))‖
     ≤ ‖(cexp (2 * ↑π * Complex.I *n * a))‖:= by
   simp_rw [Complex.norm_exp]
-  simp
+  simp only [mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero, Complex.I_re,
+    mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, natCast_re, natCast_im, coe_re,
+    zero_add, coe_im, zero_sub, Real.exp_le_exp, neg_le_neg_iff]
   gcongr
 
 theorem tendsto_neg_cexp_atImInfty (k : ℕ) :
