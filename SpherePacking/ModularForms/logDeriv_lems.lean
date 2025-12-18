@@ -136,7 +136,8 @@ lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fun n : �
     intro n hn
     have h4 := hN n hn
     have := norm_lt_of_mem_ball h4 (E := ℂ)
-    simp at *
+    simp only [tendsto_const_nhds_iff, norm_inv, one_mem, CStarRing.norm_of_mem_unitary,
+      ge_iff_le] at *
     rw [div_eq_mul_inv]
     rw [mul_comm]
     gcongr
