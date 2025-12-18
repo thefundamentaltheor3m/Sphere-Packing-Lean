@@ -804,13 +804,33 @@ lemma D_E4_qexp (z : ℍ) :
     intro w
     -- E₄.toFun = E₄ by coercion, and E₄ = E 4 by definition
     have hE : E₄.toFun w = E 4 (by norm_num) w := by rfl
-    have := E_k_q_expansion 4 (by norm_num) (by exact Nat.even_iff.mpr rfl) w
-    rw [hE]
-    -- Now goal is: E 4 _ w = 1 + 240 * ...
-    -- And this : E 4 _ w = 1 + (1/riemannZeta 4) * ((-2πi)^4 / 3!) * ∑'...
+    have hqexp := E_k_q_expansion 4 (by norm_num) (by exact Nat.even_iff.mpr rfl) w
+    -- hqexp uses ↑4 while target uses 4; they are equal
+    simp only [Nat.cast_ofNat, Nat.succ_sub_succ_eq_sub, tsub_zero] at hqexp
+    rw [hE, hqexp]
+    -- Now goal is: 1 + (1/riemannZeta 4) * ((-2πi)^4 / 3!) * ∑'... = 1 + 240 * ...
     -- Need to show coefficient = 240
-    -- (1/riemannZeta 4) * ((-2πi)^4 / 6) = (90/π^4) * (16π^4) / 6 = 90*16/6 = 240
-    sorry
+    -- Using riemannZeta_four : riemannZeta 4 = π^4 / 90
+    congr 1
+    have hzeta : riemannZeta 4 = (π : ℂ) ^ 4 / 90 := by
+      simp only [riemannZeta_four, ofReal_div, ofReal_pow]
+    -- Coefficient = (1/(π^4/90)) * ((-2πi)^4 / 6) = (90/π^4) * (16π^4) / 6 = 240
+    have hcoeff : (1 / riemannZeta 4) * ((-2 * π * I) ^ 4 / Nat.factorial 3) = (240 : ℂ) := by
+      rw [hzeta]
+      -- (-2πi)^4 = 16π^4 since I^4 = 1
+      have hI4 : I ^ 4 = (1 : ℂ) := by norm_num [pow_succ, I_sq]
+      have h1 : (-2 * (π : ℂ) * I) ^ 4 = 16 * (π : ℂ) ^ 4 := by
+        have : (-2 * (π : ℂ) * I) ^ 4 = (-2) ^ 4 * (π : ℂ) ^ 4 * I ^ 4 := by ring
+        rw [this, hI4]
+        norm_num
+      rw [h1]
+      simp only [Nat.factorial_succ, Nat.reduceAdd]
+      have hpi : (π : ℂ) ≠ 0 := ofReal_ne_zero.mpr Real.pi_ne_zero
+      field_simp
+      ring
+    convert mul_comm _ _ using 1
+    rw [hcoeff]
+    ring
   -- Step 2: Apply D = (2πi)⁻¹ * d/dz to both sides
   -- D(1) = 0, and D commutes with constant multiplication and sums
   -- Step 3: For each term, D(σ₃(n) * exp(2πinz)) = σ₃(n) * n * exp(2πinz)
