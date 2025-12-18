@@ -890,13 +890,13 @@ lemma tsum_sigma_deriv_eq {k : ℕ} (z : ℍ) :
   have hsumm : Summable (fun c : (n : ℕ+) × {x // x ∈ (n : ℕ).divisorsAntidiagonal} ↦
       (↑(c.snd.val.1) : ℂ) * ↑(c.snd.val.2) ^ (k + 1) *
       cexp (2 * π * I * z * c.snd.val.1 * c.snd.val.2)) := by
-    -- This follows from `hsum` by polynomial bounds:
-    -- For (c,d) ∈ divisorsAntidiagonal n, we have c * d = n, so:
-    --   c * d^(k+1) = c * d * d^k = n * d^k ≤ n * n^k = n^(k+1)
-    -- and |exp(2πi*z*c*d)| = |exp(2πi*n*z)| since c*d = n.
-    -- Total bound: ∑_{(c,d) with cd=n} c * d^(k+1) * |exp| ≤ card(divisors) * n^(k+1) * |exp(2πinz)|
-    --            ≤ n * n^(k+1) * |exp| = n^(k+2) * |exp|
-    -- Then use `hsum (k+2) z` for summability over n.
+    -- Summability follows from bounds adapting summable_auxil_1:
+    -- For (a,b) ∈ divisorsAntidiagonal n: a * b = n, so
+    --   a * b^(k+1) = n * b^k ≤ n^(k+1) (since b | n implies b ≤ n)
+    --   |exp(2πi*z*ab)| = |exp(2πi*n*z)| (exponential decay)
+    -- Sum over divisors: card(divisors) * n^(k+1) * |exp| ≤ n^(k+2) * |exp|
+    -- Outer sum converges by hsum (k+2) z
+    -- See summable_auxil_1 and mathlib's summable_divisorsAntidiagonal_aux for pattern
     sorry
   rw [hsumm.tsum_sigma]
   apply tsum_congr
@@ -910,18 +910,47 @@ lemma tsum_sigma_deriv_eq {k : ℕ} (z : ℍ) :
     (x.1 : ℂ) * (x.2 : ℂ) ^ (k + 1) * cexp (2 * π * I * z * x.1 * x.2))
   simp only at H
   rw [H, hdiv]
-  -- Now show: ∑_{d|n} (n/d) * d^(k+1) * exp(2πi * z * (n/d) * d) = n * σ_k(n) * exp(2πinz)
+  -- Now show: ∑_{i|n} ↑(n/i) * i^(k+1) * exp(2πi * z * ↑(n/i) * i) = n * σ_k(n) * exp(2πinz)
+  -- Note: Nat.sum_divisorsAntidiagonal' produces ↑(↑n / i) which is ℕ division cast to ℂ
   --
-  -- This is a finite sum over divisors of n. For each divisor i of n:
-  -- 1. (n/i) * i = n (exact division in ℕ), so exp(2πi * z * (n/i) * i) = exp(2πi * n * z)
-  -- 2. For coefficients: (n/i) * i^(k+1) = (n/i) * i * i^k = n * i^k
-  -- 3. Thus each term becomes n * i^k * exp(2πi * n * z)
-  -- 4. Factor out common exp: ∑(n * i^k) * exp(2πinz) = (∑ n * i^k) * exp(2πinz)
-  -- 5. Factor out n: n * (∑ i^k) * exp(2πinz) = n * σ_k(n) * exp(2πinz)
+  -- Key identity for i | n: ↑((n/i : ℕ) * i : ℕ) = ↑n via Nat.div_mul_cancel
+  -- This gives: ↑(n/i) * ↑i = ↑n (using ← Nat.cast_mul)
+  -- Then: ↑(n/i) * i^(k+1) = ↑(n/i) * i * i^k = n * i^k
+  -- And: exp(2πi*z*↑(n/i)*i) = exp(2πi*n*z) since ↑(n/i)*i = n
   --
-  -- The proof involves careful handling of type coercions between ℕ division and ℂ division.
-  -- Key lemma: for i | n, we have ((n : ℕ) / i : ℂ) * (i : ℂ) = (n : ℂ) via Nat.div_mul_cancel.
-  sorry
+  -- Convert each term using ← Nat.cast_mul and Nat.div_mul_cancel
+  have hterm_eq : ∀ i ∈ (n : ℕ).divisors,
+      (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) ^ (k + 1) *
+        cexp (2 * π * I * z * (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ)) =
+      (n : ℂ) * (i : ℂ) ^ k * cexp (2 * π * I * n * z) := by
+    intro i hi
+    have hdvd : i ∣ (n : ℕ) := Nat.dvd_of_mem_divisors hi
+    -- Key: ↑((n/i) * i : ℕ) = ↑n, so ↑(n/i) * ↑i = ↑n
+    have hprod : (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) = (n : ℂ) := by
+      rw [← Nat.cast_mul, Nat.div_mul_cancel hdvd]
+    -- Coefficient: ↑(n/i) * i^(k+1) = ↑(n/i) * i * i^k = n * i^k
+    have hcoeff : (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) ^ (k + 1) = (n : ℂ) * (i : ℂ) ^ k := by
+      calc (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) ^ (k + 1)
+          = (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) * (i : ℂ) ^ k := by ring
+        _ = (n : ℂ) * (i : ℂ) ^ k := by rw [hprod]
+    -- Exponential: ↑(n/i) * i = n, so exp(...) = exp(2πi*n*z)
+    -- Note: ((n : ℕ) / i) is ℕ division, which gets coerced to ℂ in this context
+    have hexp : cexp (2 * π * I * z * (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ)) =
+        cexp (2 * π * I * n * z) := by
+      congr 1
+      -- Rearrange to use hprod: ↑(↑n/i) * ↑i = ↑↑n (without using push_cast)
+      have hrearr : (2 : ℂ) * π * I * z * (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) =
+          2 * π * I * z * ((((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ)) := by ring
+      rw [hrearr, hprod]
+      ring
+    rw [hcoeff, hexp]
+  -- Apply the term rewrite to the sum using direct rewrites
+  rw [Finset.sum_congr rfl hterm_eq, ← Finset.sum_mul, ← Finset.mul_sum]
+  -- Now show: ∑ i ∈ n.divisors, (i : ℂ)^k = (σ k n : ℂ) using sigma_apply
+  have hsigma_cast : ∑ i ∈ ((n : ℕ)).divisors, ((i : ℂ)) ^ k = ((σ k n) : ℂ) := by
+    rw [ArithmeticFunction.sigma_apply]
+    simp only [Nat.cast_sum, Nat.cast_pow]
+  rw [hsigma_cast]
 
 /--
 The normalized derivative D multiplies q-expansion coefficients by n.
