@@ -704,6 +704,46 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ)
   ring_nf; simp only [I_sq]; ring
 
 /--
+Chain rule for restriction to imaginary axis: `d/dt F(it) = -2π * (D F)(it)`.
+
+This connects the real derivative along the imaginary axis to the Serre derivative D.
+The key computation is:
+- The imaginary axis is parametrized by g(t) = I * t
+- By chain rule: d/dt F(it) = (dF/dz)(it) · (d/dt)(it) = F'(it) · I
+- Since D = (2πi)⁻¹ · d/dz, we have F' = 2πi · D F
+- So d/dt F(it) = 2πi · D F(it) · I = -2π · D F(it)
+-/
+theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (t : ℝ) (ht : 0 < t) :
+    deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t := by
+  -- The imaginary axis parametrization: g(t) = I * t
+  let g : ℝ → ℂ := fun s => Complex.I * s
+  -- F.resToImagAxis = (F ∘ ofComplex) ∘ g locally near t > 0
+  have h_eq : F.resToImagAxis =ᶠ[nhds t] ((F ∘ ofComplex) ∘ g) := by
+    filter_upwards [lt_mem_nhds ht] with s hs
+    simp only [Function.resToImagAxis_apply, ResToImagAxis, hs, ↓reduceDIte, Function.comp_apply]
+    congr 1
+    rw [ofComplex_apply_of_im_pos (by simp [hs] : 0 < (I * ↑s).im)]
+  -- The derivatives are equal
+  rw [h_eq.deriv_eq]
+  -- g has derivative I at t (linear map)
+  have hg_deriv_at : HasDerivAt g I t := by simpa using ofRealCLM.hasDerivAt.const_mul I
+  -- F ∘ ofComplex has complex derivative at I * t
+  have him : 0 < (I * ↑t).im := by simp [ht]
+  have hFcomp_deriv_at : HasDerivAt (F ∘ ofComplex) (deriv (F ∘ ofComplex) (g t)) (g t) :=
+    (MDifferentiableAt_DifferentiableAt (hF ⟨I * t, him⟩)).hasDerivAt
+  -- Chain rule using scomp: deriv ((F ∘ ofComplex) ∘ g) t = I • deriv (F ∘ ofComplex) (I * t)
+  have hchain := hFcomp_deriv_at.scomp t hg_deriv_at
+  rw [hchain.deriv]
+  -- Use definition of D: deriv (F ∘ ofComplex) z = 2πi * D F z
+  have hD_def : deriv (F ∘ ofComplex) (g t) = 2 * π * I * D F ⟨I * t, him⟩ := by
+    simp only [D, g, coe_mk_subtype]
+    field_simp
+  simp only [hD_def, Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, g]
+  -- Simplify: I • (2πi * D F(it)) = 2π * i² * D F(it) = -2π * D F(it)
+  simp only [smul_eq_mul]; ring_nf; simp only [I_sq]; ring
+
+/--
 If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
 is positive) and the derivative is positive, then $F$ is also positive.
 -/
