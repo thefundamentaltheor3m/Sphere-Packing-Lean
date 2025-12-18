@@ -197,8 +197,10 @@ lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   ext x
   have hx' : (x : ℂ) ≠ 0 := by obtain ⟨x, hx⟩ := x; change x ≠ 0; simp [Complex.ext_iff, hx.ne.symm]
   have := jacobiTheta₂_functional_equation 0
-  simp [-one_div] at this
-  simp [modular_slash_S_apply, Pi.neg_apply, H₃, Θ₃_as_jacobiTheta₂]
+  simp only [neg_mul, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, mul_zero, zero_div,
+    Complex.exp_zero, mul_one] at this
+  simp only [modular_slash_S_apply, H₃, inv_neg, Θ₃_as_jacobiTheta₂, UpperHalfPlane.coe_mk,
+    Int.reduceNeg, zpow_neg, Pi.neg_apply]
   rw [this, mul_pow, neg_div, div_neg, neg_neg, one_div (x : ℂ)⁻¹, inv_inv,
     mul_right_comm, ← neg_one_mul (_ ^ 4)]
   congr
