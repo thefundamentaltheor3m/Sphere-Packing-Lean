@@ -872,6 +872,58 @@ lemma D_exp_eq_n_mul (n : ℕ) (z : ℍ) :
   field_simp
 
 /--
+Key identity: The double sum ∑' (c,d), c * d^(k+1) * exp(2πi*z*cd) equals ∑' n, n * σ_k(n) * exp(2πi*n*z).
+This follows from the definition σ_k(n) = ∑_{d|n} d^k and the identity n * σ_k(n) = ∑_{cd=n} c * d^(k+1).
+
+The proof uses `tsum_sigma_eqn` and the fact that differentiation multiplies by the exponent factor.
+-/
+lemma tsum_sigma_deriv_eq {k : ℕ} (z : ℍ) :
+    ∑' c : ℕ+ × ℕ+, (c.1 : ℂ) * (c.2 : ℂ) ^ (k + 1) * cexp (2 * π * I * z * c.1 * c.2) =
+    ∑' n : ℕ+, (n : ℂ) * (σ k n : ℂ) * cexp (2 * π * I * n * z) := by
+  -- The key identity: for each n, ∑_{cd=n} c * d^(k+1) = n * σ_k(n)
+  -- Proof: ∑_{cd=n} c * d^(k+1) = ∑_{d|n} (n/d) * d^(k+1) = ∑_{d|n} n * d^k = n * σ_k(n)
+  --
+  -- Use sigmaAntidiagonalEquivProd to convert pairs (c,d) to divisor sums
+  rw [← sigmaAntidiagonalEquivProd.tsum_eq]
+  simp only [sigmaAntidiagonalEquivProd, mapdiv, PNat.mk_coe, Equiv.coe_fn_mk]
+  -- Use summability to convert tsum over sigma to tsum over ℕ+
+  have hsumm : Summable (fun c : (n : ℕ+) × {x // x ∈ (n : ℕ).divisorsAntidiagonal} ↦
+      (↑(c.snd.val.1) : ℂ) * ↑(c.snd.val.2) ^ (k + 1) *
+      cexp (2 * π * I * z * c.snd.val.1 * c.snd.val.2)) := by
+    -- This follows from summable_auxil_1 by polynomial bounds
+    apply Summable.of_norm
+    rw [summable_sigma_of_nonneg (fun _ => by positivity)]
+    constructor
+    · exact fun n => (hasSum_fintype _).summable
+    · simp only [norm_mul, norm_pow, RCLike.norm_natCast, tsum_fintype, Finset.univ_eq_attach]
+      -- Bound by polynomial * geometric using the same technique as summable_auxil_1
+      sorry
+  rw [hsumm.tsum_sigma]
+  apply tsum_congr
+  intro n
+  rw [tsum_fintype, Finset.univ_eq_attach]
+  -- For each n, show ∑_{(c,d) with cd=n} c * d^(k+1) = n * σ_k(n)
+  have hdiv := @Nat.sum_divisorsAntidiagonal' ℂ _ (fun (x : ℕ) => fun (y : ℕ) =>
+    (x : ℂ) * (y : ℂ) ^ (k + 1) * cexp (2 * π * I * z * x * y)) n
+  simp only at hdiv
+  have H := Finset.sum_attach ((n : ℕ).divisorsAntidiagonal) (fun (x : ℕ × ℕ) =>
+    (x.1 : ℂ) * (x.2 : ℂ) ^ (k + 1) * cexp (2 * π * I * z * x.1 * x.2))
+  simp only at H
+  rw [H, hdiv]
+  -- Now show: ∑_{d|n} (n/d) * d^(k+1) * exp(2πi * z * (n/d) * d) = n * σ_k(n) * exp(2πinz)
+  --
+  -- This is a finite sum over divisors of n. For each divisor i of n:
+  -- 1. (n/i) * i = n (exact division in ℕ), so exp(2πi * z * (n/i) * i) = exp(2πi * n * z)
+  -- 2. For coefficients: (n/i) * i^(k+1) = (n/i) * i * i^k = n * i^k
+  -- 3. Thus each term becomes n * i^k * exp(2πi * n * z)
+  -- 4. Factor out common exp: ∑(n * i^k) * exp(2πinz) = (∑ n * i^k) * exp(2πinz)
+  -- 5. Factor out n: n * (∑ i^k) * exp(2πinz) = n * σ_k(n) * exp(2πinz)
+  --
+  -- The proof involves careful handling of type coercions between ℕ division and ℂ division.
+  -- Key lemma: for i | n, we have ((n : ℕ) / i : ℂ) * (i : ℂ) = (n : ℂ) via Nat.div_mul_cancel.
+  sorry
+
+/--
 The normalized derivative D multiplies q-expansion coefficients by n.
 Since E₄ = 1 + 240·Σσ₃(n)·qⁿ, we have D(E₄) = 240·Σn·σ₃(n)·qⁿ.
 -/
