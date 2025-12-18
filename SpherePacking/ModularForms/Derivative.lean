@@ -1,4 +1,5 @@
 import SpherePacking.ModularForms.Eisenstein
+import SpherePacking.ModularForms.tsumderivWithin
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
@@ -813,7 +814,7 @@ lemma D_E4_qexp (z : ℍ) :
     -- Using riemannZeta_four : riemannZeta 4 = π^4 / 90
     congr 1
     have hzeta : riemannZeta 4 = (π : ℂ) ^ 4 / 90 := by
-      simp only [riemannZeta_four, ofReal_div, ofReal_pow]
+      simp only [riemannZeta_four]
     -- Coefficient = (1/(π^4/90)) * ((-2πi)^4 / 6) = (90/π^4) * (16π^4) / 6 = 240
     have hcoeff : (1 / riemannZeta 4) * ((-2 * π * I) ^ 4 / Nat.factorial 3) = (240 : ℂ) := by
       rw [hzeta]
@@ -831,19 +832,31 @@ lemma D_E4_qexp (z : ℍ) :
     convert mul_comm _ _ using 1
     rw [hcoeff]
     ring
-  -- Step 2: Apply D = (2πi)⁻¹ * d/dz to the q-expansion
-  -- We need: deriv (∑' n, f n) = ∑' n, deriv (f n)
-  -- Use `hasSum_deriv_of_summable_norm` from Analysis.Complex.LocallyUniformLimit:
-  --   For open U ⊂ ℂ, if ‖F i w‖ ≤ u i for all w ∈ U and Summable u, then
-  --   deriv (∑' i, F i) z = ∑' i, deriv (F i) z
+  -- Step 2: Compute D of the q-expansion using deriv-tsum interchange
   --
-  -- For z ∈ ℍ, take U = {w : im(w) > im(z)/2}. Then for w ∈ U:
-  --   |σ₃(n) * exp(2πinw)| ≤ σ₃(n) * exp(-π·n·im(z))
-  -- which is summable. This justifies the interchange.
+  -- Proof Strategy:
+  -- Using hE4: E₄.toFun w = 1 + 240 * ∑' n, σ₃(n) * exp(2πi·n·w)
   --
-  -- Step 3: For each term, deriv (σ₃(n) * exp(2πinz)) = 2πi·n·σ₃(n) * exp(2πinz)
-  -- Step 4: D = (2πi)⁻¹ * deriv, so D(σ₃(n) * exp(2πinz)) = n·σ₃(n) * exp(2πinz)
-  -- Step 5: Multiply by 240 to get 240 * ∑' n * σ₃(n) * exp(2πinz)
+  -- D(E₄)(z) = (2πi)⁻¹ * deriv (E₄.toFun ∘ ofComplex) z
+  --          = (2πi)⁻¹ * deriv (z ↦ 1 + 240 * ∑' n, σ₃(n) * exp(2πinz)) z
+  --          = (2πi)⁻¹ * (0 + 240 * ∑' n, σ₃(n) * 2πin * exp(2πinz))  [D-tsum interchange]
+  --          = 240 * ∑' n, (2πi)⁻¹ * 2πin * σ₃(n) * exp(2πinz)
+  --          = 240 * ∑' n, n * σ₃(n) * exp(2πinz)
+  --
+  -- The D-tsum interchange requires:
+  -- 1. Pointwise summability: ∀ w ∈ ℍ', Summable (n ↦ σ₃(n) * exp(2πinw))
+  --    This follows from exponential decay |exp(2πinw)| = exp(-2πn·im(w)) < 1
+  --
+  -- 2. Uniform bound on derivatives: For K compact in ℍ', ∃ u : ℕ+ → ℝ summable,
+  --    ‖derivWithin (n ↦ σ₃(n) * exp(2πin·)) ℍ' w‖ ≤ u n for w ∈ K
+  --    The derivative is σ₃(n) * 2πin * exp(2πinw).
+  --    Bound: 2π * n * σ₃(n) * exp(-2πn·c) where c = min{im(w) : w ∈ K} > 0.
+  --    Since σ₃(n) ≤ n⁴ (polynomial) and exp(-2πnc) decays exponentially, this is summable.
+  --
+  -- 3. Differentiability: Each term z ↦ σ₃(n) * exp(2πinz) is differentiable on ℍ'.
+  --
+  -- Use derivWithin_tsum_fun' from tsumderivWithin.lean.
+  -- Key infrastructure: summable_auxil_1, tsum_sigma_eqn from summable_lems.lean.
   sorry
 
 /--
