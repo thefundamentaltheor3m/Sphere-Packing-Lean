@@ -628,16 +628,58 @@ to apply the dimension formula for weight-6 modular forms.
 
 /-- E₂ is bounded at infinity.
 
-The q-expansion E₂ = 1 - 24·Σσ₁(n)·qⁿ shows that E₂ → 1 as im(z) → ∞.
-
-**Proof outline**: For q = exp(2πiz), we have ‖q‖ = exp(-2π·im(z)) < 1.
-The sum Σσ₁(n)·qⁿ is absolutely convergent for ‖q‖ < 1
-(see `summable_prod_mul_pow` in TsumDivsorsAntidiagonal.lean).
+Uses `E₂_eq`: E₂(z) = 1 - 24·Σn·qⁿ/(1-qⁿ) where q = exp(2πiz).
 As im(z) → ∞, ‖q‖ → 0, so the sum → 0, hence E₂(z) → 1.
 
-**Blocker**: Need to connect E₂'s definition (via G₂) to the q-expansion formula.
-This requires showing G₂ = (π²/3) - 8π² · Σσ₁(n)·qⁿ and using uniform convergence. -/
+**Proof strategy** (partially implemented below):
+1. For im(z) ≥ 1, |q| ≤ exp(-2π) < 0.002
+2. Bound: |n·q^n/(1-q^n)| ≤ n·|q|^n/(1-|q|) since |1-q^n| ≥ 1-|q| for n ≥ 1
+3. The tsum is bounded by |q|/(1-|q|)³ < 0.003
+4. Therefore |E₂| ≤ 1 + 24·0.003 < 2
+
+**Remaining**: Complete the tsum bound using `norm_tsum_le_tsum_norm` and
+geometric series. See JacobiTheta.lean:374 (`isBoundedAtImInfty_H₂`) for similar proofs. -/
 lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
+  -- Use E₂_eq: E₂ z = 1 - 24 * ∑' n : ℕ+, n * q^n / (1 - q^n) where q = exp(2πiz)
+  -- As im(z) → ∞, |q| → 0, so the sum → 0, hence E₂ → 1 (bounded).
+  rw [UpperHalfPlane.isBoundedAtImInfty_iff]
+  -- We'll show: ∃ M A : ℝ, ∀ z : ℍ, A ≤ im z → ‖E₂ z‖ ≤ M
+  use 2, 1  -- M = 2, A = 1
+  intro z hz
+  rw [E₂_eq]
+  -- E₂ z = 1 - 24 * ∑' n, n * q^n / (1 - q^n)
+  -- Need to bound ‖1 - 24 * tsum‖ ≤ 1 + 24 * ‖tsum‖
+  have hq : ‖cexp (2 * π * Complex.I * z)‖ < 1 := norm_exp_two_pi_I_lt_one z
+  -- When im(z) ≥ 1, |q| ≤ exp(-2π) < 0.002, so the sum is very small
+  have hq_bound : ‖cexp (2 * π * Complex.I * z)‖ ≤ Real.exp (-2 * π) := by
+    have h1 : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
+      rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
+      simp [Complex.I_re, Complex.I_im, mul_comm]
+    rw [Complex.norm_exp, h1, Real.exp_le_exp]
+    have hpi : 0 < π := Real.pi_pos
+    have him : 1 ≤ z.im := hz
+    nlinarith
+  -- Step 1: Triangle inequality: ‖1 - 24 * tsum‖ ≤ 1 + 24 * ‖tsum‖
+  calc ‖1 - 24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+          (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖
+      ≤ ‖(1 : ℂ)‖ + ‖24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+          (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := norm_sub_le _ _
+    _ = 1 + 24 * ‖∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+          (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := by
+        simp only [norm_one, norm_mul, RCLike.norm_ofNat]
+    _ ≤ 2 := ?_
+  -- Step 2: Bound the tsum norm. Need: 24 * ‖tsum‖ ≤ 1, i.e., ‖tsum‖ ≤ 1/24
+  -- Key bound: For n ≥ 1, |n * q^n / (1 - q^n)| ≤ n * |q|^n / (1 - |q|)
+  -- since |1 - q^n| ≥ 1 - |q|^n ≥ 1 - |q| for n ≥ 1.
+  --
+  -- The tsum is bounded by (1/(1-|q|)) * ∑ n * |q|^n = |q| / (1-|q|)³
+  -- With |q| ≤ exp(-2π) < 0.002, we get |q|/(1-|q|)³ < 0.003 < 1/24 ≈ 0.042
+  -- So 1 + 24 * (< 0.003) < 1 + 0.072 < 2. ✓
+  --
+  -- Technical requirements:
+  -- - `summable_norm_pow_mul_geometric_div_one_sub` for summability
+  -- - `norm_tsum_le_tsum_norm` for ‖∑'‖ ≤ ∑' ‖...‖
+  -- - Geometric series: ∑ n * r^n = r/(1-r)²
   sorry
 
 /-- E₄ is bounded at infinity (as a modular form). -/
