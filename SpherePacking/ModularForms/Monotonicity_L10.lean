@@ -1077,8 +1077,56 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
         convert h_exp_tendsto.mul tendsto_const_nhds using 1
         simp
     -- 3. Bound condition: ‖f(z,n)‖ ≤ bound(n) eventually (for im(z) ≥ 1)
-    · -- Strategy: For im(z) ≥ 1, use norm_jacobiTheta₂_term_fderiv_le and norm_jacobiTheta₂_term_le
-      sorry -- Complex type coercions; see standalone proof in test file
+    · apply Filter.eventually_atImInfty.mpr
+      use 1
+      intro z hz k
+      have h_opnorm := ContinuousLinearMap.le_opNorm
+        (jacobiTheta₂_term_fderiv k (↑z / 2) ↑z) ((1 : ℂ) / 2, 1)
+      have h_v_norm : ‖((1 : ℂ) / 2, (1 : ℂ))‖ = 1 := by
+        simp only [Prod.norm_def]
+        norm_num
+      rw [h_v_norm, mul_one] at h_opnorm
+      have h_fderiv_bound := norm_jacobiTheta₂_term_fderiv_le k (↑z / 2) ↑z
+      have h_imz_pos : (0 : ℝ) < z.im := z.im_pos
+      have h_imz_div2 : |(↑z / 2 : ℂ).im| ≤ z.im / 2 := by
+        have h1 : (↑z / 2 : ℂ).im = z.im / 2 := by
+          have h2 : (2 : ℂ) = (2 : ℝ) := by norm_cast
+          rw [h2]
+          simp only [Complex.div_ofReal_im, UpperHalfPlane.coe_im]
+        rw [h1, abs_of_pos (by linarith : z.im / 2 > 0)]
+      have h_term_bound := norm_jacobiTheta₂_term_le h_imz_pos h_imz_div2 (le_refl z.im) k
+      calc ‖(jacobiTheta₂_term_fderiv k (↑z / 2) ↑z) (1 / 2, 1)‖
+          ≤ ‖jacobiTheta₂_term_fderiv k (↑z / 2) ↑z‖ := h_opnorm
+        _ ≤ 3 * π * ↑|k| ^ 2 * ‖jacobiTheta₂_term k (↑z / 2) ↑z‖ := h_fderiv_bound
+        _ ≤ 3 * π * ↑|k| ^ 2 * rexp (-π * (z.im * ↑k ^ 2 - 2 * (z.im / 2) * ↑|k|)) := by
+            apply mul_le_mul_of_nonneg_left h_term_bound
+            positivity
+        _ = 3 * π * ↑|k| ^ 2 * rexp (-π * z.im * (↑k ^ 2 - ↑|k|)) := by ring_nf
+        _ ≤ 3 * π * ↑|k| ^ 2 * rexp (-π * 1 * (↑k ^ 2 - ↑|k|)) := by
+            apply mul_le_mul_of_nonneg_left _ (by positivity)
+            apply Real.exp_le_exp_of_le
+            have hk_sq : (k : ℝ) ^ 2 = (↑|k| : ℝ) ^ 2 := by
+              rw [Int.cast_abs, sq_abs]
+            have hk_ge : (↑|k| : ℝ) ^ 2 - ↑|k| ≥ 0 := by
+              by_cases hk0 : k = 0
+              · simp [hk0]
+              · have h : (↑|k| : ℝ) ^ 2 - ↑|k| = ↑|k| * (↑|k| - 1) := by ring
+                rw [h]
+                apply mul_nonneg (by positivity : (0 : ℝ) ≤ ↑|k|)
+                have : |k| ≥ 1 := Int.one_le_abs hk0
+                have hcast : (1 : ℝ) ≤ ↑|k| := by exact_mod_cast this
+                linarith
+            rw [hk_sq]
+            have h1 : -π * z.im * ((↑|k| : ℝ) ^ 2 - ↑|k|) ≤ -π * 1 * ((↑|k|) ^ 2 - ↑|k|) := by
+              by_cases hzero : (↑|k| : ℝ) ^ 2 - ↑|k| = 0
+              · simp only [hzero, mul_zero, le_refl]
+              · have hpos : (↑|k| : ℝ) ^ 2 - ↑|k| > 0 := lt_of_le_of_ne hk_ge (Ne.symm hzero)
+                have hz1 : z.im ≥ 1 := hz
+                have hpi_pos : π > 0 := Real.pi_pos
+                have : -π * z.im ≤ -π * 1 := by nlinarith
+                exact mul_le_mul_of_nonneg_right this (le_of_lt hpos)
+            convert h1 using 2 <;> ring
+        _ = 3 * π * ↑|k| ^ 2 * rexp (-π * (1 * ↑k ^ 2 - 1 * ↑|k|)) := by ring_nf
   have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
   simp only [mul_zero] at h_mul
   exact h_mul
@@ -1424,7 +1472,11 @@ theorem D_Θ₄_tendsto_zero :
   -- summable_sq_mul_exp_neg_pi_sq, tendsto_tsum_of_dominated_convergence
   have h_tsum_tendsto : Filter.Tendsto
       (fun z : ℍ => ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (1/2) z) (0, 1)) atImInfty (nhds 0) := by
-    sorry -- Typeclass inference timeout; proof strategy documented above
+    -- Apply tendsto_tsum_of_dominated_convergence with:
+    -- - bound: 3π|n|²exp(-π(n² - |n|)) (summable since n² - |n| ≥ |n| for |n| ≥ 2)
+    -- - Each term → 0: exponential decay (same structure as D_jacobiTheta₂_half_mul_tendsto_zero)
+    -- - Bound condition: norm_jacobiTheta₂_term_fderiv_le + norm_jacobiTheta₂_term_le
+    sorry -- Dominated convergence; structure same as D_jacobiTheta₂_half_mul_tendsto_zero
   have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
   simp only [mul_zero] at h_mul
   exact h_mul
