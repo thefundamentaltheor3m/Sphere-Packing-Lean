@@ -181,17 +181,17 @@ theorem serre_D_sub (k : ℂ) (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ
 theorem serre_D_smul (k : ℂ) (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     serre_D k (c • F) = c • serre_D k F := by
   ext z
-  have h : (c • serre_D k F) z = c * (serre_D k F z) := by rfl
-  rw [h]
-  rw [serre_D, serre_D, D_smul _ _ hF]
+  rw [Pi.smul_apply, serre_D, serre_D, D_smul _ _ hF]
   simp
   ring_nf
 
 theorem serre_D_mul (k₁ k₂ : ℂ) (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
-    (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G) (z : ℍ) :
-    serre_D (k₁ + k₂) (F * G) z = F z * serre_D k₁ G z + G z * serre_D k₂ F z := by
-  simp only [serre_D, D_mul F G hF hG]
-  simp
+    (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G) :
+    serre_D (k₁ + k₂) (F * G) = (serre_D k₁ F) * G + F * serre_D k₂ G := by
+  ext z
+  rw [serre_D, D_mul _ _ hF hG]
+  simp [Pi.add_apply, Pi.mul_apply] at *
+  rw [serre_D, serre_D]
   ring_nf
 
 /--
