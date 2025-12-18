@@ -330,15 +330,15 @@ The key computation is:
 - So d/dt F(it) = 2πi · D F(it) · I = -2π · D F(it)
 -/
 theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
-    (t : ℝ) (ht : 0 < t) :
+    {t : ℝ} (ht : 0 < t) :
     deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t := by
   let z : ℍ := ⟨I * t, by simp [ht]⟩
   let g : ℝ → ℂ := (I * ·)
-  -- F.resToImagAxis = (F ∘ ofComplex) ∘ g locally near t > 0
   have h_eq : F.resToImagAxis =ᶠ[nhds t] ((F ∘ ofComplex) ∘ g) := by
     filter_upwards [lt_mem_nhds ht] with s hs
-    simp only [Function.resToImagAxis_apply, ResToImagAxis, hs, Function.comp_apply, g]
-    split_ifs <;> simp [ofComplex_apply_of_im_pos, hs]
+    have him : 0 < (g s).im := by simp [g, hs]
+    simp [Function.resToImagAxis_apply, ResToImagAxis, hs, Function.comp_apply, g,
+      ofComplex_apply_of_im_pos him]
   rw [h_eq.deriv_eq]
   have hg : HasDerivAt g I t := by simpa using ofRealCLM.hasDerivAt.const_mul I
   have hF' := (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt
