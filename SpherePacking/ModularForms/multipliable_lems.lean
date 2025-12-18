@@ -80,7 +80,7 @@ lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
 lemma tprod_ne_zero (x : ℍ) (f : ℕ → ℍ → ℂ) (hf : ∀ i x, 1 + f i x ≠ 0)
   (hu : ∀ x : ℍ, Summable fun n => f n x) : (∏' i : ℕ, (1 + f i) x) ≠ 0 := by
   have := Complex.cexp_tsum_eq_tprod (f := fun n => 1 + f n x) ?_
-  · simp
+  · simp only [Pi.add_apply, Pi.one_apply, ne_eq]
     rw [← this]
     · simp only [exp_ne_zero, not_false_eq_true]
     apply Complex.summable_log_one_add_of_summable
@@ -93,7 +93,7 @@ lemma Multipliable_pow {ι : Type*} (f : ι → ℂ) (hf : Multipliable f) (n : 
      Multipliable (fun i => f i ^ n) := by
   induction n with
   | zero =>
-    simp
+    simp only [pow_zero]
     apply multipliable_one
   | succ n hn =>
     conv =>

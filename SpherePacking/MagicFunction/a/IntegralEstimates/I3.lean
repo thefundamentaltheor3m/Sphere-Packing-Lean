@@ -187,7 +187,7 @@ lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0) :
     filter_upwards [Filter.Ici_mem_atTop 1] with s hs
     have heb : rexp (-π * r / s) ≤ rexp (π * |r|) :=
       Real.exp_le_exp.mpr <| (le_abs_self _).trans <| by
-        simp [abs_div, abs_mul, abs_of_nonneg Real.pi_pos.le]
+        simp only [neg_mul, abs_div, abs_neg, abs_mul, abs_of_nonneg Real.pi_pos.le]
         exact div_le_self (by positivity) (by rwa [abs_of_nonneg (zero_lt_one.trans_le hs).le])
     simp only [f, Real.norm_eq_abs, Real.abs_exp, abs_mul, mul_comm, mul_left_comm,
       mul_assoc, div_eq_mul_inv]
