@@ -158,7 +158,7 @@ lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff 1 = 1 :=
     Finset.sum_singleton, Prod.fst_zero, Prod.snd_zero]
   have he4 := E4_q_exp_zero
   have he6 := E6_q_exp_zero
-  simp at *
+  simp only [one_div, DirectSum.sub_apply, PowerSeries.coeff_zero_eq_constantCoeff] at *
   simp_rw [E4_q_exp_one, he4, he6]
   ring_nf
   rw [antidiagonal_one]
