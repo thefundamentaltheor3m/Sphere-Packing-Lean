@@ -831,11 +831,19 @@ lemma D_E4_qexp (z : ℍ) :
     convert mul_comm _ _ using 1
     rw [hcoeff]
     ring
-  -- Step 2: Apply D = (2πi)⁻¹ * d/dz to both sides
-  -- D(1) = 0, and D commutes with constant multiplication and sums
-  -- Step 3: For each term, D(σ₃(n) * exp(2πinz)) = σ₃(n) * n * exp(2πinz)
-  -- by D_exp_eq_n_mul
-  -- Step 4: Rearrange to get 240 * Σ n * σ₃(n) * exp(2πinz)
+  -- Step 2: Apply D = (2πi)⁻¹ * d/dz to the q-expansion
+  -- We need: deriv (∑' n, f n) = ∑' n, deriv (f n)
+  -- Use `hasSum_deriv_of_summable_norm` from Analysis.Complex.LocallyUniformLimit:
+  --   For open U ⊂ ℂ, if ‖F i w‖ ≤ u i for all w ∈ U and Summable u, then
+  --   deriv (∑' i, F i) z = ∑' i, deriv (F i) z
+  --
+  -- For z ∈ ℍ, take U = {w : im(w) > im(z)/2}. Then for w ∈ U:
+  --   |σ₃(n) * exp(2πinw)| ≤ σ₃(n) * exp(-π·n·im(z))
+  -- which is summable. This justifies the interchange.
+  --
+  -- Step 3: For each term, deriv (σ₃(n) * exp(2πinz)) = 2πi·n·σ₃(n) * exp(2πinz)
+  -- Step 4: D = (2πi)⁻¹ * deriv, so D(σ₃(n) * exp(2πinz)) = n·σ₃(n) * exp(2πinz)
+  -- Step 5: Multiply by 240 to get 240 * ∑' n * σ₃(n) * exp(2πinz)
   sorry
 
 /--
