@@ -12,8 +12,7 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 lemma norm_symm (x y : ℤ) : ‖![x, y]‖ = ‖![y,x]‖ := by
   simp_rw [EisensteinSeries.norm_eq_max_natAbs]
   rw [max_comm]
-  simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Fin.isValue, Matrix.cons_val_one,
-    Matrix.cons_val_fin_one, Matrix.cons_val_zero, Nat.cast_max, Nat.cast_natAbs, Int.cast_abs]
+  simp
 
 
 lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻¹) =O[cofinite]
@@ -49,13 +48,12 @@ lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻
     --have := EisensteinSeries.summand_bound z (k := 1) (by norm_num) ![n, m]
     rw [mul_comm]
     gcongr
-    · simp only [inv_nonneg, (r_pos z).le]
+    · simp [(r_pos z).le]
     · exact r_pos z
     · exact le_abs_self (r z)
-    · simp only [abs_pos, ne_eq, Int.cast_eq_zero]; omega
+    · simp; omega
     · rw [EisensteinSeries.norm_eq_max_natAbs]
-      simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
-        Nat.cast_max, Nat.cast_natAbs, Int.cast_abs, le_sup_left]
+      simp
   use max 1 m
   intro b hb
   rw [EisensteinSeries.norm_eq_max_natAbs]
