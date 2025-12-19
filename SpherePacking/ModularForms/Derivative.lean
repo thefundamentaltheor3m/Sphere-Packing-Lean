@@ -379,33 +379,35 @@ section DSlashHelpers
 
 open ModularGroup
 
+variable (γ : SL(2, ℤ))
+
 /-- Derivative of the denominator function: d/dz[cz + d] = c. -/
-lemma deriv_denom (γ : SL(2, ℤ)) (z : ℂ) :
+lemma deriv_denom (z : ℂ) :
     deriv (fun w => denom γ w) z = ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) := by
   simp only [denom]
   rw [deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]; simp
 
 /-- Derivative of the numerator function: d/dz[az + b] = a. -/
-lemma deriv_num (γ : SL(2, ℤ)) (z : ℂ) :
+lemma deriv_num (z : ℂ) :
     deriv (fun w => num γ w) z = ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) := by
   simp only [num]
   rw [deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]; simp
 
 /-- Differentiability of denom. -/
-lemma differentiableAt_denom (γ : SL(2, ℤ)) (z : ℂ) :
+lemma differentiableAt_denom (z : ℂ) :
     DifferentiableAt ℂ (fun w => denom γ w) z := by
   simp only [denom]
   fun_prop
 
 /-- Differentiability of num. -/
-lemma differentiableAt_num (γ : SL(2, ℤ)) (z : ℂ) :
+lemma differentiableAt_num (z : ℂ) :
     DifferentiableAt ℂ (fun w => num γ w) z := by
   simp only [num]
   fun_prop
 
 /-- Derivative of the Möbius transformation: d/dz[(az+b)/(cz+d)] = 1/(cz+d)².
 Uses det(γ) = 1: a(cz+d) - c(az+b) = ad - bc = 1. -/
-lemma deriv_moebius (γ : SL(2, ℤ)) (z : ℂ) (hz : denom γ z ≠ 0) :
+lemma deriv_moebius (z : ℂ) (hz : denom γ z ≠ 0) :
     deriv (fun w => num γ w / denom γ w) z = 1 / (denom γ z) ^ 2 := by
   have hdiff_num := differentiableAt_num γ z
   have hdiff_denom := differentiableAt_denom γ z
@@ -437,7 +439,7 @@ lemma deriv_moebius (γ : SL(2, ℤ)) (z : ℂ) (hz : denom γ z ≠ 0) :
   simp only [hnum_eq, one_div]
 
 /-- Derivative of denom^(-k): d/dz[(cz+d)^(-k)] = -k * c * (cz+d)^(-k-1). -/
-lemma deriv_denom_zpow (γ : SL(2, ℤ)) (k : ℤ) (z : ℂ) (hz : denom γ z ≠ 0) :
+lemma deriv_denom_zpow (k : ℤ) (z : ℂ) (hz : denom γ z ≠ 0) :
     deriv (fun w => (denom γ w) ^ (-k)) z =
         (-k : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * (denom γ z) ^ (-k - 1) := by
   have hdiff := differentiableAt_denom γ z
