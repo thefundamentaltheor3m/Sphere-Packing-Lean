@@ -69,7 +69,7 @@ lemma int_add_abs_self_nonneg (n : ℤ) : 0 ≤ n + |n| := by
     exact abs_nonneg n
   simp only [not_le] at *
   rw [abs_of_neg h]
-  simp only [add_neg_cancel, le_refl]
+  simp
 
 lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
   apply tendsto_atTop_finset_of_monotone (fun _ _ _ ↦ Finset.Ico_subset_Ico (by omega) (by gcongr))

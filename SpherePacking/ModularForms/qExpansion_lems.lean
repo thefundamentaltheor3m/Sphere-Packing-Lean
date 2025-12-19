@@ -495,7 +495,7 @@ lemma qExpansion_pow (f : ModularForm Γ(1) k) (n : ℕ) :
     apply qExpansion_ext2
     ext z
     rw [show n * k = n • k by rfl]
-    simp only [Int.nsmul_eq_mul, DirectSum.of_eq_same]
+    simp
 
 @[simp]
 lemma qExpansion_zero [NeZero n] : qExpansion n (0 : ModularForm Γ(n) k) = 0 := by
