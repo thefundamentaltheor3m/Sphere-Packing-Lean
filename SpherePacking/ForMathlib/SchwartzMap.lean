@@ -925,7 +925,6 @@ lemma exists_smooth_flat_factor (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f)
 
 -- set_option trace.profiler true in
 set_option linter.style.longLine false in
-set_option maxHeartbeats 300000 in
 lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f)
                                 (hflat : ∀ k, iteratedDeriv k f 0 = 0) :
     ContDiff ℝ ∞ (fun x => f (Real.sqrt x)) := by
@@ -943,9 +942,9 @@ lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f
           convert hflat ( k + 1 ) using 1;
           rw [ iteratedDeriv_succ' ];
       -- We claim the derivative of $f(\sqrt{x})$ is $\frac{1}{2} g(\sqrt{x})$.
-      have h_deriv : ∀ x, HasDerivAt (fun x => f (Real.sqrt x)) (if x = 0 then 0 else (1 / 2) * g (Real.sqrt x)) x := by
+      have h_deriv : ∀ x, HasDerivAt (fun x => f (Real.sqrt x)) ((1 / 2) * g (Real.sqrt x)) x := by
         intro x
-        split_ifs with x_zero
+        by_cases x_zero : x = 0
         · simp_all only [sqrt_eq_rpow, one_div]
           -- By definition of $f$, we know that $f(\sqrt{h}) = \int_0^{\sqrt{h}} f'(t) dt = \int_0^{\sqrt{h}} t g(t) dt$.
           have h_int : ∀ h ≥ 0, f (Real.sqrt h) = ∫ t in (0 : ℝ)..Real.sqrt h, t * g t := by
@@ -1008,7 +1007,7 @@ lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f
           rw [ Metric.tendsto_nhdsWithin_nhds ] at * ;
           intro ε a
           simp_all only [gt_iff_lt, Set.mem_Ioi, dist_zero_right, norm_eq_abs, Set.mem_compl_iff,
-            Set.mem_singleton_iff, norm_mul, norm_inv]
+            Set.mem_singleton_iff]
           obtain ⟨ δ, hδ₁, hδ₂ ⟩ := h_limit ε a; use δ, hδ₁
           intro x hx₁ hx₂;
           cases lt_or_gt_of_ne hx₁
@@ -1017,8 +1016,10 @@ lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f
             simp_all only [one_div]
             norm_num [ show 1 / 2 * Real.pi = Real.pi / 2 by ring, Real.exp_mul, Real.exp_log_eq_abs, hx₁ ] at *
             simp_all only [one_div]
+            exact hg_id0 0 |> abs_eq_zero.mpr |> mul_eq_zero_of_right 2⁻¹ |> fun h ↦ lt_of_eq_of_lt h a
           · simp_all only [sqrt_eq_rpow, one_div]
-            rw [ inv_mul_eq_div, div_lt_iff₀ ] <;> have := h_int_simplified x ( by positivity ) <;> have := h_int_simplified 0 ( by positivity ) <;>
+            have hg_zero : g 0 = 0 := by exact hg_id0 0
+            rw [ inv_mul_eq_div, hg_zero, mul_zero, dist_0_eq_abs, abs_div, div_lt_iff₀ ] <;> have := h_int_simplified x ( by positivity ) <;> have := h_int_simplified 0 ( by positivity ) <;>
             simp_all only [ne_eq, inv_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, zero_rpow,
               intervalIntegral.integral_same, abs_pos]
             expose_names
@@ -1042,12 +1043,9 @@ lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f
       apply And.intro
       · exact fun x => ( h_deriv x |> HasDerivAt.differentiableAt );
       · convert h_deriv_cont_diff using 1;
-        ext x; specialize h_deriv x; have := h_deriv.deriv;
-        simp_all only [ite_eq_right_iff, sqrt_zero, zero_eq_mul, inv_eq_zero, OfNat.ofNat_ne_zero, false_or]
-        intro a
-        subst a
-        simp_all only [↓reduceIte]
-        simpa only [iteratedDeriv_zero] using hg_id0 0;
+        ext x;
+        specialize h_deriv x
+        exact h_deriv.deriv
 
 include hsmooth heven in
 theorem Function.Even.eq_smooth_comp_sq_of_smooth : ∃ g : ℝ → ℝ, f = g ∘ (fun x => x ^ 2) ∧
