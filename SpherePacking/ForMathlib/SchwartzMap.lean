@@ -751,7 +751,6 @@ lemma exists_smooth_even_approx (f : ℝ → ℝ) (heven : Function.Even f) (hsm
 
 
 set_option linter.style.longLine false in
-set_option maxHeartbeats 500000 in
 lemma deriv_integral_of_smooth (F : ℝ → ℝ → ℝ) (hF : ContDiff ℝ ∞ (fun p : ℝ × ℝ => F p.1 p.2)) (x : ℝ) :
     HasDerivAt (fun x => ∫ t in (0 : ℝ)..1, F t x) (∫ t in (0 : ℝ)..1, deriv (fun y => F t y) x) x := by
       -- Applying the Leibniz rule to differentiate the integral.
@@ -793,25 +792,40 @@ lemma deriv_integral_of_smooth (F : ℝ → ℝ → ℝ) (hF : ContDiff ℝ ∞ 
                   exact this h_cont_diff.1 h_cont_diff.2 |> fun ⟨ c, hc₁, hc₂ ⟩ => ⟨ c, ⟨ by linarith [ hc₁.1 ], by linarith [ hc₁.2 ] ⟩, by rw [ hc₂ ] ; rw [ div_eq_div_iff ] <;> linarith ⟩;
                 · have := exists_deriv_eq_slope ( f := fun y => F t y ) ( show x < x + h by linarith ) ; aesop;
                   exact ⟨ w, ⟨ by linarith, by linarith ⟩, right_2.symm ⟩;
-              intro t ht h hh; by_cases hh' : h = 0 <;> aesop;
-              · apply_rules [ Real.sSup_nonneg ] ; aesop;
-              · obtain ⟨ c, hc₁, hc₂ ⟩ := h_mean_value t left right h hh' hh ; rw [ hc₂ ] ; refine' le_csSup _ _ <;> norm_num;
+              intro t ht h hh; by_cases hh' : h = 0
+              · subst hh'
+                simp_all only [Set.mem_Icc, hasDerivAt_deriv_iff, and_imp, ne_eq, inf_le_iff, le_sup_iff, abs_zero,
+                  zero_le_one, add_zero, sub_self, div_zero, Set.Icc_prod_Icc]
+                apply_rules [ Real.sSup_nonneg ]
+                intro x₁ a
+                simp_all only [Set.mem_image, Set.mem_Icc, Prod.exists, Prod.mk_le_mk, tsub_le_iff_right]
+                obtain ⟨a, b, h⟩ := a
+                rw [← h.2]
+                exact abs_nonneg _
+              · simp_all only [Set.mem_Icc, hasDerivAt_deriv_iff, and_imp, ne_eq, inf_le_iff, le_sup_iff,
+                  Set.Icc_prod_Icc]
+                obtain ⟨left, right⟩ := ht
+                obtain ⟨ c, hc₁, hc₂ ⟩ := h_mean_value t left right h hh' hh ; rw [ hc₂ ]
+                apply le_csSup _ _ <;> norm_num;
                 · exact IsCompact.bddAbove ( isCompact_Icc.image ( h_cont_deriv.abs ) );
                 · exact ⟨ t, c, ⟨ ⟨ left, by cases hc₁.1 <;> cases hc₁.2 <;> linarith [ abs_le.mp hh ] ⟩, right, by cases hc₁.1 <;> cases hc₁.2 <;> linarith [ abs_le.mp hh ] ⟩, rfl ⟩;
-            refine' intervalIntegral.tendsto_integral_filter_of_dominated_convergence _ _ _ _ _;
-            refine' fun t => SupSet.sSup ( Set.image ( fun p : ℝ × ℝ => |deriv ( fun y => F p.1 y ) p.2| ) ( Set.Icc 0 1 ×ˢ Set.Icc ( x - 1 ) ( x + 1 ) ) );
+            apply intervalIntegral.tendsto_integral_filter_of_dominated_convergence _ _ _ _ _
+            · exact fun t => SupSet.sSup ( Set.image ( fun p : ℝ × ℝ => |deriv ( fun y => F p.1 y ) p.2| ) ( Set.Icc 0 1 ×ˢ Set.Icc ( x - 1 ) ( x + 1 ) ) );
             · exact Filter.Eventually.of_forall fun n => Continuous.aestronglyMeasurable ( by exact Continuous.div_const ( by exact Continuous.sub ( h_cont.comp ( continuous_id.prodMk continuous_const ) ) ( h_cont.comp ( continuous_id.prodMk continuous_const ) ) ) _ );
             · rw [ eventually_nhdsWithin_iff ];
               filter_upwards [ Metric.ball_mem_nhds _ zero_lt_one ] with h hh hh' using Filter.eventually_of_mem ( MeasureTheory.ae_of_all _ fun t ht => h_dominated t ( by constructor <;> cases Set.mem_uIoc.mp ht <;> linarith ) h <| by simpa using hh.out.le ) fun t ht => ht;
             · norm_num;
-            · aesop;
+            · simp_all only [Set.mem_Icc, hasDerivAt_deriv_iff, and_imp, Set.Icc_prod_Icc, zero_le_one, Set.uIoc_of_le, Set.mem_Ioc]
               filter_upwards [ ] with t ht₁ ht₂ using by simpa [ div_eq_inv_mul ] using this t ht₁.le ht₂ |> DifferentiableAt.hasDerivAt |> HasDerivAt.tendsto_slope_zero;
           rw [ hasDerivAt_iff_tendsto_slope_zero ];
           convert h_dominated using 2 ; norm_num [ div_eq_inv_mul ];
           rw [ intervalIntegral.integral_sub ] <;> norm_num;
           · exact Continuous.intervalIntegrable ( by exact h_cont.comp ( continuous_id.prodMk continuous_const ) ) _ _;
           · exact Continuous.intervalIntegrable ( by exact h_cont.comp ( continuous_id.prodMk continuous_const ) ) _ _;
-        exact h_leibniz.congr_of_eventuallyEq ( by filter_upwards [ ] using by aesop );
+        apply h_leibniz.congr_of_eventuallyEq
+        filter_upwards
+        intro a
+        simp_all only [Set.mem_Icc, hasDerivAt_deriv_iff, and_imp]
       exact h_leibniz
 
 
