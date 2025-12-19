@@ -925,127 +925,129 @@ lemma exists_smooth_flat_factor (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f)
 
 -- set_option trace.profiler true in
 set_option linter.style.longLine false in
-set_option maxHeartbeats 400000 in
+set_option maxHeartbeats 300000 in
 lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f)
                                 (hflat : ∀ k, iteratedDeriv k f 0 = 0) :
     ContDiff ℝ ∞ (fun x => f (Real.sqrt x)) := by
-      -- Let's choose any $n \geq 0$.
-      have h_cont_diff : ∀ n : ℕ, ContDiff ℝ n (fun x => f (Real.sqrt x)) := by
-        -- We prove `ContDiff ℝ n` for all `n` by induction.
-        intro n
-        induction' n with n ih generalizing f;
-        · exact contDiff_zero.2 <| hsmooth.continuous.comp <| Real.continuous_sqrt;
-        · simp +zetaDelta at *;
-          -- By `exists_smooth_flat_factor` applied to `f'`, there exists smooth flat `g` such that `f'(x) = x g(x)`.
-          obtain ⟨g, hg⟩ : ∃ g : ℝ → ℝ, ContDiff ℝ ∞ g ∧ (∀ k, iteratedDeriv k g 0 = 0) ∧ ∀ x, deriv f x = x * g x := by
-            have := exists_smooth_flat_factor ( deriv f ) ?_ ?_;
-            · exact this;
-            · exact ContDiff.deriv' hsmooth
-            · intro k
-              convert hflat ( k + 1 ) using 1;
-              rw [ iteratedDeriv_succ' ];
-          -- We claim the derivative of $f(\sqrt{x})$ is $\frac{1}{2} g(\sqrt{x})$.
-          have h_deriv : ∀ x, HasDerivAt (fun x => f (Real.sqrt x)) (if x = 0 then 0 else (1 / 2) * g (Real.sqrt x)) x := by
-            intro x; split_ifs <;> simp_all +decide [ Real.sqrt_eq_rpow ] ;
-            · -- By definition of $f$, we know that $f(\sqrt{h}) = \int_0^{\sqrt{h}} f'(t) dt = \int_0^{\sqrt{h}} t g(t) dt$.
-              have h_int : ∀ h ≥ 0, f (Real.sqrt h) = ∫ t in (0 : ℝ)..Real.sqrt h, t * g t := by
-                -- By the Fundamental Theorem of Calculus, we have $f(\sqrt{h}) - f(0) = \int_0^{\sqrt{h}} f'(t) dt$.
-                have h_ftc : ∀ h ≥ 0, f (Real.sqrt h) - f 0 = ∫ t in (0 : ℝ)..Real.sqrt h, deriv f t := by
-                  intro h hh; rw [ intervalIntegral.integral_deriv_eq_sub ] ;
-                  intro x_1 a
-                  simp_all only [ge_iff_le, sqrt_nonneg, Set.uIcc_of_le, Set.mem_Icc]
-                  · exact hsmooth.contDiffAt.differentiableAt ( by norm_num );
-                  · exact Continuous.intervalIntegrable ( by rw [ show deriv f = _ from funext hg.2.2 ] ; exact Continuous.mul continuous_id hg.1.continuous ) _ _;
-                simp_all +decide only [ge_iff_le, sub_eq_iff_eq_add, add_eq_left];
-                exact fun h hh => by simpa using hflat 0;
-              -- By definition of $f$, we know that $f(\sqrt{h}) = h \int_0^1 u g(u\sqrt{h}) du$.
-              have h_int_simplified : ∀ h ≥ 0, f (Real.sqrt h) = h * ∫ u in (0 : ℝ)..1, u * g (u * Real.sqrt h) := by
-                intro h hh; rw [ h_int h hh ] ; by_cases hh' : Real.sqrt h = 0 <;> simp_all +decide [ mul_comm ] ;
-                have h_int_simplified : ∀ a b : ℝ, 0 ≤ a → a ≤ b → ∫ t in a..b, t * g t = (∫ u in (a / Real.sqrt h).. (b / Real.sqrt h), (u * Real.sqrt h) * g (u * Real.sqrt h)) * Real.sqrt h := by
-                  intros a b ha hb; rw [ mul_comm ] ; simp +decide [ div_eq_inv_mul] ;
-                  convert intervalIntegral.integral_comp_div _ _ using 3 <;> ring <;> norm_num [ hh', hh ];
-                rw [ h_int_simplified _ _ le_rfl ( Real.sqrt_nonneg _ ) ] ; norm_num [ hh, hh', mul_assoc, mul_comm, mul_left_comm, div_eq_mul_inv ] ; ring;
-                norm_num [ mul_assoc, mul_left_comm, ← intervalIntegral.integral_const_mul, hh ];
-                -- exact intervalIntegral.integral_congr fun x _ => by ring_nf; norm_num [ hh ] ; ring;
-                apply intervalIntegral.integral_congr
-                intro x hx
-                simp_all only [le_refl, sqrt_nonneg, zero_div, zero_le_one, Set.uIcc_of_le, Set.mem_Icc]
-                rw [← mul_assoc √h, mul_self_sqrt hh] ; ring_nf
-              -- We need to show that the limit of the difference quotient as $h$ approaches $0$ is $0$.
-              have h_limit : Filter.Tendsto (fun h => (∫ u in (0 : ℝ)..1, u * g (u * Real.sqrt h)) / 1) (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
-                -- Since $g$ is continuous at $0$, we have $\lim_{h \to 0} g(u \sqrt{h}) = g(0)$ for all $u \in [0, 1]$.
-                have h_cont_g : ∀ u ∈ Set.Icc (0 : ℝ) 1, Filter.Tendsto (fun h => g (u * Real.sqrt h)) (nhdsWithin 0 (Set.Ioi 0)) (nhds (g 0)) := by
-                  exact fun u hu => tendsto_nhdsWithin_of_tendsto_nhds ( hg.1.continuous.continuousAt.tendsto.comp <| Continuous.tendsto' ( by continuity ) _ _ <| by aesop );
-                -- By the Dominated Convergence Theorem, we can interchange the limit and the integral.
-                have h_dominated : Filter.Tendsto (fun h => ∫ u in (0 : ℝ)..1, u * g (u * Real.sqrt h)) (nhdsWithin 0 (Set.Ioi 0)) (nhds (∫ u in (0 : ℝ)..1, u * g 0)) := by
-                  apply intervalIntegral.tendsto_integral_filter_of_dominated_convergence _ _ _ _ _;
-                  use fun u => |u| * ( SupSet.sSup ( Set.image ( fun x => |g x| ) ( Set.Icc ( -1 ) 1 ) ) );
-                  · exact Filter.Eventually.of_forall fun x => Continuous.aestronglyMeasurable ( by exact Continuous.mul continuous_id <| hg.1.continuous.comp <| by continuity );
-                  · rw [ eventually_nhdsWithin_iff ] ;
-                    rename_i h
-                    subst h
-                    simp_all only [ge_iff_le, Set.mem_Icc, and_imp, Set.mem_Ioi, zero_le_one, Set.uIoc_of_le,
-                      Set.mem_Ioc, norm_mul, norm_eq_abs]
-                    obtain ⟨left, right⟩ := hg
-                    obtain ⟨left_1, right⟩ := right
-                    filter_upwards [ gt_mem_nhds zero_lt_one ] with x hx₁ hx₂ using Filter.Eventually.of_forall fun y hy₁ hy₂ => mul_le_mul_of_nonneg_left ( le_csSup ( IsCompact.bddAbove ( isCompact_Icc.image ( show Continuous fun x => |g x| from continuous_abs.comp left.continuous ) ) ) <| Set.mem_image_of_mem _ <| by constructor <;> nlinarith [ Real.sqrt_nonneg x, Real.sq_sqrt hx₂.le ] ) <| abs_nonneg _;
-                  · exact Continuous.intervalIntegrable ( by continuity ) _ _;
-                  · filter_upwards [ ] with x hx using Filter.Tendsto.mul tendsto_const_nhds ( h_cont_g x <| by constructor <;> cases Set.mem_uIoc.mp hx <;> linarith );
-                have := hg.2.1 0;
-                rename_i h
-                subst h
-                simp_all only [ge_iff_le, Set.mem_Icc, and_imp, intervalIntegral.integral_mul_const, integral_id,
-                  one_pow, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, sub_zero, one_div, div_one]
-                obtain ⟨left, right⟩ := hg
-                obtain ⟨left_1, right⟩ := right
-                specialize left_1 0; aesop;
-              rw [ hasDerivAt_iff_tendsto_slope_zero ] ;
-              rename_i h
-              subst h
-              simp_all only [ge_iff_le, div_one, zero_add, ne_eq, inv_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true,
-                zero_rpow, smul_eq_mul]
-              obtain ⟨left, right⟩ := hg
-              obtain ⟨left_1, right⟩ := right
-              rw [ Metric.tendsto_nhdsWithin_nhds ] at * ;
-              intro ε a
-              simp_all only [gt_iff_lt, Set.mem_Ioi, dist_zero_right, norm_eq_abs, Set.mem_compl_iff,
-                Set.mem_singleton_iff, norm_mul, norm_inv]
-              obtain ⟨ δ, hδ₁, hδ₂ ⟩ := h_limit ε a; use δ, hδ₁; intro x hx₁ hx₂; cases lt_or_gt_of_ne hx₁ <;> simp_all +decide [ Real.sqrt_eq_rpow ] ;
-              · norm_num [ Real.rpow_def_of_neg ‹_› ] at * ;
-                simp_all only [one_div]
-                norm_num [ show 1 / 2 * Real.pi = Real.pi / 2 by ring, Real.exp_mul, Real.exp_log_eq_abs, hx₁ ] at * ; aesop;
-              · rw [ inv_mul_eq_div, div_lt_iff₀ ] <;> have := h_int_simplified x ( by positivity ) <;> have := h_int_simplified 0 ( by positivity ) <;>
-                simp_all only [ne_eq, inv_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, zero_rpow,
-                  intervalIntegral.integral_same, abs_pos]
-                expose_names
-                rw [ ← h_int x h.le ] ; exact abs_lt.mpr ⟨ by cases abs_cases x <;> nlinarith [ abs_lt.mp ( hδ₂ h ( by simpa [ abs_of_pos h ] using hx₂ ) ) ], by cases abs_cases x <;> nlinarith [ abs_lt.mp ( hδ₂ h ( by simpa [ abs_of_pos h ] using hx₂ ) ) ] ⟩ ;
-            · convert HasDerivAt.comp x ( hsmooth.contDiffAt.differentiableAt ( by norm_num ) |>
-                DifferentiableAt.hasDerivAt ) ( HasDerivAt.rpow_const ( hasDerivAt_id x ) _ ) using 1 <;>
-                simp_all only [id_eq, ne_eq, not_false_eq_true, true_or];
-              by_cases hx : x < 0 <;> norm_num [ Real.rpow_def_of_neg, hx ] ; ring_nf;
-              · norm_num [ mul_div ];
-                simpa using hg.2.1 0;
-              · expose_names
-                rw [ Real.rpow_neg ( by linarith ) ] ; ring_nf;
-                norm_num [ mul_comm, h, ne_of_gt ( Real.rpow_pos_of_pos ( lt_of_le_of_ne ( le_of_not_gt hx ) ( Ne.symm h ) ) _ ) ];
-                rw [ mul_right_comm, mul_inv_cancel₀ ( ne_of_gt ( Real.rpow_pos_of_pos ( lt_of_le_of_ne ( le_of_not_gt hx ) ( Ne.symm h ) ) _ ) ), one_mul ];
-          rw [ contDiff_succ_iff_deriv ];
-          -- The derivative function is ContDiff ℝ n because it's a composition of smooth functions.
-          have h_deriv_cont_diff : ContDiff ℝ n (fun x => (1 / 2) * g (Real.sqrt x)) := by
-            exact ContDiff.mul contDiff_const ( ih g hg.1 hg.2.1 );
-          simp_all only [one_div, WithTop.natCast_ne_top, analyticOn_univ, IsEmpty.forall_iff, true_and]
-          obtain ⟨left, right⟩ := hg
-          obtain ⟨left_1, right⟩ := right
-          apply And.intro
-          · exact fun x => ( h_deriv x |> HasDerivAt.differentiableAt );
-          · convert h_deriv_cont_diff using 1;
-            ext x; specialize h_deriv x; have := h_deriv.deriv;
-            simp_all only [ite_eq_right_iff, sqrt_zero, zero_eq_mul, inv_eq_zero, OfNat.ofNat_ne_zero, false_or]
-            intro a
-            subst a
-            simp_all only [↓reduceIte]
-            simpa using left_1 0;
-      exact contDiff_infty.mpr h_cont_diff
+    rw [contDiff_infty]
+    intro n
+    induction n generalizing f with
+    | zero => exact contDiff_zero.2 <| hsmooth.continuous.comp <| Real.continuous_sqrt
+    | succ n ih =>
+      rw [Nat.cast_add, Nat.cast_one]
+      -- By `exists_smooth_flat_factor` applied to `f'`, there exists smooth flat `g` such that `f'(x) = x g(x)`.
+      obtain ⟨g, hg_cd, hg_id0, hg_df⟩ : ∃ g : ℝ → ℝ, ContDiff ℝ ∞ g ∧ (∀ k, iteratedDeriv k g 0 = 0) ∧ ∀ x, deriv f x = x * g x := by
+        have := exists_smooth_flat_factor ( deriv f ) (ContDiff.deriv' hsmooth) ?_;
+        · exact this
+        · intro k
+          convert hflat ( k + 1 ) using 1;
+          rw [ iteratedDeriv_succ' ];
+      -- We claim the derivative of $f(\sqrt{x})$ is $\frac{1}{2} g(\sqrt{x})$.
+      have h_deriv : ∀ x, HasDerivAt (fun x => f (Real.sqrt x)) (if x = 0 then 0 else (1 / 2) * g (Real.sqrt x)) x := by
+        intro x
+        split_ifs with x_zero
+        · simp_all only [sqrt_eq_rpow, one_div]
+          -- By definition of $f$, we know that $f(\sqrt{h}) = \int_0^{\sqrt{h}} f'(t) dt = \int_0^{\sqrt{h}} t g(t) dt$.
+          have h_int : ∀ h ≥ 0, f (Real.sqrt h) = ∫ t in (0 : ℝ)..Real.sqrt h, t * g t := by
+            -- By the Fundamental Theorem of Calculus, we have $f(\sqrt{h}) - f(0) = \int_0^{\sqrt{h}} f'(t) dt$.
+            have h_ftc : ∀ h ≥ 0, f (Real.sqrt h) - f 0 = ∫ t in (0 : ℝ)..Real.sqrt h, deriv f t := by
+              intro h hh; rw [ intervalIntegral.integral_deriv_eq_sub ] ;
+              intro x_1 a
+              simp_all only [ge_iff_le, sqrt_nonneg, Set.uIcc_of_le, Set.mem_Icc]
+              · exact hsmooth.contDiffAt.differentiableAt ( by norm_num );
+              · exact Continuous.intervalIntegrable ( by rw [ show deriv f = _ from funext hg_df ] ; exact Continuous.mul continuous_id hg_cd.continuous ) _ _;
+            simp_all only [ge_iff_le, sub_eq_iff_eq_add, add_eq_left];
+            exact fun h hh => by simpa only [iteratedDeriv_zero] using hflat 0
+          -- By definition of $f$, we know that $f(\sqrt{h}) = h \int_0^1 u g(u\sqrt{h}) du$.
+          have h_int_simplified : ∀ h ≥ 0, f (Real.sqrt h) = h * ∫ u in (0 : ℝ)..1, u * g (u * Real.sqrt h) := by
+            intro h hh
+            rw [ h_int h hh ]
+            by_cases hh' : Real.sqrt h = 0
+            simp_all only [ge_iff_le, sqrt_eq_zero, sqrt_zero, intervalIntegral.integral_same,
+              mul_zero, intervalIntegral.integral_mul_const, integral_id, one_pow, ne_eq,
+              OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, sub_zero, one_div, mul_comm,
+              zero_mul]
+            have h_int_simplified : ∀ a b : ℝ, 0 ≤ a → a ≤ b → ∫ t in a..b, t * g t = (∫ u in (a / Real.sqrt h).. (b / Real.sqrt h), (u * Real.sqrt h) * g (u * Real.sqrt h)) * Real.sqrt h := by
+              intros a b ha hb; rw [ mul_comm ] ; simp +decide [ div_eq_inv_mul] ;
+              convert intervalIntegral.integral_comp_div _ _ using 3 <;> ring_nf <;> norm_num [ hh', hh ];
+            rw [ h_int_simplified _ _ le_rfl ( Real.sqrt_nonneg _ ) ] ; norm_num [ hh, hh', mul_assoc, mul_comm, mul_left_comm, div_eq_mul_inv ] ; ring_nf
+            norm_num [ mul_assoc, mul_left_comm, ← intervalIntegral.integral_const_mul, hh ];
+            apply intervalIntegral.integral_congr
+            intro x hx
+            simp_all only [le_refl, sqrt_nonneg, zero_div, zero_le_one, Set.uIcc_of_le, Set.mem_Icc]
+            rw [← mul_assoc √h, mul_self_sqrt hh] ; ring_nf
+          -- We need to show that the limit of the difference quotient as $h$ approaches $0$ is $0$.
+          have h_limit : Filter.Tendsto (fun h => (∫ u in (0 : ℝ)..1, u * g (u * Real.sqrt h)) / 1) (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
+            -- Since $g$ is continuous at $0$, we have $\lim_{h \to 0} g(u \sqrt{h}) = g(0)$ for all $u \in [0, 1]$.
+            have h_cont_g : ∀ u ∈ Set.Icc (0 : ℝ) 1, Filter.Tendsto (fun h => g (u * Real.sqrt h)) (nhdsWithin 0 (Set.Ioi 0)) (nhds (g 0)) := by
+              exact fun u hu => tendsto_nhdsWithin_of_tendsto_nhds ( hg_cd.continuous.continuousAt.tendsto.comp <| Continuous.tendsto' ( by continuity ) _ _ <| by
+              subst x_zero
+              simp_all only [ge_iff_le, Set.mem_Icc, sqrt_zero, mul_zero] );
+            -- By the Dominated Convergence Theorem, we can interchange the limit and the integral.
+            have h_dominated : Filter.Tendsto (fun h => ∫ u in (0 : ℝ)..1, u * g (u * Real.sqrt h)) (nhdsWithin 0 (Set.Ioi 0)) (nhds (∫ u in (0 : ℝ)..1, u * g 0)) := by
+              apply intervalIntegral.tendsto_integral_filter_of_dominated_convergence _ _ _ _ _;
+              use fun u => |u| * ( SupSet.sSup ( Set.image ( fun x => |g x| ) ( Set.Icc ( -1 ) 1 ) ) );
+              · exact Filter.Eventually.of_forall fun x => Continuous.aestronglyMeasurable ( by exact Continuous.mul continuous_id <| hg_cd.continuous.comp <| by continuity );
+              · rw [ eventually_nhdsWithin_iff ] ;
+                subst x_zero
+                simp_all only [ge_iff_le, Set.mem_Icc, and_imp, Set.mem_Ioi, zero_le_one, Set.uIoc_of_le,
+                  Set.mem_Ioc, norm_mul, norm_eq_abs]
+                filter_upwards [ gt_mem_nhds zero_lt_one ] with x hx₁ hx₂ using Filter.Eventually.of_forall fun y hy₁ hy₂ => mul_le_mul_of_nonneg_left ( le_csSup ( IsCompact.bddAbove ( isCompact_Icc.image ( show Continuous fun x => |g x| from continuous_abs.comp hg_cd.continuous ) ) ) <| Set.mem_image_of_mem _ <| by constructor <;> nlinarith [ Real.sqrt_nonneg x, Real.sq_sqrt hx₂.le ] ) <| abs_nonneg _;
+              · exact Continuous.intervalIntegrable ( by continuity ) _ _;
+              · filter_upwards [ ] with x hx using Filter.Tendsto.mul tendsto_const_nhds ( h_cont_g x <| by constructor <;> cases Set.mem_uIoc.mp hx <;> linarith );
+            have := hg_id0 0;
+            subst x_zero
+            simp_all only [ge_iff_le, Set.mem_Icc, and_imp, intervalIntegral.integral_mul_const, integral_id,
+              one_pow, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, sub_zero, one_div, div_one]
+            specialize hg_id0 0;
+            simp_all only [iteratedDeriv_zero, mul_zero]
+          rw [ hasDerivAt_iff_tendsto_slope_zero ] ;
+          subst x_zero
+          simp_all only [ge_iff_le, div_one, zero_add, ne_eq, inv_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true,
+            zero_rpow, smul_eq_mul]
+          rw [ Metric.tendsto_nhdsWithin_nhds ] at * ;
+          intro ε a
+          simp_all only [gt_iff_lt, Set.mem_Ioi, dist_zero_right, norm_eq_abs, Set.mem_compl_iff,
+            Set.mem_singleton_iff, norm_mul, norm_inv]
+          obtain ⟨ δ, hδ₁, hδ₂ ⟩ := h_limit ε a; use δ, hδ₁
+          intro x hx₁ hx₂;
+          cases lt_or_gt_of_ne hx₁
+          · simp_all only [sqrt_eq_rpow, one_div]
+            norm_num [ Real.rpow_def_of_neg ‹_› ] at *
+            simp_all only [one_div]
+            norm_num [ show 1 / 2 * Real.pi = Real.pi / 2 by ring, Real.exp_mul, Real.exp_log_eq_abs, hx₁ ] at *
+            simp_all only [one_div]
+          · simp_all only [sqrt_eq_rpow, one_div]
+            rw [ inv_mul_eq_div, div_lt_iff₀ ] <;> have := h_int_simplified x ( by positivity ) <;> have := h_int_simplified 0 ( by positivity ) <;>
+            simp_all only [ne_eq, inv_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, zero_rpow,
+              intervalIntegral.integral_same, abs_pos]
+            expose_names
+            rw [ ← h_int x h.le ] ; exact abs_lt.mpr ⟨ by cases abs_cases x <;> nlinarith [ abs_lt.mp ( hδ₂ h ( by simpa [ abs_of_pos h ] using hx₂ ) ) ], by cases abs_cases x <;> nlinarith [ abs_lt.mp ( hδ₂ h ( by simpa [ abs_of_pos h ] using hx₂ ) ) ] ⟩ ;
+        · simp_all only [sqrt_eq_rpow, one_div]
+          convert HasDerivAt.comp x ( hsmooth.contDiffAt.differentiableAt ( by norm_num ) |>
+            DifferentiableAt.hasDerivAt ) ( HasDerivAt.rpow_const ( hasDerivAt_id x ) _ ) using 1 <;>
+            simp_all only [id_eq, ne_eq, not_false_eq_true, true_or];
+          by_cases hx : x < 0 <;> norm_num [ Real.rpow_def_of_neg, hx ] ; ring_nf;
+          · norm_num [ mul_div ];
+            simpa only [iteratedDeriv_zero] using hg_id0 0;
+          · expose_names
+            rw [ Real.rpow_neg ( by linarith ) ] ; ring_nf;
+            norm_num [ mul_comm, x_zero, ne_of_gt ( Real.rpow_pos_of_pos ( lt_of_le_of_ne ( le_of_not_gt hx ) ( Ne.symm x_zero ) ) _ ) ];
+            rw [ mul_right_comm, mul_inv_cancel₀ ( ne_of_gt ( Real.rpow_pos_of_pos ( lt_of_le_of_ne ( le_of_not_gt hx ) ( Ne.symm x_zero ) ) _ ) ), one_mul ];
+      rw [ contDiff_succ_iff_deriv ];
+      -- The derivative function is ContDiff ℝ n because it's a composition of smooth functions.
+      have h_deriv_cont_diff : ContDiff ℝ n (fun x => (1 / 2) * g (Real.sqrt x)) := by
+        exact ContDiff.mul contDiff_const ( ih g hg_cd hg_id0 );
+      simp_all only [one_div, WithTop.natCast_ne_top, analyticOn_univ, IsEmpty.forall_iff, true_and]
+      apply And.intro
+      · exact fun x => ( h_deriv x |> HasDerivAt.differentiableAt );
+      · convert h_deriv_cont_diff using 1;
+        ext x; specialize h_deriv x; have := h_deriv.deriv;
+        simp_all only [ite_eq_right_iff, sqrt_zero, zero_eq_mul, inv_eq_zero, OfNat.ofNat_ne_zero, false_or]
+        intro a
+        subst a
+        simp_all only [↓reduceIte]
+        simpa only [iteratedDeriv_zero] using hg_id0 0;
 
 include hsmooth heven in
 theorem Function.Even.eq_smooth_comp_sq_of_smooth : ∃ g : ℝ → ℝ, f = g ∘ (fun x => x ^ 2) ∧
