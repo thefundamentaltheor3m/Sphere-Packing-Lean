@@ -407,8 +407,9 @@ lemma differentiableAt_num (z : ℂ) :
 
 /-- Derivative of the Möbius transformation: d/dz[(az+b)/(cz+d)] = 1/(cz+d)².
 Uses det(γ) = 1: a(cz+d) - c(az+b) = ad - bc = 1. -/
-lemma deriv_moebius (z : ℂ) (hz : denom γ z ≠ 0) :
+lemma deriv_moebius (z : ℍ) :
     deriv (fun w => num γ w / denom γ w) z = 1 / (denom γ z) ^ 2 := by
+  have hz : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
   have hdiff_num := differentiableAt_num γ z
   have hdiff_denom := differentiableAt_denom γ z
   have hderiv : HasDerivAt (fun w => num γ w / denom γ w)
@@ -421,16 +422,10 @@ lemma deriv_moebius (z : ℂ) (hz : denom γ z ≠ 0) :
     have hdet' := Matrix.SpecialLinearGroup.det_coe γ
     simp only [Matrix.det_fin_two, ← Int.cast_mul, ← Int.cast_sub] at hdet' ⊢
     exact mod_cast hdet'
-  -- Normalize GL → Matrix ℤ coercions via simp
-  simp only [num, denom] at *
-  simp only [show (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 0 : ℂ) =
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) by simp,
-    show (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 1 : ℂ) =
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) by simp,
-    show (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 0 : ℂ) =
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) by simp,
-    show (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 1 : ℂ) =
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ) by simp]
+  -- Normalize coercions and simplify
+  simp only [denom_apply, num, Matrix.SpecialLinearGroup.coe_GL_coe_matrix,
+    Matrix.SpecialLinearGroup.map_apply_coe, RingHom.mapMatrix_apply, Int.coe_castRingHom,
+    Matrix.map_apply, ofReal_intCast] at *
   -- Numerator: a * denom - num * c = ad - bc = 1
   have hnum_eq : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) *
       (((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * z + ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ)) -
@@ -439,14 +434,16 @@ lemma deriv_moebius (z : ℂ) (hz : denom γ z ≠ 0) :
   simp only [hnum_eq, one_div]
 
 /-- Derivative of denom^(-k): d/dz[(cz+d)^(-k)] = -k * c * (cz+d)^(-k-1). -/
-lemma deriv_denom_zpow (k : ℤ) (z : ℂ) (hz : denom γ z ≠ 0) :
+lemma deriv_denom_zpow (k : ℤ) (z : ℍ) :
     deriv (fun w => (denom γ w) ^ (-k)) z =
         (-k : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * (denom γ z) ^ (-k - 1) := by
-  have hdiff := differentiableAt_denom γ z
+  have hz : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+  have hdiff := differentiableAt_denom γ (z : ℂ)
   have hderiv_zpow := hasDerivAt_zpow (-k) (denom γ z) (Or.inl hz)
   have hderiv_denom : HasDerivAt (fun w => denom γ w)
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) z := by rw [← deriv_denom]; exact hdiff.hasDerivAt
-  have hcomp := hderiv_zpow.comp z hderiv_denom
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) (z : ℂ) := by
+    rw [← deriv_denom]; exact hdiff.hasDerivAt
+  have hcomp := hderiv_zpow.comp (z : ℂ) hderiv_denom
   have heq : (fun w => w ^ (-k)) ∘ (fun w => denom γ w) = (fun w => (denom γ w) ^ (-k)) := rfl
   rw [← heq, hcomp.deriv]; simp only [Int.cast_neg]; ring
 
@@ -551,8 +548,8 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
     have hcomp := hdiff_F_comp.hasDerivAt.comp (z : ℂ) hdiff_mobius.hasDerivAt
     rw [heq, hcomp.deriv]
   -- Substitute the micro-lemmas
-  have hderiv_mob := deriv_moebius γ z (hdenom_ne z hz_im_pos)
-  have hderiv_zpow := deriv_denom_zpow γ k z (hdenom_ne z hz_im_pos)
+  have hderiv_mob := deriv_moebius γ z
+  have hderiv_zpow := deriv_denom_zpow γ k z
   rw [hchain, hderiv_mob, hderiv_zpow]
   -- Now we have:
   -- (2πi)⁻¹ * [deriv(F∘ofComplex)(mob z) * (1/denom²) * denom^(-k) +
