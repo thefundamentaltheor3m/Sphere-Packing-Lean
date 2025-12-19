@@ -405,48 +405,37 @@ lemma differentiableAt_num (γ : SL(2, ℤ)) (z : ℂ) :
 
 open ModularGroup in
 /-- Derivative of the Möbius transformation: d/dz[(az+b)/(cz+d)] = 1/(cz+d)².
-This uses det(γ) = 1, so (a(cz+d) - c(az+b)) = ad - bc = 1. -/
+Uses det(γ) = 1: a(cz+d) - c(az+b) = ad - bc = 1. -/
 lemma deriv_moebius (γ : SL(2, ℤ)) (z : ℂ) (hz : denom γ z ≠ 0) :
     deriv (fun w => num γ w / denom γ w) z = 1 / (denom γ z) ^ 2 := by
-  have hdiff_num : DifferentiableAt ℂ (fun w => num γ w) z := differentiableAt_num γ z
-  have hdiff_denom : DifferentiableAt ℂ (fun w => denom γ w) z := differentiableAt_denom γ z
+  have hdiff_num := differentiableAt_num γ z
+  have hdiff_denom := differentiableAt_denom γ z
   have hderiv : HasDerivAt (fun w => num γ w / denom γ w)
       ((deriv (fun w => num γ w) z * denom γ z - num γ z * deriv (fun w => denom γ w) z)
-        / (denom γ z) ^ 2) z :=
-    hdiff_num.hasDerivAt.div hdiff_denom.hasDerivAt hz
+        / (denom γ z) ^ 2) z := hdiff_num.hasDerivAt.div hdiff_denom.hasDerivAt hz
   rw [hderiv.deriv, deriv_num, deriv_denom]
-  -- Use det γ = 1: γ 0 0 * γ 1 1 - γ 0 1 * γ 1 0 = 1
+  -- det(γ) = 1 in ℂ
   have hdet : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ)
       - ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) = 1 := by
-    simp only [← Int.cast_mul, ← Int.cast_sub]
     have hdet' := Matrix.SpecialLinearGroup.det_coe γ
-    simp only [Matrix.det_fin_two] at hdet'
-    norm_cast
-  -- Normalize coercions between GL and Matrix ℤ
-  have ha : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 0 : ℂ) =
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) := by simp
-  have hb : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 1 : ℂ) =
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) := by simp
-  have hc : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 0 : ℂ) =
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) := by simp
-  have hd' : (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 1 : ℂ) =
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ) := by simp
-  simp only [num, denom, ha, hb, hc, hd']
-  -- Goal: (a * (c*z+d) - (a*z+b) * c) / (c*z+d)^2 = 1 / (c*z+d)^2
-  -- Numerator: a*(cz+d) - c*(az+b) = acz + ad - acz - bc = ad - bc = 1 (det)
-  have hdenom_eq : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * z +
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ) = denom γ z := by simp only [denom, hc, hd']
-  rw [hdenom_eq]
-  have hdenom_sq_ne : (denom γ z) ^ 2 ≠ 0 := pow_ne_zero 2 hz
-  rw [div_eq_div_iff hdenom_sq_ne hdenom_sq_ne, one_mul]
-  -- Goal: (a * denom - (az+b) * c) * denom^2 = denom^2
-  -- This is 1 * denom^2 = denom^2 if we can show numerator = 1
-  have hnum_eq : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * denom γ z -
+    simp only [Matrix.det_fin_two, ← Int.cast_mul, ← Int.cast_sub] at hdet' ⊢
+    exact mod_cast hdet'
+  -- Normalize GL → Matrix ℤ coercions via simp
+  simp only [num, denom] at *
+  simp only [show (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 0 : ℂ) =
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) by simp,
+    show (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 1 : ℂ) =
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) by simp,
+    show (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 0 : ℂ) =
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) by simp,
+    show (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 1 : ℂ) =
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ) by simp]
+  -- Numerator: a * denom - num * c = ad - bc = 1
+  have hnum_eq : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) *
+      (((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * z + ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ)) -
       (((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * z + ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ)) *
-        ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) = 1 := by
-    simp only [denom, hc, hd']
-    linear_combination hdet
-  rw [hnum_eq, one_mul]
+        ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) = 1 := by linear_combination hdet
+  simp only [hnum_eq, one_div]
 
 open ModularGroup in
 /-- Derivative of denom^(-k): d/dz[(cz+d)^(-k)] = -k * c * (cz+d)^(-k-1). -/
