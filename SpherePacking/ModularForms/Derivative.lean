@@ -442,22 +442,13 @@ open ModularGroup in
 lemma deriv_denom_zpow (γ : SL(2, ℤ)) (k : ℤ) (z : ℂ) (hz : denom γ z ≠ 0) :
     deriv (fun w => (denom γ w) ^ (-k)) z =
         (-k : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * (denom γ z) ^ (-k - 1) := by
-  have hdiff : DifferentiableAt ℂ (fun w => denom γ w) z := differentiableAt_denom γ z
-  -- Use chain rule: d/dz[f(z)^m] = m * f(z)^(m-1) * f'(z)
-  have hderiv_zpow : HasDerivAt (fun w => w ^ (-k)) (((-k : ℤ) : ℂ) * (denom γ z) ^ (-k - 1))
-      (denom γ z) := hasDerivAt_zpow (-k) (denom γ z) (Or.inl hz)
+  have hdiff := differentiableAt_denom γ z
+  have hderiv_zpow := hasDerivAt_zpow (-k) (denom γ z) (Or.inl hz)
   have hderiv_denom : HasDerivAt (fun w => denom γ w)
-      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) z := by
-    rw [← deriv_denom]
-    exact hdiff.hasDerivAt
-  -- Chain rule
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) z := by rw [← deriv_denom]; exact hdiff.hasDerivAt
   have hcomp := hderiv_zpow.comp z hderiv_denom
-  -- The composition equals fun w => (denom γ w) ^ (-k)
-  have heq : (fun w => w ^ (-k)) ∘ (fun w => denom γ w) = (fun w => (denom γ w) ^ (-k)) := by
-    ext w; simp only [Function.comp_apply]
-  rw [← heq, hcomp.deriv]
-  simp only [Int.cast_neg]
-  ring
+  have heq : (fun w => w ^ (-k)) ∘ (fun w => denom γ w) = (fun w => (denom γ w) ^ (-k)) := rfl
+  rw [← heq, hcomp.deriv]; simp only [Int.cast_neg]; ring
 
 /--
 The derivative anomaly: how D interacts with the slash action.
