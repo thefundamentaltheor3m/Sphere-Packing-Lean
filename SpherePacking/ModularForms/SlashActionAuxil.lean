@@ -23,27 +23,23 @@ local notation "Γ " n:100 => Gamma n
 
 /- This part defines generators of Γ 2 and some relations between them. -/
 
-def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp only [det_fin_two_of, mul_one, mul_zero, sub_zero]⟩,
+def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp⟩,
   by simp only [Gamma_mem, Fin.isValue, of_apply, cons_val', cons_val_zero, cons_val_fin_one,
-    Int.cast_one, cons_val_one, Int.cast_ofNat, Int.cast_zero, and_self, and_true, true_and]
+       Int.cast_one, cons_val_one, Int.cast_ofNat, Int.cast_zero, and_self, and_true, true_and]
      decide⟩
-def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp only [det_fin_two_of, mul_one, zero_mul, sub_zero]⟩,
+def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp⟩,
   by simp only [Gamma_mem, Fin.isValue, of_apply, cons_val', cons_val_zero, cons_val_fin_one,
-    Int.cast_one, cons_val_one, Int.cast_zero, Int.cast_ofNat, and_true, true_and]
+       Int.cast_one, cons_val_one, Int.cast_zero, Int.cast_ofNat, and_true, true_and]
      decide⟩
-def negI : Γ 2 := ⟨⟨!![-1, 0; 0, -1],
-  by simp only [Int.reduceNeg, det_fin_two_of, mul_neg, mul_one, neg_neg, mul_zero, sub_zero]⟩,
-  by simp only [Int.reduceNeg, Gamma_mem, Fin.isValue, of_apply, cons_val', cons_val_zero,
-    cons_val_fin_one, Int.cast_neg, Int.cast_one, ZMod.neg_eq_self_mod_two, cons_val_one,
-    Int.cast_zero, and_self]⟩
+def negI : Γ 2 := ⟨⟨!![-1, 0; 0, -1], by simp⟩, by simp⟩
 
-theorem α_eq_T_sq : α = ⟨T ^ 2, by
-  simp only [T, sq, Gamma_mem, Fin.isValue, SpecialLinearGroup.coe_mul, cons_mul, Nat.succ_eq_add_one,
-    Nat.reduceAdd, vecMul_cons, head_cons, one_smul, tail_cons, empty_vecMul, add_zero, add_cons,
-    Int.reduceAdd, empty_add_empty, zero_smul, zero_add, empty_mul, Equiv.symm_apply_apply, of_apply,
-    cons_val', cons_val_zero, cons_val_fin_one, Int.cast_one, cons_val_one, Int.cast_ofNat,
-    Int.cast_zero, and_self, and_true, true_and]
-  decide⟩ := by
+theorem α_eq_T_sq : α = ⟨T ^ 2,
+  by simp only [T, sq, Gamma_mem, Fin.isValue, SpecialLinearGroup.coe_mul, cons_mul,
+       Nat.succ_eq_add_one, Nat.reduceAdd, vecMul_cons, head_cons, one_smul, tail_cons,
+       empty_vecMul, add_zero, add_cons, Int.reduceAdd, empty_add_empty, zero_smul, zero_add,
+       empty_mul, Equiv.symm_apply_apply, of_apply, cons_val', cons_val_zero, cons_val_fin_one,
+       Int.cast_one, cons_val_one, Int.cast_ofNat, Int.cast_zero, and_self, and_true, true_and]
+     decide⟩ := by
   ext
   simp [α, T, sq]
 
@@ -53,12 +49,7 @@ theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by
 
 theorem ModularGroup.modular_negI_sq : negI ^ 2 = 1 := by
   ext i j
-  simp only [negI, Int.reduceNeg, sq, MulMemClass.mk_mul_mk, SpecialLinearGroup.coe_mul, cons_mul,
-    Nat.succ_eq_add_one, Nat.reduceAdd, vecMul_cons, head_cons, _root_.neg_smul, one_smul, neg_cons,
-    neg_neg, neg_zero, neg_empty, tail_cons, zero_smul, empty_vecMul, add_zero, zero_add, empty_mul,
-    Equiv.symm_apply_apply, of_apply, cons_val', cons_val_fin_one, OneMemClass.coe_one,
-    SpecialLinearGroup.coe_one]
-  fin_cases i <;> fin_cases j <;> rfl
+  fin_cases i <;> fin_cases j <;> decide
 
 theorem ModularGroup.modular_negI_inv : negI⁻¹ = negI := by
   ext i j
