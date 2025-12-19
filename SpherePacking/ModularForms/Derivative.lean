@@ -415,8 +415,8 @@ lemma deriv_moebius (γ : SL(2, ℤ)) (z : ℂ) (hz : denom γ z ≠ 0) :
         / (denom γ z) ^ 2) z := hdiff_num.hasDerivAt.div hdiff_denom.hasDerivAt hz
   rw [hderiv.deriv, deriv_num, deriv_denom]
   -- det(γ) = 1 in ℂ
-  have hdet : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ)
-      - ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) = 1 := by
+  have hdet : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * (γ 1 1) -
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) * (γ 1 0) = 1 := by
     have hdet' := Matrix.SpecialLinearGroup.det_coe γ
     simp only [Matrix.det_fin_two, ← Int.cast_mul, ← Int.cast_sub] at hdet' ⊢
     exact mod_cast hdet'
@@ -465,20 +465,15 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
   -- 5. deriv_moebius: d/dz[num/denom] = 1/denom² (uses det = 1)
   -- 6. deriv_denom_zpow: d/dz[denom^(-k)] = -k * c * denom^(-k-1)
   --
-  -- Computation:
-  -- D(F ∣[k] γ) z = (2πi)⁻¹ * deriv[(F ∣[k] γ) ∘ ofComplex] z
-  --   = (2πi)⁻¹ * deriv[w ↦ F(mobius w) * denom(w)^(-k)] z
-  --   = (2πi)⁻¹ * [F(mobius z) * (-k * c * denom^(-k-1)) + deriv[F](mobius z) * (1/denom²) * denom^(-k)]
-  --   = -k*(2πi)⁻¹*(c/denom)*(F ∣[k] γ)(z) + (2πi)⁻¹*deriv[F](γ•z)*denom^(-k-2)
-  --   = (D F ∣[k+2] γ)(z) - k*(2πi)⁻¹*(c/denom)*(F ∣[k] γ)(z)
+  -- Computation (product rule + chain rule):
+  -- D(F ∣[k] γ) = (2πi)⁻¹ * deriv[F(γ•·) * denom^(-k)]
+  --   = (2πi)⁻¹ * [F(γ•z)*(-k*c*denom^(-k-1)) + deriv[F](γ•z)*(1/denom²)*denom^(-k)]
+  --   = (D F ∣[k+2] γ) - k*(2πi)⁻¹*(c/denom)*(F ∣[k] γ)
   ext z
   unfold D
   simp only [Pi.sub_apply]
   -- Key facts about denom
   have hz_denom_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
-  -- Coercion normalization
-  have hc : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) =
-      (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 0 : ℂ) := by simp
   -- The derivative computation on ℂ using Filter.EventuallyEq.deriv_eq
   -- (F ∣[k] γ) ∘ ofComplex agrees with F(num/denom) * denom^(-k) on ℍ
   have hcomp : deriv (((F ∣[k] γ)) ∘ ofComplex) z =
@@ -487,8 +482,7 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
     simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
     rw [ModularForm.SL_slash_apply (f := F) (k := k) γ ⟨w, hw⟩]
-    -- Need: F (γ • ⟨w, hw⟩) * denom γ ⟨w, hw⟩ ^ (-k) = (F ∘ ofComplex) (num γ w / denom γ w) * denom γ w ^ (-k)
-    -- Key: (γ • ⟨w, hw⟩ : ℂ) = num γ w / denom γ w and denom γ ⟨w, hw⟩ = denom γ w
+    -- Key: (γ • ⟨w, hw⟩ : ℂ) = num γ w / denom γ w
     congr 1
     · -- F (γ • ⟨w, hw⟩) = (F ∘ ofComplex) (num γ w / denom γ w)
       -- Need: γ • ⟨w, hw⟩ = ofComplex (num γ w / denom γ w) as points in ℍ
@@ -578,17 +572,7 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
   -- Relate (F ∘ ofComplex)(mob z) to F(γ • z)
   have hF_mob : (F ∘ ofComplex) (num γ z / denom γ z) = F (γ • z) := by
     simp only [Function.comp_apply, ← hmob_eq, ofComplex_apply]
-  -- Relate deriv(F∘ofComplex) to D via (2πi)⁻¹
-  have hD_eq : (2 * π * I)⁻¹ * deriv (F ∘ ofComplex) (num γ z / denom γ z) = D F (γ • z) := by
-    unfold D
-    congr 1
-    rw [← hmob_eq]
-  -- The slash action values
-  have hslash_k : (F ∣[k] γ) z = F (γ • z) * (denom γ z) ^ (-k) := by
-    rw [ModularForm.SL_slash_apply (f := F) (k := k) γ z]
-  have hslash_k2 : (D F ∣[k + 2] γ) z = D F (γ • z) * (denom γ z) ^ (-(k + 2)) := by
-    rw [ModularForm.SL_slash_apply (f := D F) (k := k + 2) γ z]
-  -- Final algebraic manipulation combining all lemmas
+  -- Final algebraic manipulation
   -- Goal: (2πi)⁻¹ * (deriv(F∘ofComplex)(mob z) * (1/denom²) * denom^(-k) +
   --                   (F∘ofComplex)(mob z) * (-k * c * denom^(-k-1)))
   --      = D F(γ•z) * denom^(-(k+2)) - k * (2πi)⁻¹ * (c/denom) * F(γ•z) * denom^(-k)
