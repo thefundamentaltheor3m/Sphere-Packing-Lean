@@ -781,7 +781,7 @@ lemma deriv_integral_of_smooth (F : ℝ → ℝ → ℝ) (hF : ContDiff ℝ ∞ 
                 -- Apply the Mean Value Theorem to the function $F(t, y)$ with respect to $y$.
                 intros t ht h h_ne h_abs
                 have h_cont_diff : ContinuousOn (fun y => F t y) (Set.Icc (min x (x + h)) (max x (x + h))) ∧ DifferentiableOn ℝ (fun y => F t y) (Set.Ioo (min x (x + h)) (max x (x + h))) := by
-                  bound;
+                  constructor
                   · exact h_cont.comp_continuousOn ( continuousOn_const.prodMk continuousOn_id );
                   · -- Since $F$ is smooth, the partial derivative with respect to $y$ exists and is continuous, hence $F(t, y)$ is differentiable on any interval.
                     have h_diff : ∀ t ∈ Set.Icc (0 : ℝ) 1, ContDiff ℝ ∞ (fun y => F t y) := by
@@ -790,7 +790,9 @@ lemma deriv_integral_of_smooth (F : ℝ → ℝ → ℝ) (hF : ContDiff ℝ ∞ 
                 cases max_cases x ( x + h ) <;> cases min_cases x ( x + h ) <;> simp_all +decide;
                 · have := exists_deriv_eq_slope ( f := fun y => F t y ) ( show x + h < x by linarith );
                   exact this h_cont_diff.1 h_cont_diff.2 |> fun ⟨ c, hc₁, hc₂ ⟩ => ⟨ c, ⟨ by linarith [ hc₁.1 ], by linarith [ hc₁.2 ] ⟩, by rw [ hc₂ ] ; rw [ div_eq_div_iff ] <;> linarith ⟩;
-                · have := exists_deriv_eq_slope ( f := fun y => F t y ) ( show x < x + h by linarith ) ; aesop;
+                · have := exists_deriv_eq_slope ( f := fun y => F t y ) ( show x < x + h by linarith )
+                  simp_all only [Set.mem_Ioo, add_sub_cancel_left, forall_const]
+                  obtain ⟨w, left_2, right_2⟩ := this
                   exact ⟨ w, ⟨ by linarith, by linarith ⟩, right_2.symm ⟩;
               intro t ht h hh; by_cases hh' : h = 0
               · subst hh'
