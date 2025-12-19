@@ -375,35 +375,34 @@ theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
 These micro-lemmas compute derivatives of the components in the slash action formula.
 -/
 
-open ModularGroup in
+section DSlashHelpers
+
+open ModularGroup
+
 /-- Derivative of the denominator function: d/dz[cz + d] = c. -/
 lemma deriv_denom (γ : SL(2, ℤ)) (z : ℂ) :
     deriv (fun w => denom γ w) z = ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) := by
   simp only [denom]
   rw [deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]; simp
 
-open ModularGroup in
 /-- Derivative of the numerator function: d/dz[az + b] = a. -/
 lemma deriv_num (γ : SL(2, ℤ)) (z : ℂ) :
     deriv (fun w => num γ w) z = ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) := by
   simp only [num]
   rw [deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]; simp
 
-open ModularGroup in
 /-- Differentiability of denom. -/
 lemma differentiableAt_denom (γ : SL(2, ℤ)) (z : ℂ) :
     DifferentiableAt ℂ (fun w => denom γ w) z := by
   simp only [denom]
   fun_prop
 
-open ModularGroup in
 /-- Differentiability of num. -/
 lemma differentiableAt_num (γ : SL(2, ℤ)) (z : ℂ) :
     DifferentiableAt ℂ (fun w => num γ w) z := by
   simp only [num]
   fun_prop
 
-open ModularGroup in
 /-- Derivative of the Möbius transformation: d/dz[(az+b)/(cz+d)] = 1/(cz+d)².
 Uses det(γ) = 1: a(cz+d) - c(az+b) = ad - bc = 1. -/
 lemma deriv_moebius (γ : SL(2, ℤ)) (z : ℂ) (hz : denom γ z ≠ 0) :
@@ -437,7 +436,6 @@ lemma deriv_moebius (γ : SL(2, ℤ)) (z : ℂ) (hz : denom γ z ≠ 0) :
         ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) = 1 := by linear_combination hdet
   simp only [hnum_eq, one_div]
 
-open ModularGroup in
 /-- Derivative of denom^(-k): d/dz[(cz+d)^(-k)] = -k * c * (cz+d)^(-k-1). -/
 lemma deriv_denom_zpow (γ : SL(2, ℤ)) (k : ℤ) (z : ℂ) (hz : denom γ z ≠ 0) :
     deriv (fun w => (denom γ w) ^ (-k)) z =
@@ -449,6 +447,8 @@ lemma deriv_denom_zpow (γ : SL(2, ℤ)) (k : ℤ) (z : ℂ) (hz : denom γ z �
   have hcomp := hderiv_zpow.comp z hderiv_denom
   have heq : (fun w => w ^ (-k)) ∘ (fun w => denom γ w) = (fun w => (denom γ w) ^ (-k)) := rfl
   rw [← heq, hcomp.deriv]; simp only [Int.cast_neg]; ring
+
+end DSlashHelpers
 
 /--
 The derivative anomaly: how D interacts with the slash action.
