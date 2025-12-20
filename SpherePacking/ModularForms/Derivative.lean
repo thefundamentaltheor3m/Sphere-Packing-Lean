@@ -410,27 +410,18 @@ Uses det(γ) = 1: a(cz+d) - c(az+b) = ad - bc = 1. -/
 lemma deriv_moebius (z : ℍ) :
     deriv (fun w => num γ w / denom γ w) z = 1 / (denom γ z) ^ 2 := by
   have hz : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
-  have hdiff_num := differentiableAt_num γ z
-  have hdiff_denom := differentiableAt_denom γ z
-  have hderiv : HasDerivAt (fun w => num γ w / denom γ w)
-      ((deriv (fun w => num γ w) z * denom γ z - num γ z * deriv (fun w => denom γ w) z)
-        / (denom γ z) ^ 2) z := hdiff_num.hasDerivAt.div hdiff_denom.hasDerivAt hz
-  rw [hderiv.deriv, deriv_num, deriv_denom]
-  -- det(γ) = 1 in ℂ
   have hdet : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * (γ 1 1) -
       ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) * (γ 1 0) = 1 := by
-    have hdet' := Matrix.SpecialLinearGroup.det_coe γ
-    simp only [Matrix.det_fin_two, ← Int.cast_mul, ← Int.cast_sub] at hdet' ⊢
-    exact mod_cast hdet'
-  -- Normalize coercions and simplify
+    have := Matrix.SpecialLinearGroup.det_coe γ
+    simp only [Matrix.det_fin_two, ← Int.cast_mul, ← Int.cast_sub] at this ⊢
+    exact_mod_cast this
+  rw [deriv_fun_div (differentiableAt_num γ z) (differentiableAt_denom γ z) hz,
+      deriv_num, deriv_denom]
   simp only [denom_apply, num, Matrix.SpecialLinearGroup.coe_GL_coe_matrix,
     Matrix.SpecialLinearGroup.map_apply_coe, RingHom.mapMatrix_apply, Int.coe_castRingHom,
     Matrix.map_apply, ofReal_intCast] at *
-  -- Numerator: a * denom - num * c = ad - bc = 1
-  have hnum_eq : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) *
-      (((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * z + ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ)) -
-      (((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * z + ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ)) *
-        ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) = 1 := by linear_combination hdet
+  have hnum_eq : ((γ 0 0 : ℤ) : ℂ) * ((γ 1 0 : ℤ) * z + (γ 1 1 : ℤ)) -
+      ((γ 0 0 : ℤ) * z + (γ 0 1 : ℤ)) * (γ 1 0 : ℤ) = 1 := by linear_combination hdet
   simp only [hnum_eq, one_div]
 
 /-- Derivative of denom^(-k): d/dz[(cz+d)^(-k)] = -k * c * (cz+d)^(-k-1). -/
