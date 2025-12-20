@@ -6,23 +6,30 @@ Authors: Sidharth Hariharan
 
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 
+import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+
 /-! # Φ₁' : ℂ → ℂ is Holomorphic on the Upper Half-Plane
 
-In this file, we prove that the integrand of `I₁` is holomorphic on the upper half-plane.
-
-The proof we have in mind involves differentiating under the integral sign..
+In this file, we prove that the integrand of `I₁` is holomorphic on the upper half-plane. This
+relies on the properties of φ₀ that it inherits from the modular forms in terms of which it is
+defined.
 -/
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
   MagicFunction.PolyFourierCoeffBound MagicFunction.a.IntegralEstimates.I₁
-  MagicFunction.a.ComplexIntegrands
-open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
-open scoped Function UpperHalfPlane
+  MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
 
-namespace MagicFunction.a.Holomorphicity
+open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
+
+open scoped Function UpperHalfPlane Manifold
+
+namespace MagicFunction.a.ComplexIntegrands
 
 variable {r : ℝ} (hr : r ≥ 0)
 
+local notation "Holo" => MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
 
+theorem Φ₁_Holo : Holo (Φ₁' r) := by
+  sorry
 
-end MagicFunction.a.Holomorphicity
+end MagicFunction.a.ComplexIntegrands

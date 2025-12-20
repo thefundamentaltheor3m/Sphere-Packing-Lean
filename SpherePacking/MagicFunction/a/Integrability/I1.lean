@@ -5,18 +5,11 @@ Authors: Sidharth Hariharan
 -/
 
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
-import SpherePacking.MagicFunction.a.Holomorphicity.I1
+import SpherePacking.MagicFunction.a.Holomorphicity.ContDiff
 
 /-! # Integrability
 
 In this file, we prove that the integrand of `I₁` is integrable.
-
-I'm no quite sure what the best way is to prove intgerability. One way is to prove that `g` is
-`AEStronglyMeasurable` and then use `IntegralEstimates` to prove `HasFiniteIntegral`. Unfortunately,
-maybe the most direct way to prove `AEStronglyMeasurable` is via holomorphicity, but the way we want
-to prove holomorphicity is to differentiate under the integral sign, which requires integrability.
-
-One possible approach is to show that the _double intgeral_ exists. 
 -/
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
