@@ -923,7 +923,6 @@ lemma exists_smooth_flat_factor (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f)
       intro k; specialize hflat ( k + 1 ) ; simp_all +decide [ iteratedDeriv_eq_iterate ] ;
       exact hflat.resolve_left <| by positivity;
 
--- set_option trace.profiler true in
 set_option linter.style.longLine false in
 lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f)
                                 (hflat : ∀ k, iteratedDeriv k f 0 = 0) :
@@ -936,11 +935,11 @@ lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f
       rw [Nat.cast_add, Nat.cast_one]
       -- By `exists_smooth_flat_factor` applied to `f'`, there exists smooth flat `g` such that `f'(x) = x g(x)`.
       obtain ⟨g, hg_cd, hg_id0, hg_df⟩ : ∃ g : ℝ → ℝ, ContDiff ℝ ∞ g ∧ (∀ k, iteratedDeriv k g 0 = 0) ∧ ∀ x, deriv f x = x * g x := by
-        have := exists_smooth_flat_factor ( deriv f ) (ContDiff.deriv' hsmooth) ?_;
-        · exact this
-        · intro k
-          convert hflat ( k + 1 ) using 1;
-          rw [ iteratedDeriv_succ' ];
+        apply exists_smooth_flat_factor ( deriv f ) (ContDiff.deriv' hsmooth)
+        intro k
+        rw [ ← iteratedDeriv_succ' ]
+        exact hflat (k + 1)
+      have hg_0_0 : g 0 = 0 := by exact hg_id0 0
       -- We claim the derivative of $f(\sqrt{x})$ is $\frac{1}{2} g(\sqrt{x})$.
       have h_deriv : ∀ x, HasDerivAt (fun x => f (Real.sqrt x)) ((1 / 2) * g (Real.sqrt x)) x := by
         intro x
@@ -963,9 +962,7 @@ lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f
             rw [ h_int h hh ]
             by_cases hh' : Real.sqrt h = 0
             simp_all only [ge_iff_le, sqrt_eq_zero, sqrt_zero, intervalIntegral.integral_same,
-              mul_zero, intervalIntegral.integral_mul_const, integral_id, one_pow, ne_eq,
-              OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, sub_zero, one_div, mul_comm,
-              zero_mul]
+              mul_zero, zero_mul]
             have h_int_simplified : ∀ a b : ℝ, 0 ≤ a → a ≤ b → ∫ t in a..b, t * g t = (∫ u in (a / Real.sqrt h).. (b / Real.sqrt h), (u * Real.sqrt h) * g (u * Real.sqrt h)) * Real.sqrt h := by
               intros a b ha hb; rw [ mul_comm ] ; simp +decide [ div_eq_inv_mul] ;
               convert intervalIntegral.integral_comp_div _ _ using 3 <;> ring_nf <;> norm_num [ hh', hh ];
@@ -994,7 +991,6 @@ lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f
                 filter_upwards [ gt_mem_nhds zero_lt_one ] with x hx₁ hx₂ using Filter.Eventually.of_forall fun y hy₁ hy₂ => mul_le_mul_of_nonneg_left ( le_csSup ( IsCompact.bddAbove ( isCompact_Icc.image ( show Continuous fun x => |g x| from continuous_abs.comp hg_cd.continuous ) ) ) <| Set.mem_image_of_mem _ <| by constructor <;> nlinarith [ Real.sqrt_nonneg x, Real.sq_sqrt hx₂.le ] ) <| abs_nonneg _;
               · exact Continuous.intervalIntegrable ( by continuity ) _ _;
               · filter_upwards [ ] with x hx using Filter.Tendsto.mul tendsto_const_nhds ( h_cont_g x <| by constructor <;> cases Set.mem_uIoc.mp hx <;> linarith );
-            have := hg_id0 0;
             subst x_zero
             simp_all only [ge_iff_le, Set.mem_Icc, and_imp, intervalIntegral.integral_mul_const, integral_id,
               one_pow, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, sub_zero, one_div, div_one]
@@ -1010,20 +1006,18 @@ lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f
             Set.mem_singleton_iff]
           obtain ⟨ δ, hδ₁, hδ₂ ⟩ := h_limit ε a; use δ, hδ₁
           intro x hx₁ hx₂;
-          cases lt_or_gt_of_ne hx₁
+          rcases lt_or_gt_of_ne hx₁ with hlt|hgt
+          · rw [mul_zero, dist_0_eq_abs, Real.rpow_def_of_neg hlt, show 2⁻¹ * Real.pi = Real.pi / 2 by ring]
+            norm_num
+            exact a
           · simp_all only [sqrt_eq_rpow, one_div]
-            norm_num [ Real.rpow_def_of_neg ‹_› ] at *
-            simp_all only [one_div]
-            norm_num [ show 1 / 2 * Real.pi = Real.pi / 2 by ring, Real.exp_mul, Real.exp_log_eq_abs, hx₁ ] at *
-            simp_all only [one_div]
-            exact hg_id0 0 |> abs_eq_zero.mpr |> mul_eq_zero_of_right 2⁻¹ |> fun h ↦ lt_of_eq_of_lt h a
-          · simp_all only [sqrt_eq_rpow, one_div]
-            have hg_zero : g 0 = 0 := by exact hg_id0 0
-            rw [ inv_mul_eq_div, hg_zero, mul_zero, dist_0_eq_abs, abs_div, div_lt_iff₀ ] <;> have := h_int_simplified x ( by positivity ) <;> have := h_int_simplified 0 ( by positivity ) <;>
-            simp_all only [ne_eq, inv_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, zero_rpow,
-              intervalIntegral.integral_same, abs_pos]
-            expose_names
-            rw [ ← h_int x h.le ] ; exact abs_lt.mpr ⟨ by cases abs_cases x <;> nlinarith [ abs_lt.mp ( hδ₂ h ( by simpa [ abs_of_pos h ] using hx₂ ) ) ], by cases abs_cases x <;> nlinarith [ abs_lt.mp ( hδ₂ h ( by simpa [ abs_of_pos h ] using hx₂ ) ) ] ⟩ ;
+            rw [mul_zero, dist_0_eq_abs, inv_mul_eq_div, abs_div, div_lt_iff₀ ]
+            · have := h_int_simplified x ( by positivity )
+              have := h_int_simplified 0 ( by positivity )
+              simp_all only [ne_eq, inv_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, zero_rpow,
+                intervalIntegral.integral_same]
+              rw [ ← h_int x hgt.le ] ; exact abs_lt.mpr ⟨ by cases abs_cases x <;> nlinarith [ abs_lt.mp ( hδ₂ hgt ( by simpa [ abs_of_pos   hgt ] using hx₂ ) ) ], by cases abs_cases x <;> nlinarith [ abs_lt.mp ( hδ₂ hgt ( by simpa [ abs_of_pos hgt ] using hx₂ ) ) ] ⟩
+            · exact abs_pos_of_pos hgt
         · simp_all only [sqrt_eq_rpow, one_div]
           convert HasDerivAt.comp x ( hsmooth.contDiffAt.differentiableAt ( by norm_num ) |>
             DifferentiableAt.hasDerivAt ) ( HasDerivAt.rpow_const ( hasDerivAt_id x ) _ ) using 1 <;>
@@ -1031,8 +1025,7 @@ lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f
           by_cases hx : x < 0 <;> norm_num [ Real.rpow_def_of_neg, hx ] ; ring_nf;
           · norm_num [ mul_div ];
             simpa only [iteratedDeriv_zero] using hg_id0 0;
-          · expose_names
-            rw [ Real.rpow_neg ( by linarith ) ] ; ring_nf;
+          · rw [ Real.rpow_neg ( by linarith ) ] ; ring_nf;
             norm_num [ mul_comm, x_zero, ne_of_gt ( Real.rpow_pos_of_pos ( lt_of_le_of_ne ( le_of_not_gt hx ) ( Ne.symm x_zero ) ) _ ) ];
             rw [ mul_right_comm, mul_inv_cancel₀ ( ne_of_gt ( Real.rpow_pos_of_pos ( lt_of_le_of_ne ( le_of_not_gt hx ) ( Ne.symm x_zero ) ) _ ) ), one_mul ];
       rw [ contDiff_succ_iff_deriv ];
