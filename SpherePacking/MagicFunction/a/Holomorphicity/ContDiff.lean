@@ -73,7 +73,11 @@ variable {r : ℝ} (hr : r ≥ 0)
 
 namespace MagicFunction.a.RealIntegrands
 
+#check ContDiffOn.comp
+
 theorem Φ₁_contDiffOn : ContDiffOn ℝ ∞ (Φ₁ r) (Ioc (0 : ℝ) 1) := by
+  rw [Φ₁_def]
+
   sorry
 
 end MagicFunction.a.RealIntegrands

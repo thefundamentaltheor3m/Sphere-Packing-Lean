@@ -19,7 +19,7 @@ open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.
   MagicFunction.PolyFourierCoeffBound MagicFunction.a.IntegralEstimates.I₁
   MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
 
-open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
+open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral UpperHalfPlane
 
 open scoped Function UpperHalfPlane Manifold
 
@@ -27,9 +27,18 @@ namespace MagicFunction.a.ComplexIntegrands
 
 variable {r : ℝ} (hr : r ≥ 0)
 
-local notation "Holo" => MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
+local notation "ℍ₀" => upperHalfPlaneSet
+local notation "Holo(" f ")" => MDifferentiableOn 𝓘(ℂ) 𝓘(ℂ) f ℍ₀
 
-theorem Φ₁_Holo : Holo (Φ₁' r) := by
+section Halfplane_API
+
+end Halfplane_API
+
+section Holo
+
+theorem Φ₁_Holo : Holo(Φ₁' r) := by
   sorry
+
+end Holo
 
 end MagicFunction.a.ComplexIntegrands
