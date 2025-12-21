@@ -32,6 +32,30 @@ def Φ₅' : ℂ → ℂ := fun z ↦ φ₀'' (-1 / z) * z ^ 2 * cexp (π * I * 
 
 def Φ₆' : ℂ → ℂ := fun z ↦ φ₀'' (z) * cexp (π * I * r * (z : ℂ))
 
+section Def
+
+-- We write some API that allows us to express the `(Φᵢ' r)` as functions when needed.
+
+lemma Φ₁'_def : Φ₁' r = fun z ↦ φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ)) :=
+  rfl
+
+lemma Φ₂'_def : Φ₂' r = fun z ↦ φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ)) :=
+  rfl
+
+lemma Φ₃'_def : Φ₃' r = fun z ↦ φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ)) :=
+  rfl
+
+lemma Φ₄'_def : Φ₄' r = fun z ↦ φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ)) :=
+  rfl
+
+lemma Φ₅'_def : Φ₅' r = fun z ↦ φ₀'' (-1 / z) * z ^ 2 * cexp (π * I * r * (z : ℂ)) :=
+  rfl
+
+lemma Φ₆'_def : Φ₆' r = fun z ↦ φ₀'' (z) * cexp (π * I * r * (z : ℂ)) :=
+  rfl
+
+end Def
+
 end MagicFunction.a.ComplexIntegrands
 
 namespace MagicFunction.a.RealIntegrands
@@ -49,6 +73,30 @@ def Φ₄ : ℝ → ℂ := fun t ↦ -1 * Φ₄' r (z₄' t)
 def Φ₅ : ℝ → ℂ := fun t ↦ I * Φ₅' r (z₅' t)
 
 def Φ₆ : ℝ → ℂ := fun t ↦ I * Φ₆' r (z₆' t)
+
+section Def
+
+-- We write some API that allows us to express the `(Φᵢ r)` as functions when needed.
+
+lemma Φ₁_def : Φ₁ r = fun t ↦ I * Φ₁' r (z₁' t) :=
+  rfl
+
+lemma Φ₂_def : Φ₂ r = fun t ↦ Φ₂' r (z₂' t) :=
+  rfl
+
+lemma Φ₃_def : Φ₃ r = fun t ↦ I * Φ₃' r (z₃' t) :=
+  rfl
+
+lemma Φ₄_def : Φ₄ r = fun t ↦ -1 * Φ₄' r (z₄' t) :=
+  rfl
+
+lemma Φ₅_def : Φ₅ r = fun t ↦ I * Φ₅' r (z₅' t) :=
+  rfl
+
+lemma Φ₆_def : Φ₆ r = fun t ↦ I * Φ₆' r (z₆' t) :=
+  rfl
+
+end Def
 
 end MagicFunction.a.RealIntegrands
 
