@@ -20,17 +20,17 @@ variable (r : ℝ)
 
 namespace MagicFunction.a.ComplexIntegrands
 
-def Φ₁' (z : ℂ) : ℂ := φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ))
+def Φ₁' : ℂ → ℂ := fun z ↦ φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ))
 
-def Φ₂' (z : ℂ) : ℂ := φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ))
+def Φ₂' : ℂ → ℂ := fun z ↦ φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ))
 
-def Φ₃' (z : ℂ) : ℂ := φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ))
+def Φ₃' : ℂ → ℂ := fun z ↦ φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ))
 
-def Φ₄' (z : ℂ) : ℂ := φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ))
+def Φ₄' : ℂ → ℂ := fun z ↦ φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ))
 
-def Φ₅' (z : ℂ) : ℂ := φ₀'' (-1 / z) * z ^ 2 * cexp (π * I * r * (z : ℂ))
+def Φ₅' : ℂ → ℂ := fun z ↦ φ₀'' (-1 / z) * z ^ 2 * cexp (π * I * r * (z : ℂ))
 
-def Φ₆' (z : ℂ) : ℂ := φ₀'' (z) * cexp (π * I * r * (z : ℂ))
+def Φ₆' : ℂ → ℂ := fun z ↦ φ₀'' (z) * cexp (π * I * r * (z : ℂ))
 
 end MagicFunction.a.ComplexIntegrands
 
@@ -38,17 +38,17 @@ namespace MagicFunction.a.RealIntegrands
 
 open MagicFunction.a.ComplexIntegrands
 
-def Φ₁ (t : ℝ) : ℂ := I * Φ₁' r (z₁' t)
+def Φ₁ : ℝ → ℂ := fun t ↦ I * Φ₁' r (z₁' t)
 
-def Φ₂ (t : ℝ) : ℂ := Φ₂' r (z₂' t)
+def Φ₂ : ℝ → ℂ := fun t ↦ Φ₂' r (z₂' t)
 
-def Φ₃ (t : ℝ) : ℂ := I * Φ₃' r (z₃' t)
+def Φ₃ : ℝ → ℂ := fun t ↦ I * Φ₃' r (z₃' t)
 
-def Φ₄ (t : ℝ) : ℂ := -1 * Φ₄' r (z₄' t)
+def Φ₄ : ℝ → ℂ := fun t ↦ -1 * Φ₄' r (z₄' t)
 
-def Φ₅ (t : ℝ) : ℂ := I * Φ₅' r (z₅' t)
+def Φ₅ : ℝ → ℂ := fun t ↦ I * Φ₅' r (z₅' t)
 
-def Φ₆ (t : ℝ) : ℂ := I * Φ₆' r (z₆' t)
+def Φ₆ : ℝ → ℂ := fun t ↦ I * Φ₆' r (z₆' t)
 
 end MagicFunction.a.RealIntegrands
 
@@ -60,19 +60,19 @@ noncomputable section Real_Input
 
 open MagicFunction.a.RealIntegrands
 
-def I₁' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, Φ₁ x t
+def I₁' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Φ₁ x t
 
-def I₂' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, Φ₂ x t
+def I₂' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Φ₂ x t
 
-def I₃' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, Φ₃ x t
+def I₃' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Φ₃ x t
 
-def I₄' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, Φ₄ x t
+def I₄' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Φ₄ x t
 
-def I₅' (x : ℝ) : ℂ := -2 * ∫ t in (0 : ℝ)..1, Φ₅ x t
+def I₅' : ℝ → ℂ := fun x ↦ -2 * ∫ t in (0 : ℝ)..1, Φ₅ x t
 
-def I₆' (x : ℝ) : ℂ := 2 * ∫ t in Ici (1 : ℝ), Φ₆ x t
+def I₆' : ℝ → ℂ := fun x ↦ 2 * ∫ t in Ici (1 : ℝ), Φ₆ x t
 
-def a' (x : ℝ) := I₁' x + I₂' x + I₃' x + I₄' x + I₅' x + I₆' x
+def a' : ℝ → ℂ := fun x ↦ I₁' x + I₂' x + I₃' x + I₄' x + I₅' x + I₆' x
 
 end Real_Input
 
@@ -84,19 +84,19 @@ namespace MagicFunction.a.RadialFunctions
 
 noncomputable section Vector_Input
 
-def I₁ (x : V) : ℂ := I₁' (‖x‖ ^ 2)
+def I₁ : V → ℂ := fun x ↦ I₁' (‖x‖ ^ 2)
 
-def I₂ (x : V) : ℂ := I₂' (‖x‖ ^ 2)
+def I₂ : V → ℂ := fun x ↦ I₂' (‖x‖ ^ 2)
 
-def I₃ (x : V) : ℂ := I₃' (‖x‖ ^ 2)
+def I₃ : V → ℂ := fun x ↦ I₃' (‖x‖ ^ 2)
 
-def I₄ (x : V) : ℂ := I₄' (‖x‖ ^ 2)
+def I₄ : V → ℂ := fun x ↦ I₄' (‖x‖ ^ 2)
 
-def I₅ (x : V) : ℂ := I₅' (‖x‖ ^ 2)
+def I₅ : V → ℂ := fun x ↦ I₅' (‖x‖ ^ 2)
 
-def I₆ (x : V) : ℂ := I₆' (‖x‖ ^ 2)
+def I₆ : V → ℂ := fun x ↦ I₆' (‖x‖ ^ 2)
 
-def a (x : V) : ℂ := a' (‖x‖ ^ 2)
+def a : V → ℂ := fun x ↦ a' (‖x‖ ^ 2)
 
 end Vector_Input
 
@@ -107,6 +107,18 @@ section Eq
 open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
 
 lemma a_eq (x : V) : a x = I₁ x + I₂ x + I₃ x + I₄ x + I₅ x + I₆ x := rfl
+
+lemma I₁_eq (x : V) : I₁ x = I₁' (‖x‖ ^ 2) := rfl
+
+lemma I₂_eq (x : V) : I₂ x = I₂' (‖x‖ ^ 2) := rfl
+
+lemma I₃_eq (x : V) : I₃ x = I₃' (‖x‖ ^ 2) := rfl
+
+lemma I₄_eq (x : V) : I₄ x = I₄' (‖x‖ ^ 2) := rfl
+
+lemma I₅_eq (x : V) : I₅ x = I₅' (‖x‖ ^ 2) := rfl
+
+lemma I₆_eq (x : V) : I₆ x = I₆' (‖x‖ ^ 2) := rfl
 
 lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, -I
     * φ₀'' (-1 / (I * t))
