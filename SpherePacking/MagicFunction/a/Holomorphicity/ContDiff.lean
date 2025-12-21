@@ -62,6 +62,8 @@ theorem z₆'_contDiffOn : ContDiffOn ℝ ∞ z₆' (Ioi (1 : ℝ)) := by
   refine ContDiffWithinAt.congr ?_ h_eq <| h_eq x hx
   exact contDiffWithinAt_const.mul ofRealCLM.contDiff.contDiffWithinAt
 
+end MagicFunction.Parametrisations
+
 end Parametrisations
 
 section ContDiff
@@ -73,12 +75,14 @@ variable {r : ℝ} (hr : r ≥ 0)
 
 namespace MagicFunction.a.RealIntegrands
 
-#check ContDiffOn.comp
-
+include hr in
 theorem Φ₁_contDiffOn : ContDiffOn ℝ ∞ (Φ₁ r) (Ioc (0 : ℝ) 1) := by
-  rw [Φ₁_def]
-
-  sorry
+  simp only [Φ₁_def, ← smul_eq_mul I _]
+  apply ContDiffOn.const_smul
+  change ContDiffOn ℝ ∞ ((Φ₁' r) ∘ z₁') (Ioc (0 : ℝ) 1)
+  refine ContDiffOn.comp (t := ⊤) ?_ z₁'_contDiffOn <| fun _ _ ↦ trivial
+  rw [top_eq_univ, contDiffOn_univ]
+  exact Φ₁'_contDiff hr
 
 end MagicFunction.a.RealIntegrands
 
