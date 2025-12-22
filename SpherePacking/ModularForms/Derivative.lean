@@ -698,24 +698,54 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
     ext n
     simp only [hexp_pow]
   rw [hsum_eq]
-  -- **Proof Strategy** (fully implemented except final numerical bound):
+  -- Step 1: Key bounds on q
+  have hq_lt_one : ‖q‖ < 1 := hq
+  have hq_pos : 0 < ‖q‖ := norm_pos_iff.mpr (Complex.exp_ne_zero _)
+  have hone_sub_q_pos : 0 < 1 - ‖q‖ := by linarith
+  -- Step 2: Term bound: ‖n * q^n / (1 - q^n)‖ ≤ n * ‖q‖^n / (1 - ‖q‖)
+  have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
+      n * ‖q‖ ^ (n : ℕ) / (1 - ‖q‖) := fun n => by
+    have hqn_lt : ‖q ^ (n : ℕ)‖ < 1 := by
+      rw [norm_pow]; exact pow_lt_one₀ (norm_nonneg _) hq_lt_one n.ne_zero
+    have hdenom_pos : 0 < 1 - ‖q ^ (n : ℕ)‖ := by linarith
+    have hdenom_ne : 1 - q ^ (n : ℕ) ≠ 0 := by
+      intro h; simp only [sub_eq_zero] at h
+      have : ‖q ^ (n : ℕ)‖ = 1 := by rw [← h]; exact norm_one
+      linarith
+    rw [norm_div, norm_mul, Complex.norm_natCast]
+    -- |1 - q^n| ≥ 1 - |q^n| ≥ 1 - |q| (reverse triangle inequality)
+    have hdenom_lower : 1 - ‖q‖ ≤ ‖1 - q ^ (n : ℕ)‖ := by
+      have h1 : 1 - ‖q ^ (n : ℕ)‖ ≤ ‖1 - q ^ (n : ℕ)‖ := by
+        have := norm_sub_norm_le (1 : ℂ) (q ^ (n : ℕ))
+        simp only [norm_one] at this
+        linarith
+      have h2 : ‖q‖ ^ (n : ℕ) ≤ ‖q‖ := by
+        have := pow_le_pow_of_le_one (norm_nonneg _) hq_lt_one.le n.one_le
+        simp at this; exact this
+      calc 1 - ‖q‖ ≤ 1 - ‖q‖ ^ (n : ℕ) := by linarith
+        _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow]
+        _ ≤ _ := h1
+    -- Now: (n * |q|^n) / |1 - q^n| ≤ (n * |q|^n) / (1 - |q|)
+    calc ↑n * ‖q ^ (n : ℕ)‖ / ‖1 - q ^ (n : ℕ)‖
+        ≤ ↑n * ‖q ^ (n : ℕ)‖ / (1 - ‖q‖) := by
+          apply div_le_div_of_nonneg_left _ hone_sub_q_pos hdenom_lower
+          exact mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _)
+      _ = ↑n * ‖q‖ ^ (n : ℕ) / (1 - ‖q‖) := by rw [norm_pow]
+  -- Step 3-4: Bound the tsum
+  -- The full proof uses:
+  -- 1. ‖∑' f‖ ≤ ∑' ‖f‖ (norm_tsum_le_tsum_norm)
+  -- 2. hterm_bound: ‖n * q^n / (1 - q^n)‖ ≤ n * ‖q‖^n / (1 - ‖q‖)
+  -- 3. ∑' (n : ℕ), n * r^n = r / (1 - r)² (tsum_coe_mul_geometric_of_norm_lt_one)
+  -- 4. So 24 * tsum ≤ 24 * ‖q‖ / (1 - ‖q‖)³
+  -- 5. With ‖q‖ ≤ exp(-2π) < exp(-6) < 1/50:
+  --    24 * (1/50) / (49/50)³ = 24 * 50² / 49³ < 1 (by norm_num)
   --
-  -- 1. Term bound: ‖n * q^n / (1 - q^n)‖ ≤ n * ‖q‖^n / (1 - ‖q‖)
-  --    Uses reverse triangle inequality: |1 - z| ≥ 1 - |z|
-  --
-  -- 2. Summability: Follows from summable_pow_mul_geometric_of_norm_lt_one
-  --
-  -- 3. Sum bound: ∑' n * ‖q‖^n = ‖q‖ / (1 - ‖q‖)²  (tsum_coe_mul_geometric_of_norm_lt_one)
-  --    So ∑' n * ‖q‖^n / (1 - ‖q‖) = ‖q‖ / (1 - ‖q‖)³
-  --
-  -- 4. Final bound with ‖q‖ ≤ exp(-2π):
-  --    24 * exp(-2π) / (1 - exp(-2π))³ ≈ 24 * 0.00187 / 0.994³ ≈ 0.045 < 1
-  --
-  -- The full proof requires:
-  -- - norm_tsum_le_tsum_norm for ‖∑' f‖ ≤ ∑' ‖f‖
-  -- - tsum_le_tsum for comparing term-by-term bounds
-  -- - tsum_coe_mul_geometric_of_norm_lt_one for ∑' n * r^n = r / (1-r)²
-  -- - Native arithmetic or interval verification for the final numerical bound
+  -- Key mathlib lemmas:
+  -- - summable_pow_mul_geometric_of_norm_lt_one 1 hr : Summable (fun n => n * r^n)
+  -- - tsum_coe_mul_geometric_of_norm_lt_one hr : ∑' n * r^n = r / (1-r)²
+  -- - norm_tsum_le_tsum_norm : ‖∑' f‖ ≤ ∑' ‖f‖
+  -- - Real.three_lt_pi : 3 < π
+  -- - Real.exp_one_gt_d9 : 2.7 < exp(1)
   sorry
 
 /-- E₄ is bounded at infinity (as a modular form). -/
