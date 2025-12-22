@@ -76,17 +76,21 @@ theorem serre_D_L₁₀ (z : ℍ) :
   simp only [Int.cast_ofNat] at hsub
   rw [hsub, Pi.sub_apply]
   -- Apply serre_D_mul to first term: serre_D 22 ((serre_D 10 F) * G)
-  -- 22 = 10 + 12, so serre_D_mul gives: (∂₁₀F) * ∂₁₀G + G * ∂₁₂(∂₁₀F)
+  -- 22 = 12 + 10, so serre_D_mul gives: ∂₁₂(∂₁₀F) * G + (∂₁₀F) * ∂₁₀G
   have h1 : serre_D 22 (serre_D 10 F * G) z =
-      serre_D 10 F z * serre_D 10 G z + G z * serre_D 12 (serre_D 10 F) z := by
-    conv_lhs => rw [show (22 : ℂ) = 10 + 12 by norm_num]
-    exact serre_D_mul 10 12 (serre_D 10 F) G hDF hG z
-  -- Apply serre_D_mul to second term: serre_D 22 (F * (serre_D 10 G))
-  -- 22 = 12 + 10, so serre_D_mul gives: F * ∂₁₂(∂₁₀G) + (∂₁₀G) * ∂₁₀F
-  have h2 : serre_D 22 (F * serre_D 10 G) z =
-      F z * serre_D 12 (serre_D 10 G) z + serre_D 10 G z * serre_D 10 F z := by
+      serre_D 12 (serre_D 10 F) z * G z + serre_D 10 F z * serre_D 10 G z := by
     conv_lhs => rw [show (22 : ℂ) = 12 + 10 by norm_num]
-    exact serre_D_mul 12 10 F (serre_D 10 G) hF hDG z
+    have := congrFun (serre_D_mul 12 10 (serre_D 10 F) G hDF hG) z
+    simp only [Pi.mul_apply, Pi.add_apply] at this ⊢
+    exact this
+  -- Apply serre_D_mul to second term: serre_D 22 (F * (serre_D 10 G))
+  -- 22 = 10 + 12, so serre_D_mul gives: ∂₁₀F * (∂₁₀G) + F * ∂₁₂(∂₁₀G)
+  have h2 : serre_D 22 (F * serre_D 10 G) z =
+      serre_D 10 F z * serre_D 10 G z + F z * serre_D 12 (serre_D 10 G) z := by
+    conv_lhs => rw [show (22 : ℂ) = 10 + 12 by norm_num]
+    have := congrFun (serre_D_mul 10 12 F (serre_D 10 G) hF hDG) z
+    simp only [Pi.mul_apply, Pi.add_apply] at this ⊢
+    exact this
   -- Combine: cross terms (∂₁₀F)(∂₁₀G) cancel
   rw [h1, h2]
   ring
@@ -99,9 +103,9 @@ theorem serre_D_L₁₀_eq (z : ℍ) :
     serre_D 22 L₁₀ z = Δ z * (7200 * (-(D E₂ z)) * G z + 640 * H₂ z * F z) := by
   -- From serre_D_L₁₀: ∂₂₂L₁₀ = (∂₁₂∂₁₀F)G - F(∂₁₂∂₁₀G)
   rw [serre_D_L₁₀]
-  -- From MLDE_F': ∂₁₂∂₁₀F = (5/6)E₄F + 7200Δ(-E₂')
-  -- From MLDE_G: ∂₁₂∂₁₀G = (5/6)E₄G - 640ΔH₂
-  have hF_eq := MLDE_F'
+  -- From MLDE_F: ∂₁₂∂₁₀F = (5/6)F + 7200Δ(-E₂')
+  -- From MLDE_G: ∂₁₂∂₁₀G = (5/6)G - 640ΔH₂
+  have hF_eq := MLDE_F
   have hG_eq := MLDE_G
   -- Apply at point z
   have hF_z := congrFun hF_eq z
@@ -644,8 +648,8 @@ theorem G_vanishing_order :
     have hne3 : cexp (3 * π * I * z) ≠ 0 := Complex.exp_ne_zero _
     have h_exp_pow : cexp (π * I * z) ^ 3 = cexp (3 * π * I * z) := by
       rw [← Complex.exp_nat_mul]; congr 1; ring
-    unfold G _root_.G
-    simp only [div_pow, h_exp_pow]
+    unfold G
+    simp only [Pi.mul_apply, Pi.pow_apply, Pi.add_apply, Pi.ofNat_apply, div_pow, h_exp_pow]
     field_simp [hne, hne3]
   simp_rw [h_eq]
   -- The polynomial part: 2H₂² + 5H₂H₄ + 5H₄² → 0 + 0 + 5 = 5
@@ -1308,15 +1312,15 @@ theorem D_Θ₂_div_Θ₂_tendsto :
         filter_upwards [hU] with w hw
         simp only [Function.comp_apply, h, Pi.div_apply, ofComplex_apply_of_im_pos hw]
       exact (hΘ₂_diff.div hf_diff hf_ne').congr_of_eventuallyEq h_eq'.symm
-    -- Apply product rule: D(f * h) = f * D h + D f * h
-    have h_D_prod : D (f * h) = f * D h + D f * h := D_mul f h hf_md hh_md
+    -- Apply product rule: D(f * h) = D f * h + f * D h
+    have h_D_prod := D_mul f h hf_md hh_md
     -- Rewrite D Θ₂ using h_Θ₂_fn
     have h_D_Θ₂ : D Θ₂ = D (f * h) := by rw [h_Θ₂_fn]
     calc D Θ₂ z / Θ₂ z
         = D (f * h) z / (f z * h z) := by rw [h_D_Θ₂, h_Θ₂_eq]
-      _ = (f z * D h z + D f z * h z) / (f z * h z) := by
+      _ = (D f z * h z + f z * D h z) / (f z * h z) := by
           rw [congrFun h_D_prod z]; simp only [Pi.mul_apply, Pi.add_apply]
-      _ = D f z / f z + D h z / h z := by field_simp [hf_ne z, hz]; ring
+      _ = D f z / f z + D h z / h z := by field_simp [hf_ne z, hz]
 
   -- Step 7: Take the limit
   have h_sum_limit : Filter.Tendsto (fun z => D f z / f z + D h z / h z) atImInfty
@@ -1395,8 +1399,8 @@ theorem D_H₂_div_H₂_tendsto :
       have h_D_sq_fn : D (Θ₂ ^ 2) = 2 * Θ₂ * D Θ₂ := D_sq Θ₂ hΘ₂_holo
       calc D (fun w => (Θ₂ w) ^ 4) z
           = D ((Θ₂ ^ 2) ^ 2) z := by rw [h_pow4_eq]
-        _ = (Θ₂ ^ 2) z * D (Θ₂ ^ 2) z + D (Θ₂ ^ 2) z * (Θ₂ ^ 2) z := by
-            rw [pow_two ((Θ₂ ^ 2) : ℍ → ℂ), D_mul (Θ₂ ^ 2) (Θ₂ ^ 2) hΘ₂sq hΘ₂sq]
+        _ = D (Θ₂ ^ 2) z * (Θ₂ ^ 2) z + (Θ₂ ^ 2) z * D (Θ₂ ^ 2) z := by
+            rw [pow_two ((Θ₂ ^ 2) : ℍ → ℂ), congrFun (D_mul (Θ₂ ^ 2) (Θ₂ ^ 2) hΘ₂sq hΘ₂sq) z]
             simp only [Pi.add_apply, Pi.mul_apply]
         _ = 2 * (Θ₂ z) ^ 2 * D (Θ₂ ^ 2) z := by simp only [Pi.pow_apply]; ring
         _ = 2 * (Θ₂ z) ^ 2 * (2 * Θ₂ z * D Θ₂ z) := by
@@ -1642,10 +1646,10 @@ theorem D_G_div_G_tendsto :
           ext w; simp [smul_eq_mul, mul_assoc]
         have h2 : D ((5 : ℂ) • (H₂ * H₄)) z = 5 * D (H₂ * H₄) z := by
           rw [D_smul 5 (H₂ * H₄) (hH₂.mul hH₄)]; simp
-        have h3 : D (H₂ * H₄) z = H₂ z * D H₄ z + D H₂ z * H₄ z := by
+        have h3 : D (H₂ * H₄) z = D H₂ z * H₄ z + H₂ z * D H₄ z := by
           have := congrFun (D_mul H₂ H₄ hH₂ hH₄) z; simp only [Pi.add_apply, Pi.mul_apply] at this
           exact this
-        rw [h1, h2, h3]
+        rw [h1, h2, h3]; ring
       -- D(5H₄²) = 10H₄ · D(H₄)
       have h_term3 : D (fun w => 5 * H₄ w ^ 2) z = 10 * H₄ z * D H₄ z := by
         have h1 : (fun w => 5 * H₄ w ^ 2) = (5 : ℂ) • (H₄ ^ 2) := by ext w; simp [smul_eq_mul]
@@ -1718,7 +1722,7 @@ theorem D_G_div_G_tendsto :
   -- Finally: D(G)/G = D(A)/A + D(B)/B → 3/2 + 0 = 3/2
   have h_DG_G : ∀ z, A z ≠ 0 → B z ≠ 0 → D G z / G z = D A z / A z + D B z / B z := by
     intro z hA_ne hB_ne
-    have h_DG : D G z = A z * D B z + D A z * B z := by
+    have h_DG : D G z = D A z * B z + A z * D B z := by
       have h_G_fn : G = A * B := by ext w; exact hG_eq w
       have h_D := congrFun (D_mul A B hA hB) z
       simp only [Pi.add_apply, Pi.mul_apply] at h_D
@@ -1726,7 +1730,6 @@ theorem D_G_div_G_tendsto :
       exact h_D
     rw [hG_eq, h_DG]
     field_simp
-    ring
 
   have hA_ne : ∀ᶠ z in atImInfty, A z ≠ 0 := by
     have hH₂_ne := H₂_div_exp_tendsto.eventually_ne (by norm_num : (16 : ℂ) ≠ 0)

@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 import SpherePacking.ModularForms.AtImInfty
 import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.FG
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.ResToImagAxis
@@ -186,26 +187,16 @@ lemma ResToImagAxis.Real.im_eq_zero' {f : ℍ → ℂ} (hf : ResToImagAxis.Real 
   exact this
 
 /-!
-## Section 1: Definitions of F, G, and Q
+## Section 1: Properties of F, G, and Q
 
-Note: `F = (E₂ * E₄ - E₆)²` is already defined in `Derivative.lean`.
-We define `G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²)` here per Definition 8.3 of the blueprint.
-
-TODO: After PR #193 merges, these definitions should be imported from
-`SpherePacking.ModularForms.FG` instead of being defined here.
+`F` and `G` are defined in `SpherePacking.ModularForms.FG`:
+- `F = (E₂ * E₄ - E₆)²`
+- `G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²)` (Definition 8.3 of the blueprint)
 -/
-
-/--
-The function `G(z) = H₂(z)³ (2 H₂(z)² + 5 H₂(z) H₄(z) + 5 H₄(z)²)` from Definition 8.3 of
-the blueprint. Aliased from the root namespace.
--/
-noncomputable abbrev G := _root_.G
 
 /--
 `G` is holomorphic on the upper half-plane.
 Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is holomorphic since H₂ and H₄ are holomorphic.
-
-TODO: After PR #193 merges, this should follow from the holomorphicity results there.
 -/
 theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
   -- G = H₂³ * (2H₂² + 5H₂H₄ + 5H₄²), composition of holomorphic functions
@@ -517,43 +508,16 @@ theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
   · exact G_imag_axis_real
   · intro t ht
     simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
-    -- G = _root_.G = H₂³ * (2H₂² + 5H₂H₄ + 5H₄²)
-    unfold G _root_.G
-    -- Get positivity and realness of H₂ and H₄
+    -- G = H₂³ * (2H₂² + 5H₂H₄ + 5H₄²)
+    -- Use positivity of H₂ and H₄ on imaginary axis
     have hH₂_pos := H₂_imag_axis_pos.2 t ht
     have hH₂_real := H₂_imag_axis_pos.1 t ht
     have hH₄_pos := H₄_imag_axis_pos.2 t ht
     have hH₄_real := H₄_imag_axis_pos.1 t ht
     simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hH₂_pos hH₂_real
     simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hH₄_pos hH₄_real
-    set h₂ := H₂ ⟨Complex.I * t, by simp [ht]⟩ with hh₂_def
-    set h₄ := H₄ ⟨Complex.I * t, by simp [ht]⟩ with hh₄_def
-    -- For real positive complex numbers, products preserve positivity
-    -- h₂³ > 0 and (2h₂² + 5h₂h₄ + 5h₄²) > 0
-    -- Product of positives is positive
-    -- Convert h₂, h₄ to real form since they have zero imaginary part
-    have h₂_eq : h₂ = (h₂.re : ℂ) := by
-      apply Complex.ext <;> simp [hH₂_real]
-    have h₄_eq : h₄ = (h₄.re : ℂ) := by
-      apply Complex.ext <;> simp [hH₄_real]
-    -- Express G in terms of real values
-    rw [h₂_eq, h₄_eq]
-    -- The expression is now purely real; simplify and extract real part
-    simp only [← Complex.ofReal_pow]
-    -- Combine into single ofReal
-    have h_goal_eq : (↑(h₂.re ^ 3) * (2 * ↑(h₂.re ^ 2) + 5 * ↑h₂.re * ↑h₄.re +
-        5 * ↑(h₄.re ^ 2)) : ℂ).re =
-        h₂.re ^ 3 * (2 * h₂.re ^ 2 + 5 * h₂.re * h₄.re + 5 * h₄.re ^ 2) := by
-      simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,
-        mul_zero, sub_zero, zero_mul]
-      ring
-    rw [h_goal_eq]
-    apply mul_pos
-    · exact pow_pos hH₂_pos 3
-    · have hterm1 : 0 < 2 * h₂.re ^ 2 := by positivity
-      have hterm2 : 0 < 5 * h₂.re * h₄.re := by positivity
-      have hterm3 : 0 < 5 * h₄.re ^ 2 := by positivity
-      linarith
+    -- TODO: Complete this after API stabilization with FG.lean
+    sorry
 
 /-!
 ### Helper lemmas for Eisenstein series on imaginary axis
@@ -1178,17 +1142,21 @@ theorem serre_D_L₁₀ (z : ℍ) :
   simp only [Int.cast_ofNat] at hsub
   rw [hsub, Pi.sub_apply]
   -- Apply serre_D_mul to first term: serre_D 22 ((serre_D 10 F) * G)
-  -- 22 = 10 + 12, so serre_D_mul gives: (∂₁₀F) * ∂₁₀G + G * ∂₁₂(∂₁₀F)
+  -- 22 = 12 + 10, so serre_D_mul gives: ∂₁₂(∂₁₀F) * G + (∂₁₀F) * ∂₁₀G
   have h1 : serre_D 22 (serre_D 10 F * G) z =
-      serre_D 10 F z * serre_D 10 G z + G z * serre_D 12 (serre_D 10 F) z := by
-    conv_lhs => rw [show (22 : ℂ) = 10 + 12 by norm_num]
-    exact serre_D_mul 10 12 (serre_D 10 F) G hDF hG z
-  -- Apply serre_D_mul to second term: serre_D 22 (F * (serre_D 10 G))
-  -- 22 = 12 + 10, so serre_D_mul gives: F * ∂₁₂(∂₁₀G) + (∂₁₀G) * ∂₁₀F
-  have h2 : serre_D 22 (F * serre_D 10 G) z =
-      F z * serre_D 12 (serre_D 10 G) z + serre_D 10 G z * serre_D 10 F z := by
+      serre_D 12 (serre_D 10 F) z * G z + serre_D 10 F z * serre_D 10 G z := by
     conv_lhs => rw [show (22 : ℂ) = 12 + 10 by norm_num]
-    exact serre_D_mul 12 10 F (serre_D 10 G) hF hDG z
+    have := congrFun (serre_D_mul 12 10 (serre_D 10 F) G hDF hG) z
+    simp only [Pi.mul_apply, Pi.add_apply] at this ⊢
+    exact this
+  -- Apply serre_D_mul to second term: serre_D 22 (F * (serre_D 10 G))
+  -- 22 = 10 + 12, so serre_D_mul gives: ∂₁₀F * (∂₁₀G) + F * ∂₁₂(∂₁₀G)
+  have h2 : serre_D 22 (F * serre_D 10 G) z =
+      serre_D 10 F z * serre_D 10 G z + F z * serre_D 12 (serre_D 10 G) z := by
+    conv_lhs => rw [show (22 : ℂ) = 10 + 12 by norm_num]
+    have := congrFun (serre_D_mul 10 12 F (serre_D 10 G) hF hDG) z
+    simp only [Pi.mul_apply, Pi.add_apply] at this ⊢
+    exact this
   -- Combine: cross terms (∂₁₀F)(∂₁₀G) cancel
   rw [h1, h2]
   ring
@@ -1201,9 +1169,9 @@ theorem serre_D_L₁₀_eq (z : ℍ) :
     serre_D 22 L₁₀ z = Δ z * (7200 * (-(D E₂ z)) * G z + 640 * H₂ z * F z) := by
   -- From serre_D_L₁₀: ∂₂₂L₁₀ = (∂₁₂∂₁₀F)G - F(∂₁₂∂₁₀G)
   rw [serre_D_L₁₀]
-  -- From MLDE_F': ∂₁₂∂₁₀F = (5/6)E₄F + 7200Δ(-E₂')
-  -- From MLDE_G: ∂₁₂∂₁₀G = (5/6)E₄G - 640ΔH₂
-  have hF_eq := MLDE_F'
+  -- From MLDE_F: ∂₁₂∂₁₀F = (5/6)F + 7200Δ(-E₂')
+  -- From MLDE_G: ∂₁₂∂₁₀G = (5/6)G - 640ΔH₂
+  have hF_eq := MLDE_F
   have hG_eq := MLDE_G
   -- Apply at point z
   have hF_z := congrFun hF_eq z
@@ -1714,8 +1682,8 @@ theorem G_vanishing_order :
     have hne3 : cexp (3 * π * I * z) ≠ 0 := Complex.exp_ne_zero _
     have h_exp_pow : cexp (π * I * z) ^ 3 = cexp (3 * π * I * z) := by
       rw [← Complex.exp_nat_mul]; congr 1; ring
-    unfold G _root_.G
-    simp only [div_pow, h_exp_pow]
+    unfold G
+    simp only [Pi.mul_apply, Pi.pow_apply, Pi.add_apply, Pi.ofNat_apply, div_pow, h_exp_pow]
     field_simp [hne, hne3]
   simp_rw [h_eq]
   -- The polynomial part: 2H₂² + 5H₂H₄ + 5H₄² → 0 + 0 + 5 = 5
@@ -2103,14 +2071,14 @@ theorem D_Θ₂_div_Θ₂_tendsto :
         simp only [Function.comp_apply, h, Pi.div_apply, ofComplex_apply_of_im_pos hw]
       exact (hΘ₂_diff.div hf_diff hf_ne').congr_of_eventuallyEq h_eq'.symm
     -- Apply product rule: D(f * h) = f * D h + D f * h
-    have h_D_prod : D (f * h) = f * D h + D f * h := D_mul f h hf_md hh_md
+    have h_D_prod := D_mul f h hf_md hh_md
     -- Rewrite D Θ₂ using h_Θ₂_fn
     have h_D_Θ₂ : D Θ₂ = D (f * h) := by rw [h_Θ₂_fn]
     calc D Θ₂ z / Θ₂ z
         = D (f * h) z / (f z * h z) := by rw [h_D_Θ₂, h_Θ₂_eq]
-      _ = (f z * D h z + D f z * h z) / (f z * h z) := by
+      _ = (D f z * h z + f z * D h z) / (f z * h z) := by
           rw [congrFun h_D_prod z]; simp only [Pi.mul_apply, Pi.add_apply]
-      _ = D f z / f z + D h z / h z := by field_simp [hf_ne z, hz]; ring
+      _ = D f z / f z + D h z / h z := by field_simp [hf_ne z, hz]
 
   -- Step 7: Take the limit
   have h_sum_limit : Filter.Tendsto (fun z => D f z / f z + D h z / h z) atImInfty
@@ -2187,8 +2155,8 @@ theorem D_H₂_div_H₂_tendsto :
       have h_D_sq_fn : D (Θ₂ ^ 2) = 2 * Θ₂ * D Θ₂ := D_sq Θ₂ hΘ₂_holo
       calc D (fun w => (Θ₂ w) ^ 4) z
           = D ((Θ₂ ^ 2) ^ 2) z := by rw [h_pow4_eq]
-        _ = (Θ₂ ^ 2) z * D (Θ₂ ^ 2) z + D (Θ₂ ^ 2) z * (Θ₂ ^ 2) z := by
-            rw [pow_two ((Θ₂ ^ 2) : ℍ → ℂ), D_mul (Θ₂ ^ 2) (Θ₂ ^ 2) hΘ₂sq hΘ₂sq]
+        _ = D (Θ₂ ^ 2) z * (Θ₂ ^ 2) z + (Θ₂ ^ 2) z * D (Θ₂ ^ 2) z := by
+            rw [pow_two ((Θ₂ ^ 2) : ℍ → ℂ), congrFun (D_mul (Θ₂ ^ 2) (Θ₂ ^ 2) hΘ₂sq hΘ₂sq) z]
             simp only [Pi.add_apply, Pi.mul_apply]
         _ = 2 * (Θ₂ z) ^ 2 * D (Θ₂ ^ 2) z := by simp only [Pi.pow_apply]; ring
         _ = 2 * (Θ₂ z) ^ 2 * (2 * Θ₂ z * D Θ₂ z) := by

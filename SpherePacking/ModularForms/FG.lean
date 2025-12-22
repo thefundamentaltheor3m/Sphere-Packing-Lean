@@ -20,6 +20,9 @@ noncomputable def negDE₂ := - (D E₂)
 
 noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
 
+/-- The discriminant Δ_fun = 1728⁻¹(E₄³ - E₆²) equals the standard discriminant Δ. -/
+lemma Δ_fun_eq_Δ : Δ_fun = Δ := by sorry
+
 noncomputable def L₁₀ := (D F) * G - F * (D G)
 
 noncomputable def SerreDer_22_L₁₀ := serre_D 22 L₁₀

@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 import SpherePacking.ModularForms.AtImInfty
 import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.FG
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.ResToImagAxis
@@ -127,27 +128,17 @@ lemma Complex.im_div_eq_zero' (a b : ℂ) (ha : a.im = 0) (hb : b.im = 0) : (a /
   · exact ha
   · simp [Complex.inv_im, hb]
 /-!
-## Section 2: Definitions of F, G, and Q
+## Section 2: Properties of F, G, and Q
 
-Note: `F = (E₂ * E₄ - E₆)²` is already defined in `Derivative.lean`.
-We define `G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²)` here per Definition 8.3 of the blueprint.
-
-TODO: After PR #193 merges, these definitions should be imported from
-`SpherePacking.ModularForms.FG` instead of being defined here.
+`F` and `G` are defined in `SpherePacking.ModularForms.FG`:
+- `F = (E₂ * E₄ - E₆)²`
+- `G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²)` (Definition 8.3 of the blueprint)
 -/
-
-/--
-The function `G(z) = H₂(z)³ (2 H₂(z)² + 5 H₂(z) H₄(z) + 5 H₄(z)²)` from
-Definition 8.3 of the blueprint. Aliased from the root namespace.
--/
-noncomputable abbrev G := _root_.G
 
 /--
 `G` is holomorphic on the upper half-plane.
 Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is holomorphic since H₂ and H₄ are
 holomorphic.
-
-TODO: After PR #193 merges, this should follow from the holomorphicity results there.
 -/
 theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
   -- G = H₂³ * (2H₂² + 5H₂H₄ + 5H₄²), composition of holomorphic functions
@@ -422,10 +413,10 @@ theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
 Blueprint: Lemma 8.6 - follows from H₂(it) > 0 and H₄(it) > 0.
 G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is positive since all factors are positive.
 
-TODO: After PR #193 merges, use the G_pos lemma from FG.lean.
+TODO: Use the G_pos lemma from FG.lean once it's complete.
 -/
 theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
-  unfold G _root_.G
+  unfold G
   have hH₂ : ResToImagAxis.Pos H₂ := H₂_imag_axis_pos
   have hH₄ : ResToImagAxis.Pos H₄ := H₄_imag_axis_pos
 
