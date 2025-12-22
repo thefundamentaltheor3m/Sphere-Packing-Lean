@@ -1750,7 +1750,7 @@ the imaginary axis.
 theorem D_imag_axis_real_of_imag_axis_real {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (hreal : ResToImagAxis.Real F) : ResToImagAxis.Real (D F) := by
   intro t ht
-  have hderiv := deriv_resToImagAxis_eq F hF t ht
+  have hderiv := deriv_resToImagAxis_eq F hF ht
   have hDiff : DifferentiableAt ℝ F.resToImagAxis t := ResToImagAxis.Differentiable F hF t ht
   have h := Complex.imCLM.hasFDerivAt.comp_hasDerivAt t hDiff.hasDerivAt
   have hderiv_im : (deriv F.resToImagAxis t).im = 0 := by
