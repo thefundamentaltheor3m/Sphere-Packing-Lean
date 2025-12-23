@@ -1,5 +1,6 @@
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ModularForms.tsumderivWithin
+import Mathlib.Analysis.Calculus.DerivativeTest
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
@@ -1241,10 +1242,192 @@ the specific functions involved.
 theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (hSDF : ResToImagAxis.Pos (serre_D k F)) (hF : ResToImagAxis.EventuallyPos F) :
     ResToImagAxis.Pos F := by
-  -- TODO: This requires analyzing the interaction between serre_D and the imaginary axis.
-  -- serre_D k F = D F - (k/12) * E₂ * F
-  -- If k > 0 and both E₂, F > 0 on imaginary axis, then serre_D k F > 0 implies
-  -- D F > (k/12)*E₂*F > 0
-  -- But we need F > 0 to conclude D F > 0, which is circular.
-  -- The actual proof likely requires a more careful analysis using the specific form of E₂.
-  sorry
+  -- Strategy: "no last zero" argument.
+  -- At a zero of F, serre_D k F = D F (since E₂ * F = E₂ * 0 = 0).
+  -- So if serre_D k F > 0, then D F > 0 at that point.
+  -- By deriv_resToImagAxis_eq, d/dt F(it) = -2π * D F(it), so derivative is negative.
+  -- This means F is strictly decreasing at the zero, contradicting having a "last zero".
+  refine ⟨hF.1, fun t ht => ?_⟩
+  -- Define g(t) = (F.resToImagAxis t).re
+  set g : ℝ → ℝ := fun s => (F.resToImagAxis s).re with hg_def
+  -- We need to show g t > 0. By contradiction, suppose g t ≤ 0 for some t > 0.
+  by_contra h_not_pos
+  push_neg at h_not_pos
+  -- Get eventual positivity: ∃ t₀, ∀ s ≥ t₀, g s > 0
+  obtain ⟨t₀, ht₀_pos, heventual⟩ := hF.2
+  -- g is continuous on (0, ∞)
+  have hg_cont : ContinuousOn g (Set.Ioi 0) := by
+    intro s hs
+    have hdiff := ResToImagAxis.Differentiable F hFdiff s hs
+    exact Complex.continuous_re.continuousAt.comp_continuousWithinAt
+      hdiff.continuousAt.continuousWithinAt
+  -- Case analysis: if t ≥ t₀, then g t > 0 by eventual positivity - contradiction
+  by_cases ht_le_t₀ : t₀ ≤ t
+  · -- t ≥ t₀, so by eventual positivity g t > 0, contradiction
+    exact absurd (heventual t ht_le_t₀) (not_lt.mpr h_not_pos)
+  · push_neg at ht_le_t₀
+    -- Now t < t₀ and g t ≤ 0 but g t₀ > 0
+    -- There is a "last zero" t* = sSup {s ∈ [t, t₀] | g s ≤ 0}
+    set Z := {s ∈ Set.Icc t t₀ | g s ≤ 0} with hZ_def
+    have ht_in_Z : t ∈ Z := by
+      simp only [Z, Set.mem_setOf_eq, Set.mem_Icc, le_refl, ht_le_t₀.le, and_self, true_and]
+      rw [hg_def]
+      exact h_not_pos
+    have hZ_nonempty : Z.Nonempty := ⟨t, ht_in_Z⟩
+    have hZ_bddAbove : BddAbove Z := ⟨t₀, fun s hs => hs.1.2⟩
+    set t_star := sSup Z with ht_star_def
+    have ht_star_mem : t_star ∈ Set.Icc t t₀ := by
+      refine ⟨le_csSup_of_le hZ_bddAbove ht_in_Z (le_refl t), ?_⟩
+      exact csSup_le hZ_nonempty (fun s hs => hs.1.2)
+    have ht_star_pos : 0 < t_star := lt_of_lt_of_le ht ht_star_mem.1
+    -- g(t_star) ≤ 0 because Z is closed (g is continuous) and t_star = sSup Z
+    have hg_cont_Icc : ContinuousOn g (Set.Icc t t₀) :=
+      hg_cont.mono (fun x hx => lt_of_lt_of_le ht hx.1)
+    have hZ_closed : IsClosed Z := by
+      have hZ_eq : Z = Set.Icc t t₀ ∩ g ⁻¹' Set.Iic 0 := by ext x; simp [Z]
+      rw [hZ_eq]
+      exact hg_cont_Icc.preimage_isClosed_of_isClosed isClosed_Icc isClosed_Iic
+    have hg_t_star_le : g t_star ≤ 0 :=
+      (hZ_closed.csSup_mem hZ_nonempty ⟨t₀, fun s hs => hs.1.2⟩).2
+    -- Also t_star < t₀ (otherwise g t₀ ≤ 0, contradicting eventual positivity)
+    have ht_star_lt_t₀ : t_star < t₀ := by
+      by_contra h_ge
+      push_neg at h_ge
+      have hg_t₀_pos := heventual t₀ (le_refl t₀)
+      have hg_t₀_eq := ht_star_mem.2.antisymm h_ge ▸ hg_t_star_le
+      linarith
+    -- Actually g(t_star) = 0 (if g(t_star) < 0, there would be points past t_star with g ≤ 0)
+    have hg_t_star_eq : g t_star = 0 := by
+      by_contra h_ne
+      have h_neg : g t_star < 0 := lt_of_le_of_ne hg_t_star_le h_ne
+      -- g is continuous at t_star, so g < 0 in a neighborhood
+      have hg_cont_at : ContinuousAt g t_star := (hg_cont t_star ht_star_pos).continuousAt
+        (Ioi_mem_nhds ht_star_pos)
+      obtain ⟨δ, hδ_pos, hδ⟩ := Metric.continuousAt_iff.mp hg_cont_at (|g t_star| / 2)
+        (by positivity)
+      -- Choose s in (t_star, min(t_star + δ, t₀))
+      have hδ'' : 0 < t₀ - t_star := by linarith
+      set s := t_star + min δ (t₀ - t_star) / 2 with hs_def
+      have hmin_pos : 0 < min δ (t₀ - t_star) := lt_min hδ_pos hδ''
+      have hs_gt : t_star < s := by linarith [half_pos hmin_pos]
+      have hs_dist : dist s t_star < δ := by
+        simp only [Real.dist_eq, abs_of_pos (sub_pos.mpr hs_gt)]
+        calc s - t_star = min δ (t₀ - t_star) / 2 := by linarith
+          _ < min δ (t₀ - t_star) := half_lt_self hmin_pos
+          _ ≤ δ := min_le_left _ _
+      have hg_s_bound := hδ hs_dist
+      simp only [Real.dist_eq, abs_lt] at hg_s_bound
+      have hg_s_neg : g s < 0 := by
+        have habs : |g t_star| = -g t_star := abs_of_neg h_neg
+        linarith [hg_s_bound.2]
+      -- So s ∈ Z but s > t_star, contradicting t_star = sSup Z
+      have hs_in_Z : s ∈ Z := by
+        simp only [Z, Set.mem_setOf_eq, Set.mem_Icc]
+        refine ⟨⟨le_of_lt (lt_of_le_of_lt ht_star_mem.1 hs_gt), ?_⟩, le_of_lt hg_s_neg⟩
+        have h1 : s = t_star + min δ (t₀ - t_star) / 2 := by linarith
+        have h2 : s ≤ t_star + (t₀ - t_star) / 2 := by linarith [min_le_right δ (t₀ - t_star)]
+        linarith
+      have : s ≤ t_star := le_csSup hZ_bddAbove hs_in_Z
+      linarith
+    -- Now we have g(t_star) = 0, i.e., F.resToImagAxis t_star = 0 (using that F is real)
+    have hF_t_star_eq : F.resToImagAxis t_star = 0 := by
+      have hreal := hF.1 t_star ht_star_pos
+      simp only [Complex.ext_iff, Complex.zero_re, Complex.zero_im]
+      exact ⟨hg_t_star_eq, hreal⟩
+    -- At t_star, serre_D k F = D F (since F = 0 there)
+    have hserre_eq_D : (serre_D k F).resToImagAxis t_star = (D F).resToImagAxis t_star := by
+      unfold serre_D
+      simp only [Pi.sub_apply, Pi.mul_apply,
+        Function.resToImagAxis_apply, ResToImagAxis, ht_star_pos, ↓reduceDIte]
+      have hF_zero : F ⟨I * t_star, by simp [ht_star_pos]⟩ = 0 := by
+        have := hF_t_star_eq
+        simp only [Function.resToImagAxis_apply, ResToImagAxis, ht_star_pos, ↓reduceDIte] at this
+        exact this
+      rw [hF_zero, mul_zero, sub_zero]
+    -- serre_D k F is positive at t_star
+    have hSDF_pos : 0 < ((serre_D k F).resToImagAxis t_star).re := hSDF.2 t_star ht_star_pos
+    -- So D F is positive at t_star
+    have hDF_pos : 0 < ((D F).resToImagAxis t_star).re := by rw [← hserre_eq_D]; exact hSDF_pos
+    -- By deriv_resToImagAxis_eq: deriv F.resToImagAxis t_star = -2π * (D F).resToImagAxis t_star
+    have hF_deriv : deriv F.resToImagAxis t_star = -2 * π * (D F).resToImagAxis t_star :=
+      deriv_resToImagAxis_eq F hFdiff ht_star_pos
+    -- deriv g t_star = (deriv F.resToImagAxis t_star).re < 0
+    have hFdiff_at := ResToImagAxis.Differentiable F hFdiff t_star ht_star_pos
+    have hDF_real := hSDF.1 t_star ht_star_pos
+    rw [hserre_eq_D] at hDF_real
+    have hg_deriv_neg : deriv g t_star < 0 := by
+      -- deriv g = deriv (Complex.re ∘ F.resToImagAxis) = re (deriv F.resToImagAxis)
+      -- Use HasFDerivAt.comp_hasDerivAt with the chain rule
+      have hF_hasDerivAt : HasDerivAt F.resToImagAxis (deriv F.resToImagAxis t_star) t_star :=
+        hFdiff_at.hasDerivAt
+      have hg_hasDerivAt : HasDerivAt g (deriv F.resToImagAxis t_star).re t_star := by
+        simp only [hg_def]
+        exact Complex.reCLM.hasFDerivAt.comp_hasDerivAt t_star hF_hasDerivAt
+      have hg_deriv_eq : deriv g t_star = (deriv F.resToImagAxis t_star).re := hg_hasDerivAt.deriv
+      rw [hg_deriv_eq, hF_deriv]
+      -- (-2 * π * (D F).resToImagAxis t_star).re < 0
+      -- Since (D F).resToImagAxis t_star is real (im = 0), and -2π is real, this simplifies
+      have h2pi : (0 : ℝ) < 2 * π := by positivity
+      -- Write -2 * π as ofReal (-2 * π) to use re_ofReal_mul
+      have hre_eq : (-2 * ↑π * (D F).resToImagAxis t_star).re =
+          -2 * π * ((D F).resToImagAxis t_star).re := by
+        rw [show (-2 : ℂ) * ↑π = ↑((-2 : ℝ) * π) by simp [Complex.ofReal_mul]]
+        rw [Complex.re_ofReal_mul]
+      rw [hre_eq]
+      linarith [mul_pos h2pi hDF_pos]
+    -- g(t_star) = 0 and g'(t_star) < 0 means g becomes negative just past t_star
+    -- But for s > t_star (and s < t₀), we must have g s > 0 (since t_star = sSup Z)
+    have hg_pos_after : ∀ s ∈ Set.Ioo t_star t₀, 0 < g s := by
+      intro s ⟨hs_gt, hs_lt⟩
+      by_contra h_not_pos_s
+      push_neg at h_not_pos_s
+      have hs_in_Z : s ∈ Z := by
+        simp only [Z, Set.mem_setOf_eq, Set.mem_Icc]
+        refine ⟨⟨le_of_lt (lt_of_le_of_lt ht_star_mem.1 hs_gt), le_of_lt hs_lt⟩, h_not_pos_s⟩
+      have : s ≤ t_star := le_csSup hZ_bddAbove hs_in_Z
+      linarith
+    -- g is differentiable at t_star
+    have hg_diff : DifferentiableAt ℝ g t_star := by
+      simp only [hg_def]
+      exact Complex.reCLM.differentiable.differentiableAt.comp t_star hFdiff_at
+    -- By definition of derivative: f'(a) < 0 means f(a + ε) < f(a) for small ε > 0
+    have h_decrease : ∃ ε > 0, ε < t₀ - t_star ∧ g (t_star + ε) < g t_star := by
+      have hδ' : 0 < t₀ - t_star := by linarith
+      -- Use eventually_nhdsWithin_sign_eq_of_deriv_neg: if deriv g x₀ < 0 and g x₀ = 0,
+      -- then locally sign(g x) = sign(x₀ - x)
+      have hsign := eventually_nhdsWithin_sign_eq_of_deriv_neg hg_deriv_neg hg_t_star_eq
+      -- hsign : ∀ᶠ x in nhds t_star, SignType.sign (g x) = SignType.sign (t_star - x)
+      -- Get an ε-ball where this holds
+      rw [Filter.Eventually, Metric.mem_nhds_iff] at hsign
+      obtain ⟨δ, hδ_pos, hδ_ball⟩ := hsign
+      -- Choose ε = min(δ/2, (t₀ - t_star)/2)
+      set ε := min (δ / 2) ((t₀ - t_star) / 2) with hε_def
+      have hε_pos : 0 < ε := lt_min (by linarith) (by linarith)
+      refine ⟨ε, hε_pos, ?_, ?_⟩
+      · -- ε < t₀ - t_star
+        calc ε ≤ (t₀ - t_star) / 2 := min_le_right _ _
+          _ < t₀ - t_star := by linarith
+      · -- g (t_star + ε) < g t_star
+        have hε_in_ball : t_star + ε ∈ Metric.ball t_star δ := by
+          simp only [Metric.mem_ball, Real.dist_eq, add_sub_cancel_left, abs_of_pos hε_pos]
+          calc ε ≤ δ / 2 := min_le_left _ _
+            _ < δ := by linarith
+        have hsign_at := hδ_ball hε_in_ball
+        -- hsign_at : t_star + ε ∈ {x | SignType.sign (g x) = SignType.sign (t_star - x)}
+        simp only [Set.mem_setOf_eq] at hsign_at
+        -- hsign_at : SignType.sign (g (t_star + ε)) = SignType.sign (t_star - (t_star + ε))
+        have hneg_ε : t_star - (t_star + ε) = -ε := by ring
+        have hneg_ε_lt : -ε < 0 := neg_neg_of_pos hε_pos
+        rw [hneg_ε, sign_neg hneg_ε_lt] at hsign_at
+        -- sign (g (t_star + ε)) = -1 (i.e., SignType.neg) means g (t_star + ε) < 0
+        have hg_neg : g (t_star + ε) < 0 := sign_eq_neg_one_iff.mp hsign_at
+        rw [hg_t_star_eq]
+        exact hg_neg
+    obtain ⟨ε, hε_pos, hε_small, hg_decrease⟩ := h_decrease
+    have hs_in_Ioo : t_star + ε ∈ Set.Ioo t_star t₀ := by
+      constructor
+      · linarith
+      · linarith
+    have hg_s_pos : 0 < g (t_star + ε) := hg_pos_after (t_star + ε) hs_in_Ioo
+    rw [hg_t_star_eq] at hg_decrease
+    linarith
