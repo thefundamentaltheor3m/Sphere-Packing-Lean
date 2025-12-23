@@ -53,7 +53,16 @@ theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(
 /--
 TODO: Move this to E2.lean.
 -/
-theorem E₂_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₂ := sorry
+theorem E₂_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₂ := by
+  rw [UpperHalfPlane.mdifferentiable_iff]
+  have hSopen : IsOpen {z : ℂ | 0 < z.im} := isOpen_lt continuous_const Complex.continuous_im
+  have hη : DifferentiableOn ℂ η _ := fun z hz => (eta_DifferentiableAt_UpperHalfPlane ⟨z, hz⟩).differentiableWithinAt
+  have hlog : DifferentiableOn ℂ (logDeriv η) {z | 0 < z.im} :=
+    (hη.deriv hSopen).div hη fun _ hz => by simpa using eta_nonzero_on_UpperHalfPlane ⟨_, hz⟩
+  exact (hlog.const_mul ((↑π * I / 12)⁻¹)).congr fun z hz => by
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hz,
+      show logDeriv η z = (↑π * I / 12) * E₂ ⟨z, hz⟩ by simpa using eta_logDeriv ⟨z, hz⟩]
+    field_simp [Real.pi_ne_zero]
 
 /--
 Basic properties of derivatives: linearity, Leibniz rule, etc.
@@ -319,6 +328,16 @@ example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.t
 Interaction between (Serre) derivative and restriction to the imaginary axis.
 -/
 
+lemma StrictAntiOn.eventuallyPos_Ioi {g : ℝ → ℝ}
+  (hAnti : StrictAntiOn g (Set.Ioi (0 : ℝ)))
+  {t₀ : ℝ} (ht₀_pos : 0 < t₀)
+  (hEv : ∀ t : ℝ, t₀ ≤ t → 0 < g t) :
+  ∀ t : ℝ, 0 < t → 0 < g t := by
+  intro t ht
+  by_cases hcase : t₀ ≤ t
+  · exact hEv t hcase
+  · exact lt_trans (hEv t₀ le_rfl) (hAnti ht ht₀_pos (lt_of_not_ge hcase))
+
 /--
 Chain rule for restriction to imaginary axis: `d/dt F(it) = -2π * (D F)(it)`.
 
@@ -353,7 +372,26 @@ is positive) and the derivative is positive, then $F$ is also positive.
 -/
 theorem antiDerPos {F : ℍ → ℂ} {k : ℤ} (hF : ResToImagAxis.EventuallyPos F)
     (hDF : ResToImagAxis.Pos (D F)) : ResToImagAxis.Pos F := by
-  sorry
+  obtain ⟨hF_real, t₀, ht₀_pos, hF_pos⟩ := hF; obtain ⟨-, hDF_pos⟩ := hDF
+  let g := fun t => (F.resToImagAxis t).re
+  have hg : ∀ t, 0 < t → HasDerivAt g (-(2 * π) * (ResToImagAxis (D F) t).re) t := fun t ht => by
+    let z0 : ℂ := Complex.I * t; let zH : ℍ := ⟨z0, by simp [z0, ht]⟩; let Φ := F ∘ ofComplex
+    have hax : ResToImagAxis (D F) t = D F zH := by simp [ResToImagAxis, ht, zH, z0]
+    have hΦ : DifferentiableAt ℂ Φ z0 := differentiableAt_of_deriv_ne_zero fun h => by
+      have hpos : 0 < (D F zH).re := by simpa [hax] using hDF_pos t ht
+      simp [D, Φ, zH, h] at hpos
+    have hi : HasDerivAt (Complex.I * ·) Complex.I t := by simpa [mul_comm] using hasDerivAt_mul_const Complex.I
+    have he := (by simpa [Φ, mul_comm, mul_left_comm] using hΦ.hasDerivAt.comp (t : ℂ) hi :
+      HasDerivAt (Φ <| Complex.I * ·) (deriv Φ z0 * Complex.I) t)
+    have hev : ∀ᶠ x in nhds t, g x = (Φ (Complex.I * x)).re := by filter_upwards [lt_mem_nhds ht] with x hx; simp [g, Φ, ResToImagAxis, hx, ofComplex_apply_of_im_pos (by simp [hx] : 0 < (Complex.I * x).im)]
+    have hd : deriv Φ z0 = 2 * π * Complex.I * D F zH := by
+      have h : D F zH = (2 * π * Complex.I)⁻¹ * deriv Φ z0 := by simp [D, Φ, zH]
+      field_simp [Real.pi_ne_zero, Complex.I_ne_zero] at h ⊢; ring_nf at h ⊢; exact h.symm
+    simpa [hd, Complex.mul_re, Complex.mul_im, hax] using he.real_of_complex.congr_of_eventuallyEq hev
+  have hn : ∀ x ∈ Set.Ioi (0 : ℝ), deriv g x < 0 := fun x (hx : 0 < x) => by
+    rw [(hg x hx).deriv]; have hx' : 0 < (ResToImagAxis (D F) x).re := hDF_pos x hx; nlinarith [Real.pi_pos]
+  exact ⟨hF_real, fun t ht => StrictAntiOn.eventuallyPos_Ioi (strictAntiOn_of_deriv_neg (convex_Ioi 0)
+    (fun x hx => (hg x hx).continuousAt.continuousWithinAt) (by simpa [interior_Ioi] using hn)) ht₀_pos hF_pos t ht⟩
 
 /--
 Let $F : \mathbb{H} \to \mathbb{C}$ be a holomorphic function where $F(it)$ is real for all $t > 0$.
