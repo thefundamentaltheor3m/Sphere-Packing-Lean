@@ -432,15 +432,15 @@ theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
     simpa [pow_two] using hmul
 
   have hterm1 : ResToImagAxis.Pos (fun z : ℍ => 2 * H₂ z ^ 2) := by
-    simpa using (ResToImagAxis.Pos.hmul (F := fun z : ℍ => H₂ z ^ 2) hH₂_sq (by norm_num))
+    simpa using (ResToImagAxis.Pos.smul (F := fun z : ℍ => H₂ z ^ 2) hH₂_sq (by norm_num))
   have hterm2 : ResToImagAxis.Pos (fun z : ℍ => 5 * H₂ z * H₄ z) := by
     have h5H₂ : ResToImagAxis.Pos (fun z : ℍ => (5 : ℝ) * H₂ z) :=
-      ResToImagAxis.Pos.hmul (F := H₂) hH₂ (by norm_num)
+      ResToImagAxis.Pos.smul (F := H₂) hH₂ (by norm_num)
     have hmul : ResToImagAxis.Pos (fun z : ℍ => ((5 : ℝ) * H₂ z) * H₄ z) :=
       ResToImagAxis.Pos.mul h5H₂ hH₄
     simpa [mul_assoc] using hmul
   have hterm3 : ResToImagAxis.Pos (fun z : ℍ => 5 * H₄ z ^ 2) := by
-    simpa using (ResToImagAxis.Pos.hmul (F := fun z : ℍ => H₄ z ^ 2) hH₄_sq (by norm_num))
+    simpa using (ResToImagAxis.Pos.smul (F := fun z : ℍ => H₄ z ^ 2) hH₄_sq (by norm_num))
 
   have hquad :
       ResToImagAxis.Pos
@@ -762,7 +762,7 @@ theorem F_imag_axis_real : ResToImagAxis.Real F := by
   have hProd : ResToImagAxis.Real (E₂ * E₄.toFun) :=
     ResToImagAxis.Real.mul E₂_imag_axis_real E₄_imag_axis_real
   have hNeg : ResToImagAxis.Real ((-1 : ℝ) • E₆.toFun) :=
-    ResToImagAxis.Real.hmul (c := (-1 : ℝ)) E₆_imag_axis_real
+    ResToImagAxis.Real.smul E₆_imag_axis_real
   have hSub : ResToImagAxis.Real (E₂ * E₄.toFun - E₆.toFun) := by
     have hEq : E₂ * E₄.toFun - E₆.toFun = E₂ * E₄.toFun + (-1 : ℝ) • E₆.toFun := by
       ext z

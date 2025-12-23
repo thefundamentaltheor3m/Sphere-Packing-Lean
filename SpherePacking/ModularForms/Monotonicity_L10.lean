@@ -181,15 +181,16 @@ theorem D_E₂_qexp (z : ℍ) :
     D E₂ z = -24 * ∑' n : ℕ+, (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
         cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
   -- Proof strategy:
-  -- 1. From E₂_eq_sigma: E₂ z = 1 - 24 * ∑' σ₁(n) * qⁿ
+  -- 1. E₂ z = 1 - 24 * ∑' σ₁(n) * qⁿ (from E₂_eq and tsum_eq_tsum_sigma)
   -- 2. Apply D: D(E₂) = D(1) - 24 * D(∑' σ₁(n) * qⁿ)
   --    - D(1) = 0 by D_const
   --    - D(∑' σ₁(n) * qⁿ) = ∑' n * σ₁(n) * qⁿ by D_qexp_tsum_pnat
   -- 3. Result: D(E₂) = -24 * ∑' n * σ₁(n) * qⁿ
   --
   -- Technical requirements for D_qexp_tsum_pnat:
-  --   - Summability of σ₁(n) * qⁿ: Use σ₁(n) ≤ n² (sigma_bound), then a33 gives summability
-  --   - Uniform bound on compact sets: On K ⊂ ℍ, im(z) ≥ y_min > 0, so
+  --   - Summability of σ₁(n) * qⁿ: Use σ₁(n) ≤ n² (sigma_bound), then summability follows
+  --     from exponential decay: ‖σ₁(n) * qⁿ‖ ≤ n² * exp(-2πn·y) is summable for y > 0
+  --   - Uniform bound on compact sets: On K ⊂ ℍ with im ≥ y_min > 0,
   --     ‖σ₁(n) * n * qⁿ‖ ≤ n³ * exp(-2π·y_min·n), which is summable
   sorry
 
