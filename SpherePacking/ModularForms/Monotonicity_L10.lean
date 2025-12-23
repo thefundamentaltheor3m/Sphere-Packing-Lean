@@ -1496,22 +1496,89 @@ theorem D_Θ₄_tendsto_zero :
   -- summable_sq_mul_exp_neg_pi_sq, tendsto_tsum_of_dominated_convergence
   have h_tsum_tendsto : Filter.Tendsto
       (fun z : ℍ => ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (1/2) z) (0, 1)) atImInfty (nhds 0) := by
-    -- Proof strategy: Apply tendsto_tsum_of_dominated_convergence
-    -- (see D_jacobiTheta₂_half_mul_tendsto_zero at lines 1029-1153 for template)
-    --
-    -- Key differences from D_jacobiTheta₂_half_mul_tendsto_zero:
-    -- - Direction is (0, 1) instead of (1/2, 1)
-    -- - First argument is constant 1/2 (not z/2), so S = |(1/2).im| = 0
-    -- - Simpler bound: 3π|n|² exp(-πn²) (vs exp(-π(n² - |n|)))
-    --
-    -- Arguments for tendsto_tsum_of_dominated_convergence:
-    -- 1. Summability: summable_sq_mul_exp_neg_pi_sq.mul_left (3 * π)
-    -- 2. Pointwise convergence: n=0 gives constant 0 (since coefficient πin² = 0),
-    --    n≠0 gives exp(πin + πin²z) * πin² → 0 since (πin + πin²z).re = -πn²·z.im → -∞
-    -- 3. Eventual bound: For z.im ≥ 1, use norm_jacobiTheta₂_term_fderiv_le and
-    --    norm_jacobiTheta₂_term_le with S=0, T=z.im, giving
-    --    ‖term_fderiv(n)‖ ≤ 3π|n|² exp(-π·z.im·n²) ≤ 3π|n|² exp(-πn²)
-    sorry
+    -- Use dominated convergence with bound 3π|n|² exp(-πn²)
+    conv => rhs; rw [show (0 : ℂ) = ∑' (k : ℤ), (0 : ℂ) from tsum_zero.symm]
+    apply tendsto_tsum_of_dominated_convergence (α := ℍ) (𝓕 := atImInfty)
+      (f := fun z n => (jacobiTheta₂_term_fderiv n (1/2) z) ((0 : ℂ), 1))
+      (g := fun _ => 0)
+      (bound := fun n => 3 * π * |n| ^ 2 * Real.exp (-π * n ^ 2))
+    -- 1. Summability of bound
+    · simpa [mul_assoc] using summable_sq_mul_exp_neg_pi_sq.mul_left (3 * π)
+    -- 2. Pointwise convergence: each term → 0
+    · intro n
+      -- The term is: exp(πin + πin²z) * (2πin * 0 + πin² * 1) = exp(πin + πin²z) * πin²
+      -- For n=0: πin² = 0, so term is constant 0
+      -- For n≠0: exponential decay since (πin + πin²z).re = -πn²·z.im → -∞
+      by_cases hn0 : n = 0
+      · -- n = 0: term is 0 for all z
+        subst hn0
+        simp only [jacobiTheta₂_term_fderiv, Int.cast_zero, mul_zero, sq,
+          zero_mul, zero_smul, add_zero, Complex.exp_zero, one_smul,
+          ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
+          ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd', smul_eq_mul]
+        exact tendsto_const_nhds
+      · -- n ≠ 0: exponential decay
+        simp only [jacobiTheta₂_term_fderiv, ContinuousLinearMap.smul_apply,
+          ContinuousLinearMap.add_apply, ContinuousLinearMap.coe_fst',
+          ContinuousLinearMap.coe_snd', smul_eq_mul]
+        -- Simplify: (0, 1) applied gives just the second component coefficient πin²
+        have h_simp : ∀ z : ℍ,
+            cexp (2 * ↑π * I * ↑n * (1/2 : ℂ) + ↑π * I * ↑n ^ 2 * ↑z) *
+            (2 * ↑π * I * ↑n * 0 + ↑π * I * ↑n ^ 2 * 1) =
+            cexp (↑π * I * ↑n + ↑π * I * ↑n ^ 2 * ↑z) * (↑π * I * ↑n ^ 2) := fun z => by ring
+        simp_rw [h_simp]
+        -- Now show exp(πin + πin²z) * πin² → 0
+        have hnsq_pos : n ^ 2 > 0 := sq_pos_of_ne_zero hn0
+        have h_exp_tendsto : Filter.Tendsto
+            (fun z : ℍ => cexp ((π : ℂ) * I * n + (π : ℂ) * I * (n : ℂ) ^ 2 * z))
+            atImInfty (nhds 0) := by
+          rw [Complex.tendsto_exp_nhds_zero_iff]
+          -- (πin + πin²z).re = -πn²·z.im since (πin).re = 0 and (πin²z).re = -πn²·z.im
+          have h_re_eq : ∀ z : ℍ,
+              ((π : ℂ) * I * n + (π : ℂ) * I * (n : ℂ) ^ 2 * z).re = -π * (n : ℝ) ^ 2 * z.im := by
+            intro z
+            simp only [add_re, mul_re, ofReal_re, ofReal_im, Complex.I_re, Complex.I_im,
+              intCast_re, intCast_im, sq, UpperHalfPlane.coe_re, UpperHalfPlane.coe_im, mul_im]
+            ring
+          simp_rw [h_re_eq]
+          have h_const_neg : -π * (n : ℝ) ^ 2 < 0 := by
+            have hnsq' : (0 : ℝ) < (n : ℝ) ^ 2 := by exact_mod_cast hnsq_pos
+            nlinarith [Real.pi_pos]
+          rw [Filter.tendsto_const_mul_atBot_of_neg h_const_neg]
+          exact Filter.tendsto_im_atImInfty
+        convert h_exp_tendsto.mul tendsto_const_nhds using 1 <;> simp
+    -- 3. Bound condition: ‖f(z,n)‖ ≤ bound(n) eventually (for z.im ≥ 1)
+    · apply Filter.eventually_atImInfty.mpr
+      use 1
+      intro z hz k
+      -- ‖term‖ ≤ ‖term_fderiv‖ ≤ 3π|k|² ‖jacobiTheta₂_term‖ ≤ 3π|k|² exp(-πk²)
+      have h_opnorm := ContinuousLinearMap.le_opNorm
+        (jacobiTheta₂_term_fderiv k (1/2) ↑z) ((0 : ℂ), 1)
+      have h_v_norm : ‖((0 : ℂ), (1 : ℂ))‖ = 1 := by simp [Prod.norm_def]
+      rw [h_v_norm, mul_one] at h_opnorm
+      have h_fderiv_bound := norm_jacobiTheta₂_term_fderiv_le k (1/2 : ℂ) ↑z
+      have h_half_im : |(1/2 : ℂ).im| ≤ 0 := by simp
+      have h_term_bound := norm_jacobiTheta₂_term_le z.im_pos h_half_im (le_refl z.im) k
+      calc ‖(jacobiTheta₂_term_fderiv k (1/2) ↑z) (0, 1)‖
+          ≤ ‖jacobiTheta₂_term_fderiv k (1/2) ↑z‖ := h_opnorm
+        _ ≤ 3 * π * ↑|k| ^ 2 * ‖jacobiTheta₂_term k (1/2) ↑z‖ := h_fderiv_bound
+        _ ≤ 3 * π * ↑|k| ^ 2 * rexp (-π * (z.im * ↑k ^ 2 - 2 * 0 * ↑|k|)) := by
+            exact mul_le_mul_of_nonneg_left h_term_bound (by positivity)
+        _ = 3 * π * ↑|k| ^ 2 * rexp (-π * z.im * ↑k ^ 2) := by ring_nf
+        _ ≤ 3 * π * ↑|k| ^ 2 * rexp (-π * 1 * ↑k ^ 2) := by
+            apply mul_le_mul_of_nonneg_left _ (by positivity)
+            apply Real.exp_le_exp_of_le
+            -- Need: -π * z.im * k² ≤ -π * 1 * k²
+            -- Since z.im ≥ 1 and k² ≥ 0, we have -π * z.im * k² ≤ -π * k²
+            have hk_sq_nonneg : (0 : ℝ) ≤ (k : ℝ) ^ 2 := sq_nonneg _
+            have hz1 : z.im ≥ 1 := hz
+            have hpi_pos : π > 0 := Real.pi_pos
+            have h1 : -π * z.im ≤ -π * 1 := by nlinarith
+            calc -π * z.im * (k : ℝ) ^ 2
+                = (-π * z.im) * (k : ℝ) ^ 2 := by ring
+              _ ≤ (-π * 1) * (k : ℝ) ^ 2 := mul_le_mul_of_nonneg_right h1 hk_sq_nonneg
+              _ = -π * 1 * (k : ℝ) ^ 2 := by ring
+        _ = 3 * π * ↑|k| ^ 2 * rexp (-π * ↑k ^ 2) := by ring_nf
   have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
   simp only [mul_zero] at h_mul
   exact h_mul
