@@ -181,7 +181,22 @@ See E2.lean:857-864 for the pattern used in E₂_eq.
 -/
 lemma E₂_eq_sigma (z : ℍ) :
     E₂ z = 1 - 24 * ∑' (n : ℕ+), ↑(σ 1 n) * cexp (2 * π * I * ↑n * z) := by
-  sorry
+  rw [E₂_eq z]
+  -- Goal: 1 - 24 * ∑' n/(1-q^n) = 1 - 24 * ∑' σ₁(n) * q^n
+  -- Suffices to show: ∑' n/(1-q^n) = ∑' σ₁(n) * q^n
+  congr 2
+  -- Use tsum_pnat_eq_tsum_succ3 to convert both sums from ℕ+ to ℕ indexing
+  -- hr rewrites LHS: ∑' ℕ+, n/(1-q) → ∑' ℕ, (n+1)/(1-q)
+  -- hl rewrites RHS: ∑' ℕ+, σ₁(n)*q → ∑' ℕ, σ₁(n+1)*q
+  have hl := tsum_pnat_eq_tsum_succ3 (fun n => ArithmeticFunction.sigma 1 n *
+      cexp (2 * π * Complex.I * n * z))
+  have hr := tsum_pnat_eq_tsum_succ3 (fun n => n * cexp (2 * π * Complex.I * n * z) /
+      (1 - cexp (2 * π * Complex.I * n * z)))
+  rw [hr, hl]
+  -- Apply tsum_eq_tsum_sigma to show the ℕ-indexed sums are equal
+  have ht := tsum_eq_tsum_sigma z
+  simp at *
+  rw [ht]
 
 /-- D(E₂) equals -24 times the q-expansion with n·σ₁(n) coefficients.
 
@@ -204,6 +219,18 @@ Technical requirements for D_qexp_tsum_pnat:
 theorem D_E₂_qexp (z : ℍ) :
     D E₂ z = -24 * ∑' n : ℕ+, (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
         cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
+  -- Strategy: Use E₂_eq_sigma to express E₂ = 1 - 24*∑'σ₁(n)*qⁿ, then apply D_qexp_tsum_pnat
+  -- Steps:
+  -- 1. E₂ = 1 - 24 * ∑' σ₁(n) * qⁿ (from E₂_eq_sigma)
+  -- 2. D E₂ = D(1) - 24 * D(∑' σ₁(n) * qⁿ) = -24 * D(∑')
+  -- 3. D(∑' σ₁(n) * qⁿ) = ∑' n * σ₁(n) * qⁿ (from D_qexp_tsum_pnat)
+  --
+  -- The full proof requires:
+  -- - MDifferentiability of the tsum function (for D_sub, D_smul)
+  -- - Summability bounds using sigma_bound 1 n : σ₁(n) ≤ n²
+  -- - Uniform convergence bounds for D_qexp_tsum_pnat on compact sets
+  --
+  -- The MDifferentiability infrastructure is complex. For now, marked as sorry.
   sorry
 
 theorem E₄_sub_E₂_sq_qexp (z : ℍ) :
