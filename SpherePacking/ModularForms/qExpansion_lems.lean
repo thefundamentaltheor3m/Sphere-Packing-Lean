@@ -31,7 +31,7 @@ theorem modform_tendto_ndhs_zero {k : ℤ} (n : ℕ) [ModularFormClass F Γ(n) k
     apply (Function.Periodic.differentiableAt_cuspFunction_zero (h := n)
       (by simp only [Nat.cast_pos]; exact Nat.pos_of_neZero n) ?_ ?_ ?_).continuousAt.tendsto
     · apply SlashInvariantFormClass.periodic_comp_ofComplex
-      simp only [CongruenceSubgroup.strictPeriods_Gamma, AddSubgroup.mem_zmultiples]
+      simp
     · simp only [eventually_comap, eventually_atTop, ge_iff_le]
       use 1
       intro b hb a ha
@@ -211,7 +211,7 @@ lemma cuspFunction_sub [NeZero n] (f g : ModularForm Γ(n) k) :
     ↑n
       - (⇑g ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n := by
     ext y
-    simp only [comp_apply, Pi.sub_apply]
+    simp
   simp only [Pi.sub_apply, update_self] at *
   rw [this]
   rw [Filter.Tendsto.limUnder_eq]
@@ -285,7 +285,7 @@ lemma cuspFunction_add [NeZero n] (f g : ModularForm Γ(n) k) :
     ↑n
       + (⇑g ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n := by
     ext y
-    simp only [comp_apply, Pi.add_apply]
+    simp
   rw [this]
   rw [Filter.Tendsto.limUnder_eq]
   apply Tendsto.add
@@ -368,7 +368,7 @@ lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
       · have hl : ((a • ⇑f) ∘ ↑ofComplex) ∘ Periodic.invQParam ↑n = fun x => a * (f ∘ ↑ofComplex)
           (Periodic.invQParam ↑n x) := by
           ext y
-          simp only [comp_apply, Pi.smul_apply, smul_eq_mul]
+          simp
         rw [hl]
         simp only [comp_apply]
         apply Filter.Tendsto.const_mul
@@ -383,7 +383,7 @@ lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
     · simp only [cuspFunction, Pi.smul_apply, smul_eq_mul]
       rw [Function.Periodic.cuspFunction_eq_of_nonzero _ _ h,
         Function.Periodic.cuspFunction_eq_of_nonzero _ _ h]
-      simp only [comp_apply, Pi.smul_apply, smul_eq_mul]
+      simp
   simp only [PowerSeries.coeff_mk, IsGLPos.coe_smul, this]
   conv =>
     enter [2,2]
@@ -477,7 +477,7 @@ lemma qExpansion_pow (f : ModularForm Γ(1) k) (n : ℕ) :
       simp only [PowerSeries.coeff_mk, PowerSeries.coeff_one]
       by_cases hm : m = 0
       · rw [hm]
-        simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, Pi.one_apply, mul_one, ↓reduceIte]
+        simp
       simp only [hm, ↓reduceIte, mul_eq_zero, inv_eq_zero, Nat.cast_eq_zero]
       right
       have hmp : 0 < m := by omega

@@ -382,7 +382,7 @@ lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn (
         enter [2,1]
         rw [neg_div]
         rw [div_eq_mul_inv]
-        simp only [one_mul]
+        simp
       simp only [coe_mk_subtype, inv_neg, neg_im, inv_im, Left.neg_pos_iff] at *
       exact this
   · apply DifferentiableOn.mul

@@ -261,13 +261,13 @@ lemma EQ22 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
           enter [2,1]
           ext c
           rw [show ((0 : ℂ)^ k)⁻¹ = 0 by simp; omega]
-          simp only [mul_zero]
+          simp
         conv =>
           enter [1,1]
           ext c
           rw [gammaSetN_eisSummand k z, show (((0 : ℕ) : ℂ)^ (k : ℤ))⁻¹ = 0 by simp; omega]
-          simp only [mul_zero]
-        simp only [zero_mul, tsum_zero]
+          simp
+        simp
       conv =>
         enter [1,1]
         ext c
@@ -280,7 +280,7 @@ lemma EQ22 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
       exact this
     · apply summable_mul_of_summable_norm (f := fun (n : ℕ) => ((n : ℂ)^k)⁻¹)
         (g := fun (v : (gammaSet 1 1 0) ) => eisSummand k v z)
-      · simp only [norm_inv, norm_pow, _root_.norm_natCast, Real.summable_nat_pow_inv, hk1]
+      · simp [hk1]
       apply (EisensteinSeries.summable_norm_eisSummand hk z).subtype
     intro b
     simp only
