@@ -298,7 +298,7 @@ theorem iter_deriv_comp_bound3 (K : Set ℂ) (hK1 : K ⊆ ℍ') (hK2 : IsCompact
     rw [norm_norm]
     simpa using this
   apply mul_le_mul
-  · simp only [le_refl]
+  · simp
   · simp only [Real.norm_eq_abs] at ineqe
     convert ineqe
   · positivity
