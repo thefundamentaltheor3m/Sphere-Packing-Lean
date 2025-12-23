@@ -203,34 +203,120 @@ lemma E₂_eq_sigma (z : ℍ) :
 Q-expansion identity: `E₄ - E₂² = 288 * ∑' n : ℕ+, n * σ₁(n) * qⁿ` follows from this
 via the Ramanujan identity `D E₂ = 12⁻¹ * (E₂² - E₄)`.
 
-TODO: The proof requires:
-1. Express E₂ in σ₁ form: E₂ = 1 - 24 * ∑' σ₁(n) * qⁿ
-   - Use E₂_eq (gives n/(1-exp) form) + tsum_eq_tsum_sigma (converts to σ₁ form)
-2. Apply D linearity: D(1 - 24 * ∑') = D(1) - 24 * D(∑') = -24 * D(∑')
-3. Apply D_qexp_tsum_pnat with a(n) = σ₁(n):
-   - D(∑' σ₁(n) * qⁿ) = ∑' n * σ₁(n) * qⁿ
-
 Technical requirements for D_qexp_tsum_pnat:
 - Summability: σ₁(n) ≤ n² (sigma_bound 1 n), so ‖σ₁(n) * qⁿ‖ ≤ n² * exp(-2πn·y)
   is summable via a33 with k=2
 - Derivative bound: ‖σ₁(n) * n * qⁿ‖ ≤ n³ * exp(-2πn·y_min) on compact K ⊂ ℍ
   is summable via Real.summable_pow_mul_exp_neg_nat_mul
 -/
+/-- The derivative of the q-series coefficient function σ₁ is summable. -/
+private lemma sigma1_qexp_summable (z : ℍ) :
+    Summable (fun n : ℕ+ => ↑((σ 1) ↑n) * cexp (2 * π * I * ↑n * ↑z)) := by
+  have hz := z.im_pos
+  have hpos : 0 < 2 * π * z.im := by nlinarith [pi_pos]
+  have h := Real.summable_pow_mul_exp_neg_nat_mul 2 hpos
+  have hconv : Summable (fun n : ℕ+ => ((n : ℕ) : ℝ)^2 * rexp (-(2 * π * z.im) * (n : ℕ))) :=
+    h.subtype _
+  apply Summable.of_norm_bounded (g := fun n : ℕ+ => ((n : ℕ) : ℝ)^2 * rexp (-(2 * π * z.im) * (n : ℕ)))
+    hconv
+  intro n
+  have hsig : ‖↑((σ 1) ↑n) : ℂ‖ ≤ (n : ℝ)^2 := by
+    have hsig' := sigma_bound 1 n
+    simp only [Complex.norm_natCast]
+    exact_mod_cast hsig'
+  calc ‖↑((σ 1) ↑n) * cexp (2 * π * I * ↑n * ↑z)‖
+      = ‖(↑((σ 1) ↑n) : ℂ)‖ * ‖cexp (2 * π * I * ↑n * ↑z)‖ := norm_mul _ _
+    _ ≤ (n : ℝ)^2 * ‖cexp (2 * π * I * ↑n * ↑z)‖ := by
+        apply mul_le_mul_of_nonneg_right hsig; positivity
+    _ = (n : ℝ)^2 * rexp (-(2 * π * z.im) * ↑n) := by
+        congr 1; rw [Complex.norm_exp]
+        congr 1
+        simp only [Complex.mul_re, Complex.ofReal_re, Complex.I_re, mul_zero,
+          Complex.ofReal_im, Complex.I_im, mul_one, zero_mul, sub_zero,
+          Complex.natCast_re, Complex.natCast_im, UpperHalfPlane.coe_re, UpperHalfPlane.coe_im]
+        ring
+
+/-- Derivative bound for σ₁ q-series on compact subsets of ℍ. -/
+private lemma sigma1_qexp_deriv_bound :
+    ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ n (k : K), ‖↑((σ 1) ↑n) * (2 * π * I * ↑n) *
+        cexp (2 * π * I * ↑n * k.1)‖ ≤ u n := by
+  intro K hK_sub hK_compact
+  by_cases hK_nonempty : K.Nonempty
+  · obtain ⟨k_min, hk_min_mem, hk_min_le⟩ := hK_compact.exists_isMinOn hK_nonempty
+      Complex.continuous_im.continuousOn
+    have hy_min_pos : 0 < k_min.im := hK_sub hk_min_mem
+    have hpos : 0 < 2 * π * k_min.im := by nlinarith [pi_pos]
+    have h := Real.summable_pow_mul_exp_neg_nat_mul 3 hpos
+    have hconv : Summable (fun n : ℕ+ =>
+        2 * π * ((n : ℕ) : ℝ)^3 * rexp (-(2 * π * k_min.im) * (n : ℕ))) := by
+      apply Summable.mul_left; exact h.subtype _
+    use fun n => 2 * π * (n : ℝ)^3 * rexp (-2 * π * ↑n * k_min.im)
+    constructor
+    · apply hconv.of_nonneg_of_le
+      · intro n; positivity
+      · intro n
+        have h1 : -2 * π * ↑↑n * k_min.im = -(2 * π * k_min.im) * ↑↑n := by ring
+        simp only [h1]
+    · intro n ⟨k, hk_mem⟩
+      have hk_im : k_min.im ≤ k.im := hk_min_le hk_mem
+      have hn_pos : (0 : ℝ) < n := by exact_mod_cast n.pos
+      have hsig : ‖(↑((σ 1) ↑n) : ℂ)‖ ≤ (n : ℝ)^2 := by
+        have hsig' := sigma_bound 1 n
+        simp only [Complex.norm_natCast]
+        exact_mod_cast hsig'
+      have h_norm_2pin : ‖(2 : ℂ) * π * I * ↑↑n‖ = 2 * π * n := by
+        rw [Complex.norm_mul, Complex.norm_mul, Complex.norm_mul]
+        simp only [Complex.norm_two, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_pos pi_pos, Complex.norm_I, Complex.norm_natCast]
+        ring
+      have h_norm_exp : ‖cexp (2 * π * I * ↑↑n * k)‖ = rexp (-2 * π * ↑↑n * k.im) := by
+        rw [Complex.norm_exp]; congr 1
+        simp only [Complex.mul_re, Complex.ofReal_re, Complex.I_re, mul_zero,
+          Complex.ofReal_im, Complex.I_im, mul_one, zero_mul, sub_zero,
+          Complex.natCast_re, Complex.natCast_im]
+        ring
+      calc ‖↑((σ 1) ↑n) * (2 * π * I * ↑n) * cexp (2 * π * I * ↑n * k)‖
+          = ‖(↑((σ 1) ↑n) : ℂ)‖ * ‖(2 : ℂ) * π * I * ↑↑n‖ * ‖cexp (2 * π * I * ↑↑n * k)‖ := by
+            rw [norm_mul, norm_mul]
+        _ = ‖(↑((σ 1) ↑n) : ℂ)‖ * (2 * π * n) * rexp (-2 * π * ↑↑n * k.im) := by
+            rw [h_norm_2pin, h_norm_exp]
+        _ ≤ (n : ℝ)^2 * (2 * π * n) * rexp (-2 * π * ↑↑n * k.im) := by
+            apply mul_le_mul_of_nonneg_right
+            apply mul_le_mul_of_nonneg_right hsig
+            nlinarith [pi_pos, hn_pos]
+            positivity
+        _ = 2 * π * (n : ℝ)^3 * rexp (-2 * π * ↑↑n * k.im) := by ring
+        _ ≤ 2 * π * (n : ℝ)^3 * rexp (-2 * π * ↑↑n * k_min.im) := by
+            apply mul_le_mul_of_nonneg_left _ (by nlinarith [pi_pos, hn_pos])
+            apply Real.exp_le_exp_of_le
+            nlinarith [pi_pos, hn_pos, hk_im]
+  · use fun _ => 0
+    constructor
+    · exact summable_zero
+    · intro n ⟨k, hk_mem⟩; exact (hK_nonempty ⟨k, hk_mem⟩).elim
+
 theorem D_E₂_qexp (z : ℍ) :
     D E₂ z = -24 * ∑' n : ℕ+, (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
         cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
-  -- Strategy: Use E₂_eq_sigma to express E₂ = 1 - 24*∑'σ₁(n)*qⁿ, then apply D_qexp_tsum_pnat
-  -- Steps:
-  -- 1. E₂ = 1 - 24 * ∑' σ₁(n) * qⁿ (from E₂_eq_sigma)
-  -- 2. D E₂ = D(1) - 24 * D(∑' σ₁(n) * qⁿ) = -24 * D(∑')
-  -- 3. D(∑' σ₁(n) * qⁿ) = ∑' n * σ₁(n) * qⁿ (from D_qexp_tsum_pnat)
-  --
-  -- The full proof requires:
-  -- - MDifferentiability of the tsum function (for D_sub, D_smul)
-  -- - Summability bounds using sigma_bound 1 n : σ₁(n) ≤ n²
-  -- - Uniform convergence bounds for D_qexp_tsum_pnat on compact sets
-  --
-  -- The MDifferentiability infrastructure is complex. For now, marked as sorry.
+  -- Define coefficient function
+  let a : ℕ+ → ℂ := fun n => ↑((ArithmeticFunction.sigma 1) ↑n)
+  let qseries : ℍ → ℂ := fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)
+  -- Use E₂_eq_sigma and D_qexp_tsum_pnat
+  have hE₂_eq : ∀ w : ℍ, E₂ w = 1 - 24 * qseries w := E₂_eq_sigma
+  have hsum : Summable (fun n : ℕ+ => a n * cexp (2 * π * I * ↑n * ↑z)) := sigma1_qexp_summable z
+  have hsum_deriv := sigma1_qexp_deriv_bound
+  have hD_qseries : D qseries z = ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * ↑n * z) :=
+    D_qexp_tsum_pnat a z hsum hsum_deriv
+  -- D(E₂) = D(1 - 24 * qseries) = D(1) - 24 * D(qseries) = -24 * D(qseries)
+  -- We compute this using the definition of D
+  simp only [D]
+  have h_E₂_agree : (E₂ ∘ ofComplex) =ᶠ[nhds (z : ℂ)]
+      (fun w => 1 - 24 * ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) := by
+    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, hE₂_eq, qseries, coe_mk_subtype]
+  rw [h_E₂_agree.deriv_eq]
+  -- The rest uses differentiability and deriv rules
   sorry
 
 theorem E₄_sub_E₂_sq_qexp (z : ℍ) :
