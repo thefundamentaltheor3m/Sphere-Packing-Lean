@@ -31,7 +31,7 @@ include hr
 
 local notation "ℍ₀" => upperHalfPlaneSet
 
-local notation "Holo(" f ")" => Differentiable ℂ f
+local notation "Holo(" f ")" => DifferentiableOn ℂ f ℍ₀
 
 local notation "MDiff(" f ")" => MDifferentiableOn 𝓘(ℂ) 𝓘(ℂ) f ℍ₀
 
@@ -46,16 +46,42 @@ section Holo
 theorem Φ₁'_holo : Holo(Φ₁' r) := by
   sorry
 
+theorem Φ₁'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₁' r) ℍ₀ :=
+  (Φ₁'_holo hr).contDiffOn isOpen_upperHalfPlaneSet
+
 end Holo
 
-section ContDiff
+section ContDiffOn_Real
 
 /-! # Real Differentiability -/
 
-theorem Φ₁'_contDiff : ContDiff ℝ ∞ (Φ₁' r) := by
+noncomputable example (n : ℕ) : ContinuousMultilinearMap (ι := Fin n) ℂ (fun i ↦ ℂ) ℂ → ContinuousMultilinearMap (ι := Fin n) ℝ (fun i ↦ ℂ) ℂ :=
+  -- fun p ↦ FormalMultilinearSeries.ofScalars ℂ <| Complex.re ∘ p
+  fun f ↦
+  by
   sorry
 
-end ContDiff
+lemma Real_differentiable_of_Complex_differentiable (f : ℂ → ℂ) : Differentiable ℂ f → Differentiable ℝ f := by
+  simp only [Differentiable.eq_def]
+  intro h x
+  specialize h x
+  obtain ⟨f', hf'⟩ := h
+  have : ∃ k : ℂ, f'.toFun = (fun z ↦ k • z) := by
+    sorry
+  obtain ⟨k, hk⟩ := this
+  let f'_re : ℂ →L[ℝ] ℂ := sorry
+  sorry
+
+lemma Real_contDiff_of_Complex_contDiff (f : ℂ → ℂ) : ContDiff ℂ ∞ f → ContDiff ℝ ∞ f := by
+  intro h
+  simp only [ContDiff.eq_def] at h ⊢
+  obtain ⟨p, hp⟩ := h
+  sorry
+
+theorem Φ₁'_contDiffOn : ContDiffOn ℝ ∞ (Φ₁' r) ℍ₀ := by
+  sorry
+
+end ContDiffOn_Real
 
 section MDiff
 
