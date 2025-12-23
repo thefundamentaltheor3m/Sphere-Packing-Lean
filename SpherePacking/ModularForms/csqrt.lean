@@ -28,8 +28,7 @@ lemma csqrt_deriv (z : ℍ) : deriv (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log 
     have hz := z.2
     exact Ne.symm (ne_of_lt hz)
   rw [this, deriv_comp]
-  · simp only [one_div, Complex.deriv_exp, differentiableAt_const, deriv_const_mul_field', neg_mul,
-      smul_eq_mul]
+  · simp only [one_div, Complex.deriv_exp, deriv_const_mul_field', neg_mul, smul_eq_mul]
     rw [Complex.exp_neg]
     field_simp
     have hsq : cexp (Complex.log (z : ℂ) / 2) ^ 2 = cexp (Complex.log (z : ℂ)) := by
