@@ -23,8 +23,8 @@ local notation "Γ " n:100 => Gamma n
 
 /- This part defines generators of Γ 2 and some relations between them. -/
 
-def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp⟩, by simp; decide⟩
-def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp⟩, by simp; decide⟩
+def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp⟩, by simp +decide⟩
+def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp⟩, by simp +decide⟩
 def negI : Γ 2 := ⟨⟨!![-1, 0; 0, -1], by simp⟩, by simp⟩
 
 theorem α_eq_T_sq : α = ⟨T ^ 2, by simp +decide [sq, T]⟩ := by
@@ -37,8 +37,7 @@ theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by
 
 theorem ModularGroup.modular_negI_sq : negI ^ 2 = 1 := by
   ext i j
-  simp [negI, sq]
-  fin_cases i <;> fin_cases j <;> rfl
+  fin_cases i <;> fin_cases j <;> decide
 
 theorem ModularGroup.modular_negI_inv : negI⁻¹ = negI := by
   ext i j
