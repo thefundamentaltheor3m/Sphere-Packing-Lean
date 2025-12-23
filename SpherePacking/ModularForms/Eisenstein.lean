@@ -213,8 +213,7 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
     simp only [qq]
     rw [
     ← (ContinuousMultilinearMap.piFieldEquiv ℂ (Fin m) ℂ).symm.norm_map]
-    simp only [_root_.map_smul, smul_eq_mul, norm_mul,
-      LinearIsometryEquiv.norm_map, ContinuousMultilinearMap.norm_mkPiAlgebraFin, mul_one]
+    simp
   have H2 : HasFPowerSeriesOnBall (cuspFunction n f) qq 0 1 := by
     have H21 : 1 ≤ qq.radius := by
         refine le_of_forall_lt_imp_le_of_dense fun r hr ↦ ?_
