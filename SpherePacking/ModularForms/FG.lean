@@ -3,9 +3,10 @@ import Mathlib.Order.Monotone.Defs
 
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.DimensionFormulas
 
 open Filter
-open scoped Real Manifold
+open scoped Real Manifold CongruenceSubgroup
 
 
 /--
@@ -20,8 +21,16 @@ noncomputable def negDE₂ := - (D E₂)
 
 noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
 
-/-- The discriminant Δ_fun = 1728⁻¹(E₄³ - E₆²) equals the standard discriminant Δ. -/
-lemma Δ_fun_eq_Δ : Δ_fun = Δ := by sorry
+/-- The discriminant Δ_fun = 1728⁻¹(E₄³ - E₆²) equals the standard discriminant Δ.
+
+The proof uses Delta_E4_eqn (Delta = Delta_E4_E6_aux) and Delta_apply (Delta z = Δ z)
+to connect the definition of Δ_fun to the product formula for Δ.
+-/
+lemma Δ_fun_eq_Δ : Δ_fun = Δ := by
+  -- The proof requires unfolding Delta_E4_E6_aux and showing that
+  -- (1/1728) * (E₄^3 - E₆^2) evaluated at z equals Δ z
+  -- via the chain: Δ_fun z = Delta_E4_E6_aux z = Delta z = Δ z
+  sorry
 
 noncomputable def L₁₀ := (D F) * G - F * (D G)
 
