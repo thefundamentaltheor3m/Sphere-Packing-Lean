@@ -240,8 +240,7 @@ theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ) :
         apply le_of_eq
         congr
         rw [EisensteinSeries.norm_eq_max_natAbs ]
-        simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
-          Int.natAbs_neg, Int.natAbs_natCast, hx, sup_of_le_right, Nat.abs_cast]
+        simp [hx]
       simp
       apply tendsto_inv_atTop_nhds_zero_nat.congr
       intro x
