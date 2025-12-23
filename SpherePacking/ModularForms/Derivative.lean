@@ -548,17 +548,59 @@ This expresses E₄ in tsum form using hasSum_qExpansion and E4_q_exp.
 -/
 lemma E₄_eq_one_add_tsum (z : ℍ) :
     E₄ z = 1 + 240 * ∑' (n : ℕ+), ↑(σ 3 n) * cexp (2 * π * I * ↑n * z) := by
-  -- From hasSum_qExpansion, E₄ z = ∑ coeff(n) * q^n
-  -- Split into n=0 term (= 1) and n>0 terms (= 240 * σ₃(n) * q^n)
-  -- The conversion requires splitting ℕ into 0 and ℕ+ using tsum_eq_zero_add
-  -- and substituting E4_q_exp for the coefficients
-  sorry
+  -- Step 1: Get hasSum from modular form q-expansion
+  have h_mem : (1 : ℝ) ∈ (CongruenceSubgroup.Gamma 1 : Subgroup (GL (Fin 2) ℝ)).strictPeriods := by
+    simp only [CongruenceSubgroup.strictPeriods_Gamma]
+    norm_cast
+    exact AddSubgroup.mem_zmultiples (1 : ℝ)
+  have hsum := ModularFormClass.hasSum_qExpansion (h := 1) E₄ (by norm_num : (0 : ℝ) < 1) h_mem z
+  -- Step 2: Convert qParam 1 z to exp(2πiz)
+  have hq : Function.Periodic.qParam 1 ↑z = cexp (2 * π * I * z) := by
+    simp only [Function.Periodic.qParam, ofReal_one, div_one]
+  -- Step 3: Convert HasSum to tsum
+  rw [← hsum.tsum_eq]
+  -- Step 4: Split the sum: n=0 term + n≥1 terms
+  -- Use tsum_zero_pnat_eq_tsum_nat: f 0 + ∑_{n : ℕ+} f n = ∑_{n : ℕ} f n
+  have hsummable : Summable (fun n : ℕ => (ModularFormClass.qExpansion 1 E₄).coeff n •
+      (Function.Periodic.qParam 1 ↑z) ^ n) := hsum.summable
+  rw [← tsum_zero_pnat_eq_tsum_nat hsummable]
+  -- Step 5: Evaluate n=0 term: coeff 0 = 1, q^0 = 1
+  have h0 : (ModularFormClass.qExpansion 1 E₄).coeff 0 •
+      (Function.Periodic.qParam 1 ↑z) ^ 0 = 1 := by
+    simp only [pow_zero, smul_eq_mul, mul_one]
+    exact E4_q_exp_zero
+  rw [h0]
+  -- Step 6: Simplify n≥1 terms using E4_q_exp
+  -- RHS: pull 240 inside the sum
+  rw [← tsum_mul_left]
+  congr 1
+  apply tsum_congr
+  intro n
+  -- coeff n = 240 * σ₃(n) for n ≥ 1
+  have hcoeff : (ModularFormClass.qExpansion 1 E₄).coeff n.val = 240 * ↑(σ 3 n.val) := by
+    have h := congr_fun E4_q_exp n.val
+    simp only [n.ne_zero, ↓reduceIte] at h
+    exact h
+  simp only [hcoeff, hq, smul_eq_mul]
+  -- q^n = exp(2πi·n·z)
+  have hpow : cexp (2 * π * I * z) ^ n.val = cexp (2 * π * I * ↑n * z) := by
+    rw [← Complex.exp_nat_mul]
+    ring_nf
+  rw [hpow]
+  ring
 
-/-- Derivative of E₄ using q-expansion. -/
+/-- Derivative of E₄ using q-expansion.
+
+TODO: The full proof requires showing E₄.toFun = (fun w : ℍ => 1 + 240 * ∑' ...)
+as functions ℍ → ℂ (not ℂ → ℂ), and applying D_qexp_tsum_pnat with summability bounds.
+The key ingredients are:
+- E₄_eq_one_add_tsum (pointwise equality)
+- sigma_bound 3 n : σ₃(n) ≤ n⁴
+- a33 4 1 w : summability of n⁴ * exp(2πi·w·n)
+- D_qexp_tsum_pnat for termwise differentiation
+-/
 lemma D_E₄_eq_tsum (z : ℍ) :
     D E₄.toFun z = 240 * ∑' (n : ℕ+), ↑n * ↑(σ 3 n) * cexp (2 * π * I * ↑n * z) := by
-  -- Use E₄_eq_one_add_tsum and D_qexp_tsum_pnat
-  -- D(1) = 0 by D_const, D(240 * ∑' σ₃(n) * qⁿ) = 240 * ∑' n * σ₃(n) * qⁿ
   sorry
 
 theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
