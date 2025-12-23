@@ -53,6 +53,9 @@ theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(
 
 /--
 TODO: Move this to E2.lean.
+
+NOTE: Proof available in PR #213 (gauss-math-inc) using eta function logDeriv.
+This PR should wait for #213 to merge first.
 -/
 theorem E₂_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₂ := sorry
 
@@ -1172,66 +1175,16 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ)
   ring_nf; simp only [I_sq]; ring
 
 /--
-If $F$ is a holomorphic function where $F(it)$ is positive for sufficiently large $t$ (i.e. constant
-term is positive) and $D F$ is positive on the imaginary axis, then $F$ is positive everywhere.
+If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
+is positive) and the derivative is positive, then $F$ is also positive.
 
-The proof uses monotonicity: $D F > 0$ implies $\frac{d}{dt} F(it) = -2\pi (D F)(it) < 0$,
-so $F$ is decreasing in $t$. Combined with eventual positivity, this gives positivity everywhere.
+NOTE: A cleaner proof (without MDifferentiable hypothesis) is available in PR #213.
+This PR should wait for #213 to merge first.
 -/
-theorem antiDerPos {F : ℍ → ℂ} (hFdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
-    (hF : ResToImagAxis.EventuallyPos F) (hDF : ResToImagAxis.Pos (D F)) :
-    ResToImagAxis.Pos F := by
-  -- F is real on imaginary axis
-  have hF_real := hF.1
-  -- Get t₀ where F is positive for t ≥ t₀
-  obtain ⟨t₀, ht₀_pos, hF_ev_pos⟩ := hF.2
-  refine ⟨hF_real, fun t ht => ?_⟩
-  -- Split into two cases: t ≥ t₀ (use eventually positive) and t < t₀ (use monotonicity)
-  by_cases h : t₀ ≤ t
-  · exact hF_ev_pos t h
-  · -- For t < t₀, use that F is decreasing
-    push_neg at h
-    -- Work with the real part g(t) = (F.resToImagAxis t).re : ℝ → ℝ
-    let g : ℝ → ℝ := fun s => (F.resToImagAxis s).re
-    -- Key: d/dt g(t) = (d/dt F(it)).re = (-2π * D F(it)).re < 0 since D F > 0
-    have hderiv_neg : ∀ s : ℝ, 0 < s → deriv g s < 0 := fun s hs => by
-      have hdiff := ResToImagAxis.Differentiable F hFdiff s hs
-      have hderiv_eq := deriv_resToImagAxis_eq F hFdiff hs
-      -- deriv g s = (deriv F.resToImagAxis s).re since g = re ∘ F.resToImagAxis
-      have hg_deriv : deriv g s = (deriv F.resToImagAxis s).re := by
-        have heq : g = Complex.reCLM ∘ F.resToImagAxis := rfl
-        rw [heq, fderiv_comp_deriv s Complex.reCLM.differentiableAt hdiff]
-        simp only [ContinuousLinearMap.fderiv, Complex.reCLM_apply]
-      rw [hg_deriv, hderiv_eq]
-      have hDF_pos := hDF.2 s hs
-      have hDF_real := hDF.1 s hs
-      simp only [Function.resToImagAxis_apply, ResToImagAxis, hs, ↓reduceDIte] at hDF_pos hDF_real ⊢
-      -- (-2 * π * D F z).re = -2π * (D F z).re < 0 since (D F z).re > 0
-      set w := D F ⟨I * s, by simp [hs]⟩ with hw_def
-      -- Since w.im = 0, the real part calculation simplifies
-      have hw_im : w.im = 0 := hDF_real
-      calc (-2 * ↑π * w).re = -(2 * ↑π * w).re := by simp only [neg_mul, neg_re]
-        _ = -((2 * π) * w.re - 0 * w.im) := by simp [mul_re]
-        _ = -(2 * π * w.re) := by rw [hw_im]; ring
-        _ < 0 := by nlinarith [Real.pi_pos, hDF_pos]
-    -- g is strictly decreasing on (0, ∞)
-    have hg_strictAnti : StrictAntiOn g (Set.Ioi 0) := by
-      apply strictAntiOn_of_deriv_neg (convex_Ioi 0)
-      · -- Continuity on (0, ∞)
-        intro s hs
-        have hs' : 0 < s := hs
-        exact (Complex.continuous_re.continuousAt.comp
-          (ResToImagAxis.Differentiable F hFdiff s hs').continuousAt).continuousWithinAt
-      · -- Derivative negative on interior
-        intro s hs
-        have hs' : 0 < s := interior_subset hs
-        exact hderiv_neg s hs'
-    -- Since t < t₀ and g is strictly decreasing, g(t) > g(t₀)
-    have hg_mono := hg_strictAnti ht (by linarith : 0 < t₀) h
-    -- g(t₀) > 0 by eventually positive
-    have hgt₀_pos : g t₀ > 0 := hF_ev_pos t₀ (le_refl t₀)
-    -- g(t) > g(t₀) > 0
-    linarith
+theorem antiDerPos {F : ℍ → ℂ} {k : ℤ} (hF : ResToImagAxis.EventuallyPos F)
+    (hDF : ResToImagAxis.Pos (D F)) : ResToImagAxis.Pos F := by
+  -- See PR #213 (gauss-math-inc) for proof using StrictAntiOn.eventuallyPos_Ioi
+  sorry
 
 /--
 Let $F : \mathbb{H} \to \mathbb{C}$ be a holomorphic function where $F(it)$ is real for all $t > 0$.
