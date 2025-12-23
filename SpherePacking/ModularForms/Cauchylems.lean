@@ -26,7 +26,7 @@ lemma cc (f : ℤ → ℂ) (hc : CauchySeq fun N : ℕ => ∑ m ∈ Finset.Icc (
   intro n hn
   have H3 := H (n).natAbs (n -1).natAbs N ?_ ?_
   · rw [trex f n.natAbs] at H3
-    · simp only [dist_eq_norm, sub_zero, norm_norm, Prod.forall, Prod.exists, Prod.mk_le_mk, and_imp,
+    · simp only [dist_eq_norm, sub_zero, Prod.forall, Prod.exists, Prod.mk_le_mk, and_imp,
         Real.norm_eq_abs, Nat.cast_natAbs, Int.cast_abs, Int.cast_eq, neg_sub, Int.cast_sub,
         Int.cast_one, gt_iff_lt] at *
       have h1 : |n| = n := by
@@ -80,7 +80,7 @@ lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n, f n = f (-n
   have h1 := Filter.Tendsto.mul_const 2 h0
   have hff : Tendsto (fun n : ℕ => 2 * ‖f n‖) atTop (𝓝 0) := by
     rw [Metric.tendsto_atTop] at *
-    simp only [gt_iff_lt, ge_iff_le, dist_eq_norm, sub_zero, zero_mul, Complex.norm_mul, norm_ofNat,
+    simp only [gt_iff_lt, ge_iff_le, dist_eq_norm, sub_zero, zero_mul, norm_ofNat,
       norm_mul, Real.norm_ofNat, norm_norm] at *
     intro ε hε
     have hf3 := h1 ε hε
@@ -196,7 +196,7 @@ theorem tendstozero_inv_linear (z : ℍ) (b : ℤ) :
         rw [EisensteinSeries.norm_eq_max_natAbs ]
         simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
           Int.natAbs_natCast, hx, sup_of_le_right, Nat.abs_cast]
-      simp only [Nat.abs_cast]
+      simp
       apply tendsto_inv_atTop_nhds_zero_nat.congr
       intro x
       exact Eq.symm (Real.rpow_neg_one ↑x)
@@ -242,7 +242,7 @@ theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ) :
         rw [EisensteinSeries.norm_eq_max_natAbs ]
         simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
           Int.natAbs_neg, Int.natAbs_natCast, hx, sup_of_le_right, Nat.abs_cast]
-      simp only [Nat.abs_cast]
+      simp
       apply tendsto_inv_atTop_nhds_zero_nat.congr
       intro x
       exact Eq.symm (Real.rpow_neg_one ↑x)
