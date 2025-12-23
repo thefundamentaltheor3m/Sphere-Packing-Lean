@@ -168,6 +168,21 @@ theorem negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by
   rw [h12, neg_im]
   exact neg_eq_zero.mpr hprod_real
 
+/-- E₂ equals 1 minus 24 times the σ₁ q-expansion.
+
+This combines E₂_eq (which gives n/(1-q^n) form) with tsum_eq_tsum_sigma
+(which converts n/(1-q^n) to σ₁ form).
+
+The proof uses:
+1. tsum_pnat_eq_tsum_succ3 to convert ℕ+ sums to ℕ sums (with n+1 indexing)
+2. tsum_eq_tsum_sigma to show the two ℕ-indexed forms are equal
+
+See E2.lean:857-864 for the pattern used in E₂_eq.
+-/
+lemma E₂_eq_sigma (z : ℍ) :
+    E₂ z = 1 - 24 * ∑' (n : ℕ+), ↑(σ 1 n) * cexp (2 * π * I * ↑n * z) := by
+  sorry
+
 /-- D(E₂) equals -24 times the q-expansion with n·σ₁(n) coefficients.
 
 Q-expansion identity: `E₄ - E₂² = 288 * ∑' n : ℕ+, n * σ₁(n) * qⁿ` follows from this
