@@ -521,3 +521,62 @@ If $F(it)$ is positive for sufficiently large $t$, then $F(it)$ is positive for 
 theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hSDF : ResToImagAxis.Pos (serre_D k F))
     (hF : ResToImagAxis.EventuallyPos F) : ResToImagAxis.Pos F := by
   sorry
+
+section Ramanujan_Formula
+
+open ArithmeticFunction
+open scoped ArithmeticFunction.sigma
+
+/-!
+## Ramanujan's formula: E₂ E₄ - E₆ = 720 * ∑ n * σ₃(n) * qⁿ
+
+The key step is to express E₄ in tsum form so we can apply D_qexp_tsum_pnat.
+E₄(z) = 1 + 240 * ∑' n : ℕ+, σ₃(n) * exp(2πi·n·z)
+
+The proof uses `ramanujan_E₄` which states `D E₄ = (E₂ E₄ - E₆) / 3`,
+rearranged to `E₂ E₄ - E₆ = 3 * D E₄`.
+
+Infrastructure needed:
+1. hasSum_qExpansion: E₄(z) = ∑ coeff(n) * qParam^n
+2. E4_q_exp: coeff 0 = 1, coeff n = 240 * σ₃(n) for n > 0
+3. qParam 1 z = exp(2πi·z)
+-/
+
+/-- E₄ equals 1 plus 240 times the q-expansion sum.
+
+This expresses E₄ in tsum form using hasSum_qExpansion and E4_q_exp.
+-/
+lemma E₄_eq_one_add_tsum (z : ℍ) :
+    E₄ z = 1 + 240 * ∑' (n : ℕ+), ↑(σ 3 n) * cexp (2 * π * I * ↑n * z) := by
+  -- From hasSum_qExpansion, E₄ z = ∑ coeff(n) * q^n
+  -- Split into n=0 term (= 1) and n>0 terms (= 240 * σ₃(n) * q^n)
+  -- The conversion requires splitting ℕ into 0 and ℕ+ using tsum_eq_zero_add
+  -- and substituting E4_q_exp for the coefficients
+  sorry
+
+/-- Derivative of E₄ using q-expansion. -/
+lemma D_E₄_eq_tsum (z : ℍ) :
+    D E₄.toFun z = 240 * ∑' (n : ℕ+), ↑n * ↑(σ 3 n) * cexp (2 * π * I * ↑n * z) := by
+  -- Use E₄_eq_one_add_tsum and D_qexp_tsum_pnat
+  -- D(1) = 0 by D_const, D(240 * ∑' σ₃(n) * qⁿ) = 240 * ∑' n * σ₃(n) * qⁿ
+  sorry
+
+theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
+    (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), ↑n * ↑(σ 3 n) * cexp (2 * π * I * ↑n * z) := by
+  -- Strategy: Use ramanujan_E₄ to rewrite E₂E₄ - E₆ = 3 * D E₄
+  -- ramanujan_E₄: D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)
+  have h_ram := congrFun ramanujan_E₄ z
+  -- h_ram : D E₄ z = (3⁻¹ * (E₂ * E₄ - E₆)) z
+  -- The * here is Pi.mul (scalar as constant function), so (c * f) z = c z * f z = c * f z
+  have h_ram' : D E₄.toFun z = (3 : ℂ)⁻¹ * (E₂ z * E₄ z - E₆ z) := by
+    convert h_ram using 2
+  -- Rearranging: E₂ * E₄ - E₆ = 3 * D E₄
+  have h_rearrange : E₂ z * E₄ z - E₆ z = 3 * D E₄.toFun z := by
+    rw [h_ram']
+    have h3 : (3 : ℂ) ≠ 0 := by norm_num
+    field_simp
+  rw [h_rearrange, D_E₄_eq_tsum]
+  -- 3 * 240 = 720
+  ring
+
+end Ramanujan_Formula
