@@ -591,13 +591,13 @@ lemma E₄_eq_one_add_tsum (z : ℍ) :
 
 /-- Derivative of E₄ using q-expansion.
 
-TODO: The full proof requires showing E₄.toFun = (fun w : ℍ => 1 + 240 * ∑' ...)
-as functions ℍ → ℂ (not ℂ → ℂ), and applying D_qexp_tsum_pnat with summability bounds.
-The key ingredients are:
+Key ingredients:
 - E₄_eq_one_add_tsum (pointwise equality)
-- sigma_bound 3 n : σ₃(n) ≤ n⁴
-- a33 4 1 w : summability of n⁴ * exp(2πi·w·n)
-- D_qexp_tsum_pnat for termwise differentiation
+- D_qexp_tsum_pnat with a(n) = σ₃(n)
+- sigma_bound 3 n : σ₃(n) ≤ n⁴ for summability
+
+TODO: The full proof requires extracting differentiability from D_qexp_tsum_pnat.
+The derivative bound infrastructure is complex. For now, this is marked as sorry.
 -/
 lemma D_E₄_eq_tsum (z : ℍ) :
     D E₄.toFun z = 240 * ∑' (n : ℕ+), ↑n * ↑(σ 3 n) * cexp (2 * π * I * ↑n * z) := by
