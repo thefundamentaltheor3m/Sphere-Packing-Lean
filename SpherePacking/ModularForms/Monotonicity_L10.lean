@@ -1496,15 +1496,21 @@ theorem D_Θ₄_tendsto_zero :
   -- summable_sq_mul_exp_neg_pi_sq, tendsto_tsum_of_dominated_convergence
   have h_tsum_tendsto : Filter.Tendsto
       (fun z : ℍ => ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (1/2) z) (0, 1)) atImInfty (nhds 0) := by
-    -- Proof strategy: Apply tendsto_tsum_of_dominated_convergence (same as D_jacobiTheta₂_half_mul)
-    -- Key differences from D_jacobiTheta₂_half_mul_tendsto_zero:
-    -- - Direction (0, 1) instead of (1/2, 1)
-    -- - First argument 1/2 is constant (S=0) instead of z/2 (S=z.im/2)
-    -- Simpler bound: 3π|n|² exp(-πn²) (vs exp(-π(n² - |n|)))
+    -- Proof strategy: Apply tendsto_tsum_of_dominated_convergence
+    -- (see D_jacobiTheta₂_half_mul_tendsto_zero at lines 1029-1153 for template)
     --
+    -- Key differences from D_jacobiTheta₂_half_mul_tendsto_zero:
+    -- - Direction is (0, 1) instead of (1/2, 1)
+    -- - First argument is constant 1/2 (not z/2), so S = |(1/2).im| = 0
+    -- - Simpler bound: 3π|n|² exp(-πn²) (vs exp(-π(n² - |n|)))
+    --
+    -- Arguments for tendsto_tsum_of_dominated_convergence:
     -- 1. Summability: summable_sq_mul_exp_neg_pi_sq.mul_left (3 * π)
-    -- 2. Pointwise: n=0 gives 0, n≠0 gives exponential decay
-    -- 3. Bound: For z.im ≥ 1, use norm_jacobiTheta₂_term_fderiv_le with S=0, T=z.im
+    -- 2. Pointwise convergence: n=0 gives constant 0 (since coefficient πin² = 0),
+    --    n≠0 gives exp(πin + πin²z) * πin² → 0 since (πin + πin²z).re = -πn²·z.im → -∞
+    -- 3. Eventual bound: For z.im ≥ 1, use norm_jacobiTheta₂_term_fderiv_le and
+    --    norm_jacobiTheta₂_term_le with S=0, T=z.im, giving
+    --    ‖term_fderiv(n)‖ ≤ 3π|n|² exp(-π·z.im·n²) ≤ 3π|n|² exp(-πn²)
     sorry
   have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
   simp only [mul_zero] at h_mul
