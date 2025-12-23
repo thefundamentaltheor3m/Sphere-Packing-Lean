@@ -101,7 +101,7 @@ theorem ResToImagAxis.Real.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal hGreal
   simp [ResToImagAxis, ht, hFreal, hGreal]
 
-theorem ResToImagAxis.Real.hmul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Real F) :
+theorem ResToImagAxis.Real.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Real F) :
     ResToImagAxis.Real (c • F) := by
   intro t ht
   have hFreal := hF t ht
@@ -129,10 +129,10 @@ theorem ResToImagAxis.Pos.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFpos hGpos
   simp [ResToImagAxis, ht, hFreal, hGreal, mul_pos hFpos hGpos]
 
-theorem ResToImagAxis.Pos.hmul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Pos F)
+theorem ResToImagAxis.Pos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Pos F)
     (hc : 0 < c) : ResToImagAxis.Pos (fun z => c * F z) := by
   rw [Pos]
-  refine ⟨Real.hmul hF.1, fun t ht ↦ ?_⟩
+  refine ⟨Real.smul hF.1, fun t ht ↦ ?_⟩
   have hFreal := hF.1 t ht
   have hFpos := hF.2 t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal
@@ -186,11 +186,11 @@ theorem ResToImagAxis.EventuallyPos.mul {F G : ℍ → ℂ}
     hFreal_t, hGreal_t, mul_zero, sub_zero]
   exact mul_pos hFpos_t hGpos_t
 
-theorem ResToImagAxis.EventuallyPos.hmul {F : ℍ → ℂ} {c : ℝ}
+theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ}
     (hF : ResToImagAxis.EventuallyPos F) (hc : 0 < c) :
     ResToImagAxis.EventuallyPos (fun z => c * F z) := by
   rw [EventuallyPos]
-  refine ⟨ResToImagAxis.Real.hmul hF.1, ?_⟩
+  refine ⟨ResToImagAxis.Real.smul hF.1, ?_⟩
   obtain ⟨t₀, hF0, hFpos⟩ := hF.2
   use t₀
   refine ⟨hF0, fun t ht ↦ ?_⟩
