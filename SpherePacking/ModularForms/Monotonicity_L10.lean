@@ -192,6 +192,9 @@ theorem D_E₂_qexp (z : ℍ) :
   --     from exponential decay: ‖σ₁(n) * qⁿ‖ ≤ n² * exp(-2πn·y) is summable for y > 0
   --   - Uniform bound on compact sets: On K ⊂ ℍ with im ≥ y_min > 0,
   --     ‖σ₁(n) * n * qⁿ‖ ≤ n³ * exp(-2π·y_min·n), which is summable
+  --
+  -- Proof approach: Use E₂_eq + tsum_eq_tsum_sigma to express E₂ in σ₁ form,
+  -- then apply D_qexp_tsum_pnat for termwise differentiation.
   sorry
 
 theorem E₄_sub_E₂_sq_qexp (z : ℍ) :
