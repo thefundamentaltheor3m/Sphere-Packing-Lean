@@ -67,7 +67,7 @@ lemma int_add_abs_self_nonneg (n : ℤ) : 0 ≤ n + |n| := by
   by_cases h : 0 ≤ n
   · apply add_nonneg h
     exact abs_nonneg n
-  simp at *
+  simp only [not_le] at *
   rw [abs_of_neg h]
   simp
 
