@@ -2,7 +2,6 @@ import SpherePacking.ModularForms.Icc_Ico_lems
 import SpherePacking.ModularForms.riemannZetalems
 import SpherePacking.ModularForms.summable_lems
 
-
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex
 
@@ -196,7 +195,7 @@ theorem tendstozero_inv_linear (z : ℍ) (b : ℤ) :
         rw [EisensteinSeries.norm_eq_max_natAbs ]
         simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
           Int.natAbs_natCast, hx, sup_of_le_right, Nat.abs_cast]
-      simp
+      simp only [Nat.abs_cast]
       apply tendsto_inv_atTop_nhds_zero_nat.congr
       intro x
       exact Eq.symm (Real.rpow_neg_one ↑x)
@@ -241,7 +240,7 @@ theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ) :
         congr
         rw [EisensteinSeries.norm_eq_max_natAbs ]
         simp [hx]
-      simp
+      simp only [Nat.abs_cast]
       apply tendsto_inv_atTop_nhds_zero_nat.congr
       intro x
       exact Eq.symm (Real.rpow_neg_one ↑x)
@@ -393,8 +392,8 @@ theorem G2_c_tendsto (z : ℍ) :
         congr
     have := hf.hasSum
     have V := this.comp tendsto_finset_range
-    simp only [neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one, Nat.factorial_one, Nat.cast_one,
-      div_one, pow_one] at *
+    simp only [neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one, Nat.factorial_one,
+      Nat.cast_one, div_one, pow_one] at *
     apply V
 
 lemma G2_cauchy (z : ℍ) :
