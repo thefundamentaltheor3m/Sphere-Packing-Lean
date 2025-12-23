@@ -168,33 +168,27 @@ theorem negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by
   rw [h12, neg_im]
   exact neg_eq_zero.mpr hprod_real
 
-/--
-Q-expansion identity: `E₄ - E₂² = 288 * ∑' n : ℕ+, n * σ₁(n) * qⁿ`.
-This follows from the Ramanujan identity `D E₂ = 12⁻¹ * (E₂² - E₄)` and the q-expansion
-of E₂ via termwise differentiation.
+/-- D(E₂) equals -24 times the q-expansion with n·σ₁(n) coefficients.
+
+Q-expansion identity: `E₄ - E₂² = 288 * ∑' n : ℕ+, n * σ₁(n) * qⁿ` follows from this
+via the Ramanujan identity `D E₂ = 12⁻¹ * (E₂² - E₄)`.
+
+TODO: The proof requires:
+1. Express E₂ in σ₁ form: E₂ = 1 - 24 * ∑' σ₁(n) * qⁿ
+   - Use E₂_eq (gives n/(1-exp) form) + tsum_eq_tsum_sigma (converts to σ₁ form)
+2. Apply D linearity: D(1 - 24 * ∑') = D(1) - 24 * D(∑') = -24 * D(∑')
+3. Apply D_qexp_tsum_pnat with a(n) = σ₁(n):
+   - D(∑' σ₁(n) * qⁿ) = ∑' n * σ₁(n) * qⁿ
+
+Technical requirements for D_qexp_tsum_pnat:
+- Summability: σ₁(n) ≤ n² (sigma_bound 1 n), so ‖σ₁(n) * qⁿ‖ ≤ n² * exp(-2πn·y)
+  is summable via a33 with k=2
+- Derivative bound: ‖σ₁(n) * n * qⁿ‖ ≤ n³ * exp(-2πn·y_min) on compact K ⊂ ℍ
+  is summable via Real.summable_pow_mul_exp_neg_nat_mul
 -/
--- Auxiliary lemma: D(E₂) equals a specific q-expansion
--- This follows from E₂ = 1 - 24 * ∑ σ₁(n) qⁿ (from E₂_eq and tsum_eq_tsum_sigma)
--- and D multiplying coefficients by n via D_qexp_tsum_pnat
--- D(1) = 0, D(σ₁(n) qⁿ) = n·σ₁(n) qⁿ, so D(E₂) = -24 ∑ n·σ₁(n) qⁿ
 theorem D_E₂_qexp (z : ℍ) :
     D E₂ z = -24 * ∑' n : ℕ+, (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 1) ↑n) *
         cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
-  -- Proof strategy:
-  -- 1. E₂ z = 1 - 24 * ∑' σ₁(n) * qⁿ (from E₂_eq and tsum_eq_tsum_sigma)
-  -- 2. Apply D: D(E₂) = D(1) - 24 * D(∑' σ₁(n) * qⁿ)
-  --    - D(1) = 0 by D_const
-  --    - D(∑' σ₁(n) * qⁿ) = ∑' n * σ₁(n) * qⁿ by D_qexp_tsum_pnat
-  -- 3. Result: D(E₂) = -24 * ∑' n * σ₁(n) * qⁿ
-  --
-  -- Technical requirements for D_qexp_tsum_pnat:
-  --   - Summability of σ₁(n) * qⁿ: Use σ₁(n) ≤ n² (sigma_bound), then summability follows
-  --     from exponential decay: ‖σ₁(n) * qⁿ‖ ≤ n² * exp(-2πn·y) is summable for y > 0
-  --   - Uniform bound on compact sets: On K ⊂ ℍ with im ≥ y_min > 0,
-  --     ‖σ₁(n) * n * qⁿ‖ ≤ n³ * exp(-2π·y_min·n), which is summable
-  --
-  -- Proof approach: Use E₂_eq + tsum_eq_tsum_sigma to express E₂ in σ₁ form,
-  -- then apply D_qexp_tsum_pnat for termwise differentiation.
   sorry
 
 theorem E₄_sub_E₂_sq_qexp (z : ℍ) :
@@ -669,31 +663,29 @@ theorem G_vanishing_order :
   -- (H₂/exp(πiz))³ → 16³, polynomial → 5, product: 16³ * 5 = 20480
   convert (hH₂_asymp.pow 3).mul h_poly; norm_num
 
-/--
-Log-derivative limit for F: `(D F)/F → 2` as `z → i∞`.
-This follows from F having vanishing order 2: F ~ c·q² where q = exp(2πiz).
-Taking logarithmic derivative: D(log F) = (D F)/F → 2.
+/-- D(E₂E₄ - E₆) equals 720 times the q-expansion with n²·σ₃(n) coefficients.
+
+This is key for the log-derivative limit: `(D F)/F → 2` as `z → i∞`,
+since F has vanishing order 2 (F ~ c·q²).
+
+TODO: The proof requires:
+1. From E₂_mul_E₄_sub_E₆: E₂E₄ - E₆ = 720 * ∑' n·σ₃(n)·qⁿ
+2. Apply D linearity: D(720 * ∑') = 720 * D(∑')
+3. Apply D_qexp_tsum_pnat with a(n) = n·σ₃(n):
+   - D(∑' a(n)·qⁿ) = ∑' n·a(n)·qⁿ = ∑' n²·σ₃(n)·qⁿ
+
+Technical requirements for D_qexp_tsum_pnat:
+- Summability: n·σ₃(n) ≤ n⁵ (since σ₃(n) ≤ n⁴ by sigma_bound)
+  so ‖n·σ₃(n)·qⁿ‖ ≤ n⁵ * exp(-2πn·y) is summable via a33 with k=5
+- Derivative bound: ‖n·σ₃(n)·n·qⁿ‖ ≤ n⁶ * exp(-2πn·y_min) on compact K ⊂ ℍ
+  is summable via Real.summable_pow_mul_exp_neg_nat_mul
+
+Note: This depends on E₂_mul_E₄_sub_E₆ from Derivative.lean (which uses D_E₄_eq_tsum).
 -/
--- Auxiliary: D(E₂E₄ - E₆) equals n² times the q-expansion coefficients
--- From E₂_mul_E₄_sub_E₆: E₂E₄ - E₆ = 720 * ∑' n : ℕ+, n * σ₃(n) * q^n
--- Applying D (which multiplies coefficients by n): D(E₂E₄ - E₆) = 720 * ∑' n : ℕ+, n² * σ₃(n) * q^n
 theorem D_diff_qexp (z : ℍ) :
     D (fun w => E₂ w * E₄ w - E₆ w) z =
       720 * ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
         cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
-  -- Proof strategy:
-  -- 1. From E₂_mul_E₄_sub_E₆: E₂E₄ - E₆ = 720 * ∑' n·σ₃(n)·qⁿ
-  -- 2. Apply D_qexp_tsum_pnat with a(n) = n·σ₃(n):
-  --    D(∑' a(n)·qⁿ) = ∑' n·a(n)·qⁿ = ∑' n·(n·σ₃(n))·qⁿ = ∑' n²·σ₃(n)·qⁿ
-  -- 3. D(720 * ∑') = 720 * D(∑') by linearity
-  -- 4. Result: D(E₂E₄ - E₆) = 720 * ∑' n²·σ₃(n)·qⁿ
-  --
-  -- Technical requirements for D_qexp_tsum_pnat:
-  --   - Summability of n·σ₃(n)·qⁿ: Use σ₃(n) ≤ n⁴ (sigma_bound), so n·σ₃(n) ≤ n⁵
-  --     Then a33 gives summability of n^5 * q^n
-  --   - Uniform derivative bound on compact K ⊂ ℍ:
-  --     On K, im(z) ≥ y_min > 0, so ‖n·σ₃(n)·n·qⁿ‖ ≤ n⁶ * exp(-2π·y_min·n)
-  --     which is summable by summable_pow_mul_exp_neg_nat_mul
   sorry
 
 -- Helper: D(E₂E₄ - E₆) / q → 720 (same pattern as f/q → 720)
