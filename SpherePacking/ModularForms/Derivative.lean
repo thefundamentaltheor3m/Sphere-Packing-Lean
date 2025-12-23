@@ -647,7 +647,9 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- As im(z) → ∞, |q| → 0, so the sum → 0, hence E₂ → 1 (bounded).
   rw [UpperHalfPlane.isBoundedAtImInfty_iff]
   -- We'll show: ∃ M A : ℝ, ∀ z : ℍ, A ≤ im z → ‖E₂ z‖ ≤ M
-  use 2, 1  -- M = 2, A = 1
+  -- Use explicit constant to avoid numeric grind: M = 1 + 24 * exp(-2π) / (1 - exp(-2π))³
+  set r₀ : ℝ := Real.exp (-2 * π) with hr₀_def
+  refine ⟨1 + 24 * (r₀ / (1 - r₀) ^ 3), 1, ?_⟩
   intro z hz
   rw [E₂_eq]
   -- E₂ z = 1 - 24 * ∑' n, n * q^n / (1 - q^n)
@@ -670,23 +672,8 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
     _ = 1 + 24 * ‖∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
           (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := by
         simp only [norm_one, norm_mul, RCLike.norm_ofNat]
-    _ ≤ 2 := ?_
-  -- Step 2: Need to show 1 + 24 * ‖tsum‖ ≤ 2, i.e., ‖tsum‖ ≤ 1/24 ≈ 0.042
-  --
-  -- Key bounds:
-  -- 1. For n ≥ 1: |1 - q^n| ≥ 1 - |q|^n ≥ 1 - |q| (since |q|^n ≤ |q| for n ≥ 1)
-  -- 2. So |n·q^n/(1-q^n)| ≤ n·|q|^n / (1 - |q|)
-  -- 3. ∑' n : ℕ+, n·|q|^n = |q| / (1-|q|)²  (tsum_coe_mul_geometric_of_norm_lt_one)
-  -- 4. The tsum is bounded by |q| / (1-|q|)³
-  -- 5. With |q| ≤ exp(-2π) ≈ 0.00187, we get |q|/(1-|q|)³ ≈ 0.00189 < 1/24
-  --
-  -- This is a computational exercise. The bound exp(-2π)/(1-exp(-2π))³ < 1/24 can be
-  -- verified using native_decide or interval arithmetic.
-  --
-  -- For now, we leave this as a computational sorry. The mathematical argument is clear:
-  -- E₂ → 1 as im(z) → ∞, so it must be bounded.
-  suffices h : 24 * ‖∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
-      (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ ≤ 1 by linarith
+    _ ≤ 1 + 24 * (r₀ / (1 - r₀) ^ 3) := ?_
+  -- Step 2: Need to show ‖tsum‖ ≤ r₀ / (1 - r₀)³ where r₀ = exp(-2π)
   -- Strategy: Use norm_tsum_le_tsum_norm + term bound + geometric series
   -- Let q = exp(2πiz). We need to bound the tsum.
   set q : ℂ := cexp (2 * π * Complex.I * z) with hq_def
@@ -701,16 +688,23 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
     ext n
     simp only [hexp_pow]
   rw [hsum_eq]
-  -- Step 1: Key bounds on q
+  -- Key bounds on r₀
+  have hr₀_pos : 0 < r₀ := Real.exp_pos _
+  have hr₀_lt_one : r₀ < 1 := by
+    simp only [hr₀_def]
+    have hpi : 0 < π := Real.pi_pos
+    calc Real.exp (-2 * π) < Real.exp 0 := Real.exp_strictMono (by linarith)
+      _ = 1 := Real.exp_zero
+  have hone_sub_r₀_pos : 0 < 1 - r₀ := by linarith
+  -- Key bounds on q
   have hq_lt_one : ‖q‖ < 1 := hq
   have hq_pos : 0 < ‖q‖ := norm_pos_iff.mpr (Complex.exp_ne_zero _)
   have hone_sub_q_pos : 0 < 1 - ‖q‖ := by linarith
-  -- Step 2: Term bound: ‖n * q^n / (1 - q^n)‖ ≤ n * ‖q‖^n / (1 - ‖q‖)
+  -- Term bound: ‖n * q^n / (1 - q^n)‖ ≤ n * ‖q‖^n / (1 - ‖q‖)
   have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
       n * ‖q‖ ^ (n : ℕ) / (1 - ‖q‖) := fun n => by
     have hqn_lt : ‖q ^ (n : ℕ)‖ < 1 := by
       rw [norm_pow]; exact pow_lt_one₀ (norm_nonneg _) hq_lt_one n.ne_zero
-    have hdenom_pos : 0 < 1 - ‖q ^ (n : ℕ)‖ := by linarith
     have hdenom_ne : 1 - q ^ (n : ℕ) ≠ 0 := by
       intro h; simp only [sub_eq_zero] at h
       have : ‖q ^ (n : ℕ)‖ = 1 := by rw [← h]; exact norm_one
@@ -734,22 +728,71 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
           apply div_le_div_of_nonneg_left _ hone_sub_q_pos hdenom_lower
           exact mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _)
       _ = ↑n * ‖q‖ ^ (n : ℕ) / (1 - ‖q‖) := by rw [norm_pow]
-  -- Step 3-4: Bound the tsum
-  -- The full proof uses:
-  -- 1. ‖∑' f‖ ≤ ∑' ‖f‖ (norm_tsum_le_tsum_norm)
-  -- 2. hterm_bound: ‖n * q^n / (1 - q^n)‖ ≤ n * ‖q‖^n / (1 - ‖q‖)
-  -- 3. ∑' (n : ℕ), n * r^n = r / (1 - r)² (tsum_coe_mul_geometric_of_norm_lt_one)
-  -- 4. So 24 * tsum ≤ 24 * ‖q‖ / (1 - ‖q‖)³
-  -- 5. With ‖q‖ ≤ exp(-2π) < exp(-6) < 1/50:
-  --    24 * (1/50) / (49/50)³ = 24 * 50² / 49³ < 1 (by norm_num)
-  --
-  -- Key mathlib lemmas:
-  -- - summable_pow_mul_geometric_of_norm_lt_one 1 hr : Summable (fun n => n * r^n)
-  -- - tsum_coe_mul_geometric_of_norm_lt_one hr : ∑' n * r^n = r / (1-r)²
-  -- - norm_tsum_le_tsum_norm : ‖∑' f‖ ≤ ∑' ‖f‖
-  -- - Real.three_lt_pi : 3 < π
-  -- - Real.exp_one_gt_d9 : 2.7 < exp(1)
-  sorry
+  -- Set r = ‖q‖ for convenience
+  set r : ℝ := ‖q‖ with hr_def
+  have hr_pos : 0 < r := hq_pos
+  have hr_lt_one : r < 1 := hq_lt_one
+  have hr_le_r₀ : r ≤ r₀ := hq_bound
+  have hone_sub_r_pos : 0 < 1 - r := hone_sub_q_pos
+  have hr_norm_lt_one : ‖r‖ < 1 := by
+    simp only [Real.norm_eq_abs, abs_of_nonneg hr_pos.le, hr_lt_one]
+  -- Summability of n * r^n on ℕ (from mathlib)
+  have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
+    have := summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
+    simp only [pow_one] at this
+    exact this
+  -- Convert to ℕ+ via nat_pos_tsum2 (using f 0 = 0)
+  have hsumm_pnat : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ)) := by
+    have h0 : (fun n : ℕ => (n : ℝ) * r ^ n) 0 = 0 := by simp
+    exact (nat_pos_tsum2 _ h0).mpr hsumm_nat
+  -- Summability with (1 - r)⁻¹ factor
+  have hsumm_majorant : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
+    have hr_ne : (1 - r) ≠ 0 := hone_sub_r_pos.ne'
+    simpa [div_eq_mul_inv] using hsumm_pnat.mul_right (1 - r)⁻¹
+  -- Summability of the complex sum norms
+  have hsumm_norms : Summable (fun n : ℕ+ => ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖) := by
+    refine Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => ?_) hsumm_majorant
+    convert hterm_bound n using 2
+  -- Bound: ‖tsum‖ ≤ ∑' (n : ℕ+), ‖term‖ ≤ ∑' (n : ℕ+), n * r^n / (1 - r)
+  have htsum_le : ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
+      ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) := by
+    calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
+        ≤ ∑' n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ :=
+          norm_tsum_le_tsum_norm hsumm_norms
+      _ ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) :=
+          Summable.tsum_le_tsum (fun n => by convert hterm_bound n using 2)
+            hsumm_norms hsumm_majorant
+  -- Compute ∑' n : ℕ, n * r^n = r / (1 - r)²
+  have hsum_nat : (∑' n : ℕ, (n : ℝ) * r ^ n) = r / (1 - r) ^ 2 :=
+    tsum_coe_mul_geometric_of_norm_lt_one hr_norm_lt_one
+  -- Convert ℕ+ sum via tsum_pnat_eq_tsum_succ4 (f 0 = 0 so sums match)
+  have hsum_pnat : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
+    have heq := tsum_pnat_eq_tsum_succ4 (fun n => (n : ℝ) * r ^ n) hsumm_nat
+    simp only [Nat.cast_zero, zero_mul, zero_add] at heq
+    rw [← hsum_nat]; exact heq
+  -- With (1-r)⁻¹ factor: r / (1-r)³
+  have hsum_majorant_eq : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
+    have hr_ne : (1 - r) ≠ 0 := hone_sub_r_pos.ne'
+    rw [tsum_div_const, hsum_pnat]
+    field_simp
+  -- Now: ‖tsum‖ ≤ r / (1-r)³ ≤ r₀ / (1-r₀)³
+  -- Monotonicity: f(x) = x/(1-x)³ is increasing on [0,1) since f'(x) = (1+2x)/(1-x)⁴ > 0
+  have hmono : r / (1 - r) ^ 3 ≤ r₀ / (1 - r₀) ^ 3 := by
+    -- Since 0 ≤ r ≤ r₀ < 1, and x/(1-x)³ is increasing on [0,1)
+    have h1 : 0 ≤ r := hr_pos.le
+    have h2 : r ≤ r₀ := hr_le_r₀
+    have h3 : r₀ < 1 := hr₀_lt_one
+    -- Use gcongr for numerator and denominator separately
+    gcongr
+  -- Chain the bounds
+  have htsum_bound : ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
+      r₀ / (1 - r₀) ^ 3 := by
+    calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
+        ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) := htsum_le
+      _ = r / (1 - r) ^ 3 := hsum_majorant_eq
+      _ ≤ r₀ / (1 - r₀) ^ 3 := hmono
+  -- Final: 24 * ‖tsum‖ ≤ 24 * r₀ / (1 - r₀)³
+  gcongr
 
 /-- E₄ is bounded at infinity (as a modular form). -/
 lemma E₄_isBoundedAtImInfty : IsBoundedAtImInfty E₄.toFun :=
