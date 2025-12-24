@@ -45,20 +45,16 @@ lemma Δ_fun_eq_Δ : Δ_fun = Δ := by
   have h :=
     congr_fun (congr_arg (fun f => f.toFun) Delta_E4_E6_eq) z
   have hE4E6 : Delta_E4_E6_aux z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
-    simp only [ModForm_mk, ModularForm.toFun_eq_coe, one_div, DirectSum.sub_apply, Pi.sub_apply,
-      Pi.smul_apply, smul_eq_mul, Pi.mul_apply] at h
+    simp only [ModForm_mk, ModularForm.toFun_eq_coe, one_div, DirectSum.sub_apply] at h
     simp only [hds, hd6] at h
-    simp only [mul_apply, pow_three, pow_two] at h ⊢
-    convert h using 2 <;> ring
+    simp only [pow_three, pow_two] at h ⊢
+    convert h using 2
   calc
     Δ_fun z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
-      simp [Δ_fun, ModularForm.toFun_eq_coe, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply]
-    _ = Delta_E4_E6_aux z := by
-      simpa using hE4E6.symm
-    _ = Delta z := by
-      simpa [Delta_E4_eqn]
-    _ = Δ z := by
-      simpa [Delta_apply]
+      simp [Δ_fun, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply]
+    _ = Delta_E4_E6_aux z := by simp [hE4E6]
+    _ = Delta z := by simp [Delta_E4_eqn]
+    _ = Δ z := by simp [Delta_apply]
 
 noncomputable def L₁₀ := (D F) * G - F * (D G)
 
@@ -108,7 +104,6 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
     ext z
     simp
     ring_nf
-
   -- Holomorphicity of the terms
   · exact E₂_holo'
   · exact E₄.holo'

@@ -376,9 +376,7 @@ theorem serre_D_smul (k : ℤ) (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable
 
 theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G) :
-    serre_D (k₁ + k₂) (F * G) = (serre_D k₁ F) * G + F * (serre_D k₂ G) := by
-
-  calc
+    serre_D (k₁ + k₂) (F * G) = (serre_D k₁ F) * G + F * (serre_D k₂ G) := by calc
     serre_D (k₁ + k₂) (F * G)
     _ = D (F * G) - (k₁ + k₂) * 12⁻¹ * E₂ * (F * G) := by rfl
     _ = (D F * G + F * D G) - (k₁ + k₂) * 12⁻¹ * E₂ * (F * G) := by
@@ -597,8 +595,8 @@ private lemma sigma3_qexp_summable (z : ℍ) :
   have h := Real.summable_pow_mul_exp_neg_nat_mul 4 hpos
   have hconv : Summable (fun n : ℕ+ => ((n : ℕ) : ℝ)^4 * rexp (-(2 * π * z.im) * (n : ℕ))) :=
     h.subtype _
-  apply Summable.of_norm_bounded (g := fun n : ℕ+ => ((n : ℕ) : ℝ)^4 * rexp (-(2 * π * z.im) * (n : ℕ)))
-    hconv
+  apply Summable.of_norm_bounded
+    (g := fun n : ℕ+ => ((n : ℕ) : ℝ)^4 * rexp (-(2 * π * z.im) * (n : ℕ))) hconv
   intro n
   have hsig : ‖(↑((σ 3) ↑n) : ℂ)‖ ≤ (n : ℝ)^4 := by
     have hsig' := sigma_bound 3 n
@@ -613,7 +611,7 @@ private lemma sigma3_qexp_summable (z : ℍ) :
         congr 1
         simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
           Complex.I_re, Complex.I_im, Complex.natCast_re, Complex.natCast_im,
-          UpperHalfPlane.coe_re, UpperHalfPlane.coe_im, mul_zero, mul_one, zero_mul,
+          UpperHalfPlane.coe_re, UpperHalfPlane.coe_im, mul_zero, mul_one,
           zero_add, add_zero, sub_zero]
         ring
 
@@ -658,7 +656,7 @@ private lemma sigma3_qexp_deriv_bound :
         rw [Complex.norm_exp]; congr 1
         simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
           Complex.I_re, Complex.I_im, Complex.natCast_re, Complex.natCast_im,
-          mul_zero, mul_one, zero_mul, zero_add, add_zero, sub_zero]
+          mul_zero, mul_one, zero_add, add_zero, sub_zero]
         ring
       calc ‖↑((σ 3) ↑n) * (2 * π * I * ↑n) * cexp (2 * π * I * ↑n * k)‖
           = ‖(↑((σ 3) ↑n) : ℂ)‖ * ‖(2 : ℂ) * π * I * ↑↑n‖ * ‖cexp (2 * π * I * ↑↑n * k)‖ := by
@@ -667,9 +665,9 @@ private lemma sigma3_qexp_deriv_bound :
             rw [h_norm_2pin, h_norm_exp]
         _ ≤ (n : ℝ)^4 * (2 * π * n) * rexp (-2 * π * ↑↑n * k.im) := by
             apply mul_le_mul_of_nonneg_right
-            apply mul_le_mul_of_nonneg_right hsig
-            nlinarith [pi_pos, hn_pos]
-            positivity
+            · apply mul_le_mul_of_nonneg_right hsig
+              nlinarith [pi_pos, hn_pos]
+            · positivity
         _ = 2 * π * (n : ℝ)^5 * rexp (-2 * π * ↑↑n * k.im) := by ring
         _ ≤ 2 * π * (n : ℝ)^5 * rexp (-2 * π * ↑↑n * k_min.im) := by
             have hcoeff : (0 : ℝ) < 2 * π * (n : ℝ)^5 := by positivity
@@ -677,13 +675,14 @@ private lemma sigma3_qexp_deriv_bound :
             apply Real.exp_le_exp.mpr
             have hneg : -2 * π * (n : ℝ) < 0 := by nlinarith [pi_pos, hn_pos]
             have h1 := mul_le_mul_of_nonpos_left hk_im hneg.le
-            convert h1 using 2 <;> ring
+            convert h1 using 2
   · use fun _ => 0
     constructor
     · exact summable_zero
     · intro n ⟨k, hk_mem⟩; exact (hK_nonempty ⟨k, hk_mem⟩).elim
 
 set_option maxHeartbeats 400000 in
+-- Increased heartbeats for complex tsum/deriv computation with norm bounds
 /-- Derivative of E₄ using q-expansion.
 
 Key ingredients:
@@ -738,7 +737,7 @@ lemma D_E₄_eq_tsum (z : ℍ) :
             congr 1; rw [Complex.norm_exp]; congr 1
             simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
               Complex.I_re, Complex.I_im, Complex.natCast_re, Complex.natCast_im,
-              mul_zero, mul_one, zero_mul, zero_add, add_zero, sub_zero]
+              mul_zero, mul_one, zero_add, add_zero, sub_zero]
             ring
     have hu : ∀ K ⊆ {w : ℂ | 0 < w.im}, IsCompact K →
         ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ n (k : K),
@@ -753,9 +752,10 @@ lemma D_E₄_eq_tsum (z : ℍ) :
   have h2 : DifferentiableAt ℂ (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) z := htsum_diff
   have h3 : DifferentiableAt ℂ (fun w => 240 * ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) z :=
     h2.const_mul 240
-  have hderiv_sum : deriv (fun w => 1 + 240 * ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) (z : ℂ) =
-      deriv (fun _ : ℂ => (1 : ℂ)) z + deriv (fun w => 240 * ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) z :=
-    deriv_add h1 h3
+  have hderiv_sum :
+      deriv (fun w => 1 + 240 * ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) (z : ℂ) =
+      deriv (fun _ : ℂ => (1 : ℂ)) z +
+      deriv (fun w => 240 * ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) z := deriv_add h1 h3
   rw [hderiv_sum, deriv_const, zero_add, deriv_const_mul 240 h2]
   -- The composed function qseries ∘ ofComplex agrees with the ℂ → ℂ version
   have h_qseries_agree : (qseries ∘ ofComplex) =ᶠ[nhds (z : ℂ)]

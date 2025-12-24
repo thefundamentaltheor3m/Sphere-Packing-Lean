@@ -163,7 +163,8 @@ theorem negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by
   have h12_real : ((12 : ℂ)⁻¹).im = 0 := by norm_num
   have hE₂_sq_real : (E₂ z * E₂ z).im = 0 := by rw [Complex.mul_im, hE₂_real]; ring
   have hdiff_real : (E₂ z * E₂ z - E₄ z).im = 0 := by
-    rw [Complex.sub_im, hE₂_sq_real, hE₄_real]
+    rw [Complex.sub_im, hE₂_sq_real]
+    simp only [ModularForm.toFun_eq_coe, zero_sub, neg_eq_zero] at hE₄_real ⊢; exact hE₄_real
   have hprod_real : ((12 : ℂ)⁻¹ * (E₂ z * E₂ z - E₄ z)).im = 0 := by
     rw [Complex.mul_im, h12_real, hdiff_real]; ring
   simp only [negDE₂, Pi.neg_apply, ramanujan_E₂, Pi.mul_apply, Pi.sub_apply, neg_im]
@@ -497,8 +498,9 @@ theorem negDE₂_imag_axis_pos : ResToImagAxis.Pos negDE₂ := by
   have h12_real : ((12 : ℂ)⁻¹).im = 0 := by norm_num
   have hE₂_sq_real : (E₂ z * E₂ z).im = 0 := by rw [Complex.mul_im, hE₂_real]; ring
   have hdiff_real : (E₂ z * E₂ z - E₄.toFun z).im = 0 := by
-    rw [Complex.sub_im, hE₂_sq_real, hE₄_real]
-  simp only [negDE₂, Pi.neg_apply, ramanujan_E₂, Pi.mul_apply, Pi.sub_apply, neg_re]
+    rw [Complex.sub_im, hE₂_sq_real, hE₄_real]; ring
+  simp only [negDE₂, Pi.neg_apply, ramanujan_E₂, Pi.mul_apply, Pi.sub_apply, neg_re,
+    ModularForm.toFun_eq_coe, Pi.inv_apply, Pi.natCast_apply]
   rw [Complex.mul_re, h12_real, hdiff_real, mul_zero, sub_zero, neg_pos]
   -- Goal: 12⁻¹.re * (E₂ z² - E₄ z).re < 0, i.e., E₄.re > E₂.re²
   have hE₂_sq_re : (E₂ z * E₂ z).re = (E₂ z).re ^ 2 := by
@@ -889,8 +891,15 @@ theorem D_diff_qexp (z : ℍ) :
             = ‖a n‖ * ‖(2 * π * I * ↑↑n)‖ * ‖cexp (2 * π * I * ↑↑n * k)‖ := by
               rw [norm_mul, norm_mul]
           _ ≤ (n : ℝ)^5 * (2 * π * n) * rexp (-2 * π * n * k.im) := by
-              apply mul_le_mul _ (le_refl _) (by positivity) (by positivity)
-              apply mul_le_mul ha_bound (by rw [h_norm_2pin]) (by positivity) (by positivity)
+              rw [h_norm_2pin]
+              have hexp : ‖cexp (2 * π * I * ↑↑n * k)‖ ≤ rexp (-2 * π * n * k.im) := by
+                rw [Complex.norm_exp]
+                have : (2 * π * I * ↑↑n * k).re = -2 * π * n * k.im := by
+                  simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
+                    Complex.I_re, Complex.I_im, Complex.natCast_re, Complex.natCast_im,
+                    mul_zero, mul_one, zero_mul, zero_add, add_zero, sub_zero]; ring
+                rw [this]
+              gcongr
           _ ≤ (n : ℝ)^5 * (2 * π * n) * rexp (-2 * π * n * k_min.im) := by
               apply mul_le_mul_of_nonneg_left _ (by positivity)
               apply Real.exp_le_exp_of_le
@@ -907,7 +916,7 @@ theorem D_diff_qexp (z : ℍ) :
       ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * ↑n * z) :=
     D_qexp_tsum_pnat a z hsum hsum_deriv
   -- Step 6: Compute D(E₂E₄ - E₆) = 720 * D(∑ a(n) * q^n)
-  have h_agree : (fun w : ℍ => E₂ w * E₄ w - E₆ w) = (fun w =>
+  have h_agree : (fun w : ℍ => E₂ w * E₄ w - E₆ w) = (fun w : ℍ =>
       720 * ∑' (n : ℕ+), ↑n * ↑(σ 3 n) * cexp (2 * π * I * ↑n * w)) := by
     ext w; exact h_eq w
   rw [h_agree, D_const_mul 720 _ (by
