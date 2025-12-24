@@ -479,17 +479,6 @@ private lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) : a⁻¹ 
     simp only [one_div]
     apply mul_pos hc (inv_pos.mpr hb)
 
-lemma summable_hammerTime {α : Type} [NormedField α] [CompleteSpace α] (f : ℤ → α) (a : ℝ)
-    (hab : 1 < a)
-    (hf : (fun n => (f n)⁻¹) =O[cofinite] fun n => (|(n : ℝ)| ^ (a : ℝ))⁻¹) :
-    Summable fun n => (f n)⁻¹ := by
-  apply summable_of_isBigO _ hf
-  have := Real.summable_abs_int_rpow hab
-  apply this.congr
-  intro b
-  refine Real.rpow_neg ?_ a
-  exact abs_nonneg (b : ℝ)
-
 lemma summable_hammerTime_nat {α : Type} [NormedField α] [CompleteSpace α] (f : ℕ → α) (a : ℝ) (hab
   : 1 < a)
     (hf : (fun n => (f n)⁻¹) =O[cofinite] fun n => (|(n : ℝ)| ^ (a : ℝ))⁻¹) :
@@ -506,7 +495,7 @@ theorem summable_diff_denom (z : ℍ) (i : ℤ) :
     enter [1]
     ext m
     rw [← mul_inv]
-  apply summable_hammerTime _ 2 (by norm_num)
+  apply summable_inv_of_isBigO_rpow_inv one_lt_two
   have h1 := linear_bigO' (i+1) z
   have h2 := linear_bigO' i z
   have h3 := h2.mul h1
@@ -1633,8 +1622,7 @@ theorem tsum_sigma_eqn2 (k : ℕ) (z : ℍ) :
 /-This is proven in the modular forms repo. -/
 lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
     Summable fun d : ℤ => ((((n : ℂ) * z) + d) ^ k)⁻¹ := by
-  apply summable_hammerTime _ k
-  · norm_cast
+  apply summable_inv_of_isBigO_rpow_inv (show 1 < (k : ℝ) by norm_cast)
   lift k to ℕ using (by linarith)
   have := linear_bigO_pow n z k
   norm_cast at *
