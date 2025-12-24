@@ -223,11 +223,12 @@ def serre_D_E₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 where
     obtain ⟨A', hA'_eq⟩ := hA
     -- The SL(2,ℤ) slash action is defined via mapGL ℝ
     have h := serre_D_slash_invariant 4 E₄.toFun E₄.holo' A' (E₄.slash_action_eq' _ ⟨A', mem_Gamma_one A', rfl⟩)
-    -- h uses the SL action which is definitionally the GL action via mapGL
-    -- Rewrite goal to use A' instead of A
+    -- The SL slash action ∣[k] γ is definitionally the GL slash action
+    -- h : serre_D 4 E₄ ∣[6] A' = serre_D 4 E₄ (SL action)
+    -- Since A = mapGL ℝ A' and the SL action uses mapGL, we can apply the bound
     show IsBoundedAtImInfty (serre_D 4 E₄.toFun ∣[(6 : ℤ)] A)
-    -- h : serre_D 4 E₄ ∣[6] A' = serre_D 4 E₄ (SL action via mapGL ℝ)
-    -- Since A = mapGL ℝ A' and SL action is defined via mapGL, this rewrites the goal
+    -- The rewrite is tricky due to definitional vs propositional equality
+    -- For now, defer this technical detail
     sorry
 
 /-- serre_D 6 E₆ is bounded at infinity. -/
@@ -260,6 +261,7 @@ def serre_D_E₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 where
     obtain ⟨A', hA'_eq⟩ := hA
     have h := serre_D_slash_invariant 6 E₆.toFun E₆.holo' A' (E₆.slash_action_eq' _ ⟨A', mem_Gamma_one A', rfl⟩)
     show IsBoundedAtImInfty (serre_D 6 E₆.toFun ∣[(8 : ℤ)] A)
+    -- Similar technical issue with SL/GL slash action coercion
     sorry
 
 /-! ## Limit of serre_D at infinity (for determining scalar) -/
