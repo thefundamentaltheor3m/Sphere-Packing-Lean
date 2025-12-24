@@ -419,7 +419,6 @@ theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
   unfold G
   have hH₂ : ResToImagAxis.Pos H₂ := H₂_imag_axis_pos
   have hH₄ : ResToImagAxis.Pos H₄ := H₄_imag_axis_pos
-
   have hH₂_sq : ResToImagAxis.Pos (fun z : ℍ => H₂ z ^ 2) := by
     have hmul : ResToImagAxis.Pos (fun z : ℍ => H₂ z * H₂ z) := ResToImagAxis.Pos.mul hH₂ hH₂
     simpa [pow_two] using hmul
@@ -430,7 +429,6 @@ theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
   have hH₄_sq : ResToImagAxis.Pos (fun z : ℍ => H₄ z ^ 2) := by
     have hmul : ResToImagAxis.Pos (fun z : ℍ => H₄ z * H₄ z) := ResToImagAxis.Pos.mul hH₄ hH₄
     simpa [pow_two] using hmul
-
   have hterm1 : ResToImagAxis.Pos (fun z : ℍ => 2 * H₂ z ^ 2) := by
     simpa using (ResToImagAxis.Pos.smul (F := fun z : ℍ => H₂ z ^ 2) hH₂_sq (by norm_num))
   have hterm2 : ResToImagAxis.Pos (fun z : ℍ => 5 * H₂ z * H₄ z) := by
@@ -441,7 +439,6 @@ theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
     simpa [mul_assoc] using hmul
   have hterm3 : ResToImagAxis.Pos (fun z : ℍ => 5 * H₄ z ^ 2) := by
     simpa using (ResToImagAxis.Pos.smul (F := fun z : ℍ => H₄ z ^ 2) hH₄_sq (by norm_num))
-
   have hquad :
       ResToImagAxis.Pos
         (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) :=
@@ -521,7 +518,6 @@ theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun := by
     have hsigma_real : (↑((ArithmeticFunction.sigma 3) ↑n) : ℂ).im = 0 := by simp
     -- Product of reals is real: (a + 0i) * (b + 0i) has im = a*0 + 0*b = 0
     simp only [Complex.mul_im, hsigma_real, hexp_real, mul_zero, zero_mul, add_zero]
-
   -- Step 2: Summability of the series
   have hsum : Summable fun n : ℕ+ => ↑((ArithmeticFunction.sigma 3) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n) := by
@@ -546,40 +542,32 @@ theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun := by
       have := a33 4 1 z
       simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at this
       exact summable_norm_iff.mpr this
-
   -- Step 3: The sum has zero imaginary part
   have hsum_im : (∑' (n : ℕ+), ↑((ArithmeticFunction.sigma (4 - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
     rw [Complex.im_tsum hsum]
     simp only [hterm_im, tsum_zero]
-
   -- Step 4: Show the coefficient is real and product with sum is real
   -- The coefficient is (1/ζ(4)) * ((-2πi)^4 / 3!)
   -- (-2πi)^4 is real (proved in neg_two_pi_I_pow_even_real)
   -- ζ(4) is real (it's π^4/90)
   -- So the coefficient is real, and product with real sum is real
-
   -- Show (-2πi)^4 is real
   have hpow_im : ((-2 * Real.pi * Complex.I) ^ 4 : ℂ).im = 0 :=
     neg_two_pi_I_pow_even_real 4 (by norm_num)
-
   -- Show the factorial term is real
   have hfact_im : ((4 - 1).factorial : ℂ).im = 0 := by simp
-
   -- Show 1/ζ(4) is real (ζ(4) = π^4/90 is real)
   have hzeta_im : (riemannZeta 4).im = 0 := by
     rw [riemannZeta_four]
     have h : (↑Real.pi ^ 4 / 90 : ℂ) = ((Real.pi ^ 4 / 90 : ℝ) : ℂ) := by push_cast; ring
     rw [h]
     exact ofReal_im _
-
   have hinv_zeta_im : (1 / riemannZeta 4).im = 0 := by
     rw [Complex.div_im, Complex.one_im, Complex.one_re, hzeta_im]
     ring
-
   -- (-2πi)^4 / 3! is real (using global helper)
   have hcoeff2_im := Complex.im_div_eq_zero' _ _ hpow_im hfact_im
-
   -- Full product with sum is real (combine all three factors directly)
   simp only [Complex.mul_im, Complex.div_im, hinv_zeta_im, hsum_im, hpow_im, hfact_im]
   ring
@@ -609,7 +597,6 @@ theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun := by
     have hexp_real : (cexp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := exp_ofReal_im _
     have hsigma_real : (↑((ArithmeticFunction.sigma 5) ↑n) : ℂ).im = 0 := by simp
     simp only [Complex.mul_im, hsigma_real, hexp_real, mul_zero, zero_mul, add_zero]
-
   -- Step 2: Summability of the series
   have hsum : Summable fun n : ℕ+ => ↑((ArithmeticFunction.sigma 5) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n) := by
