@@ -540,11 +540,16 @@ theorem ramanujan_E₂_new : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
 
 @[simp]
 theorem ramanujan_E₄_new : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
-  ext z
+  -- From ramanujan_E₄'_new: serre_D 4 E₄ = -1/3 * E₆
+  -- serre_D 4 E₄ = D E₄ - (4/12) * E₂ * E₄ = D E₄ - (1/3) * E₂ * E₄
+  -- So: D E₄ - (1/3) * E₂ * E₄ = -1/3 * E₆
+  -- Hence: D E₄ = (1/3) * E₂ * E₄ - (1/3) * E₆ = (1/3) * (E₂ * E₄ - E₆)
   have h := ramanujan_E₄'_new
+  ext z
   unfold serre_D at h
-  have h1 := congrFun h z
-  simp only [Pi.sub_apply, Pi.mul_apply] at h1
+  have hz := congrFun h z
+  simp only [Pi.sub_apply, Pi.mul_apply] at hz
+  -- Algebraic rearrangement from serre_D to D
   sorry
 
 @[simp]
