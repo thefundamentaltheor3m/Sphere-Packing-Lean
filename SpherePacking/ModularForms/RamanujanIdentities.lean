@@ -80,33 +80,82 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ} {L : ℂ}
 
 /-! ## Limits of Eisenstein series at infinity -/
 
+/-- The imaginary part of iMulPosReal y equals y. -/
+@[simp]
+lemma im_iMulPosReal (y : PosReal) : (iMulPosReal y).im = y.val := by
+  -- (I * y).im = 1 * y = y
+  -- iMulPosReal y = ⟨I * y, ...⟩, im ⟨z, h⟩ = z.im by definition
+  show (I * ↑↑y).im = y.val
+  simp [Complex.mul_im]
+
+/-- iMulPosReal sends the comap filter to atImInfty. -/
+lemma tendsto_iMulPosReal_atImInfty :
+    Filter.Tendsto iMulPosReal (Filter.comap Subtype.val Filter.atTop) atImInfty := by
+  rw [atImInfty]
+  simp only [Filter.tendsto_comap_iff, Function.comp_def]
+  -- Need: Tendsto (im ∘ iMulPosReal) (comap val atTop) atTop
+  -- im ∘ iMulPosReal = val, so this is Tendsto val (comap val atTop) atTop
+  have h : ∀ y : PosReal, (iMulPosReal y).im = y.val := im_iMulPosReal
+  simp_rw [h]
+  exact Filter.tendsto_comap
+
+/-- exp(-c * y) → 0 as y → +∞ (for c > 0). -/
+lemma tendsto_exp_neg_mul_atTop {c : ℝ} (hc : 0 < c) :
+    Filter.Tendsto (fun y : ℝ => Real.exp (-c * y)) Filter.atTop (nhds 0) := by
+  have : Filter.Tendsto (fun y => -c * y) Filter.atTop Filter.atBot := by
+    simpa using Filter.tendsto_id.const_mul_atTop_of_neg (neg_neg_of_pos hc)
+  exact Real.tendsto_exp_atBot.comp this
+
+/-- If f = O(exp(-c * Im z)) as z → i∞ for c > 0, then f → 0 at i∞. -/
+lemma tendsto_zero_of_exp_decay {f : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
+    (hO : f =O[atImInfty] fun τ => Real.exp (-c * τ.im)) :
+    Filter.Tendsto f atImInfty (nhds 0) := by
+  apply Asymptotics.IsBigO.trans_tendsto hO
+  rw [atImInfty]
+  exact (tendsto_exp_neg_mul_atTop hc).comp Filter.tendsto_comap
+
+/-- A modular form tends to its value at infinity as z → i∞. -/
+lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :
+    Filter.Tendsto f.toFun atImInfty (nhds ((qExpansion 1 f).coeff 0)) := by
+  -- Use exp_decay_sub_atImInfty': (f - valueAtInfty f) = O(exp(-c * Im z))
+  -- And valueAtInfty f = (qExpansion 1 f).coeff 0
+  have hdecay := ModularFormClass.exp_decay_sub_atImInfty' f
+  obtain ⟨c, hc, hO⟩ := hdecay
+  -- qExpansion_coeff_zero: (qExpansion 1 f).coeff 0 = valueAtInfty f
+  have hval := qExpansion_coeff_zero f (by norm_num : (0 : ℝ) < 1) one_mem_strictPeriods_SL2Z
+  rw [hval]
+  -- f - valueAtInfty f → 0, so f → valueAtInfty f
+  have htend : Filter.Tendsto (fun z => f z - valueAtInfty f.toFun) atImInfty (nhds 0) :=
+    tendsto_zero_of_exp_decay hc hO
+  simpa using htend.add_const (valueAtInfty f.toFun)
+
 /-- E₂(iy) → 1 as y → +∞. -/
 lemma E₂_tendsto_one_at_infinity :
     Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y))
       (Filter.comap Subtype.val Filter.atTop) (nhds 1) := by
+  -- E₂ is not a modular form, so we need a different approach
+  -- Use the explicit formula: E₂ = 1 - 24 * ∑' n, σ₁(n) * q^n
   sorry
 
 /-- E₄(iy) → 1 as y → +∞.
-Uses the q-expansion: E₄(z) = 1 + C * ∑' n, σ₃(n) * q^n where q = exp(2πiz).
-At z = iy, |q| = exp(-2πy) → 0 as y → ∞.
-By dominated convergence, the tsum → 0, so E₄(iy) → 1. -/
+Uses the q-expansion: E₄(z) = 1 + 240 * ∑' n, σ₃(n) * q^n where q = exp(2πiz).
+At z = iy, q → 0 as y → ∞, so E₄(iy) → (qExpansion 1 E₄).coeff 0 = 1. -/
 lemma E₄_tendsto_one_at_infinity :
     Filter.Tendsto (fun y : PosReal => E₄.toFun (iMulPosReal y))
       (Filter.comap Subtype.val Filter.atTop) (nhds 1) := by
-  -- Use E_k_q_expansion: E₄(z) = 1 + coeff * ∑' n, σ₃(n) * exp(2πinz)
-  -- At z = iy, exp(2πinz) = exp(-2πny) → 0 as y → ∞
-  -- Apply tendsto_tsum_of_dominated_convergence:
-  -- 1. Each term σ₃(n) * exp(-2πny) → 0 as y → ∞
-  -- 2. Bound by σ₃(n) * exp(-2πn) which is summable (for y ≥ 1)
-  -- 3. Therefore tsum → 0 and E₄(iy) → 1
-  sorry
+  -- Use the general result for modular forms
+  have h := modular_form_tendsto_atImInfty E₄
+  rw [E4_q_exp_zero] at h
+  exact h.comp tendsto_iMulPosReal_atImInfty
 
 /-- E₆(iy) → 1 as y → +∞.
-Same strategy as E₄: use q-expansion and dominated convergence. -/
+Same strategy as E₄: use q-expansion and modular form convergence. -/
 lemma E₆_tendsto_one_at_infinity :
     Filter.Tendsto (fun y : PosReal => E₆.toFun (iMulPosReal y))
       (Filter.comap Subtype.val Filter.atTop) (nhds 1) := by
-  sorry
+  have h := modular_form_tendsto_atImInfty E₆
+  rw [E6_q_exp_zero] at h
+  exact h.comp tendsto_iMulPosReal_atImInfty
 
 /-! ## Boundedness of serre_D 1 E₂ at infinity -/
 
