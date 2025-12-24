@@ -56,6 +56,15 @@ lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
 /-- Subtype of positive reals for limit statements -/
 abbrev PosReal := {y : ℝ // 0 < y}
 
+/-- The filter comap of Subtype.val on PosReal at atTop is NeBot. -/
+lemma PosReal_comap_atTop_neBot :
+    (Filter.comap Subtype.val (Filter.atTop : Filter ℝ)).NeBot (α := PosReal) := by
+  rw [Filter.comap_neBot_iff]
+  intro s hs
+  rw [Filter.mem_atTop_sets] at hs
+  obtain ⟨a, ha⟩ := hs
+  exact ⟨⟨max a 1, lt_max_of_lt_right one_pos⟩, ha (max a 1) (le_max_left a 1)⟩
+
 /-- Helper to construct an upper half plane point from a positive real. -/
 def iMulPosReal (y : PosReal) : ℍ := ⟨I * y.val, by simp [y.2]⟩
 
@@ -77,13 +86,23 @@ lemma E₂_tendsto_one_at_infinity :
       (Filter.comap Subtype.val Filter.atTop) (nhds 1) := by
   sorry
 
-/-- E₄(iy) → 1 as y → +∞. -/
+/-- E₄(iy) → 1 as y → +∞.
+Uses the q-expansion: E₄(z) = 1 + C * ∑' n, σ₃(n) * q^n where q = exp(2πiz).
+At z = iy, |q| = exp(-2πy) → 0 as y → ∞.
+By dominated convergence, the tsum → 0, so E₄(iy) → 1. -/
 lemma E₄_tendsto_one_at_infinity :
     Filter.Tendsto (fun y : PosReal => E₄.toFun (iMulPosReal y))
       (Filter.comap Subtype.val Filter.atTop) (nhds 1) := by
+  -- Use E_k_q_expansion: E₄(z) = 1 + coeff * ∑' n, σ₃(n) * exp(2πinz)
+  -- At z = iy, exp(2πinz) = exp(-2πny) → 0 as y → ∞
+  -- Apply tendsto_tsum_of_dominated_convergence:
+  -- 1. Each term σ₃(n) * exp(-2πny) → 0 as y → ∞
+  -- 2. Bound by σ₃(n) * exp(-2πn) which is summable (for y ≥ 1)
+  -- 3. Therefore tsum → 0 and E₄(iy) → 1
   sorry
 
-/-- E₆(iy) → 1 as y → +∞. -/
+/-- E₆(iy) → 1 as y → +∞.
+Same strategy as E₄: use q-expansion and dominated convergence. -/
 lemma E₆_tendsto_one_at_infinity :
     Filter.Tendsto (fun y : PosReal => E₆.toFun (iMulPosReal y))
       (Filter.comap Subtype.val Filter.atTop) (nhds 1) := by
@@ -179,9 +198,30 @@ lemma serre_D_E₄_tendsto_at_infinity :
     Filter.Tendsto (fun y : PosReal => serre_D 4 E₄.toFun (iMulPosReal y))
       (Filter.comap Subtype.val Filter.atTop) (nhds (-(1/3 : ℂ))) := by
   -- serre_D 4 E₄ = D E₄ - (4/12) * E₂ * E₄
-  -- As y → ∞: D E₄ → 0, E₂ → 1, E₄ → 1
-  -- So limit = 0 - (1/3) * 1 * 1 = -1/3
-  sorry
+  have hserre : ∀ y : PosReal, serre_D 4 E₄.toFun (iMulPosReal y) =
+      D E₄.toFun (iMulPosReal y) - (4 : ℂ) * 12⁻¹ * E₂ (iMulPosReal y) * E₄.toFun (iMulPosReal y) := by
+    intro y
+    simp only [serre_D, Pi.sub_apply, Pi.mul_apply]
+  simp_rw [hserre]
+  -- Limit of D E₄ is 0 (D_tendsto_zero_of_tendsto_const)
+  have hD : Filter.Tendsto (fun y : PosReal => D E₄.toFun (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds 0) :=
+    D_tendsto_zero_of_tendsto_const E₄.holo' E₄_isBoundedAtImInfty E₄_tendsto_one_at_infinity
+  -- Limits of E₂ and E₄ are 1
+  have hE₂ := E₂_tendsto_one_at_infinity
+  have hE₄ := E₄_tendsto_one_at_infinity
+  -- Combined limit: 0 - (4/12) * 1 * 1 = -1/3
+  have hlim : (0 : ℂ) - (4 : ℂ) * 12⁻¹ * 1 * 1 = -(1/3 : ℂ) := by norm_num
+  rw [← hlim]
+  refine Filter.Tendsto.sub hD ?_
+  -- Need: Tendsto (fun y => 4 * 12⁻¹ * E₂ y * E₄ y) ... (nhds (4 * 12⁻¹ * 1 * 1))
+  have hprod : Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y) * E₄.toFun (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds (1 * 1)) :=
+    hE₂.mul hE₄
+  have hconst : Filter.Tendsto (fun _ : PosReal => (4 : ℂ) * 12⁻¹)
+      (Filter.comap Subtype.val Filter.atTop) (nhds ((4 : ℂ) * 12⁻¹)) :=
+    tendsto_const_nhds
+  convert hconst.mul hprod using 1 <;> ring
 
 /-- serre_D 6 E₆(iy) → -1/2 as y → +∞.
 This determines the scalar in `serre_D 6 E₆ = c * E₄²`. -/
@@ -189,9 +229,29 @@ lemma serre_D_E₆_tendsto_at_infinity :
     Filter.Tendsto (fun y : PosReal => serre_D 6 E₆.toFun (iMulPosReal y))
       (Filter.comap Subtype.val Filter.atTop) (nhds (-(1/2 : ℂ))) := by
   -- serre_D 6 E₆ = D E₆ - (6/12) * E₂ * E₆
-  -- As y → ∞: D E₆ → 0, E₂ → 1, E₆ → 1
-  -- So limit = 0 - (1/2) * 1 * 1 = -1/2
-  sorry
+  have hserre : ∀ y : PosReal, serre_D 6 E₆.toFun (iMulPosReal y) =
+      D E₆.toFun (iMulPosReal y) - (6 : ℂ) * 12⁻¹ * E₂ (iMulPosReal y) * E₆.toFun (iMulPosReal y) := by
+    intro y
+    simp only [serre_D, Pi.sub_apply, Pi.mul_apply]
+  simp_rw [hserre]
+  -- Limit of D E₆ is 0
+  have hD : Filter.Tendsto (fun y : PosReal => D E₆.toFun (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds 0) := by
+    apply D_tendsto_zero_of_tendsto_const E₆.holo'
+    · sorry -- E₆_isBoundedAtImInfty
+    · exact E₆_tendsto_one_at_infinity
+  have hE₂ := E₂_tendsto_one_at_infinity
+  have hE₆ := E₆_tendsto_one_at_infinity
+  have hlim : (0 : ℂ) - (6 : ℂ) * 12⁻¹ * 1 * 1 = -(1/2 : ℂ) := by norm_num
+  rw [← hlim]
+  refine Filter.Tendsto.sub hD ?_
+  have hprod : Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y) * E₆.toFun (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds (1 * 1)) :=
+    hE₂.mul hE₆
+  have hconst : Filter.Tendsto (fun _ : PosReal => (6 : ℂ) * 12⁻¹)
+      (Filter.comap Subtype.val Filter.atTop) (nhds ((6 : ℂ) * 12⁻¹)) :=
+    tendsto_const_nhds
+  convert hconst.mul hprod using 1 <;> ring
 
 /-- serre_D 1 E₂(iy) → -1/12 as y → +∞.
 This determines the scalar in `serre_D 1 E₂ = c * E₄`. -/
@@ -265,9 +325,17 @@ theorem ramanujan_E₄'_new : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   -- E₆(iy) → 1 (by E₆_tendsto_one_at_infinity)
   -- c * E₆(iy) → c * 1 = c, so c = -1/3
   have hc_val : c = -(1/3 : ℂ) := by
-    -- Use the fact that both sides have the same limit
-    -- serre_D 4 E₄ → -1/3 and c * E₆ → c * 1 = c
-    -- So c = -1/3
+    -- Use uniqueness of limits:
+    -- serre_D 4 E₄(iy) → -1/3 (by serre_D_E₄_tendsto_at_infinity)
+    -- E₆(iy) → 1 (by E₆_tendsto_one_at_infinity)
+    -- Since serre_D 4 E₄ = c * E₆, we have c * E₆(iy) → c * 1 = c
+    -- By uniqueness of limits: c = -1/3
+    have hlim_serre := serre_D_E₄_tendsto_at_infinity
+    have hlim_E₆ := E₆_tendsto_one_at_infinity
+    have heq : ∀ y : PosReal, serre_D 4 E₄.toFun (iMulPosReal y) = c * E₆.toFun (iMulPosReal y) :=
+      fun y => hfun (iMulPosReal y)
+    -- The limit of serre_D 4 E₄ is -1/3, and the limit of c * E₆ is c * 1 = c
+    -- So c = -1/3 by uniqueness of limits
     sorry
   ext z
   rw [hfun z, hc_val]
@@ -299,9 +367,28 @@ theorem ramanujan_E₆'_new : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E�
   have hE₄_sq_ne : E₄_sq ≠ 0 := by
     simp only [ne_eq, E₄_sq]
     intro h
-    have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) ⟨I, by simp⟩
-    simp only [ModularForm.coe_mul, Pi.mul_apply, ModularForm.coe_zero, Pi.zero_apply] at this
-    -- E₄(i)² = 0 would imply E₄(i) = 0, contradicting E₄ ≠ 0
+    -- If E₄ * E₄ = 0 as modular form, then E₄ = 0
+    -- This follows since the underlying function ring is an integral domain
+    have hE₄_ne := E4_ne_zero
+    -- h : (4 + 4 = 8) ▸ (E₄.mul E₄) = 0
+    -- The cast doesn't change the function values, so E₄ * E₄ = 0 as functions
+    have h' : (E₄.mul E₄ : ℍ → ℂ) = 0 := by
+      -- h : (4 + 4 = 8) ▸ (E₄.mul E₄) = 0
+      -- Need to extract that E₄.mul E₄ = 0 as a function
+      ext z
+      have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
+      simp only [ModularForm.coe_mul, Pi.mul_apply, ModularForm.coe_zero, Pi.zero_apply] at this
+      exact this
+    -- E₄.mul E₄ = (fun z => E₄ z * E₄ z)
+    have h'' : ∀ z : ℍ, E₄.toFun z * E₄.toFun z = 0 := fun z => congrFun h' z
+    -- For the point i, this means E₄(i)² = 0, so E₄(i) = 0
+    have hi : E₄.toFun ⟨I, by simp⟩ = 0 := by
+      have := h'' ⟨I, by simp⟩
+      rw [mul_self_eq_zero] at this
+      exact this
+    -- But E₄ is nonzero, contradiction via q-expansion constant term
+    -- The q-expansion of E₄ has constant term 1, so E₄ can't be identically zero
+    -- and in fact E₄(i) ≠ 0 (since i maps to q = e^{2πi·i} = e^{-2π} ≠ 0)
     sorry
   rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
   have := (finrank_eq_one_iff_of_nonzero' E₄_sq hE₄_sq_ne).mp hrank serre_D_E₆_ModularForm
@@ -315,9 +402,22 @@ theorem ramanujan_E₆'_new : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E�
     have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
     simp only [ModularForm.coe_smul, Pi.smul_apply, smul_eq_mul] at this
     -- Need to relate E₄_sq to E₄.toFun * E₄.toFun
-    sorry
+    -- E₄_sq = (4 + 4 = 8) ▸ (E₄.mul E₄), so the underlying function is E₄ * E₄
+    -- The ▸ cast preserves function values
+    convert this using 2
   have hc_val : c = -(1/2 : ℂ) := by
-    -- serre_D 6 E₆(iy) → -1/2 and c * E₄(iy)² → c * 1² = c
+    -- Use uniqueness of limits:
+    -- serre_D 6 E₆(iy) → -1/2 (by serre_D_E₆_tendsto_at_infinity)
+    -- E₄(iy) → 1 (by E₄_tendsto_one_at_infinity)
+    -- Since serre_D 6 E₆ = c * E₄², we have c * E₄(iy)² → c * 1² = c
+    -- By uniqueness of limits: c = -1/2
+    have hlim_serre := serre_D_E₆_tendsto_at_infinity
+    have hlim_E₄ := E₄_tendsto_one_at_infinity
+    have heq : ∀ y : PosReal, serre_D 6 E₆.toFun (iMulPosReal y) =
+        c * (E₄.toFun (iMulPosReal y) * E₄.toFun (iMulPosReal y)) :=
+      fun y => hfun (iMulPosReal y)
+    -- The limit of serre_D 6 E₆ is -1/2, and the limit of c * E₄² is c * 1² = c
+    -- So c = -1/2 by uniqueness of limits
     sorry
   ext z
   rw [hfun z, hc_val]
