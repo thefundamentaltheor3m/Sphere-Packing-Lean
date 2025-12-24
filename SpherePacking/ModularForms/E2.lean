@@ -68,7 +68,7 @@ theorem extracted_66 (z : ℍ) :
   fun N : ℕ ↦
     ∑' (n : ℤ), ∑ x ∈ Finset.Ico (-↑N : ℤ) ↑N, (((n : ℂ) * ↑z + ↑x) ^ 2)⁻¹ := by
   ext N
-  simp
+  simp only [inv_neg, mul_neg, Pi.mul_apply]
   rw [@Finset.mul_sum]
   rw [Summable.tsum_finsetSum]
   · congr
@@ -94,7 +94,7 @@ theorem extracted_66 (z : ℍ) :
 lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) = limUnder (atTop)
     fun N : ℕ => ((∑' (n : ℤ), ∑ m ∈ Finset.Ico (-N : ℤ) N, (1 / ((n : ℂ) * z + m) ^ 2))) := by
   rw [ modular_S_smul]
-  simp [G₂]
+  simp only [G₂, inv_neg, UpperHalfPlane.coe_mk, mul_neg, one_div]
   rw [ limUnder_mul_const]
   · congr
     simpa using extracted_66 z
@@ -135,7 +135,8 @@ theorem series_eql' (z : ℍ) :
 theorem extracted_summable (z : ℍ) (n : ℕ+) : Summable fun m : ℕ ↦
     cexp (2 * ↑π * Complex.I * (-↑↑n / ↑z) * ↑m) := by
   have A1 := a1 1 1 ⟨ -n / z , pnat_div_upper n z⟩
-  simp at A1
+  simp only [PNat.val_ofNat, Nat.cast_one, tsub_self, pow_zero, coe_mk_subtype, mul_one,
+    one_mul] at A1
   apply A1
 
 theorem tsum_exp_tendsto_zero (z : ℍ) :
@@ -215,7 +216,8 @@ theorem extracted_12 (z : ℍ) :
       funext N
       set Z : ℍ := ⟨-N / z, pnat_div_upper N z⟩
       have hS := series_eql' Z
-      simp [Z] at *
+      simp only [coe_mk_subtype, one_div, inv_div, mul_eq_mul_left_iff, div_eq_zero_iff,
+        OfNat.ofNat_ne_zero, false_or, Z] at *
       rw [← sub_eq_iff_eq_add'] at hS
       left
       have hSS := hS.symm
@@ -330,7 +332,7 @@ theorem poly_id (z : ℍ) (b n : ℤ) :
   by_cases h : b = 0 ∧ n = 0
   · rw [h.1, h.2]
     simp
-  simp at h
+  simp only [not_and] at h
   by_cases hb : b = 0
   · by_cases hn : n = -1
     · simp [hb, hn]
@@ -347,7 +349,7 @@ theorem poly_id (z : ℍ) (b n : ℤ) :
     ring
   have : δ b n = 0 := by simp [δ, hb]
   rw [this]
-  simp
+  simp only [add_zero]
   have h : ![(b : ℝ), n + 1] ≠ 0 := by
     aesop
   have hh : ![(b : ℝ), n ] ≠ 0 := by
@@ -370,7 +372,7 @@ theorem extracted_66c (z : ℍ) :
   fun N : ℕ ↦
     ∑' (n : ℤ), ∑ x ∈ Finset.Icc (-↑N : ℤ) ↑N, (((n : ℂ) * ↑z + ↑x) ^ 2)⁻¹ := by
   ext N
-  simp
+  simp only [inv_neg, mul_neg, Pi.mul_apply]
   rw [Finset.mul_sum]
   rw [Summable.tsum_finsetSum]
   · congr
@@ -437,7 +439,7 @@ lemma G2_inde_lhs (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -2 
     have hC := cauchy_seq_mul_const _ ((z : ℂ) ^ 2)⁻¹ (by simp [ne_zero z]) this
     apply hC.congr
     have H := extracted_66c z
-    simp at *
+    simp only [coe_mk_subtype, one_div, inv_neg, mul_neg] at *
     rw [← H]
     ext N
     simp only [Pi.mul_apply, Pi.smul_apply, smul_eq_mul, mul_eq_mul_left_iff, inv_eq_zero, ne_eq,
@@ -835,7 +837,7 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ, (n + 1) *
     ring_nf
   · intro e
     have := a1 2 e z
-    simp at *
+    simp only [pow_one, Nat.cast_add, Nat.cast_one, Nat.add_one_sub_one] at *
     apply this.subtype
 
 /- This we should get from the modular forms repo stuff. Will port these things soon. -/
@@ -843,7 +845,7 @@ lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
     1 - 24 * ∑' (n : ℕ+),
     ↑n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)) := by
   rw [E₂]
-  simp
+  simp only [one_div, mul_inv_rev, Pi.smul_apply, smul_eq_mul]
   rw [G2_q_exp]
   rw [mul_sub]
   congr 1
@@ -860,5 +862,5 @@ lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
         (2 * π * Complex.I * n * z)))
       rw [hl, hr]
       have ht := tsum_eq_tsum_sigma z
-      simp at *
+      simp only [Nat.cast_add, Nat.cast_one] at *
       rw [ht]

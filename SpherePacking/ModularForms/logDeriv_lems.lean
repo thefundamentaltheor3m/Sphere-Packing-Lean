@@ -125,17 +125,19 @@ lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fun n : �
   have h3 := h2 1 (by norm_num)
   apply Summable.of_norm_bounded_eventually_nat (g := fun n => 2 * ‖n * r^n‖)
   · apply Summable.mul_left
-    simp
+    simp only [Complex.norm_mul, RCLike.norm_natCast, norm_pow]
     have := (summable_norm_pow_mul_geometric_of_norm_lt_one 1 hr)
-    simp at this
+    simp only [pow_one, Complex.norm_mul, RCLike.norm_natCast, norm_pow] at this
     apply this
-  · simp
+  · simp only [Complex.norm_div, Complex.norm_mul, RCLike.norm_natCast, norm_pow, eventually_atTop,
+      ge_iff_le]
     obtain ⟨N, hN⟩ := h3
     use N
     intro n hn
     have h4 := hN n hn
     have := norm_lt_of_mem_ball h4 (E := ℂ)
-    simp at *
+    simp only [tendsto_const_nhds_iff, norm_inv, one_mem, CStarRing.norm_of_mem_unitary,
+      ge_iff_le] at *
     rw [div_eq_mul_inv]
     rw [mul_comm]
     gcongr
@@ -240,6 +242,6 @@ lemma logDeriv_eqOn_iff' (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableO
     have HJ := deriv_EqOn_congr s hz hs2 hx
     rw [HJ, h]
     rw [deriv_const_smul]
-    · simp
+    · simp only [smul_eq_mul, Pi.smul_apply]
       rw [mul_div_mul_left (deriv g x) (g x) hz0]
     · exact hg.differentiableAt (x := x) (IsOpen.mem_nhds hs2 hx)
