@@ -208,8 +208,8 @@ private lemma sigma1_qexp_summable (z : ℍ) :
   have h := Real.summable_pow_mul_exp_neg_nat_mul 2 hpos
   have hconv : Summable (fun n : ℕ+ => ((n : ℕ) : ℝ)^2 * rexp (-(2 * π * z.im) * (n : ℕ))) :=
     h.subtype _
-  apply Summable.of_norm_bounded (g := fun n : ℕ+ => ((n : ℕ) : ℝ)^2 * rexp (-(2 * π * z.im) * (n : ℕ)))
-    hconv
+  apply Summable.of_norm_bounded
+    (g := fun n : ℕ+ => ((n : ℕ) : ℝ)^2 * rexp (-(2 * π * z.im) * (n : ℕ))) hconv
   intro n
   have hsig : ‖(↑((σ 1) ↑n) : ℂ)‖ ≤ (n : ℝ)^2 := by
     have hsig' := sigma_bound 1 n
@@ -279,9 +279,9 @@ private lemma sigma1_qexp_deriv_bound :
             rw [h_norm_2pin, h_norm_exp]
         _ ≤ (n : ℝ)^2 * (2 * π * n) * rexp (-2 * π * ↑↑n * k.im) := by
             apply mul_le_mul_of_nonneg_right
-            apply mul_le_mul_of_nonneg_right hsig
-            nlinarith [pi_pos, hn_pos]
-            positivity
+            · apply mul_le_mul_of_nonneg_right hsig
+              nlinarith [pi_pos, hn_pos]
+            · positivity
         _ = 2 * π * (n : ℝ)^3 * rexp (-2 * π * ↑↑n * k.im) := by ring
         _ ≤ 2 * π * (n : ℝ)^3 * rexp (-2 * π * ↑↑n * k_min.im) := by
             apply mul_le_mul_of_nonneg_left _ (by positivity)
@@ -344,7 +344,7 @@ theorem D_E₂_qexp (z : ℍ) :
     have h_eq : (qseries ∘ ofComplex) =ᶠ[nhds (z : ℂ)] (fun w => (1 - E₂ (ofComplex w)) / 24) := by
       filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
       simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, qseries]
-      have := hE₂_eq ⟨w, hw⟩; simp only [coe_mk_subtype] at this
+      have := hE₂_eq ⟨w, hw⟩
       -- this : E₂ ⟨w,hw⟩ = 1 - 24 * qseries ⟨w,hw⟩, so qseries = (1 - E₂) / 24
       rw [this]; ring
     have h_diff_qseries : DifferentiableAt ℂ (qseries ∘ ofComplex) z :=
@@ -356,9 +356,10 @@ theorem D_E₂_qexp (z : ℍ) :
   -- The key cancellation: (2πi)⁻¹ * 2πi = 1
   -- Goal: (2πI)⁻¹ * -(24 * (2πI * ∑')) = -24 * ∑'
   have h_cancel : (2 * ↑π * I)⁻¹ * (2 * ↑π * I) = 1 := inv_mul_cancel₀ two_pi_I_ne_zero
-  calc (2 * ↑π * I)⁻¹ * -(24 * (2 * ↑π * I * ∑' n : ℕ+, ↑↑n * a n * cexp (2 * ↑π * I * ↑↑n * ↑z)))
-      = -((2 * ↑π * I)⁻¹ * (24 * (2 * ↑π * I * ∑' n : ℕ+, ↑↑n * a n * cexp (2 * ↑π * I * ↑↑n * ↑z)))) := by ring
-    _ = -(24 * ((2 * ↑π * I)⁻¹ * (2 * ↑π * I) * ∑' n : ℕ+, ↑↑n * a n * cexp (2 * ↑π * I * ↑↑n * ↑z))) := by ring
+  set S := ∑' n : ℕ+, ↑↑n * a n * cexp (2 * ↑π * I * ↑↑n * ↑z) with hS
+  calc (2 * ↑π * I)⁻¹ * -(24 * (2 * ↑π * I * S))
+      = -((2 * ↑π * I)⁻¹ * (24 * (2 * ↑π * I * S))) := by ring
+    _ = -(24 * ((2 * ↑π * I)⁻¹ * (2 * ↑π * I) * S)) := by ring
     _ = -(24 * (1 * ∑' n : ℕ+, ↑↑n * a n * cexp (2 * ↑π * I * ↑↑n * ↑z))) := by rw [h_cancel]
     _ = -24 * ∑' n : ℕ+, ↑↑n * a n * cexp (2 * ↑π * I * ↑↑n * ↑z) := by ring
     _ = -24 * ∑' n : ℕ+, ↑↑n * ↑((σ 1) ↑n) * cexp (2 * ↑π * I * ↑↑n * ↑z) := rfl
@@ -853,7 +854,7 @@ theorem D_diff_qexp (z : ℍ) :
           congr 1
           simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
             Complex.I_re, Complex.I_im, Complex.natCast_re, Complex.natCast_im,
-            UpperHalfPlane.coe_re, UpperHalfPlane.coe_im, mul_zero, mul_one, zero_mul,
+            UpperHalfPlane.coe_re, UpperHalfPlane.coe_im, mul_zero, mul_one,
             zero_add, add_zero, sub_zero]
           ring
   -- Step 4: Derivative bounds for a(n) * q^n (using |a(n)| ≤ n⁵, so derivative ≤ n⁶)
@@ -888,7 +889,9 @@ theorem D_diff_qexp (z : ℍ) :
           simp only [a, Complex.norm_mul, Complex.norm_natCast]
           calc (n : ℝ) * ↑(σ 3 ↑n)
               ≤ (n : ℝ) * (n : ℝ)^4 := by
-                apply mul_le_mul_of_nonneg_left; exact_mod_cast hsig'; positivity
+                apply mul_le_mul_of_nonneg_left
+                · exact_mod_cast hsig'
+                · positivity
             _ = (n : ℝ)^5 := by ring
         have h_norm_2pin : ‖(2 : ℂ) * π * I * ↑↑n‖ = 2 * π * n := by
           rw [norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real,
@@ -903,7 +906,7 @@ theorem D_diff_qexp (z : ℍ) :
                 have : (2 * π * I * ↑↑n * k).re = -2 * π * n * k.im := by
                   simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
                     Complex.I_re, Complex.I_im, Complex.natCast_re, Complex.natCast_im,
-                    mul_zero, mul_one, zero_mul, zero_add, add_zero, sub_zero]; ring
+                    mul_zero, mul_one, zero_add, add_zero, sub_zero]; ring
                 rw [this]
               gcongr
           _ ≤ (n : ℝ)^5 * (2 * π * n) * rexp (-2 * π * n * k_min.im) := by
@@ -981,7 +984,7 @@ theorem D_diff_div_q_tendsto :
       if m = 0 then 1 else (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) := by
     intro m
     split_ifs with h
-    · simp [h, ArithmeticFunction.sigma_one_apply]
+    · simp [h, ArithmeticFunction.sigma_one]
     · rfl
   -- Apply QExp.tendsto_nat with coefficient function a(m) = (m+1)² * σ₃(m+1)
   set a : ℕ → ℂ := fun m => (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) with ha_def
@@ -1220,16 +1223,19 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
       let f' : ℂ →L[ℂ] ℂ × ℂ := {
         toFun := fun h => (h / 2, h)
         map_add' := by intro x y; simp only [add_div, Prod.mk_add_mk]
-        map_smul' := by intro c x; simp only [RingHom.id_apply, Prod.smul_mk, smul_eq_mul, mul_div_assoc]
+        map_smul' := by
+          intro c x
+          simp only [RingHom.id_apply, Prod.smul_mk, smul_eq_mul, mul_div_assoc]
         cont := by continuity }
       have hf_1 : f' 1 = ((1 : ℂ) / 2, 1) := by simp only [f', ContinuousLinearMap.coe_mk',
         LinearMap.coe_mk, AddHom.coe_mk, one_div]
       have hf : HasFDerivAt f f' (z : ℂ) := by
-        have h1 : HasDerivAt (fun t : ℂ => t / 2) (1 / 2 : ℂ) (z : ℂ) := (hasDerivAt_id _).div_const 2
+        have h1 : HasDerivAt (fun t : ℂ => t / 2) (1 / 2 : ℂ) (z : ℂ) :=
+          (hasDerivAt_id _).div_const 2
         have h2 : HasDerivAt (fun t : ℂ => t) 1 (z : ℂ) := hasDerivAt_id _
         have hprod := h1.prodMk h2
         convert hprod.hasFDerivAt using 1
-        ext x : 1
+        ext : 1
         simp only [f', ContinuousLinearMap.coe_mk', LinearMap.coe_mk, AddHom.coe_mk,
           ContinuousLinearMap.smulRight_apply, ContinuousLinearMap.one_apply,
           Prod.smul_mk, smul_eq_mul, mul_one, Prod.mk.injEq]
@@ -1264,7 +1270,8 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
       (g := fun _ => 0)
       (bound := fun n => 3 * π * |n| ^ 2 * Real.exp (-π * (1 * n ^ 2 - 1 * |n|)))
     -- 1. Summability of bound
-    · simpa [mul_assoc] using (summable_pow_mul_jacobiTheta₂_term_bound (1/2) one_pos 2).mul_left (3 * π)
+    · simpa [mul_assoc] using
+        (summable_pow_mul_jacobiTheta₂_term_bound (1/2) one_pos 2).mul_left (3 * π)
     -- 2. Pointwise convergence: each term → 0 as im(z) → ∞
     -- Key: For n = 0 or n = -1, coefficient πin(1+n) = 0. For other n, exponential decay.
     · intro n
@@ -1273,6 +1280,8 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
       -- For other n: exponential decay cexp(-π·n(1+n)·im(τ)) → 0
       by_cases hn0 : n = 0
       · -- n = 0: the linear map (2πi·0)•fst + (πi·0²)•snd = 0
+        -- zero_mul is needed but linter reports it unused (false positive: removing it breaks proof)
+        set_option linter.unusedSimpArgs false in
         simp only [hn0, jacobiTheta₂_term_fderiv, Int.cast_zero, mul_zero, sq,
           zero_mul, zero_smul, add_zero, Complex.exp_zero, one_smul]
         -- Goal: (0 • fst + 0 • snd) (1/2, 1) = 0 for all z
@@ -1282,7 +1291,7 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
           ext x
           simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
             ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd',
-            smul_eq_mul, mul_one, mul_comm, zero_add]
+            smul_eq_mul, mul_one]
           ring
         rw [h_eq]
         exact tendsto_const_nhds
@@ -1381,7 +1390,7 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
                 have hpi_pos : π > 0 := Real.pi_pos
                 have : -π * z.im ≤ -π * 1 := by nlinarith
                 exact mul_le_mul_of_nonneg_right this (le_of_lt hpos)
-            convert h1 using 2 <;> ring
+            convert h1 using 2
         _ = 3 * π * ↑|k| ^ 2 * rexp (-π * (1 * ↑k ^ 2 - 1 * ↑|k|)) := by ring_nf
   have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
   simp only [mul_zero] at h_mul
@@ -1550,7 +1559,6 @@ theorem D_Θ₂_div_Θ₂_tendsto :
       _ = (D f z * h z + f z * D h z) / (f z * h z) := by
           rw [congrFun h_D_prod z]; simp only [Pi.mul_apply, Pi.add_apply]
       _ = D f z / f z + D h z / h z := by field_simp [hf_ne z, hz]
-
   -- Step 7: Take the limit
   have h_sum_limit : Filter.Tendsto (fun z => D f z / f z + D h z / h z) atImInfty
       (nhds ((1 : ℂ) / 8 + 0)) := by
@@ -1734,6 +1742,8 @@ theorem D_Θ₄_tendsto_zero :
       by_cases hn0 : n = 0
       · -- n = 0: term is 0 for all z
         subst hn0
+        -- zero_mul is needed but linter reports it unused (false positive: removing it breaks proof)
+        set_option linter.unusedSimpArgs false in
         simp only [jacobiTheta₂_term_fderiv, Int.cast_zero, mul_zero, sq,
           zero_mul, zero_smul, add_zero, Complex.exp_zero, one_smul,
           ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
@@ -1768,7 +1778,7 @@ theorem D_Θ₄_tendsto_zero :
             nlinarith [Real.pi_pos]
           rw [Filter.tendsto_const_mul_atBot_of_neg h_const_neg]
           exact Filter.tendsto_im_atImInfty
-        convert h_exp_tendsto.mul tendsto_const_nhds using 1 <;> simp
+        convert h_exp_tendsto.mul tendsto_const_nhds using 1; simp
     -- 3. Bound condition: ‖f(z,n)‖ ≤ bound(n) eventually (for z.im ≥ 1)
     · apply Filter.eventually_atImInfty.mpr
       use 1
@@ -1859,14 +1869,11 @@ theorem D_G_div_G_tendsto :
   -- MDifferentiability lemmas
   have hH₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
   have hH₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
-
   -- Define A = H₂³ and B = 2H₂² + 5H₂H₄ + 5H₄²
   let A : ℍ → ℂ := fun z => H₂ z ^ 3
   let B : ℍ → ℂ := fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2
-
   -- G = A * B
   have hG_eq : ∀ z, G z = A z * B z := fun z => rfl
-
   -- MDifferentiability of A, B
   have hH₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 2) := by rw [pow_two]; exact hH₂.mul hH₂
   have hH₄sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 2) := by rw [pow_two]; exact hH₄.mul hH₄
@@ -1883,7 +1890,6 @@ theorem D_G_div_G_tendsto :
       have : (fun z => 5 * H₄ z ^ 2) = (5 : ℂ) • (H₄ ^ 2) := by ext z; simp [smul_eq_mul]
       rw [this]; exact hH₄sq.const_smul 5
     exact (h1.add h2).add h3
-
   -- D(A)/A = 3·D(H₂)/H₂
   have h_DA_A : ∀ z, H₂ z ≠ 0 → D A z / A z = 3 * (D H₂ z / H₂ z) := by
     intro z hH₂_ne
@@ -1894,7 +1900,6 @@ theorem D_G_div_G_tendsto :
     simp only [A]
     rw [h_cube]
     field_simp [pow_ne_zero 3 hH₂_ne, pow_ne_zero 2 hH₂_ne]
-
   -- D(A)/A → 3/2
   have h_DA_A_tendsto : Filter.Tendsto (fun z => D A z / A z) atImInfty (nhds ((3 : ℂ) / 2)) := by
     have h_eq : (3 : ℂ) / 2 = 3 * (1 / 2) := by norm_num
@@ -1906,18 +1911,16 @@ theorem D_G_div_G_tendsto :
     apply (D_H₂_div_H₂_tendsto.const_mul 3).congr'
     filter_upwards [hH₂_ne] with z hz
     exact (h_DA_A z hz).symm
-
   -- B → 5 (since H₂ → 0, H₄ → 1)
   have h_B_tendsto : Filter.Tendsto B atImInfty (nhds 5) := by
     -- B = 2H₂² + 5H₂H₄ + 5H₄² → 2·0² + 5·0·1 + 5·1² = 5
     have h := ((H₂_tendsto_atImInfty.pow 2).const_mul 2).add
       (((H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty).const_mul 5).add
         ((H₄_tendsto_atImInfty.pow 2).const_mul 5))
-    simp only [zero_pow two_ne_zero, one_pow, mul_zero, mul_one, add_zero, zero_add] at h
+    simp only [zero_pow two_ne_zero, one_pow, mul_zero, mul_one, zero_add] at h
     refine h.congr' ?_
     filter_upwards with z
     simp only [B, pow_two]; ring
-
   -- D(B) → 0 (expand and use D_H₂_tendsto_zero, D_H₄_tendsto_zero)
   have h_DB_tendsto : Filter.Tendsto (fun z => D B z) atImInfty (nhds 0) := by
     -- D(B) = 4H₂·D(H₂) + 5(H₂·D(H₄) + D(H₂)·H₄) + 10H₄·D(H₄)
@@ -1994,24 +1997,22 @@ theorem D_G_div_G_tendsto :
         atImInfty (nhds 0) := by
       have h_sub1 := H₂_tendsto_atImInfty.mul D_H₄_tendsto_zero
       have h_sub2 := D_H₂_tendsto_zero.mul H₄_tendsto_atImInfty
-      simp only [zero_mul, mul_zero, mul_one] at h_sub1 h_sub2
+      simp only [zero_mul, mul_zero] at h_sub1 h_sub2
       have := (tendsto_const_nhds (x := (5 : ℂ))).mul (h_sub1.add h_sub2)
       simp only [add_zero, mul_zero] at this; exact this
     have h_t3 : Filter.Tendsto (fun z => 10 * H₄ z * D H₄ z) atImInfty (nhds 0) := by
       have := (tendsto_const_nhds (x := (10 : ℂ))).mul
         (H₄_tendsto_atImInfty.mul D_H₄_tendsto_zero)
-      simp only [mul_one, mul_zero] at this
+      simp only [mul_zero] at this
       convert this using 1; ext z; ring
     convert (h_t1.add h_t2).add h_t3 using 1
     simp only [add_zero]
-
   -- D(B)/B → 0/5 = 0
   have h_DB_B_tendsto : Filter.Tendsto (fun z => D B z / B z) atImInfty (nhds 0) := by
     have h_B_ne : ∀ᶠ z in atImInfty, B z ≠ 0 :=
       h_B_tendsto.eventually_ne (by norm_num : (5 : ℂ) ≠ 0)
     have h := h_DB_tendsto.div h_B_tendsto (by norm_num : (5 : ℂ) ≠ 0)
     simp only [zero_div] at h; exact h
-
   -- Finally: D(G)/G = D(A)/A + D(B)/B → 3/2 + 0 = 3/2
   have h_DG_G : ∀ z, A z ≠ 0 → B z ≠ 0 → D G z / G z = D A z / A z + D B z / B z := by
     intro z hA_ne hB_ne
@@ -2023,7 +2024,6 @@ theorem D_G_div_G_tendsto :
       exact h_D
     rw [hG_eq, h_DG]
     field_simp
-
   have hA_ne : ∀ᶠ z in atImInfty, A z ≠ 0 := by
     have hH₂_ne := H₂_div_exp_tendsto.eventually_ne (by norm_num : (16 : ℂ) ≠ 0)
     filter_upwards [hH₂_ne] with z hz hzero
@@ -2032,7 +2032,6 @@ theorem D_G_div_G_tendsto :
     exact hz (by simp [this])
   have hB_ne : ∀ᶠ z in atImInfty, B z ≠ 0 :=
     h_B_tendsto.eventually_ne (by norm_num : (5 : ℂ) ≠ 0)
-
   have h_sum : (3 : ℂ) / 2 = 3 / 2 + 0 := by norm_num
   rw [h_sum]
   apply (h_DA_A_tendsto.add h_DB_B_tendsto).congr'
