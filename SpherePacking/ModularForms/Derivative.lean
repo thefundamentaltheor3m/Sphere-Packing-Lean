@@ -1171,7 +1171,7 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
 Modular linear differential equation satisfied by `F`.
 TODO: Move this to a more appropriate place.
 -/
-theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 172800 * Δ_fun * X₄₂ := by
+theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 172800 * Δ_fun * X₄₂ := by
   ext x
   rw [X₄₂, Δ_fun, serre_D, serre_D, F_aux]
   unfold serre_D
