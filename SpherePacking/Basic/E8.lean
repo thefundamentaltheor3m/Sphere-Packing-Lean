@@ -529,7 +529,10 @@ instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   simp only [Submodule.mk_eq_zero]
   simp only [Submodule.mem_map, WithLp.linearEquiv_symm_apply] at hv
   obtain ⟨v, hv, rfl⟩ := hv
-  apply (E8_norm_lower_bound v hv).resolve_right ?_
+  simp only [AddEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm,
+    WithLp.addEquiv_symm_apply] at h
+  suffices v = 0 from congrArg (WithLp.toLp 2) this
+  refine (E8_norm_lower_bound v hv).resolve_right ?_
   have : 1 < √2 := by rw [Real.lt_sqrt zero_le_one, sq, mul_one]; exact one_lt_two
   linarith
 
@@ -607,6 +610,8 @@ noncomputable def E8Packing : PeriodicSpherePacking 8 where
     intro _ a ha rfl _ b hb rfl hab
     rw [(WithLp.toLp_injective _).eq_iff] at hab
     have : a - b ∈ Submodule.E8 ℝ := Submodule.sub_mem _ ha hb
+    simp only [AddEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm,
+      WithLp.addEquiv_symm_apply] at hab
     simpa [Subtype.dist_eq, WithLp.ofLp_eq_zero, sub_eq_zero, hab] using
       E8_norm_lower_bound _ this
   lattice_action x y := add_mem
@@ -653,14 +658,14 @@ end hack
 
 lemma test'' {ι : Type*} [Fintype ι] (s : Set (EuclideanSpace ℝ ι)) :
     MeasureTheory.volume ((WithLp.equiv 2 _).symm ⁻¹' s) = MeasureTheory.volume s := by
-  rw [← (EuclideanSpace.volume_preserving_measurableEquiv ι).symm.measure_preimage_equiv]
+  rw [← (EuclideanSpace.volume_preserving_symm_measurableEquiv_toLp ι).symm.measure_preimage_equiv]
   rfl
 
 open MeasureTheory ZSpan in
 lemma same_domain :
     (WithLp.linearEquiv 2 ℝ _).symm ⁻¹' fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) =
       fundamentalDomain (E8Basis ℝ) := by
-  rw [← LinearEquiv.image_eq_preimage, ZSpan.map_fundamentalDomain]
+  rw [← LinearEquiv.image_eq_preimage_symm, ZSpan.map_fundamentalDomain]
   congr! 1
   ext i : 1
   simp [E8_ℤBasis, E8Basis_apply]

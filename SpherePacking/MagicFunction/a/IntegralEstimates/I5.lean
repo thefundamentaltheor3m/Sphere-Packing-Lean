@@ -185,7 +185,7 @@ lemma Bound_integrableOn (r C₀ : ℝ) :
                                 abs_of_nonneg (zero_le_one.trans hs)]
       _ ≤ _ := div_le_self (mul_nonneg Real.pi_pos.le (abs_nonneg _)) hs
   simpa [IntegrableOn, mul_comm, mul_left_comm, mul_assoc, div_eq_mul_inv] using
-    (h_exp.const_mul C₀).bdd_mul' (Real.continuous_exp.measurable.comp
+    (h_exp.const_mul C₀).bdd_mul (Real.continuous_exp.measurable.comp
       (measurable_const.mul measurable_id.inv)).aestronglyMeasurable h_bnd
 
 end Integrability

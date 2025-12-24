@@ -32,8 +32,8 @@ def I₃' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, I -- Added factor due to var
   * ((z₃' t) - (1 : ℂ)) ^ 2
   * cexp (π * I * x * (z₃' t))
 
-def I₄' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1,
-  φ₀'' (-1 / ((z₄' t) - (1 : ℂ)))
+def I₄' (x : ℝ) : ℂ := ∫ t in (0 : ℝ)..1, -1 -- Added factor due to variable change!!
+  * φ₀'' (-1 / ((z₄' t) - (1 : ℂ)))
   * ((z₄' t) - (1 : ℂ)) ^ 2
   * cexp (π * I * x * (z₄' t))
 
@@ -203,8 +203,8 @@ lemma I₃'_eq'_Ioc (r : ℝ) : I₃' r = -I * ∫ (t : ℝ) in Ioc 0 1,
     * cexp (-π * r * t) := by
   simp [I₃'_eq', intervalIntegral_eq_integral_uIoc]
 
-lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1,
-    φ₀'' (-1 / (-t + I))
+lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1, -1
+    * φ₀'' (-1 / (-t + I))
     * (-t + I) ^ 2
     * cexp (π * I * r)
     * cexp (-π * I * r * t)
@@ -216,12 +216,10 @@ lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1,
   have hmem : t ∈ Icc 0 1 := ⟨ht₀, ht₁⟩
   simp only [z₄'_eq_of_mem hmem]
   calc
-  _ = φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2 * cexp (π * I * r * (1 - t + I)) := by
-      congr 2 <;> ring_nf
+  _ = -1 * φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2 * cexp (π * I * r * (1 - t + I)) := by ring_nf
   _ = _ := by
       conv_rhs => rw [mul_assoc, mul_assoc]
       rw [← Complex.exp_add, ← Complex.exp_add]
-      congr
       ring_nf
       rw [I_sq]
       ring_nf

@@ -29,7 +29,8 @@ variable (r : ℝ)
 
 section Setup
 
-noncomputable def g : ℝ → ℝ → ℂ := fun r t ↦ φ₀'' (-1 / (-t + I))
+noncomputable def g : ℝ → ℝ → ℂ := fun r t ↦ -1
+    * φ₀'' (-1 / (-t + I))
     * (-t + I) ^ 2
     * cexp (π * I * r)
     * cexp (-π * I * r * t)
@@ -55,7 +56,8 @@ lemma I₄'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ �
     ‖φ₀'' (-1 / (-t + I))‖ * 2 * rexp (-π * r) := by
   intro t ht
   obtain ⟨ht₀, ht₁⟩ := ht
-  rw [g, norm_mul, norm_mul, norm_mul, mul_assoc, mul_assoc, norm_mul]
+  rw [g, norm_mul, norm_mul, norm_mul, mul_assoc, mul_assoc, norm_mul,
+    norm_mul, norm_neg, norm_one, one_mul]
   gcongr
   · rw [norm_pow, ← normSq_eq_norm_sq, normSq_apply, add_re, neg_re, ofReal_re, I_re,
       add_zero, mul_neg, neg_mul, neg_neg, add_im, neg_im, ofReal_im, neg_zero, I_im, zero_add,

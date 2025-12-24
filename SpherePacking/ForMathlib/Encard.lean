@@ -75,7 +75,7 @@ protected theorem tsum_subtype_le_of_subset {s t : Set α} (h : s ⊆ t) :
 protected theorem tsum_subtype_union_le (s t : Set α) :
     ∑' (x : ↑(s ∪ t)), f (x : α) ≤ ∑' (x : s), f x + ∑' (x : t), f x := by
   rw [← Set.diff_union_self, ENat.tsum_subtype_union_disjoint disjoint_sdiff_left]
-  exact add_le_add_right (ENat.tsum_subtype_le_of_subset diff_subset) _
+  exact add_le_add_left (ENat.tsum_subtype_le_of_subset diff_subset) _
 
 protected theorem tsum_subtype_insert {s : Set α} {a : α} (h : a ∉ s) :
     ∑' (x : ↑(insert a s)), f x = f a + ∑' (x : s), f x := by
@@ -197,7 +197,7 @@ protected theorem tsum_subtype_biUnion_le_tsum (f : α → ℕ∞) (s : Set ι) 
 
 protected theorem tsum_subtype_biUnion_le (f : α → ℕ∞) (s : Finset ι) (t : ι → Set α) :
     ∑' x : ⋃ i ∈ s, t i, f x ≤ ∑ i ∈ s, ∑' x : t i, f x :=
-  (ENat.tsum_subtype_biUnion_le_tsum f s.toSet t).trans_eq <|
+  (ENat.tsum_subtype_biUnion_le_tsum f (SetLike.coe s) t).trans_eq <|
     Finset.tsum_subtype s fun i ↦ ∑' x : t i, f x
 
 protected theorem tsum_subtype_iUnion_le [Fintype ι] (f : α → ℕ∞) (t : ι → Set α) :

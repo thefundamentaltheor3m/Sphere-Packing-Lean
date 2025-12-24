@@ -78,7 +78,6 @@ theorem extracted_66 (z : ℍ) :
     congr
     ext d
     have hz := ne_zero z
-
     rw [← mul_inv]
     congr 1
     rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
@@ -192,7 +191,6 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
     rw [this]
     simp only [norm_pow, ge_iff_le]
     rw [← pow_mul]
-
     apply Bound.pow_le_pow_right_of_le_one_or_one_le ?_
     right
     constructor
@@ -238,10 +236,10 @@ theorem extracted_12 (z : ℍ) :
     rw [show -2 * ↑π * Complex.I / ↑z = 2 * ↑π * Complex.I / ↑z - 4 * ↑π * Complex.I / ↑z - 0 by
       ring]
     apply Tendsto.sub
-    apply Tendsto.sub
-    simp only [tendsto_const_nhds_iff]
-    ring
-    apply tsum_exp_tendsto_zero
+    · apply Tendsto.sub
+      · simp only [tendsto_const_nhds_iff]
+        ring
+      apply tsum_exp_tendsto_zero
     have := tendsto_const_div_pow 2 1 (Nat.one_ne_zero)
     rw [Metric.tendsto_atTop] at *
     simp only [one_div, gt_iff_lt, ge_iff_le, pow_one, dist_zero_right, norm_div, Real.norm_ofNat,
@@ -303,8 +301,8 @@ theorem PS3tn22 (z : ℍ) :
   · have : Tendsto (fun x : ℕ ↦ -2 / (x : ℂ)) atTop (𝓝 0) := by
         have := Filter.Tendsto.const_div_atTop (g := fun n : ℕ => ‖(n : ℂ)‖) (r := 2) (l := atTop)
           ?_
-        rw [tendsto_zero_iff_norm_tendsto_zero]
-        simpa only [norm_div, norm_neg, norm_ofNat, norm_natCast] using this
+        · rw [tendsto_zero_iff_norm_tendsto_zero]
+          simpa only [norm_div, norm_neg, norm_ofNat, norm_natCast] using this
         simp only [norm_natCast]
         exact tendsto_natCast_atTop_atTop
     have H := nat_tendsto_pnat _ _ this
