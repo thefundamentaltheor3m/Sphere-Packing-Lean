@@ -453,28 +453,24 @@ theorem ramanujan_E₆'_new : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E�
     simp only [ne_eq, E₄_sq]
     intro h
     -- If E₄ * E₄ = 0 as modular form, then E₄ = 0
-    -- This follows since the underlying function ring is an integral domain
     have hE₄_ne := E4_ne_zero
     -- h : (4 + 4 = 8) ▸ (E₄.mul E₄) = 0
-    -- The cast doesn't change the function values, so E₄ * E₄ = 0 as functions
+    -- Extract that E₄ * E₄ = 0 as functions
     have h' : (E₄.mul E₄ : ℍ → ℂ) = 0 := by
-      -- h : (4 + 4 = 8) ▸ (E₄.mul E₄) = 0
-      -- Need to extract that E₄.mul E₄ = 0 as a function
       ext z
       have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
       simp only [ModularForm.coe_mul, Pi.mul_apply, ModularForm.coe_zero, Pi.zero_apply] at this
       exact this
-    -- E₄.mul E₄ = (fun z => E₄ z * E₄ z)
-    have h'' : ∀ z : ℍ, E₄.toFun z * E₄.toFun z = 0 := fun z => congrFun h' z
-    -- For the point i, this means E₄(i)² = 0, so E₄(i) = 0
-    have hi : E₄.toFun ⟨I, by simp⟩ = 0 := by
-      have := h'' ⟨I, by simp⟩
-      rw [mul_self_eq_zero] at this
-      exact this
-    -- But E₄ is nonzero, contradiction via q-expansion constant term
-    -- The q-expansion of E₄ has constant term 1, so E₄ can't be identically zero
-    -- and in fact E₄(i) ≠ 0 (since i maps to q = e^{2πi·i} = e^{-2π} ≠ 0)
-    sorry
+    -- E₄ z * E₄ z = 0 for all z, so E₄ z = 0 for all z
+    have h'' : ∀ z : ℍ, E₄.toFun z = 0 := fun z => by
+      have := congrFun h' z
+      simp only [ModularForm.coe_mul, Pi.mul_apply, Pi.zero_apply] at this
+      exact mul_self_eq_zero.mp this
+    -- This means E₄ = 0 as a function, contradicting E4_ne_zero
+    apply hE₄_ne
+    ext z
+    simp only [ModularForm.coe_zero, Pi.zero_apply]
+    exact h'' z
   rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
   have := (finrank_eq_one_iff_of_nonzero' E₄_sq hE₄_sq_ne).mp hrank serre_D_E₆_ModularForm
   obtain ⟨c, hc⟩ := this
