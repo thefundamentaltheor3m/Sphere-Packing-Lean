@@ -164,7 +164,7 @@ theorem tendstozero_inv_linear (z : ℍ) (b : ℤ) :
       enter [1]
       simp only [one_div, norm_inv]
     apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, n]‖ ^ (-1 : ℝ))
-    · simp only [inv_nonneg, norm_nonneg, implies_true]
+    · simp
     · intro t
       have := EisensteinSeries.summand_bound z (k := 1) (by simp only [zero_le_one]) ![b, t]
       simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
@@ -193,8 +193,7 @@ theorem tendstozero_inv_linear (z : ℍ) (b : ℤ) :
         apply le_of_eq
         congr
         rw [EisensteinSeries.norm_eq_max_natAbs ]
-        simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
-          Int.natAbs_natCast, hx, sup_of_le_right, Nat.abs_cast]
+        simp [hx]
       simp only [Nat.abs_cast]
       apply tendsto_inv_atTop_nhds_zero_nat.congr
       intro x
@@ -209,7 +208,7 @@ theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ) :
       enter [1]
       simp only [one_div, norm_inv]
     apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, -n]‖ ^ (-1 : ℝ))
-    · simp only [inv_nonneg, norm_nonneg, implies_true]
+    · simp
     · intro t
       have := EisensteinSeries.summand_bound z (k := 1) (by simp only [zero_le_one]) ![b, -t]
       simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
