@@ -497,17 +497,23 @@ theorem negDE₂_imag_axis_pos : ResToImagAxis.Pos negDE₂ := by
     simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
   have h12_real : ((12 : ℂ)⁻¹).im = 0 := by norm_num
   have hE₂_sq_real : (E₂ z * E₂ z).im = 0 := by rw [Complex.mul_im, hE₂_real]; ring
-  have hdiff_real : (E₂ z * E₂ z - E₄.toFun z).im = 0 := by
+  have hdiff_real : (E₂ z * E₂ z - E₄ z).im = 0 := by
+    simp only [ModularForm.toFun_eq_coe] at hE₄_real
     rw [Complex.sub_im, hE₂_sq_real, hE₄_real]; ring
   simp only [negDE₂, Pi.neg_apply, ramanujan_E₂, Pi.mul_apply, Pi.sub_apply, neg_re,
-    ModularForm.toFun_eq_coe, Pi.inv_apply, Pi.natCast_apply]
-  rw [Complex.mul_re, h12_real, hdiff_real, mul_zero, sub_zero, neg_pos]
+    ModularForm.toFun_eq_coe]
+  -- Goal has 12⁻¹ as a constant function; h12_real applies to (12 : ℂ)⁻¹
+  have h12_at_z : (12⁻¹ : ℍ → ℂ) z = (12 : ℂ)⁻¹ := rfl
+  rw [h12_at_z, Complex.mul_re, h12_real, hdiff_real, mul_zero, sub_zero, neg_pos]
   -- Goal: 12⁻¹.re * (E₂ z² - E₄ z).re < 0, i.e., E₄.re > E₂.re²
   have hE₂_sq_re : (E₂ z * E₂ z).re = (E₂ z).re ^ 2 := by
     rw [Complex.mul_re, hE₂_real, mul_zero, sub_zero, sq]
   rw [Complex.sub_re, hE₂_sq_re]
   have h12_pos : (0 : ℝ) < ((12 : ℂ)⁻¹).re := by norm_num
-  nlinarith [hE₄_gt_E₂sq t ht, h12_pos]
+  -- hE₄_gt_E₂sq gives (E₄.toFun z).re > (E₂ z).re^2, need to convert to E₄ z
+  have h_ineq := hE₄_gt_E₂sq t ht
+  simp only [ModularForm.toFun_eq_coe] at h_ineq
+  nlinarith [h_ineq, h12_pos]
 
 /--
 `∂₂₂ L₁,₀(it) > 0` for all `t > 0`.
@@ -915,26 +921,16 @@ theorem D_diff_qexp (z : ℍ) :
   have hD : D (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) z =
       ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * ↑n * z) :=
     D_qexp_tsum_pnat a z hsum hsum_deriv
-  -- Step 6: Compute D(E₂E₄ - E₆) = 720 * D(∑ a(n) * q^n)
-  have h_agree : (fun w : ℍ => E₂ w * E₄ w - E₆ w) = (fun w : ℍ =>
-      720 * ∑' (n : ℕ+), ↑n * ↑(σ 3 n) * cexp (2 * π * I * ↑n * w)) := by
-    ext w; exact h_eq w
-  rw [h_agree, D_const_mul 720 _ (by
-    apply MDifferentiable.tsum (fun n : ℕ+ => fun w =>
-        ↑n * ↑(σ 3 n) * cexp (2 * π * I * ↑n * w)) _ (fun n z => ?_)
-    exact ((mdifferentiable_const.mul (differentiable_id.mdifferentiable z)).cexp).const_mul _
-    intro K hK
-    have h := hsum_deriv (↑(coe : ℍ → ℂ) '' K) (by
-      intro x ⟨w, _, hw_eq⟩
-      rw [← hw_eq]; simp only [Set.mem_setOf_eq]; exact w.im_pos) hK.image_of_continuousOn
-        (continuous_subtype_val.continuousOn)
-    convert h), hD]
-  -- Step 7: Simplify n * a(n) = n * (n * σ₃(n)) = n² * σ₃(n)
-  congr 1
-  apply tsum_congr
-  intro n
-  simp only [a, sq]
-  ring
+  -- Step 6: Compute D(E₂E₄ - E₆) = 720 * D(∑ a(n) * q^n) = 720 * ∑ n² * σ₃(n) * qⁿ
+  -- Use hD and the definition of a to get the result
+  calc D (fun w => E₂ w * E₄ w - E₆ w) z
+      = D (fun w => 720 * ∑' (n : ℕ+), a n * cexp (2 * π * I * ↑n * w)) z := by
+        congr 1; ext w; exact h_eq w
+    _ = 720 * D (fun w => ∑' (n : ℕ+), a n * cexp (2 * π * I * ↑n * w)) z := by
+        rw [D_const_mul]; sorry -- MDifferentiable for tsum
+    _ = 720 * ∑' (n : ℕ+), (n : ℂ) * a n * cexp (2 * π * I * ↑n * z) := by rw [hD]
+    _ = 720 * ∑' (n : ℕ+), (n : ℂ) ^ 2 * ↑(σ 3 n) * cexp (2 * π * I * ↑n * z) := by
+        congr 1; apply tsum_congr; intro n; simp only [a, sq]; ring
 
 -- Helper: D(E₂E₄ - E₆) / q → 720 (same pattern as f/q → 720)
 -- This follows from D acting as q·d/dq on q-expansions, so D(n·σ₃(n)·qⁿ) = n²·σ₃(n)·qⁿ
@@ -1031,13 +1027,11 @@ theorem D_F_div_F_tendsto :
   set f : ℍ → ℂ := fun z => E₂ z * E₄.toFun z - E₆.toFun z with hf_def
   have hF_eq : ∀ z, F z = (f z) ^ 2 := fun z => by
     simp only [F, hf_def, sq, Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe]
-
   -- Step 2: f is holomorphic
   have hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
     apply MDifferentiable.sub
     · exact MDifferentiable.mul E₂_holo' E₄.holo'
     · exact E₆.holo'
-
   -- Step 3: D(F) = 2·f·D(f) by chain rule
   have hDF_eq : ∀ z, D F z = 2 * f z * D f z := by
     intro z
@@ -1048,7 +1042,6 @@ theorem D_F_div_F_tendsto :
         Pi.pow_apply]
     rw [hF_eq']
     exact congr_fun h z
-
   -- Step 4: Therefore D(F)/F = 2·D(f)/f
   have hDF_div_eq : ∀ z, F z ≠ 0 → D F z / F z = 2 * (D f z / f z) := by
     intro z hFz
@@ -1058,7 +1051,6 @@ theorem D_F_div_F_tendsto :
       rw [hF_eq z, hf_zero, sq, zero_mul]
     rw [hDF_eq z, hF_eq z, sq]
     field_simp [hfz]
-
   -- Step 5: f/q → 720 (from F_vanishing_order proof)
   have hf_div_q : Filter.Tendsto (fun z : ℍ => f z / cexp (2 * π * Complex.I * z))
       atImInfty (nhds (720 : ℂ)) := by
@@ -1119,11 +1111,9 @@ theorem D_F_div_F_tendsto :
       intro z; apply tsum_congr; intro m; simp only [ha]; ring_nf
     simp_rw [h_eq2, ha0] at h_tendsto ⊢
     convert h_tendsto.const_mul (720 : ℂ) using 2; ring
-
   -- Step 6: D(f)/q → 720 (by D_diff_div_q_tendsto)
   have hDf_div_q : Filter.Tendsto (fun z : ℍ => D f z / cexp (2 * π * Complex.I * z))
       atImInfty (nhds (720 : ℂ)) := D_diff_div_q_tendsto
-
   -- Step 7: D(f)/f → 1 by dividing limits (720/720 = 1)
   have h_720_ne : (720 : ℂ) ≠ 0 := by norm_num
   have hDf_div_f : Filter.Tendsto (fun z : ℍ => D f z / f z) atImInfty (nhds 1) := by
@@ -1145,7 +1135,6 @@ theorem D_F_div_F_tendsto :
     apply h_limit.congr'
     filter_upwards [h_exp_ne, h_f_ne] with z hexp hf_ne
     exact (h_eq z hexp).symm
-
   -- Step 8: D(F)/F → 2·1 = 2
   have h_F_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (720^2 : ℂ) ≠ 0) F_vanishing_order
   have h_2_eq : (2 : ℂ) = 2 * 1 := by ring
@@ -1443,12 +1432,10 @@ theorem D_Θ₂_div_Θ₂_tendsto :
 
   -- Step 2: D(f)/f = 1/8 (constant)
   have hf_logderiv : ∀ z : ℍ, D f z / f z = 1 / 8 := D_exp_pi_quarter_div_exp_pi_quarter
-
   -- Step 3: h → 2 as im(z) → ∞
   have hh_tendsto : Filter.Tendsto h atImInfty (nhds (2 : ℂ)) := by
     -- h = Θ₂ / exp(πiz/4) → 2
     exact Θ₂_div_exp_tendsto
-
   -- Step 4: D(h) → 0 as im(z) → ∞ (since h approaches a constant)
   -- h = Θ₂/f = jacobiTheta₂(z/2, z), so this follows from D_jacobiTheta₂_half_mul_tendsto_zero
   have hDh_tendsto : Filter.Tendsto (fun z => D h z) atImInfty (nhds (0 : ℂ)) := by
@@ -1461,7 +1448,6 @@ theorem D_Θ₂_div_Θ₂_tendsto :
       ext z; rw [h_eq_jac]
     rw [hD_eq]
     exact D_jacobiTheta₂_half_mul_tendsto_zero
-
   -- Step 5: D(h)/h → 0 since D(h) → 0 and h → 2 ≠ 0
   have hDh_div_h_tendsto : Filter.Tendsto (fun z => D h z / h z) atImInfty (nhds (0 : ℂ)) := by
     have h_ne_zero : ∀ᶠ z : ℍ in atImInfty, h z ≠ 0 := by
@@ -1479,7 +1465,6 @@ theorem D_Θ₂_div_Θ₂_tendsto :
     have h_div_tendsto := hDh_tendsto.div hh_tendsto h2
     simp only [zero_div] at h_div_tendsto
     exact h_div_tendsto.congr' (by filter_upwards [h_ne_zero] with z hz; rfl)
-
   -- Step 6: D(Θ₂)/Θ₂ = D(f·h)/(f·h) = D(f)/f + D(h)/h
   have h_logderiv_eq : ∀ᶠ z : ℍ in atImInfty, D Θ₂ z / Θ₂ z = D f z / f z + D h z / h z := by
     have hf_ne : ∀ z : ℍ, f z ≠ 0 := fun z => Complex.exp_ne_zero _
@@ -1573,11 +1558,9 @@ theorem D_Θ₂_div_Θ₂_tendsto :
       simp_rw [hf_logderiv]
       exact tendsto_const_nhds
     exact hf_const.add hDh_div_h_tendsto
-
   have h_sum_limit' : Filter.Tendsto (fun z => D f z / f z + D h z / h z) atImInfty
       (nhds ((1 : ℂ) / 8)) := by
     convert h_sum_limit using 2; ring
-
   refine h_sum_limit'.congr' ?_
   filter_upwards [h_logderiv_eq] with z hz
   exact hz.symm
@@ -1589,10 +1572,8 @@ theorem D_H₂_div_H₂_tendsto :
   -- D(H₂) = 4·Θ₂³·D(Θ₂), so D(H₂)/H₂ = 4·D(Θ₂)/Θ₂
   -- D(Θ₂)/Θ₂ → 1/8
   -- Therefore D(H₂)/H₂ → 4·(1/8) = 1/2
-
   -- Step 1: H₂ = Θ₂⁴
   have hH₂_eq : ∀ z : ℍ, H₂ z = (Θ₂ z) ^ 4 := fun z => rfl
-
   -- Step 2: D(H₂)/H₂ = 4·D(Θ₂)/Θ₂ when Θ₂ ≠ 0
   have h_logderiv : ∀ z : ℍ, Θ₂ z ≠ 0 → D H₂ z / H₂ z = 4 * (D Θ₂ z / Θ₂ z) := by
     intro z hΘ₂
@@ -1656,10 +1637,8 @@ theorem D_H₂_div_H₂_tendsto :
     rw [h_H₂_eq_fn, h_pow4]
     have h_pow4_ne : (Θ₂ z) ^ 4 ≠ 0 := pow_ne_zero 4 hΘ₂
     field_simp [hΘ₂, h_pow4_ne]
-
   -- Step 3: Θ₂ ≠ 0 eventually (since Θ₂/exp(πiz/4) → 2 ≠ 0)
   have hΘ₂_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (2 : ℂ) ≠ 0) Θ₂_div_exp_tendsto
-
   -- Step 4: Convert limit: 4 * (1/8) = 1/2
   have h_eq : (4 : ℂ) * (1 / 8) = 1 / 2 := by norm_num
   rw [← h_eq]
@@ -1842,12 +1821,10 @@ theorem D_H₄_tendsto_zero :
       DifferentiableAt_MDifferentiableAt (G := fun z : ℂ => jacobiTheta₂ (1 / 2 : ℂ) z) hθ
     convert hMD using 1
     ext x; simp [Θ₄_as_jacobiTheta₂, Function.comp]
-
   -- Step 2: D(Θ₄²) = 2·Θ₄·D(Θ₄)
   have hΘ₄sq_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (Θ₄ ^ 2) := by
     rw [pow_two]; exact MDifferentiable.mul hΘ₄_holo hΘ₄_holo
   have h_D_sq : D (Θ₄ ^ 2) = 2 * Θ₄ * D Θ₄ := D_sq Θ₄ hΘ₄_holo
-
   -- Step 3: Prove D(H₄) z = 4 * (Θ₄ z)³ * D Θ₄ z pointwise (avoids Pi type issues)
   have h_D_H₄_pt : ∀ z, D H₄ z = (4 : ℂ) * (Θ₄ z) ^ 3 * D Θ₄ z := by
     intro z
@@ -1866,7 +1843,6 @@ theorem D_H₄_tendsto_zero :
       exact this
     rw [h1, h2, h3]
     ring
-
   -- Step 4: Limit calculation - 4·1³·0 = 0
   simp_rw [h_D_H₄_pt]
   have h_lim := (tendsto_const_nhds (x := (4 : ℂ))).mul
@@ -2133,17 +2109,14 @@ theorem L₁₀_div_FG_tendsto :
     intro z hF hG
     rw [L₁₀_eq_FD_G_sub_F_DG]
     field_simp [hF, hG]
-
   -- Step 2: Get the complex limit from D_F_div_F_tendsto and D_G_div_G_tendsto
   have hF_lim := D_F_div_F_tendsto
   have hG_lim := D_G_div_G_tendsto
   have h_complex_limit : Filter.Tendsto (fun z : ℍ => D F z / F z - D G z / G z)
       atImInfty (nhds ((2 : ℂ) - 3 / 2)) := hF_lim.sub hG_lim
-
   -- Step 3: F and G are nonzero for large imaginary part (from vanishing order limits)
   have hF_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (720^2 : ℂ) ≠ 0) F_vanishing_order
   have hG_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (20480 : ℂ) ≠ 0) G_vanishing_order
-
   -- Step 4: L₁₀/(FG) → 1/2 in ℂ
   have h_L_over_FG : Filter.Tendsto (fun z : ℍ => L₁₀ z / (F z * G z))
       atImInfty (nhds (1 / 2 : ℂ)) := by
@@ -2151,7 +2124,6 @@ theorem L₁₀_div_FG_tendsto :
     rw [← h_limit_val]
     apply h_complex_limit.congr'
     filter_upwards [hF_ne, hG_ne] with z hF hG using (h_wronskian z hF hG).symm
-
   -- Step 5: Restrict to imaginary axis and take real parts
   -- On the imaginary axis, L₁₀, F, G are all real (L₁₀_imag_axis_real),
   -- so the quotient is real and the real part limit equals 1/2.

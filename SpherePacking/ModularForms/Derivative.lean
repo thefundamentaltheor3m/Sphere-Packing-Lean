@@ -105,6 +105,14 @@ theorem D_smul (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(
     _ = c * ((2 * π * I)⁻¹ * deriv (F ∘ ofComplex) z) := by ring_nf
     _ = c * D F z := by rfl
 
+/-- D(c * F) = c * D(F) for constant c : ℂ, where c * F is pointwise multiplication. -/
+@[simp]
+theorem D_const_mul (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    : D (fun z => c * F z) = fun z => c * D F z := by
+  have h : (fun z => c * F z) = c • F := rfl
+  rw [h, D_smul c F hF]
+  ext z; simp [smul_eq_mul]
+
 @[simp]
 theorem D_mul (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G)
     : D (F * G) = D F * G + F * D G := by
