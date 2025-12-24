@@ -530,13 +530,30 @@ theorem ramanujan_E₆'_new : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E�
 
 @[simp]
 theorem ramanujan_E₂_new : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
-  ext z
+  -- From ramanujan_E₂'_new: serre_D 1 E₂ = -12⁻¹ * E₄
+  -- serre_D 1 E₂ = D E₂ - (1/12) * E₂ * E₂
+  -- So: D E₂ - (1/12) * E₂² = -12⁻¹ * E₄
+  -- Hence: D E₂ = (1/12) * E₂² - (1/12) * E₄ = (1/12) * (E₂² - E₄)
   have h := ramanujan_E₂'_new
+  ext z
   unfold serre_D at h
-  have h1 := congrFun h z
-  simp only [Pi.sub_apply, Pi.mul_apply] at h1
-  -- Algebraic manipulation
-  sorry
+  have hz := congrFun h z
+  simp only [Pi.mul_apply] at hz
+  -- Simplify constant function: (-12⁻¹) z = -12⁻¹
+  have hconst : (-12⁻¹ : ℍ → ℂ) z = -12⁻¹ := rfl
+  rw [hconst] at hz
+  -- hz : D E₂ z - 1 * 12⁻¹ * E₂ z * E₂ z = -12⁻¹ * E₄.toFun z
+  have step1 : D E₂ z = 1 * 12⁻¹ * E₂ z * E₂ z - 12⁻¹ * E₄.toFun z := by
+    calc D E₂ z
+        = (D E₂ z - 1 * 12⁻¹ * E₂ z * E₂ z) + 1 * 12⁻¹ * E₂ z * E₂ z := by ring
+      _ = -12⁻¹ * E₄.toFun z + 1 * 12⁻¹ * E₂ z * E₂ z := by rw [hz]
+      _ = 1 * 12⁻¹ * E₂ z * E₂ z - 12⁻¹ * E₄.toFun z := by ring
+  -- Simplify 1 * 12⁻¹ = 12⁻¹
+  simp only [one_mul] at step1
+  rw [step1]
+  -- Simplify the goal - Pi.mul_apply for constant function
+  simp only [Pi.mul_apply, Pi.sub_apply, Pi.one_apply, Pi.inv_apply, Pi.ofNat_apply]
+  ring
 
 @[simp]
 theorem ramanujan_E₄_new : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
@@ -548,17 +565,51 @@ theorem ramanujan_E₄_new : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.t
   ext z
   unfold serre_D at h
   have hz := congrFun h z
-  simp only [Pi.sub_apply, Pi.mul_apply] at hz
-  -- Algebraic rearrangement from serre_D to D
-  sorry
+  simp only [Pi.mul_apply] at hz
+  -- Simplify constant function: (-3⁻¹) z = -3⁻¹
+  have hconst : (-3⁻¹ : ℍ → ℂ) z = -3⁻¹ := rfl
+  rw [hconst] at hz
+  -- hz : D E₄.toFun z - 4 * 12⁻¹ * E₂ z * E₄.toFun z = -3⁻¹ * E₆.toFun z
+  have step1 : D E₄.toFun z = 4 * 12⁻¹ * E₂ z * E₄.toFun z - 3⁻¹ * E₆.toFun z := by
+    calc D E₄.toFun z
+        = (D E₄.toFun z - 4 * 12⁻¹ * E₂ z * E₄.toFun z) + 4 * 12⁻¹ * E₂ z * E₄.toFun z := by ring
+      _ = -3⁻¹ * E₆.toFun z + 4 * 12⁻¹ * E₂ z * E₄.toFun z := by rw [hz]
+      _ = 4 * 12⁻¹ * E₂ z * E₄.toFun z - 3⁻¹ * E₆.toFun z := by ring
+  -- 4/12 = 1/3
+  have h412 : (4 : ℂ) * 12⁻¹ = 3⁻¹ := by norm_num
+  rw [h412] at step1
+  rw [step1]
+  -- Simplify the goal - Pi.mul_apply for constant function
+  simp only [Pi.mul_apply, Pi.sub_apply, Pi.one_apply, Pi.inv_apply, Pi.ofNat_apply]
+  ring
 
 @[simp]
 theorem ramanujan_E₆_new : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
-  ext z
+  -- From ramanujan_E₆'_new: serre_D 6 E₆ = -1/2 * E₄²
+  -- serre_D 6 E₆ = D E₆ - (6/12) * E₂ * E₆ = D E₆ - (1/2) * E₂ * E₆
+  -- So: D E₆ - (1/2) * E₂ * E₆ = -1/2 * E₄²
+  -- Hence: D E₆ = (1/2) * E₂ * E₆ - (1/2) * E₄² = (1/2) * (E₂ * E₆ - E₄²)
   have h := ramanujan_E₆'_new
+  ext z
   unfold serre_D at h
-  have h1 := congrFun h z
-  simp only [Pi.sub_apply, Pi.mul_apply] at h1
-  sorry
+  have hz := congrFun h z
+  simp only [Pi.mul_apply] at hz
+  -- hz has (-2⁻¹) z which is the constant function evaluated at z, equal to -2⁻¹
+  -- Need to simplify constant functions
+  have hconst : (-2⁻¹ : ℍ → ℂ) z = -2⁻¹ := rfl
+  rw [hconst] at hz
+  -- hz : D E₆.toFun z - 6 * 12⁻¹ * E₂ z * E₆.toFun z = -2⁻¹ * E₄.toFun z * E₄.toFun z
+  have step1 : D E₆.toFun z = 6 * 12⁻¹ * E₂ z * E₆.toFun z - 2⁻¹ * E₄.toFun z * E₄.toFun z := by
+    calc D E₆.toFun z
+        = (D E₆.toFun z - 6 * 12⁻¹ * E₂ z * E₆.toFun z) + 6 * 12⁻¹ * E₂ z * E₆.toFun z := by ring
+      _ = -2⁻¹ * E₄.toFun z * E₄.toFun z + 6 * 12⁻¹ * E₂ z * E₆.toFun z := by rw [hz]
+      _ = 6 * 12⁻¹ * E₂ z * E₆.toFun z - 2⁻¹ * E₄.toFun z * E₄.toFun z := by ring
+  -- 6/12 = 1/2
+  have h612 : (6 : ℂ) * 12⁻¹ = 2⁻¹ := by norm_num
+  rw [h612] at step1
+  rw [step1]
+  -- Simplify the goal - Pi.mul_apply for constant function
+  simp only [Pi.mul_apply, Pi.sub_apply, Pi.one_apply, Pi.inv_apply, Pi.ofNat_apply]
+  ring
 
 end
