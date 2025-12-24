@@ -129,13 +129,32 @@ lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :
     tendsto_zero_of_exp_decay hc hO
   simpa using htend.add_const (valueAtInfty f.toFun)
 
-/-- E₂(iy) → 1 as y → +∞. -/
+/-- E₂ - 1 = O(exp(-2π·Im z)) at infinity.
+This follows from the q-expansion bound in E₂_isBoundedAtImInfty. -/
+lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
+    fun z => Real.exp (-(2 * π) * z.im) := by
+  -- From E₂_eq: E₂ z - 1 = -24 * (q-series)
+  -- The q-series is bounded by |q|/(1-|q|)³ ≤ C·|q| for small |q|
+  -- where |q| = exp(-2π·Im z)
+  -- So E₂ - 1 = O(exp(-2π·Im z))
+  sorry
+
+/-- E₂ → 1 at i∞. -/
+lemma E₂_tendsto_one_atImInfty : Filter.Tendsto E₂ atImInfty (nhds 1) := by
+  -- E₂ - 1 = O(exp(-2π·Im z)), and exp(-2π·y) → 0 as y → ∞
+  suffices h : Filter.Tendsto (fun z : ℍ => E₂ z - 1) atImInfty (nhds 0) by
+    simpa using h.add_const 1
+  exact tendsto_zero_of_exp_decay (by positivity : 0 < 2 * π) E₂_sub_one_isBigO_exp
+
+/-- E₂(iy) → 1 as y → +∞.
+
+E₂ is not a modular form, so we use the explicit q-expansion:
+E₂ z = 1 - 24 * ∑' n, n * q^n / (1 - q^n) where q = exp(2πiz).
+At z = iy, q = exp(-2πy) → 0 as y → ∞, so the sum → 0 and E₂ → 1. -/
 lemma E₂_tendsto_one_at_infinity :
     Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds 1) := by
-  -- E₂ is not a modular form, so we need a different approach
-  -- Use the explicit formula: E₂ = 1 - 24 * ∑' n, σ₁(n) * q^n
-  sorry
+      (Filter.comap Subtype.val Filter.atTop) (nhds 1) :=
+  E₂_tendsto_one_atImInfty.comp tendsto_iMulPosReal_atImInfty
 
 /-- E₄(iy) → 1 as y → +∞.
 Uses the q-expansion: E₄(z) = 1 + 240 * ∑' n, σ₃(n) * q^n where q = exp(2πiz).
@@ -157,7 +176,11 @@ lemma E₆_tendsto_one_at_infinity :
   rw [E6_q_exp_zero] at h
   exact h.comp tendsto_iMulPosReal_atImInfty
 
-/-! ## Boundedness of serre_D 1 E₂ at infinity -/
+/-! ## Boundedness lemmas -/
+
+/-- E₆ is bounded at infinity (as a modular form). -/
+lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
+  ModularFormClass.bdd_at_infty E₆
 
 /-- serre_D 1 E₂ is bounded at infinity.
 This follows from E₂ and E₂² being bounded. -/
@@ -287,7 +310,7 @@ lemma serre_D_E₆_tendsto_at_infinity :
   have hD : Filter.Tendsto (fun y : PosReal => D E₆.toFun (iMulPosReal y))
       (Filter.comap Subtype.val Filter.atTop) (nhds 0) := by
     apply D_tendsto_zero_of_tendsto_const E₆.holo'
-    · sorry -- E₆_isBoundedAtImInfty
+    · exact E₆_isBoundedAtImInfty
     · exact E₆_tendsto_one_at_infinity
   have hE₂ := E₂_tendsto_one_at_infinity
   have hE₆ := E₆_tendsto_one_at_infinity
@@ -383,9 +406,22 @@ theorem ramanujan_E₄'_new : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
     have hlim_E₆ := E₆_tendsto_one_at_infinity
     have heq : ∀ y : PosReal, serre_D 4 E₄.toFun (iMulPosReal y) = c * E₆.toFun (iMulPosReal y) :=
       fun y => hfun (iMulPosReal y)
-    -- The limit of serre_D 4 E₄ is -1/3, and the limit of c * E₆ is c * 1 = c
-    -- So c = -1/3 by uniqueness of limits
-    sorry
+    -- c * E₆(iy) → c * 1 = c as y → ∞
+    have hlim_c : Filter.Tendsto (fun y : PosReal => c * E₆.toFun (iMulPosReal y))
+        (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+      have h1 : Filter.Tendsto (fun y : PosReal => c * E₆.toFun (iMulPosReal y))
+          (Filter.comap Subtype.val Filter.atTop) (nhds (c * 1)) :=
+        tendsto_const_nhds.mul hlim_E₆
+      simpa using h1
+    -- serre_D 4 E₄(iy) = c * E₆(iy), so they have the same limit
+    have hlim_eq : Filter.Tendsto (fun y : PosReal => serre_D 4 E₄.toFun (iMulPosReal y))
+        (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+      convert hlim_c using 1
+      ext y
+      exact heq y
+    -- By uniqueness of limits: -1/3 = c
+    haveI := PosReal_comap_atTop_neBot
+    exact (tendsto_nhds_unique hlim_serre hlim_eq).symm
   ext z
   rw [hfun z, hc_val]
   -- Simplify Pi.mul_apply and constant function coercion
@@ -465,9 +501,24 @@ theorem ramanujan_E₆'_new : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E�
     have heq : ∀ y : PosReal, serre_D 6 E₆.toFun (iMulPosReal y) =
         c * (E₄.toFun (iMulPosReal y) * E₄.toFun (iMulPosReal y)) :=
       fun y => hfun (iMulPosReal y)
-    -- The limit of serre_D 6 E₆ is -1/2, and the limit of c * E₄² is c * 1² = c
-    -- So c = -1/2 by uniqueness of limits
-    sorry
+    -- c * E₄²(iy) → c * 1² = c as y → ∞
+    have hlim_c : Filter.Tendsto (fun y : PosReal =>
+        c * (E₄.toFun (iMulPosReal y) * E₄.toFun (iMulPosReal y)))
+        (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+      have h1 : Filter.Tendsto (fun y : PosReal =>
+          c * (E₄.toFun (iMulPosReal y) * E₄.toFun (iMulPosReal y)))
+          (Filter.comap Subtype.val Filter.atTop) (nhds (c * (1 * 1))) :=
+        tendsto_const_nhds.mul (hlim_E₄.mul hlim_E₄)
+      simpa using h1
+    -- serre_D 6 E₆(iy) = c * E₄²(iy), so they have the same limit
+    have hlim_eq : Filter.Tendsto (fun y : PosReal => serre_D 6 E₆.toFun (iMulPosReal y))
+        (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+      convert hlim_c using 1
+      ext y
+      exact heq y
+    -- By uniqueness of limits: -1/2 = c
+    haveI := PosReal_comap_atTop_neBot
+    exact (tendsto_nhds_unique hlim_serre hlim_eq).symm
   ext z
   rw [hfun z, hc_val]
   simp only [Pi.mul_apply]
