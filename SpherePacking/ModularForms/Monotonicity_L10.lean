@@ -198,18 +198,7 @@ lemma E₂_eq_sigma (z : ℍ) :
   simp at *
   rw [ht]
 
-/-- D(E₂) equals -24 times the q-expansion with n·σ₁(n) coefficients.
-
-Q-expansion identity: `E₄ - E₂² = 288 * ∑' n : ℕ+, n * σ₁(n) * qⁿ` follows from this
-via the Ramanujan identity `D E₂ = 12⁻¹ * (E₂² - E₄)`.
-
-Technical requirements for D_qexp_tsum_pnat:
-- Summability: σ₁(n) ≤ n² (sigma_bound 1 n), so ‖σ₁(n) * qⁿ‖ ≤ n² * exp(-2πn·y)
-  is summable via a33 with k=2
-- Derivative bound: ‖σ₁(n) * n * qⁿ‖ ≤ n³ * exp(-2πn·y_min) on compact K ⊂ ℍ
-  is summable via Real.summable_pow_mul_exp_neg_nat_mul
--/
-/-- The derivative of the q-series coefficient function σ₁ is summable. -/
+/-- The σ₁ q-series is summable for any z in the upper half-plane. -/
 private lemma sigma1_qexp_summable (z : ℍ) :
     Summable (fun n : ℕ+ => ↑((σ 1) ↑n) * cexp (2 * π * I * ↑n * ↑z)) := by
   have hz := z.im_pos
@@ -220,7 +209,7 @@ private lemma sigma1_qexp_summable (z : ℍ) :
   apply Summable.of_norm_bounded (g := fun n : ℕ+ => ((n : ℕ) : ℝ)^2 * rexp (-(2 * π * z.im) * (n : ℕ)))
     hconv
   intro n
-  have hsig : ‖↑((σ 1) ↑n) : ℂ‖ ≤ (n : ℝ)^2 := by
+  have hsig : ‖(↑((σ 1) ↑n) : ℂ)‖ ≤ (n : ℝ)^2 := by
     have hsig' := sigma_bound 1 n
     simp only [Complex.norm_natCast]
     exact_mod_cast hsig'
@@ -231,15 +220,15 @@ private lemma sigma1_qexp_summable (z : ℍ) :
     _ = (n : ℝ)^2 * rexp (-(2 * π * z.im) * ↑n) := by
         congr 1; rw [Complex.norm_exp]
         congr 1
-        simp only [Complex.mul_re, Complex.ofReal_re, Complex.I_re, mul_zero,
-          Complex.ofReal_im, Complex.I_im, mul_one, zero_mul, sub_zero,
+        simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.I_re, mul_zero,
+          Complex.ofReal_im, Complex.I_im, mul_one, sub_zero,
           Complex.natCast_re, Complex.natCast_im, UpperHalfPlane.coe_re, UpperHalfPlane.coe_im]
         ring
 
 /-- Derivative bound for σ₁ q-series on compact subsets of ℍ. -/
 private lemma sigma1_qexp_deriv_bound :
     ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
-      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ n (k : K), ‖↑((σ 1) ↑n) * (2 * π * I * ↑n) *
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K), ‖↑((σ 1) ↑n) * (2 * π * I * ↑n) *
         cexp (2 * π * I * ↑n * k.1)‖ ≤ u n := by
   intro K hK_sub hK_compact
   by_cases hK_nonempty : K.Nonempty
@@ -250,7 +239,11 @@ private lemma sigma1_qexp_deriv_bound :
     have h := Real.summable_pow_mul_exp_neg_nat_mul 3 hpos
     have hconv : Summable (fun n : ℕ+ =>
         2 * π * ((n : ℕ) : ℝ)^3 * rexp (-(2 * π * k_min.im) * (n : ℕ))) := by
-      apply Summable.mul_left; exact h.subtype _
+      have h' : Summable (fun n : ℕ+ => (2 * π) * (((n : ℕ) : ℝ)^3 *
+          rexp (-(2 * π * k_min.im) * (n : ℕ)))) := (h.subtype _).mul_left (2 * π)
+      convert h' using 1
+      ext n
+      ring
     use fun n => 2 * π * (n : ℝ)^3 * rexp (-2 * π * ↑n * k_min.im)
     constructor
     · apply hconv.of_nonneg_of_le
@@ -258,6 +251,7 @@ private lemma sigma1_qexp_deriv_bound :
       · intro n
         have h1 : -2 * π * ↑↑n * k_min.im = -(2 * π * k_min.im) * ↑↑n := by ring
         simp only [h1]
+        rfl
     · intro n ⟨k, hk_mem⟩
       have hk_im : k_min.im ≤ k.im := hk_min_le hk_mem
       have hn_pos : (0 : ℝ) < n := by exact_mod_cast n.pos
@@ -272,8 +266,8 @@ private lemma sigma1_qexp_deriv_bound :
         ring
       have h_norm_exp : ‖cexp (2 * π * I * ↑↑n * k)‖ = rexp (-2 * π * ↑↑n * k.im) := by
         rw [Complex.norm_exp]; congr 1
-        simp only [Complex.mul_re, Complex.ofReal_re, Complex.I_re, mul_zero,
-          Complex.ofReal_im, Complex.I_im, mul_one, zero_mul, sub_zero,
+        simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.I_re, mul_zero,
+          Complex.ofReal_im, Complex.I_im, mul_one, sub_zero, add_zero,
           Complex.natCast_re, Complex.natCast_im]
         ring
       calc ‖↑((σ 1) ↑n) * (2 * π * I * ↑n) * cexp (2 * π * I * ↑n * k)‖
@@ -288,9 +282,11 @@ private lemma sigma1_qexp_deriv_bound :
             positivity
         _ = 2 * π * (n : ℝ)^3 * rexp (-2 * π * ↑↑n * k.im) := by ring
         _ ≤ 2 * π * (n : ℝ)^3 * rexp (-2 * π * ↑↑n * k_min.im) := by
-            apply mul_le_mul_of_nonneg_left _ (by nlinarith [pi_pos, hn_pos])
+            apply mul_le_mul_of_nonneg_left _ (by positivity)
             apply Real.exp_le_exp_of_le
-            nlinarith [pi_pos, hn_pos, hk_im]
+            have h_neg : -2 * π * ↑↑n ≤ 0 := by nlinarith [pi_pos, hn_pos]
+            have h_ineq := mul_le_mul_of_nonpos_left hk_im h_neg
+            linarith
   · use fun _ => 0
     constructor
     · exact summable_zero
@@ -316,8 +312,54 @@ theorem D_E₂_qexp (z : ℍ) :
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
     simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, hE₂_eq, qseries, coe_mk_subtype]
   rw [h_E₂_agree.deriv_eq]
-  -- The rest uses differentiability and deriv rules
-  sorry
+  -- Step 1: The qseries ∘ ofComplex agrees with the ℂ → ℂ tsum near z
+  have h_qseries_agree : (qseries ∘ ofComplex) =ᶠ[nhds (z : ℂ)]
+      (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) := by
+    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, qseries, coe_mk_subtype]
+  -- Step 2: From hD_qseries, get deriv (qseries ∘ ofComplex) z = (2πi) * ∑' n * a n * qⁿ
+  have h_deriv_qseries : deriv (qseries ∘ ofComplex) z =
+      2 * π * I * ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * ↑n * z) := by
+    have hD := hD_qseries; simp only [D] at hD
+    -- hD : (2πi)⁻¹ * deriv (...) = tsum, multiply both sides by 2πi
+    have := congrArg (fun x => 2 * π * I * x) hD
+    simp only [mul_inv_cancel_left₀ two_pi_I_ne_zero] at this
+    exact this
+  -- Step 3: deriv of tsum = deriv of qseries ∘ ofComplex (they agree near z)
+  have h_deriv_tsum : deriv (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) z =
+      2 * π * I * ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * ↑n * z) := by
+    rw [← h_qseries_agree.deriv_eq, h_deriv_qseries]
+  -- Step 4: tsum is differentiable at z (from D_qexp_tsum_pnat infrastructure)
+  have h_diff_tsum : DifferentiableAt ℂ
+      (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) z := by
+    -- Since E₂ = 1 - 24 * qseries, we have qseries = (1 - E₂) / 24
+    -- E₂ is holomorphic (MDifferentiable), so qseries is differentiable
+    have hE₂_diff : DifferentiableAt ℂ (E₂ ∘ ofComplex) z :=
+      MDifferentiableAt_DifferentiableAt (E₂_holo' z)
+    have h_diff_expr : DifferentiableAt ℂ (fun w => (1 - E₂ (ofComplex w)) / 24) z :=
+      ((differentiableAt_const 1).sub hE₂_diff).div_const 24
+    -- qseries ∘ ofComplex = (1 - E₂ ∘ ofComplex) / 24 near z
+    have h_eq : (qseries ∘ ofComplex) =ᶠ[nhds (z : ℂ)] (fun w => (1 - E₂ (ofComplex w)) / 24) := by
+      filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
+      simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, qseries]
+      have := hE₂_eq ⟨w, hw⟩; simp only [coe_mk_subtype] at this
+      -- this : E₂ ⟨w,hw⟩ = 1 - 24 * qseries ⟨w,hw⟩, so qseries = (1 - E₂) / 24
+      rw [this]; ring
+    have h_diff_qseries : DifferentiableAt ℂ (qseries ∘ ofComplex) z :=
+      h_eq.differentiableAt_iff.mpr h_diff_expr
+    exact h_qseries_agree.symm.differentiableAt_iff.mpr h_diff_qseries
+  -- Step 5: Compute deriv (1 - 24 * tsum) = -deriv(24 * tsum) = -24 * deriv(tsum)
+  rw [deriv_const_sub, deriv_const_mul _ h_diff_tsum, h_deriv_tsum]
+  -- Step 6: Simplify (2πi)⁻¹ * (-24 * (2πi * ∑')) = -24 * ∑'
+  -- The key cancellation: (2πi)⁻¹ * 2πi = 1
+  -- Goal: (2πI)⁻¹ * -(24 * (2πI * ∑')) = -24 * ∑'
+  have h_cancel : (2 * ↑π * I)⁻¹ * (2 * ↑π * I) = 1 := inv_mul_cancel₀ two_pi_I_ne_zero
+  calc (2 * ↑π * I)⁻¹ * -(24 * (2 * ↑π * I * ∑' n : ℕ+, ↑↑n * a n * cexp (2 * ↑π * I * ↑↑n * ↑z)))
+      = -((2 * ↑π * I)⁻¹ * (24 * (2 * ↑π * I * ∑' n : ℕ+, ↑↑n * a n * cexp (2 * ↑π * I * ↑↑n * ↑z)))) := by ring
+    _ = -(24 * ((2 * ↑π * I)⁻¹ * (2 * ↑π * I) * ∑' n : ℕ+, ↑↑n * a n * cexp (2 * ↑π * I * ↑↑n * ↑z))) := by ring
+    _ = -(24 * (1 * ∑' n : ℕ+, ↑↑n * a n * cexp (2 * ↑π * I * ↑↑n * ↑z))) := by rw [h_cancel]
+    _ = -24 * ∑' n : ℕ+, ↑↑n * a n * cexp (2 * ↑π * I * ↑↑n * ↑z) := by ring
+    _ = -24 * ∑' n : ℕ+, ↑↑n * ↑((σ 1) ↑n) * cexp (2 * ↑π * I * ↑↑n * ↑z) := rfl
 
 theorem E₄_sub_E₂_sq_qexp (z : ℍ) :
     E₄.toFun z - E₂ z * E₂ z =
@@ -814,7 +856,120 @@ theorem D_diff_qexp (z : ℍ) :
     D (fun w => E₂ w * E₄ w - E₆ w) z =
       720 * ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
         cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
-  sorry
+  -- Step 1: Rewrite using E₂_mul_E₄_sub_E₆
+  have h_eq : ∀ w : ℍ, E₂ w * E₄ w - E₆ w =
+      720 * ∑' (n : ℕ+), ↑n * ↑(σ 3 n) * cexp (2 * π * I * ↑n * w) := E₂_mul_E₄_sub_E₆
+  -- Step 2: Define coefficient function a(n) = n * σ₃(n)
+  let a : ℕ+ → ℂ := fun n => ↑n * ↑(σ 3 n)
+  -- Step 3: Summability of a(n) * q^n (using |a(n)| ≤ n⁵)
+  have hsum : Summable (fun n : ℕ+ => a n * cexp (2 * π * I * ↑n * ↑z)) := by
+    have hz := z.im_pos
+    have hpos : 0 < 2 * π * z.im := by nlinarith [pi_pos]
+    have h := Real.summable_pow_mul_exp_neg_nat_mul 5 hpos
+    have hconv : Summable (fun n : ℕ+ => ((n : ℕ) : ℝ)^5 * rexp (-(2 * π * z.im) * (n : ℕ))) :=
+      h.subtype _
+    apply Summable.of_norm_bounded (g := fun n : ℕ+ =>
+        ((n : ℕ) : ℝ)^5 * rexp (-(2 * π * z.im) * (n : ℕ))) hconv
+    intro n
+    have hsig : ‖(↑n * ↑(σ 3 n) : ℂ)‖ ≤ (n : ℝ)^5 := by
+      have hsig' := sigma_bound 3 n
+      simp only [Complex.norm_mul, Complex.norm_natCast]
+      calc (n : ℝ) * ↑(σ 3 ↑n)
+          ≤ (n : ℝ) * (n : ℝ)^4 := by
+            apply mul_le_mul_of_nonneg_left
+            · exact_mod_cast hsig'
+            · positivity
+        _ = (n : ℝ)^5 := by ring
+    calc ‖a n * cexp (2 * π * I * ↑n * ↑z)‖
+        = ‖(↑n * ↑(σ 3 n) : ℂ)‖ * ‖cexp (2 * π * I * ↑n * ↑z)‖ := norm_mul _ _
+      _ ≤ (n : ℝ)^5 * ‖cexp (2 * π * I * ↑n * ↑z)‖ := by
+          apply mul_le_mul_of_nonneg_right hsig; positivity
+      _ = (n : ℝ)^5 * rexp (-(2 * π * z.im) * ↑n) := by
+          congr 1; rw [Complex.norm_exp]
+          congr 1
+          simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
+            Complex.I_re, Complex.I_im, Complex.natCast_re, Complex.natCast_im,
+            UpperHalfPlane.coe_re, UpperHalfPlane.coe_im, mul_zero, mul_one, zero_mul,
+            zero_add, add_zero, sub_zero]
+          ring
+  -- Step 4: Derivative bounds for a(n) * q^n (using |a(n)| ≤ n⁵, so derivative ≤ n⁶)
+  have hsum_deriv : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K), ‖a n * (2 * π * I * ↑n) *
+        cexp (2 * π * I * ↑n * k.1)‖ ≤ u n := by
+    intro K hK_sub hK_compact
+    by_cases hK_nonempty : K.Nonempty
+    · obtain ⟨k_min, hk_min_mem, hk_min_le⟩ := hK_compact.exists_isMinOn hK_nonempty
+        Complex.continuous_im.continuousOn
+      have hy_min_pos : 0 < k_min.im := hK_sub hk_min_mem
+      have hpos : 0 < 2 * π * k_min.im := by nlinarith [pi_pos]
+      have h := Real.summable_pow_mul_exp_neg_nat_mul 6 hpos
+      have hconv : Summable (fun n : ℕ+ =>
+          2 * π * ((n : ℕ) : ℝ)^6 * rexp (-(2 * π * k_min.im) * (n : ℕ))) := by
+        have : Summable (fun n : ℕ+ => ((n : ℕ) : ℝ)^6 * rexp (-(2 * π * k_min.im) * (n : ℕ))) :=
+          h.subtype _
+        convert this.mul_left (2 * π) using 1
+        ext n; ring
+      use fun n => 2 * π * (n : ℝ)^6 * rexp (-2 * π * ↑n * k_min.im)
+      constructor
+      · apply hconv.of_nonneg_of_le
+        · intro n; positivity
+        · intro n
+          have h1 : -2 * π * ↑↑n * k_min.im = -(2 * π * k_min.im) * ↑↑n := by ring
+          simp only [h1]; exact le_refl _
+      · intro n ⟨k, hk_mem⟩
+        have hk_im : k_min.im ≤ k.im := hk_min_le hk_mem
+        have hn_pos : (0 : ℝ) < n := by exact_mod_cast n.pos
+        have ha_bound : ‖a n‖ ≤ (n : ℝ)^5 := by
+          have hsig' := sigma_bound 3 n
+          simp only [a, Complex.norm_mul, Complex.norm_natCast]
+          calc (n : ℝ) * ↑(σ 3 ↑n)
+              ≤ (n : ℝ) * (n : ℝ)^4 := by
+                apply mul_le_mul_of_nonneg_left; exact_mod_cast hsig'; positivity
+            _ = (n : ℝ)^5 := by ring
+        have h_norm_2pin : ‖(2 : ℂ) * π * I * ↑↑n‖ = 2 * π * n := by
+          rw [norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real,
+              Complex.norm_I, mul_one, Complex.norm_natCast, Real.norm_of_nonneg pi_pos.le]
+        calc ‖a n * (2 * π * I * ↑↑n) * cexp (2 * π * I * ↑↑n * k)‖
+            = ‖a n‖ * ‖(2 * π * I * ↑↑n)‖ * ‖cexp (2 * π * I * ↑↑n * k)‖ := by
+              rw [norm_mul, norm_mul]
+          _ ≤ (n : ℝ)^5 * (2 * π * n) * rexp (-2 * π * n * k.im) := by
+              apply mul_le_mul _ (le_refl _) (by positivity) (by positivity)
+              apply mul_le_mul ha_bound (by rw [h_norm_2pin]) (by positivity) (by positivity)
+          _ ≤ (n : ℝ)^5 * (2 * π * n) * rexp (-2 * π * n * k_min.im) := by
+              apply mul_le_mul_of_nonneg_left _ (by positivity)
+              apply Real.exp_le_exp_of_le
+              apply mul_le_mul_of_nonpos_left hk_im
+              nlinarith [pi_pos, hn_pos]
+          _ = 2 * π * (n : ℝ)^6 * rexp (-2 * π * n * k_min.im) := by ring
+    · use fun _ => 0
+      constructor
+      · exact summable_zero
+      · intro n ⟨k, hk_mem⟩
+        exfalso; exact hK_nonempty ⟨k, hk_mem⟩
+  -- Step 5: Apply D_qexp_tsum_pnat
+  have hD : D (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) z =
+      ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * ↑n * z) :=
+    D_qexp_tsum_pnat a z hsum hsum_deriv
+  -- Step 6: Compute D(E₂E₄ - E₆) = 720 * D(∑ a(n) * q^n)
+  have h_agree : (fun w : ℍ => E₂ w * E₄ w - E₆ w) = (fun w =>
+      720 * ∑' (n : ℕ+), ↑n * ↑(σ 3 n) * cexp (2 * π * I * ↑n * w)) := by
+    ext w; exact h_eq w
+  rw [h_agree, D_const_mul 720 _ (by
+    apply MDifferentiable.tsum (fun n : ℕ+ => fun w =>
+        ↑n * ↑(σ 3 n) * cexp (2 * π * I * ↑n * w)) _ (fun n z => ?_)
+    exact ((mdifferentiable_const.mul (differentiable_id.mdifferentiable z)).cexp).const_mul _
+    intro K hK
+    have h := hsum_deriv (↑(coe : ℍ → ℂ) '' K) (by
+      intro x ⟨w, _, hw_eq⟩
+      rw [← hw_eq]; simp only [Set.mem_setOf_eq]; exact w.im_pos) hK.image_of_continuousOn
+        (continuous_subtype_val.continuousOn)
+    convert h), hD]
+  -- Step 7: Simplify n * a(n) = n * (n * σ₃(n)) = n² * σ₃(n)
+  congr 1
+  apply tsum_congr
+  intro n
+  simp only [a, sq]
+  ring
 
 -- Helper: D(E₂E₄ - E₆) / q → 720 (same pattern as f/q → 720)
 -- This follows from D acting as q·d/dq on q-expansions, so D(n·σ₃(n)·qⁿ) = n²·σ₃(n)·qⁿ
