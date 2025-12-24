@@ -162,7 +162,7 @@ theorem tendstozero_inv_linear (z : ℍ) (b : ℤ) :
     rw [@tendsto_zero_iff_norm_tendsto_zero]
     conv =>
       enter [1]
-      simp only [one_div, norm_inv]
+      simp
     apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, n]‖ ^ (-1 : ℝ))
     · simp
     · intro t
@@ -206,7 +206,7 @@ theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ) :
     rw [@tendsto_zero_iff_norm_tendsto_zero]
     conv =>
       enter [1]
-      simp only [one_div, norm_inv]
+      simp
     apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, -n]‖ ^ (-1 : ℝ))
     · simp
     · intro t
