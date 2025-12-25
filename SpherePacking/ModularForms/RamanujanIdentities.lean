@@ -110,17 +110,17 @@ After expansion, the anomaly terms involving D₂ γ and D(D₂ γ) cancel using
 -/
 lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
     (serre_D 1 E₂) ∣[(4 : ℤ)] γ = serre_D 1 E₂ := by
-  -- Key steps verified:
-  -- 1. serre_D 1 E₂ = serre_D 2 E₂ + (1/12) E₂²
-  -- 2. (serre_D 2 E₂) ∣[4] γ = serre_D 2 (E₂ ∣[2] γ) by serre_D_slash_equivariant
-  -- 3. E₂ ∣[2] γ = E₂ - α D₂ γ where α = 1/(2ζ(2)) = 3/π²
-  -- 4. (E₂²) ∣[4] γ = (E₂ ∣[2] γ)²
-  -- 5. D(E₂ - α D₂ γ) = D E₂ - α D(D₂ γ) by D_sub, D_smul
-  -- 6. D(D₂ γ) = -c²/denom² by D_D₂
-  -- 7. After expansion: anomaly = -α D(D₂ γ) + (α²/12)(D₂ γ)²
-  --    = α c²/d² - (α²/12)(4π²)c²/d² = c²/d² (α - α²π²/3) = 0
-  --    since α = 3/π² implies α = α² π²/3
-  -- TODO: Complete algebraic expansion using D_sub, D_smul, D_D₂
+  -- Full algebraic proof deferred - the cancellation involves:
+  -- 1. serre_D_slash_equivariant: serre_D 2 E₂ ∣[4] γ = serre_D 2 (E₂ ∣[2] γ)
+  -- 2. E₂_slash_transform: E₂ ∣[2] γ = E₂ - α D₂ γ where α = 1/(2ζ(2)) = 3/π²
+  -- 3. mul_slash_SL2: (E₂²) ∣[4] γ = (E₂ ∣[2] γ)²
+  -- 4. D_sub, D_smul for D(E₂ - α D₂ γ) = D E₂ - α D(D₂ γ)
+  -- 5. D_D₂: D(D₂ γ) = -c²/denom²
+  -- 6. Anomaly cancellation: α = 3/π² satisfies α = α²π²/3
+  --
+  -- After full expansion of serre_D 2 (E₂ - α D₂ γ) + (1/12)(E₂ - α D₂ γ)²,
+  -- the terms involving D₂ γ and D(D₂ γ) cancel via the identity
+  -- α c²/d² - (α²/12)(2πic/d)² = α c²/d² - (α²/12)(-4π²c²/d²) = c²/d²(α - α²π²/3) = 0.
   sorry
 
 /-! ## Cauchy estimates and limits at infinity -/
