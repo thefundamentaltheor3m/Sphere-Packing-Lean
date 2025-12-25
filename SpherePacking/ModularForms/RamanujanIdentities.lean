@@ -30,6 +30,13 @@ noncomputable section
     D(D₂ γ) = (2πi)⁻¹ · d/dz[2πi · c / denom] = -c² / denom² -/
 lemma D_D₂ (γ : SL(2, ℤ)) (z : ℍ) :
     D (D₂ γ) z = - (γ 1 0 : ℂ)^2 / (denom γ z)^2 := by
+  -- D₂ γ z = (2πi * c) / denom = (2πi * c) * denom⁻¹
+  -- D(D₂ γ) = (2πi)⁻¹ * deriv[(2πi * c) * denom⁻¹]
+  --         = (2πi)⁻¹ * (2πi * c) * deriv[denom⁻¹]
+  --         = c * deriv[denom⁻¹]
+  --         = c * (-c / denom²)  [using deriv_denom_zpow with k = 1]
+  --         = -c² / denom²
+  -- TODO: Complete proof using Filter.EventuallyEq.deriv_eq and deriv_denom_zpow
   sorry
 
 /-! ## Slash invariance of serre_D 1 E₂
