@@ -144,10 +144,9 @@ lemma H₂_pos : ResToImagAxis.Pos H₂ := by
   sorry
 
 lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
-  calc
-    L₁₀ = (D F) * G - F * (D G) := rfl
-    _ = (D F - 10 * 12⁻¹ * E₂ * F) * G - F * (D G - 10 * 12⁻¹ * E₂ * G) := by ring_nf
-    _ = (serre_D 10 F) * G - F * (serre_D 10 G) := by ext z; simp [serre_D]
+  ext z
+  simp only [L₁₀, serre_D, Pi.mul_apply, Pi.sub_apply]
+  ring
 
 lemma SerreDer_22_L₁₀_SerreDer :
     SerreDer_22_L₁₀ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by
