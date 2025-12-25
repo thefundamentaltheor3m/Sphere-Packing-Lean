@@ -638,6 +638,32 @@ lemma serre_D_E₆_tendsto_at_infinity :
     tendsto_const_nhds
   convert hconst.mul hprod using 1 <;> ring
 
+/-- serre_D 1 E₂ is a weight-4 modular form.
+This packages the slash invariance, holomorphicity, and boundedness at cusps.
+Note: E₂ itself is NOT a modular form, but serre_D 1 E₂ IS. -/
+def serre_D_E₂_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 4 where
+  toSlashInvariantForm := {
+    toFun := serre_D 1 E₂
+    slash_action_eq' := fun γ hγ => by
+      rw [Subgroup.mem_map] at hγ
+      obtain ⟨γ', _, hγ'_eq⟩ := hγ
+      -- Use serre_D_E₂_slash_invariant directly
+      have h := serre_D_E₂_slash_invariant γ'
+      show serre_D 1 E₂ ∣[(4 : ℤ)] γ = serre_D 1 E₂
+      rw [← hγ'_eq]
+      exact h
+  }
+  holo' := serre_D_differentiable E₂_holo'
+  bdd_at_cusps' := fun hc => by
+    apply bounded_at_cusps_of_bounded_at_infty hc
+    intro A hA
+    rw [MonoidHom.mem_range] at hA
+    obtain ⟨A', hA'_eq⟩ := hA
+    have h := serre_D_E₂_slash_invariant A'
+    show IsBoundedAtImInfty (serre_D 1 E₂ ∣[(4 : ℤ)] A)
+    rw [← hA'_eq]
+    convert serre_D_E₂_isBoundedAtImInfty using 1
+
 /-- serre_D 1 E₂(iy) → -1/12 as y → +∞.
 This determines the scalar in `serre_D 1 E₂ = c * E₄`. -/
 lemma serre_D_E₂_tendsto_at_infinity :
@@ -683,14 +709,59 @@ The proof uses:
 4. Constant term: serre_D 1 E₂(iy) → -1/12 as y → ∞
 -/
 theorem ramanujan_E₂'_new : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
-  -- Strategy: Use dimension argument.
-  -- 1. serre_D 1 E₂ is weight-4 slash-invariant (serre_D_E₂_slash_invariant)
-  -- 2. It's bounded at infinity (serre_D_E₂_isBoundedAtImInfty)
-  -- 3. So it's a weight-4 modular form
-  -- 4. Weight-4 forms are 1-dimensional, spanned by E₄ (weight_four_one_dimensional)
-  -- 5. Get serre_D 1 E₂ = c * E₄ for some c
-  -- 6. Determine c = -1/12 by taking limit as y → ∞ (serre_D_E₂_tendsto_at_infinity)
-  sorry
+  -- Use dimension argument
+  have hrank : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 4) = 1 :=
+    weight_four_one_dimensional
+  -- Apply finrank_eq_one_iff_of_nonzero' to get that serre_D_E₂_ModularForm = c * E₄
+  have hE₄_ne : E₄ ≠ 0 := E4_ne_zero
+  rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
+  have := (finrank_eq_one_iff_of_nonzero' E₄ hE₄_ne).mp hrank serre_D_E₂_ModularForm
+  obtain ⟨c, hc⟩ := this
+  -- hc : c • E₄ = serre_D_E₂_ModularForm, so serre_D_E₂_ModularForm = c • E₄
+  -- We need to show c = -1/12
+  -- First establish that serre_D 1 E₂ equals c * E₄ as functions
+  have hcoe : (serre_D_E₂_ModularForm : ℍ → ℂ) = serre_D 1 E₂ := rfl
+  -- From hc : c • E₄ = serre_D_E₂_ModularForm, we get the function equality
+  have hfun : ∀ z, serre_D 1 E₂ z = c * E₄.toFun z := by
+    intro z
+    rw [← hcoe]
+    have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
+    simp only [ModularForm.coe_smul, Pi.smul_apply, smul_eq_mul] at this
+    exact this
+  -- Now we need to show c = -1/12 using limits
+  -- serre_D 1 E₂(iy) → -1/12 (by serre_D_E₂_tendsto_at_infinity)
+  -- E₄(iy) → 1 (by E₄_tendsto_one_at_infinity)
+  -- c * E₄(iy) → c * 1 = c, so c = -1/12
+  have hc_val : c = -(1/12 : ℂ) := by
+    have hlim_serre := serre_D_E₂_tendsto_at_infinity
+    have hlim_E₄ := E₄_tendsto_one_at_infinity
+    have heq : ∀ y : PosReal, serre_D 1 E₂ (iMulPosReal y) = c * E₄.toFun (iMulPosReal y) :=
+      fun y => hfun (iMulPosReal y)
+    -- c * E₄(iy) → c * 1 = c as y → ∞
+    have hlim_c : Filter.Tendsto (fun y : PosReal => c * E₄.toFun (iMulPosReal y))
+        (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+      have h1 : Filter.Tendsto (fun y : PosReal => c * E₄.toFun (iMulPosReal y))
+          (Filter.comap Subtype.val Filter.atTop) (nhds (c * 1)) :=
+        tendsto_const_nhds.mul hlim_E₄
+      simpa using h1
+    -- serre_D 1 E₂(iy) = c * E₄(iy), so they have the same limit
+    have hlim_eq : Filter.Tendsto (fun y : PosReal => serre_D 1 E₂ (iMulPosReal y))
+        (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+      convert hlim_c using 1
+      ext y
+      exact heq y
+    -- By uniqueness of limits
+    haveI : (Filter.comap Subtype.val Filter.atTop).NeBot := PosReal_comap_atTop_neBot
+    exact tendsto_nhds_unique hlim_eq hlim_serre
+  -- Now substitute c = -1/12
+  ext z
+  rw [hfun z, hc_val]
+  -- Simplify Pi.mul_apply and constant function coercion
+  simp only [Pi.mul_apply]
+  -- Goal: -(1 / 12) * E₄.toFun z = (-12⁻¹) z * E₄.toFun z
+  -- The (-12⁻¹) z is a constant function evaluated at z, which equals -12⁻¹
+  congr 1
+  norm_num
 
 /-- Serre derivative of E₄: `serre_D 4 E₄ = - 3⁻¹ * E₆`.
 
