@@ -1,4 +1,5 @@
 import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.Derivative_Cauchy
 import SpherePacking.ModularForms.DimensionFormulas
 
 /-!
@@ -79,20 +80,27 @@ This is the hard part: E₂ is NOT modular, so we cannot use `serre_D_slash_inva
 We must prove directly that the non-modular terms cancel. -/
 
 /-- The Serre derivative of E₂ is weight-4 slash-invariant.
-This requires explicit computation since E₂ is not modular. -/
+This requires explicit computation since E₂ is not modular.
+
+**Proof strategy:**
+Write serre_D 1 E₂ = serre_D 2 E₂ + (1/12) E₂². Then:
+- (serre_D 2 E₂) ∣[4] γ = serre_D 2 (E₂ ∣[2] γ) by serre_D_slash_equivariant
+- E₂ ∣[2] γ = E₂ - α D₂ γ where α = 1/(2ζ(2)) = 3/π²
+- (E₂²) ∣[4] γ = (E₂ ∣[2] γ)²
+
+After expansion, the anomaly terms involving D₂ γ and D(D₂ γ) cancel using:
+- D(D₂ γ) = -c²/denom² (from D_D₂)
+- The identity α = α² π²/3 (from ζ(2) = π²/6)
+-/
 lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
     (serre_D 1 E₂) ∣[(4 : ℤ)] γ = serre_D 1 E₂ := by
+  -- TODO: Complex algebraic proof showing anomaly terms cancel
+  -- Key ingredients available: D_D₂, E₂_slash_transform, serre_D_slash_equivariant, anomaly_coeff_zero
   sorry
 
 /-! ## Cauchy estimates and limits at infinity -/
 
-/-- The D-derivative is bounded at infinity for bounded holomorphic functions.
-Uses Cauchy estimate: |f'(z)| ≤ M/r for f bounded by M on a disk of radius r. -/
-lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
-    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
-    (hbdd : IsBoundedAtImInfty f) :
-    IsBoundedAtImInfty (D f) := by
-  sorry
+-- D_isBoundedAtImInfty_of_bounded is now in Derivative_Cauchy.lean
 
 /-- Subtype of positive reals for limit statements -/
 abbrev PosReal := {y : ℝ // 0 < y}
@@ -108,6 +116,12 @@ lemma PosReal_comap_atTop_neBot :
 
 /-- Helper to construct an upper half plane point from a positive real. -/
 def iMulPosReal (y : PosReal) : ℍ := ⟨I * y.val, by simp [y.2]⟩
+
+/-- The imaginary part of iMulPosReal y equals y. -/
+@[simp]
+lemma im_iMulPosReal (y : PosReal) : (iMulPosReal y).im = y.val := by
+  show (I * ↑↑y).im = y.val
+  simp [Complex.mul_im]
 
 /-- If f is holomorphic and bounded, with f(iy) → L as y → ∞, then D f(iy) → 0.
 
@@ -160,21 +174,83 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ} {L : ℂ}
     -- By Cauchy: ‖deriv(f ∘ ofComplex)(iy)‖ ≤ M / (y/2) = 2M/y
     -- ‖D f(iy)‖ = |(2πi)⁻¹| * ‖deriv(...)‖ ≤ (2π)⁻¹ * 2M/y = M/(πy) < ε
     --
-    -- Technical gap: Constructing DiffContOnCl for Cauchy estimate
-    -- This requires showing f ∘ ofComplex is differentiable on ball and continuous on closure
-    -- The key insight: for z in closedBall(iy, y/2), we have Im z ≥ y/2 > 0, so z is in ℍ
-    -- and f ∘ ofComplex agrees with f on this region
-    sorry
+    -- The point iMulPosReal y has imaginary part y.val
+    let z : ℍ := iMulPosReal y
+    have hz_im : z.im = y.val := im_iMulPosReal y
+    -- Build DiffContOnCl for ball centered at z with radius z.im/2
+    have hclosed := closedBall_center_subset_upperHalfPlane z
+    have hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) (z.im / 2)) :=
+      diffContOnCl_comp_ofComplex_of_mdifferentiable hf hclosed
+    have hz_im_pos : 0 < z.im := z.im_pos
+    have hR_pos : 0 < z.im / 2 := by linarith
+    -- f is bounded by M on the sphere (when Im > A)
+    have hmax_nonneg : 0 ≤ max A 0 := le_max_right _ _
+    have hA_le_max : A ≤ max A 0 := le_max_left _ _
+    have hf_bdd_sphere : ∀ w ∈ Metric.sphere (z : ℂ) (z.im / 2), ‖(f ∘ ofComplex) w‖ ≤ M := by
+      intro w hw
+      have hw_mem_closed : w ∈ Metric.closedBall (z : ℂ) (z.im / 2) :=
+        Metric.sphere_subset_closedBall hw
+      have hw_im_pos : 0 < w.im := hclosed hw_mem_closed
+      have hw_im_ge_A : A ≤ w.im := by
+        have hdist : dist w z = z.im / 2 := Metric.mem_sphere.mp hw
+        have habs : |w.im - z.im| ≤ z.im / 2 := by
+          calc |w.im - z.im|
+            _ = |(w - z).im| := by simp [Complex.sub_im]
+            _ ≤ ‖w - z‖ := abs_im_le_norm _
+            _ = dist w z := (dist_eq_norm _ _).symm
+            _ = z.im / 2 := hdist
+        have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
+        have hA_lt : A < w.im := calc A ≤ max A 0 := hA_le_max
+          _ < z.im / 2 := by rw [hz_im]; exact hy_ge_A
+          _ ≤ w.im := hlower
+        linarith
+      simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw_im_pos]
+      exact hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
+    -- Apply Cauchy estimate
+    have hderiv_bound : ‖deriv (f ∘ ofComplex) z‖ ≤ M / (z.im / 2) :=
+      Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hR_pos hDiff hf_bdd_sphere
+    -- D f = (2πi)⁻¹ * deriv, so ‖D f z‖ ≤ (2π)⁻¹ * 2M/z.im = M/(π*z.im)
+    have hD_eq : D f z = (2 * π * I)⁻¹ * deriv (f ∘ ofComplex) z := rfl
+    have h2piI_norm : ‖(2 * π * I : ℂ)⁻¹‖ = (2 * π)⁻¹ := by
+      rw [norm_inv, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_I, mul_one]
+      simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
+    have hM_nonneg : 0 ≤ M := by
+      have hA_le_z : A ≤ z.im := by rw [hz_im]; linarith [hA_le_max, hmax_nonneg, hy_ge_A]
+      exact le_trans (norm_nonneg _) (hMA z hA_le_z)
+    have hDf_bound : ‖D f z‖ ≤ M / (π * z.im) := by
+      calc ‖D f z‖
+        _ = ‖(2 * π * I)⁻¹ * deriv (f ∘ ofComplex) z‖ := by rw [hD_eq]
+        _ = ‖(2 * π * I)⁻¹‖ * ‖deriv (f ∘ ofComplex) z‖ := norm_mul _ _
+        _ = (2 * π)⁻¹ * ‖deriv (f ∘ ofComplex) z‖ := by rw [h2piI_norm]
+        _ ≤ (2 * π)⁻¹ * (M / (z.im / 2)) := by
+            apply mul_le_mul_of_nonneg_left hderiv_bound
+            exact inv_nonneg.mpr (by positivity)
+        _ = (2 * π)⁻¹ * (2 * M / z.im) := by ring_nf
+        _ = M / (π * z.im) := by ring
+    -- Now show M / (π * z.im) < ε
+    -- We have z.im = y.val and hy_ge_bound : y.val > |M| / (π * ε)
+    simp only [dist_zero_right]
+    -- Handle M = 0 case separately
+    by_cases hM_zero : M = 0
+    · -- If M = 0, then ‖D f z‖ ≤ 0 / (π * z.im) = 0 < ε
+      calc ‖D f z‖
+        _ ≤ M / (π * z.im) := hDf_bound
+        _ = 0 := by simp [hM_zero]
+        _ < ε := hε
+    · -- If M ≠ 0, use hy_ge_bound
+      have hM_pos : 0 < M := lt_of_le_of_ne hM_nonneg (Ne.symm hM_zero)
+      have habs_M_pos : 0 < |M| := abs_pos.mpr hM_zero
+      calc ‖D f z‖
+        _ ≤ M / (π * z.im) := hDf_bound
+        _ = |M| / (π * z.im) := by rw [abs_of_pos hM_pos]
+        _ < |M| / (π * (|M| / (π * ε))) := by
+            apply div_lt_div_of_pos_left habs_M_pos
+            · positivity
+            · apply mul_lt_mul_of_pos_left _ Real.pi_pos
+              rw [hz_im]; exact hy_ge_bound
+        _ = ε := by field_simp
 
 /-! ## Limits of Eisenstein series at infinity -/
-
-/-- The imaginary part of iMulPosReal y equals y. -/
-@[simp]
-lemma im_iMulPosReal (y : PosReal) : (iMulPosReal y).im = y.val := by
-  -- (I * y).im = 1 * y = y
-  -- iMulPosReal y = ⟨I * y, ...⟩, im ⟨z, h⟩ = z.im by definition
-  show (I * ↑↑y).im = y.val
-  simp [Complex.mul_im]
 
 /-- iMulPosReal sends the comap filter to atImInfty. -/
 lemma tendsto_iMulPosReal_atImInfty :
