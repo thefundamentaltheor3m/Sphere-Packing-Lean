@@ -749,4 +749,4 @@ lemma PowerSeries.coeff_add (f g : PowerSeries ℂ) (n : ℕ) :
 
 open ArithmeticFunction
 
--- E₂_mul_E₄_sub_E₆ moved to Derivative.lean (uses ramanujan_E₄)
+-- E₂_mul_E₄_sub_E₆ moved to RamanujanIdentities.lean (uses ramanujan_E₄)

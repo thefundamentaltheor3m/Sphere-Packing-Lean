@@ -4,16 +4,21 @@ import SpherePacking.ModularForms.DimensionFormulas
 import Mathlib.Analysis.Real.Pi.Bounds
 
 /-!
-# Ramanujan's Identities for Eisenstein Series - Helper Lemmas
+# Ramanujan's Identities for Eisenstein Series
 
-This file provides helper lemmas needed for proving Ramanujan's identities
-in Derivative.lean. The main theorems `ramanujan_E₂'`, `ramanujan_E₄'`, `ramanujan_E₆'`
-are declared in Derivative.lean.
+This file contains the Ramanujan identities for Eisenstein series (Blueprint Theorem 6.50).
 
-Blueprint Theorem 6.50:
-* `serre_D 1 E₂ = -E₄/12` (requires explicit computation since E₂ is not modular)
-* `serre_D 4 E₄ = -E₆/3` (uses dimension formula for weight-6 forms)
-* `serre_D 6 E₆ = -E₄²/2` (uses dimension formula for weight-8 forms)
+## Main results
+
+* `ramanujan_E₂'` : `serre_D 1 E₂ = -E₄/12` (requires explicit computation since E₂ is not modular)
+* `ramanujan_E₄'` : `serre_D 4 E₄ = -E₆/3` (uses dimension formula for weight-6 forms)
+* `ramanujan_E₆'` : `serre_D 6 E₆ = -E₄²/2` (uses dimension formula for weight-8 forms)
+
+## Derived identities
+
+* `ramanujan_E₂` : `D E₂ = (E₂² - E₄)/12`
+* `ramanujan_E₄` : `D E₄ = (E₂·E₄ - E₆)/3`
+* `ramanujan_E₆` : `D E₆ = (E₂·E₆ - E₄²)/2`
 -/
 
 open UpperHalfPlane hiding I
@@ -854,7 +859,7 @@ The proof uses:
 3. Dimension formula: weight-4 forms are 1-dimensional, spanned by E₄
 4. Constant term: serre_D 1 E₂(iy) → -1/12 as y → ∞
 -/
-theorem ramanujan_E₂'_new : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
+theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   -- Use dimension argument
   have hrank : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 4) = 1 :=
     weight_four_one_dimensional
@@ -917,7 +922,7 @@ Uses the dimension argument:
 3. Weight-6 modular forms are 1-dimensional (weight_six_one_dimensional)
 4. Constant term is -1/3 (from D E₄ → 0, E₂ → 1, E₄ → 1)
 -/
-theorem ramanujan_E₄'_new : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
+theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   -- Use the dimension argument
   -- serre_D_E₄_ModularForm gives us a ModularForm Γ(1) 6
   -- weight_six_one_dimensional says the space is 1-dimensional, spanned by E₆
@@ -988,8 +993,8 @@ Uses the dimension argument:
 2. Weight-8 modular forms are 1-dimensional, spanned by E₄²
 3. Constant term is -1/2 (from D E₆ → 0, E₂ → 1, E₆ → 1)
 -/
-theorem ramanujan_E₆'_new : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by
-  -- Similar to ramanujan_E₄'_new but for weight 8
+theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by
+  -- Similar to ramanujan_E₄' but for weight 8
   -- E₄² is a weight-8 modular form via ModularForm.mul
   let E₄_sq : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
     have h : (4 : ℤ) + 4 = 8 := by norm_num
@@ -1076,12 +1081,12 @@ theorem ramanujan_E₆'_new : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E�
 /-! ## Derived Ramanujan identities (D instead of serre_D) -/
 
 @[simp]
-theorem ramanujan_E₂_new : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
-  -- From ramanujan_E₂'_new: serre_D 1 E₂ = -12⁻¹ * E₄
+theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
+  -- From ramanujan_E₂': serre_D 1 E₂ = -12⁻¹ * E₄
   -- serre_D 1 E₂ = D E₂ - (1/12) * E₂ * E₂
   -- So: D E₂ - (1/12) * E₂² = -12⁻¹ * E₄
   -- Hence: D E₂ = (1/12) * E₂² - (1/12) * E₄ = (1/12) * (E₂² - E₄)
-  have h := ramanujan_E₂'_new
+  have h := ramanujan_E₂'
   ext z
   unfold serre_D at h
   have hz := congrFun h z
@@ -1103,12 +1108,12 @@ theorem ramanujan_E₂_new : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
   ring
 
 @[simp]
-theorem ramanujan_E₄_new : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
-  -- From ramanujan_E₄'_new: serre_D 4 E₄ = -1/3 * E₆
+theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
+  -- From ramanujan_E₄': serre_D 4 E₄ = -1/3 * E₆
   -- serre_D 4 E₄ = D E₄ - (4/12) * E₂ * E₄ = D E₄ - (1/3) * E₂ * E₄
   -- So: D E₄ - (1/3) * E₂ * E₄ = -1/3 * E₆
   -- Hence: D E₄ = (1/3) * E₂ * E₄ - (1/3) * E₆ = (1/3) * (E₂ * E₄ - E₆)
-  have h := ramanujan_E₄'_new
+  have h := ramanujan_E₄'
   ext z
   unfold serre_D at h
   have hz := congrFun h z
@@ -1131,12 +1136,12 @@ theorem ramanujan_E₄_new : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.t
   ring
 
 @[simp]
-theorem ramanujan_E₆_new : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
-  -- From ramanujan_E₆'_new: serre_D 6 E₆ = -1/2 * E₄²
+theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
+  -- From ramanujan_E₆': serre_D 6 E₆ = -1/2 * E₄²
   -- serre_D 6 E₆ = D E₆ - (6/12) * E₂ * E₆ = D E₆ - (1/2) * E₂ * E₆
   -- So: D E₆ - (1/2) * E₂ * E₆ = -1/2 * E₄²
   -- Hence: D E₆ = (1/2) * E₂ * E₆ - (1/2) * E₄² = (1/2) * (E₂ * E₆ - E₄²)
-  have h := ramanujan_E₆'_new
+  have h := ramanujan_E₆'
   ext z
   unfold serre_D at h
   have hz := congrFun h z
@@ -1158,5 +1163,286 @@ theorem ramanujan_E₆_new : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.t
   -- Simplify the goal - Pi.mul_apply for constant function
   simp only [Pi.mul_apply, Pi.sub_apply, Pi.one_apply, Pi.inv_apply, Pi.ofNat_apply]
   ring
+
+/-! ## Applications of Ramanujan identities -/
+
+section Ramanujan_qExpansion
+
+open scoped ArithmeticFunction.sigma
+
+/--
+Helper: D applied to exp(2πinz) gives n * exp(2πinz).
+This follows from: d/dz[exp(2πinz)] = 2πin * exp(2πinz),
+so D[exp(2πinz)] = (2πi)⁻¹ * 2πin * exp(2πinz) = n * exp(2πinz).
+-/
+lemma D_exp_eq_n_mul (n : ℕ) (z : ℍ) :
+    D (fun w : ℍ => cexp (2 * π * I * n * w)) z = n * cexp (2 * π * I * n * z) := by
+  unfold D
+  -- The key: (f ∘ ofComplex) agrees with f on the upper half-plane
+  -- So their derivatives agree at points in ℍ
+  have hcomp : deriv ((fun w : ℍ => cexp (2 * π * I * n * w)) ∘ ofComplex) z =
+      deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z := by
+    apply Filter.EventuallyEq.deriv_eq
+    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
+    rfl
+  rw [hcomp]
+  -- deriv of exp(c*z) is c*exp(c*z)
+  have hderiv : deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z =
+      (2 * π * I * n) * cexp (2 * π * I * n * z) := by
+    -- Use the derivative chain rule lemma directly
+    have hdiff_lin : DifferentiableAt ℂ (fun w => 2 * π * I * n * w) (z : ℂ) := by fun_prop
+    have hderiv_lin : deriv (fun w : ℂ => 2 * π * I * n * w) (z : ℂ) = 2 * π * I * n := by
+      rw [deriv_const_mul _ differentiableAt_id]
+      simp only [deriv_id'', mul_one]
+    calc deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z
+        = cexp (2 * π * I * n * z) * deriv (fun w => 2 * π * I * n * w) z := by
+            exact deriv_cexp hdiff_lin
+      _ = cexp (2 * π * I * n * z) * (2 * π * I * n) := by rw [hderiv_lin]
+      _ = (2 * π * I * n) * cexp (2 * π * I * n * z) := by ring
+  rw [hderiv]
+  -- Simplify (2πi)⁻¹ * (2πin) = n
+  have h2pi : (2 * π * I : ℂ) ≠ 0 := by
+    simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, ofReal_eq_zero,
+      Real.pi_ne_zero, I_ne_zero, or_self]
+  field_simp
+
+/--
+Key identity: The double sum ∑' (c,d), c * d^(k+1) * exp(2πi*z*cd) equals ∑' n, n * σ_k(n) * exp(2πi*n*z).
+This follows from the definition σ_k(n) = ∑_{d|n} d^k and the identity n * σ_k(n) = ∑_{cd=n} c * d^(k+1).
+
+The proof uses `tsum_sigma_eqn` and the fact that differentiation multiplies by the exponent factor.
+-/
+lemma tsum_sigma_deriv_eq {k : ℕ} (z : ℍ) :
+    ∑' c : ℕ+ × ℕ+, (c.1 : ℂ) * (c.2 : ℂ) ^ (k + 1) * cexp (2 * π * I * z * c.1 * c.2) =
+    ∑' n : ℕ+, (n : ℂ) * (σ k n : ℂ) * cexp (2 * π * I * n * z) := by
+  -- The key identity: for each n, ∑_{cd=n} c * d^(k+1) = n * σ_k(n)
+  -- Proof: ∑_{cd=n} c * d^(k+1) = ∑_{d|n} (n/d) * d^(k+1) = ∑_{d|n} n * d^k = n * σ_k(n)
+  --
+  -- Use sigmaAntidiagonalEquivProd to convert pairs (c,d) to divisor sums
+  rw [← sigmaAntidiagonalEquivProd.tsum_eq]
+  simp only [sigmaAntidiagonalEquivProd, mapdiv, PNat.mk_coe, Equiv.coe_fn_mk]
+  -- Use summability to convert tsum over sigma to tsum over ℕ+
+  have hsumm : Summable (fun c : (n : ℕ+) × {x // x ∈ (n : ℕ).divisorsAntidiagonal} ↦
+      (↑(c.snd.val.1) : ℂ) * ↑(c.snd.val.2) ^ (k + 1) *
+      cexp (2 * π * I * z * c.snd.val.1 * c.snd.val.2)) := by
+    -- Summability follows from bounds adapting summable_auxil_1:
+    -- For (a,b) ∈ divisorsAntidiagonal n: a * b = n, so
+    --   a * b^(k+1) = n * b^k ≤ n^(k+1) (since b | n implies b ≤ n)
+    --   |exp(2πi*z*ab)| = |exp(2πi*n*z)| (exponential decay)
+    -- Sum over divisors: card(divisors) * n^(k+1) * |exp| ≤ n^(k+2) * |exp|
+    -- Outer sum converges by hsum (k+2) z
+    -- See summable_auxil_1 and mathlib's summable_divisorsAntidiagonal_aux for pattern
+    sorry
+  rw [hsumm.tsum_sigma]
+  apply tsum_congr
+  intro n
+  rw [tsum_fintype, Finset.univ_eq_attach]
+  -- For each n, show ∑_{(c,d) with cd=n} c * d^(k+1) = n * σ_k(n)
+  have hdiv := @Nat.sum_divisorsAntidiagonal' ℂ _ (fun (x : ℕ) => fun (y : ℕ) =>
+    (x : ℂ) * (y : ℂ) ^ (k + 1) * cexp (2 * π * I * z * x * y)) n
+  simp only at hdiv
+  have H := Finset.sum_attach ((n : ℕ).divisorsAntidiagonal) (fun (x : ℕ × ℕ) =>
+    (x.1 : ℂ) * (x.2 : ℂ) ^ (k + 1) * cexp (2 * π * I * z * x.1 * x.2))
+  simp only at H
+  rw [H, hdiv]
+  -- Now show: ∑_{i|n} ↑(n/i) * i^(k+1) * exp(2πi * z * ↑(n/i) * i) = n * σ_k(n) * exp(2πinz)
+  -- Note: Nat.sum_divisorsAntidiagonal' produces ↑(↑n / i) which is ℕ division cast to ℂ
+  --
+  -- Key identity for i | n: ↑((n/i : ℕ) * i : ℕ) = ↑n via Nat.div_mul_cancel
+  -- This gives: ↑(n/i) * ↑i = ↑n (using ← Nat.cast_mul)
+  -- Then: ↑(n/i) * i^(k+1) = ↑(n/i) * i * i^k = n * i^k
+  -- And: exp(2πi*z*↑(n/i)*i) = exp(2πi*n*z) since ↑(n/i)*i = n
+  --
+  -- Convert each term using ← Nat.cast_mul and Nat.div_mul_cancel
+  have hterm_eq : ∀ i ∈ (n : ℕ).divisors,
+      (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) ^ (k + 1) *
+        cexp (2 * π * I * z * (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ)) =
+      (n : ℂ) * (i : ℂ) ^ k * cexp (2 * π * I * n * z) := by
+    intro i hi
+    have hdvd : i ∣ (n : ℕ) := Nat.dvd_of_mem_divisors hi
+    -- Key: ↑((n/i) * i : ℕ) = ↑n, so ↑(n/i) * ↑i = ↑n
+    have hprod : (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) = (n : ℂ) := by
+      rw [← Nat.cast_mul, Nat.div_mul_cancel hdvd]
+    -- Coefficient: ↑(n/i) * i^(k+1) = ↑(n/i) * i * i^k = n * i^k
+    have hcoeff : (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) ^ (k + 1) = (n : ℂ) * (i : ℂ) ^ k := by
+      calc (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) ^ (k + 1)
+          = (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) * (i : ℂ) ^ k := by ring
+        _ = (n : ℂ) * (i : ℂ) ^ k := by rw [hprod]
+    -- Exponential: ↑(n/i) * i = n, so exp(...) = exp(2πi*n*z)
+    -- Note: ((n : ℕ) / i) is ℕ division, which gets coerced to ℂ in this context
+    have hexp : cexp (2 * π * I * z * (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ)) =
+        cexp (2 * π * I * n * z) := by
+      congr 1
+      -- Rearrange to use hprod: ↑(↑n/i) * ↑i = ↑↑n (without using push_cast)
+      have hrearr : (2 : ℂ) * π * I * z * (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) =
+          2 * π * I * z * ((((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ)) := by ring
+      rw [hrearr, hprod]
+      ring
+    rw [hcoeff, hexp]
+  -- Apply the term rewrite to the sum using direct rewrites
+  rw [Finset.sum_congr rfl hterm_eq, ← Finset.sum_mul, ← Finset.mul_sum]
+  -- Now show: ∑ i ∈ n.divisors, (i : ℂ)^k = (σ k n : ℂ) using sigma_apply
+  have hsigma_cast : ∑ i ∈ ((n : ℕ)).divisors, ((i : ℂ)) ^ k = ((σ k n) : ℂ) := by
+    rw [ArithmeticFunction.sigma_apply]
+    simp only [Nat.cast_sum, Nat.cast_pow]
+  rw [hsigma_cast]
+
+/--
+The normalized derivative D multiplies q-expansion coefficients by n.
+Since E₄ = 1 + 240·Σσ₃(n)·qⁿ, we have D(E₄) = 240·Σn·σ₃(n)·qⁿ.
+-/
+lemma D_E4_qexp (z : ℍ) :
+    D E₄.toFun z = 240 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) := by
+  -- Step 1: Express E₄ using q-expansion
+  -- E₄(z) = 1 + 240 * ∑' n : ℕ+, σ₃(n) * exp(2πi·z·n) from E_k_q_expansion
+  have hE4 : ∀ w : ℍ, E₄.toFun w = 1 + 240 * ∑' (n : ℕ+), (σ 3 n) * cexp (2 * π * I * w * n) := by
+    intro w
+    -- E₄.toFun = E₄ by coercion, and E₄ = E 4 by definition
+    have hE : E₄.toFun w = E 4 (by norm_num) w := by rfl
+    have hqexp := E_k_q_expansion 4 (by norm_num) (by exact Nat.even_iff.mpr rfl) w
+    -- hqexp uses ↑4 while target uses 4; they are equal
+    simp only [Nat.cast_ofNat, Nat.succ_sub_succ_eq_sub, tsub_zero] at hqexp
+    rw [hE, hqexp]
+    -- Now goal is: 1 + (1/riemannZeta 4) * ((-2πi)^4 / 3!) * ∑'... = 1 + 240 * ...
+    -- Need to show coefficient = 240
+    -- Using riemannZeta_four : riemannZeta 4 = π^4 / 90
+    congr 1
+    have hzeta : riemannZeta 4 = (π : ℂ) ^ 4 / 90 := by
+      simp only [riemannZeta_four]
+    -- Coefficient = (1/(π^4/90)) * ((-2πi)^4 / 6) = (90/π^4) * (16π^4) / 6 = 240
+    have hcoeff : (1 / riemannZeta 4) * ((-2 * π * I) ^ 4 / Nat.factorial 3) = (240 : ℂ) := by
+      rw [hzeta]
+      -- (-2πi)^4 = 16π^4 since I^4 = 1
+      have hI4 : I ^ 4 = (1 : ℂ) := by norm_num [pow_succ, I_sq]
+      have h1 : (-2 * (π : ℂ) * I) ^ 4 = 16 * (π : ℂ) ^ 4 := by
+        have : (-2 * (π : ℂ) * I) ^ 4 = (-2) ^ 4 * (π : ℂ) ^ 4 * I ^ 4 := by ring
+        rw [this, hI4]
+        norm_num
+      rw [h1]
+      simp only [Nat.factorial_succ, Nat.reduceAdd]
+      have hpi : (π : ℂ) ≠ 0 := ofReal_ne_zero.mpr Real.pi_ne_zero
+      field_simp
+      ring
+    convert mul_comm _ _ using 1
+    rw [hcoeff]
+    ring
+  -- Step 2: Compute D of the q-expansion using deriv-tsum interchange
+  -- We use D_exp_eq_n_mul for individual terms and the tsum-deriv interchange
+  unfold D
+  -- Express the derivative in terms of the q-expansion
+  have hz' : 0 < (z : ℂ).im := z.im_pos
+  -- The composition E₄.toFun ∘ ofComplex agrees with the q-expansion on ℍ'
+  have hE4' : ∀ w : ℂ, 0 < w.im →
+      (E₄.toFun ∘ ofComplex) w = 1 + 240 * ∑' (n : ℕ+), (σ 3 n) * cexp (2 * π * I * w * n) := by
+    intro w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
+    exact hE4 ⟨w, hw⟩
+  -- deriv of constant + scalar * tsum = 0 + scalar * deriv(tsum)
+  -- For the tsum, each term's derivative is: σ₃(n) * (2πin) * exp(2πinw)
+  -- Using hasDerivAt_tsum_fun or derivWithin_tsum_fun' from tsumderivWithin.lean
+  --
+  -- **Full Proof Strategy** (detailed steps):
+  --
+  -- 1. Convert deriv to derivWithin on ℍ' (open set)
+  -- 2. Use derivWithin_tsum_fun' to interchange deriv with tsum:
+  --    derivWithin (∑' f_n) ℍ' z = ∑' derivWithin f_n ℍ' z
+  -- 3. For each term: derivWithin (σ₃(n) * exp(2πinw)) ℍ' w = σ₃(n) * 2πin * exp(2πinw)
+  -- 4. Simplify: (2πi)⁻¹ * σ₃(n) * 2πin * exp(2πinz) = n * σ₃(n) * exp(2πinz)
+  --
+  -- Requirements for derivWithin_tsum_fun':
+  -- (a) ℍ' is open ✓ (upper_half_plane_isOpen)
+  -- (b) Summability: ∀ w ∈ ℍ', Summable (n ↦ σ₃(n) * exp(2πinw))
+  --     This follows from exponential decay (summable_auxil_1 with k=0)
+  -- (c) Uniform derivative bound: ∃ u summable, ‖derivWithin (f n)‖ ≤ u n on compact K ⊆ ℍ'
+  --     Since σ₃(n) ≤ n⁴ and derivatives add a factor of 2πn, we get n⁵ * |q|^n
+  --     This is bounded by iter_deriv_comp_bound3
+  -- (d) Each term differentiable: z ↦ σ₃(n) * exp(2πinz) is holomorphic
+  --
+  -- The infrastructure from summable_lems.lean handles most of this.
+  -- Key lemmas: summable_auxil_1, iter_deriv_comp_bound2/3
+  sorry
+
+/--
+The q-expansion identity E₂E₄ - E₆ = 720·Σn·σ₃(n)·qⁿ.
+This follows from Ramanujan's formula: E₂E₄ - E₆ = 3·D(E₄),
+combined with D(E₄) = 240·Σn·σ₃(n)·qⁿ (since D multiplies q-coefficients by n).
+-/
+theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
+    (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)
+    := by
+  -- From ramanujan_E₄: D E₄ = (1/3) * (E₂ * E₄ - E₆)
+  -- So: E₂ * E₄ - E₆ = 3 * D E₄
+  have hRam : (E₂ z) * (E₄ z) - (E₆ z) = 3 * D E₄.toFun z := by
+    -- ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)
+    -- Evaluating at z and rearranging gives the result
+    have h3 : (3 : ℂ) ≠ 0 := by norm_num
+    have h := congrFun ramanujan_E₄ z
+    -- h : D E₄.toFun z = (3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)) z
+    -- Instead of simp, unfold Pi.mul directly
+    -- (c * f) z where c : ℂ and f : ℍ → ℂ evaluates to c * f z
+    -- But the * here might be Pi.mul with c as constant function
+    -- Let's work around by computing the value directly
+    calc E₂ z * E₄ z - E₆ z
+        = E₂ z * E₄.toFun z - E₆.toFun z := by rfl
+      _ = 3 * (3⁻¹ * (E₂ z * E₄.toFun z - E₆.toFun z)) := by field_simp
+      _ = 3 * D E₄.toFun z := by
+          congr 1
+          -- The RHS of h is (3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)) z
+          -- We need to show this equals 3⁻¹ * (E₂ z * E₄.toFun z - E₆.toFun z)
+          -- This follows from how Pi multiplication works
+          simp only [Pi.mul_apply, Pi.sub_apply] at h
+          exact h.symm
+  -- Substitute D(E₄) = 240 * ∑' n, n * σ₃(n) * q^n
+  rw [hRam, D_E4_qexp]
+  ring
+
+end Ramanujan_qExpansion
+
+/--
+Prove modular linear differential equation satisfied by $F$.
+-/
+noncomputable def X₄₂ := 288⁻¹ * (E₄.toFun - E₂ * E₂)
+
+noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
+
+noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
+
+theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
+    + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun
+    := by
+  rw [F, D_sq, D_sub, D_mul]
+  · ring_nf
+    rw [ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
+    ext z
+    simp
+    ring_nf
+  -- Holomorphicity of the terms
+  · exact E₂_holo'
+  · exact E₄.holo'
+  · exact MDifferentiable.mul E₂_holo' E₄.holo'
+  · exact E₆.holo'
+  have h24 := MDifferentiable.mul E₂_holo' E₄.holo'
+  exact MDifferentiable.sub h24 E₆.holo'
+
+
+/--
+Modular linear differential equation satisfied by `F`.
+TODO: Move this to a more appropriate place.
+-/
+theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 172800 * Δ_fun * X₄₂ := by
+  ext x
+  rw [X₄₂, Δ_fun, serre_D, serre_D, F_aux]
+  unfold serre_D
+  rw [F_aux]
+  sorry
+
+example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.toFun - E₆.toFun) :=
+  by
+  rw [D_mul E₄.toFun E₄.toFun]
+  · simp only [ramanujan_E₄]
+    ring_nf
+  · exact E₄.holo'
+  · exact E₄.holo'
 
 end
