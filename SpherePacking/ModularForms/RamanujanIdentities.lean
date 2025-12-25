@@ -74,6 +74,22 @@ lemma D_D₂ (γ : SL(2, ℤ)) (z : ℍ) :
   field_simp
   ring
 
+/-! ## MDifferentiable infrastructure for D₂ -/
+
+/-- D₂ γ is MDifferentiable: it's a constant divided by a linear polynomial. -/
+lemma MDifferentiable_D₂ (γ : SL(2, ℤ)) : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D₂ γ) := by
+  intro z
+  -- D₂ γ z = (2πi c) / denom γ z  where c = γ 1 0
+  -- D₂ γ = G ∘ (↑) where G(w) = (2πi c) / denom γ w
+  set G : ℂ → ℂ := fun w => (2 * π * I * (γ 1 0 : ℂ)) / denom γ w with hG_def
+  -- Show D₂ γ = G ∘ (↑)
+  have heq : D₂ γ = G ∘ (↑) := by ext w; rfl
+  rw [heq]
+  -- Use DifferentiableAt_MDifferentiableAt
+  apply DifferentiableAt_MDifferentiableAt
+  apply DifferentiableAt.div (differentiableAt_const _) (differentiableAt_denom γ z)
+  exact UpperHalfPlane.denom_ne_zero γ z
+
 /-! ## Slash invariance of serre_D 1 E₂
 
 This is the hard part: E₂ is NOT modular, so we cannot use `serre_D_slash_invariant`.
@@ -94,8 +110,17 @@ After expansion, the anomaly terms involving D₂ γ and D(D₂ γ) cancel using
 -/
 lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
     (serre_D 1 E₂) ∣[(4 : ℤ)] γ = serre_D 1 E₂ := by
-  -- TODO: Complex algebraic proof showing anomaly terms cancel
-  -- Key ingredients available: D_D₂, E₂_slash_transform, serre_D_slash_equivariant, anomaly_coeff_zero
+  -- Key steps verified:
+  -- 1. serre_D 1 E₂ = serre_D 2 E₂ + (1/12) E₂²
+  -- 2. (serre_D 2 E₂) ∣[4] γ = serre_D 2 (E₂ ∣[2] γ) by serre_D_slash_equivariant
+  -- 3. E₂ ∣[2] γ = E₂ - α D₂ γ where α = 1/(2ζ(2)) = 3/π²
+  -- 4. (E₂²) ∣[4] γ = (E₂ ∣[2] γ)²
+  -- 5. D(E₂ - α D₂ γ) = D E₂ - α D(D₂ γ) by D_sub, D_smul
+  -- 6. D(D₂ γ) = -c²/denom² by D_D₂
+  -- 7. After expansion: anomaly = -α D(D₂ γ) + (α²/12)(D₂ γ)²
+  --    = α c²/d² - (α²/12)(4π²)c²/d² = c²/d² (α - α²π²/3) = 0
+  --    since α = 3/π² implies α = α² π²/3
+  -- TODO: Complete algebraic expansion using D_sub, D_smul, D_D₂
   sorry
 
 /-! ## Cauchy estimates and limits at infinity -/
@@ -357,9 +382,21 @@ lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
 This follows from E₂ and E₂² being bounded. -/
 lemma serre_D_E₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) := by
   -- serre_D 1 E₂ = D E₂ - (1/12) * E₂ * E₂
+  have hserre : serre_D 1 E₂ = D E₂ - (fun z => 1 * 12⁻¹ * E₂ z * E₂ z) := rfl
+  rw [hserre]
   -- D E₂ is bounded (by Cauchy estimate from E₂_isBoundedAtImInfty)
+  have hDE₂ : IsBoundedAtImInfty (D E₂) :=
+    D_isBoundedAtImInfty_of_bounded E₂_holo' E₂_isBoundedAtImInfty
   -- E₂ * E₂ is bounded
-  sorry
+  have hE₂sq : IsBoundedAtImInfty (fun z => E₂ z * E₂ z) :=
+    E₂_isBoundedAtImInfty.mul E₂_isBoundedAtImInfty
+  have h12E₂sq : IsBoundedAtImInfty (fun z => 1 * 12⁻¹ * E₂ z * E₂ z) := by
+    have hconst : IsBoundedAtImInfty (fun _ : ℍ => (1 : ℂ) * 12⁻¹) :=
+      Filter.const_boundedAtFilter _ _
+    have := hconst.mul hE₂sq
+    convert this using 1
+    ext z; simp only [Pi.mul_apply]; ring
+  exact hDE₂.sub h12E₂sq
 
 /-! ## Construction of ModularForm from serre_D -/
 
@@ -520,9 +557,28 @@ lemma serre_D_E₂_tendsto_at_infinity :
     Filter.Tendsto (fun y : PosReal => serre_D 1 E₂ (iMulPosReal y))
       (Filter.comap Subtype.val Filter.atTop) (nhds (-(1/12 : ℂ))) := by
   -- serre_D 1 E₂ = D E₂ - (1/12) * E₂ * E₂
-  -- As y → ∞: D E₂ → 0, E₂ → 1
-  -- So limit = 0 - (1/12) * 1 * 1 = -1/12
-  sorry
+  have hserre : ∀ y : PosReal, serre_D 1 E₂ (iMulPosReal y) =
+      D E₂ (iMulPosReal y) - 1 * 12⁻¹ * E₂ (iMulPosReal y) * E₂ (iMulPosReal y) := by
+    intro y
+    simp only [serre_D, Pi.sub_apply, Pi.mul_apply]
+  simp_rw [hserre]
+  -- Limit of D E₂ is 0 (D_tendsto_zero_of_tendsto_const)
+  have hD : Filter.Tendsto (fun y : PosReal => D E₂ (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds 0) :=
+    D_tendsto_zero_of_tendsto_const E₂_holo' E₂_isBoundedAtImInfty E₂_tendsto_one_at_infinity
+  -- Limit of E₂ is 1
+  have hE₂ := E₂_tendsto_one_at_infinity
+  -- Combined limit: 0 - (1/12) * 1 * 1 = -1/12
+  have hlim : (0 : ℂ) - (1 : ℂ) * 12⁻¹ * 1 * 1 = -(1/12 : ℂ) := by norm_num
+  rw [← hlim]
+  refine Filter.Tendsto.sub hD ?_
+  have hprod : Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y) * E₂ (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds (1 * 1)) :=
+    hE₂.mul hE₂
+  have hconst : Filter.Tendsto (fun _ : PosReal => (1 : ℂ) * 12⁻¹)
+      (Filter.comap Subtype.val Filter.atTop) (nhds ((1 : ℂ) * 12⁻¹)) :=
+    tendsto_const_nhds
+  convert hconst.mul hprod using 1 <;> ring
 
 /-! ## The Ramanujan Identities
 
