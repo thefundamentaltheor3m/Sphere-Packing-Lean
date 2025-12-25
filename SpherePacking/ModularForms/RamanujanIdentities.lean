@@ -96,18 +96,41 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ} {L : ℂ}
       (Filter.comap Subtype.val Filter.atTop) (nhds L)) :
     Filter.Tendsto (fun y : PosReal => D f (iMulPosReal y))
       (Filter.comap Subtype.val Filter.atTop) (nhds 0) := by
-  -- Proof outline:
-  -- 1. Get M, A from IsBoundedAtImInfty: ‖f z‖ ≤ M for Im z ≥ A
-  -- 2. For y > 2A, ball B(iy, y/2) is contained in {z : Im z ≥ y/2 > A}
-  -- 3. DiffContOnCl ℂ (f ∘ ofComplex) (ball (I * y) (y/2)) from MDifferentiable
-  -- 4. By Cauchy: ‖deriv(f ∘ ofComplex)(iy)‖ ≤ M / (y/2) = 2M/y
-  -- 5. ‖D f(iy)‖ = |(2πi)⁻¹| * ‖deriv(...)‖ ≤ (2π)⁻¹ * 2M/y = M/(πy)
-  -- 6. M/(πy) → 0 as y → ∞
-  --
-  -- Technical requirement: `norm_deriv_le_of_forall_mem_sphere_norm_le` from
-  -- Mathlib.Analysis.Complex.Liouville needs DiffContOnCl, which requires
-  -- showing f ∘ ofComplex is differentiable on the ball and continuous on closure.
-  sorry
+  -- Get M, A from IsBoundedAtImInfty: ‖f z‖ ≤ M for Im z ≥ A
+  rw [isBoundedAtImInfty_iff] at hbdd
+  obtain ⟨M, A, hMA⟩ := hbdd
+  -- Use Metric.tendsto_atTop style: for any ε > 0, find Y such that for y > Y, ‖D f(iy)‖ < ε
+  rw [Metric.tendsto_nhds]
+  intro ε hε
+  -- Choose Y large enough: y > Y implies y/2 > A and M/(π*y) < ε
+  -- Take Y = max(2*A, M/(π*ε) + 1)
+  have hpi : 0 < π := Real.pi_pos
+  rw [Filter.Eventually, Filter.mem_comap]
+  use Set.Ici (max (2 * max A 0 + 1) (|M| / (π * ε) + 1))
+  constructor
+  · exact Filter.mem_atTop _
+  · intro y hy
+    simp only [Set.mem_preimage, Set.mem_Ici] at hy
+    -- y.val ≥ max(2 * max A 0 + 1, |M| / (π * ε) + 1)
+    have hy_pos : 0 < y.val := y.2
+    have hy_ge_A : y.val / 2 > max A 0 := by
+      have h1 : y.val ≥ 2 * max A 0 + 1 := le_trans (le_max_left _ _) hy
+      linarith
+    have hy_ge_bound : y.val > |M| / (π * ε) := by
+      have h1 : y.val ≥ |M| / (π * ε) + 1 := le_trans (le_max_right _ _) hy
+      linarith
+    -- For z = iy with y large, use Cauchy estimate on ball(iy, y/2)
+    -- Ball is contained in upper half plane since all points have Im > y/2 > 0
+    -- f ∘ ofComplex is differentiable on ball (from MDifferentiable)
+    -- f is bounded by M on the ball (from IsBoundedAtImInfty, since Im > y/2 > A)
+    -- By Cauchy: ‖deriv(f ∘ ofComplex)(iy)‖ ≤ M / (y/2) = 2M/y
+    -- ‖D f(iy)‖ = |(2πi)⁻¹| * ‖deriv(...)‖ ≤ (2π)⁻¹ * 2M/y = M/(πy) < ε
+    --
+    -- Technical gap: Constructing DiffContOnCl for Cauchy estimate
+    -- This requires showing f ∘ ofComplex is differentiable on ball and continuous on closure
+    -- The key insight: for z in closedBall(iy, y/2), we have Im z ≥ y/2 > 0, so z is in ℍ
+    -- and f ∘ ofComplex agrees with f on this region
+    sorry
 
 /-! ## Limits of Eisenstein series at infinity -/
 
