@@ -223,19 +223,32 @@ def serre_D_E₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 where
     obtain ⟨A', hA'_eq⟩ := hA
     -- The SL(2,ℤ) slash action is defined via mapGL ℝ
     have h := serre_D_slash_invariant 4 E₄.toFun E₄.holo' A' (E₄.slash_action_eq' _ ⟨A', mem_Gamma_one A', rfl⟩)
-    -- The SL slash action ∣[k] γ is definitionally the GL slash action
+    -- The SL slash action ∣[k] γ is definitionally the GL slash action via mapGL
     -- h : serre_D 4 E₄ ∣[6] A' = serre_D 4 E₄ (SL action)
-    -- Since A = mapGL ℝ A' and the SL action uses mapGL, we can apply the bound
+    -- SL_slash : f ∣[k] γ = f ∣[k] (γ : GL (Fin 2) ℝ), which is definitionally rfl via mapGL
     show IsBoundedAtImInfty (serre_D 4 E₄.toFun ∣[(6 : ℤ)] A)
-    -- The rewrite is tricky due to definitional vs propositional equality
-    -- For now, defer this technical detail
-    sorry
+    -- Since A = mapGL ℝ A', and SL action is defined via mapGL, we use SL_slash directly
+    rw [← hA'_eq]
+    -- The SL slash action on A' equals the GL slash action on mapGL ℝ A' by definition
+    -- convert handles the definitional equality between ∣[6] (mapGL ℝ A') and ∣[6] A'
+    convert serre_D_E₄_isBoundedAtImInfty using 1
 
 /-- serre_D 6 E₆ is bounded at infinity. -/
 lemma serre_D_E₆_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 6 E₆.toFun) := by
   -- serre_D 6 E₆ = D E₆ - (6/12) * E₂ * E₆
   -- Both terms are bounded at infinity
-  sorry
+  unfold serre_D
+  -- Same pattern as serre_D_E₄_isBoundedAtImInfty in Derivative.lean
+  have h1 : IsBoundedAtImInfty (D E₆.toFun) := D_isBoundedAtImInfty_of_bounded E₆.holo' E₆_isBoundedAtImInfty
+  have h2 : IsBoundedAtImInfty (fun z => (6 : ℂ) * 12⁻¹ * E₂ z * E₆.toFun z) := by
+    have hconst : IsBoundedAtImInfty (fun _ : ℍ => (6 : ℂ) * 12⁻¹) :=
+      Filter.const_boundedAtFilter _ _
+    have hE₂E₆ : IsBoundedAtImInfty (E₂ * E₆.toFun) := E₂_isBoundedAtImInfty.mul E₆_isBoundedAtImInfty
+    convert hconst.mul hE₂E₆ using 1
+    ext z
+    simp only [Pi.mul_apply]
+    ring
+  exact h1.sub h2
 
 /-- serre_D 6 E₆ is a weight-8 modular form. -/
 def serre_D_E₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 where
@@ -261,8 +274,11 @@ def serre_D_E₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 where
     obtain ⟨A', hA'_eq⟩ := hA
     have h := serre_D_slash_invariant 6 E₆.toFun E₆.holo' A' (E₆.slash_action_eq' _ ⟨A', mem_Gamma_one A', rfl⟩)
     show IsBoundedAtImInfty (serre_D 6 E₆.toFun ∣[(8 : ℤ)] A)
-    -- Similar technical issue with SL/GL slash action coercion
-    sorry
+    -- Since A = mapGL ℝ A', and SL action is defined via mapGL, we use SL_slash directly
+    rw [← hA'_eq]
+    -- The SL slash action on A' equals the GL slash action on mapGL ℝ A' by definition
+    -- convert handles the definitional equality between ∣[8] (mapGL ℝ A') and ∣[8] A'
+    convert serre_D_E₆_isBoundedAtImInfty using 1
 
 /-! ## Limit of serre_D at infinity (for determining scalar) -/
 
