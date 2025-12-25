@@ -110,18 +110,105 @@ After expansion, the anomaly terms involving D₂ γ and D(D₂ γ) cancel using
 -/
 lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
     (serre_D 1 E₂) ∣[(4 : ℤ)] γ = serre_D 1 E₂ := by
-  -- Full algebraic proof deferred - the cancellation involves:
-  -- 1. serre_D_slash_equivariant: serre_D 2 E₂ ∣[4] γ = serre_D 2 (E₂ ∣[2] γ)
-  -- 2. E₂_slash_transform: E₂ ∣[2] γ = E₂ - α D₂ γ where α = 1/(2ζ(2)) = 3/π²
-  -- 3. mul_slash_SL2: (E₂²) ∣[4] γ = (E₂ ∣[2] γ)²
-  -- 4. D_sub, D_smul for D(E₂ - α D₂ γ) = D E₂ - α D(D₂ γ)
-  -- 5. D_D₂: D(D₂ γ) = -c²/denom²
-  -- 6. Anomaly cancellation: α = 3/π² satisfies α = α²π²/3
-  --
-  -- After full expansion of serre_D 2 (E₂ - α D₂ γ) + (1/12)(E₂ - α D₂ γ)²,
-  -- the terms involving D₂ γ and D(D₂ γ) cancel via the identity
-  -- α c²/d² - (α²/12)(2πic/d)² = α c²/d² - (α²/12)(-4π²c²/d²) = c²/d²(α - α²π²/3) = 0.
-  sorry
+  -- Step 1: Use serre_D 1 E₂ = serre_D 2 E₂ + (1/12) E₂²
+  -- Key identity: serre_D k F = D F - (k/12) E₂ F
+  -- serre_D 1 E₂ = D E₂ - (1/12) E₂ * E₂
+  -- serre_D 2 E₂ = D E₂ - (2/12) E₂ * E₂
+  -- So serre_D 1 E₂ = serre_D 2 E₂ + (1/12) E₂ * E₂
+  have hserre12 : serre_D 1 E₂ = serre_D 2 E₂ + (1 / 12 : ℂ) • (E₂ * E₂) := by
+    ext z; simp only [serre_D, Pi.add_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul]; ring
+  -- Step 2: Apply serre_D_slash_equivariant with k=2
+  have hequiv := serre_D_slash_equivariant 2 E₂ E₂_holo' γ
+  -- Step 3: E₂ ∣[2] γ = E₂ - α D₂ γ
+  have hE₂slash := E₂_slash_transform γ
+  -- Step 4: (E₂ * E₂) ∣[4] γ = (E₂ ∣[2] γ) * (E₂ ∣[2] γ) by mul_slash_SL2
+  have hprod := ModularForm.mul_slash_SL2 (2 : ℤ) (2 : ℤ) γ E₂ E₂
+  -- Work pointwise
+  ext z
+  -- Expand LHS: (serre_D 1 E₂ ∣[4] γ) z
+  rw [hserre12]
+  -- Use that slash distributes over addition and scalar multiplication
+  simp only [SlashAction.add_slash, Pi.add_apply]
+  have hsmul := ModularForm.SL_smul_slash (4 : ℤ) γ (E₂ * E₂) (1 / 12 : ℂ)
+  rw [hsmul]
+  simp only [Pi.smul_apply, smul_eq_mul]
+  -- Use equivariance: (serre_D 2 E₂ ∣[4] γ) z = serre_D 2 (E₂ ∣[2] γ) z
+  have hequiv_z : (serre_D 2 E₂ ∣[(4 : ℤ)] γ) z = serre_D 2 (E₂ ∣[(2 : ℤ)] γ) z := by
+    have h := congrFun hequiv z
+    simp only [Int.reduceAdd] at h
+    exact h
+  rw [hequiv_z]
+  -- Use product formula: ((E₂ * E₂) ∣[4] γ) z = (E₂ ∣[2] γ) z * (E₂ ∣[2] γ) z
+  have hprod_z : ((E₂ * E₂) ∣[(4 : ℤ)] γ) z = (E₂ ∣[(2 : ℤ)] γ) z * (E₂ ∣[(2 : ℤ)] γ) z := by
+    have h := congrFun hprod z
+    simp only [Pi.mul_apply, Int.reduceAdd] at h
+    exact h
+  rw [hprod_z]
+  -- Now substitute E₂ ∣[2] γ = E₂ - α D₂ γ
+  set α := (1 : ℂ) / (2 * riemannZeta 2) with hα_def
+  have hE₂slash_z : (E₂ ∣[(2 : ℤ)] γ) z = E₂ z - α * D₂ γ z := by
+    have h := congrFun hE₂slash z
+    simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul] at h
+    exact h
+  -- Now expand serre_D 2 (E₂ ∣[2] γ) using the definition
+  -- First rewrite the function E₂ ∣[2] γ = E₂ - α • D₂ γ (as functions, not just values)
+  have hE₂slash_fun : (E₂ ∣[(2 : ℤ)] γ) = E₂ - α • D₂ γ := by
+    ext w
+    have h := congrFun hE₂slash w
+    simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul] at h
+    exact h
+  rw [hE₂slash_fun]
+  -- Now at z, we have (E₂ - α • D₂ γ) z = E₂ z - α * D₂ γ z
+  simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
+  -- D (E₂ - α • D₂ γ) = D E₂ - α • D (D₂ γ) by linearity
+  have hD_lin : D (E₂ - α • D₂ γ) z = D E₂ z - α * D (D₂ γ) z := by
+    have hαD₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (α • D₂ γ) := (MDifferentiable_D₂ γ).const_smul α
+    have hsub := D_sub E₂ (α • D₂ γ) E₂_holo' hαD₂
+    have hsmul := D_smul α (D₂ γ) (MDifferentiable_D₂ γ)
+    calc D (E₂ - α • D₂ γ) z
+      _ = (D E₂ - D (α • D₂ γ)) z := by rw [hsub]
+      _ = D E₂ z - D (α • D₂ γ) z := by simp only [Pi.sub_apply]
+      _ = D E₂ z - (α • D (D₂ γ)) z := by rw [hsmul]
+      _ = D E₂ z - α * D (D₂ γ) z := by simp only [Pi.smul_apply, smul_eq_mul]
+  -- Use D_D₂: D(D₂ γ) z = -c²/denom²
+  have hDd : D (D₂ γ) z = -(γ 1 0 : ℂ)^2 / (denom γ z)^2 := D_D₂ γ z
+  -- Key: (D₂ γ z)² = -4π²c²/denom²
+  have hd_sq : D₂ γ z * D₂ γ z = -4 * π^2 * (γ 1 0 : ℂ)^2 / (denom γ z)^2 := by
+    have hden_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+    have hI_sq : (I : ℂ)^2 = -1 := Complex.I_sq
+    simp only [D₂]
+    field_simp [hden_ne]
+    ring_nf
+    simp only [hI_sq]
+    ring
+  -- Now substitute and expand everything
+  simp only [serre_D, Pi.sub_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul]
+  rw [hD_lin, hDd]
+  -- α = 3/π²
+  have hα_val : α = 3 / π^2 := by
+    simp only [hα_def]
+    rw [riemannZeta_two]
+    have hpi_ne : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+    field_simp [hpi_ne]
+    ring
+  -- Needed for field_simp
+  have hden_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+  have hpi_ne : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  -- The key algebraic observation:
+  -- The terms with D₂ γ z cancel because α - α² π²/3 = 0 when α = 3/π²
+  -- After substituting hDd and expanding:
+  --   ... + α * (-(γ 1 0)² / denom²) + ... + α² * (D₂ γ z)² / 12
+  -- Since D₂ γ z = 2πic/denom, (D₂ γ z)² = -4π²c²/denom²
+  -- So the c²/denom² coefficient is: α - α²·4π²/12 = α - α²π²/3
+  -- With α = 3/π², this is 3/π² - (9/π⁴)(π²/3) = 3/π² - 3/π² = 0
+  have hD₂_eq : D₂ γ z = (2 * π * I * (γ 1 0 : ℂ)) / denom γ z := rfl
+  rw [hD₂_eq, hα_val]
+  field_simp [hden_ne, hpi_ne]
+  -- Now we need I² = -1
+  have hI_sq : (I : ℂ)^2 = -1 := Complex.I_sq
+  ring_nf
+  simp only [hI_sq]
+  ring
 
 /-! ## Cauchy estimates and limits at infinity -/
 
