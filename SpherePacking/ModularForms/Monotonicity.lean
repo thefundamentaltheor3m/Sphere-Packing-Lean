@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
 import SpherePacking.ModularForms.Monotonicity_ImagAxis
-import SpherePacking.ModularForms.Monotonicity_L10
+import SpherePacking.ModularForms.Monotonicity_L10_GAndEventuallyPos
 
 /-!
 # Monotonicity of Q = F/G on the Imaginary Axis
