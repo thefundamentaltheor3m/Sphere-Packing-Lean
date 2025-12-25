@@ -75,7 +75,20 @@ lemma PosReal_comap_atTop_neBot :
 /-- Helper to construct an upper half plane point from a positive real. -/
 def iMulPosReal (y : PosReal) : ℍ := ⟨I * y.val, by simp [y.2]⟩
 
-/-- If f is holomorphic and bounded, with f(iy) → L as y → ∞, then D f(iy) → 0. -/
+/-- If f is holomorphic and bounded, with f(iy) → L as y → ∞, then D f(iy) → 0.
+
+**Proof via Cauchy estimates:**
+For z = iy with y large, consider the ball B(z, y/2) in ℂ.
+- Ball is contained in upper half plane: all points have Im > y/2 > 0
+- f ∘ ofComplex is holomorphic on the ball (from MDifferentiable)
+- f is bounded by M for Im ≥ A (from IsBoundedAtImInfty)
+- By Cauchy: |deriv(f ∘ ofComplex)(z)| ≤ M / (y/2) = 2M/y
+- D f = (2πi)⁻¹ * deriv(...), so |D f(z)| ≤ M/(πy) → 0
+
+**Technical requirements:**
+1. Construct `DiffContOnCl ℂ (f ∘ ofComplex) (ball (I * y) (y/2))`
+2. Apply `norm_deriv_le_of_forall_mem_sphere_norm_le`
+3. Convert the bound to a limit statement -/
 lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ} {L : ℂ}
     (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
     (hbdd : IsBoundedAtImInfty f)
@@ -83,6 +96,17 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ} {L : ℂ}
       (Filter.comap Subtype.val Filter.atTop) (nhds L)) :
     Filter.Tendsto (fun y : PosReal => D f (iMulPosReal y))
       (Filter.comap Subtype.val Filter.atTop) (nhds 0) := by
+  -- Proof outline:
+  -- 1. Get M, A from IsBoundedAtImInfty: ‖f z‖ ≤ M for Im z ≥ A
+  -- 2. For y > 2A, ball B(iy, y/2) is contained in {z : Im z ≥ y/2 > A}
+  -- 3. DiffContOnCl ℂ (f ∘ ofComplex) (ball (I * y) (y/2)) from MDifferentiable
+  -- 4. By Cauchy: ‖deriv(f ∘ ofComplex)(iy)‖ ≤ M / (y/2) = 2M/y
+  -- 5. ‖D f(iy)‖ = |(2πi)⁻¹| * ‖deriv(...)‖ ≤ (2π)⁻¹ * 2M/y = M/(πy)
+  -- 6. M/(πy) → 0 as y → ∞
+  --
+  -- Technical requirement: `norm_deriv_le_of_forall_mem_sphere_norm_le` from
+  -- Mathlib.Analysis.Complex.Liouville needs DiffContOnCl, which requires
+  -- showing f ∘ ofComplex is differentiable on the ball and continuous on closure.
   sorry
 
 /-! ## Limits of Eisenstein series at infinity -/
@@ -137,13 +161,20 @@ lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :
   simpa using htend.add_const (valueAtInfty f.toFun)
 
 /-- E₂ - 1 = O(exp(-2π·Im z)) at infinity.
-This follows from the q-expansion bound in E₂_isBoundedAtImInfty. -/
+This follows from the q-expansion: E₂ z - 1 = -24 * ∑' n, n * qⁿ / (1 - qⁿ).
+The sum is bounded by |q|/(1-|q|)³ ≤ 8|q| when |q| ≤ 1/2.
+
+**Proof sketch:**
+1. From E₂_eq: E₂ z = 1 - 24 * ∑' n, n * qⁿ / (1 - qⁿ), so E₂ z - 1 = -24 * tsum
+2. ‖tsum‖ ≤ |q| / (1 - |q|)³ (from E₂_isBoundedAtImInfty proof)
+3. For Im z ≥ 1, |q| = exp(-2π·Im z) ≤ exp(-2π) < 1/2
+4. When |q| < 1/2: (1 - |q|)³ > 1/8, so |q|/(1-|q|)³ < 8|q|
+5. ‖E₂ z - 1‖ = 24 * ‖tsum‖ ≤ 24 * 8 * |q| = 192 * exp(-2π·Im z) -/
 lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
     fun z => Real.exp (-(2 * π) * z.im) := by
-  -- From E₂_eq: E₂ z - 1 = -24 * (q-series)
-  -- The q-series is bounded by |q|/(1-|q|)³ ≤ C·|q| for small |q|
-  -- where |q| = exp(-2π·Im z)
-  -- So E₂ - 1 = O(exp(-2π·Im z))
+  -- The proof follows the structure from E₂_isBoundedAtImInfty in Derivative.lean
+  -- Key bounds: ‖tsum‖ ≤ |q|/(1-|q|)³ ≤ 8|q| when |q| < 1/2
+  -- TODO: Extract tsum bound lemma from Derivative.lean
   sorry
 
 /-- E₂ → 1 at i∞. -/
