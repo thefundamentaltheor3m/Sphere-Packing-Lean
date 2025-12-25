@@ -1280,11 +1280,11 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
       -- For other n: exponential decay cexp(-π·n(1+n)·im(τ)) → 0
       by_cases hn0 : n = 0
       · -- n = 0: the linear map (2πi·0)•fst + (πi·0²)•snd = 0
-        -- zero_mul is needed but linter reports it unused (false positive: removing it breaks proof)
+        -- zero_mul is needed but linter reports it unused
+        -- (false positive: removing it breaks proof)
         set_option linter.unusedSimpArgs false in
         simp only [hn0, jacobiTheta₂_term_fderiv, Int.cast_zero, mul_zero, sq,
           zero_mul, zero_smul, add_zero, Complex.exp_zero, one_smul]
-        -- Goal: (0 • fst + 0 • snd) (1/2, 1) = 0 for all z
         -- Goal: (0 • fst + 0 • snd) (1/2, 1) = 0 for all z
         have h_eq : (fun _ : ℍ => ((0 : ℂ) • ContinuousLinearMap.fst ℂ ℂ ℂ +
             (0 : ℂ) • ContinuousLinearMap.snd ℂ ℂ ℂ) ((1 : ℂ) / 2, 1)) = fun _ => 0 := by
@@ -1742,7 +1742,8 @@ theorem D_Θ₄_tendsto_zero :
       by_cases hn0 : n = 0
       · -- n = 0: term is 0 for all z
         subst hn0
-        -- zero_mul is needed but linter reports it unused (false positive: removing it breaks proof)
+        -- zero_mul is needed but linter reports it unused
+        -- (false positive: removing it breaks proof)
         set_option linter.unusedSimpArgs false in
         simp only [jacobiTheta₂_term_fderiv, Int.cast_zero, mul_zero, sq,
           zero_mul, zero_smul, add_zero, Complex.exp_zero, one_smul,

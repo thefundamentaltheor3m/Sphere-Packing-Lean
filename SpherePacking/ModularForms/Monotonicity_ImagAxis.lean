@@ -586,7 +586,6 @@ theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun := by
   simp only [hE6, Nat.cast_ofNat] at hq ⊢
   rw [hq]
   simp only [add_im, one_im, zero_add]
-
   -- Step 1: Show each term in the sum is real on the imaginary axis
   have hterm_im : ∀ n : ℕ+, (↑((ArithmeticFunction.sigma (6 - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
@@ -618,21 +617,17 @@ theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun := by
     · have := a33 6 1 z
       simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at this
       exact summable_norm_iff.mpr this
-
   -- Step 3: The sum has zero imaginary part
   have hsum_im : (∑' (n : ℕ+), ↑((ArithmeticFunction.sigma (6 - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
     rw [Complex.im_tsum hsum]
     simp only [hterm_im, tsum_zero]
-
   -- Step 4: Coefficient is real, product with real sum is real
   -- Show (-2πi)^6 is real
   have hpow_im : ((-2 * Real.pi * Complex.I) ^ 6 : ℂ).im = 0 :=
     neg_two_pi_I_pow_even_real 6 (by norm_num)
-
   -- Show the factorial term is real
   have hfact_im : ((6 - 1).factorial : ℂ).im = 0 := by simp
-
   -- Show 1/ζ(6) is real (ζ(6) = π^6/945 is real)
   -- Use riemannZeta_two_mul_nat: ζ(2k) is a real multiple of π^(2k)
   have hzeta_im : (riemannZeta 6).im = 0 := by
@@ -650,11 +645,9 @@ theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun := by
     have h5 : (↑(6 : ℕ).factorial : ℂ).im = 0 := Complex.ofReal_im _
     simp only [Complex.mul_im, Complex.div_im, h1, h2, h3, h4, h5]
     ring
-
   have hinv_zeta_im : (1 / riemannZeta 6).im = 0 := by
     rw [Complex.div_im, Complex.one_im, Complex.one_re, hzeta_im]
     ring
-
   -- (-2πi)^6 / 5! is real
   have hcoeff2_im : ((-2 * Real.pi * Complex.I) ^ 6 / ((6 - 1).factorial : ℂ)).im = 0 := by
     -- (-2πi)^6 = -64π^6 is real, and 5! is real, so the quotient is real
@@ -673,7 +666,6 @@ theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun := by
         (↑Real.pi : ℂ) ^ 6 * Complex.I ^ 6 * 64 := by push_cast; ring
     rw [h_eq, hpi_im]
     ring
-
   -- Full product with sum is real (combine all three factors directly)
   simp only [Complex.mul_im, Complex.div_im, hinv_zeta_im, hsum_im, hpow_im, hfact_im]
   ring
@@ -688,7 +680,6 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
   have hq := E₂_eq z
   rw [hq]
   simp only [sub_im, one_im, zero_sub]
-
   -- Step 1: Show each term in the sum is real on the imaginary axis
   have hterm_im : ∀ n : ℕ+, (↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
       (1 - cexp (2 * ↑Real.pi * Complex.I * n * z))).im = 0 := by
@@ -712,7 +703,6 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
     rw [Complex.div_im]
     rw [hnum_real, hone_sub_real]
     ring
-
   -- Step 2: Summability of the series
   have hsum : Summable fun n : ℕ+ => ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
       (1 - cexp (2 * ↑Real.pi * Complex.I * n * z)) := by
@@ -729,13 +719,11 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
       simpa [mul_assoc, mul_left_comm, mul_comm] using
         (Complex.exp_nat_mul (2 * ↑Real.pi * Complex.I * z) (n : ℕ)).symm
     simp [hpow]
-
   -- Step 3: The sum has zero imaginary part
   have hsum_im : (∑' (n : ℕ+), ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
       (1 - cexp (2 * ↑Real.pi * Complex.I * n * z))).im = 0 := by
     rw [Complex.im_tsum hsum]
     simp only [hterm_im, tsum_zero]
-
   -- Step 4: 24 * sum is real, so -(24 * sum).im = 0
   have h24_im : (24 : ℂ).im = 0 := by norm_num
   simp only [Complex.mul_im, hsum_im, h24_im, mul_zero, add_zero, neg_zero, zero_mul]
