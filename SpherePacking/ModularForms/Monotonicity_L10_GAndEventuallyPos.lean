@@ -639,7 +639,7 @@ theorem D_Θ₄_tendsto_zero :
         have h_simp : ∀ z : ℍ,
             cexp (2 * ↑π * I * ↑n * (1/2 : ℂ) + ↑π * I * ↑n ^ 2 * ↑z) *
             (2 * ↑π * I * ↑n * 0 + ↑π * I * ↑n ^ 2 * 1) =
-            cexp (↑π * I * ↑n + ↑π * I * ↑n ^ 2 * ↑z) * (↑π * I * ↑n ^ 2) := fun z => by ring
+            cexp (↑π * I * ↑n + ↑π * I * ↑n ^ 2 * ↑z) * (↑π * I * ↑n ^ 2) := fun z => by ring_nf
         simp_rw [h_simp]
         -- Now show exp(πin + πin²z) * πin² → 0
         have hnsq_pos : n ^ 2 > 0 := sq_pos_of_ne_zero hn0

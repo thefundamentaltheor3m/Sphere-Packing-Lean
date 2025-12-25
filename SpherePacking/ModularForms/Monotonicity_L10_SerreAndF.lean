@@ -928,20 +928,47 @@ theorem D_diff_qexp (z : ℍ) :
       · exact summable_zero
       · intro n ⟨k, hk_mem⟩
         exfalso; exact hK_nonempty ⟨k, hk_mem⟩
-  -- Step 5: Apply D_qexp_tsum_pnat
-  have hD : D (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * ↑n * w)) z =
-      ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * ↑n * z) :=
-    D_qexp_tsum_pnat a z hsum hsum_deriv
-  -- Step 6: Compute D(E₂E₄ - E₆) = 720 * D(∑ a(n) * q^n) = 720 * ∑ n² * σ₃(n) * qⁿ
-  -- Use hD and the definition of a to get the result
+  -- Step 5: Apply D_qexp_tsum_pnat with b(n) = 720 * a(n) = 720 * n * σ₃(n)
+  -- This avoids needing D_const_mul and MDifferentiable for the tsum
+  let b : ℕ+ → ℂ := fun n => 720 * (↑n * ↑(σ 3 n))
+  have h_eq' : ∀ w : ℍ, E₂ w * E₄ w - E₆ w = ∑' (n : ℕ+), b n * cexp (2 * π * I * ↑n * w) := by
+    intro w
+    rw [h_eq]
+    simp only [b, ← tsum_mul_left]
+    congr 1; funext n; ring
+  -- Summability of b(n) * q^n (same bound as a, times 720)
+  have hsum' : Summable (fun n : ℕ+ => b n * cexp (2 * π * I * ↑n * ↑z)) := by
+    simp only [b]
+    convert hsum.mul_left 720 using 1
+    funext n; ring
+  -- Derivative bounds for b(n) * q^n
+  have hsum_deriv' : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K), ‖b n * (2 * π * I * ↑n) *
+        cexp (2 * π * I * ↑n * k.1)‖ ≤ u n := by
+    intro K hK_sub hK_compact
+    obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK_sub hK_compact
+    use fun n => 720 * u n
+    constructor
+    · exact hu_sum.mul_left 720
+    · intro n k
+      simp only [b]
+      calc ‖720 * (↑↑n * ↑(σ 3 ↑n)) * (2 * ↑π * I * ↑↑n) * cexp (2 * ↑π * I * ↑↑n * k.1)‖
+          = 720 * ‖(↑↑n * ↑(σ 3 ↑n)) * (2 * ↑π * I * ↑↑n) * cexp (2 * ↑π * I * ↑↑n * k.1)‖ := by
+            rw [norm_mul]; simp only [norm_mul, Complex.norm_ofNat]; ring
+        _ ≤ 720 * u n := by
+            apply mul_le_mul_of_nonneg_left (hu_bound n k); norm_num
+  have hD : D (fun w => ∑' n : ℕ+, b n * cexp (2 * π * I * ↑n * w)) z =
+      ∑' n : ℕ+, (n : ℂ) * b n * cexp (2 * π * I * ↑n * z) :=
+    D_qexp_tsum_pnat b z hsum' hsum_deriv'
+  -- Step 6: Compute D(E₂E₄ - E₆) using b(n)
   calc D (fun w => E₂ w * E₄ w - E₆ w) z
-      = D (fun w => 720 * ∑' (n : ℕ+), a n * cexp (2 * π * I * ↑n * w)) z := by
-        congr 1; ext w; exact h_eq w
-    _ = 720 * D (fun w => ∑' (n : ℕ+), a n * cexp (2 * π * I * ↑n * w)) z := by
-        rw [D_const_mul]; sorry -- MDifferentiable for tsum
-    _ = 720 * ∑' (n : ℕ+), (n : ℂ) * a n * cexp (2 * π * I * ↑n * z) := by rw [hD]
+      = D (fun w => ∑' (n : ℕ+), b n * cexp (2 * π * I * ↑n * w)) z := by
+        congr 1; ext w; exact h_eq' w
+    _ = ∑' (n : ℕ+), (n : ℂ) * b n * cexp (2 * π * I * ↑n * z) := hD
+    _ = ∑' (n : ℕ+), (n : ℂ) * (720 * (↑n * ↑(σ 3 n))) * cexp (2 * π * I * ↑n * z) := by
+        simp only [b]
     _ = 720 * ∑' (n : ℕ+), (n : ℂ) ^ 2 * ↑(σ 3 n) * cexp (2 * π * I * ↑n * z) := by
-        congr 1; apply tsum_congr; intro n; simp only [a, sq]; ring
+        rw [← tsum_mul_left]; congr 1; funext n; simp only [sq]; ring
 
 -- Helper: D(E₂E₄ - E₆) / q → 720 (same pattern as f/q → 720)
 -- This follows from D acting as q·d/dq on q-expansions, so D(n·σ₃(n)·qⁿ) = n²·σ₃(n)·qⁿ
