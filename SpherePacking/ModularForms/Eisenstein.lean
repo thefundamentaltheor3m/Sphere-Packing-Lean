@@ -747,15 +747,4 @@ lemma PowerSeries.coeff_add (f g : PowerSeries ℂ) (n : ℕ) :
     (f + g).coeff n = (f.coeff n) + (g.coeff n) := by
   exact rfl
 
-open ArithmeticFunction
-
-section Ramanujan_Formula
-
--- In this section, we state some simplifications that are used in Cor 7.5-7.7 of the blueprint
-
-theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
-    (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)
-    := by
-  sorry
-
-end Ramanujan_Formula
+-- E₂_mul_E₄_sub_E₆ moved to Derivative.lean to access ramanujan_E₄

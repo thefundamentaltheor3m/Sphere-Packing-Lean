@@ -1,0 +1,212 @@
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import Mathlib.Order.Monotone.Defs
+
+import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.DimensionFormulas
+
+open Filter
+open scoped Real Manifold CongruenceSubgroup
+
+
+/--
+Definition of $F$ and $G$ and auxiliary functions for the inequality between them
+on the imaginary axis.
+-/
+noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
+
+noncomputable def G := H₂ ^ 3 * (2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2)
+
+noncomputable def negDE₂ := - (D E₂)
+
+noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
+
+/-- The discriminant Δ_fun = 1728⁻¹(E₄³ - E₆²) equals the standard discriminant Δ.
+
+The proof uses Delta_E4_eqn (Delta = Delta_E4_E6_aux) and Delta_apply (Delta z = Δ z)
+to connect the definition of Δ_fun to the product formula for Δ.
+-/
+lemma Δ_fun_eq_Δ : Δ_fun = Δ := by
+  funext z
+  have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
+    ext w
+    rw [pow_three]
+    rw [@DirectSum.of_mul_of, DirectSum.of_mul_of]
+    simp
+    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₄ (GradedMonoid.GMul.mul E₄ E₄)) rfl]
+    rfl
+  have hd6 : (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12) = E₆.mul E₆ := by
+    ext w
+    rw [pow_two]
+    rw [@DirectSum.of_mul_of]
+    simp
+    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₆ E₆) rfl]
+    rfl
+  have h :=
+    congr_fun (congr_arg (fun f => f.toFun) Delta_E4_E6_eq) z
+  have hE4E6 : Delta_E4_E6_aux z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
+    simp only [ModForm_mk, ModularForm.toFun_eq_coe, one_div, DirectSum.sub_apply] at h
+    simp only [hds, hd6] at h
+    simp only [pow_three, pow_two] at h ⊢
+    convert h using 2
+  calc
+    Δ_fun z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
+      simp [Δ_fun, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply]
+    _ = Delta_E4_E6_aux z := by simp [hE4E6]
+    _ = Delta z := by simp [Delta_E4_eqn]
+    _ = Δ z := by simp [Delta_apply]
+
+noncomputable def L₁₀ := (D F) * G - F * (D G)
+
+noncomputable def SerreDer_22_L₁₀ := serre_D 22 L₁₀
+
+noncomputable def FReal (t : ℝ) : ℝ := (F.resToImagAxis t).re
+
+noncomputable def GReal (t : ℝ) : ℝ := (G.resToImagAxis t).re
+
+noncomputable def FmodGReal (t : ℝ) : ℝ := (FReal t) / (GReal t)
+
+theorem F_eq_FReal {t : ℝ} (ht : 0 < t) : F.resToImagAxis t = FReal t := by sorry
+
+theorem G_eq_GReal {t : ℝ} (ht : 0 < t) : G.resToImagAxis t = GReal t := by sorry
+
+theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
+    FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by sorry
+
+/- Some basic facts -/
+theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
+  have h : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) := by
+    exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
+  rw [F, pow_two]
+  exact MDifferentiable.mul h h
+
+theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
+  sorry
+
+theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by
+  exact serre_D_differentiable F_holo
+
+theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := by
+  exact serre_D_differentiable G_holo
+
+theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
+  sorry
+
+theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ GReal t := by
+  sorry
+
+theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
+    + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun
+    := by
+  rw [F, D_sq, D_sub, D_mul]
+  · ring_nf
+    rw [ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
+    ext z
+    simp
+    ring_nf
+  -- Holomorphicity of the terms
+  · exact E₂_holo'
+  · exact E₄.holo'
+  · exact MDifferentiable.mul E₂_holo' E₄.holo'
+  · exact E₆.holo'
+  · exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
+
+/--
+Modular linear differential equation satisfied by $F$.
+-/
+theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 7200 * Δ_fun * negDE₂ := by
+  ext x
+  rw [negDE₂, Δ_fun, serre_D, serre_D, F_aux]
+  unfold serre_D
+  rw [F_aux]
+  sorry
+
+/--
+Modular linear differential equation satisfied by $G$.
+-/
+theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
+  sorry
+
+/- Positivity of (quasi)modular forms. $F, G, H_2$ are all (sum of) squares. -/
+lemma F_pos : ResToImagAxis.Pos F := by
+  sorry
+
+lemma G_pos : ResToImagAxis.Pos G := by
+  sorry
+
+lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
+  sorry
+
+lemma Δ_fun_pos : ResToImagAxis.Pos Δ_fun := by
+  sorry
+
+lemma H₂_pos : ResToImagAxis.Pos H₂ := by
+  sorry
+
+lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
+  ext z
+  simp only [L₁₀, serre_D, Pi.mul_apply, Pi.sub_apply]
+  ring
+
+lemma SerreDer_22_L₁₀_SerreDer :
+    SerreDer_22_L₁₀ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by
+  calc
+    SerreDer_22_L₁₀ = serre_D 22 L₁₀ := rfl
+    _ = serre_D 22 (serre_D 10 F * G - F * serre_D 10 G) := by rw [L₁₀_SerreDer]
+    _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by
+        apply serre_D_sub _ _ _
+        · exact MDifferentiable.mul (serre_D_differentiable F_holo) G_holo
+        · exact MDifferentiable.mul F_holo (serre_D_differentiable G_holo)
+    _ = serre_D (12 + 10) (serre_D 10 F * G) - serre_D (10 + 12) (F * serre_D 10 G) := by ring_nf
+    _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
+        - ((serre_D 10 F) * (serre_D 10 G) + F * (serre_D 12 (serre_D 10 G))) := by
+        -- This doesn't work?
+        -- apply serre_D_mul 12 10 (serre_D 10 F) G
+        sorry
+    _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
+
+/- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
+lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ := by
+  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, ResToImagAxis.Real]
+  intro t ht
+  ring_nf
+  simp only [Function.resToImagAxis_apply]
+  sorry
+
+lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
+  refine And.intro SerreDer_22_L₁₀_real ?_
+  intro t ht
+  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G]
+  ring_nf
+  sorry
+
+/- $\mathcal{L}_{1, 0}$ is eventually positive on the imaginary axis. -/
+lemma L₁₀_eventuallyPos : ResToImagAxis.EventuallyPos L₁₀ := by
+  sorry
+
+/- $\mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
+lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ := antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventuallyPos
+
+/--
+$t \mapsto F(it) / G(it)$ is monotone decreasing.
+-/
+theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) := by
+  sorry
+
+/--
+$\lim_{t \to 0^+} F(it) / G(it) = 18 / \pi^2$.
+-/
+theorem FmodG_rightLimitAt_zero :
+    Tendsto FmodGReal (nhdsWithin 0 (Set.Ioi 0)) (nhdsWithin (18 * (π ^ (-2 : ℤ))) Set.univ) := by
+  sorry
+
+/--
+Main inequalities between $F$ and $G$ on the imaginary axis.
+-/
+theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
+    FReal t + 18 * (π ^ (-2 : ℤ)) * GReal t > 0 := by
+  sorry
+
+theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
+    FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
+  sorry
