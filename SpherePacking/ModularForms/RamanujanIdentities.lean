@@ -30,14 +30,48 @@ noncomputable section
     D(D₂ γ) = (2πi)⁻¹ · d/dz[2πi · c / denom] = -c² / denom² -/
 lemma D_D₂ (γ : SL(2, ℤ)) (z : ℍ) :
     D (D₂ γ) z = - (γ 1 0 : ℂ)^2 / (denom γ z)^2 := by
-  -- D₂ γ z = (2πi * c) / denom = (2πi * c) * denom⁻¹
-  -- D(D₂ γ) = (2πi)⁻¹ * deriv[(2πi * c) * denom⁻¹]
-  --         = (2πi)⁻¹ * (2πi * c) * deriv[denom⁻¹]
-  --         = c * deriv[denom⁻¹]
-  --         = c * (-c / denom²)  [using deriv_denom_zpow with k = 1]
-  --         = -c² / denom²
-  -- TODO: Complete proof using Filter.EventuallyEq.deriv_eq and deriv_denom_zpow
-  sorry
+  -- D₂ γ z = (2πi * c) / denom, so D(D₂ γ) = (2πi)⁻¹ * deriv[(2πi * c) / denom]
+  -- Using deriv_denom_zpow with k = 1: deriv[denom⁻¹] = -c / denom²
+  -- Result: (2πi)⁻¹ * (2πi * c) * (-c / denom²) = -c² / denom²
+  unfold D
+  -- Abbreviate the constant c = γ 1 0
+  set c : ℂ := (γ 1 0 : ℂ) with hc_def
+  -- denom γ z ≠ 0 on ℍ
+  have hz_denom_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+  -- Step 1: Rewrite deriv on ℍ to deriv on ℂ using Filter.EventuallyEq.deriv_eq
+  have hcomp : deriv ((D₂ γ) ∘ ofComplex) z =
+      deriv (fun w => (2 * π * I * c) / (denom γ w)) z := by
+    apply Filter.EventuallyEq.deriv_eq
+    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, D₂, coe_mk_subtype, ← hc_def]
+  rw [hcomp]
+  -- Step 2: Rewrite a/b as a * b⁻¹ = a * b^(-1)
+  have hdiv_eq : (fun w => (2 * π * I * c) / (denom γ w)) =
+      (fun w => (2 * π * I * c) * (denom γ w)^(-1 : ℤ)) := by
+    ext w
+    simp only [zpow_neg_one, div_eq_mul_inv]
+  rw [hdiv_eq]
+  -- Step 3: Derivative of const * f is const * deriv f
+  have hdiff_denom_inv : DifferentiableAt ℂ (fun w => (denom γ w)^(-1 : ℤ)) z := by
+    apply DifferentiableAt.zpow (differentiableAt_denom γ z) (Or.inl hz_denom_ne)
+  have hderiv_const_mul : deriv (fun w => (2 * π * I * c) * (denom γ w)^(-1 : ℤ)) z =
+      (2 * π * I * c) * deriv (fun w => (denom γ w)^(-1 : ℤ)) z := by
+    exact deriv_const_mul (2 * π * I * c) hdiff_denom_inv
+  rw [hderiv_const_mul]
+  -- Step 4: Apply deriv_denom_zpow with k = 1
+  -- deriv_denom_zpow γ 1 z hz gives:
+  --   deriv (fun w => (denom γ w)^(-1)) z = (-1) * c * (denom γ z)^(-2)
+  have hderiv_zpow := deriv_denom_zpow γ 1 (z : ℂ) hz_denom_ne
+  simp only [Int.reduceNeg, neg_neg, zpow_one] at hderiv_zpow
+  rw [hderiv_zpow]
+  -- Now we have: (2πi)⁻¹ * (2πi * c) * ((-1) * c * denom^(-2))
+  -- Step 5: Simplify to -c² / denom²
+  have h2piI_ne : (2 * π * I : ℂ) ≠ 0 := by
+    simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, ofReal_eq_zero, Real.pi_ne_zero, I_ne_zero,
+      or_self, not_false_eq_true]
+  simp only [Int.reduceNeg, Int.reduceSub, hc_def]
+  field_simp
+  ring
 
 /-! ## Slash invariance of serre_D 1 E₂
 
