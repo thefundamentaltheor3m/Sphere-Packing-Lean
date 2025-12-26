@@ -1385,23 +1385,110 @@ lemma D_E4_qexp (z : ℍ) :
     convert mul_comm _ _ using 1
     rw [hcoeff]
     ring
-  -- Step 2: Use Ramanujan's formula and the identity (E₂·E₄ - E₆) = 3·D(E₄)
-  -- The cleanest approach is to use the already-proven ramanujan_E₄:
-  -- D(E₄) = (1/3) * (E₂ * E₄ - E₆)
-  -- Combined with E₂E₄ - E₆ = 720 * ∑' n, n * σ₃(n) * qⁿ (from E2E4_sub_E6_qexp below)
-  -- gives D(E₄) = 240 * ∑' n, n * σ₃(n) * qⁿ
-  --
-  -- For a direct proof using tsum-deriv interchange:
-  -- The key infrastructure is:
-  -- - hasDerivAt_tsum_fun for interchanging deriv with tsum
-  -- - iter_deriv_comp_bound3 for uniform derivative bounds on compact sets
-  -- - D_exp_eq_n_mul for derivatives of individual exponential terms
-  --
-  -- The proof requires showing summability of σ₃(n)·exp(2πinz) and bounds on derivatives.
-  -- Since σ₃(n) ≤ n⁴, derivatives are bounded by n⁵ · |q|ⁿ which is summable.
-  --
-  -- TODO: Complete the tsum-deriv interchange proof following the strategy above.
-  sorry
+  -- Step 2: Use deriv-tsum interchange
+  unfold D
+  have hz' : 0 < (z : ℂ).im := z.im_pos
+  -- The composition E₄.toFun ∘ ofComplex agrees with the q-expansion on ℍ'
+  have hE4' : ∀ w : ℂ, 0 < w.im →
+      (E₄.toFun ∘ ofComplex) w = 1 + 240 * ∑' (n : ℕ+), (σ 3 n) * cexp (2 * π * I * w * n) := by
+    intro w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
+    exact hE4 ⟨w, hw⟩
+  -- Replace deriv of E₄ with deriv of q-expansion form
+  have hderiv_eq : deriv (E₄.toFun ∘ ofComplex) (z : ℂ) =
+      deriv (fun w => 1 + 240 * ∑' (n : ℕ+), (σ 3 n) * cexp (2 * π * I * w * n)) (z : ℂ) := by
+    apply Filter.EventuallyEq.deriv_eq
+    filter_upwards [isOpen_lt continuous_const Complex.continuous_im |>.mem_nhds hz'] with w hw
+    exact hE4' w hw
+  rw [hderiv_eq]
+  -- Now we need to interchange deriv with tsum
+  -- Using hasDerivAt_tsum_fun from tsumderivWithin.lean
+  have hopen : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
+  -- Define f n w := (σ 3 n) * cexp (2 * π * I * w * n)
+  let f : ℕ+ → ℂ → ℂ := fun n w => (σ 3 n) * cexp (2 * π * I * w * n)
+  -- Summability at each point
+  have hf_summ : ∀ y : ℂ, 0 < y.im → Summable (fun n : ℕ+ => f n y) := by
+    intro y hy
+    -- |f n y| = |σ 3 n| * |exp(2πiny)| ≤ n^4 * r^n where r < 1
+    -- This is summable as polynomial times geometric
+    sorry
+  -- Uniform derivative bound on compact sets
+  have hu : ∀ K ⊆ {w : ℂ | 0 < w.im}, IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K), ‖derivWithin (f n) {w | 0 < w.im} k‖ ≤ u n := by
+    intro K hK hKc
+    -- |deriv (f n)| = |σ 3 n| * |2πn| * |exp(...)| ≤ 2πn * n^4 * r^n
+    -- This is bounded by iter_deriv_comp_bound3 with k=5
+    sorry
+  -- Each term is differentiable
+  have hf_diff : ∀ (n : ℕ+) (r : {w : ℂ | 0 < w.im}), DifferentiableAt ℂ (f n) r := by
+    intro n r
+    apply DifferentiableAt.const_mul
+    apply DifferentiableAt.cexp
+    fun_prop
+  -- Apply hasDerivAt_tsum_fun
+  have hderiv_tsum : HasDerivAt (fun w => ∑' n : ℕ+, f n w)
+      (∑' n : ℕ+, derivWithin (f n) {w | 0 < w.im} z) (z : ℂ) :=
+    hasDerivAt_tsum_fun f hopen (z : ℂ) hz' hf_summ hu hf_diff
+  -- deriv (1 + 240 * tsum) = 240 * deriv(tsum)
+  -- First rewrite to (240 * tsum + 1) form for deriv_add_const
+  have hfun_eq : (fun w => 1 + 240 * ∑' (n : ℕ+), f n w) =
+      (fun w => 240 * ∑' (n : ℕ+), f n w + 1) := by ext w; ring
+  have hdiff_tsum : DifferentiableAt ℂ (fun w => ∑' (n : ℕ+), f n w) z :=
+    hderiv_tsum.differentiableAt
+  have hderiv_add : deriv (fun w => 1 + 240 * ∑' (n : ℕ+), f n w) (z : ℂ) =
+      240 * deriv (fun w => ∑' (n : ℕ+), f n w) (z : ℂ) := by
+    rw [hfun_eq, deriv_add_const, deriv_const_mul _ hdiff_tsum]
+  rw [hderiv_add]
+  -- Extract the deriv from HasDerivAt
+  have hderiv_tsum_eq : deriv (fun w => ∑' n : ℕ+, f n w) (z : ℂ) =
+      ∑' n : ℕ+, derivWithin (f n) {w | 0 < w.im} z := hderiv_tsum.deriv
+  rw [hderiv_tsum_eq]
+  -- Compute derivWithin of each term
+  have hderiv_term : ∀ n : ℕ+, derivWithin (f n) {w | 0 < w.im} z =
+      (σ 3 n) * (2 * π * I * n) * cexp (2 * π * I * z * n) := by
+    intro n
+    rw [derivWithin_of_isOpen hopen hz']
+    -- Derivative of 2πI * w * n is 2πI * n
+    have hlin_deriv : deriv (fun w : ℂ => 2 * π * I * w * n) z = 2 * π * I * n := by
+      have : (fun w : ℂ => 2 * π * I * w * n) = fun w => (2 * π * I * n) * w := by ext; ring
+      rw [this, deriv_const_mul, deriv_id'', mul_one]
+      exact differentiableAt_id'
+    have hderiv_exp : deriv (fun w => cexp (2 * π * I * w * n)) z =
+        (2 * π * I * n) * cexp (2 * π * I * z * n) := by
+      rw [deriv_cexp (by fun_prop : DifferentiableAt ℂ (fun w => 2 * π * I * w * n) z)]
+      rw [hlin_deriv]
+      ring
+    simp only [f]
+    rw [deriv_const_mul_field, hderiv_exp]
+    ring
+  -- First rewrite the tsum using hderiv_term
+  have htsum_eq : ∑' n : ℕ+, derivWithin (f n) {w | 0 < w.im} z =
+      ∑' n : ℕ+, (σ 3 n : ℂ) * (2 * π * I * n) * cexp (2 * π * I * z * n) :=
+    tsum_congr hderiv_term
+  rw [htsum_eq]
+  -- Simplify: (2πi)⁻¹ * 240 * ∑ (σ 3 n) * (2πin) * exp(...) = 240 * ∑ n * (σ 3 n) * exp(...)
+  have h2pi : (2 * π * I : ℂ) ≠ 0 := by
+    simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, ofReal_eq_zero,
+      Real.pi_ne_zero, I_ne_zero, or_self]
+  -- Rewrite each term: (σ 3 n) * (2πIn) * exp(...) = (2πI) * n * (σ 3 n) * exp(...)
+  have hterm_eq : ∀ n : ℕ+, (σ 3 n : ℂ) * (2 * π * I * n) * cexp (2 * π * I * (z : ℂ) * n) =
+      (2 * π * I) * (n * (σ 3 n) * cexp (2 * π * I * n * z)) := by
+    intro n
+    have hexp_eq : cexp (2 * π * I * (z : ℂ) * n) = cexp (2 * π * I * n * z) := by ring_nf
+    rw [hexp_eq]
+    ring
+  have htsum_eq2 : ∑' n : ℕ+, (σ 3 n : ℂ) * (2 * π * I * n) * cexp (2 * π * I * (z : ℂ) * n) =
+      (2 * π * I) * ∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * I * n * z) := by
+    rw [tsum_congr hterm_eq, tsum_mul_left]
+  rw [htsum_eq2]
+  -- Goal: (2πI)⁻¹ * (240 * ((2πI) * ∑ (...))) = 240 * ∑ (...)
+  -- Use calc to handle the algebra step by step
+  let T := ∑' n : ℕ+, (n : ℂ) * (σ 3 n) * cexp (2 * π * I * n * z)
+  show (2 * π * I)⁻¹ * (240 * ((2 * π * I) * T)) = 240 * T
+  calc (2 * π * I)⁻¹ * (240 * ((2 * π * I) * T))
+      = (2 * π * I)⁻¹ * (2 * π * I) * (240 * T) := by ring
+    _ = 1 * (240 * T) := by rw [inv_mul_cancel₀ h2pi]
+    _ = 240 * T := by ring
 
 /--
 The q-expansion identity E₂E₄ - E₆ = 720·Σn·σ₃(n)·qⁿ.
