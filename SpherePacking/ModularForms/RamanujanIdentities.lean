@@ -1411,7 +1411,35 @@ lemma D_E4_qexp (z : ℍ) :
     intro y hy
     -- |f n y| = |σ 3 n| * |exp(2πiny)| ≤ n^4 * r^n where r < 1
     -- This is summable as polynomial times geometric
-    sorry
+    simp only [f]
+    apply Summable.of_norm
+    -- Use sigma_bound: σ 3 n ≤ n^4
+    have hsigma_bound : ∀ n : ℕ+, (σ 3 n : ℝ) ≤ (n : ℕ) ^ 4 := fun n => by
+      exact_mod_cast sigma_bound 3 n
+    -- Construct UpperHalfPlane element
+    let y_uhp : ℍ := ⟨y, hy⟩
+    -- Use a33 with k=4 and e=1 for the bound
+    have ha33 := a33 4 1 y_uhp
+    apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _ (summable_norm_iff.mpr ha33)
+    intro n
+    simp only [Complex.norm_mul, norm_pow]
+    -- |σ 3 n| * |exp(...)| ≤ n^4 * |exp(...)|
+    have hσ_norm : ‖(σ 3 n : ℂ)‖ ≤ (n : ℝ) ^ 4 := by
+      rw [Complex.norm_natCast]
+      exact hsigma_bound n
+    have hy_coe : (y_uhp : ℂ) = y := rfl
+    -- After simp, goal is: (σ 3 n : ℝ) * ‖exp(...)‖ ≤ ‖n‖^4 * ‖exp(...)‖
+    -- (because simp uses Complex.norm_natCast on ‖σ 3 n‖)
+    -- Rewrite exponent argument to match ha33 form
+    have harg : cexp (2 * π * I * y * n) = cexp (2 * π * I * (1 : ℕ+) * (y_uhp : ℂ) * n) := by
+      congr 1
+      simp only [hy_coe, PNat.one_coe, Nat.cast_one, Complex.ofReal_one, mul_one]
+    rw [harg]
+    -- Goal: (σ 3 n : ℝ) * ‖exp(...)‖ ≤ ‖n‖^4 * ‖exp(...)‖
+    apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+    -- Goal: (σ 3 n : ℝ) ≤ ‖n‖^4 = (n : ℝ)^4
+    rw [Complex.norm_natCast]
+    exact_mod_cast hsigma_bound n
   -- Uniform derivative bound on compact sets
   have hu : ∀ K ⊆ {w : ℂ | 0 < w.im}, IsCompact K →
       ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K), ‖derivWithin (f n) {w | 0 < w.im} k‖ ≤ u n := by
