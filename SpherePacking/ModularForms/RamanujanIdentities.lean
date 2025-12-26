@@ -1444,9 +1444,60 @@ lemma D_E4_qexp (z : ℍ) :
   have hu : ∀ K ⊆ {w : ℂ | 0 < w.im}, IsCompact K →
       ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K), ‖derivWithin (f n) {w | 0 < w.im} k‖ ≤ u n := by
     intro K hK hKc
-    -- |deriv (f n)| = |σ 3 n| * |2πn| * |exp(...)| ≤ 2πn * n^4 * r^n
-    -- This is bounded by iter_deriv_comp_bound3 with k=5
-    sorry
+    -- |deriv (f n)| = |σ 3 n| * |2πn| * |exp(...)| ≤ n^4 * 2πn * |exp(...)|
+    -- Since n^4 * 2πn = n^5 * 2π ≤ (2πn)^5 (for n ≥ 1, 2π > 1)
+    -- Use iter_deriv_comp_bound3 with k=5
+    obtain ⟨u', hu'_sum, hu'_bound⟩ := iter_deriv_comp_bound3 K hK hKc 5
+    use fun n => u' n
+    constructor
+    · exact hu'_sum.subtype _
+    · intro n k
+      rw [derivWithin_of_isOpen hopen (hK k.2)]
+      simp only [f]
+      have hderiv_fn : deriv (fun w => (σ 3 n : ℂ) * cexp (2 * π * I * w * n)) k =
+          (σ 3 n : ℂ) * (2 * π * I * n) * cexp (2 * π * I * k * n) := by
+        rw [deriv_const_mul_field]
+        have h_inner_fun : (fun w : ℂ => 2 * π * I * w * n) = (fun w => (2 * π * I * n) * w) := by
+          ext w; ring
+        have h_deriv_inner : deriv (fun w : ℂ => 2 * π * I * w * n) k = 2 * π * I * n := by
+          rw [h_inner_fun, deriv_const_mul_field, deriv_id'', mul_one]
+        rw [deriv_cexp (by fun_prop : DifferentiableAt ℂ (fun w => 2 * π * I * w * n) k)]
+        rw [h_deriv_inner]
+        ring
+      rw [hderiv_fn]
+      have hσ : ‖(σ 3 n : ℂ)‖ ≤ (n : ℝ) ^ 4 := by
+        rw [Complex.norm_natCast]
+        exact_mod_cast sigma_bound 3 n
+      have h2pin : ‖(2 * π * I * n : ℂ)‖ = 2 * |π| * n := by
+        simp only [Complex.norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs,
+          Complex.norm_I, mul_one, Complex.norm_natCast]
+      have hargswap : cexp (2 * π * I * k * n) = cexp (2 * π * I * n * k) := by
+        congr 1; ring
+      -- n^4 * 2πn ≤ (2πn)^5 since 2π ≥ 1 and n ≥ 1
+      have hbound : (n : ℝ) ^ 4 * (2 * |π| * n) ≤ (2 * |π| * n) ^ 5 := by
+        have hn : (1 : ℝ) ≤ n := by exact_mod_cast n.one_le
+        have hpi : 1 ≤ 2 * |π| := by
+          have : (0 : ℝ) < π := Real.pi_pos
+          simp only [abs_of_pos this]
+          linarith [Real.pi_gt_three]
+        calc (n : ℝ) ^ 4 * (2 * |π| * n)
+            = (2 * |π|) * n ^ 5 := by ring
+          _ ≤ (2 * |π|) ^ 5 * n ^ 5 := by
+              apply mul_le_mul_of_nonneg_right _ (by positivity)
+              calc (2 * |π|) = (2 * |π|) ^ 1 := by ring
+                _ ≤ (2 * |π|) ^ 5 := pow_le_pow_right₀ hpi (by omega : 1 ≤ 5)
+          _ = (2 * |π| * n) ^ 5 := by ring
+      calc ‖(σ 3 n : ℂ) * (2 * π * I * n) * cexp (2 * π * I * k * n)‖
+          = ‖(σ 3 n : ℂ)‖ * ‖(2 * π * I * n : ℂ)‖ * ‖cexp (2 * π * I * k * n)‖ := by
+            rw [norm_mul, norm_mul]
+        _ ≤ (n : ℝ) ^ 4 * (2 * |π| * n) * ‖cexp (2 * π * I * k * n)‖ := by
+            rw [h2pin]
+            apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+            apply mul_le_mul_of_nonneg_right hσ; positivity
+        _ ≤ (2 * |π| * n) ^ 5 * ‖cexp (2 * π * I * n * k)‖ := by
+            rw [hargswap]
+            apply mul_le_mul_of_nonneg_right hbound (norm_nonneg _)
+        _ ≤ u' n := hu'_bound n k
   -- Each term is differentiable
   have hf_diff : ∀ (n : ℕ+) (r : {w : ℂ | 0 < w.im}), DifferentiableAt ℂ (f n) r := by
     intro n r
