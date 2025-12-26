@@ -1,0 +1,1666 @@
+import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.Derivative_Cauchy
+import SpherePacking.ModularForms.DimensionFormulas
+import Mathlib.Analysis.Real.Pi.Bounds
+
+/-!
+# Ramanujan's Identities for Eisenstein Series
+
+This file contains the Ramanujan identities for Eisenstein series (Blueprint Theorem 6.50).
+
+## Main results
+
+* `ramanujan_E₂'` : `serre_D 1 E₂ = -E₄/12` (requires explicit computation since E₂ is not modular)
+* `ramanujan_E₄'` : `serre_D 4 E₄ = -E₆/3` (uses dimension formula for weight-6 forms)
+* `ramanujan_E₆'` : `serre_D 6 E₆ = -E₄²/2` (uses dimension formula for weight-8 forms)
+
+## Derived identities
+
+* `ramanujan_E₂` : `D E₂ = (E₂² - E₄)/12`
+* `ramanujan_E₄` : `D E₄ = (E₂·E₄ - E₆)/3`
+* `ramanujan_E₆` : `D E₆ = (E₂·E₆ - E₄²)/2`
+-/
+
+open UpperHalfPlane hiding I
+open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
+open ModularForm EisensteinSeries TopologicalSpace Set MeasureTheory
+open Metric Filter Function Complex MatrixGroups SlashInvariantFormClass ModularFormClass
+
+open scoped ModularForm MatrixGroups Manifold Interval Real NNReal ENNReal Topology BigOperators
+
+noncomputable section
+
+/-! ## Helper lemmas for derivative of anomaly function D₂ -/
+
+/-- The D-derivative of the anomaly function D₂.
+    D₂ γ z = 2πi · (γ₁₀ / denom γ z), so
+    D(D₂ γ) = (2πi)⁻¹ · d/dz[2πi · c / denom] = -c² / denom² -/
+lemma D_D₂ (γ : SL(2, ℤ)) (z : ℍ) :
+    D (D₂ γ) z = - (γ 1 0 : ℂ)^2 / (denom γ z)^2 := by
+  -- D₂ γ z = (2πi * c) / denom, so D(D₂ γ) = (2πi)⁻¹ * deriv[(2πi * c) / denom]
+  -- Using deriv_denom_zpow with k = 1: deriv[denom⁻¹] = -c / denom²
+  -- Result: (2πi)⁻¹ * (2πi * c) * (-c / denom²) = -c² / denom²
+  unfold D
+  -- Abbreviate the constant c = γ 1 0
+  set c : ℂ := (γ 1 0 : ℂ) with hc_def
+  -- denom γ z ≠ 0 on ℍ
+  have hz_denom_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+  -- Step 1: Rewrite deriv on ℍ to deriv on ℂ using Filter.EventuallyEq.deriv_eq
+  have hcomp : deriv ((D₂ γ) ∘ ofComplex) z =
+      deriv (fun w => (2 * π * I * c) / (denom γ w)) z := by
+    apply Filter.EventuallyEq.deriv_eq
+    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, D₂, coe_mk_subtype, ← hc_def]
+  rw [hcomp]
+  -- Step 2: Rewrite a/b as a * b⁻¹ = a * b^(-1)
+  have hdiv_eq : (fun w => (2 * π * I * c) / (denom γ w)) =
+      (fun w => (2 * π * I * c) * (denom γ w)^(-1 : ℤ)) := by
+    ext w
+    simp only [zpow_neg_one, div_eq_mul_inv]
+  rw [hdiv_eq]
+  -- Step 3: Derivative of const * f is const * deriv f
+  have hdiff_denom_inv : DifferentiableAt ℂ (fun w => (denom γ w)^(-1 : ℤ)) z := by
+    apply DifferentiableAt.zpow (differentiableAt_denom γ z) (Or.inl hz_denom_ne)
+  have hderiv_const_mul : deriv (fun w => (2 * π * I * c) * (denom γ w)^(-1 : ℤ)) z =
+      (2 * π * I * c) * deriv (fun w => (denom γ w)^(-1 : ℤ)) z := by
+    exact deriv_const_mul (2 * π * I * c) hdiff_denom_inv
+  rw [hderiv_const_mul]
+  -- Step 4: Apply deriv_denom_zpow with k = 1
+  -- deriv_denom_zpow γ 1 z hz gives:
+  --   deriv (fun w => (denom γ w)^(-1)) z = (-1) * c * (denom γ z)^(-2)
+  have hderiv_zpow := deriv_denom_zpow γ 1 (z : ℂ) hz_denom_ne
+  simp only [Int.reduceNeg, neg_neg, zpow_one] at hderiv_zpow
+  rw [hderiv_zpow]
+  -- Now we have: (2πi)⁻¹ * (2πi * c) * ((-1) * c * denom^(-2))
+  -- Step 5: Simplify to -c² / denom²
+  have h2piI_ne : (2 * π * I : ℂ) ≠ 0 := by
+    simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, ofReal_eq_zero, Real.pi_ne_zero, I_ne_zero,
+      or_self, not_false_eq_true]
+  simp only [Int.reduceNeg, Int.reduceSub, hc_def]
+  field_simp
+  ring
+
+/-! ## MDifferentiable infrastructure for D₂ -/
+
+/-- D₂ γ is MDifferentiable: it's a constant divided by a linear polynomial. -/
+lemma MDifferentiable_D₂ (γ : SL(2, ℤ)) : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D₂ γ) := by
+  intro z
+  -- D₂ γ z = (2πi c) / denom γ z  where c = γ 1 0
+  -- D₂ γ = G ∘ (↑) where G(w) = (2πi c) / denom γ w
+  set G : ℂ → ℂ := fun w => (2 * π * I * (γ 1 0 : ℂ)) / denom γ w with hG_def
+  -- Show D₂ γ = G ∘ (↑)
+  have heq : D₂ γ = G ∘ (↑) := by ext w; rfl
+  rw [heq]
+  -- Use DifferentiableAt_MDifferentiableAt
+  apply DifferentiableAt_MDifferentiableAt
+  apply DifferentiableAt.div (differentiableAt_const _) (differentiableAt_denom γ z)
+  exact UpperHalfPlane.denom_ne_zero γ z
+
+/-! ## Slash invariance of serre_D 1 E₂
+
+This is the hard part: E₂ is NOT modular, so we cannot use `serre_D_slash_invariant`.
+We must prove directly that the non-modular terms cancel. -/
+
+/-- The Serre derivative of E₂ is weight-4 slash-invariant.
+This requires explicit computation since E₂ is not modular.
+
+**Proof strategy:**
+Write serre_D 1 E₂ = serre_D 2 E₂ + (1/12) E₂². Then:
+- (serre_D 2 E₂) ∣[4] γ = serre_D 2 (E₂ ∣[2] γ) by serre_D_slash_equivariant
+- E₂ ∣[2] γ = E₂ - α D₂ γ where α = 1/(2ζ(2)) = 3/π²
+- (E₂²) ∣[4] γ = (E₂ ∣[2] γ)²
+
+After expansion, the anomaly terms involving D₂ γ and D(D₂ γ) cancel using:
+- D(D₂ γ) = -c²/denom² (from D_D₂)
+- The identity α = α² π²/3 (from ζ(2) = π²/6)
+-/
+lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
+    (serre_D 1 E₂) ∣[(4 : ℤ)] γ = serre_D 1 E₂ := by
+  -- Step 1: Use serre_D 1 E₂ = serre_D 2 E₂ + (1/12) E₂²
+  -- Key identity: serre_D k F = D F - (k/12) E₂ F
+  -- serre_D 1 E₂ = D E₂ - (1/12) E₂ * E₂
+  -- serre_D 2 E₂ = D E₂ - (2/12) E₂ * E₂
+  -- So serre_D 1 E₂ = serre_D 2 E₂ + (1/12) E₂ * E₂
+  have hserre12 : serre_D 1 E₂ = serre_D 2 E₂ + (1 / 12 : ℂ) • (E₂ * E₂) := by
+    ext z; simp only [serre_D, Pi.add_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul]; ring
+  -- Step 2: Apply serre_D_slash_equivariant with k=2
+  have hequiv := serre_D_slash_equivariant 2 E₂ E₂_holo' γ
+  -- Step 3: E₂ ∣[2] γ = E₂ - α D₂ γ
+  have hE₂slash := E₂_slash_transform γ
+  -- Step 4: (E₂ * E₂) ∣[4] γ = (E₂ ∣[2] γ) * (E₂ ∣[2] γ) by mul_slash_SL2
+  have hprod := ModularForm.mul_slash_SL2 (2 : ℤ) (2 : ℤ) γ E₂ E₂
+  -- Work pointwise
+  ext z
+  -- Expand LHS: (serre_D 1 E₂ ∣[4] γ) z
+  rw [hserre12]
+  -- Use that slash distributes over addition and scalar multiplication
+  simp only [SlashAction.add_slash, Pi.add_apply]
+  have hsmul := ModularForm.SL_smul_slash (4 : ℤ) γ (E₂ * E₂) (1 / 12 : ℂ)
+  rw [hsmul]
+  simp only [Pi.smul_apply, smul_eq_mul]
+  -- Use equivariance: (serre_D 2 E₂ ∣[4] γ) z = serre_D 2 (E₂ ∣[2] γ) z
+  have hequiv_z : (serre_D 2 E₂ ∣[(4 : ℤ)] γ) z = serre_D 2 (E₂ ∣[(2 : ℤ)] γ) z := by
+    have h := congrFun hequiv z
+    simp only [Int.reduceAdd] at h
+    exact h
+  rw [hequiv_z]
+  -- Use product formula: ((E₂ * E₂) ∣[4] γ) z = (E₂ ∣[2] γ) z * (E₂ ∣[2] γ) z
+  have hprod_z : ((E₂ * E₂) ∣[(4 : ℤ)] γ) z = (E₂ ∣[(2 : ℤ)] γ) z * (E₂ ∣[(2 : ℤ)] γ) z := by
+    have h := congrFun hprod z
+    simp only [Pi.mul_apply, Int.reduceAdd] at h
+    exact h
+  rw [hprod_z]
+  -- Now substitute E₂ ∣[2] γ = E₂ - α D₂ γ
+  set α := (1 : ℂ) / (2 * riemannZeta 2) with hα_def
+  have hE₂slash_z : (E₂ ∣[(2 : ℤ)] γ) z = E₂ z - α * D₂ γ z := by
+    have h := congrFun hE₂slash z
+    simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul] at h
+    exact h
+  -- Now expand serre_D 2 (E₂ ∣[2] γ) using the definition
+  -- First rewrite the function E₂ ∣[2] γ = E₂ - α • D₂ γ (as functions, not just values)
+  have hE₂slash_fun : (E₂ ∣[(2 : ℤ)] γ) = E₂ - α • D₂ γ := by
+    ext w
+    have h := congrFun hE₂slash w
+    simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul] at h
+    exact h
+  rw [hE₂slash_fun]
+  -- Now at z, we have (E₂ - α • D₂ γ) z = E₂ z - α * D₂ γ z
+  simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
+  -- D (E₂ - α • D₂ γ) = D E₂ - α • D (D₂ γ) by linearity
+  have hD_lin : D (E₂ - α • D₂ γ) z = D E₂ z - α * D (D₂ γ) z := by
+    have hαD₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (α • D₂ γ) := (MDifferentiable_D₂ γ).const_smul α
+    have hsub := D_sub E₂ (α • D₂ γ) E₂_holo' hαD₂
+    have hsmul := D_smul α (D₂ γ) (MDifferentiable_D₂ γ)
+    calc D (E₂ - α • D₂ γ) z
+      _ = (D E₂ - D (α • D₂ γ)) z := by rw [hsub]
+      _ = D E₂ z - D (α • D₂ γ) z := by simp only [Pi.sub_apply]
+      _ = D E₂ z - (α • D (D₂ γ)) z := by rw [hsmul]
+      _ = D E₂ z - α * D (D₂ γ) z := by simp only [Pi.smul_apply, smul_eq_mul]
+  -- Use D_D₂: D(D₂ γ) z = -c²/denom²
+  have hDd : D (D₂ γ) z = -(γ 1 0 : ℂ)^2 / (denom γ z)^2 := D_D₂ γ z
+  -- Key: (D₂ γ z)² = -4π²c²/denom²
+  have hd_sq : D₂ γ z * D₂ γ z = -4 * π^2 * (γ 1 0 : ℂ)^2 / (denom γ z)^2 := by
+    have hden_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+    have hI_sq : (I : ℂ)^2 = -1 := Complex.I_sq
+    simp only [D₂]
+    field_simp [hden_ne]
+    ring_nf
+    simp only [hI_sq]
+    ring
+  -- Now substitute and expand everything
+  simp only [serre_D, Pi.sub_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul]
+  rw [hD_lin, hDd]
+  -- α = 3/π²
+  have hα_val : α = 3 / π^2 := by
+    simp only [hα_def]
+    rw [riemannZeta_two]
+    have hpi_ne : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+    field_simp [hpi_ne]
+    ring
+  -- Needed for field_simp
+  have hden_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+  have hpi_ne : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  -- The key algebraic observation:
+  -- The terms with D₂ γ z cancel because α - α² π²/3 = 0 when α = 3/π²
+  -- After substituting hDd and expanding:
+  --   ... + α * (-(γ 1 0)² / denom²) + ... + α² * (D₂ γ z)² / 12
+  -- Since D₂ γ z = 2πic/denom, (D₂ γ z)² = -4π²c²/denom²
+  -- So the c²/denom² coefficient is: α - α²·4π²/12 = α - α²π²/3
+  -- With α = 3/π², this is 3/π² - (9/π⁴)(π²/3) = 3/π² - 3/π² = 0
+  have hD₂_eq : D₂ γ z = (2 * π * I * (γ 1 0 : ℂ)) / denom γ z := rfl
+  rw [hD₂_eq, hα_val]
+  field_simp [hden_ne, hpi_ne]
+  -- Now we need I² = -1
+  have hI_sq : (I : ℂ)^2 = -1 := Complex.I_sq
+  ring_nf
+  simp only [hI_sq]
+  ring
+
+/-! ## Cauchy estimates and limits at infinity -/
+
+-- D_isBoundedAtImInfty_of_bounded is now in Derivative_Cauchy.lean
+
+/-- Subtype of positive reals for limit statements -/
+abbrev PosReal := {y : ℝ // 0 < y}
+
+/-- The filter comap of Subtype.val on PosReal at atTop is NeBot. -/
+lemma PosReal_comap_atTop_neBot :
+    (Filter.comap Subtype.val (Filter.atTop : Filter ℝ)).NeBot (α := PosReal) := by
+  rw [Filter.comap_neBot_iff]
+  intro s hs
+  rw [Filter.mem_atTop_sets] at hs
+  obtain ⟨a, ha⟩ := hs
+  exact ⟨⟨max a 1, lt_max_of_lt_right one_pos⟩, ha (max a 1) (le_max_left a 1)⟩
+
+/-- Helper to construct an upper half plane point from a positive real. -/
+def iMulPosReal (y : PosReal) : ℍ := ⟨I * y.val, by simp [y.2]⟩
+
+/-- The imaginary part of iMulPosReal y equals y. -/
+@[simp]
+lemma im_iMulPosReal (y : PosReal) : (iMulPosReal y).im = y.val := by
+  show (I * ↑↑y).im = y.val
+  simp [Complex.mul_im]
+
+/-- If f is holomorphic and bounded, with f(iy) → L as y → ∞, then D f(iy) → 0.
+
+**Proof via Cauchy estimates:**
+For z = iy with y large, consider the ball B(z, y/2) in ℂ.
+- Ball is contained in upper half plane: all points have Im > y/2 > 0
+- f ∘ ofComplex is holomorphic on the ball (from MDifferentiable)
+- f is bounded by M for Im ≥ A (from IsBoundedAtImInfty)
+- By Cauchy: |deriv(f ∘ ofComplex)(z)| ≤ M / (y/2) = 2M/y
+- D f = (2πi)⁻¹ * deriv(...), so |D f(z)| ≤ M/(πy) → 0
+
+**Technical requirements:**
+1. Construct `DiffContOnCl ℂ (f ∘ ofComplex) (ball (I * y) (y/2))`
+2. Apply `norm_deriv_le_of_forall_mem_sphere_norm_le`
+3. Convert the bound to a limit statement -/
+lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ} {L : ℂ}
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
+    (hbdd : IsBoundedAtImInfty f)
+    (hlim : Filter.Tendsto (fun y : PosReal => f (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds L)) :
+    Filter.Tendsto (fun y : PosReal => D f (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds 0) := by
+  -- Get M, A from IsBoundedAtImInfty: ‖f z‖ ≤ M for Im z ≥ A
+  rw [isBoundedAtImInfty_iff] at hbdd
+  obtain ⟨M, A, hMA⟩ := hbdd
+  -- Use Metric.tendsto_atTop style: for any ε > 0, find Y such that for y > Y, ‖D f(iy)‖ < ε
+  rw [Metric.tendsto_nhds]
+  intro ε hε
+  -- Choose Y large enough: y > Y implies y/2 > A and M/(π*y) < ε
+  -- Take Y = max(2*A, M/(π*ε) + 1)
+  have hpi : 0 < π := Real.pi_pos
+  rw [Filter.Eventually, Filter.mem_comap]
+  use Set.Ici (max (2 * max A 0 + 1) (|M| / (π * ε) + 1))
+  constructor
+  · exact Filter.mem_atTop _
+  · intro y hy
+    simp only [Set.mem_preimage, Set.mem_Ici] at hy
+    -- y.val ≥ max(2 * max A 0 + 1, |M| / (π * ε) + 1)
+    have hy_pos : 0 < y.val := y.2
+    have hy_ge_A : y.val / 2 > max A 0 := by
+      have h1 : y.val ≥ 2 * max A 0 + 1 := le_trans (le_max_left _ _) hy
+      linarith
+    have hy_ge_bound : y.val > |M| / (π * ε) := by
+      have h1 : y.val ≥ |M| / (π * ε) + 1 := le_trans (le_max_right _ _) hy
+      linarith
+    -- For z = iy with y large, use Cauchy estimate on ball(iy, y/2)
+    -- Ball is contained in upper half plane since all points have Im > y/2 > 0
+    -- f ∘ ofComplex is differentiable on ball (from MDifferentiable)
+    -- f is bounded by M on the ball (from IsBoundedAtImInfty, since Im > y/2 > A)
+    -- By Cauchy: ‖deriv(f ∘ ofComplex)(iy)‖ ≤ M / (y/2) = 2M/y
+    -- ‖D f(iy)‖ = |(2πi)⁻¹| * ‖deriv(...)‖ ≤ (2π)⁻¹ * 2M/y = M/(πy) < ε
+    --
+    -- The point iMulPosReal y has imaginary part y.val
+    let z : ℍ := iMulPosReal y
+    have hz_im : z.im = y.val := im_iMulPosReal y
+    -- Build DiffContOnCl for ball centered at z with radius z.im/2
+    have hclosed := closedBall_center_subset_upperHalfPlane z
+    have hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) (z.im / 2)) :=
+      diffContOnCl_comp_ofComplex_of_mdifferentiable hf hclosed
+    have hz_im_pos : 0 < z.im := z.im_pos
+    have hR_pos : 0 < z.im / 2 := by linarith
+    -- f is bounded by M on the sphere (when Im > A)
+    have hmax_nonneg : 0 ≤ max A 0 := le_max_right _ _
+    have hA_le_max : A ≤ max A 0 := le_max_left _ _
+    have hf_bdd_sphere : ∀ w ∈ Metric.sphere (z : ℂ) (z.im / 2), ‖(f ∘ ofComplex) w‖ ≤ M := by
+      intro w hw
+      have hw_mem_closed : w ∈ Metric.closedBall (z : ℂ) (z.im / 2) :=
+        Metric.sphere_subset_closedBall hw
+      have hw_im_pos : 0 < w.im := hclosed hw_mem_closed
+      have hw_im_ge_A : A ≤ w.im := by
+        have hdist : dist w z = z.im / 2 := Metric.mem_sphere.mp hw
+        have habs : |w.im - z.im| ≤ z.im / 2 := by
+          calc |w.im - z.im|
+            _ = |(w - z).im| := by simp [Complex.sub_im]
+            _ ≤ ‖w - z‖ := abs_im_le_norm _
+            _ = dist w z := (dist_eq_norm _ _).symm
+            _ = z.im / 2 := hdist
+        have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
+        have hA_lt : A < w.im := calc A ≤ max A 0 := hA_le_max
+          _ < z.im / 2 := by rw [hz_im]; exact hy_ge_A
+          _ ≤ w.im := hlower
+        linarith
+      simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw_im_pos]
+      exact hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
+    -- Apply Cauchy estimate
+    have hderiv_bound : ‖deriv (f ∘ ofComplex) z‖ ≤ M / (z.im / 2) :=
+      Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hR_pos hDiff hf_bdd_sphere
+    -- D f = (2πi)⁻¹ * deriv, so ‖D f z‖ ≤ (2π)⁻¹ * 2M/z.im = M/(π*z.im)
+    have hD_eq : D f z = (2 * π * I)⁻¹ * deriv (f ∘ ofComplex) z := rfl
+    have h2piI_norm : ‖(2 * π * I : ℂ)⁻¹‖ = (2 * π)⁻¹ := by
+      rw [norm_inv, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_I, mul_one]
+      simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
+    have hM_nonneg : 0 ≤ M := by
+      have hA_le_z : A ≤ z.im := by rw [hz_im]; linarith [hA_le_max, hmax_nonneg, hy_ge_A]
+      exact le_trans (norm_nonneg _) (hMA z hA_le_z)
+    have hDf_bound : ‖D f z‖ ≤ M / (π * z.im) := by
+      calc ‖D f z‖
+        _ = ‖(2 * π * I)⁻¹ * deriv (f ∘ ofComplex) z‖ := by rw [hD_eq]
+        _ = ‖(2 * π * I)⁻¹‖ * ‖deriv (f ∘ ofComplex) z‖ := norm_mul _ _
+        _ = (2 * π)⁻¹ * ‖deriv (f ∘ ofComplex) z‖ := by rw [h2piI_norm]
+        _ ≤ (2 * π)⁻¹ * (M / (z.im / 2)) := by
+            apply mul_le_mul_of_nonneg_left hderiv_bound
+            exact inv_nonneg.mpr (by positivity)
+        _ = (2 * π)⁻¹ * (2 * M / z.im) := by ring_nf
+        _ = M / (π * z.im) := by ring
+    -- Now show M / (π * z.im) < ε
+    -- We have z.im = y.val and hy_ge_bound : y.val > |M| / (π * ε)
+    simp only [dist_zero_right]
+    -- Handle M = 0 case separately
+    by_cases hM_zero : M = 0
+    · -- If M = 0, then ‖D f z‖ ≤ 0 / (π * z.im) = 0 < ε
+      calc ‖D f z‖
+        _ ≤ M / (π * z.im) := hDf_bound
+        _ = 0 := by simp [hM_zero]
+        _ < ε := hε
+    · -- If M ≠ 0, use hy_ge_bound
+      have hM_pos : 0 < M := lt_of_le_of_ne hM_nonneg (Ne.symm hM_zero)
+      have habs_M_pos : 0 < |M| := abs_pos.mpr hM_zero
+      calc ‖D f z‖
+        _ ≤ M / (π * z.im) := hDf_bound
+        _ = |M| / (π * z.im) := by rw [abs_of_pos hM_pos]
+        _ < |M| / (π * (|M| / (π * ε))) := by
+            apply div_lt_div_of_pos_left habs_M_pos
+            · positivity
+            · apply mul_lt_mul_of_pos_left _ Real.pi_pos
+              rw [hz_im]; exact hy_ge_bound
+        _ = ε := by field_simp
+
+/-! ## Limits of Eisenstein series at infinity -/
+
+/-- iMulPosReal sends the comap filter to atImInfty. -/
+lemma tendsto_iMulPosReal_atImInfty :
+    Filter.Tendsto iMulPosReal (Filter.comap Subtype.val Filter.atTop) atImInfty := by
+  rw [atImInfty]
+  simp only [Filter.tendsto_comap_iff, Function.comp_def]
+  -- Need: Tendsto (im ∘ iMulPosReal) (comap val atTop) atTop
+  -- im ∘ iMulPosReal = val, so this is Tendsto val (comap val atTop) atTop
+  have h : ∀ y : PosReal, (iMulPosReal y).im = y.val := im_iMulPosReal
+  simp_rw [h]
+  exact Filter.tendsto_comap
+
+/-- exp(-c * y) → 0 as y → +∞ (for c > 0). -/
+lemma tendsto_exp_neg_mul_atTop {c : ℝ} (hc : 0 < c) :
+    Filter.Tendsto (fun y : ℝ => Real.exp (-c * y)) Filter.atTop (nhds 0) := by
+  have : Filter.Tendsto (fun y => -c * y) Filter.atTop Filter.atBot := by
+    simpa using Filter.tendsto_id.const_mul_atTop_of_neg (neg_neg_of_pos hc)
+  exact Real.tendsto_exp_atBot.comp this
+
+/-- If f = O(exp(-c * Im z)) as z → i∞ for c > 0, then f → 0 at i∞. -/
+lemma tendsto_zero_of_exp_decay {f : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
+    (hO : f =O[atImInfty] fun τ => Real.exp (-c * τ.im)) :
+    Filter.Tendsto f atImInfty (nhds 0) := by
+  apply Asymptotics.IsBigO.trans_tendsto hO
+  rw [atImInfty]
+  exact (tendsto_exp_neg_mul_atTop hc).comp Filter.tendsto_comap
+
+/-- A modular form tends to its value at infinity as z → i∞. -/
+lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :
+    Filter.Tendsto f.toFun atImInfty (nhds ((qExpansion 1 f).coeff 0)) := by
+  -- Use exp_decay_sub_atImInfty': (f - valueAtInfty f) = O(exp(-c * Im z))
+  -- And valueAtInfty f = (qExpansion 1 f).coeff 0
+  have hdecay := ModularFormClass.exp_decay_sub_atImInfty' f
+  obtain ⟨c, hc, hO⟩ := hdecay
+  -- qExpansion_coeff_zero: (qExpansion 1 f).coeff 0 = valueAtInfty f
+  have hval := qExpansion_coeff_zero f (by norm_num : (0 : ℝ) < 1) one_mem_strictPeriods_SL2Z
+  rw [hval]
+  -- f - valueAtInfty f → 0, so f → valueAtInfty f
+  have htend : Filter.Tendsto (fun z => f z - valueAtInfty f.toFun) atImInfty (nhds 0) :=
+    tendsto_zero_of_exp_decay hc hO
+  simpa using htend.add_const (valueAtInfty f.toFun)
+
+/-- E₂ - 1 = O(exp(-2π·Im z)) at infinity.
+This follows from the q-expansion: E₂ z - 1 = -24 * ∑' n, n * qⁿ / (1 - qⁿ).
+The sum is bounded by |q|/(1-|q|)³ ≤ 8|q| when |q| ≤ 1/2.
+
+**Proof sketch:**
+1. From E₂_eq: E₂ z = 1 - 24 * ∑' n, n * qⁿ / (1 - qⁿ), so E₂ z - 1 = -24 * tsum
+2. ‖tsum‖ ≤ |q| / (1 - |q|)³ (from E₂_isBoundedAtImInfty proof)
+3. For Im z ≥ 1, |q| = exp(-2π·Im z) ≤ exp(-2π) < 1/2
+4. When |q| < 1/2: (1 - |q|)³ > 1/8, so |q|/(1-|q|)³ < 8|q|
+5. ‖E₂ z - 1‖ = 24 * ‖tsum‖ ≤ 24 * 8 * |q| = 192 * exp(-2π·Im z) -/
+lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
+    fun z => Real.exp (-(2 * π) * z.im) := by
+  -- Strategy: E₂ z - 1 = -24 * tsum, and ‖tsum‖ ≤ 8|q| when im z ≥ 1
+  -- so ‖E₂ z - 1‖ ≤ 192 * exp(-2π·im z)
+  rw [Asymptotics.isBigO_iff]
+  refine ⟨192, ?_⟩
+  rw [Filter.eventually_atImInfty]
+  refine ⟨1, fun z hz => ?_⟩
+  -- E₂ z - 1 = -24 * tsum
+  have hE₂_eq := E₂_eq z
+  have hsub : E₂ z - 1 = -24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+      (1 - cexp (2 * π * Complex.I * ↑n * ↑z)) := by
+    rw [hE₂_eq]; ring
+  rw [hsub]
+  -- Bound the norm: ‖-24 * tsum‖ = ‖-24‖ * ‖tsum‖ = 24 * ‖tsum‖
+  have h24 : ‖(-24 : ℂ)‖ = 24 := by simp [norm_neg]
+  rw [norm_mul, h24, Real.norm_of_nonneg (Real.exp_pos _).le]
+  -- Need: 24 * ‖tsum‖ ≤ 192 * exp(-2π · im z)
+  -- i.e., ‖tsum‖ ≤ 8 * exp(-2π · im z)
+  -- Set up q = exp(2πiz)
+  set q : ℂ := cexp (2 * π * Complex.I * z) with hq_def
+  -- Basic bounds
+  have hq_norm : ‖q‖ < 1 := norm_exp_two_pi_I_lt_one z
+  have hq_pos : 0 < ‖q‖ := norm_pos_iff.mpr (Complex.exp_ne_zero _)
+  have hone_sub_q_pos : 0 < 1 - ‖q‖ := by linarith
+  -- When im z ≥ 1, |q| ≤ exp(-2π)
+  have hq_bound : ‖q‖ ≤ Real.exp (-2 * π) := by
+    have h1 : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
+      rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
+      simp [Complex.I_re, Complex.I_im, mul_comm]
+    rw [hq_def, Complex.norm_exp, h1, Real.exp_le_exp]
+    nlinarith [Real.pi_pos, z.im_pos]
+  -- exp(-2π) < 1/2: since exp(1) > 2 (from add_one_lt_exp), we have exp(-1) < 1/2
+  -- And since 2π > 1, exp(-2π) < exp(-1) < 1/2
+  have hexp_lt_half : Real.exp (-2 * π) < 1 / 2 := by
+    -- exp(1) > 2 from add_one_lt_exp: 1 + 1 < exp 1
+    have hexp1_gt_2 : 2 < Real.exp 1 := by
+      have h1 : (1 : ℝ) ≠ 0 := by norm_num
+      have := Real.add_one_lt_exp h1
+      linarith
+    -- exp(-1) < 1/2
+    have hexp_neg1_lt : Real.exp (-1 : ℝ) < 1 / 2 := by
+      rw [Real.exp_neg, inv_lt_comm₀ (Real.exp_pos _) (by norm_num)]
+      simp only [one_div, inv_inv]
+      exact hexp1_gt_2
+    -- 2π > 6 > 1, so -2π < -1
+    have h2pi_gt_1 : 1 < 2 * π := by
+      have hpi_gt_3 : 3 < π := pi_gt_three
+      linarith
+    have hneg : -2 * π < -1 := by linarith
+    calc Real.exp (-2 * π) < Real.exp (-1) := Real.exp_strictMono hneg
+      _ < 1 / 2 := hexp_neg1_lt
+  have hq_lt_half : ‖q‖ < 1 / 2 := lt_of_le_of_lt hq_bound hexp_lt_half
+  have hone_sub_q_gt_half : 1 / 2 < 1 - ‖q‖ := by linarith
+  -- Rewrite sum in terms of q
+  have hexp_pow : ∀ n : ℕ, cexp (2 * π * Complex.I * n * z) = q ^ n := fun n => by
+    rw [hq_def, ← Complex.exp_nat_mul]; congr 1; ring
+  have hsum_eq : (fun n : ℕ+ => ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+      (1 - cexp (2 * π * Complex.I * ↑n * ↑z))) =
+      (fun n : ℕ+ => ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))) := by
+    ext n; simp only [hexp_pow]
+  rw [hsum_eq]
+  -- Set r = ‖q‖
+  set r : ℝ := ‖q‖ with hr_def
+  have hr_pos : 0 < r := hq_pos
+  have hr_lt_one : r < 1 := hq_norm
+  have hr_lt_half : r < 1 / 2 := hq_lt_half
+  have hone_sub_r_pos : 0 < 1 - r := hone_sub_q_pos
+  have hone_sub_r_gt_half : 1 / 2 < 1 - r := hone_sub_q_gt_half
+  have hr_norm_lt_one : ‖r‖ < 1 := by simp [Real.norm_eq_abs, abs_of_nonneg hr_pos.le, hr_lt_one]
+  -- Term bound: ‖n * q^n / (1 - q^n)‖ ≤ n * r^n / (1 - r)
+  have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
+      n * r ^ (n : ℕ) / (1 - r) := fun n => by
+    have hqn_lt : ‖q ^ (n : ℕ)‖ < 1 := by
+      rw [norm_pow]; exact pow_lt_one₀ (norm_nonneg _) hr_lt_one n.ne_zero
+    have hdenom_ne : 1 - q ^ (n : ℕ) ≠ 0 := by
+      intro h; simp only [sub_eq_zero] at h
+      have : ‖q ^ (n : ℕ)‖ = 1 := by rw [← h]; exact norm_one
+      linarith
+    rw [norm_div, norm_mul, Complex.norm_natCast]
+    have hdenom_lower : 1 - r ≤ ‖1 - q ^ (n : ℕ)‖ := by
+      have h1 : 1 - ‖q ^ (n : ℕ)‖ ≤ ‖1 - q ^ (n : ℕ)‖ := by
+        have := norm_sub_norm_le (1 : ℂ) (q ^ (n : ℕ))
+        simp only [norm_one] at this; linarith
+      have h2 : r ^ (n : ℕ) ≤ r := by
+        have := pow_le_pow_of_le_one (norm_nonneg _) hr_lt_one.le n.one_le
+        simp at this; exact this
+      calc 1 - r ≤ 1 - r ^ (n : ℕ) := by linarith
+        _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow, hr_def]
+        _ ≤ _ := h1
+    calc ↑n * ‖q ^ (n : ℕ)‖ / ‖1 - q ^ (n : ℕ)‖
+        ≤ ↑n * ‖q ^ (n : ℕ)‖ / (1 - r) := by
+          apply div_le_div_of_nonneg_left _ hone_sub_r_pos hdenom_lower
+          exact mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _)
+      _ = ↑n * r ^ (n : ℕ) / (1 - r) := by rw [norm_pow, hr_def]
+  -- Summability
+  have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
+    have := summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
+    simp only [pow_one] at this; exact this
+  have hsumm_pnat : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ)) := by
+    have h0 : (fun n : ℕ => (n : ℝ) * r ^ n) 0 = 0 := by simp
+    exact (nat_pos_tsum2 _ h0).mpr hsumm_nat
+  have hsumm_majorant : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
+    simpa [div_eq_mul_inv] using hsumm_pnat.mul_right (1 - r)⁻¹
+  have hsumm_norms : Summable (fun n : ℕ+ => ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖) := by
+    refine Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => ?_) hsumm_majorant
+    convert hterm_bound n using 2
+  -- Bound tsum
+  have htsum_le : ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
+      ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) := by
+    calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
+        ≤ ∑' n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ :=
+          norm_tsum_le_tsum_norm hsumm_norms
+      _ ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) :=
+          Summable.tsum_le_tsum (fun n => by convert hterm_bound n using 2)
+            hsumm_norms hsumm_majorant
+  -- Compute the sum: ∑ n * r^n = r / (1 - r)²
+  have hsum_nat_val : (∑' n : ℕ, (n : ℝ) * r ^ n) = r / (1 - r) ^ 2 :=
+    tsum_coe_mul_geometric_of_norm_lt_one hr_norm_lt_one
+  have hsum_pnat : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
+    have heq := tsum_pnat_eq_tsum_succ4 (fun n => (n : ℝ) * r ^ n) hsumm_nat
+    simp only [Nat.cast_zero, zero_mul, zero_add] at heq
+    rw [← hsum_nat_val]; exact heq
+  have hsum_majorant_eq : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
+    rw [tsum_div_const, hsum_pnat]; field_simp
+  -- Key bound: r / (1 - r)³ ≤ 8r when (1 - r)³ ≥ 1/8, i.e., 1 - r ≥ 1/2
+  have hsum_le_8r : r / (1 - r) ^ 3 ≤ 8 * r := by
+    have h1 : (1 / 2 : ℝ) ^ 3 ≤ (1 - r) ^ 3 := by
+      apply pow_le_pow_left₀ (by norm_num : 0 ≤ (1 : ℝ) / 2)
+      linarith
+    have h2 : (1 / 2 : ℝ) ^ 3 = 1 / 8 := by norm_num
+    rw [h2] at h1
+    -- div_le_div_of_nonneg_left : 0 ≤ a → 0 < b → b ≤ c → a / c ≤ a / b
+    calc r / (1 - r) ^ 3 ≤ r / (1 / 8) := by
+          apply div_le_div_of_nonneg_left hr_pos.le (by positivity : 0 < (1 : ℝ) / 8) h1
+      _ = 8 * r := by ring
+  -- Chain everything: 24 * ‖tsum‖ ≤ 24 * 8 * r = 192 * exp(-2π · im z)
+  have hq_eq_exp : r = Real.exp (-2 * π * z.im) := by
+    rw [hr_def, hq_def]
+    have hre : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
+      rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
+      simp [Complex.I_re, Complex.I_im, mul_comm]
+    rw [Complex.norm_exp, hre]
+  calc 24 * ‖∑' n : ℕ+, ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
+      ≤ 24 * (r / (1 - r) ^ 3) := by
+        gcongr; calc _ ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) := htsum_le
+          _ = r / (1 - r) ^ 3 := hsum_majorant_eq
+    _ ≤ 24 * (8 * r) := by gcongr
+    _ = 192 * r := by ring
+    _ = 192 * Real.exp (-2 * π * z.im) := by rw [hq_eq_exp]
+    _ = 192 * Real.exp (-(2 * π) * z.im) := by ring_nf
+
+/-- E₂ → 1 at i∞. -/
+lemma E₂_tendsto_one_atImInfty : Filter.Tendsto E₂ atImInfty (nhds 1) := by
+  -- E₂ - 1 = O(exp(-2π·Im z)), and exp(-2π·y) → 0 as y → ∞
+  suffices h : Filter.Tendsto (fun z : ℍ => E₂ z - 1) atImInfty (nhds 0) by
+    simpa using h.add_const 1
+  exact tendsto_zero_of_exp_decay (by positivity : 0 < 2 * π) E₂_sub_one_isBigO_exp
+
+/-- E₂(iy) → 1 as y → +∞.
+
+E₂ is not a modular form, so we use the explicit q-expansion:
+E₂ z = 1 - 24 * ∑' n, n * q^n / (1 - q^n) where q = exp(2πiz).
+At z = iy, q = exp(-2πy) → 0 as y → ∞, so the sum → 0 and E₂ → 1. -/
+lemma E₂_tendsto_one_at_infinity :
+    Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds 1) :=
+  E₂_tendsto_one_atImInfty.comp tendsto_iMulPosReal_atImInfty
+
+/-- E₄(iy) → 1 as y → +∞.
+Uses the q-expansion: E₄(z) = 1 + 240 * ∑' n, σ₃(n) * q^n where q = exp(2πiz).
+At z = iy, q → 0 as y → ∞, so E₄(iy) → (qExpansion 1 E₄).coeff 0 = 1. -/
+lemma E₄_tendsto_one_at_infinity :
+    Filter.Tendsto (fun y : PosReal => E₄.toFun (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds 1) := by
+  -- Use the general result for modular forms
+  have h := modular_form_tendsto_atImInfty E₄
+  rw [E4_q_exp_zero] at h
+  exact h.comp tendsto_iMulPosReal_atImInfty
+
+/-- E₆(iy) → 1 as y → +∞.
+Same strategy as E₄: use q-expansion and modular form convergence. -/
+lemma E₆_tendsto_one_at_infinity :
+    Filter.Tendsto (fun y : PosReal => E₆.toFun (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds 1) := by
+  have h := modular_form_tendsto_atImInfty E₆
+  rw [E6_q_exp_zero] at h
+  exact h.comp tendsto_iMulPosReal_atImInfty
+
+/-! ## Boundedness lemmas -/
+
+/-- E₆ is bounded at infinity (as a modular form). -/
+lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
+  ModularFormClass.bdd_at_infty E₆
+
+/-- serre_D 1 E₂ is bounded at infinity.
+This follows from E₂ and E₂² being bounded. -/
+lemma serre_D_E₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) := by
+  -- serre_D 1 E₂ = D E₂ - (1/12) * E₂ * E₂
+  have hserre : serre_D 1 E₂ = D E₂ - (fun z => 1 * 12⁻¹ * E₂ z * E₂ z) := rfl
+  rw [hserre]
+  -- D E₂ is bounded (by Cauchy estimate from E₂_isBoundedAtImInfty)
+  have hDE₂ : IsBoundedAtImInfty (D E₂) :=
+    D_isBoundedAtImInfty_of_bounded E₂_holo' E₂_isBoundedAtImInfty
+  -- E₂ * E₂ is bounded
+  have hE₂sq : IsBoundedAtImInfty (fun z => E₂ z * E₂ z) :=
+    E₂_isBoundedAtImInfty.mul E₂_isBoundedAtImInfty
+  have h12E₂sq : IsBoundedAtImInfty (fun z => 1 * 12⁻¹ * E₂ z * E₂ z) := by
+    have hconst : IsBoundedAtImInfty (fun _ : ℍ => (1 : ℂ) * 12⁻¹) :=
+      Filter.const_boundedAtFilter _ _
+    have := hconst.mul hE₂sq
+    convert this using 1
+    ext z; simp only [Pi.mul_apply]; ring
+  exact hDE₂.sub h12E₂sq
+
+/-! ## Construction of ModularForm from serre_D -/
+
+/-- serre_D 4 E₄ is a weight-6 modular form.
+This packages the slash invariance, holomorphicity, and boundedness at cusps. -/
+def serre_D_E₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 where
+  toSlashInvariantForm := {
+    toFun := serre_D 4 E₄.toFun
+    slash_action_eq' := fun γ hγ => by
+      -- γ ∈ (Γ(1)).map (mapGL ℝ), so γ = mapGL ℝ γ' for some γ' ∈ Γ(1)
+      rw [Subgroup.mem_map] at hγ
+      obtain ⟨γ', _, hγ'_eq⟩ := hγ
+      -- The SL(2,ℤ) slash action is defined via mapGL ℝ
+      -- So f ∣[k] γ = f ∣[k] (mapGL ℝ γ') when γ = mapGL ℝ γ'
+      have hE₄_slash : E₄.toFun ∣[(4 : ℤ)] γ' = E₄.toFun := by
+        have := E₄.slash_action_eq' γ ⟨γ', mem_Gamma_one γ', hγ'_eq⟩
+        rw [← hγ'_eq] at this
+        exact this
+      -- Now apply serre_D_slash_invariant
+      have h := serre_D_slash_invariant 4 E₄.toFun E₄.holo' γ' hE₄_slash
+      -- Convert back to GL notation
+      show serre_D 4 E₄.toFun ∣[(6 : ℤ)] γ = serre_D 4 E₄.toFun
+      rw [← hγ'_eq]
+      exact h
+  }
+  holo' := serre_D_differentiable E₄.holo'
+  bdd_at_cusps' := fun hc => by
+    apply bounded_at_cusps_of_bounded_at_infty hc
+    intro A hA
+    -- A ∈ (mapGL ℝ).range, so A = mapGL ℝ A' for some A' : SL(2,ℤ)
+    rw [MonoidHom.mem_range] at hA
+    obtain ⟨A', hA'_eq⟩ := hA
+    -- The SL(2,ℤ) slash action is defined via mapGL ℝ
+    have h := serre_D_slash_invariant 4 E₄.toFun E₄.holo' A' (E₄.slash_action_eq' _ ⟨A', mem_Gamma_one A', rfl⟩)
+    -- The SL slash action ∣[k] γ is definitionally the GL slash action via mapGL
+    -- h : serre_D 4 E₄ ∣[6] A' = serre_D 4 E₄ (SL action)
+    -- SL_slash : f ∣[k] γ = f ∣[k] (γ : GL (Fin 2) ℝ), which is definitionally rfl via mapGL
+    show IsBoundedAtImInfty (serre_D 4 E₄.toFun ∣[(6 : ℤ)] A)
+    -- Since A = mapGL ℝ A', and SL action is defined via mapGL, we use SL_slash directly
+    rw [← hA'_eq]
+    -- The SL slash action on A' equals the GL slash action on mapGL ℝ A' by definition
+    -- convert handles the definitional equality between ∣[6] (mapGL ℝ A') and ∣[6] A'
+    convert serre_D_E₄_isBoundedAtImInfty using 1
+
+/-- serre_D 6 E₆ is bounded at infinity. -/
+lemma serre_D_E₆_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 6 E₆.toFun) := by
+  -- serre_D 6 E₆ = D E₆ - (6/12) * E₂ * E₆
+  -- Both terms are bounded at infinity
+  unfold serre_D
+  -- Same pattern as serre_D_E₄_isBoundedAtImInfty in Derivative.lean
+  have h1 : IsBoundedAtImInfty (D E₆.toFun) := D_isBoundedAtImInfty_of_bounded E₆.holo' E₆_isBoundedAtImInfty
+  have h2 : IsBoundedAtImInfty (fun z => (6 : ℂ) * 12⁻¹ * E₂ z * E₆.toFun z) := by
+    have hconst : IsBoundedAtImInfty (fun _ : ℍ => (6 : ℂ) * 12⁻¹) :=
+      Filter.const_boundedAtFilter _ _
+    have hE₂E₆ : IsBoundedAtImInfty (E₂ * E₆.toFun) := E₂_isBoundedAtImInfty.mul E₆_isBoundedAtImInfty
+    convert hconst.mul hE₂E₆ using 1
+    ext z
+    simp only [Pi.mul_apply]
+    ring
+  exact h1.sub h2
+
+/-- serre_D 6 E₆ is a weight-8 modular form. -/
+def serre_D_E₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 where
+  toSlashInvariantForm := {
+    toFun := serre_D 6 E₆.toFun
+    slash_action_eq' := fun γ hγ => by
+      rw [Subgroup.mem_map] at hγ
+      obtain ⟨γ', _, hγ'_eq⟩ := hγ
+      have hE₆_slash : E₆.toFun ∣[(6 : ℤ)] γ' = E₆.toFun := by
+        have := E₆.slash_action_eq' γ ⟨γ', mem_Gamma_one γ', hγ'_eq⟩
+        rw [← hγ'_eq] at this
+        exact this
+      have h := serre_D_slash_invariant 6 E₆.toFun E₆.holo' γ' hE₆_slash
+      show serre_D 6 E₆.toFun ∣[(8 : ℤ)] γ = serre_D 6 E₆.toFun
+      rw [← hγ'_eq]
+      exact h
+  }
+  holo' := serre_D_differentiable E₆.holo'
+  bdd_at_cusps' := fun hc => by
+    apply bounded_at_cusps_of_bounded_at_infty hc
+    intro A hA
+    rw [MonoidHom.mem_range] at hA
+    obtain ⟨A', hA'_eq⟩ := hA
+    have h := serre_D_slash_invariant 6 E₆.toFun E₆.holo' A' (E₆.slash_action_eq' _ ⟨A', mem_Gamma_one A', rfl⟩)
+    show IsBoundedAtImInfty (serre_D 6 E₆.toFun ∣[(8 : ℤ)] A)
+    -- Since A = mapGL ℝ A', and SL action is defined via mapGL, we use SL_slash directly
+    rw [← hA'_eq]
+    -- The SL slash action on A' equals the GL slash action on mapGL ℝ A' by definition
+    -- convert handles the definitional equality between ∣[8] (mapGL ℝ A') and ∣[8] A'
+    convert serre_D_E₆_isBoundedAtImInfty using 1
+
+/-! ## Limit of serre_D at infinity (for determining scalar) -/
+
+/-- serre_D 4 E₄(iy) → -1/3 as y → +∞.
+This determines the scalar in `serre_D 4 E₄ = c * E₆`. -/
+lemma serre_D_E₄_tendsto_at_infinity :
+    Filter.Tendsto (fun y : PosReal => serre_D 4 E₄.toFun (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds (-(1/3 : ℂ))) := by
+  -- serre_D 4 E₄ = D E₄ - (4/12) * E₂ * E₄
+  have hserre : ∀ y : PosReal, serre_D 4 E₄.toFun (iMulPosReal y) =
+      D E₄.toFun (iMulPosReal y) - (4 : ℂ) * 12⁻¹ * E₂ (iMulPosReal y) * E₄.toFun (iMulPosReal y) := by
+    intro y
+    simp only [serre_D, Pi.sub_apply, Pi.mul_apply]
+  simp_rw [hserre]
+  -- Limit of D E₄ is 0 (D_tendsto_zero_of_tendsto_const)
+  have hD : Filter.Tendsto (fun y : PosReal => D E₄.toFun (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds 0) :=
+    D_tendsto_zero_of_tendsto_const E₄.holo' E₄_isBoundedAtImInfty E₄_tendsto_one_at_infinity
+  -- Limits of E₂ and E₄ are 1
+  have hE₂ := E₂_tendsto_one_at_infinity
+  have hE₄ := E₄_tendsto_one_at_infinity
+  -- Combined limit: 0 - (4/12) * 1 * 1 = -1/3
+  have hlim : (0 : ℂ) - (4 : ℂ) * 12⁻¹ * 1 * 1 = -(1/3 : ℂ) := by norm_num
+  rw [← hlim]
+  refine Filter.Tendsto.sub hD ?_
+  -- Need: Tendsto (fun y => 4 * 12⁻¹ * E₂ y * E₄ y) ... (nhds (4 * 12⁻¹ * 1 * 1))
+  have hprod : Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y) * E₄.toFun (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds (1 * 1)) :=
+    hE₂.mul hE₄
+  have hconst : Filter.Tendsto (fun _ : PosReal => (4 : ℂ) * 12⁻¹)
+      (Filter.comap Subtype.val Filter.atTop) (nhds ((4 : ℂ) * 12⁻¹)) :=
+    tendsto_const_nhds
+  convert hconst.mul hprod using 1 <;> ring
+
+/-- serre_D 6 E₆(iy) → -1/2 as y → +∞.
+This determines the scalar in `serre_D 6 E₆ = c * E₄²`. -/
+lemma serre_D_E₆_tendsto_at_infinity :
+    Filter.Tendsto (fun y : PosReal => serre_D 6 E₆.toFun (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds (-(1/2 : ℂ))) := by
+  -- serre_D 6 E₆ = D E₆ - (6/12) * E₂ * E₆
+  have hserre : ∀ y : PosReal, serre_D 6 E₆.toFun (iMulPosReal y) =
+      D E₆.toFun (iMulPosReal y) - (6 : ℂ) * 12⁻¹ * E₂ (iMulPosReal y) * E₆.toFun (iMulPosReal y) := by
+    intro y
+    simp only [serre_D, Pi.sub_apply, Pi.mul_apply]
+  simp_rw [hserre]
+  -- Limit of D E₆ is 0
+  have hD : Filter.Tendsto (fun y : PosReal => D E₆.toFun (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds 0) := by
+    apply D_tendsto_zero_of_tendsto_const E₆.holo'
+    · exact E₆_isBoundedAtImInfty
+    · exact E₆_tendsto_one_at_infinity
+  have hE₂ := E₂_tendsto_one_at_infinity
+  have hE₆ := E₆_tendsto_one_at_infinity
+  have hlim : (0 : ℂ) - (6 : ℂ) * 12⁻¹ * 1 * 1 = -(1/2 : ℂ) := by norm_num
+  rw [← hlim]
+  refine Filter.Tendsto.sub hD ?_
+  have hprod : Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y) * E₆.toFun (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds (1 * 1)) :=
+    hE₂.mul hE₆
+  have hconst : Filter.Tendsto (fun _ : PosReal => (6 : ℂ) * 12⁻¹)
+      (Filter.comap Subtype.val Filter.atTop) (nhds ((6 : ℂ) * 12⁻¹)) :=
+    tendsto_const_nhds
+  convert hconst.mul hprod using 1 <;> ring
+
+/-- serre_D 1 E₂ is a weight-4 modular form.
+This packages the slash invariance, holomorphicity, and boundedness at cusps.
+Note: E₂ itself is NOT a modular form, but serre_D 1 E₂ IS. -/
+def serre_D_E₂_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 4 where
+  toSlashInvariantForm := {
+    toFun := serre_D 1 E₂
+    slash_action_eq' := fun γ hγ => by
+      rw [Subgroup.mem_map] at hγ
+      obtain ⟨γ', _, hγ'_eq⟩ := hγ
+      -- Use serre_D_E₂_slash_invariant directly
+      have h := serre_D_E₂_slash_invariant γ'
+      show serre_D 1 E₂ ∣[(4 : ℤ)] γ = serre_D 1 E₂
+      rw [← hγ'_eq]
+      exact h
+  }
+  holo' := serre_D_differentiable E₂_holo'
+  bdd_at_cusps' := fun hc => by
+    apply bounded_at_cusps_of_bounded_at_infty hc
+    intro A hA
+    rw [MonoidHom.mem_range] at hA
+    obtain ⟨A', hA'_eq⟩ := hA
+    have h := serre_D_E₂_slash_invariant A'
+    show IsBoundedAtImInfty (serre_D 1 E₂ ∣[(4 : ℤ)] A)
+    rw [← hA'_eq]
+    convert serre_D_E₂_isBoundedAtImInfty using 1
+
+/-- serre_D 1 E₂(iy) → -1/12 as y → +∞.
+This determines the scalar in `serre_D 1 E₂ = c * E₄`. -/
+lemma serre_D_E₂_tendsto_at_infinity :
+    Filter.Tendsto (fun y : PosReal => serre_D 1 E₂ (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds (-(1/12 : ℂ))) := by
+  -- serre_D 1 E₂ = D E₂ - (1/12) * E₂ * E₂
+  have hserre : ∀ y : PosReal, serre_D 1 E₂ (iMulPosReal y) =
+      D E₂ (iMulPosReal y) - 1 * 12⁻¹ * E₂ (iMulPosReal y) * E₂ (iMulPosReal y) := by
+    intro y
+    simp only [serre_D, Pi.sub_apply, Pi.mul_apply]
+  simp_rw [hserre]
+  -- Limit of D E₂ is 0 (D_tendsto_zero_of_tendsto_const)
+  have hD : Filter.Tendsto (fun y : PosReal => D E₂ (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds 0) :=
+    D_tendsto_zero_of_tendsto_const E₂_holo' E₂_isBoundedAtImInfty E₂_tendsto_one_at_infinity
+  -- Limit of E₂ is 1
+  have hE₂ := E₂_tendsto_one_at_infinity
+  -- Combined limit: 0 - (1/12) * 1 * 1 = -1/12
+  have hlim : (0 : ℂ) - (1 : ℂ) * 12⁻¹ * 1 * 1 = -(1/12 : ℂ) := by norm_num
+  rw [← hlim]
+  refine Filter.Tendsto.sub hD ?_
+  have hprod : Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y) * E₂ (iMulPosReal y))
+      (Filter.comap Subtype.val Filter.atTop) (nhds (1 * 1)) :=
+    hE₂.mul hE₂
+  have hconst : Filter.Tendsto (fun _ : PosReal => (1 : ℂ) * 12⁻¹)
+      (Filter.comap Subtype.val Filter.atTop) (nhds ((1 : ℂ) * 12⁻¹)) :=
+    tendsto_const_nhds
+  convert hconst.mul hprod using 1 <;> ring
+
+/-! ## The Ramanujan Identities
+
+These are the main theorems. The primed versions are in terms of serre_D,
+the non-primed versions are in terms of D. -/
+
+/--
+Serre derivative of E₂: `serre_D 1 E₂ = - 12⁻¹ * E₄`.
+
+This is the hardest identity because E₂ is not modular.
+The proof uses:
+1. `serre_D_E₂_slash_invariant`: serre_D 1 E₂ is weight-4 slash-invariant
+2. Bounded at infinity: serre_D 1 E₂ = D E₂ - (1/12) E₂², both terms bounded
+3. Dimension formula: weight-4 forms are 1-dimensional, spanned by E₄
+4. Constant term: serre_D 1 E₂(iy) → -1/12 as y → ∞
+-/
+theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
+  -- Use dimension argument
+  have hrank : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 4) = 1 :=
+    weight_four_one_dimensional
+  -- Apply finrank_eq_one_iff_of_nonzero' to get that serre_D_E₂_ModularForm = c * E₄
+  have hE₄_ne : E₄ ≠ 0 := E4_ne_zero
+  rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
+  have := (finrank_eq_one_iff_of_nonzero' E₄ hE₄_ne).mp hrank serre_D_E₂_ModularForm
+  obtain ⟨c, hc⟩ := this
+  -- hc : c • E₄ = serre_D_E₂_ModularForm, so serre_D_E₂_ModularForm = c • E₄
+  -- We need to show c = -1/12
+  -- First establish that serre_D 1 E₂ equals c * E₄ as functions
+  have hcoe : (serre_D_E₂_ModularForm : ℍ → ℂ) = serre_D 1 E₂ := rfl
+  -- From hc : c • E₄ = serre_D_E₂_ModularForm, we get the function equality
+  have hfun : ∀ z, serre_D 1 E₂ z = c * E₄.toFun z := by
+    intro z
+    rw [← hcoe]
+    have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
+    simp only [ModularForm.coe_smul, Pi.smul_apply, smul_eq_mul] at this
+    exact this
+  -- Now we need to show c = -1/12 using limits
+  -- serre_D 1 E₂(iy) → -1/12 (by serre_D_E₂_tendsto_at_infinity)
+  -- E₄(iy) → 1 (by E₄_tendsto_one_at_infinity)
+  -- c * E₄(iy) → c * 1 = c, so c = -1/12
+  have hc_val : c = -(1/12 : ℂ) := by
+    have hlim_serre := serre_D_E₂_tendsto_at_infinity
+    have hlim_E₄ := E₄_tendsto_one_at_infinity
+    have heq : ∀ y : PosReal, serre_D 1 E₂ (iMulPosReal y) = c * E₄.toFun (iMulPosReal y) :=
+      fun y => hfun (iMulPosReal y)
+    -- c * E₄(iy) → c * 1 = c as y → ∞
+    have hlim_c : Filter.Tendsto (fun y : PosReal => c * E₄.toFun (iMulPosReal y))
+        (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+      have h1 : Filter.Tendsto (fun y : PosReal => c * E₄.toFun (iMulPosReal y))
+          (Filter.comap Subtype.val Filter.atTop) (nhds (c * 1)) :=
+        tendsto_const_nhds.mul hlim_E₄
+      simpa using h1
+    -- serre_D 1 E₂(iy) = c * E₄(iy), so they have the same limit
+    have hlim_eq : Filter.Tendsto (fun y : PosReal => serre_D 1 E₂ (iMulPosReal y))
+        (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+      convert hlim_c using 1
+      ext y
+      exact heq y
+    -- By uniqueness of limits
+    haveI : (Filter.comap Subtype.val Filter.atTop).NeBot := PosReal_comap_atTop_neBot
+    exact tendsto_nhds_unique hlim_eq hlim_serre
+  -- Now substitute c = -1/12
+  ext z
+  rw [hfun z, hc_val]
+  -- Simplify Pi.mul_apply and constant function coercion
+  simp only [Pi.mul_apply]
+  -- Goal: -(1 / 12) * E₄.toFun z = (-12⁻¹) z * E₄.toFun z
+  -- The (-12⁻¹) z is a constant function evaluated at z, which equals -12⁻¹
+  congr 1
+  norm_num
+
+/-- Serre derivative of E₄: `serre_D 4 E₄ = - 3⁻¹ * E₆`.
+
+Uses the dimension argument:
+1. serre_D 4 E₄ is weight-6 slash-invariant (by serre_D_slash_invariant)
+2. serre_D 4 E₄ is bounded at infinity (serre_D_E₄_isBoundedAtImInfty)
+3. Weight-6 modular forms are 1-dimensional (weight_six_one_dimensional)
+4. Constant term is -1/3 (from D E₄ → 0, E₂ → 1, E₄ → 1)
+-/
+theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
+  -- Use the dimension argument
+  -- serre_D_E₄_ModularForm gives us a ModularForm Γ(1) 6
+  -- weight_six_one_dimensional says the space is 1-dimensional, spanned by E₆
+  -- So serre_D 4 E₄ = c * E₆ for some c
+  -- serre_D_E₄_tendsto_at_infinity gives c = -1/3
+  have hrank : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 6) = 1 :=
+    weight_six_one_dimensional
+  -- Apply finrank_eq_one_iff_of_nonzero' to get that serre_D_E₄_ModularForm = c * E₆
+  have hE₆_ne : E₆ ≠ 0 := E6_ne_zero
+  rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
+  have := (finrank_eq_one_iff_of_nonzero' E₆ hE₆_ne).mp hrank serre_D_E₄_ModularForm
+  obtain ⟨c, hc⟩ := this
+  -- hc : c • E₆ = serre_D_E₄_ModularForm, so serre_D_E₄_ModularForm = c • E₆
+  -- We need to show c = -1/3
+  -- First establish that serre_D 4 E₄ equals c * E₆ as functions
+  have hcoe : (serre_D_E₄_ModularForm : ℍ → ℂ) = serre_D 4 E₄.toFun := rfl
+  -- From hc : c • E₆ = serre_D_E₄_ModularForm, we get the function equality
+  have hfun : ∀ z, serre_D 4 E₄.toFun z = c * E₆.toFun z := by
+    intro z
+    rw [← hcoe]
+    have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
+    simp only [ModularForm.coe_smul, Pi.smul_apply, smul_eq_mul] at this
+    exact this
+  -- Now we need to show c = -1/3 using limits
+  -- serre_D 4 E₄(iy) → -1/3 (by serre_D_E₄_tendsto_at_infinity)
+  -- E₆(iy) → 1 (by E₆_tendsto_one_at_infinity)
+  -- c * E₆(iy) → c * 1 = c, so c = -1/3
+  have hc_val : c = -(1/3 : ℂ) := by
+    -- Use uniqueness of limits:
+    -- serre_D 4 E₄(iy) → -1/3 (by serre_D_E₄_tendsto_at_infinity)
+    -- E₆(iy) → 1 (by E₆_tendsto_one_at_infinity)
+    -- Since serre_D 4 E₄ = c * E₆, we have c * E₆(iy) → c * 1 = c
+    -- By uniqueness of limits: c = -1/3
+    have hlim_serre := serre_D_E₄_tendsto_at_infinity
+    have hlim_E₆ := E₆_tendsto_one_at_infinity
+    have heq : ∀ y : PosReal, serre_D 4 E₄.toFun (iMulPosReal y) = c * E₆.toFun (iMulPosReal y) :=
+      fun y => hfun (iMulPosReal y)
+    -- c * E₆(iy) → c * 1 = c as y → ∞
+    have hlim_c : Filter.Tendsto (fun y : PosReal => c * E₆.toFun (iMulPosReal y))
+        (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+      have h1 : Filter.Tendsto (fun y : PosReal => c * E₆.toFun (iMulPosReal y))
+          (Filter.comap Subtype.val Filter.atTop) (nhds (c * 1)) :=
+        tendsto_const_nhds.mul hlim_E₆
+      simpa using h1
+    -- serre_D 4 E₄(iy) = c * E₆(iy), so they have the same limit
+    have hlim_eq : Filter.Tendsto (fun y : PosReal => serre_D 4 E₄.toFun (iMulPosReal y))
+        (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+      convert hlim_c using 1
+      ext y
+      exact heq y
+    -- By uniqueness of limits: -1/3 = c
+    haveI := PosReal_comap_atTop_neBot
+    exact (tendsto_nhds_unique hlim_serre hlim_eq).symm
+  ext z
+  rw [hfun z, hc_val]
+  -- Simplify Pi.mul_apply and constant function coercion
+  simp only [Pi.mul_apply]
+  -- Goal: -(1 / 3) * E₆.toFun z = (-3⁻¹) z * E₆.toFun z
+  -- The (-3⁻¹) z is a constant function evaluated at z, which equals -3⁻¹
+  -- Convert to same form
+  congr 1
+  norm_num
+
+/-- Serre derivative of E₆: `serre_D 6 E₆ = - 2⁻¹ * E₄²`.
+
+Uses the dimension argument:
+1. serre_D 6 E₆ is weight-8 slash-invariant (by serre_D_slash_invariant)
+2. Weight-8 modular forms are 1-dimensional, spanned by E₄²
+3. Constant term is -1/2 (from D E₆ → 0, E₂ → 1, E₆ → 1)
+-/
+theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by
+  -- Similar to ramanujan_E₄' but for weight 8
+  -- E₄² is a weight-8 modular form via ModularForm.mul
+  let E₄_sq : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
+    have h : (4 : ℤ) + 4 = 8 := by norm_num
+    h ▸ ModularForm.mul E₄ E₄
+  -- Weight-8 is 1-dimensional
+  have hrank : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 8) = 1 :=
+    weight_eight_one_dimensional 8 (by norm_num : (3 : ℤ) ≤ 8) ⟨4, rfl⟩ (by norm_num : 8 < 12)
+  -- E₄² is nonzero
+  have hE₄_sq_ne : E₄_sq ≠ 0 := by
+    simp only [ne_eq, E₄_sq]
+    intro h
+    -- If E₄ * E₄ = 0 as modular form, then E₄ = 0
+    have hE₄_ne := E4_ne_zero
+    -- h : (4 + 4 = 8) ▸ (E₄.mul E₄) = 0
+    -- Extract that E₄ * E₄ = 0 as functions
+    have h' : (E₄.mul E₄ : ℍ → ℂ) = 0 := by
+      ext z
+      have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
+      simp only [ModularForm.coe_mul, Pi.mul_apply, ModularForm.coe_zero, Pi.zero_apply] at this
+      exact this
+    -- E₄ z * E₄ z = 0 for all z, so E₄ z = 0 for all z
+    have h'' : ∀ z : ℍ, E₄.toFun z = 0 := fun z => by
+      have := congrFun h' z
+      simp only [ModularForm.coe_mul, Pi.mul_apply, Pi.zero_apply] at this
+      exact mul_self_eq_zero.mp this
+    -- This means E₄ = 0 as a function, contradicting E4_ne_zero
+    apply hE₄_ne
+    ext z
+    simp only [ModularForm.coe_zero, Pi.zero_apply]
+    exact h'' z
+  rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
+  have := (finrank_eq_one_iff_of_nonzero' E₄_sq hE₄_sq_ne).mp hrank serre_D_E₆_ModularForm
+  obtain ⟨c, hc⟩ := this
+  -- hc : c • E₄_sq = serre_D_E₆_ModularForm
+  -- So serre_D_E₆_ModularForm = c * E₄²
+  have hcoe : (serre_D_E₆_ModularForm : ℍ → ℂ) = serre_D 6 E₆.toFun := rfl
+  have hfun : ∀ z, serre_D 6 E₆.toFun z = c * (E₄.toFun z * E₄.toFun z) := by
+    intro z
+    rw [← hcoe]
+    have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
+    simp only [ModularForm.coe_smul, Pi.smul_apply, smul_eq_mul] at this
+    -- Need to relate E₄_sq to E₄.toFun * E₄.toFun
+    -- E₄_sq = (4 + 4 = 8) ▸ (E₄.mul E₄), so the underlying function is E₄ * E₄
+    -- The ▸ cast preserves function values
+    convert this using 2
+  have hc_val : c = -(1/2 : ℂ) := by
+    -- Use uniqueness of limits:
+    -- serre_D 6 E₆(iy) → -1/2 (by serre_D_E₆_tendsto_at_infinity)
+    -- E₄(iy) → 1 (by E₄_tendsto_one_at_infinity)
+    -- Since serre_D 6 E₆ = c * E₄², we have c * E₄(iy)² → c * 1² = c
+    -- By uniqueness of limits: c = -1/2
+    have hlim_serre := serre_D_E₆_tendsto_at_infinity
+    have hlim_E₄ := E₄_tendsto_one_at_infinity
+    have heq : ∀ y : PosReal, serre_D 6 E₆.toFun (iMulPosReal y) =
+        c * (E₄.toFun (iMulPosReal y) * E₄.toFun (iMulPosReal y)) :=
+      fun y => hfun (iMulPosReal y)
+    -- c * E₄²(iy) → c * 1² = c as y → ∞
+    have hlim_c : Filter.Tendsto (fun y : PosReal =>
+        c * (E₄.toFun (iMulPosReal y) * E₄.toFun (iMulPosReal y)))
+        (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+      have h1 : Filter.Tendsto (fun y : PosReal =>
+          c * (E₄.toFun (iMulPosReal y) * E₄.toFun (iMulPosReal y)))
+          (Filter.comap Subtype.val Filter.atTop) (nhds (c * (1 * 1))) :=
+        tendsto_const_nhds.mul (hlim_E₄.mul hlim_E₄)
+      simpa using h1
+    -- serre_D 6 E₆(iy) = c * E₄²(iy), so they have the same limit
+    have hlim_eq : Filter.Tendsto (fun y : PosReal => serre_D 6 E₆.toFun (iMulPosReal y))
+        (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+      convert hlim_c using 1
+      ext y
+      exact heq y
+    -- By uniqueness of limits: -1/2 = c
+    haveI := PosReal_comap_atTop_neBot
+    exact (tendsto_nhds_unique hlim_serre hlim_eq).symm
+  ext z
+  rw [hfun z, hc_val]
+  simp only [Pi.mul_apply]
+  -- Goal: -(1/2) * (E₄.toFun z * E₄.toFun z) = (-2⁻¹) z * E₄.toFun z * E₄.toFun z
+  -- The (-2⁻¹) z is a constant function evaluated at z, which equals -2⁻¹
+  ring_nf
+  congr 1
+  norm_num
+
+/-! ## Derived Ramanujan identities (D instead of serre_D) -/
+
+@[simp]
+theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
+  -- From ramanujan_E₂': serre_D 1 E₂ = -12⁻¹ * E₄
+  -- serre_D 1 E₂ = D E₂ - (1/12) * E₂ * E₂
+  -- So: D E₂ - (1/12) * E₂² = -12⁻¹ * E₄
+  -- Hence: D E₂ = (1/12) * E₂² - (1/12) * E₄ = (1/12) * (E₂² - E₄)
+  have h := ramanujan_E₂'
+  ext z
+  unfold serre_D at h
+  have hz := congrFun h z
+  simp only [Pi.mul_apply] at hz
+  -- Simplify constant function: (-12⁻¹) z = -12⁻¹
+  have hconst : (-12⁻¹ : ℍ → ℂ) z = -12⁻¹ := rfl
+  rw [hconst] at hz
+  -- hz : D E₂ z - 1 * 12⁻¹ * E₂ z * E₂ z = -12⁻¹ * E₄.toFun z
+  have step1 : D E₂ z = 1 * 12⁻¹ * E₂ z * E₂ z - 12⁻¹ * E₄.toFun z := by
+    calc D E₂ z
+        = (D E₂ z - 1 * 12⁻¹ * E₂ z * E₂ z) + 1 * 12⁻¹ * E₂ z * E₂ z := by ring
+      _ = -12⁻¹ * E₄.toFun z + 1 * 12⁻¹ * E₂ z * E₂ z := by rw [hz]
+      _ = 1 * 12⁻¹ * E₂ z * E₂ z - 12⁻¹ * E₄.toFun z := by ring
+  -- Simplify 1 * 12⁻¹ = 12⁻¹
+  simp only [one_mul] at step1
+  rw [step1]
+  -- Simplify the goal - Pi.mul_apply for constant function
+  simp only [Pi.mul_apply, Pi.sub_apply, Pi.one_apply, Pi.inv_apply, Pi.ofNat_apply]
+  ring
+
+@[simp]
+theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
+  -- From ramanujan_E₄': serre_D 4 E₄ = -1/3 * E₆
+  -- serre_D 4 E₄ = D E₄ - (4/12) * E₂ * E₄ = D E₄ - (1/3) * E₂ * E₄
+  -- So: D E₄ - (1/3) * E₂ * E₄ = -1/3 * E₆
+  -- Hence: D E₄ = (1/3) * E₂ * E₄ - (1/3) * E₆ = (1/3) * (E₂ * E₄ - E₆)
+  have h := ramanujan_E₄'
+  ext z
+  unfold serre_D at h
+  have hz := congrFun h z
+  simp only [Pi.mul_apply] at hz
+  -- Simplify constant function: (-3⁻¹) z = -3⁻¹
+  have hconst : (-3⁻¹ : ℍ → ℂ) z = -3⁻¹ := rfl
+  rw [hconst] at hz
+  -- hz : D E₄.toFun z - 4 * 12⁻¹ * E₂ z * E₄.toFun z = -3⁻¹ * E₆.toFun z
+  have step1 : D E₄.toFun z = 4 * 12⁻¹ * E₂ z * E₄.toFun z - 3⁻¹ * E₆.toFun z := by
+    calc D E₄.toFun z
+        = (D E₄.toFun z - 4 * 12⁻¹ * E₂ z * E₄.toFun z) + 4 * 12⁻¹ * E₂ z * E₄.toFun z := by ring
+      _ = -3⁻¹ * E₆.toFun z + 4 * 12⁻¹ * E₂ z * E₄.toFun z := by rw [hz]
+      _ = 4 * 12⁻¹ * E₂ z * E₄.toFun z - 3⁻¹ * E₆.toFun z := by ring
+  -- 4/12 = 1/3
+  have h412 : (4 : ℂ) * 12⁻¹ = 3⁻¹ := by norm_num
+  rw [h412] at step1
+  rw [step1]
+  -- Simplify the goal - Pi.mul_apply for constant function
+  simp only [Pi.mul_apply, Pi.sub_apply, Pi.one_apply, Pi.inv_apply, Pi.ofNat_apply]
+  ring
+
+@[simp]
+theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
+  -- From ramanujan_E₆': serre_D 6 E₆ = -1/2 * E₄²
+  -- serre_D 6 E₆ = D E₆ - (6/12) * E₂ * E₆ = D E₆ - (1/2) * E₂ * E₆
+  -- So: D E₆ - (1/2) * E₂ * E₆ = -1/2 * E₄²
+  -- Hence: D E₆ = (1/2) * E₂ * E₆ - (1/2) * E₄² = (1/2) * (E₂ * E₆ - E₄²)
+  have h := ramanujan_E₆'
+  ext z
+  unfold serre_D at h
+  have hz := congrFun h z
+  simp only [Pi.mul_apply] at hz
+  -- hz has (-2⁻¹) z which is the constant function evaluated at z, equal to -2⁻¹
+  -- Need to simplify constant functions
+  have hconst : (-2⁻¹ : ℍ → ℂ) z = -2⁻¹ := rfl
+  rw [hconst] at hz
+  -- hz : D E₆.toFun z - 6 * 12⁻¹ * E₂ z * E₆.toFun z = -2⁻¹ * E₄.toFun z * E₄.toFun z
+  have step1 : D E₆.toFun z = 6 * 12⁻¹ * E₂ z * E₆.toFun z - 2⁻¹ * E₄.toFun z * E₄.toFun z := by
+    calc D E₆.toFun z
+        = (D E₆.toFun z - 6 * 12⁻¹ * E₂ z * E₆.toFun z) + 6 * 12⁻¹ * E₂ z * E₆.toFun z := by ring
+      _ = -2⁻¹ * E₄.toFun z * E₄.toFun z + 6 * 12⁻¹ * E₂ z * E₆.toFun z := by rw [hz]
+      _ = 6 * 12⁻¹ * E₂ z * E₆.toFun z - 2⁻¹ * E₄.toFun z * E₄.toFun z := by ring
+  -- 6/12 = 1/2
+  have h612 : (6 : ℂ) * 12⁻¹ = 2⁻¹ := by norm_num
+  rw [h612] at step1
+  rw [step1]
+  -- Simplify the goal - Pi.mul_apply for constant function
+  simp only [Pi.mul_apply, Pi.sub_apply, Pi.one_apply, Pi.inv_apply, Pi.ofNat_apply]
+  ring
+
+/-! ## Applications of Ramanujan identities -/
+
+section Ramanujan_qExpansion
+
+open scoped ArithmeticFunction.sigma
+
+/--
+Helper: D applied to exp(2πinz) gives n * exp(2πinz).
+This follows from: d/dz[exp(2πinz)] = 2πin * exp(2πinz),
+so D[exp(2πinz)] = (2πi)⁻¹ * 2πin * exp(2πinz) = n * exp(2πinz).
+-/
+lemma D_exp_eq_n_mul (n : ℕ) (z : ℍ) :
+    D (fun w : ℍ => cexp (2 * π * I * n * w)) z = n * cexp (2 * π * I * n * z) := by
+  unfold D
+  -- The key: (f ∘ ofComplex) agrees with f on the upper half-plane
+  -- So their derivatives agree at points in ℍ
+  have hcomp : deriv ((fun w : ℍ => cexp (2 * π * I * n * w)) ∘ ofComplex) z =
+      deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z := by
+    apply Filter.EventuallyEq.deriv_eq
+    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
+    rfl
+  rw [hcomp]
+  -- deriv of exp(c*z) is c*exp(c*z)
+  have hderiv : deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z =
+      (2 * π * I * n) * cexp (2 * π * I * n * z) := by
+    -- Use the derivative chain rule lemma directly
+    have hdiff_lin : DifferentiableAt ℂ (fun w => 2 * π * I * n * w) (z : ℂ) := by fun_prop
+    have hderiv_lin : deriv (fun w : ℂ => 2 * π * I * n * w) (z : ℂ) = 2 * π * I * n := by
+      rw [deriv_const_mul _ differentiableAt_id]
+      simp only [deriv_id'', mul_one]
+    calc deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z
+        = cexp (2 * π * I * n * z) * deriv (fun w => 2 * π * I * n * w) z := by
+            exact deriv_cexp hdiff_lin
+      _ = cexp (2 * π * I * n * z) * (2 * π * I * n) := by rw [hderiv_lin]
+      _ = (2 * π * I * n) * cexp (2 * π * I * n * z) := by ring
+  rw [hderiv]
+  -- Simplify (2πi)⁻¹ * (2πin) = n
+  have h2pi : (2 * π * I : ℂ) ≠ 0 := by
+    simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, ofReal_eq_zero,
+      Real.pi_ne_zero, I_ne_zero, or_self]
+  field_simp
+
+/--
+Key identity: The double sum ∑' (c,d), c * d^(k+1) * exp(2πi*z*cd) equals ∑' n, n * σ_k(n) * exp(2πi*n*z).
+This follows from the definition σ_k(n) = ∑_{d|n} d^k and the identity n * σ_k(n) = ∑_{cd=n} c * d^(k+1).
+
+The proof uses `tsum_sigma_eqn` and the fact that differentiation multiplies by the exponent factor.
+-/
+lemma tsum_sigma_deriv_eq {k : ℕ} (z : ℍ) :
+    ∑' c : ℕ+ × ℕ+, (c.1 : ℂ) * (c.2 : ℂ) ^ (k + 1) * cexp (2 * π * I * z * c.1 * c.2) =
+    ∑' n : ℕ+, (n : ℂ) * (σ k n : ℂ) * cexp (2 * π * I * n * z) := by
+  -- The key identity: for each n, ∑_{cd=n} c * d^(k+1) = n * σ_k(n)
+  -- Proof: ∑_{cd=n} c * d^(k+1) = ∑_{d|n} (n/d) * d^(k+1) = ∑_{d|n} n * d^k = n * σ_k(n)
+  --
+  -- Use sigmaAntidiagonalEquivProd to convert pairs (c,d) to divisor sums
+  rw [← sigmaAntidiagonalEquivProd.tsum_eq]
+  simp only [sigmaAntidiagonalEquivProd, mapdiv, PNat.mk_coe, Equiv.coe_fn_mk]
+  -- Use summability to convert tsum over sigma to tsum over ℕ+
+  have hsumm : Summable (fun c : (n : ℕ+) × {x // x ∈ (n : ℕ).divisorsAntidiagonal} ↦
+      (↑(c.snd.val.1) : ℂ) * ↑(c.snd.val.2) ^ (k + 1) *
+      cexp (2 * π * I * z * c.snd.val.1 * c.snd.val.2)) := by
+    -- Summability follows from bounds adapting summable_auxil_1:
+    -- For (a,b) ∈ divisorsAntidiagonal n: a * b = n, so
+    --   a * b^(k+1) = n * b^k ≤ n^(k+1) (since b | n implies b ≤ n)
+    --   |exp(2πi*z*ab)| = |exp(2πi*n*z)| (exponential decay)
+    -- Sum over divisors: card(divisors) * n^(k+1) * |exp| ≤ n^(k+2) * |exp|
+    -- Outer sum converges by hsum (k+2) z
+    apply Summable.of_norm
+    rw [summable_sigma_of_nonneg]
+    constructor
+    · -- Each inner sum over divisorsAntidiagonal is finite
+      intro n
+      exact (hasSum_fintype _).summable
+    · -- Outer sum of norms converges
+      simp only [Complex.norm_mul, norm_pow, RCLike.norm_natCast, tsum_fintype, Finset.univ_eq_attach]
+      have H (n : ℕ+) := Finset.sum_attach ((n : ℕ).divisorsAntidiagonal) (fun (x : ℕ × ℕ) =>
+        (x.1 : ℝ) * (x.2 : ℝ) ^ (k + 1) * ‖cexp (2 * π * I * z * x.1 * x.2)‖)
+      have H2 (n : ℕ+) := Nat.sum_divisorsAntidiagonal ((fun (x : ℕ) => fun (y : ℕ) =>
+        (x : ℝ) * (y : ℝ) ^ (k + 1) * ‖cexp (2 * π * I * z * x * y)‖)) (n := n)
+      conv =>
+        enter [1]
+        ext b
+        simp
+        rw [H b]
+        rw [H2 b]
+      -- Bound each divisor sum by n^(k+1) * |exp(2πi*n*z)| * card(divisors)
+      have hsum_bound := hsum (k + 1) z
+      apply Summable.of_nonneg_of_le _ _ hsum_bound
+      · intro b
+        apply Finset.sum_nonneg
+        intro i _
+        apply mul_nonneg (mul_nonneg _ _) (norm_nonneg _)
+        · exact Nat.cast_nonneg _
+        · exact pow_nonneg (Nat.cast_nonneg _) _
+      · intro b
+        apply Finset.sum_le_sum
+        intro i hi
+        simp only [Nat.mem_divisors, ne_eq, PNat.ne_zero, not_false_eq_true, and_true] at hi
+        -- After Nat.sum_divisorsAntidiagonal: term is i * (b/i)^(k+1) * ‖exp(...)‖
+        -- For i | b: i * (b/i) = b
+        have hdvd : i ∣ (b : ℕ) := hi
+        have hi_pos : 0 < i := Nat.pos_of_ne_zero (fun h => by simp [h] at hdvd)
+        have hquot_le_b : (b : ℕ) / i ≤ (b : ℕ) := Nat.div_le_self _ _
+        have hprod : i * ((b : ℕ) / i) = (b : ℕ) := Nat.mul_div_cancel' hdvd
+        -- Bound: i * (b/i)^(k+1) = i * (b/i) * (b/i)^k = b * (b/i)^k ≤ b * b^k = b^(k+1)
+        -- Let q = (b : ℕ) / i for clarity
+        set q := (b : ℕ) / i with hq_def
+        have hcoeff_le : (i : ℝ) * (q : ℝ) ^ (k + 1) ≤ (b : ℝ) ^ (k + 1) := by
+          calc (i : ℝ) * (q : ℝ) ^ (k + 1)
+              = (i : ℝ) * (q : ℝ) * (q : ℝ) ^ k := by ring
+            _ = ((i * q : ℕ) : ℝ) * (q : ℝ) ^ k := by rw [← Nat.cast_mul]
+            _ = (b : ℝ) * (q : ℝ) ^ k := by rw [hq_def, hprod]
+            _ ≤ (b : ℝ) * (b : ℝ) ^ k := by gcongr
+            _ = (b : ℝ) ^ (k + 1) := by ring
+        -- Exponential: i * q = b, so exp(2πi*z*i*q) = exp(2πi*z*b)
+        have hexp_eq : ‖cexp (2 * π * I * z * i * q)‖ = ‖cexp (2 * π * I * z * b)‖ := by
+          congr 1
+          congr 1
+          calc (2 : ℂ) * π * I * z * i * q
+              = 2 * π * I * z * ((i * q : ℕ) : ℂ) := by simp only [Nat.cast_mul]; ring
+            _ = 2 * π * I * z * (b : ℕ) := by rw [hq_def, hprod]
+            _ = 2 * π * I * z * ↑↑b := by simp
+        calc (i : ℝ) * (q : ℝ) ^ (k + 1) * ‖cexp (2 * π * I * z * i * q)‖
+            = (i : ℝ) * (q : ℝ) ^ (k + 1) * ‖cexp (2 * π * I * z * b)‖ := by rw [hexp_eq]
+          _ ≤ (b : ℝ) ^ (k + 1) * ‖cexp (2 * π * I * z * b)‖ := by gcongr
+    · intro _
+      exact norm_nonneg _
+  rw [hsumm.tsum_sigma]
+  apply tsum_congr
+  intro n
+  rw [tsum_fintype, Finset.univ_eq_attach]
+  -- For each n, show ∑_{(c,d) with cd=n} c * d^(k+1) = n * σ_k(n)
+  have hdiv := @Nat.sum_divisorsAntidiagonal' ℂ _ (fun (x : ℕ) => fun (y : ℕ) =>
+    (x : ℂ) * (y : ℂ) ^ (k + 1) * cexp (2 * π * I * z * x * y)) n
+  simp only at hdiv
+  have H := Finset.sum_attach ((n : ℕ).divisorsAntidiagonal) (fun (x : ℕ × ℕ) =>
+    (x.1 : ℂ) * (x.2 : ℂ) ^ (k + 1) * cexp (2 * π * I * z * x.1 * x.2))
+  simp only at H
+  rw [H, hdiv]
+  -- Now show: ∑_{i|n} ↑(n/i) * i^(k+1) * exp(2πi * z * ↑(n/i) * i) = n * σ_k(n) * exp(2πinz)
+  -- Note: Nat.sum_divisorsAntidiagonal' produces ↑(↑n / i) which is ℕ division cast to ℂ
+  --
+  -- Key identity for i | n: ↑((n/i : ℕ) * i : ℕ) = ↑n via Nat.div_mul_cancel
+  -- This gives: ↑(n/i) * ↑i = ↑n (using ← Nat.cast_mul)
+  -- Then: ↑(n/i) * i^(k+1) = ↑(n/i) * i * i^k = n * i^k
+  -- And: exp(2πi*z*↑(n/i)*i) = exp(2πi*n*z) since ↑(n/i)*i = n
+  --
+  -- Convert each term using ← Nat.cast_mul and Nat.div_mul_cancel
+  have hterm_eq : ∀ i ∈ (n : ℕ).divisors,
+      (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) ^ (k + 1) *
+        cexp (2 * π * I * z * (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ)) =
+      (n : ℂ) * (i : ℂ) ^ k * cexp (2 * π * I * n * z) := by
+    intro i hi
+    have hdvd : i ∣ (n : ℕ) := Nat.dvd_of_mem_divisors hi
+    -- Key: ↑((n/i) * i : ℕ) = ↑n, so ↑(n/i) * ↑i = ↑n
+    have hprod : (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) = (n : ℂ) := by
+      rw [← Nat.cast_mul, Nat.div_mul_cancel hdvd]
+    -- Coefficient: ↑(n/i) * i^(k+1) = ↑(n/i) * i * i^k = n * i^k
+    have hcoeff : (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) ^ (k + 1) = (n : ℂ) * (i : ℂ) ^ k := by
+      calc (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) ^ (k + 1)
+          = (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) * (i : ℂ) ^ k := by ring
+        _ = (n : ℂ) * (i : ℂ) ^ k := by rw [hprod]
+    -- Exponential: ↑(n/i) * i = n, so exp(...) = exp(2πi*n*z)
+    -- Note: ((n : ℕ) / i) is ℕ division, which gets coerced to ℂ in this context
+    have hexp : cexp (2 * π * I * z * (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ)) =
+        cexp (2 * π * I * n * z) := by
+      congr 1
+      -- Rearrange to use hprod: ↑(↑n/i) * ↑i = ↑↑n (without using push_cast)
+      have hrearr : (2 : ℂ) * π * I * z * (((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ) =
+          2 * π * I * z * ((((n : ℕ) / i : ℕ) : ℂ) * (i : ℂ)) := by ring
+      rw [hrearr, hprod]
+      ring
+    rw [hcoeff, hexp]
+  -- Apply the term rewrite to the sum using direct rewrites
+  rw [Finset.sum_congr rfl hterm_eq, ← Finset.sum_mul, ← Finset.mul_sum]
+  -- Now show: ∑ i ∈ n.divisors, (i : ℂ)^k = (σ k n : ℂ) using sigma_apply
+  have hsigma_cast : ∑ i ∈ ((n : ℕ)).divisors, ((i : ℂ)) ^ k = ((σ k n) : ℂ) := by
+    rw [ArithmeticFunction.sigma_apply]
+    simp only [Nat.cast_sum, Nat.cast_pow]
+  rw [hsigma_cast]
+
+/--
+The normalized derivative D multiplies q-expansion coefficients by n.
+Since E₄ = 1 + 240·Σσ₃(n)·qⁿ, we have D(E₄) = 240·Σn·σ₃(n)·qⁿ.
+-/
+lemma D_E4_qexp (z : ℍ) :
+    D E₄.toFun z = 240 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) := by
+  -- Step 1: Express E₄ using q-expansion
+  -- E₄(z) = 1 + 240 * ∑' n : ℕ+, σ₃(n) * exp(2πi·z·n) from E_k_q_expansion
+  have hE4 : ∀ w : ℍ, E₄.toFun w = 1 + 240 * ∑' (n : ℕ+), (σ 3 n) * cexp (2 * π * I * w * n) := by
+    intro w
+    -- E₄.toFun = E₄ by coercion, and E₄ = E 4 by definition
+    have hE : E₄.toFun w = E 4 (by norm_num) w := by rfl
+    have hqexp := E_k_q_expansion 4 (by norm_num) (by exact Nat.even_iff.mpr rfl) w
+    -- hqexp uses ↑4 while target uses 4; they are equal
+    simp only [Nat.cast_ofNat, Nat.succ_sub_succ_eq_sub, tsub_zero] at hqexp
+    rw [hE, hqexp]
+    -- Now goal is: 1 + (1/riemannZeta 4) * ((-2πi)^4 / 3!) * ∑'... = 1 + 240 * ...
+    -- Need to show coefficient = 240
+    -- Using riemannZeta_four : riemannZeta 4 = π^4 / 90
+    congr 1
+    have hzeta : riemannZeta 4 = (π : ℂ) ^ 4 / 90 := by
+      simp only [riemannZeta_four]
+    -- Coefficient = (1/(π^4/90)) * ((-2πi)^4 / 6) = (90/π^4) * (16π^4) / 6 = 240
+    have hcoeff : (1 / riemannZeta 4) * ((-2 * π * I) ^ 4 / Nat.factorial 3) = (240 : ℂ) := by
+      rw [hzeta]
+      -- (-2πi)^4 = 16π^4 since I^4 = 1
+      have hI4 : I ^ 4 = (1 : ℂ) := by norm_num [pow_succ, I_sq]
+      have h1 : (-2 * (π : ℂ) * I) ^ 4 = 16 * (π : ℂ) ^ 4 := by
+        have : (-2 * (π : ℂ) * I) ^ 4 = (-2) ^ 4 * (π : ℂ) ^ 4 * I ^ 4 := by ring
+        rw [this, hI4]
+        norm_num
+      rw [h1]
+      simp only [Nat.factorial_succ, Nat.reduceAdd]
+      have hpi : (π : ℂ) ≠ 0 := ofReal_ne_zero.mpr Real.pi_ne_zero
+      field_simp
+      ring
+    convert mul_comm _ _ using 1
+    rw [hcoeff]
+    ring
+  -- Step 2: Use deriv-tsum interchange
+  unfold D
+  have hz' : 0 < (z : ℂ).im := z.im_pos
+  -- The composition E₄.toFun ∘ ofComplex agrees with the q-expansion on ℍ'
+  have hE4' : ∀ w : ℂ, 0 < w.im →
+      (E₄.toFun ∘ ofComplex) w = 1 + 240 * ∑' (n : ℕ+), (σ 3 n) * cexp (2 * π * I * w * n) := by
+    intro w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
+    exact hE4 ⟨w, hw⟩
+  -- Replace deriv of E₄ with deriv of q-expansion form
+  have hderiv_eq : deriv (E₄.toFun ∘ ofComplex) (z : ℂ) =
+      deriv (fun w => 1 + 240 * ∑' (n : ℕ+), (σ 3 n) * cexp (2 * π * I * w * n)) (z : ℂ) := by
+    apply Filter.EventuallyEq.deriv_eq
+    filter_upwards [isOpen_lt continuous_const Complex.continuous_im |>.mem_nhds hz'] with w hw
+    exact hE4' w hw
+  rw [hderiv_eq]
+  -- Now we need to interchange deriv with tsum
+  -- Using hasDerivAt_tsum_fun from tsumderivWithin.lean
+  have hopen : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
+  -- Define f n w := (σ 3 n) * cexp (2 * π * I * w * n)
+  let f : ℕ+ → ℂ → ℂ := fun n w => (σ 3 n) * cexp (2 * π * I * w * n)
+  -- Summability at each point
+  have hf_summ : ∀ y : ℂ, 0 < y.im → Summable (fun n : ℕ+ => f n y) := by
+    intro y hy
+    -- |f n y| = |σ 3 n| * |exp(2πiny)| ≤ n^4 * r^n where r < 1
+    -- This is summable as polynomial times geometric
+    simp only [f]
+    apply Summable.of_norm
+    -- Use sigma_bound: σ 3 n ≤ n^4
+    have hsigma_bound : ∀ n : ℕ+, (σ 3 n : ℝ) ≤ (n : ℕ) ^ 4 := fun n => by
+      exact_mod_cast sigma_bound 3 n
+    -- Construct UpperHalfPlane element
+    let y_uhp : ℍ := ⟨y, hy⟩
+    -- Use a33 with k=4 and e=1 for the bound
+    have ha33 := a33 4 1 y_uhp
+    apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _ (summable_norm_iff.mpr ha33)
+    intro n
+    simp only [Complex.norm_mul, norm_pow]
+    -- |σ 3 n| * |exp(...)| ≤ n^4 * |exp(...)|
+    have hσ_norm : ‖(σ 3 n : ℂ)‖ ≤ (n : ℝ) ^ 4 := by
+      rw [Complex.norm_natCast]
+      exact hsigma_bound n
+    have hy_coe : (y_uhp : ℂ) = y := rfl
+    -- After simp, goal is: (σ 3 n : ℝ) * ‖exp(...)‖ ≤ ‖n‖^4 * ‖exp(...)‖
+    -- (because simp uses Complex.norm_natCast on ‖σ 3 n‖)
+    -- Rewrite exponent argument to match ha33 form
+    have harg : cexp (2 * π * I * y * n) = cexp (2 * π * I * (1 : ℕ+) * (y_uhp : ℂ) * n) := by
+      congr 1
+      simp only [hy_coe, PNat.one_coe, Nat.cast_one, Complex.ofReal_one, mul_one]
+    rw [harg]
+    -- Goal: (σ 3 n : ℝ) * ‖exp(...)‖ ≤ ‖n‖^4 * ‖exp(...)‖
+    apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+    -- Goal: (σ 3 n : ℝ) ≤ ‖n‖^4 = (n : ℝ)^4
+    rw [Complex.norm_natCast]
+    exact_mod_cast hsigma_bound n
+  -- Uniform derivative bound on compact sets
+  have hu : ∀ K ⊆ {w : ℂ | 0 < w.im}, IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K), ‖derivWithin (f n) {w | 0 < w.im} k‖ ≤ u n := by
+    intro K hK hKc
+    -- |deriv (f n)| = |σ 3 n| * |2πn| * |exp(...)| ≤ n^4 * 2πn * |exp(...)|
+    -- Since n^4 * 2πn = n^5 * 2π ≤ (2πn)^5 (for n ≥ 1, 2π > 1)
+    -- Use iter_deriv_comp_bound3 with k=5
+    obtain ⟨u', hu'_sum, hu'_bound⟩ := iter_deriv_comp_bound3 K hK hKc 5
+    use fun n => u' n
+    constructor
+    · exact hu'_sum.subtype _
+    · intro n k
+      rw [derivWithin_of_isOpen hopen (hK k.2)]
+      simp only [f]
+      have hderiv_fn : deriv (fun w => (σ 3 n : ℂ) * cexp (2 * π * I * w * n)) k =
+          (σ 3 n : ℂ) * (2 * π * I * n) * cexp (2 * π * I * k * n) := by
+        rw [deriv_const_mul_field]
+        have h_inner_fun : (fun w : ℂ => 2 * π * I * w * n) = (fun w => (2 * π * I * n) * w) := by
+          ext w; ring
+        have h_deriv_inner : deriv (fun w : ℂ => 2 * π * I * w * n) k = 2 * π * I * n := by
+          rw [h_inner_fun, deriv_const_mul_field, deriv_id'', mul_one]
+        rw [deriv_cexp (by fun_prop : DifferentiableAt ℂ (fun w => 2 * π * I * w * n) k)]
+        rw [h_deriv_inner]
+        ring
+      rw [hderiv_fn]
+      have hσ : ‖(σ 3 n : ℂ)‖ ≤ (n : ℝ) ^ 4 := by
+        rw [Complex.norm_natCast]
+        exact_mod_cast sigma_bound 3 n
+      have h2pin : ‖(2 * π * I * n : ℂ)‖ = 2 * |π| * n := by
+        simp only [Complex.norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs,
+          Complex.norm_I, mul_one, Complex.norm_natCast]
+      have hargswap : cexp (2 * π * I * k * n) = cexp (2 * π * I * n * k) := by
+        congr 1; ring
+      -- n^4 * 2πn ≤ (2πn)^5 since 2π ≥ 1 and n ≥ 1
+      have hbound : (n : ℝ) ^ 4 * (2 * |π| * n) ≤ (2 * |π| * n) ^ 5 := by
+        have hn : (1 : ℝ) ≤ n := by exact_mod_cast n.one_le
+        have hpi : 1 ≤ 2 * |π| := by
+          have : (0 : ℝ) < π := Real.pi_pos
+          simp only [abs_of_pos this]
+          linarith [Real.pi_gt_three]
+        calc (n : ℝ) ^ 4 * (2 * |π| * n)
+            = (2 * |π|) * n ^ 5 := by ring
+          _ ≤ (2 * |π|) ^ 5 * n ^ 5 := by
+              apply mul_le_mul_of_nonneg_right _ (by positivity)
+              calc (2 * |π|) = (2 * |π|) ^ 1 := by ring
+                _ ≤ (2 * |π|) ^ 5 := pow_le_pow_right₀ hpi (by omega : 1 ≤ 5)
+          _ = (2 * |π| * n) ^ 5 := by ring
+      calc ‖(σ 3 n : ℂ) * (2 * π * I * n) * cexp (2 * π * I * k * n)‖
+          = ‖(σ 3 n : ℂ)‖ * ‖(2 * π * I * n : ℂ)‖ * ‖cexp (2 * π * I * k * n)‖ := by
+            rw [norm_mul, norm_mul]
+        _ ≤ (n : ℝ) ^ 4 * (2 * |π| * n) * ‖cexp (2 * π * I * k * n)‖ := by
+            rw [h2pin]
+            apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+            apply mul_le_mul_of_nonneg_right hσ; positivity
+        _ ≤ (2 * |π| * n) ^ 5 * ‖cexp (2 * π * I * n * k)‖ := by
+            rw [hargswap]
+            apply mul_le_mul_of_nonneg_right hbound (norm_nonneg _)
+        _ ≤ u' n := hu'_bound n k
+  -- Each term is differentiable
+  have hf_diff : ∀ (n : ℕ+) (r : {w : ℂ | 0 < w.im}), DifferentiableAt ℂ (f n) r := by
+    intro n r
+    apply DifferentiableAt.const_mul
+    apply DifferentiableAt.cexp
+    fun_prop
+  -- Apply hasDerivAt_tsum_fun
+  have hderiv_tsum : HasDerivAt (fun w => ∑' n : ℕ+, f n w)
+      (∑' n : ℕ+, derivWithin (f n) {w | 0 < w.im} z) (z : ℂ) :=
+    hasDerivAt_tsum_fun f hopen (z : ℂ) hz' hf_summ hu hf_diff
+  -- deriv (1 + 240 * tsum) = 240 * deriv(tsum)
+  -- First rewrite to (240 * tsum + 1) form for deriv_add_const
+  have hfun_eq : (fun w => 1 + 240 * ∑' (n : ℕ+), f n w) =
+      (fun w => 240 * ∑' (n : ℕ+), f n w + 1) := by ext w; ring
+  have hdiff_tsum : DifferentiableAt ℂ (fun w => ∑' (n : ℕ+), f n w) z :=
+    hderiv_tsum.differentiableAt
+  have hderiv_add : deriv (fun w => 1 + 240 * ∑' (n : ℕ+), f n w) (z : ℂ) =
+      240 * deriv (fun w => ∑' (n : ℕ+), f n w) (z : ℂ) := by
+    rw [hfun_eq, deriv_add_const, deriv_const_mul _ hdiff_tsum]
+  rw [hderiv_add]
+  -- Extract the deriv from HasDerivAt
+  have hderiv_tsum_eq : deriv (fun w => ∑' n : ℕ+, f n w) (z : ℂ) =
+      ∑' n : ℕ+, derivWithin (f n) {w | 0 < w.im} z := hderiv_tsum.deriv
+  rw [hderiv_tsum_eq]
+  -- Compute derivWithin of each term
+  have hderiv_term : ∀ n : ℕ+, derivWithin (f n) {w | 0 < w.im} z =
+      (σ 3 n) * (2 * π * I * n) * cexp (2 * π * I * z * n) := by
+    intro n
+    rw [derivWithin_of_isOpen hopen hz']
+    -- Derivative of 2πI * w * n is 2πI * n
+    have hlin_deriv : deriv (fun w : ℂ => 2 * π * I * w * n) z = 2 * π * I * n := by
+      have : (fun w : ℂ => 2 * π * I * w * n) = fun w => (2 * π * I * n) * w := by ext; ring
+      rw [this, deriv_const_mul, deriv_id'', mul_one]
+      exact differentiableAt_id'
+    have hderiv_exp : deriv (fun w => cexp (2 * π * I * w * n)) z =
+        (2 * π * I * n) * cexp (2 * π * I * z * n) := by
+      rw [deriv_cexp (by fun_prop : DifferentiableAt ℂ (fun w => 2 * π * I * w * n) z)]
+      rw [hlin_deriv]
+      ring
+    simp only [f]
+    rw [deriv_const_mul_field, hderiv_exp]
+    ring
+  -- First rewrite the tsum using hderiv_term
+  have htsum_eq : ∑' n : ℕ+, derivWithin (f n) {w | 0 < w.im} z =
+      ∑' n : ℕ+, (σ 3 n : ℂ) * (2 * π * I * n) * cexp (2 * π * I * z * n) :=
+    tsum_congr hderiv_term
+  rw [htsum_eq]
+  -- Simplify: (2πi)⁻¹ * 240 * ∑ (σ 3 n) * (2πin) * exp(...) = 240 * ∑ n * (σ 3 n) * exp(...)
+  have h2pi : (2 * π * I : ℂ) ≠ 0 := by
+    simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, ofReal_eq_zero,
+      Real.pi_ne_zero, I_ne_zero, or_self]
+  -- Rewrite each term: (σ 3 n) * (2πIn) * exp(...) = (2πI) * n * (σ 3 n) * exp(...)
+  have hterm_eq : ∀ n : ℕ+, (σ 3 n : ℂ) * (2 * π * I * n) * cexp (2 * π * I * (z : ℂ) * n) =
+      (2 * π * I) * (n * (σ 3 n) * cexp (2 * π * I * n * z)) := by
+    intro n
+    have hexp_eq : cexp (2 * π * I * (z : ℂ) * n) = cexp (2 * π * I * n * z) := by ring_nf
+    rw [hexp_eq]
+    ring
+  have htsum_eq2 : ∑' n : ℕ+, (σ 3 n : ℂ) * (2 * π * I * n) * cexp (2 * π * I * (z : ℂ) * n) =
+      (2 * π * I) * ∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * I * n * z) := by
+    rw [tsum_congr hterm_eq, tsum_mul_left]
+  rw [htsum_eq2]
+  -- Goal: (2πI)⁻¹ * (240 * ((2πI) * ∑ (...))) = 240 * ∑ (...)
+  -- Use calc to handle the algebra step by step
+  let T := ∑' n : ℕ+, (n : ℂ) * (σ 3 n) * cexp (2 * π * I * n * z)
+  show (2 * π * I)⁻¹ * (240 * ((2 * π * I) * T)) = 240 * T
+  calc (2 * π * I)⁻¹ * (240 * ((2 * π * I) * T))
+      = (2 * π * I)⁻¹ * (2 * π * I) * (240 * T) := by ring
+    _ = 1 * (240 * T) := by rw [inv_mul_cancel₀ h2pi]
+    _ = 240 * T := by ring
+
+/--
+The q-expansion identity E₂E₄ - E₆ = 720·Σn·σ₃(n)·qⁿ.
+This follows from Ramanujan's formula: E₂E₄ - E₆ = 3·D(E₄),
+combined with D(E₄) = 240·Σn·σ₃(n)·qⁿ (since D multiplies q-coefficients by n).
+-/
+theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
+    (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)
+    := by
+  -- From ramanujan_E₄: D E₄ = (1/3) * (E₂ * E₄ - E₆)
+  -- So: E₂ * E₄ - E₆ = 3 * D E₄
+  have hRam : (E₂ z) * (E₄ z) - (E₆ z) = 3 * D E₄.toFun z := by
+    -- ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)
+    -- Evaluating at z and rearranging gives the result
+    have h3 : (3 : ℂ) ≠ 0 := by norm_num
+    have h := congrFun ramanujan_E₄ z
+    -- h : D E₄.toFun z = (3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)) z
+    -- Instead of simp, unfold Pi.mul directly
+    -- (c * f) z where c : ℂ and f : ℍ → ℂ evaluates to c * f z
+    -- But the * here might be Pi.mul with c as constant function
+    -- Let's work around by computing the value directly
+    calc E₂ z * E₄ z - E₆ z
+        = E₂ z * E₄.toFun z - E₆.toFun z := by rfl
+      _ = 3 * (3⁻¹ * (E₂ z * E₄.toFun z - E₆.toFun z)) := by field_simp
+      _ = 3 * D E₄.toFun z := by
+          congr 1
+          -- The RHS of h is (3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)) z
+          -- We need to show this equals 3⁻¹ * (E₂ z * E₄.toFun z - E₆.toFun z)
+          -- This follows from how Pi multiplication works
+          simp only [Pi.mul_apply, Pi.sub_apply] at h
+          exact h.symm
+  -- Substitute D(E₄) = 240 * ∑' n, n * σ₃(n) * q^n
+  rw [hRam, D_E4_qexp]
+  ring
+
+end Ramanujan_qExpansion
+
+/--
+Prove modular linear differential equation satisfied by $F$.
+-/
+noncomputable def X₄₂ := 288⁻¹ * (E₄.toFun - E₂ * E₂)
+
+noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
+
+noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
+
+theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
+    + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun
+    := by
+  rw [F, D_sq, D_sub, D_mul]
+  · ring_nf
+    rw [ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
+    ext z
+    simp
+    ring_nf
+  -- Holomorphicity of the terms
+  · exact E₂_holo'
+  · exact E₄.holo'
+  · exact MDifferentiable.mul E₂_holo' E₄.holo'
+  · exact E₆.holo'
+  have h24 := MDifferentiable.mul E₂_holo' E₄.holo'
+  exact MDifferentiable.sub h24 E₆.holo'
+
+
+/-- Holomorphicity of F. -/
+lemma F_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
+  have hE₂E₄ := MDifferentiable.mul E₂_holo' E₄.holo'
+  have hE₂E₄_sub_E₆ := MDifferentiable.sub hE₂E₄ E₆.holo'
+  simp only [F, sq]; exact MDifferentiable.mul hE₂E₄_sub_E₆ hE₂E₄_sub_E₆
+
+/-- Modular linear differential equation satisfied by `F`. -/
+theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 172800 * Δ_fun * X₄₂ := by
+  -- The modular linear differential equation for F = (E₂·E₄ - E₆)².
+  -- Proof strategy:
+  -- 1. Expand serre_D 10 F = D F - (5/6)·E₂·F using F_aux
+  -- 2. Apply serre_D 12 = D - E₂· to this
+  -- 3. Compute D(D F) using D rules applied to F_aux
+  -- 4. Apply Ramanujan identities to all D terms
+  -- 5. Combine with RHS = (5/6)·E₄·F + 172800·Δ_fun·X₄₂ where
+  --    Δ_fun = (E₄³ - E₆²)/1728 and X₄₂ = (E₄ - E₂²)/288
+  -- 6. Verify algebraic equality by ring_nf
+  --
+  -- The calculation is lengthy but purely algebraic after applying the
+  -- Ramanujan identities: D(E₂) = (E₂² - E₄)/12, D(E₄) = (E₂·E₄ - E₆)/3,
+  -- D(E₆) = (E₂·E₆ - E₄²)/2
+  sorry
+
+example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.toFun - E₆.toFun) :=
+  by
+  rw [D_mul E₄.toFun E₄.toFun]
+  · simp only [ramanujan_E₄]
+    ring_nf
+  · exact E₄.holo'
+  · exact E₄.holo'
+
+end
