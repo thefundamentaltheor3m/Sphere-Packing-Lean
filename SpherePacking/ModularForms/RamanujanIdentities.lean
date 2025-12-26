@@ -1232,8 +1232,66 @@ lemma tsum_sigma_deriv_eq {k : ℕ} (z : ℍ) :
     --   |exp(2πi*z*ab)| = |exp(2πi*n*z)| (exponential decay)
     -- Sum over divisors: card(divisors) * n^(k+1) * |exp| ≤ n^(k+2) * |exp|
     -- Outer sum converges by hsum (k+2) z
-    -- See summable_auxil_1 and mathlib's summable_divisorsAntidiagonal_aux for pattern
-    sorry
+    apply Summable.of_norm
+    rw [summable_sigma_of_nonneg]
+    constructor
+    · -- Each inner sum over divisorsAntidiagonal is finite
+      intro n
+      exact (hasSum_fintype _).summable
+    · -- Outer sum of norms converges
+      simp only [Complex.norm_mul, norm_pow, RCLike.norm_natCast, tsum_fintype, Finset.univ_eq_attach]
+      have H (n : ℕ+) := Finset.sum_attach ((n : ℕ).divisorsAntidiagonal) (fun (x : ℕ × ℕ) =>
+        (x.1 : ℝ) * (x.2 : ℝ) ^ (k + 1) * ‖cexp (2 * π * I * z * x.1 * x.2)‖)
+      have H2 (n : ℕ+) := Nat.sum_divisorsAntidiagonal ((fun (x : ℕ) => fun (y : ℕ) =>
+        (x : ℝ) * (y : ℝ) ^ (k + 1) * ‖cexp (2 * π * I * z * x * y)‖)) (n := n)
+      conv =>
+        enter [1]
+        ext b
+        simp
+        rw [H b]
+        rw [H2 b]
+      -- Bound each divisor sum by n^(k+1) * |exp(2πi*n*z)| * card(divisors)
+      have hsum_bound := hsum (k + 1) z
+      apply Summable.of_nonneg_of_le _ _ hsum_bound
+      · intro b
+        apply Finset.sum_nonneg
+        intro i _
+        apply mul_nonneg (mul_nonneg _ _) (norm_nonneg _)
+        · exact Nat.cast_nonneg _
+        · exact pow_nonneg (Nat.cast_nonneg _) _
+      · intro b
+        apply Finset.sum_le_sum
+        intro i hi
+        simp only [Nat.mem_divisors, ne_eq, PNat.ne_zero, not_false_eq_true, and_true] at hi
+        -- After Nat.sum_divisorsAntidiagonal: term is i * (b/i)^(k+1) * ‖exp(...)‖
+        -- For i | b: i * (b/i) = b
+        have hdvd : i ∣ (b : ℕ) := hi
+        have hi_pos : 0 < i := Nat.pos_of_ne_zero (fun h => by simp [h] at hdvd)
+        have hquot_le_b : (b : ℕ) / i ≤ (b : ℕ) := Nat.div_le_self _ _
+        have hprod : i * ((b : ℕ) / i) = (b : ℕ) := Nat.mul_div_cancel' hdvd
+        -- Bound: i * (b/i)^(k+1) = i * (b/i) * (b/i)^k = b * (b/i)^k ≤ b * b^k = b^(k+1)
+        -- Let q = (b : ℕ) / i for clarity
+        set q := (b : ℕ) / i with hq_def
+        have hcoeff_le : (i : ℝ) * (q : ℝ) ^ (k + 1) ≤ (b : ℝ) ^ (k + 1) := by
+          calc (i : ℝ) * (q : ℝ) ^ (k + 1)
+              = (i : ℝ) * (q : ℝ) * (q : ℝ) ^ k := by ring
+            _ = ((i * q : ℕ) : ℝ) * (q : ℝ) ^ k := by rw [← Nat.cast_mul]
+            _ = (b : ℝ) * (q : ℝ) ^ k := by rw [hq_def, hprod]
+            _ ≤ (b : ℝ) * (b : ℝ) ^ k := by gcongr
+            _ = (b : ℝ) ^ (k + 1) := by ring
+        -- Exponential: i * q = b, so exp(2πi*z*i*q) = exp(2πi*z*b)
+        have hexp_eq : ‖cexp (2 * π * I * z * i * q)‖ = ‖cexp (2 * π * I * z * b)‖ := by
+          congr 1
+          congr 1
+          calc (2 : ℂ) * π * I * z * i * q
+              = 2 * π * I * z * ((i * q : ℕ) : ℂ) := by simp only [Nat.cast_mul]; ring
+            _ = 2 * π * I * z * (b : ℕ) := by rw [hq_def, hprod]
+            _ = 2 * π * I * z * ↑↑b := by simp
+        calc (i : ℝ) * (q : ℝ) ^ (k + 1) * ‖cexp (2 * π * I * z * i * q)‖
+            = (i : ℝ) * (q : ℝ) ^ (k + 1) * ‖cexp (2 * π * I * z * b)‖ := by rw [hexp_eq]
+          _ ≤ (b : ℝ) ^ (k + 1) * ‖cexp (2 * π * I * z * b)‖ := by gcongr
+    · intro _
+      exact norm_nonneg _
   rw [hsumm.tsum_sigma]
   apply tsum_congr
   intro n
