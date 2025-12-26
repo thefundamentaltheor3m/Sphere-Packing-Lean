@@ -1385,40 +1385,22 @@ lemma D_E4_qexp (z : ℍ) :
     convert mul_comm _ _ using 1
     rw [hcoeff]
     ring
-  -- Step 2: Compute D of the q-expansion using deriv-tsum interchange
-  -- We use D_exp_eq_n_mul for individual terms and the tsum-deriv interchange
-  unfold D
-  -- Express the derivative in terms of the q-expansion
-  have hz' : 0 < (z : ℂ).im := z.im_pos
-  -- The composition E₄.toFun ∘ ofComplex agrees with the q-expansion on ℍ'
-  have hE4' : ∀ w : ℂ, 0 < w.im →
-      (E₄.toFun ∘ ofComplex) w = 1 + 240 * ∑' (n : ℕ+), (σ 3 n) * cexp (2 * π * I * w * n) := by
-    intro w hw
-    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
-    exact hE4 ⟨w, hw⟩
-  -- deriv of constant + scalar * tsum = 0 + scalar * deriv(tsum)
-  -- For the tsum, each term's derivative is: σ₃(n) * (2πin) * exp(2πinw)
-  -- Using hasDerivAt_tsum_fun or derivWithin_tsum_fun' from tsumderivWithin.lean
+  -- Step 2: Use Ramanujan's formula and the identity (E₂·E₄ - E₆) = 3·D(E₄)
+  -- The cleanest approach is to use the already-proven ramanujan_E₄:
+  -- D(E₄) = (1/3) * (E₂ * E₄ - E₆)
+  -- Combined with E₂E₄ - E₆ = 720 * ∑' n, n * σ₃(n) * qⁿ (from E2E4_sub_E6_qexp below)
+  -- gives D(E₄) = 240 * ∑' n, n * σ₃(n) * qⁿ
   --
-  -- **Full Proof Strategy** (detailed steps):
+  -- For a direct proof using tsum-deriv interchange:
+  -- The key infrastructure is:
+  -- - hasDerivAt_tsum_fun for interchanging deriv with tsum
+  -- - iter_deriv_comp_bound3 for uniform derivative bounds on compact sets
+  -- - D_exp_eq_n_mul for derivatives of individual exponential terms
   --
-  -- 1. Convert deriv to derivWithin on ℍ' (open set)
-  -- 2. Use derivWithin_tsum_fun' to interchange deriv with tsum:
-  --    derivWithin (∑' f_n) ℍ' z = ∑' derivWithin f_n ℍ' z
-  -- 3. For each term: derivWithin (σ₃(n) * exp(2πinw)) ℍ' w = σ₃(n) * 2πin * exp(2πinw)
-  -- 4. Simplify: (2πi)⁻¹ * σ₃(n) * 2πin * exp(2πinz) = n * σ₃(n) * exp(2πinz)
+  -- The proof requires showing summability of σ₃(n)·exp(2πinz) and bounds on derivatives.
+  -- Since σ₃(n) ≤ n⁴, derivatives are bounded by n⁵ · |q|ⁿ which is summable.
   --
-  -- Requirements for derivWithin_tsum_fun':
-  -- (a) ℍ' is open ✓ (upper_half_plane_isOpen)
-  -- (b) Summability: ∀ w ∈ ℍ', Summable (n ↦ σ₃(n) * exp(2πinw))
-  --     This follows from exponential decay (summable_auxil_1 with k=0)
-  -- (c) Uniform derivative bound: ∃ u summable, ‖derivWithin (f n)‖ ≤ u n on compact K ⊆ ℍ'
-  --     Since σ₃(n) ≤ n⁴ and derivatives add a factor of 2πn, we get n⁵ * |q|^n
-  --     This is bounded by iter_deriv_comp_bound3
-  -- (d) Each term differentiable: z ↦ σ₃(n) * exp(2πinz) is holomorphic
-  --
-  -- The infrastructure from summable_lems.lean handles most of this.
-  -- Key lemmas: summable_auxil_1, iter_deriv_comp_bound2/3
+  -- TODO: Complete the tsum-deriv interchange proof following the strategy above.
   sorry
 
 /--
@@ -1484,15 +1466,27 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
   exact MDifferentiable.sub h24 E₆.holo'
 
 
-/--
-Modular linear differential equation satisfied by `F`.
-TODO: Move this to a more appropriate place.
--/
+/-- Holomorphicity of F. -/
+lemma F_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
+  have hE₂E₄ := MDifferentiable.mul E₂_holo' E₄.holo'
+  have hE₂E₄_sub_E₆ := MDifferentiable.sub hE₂E₄ E₆.holo'
+  simp only [F, sq]; exact MDifferentiable.mul hE₂E₄_sub_E₆ hE₂E₄_sub_E₆
+
+/-- Modular linear differential equation satisfied by `F`. -/
 theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 172800 * Δ_fun * X₄₂ := by
-  ext x
-  rw [X₄₂, Δ_fun, serre_D, serre_D, F_aux]
-  unfold serre_D
-  rw [F_aux]
+  -- The modular linear differential equation for F = (E₂·E₄ - E₆)².
+  -- Proof strategy:
+  -- 1. Expand serre_D 10 F = D F - (5/6)·E₂·F using F_aux
+  -- 2. Apply serre_D 12 = D - E₂· to this
+  -- 3. Compute D(D F) using D rules applied to F_aux
+  -- 4. Apply Ramanujan identities to all D terms
+  -- 5. Combine with RHS = (5/6)·E₄·F + 172800·Δ_fun·X₄₂ where
+  --    Δ_fun = (E₄³ - E₆²)/1728 and X₄₂ = (E₄ - E₂²)/288
+  -- 6. Verify algebraic equality by ring_nf
+  --
+  -- The calculation is lengthy but purely algebraic after applying the
+  -- Ramanujan identities: D(E₂) = (E₂² - E₄)/12, D(E₄) = (E₂·E₄ - E₆)/3,
+  -- D(E₆) = (E₂·E₆ - E₄²)/2
   sorry
 
 example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.toFun - E₆.toFun) :=
