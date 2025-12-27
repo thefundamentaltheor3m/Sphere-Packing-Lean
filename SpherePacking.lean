@@ -31,6 +31,11 @@ import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.a.Eigenfunction
 import SpherePacking.MagicFunction.a.Holomorphicity.ContDiff
 import SpherePacking.MagicFunction.a.Holomorphicity.I1
+import SpherePacking.MagicFunction.a.Holomorphicity.I2
+import SpherePacking.MagicFunction.a.Holomorphicity.I3
+import SpherePacking.MagicFunction.a.Holomorphicity.I4
+import SpherePacking.MagicFunction.a.Holomorphicity.I5
+import SpherePacking.MagicFunction.a.Holomorphicity.I6
 import SpherePacking.MagicFunction.a.Integrability.I1
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 import SpherePacking.MagicFunction.a.IntegralEstimates.I2

@@ -65,7 +65,7 @@ end MagicFunction.Parametrisations
 
 end Parametrisations
 
-section ContDiff
+section Integrands
 
 open MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
   MagicFunction.Parametrisations
@@ -123,4 +123,4 @@ theorem Φ₆_contDiffOn : ContDiffOn ℝ ∞ (Φ₆ r) (Ici (1 : ℝ)) := by
 
 end MagicFunction.a.RealIntegrands
 
-end ContDiff
+end Integrands

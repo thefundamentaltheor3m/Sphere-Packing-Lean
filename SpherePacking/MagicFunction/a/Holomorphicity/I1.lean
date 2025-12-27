@@ -39,52 +39,53 @@ section Halfplane_API
 
 end Halfplane_API
 
-section Holo
+section Holo_Lemmas
 
 /-! # Complex Differentiability -/
 
-theorem Φ₁'_holo : Holo(Φ₁' r) := by
+omit hr in
+theorem φ₀''_holo : Holo(φ₀'') := by
   sorry
 
-theorem Φ₁'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₁' r) ℍ₀ :=
-  (Φ₁'_holo hr).contDiffOn isOpen_upperHalfPlaneSet
+omit hr in
+theorem Φ₁'_holo : Holo(Φ₁' r) := by
+  refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
+      differentiable_fun_id).differentiableOn)
+  refine DifferentiableOn.mul ?_ <| (differentiable_fun_id.differentiableOn.add_const 1).pow 2
+  apply φ₀''_holo.comp
+  · apply (differentiableOn_const (-1)).div
+    · rw [differentiableOn_add_const_iff]
+      exact differentiableOn_id
+    · intro z hz hcontra
+      obtain ⟨hre, him⟩ := Complex.ext_iff.mp hcontra
+      simp only [add_im, one_im, add_zero, zero_im] at him
+      have : z.im > 0 := hz
+      linarith
+  · let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, 1]) (!![1, 1; -1, 0])
+      (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
+    have : ∀ z ∈ ℍ₀, UpperHalfPlane.smulAux' g z = -1 / (z + 1) := fun _ _ ↦ by
+      simp [smulAux', g, num, denom, σ]
+    refine MapsTo.congr ?_ this
+    intro _ hz
+    rw [mem_setOf_eq, smulAux'_im]
+    exact div_pos (mul_pos (abs_pos.mpr g.det.ne_zero) hz) (normSq_denom_pos _ (ne_of_gt hz))
 
-end Holo
+omit hr in
+theorem Φ₁'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₁' r) ℍ₀ := Φ₁'_holo.contDiffOn isOpen_upperHalfPlaneSet
+
+end Holo_Lemmas
 
 section ContDiffOn_Real
 
 /-! # Real Differentiability -/
-
-noncomputable example (n : ℕ) : ContinuousMultilinearMap (ι := Fin n) ℂ (fun i ↦ ℂ) ℂ → ContinuousMultilinearMap (ι := Fin n) ℝ (fun i ↦ ℂ) ℂ :=
-  -- fun p ↦ FormalMultilinearSeries.ofScalars ℂ <| Complex.re ∘ p
-  fun f ↦
-  by
-  sorry
-
-lemma Real_differentiable_of_Complex_differentiable (f : ℂ → ℂ) : Differentiable ℂ f → Differentiable ℝ f := by
-  simp only [Differentiable.eq_def]
-  intro h x
-  specialize h x
-  obtain ⟨f', hf'⟩ := h
-  have : ∃ k : ℂ, f'.toFun = (fun z ↦ k • z) := by
-    sorry
-  obtain ⟨k, hk⟩ := this
-  let f'_re : ℂ →L[ℝ] ℂ := sorry
-  sorry
-
-lemma Real_contDiff_of_Complex_contDiff (f : ℂ → ℂ) : ContDiff ℂ ∞ f → ContDiff ℝ ∞ f := by
-  intro h
-  simp only [ContDiff.eq_def] at h ⊢
-  obtain ⟨p, hp⟩ := h
-  sorry
 
 theorem Φ₁'_contDiffOn : ContDiffOn ℝ ∞ (Φ₁' r) ℍ₀ := by
   sorry
 
 end ContDiffOn_Real
 
-section MDiff
+section MDiff_Lemmas
 
-end MDiff
+end MDiff_Lemmas
 
 end MagicFunction.a.ComplexIntegrands
