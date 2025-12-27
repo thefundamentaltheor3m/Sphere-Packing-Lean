@@ -44,6 +44,11 @@ def φ₀'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₀ ⟨z, hz⟩ else 0
 def φ₂'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₂' ⟨z, hz⟩ else 0
 def φ₄'' (z : ℂ) : ℂ := if hz : 0 < z.im then φ₄' ⟨z, hz⟩ else 0
 
+lemma φ₀''_def {z : ℂ} (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := by simp [φ₀'', hz]
+
+lemma φ₀''_mem_upperHalfPlane {z : ℂ} (hz : z ∈ upperHalfPlaneSet) : φ₀'' z = φ₀ ⟨z, hz⟩ :=
+  φ₀''_def hz
+
 instance : atImInfty.NeBot := by
   rw [atImInfty, Filter.comap_neBot_iff ]
   simp only [mem_atTop_sets, ge_iff_le, forall_exists_index]
