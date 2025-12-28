@@ -91,12 +91,7 @@ theorem φ₀_periodic (z : ℍ) : φ₀ ((1 : ℝ) +ᵥ z) = φ₀ z := by
 lemma E₂_S_transform (z : ℍ) :
     E₂ (ModularGroup.S • z) = z ^ 2 * (E₂ z + 6 / (π * Complex.I * z)) := by
   have h := E₂_transform z
-  -- E₂_transform says: (E₂ ∣[2] S) z = E₂ z + 6 / (π * I * z)
-  -- The slash action (f ∣[k] γ) z = f(γ • z) * (denom γ z)^(-k)
-  -- For S, denom S z = 1*z + 0 = z, so (E₂ ∣[2] S) z = E₂(S • z) / z²
-  rw [SL_slash_apply] at h
-  simp only [ModularGroup.denom_S, zpow_neg, zpow_two] at h
-  -- h : E₂ (S • z) * (z * z)⁻¹ = E₂ z + 6 / (π * I * z)
+  rw [SL_slash_apply, ModularGroup.denom_S, zpow_neg, zpow_two] at h
   have hz : (z : ℂ) ≠ 0 := ne_zero z
   have hz2 : (z : ℂ) * (z : ℂ) ≠ 0 := mul_ne_zero hz hz
   have h2 : E₂ (ModularGroup.S • z) = (E₂ z + 6 / (π * Complex.I * z)) * ((z : ℂ) * (z : ℂ)) := by
@@ -161,14 +156,10 @@ lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ
 theorem φ₀_S_transform (z : ℍ) :
     φ₀ (ModularGroup.S • z) = φ₀ z - (12 * Complex.I) / (π * z) * φ₂' z
                              - 36 / (π ^ 2 * z ^ 2) * φ₄' z := by
-  -- Set up key non-zero hypotheses
   have hz : (z : ℂ) ≠ 0 := ne_zero z
   have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   have hI : Complex.I ≠ 0 := Complex.I_ne_zero
   have hΔ : Δ z ≠ 0 := Δ_ne_zero z
-  have hz2 : (z : ℂ) ^ 2 ≠ 0 := pow_ne_zero 2 hz
-  have hz12 : (z : ℂ) ^ 12 ≠ 0 := pow_ne_zero 12 hz
-  -- Substitute transformation rules
   unfold φ₀ φ₂' φ₄'
   rw [E₂_S_transform, E₄_S_transform, E₆_S_transform, Δ_S_transform]
   -- Let A = E₂ z * E₄ z - E₆ z (the key expression)
@@ -201,31 +192,14 @@ theorem φ₀_S_transform (z : ℍ) :
     have hπIz : π * Complex.I * z ≠ 0 := mul_ne_zero (mul_ne_zero hπ hI) hz
     field_simp; ring
   rw [h_expand, hI2]
-  -- Now: A²/Δ + 12AE₄/(πIzΔ) + 36E₄²/(π²(-1)z²Δ)
-  --    = A²/Δ + 12AE₄/(πIzΔ) - 36E₄²/(π²z²Δ)
-  --    = φ₀ + (12/(πIz))φ₂' - (36/(π²z²))φ₄'
-  -- And 12/(πIz) = 12 * (1/I) / (πz) = 12 * (-I) / (πz) = -12I/(πz)
-  -- Relate back to φ₀, φ₂', φ₄'
-  have hφ₀ : A ^ 2 / Δ z = φ₀ z := by rfl
-  have hφ₂' : E₄ z * A / Δ z = φ₂' z := by rfl
-  have hφ₄' : (E₄ z) ^ 2 / Δ z = φ₄' z := by rfl
   -- Transform 12/(πIz) to -12I/(πz) using I⁻¹ = -I
   have h_I_factor : (12 : ℂ) / (π * Complex.I * z) = -12 * Complex.I / (π * z) := by
-    have hπz : (π : ℂ) * z ≠ 0 := mul_ne_zero hπ hz
     rw [mul_comm (π : ℂ) Complex.I, mul_assoc, div_mul_eq_div_div, div_eq_mul_inv,
         div_eq_mul_inv, h_inv_I]; ring
-  -- The main algebraic manipulation using h_I_factor
-  -- LHS = A²/Δ + 12AE₄/(πIzΔ) + 36E₄²/(π²(-1)z²Δ)
-  -- RHS = φ₀ - (12I/(πz))φ₂' - (36/(π²z²))φ₄'
-  --     = A²/Δ - (12I/(πz))(E₄A/Δ) - (36/(π²z²))(E₄²/Δ)
-  -- Key: 12/(πIz) = -12I/(πz) by h_I_factor
   have h_final : A ^ 2 / Δ z + 12 * A * E₄ z / (π * Complex.I * z * Δ z) +
        36 * (E₄ z) ^ 2 / (π ^ 2 * (-1) * z ^ 2 * Δ z) =
        A ^ 2 / Δ z - 12 * Complex.I / (π * z) * (E₄ z * A / Δ z) -
        36 / (π ^ 2 * z ^ 2) * ((E₄ z) ^ 2 / Δ z) := by
-    have hπIzΔ : π * Complex.I * z * Δ z ≠ 0 :=
-      mul_ne_zero (mul_ne_zero (mul_ne_zero hπ hI) hz) hΔ
-    -- Use the h_I_factor to transform 12/(πIz) to -12I/(πz)
     have h1 : 12 * A * E₄ z / (π * Complex.I * z * Δ z) =
               12 / (π * Complex.I * z) * (E₄ z * A / Δ z) := by field_simp
     rw [h1, h_I_factor]; ring
