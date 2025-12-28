@@ -113,11 +113,13 @@ lemma E₄_S_transform (z : ℍ) : E₄ (ModularGroup.S • z) = z ^ (4 : ℕ) *
     apply E₄.slash_action_eq'
     simp only [Subgroup.mem_map, CongruenceSubgroup.mem_Gamma_one]
     use ModularGroup.S
-  rw [ModularForm.slash_action_eq'_iff] at h
-  -- S = [[0, -1], [1, 0]], so (S 1 0) = 1 and (S 1 1) = 0
-  -- Hence factor is (1 * z + 0)^4 = z^4
-  simp only [ModularGroup.S, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Int.cast_one, one_mul, Int.cast_zero, add_zero] at h
+  rw [SL_slash_apply] at h
+  simp only [ModularGroup.denom_S, zpow_neg] at h
+  -- h : E₄ (S • z) * (z^4)⁻¹ = E₄ z
+  have hz : (z : ℂ) ≠ 0 := ne_zero z
+  have hz4 : (z : ℂ) ^ (4 : ℤ) ≠ 0 := zpow_ne_zero 4 hz
+  field_simp at h
+  simp only [ModularForm.toFun_eq_coe] at h
   exact h
 
 /-- E₆ transforms under S as: E₆(-1/z) = z⁶ · E₆(z) -/
@@ -127,9 +129,13 @@ lemma E₆_S_transform (z : ℍ) : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) *
     apply E₆.slash_action_eq'
     simp only [Subgroup.mem_map, CongruenceSubgroup.mem_Gamma_one]
     use ModularGroup.S
-  rw [ModularForm.slash_action_eq'_iff] at h
-  simp only [ModularGroup.S, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Int.cast_one, one_mul, Int.cast_zero, add_zero] at h
+  rw [SL_slash_apply] at h
+  simp only [ModularGroup.denom_S, zpow_neg] at h
+  -- h : E₆ (S • z) * (z^6)⁻¹ = E₆ z
+  have hz : (z : ℂ) ≠ 0 := ne_zero z
+  have hz6 : (z : ℂ) ^ (6 : ℤ) ≠ 0 := zpow_ne_zero 6 hz
+  field_simp at h
+  simp only [ModularForm.toFun_eq_coe] at h
   exact h
 
 /-- Δ transforms under S as: Δ(-1/z) = z¹² · Δ(z) -/
@@ -137,10 +143,13 @@ lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ
   have h := Discriminant_S_invariant
   simp only [funext_iff] at h
   specialize h z
-  rw [ModularForm.slash_action_eq'_iff] at h
-  simp only [ModularGroup.S, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Int.cast_one, one_mul, Int.cast_zero, add_zero] at h
-  exact h
+  rw [SL_slash_apply] at h
+  simp only [ModularGroup.denom_S, zpow_neg] at h
+  -- h : Δ (S • z) * (z^12)⁻¹ = Δ z
+  have hz : (z : ℂ) ≠ 0 := ne_zero z
+  have hz12 : (z : ℂ) ^ (12 : ℤ) ≠ 0 := zpow_ne_zero 12 hz
+  field_simp at h
+  rw [h, mul_comm]
 
 /-! ## Main Theorem: S-transformation of φ₀ -/
 
