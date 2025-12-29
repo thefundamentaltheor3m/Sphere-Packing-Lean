@@ -43,11 +43,8 @@ lemma E₄_S_transform (z : ℍ) : E₄ (ModularGroup.S • z) = z ^ (4 : ℕ) *
     simp only [Subgroup.mem_map, CongruenceSubgroup.mem_Gamma_one]
     use ModularGroup.S
   rw [SL_slash_apply] at h
-  simp only [ModularGroup.denom_S, zpow_neg] at h
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
-  have hz4 : (z : ℂ) ^ (4 : ℤ) ≠ 0 := zpow_ne_zero 4 hz
-  field_simp at h
-  simp only [ModularForm.toFun_eq_coe] at h
+  simp only [ModularGroup.denom_S, zpow_neg, ModularForm.toFun_eq_coe] at h
+  field_simp [ne_zero z] at h
   exact h
 
 /-- E₆ transforms under S as: E₆(-1/z) = z⁶ · E₆(z) -/
@@ -58,11 +55,8 @@ lemma E₆_S_transform (z : ℍ) : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) *
     simp only [Subgroup.mem_map, CongruenceSubgroup.mem_Gamma_one]
     use ModularGroup.S
   rw [SL_slash_apply] at h
-  simp only [ModularGroup.denom_S, zpow_neg] at h
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
-  have hz6 : (z : ℂ) ^ (6 : ℤ) ≠ 0 := zpow_ne_zero 6 hz
-  field_simp at h
-  simp only [ModularForm.toFun_eq_coe] at h
+  simp only [ModularGroup.denom_S, zpow_neg, ModularForm.toFun_eq_coe] at h
+  field_simp [ne_zero z] at h
   exact h
 
 variable (f : ℍ → ℂ) (k : ℤ) (z : ℍ)

@@ -101,9 +101,7 @@ lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ
   specialize h z
   rw [SL_slash_apply] at h
   simp only [ModularGroup.denom_S, zpow_neg] at h
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
-  have hz12 : (z : ℂ) ^ (12 : ℤ) ≠ 0 := zpow_ne_zero 12 hz
-  field_simp at h
+  field_simp [ne_zero z] at h
   rw [h, mul_comm]
 
 instance : atImInfty.NeBot := by
