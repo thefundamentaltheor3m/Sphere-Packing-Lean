@@ -84,6 +84,26 @@ lemma Discriminant_S_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.S) = Δ := by
   norm_cast
   field_simp
 
+/-- Δ is 1-periodic: Δ(z + 1) = Δ(z) -/
+lemma Δ_periodic (z : ℍ) : Δ ((1 : ℝ) +ᵥ z) = Δ z := by
+  have h := Discriminant_T_invariant
+  simp only [funext_iff] at h
+  specialize h z
+  rw [modular_slash_T_apply] at h
+  exact h
+
+/-- Δ transforms under S as: Δ(-1/z) = z¹² · Δ(z) -/
+lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ z := by
+  have h := Discriminant_S_invariant
+  simp only [funext_iff] at h
+  specialize h z
+  rw [SL_slash_apply] at h
+  simp only [ModularGroup.denom_S, zpow_neg] at h
+  have hz : (z : ℂ) ≠ 0 := ne_zero z
+  have hz12 : (z : ℂ) ^ (12 : ℤ) ≠ 0 := zpow_ne_zero 12 hz
+  field_simp at h
+  rw [h, mul_comm]
+
 def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun := Δ
   slash_action_eq' :=

@@ -21,12 +21,16 @@ are not valid identifiers.
 
 ## Main Results
 
-- `E₂_periodic`: E₂ is 1-periodic, i.e., `E₂(z + 1) = E₂(z)`
-- `E₄_periodic`: E₄ is 1-periodic
-- `E₆_periodic`: E₆ is 1-periodic
-- `Δ_periodic`: Δ is 1-periodic
-- `φ₀_periodic`: φ₀ is 1-periodic
+- `φ₀_periodic`: φ₀ is 1-periodic, i.e., `φ₀(z + 1) = φ₀(z)`
 - `φ₀_S_transform`: S-transformation formula for φ₀
+
+## Supporting lemmas
+
+- `E₂_periodic`: E₂ is 1-periodic (E₂ is quasimodular, so this is proved here)
+- `E₂_S_transform`: E₂ transforms under S with an extra correction term
+
+Note: Periodicity and S-transformation for E₄, E₆ are in `Eisenstein.lean`;
+for Δ they are in `Delta.lean`.
 
 -/
 
@@ -48,34 +52,6 @@ lemma E₂_periodic (z : ℍ) : E₂ ((1 : ℝ) +ᵥ z) = E₂ z := by
   unfold E₂
   simp only [Pi.smul_apply, smul_eq_mul]
   rw [h]
-
-/-- E₄ is 1-periodic: E₄(z + 1) = E₄(z). This follows from E₄ being a modular form for Γ(1). -/
-lemma E₄_periodic (z : ℍ) : E₄ ((1 : ℝ) +ᵥ z) = E₄ z := by
-  have h : (E₄.toFun ∣[(4 : ℤ)] ModularGroup.T) z = E₄.toFun z := by
-    apply congrFun
-    apply E₄.slash_action_eq'
-    simp only [Subgroup.mem_map, CongruenceSubgroup.mem_Gamma_one]
-    use ModularGroup.T
-  rw [modular_slash_T_apply] at h
-  exact h
-
-/-- E₆ is 1-periodic: E₆(z + 1) = E₆(z). This follows from E₆ being a modular form for Γ(1). -/
-lemma E₆_periodic (z : ℍ) : E₆ ((1 : ℝ) +ᵥ z) = E₆ z := by
-  have h : (E₆.toFun ∣[(6 : ℤ)] ModularGroup.T) z = E₆.toFun z := by
-    apply congrFun
-    apply E₆.slash_action_eq'
-    simp only [Subgroup.mem_map, CongruenceSubgroup.mem_Gamma_one]
-    use ModularGroup.T
-  rw [modular_slash_T_apply] at h
-  exact h
-
-/-- Δ is 1-periodic: Δ(z + 1) = Δ(z) -/
-lemma Δ_periodic (z : ℍ) : Δ ((1 : ℝ) +ᵥ z) = Δ z := by
-  have h := Discriminant_T_invariant
-  simp only [funext_iff] at h
-  specialize h z
-  rw [modular_slash_T_apply] at h
-  exact h
 
 /-! ## Main Theorem: T-periodicity of φ₀ -/
 
@@ -100,51 +76,6 @@ lemma E₂_S_transform (z : ℍ) :
     rw [mul_assoc, inv_mul_cancel₀ hz2, mul_one] at this
     exact this
   rw [h2, sq, mul_comm]
-
-/-- E₄ transforms under S as: E₄(-1/z) = z⁴ · E₄(z) -/
-lemma E₄_S_transform (z : ℍ) : E₄ (ModularGroup.S • z) = z ^ (4 : ℕ) * E₄ z := by
-  have h : (E₄.toFun ∣[(4 : ℤ)] ModularGroup.S) z = E₄.toFun z := by
-    apply congrFun
-    apply E₄.slash_action_eq'
-    simp only [Subgroup.mem_map, CongruenceSubgroup.mem_Gamma_one]
-    use ModularGroup.S
-  rw [SL_slash_apply] at h
-  simp only [ModularGroup.denom_S, zpow_neg] at h
-  -- h : E₄ (S • z) * (z^4)⁻¹ = E₄ z
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
-  have hz4 : (z : ℂ) ^ (4 : ℤ) ≠ 0 := zpow_ne_zero 4 hz
-  field_simp at h
-  simp only [ModularForm.toFun_eq_coe] at h
-  exact h
-
-/-- E₆ transforms under S as: E₆(-1/z) = z⁶ · E₆(z) -/
-lemma E₆_S_transform (z : ℍ) : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) * E₆ z := by
-  have h : (E₆.toFun ∣[(6 : ℤ)] ModularGroup.S) z = E₆.toFun z := by
-    apply congrFun
-    apply E₆.slash_action_eq'
-    simp only [Subgroup.mem_map, CongruenceSubgroup.mem_Gamma_one]
-    use ModularGroup.S
-  rw [SL_slash_apply] at h
-  simp only [ModularGroup.denom_S, zpow_neg] at h
-  -- h : E₆ (S • z) * (z^6)⁻¹ = E₆ z
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
-  have hz6 : (z : ℂ) ^ (6 : ℤ) ≠ 0 := zpow_ne_zero 6 hz
-  field_simp at h
-  simp only [ModularForm.toFun_eq_coe] at h
-  exact h
-
-/-- Δ transforms under S as: Δ(-1/z) = z¹² · Δ(z) -/
-lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ z := by
-  have h := Discriminant_S_invariant
-  simp only [funext_iff] at h
-  specialize h z
-  rw [SL_slash_apply] at h
-  simp only [ModularGroup.denom_S, zpow_neg] at h
-  -- h : Δ (S • z) * (z^12)⁻¹ = Δ z
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
-  have hz12 : (z : ℂ) ^ (12 : ℤ) ≠ 0 := zpow_ne_zero 12 hz
-  field_simp at h
-  rw [h, mul_comm]
 
 /-! ## Main Theorem: S-transformation of φ₀ -/
 
