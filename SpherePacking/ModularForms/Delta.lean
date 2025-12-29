@@ -27,7 +27,6 @@ lemma DiscriminantProductFormula (z : ℍ) : Δ z = cexp (2 * π * Complex.I * z
       enter [1,1]
       ext n
       rw [show (n : ℂ) + 1 = ((n + 1) : ℕ) by simp]
-
     have := tprod_pnat_eq_tprod_succ (f := (fun n => (1 - cexp (2 * π * Complex.I * (n) * z)) ^ 24))
     rw [this]
 
@@ -327,7 +326,7 @@ lemma Delta_apply (z : ℍ) : Delta z = Δ z := by rfl
 
 lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ => Real.exp (-2 * π * τ.im)) := by
   rw [Asymptotics.IsTheta]
-  refine ⟨by simpa using CuspFormClass.exp_decay_atImInfty 1 Delta, ?_⟩
+  refine ⟨by simpa using CuspFormClass.exp_decay_atImInfty (h := 1) Delta, ?_⟩
   rw [Asymptotics.isBigO_iff']
   have := Delta_boundedfactor.norm
   simp only [norm_one] at this
@@ -419,12 +418,12 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
     bdd_at_cusps' {c} hc := by
       apply bounded_at_cusps_of_bounded_at_infty hc
       intro A ⟨A', hA'⟩
-      have h1 := CuspFormClass.exp_decay_atImInfty 1 f
+      have h1 := CuspFormClass.exp_decay_atImInfty (h := 1) f zero_lt_one (by simp)
       have h2 := Delta_isTheta_rexp.2
       rw [IsBoundedAtImInfty, BoundedAtFilter] at *
       rw [Asymptotics.isBigO_iff'] at h1 ⊢
       rw [Asymptotics.isBigO_iff''] at h2
-      simp only [gt_iff_lt, neg_mul, Nat.cast_one, div_one, Real.norm_eq_abs,
+      simp only [gt_iff_lt, neg_mul, div_one, Real.norm_eq_abs,
         Real.abs_exp, Pi.one_apply, norm_one, mul_one] at *
       obtain ⟨e1, he1, hf⟩ := h1
       obtain ⟨e2, he2, hD⟩ := h2

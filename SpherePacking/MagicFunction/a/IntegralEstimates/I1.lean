@@ -187,7 +187,7 @@ lemma Bound_integrableOn (r C₀ : ℝ) :
       refine exp_le_exp.mpr <| (le_abs_self _).trans ?_
       rw [abs_div, abs_mul, abs_neg, abs_of_nonneg pi_pos.le, abs_of_nonneg (by linarith : 0 ≤ s)]
       exact div_le_self (by positivity) hs
-  simpa [mul_comm] using h_g.bdd_mul' hφ hb
+  simpa [mul_comm] using h_g.bdd_mul hφ hb
 
 end Integrability
 
