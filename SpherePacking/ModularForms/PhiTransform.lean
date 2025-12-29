@@ -24,13 +24,11 @@ are not valid identifiers.
 - `φ₀_periodic`: φ₀ is 1-periodic, i.e., `φ₀(z + 1) = φ₀(z)`
 - `φ₀_S_transform`: S-transformation formula for φ₀
 
-## Supporting lemmas
+## Supporting lemmas (in other files)
 
-- `E₂_periodic`: E₂ is 1-periodic (E₂ is quasimodular, so this is proved here)
-- `E₂_S_transform`: E₂ transforms under S with an extra correction term
-
-Note: Periodicity and S-transformation for E₄, E₆ are in `Eisenstein.lean`;
-for Δ they are in `Delta.lean`.
+- `E₂_periodic`, `E₂_S_transform`: in `E2.lean`
+- `E₄_periodic`, `E₆_periodic`, `E₄_S_transform`, `E₆_S_transform`: in `Eisenstein.lean`
+- `Δ_periodic`, `Δ_S_transform`: in `Delta.lean`
 
 -/
 
@@ -41,41 +39,12 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 noncomputable section
 
-/-! ## T-periodicity Lemmas -/
-
-/-- E₂ is 1-periodic: E₂(z + 1) = E₂(z) -/
-lemma E₂_periodic (z : ℍ) : E₂ ((1 : ℝ) +ᵥ z) = E₂ z := by
-  have h := G2_periodic
-  simp only [funext_iff] at h
-  specialize h z
-  rw [modular_slash_T_apply] at h
-  unfold E₂
-  simp only [Pi.smul_apply, smul_eq_mul]
-  rw [h]
-
 /-! ## Main Theorem: T-periodicity of φ₀ -/
 
 /-- φ₀ is 1-periodic: φ₀(z + 1) = φ₀(z) -/
 theorem φ₀_periodic (z : ℍ) : φ₀ ((1 : ℝ) +ᵥ z) = φ₀ z := by
   unfold φ₀
   rw [E₂_periodic, E₄_periodic, E₆_periodic, Δ_periodic]
-
-/-! ## S-transformation Lemmas -/
-
-/-- E₂ transforms under S as: E₂(-1/z) = z² · (E₂(z) + 6/(πIz)).
-    This is derived from E₂_transform by relating the slash action to the direct value. -/
-lemma E₂_S_transform (z : ℍ) :
-    E₂ (ModularGroup.S • z) = z ^ 2 * (E₂ z + 6 / (π * Complex.I * z)) := by
-  have h := E₂_transform z
-  rw [SL_slash_apply, ModularGroup.denom_S, zpow_neg, zpow_two] at h
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
-  have hz2 : (z : ℂ) * (z : ℂ) ≠ 0 := mul_ne_zero hz hz
-  have h2 : E₂ (ModularGroup.S • z) = (E₂ z + 6 / (π * Complex.I * z)) * ((z : ℂ) * (z : ℂ)) := by
-    have := congrArg (· * ((z : ℂ) * (z : ℂ))) h
-    simp only at this
-    rw [mul_assoc, inv_mul_cancel₀ hz2, mul_one] at this
-    exact this
-  rw [h2, sq, mul_comm]
 
 /-! ## Main Theorem: S-transformation of φ₀ -/
 
@@ -138,4 +107,3 @@ theorem φ₀_S_transform (z : ℍ) :
   rw [h_final]
 
 end
-
