@@ -31,7 +31,9 @@ local notation "MDiff(" f ")" => MDifferentiableOn 𝓘(ℂ) 𝓘(ℂ) f ℍ₀
 
 section Helpers
 
-theorem _root_.range_upperHalfPlane_coe : range UpperHalfPlane.coe = ℍ₀ := by
+namespace UpperHalfPlane
+
+theorem range_upperHalfPlane_coe : range UpperHalfPlane.coe = ℍ₀ := by
   ext z
   rw [mem_range]
   constructor <;> intro hz
@@ -41,14 +43,15 @@ theorem _root_.range_upperHalfPlane_coe : range UpperHalfPlane.coe = ℍ₀ := b
   · use ⟨z, hz⟩
     exact coe_mk_subtype hz
 
+theorem zero_not_mem_upperHalfPlaneSet : (0 : ℂ) ∉ ℍ₀ := by simp
+
+end UpperHalfPlane
+
 end Helpers
 
 namespace MagicFunction.a.ComplexIntegrands
 
 variable {r : ℝ} (hr : r ≥ 0)
-
--- include hr
-
 section Halfplane_API
 
 end Halfplane_API
@@ -58,7 +61,6 @@ section Holo_Lemmas
 /-! # Complex Differentiability -/
 
 theorem φ₀''_holo : Holo(φ₀'') := by
-
   sorry
 
 theorem Φ₁'_holo : Holo(Φ₁' r) := by
@@ -124,7 +126,7 @@ theorem Φ₅'_holo : Holo(Φ₅' r) := by
   apply φ₀''_holo.comp
   · apply (differentiableOn_const (-1)).div differentiableOn_id
     intro _ hz
-    exact ne_of_mem_of_not_mem hz <| Std.Irrefl.irrefl (Complex.im 0)
+    exact ne_of_mem_of_not_mem hz <| zero_not_mem_upperHalfPlaneSet
   · let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, 0]) (!![0, 1; -1, 0])
       (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
     have : ∀ z ∈ ℍ₀, UpperHalfPlane.smulAux' g z = -1 / z := fun _ _ ↦ by
