@@ -43,8 +43,7 @@ noncomputable section
 
 /-- φ₀ is 1-periodic: φ₀(z + 1) = φ₀(z) -/
 theorem φ₀_periodic (z : ℍ) : φ₀ ((1 : ℝ) +ᵥ z) = φ₀ z := by
-  unfold φ₀
-  rw [E₂_periodic, E₄_periodic, E₆_periodic, Δ_periodic]
+  simp only [φ₀, E₂_periodic, E₄_periodic, E₆_periodic, Δ_periodic]
 
 /-! ## Main Theorem: S-transformation of φ₀ -/
 
@@ -59,7 +58,6 @@ theorem φ₀_S_transform (z : ℍ) :
   have hz : (z : ℂ) ≠ 0 := ne_zero z
   have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   have hI : Complex.I ≠ 0 := Complex.I_ne_zero
-  have hΔ : Δ z ≠ 0 := Δ_ne_zero z
   unfold φ₀ φ₂' φ₄'
   rw [E₂_S_transform, E₄_S_transform, E₆_S_transform, Δ_S_transform]
   -- Let A = E₂ z * E₄ z - E₆ z (the key expression)
@@ -84,7 +82,6 @@ theorem φ₀_S_transform (z : ℍ) :
   -- Expand (A + 6E₄/(πIz))² = A² + 12AE₄/(πIz) + 36E₄²/(π²I²z²)
   -- Since I² = -1, we get: A² + 12AE₄/(πIz) - 36E₄²/(π²z²)
   have hI2 : Complex.I ^ 2 = -1 := Complex.I_sq
-  have h_inv_I : (Complex.I)⁻¹ = -Complex.I := Complex.inv_I  -- Key: 1/I = -I
   -- Expand the square and simplify
   have h_expand : (A + 6 * E₄ z / (π * Complex.I * z)) ^ 2 / Δ z =
                   A ^ 2 / Δ z + 12 * A * E₄ z / (π * Complex.I * z * Δ z) +
@@ -94,8 +91,7 @@ theorem φ₀_S_transform (z : ℍ) :
   rw [h_expand, hI2]
   -- Transform 12/(πIz) to -12I/(πz) using I⁻¹ = -I
   have h_I_factor : (12 : ℂ) / (π * Complex.I * z) = -12 * Complex.I / (π * z) := by
-    rw [mul_comm (π : ℂ) Complex.I, mul_assoc, div_mul_eq_div_div, div_eq_mul_inv,
-        div_eq_mul_inv, h_inv_I]; ring
+    field_simp [Complex.inv_I]; simp [Complex.I_sq]
   have h_final : A ^ 2 / Δ z + 12 * A * E₄ z / (π * Complex.I * z * Δ z) +
        36 * (E₄ z) ^ 2 / (π ^ 2 * (-1) * z ^ 2 * Δ z) =
        A ^ 2 / Δ z - 12 * Complex.I / (π * z) * (E₄ z * A / Δ z) -

@@ -92,9 +92,7 @@ def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
 
 /-- Δ is 1-periodic: Δ(z + 1) = Δ(z) -/
 lemma Δ_periodic (z : ℍ) : Δ ((1 : ℝ) +ᵥ z) = Δ z := by
-  have := SlashInvariantForm.vAdd_width_periodic 1 12 1 Discriminant_SIF z
-  simp only [Nat.cast_one, one_mul, Int.cast_one] at this
-  exact this
+  simpa using SlashInvariantForm.vAdd_width_periodic 1 12 1 Discriminant_SIF z
 
 /-- Δ transforms under S as: Δ(-1/z) = z¹² · Δ(z) -/
 lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ z := by
