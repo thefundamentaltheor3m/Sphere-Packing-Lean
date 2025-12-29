@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 
-import SpherePacking.MagicFunction.a.Holomorphicity.Integrands
+import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 
 /-! # Smoothness
 

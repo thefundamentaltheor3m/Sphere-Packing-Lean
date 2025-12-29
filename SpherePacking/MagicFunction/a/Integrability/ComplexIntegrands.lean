@@ -164,8 +164,4 @@ theorem Φ₆'_contDiffOn : ContDiffOn ℝ ∞ (Φ₆' r) ℍ₀ := by sorry
 
 end ContDiffOn_Real
 
-section MDiff_Lemmas
-
-end MDiff_Lemmas
-
 end MagicFunction.a.ComplexIntegrands
