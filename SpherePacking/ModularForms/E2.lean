@@ -709,13 +709,9 @@ lemma G2_periodic : (G₂ ∣[(2 : ℤ)] ModularGroup.T) = G₂ := by
 
 /-- E₂ is 1-periodic: E₂(z + 1) = E₂(z) -/
 lemma E₂_periodic (z : ℍ) : E₂ ((1 : ℝ) +ᵥ z) = E₂ z := by
-  have h := G2_periodic
-  simp only [funext_iff] at h
-  specialize h z
+  have h := congrFun G2_periodic z
   rw [modular_slash_T_apply] at h
-  unfold E₂
-  simp only [Pi.smul_apply, smul_eq_mul]
-  rw [h]
+  simp only [E₂, Pi.smul_apply, smul_eq_mul, h]
 
 /-This is the annoying exercise. -/
 lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂ γ) := by
