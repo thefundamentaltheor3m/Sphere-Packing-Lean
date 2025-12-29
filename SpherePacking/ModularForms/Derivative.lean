@@ -287,7 +287,6 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
     ext z
     simp
     ring_nf
-
   -- Holomorphicity of the terms
   · exact E₂_holo'
   · exact E₄.holo'
@@ -319,6 +318,34 @@ example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.t
 /-
 Interaction between (Serre) derivative and restriction to the imaginary axis.
 -/
+
+/--
+Chain rule for restriction to imaginary axis: `d/dt F(it) = -2π * (D F)(it)`.
+
+This connects the real derivative along the imaginary axis to the normalized derivative D.
+The key computation is:
+- The imaginary axis is parametrized by g(t) = I * t
+- By chain rule: d/dt F(it) = (dF/dz)(it) · (d/dt)(it) = F'(it) · I
+- Since D = (2πi)⁻¹ · d/dz, we have F' = 2πi · D F
+- So d/dt F(it) = 2πi · D F(it) · I = -2π · D F(it)
+-/
+theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    {t : ℝ} (ht : 0 < t) :
+    deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t := by
+  let z : ℍ := ⟨I * t, by simp [ht]⟩
+  let g : ℝ → ℂ := (I * ·)
+  have h_eq : F.resToImagAxis =ᶠ[nhds t] ((F ∘ ofComplex) ∘ g) := by
+    filter_upwards [lt_mem_nhds ht] with s hs
+    have him : 0 < (g s).im := by simp [g, hs]
+    simp [Function.resToImagAxis_apply, ResToImagAxis, hs, Function.comp_apply, g,
+      ofComplex_apply_of_im_pos him]
+  rw [h_eq.deriv_eq]
+  have hg : HasDerivAt g I t := by simpa using ofRealCLM.hasDerivAt.const_mul I
+  have hF' := (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt
+  rw [(hF'.scomp t hg).deriv]
+  have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by simp only [D]; field_simp
+  simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z, smul_eq_mul]
+  ring_nf; simp only [I_sq]; ring
 
 /--
 If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
