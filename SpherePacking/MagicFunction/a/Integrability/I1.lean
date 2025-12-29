@@ -5,7 +5,7 @@ Authors: Sidharth Hariharan
 -/
 
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
-import SpherePacking.MagicFunction.a.Holomorphicity.ContDiff
+import SpherePacking.MagicFunction.a.Holomorphicity.Integrands
 
 /-! # Integrability
 

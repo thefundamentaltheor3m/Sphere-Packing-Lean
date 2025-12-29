@@ -49,6 +49,9 @@ lemma φ₀''_def {z : ℂ} (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := b
 lemma φ₀''_mem_upperHalfPlane {z : ℂ} (hz : z ∈ upperHalfPlaneSet) : φ₀'' z = φ₀ ⟨z, hz⟩ :=
   φ₀''_def hz
 
+lemma φ₀''_coe_upperHalfPlane (z : ℍ) : φ₀'' (z : ℂ) = φ₀ z := by
+  rw [φ₀''_def <| UpperHalfPlane.im_pos z]; rfl
+
 instance : atImInfty.NeBot := by
   rw [atImInfty, Filter.comap_neBot_iff ]
   simp only [mem_atTop_sets, ge_iff_le, forall_exists_index]
