@@ -29,23 +29,15 @@ lemma E6_apply (z : ℍ) : E₆ z = E 6 (by norm_num) z := rfl
 
 /-- E₄ is 1-periodic: E₄(z + 1) = E₄(z). This follows from E₄ being a modular form for Γ(1). -/
 lemma E₄_periodic (z : ℍ) : E₄ ((1 : ℝ) +ᵥ z) = E₄ z := by
-  have h : (E₄.toFun ∣[(4 : ℤ)] ModularGroup.T) z = E₄.toFun z := by
-    apply congrFun
-    apply E₄.slash_action_eq'
-    simp only [Subgroup.mem_map, CongruenceSubgroup.mem_Gamma_one]
-    use ModularGroup.T
-  rw [modular_slash_T_apply] at h
-  exact h
+  have := SlashInvariantForm.vAdd_width_periodic 1 4 1 E₄.toSlashInvariantForm z
+  simp only [Nat.cast_one, one_mul, Int.cast_one] at this
+  exact this
 
 /-- E₆ is 1-periodic: E₆(z + 1) = E₆(z). This follows from E₆ being a modular form for Γ(1). -/
 lemma E₆_periodic (z : ℍ) : E₆ ((1 : ℝ) +ᵥ z) = E₆ z := by
-  have h : (E₆.toFun ∣[(6 : ℤ)] ModularGroup.T) z = E₆.toFun z := by
-    apply congrFun
-    apply E₆.slash_action_eq'
-    simp only [Subgroup.mem_map, CongruenceSubgroup.mem_Gamma_one]
-    use ModularGroup.T
-  rw [modular_slash_T_apply] at h
-  exact h
+  have := SlashInvariantForm.vAdd_width_periodic 1 6 1 E₆.toSlashInvariantForm z
+  simp only [Nat.cast_one, one_mul, Int.cast_one] at this
+  exact this
 
 /-- E₄ transforms under S as: E₄(-1/z) = z⁴ · E₄(z) -/
 lemma E₄_S_transform (z : ℍ) : E₄ (ModularGroup.S • z) = z ^ (4 : ℕ) * E₄ z := by
