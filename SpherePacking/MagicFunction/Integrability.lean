@@ -646,6 +646,69 @@ where Cor 7.5 applies since Im(is) = s ≥ 1 > 1/2.
 
 section ClassB
 
+/-! ### Class B Helper Lemmas
+
+For t ∈ (0, 1], the argument -1/(I*t) = I/t has Im = 1/t ≥ 1 > 1/2,
+so the Cor 7.5 bound applies. The key fact is that exp(-2π/t) → 0
+as t → 0⁺, making the integral converge despite the apparent singularity.
+-/
+
+/-- Key identity: -1/(I*t) = I/t for t ≠ 0 -/
+lemma neg_one_div_I_mul (t : ℝ) (ht : t ≠ 0) : (-1 : ℂ) / (I * t) = I / t := by
+  have hI : (I : ℂ) ≠ 0 := Complex.I_ne_zero
+  have ht' : (t : ℂ) ≠ 0 := ofReal_ne_zero.mpr ht
+  have hIt : (I : ℂ) * t ≠ 0 := mul_ne_zero hI ht'
+  field_simp [hIt, ht']
+  ring_nf
+  simp only [Complex.I_sq]
+
+/-- For t ∈ (0, 1], the imaginary part of I/t is 1/t ≥ 1 -/
+lemma im_I_div_pos (t : ℝ) (ht : 0 < t) (ht' : t ≤ 1) : 1 / 2 < (I / (t : ℂ)).im := by
+  simp only [div_ofReal_im, Complex.I_im, one_div]
+  have h1t : 1 ≤ t⁻¹ := one_le_inv_iff₀.mpr ⟨ht, ht'⟩
+  linarith
+
+/-- The UpperHalfPlane point I/t for t ∈ (0, 1] -/
+def uhp_I_div_t (t : ℝ) (ht : 0 < t) : UpperHalfPlane :=
+  ⟨I / t, by simp only [div_ofReal_im, I_im, one_div]; positivity⟩
+
+/-- Im(I/t) = 1/t for t > 0 -/
+lemma uhp_I_div_t_im (t : ℝ) (ht : 0 < t) : (uhp_I_div_t t ht).im = t⁻¹ := by
+  change (I / (t : ℂ)).im = t⁻¹
+  simp only [div_ofReal_im, I_im, one_div]
+
+/-- φ₀'' bound for Class B: for t ∈ (0, 1], ‖φ₀''(-1/(It))‖ ≤ C₀ * exp(-2π/t) -/
+lemma norm_φ₀''_classB_bound : ∃ C₀ > 0, ∀ t : ℝ, 0 < t → t ≤ 1 →
+    ‖φ₀'' (-1 / (I * t))‖ ≤ C₀ * Real.exp (-2 * π / t) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
+  refine ⟨C₀, hC₀_pos, fun t ht ht' => ?_⟩
+  have ht_ne : t ≠ 0 := ne_of_gt ht
+  rw [neg_one_div_I_mul t ht_ne]
+  -- For t ∈ (0, 1], Im(I/t) = 1/t ≥ 1 > 1/2, so norm_φ₀_le applies
+  have him : (I / (t : ℂ)).im = t⁻¹ := by simp only [div_ofReal_im, I_im, one_div]
+  have him_pos : 0 < (I / (t : ℂ)).im := by rw [him]; positivity
+  have h1t : 1 ≤ t⁻¹ := one_le_inv_iff₀.mpr ⟨ht, ht'⟩
+  have him_gt : 1 / 2 < (I / (t : ℂ)).im := by rw [him]; linarith
+  -- φ₀'' (I/t) = φ₀(⟨I/t, ...⟩) since Im(I/t) > 0
+  simp only [φ₀'', him_pos, ↓reduceDIte]
+  -- Apply the φ₀ bound
+  let z : UpperHalfPlane := ⟨I / t, him_pos⟩
+  have hz_im : z.im = t⁻¹ := him
+  have hz_gt : 1 / 2 < z.im := him_gt
+  have h := hC₀ z hz_gt
+  convert h using 2
+  rw [hz_im, mul_comm, ← div_eq_mul_inv]
+
+/-- exp(-2π/t) is integrable on (0, 1] despite the apparent singularity.
+The key fact is that exp(-2π/t) → 0 as t → 0⁺ faster than any polynomial decay.
+
+Proof sketch: Change variables s = 1/t transforms (0,1] → [1,∞).
+Then ∫₀¹ exp(-2π/t) dt = ∫₁^∞ exp(-2πs) * (1/s²) ds.
+This is integrable since exp(-2πs) dominates any polynomial growth. -/
+lemma exp_neg_inv_integrableOn :
+    IntegrableOn (fun t => Real.exp (-2 * π / t)) (Ioc 0 1) volume := by
+  sorry  -- Technical: needs change of variables on measure theory side
+
 /-- The integrand for I₁ over V × (0,1].
 Using the simplified form from `I₁'_eq_Ioc`. -/
 def I₁_integrand (p : V × ℝ) : ℂ :=
