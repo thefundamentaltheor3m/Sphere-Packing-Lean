@@ -5,7 +5,9 @@ Authors: Sphere Packing Contributors
 -/
 
 import SpherePacking.MagicFunction.a.Basic
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
+import Mathlib.MeasureTheory.Integral.Prod
 
 /-!
 # Integrability of Iⱼ over ℝ⁸
@@ -172,6 +174,60 @@ lemma im_neg_inv_neg_t_add_I (t : ℝ) (ht : t ∈ Icc 0 1) : 1/2 ≤ (-1 / (-t 
   rw [← one_div, ← one_div, one_div_le_one_div (by positivity) h_pos]
   linarith
 
+/-- For t ∈ [0,1], |(t + I)²| ≤ 2. -/
+lemma norm_sq_t_add_I_le (t : ℝ) (ht : t ∈ Icc 0 1) : ‖(t + I) ^ 2‖ ≤ 2 := by
+  rw [norm_pow, ← normSq_eq_norm_sq]
+  simp only [normSq_apply, add_re, ofReal_re, I_re, add_zero, add_im, ofReal_im, I_im, zero_add]
+  nlinarith [sq_nonneg t, ht.1, ht.2]
+
+/-- For t ∈ [0,1], |(-t + I)²| ≤ 2. -/
+lemma norm_sq_neg_t_add_I_le (t : ℝ) (ht : t ∈ Icc 0 1) : ‖(-t + I) ^ 2‖ ≤ 2 := by
+  rw [norm_pow, ← normSq_eq_norm_sq]
+  simp only [normSq_apply, add_re, neg_re, ofReal_re, I_re, add_zero, add_im, neg_im,
+    ofReal_im, I_im]
+  nlinarith [sq_nonneg t, ht.1, ht.2]
+
+/-- For t ∈ [0,1], the positive imaginary part of -1/(t+I). -/
+lemma im_neg_inv_t_add_I_pos (t : ℝ) (ht : t ∈ Icc 0 1) : 0 < (-1 / (t + I)).im := by
+  have h := im_neg_inv_t_add_I t ht
+  linarith
+
+/-- For t ∈ [0,1], the positive imaginary part of -1/(-t+I). -/
+lemma im_neg_inv_neg_t_add_I_pos (t : ℝ) (ht : t ∈ Icc 0 1) : 0 < (-1 / (-t + I)).im := by
+  have h := im_neg_inv_neg_t_add_I t ht
+  linarith
+
+/-- Bound on φ₀'' for I₂ segment: |φ₀''(-1/(t+I))| ≤ C₀ * e^{-π} for t ∈ [0,1).
+Uses `norm_φ₀_le` (Cor 7.5) with Im > 1/2.
+Note: At t=1, Im = 1/2 exactly, so we use [0,1) instead of [0,1]. -/
+lemma norm_φ₀''_I₂_bound_Ico : ∃ C₀ > 0, ∀ t : ℝ, t ∈ Ico 0 1 →
+    ‖φ₀'' (-1 / (t + I))‖ ≤ C₀ * Real.exp (-π) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
+  refine ⟨C₀, hC₀_pos, fun t ht => ?_⟩
+  have ht' : t ∈ Icc 0 1 := Ico_subset_Icc_self ht
+  have him_pos : 0 < (-1 / (t + I)).im := im_neg_inv_t_add_I_pos t ht'
+  have him_ge : 1/2 < (-1 / (t + I)).im := by
+    -- For t ∈ [0,1), Im = 1/(t²+1) > 1/2 since t² < 1
+    simp only [neg_div, neg_im, one_div, inv_im, add_im, ofReal_im, I_im, zero_add, neg_neg]
+    have hns : normSq (t + I) = t^2 + 1 := by simp [normSq, sq]
+    rw [hns]
+    have ht1 : t < 1 := ht.2
+    have ht2 : t^2 < 1 := by nlinarith [sq_nonneg t, ht.1]
+    have h_lt : t^2 + 1 < 2 := by linarith
+    exact (inv_lt_inv₀ (by norm_num : (0 : ℝ) < 2) (by positivity : (0 : ℝ) < t^2 + 1)).mpr h_lt
+  let z : UpperHalfPlane := ⟨-1 / (t + I), him_pos⟩
+  have hz_im : z.im = (-1 / (t + I)).im := rfl
+  simp only [φ₀'', him_pos, ↓reduceDIte]
+  calc ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im) := hC₀ z (by rw [hz_im]; exact him_ge)
+    _ ≤ C₀ * Real.exp (-π) := by
+        gcongr
+        simp only [neg_mul, neg_le_neg_iff]
+        have him_ge' : 1/2 < z.im := by rw [hz_im]; exact him_ge
+        have : 2 * π * z.im > 2 * π * (1/2) := by
+          apply mul_lt_mul_of_pos_left him_ge'
+          norm_num [Real.pi_pos]
+        linarith [Real.pi_pos]
+
 /-- The integrand for I₂ over V × [0,1].
 Using the simplified form from `I₂'_eq`: integrand has factors
 `φ₀'' (-1 / (t + I)) * (t + I)² * e^{-πIr} * e^{πIrt} * e^{-πr}`. -/
@@ -188,15 +244,19 @@ def I₄_integrand (p : V × ℝ) : ℂ :=
 /-- I₂ integrand is integrable on V × [0,1] (Class A segment).
 
 Proof strategy:
-1. For t ∈ [0,1], Im(-1/(t+I)) ≥ 1/2, so `norm_φ₀_le` applies
-2. |φ₀''(-1/(t+I))| × |t+I|² is bounded (continuous on compact)
+1. For t ∈ [0,1), Im(-1/(t+I)) > 1/2, so `norm_φ₀_le` applies
+2. |φ₀''(-1/(t+I))| × |t+I|² is bounded by C for t ∈ [0,1)
 3. Phase factors have unit norm
 4. Gaussian factor e^{-π‖x‖²} is integrable on ℝ⁸
-5. Product of (bounded on [0,1]) × (integrable on V) is integrable
+5. Use product integrability with finite measure on [0,1]
 
-BLOCKER: Requires `norm_φ₀_le` to be proved (has 2 sorries). -/
+BLOCKER: Uses `norm_φ₀_le` (has 2 sorries in PolyFourierCoeffBound.lean). -/
 theorem I₂_integrand_integrable :
     Integrable I₂_integrand (volume.prod (volume.restrict (Icc 0 1))) := by
+  -- The integrand is integrable via domination by Gaussian × constant
+  -- Full proof is technical; the key is:
+  -- 1. |I₂_integrand| ≤ C * exp(-π‖x‖²) for t ∈ [0,1) (measure-full)
+  -- 2. C * exp(-π‖x‖²) ∘ fst is integrable (Gaussian × finite measure)
   sorry
 
 /-- I₄ integrand is integrable on V × [0,1] (Class A segment).
