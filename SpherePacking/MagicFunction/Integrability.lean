@@ -106,7 +106,8 @@ lemma exp_neg_mul_le_of_one_le (c r t : ℝ) (hc : 0 ≤ c) (hr : 0 ≤ r) (ht :
   linarith
 
 /-- For t^{-1} decay bounds: `∫_1^∞ t^{-4} e^{-c·t} dt` converges for c > 0.
-Used in the s = 1/t substitution for Class B segments. -/
+Used in the s = 1/t substitution for Class B segments.
+Strategy: On [1,∞), t^{-4} ≤ 1, so dominated by exp(-c*t) which is integrable. -/
 lemma integral_inv_pow_four_exp_converges (c : ℝ) (hc : 0 < c) :
     Integrable (fun t : ℝ => t^(-(4:ℝ)) * Real.exp (-c * t)) (volume.restrict (Ici 1)) := by
   sorry
