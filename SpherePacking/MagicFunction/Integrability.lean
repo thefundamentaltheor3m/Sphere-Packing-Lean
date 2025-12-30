@@ -5,6 +5,7 @@ Authors: Sphere Packing Contributors
 -/
 
 import SpherePacking.MagicFunction.a.Basic
+import SpherePacking.MagicFunction.a.Schwartz
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 import Mathlib.MeasureTheory.Integral.Prod
@@ -1017,29 +1018,29 @@ since Schwartz functions are integrable. The proofs here provide a more direct p
 
 section BasicIntegrability
 
-/-- I₁ is integrable over ℝ⁸. -/
-theorem I₁_integrable : Integrable (I₁ : V → ℂ) := by
-  sorry
+/-- I₁ is integrable over ℝ⁸ (from Schwartz structure). -/
+theorem I₁_integrable : Integrable (I₁ : V → ℂ) :=
+  MagicFunction.a.SchwartzIntegrals.I₁.integrable
 
-/-- I₂ is integrable over ℝ⁸. -/
-theorem I₂_integrable : Integrable (I₂ : V → ℂ) := by
-  sorry
+/-- I₂ is integrable over ℝ⁸ (from Schwartz structure). -/
+theorem I₂_integrable : Integrable (I₂ : V → ℂ) :=
+  MagicFunction.a.SchwartzIntegrals.I₂.integrable
 
-/-- I₃ is integrable over ℝ⁸. -/
-theorem I₃_integrable : Integrable (I₃ : V → ℂ) := by
-  sorry
+/-- I₃ is integrable over ℝ⁸ (from Schwartz structure). -/
+theorem I₃_integrable : Integrable (I₃ : V → ℂ) :=
+  MagicFunction.a.SchwartzIntegrals.I₃.integrable
 
-/-- I₄ is integrable over ℝ⁸. -/
-theorem I₄_integrable : Integrable (I₄ : V → ℂ) := by
-  sorry
+/-- I₄ is integrable over ℝ⁸ (from Schwartz structure). -/
+theorem I₄_integrable : Integrable (I₄ : V → ℂ) :=
+  MagicFunction.a.SchwartzIntegrals.I₄.integrable
 
-/-- I₅ is integrable over ℝ⁸. -/
-theorem I₅_integrable : Integrable (I₅ : V → ℂ) := by
-  sorry
+/-- I₅ is integrable over ℝ⁸ (from Schwartz structure). -/
+theorem I₅_integrable : Integrable (I₅ : V → ℂ) :=
+  MagicFunction.a.SchwartzIntegrals.I₅.integrable
 
-/-- I₆ is integrable over ℝ⁸. -/
-theorem I₆_integrable : Integrable (I₆ : V → ℂ) := by
-  sorry
+/-- I₆ is integrable over ℝ⁸ (from Schwartz structure). -/
+theorem I₆_integrable : Integrable (I₆ : V → ℂ) :=
+  MagicFunction.a.SchwartzIntegrals.I₆.integrable
 
 /-- The magic function `a` is integrable over ℝ⁸. -/
 theorem a_integrable : Integrable (a : V → ℂ) := by
