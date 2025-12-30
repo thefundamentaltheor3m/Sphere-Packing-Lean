@@ -726,23 +726,100 @@ Using the simplified form from `I₅'_eq_Ioc`. -/
 def I₅_integrand (p : V × ℝ) : ℂ :=
   -I * φ₀'' (-1 / (I * p.2)) * p.2 ^ 2 * cexp (-π * ‖p.1‖^2 * p.2)
 
-/-- I₁ integrand is integrable on V × (0,1] (Class B segment).
-Strategy: Substitute s = 1/t, use Cor 7.5 for φ₀ decay at large s. -/
-theorem I₁_integrand_integrable :
-    Integrable I₁_integrand (volume.prod (volume.restrict (Ioc 0 1))) := by
-  sorry
+/-- I₁ integrand equals I₅ integrand times a unit-modulus phase factor. -/
+lemma I₁_integrand_eq_I₅_mul_phase (p : V × ℝ) :
+    I₁_integrand p = I₅_integrand p * cexp (-π * I * ‖p.1‖^2) := by
+  simp only [I₁_integrand, I₅_integrand]
+  ring
 
-/-- I₃ integrand is integrable on V × (0,1] (Class B segment).
-Strategy: Same as I₁ - substitute s = 1/t, use Cor 7.5. -/
-theorem I₃_integrand_integrable :
-    Integrable I₃_integrand (volume.prod (volume.restrict (Ioc 0 1))) := by
-  sorry
+/-- I₃ integrand equals I₅ integrand times a unit-modulus phase factor. -/
+lemma I₃_integrand_eq_I₅_mul_phase (p : V × ℝ) :
+    I₃_integrand p = I₅_integrand p * cexp (π * I * ‖p.1‖^2) := by
+  simp only [I₃_integrand, I₅_integrand]
+  ring
+
+/-- The phase factor cexp(-πI‖x‖²) has unit modulus. -/
+lemma norm_phase_factor_I₁ (x : V) : ‖cexp (-π * I * ‖x‖^2)‖ = 1 := by
+  rw [show (-π * I * ‖x‖^2 : ℂ) = ↑(-π * ‖x‖^2) * I from by push_cast; ring]
+  exact Complex.norm_exp_ofReal_mul_I _
+
+/-- The phase factor cexp(πI‖x‖²) has unit modulus. -/
+lemma norm_phase_factor_I₃ (x : V) : ‖cexp (π * I * ‖x‖^2)‖ = 1 := by
+  rw [show (π * I * ‖x‖^2 : ℂ) = ↑(π * ‖x‖^2) * I from by push_cast; ring]
+  exact Complex.norm_exp_ofReal_mul_I _
+
+/-- I₅ integrand norm bound for Class B. -/
+lemma I₅_integrand_norm_bound : ∃ C > 0, ∀ x : V, ∀ t : ℝ, 0 < t → t ≤ 1 →
+    ‖I₅_integrand (x, t)‖ ≤ C * Real.exp (-2 * π / t) * t ^ 2 * Real.exp (-π * ‖x‖^2 * t) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀''_classB_bound
+  refine ⟨C₀, hC₀_pos, fun x t ht ht' => ?_⟩
+  unfold I₅_integrand
+  rw [norm_mul, norm_mul, norm_mul]
+  have h_I : ‖(-I : ℂ)‖ = 1 := by rw [norm_neg, Complex.norm_I]
+  have h_φ := hC₀ t ht ht'
+  -- Gaussian factor
+  have h_gauss : ‖cexp ((-π : ℂ) * ‖x‖^2 * t)‖ = Real.exp (-π * ‖x‖^2 * t) := by
+    rw [Complex.norm_exp]
+    congr 1
+    have h1 : (‖x‖^2 : ℂ).re = ‖x‖^2 := by simp [sq]
+    have h2 : (‖x‖^2 : ℂ).im = 0 := by simp [sq]
+    simp only [neg_mul, neg_re, mul_re, ofReal_re, ofReal_im, mul_zero, sub_zero, h1, h2]
+  -- t² factor
+  have h_t2 : ‖(t : ℂ) ^ 2‖ = t ^ 2 := by
+    simp only [norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht]
+  rw [h_I, h_t2, h_gauss, one_mul]
+  calc ‖φ₀'' (-1 / (I * t))‖ * t ^ 2 * Real.exp (-π * ‖x‖^2 * t)
+      ≤ (C₀ * Real.exp (-2 * π / t)) * t ^ 2 * Real.exp (-π * ‖x‖^2 * t) := by gcongr
+    _ = C₀ * Real.exp (-2 * π / t) * t ^ 2 * Real.exp (-π * ‖x‖^2 * t) := by ring
 
 /-- I₅ integrand is integrable on V × (0,1] (Class B segment).
-Strategy: Same as I₁, I₃ - substitute s = 1/t, use Cor 7.5. -/
+
+Route A strategy:
+1. Bound: ‖I₅_integrand(x,t)‖ ≤ C * exp(-2π/t) * t² * exp(-π‖x‖²t)
+2. Integrate in x first: ∫_V exp(-πt‖x‖²) dx = t^{-4} (Gaussian in 8D)
+3. Then t-integral: ∫₀¹ C * exp(-2π/t) * t^{-2} dt converges
+
+The super-exponential decay of exp(-2π/t) as t→0 dominates the polynomial t^{-2}. -/
 theorem I₅_integrand_integrable :
     Integrable I₅_integrand (volume.prod (volume.restrict (Ioc 0 1))) := by
+  -- This is the critical Class B proof using Route A (integrate in x first)
+  -- The Gaussian integral ∫_V exp(-πt‖x‖²) dx = (π/(πt))^4 = t^{-4}
+  -- Combined with t² gives t^{-2}, and exp(-2π/t) * t^{-2} is integrable on (0,1]
   sorry
+
+/-- I₁ integrand is integrable on V × (0,1] (Class B segment).
+Follows from I₅ integrability since I₁ = I₅ * (unit-modulus phase). -/
+theorem I₁_integrand_integrable :
+    Integrable I₁_integrand (volume.prod (volume.restrict (Ioc 0 1))) := by
+  have h_eq : I₁_integrand = fun p => I₅_integrand p * cexp (-π * I * ‖p.1‖^2) := by
+    ext p; exact I₁_integrand_eq_I₅_mul_phase p
+  rw [h_eq]
+  -- I₅ is integrable, and we multiply by a unit-modulus factor
+  have h_I₅ := I₅_integrand_integrable
+  -- ‖f*g‖ = ‖f‖*‖g‖ = ‖f‖*1 = ‖f‖
+  apply Integrable.mono' h_I₅.norm
+  · -- Measurability
+    have h_cont : Continuous (fun p : V × ℝ => cexp (-π * I * ‖p.1‖^2)) := by fun_prop
+    exact h_I₅.aestronglyMeasurable.mul h_cont.aestronglyMeasurable
+  · -- Norm bound
+    apply ae_of_all
+    intro p
+    rw [norm_mul, norm_phase_factor_I₁ p.1, mul_one]
+
+/-- I₃ integrand is integrable on V × (0,1] (Class B segment).
+Follows from I₅ integrability since I₃ = I₅ * (unit-modulus phase). -/
+theorem I₃_integrand_integrable :
+    Integrable I₃_integrand (volume.prod (volume.restrict (Ioc 0 1))) := by
+  have h_eq : I₃_integrand = fun p => I₅_integrand p * cexp (π * I * ‖p.1‖^2) := by
+    ext p; exact I₃_integrand_eq_I₅_mul_phase p
+  rw [h_eq]
+  have h_I₅ := I₅_integrand_integrable
+  apply Integrable.mono' h_I₅.norm
+  · have h_cont : Continuous (fun p : V × ℝ => cexp (π * I * ‖p.1‖^2)) := by fun_prop
+    exact h_I₅.aestronglyMeasurable.mul h_cont.aestronglyMeasurable
+  · apply ae_of_all
+    intro p
+    rw [norm_mul, norm_phase_factor_I₃ p.1, mul_one]
 
 end ClassB
 
