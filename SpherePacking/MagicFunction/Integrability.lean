@@ -197,6 +197,13 @@ lemma im_neg_inv_neg_t_add_I_pos (t : ℝ) (ht : t ∈ Icc 0 1) : 0 < (-1 / (-t 
   have h := im_neg_inv_neg_t_add_I t ht
   linarith
 
+/-- The map t ↦ φ₀''(-1/(t+I)) is continuous on [0,1].
+This follows from: (1) t ↦ -1/(t+I) is continuous, (2) for t ∈ [0,1], Im(-1/(t+I)) > 0,
+(3) φ₀ is holomorphic on ℍ, hence continuous.
+BLOCKER: Depends on E₂_holo' (has sorry in Derivative.lean). -/
+lemma continuous_φ₀''_I₂_param : Continuous (fun t : ℝ => φ₀'' (-1 / (t + I))) := by
+  sorry -- Depends on E₂_holo' and the holomorphy chain E₂, E₄, E₆, Δ → φ₀
+
 /-- Bound on φ₀'' for I₂ segment: |φ₀''(-1/(t+I))| ≤ C₀ * e^{-π} for t ∈ [0,1).
 Uses `norm_φ₀_le` (Cor 7.5) with Im > 1/2.
 Note: At t=1, Im = 1/2 exactly, so we use [0,1) instead of [0,1]. -/
@@ -228,6 +235,41 @@ lemma norm_φ₀''_I₂_bound_Ico : ∃ C₀ > 0, ∀ t : ℝ, t ∈ Ico 0 1 →
           norm_num [Real.pi_pos]
         linarith [Real.pi_pos]
 
+/-- The map t ↦ φ₀''(-1/(-t+I)) is continuous on [0,1]. Same as continuous_φ₀''_I₂_param. -/
+lemma continuous_φ₀''_I₄_param : Continuous (fun t : ℝ => φ₀'' (-1 / (-t + I))) := by
+  sorry -- Depends on E₂_holo' and the holomorphy chain
+
+/-- Bound on φ₀'' for I₄ segment: |φ₀''(-1/(-t+I))| ≤ C₀ * e^{-π} for t ∈ [0,1).
+Uses `norm_φ₀_le` (Cor 7.5) with Im > 1/2. -/
+lemma norm_φ₀''_I₄_bound_Ico : ∃ C₀ > 0, ∀ t : ℝ, t ∈ Ico 0 1 →
+    ‖φ₀'' (-1 / (-t + I))‖ ≤ C₀ * Real.exp (-π) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
+  refine ⟨C₀, hC₀_pos, fun t ht => ?_⟩
+  have ht' : t ∈ Icc 0 1 := Ico_subset_Icc_self ht
+  have him_pos : 0 < (-1 / (-t + I)).im := im_neg_inv_neg_t_add_I_pos t ht'
+  have him_ge : 1/2 < (-1 / (-t + I)).im := by
+    have hns : normSq (-t + I) = t^2 + 1 := by simp [normSq, sq]
+    have him_eq : (-1 / (-t + I)).im = 1 / (t^2 + 1) := by
+      simp only [neg_div, neg_im, one_div, inv_im, add_im, neg_im, ofReal_im, I_im, neg_neg, hns]
+      ring
+    rw [him_eq, one_div, one_div]
+    have ht1 : t < 1 := ht.2
+    have ht2 : t^2 < 1 := by nlinarith [sq_nonneg t, ht.1]
+    have h_lt : t^2 + 1 < 2 := by linarith
+    exact (inv_lt_inv₀ (by norm_num : (0 : ℝ) < 2) (by positivity : (0 : ℝ) < t^2 + 1)).mpr h_lt
+  let z : UpperHalfPlane := ⟨-1 / (-t + I), him_pos⟩
+  have hz_im : z.im = (-1 / (-t + I)).im := rfl
+  simp only [φ₀'', him_pos, ↓reduceDIte]
+  calc ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im) := hC₀ z (by rw [hz_im]; exact him_ge)
+    _ ≤ C₀ * Real.exp (-π) := by
+        gcongr
+        simp only [neg_mul, neg_le_neg_iff]
+        have him_ge' : 1/2 < z.im := by rw [hz_im]; exact him_ge
+        have : 2 * π * z.im > 2 * π * (1/2) := by
+          apply mul_lt_mul_of_pos_left him_ge'
+          norm_num [Real.pi_pos]
+        linarith [Real.pi_pos]
+
 /-- The integrand for I₂ over V × [0,1].
 Using the simplified form from `I₂'_eq`: integrand has factors
 `φ₀'' (-1 / (t + I)) * (t + I)² * e^{-πIr} * e^{πIrt} * e^{-πr}`. -/
@@ -241,23 +283,130 @@ def I₄_integrand (p : V × ℝ) : ℂ :=
   -1 * φ₀'' (-1 / (-p.2 + I)) * (-p.2 + I) ^ 2 *
   cexp (π * I * ‖p.1‖^2) * cexp (-π * I * ‖p.1‖^2 * p.2) * cexp (-π * ‖p.1‖^2)
 
+/-- The I₂ integrand is continuous as a function V × ℝ → ℂ.
+Follows from: continuity of φ₀''(-1/(t+I)), polynomial in t, and cexp compositions. -/
+lemma I₂_integrand_continuous : Continuous I₂_integrand := by
+  unfold I₂_integrand
+  -- Each factor is continuous in (x, t)
+  have h1 : Continuous (fun p : V × ℝ => φ₀'' (-1 / (p.2 + I))) :=
+    continuous_φ₀''_I₂_param.comp continuous_snd
+  have h2 : Continuous (fun p : V × ℝ => (p.2 + I) ^ 2) :=
+    (continuous_ofReal.comp continuous_snd).add continuous_const |>.pow 2
+  have h_norm_sq : Continuous (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) := by
+    have h1 : Continuous (fun p : V × ℝ => ‖p.1‖^2) := (continuous_norm.comp continuous_fst).pow 2
+    have h2 : Continuous (fun r : ℝ => (r : ℂ)) := continuous_ofReal
+    have h3 : (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) = (fun r : ℝ => (r : ℂ)) ∘ (fun p => ‖p.1‖^2) := by
+      funext p
+      simp only [Function.comp_apply, ofReal_pow]
+    rw [h3]
+    exact h2.comp h1
+  have h3 : Continuous (fun p : V × ℝ => cexp (-π * I * ‖p.1‖^2)) :=
+    Complex.continuous_exp.comp (continuous_const.mul h_norm_sq)
+  have h4 : Continuous (fun p : V × ℝ => cexp (π * I * ‖p.1‖^2 * p.2)) :=
+    Complex.continuous_exp.comp ((continuous_const.mul h_norm_sq).mul
+      (continuous_ofReal.comp continuous_snd))
+  have h5 : Continuous (fun p : V × ℝ => cexp (-π * ‖p.1‖^2)) :=
+    Complex.continuous_exp.comp (continuous_const.mul h_norm_sq)
+  exact ((h1.mul h2).mul h3).mul h4 |>.mul h5
+
+/-- The norm of I₂_integrand is bounded by C * exp(-π‖x‖²) for all (x, t) ∈ V × [0,1].
+Uses continuity of φ₀'' on [0,1] to get a uniform bound. -/
+lemma I₂_integrand_norm_bound : ∃ C > 0, ∀ x : V, ∀ t ∈ Icc (0 : ℝ) 1,
+    ‖I₂_integrand (x, t)‖ ≤ C * Real.exp (-π * ‖x‖^2) := by
+  -- Get a bound on |φ₀''(-1/(t+I))| for t ∈ [0,1] using continuity
+  -- Since φ₀''(-1/(t+I)) is continuous on the compact set [0,1], it's bounded
+  have h_bdd : BddAbove ((fun t : ℝ => ‖φ₀'' (-1 / (t + I))‖) '' Icc (0 : ℝ) 1) :=
+    IsCompact.bddAbove_image isCompact_Icc
+      (continuous_norm.comp continuous_φ₀''_I₂_param).continuousOn
+  -- Get an upper bound M ≥ 0 such that all elements of the set are ≤ M
+  obtain ⟨M, hM_nonneg, hM_le⟩ := h_bdd.exists_ge (0 : ℝ)
+  -- hM_le says: for all y in the image, y ≤ M
+  -- The bound constant: combine M with the |(t+I)²| ≤ 2 bound
+  refine ⟨2 * (M + 1), by positivity, fun x t ht => ?_⟩
+  unfold I₂_integrand
+  rw [norm_mul, norm_mul, norm_mul, norm_mul]
+  -- |φ₀''(...)| ≤ M (the value is in the image set)
+  have h_φ : ‖φ₀'' (-1 / (t + I))‖ ≤ M := by
+    apply hM_le
+    exact ⟨t, ht, rfl⟩
+  -- |(t + I)²| ≤ 2
+  have h_sq : ‖(t + I) ^ 2‖ ≤ 2 := norm_sq_t_add_I_le t ht
+  -- Phase factors have unit norm (use Complex.norm_exp_ofReal_mul_I)
+  have h_phase1 : ‖cexp (-π * I * ‖x‖^2)‖ = 1 := by
+    rw [show (-π * I * ‖x‖^2 : ℂ) = ↑(-π * ‖x‖^2) * I from by push_cast; ring]
+    exact Complex.norm_exp_ofReal_mul_I _
+  have h_phase2 : ‖cexp (π * I * ‖x‖^2 * t)‖ = 1 := by
+    rw [show (π * I * ‖x‖^2 * t : ℂ) = ↑(π * ‖x‖^2 * t) * I from by push_cast; ring]
+    exact Complex.norm_exp_ofReal_mul_I _
+  -- Gaussian factor: need to show ‖cexp((-π : ℂ) * ‖x‖^2)‖ = exp(-π * ‖x‖^2)
+  -- Note: (↑‖x‖)^2 : ℂ has real part ‖x‖^2 and imaginary part 0
+  have h_norm_sq_re : ((‖x‖ : ℂ) ^ 2).re = ‖x‖^2 := by simp [sq]
+  have h_norm_sq_im : ((‖x‖ : ℂ) ^ 2).im = 0 := by simp [sq]
+  have h_gauss : ‖cexp ((-π : ℂ) * ‖x‖^2)‖ = Real.exp (-π * ‖x‖^2) := by
+    rw [Complex.norm_exp]
+    congr 1
+    simp only [neg_mul, neg_re, mul_re, ofReal_re, ofReal_im, h_norm_sq_re, h_norm_sq_im,
+      mul_zero, sub_zero]
+  -- Combine the bounds using explicit multiplication
+  have h1 : ‖φ₀'' (-1 / (t + I))‖ * ‖(t + I) ^ 2‖ ≤ M * 2 := by
+    calc ‖φ₀'' (-1 / (t + I))‖ * ‖(t + I) ^ 2‖
+        ≤ M * ‖(t + I) ^ 2‖ := by apply mul_le_mul_of_nonneg_right h_φ (norm_nonneg _)
+      _ ≤ M * 2 := by apply mul_le_mul_of_nonneg_left h_sq hM_nonneg
+  calc ‖φ₀'' (-1 / (t + I))‖ * ‖(t + I) ^ 2‖ * ‖cexp (-π * I * ‖x‖^2)‖ *
+       ‖cexp (π * I * ‖x‖^2 * t)‖ * ‖cexp ((-π : ℂ) * ‖x‖^2)‖
+       = ‖φ₀'' (-1 / (t + I))‖ * ‖(t + I) ^ 2‖ * 1 * 1 * Real.exp (-π * ‖x‖^2) := by
+         rw [h_phase1, h_phase2, h_gauss]
+    _ = ‖φ₀'' (-1 / (t + I))‖ * ‖(t + I) ^ 2‖ * Real.exp (-π * ‖x‖^2) := by ring
+    _ ≤ M * 2 * Real.exp (-π * ‖x‖^2) := by
+         apply mul_le_mul_of_nonneg_right h1 (Real.exp_pos _).le
+    _ ≤ 2 * (M + 1) * Real.exp (-π * ‖x‖^2) := by nlinarith [Real.exp_pos (-π * ‖x‖^2), hM_nonneg]
+
 /-- I₂ integrand is integrable on V × [0,1] (Class A segment).
 
-Proof strategy:
-1. For t ∈ [0,1), Im(-1/(t+I)) > 1/2, so `norm_φ₀_le` applies
-2. |φ₀''(-1/(t+I))| × |t+I|² is bounded by C for t ∈ [0,1)
-3. Phase factors have unit norm
-4. Gaussian factor e^{-π‖x‖²} is integrable on ℝ⁸
-5. Use product integrability with finite measure on [0,1]
-
-BLOCKER: Uses `norm_φ₀_le` (has 2 sorries in PolyFourierCoeffBound.lean). -/
+Proof: Continuous, bounded by C * exp(-π‖x‖²), and Gaussian is integrable on V. -/
 theorem I₂_integrand_integrable :
     Integrable I₂_integrand (volume.prod (volume.restrict (Icc 0 1))) := by
-  -- The integrand is integrable via domination by Gaussian × constant
-  -- Full proof is technical; the key is:
-  -- 1. |I₂_integrand| ≤ C * exp(-π‖x‖²) for t ∈ [0,1) (measure-full)
-  -- 2. C * exp(-π‖x‖²) ∘ fst is integrable (Gaussian × finite measure)
-  sorry
+  -- Use Integrable.mono' with dominating function C * exp(-π‖x‖²) ∘ fst
+  obtain ⟨C, hC_pos, hC⟩ := I₂_integrand_norm_bound
+  -- The dominating function
+  let g : V × ℝ → ℝ := fun p => C * Real.exp (-π * ‖p.1‖^2)
+  -- Step 1: I₂_integrand is AEStronglyMeasurable (it's continuous)
+  have h_meas : AEStronglyMeasurable I₂_integrand (volume.prod (volume.restrict (Icc 0 1))) :=
+    I₂_integrand_continuous.aestronglyMeasurable
+  -- Step 2: The dominating function g is integrable on the product
+  have h_g_int : Integrable g (volume.prod (volume.restrict (Icc 0 1))) := by
+    -- g(x, t) = C * exp(-π‖x‖²) depends only on x
+    -- ∫∫ g = C * ∫_V exp(-π‖x‖²) dx * ∫_{[0,1]} 1 dt = C * (Gaussian integral) * 1
+    have h_fst : g = (fun p : V × ℝ => C * Real.exp (-π * ‖p.1‖^2)) := rfl
+    rw [h_fst]
+    -- Establish that the restricted measure is a finite measure
+    haveI : IsFiniteMeasure (volume.restrict (Icc (0 : ℝ) 1)) :=
+      ⟨by simp only [Measure.restrict_apply MeasurableSet.univ, Set.univ_inter]
+          exact measure_Icc_lt_top⟩
+    -- Now use Integrable.comp_fst which requires IsFiniteMeasure on the second factor
+    have h_gauss : Integrable (fun x : V => C * Real.exp (-π * ‖x‖^2)) volume :=
+      (gaussian_integrable_R8 π Real.pi_pos).const_mul C
+    exact h_gauss.comp_fst (volume.restrict (Icc 0 1))
+  -- Step 3: The bound ‖I₂_integrand‖ ≤ g holds a.e. on V × [0,1]
+  -- The product measure with restriction only sees t ∈ [0,1], where the bound holds
+  have h_bound : ∀ᵐ p ∂(volume.prod (volume.restrict (Icc 0 1))), ‖I₂_integrand p‖ ≤ g p := by
+    -- The bound holds for all (x, t) with t ∈ [0,1], and the product measure only sees such t
+    -- First show that a.e. under restricted measure, t ∈ [0,1]
+    have h_ae_snd : ∀ᵐ (t : ℝ) ∂(volume.restrict (Icc 0 1)), t ∈ Icc 0 1 := by
+      rw [ae_restrict_iff' measurableSet_Icc]
+      exact ae_of_all _ (fun _ h => h)
+    -- For product measures, use ae_prod_iff_ae_ae with measurability of the bound set
+    have h_meas_bound : MeasurableSet {p : V × ℝ | ‖I₂_integrand p‖ ≤ g p} := by
+      apply measurableSet_le
+      · exact I₂_integrand_continuous.norm.measurable
+      · exact (continuous_const.mul (Real.continuous_exp.comp
+          (continuous_const.mul ((continuous_norm.comp continuous_fst).pow 2)))).measurable
+    rw [Measure.ae_prod_iff_ae_ae h_meas_bound]
+    apply ae_of_all
+    intro x
+    filter_upwards [h_ae_snd] with t ht
+    exact hC x t ht
+  exact Integrable.mono' h_g_int h_meas h_bound
 
 /-- I₄ integrand is integrable on V × [0,1] (Class A segment).
 Strategy: Same as I₂ - φ₀'' bounded via Im ≥ 1/2, Gaussian decay dominates. -/
