@@ -105,20 +105,72 @@ lemma exp_neg_mul_le_of_one_le (c r t : ℝ) (hc : 0 ≤ c) (hr : 0 ≤ r) (ht :
     linarith
   linarith
 
-/-- For t^{-1} decay bounds: `∫_1^∞ t^{-4} e^{-c·t} dt` converges for c > 0.
+/-- For t^{-4} decay bounds: `∫_1^∞ t^{-4} e^{-c·t} dt` converges for c > 0.
 Used in the s = 1/t substitution for Class B segments.
-Strategy: On [1,∞), t^{-4} ≤ 1, so dominated by exp(-c*t) which is integrable. -/
+Strategy: On [1,∞), 1/t^4 ≤ 1, so dominated by exp(-c*t) which is integrable. -/
 lemma integral_inv_pow_four_exp_converges (c : ℝ) (hc : 0 < c) :
-    Integrable (fun t : ℝ => t^(-(4:ℝ)) * Real.exp (-c * t)) (volume.restrict (Ici 1)) := by
-  sorry
+    Integrable (fun t : ℝ => (1 / t^4) * Real.exp (-c * t)) (volume.restrict (Ici 1)) := by
+  -- Dominate by exp(-c*t) since 1/t^4 ≤ 1 for t ≥ 1
+  have h_exp_int : Integrable (fun t : ℝ => Real.exp (-c * t)) (volume.restrict (Ici 1)) :=
+    (integrableOn_Ici_iff_integrableOn_Ioi).mpr (integrableOn_exp_mul_Ioi (by linarith : -c < 0) 1)
+  apply Integrable.mono h_exp_int
+  · -- Measurability: (1/t^4) * exp(-c*t) is measurable
+    apply AEStronglyMeasurable.mul
+    · exact (measurable_const.div (measurable_id.pow_const 4)).aestronglyMeasurable
+    · exact (Real.continuous_exp.comp (continuous_const.mul continuous_id)).aestronglyMeasurable
+  · -- Bound: |(1/t^4) * exp(-c*t)| ≤ |exp(-c*t)| for t ≥ 1
+    apply ae_restrict_of_ae_restrict_of_subset (s := Ici 1) (t := Ici 1) (le_refl _)
+    rw [ae_restrict_iff' measurableSet_Ici]
+    apply ae_of_all
+    intro t ht
+    rw [norm_mul, Real.norm_eq_abs, Real.norm_eq_abs]
+    have ht' : 1 ≤ t := ht
+    have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht'
+    calc |1 / t ^ 4| * |Real.exp (-c * t)|
+        = (1 / t ^ 4) * Real.exp (-c * t) := by
+          rw [abs_of_nonneg, abs_of_nonneg (Real.exp_nonneg _)]
+          apply div_nonneg zero_le_one (pow_nonneg (le_of_lt ht_pos) 4)
+      _ ≤ 1 * Real.exp (-c * t) := by
+          gcongr
+          rw [div_le_one (pow_pos ht_pos 4)]
+          exact one_le_pow₀ ht'
+      _ = |Real.exp (-c * t)| := by rw [one_mul, abs_of_nonneg (Real.exp_nonneg _)]
 
 /-! ## Class A: Safe segments (I₂, I₄)
 
-For these segments, Im(z) = 1 throughout, so φ₀'' is bounded on the compact parameter
-range [0,1], and the Gaussian factor `e^{-π·r·Im(z)} = e^{-π·r}` provides integrability.
+For these segments, the argument to φ₀'' has Im ≥ 1/2 throughout:
+- I₂: z = -1/(t + I) has Im = 1/(t² + 1) ≥ 1/2 for t ∈ [0,1]
+- I₄: z = -1/(-t + I) has Im = 1/(t² + 1) ≥ 1/2 for t ∈ [0,1]
+
+So `norm_φ₀_le` applies, giving uniform bounds on φ₀''.
+Combined with Gaussian decay `e^{-π‖x‖²}`, we get product integrability.
 -/
 
 section ClassA
+
+/-- For t ∈ [0,1], Im(-1/(t + I)) ≥ 1/2. -/
+lemma im_neg_inv_t_add_I (t : ℝ) (ht : t ∈ Icc 0 1) : 1/2 ≤ (-1 / (t + I)).im := by
+  have h1 : (t + I) ≠ 0 := by simp [Complex.ext_iff]
+  have hns : normSq (t + I) = t^2 + 1 := by simp [normSq, sq]
+  have him : (t + I).im = 1 := by simp
+  simp only [neg_div, neg_im, one_div, inv_im, hns, him, neg_neg]
+  -- Goal: 2⁻¹ ≤ (t^2 + 1)⁻¹, i.e., t^2 + 1 ≤ 2
+  have ht2 : t^2 ≤ 1 := by nlinarith [ht.1, ht.2, sq_nonneg t]
+  have h_pos : 0 < t^2 + 1 := by positivity
+  rw [← one_div, ← one_div, one_div_le_one_div (by positivity) h_pos]
+  linarith
+
+/-- For t ∈ [0,1], Im(-1/(-t + I)) ≥ 1/2. -/
+lemma im_neg_inv_neg_t_add_I (t : ℝ) (ht : t ∈ Icc 0 1) : 1/2 ≤ (-1 / (-t + I)).im := by
+  have h1 : (-t + I) ≠ 0 := by simp [Complex.ext_iff]
+  have hns : normSq (-t + I) = t^2 + 1 := by simp [normSq, sq]
+  have him : (-t + I).im = 1 := by simp
+  simp only [neg_div, neg_im, one_div, inv_im, hns, him, neg_neg]
+  -- Goal: 2⁻¹ ≤ (t^2 + 1)⁻¹, i.e., t^2 + 1 ≤ 2
+  have ht2 : t^2 ≤ 1 := by nlinarith [ht.1, ht.2, sq_nonneg t]
+  have h_pos : 0 < t^2 + 1 := by positivity
+  rw [← one_div, ← one_div, one_div_le_one_div (by positivity) h_pos]
+  linarith
 
 /-- The integrand for I₂ over V × [0,1].
 Using the simplified form from `I₂'_eq`: integrand has factors
@@ -134,13 +186,21 @@ def I₄_integrand (p : V × ℝ) : ℂ :=
   cexp (π * I * ‖p.1‖^2) * cexp (-π * I * ‖p.1‖^2 * p.2) * cexp (-π * ‖p.1‖^2)
 
 /-- I₂ integrand is integrable on V × [0,1] (Class A segment).
-Strategy: φ₀'' bounded on compact, Gaussian decay `e^{-π‖x‖²}` dominates. -/
+
+Proof strategy:
+1. For t ∈ [0,1], Im(-1/(t+I)) ≥ 1/2, so `norm_φ₀_le` applies
+2. |φ₀''(-1/(t+I))| × |t+I|² is bounded (continuous on compact)
+3. Phase factors have unit norm
+4. Gaussian factor e^{-π‖x‖²} is integrable on ℝ⁸
+5. Product of (bounded on [0,1]) × (integrable on V) is integrable
+
+BLOCKER: Requires `norm_φ₀_le` to be proved (has 2 sorries). -/
 theorem I₂_integrand_integrable :
     Integrable I₂_integrand (volume.prod (volume.restrict (Icc 0 1))) := by
   sorry
 
 /-- I₄ integrand is integrable on V × [0,1] (Class A segment).
-Strategy: Same as I₂ - φ₀'' bounded on compact, Gaussian decay dominates. -/
+Strategy: Same as I₂ - φ₀'' bounded via Im ≥ 1/2, Gaussian decay dominates. -/
 theorem I₄_integrand_integrable :
     Integrable I₄_integrand (volume.prod (volume.restrict (Icc 0 1))) := by
   sorry
