@@ -166,7 +166,7 @@ theorem tendstozero_inv_linear (z : ℍ) (b : ℤ) :
     apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, n]‖ ^ (-1 : ℝ))
     · simp
     · intro t
-      have := EisensteinSeries.summand_bound z (k := 1) (by simp only [zero_le_one]) ![b, t]
+      have := EisensteinSeries.summand_bound z (k := 1) (by simp) ![b, t]
       simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
         Int.cast_natCast, Nat.succ_eq_add_one, Nat.reduceAdd, ge_iff_le] at *
       apply le_trans _ this
@@ -210,7 +210,7 @@ theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ) :
     apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, -n]‖ ^ (-1 : ℝ))
     · simp
     · intro t
-      have := EisensteinSeries.summand_bound z (k := 1) (by simp only [zero_le_one]) ![b, -t]
+      have := EisensteinSeries.summand_bound z (k := 1) (by simp) ![b, -t]
       simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
         Int.cast_neg, Int.cast_natCast, Nat.succ_eq_add_one, Nat.reduceAdd, ge_iff_le] at *
       apply le_trans _ this

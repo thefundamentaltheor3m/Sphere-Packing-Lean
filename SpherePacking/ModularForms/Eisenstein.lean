@@ -394,7 +394,6 @@ lemma qexpsummable (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
   nth_rw 2 [show k = 1 + (k - 1) by omega]
   rw [pow_add]
   gcongr
-  simp only [pow_one]
   simpa using Nat.card_divisors_le_self (b + 1)
 
 
@@ -406,7 +405,7 @@ lemma Ek_q_exp_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : (qExpansio
   · have hc := congr_fun h 0
     rw [Nat.cast_one] at hc
     rw [← hc]
-    simp only [one_div, neg_mul, ↓reduceIte, c]
+    simp [c]
   intro z
   have := E_k_q_expansion k hk hk2 z
   rw [Summable.hasSum_iff]
@@ -547,7 +546,7 @@ lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff m) =
     Nat.succ_eq_add_one, Nat.reduceAdd, zero_add, mul_one, Nat.reduceMul, Nat.cast_ofNat]
   ring_nf
   rw [Complex.I_pow_six ]
-  have pin : (π : ℂ) ≠ 0 := by simp only [ne_eq, ofReal_eq_zero, Real.pi_ne_zero, not_false_eq_true]
+  have pin : (π : ℂ) ≠ 0 := by simp
   field_simp
 
 lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 := by
@@ -589,7 +588,7 @@ theorem E4E6_coeff_zero_eq_zero :
   simp only [Finset.antidiagonal_zero, Prod.mk_zero_zero, Finset.sum_singleton, Prod.fst_zero,
     Prod.snd_zero, one_mul, mul_one]
   rw [E4_q_exp_zero]
-  simp only [mul_one, sub_self]
+  simp
 
 def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 := by
   let foo : ModularForm Γ(1) 12 := (E₄).mul ((E₄).mul E₄)
@@ -699,7 +698,7 @@ theorem diffwithinat_prod_1 :
   apply DifferentiableWithinAt.pow
   have hu := asdf.differentiableOn ?_ ?_
   · apply hu
-    simp only [one_div, mem_ball, dist_self, inv_pos, Nat.ofNat_pos]
+    simp
   · simp only [one_div, eventually_atTop, ge_iff_le]
     use 0
     intro b hb
