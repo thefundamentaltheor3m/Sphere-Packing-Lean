@@ -408,11 +408,98 @@ theorem I₂_integrand_integrable :
     exact hC x t ht
   exact Integrable.mono' h_g_int h_meas h_bound
 
+/-- The I₄ integrand is continuous as a function V × ℝ → ℂ. -/
+lemma I₄_integrand_continuous : Continuous I₄_integrand := by
+  unfold I₄_integrand
+  have h1 : Continuous (fun p : V × ℝ => φ₀'' (-1 / (-p.2 + I))) :=
+    continuous_φ₀''_I₄_param.comp continuous_snd
+  have h2 : Continuous (fun p : V × ℝ => (-p.2 + I) ^ 2) :=
+    ((continuous_ofReal.comp continuous_snd).neg.add continuous_const).pow 2
+  have h_norm_sq : Continuous (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) := by
+    have h1 : Continuous (fun p : V × ℝ => ‖p.1‖^2) := (continuous_norm.comp continuous_fst).pow 2
+    have h2 : Continuous (fun r : ℝ => (r : ℂ)) := continuous_ofReal
+    have h3 : (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) = (fun r : ℝ => (r : ℂ)) ∘ (fun p => ‖p.1‖^2) := by
+      funext p; simp only [Function.comp_apply, ofReal_pow]
+    rw [h3]; exact h2.comp h1
+  have h3 : Continuous (fun p : V × ℝ => cexp (π * I * ‖p.1‖^2)) :=
+    Complex.continuous_exp.comp (continuous_const.mul h_norm_sq)
+  have h4 : Continuous (fun p : V × ℝ => cexp (-π * I * ‖p.1‖^2 * p.2)) :=
+    Complex.continuous_exp.comp ((continuous_const.mul h_norm_sq).mul
+      (continuous_ofReal.comp continuous_snd))
+  have h5 : Continuous (fun p : V × ℝ => cexp (-π * ‖p.1‖^2)) :=
+    Complex.continuous_exp.comp (continuous_const.mul h_norm_sq)
+  exact ((continuous_const.mul h1).mul h2).mul h3 |>.mul h4 |>.mul h5
+
+/-- The norm of I₄_integrand is bounded by C * exp(-π‖x‖²) for all (x, t) ∈ V × [0,1]. -/
+lemma I₄_integrand_norm_bound : ∃ C > 0, ∀ x : V, ∀ t ∈ Icc (0 : ℝ) 1,
+    ‖I₄_integrand (x, t)‖ ≤ C * Real.exp (-π * ‖x‖^2) := by
+  have h_bdd : BddAbove ((fun t : ℝ => ‖φ₀'' (-1 / (-t + I))‖) '' Icc (0 : ℝ) 1) :=
+    IsCompact.bddAbove_image isCompact_Icc
+      (continuous_norm.comp continuous_φ₀''_I₄_param).continuousOn
+  obtain ⟨M, hM_nonneg, hM_le⟩ := h_bdd.exists_ge (0 : ℝ)
+  refine ⟨2 * (M + 1), by positivity, fun x t ht => ?_⟩
+  unfold I₄_integrand
+  rw [norm_mul, norm_mul, norm_mul, norm_mul, norm_mul]
+  have h_neg1 : ‖(-1 : ℂ)‖ = 1 := by simp
+  have h_φ : ‖φ₀'' (-1 / (-t + I))‖ ≤ M := by apply hM_le; exact ⟨t, ht, rfl⟩
+  have h_sq : ‖(-t + I) ^ 2‖ ≤ 2 := norm_sq_neg_t_add_I_le t ht
+  have h_phase1 : ‖cexp (π * I * ‖x‖^2)‖ = 1 := by
+    rw [show (π * I * ‖x‖^2 : ℂ) = ↑(π * ‖x‖^2) * I from by push_cast; ring]
+    exact Complex.norm_exp_ofReal_mul_I _
+  have h_phase2 : ‖cexp (-π * I * ‖x‖^2 * t)‖ = 1 := by
+    rw [show (-π * I * ‖x‖^2 * t : ℂ) = ↑(-π * ‖x‖^2 * t) * I from by push_cast; ring]
+    exact Complex.norm_exp_ofReal_mul_I _
+  have h_norm_sq_re : ((‖x‖ : ℂ) ^ 2).re = ‖x‖^2 := by simp [sq]
+  have h_norm_sq_im : ((‖x‖ : ℂ) ^ 2).im = 0 := by simp [sq]
+  have h_gauss : ‖cexp ((-π : ℂ) * ‖x‖^2)‖ = Real.exp (-π * ‖x‖^2) := by
+    rw [Complex.norm_exp]; congr 1
+    simp only [neg_mul, neg_re, mul_re, ofReal_re, ofReal_im, h_norm_sq_re, h_norm_sq_im,
+      mul_zero, sub_zero]
+  have h1 : ‖φ₀'' (-1 / (-t + I))‖ * ‖(-t + I) ^ 2‖ ≤ M * 2 := by
+    calc ‖φ₀'' (-1 / (-t + I))‖ * ‖(-t + I) ^ 2‖
+        ≤ M * ‖(-t + I) ^ 2‖ := by apply mul_le_mul_of_nonneg_right h_φ (norm_nonneg _)
+      _ ≤ M * 2 := by apply mul_le_mul_of_nonneg_left h_sq hM_nonneg
+  calc ‖(-1 : ℂ)‖ * ‖φ₀'' (-1 / (-t + I))‖ * ‖(-t + I) ^ 2‖ * ‖cexp (π * I * ‖x‖^2)‖ *
+       ‖cexp (-π * I * ‖x‖^2 * t)‖ * ‖cexp ((-π : ℂ) * ‖x‖^2)‖
+       = 1 * ‖φ₀'' (-1 / (-t + I))‖ * ‖(-t + I) ^ 2‖ * 1 * 1 * Real.exp (-π * ‖x‖^2) := by
+         rw [h_neg1, h_phase1, h_phase2, h_gauss]
+    _ = ‖φ₀'' (-1 / (-t + I))‖ * ‖(-t + I) ^ 2‖ * Real.exp (-π * ‖x‖^2) := by ring
+    _ ≤ M * 2 * Real.exp (-π * ‖x‖^2) := by
+         apply mul_le_mul_of_nonneg_right h1 (Real.exp_pos _).le
+    _ ≤ 2 * (M + 1) * Real.exp (-π * ‖x‖^2) := by nlinarith [Real.exp_pos (-π * ‖x‖^2), hM_nonneg]
+
 /-- I₄ integrand is integrable on V × [0,1] (Class A segment).
 Strategy: Same as I₂ - φ₀'' bounded via Im ≥ 1/2, Gaussian decay dominates. -/
 theorem I₄_integrand_integrable :
     Integrable I₄_integrand (volume.prod (volume.restrict (Icc 0 1))) := by
-  sorry
+  obtain ⟨C, hC_pos, hC⟩ := I₄_integrand_norm_bound
+  let g : V × ℝ → ℝ := fun p => C * Real.exp (-π * ‖p.1‖^2)
+  have h_meas : AEStronglyMeasurable I₄_integrand (volume.prod (volume.restrict (Icc 0 1))) :=
+    I₄_integrand_continuous.aestronglyMeasurable
+  have h_g_int : Integrable g (volume.prod (volume.restrict (Icc 0 1))) := by
+    have h_fst : g = (fun p : V × ℝ => C * Real.exp (-π * ‖p.1‖^2)) := rfl
+    rw [h_fst]
+    haveI : IsFiniteMeasure (volume.restrict (Icc (0 : ℝ) 1)) :=
+      ⟨by simp only [Measure.restrict_apply MeasurableSet.univ, Set.univ_inter]
+          exact measure_Icc_lt_top⟩
+    have h_gauss : Integrable (fun x : V => C * Real.exp (-π * ‖x‖^2)) volume :=
+      (gaussian_integrable_R8 π Real.pi_pos).const_mul C
+    exact h_gauss.comp_fst (volume.restrict (Icc 0 1))
+  have h_bound : ∀ᵐ p ∂(volume.prod (volume.restrict (Icc 0 1))), ‖I₄_integrand p‖ ≤ g p := by
+    have h_ae_snd : ∀ᵐ (t : ℝ) ∂(volume.restrict (Icc 0 1)), t ∈ Icc 0 1 := by
+      rw [ae_restrict_iff' measurableSet_Icc]
+      exact ae_of_all _ (fun _ h => h)
+    have h_meas_bound : MeasurableSet {p : V × ℝ | ‖I₄_integrand p‖ ≤ g p} := by
+      apply measurableSet_le
+      · exact I₄_integrand_continuous.norm.measurable
+      · exact (continuous_const.mul (Real.continuous_exp.comp
+          (continuous_const.mul ((continuous_norm.comp continuous_fst).pow 2)))).measurable
+    rw [Measure.ae_prod_iff_ae_ae h_meas_bound]
+    apply ae_of_all
+    intro x
+    filter_upwards [h_ae_snd] with t ht
+    exact hC x t ht
+  exact Integrable.mono' h_g_int h_meas h_bound
 
 end ClassA
 
