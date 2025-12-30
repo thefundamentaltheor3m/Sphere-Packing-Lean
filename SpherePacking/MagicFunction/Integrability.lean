@@ -520,11 +520,113 @@ Using the simplified form from `I₆'_eq`: `I * φ₀''(it) * e^{-πrt}`. -/
 def I₆_integrand (p : V × ℝ) : ℂ :=
   I * φ₀'' (I * p.2) * cexp (-π * ‖p.1‖^2 * p.2)
 
+/-- Continuity of φ₀'' along the imaginary axis: t ↦ φ₀''(I*t) is continuous for t > 0. -/
+lemma continuous_φ₀''_I₆_param : Continuous (fun t : ℝ => φ₀'' (I * t)) := by
+  sorry -- Depends on holomorphy of φ₀
+
+/-- For t ≥ 1, Im(I*t) = t ≥ 1 > 1/2, so norm_φ₀_le applies. -/
+lemma norm_φ₀''_I₆_bound : ∃ C₀ > 0, ∀ t : ℝ, 1 ≤ t →
+    ‖φ₀'' (I * t)‖ ≤ C₀ * Real.exp (-2 * π * t) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
+  refine ⟨C₀, hC₀_pos, fun t ht => ?_⟩
+  -- For t ≥ 1, Im(I*t) = t ≥ 1 > 1/2
+  have him : (I * t).im = t := by simp
+  have him_pos : 0 < (I * t).im := by rw [him]; linarith
+  have him_ge : 1/2 < (I * t).im := by rw [him]; linarith
+  -- φ₀''(I*t) = φ₀(⟨I*t, ...⟩) since Im(I*t) > 0
+  simp only [φ₀'', him_pos, ↓reduceDIte]
+  let z : UpperHalfPlane := ⟨I * t, him_pos⟩
+  have hz_im : z.im = t := him
+  calc ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im) := hC₀ z him_ge
+    _ = C₀ * Real.exp (-2 * π * t) := by rw [hz_im]
+
+/-- The I₆ integrand is continuous. -/
+lemma I₆_integrand_continuous : Continuous I₆_integrand := by
+  unfold I₆_integrand
+  have h1 : Continuous (fun p : V × ℝ => φ₀'' (I * p.2)) :=
+    continuous_φ₀''_I₆_param.comp continuous_snd
+  have h_norm_sq : Continuous (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) := by
+    have h1 : Continuous (fun p : V × ℝ => ‖p.1‖^2) := (continuous_norm.comp continuous_fst).pow 2
+    have h2 : Continuous (fun r : ℝ => (r : ℂ)) := continuous_ofReal
+    have h3 : (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) = (fun r : ℝ => (r : ℂ)) ∘ (fun p => ‖p.1‖^2) := by
+      funext p; simp only [Function.comp_apply, ofReal_pow]
+    rw [h3]; exact h2.comp h1
+  have h2 : Continuous (fun p : V × ℝ => cexp (-π * ‖p.1‖^2 * p.2)) :=
+    Complex.continuous_exp.comp ((continuous_const.mul h_norm_sq).mul
+      (continuous_ofReal.comp continuous_snd))
+  exact (continuous_const.mul h1).mul h2
+
+/-- The norm of I₆_integrand is bounded by C * exp(-2πt) * exp(-π‖x‖²) for t ≥ 1. -/
+lemma I₆_integrand_norm_bound : ∃ C > 0, ∀ x : V, ∀ t : ℝ, 1 ≤ t →
+    ‖I₆_integrand (x, t)‖ ≤ C * Real.exp (-2 * π * t) * Real.exp (-π * ‖x‖^2) := by
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀''_I₆_bound
+  refine ⟨C₀, hC₀_pos, fun x t ht => ?_⟩
+  unfold I₆_integrand
+  rw [norm_mul, norm_mul]
+  have h_I : ‖(I : ℂ)‖ = 1 := Complex.norm_I
+  have h_φ : ‖φ₀'' (I * t)‖ ≤ C₀ * Real.exp (-2 * π * t) := hC₀ t ht
+  -- For the Gaussian: ‖cexp(-π‖x‖²t)‖ = exp(-π‖x‖²t) ≤ exp(-π‖x‖²) for t ≥ 1
+  have h_norm_sq_re : ((‖x‖ : ℂ) ^ 2).re = ‖x‖^2 := by simp [sq]
+  have h_norm_sq_im : ((‖x‖ : ℂ) ^ 2).im = 0 := by simp [sq]
+  have h_gauss_norm : ‖cexp (-π * ‖x‖^2 * t)‖ = Real.exp (-π * ‖x‖^2 * t) := by
+    rw [Complex.norm_exp]
+    congr 1
+    have h_prod_im : ((‖x‖ : ℂ)^2 * t).im = 0 := by simp [sq]
+    simp only [neg_mul, mul_assoc, neg_re, mul_re, ofReal_re, ofReal_im, h_norm_sq_re,
+      h_prod_im, mul_zero, sub_zero]
+  have h_gauss_le : Real.exp (-π * ‖x‖^2 * t) ≤ Real.exp (-π * ‖x‖^2) := by
+    apply Real.exp_le_exp.mpr
+    have h1 : -π * ‖x‖^2 * t ≤ -π * ‖x‖^2 * 1 := by
+      have hpi : -π * ‖x‖^2 ≤ 0 := by nlinarith [Real.pi_pos, sq_nonneg ‖x‖]
+      nlinarith
+    linarith
+  calc ‖(I : ℂ)‖ * ‖φ₀'' (I * t)‖ * ‖cexp (-π * ‖x‖^2 * t)‖
+      = 1 * ‖φ₀'' (I * t)‖ * Real.exp (-π * ‖x‖^2 * t) := by rw [h_I, h_gauss_norm]
+    _ ≤ 1 * (C₀ * Real.exp (-2 * π * t)) * Real.exp (-π * ‖x‖^2) := by gcongr
+    _ = C₀ * Real.exp (-2 * π * t) * Real.exp (-π * ‖x‖^2) := by ring
+
 /-- I₆ integrand is integrable on V × [1,∞) (Class C tail).
 Strategy: φ₀ decay (Cor 7.5) + domination `e^{-πrt} ≤ e^{-πr}` for t ≥ 1. -/
 theorem I₆_integrand_integrable :
     Integrable I₆_integrand (volume.prod (volume.restrict (Ici 1))) := by
-  sorry
+  obtain ⟨C, hC_pos, hC⟩ := I₆_integrand_norm_bound
+  -- Dominating function: C * exp(-2πt) * exp(-π‖x‖²) = (C * exp(-π‖x‖²)) * exp(-2πt)
+  let g : V × ℝ → ℝ := fun p => C * Real.exp (-2 * π * p.2) * Real.exp (-π * ‖p.1‖^2)
+  have h_meas : AEStronglyMeasurable I₆_integrand (volume.prod (volume.restrict (Ici 1))) :=
+    I₆_integrand_continuous.aestronglyMeasurable
+  -- The dominating function is integrable (product of two integrable functions)
+  have h_g_int : Integrable g (volume.prod (volume.restrict (Ici 1))) := by
+    -- Rewrite as product: g(x,t) = (C * exp(-π‖x‖²)) * exp(-2πt)
+    have h_eq : g = fun p : V × ℝ => (C * Real.exp (-π * ‖p.1‖^2)) * Real.exp (-2 * π * p.2) := by
+      ext p; ring
+    rw [h_eq]
+    -- Use integrability of product of independent factors
+    have h_x : Integrable (fun x : V => C * Real.exp (-π * ‖x‖^2)) volume :=
+      (gaussian_integrable_R8 π Real.pi_pos).const_mul C
+    have h_t : Integrable (fun t : ℝ => Real.exp (-2 * π * t)) (volume.restrict (Ici 1)) := by
+      have h : -2 * π < 0 := by linarith [Real.pi_pos]
+      exact (integrableOn_Ici_iff_integrableOn_Ioi).mpr (integrableOn_exp_mul_Ioi h 1)
+    -- Product of integrable functions
+    exact Integrable.mul_prod h_x h_t
+  -- The bound holds a.e.
+  have h_bound : ∀ᵐ p ∂(volume.prod (volume.restrict (Ici 1))), ‖I₆_integrand p‖ ≤ g p := by
+    have h_ae_snd : ∀ᵐ (t : ℝ) ∂(volume.restrict (Ici 1)), t ∈ Ici 1 := by
+      rw [ae_restrict_iff' measurableSet_Ici]
+      exact ae_of_all _ (fun _ h => h)
+    have h_meas_bound : MeasurableSet {p : V × ℝ | ‖I₆_integrand p‖ ≤ g p} := by
+      apply measurableSet_le
+      · exact I₆_integrand_continuous.norm.measurable
+      · apply Measurable.mul
+        · apply Measurable.mul measurable_const
+          exact (Real.continuous_exp.comp (continuous_const.mul continuous_snd)).measurable
+        · exact (Real.continuous_exp.comp
+            (continuous_const.mul ((continuous_norm.comp continuous_fst).pow 2))).measurable
+    rw [Measure.ae_prod_iff_ae_ae h_meas_bound]
+    apply ae_of_all
+    intro x
+    filter_upwards [h_ae_snd] with t ht
+    exact hC x t (mem_Ici.mp ht)
+  exact Integrable.mono' h_g_int h_meas h_bound
 
 end ClassC
 
