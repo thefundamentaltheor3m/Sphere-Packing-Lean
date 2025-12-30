@@ -5,6 +5,7 @@ Authors: Sphere Packing Contributors
 -/
 
 import SpherePacking.MagicFunction.a.Basic
+import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 
 /-!
 # Integrability of Iⱼ over ℝ⁸
@@ -72,7 +73,18 @@ lemma norm_cexp_pi_I_mul_eq (r : ℝ) (z : ℂ) (_hr : 0 ≤ r) :
 /-- Gaussian integrability on ℝ⁸: `∫_{ℝ⁸} e^{-c·‖x‖²} < ∞` for c > 0. -/
 lemma gaussian_integrable_R8 (c : ℝ) (hc : 0 < c) :
     Integrable (fun x : V => Real.exp (-c * ‖x‖^2)) := by
-  sorry
+  -- Use the complex Gaussian integrability with c = 0, w = 0
+  have h := GaussianFourier.integrable_cexp_neg_mul_sq_norm_add_of_euclideanSpace
+    (b := c) (by simp [hc]) (0 : ℂ) (0 : V)
+  simp only [inner_zero_left, ofReal_zero, mul_zero, add_zero] at h
+  -- Now h : Integrable (fun v => cexp (-c * ‖v‖^2))
+  -- Extract real integrability from complex
+  have hf : ∀ x : V, Real.exp (-c * ‖x‖^2) = ‖cexp (-(c : ℂ) * ‖x‖^2)‖ := fun x => by
+    rw [Complex.norm_exp]
+    congr 1
+    simp only [neg_mul, neg_re, mul_re, ofReal_re, ofReal_im, zero_mul, sub_zero, sq]
+  simp_rw [hf]
+  exact h.norm
 
 /-- Scaled Gaussian integrability: `∫_{ℝ⁸} e^{-c·t·‖x‖²} < ∞` for c > 0, t > 0.
 Useful for Class A/C where we have uniform lower bounds on Im(z). -/
