@@ -699,15 +699,90 @@ lemma norm_φ₀''_classB_bound : ∃ C₀ > 0, ∀ t : ℝ, 0 < t → t ≤ 1 �
   convert h using 2
   rw [hz_im, mul_comm, ← div_eq_mul_inv]
 
-/-- exp(-2π/t) is integrable on (0, 1] despite the apparent singularity.
-The key fact is that exp(-2π/t) → 0 as t → 0⁺ faster than any polynomial decay.
+/-- For t ∈ (0, 1], exp(-2π/t) ≤ exp(-2π) since 1/t ≥ 1 implies -2π/t ≤ -2π. -/
+lemma exp_neg_two_pi_div_le (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
+    Real.exp (-2 * π / t) ≤ Real.exp (-2 * π) := by
+  apply Real.exp_le_exp.mpr
+  have h1 : t ≤ 1 := ht.2
+  have h2 : 0 < t := ht.1
+  have h3 : 1 ≤ t⁻¹ := one_le_inv_iff₀.mpr ⟨h2, h1⟩
+  calc -2 * π / t = -2 * π * t⁻¹ := by ring
+    _ ≤ -2 * π * 1 := by nlinarith [Real.pi_pos]
+    _ = -2 * π := by ring
 
-Proof sketch: Change variables s = 1/t transforms (0,1] → [1,∞).
-Then ∫₀¹ exp(-2π/t) dt = ∫₁^∞ exp(-2πs) * (1/s²) ds.
-This is integrable since exp(-2πs) dominates any polynomial growth. -/
+/-- For t ∈ (0, 1], exp(-2π/t) * t^{-2} ≤ exp(-2π).
+This uses the substitution u = 1/t: the function exp(-2πu) * u² is decreasing on [1, ∞). -/
+lemma exp_neg_two_pi_div_mul_inv_sq_le (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
+    Real.exp (-2 * π / t) * t⁻¹^2 ≤ Real.exp (-2 * π) := by
+  have h1 : t ≤ 1 := ht.2
+  have h2 : 0 < t := ht.1
+  have h3 : 1 ≤ t⁻¹ := one_le_inv_iff₀.mpr ⟨h2, h1⟩
+  -- Substitute u = 1/t, so u ≥ 1
+  set u := t⁻¹ with hu_def
+  have h_u_pos : 0 < u := by positivity
+  have h_u_ge_1 : 1 ≤ u := h3
+  -- The function is exp(-2πu) * u²
+  have h_eq : Real.exp (-2 * π / t) * t⁻¹^2 = Real.exp (-2 * π * u) * u^2 := by
+    simp only [hu_def, div_eq_mul_inv]
+  rw [h_eq]
+  -- For u ≥ 1, we need exp(-2πu) * u² ≤ exp(-2π)
+  -- Equivalently: u² ≤ exp(2π(u-1))
+  -- This follows from 2*log(u) ≤ 2π(u-1), i.e., log(u) ≤ π(u-1)
+  have h_ineq : u^2 ≤ Real.exp (2 * π * (u - 1)) := by
+    by_cases hu1 : u = 1
+    · simp [hu1]
+    · have hu1' : 1 < u := lt_of_le_of_ne h_u_ge_1 (Ne.symm hu1)
+      -- log(u) ≤ u - 1 for u > 0, and π(u-1) ≥ u - 1 when π ≥ 1
+      have hlog : Real.log u ≤ u - 1 := Real.log_le_sub_one_of_pos h_u_pos
+      have h5 : u - 1 ≤ π * (u - 1) := by
+        have hu_sub : 0 < u - 1 := by linarith
+        have hpi : 1 ≤ π := le_of_lt (lt_of_lt_of_le (by norm_num : (1 : ℝ) < 2) Real.two_le_pi)
+        calc u - 1 = 1 * (u - 1) := by ring
+          _ ≤ π * (u - 1) := mul_le_mul_of_nonneg_right hpi (le_of_lt hu_sub)
+      have h6 : Real.log u ≤ π * (u - 1) := le_trans hlog h5
+      have h7 : 2 * Real.log u ≤ 2 * π * (u - 1) := by linarith
+      calc u^2 = Real.exp (Real.log (u^2)) := by rw [Real.exp_log]; positivity
+        _ = Real.exp (2 * Real.log u) := by rw [Real.log_pow]; ring_nf
+        _ ≤ Real.exp (2 * π * (u - 1)) := Real.exp_le_exp.mpr h7
+  -- Now: exp(-2πu) * u² = exp(-2π) * exp(-2π(u-1)) * u² ≤ exp(-2π) * 1
+  have h_split : Real.exp (-2 * π * u) = Real.exp (-2 * π) * Real.exp (-2 * π * (u - 1)) := by
+    rw [← Real.exp_add]; ring_nf
+  rw [h_split, mul_assoc]
+  apply mul_le_of_le_one_right (Real.exp_pos _).le
+  -- Need: exp(-2π(u-1)) * u² ≤ 1
+  rw [mul_comm]
+  have h_exp_pos : 0 < Real.exp (2 * π * (u - 1)) := Real.exp_pos _
+  calc u^2 * Real.exp (-2 * π * (u - 1))
+      = u^2 / Real.exp (2 * π * (u - 1)) := by
+        rw [div_eq_mul_inv, ← Real.exp_neg]; ring_nf
+    _ ≤ Real.exp (2 * π * (u - 1)) / Real.exp (2 * π * (u - 1)) :=
+        div_le_div_of_nonneg_right h_ineq h_exp_pos.le
+    _ = 1 := div_self (ne_of_gt h_exp_pos)
+
+/-- exp(-2π/t) is integrable on (0, 1].
+The function is bounded by exp(-2π) on this set, and the set has finite measure. -/
 lemma exp_neg_inv_integrableOn :
     IntegrableOn (fun t => Real.exp (-2 * π / t)) (Ioc 0 1) volume := by
-  sorry  -- Technical: needs change of variables on measure theory side
+  -- Function is bounded by 1 on (0,1], and (0,1] has finite measure 1
+  have h_bdd : ∀ t ∈ Ioc (0 : ℝ) 1, ‖Real.exp (-2 * π / t)‖ ≤ 1 := fun t ht => by
+    rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_pos _).le]
+    calc Real.exp (-2 * π / t) ≤ Real.exp (-2 * π) := exp_neg_two_pi_div_le t ht
+      _ ≤ Real.exp 0 := Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos])
+      _ = 1 := Real.exp_zero
+  -- Use integrableOn_of_bounded for bounded functions on finite measure sets
+  haveI : IsFiniteMeasure (volume.restrict (Ioc (0 : ℝ) 1)) := ⟨by
+    simp only [Measure.restrict_apply MeasurableSet.univ, Set.univ_inter]
+    exact measure_Ioc_lt_top⟩
+  apply Integrable.mono' (integrable_const (1 : ℝ))
+  · -- Measurability: The function is continuous on (0,1] where t ≠ 0
+    have h_contOn : ContinuousOn (fun t => Real.exp (-2 * π / t)) (Ioc 0 1) := by
+      apply Real.continuous_exp.comp_continuousOn
+      apply ContinuousOn.div continuousOn_const continuousOn_id
+      intro t ht; exact ne_of_gt ht.1
+    exact h_contOn.aestronglyMeasurable measurableSet_Ioc
+  · -- Bound
+    rw [ae_restrict_iff' measurableSet_Ioc]
+    exact ae_of_all _ fun t ht => h_bdd t ht
 
 /-- The integrand for I₁ over V × (0,1].
 Using the simplified form from `I₁'_eq_Ioc`. -/
@@ -782,10 +857,78 @@ Route A strategy:
 The super-exponential decay of exp(-2π/t) as t→0 dominates the polynomial t^{-2}. -/
 theorem I₅_integrand_integrable :
     Integrable I₅_integrand (volume.prod (volume.restrict (Ioc 0 1))) := by
-  -- This is the critical Class B proof using Route A (integrate in x first)
-  -- The Gaussian integral ∫_V exp(-πt‖x‖²) dx = (π/(πt))^4 = t^{-4}
-  -- Combined with t² gives t^{-2}, and exp(-2π/t) * t^{-2} is integrable on (0,1]
-  sorry
+  -- Get the pointwise bound constant C from I₅_integrand_norm_bound
+  obtain ⟨C, hC_pos, hC_bound⟩ := I₅_integrand_norm_bound
+  -- AEStronglyMeasurable is needed for integrable_prod_iff'
+  have h_meas : AEStronglyMeasurable I₅_integrand
+      (volume.prod (volume.restrict (Ioc 0 1))) := by
+    sorry -- requires continuity of φ₀'' along the segment
+  -- Use integrable_prod_iff' to swap order of integration
+  rw [MeasureTheory.integrable_prod_iff' h_meas]
+  constructor
+  -- Goal 1: For a.e. t ∈ (0,1], the x-slice is integrable
+  · rw [ae_restrict_iff' measurableSet_Ioc]
+    refine ae_of_all _ fun t ht => ?_
+    -- Bound by C·exp(-2π/t)·t² · Gaussian, which is integrable
+    have h_gauss := gaussian_integrable_scaled π t Real.pi_pos ht.1
+    apply Integrable.mono' (h_gauss.const_mul (C * Real.exp (-2 * π / t) * t^2))
+    · -- Measurability of I₅_integrand in x for fixed t
+      sorry -- measurability of I₅_integrand(·, t) for fixed t
+    · -- Norm bound
+      refine ae_of_all _ fun x => ?_
+      have h := hC_bound x t ht.1 ht.2
+      calc ‖I₅_integrand (x, t)‖
+          ≤ C * Real.exp (-2 * π / t) * t ^ 2 * Real.exp (-π * ‖x‖^2 * t) := h
+        _ = C * Real.exp (-2 * π / t) * t ^ 2 * Real.exp (-π * t * ‖x‖^2) := by ring_nf
+  -- Goal 2: The t-integral of x-integrals converges
+  · -- ∫_V ‖I₅(x,t)‖ dx ≤ C·exp(-2π/t)·t^{-2} ≤ C·exp(-2π) for t ∈ (0,1]
+    apply Integrable.mono' (integrable_const (C * Real.exp (-2 * π)))
+    · -- Measurability of integral of norms
+      sorry -- requires AEStronglyMeasurable for integral of norms
+    · -- Bound on integral
+      rw [ae_restrict_iff' measurableSet_Ioc]
+      refine ae_of_all _ fun t ht => ?_
+      have h_gauss := gaussian_integrable_scaled π t Real.pi_pos ht.1
+      have h_int : Integrable (fun x => ‖I₅_integrand (x, t)‖) (volume : Measure V) := by
+        apply Integrable.mono' (h_gauss.const_mul (C * Real.exp (-2 * π / t) * t^2))
+        · sorry -- measurability of ‖I₅_integrand(·, t)‖ for fixed t
+        · refine ae_of_all _ fun x => ?_
+          rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+          have h := hC_bound x t ht.1 ht.2
+          calc ‖I₅_integrand (x, t)‖
+              ≤ C * Real.exp (-2 * π / t) * t ^ 2 * Real.exp (-π * ‖x‖^2 * t) := h
+            _ = C * Real.exp (-2 * π / t) * t ^ 2 * Real.exp (-π * t * ‖x‖^2) := by ring_nf
+      rw [Real.norm_eq_abs, abs_of_nonneg (integral_nonneg fun _ => norm_nonneg _)]
+      -- Use Gaussian integral formula: ∫_V exp(-πt‖x‖²) = (π/(πt))^4 = t^{-4}
+      have h_gauss_val : ∫ x : V, Real.exp (-π * t * ‖x‖^2) = t⁻¹ ^ 4 := by
+        have h_pos : 0 < π * t := mul_pos Real.pi_pos ht.1
+        have h := @GaussianFourier.integral_rexp_neg_mul_sq_norm V _ _ _ _ _ (π * t) h_pos
+        have h_finrank : Module.finrank ℝ V = 8 := finrank_euclideanSpace_fin
+        simp only [h_finrank, Nat.cast_ofNat] at h
+        convert h using 2
+        · ring_nf
+        · -- Need: t⁻¹ ^ 4 = (π / (π * t)) ^ (8 / 2)
+          -- Note: 8 / 2 = 4 in ℕ, and π / (π * t) = 1/t = t⁻¹
+          have hπ : (π : ℝ) ≠ 0 := Real.pi_ne_zero
+          have ht_ne : (t : ℝ) ≠ 0 := ne_of_gt ht.1
+          -- Simplify π / (π * t) = t⁻¹
+          have h_simp : π / (π * t) = t⁻¹ := by field_simp
+          -- The exponent (8 : ℕ) / 2 = 4
+          norm_num [h_simp]
+      calc ∫ x : V, ‖I₅_integrand (x, t)‖
+          ≤ ∫ x : V, C * Real.exp (-2 * π / t) * t ^ 2 * Real.exp (-π * t * ‖x‖^2) := by
+            apply integral_mono h_int (h_gauss.const_mul _)
+            intro x; have h := hC_bound x t ht.1 ht.2
+            calc ‖I₅_integrand (x, t)‖ ≤ C * Real.exp (-2 * π / t) * t ^ 2 *
+                Real.exp (-π * ‖x‖^2 * t) := h
+              _ = C * Real.exp (-2 * π / t) * t ^ 2 * Real.exp (-π * t * ‖x‖^2) := by ring_nf
+        _ = C * Real.exp (-2 * π / t) * t ^ 2 * ∫ x : V, Real.exp (-π * t * ‖x‖^2) := by
+            rw [← integral_const_mul]
+        _ = C * Real.exp (-2 * π / t) * t ^ 2 * t⁻¹ ^ 4 := by rw [h_gauss_val]
+        _ = C * Real.exp (-2 * π / t) * t⁻¹ ^ 2 := by field_simp
+        _ = C * (Real.exp (-2 * π / t) * t⁻¹ ^ 2) := by ring
+        _ ≤ C * Real.exp (-2 * π) := mul_le_mul_of_nonneg_left
+            (exp_neg_two_pi_div_mul_inv_sq_le t ht) (le_of_lt hC_pos)
 
 /-- I₁ integrand is integrable on V × (0,1] (Class B segment).
 Follows from I₅ integrability since I₁ = I₅ * (unit-modulus phase). -/
