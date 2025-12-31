@@ -971,13 +971,43 @@ end ClassB
 
 Once we have product integrability, Fubini's theorem allows swapping
 the order of integration: ∫_{ℝ⁸} ∫_{contour} = ∫_{contour} ∫_{ℝ⁸}.
+
+The connection between `Iⱼ x` and `∫ t, Iⱼ_integrand (x, t)` follows from
+the `Iⱼ'_eq_Ioc` lemmas in Basic.lean. Note that some have prefactors:
+- I₁, I₃: factor 1 (direct integral)
+- I₅: factor -2
+- I₆: factor 2
 -/
 
 section FubiniSwap
 
+/-- Connection: I₁ x = ∫ t, I₁_integrand (x, t) -/
+lemma I₁_eq_integral (x : V) :
+    I₁ x = ∫ t in Ioc (0 : ℝ) 1, I₁_integrand (x, t) := by
+  -- From I₁'_eq_Ioc with r = ‖x‖²
+  sorry
+
+/-- Connection: I₃ x = ∫ t, I₃_integrand (x, t) -/
+lemma I₃_eq_integral (x : V) :
+    I₃ x = ∫ t in Ioc (0 : ℝ) 1, I₃_integrand (x, t) := by
+  sorry
+
+/-- Connection: I₅ x = -2 * ∫ t, I₅_integrand (x, t) -/
+lemma I₅_eq_integral (x : V) :
+    I₅ x = -2 * ∫ t in Ioc (0 : ℝ) 1, I₅_integrand (x, t) := by
+  -- From I₅'_eq_Ioc with r = ‖x‖²
+  sorry
+
+/-- Connection: I₆ x = 2 * ∫ t, I₆_integrand (x, t) -/
+lemma I₆_eq_integral (x : V) :
+    I₆ x = 2 * ∫ t in Ici (1 : ℝ), I₆_integrand (x, t) := by
+  sorry
+
 /-- Fubini for I₁: swap ∫_{ℝ⁸} and ∫_{(0,1]} -/
 theorem I₁_integral_swap :
     ∫ x : V, I₁ x = ∫ t in Ioc (0 : ℝ) 1, ∫ x : V, I₁_integrand (x, t) := by
+  simp_rw [I₁_eq_integral]
+  -- Apply Fubini via integral_integral_swap
   sorry
 
 /-- Fubini for I₂: swap ∫_{ℝ⁸} and ∫_{[0,1]} -/
@@ -988,6 +1018,7 @@ theorem I₂_integral_swap :
 /-- Fubini for I₃: swap ∫_{ℝ⁸} and ∫_{(0,1]} -/
 theorem I₃_integral_swap :
     ∫ x : V, I₃ x = ∫ t in Ioc (0 : ℝ) 1, ∫ x : V, I₃_integrand (x, t) := by
+  simp_rw [I₃_eq_integral]
   sorry
 
 /-- Fubini for I₄: swap ∫_{ℝ⁸} and ∫_{[0,1]} -/
@@ -995,14 +1026,23 @@ theorem I₄_integral_swap :
     ∫ x : V, I₄ x = ∫ t in Icc (0 : ℝ) 1, ∫ x : V, I₄_integrand (x, t) := by
   sorry
 
-/-- Fubini for I₅: swap ∫_{ℝ⁸} and ∫_{(0,1]} -/
+/-- Fubini for I₅: swap ∫_{ℝ⁸} and ∫_{(0,1]}
+Note: includes factor of -2 from I₅ definition. -/
 theorem I₅_integral_swap :
-    ∫ x : V, I₅ x = ∫ t in Ioc (0 : ℝ) 1, ∫ x : V, I₅_integrand (x, t) := by
+    ∫ x : V, I₅ x = -2 * ∫ t in Ioc (0 : ℝ) 1, ∫ x : V, I₅_integrand (x, t) := by
+  simp_rw [I₅_eq_integral]
+  rw [integral_const_mul]
+  congr 1
+  -- Apply Fubini via integral_integral_swap
   sorry
 
-/-- Fubini for I₆: swap ∫_{ℝ⁸} and ∫_{[1,∞)} -/
+/-- Fubini for I₆: swap ∫_{ℝ⁸} and ∫_{[1,∞)}
+Note: includes factor of 2 from I₆ definition. -/
 theorem I₆_integral_swap :
-    ∫ x : V, I₆ x = ∫ t in Ici (1 : ℝ), ∫ x : V, I₆_integrand (x, t) := by
+    ∫ x : V, I₆ x = 2 * ∫ t in Ici (1 : ℝ), ∫ x : V, I₆_integrand (x, t) := by
+  simp_rw [I₆_eq_integral]
+  rw [integral_const_mul]
+  congr 1
   sorry
 
 end FubiniSwap
