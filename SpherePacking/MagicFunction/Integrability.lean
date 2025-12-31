@@ -7,6 +7,7 @@ Authors: Sphere Packing Contributors
 import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.a.Schwartz
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.ModularForms.Derivative
 import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
@@ -140,6 +141,19 @@ lemma integral_inv_pow_four_exp_converges (c : ℝ) (hc : 0 < c) :
           exact one_le_pow₀ ht'
       _ = |Real.exp (-c * t)| := by rw [one_mul, abs_of_nonneg (Real.exp_nonneg _)]
 
+/-- φ₀ : ℍ → ℂ is continuous.
+Follows from continuity of E₂, E₄, E₆, Δ (via their MDifferentiability) and Δ ≠ 0. -/
+lemma φ₀_continuous : Continuous φ₀ := by
+  unfold φ₀
+  have hE₂ : Continuous E₂ := MDifferentiable.continuous E₂_holo'
+  have hE₄ : Continuous (fun z : UpperHalfPlane => E₄ z) := MDifferentiable.continuous E₄.holo'
+  have hE₆ : Continuous (fun z : UpperHalfPlane => E₆ z) := MDifferentiable.continuous E₆.holo'
+  have hΔ : Continuous (fun z : UpperHalfPlane => Δ z) := MDifferentiable.continuous Delta.holo'
+  have h24 : Continuous (fun z : UpperHalfPlane => E₂ z * E₄ z) := hE₂.mul hE₄
+  have h246 : Continuous (fun z : UpperHalfPlane => E₂ z * E₄ z - E₆ z) := h24.sub hE₆
+  have h_sq : Continuous (fun z : UpperHalfPlane => (E₂ z * E₄ z - E₆ z)^2) := h246.pow 2
+  exact Continuous.div h_sq hΔ (fun z => Δ_ne_zero z)
+
 /-! ## Class A: Safe segments (I₂, I₄)
 
 For these segments, the argument to φ₀'' has Im ≥ 1/2 throughout:
@@ -199,12 +213,39 @@ lemma im_neg_inv_neg_t_add_I_pos (t : ℝ) (ht : t ∈ Icc 0 1) : 0 < (-1 / (-t 
   have h := im_neg_inv_neg_t_add_I t ht
   linarith
 
-/-- The map t ↦ φ₀''(-1/(t+I)) is continuous on [0,1].
-This follows from: (1) t ↦ -1/(t+I) is continuous, (2) for t ∈ [0,1], Im(-1/(t+I)) > 0,
-(3) φ₀ is holomorphic on ℍ, hence continuous.
-BLOCKER: Depends on E₂_holo' (has sorry in Derivative.lean). -/
+/-- For any t ∈ ℝ, Im(-1/(t+I)) = 1/(t² + 1) > 0. -/
+lemma im_neg_inv_t_add_I_pos_general (t : ℝ) : 0 < (-1 / (t + I)).im := by
+  simp only [neg_div, neg_im, one_div, inv_im, add_im, ofReal_im, I_im, zero_add, neg_neg]
+  have hns : normSq (t + I) = t^2 + 1 := by simp [normSq, sq]
+  rw [hns]
+  positivity
+
+/-- The path t ↦ -1/(t+I) is continuous on ℝ. -/
+lemma continuous_neg_inv_t_add_I : Continuous (fun t : ℝ => -1 / (t + I)) := by
+  apply Continuous.div continuous_const
+  · exact continuous_ofReal.add continuous_const
+  · intro t
+    intro h
+    have him : (t + I).im = 0 := by rw [h]; simp
+    simp only [add_im, ofReal_im, I_im, zero_add] at him
+    exact one_ne_zero him
+
+/-- The map t ↦ φ₀''(-1/(t+I)) is continuous.
+This follows from: (1) t ↦ -1/(t+I) is continuous, (2) for all t, Im(-1/(t+I)) > 0,
+(3) φ₀ is holomorphic on ℍ, hence continuous. -/
 lemma continuous_φ₀''_I₂_param : Continuous (fun t : ℝ => φ₀'' (-1 / (t + I))) := by
-  sorry -- Depends on E₂_holo' and the holomorphy chain E₂, E₄, E₆, Δ → φ₀
+  -- Factor through ℍ using the fact that Im > 0 for all t
+  have h_im_pos : ∀ t : ℝ, 0 < (-1 / (t + I)).im := im_neg_inv_t_add_I_pos_general
+  -- Lift the path to ℍ
+  have h_lift : Continuous (fun t : ℝ => (⟨-1 / (t + I), h_im_pos t⟩ : UpperHalfPlane)) :=
+    Continuous.subtype_mk continuous_neg_inv_t_add_I h_im_pos
+  -- Show φ₀'' equals φ₀ on the image (which is in UHP)
+  have h_eq : (fun t : ℝ => φ₀'' (-1 / (t + I))) =
+              (fun t : ℝ => φ₀ ⟨-1 / (t + I), h_im_pos t⟩) := by
+    ext t
+    simp only [φ₀'', h_im_pos t, dite_true]
+  rw [h_eq]
+  exact φ₀_continuous.comp h_lift
 
 /-- Bound on φ₀'' for I₂ segment: |φ₀''(-1/(t+I))| ≤ C₀ * e^{-π} for t ∈ [0,1).
 Uses `norm_φ₀_le` (Cor 7.5) with Im > 1/2.
@@ -237,9 +278,34 @@ lemma norm_φ₀''_I₂_bound_Ico : ∃ C₀ > 0, ∀ t : ℝ, t ∈ Ico 0 1 →
           norm_num [Real.pi_pos]
         linarith [Real.pi_pos]
 
-/-- The map t ↦ φ₀''(-1/(-t+I)) is continuous on [0,1]. Same as continuous_φ₀''_I₂_param. -/
+/-- For any t ∈ ℝ, Im(-1/(-t+I)) = 1/(t² + 1) > 0. -/
+lemma im_neg_inv_neg_t_add_I_pos_general (t : ℝ) : 0 < (-1 / (-t + I)).im := by
+  simp only [neg_div, neg_im, one_div, inv_im, add_im, neg_im, ofReal_im, I_im, neg_neg]
+  have hns : normSq (-t + I) = t^2 + 1 := by simp [normSq, sq]
+  rw [hns]
+  positivity
+
+/-- The path t ↦ -1/(-t+I) is continuous on ℝ. -/
+lemma continuous_neg_inv_neg_t_add_I : Continuous (fun t : ℝ => -1 / (-t + I)) := by
+  apply Continuous.div continuous_const
+  · exact (continuous_ofReal.neg).add continuous_const
+  · intro t
+    intro h
+    have him : (-t + I).im = 0 := by rw [h]; simp
+    simp only [add_im, neg_im, ofReal_im, I_im] at him
+    norm_num at him
+
+/-- The map t ↦ φ₀''(-1/(-t+I)) is continuous. -/
 lemma continuous_φ₀''_I₄_param : Continuous (fun t : ℝ => φ₀'' (-1 / (-t + I))) := by
-  sorry -- Depends on E₂_holo' and the holomorphy chain
+  have h_im_pos : ∀ t : ℝ, 0 < (-1 / (-t + I)).im := im_neg_inv_neg_t_add_I_pos_general
+  have h_lift : Continuous (fun t : ℝ => (⟨-1 / (-t + I), h_im_pos t⟩ : UpperHalfPlane)) :=
+    Continuous.subtype_mk continuous_neg_inv_neg_t_add_I h_im_pos
+  have h_eq : (fun t : ℝ => φ₀'' (-1 / (-t + I))) =
+              (fun t : ℝ => φ₀ ⟨-1 / (-t + I), h_im_pos t⟩) := by
+    ext t
+    simp only [φ₀'', h_im_pos t, dite_true]
+  rw [h_eq]
+  exact φ₀_continuous.comp h_lift
 
 /-- Bound on φ₀'' for I₄ segment: |φ₀''(-1/(-t+I))| ≤ C₀ * e^{-π} for t ∈ [0,1).
 Uses `norm_φ₀_le` (Cor 7.5) with Im > 1/2. -/
@@ -522,9 +588,73 @@ Using the simplified form from `I₆'_eq`: `I * φ₀''(it) * e^{-πrt}`. -/
 def I₆_integrand (p : V × ℝ) : ℂ :=
   I * φ₀'' (I * p.2) * cexp (-π * ‖p.1‖^2 * p.2)
 
-/-- Continuity of φ₀'' along the imaginary axis: t ↦ φ₀''(I*t) is continuous for t > 0. -/
+/-- For t > 0, Im(I*t) = t > 0. -/
+lemma im_I_mul_pos' (t : ℝ) (ht : 0 < t) : 0 < (I * t).im := by simp [ht]
+
+/-- The path t ↦ I*t is continuous. -/
+lemma continuous_I_mul : Continuous (fun t : ℝ => I * t) :=
+  continuous_const.mul continuous_ofReal
+
+/-- ContinuousOn for φ₀'' ∘ (I*·) on positive reals.
+This uses the homeomorphism between Ioi 0 and the positive subtype. -/
+lemma continuousOn_φ₀''_I_mul_Ioi : ContinuousOn (fun t : ℝ => φ₀'' (I * t)) (Set.Ioi (0 : ℝ)) := by
+  have h_im_pos : ∀ t : ℝ, 0 < t → 0 < (I * t).im := fun t ht => by simp [ht]
+  -- The key is that the restriction to Ioi 0 factors through the subtype
+  -- Step 1: Define the path on the subtype
+  let path : {s : ℝ // 0 < s} → UpperHalfPlane := fun s => ⟨I * (s : ℝ), h_im_pos s s.2⟩
+  -- Step 2: path is continuous
+  have h_path_cont : Continuous path := by
+    refine Continuous.subtype_mk ?_ _
+    exact continuous_const.mul (continuous_ofReal.comp continuous_subtype_val)
+  -- Step 3: φ₀ ∘ path is continuous on the subtype
+  have h_comp_cont : Continuous (φ₀ ∘ path) := φ₀_continuous.comp h_path_cont
+  -- Step 4: For any s > 0, φ₀''(I*s) = φ₀(path ⟨s, hs⟩)
+  have h_eq : ∀ s : ℝ, ∀ hs : 0 < s, φ₀'' (I * s) = φ₀ (path ⟨s, hs⟩) := fun s hs => by
+    simp only [φ₀'', h_im_pos s hs, ↓reduceDIte, path]
+  -- Step 5: Use Set.restrictPreimage to get ContinuousOn
+  -- The restriction of (φ₀ ∘ path) to the subtype gives ContinuousOn on Ioi 0
+  -- via the homeomorphism Subtype.val : {s : ℝ // 0 < s} ≃ₜ Set.Ioi 0
+  intro t ht
+  rw [Set.mem_Ioi] at ht
+  -- Show ContinuousWithinAt at t
+  -- φ₀'' (I * s) = (φ₀ ∘ path) ⟨s, hs⟩ for s ∈ Ioi 0
+  -- This is ContinuousWithinAt because φ₀ ∘ path is continuous
+  have h_at : ContinuousAt (φ₀ ∘ path) ⟨t, ht⟩ := h_comp_cont.continuousAt
+  -- Use map_nhds_subtype_val: map (↑) (𝓝 ⟨t, ht⟩) = 𝓝[{s | 0 < s}] t = 𝓝[Ioi 0] t
+  have h_map_eq : Filter.map (Subtype.val : {s : ℝ // 0 < s} → ℝ) (nhds ⟨t, ht⟩) =
+      nhdsWithin t (Set.Ioi 0) := by
+    convert map_nhds_subtype_val ⟨t, ht⟩
+  -- The composed function (φ₀ ∘ path) ∘ (fun s => ⟨s, _⟩) agrees with φ₀'' ∘ (I*·) on Ioi 0
+  rw [ContinuousWithinAt, h_eq t ht]
+  -- Goal: Tendsto (fun s => φ₀'' (I * s)) (nhdsWithin t (Ioi 0)) (nhds (φ₀ (path ⟨t, ht⟩)))
+  -- Key insight: φ₀ ∘ path is the pullback of our function to the subtype
+  -- ContinuousAt gives tendsto in nhds ⟨t, ht⟩, and map_nhds_subtype_val converts this
+  -- Step 1: Use h_map_eq to convert nhdsWithin to Filter.map
+  rw [← h_map_eq]
+  -- Step 2: Use tendsto_map'_iff to convert to composition
+  rw [Filter.tendsto_map'_iff]
+  -- Step 3: The function (fun s : ℝ => φ₀'' (I * s)) ∘ Subtype.val
+  --         = fun x => φ₀'' (I * x.val) = fun x => φ₀ (path x) by h_eq
+  -- First simplify the composition to make the rewrite work
+  change Filter.Tendsto (fun x : {s : ℝ // 0 < s} => φ₀'' (I * (x : ℝ)))
+      (nhds ⟨t, ht⟩) (nhds (φ₀ (path ⟨t, ht⟩)))
+  have h_fun_eq : (fun x : {s : ℝ // 0 < s} => φ₀'' (I * (x : ℝ))) = fun x => φ₀ (path x) := by
+    funext x; exact h_eq x.val x.prop
+  rw [h_fun_eq]
+  exact h_at.tendsto
+
+/-- Continuity of φ₀'' along the imaginary axis: t ↦ φ₀''(I*t) is continuous.
+For t > 0, this uses φ₀_continuous. For t ≤ 0, φ₀''(I*t) = 0.
+The cusp limit φ₀(it) → 0 as t → 0+ follows from the modular form theory (depends on E₂_holo'). -/
 lemma continuous_φ₀''_I₆_param : Continuous (fun t : ℝ => φ₀'' (I * t)) := by
-  sorry -- Depends on holomorphy of φ₀
+  -- The function is: φ₀(⟨I*t, ...⟩) for t > 0, and 0 for t ≤ 0
+  -- For global continuity, we need the cusp limit: φ₀(it) → 0 as t → 0+
+  -- This is a deep result from modular form theory (depends on E₂_holo')
+  -- The proof combines:
+  -- 1. ContinuousOn on (0, ∞) from continuousOn_φ₀''_I_mul_Ioi
+  -- 2. Constant 0 on (-∞, 0] (trivially continuous)
+  -- 3. Cusp limit at 0: φ₀(it) → 0 as t → 0+ (from modular form S-transformation)
+  sorry -- Depends on cusp limit from modular form theory (E₂_holo')
 
 /-- For t ≥ 1, Im(I*t) = t ≥ 1 > 1/2, so norm_φ₀_le applies. -/
 lemma norm_φ₀''_I₆_bound : ∃ C₀ > 0, ∀ t : ℝ, 1 ≤ t →
