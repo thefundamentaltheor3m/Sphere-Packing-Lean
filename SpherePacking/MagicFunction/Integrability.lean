@@ -63,18 +63,6 @@ noncomputable section
 These lemmas are used across multiple integrability proofs.
 -/
 
-/-- The norm of `cexp (π * I * r * z)` equals `exp(-π * r * Im(z))` for r ≥ 0.
-This is the key decay factor in all our integrands. -/
-lemma norm_cexp_pi_I_mul_eq (r : ℝ) (z : ℂ) (_hr : 0 ≤ r) :
-    ‖cexp (π * I * r * z)‖ = Real.exp (-π * r * z.im) := by
-  rw [Complex.norm_exp]
-  congr 1
-  -- Goal: (π * I * r * z).re = -(π * r * z.im)
-  have h1 : ((π : ℂ) * I * r).im = π * r := by
-    simp only [mul_im, ofReal_re, I_re, mul_zero, ofReal_im, I_im, mul_one, zero_add, add_zero]
-  simp only [mul_re, h1, ofReal_im, mul_zero, sub_zero]
-  ring
-
 /-- Gaussian integrability on ℝ⁸: `∫_{ℝ⁸} e^{-c·‖x‖²} < ∞` for c > 0. -/
 lemma gaussian_integrable_R8 (c : ℝ) (hc : 0 < c) :
     Integrable (fun x : V => Real.exp (-c * ‖x‖^2)) := by
@@ -98,48 +86,6 @@ lemma gaussian_integrable_scaled (c : ℝ) (t : ℝ) (hc : 0 < c) (ht : 0 < t) :
   have h : -c * t = -(c * t) := by ring
   simp_rw [h]
   exact gaussian_integrable_R8 (c * t) (mul_pos hc ht)
-
-/-- For t ≥ 1, we have `e^{-c·t·r} ≤ e^{-c·r}` when c, r ≥ 0.
-Key domination for Class C (I₆) integrability. -/
-lemma exp_neg_mul_le_of_one_le (c r t : ℝ) (hc : 0 ≤ c) (hr : 0 ≤ r) (ht : 1 ≤ t) :
-    Real.exp (-c * t * r) ≤ Real.exp (-c * r) := by
-  apply Real.exp_le_exp.mpr
-  have h1 : c * r ≤ c * t * r := by
-    have : 1 * (c * r) ≤ t * (c * r) := by
-      apply mul_le_mul_of_nonneg_right ht (mul_nonneg hc hr)
-    linarith
-  linarith
-
-/-- For t^{-4} decay bounds: `∫_1^∞ t^{-4} e^{-c·t} dt` converges for c > 0.
-Used in the s = 1/t substitution for Class B segments.
-Strategy: On [1,∞), 1/t^4 ≤ 1, so dominated by exp(-c*t) which is integrable. -/
-lemma integral_inv_pow_four_exp_converges (c : ℝ) (hc : 0 < c) :
-    Integrable (fun t : ℝ => (1 / t^4) * Real.exp (-c * t)) (volume.restrict (Ici 1)) := by
-  -- Dominate by exp(-c*t) since 1/t^4 ≤ 1 for t ≥ 1
-  have h_exp_int : Integrable (fun t : ℝ => Real.exp (-c * t)) (volume.restrict (Ici 1)) :=
-    (integrableOn_Ici_iff_integrableOn_Ioi).mpr (integrableOn_exp_mul_Ioi (by linarith : -c < 0) 1)
-  apply Integrable.mono h_exp_int
-  · -- Measurability: (1/t^4) * exp(-c*t) is measurable
-    apply AEStronglyMeasurable.mul
-    · exact (measurable_const.div (measurable_id.pow_const 4)).aestronglyMeasurable
-    · exact (Real.continuous_exp.comp (continuous_const.mul continuous_id)).aestronglyMeasurable
-  · -- Bound: |(1/t^4) * exp(-c*t)| ≤ |exp(-c*t)| for t ≥ 1
-    apply ae_restrict_of_ae_restrict_of_subset (s := Ici 1) (t := Ici 1) (le_refl _)
-    rw [ae_restrict_iff' measurableSet_Ici]
-    apply ae_of_all
-    intro t ht
-    rw [norm_mul, Real.norm_eq_abs, Real.norm_eq_abs]
-    have ht' : 1 ≤ t := ht
-    have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one ht'
-    calc |1 / t ^ 4| * |Real.exp (-c * t)|
-        = (1 / t ^ 4) * Real.exp (-c * t) := by
-          rw [abs_of_nonneg, abs_of_nonneg (Real.exp_nonneg _)]
-          apply div_nonneg zero_le_one (pow_nonneg (le_of_lt ht_pos) 4)
-      _ ≤ 1 * Real.exp (-c * t) := by
-          gcongr
-          rw [div_le_one (pow_pos ht_pos 4)]
-          exact one_le_pow₀ ht'
-      _ = |Real.exp (-c * t)| := by rw [one_mul, abs_of_nonneg (Real.exp_nonneg _)]
 
 /-- φ₀ : ℍ → ℂ is continuous.
 Follows from continuity of E₂, E₄, E₆, Δ (via their MDifferentiability) and Δ ≠ 0. -/
