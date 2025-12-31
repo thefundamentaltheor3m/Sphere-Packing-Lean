@@ -989,7 +989,7 @@ lemma I₁_eq_integral (x : V) :
   rw [I₁, I₁'_eq_Ioc]
   apply MeasureTheory.setIntegral_congr_ae₀ nullMeasurableSet_Ioc
   refine ae_of_all _ fun t _ => ?_
-  simp only [I₁_integrand, sq_abs, ofReal_pow]
+  simp only [I₁_integrand, ofReal_pow]
 
 /-- Connection: I₃ x = ∫ t, I₃_integrand (x, t) -/
 lemma I₃_eq_integral (x : V) :
@@ -1021,8 +1021,7 @@ lemma I₆_eq_integral (x : V) :
 theorem I₁_integral_swap :
     ∫ x : V, I₁ x = ∫ t in Ioc (0 : ℝ) 1, ∫ x : V, I₁_integrand (x, t) := by
   simp_rw [I₁_eq_integral]
-  -- Apply Fubini via integral_integral_swap
-  sorry
+  exact MeasureTheory.integral_integral_swap I₁_integrand_integrable
 
 /-- Fubini for I₂: swap ∫_{ℝ⁸} and ∫_{[0,1]} -/
 theorem I₂_integral_swap :
@@ -1033,7 +1032,7 @@ theorem I₂_integral_swap :
 theorem I₃_integral_swap :
     ∫ x : V, I₃ x = ∫ t in Ioc (0 : ℝ) 1, ∫ x : V, I₃_integrand (x, t) := by
   simp_rw [I₃_eq_integral]
-  sorry
+  exact MeasureTheory.integral_integral_swap I₃_integrand_integrable
 
 /-- Fubini for I₄: swap ∫_{ℝ⁸} and ∫_{[0,1]} -/
 theorem I₄_integral_swap :
@@ -1047,8 +1046,7 @@ theorem I₅_integral_swap :
   simp_rw [I₅_eq_integral]
   rw [integral_const_mul]
   congr 1
-  -- Apply Fubini via integral_integral_swap
-  sorry
+  exact MeasureTheory.integral_integral_swap I₅_integrand_integrable
 
 /-- Fubini for I₆: swap ∫_{ℝ⁸} and ∫_{[1,∞)}
 Note: includes factor of 2 from I₆ definition. -/
@@ -1057,7 +1055,7 @@ theorem I₆_integral_swap :
   simp_rw [I₆_eq_integral]
   rw [integral_const_mul]
   congr 1
-  sorry
+  exact MeasureTheory.integral_integral_swap I₆_integrand_integrable
 
 end FubiniSwap
 
