@@ -286,13 +286,8 @@ lemma I₂_integrand_continuous : Continuous I₂_integrand := by
   have h2 : Continuous (fun p : V × ℝ => (p.2 + I) ^ 2) :=
     (continuous_ofReal.comp continuous_snd).add continuous_const |>.pow 2
   have h_norm_sq : Continuous (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) := by
-    have h1 : Continuous (fun p : V × ℝ => ‖p.1‖^2) := (continuous_norm.comp continuous_fst).pow 2
-    have h2 : Continuous (fun r : ℝ => (r : ℂ)) := continuous_ofReal
-    have h3 : (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) = (fun r : ℝ => (r : ℂ)) ∘ (fun p => ‖p.1‖^2) := by
-      funext p
-      simp only [Function.comp_apply, ofReal_pow]
-    rw [h3]
-    exact h2.comp h1
+    simp_rw [← ofReal_pow]
+    exact continuous_ofReal.comp ((continuous_norm.comp continuous_fst).pow 2)
   have h3 : Continuous (fun p : V × ℝ => cexp (-π * I * ‖p.1‖^2)) :=
     Complex.continuous_exp.comp (continuous_const.mul h_norm_sq)
   have h4 : Continuous (fun p : V × ℝ => cexp (π * I * ‖p.1‖^2 * p.2)) :=
@@ -401,11 +396,8 @@ lemma I₄_integrand_continuous : Continuous I₄_integrand := by
   have h2 : Continuous (fun p : V × ℝ => (-p.2 + I) ^ 2) :=
     ((continuous_ofReal.comp continuous_snd).neg.add continuous_const).pow 2
   have h_norm_sq : Continuous (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) := by
-    have h1 : Continuous (fun p : V × ℝ => ‖p.1‖^2) := (continuous_norm.comp continuous_fst).pow 2
-    have h2 : Continuous (fun r : ℝ => (r : ℂ)) := continuous_ofReal
-    have h3 : (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) = (fun r : ℝ => (r : ℂ)) ∘ (fun p => ‖p.1‖^2) := by
-      funext p; simp only [Function.comp_apply, ofReal_pow]
-    rw [h3]; exact h2.comp h1
+    simp_rw [← ofReal_pow]
+    exact continuous_ofReal.comp ((continuous_norm.comp continuous_fst).pow 2)
   have h3 : Continuous (fun p : V × ℝ => cexp (π * I * ‖p.1‖^2)) :=
     Complex.continuous_exp.comp (continuous_const.mul h_norm_sq)
   have h4 : Continuous (fun p : V × ℝ => cexp (-π * I * ‖p.1‖^2 * p.2)) :=
@@ -583,11 +575,8 @@ lemma continuousOn_I₆_integrand :
     exact ht.2
   -- The other factors are globally continuous
   have h_norm_sq : Continuous (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) := by
-    have h1 : Continuous (fun p : V × ℝ => ‖p.1‖^2) := (continuous_norm.comp continuous_fst).pow 2
-    have h2 : Continuous (fun r : ℝ => (r : ℂ)) := continuous_ofReal
-    have h3 : (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) = (fun r : ℝ => (r : ℂ)) ∘ (fun p => ‖p.1‖^2) := by
-      funext p; simp only [Function.comp_apply, ofReal_pow]
-    rw [h3]; exact h2.comp h1
+    simp_rw [← ofReal_pow]
+    exact continuous_ofReal.comp ((continuous_norm.comp continuous_fst).pow 2)
   have h2 : Continuous (fun p : V × ℝ => cexp (-π * ‖p.1‖^2 * p.2)) :=
     Complex.continuous_exp.comp ((continuous_const.mul h_norm_sq).mul
       (continuous_ofReal.comp continuous_snd))
