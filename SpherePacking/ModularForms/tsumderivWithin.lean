@@ -112,9 +112,10 @@ theorem iter_deriv_comp_bound2 (K : Set ℂ) (hK1 : K ⊆ ℍ') (hK2 : IsCompact
   have hr : ‖BoundedContinuousFunction.mkOfCompact (cts_exp_two_pi_n K )‖ < 1 :=
     by
     rw [BoundedContinuousFunction.norm_lt_iff_of_compact]
-    intro x; rw [BoundedContinuousFunction.mkOfCompact_apply]; simp_rw [cts_exp_two_pi_n]
-    simp only [ContinuousMap.coe_mk]
-    apply exp_upperHalfPlane_lt_one ⟨x.1, hK1 x.2⟩; linarith
+    · intro x; rw [BoundedContinuousFunction.mkOfCompact_apply]; simp_rw [cts_exp_two_pi_n]
+      simp only [ContinuousMap.coe_mk]
+      apply exp_upperHalfPlane_lt_one ⟨x.1, hK1 x.2⟩
+    linarith
   have hr2 : 0 ≤ r := by apply norm_nonneg _
   have hu : Summable fun n : ℕ => ‖((2 * ↑π * Complex.I * n) ^ (k + 1) * r ^ n)‖ :=
     by
@@ -132,13 +133,13 @@ theorem iter_deriv_comp_bound2 (K : Set ℂ) (hK1 : K ⊆ ℍ') (hK2 : IsCompact
         ring
     apply Summable.congr _ this
     rw [summable_mul_left_iff]
-    apply summable_norm_pow_mul_geometric_of_norm_lt_one
-    convert hr
-    rw [norm_norm]
+    · apply summable_norm_pow_mul_geometric_of_norm_lt_one
+      convert hr
+      rw [norm_norm]
     norm_cast
     apply pow_ne_zero
     apply mul_ne_zero
-    linarith
+    · linarith
     apply Real.pi_ne_zero
   · use fun n : ℕ => ‖((2 * ↑π * Complex.I * n) ^ (k + 1) * r ^ n)‖, hu
     intro n t
@@ -162,7 +163,7 @@ theorem iter_deriv_comp_bound2 (K : Set ℂ) (hK1 : K ⊆ ℍ') (hK2 : IsCompact
       rw [hw1]
       norm_cast
       apply pow_le_pow_left₀
-      simp only [norm_nonneg]
+      · simp only [norm_nonneg]
       have :=
         BoundedContinuousFunction.norm_coe_le_norm
           (BoundedContinuousFunction.mkOfCompact (cts_exp_two_pi_n K)) t
@@ -241,9 +242,10 @@ theorem iter_deriv_comp_bound3 (K : Set ℂ) (hK1 : K ⊆ ℍ') (hK2 : IsCompact
   have hr : ‖BoundedContinuousFunction.mkOfCompact (cts_exp_two_pi_n K )‖ < 1 :=
     by
     rw [BoundedContinuousFunction.norm_lt_iff_of_compact]
-    intro x; rw [BoundedContinuousFunction.mkOfCompact_apply]; simp_rw [cts_exp_two_pi_n]
-    simp only [ContinuousMap.coe_mk]
-    apply exp_upperHalfPlane_lt_one ⟨x.1, hK1 x.2⟩; linarith
+    · intro x; rw [BoundedContinuousFunction.mkOfCompact_apply]; simp_rw [cts_exp_two_pi_n]
+      simp only [ContinuousMap.coe_mk]
+      apply exp_upperHalfPlane_lt_one ⟨x.1, hK1 x.2⟩
+    linarith
   have hr2 : 0 ≤ r := by apply norm_nonneg _
   have hu : Summable fun n : ℕ => ‖((2 * ↑π * Complex.I * n) ^ (k) * r ^ n)‖ :=
     by
@@ -261,13 +263,13 @@ theorem iter_deriv_comp_bound3 (K : Set ℂ) (hK1 : K ⊆ ℍ') (hK2 : IsCompact
         ring
     apply Summable.congr _ this
     rw [summable_mul_left_iff]
-    apply summable_norm_pow_mul_geometric_of_norm_lt_one
-    convert hr
-    rw [norm_norm]
+    · apply summable_norm_pow_mul_geometric_of_norm_lt_one
+      convert hr
+      rw [norm_norm]
     norm_cast
     apply pow_ne_zero
     apply mul_ne_zero
-    linarith
+    · linarith
     apply Real.pi_ne_zero
   use fun n : ℕ => ‖((2 * ↑π * Complex.I * n) ^ (k) * r ^ n)‖, hu
   intro n t
@@ -285,7 +287,7 @@ theorem iter_deriv_comp_bound3 (K : Set ℂ) (hK1 : K ⊆ ℍ') (hK2 : IsCompact
     rw [hw1]
     norm_cast
     apply pow_le_pow_left₀
-    simp only [norm_nonneg]
+    · simp only [norm_nonneg]
     have :=
       BoundedContinuousFunction.norm_coe_le_norm
         (BoundedContinuousFunction.mkOfCompact (cts_exp_two_pi_n K)) t

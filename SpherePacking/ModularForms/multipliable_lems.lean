@@ -28,7 +28,7 @@ theorem ball_pow_ne_1 (x : ℂ) (hx : x ∈ ball 0 1) (n : ℕ) : 1 + (fun n ↦
   have hxn : ‖(x ^ (n + 1))‖ < 1 := by
     simp only [norm_pow]
     refine pow_lt_one₀ ?_ hx ?_
-    exact norm_nonneg x
+    · exact norm_nonneg x
     omega
   intro h
   rw [← h] at hxn

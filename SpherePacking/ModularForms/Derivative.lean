@@ -24,6 +24,31 @@ lemma MDifferentiableAt_DifferentiableAt {F : ℍ → ℂ} {z : ℍ}
       MDifferentiableWithinAt.differentiableWithinAt_writtenInExtChartAt h
   exact (differentiableWithinAt_univ.1 h₁)
 
+/--
+The converse direction: `DifferentiableAt` on ℂ implies `MDifferentiableAt` on ℍ.
+-/
+lemma DifferentiableAt_MDifferentiableAt {G : ℂ → ℂ} {z : ℍ}
+    (h : DifferentiableAt ℂ G ↑z) : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (G ∘ (↑) : ℍ → ℂ) z := by
+  rw [mdifferentiableAt_iff]
+  -- Goal: DifferentiableAt ℂ ((G ∘ (↑)) ∘ ofComplex) ↑z
+  -- The functions ((G ∘ (↑)) ∘ ofComplex) and G agree on the upper half-plane
+  -- which is a neighborhood of ↑z
+  apply DifferentiableAt.congr_of_eventuallyEq h
+  filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
+  simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
+  exact congrArg G (UpperHalfPlane.coe_mk w hw)
+
+/--
+The derivative operator `D` preserves MDifferentiability.
+If `F : ℍ → ℂ` is MDifferentiable, then `D F` is also MDifferentiable.
+-/
+theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D F) := fun z =>
+  let hDiffOn : DifferentiableOn ℂ (F ∘ ofComplex) {z : ℂ | 0 < z.im} :=
+    fun w hw => (MDifferentiableAt_DifferentiableAt (hF ⟨w, hw⟩)).differentiableWithinAt
+  MDifferentiableAt.mul mdifferentiableAt_const <| DifferentiableAt_MDifferentiableAt <|
+    (hDiffOn.deriv isOpen_upperHalfPlaneSet).differentiableAt
+      (isOpen_upperHalfPlaneSet.mem_nhds z.im_pos)
 
 /--
 TODO: Move this to E2.lean.
@@ -40,8 +65,8 @@ theorem D_add (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (
   have h : deriv ((F ∘ ofComplex) + (G ∘ ofComplex)) z
       = deriv (F ∘ ofComplex) z + deriv (G ∘ ofComplex) z := by
     refine deriv_add ?_ ?_
-    exact MDifferentiableAt_DifferentiableAt (hF z)
-    exact MDifferentiableAt_DifferentiableAt (hG z)
+    · exact MDifferentiableAt_DifferentiableAt (hF z)
+    · exact MDifferentiableAt_DifferentiableAt (hG z)
   calc
     D (F + G) z
     _ = (2 * π * I)⁻¹ * deriv ((F ∘ ofComplex) + (G ∘ ofComplex)) z := by rfl
@@ -59,8 +84,8 @@ theorem D_sub (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (
   have h : deriv ((F ∘ ofComplex) - (G ∘ ofComplex)) z
       = deriv (F ∘ ofComplex) z - deriv (G ∘ ofComplex) z := by
     refine deriv_sub ?_ ?_
-    exact MDifferentiableAt_DifferentiableAt (hF z)
-    exact MDifferentiableAt_DifferentiableAt (hG z)
+    · exact MDifferentiableAt_DifferentiableAt (hF z)
+    · exact MDifferentiableAt_DifferentiableAt (hG z)
   calc
     D (F - G) z
     _ = (2 * π * I)⁻¹ * deriv ((F ∘ ofComplex) - (G ∘ ofComplex)) z := by rfl
@@ -165,6 +190,19 @@ theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 
   simp
   ring_nf
 
+/--
+The Serre derivative preserves MDifferentiability.
+If `F : ℍ → ℂ` is MDifferentiable, then `serre_D k F` is also MDifferentiable.
+-/
+theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
+    (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D k F) := by
+  -- serre_D k F = D F - k * 12⁻¹ * E₂ * F
+  have h_term : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => k * 12⁻¹ * E₂ z * F z) := by
+    have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => (k * 12⁻¹) * (E₂ z * F z)) :=
+      MDifferentiable.mul mdifferentiable_const (E₂_holo'.mul hF)
+    convert h1 using 1; ext z; simp only [mul_assoc]
+  exact (D_differentiable hF).sub h_term
 
 /--
 Serre derivative is equivariant under the slash action. More precisely, if `F` is invariant
@@ -249,7 +287,6 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
     ext z
     simp
     ring_nf
-
   -- Holomorphicity of the terms
   · exact E₂_holo'
   · exact E₄.holo'
@@ -281,6 +318,34 @@ example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.t
 /-
 Interaction between (Serre) derivative and restriction to the imaginary axis.
 -/
+
+/--
+Chain rule for restriction to imaginary axis: `d/dt F(it) = -2π * (D F)(it)`.
+
+This connects the real derivative along the imaginary axis to the normalized derivative D.
+The key computation is:
+- The imaginary axis is parametrized by g(t) = I * t
+- By chain rule: d/dt F(it) = (dF/dz)(it) · (d/dt)(it) = F'(it) · I
+- Since D = (2πi)⁻¹ · d/dz, we have F' = 2πi · D F
+- So d/dt F(it) = 2πi · D F(it) · I = -2π · D F(it)
+-/
+theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    {t : ℝ} (ht : 0 < t) :
+    deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t := by
+  let z : ℍ := ⟨I * t, by simp [ht]⟩
+  let g : ℝ → ℂ := (I * ·)
+  have h_eq : F.resToImagAxis =ᶠ[nhds t] ((F ∘ ofComplex) ∘ g) := by
+    filter_upwards [lt_mem_nhds ht] with s hs
+    have him : 0 < (g s).im := by simp [g, hs]
+    simp [Function.resToImagAxis_apply, ResToImagAxis, hs, Function.comp_apply, g,
+      ofComplex_apply_of_im_pos him]
+  rw [h_eq.deriv_eq]
+  have hg : HasDerivAt g I t := by simpa using ofRealCLM.hasDerivAt.const_mul I
+  have hF' := (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt
+  rw [(hF'.scomp t hg).deriv]
+  have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by simp only [D]; field_simp
+  simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z, smul_eq_mul]
+  ring_nf; simp only [I_sq]; ring
 
 /--
 If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term

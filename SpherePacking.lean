@@ -7,6 +7,7 @@ import SpherePacking.ForMathlib.Asymptotics
 import SpherePacking.ForMathlib.AtImInfty
 import SpherePacking.ForMathlib.Cardinal
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
+import SpherePacking.ForMathlib.Cusps
 import SpherePacking.ForMathlib.ENNReal
 import SpherePacking.ForMathlib.ENat
 import SpherePacking.ForMathlib.Encard
@@ -55,7 +56,9 @@ import SpherePacking.ModularForms.Eisensteinqexpansions
 import SpherePacking.ModularForms.Icc_Ico_lems
 import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.PhiTransform
 import SpherePacking.ModularForms.QExpansion
+import SpherePacking.ModularForms.ResToImagAxis
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.clog_arg_lems
 import SpherePacking.ModularForms.csqrt

@@ -78,7 +78,6 @@ theorem extracted_66 (z : ℍ) :
     congr
     ext d
     have hz := ne_zero z
-
     rw [← mul_inv]
     congr 1
     rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
@@ -192,7 +191,6 @@ theorem tsum_exp_tendsto_zero (z : ℍ) :
     rw [this]
     simp only [norm_pow, ge_iff_le]
     rw [← pow_mul]
-
     apply Bound.pow_le_pow_right_of_le_one_or_one_le ?_
     right
     constructor
@@ -238,10 +236,10 @@ theorem extracted_12 (z : ℍ) :
     rw [show -2 * ↑π * Complex.I / ↑z = 2 * ↑π * Complex.I / ↑z - 4 * ↑π * Complex.I / ↑z - 0 by
       ring]
     apply Tendsto.sub
-    apply Tendsto.sub
-    simp only [tendsto_const_nhds_iff]
-    ring
-    apply tsum_exp_tendsto_zero
+    · apply Tendsto.sub
+      · simp only [tendsto_const_nhds_iff]
+        ring
+      apply tsum_exp_tendsto_zero
     have := tendsto_const_div_pow 2 1 (Nat.one_ne_zero)
     rw [Metric.tendsto_atTop] at *
     simp only [one_div, gt_iff_lt, ge_iff_le, pow_one, dist_zero_right, norm_div, Real.norm_ofNat,
@@ -303,8 +301,8 @@ theorem PS3tn22 (z : ℍ) :
   · have : Tendsto (fun x : ℕ ↦ -2 / (x : ℂ)) atTop (𝓝 0) := by
         have := Filter.Tendsto.const_div_atTop (g := fun n : ℕ => ‖(n : ℂ)‖) (r := 2) (l := atTop)
           ?_
-        rw [tendsto_zero_iff_norm_tendsto_zero]
-        simpa only [norm_div, norm_neg, norm_ofNat, norm_natCast] using this
+        · rw [tendsto_zero_iff_norm_tendsto_zero]
+          simpa only [norm_div, norm_neg, norm_ofNat, norm_natCast] using this
         simp only [norm_natCast]
         exact tendsto_natCast_atTop_atTop
     have H := nat_tendsto_pnat _ _ this
@@ -709,6 +707,12 @@ lemma G2_periodic : (G₂ ∣[(2 : ℤ)] ModularGroup.T) = G₂ := by
   left
   apply exp_periodo
 
+/-- E₂ is 1-periodic: E₂(z + 1) = E₂(z) -/
+lemma E₂_periodic (z : ℍ) : E₂ ((1 : ℝ) +ᵥ z) = E₂ z := by
+  have h := congrFun G2_periodic z
+  rw [modular_slash_T_apply] at h
+  simp only [E₂, Pi.smul_apply, smul_eq_mul, h]
+
 /-This is the annoying exercise. -/
 lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂ γ) := by
   have := Subgroup.closure_induction (G := SL(2, ℤ)) (p := fun γ _ ↦ G₂ ∣[(2 : ℤ)] γ = G₂ - (D₂ γ))
@@ -776,7 +780,20 @@ lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
   rw [← inv_pow, pow_two, ← mul_assoc, mul_inv_cancel₀ hpi, one_mul]
   ring
 
-
+/-- E₂ transforms under S as: E₂(-1/z) = z² · (E₂(z) + 6/(πIz)).
+    This is derived from E₂_transform by relating the slash action to the direct value. -/
+lemma E₂_S_transform (z : ℍ) :
+    E₂ (ModularGroup.S • z) = z ^ 2 * (E₂ z + 6 / (π * Complex.I * z)) := by
+  have h := E₂_transform z
+  rw [SL_slash_apply, ModularGroup.denom_S, zpow_neg, zpow_two] at h
+  have hz : (z : ℂ) ≠ 0 := ne_zero z
+  have hz2 : (z : ℂ) * (z : ℂ) ≠ 0 := mul_ne_zero hz hz
+  have h2 : E₂ (ModularGroup.S • z) = (E₂ z + 6 / (π * Complex.I * z)) * ((z : ℂ) * (z : ℂ)) := by
+    have := congrArg (· * ((z : ℂ) * (z : ℂ))) h
+    simp only at this
+    rw [mul_assoc, inv_mul_cancel₀ hz2, mul_one] at this
+    exact this
+  rw [h2, sq, mul_comm]
 
 lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ, (n + 1) *
     cexp (2 * π * Complex.I * (n + 1) * z) / (1 - cexp (2 * π * Complex.I * (n + 1) * z)) =

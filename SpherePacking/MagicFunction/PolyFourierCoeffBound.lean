@@ -29,6 +29,7 @@ comprehensive list of things to be done, including but not limited to the `sorry
 
 open Filter Complex Real BigOperators Asymptotics
 open scoped UpperHalfPlane
+open scoped ArithmeticFunction.sigma
 
 namespace MagicFunction.PolyFourierCoeffBound
 
@@ -132,7 +133,6 @@ lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 :=
     conv =>
       lhs
       equals (fun (b : ℕ) => Real.exp (-2 * π * b * z.im)) ∘ (PNat.val) => rfl
-
     apply Summable.subtype
     simp_rw [mul_comm, mul_assoc, Real.summable_exp_nat_mul_iff]
     simp [pi_pos, UpperHalfPlane.im_pos]
@@ -165,7 +165,6 @@ lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
     conv =>
       lhs
       equals (fun (b : ℕ) => Real.exp (-π * b)) ∘ (PNat.val) => rfl
-
     apply Summable.subtype
     simp_rw [mul_comm, Real.summable_exp_nat_mul_iff]
     simp [pi_pos]
@@ -365,8 +364,8 @@ private lemma step_12a {r : ℝ} (cpos : r > 0)
     apply one_add_mul_le_pow _ 24
     rw [le_neg, neg_neg]
     trans 1
-    apply exp_le_one_iff.mpr
-    apply mul_nonpos_of_nonpos_of_nonneg (neg_nonpos_of_nonneg (le_of_lt cpos)) (le_of_lt hx)
+    · apply exp_le_one_iff.mpr
+      apply mul_nonpos_of_nonpos_of_nonneg (neg_nonpos_of_nonneg (le_of_lt cpos)) (le_of_lt hx)
     norm_num
 -- Establish upper bound of 0 for target series
   have h_upper_bound : ∀ x ≥ 0 , (1 - rexp (-r * x)) ^ 24 - 1 ≤ 0 := by
@@ -383,7 +382,7 @@ private lemma step_12a {r : ℝ} (cpos : r > 0)
     apply abs_sub_le_iff.mpr
     constructor
     · trans 0
-      apply h_upper_bound i (Nat.cast_nonneg i)
+      · apply h_upper_bound i (Nat.cast_nonneg i)
       apply mul_nonneg (by norm_num) (le_of_lt (exp_pos _))
     · simp_all only [le_of_neg_le_neg, neg_mul, neg_sub, Nat.cast_pos, PNat.pos]
 -- Show that the bound is itself summable

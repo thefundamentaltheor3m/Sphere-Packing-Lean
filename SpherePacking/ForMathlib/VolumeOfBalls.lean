@@ -41,7 +41,7 @@ theorem EuclideanSpace.ball_subsingleton [IsEmpty ι]
     (x : EuclideanSpace ℝ ι) : Subsingleton (ball x r) := by
   apply Subsingleton.intro
   intro ⟨x, _⟩ ⟨y, _⟩
-  change ι → ℝ at x y
+  congr 1
   ext t
   exact False.elim (IsEmpty.false t)
 
