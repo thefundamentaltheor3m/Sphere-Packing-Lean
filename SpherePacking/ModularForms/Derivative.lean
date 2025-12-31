@@ -53,7 +53,17 @@ theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(
 /--
 TODO: Move this to E2.lean.
 -/
-theorem E₂_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₂ := sorry
+theorem E₂_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₂ := by
+  rw [UpperHalfPlane.mdifferentiable_iff]
+  have hη : DifferentiableOn ℂ η _ :=
+    fun z hz => (eta_DifferentiableAt_UpperHalfPlane ⟨z, hz⟩).differentiableWithinAt
+  have hlog : DifferentiableOn ℂ (logDeriv η) {z | 0 < z.im} :=
+    (hη.deriv isOpen_upperHalfPlaneSet).div hη fun _ hz => by
+      simpa using eta_nonzero_on_UpperHalfPlane ⟨_, hz⟩
+  exact (hlog.const_mul ((↑π * I / 12)⁻¹)).congr fun z hz => by
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hz,
+      show logDeriv η z = (↑π * I / 12) * E₂ ⟨z, hz⟩ by simpa using eta_logDeriv ⟨z, hz⟩]
+    field_simp [Real.pi_ne_zero]
 
 /--
 Basic properties of derivatives: linearity, Leibniz rule, etc.
@@ -318,6 +328,13 @@ example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.t
 /-
 Interaction between (Serre) derivative and restriction to the imaginary axis.
 -/
+lemma StrictAntiOn.eventuallyPos_Ioi {g : ℝ → ℝ} (hAnti : StrictAntiOn g (Set.Ioi (0 : ℝ)))
+    {t₀ : ℝ} (ht₀_pos : 0 < t₀) (hEv : ∀ t : ℝ, t₀ ≤ t → 0 < g t) :
+    ∀ t : ℝ, 0 < t → 0 < g t := by
+  intro t ht
+  by_cases hcase : t₀ ≤ t
+  · exact hEv t hcase
+  · exact lt_trans (hEv t₀ le_rfl) (hAnti ht ht₀_pos (lt_of_not_ge hcase))
 
 /--
 Chain rule for restriction to imaginary axis: `d/dt F(it) = -2π * (D F)(it)`.
@@ -329,8 +346,7 @@ The key computation is:
 - Since D = (2πi)⁻¹ · d/dz, we have F' = 2πi · D F
 - So d/dt F(it) = 2πi · D F(it) · I = -2π · D F(it)
 -/
-theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
-    {t : ℝ} (ht : 0 < t) :
+theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) {t : ℝ} (ht : 0 < t) :
     deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t := by
   let z : ℍ := ⟨I * t, by simp [ht]⟩
   let g : ℝ → ℂ := (I * ·)
@@ -351,9 +367,30 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ)
 If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
 is positive) and the derivative is positive, then $F$ is also positive.
 -/
-theorem antiDerPos {F : ℍ → ℂ} {k : ℤ} (hF : ResToImagAxis.EventuallyPos F)
-    (hDF : ResToImagAxis.Pos (D F)) : ResToImagAxis.Pos F := by
-  sorry
+theorem antiDerPos {F : ℍ → ℂ} (hFderiv : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (hFepos : ResToImagAxis.EventuallyPos F) (hDF : ResToImagAxis.Pos (D F)) :
+    ResToImagAxis.Pos F := by
+  obtain ⟨hF_real, t₀, ht₀_pos, hF_pos⟩ := hFepos
+  obtain ⟨-, hDF_pos⟩ := hDF
+  let g := fun t => (F.resToImagAxis t).re
+  have hg : ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t := fun t ht => by
+    have hdiff : DifferentiableAt ℝ F.resToImagAxis t :=
+      ResToImagAxis.Differentiable F hFderiv t ht
+    have hderivC : HasDerivAt F.resToImagAxis (-2 * π * (D F).resToImagAxis t) t :=
+      hdiff.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hFderiv ht)
+    have hconst : HasDerivAt (fun _ : ℝ => (Complex.reCLM : ℂ →L[ℝ] ℝ)) 0 t := by
+      simpa using (hasDerivAt_const (x := t) (c := (Complex.reCLM : ℂ →L[ℝ] ℝ)))
+    have hreal := hconst.clm_apply hderivC
+    simpa [g] using hreal
+  have hn : ∀ t ∈ Set.Ioi (0 : ℝ), deriv g t < 0 := fun t (ht : 0 < t) => by
+    rw [(hg t ht).deriv]
+    have ht' : 0 < (ResToImagAxis (D F) t).re := hDF_pos t ht
+    nlinarith [Real.pi_pos]
+  have gpos := fun t ht =>
+    StrictAntiOn.eventuallyPos_Ioi (strictAntiOn_of_deriv_neg (convex_Ioi 0)
+    (fun x hx => (hg x hx).continuousAt.continuousWithinAt)
+      (by simpa [interior_Ioi] using hn)) ht₀_pos hF_pos t ht
+  exact ⟨hF_real, gpos⟩
 
 /--
 Let $F : \mathbb{H} \to \mathbb{C}$ be a holomorphic function where $F(it)$ is real for all $t > 0$.
