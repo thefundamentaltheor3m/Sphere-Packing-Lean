@@ -117,7 +117,7 @@ theorem Φ₃'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₃' r) ℍ₀ := Φ₃'_h
 
 theorem Φ₄'_holo : Holo(Φ₄' r) := Φ₃'_holo
 
-theorem Φ₄'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₃' r) ℍ₀ := Φ₃'_contDiffOn_ℂ
+theorem Φ₄'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₄' r) ℍ₀ := Φ₃'_contDiffOn_ℂ
 
 theorem Φ₅'_holo : Holo(Φ₅' r) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
