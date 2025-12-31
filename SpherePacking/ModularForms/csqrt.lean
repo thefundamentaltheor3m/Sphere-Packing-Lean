@@ -2,7 +2,8 @@ import Mathlib.Algebra.Group.NatPowAssoc
 import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 import Mathlib.Analysis.SpecialFunctions.Complex.LogDeriv
-import Mathlib.NumberTheory.ArithmeticFunction
+import Mathlib.NumberTheory.ArithmeticFunction.Defs
+import Mathlib.NumberTheory.ArithmeticFunction.Moebius
 import Mathlib.NumberTheory.ModularForms.Basic
 import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
 

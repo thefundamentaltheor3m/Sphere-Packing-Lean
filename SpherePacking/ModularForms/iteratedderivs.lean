@@ -38,7 +38,6 @@ theorem aut_iter_deriv (d : ℤ) (k : ℕ) :
              (-1) ^ (↑k + 1) * ((↑k + 1) * ↑k !) * ((x + ↑d) ^ (↑k + 1 + 1))⁻¹ := by
       rw [DifferentiableAt.derivWithin]
       · simp only [deriv_const_mul_field']
-
         have h0 : (fun z : ℂ => ((z + d) ^ (k + 1))⁻¹) = (fun z : ℂ => (z + d) ^ (k + 1))⁻¹ := by
           rfl
         rw [h0]
@@ -49,7 +48,6 @@ theorem aut_iter_deriv (d : ℤ) (k : ℕ) :
         · simp only [Nat.cast_add, Nat.cast_one, add_tsub_cancel_right, mul_one]
           rw [pow_add]
           simp [pow_one]
-
           have Hw : (-(((k : ℂ) + 1) * (x + ↑d) ^ k) / ((x + ↑d) ^ k * (x + ↑d)) ^ 2) =
                     -(↑k + 1) / (x + ↑d) ^ (k + 2) :=
             by

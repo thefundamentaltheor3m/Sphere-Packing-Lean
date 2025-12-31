@@ -133,7 +133,6 @@ lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 :=
     conv =>
       lhs
       equals (fun (b : ℕ) => Real.exp (-2 * π * b * z.im)) ∘ (PNat.val) => rfl
-
     apply Summable.subtype
     simp_rw [mul_comm, mul_assoc, Real.summable_exp_nat_mul_iff]
     simp [pi_pos, UpperHalfPlane.im_pos]
@@ -166,7 +165,6 @@ lemma aux_11 : 0 < ∏' (n : ℕ+), (1 - rexp (-π * ↑↑n)) ^ 24 := by
     conv =>
       lhs
       equals (fun (b : ℕ) => Real.exp (-π * b)) ∘ (PNat.val) => rfl
-
     apply Summable.subtype
     simp_rw [mul_comm, Real.summable_exp_nat_mul_iff]
     simp [pi_pos]
