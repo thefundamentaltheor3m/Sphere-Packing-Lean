@@ -94,5 +94,55 @@ lemma exp_neg_div_pos (c t : ℝ) : 0 < exp (-c / t) := exp_pos _
 
 end Asymptotics
 
+/-! ## Integrability Lemmas -/
+
+section Integrability
+
+/-- exp(-c*t) is integrable on [1,∞) for c > 0. -/
+lemma integrableOn_exp_neg_mul_Ici (c : ℝ) (hc : 0 < c) :
+    IntegrableOn (fun t => exp (-c * t)) (Ici 1) volume := by
+  have h : -c < 0 := neg_neg_of_pos hc
+  exact (integrableOn_Ici_iff_integrableOn_Ioi).mpr (integrableOn_exp_mul_Ioi h 1)
+
+/-- t^(-2) * exp(-c*t) is integrable on [1,∞) for c > 0.
+    Polynomial decay × exponential decay is integrable. -/
+lemma integrableOn_inv_sq_mul_exp_neg_Ici (c : ℝ) (hc : 0 < c) :
+    IntegrableOn (fun t => t^(-2 : ℝ) * exp (-c * t)) (Ici 1) volume := by
+  -- The exponential decay dominates the polynomial factor
+  have h_eq : (fun t : ℝ => exp (-(c / 2) * t)) = fun t => exp ((-c / 2) * t) := by
+    ext t; ring_nf
+  have h_exp : IntegrableOn (fun t => exp ((-c / 2) * t)) (Ici 1) volume := by
+    rw [← h_eq]
+    exact integrableOn_exp_neg_mul_Ici (c / 2) (half_pos hc)
+  -- Use Integrable.mono: if g is integrable and ‖f‖ ≤ ‖g‖ a.e., then f is integrable
+  apply Integrable.mono h_exp (by measurability)
+  rw [ae_restrict_iff' measurableSet_Ici]
+  apply ae_of_all
+  intro t ht
+  have ht1 : 1 ≤ t := ht
+  have ht_pos : 0 < t := by linarith
+  -- For t ≥ 1: t^(-2) ≤ 1, and exp(-c*t) ≤ exp(-c/2*t)
+  have h1 : |t^(-2 : ℝ)| ≤ 1 := by
+    rw [abs_of_pos (rpow_pos_of_pos ht_pos _)]
+    rw [rpow_neg ht_pos.le, rpow_two]
+    have h_sq : 1 ≤ t ^ 2 := by nlinarith
+    exact inv_le_one_of_one_le₀ h_sq
+  have h3 : exp (-c * t) ≤ exp (-c / 2 * t) := by
+    apply exp_le_exp.mpr
+    nlinarith
+  calc ‖t ^ (-2 : ℝ) * exp (-c * t)‖
+      _ = |t ^ (-2 : ℝ)| * |exp (-c * t)| := by rw [norm_mul, Real.norm_eq_abs, Real.norm_eq_abs]
+      _ ≤ 1 * exp (-c / 2 * t) := by
+          have habs : |exp (-c * t)| = exp (-c * t) := abs_of_pos (exp_pos _)
+          have h_le : |t ^ (-2 : ℝ)| * exp (-c * t) ≤ 1 * exp (-c * t) := by
+            apply mul_le_mul_of_nonneg_right h1 (exp_pos _).le
+          calc |t ^ (-2 : ℝ)| * |exp (-c * t)|
+              _ = |t ^ (-2 : ℝ)| * exp (-c * t) := by rw [habs]
+              _ ≤ 1 * exp (-c * t) := h_le
+              _ ≤ 1 * exp (-c / 2 * t) := by nlinarith
+      _ = ‖exp (-c / 2 * t)‖ := by simp [Real.norm_eq_abs, abs_of_pos (exp_pos _)]
+
+end Integrability
+
 end
 
