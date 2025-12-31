@@ -57,6 +57,13 @@ lemma continuous_norm_sq_fst : Continuous (fun p : V × ℝ => (‖p.1‖^2 : �
   simp_rw [← ofReal_pow]
   exact continuous_ofReal.comp ((continuous_norm.comp continuous_fst).pow 2)
 
+/-- Product measure with restricted second component equals restricted product measure. -/
+lemma volume_prod_restrict_eq (s : Set ℝ) :
+    (volume : Measure V).prod ((volume : Measure ℝ).restrict s) =
+    ((volume : Measure V).prod (volume : Measure ℝ)).restrict (Set.univ ×ˢ s) := by
+  conv_lhs => rw [← Measure.restrict_univ (μ := (volume : Measure V))]
+  rw [Measure.prod_restrict]
+
 /-- Gaussian integrability on ℝ⁸: `∫_{ℝ⁸} e^{-c·‖x‖²} < ∞` for c > 0. -/
 lemma gaussian_integrable_R8 (c : ℝ) (hc : 0 < c) :
     Integrable (fun x : V => Real.exp (-c * ‖x‖^2)) := by
@@ -612,12 +619,7 @@ theorem I₆_integrand_integrable :
         ((volume.prod volume).restrict (Set.univ ×ˢ Set.Ici (1 : ℝ))) :=
       continuousOn_I₆_integrand.aestronglyMeasurable
         (MeasurableSet.univ.prod measurableSet_Ici)
-    -- Rewrite the product measure to match: μ.prod (ν.restrict t) = (μ.prod ν).restrict (univ ×ˢ t)
-    have h_eq : (volume : Measure V).prod ((volume : Measure ℝ).restrict (Set.Ici 1)) =
-        ((volume : Measure V).prod (volume : Measure ℝ)).restrict (Set.univ ×ˢ Set.Ici 1) := by
-      conv_lhs => rw [← Measure.restrict_univ (μ := (volume : Measure V))]
-      rw [Measure.prod_restrict]
-    rw [h_eq]
+    rw [volume_prod_restrict_eq]
     exact hmeas'
   -- The dominating function is integrable (product of two integrable functions)
   have h_g_int : Integrable g (volume.prod (volume.restrict (Ici 1))) := by
@@ -635,17 +637,8 @@ theorem I₆_integrand_integrable :
     exact Integrable.mul_prod h_x h_t
   -- The bound holds a.e. (it actually holds everywhere on the support)
   have h_bound : ∀ᵐ p ∂(volume.prod (volume.restrict (Ici 1))), ‖I₆_integrand p‖ ≤ g p := by
-    -- The bound holds for all (x, t) with t ≥ 1
-    -- On the restricted measure, t ∈ Ici 1 a.e., so the bound holds a.e.
-    -- Rewrite using the measure equality
-    have h_eq : (volume : Measure V).prod ((volume : Measure ℝ).restrict (Set.Ici 1)) =
-        ((volume : Measure V).prod (volume : Measure ℝ)).restrict (Set.univ ×ˢ Set.Ici 1) := by
-      conv_lhs => rw [← Measure.restrict_univ (μ := (volume : Measure V))]
-      rw [Measure.prod_restrict]
-    rw [h_eq, ae_restrict_iff' (MeasurableSet.univ.prod measurableSet_Ici)]
-    apply ae_of_all
-    intro ⟨x, t⟩ ⟨_, ht⟩
-    exact hC x t ht
+    rw [volume_prod_restrict_eq, ae_restrict_iff' (MeasurableSet.univ.prod measurableSet_Ici)]
+    exact ae_of_all _ fun ⟨x, t⟩ ⟨_, ht⟩ => hC x t ht
   exact Integrable.mono' h_g_int h_meas h_bound
 
 end ImaginaryRay
@@ -891,12 +884,7 @@ theorem I₅_integrand_integrable :
         ((volume.prod volume).restrict (Set.univ ×ˢ Set.Ioc (0 : ℝ) 1)) :=
       continuousOn_I₅_integrand.aestronglyMeasurable
         (MeasurableSet.univ.prod measurableSet_Ioc)
-    -- Rewrite the product measure: μ.prod (ν.restrict t) = (μ.prod ν).restrict (univ ×ˢ t)
-    have h_eq : (volume : Measure V).prod ((volume : Measure ℝ).restrict (Set.Ioc 0 1)) =
-        ((volume : Measure V).prod (volume : Measure ℝ)).restrict (Set.univ ×ˢ Set.Ioc 0 1) := by
-      conv_lhs => rw [← Measure.restrict_univ (μ := (volume : Measure V))]
-      rw [Measure.prod_restrict]
-    rw [h_eq]
+    rw [volume_prod_restrict_eq]
     exact hmeas'
   -- Use integrable_prod_iff' to swap order of integration
   rw [MeasureTheory.integrable_prod_iff' h_meas]
