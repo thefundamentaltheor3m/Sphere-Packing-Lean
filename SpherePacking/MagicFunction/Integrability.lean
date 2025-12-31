@@ -984,24 +984,38 @@ section FubiniSwap
 /-- Connection: I₁ x = ∫ t, I₁_integrand (x, t) -/
 lemma I₁_eq_integral (x : V) :
     I₁ x = ∫ t in Ioc (0 : ℝ) 1, I₁_integrand (x, t) := by
-  -- From I₁'_eq_Ioc with r = ‖x‖²
-  sorry
+  -- I₁ x = I₁' (‖x‖²) by definition
+  -- I₁'_eq_Ioc gives the integral form with r = ‖x‖²
+  rw [I₁, I₁'_eq_Ioc]
+  apply MeasureTheory.setIntegral_congr_ae₀ nullMeasurableSet_Ioc
+  refine ae_of_all _ fun t _ => ?_
+  simp only [I₁_integrand, sq_abs, ofReal_pow]
 
 /-- Connection: I₃ x = ∫ t, I₃_integrand (x, t) -/
 lemma I₃_eq_integral (x : V) :
     I₃ x = ∫ t in Ioc (0 : ℝ) 1, I₃_integrand (x, t) := by
-  sorry
+  rw [I₃, I₃'_eq_Ioc]
+  apply MeasureTheory.setIntegral_congr_ae₀ nullMeasurableSet_Ioc
+  refine ae_of_all _ fun t _ => ?_
+  simp only [I₃_integrand, ofReal_pow]
 
 /-- Connection: I₅ x = -2 * ∫ t, I₅_integrand (x, t) -/
 lemma I₅_eq_integral (x : V) :
     I₅ x = -2 * ∫ t in Ioc (0 : ℝ) 1, I₅_integrand (x, t) := by
-  -- From I₅'_eq_Ioc with r = ‖x‖²
-  sorry
+  rw [I₅, I₅'_eq_Ioc]
+  congr 1
+  apply MeasureTheory.setIntegral_congr_ae₀ nullMeasurableSet_Ioc
+  refine ae_of_all _ fun t _ => ?_
+  simp only [I₅_integrand, ofReal_pow]
 
 /-- Connection: I₆ x = 2 * ∫ t, I₆_integrand (x, t) -/
 lemma I₆_eq_integral (x : V) :
     I₆ x = 2 * ∫ t in Ici (1 : ℝ), I₆_integrand (x, t) := by
-  sorry
+  rw [I₆, I₆'_eq]
+  congr 1
+  apply MeasureTheory.setIntegral_congr_ae₀ nullMeasurableSet_Ici
+  refine ae_of_all _ fun t _ => ?_
+  simp only [I₆_integrand, ofReal_pow]
 
 /-- Fubini for I₁: swap ∫_{ℝ⁸} and ∫_{(0,1]} -/
 theorem I₁_integral_swap :
