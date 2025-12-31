@@ -8,11 +8,11 @@ import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 
 import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 
-/-! # Φ₁' : ℂ → ℂ is Holomorphic on the Upper Half-Plane
+/-! # Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane
 
-In this file, we prove that the integrand of `I₁` is holomorphic on the upper half-plane. This
-relies on the properties of φ₀ that it inherits from the modular forms in terms of which it is
-defined.
+In this file, we prove that all the complex integrands Φ₁' through Φ₆' that appear in our integral
+estimates (including the integrand of `I₁`) are holomorphic on the upper half-plane. This relies on
+the properties of φ₀ that they inherit from the modular forms in terms of which they are defined.
 -/
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
