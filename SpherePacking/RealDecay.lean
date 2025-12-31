@@ -86,7 +86,7 @@ lemma exp_neg_div_tendsto_zero (c : ℝ) (hc : 0 < c) :
       tendsto_inv_nhdsGT_zero
     have h_eq : (fun t : ℝ => -c / t) = fun t => -c * t⁻¹ := by ext t; ring
     rw [h_eq]
-    exact h_inv.const_mul_atTop_of_neg (neg_neg_of_pos hc)
+    exact h_inv.const_mul_atTop_of_neg (neg_lt_zero.mpr hc)
   exact tendsto_exp_atBot.comp h1
 
 /-- exp(-c/t) is always positive. -/
@@ -100,47 +100,46 @@ section Integrability
 
 /-- exp(-c*t) is integrable on [1,∞) for c > 0. -/
 lemma integrableOn_exp_neg_mul_Ici (c : ℝ) (hc : 0 < c) :
-    IntegrableOn (fun t => exp (-c * t)) (Ici 1) volume := by
-  have h : -c < 0 := neg_neg_of_pos hc
-  exact (integrableOn_Ici_iff_integrableOn_Ioi).mpr (integrableOn_exp_mul_Ioi h 1)
+    IntegrableOn (fun t => exp (-c * t)) (Ici 1) volume :=
+  (integrableOn_Ici_iff_integrableOn_Ioi).mpr (integrableOn_exp_mul_Ioi (neg_lt_zero.mpr hc) 1)
 
 /-- t^(-2) * exp(-c*t) is integrable on [1,∞) for c > 0.
     Polynomial decay × exponential decay is integrable. -/
 lemma integrableOn_inv_sq_mul_exp_neg_Ici (c : ℝ) (hc : 0 < c) :
     IntegrableOn (fun t => t^(-2 : ℝ) * exp (-c * t)) (Ici 1) volume := by
-  -- The exponential decay dominates the polynomial factor
-  have h_eq : (fun t : ℝ => exp (-(c / 2) * t)) = fun t => exp ((-c / 2) * t) := by
-    ext t; ring_nf
-  have h_exp : IntegrableOn (fun t => exp ((-c / 2) * t)) (Ici 1) volume := by
-    rw [← h_eq]
-    exact integrableOn_exp_neg_mul_Ici (c / 2) (half_pos hc)
-  -- Use Integrable.mono: if g is integrable and ‖f‖ ≤ ‖g‖ a.e., then f is integrable
+  -- For t ≥ 1: t^(-2) ≤ 1, so |t^(-2) * exp(-c*t)| ≤ exp(-c*t)
+  have h_exp : IntegrableOn (fun t => exp (-c * t)) (Ici 1) volume :=
+    integrableOn_exp_neg_mul_Ici c hc
   apply Integrable.mono h_exp (by measurability)
   rw [ae_restrict_iff' measurableSet_Ici]
   apply ae_of_all
   intro t ht
-  have ht1 : 1 ≤ t := ht
+  simp only [mem_Ici] at ht
   have ht_pos : 0 < t := by linarith
-  -- For t ≥ 1: t^(-2) ≤ 1, and exp(-c*t) ≤ exp(-c/2*t)
-  have h1 : |t^(-2 : ℝ)| ≤ 1 := by
-    rw [abs_of_pos (rpow_pos_of_pos ht_pos _)]
+  have h1 : t^(-2 : ℝ) ≤ 1 := by
     rw [rpow_neg ht_pos.le, rpow_two]
-    have h_sq : 1 ≤ t ^ 2 := by nlinarith
-    exact inv_le_one_of_one_le₀ h_sq
-  have h3 : exp (-c * t) ≤ exp (-c / 2 * t) := by
-    apply exp_le_exp.mpr
-    nlinarith
-  calc ‖t ^ (-2 : ℝ) * exp (-c * t)‖
-      _ = |t ^ (-2 : ℝ)| * |exp (-c * t)| := by rw [norm_mul, Real.norm_eq_abs, Real.norm_eq_abs]
-      _ ≤ 1 * exp (-c / 2 * t) := by
-          have habs : |exp (-c * t)| = exp (-c * t) := abs_of_pos (exp_pos _)
-          have h_le : |t ^ (-2 : ℝ)| * exp (-c * t) ≤ 1 * exp (-c * t) := by
-            apply mul_le_mul_of_nonneg_right h1 (exp_pos _).le
-          calc |t ^ (-2 : ℝ)| * |exp (-c * t)|
-              _ = |t ^ (-2 : ℝ)| * exp (-c * t) := by rw [habs]
-              _ ≤ 1 * exp (-c * t) := h_le
-              _ ≤ 1 * exp (-c / 2 * t) := by nlinarith
-      _ = ‖exp (-c / 2 * t)‖ := by simp [Real.norm_eq_abs, abs_of_pos (exp_pos _)]
+    exact inv_le_one_of_one_le₀ (by nlinarith : 1 ≤ t ^ 2)
+  simp only [norm_mul, Real.norm_eq_abs, abs_of_pos (rpow_pos_of_pos ht_pos _),
+             abs_of_pos (exp_pos _)]
+  exact mul_le_of_le_one_left (exp_pos _).le h1
+
+/-- exp(-c/t) is integrable on (0, 1] for c > 0.
+    Change of variables: u = 1/t transforms ∫₀¹ exp(-c/t) dt to ∫₁^∞ exp(-c*u) * u⁻² du.
+    The latter is integrable since exp(-c*u) decays faster than u² grows. -/
+lemma integrableOn_exp_neg_div_Ioc (c : ℝ) (hc : 0 < c) :
+    IntegrableOn (fun t => exp (-c / t)) (Ioc 0 1) volume := by
+  -- Strategy: bound exp(-c/t) ≤ exp(-c) on (0,1], then use finite measure
+  have h_bound : ∀ t ∈ Ioc (0 : ℝ) 1, exp (-c / t) ≤ exp (-c) := fun t ht =>
+    exp_neg_div_le_of_le_one c t hc ht.1 ht.2
+  -- exp(-c) is a constant, and Ioc 0 1 has finite measure
+  have h_const : IntegrableOn (fun (_ : ℝ) => exp (-c)) (Ioc 0 1) volume :=
+    integrableOn_const (by simp [Real.volume_Ioc])
+  apply Integrable.mono h_const (by measurability)
+  rw [ae_restrict_iff' measurableSet_Ioc]
+  apply ae_of_all
+  intro t ht
+  rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_pos (exp_pos _), abs_of_pos (exp_pos _)]
+  exact h_bound t ht
 
 end Integrability
 

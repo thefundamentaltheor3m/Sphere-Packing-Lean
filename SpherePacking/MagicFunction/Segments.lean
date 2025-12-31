@@ -45,12 +45,17 @@ lemma φ₀''_eq (z : ℂ) (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := by
 
 /-- Norm of cexp(-π * ‖x‖²) equals exp(-π * ‖x‖²). -/
 lemma norm_cexp_neg_pi_norm_sq (x : V) : ‖cexp ((-π : ℂ) * ‖x‖^2)‖ = Real.exp (-π * ‖x‖^2) := by
-  rw [Complex.norm_exp]; simp [sq]
+  simp only [← ofReal_neg, ← ofReal_pow, ← ofReal_mul, norm_exp_ofReal]
 
 /-- Norm of cexp(-π * ‖x‖² * t) equals exp(-π * ‖x‖² * t). -/
 lemma norm_cexp_neg_pi_norm_sq_mul (x : V) (t : ℝ) :
     ‖cexp (-π * ‖x‖^2 * t)‖ = Real.exp (-π * ‖x‖^2 * t) := by
-  rw [Complex.norm_exp]; simp [sq]
+  simp only [← ofReal_neg, ← ofReal_pow, ← ofReal_mul, norm_exp_ofReal]
+
+/-- ‖x‖² is continuous on V × ℝ (projecting to first component). -/
+lemma continuous_norm_sq_fst : Continuous (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) := by
+  simp_rw [← ofReal_pow]
+  exact continuous_ofReal.comp ((continuous_norm.comp continuous_fst).pow 2)
 
 /-- Gaussian integrability on ℝ⁸: `∫_{ℝ⁸} e^{-c·‖x‖²} < ∞` for c > 0. -/
 lemma gaussian_integrable_R8 (c : ℝ) (hc : 0 < c) :
@@ -285,16 +290,13 @@ lemma I₂_integrand_continuous : Continuous I₂_integrand := by
     continuous_φ₀''_I₂_param.comp continuous_snd
   have h2 : Continuous (fun p : V × ℝ => (p.2 + I) ^ 2) :=
     (continuous_ofReal.comp continuous_snd).add continuous_const |>.pow 2
-  have h_norm_sq : Continuous (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) := by
-    simp_rw [← ofReal_pow]
-    exact continuous_ofReal.comp ((continuous_norm.comp continuous_fst).pow 2)
   have h3 : Continuous (fun p : V × ℝ => cexp (-π * I * ‖p.1‖^2)) :=
-    Complex.continuous_exp.comp (continuous_const.mul h_norm_sq)
+    Complex.continuous_exp.comp (continuous_const.mul continuous_norm_sq_fst)
   have h4 : Continuous (fun p : V × ℝ => cexp (π * I * ‖p.1‖^2 * p.2)) :=
-    Complex.continuous_exp.comp ((continuous_const.mul h_norm_sq).mul
+    Complex.continuous_exp.comp ((continuous_const.mul continuous_norm_sq_fst).mul
       (continuous_ofReal.comp continuous_snd))
   have h5 : Continuous (fun p : V × ℝ => cexp (-π * ‖p.1‖^2)) :=
-    Complex.continuous_exp.comp (continuous_const.mul h_norm_sq)
+    Complex.continuous_exp.comp (continuous_const.mul continuous_norm_sq_fst)
   exact ((h1.mul h2).mul h3).mul h4 |>.mul h5
 
 /-- The norm of I₂_integrand is bounded by C * exp(-π‖x‖²) for all (x, t) ∈ V × [0,1].
@@ -395,16 +397,13 @@ lemma I₄_integrand_continuous : Continuous I₄_integrand := by
     continuous_φ₀''_I₄_param.comp continuous_snd
   have h2 : Continuous (fun p : V × ℝ => (-p.2 + I) ^ 2) :=
     ((continuous_ofReal.comp continuous_snd).neg.add continuous_const).pow 2
-  have h_norm_sq : Continuous (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) := by
-    simp_rw [← ofReal_pow]
-    exact continuous_ofReal.comp ((continuous_norm.comp continuous_fst).pow 2)
   have h3 : Continuous (fun p : V × ℝ => cexp (π * I * ‖p.1‖^2)) :=
-    Complex.continuous_exp.comp (continuous_const.mul h_norm_sq)
+    Complex.continuous_exp.comp (continuous_const.mul continuous_norm_sq_fst)
   have h4 : Continuous (fun p : V × ℝ => cexp (-π * I * ‖p.1‖^2 * p.2)) :=
-    Complex.continuous_exp.comp ((continuous_const.mul h_norm_sq).mul
+    Complex.continuous_exp.comp ((continuous_const.mul continuous_norm_sq_fst).mul
       (continuous_ofReal.comp continuous_snd))
   have h5 : Continuous (fun p : V × ℝ => cexp (-π * ‖p.1‖^2)) :=
-    Complex.continuous_exp.comp (continuous_const.mul h_norm_sq)
+    Complex.continuous_exp.comp (continuous_const.mul continuous_norm_sq_fst)
   exact ((continuous_const.mul h1).mul h2).mul h3 |>.mul h4 |>.mul h5
 
 /-- The norm of I₄_integrand is bounded by C * exp(-π‖x‖²) for all (x, t) ∈ V × [0,1]. -/
@@ -574,11 +573,8 @@ lemma continuousOn_I₆_integrand :
     intro ⟨_, t⟩ ht
     exact ht.2
   -- The other factors are globally continuous
-  have h_norm_sq : Continuous (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) := by
-    simp_rw [← ofReal_pow]
-    exact continuous_ofReal.comp ((continuous_norm.comp continuous_fst).pow 2)
   have h2 : Continuous (fun p : V × ℝ => cexp (-π * ‖p.1‖^2 * p.2)) :=
-    Complex.continuous_exp.comp ((continuous_const.mul h_norm_sq).mul
+    Complex.continuous_exp.comp ((continuous_const.mul continuous_norm_sq_fst).mul
       (continuous_ofReal.comp continuous_snd))
   exact (continuous_const.continuousOn.mul h1).mul h2.continuousOn
 
