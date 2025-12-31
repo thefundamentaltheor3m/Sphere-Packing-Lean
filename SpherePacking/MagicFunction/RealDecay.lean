@@ -21,8 +21,9 @@ These lemmas are designed to be reusable for contour integral analysis where:
 ## Main results
 
 ### Comparison lemmas
-- `exp_neg_div_le_of_one_le`: exp(-c/t) ≤ exp(-c) for t ≥ 1
+- `exp_neg_div_le_of_le_one`: exp(-c/t) ≤ exp(-c) for 0 < t ≤ 1
 - `exp_neg_mul_div_le_exp_abs`: exp(-c*r/s) ≤ exp(c*|r|) for s ≥ 1
+- `exp_neg_div_mul_inv_sq_le`: exp(-c/t) * t⁻² ≤ exp(-c) for t ∈ (0,1] and c ≥ 2
 
 ### Asymptotic behavior
 - `exp_neg_div_tendsto_zero`: exp(-c/t) → 0 as t → 0⁺
@@ -45,29 +46,19 @@ section Comparison
     When 0 < t ≤ 1, we have 1/t ≥ 1, so c/t ≥ c, so -c/t ≤ -c. -/
 lemma exp_neg_div_le_of_le_one (c t : ℝ) (hc : 0 < c) (ht_pos : 0 < t) (ht : t ≤ 1) :
     exp (-c / t) ≤ exp (-c) := by
-  apply exp_le_exp.mpr
-  have h : c ≤ c / t := by
-    rw [le_div_iff₀ ht_pos]
-    calc c * t ≤ c * 1 := by nlinarith
-      _ = c := mul_one c
-  have : -c / t ≤ -c := by
-    rw [neg_div]
-    exact neg_le_neg h
-  exact this
+  rw [exp_le_exp, neg_div, neg_le_neg_iff, le_div_iff₀ ht_pos]
+  nlinarith
 
 /-- For s ≥ 1, exp(-c*r/s) ≤ exp(c*|r|).
     This bounds a secondary exponential factor uniformly. -/
 lemma exp_neg_mul_div_le_exp_abs (c r s : ℝ) (hc : 0 ≤ c) (hs : 1 ≤ s) :
     exp (-c * r / s) ≤ exp (c * |r|) := by
   apply exp_le_exp.mpr
-  have h_pos : 0 < s := by linarith
   have h1 : -c * r / s ≤ |c * r| / s := by
-    apply div_le_div_of_nonneg_right _ h_pos.le
-    have : -c * r = -(c * r) := by ring
-    rw [this]
-    exact neg_le_abs (c * r)
-  have h2 : |c * r| / s ≤ |c * r| := div_le_self (abs_nonneg _) hs
-  have h3 : |c * r| = c * |r| := by rw [abs_mul, abs_of_nonneg hc]
+    apply div_le_div_of_nonneg_right _ (by linarith : 0 ≤ s)
+    simp only [neg_mul]; exact neg_le_abs _
+  have h2 : |c * r| / s ≤ c * |r| := by
+    rw [abs_mul, abs_of_nonneg hc]; exact div_le_self (by positivity) hs
   linarith
 
 /-- exp(-c/t) * t⁻² ≤ exp(-c) for t ∈ (0,1] and c ≥ 2.
