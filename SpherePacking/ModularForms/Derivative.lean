@@ -55,10 +55,11 @@ TODO: Move this to E2.lean.
 -/
 theorem E₂_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₂ := by
   rw [UpperHalfPlane.mdifferentiable_iff]
-  have hSopen : IsOpen {z : ℂ | 0 < z.im} := isOpen_lt continuous_const Complex.continuous_im
-  have hη : DifferentiableOn ℂ η _ := fun z hz => (eta_DifferentiableAt_UpperHalfPlane ⟨z, hz⟩).differentiableWithinAt
+  have hη : DifferentiableOn ℂ η _ :=
+    fun z hz => (eta_DifferentiableAt_UpperHalfPlane ⟨z, hz⟩).differentiableWithinAt
   have hlog : DifferentiableOn ℂ (logDeriv η) {z | 0 < z.im} :=
-    (hη.deriv hSopen).div hη fun _ hz => by simpa using eta_nonzero_on_UpperHalfPlane ⟨_, hz⟩
+    (hη.deriv isOpen_upperHalfPlaneSet).div hη fun _ hz => by
+      simpa using eta_nonzero_on_UpperHalfPlane ⟨_, hz⟩
   exact (hlog.const_mul ((↑π * I / 12)⁻¹)).congr fun z hz => by
     simp only [Function.comp_apply, ofComplex_apply_of_im_pos hz,
       show logDeriv η z = (↑π * I / 12) * E₂ ⟨z, hz⟩ by simpa using eta_logDeriv ⟨z, hz⟩]
@@ -328,10 +329,8 @@ example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.t
 Interaction between (Serre) derivative and restriction to the imaginary axis.
 -/
 
-lemma StrictAntiOn.eventuallyPos_Ioi {g : ℝ → ℝ}
-  (hAnti : StrictAntiOn g (Set.Ioi (0 : ℝ)))
-  {t₀ : ℝ} (ht₀_pos : 0 < t₀)
-  (hEv : ∀ t : ℝ, t₀ ≤ t → 0 < g t) :
+lemma StrictAntiOn.eventuallyPos_Ioi {g : ℝ → ℝ} (hAnti : StrictAntiOn g (Set.Ioi (0 : ℝ)))
+    {t₀ : ℝ} (ht₀_pos : 0 < t₀) (hEv : ∀ t : ℝ, t₀ ≤ t → 0 < g t) :
   ∀ t : ℝ, 0 < t → 0 < g t := by
   intro t ht
   by_cases hcase : t₀ ≤ t
