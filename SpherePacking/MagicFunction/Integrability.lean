@@ -235,21 +235,16 @@ lemma norm_φ₀''_I₂_bound_Ico : ∃ C₀ > 0, ∀ t : ℝ, t ∈ Ico 0 1 →
           norm_num [Real.pi_pos]
         linarith [Real.pi_pos]
 
-/-- For any t ∈ ℝ, Im(-1/(-t+I)) = 1/(t² + 1) > 0. -/
+/-- For any t ∈ ℝ, Im(-1/(-t+I)) = 1/(t² + 1) > 0. Derived from im_neg_inv_t_add_I_pos_general. -/
 lemma im_neg_inv_neg_t_add_I_pos_general (t : ℝ) : 0 < (-1 / (-t + I)).im := by
-  simp only [neg_div, neg_im, one_div, inv_im, add_im, neg_im, ofReal_im, I_im, neg_neg]
-  have hns : normSq (-t + I) = t^2 + 1 := by simp [normSq, sq]
-  rw [hns]
-  positivity
+  convert im_neg_inv_t_add_I_pos_general (-t) using 2
+  simp only [ofReal_neg, ← sub_eq_add_neg, add_comm]
 
-/-- The path t ↦ -1/(-t+I) is continuous on ℝ. -/
+/-- The path t ↦ -1/(-t+I) is continuous on ℝ. Derived from continuous_neg_inv_t_add_I. -/
 lemma continuous_neg_inv_neg_t_add_I : Continuous (fun t : ℝ => -1 / (-t + I)) := by
-  apply Continuous.div continuous_const
-  · exact (continuous_ofReal.neg).add continuous_const
-  · intro t h
-    have him : (-t + I).im = 0 := by rw [h]; simp
-    simp only [add_im, neg_im, ofReal_im, I_im] at him
-    norm_num at him
+  have h : (fun t : ℝ => -1 / (-t + I)) = (fun t : ℝ => -1 / (t + I)) ∘ (fun t => -t) := by
+    ext t; simp only [Function.comp_apply, ofReal_neg, ← sub_eq_add_neg, add_comm]
+  rw [h]; exact continuous_neg_inv_t_add_I.comp continuous_neg
 
 /-- The map t ↦ φ₀''(-1/(-t+I)) is continuous. -/
 lemma continuous_φ₀''_I₄_param : Continuous (fun t : ℝ => φ₀'' (-1 / (-t + I))) := by
