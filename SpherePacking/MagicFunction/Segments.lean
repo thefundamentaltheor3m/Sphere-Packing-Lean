@@ -7,6 +7,7 @@ Authors: Sphere Packing Contributors
 import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.a.Schwartz
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.MagicFunction.RealDecay
 import SpherePacking.ModularForms.Derivative
 import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 import Mathlib.MeasureTheory.Integral.Prod
@@ -682,66 +683,6 @@ lemma norm_φ₀''_cusp_bound : ∃ C₀ > 0, ∀ t : ℝ, 0 < t → t ≤ 1 →
   convert h using 2
   rw [hz_im, mul_comm, ← div_eq_mul_inv]
 
-/-- For t ∈ (0, 1], exp(-2π/t) ≤ exp(-2π) since 1/t ≥ 1 implies -2π/t ≤ -2π. -/
-lemma exp_neg_two_pi_div_le (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
-    Real.exp (-2 * π / t) ≤ Real.exp (-2 * π) := by
-  apply Real.exp_le_exp.mpr
-  have h1 : t ≤ 1 := ht.2
-  have h2 : 0 < t := ht.1
-  have h3 : 1 ≤ t⁻¹ := one_le_inv_iff₀.mpr ⟨h2, h1⟩
-  calc -2 * π / t = -2 * π * t⁻¹ := by ring
-    _ ≤ -2 * π * 1 := by nlinarith [Real.pi_pos]
-    _ = -2 * π := by ring
-
-/-- For t ∈ (0, 1], exp(-2π/t) * t^{-2} ≤ exp(-2π).
-This uses the substitution u = 1/t: the function exp(-2πu) * u² is decreasing on [1, ∞). -/
-lemma exp_neg_two_pi_div_mul_inv_sq_le (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
-    Real.exp (-2 * π / t) * t⁻¹^2 ≤ Real.exp (-2 * π) := by
-  have h1 : t ≤ 1 := ht.2
-  have h2 : 0 < t := ht.1
-  have h3 : 1 ≤ t⁻¹ := one_le_inv_iff₀.mpr ⟨h2, h1⟩
-  -- Substitute u = 1/t, so u ≥ 1
-  set u := t⁻¹ with hu_def
-  have h_u_pos : 0 < u := by positivity
-  have h_u_ge_1 : 1 ≤ u := h3
-  -- The function is exp(-2πu) * u²
-  have h_eq : Real.exp (-2 * π / t) * t⁻¹^2 = Real.exp (-2 * π * u) * u^2 := by
-    simp only [hu_def, div_eq_mul_inv]
-  rw [h_eq]
-  -- For u ≥ 1, we need exp(-2πu) * u² ≤ exp(-2π)
-  -- Equivalently: u² ≤ exp(2π(u-1))
-  -- This follows from 2*log(u) ≤ 2π(u-1), i.e., log(u) ≤ π(u-1)
-  have h_ineq : u^2 ≤ Real.exp (2 * π * (u - 1)) := by
-    by_cases hu1 : u = 1
-    · simp [hu1]
-    · have hu1' : 1 < u := lt_of_le_of_ne h_u_ge_1 (Ne.symm hu1)
-      -- log(u) ≤ u - 1 for u > 0, and π(u-1) ≥ u - 1 when π ≥ 1
-      have hlog : Real.log u ≤ u - 1 := Real.log_le_sub_one_of_pos h_u_pos
-      have h5 : u - 1 ≤ π * (u - 1) := by
-        have hu_sub : 0 < u - 1 := by linarith
-        have hpi : 1 ≤ π := le_of_lt (lt_of_lt_of_le (by norm_num : (1 : ℝ) < 2) Real.two_le_pi)
-        calc u - 1 = 1 * (u - 1) := by ring
-          _ ≤ π * (u - 1) := mul_le_mul_of_nonneg_right hpi (le_of_lt hu_sub)
-      have h6 : Real.log u ≤ π * (u - 1) := le_trans hlog h5
-      have h7 : 2 * Real.log u ≤ 2 * π * (u - 1) := by linarith
-      calc u^2 = Real.exp (Real.log (u^2)) := by rw [Real.exp_log]; positivity
-        _ = Real.exp (2 * Real.log u) := by rw [Real.log_pow]; ring_nf
-        _ ≤ Real.exp (2 * π * (u - 1)) := Real.exp_le_exp.mpr h7
-  -- Now: exp(-2πu) * u² = exp(-2π) * exp(-2π(u-1)) * u² ≤ exp(-2π) * 1
-  have h_split : Real.exp (-2 * π * u) = Real.exp (-2 * π) * Real.exp (-2 * π * (u - 1)) := by
-    rw [← Real.exp_add]; ring_nf
-  rw [h_split, mul_assoc]
-  apply mul_le_of_le_one_right (Real.exp_pos _).le
-  -- Need: exp(-2π(u-1)) * u² ≤ 1
-  rw [mul_comm]
-  have h_exp_pos : 0 < Real.exp (2 * π * (u - 1)) := Real.exp_pos _
-  calc u^2 * Real.exp (-2 * π * (u - 1))
-      = u^2 / Real.exp (2 * π * (u - 1)) := by
-        rw [div_eq_mul_inv, ← Real.exp_neg]; ring_nf
-    _ ≤ Real.exp (2 * π * (u - 1)) / Real.exp (2 * π * (u - 1)) :=
-        div_le_div_of_nonneg_right h_ineq h_exp_pos.le
-    _ = 1 := div_self (ne_of_gt h_exp_pos)
-
 /-- The integrand for I₁ over V × (0,1].
 Using the simplified form from `I₁'_eq_Ioc`. -/
 def I₁_integrand (p : V × ℝ) : ℂ :=
@@ -990,8 +931,10 @@ theorem I₅_integrand_integrable :
         _ = C * Real.exp (-2 * π / t) * t ^ 2 * t⁻¹ ^ 4 := by rw [h_gauss_val]
         _ = C * Real.exp (-2 * π / t) * t⁻¹ ^ 2 := by field_simp
         _ = C * (Real.exp (-2 * π / t) * t⁻¹ ^ 2) := by ring
-        _ ≤ C * Real.exp (-2 * π) := mul_le_mul_of_nonneg_left
-            (exp_neg_two_pi_div_mul_inv_sq_le t ht) (le_of_lt hC_pos)
+        _ ≤ C * Real.exp (-2 * π) := by
+            refine mul_le_mul_of_nonneg_left ?_ (le_of_lt hC_pos)
+            have := exp_neg_div_mul_inv_sq_le (2 * π) t (by linarith [Real.two_le_pi]) ht.1 ht.2
+            convert this using 2 <;> ring_nf
 
 /-- I₁ integrand is integrable on V × (0,1] (Class B segment).
 Follows from I₅ integrability since I₁ = I₅ * (unit-modulus phase). -/

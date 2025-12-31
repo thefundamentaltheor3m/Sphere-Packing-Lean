@@ -70,6 +70,53 @@ lemma exp_neg_mul_div_le_exp_abs (c r s : ℝ) (hc : 0 ≤ c) (hs : 1 ≤ s) :
   have h3 : |c * r| = c * |r| := by rw [abs_mul, abs_of_nonneg hc]
   linarith
 
+/-- exp(-c/t) * t⁻² ≤ exp(-c) for t ∈ (0,1] and c ≥ 2.
+    The super-exponential decay dominates the polynomial singularity.
+    Uses substitution u = 1/t and the inequality log(u) ≤ u - 1. -/
+lemma exp_neg_div_mul_inv_sq_le (c t : ℝ) (hc : 2 ≤ c) (ht_pos : 0 < t) (ht : t ≤ 1) :
+    exp (-c / t) * t⁻¹^2 ≤ exp (-c) := by
+  have h_u_ge_1 : 1 ≤ t⁻¹ := one_le_inv_iff₀.mpr ⟨ht_pos, ht⟩
+  -- Substitute u = 1/t, so u ≥ 1
+  set u := t⁻¹ with hu_def
+  have h_u_pos : 0 < u := by positivity
+  -- The function is exp(-c*u) * u²
+  have h_eq : exp (-c / t) * t⁻¹^2 = exp (-c * u) * u^2 := by
+    simp only [hu_def, div_eq_mul_inv]
+  rw [h_eq]
+  -- For u ≥ 1, we need exp(-c*u) * u² ≤ exp(-c)
+  -- Equivalently: u² ≤ exp(c(u-1))
+  -- This follows from 2*log(u) ≤ c(u-1), which holds when c/2 ≥ 1
+  have h_ineq : u^2 ≤ exp (c * (u - 1)) := by
+    by_cases hu1 : u = 1
+    · simp [hu1]
+    · have hu1' : 1 < u := lt_of_le_of_ne h_u_ge_1 (Ne.symm hu1)
+      -- log(u) ≤ u - 1 for u > 0, and (c/2)(u-1) ≥ u - 1 when c/2 ≥ 1
+      have hlog : log u ≤ u - 1 := log_le_sub_one_of_pos h_u_pos
+      have h5 : u - 1 ≤ (c / 2) * (u - 1) := by
+        have hu_sub : 0 < u - 1 := by linarith
+        have hc2 : 1 ≤ c / 2 := by linarith
+        calc u - 1 = 1 * (u - 1) := by ring
+          _ ≤ (c / 2) * (u - 1) := mul_le_mul_of_nonneg_right hc2 (le_of_lt hu_sub)
+      have h6 : log u ≤ (c / 2) * (u - 1) := le_trans hlog h5
+      have h7 : 2 * log u ≤ c * (u - 1) := by linarith
+      calc u^2 = exp (log (u^2)) := by rw [exp_log]; positivity
+        _ = exp (2 * log u) := by rw [log_pow]; ring_nf
+        _ ≤ exp (c * (u - 1)) := exp_le_exp.mpr h7
+  -- Now: exp(-c*u) * u² = exp(-c) * exp(-c(u-1)) * u² ≤ exp(-c) * 1
+  have h_split : exp (-c * u) = exp (-c) * exp (-c * (u - 1)) := by
+    rw [← exp_add]; ring_nf
+  rw [h_split, mul_assoc]
+  apply mul_le_of_le_one_right (exp_pos _).le
+  -- Need: exp(-c(u-1)) * u² ≤ 1
+  rw [mul_comm]
+  have h_exp_pos : 0 < exp (c * (u - 1)) := exp_pos _
+  calc u^2 * exp (-c * (u - 1))
+      = u^2 / exp (c * (u - 1)) := by
+        rw [div_eq_mul_inv, ← exp_neg]; ring_nf
+    _ ≤ exp (c * (u - 1)) / exp (c * (u - 1)) :=
+        div_le_div_of_nonneg_right h_ineq h_exp_pos.le
+    _ = 1 := div_self (ne_of_gt h_exp_pos)
+
 end Comparison
 
 /-! ## Asymptotic Behavior -/
