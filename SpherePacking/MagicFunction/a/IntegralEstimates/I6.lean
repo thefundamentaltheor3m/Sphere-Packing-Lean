@@ -68,15 +68,35 @@ end Bounding_Integrand
 
 section Integrability
 
-lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
-  (hC₀ : ∀ t ∈ Ici 1, ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) :
-  IntegrableOn (fun t ↦ C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) (Ici (1 : ℝ)) volume := sorry
+lemma Bound_integrableOn (r C₀ : ℝ) (hr : 0 ≤ r) :
+  IntegrableOn (fun t ↦ C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) (Ici (1 : ℝ)) volume := by
+  have hb_pos : 0 < π * (r + 2) := mul_pos Real.pi_pos (by linarith)
+  have h0 : IntegrableOn (fun t : ℝ => rexp (-(π * (r + 2)) * t)) (Ioi (1 : ℝ)) := by
+    simpa using exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := π * (r + 2)) hb_pos
+  have h1 : IntegrableOn (fun t : ℝ => C₀ * rexp (-(π * (r + 2)) * t)) (Ioi (1 : ℝ)) :=
+    h0.const_mul C₀
+  have h_eq (t : ℝ) :
+      C₀ * rexp (-(π * (r + 2)) * t) =
+        C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
+    have ht : -(π * (r + 2)) * t = (-2 * π * t) + (-π * r * t) := by ring_nf
+    simp [ht, Real.exp_add, mul_comm, mul_left_comm]
+  have h2 : IntegrableOn (fun t : ℝ => C₀ * rexp (-2 * π * t) * rexp (-π * r * t))
+        (Ioi (1 : ℝ)) volume := by
+    refine h1.congr_fun ?_ measurableSet_Ioi
+    intro t _
+    exact h_eq t
+  exact
+    (integrableOn_Ici_iff_integrableOn_Ioi
+        (μ := (volume : Measure ℝ))
+        (f := fun t : ℝ => C₀ * rexp (-2 * π * t) * rexp (-π * r * t))
+        (b := (1 : ℝ))).2
+      h2
 
 end Integrability
 
 section Bounding_Integral
 
-lemma I₆'_bounding_aux_3 (r : ℝ) : ∃ C₀ > 0,
+lemma I₆'_bounding_aux_3 (r : ℝ) (hr : 0 ≤ r) : ∃ C₀ > 0,
     ∫ t in Ici (1 : ℝ), ‖g r t‖ ≤
     ∫ t in Ici (1 : ℝ), C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
   wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
@@ -87,11 +107,11 @@ lemma I₆'_bounding_aux_3 (r : ℝ) : ∃ C₀ > 0,
     positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₆'_bounding_aux_2 r
   use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hC₀_pos hC₀) measurableSet_Ici hC₀
+  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hr) measurableSet_Ici hC₀
 
-theorem I₆'_bounding (r : ℝ) : ∃ C₁ > 0,
+theorem I₆'_bounding (r : ℝ) (hr : 0 ≤ r) : ∃ C₁ > 0,
     ‖I₆' r‖ ≤ ∫ t in Ici (1 : ℝ), C₁ * rexp (-2 * π * t) * rexp (-π * r * t) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₆'_bounding_aux_3 r
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₆'_bounding_aux_3 r hr
   refine ⟨2 * C₀, by positivity, ?_⟩
   calc
   _ = ‖2 * ∫ t in Ici (1 : ℝ), g r t‖ := by simp only [I₆'_eq_integral_g_Ioo, g]
@@ -105,10 +125,10 @@ theorem I₆'_bounding (r : ℝ) : ∃ C₁ > 0,
       rw [smul_eq_mul]
       ac_rfl
 
-theorem I₆'_bounding_eq (r : ℝ) : ∃ C₂ > 0,
+theorem I₆'_bounding_eq (r : ℝ) (hr : 0 ≤ r) : ∃ C₂ > 0,
     ‖I₆' r‖ ≤ C₂ * rexp (-π * (r ^ 2 + 2)) / (r ^ 2 + 2) :=
 by
-  obtain ⟨C₁, _, hC₁⟩ := I₆'_bounding r
+  obtain ⟨C₁, _, hC₁⟩ := I₆'_bounding r hr
   let A : ℝ := ∫ t in Ici (1 : ℝ), C₁ * rexp (-2 * π * t) * rexp (-π * r * t)
   let K : ℝ := rexp (-π * (r ^ 2 + 2)) / (r ^ 2 + 2)
   have hKpos : 0 < K := by

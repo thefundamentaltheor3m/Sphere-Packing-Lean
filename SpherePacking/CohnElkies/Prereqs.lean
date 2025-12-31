@@ -14,7 +14,8 @@ import Mathlib.Analysis.Distribution.FourierSchwartz
 import Mathlib.Analysis.RCLike.Inner
 import Mathlib.LinearAlgebra.BilinearForm.DualLattice
 import Mathlib.Order.CompletePartialOrder
-import Mathlib.Topology.Compactness.PseudometrizableLindelof
+import Mathlib.Topology.Metrizable.Basic
+import Mathlib.Topology.Compactness.Lindelof
 import Mathlib.Topology.EMetricSpace.Paracompact
 import Mathlib.Topology.Separation.CompletelyRegular
 
