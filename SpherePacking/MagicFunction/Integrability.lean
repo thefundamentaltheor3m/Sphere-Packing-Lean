@@ -224,8 +224,7 @@ lemma im_neg_inv_t_add_I_pos_general (t : ℝ) : 0 < (-1 / (t + I)).im := by
 lemma continuous_neg_inv_t_add_I : Continuous (fun t : ℝ => -1 / (t + I)) := by
   apply Continuous.div continuous_const
   · exact continuous_ofReal.add continuous_const
-  · intro t
-    intro h
+  · intro t h
     have him : (t + I).im = 0 := by rw [h]; simp
     simp only [add_im, ofReal_im, I_im, zero_add] at him
     exact one_ne_zero him
@@ -289,8 +288,7 @@ lemma im_neg_inv_neg_t_add_I_pos_general (t : ℝ) : 0 < (-1 / (-t + I)).im := b
 lemma continuous_neg_inv_neg_t_add_I : Continuous (fun t : ℝ => -1 / (-t + I)) := by
   apply Continuous.div continuous_const
   · exact (continuous_ofReal.neg).add continuous_const
-  · intro t
-    intro h
+  · intro t h
     have him : (-t + I).im = 0 := by rw [h]; simp
     simp only [add_im, neg_im, ofReal_im, I_im] at him
     norm_num at him
@@ -643,18 +641,16 @@ lemma continuousOn_φ₀''_I_mul_Ioi : ContinuousOn (fun t : ℝ => φ₀'' (I *
   rw [h_fun_eq]
   exact h_at.tendsto
 
-/-- Continuity of φ₀'' along the imaginary axis: t ↦ φ₀''(I*t) is continuous.
-For t > 0, this uses φ₀_continuous. For t ≤ 0, φ₀''(I*t) = 0.
-The cusp limit φ₀(it) → 0 as t → 0+ follows from the modular form theory (depends on E₂_holo'). -/
-lemma continuous_φ₀''_I₆_param : Continuous (fun t : ℝ => φ₀'' (I * t)) := by
-  -- The function is: φ₀(⟨I*t, ...⟩) for t > 0, and 0 for t ≤ 0
-  -- For global continuity, we need the cusp limit: φ₀(it) → 0 as t → 0+
-  -- This is a deep result from modular form theory (depends on E₂_holo')
-  -- The proof combines:
-  -- 1. ContinuousOn on (0, ∞) from continuousOn_φ₀''_I_mul_Ioi
-  -- 2. Constant 0 on (-∞, 0] (trivially continuous)
-  -- 3. Cusp limit at 0: φ₀(it) → 0 as t → 0+ (from modular form S-transformation)
-  sorry -- Depends on cusp limit from modular form theory (E₂_holo')
+/-- Continuity of φ₀'' along the imaginary axis on [1, ∞): t ↦ φ₀''(I*t).
+This is the domain used for I₆ in the blueprint (Lemma 7.10), which parametrizes
+z = it for t ∈ [1,∞). We avoid the cusp limit at t = 0 by restricting to Ici 1. -/
+lemma continuousOn_φ₀''_I₆_param :
+    ContinuousOn (fun t : ℝ => φ₀'' (I * t)) (Set.Ici (1 : ℝ)) := by
+  -- Derive from continuousOn_φ₀''_I_mul_Ioi by monotonicity: Ici 1 ⊆ Ioi 0
+  refine continuousOn_φ₀''_I_mul_Ioi.mono ?_
+  intro t ht
+  -- ht : t ∈ Ici 1, so t ≥ 1 hence t > 0
+  exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) ht
 
 /-- For t ≥ 1, Im(I*t) = t ≥ 1 > 1/2, so norm_φ₀_le applies. -/
 lemma norm_φ₀''_I₆_bound : ∃ C₀ > 0, ∀ t : ℝ, 1 ≤ t →
@@ -672,11 +668,17 @@ lemma norm_φ₀''_I₆_bound : ∃ C₀ > 0, ∀ t : ℝ, 1 ≤ t →
   calc ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im) := hC₀ z him_ge
     _ = C₀ * Real.exp (-2 * π * t) := by rw [hz_im]
 
-/-- The I₆ integrand is continuous. -/
-lemma I₆_integrand_continuous : Continuous I₆_integrand := by
+/-- The I₆ integrand is continuous on V × [1, ∞).
+This matches the blueprint's I₆ parametrization z = it for t ∈ [1,∞). -/
+lemma continuousOn_I₆_integrand :
+    ContinuousOn I₆_integrand (Set.univ ×ˢ Set.Ici (1 : ℝ)) := by
   unfold I₆_integrand
-  have h1 : Continuous (fun p : V × ℝ => φ₀'' (I * p.2)) :=
-    continuous_φ₀''_I₆_param.comp continuous_snd
+  -- φ₀''(I * p.2) is ContinuousOn on univ ×ˢ Ici 1 via continuousOn_φ₀''_I₆_param
+  have h1 : ContinuousOn (fun p : V × ℝ => φ₀'' (I * p.2)) (Set.univ ×ˢ Set.Ici 1) := by
+    apply ContinuousOn.comp continuousOn_φ₀''_I₆_param continuous_snd.continuousOn
+    intro ⟨_, t⟩ ht
+    exact ht.2
+  -- The other factors are globally continuous
   have h_norm_sq : Continuous (fun p : V × ℝ => (‖p.1‖^2 : ℂ)) := by
     have h1 : Continuous (fun p : V × ℝ => ‖p.1‖^2) := (continuous_norm.comp continuous_fst).pow 2
     have h2 : Continuous (fun r : ℝ => (r : ℂ)) := continuous_ofReal
@@ -686,7 +688,7 @@ lemma I₆_integrand_continuous : Continuous I₆_integrand := by
   have h2 : Continuous (fun p : V × ℝ => cexp (-π * ‖p.1‖^2 * p.2)) :=
     Complex.continuous_exp.comp ((continuous_const.mul h_norm_sq).mul
       (continuous_ofReal.comp continuous_snd))
-  exact (continuous_const.mul h1).mul h2
+  exact (continuous_const.continuousOn.mul h1).mul h2.continuousOn
 
 /-- The norm of I₆_integrand is bounded by C * exp(-2πt) * exp(-π‖x‖²) for t ≥ 1. -/
 lemma I₆_integrand_norm_bound : ∃ C > 0, ∀ x : V, ∀ t : ℝ, 1 ≤ t →
@@ -724,8 +726,19 @@ theorem I₆_integrand_integrable :
   obtain ⟨C, hC_pos, hC⟩ := I₆_integrand_norm_bound
   -- Dominating function: C * exp(-2πt) * exp(-π‖x‖²) = (C * exp(-π‖x‖²)) * exp(-2πt)
   let g : V × ℝ → ℝ := fun p => C * Real.exp (-2 * π * p.2) * Real.exp (-π * ‖p.1‖^2)
-  have h_meas : AEStronglyMeasurable I₆_integrand (volume.prod (volume.restrict (Ici 1))) :=
-    I₆_integrand_continuous.aestronglyMeasurable
+  -- Use ContinuousOn.aestronglyMeasurable with the restricted measure
+  have h_meas : AEStronglyMeasurable I₆_integrand (volume.prod (volume.restrict (Ici 1))) := by
+    have hmeas' : AEStronglyMeasurable I₆_integrand
+        ((volume.prod volume).restrict (Set.univ ×ˢ Set.Ici (1 : ℝ))) :=
+      continuousOn_I₆_integrand.aestronglyMeasurable
+        (MeasurableSet.univ.prod measurableSet_Ici)
+    -- Rewrite the product measure to match: μ.prod (ν.restrict t) = (μ.prod ν).restrict (univ ×ˢ t)
+    have h_eq : (volume : Measure V).prod ((volume : Measure ℝ).restrict (Set.Ici 1)) =
+        ((volume : Measure V).prod (volume : Measure ℝ)).restrict (Set.univ ×ˢ Set.Ici 1) := by
+      conv_lhs => rw [← Measure.restrict_univ (μ := (volume : Measure V))]
+      rw [Measure.prod_restrict]
+    rw [h_eq]
+    exact hmeas'
   -- The dominating function is integrable (product of two integrable functions)
   have h_g_int : Integrable g (volume.prod (volume.restrict (Ici 1))) := by
     -- Rewrite as product: g(x,t) = (C * exp(-π‖x‖²)) * exp(-2πt)
@@ -740,24 +753,19 @@ theorem I₆_integrand_integrable :
       exact (integrableOn_Ici_iff_integrableOn_Ioi).mpr (integrableOn_exp_mul_Ioi h 1)
     -- Product of integrable functions
     exact Integrable.mul_prod h_x h_t
-  -- The bound holds a.e.
+  -- The bound holds a.e. (it actually holds everywhere on the support)
   have h_bound : ∀ᵐ p ∂(volume.prod (volume.restrict (Ici 1))), ‖I₆_integrand p‖ ≤ g p := by
-    have h_ae_snd : ∀ᵐ (t : ℝ) ∂(volume.restrict (Ici 1)), t ∈ Ici 1 := by
-      rw [ae_restrict_iff' measurableSet_Ici]
-      exact ae_of_all _ (fun _ h => h)
-    have h_meas_bound : MeasurableSet {p : V × ℝ | ‖I₆_integrand p‖ ≤ g p} := by
-      apply measurableSet_le
-      · exact I₆_integrand_continuous.norm.measurable
-      · apply Measurable.mul
-        · apply Measurable.mul measurable_const
-          exact (Real.continuous_exp.comp (continuous_const.mul continuous_snd)).measurable
-        · exact (Real.continuous_exp.comp
-            (continuous_const.mul ((continuous_norm.comp continuous_fst).pow 2))).measurable
-    rw [Measure.ae_prod_iff_ae_ae h_meas_bound]
+    -- The bound holds for all (x, t) with t ≥ 1
+    -- On the restricted measure, t ∈ Ici 1 a.e., so the bound holds a.e.
+    -- Rewrite using the measure equality
+    have h_eq : (volume : Measure V).prod ((volume : Measure ℝ).restrict (Set.Ici 1)) =
+        ((volume : Measure V).prod (volume : Measure ℝ)).restrict (Set.univ ×ˢ Set.Ici 1) := by
+      conv_lhs => rw [← Measure.restrict_univ (μ := (volume : Measure V))]
+      rw [Measure.prod_restrict]
+    rw [h_eq, ae_restrict_iff' (MeasurableSet.univ.prod measurableSet_Ici)]
     apply ae_of_all
-    intro x
-    filter_upwards [h_ae_snd] with t ht
-    exact hC x t (mem_Ici.mp ht)
+    intro ⟨x, t⟩ ⟨_, ht⟩
+    exact hC x t ht
   exact Integrable.mono' h_g_int h_meas h_bound
 
 end ClassC
@@ -955,6 +963,65 @@ lemma norm_phase_factor_I₃ (x : V) : ‖cexp (π * I * ‖x‖^2)‖ = 1 := by
   rw [show (π * I * ‖x‖^2 : ℂ) = ↑(π * ‖x‖^2) * I from by push_cast; ring]
   exact Complex.norm_exp_ofReal_mul_I _
 
+/-- ContinuousOn for the I₅ path: t ↦ φ₀''(-1/(I*t)) is continuous on (0, ∞).
+Since -1/(I*t) = I/t and Im(I/t) = 1/t > 0 for t > 0, this factors through φ₀_continuous. -/
+lemma continuousOn_φ₀''_classB_path :
+    ContinuousOn (fun t : ℝ => φ₀'' (-1 / (I * t))) (Set.Ioi 0) := by
+  have h_im_pos : ∀ t : ℝ, 0 < t → 0 < ((-1 : ℂ) / (I * t)).im := fun t ht => by
+    rw [neg_one_div_I_mul t (ne_of_gt ht)]
+    simp only [div_ofReal_im, I_im, one_div]; positivity
+  -- The path t ↦ ⟨-1/(I*t), _⟩ factorizes through UpperHalfPlane
+  let path : {s : ℝ // 0 < s} → UpperHalfPlane := fun s => ⟨-1 / (I * s), h_im_pos s s.2⟩
+  have h_path_cont : Continuous path := by
+    refine Continuous.subtype_mk ?_ _
+    apply Continuous.div continuous_const
+    · exact continuous_const.mul (continuous_ofReal.comp continuous_subtype_val)
+    · intro ⟨s, hs⟩
+      simp only [ne_eq, mul_eq_zero, I_ne_zero, ofReal_eq_zero, false_or]
+      exact ne_of_gt hs
+  have h_comp_cont : Continuous (φ₀ ∘ path) := φ₀_continuous.comp h_path_cont
+  -- Transfer to ContinuousOn via the homeomorphism
+  intro t ht
+  rw [Set.mem_Ioi] at ht
+  have h_eq : φ₀'' (-1 / (I * t)) = φ₀ (path ⟨t, ht⟩) := by
+    simp only [φ₀'', h_im_pos t ht, ↓reduceDIte, path]
+  rw [ContinuousWithinAt, h_eq]
+  have h_at : ContinuousAt (φ₀ ∘ path) ⟨t, ht⟩ := h_comp_cont.continuousAt
+  have h_map_eq : Filter.map (Subtype.val : {s : ℝ // 0 < s} → ℝ) (nhds ⟨t, ht⟩) =
+      nhdsWithin t (Set.Ioi 0) := by convert map_nhds_subtype_val ⟨t, ht⟩
+  rw [← h_map_eq, Filter.tendsto_map'_iff]
+  convert h_at.tendsto using 1
+  funext x
+  simp only [Function.comp_apply, φ₀'', h_im_pos x.val x.prop, ↓reduceDIte, path]
+
+/-- The I₅ integrand is continuous on V × (0, 1]. -/
+lemma continuousOn_I₅_integrand : ContinuousOn I₅_integrand (Set.univ ×ˢ Set.Ioc 0 1) := by
+  unfold I₅_integrand
+  refine ContinuousOn.mul ?_ ?_
+  · refine ContinuousOn.mul ?_ ?_
+    · refine ContinuousOn.mul ?_ ?_
+      · exact continuousOn_const
+      · -- φ₀''(-1/(I*t)) is continuous in t
+        apply ContinuousOn.comp continuousOn_φ₀''_classB_path
+        · exact continuous_snd.continuousOn
+        · intro ⟨_, t⟩ ht
+          simp only [Set.mem_prod, Set.mem_univ, Set.mem_Ioc, true_and] at ht
+          exact ht.1
+    · -- t² is continuous
+      have h : Continuous (fun p : V × ℝ => (p.2 : ℂ) ^ 2) := by
+        exact (continuous_pow 2).comp (continuous_ofReal.comp continuous_snd)
+      exact h.continuousOn
+  · -- cexp(-π‖x‖²*t) is continuous
+    have h : Continuous (fun p : V × ℝ => cexp (-π * ‖p.1‖^2 * p.2)) := by
+      apply Complex.continuous_exp.comp
+      apply Continuous.mul
+      · apply Continuous.mul continuous_const
+        have h1 : Continuous (fun p : V × ℝ => (‖p.1‖ ^ 2 : ℂ)) :=
+          (continuous_pow 2).comp (continuous_ofReal.comp (continuous_norm.comp continuous_fst))
+        exact h1
+      · exact continuous_ofReal.comp continuous_snd
+    exact h.continuousOn
+
 /-- I₅ integrand norm bound for Class B. -/
 lemma I₅_integrand_norm_bound : ∃ C > 0, ∀ x : V, ∀ t : ℝ, 0 < t → t ≤ 1 →
     ‖I₅_integrand (x, t)‖ ≤ C * Real.exp (-2 * π / t) * t ^ 2 * Real.exp (-π * ‖x‖^2 * t) := by
@@ -994,7 +1061,18 @@ theorem I₅_integrand_integrable :
   -- AEStronglyMeasurable is needed for integrable_prod_iff'
   have h_meas : AEStronglyMeasurable I₅_integrand
       (volume.prod (volume.restrict (Ioc 0 1))) := by
-    sorry -- requires continuity of φ₀'' along the segment
+    -- Use ContinuousOn.aestronglyMeasurable with the restricted measure
+    have hmeas' : AEStronglyMeasurable I₅_integrand
+        ((volume.prod volume).restrict (Set.univ ×ˢ Set.Ioc (0 : ℝ) 1)) :=
+      continuousOn_I₅_integrand.aestronglyMeasurable
+        (MeasurableSet.univ.prod measurableSet_Ioc)
+    -- Rewrite the product measure: μ.prod (ν.restrict t) = (μ.prod ν).restrict (univ ×ˢ t)
+    have h_eq : (volume : Measure V).prod ((volume : Measure ℝ).restrict (Set.Ioc 0 1)) =
+        ((volume : Measure V).prod (volume : Measure ℝ)).restrict (Set.univ ×ˢ Set.Ioc 0 1) := by
+      conv_lhs => rw [← Measure.restrict_univ (μ := (volume : Measure V))]
+      rw [Measure.prod_restrict]
+    rw [h_eq]
+    exact hmeas'
   -- Use integrable_prod_iff' to swap order of integration
   rw [MeasureTheory.integrable_prod_iff' h_meas]
   constructor
@@ -1005,7 +1083,18 @@ theorem I₅_integrand_integrable :
     have h_gauss := gaussian_integrable_scaled π t Real.pi_pos ht.1
     apply Integrable.mono' (h_gauss.const_mul (C * Real.exp (-2 * π / t) * t^2))
     · -- Measurability of I₅_integrand in x for fixed t
-      sorry -- measurability of I₅_integrand(·, t) for fixed t
+      -- For fixed t ∈ (0, 1], the slice x ↦ I₅_integrand(x, t) is continuous
+      -- I₅_integrand (x, t) = -I * φ₀''(-1/(It)) * t² * cexp(-π‖x‖²t) = const * cexp(...)
+      have h_cont : Continuous (fun x : V => I₅_integrand (x, t)) := by
+        simp only [I₅_integrand]
+        apply Continuous.mul
+        · exact continuous_const  -- -I * φ₀''(-1/(It)) * t² is constant
+        · apply Complex.continuous_exp.comp
+          -- The argument is -π * ‖x‖² * t
+          refine Continuous.mul ?_ continuous_const
+          refine Continuous.mul continuous_const ?_
+          exact (continuous_pow 2).comp (continuous_ofReal.comp continuous_norm)
+      exact h_cont.aestronglyMeasurable
     · -- Norm bound
       refine ae_of_all _ fun x => ?_
       have h := hC_bound x t ht.1 ht.2
@@ -1016,14 +1105,43 @@ theorem I₅_integrand_integrable :
   · -- ∫_V ‖I₅(x,t)‖ dx ≤ C·exp(-2π/t)·t^{-2} ≤ C·exp(-2π) for t ∈ (0,1]
     apply Integrable.mono' (integrable_const (C * Real.exp (-2 * π)))
     · -- Measurability of integral of norms
-      sorry -- requires AEStronglyMeasurable for integral of norms
+      -- The function t ↦ ∫ x, ‖I₅_integrand (x, t)‖ is AEStronglyMeasurable
+      -- We need to integrate over the first variable V, so use the swapped version
+      -- First swap the product: (t, x) ↦ ‖I₅_integrand (x, t)‖
+      have h_swap : AEStronglyMeasurable (fun p : ℝ × V => ‖I₅_integrand (p.2, p.1)‖)
+          ((volume.restrict (Ioc 0 1)).prod (volume : Measure V)) := by
+        -- Use that map swap (ν.prod μ) = μ.prod ν
+        -- So map swap ((volume.restrict ...).prod volume) = volume.prod (volume.restrict ...)
+        have h_map_eq : Measure.map Prod.swap
+            (((volume : Measure ℝ).restrict (Ioc 0 1)).prod (volume : Measure V)) =
+            (volume : Measure V).prod ((volume : Measure ℝ).restrict (Ioc 0 1)) :=
+          Measure.prod_swap
+        -- h_meas.norm is AEStronglyMeasurable on volume.prod (volume.restrict ...)
+        -- = map swap ((volume.restrict ...).prod volume)
+        have h_on_map : AEStronglyMeasurable (fun x => ‖I₅_integrand x‖)
+            (Measure.map Prod.swap
+              (((volume : Measure ℝ).restrict (Ioc 0 1)).prod (volume : Measure V))) := by
+          rw [h_map_eq]; exact h_meas.norm
+        -- Apply comp_measurable to get the swapped function
+        exact h_on_map.comp_measurable measurable_swap
+      -- Now integral_prod_right' integrates over V (now second variable)
+      exact h_swap.integral_prod_right'
     · -- Bound on integral
       rw [ae_restrict_iff' measurableSet_Ioc]
       refine ae_of_all _ fun t ht => ?_
       have h_gauss := gaussian_integrable_scaled π t Real.pi_pos ht.1
       have h_int : Integrable (fun x => ‖I₅_integrand (x, t)‖) (volume : Measure V) := by
         apply Integrable.mono' (h_gauss.const_mul (C * Real.exp (-2 * π / t) * t^2))
-        · sorry -- measurability of ‖I₅_integrand(·, t)‖ for fixed t
+        · -- For fixed t, x ↦ ‖I₅_integrand(x, t)‖ is continuous (norm of continuous function)
+          have h_cont : Continuous (fun x : V => I₅_integrand (x, t)) := by
+            simp only [I₅_integrand]
+            apply Continuous.mul
+            · exact continuous_const
+            · apply Complex.continuous_exp.comp
+              refine Continuous.mul ?_ continuous_const
+              refine Continuous.mul continuous_const ?_
+              exact (continuous_pow 2).comp (continuous_ofReal.comp continuous_norm)
+          exact (continuous_norm.comp h_cont).aestronglyMeasurable
         · refine ae_of_all _ fun x => ?_
           rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
           have h := hC_bound x t ht.1 ht.2
