@@ -63,6 +63,19 @@ noncomputable section
 These lemmas are used across multiple integrability proofs.
 -/
 
+/-- Unfold φ₀'' to φ₀ when the imaginary part is positive. -/
+lemma φ₀''_eq (z : ℂ) (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := by
+  simp only [φ₀'', hz, dite_true]
+
+/-- Norm of cexp(-π * ‖x‖²) equals exp(-π * ‖x‖²). -/
+lemma norm_cexp_neg_pi_norm_sq (x : V) : ‖cexp ((-π : ℂ) * ‖x‖^2)‖ = Real.exp (-π * ‖x‖^2) := by
+  rw [Complex.norm_exp]; simp [sq]
+
+/-- Norm of cexp(-π * ‖x‖² * t) equals exp(-π * ‖x‖² * t). -/
+lemma norm_cexp_neg_pi_norm_sq_mul (x : V) (t : ℝ) :
+    ‖cexp (-π * ‖x‖^2 * t)‖ = Real.exp (-π * ‖x‖^2 * t) := by
+  rw [Complex.norm_exp]; simp [sq]
+
 /-- Gaussian integrability on ℝ⁸: `∫_{ℝ⁸} e^{-c·‖x‖²} < ∞` for c > 0. -/
 lemma gaussian_integrable_R8 (c : ℝ) (hc : 0 < c) :
     Integrable (fun x : V => Real.exp (-c * ‖x‖^2)) := by
@@ -187,8 +200,7 @@ lemma continuous_φ₀''_I₂_param : Continuous (fun t : ℝ => φ₀'' (-1 / (
   -- Show φ₀'' equals φ₀ on the image (which is in UHP)
   have h_eq : (fun t : ℝ => φ₀'' (-1 / (t + I))) =
               (fun t : ℝ => φ₀ ⟨-1 / (t + I), h_im_pos t⟩) := by
-    ext t
-    simp only [φ₀'', h_im_pos t, dite_true]
+    ext t; rw [φ₀''_eq _ (h_im_pos t)]
   rw [h_eq]
   exact φ₀_continuous.comp h_lift
 
@@ -212,7 +224,7 @@ lemma norm_φ₀''_I₂_bound_Ico : ∃ C₀ > 0, ∀ t : ℝ, t ∈ Ico 0 1 →
     exact (inv_lt_inv₀ (by norm_num : (0 : ℝ) < 2) (by positivity : (0 : ℝ) < t^2 + 1)).mpr h_lt
   let z : UpperHalfPlane := ⟨-1 / (t + I), him_pos⟩
   have hz_im : z.im = (-1 / (t + I)).im := rfl
-  simp only [φ₀'', him_pos, ↓reduceDIte]
+  rw [φ₀''_eq _ him_pos]
   calc ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im) := hC₀ z (by rw [hz_im]; exact him_ge)
     _ ≤ C₀ * Real.exp (-π) := by
         gcongr
@@ -246,8 +258,7 @@ lemma continuous_φ₀''_I₄_param : Continuous (fun t : ℝ => φ₀'' (-1 / (
     Continuous.subtype_mk continuous_neg_inv_neg_t_add_I h_im_pos
   have h_eq : (fun t : ℝ => φ₀'' (-1 / (-t + I))) =
               (fun t : ℝ => φ₀ ⟨-1 / (-t + I), h_im_pos t⟩) := by
-    ext t
-    simp only [φ₀'', h_im_pos t, dite_true]
+    ext t; rw [φ₀''_eq _ (h_im_pos t)]
   rw [h_eq]
   exact φ₀_continuous.comp h_lift
 
@@ -271,7 +282,7 @@ lemma norm_φ₀''_I₄_bound_Ico : ∃ C₀ > 0, ∀ t : ℝ, t ∈ Ico 0 1 →
     exact (inv_lt_inv₀ (by norm_num : (0 : ℝ) < 2) (by positivity : (0 : ℝ) < t^2 + 1)).mpr h_lt
   let z : UpperHalfPlane := ⟨-1 / (-t + I), him_pos⟩
   have hz_im : z.im = (-1 / (-t + I)).im := rfl
-  simp only [φ₀'', him_pos, ↓reduceDIte]
+  rw [φ₀''_eq _ him_pos]
   calc ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im) := hC₀ z (by rw [hz_im]; exact him_ge)
     _ ≤ C₀ * Real.exp (-π) := by
         gcongr
@@ -350,15 +361,7 @@ lemma I₂_integrand_norm_bound : ∃ C > 0, ∀ x : V, ∀ t ∈ Icc (0 : ℝ) 
   have h_phase2 : ‖cexp (π * I * ‖x‖^2 * t)‖ = 1 := by
     rw [show (π * I * ‖x‖^2 * t : ℂ) = ↑(π * ‖x‖^2 * t) * I from by push_cast; ring]
     exact Complex.norm_exp_ofReal_mul_I _
-  -- Gaussian factor: need to show ‖cexp((-π : ℂ) * ‖x‖^2)‖ = exp(-π * ‖x‖^2)
-  -- Note: (↑‖x‖)^2 : ℂ has real part ‖x‖^2 and imaginary part 0
-  have h_norm_sq_re : ((‖x‖ : ℂ) ^ 2).re = ‖x‖^2 := by simp [sq]
-  have h_norm_sq_im : ((‖x‖ : ℂ) ^ 2).im = 0 := by simp [sq]
-  have h_gauss : ‖cexp ((-π : ℂ) * ‖x‖^2)‖ = Real.exp (-π * ‖x‖^2) := by
-    rw [Complex.norm_exp]
-    congr 1
-    simp only [neg_mul, neg_re, mul_re, ofReal_re, ofReal_im, h_norm_sq_re, h_norm_sq_im,
-      mul_zero, sub_zero]
+  have h_gauss := norm_cexp_neg_pi_norm_sq x
   -- Combine the bounds using explicit multiplication
   have h1 : ‖φ₀'' (-1 / (t + I))‖ * ‖(t + I) ^ 2‖ ≤ M * 2 := by
     calc ‖φ₀'' (-1 / (t + I))‖ * ‖(t + I) ^ 2‖
@@ -461,12 +464,7 @@ lemma I₄_integrand_norm_bound : ∃ C > 0, ∀ x : V, ∀ t ∈ Icc (0 : ℝ) 
   have h_phase2 : ‖cexp (-π * I * ‖x‖^2 * t)‖ = 1 := by
     rw [show (-π * I * ‖x‖^2 * t : ℂ) = ↑(-π * ‖x‖^2 * t) * I from by push_cast; ring]
     exact Complex.norm_exp_ofReal_mul_I _
-  have h_norm_sq_re : ((‖x‖ : ℂ) ^ 2).re = ‖x‖^2 := by simp [sq]
-  have h_norm_sq_im : ((‖x‖ : ℂ) ^ 2).im = 0 := by simp [sq]
-  have h_gauss : ‖cexp ((-π : ℂ) * ‖x‖^2)‖ = Real.exp (-π * ‖x‖^2) := by
-    rw [Complex.norm_exp]; congr 1
-    simp only [neg_mul, neg_re, mul_re, ofReal_re, ofReal_im, h_norm_sq_re, h_norm_sq_im,
-      mul_zero, sub_zero]
+  have h_gauss := norm_cexp_neg_pi_norm_sq x
   have h1 : ‖φ₀'' (-1 / (-t + I))‖ * ‖(-t + I) ^ 2‖ ≤ M * 2 := by
     calc ‖φ₀'' (-1 / (-t + I))‖ * ‖(-t + I) ^ 2‖
         ≤ M * ‖(-t + I) ^ 2‖ := by apply mul_le_mul_of_nonneg_right h_φ (norm_nonneg _)
@@ -554,7 +552,7 @@ lemma continuousOn_φ₀''_I_mul_Ioi : ContinuousOn (fun t : ℝ => φ₀'' (I *
   have h_comp_cont : Continuous (φ₀ ∘ path) := φ₀_continuous.comp h_path_cont
   -- Step 4: For any s > 0, φ₀''(I*s) = φ₀(path ⟨s, hs⟩)
   have h_eq : ∀ s : ℝ, ∀ hs : 0 < s, φ₀'' (I * s) = φ₀ (path ⟨s, hs⟩) := fun s hs => by
-    simp only [φ₀'', h_im_pos s hs, ↓reduceDIte, path]
+    rw [φ₀''_eq _ (h_im_pos s hs)]
   -- Step 5: Use Set.restrictPreimage to get ContinuousOn
   -- The restriction of (φ₀ ∘ path) to the subtype gives ContinuousOn on Ioi 0
   -- via the homeomorphism Subtype.val : {s : ℝ // 0 < s} ≃ₜ Set.Ioi 0
@@ -608,7 +606,7 @@ lemma norm_φ₀''_I₆_bound : ∃ C₀ > 0, ∀ t : ℝ, 1 ≤ t →
   have him_pos : 0 < (I * t).im := by rw [him]; linarith
   have him_ge : 1/2 < (I * t).im := by rw [him]; linarith
   -- φ₀''(I*t) = φ₀(⟨I*t, ...⟩) since Im(I*t) > 0
-  simp only [φ₀'', him_pos, ↓reduceDIte]
+  rw [φ₀''_eq _ him_pos]
   let z : UpperHalfPlane := ⟨I * t, him_pos⟩
   have hz_im : z.im = t := him
   calc ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im) := hC₀ z him_ge
@@ -645,15 +643,7 @@ lemma I₆_integrand_norm_bound : ∃ C > 0, ∀ x : V, ∀ t : ℝ, 1 ≤ t →
   rw [norm_mul, norm_mul]
   have h_I : ‖(I : ℂ)‖ = 1 := Complex.norm_I
   have h_φ : ‖φ₀'' (I * t)‖ ≤ C₀ * Real.exp (-2 * π * t) := hC₀ t ht
-  -- For the Gaussian: ‖cexp(-π‖x‖²t)‖ = exp(-π‖x‖²t) ≤ exp(-π‖x‖²) for t ≥ 1
-  have h_norm_sq_re : ((‖x‖ : ℂ) ^ 2).re = ‖x‖^2 := by simp [sq]
-  have h_norm_sq_im : ((‖x‖ : ℂ) ^ 2).im = 0 := by simp [sq]
-  have h_gauss_norm : ‖cexp (-π * ‖x‖^2 * t)‖ = Real.exp (-π * ‖x‖^2 * t) := by
-    rw [Complex.norm_exp]
-    congr 1
-    have h_prod_im : ((‖x‖ : ℂ)^2 * t).im = 0 := by simp [sq]
-    simp only [neg_mul, mul_assoc, neg_re, mul_re, ofReal_re, ofReal_im, h_norm_sq_re,
-      h_prod_im, mul_zero, sub_zero]
+  have h_gauss_norm := norm_cexp_neg_pi_norm_sq_mul x t
   have h_gauss_le : Real.exp (-π * ‖x‖^2 * t) ≤ Real.exp (-π * ‖x‖^2) := by
     apply Real.exp_le_exp.mpr
     have h1 : -π * ‖x‖^2 * t ≤ -π * ‖x‖^2 * 1 := by
@@ -776,7 +766,7 @@ lemma norm_φ₀''_classB_bound : ∃ C₀ > 0, ∀ t : ℝ, 0 < t → t ≤ 1 �
   have h1t : 1 ≤ t⁻¹ := one_le_inv_iff₀.mpr ⟨ht, ht'⟩
   have him_gt : 1 / 2 < (I / (t : ℂ)).im := by rw [him]; linarith
   -- φ₀'' (I/t) = φ₀(⟨I/t, ...⟩) since Im(I/t) > 0
-  simp only [φ₀'', him_pos, ↓reduceDIte]
+  rw [φ₀''_eq _ him_pos]
   -- Apply the φ₀ bound
   let z : UpperHalfPlane := ⟨I / t, him_pos⟩
   have hz_im : z.im = t⁻¹ := him
@@ -930,7 +920,7 @@ lemma continuousOn_φ₀''_classB_path :
   intro t ht
   rw [Set.mem_Ioi] at ht
   have h_eq : φ₀'' (-1 / (I * t)) = φ₀ (path ⟨t, ht⟩) := by
-    simp only [φ₀'', h_im_pos t ht, ↓reduceDIte, path]
+    rw [φ₀''_eq _ (h_im_pos t ht)]
   rw [ContinuousWithinAt, h_eq]
   have h_at : ContinuousAt (φ₀ ∘ path) ⟨t, ht⟩ := h_comp_cont.continuousAt
   have h_map_eq : Filter.map (Subtype.val : {s : ℝ // 0 < s} → ℝ) (nhds ⟨t, ht⟩) =
@@ -938,7 +928,7 @@ lemma continuousOn_φ₀''_classB_path :
   rw [← h_map_eq, Filter.tendsto_map'_iff]
   convert h_at.tendsto using 1
   funext x
-  simp only [Function.comp_apply, φ₀'', h_im_pos x.val x.prop, ↓reduceDIte, path]
+  simp only [Function.comp_apply, φ₀''_eq _ (h_im_pos x.val x.prop), path]
 
 /-- The I₅ integrand is continuous on V × (0, 1]. -/
 lemma continuousOn_I₅_integrand : ContinuousOn I₅_integrand (Set.univ ×ˢ Set.Ioc 0 1) := by
