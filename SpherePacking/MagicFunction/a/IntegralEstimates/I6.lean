@@ -68,13 +68,13 @@ end Bounding_Integrand
 
 section Integrability
 
-lemma Bound_integrableOn (r C₀ : ℝ) (hr : r > -2) (hC₀_pos : C₀ > 0)
-  (hC₀ : ∀ t ∈ Ici 1, ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) :
+lemma Bound_integrableOn (r C₀ : ℝ) (hr : 0 ≤ r) :
   IntegrableOn (fun t ↦ C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) (Ici (1 : ℝ)) volume := by
   have hb_pos : 0 < π * (r + 2) := mul_pos Real.pi_pos (by linarith)
   have h0 : IntegrableOn (fun t : ℝ => rexp (-(π * (r + 2)) * t)) (Ioi (1 : ℝ)) := by
     simpa using exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := π * (r + 2)) hb_pos
-  have h1 : IntegrableOn (fun t : ℝ => C₀ * rexp (-(π * (r + 2)) * t)) (Ioi (1 : ℝ)) := h0.const_mul C₀
+  have h1 : IntegrableOn (fun t : ℝ => C₀ * rexp (-(π * (r + 2)) * t)) (Ioi (1 : ℝ)) :=
+    h0.const_mul C₀
   have h_eq (t : ℝ) :
       C₀ * rexp (-(π * (r + 2)) * t) =
         C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
@@ -96,7 +96,7 @@ end Integrability
 
 section Bounding_Integral
 
-lemma I₆'_bounding_aux_3 (r : ℝ) (hr : r > -2) : ∃ C₀ > 0,
+lemma I₆'_bounding_aux_3 (r : ℝ) (hr : 0 ≤ r) : ∃ C₀ > 0,
     ∫ t in Ici (1 : ℝ), ‖g r t‖ ≤
     ∫ t in Ici (1 : ℝ), C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
   wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
@@ -107,9 +107,9 @@ lemma I₆'_bounding_aux_3 (r : ℝ) (hr : r > -2) : ∃ C₀ > 0,
     positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₆'_bounding_aux_2 r
   use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hr hC₀_pos hC₀) measurableSet_Ici hC₀
+  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hr) measurableSet_Ici hC₀
 
-theorem I₆'_bounding (r : ℝ) (hr : r > -2) : ∃ C₁ > 0,
+theorem I₆'_bounding (r : ℝ) (hr : 0 ≤ r) : ∃ C₁ > 0,
     ‖I₆' r‖ ≤ ∫ t in Ici (1 : ℝ), C₁ * rexp (-2 * π * t) * rexp (-π * r * t) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₆'_bounding_aux_3 r hr
   refine ⟨2 * C₀, by positivity, ?_⟩
@@ -125,7 +125,7 @@ theorem I₆'_bounding (r : ℝ) (hr : r > -2) : ∃ C₁ > 0,
       rw [smul_eq_mul]
       ac_rfl
 
-theorem I₆'_bounding_eq (r : ℝ) (hr : r > -2) : ∃ C₂ > 0,
+theorem I₆'_bounding_eq (r : ℝ) (hr : 0 ≤ r) : ∃ C₂ > 0,
     ‖I₆' r‖ ≤ C₂ * rexp (-π * (r ^ 2 + 2)) / (r ^ 2 + 2) :=
 by
   obtain ⟨C₁, _, hC₁⟩ := I₆'_bounding r hr
