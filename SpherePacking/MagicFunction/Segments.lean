@@ -19,17 +19,9 @@ This file defines the integrand functions I₁_integrand through I₆_integrand 
 contour integral components in the magic function decomposition, and proves they are
 integrable on V × (contour parameter).
 
-## Contour classification
-
-- **Class A** (safe, Im ≥ 1): I₂, I₄ — horizontal segments where Im(z) = 1 throughout.
-- **Class B** (Im → 0 at endpoint): I₁, I₃, I₅ — vertical segments approaching the real axis.
-- **Class C** (unbounded tail): I₆ — vertical ray from i to i∞.
-
 ## Main results
 
-- `I₂_integrand_integrable`, `I₄_integrand_integrable`: Class A integrability
-- `I₆_integrand_integrable`: Class C integrability
-- `I₁_integrand_integrable`, `I₃_integrand_integrable`, `I₅_integrand_integrable`: Class B
+- `I₁_integrand_integrable` through `I₆_integrand_integrable`
 
 See `Fubini.lean` for the Fubini swap lemmas that use these results.
 -/
@@ -97,17 +89,16 @@ lemma φ₀_continuous : Continuous φ₀ := by
   have h_sq : Continuous (fun z : UpperHalfPlane => (E₂ z * E₄ z - E₆ z)^2) := h246.pow 2
   exact Continuous.div h_sq hΔ (fun z => Δ_ne_zero z)
 
-/-! ## Class A: Safe segments (I₂, I₄)
+/-! ## Horizontal Segments (I₂, I₄)
 
-For these segments, the argument to φ₀'' has Im ≥ 1/2 throughout:
+For I₂ and I₄, the argument to φ₀'' has Im ≥ 1/2 throughout:
 - I₂: z = -1/(t + I) has Im = 1/(t² + 1) ≥ 1/2 for t ∈ [0,1]
 - I₄: z = -1/(-t + I) has Im = 1/(t² + 1) ≥ 1/2 for t ∈ [0,1]
 
 So `norm_φ₀_le` applies, giving uniform bounds on φ₀''.
-Combined with Gaussian decay `e^{-π‖x‖²}`, we get product integrability.
 -/
 
-section ClassA
+section HorizontalSegments
 
 /-- For t ∈ [0,1], Im(-1/(t + I)) ≥ 1/2. -/
 lemma im_neg_inv_t_add_I (t : ℝ) (ht : t ∈ Icc 0 1) : 1/2 ≤ (-1 / (t + I)).im := by
@@ -490,31 +481,20 @@ theorem I₄_integrand_integrable :
     exact hC x t ht
   exact Integrable.mono' h_g_int h_meas h_bound
 
-end ClassA
+end HorizontalSegments
 
-/-! ## Class C: Unbounded tail (I₆)
+/-! ## Imaginary Ray (I₆)
 
-For I₆, we integrate over t ∈ [1,∞) with z₆(t) = it.
-Since Im(z) = t ≥ 1, Corollary 7.5 gives `|φ₀(z)| ≤ C₀·e^{-2πt}`.
-Combined with Gaussian `e^{-π·r·t}`, we get `e^{-π(2+r)t}` which is integrable over [1,∞).
-
-Key domination: For t ≥ 1, `e^{-π·r·t} ≤ e^{-π·r}`, so we can bound by
-`C₀·e^{-π·r} · ∫_1^∞ e^{-2πt} dt` which is integrable on ℝ⁸.
+For I₆, we integrate over t ∈ [1,∞) with z = it on the positive imaginary axis.
+Since Im(z) = t ≥ 1, `norm_φ₀_le` gives `|φ₀(z)| ≤ C₀·e^{-2πt}`.
 -/
 
-section ClassC
+section ImaginaryRay
 
 /-- The integrand for I₆ over V × [1,∞).
 Using the simplified form from `I₆'_eq`: `I * φ₀''(it) * e^{-πrt}`. -/
 def I₆_integrand (p : V × ℝ) : ℂ :=
   I * φ₀'' (I * p.2) * cexp (-π * ‖p.1‖^2 * p.2)
-
-/-- For t > 0, Im(I*t) = t > 0. -/
-lemma im_I_mul_pos' (t : ℝ) (ht : 0 < t) : 0 < (I * t).im := by simp [ht]
-
-/-- The path t ↦ I*t is continuous. -/
-lemma continuous_I_mul : Continuous (fun t : ℝ => I * t) :=
-  continuous_const.mul continuous_ofReal
 
 /-- ContinuousOn for φ₀'' ∘ (I*·) on positive reals.
 This uses the homeomorphism between Ioi 0 and the positive subtype. -/
@@ -683,30 +663,15 @@ theorem I₆_integrand_integrable :
     exact hC x t ht
   exact Integrable.mono' h_g_int h_meas h_bound
 
-end ClassC
+end ImaginaryRay
 
-/-! ## Class B: Segments approaching real axis (I₁, I₃, I₅)
+/-! ## Cusp-Approaching Segments (I₁, I₃, I₅)
 
-These segments have Im(z) = t → 0 as t → 0, so φ₀'' is unbounded near the endpoint.
-We use `Ioc 0 1` to exclude the problematic endpoint, then apply the substitution s = 1/t.
-
-Under this substitution:
-- t → s = 1/t transforms [0,1] → [1,∞)
-- φ₀''(-1/(it)) with t small becomes φ₀''(-1/(i/s)) = φ₀''(is) with s large
-- The Jacobian dt = -ds/s² introduces the t^{-4} factor seen in the blueprint
-
-This reduces Class B to integrals like `∫_1^∞ φ₀(is)·s^{-4}·e^{-πr/s} ds`
-where Cor 7.5 applies since Im(is) = s ≥ 1 > 1/2.
+For I₁, I₃, I₅ we integrate over (0,1] with z = -1/(it), where Im(z) = 1/t → ∞ as t → 0.
+The exponential decay exp(-2π/t) dominates any polynomial singularity at t = 0.
 -/
 
-section ClassB
-
-/-! ### Class B Helper Lemmas
-
-For t ∈ (0, 1], the argument -1/(I*t) = I/t has Im = 1/t ≥ 1 > 1/2,
-so the Cor 7.5 bound applies. The key fact is that exp(-2π/t) → 0
-as t → 0⁺, making the integral converge despite the apparent singularity.
--/
+section CuspApproachingSegments
 
 /-- Key identity: -1/(I*t) = I/t for t ≠ 0 -/
 lemma neg_one_div_I_mul (t : ℝ) (ht : t ≠ 0) : (-1 : ℂ) / (I * t) = I / t := by
@@ -717,23 +682,8 @@ lemma neg_one_div_I_mul (t : ℝ) (ht : t ≠ 0) : (-1 : ℂ) / (I * t) = I / t 
   ring_nf
   simp only [Complex.I_sq]
 
-/-- For t ∈ (0, 1], the imaginary part of I/t is 1/t ≥ 1 -/
-lemma im_I_div_pos (t : ℝ) (ht : 0 < t) (ht' : t ≤ 1) : 1 / 2 < (I / (t : ℂ)).im := by
-  simp only [div_ofReal_im, Complex.I_im, one_div]
-  have h1t : 1 ≤ t⁻¹ := one_le_inv_iff₀.mpr ⟨ht, ht'⟩
-  linarith
-
-/-- The UpperHalfPlane point I/t for t ∈ (0, 1] -/
-def uhp_I_div_t (t : ℝ) (ht : 0 < t) : UpperHalfPlane :=
-  ⟨I / t, by simp only [div_ofReal_im, I_im, one_div]; positivity⟩
-
-/-- Im(I/t) = 1/t for t > 0 -/
-lemma uhp_I_div_t_im (t : ℝ) (ht : 0 < t) : (uhp_I_div_t t ht).im = t⁻¹ := by
-  change (I / (t : ℂ)).im = t⁻¹
-  simp only [div_ofReal_im, I_im, one_div]
-
-/-- φ₀'' bound for Class B: for t ∈ (0, 1], ‖φ₀''(-1/(It))‖ ≤ C₀ * exp(-2π/t) -/
-lemma norm_φ₀''_classB_bound : ∃ C₀ > 0, ∀ t : ℝ, 0 < t → t ≤ 1 →
+/-- φ₀'' bound for cusp-approaching segments: for t ∈ (0, 1], ‖φ₀''(-1/(It))‖ ≤ C₀ * exp(-2π/t) -/
+lemma norm_φ₀''_cusp_bound : ∃ C₀ > 0, ∀ t : ℝ, 0 < t → t ≤ 1 →
     ‖φ₀'' (-1 / (I * t))‖ ≤ C₀ * Real.exp (-2 * π / t) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   refine ⟨C₀, hC₀_pos, fun t ht ht' => ?_⟩
@@ -814,31 +764,6 @@ lemma exp_neg_two_pi_div_mul_inv_sq_le (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
         div_le_div_of_nonneg_right h_ineq h_exp_pos.le
     _ = 1 := div_self (ne_of_gt h_exp_pos)
 
-/-- exp(-2π/t) is integrable on (0, 1].
-The function is bounded by exp(-2π) on this set, and the set has finite measure. -/
-lemma exp_neg_inv_integrableOn :
-    IntegrableOn (fun t => Real.exp (-2 * π / t)) (Ioc 0 1) volume := by
-  -- Function is bounded by 1 on (0,1], and (0,1] has finite measure 1
-  have h_bdd : ∀ t ∈ Ioc (0 : ℝ) 1, ‖Real.exp (-2 * π / t)‖ ≤ 1 := fun t ht => by
-    rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_pos _).le]
-    calc Real.exp (-2 * π / t) ≤ Real.exp (-2 * π) := exp_neg_two_pi_div_le t ht
-      _ ≤ Real.exp 0 := Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos])
-      _ = 1 := Real.exp_zero
-  -- Use integrableOn_of_bounded for bounded functions on finite measure sets
-  haveI : IsFiniteMeasure (volume.restrict (Ioc (0 : ℝ) 1)) := ⟨by
-    simp only [Measure.restrict_apply MeasurableSet.univ, Set.univ_inter]
-    exact measure_Ioc_lt_top⟩
-  apply Integrable.mono' (integrable_const (1 : ℝ))
-  · -- Measurability: The function is continuous on (0,1] where t ≠ 0
-    have h_contOn : ContinuousOn (fun t => Real.exp (-2 * π / t)) (Ioc 0 1) := by
-      apply Real.continuous_exp.comp_continuousOn
-      apply ContinuousOn.div continuousOn_const continuousOn_id
-      intro t ht; exact ne_of_gt ht.1
-    exact h_contOn.aestronglyMeasurable measurableSet_Ioc
-  · -- Bound
-    rw [ae_restrict_iff' measurableSet_Ioc]
-    exact ae_of_all _ fun t ht => h_bdd t ht
-
 /-- The integrand for I₁ over V × (0,1].
 Using the simplified form from `I₁'_eq_Ioc`. -/
 def I₁_integrand (p : V × ℝ) : ℂ :=
@@ -880,7 +805,7 @@ lemma norm_phase_factor_I₃ (x : V) : ‖cexp (π * I * ‖x‖^2)‖ = 1 := by
 
 /-- ContinuousOn for the I₅ path: t ↦ φ₀''(-1/(I*t)) is continuous on (0, ∞).
 Since -1/(I*t) = I/t and Im(I/t) = 1/t > 0 for t > 0, this factors through φ₀_continuous. -/
-lemma continuousOn_φ₀''_classB_path :
+lemma continuousOn_φ₀''_cusp_path :
     ContinuousOn (fun t : ℝ => φ₀'' (-1 / (I * t))) (Set.Ioi 0) := by
   have h_im_pos : ∀ t : ℝ, 0 < t → 0 < ((-1 : ℂ) / (I * t)).im := fun t ht => by
     rw [neg_one_div_I_mul t (ne_of_gt ht)]
@@ -917,7 +842,7 @@ lemma continuousOn_I₅_integrand : ContinuousOn I₅_integrand (Set.univ ×ˢ S
     · refine ContinuousOn.mul ?_ ?_
       · exact continuousOn_const
       · -- φ₀''(-1/(I*t)) is continuous in t
-        apply ContinuousOn.comp continuousOn_φ₀''_classB_path
+        apply ContinuousOn.comp continuousOn_φ₀''_cusp_path
         · exact continuous_snd.continuousOn
         · intro ⟨_, t⟩ ht
           simp only [Set.mem_prod, Set.mem_univ, Set.mem_Ioc, true_and] at ht
@@ -940,7 +865,7 @@ lemma continuousOn_I₅_integrand : ContinuousOn I₅_integrand (Set.univ ×ˢ S
 /-- I₅ integrand norm bound for Class B. -/
 lemma I₅_integrand_norm_bound : ∃ C > 0, ∀ x : V, ∀ t : ℝ, 0 < t → t ≤ 1 →
     ‖I₅_integrand (x, t)‖ ≤ C * Real.exp (-2 * π / t) * t ^ 2 * Real.exp (-π * ‖x‖^2 * t) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀''_classB_bound
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀''_cusp_bound
   refine ⟨C₀, hC₀_pos, fun x t ht ht' => ?_⟩
   unfold I₅_integrand
   rw [norm_mul, norm_mul, norm_mul]
@@ -1129,7 +1054,7 @@ theorem I₃_integrand_integrable :
     intro p
     rw [norm_mul, norm_phase_factor_I₃ p.1, mul_one]
 
-end ClassB
+end CuspApproachingSegments
 
 end
 

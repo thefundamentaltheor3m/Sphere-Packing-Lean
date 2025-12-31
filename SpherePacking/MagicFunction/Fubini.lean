@@ -30,16 +30,10 @@ open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.
 
 noncomputable section
 
-/-! ## Level 3: Fubini Swap Lemmas
+/-! ## Fubini Swap Lemmas
 
 Once we have product integrability, Fubini's theorem allows swapping
 the order of integration: ∫_{ℝ⁸} ∫_{contour} = ∫_{contour} ∫_{ℝ⁸}.
-
-The connection between `Iⱼ x` and `∫ t, Iⱼ_integrand (x, t)` follows from
-the `Iⱼ'_eq_Ioc` lemmas in Basic.lean. Note that some have prefactors:
-- I₁, I₃: factor 1 (direct integral)
-- I₅: factor -2
-- I₆: factor 2
 -/
 
 section FubiniSwap
@@ -149,13 +143,9 @@ theorem I₆_integral_swap :
 
 end FubiniSwap
 
-/-! ## Level 1: Basic Integrability
+/-! ## Basic Integrability
 
-Each Iⱼ is integrable over ℝ⁸. These follow from the product integrability results
-via Tonelli's theorem (integrating out the t parameter).
-
-Note: These may alternatively follow from `a : 𝓢(V, ℂ)` being Schwartz (in Schwartz.lean),
-since Schwartz functions are integrable. The proofs here provide a more direct path.
+Each Iⱼ is integrable over ℝ⁸ (from Schwartz structure).
 -/
 
 section BasicIntegrability
