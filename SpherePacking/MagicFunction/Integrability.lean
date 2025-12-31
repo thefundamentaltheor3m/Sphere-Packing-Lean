@@ -9,6 +9,7 @@ import SpherePacking.MagicFunction.a.Schwartz
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 
 /-!
 # Integrability of Iⱼ over ℝ⁸
@@ -48,7 +49,7 @@ The six contour segments fall into three classes with different proof strategies
 - Blueprint Section 7 for contour definitions and integral representations
 -/
 
-open MeasureTheory Complex Real Set
+open MeasureTheory Complex Real Set intervalIntegral
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 
@@ -924,7 +925,7 @@ theorem I₅_integrand_integrable :
                 Real.exp (-π * ‖x‖^2 * t) := h
               _ = C * Real.exp (-2 * π / t) * t ^ 2 * Real.exp (-π * t * ‖x‖^2) := by ring_nf
         _ = C * Real.exp (-2 * π / t) * t ^ 2 * ∫ x : V, Real.exp (-π * t * ‖x‖^2) := by
-            rw [← integral_const_mul]
+            rw [← MeasureTheory.integral_const_mul]
         _ = C * Real.exp (-2 * π / t) * t ^ 2 * t⁻¹ ^ 4 := by rw [h_gauss_val]
         _ = C * Real.exp (-2 * π / t) * t⁻¹ ^ 2 := by field_simp
         _ = C * (Real.exp (-2 * π / t) * t⁻¹ ^ 2) := by ring
@@ -991,6 +992,19 @@ lemma I₁_eq_integral (x : V) :
   refine ae_of_all _ fun t _ => ?_
   simp only [I₁_integrand, ofReal_pow]
 
+/-- Connection: I₂ x = ∫ t, I₂_integrand (x, t) over [0,1].
+Note: Uses Icc because the integrand is continuous (no singularity at 0). -/
+lemma I₂_eq_integral (x : V) :
+    I₂ x = ∫ t in Icc (0 : ℝ) 1, I₂_integrand (x, t) := by
+  rw [I₂, I₂'_eq]
+  -- Convert interval integral to Ioc, then Ioc to Icc (NoAtoms)
+  rw [intervalIntegral_eq_integral_uIoc, if_pos (by norm_num : (0 : ℝ) ≤ 1)]
+  simp only [uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1), one_smul]
+  rw [← MeasureTheory.integral_Icc_eq_integral_Ioc]
+  apply MeasureTheory.setIntegral_congr_ae₀ nullMeasurableSet_Icc
+  refine ae_of_all _ fun t _ => ?_
+  simp only [I₂_integrand, ofReal_pow]
+
 /-- Connection: I₃ x = ∫ t, I₃_integrand (x, t) -/
 lemma I₃_eq_integral (x : V) :
     I₃ x = ∫ t in Ioc (0 : ℝ) 1, I₃_integrand (x, t) := by
@@ -998,6 +1012,18 @@ lemma I₃_eq_integral (x : V) :
   apply MeasureTheory.setIntegral_congr_ae₀ nullMeasurableSet_Ioc
   refine ae_of_all _ fun t _ => ?_
   simp only [I₃_integrand, ofReal_pow]
+
+/-- Connection: I₄ x = ∫ t, I₄_integrand (x, t) over [0,1].
+Note: Uses Icc because the integrand is continuous (no singularity at 0). -/
+lemma I₄_eq_integral (x : V) :
+    I₄ x = ∫ t in Icc (0 : ℝ) 1, I₄_integrand (x, t) := by
+  rw [I₄, I₄'_eq]
+  rw [intervalIntegral_eq_integral_uIoc, if_pos (by norm_num : (0 : ℝ) ≤ 1)]
+  simp only [uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1), one_smul]
+  rw [← MeasureTheory.integral_Icc_eq_integral_Ioc]
+  apply MeasureTheory.setIntegral_congr_ae₀ nullMeasurableSet_Icc
+  refine ae_of_all _ fun t _ => ?_
+  simp only [I₄_integrand, ofReal_pow]
 
 /-- Connection: I₅ x = -2 * ∫ t, I₅_integrand (x, t) -/
 lemma I₅_eq_integral (x : V) :
@@ -1026,7 +1052,8 @@ theorem I₁_integral_swap :
 /-- Fubini for I₂: swap ∫_{ℝ⁸} and ∫_{[0,1]} -/
 theorem I₂_integral_swap :
     ∫ x : V, I₂ x = ∫ t in Icc (0 : ℝ) 1, ∫ x : V, I₂_integrand (x, t) := by
-  sorry
+  simp_rw [I₂_eq_integral]
+  exact MeasureTheory.integral_integral_swap I₂_integrand_integrable
 
 /-- Fubini for I₃: swap ∫_{ℝ⁸} and ∫_{(0,1]} -/
 theorem I₃_integral_swap :
@@ -1037,14 +1064,15 @@ theorem I₃_integral_swap :
 /-- Fubini for I₄: swap ∫_{ℝ⁸} and ∫_{[0,1]} -/
 theorem I₄_integral_swap :
     ∫ x : V, I₄ x = ∫ t in Icc (0 : ℝ) 1, ∫ x : V, I₄_integrand (x, t) := by
-  sorry
+  simp_rw [I₄_eq_integral]
+  exact MeasureTheory.integral_integral_swap I₄_integrand_integrable
 
 /-- Fubini for I₅: swap ∫_{ℝ⁸} and ∫_{(0,1]}
 Note: includes factor of -2 from I₅ definition. -/
 theorem I₅_integral_swap :
     ∫ x : V, I₅ x = -2 * ∫ t in Ioc (0 : ℝ) 1, ∫ x : V, I₅_integrand (x, t) := by
   simp_rw [I₅_eq_integral]
-  rw [integral_const_mul]
+  rw [MeasureTheory.integral_const_mul]
   congr 1
   exact MeasureTheory.integral_integral_swap I₅_integrand_integrable
 
@@ -1053,7 +1081,7 @@ Note: includes factor of 2 from I₆ definition. -/
 theorem I₆_integral_swap :
     ∫ x : V, I₆ x = 2 * ∫ t in Ici (1 : ℝ), ∫ x : V, I₆_integrand (x, t) := by
   simp_rw [I₆_eq_integral]
-  rw [integral_const_mul]
+  rw [MeasureTheory.integral_const_mul]
   congr 1
   exact MeasureTheory.integral_integral_swap I₆_integrand_integrable
 
