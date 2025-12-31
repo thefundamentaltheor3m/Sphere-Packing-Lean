@@ -631,9 +631,8 @@ theorem I₆_integrand_integrable :
     -- Use integrability of product of independent factors
     have h_x : Integrable (fun x : V => C * Real.exp (-π * ‖x‖^2)) volume :=
       (gaussian_integrable_R8 π Real.pi_pos).const_mul C
-    have h_t : Integrable (fun t : ℝ => Real.exp (-2 * π * t)) (volume.restrict (Ici 1)) := by
-      have h : -2 * π < 0 := by linarith [Real.pi_pos]
-      exact (integrableOn_Ici_iff_integrableOn_Ioi).mpr (integrableOn_exp_mul_Ioi h 1)
+    have h_t : Integrable (fun t : ℝ => Real.exp (-2 * π * t)) (volume.restrict (Ici 1)) :=
+      integrableOn_exp_mul_Ici (-2 * π) (by linarith [Real.pi_pos])
     -- Product of integrable functions
     exact Integrable.mul_prod h_x h_t
   -- The bound holds a.e. (it actually holds everywhere on the support)

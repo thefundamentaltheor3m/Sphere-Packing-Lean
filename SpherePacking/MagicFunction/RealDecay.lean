@@ -145,18 +145,18 @@ end Asymptotics
 
 section Integrability
 
-/-- exp(-c*t) is integrable on [1,∞) for c > 0. -/
-lemma integrableOn_exp_neg_mul_Ici (c : ℝ) (hc : 0 < c) :
-    IntegrableOn (fun t => exp (-c * t)) (Ici 1) volume :=
-  (integrableOn_Ici_iff_integrableOn_Ioi).mpr (integrableOn_exp_mul_Ioi (neg_lt_zero.mpr hc) 1)
+/-- exp(c*t) is integrable on [1,∞) for c < 0. -/
+lemma integrableOn_exp_mul_Ici (c : ℝ) (hc : c < 0) :
+    IntegrableOn (fun t => exp (c * t)) (Ici 1) volume :=
+  (integrableOn_Ici_iff_integrableOn_Ioi).mpr (integrableOn_exp_mul_Ioi hc 1)
 
-/-- t^(-2) * exp(-c*t) is integrable on [1,∞) for c > 0.
+/-- t^(-2) * exp(c*t) is integrable on [1,∞) for c < 0.
     Polynomial decay × exponential decay is integrable. -/
-lemma integrableOn_inv_sq_mul_exp_neg_Ici (c : ℝ) (hc : 0 < c) :
-    IntegrableOn (fun t => t^(-2 : ℝ) * exp (-c * t)) (Ici 1) volume := by
-  -- For t ≥ 1: t^(-2) ≤ 1, so |t^(-2) * exp(-c*t)| ≤ exp(-c*t)
-  have h_exp : IntegrableOn (fun t => exp (-c * t)) (Ici 1) volume :=
-    integrableOn_exp_neg_mul_Ici c hc
+lemma integrableOn_inv_sq_mul_exp_Ici (c : ℝ) (hc : c < 0) :
+    IntegrableOn (fun t => t^(-2 : ℝ) * exp (c * t)) (Ici 1) volume := by
+  -- For t ≥ 1: t^(-2) ≤ 1, so |t^(-2) * exp(c*t)| ≤ exp(c*t)
+  have h_exp : IntegrableOn (fun t => exp (c * t)) (Ici 1) volume :=
+    integrableOn_exp_mul_Ici c hc
   apply Integrable.mono h_exp (by measurability)
   rw [ae_restrict_iff' measurableSet_Ici]
   apply ae_of_all
