@@ -126,6 +126,45 @@ lemma norm_coeff_36_div_sq (z : ℂ) (hz : z ≠ 0) :
   rw [norm_div, norm_mul, norm_pow, norm_pow, Complex.norm_real]
   simp only [Real.norm_eq_abs, abs_of_pos Real.pi_pos, Complex.norm_ofNat]
 
+/-- General S-transform bound for any z with im(z) ≥ 1.
+    This is the generalized Corollary 7.13. -/
+lemma norm_φ₀_S_smul_le (hb : PhiBounds) (z : ℍ) (hz : 1 ≤ z.im) :
+    ‖φ₀ (ModularGroup.S • z)‖ ≤ hb.C₀ * Real.exp (-2 * π * z.im)
+                              + (12 / (π * ‖(z : ℂ)‖)) * hb.C₂
+                              + (36 / (π^2 * ‖(z : ℂ)‖^2)) * hb.C₄ * Real.exp (2 * π * z.im) := by
+  -- Step 1: Use the S-transform formula
+  rw [φ₀_S_transform]
+  -- Step 2: Apply triangle inequality twice for a - b - c
+  have h_tri : ‖φ₀ z - (12 * Complex.I) / (↑π * z) * φ₂' z - 36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖
+      ≤ ‖φ₀ z‖ + ‖(12 * Complex.I) / (↑π * z) * φ₂' z‖
+          + ‖36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖ := by
+    have h1 : ‖φ₀ z - (12 * Complex.I) / (↑π * z) * φ₂' z - 36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖
+        ≤ ‖φ₀ z - (12 * Complex.I) / (↑π * z) * φ₂' z‖
+            + ‖36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖ := norm_sub_le _ _
+    have h2 : ‖φ₀ z - (12 * Complex.I) / (↑π * z) * φ₂' z‖
+        ≤ ‖φ₀ z‖ + ‖(12 * Complex.I) / (↑π * z) * φ₂' z‖ := norm_sub_le _ _
+    linarith
+  refine h_tri.trans ?_
+  -- Step 3: Bound each of the three terms
+  have hz_ne : (z : ℂ) ≠ 0 := ne_zero z
+  -- Bound (i): ‖φ₀ z‖ ≤ C₀ * exp(-2πt)  [from hb.hφ₀]
+  have hbound1 : ‖φ₀ z‖ ≤ hb.C₀ * exp (-2 * π * z.im) := hb.hφ₀ z hz
+  -- Bound (ii): ‖(12I)/(πz) * φ₂' z‖ ≤ (12/(π‖z‖)) * C₂
+  have hbound2 : ‖(12 * Complex.I) / (↑π * z) * φ₂' z‖ ≤ (12 / (π * ‖(z : ℂ)‖)) * hb.C₂ := by
+    rw [norm_mul, norm_coeff_12I_div (z : ℂ) hz_ne]
+    exact mul_le_mul_of_nonneg_left (hb.hφ₂ z hz) (by positivity)
+  -- Bound (iii): ‖36/(π²z²) * φ₄' z‖ ≤ (36/(π²‖z‖²)) * C₄ * exp(2πt)
+  have hbound3 : ‖36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖ ≤
+      (36 / (π^2 * ‖(z : ℂ)‖^2)) * hb.C₄ * exp (2 * π * z.im) := by
+    rw [norm_mul, norm_coeff_36_div_sq (z : ℂ) hz_ne]
+    have h := hb.hφ₄ z hz
+    calc 36 / (π ^ 2 * ‖(z : ℂ)‖ ^ 2) * ‖φ₄' z‖
+        ≤ 36 / (π ^ 2 * ‖(z : ℂ)‖ ^ 2) * (hb.C₄ * exp (2 * π * z.im)) :=
+          mul_le_mul_of_nonneg_left h (by positivity)
+      _ = 36 / (π ^ 2 * ‖(z : ℂ)‖ ^ 2) * hb.C₄ * exp (2 * π * z.im) := by ring
+  -- Combine bounds
+  linarith
+
 /-- Corollary 7.13: S-transform bound for φ₀(i/t) at large t.
     Uses φ₀_S_transform: φ₀(-1/z) = φ₀(z) - 12i/(πz)·φ₂'(z) - 36/(π²z²)·φ₄'(z)
     with z = it, so S•(it) = i/t.
@@ -211,9 +250,31 @@ lemma norm_cexp_verticalPhase (x r t : ℝ) :
 
 /-! ## Integrability (complex-valued) -/
 
+/-- Norm of the vertical integrand. -/
+lemma norm_verticalIntegrandX (x r t : ℝ) (ht : 0 < t) :
+    ‖verticalIntegrandX x r t‖ = t^2 * ‖φ₀'' (Complex.I / t)‖ * Real.exp (-π * r * t) := by
+  simp only [verticalIntegrandX]
+  rw [norm_mul, norm_mul, norm_mul, Complex.norm_I, one_mul]
+  rw [norm_cexp_verticalPhase]
+  -- ‖(I*t)^2‖ = ‖-t^2‖ = t^2
+  have h1 : ‖(Complex.I * ↑t : ℂ)^2‖ = t^2 := by
+    have ht_abs : |t| = t := abs_of_pos ht
+    simp only [sq, norm_mul, Complex.norm_I, Complex.norm_real, Real.norm_eq_abs, ht_abs]
+    ring
+  rw [h1]
+  ring
+
 /-- Vertical ray integrand is integrable on [1,∞) for r > 2. -/
 lemma integrableOn_verticalIntegrandX (hb : PhiBounds) (x r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t => verticalIntegrandX x r t) (Ici 1) volume := by
+  -- Strategy: bound the norm and show it's dominated by an integrable function
+  -- ‖verticalIntegrandX x r t‖ = t² * ‖φ₀''(I/t)‖ * exp(-πrt)
+  -- Using the 3-term bound on ‖φ₀''(I/t)‖, we get terms that are all integrable for r > 2:
+  -- Term 1: t² * C₀ * exp(-2πt) * exp(-πrt) = C₀ * t² * exp(-(2π+πr)t)
+  -- Term 2: t² * (12/(πt)) * C₂ * exp(-πrt) = (12C₂/π) * t * exp(-πrt)
+  -- Term 3: t² * (36/(π²t²)) * C₄ * exp(2πt) * exp(-πrt) = (36C₄/π²) * exp(-(πr-2π)t)
+  -- All integrable since 2π+πr > 0, πr > 0, and πr-2π > 0 when r > 2
+  have h_decay : π * r - 2 * π > 0 := by nlinarith [Real.pi_pos]
   sorry
 
 /-- Corollary: norm is also integrable. -/
@@ -230,13 +291,28 @@ lemma tendsto_verticalIntegrandX_atTop (hb : PhiBounds) (x r : ℝ) (hr : 2 < r)
 
 /-! ## Top Edge Integral → 0 -/
 
+/-- Top edge integrand for the S-transformed function.
+    The actual integrand in the rectangle deformation is φ₀(-1/z) · z² · exp(πir²z)
+    where z = x + iT. Note: φ₀''(-1/z) = φ₀(S•z) when z is in ℍ. -/
+def topEdgeIntegrand (r x T : ℝ) : ℂ :=
+  φ₀'' (-1 / (↑x + Complex.I * ↑T)) * (↑x + Complex.I * ↑T)^2 *
+    Complex.exp (Complex.I * π * r * (↑x + Complex.I * ↑T))
+
 /-- Top horizontal edge integral vanishes as height T → ∞.
-    This is the "integrand at i∞ disappears" fact from Proposition 7.14. -/
+    This is the "integrand at i∞ disappears" fact from Proposition 7.14.
+
+    The integrand involves φ₀(-1/z) = φ₀(S•z), not φ₀(z) directly.
+    For z = x + iT with T large, the S-transform bound gives exponential decay. -/
 lemma tendsto_topEdgeIntegral_zero (hb : PhiBounds) (r : ℝ) (hr : 2 < r) :
-    Tendsto (fun (T : ℝ) => ∫ x : ℝ in Icc (-1 : ℝ) 1,
-      φ₀'' (↑x + Complex.I * ↑T) * (↑x + Complex.I * ↑T)^2 *
-        Complex.exp (Complex.I * π * r * (↑x + Complex.I * ↑T)))
+    Tendsto (fun (T : ℝ) => ∫ x : ℝ in Icc (-1 : ℝ) 1, topEdgeIntegrand r x T)
     atTop (𝓝 0) := by
+  -- Strategy: Uniform bound + squeeze theorem
+  -- For z = x + iT with x ∈ [-1,1] and T ≥ 1:
+  -- 1. ‖z‖ ≥ T (since im(z) = T)
+  -- 2. Use norm_φ₀_S_smul_le to bound φ₀(-1/z)
+  -- 3. The exponential decay from exp(πir²z) dominates
+  -- 4. Uniformly bound ‖F(x,T)‖ ≤ G(T) where G(T) → 0
+  -- 5. Then ‖∫ F(x,T) dx‖ ≤ 2 · G(T) → 0
   sorry
 
 end MagicFunction.ContourEndpoints
