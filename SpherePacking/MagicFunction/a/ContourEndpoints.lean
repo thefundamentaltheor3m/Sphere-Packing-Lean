@@ -479,6 +479,45 @@ lemma norm_x_add_I_mul_T_bounds (x T : ℝ) (hx : x ∈ Icc (-1 : ℝ) 1) (hT : 
           have hT_abs : |T| = T := abs_of_pos (by linarith)
           linarith
 
+/-- Norm of the exponential phase factor for top edge. -/
+lemma norm_cexp_topEdgePhase (r x T : ℝ) :
+    ‖Complex.exp (Complex.I * π * r * (↑x + Complex.I * ↑T))‖ = Real.exp (-π * r * T) := by
+  rw [Complex.norm_exp]
+  congr 1
+  -- Goal: (I * π * r * (x + I * T)).re = -π * r * T
+  -- I * π * r * (x + I*T) = I*π*r*x + I²*π*r*T = I*π*r*x - π*r*T
+  -- Real part is -π*r*T
+  have h1 : (Complex.I * ↑π * ↑r * (↑x + Complex.I * ↑T) : ℂ) =
+      Complex.I * ↑(π * r * x) - ↑(π * r * T) := by
+    have hI2 : Complex.I * Complex.I = -1 := Complex.I_mul_I
+    calc Complex.I * ↑π * ↑r * (↑x + Complex.I * ↑T)
+        = Complex.I * (↑π * ↑r * ↑x) + Complex.I * Complex.I * (↑π * ↑r * ↑T) := by ring
+      _ = Complex.I * (↑π * ↑r * ↑x) + (-1) * (↑π * ↑r * ↑T) := by rw [hI2]
+      _ = Complex.I * ↑(π * r * x) - ↑(π * r * T) := by push_cast; ring
+  rw [h1]
+  simp only [Complex.sub_re, Complex.mul_re, Complex.I_re, Complex.I_im,
+             Complex.ofReal_re, Complex.ofReal_im]
+  ring
+
+/-- Bounding function for top edge integrand norm.
+    For z = x + iT with x ∈ [-1,1] and T ≥ 1, this bounds ‖topEdgeIntegrand r x T‖. -/
+def topEdgeBound (hb : PhiBounds) (r T : ℝ) : ℝ :=
+  (1 + T)^2 * Real.exp (-π * r * T) *
+    (hb.C₀ * Real.exp (-2 * π * T) + (12 * hb.C₂ / (π * T)) + (36 * hb.C₄ / (π^2 * T^2))
+        * Real.exp (2 * π * T))
+
+/-- The top edge bound → 0 as T → ∞ for r > 2. -/
+lemma tendsto_topEdgeBound_atTop (hb : PhiBounds) (r : ℝ) (hr : 2 < r) :
+    Tendsto (topEdgeBound hb r) atTop (𝓝 0) := by
+  unfold topEdgeBound
+  -- The dominant term is (1+T)² * exp(-πrT) * (C/T²) * exp(2πT)
+  --   = O((1+T)²/T² * exp(-(πr-2π)T)) = O(exp(-(πr-2π)T)) → 0 since πr > 2π
+  -- Each of the three terms in the sum, when multiplied by (1+T)² * exp(-πrT), → 0
+  have h_rate : 0 < π * r - 2 * π := by nlinarith [Real.pi_pos]
+  -- Use that polynomial × exp(-ct) → 0 for c > 0
+  -- This follows from tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero
+  sorry
+
 /-- Top horizontal edge integral vanishes as height T → ∞.
     This is the "integrand at i∞ disappears" fact from Proposition 7.14.
 
@@ -487,28 +526,25 @@ lemma norm_x_add_I_mul_T_bounds (x T : ℝ) (hx : x ∈ Icc (-1 : ℝ) 1) (hT : 
 lemma tendsto_topEdgeIntegral_zero (hb : PhiBounds) (r : ℝ) (hr : 2 < r) :
     Tendsto (fun (T : ℝ) => ∫ x : ℝ in Icc (-1 : ℝ) 1, topEdgeIntegrand r x T)
     atTop (𝓝 0) := by
-  -- Strategy: Uniform bound + squeeze theorem
-  -- For z = x + iT with x ∈ [-1,1] and T ≥ 1:
-  -- 1. ‖z‖ ≥ T (since im(z) = T), so 1/‖z‖ ≤ 1/T and 1/‖z‖² ≤ 1/T²
-  -- 2. ‖z‖ ≤ 1 + T (by triangle inequality)
-  -- 3. Use norm_φ₀_S_smul_le to bound ‖φ₀''(-1/z)‖ (since S•z = -1/z)
-  -- 4. The exp factor has norm exp(-πrT)
-  -- 5. Combine to get ‖topEdgeIntegrand‖ ≤ G(T) uniformly in x, where G(T) → 0
-  -- 6. Then ‖∫₋₁¹ topEdgeIntegrand dx‖ ≤ 2 · G(T) → 0
-  --
-  -- Key bounds (for T ≥ 1, x ∈ [-1,1]):
-  -- - ‖z²‖ ≤ (1+T)² (from upper bound on ‖z‖)
-  -- - ‖exp(iπrz)‖ = exp(-πrT) (exponential decay in T)
-  -- - ‖φ₀''(-1/z)‖ ≤ C₀ exp(-2πT) + (12C₂/πT) + (36C₄/π²T²) exp(2πT)
-  --     (from norm_φ₀_S_smul_le with z having im = T ≥ 1)
-  --
-  -- The dominant term for large T is:
-  --   (1+T)² · exp(-πrT) · (36C₄/π²T²) · exp(2πT)
-  --   = O((1+T)² · T⁻² · exp(-(πr-2π)T))
-  --   = O(exp(-(πr-2π)T)) since πr - 2π > 0 when r > 2
-  --
-  -- Full proof requires: continuity of integrand for Bochner integral,
-  -- measurability, uniform bounds, and combining via tendsto_of_norm_tendsto.
+  -- Strategy: Use squeeze theorem with topEdgeBound
+  -- ‖∫₋₁¹ f(x,T) dx‖ ≤ ∫₋₁¹ ‖f(x,T)‖ dx ≤ 2 * topEdgeBound(T) → 0
+  apply Metric.tendsto_atTop.mpr
+  intro ε hε
+  -- Get N such that topEdgeBound < ε/2 for T ≥ N
+  have hbound := tendsto_topEdgeBound_atTop hb r hr
+  rw [Metric.tendsto_atTop] at hbound
+  obtain ⟨N₁, hN₁⟩ := hbound (ε / 2) (by linarith)
+  use max N₁ 1
+  intro T hT
+  have hT_ge_1 : 1 ≤ T := le_of_max_le_right hT
+  have hT_ge_N₁ : T ≥ N₁ := le_of_max_le_left hT
+  simp only [dist_zero_right]
+  -- Need: ‖∫₋₁¹ topEdgeIntegrand r x T dx‖ < ε
+  -- Use: ‖∫‖ ≤ ∫‖·‖ ≤ 2 * topEdgeBound < ε
+  -- This requires:
+  -- 1. Uniform bound: ‖topEdgeIntegrand r x T‖ ≤ topEdgeBound for all x ∈ [-1,1]
+  -- 2. Integrability of the integrand
+  -- 3. norm_integral_le_of_norm_le or similar
   sorry
 
 end MagicFunction.ContourEndpoints
