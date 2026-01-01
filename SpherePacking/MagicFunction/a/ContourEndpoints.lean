@@ -105,6 +105,27 @@ lemma φ₀''_I_div_t_eq (t : ℝ) (ht : 0 < t) :
   apply Subtype.ext
   exact (S_smul_I_mul_t t ht).symm
 
+/-- Norm of I*t equals t for t > 0. -/
+lemma norm_I_mul_t (t : ℝ) (ht : 0 < t) : ‖(Complex.I * t : ℂ)‖ = t := by
+  simp only [norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht]
+
+/-- The coefficient (12I)/(πz) has norm 12/(π|z|). -/
+lemma norm_coeff_12I_div (z : ℂ) (hz : z ≠ 0) :
+    ‖(12 * Complex.I) / (↑π * z)‖ = 12 / (π * ‖z‖) := by
+  have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hπz : (↑π : ℂ) * z ≠ 0 := mul_ne_zero hπ hz
+  rw [norm_div, norm_mul, norm_mul, Complex.norm_I, Complex.norm_real, Complex.norm_ofNat]
+  simp only [mul_one, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
+
+/-- The coefficient 36/(π²z²) has norm 36/(π²|z|²). -/
+lemma norm_coeff_36_div_sq (z : ℂ) (hz : z ≠ 0) :
+    ‖36 / (↑π ^ 2 * z ^ 2)‖ = 36 / (π^2 * ‖z‖^2) := by
+  have hz2 : z ^ 2 ≠ 0 := pow_ne_zero 2 hz
+  have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hπ2 : (↑π : ℂ) ^ 2 ≠ 0 := pow_ne_zero 2 hπ
+  rw [norm_div, norm_mul, norm_pow, norm_pow, Complex.norm_real]
+  simp only [Real.norm_eq_abs, abs_of_pos Real.pi_pos, Complex.norm_ofNat]
+
 /-- Corollary 7.13: S-transform bound for φ₀(i/t) at large t.
     Uses φ₀_S_transform: φ₀(-1/z) = φ₀(z) - 12i/(πz)·φ₂'(z) - 36/(π²z²)·φ₄'(z)
     with z = it, so S•(it) = i/t.
@@ -135,11 +156,30 @@ lemma norm_φ₀''_I_div_t_le (hb : PhiBounds) (t : ℝ) (ht : 1 ≤ t) :
     linarith
   refine h_tri.trans ?_
   -- Step 4: Bound each of the three terms
-  -- This requires showing:
-  -- (i) ‖φ₀ z‖ ≤ C₀ * exp(-2πt)  [from hb.hφ₀]
-  -- (ii) ‖(12I)/(πz) * φ₂' z‖ ≤ (12/(πt)) * C₂
-  -- (iii) ‖36/(π²z²) * φ₄' z‖ ≤ (36/(π²t²)) * C₄ * exp(2πt)
-  sorry
+  have hz_ne : (z : ℂ) ≠ 0 := ne_zero z
+  have hz_norm : ‖(z : ℂ)‖ = t := by
+    simp only [hz_def, mkI_mul_t]
+    exact norm_I_mul_t t ht_pos
+  -- Bound (i): ‖φ₀ z‖ ≤ C₀ * exp(-2πt)  [from hb.hφ₀]
+  have hbound1 : ‖φ₀ z‖ ≤ hb.C₀ * exp (-2 * π * t) := by
+    have h := hb.hφ₀ z hz_im_ge
+    rwa [hz_im] at h
+  -- Bound (ii): ‖(12I)/(πz) * φ₂' z‖ ≤ (12/(πt)) * C₂
+  have hbound2 : ‖(12 * Complex.I) / (↑π * z) * φ₂' z‖ ≤ (12 / (π * t)) * hb.C₂ := by
+    rw [norm_mul, norm_coeff_12I_div (z : ℂ) hz_ne, hz_norm]
+    exact mul_le_mul_of_nonneg_left (hb.hφ₂ z hz_im_ge) (by positivity)
+  -- Bound (iii): ‖36/(π²z²) * φ₄' z‖ ≤ (36/(π²t²)) * C₄ * exp(2πt)
+  have hbound3 : ‖36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖ ≤
+      (36 / (π^2 * t^2)) * hb.C₄ * exp (2 * π * t) := by
+    rw [norm_mul, norm_coeff_36_div_sq (z : ℂ) hz_ne, hz_norm]
+    have h := hb.hφ₄ z hz_im_ge
+    rw [hz_im] at h
+    calc 36 / (π ^ 2 * t ^ 2) * ‖φ₄' z‖
+        ≤ 36 / (π ^ 2 * t ^ 2) * (hb.C₄ * exp (2 * π * t)) :=
+          mul_le_mul_of_nonneg_left h (by positivity)
+      _ = 36 / (π ^ 2 * t ^ 2) * hb.C₄ * exp (2 * π * t) := by ring
+  -- Combine bounds
+  linarith
 
 /-! ## Vertical Ray Integrand -/
 
