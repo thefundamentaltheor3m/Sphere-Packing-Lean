@@ -186,30 +186,14 @@ private lemma derivWithin_qexp (a c : ℂ) (w : ℂ) (hw : 0 < w.im) :
     (isOpen_upperHalfPlaneSet.uniqueDiffWithinAt hw)
 
 /--
-**Lemma 6.45 (Blueprint)**: The Serre derivative D acts as q·d/dq on q-series.
-For a single q-power term: D(a·qⁿ) = n·a·qⁿ where q = exp(2πiz).
+**Lemma 6.45 (Blueprint)**: The normalized derivative $D$ acts as $q \frac{d}{dq}$ on $q$-series.
+For a single q-power term: D(a·qⁿ) = n·a·qⁿ where q = exp(2πiz) and n ∈ ℤ.
 
 The key calculation:
 - d/dz(exp(2πinz)) = 2πin·exp(2πinz)
 - D(exp(2πinz)) = (2πi)⁻¹·(2πin·exp(2πinz)) = n·exp(2πinz)
 -/
-theorem D_qexp_term (n : ℕ) (a : ℂ) (z : ℍ) :
-    D (fun w => a * cexp (2 * π * I * n * w)) z =
-      n * a * cexp (2 * π * I * n * z) := by
-  simp only [D]
-  -- The composed function agrees with the ℂ → ℂ function in a neighborhood
-  have h_agree : ((fun w : ℍ => a * cexp (2 * π * I * n * w)) ∘ ofComplex) =ᶠ[nhds (z : ℂ)]
-      (fun w : ℂ => a * cexp (2 * π * I * n * w)) := by
-    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.2] with w hw
-    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
-  rw [h_agree.deriv_eq, (hasDerivAt_qexp a n z).deriv]
-  field_simp [two_pi_I_ne_zero]
-
-/--
-Variant of `D_qexp_term` for integer exponents, covering negative powers in theta series.
-D(a·q^n) = n·a·q^n where q = exp(2πiz) and n ∈ ℤ.
--/
-theorem D_qexp_term_int (n : ℤ) (a : ℂ) (z : ℍ) :
+theorem D_qexp_term (n : ℤ) (a : ℂ) (z : ℍ) :
     D (fun w => a * cexp (2 * π * I * n * w)) z =
       n * a * cexp (2 * π * I * n * z) := by
   simp only [D]
@@ -221,7 +205,7 @@ theorem D_qexp_term_int (n : ℤ) (a : ℂ) (z : ℍ) :
   field_simp [two_pi_I_ne_zero]
 
 /--
-**Lemma 6.45 (Blueprint)**: D commutes with tsum for q-series.
+**Lemma 6.45 (Blueprint)**: $D$ commutes with tsum for $q$-series.
 If F(z) = Σ a(n)·qⁿ where q = exp(2πiz), then D F(z) = Σ n·a(n)·qⁿ.
 
 More precisely, this lemma shows that for a ℕ-indexed q-series with summable coefficients
@@ -286,70 +270,6 @@ theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
   rw [h_agree.deriv_eq, h_tsum_deriv.deriv]
   -- Simplify derivWithin using helper
   have h_deriv_simp : ∀ n, derivWithin (fun w => a n * cexp (2 * π * I * n * w))
-      {w : ℂ | 0 < w.im} z = a n * (2 * π * I * n) * cexp (2 * π * I * n * z) :=
-    fun n => derivWithin_qexp _ _ _ z.2
-  simp_rw [h_deriv_simp, ← tsum_mul_left]
-  congr 1; funext n; field_simp [two_pi_I_ne_zero]
-
-/--
-Simplified version of `D_qexp_tsum` for ℕ+-indexed series (starting from n=1).
-This is the form most commonly used for Eisenstein series q-expansions.
--/
-theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
-    (_hsum : Summable (fun n : ℕ+ => a n * cexp (2 * π * I * n * z)))
-    (hsum_deriv : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
-        ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ n (k : K), ‖a n * (2 * π * I * n) *
-          cexp (2 * π * I * n * k.1)‖ ≤ u n) :
-    D (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) z =
-      ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
-  simp only [D]
-  -- Each term is differentiable
-  have hf_diff : ∀ (n : ℕ+) (r : {w : ℂ | 0 < w.im}), DifferentiableAt ℂ
-      (fun w => a n * cexp (2 * π * I * n * w)) r := fun n r =>
-    ((differentiableAt_id.const_mul (2 * π * I * n)).cexp).const_mul (a n)
-  -- Summability at each point (simpler than ℕ case since all n ≥ 1)
-  have hf_sum : ∀ y : ℂ, y ∈ {w : ℂ | 0 < w.im} →
-      Summable (fun n : ℕ+ => a n * cexp (2 * π * I * n * y)) := by
-    intro y hy
-    obtain ⟨u, hu_sum, hu_bound⟩ :=
-      hsum_deriv {y} (Set.singleton_subset_iff.mpr hy) isCompact_singleton
-    apply Summable.of_norm_bounded (g := fun n => u n / (2 * π)) (hu_sum.div_const _)
-    intro n
-    have h_deriv_bound := hu_bound n ⟨y, Set.mem_singleton y⟩
-    have h_norm_2pin : ‖(2 : ℂ) * π * I * n‖ = 2 * π * n := by
-      rw [norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real,
-          Complex.norm_I, mul_one, Complex.norm_natCast, Real.norm_of_nonneg pi_pos.le]
-    have h_pos : (0 : ℝ) < 2 * π * n := by positivity
-    have h_key : ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) =
-        ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ := by
-      simp only [norm_mul, h_norm_2pin]; ring
-    calc ‖a n * cexp (2 * π * I * n * y)‖
-        = ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) / (2 * π * n) := by field_simp
-      _ = ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ / (2 * π * n) := by rw [h_key]
-      _ ≤ u n / (2 * π * n) := div_le_div_of_nonneg_right h_deriv_bound h_pos.le
-      _ ≤ u n / (2 * π) := by
-          apply div_le_div_of_nonneg_left (le_trans (norm_nonneg _) h_deriv_bound)
-            (by positivity)
-          have : (1 : ℝ) ≤ n := by exact_mod_cast n.one_le
-          linarith [mul_le_mul_of_nonneg_left this (by positivity : (0 : ℝ) ≤ 2 * π)]
-  -- Derivative bound for uniform convergence
-  have hu : ∀ K ⊆ {w : ℂ | 0 < w.im}, IsCompact K →
-      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ n (k : K),
-        ‖derivWithin (fun w => a n * cexp (2 * π * I * n * w)) {w : ℂ | 0 < w.im} k‖ ≤ u n := by
-    intro K hK1 hK2
-    obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK1 hK2
-    exact ⟨u, hu_sum, fun n k => by rw [derivWithin_qexp _ _ _ (hK1 k.2)]; exact hu_bound n k⟩
-  -- Apply termwise differentiation
-  have h_tsum_deriv := hasDerivAt_tsum_fun (fun n w => a n * cexp (2 * π * I * n * w))
-    isOpen_upperHalfPlaneSet (z : ℂ) z.2 hf_sum hu hf_diff
-  -- The composed function agrees with ℂ → ℂ in a neighborhood
-  have h_agree : ((fun w : ℍ => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) ∘ ofComplex)
-      =ᶠ[nhds (z : ℂ)] (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) := by
-    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.2] with w hw
-    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
-  rw [h_agree.deriv_eq, h_tsum_deriv.deriv]
-  -- Simplify derivWithin using helper
-  have h_deriv_simp : ∀ n : ℕ+, derivWithin (fun w => a n * cexp (2 * π * I * n * w))
       {w : ℂ | 0 < w.im} z = a n * (2 * π * I * n) * cexp (2 * π * I * n * z) :=
     fun n => derivWithin_qexp _ _ _ z.2
   simp_rw [h_deriv_simp, ← tsum_mul_left]
