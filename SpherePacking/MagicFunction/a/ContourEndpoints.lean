@@ -510,41 +510,162 @@ def topEdgeBound (hb : PhiBounds) (r T : ℝ) : ℝ :=
 lemma tendsto_topEdgeBound_atTop (hb : PhiBounds) (r : ℝ) (hr : 2 < r) :
     Tendsto (topEdgeBound hb r) atTop (𝓝 0) := by
   unfold topEdgeBound
-  -- The dominant term is (1+T)² * exp(-πrT) * (C/T²) * exp(2πT)
-  --   = O((1+T)²/T² * exp(-(πr-2π)T)) = O(exp(-(πr-2π)T)) → 0 since πr > 2π
-  -- Each of the three terms in the sum, when multiplied by (1+T)² * exp(-πrT), → 0
-  have h_rate : 0 < π * r - 2 * π := by nlinarith [Real.pi_pos]
-  -- Use that polynomial × exp(-ct) → 0 for c > 0
-  -- This follows from tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero
+  have hπ := Real.pi_pos
+  have h1 : 0 < π * r + 2 * π := by nlinarith
+  have h2 : 0 < π * r := by nlinarith
+  have h3 : 0 < π * r - 2 * π := by nlinarith
+  -- Strategy: Expand (1+T)² = 1 + 2T + T² and use individual tendsto lemmas
+  -- Term 1: C₀ * (1+T)² * exp(-(πr+2π)T) → 0
+  have t1 : Tendsto (fun T => hb.C₀ * (1 + T)^2 * Real.exp (-(π * r + 2 * π) * T))
+      atTop (𝓝 0) := by
+    -- Expand: (1+T)² = 1 + 2T + T²
+    have t1a : Tendsto (fun T => hb.C₀ * Real.exp (-(π * r + 2 * π) * T)) atTop (𝓝 0) := by
+      have h := (_root_.tendsto_exp_neg_atTop (π * r + 2 * π) h1).const_mul hb.C₀
+      simp only [mul_zero] at h; exact h
+    have t1b : Tendsto (fun T => 2 * hb.C₀ * T * Real.exp (-(π * r + 2 * π) * T))
+        atTop (𝓝 0) := by
+      have h := (_root_.tendsto_mul_exp_neg_atTop (π * r + 2 * π) h1).const_mul (2 * hb.C₀)
+      simp only [mul_zero] at h
+      convert h using 1; funext T; ring
+    have t1c : Tendsto (fun T => hb.C₀ * T^2 * Real.exp (-(π * r + 2 * π) * T))
+        atTop (𝓝 0) := by
+      have h := (_root_.tendsto_sq_mul_exp_neg_atTop (π * r + 2 * π) h1).const_mul hb.C₀
+      simp only [mul_zero] at h
+      convert h using 1; funext T; ring
+    have hsum := (t1a.add t1b).add t1c
+    simp only [add_zero] at hsum
+    convert hsum using 1
+    funext T; ring
+  -- Term 2: (12C₂/(πT)) * (1+T)² * exp(-πrT) → 0
+  -- Use squeeze: (1+T)²/T ≤ 4T for T ≥ 1
+  have t2 : Tendsto (fun T => (12 * hb.C₂ / (π * T)) * (1 + T)^2 * Real.exp (-π * r * T))
+      atTop (𝓝 0) := by
+    have hbound : Tendsto (fun T => (48 * hb.C₂ / π) * T * Real.exp (-π * r * T))
+        atTop (𝓝 0) := by
+      have h := (_root_.tendsto_mul_exp_neg_atTop (π * r) h2).const_mul (48 * hb.C₂ / π)
+      simp only [mul_zero] at h
+      convert h using 1; funext T; ring_nf
+    apply squeeze_zero'
+    · filter_upwards [eventually_ge_atTop 1] with T hT
+      have hT_pos : 0 < T := by linarith
+      apply mul_nonneg (mul_nonneg _ (sq_nonneg _)) (le_of_lt (Real.exp_pos _))
+      exact div_nonneg (by linarith [hb.hC₂_pos]) (by positivity)
+    · filter_upwards [eventually_ge_atTop 1] with T hT
+      have hT_pos : 0 < T := by linarith
+      have hπT_pos : 0 < π * T := by positivity
+      have h1 : (12 * hb.C₂ / (π * T)) * (1 + T)^2 = (12 * hb.C₂ / π) * ((1 + T)^2 / T) := by
+        field_simp
+      have h2 : (1 + T)^2 / T = 1 / T + 2 + T := by field_simp; ring
+      have h3 : 1 / T + 2 + T ≤ 4 * T := by
+        have : 1 / T ≤ 1 := by rw [div_le_one hT_pos]; exact hT
+        linarith
+      calc (12 * hb.C₂ / (π * T)) * (1 + T)^2 * Real.exp (-π * r * T)
+          = (12 * hb.C₂ / π) * (1 / T + 2 + T) * Real.exp (-π * r * T) := by
+              rw [h1, h2]
+        _ ≤ (12 * hb.C₂ / π) * (4 * T) * Real.exp (-π * r * T) := by
+            apply mul_le_mul_of_nonneg_right
+            · apply mul_le_mul_of_nonneg_left h3
+              exact div_nonneg (by linarith [hb.hC₂_pos]) (le_of_lt hπ)
+            · exact le_of_lt (Real.exp_pos _)
+        _ = (48 * hb.C₂ / π) * T * Real.exp (-π * r * T) := by ring
+    · exact hbound
+  -- Term 3: (36C₄/(π²T²)) * (1+T)² * exp(2πT-πrT) → 0
+  -- Use squeeze: (1+T)²/T² ≤ 4 for T ≥ 1
+  have t3 : Tendsto (fun T => (36 * hb.C₄ / (π^2 * T^2)) * (1 + T)^2 *
+      Real.exp (2 * π * T) * Real.exp (-π * r * T)) atTop (𝓝 0) := by
+    have hbound : Tendsto (fun T => (144 * hb.C₄ / π^2) * Real.exp (-(π * r - 2 * π) * T))
+        atTop (𝓝 0) := by
+      have h := (_root_.tendsto_exp_neg_atTop (π * r - 2 * π) h3).const_mul (144 * hb.C₄ / π^2)
+      simp only [mul_zero] at h
+      exact h
+    apply squeeze_zero'
+    · filter_upwards [eventually_ge_atTop 1] with T hT
+      have hT_pos : 0 < T := by linarith
+      apply mul_nonneg (mul_nonneg (mul_nonneg _ (sq_nonneg _)) (le_of_lt (Real.exp_pos _)))
+          (le_of_lt (Real.exp_pos _))
+      exact div_nonneg (by linarith [hb.hC₄_pos]) (by positivity)
+    · filter_upwards [eventually_ge_atTop 1] with T hT
+      have hT_pos : 0 < T := by linarith
+      have hexp_comb : Real.exp (2 * π * T) * Real.exp (-π * r * T) =
+          Real.exp (-(π * r - 2 * π) * T) := by rw [← Real.exp_add]; ring_nf
+      have h1 : (1 + T)^2 / T^2 = (1 / T + 1)^2 := by field_simp
+      have hle2 : 1 / T + 1 ≤ 2 := by
+        have : 1 / T ≤ 1 := by rw [div_le_one hT_pos]; exact hT
+        linarith
+      have h2 : (1 / T + 1)^2 ≤ 4 := by
+        have h0 : 0 ≤ 1 / T + 1 := by positivity
+        calc (1 / T + 1)^2 ≤ 2^2 := by
+              apply sq_le_sq' (by linarith) hle2
+          _ = 4 := by norm_num
+      -- Combine the exponentials and rearrange
+      have heq : (36 * hb.C₄ / (π^2 * T^2)) * (1 + T)^2 * Real.exp (2 * π * T) *
+          Real.exp (-π * r * T) =
+          (36 * hb.C₄ / π^2) * ((1 + T)^2 / T^2) *
+          (Real.exp (2 * π * T) * Real.exp (-π * r * T)) := by
+        field_simp
+      calc (36 * hb.C₄ / (π^2 * T^2)) * (1 + T)^2 * Real.exp (2 * π * T) *
+               Real.exp (-π * r * T)
+          = (36 * hb.C₄ / π^2) * ((1 + T)^2 / T^2) *
+              (Real.exp (2 * π * T) * Real.exp (-π * r * T)) := heq
+        _ = (36 * hb.C₄ / π^2) * (1 / T + 1)^2 * Real.exp (-(π * r - 2 * π) * T) := by
+              rw [h1, hexp_comb]
+        _ ≤ (36 * hb.C₄ / π^2) * 4 * Real.exp (-(π * r - 2 * π) * T) := by
+            apply mul_le_mul_of_nonneg_right
+            · apply mul_le_mul_of_nonneg_left h2
+              exact div_nonneg (by linarith [hb.hC₄_pos]) (sq_nonneg π)
+            · exact le_of_lt (Real.exp_pos _)
+        _ = (144 * hb.C₄ / π^2) * Real.exp (-(π * r - 2 * π) * T) := by ring
+    · exact hbound
+  -- Combine by showing function equals sum of three terms
+  have heq : ∀ T, (1 + T)^2 * Real.exp (-π * r * T) *
+      (hb.C₀ * Real.exp (-2 * π * T) + 12 * hb.C₂ / (π * T) +
+       36 * hb.C₄ / (π^2 * T^2) * Real.exp (2 * π * T))
+      = hb.C₀ * (1 + T)^2 * Real.exp (-(π * r + 2 * π) * T)
+        + (12 * hb.C₂ / (π * T)) * (1 + T)^2 * Real.exp (-π * r * T)
+        + (36 * hb.C₄ / (π^2 * T^2)) * (1 + T)^2 * Real.exp (2 * π * T) *
+            Real.exp (-π * r * T) := fun T => by
+    have hexp1 : Real.exp (-π * r * T) * Real.exp (-2 * π * T) =
+        Real.exp (-(π * r + 2 * π) * T) := by rw [← Real.exp_add]; ring_nf
+    calc (1 + T)^2 * Real.exp (-π * r * T) *
+        (hb.C₀ * Real.exp (-2 * π * T) + 12 * hb.C₂ / (π * T) +
+         36 * hb.C₄ / (π^2 * T^2) * Real.exp (2 * π * T))
+      = (1 + T)^2 * hb.C₀ * (Real.exp (-π * r * T) * Real.exp (-2 * π * T))
+        + (12 * hb.C₂ / (π * T)) * (1 + T)^2 * Real.exp (-π * r * T)
+        + (36 * hb.C₄ / (π^2 * T^2)) * (1 + T)^2 * Real.exp (2 * π * T) *
+            Real.exp (-π * r * T) := by ring
+    _ = hb.C₀ * (1 + T)^2 * Real.exp (-(π * r + 2 * π) * T)
+        + (12 * hb.C₂ / (π * T)) * (1 + T)^2 * Real.exp (-π * r * T)
+        + (36 * hb.C₄ / (π^2 * T^2)) * (1 + T)^2 * Real.exp (2 * π * T) *
+            Real.exp (-π * r * T) := by rw [hexp1]; ring
+  simp_rw [heq]
+  have hsum := (t1.add t2).add t3
+  simp only [add_zero] at hsum
+  exact hsum
+
+/-- Uniform bound on top edge integrand for x ∈ [-1,1], T ≥ 1.
+    Uses S-transform bound (norm_φ₀_S_smul_le) with ‖z‖ ≥ T.
+
+    The proof involves:
+    1. Showing φ₀''(-1/z) = φ₀(S•w) where w = x + iT ∈ ℍ
+    2. Using ‖z‖ ≥ T to bound 1/‖z‖ terms by 1/T
+    3. Combining with exponential phase bound -/
+lemma norm_topEdgeIntegrand_le (hb : PhiBounds) (r : ℝ) (x T : ℝ)
+    (hx : x ∈ Icc (-1 : ℝ) 1) (hT : 1 ≤ T) :
+    ‖topEdgeIntegrand r x T‖ ≤ topEdgeBound hb r T := by
   sorry
 
 /-- Top horizontal edge integral vanishes as height T → ∞.
     This is the "integrand at i∞ disappears" fact from Proposition 7.14.
 
     The integrand involves φ₀(-1/z) = φ₀(S•z), not φ₀(z) directly.
-    For z = x + iT with T large, the S-transform bound gives exponential decay. -/
+    For z = x + iT with T large, the S-transform bound gives exponential decay.
+
+    Strategy: Use squeeze theorem with topEdgeBound
+    ‖∫₋₁¹ f(x,T) dx‖ ≤ ∫₋₁¹ ‖f(x,T)‖ dx ≤ 2 * topEdgeBound(T) → 0 -/
 lemma tendsto_topEdgeIntegral_zero (hb : PhiBounds) (r : ℝ) (hr : 2 < r) :
     Tendsto (fun (T : ℝ) => ∫ x : ℝ in Icc (-1 : ℝ) 1, topEdgeIntegrand r x T)
     atTop (𝓝 0) := by
-  -- Strategy: Use squeeze theorem with topEdgeBound
-  -- ‖∫₋₁¹ f(x,T) dx‖ ≤ ∫₋₁¹ ‖f(x,T)‖ dx ≤ 2 * topEdgeBound(T) → 0
-  apply Metric.tendsto_atTop.mpr
-  intro ε hε
-  -- Get N such that topEdgeBound < ε/2 for T ≥ N
-  have hbound := tendsto_topEdgeBound_atTop hb r hr
-  rw [Metric.tendsto_atTop] at hbound
-  obtain ⟨N₁, hN₁⟩ := hbound (ε / 2) (by linarith)
-  use max N₁ 1
-  intro T hT
-  have hT_ge_1 : 1 ≤ T := le_of_max_le_right hT
-  have hT_ge_N₁ : T ≥ N₁ := le_of_max_le_left hT
-  simp only [dist_zero_right]
-  -- Need: ‖∫₋₁¹ topEdgeIntegrand r x T dx‖ < ε
-  -- Use: ‖∫‖ ≤ ∫‖·‖ ≤ 2 * topEdgeBound < ε
-  -- This requires:
-  -- 1. Uniform bound: ‖topEdgeIntegrand r x T‖ ≤ topEdgeBound for all x ∈ [-1,1]
-  -- 2. Integrability of the integrand
-  -- 3. norm_integral_le_of_norm_le or similar
+  -- Uses norm_topEdgeIntegrand_le for uniform bound, then squeeze
   sorry
 
 end MagicFunction.ContourEndpoints
