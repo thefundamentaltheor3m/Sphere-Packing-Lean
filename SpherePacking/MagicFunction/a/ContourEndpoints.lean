@@ -146,59 +146,20 @@ lemma norm_φ₀_S_smul_le (hb : PhiBounds) (z : ℍ) (hz : 1 ≤ z.im) :
   linarith
 
 /-- Corollary 7.13: S-transform bound for φ₀(i/t) at large t.
-    Uses φ₀_S_transform: φ₀(-1/z) = φ₀(z) - 12i/(πz)·φ₂'(z) - 36/(π²z²)·φ₄'(z)
-    with z = it, so S•(it) = i/t.
-
-    This gives the 3-term explicit bound without compressing to a single O(t⁻²e^{2πt}). -/
+    Specializes norm_φ₀_S_smul_le to z = I*t where z.im = ‖z‖ = t. -/
 lemma norm_φ₀''_I_div_t_le (hb : PhiBounds) (t : ℝ) (ht : 1 ≤ t) :
     ‖φ₀'' (Complex.I / t)‖ ≤ hb.C₀ * Real.exp (-2 * π * t)
                     + (12 / (π * t)) * hb.C₂
                     + (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t) := by
   have ht_pos : 0 < t := by linarith
-  -- Step 1: Rewrite φ₀''(I/t) as φ₀(S•(I*t)) using our helper
   rw [φ₀''_I_div_t_eq t ht_pos]
-  -- Step 2: Use the S-transform formula
-  rw [φ₀_S_transform]
-  set z := mkI_mul_t t ht_pos with hz_def
-  -- z = I*t has im = t ≥ 1
+  set z := mkI_mul_t t ht_pos
   have hz_im : z.im = t := mkI_mul_t_im t ht_pos
+  have hz_norm : ‖(z : ℂ)‖ = t := norm_I_mul_t t ht_pos
   have hz_im_ge : 1 ≤ z.im := by rw [hz_im]; exact ht
-  -- Step 3: Apply triangle inequality twice for a - b - c
-  have h_tri : ‖φ₀ z - (12 * Complex.I) / (↑π * z) * φ₂' z - 36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖
-      ≤ ‖φ₀ z‖ + ‖(12 * Complex.I) / (↑π * z) * φ₂' z‖
-          + ‖36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖ := by
-    have h1 : ‖φ₀ z - (12 * Complex.I) / (↑π * z) * φ₂' z - 36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖
-        ≤ ‖φ₀ z - (12 * Complex.I) / (↑π * z) * φ₂' z‖
-            + ‖36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖ := norm_sub_le _ _
-    have h2 : ‖φ₀ z - (12 * Complex.I) / (↑π * z) * φ₂' z‖
-        ≤ ‖φ₀ z‖ + ‖(12 * Complex.I) / (↑π * z) * φ₂' z‖ := norm_sub_le _ _
-    linarith
-  refine h_tri.trans ?_
-  -- Step 4: Bound each of the three terms
-  have hz_ne : (z : ℂ) ≠ 0 := ne_zero z
-  have hz_norm : ‖(z : ℂ)‖ = t := by
-    simp only [hz_def, mkI_mul_t]
-    exact norm_I_mul_t t ht_pos
-  -- Bound (i): ‖φ₀ z‖ ≤ C₀ * exp(-2πt)  [from hb.hφ₀]
-  have hbound1 : ‖φ₀ z‖ ≤ hb.C₀ * exp (-2 * π * t) := by
-    have h := hb.hφ₀ z hz_im_ge
-    rwa [hz_im] at h
-  -- Bound (ii): ‖(12I)/(πz) * φ₂' z‖ ≤ (12/(πt)) * C₂
-  have hbound2 : ‖(12 * Complex.I) / (↑π * z) * φ₂' z‖ ≤ (12 / (π * t)) * hb.C₂ := by
-    rw [norm_mul, norm_coeff_12I_div (z : ℂ) hz_ne, hz_norm]
-    exact mul_le_mul_of_nonneg_left (hb.hφ₂ z hz_im_ge) (by positivity)
-  -- Bound (iii): ‖36/(π²z²) * φ₄' z‖ ≤ (36/(π²t²)) * C₄ * exp(2πt)
-  have hbound3 : ‖36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖ ≤
-      (36 / (π^2 * t^2)) * hb.C₄ * exp (2 * π * t) := by
-    rw [norm_mul, norm_coeff_36_div_sq (z : ℂ) hz_ne, hz_norm]
-    have h := hb.hφ₄ z hz_im_ge
-    rw [hz_im] at h
-    calc 36 / (π ^ 2 * t ^ 2) * ‖φ₄' z‖
-        ≤ 36 / (π ^ 2 * t ^ 2) * (hb.C₄ * exp (2 * π * t)) :=
-          mul_le_mul_of_nonneg_left h (by positivity)
-      _ = 36 / (π ^ 2 * t ^ 2) * hb.C₄ * exp (2 * π * t) := by ring
-  -- Combine bounds
-  linarith
+  have h := norm_φ₀_S_smul_le hb z hz_im_ge
+  simp only [hz_im, hz_norm] at h
+  exact h
 
 /-! ## Vertical Ray Integrand -/
 
