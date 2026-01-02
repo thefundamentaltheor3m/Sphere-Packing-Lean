@@ -473,26 +473,6 @@ lemma norm_x_add_I_mul_T_bounds (x T : ℝ) (hx : x ∈ Icc (-1 : ℝ) 1) (hT : 
           have hT_abs : |T| = T := abs_of_pos (by linarith)
           linarith
 
-/-- Norm of the exponential phase factor for top edge. -/
-lemma norm_cexp_topEdgePhase (r x T : ℝ) :
-    ‖Complex.exp (Complex.I * π * r * (↑x + Complex.I * ↑T))‖ = Real.exp (-π * r * T) := by
-  rw [Complex.norm_exp]
-  congr 1
-  -- Goal: (I * π * r * (x + I * T)).re = -π * r * T
-  -- I * π * r * (x + I*T) = I*π*r*x + I²*π*r*T = I*π*r*x - π*r*T
-  -- Real part is -π*r*T
-  have h1 : (Complex.I * ↑π * ↑r * (↑x + Complex.I * ↑T) : ℂ) =
-      Complex.I * ↑(π * r * x) - ↑(π * r * T) := by
-    have hI2 : Complex.I * Complex.I = -1 := Complex.I_mul_I
-    calc Complex.I * ↑π * ↑r * (↑x + Complex.I * ↑T)
-        = Complex.I * (↑π * ↑r * ↑x) + Complex.I * Complex.I * (↑π * ↑r * ↑T) := by ring
-      _ = Complex.I * (↑π * ↑r * ↑x) + (-1) * (↑π * ↑r * ↑T) := by rw [hI2]
-      _ = Complex.I * ↑(π * r * x) - ↑(π * r * T) := by push_cast; ring
-  rw [h1]
-  simp only [Complex.sub_re, Complex.mul_re, Complex.I_re, Complex.I_im,
-             Complex.ofReal_re, Complex.ofReal_im]
-  ring
-
 /-- S action on x + iT gives -1/(x + iT).
     This is a restatement of `modular_S_smul` with explicit computation. -/
 lemma S_smul_x_add_I_mul_T (x T : ℝ) (hT : 0 < T) :
@@ -698,7 +678,7 @@ lemma norm_topEdgeIntegrand_le (hb : PhiBounds) (r : ℝ) (x T : ℝ)
     rw [norm_pow]
     exact sq_le_sq' (by linarith) hz_norm_le
   have hexp_norm : ‖Complex.exp (Complex.I * π * r * z)‖ = Real.exp (-π * r * T) :=
-    norm_cexp_topEdgePhase r x T
+    norm_cexp_verticalPhase x r T
   -- Step 4: Compute the full norm using triangle inequality
   unfold topEdgeIntegrand topEdgeBound
   simp only [z] at *
