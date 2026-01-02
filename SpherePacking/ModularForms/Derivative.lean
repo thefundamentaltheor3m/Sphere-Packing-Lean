@@ -386,7 +386,8 @@ lemma deriv_denom (γ : SL(2, ℤ)) (z : ℂ) :
   simp only [denom]
   have h : (fun w => (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 0 : ℂ) * w +
       (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 1 1 : ℂ)) =
-      (fun w => ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * w + ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ)) := by
+      (fun w => ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * w +
+          ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ)) := by
     ext w; rw [hc, hd]
   rw [h, deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]
 
@@ -401,7 +402,8 @@ lemma deriv_num (γ : SL(2, ℤ)) (z : ℂ) :
   simp only [num]
   have h : (fun w => (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 0 : ℂ) * w +
       (((γ : GL (Fin 2) ℝ) : Matrix (Fin 2) (Fin 2) ℝ) 0 1 : ℂ)) =
-      (fun w => ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * w + ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ)) := by
+      (fun w => ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * w +
+          ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ)) := by
     ext w; rw [ha, hb]
   rw [h, deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]
 
@@ -432,8 +434,10 @@ lemma deriv_moebius (γ : SL(2, ℤ)) (z : ℂ) (hz : denom γ z ≠ 0) :
     hdiff_num.hasDerivAt.div hdiff_denom.hasDerivAt hz
   rw [hderiv.deriv, deriv_num, deriv_denom]
   -- Use det γ = 1: γ 0 0 * γ 1 1 - γ 0 1 * γ 1 0 = 1
-  have hdet : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ)
-      - ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) = 1 := by
+  have hdet : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) *
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 1 : ℂ) -
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) *
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) = 1 := by
     simp only [← Int.cast_mul, ← Int.cast_sub]
     have hdet' := Matrix.SpecialLinearGroup.det_coe γ
     simp only [Matrix.det_fin_two] at hdet'
@@ -501,12 +505,12 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
   -- 5. deriv_moebius: d/dz[num/denom] = 1/denom² (uses det = 1)
   -- 6. deriv_denom_zpow: d/dz[denom^(-k)] = -k * c * denom^(-k-1)
   --
-  -- Computation:
+  -- Computation (product rule + chain rule):
   -- D(F ∣[k] γ) z = (2πi)⁻¹ * deriv[(F ∣[k] γ) ∘ ofComplex] z
   --   = (2πi)⁻¹ * deriv[w ↦ F(mobius w) * denom(w)^(-k)] z
-  --   = (2πi)⁻¹ * [F(mobius z) * (-k * c * denom^(-k-1)) + deriv[F](mobius z) * (1/denom²) * denom^(-k)]
-  --   = -k*(2πi)⁻¹*(c/denom)*(F ∣[k] γ)(z) + (2πi)⁻¹*deriv[F](γ•z)*denom^(-k-2)
-  --   = (D F ∣[k+2] γ)(z) - k*(2πi)⁻¹*(c/denom)*(F ∣[k] γ)(z)
+  --   = (2πi)⁻¹ * [F(mob z)*(-k*c*denom^(-k-1)) + deriv[F](mob z)*(1/d²)*d^(-k)]
+  --   = -k*(2πi)⁻¹*(c/d)*(F ∣[k] γ)(z) + (2πi)⁻¹*deriv[F](γ•z)*d^(-k-2)
+  --   = (D F ∣[k+2] γ)(z) - k*(2πi)⁻¹*(c/d)*(F ∣[k] γ)(z)
   ext z
   unfold D
   simp only [Pi.sub_apply]
@@ -523,8 +527,8 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
     simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
     rw [ModularForm.SL_slash_apply (f := F) (k := k) γ ⟨w, hw⟩]
-    -- Need: F (γ • ⟨w, hw⟩) * denom γ ⟨w, hw⟩ ^ (-k) = (F ∘ ofComplex) (num γ w / denom γ w) * denom γ w ^ (-k)
-    -- Key: (γ • ⟨w, hw⟩ : ℂ) = num γ w / denom γ w and denom γ ⟨w, hw⟩ = denom γ w
+    -- Need: F(γ•⟨w,hw⟩) * denom^(-k) = (F∘ofComplex)(num/denom) * denom^(-k)
+    -- Key: (γ•⟨w,hw⟩ : ℂ) = num/denom and denom γ ⟨w,hw⟩ = denom γ w
     congr 1
     · -- F (γ • ⟨w, hw⟩) = (F ∘ ofComplex) (num γ w / denom γ w)
       -- Need: γ • ⟨w, hw⟩ = ofComplex (num γ w / denom γ w) as points in ℍ
@@ -670,10 +674,10 @@ lemma E₂_slash_transform (γ : SL(2, ℤ)) :
   simp only [one_div, Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
   ring
 
-/-- Helper lemma: The anomaly coefficient vanishes.
-The key identity is: (1/12) * (1/(2ζ(2))) * 2πi + (2πi)⁻¹ = 0
-Using ζ(2) = π²/6, this becomes: i/(2π) + 1/(2πi) = i/(2π) - i/(2π) = 0 -/
-lemma anomaly_coeff_zero : (12 : ℂ)⁻¹ * (2 * riemannZeta 2)⁻¹ * (2 * π * I) + (2 * π * I)⁻¹ = 0 := by
+/-- The anomaly coefficient vanishes: `(1/12)*(1/(2ζ(2)))*2πi + (2πi)⁻¹ = 0`.
+Using `ζ(2) = π²/6`, this is `i/(2π) + 1/(2πi) = 0`. -/
+lemma anomaly_coeff_zero :
+    (12 : ℂ)⁻¹ * (2 * riemannZeta 2)⁻¹ * (2 * π * I) + (2 * π * I)⁻¹ = 0 := by
   rw [riemannZeta_two]
   have hπ : (π : ℂ) ≠ 0 := ofReal_ne_zero.mpr Real.pi_ne_zero
   have hI : (I : ℂ) ≠ 0 := I_ne_zero
@@ -765,7 +769,8 @@ theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentia
   -- = 0 by h_app
   ring_nf
   -- h_goal: the anomaly terms sum to 0
-  have h_goal : (k : ℂ) * π2I * c_div_d * F' * ζ2⁻¹ * (1 / 24) + (k : ℂ) * π2I⁻¹ * c_div_d * F' = 0 := by
+  have h_goal : (k : ℂ) * π2I * c_div_d * F' * ζ2⁻¹ * (1 / 24) +
+      (k : ℂ) * π2I⁻¹ * c_div_d * F' = 0 := by
     calc (k : ℂ) * π2I * c_div_d * F' * ζ2⁻¹ * (1 / 24) + (k : ℂ) * π2I⁻¹ * c_div_d * F'
         = (12 : ℂ)⁻¹ * (2 * ζ2)⁻¹ * π2I * ((k : ℂ) * c_div_d * F') +
           π2I⁻¹ * ((k : ℂ) * c_div_d * F') := by ring
