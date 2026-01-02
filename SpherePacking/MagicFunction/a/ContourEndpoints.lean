@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 import SpherePacking.ModularForms.PhiTransform
 import SpherePacking.MagicFunction.RealDecay
+import SpherePacking.MagicFunction.Segments
 import Mathlib.MeasureTheory.Integral.IntegrableOn
 
 /-!
@@ -364,9 +365,35 @@ lemma integrableOn_verticalIntegrandX (hb : PhiBounds) (x r : ℝ) (hr : 2 < r) 
     IntegrableOn (fun t => verticalIntegrandX x r t) (Ici 1) volume := by
   -- Bound by verticalBound and use integrability of the bound
   apply MeasureTheory.Integrable.mono' (integrableOn_verticalBound hb r hr)
-  · -- Measurability: verticalIntegrandX is measurable (needs continuity of φ₀'')
-    -- TODO: Add Continuous.aestronglyMeasurable once continuous_φ₀'' is proved
-    sorry
+  · -- Measurability: verticalIntegrandX is continuous on Ici 1 → AEStronglyMeasurable
+    -- Key: I/t = -1/(I*t), so we can use continuousOn_φ₀''_cusp_path
+    have h_eq : ∀ t : ℝ, Complex.I / t = -1 / (Complex.I * t) := fun t => by
+      by_cases ht : t = 0
+      · simp [ht]
+      · field_simp
+        simp only [Complex.I_sq]
+        ring
+    have h_cont_phi : ContinuousOn (fun t : ℝ => φ₀'' (Complex.I / t)) (Ici 1) := by
+      have h1 : ContinuousOn (fun t : ℝ => φ₀'' (-1 / (Complex.I * t))) (Ici 1) :=
+        continuousOn_φ₀''_cusp_path.mono (fun t ht => by
+          simp only [mem_Ici] at ht
+          exact lt_of_lt_of_le zero_lt_one ht)
+      simp_rw [h_eq]
+      exact h1
+    have h_cont : ContinuousOn (fun t : ℝ => verticalIntegrandX x r t) (Ici 1) := by
+      unfold verticalIntegrandX
+      apply ContinuousOn.mul
+      · apply ContinuousOn.mul
+        · apply ContinuousOn.mul
+          · exact continuousOn_const
+          · exact h_cont_phi
+        · apply ContinuousOn.pow
+          exact continuousOn_const.mul (Complex.continuous_ofReal.continuousOn)
+      · apply Complex.continuous_exp.comp_continuousOn
+        apply ContinuousOn.mul continuousOn_const
+        apply ContinuousOn.add continuousOn_const
+        exact continuousOn_const.mul (Complex.continuous_ofReal.continuousOn)
+    exact h_cont.aestronglyMeasurable measurableSet_Ici
   · rw [ae_restrict_iff' measurableSet_Ici]
     apply ae_of_all
     intro t ht
@@ -498,6 +525,43 @@ lemma norm_cexp_topEdgePhase (r x T : ℝ) :
   simp only [Complex.sub_re, Complex.mul_re, Complex.I_re, Complex.I_im,
              Complex.ofReal_re, Complex.ofReal_im]
   ring
+
+/-- S action on x + iT gives -1/(x + iT).
+    This is a restatement of `modular_S_smul` with explicit computation. -/
+lemma S_smul_x_add_I_mul_T (x T : ℝ) (hT : 0 < T) :
+    let w : ℍ := ⟨↑x + Complex.I * ↑T, by simp; exact hT⟩
+    (↑(ModularGroup.S • w) : ℂ) = -1 / (↑x + Complex.I * ↑T) := by
+  -- S•z = -z⁻¹ for z ∈ ℍ, and -z⁻¹ = -1/z
+  simp only [modular_S_smul, UpperHalfPlane.coe_mk_subtype]
+  -- Goal: ↑(mk ((-z)⁻¹) ...) = -1/z where z = x + iT
+  simp only [UpperHalfPlane.coe_mk]
+  -- Goal: (-z)⁻¹ = -1/z, which equals -(z⁻¹) = -(z⁻¹) by neg_inv
+  rw [← neg_inv]
+  ring
+
+/-- φ₀''(-1/z) equals φ₀(S•w) where w = ⟨z, _⟩ ∈ ℍ.
+    This connects the extension φ₀'' on ℂ to the original φ₀ on ℍ via S-transform. -/
+lemma φ₀''_neg_inv_eq_φ₀_S_smul (x T : ℝ) (hT : 0 < T) :
+    let z : ℂ := ↑x + Complex.I * ↑T
+    let w : ℍ := ⟨z, by simp only [z]; simp; exact hT⟩
+    φ₀'' (-1 / z) = φ₀ (ModularGroup.S • w) := by
+  -- Show that -1/z has positive imaginary part: im(-1/z) = im(z)/|z|² = T/(x²+T²) > 0
+  have hneg_inv_im : 0 < (-1 / (↑x + Complex.I * ↑T) : ℂ).im := by
+    have him : (↑x + Complex.I * ↑T : ℂ).im = T := by simp
+    -- -1/z = -z⁻¹, and im(-z⁻¹) = -im(z⁻¹) = -(-im(z)/|z|²) = im(z)/|z|² = T/(x²+T²)
+    have h1 : (-1 / (↑x + Complex.I * ↑T) : ℂ) = -(↑x + Complex.I * ↑T)⁻¹ := by ring
+    rw [h1, Complex.neg_im, Complex.inv_im, him]
+    -- Goal: 0 < -(-T / normSq(z))
+    apply neg_pos.mpr
+    apply div_neg_of_neg_of_pos
+    · linarith
+    · exact Complex.normSq_pos.mpr (by
+        intro h; have him' : (↑x + Complex.I * ↑T : ℂ).im = T := by simp
+        rw [h] at him'; simp at him'; linarith)
+  simp only [φ₀'', dif_pos hneg_inv_im]
+  congr 1
+  apply Subtype.ext
+  exact (S_smul_x_add_I_mul_T x T hT).symm
 
 /-- Bounding function for top edge integrand norm.
     For z = x + iT with x ∈ [-1,1] and T ≥ 1, this bounds ‖topEdgeIntegrand r x T‖. -/
@@ -645,14 +709,107 @@ lemma tendsto_topEdgeBound_atTop (hb : PhiBounds) (r : ℝ) (hr : 2 < r) :
 /-- Uniform bound on top edge integrand for x ∈ [-1,1], T ≥ 1.
     Uses S-transform bound (norm_φ₀_S_smul_le) with ‖z‖ ≥ T.
 
-    The proof involves:
-    1. Showing φ₀''(-1/z) = φ₀(S•w) where w = x + iT ∈ ℍ
-    2. Using ‖z‖ ≥ T to bound 1/‖z‖ terms by 1/T
-    3. Combining with exponential phase bound -/
+    Proof strategy:
+    1. Show φ₀''(-1/z) = φ₀(S•w) where w = x + iT ∈ ℍ
+    2. Apply norm_φ₀_S_smul_le to get 3-term bound
+    3. Use ‖z‖ ≥ T to bound 1/‖z‖ terms by 1/T
+    4. Combine with ‖z²‖ ≤ (1+T)² and exponential phase norm -/
 lemma norm_topEdgeIntegrand_le (hb : PhiBounds) (r : ℝ) (x T : ℝ)
     (hx : x ∈ Icc (-1 : ℝ) 1) (hT : 1 ≤ T) :
     ‖topEdgeIntegrand r x T‖ ≤ topEdgeBound hb r T := by
-  sorry
+  -- This proof connects topEdgeIntegrand to the S-transform bound.
+  -- The key insight is: φ₀''(-1/z) = φ₀(S•w) where w = ⟨z, _⟩ ∈ ℍ
+  have hT_pos : 0 < T := lt_of_lt_of_le one_pos hT
+  -- Define z and the upper half plane point w
+  let z : ℂ := ↑x + Complex.I * ↑T
+  have hz_im : z.im = T := by simp [z]
+  have hz_im_pos : 0 < z.im := by rw [hz_im]; exact hT_pos
+  let w : ℍ := ⟨z, hz_im_pos⟩
+  -- Get the S-transform bound with w.im = T ≥ 1
+  have hw_im : w.im = T := hz_im
+  have hw_im_ge : 1 ≤ w.im := by rw [hw_im]; exact hT
+  -- Get z norm bounds
+  have hz_bounds := norm_x_add_I_mul_T_bounds x T hx hT
+  have hz_norm_ge : T ≤ ‖z‖ := hz_bounds.1
+  have hz_norm_le : ‖z‖ ≤ 1 + T := hz_bounds.2
+  have hz_norm_pos : 0 < ‖z‖ := lt_of_lt_of_le hT_pos hz_norm_ge
+  -- Step 1: Rewrite φ₀''(-1/z) = φ₀(S•w)
+  have hφ₀_eq : φ₀'' (-1 / z) = φ₀ (ModularGroup.S • w) := φ₀''_neg_inv_eq_φ₀_S_smul x T hT_pos
+  -- Step 2: Get the S-transform bound
+  have hS_bound := norm_φ₀_S_smul_le hb w hw_im_ge
+  -- Step 3: Bound the norm of z² and the exponential phase
+  have hz_sq_norm : ‖z^2‖ ≤ (1 + T)^2 := by
+    rw [norm_pow]
+    exact sq_le_sq' (by linarith) hz_norm_le
+  have hexp_norm : ‖Complex.exp (Complex.I * π * r * z)‖ = Real.exp (-π * r * T) :=
+    norm_cexp_topEdgePhase r x T
+  -- Step 4: Compute the full norm using triangle inequality
+  unfold topEdgeIntegrand topEdgeBound
+  simp only [z] at *
+  rw [norm_mul, norm_mul, hφ₀_eq, hexp_norm]
+  -- Now we need: ‖φ₀(S•w)‖ * ‖z²‖ * exp(-πrT) ≤ topEdgeBound
+  -- First bound ‖z²‖ ≤ (1+T)²
+  have hz_sq_bound : ‖(↑x + Complex.I * ↑T : ℂ)^2‖ ≤ (1 + T)^2 := hz_sq_norm
+  -- Step 5: Use monotonicity: 1/‖z‖ ≤ 1/T since ‖z‖ ≥ T
+  have hinv_z_le : 1 / ‖(w : ℂ)‖ ≤ 1 / T := by
+    apply one_div_le_one_div_of_le hT_pos
+    simp only [w, z]
+    exact hz_norm_ge
+  have hw_norm_eq : ‖(w : ℂ)‖ = ‖z‖ := rfl
+  have hinv_z_sq_le : 1 / ‖(w : ℂ)‖^2 ≤ 1 / T^2 := by
+    apply one_div_le_one_div_of_le (sq_pos_of_pos hT_pos)
+    rw [hw_norm_eq]
+    exact sq_le_sq' (by linarith [norm_nonneg z]) hz_norm_ge
+  -- Step 6: Rewrite the S-transform bound with 1/T replacing 1/‖z‖
+  -- Key monotonicity facts
+  have h12_div_le : 12 / (π * ‖(w : ℂ)‖) ≤ 12 / (π * T) := by
+    apply div_le_div_of_nonneg_left (by norm_num : (0:ℝ) ≤ 12)
+    · exact mul_pos Real.pi_pos hT_pos
+    · rw [hw_norm_eq]
+      exact mul_le_mul_of_nonneg_left hz_norm_ge (le_of_lt Real.pi_pos)
+  have h36_div_le : 36 / (π^2 * ‖(w : ℂ)‖^2) ≤ 36 / (π^2 * T^2) := by
+    apply div_le_div_of_nonneg_left (by norm_num : (0:ℝ) ≤ 36)
+    · exact mul_pos (sq_pos_of_pos Real.pi_pos) (sq_pos_of_pos hT_pos)
+    · rw [hw_norm_eq]
+      apply mul_le_mul_of_nonneg_left _ (sq_nonneg π)
+      exact sq_le_sq' (by linarith [norm_nonneg z]) hz_norm_ge
+  have hS_bound' : ‖φ₀ (ModularGroup.S • w)‖ ≤
+      hb.C₀ * Real.exp (-2 * π * T) + 12 * hb.C₂ / (π * T) +
+        36 * hb.C₄ / (π^2 * T^2) * Real.exp (2 * π * T) := by
+    calc ‖φ₀ (ModularGroup.S • w)‖
+        ≤ hb.C₀ * Real.exp (-2 * π * w.im) + 12 / (π * ‖(w : ℂ)‖) * hb.C₂ +
+            36 / (π^2 * ‖(w : ℂ)‖^2) * hb.C₄ * Real.exp (2 * π * w.im) := hS_bound
+      _ = hb.C₀ * Real.exp (-2 * π * T) + 12 / (π * ‖(w : ℂ)‖) * hb.C₂ +
+            36 / (π^2 * ‖(w : ℂ)‖^2) * hb.C₄ * Real.exp (2 * π * T) := by rw [hw_im]
+      _ ≤ hb.C₀ * Real.exp (-2 * π * T) + 12 / (π * T) * hb.C₂ +
+            36 / (π^2 * T^2) * hb.C₄ * Real.exp (2 * π * T) := by
+          apply add_le_add
+          · apply add_le_add
+            · exact le_refl _
+            · exact mul_le_mul_of_nonneg_right h12_div_le (le_of_lt hb.hC₂_pos)
+          · apply mul_le_mul_of_nonneg_right _ (le_of_lt (Real.exp_pos _))
+            exact mul_le_mul_of_nonneg_right h36_div_le (le_of_lt hb.hC₄_pos)
+      _ = hb.C₀ * Real.exp (-2 * π * T) + 12 * hb.C₂ / (π * T) +
+            36 * hb.C₄ / (π^2 * T^2) * Real.exp (2 * π * T) := by ring
+  -- Step 7: Combine everything
+  have hbound_pos : 0 ≤ hb.C₀ * Real.exp (-2 * π * T) + 12 * hb.C₂ / (π * T) +
+      36 * hb.C₄ / (π^2 * T^2) * Real.exp (2 * π * T) := by
+    apply add_nonneg
+    · apply add_nonneg
+      · exact mul_nonneg (le_of_lt hb.hC₀_pos) (le_of_lt (Real.exp_pos _))
+      · apply div_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 12) (le_of_lt hb.hC₂_pos))
+        exact le_of_lt (mul_pos Real.pi_pos hT_pos)
+    · apply mul_nonneg _ (le_of_lt (Real.exp_pos _))
+      apply div_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 36) (le_of_lt hb.hC₄_pos))
+      exact le_of_lt (mul_pos (sq_pos_of_pos Real.pi_pos) (sq_pos_of_pos hT_pos))
+  calc ‖φ₀ (ModularGroup.S • w)‖ * ‖(↑x + Complex.I * ↑T)^2‖ * Real.exp (-π * r * T)
+      ≤ (hb.C₀ * Real.exp (-2 * π * T) + 12 * hb.C₂ / (π * T) +
+          36 * hb.C₄ / (π^2 * T^2) * Real.exp (2 * π * T)) * (1 + T)^2 * Real.exp (-π * r * T) := by
+        apply mul_le_mul_of_nonneg_right _ (le_of_lt (Real.exp_pos _))
+        apply mul_le_mul hS_bound' hz_sq_bound (norm_nonneg _) hbound_pos
+    _ = (1 + T)^2 * Real.exp (-π * r * T) *
+          (hb.C₀ * Real.exp (-2 * π * T) + 12 * hb.C₂ / (π * T) +
+            36 * hb.C₄ / (π^2 * T^2) * Real.exp (2 * π * T)) := by ring
 
 /-- Top horizontal edge integral vanishes as height T → ∞.
     This is the "integrand at i∞ disappears" fact from Proposition 7.14.
@@ -665,8 +822,27 @@ lemma norm_topEdgeIntegrand_le (hb : PhiBounds) (r : ℝ) (x T : ℝ)
 lemma tendsto_topEdgeIntegral_zero (hb : PhiBounds) (r : ℝ) (hr : 2 < r) :
     Tendsto (fun (T : ℝ) => ∫ x : ℝ in Icc (-1 : ℝ) 1, topEdgeIntegrand r x T)
     atTop (𝓝 0) := by
-  -- Uses norm_topEdgeIntegrand_le for uniform bound, then squeeze
-  sorry
+  -- Strategy: Use tendsto_zero_iff_norm_tendsto_zero + squeeze_zero'
+  rw [tendsto_zero_iff_norm_tendsto_zero]
+  apply squeeze_zero'
+  -- Lower bound: 0 ≤ ‖∫...‖
+  · filter_upwards with T
+    exact norm_nonneg _
+  -- Upper bound: ‖∫...‖ ≤ 2 * topEdgeBound hb r T for T ≥ 1
+  · filter_upwards [eventually_ge_atTop 1] with T hT
+    have h_meas : volume (Icc (-1 : ℝ) 1) < ⊤ := measure_Icc_lt_top
+    have h_bound : ∀ x ∈ Icc (-1 : ℝ) 1, ‖topEdgeIntegrand r x T‖ ≤ topEdgeBound hb r T :=
+      fun x hx => norm_topEdgeIntegrand_le hb r x T hx hT
+    calc ‖∫ x in Icc (-1 : ℝ) 1, topEdgeIntegrand r x T‖
+        ≤ topEdgeBound hb r T * volume.real (Icc (-1 : ℝ) 1) :=
+          norm_setIntegral_le_of_norm_le_const h_meas h_bound
+      _ = topEdgeBound hb r T * 2 := by
+          rw [Measure.real, Real.volume_Icc]; norm_num
+      _ = 2 * topEdgeBound hb r T := mul_comm _ _
+  -- Limit: 2 * topEdgeBound hb r T → 0
+  · have h := tendsto_topEdgeBound_atTop hb r hr
+    convert h.const_mul 2 using 1
+    simp
 
 end MagicFunction.ContourEndpoints
 
