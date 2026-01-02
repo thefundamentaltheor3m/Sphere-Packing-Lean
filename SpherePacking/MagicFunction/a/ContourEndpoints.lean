@@ -230,48 +230,22 @@ lemma norm_verticalIntegrandX_le (hb : PhiBounds) (x r t : ℝ) (ht : 1 ≤ t) :
         · exact (Real.exp_pos _).le
     _ = verticalBound hb r t := by
         simp only [verticalBound]
-        have hπ : π ≠ 0 := Real.pi_ne_zero
         have ht_ne : t ≠ 0 := ne_of_gt ht_pos
-        have ht2_ne : t^2 ≠ 0 := pow_ne_zero 2 ht_ne
-        -- Expand and distribute
-        have hexp := Real.exp_pos (-π * r * t)
-        have hπ_pos := Real.pi_pos
-        -- Use calc to break down the equality term by term
-        have term1 : t^2 * (hb.C₀ * Real.exp (-2 * π * t)) * Real.exp (-π * r * t)
-            = hb.C₀ * t^2 * Real.exp (-(2 * π + π * r) * t) := by
-          have hexp1 : Real.exp (-2 * π * t) * Real.exp (-π * r * t) =
-              Real.exp (-(2 * π + π * r) * t) := by rw [← Real.exp_add]; ring_nf
-          calc t^2 * (hb.C₀ * Real.exp (-2 * π * t)) * Real.exp (-π * r * t)
-             = hb.C₀ * t^2 * (Real.exp (-2 * π * t) * Real.exp (-π * r * t)) := by ring
-           _ = hb.C₀ * t^2 * Real.exp (-(2 * π + π * r) * t) := by rw [hexp1]
-        have term2 : t^2 * ((12 / (π * t)) * hb.C₂) * Real.exp (-π * r * t)
-            = (12 * hb.C₂ / π) * t * Real.exp (-π * r * t) := by
-          field_simp
-        have term3 : t^2 * ((36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t))
-            * Real.exp (-π * r * t)
-            = (36 * hb.C₄ / π^2) * Real.exp (-(π * r - 2 * π) * t) := by
-          have hexp3 : Real.exp (2 * π * t) * Real.exp (-π * r * t) =
-              Real.exp (-(π * r - 2 * π) * t) := by rw [← Real.exp_add]; ring_nf
-          calc t^2 * ((36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t))
-                 * Real.exp (-π * r * t)
-             = (36 * hb.C₄ / (π^2 * t^2)) * t^2
-                 * (Real.exp (2 * π * t) * Real.exp (-π * r * t)) := by ring
-           _ = (36 * hb.C₄ / (π^2 * t^2)) * t^2 * Real.exp (-(π * r - 2 * π) * t) := by
-               rw [hexp3]
-           _ = (36 * hb.C₄ / π^2) * Real.exp (-(π * r - 2 * π) * t) := by
-               field_simp
-        -- Combine
+        have hexp1 : Real.exp (-2 * π * t) * Real.exp (-π * r * t) =
+            Real.exp (-(2 * π + π * r) * t) := by rw [← Real.exp_add]; ring_nf
+        have hexp3 : Real.exp (2 * π * t) * Real.exp (-π * r * t) =
+            Real.exp (-(π * r - 2 * π) * t) := by rw [← Real.exp_add]; ring_nf
         calc t^2 * (hb.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * hb.C₂
                + (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t))
              * Real.exp (-π * r * t)
-           = t^2 * (hb.C₀ * Real.exp (-2 * π * t)) * Real.exp (-π * r * t)
-             + t^2 * ((12 / (π * t)) * hb.C₂) * Real.exp (-π * r * t)
-             + t^2 * ((36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t))
-                 * Real.exp (-π * r * t) := by ring
+           = hb.C₀ * t^2 * (Real.exp (-2 * π * t) * Real.exp (-π * r * t))
+             + (12 * hb.C₂ / π) * t * Real.exp (-π * r * t)
+             + (36 * hb.C₄ / π^2) * (Real.exp (2 * π * t) * Real.exp (-π * r * t)) := by
+               field_simp
          _ = hb.C₀ * t^2 * Real.exp (-(2 * π + π * r) * t)
              + (12 * hb.C₂ / π) * t * Real.exp (-π * r * t)
              + (36 * hb.C₄ / π^2) * Real.exp (-(π * r - 2 * π) * t) := by
-             rw [term1, term2, term3]
+               rw [hexp1, hexp3]
 
 /-- The vertical bound is integrable on [1,∞) for r > 2. -/
 lemma integrableOn_verticalBound (hb : PhiBounds) (r : ℝ) (hr : 2 < r) :
