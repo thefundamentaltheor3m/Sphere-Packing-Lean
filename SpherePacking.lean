@@ -57,6 +57,7 @@ import SpherePacking.ModularForms.Derivative_Cauchy
 import SpherePacking.ModularForms.DimensionFormulas
 import SpherePacking.ModularForms.E2
 import SpherePacking.ModularForms.Eisenstein
+import SpherePacking.ModularForms.EisensteinAsymptotics
 import SpherePacking.ModularForms.Eisensteinqexpansions
 import SpherePacking.ModularForms.FG
 import SpherePacking.ModularForms.Icc_Ico_lems
@@ -65,6 +66,7 @@ import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.PhiTransform
 import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.ResToImagAxis
+import SpherePacking.ModularForms.SerreDerivativeSlash
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.ThetaDerivIdentities
 import SpherePacking.ModularForms.clog_arg_lems
