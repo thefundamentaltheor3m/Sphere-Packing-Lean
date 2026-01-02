@@ -60,23 +60,6 @@ structure PhiBounds where
 
 /-! ## Corollary 7.13 - S-transform bound for φ₀''(I/t) -/
 
-/-- Helper: im(it) = t for real t. -/
-lemma im_I_mul (t : ℝ) : (Complex.I * t).im = t := by simp
-
-/-- Helper: im(i/t) = 1/t for real t ≠ 0. -/
-lemma im_I_div (t : ℝ) (_ht : t ≠ 0) : (Complex.I / t).im = 1 / t := by
-  simp only [Complex.div_ofReal_im, Complex.I_im]
-
-/-- For t ≥ 1, the point it is in the upper half-plane with im ≥ 1. -/
-lemma I_mul_t_in_UHP (t : ℝ) (ht : 1 ≤ t) : 0 < (Complex.I * t).im := by
-  rw [im_I_mul]; linarith
-
-/-- For t ≥ 1, the point i/t is in the upper half-plane. -/
-lemma I_div_t_in_UHP (t : ℝ) (ht : 1 ≤ t) : 0 < (Complex.I / t).im := by
-  have ht_pos : 0 < t := by linarith
-  rw [im_I_div t (ne_of_gt ht_pos)]
-  positivity
-
 /-- The point it as an element of ℍ for t > 0. -/
 def mkI_mul_t (t : ℝ) (ht : 0 < t) : ℍ :=
   ⟨Complex.I * t, by simp; exact ht⟩
@@ -98,13 +81,9 @@ lemma mkI_mul_t_im (t : ℝ) (ht : 0 < t) : (mkI_mul_t t ht).im = t := by
 lemma φ₀''_I_div_t_eq (t : ℝ) (ht : 0 < t) :
     φ₀'' (Complex.I / t) = φ₀ (ModularGroup.S • mkI_mul_t t ht) := by
   have hI_div : 0 < (Complex.I / t).im := by
-    rw [Complex.div_ofReal_im, Complex.I_im]
-    positivity
-  simp only [φ₀'']
-  rw [dif_pos hI_div]
-  congr 1
-  apply Subtype.ext
-  exact (S_smul_I_mul_t t ht).symm
+    rw [Complex.div_ofReal_im, Complex.I_im]; positivity
+  rw [φ₀''_eq _ hI_div]
+  exact congrArg φ₀ (Subtype.ext (S_smul_I_mul_t t ht).symm)
 
 /-- Norm of I*t equals t for t > 0. -/
 lemma norm_I_mul_t (t : ℝ) (ht : 0 < t) : ‖(Complex.I * t : ℂ)‖ = t := by
@@ -533,12 +512,12 @@ lemma φ₀''_neg_inv_eq_φ₀_S_smul (x T : ℝ) (hT : 0 < T) :
     let z : ℂ := ↑x + Complex.I * ↑T
     let w : ℍ := ⟨z, by simp only [z]; simp; exact hT⟩
     φ₀'' (-1 / z) = φ₀ (ModularGroup.S • w) := by
-  -- Use im_inv_neg_coe_pos: for w ∈ ℍ, 0 < ((-w)⁻¹).im, and -1/z = (-z)⁻¹
-  have hneg_inv_im : 0 < (-1 / (↑x + Complex.I * ↑T) : ℂ).im := by
-    rw [neg_div, one_div, neg_inv]
+  intro z w
+  have hneg_inv_im : 0 < (-1 / z : ℂ).im := by
+    simp only [z, neg_div, one_div, neg_inv]
     exact UpperHalfPlane.im_inv_neg_coe_pos ⟨_, by simp [Complex.add_im]; exact hT⟩
-  simp only [φ₀'', dif_pos hneg_inv_im]
-  exact congrArg _ (Subtype.ext (S_smul_x_add_I_mul_T x T hT).symm)
+  rw [φ₀''_eq _ hneg_inv_im]
+  exact congrArg φ₀ (Subtype.ext (S_smul_x_add_I_mul_T x T hT).symm)
 
 /-- Bounding function for top edge integrand norm.
     For z = x + iT with x ∈ [-1,1] and T ≥ 1, this bounds ‖topEdgeIntegrand r x T‖. -/
