@@ -281,6 +281,46 @@ theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
   congr 1; funext n; field_simp [two_pi_I_ne_zero]
 
 /--
+Simplified version of `D_qexp_tsum` for ℕ+-indexed series (starting from n=1).
+This is the form most commonly used for Eisenstein series q-expansions.
+
+**Thin layer implementation:** Extends `a : ℕ+ → ℂ` to `ℕ → ℂ` with `a' 0 = 0`,
+uses `tsum_pNat` and `nat_pos_tsum2` to convert between sums,
+then applies `D_qexp_tsum`.
+-/
+theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
+    (hsum : Summable (fun n : ℕ+ => a n * cexp (2 * π * I * n * z)))
+    (hsum_deriv : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+        ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ n (k : K), ‖a n * (2 * π * I * n) *
+          cexp (2 * π * I * n * k.1)‖ ≤ u n) :
+    D (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) z =
+      ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
+  -- Extend a to ℕ with a' 0 = 0
+  let a' : ℕ → ℂ := fun n => if h : 0 < n then a ⟨n, h⟩ else 0
+  have ha' : ∀ n : ℕ+, a' n = a n := fun n => dif_pos n.pos
+  -- Derivative bounds: extend u using nat_pos_tsum2
+  have hsum_deriv' : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K), ‖a' n * (2 * π * I * n) *
+        cexp (2 * π * I * n * k.1)‖ ≤ u n := fun K hK hKc => by
+    obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK hKc
+    let u' : ℕ → ℝ := fun n => if h : 0 < n then u ⟨n, h⟩ else 0
+    have hu' : ∀ n : ℕ+, u' n = u n := fun n => dif_pos n.pos
+    refine ⟨u', (nat_pos_tsum2 u' (by simp [u'])).mp (hu_sum.congr fun n => by rw [hu']),
+      fun n k => ?_⟩
+    by_cases hn : 0 < n
+    · simp only [a', u', dif_pos hn]; exact hu_bound _ k
+    · simp only [Nat.not_lt, Nat.le_zero] at hn; simp [a', u', hn]
+  -- Apply D_qexp_tsum and convert sums via tsum_pNat
+  have hD := D_qexp_tsum a' z ((nat_pos_tsum2 _ (by simp [a'])).mp
+    (hsum.congr fun n => by rw [ha'])) hsum_deriv'
+  calc D (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) z
+      = D (fun w : ℍ => ∑' n : ℕ, a' n * cexp (2 * π * I * n * (w : ℂ))) z := by
+          congr 1; ext w; rw [← tsum_pNat _ (by simp [a'])]; exact tsum_congr fun n => by rw [ha']
+    _ = ∑' n : ℕ, (n : ℂ) * a' n * cexp (2 * π * I * n * (z : ℂ)) := hD
+    _ = ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
+          rw [← tsum_pNat _ (by simp [a'])]; exact tsum_congr fun n => by rw [ha']
+
+/--
 Serre derivative of weight $k$.
 Note that the definition makes sense for any analytic function $F : \mathbb{H} \to \mathbb{C}$.
 -/
