@@ -160,7 +160,7 @@ lemma theta_g_T_action : (theta_g ∣[(6 : ℤ)] T) = theta_g := by
   simp only [Pi.add_apply]
   -- H₃ = H₂ + H₄ and f₃ = f₂ + f₄
   have hH₃ : H₃ z = H₂ z + H₄ z := (h_jacobi z).symm
-  have hf₃ : f₃ z = f₂ z + f₄ z := (f₂_add_f₄_eq_f₃ z).symm
+  have hf₃ : f₃ z = f₂ z + f₄ z := (congrFun f₂_add_f₄_eq_f₃ z).symm
   rw [hH₃, hf₃]
   ring
 
@@ -240,7 +240,7 @@ lemma theta_h_T_action : (theta_h ∣[(8 : ℤ)] T) = theta_h := by
     rw [hfun, h8, hmul]
     funext z
     simp only [Pi.mul_apply, sq]
-    rw [hf₂f₄ z]
+    rw [(congrFun hf₂f₄ z).symm, Pi.add_apply]
   have h_f₂f₄' : ((fun z => f₂ z * f₄ z) ∣[(8 : ℤ)] T) =
       fun z => (-f₂ z) * (f₂ z + f₄ z) := by
     have hmul := mul_slash_SL2 4 4 T f₂ f₄
@@ -250,7 +250,7 @@ lemma theta_h_T_action : (theta_h ∣[(8 : ℤ)] T) = theta_h := by
     rw [hfun, h8, hmul]
     funext z
     simp only [Pi.mul_apply, Pi.neg_apply]
-    rw [hf₂f₄ z]
+    rw [(congrFun hf₂f₄ z).symm, Pi.add_apply]
   -- Combine: h|T = f₂² + (-f₂)(f₂+f₄) + (f₂+f₄)² = h
   have hfun_h : theta_h = (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) := by
     funext z; unfold theta_h; ring
