@@ -61,48 +61,39 @@ lemma f₄_decompose :
 ## Phase 2: MDifferentiable for Error Terms
 -/
 
-/-- H₂ is MDifferentiable (extract from SIF) -/
-lemma H₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
-
-/-- H₃ is MDifferentiable (extract from SIF) -/
-lemma H₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃ := H₃_SIF_MDifferentiable
-
-/-- H₄ is MDifferentiable (extract from SIF) -/
-lemma H₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
-
 /-- f₂ is MDifferentiable -/
 lemma f₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₂ := by
   unfold f₂
   apply MDifferentiable.sub
-  · exact serre_D_differentiable H₂_MDifferentiable
+  · exact serre_D_differentiable H₂_SIF_MDifferentiable
   · apply MDifferentiable.mul
     · exact mdifferentiable_const
-    · apply MDifferentiable.mul H₂_MDifferentiable
-      apply MDifferentiable.add H₂_MDifferentiable
-      apply MDifferentiable.mul mdifferentiable_const H₄_MDifferentiable
+    · apply MDifferentiable.mul H₂_SIF_MDifferentiable
+      apply MDifferentiable.add H₂_SIF_MDifferentiable
+      apply MDifferentiable.mul mdifferentiable_const H₄_SIF_MDifferentiable
 
 /-- f₃ is MDifferentiable -/
 lemma f₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₃ := by
   unfold f₃
   apply MDifferentiable.sub
-  · exact serre_D_differentiable H₃_MDifferentiable
+  · exact serre_D_differentiable H₃_SIF_MDifferentiable
   · apply MDifferentiable.mul
     · exact mdifferentiable_const
     · apply MDifferentiable.sub
-      · simp only [pow_two]; exact H₂_MDifferentiable.mul H₂_MDifferentiable
-      · simp only [pow_two]; exact H₄_MDifferentiable.mul H₄_MDifferentiable
+      · simp only [pow_two]; exact H₂_SIF_MDifferentiable.mul H₂_SIF_MDifferentiable
+      · simp only [pow_two]; exact H₄_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable
 
 /-- f₄ is MDifferentiable -/
 lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by
   unfold f₄
   apply MDifferentiable.add
-  · exact serre_D_differentiable H₄_MDifferentiable
+  · exact serre_D_differentiable H₄_SIF_MDifferentiable
   · apply MDifferentiable.mul
     · exact mdifferentiable_const
-    · apply MDifferentiable.mul H₄_MDifferentiable
+    · apply MDifferentiable.mul H₄_SIF_MDifferentiable
       apply MDifferentiable.add
-      · apply MDifferentiable.mul mdifferentiable_const H₂_MDifferentiable
-      · exact H₄_MDifferentiable
+      · apply MDifferentiable.mul mdifferentiable_const H₂_SIF_MDifferentiable
+      · exact H₄_SIF_MDifferentiable
 
 /-!
 ## Phase 3-4: Jacobi Identity and Relation f₂ + f₄ = f₃
@@ -122,7 +113,7 @@ lemma f₂_add_f₄_eq_f₃ : ∀ z, f₂ z + f₄ z = f₃ z := by
   simp only [f₂, f₃, f₄]
   -- Key relation: serre_D 2 H₂ z + serre_D 2 H₄ z = serre_D 2 H₃ z (via Jacobi identity)
   have h_serre : serre_D 2 H₂ z + serre_D 2 H₄ z = serre_D 2 H₃ z := by
-    have add_eq := serre_D_add (2 : ℤ) H₂ H₄ H₂_MDifferentiable H₄_MDifferentiable
+    have add_eq := serre_D_add (2 : ℤ) H₂ H₄ H₂_SIF_MDifferentiable H₄_SIF_MDifferentiable
     have jacobi_eq : H₂ + H₄ = H₃ := by funext w; exact jacobi_identity' w
     have h := congrFun add_eq z
     simp only [Pi.add_apply] at h
@@ -188,10 +179,10 @@ Key lemmas used:
 lemma f₂_S_action : (f₂ ∣[(4 : ℤ)] S) = -f₄ := by
   have h_neg_H₄ : (H₂ ∣[(2 : ℤ)] S) = -H₄ := H₂_S_action
   have h_neg_H₂ : (H₄ ∣[(2 : ℤ)] S) = -H₂ := H₄_S_action
-  have h_serre_neg := serre_D_neg (2 : ℤ) H₄ H₄_MDifferentiable
+  have h_serre_neg := serre_D_neg (2 : ℤ) H₄ H₄_SIF_MDifferentiable
   -- Step 1: (serre_D 2 H₂)|[4]S = -serre_D 2 H₄ (via equivariance)
   have h_serre_term : (serre_D (2 : ℤ) H₂ ∣[(4 : ℤ)] S) = -serre_D (2 : ℤ) H₄ := by
-    have h_equivariant := serre_D_slash_equivariant (2 : ℤ) H₂ H₂_MDifferentiable S
+    have h_equivariant := serre_D_slash_equivariant (2 : ℤ) H₂ H₂_SIF_MDifferentiable S
     calc (serre_D (2 : ℤ) H₂ ∣[(4 : ℤ)] S)
         = (serre_D (2 : ℤ) H₂ ∣[(2 + 2 : ℤ)] S) := by ring_nf
       _ = serre_D (2 : ℤ) (H₂ ∣[(2 : ℤ)] S) := h_equivariant
@@ -228,10 +219,10 @@ Proof outline:
 lemma f₂_T_action : (f₂ ∣[(4 : ℤ)] T) = -f₂ := by
   have h_H₂_T : (H₂ ∣[(2 : ℤ)] T) = -H₂ := H₂_T_action
   have h_H₄_T : (H₄ ∣[(2 : ℤ)] T) = H₃ := H₄_T_action
-  have h_serre_neg := serre_D_neg (2 : ℤ) H₂ H₂_MDifferentiable
+  have h_serre_neg := serre_D_neg (2 : ℤ) H₂ H₂_SIF_MDifferentiable
   -- Step 1: (serre_D 2 H₂)|[4]T = -serre_D 2 H₂ (via equivariance)
   have h_serre_term : (serre_D (2 : ℤ) H₂ ∣[(4 : ℤ)] T) = -serre_D (2 : ℤ) H₂ := by
-    have h_equivariant := serre_D_slash_equivariant (2 : ℤ) H₂ H₂_MDifferentiable T
+    have h_equivariant := serre_D_slash_equivariant (2 : ℤ) H₂ H₂_SIF_MDifferentiable T
     calc (serre_D (2 : ℤ) H₂ ∣[(4 : ℤ)] T)
         = (serre_D (2 : ℤ) H₂ ∣[(2 + 2 : ℤ)] T) := by ring_nf
       _ = serre_D (2 : ℤ) (H₂ ∣[(2 : ℤ)] T) := h_equivariant
@@ -269,10 +260,10 @@ Proof outline (symmetric to f₂_S_action):
 lemma f₄_S_action : (f₄ ∣[(4 : ℤ)] S) = -f₂ := by
   have h_neg_H₂ : (H₄ ∣[(2 : ℤ)] S) = -H₂ := H₄_S_action
   have h_neg_H₄ : (H₂ ∣[(2 : ℤ)] S) = -H₄ := H₂_S_action
-  have h_serre_neg := serre_D_neg (2 : ℤ) H₂ H₂_MDifferentiable
+  have h_serre_neg := serre_D_neg (2 : ℤ) H₂ H₂_SIF_MDifferentiable
   -- Step 1: (serre_D 2 H₄)|[4]S = -serre_D 2 H₂ (via equivariance)
   have h_serre_term : (serre_D (2 : ℤ) H₄ ∣[(4 : ℤ)] S) = -serre_D (2 : ℤ) H₂ := by
-    have h_equivariant := serre_D_slash_equivariant (2 : ℤ) H₄ H₄_MDifferentiable S
+    have h_equivariant := serre_D_slash_equivariant (2 : ℤ) H₄ H₄_SIF_MDifferentiable S
     calc (serre_D (2 : ℤ) H₄ ∣[(4 : ℤ)] S)
         = (serre_D (2 : ℤ) H₄ ∣[(2 + 2 : ℤ)] S) := by ring_nf
       _ = serre_D (2 : ℤ) (H₄ ∣[(2 : ℤ)] S) := h_equivariant
@@ -313,7 +304,7 @@ lemma f₄_T_action : (f₄ ∣[(4 : ℤ)] T) = f₃ := by
   have h_H₄_T : (H₄ ∣[(2 : ℤ)] T) = H₃ := H₄_T_action
   -- Step 1: (serre_D 2 H₄)|[4]T = serre_D 2 H₃ (via equivariance)
   have h_serre_term : (serre_D (2 : ℤ) H₄ ∣[(4 : ℤ)] T) = serre_D (2 : ℤ) H₃ := by
-    have h_equivariant := serre_D_slash_equivariant (2 : ℤ) H₄ H₄_MDifferentiable T
+    have h_equivariant := serre_D_slash_equivariant (2 : ℤ) H₄ H₄_SIF_MDifferentiable T
     calc (serre_D (2 : ℤ) H₄ ∣[(4 : ℤ)] T)
         = (serre_D (2 : ℤ) H₄ ∣[(2 + 2 : ℤ)] T) := by ring_nf
       _ = serre_D (2 : ℤ) (H₄ ∣[(2 : ℤ)] T) := h_equivariant
