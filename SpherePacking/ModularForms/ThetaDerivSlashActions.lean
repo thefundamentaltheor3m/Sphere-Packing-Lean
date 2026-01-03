@@ -49,10 +49,7 @@ noncomputable def f₄ : ℍ → ℂ :=
 /-- f₂ decomposes as serre_D 2 H₂ + (-1/6) • (H₂ * (H₂ + 2*H₄)) -/
 lemma f₂_decompose :
     f₂ = serre_D (2 : ℤ) H₂ + ((-1/6 : ℂ) • (H₂ * (H₂ + (2 : ℂ) • H₄))) := by
-  unfold f₂
-  ext z
-  simp only [Pi.sub_apply, Pi.smul_apply, Pi.mul_apply, Pi.add_apply, smul_eq_mul]
-  ring_nf
+  ext z; simp [f₂, sub_eq_add_neg]; ring
 
 /-- f₄ decomposes as serre_D 2 H₄ + (1/6) • (H₄ * (2*H₂ + H₄)) -/
 lemma f₄_decompose :
@@ -291,8 +288,5 @@ lemma f₄_T_action : (f₄ ∣[(4 : ℤ)] T) = f₃ := by
   simp only [Pi.sub_apply, Pi.add_apply, Pi.smul_apply, Pi.mul_apply, Pi.pow_apply, smul_eq_mul]
   have h_jacobi := jacobi_identity' z
   -- Need: 1/6 * H₃ z * (H₄ z - H₂ z) = -1/6 * (H₂ z^2 - H₄ z^2)
-  have h_diff_sq : H₂ z ^ 2 - H₄ z ^ 2 = (H₂ z - H₄ z) * H₃ z := by
-    have h_factor : H₂ z ^ 2 - H₄ z ^ 2 = (H₂ z - H₄ z) * (H₂ z + H₄ z) := by ring
-    rw [h_factor, h_jacobi]
-  rw [h_diff_sq]
+  rw [sq_sub_sq, h_jacobi]
   ring_nf
