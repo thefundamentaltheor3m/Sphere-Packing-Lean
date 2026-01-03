@@ -29,8 +29,8 @@ noncomputable section
 
 /-! ## Bridge Lemma: MDifferentiable to DiffContOnCl -/
 
-/-- If `f : ℍ → ℂ` is `MDifferentiable` and a closed disk in `ℂ` lies in the upper half-plane,
-then `f ∘ ofComplex` is `DiffContOnCl` on the corresponding open disk. -/
+/-- If `f : ℍ → ℂ` is `MDifferentiable` and a closed disk in `ℂ` lies in the upper
+half-plane, then `f ∘ ofComplex` is `DiffContOnCl` on the corresponding open disk. -/
 lemma diffContOnCl_comp_ofComplex_of_mdifferentiable
     {f : ℍ → ℂ}
     (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
@@ -71,8 +71,9 @@ lemma closedBall_center_subset_upperHalfPlane (z : ℍ) :
 
 /-! ## Cauchy Estimates -/
 
-/-- Cauchy estimate for the D-derivative: if `f ∘ ofComplex` is holomorphic on a disk of radius `r`
-around `z` and bounded by `M` on the boundary sphere, then `‖D f z‖ ≤ M / (2πr)`.
+/-- Cauchy estimate for the D-derivative: if `f ∘ ofComplex` is holomorphic on a disk
+of radius `r` around `z` and bounded by `M` on the boundary sphere,
+then `‖D f z‖ ≤ M / (2πr)`.
 
 This is the core estimate used by `D_isBoundedAtImInfty_of_bounded`. -/
 lemma norm_D_le_of_sphere_bound {f : ℍ → ℂ} {z : ℍ} {r M : ℝ}

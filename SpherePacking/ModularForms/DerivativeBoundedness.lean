@@ -63,8 +63,9 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- Step 1: Triangle inequality: ‖1 - 24 * tsum‖ ≤ 1 + 24 * ‖tsum‖
   calc ‖1 - 24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
           (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖
-      ≤ ‖(1 : ℂ)‖ + ‖24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
-          (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := norm_sub_le _ _
+      ≤ ‖(1 : ℂ)‖ +
+          ‖24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+            (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := norm_sub_le _ _
     _ = 1 + 24 * ‖∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
           (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := by
         simp only [norm_one, norm_mul, RCLike.norm_ofNat]
@@ -146,7 +147,8 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
     have hr_ne : (1 - r) ≠ 0 := hone_sub_r_pos.ne'
     simpa [div_eq_mul_inv] using hsumm_pnat.mul_right (1 - r)⁻¹
   -- Summability of the complex sum norms
-  have hsumm_norms : Summable (fun n : ℕ+ => ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖) := by
+  have hsumm_norms : Summable
+      (fun n : ℕ+ => ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖) := by
     refine Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => ?_) hsumm_majorant
     convert hterm_bound n using 2
   -- Bound: ‖tsum‖ ≤ ∑' (n : ℕ+), ‖term‖ ≤ ∑' (n : ℕ+), n * r^n / (1 - r)
@@ -167,7 +169,8 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
     simp only [Nat.cast_zero, zero_mul, zero_add] at heq
     rw [← hsum_nat]; exact heq
   -- With (1-r)⁻¹ factor: r / (1-r)³
-  have hsum_majorant_eq : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
+  have hsum_majorant_eq :
+      (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
     have hr_ne : (1 - r) ≠ 0 := hone_sub_r_pos.ne'
     rw [tsum_div_const, hsum_pnat]
     field_simp
@@ -200,7 +203,8 @@ lemma E₂_mul_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (E₂ * E₄.toFun) 
 
 /-- D E₄ is bounded at infinity.
 
-The q-expansion D(E₄) = 240·Σn·σ₃(n)·qⁿ has no constant term, so D(E₄) → 0 as im(z) → ∞.
+The q-expansion D(E₄) = 240·Σn·σ₃(n)·qⁿ has no constant term,
+so D(E₄) → 0 as im(z) → ∞.
 This is even stronger than boundedness: D(E₄) vanishes at infinity.
 
 **Proof outline**: D commutes with the q-expansion tsum (by uniform convergence),
