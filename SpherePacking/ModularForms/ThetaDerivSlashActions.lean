@@ -31,9 +31,6 @@ open UpperHalfPlane hiding I
 open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix ModularGroup
   ModularForm SlashAction MatrixGroups
 
-local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
-local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
-
 /-!
 ## Phase 1: Error Term Definitions
 -/
