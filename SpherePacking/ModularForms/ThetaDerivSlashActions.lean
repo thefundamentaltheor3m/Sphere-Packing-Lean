@@ -107,9 +107,9 @@ lemma jacobi_identity' (z : ℍ) : H₂ z + H₄ z = H₃ z := by
   exact h
 
 /-- The error terms satisfy f₂ + f₄ = f₃ (from Jacobi identity) -/
-lemma f₂_add_f₄_eq_f₃ : ∀ z, f₂ z + f₄ z = f₃ z := by
-  intro z
-  simp only [f₂, f₃, f₄]
+lemma f₂_add_f₄_eq_f₃ : f₂ + f₄ = f₃ := by
+  ext z
+  simp only [Pi.add_apply, f₂, f₃, f₄]
   -- Key relation: serre_D 2 H₂ z + serre_D 2 H₄ z = serre_D 2 H₃ z (via Jacobi identity)
   have h_serre : serre_D 2 H₂ z + serre_D 2 H₄ z = serre_D 2 H₃ z := by
     have add_eq := serre_D_add (2 : ℤ) H₂ H₄ H₂_SIF_MDifferentiable H₄_SIF_MDifferentiable
