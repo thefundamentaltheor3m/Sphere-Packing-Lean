@@ -62,46 +62,31 @@ lemma f₄_decompose :
 
 /-- f₂ is MDifferentiable -/
 lemma f₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₂ := by
-  unfold f₂
-  apply MDifferentiable.sub
-  · exact serre_D_differentiable H₂_SIF_MDifferentiable
-  · apply MDifferentiable.const_smul (1/6 : ℂ)
-    apply MDifferentiable.mul H₂_SIF_MDifferentiable
-    apply MDifferentiable.add H₂_SIF_MDifferentiable
-    exact MDifferentiable.const_smul (2 : ℂ) H₄_SIF_MDifferentiable
+  simp only [f₂]
+  exact (serre_D_differentiable H₂_SIF_MDifferentiable).sub
+    ((H₂_SIF_MDifferentiable.mul (H₂_SIF_MDifferentiable.add
+      (H₄_SIF_MDifferentiable.const_smul _))).const_smul _)
 
 /-- f₃ is MDifferentiable -/
 lemma f₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₃ := by
-  unfold f₃
-  apply MDifferentiable.sub
-  · exact serre_D_differentiable H₃_SIF_MDifferentiable
-  · apply MDifferentiable.const_smul (1/6 : ℂ)
-    apply MDifferentiable.sub
-    · simp only [sq]; exact H₂_SIF_MDifferentiable.mul H₂_SIF_MDifferentiable
-    · simp only [sq]; exact H₄_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable
+  simp only [f₃, sq]
+  exact (serre_D_differentiable H₃_SIF_MDifferentiable).sub
+    (((H₂_SIF_MDifferentiable.mul H₂_SIF_MDifferentiable).sub
+      (H₄_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)).const_smul _)
 
 /-- f₄ is MDifferentiable -/
 lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by
-  unfold f₄
-  apply MDifferentiable.add
-  · exact serre_D_differentiable H₄_SIF_MDifferentiable
-  · apply MDifferentiable.const_smul (1/6 : ℂ)
-    apply MDifferentiable.mul H₄_SIF_MDifferentiable
-    apply MDifferentiable.add
-    · exact MDifferentiable.const_smul (2 : ℂ) H₂_SIF_MDifferentiable
-    · exact H₄_SIF_MDifferentiable
+  simp only [f₄]
+  exact (serre_D_differentiable H₄_SIF_MDifferentiable).add
+    ((H₄_SIF_MDifferentiable.mul
+      ((H₂_SIF_MDifferentiable.const_smul _).add H₄_SIF_MDifferentiable)).const_smul _)
 
 /-!
 ## Phase 3-4: Jacobi Identity and Relation f₂ + f₄ = f₃
 -/
 
 /-- Jacobi identity: H₂ + H₄ = H₃ -/
--- This follows from jacobi_identity in JacobiTheta.lean (which has a sorry)
-lemma jacobi_identity' (z : ℍ) : H₂ z + H₄ z = H₃ z := by
-  have h := jacobi_identity z
-  -- jacobi_identity says Θ₂^4 + Θ₄^4 = Θ₃^4, which is exactly H₂ + H₄ = H₃
-  simp only [H₂, H₃, H₄] at h ⊢
-  exact h
+lemma jacobi_identity' (z : ℍ) : H₂ z + H₄ z = H₃ z := by simp [H₂, H₃, H₄, jacobi_identity z]
 
 /-- The error terms satisfy f₂ + f₄ = f₃ (from Jacobi identity) -/
 lemma f₂_add_f₄_eq_f₃ : f₂ + f₄ = f₃ := by
