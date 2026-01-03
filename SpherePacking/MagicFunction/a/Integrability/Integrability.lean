@@ -14,7 +14,7 @@ import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
 
 /-! # Integrability
 
-In this file, we prove that the integrands `Φᵢ` are integrable.
+In this file, we prove that the integrands `Φⱼ` are integrable.
 -/
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions

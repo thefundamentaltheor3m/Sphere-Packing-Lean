@@ -10,9 +10,17 @@ import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 
 /-! # Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane
 
-In this file, we prove that all the complex integrands Φ₁' through Φ₆' that appear in our integral
-estimates (including the integrand of `I₁`) are holomorphic on the upper half-plane. This relies on
-the properties of φ₀ that they inherit from the modular forms in terms of which they are defined.
+In this file, we prove that all the complex integrands Φ₁' through Φ₆' that appear in our integrals
+`I₁`-`I₆` are holomorphic on the upper half-plane.
+
+## Main Results:
+
+This file includes the following (families of) theorems:
+
+* [PROVED] `Φⱼ'_holo`: For j = 1…6, `Φⱼ'` is Complex-differentiable on the upper half-plane.
+* [PROVED] `Φⱼ'_contDiffOn_ℂ`: For j = 1…6, `Φⱼ'` is Complex-smooth on the upper half-plane.
+* [TODO] `Φⱼ'_contDiffOn`: For j = 1…6, `Φⱼ'` is Real-smooth on the upper half-plane.
+* [TODO] `φ₀''_holo`: `φ₀''` is Complex-differentiable on the upper half-plane.
 -/
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
@@ -52,9 +60,6 @@ end Helpers
 namespace MagicFunction.a.ComplexIntegrands
 
 variable {r : ℝ} (hr : r ≥ 0)
-section Halfplane_API
-
-end Halfplane_API
 
 section Holo_Lemmas
 
