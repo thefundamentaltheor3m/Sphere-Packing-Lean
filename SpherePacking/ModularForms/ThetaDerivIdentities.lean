@@ -33,12 +33,11 @@ local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
 -/
 
 /-- Level-1 invariant of weight 6: g = (2H₂ + H₄)f₂ + (H₂ + 2H₄)f₄ -/
-noncomputable def theta_g : ℍ → ℂ := fun z =>
-  (2 * H₂ z + H₄ z) * f₂ z + (H₂ z + 2 * H₄ z) * f₄ z
+noncomputable def theta_g : ℍ → ℂ :=
+  ((2 : ℂ) • H₂ + H₄) * f₂ + (H₂ + (2 : ℂ) • H₄) * f₄
 
 /-- Level-1 invariant of weight 8: h = f₂² + f₂f₄ + f₄² -/
-noncomputable def theta_h : ℍ → ℂ := fun z =>
-  f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2
+noncomputable def theta_h : ℍ → ℂ := f₂ ^ 2 + f₂ * f₄ + f₄ ^ 2
 
 /-- g is invariant under S.
 
@@ -48,56 +47,25 @@ g|S = (2(-H₄) + (-H₂))(-f₄) + ((-H₄) + 2(-H₂))(-f₂)
     = (2H₄ + H₂)f₄ + (H₄ + 2H₂)f₂
     = g -/
 lemma theta_g_S_action : (theta_g ∣[(6 : ℤ)] S) = theta_g := by
-  have hf₂ := f₂_S_action
-  have hf₄ := f₄_S_action
-  have hH₂ := H₂_S_action
-  have hH₄ := H₄_S_action
-  -- First, prove the transformations for the linear combinations
-  have h_2H₂_H₄ : ((fun z => 2 * H₂ z + H₄ z) ∣[(2 : ℤ)] S) =
-      fun z => -(2 * H₄ z + H₂ z) := by
-    have h_smul := SL_smul_slash (2 : ℤ) S H₂ (2 : ℂ)
-    have h_add := SlashAction.add_slash (2 : ℤ) S ((2 : ℂ) • H₂) H₄
-    have hfun1 : (fun z => 2 * H₂ z + H₄ z) = ((2 : ℂ) • H₂) + H₄ := by
-      funext; simp [Pi.add_apply, Pi.smul_apply]
-    rw [hfun1, h_add, h_smul, hH₂, hH₄]
-    funext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
-  have h_H₂_2H₄ : ((fun z => H₂ z + 2 * H₄ z) ∣[(2 : ℤ)] S) =
-      fun z => -(H₄ z + 2 * H₂ z) := by
-    have h_smul := SL_smul_slash (2 : ℤ) S H₄ (2 : ℂ)
-    have h_add := SlashAction.add_slash (2 : ℤ) S H₂ ((2 : ℂ) • H₄)
-    have hfun1 : (fun z => H₂ z + 2 * H₄ z) = H₂ + ((2 : ℂ) • H₄) := by
-      funext; simp [Pi.add_apply, Pi.smul_apply]
-    rw [hfun1, h_add, h_smul, hH₂, hH₄]
-    funext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
-  -- Now prove the product transformations using mul_slash_SL2
-  have h_term1 : ((fun z => (2 * H₂ z + H₄ z) * f₂ z) ∣[(6 : ℤ)] S) =
-      fun z => (2 * H₄ z + H₂ z) * f₄ z := by
-    have hmul := mul_slash_SL2 2 4 S (fun z => 2 * H₂ z + H₄ z) f₂
-    have hfun : (fun z => (2 * H₂ z + H₄ z) * f₂ z) =
-        (fun z => 2 * H₂ z + H₄ z) * f₂ := by funext; simp [Pi.mul_apply]
-    have h6 : (6 : ℤ) = 2 + 4 := by norm_num
-    rw [hfun, h6, hmul, h_2H₂_H₄, hf₂]
-    funext z; simp [Pi.mul_apply, Pi.neg_apply]; ring
-  have h_term2 : ((fun z => (H₂ z + 2 * H₄ z) * f₄ z) ∣[(6 : ℤ)] S) =
-      fun z => (H₄ z + 2 * H₂ z) * f₂ z := by
-    have hmul := mul_slash_SL2 2 4 S (fun z => H₂ z + 2 * H₄ z) f₄
-    have hfun : (fun z => (H₂ z + 2 * H₄ z) * f₄ z) =
-        (fun z => H₂ z + 2 * H₄ z) * f₄ := by funext; simp [Pi.mul_apply]
-    have h6 : (6 : ℤ) = 2 + 4 := by norm_num
-    rw [hfun, h6, hmul, h_H₂_2H₄, hf₄]
-    funext z; simp [Pi.mul_apply, Pi.neg_apply]; ring
-  -- Combine: g|S = (2H₄ + H₂)f₄ + (H₄ + 2H₂)f₂ = g
-  have hfun_g : theta_g =
-      (fun z => (2 * H₂ z + H₄ z) * f₂ z + (H₂ z + 2 * H₄ z) * f₄ z) := by
-    funext z; unfold theta_g; ring
-  rw [hfun_g]
-  have hfun_sum : (fun z => (2 * H₂ z + H₄ z) * f₂ z + (H₂ z + 2 * H₄ z) * f₄ z) =
-      (fun z => (2 * H₂ z + H₄ z) * f₂ z) + (fun z => (H₂ z + 2 * H₄ z) * f₄ z) := by
-    funext; simp [Pi.add_apply]
-  have h_add := SlashAction.add_slash (6 : ℤ) S
-    (fun z => (2 * H₂ z + H₄ z) * f₂ z) (fun z => (H₂ z + 2 * H₄ z) * f₄ z)
-  rw [hfun_sum, h_add, h_term1, h_term2]
-  funext z; simp only [Pi.add_apply]; ring
+  -- Linear combination transforms: (2•H₂ + H₄)|S = -(2•H₄ + H₂), (H₂ + 2•H₄)|S = -(H₄ + 2•H₂)
+  have h_2H₂_H₄ : (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] S) = -((2 : ℂ) • H₄ + H₂) := by
+    simp only [SlashAction.add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
+    ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
+  have h_H₂_2H₄ : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] S) = -(H₄ + (2 : ℂ) • H₂) := by
+    simp only [SlashAction.add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
+    ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
+  -- Product transforms using mul_slash_SL2
+  have h_term1 : ((((2 : ℂ) • H₂ + H₄) * f₂) ∣[(6 : ℤ)] S) = ((2 : ℂ) • H₄ + H₂) * f₄ := by
+    have hmul := mul_slash_SL2 2 4 S ((2 : ℂ) • H₂ + H₄) f₂
+    simp only [h_2H₂_H₄, f₂_S_action] at hmul
+    convert hmul using 1; ext z; simp only [Pi.mul_apply, Pi.neg_apply]; ring
+  have h_term2 : (((H₂ + (2 : ℂ) • H₄) * f₄) ∣[(6 : ℤ)] S) = (H₄ + (2 : ℂ) • H₂) * f₂ := by
+    have hmul := mul_slash_SL2 2 4 S (H₂ + (2 : ℂ) • H₄) f₄
+    simp only [h_H₂_2H₄, f₄_S_action] at hmul
+    convert hmul using 1; ext z; simp only [Pi.mul_apply, Pi.neg_apply]; ring
+  -- g|S = (2H₄ + H₂)f₄ + (H₄ + 2H₂)f₂ = g
+  simp only [theta_g, SlashAction.add_slash, h_term1, h_term2]
+  ext z; simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply]; ring
 
 /-- g is invariant under T.
 
@@ -105,61 +73,29 @@ Proof: Under T: H₂ ↦ -H₂, H₄ ↦ H₃, f₂ ↦ -f₂, f₄ ↦ f₃ = f
 g|T = (2(-H₂) + H₃)(-f₂) + ((-H₂) + 2H₃)(f₂ + f₄)
 Using Jacobi: H₃ = H₂ + H₄, simplifies to g. -/
 lemma theta_g_T_action : (theta_g ∣[(6 : ℤ)] T) = theta_g := by
-  have hf₂ := f₂_T_action
-  have hf₄ := f₄_T_action
-  have hH₂ := H₂_T_action
-  have hH₄ := H₄_T_action
-  have h_jacobi := fun z => jacobi_identity' z
-  -- Under T: H₂ → -H₂, H₄ → H₃ = H₂ + H₄, f₂ → -f₂, f₄ → f₃
-  -- Transform linear combinations
-  have h_2H₂_H₄ : ((fun z => 2 * H₂ z + H₄ z) ∣[(2 : ℤ)] T) =
-      fun z => -2 * H₂ z + H₃ z := by
-    have h_smul := SL_smul_slash (2 : ℤ) T H₂ (2 : ℂ)
-    have h_add := SlashAction.add_slash (2 : ℤ) T ((2 : ℂ) • H₂) H₄
-    have hfun1 : (fun z => 2 * H₂ z + H₄ z) = ((2 : ℂ) • H₂) + H₄ := by
-      funext; simp [Pi.add_apply, Pi.smul_apply]
-    rw [hfun1, h_add, h_smul, hH₂, hH₄]
-    funext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]
-  have h_H₂_2H₄ : ((fun z => H₂ z + 2 * H₄ z) ∣[(2 : ℤ)] T) =
-      fun z => -H₂ z + 2 * H₃ z := by
-    have h_smul := SL_smul_slash (2 : ℤ) T H₄ (2 : ℂ)
-    have h_add := SlashAction.add_slash (2 : ℤ) T H₂ ((2 : ℂ) • H₄)
-    have hfun1 : (fun z => H₂ z + 2 * H₄ z) = H₂ + ((2 : ℂ) • H₄) := by
-      funext; simp [Pi.add_apply, Pi.smul_apply]
-    rw [hfun1, h_add, h_smul, hH₂, hH₄]
-    funext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]
-  -- Product transformations
-  have h_term1 : ((fun z => (2 * H₂ z + H₄ z) * f₂ z) ∣[(6 : ℤ)] T) =
-      fun z => (-2 * H₂ z + H₃ z) * (-f₂ z) := by
-    have hmul := mul_slash_SL2 2 4 T (fun z => 2 * H₂ z + H₄ z) f₂
-    have hfun : (fun z => (2 * H₂ z + H₄ z) * f₂ z) =
-        (fun z => 2 * H₂ z + H₄ z) * f₂ := by funext; simp [Pi.mul_apply]
-    have h6 : (6 : ℤ) = 2 + 4 := by norm_num
-    rw [hfun, h6, hmul, h_2H₂_H₄, hf₂]
-    funext z; simp [Pi.mul_apply, Pi.neg_apply]
-  have h_term2 : ((fun z => (H₂ z + 2 * H₄ z) * f₄ z) ∣[(6 : ℤ)] T) =
-      fun z => (-H₂ z + 2 * H₃ z) * f₃ z := by
-    have hmul := mul_slash_SL2 2 4 T (fun z => H₂ z + 2 * H₄ z) f₄
-    have hfun : (fun z => (H₂ z + 2 * H₄ z) * f₄ z) =
-        (fun z => H₂ z + 2 * H₄ z) * f₄ := by funext; simp [Pi.mul_apply]
-    have h6 : (6 : ℤ) = 2 + 4 := by norm_num
-    rw [hfun, h6, hmul, h_H₂_2H₄, hf₄]
-    funext z; simp [Pi.mul_apply]
-  -- Now combine and simplify using Jacobi: H₃ = H₂ + H₄, f₃ = f₂ + f₄
-  have hfun_g : theta_g = (fun z => (2 * H₂ z + H₄ z) * f₂ z +
-      (H₂ z + 2 * H₄ z) * f₄ z) := by funext z; unfold theta_g; ring
-  rw [hfun_g]
-  have hfun_sum : (fun z => (2 * H₂ z + H₄ z) * f₂ z + (H₂ z + 2 * H₄ z) * f₄ z) =
-      (fun z => (2 * H₂ z + H₄ z) * f₂ z) + (fun z => (H₂ z + 2 * H₄ z) * f₄ z) := by
-    funext; simp [Pi.add_apply]
-  have h_add := SlashAction.add_slash (6 : ℤ) T
-    (fun z => (2 * H₂ z + H₄ z) * f₂ z) (fun z => (H₂ z + 2 * H₄ z) * f₄ z)
-  rw [hfun_sum, h_add, h_term1, h_term2]
-  -- Simplify using Jacobi identity
-  funext z
-  simp only [Pi.add_apply]
-  -- H₃ = H₂ + H₄ and f₃ = f₂ + f₄
-  have hH₃ : H₃ z = H₂ z + H₄ z := (h_jacobi z).symm
+  -- Under T: H₂ → -H₂, H₄ → H₃, f₂ → -f₂, f₄ → f₃
+  -- Linear combination transforms: (2•H₂ + H₄)|T = -2•H₂ + H₃, (H₂ + 2•H₄)|T = -H₂ + 2•H₃
+  have h_2H₂_H₄ : (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] T) = -(2 : ℂ) • H₂ + H₃ := by
+    simp only [SlashAction.add_slash, SL_smul_slash, H₂_T_action, H₄_T_action, smul_neg]
+    ext z
+    simp only [Pi.add_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]
+    ring
+  have h_H₂_2H₄ : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] T) = -H₂ + (2 : ℂ) • H₃ := by
+    simp only [SlashAction.add_slash, SL_smul_slash, H₂_T_action, H₄_T_action]
+  -- Product transforms
+  have h_term1 : ((((2 : ℂ) • H₂ + H₄) * f₂) ∣[(6 : ℤ)] T) = (-(2 : ℂ) • H₂ + H₃) * (-f₂) := by
+    have hmul := mul_slash_SL2 2 4 T ((2 : ℂ) • H₂ + H₄) f₂
+    simp only [h_2H₂_H₄, f₂_T_action] at hmul
+    exact hmul
+  have h_term2 : (((H₂ + (2 : ℂ) • H₄) * f₄) ∣[(6 : ℤ)] T) = (-H₂ + (2 : ℂ) • H₃) * f₃ := by
+    have hmul := mul_slash_SL2 2 4 T (H₂ + (2 : ℂ) • H₄) f₄
+    simp only [h_H₂_2H₄, f₄_T_action] at hmul
+    exact hmul
+  -- Combine and simplify using Jacobi: H₃ = H₂ + H₄, f₃ = f₂ + f₄
+  simp only [theta_g, SlashAction.add_slash, h_term1, h_term2]
+  ext z
+  simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]
+  have hH₃ : H₃ z = H₂ z + H₄ z := (jacobi_identity' z).symm
   have hf₃ : f₃ z = f₂ z + f₄ z := (congrFun f₂_add_f₄_eq_f₃ z).symm
   rw [hH₃, hf₃]
   ring
@@ -173,45 +109,27 @@ Using mul_slash_SL2: (f₂²)|[8]S = (f₂|[4]S)² = (-f₄)² = f₄²
                      (f₄²)|[8]S = (f₄|[4]S)² = (-f₂)² = f₂²
 So h|[8]S = f₄² + f₂f₄ + f₂² = f₂² + f₂f₄ + f₄² = h -/
 lemma theta_h_S_action : (theta_h ∣[(8 : ℤ)] S) = theta_h := by
-  have hf₂ := f₂_S_action
-  have hf₄ := f₄_S_action
-  -- h = f₂² + f₂f₄ + f₄² = f₂*f₂ + f₂*f₄ + f₄*f₄
-  -- Use mul_slash_SL2: (f*g)|[k1+k2]S = (f|[k1]S)*(g|[k2]S)
-  have h_f₂_sq : ((fun z => f₂ z ^ 2) ∣[(8 : ℤ)] S) = fun z => f₄ z ^ 2 := by
+  -- Under S: f₂ ↦ -f₄, f₄ ↦ -f₂
+  -- (f₂²)|S = f₄², (f₄²)|S = f₂², (f₂f₄)|S = f₂f₄
+  have h_f₂_sq : ((f₂ ^ 2) ∣[(8 : ℤ)] S) = f₄ ^ 2 := by
     have hmul := mul_slash_SL2 4 4 S f₂ f₂
-    rw [hf₂] at hmul
-    have hfun : (fun z => f₂ z ^ 2) = (f₂ * f₂) := by funext w; simp [Pi.mul_apply, sq]
-    have h8 : (8 : ℤ) = 4 + 4 := by norm_num
-    rw [hfun, h8, hmul]
-    funext z; simp only [Pi.mul_apply, Pi.neg_apply, sq, neg_mul_neg]
-  have h_f₄_sq : ((fun z => f₄ z ^ 2) ∣[(8 : ℤ)] S) = fun z => f₂ z ^ 2 := by
+    simp only [f₂_S_action] at hmul
+    convert hmul using 1 <;> ext <;> simp [sq]
+  have h_f₄_sq : ((f₄ ^ 2) ∣[(8 : ℤ)] S) = f₂ ^ 2 := by
     have hmul := mul_slash_SL2 4 4 S f₄ f₄
-    rw [hf₄] at hmul
-    have hfun : (fun z => f₄ z ^ 2) = (f₄ * f₄) := by funext w; simp [Pi.mul_apply, sq]
-    have h8 : (8 : ℤ) = 4 + 4 := by norm_num
-    rw [hfun, h8, hmul]
-    funext z; simp only [Pi.mul_apply, Pi.neg_apply, sq, neg_mul_neg]
-  have h_f₂f₄ : ((fun z => f₂ z * f₄ z) ∣[(8 : ℤ)] S) = fun z => f₂ z * f₄ z := by
+    simp only [f₄_S_action] at hmul
+    convert hmul using 1 <;> ext <;> simp [sq]
+  have h_f₂f₄ : ((f₂ * f₄) ∣[(8 : ℤ)] S) = f₂ * f₄ := by
     have hmul := mul_slash_SL2 4 4 S f₂ f₄
-    rw [hf₂, hf₄] at hmul
-    have hfun : (fun z => f₂ z * f₄ z) = (f₂ * f₄) := by funext w; simp [Pi.mul_apply]
-    have h8 : (8 : ℤ) = 4 + 4 := by norm_num
-    rw [hfun, h8, hmul]
-    funext z; simp only [Pi.mul_apply, Pi.neg_apply, neg_mul_neg, mul_comm]
-  -- Combine: h|S = f₄² + f₂f₄ + f₂² = h
-  have hfun_h : theta_h = (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) := by
-    funext z; unfold theta_h; ring
-  rw [hfun_h]
-  have hfun_lhs1 : (fun z => f₂ z ^ 2 + f₂ z * f₄ z) =
-      (fun z => f₂ z ^ 2) + (fun z => f₂ z * f₄ z) := by funext; simp [Pi.add_apply]
-  have h_add1 := SlashAction.add_slash (8 : ℤ) S (fun z => f₂ z ^ 2) (fun z => f₂ z * f₄ z)
-  have hfun_lhs2 : (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) =
-      (fun z => f₂ z ^ 2 + f₂ z * f₄ z) + (fun z => f₄ z ^ 2) := by
-    funext; simp [Pi.add_apply]
-  have h_add2 := SlashAction.add_slash (8 : ℤ) S
-    (fun z => f₂ z ^ 2 + f₂ z * f₄ z) (fun z => f₄ z ^ 2)
-  rw [hfun_lhs2, h_add2, hfun_lhs1, h_add1, h_f₂_sq, h_f₂f₄, h_f₄_sq]
-  funext z; simp only [Pi.add_apply]; ring
+    simp only [f₂_S_action, f₄_S_action] at hmul
+    convert hmul using 1
+    ext z
+    simp only [Pi.mul_apply, Pi.neg_apply, neg_mul_neg, mul_comm]
+  -- h|S = f₄² + f₂f₄ + f₂² = h
+  simp only [theta_h, SlashAction.add_slash, h_f₂_sq, h_f₂f₄, h_f₄_sq]
+  ext z
+  simp only [Pi.add_apply, Pi.mul_apply, sq]
+  ring
 
 /-- h is invariant under T.
 
@@ -220,48 +138,28 @@ h|T = (-f₂)² + (-f₂)(f₂ + f₄) + (f₂ + f₄)²
     = f₂² - f₂² - f₂f₄ + f₂² + 2f₂f₄ + f₄²
     = f₂² + f₂f₄ + f₄² = h -/
 lemma theta_h_T_action : (theta_h ∣[(8 : ℤ)] T) = theta_h := by
-  have hf₂ := f₂_T_action
-  have hf₄ := f₄_T_action
-  have hf₂f₄ := f₂_add_f₄_eq_f₃
-  -- Under T: f₂ → -f₂, f₄ → f₃ = f₂ + f₄
-  -- (f₂²)|T = (-f₂)² = f₂², (f₄²)|T = (f₂+f₄)², (f₂f₄)|T = (-f₂)(f₂+f₄)
-  have h_f₂_sq : ((fun z => f₂ z ^ 2) ∣[(8 : ℤ)] T) = fun z => f₂ z ^ 2 := by
+  -- Under T: f₂ ↦ -f₂, f₄ ↦ f₃ = f₂ + f₄
+  -- (f₂²)|T = f₂², (f₄²)|T = (f₂+f₄)², (f₂f₄)|T = (-f₂)(f₂+f₄)
+  have h_f₂_sq : ((f₂ ^ 2) ∣[(8 : ℤ)] T) = f₂ ^ 2 := by
     have hmul := mul_slash_SL2 4 4 T f₂ f₂
-    rw [hf₂] at hmul
-    have hfun : (fun z => f₂ z ^ 2) = (f₂ * f₂) := by funext w; simp [Pi.mul_apply, sq]
-    have h8 : (8 : ℤ) = 4 + 4 := by norm_num
-    rw [hfun, h8, hmul]
-    funext z; simp only [Pi.mul_apply, Pi.neg_apply, neg_mul_neg]
-  have h_f₄_sq : ((fun z => f₄ z ^ 2) ∣[(8 : ℤ)] T) = fun z => (f₂ z + f₄ z) ^ 2 := by
+    simp only [f₂_T_action] at hmul
+    convert hmul using 1 <;> ext <;> simp [sq]
+  have h_f₄_sq : ((f₄ ^ 2) ∣[(8 : ℤ)] T) = (f₂ + f₄) ^ 2 := by
     have hmul := mul_slash_SL2 4 4 T f₄ f₄
-    rw [hf₄] at hmul
-    have hfun : (fun z => f₄ z ^ 2) = (f₄ * f₄) := by funext w; simp [Pi.mul_apply, sq]
-    have h8 : (8 : ℤ) = 4 + 4 := by norm_num
-    rw [hfun, h8, hmul]
-    funext z
-    simp only [Pi.mul_apply, sq]
-    rw [(congrFun hf₂f₄ z).symm, Pi.add_apply]
-  have h_f₂f₄' : ((fun z => f₂ z * f₄ z) ∣[(8 : ℤ)] T) =
-      fun z => (-f₂ z) * (f₂ z + f₄ z) := by
+    simp only [f₄_T_action] at hmul
+    convert hmul using 1
+    · ext; simp [sq]
+    · ext z; simp only [Pi.pow_apply, Pi.mul_apply, sq]
+      rw [(congrFun f₂_add_f₄_eq_f₃ z).symm, Pi.add_apply]
+  have h_f₂f₄ : ((f₂ * f₄) ∣[(8 : ℤ)] T) = (-f₂) * (f₂ + f₄) := by
     have hmul := mul_slash_SL2 4 4 T f₂ f₄
-    rw [hf₂, hf₄] at hmul
-    have hfun : (fun z => f₂ z * f₄ z) = (f₂ * f₄) := by funext w; simp [Pi.mul_apply]
-    have h8 : (8 : ℤ) = 4 + 4 := by norm_num
-    rw [hfun, h8, hmul]
-    funext z
+    simp only [f₂_T_action, f₄_T_action] at hmul
+    convert hmul using 1
+    ext z
     simp only [Pi.mul_apply, Pi.neg_apply]
-    rw [(congrFun hf₂f₄ z).symm, Pi.add_apply]
-  -- Combine: h|T = f₂² + (-f₂)(f₂+f₄) + (f₂+f₄)² = h
-  have hfun_h : theta_h = (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) := by
-    funext z; unfold theta_h; ring
-  rw [hfun_h]
-  have hfun_lhs1 : (fun z => f₂ z ^ 2 + f₂ z * f₄ z) =
-      (fun z => f₂ z ^ 2) + (fun z => f₂ z * f₄ z) := by funext; simp [Pi.add_apply]
-  have h_add1 := SlashAction.add_slash (8 : ℤ) T (fun z => f₂ z ^ 2) (fun z => f₂ z * f₄ z)
-  have hfun_lhs2 : (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) =
-      (fun z => f₂ z ^ 2 + f₂ z * f₄ z) + (fun z => f₄ z ^ 2) := by
-    funext; simp [Pi.add_apply]
-  have h_add2 := SlashAction.add_slash (8 : ℤ) T
-    (fun z => f₂ z ^ 2 + f₂ z * f₄ z) (fun z => f₄ z ^ 2)
-  rw [hfun_lhs2, h_add2, hfun_lhs1, h_add1, h_f₂_sq, h_f₂f₄', h_f₄_sq]
-  funext z; simp only [Pi.add_apply]; ring
+    rw [(congrFun f₂_add_f₄_eq_f₃ z).symm, Pi.add_apply]
+  -- h|T = f₂² + (-f₂)(f₂+f₄) + (f₂+f₄)² = h
+  simp only [theta_h, SlashAction.add_slash, h_f₂_sq, h_f₂f₄, h_f₄_sq]
+  ext z
+  simp only [Pi.add_apply, Pi.mul_apply, Pi.neg_apply, sq]
+  ring
