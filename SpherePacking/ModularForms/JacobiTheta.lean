@@ -613,16 +613,29 @@ lemma jacobi_g_T_action : (jacobi_g ∣[(2 : ℤ)] T) = -jacobi_g := by
   rw [h2z, h4z, h3z]
   ring
 
-/-- S-invariance of f: f|[4]S = f (since g|S = -g implies g²|S = g²) -/
-lemma jacobi_f_S_action : (jacobi_f ∣[(4 : ℤ)] S) = jacobi_f := by
-  -- Since g|[2]S = -g, we have (g²)|[4]S = (-g)² = g² = f
-  -- Use the fact that squaring eliminates the sign
-  sorry
+/-- Rewrite `jacobi_f` as a pointwise product (so we can use `mul_slash_SL2`). -/
+lemma jacobi_f_eq_mul : jacobi_f = jacobi_g * jacobi_g := by
+  ext z
+  simp [jacobi_f, pow_two]
 
-/-- T-invariance of f: f|[4]T = f (since g|T = -g implies g²|T = g²) -/
+/-- S-invariance of f: f|[4]S = f, because g|[2]S = -g. -/
+lemma jacobi_f_S_action : (jacobi_f ∣[(4 : ℤ)] S) = jacobi_f := by
+  rw [jacobi_f_eq_mul]
+  -- (g*g)|[4]S = (g|[2]S)*(g|[2]S)
+  rw [show (4 : ℤ) = 2 + 2 by norm_num, mul_slash_SL2 2 2 S _ _]
+  -- replace g|S by -g
+  rw [jacobi_g_S_action]
+  -- (-g)*(-g) = g*g
+  ext z
+  simp only [Pi.neg_apply, Pi.mul_apply, neg_mul_neg]
+
+/-- T-invariance of f: f|[4]T = f, because g|[2]T = -g. -/
 lemma jacobi_f_T_action : (jacobi_f ∣[(4 : ℤ)] T) = jacobi_f := by
-  -- Since g|[2]T = -g, we have (g²)|[4]T = (-g)² = g² = f
-  sorry
+  rw [jacobi_f_eq_mul]
+  rw [show (4 : ℤ) = 2 + 2 by norm_num, mul_slash_SL2 2 2 T _ _]
+  rw [jacobi_g_T_action]
+  ext z
+  simp only [Pi.neg_apply, Pi.mul_apply, neg_mul_neg]
 
 /-- Full SL₂(ℤ) invariance of f with weight 4 -/
 lemma jacobi_f_SL2Z_invariant : ∀ γ : SL(2, ℤ), jacobi_f ∣[(4 : ℤ)] γ = jacobi_f :=
