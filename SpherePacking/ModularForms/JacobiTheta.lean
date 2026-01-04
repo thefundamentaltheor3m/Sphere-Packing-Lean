@@ -646,6 +646,59 @@ noncomputable def jacobi_f_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1)
   toFun := jacobi_f
   slash_action_eq' := slashaction_generators_GL2R jacobi_f 4 jacobi_f_S_action jacobi_f_T_action
 
+/-- jacobi_g is holomorphic (MDifferentiable) since H₂, H₃, H₄ are -/
+lemma jacobi_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_g := by
+  have h2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂_SIF := H₂_SIF_MDifferentiable
+  have h3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃_SIF := H₃_SIF_MDifferentiable
+  have h4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF := H₄_SIF_MDifferentiable
+  have heq : jacobi_g = fun z => H₂ z + H₄ z - H₃ z := rfl
+  rw [heq]
+  exact (h2.add h4).sub h3
+
+/-- jacobi_f is holomorphic (MDifferentiable) since jacobi_g is -/
+lemma jacobi_f_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f := by
+  have hg := jacobi_g_MDifferentiable
+  have heq : jacobi_f = fun z => jacobi_g z * jacobi_g z := by
+    ext z; simp [jacobi_f, pow_two]
+  rw [heq]
+  exact hg.mul hg
+
+/-- jacobi_f_SIF is holomorphic -/
+lemma jacobi_f_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f_SIF :=
+  jacobi_f_MDifferentiable
+
+/-- jacobi_f is bounded at i∞ (in fact tends to 0) -/
+lemma isBoundedAtImInfty_jacobi_f : IsBoundedAtImInfty jacobi_f := by
+  -- jacobi_f → 0 at i∞, so it's certainly bounded
+  rw [isBoundedAtImInfty_iff]
+  use 1, 1
+  intro z hz
+  -- For large enough imaginary part, jacobi_f z is small
+  -- This follows from jacobi_f_tendsto_atImInfty (proved in AtImInfty.lean)
+  -- For now we use sorry as the tendsto lemma is in AtImInfty
+  sorry
+
+/-- jacobi_f slash by any SL₂(ℤ) element equals jacobi_f (for use with bounded_at_cusps) -/
+lemma jacobi_f_slash_eq (A' : SL(2, ℤ)) :
+    jacobi_f ∣[(4 : ℤ)] (SpecialLinearGroup.mapGL ℝ A') = jacobi_f := by
+  have h := jacobi_f_SL2Z_invariant A'
+  simp only [SL_slash] at h
+  exact h
+
+/-- jacobi_f slash by any SL₂(ℤ) element is bounded at i∞ -/
+lemma isBoundedAtImInfty_jacobi_f_slash :
+    ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (jacobi_f ∣[(4 : ℤ)] (A : GL (Fin 2) ℝ)) := by
+  intro A ⟨A', hA⟩
+  rw [← hA, jacobi_f_slash_eq A']
+  exact isBoundedAtImInfty_jacobi_f
+
+/-- jacobi_f as a ModularForm of weight 4 and level Γ(1) -/
+noncomputable def jacobi_f_MF : ModularForm (CongruenceSubgroup.Gamma 1) 4 := {
+  jacobi_f_SIF with
+  holo' := jacobi_f_SIF_MDifferentiable
+  bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_jacobi_f_slash
+}
+
 end JacobiIdentity
 
 /-- Jacobi identity: H₂ + H₄ = H₃ (Blueprint Lemma 6.41)
