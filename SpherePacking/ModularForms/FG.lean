@@ -4,8 +4,9 @@ import Mathlib.Order.Monotone.Defs
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.JacobiTheta
 
-open Filter
-open scoped Real Manifold
+open UpperHalfPlane
+open Filter ModularGroup ModularForm SlashAction
+open scoped Real Manifold SlashAction
 
 
 /--
@@ -160,6 +161,39 @@ lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ := antiSerreDerPos SerreDer_22_L�
 $t \mapsto F(it) / G(it)$ is monotone decreasing.
 -/
 theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) := by
+  sorry
+
+/- Functional equation of $F$ -/
+noncomputable def F₁ := E₂ * E₄.toFun - E₆.toFun
+
+theorem F_S_action (z : ℍ) :
+    (F ∣[(12 : ℤ)] S) z = F z - 12 * I * π ^ (-1 : ℤ) * z ^ (-1 : ℤ) * (F₁ * E₄.toFun) z
+      - 36 * π ^ (-2 : ℤ) * z ^ (-2 : ℤ) * (E₄.toFun z) ^ 2 := by
+  sorry
+
+theorem F_functional_equation (z : ℍ) :
+    F (S • z) = z ^ 12 * F z - 12 * I * π ^ (-1 : ℤ) * z ^ 11 * (F₁ * E₄.toFun) z
+      - 36 * π ^ (-2 : ℤ) * z ^ 10 * (E₄.toFun z) ^ 2 := by
+  sorry
+
+theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
+    FReal (1 / t) = t ^ 12 * FReal t - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun).resToImagAxis t
+      - 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun.resToImagAxis t) ^ 2 := by
+  sorry
+
+/- Functional equation of $G$ -/
+theorem G_S_action (z : ℍ) :
+    (G ∣[(12 : ℤ)] S) z = H₄ z ^ 3 * (2 * H₄ z ^ 3 + 5 * H₂ z * H₄ z + 5 * H₂ z ^ 2) := by
+      sorry
+
+theorem G_functional_equation (z : ℍ) :
+    G (S • z) = z ^ 12 * H₄ z ^ 3 * (2 * H₄ z ^ 3 + 5 * H₂ z * H₄ z + 5 * H₂ z ^ 2) := by
+  sorry
+
+theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
+    GReal (1 / t) = t ^ 12 * H₄.resToImagAxis t ^ 3
+      * (2 * H₄.resToImagAxis t ^ 3 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t
+        + 5 * H₂.resToImagAxis t ^ 2) := by
   sorry
 
 /--
