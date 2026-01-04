@@ -585,32 +585,22 @@ noncomputable def jacobi_f : ℍ → ℂ := fun z => (jacobi_g z) ^ 2
     Using: H₂|S = -H₄, H₄|S = -H₂, H₃|S = -H₃
     So (H₂ + H₄ - H₃)|S = -H₄ - H₂ + H₃ = -(H₂ + H₄ - H₃) -/
 lemma jacobi_g_S_action : (jacobi_g ∣[(2 : ℤ)] S) = -jacobi_g := by
-  have h2 := H₂_S_action
-  have h4 := H₄_S_action
-  have h3 := H₃_S_action
+  have h : jacobi_g = H₂ + H₄ - H₃ := rfl
+  rw [h, sub_eq_add_neg, SlashAction.add_slash, SlashAction.add_slash, SlashAction.neg_slash]
+  rw [H₂_S_action, H₃_S_action, H₄_S_action]
   ext z
-  simp only [jacobi_g, Pi.neg_apply, SL_slash_apply, add_mul, sub_mul]
-  have h2z := congr_fun h2 z
-  have h4z := congr_fun h4 z
-  have h3z := congr_fun h3 z
-  simp only [SL_slash_apply, Pi.neg_apply] at h2z h4z h3z
-  rw [h2z, h4z, h3z]
+  simp only [Pi.add_apply, Pi.neg_apply]
   ring
 
 /-- T-action on g: g|[2]T = -g
     Using: H₂|T = -H₂, H₃|T = H₄, H₄|T = H₃
     So (H₂ + H₄ - H₃)|T = -H₂ + H₃ - H₄ = -(H₂ + H₄ - H₃) -/
 lemma jacobi_g_T_action : (jacobi_g ∣[(2 : ℤ)] T) = -jacobi_g := by
-  have h2 := H₂_T_action
-  have h4 := H₄_T_action
-  have h3 := H₃_T_action
+  have h : jacobi_g = H₂ + H₄ - H₃ := rfl
+  rw [h, sub_eq_add_neg, SlashAction.add_slash, SlashAction.add_slash, SlashAction.neg_slash]
+  rw [H₂_T_action, H₃_T_action, H₄_T_action]
   ext z
-  simp only [jacobi_g, Pi.neg_apply, SL_slash_apply, add_mul, sub_mul]
-  have h2z := congr_fun h2 z
-  have h4z := congr_fun h4 z
-  have h3z := congr_fun h3 z
-  simp only [SL_slash_apply, Pi.neg_apply] at h2z h4z h3z
-  rw [h2z, h4z, h3z]
+  simp only [Pi.add_apply, Pi.neg_apply]
   ring
 
 /-- Rewrite `jacobi_f` as a pointwise product (so we can use `mul_slash_SL2`). -/
@@ -620,22 +610,13 @@ lemma jacobi_f_eq_mul : jacobi_f = jacobi_g * jacobi_g := by
 
 /-- S-invariance of f: f|[4]S = f, because g|[2]S = -g. -/
 lemma jacobi_f_S_action : (jacobi_f ∣[(4 : ℤ)] S) = jacobi_f := by
-  rw [jacobi_f_eq_mul]
-  -- (g*g)|[4]S = (g|[2]S)*(g|[2]S)
-  rw [show (4 : ℤ) = 2 + 2 by norm_num, mul_slash_SL2 2 2 S _ _]
-  -- replace g|S by -g
-  rw [jacobi_g_S_action]
-  -- (-g)*(-g) = g*g
-  ext z
-  simp only [Pi.neg_apply, Pi.mul_apply, neg_mul_neg]
+  simp only [jacobi_f_eq_mul, show (4 : ℤ) = 2 + 2 by norm_num, mul_slash_SL2 2 2 S _ _,
+    jacobi_g_S_action, neg_mul_neg]
 
 /-- T-invariance of f: f|[4]T = f, because g|[2]T = -g. -/
 lemma jacobi_f_T_action : (jacobi_f ∣[(4 : ℤ)] T) = jacobi_f := by
-  rw [jacobi_f_eq_mul]
-  rw [show (4 : ℤ) = 2 + 2 by norm_num, mul_slash_SL2 2 2 T _ _]
-  rw [jacobi_g_T_action]
-  ext z
-  simp only [Pi.neg_apply, Pi.mul_apply, neg_mul_neg]
+  simp only [jacobi_f_eq_mul, show (4 : ℤ) = 2 + 2 by norm_num, mul_slash_SL2 2 2 T _ _,
+    jacobi_g_T_action, neg_mul_neg]
 
 /-- Full SL₂(ℤ) invariance of f with weight 4 -/
 lemma jacobi_f_SL2Z_invariant : ∀ γ : SL(2, ℤ), jacobi_f ∣[(4 : ℤ)] γ = jacobi_f :=
@@ -647,21 +628,14 @@ noncomputable def jacobi_f_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1)
   slash_action_eq' := slashaction_generators_GL2R jacobi_f 4 jacobi_f_S_action jacobi_f_T_action
 
 /-- jacobi_g is holomorphic (MDifferentiable) since H₂, H₃, H₄ are -/
-lemma jacobi_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_g := by
-  have h2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂_SIF := H₂_SIF_MDifferentiable
-  have h3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃_SIF := H₃_SIF_MDifferentiable
-  have h4 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF := H₄_SIF_MDifferentiable
-  have heq : jacobi_g = fun z => H₂ z + H₄ z - H₃ z := rfl
-  rw [heq]
-  exact (h2.add h4).sub h3
+lemma jacobi_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_g :=
+  (H₂_SIF_MDifferentiable.add H₄_SIF_MDifferentiable).sub H₃_SIF_MDifferentiable
 
 /-- jacobi_f is holomorphic (MDifferentiable) since jacobi_g is -/
 lemma jacobi_f_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f := by
-  have hg := jacobi_g_MDifferentiable
-  have heq : jacobi_f = fun z => jacobi_g z * jacobi_g z := by
-    ext z; simp [jacobi_f, pow_two]
-  rw [heq]
-  exact hg.mul hg
+  change MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => (jacobi_g z) ^ 2)
+  simp only [pow_two]
+  exact jacobi_g_MDifferentiable.mul jacobi_g_MDifferentiable
 
 /-- jacobi_f_SIF is holomorphic -/
 lemma jacobi_f_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f_SIF :=
@@ -681,9 +655,7 @@ lemma isBoundedAtImInfty_jacobi_f : IsBoundedAtImInfty jacobi_f := by
 /-- jacobi_f slash by any SL₂(ℤ) element equals jacobi_f (for use with bounded_at_cusps) -/
 lemma jacobi_f_slash_eq (A' : SL(2, ℤ)) :
     jacobi_f ∣[(4 : ℤ)] (SpecialLinearGroup.mapGL ℝ A') = jacobi_f := by
-  have h := jacobi_f_SL2Z_invariant A'
-  simp only [SL_slash] at h
-  exact h
+  simpa [SL_slash] using jacobi_f_SL2Z_invariant A'
 
 /-- jacobi_f slash by any SL₂(ℤ) element is bounded at i∞ -/
 lemma isBoundedAtImInfty_jacobi_f_slash :
@@ -696,7 +668,8 @@ lemma isBoundedAtImInfty_jacobi_f_slash :
 noncomputable def jacobi_f_MF : ModularForm (CongruenceSubgroup.Gamma 1) 4 := {
   jacobi_f_SIF with
   holo' := jacobi_f_SIF_MDifferentiable
-  bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_jacobi_f_slash
+  bdd_at_cusps' := fun hc =>
+    bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_jacobi_f_slash
 }
 
 end JacobiIdentity
