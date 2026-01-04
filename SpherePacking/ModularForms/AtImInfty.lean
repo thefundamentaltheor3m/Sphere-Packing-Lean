@@ -194,20 +194,12 @@ Combined with the dimension vanishing for weight 4 cusp forms, this proves jacob
 /-- The function g := H₂ + H₄ - H₃ tends to 0 at i∞.
     Since H₂ → 0, H₃ → 1, H₄ → 1, we have g → 0 + 1 - 1 = 0. -/
 theorem jacobi_g_tendsto_atImInfty : Tendsto jacobi_g atImInfty (𝓝 0) := by
-  have h := H₂_tendsto_atImInfty.add H₄_tendsto_atImInfty
-  have h' := h.sub H₃_tendsto_atImInfty
-  -- H₂ + H₄ → 0 + 1 = 1, then (H₂ + H₄) - H₃ → 1 - 1 = 0
-  have heq : jacobi_g = fun z => H₂ z + H₄ z - H₃ z := rfl
-  rw [heq]
-  convert h' using 1
+  convert (H₂_tendsto_atImInfty.add H₄_tendsto_atImInfty).sub H₃_tendsto_atImInfty using 1
   norm_num
 
 /-- The function f := g² tends to 0 at i∞. -/
 theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
-  have h := jacobi_g_tendsto_atImInfty.pow 2
-  have heq : jacobi_f = fun z => (jacobi_g z) ^ 2 := rfl
-  rw [heq]
-  convert h using 1
+  convert jacobi_g_tendsto_atImInfty.pow 2 using 1
   norm_num
 
 /-!
@@ -254,26 +246,15 @@ theorem jacobi_f_MF_eq_zero : jacobi_f_MF = 0 := by
   exact jacobi_f_MF_IsCuspForm
 
 /-- jacobi_f = 0 as a function -/
-theorem jacobi_f_eq_zero : jacobi_f = 0 := by
-  have h := jacobi_f_MF_eq_zero
-  ext z
-  have hz := congr_arg (fun f => f z) h
-  simp only [ModularForm.zero_apply] at hz
-  exact hz
+theorem jacobi_f_eq_zero : jacobi_f = 0 :=
+  congr_arg (·.toFun) jacobi_f_MF_eq_zero
 
 /-- jacobi_g = 0 as a function (from g² = 0) -/
 theorem jacobi_g_eq_zero : jacobi_g = 0 := by
   ext z
-  have h := congr_fun jacobi_f_eq_zero z
-  simp only [jacobi_f, Pi.zero_apply] at h
-  exact sq_eq_zero_iff.mp h
+  simpa [jacobi_f] using congr_fun jacobi_f_eq_zero z
 
 /-- Jacobi identity proof: H₂ + H₄ = H₃ -/
 theorem jacobi_identity_proof : H₂ + H₄ = H₃ := by
-  have h := jacobi_g_eq_zero
   ext z
-  have hz := congr_fun h z
-  simp only [jacobi_g, Pi.zero_apply] at hz
-  simp only [Pi.add_apply]
-  -- From H₂ z + H₄ z - H₃ z = 0, get H₂ z + H₄ z = H₃ z
-  exact sub_eq_zero.mp hz
+  simpa [jacobi_g, sub_eq_zero] using congr_fun jacobi_g_eq_zero z
