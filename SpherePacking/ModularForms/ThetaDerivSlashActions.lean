@@ -150,7 +150,7 @@ lemma f₂_S_action : (f₂ ∣[(4 : ℤ)] S) = -f₄ := by
       _ = serre_D (2 : ℤ) (H₂ ∣[(2 : ℤ)] S) := h_equivariant
       _ = serre_D (2 : ℤ) (-H₄) := by rw [H₂_S_action]
       _ = -serre_D (2 : ℤ) H₄ := by
-            funext z; simpa using serre_D_smul (2 : ℤ) (-1) H₄ H₄_SIF_MDifferentiable z
+            simpa using serre_D_smul 2 (-1) H₄ H₄_SIF_MDifferentiable
   -- Step 2: (H₂ + 2•H₄)|[2]S = -(H₄ + 2•H₂)
   have h_lin_comb : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] S) = -(H₄ + (2 : ℂ) • H₂) := by
     rw [SlashAction.add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
@@ -185,7 +185,7 @@ lemma f₂_T_action : (f₂ ∣[(4 : ℤ)] T) = -f₂ := by
       _ = serre_D (2 : ℤ) (H₂ ∣[(2 : ℤ)] T) := h_equivariant
       _ = serre_D (2 : ℤ) (-H₂) := by rw [H₂_T_action]
       _ = -serre_D (2 : ℤ) H₂ := by
-            funext z; simpa using serre_D_smul (2 : ℤ) (-1) H₂ H₂_SIF_MDifferentiable z
+          simpa using serre_D_smul 2 (-1) H₂ H₂_SIF_MDifferentiable
   -- Step 2: (H₂ + 2•H₄)|[2]T = H₂ + 2•H₄ using Jacobi: H₃ = H₂ + H₄
   -- -H₂ + 2H₃ = -H₂ + 2(H₂ + H₄) = H₂ + 2H₄
   have h_lin_comb : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] T) = H₂ + (2 : ℂ) • H₄ := by
@@ -219,7 +219,7 @@ lemma f₄_S_action : (f₄ ∣[(4 : ℤ)] S) = -f₂ := by
       _ = serre_D (2 : ℤ) (H₄ ∣[(2 : ℤ)] S) := h_equivariant
       _ = serre_D (2 : ℤ) (-H₂) := by rw [H₄_S_action]
       _ = -serre_D (2 : ℤ) H₂ := by
-            funext z; simpa using serre_D_smul (2 : ℤ) (-1) H₂ H₂_SIF_MDifferentiable z
+          simpa using serre_D_smul 2 (-1) H₂ H₂_SIF_MDifferentiable
   -- Step 2: (2•H₂ + H₄)|[2]S = -(2•H₄ + H₂)
   have h_lin_comb : (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] S) = -((2 : ℂ) • H₄ + H₂) := by
     rw [SlashAction.add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
