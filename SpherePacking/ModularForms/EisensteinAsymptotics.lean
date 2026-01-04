@@ -460,7 +460,7 @@ lemma serre_D_E₄_tendsto_at_infinity :
   have hconst : Filter.Tendsto (fun _ : PosReal => (4 : ℂ) * 12⁻¹)
       (Filter.comap Subtype.val Filter.atTop) (nhds ((4 : ℂ) * 12⁻¹)) :=
     tendsto_const_nhds
-  convert hconst.mul hprod using 1 <;> ring
+  convert hconst.mul hprod using 1 <;> ring_nf
 
 /-- serre_D 6 E₆(iy) → -1/2 as y → +∞. -/
 lemma serre_D_E₆_tendsto_at_infinity :
@@ -486,7 +486,7 @@ lemma serre_D_E₆_tendsto_at_infinity :
   have hconst : Filter.Tendsto (fun _ : PosReal => (6 : ℂ) * 12⁻¹)
       (Filter.comap Subtype.val Filter.atTop) (nhds ((6 : ℂ) * 12⁻¹)) :=
     tendsto_const_nhds
-  convert hconst.mul hprod using 1 <;> ring
+  convert hconst.mul hprod using 1 <;> ring_nf
 
 /-- serre_D 1 E₂ is a weight-4 modular form.
 Note: E₂ itself is NOT a modular form, but serre_D 1 E₂ IS. -/
@@ -534,4 +534,4 @@ lemma serre_D_E₂_tendsto_at_infinity :
   have hconst : Filter.Tendsto (fun _ : PosReal => (1 : ℂ) * 12⁻¹)
       (Filter.comap Subtype.val Filter.atTop) (nhds ((1 : ℂ) * 12⁻¹)) :=
     tendsto_const_nhds
-  convert hconst.mul hprod using 1 <;> ring
+  convert hconst.mul hprod using 1 <;> ring_nf
