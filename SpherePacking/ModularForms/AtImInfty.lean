@@ -2,6 +2,7 @@ import SpherePacking.ForMathlib.AtImInfty
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.DimensionFormulas
 import SpherePacking.ModularForms.IsCuspForm
+import SpherePacking.ModularForms.qExpansion_lems
 
 /-!
 # Limits at infinity
@@ -229,16 +230,15 @@ theorem isBoundedAtImInfty_jacobi_f' : IsBoundedAtImInfty jacobi_f := by
 /-- jacobi_f_MF is a cusp form because it vanishes at i∞ -/
 theorem jacobi_f_MF_IsCuspForm : IsCuspForm (CongruenceSubgroup.Gamma 1) 4 jacobi_f_MF := by
   -- A modular form that tends to 0 at i∞ is a cusp form
-  -- Strategy: Use limit uniqueness - jacobi_f → 0 at i∞ implies cuspFunction = 0
   rw [IsCuspForm_iff_coeffZero_eq_zero]
   rw [ModularFormClass.qExpansion_coeff]
   simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul]
-  -- The limit of jacobi_f_MF ∘ invQParam as q → 0 equals both:
-  -- (1) cuspFunction 1 jacobi_f_MF 0 (by modform_tendto_ndhs_zero)
-  -- (2) 0 (because invQParam → i∞ and jacobi_f → 0 at i∞)
-  -- By uniqueness of limits, cuspFunction 1 jacobi_f_MF 0 = 0
-  -- TODO: Clean up the filter composition proof
-  sorry
+  -- jacobi_f → 0 at atImInfty, hence jacobi_f ∘ ofComplex → 0 at I∞ on ℂ
+  have h_zero : IsZeroAtImInfty jacobi_f := jacobi_f_tendsto_atImInfty
+  have h_zero_I : ZeroAtFilter (comap Complex.im atTop) (jacobi_f ∘ ofComplex) :=
+    h_zero.comp tendsto_comap_im_ofComplex
+  -- cuspFunction is 0 when the function vanishes at I∞
+  exact Function.Periodic.cuspFunction_zero_of_zero_at_inf (by norm_num : (0 : ℝ) < 1) h_zero_I
 
 /-- The main dimension vanishing: jacobi_f_MF = 0 -/
 theorem jacobi_f_MF_eq_zero : jacobi_f_MF = 0 := by
