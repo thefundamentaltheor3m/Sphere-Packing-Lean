@@ -181,3 +181,29 @@ theorem H₃_tendsto_atImInfty : Tendsto H₃ atImInfty (𝓝 1) := by
 theorem H₄_tendsto_atImInfty : Tendsto H₄ atImInfty (𝓝 1) := by
   convert Θ₄_tendsto_atImInfty.pow 4
   norm_num
+
+/-!
+## Jacobi identity asymptotics
+
+We prove that g := H₂ + H₄ - H₃ → 0 at i∞, hence f := g² → 0.
+Combined with the dimension vanishing for weight 4 cusp forms, this proves jacobi_identity.
+-/
+
+/-- The function g := H₂ + H₄ - H₃ tends to 0 at i∞.
+    Since H₂ → 0, H₃ → 1, H₄ → 1, we have g → 0 + 1 - 1 = 0. -/
+theorem jacobi_g_tendsto_atImInfty : Tendsto jacobi_g atImInfty (𝓝 0) := by
+  have h := H₂_tendsto_atImInfty.add H₄_tendsto_atImInfty
+  have h' := h.sub H₃_tendsto_atImInfty
+  -- H₂ + H₄ → 0 + 1 = 1, then (H₂ + H₄) - H₃ → 1 - 1 = 0
+  have heq : jacobi_g = fun z => H₂ z + H₄ z - H₃ z := rfl
+  rw [heq]
+  convert h' using 1
+  norm_num
+
+/-- The function f := g² tends to 0 at i∞. -/
+theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
+  have h := jacobi_g_tendsto_atImInfty.pow 2
+  have heq : jacobi_f = fun z => (jacobi_g z) ^ 2 := rfl
+  rw [heq]
+  convert h using 1
+  norm_num
