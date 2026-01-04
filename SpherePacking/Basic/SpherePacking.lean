@@ -356,7 +356,7 @@ lemma biUnion_inter_balls_subset_biUnion_balls_inter
     (X : Set (EuclideanSpace ℝ (Fin d))) (r R : ℝ) :
     ⋃ x ∈ X ∩ ball 0 R, ball x r ⊆ (⋃ x ∈ X, ball x r) ∩ ball 0 (R + r) := by
   intro x hx
-  simp at hx ⊢
+  simp only [Set.mem_inter_iff, mem_ball, dist_zero_right, Set.mem_iUnion, exists_prop] at hx ⊢
   obtain ⟨y, ⟨hy₁, hy₂⟩⟩ := hx
   use ⟨y, ⟨hy₁.left, hy₂⟩⟩
   apply lt_of_le_of_lt <| norm_le_norm_add_norm_sub' x y
@@ -366,7 +366,7 @@ lemma biUnion_balls_inter_subset_biUnion_inter_balls
     (X : Set (EuclideanSpace ℝ (Fin d))) (r R : ℝ) :
     (⋃ x ∈ X, ball x r) ∩ ball 0 (R - r) ⊆ ⋃ x ∈ X ∩ ball 0 R, ball x r := by
   intro x hx
-  simp at hx ⊢
+  simp only [Set.mem_inter_iff, Set.mem_iUnion, mem_ball, exists_prop, dist_zero_right] at hx ⊢
   obtain ⟨⟨y, ⟨hy₁, hy₂⟩⟩, hx⟩ := hx
   use y, ⟨hy₁, ?_⟩, hy₂
   calc

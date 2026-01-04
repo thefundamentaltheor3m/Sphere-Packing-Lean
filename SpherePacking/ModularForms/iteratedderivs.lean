@@ -16,7 +16,7 @@ theorem upper_ne_int (x : ℍ) (d : ℤ) : (x : ℂ) + d ≠ 0 :=
   by
   by_contra h
   rw [add_eq_zero_iff_eq_neg] at h
-  have h1 : 0 < (x : ℂ).im := by simp; exact im_pos x
+  have h1 : 0 < (x : ℂ).im := by simp only [coe_im]; exact im_pos x
   rw [h] at h1
   simp at h1
 
@@ -47,7 +47,7 @@ theorem aut_iter_deriv (d : ℤ) (k : ℕ) :
         rw [deriv_inv'', deriv_pow, deriv_add_const', deriv_id'']
         · simp only [Nat.cast_add, Nat.cast_one, add_tsub_cancel_right, mul_one]
           rw [pow_add]
-          simp [pow_one]
+          simp only [pow_one, Pi.mul_apply, Pi.pow_apply]
           have Hw : (-(((k : ℂ) + 1) * (x + ↑d) ^ k) / ((x + ↑d) ^ k * (x + ↑d)) ^ 2) =
                     -(↑k + 1) / (x + ↑d) ^ (k + 2) :=
             by
@@ -80,11 +80,15 @@ theorem aut_iter_deriv (d : ℤ) (k : ℕ) :
     rw [←H]
     apply derivWithin_congr
     · norm_cast at *
-      simp at *
+      simp only [mem_setOf_eq, one_div, Int.reduceNegSucc, Int.reduceNeg, Int.cast_mul, Int.cast_pow,
+        Int.cast_neg, Int.cast_one, Int.cast_natCast, Nat.cast_mul, Nat.cast_add, Nat.cast_one,
+        Int.cast_add] at *
       intro r hr
       apply IH hr
     norm_cast at *
-    simp at *
+    simp only [mem_setOf_eq, one_div, Int.reduceNegSucc, Int.reduceNeg, Int.cast_mul, Int.cast_pow,
+      Int.cast_neg, Int.cast_one, Int.cast_natCast, Nat.cast_mul, Nat.cast_add, Nat.cast_one,
+      Int.cast_add] at *
     apply this
 
 theorem aut_iter_deriv' (d : ℤ) (k : ℕ) :
@@ -108,7 +112,7 @@ theorem aut_contDiffOn (d : ℤ) (k : ℕ) : ContDiffOn ℂ k (fun z : ℂ => 1 
   intro x hx
   have := upper_ne_int ⟨x, hx⟩ (-d)
   norm_cast at *
-  simp at *
+  simp only [coe_mk_subtype, Int.cast_neg] at *
   rw [add_neg_eq_zero] at this
   rw [sub_eq_zero]
   convert this
@@ -129,14 +133,14 @@ theorem iter_div_aut_add (d : ℤ) (k : ℕ) :
   rw [iteratedDerivWithin_add hx ?_]
   · have h2 := aut_iter_deriv d k hx
     have h3 := aut_iter_deriv' d k hx
-    simp at *
+    simp only [mem_setOf_eq, one_div] at *
     rw [h2, h3]
   · have h4 := aut_contDiffOn d k
-    simp at h4
+    simp only [one_div] at h4
     apply h4
     exact hx
   · have h5 := aut_contDiffOn (-d) k
-    simp at h5
+    simp only [Int.cast_neg, sub_neg_eq_add, one_div] at h5
     apply h5
     exact hx
   · refine IsOpen.uniqueDiffOn ?_

@@ -89,7 +89,7 @@ include hcsum in
 private lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i * z)‖ := by
   rw [summable_norm_iff]
   have h₁ := Summable.mul_right (cexp (↑π * I * ↑n₀ * z))⁻¹ hcsum
-  simp [fouterm, mul_add, add_mul, Complex.exp_add] at h₁
+  simp only [fouterm, Int.cast_add, Int.cast_natCast, mul_add, add_mul, Complex.exp_add] at h₁
   have h₂ : ∀ (i : ℕ), c (↑i + n₀) * (cexp (↑π * I * ↑i * z) * cexp (↑π * I * ↑n₀ * z)) *
       (cexp (↑π * I * ↑n₀ * z))⁻¹ = c (↑i + n₀) * cexp (↑π * I * ↑i * z) := by
     intro i; field_simp
@@ -287,7 +287,7 @@ by
   gcongr
   · exact aux_8 z
   · apply tprod_le_of_nonneg_of_multipliable
-    · intro n; simp
+    · intro n; simp only [Pi.zero_apply, neg_mul]
       have : (1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 24 =
           ((1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 12) ^ 2 := by ring_nf
       rw [this]; exact sq_nonneg _
@@ -321,7 +321,8 @@ private lemma step_11 :
     -- **This is where we use the fact that c is eventually polynomial in n.**
     have hnorm : ‖(rexp (-π * 2⁻¹) : ℂ)‖ < 1 := by
       rw [Complex.norm_real]
-      simp; positivity
+      simp only [neg_mul, norm_eq_abs, abs_exp, exp_lt_one_iff, Left.neg_neg_iff, inv_pos,
+        Nat.ofNat_pos, mul_pos_iff_of_pos_right]; positivity
     have h₁ : ∀ (n : ℕ), rexp (-π * n * 2⁻¹) = (rexp (-π * 2⁻¹)) ^ n := by
       intro n; symm
       calc (rexp (-π * 2⁻¹)) ^ n
@@ -405,11 +406,11 @@ private lemma step_12 :
   · -- This allows us to get rid of the numerators
     exact aux_11
   · apply tprod_le_of_nonneg_of_multipliable
-    · intro n; simp
+    · intro n; simp only [Pi.zero_apply, neg_mul]
       have : (1 - rexp (-(π * ↑↑n))) ^ 24 = ((1 - rexp (-(π * ↑↑n))) ^ 12) ^ 2 := by ring
       rw [this]
       exact sq_nonneg ((1 - rexp (-(π * ↑↑n))) ^ 12)
-    · intro n; simp
+    · intro n; simp only [neg_mul]
       suffices : 1 - rexp (-(π * ↑↑n)) < 1 - rexp (-2 * π * ↑↑n * z.im)
       · apply le_of_lt
         have h₁ : 0 ≤ 1 - rexp (-(π * ↑↑n)) := by norm_num; positivity

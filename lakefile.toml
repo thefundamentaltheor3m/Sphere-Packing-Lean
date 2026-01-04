@@ -6,7 +6,7 @@ pp.unicode.fun = true
 autoImplicit = false
 relaxedAutoImplicit = false
 linter.mathlibStandardSet = true
-linter.flexible = false
+linter.flexible = true
 
 [[require]]
 name = "mathlib"

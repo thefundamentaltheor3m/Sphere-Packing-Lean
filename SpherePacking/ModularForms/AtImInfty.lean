@@ -50,7 +50,7 @@ theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
       have h_base' : rexp (-π) ^ ((n : ℝ) + n ^ 2) < 1 := by
         apply Real.rpow_lt_one
         · positivity
-        · apply Real.exp_lt_one_iff.mpr (by simp; positivity)
+        · apply Real.exp_lt_one_iff.mpr (by simp only [Left.neg_neg_iff]; positivity)
         convert_to 0 < ((n * (n + 1) : ℤ) : ℝ)
         · push_cast
           ring_nf
