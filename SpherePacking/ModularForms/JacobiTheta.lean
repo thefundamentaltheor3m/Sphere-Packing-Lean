@@ -635,12 +635,11 @@ noncomputable def jacobi_f_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1)
 
 end JacobiIdentity
 
-/-- Jacobi identity: H₂ + H₄ = H₃ (point-free version, Blueprint Lemma 6.41)
-    Proof requires atImInfty asymptotics, see AtImInfty.lean for jacobi_identity' -/
+/-- Jacobi identity: H₂ + H₄ = H₃ (Blueprint Lemma 6.41)
+    Proof requires atImInfty asymptotics, completed in AtImInfty.lean -/
 theorem jacobi_identity : H₂ + H₄ = H₃ := by
-  ext τ
   -- The proof uses dimension vanishing for weight 4 cusp forms
-  -- Full proof is in AtImInfty.lean as jacobi_identity'
+  -- Full proof is in AtImInfty.lean
   sorry
 
 lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
