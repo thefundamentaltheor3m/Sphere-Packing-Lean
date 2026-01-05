@@ -151,20 +151,16 @@ Key lemmas used:
 lemma f₂_S_action : (f₂ ∣[(4 : ℤ)] S) = -f₄ := by
   -- Step 1: (serre_D 2 H₂)|[4]S = -serre_D 2 H₄ (via equivariance)
   have h_serre_term : (serre_D (2 : ℤ) H₂ ∣[(4 : ℤ)] S) = -serre_D (2 : ℤ) H₄ := by
-    have h_equivariant := serre_D_slash_equivariant (2 : ℤ) H₂ H₂_SIF_MDifferentiable S
-    calc (serre_D (2 : ℤ) H₂ ∣[(4 : ℤ)] S)
-        = (serre_D (2 : ℤ) H₂ ∣[(2 + 2 : ℤ)] S) := by ring_nf
-      _ = serre_D (2 : ℤ) (H₂ ∣[(2 : ℤ)] S) := h_equivariant
-      _ = serre_D (2 : ℤ) (-H₄) := by rw [H₂_S_action]
-      _ = -serre_D (2 : ℤ) H₄ := by
-            simpa using serre_D_smul 2 (-1) H₄ H₄_SIF_MDifferentiable
+    rw [show (4 : ℤ) = 2 + 2 from rfl,
+        serre_D_slash_equivariant (2 : ℤ) H₂ H₂_SIF_MDifferentiable S, H₂_S_action]
+    simpa using serre_D_smul 2 (-1) H₄ H₄_SIF_MDifferentiable
   -- Step 2: (H₂ + 2•H₄)|[2]S = -(H₄ + 2•H₂)
   have h_lin_comb : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] S) = -(H₄ + (2 : ℂ) • H₂) := by
     rw [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
     ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
   -- Step 3: Product (H₂ * (H₂ + 2•H₄))|[4]S = H₄ * (H₄ + 2•H₂)
   have h_prod : ((H₂ * (H₂ + (2 : ℂ) • H₄)) ∣[(4 : ℤ)] S) = H₄ * (H₄ + (2 : ℂ) • H₂) := by
-    rw [show (4 : ℤ) = 2 + 2 by norm_num, mul_slash_SL2 2 2 S _ _, H₂_S_action, h_lin_comb]
+    rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 S _ _, H₂_S_action, h_lin_comb]
     ext z; simp [Pi.mul_apply, Pi.neg_apply, Pi.add_apply, Pi.smul_apply]; ring
   -- Combine: f₂|[4]S = -serre_D 2 H₄ - (1/6) * H₄ * (2*H₂ + H₄) = -f₄
   rw [f₂_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
@@ -186,13 +182,9 @@ Proof outline:
 lemma f₂_T_action : (f₂ ∣[(4 : ℤ)] T) = -f₂ := by
   -- Step 1: (serre_D 2 H₂)|[4]T = -serre_D 2 H₂ (via equivariance)
   have h_serre_term : (serre_D (2 : ℤ) H₂ ∣[(4 : ℤ)] T) = -serre_D (2 : ℤ) H₂ := by
-    have h_equivariant := serre_D_slash_equivariant (2 : ℤ) H₂ H₂_SIF_MDifferentiable T
-    calc (serre_D (2 : ℤ) H₂ ∣[(4 : ℤ)] T)
-        = (serre_D (2 : ℤ) H₂ ∣[(2 + 2 : ℤ)] T) := by ring_nf
-      _ = serre_D (2 : ℤ) (H₂ ∣[(2 : ℤ)] T) := h_equivariant
-      _ = serre_D (2 : ℤ) (-H₂) := by rw [H₂_T_action]
-      _ = -serre_D (2 : ℤ) H₂ := by
-          simpa using serre_D_smul 2 (-1) H₂ H₂_SIF_MDifferentiable
+    rw [show (4 : ℤ) = 2 + 2 from rfl,
+        serre_D_slash_equivariant (2 : ℤ) H₂ H₂_SIF_MDifferentiable T, H₂_T_action]
+    simpa using serre_D_smul 2 (-1) H₂ H₂_SIF_MDifferentiable
   -- Step 2: (H₂ + 2•H₄)|[2]T = H₂ + 2•H₄ using Jacobi: H₃ = H₂ + H₄
   -- -H₂ + 2H₃ = -H₂ + 2(H₂ + H₄) = H₂ + 2H₄
   have h_lin_comb : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] T) = H₂ + (2 : ℂ) • H₄ := by
@@ -204,7 +196,7 @@ lemma f₂_T_action : (f₂ ∣[(4 : ℤ)] T) = -f₂ := by
     rw [← h_jacobi]; ring
   -- Step 3: Product (H₂ * (H₂ + 2•H₄))|[4]T = (-H₂) * (H₂ + 2•H₄)
   have h_prod : ((H₂ * (H₂ + (2 : ℂ) • H₄)) ∣[(4 : ℤ)] T) = -H₂ * (H₂ + (2 : ℂ) • H₄) := by
-    rw [show (4 : ℤ) = 2 + 2 by norm_num, mul_slash_SL2 2 2 T _ _, H₂_T_action, h_lin_comb]
+    rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 T _ _, H₂_T_action, h_lin_comb]
   -- Combine: f₂|[4]T = -serre_D 2 H₂ - (1/6)(-H₂)(H₂ + 2H₄) = -f₂
   rw [f₂_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
   ext z
@@ -220,20 +212,16 @@ Proof outline (symmetric to f₂_S_action):
 lemma f₄_S_action : (f₄ ∣[(4 : ℤ)] S) = -f₂ := by
   -- Step 1: (serre_D 2 H₄)|[4]S = -serre_D 2 H₂ (via equivariance)
   have h_serre_term : (serre_D (2 : ℤ) H₄ ∣[(4 : ℤ)] S) = -serre_D (2 : ℤ) H₂ := by
-    have h_equivariant := serre_D_slash_equivariant (2 : ℤ) H₄ H₄_SIF_MDifferentiable S
-    calc (serre_D (2 : ℤ) H₄ ∣[(4 : ℤ)] S)
-        = (serre_D (2 : ℤ) H₄ ∣[(2 + 2 : ℤ)] S) := by ring_nf
-      _ = serre_D (2 : ℤ) (H₄ ∣[(2 : ℤ)] S) := h_equivariant
-      _ = serre_D (2 : ℤ) (-H₂) := by rw [H₄_S_action]
-      _ = -serre_D (2 : ℤ) H₂ := by
-          simpa using serre_D_smul 2 (-1) H₂ H₂_SIF_MDifferentiable
+    rw [show (4 : ℤ) = 2 + 2 from rfl,
+        serre_D_slash_equivariant (2 : ℤ) H₄ H₄_SIF_MDifferentiable S, H₄_S_action]
+    simpa using serre_D_smul 2 (-1) H₂ H₂_SIF_MDifferentiable
   -- Step 2: (2•H₂ + H₄)|[2]S = -(2•H₄ + H₂)
   have h_lin_comb : (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] S) = -((2 : ℂ) • H₄ + H₂) := by
     rw [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
     ext z; simp [Pi.add_apply, Pi.smul_apply, Pi.neg_apply]; ring
   -- Step 3: Product (H₄ * (2•H₂ + H₄))|[4]S = H₂ * (H₂ + 2•H₄)
   have h_prod : ((H₄ * ((2 : ℂ) • H₂ + H₄)) ∣[(4 : ℤ)] S) = H₂ * (H₂ + (2 : ℂ) • H₄) := by
-    rw [show (4 : ℤ) = 2 + 2 by norm_num, mul_slash_SL2 2 2 S _ _, H₄_S_action, h_lin_comb]
+    rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 S _ _, H₄_S_action, h_lin_comb]
     ext z; simp [Pi.mul_apply, Pi.neg_apply, Pi.add_apply, Pi.smul_apply]; ring
   -- Combine: f₄|[4]S = -serre_D 2 H₂ + (1/6) * H₂ * (H₂ + 2H₄) = -f₂
   rw [f₄_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
@@ -255,11 +243,8 @@ Proof outline:
 lemma f₄_T_action : (f₄ ∣[(4 : ℤ)] T) = f₃ := by
   -- Step 1: (serre_D 2 H₄)|[4]T = serre_D 2 H₃ (via equivariance)
   have h_serre_term : (serre_D (2 : ℤ) H₄ ∣[(4 : ℤ)] T) = serre_D (2 : ℤ) H₃ := by
-    have h_equivariant := serre_D_slash_equivariant (2 : ℤ) H₄ H₄_SIF_MDifferentiable T
-    calc (serre_D (2 : ℤ) H₄ ∣[(4 : ℤ)] T)
-        = (serre_D (2 : ℤ) H₄ ∣[(2 + 2 : ℤ)] T) := by ring_nf
-      _ = serre_D (2 : ℤ) (H₄ ∣[(2 : ℤ)] T) := h_equivariant
-      _ = serre_D (2 : ℤ) H₃ := by rw [H₄_T_action]
+    rw [show (4 : ℤ) = 2 + 2 from rfl,
+        serre_D_slash_equivariant (2 : ℤ) H₄ H₄_SIF_MDifferentiable T, H₄_T_action]
   -- Step 2: (2•H₂ + H₄)|[2]T = H₄ - H₂ using Jacobi: H₃ = H₂ + H₄
   -- -2H₂ + H₃ = -2H₂ + (H₂ + H₄) = H₄ - H₂
   have h_lin_comb : (((2 : ℂ) • H₂ + H₄) ∣[(2 : ℤ)] T) = H₄ - H₂ := by
@@ -270,7 +255,7 @@ lemma f₄_T_action : (f₄ ∣[(4 : ℤ)] T) = f₃ := by
     rw [← h_jacobi]; ring
   -- Step 3: Product (H₄ * (2•H₂ + H₄))|[4]T = H₃ * (H₄ - H₂)
   have h_prod : ((H₄ * ((2 : ℂ) • H₂ + H₄)) ∣[(4 : ℤ)] T) = H₃ * (H₄ - H₂) := by
-    rw [show (4 : ℤ) = 2 + 2 by norm_num, mul_slash_SL2 2 2 T _ _, H₄_T_action, h_lin_comb]
+    rw [show (4 : ℤ) = 2 + 2 from rfl, mul_slash_SL2 2 2 T _ _, H₄_T_action, h_lin_comb]
   -- Combine: f₄|[4]T = serre_D 2 H₃ + (1/6) * H₃ * (H₄ - H₂) = f₃
   rw [f₄_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
   -- Now: serre_D 2 H₃ + (1/6) • H₃ * (H₄ - H₂) = f₃
