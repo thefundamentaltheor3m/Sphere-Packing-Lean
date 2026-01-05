@@ -81,3 +81,4 @@ import SpherePacking.Tactic.NormNumI
 import SpherePacking.Tactic.NormNumI_Scratch
 import SpherePacking.Tactic.Test.NormNumI
 import SpherePacking.ModularForms.Monotonicity_ImagAxis
+import SpherePacking.ModularForms.Monotonicity_L10_SerreAndF
