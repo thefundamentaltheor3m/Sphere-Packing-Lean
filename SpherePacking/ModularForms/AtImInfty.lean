@@ -2,7 +2,6 @@ import SpherePacking.ForMathlib.AtImInfty
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.DimensionFormulas
 import SpherePacking.ModularForms.IsCuspForm
-import SpherePacking.ModularForms.qExpansion_lems
 
 /-!
 # Limits at infinity
@@ -210,40 +209,15 @@ With jacobi_f → 0 at i∞, we can show jacobi_f_MF is a cusp form and apply
 the dimension vanishing lemma to conclude f = 0, hence g = 0, hence H₂ + H₄ = H₃.
 -/
 
-/-- jacobi_f is bounded at i∞ (follows from tendsto to 0) -/
-theorem isBoundedAtImInfty_jacobi_f' : IsBoundedAtImInfty jacobi_f := by
-  rw [isBoundedAtImInfty_iff]
-  -- Since jacobi_f → 0, for large enough y, |jacobi_f z| < 1
-  have h := jacobi_f_tendsto_atImInfty
-  -- Extract: eventually, ‖jacobi_f z‖ < 1
-  rw [Metric.tendsto_nhds] at h
-  specialize h 1 one_pos
-  rw [eventually_atImInfty] at h
-  obtain ⟨N, hN⟩ := h
-  -- hN : ∀ z, N ≤ z.im → dist (jacobi_f z) 0 < 1
-  use 1, N
-  intro z hz
-  specialize hN z hz
-  simp only [dist_zero_right] at hN
-  exact le_of_lt hN
-
 /-- jacobi_f_MF is a cusp form because it vanishes at i∞ -/
 theorem jacobi_f_MF_IsCuspForm : IsCuspForm (CongruenceSubgroup.Gamma 1) 4 jacobi_f_MF := by
-  -- A modular form that tends to 0 at i∞ is a cusp form
-  rw [IsCuspForm_iff_coeffZero_eq_zero]
-  rw [ModularFormClass.qExpansion_coeff]
-  simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul]
-  -- jacobi_f → 0 at atImInfty, hence jacobi_f ∘ ofComplex → 0 at I∞ on ℂ
-  have h_zero : IsZeroAtImInfty jacobi_f := jacobi_f_tendsto_atImInfty
-  have h_zero_I : ZeroAtFilter (comap Complex.im atTop) (jacobi_f ∘ ofComplex) :=
-    h_zero.comp tendsto_comap_im_ofComplex
-  -- cuspFunction is 0 when the function vanishes at I∞
-  exact Function.Periodic.cuspFunction_zero_of_zero_at_inf (by norm_num : (0 : ℝ) < 1) h_zero_I
+  rw [IsCuspForm_iff_coeffZero_eq_zero, ModularFormClass.qExpansion_coeff]; simp
+  exact IsZeroAtImInfty.cuspFunction_apply_zero jacobi_f_tendsto_atImInfty
+    (by norm_num : (0 : ℝ) < 1)
 
 /-- The main dimension vanishing: jacobi_f_MF = 0 -/
-theorem jacobi_f_MF_eq_zero : jacobi_f_MF = 0 := by
-  apply IsCuspForm_weight_lt_eq_zero 4 (by norm_num : (4 : ℤ) < 12)
-  exact jacobi_f_MF_IsCuspForm
+theorem jacobi_f_MF_eq_zero : jacobi_f_MF = 0 :=
+  IsCuspForm_weight_lt_eq_zero 4 (by norm_num) jacobi_f_MF jacobi_f_MF_IsCuspForm
 
 /-- jacobi_f = 0 as a function -/
 theorem jacobi_f_eq_zero : jacobi_f = 0 :=
