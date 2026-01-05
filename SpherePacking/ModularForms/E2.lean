@@ -780,6 +780,17 @@ lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
   rw [← inv_pow, pow_two, ← mul_assoc, mul_inv_cancel₀ hpi, one_mul]
   ring
 
+/-- E₂ transforms under SL(2,ℤ) as: E₂ ∣[2] γ = E₂ - α • D₂ γ where α = 1/(2ζ(2)) -/
+lemma E₂_slash_transform (γ : SL(2, ℤ)) :
+    (E₂ ∣[(2 : ℤ)] γ) = E₂ - (1 / (2 * riemannZeta 2)) • D₂ γ := by
+  rw [E₂]
+  have hG := G₂_transform γ
+  have hsm := ModularForm.SL_smul_slash (2 : ℤ) γ G₂ (1 / (2 * riemannZeta 2))
+  rw [hsm, hG]
+  ext z
+  simp only [Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
+  ring
+
 /-- E₂ transforms under S as: E₂(-1/z) = z² · (E₂(z) + 6/(πIz)).
     This is derived from E₂_transform by relating the slash action to the direct value. -/
 lemma E₂_S_transform (z : ℍ) :
