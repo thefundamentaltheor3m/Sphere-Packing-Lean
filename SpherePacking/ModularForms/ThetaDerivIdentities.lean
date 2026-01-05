@@ -93,7 +93,7 @@ lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by
 -/
 
 /-- Jacobi identity: H₂ + H₄ = H₃ -/
-lemma jacobi_identity' (z : ℍ) : H₂ z + H₄ z = H₃ z := by simp [H₂, H₃, H₄, jacobi_identity z]
+lemma jacobi_identity' (z : ℍ) : H₂ z + H₄ z = H₃ z := congrFun jacobi_identity z
 
 /-- The error terms satisfy f₂ + f₄ = f₃ (from Jacobi identity) -/
 lemma f₂_add_f₄_eq_f₃ : f₂ + f₄ = f₃ := by
