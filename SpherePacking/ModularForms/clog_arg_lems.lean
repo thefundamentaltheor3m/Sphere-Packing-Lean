@@ -120,7 +120,8 @@ lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) :
       obtain ⟨a, ha1, hA1⟩ := hA1
       obtain ⟨a2, ha2, hA2⟩ := hA2
       use min a a2
-      refine ⟨by rw [atImInfty] at *; simp at *; refine ⟨ha1, ha2⟩, ?_⟩
+      refine ⟨by rw [atImInfty] at *; simp only [eventually_comap, eventually_atTop, ge_iff_le,
+        mem_comap, mem_atTop_sets, one_div, inf_eq_inter, inter_mem_iff] at *; exact ⟨ha1, ha2⟩, ?_⟩
       intro b hb
       rw [arg_pow_aux n (1 + f b) ?_]
       · apply hA1 b
@@ -133,7 +134,7 @@ lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) :
 lemma clog_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀ᶠ m : ℕ in atTop,
     Complex.log ((1 + f m) ^ n) = n * Complex.log (1 + f m) := by
   have h := arg_pow n f hf
-  simp at *
+  simp only [eventually_atTop, ge_iff_le] at *
   simp_rw [Complex.log]
   obtain ⟨a, ha⟩ := h
   use a
@@ -146,7 +147,7 @@ lemma clog_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀
 lemma clog_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) : ∀ᶠ m : ℍ in atImInfty,
     Complex.log ((1 + f m) ^ n) = n * Complex.log (1 + f m) := by
   have h := arg_pow2 n f hf
-  simp at *
+  simp only at *
   simp_rw [Complex.log]
   obtain ⟨a, ha0, ha⟩ := h
   use a

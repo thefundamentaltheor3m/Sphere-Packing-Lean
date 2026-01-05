@@ -60,7 +60,7 @@ def sigmaAntidiagonalEquivProd : (Σ n : ℕ+, Nat.divisorsAntidiagonal n) ≃ �
   invFun x :=
     ⟨⟨x.1.1 * x.2.1, by apply mul_pos x.1.2 x.2.2⟩, ⟨x.1, x.2⟩, by
       rw [Nat.mem_divisorsAntidiagonal]
-      simp
+      simp only [PNat.mk_coe, ne_eq, mul_eq_zero, not_or]
       refine ⟨rfl, ?_, ?_⟩
       · linarith [x.1.2]
       · linarith [x.2.2]⟩
@@ -70,7 +70,7 @@ def sigmaAntidiagonalEquivProd : (Σ n : ℕ+, Nat.divisorsAntidiagonal n) ≃ �
     simp_rw [mapdiv]
     simp only [PNat.mk_coe]
     ext
-    · simp at *
+    · simp only [ne_eq, PNat.ne_zero, not_false_eq_true, and_true] at *
       simp_rw [h]
       norm_cast
     · simp only

@@ -57,7 +57,8 @@ lemma linear_bigO (m : ℤ) (z : ℍ) : (fun (n : ℤ) => ((m : ℂ) * z + n)⁻
   use max 1 m
   intro b hb
   rw [EisensteinSeries.norm_eq_max_natAbs]
-  simp
+  simp only [Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
+    Nat.cast_max, Nat.cast_natAbs, Int.cast_abs]
   rw [mul_comm]
   gcongr
   · simp [(r_pos z).le]

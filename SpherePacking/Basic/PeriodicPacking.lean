@@ -162,7 +162,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
       have : y + v = u := Subtype.ext_iff.mp hy'
       subst this
       have hv' := (Classical.choose_spec (hD_unique_covers v)).right
-      simp at hv'
+      simp only [Subtype.forall] at hv'
       simp_rw [Subtype.forall, S.lattice.mk_vadd, vadd_eq_add, Subtype.mk.injEq, ← add_assoc,]
       congr 1
       convert Subtype.ext_iff.mp (hv' _ ?_ ?_)
