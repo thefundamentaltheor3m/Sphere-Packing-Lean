@@ -64,7 +64,6 @@ import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.ResToImagAxis
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.ThetaDerivIdentities
-import SpherePacking.ModularForms.ThetaDerivSlashActions
 import SpherePacking.ModularForms.clog_arg_lems
 import SpherePacking.ModularForms.csqrt
 import SpherePacking.ModularForms.equivs
