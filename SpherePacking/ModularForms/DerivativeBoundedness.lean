@@ -86,9 +86,8 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   have hr₀_pos : 0 < r₀ := Real.exp_pos _
   have hr₀_lt_one : r₀ < 1 := Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos])
   have hone_sub_r₀_pos : 0 < 1 - r₀ := by linarith
-  -- Key bounds on q
-  have hq_pos : 0 < ‖q‖ := norm_pos_iff.mpr (Complex.exp_ne_zero _)
-  have hone_sub_q_pos : 0 < 1 - ‖q‖ := by linarith
+  have hq_nonneg : 0 ≤ ‖q‖ := norm_nonneg _
+  have hone_sub_q_pos : 0 < 1 - ‖q‖ := sub_pos.mpr hq
   -- Term bound: ‖n * q^n / (1 - q^n)‖ ≤ n * ‖q‖^n / (1 - ‖q‖)
   have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
       n * ‖q‖ ^ (n : ℕ) / (1 - ‖q‖) := fun n => by
@@ -113,7 +112,7 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- Set r = ‖q‖ for convenience
   set r : ℝ := ‖q‖ with hr_def
   have hr_norm_lt_one : ‖r‖ < 1 := by
-    simp [Real.norm_eq_abs, abs_of_nonneg hq_pos.le, hq]
+    simp [Real.norm_eq_abs, abs_of_nonneg hq_nonneg, hq]
   -- Summability of n * r^n on ℕ (from mathlib)
   have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
     simpa [pow_one] using summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
