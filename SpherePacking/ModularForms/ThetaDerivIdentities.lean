@@ -93,8 +93,8 @@ lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by
 ## Phase 3-4: Jacobi Identity and Relation f₂ + f₄ = f₃
 -/
 
-/-- Jacobi identity at a point: H₂ z + H₄ z = H₃ z -/
-lemma jacobi_identity' (z : ℍ) : H₂ z + H₄ z = H₃ z := by
+/-- Jacobi identity: H₂ z + H₄ z = H₃ z (Blueprint Lemma 6.41) -/
+lemma jacobi_identity (z : ℍ) : H₂ z + H₄ z = H₃ z := by
   have h := congr_fun jacobi_g_eq_zero z
   simp only [jacobi_g, Pi.zero_apply, sub_eq_zero] at h
   exact h
@@ -106,13 +106,13 @@ lemma f₂_add_f₄_eq_f₃ : f₂ + f₄ = f₃ := by
   -- Key relation: serre_D 2 H₂ z + serre_D 2 H₄ z = serre_D 2 H₃ z (via Jacobi identity)
   have h_serre : serre_D 2 H₂ z + serre_D 2 H₄ z = serre_D 2 H₃ z := by
     have add_eq := serre_D_add (2 : ℤ) H₂ H₄ H₂_SIF_MDifferentiable H₄_SIF_MDifferentiable
-    have jacobi_eq : H₂ + H₄ = H₃ := by funext w; exact jacobi_identity' w
+    have jacobi_eq : H₂ + H₄ = H₃ := by funext w; exact jacobi_identity w
     have h := congrFun add_eq z
     simp only [Pi.add_apply] at h
     -- Use convert to handle the (2 : ℂ) vs ↑(2 : ℤ) issue
     convert h.symm using 2; rw [jacobi_eq]
   -- Now algebraic: use h_serre to simplify and close with ring
-  have h_jacobi := jacobi_identity' z
+  have h_jacobi := jacobi_identity z
   calc serre_D 2 H₂ z - 1/6 * (H₂ z * (H₂ z + 2 * H₄ z)) +
        (serre_D 2 H₄ z + 1/6 * (H₄ z * (2 * H₂ z + H₄ z)))
       = (serre_D 2 H₂ z + serre_D 2 H₄ z) +
@@ -196,7 +196,7 @@ lemma f₂_T_action : (f₂ ∣[(4 : ℤ)] T) = -f₂ := by
     ext z
     simp only [Pi.add_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]
     -- -H₂ z + 2 * H₃ z = H₂ z + 2 * H₄ z using Jacobi
-    have h_jacobi := jacobi_identity' z
+    have h_jacobi := jacobi_identity z
     rw [← h_jacobi]; ring
   -- Step 3: Product (H₂ * (H₂ + 2•H₄))|[4]T = (-H₂) * (H₂ + 2•H₄)
   have h_prod : ((H₂ * (H₂ + (2 : ℂ) • H₄)) ∣[(4 : ℤ)] T) = -H₂ * (H₂ + (2 : ℂ) • H₄) := by
@@ -255,7 +255,7 @@ lemma f₄_T_action : (f₄ ∣[(4 : ℤ)] T) = f₃ := by
     rw [add_slash, SL_smul_slash, H₂_T_action, H₄_T_action]
     ext z
     simp only [Pi.add_apply, Pi.smul_apply, Pi.neg_apply, Pi.sub_apply, smul_eq_mul]
-    have h_jacobi := jacobi_identity' z
+    have h_jacobi := jacobi_identity z
     rw [← h_jacobi]; ring
   -- Step 3: Product (H₄ * (2•H₂ + H₄))|[4]T = H₃ * (H₄ - H₂)
   have h_prod : ((H₄ * ((2 : ℂ) • H₂ + H₄)) ∣[(4 : ℤ)] T) = H₃ * (H₄ - H₂) := by
@@ -267,7 +267,7 @@ lemma f₄_T_action : (f₄ ∣[(4 : ℤ)] T) = f₃ := by
   unfold f₃
   ext z
   simp only [Pi.sub_apply, Pi.add_apply, Pi.smul_apply, Pi.mul_apply, Pi.pow_apply, smul_eq_mul]
-  have h_jacobi := jacobi_identity' z
+  have h_jacobi := jacobi_identity z
   -- Need: 1/6 * H₃ z * (H₄ z - H₂ z) = -1/6 * (H₂ z^2 - H₄ z^2)
   rw [sq_sub_sq, h_jacobi]
   ring_nf
@@ -339,7 +339,7 @@ lemma theta_g_T_action : (theta_g ∣[(6 : ℤ)] T) = theta_g := by
   simp only [theta_g, add_slash, h_term1, h_term2]
   ext z
   simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply, Pi.neg_apply, smul_eq_mul]
-  have hH₃ : H₃ z = H₂ z + H₄ z := (jacobi_identity' z).symm
+  have hH₃ : H₃ z = H₂ z + H₄ z := (jacobi_identity z).symm
   have hf₃ : f₃ z = f₂ z + f₄ z := (congrFun f₂_add_f₄_eq_f₃ z).symm
   rw [hH₃, hf₃]
   ring
