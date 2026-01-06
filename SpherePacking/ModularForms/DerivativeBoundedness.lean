@@ -65,8 +65,7 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
           ‖24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
             (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := norm_sub_le _ _
     _ = 1 + 24 * ‖∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
-          (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := by
-        simp only [norm_one, norm_mul, RCLike.norm_ofNat]
+          (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := by simp
     _ ≤ 1 + 24 * (r₀ / (1 - r₀) ^ 3) := ?_
   -- Step 2: Need to show ‖tsum‖ ≤ r₀ / (1 - r₀)³ where r₀ = exp(-2π)
   -- Strategy: Use norm_tsum_le_tsum_norm + term bound + geometric series
@@ -202,7 +201,6 @@ lemma serre_D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 4 E₄.toFun
   -- Both terms are bounded at infinity
   unfold serre_D
   -- The subtraction of bounded functions is bounded
-  have h1 : IsBoundedAtImInfty (D E₄.toFun) := D_E₄_isBoundedAtImInfty
   have h2 : IsBoundedAtImInfty (fun z => (4 : ℂ) * 12⁻¹ * E₂ z * E₄.toFun z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => (4 : ℂ) * 12⁻¹) :=
       Filter.const_boundedAtFilter _ _
@@ -210,6 +208,6 @@ lemma serre_D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 4 E₄.toFun
     ext z
     simp only [Pi.mul_apply]
     ring
-  exact h1.sub h2
+  exact D_E₄_isBoundedAtImInfty.sub h2
 
 end
