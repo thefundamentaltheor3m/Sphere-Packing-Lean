@@ -92,11 +92,6 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- Term bound: ‖n * q^n / (1 - q^n)‖ ≤ n * ‖q‖^n / (1 - ‖q‖)
   have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
       n * ‖q‖ ^ (n : ℕ) / (1 - ‖q‖) := fun n => by
-    have hqn_lt : ‖q ^ (n : ℕ)‖ < 1 := norm_pow q n ▸ pow_lt_one₀ (norm_nonneg _) hq n.ne_zero
-    have hdenom_ne : 1 - q ^ (n : ℕ) ≠ 0 := by
-      intro h; simp only [sub_eq_zero] at h
-      have : ‖q ^ (n : ℕ)‖ = 1 := by rw [← h]; exact norm_one
-      linarith
     rw [norm_div, norm_mul, Complex.norm_natCast]
     -- |1 - q^n| ≥ 1 - |q^n| ≥ 1 - |q| (reverse triangle inequality)
     have hdenom_lower : 1 - ‖q‖ ≤ ‖1 - q ^ (n : ℕ)‖ := by
