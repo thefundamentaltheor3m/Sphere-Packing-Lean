@@ -10,7 +10,6 @@ These lemmas are used for asymptotic analysis and dimension arguments.
 ## Main results
 
 * `E₂_isBoundedAtImInfty` : E₂ is bounded as im(z) → ∞
-* `E₄_isBoundedAtImInfty` : E₄ is bounded at infinity (as a modular form)
 * `D_E₄_isBoundedAtImInfty` : D(E₄) is bounded at infinity
 * `serre_D_E₄_isBoundedAtImInfty` : serre_D 4 E₄ is bounded at infinity
 -/
@@ -161,10 +160,6 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- Final: 24 * ‖tsum‖ ≤ 24 * r₀ / (1 - r₀)³
   gcongr
 
-/-- E₄ is bounded at infinity (as a modular form). -/
-lemma E₄_isBoundedAtImInfty : IsBoundedAtImInfty E₄.toFun :=
-  ModularFormClass.bdd_at_infty E₄
-
 /-- D E₄ is bounded at infinity.
 
 The q-expansion D(E₄) = 240·Σn·σ₃(n)·qⁿ has no constant term,
@@ -189,9 +184,9 @@ lemma serre_D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 4 E₄.toFun
   have h2 : IsBoundedAtImInfty (fun z => (4 : ℂ) * 12⁻¹ * E₂ z * E₄.toFun z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => (4 : ℂ) * 12⁻¹) :=
       Filter.const_boundedAtFilter _ _
-    convert hconst.mul (E₂_isBoundedAtImInfty.mul E₄_isBoundedAtImInfty) using 1
+    convert hconst.mul (E₂_isBoundedAtImInfty.mul (ModularFormClass.bdd_at_infty E₄)) using 1
     ext z
-    simp only [Pi.mul_apply]
+    simp only [Pi.mul_apply, ModularForm.toFun_eq_coe]
     ring
   exact D_E₄_isBoundedAtImInfty.sub h2
 
