@@ -40,14 +40,11 @@ lemma diffContOnCl_comp_ofComplex_of_mdifferentiable
   constructor
   · -- DifferentiableOn on the open ball
     intro z hz
-    have hz_closed : z ∈ Metric.closedBall c R := Metric.ball_subset_closedBall hz
-    have hz_im : 0 < z.im := hclosed hz_closed
+    have hz_im : 0 < z.im := hclosed (Metric.ball_subset_closedBall hz)
     exact (MDifferentiableAt_DifferentiableAt (hf ⟨z, hz_im⟩)).differentiableWithinAt
   · -- ContinuousOn on closure(ball c R)
     intro z hz
-    have hz_closed : z ∈ Metric.closedBall c R :=
-      closure_minimal Metric.ball_subset_closedBall Metric.isClosed_closedBall hz
-    have hz_im : 0 < z.im := hclosed hz_closed
+    have hz_im : 0 < z.im := hclosed (closure_ball_subset_closedBall hz)
     exact (MDifferentiableAt_DifferentiableAt (hf ⟨z, hz_im⟩)).continuousAt.continuousWithinAt
 
 /-! ## Disk Geometry -/
