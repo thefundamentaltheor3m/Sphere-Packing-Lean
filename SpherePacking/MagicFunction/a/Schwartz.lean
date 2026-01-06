@@ -23,7 +23,7 @@ elsewhere and presents them concisely.
 -- #exit
 
 open MagicFunction MagicFunction.a MagicFunction.a.RadialFunctions MagicFunction.a.RealIntegrals
-  MagicFunction.Parametrisations
+  MagicFunction.Parametrisations MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
 
 open Set Complex Real SchwartzMap
 
@@ -63,8 +63,8 @@ theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' := by
         show z₃' t = z₁' t + 2 by simp [h1, h3]; ring,
         show z₁' t + 1 = I * t by simp [h1],
         mul_add, Complex.exp_add, mul_comm, mul_left_comm, mul_assoc]
-    simpa [RealIntegrals.I₃', RealIntegrals.I₁', mul_comm, mul_left_comm, mul_assoc] using
-      intervalIntegral.integral_congr (a := 0) (b := 1) hEqOn
+    simpa [RealIntegrals.I₃', Φ₃, Φ₃', RealIntegrals.I₁', Φ₁, Φ₁', mul_comm, mul_left_comm,
+      mul_assoc] using intervalIntegral.integral_congr (a := 0) (b := 1) hEqOn
   simpa [hI] using (contDiff_const.mul ofRealCLM.contDiff).cexp.mul I₁'_smooth'
 
 theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' := by

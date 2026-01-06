@@ -29,6 +29,9 @@ import SpherePacking.MagicFunction.IntegralParametrisations
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.a.Eigenfunction
+import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
+import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
+import SpherePacking.MagicFunction.a.Integrability.Integrability
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 import SpherePacking.MagicFunction.a.IntegralEstimates.I2
 import SpherePacking.MagicFunction.a.IntegralEstimates.I3
@@ -56,9 +59,11 @@ import SpherePacking.ModularForms.Eisensteinqexpansions
 import SpherePacking.ModularForms.Icc_Ico_lems
 import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.PhiTransform
 import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.ResToImagAxis
 import SpherePacking.ModularForms.SlashActionAuxil
+import SpherePacking.ModularForms.ThetaDerivIdentities
 import SpherePacking.ModularForms.clog_arg_lems
 import SpherePacking.ModularForms.csqrt
 import SpherePacking.ModularForms.equivs
