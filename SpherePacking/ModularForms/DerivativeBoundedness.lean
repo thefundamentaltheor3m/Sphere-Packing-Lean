@@ -18,7 +18,7 @@ These lemmas are used for asymptotic analysis and dimension arguments.
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
 open ModularForm EisensteinSeries TopologicalSpace Set MeasureTheory
-open Metric Filter Function Complex MatrixGroups SlashInvariantFormClass ModularFormClass
+open Metric Filter Function MatrixGroups SlashInvariantFormClass ModularFormClass
 
 open scoped ModularForm MatrixGroups Manifold Interval Real NNReal ENNReal Topology BigOperators
 
