@@ -204,17 +204,8 @@ theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
   norm_num
 
 /-- jacobi_f is bounded at i∞ (follows from tending to 0) -/
-lemma isBoundedAtImInfty_jacobi_f : IsBoundedAtImInfty jacobi_f := by
-  rw [isBoundedAtImInfty_iff]
-  -- From jacobi_f → 0, for any ε > 0, eventually ‖jacobi_f z‖ < ε
-  have h := jacobi_f_tendsto_atImInfty.eventually (Metric.ball_mem_nhds 0 one_pos)
-  rw [eventually_atImInfty] at h
-  obtain ⟨A, hA⟩ := h
-  use 1, A
-  intro z hz
-  specialize hA z hz
-  simp only [dist_zero_right] at hA
-  linarith
+lemma isBoundedAtImInfty_jacobi_f : IsBoundedAtImInfty jacobi_f :=
+  IsZeroAtImInfty.isBoundedAtImInfty jacobi_f_tendsto_atImInfty
 
 /-- jacobi_f slash by any SL₂(ℤ) element equals jacobi_f (for use with bounded_at_cusps) -/
 lemma jacobi_f_slash_eq (A' : SL(2, ℤ)) :
