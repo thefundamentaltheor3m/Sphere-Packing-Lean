@@ -585,9 +585,9 @@ noncomputable def jacobi_f : ℍ → ℂ := fun z => (jacobi_g z) ^ 2
     Using: H₂|S = -H₄, H₄|S = -H₂, H₃|S = -H₃
     So (H₂ + H₄ - H₃)|S = -H₄ - H₂ + H₃ = -(H₂ + H₄ - H₃) -/
 lemma jacobi_g_S_action : (jacobi_g ∣[(2 : ℤ)] S) = -jacobi_g := by
-  have h : jacobi_g = H₂ + H₄ - H₃ := rfl
-  rw [h, sub_eq_add_neg, SlashAction.add_slash, SlashAction.add_slash, SlashAction.neg_slash]
-  rw [H₂_S_action, H₃_S_action, H₄_S_action]
+  change ((H₂ + H₄ - H₃) ∣[(2 : ℤ)] S) = -(H₂ + H₄ - H₃)
+  simp only [sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
+    H₂_S_action, H₃_S_action, H₄_S_action]
   ext z
   simp only [Pi.add_apply, Pi.neg_apply]
   ring
@@ -596,9 +596,9 @@ lemma jacobi_g_S_action : (jacobi_g ∣[(2 : ℤ)] S) = -jacobi_g := by
     Using: H₂|T = -H₂, H₃|T = H₄, H₄|T = H₃
     So (H₂ + H₄ - H₃)|T = -H₂ + H₃ - H₄ = -(H₂ + H₄ - H₃) -/
 lemma jacobi_g_T_action : (jacobi_g ∣[(2 : ℤ)] T) = -jacobi_g := by
-  have h : jacobi_g = H₂ + H₄ - H₃ := rfl
-  rw [h, sub_eq_add_neg, SlashAction.add_slash, SlashAction.add_slash, SlashAction.neg_slash]
-  rw [H₂_T_action, H₃_T_action, H₄_T_action]
+  change ((H₂ + H₄ - H₃) ∣[(2 : ℤ)] T) = -(H₂ + H₄ - H₃)
+  simp only [sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
+    H₂_T_action, H₃_T_action, H₄_T_action]
   ext z
   simp only [Pi.add_apply, Pi.neg_apply]
   ring
