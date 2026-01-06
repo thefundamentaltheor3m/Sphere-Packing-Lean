@@ -75,7 +75,7 @@ private theorem α_zpow_val (k : ℤ) : (α ^ k : SL(2, ℤ)).val = !![1, 2 * k;
       Matrix.adjugate_fin_two, ih]
     ext i j; fin_cases i <;> fin_cases j <;> simp [α]; ring
 
-/-- The `(1, 0)` entry of `α ^ k` is always `0` (upper triangular). -/
+/-- The `(1, 0)` entry of `α ^ k` is always `0`. -/
 private theorem α_zpow_one_zero (k : ℤ) : (α ^ k : SL(2, ℤ)).val 1 0 = 0 := by
   simp [α_zpow_val]
 
