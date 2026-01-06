@@ -21,28 +21,23 @@ open Matrix UpperHalfPlane CongruenceSubgroup ModularGroup
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 local notation "Γ " n:100 => Gamma n
 
-/- This part defines generators of Γ 2 and some relations between them. -/
-
+/-- The generator `α = T²` of `Γ(2)`, equal to `[[1, 2], [0, 1]]`. -/
 def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp⟩, by simp; decide⟩
+
+/-- The generator `β = -I · S · α⁻¹ · S` of `Γ(2)`, equal to `[[1, 0], [2, 1]]`. -/
 def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp⟩, by simp; decide⟩
+
+/-- The element `-I` of `Γ(2)`, equal to `[[-1, 0], [0, -1]]`. -/
 def negI : Γ 2 := ⟨⟨!![-1, 0; 0, -1], by simp⟩, by simp⟩
 
-theorem α_eq_T_sq : α = ⟨T ^ 2, by simp [sq, T]; decide⟩ := by
-  ext
-  simp [α, T, sq]
+theorem α_eq_T_sq : α = ⟨T ^ 2, by simp [sq, T]; decide⟩ := by ext; simp [α, T, sq]
 
-theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by
-  ext
-  simp [β, S, α, negI]
+theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by ext; simp [β, S, α, negI]
 
 theorem ModularGroup.modular_negI_sq : negI ^ 2 = 1 := by
-  ext i j
-  simp [negI, sq]
-  fin_cases i <;> fin_cases j <;> rfl
+  ext i j; fin_cases i <;> fin_cases j <;> rfl
 
-theorem ModularGroup.modular_negI_inv : negI⁻¹ = negI := by
-  ext i j
-  simp [negI]
+theorem ModularGroup.modular_negI_inv : negI⁻¹ = negI := by ext i j; simp [negI]
 
 section slash_action
 
@@ -50,30 +45,17 @@ variable (f : ℍ → ℂ) (k : ℤ) (z : ℍ)
 
 open ModularForm
 
-/- This section proves rewriting lemmas for f|[k]γ for various γ. -/
-
-theorem modular_negI_smul : negI.1 • z = z := by
-  rw [specialLinearGroup_apply]
-  simp [negI]
+theorem modular_negI_smul : negI.1 • z = z := by rw [specialLinearGroup_apply]; simp [negI]
 
 theorem modular_slash_negI_of_even (hk : Even k) : f ∣[k] negI.1 = f := by
-  ext x
-  rw [slash_action_eq'_iff]
-  rw [modular_negI_smul]
-  simp only [negI, Int.reduceNeg, Fin.isValue, of_apply, cons_val', cons_val_zero, empty_val',
-    cons_val_fin_one, cons_val_one, Int.cast_zero, zero_mul,
-    Int.cast_neg, Int.cast_one, zero_add, hk.neg_one_zpow, one_mul]
+  ext x; rw [slash_action_eq'_iff, modular_negI_smul]; simp [negI, hk.neg_one_zpow]
 
 theorem modular_slash_S_apply :
     (f ∣[k] S) z = f (UpperHalfPlane.mk (-z)⁻¹ z.im_inv_neg_coe_pos) * z ^ (-k) := by
-  rw [SL_slash_apply, denom, UpperHalfPlane.modular_S_smul]
-  simp [S]
-
-
+  rw [SL_slash_apply, denom, UpperHalfPlane.modular_S_smul]; simp [S]
 
 theorem modular_slash_T_apply : (f ∣[k] T) z = f ((1 : ℝ) +ᵥ z) := by
-  rw [SL_slash_apply, denom, UpperHalfPlane.modular_T_smul]
-  simp [T]
+  rw [SL_slash_apply, denom, UpperHalfPlane.modular_T_smul]; simp [T]
 
 end slash_action
 
@@ -84,161 +66,70 @@ section slashaction_generators
 theorem SL2Z_generate : (⊤ : Subgroup SL(2, ℤ)) = Subgroup.closure {S, T} :=
   SpecialLinearGroup.SL2Z_generators.symm
 
-set_option maxHeartbeats 0 in
+/-- The matrix `α ^ k` equals `[[1, 2k], [0, 1]]`. -/
+private theorem α_zpow_val (k : ℤ) : (α ^ k : SL(2, ℤ)).val = !![1, 2 * k; 0, 1] := by
+  induction k using Int.induction_on with
+  | zero => exact Matrix.one_fin_two
+  | succ n ih =>
+    simp only [zpow_add, zpow_one, SpecialLinearGroup.coe_mul, ih]
+    ext i j; fin_cases i <;> fin_cases j <;> simp [α]; ring
+  | pred n ih =>
+    simp only [zpow_sub, zpow_one, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
+      Matrix.adjugate_fin_two, ih]
+    ext i j; fin_cases i <;> fin_cases j <;> simp [α]; ring
+
+/-- The `(1, 0)` entry of `α ^ k` is always `0` (upper triangular). -/
+private theorem α_zpow_one_zero (k : ℤ) : (α ^ k : SL(2, ℤ)).val 1 0 = 0 := by
+  simp [α_zpow_val]
+
+/-- The matrix `β ^ k` equals `[[1, 0], [2k, 1]]`. -/
+private theorem β_zpow_val (k : ℤ) : (β ^ k : SL(2, ℤ)).val = !![1, 0; 2 * k, 1] := by
+  induction k using Int.induction_on with
+  | zero => exact Matrix.one_fin_two
+  | succ n ih =>
+    simp only [zpow_add, zpow_one, SpecialLinearGroup.coe_mul, ih]
+    ext i j; fin_cases i <;> fin_cases j <;> simp [β, Matrix.mul_apply]; ring
+  | pred n ih =>
+    simp only [zpow_sub, zpow_one, SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_inv,
+      Matrix.adjugate_fin_two, ih]
+    ext i j; fin_cases i <;> fin_cases j <;> simp [β, Matrix.mul_apply]; ring
+
 lemma Γ2_c_eq_zero (A : Γ 2) (h : A.1 1 0 = 0) : A ∈ Subgroup.closure {α, β, negI} := by
   by_cases ha : (A.val.val 0 0) = 1 ∨ (A.val.val 0 0) = -1
   · obtain ⟨val, property⟩ := A
     simp_all only [Fin.isValue, Int.reduceNeg]
     cases ha with
     | inl h_1 =>
-      obtain ⟨k, hk⟩ : ∃ k : ℤ, val = !![1, 2 * k; 0, 1] := by
-        have := val.det_coe; simp_all only [Gamma_mem, Fin.isValue, Int.cast_one, Int.cast_zero,
-          true_and, SpecialLinearGroup.det_coe]
+      obtain ⟨k, hk⟩ : ∃ k : ℤ, val.val 0 1 = 2 * k := by
+        simp only [Gamma_mem] at property
         erw [ZMod.intCast_zmod_eq_zero_iff_dvd] at property
-        simp_all only [Nat.cast_ofNat, Fin.isValue]
-        obtain ⟨left, right⟩ := property
-        obtain ⟨k, hk⟩ := left; use k; ext i j; fin_cases i <;> fin_cases j <;> simp_all
-        have h_det : (val.val 0 0) * (val.val 1 1) - (val.val 0 1) * (val.val 1 0) = 1 := by
-          convert val.det_coe; rw [Matrix.det_fin_two]
-        simp_all only [Fin.isValue, one_mul, mul_zero, sub_zero]
+        exact property.2.1
+      have h11 : val.val 1 1 = 1 := by
+        have := val.2; rw [Matrix.det_fin_two] at this; simp_all
       have h_alpha_k : val = α ^ k := by
-        rcases k with (_ | k); simp_all only [Gamma_mem, Fin.isValue, Int.cast_one,
-          Int.ofNat_eq_coe, of_apply, cons_val', cons_val_one, cons_val_fin_one, cons_val_zero,
-          Int.cast_mul, Int.cast_ofNat, Int.cast_natCast, mul_eq_zero, Int.cast_zero, and_self,
-          and_true, true_and, zpow_natCast]
-        · have h_exp :
-              ∀ a : ℕ, (α ^ a : Matrix.SpecialLinearGroup (Fin 2) ℤ) = ⟨!![1, 2 * a; 0, 1], by
-            norm_num⟩ := by
-            intro a; induction a
-            · simp_all only [pow_zero, CharP.cast_eq_zero, mul_zero]
-              exact Subtype.ext <| by ext i j; fin_cases i <;> fin_cases j <;> rfl
-            · simp_all only [pow_succ, Nat.cast_add, Nat.cast_one]
-              ext i j; fin_cases i <;> fin_cases j <;> norm_num [α]; ring
-          simp_all only
-          cases property with
-          | inl h =>
-            ext i j : 1
-            simp_all only [of_apply, cons_val', cons_val_fin_one]
-          | inr h_1 =>
-            ext i j : 1
-            simp_all only [of_apply, cons_val', cons_val_fin_one]
-        · refine Subtype.ext ?_
-          simp_all only [Gamma_mem, Fin.isValue, Int.cast_one, of_apply, cons_val', cons_val_one,
-            cons_val_fin_one, cons_val_zero, Int.cast_mul, Int.cast_ofNat, Int.cast_negSucc,
-            Nat.cast_add, Nat.cast_one, neg_add_rev, ZMod.neg_eq_self_mod_two, mul_eq_zero,
-            Int.cast_zero, and_self, and_true, true_and, zpow_negSucc, SpecialLinearGroup.coe_inv,
-            SpecialLinearGroup.coe_pow, adjugate_pow]
-          refine Nat.recOn k ?_ ?_
-          simp_all +decide only [true_or]
-          simp_all only [← ext_iff, of_apply, cons_val', cons_val_fin_one, Fin.forall_fin_two,
-            Fin.isValue, cons_val_zero, cons_val_one, pow_succ, and_imp]
-          unfold α; norm_num [Matrix.mul_apply, Matrix.adjugate_fin_two]
-          intros; constructor <;> grind
+        refine Subtype.ext ?_
+        rw [α_zpow_val]
+        ext i j; fin_cases i <;> fin_cases j <;> simp_all
       exact h_alpha_k.symm ▸ Subgroup.zpow_mem _ (Subgroup.subset_closure (Set.mem_insert _ _)) _
     | inr h_2 =>
       obtain ⟨k, hk⟩ : ∃ k : ℤ, val.val 0 1 = 2 * k := by
-        norm_num [ZMod.intCast_zmod_eq_zero_iff_dvd] at property
-        simp_all only [Fin.isValue, Int.reduceNeg, Int.cast_neg, Int.cast_one,
-          ZMod.neg_eq_self_mod_two, dvd_zero, true_and]
-        obtain ⟨left, right⟩ := property
-        exact left
+        simp only [Gamma_mem] at property
+        erw [ZMod.intCast_zmod_eq_zero_iff_dvd] at property
+        exact property.2.1
+      have h11 : val.val 1 1 = -1 := by
+        have := val.2; rw [Matrix.det_fin_two] at this; grind
       have h_val : val = negI * α^(-k) := by
-        ext i j ; fin_cases i <;> fin_cases j <;> simp_all +decide [Matrix.mul_apply]
-        · have h_adj : (α ^ k).val = !![1, 2 * k; 0, 1] := by
-            have h_adj : ∀ k : ℤ, (α ^ k).val = !![1, 2 * k; 0, 1] := by
-              intro k; induction k using Int.induction_on
-              · exact Matrix.one_fin_two
-              · simp_all only [Fin.isValue, Int.reduceNeg, zpow_natCast, SubmonoidClass.coe_pow,
-                SpecialLinearGroup.coe_pow, zpow_add, zpow_one, Subgroup.coe_mul,
-                SpecialLinearGroup.coe_mul, cons_mul, Nat.succ_eq_add_one, Nat.reduceAdd, empty_mul,
-                Equiv.symm_apply_apply, EmbeddingLike.apply_eq_iff_eq, vecCons_inj, and_true]
-                simp only [α, vecMul_cons, head_cons, one_smul, tail_cons, smul_cons,
-                  Int.zsmul_eq_mul, mul_zero, mul_one, smul_empty, empty_vecMul, add_zero, add_cons,
-                  empty_add_empty, vecCons_inj, and_true, true_and, zero_smul, zero_add]
-                ring;
-              · simp_all only [Fin.isValue, Int.reduceNeg, zpow_neg, zpow_natCast,
-                InvMemClass.coe_inv, SubmonoidClass.coe_pow, SpecialLinearGroup.coe_inv,
-                SpecialLinearGroup.coe_pow, adjugate_pow, adjugate_fin_two, mul_neg, sub_eq_add_neg,
-                zpow_add, zpow_one, Subgroup.coe_mul, SpecialLinearGroup.coe_mul, cons_mul,
-                Nat.succ_eq_add_one, Nat.reduceAdd]
-                erw [show (α : Matrix (Fin 2) (Fin 2) ℤ) = !![1, 2; 0, 1] from rfl]; norm_num
-                ring
-            exact h_adj k;
-          simp_all +decide only [Fin.isValue, Int.reduceNeg, SubgroupClass.coe_zpow,
-            adjugate_fin_two, of_apply, cons_val', cons_val_one, cons_val_fin_one, cons_val_zero,
-            neg_zero, mul_one, mul_zero, add_zero]
-        · unfold α
-          simp_all only [Fin.isValue, Int.reduceNeg]
-          unfold negI; norm_num [Matrix.adjugate_fin_two]
-          refine Int.induction_on k ?_ ?_ ?_
-          · simp_all only [Fin.isValue, Int.reduceNeg, mul_zero, zpow_zero,
-            SpecialLinearGroup.coe_one, ne_eq, zero_ne_one, not_false_eq_true, one_apply_ne]
-          · intro i a
-            simp_all only [Fin.isValue, Int.reduceNeg, zpow_natCast, SpecialLinearGroup.coe_pow]
-            norm_cast ; simp_all only [Fin.isValue, Int.reduceNeg, Nat.cast_mul, Nat.cast_ofNat,
-              Nat.cast_add, Nat.cast_one, pow_succ, SpecialLinearGroup.coe_mul,
-              SpecialLinearGroup.coe_pow, mul_apply, of_apply, cons_val', cons_val_one,
-              cons_val_fin_one, Fin.sum_univ_two, cons_val_zero, mul_one]
-            linarith [show ((!![1, 2; 0, 1] ^ i : Matrix (Fin 2) (Fin 2) ℤ) 0 0) = 1 from by
-              exact Nat.recOn i (by norm_num) fun n ih ↦ by simp [*, pow_succ, Matrix.mul_apply]]
-          · intro i a
-            simp_all only [Fin.isValue, Int.reduceNeg, mul_neg, zpow_neg, zpow_natCast,
-              SpecialLinearGroup.coe_inv, SpecialLinearGroup.coe_pow, adjugate_pow,
-                adjugate_fin_two_of, neg_zero]
-            erw [zpow_sub] ; norm_num;
-            norm_num [Matrix.mul_apply, a.symm] ; ring_nf
-            exact Nat.recOn i (by norm_num) fun n ihn ↦ by
-              norm_num [pow_succ, Matrix.mul_apply]; grind
-        · erw [Matrix.adjugate_fin_two]
-          simp_all only [Fin.isValue, Int.reduceNeg, of_apply]
-          erw [show (negI : Matrix.SpecialLinearGroup (Fin 2) ℤ)
-            = ⟨Matrix.diagonal fun i ↦ if i = 0 then -1 else -1, by simp⟩
-              from by ext i j; fin_cases i <;> fin_cases j <;> rfl]; norm_num
-          have h_upper_triangular :
-              ∀ k : ℤ, ((α : Matrix.SpecialLinearGroup (Fin 2) ℤ) ^ k).val 1 0 = 0 := by
-            intro k; induction k using Int.induction_on
-            · simp_all only [Fin.isValue, Int.reduceNeg, zpow_zero, SpecialLinearGroup.coe_one,
-                ne_eq, one_ne_zero, not_false_eq_true, one_apply_ne]
-            · simp_all only [Fin.isValue, Int.reduceNeg, zpow_natCast, SpecialLinearGroup.coe_pow]
-              simp_all +decide only [Fin.isValue, Int.reduceNeg, zpow_add, zpow_natCast, zpow_one,
-                SpecialLinearGroup.coe_mul, SpecialLinearGroup.coe_pow, mul_apply, Fin.sum_univ_two,
-                zero_mul, zero_add, mul_eq_zero, or_true]
-            · simp_all +decide only [Fin.isValue, Int.reduceNeg, zpow_neg, zpow_natCast,
-              SpecialLinearGroup.coe_inv, SpecialLinearGroup.coe_pow, adjugate_pow,
-              adjugate_fin_two, zpow_sub, zpow_one, SpecialLinearGroup.coe_mul, mul_apply, of_apply,
-              cons_val', cons_val_zero, cons_val_fin_one, Fin.sum_univ_two, zero_mul, cons_val_one,
-              mul_neg, zero_add, neg_eq_zero, mul_eq_zero, or_true]
-          rw [h_upper_triangular]
-        · simp only [Fin.isValue, negI, Int.reduceNeg, of_apply, cons_val', cons_val_zero,
-          cons_val_fin_one, cons_val_one, α, adjugate_fin_two, mul_neg, zero_mul, neg_zero, neg_mul,
-          one_mul, zero_add]
-          have h_val11 : val.val 1 1 = -1 := by
-            have := val.2
-            rw [Matrix.det_fin_two] at this
-            simp_all only [Fin.isValue, Int.reduceNeg, neg_mul, one_mul, mul_zero, sub_zero]
-            grind
-          induction k using Int.induction_on <;> aesop?
-          · norm_cast
-            exact Eq.symm (by induction i + 1 <;> simp_all [pow_succ, Matrix.mul_apply])
-          · induction i
-            · simp_all only [Fin.isValue, Int.reduceNeg, CharP.cast_eq_zero, neg_zero, zero_sub,
-              mul_neg, mul_one, mul_zero, neg_eq_zero, OfNat.ofNat_ne_zero, pow_zero, one_apply_eq,
-              implies_true, zpow_neg, zpow_one, SpecialLinearGroup.coe_inv, adjugate_fin_two_of,
-              of_apply, cons_val', cons_val_zero, cons_val_fin_one]
-            · simp_all only [Fin.isValue, Int.reduceNeg, Nat.cast_add, Nat.cast_one, neg_add_rev,
-              mul_eq_mul_left_iff, sub_left_inj, add_eq_right, neg_eq_zero, one_ne_zero,
-              OfNat.ofNat_ne_zero, or_self, IsEmpty.forall_iff, implies_true, pow_succ]
-              norm_num [zpow_add, zpow_sub , Matrix.vecMul, Matrix.vecHead, Matrix.vecTail,
-                Matrix.mul_apply]
-              rename_i n
-              exact Nat.recOn n (by norm_num) fun n ih ↦ by
-                simp only [mul_apply, of_apply, cons_val', cons_val_zero, Fin.sum_univ_two,
-                  cons_val_one, Nat.succ_eq_add_one, pow_succ]
-                grind
-      simp_all only [zpow_neg, Fin.isValue, Subgroup.mem_closure]
-      intro K hK
-      convert K.mul_mem (hK <| Set.mem_insert_of_mem _ <| Set.mem_insert_of_mem _
-        <| Set.mem_singleton _) (K.inv_mem <| K.zpow_mem (hK <| Set.mem_insert _ _) k) using 1
+        refine Subtype.ext ?_
+        simp only [SpecialLinearGroup.coe_mul, zpow_neg, SpecialLinearGroup.coe_inv]
+        rw [α_zpow_val]
+        ext i j; fin_cases i <;> fin_cases j
+          <;> simp [negI, Matrix.mul_apply, Matrix.adjugate_fin_two, hk, h, h_2, h11]
+      have hnegI_mem : negI ∈ Subgroup.closure {α, β, negI} :=
+        Subgroup.subset_closure (Set.mem_insert_of_mem _ (Set.mem_insert_of_mem _ rfl))
+      have hα_mem : α ∈ Subgroup.closure {α, β, negI} :=
+        Subgroup.subset_closure (Set.mem_insert _ _)
+      convert Subgroup.mul_mem _ hnegI_mem (Subgroup.inv_mem _ (Subgroup.zpow_mem _ hα_mem k))
+      simp only [zpow_neg, Subgroup.coe_mul, Subgroup.coe_inv, SubgroupClass.coe_zpow, h_val]
   · have h_det : (A.val.val 0 0) * (A.val.val 1 1) = 1 := by
       have := A.1.2; rw [Matrix.det_fin_two] at this
       simp_all only [Fin.isValue, Int.reduceNeg, not_or, mul_zero, sub_zero]
@@ -247,38 +138,29 @@ lemma Γ2_c_eq_zero (A : Γ 2) (h : A.1 1 0 = 0) : A ∈ Subgroup.closure {α, �
 
 lemma Γ2_reduce_row (a c : ℤ) (ha : Odd a) (hc : Even c) (hc0 : c ≠ 0) :
     ∃ n, |a + 2 * n * c| < |c| := by
-  obtain ⟨n, r, hr⟩ : ∃ n, ∃ r, a + 2 * n * c = r ∧ -|c| < r ∧ r ≤ |c| := by
-    obtain ⟨q, r, hr⟩ : ∃ q r, a = 2 * c * q + r ∧ 0 ≤ r ∧ r < 2 * |c| := by
-      have h_div_alg : ∃ q r, a = (2 * c) * q + r ∧ 0 ≤ r ∧ r < |2 * c| := by
-        exact ⟨a / (2 * c), a % (2 * c),
-          by rw [Int.mul_ediv_add_emod], Int.emod_nonneg _ (by simp [hc0]),
-            Int.emod_lt_abs _ (by simp [hc0])⟩
-      simp_all
-    by_cases hr_case : r ≤ |c|;
-    · exact ⟨-q, r, by grind, by grind, hr_case⟩
-    · obtain ⟨k, hk⟩ : ∃ k, 0 < k ∧ k < |c| ∧ r = |c| + k :=
-        ⟨r - |c|, by grind, by grind, by ring⟩
-      use -q - (if c > 0 then 1 else -1), k - |c|
-      split_ifs <;> cases abs_cases c <;> grind
-  by_cases hr_eq : r = c ∨ r = -c
-  · grind
-  · exact ⟨n, hr.1 ▸ abs_lt.mpr ⟨by grind, by cases abs_cases c <;> grind⟩⟩
+  have h2c : 2 * c ≠ 0 := by simp [hc0]
+  obtain ⟨q, r, hqr, hr0, hr2c⟩ : ∃ q r, a = 2 * c * q + r ∧ 0 ≤ r ∧ r < 2 * |c| := by
+    refine ⟨a / (2 * c), a % (2 * c), by rw [Int.mul_ediv_add_emod],
+      Int.emod_nonneg _ h2c, ?_⟩
+    simpa using Int.emod_lt_abs _ h2c
+  by_cases hr_le : r ≤ |c|
+  · refine ⟨-q, ?_⟩
+    by_cases hr_eq : r = c ∨ r = -c <;> [grind; exact abs_lt.mpr ⟨by grind, by grind⟩]
+  · refine ⟨-q - (if c > 0 then 1 else -1), ?_⟩
+    split_ifs <;> cases abs_cases c <;> grind
 
 lemma Γ2_reduce_col (a c : ℤ) (ha : Odd a) (hc : Even c) (ha0 : a ≠ 0) :
     ∃ m, |c + 2 * m * a| < |a| := by
+  obtain ⟨q, r, hqr, hr0, hra⟩ : ∃ q r, c / 2 = q * a + r ∧ 0 ≤ r ∧ r < |a| :=
+    ⟨c / 2 / a, c / 2 % a, by rw [Int.ediv_mul_add_emod],
+      Int.emod_nonneg _ ha0, Int.emod_lt_abs _ ha0⟩
   have hm : ∃ m, |c / 2 + m * a| ≤ (|a| - 1) / 2 := by
-    obtain ⟨q, r, hr⟩ : ∃ q r, c / 2 = q * a + r ∧ 0 ≤ r ∧ r < |a| := by
-      exact ⟨c / 2 / a, c / 2 % a, by rw [Int.ediv_mul_add_emod],
-        Int.emod_nonneg _ ha0, Int.emod_lt_abs _ ha0⟩
     by_cases hr_case : r ≤ (|a| - 1) / 2
     · exact ⟨-q, by rw [abs_le]; constructor <;> grind⟩
-    · obtain ⟨s, hs⟩ : ∃ s, 1 ≤ s ∧ s ≤ (|a| - 1) / 2 ∧ r = |a| - s := by
-        use |a| - r
-        cases abs_cases a <;> cases ha <;> grind
-      use if a > 0 then -q - 1 else -q + 1
-      split_ifs <;> cases abs_cases a <;> exact abs_le.mpr ⟨by grind, by grind⟩
+    · refine ⟨if a > 0 then -q - 1 else -q + 1, ?_⟩
+      split_ifs <;> cases abs_cases a <;> cases ha <;> exact abs_le.mpr ⟨by grind, by grind⟩
   obtain ⟨m, hm⟩ := hm
-  use m
+  refine ⟨m, ?_⟩
   norm_num [abs_le] at *
   cases abs_cases a <;> cases abs_cases (c + 2 * m * a) <;>
     nlinarith [Int.ediv_mul_cancel (show 2 ∣ c from even_iff_two_dvd.mp hc),
@@ -348,45 +230,18 @@ lemma Γ2_descent (A : Γ 2) (h : A.1 1 0 ≠ 0) :
       simp only [Fin.isValue, ne_eq]
       intro a
       simp_all [Fin.isValue, abs_zero, abs_pos, ne_eq, not_false_eq_true, Int.not_odd_zero]
-  refine ⟨β ^ m * α ^ n, ?_, ?_⟩
-  · exact Subgroup.mul_mem _ (Subgroup.zpow_mem _ (Subgroup.subset_closure
-      (Set.mem_insert_of_mem _ (Set.mem_insert _ _))) _)
-        (Subgroup.zpow_mem _ (Subgroup.subset_closure (Set.mem_insert _ _)) _)
-  · erw [Subtype.coe_mk] at *
-    obtain ⟨val, property⟩ := A
-    simp_all only [Fin.isValue]
-    have h_alpha_beta :
-        ∀ n, (α ^ n : Matrix.SpecialLinearGroup (Fin 2) ℤ) = ⟨!![1, 2 * n; 0, 1], by
-          norm_num⟩ := by
-      intro n; induction n using Int.induction_on
-      · exact Subtype.ext <| by ext i j; fin_cases i <;> fin_cases j <;> rfl;
-      · simp_all only [Gamma_mem, Fin.isValue, ne_eq, zpow_natCast, zpow_add, zpow_one]
-        ext i j ; fin_cases i <;> fin_cases j <;> norm_num [Matrix.mul_apply, α]; ring
-      · simp_all only [Gamma_mem, Fin.isValue, ne_eq, zpow_neg, zpow_natCast, mul_neg, zpow_sub,
-          zpow_one]
-        erw [Subtype.ext_iff]
-        norm_num [Matrix.mul_apply, Matrix.adjugate_fin_two]
-        erw [show (α : Matrix.SpecialLinearGroup (Fin 2) ℤ) = ⟨Matrix.of ![![1, 2], ![0, 1]],
-          by simp [Matrix.det_fin_two]⟩ from by ext i j; fin_cases i <;> fin_cases j <;> rfl]
-        norm_num
-        ring
-    have h_beta : ∀ m, (β ^ m : Matrix.SpecialLinearGroup (Fin 2) ℤ) = ⟨!![1, 0; 2 * m, 1], by
-      norm_num [Matrix.det_fin_two]⟩ := by
-      intro m
-      induction m using Int.induction_on
-      · exact Subtype.ext <| by ext i j; fin_cases i <;> fin_cases j <;> rfl
-      · simp_all only [Fin.isValue, zpow_natCast]
-        norm_cast
-        simp_all only [Fin.isValue, pow_succ, Subgroup.coe_mul, SubmonoidClass.coe_pow]
-        exact Subtype.ext <| by ext i j; fin_cases i <;> fin_cases j
-          <;> norm_num [Matrix.mul_apply, β]; ring
-      · simp_all only [Fin.isValue, zpow_sub, zpow_neg, zpow_natCast]
-        erw [Matrix.SpecialLinearGroup.ext_iff]
-        norm_num [β, Matrix.adjugate_fin_two]
-        ring_nf
-    simp_all [Matrix.mul_apply]
-    convert hm.trans hn using 1
-    ring_nf
+  have hβ_mem : β ∈ Subgroup.closure {α, β, negI} :=
+    Subgroup.subset_closure (Set.mem_insert_of_mem _ (Set.mem_insert _ _))
+  have hα_mem : α ∈ Subgroup.closure {α, β, negI} := Subgroup.subset_closure (Set.mem_insert _ _)
+  refine ⟨β ^ m * α ^ n, Subgroup.mul_mem _ (Subgroup.zpow_mem _ hβ_mem _)
+    (Subgroup.zpow_mem _ hα_mem _), ?_⟩
+  obtain ⟨val, property⟩ := A
+  simp only [Fin.isValue, Subgroup.coe_mul, SubgroupClass.coe_zpow, SpecialLinearGroup.coe_mul]
+  rw [α_zpow_val, β_zpow_val]
+  simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.of_apply, Matrix.cons_val_zero,
+    Matrix.cons_val_one] at hn hm ⊢
+  convert hm.trans hn using 1
+  ring_nf
 
 theorem Γ2_generate : (⊤ : Subgroup (Γ 2)) = Subgroup.closure {α, β, negI} := by
   refine le_antisymm ?_ le_top
