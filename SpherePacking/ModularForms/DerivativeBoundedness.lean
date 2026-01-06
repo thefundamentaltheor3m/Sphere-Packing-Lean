@@ -124,24 +124,18 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
       _ = ↑n * ‖q‖ ^ (n : ℕ) / (1 - ‖q‖) := by rw [norm_pow]
   -- Set r = ‖q‖ for convenience
   set r : ℝ := ‖q‖ with hr_def
-  have hr_pos : 0 < r := hq_pos
-  have hr_lt_one : r < 1 := hq
-  have hr_le_r₀ : r ≤ r₀ := hq_bound
-  have hone_sub_r_pos : 0 < 1 - r := hone_sub_q_pos
   have hr_norm_lt_one : ‖r‖ < 1 := by
-    simp only [Real.norm_eq_abs, abs_of_nonneg hr_pos.le, hr_lt_one]
+    simp [Real.norm_eq_abs, abs_of_nonneg hq_pos.le, hq]
   -- Summability of n * r^n on ℕ (from mathlib)
   have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
-    have := summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
-    simp only [pow_one] at this
-    exact this
+    simpa [pow_one] using summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
   -- Convert to ℕ+ via nat_pos_tsum2 (using f 0 = 0)
   have hsumm_pnat : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ)) := by
     have h0 : (fun n : ℕ => (n : ℝ) * r ^ n) 0 = 0 := by simp
     exact (nat_pos_tsum2 _ h0).mpr hsumm_nat
   -- Summability with (1 - r)⁻¹ factor
   have hsumm_majorant : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
-    have hr_ne : (1 - r) ≠ 0 := hone_sub_r_pos.ne'
+    have hr_ne : (1 - r) ≠ 0 := hone_sub_q_pos.ne'
     simpa [div_eq_mul_inv] using hsumm_pnat.mul_right (1 - r)⁻¹
   -- Summability of the complex sum norms
   have hsumm_norms : Summable
@@ -168,18 +162,11 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- With (1-r)⁻¹ factor: r / (1-r)³
   have hsum_majorant_eq :
       (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
-    have hr_ne : (1 - r) ≠ 0 := hone_sub_r_pos.ne'
+    have hr_ne : (1 - r) ≠ 0 := hone_sub_q_pos.ne'
     rw [tsum_div_const, hsum_pnat]
     field_simp
   -- Now: ‖tsum‖ ≤ r / (1-r)³ ≤ r₀ / (1-r₀)³
-  -- Monotonicity: f(x) = x/(1-x)³ is increasing on [0,1) since f'(x) = (1+2x)/(1-x)⁴ > 0
-  have hmono : r / (1 - r) ^ 3 ≤ r₀ / (1 - r₀) ^ 3 := by
-    -- Since 0 ≤ r ≤ r₀ < 1, and x/(1-x)³ is increasing on [0,1)
-    have h1 : 0 ≤ r := hr_pos.le
-    have h2 : r ≤ r₀ := hr_le_r₀
-    have h3 : r₀ < 1 := hr₀_lt_one
-    -- Use gcongr for numerator and denominator separately
-    gcongr
+  have hmono : r / (1 - r) ^ 3 ≤ r₀ / (1 - r₀) ^ 3 := by gcongr
   -- Chain the bounds
   have htsum_bound : ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
       r₀ / (1 - r₀) ^ 3 := by
