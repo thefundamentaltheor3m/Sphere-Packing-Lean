@@ -641,36 +641,9 @@ lemma jacobi_f_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f :=
 lemma jacobi_f_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f_SIF :=
   jacobi_f_MDifferentiable
 
-/-- jacobi_f is bounded at i∞ (in fact tends to 0) -/
-lemma isBoundedAtImInfty_jacobi_f : IsBoundedAtImInfty jacobi_f := by
-  -- jacobi_f → 0 at i∞, so it's certainly bounded
-  rw [isBoundedAtImInfty_iff]
-  use 1, 1
-  intro z hz
-  -- For large enough imaginary part, jacobi_f z is small
-  -- This follows from jacobi_f_tendsto_atImInfty (proved in AtImInfty.lean)
-  -- For now we use sorry as the tendsto lemma is in AtImInfty
-  sorry
-
-/-- jacobi_f slash by any SL₂(ℤ) element equals jacobi_f (for use with bounded_at_cusps) -/
-lemma jacobi_f_slash_eq (A' : SL(2, ℤ)) :
-    jacobi_f ∣[(4 : ℤ)] (SpecialLinearGroup.mapGL ℝ A') = jacobi_f := by
-  simpa [SL_slash] using jacobi_f_SL2Z_invariant A'
-
-/-- jacobi_f slash by any SL₂(ℤ) element is bounded at i∞ -/
-lemma isBoundedAtImInfty_jacobi_f_slash :
-    ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (jacobi_f ∣[(4 : ℤ)] (A : GL (Fin 2) ℝ)) := by
-  intro A ⟨A', hA⟩
-  rw [← hA, jacobi_f_slash_eq A']
-  exact isBoundedAtImInfty_jacobi_f
-
-/-- jacobi_f as a ModularForm of weight 4 and level Γ(1) -/
-noncomputable def jacobi_f_MF : ModularForm (CongruenceSubgroup.Gamma 1) 4 := {
-  jacobi_f_SIF with
-  holo' := jacobi_f_SIF_MDifferentiable
-  bdd_at_cusps' := fun hc =>
-    bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_jacobi_f_slash
-}
+-- isBoundedAtImInfty_jacobi_f, jacobi_f_slash_eq, isBoundedAtImInfty_jacobi_f_slash,
+-- and jacobi_f_MF are defined in AtImInfty.lean where jacobi_f_tendsto_atImInfty
+-- is available to prove boundedness.
 
 end JacobiIdentity
 

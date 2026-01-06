@@ -11,9 +11,10 @@ computations with Fourier coefficients, e.g. comparing two q-expansions. This is
 compute limits of forms later on (following Seewoo's approach).
 -/
 
-open scoped Real
+open scoped Real MatrixGroups ModularForm
 open UpperHalfPlane hiding I
-open Complex Asymptotics Topology Filter
+open Complex Asymptotics Topology Filter Manifold SlashInvariantForm Matrix ModularGroup
+  SlashAction
 
 lemma Int.ne_half (a : ℤ) : ↑a ≠ (1 / 2 : ℝ) :=
   ne_of_apply_ne Int.fract <| by
@@ -202,6 +203,39 @@ theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
   convert jacobi_g_tendsto_atImInfty.pow 2 using 1
   norm_num
 
+/-- jacobi_f is bounded at i∞ (follows from tending to 0) -/
+lemma isBoundedAtImInfty_jacobi_f : IsBoundedAtImInfty jacobi_f := by
+  rw [isBoundedAtImInfty_iff]
+  -- From jacobi_f → 0, for any ε > 0, eventually ‖jacobi_f z‖ < ε
+  have h := jacobi_f_tendsto_atImInfty.eventually (Metric.ball_mem_nhds 0 one_pos)
+  rw [eventually_atImInfty] at h
+  obtain ⟨A, hA⟩ := h
+  use 1, A
+  intro z hz
+  specialize hA z hz
+  simp only [dist_zero_right] at hA
+  linarith
+
+/-- jacobi_f slash by any SL₂(ℤ) element equals jacobi_f (for use with bounded_at_cusps) -/
+lemma jacobi_f_slash_eq (A' : SL(2, ℤ)) :
+    jacobi_f ∣[(4 : ℤ)] (SpecialLinearGroup.mapGL ℝ A') = jacobi_f := by
+  simpa [ModularForm.SL_slash] using jacobi_f_SL2Z_invariant A'
+
+/-- jacobi_f slash by any SL₂(ℤ) element is bounded at i∞ -/
+lemma isBoundedAtImInfty_jacobi_f_slash :
+    ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (jacobi_f ∣[(4 : ℤ)] (A : GL (Fin 2) ℝ)) := by
+  intro A ⟨A', hA⟩
+  rw [← hA, jacobi_f_slash_eq A']
+  exact isBoundedAtImInfty_jacobi_f
+
+/-- jacobi_f as a ModularForm of weight 4 and level Γ(1) -/
+noncomputable def jacobi_f_MF : ModularForm (CongruenceSubgroup.Gamma 1) 4 := {
+  jacobi_f_SIF with
+  holo' := jacobi_f_SIF_MDifferentiable
+  bdd_at_cusps' := fun hc =>
+    bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_jacobi_f_slash
+}
+
 /-!
 ## Completing the Jacobi identity proof
 
@@ -228,4 +262,4 @@ theorem jacobi_g_eq_zero : jacobi_g = 0 := by
   ext z
   simpa [jacobi_f] using congr_fun jacobi_f_eq_zero z
 
--- jacobi_identity is now proved in JacobiTheta.lean using jacobi_g_eq_zero
+-- jacobi_identity is proved in ThetaDerivIdentities.lean using jacobi_g_eq_zero
