@@ -63,8 +63,7 @@ lemma closedBall_center_subset_upperHalfPlane (z : ℍ) :
   have hlower : z.im / 2 ≤ w.im := by
     have h1 : -(z.im / 2) ≤ w.im - z.im := (abs_le.mp habs).1
     linarith
-  have hz_im_pos : 0 < z.im := z.im_pos
-  exact lt_of_lt_of_le (by linarith : 0 < z.im / 2) hlower
+  exact lt_of_lt_of_le (by linarith [z.im_pos] : 0 < z.im / 2) hlower
 
 /-! ## Cauchy Estimates -/
 
@@ -104,7 +103,6 @@ lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
   obtain ⟨M, A, hMA⟩ := hbdd
   use M / π, 2 * max A 0 + 1
   intro z hz
-  have hz_half_gt_A : z.im / 2 > max A 0 := by linarith
   have hR_pos : 0 < z.im / 2 := by linarith [z.im_pos]
   -- Build DiffContOnCl on ball(z, z.im/2)
   have hclosed := closedBall_center_subset_upperHalfPlane z
