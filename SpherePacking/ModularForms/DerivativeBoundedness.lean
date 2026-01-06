@@ -11,7 +11,6 @@ These lemmas are used for asymptotic analysis and dimension arguments.
 
 * `E₂_isBoundedAtImInfty` : E₂ is bounded as im(z) → ∞
 * `E₄_isBoundedAtImInfty` : E₄ is bounded at infinity (as a modular form)
-* `E₂_mul_E₄_isBoundedAtImInfty` : The product E₂ · E₄ is bounded at infinity
 * `D_E₄_isBoundedAtImInfty` : D(E₄) is bounded at infinity
 * `serre_D_E₄_isBoundedAtImInfty` : serre_D 4 E₄ is bounded at infinity
 -/
@@ -58,7 +57,6 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
       simp [Complex.I_re, Complex.I_im, mul_comm]
     rw [Complex.norm_exp, h1, Real.exp_le_exp]
     have hpi : 0 < π := Real.pi_pos
-    have him : 1 ≤ z.im := hz
     nlinarith
   -- Step 1: Triangle inequality: ‖1 - 24 * tsum‖ ≤ 1 + 24 * ‖tsum‖
   calc ‖1 - 24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
