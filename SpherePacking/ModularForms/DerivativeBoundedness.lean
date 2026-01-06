@@ -147,8 +147,8 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- With (1-r)⁻¹ factor: r / (1-r)³
   have hsum_majorant_eq :
       (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
-    rw [tsum_div_const, hsum_pnat]
-    field_simp
+    simp only [div_eq_mul_inv, tsum_mul_right, hsum_pnat, pow_succ, mul_inv]
+    ring
   -- Now: ‖tsum‖ ≤ r / (1-r)³ ≤ r₀ / (1-r₀)³
   have hmono : r / (1 - r) ^ 3 ≤ r₀ / (1 - r₀) ^ 3 := by gcongr
   -- Chain the bounds
