@@ -83,7 +83,7 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
       (1 - cexp (2 * π * Complex.I * ↑n * ↑z))) =
       (fun n : ℕ+ => ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))) := by
     ext n
-    simp only [hexp_pow]
+    simp [hexp_pow]
   rw [hsum_eq]
   -- Key bounds on r₀
   have hr₀_pos : 0 < r₀ := Real.exp_pos _
@@ -94,14 +94,13 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
       _ = 1 := Real.exp_zero
   have hone_sub_r₀_pos : 0 < 1 - r₀ := by linarith
   -- Key bounds on q
-  have hq_lt_one : ‖q‖ < 1 := hq
   have hq_pos : 0 < ‖q‖ := norm_pos_iff.mpr (Complex.exp_ne_zero _)
   have hone_sub_q_pos : 0 < 1 - ‖q‖ := by linarith
   -- Term bound: ‖n * q^n / (1 - q^n)‖ ≤ n * ‖q‖^n / (1 - ‖q‖)
   have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
       n * ‖q‖ ^ (n : ℕ) / (1 - ‖q‖) := fun n => by
     have hqn_lt : ‖q ^ (n : ℕ)‖ < 1 := by
-      rw [norm_pow]; exact pow_lt_one₀ (norm_nonneg _) hq_lt_one n.ne_zero
+      rw [norm_pow]; exact pow_lt_one₀ (norm_nonneg _) hq n.ne_zero
     have hdenom_ne : 1 - q ^ (n : ℕ) ≠ 0 := by
       intro h; simp only [sub_eq_zero] at h
       have : ‖q ^ (n : ℕ)‖ = 1 := by rw [← h]; exact norm_one
@@ -114,7 +113,7 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
         simp only [norm_one] at this
         linarith
       have h2 : ‖q‖ ^ (n : ℕ) ≤ ‖q‖ := by
-        have := pow_le_pow_of_le_one (norm_nonneg _) hq_lt_one.le n.one_le
+        have := pow_le_pow_of_le_one (norm_nonneg _) hq.le n.one_le
         simp at this; exact this
       calc 1 - ‖q‖ ≤ 1 - ‖q‖ ^ (n : ℕ) := by linarith
         _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow]
@@ -128,7 +127,7 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- Set r = ‖q‖ for convenience
   set r : ℝ := ‖q‖ with hr_def
   have hr_pos : 0 < r := hq_pos
-  have hr_lt_one : r < 1 := hq_lt_one
+  have hr_lt_one : r < 1 := hq
   have hr_le_r₀ : r ≤ r₀ := hq_bound
   have hone_sub_r_pos : 0 < 1 - r := hone_sub_q_pos
   have hr_norm_lt_one : ‖r‖ < 1 := by
@@ -197,10 +196,6 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
 lemma E₄_isBoundedAtImInfty : IsBoundedAtImInfty E₄.toFun :=
   ModularFormClass.bdd_at_infty E₄
 
-/-- The product E₂ · E₄ is bounded at infinity. -/
-lemma E₂_mul_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (E₂ * E₄.toFun) := by
-  exact E₂_isBoundedAtImInfty.mul E₄_isBoundedAtImInfty
-
 /-- D E₄ is bounded at infinity.
 
 The q-expansion D(E₄) = 240·Σn·σ₃(n)·qⁿ has no constant term,
@@ -226,7 +221,7 @@ lemma serre_D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 4 E₄.toFun
   have h2 : IsBoundedAtImInfty (fun z => (4 : ℂ) * 12⁻¹ * E₂ z * E₄.toFun z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => (4 : ℂ) * 12⁻¹) :=
       Filter.const_boundedAtFilter _ _
-    convert hconst.mul E₂_mul_E₄_isBoundedAtImInfty using 1
+    convert hconst.mul (E₂_isBoundedAtImInfty.mul E₄_isBoundedAtImInfty) using 1
     ext z
     simp only [Pi.mul_apply]
     ring
