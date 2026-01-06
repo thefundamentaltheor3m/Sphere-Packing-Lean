@@ -98,10 +98,6 @@ lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
     exact h
   rw [hprod_z]
   set α := (1 : ℂ) / (2 * riemannZeta 2) with hα_def
-  have hE₂slash_z : (E₂ ∣[(2 : ℤ)] γ) z = E₂ z - α * D₂ γ z := by
-    have h := congrFun hE₂slash z
-    simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul] at h
-    exact h
   have hE₂slash_fun : (E₂ ∣[(2 : ℤ)] γ) = E₂ - α • D₂ γ := by
     ext w
     have h := congrFun hE₂slash w
@@ -114,14 +110,6 @@ lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
     simp only [D_sub E₂ _ E₂_holo' hαD₂, D_smul α _ (MDifferentiable_D₂ γ),
                Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
   have hDd : D (D₂ γ) z = -(γ 1 0 : ℂ)^2 / (denom γ z)^2 := D_D₂ γ z
-  have hd_sq : D₂ γ z * D₂ γ z = -4 * π^2 * (γ 1 0 : ℂ)^2 / (denom γ z)^2 := by
-    have hden_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
-    have hI_sq : (I : ℂ)^2 = -1 := Complex.I_sq
-    simp only [D₂]
-    field_simp [hden_ne]
-    ring_nf
-    simp only [hI_sq]
-    ring
   simp only [serre_D, Pi.sub_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul]
   rw [hD_lin, hDd]
   have hα_val : α = 3 / π^2 := by

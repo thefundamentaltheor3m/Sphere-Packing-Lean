@@ -325,18 +325,14 @@ lemma E₂_tendsto_one_at_infinity :
 /-- E₄(iy) → 1 as y → +∞. -/
 lemma E₄_tendsto_one_at_infinity :
     Filter.Tendsto (fun y : PosReal => E₄.toFun (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds 1) := by
-  have h := modular_form_tendsto_atImInfty E₄
-  rw [E4_q_exp_zero] at h
-  exact h.comp tendsto_iMulPosReal_atImInfty
+      (Filter.comap Subtype.val Filter.atTop) (nhds 1) :=
+  (E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄).comp tendsto_iMulPosReal_atImInfty
 
 /-- E₆(iy) → 1 as y → +∞. -/
 lemma E₆_tendsto_one_at_infinity :
     Filter.Tendsto (fun y : PosReal => E₆.toFun (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds 1) := by
-  have h := modular_form_tendsto_atImInfty E₆
-  rw [E6_q_exp_zero] at h
-  exact h.comp tendsto_iMulPosReal_atImInfty
+      (Filter.comap Subtype.val Filter.atTop) (nhds 1) :=
+  (E6_q_exp_zero ▸ modular_form_tendsto_atImInfty E₆).comp tendsto_iMulPosReal_atImInfty
 
 /-! ## Boundedness lemmas -/
 
@@ -348,16 +344,13 @@ lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
 lemma serre_D_E₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) := by
   have hserre : serre_D 1 E₂ = D E₂ - (fun z => 1 * 12⁻¹ * E₂ z * E₂ z) := rfl
   rw [hserre]
-  have hDE₂ : IsBoundedAtImInfty (D E₂) :=
-    D_isBoundedAtImInfty_of_bounded E₂_holo' E₂_isBoundedAtImInfty
-  have hE₂sq : IsBoundedAtImInfty (fun z => E₂ z * E₂ z) :=
-    E₂_isBoundedAtImInfty.mul E₂_isBoundedAtImInfty
+  have hDE₂ := D_isBoundedAtImInfty_of_bounded E₂_holo' E₂_isBoundedAtImInfty
+  have hE₂sq := E₂_isBoundedAtImInfty.mul E₂_isBoundedAtImInfty
   have h12E₂sq : IsBoundedAtImInfty (fun z => 1 * 12⁻¹ * E₂ z * E₂ z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => (1 : ℂ) * 12⁻¹) :=
       Filter.const_boundedAtFilter _ _
     have := hconst.mul hE₂sq
-    convert this using 1
-    ext z; simp only [Pi.mul_apply]; ring
+    convert this using 1; ext z; simp only [Pi.mul_apply]; ring
   exact hDE₂.sub h12E₂sq
 
 /-! ## Construction of ModularForm from serre_D -/
@@ -393,17 +386,12 @@ def serre_D_E₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 where
 /-- serre_D 6 E₆ is bounded at infinity. -/
 lemma serre_D_E₆_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 6 E₆.toFun) := by
   unfold serre_D
-  have h1 : IsBoundedAtImInfty (D E₆.toFun) :=
-    D_isBoundedAtImInfty_of_bounded E₆.holo' E₆_isBoundedAtImInfty
+  have h1 := D_isBoundedAtImInfty_of_bounded E₆.holo' E₆_isBoundedAtImInfty
   have h2 : IsBoundedAtImInfty (fun z => (6 : ℂ) * 12⁻¹ * E₂ z * E₆.toFun z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => (6 : ℂ) * 12⁻¹) :=
       Filter.const_boundedAtFilter _ _
-    have hE₂E₆ : IsBoundedAtImInfty (E₂ * E₆.toFun) :=
-      E₂_isBoundedAtImInfty.mul E₆_isBoundedAtImInfty
-    convert hconst.mul hE₂E₆ using 1
-    ext z
-    simp only [Pi.mul_apply]
-    ring
+    have hE₂E₆ := E₂_isBoundedAtImInfty.mul E₆_isBoundedAtImInfty
+    convert hconst.mul hE₂E₆ using 1; ext z; simp only [Pi.mul_apply]; ring
   exact h1.sub h2
 
 /-- serre_D 6 E₆ is a weight-8 modular form. -/
@@ -442,24 +430,16 @@ lemma serre_D_E₄_tendsto_at_infinity :
       (Filter.comap Subtype.val Filter.atTop) (nhds (-(1/3 : ℂ))) := by
   have hserre : ∀ y : PosReal, serre_D 4 E₄.toFun (iMulPosReal y) =
       D E₄.toFun (iMulPosReal y) -
-        (4 : ℂ) * 12⁻¹ * E₂ (iMulPosReal y) * E₄.toFun (iMulPosReal y) := by
-    intro y
+        (4 : ℂ) * 12⁻¹ * E₂ (iMulPosReal y) * E₄.toFun (iMulPosReal y) := fun y => by
     simp only [serre_D]
   simp_rw [hserre]
-  have hD : Filter.Tendsto (fun y : PosReal => D E₄.toFun (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds 0) :=
-    D_tendsto_zero_of_tendsto_const E₄.holo' E₄_isBoundedAtImInfty
-  have hE₂ := E₂_tendsto_one_at_infinity
-  have hE₄ := E₄_tendsto_one_at_infinity
+  have hD := D_tendsto_zero_of_tendsto_const E₄.holo' E₄_isBoundedAtImInfty
+  have hprod := E₂_tendsto_one_at_infinity.mul E₄_tendsto_one_at_infinity
   have hlim : (0 : ℂ) - (4 : ℂ) * 12⁻¹ * 1 * 1 = -(1/3 : ℂ) := by norm_num
   rw [← hlim]
-  refine Filter.Tendsto.sub hD ?_
-  have hprod : Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y) * E₄.toFun (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds (1 * 1)) :=
-    hE₂.mul hE₄
+  refine hD.sub ?_
   have hconst : Filter.Tendsto (fun _ : PosReal => (4 : ℂ) * 12⁻¹)
-      (Filter.comap Subtype.val Filter.atTop) (nhds ((4 : ℂ) * 12⁻¹)) :=
-    tendsto_const_nhds
+      (Filter.comap Subtype.val Filter.atTop) (nhds ((4 : ℂ) * 12⁻¹)) := tendsto_const_nhds
   convert hconst.mul hprod using 1 <;> ring_nf
 
 /-- serre_D 6 E₆(iy) → -1/2 as y → +∞. -/
@@ -468,24 +448,16 @@ lemma serre_D_E₆_tendsto_at_infinity :
       (Filter.comap Subtype.val Filter.atTop) (nhds (-(1/2 : ℂ))) := by
   have hserre : ∀ y : PosReal, serre_D 6 E₆.toFun (iMulPosReal y) =
       D E₆.toFun (iMulPosReal y) -
-        (6 : ℂ) * 12⁻¹ * E₂ (iMulPosReal y) * E₆.toFun (iMulPosReal y) := by
-    intro y
+        (6 : ℂ) * 12⁻¹ * E₂ (iMulPosReal y) * E₆.toFun (iMulPosReal y) := fun y => by
     simp only [serre_D]
   simp_rw [hserre]
-  have hD : Filter.Tendsto (fun y : PosReal => D E₆.toFun (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds 0) :=
-    D_tendsto_zero_of_tendsto_const E₆.holo' E₆_isBoundedAtImInfty
-  have hE₂ := E₂_tendsto_one_at_infinity
-  have hE₆ := E₆_tendsto_one_at_infinity
+  have hD := D_tendsto_zero_of_tendsto_const E₆.holo' E₆_isBoundedAtImInfty
+  have hprod := E₂_tendsto_one_at_infinity.mul E₆_tendsto_one_at_infinity
   have hlim : (0 : ℂ) - (6 : ℂ) * 12⁻¹ * 1 * 1 = -(1/2 : ℂ) := by norm_num
   rw [← hlim]
-  refine Filter.Tendsto.sub hD ?_
-  have hprod : Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y) * E₆.toFun (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds (1 * 1)) :=
-    hE₂.mul hE₆
+  refine hD.sub ?_
   have hconst : Filter.Tendsto (fun _ : PosReal => (6 : ℂ) * 12⁻¹)
-      (Filter.comap Subtype.val Filter.atTop) (nhds ((6 : ℂ) * 12⁻¹)) :=
-    tendsto_const_nhds
+      (Filter.comap Subtype.val Filter.atTop) (nhds ((6 : ℂ) * 12⁻¹)) := tendsto_const_nhds
   convert hconst.mul hprod using 1 <;> ring_nf
 
 /-- serre_D 1 E₂ is a weight-4 modular form.
@@ -517,21 +489,14 @@ lemma serre_D_E₂_tendsto_at_infinity :
     Filter.Tendsto (fun y : PosReal => serre_D 1 E₂ (iMulPosReal y))
       (Filter.comap Subtype.val Filter.atTop) (nhds (-(1/12 : ℂ))) := by
   have hserre : ∀ y : PosReal, serre_D 1 E₂ (iMulPosReal y) =
-      D E₂ (iMulPosReal y) - 1 * 12⁻¹ * E₂ (iMulPosReal y) * E₂ (iMulPosReal y) := by
-    intro y
+      D E₂ (iMulPosReal y) - 1 * 12⁻¹ * E₂ (iMulPosReal y) * E₂ (iMulPosReal y) := fun y => by
     simp only [serre_D]
   simp_rw [hserre]
-  have hD : Filter.Tendsto (fun y : PosReal => D E₂ (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds 0) :=
-    D_tendsto_zero_of_tendsto_const E₂_holo' E₂_isBoundedAtImInfty
-  have hE₂ := E₂_tendsto_one_at_infinity
+  have hD := D_tendsto_zero_of_tendsto_const E₂_holo' E₂_isBoundedAtImInfty
+  have hprod := E₂_tendsto_one_at_infinity.mul E₂_tendsto_one_at_infinity
   have hlim : (0 : ℂ) - (1 : ℂ) * 12⁻¹ * 1 * 1 = -(1/12 : ℂ) := by norm_num
   rw [← hlim]
-  refine Filter.Tendsto.sub hD ?_
-  have hprod : Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y) * E₂ (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds (1 * 1)) :=
-    hE₂.mul hE₂
+  refine hD.sub ?_
   have hconst : Filter.Tendsto (fun _ : PosReal => (1 : ℂ) * 12⁻¹)
-      (Filter.comap Subtype.val Filter.atTop) (nhds ((1 : ℂ) * 12⁻¹)) :=
-    tendsto_const_nhds
+      (Filter.comap Subtype.val Filter.atTop) (nhds ((1 : ℂ) * 12⁻¹)) := tendsto_const_nhds
   convert hconst.mul hprod using 1 <;> ring_nf
