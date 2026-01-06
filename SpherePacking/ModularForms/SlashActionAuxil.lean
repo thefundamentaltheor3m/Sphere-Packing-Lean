@@ -21,13 +21,10 @@ open Matrix UpperHalfPlane CongruenceSubgroup ModularGroup
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 local notation "Γ " n:100 => Gamma n
 
-/-- The generator `α = T²` of `Γ(2)`, equal to `[[1, 2], [0, 1]]`. -/
 def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp⟩, by simp; decide⟩
 
-/-- The generator `β = -I · S · α⁻¹ · S` of `Γ(2)`, equal to `[[1, 0], [2, 1]]`. -/
 def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp⟩, by simp; decide⟩
 
-/-- The element `-I` of `Γ(2)`, equal to `[[-1, 0], [0, -1]]`. -/
 def negI : Γ 2 := ⟨⟨!![-1, 0; 0, -1], by simp⟩, by simp⟩
 
 theorem α_eq_T_sq : α = ⟨T ^ 2, by simp [sq, T]; decide⟩ := by ext; simp [α, T, sq]
