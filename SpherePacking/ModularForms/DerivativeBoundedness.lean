@@ -116,10 +116,9 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- Summability of n * r^n on ℕ (from mathlib)
   have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
     simpa [pow_one] using summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
-  -- Convert to ℕ+ via nat_pos_tsum2 (using f 0 = 0)
-  have hsumm_pnat : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ)) := by
-    have h0 : (fun n : ℕ => (n : ℝ) * r ^ n) 0 = 0 := by simp
-    exact (nat_pos_tsum2 _ h0).mpr hsumm_nat
+  -- Convert to ℕ+ summability (using f 0 = 0)
+  have hsumm_pnat : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ)) :=
+    hsumm_nat.subtype _
   -- Summability with (1 - r)⁻¹ factor
   have hsumm_majorant : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
     simpa [div_eq_mul_inv] using hsumm_pnat.mul_right (1 - r)⁻¹
