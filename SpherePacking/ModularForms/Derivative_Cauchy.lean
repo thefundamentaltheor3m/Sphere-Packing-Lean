@@ -134,9 +134,7 @@ lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
   have hM_nonneg : 0 ≤ M := le_trans (norm_nonneg _) (hMA z (by linarith [le_max_left A 0]))
   calc ‖D f z‖ ≤ M / (2 * π * (z.im / 2)) := hD_bound
     _ = M / (π * z.im) := by ring
-    _ ≤ M / (π * 1) := by
-        apply div_le_div_of_nonneg_left hM_nonneg (by positivity)
-        exact mul_le_mul_of_nonneg_left hz_im_ge_1 (le_of_lt Real.pi_pos)
+    _ ≤ M / (π * 1) := by gcongr
     _ = M / π := by ring
 
 end

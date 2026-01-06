@@ -84,11 +84,7 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   rw [hsum_eq]
   -- Key bounds on r₀
   have hr₀_pos : 0 < r₀ := Real.exp_pos _
-  have hr₀_lt_one : r₀ < 1 := by
-    simp only [hr₀_def]
-    have hpi : 0 < π := Real.pi_pos
-    calc Real.exp (-2 * π) < Real.exp 0 := Real.exp_strictMono (by linarith)
-      _ = 1 := Real.exp_zero
+  have hr₀_lt_one : r₀ < 1 := Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos])
   have hone_sub_r₀_pos : 0 < 1 - r₀ := by linarith
   -- Key bounds on q
   have hq_pos : 0 < ‖q‖ := norm_pos_iff.mpr (Complex.exp_ne_zero _)
@@ -110,8 +106,7 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
         simp only [norm_one] at this
         linarith
       have h2 : ‖q‖ ^ (n : ℕ) ≤ ‖q‖ := by
-        have := pow_le_pow_of_le_one (norm_nonneg _) hq.le n.one_le
-        simp at this; exact this
+        simpa using pow_le_pow_of_le_one (norm_nonneg _) hq.le n.one_le
       calc 1 - ‖q‖ ≤ 1 - ‖q‖ ^ (n : ℕ) := by linarith
         _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow]
         _ ≤ _ := h1
