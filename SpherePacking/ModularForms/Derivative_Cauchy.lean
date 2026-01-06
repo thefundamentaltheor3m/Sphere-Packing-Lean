@@ -59,9 +59,7 @@ lemma closedBall_center_subset_upperHalfPlane (z : ℍ) :
       _ ≤ ‖w - z‖ := abs_im_le_norm _
       _ = dist w z := (dist_eq_norm _ _).symm
       _ ≤ z.im / 2 := hdist
-  have hlower : z.im / 2 ≤ w.im := by
-    have h1 : -(z.im / 2) ≤ w.im - z.im := (abs_le.mp habs).1
-    linarith
+  have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
   exact lt_of_lt_of_le (by linarith [z.im_pos] : 0 < z.im / 2) hlower
 
 /-! ## Cauchy Estimates -/
@@ -117,9 +115,7 @@ lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
         _ ≤ ‖w - z‖ := abs_im_le_norm _
         _ = dist w z := (dist_eq_norm _ _).symm
         _ = z.im / 2 := hdist
-    have hw_im_ge_A : A ≤ w.im := by
-      have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
-      linarith [le_max_left A 0]
+    have hw_im_ge_A : A ≤ w.im := by linarith [(abs_le.mp habs).1, le_max_left A 0]
     simpa [ofComplex_apply_of_im_pos hw_im_pos] using hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
   -- Apply Cauchy estimate and bound by M/π
   have hD_bound := norm_D_le_of_sphere_bound hR_pos hDiff hf_bdd_sphere

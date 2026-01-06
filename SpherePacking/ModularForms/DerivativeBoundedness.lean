@@ -81,10 +81,8 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
     ext n
     simp [hexp_pow]
   rw [hsum_eq]
-  -- Key bounds on r₀
-  have hr₀_pos : 0 < r₀ := Real.exp_pos _
   have hr₀_lt_one : r₀ < 1 := Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos])
-  have hone_sub_r₀_pos : 0 < 1 - r₀ := by linarith
+  have hone_sub_r₀_pos : 0 < 1 - r₀ := sub_pos.mpr hr₀_lt_one
   have hq_nonneg : 0 ≤ ‖q‖ := norm_nonneg _
   have hone_sub_q_pos : 0 < 1 - ‖q‖ := sub_pos.mpr hq
   -- Term bound: ‖n * q^n / (1 - q^n)‖ ≤ n * ‖q‖^n / (1 - ‖q‖)
