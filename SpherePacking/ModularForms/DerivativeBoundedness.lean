@@ -134,7 +134,6 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
     exact (nat_pos_tsum2 _ h0).mpr hsumm_nat
   -- Summability with (1 - r)⁻¹ factor
   have hsumm_majorant : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
-    have hr_ne : (1 - r) ≠ 0 := hone_sub_q_pos.ne'
     simpa [div_eq_mul_inv] using hsumm_pnat.mul_right (1 - r)⁻¹
   -- Summability of the complex sum norms
   have hsumm_norms : Summable
@@ -161,7 +160,6 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- With (1-r)⁻¹ factor: r / (1-r)³
   have hsum_majorant_eq :
       (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
-    have hr_ne : (1 - r) ≠ 0 := hone_sub_q_pos.ne'
     rw [tsum_div_const, hsum_pnat]
     field_simp
   -- Now: ‖tsum‖ ≤ r / (1-r)³ ≤ r₀ / (1-r₀)³
