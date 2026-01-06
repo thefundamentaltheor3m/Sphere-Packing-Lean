@@ -1,6 +1,7 @@
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.DimensionFormulas
+import SpherePacking.ModularForms.AtImInfty
 
 /-!
 # Theta Derivative Identities
@@ -92,8 +93,11 @@ lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by
 ## Phase 3-4: Jacobi Identity and Relation f₂ + f₄ = f₃
 -/
 
-/-- Jacobi identity: H₂ + H₄ = H₃ -/
-lemma jacobi_identity' (z : ℍ) : H₂ z + H₄ z = H₃ z := congrFun jacobi_identity z
+/-- Jacobi identity at a point: H₂ z + H₄ z = H₃ z -/
+lemma jacobi_identity' (z : ℍ) : H₂ z + H₄ z = H₃ z := by
+  have h := congr_fun jacobi_g_eq_zero z
+  simp only [jacobi_g, Pi.zero_apply, sub_eq_zero] at h
+  exact h
 
 /-- The error terms satisfy f₂ + f₄ = f₃ (from Jacobi identity) -/
 lemma f₂_add_f₄_eq_f₃ : f₂ + f₄ = f₃ := by
