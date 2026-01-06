@@ -1,6 +1,5 @@
 import SpherePacking.ModularForms.Derivative
 import Mathlib.Analysis.Calculus.DiffContOnCl
-import Mathlib.Analysis.Complex.Liouville
 
 /-!
 # Cauchy Estimates for Modular Forms
@@ -22,7 +21,7 @@ of holomorphic functions on the upper half plane.
 -/
 
 open UpperHalfPlane hiding I
-open Real Complex Filter Metric
+open Real Complex Metric
 open scoped Topology Manifold
 
 noncomputable section
