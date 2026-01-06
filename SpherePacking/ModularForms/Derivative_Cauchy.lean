@@ -120,8 +120,7 @@ lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
     have hw_im_ge_A : A ≤ w.im := by
       have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
       linarith [le_max_left A 0]
-    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw_im_pos]
-    exact hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
+    simpa [ofComplex_apply_of_im_pos hw_im_pos] using hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
   -- Apply Cauchy estimate and bound by M/π
   have hD_bound := norm_D_le_of_sphere_bound hR_pos hDiff hf_bdd_sphere
   have hz_im_ge_1 : 1 ≤ z.im := by linarith [le_max_right A 0]
