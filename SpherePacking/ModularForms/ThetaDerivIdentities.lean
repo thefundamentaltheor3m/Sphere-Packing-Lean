@@ -547,19 +547,14 @@ lemma serre_D_tendsto_of_tendsto {k : ℤ} {F : ℍ → ℂ} {c : ℂ}
   -- serre_D k F = D F - k/12 * E₂ * F
   -- D F → 0, E₂ → 1, F → c, so serre_D k F → 0 - k/12 * 1 * c = -k/12 * c
   have hE₂_F : Tendsto (fun z => E₂ z * F z) atImInfty (𝓝 c) := by
-    have := E₂_tendsto_one_atImInfty.mul hF
-    simp only [one_mul] at this
-    exact this
+    simpa [one_mul] using E₂_tendsto_one_atImInfty.mul hF
   have h_coef : Tendsto (fun z => (k : ℂ) * 12⁻¹ * E₂ z * F z) atImInfty
       (𝓝 ((k : ℂ) / 12 * c)) := by
-    have := hE₂_F.const_mul ((k : ℂ) * 12⁻¹)
-    simp only [div_eq_mul_inv]
-    convert this using 2; ring
-  have h_eq : serre_D k F = fun z => D F z - (k : ℂ) * 12⁻¹ * E₂ z * F z := rfl
-  rw [h_eq]
-  have hsub := hD.sub h_coef
-  convert hsub using 2
-  simp only [div_eq_mul_inv]; ring
+    convert hE₂_F.const_mul ((k : ℂ) * 12⁻¹) using 2
+    ring
+  convert hD.sub h_coef using 2
+  simp only [div_eq_mul_inv]
+  ring
 
 /-- f₂ tends to 0 at infinity.
 Proof: f₂ = serre_D 2 H₂ - (1/6)H₂(H₂ + 2H₄)
@@ -712,24 +707,16 @@ lemma H_sum_sq_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H_sum_sq :=
 
 /-- H_sum_sq → 1 at infinity -/
 lemma H_sum_sq_tendsto : Tendsto H_sum_sq atImInfty (𝓝 1) := by
-  have h_H₂_lim := H₂_tendsto_atImInfty
-  have h_H₄_lim := H₄_tendsto_atImInfty
-  have h1 : Tendsto (fun z => H₂ z ^ 2) atImInfty (𝓝 0) := by
-    simpa [sq] using h_H₂_lim.mul h_H₂_lim
-  have h2 : Tendsto (fun z => H₂ z * H₄ z) atImInfty (𝓝 0) := by
-    simpa using h_H₂_lim.mul h_H₄_lim
-  have h3 : Tendsto (fun z => H₄ z ^ 2) atImInfty (𝓝 1) := by
-    simpa [sq] using h_H₄_lim.mul h_H₄_lim
-  have hsum := (h1.add h2).add h3
-  simp only [zero_add, add_zero] at hsum
-  exact hsum
+  have h_H₂ := H₂_tendsto_atImInfty
+  have h_H₄ := H₄_tendsto_atImInfty
+  have h1 : Tendsto (fun z => H₂ z ^ 2) atImInfty (𝓝 0) := by simpa [sq] using h_H₂.mul h_H₂
+  have h2 : Tendsto (fun z => H₂ z * H₄ z) atImInfty (𝓝 0) := by simpa using h_H₂.mul h_H₄
+  have h3 : Tendsto (fun z => H₄ z ^ 2) atImInfty (𝓝 1) := by simpa [sq] using h_H₄.mul h_H₄
+  simpa [zero_add, add_zero] using (h1.add h2).add h3
 
 /-- H_sum_sq ≠ 0 (since it tends to 1 ≠ 0) -/
-lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 := by
-  intro h
-  have h_limit := H_sum_sq_tendsto
-  rw [h] at h_limit
-  exact one_ne_zero (tendsto_nhds_unique tendsto_const_nhds h_limit).symm
+lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 := fun h =>
+  one_ne_zero (tendsto_nhds_unique tendsto_const_nhds (h ▸ H_sum_sq_tendsto)).symm
 
 /-- 3 * H_sum_sq ≠ 0 -/
 lemma three_H_sum_sq_ne_zero : (fun z => 3 * H_sum_sq z) ≠ 0 := by
