@@ -85,7 +85,7 @@ lemma norm_D_le_of_sphere_bound {f : ℍ → ℂ} {z : ℍ} {r M : ℝ}
     Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hr hDiff hbdd
   have h2piI_norm : ‖(2 * π * I : ℂ)⁻¹‖ = (2 * π)⁻¹ := by
     rw [norm_inv, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_I, mul_one]
-    simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
+    simp [abs_of_pos Real.pi_pos]
   calc ‖D f z‖
     _ = ‖(2 * π * I)⁻¹ * deriv (f ∘ ofComplex) z‖ := rfl
     _ = ‖(2 * π * I)⁻¹‖ * ‖deriv (f ∘ ofComplex) z‖ := norm_mul _ _
