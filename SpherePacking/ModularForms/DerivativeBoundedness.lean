@@ -83,7 +83,6 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   rw [hsum_eq]
   have hr₀_lt_one : r₀ < 1 := Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos])
   have hone_sub_r₀_pos : 0 < 1 - r₀ := sub_pos.mpr hr₀_lt_one
-  have hq_nonneg : 0 ≤ ‖q‖ := norm_nonneg _
   have hone_sub_q_pos : 0 < 1 - ‖q‖ := sub_pos.mpr hq
   -- Term bound: ‖n * q^n / (1 - q^n)‖ ≤ n * ‖q‖^n / (1 - ‖q‖)
   have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
@@ -108,8 +107,7 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
       _ = ↑n * ‖q‖ ^ (n : ℕ) / (1 - ‖q‖) := by rw [norm_pow]
   -- Set r = ‖q‖ for convenience
   set r : ℝ := ‖q‖ with hr_def
-  have hr_norm_lt_one : ‖r‖ < 1 := by
-    simp [Real.norm_eq_abs, abs_of_nonneg hq_nonneg, hq]
+  have hr_norm_lt_one : ‖r‖ < 1 := by rwa [Real.norm_of_nonneg (norm_nonneg q)]
   -- Summability of n * r^n on ℕ (from mathlib)
   have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
     simpa [pow_one] using summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
@@ -146,15 +144,13 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
       (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
     simp only [div_eq_mul_inv, tsum_mul_right, hsum_pnat, pow_succ, mul_inv]
     ring
-  -- Now: ‖tsum‖ ≤ r / (1-r)³ ≤ r₀ / (1-r₀)³
-  have hmono : r / (1 - r) ^ 3 ≤ r₀ / (1 - r₀) ^ 3 := by gcongr
-  -- Chain the bounds
+  -- Chain the bounds: ‖tsum‖ ≤ r / (1-r)³ ≤ r₀ / (1-r₀)³
   have htsum_bound : ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
       r₀ / (1 - r₀) ^ 3 := by
     calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
         ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) := htsum_le
       _ = r / (1 - r) ^ 3 := hsum_majorant_eq
-      _ ≤ r₀ / (1 - r₀) ^ 3 := hmono
+      _ ≤ r₀ / (1 - r₀) ^ 3 := by gcongr
   -- Final: 24 * ‖tsum‖ ≤ 24 * r₀ / (1 - r₀)³
   gcongr
 
