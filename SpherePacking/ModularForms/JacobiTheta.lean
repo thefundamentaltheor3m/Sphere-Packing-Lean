@@ -675,10 +675,9 @@ noncomputable def jacobi_f_MF : ModularForm (CongruenceSubgroup.Gamma 1) 4 := {
 end JacobiIdentity
 
 /-- Jacobi identity: H₂ + H₄ = H₃ (Blueprint Lemma 6.41)
-    Proof requires atImInfty asymptotics, completed in AtImInfty.lean -/
+    Proof uses dimension vanishing for weight 4 cusp forms.
+    See `jacobi_g_eq_zero` in AtImInfty.lean for the key step. -/
 theorem jacobi_identity : H₂ + H₄ = H₃ := by
-  -- The proof uses dimension vanishing for weight 4 cusp forms
-  -- Full proof is in AtImInfty.lean
   sorry
 
 lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :

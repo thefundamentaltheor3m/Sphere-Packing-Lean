@@ -228,7 +228,4 @@ theorem jacobi_g_eq_zero : jacobi_g = 0 := by
   ext z
   simpa [jacobi_f] using congr_fun jacobi_f_eq_zero z
 
-/-- Jacobi identity proof: H₂ + H₄ = H₃ -/
-theorem jacobi_identity_proof : H₂ + H₄ = H₃ := by
-  ext z
-  simpa [jacobi_g, sub_eq_zero] using congr_fun jacobi_g_eq_zero z
+-- jacobi_identity is now proved in JacobiTheta.lean using jacobi_g_eq_zero
