@@ -1,7 +1,6 @@
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.DimensionFormulas
-import SpherePacking.ModularForms.AtImInfty
 
 /-!
 # Theta Derivative Identities
@@ -15,7 +14,7 @@ and constructs level-1 invariants.
 ### Error Terms (Phases 1-5)
 * Error terms `f₂`, `f₃`, `f₄` definitions
 * MDifferentiable proofs for error terms
-* Jacobi identity: `f₂ + f₄ = f₃`
+* Relation `f₂ + f₄ = f₃` (from `jacobi_identity` in JacobiTheta.lean)
 * S/T transformation rules: `f₂_S_action`, `f₂_T_action`, `f₄_S_action`, `f₄_T_action`
 
 ### Level-1 Invariants (Phase 6)
@@ -90,12 +89,8 @@ lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by
       ((H₂_SIF_MDifferentiable.const_smul _).add H₄_SIF_MDifferentiable)).const_smul _)
 
 /-!
-## Phase 3-4: Jacobi Identity and Relation f₂ + f₄ = f₃
+## Phase 3-4: Relation f₂ + f₄ = f₃
 -/
-
-/-- Jacobi identity: H₂ + H₄ = H₃ (Blueprint Lemma 6.41) -/
-theorem jacobi_identity : H₂ + H₄ = H₃ := by
-  ext z; simpa [jacobi_g, sub_eq_zero] using congr_fun jacobi_g_eq_zero z
 
 /-- The error terms satisfy f₂ + f₄ = f₃ (from Jacobi identity) -/
 lemma f₂_add_f₄_eq_f₃ : f₂ + f₄ = f₃ := by
