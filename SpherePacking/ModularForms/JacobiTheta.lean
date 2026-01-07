@@ -49,7 +49,7 @@ theorem Θ₂_term_as_jacobiTheta₂_term (τ : ℍ) (n : ℤ) :
   ring_nf
 
 theorem Θ₂_as_jacobiTheta₂ (τ : ℍ) : Θ₂ τ = cexp (π * I * τ / 4) * jacobiTheta₂ (τ / 2) τ := by
-  simp_rw [Θ₂, Θ₂_term_as_jacobiTheta₂_term, ← smul_eq_mul, tsum_const_smul'', jacobiTheta₂]
+  simp_rw [Θ₂, Θ₂_term_as_jacobiTheta₂_term, tsum_mul_left, jacobiTheta₂]
 
 theorem Θ₃_term_as_jacobiTheta₂_term (τ : ℍ) (n : ℤ) :
     Θ₃_term n τ = jacobiTheta₂_term n 0 τ := by
@@ -90,8 +90,7 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
     congr
     ring_nf
   _ = cexp (π * I / 4) * ∑' (n : ℤ), cexp (π * I * (n ^ 2 + n) + π * I * (n + 1 / 2) ^ 2 * x) := by
-    conv_rhs => rw [← smul_eq_mul]
-    simp_rw [← tsum_const_smul'', smul_eq_mul]
+    rw [tsum_mul_left]
   _ = _ := by
     simp_rw [Θ₂, Θ₂_term]
     congr 1
@@ -585,9 +584,7 @@ noncomputable def jacobi_g : ℍ → ℂ := fun z => H₂ z + H₄ z - H₃ z
 /-- The squared difference f := g² -/
 noncomputable def jacobi_f : ℍ → ℂ := fun z => (jacobi_g z) ^ 2
 
-/-- S-action on g: g|[2]S = -g
-    Using: H₂|S = -H₄, H₄|S = -H₂, H₃|S = -H₃
-    So (H₂ + H₄ - H₃)|S = -H₄ - H₂ + H₃ = -(H₂ + H₄ - H₃) -/
+/-- S-action on g: g|[2]S = -g -/
 lemma jacobi_g_S_action : (jacobi_g ∣[(2 : ℤ)] S) = -jacobi_g := by
   change ((H₂ + H₄ - H₃) ∣[(2 : ℤ)] S) = -(H₂ + H₄ - H₃)
   simp only [sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
@@ -596,9 +593,7 @@ lemma jacobi_g_S_action : (jacobi_g ∣[(2 : ℤ)] S) = -jacobi_g := by
   simp only [Pi.add_apply, Pi.neg_apply]
   ring
 
-/-- T-action on g: g|[2]T = -g
-    Using: H₂|T = -H₂, H₃|T = H₄, H₄|T = H₃
-    So (H₂ + H₄ - H₃)|T = -H₂ + H₃ - H₄ = -(H₂ + H₄ - H₃) -/
+/-- T-action on g: g|[2]T = -g -/
 lemma jacobi_g_T_action : (jacobi_g ∣[(2 : ℤ)] T) = -jacobi_g := by
   change ((H₂ + H₄ - H₃) ∣[(2 : ℤ)] T) = -(H₂ + H₄ - H₃)
   simp only [sub_eq_add_neg, SlashAction.add_slash, SlashAction.neg_slash,
@@ -607,20 +602,22 @@ lemma jacobi_g_T_action : (jacobi_g ∣[(2 : ℤ)] T) = -jacobi_g := by
   simp only [Pi.add_apply, Pi.neg_apply]
   ring
 
-/-- Rewrite `jacobi_f` as a pointwise product (so we can use `mul_slash_SL2`). -/
+/-- Rewrite jacobi_f as a pointwise product -/
 lemma jacobi_f_eq_mul : jacobi_f = jacobi_g * jacobi_g := by
-  ext z
-  simp [jacobi_f, pow_two]
+  ext
+  simp [jacobi_f, sq]
 
 /-- S-invariance of f: f|[4]S = f, because g|[2]S = -g. -/
 lemma jacobi_f_S_action : (jacobi_f ∣[(4 : ℤ)] S) = jacobi_f := by
-  simp only [jacobi_f_eq_mul, show (4 : ℤ) = 2 + 2 by norm_num, mul_slash_SL2 2 2 S _ _,
-    jacobi_g_S_action, neg_mul_neg]
+  -- simp only needed: lemmas must be applied in order (not a terminal simp)
+  simp only [jacobi_f_eq_mul, show (4 : ℤ) = 2 + 2 by norm_num,
+    mul_slash_SL2 2 2 S _ _, jacobi_g_S_action, neg_mul_neg]
 
 /-- T-invariance of f: f|[4]T = f, because g|[2]T = -g. -/
 lemma jacobi_f_T_action : (jacobi_f ∣[(4 : ℤ)] T) = jacobi_f := by
-  simp only [jacobi_f_eq_mul, show (4 : ℤ) = 2 + 2 by norm_num, mul_slash_SL2 2 2 T _ _,
-    jacobi_g_T_action, neg_mul_neg]
+  -- simp only needed: lemmas must be applied in order (not a terminal simp)
+  simp only [jacobi_f_eq_mul, show (4 : ℤ) = 2 + 2 by norm_num,
+    mul_slash_SL2 2 2 T _ _, jacobi_g_T_action, neg_mul_neg]
 
 /-- Full SL₂(ℤ) invariance of f with weight 4 -/
 lemma jacobi_f_SL2Z_invariant : ∀ γ : SL(2, ℤ), jacobi_f ∣[(4 : ℤ)] γ = jacobi_f :=
@@ -652,11 +649,6 @@ end JacobiIdentity
 
 We prove the limit of Θᵢ(z) and Hᵢ(z) as z tends to i∞. This is used to prove the Jacobi identity.
 -/
-
-lemma Int.ne_half (a : ℤ) : ↑a ≠ (1 / 2 : ℝ) :=
-  ne_of_apply_ne Int.fract <| by
-    rw [fract_intCast, fract_eq_self.mpr ⟨by linarith, by linarith⟩]
-    norm_num
 
 theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (x / 2) x) atImInfty (𝓝 2) := by
