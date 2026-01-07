@@ -347,7 +347,6 @@ theorem serre_D_smul (k : ℤ) (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable
 theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G) :
     serre_D (k₁ + k₂) (F * G) = (serre_D k₁ F) * G + F * (serre_D k₂ G) := by
-
   calc
     serre_D (k₁ + k₂) (F * G)
     _ = D (F * G) - (k₁ + k₂) * 12⁻¹ * E₂ * (F * G) := by rfl
@@ -462,8 +461,9 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
   ext z
   unfold D
   simp only [Pi.sub_apply]
-  -- Key facts about denom
+  -- Key facts about denom and determinant (used multiple times below)
   have hz_denom_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+  have hdet_pos : (0 : ℝ) < ((γ : GL (Fin 2) ℝ).det).val := by simp
   -- The derivative computation on ℂ using Filter.EventuallyEq.deriv_eq
   -- (F ∣[k] γ) ∘ ofComplex agrees with F(num/denom) * denom^(-k) on ℍ
   have hcomp : deriv (((F ∣[k] γ)) ∘ ofComplex) z =
@@ -476,7 +476,6 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
     congr 1
     · -- F (γ • ⟨w, hw⟩) = (F ∘ ofComplex) (num γ w / denom γ w)
       -- Need: γ • ⟨w, hw⟩ = ofComplex (num γ w / denom γ w) as points in ℍ
-      have hdet_pos : (0 : ℝ) < ((γ : GL (Fin 2) ℝ).det).val := by simp
       -- The smul result as element of ℍ, then coerce to ℂ
       let gz : ℍ := γ • ⟨w, hw⟩
       -- The key: (gz : ℂ) = num/denom (using the lemma for GL coercion)
@@ -501,19 +500,15 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
   -- Setup differentiability for product rule
   have hdenom_ne : ∀ w : ℂ, w.im > 0 → denom γ w ≠ 0 := fun w hw =>
     UpperHalfPlane.denom_ne_zero γ ⟨w, hw⟩
-  have hz_im_pos : (z : ℂ).im > 0 := z.im_pos
-  have hdiff_denom_zpow : DifferentiableAt ℂ (fun w => (denom γ w) ^ (-k)) z := by
-    apply DifferentiableAt.zpow (differentiableAt_denom γ z) (Or.inl (hdenom_ne z hz_im_pos))
+  have hdiff_denom_zpow : DifferentiableAt ℂ (fun w => (denom γ w) ^ (-k)) z :=
+    DifferentiableAt.zpow (differentiableAt_denom γ z) (Or.inl (hdenom_ne z z.im_pos))
   -- For the F ∘ (num/denom) term, we need differentiability of the Möbius and F
-  have hdiff_mobius : DifferentiableAt ℂ (fun w => num γ w / denom γ w) z := by
-    exact (differentiableAt_num γ z).div (differentiableAt_denom γ z) (hdenom_ne z hz_im_pos)
+  have hdiff_mobius : DifferentiableAt ℂ (fun w => num γ w / denom γ w) z :=
+    (differentiableAt_num γ z).div (differentiableAt_denom γ z) (hdenom_ne z z.im_pos)
   -- The composition (F ∘ ofComplex) ∘ mobius is differentiable at z
   -- because mobius(z) is in ℍ and F is MDifferentiable
   have hmobius_in_H : (num γ z / denom γ z).im > 0 := by
-    -- γ • z is in ℍ, and (γ • z : ℂ) = num/denom
-    have hdet_pos : (0 : ℝ) < ((γ : GL (Fin 2) ℝ).det).val := by simp
-    have hsmul := UpperHalfPlane.coe_smul_of_det_pos hdet_pos z
-    rw [← hsmul]
+    rw [← UpperHalfPlane.coe_smul_of_det_pos hdet_pos z]
     exact (γ • z).im_pos
   have hdiff_F_comp : DifferentiableAt ℂ (F ∘ ofComplex) (num γ z / denom γ z) :=
     MDifferentiableAt_DifferentiableAt (hF ⟨num γ z / denom γ z, hmobius_in_H⟩)
@@ -554,9 +549,7 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
   -- - (F∘ofComplex)(mob z) * denom^(-k) = F(γ • z) * denom^(-k) = (F ∣[k] γ) z
   -- - -k * c * denom^(-k-1) * (2πi)⁻¹ = -k * (2πi)⁻¹ * c/denom * denom^(-k)
   --
-  -- Relate mobius to γ • z
-  have hdet_pos : (0 : ℝ) < ((γ : GL (Fin 2) ℝ).det).val := by simp
-  -- The key: ↑(γ • z) = num/denom (explicit coercion from ℍ to ℂ)
+  -- Relate mobius to γ • z: ↑(γ • z) = num/denom (explicit coercion from ℍ to ℂ)
   have hmob_eq : ↑(γ • z) = num γ z / denom γ z :=
     UpperHalfPlane.coe_smul_of_det_pos hdet_pos z
   -- Relate (F ∘ ofComplex)(mob z) to F(γ • z)
