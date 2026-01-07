@@ -512,11 +512,10 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
     exact (γ • z).im_pos
   have hdiff_F_comp : DifferentiableAt ℂ (F ∘ ofComplex) (num γ z / denom γ z) :=
     MDifferentiableAt_DifferentiableAt (hF ⟨num γ z / denom γ z, hmobius_in_H⟩)
+  have hcomp_eq : (fun w => (F ∘ ofComplex) (num γ w / denom γ w)) =
+      (F ∘ ofComplex) ∘ (fun w => num γ w / denom γ w) := rfl
   have hdiff_F_mobius : DifferentiableAt ℂ (fun w => (F ∘ ofComplex) (num γ w / denom γ w)) z := by
-    -- The composition (F ∘ ofComplex) ∘ (num/denom) : ℂ → ℂ
-    have heq : (fun w => (F ∘ ofComplex) (num γ w / denom γ w)) =
-        (F ∘ ofComplex) ∘ (fun w => num γ w / denom γ w) := rfl
-    rw [heq]
+    rw [hcomp_eq]
     exact DifferentiableAt.comp (z : ℂ) hdiff_F_comp hdiff_mobius
   -- Apply product rule
   -- Note: need to show the functions are equal to use deriv_mul
@@ -528,11 +527,7 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
   -- Apply chain rule to (F ∘ ofComplex) ∘ mobius
   have hchain : deriv (fun w => (F ∘ ofComplex) (num γ w / denom γ w)) z =
       deriv (F ∘ ofComplex) (num γ z / denom γ z) * deriv (fun w => num γ w / denom γ w) z := by
-    -- Chain rule: d/dx[f(g(x))] = f'(g(x)) * g'(x)
-    have heq : (fun w => (F ∘ ofComplex) (num γ w / denom γ w)) =
-        (F ∘ ofComplex) ∘ (fun w => num γ w / denom γ w) := rfl
-    have hcomp := hdiff_F_comp.hasDerivAt.comp (z : ℂ) hdiff_mobius.hasDerivAt
-    rw [heq, hcomp.deriv]
+    rw [hcomp_eq, (hdiff_F_comp.hasDerivAt.comp (z : ℂ) hdiff_mobius.hasDerivAt).deriv]
   -- Substitute the micro-lemmas
   have hderiv_mob := deriv_moebius γ z
   have hderiv_zpow := deriv_denom_zpow γ k z
