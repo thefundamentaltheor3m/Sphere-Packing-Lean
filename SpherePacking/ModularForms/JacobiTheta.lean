@@ -579,10 +579,10 @@ asymptotics (atImInfty) is in AtImInfty.lean to avoid circular imports.
 section JacobiIdentity
 
 /-- The difference g := H₂ + H₄ - H₃ -/
-noncomputable def jacobi_g : ℍ → ℂ := fun z => H₂ z + H₄ z - H₃ z
+noncomputable def jacobi_g : ℍ → ℂ := H₂ + H₄ - H₃
 
 /-- The squared difference f := g² -/
-noncomputable def jacobi_f : ℍ → ℂ := fun z => (jacobi_g z) ^ 2
+noncomputable def jacobi_f : ℍ → ℂ := jacobi_g ^ 2
 
 /-- S-action on g: g|[2]S = -g -/
 lemma jacobi_g_S_action : (jacobi_g ∣[(2 : ℤ)] S) = -jacobi_g := by
