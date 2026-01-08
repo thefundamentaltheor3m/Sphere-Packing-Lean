@@ -137,10 +137,9 @@ lemma norm_φ₀_S_smul_le (hb : PhiBounds) (z : ℍ) (hz : 1 ≤ z.im) :
   have hbound3 : ‖36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖ ≤
       (36 / (π^2 * ‖(z : ℂ)‖^2)) * hb.C₄ * exp (2 * π * z.im) := by
     rw [norm_mul, norm_coeff_36_div_sq (z : ℂ) hz_ne]
-    have h := hb.hφ₄ z hz
     calc 36 / (π ^ 2 * ‖(z : ℂ)‖ ^ 2) * ‖φ₄' z‖
         ≤ 36 / (π ^ 2 * ‖(z : ℂ)‖ ^ 2) * (hb.C₄ * exp (2 * π * z.im)) :=
-          mul_le_mul_of_nonneg_left h (by positivity)
+          mul_le_mul_of_nonneg_left (hb.hφ₄ z hz) (by positivity)
       _ = 36 / (π ^ 2 * ‖(z : ℂ)‖ ^ 2) * hb.C₄ * exp (2 * π * z.im) := by ring
   -- Combine bounds
   linarith

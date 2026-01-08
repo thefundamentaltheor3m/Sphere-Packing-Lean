@@ -172,8 +172,7 @@ lemma norm_Φ₅_le {r : ℝ} (hr : r ≥ 0) :
   have h_decay : rexp (-2 * π / t) * t ^ 2 ≤ rexp (-2 * π) :=
     exp_neg_two_pi_div_mul_sq_le ht.1 ht.2
   calc ‖φ₀'' (-1 / (I * ↑t))‖ * t ^ 2 * rexp (-(π * r * t))
-      ≤ ‖φ₀'' (-1 / (I * ↑t))‖ * t ^ 2 * 1 := by gcongr
-    _ = ‖φ₀'' (-1 / (I * ↑t))‖ * t ^ 2 := mul_one _
+      ≤ ‖φ₀'' (-1 / (I * ↑t))‖ * t ^ 2 := mul_le_of_le_one_right (by positivity) h_exp_r
     _ ≤ (C₀ * rexp (-2 * π / t)) * t ^ 2 := by gcongr
     _ = C₀ * (rexp (-2 * π / t) * t ^ 2) := by ring
     _ ≤ C₀ * rexp (-2 * π) := by gcongr
