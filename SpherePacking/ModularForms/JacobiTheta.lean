@@ -11,6 +11,7 @@ import SpherePacking.ForMathlib.SlashActions
 import SpherePacking.ForMathlib.UpperHalfPlane
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.Delta
+import SpherePacking.ModularForms.ResToImagAxis
 
 /-!
 # Jacobi theta functions
