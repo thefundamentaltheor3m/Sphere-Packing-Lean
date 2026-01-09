@@ -38,6 +38,15 @@ theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
     FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by sorry
 
 /- Some basic facts -/
+/-- Helper until MDifferentiable.pow is upstreamed to mathlib -/
+lemma MDifferentiable.pow {f : UpperHalfPlane → ℂ} (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (n : ℕ) :
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => f z ^ n) := by
+  induction n with
+  | zero => exact fun _ => mdifferentiableAt_const
+  | succ n ih =>
+    have : (fun z => f z ^ (n + 1)) = (fun z => f z ^ n * f z) := by ext z; ring
+    rw [this]; exact ih.mul hf
+
 theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
   have h : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) := by
     exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
@@ -45,29 +54,17 @@ theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
   exact MDifferentiable.mul h h
 
 theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
-  -- G = H₂³ * (2H₂² + 5H₂H₄ + 5H₄²), composition of holomorphic functions
-  have hH₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
-  have hH₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
+  have hH₂ := H₂_SIF_MDifferentiable
+  have hH₄ := H₄_SIF_MDifferentiable
   unfold G
-  have hH₂_sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => H₂ z ^ 2) := by
-    have : (fun z => H₂ z ^ 2) = (fun z => H₂ z * H₂ z) := by ext z; ring
-    rw [this]; exact hH₂.mul hH₂
-  have hH₂_cube : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => H₂ z ^ 3) := by
-    have : (fun z => H₂ z ^ 3) = (fun z => H₂ z ^ 2 * H₂ z) := by ext z; ring
-    rw [this]; exact hH₂_sq.mul hH₂
-  have hH₄_sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => H₄ z ^ 2) := by
-    have : (fun z => H₄ z ^ 2) = (fun z => H₄ z * H₄ z) := by ext z; ring
-    rw [this]; exact hH₄.mul hH₄
-  have hH₂H₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => H₂ z * H₄ z) := hH₂.mul hH₄
-  have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2) := hH₂_sq.const_smul (2 : ℂ)
+  have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2) :=
+    (MDifferentiable.pow hH₂ 2).const_smul (2 : ℂ)
   have h2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₂ z * H₄ z) := by
-    have : (fun z => 5 * H₂ z * H₄ z) = (fun z => (5 : ℂ) * (H₂ z * H₄ z)) := by
-      ext z; ring
-    rw [this]; exact hH₂H₄.const_smul (5 : ℂ)
-  have h3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₄ z ^ 2) := hH₄_sq.const_smul (5 : ℂ)
-  have hquad : MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
-      (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := (h1.add h2).add h3
-  exact hH₂_cube.mul hquad
+    have : (fun z => 5 * H₂ z * H₄ z) = (fun z => (5 : ℂ) * (H₂ z * H₄ z)) := by ext z; ring
+    rw [this]; exact (hH₂.mul hH₄).const_smul (5 : ℂ)
+  have h3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₄ z ^ 2) :=
+    (MDifferentiable.pow hH₄ 2).const_smul (5 : ℂ)
+  exact (MDifferentiable.pow hH₂ 3).mul ((h1.add h2).add h3)
 
 theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by
   exact serre_D_differentiable F_holo
