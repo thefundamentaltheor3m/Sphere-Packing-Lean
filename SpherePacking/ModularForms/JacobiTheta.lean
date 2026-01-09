@@ -955,4 +955,40 @@ lemma Θ₂_imag_axis_real (t : ℝ) (ht : 0 < t) :
   intro n
   exact Θ₂_term_imag_axis_real n t ht
 
+/-- `(-1 : ℂ)^n` has zero imaginary part for any integer n. -/
+lemma neg_one_zpow_im_eq_zero (n : ℤ) : ((-1 : ℂ) ^ n).im = 0 := by
+  rcases Int.even_or_odd n with hn | hn <;> (rw [hn.neg_one_zpow]; simp)
+
+/-- Each term Θ₄_term n (I*t) has zero imaginary part for t > 0. -/
+lemma Θ₄_term_imag_axis_real (n : ℤ) (t : ℝ) (ht : 0 < t) :
+    (Θ₄_term n ⟨I * t, by simp [ht]⟩).im = 0 := by
+  unfold Θ₄_term
+  change ((-1 : ℂ) ^ n * cexp (Real.pi * I * (n : ℂ) ^ 2 * (I * t))).im = 0
+  -- Simplify the exponent: π * I * n² * (I*t) = -π * n² * t
+  have hexpr : Real.pi * I * (n : ℂ) ^ 2 * (I * t) =
+      (-(Real.pi * (n : ℝ) ^ 2 * t) : ℝ) := by
+    have hI : I ^ 2 = -1 := I_sq
+    push_cast
+    ring_nf
+    simp only [hI]
+    ring
+  rw [hexpr]
+  -- Now we have (-1)^n * exp(real), both are real
+  have hexp_real : (cexp (-(Real.pi * (n : ℝ) ^ 2 * t) : ℝ)).im = 0 := exp_ofReal_im _
+  have hneg_one_real : ((-1 : ℂ) ^ n).im = 0 := neg_one_zpow_im_eq_zero n
+  simp only [Complex.mul_im, hneg_one_real, hexp_real, mul_zero, zero_mul, add_zero]
+
+/-- Θ₄(I*t) has zero imaginary part for t > 0. -/
+lemma Θ₄_imag_axis_real (t : ℝ) (ht : 0 < t) :
+    (Θ₄ ⟨I * t, by simp [ht]⟩).im = 0 := by
+  unfold Θ₄
+  let z : ℍ := ⟨I * t, by simp [ht]⟩
+  have hsum : Summable fun n : ℤ => Θ₄_term n z := by
+    simp_rw [Θ₄_term_as_jacobiTheta₂_term]
+    rw [summable_jacobiTheta₂_term_iff]
+    exact z.im_pos
+  apply Complex.im_tsum_eq_zero_of_im_eq_zero _ hsum
+  intro n
+  exact Θ₄_term_imag_axis_real n t ht
+
 end ImagAxisProperties
