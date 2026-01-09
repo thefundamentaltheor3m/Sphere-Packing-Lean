@@ -3,9 +3,10 @@ import Mathlib.Order.Monotone.Defs
 
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.DimensionFormulas
 
 open Filter
-open scoped Real Manifold
+open scoped Real Manifold CongruenceSubgroup
 
 
 /--
@@ -19,6 +20,37 @@ noncomputable def G := H₂ ^ 3 * (2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2
 noncomputable def negDE₂ := - (D E₂)
 
 noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
+
+/-- The discriminant Δ_fun = 1728⁻¹(E₄³ - E₆²) equals the standard discriminant Δ. -/
+lemma Δ_fun_eq_Δ : Δ_fun = Δ := by
+  funext z
+  have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
+    ext w
+    rw [pow_three]
+    rw [@DirectSum.of_mul_of, DirectSum.of_mul_of]
+    simp
+    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₄ (GradedMonoid.GMul.mul E₄ E₄)) rfl]
+    rfl
+  have hd6 : (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12) = E₆.mul E₆ := by
+    ext w
+    rw [pow_two]
+    rw [@DirectSum.of_mul_of]
+    simp
+    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₆ E₆) rfl]
+    rfl
+  have h :=
+    congr_fun (congr_arg (fun f => f.toFun) Delta_E4_E6_eq) z
+  have hE4E6 : Delta_E4_E6_aux z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
+    simp only [ModForm_mk, ModularForm.toFun_eq_coe, one_div, DirectSum.sub_apply] at h
+    simp only [hds, hd6] at h
+    simp only [pow_three, pow_two] at h ⊢
+    convert h using 2
+  calc
+    Δ_fun z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
+      simp [Δ_fun, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply]
+    _ = Delta_E4_E6_aux z := by simp [hE4E6]
+    _ = Delta z := by simp [Delta_E4_eqn]
+    _ = Δ z := by simp [Delta_apply]
 
 noncomputable def L₁₀ := (D F) * G - F * (D G)
 
