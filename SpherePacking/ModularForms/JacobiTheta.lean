@@ -884,3 +884,75 @@ lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
     Delta τ = ((H₂ τ) * (H₃ τ) * (H₄ τ))^2 / (256 : ℂ) := by
 
   sorry
+
+/-!
+## Imaginary Axis Properties
+
+Properties of theta functions when restricted to the positive imaginary axis z = I*t.
+-/
+
+section ImagAxisProperties
+
+/-- For even k, `I^k = (-1)^(k/2)`. -/
+lemma I_pow_even (k : ℕ) (hk : Even k) : I ^ k = (-1 : ℂ) ^ (k / 2) := by
+  obtain ⟨m, rfl⟩ := hk
+  rw [show (m + m) / 2 = m by omega, show m + m = 2 * m by ring, pow_mul, I_sq]
+
+/-- `I^k` is real for even k (since `(-1)^m` is `±1`). -/
+lemma I_pow_even_real (k : ℕ) (hk : Even k) : (I ^ k).im = 0 := by
+  rw [I_pow_even k hk]
+  induction k / 2 with
+  | zero => simp
+  | succ n ih => simp [pow_succ, ih]
+
+/-- `(-2πi)^k` is real for even k. -/
+lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
+    ((-2 * Real.pi * I) ^ k : ℂ).im = 0 := by
+  have h : (-2 * Real.pi * I) ^ k = ((-2 * Real.pi) ^ k : ℂ) * I ^ k := by ring
+  rw [h]
+  have h1 : ((-(2 * Real.pi)) ^ k : ℂ).im = 0 := by
+    have hcast : ((-(2 * Real.pi)) ^ k : ℂ) = (((-2 * Real.pi) ^ k : ℝ) : ℂ) := by push_cast; ring
+    rw [hcast]
+    exact Complex.ofReal_im _
+  have h2 : (I ^ k : ℂ).im = 0 := I_pow_even_real k hk
+  have heq : (-2 * Real.pi : ℂ) ^ k = (-(2 * Real.pi)) ^ k := by ring
+  rw [heq]
+  simp [Complex.mul_im, h1, h2]
+
+/-- Each term Θ₂_term n (I*t) has zero imaginary part for t > 0. -/
+lemma Θ₂_term_imag_axis_real (n : ℤ) (t : ℝ) (ht : 0 < t) :
+    (Θ₂_term n ⟨I * t, by simp [ht]⟩).im = 0 := by
+  unfold Θ₂_term
+  change (cexp (Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * t))).im = 0
+  have hexpr : Real.pi * I * ((n : ℂ) + 1 / 2) ^ 2 * (I * ↑t) =
+      (-(Real.pi * ((n : ℝ) + 1/2) ^ 2 * t) : ℝ) := by
+    have hI : I ^ 2 = -1 := I_sq
+    push_cast
+    ring_nf
+    simp only [hI]
+    ring
+  rw [hexpr]
+  exact exp_ofReal_im _
+
+/-- `im` distributes over tsum when each term has zero imaginary part. -/
+lemma Complex.im_tsum_eq_zero_of_im_eq_zero (f : ℤ → ℂ)
+    (hf : Summable f) (him : ∀ n, (f n).im = 0) :
+    (∑' n : ℤ, f n).im = 0 := by
+  rw [Complex.im_tsum hf]
+  simp [him]
+
+/-- Θ₂(I*t) has zero imaginary part for t > 0. -/
+lemma Θ₂_imag_axis_real (t : ℝ) (ht : 0 < t) :
+    (Θ₂ ⟨I * t, by simp [ht]⟩).im = 0 := by
+  unfold Θ₂
+  let z : ℍ := ⟨I * t, by simp [ht]⟩
+  have hsum : Summable fun n : ℤ => Θ₂_term n z := by
+    simp_rw [Θ₂_term_as_jacobiTheta₂_term]
+    apply Summable.mul_left
+    rw [summable_jacobiTheta₂_term_iff]
+    exact z.im_pos
+  apply Complex.im_tsum_eq_zero_of_im_eq_zero _ hsum
+  intro n
+  exact Θ₂_term_imag_axis_real n t ht
+
+end ImagAxisProperties
