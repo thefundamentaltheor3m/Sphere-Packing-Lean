@@ -211,6 +211,7 @@ Properties of G and F when restricted to the positive imaginary axis z = I*t.
 section ImagAxisProperties
 
 open UpperHalfPlane hiding I
+open Complex
 
 /--
 `G(it) > 0` for all `t > 0`.
@@ -283,7 +284,7 @@ Blueprint: Follows from the q-expansion (E₂E₄ - E₆ = 720 * ...) and positi
 theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   refine ⟨F_imag_axis_real, fun t ht => ?_⟩
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, F]
-  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  let z : ℍ := ⟨I * t, by simp [ht]⟩
   -- F = (E₂E₄ - E₆)² and we need to show its real part is positive
   -- Since F_imag_axis_real shows F(it).im = 0, we have F(it) = F(it).re
   have hF_real_pre := F_imag_axis_real t ht
@@ -328,7 +329,7 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   rw [hq_exp]
   -- Show the sum is positive on imaginary axis
   -- For z = it, exp(2πinz) = exp(-2πnt) which is positive real
-  have hz_eq : (z : ℂ) = Complex.I * t := rfl
+  have hz_eq : (z : ℂ) = I * t := rfl
   -- The real part of 720 * (positive sum) is positive
   -- 720 is real, so (720 * x).re = 720 * x.re
   have h720_real : (720 : ℂ).im = 0 := by norm_num
@@ -340,23 +341,23 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   -- So each term > 0, and their sum > 0
   -- Step 1: Summability of the series
   have hsum : Summable fun n : ℕ+ => (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-      Complex.exp (2 * ↑Real.pi * Complex.I * z * n) := by
+      exp (2 * ↑Real.pi * I * z * n) := by
     apply Summable.of_norm
     apply Summable.of_nonneg_of_le
     · intro n; exact norm_nonneg _
     · intro n
       calc ‖(↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-              Complex.exp (2 * ↑Real.pi * Complex.I * z * n)‖
+              exp (2 * ↑Real.pi * I * z * n)‖
           = ‖(↑↑n : ℂ)‖ * ‖(↑((ArithmeticFunction.sigma 3) ↑n) : ℂ)‖ *
-              ‖Complex.exp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
+              ‖exp (2 * ↑Real.pi * I * z * n)‖ := by
             rw [norm_mul, norm_mul]
-        _ ≤ (↑n : ℝ) * (↑n : ℝ)^4 * ‖Complex.exp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
+        _ ≤ (↑n : ℝ) * (↑n : ℝ)^4 * ‖exp (2 * ↑Real.pi * I * z * n)‖ := by
             gcongr
             · rw [Complex.norm_natCast]
             · rw [Complex.norm_natCast]
               have hbound := sigma_bound 3 n
               exact_mod_cast hbound
-        _ = ‖(↑n : ℂ) ^ 5 * Complex.exp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
+        _ = ‖(↑n : ℂ) ^ 5 * exp (2 * ↑Real.pi * I * z * n)‖ := by
             rw [norm_mul, Complex.norm_pow, Complex.norm_natCast]
             ring
     · have := a33 5 1 z
@@ -364,36 +365,36 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
       exact summable_norm_iff.mpr this
   -- Adjust the exponent form to match the goal
   have hsum' : Summable fun n : ℕ+ => (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-      Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
-    simp_rw [show ∀ n : ℕ+, (2 : ℂ) * ↑Real.pi * Complex.I * ↑n * z =
-        2 * ↑Real.pi * Complex.I * z * n by intro n; ring]
+      exp (2 * ↑Real.pi * I * ↑n * z) := by
+    simp_rw [show ∀ n : ℕ+, (2 : ℂ) * ↑Real.pi * I * ↑n * z =
+        2 * ↑Real.pi * I * z * n by intro n; ring]
     exact hsum
   -- Key simplification: on z = I*t, the exponential becomes real
-  have hexp_simpl : ∀ n : ℕ+, Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * z) =
+  have hexp_simpl : ∀ n : ℕ+, exp (2 * ↑Real.pi * I * ↑n * z) =
       Real.exp (-(2 * Real.pi * n * t)) := by
     intro n
     rw [hz_eq]
-    have harg : (2 : ℂ) * ↑Real.pi * Complex.I * ↑n * (Complex.I * ↑t) =
+    have harg : (2 : ℂ) * ↑Real.pi * I * ↑n * (I * ↑t) =
         ↑(-(2 * Real.pi * (n : ℕ) * t)) := by
       push_cast
       ring_nf
-      rw [Complex.I_sq]
+      rw [I_sq]
       ring
-    rw [harg, Complex.ofReal_exp]
+    rw [harg, ofReal_exp]
   -- Step 2: Each term is real on imaginary axis: n * σ(3,n) * exp(-2πnt)
   have hterm_real : ∀ n : ℕ+, ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-      Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * z)).im = 0 := by
+      exp (2 * ↑Real.pi * I * ↑n * z)).im = 0 := by
     intro n
     rw [hexp_simpl]
-    simp only [Complex.mul_im, Complex.natCast_re, Complex.natCast_im, zero_mul, add_zero,
-      Complex.ofReal_re, Complex.ofReal_im, mul_zero]
+    simp only [mul_im, natCast_re, natCast_im, zero_mul, add_zero,
+      ofReal_re, ofReal_im, mul_zero]
   -- Step 3: Each term is positive
   have hterm_pos : ∀ n : ℕ+, 0 < ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-      Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * z)).re := by
+      exp (2 * ↑Real.pi * I * ↑n * z)).re := by
     intro n
     rw [hexp_simpl]
-    simp only [Complex.mul_re, Complex.natCast_re, Complex.natCast_im, sub_zero,
-      Complex.ofReal_re, Complex.ofReal_im, mul_zero]
+    simp only [mul_re, natCast_re, natCast_im, sub_zero,
+      ofReal_re, ofReal_im, mul_zero]
     -- Term is n * σ(3,n) * exp(-2πnt), all factors positive
     apply mul_pos
     · apply mul_pos
@@ -402,9 +403,9 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
     · exact Real.exp_pos _
   -- Step 4: Sum of positive terms is positive
   have hsum_re : Summable fun n : ℕ+ => ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-      Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * z)).re := by
+      exp (2 * ↑Real.pi * I * ↑n * z)).re := by
     obtain ⟨x, hx⟩ := hsum'
-    exact ⟨x.re, Complex.hasSum_re hx⟩
+    exact ⟨x.re, hasSum_re hx⟩
   rw [Complex.re_tsum hsum']
   exact Summable.tsum_pos hsum_re (fun n => le_of_lt (hterm_pos n)) 1 (hterm_pos 1)
 
