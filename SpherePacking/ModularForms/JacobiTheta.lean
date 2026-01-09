@@ -14,6 +14,7 @@ import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.DimensionFormulas
 import SpherePacking.ModularForms.IsCuspForm
+import SpherePacking.ModularForms.ResToImagAxis
 
 /-!
 # Jacobi theta functions
