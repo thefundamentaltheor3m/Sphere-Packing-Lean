@@ -85,6 +85,14 @@ theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0
 /--
 Realenss, positivity and essential positivity are closed under the addition and multiplication.
 -/
+theorem ResToImagAxis.Real.zero : ResToImagAxis.Real (fun _ => 0) := by
+  intro t ht
+  simp [ResToImagAxis]
+
+theorem ResToImagAxis.Real.one : ResToImagAxis.Real (fun _ => 1) := by
+  intro t ht
+  simp [ResToImagAxis]
+
 theorem ResToImagAxis.Real.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
     (hG : ResToImagAxis.Real G) : ResToImagAxis.Real (F + G) := by
   intro t ht
@@ -107,6 +115,19 @@ theorem ResToImagAxis.Real.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.
   have hFreal := hF t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal
   simp [ResToImagAxis, ht, hFreal]
+
+theorem ResToImagAxis.Real.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (n : ℕ) :
+    ResToImagAxis.Real (F ^ n) := by
+  induction n with
+  | zero =>
+      simp only [pow_zero]
+      exact ResToImagAxis.Real.one
+  | succ n ih =>
+      exact ResToImagAxis.Real.mul ih hF
+
+theorem ResToImagAxis.Pos.one : ResToImagAxis.Pos (fun _ => 1) := by
+  refine ⟨ResToImagAxis.Real.one, fun t ht ↦ ?_⟩
+  simp [ResToImagAxis, ht]
 
 theorem ResToImagAxis.Pos.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
     (hG : ResToImagAxis.Pos G) : ResToImagAxis.Pos (F + G) := by
@@ -138,6 +159,15 @@ theorem ResToImagAxis.Pos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.P
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFpos
   simp [ResToImagAxis, ht, mul_pos hc hFpos]
+
+theorem ResToImagAxis.Pos.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Pos F) (n : ℕ) :
+    ResToImagAxis.Pos (F ^ n) := by
+  induction n with
+  | zero =>
+      simp only [pow_zero]
+      exact ResToImagAxis.Pos.one
+  | succ n ih =>
+      exact ResToImagAxis.Pos.mul ih hF
 
 theorem ResToImagAxis.EventuallyPos.add {F G : ℍ → ℂ}
     (hF : ResToImagAxis.EventuallyPos F) (hG : ResToImagAxis.EventuallyPos G) :
