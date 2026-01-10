@@ -19,13 +19,12 @@ Restrict a function `F : ℍ → ℂ` to the positive imaginary axis, i.e. `t �
 If $t \le 0$, then `F (I * t)` is not defined, and we return `0` in that case.
 -/
 noncomputable def ResToImagAxis (F : ℍ → ℂ) : ℝ → ℂ :=
-  fun t => if ht : 0 < t then F ⟨(Complex.I * t), by simp [ht]⟩ else 0
+  fun t => if ht : 0 < t then F ⟨(I * t), by simp [ht]⟩ else 0
 
 namespace Function
 
 /-- Dot notation alias for `ResToImagAxis`. -/
-noncomputable def resToImagAxis (F : ℍ → ℂ) : ℝ → ℂ :=
-  ResToImagAxis F
+noncomputable def resToImagAxis (F : ℍ → ℂ) : ℝ → ℂ := ResToImagAxis F
 
 @[simp] lemma resToImagAxis_eq_resToImagAxis (F : ℍ → ℂ) :
     F.resToImagAxis = ResToImagAxis F := rfl
