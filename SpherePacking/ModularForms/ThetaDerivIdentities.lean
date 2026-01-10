@@ -248,7 +248,7 @@ lemma f₄_T_action : (f₄ ∣[(4 : ℤ)] T) = f₃ := by
   ext z
   simp only [Pi.sub_apply, Pi.add_apply, Pi.smul_apply, Pi.mul_apply, Pi.pow_apply, smul_eq_mul]
   rw [show H₃ z = H₂ z + H₄ z by rw [← Pi.add_apply, (congrFun jacobi_identity z).symm]]
-  ring
+  ring_nf
 
 /-!
 ## Phase 6: Level-1 Invariants g, h

@@ -55,6 +55,7 @@ import SpherePacking.ModularForms.DimensionFormulas
 import SpherePacking.ModularForms.E2
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ModularForms.Eisensteinqexpansions
+import SpherePacking.ModularForms.FG
 import SpherePacking.ModularForms.Icc_Ico_lems
 import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.ModularForms.JacobiTheta
