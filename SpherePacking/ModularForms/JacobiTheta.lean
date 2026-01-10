@@ -345,6 +345,18 @@ lemma H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF :=
       simpa [Function.comp] using this)
   simpa [mdifferentiableWithinAt_univ] using hMD_within
 
+lemma H₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := by
+  simpa [H₂_SIF, SlashInvariantForm.coe_mk] using
+    (H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂_SIF)
+
+lemma H₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃ := by
+  simpa [H₃_SIF, SlashInvariantForm.coe_mk] using
+    (H₃_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃_SIF)
+
+lemma H₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := by
+  simpa [H₄_SIF, SlashInvariantForm.coe_mk] using
+    (H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF)
+
 end H_MDifferentiable
 
 
