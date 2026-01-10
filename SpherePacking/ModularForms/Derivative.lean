@@ -369,6 +369,217 @@ theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
     convert h1 using 1; ext z; simp only [mul_assoc]
   exact (D_differentiable hF).sub h_term
 
+/-! ### Helper lemmas for D_slash
+
+These micro-lemmas compute derivatives of the components in the slash action formula.
+-/
+
+section DSlashHelpers
+
+open ModularGroup
+
+variable (γ : SL(2, ℤ))
+
+/-- Derivative of the denominator function: d/dz[cz + d] = c. -/
+lemma deriv_denom (z : ℂ) :
+    deriv (fun w => denom γ w) z = ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) := by
+  simp only [denom]
+  rw [deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]; simp
+
+/-- Derivative of the numerator function: d/dz[az + b] = a. -/
+lemma deriv_num (z : ℂ) :
+    deriv (fun w => num γ w) z = ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) := by
+  simp only [num]
+  rw [deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]; simp
+
+/-- Differentiability of denom. -/
+lemma differentiableAt_denom (z : ℂ) :
+    DifferentiableAt ℂ (fun w => denom γ w) z := by
+  simp only [denom]
+  fun_prop
+
+/-- Differentiability of num. -/
+lemma differentiableAt_num (z : ℂ) :
+    DifferentiableAt ℂ (fun w => num γ w) z := by
+  simp only [num]
+  fun_prop
+
+/-- Derivative of the Möbius transformation: d/dz[(az+b)/(cz+d)] = 1/(cz+d)².
+Uses det(γ) = 1: a(cz+d) - c(az+b) = ad - bc = 1. -/
+lemma deriv_moebius (z : ℍ) :
+    deriv (fun w => num γ w / denom γ w) z = 1 / (denom γ z) ^ 2 := by
+  have hz : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+  have hdet : ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * (γ 1 1) -
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 1 : ℂ) * (γ 1 0) = 1 := by
+    have := Matrix.SpecialLinearGroup.det_coe γ
+    simp only [Matrix.det_fin_two, ← Int.cast_mul, ← Int.cast_sub] at this ⊢
+    exact_mod_cast this
+  rw [deriv_fun_div (differentiableAt_num γ z) (differentiableAt_denom γ z) hz,
+      deriv_num, deriv_denom]
+  simp only [denom_apply, num, Matrix.SpecialLinearGroup.coe_GL_coe_matrix,
+    Matrix.SpecialLinearGroup.map_apply_coe, RingHom.mapMatrix_apply, Int.coe_castRingHom,
+    Matrix.map_apply, ofReal_intCast] at *
+  have hnum_eq : ((γ 0 0 : ℤ) : ℂ) * ((γ 1 0 : ℤ) * z + (γ 1 1 : ℤ)) -
+      ((γ 0 0 : ℤ) * z + (γ 0 1 : ℤ)) * (γ 1 0 : ℤ) = 1 := by linear_combination hdet
+  simp only [hnum_eq, one_div]
+
+/-- Derivative of denom^(-k): d/dz[(cz+d)^(-k)] = -k * c * (cz+d)^(-k-1). -/
+lemma deriv_denom_zpow (k : ℤ) (z : ℍ) :
+    deriv (fun w => (denom γ w) ^ (-k)) z =
+        (-k : ℂ) * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) * (denom γ z) ^ (-k - 1) := by
+  have hz : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+  have hdiff := differentiableAt_denom γ (z : ℂ)
+  have hderiv_zpow := hasDerivAt_zpow (-k) (denom γ z) (Or.inl hz)
+  have hderiv_denom : HasDerivAt (fun w => denom γ w)
+      ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) (z : ℂ) := by
+    rw [← deriv_denom]; exact hdiff.hasDerivAt
+  have hcomp := hderiv_zpow.comp (z : ℂ) hderiv_denom
+  have heq : (fun w => w ^ (-k)) ∘ (fun w => denom γ w) = (fun w => (denom γ w) ^ (-k)) := rfl
+  rw [← heq, hcomp.deriv]; simp only [Int.cast_neg]; ring
+
+end DSlashHelpers
+
+/--
+The derivative anomaly: how D interacts with the slash action.
+This is the key computation for proving Serre derivative equivariance.
+-/
+lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (γ : SL(2, ℤ)) :
+    D (F ∣[k] γ) = (D F ∣[k + 2] γ) -
+        (fun z : ℍ => (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z) := by
+  -- Strategy (all micro-lemmas proven above):
+  -- 1. SL_slash_apply: (F ∣[k] γ) z = F(γ•z) * denom(γ,z)^(-k)
+  -- 2. coe_smul_of_det_pos: (γ•z : ℂ) = num γ z / denom γ z (since det(SL₂) = 1 > 0)
+  -- 3. Product rule: deriv[f*g] = f*deriv[g] + deriv[f]*g
+  -- 4. Chain rule: deriv[F ∘ mobius] = deriv[F](mobius z) * deriv_moebius
+  -- 5. deriv_moebius: d/dz[num/denom] = 1/denom² (uses det = 1)
+  -- 6. deriv_denom_zpow: d/dz[denom^(-k)] = -k * c * denom^(-k-1)
+  --
+  -- Computation (product rule + chain rule):
+  -- D(F ∣[k] γ) = (2πi)⁻¹ * deriv[F(γ•·) * denom^(-k)]
+  --   = (2πi)⁻¹ * [F(γ•z)*(-k*c*denom^(-k-1)) + deriv[F](γ•z)*(1/denom²)*denom^(-k)]
+  --   = (D F ∣[k+2] γ) - k*(2πi)⁻¹*(c/denom)*(F ∣[k] γ)
+  ext z
+  unfold D
+  simp only [Pi.sub_apply]
+  -- Key facts about denom and determinant (used multiple times below)
+  have hz_denom_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+  have hdet_pos : (0 : ℝ) < ((γ : GL (Fin 2) ℝ).det).val := by simp
+  -- The derivative computation on ℂ using Filter.EventuallyEq.deriv_eq
+  -- (F ∣[k] γ) ∘ ofComplex agrees with F(num/denom) * denom^(-k) on ℍ
+  have hcomp : deriv (((F ∣[k] γ)) ∘ ofComplex) z =
+      deriv (fun w => (F ∘ ofComplex) (num γ w / denom γ w) * (denom γ w) ^ (-k)) z := by
+    apply Filter.EventuallyEq.deriv_eq
+    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
+    rw [ModularForm.SL_slash_apply (f := F) (k := k) γ ⟨w, hw⟩]
+    -- Key: (γ • ⟨w, hw⟩ : ℂ) = num γ w / denom γ w
+    congr 1
+    · -- F (γ • ⟨w, hw⟩) = (F ∘ ofComplex) (num γ w / denom γ w)
+      -- Need: γ • ⟨w, hw⟩ = ofComplex (num γ w / denom γ w) as points in ℍ
+      -- The smul result as element of ℍ, then coerce to ℂ
+      let gz : ℍ := γ • ⟨w, hw⟩
+      -- The key: (gz : ℂ) = num/denom (using the lemma for GL coercion)
+      have hsmul_coe : (gz : ℂ) = num γ w / denom γ w := by
+        have h := UpperHalfPlane.coe_smul_of_det_pos hdet_pos ⟨w, hw⟩
+        simp only [gz] at h ⊢
+        exact h
+      -- im(num/denom) > 0 follows from gz ∈ ℍ
+      have hmob_im : (num γ w / denom γ w).im > 0 := by
+        rw [← hsmul_coe]; exact gz.im_pos
+      -- Now F(gz) = F(ofComplex(num/denom)) = (F ∘ ofComplex)(num/denom)
+      -- gz = γ • ⟨w, hw⟩, so F gz = F (γ • ⟨w, hw⟩)
+      congr 1
+      -- Show gz = ofComplex (num/denom) as points in ℍ
+      apply Subtype.ext
+      rw [ofComplex_apply_of_im_pos hmob_im]
+      exact hsmul_coe
+  rw [hcomp]
+  -- Now apply product rule: deriv[f * g] = f * deriv[g] + deriv[f] * g
+  -- where f(w) = (F ∘ ofComplex)(num w / denom w) and g(w) = denom(w)^(-k)
+  --
+  -- Setup differentiability for product rule
+  have hdenom_ne : ∀ w : ℂ, w.im > 0 → denom γ w ≠ 0 := fun w hw =>
+    UpperHalfPlane.denom_ne_zero γ ⟨w, hw⟩
+  have hdiff_denom_zpow : DifferentiableAt ℂ (fun w => (denom γ w) ^ (-k)) z :=
+    DifferentiableAt.zpow (differentiableAt_denom γ z) (Or.inl (hdenom_ne z z.im_pos))
+  -- For the F ∘ (num/denom) term, we need differentiability of the Möbius and F
+  have hdiff_mobius : DifferentiableAt ℂ (fun w => num γ w / denom γ w) z :=
+    (differentiableAt_num γ z).div (differentiableAt_denom γ z) (hdenom_ne z z.im_pos)
+  -- The composition (F ∘ ofComplex) ∘ mobius is differentiable at z
+  -- because mobius(z) is in ℍ and F is MDifferentiable
+  have hmobius_in_H : (num γ z / denom γ z).im > 0 := by
+    rw [← UpperHalfPlane.coe_smul_of_det_pos hdet_pos z]
+    exact (γ • z).im_pos
+  have hdiff_F_comp : DifferentiableAt ℂ (F ∘ ofComplex) (num γ z / denom γ z) :=
+    MDifferentiableAt_DifferentiableAt (hF ⟨num γ z / denom γ z, hmobius_in_H⟩)
+  have hcomp_eq : (fun w => (F ∘ ofComplex) (num γ w / denom γ w)) =
+      (F ∘ ofComplex) ∘ (fun w => num γ w / denom γ w) := rfl
+  have hdiff_F_mobius : DifferentiableAt ℂ (fun w => (F ∘ ofComplex) (num γ w / denom γ w)) z := by
+    rw [hcomp_eq]
+    exact DifferentiableAt.comp (z : ℂ) hdiff_F_comp hdiff_mobius
+  -- Apply product rule
+  -- Note: need to show the functions are equal to use deriv_mul
+  have hfun_eq : (fun w => (F ∘ ofComplex) (num γ w / denom γ w) * (denom γ w) ^ (-k)) =
+      ((fun w => (F ∘ ofComplex) (num γ w / denom γ w)) * (fun w => (denom γ w) ^ (-k))) := rfl
+  rw [hfun_eq]
+  have hprod := deriv_mul hdiff_F_mobius hdiff_denom_zpow
+  rw [hprod]
+  -- Apply chain rule to (F ∘ ofComplex) ∘ mobius
+  have hchain : deriv (fun w => (F ∘ ofComplex) (num γ w / denom γ w)) z =
+      deriv (F ∘ ofComplex) (num γ z / denom γ z) * deriv (fun w => num γ w / denom γ w) z := by
+    rw [hcomp_eq, (hdiff_F_comp.hasDerivAt.comp (z : ℂ) hdiff_mobius.hasDerivAt).deriv]
+  -- Substitute the micro-lemmas
+  have hderiv_mob := deriv_moebius γ z
+  have hderiv_zpow := deriv_denom_zpow γ k z
+  rw [hchain, hderiv_mob, hderiv_zpow]
+  -- Now we have:
+  -- (2πi)⁻¹ * [deriv(F∘ofComplex)(mob z) * (1/denom²) * denom^(-k) +
+  --            (F∘ofComplex)(mob z) * (-k * c * denom^(-k-1))]
+  -- = (D F ∣[k+2] γ) z - k * (2πi)⁻¹ * (c/denom) * (F ∣[k] γ) z
+  --
+  -- Key observations:
+  -- - (2πi)⁻¹ * deriv(F∘ofComplex)(mob z) = D F (γ • z)  (by def of D)
+  -- - denom^(-k) / denom² = denom^(-k-2)
+  -- - (D F)(γ • z) * denom^(-k-2) = (D F ∣[k+2] γ) z
+  -- - (F∘ofComplex)(mob z) * denom^(-k) = F(γ • z) * denom^(-k) = (F ∣[k] γ) z
+  -- - -k * c * denom^(-k-1) * (2πi)⁻¹ = -k * (2πi)⁻¹ * c/denom * denom^(-k)
+  --
+  -- Relate mobius to γ • z: ↑(γ • z) = num/denom (explicit coercion from ℍ to ℂ)
+  have hmob_eq : ↑(γ • z) = num γ z / denom γ z :=
+    UpperHalfPlane.coe_smul_of_det_pos hdet_pos z
+  -- Relate (F ∘ ofComplex)(mob z) to F(γ • z)
+  have hF_mob : (F ∘ ofComplex) (num γ z / denom γ z) = F (γ • z) := by
+    simp only [Function.comp_apply, ← hmob_eq, ofComplex_apply]
+  -- Final algebraic manipulation
+  -- Goal: (2πi)⁻¹ * (deriv(F∘ofComplex)(mob z) * (1/denom²) * denom^(-k) +
+  --                   (F∘ofComplex)(mob z) * (-k * c * denom^(-k-1)))
+  --      = D F(γ•z) * denom^(-(k+2)) - k * (2πi)⁻¹ * (c/denom) * F(γ•z) * denom^(-k)
+  -- This follows from the above lemmas by algebraic manipulation
+  --
+  -- First expand the slash action on the RHS and normalize denom coercions
+  simp only [ModularForm.SL_slash_apply, hF_mob, hmob_eq]
+  -- Now both sides should have normalized denom (num/denom arguments and ℂ coercions)
+  -- Key identities for zpow:
+  -- (1/denom²) * denom^(-k) = denom^(-2) * denom^(-k) = denom^(-k-2) = denom^(-(k+2))
+  -- -k * c * denom^(-k-1) = -k * (c/denom) * denom^(-k)
+  --
+  -- Use zpow identities
+  have hpow_combine : 1 / (denom γ z) ^ 2 * (denom γ z) ^ (-k) = (denom γ z) ^ (-(k + 2)) := by
+    rw [one_div, ← zpow_natCast (denom γ z) 2, ← zpow_neg, ← zpow_add₀ hz_denom_ne]
+    congr 1
+    ring
+  have hpow_m1 : (denom γ z) ^ (-k - 1) = (denom γ z) ^ (-1 : ℤ) * (denom γ z) ^ (-k) := by
+    rw [← zpow_add₀ hz_denom_ne]
+    congr 1
+    ring
+  -- Rewrite powers on LHS
+  conv_lhs =>
+    rw [mul_assoc (deriv (F ∘ ofComplex) (num γ z / denom γ z)) (1 / denom γ z ^ 2) _]
+    rw [hpow_combine, hpow_m1]
+  -- Now the goal should be cleaner - distribute and simplify
+  simp only [zpow_neg_one]
+  ring
+
 /--
 Serre derivative is equivariant under the slash action. More precisely, if `F` is invariant
 under the slash action of weight `k`, then `serre_D k F` is invariant under the slash action
