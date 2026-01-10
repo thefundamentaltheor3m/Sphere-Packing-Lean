@@ -91,6 +91,7 @@ theorem ResToImagAxis.Real.zero : ResToImagAxis.Real (fun _ => 0) := by
 theorem ResToImagAxis.Real.one : ResToImagAxis.Real (fun _ => 1) := by
   intro t ht
   simp [ResToImagAxis]
+  simp_all only [↓reduceIte, one_im]
 
 theorem ResToImagAxis.Real.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
     (hG : ResToImagAxis.Real G) : ResToImagAxis.Real (F + G) := by
