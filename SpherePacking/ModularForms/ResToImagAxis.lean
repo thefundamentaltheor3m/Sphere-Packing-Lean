@@ -169,7 +169,7 @@ theorem ResToImagAxis.Pos.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
   simp [ResToImagAxis, ht, hFreal, hGreal, mul_pos hFpos hGpos]
 
 theorem ResToImagAxis.Pos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Pos F)
-    (hc : 0 < c) : ResToImagAxis.Pos (fun z => c * F z) := by
+    (hc : 0 < c) : ResToImagAxis.Pos (c • F) := by
   rw [Pos]
   refine ⟨Real.smul hF.1, fun t ht ↦ ?_⟩
   have hFreal := hF.1 t ht
@@ -256,9 +256,8 @@ theorem ResToImagAxis.EventuallyPos.pow {F : ℍ → ℂ}
   | succ n hn =>
       exact ResToImagAxis.EventuallyPos.mul hn hF
 
-theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ}
-    (hF : ResToImagAxis.EventuallyPos F) (hc : 0 < c) :
-    ResToImagAxis.EventuallyPos (fun z => c * F z) := by
+theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.EventuallyPos F)
+    (hc : 0 < c) : ResToImagAxis.EventuallyPos (c • F) := by
   rw [EventuallyPos]
   refine ⟨ResToImagAxis.Real.smul hF.1, ?_⟩
   obtain ⟨t₀, hF0, hFpos⟩ := hF.2
@@ -267,11 +266,9 @@ theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ}
   have htpos : 0 < t := by grind
   have hFreal_t := hF.1 t htpos
   have hFpos_t := hFpos t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, htpos] at hFreal_t
-  simp only [Function.resToImagAxis, ResToImagAxis, htpos] at hFpos_t
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, htpos, ↓reduceDIte, mul_re, ofReal_re,
-    ofReal_im, zero_mul, sub_zero]
-  exact mul_pos hc hFpos_t
+  simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFreal_t
+  simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFpos_t
+  simp [ResToImagAxis, htpos, mul_pos hc hFpos_t]
 
 /-!
 ## Polynomial decay of functions with exponential bounds
