@@ -172,7 +172,7 @@ theorem ResToImagAxis.Pos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.P
 theorem ResToImagAxis.Pos.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Pos F) (n : ℕ) :
     ResToImagAxis.Pos (F ^ n) := by
   induction n with
-  | zero => exact ResToImagAxis.EventuallyPos.one
+  | zero => exact ResToImagAxis.Pos.one
   | succ n hn => exact hn.mul hF
 
 theorem ResToImagAxis.EventuallyPos.from_pos {F : ℍ → ℂ} (hF : ResToImagAxis.Pos F) :
@@ -184,9 +184,6 @@ theorem ResToImagAxis.EventuallyPos.from_pos {F : ℍ → ℂ} (hF : ResToImagAx
 theorem ResToImagAxis.EventuallyPos.one :
     ResToImagAxis.EventuallyPos (fun _ => 1) :=
   ResToImagAxis.EventuallyPos.from_pos ResToImagAxis.Pos.one
-  refine ⟨ResToImagAxis.Real.one, ⟨1, by positivity, fun t ht ↦ ?_⟩⟩
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht.trans_lt' one_pos, ↓reduceDIte,
-    one_re, zero_lt_one]
 
 theorem ResToImagAxis.EventuallyPos.add {F G : ℍ → ℂ}
     (hF : ResToImagAxis.EventuallyPos F) (hG : ResToImagAxis.EventuallyPos G) :
