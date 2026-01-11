@@ -122,8 +122,8 @@ theorem ResToImagAxis.Real.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (n 
   | zero =>
       simp only [pow_zero]
       exact ResToImagAxis.Real.one
-  | succ n ih =>
-      exact ResToImagAxis.Real.mul ih hF
+  | succ n hn =>
+      exact ResToImagAxis.Real.mul hn hF
 
 theorem ResToImagAxis.Pos.one : ResToImagAxis.Pos (fun _ => 1) := by
   refine ⟨ResToImagAxis.Real.one, fun t ht ↦ ?_⟩
@@ -166,8 +166,20 @@ theorem ResToImagAxis.Pos.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Pos F) (n : 
   | zero =>
       simp only [pow_zero]
       exact ResToImagAxis.Pos.one
-  | succ n ih =>
-      exact ResToImagAxis.Pos.mul ih hF
+  | succ n hn =>
+      exact ResToImagAxis.Pos.mul hn hF
+
+theorem ResToImagAxis.EventuallyPos.from_pos {F : ℍ → ℂ} (hF : ResToImagAxis.Pos F) :
+    ResToImagAxis.EventuallyPos F := by
+  refine ⟨hF.1, ⟨1, by positivity, fun t ht ↦ ?_⟩⟩
+  have ht_pos : 0 < t := by linarith
+  exact hF.2 t ht_pos
+
+theorem ResToImagAxis.EventuallyPos.one :
+    ResToImagAxis.EventuallyPos (fun _ => 1) := by
+  refine ⟨ResToImagAxis.Real.one, ⟨1, by positivity, fun t ht ↦ ?_⟩⟩
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht.trans_lt' one_pos, ↓reduceDIte,
+    one_re, zero_lt_one]
 
 theorem ResToImagAxis.EventuallyPos.add {F G : ℍ → ℂ}
     (hF : ResToImagAxis.EventuallyPos F) (hG : ResToImagAxis.EventuallyPos G) :
@@ -215,6 +227,16 @@ theorem ResToImagAxis.EventuallyPos.mul {F G : ℍ → ℂ}
   simp only [Function.resToImagAxis_apply, ResToImagAxis, htpos, ↓reduceDIte, Pi.mul_apply, mul_re,
     hFreal_t, hGreal_t, mul_zero, sub_zero]
   exact mul_pos hFpos_t hGpos_t
+
+theorem ResToImagAxis.EventuallyPos.pow {F : ℍ → ℂ}
+    (hF : ResToImagAxis.EventuallyPos F) (n : ℕ) :
+    ResToImagAxis.EventuallyPos (F ^ n) := by
+  induction n with
+  | zero =>
+      simp only [pow_zero]
+      exact ResToImagAxis.EventuallyPos.one
+  | succ n hn =>
+      exact ResToImagAxis.EventuallyPos.mul hn hF
 
 theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ}
     (hF : ResToImagAxis.EventuallyPos F) (hc : 0 < c) :
