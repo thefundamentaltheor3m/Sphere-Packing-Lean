@@ -225,7 +225,6 @@ theorem ResToImagAxis.EventuallyPos.mul {F G : ℍ → ℂ}
   have htG : tG ≤ t := htG₀.trans ht
   have hFpos_t := hFpos t htF
   have hGpos_t := hGpos t htG
-  have htpos : 0 < t := by grind
   simp only [Function.resToImagAxis, ResToImagAxis, htpos] at hFpos_t hGpos_t
   simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFreal_t hGreal_t
   simp only [Function.resToImagAxis_apply, ResToImagAxis, htpos, ↓reduceDIte, Pi.mul_apply, mul_re,
