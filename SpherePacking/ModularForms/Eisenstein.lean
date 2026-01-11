@@ -839,24 +839,17 @@ lemma exp_imag_axis_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
   simp only [hI]
   ring
 
-/-- `ζ(2k)` is real for all `k ≥ 2`. -/
-lemma riemannZeta_even_im_eq_zero (k : ℕ) (hk : 2 ≤ k) :
+/-- `ζ(2k)` is real for all `k ≥ 1`. -/
+lemma riemannZeta_even_im_eq_zero (k : ℕ) (hk : k ≠ 0) :
     (riemannZeta (2 * k : ℕ)).im = 0 := by
-  have hk' : k ≠ 0 := by omega
-  rw [Nat.cast_mul, Nat.cast_two, riemannZeta_two_mul_nat hk']
-  -- All components are real: (-1)^(k+1), 2^(2k-1), π^(2k), bernoulli(2k), (2k)!
-  have h1 : ((-1 : ℂ) ^ (k + 1)).im = 0 := by
-    rcases Nat.even_or_odd (k + 1) with hm | hm <;> simp [hm.neg_one_pow]
-  have h2 : ((2 : ℂ) ^ (2 * k - 1)).im = 0 := by
-    have : ((2 : ℂ) ^ (2 * k - 1)) = ((2 ^ (2 * k - 1) : ℕ) : ℂ) := by push_cast; rfl
-    rw [this]; exact ofReal_im _
-  have h3 : ((↑Real.pi : ℂ) ^ (2 * k)).im = 0 := by
-    have : ((↑Real.pi : ℂ) ^ (2 * k)) = ↑(Real.pi ^ (2 * k)) := by push_cast; ring
-    rw [this]; exact ofReal_im _
-  have h4 : (↑(bernoulli (2 * k)) : ℂ).im = 0 := ofReal_im _
-  have h5 : (↑((2 * k)! : ℕ) : ℂ).im = 0 := ofReal_im _
-  simp only [mul_im, div_im, h1, h2, h3, h4, h5]
-  ring
+  rw [Nat.cast_mul, Nat.cast_two, riemannZeta_two_mul_nat hk]
+  -- The RHS is the coercion of a real expression
+  have : ((-1 : ℂ) ^ (k + 1) * (2 : ℂ) ^ (2 * k - 1) * (↑Real.pi : ℂ) ^ (2 * k) *
+         ↑(bernoulli (2 * k)) / ↑((2 * k)! : ℕ)) =
+         ↑((-1 : ℝ) ^ (k + 1) * (2 : ℝ) ^ (2 * k - 1) * Real.pi ^ (2 * k) *
+           bernoulli (2 * k) / (2 * k)!) := by push_cast; ring
+  rw [this]
+  exact ofReal_im _
 
 /-- `E_k(it)` is real for all `t > 0` when `k` is even and `k ≥ 4`.
 This is the generalized theorem from which `E₄_imag_axis_real` and `E₆_imag_axis_real` follow. -/
@@ -877,10 +870,8 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
     have hexp_arg : 2 * ↑Real.pi * Complex.I * z * n = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
       simpa [z] using exp_imag_axis_arg (t := t) ht n
     rw [hexp_arg]
-    have hexp_real : (cexp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := exp_ofReal_im _
-    have hsigma_real : (↑((ArithmeticFunction.sigma (k - 1)) ↑n) : ℂ).im = 0 := by simp
-    -- Using simp only to avoid false positive linter warnings (args are needed)
-    simp only [mul_im, hsigma_real, hexp_real, mul_zero, zero_mul, add_zero]
+    -- Using simp only: `simp` gives false positive linter warning but args are needed
+    simp only [mul_im, exp_ofReal_im, natCast_im, mul_zero, zero_mul, add_zero]
   -- Step 2: Summability of the series
   have hsum : Summable fun n : ℕ+ => ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n) := by
@@ -914,10 +905,9 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
   -- For ζ(k) when k is even and ≥ 4, it's real
   obtain ⟨m, hm⟩ := hk2
   have hm' : k = 2 * m := by omega
-  have hm2 : 2 ≤ m := by omega
   have hzeta_im : (riemannZeta k).im = 0 := by
     rw [hm']
-    exact riemannZeta_even_im_eq_zero m hm2
+    exact riemannZeta_even_im_eq_zero m (by omega)
   have hinv_zeta_im : (1 / riemannZeta k).im = 0 := by
     rw [div_im, one_im, one_re, hzeta_im]
     ring
@@ -949,17 +939,12 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
       have h1 : 2 * ↑Real.pi * Complex.I * z * n = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
         simpa [z] using exp_imag_axis_arg (t := t) ht n
       simpa [mul_assoc, mul_left_comm, mul_comm] using h1
-    have hexp_real : (cexp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := exp_ofReal_im _
+    -- Using simp only: `simp` gives false positive linter warning but args are needed
     have hone_sub_real : (1 - cexp (2 * ↑Real.pi * Complex.I * ↑↑n * ↑z)).im = 0 := by
-      simp only [Complex.sub_im, Complex.one_im]
-      rw [hexp_arg, hexp_real]
-      ring
-    have hn_real : (↑n : ℂ).im = 0 := by simp
+      simp only [Complex.sub_im, Complex.one_im, hexp_arg, exp_ofReal_im, sub_zero]
     have hnum_real : (↑n * cexp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
-      rw [Complex.mul_im, hn_real, hexp_arg, hexp_real]
-      ring
-    rw [Complex.div_im, hnum_real, hone_sub_real]
-    ring
+      simp only [mul_im, natCast_im, hexp_arg, exp_ofReal_im, mul_zero, zero_mul, add_zero]
+    simp [Complex.div_im, hnum_real, hone_sub_real]
   -- Step 2: Summability of the series
   have hsum : Summable fun n : ℕ+ => ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
       (1 - cexp (2 * ↑Real.pi * Complex.I * n * z)) := by
