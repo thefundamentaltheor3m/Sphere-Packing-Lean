@@ -14,7 +14,7 @@ on the imaginary axis.
 -/
 noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
 
-noncomputable def G := H₂ ^ 3 * (2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2)
+noncomputable def G := H₂ ^ 3 * ((2 : ℝ) • H₂ ^ 2 + (5 : ℝ) • H₂ * H₄ + (5 : ℝ) • H₄ ^ 2)
 
 noncomputable def negDE₂ := - (D E₂)
 
@@ -93,20 +93,39 @@ theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H�
   sorry
 
 /- Positivity of (quasi)modular forms. $F, G, H_2$ are all (sum of) squares. -/
-lemma F_pos : ResToImagAxis.Pos F := by
-  sorry
-
-lemma G_pos : ResToImagAxis.Pos G := by
-  sorry
-
 lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
   sorry
 
 lemma Δ_fun_pos : ResToImagAxis.Pos Δ_fun := by
   sorry
 
+lemma F_pos : ResToImagAxis.Pos F := by
+  sorry
+
+@[fun_prop]
 lemma H₂_pos : ResToImagAxis.Pos H₂ := by
   sorry
+
+@[fun_prop]
+lemma H₄_pos : ResToImagAxis.Pos H₄ := by
+  sorry
+
+lemma G_pos : ResToImagAxis.Pos G := by
+  have _ : 0 < (2 : ℝ) := by positivity
+  have _ : 0 < (5 : ℝ) := by positivity
+  apply ResToImagAxis.Pos.mul
+  · exact ResToImagAxis.Pos.pow H₂_pos 3
+  · apply ResToImagAxis.Pos.add
+    · apply ResToImagAxis.Pos.add
+      · apply ResToImagAxis.Pos.smul _ (by positivity)
+        exact ResToImagAxis.Pos.pow H₂_pos 2
+      · apply ResToImagAxis.Pos.mul
+        · apply ResToImagAxis.Pos.smul _ (by positivity)
+          exact H₂_pos
+        · exact H₄_pos
+    · apply ResToImagAxis.Pos.smul _ (by positivity)
+      exact ResToImagAxis.Pos.pow H₄_pos 2
+
 
 lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
   calc
