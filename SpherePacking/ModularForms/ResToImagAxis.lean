@@ -185,6 +185,10 @@ theorem ResToImagAxis.EventuallyPos.one :
     ResToImagAxis.EventuallyPos (fun _ => 1) :=
   ResToImagAxis.EventuallyPos.from_pos ResToImagAxis.Pos.one
 
+theorem ResToImagAxis.EventuallyPos.const (c : ℝ) (hc : 0 < c) :
+    ResToImagAxis.EventuallyPos (fun _ => c) :=
+  ResToImagAxis.EventuallyPos.from_pos (ResToImagAxis.Pos.const c hc)
+
 theorem ResToImagAxis.EventuallyPos.add {F G : ℍ → ℂ}
     (hF : ResToImagAxis.EventuallyPos F) (hG : ResToImagAxis.EventuallyPos G) :
     ResToImagAxis.EventuallyPos (F + G) := by
