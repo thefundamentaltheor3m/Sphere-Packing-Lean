@@ -260,6 +260,12 @@ noncomputable def H₄_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₄
   slash_action_eq' := slashaction_generators_Γ2 H₄ (2 : ℤ) H₄_α_action H₄_β_action H₄_negI_action
 
+@[simp] lemma H₂_SIF_coe : (H₂_SIF : ℍ → ℂ) = H₂ := rfl
+
+@[simp] lemma H₃_SIF_coe : (H₃_SIF : ℍ → ℂ) = H₃ := rfl
+
+@[simp] lemma H₄_SIF_coe : (H₄_SIF : ℍ → ℂ) = H₄ := rfl
+
 end H_SlashInvariant
 
 
@@ -346,16 +352,13 @@ lemma H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF :=
   simpa [mdifferentiableWithinAt_univ] using hMD_within
 
 lemma H₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := by
-  simpa [H₂_SIF, SlashInvariantForm.coe_mk] using
-    (H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂_SIF)
+  simpa [H₂_SIF, SlashInvariantForm.coe_mk] using H₂_SIF_MDifferentiable
 
 lemma H₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃ := by
-  simpa [H₃_SIF, SlashInvariantForm.coe_mk] using
-    (H₃_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃_SIF)
+  simpa [H₃_SIF, SlashInvariantForm.coe_mk] using H₃_SIF_MDifferentiable
 
 lemma H₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := by
-  simpa [H₄_SIF, SlashInvariantForm.coe_mk] using
-    (H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF)
+  simpa [H₄_SIF, SlashInvariantForm.coe_mk] using H₄_SIF_MDifferentiable
 
 end H_MDifferentiable
 
@@ -570,6 +573,12 @@ noncomputable def H₄_MF : ModularForm (Γ 2) 2 := {
   holo' := H₄_SIF_MDifferentiable
   bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_H₄_slash
 }
+
+@[simp] lemma H₂_MF_coe : (H₂_MF : ℍ → ℂ) = H₂ := rfl
+
+@[simp] lemma H₃_MF_coe : (H₃_MF : ℍ → ℂ) = H₃ := rfl
+
+@[simp] lemma H₄_MF_coe : (H₄_MF : ℍ → ℂ) = H₄ := rfl
 
 /-!
 ## Jacobi identity
