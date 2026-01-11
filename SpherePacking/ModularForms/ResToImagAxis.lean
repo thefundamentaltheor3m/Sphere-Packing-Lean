@@ -84,14 +84,21 @@ theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0
 /--
 Realenss, positivity and essential positivity are closed under the addition and multiplication.
 -/
-theorem ResToImagAxis.Real.zero : ResToImagAxis.Real (fun _ => 0) := by
-  intro t ht
-  simp [ResToImagAxis]
 
-theorem ResToImagAxis.Real.one : ResToImagAxis.Real (fun _ => 1) := by
+theorem ResToImagAxis.Real.const (c : ℝ) : ResToImagAxis.Real (fun _ => c) := by
   intro t ht
-  simp [ResToImagAxis]
-  simp_all only [↓reduceIte, one_im]
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, ofReal_im]
+
+theorem ResToImagAxis.Real.zero : ResToImagAxis.Real (fun _ => 0) := ResToImagAxis.Real.const 0
+
+theorem ResToImagAxis.Real.one : ResToImagAxis.Real (fun _ => 1) := ResToImagAxis.Real.const 1
+
+theorem ResToImagAxis.Real.neg {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) : ResToImagAxis.Real (-F)
+    := by
+  intro t ht
+  have hFreal := hF t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal
+  simp [ResToImagAxis, ht, hFreal]
 
 theorem ResToImagAxis.Real.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
     (hG : ResToImagAxis.Real G) : ResToImagAxis.Real (F + G) := by
@@ -125,9 +132,13 @@ theorem ResToImagAxis.Real.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (n 
   | succ n hn =>
       exact ResToImagAxis.Real.mul hn hF
 
-theorem ResToImagAxis.Pos.one : ResToImagAxis.Pos (fun _ => 1) := by
-  refine ⟨ResToImagAxis.Real.one, fun t ht ↦ ?_⟩
-  simp [ResToImagAxis, ht]
+theorem ResToImagAxis.Pos.const (c : ℝ) (hc : 0 < c) : ResToImagAxis.Pos (fun _ => c) := by
+  refine ⟨ResToImagAxis.Real.const c, fun t ht ↦ ?_⟩
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, ofReal_re]
+  exact hc
+
+theorem ResToImagAxis.Pos.one : ResToImagAxis.Pos (fun _ => 1) :=
+  ResToImagAxis.Pos.const 1 one_pos
 
 theorem ResToImagAxis.Pos.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
     (hG : ResToImagAxis.Pos G) : ResToImagAxis.Pos (F + G) := by
