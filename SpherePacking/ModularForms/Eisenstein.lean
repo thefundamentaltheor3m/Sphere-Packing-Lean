@@ -839,17 +839,6 @@ lemma exp_imag_axis_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
   simp only [hI]
   ring
 
-/-- Product of complex numbers with zero imaginary part has zero imaginary part. -/
-lemma Complex.im_mul_eq_zero' (a b : ℂ) (ha : a.im = 0) (hb : b.im = 0) : (a * b).im = 0 := by
-  simp [Complex.mul_im, ha, hb]
-
-/-- Quotient of complex numbers with zero imaginary part has zero imaginary part. -/
-lemma Complex.im_div_eq_zero' (a b : ℂ) (ha : a.im = 0) (hb : b.im = 0) : (a / b).im = 0 := by
-  rw [div_eq_mul_inv]
-  apply Complex.im_mul_eq_zero'
-  · exact ha
-  · simp [Complex.inv_im, hb]
-
 /-- `ζ(2k)` is real for all `k ≥ 2`. -/
 lemma riemannZeta_even_im_eq_zero (k : ℕ) (hk : 2 ≤ k) :
     (riemannZeta (2 * k : ℕ)).im = 0 := by
@@ -890,14 +879,13 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
     rw [hexp_arg]
     have hexp_real : (cexp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := exp_ofReal_im _
     have hsigma_real : (↑((ArithmeticFunction.sigma (k - 1)) ↑n) : ℂ).im = 0 := by simp
+    -- Using simp only to avoid false positive linter warnings (args are needed)
     simp only [mul_im, hsigma_real, hexp_real, mul_zero, zero_mul, add_zero]
   -- Step 2: Summability of the series
   have hsum : Summable fun n : ℕ+ => ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n) := by
     apply Summable.of_norm
-    apply Summable.of_nonneg_of_le
-    · intro n
-      exact norm_nonneg _
+    apply Summable.of_nonneg_of_le (fun n => norm_nonneg _)
     · intro n
       calc ‖↑((ArithmeticFunction.sigma (k - 1)) ↑n) * cexp (2 * ↑Real.pi * Complex.I * z * n)‖
           = ‖(↑((ArithmeticFunction.sigma (k - 1)) ↑n) : ℂ)‖ *
@@ -970,8 +958,7 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
     have hnum_real : (↑n * cexp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
       rw [Complex.mul_im, hn_real, hexp_arg, hexp_real]
       ring
-    rw [Complex.div_im]
-    rw [hnum_real, hone_sub_real]
+    rw [Complex.div_im, hnum_real, hone_sub_real]
     ring
   -- Step 2: Summability of the series
   have hsum : Summable fun n : ℕ+ => ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
