@@ -68,7 +68,6 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
     ext z
     simp
     ring_nf
-
   -- Holomorphicity of the terms
   · exact E₂_holo'
   · exact E₄.holo'
