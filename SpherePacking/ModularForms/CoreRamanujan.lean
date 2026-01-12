@@ -8,6 +8,7 @@ and establishes boundedness properties needed for asymptotic analysis.
 
 ## Main results
 
+* `serre_D_isBoundedAtImInfty` : serre_D k f is bounded for bounded holomorphic f
 * `D_E₄_isBoundedAtImInfty` : D(E₄) is bounded at infinity
 * `serre_D_E₄_isBoundedAtImInfty` : serre_D 4 E₄ is bounded at infinity
 -/
@@ -15,26 +16,37 @@ and establishes boundedness properties needed for asymptotic analysis.
 open UpperHalfPlane hiding I
 open Real Complex Filter ModularForm
 
-open scoped ModularForm Topology
+open scoped ModularForm Topology Manifold
 
 noncomputable section
 
+/-- The Serre derivative of a bounded holomorphic function is bounded at infinity.
+
+serre_D k f = D f - (k/12)·E₂·f. Both terms are bounded:
+- D f is bounded by `D_isBoundedAtImInfty_of_bounded`
+- (k/12)·E₂·f is bounded since E₂ and f are bounded -/
+theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
+    (hbdd : IsBoundedAtImInfty f) : IsBoundedAtImInfty (serre_D k f) := by
+  unfold serre_D
+  have hD : IsBoundedAtImInfty (D f) := D_isBoundedAtImInfty_of_bounded hf hbdd
+  have hE₂f : IsBoundedAtImInfty (fun z => k * 12⁻¹ * E₂ z * f z) := by
+    have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) :=
+      Filter.const_boundedAtFilter _ _
+    convert hconst.mul (E₂_isBoundedAtImInfty.mul hbdd) using 1
+    ext z
+    simp only [Pi.mul_apply]
+    ring
+  exact hD.sub hE₂f
+
 /-- D E₄ is bounded at infinity.
 
-The q-expansion D(E₄) = 240·Σn·σ₃(n)·qⁿ has no constant term,
-so D(E₄) → 0 as im(z) → ∞.
+Follows from `D_isBoundedAtImInfty_of_bounded` since E₄ is holomorphic and bounded at infinity. -/
+lemma D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (D E₄.toFun) :=
+  D_isBoundedAtImInfty_of_bounded E₄.holo' (ModularFormClass.bdd_at_infty E₄)
 
-**Proof outline**: D commutes with the q-expansion tsum (by uniform convergence),
-and D(qⁿ) = n·qⁿ for q = exp(2πiz). Since the sum has no q⁰ term, it vanishes as ‖q‖ → 0.
-
-**Blocker**: Need D-tsum interchange lemma. See Issue #90 for the q-expansion approach. -/
-lemma D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (D E₄.toFun) := by
-  sorry
-
-/-- serre_D 4 E₄ is bounded at infinity.
-
-Follows from D_E₄_isBoundedAtImInfty and boundedness of E₂·E₄. -/
-lemma serre_D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 4 E₄.toFun) := by
-  sorry
+/-- serre_D 4 E₄ is bounded at infinity. -/
+lemma serre_D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 4 E₄.toFun) :=
+  serre_D_isBoundedAtImInfty 4 E₄.holo' (ModularFormClass.bdd_at_infty E₄)
 
 end
