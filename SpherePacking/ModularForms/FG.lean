@@ -5,8 +5,8 @@ import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ModularForms.JacobiTheta
 
-open Filter
-open scoped Real Manifold
+open Filter Complex
+open scoped Real Manifold UpperHalfPlane
 
 
 /--
@@ -119,135 +119,12 @@ lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
 lemma Δ_fun_pos : ResToImagAxis.Pos Δ_fun := by
   sorry
 
-lemma F_real : ResToImagAxis.Real F := by unfold F; fun_prop
+lemma F_imag_axis_real : ResToImagAxis.Real F := by unfold F; fun_prop
 
-lemma F_pos : ResToImagAxis.Pos F := by
-  sorry
-
-lemma G_pos : ResToImagAxis.Pos G := by unfold G; fun_prop (disch := positivity)
-
-lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
-  calc
-    L₁₀ = (D F) * G - F * (D G) := rfl
-    _ = (D F - 10 * 12⁻¹ * E₂ * F) * G - F * (D G - 10 * 12⁻¹ * E₂ * G) := by ring_nf
-    _ = (serre_D 10 F) * G - F * (serre_D 10 G) := by ext z; simp [serre_D]
-
-lemma SerreDer_22_L₁₀_SerreDer :
-    SerreDer_22_L₁₀ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by
-  have SF_holo := @serre_D_differentiable F 10 F_holo
-  have SG_holo := @serre_D_differentiable G 10 G_holo
-  calc
-    SerreDer_22_L₁₀ = serre_D 22 L₁₀ := rfl
-    _ = serre_D 22 (serre_D 10 F * G - F * serre_D 10 G) := by rw [L₁₀_SerreDer]
-    _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by
-        apply serre_D_sub _ _ _
-        · exact MDifferentiable.mul SF_holo G_holo
-        · exact MDifferentiable.mul F_holo SG_holo
-    _ = serre_D (12 + 10) ((serre_D 10 F) * G) - serre_D (10 + 12) (F * serre_D 10 G) := by ring_nf
-    _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
-        - serre_D (10 + 12) (F * serre_D 10 G) := by
-          simpa using (serre_D_mul 12 10 (serre_D 10 F) G SF_holo G_holo)
-    _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
-        - ((serre_D 10 F) * (serre_D 10 G) + F * (serre_D 12 (serre_D 10 G))) := by
-          simpa using (serre_D_mul 10 12 F (serre_D 10 G) F_holo SG_holo)
-    _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
-
-/- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
-lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ := by
-  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, ResToImagAxis.Real]
-  intro t ht
-  ring_nf
-  simp only [Function.resToImagAxis_apply]
-  sorry
-
-lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
-  refine And.intro SerreDer_22_L₁₀_real ?_
-  intro t ht
-  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G]
-  ring_nf
-  sorry
-
-/- $\mathcal{L}_{1, 0}$ is eventually positive on the imaginary axis. -/
-lemma L₁₀_eventuallyPos : ResToImagAxis.EventuallyPos L₁₀ := by
-  sorry
-
-/- $\mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
-lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ := antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventuallyPos
-
-/--
-$t \mapsto F(it) / G(it)$ is monotone decreasing.
--/
-theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) := by
-  sorry
-
-/--
-$\lim_{t \to 0^+} F(it) / G(it) = 18 / \pi^2$.
--/
-theorem FmodG_rightLimitAt_zero :
-    Tendsto FmodGReal (nhdsWithin 0 (Set.Ioi 0)) (nhdsWithin (18 * (π ^ (-2 : ℤ))) Set.univ) := by
-  sorry
-
-/--
-Main inequalities between $F$ and $G$ on the imaginary axis.
--/
-theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
-    FReal t + 18 * (π ^ (-2 : ℤ)) * GReal t > 0 := by
-  sorry
-
-theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
-    FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
-  sorry
-
-/-!
-## Imaginary Axis Properties
-
-Properties of G and F when restricted to the positive imaginary axis z = I*t.
--/
-
-section ImagAxisProperties
-
-open UpperHalfPlane hiding I
-open Complex
-
-/--
-`G(it) > 0` for all `t > 0`.
-Blueprint: Lemma 8.6 - follows from H₂(it) > 0 and H₄(it) > 0.
-G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is positive since all factors are positive.
--/
-theorem G_imag_axis_pos : ResToImagAxis.Pos G := by unfold G; fun_prop (disch := positivity)
-
-/--
-`G(it)` is real for all `t > 0`.
-Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²), product of real functions.
--/
-theorem G_imag_axis_real : ResToImagAxis.Real G :=
-  G_imag_axis_pos.1
-
-/--
-`F(it)` is real for all `t > 0`.
-Blueprint: Follows from E₂, E₄, E₆ having real values on the imaginary axis.
--/
-theorem F_imag_axis_real : ResToImagAxis.Real F := by
-  unfold F
-  have hProd : ResToImagAxis.Real (E₂ * E₄.toFun) :=
-    ResToImagAxis.Real.mul E₂_imag_axis_real E₄_imag_axis_real
-  have hNeg : ResToImagAxis.Real ((-1 : ℝ) • E₆.toFun) :=
-    ResToImagAxis.Real.smul E₆_imag_axis_real
-  have hSub : ResToImagAxis.Real (E₂ * E₄.toFun - E₆.toFun) := by
-    have hEq : E₂ * E₄.toFun - E₆.toFun = E₂ * E₄.toFun + (-1 : ℝ) • E₆.toFun := by
-      ext z
-      simp [sub_eq_add_neg]
-    simpa [hEq] using ResToImagAxis.Real.add hProd hNeg
-  simpa [pow_two] using ResToImagAxis.Real.mul hSub hSub
-
-/--
-`F(it) > 0` for all `t > 0`.
-Blueprint: Follows from the q-expansion (E₂E₄ - E₆ = 720 * ...) and positivity.
--/
 theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   refine ⟨F_imag_axis_real, fun t ht => ?_⟩
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, F]
-  let z : ℍ := ⟨I * t, by simp [ht]⟩
+  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   -- F = (E₂E₄ - E₆)² and we need to show its real part is positive
   -- Since F_imag_axis_real shows F(it).im = 0, we have F(it) = F(it).re
   have hF_real_pre := F_imag_axis_real t ht
@@ -292,7 +169,7 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   rw [hq_exp]
   -- Show the sum is positive on imaginary axis
   -- For z = it, exp(2πinz) = exp(-2πnt) which is positive real
-  have hz_eq : (z : ℂ) = I * t := rfl
+  have hz_eq : (z : ℂ) = Complex.I * t := rfl
   -- The real part of 720 * (positive sum) is positive
   -- 720 is real, so (720 * x).re = 720 * x.re
   have h720_real : (720 : ℂ).im = 0 := by norm_num
@@ -366,10 +243,84 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
     · exact Real.exp_pos _
   -- Step 4: Sum of positive terms is positive
   have hsum_re : Summable fun n : ℕ+ => ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-      exp (2 * ↑Real.pi * I * ↑n * z)).re := by
+      Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * z)).re := by
     obtain ⟨x, hx⟩ := hsum'
-    exact ⟨x.re, hasSum_re hx⟩
+    exact ⟨x.re, Complex.hasSum_re hx⟩
   rw [Complex.re_tsum hsum']
   exact Summable.tsum_pos hsum_re (fun n => le_of_lt (hterm_pos n)) 1 (hterm_pos 1)
 
-end ImagAxisProperties
+lemma G_imag_axis_real : ResToImagAxis.Real G := by unfold G; fun_prop
+
+lemma G_imag_axis_pos : ResToImagAxis.Pos G := by unfold G; fun_prop (disch := positivity)
+
+lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
+  calc
+    L₁₀ = (D F) * G - F * (D G) := rfl
+    _ = (D F - 10 * 12⁻¹ * E₂ * F) * G - F * (D G - 10 * 12⁻¹ * E₂ * G) := by ring_nf
+    _ = (serre_D 10 F) * G - F * (serre_D 10 G) := by ext z; simp [serre_D]
+
+lemma SerreDer_22_L₁₀_SerreDer :
+    SerreDer_22_L₁₀ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by
+  have SF_holo := @serre_D_differentiable F 10 F_holo
+  have SG_holo := @serre_D_differentiable G 10 G_holo
+  calc
+    SerreDer_22_L₁₀ = serre_D 22 L₁₀ := rfl
+    _ = serre_D 22 (serre_D 10 F * G - F * serre_D 10 G) := by rw [L₁₀_SerreDer]
+    _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by
+        apply serre_D_sub _ _ _
+        · exact MDifferentiable.mul SF_holo G_holo
+        · exact MDifferentiable.mul F_holo SG_holo
+    _ = serre_D (12 + 10) ((serre_D 10 F) * G) - serre_D (10 + 12) (F * serre_D 10 G) := by ring_nf
+    _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
+        - serre_D (10 + 12) (F * serre_D 10 G) := by
+          simpa using (serre_D_mul 12 10 (serre_D 10 F) G SF_holo G_holo)
+    _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
+        - ((serre_D 10 F) * (serre_D 10 G) + F * (serre_D 12 (serre_D 10 G))) := by
+          simpa using (serre_D_mul 10 12 F (serre_D 10 G) F_holo SG_holo)
+    _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
+
+/- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
+lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ := by
+  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, ResToImagAxis.Real]
+  intro t ht
+  ring_nf
+  simp only [Function.resToImagAxis_apply]
+  sorry
+
+lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
+  refine And.intro SerreDer_22_L₁₀_real ?_
+  intro t ht
+  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G]
+  ring_nf
+  sorry
+
+/- $\mathcal{L}_{1, 0}$ is eventually positive on the imaginary axis. -/
+lemma L₁₀_eventuallyPos : ResToImagAxis.EventuallyPos L₁₀ := by
+  sorry
+
+/- $\mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
+lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ := antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventuallyPos
+
+/--
+$t \mapsto F(it) / G(it)$ is monotone decreasing.
+-/
+theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) := by
+  sorry
+
+/--
+$\lim_{t \to 0^+} F(it) / G(it) = 18 / \pi^2$.
+-/
+theorem FmodG_rightLimitAt_zero :
+    Tendsto FmodGReal (nhdsWithin 0 (Set.Ioi 0)) (nhdsWithin (18 * (π ^ (-2 : ℤ))) Set.univ) := by
+  sorry
+
+/--
+Main inequalities between $F$ and $G$ on the imaginary axis.
+-/
+theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
+    FReal t + 18 * (π ^ (-2 : ℤ)) * GReal t > 0 := by
+  sorry
+
+theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
+    FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
+  sorry
