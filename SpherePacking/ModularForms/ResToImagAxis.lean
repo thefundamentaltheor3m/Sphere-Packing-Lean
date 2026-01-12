@@ -88,7 +88,7 @@ theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0
     (F ∣[k] S) z = I ^ (-k) * t ^ (-k) * F z')
 
 /--
-Realenss, positivity and essential positivity are closed under the addition and multiplication.
+Realness, positivity and essential positivity are closed under the addition and multiplication.
 -/
 @[fun_prop]
 theorem ResToImagAxis.Real.const (c : ℝ) : ResToImagAxis.Real (fun _ => c) := by
@@ -121,11 +121,7 @@ theorem ResToImagAxis.Real.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
 @[fun_prop]
 theorem ResToImagAxis.Real.sub {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
     (hG : ResToImagAxis.Real G) : ResToImagAxis.Real (F - G) := by
-  intro t ht
-  have hFreal := hF t ht
-  have hGreal := hG t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal hGreal
-  simp [ResToImagAxis, ht, hFreal, hGreal]
+  simpa [sub_eq_add_neg] using ResToImagAxis.Real.add hF hG.neg
 
 @[fun_prop]
 theorem ResToImagAxis.Real.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
@@ -148,17 +144,11 @@ theorem ResToImagAxis.Real.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.
 theorem ResToImagAxis.Real.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (n : ℕ) :
     ResToImagAxis.Real (F ^ n) := by
   induction n with
-  | zero =>
-      simp only [pow_zero]
-      exact ResToImagAxis.Real.one
-  | succ n hn =>
-      exact ResToImagAxis.Real.mul hn hF
+  | zero => exact ResToImagAxis.Real.one
+  | succ n hn => exact hn.mul hF
 
-@[fun_prop]
-theorem ResToImagAxis.Pos.const (c : ℝ) (hc : 0 < c) : ResToImagAxis.Pos (fun _ => c) := by
-  refine ⟨ResToImagAxis.Real.const c, fun t ht ↦ ?_⟩
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, ofReal_re]
-  exact hc
+theorem ResToImagAxis.Pos.const (c : ℝ) (hc : 0 < c) : ResToImagAxis.Pos (fun _ => c) :=
+  ⟨ResToImagAxis.Real.const c, fun t ht ↦ by simp [ResToImagAxis, ht, hc]⟩
 
 @[fun_prop]
 theorem ResToImagAxis.Pos.one : ResToImagAxis.Pos (fun _ => 1) :=
@@ -189,7 +179,7 @@ theorem ResToImagAxis.Pos.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
 
 @[fun_prop]
 theorem ResToImagAxis.Pos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Pos F)
-    (hc : 0 < c) : ResToImagAxis.Pos (fun z => c * F z) := by
+    (hc : 0 < c) : ResToImagAxis.Pos (c • F) := by
   rw [Pos]
   refine ⟨Real.smul hF.1, fun t ht ↦ ?_⟩
   have hFreal := hF.1 t ht
@@ -213,11 +203,8 @@ theorem ResToImagAxis.Pos.smul' {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.
 theorem ResToImagAxis.Pos.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Pos F) (n : ℕ) :
     ResToImagAxis.Pos (F ^ n) := by
   induction n with
-  | zero =>
-      simp only [pow_zero]
-      exact ResToImagAxis.Pos.one
-  | succ n hn =>
-      exact ResToImagAxis.Pos.mul hn hF
+  | zero => exact ResToImagAxis.Pos.one
+  | succ n hn => exact hn.mul hF
 
 @[fun_prop]
 theorem ResToImagAxis.EventuallyPos.from_pos {F : ℍ → ℂ} (hF : ResToImagAxis.Pos F) :
@@ -228,10 +215,12 @@ theorem ResToImagAxis.EventuallyPos.from_pos {F : ℍ → ℂ} (hF : ResToImagAx
 
 @[fun_prop]
 theorem ResToImagAxis.EventuallyPos.one :
-    ResToImagAxis.EventuallyPos (fun _ => 1) := by
-  refine ⟨ResToImagAxis.Real.one, ⟨1, by positivity, fun t ht ↦ ?_⟩⟩
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht.trans_lt' one_pos, ↓reduceDIte,
-    one_re, zero_lt_one]
+    ResToImagAxis.EventuallyPos (fun _ => 1) :=
+  ResToImagAxis.EventuallyPos.from_pos ResToImagAxis.Pos.one
+
+theorem ResToImagAxis.EventuallyPos.const (c : ℝ) (hc : 0 < c) :
+    ResToImagAxis.EventuallyPos (fun _ => c) :=
+  ResToImagAxis.EventuallyPos.from_pos (ResToImagAxis.Pos.const c hc)
 
 @[fun_prop]
 theorem ResToImagAxis.EventuallyPos.add {F G : ℍ → ℂ}
@@ -275,7 +264,6 @@ theorem ResToImagAxis.EventuallyPos.mul {F G : ℍ → ℂ}
   have htG : tG ≤ t := htG₀.trans ht
   have hFpos_t := hFpos t htF
   have hGpos_t := hGpos t htG
-  have htpos : 0 < t := by grind
   simp only [Function.resToImagAxis, ResToImagAxis, htpos] at hFpos_t hGpos_t
   simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFreal_t hGreal_t
   simp only [Function.resToImagAxis_apply, ResToImagAxis, htpos, ↓reduceDIte, Pi.mul_apply, mul_re,
@@ -287,16 +275,12 @@ theorem ResToImagAxis.EventuallyPos.pow {F : ℍ → ℂ}
     (hF : ResToImagAxis.EventuallyPos F) (n : ℕ) :
     ResToImagAxis.EventuallyPos (F ^ n) := by
   induction n with
-  | zero =>
-      simp only [pow_zero]
-      exact ResToImagAxis.EventuallyPos.one
-  | succ n hn =>
-      exact ResToImagAxis.EventuallyPos.mul hn hF
+  | zero => exact ResToImagAxis.EventuallyPos.one
+  | succ n hn => exact hn.mul hF
 
 @[fun_prop]
-theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ}
-    (hF : ResToImagAxis.EventuallyPos F) (hc : 0 < c) :
-    ResToImagAxis.EventuallyPos (fun z => c * F z) := by
+theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.EventuallyPos F)
+    (hc : 0 < c) : ResToImagAxis.EventuallyPos (c • F) := by
   rw [EventuallyPos]
   refine ⟨ResToImagAxis.Real.smul hF.1, ?_⟩
   obtain ⟨t₀, hF0, hFpos⟩ := hF.2
@@ -305,11 +289,9 @@ theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ}
   have htpos : 0 < t := by grind
   have hFreal_t := hF.1 t htpos
   have hFpos_t := hFpos t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, htpos] at hFreal_t
-  simp only [Function.resToImagAxis, ResToImagAxis, htpos] at hFpos_t
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, htpos, ↓reduceDIte, mul_re, ofReal_re,
-    ofReal_im, zero_mul, sub_zero]
-  exact mul_pos hc hFpos_t
+  simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFreal_t
+  simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFpos_t
+  simp [ResToImagAxis, htpos, mul_pos hc hFpos_t]
 
 syntax (name := res_imag_axis) "res_imag_axis" : tactic
 macro_rules
