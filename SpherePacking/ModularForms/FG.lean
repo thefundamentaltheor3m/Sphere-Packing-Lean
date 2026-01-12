@@ -107,22 +107,20 @@ lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
 
 lemma SerreDer_22_L₁₀_SerreDer :
     SerreDer_22_L₁₀ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by
-  have SF_holo := @serre_D_differentiable F 10 F_holo
-  have SG_holo := @serre_D_differentiable G 10 G_holo
   calc
     SerreDer_22_L₁₀ = serre_D 22 L₁₀ := rfl
     _ = serre_D 22 (serre_D 10 F * G - F * serre_D 10 G) := by rw [L₁₀_SerreDer]
     _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by
         apply serre_D_sub _ _ _
-        · exact MDifferentiable.mul SF_holo G_holo
-        · exact MDifferentiable.mul F_holo SG_holo
+        · exact MDifferentiable.mul SerreF_holo G_holo
+        · exact MDifferentiable.mul F_holo SerreG_holo
     _ = serre_D (12 + 10) ((serre_D 10 F) * G) - serre_D (10 + 12) (F * serre_D 10 G) := by ring_nf
     _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
         - serre_D (10 + 12) (F * serre_D 10 G) := by
-          simpa using (serre_D_mul 12 10 (serre_D 10 F) G SF_holo G_holo)
+          simpa using (serre_D_mul 12 10 (serre_D 10 F) G SerreF_holo G_holo)
     _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
         - ((serre_D 10 F) * (serre_D 10 G) + F * (serre_D 12 (serre_D 10 G))) := by
-          simpa using (serre_D_mul 10 12 F (serre_D 10 G) F_holo SG_holo)
+          simpa using (serre_D_mul 10 12 F (serre_D 10 G) F_holo SerreG_holo)
     _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
 
 /- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
