@@ -833,10 +833,9 @@ This is useful for reusing the same algebraic simplification across `E₂`, `E�
 lemma exp_imag_axis_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
     2 * Real.pi * Complex.I * (⟨Complex.I * t, by simp [ht]⟩ : ℍ) * n =
     (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-  have hI : Complex.I ^ 2 = -1 := I_sq
   push_cast
   ring_nf
-  simp only [hI]
+  simp only [I_sq]
   ring
 
 /-- `ζ(2k)` is real for all `k ≥ 1`. -/
