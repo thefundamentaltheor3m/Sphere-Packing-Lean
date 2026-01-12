@@ -815,10 +815,7 @@ lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
     ((-2 * Real.pi * Complex.I) ^ k : ℂ).im = 0 := by
   have h : (-2 * Real.pi * Complex.I) ^ k = ((-2 * Real.pi) ^ k : ℂ) * Complex.I ^ k := by ring
   rw [h]
-  have h1 : ((-(2 * Real.pi)) ^ k : ℂ).im = 0 := by
-    have hcast : ((-(2 * Real.pi)) ^ k : ℂ) = (((-2 * Real.pi) ^ k : ℝ) : ℂ) := by push_cast; ring
-    rw [hcast]
-    exact Complex.ofReal_im _
+  have h1 : ((-(2 * Real.pi)) ^ k : ℂ).im = 0 := by norm_cast
   have h2 : (Complex.I ^ k : ℂ).im = 0 := by
     obtain ⟨m, rfl⟩ := hk
     simp only [← two_mul, pow_mul, I_sq]
