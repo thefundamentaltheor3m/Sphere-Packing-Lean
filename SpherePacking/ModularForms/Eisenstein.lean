@@ -799,3 +799,164 @@ theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
   sorry
 
 end Ramanujan_Formula
+
+/-!
+## Imaginary Axis Properties
+
+Properties of Eisenstein series when restricted to the positive imaginary axis z = I*t.
+-/
+
+section ImagAxisProperties
+
+open Complex hiding I
+
+/-- `(-2πi)^k` is real for even k. -/
+lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
+    ((-2 * Real.pi * Complex.I) ^ k : ℂ).im = 0 := by
+  have h : (-2 * Real.pi * Complex.I) ^ k = (-(2 * Real.pi) : ℂ) ^ k * Complex.I ^ k := by ring
+  rw [h]
+  have h1 : ((-(2 * Real.pi)) ^ k : ℂ).im = 0 := by norm_cast
+  have h2 : (Complex.I ^ k : ℂ).im = 0 := by
+    obtain ⟨m, rfl⟩ := hk
+    simp only [← two_mul, pow_mul, I_sq]
+    -- (-1)^m is real: ±1
+    rcases m.even_or_odd with hm | hm <;> simp [hm.neg_one_pow]
+  simp [Complex.mul_im, h1, h2]
+
+/-- On imaginary axis z = I*t, the q-expansion exponent 2πi·n·z reduces to -(2πnt).
+This is useful for reusing the same algebraic simplification across `E₂`, `E₄`, `E₆`. -/
+lemma exp_imag_axis_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
+    2 * Real.pi * Complex.I * (⟨Complex.I * t, by simp [ht]⟩ : ℍ) * n =
+    (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
+  push_cast
+  ring_nf
+  simp only [I_sq]
+  ring
+
+/-- `ζ(2k)` is real for all `k ≥ 1`. -/
+lemma riemannZeta_even_im_eq_zero (k : ℕ) (hk : k ≠ 0) :
+    (riemannZeta (2 * k : ℕ)).im = 0 := by
+  rw [Nat.cast_mul, Nat.cast_two, riemannZeta_two_mul_nat hk]
+  -- The RHS is the coercion of a real expression
+  have : ((-1 : ℂ) ^ (k + 1) * (2 : ℂ) ^ (2 * k - 1) * (↑Real.pi : ℂ) ^ (2 * k) *
+         ↑(bernoulli (2 * k)) / ↑((2 * k)! : ℕ)) =
+         ↑((-1 : ℝ) ^ (k + 1) * (2 : ℝ) ^ (2 * k - 1) * Real.pi ^ (2 * k) *
+           bernoulli (2 * k) / (2 * k)!) := by push_cast; ring
+  rw [this]
+  exact ofReal_im _
+
+/-- `E_k(it)` is real for all `t > 0` when `k` is even and `k ≥ 4`.
+This is the generalized theorem from which `E₄_imag_axis_real` and `E₆_imag_axis_real` follow. -/
+theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
+    ResToImagAxis.Real (E k hk).toFun := by
+  intro t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  change (E k hk z).im = 0
+  have hq := E_k_q_expansion k hk hk2 z
+  simp only at hq ⊢
+  rw [hq]
+  simp only [add_im, one_im, zero_add]
+  -- Step 1: Show each term in the sum is real on the imaginary axis
+  have hterm_im : ∀ n : ℕ+, (↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
+    intro n
+    have hexp_arg : 2 * ↑Real.pi * Complex.I * z * n = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
+      simpa [z] using exp_imag_axis_arg (t := t) ht n
+    rw [hexp_arg]
+    -- Using simp only: `simp` gives false positive linter warning but args are needed
+    simp only [mul_im, exp_ofReal_im, natCast_im, mul_zero, zero_mul, add_zero]
+  -- Step 2: Summability of the series
+  have hsum : Summable fun n : ℕ+ => ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * z * n) := by
+    apply Summable.of_norm
+    apply Summable.of_nonneg_of_le (fun n => norm_nonneg _)
+    · intro n
+      calc ‖↑((ArithmeticFunction.sigma (k - 1)) ↑n) * cexp (2 * ↑Real.pi * Complex.I * z * n)‖
+          = ‖(↑((ArithmeticFunction.sigma (k - 1)) ↑n) : ℂ)‖ *
+            ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := norm_mul _ _
+        _ ≤ ‖(↑n : ℂ) ^ k‖ * ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
+          apply mul_le_mul_of_nonneg_right
+          · rw [Complex.norm_natCast, Complex.norm_pow, Complex.norm_natCast]
+            have hbound := sigma_bound (k - 1) n
+            have hk' : k - 1 + 1 = k := Nat.sub_add_cancel (by omega : 1 ≤ k)
+            rw [hk'] at hbound
+            exact_mod_cast hbound
+          · exact norm_nonneg _
+        _ = ‖(↑n : ℂ) ^ k * cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := (norm_mul _ _).symm
+    · have := a33 k 1 z
+      simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at this
+      exact summable_norm_iff.mpr this
+  -- Step 3: The sum has zero imaginary part
+  have hsum_im : (∑' (n : ℕ+), ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
+      cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
+    rw [im_tsum hsum]
+    simp [hterm_im]
+  -- Step 4: Show the coefficient is real and product with sum is real
+  have hpow_im : ((-2 * Real.pi * Complex.I) ^ k : ℂ).im = 0 :=
+    neg_two_pi_I_pow_even_real k hk2
+  have hfact_im : ((k - 1).factorial : ℂ).im = 0 := by simp
+  -- For ζ(k) when k is even and ≥ 4, it's real
+  obtain ⟨m, _⟩ := hk2
+  have hzeta_im : (riemannZeta k).im = 0 := by
+    rw [show k = 2 * m by omega]
+    exact riemannZeta_even_im_eq_zero m (by omega)
+  have hinv_zeta_im : (1 / riemannZeta k).im = 0 := by simp [hzeta_im]
+  simp only [mul_im, div_im, hinv_zeta_im, hsum_im, hpow_im, hfact_im]
+  ring
+
+/-- `E₄(it)` is real for all `t > 0`. -/
+theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun :=
+  E_even_imag_axis_real 4 (by norm_num) (by norm_num)
+
+/-- `E₆(it)` is real for all `t > 0`. -/
+theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun :=
+  E_even_imag_axis_real 6 (by norm_num) (by norm_num)
+
+/-- `E₂(it)` is real for all `t > 0`. -/
+theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
+  intro t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  change (E₂ z).im = 0
+  have hq := E₂_eq z
+  rw [hq]
+  simp only [sub_im, one_im, zero_sub]
+  -- Step 1: Show each term in the sum is real on the imaginary axis
+  have hterm_im : ∀ n : ℕ+, (↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
+      (1 - cexp (2 * ↑Real.pi * Complex.I * n * z))).im = 0 := by
+    intro n
+    have hexp_arg : 2 * ↑Real.pi * Complex.I * n * z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
+      have h1 : 2 * ↑Real.pi * Complex.I * z * n = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
+        simpa [z] using exp_imag_axis_arg (t := t) ht n
+      simpa [mul_assoc, mul_left_comm, mul_comm] using h1
+    -- Using simp only: `simp` gives false positive linter warning but args are needed
+    have hone_sub_real : (1 - cexp (2 * ↑Real.pi * Complex.I * ↑↑n * ↑z)).im = 0 := by
+      simp only [Complex.sub_im, Complex.one_im, hexp_arg, exp_ofReal_im, sub_zero]
+    have hnum_real : (↑n * cexp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
+      simp only [mul_im, natCast_im, hexp_arg, exp_ofReal_im, mul_zero, zero_mul, add_zero]
+    simp [Complex.div_im, hnum_real, hone_sub_real]
+  -- Step 2: Summability of the series
+  have hsum : Summable fun n : ℕ+ => ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
+      (1 - cexp (2 * ↑Real.pi * Complex.I * n * z)) := by
+    set r : ℂ := cexp (2 * ↑Real.pi * Complex.I * z) with hr
+    have hr_norm : ‖r‖ < 1 := by
+      simpa [hr] using exp_upperHalfPlane_lt_one z
+    have hs : Summable fun n : ℕ => (n : ℂ) * r ^ n / (1 - r ^ n) :=
+      logDeriv_q_expo_summable r hr_norm
+    refine (hs.comp_injective PNat.coe_injective).congr ?_
+    intro n
+    have hpow : r ^ (n : ℕ) = cexp (2 * ↑Real.pi * Complex.I * (↑n : ℂ) * z) := by
+      rw [hr]
+      simpa [mul_assoc, mul_left_comm, mul_comm] using
+        (Complex.exp_nat_mul (2 * ↑Real.pi * Complex.I * z) (n : ℕ)).symm
+    simp [hpow]
+  -- Step 3: The sum has zero imaginary part
+  have hsum_im : (∑' (n : ℕ+), ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
+      (1 - cexp (2 * ↑Real.pi * Complex.I * n * z))).im = 0 := by
+    rw [Complex.im_tsum hsum]
+    simp [hterm_im]
+  -- Step 4: 24 * sum is real, so -(24 * sum).im = 0
+  simp [Complex.mul_im, hsum_im]
+
+end ImagAxisProperties
