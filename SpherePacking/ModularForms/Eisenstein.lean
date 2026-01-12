@@ -903,13 +903,10 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
   have hfact_im : ((k - 1).factorial : ℂ).im = 0 := by simp
   -- For ζ(k) when k is even and ≥ 4, it's real
   obtain ⟨m, hm⟩ := hk2
-  have hm' : k = 2 * m := by omega
   have hzeta_im : (riemannZeta k).im = 0 := by
-    rw [hm']
+    rw [show k = 2 * m by omega]
     exact riemannZeta_even_im_eq_zero m (by omega)
-  have hinv_zeta_im : (1 / riemannZeta k).im = 0 := by
-    rw [div_im, one_im, one_re, hzeta_im]
-    ring
+  have hinv_zeta_im : (1 / riemannZeta k).im = 0 := by simp [hzeta_im]
   simp only [mul_im, div_im, hinv_zeta_im, hsum_im, hpow_im, hfact_im]
   ring
 
