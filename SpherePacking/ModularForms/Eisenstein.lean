@@ -821,7 +821,7 @@ lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
     exact Complex.ofReal_im _
   have h2 : (Complex.I ^ k : ℂ).im = 0 := by
     obtain ⟨m, rfl⟩ := hk
-    rw [show m + m = 2 * m by ring, pow_mul, I_sq]
+    simp only [← two_mul, pow_mul, I_sq]
     -- (-1)^m is real: ±1
     rcases m.even_or_odd with hm | hm <;> simp [hm.neg_one_pow]
   have heq : (-2 * Real.pi : ℂ) ^ k = (-(2 * Real.pi)) ^ k := by ring
@@ -902,7 +902,7 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
     neg_two_pi_I_pow_even_real k hk2
   have hfact_im : ((k - 1).factorial : ℂ).im = 0 := by simp
   -- For ζ(k) when k is even and ≥ 4, it's real
-  obtain ⟨m, hm⟩ := hk2
+  obtain ⟨m, _⟩ := hk2
   have hzeta_im : (riemannZeta k).im = 0 := by
     rw [show k = 2 * m by omega]
     exact riemannZeta_even_im_eq_zero m (by omega)
