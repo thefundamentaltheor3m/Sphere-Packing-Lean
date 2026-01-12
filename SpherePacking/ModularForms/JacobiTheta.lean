@@ -8,6 +8,7 @@ import Mathlib.Order.CompletePartialOrder
 import SpherePacking.ForMathlib.AtImInfty
 import SpherePacking.ForMathlib.Cusps
 import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
+import SpherePacking.ForMathlib.MDifferentiableFunProp
 import SpherePacking.ForMathlib.SlashActions
 import SpherePacking.ForMathlib.UpperHalfPlane
 import SpherePacking.ModularForms.SlashActionAuxil
@@ -351,12 +352,15 @@ lemma H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF :=
       simpa [Function.comp] using this)
   simpa [mdifferentiableWithinAt_univ] using hMD_within
 
+@[fun_prop]
 lemma H₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := by
   simpa [H₂_SIF, SlashInvariantForm.coe_mk] using H₂_SIF_MDifferentiable
 
+@[fun_prop]
 lemma H₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃ := by
   simpa [H₃_SIF, SlashInvariantForm.coe_mk] using H₃_SIF_MDifferentiable
 
+@[fun_prop]
 lemma H₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := by
   simpa [H₄_SIF, SlashInvariantForm.coe_mk] using H₄_SIF_MDifferentiable
 

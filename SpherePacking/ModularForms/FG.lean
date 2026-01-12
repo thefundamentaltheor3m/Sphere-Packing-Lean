@@ -1,5 +1,4 @@
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.Order.Monotone.Defs
+import SpherePacking.ForMathlib.MDifferentiableFunProp
 
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.JacobiTheta
@@ -7,14 +6,13 @@ import SpherePacking.ModularForms.JacobiTheta
 open Filter
 open scoped Real Manifold
 
-
 /--
 Definition of $F$ and $G$ and auxiliary functions for the inequality between them
 on the imaginary axis.
 -/
 noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
 
-noncomputable def G := H₂ ^ 3 * (2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2)
+noncomputable def G := H₂ ^ 3 * ((2 : ℝ) • H₂ ^ 2 + (5 : ℝ) • H₂ * H₄ + (5 : ℝ) • H₄ ^ 2)
 
 noncomputable def negDE₂ := - (D E₂)
 
@@ -45,6 +43,8 @@ theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
   exact MDifferentiable.mul h h
 
 theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
+  unfold G
+  -- fun_prop
   sorry
 
 theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by

@@ -1,3 +1,5 @@
+import SpherePacking.ForMathlib.MDifferentiableFunProp
+
 import SpherePacking.ModularForms.Eisenstein
 
 open UpperHalfPlane hiding I
@@ -9,7 +11,6 @@ open scoped ModularForm MatrixGroups Manifold
 Definition of (Serre) derivative of modular forms.
 Prove Ramanujan's formulas on derivatives of Eisenstein series.
 -/
-
 noncomputable def D (F : ℍ → ℂ) : ℍ → ℂ :=
   fun (z : ℍ) => (2 * π * I)⁻¹ * ((deriv (F ∘ ofComplex)) z)
 
@@ -42,6 +43,7 @@ lemma DifferentiableAt_MDifferentiableAt {G : ℂ → ℂ} {z : ℍ}
 The derivative operator `D` preserves MDifferentiability.
 If `F : ℍ → ℂ` is MDifferentiable, then `D F` is also MDifferentiable.
 -/
+@[fun_prop]
 theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D F) := fun z =>
   let hDiffOn : DifferentiableOn ℂ (F ∘ ofComplex) {z : ℂ | 0 < z.im} :=
@@ -53,6 +55,7 @@ theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(
 /--
 TODO: Move this to E2.lean.
 -/
+@[fun_prop]
 theorem E₂_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₂ := by
   rw [UpperHalfPlane.mdifferentiable_iff]
   have hη : DifferentiableOn ℂ η _ :=
@@ -360,6 +363,7 @@ theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 
 The Serre derivative preserves MDifferentiability.
 If `F : ℍ → ℂ` is MDifferentiable, then `serre_D k F` is also MDifferentiable.
 -/
+@[fun_prop]
 theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
     (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D k F) := by
