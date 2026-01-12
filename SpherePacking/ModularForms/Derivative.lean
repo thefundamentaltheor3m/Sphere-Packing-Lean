@@ -1,4 +1,5 @@
 import SpherePacking.ModularForms.Eisenstein
+import Mathlib.Analysis.Calculus.DiffContOnCl
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap

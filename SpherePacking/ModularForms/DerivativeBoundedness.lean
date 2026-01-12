@@ -25,13 +25,15 @@ noncomputable section
 
 /-- E₂ is bounded at infinity.
 
-Uses `E₂_eq`: E₂(z) = 1 - 24·Σn·qⁿ/(1-qⁿ) where q = exp(2πiz).
+Uses `E₂_eq`: E₂(z) = 1 - 24·Σₙ₌₁ n·qⁿ/(1-qⁿ) where q = exp(2πiz).
 As im(z) → ∞, ‖q‖ → 0, so the sum → 0, hence E₂(z) → 1.
 
 **Proof strategy**:
 1. For im(z) ≥ 1, |q| ≤ r₀ := exp(-2π)
-2. Bound each term: |n·qⁿ/(1-qⁿ)| ≤ n·|q|ⁿ/(1-|q|) since |1-qⁿ| ≥ 1-|q|
-3. Sum: ∑ n·rⁿ/(1-r) = r/((1-r)³) for r < 1
+2. Bound each term: |1-qⁿ| ≥ 1-|q|ⁿ ≥ 1-|q| (since |q|ⁿ ≤ |q| for n ≥ 1),
+   so |n·qⁿ/(1-qⁿ)| ≤ n·|q|ⁿ/(1-|q|)
+3. Sum: ∑ₙ₌₁ n·rⁿ = r/(1-r)² for r < 1, then multiply by 1/(1-r) to get
+   ∑ₙ₌₁ n·rⁿ/(1-r) = r/(1-r)³
 4. Therefore |E₂| ≤ 1 + 24·r₀/(1-r₀)³ -/
 lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- Use E₂_eq: E₂ z = 1 - 24 * ∑' n : ℕ+, n * q^n / (1 - q^n) where q = exp(2πiz)
