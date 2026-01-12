@@ -36,16 +36,15 @@ theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
     FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by sorry
 
 /- Some basic facts -/
-theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
-  have h : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) := by
-    exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
-  rw [F, pow_two]
-  exact MDifferentiable.mul h h
+theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by unfold F; fun_prop
 
 theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
-  unfold G
-  -- fun_prop
-  sorry
+  have h : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄^2) := by
+    unfold G
+    ext τ
+    simp
+  rw [h]
+  fun_prop
 
 theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by
   exact serre_D_differentiable F_holo
@@ -68,13 +67,8 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
     ext z
     simp
     ring_nf
-
   -- Holomorphicity of the terms
-  · exact E₂_holo'
-  · exact E₄.holo'
-  · exact MDifferentiable.mul E₂_holo' E₄.holo'
-  · exact E₆.holo'
-  · exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
+  repeat fun_prop
 
 /--
 Modular linear differential equation satisfied by $F$.
