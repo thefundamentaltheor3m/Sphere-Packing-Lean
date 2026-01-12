@@ -41,17 +41,8 @@ theorem logDeriv_tprod_eq_tsum2 {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ �
       convert this
       simp
     · use 0
-    · intro b hb
-      rw [DifferentiableOn]
-      intro z hz
-      apply DifferentiableAt.differentiableWithinAt
-      have hp : ∀ (i : ℕ), i ∈ Finset.range b →  DifferentiableAt ℂ (f i) z := by
-        intro i hi
-        have := (hd i z hz).differentiableAt
-        apply this
-        exact IsOpen.mem_nhds hs hz
-      have := DifferentiableAt.finset_prod hp
-      convert this
+    · intro _ _
+      exact DifferentiableOn.finset_prod fun i a ↦ hd i
     · exact hnez
 
 
