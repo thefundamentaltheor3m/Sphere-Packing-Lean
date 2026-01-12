@@ -738,31 +738,25 @@ Infrastructure for bounding derivatives using Cauchy estimates on disks in the u
 
 /-- If `f : ℍ → ℂ` is `MDifferentiable` and a closed disk in `ℂ` lies in the upper
 half-plane, then `f ∘ ofComplex` is `DiffContOnCl` on the corresponding open disk. -/
-lemma diffContOnCl_comp_ofComplex_of_mdifferentiable
-    {f : ℍ → ℂ}
-    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
-    {c : ℂ} {R : ℝ}
+lemma diffContOnCl_comp_ofComplex_of_mdifferentiable {f : ℍ → ℂ}
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) {c : ℂ} {R : ℝ}
     (hclosed : Metric.closedBall c R ⊆ {z : ℂ | 0 < z.im}) :
-    DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball c R) := by
-  constructor
-  · intro z hz
-    have hz_im : 0 < z.im := hclosed (Metric.ball_subset_closedBall hz)
-    exact (MDifferentiableAt_DifferentiableAt (hf ⟨z, hz_im⟩)).differentiableWithinAt
-  · intro z hz
-    have hz_im : 0 < z.im := hclosed (Metric.closure_ball_subset_closedBall hz)
-    exact (MDifferentiableAt_DifferentiableAt (hf ⟨z, hz_im⟩)).continuousAt.continuousWithinAt
+    DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball c R) :=
+  ⟨fun z hz => (MDifferentiableAt_DifferentiableAt
+      (hf ⟨z, hclosed (Metric.ball_subset_closedBall hz)⟩)).differentiableWithinAt,
+   fun z hz => (MDifferentiableAt_DifferentiableAt
+      (hf ⟨z, hclosed (Metric.closure_ball_subset_closedBall hz)⟩)).continuousAt.continuousWithinAt⟩
 
 /-- Closed ball centered at z with radius z.im/2 is contained in the upper half plane. -/
 lemma closedBall_center_subset_upperHalfPlane (z : ℍ) :
     Metric.closedBall (z : ℂ) (z.im / 2) ⊆ {w : ℂ | 0 < w.im} := by
   intro w hw
   have hdist : dist w z ≤ z.im / 2 := Metric.mem_closedBall.mp hw
-  have habs : |w.im - z.im| ≤ z.im / 2 := by
-    calc |w.im - z.im|
-      _ = |(w - z).im| := by simp [Complex.sub_im]
-      _ ≤ ‖w - z‖ := abs_im_le_norm _
-      _ = dist w z := (dist_eq_norm _ _).symm
-      _ ≤ z.im / 2 := hdist
+  have habs : |w.im - z.im| ≤ z.im / 2 := calc |w.im - z.im|
+    _ = |(w - z).im| := by simp [Complex.sub_im]
+    _ ≤ ‖w - z‖ := abs_im_le_norm _
+    _ = dist w z := (dist_eq_norm _ _).symm
+    _ ≤ z.im / 2 := hdist
   have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
   exact lt_of_lt_of_le (by linarith [z.im_pos] : 0 < z.im / 2) hlower
 
@@ -770,22 +764,13 @@ lemma closedBall_center_subset_upperHalfPlane (z : ℍ) :
 of radius `r` around `z` and bounded by `M` on the boundary sphere,
 then `‖D f z‖ ≤ M / (2πr)`. -/
 lemma norm_D_le_of_sphere_bound {f : ℍ → ℂ} {z : ℍ} {r M : ℝ}
-    (hr : 0 < r)
-    (hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) r))
+    (hr : 0 < r) (hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) r))
     (hbdd : ∀ w ∈ Metric.sphere (z : ℂ) r, ‖(f ∘ ofComplex) w‖ ≤ M) :
-    ‖D f z‖ ≤ M / (2 * π * r) := by
-  have hderiv_bound : ‖deriv (f ∘ ofComplex) z‖ ≤ M / r :=
-    Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hr hDiff hbdd
-  have h2piI_norm : ‖(2 * π * I : ℂ)⁻¹‖ = (2 * π)⁻¹ := by
-    rw [norm_inv, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_I, mul_one]
-    simp [abs_of_pos Real.pi_pos]
-  calc ‖D f z‖
-    _ = ‖(2 * π * I)⁻¹ * deriv (f ∘ ofComplex) z‖ := rfl
-    _ = ‖(2 * π * I)⁻¹‖ * ‖deriv (f ∘ ofComplex) z‖ := norm_mul _ _
-    _ = (2 * π)⁻¹ * ‖deriv (f ∘ ofComplex) z‖ := by rw [h2piI_norm]
-    _ ≤ (2 * π)⁻¹ * (M / r) := by
-        apply mul_le_mul_of_nonneg_left hderiv_bound (inv_nonneg.mpr (by positivity))
-    _ = M / (2 * π * r) := by ring
+    ‖D f z‖ ≤ M / (2 * π * r) := calc ‖D f z‖
+  _ = ‖(2 * π * I)⁻¹‖ * ‖deriv (f ∘ ofComplex) z‖ := by simp [D]
+  _ = (2 * π)⁻¹ * ‖deriv (f ∘ ofComplex) z‖ := by simp [abs_of_pos Real.pi_pos]
+  _ ≤ (2 * π)⁻¹ * (M / r) := by gcongr; exact Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hr hDiff hbdd
+  _ = M / (2 * π * r) := by ring
 
 /-- The D-derivative is bounded at infinity for bounded holomorphic functions.
 
