@@ -769,7 +769,8 @@ lemma norm_D_le_of_sphere_bound {f : ℍ → ℂ} {z : ℍ} {r M : ℝ}
     ‖D f z‖ ≤ M / (2 * π * r) := calc ‖D f z‖
   _ = ‖(2 * π * I)⁻¹‖ * ‖deriv (f ∘ ofComplex) z‖ := by simp [D]
   _ = (2 * π)⁻¹ * ‖deriv (f ∘ ofComplex) z‖ := by simp [abs_of_pos Real.pi_pos]
-  _ ≤ (2 * π)⁻¹ * (M / r) := by gcongr; exact Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hr hDiff hbdd
+  _ ≤ (2 * π)⁻¹ * (M / r) := by
+        gcongr; exact Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hr hDiff hbdd
   _ = M / (2 * π * r) := by ring
 
 /-- The D-derivative is bounded at infinity for bounded holomorphic functions.
@@ -800,10 +801,9 @@ lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
         _ = z.im / 2 := hdist
     have hw_im_ge_A : A ≤ w.im := by linarith [(abs_le.mp habs).1, le_max_left A 0]
     simpa [ofComplex_apply_of_im_pos hw_im_pos] using hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
-  have hD_bound := norm_D_le_of_sphere_bound hR_pos hDiff hf_bdd_sphere
   have hz_im_ge_1 : 1 ≤ z.im := by linarith [le_max_right A 0]
   have hM_nonneg : 0 ≤ M := le_trans (norm_nonneg _) (hMA z (by linarith [le_max_left A 0]))
-  calc ‖D f z‖ ≤ M / (2 * π * (z.im / 2)) := hD_bound
+  calc ‖D f z‖ ≤ M / (2 * π * (z.im / 2)) := norm_D_le_of_sphere_bound hR_pos hDiff hf_bdd_sphere
     _ = M / (π * z.im) := by ring
     _ ≤ M / (π * 1) := by gcongr
     _ = M / π := by ring
@@ -892,11 +892,11 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
     tsum_coe_mul_geometric_of_norm_lt_one hr_norm_lt_one
   have hsum_pnat : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
     have heq := tsum_pnat_eq_tsum_succ4 (fun n => (n : ℝ) * r ^ n) hsumm_nat
-    simp only [Nat.cast_zero, zero_mul, zero_add] at heq
+    simp at heq
     rw [← hsum_nat]; exact heq
   have hsum_majorant_eq :
       (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
-    simp only [div_eq_mul_inv, tsum_mul_right, hsum_pnat, pow_succ, mul_inv]; ring
+    simp [div_eq_mul_inv, tsum_mul_right, hsum_pnat, pow_succ]; ring
   have htsum_bound : ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
       r₀ / (1 - r₀) ^ 3 := by
     calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
