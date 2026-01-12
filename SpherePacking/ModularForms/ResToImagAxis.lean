@@ -218,6 +218,7 @@ theorem ResToImagAxis.EventuallyPos.one :
     ResToImagAxis.EventuallyPos (fun _ => 1) :=
   ResToImagAxis.EventuallyPos.from_pos ResToImagAxis.Pos.one
 
+@[fun_prop]
 theorem ResToImagAxis.EventuallyPos.const (c : ℝ) (hc : 0 < c) :
     ResToImagAxis.EventuallyPos (fun _ => c) :=
   ResToImagAxis.EventuallyPos.from_pos (ResToImagAxis.Pos.const c hc)
@@ -292,14 +293,6 @@ theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResTo
   simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFreal_t
   simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFpos_t
   simp [ResToImagAxis, htpos, mul_pos hc hFpos_t]
-
-syntax (name := res_imag_axis) "res_imag_axis" : tactic
-macro_rules
-  | `(tactic| res_imag_axis) =>
-      `(tactic|
-        -- `disch` is used to solve side-goals like `0 < 3`
-        fun_prop (disch := (first | positivity | assumption))
-      )
 
 /-!
 ## Polynomial decay of functions with exponential bounds

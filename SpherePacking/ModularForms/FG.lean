@@ -2,6 +2,7 @@ import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Order.Monotone.Defs
 
 import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ModularForms.JacobiTheta
 
 open Filter
@@ -118,33 +119,12 @@ lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
 lemma Δ_fun_pos : ResToImagAxis.Pos Δ_fun := by
   sorry
 
+lemma F_real : ResToImagAxis.Real F := by unfold F; fun_prop
+
 lemma F_pos : ResToImagAxis.Pos F := by
   sorry
 
-@[fun_prop]
-lemma H₂_pos : ResToImagAxis.Pos H₂ := by
-  sorry
-
-@[fun_prop]
-lemma H₄_pos : ResToImagAxis.Pos H₄ := by
-  sorry
-
-lemma G_pos : ResToImagAxis.Pos G := by
-  have _ : 0 < (2 : ℝ) := by positivity
-  have _ : 0 < (5 : ℝ) := by positivity
-  apply ResToImagAxis.Pos.mul
-  · exact ResToImagAxis.Pos.pow H₂_pos 3
-  · apply ResToImagAxis.Pos.add
-    · apply ResToImagAxis.Pos.add
-      · apply ResToImagAxis.Pos.smul _ (by positivity)
-        exact ResToImagAxis.Pos.pow H₂_pos 2
-      · apply ResToImagAxis.Pos.mul
-        · apply ResToImagAxis.Pos.smul _ (by positivity)
-          exact H₂_pos
-        · exact H₄_pos
-    · apply ResToImagAxis.Pos.smul _ (by positivity)
-      exact ResToImagAxis.Pos.pow H₄_pos 2
-
+lemma G_pos : ResToImagAxis.Pos G := by unfold G; fun_prop (disch := positivity)
 
 lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
   calc
@@ -234,40 +214,7 @@ open Complex
 Blueprint: Lemma 8.6 - follows from H₂(it) > 0 and H₄(it) > 0.
 G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is positive since all factors are positive.
 -/
-theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
-  unfold G
-  have hH₂ : ResToImagAxis.Pos H₂ := H₂_imag_axis_pos
-  have hH₄ : ResToImagAxis.Pos H₄ := H₄_imag_axis_pos
-  have hH₂_sq : ResToImagAxis.Pos (fun z : ℍ => H₂ z ^ 2) := by
-    have hmul : ResToImagAxis.Pos (fun z : ℍ => H₂ z * H₂ z) := ResToImagAxis.Pos.mul hH₂ hH₂
-    simpa [pow_two] using hmul
-  have hH₂_cube : ResToImagAxis.Pos (fun z : ℍ => H₂ z ^ 3) := by
-    have hmul : ResToImagAxis.Pos (fun z : ℍ => (H₂ z ^ 2) * H₂ z) :=
-      ResToImagAxis.Pos.mul hH₂_sq hH₂
-    simpa [pow_succ, pow_two, mul_assoc] using hmul
-  have hH₄_sq : ResToImagAxis.Pos (fun z : ℍ => H₄ z ^ 2) := by
-    have hmul : ResToImagAxis.Pos (fun z : ℍ => H₄ z * H₄ z) := ResToImagAxis.Pos.mul hH₄ hH₄
-    simpa [pow_two] using hmul
-  have hterm1 : ResToImagAxis.Pos (fun z : ℍ => 2 * H₂ z ^ 2) := by
-    simpa using (ResToImagAxis.Pos.smul (F := fun z : ℍ => H₂ z ^ 2) hH₂_sq (by norm_num))
-  have hterm2 : ResToImagAxis.Pos (fun z : ℍ => 5 * H₂ z * H₄ z) := by
-    have h5H₂ : ResToImagAxis.Pos (fun z : ℍ => (5 : ℝ) * H₂ z) :=
-      ResToImagAxis.Pos.smul (F := H₂) hH₂ (by norm_num)
-    have hmul : ResToImagAxis.Pos (fun z : ℍ => ((5 : ℝ) * H₂ z) * H₄ z) :=
-      ResToImagAxis.Pos.mul h5H₂ hH₄
-    simpa [mul_assoc] using hmul
-  have hterm3 : ResToImagAxis.Pos (fun z : ℍ => 5 * H₄ z ^ 2) := by
-    simpa using (ResToImagAxis.Pos.smul (F := fun z : ℍ => H₄ z ^ 2) hH₄_sq (by norm_num))
-  have hquad :
-      ResToImagAxis.Pos
-        (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) :=
-    ResToImagAxis.Pos.add (ResToImagAxis.Pos.add hterm1 hterm2) hterm3
-  have hmul :
-      ResToImagAxis.Pos
-        (fun z : ℍ =>
-          H₂ z ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)) :=
-    ResToImagAxis.Pos.mul hH₂_cube hquad
-  simpa using hmul
+theorem G_imag_axis_pos : ResToImagAxis.Pos G := by unfold G; fun_prop (disch := positivity)
 
 /--
 `G(it)` is real for all `t > 0`.

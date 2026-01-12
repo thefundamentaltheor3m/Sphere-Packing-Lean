@@ -853,6 +853,7 @@ lemma Complex.im_div_eq_zero' (a b : ℂ) (ha : a.im = 0) (hb : b.im = 0) : (a /
   · simp [Complex.inv_im, hb]
 
 /-- `E₄(it)` is real for all `t > 0`. -/
+@[fun_prop]
 theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
@@ -917,6 +918,7 @@ theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun := by
   ring
 
 /-- `E₆(it)` is real for all `t > 0`. -/
+@[fun_prop]
 theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
@@ -989,6 +991,7 @@ theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun := by
   ring
 
 /-- `E₂(it)` is real for all `t > 0`. -/
+@[fun_prop]
 theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
