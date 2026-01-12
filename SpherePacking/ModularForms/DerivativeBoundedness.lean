@@ -28,14 +28,11 @@ noncomputable section
 Uses `E₂_eq`: E₂(z) = 1 - 24·Σn·qⁿ/(1-qⁿ) where q = exp(2πiz).
 As im(z) → ∞, ‖q‖ → 0, so the sum → 0, hence E₂(z) → 1.
 
-**Proof strategy** (partially implemented below):
-1. For im(z) ≥ 1, |q| ≤ exp(-2π) < 0.002
-2. Bound: |n·q^n/(1-q^n)| ≤ n·|q|^n/(1-|q|) since |1-q^n| ≥ 1-|q| for n ≥ 1
-3. The tsum is bounded by |q|/(1-|q|)³ < 0.003
-4. Therefore |E₂| ≤ 1 + 24·0.003 < 2
-
-**Remaining**: Complete the tsum bound using `norm_tsum_le_tsum_norm` and
-geometric series. See JacobiTheta.lean:374 (`isBoundedAtImInfty_H₂`) for similar proofs. -/
+**Proof strategy**:
+1. For im(z) ≥ 1, |q| ≤ r₀ := exp(-2π)
+2. Bound each term: |n·qⁿ/(1-qⁿ)| ≤ n·|q|ⁿ/(1-|q|) since |1-qⁿ| ≥ 1-|q|
+3. Sum: ∑ n·rⁿ/(1-r) = r/((1-r)³) for r < 1
+4. Therefore |E₂| ≤ 1 + 24·r₀/(1-r₀)³ -/
 lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   -- Use E₂_eq: E₂ z = 1 - 24 * ∑' n : ℕ+, n * q^n / (1 - q^n) where q = exp(2πiz)
   -- As im(z) → ∞, |q| → 0, so the sum → 0, hence E₂ → 1 (bounded).
