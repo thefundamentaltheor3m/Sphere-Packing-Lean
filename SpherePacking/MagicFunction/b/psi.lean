@@ -119,7 +119,7 @@ private lemma slashT' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (T)) (z
 
 private lemma S_mul_T : S * T = ⟨!![0, -1; 1, 1], by norm_num [det_fin_two_of]⟩ := by
   ext (i : Fin 2) (j : Fin 2)
-  fin_cases i <;> fin_cases j <;> simp [mul_apply, S, T]
+  fin_cases i <;> fin_cases j <;> simp [S, T]
 
 -- the following statements will be applied of F = H₂, H₃, H₄ or (H₃+H₄)/H₂^2
 private lemma slashST (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (S * T)) (z) =
