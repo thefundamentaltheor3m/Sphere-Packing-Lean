@@ -813,7 +813,7 @@ open Complex hiding I
 /-- `(-2πi)^k` is real for even k. -/
 lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
     ((-2 * Real.pi * Complex.I) ^ k : ℂ).im = 0 := by
-  have h : (-2 * Real.pi * Complex.I) ^ k = ((-2 * Real.pi) ^ k : ℂ) * Complex.I ^ k := by ring
+  have h : (-2 * Real.pi * Complex.I) ^ k = (-(2 * Real.pi) : ℂ) ^ k * Complex.I ^ k := by ring
   rw [h]
   have h1 : ((-(2 * Real.pi)) ^ k : ℂ).im = 0 := by norm_cast
   have h2 : (Complex.I ^ k : ℂ).im = 0 := by
@@ -821,8 +821,6 @@ lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
     simp only [← two_mul, pow_mul, I_sq]
     -- (-1)^m is real: ±1
     rcases m.even_or_odd with hm | hm <;> simp [hm.neg_one_pow]
-  have heq : (-2 * Real.pi : ℂ) ^ k = (-(2 * Real.pi)) ^ k := by ring
-  rw [heq]
   simp [Complex.mul_im, h1, h2]
 
 /-- On imaginary axis z = I*t, the q-expansion exponent 2πi·n·z reduces to -(2πnt).
