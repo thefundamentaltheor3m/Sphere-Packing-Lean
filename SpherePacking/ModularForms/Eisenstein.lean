@@ -964,6 +964,15 @@ end ImagAxisProperties
 
 /-! ## Boundedness of E₂ -/
 
+/-- For im(z) ≥ 1, ‖exp(2πiz)‖ ≤ exp(-2π). -/
+lemma norm_exp_two_pi_I_le (z : ℍ) (hz : 1 ≤ z.im) :
+    ‖cexp (2 * π * Complex.I * z)‖ ≤ Real.exp (-2 * π) := by
+  have h : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
+    rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
+    simp [Complex.I_re, Complex.I_im, mul_comm]
+  rw [Complex.norm_exp, h, Real.exp_le_exp]
+  nlinarith [Real.pi_pos]
+
 /-- Bound on the q-series ∑ n·qⁿ/(1-qⁿ) that appears in E₂.
 
 For ‖q‖ < 1, we have ‖∑ₙ₌₁ n·qⁿ/(1-qⁿ)‖ ≤ ‖q‖/(1-‖q‖)³.
@@ -1027,30 +1036,27 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   refine ⟨1 + 24 * (r₀ / (1 - r₀) ^ 3), 1, ?_⟩
   intro z hz
   rw [E₂_eq]
-  set q : ℂ := cexp (2 * π * Complex.I * z) with hq_def
+  set q : ℂ := cexp (2 * π * Complex.I * z)
   have hq : ‖q‖ < 1 := norm_exp_two_pi_I_lt_one z
-  have hq_bound : ‖q‖ ≤ r₀ := by
-    have h1 : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
-      rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
-      simp [Complex.I_re, Complex.I_im, mul_comm]
-    rw [hq_def, Complex.norm_exp, h1, Real.exp_le_exp]
-    nlinarith [Real.pi_pos]
+  have hq_bound : ‖q‖ ≤ r₀ := norm_exp_two_pi_I_le z hz
   have hr₀_lt_one : r₀ < 1 := Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos])
   -- Rewrite sum in terms of q^n
-  have hexp_pow : ∀ n : ℕ, cexp (2 * π * Complex.I * n * z) = q ^ n := fun n => by
-    rw [hq_def, ← Complex.exp_nat_mul]; congr 1; ring
-  have hsum_eq : (fun n : ℕ+ => ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
-      (1 - cexp (2 * π * Complex.I * ↑n * ↑z))) =
-      (fun n : ℕ+ => ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))) := by ext n; simp [hexp_pow]
-  calc ‖1 - 24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+  set S := ∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))
+  have hS_eq : ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+      (1 - cexp (2 * π * Complex.I * ↑n * ↑z)) = S := by
+    congr 1; ext n
+    have : cexp (2 * π * Complex.I * n * z) = q ^ (n : ℕ) := by
+      change _ = (cexp (2 * π * Complex.I * z)) ^ (n : ℕ)
+      rw [← Complex.exp_nat_mul]; ring_nf
+    simp [this]
+  calc ‖1 - 24 * ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
           (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖
-      ≤ 1 + 24 * ‖∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
-          (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := by
-        calc _ ≤ ‖(1 : ℂ)‖ + ‖24 * _‖ := norm_sub_le _ _
+      = ‖1 - 24 * S‖ := by rw [hS_eq]
+    _ ≤ 1 + 24 * ‖S‖ := by
+        calc _ ≤ ‖(1 : ℂ)‖ + ‖24 * S‖ := norm_sub_le _ _
           _ = _ := by simp
-    _ = 1 + 24 * ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ := by rw [hsum_eq]
     _ ≤ 1 + 24 * (‖q‖ / (1 - ‖q‖) ^ 3) := by gcongr; exact norm_tsum_logDeriv_expo_le hq
     _ ≤ 1 + 24 * (r₀ / (1 - r₀) ^ 3) := by
-        have h1 : 0 < 1 - r₀ := sub_pos.mpr hr₀_lt_one
-        have h2 : 0 < 1 - ‖q‖ := sub_pos.mpr hq
+        have := sub_pos.mpr hr₀_lt_one
+        have := sub_pos.mpr hq
         gcongr
