@@ -90,6 +90,13 @@ lemma Function.Even.HasDeriv_at_zero : deriv f (0 : ℝ) = 0 := by
 *****************  New Aristotle Proofs ***********************
 -/
 
+/-- If a smooth function has compact support, so does its iterated derivative. -/
+lemma HasCompactSupport.iteratedDeriv {f : ℝ → ℝ} (hf : HasCompactSupport f) (n : ℕ) :
+    HasCompactSupport (iteratedDeriv n f) := by
+  induction n with
+  | zero => simp only [iteratedDeriv_zero]; exact hf
+  | succ n ih => rw [iteratedDeriv_succ]; exact ih.deriv
+
 /-
 If $\phi$ is a smooth compactly supported bump function, then for any $k < n$, the $k$-th derivative of $x^n \phi(u x)$ tends to 0 uniformly as $u \to \infty$.
 -/
@@ -211,13 +218,8 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
       -- Since $\phi^{(j)}$ is bounded (since it is smooth and compactly supported), say by $B_j$, we can bound each term in the sum.
       obtain ⟨B, hB⟩ : ∃ B > 0, ∀ j ≤ k, ∀ x, abs (iteratedDeriv j ϕ x) ≤ B := by
         -- Since $\phi$ is smooth and compactly supported, its derivatives are also compactly supported.
-        have h_deriv_compact_support : ∀ j ≤ k, HasCompactSupport (iteratedDeriv j ϕ) := by
-          intro j hj;
-          rw [ hasCompactSupport_iff_eventuallyEq ] at *;
-          simp_all +decide only [EventuallyEq, Pi.zero_apply, coclosedCompact_eq_cocompact,
-            cocompact_eq_atBot_atTop, eventually_sup, eventually_atBot, eventually_atTop, ge_iff_le,
-            gt_iff_lt, abs_mul, abs_pow, neg_sub];
-          exact ⟨ ⟨ -M - 1, fun x hx => hM.2 x ( by cases abs_cases x <;> linarith ) j hj ⟩, ⟨ M + 1, fun x hx => hM.2 x ( by cases abs_cases x <;> linarith ) j hj ⟩ ⟩;
+        have h_deriv_compact_support : ∀ j ≤ k, HasCompactSupport (iteratedDeriv j ϕ) :=
+          fun j _ => hsupp.iteratedDeriv j
         -- Since $\phi^{(j)}$ is compactly supported, it is bounded.
         have h_deriv_bounded : ∀ j ≤ k, ∃ B > 0, ∀ x, abs (iteratedDeriv j ϕ x) ≤ B := by
           intro j hj; specialize h_deriv_compact_support j hj;
@@ -294,11 +296,7 @@ lemma exists_smooth_term_with_bound (n : ℕ) (c : ℝ) (ε : ℝ) (hε : 0 < ε
       constructor
       · exact ContDiff.mul ( ContDiff.mul contDiff_const ( contDiff_id.pow n ) ) ( hϕ.1.comp ( contDiff_const.mul contDiff_id ) );
       constructor
-      · rw [ hasCompactSupport_iff_eventuallyEq ] at *;
-        simp_all only [EventuallyEq, Pi.zero_apply, coclosedCompact_eq_cocompact,
-          cocompact_eq_atBot_atTop, eventually_sup, eventually_atBot, eventually_atTop, ge_iff_le,
-          mul_eq_zero, div_eq_zero_iff, Nat.cast_eq_zero, pow_eq_zero_iff', ne_eq];
-        exact ⟨ by obtain ⟨ a, ha ⟩ := hϕ.2.1.1; exact ⟨ a / u, fun x hx => Or.inr <| ha _ <| by nlinarith [ mul_div_cancel₀ a hu.1.ne' ] ⟩, by obtain ⟨ a, ha ⟩ := hϕ.2.1.2; exact ⟨ a / u, fun x hx => Or.inr <| ha _ <| by nlinarith [ mul_div_cancel₀ a hu.1.ne' ] ⟩ ⟩;
+      · exact (hϕ.2.1.comp_smul hu.1.ne').mul_left
       constructor
       · intro k
         -- By definition of $f$, we know that its $k$-th derivative at 0 is given by the $k$-th derivative of $\frac{c}{n!} x^n \phi(u x)$ at 0.
@@ -505,21 +503,7 @@ theorem smooth_realization_jet : ∀ a : ℕ → ℝ, ∃ f : ℝ → ℝ, (Cont
         norm_num +zetaDelta at *;
         exact Summable.mul_right _ ( Summable.mul_right _ ( summable_geometric_two ) );
       · apply le_csSup;
-        · have h_compact_support : HasCompactSupport (iteratedDeriv k (f n)) := by
-            -- Since $f_n$ is smooth and compactly supported, its derivatives are also compactly supported.
-            have h_compact_support : ∀ k, HasCompactSupport (iteratedDeriv k (f n)) := by
-              intro k
-              have h_support : ∀ x, x ∉ tsupport (f n) → iteratedDeriv k (f n) x = 0 := by
-                induction' k with k ih generalizing x <;> simp_all +decide [ iteratedDeriv_succ ];
-                · exact fun x hx => Classical.not_not.1 fun hx' => hx <| subset_closure hx';
-                · intro x hx;
-                  exact HasDerivAt.deriv ( HasDerivAt.congr_of_eventuallyEq ( hasDerivAt_const _ _ ) ( Filter.eventuallyEq_of_mem ( IsOpen.mem_nhds ( isOpen_compl_iff.mpr <| isClosed_tsupport _ ) hx ) fun y hy => ih y hy ) )
-              rw [ hasCompactSupport_iff_eventuallyEq ];
-              simp_all +decide [ Filter.EventuallyEq, Filter.eventually_inf_principal ];
-              have h_compact_support : IsCompact (tsupport (f n)) := by
-                exact hf2 n;
-              exact ⟨ ⟨ -1 - ( SupSet.sSup ( Set.image ( fun x => |x| ) ( tsupport ( f n ) ) ) ), fun x hx => h_support x <| by rintro H; linarith [ abs_le.mp ( show |x| ≤ SupSet.sSup ( Set.image ( fun x => |x| ) ( tsupport ( f n ) ) ) from le_csSup ( by exact IsCompact.bddAbove <| h_compact_support.image <| continuous_abs ) <| Set.mem_image_of_mem _ H ) ] ⟩, ⟨ 1 + ( SupSet.sSup ( Set.image ( fun x => |x| ) ( tsupport ( f n ) ) ) ), fun x hx => h_support x <| by rintro H; linarith [ abs_le.mp ( show |x| ≤ SupSet.sSup ( Set.image ( fun x => |x| ) ( tsupport ( f n ) ) ) from le_csSup ( by exact IsCompact.bddAbove <| h_compact_support.image <| continuous_abs ) <| Set.mem_image_of_mem _ H ) ] ⟩ ⟩;
-            exact h_compact_support k;
+        · have h_compact_support : HasCompactSupport (iteratedDeriv k (f n)) := (hf2 n).iteratedDeriv k
           have := h_compact_support.exists_bound_of_continuous ( show Continuous ( iteratedDeriv k ( f n ) ) from ?_ );
           · exact ⟨ this.choose, Set.forall_mem_range.mpr fun x => this.choose_spec x ⟩;
           · apply_rules [ ContDiff.continuous_iteratedDeriv, hf1 ];
