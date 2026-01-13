@@ -146,15 +146,76 @@ lemma negDE₂_imag_axis_pos : ResToImagAxis.Pos negDE₂ := by
 lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := by
   sorry
 
+/-- `E₂ * E₄ - E₆` is real on the imaginary axis (E₂, E₄, E₆ are all real). -/
+lemma E₂_mul_E₄_sub_E₆_imag_axis_real : ResToImagAxis.Real (E₂ * E₄.toFun - E₆.toFun) := by
+  have hProd : ResToImagAxis.Real (E₂ * E₄.toFun) :=
+    ResToImagAxis.Real.mul E₂_imag_axis_real E₄_imag_axis_real
+  have hNeg : ResToImagAxis.Real ((-1 : ℝ) • E₆.toFun) :=
+    ResToImagAxis.Real.smul E₆_imag_axis_real
+  have hEq : E₂ * E₄.toFun - E₆.toFun = E₂ * E₄.toFun + (-1 : ℝ) • E₆.toFun := by
+    ext z; simp [sub_eq_add_neg]
+  simpa [hEq] using ResToImagAxis.Real.add hProd hNeg
+
+/-- The q-expansion exponent for E₂*E₄ - E₆ on imaginary axis z=it. -/
+lemma E₂_mul_E₄_sub_E₆_exp_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
+    2 * ↑Real.pi * Complex.I * ↑n * ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane) =
+    (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
+  have h1 : 2 * ↑Real.pi * Complex.I * (⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane) * n =
+      (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
+    simpa using exp_imag_axis_arg (t := t) ht n
+  simp only [mul_assoc, mul_left_comm, mul_comm] at h1 ⊢
+  convert h1 using 2
+
+/-- Each term n*σ₃(n)*exp(-2πnt) in the q-expansion of E₂*E₄ - E₆ has positive real part. -/
+lemma E₂_mul_E₄_sub_E₆_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
+    0 < (↑n * ArithmeticFunction.sigma 3 ↑n *
+      Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
+        ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane))).re := by
+  rw [E₂_mul_E₄_sub_E₆_exp_arg t ht n]
+  -- n and σ₃(n) are natural numbers, so their complex casts are real (im = 0)
+  have hn_re : (↑↑n : ℂ).re = (n : ℝ) := Complex.ofReal_re _
+  have hn_im : (↑↑n : ℂ).im = 0 := Complex.ofReal_im _
+  have hσ_re : (↑(ArithmeticFunction.sigma 3 n) : ℂ).re = ArithmeticFunction.sigma 3 n :=
+    Complex.ofReal_re _
+  have hσ_im : (↑(ArithmeticFunction.sigma 3 n) : ℂ).im = 0 := Complex.ofReal_im _
+  -- exp of real has im = 0
+  have hexp_im : (Complex.exp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := Complex.exp_ofReal_im _
+  have hexp_re : (Complex.exp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).re =
+      Real.exp (-(2 * Real.pi * (n : ℝ) * t)) := Complex.exp_ofReal_re _
+  simp only [Complex.mul_re, hn_re, hn_im, hσ_re, hσ_im, hexp_im, hexp_re,
+    mul_zero, sub_zero]
+  apply mul_pos
+  · apply mul_pos
+    · exact_mod_cast n.pos
+    · have := ArithmeticFunction.sigma_pos 3 (n : ℕ) n.ne_zero
+      exact_mod_cast this
+  · exact Real.exp_pos _
+
+/-- The q-expansion series for E₂*E₄ - E₆ is summable. -/
+lemma E₂_mul_E₄_sub_E₆_summable (t : ℝ) (ht : 0 < t) :
+    Summable fun n : ℕ+ => ↑n * ArithmeticFunction.sigma 3 ↑n *
+      Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
+        ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane)) := by
+  -- Follows from a33 with k=5, comparing n*σ₃(n) ≤ n^5 via sigma_bound
+  sorry
+
+/-- The real part of (E₂*E₄ - E₆)(it) is positive for t > 0. -/
+lemma E₂_mul_E₄_sub_E₆_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
+    0 < ((E₂ * E₄.toFun - E₆.toFun).resToImagAxis t).re := by
+  -- From E₂_mul_E₄_sub_E₆: E₂*E₄ - E₆ = 720 * ∑ n*σ₃(n)*q^n
+  -- On z = it, each term n*σ₃(n)*exp(-2πnt) > 0 (by E₂_mul_E₄_sub_E₆_term_re_pos)
+  -- Sum of positive terms is positive (by Summable.tsum_pos)
+  -- Multiply by 720 > 0 to get result
+  -- Uses E₂_mul_E₄_sub_E₆_summable for summability
+  sorry
+
 /--
 `E₂ * E₄ - E₆` is positive on the imaginary axis.
 From q-expansion: `E₂ * E₄ - E₆ = 720 * ∑ n*σ₃(n)*q^n` (E₂_mul_E₄_sub_E₆).
 On z = it, q = e^(-2πt) so each term n*σ₃(n)*e^(-2πnt) > 0.
 -/
-lemma E₂_mul_E₄_sub_E₆_imag_axis_pos : ResToImagAxis.Pos (E₂ * E₄.toFun - E₆.toFun) := by
-  -- E₂*E₄ - E₆ = 720 * Σ n*σ₃(n)*q^n by E₂_mul_E₄_sub_E₆
-  -- On z = it, each term n*σ₃(n)*e^(-2πnt) is positive real
-  sorry
+lemma E₂_mul_E₄_sub_E₆_imag_axis_pos : ResToImagAxis.Pos (E₂ * E₄.toFun - E₆.toFun) :=
+  ⟨E₂_mul_E₄_sub_E₆_imag_axis_real, E₂_mul_E₄_sub_E₆_imag_axis_re_pos⟩
 
 /--
 `D E₄` is positive on the imaginary axis.
@@ -167,7 +228,7 @@ lemma D_E₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) := by
   have hkey : D E₄.toFun = (3 : ℝ)⁻¹ • (E₂ * E₄.toFun - E₆.toFun) := by
     have hr := ramanujan_E₄
     ext z
-    simp only [Pi.smul_apply, smul_eq_mul, Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe]
+    simp only [Pi.smul_apply, Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe]
     have hrz := congrFun hr z
     simp only [Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe] at hrz
     -- ramanujan_E₄ uses 3⁻¹ as constant function
