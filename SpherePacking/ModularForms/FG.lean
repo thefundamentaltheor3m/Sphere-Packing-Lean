@@ -196,8 +196,39 @@ lemma E₂_mul_E₄_sub_E₆_summable (t : ℝ) (ht : 0 < t) :
     Summable fun n : ℕ+ => ↑n * ArithmeticFunction.sigma 3 ↑n *
       Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
         ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane)) := by
-  -- Follows from a33 with k=5, comparing n*σ₃(n) ≤ n^5 via sigma_bound
-  sorry
+  -- Use a33 with k=5 and sigma_bound to compare n*σ₃(n) ≤ n^5
+  set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩ with hz
+  apply Summable.of_norm
+  apply Summable.of_nonneg_of_le (fun n => norm_nonneg _)
+  · intro n
+    calc ‖(↑n : ℂ) * ↑(ArithmeticFunction.sigma 3 ↑n) *
+            Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖
+        = ‖(↑n : ℂ) * ↑(ArithmeticFunction.sigma 3 ↑n)‖ *
+            ‖Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖ := norm_mul _ _
+      _ ≤ ‖(↑n : ℂ) ^ 5‖ * ‖Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖ := by
+          apply mul_le_mul_of_nonneg_right
+          · rw [Complex.norm_mul, Complex.norm_natCast, Complex.norm_natCast,
+                Complex.norm_pow, Complex.norm_natCast]
+            have hbound := sigma_bound 3 n
+            -- σ₃(n) ≤ n^4, so n * σ₃(n) ≤ n * n^4 = n^5
+            calc (n : ℝ) * (ArithmeticFunction.sigma 3 n : ℝ)
+                ≤ n * n ^ 4 := by
+                  exact_mod_cast mul_le_mul_of_nonneg_left hbound (Nat.cast_nonneg n)
+              _ = n ^ 5 := by ring
+          · exact norm_nonneg _
+      _ = ‖(↑n : ℂ) ^ 5 * Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖ :=
+          (norm_mul _ _).symm
+  · have ha33 := a33 5 1 z
+    simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at ha33
+    -- Rewrite to match the form from a33
+    have heq : (fun n : ℕ+ =>
+          ‖(↑n : ℂ) ^ 5 * Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖) =
+        (fun n : ℕ+ =>
+          ‖(↑n : ℂ) ^ 5 * Complex.exp (2 * ↑Real.pi * Complex.I * ↑z * ↑n)‖) := by
+      ext n
+      ring_nf
+    rw [heq]
+    exact summable_norm_iff.mpr ha33
 
 /-- The real part of (E₂*E₄ - E₆)(it) is positive for t > 0. -/
 lemma E₂_mul_E₄_sub_E₆_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
