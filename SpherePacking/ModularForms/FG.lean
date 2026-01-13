@@ -480,7 +480,52 @@ theorem negDE₂_qexp (z : UpperHalfPlane) :
       Complex.exp (2 * Real.pi * Complex.I * n * z) := by
   -- Use termwise differentiation of E₂ = 1 - 24 * ∑ σ₁(n) * q^n
   -- Requires: E₂_sigma_qexp, sigma1_qexp_summable, sigma1_qexp_deriv_bound, D_qexp_tsum_pnat
-  sorry
+  simp only [negDE₂]
+  -- Get the q-expansion of E₂
+  have hE2_qexp := E₂_sigma_qexp z
+  -- Define the tsum function
+  let f : UpperHalfPlane → ℂ := fun w => ∑' n : ℕ+, (ArithmeticFunction.sigma 1 n : ℂ) *
+    Complex.exp (2 * π * Complex.I * (n : ℂ) * (w : ℂ))
+  -- E₂ = 1 - 24 * f
+  have hE2_eq : E₂ = fun w => 1 - 24 * f w := by
+    ext w; simp only [f]; exact E₂_sigma_qexp w
+  -- Apply D_qexp_tsum_pnat to f
+  have hDf : D f z = ∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+      Complex.exp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by
+    apply D_qexp_tsum_pnat
+    · exact sigma1_qexp_summable z
+    · exact sigma1_qexp_deriv_bound z
+  -- Need to show: -(D E₂) z = 24 * D f z
+  -- Since E₂ = 1 - 24*f, we have D E₂ = D(1) - 24*D(f) = 0 - 24*D(f) = -24*D(f)
+  -- MDifferentiable hypothesis for D_sub/D_smul
+  have hf_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+    -- f = (1 - E₂)/24 = (24⁻¹) • (1 - E₂), and E₂ is MDifferentiable
+    have h : f = (24 : ℂ)⁻¹ • (fun w => 1 - E₂ w) := by
+      ext w; simp only [f, Pi.smul_apply, smul_eq_mul]
+      rw [E₂_sigma_qexp w]; ring
+    rw [h]
+    exact (mdifferentiable_const.sub E₂_holo').const_smul _
+  have hone_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun _ : UpperHalfPlane => (1 : ℂ)) :=
+    mdifferentiable_const
+  -- D E₂ = D (1 - 24*f) = D 1 - 24 * D f
+  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := D_const 1 z
+  have hD_smul : D ((24 : ℂ) • f) z = (24 : ℂ) * D f z := by
+    have := D_smul (24 : ℂ) f hf_mdiff
+    exact congrFun this z
+  have hD_sub : D (fun w => (1 : ℂ) - (24 : ℂ) * f w) z =
+      D (fun _ => (1 : ℂ)) z - D ((24 : ℂ) • f) z := by
+    have heq : (fun w => (1 : ℂ) - (24 : ℂ) * f w) = (fun _ => (1 : ℂ)) - (24 : ℂ) • f := by
+      ext w; simp [Pi.smul_apply, smul_eq_mul]
+    rw [heq]
+    have := D_sub (fun _ => (1 : ℂ)) ((24 : ℂ) • f) hone_mdiff (hf_mdiff.const_smul (24 : ℂ))
+    exact congrFun this z
+  calc -(D E₂) z
+      = -(D (fun w => 1 - 24 * f w)) z := by rw [hE2_eq]
+    _ = -(D (fun _ => (1 : ℂ)) z - D ((24 : ℂ) • f) z) := by rw [hD_sub]
+    _ = -(0 - (24 : ℂ) * D f z) := by rw [hD_one, hD_smul]
+    _ = (24 : ℂ) * D f z := by ring
+    _ = 24 * ∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+          Complex.exp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by rw [hDf]
 
 /-- The q-expansion series for negDE₂ is summable. -/
 lemma negDE₂_summable (t : ℝ) (ht : 0 < t) :
