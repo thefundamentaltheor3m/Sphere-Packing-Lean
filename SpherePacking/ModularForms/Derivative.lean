@@ -903,3 +903,22 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
       _ = r / (1 - r) ^ 3 := hsum_majorant_eq
       _ ≤ r₀ / (1 - r₀) ^ 3 := by gcongr
   gcongr
+
+/-- The Serre derivative of a bounded holomorphic function is bounded at infinity.
+
+serre_D k f = D f - (k/12)·E₂·f. Both terms are bounded:
+- D f is bounded by `D_isBoundedAtImInfty_of_bounded`
+- (k/12)·E₂·f is bounded since E₂ and f are bounded -/
+theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
+    (hbdd : IsBoundedAtImInfty f) : IsBoundedAtImInfty (serre_D k f) := by
+  unfold serre_D
+  have hD : IsBoundedAtImInfty (D f) := D_isBoundedAtImInfty_of_bounded hf hbdd
+  have hE₂f : IsBoundedAtImInfty (fun z => k * 12⁻¹ * E₂ z * f z) := by
+    have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) :=
+      Filter.const_boundedAtFilter _ _
+    convert hconst.mul (E₂_isBoundedAtImInfty.mul hbdd) using 1
+    ext z
+    simp only [Pi.mul_apply]
+    ring
+  exact hD.sub hE₂f
