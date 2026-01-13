@@ -154,7 +154,7 @@ On z = it, each term is positive.
 lemma D_E₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) := by
   -- D E₄ = (1/3) * (E₂*E₄ - E₆) by ramanujan_E₄
   -- E₂*E₄ - E₆ = 720 * Σ n*σ₃(n)*q^n by E₂_mul_E₄_sub_E₆
-  -- On z = it, each term is positive real
+  -- On z = it, each term is positive real, so D E₄ = 240 * Σ ... > 0
   sorry
 
 lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
