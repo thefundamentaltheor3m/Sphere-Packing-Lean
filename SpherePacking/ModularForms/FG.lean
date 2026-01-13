@@ -140,8 +140,6 @@ theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H�
   sorry
 
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
-lemma negDE₂_imag_axis_pos : ResToImagAxis.Pos negDE₂ := by
-  sorry
 
 lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := by
   -- Δ_fun = 1728⁻¹ * (E₄³ - E₆²) = Delta.toFun = Δ by Delta_E4_eqn
@@ -356,6 +354,134 @@ lemma D_E₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) := by
     simp only [Complex.ofReal_inv, Complex.ofReal_ofNat]
   rw [hkey]
   exact hbase.smul (by norm_num : (0 : ℝ) < 3⁻¹)
+
+/-- Q-expansion identity: negDE₂ = 24 * ∑ n * σ₁(n) * q^n
+From Ramanujan's formula: D E₂ = (E₂² - E₄)/12, so -D E₂ = (E₄ - E₂²)/12.
+And the derivative of E₂ = 1 - 24∑ σ₁(n) q^n gives -D E₂ = 24 ∑ n σ₁(n) q^n.
+See blueprint equation at line 136 of modform-ineq.tex. -/
+theorem negDE₂_qexp (z : UpperHalfPlane) :
+    negDE₂ z = 24 * ∑' (n : ℕ+), (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+      Complex.exp (2 * Real.pi * Complex.I * n * z) := by
+  sorry
+
+/-- The q-expansion series for negDE₂ is summable. -/
+lemma negDE₂_summable (t : ℝ) (ht : 0 < t) :
+    Summable fun n : ℕ+ => (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+      Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
+        ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane)) := by
+  set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩ with hz
+  apply Summable.of_norm
+  apply Summable.of_nonneg_of_le (fun n => norm_nonneg _)
+  · intro n
+    calc ‖(↑n : ℂ) * ↑(ArithmeticFunction.sigma 1 ↑n) *
+            Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖
+        = ‖(↑n : ℂ) * ↑(ArithmeticFunction.sigma 1 ↑n)‖ *
+            ‖Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖ := norm_mul _ _
+      _ ≤ ‖(↑n : ℂ) ^ 3‖ * ‖Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖ := by
+          apply mul_le_mul_of_nonneg_right
+          · rw [Complex.norm_mul, Complex.norm_natCast, Complex.norm_natCast,
+                Complex.norm_pow, Complex.norm_natCast]
+            have hbound := sigma_bound 1 n
+            calc (n : ℝ) * (ArithmeticFunction.sigma 1 n : ℝ)
+                ≤ n * n ^ 2 := by
+                  exact_mod_cast mul_le_mul_of_nonneg_left hbound (Nat.cast_nonneg n)
+              _ = n ^ 3 := by ring
+          · exact norm_nonneg _
+      _ = ‖(↑n : ℂ) ^ 3 * Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖ := (norm_mul _ _).symm
+  · have ha33 := a33 3 1 z
+    simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at ha33
+    have heq : (fun n : ℕ+ => ‖(↑n : ℂ) ^ 3 * Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖) =
+        (fun n : ℕ+ => ‖(↑n : ℂ) ^ 3 * Complex.exp (2 * ↑Real.pi * Complex.I * ↑z * ↑n)‖) := by
+      ext n; ring_nf
+    rw [heq]
+    exact summable_norm_iff.mpr ha33
+
+/-- Each term n*σ₁(n)*exp(-2πnt) in the q-expansion of negDE₂ has positive real part. -/
+lemma negDE₂_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
+    0 < ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+      Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
+        ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane))).re := by
+  rw [E₂_mul_E₄_sub_E₆_exp_arg t ht n]
+  have hn_re : (↑↑n : ℂ).re = (n : ℝ) := Complex.ofReal_re _
+  have hn_im : (↑↑n : ℂ).im = 0 := Complex.ofReal_im _
+  have hσ_re : (↑(ArithmeticFunction.sigma 1 n) : ℂ).re = ArithmeticFunction.sigma 1 n :=
+    Complex.ofReal_re _
+  have hσ_im : (↑(ArithmeticFunction.sigma 1 n) : ℂ).im = 0 := Complex.ofReal_im _
+  have hexp_im : (Complex.exp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := Complex.exp_ofReal_im _
+  have hexp_re : (Complex.exp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).re =
+      Real.exp (-(2 * Real.pi * (n : ℝ) * t)) := Complex.exp_ofReal_re _
+  simp only [Complex.mul_re, hn_re, hn_im, hσ_re, hσ_im, hexp_im, hexp_re, mul_zero, sub_zero]
+  apply mul_pos
+  · apply mul_pos
+    · exact_mod_cast n.pos
+    · have := ArithmeticFunction.sigma_pos 1 (n : ℕ) n.ne_zero
+      exact_mod_cast this
+  · exact Real.exp_pos _
+
+/-- `negDE₂` is real on the imaginary axis. -/
+lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by
+  intro t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩
+  rw [negDE₂_qexp z]
+  have hterm_im : ∀ n : ℕ+, ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+      Complex.exp (2 * Real.pi * Complex.I * n * z)).im = 0 := by
+    intro n
+    have harg : 2 * Real.pi * Complex.I * n * z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
+      have h := E₂_mul_E₄_sub_E₆_exp_arg t ht n
+      simp only at h ⊢
+      convert h using 2
+    rw [harg]
+    simp only [Complex.mul_im, Complex.natCast_re, Complex.natCast_im, mul_zero,
+               zero_mul, add_zero, Complex.exp_ofReal_im]
+  simp only [Complex.mul_im]
+  rw [Complex.im_tsum]
+  · simp only [hterm_im, tsum_zero, mul_zero]
+    -- 24 is real, so its imaginary part is 0
+    norm_num
+  · exact negDE₂_summable t ht
+
+/-- The real part of negDE₂(it) is positive for t > 0. -/
+lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
+    0 < (negDE₂.resToImagAxis t).re := by
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩ with hz
+  rw [negDE₂_qexp z]
+  have hsum : Summable fun n : ℕ+ =>
+      (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+        Complex.exp (2 * ↑Real.pi * Complex.I * n * z) := negDE₂_summable t ht
+  have hsum_re : Summable fun n : ℕ+ =>
+      ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := by
+    obtain ⟨s, hs⟩ := hsum
+    exact ⟨s.re, Complex.hasSum_re hs⟩
+  have hpos : ∀ n : ℕ+,
+      0 < ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := fun n => negDE₂_term_re_pos t ht n
+  have htsum_pos : 0 < ∑' n : ℕ+,
+      ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re :=
+    Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
+  have hsum_im : (∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+      Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
+    rw [Complex.im_tsum hsum]
+    have hterm_im : ∀ n : ℕ+, ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
+      intro n
+      have harg : 2 * ↑Real.pi * Complex.I * n * z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
+        have h := E₂_mul_E₄_sub_E₆_exp_arg t ht n
+        simp only at h ⊢
+        convert h using 2
+      rw [harg]
+      simp only [Complex.mul_im, Complex.natCast_re, Complex.natCast_im, mul_zero,
+                 zero_mul, add_zero, Complex.exp_ofReal_im]
+    simp only [hterm_im, tsum_zero]
+  simp only [Complex.mul_re, hsum_im, mul_zero, sub_zero]
+  rw [Complex.re_tsum hsum]
+  exact mul_pos (by norm_num : (0 : ℝ) < 24) htsum_pos
+
+lemma negDE₂_imag_axis_pos : ResToImagAxis.Pos negDE₂ :=
+  ⟨negDE₂_imag_axis_real, negDE₂_imag_axis_re_pos⟩
 
 /-!
 ## Imaginary Axis Properties
