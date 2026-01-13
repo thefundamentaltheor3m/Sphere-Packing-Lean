@@ -142,40 +142,21 @@ theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H�
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
 
 lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := by
-  -- Δ_fun = 1728⁻¹ * (E₄³ - E₆²) = Delta.toFun = Δ by Delta_E4_eqn
+  -- Δ_fun = 1728⁻¹ * (E₄³ - E₆²) = Δ by Delta_E4_eqn + Delta_apply
   have hΔ_eq : Δ_fun = Δ := by
     ext z
-    -- Delta z = Δ z and Delta = Delta_E4_E6_aux by Delta_E4_eqn
-    have hDelta : Delta z = Δ z := Delta_apply z
-    have hEq : Delta = Delta_E4_E6_aux := Delta_E4_eqn
-    rw [hEq] at hDelta
-    -- Now hDelta : Delta_E4_E6_aux z = Δ z
-    -- Need to show Δ_fun z = Delta_E4_E6_aux z
-    rw [← hDelta]
-    -- Goal: Δ_fun z = Delta_E4_E6_aux z
-    -- Use CuspForm_to_ModularForm_Fun_coe to unfold Delta_E4_E6_aux
-    have hCusp := CuspForm_to_ModularForm_Fun_coe (CongruenceSubgroup.Gamma 1) 12
-      ((1 / 1728 : ℂ) • (((DirectSum.of _ 4 E₄) ^ 3 - (DirectSum.of _ 6 E₆) ^ 2) 12))
-      (by rw [IsCuspForm_iff_coeffZero_eq_zero]; exact E4E6_coeff_zero_eq_zero)
-    -- Delta_E4_E6_aux.toFun = ((1/1728) • (E₄³ - E₆²) 12).toFun
-    have hAux : Delta_E4_E6_aux.toFun = ((1 / 1728 : ℂ) • (((DirectSum.of _ 4 E₄) ^ 3 -
-        (DirectSum.of _ 6 E₆) ^ 2) 12)).toFun := by
-      rw [Delta_E4_E6_aux]
-      exact hCusp
-    -- Both Δ_fun z and Delta_E4_E6_aux z equal (1/1728) * (E₄ z^3 - E₆ z^2)
-    have hLHS : Δ_fun z = (1728 : ℂ)⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
-      simp only [Δ_fun, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply, ModularForm.toFun_eq_coe]
-      rfl
-    have hRHS : Delta_E4_E6_aux z = (1 / 1728 : ℂ) * (E₄ z ^ 3 - E₆ z ^ 2) := by
-      have hCoerce : Delta_E4_E6_aux z = Delta_E4_E6_aux.toFun z := rfl
-      rw [hCoerce, congrFun hAux z]
-      simp only [pow_two, pow_three, DirectSum.of_mul_of, DirectSum.sub_apply,
-                 Int.reduceAdd, DirectSum.of_eq_same, one_div]
-      dsimp only [GradedMonoid.GMul.mul, ModularForm.mul]
-      simp only [ModularForm.toSlashInvariantForm_coe, SlashInvariantForm.toFun_eq_coe]
-      rfl
-    rw [hLHS, hRHS]
-    ring
+    -- Δ_fun z = (1728)⁻¹ * (E₄ z^3 - E₆ z^2) by definition
+    have hLHS : Δ_fun z = (1728 : ℂ)⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := rfl
+    -- Δ z = Delta_E4_E6_aux z = (1/1728) * (E₄ z^3 - E₆ z^2)
+    have hRHS : Δ z = (1 / 1728 : ℂ) * (E₄ z ^ 3 - E₆ z ^ 2) := by
+      rw [← Delta_apply z, Delta_E4_eqn]
+      have hAux := CuspForm_to_ModularForm_Fun_coe (CongruenceSubgroup.Gamma 1) 12
+        ((1 / 1728 : ℂ) • (((DirectSum.of _ 4 E₄) ^ 3 - (DirectSum.of _ 6 E₆) ^ 2) 12))
+        (by rw [IsCuspForm_iff_coeffZero_eq_zero]; exact E4E6_coeff_zero_eq_zero)
+      simp only [Delta_E4_E6_aux, pow_two, pow_three, DirectSum.of_mul_of, DirectSum.sub_apply,
+        Int.reduceAdd, DirectSum.of_eq_same, one_div] at hAux ⊢
+      exact congrFun hAux z
+    rw [hLHS, hRHS]; ring
   rw [hΔ_eq]
   exact Delta_imag_axis_pos
 
@@ -615,27 +596,21 @@ lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
         Complex.exp (2 * ↑Real.pi * Complex.I * n * z) := negDE₂_summable t ht
   have hsum_re : Summable fun n : ℕ+ =>
       ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
-        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := by
-    obtain ⟨s, hs⟩ := hsum
-    exact ⟨s.re, Complex.hasSum_re hs⟩
-  have hpos : ∀ n : ℕ+,
-      0 < ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
-        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := fun n => negDE₂_term_re_pos t ht n
-  have htsum_pos : 0 < ∑' n : ℕ+,
-      ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
-        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re :=
-    Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
+        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := ⟨_, Complex.hasSum_re hsum.hasSum⟩
+  have hpos : ∀ n : ℕ+, 0 < ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := negDE₂_term_re_pos t ht
+  have htsum_pos := Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
+  -- Sum is real since each term is real on imaginary axis
   have hsum_im : (∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
     rw [Complex.im_tsum hsum]
     have hterm_im : ∀ n : ℕ+, ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
         Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
       intro n
-      have harg : 2 * ↑Real.pi * Complex.I * n * z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-        have h := E₂_mul_E₄_sub_E₆_exp_arg t ht n
-        simp only at h ⊢
-        convert h using 2
-      rw [harg]
+      have harg := E₂_mul_E₄_sub_E₆_exp_arg t ht n
+      simp only at harg ⊢
+      rw [show 2 * ↑Real.pi * Complex.I * ↑↑n * ↑z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) from
+        by convert harg using 2]
       simp only [Complex.mul_im, Complex.natCast_re, Complex.natCast_im, mul_zero,
                  zero_mul, add_zero, Complex.exp_ofReal_im]
     simp only [hterm_im, tsum_zero]
