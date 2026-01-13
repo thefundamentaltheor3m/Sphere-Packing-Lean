@@ -964,8 +964,10 @@ end ImagAxisProperties
 
 /-! ## Boundedness of E₂ -/
 
-/-- For im(z) ≥ 1, ‖exp(2πiz)‖ ≤ exp(-2π). -/
-lemma norm_exp_two_pi_I_le (z : ℍ) (hz : 1 ≤ z.im) :
+/-- For im(z) ≥ 1, ‖exp(2πiz)‖ ≤ exp(-2π).
+
+This bound on the q-parameter is useful for estimating q-expansions when im(z) ≥ 1. -/
+lemma norm_exp_two_pi_I_le_exp_neg_two_pi (z : ℍ) (hz : 1 ≤ z.im) :
     ‖cexp (2 * π * Complex.I * z)‖ ≤ Real.exp (-2 * π) := by
   have h : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
     rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
@@ -1025,6 +1027,19 @@ lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
         Summable.tsum_le_tsum hterm_bound hsumm_norms hsumm_majorant
     _ = r / (1 - r) ^ 3 := hsum_majorant_eq
 
+/-- Monotone version of `norm_tsum_logDeriv_expo_le`: if ‖q‖ ≤ r < 1, then
+‖∑ n·qⁿ/(1-qⁿ)‖ ≤ r/(1-r)³. Useful when we have a uniform bound on ‖q‖. -/
+lemma norm_tsum_logDeriv_expo_le_of_norm_le {q : ℂ} {r : ℝ} (hqr : ‖q‖ ≤ r) (hr : r < 1) :
+    ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤ r / (1 - r) ^ 3 := by
+  have hq : ‖q‖ < 1 := lt_of_le_of_lt hqr hr
+  have hr_nonneg : 0 ≤ r := le_trans (norm_nonneg _) hqr
+  calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
+      ≤ ‖q‖ / (1 - ‖q‖) ^ 3 := norm_tsum_logDeriv_expo_le hq
+    _ ≤ r / (1 - r) ^ 3 := by
+        have := sub_pos.mpr hr
+        have := sub_pos.mpr hq
+        gcongr
+
 /-- E₂ is bounded at infinity.
 
 Uses `E₂_eq`: E₂(z) = 1 - 24·Σₙ₌₁ n·qⁿ/(1-qⁿ) where q = exp(2πiz).
@@ -1037,8 +1052,7 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   intro z hz
   rw [E₂_eq]
   set q : ℂ := cexp (2 * π * Complex.I * z)
-  have hq : ‖q‖ < 1 := norm_exp_two_pi_I_lt_one z
-  have hq_bound : ‖q‖ ≤ r₀ := norm_exp_two_pi_I_le z hz
+  have hq_bound : ‖q‖ ≤ r₀ := norm_exp_two_pi_I_le_exp_neg_two_pi z hz
   have hr₀_lt_one : r₀ < 1 := Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos])
   -- Rewrite sum in terms of q^n
   set S := ∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))
@@ -1055,8 +1069,5 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
     _ ≤ 1 + 24 * ‖S‖ := by
         calc _ ≤ ‖(1 : ℂ)‖ + ‖24 * S‖ := norm_sub_le _ _
           _ = _ := by simp
-    _ ≤ 1 + 24 * (‖q‖ / (1 - ‖q‖) ^ 3) := by gcongr; exact norm_tsum_logDeriv_expo_le hq
     _ ≤ 1 + 24 * (r₀ / (1 - r₀) ^ 3) := by
-        have := sub_pos.mpr hr₀_lt_one
-        have := sub_pos.mpr hq
-        gcongr
+        gcongr; exact norm_tsum_logDeriv_expo_le_of_norm_le hq_bound hr₀_lt_one
