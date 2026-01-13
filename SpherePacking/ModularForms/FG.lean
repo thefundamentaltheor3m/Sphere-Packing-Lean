@@ -147,15 +147,40 @@ lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := by
   sorry
 
 /--
+`E₂ * E₄ - E₆` is positive on the imaginary axis.
+From q-expansion: `E₂ * E₄ - E₆ = 720 * ∑ n*σ₃(n)*q^n` (E₂_mul_E₄_sub_E₆).
+On z = it, q = e^(-2πt) so each term n*σ₃(n)*e^(-2πnt) > 0.
+-/
+lemma E₂_mul_E₄_sub_E₆_imag_axis_pos : ResToImagAxis.Pos (E₂ * E₄.toFun - E₆.toFun) := by
+  -- E₂*E₄ - E₆ = 720 * Σ n*σ₃(n)*q^n by E₂_mul_E₄_sub_E₆
+  -- On z = it, each term n*σ₃(n)*e^(-2πnt) is positive real
+  sorry
+
+/--
 `D E₄` is positive on the imaginary axis.
-From Ramanujan: `D E₄ = (1/3) * (E₂*E₄ - E₆) = 240 * ∑ n*σ₃(n)*q^n`.
-On z = it, each term is positive.
+From Ramanujan: `D E₄ = (1/3) * (E₂*E₄ - E₆)`, and `E₂*E₄ - E₆ > 0` on imaginary axis.
 -/
 lemma D_E₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) := by
-  -- D E₄ = (1/3) * (E₂*E₄ - E₆) by ramanujan_E₄
-  -- E₂*E₄ - E₆ = 720 * Σ n*σ₃(n)*q^n by E₂_mul_E₄_sub_E₆
-  -- On z = it, each term is positive real, so D E₄ = 240 * Σ ... > 0
-  sorry
+  -- D E₄ = 3⁻¹ * (E₂ * E₄ - E₆) by ramanujan_E₄
+  -- Use E₂_mul_E₄_sub_E₆_imag_axis_pos and smul by positive constant
+  have hbase := E₂_mul_E₄_sub_E₆_imag_axis_pos
+  have hkey : D E₄.toFun = (3 : ℝ)⁻¹ • (E₂ * E₄.toFun - E₆.toFun) := by
+    have hr := ramanujan_E₄
+    ext z
+    simp only [Pi.smul_apply, smul_eq_mul, Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe]
+    have hrz := congrFun hr z
+    simp only [Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe] at hrz
+    -- ramanujan_E₄ uses 3⁻¹ as constant function
+    have hconst : (3⁻¹ : UpperHalfPlane → ℂ) z = (3 : ℂ)⁻¹ := rfl
+    rw [hconst] at hrz
+    rw [hrz]
+    -- (3 : ℂ)⁻¹ * x = (3 : ℝ)⁻¹ • x, where • is ℝ acting on ℂ via r • z = ↑r * z
+    rw [Complex.real_smul]
+    -- Goal: (3 : ℂ)⁻¹ * x = ↑(3 : ℝ)⁻¹ * x
+    congr 1
+    simp only [Complex.ofReal_inv, Complex.ofReal_ofNat]
+  rw [hkey]
+  exact hbase.smul (by norm_num : (0 : ℝ) < 3⁻¹)
 
 lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
   calc
