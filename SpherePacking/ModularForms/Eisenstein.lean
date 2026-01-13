@@ -985,45 +985,36 @@ The key estimates are:
 - ∑ n·rⁿ = r/(1-r)², so ∑ n·rⁿ/(1-r) = r/(1-r)³ -/
 lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
     ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤ ‖q‖ / (1 - ‖q‖) ^ 3 := by
-  set r : ℝ := ‖q‖ with hr_def
-  have hr_lt_one : r < 1 := hq
-  have hone_sub_r_pos : 0 < 1 - r := sub_pos.mpr hr_lt_one
+  set r : ℝ := ‖q‖
   have hr_norm_lt_one : ‖r‖ < 1 := by rwa [Real.norm_of_nonneg (norm_nonneg q)]
-  -- Summability of n * r^n
   have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
     simpa [pow_one] using summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
   have hsumm_majorant : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
     simpa [div_eq_mul_inv] using (hsumm_nat.subtype _).mul_right (1 - r)⁻¹
-  -- Term-by-term bound: |n·q^n/(1-q^n)| ≤ n·r^n/(1-r)
   have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
       n * r ^ (n : ℕ) / (1 - r) := fun n => by
     rw [norm_div, norm_mul, Complex.norm_natCast]
-    have hdenom_lower : 1 - r ≤ ‖1 - q ^ (n : ℕ)‖ := by
-      have h1 : 1 - ‖q ^ (n : ℕ)‖ ≤ ‖1 - q ^ (n : ℕ)‖ := by
+    have hdenom_lower : 1 - r ≤ ‖1 - q ^ (n : ℕ)‖ := calc
+      1 - r ≤ 1 - r ^ (n : ℕ) := by
+        have : r ^ (n : ℕ) ≤ r := by simpa using pow_le_pow_of_le_one (norm_nonneg _) hq.le n.one_le
+        linarith
+      _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow]
+      _ ≤ ‖1 - q ^ (n : ℕ)‖ := by
         have := norm_sub_norm_le (1 : ℂ) (q ^ (n : ℕ)); simp only [norm_one] at this; linarith
-      have h2 : r ^ (n : ℕ) ≤ r := by
-        simpa using pow_le_pow_of_le_one (norm_nonneg _) hq.le n.one_le
-      calc 1 - r ≤ 1 - r ^ (n : ℕ) := by linarith
-        _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow]
-        _ ≤ _ := h1
-    calc ↑n * ‖q ^ (n : ℕ)‖ / ‖1 - q ^ (n : ℕ)‖
-        ≤ ↑n * ‖q ^ (n : ℕ)‖ / (1 - r) := by
-          apply div_le_div_of_nonneg_left _ hone_sub_r_pos hdenom_lower
-          exact mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _)
+    calc ↑n * ‖q ^ (n : ℕ)‖ / ‖1 - q ^ (n : ℕ)‖ ≤ ↑n * ‖q ^ (n : ℕ)‖ / (1 - r) := by
+          exact div_le_div_of_nonneg_left (mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _))
+            (sub_pos.mpr hq) hdenom_lower
       _ = ↑n * r ^ (n : ℕ) / (1 - r) := by rw [norm_pow]
-  -- Summability of norms
   have hsumm_norms : Summable (fun n : ℕ+ => ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖) :=
-    Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => hterm_bound n) hsumm_majorant
-  -- Closed form: ∑ n·r^n/(1-r) = r/(1-r)³
-  have hsum_majorant_eq : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
-    simp [div_eq_mul_inv, tsum_mul_right, tsum_pnat_coe_mul_geometric hr_norm_lt_one, pow_succ]
-    ring
-  -- Final bound
+    .of_nonneg_of_le (fun _ => norm_nonneg _) hterm_bound hsumm_majorant
   calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
       ≤ ∑' n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ := norm_tsum_le_tsum_norm hsumm_norms
     _ ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) :=
-        Summable.tsum_le_tsum hterm_bound hsumm_norms hsumm_majorant
-    _ = r / (1 - r) ^ 3 := hsum_majorant_eq
+        hsumm_norms.tsum_le_tsum hterm_bound hsumm_majorant
+    _ = r / (1 - r) ^ 3 := by
+        simp only [div_eq_mul_inv, tsum_mul_right, tsum_pnat_coe_mul_geometric hr_norm_lt_one,
+          pow_succ]
+        field_simp
 
 /-- Monotone version of `norm_tsum_logDeriv_expo_le`: if ‖q‖ ≤ r < 1, then
 ‖∑ n·qⁿ/(1-qⁿ)‖ ≤ r/(1-r)³. Useful when we have a uniform bound on ‖q‖. -/
