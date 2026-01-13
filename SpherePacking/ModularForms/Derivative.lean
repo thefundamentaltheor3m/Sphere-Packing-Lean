@@ -891,9 +891,8 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   have hsum_nat : (∑' n : ℕ, (n : ℝ) * r ^ n) = r / (1 - r) ^ 2 :=
     tsum_coe_mul_geometric_of_norm_lt_one hr_norm_lt_one
   have hsum_pnat : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
-    have heq := tsum_pnat_eq_tsum_succ4 (fun n => (n : ℝ) * r ^ n) hsumm_nat
-    simp at heq
-    rw [← hsum_nat]; exact heq
+    rw [← hsum_nat, ← tsum_pnat_eq_tsum_succ4 _ hsumm_nat]
+    simp
   have hsum_majorant_eq :
       (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
     simp [div_eq_mul_inv, tsum_mul_right, hsum_pnat, pow_succ]; ring
