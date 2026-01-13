@@ -205,44 +205,43 @@ lemma E₂_mul_E₄_sub_E₆_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
       exact_mod_cast this
   · exact Real.exp_pos _
 
+/-- Generic summability for n^a * σ_b(n) * exp(2πinz) series.
+Uses σ_b(n) ≤ n^(b+1) (sigma_bound) and a33 (a+b+1) for exponential summability. -/
+lemma sigma_qexp_summable_generic (a b : ℕ) (z : UpperHalfPlane) :
+    Summable (fun n : ℕ+ => (n : ℂ)^a * (ArithmeticFunction.sigma b n : ℂ) *
+      Complex.exp (2 * Real.pi * Complex.I * n * z)) := by
+  apply Summable.of_norm
+  apply Summable.of_nonneg_of_le (fun n => norm_nonneg _)
+  · intro n
+    calc ‖(n : ℂ)^a * (ArithmeticFunction.sigma b n : ℂ) * Complex.exp (2 * π * Complex.I * n * z)‖
+        = ‖(n : ℂ)^a * (ArithmeticFunction.sigma b n : ℂ)‖ *
+            ‖Complex.exp (2 * π * Complex.I * n * z)‖ := norm_mul _ _
+      _ ≤ (n : ℝ)^(a + b + 1) * ‖Complex.exp (2 * π * Complex.I * n * z)‖ := by
+          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+          rw [Complex.norm_mul, Complex.norm_pow, Complex.norm_natCast, Complex.norm_natCast]
+          have hbound := sigma_bound b n
+          calc (n : ℝ)^a * (ArithmeticFunction.sigma b n : ℝ)
+              ≤ (n : ℝ)^a * (n : ℝ)^(b + 1) := by
+                exact_mod_cast mul_le_mul_of_nonneg_left hbound (pow_nonneg (Nat.cast_nonneg n) a)
+            _ = (n : ℝ)^(a + b + 1) := by ring
+      _ = ‖(n : ℂ)^(a + b + 1) * Complex.exp (2 * π * Complex.I * n * z)‖ := by
+          rw [norm_mul, Complex.norm_pow, Complex.norm_natCast]
+  · have ha33 := a33 (a + b + 1) 1 z
+    simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at ha33
+    have heq : (fun n : ℕ+ => ‖(n : ℂ)^(a + b + 1) * Complex.exp (2 * π * Complex.I * n * z)‖) =
+        (fun n : ℕ+ => ‖(n : ℂ)^(a + b + 1) * Complex.exp (2 * π * Complex.I * z * n)‖) := by
+      ext n; ring_nf
+    rw [heq]
+    exact summable_norm_iff.mpr ha33
+
 /-- The q-expansion series for E₂*E₄ - E₆ is summable. -/
 lemma E₂_mul_E₄_sub_E₆_summable (t : ℝ) (ht : 0 < t) :
     Summable fun n : ℕ+ => ↑n * ArithmeticFunction.sigma 3 ↑n *
       Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
         ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane)) := by
-  -- Use a33 with k=5 and sigma_bound to compare n*σ₃(n) ≤ n^5
-  set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩ with hz
-  apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun n => norm_nonneg _)
-  · intro n
-    calc ‖(↑n : ℂ) * ↑(ArithmeticFunction.sigma 3 ↑n) *
-            Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖
-        = ‖(↑n : ℂ) * ↑(ArithmeticFunction.sigma 3 ↑n)‖ *
-            ‖Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖ := norm_mul _ _
-      _ ≤ ‖(↑n : ℂ) ^ 5‖ * ‖Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖ := by
-          apply mul_le_mul_of_nonneg_right
-          · rw [Complex.norm_mul, Complex.norm_natCast, Complex.norm_natCast,
-                Complex.norm_pow, Complex.norm_natCast]
-            have hbound := sigma_bound 3 n
-            -- σ₃(n) ≤ n^4, so n * σ₃(n) ≤ n * n^4 = n^5
-            calc (n : ℝ) * (ArithmeticFunction.sigma 3 n : ℝ)
-                ≤ n * n ^ 4 := by
-                  exact_mod_cast mul_le_mul_of_nonneg_left hbound (Nat.cast_nonneg n)
-              _ = n ^ 5 := by ring
-          · exact norm_nonneg _
-      _ = ‖(↑n : ℂ) ^ 5 * Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖ :=
-          (norm_mul _ _).symm
-  · have ha33 := a33 5 1 z
-    simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at ha33
-    -- Rewrite to match the form from a33
-    have heq : (fun n : ℕ+ =>
-          ‖(↑n : ℂ) ^ 5 * Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖) =
-        (fun n : ℕ+ =>
-          ‖(↑n : ℂ) ^ 5 * Complex.exp (2 * ↑Real.pi * Complex.I * ↑z * ↑n)‖) := by
-      ext n
-      ring_nf
-    rw [heq]
-    exact summable_norm_iff.mpr ha33
+  have h := sigma_qexp_summable_generic 1 3 ⟨Complex.I * t, by simp [ht]⟩
+  simp only [pow_one] at h
+  exact h
 
 /-- The real part of (E₂*E₄ - E₆)(it) is positive for t > 0. -/
 lemma E₂_mul_E₄_sub_E₆_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
@@ -356,36 +355,17 @@ lemma E₂_sigma_qexp (z : UpperHalfPlane) :
   simp at *
   rw [ht]
 
-/-- Summability of σ₁ q-series (for D_qexp_tsum_pnat hypothesis).
-Uses σ₁(n) ≤ n² (sigma_bound) and a33 for exponential summability. -/
+/-- Summability of σ₁ q-series (for D_qexp_tsum_pnat hypothesis). -/
 lemma sigma1_qexp_summable (z : UpperHalfPlane) :
     Summable (fun n : ℕ+ => (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z)) := by
-  -- Compare with n² * exp(...) using sigma_bound, then use a33 2 1 z
-  apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun n => norm_nonneg _)
-  · intro n
-    calc ‖(ArithmeticFunction.sigma 1 n : ℂ) * Complex.exp (2 * π * Complex.I * n * z)‖
-        = ‖(ArithmeticFunction.sigma 1 n : ℂ)‖ * ‖Complex.exp (2 * π * Complex.I * n * z)‖ :=
-          norm_mul _ _
-      _ ≤ (n : ℝ) ^ 2 * ‖Complex.exp (2 * π * Complex.I * n * z)‖ := by
-          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-          simp only [Complex.norm_natCast]
-          exact_mod_cast sigma_bound 1 n
-      _ = ‖(n : ℂ) ^ 2 * Complex.exp (2 * π * Complex.I * n * z)‖ := by
-          rw [norm_mul, Complex.norm_pow, Complex.norm_natCast]
-  · -- Convert form to match a33 2 1 z (order of z * n vs n * z)
-    have ha33 := a33 2 1 z
-    simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at ha33
-    have heq : (fun n : ℕ+ => ‖(n : ℂ) ^ 2 * Complex.exp (2 * π * Complex.I * n * z)‖) =
-        (fun n : ℕ+ => ‖(n : ℂ) ^ 2 * Complex.exp (2 * π * Complex.I * z * n)‖) := by
-      ext n; ring_nf
-    rw [heq]
-    exact summable_norm_iff.mpr ha33
+  have h := sigma_qexp_summable_generic 0 1 z
+  simp only [pow_zero, one_mul] at h
+  exact h
 
 /-- Derivative bound for σ₁ q-series on compact sets (for D_qexp_tsum_pnat hypothesis).
 The bound uses σ₁(n) ≤ n² (sigma_bound) and iter_deriv_comp_bound3 for exponential decay. -/
-lemma sigma1_qexp_deriv_bound (z : UpperHalfPlane) :
+lemma sigma1_qexp_deriv_bound :
     ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
       ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K),
         ‖(ArithmeticFunction.sigma 1 n : ℂ) * (2 * Real.pi * Complex.I * n) *
@@ -475,7 +455,7 @@ theorem negDE₂_qexp (z : UpperHalfPlane) :
       Complex.exp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by
     apply D_qexp_tsum_pnat
     · exact sigma1_qexp_summable z
-    · exact sigma1_qexp_deriv_bound z
+    · exact sigma1_qexp_deriv_bound
   -- Need to show: -(D E₂) z = 24 * D f z
   -- Since E₂ = 1 - 24*f, we have D E₂ = D(1) - 24*D(f) = 0 - 24*D(f) = -24*D(f)
   -- MDifferentiable hypothesis for D_sub/D_smul
@@ -513,32 +493,9 @@ lemma negDE₂_summable (t : ℝ) (ht : 0 < t) :
     Summable fun n : ℕ+ => (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
         ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane)) := by
-  set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩ with hz
-  apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun n => norm_nonneg _)
-  · intro n
-    calc ‖(↑n : ℂ) * ↑(ArithmeticFunction.sigma 1 ↑n) *
-            Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖
-        = ‖(↑n : ℂ) * ↑(ArithmeticFunction.sigma 1 ↑n)‖ *
-            ‖Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖ := norm_mul _ _
-      _ ≤ ‖(↑n : ℂ) ^ 3‖ * ‖Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖ := by
-          apply mul_le_mul_of_nonneg_right
-          · rw [Complex.norm_mul, Complex.norm_natCast, Complex.norm_natCast,
-                Complex.norm_pow, Complex.norm_natCast]
-            have hbound := sigma_bound 1 n
-            calc (n : ℝ) * (ArithmeticFunction.sigma 1 n : ℝ)
-                ≤ n * n ^ 2 := by
-                  exact_mod_cast mul_le_mul_of_nonneg_left hbound (Nat.cast_nonneg n)
-              _ = n ^ 3 := by ring
-          · exact norm_nonneg _
-      _ = ‖(↑n : ℂ) ^ 3 * Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖ := (norm_mul _ _).symm
-  · have ha33 := a33 3 1 z
-    simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at ha33
-    have heq : (fun n : ℕ+ => ‖(↑n : ℂ) ^ 3 * Complex.exp (2 * ↑Real.pi * Complex.I * ↑n * ↑z)‖) =
-        (fun n : ℕ+ => ‖(↑n : ℂ) ^ 3 * Complex.exp (2 * ↑Real.pi * Complex.I * ↑z * ↑n)‖) := by
-      ext n; ring_nf
-    rw [heq]
-    exact summable_norm_iff.mpr ha33
+  have h := sigma_qexp_summable_generic 1 1 ⟨Complex.I * t, by simp [ht]⟩
+  simp only [pow_one] at h
+  exact h
 
 /-- Each term n*σ₁(n)*exp(-2πnt) in the q-expansion of negDE₂ has positive real part. -/
 lemma negDE₂_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
