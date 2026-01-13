@@ -392,16 +392,8 @@ lemma hasDerivAt_integral_poly_mul_comp (f : ℝ → ℝ) (hf : ContDiff ℝ 1 f
             -- Apply the mean value theorem to the interval $[u * x, u * (x + y)]$.
             obtain ⟨c, hc⟩ : ∃ c ∈ Set.Ioo (min (u * x) (u * (x + y))) (max (u * x) (u * (x + y))), deriv f c = (f (u * (x + y)) - f (u * x)) / (u * y) := by
               have hne : u * x ≠ u * (x + y) := by
-                intro h
-                have : u * y = 0 := by
-                  have := congrArg (fun t => t - u * x) h
-                  -- (u*x - u*x) = (u*(x+y) - u*x) = u*y
-                  simpa [mul_add] using this
-                have : y = 0 := by
-                  rcases mul_eq_zero.mp this with hu | hy0
-                  · exfalso ; exact (ne_of_gt left hu).elim
-                  · exact hy0
-                exact hy' this
+                simp only [mul_add, ne_eq, self_eq_add_right]
+                exact mul_ne_zero left.ne' hy'
               have hcont : Continuous f := (hf.differentiable le_rfl).continuous
               by_cases hle : u * x ≤ u * (x + y)
               · have hlt : u * x < u * (x + y) := lt_of_le_of_ne hle hne
@@ -414,21 +406,12 @@ lemma hasDerivAt_integral_poly_mul_comp (f : ℝ → ℝ) (hf : ContDiff ℝ 1 f
               · have hlt : u * (x + y) < u * x := lt_of_le_of_ne (le_of_not_ge hle) hne.symm
                 rcases exists_deriv_eq_slope (f := f) hlt hcont.continuousOn (hf.differentiable le_rfl).differentiableOn with
                   ⟨c, hc, hderiv⟩
-                refine ⟨c, ?_, ?_⟩
-                · have hle' : u * (x + y) ≤ u * x := le_of_lt hlt
-                  simpa [min_eq_right hle', max_eq_left hle'] using hc
-                · have hsub : u * x - u * (x + y) = -(u * y) := by ring
-                  have hsub' : u * x - u * (x + y) = - (u * y) := hsub
-                  -- flip both numerator and denominator
-                  have : (f (u * x) - f (u * (x + y))) / (u * x - u * (x + y))
-                        = (f (u * (x + y)) - f (u * x)) / (u * y) := by
-                    calc
-                      (f (u * x) - f (u * (x + y))) / (u * x - u * (x + y))
-                          = (f (u * x) - f (u * (x + y))) / (-(u * y)) := by simp [hsub']
-                      _   = -((f (u * x) - f (u * (x + y))) / (u * y)) := by simp [div_neg]
-                      _   = (f (u * (x + y)) - f (u * x)) / (u * y) := by ring
-                  have hle' : u * (x + y) ≤ u * x := le_of_lt hlt
-                  simpa [min_eq_right hle', max_eq_left hle', this] using hderiv
+                have hle' : u * (x + y) ≤ u * x := le_of_lt hlt
+                refine ⟨c, by simpa [min_eq_right hle', max_eq_left hle'] using hc, ?_⟩
+                have hsub : u * x - u * (x + y) = -(u * y) := by ring
+                have : (f (u * x) - f (u * (x + y))) / (u * x - u * (x + y))
+                      = (f (u * (x + y)) - f (u * x)) / (u * y) := by simp [hsub, div_neg]; ring
+                simpa [min_eq_right hle', max_eq_left hle', this] using hderiv
             -- Since $|c| \leq 1 + |x|$, we have $|deriv f c| \leq \sup_{t \in [-1 - |x|, 1 + |x|]} |deriv f t|$.
             let h_deriv_bound := deriv_bound hf hc.1 left right hy
             simp_all only [abs_pos, ne_eq,not_false_eq_true, div_le_iff₀, ge_iff_le]
