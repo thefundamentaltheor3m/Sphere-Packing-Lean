@@ -1,5 +1,4 @@
 import SpherePacking.ModularForms.Derivative
-import SpherePacking.ModularForms.Derivative_Cauchy
 
 /-!
 # Slash Invariance of Serre Derivative of E₂

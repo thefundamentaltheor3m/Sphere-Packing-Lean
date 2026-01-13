@@ -1,5 +1,5 @@
 import SpherePacking.ModularForms.SerreDerivativeSlash
-import SpherePacking.ModularForms.DerivativeBoundedness
+import SpherePacking.ModularForms.CoreRamanujan
 import SpherePacking.ModularForms.DimensionFormulas
 import Mathlib.Analysis.Real.Pi.Bounds
 
@@ -433,7 +433,7 @@ lemma serre_D_E₄_tendsto_at_infinity :
         (4 : ℂ) * 12⁻¹ * E₂ (iMulPosReal y) * E₄.toFun (iMulPosReal y) := fun y => by
     simp only [serre_D]
   simp_rw [hserre]
-  have hD := D_tendsto_zero_of_tendsto_const E₄.holo' E₄_isBoundedAtImInfty
+  have hD := D_tendsto_zero_of_tendsto_const E₄.holo' (ModularFormClass.bdd_at_infty E₄)
   have hprod := E₂_tendsto_one_at_infinity.mul E₄_tendsto_one_at_infinity
   have hlim : (0 : ℂ) - (4 : ℂ) * 12⁻¹ * 1 * 1 = -(1/3 : ℂ) := by norm_num
   rw [← hlim]
