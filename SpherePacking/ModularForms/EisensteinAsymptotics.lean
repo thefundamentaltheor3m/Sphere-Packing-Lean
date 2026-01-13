@@ -184,131 +184,51 @@ lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :
 lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
     fun z => Real.exp (-(2 * π) * z.im) := by
   rw [Asymptotics.isBigO_iff]
-  refine ⟨192, ?_⟩
-  rw [Filter.eventually_atImInfty]
-  refine ⟨1, fun z hz => ?_⟩
-  have hE₂_eq := E₂_eq z
+  refine ⟨192, Filter.eventually_atImInfty.mpr ⟨1, fun z hz => ?_⟩⟩
+  -- E₂ z - 1 = -24 * ∑' n, n·qⁿ/(1-qⁿ)
   have hsub : E₂ z - 1 = -24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
-      (1 - cexp (2 * π * Complex.I * ↑n * ↑z)) := by
-    rw [hE₂_eq]; ring
-  rw [hsub]
-  have h24 : ‖(-24 : ℂ)‖ = 24 := by simp [norm_neg]
-  rw [norm_mul, h24, Real.norm_of_nonneg (Real.exp_pos _).le]
-  set q : ℂ := cexp (2 * π * Complex.I * z) with hq_def
-  have hq_norm : ‖q‖ < 1 := norm_exp_two_pi_I_lt_one z
-  have hq_pos : 0 < ‖q‖ := norm_pos_iff.mpr (Complex.exp_ne_zero _)
-  have hone_sub_q_pos : 0 < 1 - ‖q‖ := by linarith
-  have hq_bound : ‖q‖ ≤ Real.exp (-2 * π) := by
-    have h1 : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
-      rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
-      simp [Complex.I_re, Complex.I_im, mul_comm]
-    rw [hq_def, Complex.norm_exp, h1, Real.exp_le_exp]
-    nlinarith [Real.pi_pos, z.im_pos]
-  have hexp_lt_half : Real.exp (-2 * π) < 1 / 2 := by
-    have hexp1_gt_2 : 2 < Real.exp 1 := by
-      have h1 : (1 : ℝ) ≠ 0 := by norm_num
-      have := Real.add_one_lt_exp h1
-      linarith
-    have hexp_neg1_lt : Real.exp (-1 : ℝ) < 1 / 2 := by
-      rw [Real.exp_neg, inv_lt_comm₀ (Real.exp_pos _) (by norm_num)]
-      simp only [one_div, inv_inv]
-      exact hexp1_gt_2
-    have h2pi_gt_1 : 1 < 2 * π := by
-      have hpi_gt_3 : 3 < π := pi_gt_three
-      linarith
-    have hneg : -2 * π < -1 := by linarith
-    calc Real.exp (-2 * π) < Real.exp (-1) := Real.exp_strictMono hneg
-      _ < 1 / 2 := hexp_neg1_lt
-  have hq_lt_half : ‖q‖ < 1 / 2 := lt_of_le_of_lt hq_bound hexp_lt_half
-  have hone_sub_q_gt_half : 1 / 2 < 1 - ‖q‖ := by linarith
+      (1 - cexp (2 * π * Complex.I * ↑n * ↑z)) := by rw [E₂_eq z]; ring
+  rw [hsub, norm_mul, show ‖(-24 : ℂ)‖ = 24 by simp, Real.norm_of_nonneg (Real.exp_pos _).le]
+  set q : ℂ := cexp (2 * π * Complex.I * z)
+  -- Rewrite sum in terms of q^n
   have hexp_pow : ∀ n : ℕ, cexp (2 * π * Complex.I * n * z) = q ^ n := fun n => by
-    rw [hq_def, ← Complex.exp_nat_mul]; congr 1; ring
+    rw [← Complex.exp_nat_mul]; congr 1; ring
   have hsum_eq : (fun n : ℕ+ => ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
       (1 - cexp (2 * π * Complex.I * ↑n * ↑z))) =
-      (fun n : ℕ+ => ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))) := by
-    ext n; simp only [hexp_pow]
+      (fun n : ℕ+ => ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))) := by ext n; simp only [hexp_pow]
   rw [hsum_eq]
-  set r : ℝ := ‖q‖ with hr_def
-  have hr_pos : 0 < r := hq_pos
-  have hr_lt_one : r < 1 := hq_norm
-  have hr_lt_half : r < 1 / 2 := hq_lt_half
-  have hone_sub_r_pos : 0 < 1 - r := hone_sub_q_pos
-  have hone_sub_r_gt_half : 1 / 2 < 1 - r := hone_sub_q_gt_half
-  have hr_norm_lt_one : ‖r‖ < 1 := by simp [Real.norm_eq_abs, abs_of_nonneg hr_pos.le, hr_lt_one]
-  have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
-      n * r ^ (n : ℕ) / (1 - r) := fun n => by
-    have hqn_lt : ‖q ^ (n : ℕ)‖ < 1 := by
-      rw [norm_pow]; exact pow_lt_one₀ (norm_nonneg _) hr_lt_one n.ne_zero
-    have hdenom_ne : 1 - q ^ (n : ℕ) ≠ 0 := by
-      intro h; simp only [sub_eq_zero] at h
-      have : ‖q ^ (n : ℕ)‖ = 1 := by rw [← h]; exact norm_one
-      linarith
-    rw [norm_div, norm_mul, Complex.norm_natCast]
-    have hdenom_lower : 1 - r ≤ ‖1 - q ^ (n : ℕ)‖ := by
-      have h1 : 1 - ‖q ^ (n : ℕ)‖ ≤ ‖1 - q ^ (n : ℕ)‖ := by
-        have := norm_sub_norm_le (1 : ℂ) (q ^ (n : ℕ))
-        simp only [norm_one] at this; linarith
-      have h2 : r ^ (n : ℕ) ≤ r := by
-        have := pow_le_pow_of_le_one (norm_nonneg _) hr_lt_one.le n.one_le
-        simp at this; exact this
-      calc 1 - r ≤ 1 - r ^ (n : ℕ) := by linarith
-        _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow, hr_def]
-        _ ≤ _ := h1
-    calc ↑n * ‖q ^ (n : ℕ)‖ / ‖1 - q ^ (n : ℕ)‖
-        ≤ ↑n * ‖q ^ (n : ℕ)‖ / (1 - r) := by
-          apply div_le_div_of_nonneg_left _ hone_sub_r_pos hdenom_lower
-          exact mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _)
-      _ = ↑n * r ^ (n : ℕ) / (1 - r) := by rw [norm_pow, hr_def]
-  have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
-    have := summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
-    simp only [pow_one] at this; exact this
-  have hsumm_pnat : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ)) := by
-    have h0 : (fun n : ℕ => (n : ℝ) * r ^ n) 0 = 0 := by simp
-    exact (nat_pos_tsum2 _ h0).mpr hsumm_nat
-  have hsumm_majorant : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
-    simpa [div_eq_mul_inv] using hsumm_pnat.mul_right (1 - r)⁻¹
-  have hsumm_norms : Summable (fun n : ℕ+ => ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖) := by
-    refine Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => ?_) hsumm_majorant
-    convert hterm_bound n using 2
-  have htsum_le : ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
-      ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) := by
-    calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
-        ≤ ∑' n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ :=
-          norm_tsum_le_tsum_norm hsumm_norms
-      _ ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) :=
-          Summable.tsum_le_tsum (fun n => by convert hterm_bound n using 2)
-            hsumm_norms hsumm_majorant
-  have hsum_nat_val : (∑' n : ℕ, (n : ℝ) * r ^ n) = r / (1 - r) ^ 2 :=
-    tsum_coe_mul_geometric_of_norm_lt_one hr_norm_lt_one
-  have hsum_pnat : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
-    have heq := tsum_pnat_eq_tsum_succ4 (fun n => (n : ℝ) * r ^ n) hsumm_nat
-    simp only [Nat.cast_zero, zero_mul, zero_add] at heq
-    rw [← hsum_nat_val]; exact heq
-  have hsum_majorant_eq : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
-    rw [tsum_div_const, hsum_pnat]; field_simp
-  have hsum_le_8r : r / (1 - r) ^ 3 ≤ 8 * r := by
-    have h1 : (1 / 2 : ℝ) ^ 3 ≤ (1 - r) ^ 3 := by
-      apply pow_le_pow_left₀ (by norm_num : 0 ≤ (1 : ℝ) / 2)
-      linarith
-    have h2 : (1 / 2 : ℝ) ^ 3 = 1 / 8 := by norm_num
-    rw [h2] at h1
-    calc r / (1 - r) ^ 3 ≤ r / (1 / 8) := by
-          apply div_le_div_of_nonneg_left hr_pos.le (by positivity : 0 < (1 : ℝ) / 8) h1
-      _ = 8 * r := by ring
-  have hq_eq_exp : r = Real.exp (-2 * π * z.im) := by
-    rw [hr_def, hq_def]
+  -- Key bounds: ‖q‖ ≤ exp(-2π) < 1/2
+  have hq_lt : ‖q‖ < 1 := norm_exp_two_pi_I_lt_one z
+  have hq_bound : ‖q‖ ≤ Real.exp (-2 * π) := norm_exp_two_pi_I_le_exp_neg_two_pi z hz
+  have hexp_lt_half : Real.exp (-2 * π) < 1 / 2 := by
+    have h2pi_gt_1 : 1 < 2 * π := by nlinarith [pi_gt_three]
+    have hexp1_gt_2 : 2 < Real.exp 1 := by
+      have := Real.add_one_lt_exp (by norm_num : (1 : ℝ) ≠ 0); linarith
+    calc Real.exp (-2 * π) < Real.exp (-1) := Real.exp_strictMono (by linarith)
+      _ < 1 / 2 := by
+        rw [Real.exp_neg, one_div, inv_lt_inv₀ (Real.exp_pos _) (by norm_num : (0 : ℝ) < 2)]
+        exact hexp1_gt_2
+  have hq_lt_half : ‖q‖ < 1 / 2 := lt_of_le_of_lt hq_bound hexp_lt_half
+  have hone_sub_q_gt_half : 1 / 2 < 1 - ‖q‖ := by linarith
+  -- Use norm_tsum_logDeriv_expo_le and bound r/(1-r)³ ≤ 8r for r < 1/2
+  have htsum_bound := norm_tsum_logDeriv_expo_le hq_lt
+  have hsum_le_8q : ‖q‖ / (1 - ‖q‖) ^ 3 ≤ 8 * ‖q‖ := by
+    have h1 : (1 / 8 : ℝ) ≤ (1 - ‖q‖) ^ 3 := by
+      have h := pow_le_pow_left₀ (by linarith : (0 : ℝ) ≤ 1/2) hone_sub_q_gt_half.le (n := 3)
+      norm_num at h; exact h
+    calc ‖q‖ / (1 - ‖q‖) ^ 3 ≤ ‖q‖ / (1 / 8) := by
+          apply div_le_div_of_nonneg_left (norm_nonneg _) (by positivity) h1
+      _ = 8 * ‖q‖ := by ring
+  have hq_eq_exp : ‖q‖ = Real.exp (-2 * π * z.im) := by
     have hre : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
       rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
       simp [Complex.I_re, Complex.I_im, mul_comm]
     rw [Complex.norm_exp, hre]
   calc 24 * ‖∑' n : ℕ+, ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
-      ≤ 24 * (r / (1 - r) ^ 3) := by
-        gcongr; calc _ ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) := htsum_le
-          _ = r / (1 - r) ^ 3 := hsum_majorant_eq
-    _ ≤ 24 * (8 * r) := by gcongr
-    _ = 192 * r := by ring
-    _ = 192 * Real.exp (-2 * π * z.im) := by rw [hq_eq_exp]
-    _ = 192 * Real.exp (-(2 * π) * z.im) := by ring_nf
+      ≤ 24 * (‖q‖ / (1 - ‖q‖) ^ 3) := by gcongr
+    _ ≤ 24 * (8 * ‖q‖) := by gcongr
+    _ = 192 * ‖q‖ := by ring
+    _ = 192 * Real.exp (-(2 * π) * z.im) := by rw [hq_eq_exp]; ring_nf
 
 /-- E₂ → 1 at i∞. -/
 lemma E₂_tendsto_one_atImInfty : Filter.Tendsto E₂ atImInfty (nhds 1) := by
