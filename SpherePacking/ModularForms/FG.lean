@@ -361,9 +361,19 @@ The proof expands the definitions and simplifies using ζ(2) = π²/6. -/
 lemma E₂_sigma_qexp (z : UpperHalfPlane) :
     E₂ z = 1 - 24 * ∑' (n : ℕ+), (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z) := by
-  -- The algebra from G2_q_exp and E₂ = (1/(2*ζ(2))) • G₂ gives this
-  -- Uses ζ(2) = π²/6, so (1/(2*ζ(2))) * 8π² = 24
-  sorry
+  -- Use E₂_eq and tsum_eq_tsum_sigma to convert n*q^n/(1-q^n) → σ₁(n)*q^n
+  rw [E₂_eq z]
+  congr 2
+  -- Convert between ℕ+ and ℕ indexing using tsum_pnat_eq_tsum_succ3
+  have hl := tsum_pnat_eq_tsum_succ3
+    (fun n => ArithmeticFunction.sigma 1 n * Complex.exp (2 * π * Complex.I * n * z))
+  have hr := tsum_pnat_eq_tsum_succ3
+    (fun n => n * Complex.exp (2 * π * Complex.I * n * z) /
+      (1 - Complex.exp (2 * π * Complex.I * n * z)))
+  rw [hl, hr]
+  have ht := tsum_eq_tsum_sigma z
+  simp at *
+  rw [ht]
 
 /-- Summability of σ₁ q-series (for D_qexp_tsum_pnat hypothesis).
 Uses σ₁(n) ≤ n² (sigma_bound) and a33 for exponential summability. -/
@@ -371,7 +381,26 @@ lemma sigma1_qexp_summable (z : UpperHalfPlane) :
     Summable (fun n : ℕ+ => (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z)) := by
   -- Compare with n² * exp(...) using sigma_bound, then use a33 2 1 z
-  sorry
+  apply Summable.of_norm
+  apply Summable.of_nonneg_of_le (fun n => norm_nonneg _)
+  · intro n
+    calc ‖(ArithmeticFunction.sigma 1 n : ℂ) * Complex.exp (2 * π * Complex.I * n * z)‖
+        = ‖(ArithmeticFunction.sigma 1 n : ℂ)‖ * ‖Complex.exp (2 * π * Complex.I * n * z)‖ :=
+          norm_mul _ _
+      _ ≤ (n : ℝ) ^ 2 * ‖Complex.exp (2 * π * Complex.I * n * z)‖ := by
+          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+          simp only [Complex.norm_natCast]
+          exact_mod_cast sigma_bound 1 n
+      _ = ‖(n : ℂ) ^ 2 * Complex.exp (2 * π * Complex.I * n * z)‖ := by
+          rw [norm_mul, Complex.norm_pow, Complex.norm_natCast]
+  · -- Convert form to match a33 2 1 z (order of z * n vs n * z)
+    have ha33 := a33 2 1 z
+    simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at ha33
+    have heq : (fun n : ℕ+ => ‖(n : ℂ) ^ 2 * Complex.exp (2 * π * Complex.I * n * z)‖) =
+        (fun n : ℕ+ => ‖(n : ℂ) ^ 2 * Complex.exp (2 * π * Complex.I * z * n)‖) := by
+      ext n; ring_nf
+    rw [heq]
+    exact summable_norm_iff.mpr ha33
 
 /-- Derivative bound for σ₁ q-series on compact sets (for D_qexp_tsum_pnat hypothesis).
 The bound uses σ₁(n) ≤ n² (sigma_bound) and iter_deriv_comp_bound3 for exponential decay. -/
