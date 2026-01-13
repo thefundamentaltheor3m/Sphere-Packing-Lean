@@ -261,17 +261,8 @@ lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
   ModularFormClass.bdd_at_infty E₆
 
 /-- serre_D 1 E₂ is bounded at infinity. -/
-lemma serre_D_E₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) := by
-  have hserre : serre_D 1 E₂ = D E₂ - (fun z => 1 * 12⁻¹ * E₂ z * E₂ z) := rfl
-  rw [hserre]
-  have hDE₂ := D_isBoundedAtImInfty_of_bounded E₂_holo' E₂_isBoundedAtImInfty
-  have hE₂sq := E₂_isBoundedAtImInfty.mul E₂_isBoundedAtImInfty
-  have h12E₂sq : IsBoundedAtImInfty (fun z => 1 * 12⁻¹ * E₂ z * E₂ z) := by
-    have hconst : IsBoundedAtImInfty (fun _ : ℍ => (1 : ℂ) * 12⁻¹) :=
-      Filter.const_boundedAtFilter _ _
-    have := hconst.mul hE₂sq
-    convert this using 1; ext z; simp only [Pi.mul_apply]; ring
-  exact hDE₂.sub h12E₂sq
+lemma serre_D_E₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) :=
+  serre_D_isBoundedAtImInfty 1 E₂_holo' E₂_isBoundedAtImInfty
 
 /-! ## Construction of ModularForm from serre_D -/
 
@@ -304,15 +295,8 @@ def serre_D_E₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 where
     convert serre_D_E₄_isBoundedAtImInfty using 1
 
 /-- serre_D 6 E₆ is bounded at infinity. -/
-lemma serre_D_E₆_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 6 E₆.toFun) := by
-  unfold serre_D
-  have h1 := D_isBoundedAtImInfty_of_bounded E₆.holo' E₆_isBoundedAtImInfty
-  have h2 : IsBoundedAtImInfty (fun z => (6 : ℂ) * 12⁻¹ * E₂ z * E₆.toFun z) := by
-    have hconst : IsBoundedAtImInfty (fun _ : ℍ => (6 : ℂ) * 12⁻¹) :=
-      Filter.const_boundedAtFilter _ _
-    have hE₂E₆ := E₂_isBoundedAtImInfty.mul E₆_isBoundedAtImInfty
-    convert hconst.mul hE₂E₆ using 1; ext z; simp only [Pi.mul_apply]; ring
-  exact h1.sub h2
+lemma serre_D_E₆_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 6 E₆.toFun) :=
+  serre_D_isBoundedAtImInfty 6 E₆.holo' E₆_isBoundedAtImInfty
 
 /-- serre_D 6 E₆ is a weight-8 modular form. -/
 def serre_D_E₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 where
