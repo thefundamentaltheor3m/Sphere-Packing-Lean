@@ -44,9 +44,27 @@ Hence: `E₂ * E₄ - E₆ = 3 * D E₄`, so `F = (E₂ * E₄ - E₆)² = 9 * (
 -/
 theorem F_eq_nine_D_E₄_sq : F = (9 : ℂ) • (D E₄.toFun) ^ 2 := by
   -- From ramanujan_E₄: D E₄ = 3⁻¹ * (E₂ * E₄ - E₆)
-  -- Therefore: E₂ * E₄ - E₆ = 3 * D E₄
-  -- And: F = (E₂ * E₄ - E₆)² = (3 * D E₄)² = 9 * (D E₄)²
-  sorry
+  -- Therefore: E₂ * E₄ - E₆ = 3 • D E₄
+  -- And: F = (E₂ * E₄ - E₆)² = (3 • D E₄)² = 9 • (D E₄)²
+  have key : E₂ * E₄.toFun - E₆.toFun = (3 : ℂ) • D E₄.toFun := by
+    have hr := ramanujan_E₄
+    ext z
+    simp only [Pi.mul_apply, Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
+    have hrz := congrFun hr z
+    simp only [Pi.mul_apply, Pi.sub_apply] at hrz
+    -- hrz : D E₄ z = 3⁻¹ z * (E₂ z * E₄ z - E₆ z) where 3⁻¹ z = (3 : ℂ)⁻¹
+    have h3ne : (3 : ℂ) ≠ 0 := by norm_num
+    -- The key: 3⁻¹ as a constant function applied to z equals (3 : ℂ)⁻¹
+    have hconst : (3⁻¹ : UpperHalfPlane → ℂ) z = (3 : ℂ)⁻¹ := rfl
+    rw [hconst] at hrz
+    -- Now hrz : D E₄ z = (3 : ℂ)⁻¹ * (E₂ z * E₄ z - E₆ z)
+    field_simp [h3ne] at hrz ⊢
+    exact hrz.symm
+  unfold F
+  rw [key]
+  ext z
+  simp only [Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
+  ring
 
 /- Some basic facts -/
 /-- Helper until MDifferentiable.pow is upstreamed to mathlib -/
