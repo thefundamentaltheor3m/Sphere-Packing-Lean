@@ -1015,11 +1015,9 @@ lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
   have hsumm_norms : Summable (fun n : ℕ+ => ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖) :=
     Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => hterm_bound n) hsumm_majorant
   -- Closed form: ∑ n·r^n/(1-r) = r/(1-r)³
-  have hsum_pnat : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
-    rw [tsum_pNat (f := fun n => (n : ℝ) * r ^ n) (by simp)]
-    exact tsum_coe_mul_geometric_of_norm_lt_one hr_norm_lt_one
   have hsum_majorant_eq : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
-    simp [div_eq_mul_inv, tsum_mul_right, hsum_pnat, pow_succ]; ring
+    simp [div_eq_mul_inv, tsum_mul_right, tsum_pnat_coe_mul_geometric hr_norm_lt_one, pow_succ]
+    ring
   -- Final bound
   calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
       ≤ ∑' n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ := norm_tsum_le_tsum_norm hsumm_norms
