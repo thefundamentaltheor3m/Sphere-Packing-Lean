@@ -905,20 +905,6 @@ lemma I_pow_even_real (k : ℕ) (hk : Even k) : (I ^ k).im = 0 := by
   | zero => simp
   | succ n ih => simp [pow_succ, ih]
 
-/-- `(-2πi)^k` is real for even k. -/
-lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
-    ((-2 * Real.pi * I) ^ k : ℂ).im = 0 := by
-  have h : (-2 * Real.pi * I) ^ k = ((-2 * Real.pi) ^ k : ℂ) * I ^ k := by ring
-  rw [h]
-  have h1 : ((-(2 * Real.pi)) ^ k : ℂ).im = 0 := by
-    have hcast : ((-(2 * Real.pi)) ^ k : ℂ) = (((-2 * Real.pi) ^ k : ℝ) : ℂ) := by push_cast; ring
-    rw [hcast]
-    exact Complex.ofReal_im _
-  have h2 : (I ^ k : ℂ).im = 0 := I_pow_even_real k hk
-  have heq : (-2 * Real.pi : ℂ) ^ k = (-(2 * Real.pi)) ^ k := by ring
-  rw [heq]
-  simp [Complex.mul_im, h1, h2]
-
 /-- Each term Θ₂_term n (I*t) has zero imaginary part for t > 0. -/
 lemma Θ₂_term_imag_axis_real (n : ℤ) (t : ℝ) (ht : 0 < t) :
     (Θ₂_term n ⟨I * t, by simp [ht]⟩).im = 0 := by
