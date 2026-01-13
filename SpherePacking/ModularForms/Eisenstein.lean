@@ -1,5 +1,6 @@
 import SpherePacking.ModularForms.Eisensteinqexpansions
 import SpherePacking.ModularForms.IsCuspForm
+import SpherePacking.ModularForms.summable_lems
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
@@ -960,3 +961,99 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
   simp [Complex.mul_im, hsum_im]
 
 end ImagAxisProperties
+
+/-! ## Boundedness of E₂ -/
+
+/-- E₂ is bounded at infinity.
+
+Uses `E₂_eq`: E₂(z) = 1 - 24·Σₙ₌₁ n·qⁿ/(1-qⁿ) where q = exp(2πiz).
+As im(z) → ∞, ‖q‖ → 0, so the sum → 0, hence E₂(z) → 1.
+
+**Proof strategy**:
+1. For im(z) ≥ 1, |q| ≤ r₀ := exp(-2π)
+2. Bound each term: |1-qⁿ| ≥ 1-|q|ⁿ ≥ 1-|q| (since |q|ⁿ ≤ |q| for n ≥ 1),
+   so |n·qⁿ/(1-qⁿ)| ≤ n·|q|ⁿ/(1-|q|)
+3. Sum: ∑ₙ₌₁ n·rⁿ = r/(1-r)² for r < 1, then multiply by 1/(1-r) to get
+   ∑ₙ₌₁ n·rⁿ/(1-r) = r/(1-r)³
+4. Therefore |E₂| ≤ 1 + 24·r₀/(1-r₀)³ -/
+lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
+  rw [UpperHalfPlane.isBoundedAtImInfty_iff]
+  set r₀ : ℝ := Real.exp (-2 * π) with hr₀_def
+  refine ⟨1 + 24 * (r₀ / (1 - r₀) ^ 3), 1, ?_⟩
+  intro z hz
+  rw [E₂_eq]
+  have hq : ‖cexp (2 * π * Complex.I * z)‖ < 1 := norm_exp_two_pi_I_lt_one z
+  have hq_bound : ‖cexp (2 * π * Complex.I * z)‖ ≤ Real.exp (-2 * π) := by
+    have h1 : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
+      rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
+      simp [Complex.I_re, Complex.I_im, mul_comm]
+    rw [Complex.norm_exp, h1, Real.exp_le_exp]
+    nlinarith [Real.pi_pos]
+  calc ‖1 - 24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+          (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖
+      ≤ ‖(1 : ℂ)‖ +
+          ‖24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+            (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := norm_sub_le _ _
+    _ = 1 + 24 * ‖∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+          (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖ := by simp
+    _ ≤ 1 + 24 * (r₀ / (1 - r₀) ^ 3) := ?_
+  set q : ℂ := cexp (2 * π * Complex.I * z) with hq_def
+  have hexp_pow : ∀ n : ℕ, cexp (2 * π * Complex.I * n * z) = q ^ n := fun n => by
+    rw [hq_def, ← Complex.exp_nat_mul]; congr 1; ring
+  have hsum_eq : (fun n : ℕ+ => ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+      (1 - cexp (2 * π * Complex.I * ↑n * ↑z))) =
+      (fun n : ℕ+ => ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))) := by ext n; simp [hexp_pow]
+  rw [hsum_eq]
+  have hr₀_lt_one : r₀ < 1 := Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos])
+  have hone_sub_r₀_pos : 0 < 1 - r₀ := sub_pos.mpr hr₀_lt_one
+  have hone_sub_q_pos : 0 < 1 - ‖q‖ := sub_pos.mpr hq
+  have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
+      n * ‖q‖ ^ (n : ℕ) / (1 - ‖q‖) := fun n => by
+    rw [norm_div, norm_mul, Complex.norm_natCast]
+    have hdenom_lower : 1 - ‖q‖ ≤ ‖1 - q ^ (n : ℕ)‖ := by
+      have h1 : 1 - ‖q ^ (n : ℕ)‖ ≤ ‖1 - q ^ (n : ℕ)‖ := by
+        have := norm_sub_norm_le (1 : ℂ) (q ^ (n : ℕ)); simp only [norm_one] at this; linarith
+      have h2 : ‖q‖ ^ (n : ℕ) ≤ ‖q‖ := by
+        simpa using pow_le_pow_of_le_one (norm_nonneg _) hq.le n.one_le
+      calc 1 - ‖q‖ ≤ 1 - ‖q‖ ^ (n : ℕ) := by linarith
+        _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow]
+        _ ≤ _ := h1
+    calc ↑n * ‖q ^ (n : ℕ)‖ / ‖1 - q ^ (n : ℕ)‖
+        ≤ ↑n * ‖q ^ (n : ℕ)‖ / (1 - ‖q‖) := by
+          apply div_le_div_of_nonneg_left _ hone_sub_q_pos hdenom_lower
+          exact mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _)
+      _ = ↑n * ‖q‖ ^ (n : ℕ) / (1 - ‖q‖) := by rw [norm_pow]
+  set r : ℝ := ‖q‖ with hr_def
+  have hr_norm_lt_one : ‖r‖ < 1 := by rwa [Real.norm_of_nonneg (norm_nonneg q)]
+  have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
+    simpa [pow_one] using summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
+  have hsumm_pnat : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ)) := hsumm_nat.subtype _
+  have hsumm_majorant : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
+    simpa [div_eq_mul_inv] using hsumm_pnat.mul_right (1 - r)⁻¹
+  have hsumm_norms : Summable
+      (fun n : ℕ+ => ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖) := by
+    refine Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => ?_) hsumm_majorant
+    convert hterm_bound n using 2
+  have htsum_le : ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
+      ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) := by
+    calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
+        ≤ ∑' n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ :=
+          norm_tsum_le_tsum_norm hsumm_norms
+      _ ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) :=
+          Summable.tsum_le_tsum (fun n => by convert hterm_bound n using 2)
+            hsumm_norms hsumm_majorant
+  have hsum_nat : (∑' n : ℕ, (n : ℝ) * r ^ n) = r / (1 - r) ^ 2 :=
+    tsum_coe_mul_geometric_of_norm_lt_one hr_norm_lt_one
+  have hsum_pnat : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
+    rw [← hsum_nat, ← tsum_pnat_eq_tsum_succ4 _ hsumm_nat]
+    simp
+  have hsum_majorant_eq :
+      (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
+    simp [div_eq_mul_inv, tsum_mul_right, hsum_pnat, pow_succ]; ring
+  have htsum_bound : ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
+      r₀ / (1 - r₀) ^ 3 := by
+    calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
+        ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) := htsum_le
+      _ = r / (1 - r) ^ 3 := hsum_majorant_eq
+      _ ≤ r₀ / (1 - r₀) ^ 3 := by gcongr
+  gcongr
