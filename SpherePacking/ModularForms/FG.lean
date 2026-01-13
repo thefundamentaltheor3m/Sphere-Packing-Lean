@@ -355,13 +355,102 @@ lemma D_E₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) := by
   rw [hkey]
   exact hbase.smul (by norm_num : (0 : ℝ) < 3⁻¹)
 
+/-- E₂ q-expansion in sigma form: E₂ = 1 - 24 * ∑ σ₁(n) * q^n.
+This follows from G2_q_exp and the definition E₂ = (1/(2*ζ(2))) • G₂.
+The proof expands the definitions and simplifies using ζ(2) = π²/6. -/
+lemma E₂_sigma_qexp (z : UpperHalfPlane) :
+    E₂ z = 1 - 24 * ∑' (n : ℕ+), (ArithmeticFunction.sigma 1 n : ℂ) *
+      Complex.exp (2 * Real.pi * Complex.I * n * z) := by
+  -- The algebra from G2_q_exp and E₂ = (1/(2*ζ(2))) • G₂ gives this
+  -- Uses ζ(2) = π²/6, so (1/(2*ζ(2))) * 8π² = 24
+  sorry
+
+/-- Summability of σ₁ q-series (for D_qexp_tsum_pnat hypothesis).
+Uses σ₁(n) ≤ n² (sigma_bound) and a33 for exponential summability. -/
+lemma sigma1_qexp_summable (z : UpperHalfPlane) :
+    Summable (fun n : ℕ+ => (ArithmeticFunction.sigma 1 n : ℂ) *
+      Complex.exp (2 * Real.pi * Complex.I * n * z)) := by
+  -- Compare with n² * exp(...) using sigma_bound, then use a33 2 1 z
+  sorry
+
+/-- Derivative bound for σ₁ q-series on compact sets (for D_qexp_tsum_pnat hypothesis).
+The bound uses σ₁(n) ≤ n² (sigma_bound) and iter_deriv_comp_bound3 for exponential decay. -/
+lemma sigma1_qexp_deriv_bound (z : UpperHalfPlane) :
+    ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K),
+        ‖(ArithmeticFunction.sigma 1 n : ℂ) * (2 * Real.pi * Complex.I * n) *
+          Complex.exp (2 * Real.pi * Complex.I * n * k.1)‖ ≤ u n := by
+  intro K hK hKc
+  -- Use iter_deriv_comp_bound3 with k=3 to get bound (2π*n)³ * r^n
+  -- which majorizes our bound n² * (2π*n) * r^n = 2π * n³ * r^n
+  obtain ⟨u₀, hu₀_sum, hu₀_bound⟩ := iter_deriv_comp_bound3 K hK hKc 3
+  use fun n => u₀ n
+  constructor
+  · exact hu₀_sum.subtype _
+  · intro n k
+    have hbound := sigma_bound 1 n
+    -- From iter_deriv_comp_bound3: (2π * n)³ * ‖exp(...)‖ ≤ u₀ n
+    have h3 := hu₀_bound n k
+    -- Note: h3 has form (2 * |π| * n)^3 * ‖exp(...)‖ ≤ u₀ n
+    -- which is (2 * π * n)^3 * ‖exp(...)‖ ≤ u₀ n since π > 0
+    simp only [abs_of_pos Real.pi_pos] at h3
+    -- Our bound: σ₁(n) * (2π*n) * ‖exp(...)‖ ≤ n² * (2π*n) * ‖exp(...)‖
+    -- Need to show: n² * (2π*n) ≤ (2π*n)³ for n ≥ 1
+    calc ‖(ArithmeticFunction.sigma 1 n : ℂ) * (2 * π * Complex.I * n) *
+            Complex.exp (2 * π * Complex.I * n * k.1)‖
+        = ‖(ArithmeticFunction.sigma 1 n : ℂ)‖ * ‖(2 * π * Complex.I * n : ℂ)‖ *
+            ‖Complex.exp (2 * π * Complex.I * n * k.1)‖ := by
+          rw [norm_mul, norm_mul]
+      _ ≤ (n : ℝ) ^ 2 * (2 * π * n) * ‖Complex.exp (2 * π * Complex.I * n * k.1)‖ := by
+          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+          have hs : ‖(ArithmeticFunction.sigma 1 n : ℂ)‖ ≤ (n : ℝ) ^ 2 := by
+            simp only [Complex.norm_natCast]
+            exact_mod_cast hbound
+          have hn : ‖(2 * π * Complex.I * n : ℂ)‖ = 2 * π * n := by
+            simp only [norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs,
+              abs_of_pos Real.pi_pos, Complex.norm_I, mul_one, Complex.norm_natCast]
+          rw [hn]
+          exact mul_le_mul hs (le_refl _) (by positivity) (by positivity)
+      _ ≤ (2 * π * n) ^ 3 * ‖Complex.exp (2 * π * Complex.I * n * k.1)‖ := by
+          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+          -- Need: n² * (2π*n) ≤ (2π*n)³
+          -- i.e., 2π * n³ ≤ (2π)³ * n³
+          -- i.e., 2π ≤ (2π)³ which is true since 2π > 1
+          have h2pi : (1 : ℝ) ≤ 2 * π := by
+            have := Real.two_pi_pos
+            have := Real.pi_pos
+            -- π > 3.14 > 0.5, so 2π > 1
+            -- Use that π² > π (since π > 1), so π > 1
+            -- Then 2π > 2 > 1
+            have hpi_gt_one : (1 : ℝ) < π := by
+              calc (1 : ℝ) < 2 := by norm_num
+                _ ≤ π := Real.two_le_pi
+            linarith
+          calc (n : ℝ) ^ 2 * (2 * π * ↑↑n)
+              = (2 * π) * (n : ℝ) ^ 3 := by ring
+            _ ≤ (2 * π) ^ 3 * (n : ℝ) ^ 3 := by
+                apply mul_le_mul_of_nonneg_right _ (by positivity)
+                calc (2 * π) = (2 * π) ^ 1 := (pow_one _).symm
+                  _ ≤ (2 * π) ^ 3 := by
+                      apply pow_le_pow_right₀ h2pi
+                      omega
+            _ = (2 * π * ↑↑n) ^ 3 := by ring
+      _ ≤ u₀ n := h3
+
 /-- Q-expansion identity: negDE₂ = 24 * ∑ n * σ₁(n) * q^n
 From Ramanujan's formula: D E₂ = (E₂² - E₄)/12, so -D E₂ = (E₄ - E₂²)/12.
 And the derivative of E₂ = 1 - 24∑ σ₁(n) q^n gives -D E₂ = 24 ∑ n σ₁(n) q^n.
-See blueprint equation at line 136 of modform-ineq.tex. -/
+See blueprint equation at line 136 of modform-ineq.tex.
+
+Proof outline:
+1. E₂_sigma_qexp: E₂ = 1 - 24 * ∑ σ₁(n) * q^n
+2. D_qexp_tsum_pnat: D(∑ a(n) * q^n) = ∑ n * a(n) * q^n
+3. negDE₂ = -D E₂ = -D(1 - 24∑...) = 24 * ∑ n * σ₁(n) * q^n -/
 theorem negDE₂_qexp (z : UpperHalfPlane) :
     negDE₂ z = 24 * ∑' (n : ℕ+), (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z) := by
+  -- Use termwise differentiation of E₂ = 1 - 24 * ∑ σ₁(n) * q^n
+  -- Requires: E₂_sigma_qexp, sigma1_qexp_summable, sigma1_qexp_deriv_bound, D_qexp_tsum_pnat
   sorry
 
 /-- The q-expansion series for negDE₂ is summable. -/
