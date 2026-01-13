@@ -243,78 +243,6 @@ lemma D_E₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) := by
   rw [hkey]
   exact hbase.smul (by norm_num : (0 : ℝ) < 3⁻¹)
 
-lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
-  calc
-    L₁₀ = (D F) * G - F * (D G) := rfl
-    _ = (D F - 10 * 12⁻¹ * E₂ * F) * G - F * (D G - 10 * 12⁻¹ * E₂ * G) := by ring_nf
-    _ = (serre_D 10 F) * G - F * (serre_D 10 G) := by ext z; simp [serre_D]
-
-lemma SerreDer_22_L₁₀_SerreDer :
-    SerreDer_22_L₁₀ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by
-  have SF_holo := @serre_D_differentiable F 10 F_holo
-  have SG_holo := @serre_D_differentiable G 10 G_holo
-  calc
-    SerreDer_22_L₁₀ = serre_D 22 L₁₀ := rfl
-    _ = serre_D 22 (serre_D 10 F * G - F * serre_D 10 G) := by rw [L₁₀_SerreDer]
-    _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by
-        apply serre_D_sub _ _ _
-        · exact MDifferentiable.mul SF_holo G_holo
-        · exact MDifferentiable.mul F_holo SG_holo
-    _ = serre_D (12 + 10) ((serre_D 10 F) * G) - serre_D (10 + 12) (F * serre_D 10 G) := by ring_nf
-    _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
-        - serre_D (10 + 12) (F * serre_D 10 G) := by
-          simpa using (serre_D_mul 12 10 (serre_D 10 F) G SF_holo G_holo)
-    _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
-        - ((serre_D 10 F) * (serre_D 10 G) + F * (serre_D 12 (serre_D 10 G))) := by
-          simpa using (serre_D_mul 10 12 F (serre_D 10 G) F_holo SG_holo)
-    _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
-
-/- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
-lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ := by
-  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, ResToImagAxis.Real]
-  intro t ht
-  ring_nf
-  simp only [Function.resToImagAxis_apply]
-  sorry
-
-lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
-  refine And.intro SerreDer_22_L₁₀_real ?_
-  intro t ht
-  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G]
-  ring_nf
-  sorry
-
-/- $\mathcal{L}_{1, 0}$ is eventually positive on the imaginary axis. -/
-lemma L₁₀_eventuallyPos : ResToImagAxis.EventuallyPos L₁₀ := by
-  sorry
-
-/- $\mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
-lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ := antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventuallyPos
-
-/--
-$t \mapsto F(it) / G(it)$ is monotone decreasing.
--/
-theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) := by
-  sorry
-
-/--
-$\lim_{t \to 0^+} F(it) / G(it) = 18 / \pi^2$.
--/
-theorem FmodG_rightLimitAt_zero :
-    Tendsto FmodGReal (nhdsWithin 0 (Set.Ioi 0)) (nhdsWithin (18 * (π ^ (-2 : ℤ))) Set.univ) := by
-  sorry
-
-/--
-Main inequalities between $F$ and $G$ on the imaginary axis.
--/
-theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
-    FReal t + 18 * (π ^ (-2 : ℤ)) * GReal t > 0 := by
-  sorry
-
-theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
-    FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
-  sorry
-
 /-!
 ## Imaginary Axis Properties
 
@@ -403,3 +331,76 @@ theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   exact h_sq.smul (by norm_num : (0 : ℝ) < 9)
 
 end ImagAxisProperties
+
+lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
+  calc
+    L₁₀ = (D F) * G - F * (D G) := rfl
+    _ = (D F - 10 * 12⁻¹ * E₂ * F) * G - F * (D G - 10 * 12⁻¹ * E₂ * G) := by ring_nf
+    _ = (serre_D 10 F) * G - F * (serre_D 10 G) := by ext z; simp [serre_D]
+
+lemma SerreDer_22_L₁₀_SerreDer :
+    SerreDer_22_L₁₀ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by
+  have SF_holo := @serre_D_differentiable F 10 F_holo
+  have SG_holo := @serre_D_differentiable G 10 G_holo
+  calc
+    SerreDer_22_L₁₀ = serre_D 22 L₁₀ := rfl
+    _ = serre_D 22 (serre_D 10 F * G - F * serre_D 10 G) := by rw [L₁₀_SerreDer]
+    _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by
+        apply serre_D_sub _ _ _
+        · exact MDifferentiable.mul SF_holo G_holo
+        · exact MDifferentiable.mul F_holo SG_holo
+    _ = serre_D (12 + 10) ((serre_D 10 F) * G) - serre_D (10 + 12) (F * serre_D 10 G) := by ring_nf
+    _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
+        - serre_D (10 + 12) (F * serre_D 10 G) := by
+          simpa using (serre_D_mul 12 10 (serre_D 10 F) G SF_holo G_holo)
+    _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
+        - ((serre_D 10 F) * (serre_D 10 G) + F * (serre_D 12 (serre_D 10 G))) := by
+          simpa using (serre_D_mul 10 12 F (serre_D 10 G) F_holo SG_holo)
+    _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
+
+/- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
+lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ := by
+  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, ResToImagAxis.Real]
+  intro t ht
+  ring_nf
+  simp only [Function.resToImagAxis_apply]
+  sorry
+
+lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
+  refine And.intro SerreDer_22_L₁₀_real ?_
+  intro t ht
+  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G]
+  ring_nf
+  sorry
+
+/- $\mathcal{L}_{1, 0}$ is eventually positive on the imaginary axis. -/
+lemma L₁₀_eventuallyPos : ResToImagAxis.EventuallyPos L₁₀ := by
+  sorry
+
+/- $\mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
+lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ := antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventuallyPos
+
+/--
+$t \mapsto F(it) / G(it)$ is monotone decreasing.
+-/
+theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) := by
+  sorry
+
+/--
+$\lim_{t \to 0^+} F(it) / G(it) = 18 / \pi^2$.
+-/
+theorem FmodG_rightLimitAt_zero :
+    Tendsto FmodGReal (nhdsWithin 0 (Set.Ioi 0)) (nhdsWithin (18 * (π ^ (-2 : ℤ))) Set.univ) := by
+  sorry
+
+/--
+Main inequalities between $F$ and $G$ on the imaginary axis.
+-/
+theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
+    FReal t + 18 * (π ^ (-2 : ℤ)) * GReal t > 0 := by
+  sorry
+
+theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
+    FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
+  sorry
+
