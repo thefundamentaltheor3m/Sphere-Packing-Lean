@@ -1,10 +1,10 @@
 import SpherePacking.ModularForms.Derivative
 
 /-!
-# Ramanujan's Identities for Eisenstein Series
+# Boundedness of Eisenstein Series Derivatives
 
-This file proves Ramanujan's identities relating derivatives of Eisenstein series
-and establishes boundedness properties needed for asymptotic analysis.
+Boundedness results for derivatives of Eisenstein series, to be extended with
+Ramanujan's identities in future work.
 
 ## Main results
 
