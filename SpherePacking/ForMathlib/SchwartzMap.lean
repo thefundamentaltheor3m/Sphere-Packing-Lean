@@ -4,10 +4,21 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 
-import Mathlib
-
--- TODO: run #min_imports once file completed
+-- Minimal imports (replacing import Mathlib)
 import Mathlib.Analysis.Distribution.SchwartzSpace
+import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
+import Mathlib.Analysis.Calculus.SmoothSeries
+import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Analysis.Calculus.Deriv.Support
+import Mathlib.Analysis.Calculus.Deriv.ZPow
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
+import Mathlib.Algebra.Polynomial.Basic
+import Mathlib.Topology.Algebra.InfiniteSum.Basic
+import Mathlib.Algebra.Group.EvenFunction
+import Mathlib.Geometry.Manifold.PartitionOfUnity
+import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+import Mathlib.Tactic
 
 open scoped Nat NNReal ContDiff
 
