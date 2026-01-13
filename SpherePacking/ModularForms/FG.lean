@@ -37,6 +37,17 @@ theorem G_eq_GReal {t : ℝ} (ht : 0 < t) : G.resToImagAxis t = GReal t := by so
 theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
     FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by sorry
 
+/--
+`F = 9 * (D E₄)²` by Ramanujan's formula.
+From `ramanujan_E₄`: `D E₄ = (1/3) * (E₂ * E₄ - E₆)`
+Hence: `E₂ * E₄ - E₆ = 3 * D E₄`, so `F = (E₂ * E₄ - E₆)² = 9 * (D E₄)²`.
+-/
+theorem F_eq_nine_D_E₄_sq : F = (9 : ℂ) • (D E₄.toFun) ^ 2 := by
+  -- From ramanujan_E₄: D E₄ = 3⁻¹ * (E₂ * E₄ - E₆)
+  -- Therefore: E₂ * E₄ - E₆ = 3 * D E₄
+  -- And: F = (E₂ * E₄ - E₆)² = (3 * D E₄)² = 9 * (D E₄)²
+  sorry
+
 /- Some basic facts -/
 /-- Helper until MDifferentiable.pow is upstreamed to mathlib -/
 lemma MDifferentiable.pow {f : UpperHalfPlane → ℂ} (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (n : ℕ) :
@@ -110,20 +121,22 @@ Modular linear differential equation satisfied by $G$.
 theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
   sorry
 
-/- Positivity of (quasi)modular forms. $F, G, H_2$ are all (sum of) squares. -/
-lemma F_pos : ResToImagAxis.Pos F := by
+/- Positivity of (quasi)modular forms on the imaginary axis. -/
+lemma negDE₂_imag_axis_pos : ResToImagAxis.Pos negDE₂ := by
   sorry
 
-lemma G_pos : ResToImagAxis.Pos G := by
+lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := by
   sorry
 
-lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
-  sorry
-
-lemma Δ_fun_pos : ResToImagAxis.Pos Δ_fun := by
-  sorry
-
-lemma H₂_pos : ResToImagAxis.Pos H₂ := by
+/--
+`D E₄` is positive on the imaginary axis.
+From Ramanujan: `D E₄ = (1/3) * (E₂*E₄ - E₆) = 240 * ∑ n*σ₃(n)*q^n`.
+On z = it, each term is positive.
+-/
+lemma D_E₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) := by
+  -- D E₄ = (1/3) * (E₂*E₄ - E₆) by ramanujan_E₄
+  -- E₂*E₄ - E₆ = 720 * Σ n*σ₃(n)*q^n by E₂_mul_E₄_sub_E₆
+  -- On z = it, each term is positive real
   sorry
 
 lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
@@ -275,134 +288,14 @@ theorem F_imag_axis_real : ResToImagAxis.Real F := by
 
 /--
 `F(it) > 0` for all `t > 0`.
-Blueprint: Follows from the q-expansion (E₂E₄ - E₆ = 720 * ...) and positivity.
+Blueprint: F = 9*(D E₄)² and D E₄ > 0 on imaginary axis.
 -/
 theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
-  refine ⟨F_imag_axis_real, fun t ht => ?_⟩
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, F]
-  let z : ℍ := ⟨I * t, by simp [ht]⟩
-  -- F = (E₂E₄ - E₆)² and we need to show its real part is positive
-  -- Since F_imag_axis_real shows F(it).im = 0, we have F(it) = F(it).re
-  have hF_real_pre := F_imag_axis_real t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, F] at hF_real_pre
-  have hF_real : ((E₂ z * E₄ z - E₆ z) ^ 2).im = 0 := hF_real_pre
-  -- The real part of (...)² equals (...)².re
-  -- Since the base (E₂E₄ - E₆) is real on imaginary axis, we have (real)² > 0 if base ≠ 0
-  -- Use the q-expansion: E₂E₄ - E₆ = 720 * ∑ n * σ₃(n) * q^n
-  have hq_exp := E₂_mul_E₄_sub_E₆ z
-  -- E₂E₄ - E₆ is real on imaginary axis
-  have hE₂_real := E₂_imag_axis_real t ht
-  have hE₄_real := E₄_imag_axis_real t ht
-  have hE₆_real := E₆_imag_axis_real t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht,
-    ↓reduceDIte] at hE₂_real hE₄_real hE₆_real
-  -- The hypotheses have E₄.toFun, E₆.toFun but we need E₄, E₆
-  -- They're definitionally equal, so use change to match
-  have hE₄_real' : (E₄ z).im = 0 := hE₄_real
-  have hE₆_real' : (E₆ z).im = 0 := hE₆_real
-  have hE₂_real' : (E₂ z).im = 0 := hE₂_real
-  have hdiff_real : (E₂ z * E₄ z - E₆ z).im = 0 := by
-    simp only [Complex.sub_im, Complex.mul_im, hE₂_real', hE₄_real', hE₆_real', mul_zero, zero_mul,
-      add_zero, sub_zero]
-  -- For a real number r (im = 0), r² > 0 iff r.re ≠ 0
-  -- (E₂E₄ - E₆)² = (E₂E₄ - E₆).re²  since im = 0
-  have hsq_eq : ((E₂ z * E₄ z - E₆ z) ^ 2).re = (E₂ z * E₄ z - E₆ z).re ^ 2 := by
-    -- (a + 0i)² = a² + 0i, so ((a + 0i)²).re = a²
-    have hpow : (E₂ z * E₄ z - E₆ z) ^ 2 =
-        (E₂ z * E₄ z - E₆ z) * (E₂ z * E₄ z - E₆ z) := sq _
-    rw [hpow, Complex.mul_re]
-    simp only [hdiff_real, mul_zero, sub_zero]
-    ring
-  -- Convert function application to pointwise form
-  have hgoal_eq : (((E₂ * E₄.toFun - E₆.toFun) ^ 2) z).re =
-      ((E₂ z * E₄ z - E₆ z) ^ 2).re := rfl
-  rw [hgoal_eq, hsq_eq]
-  -- Now show (E₂E₄ - E₆).re ≠ 0 using the q-expansion
-  -- From hq_exp: E₂E₄ - E₆ = 720 * ∑ n*σ₃(n)*q^n
-  -- On z = it: q = exp(-2πt) > 0, and the sum has positive terms
-  apply sq_pos_of_pos
-  -- Goal: 0 < (E₂ z * E₄ z - E₆ z).re
-  rw [hq_exp]
-  -- Show the sum is positive on imaginary axis
-  -- For z = it, exp(2πinz) = exp(-2πnt) which is positive real
-  have hz_eq : (z : ℂ) = I * t := rfl
-  -- The real part of 720 * (positive sum) is positive
-  -- 720 is real, so (720 * x).re = 720 * x.re
-  have h720_real : (720 : ℂ).im = 0 := by norm_num
-  rw [Complex.mul_re, h720_real, zero_mul, sub_zero]
-  apply mul_pos (by norm_num : (0 : ℝ) < 720)
-  -- Show the sum has positive real part
-  -- On z = it, each term n * σ₃(n) * exp(2πinz) = n * σ₃(n) * exp(-2πnt) is positive real
-  -- For n : ℕ+: n > 0, σ₃(n) ≥ 1, exp(-2πnt) > 0
-  -- So each term > 0, and their sum > 0
-  -- Step 1: Summability of the series
-  have hsum : Summable fun n : ℕ+ => (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-      exp (2 * ↑Real.pi * I * z * n) := by
-    apply Summable.of_norm
-    apply Summable.of_nonneg_of_le
-    · intro n; exact norm_nonneg _
-    · intro n
-      calc ‖(↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-              exp (2 * ↑Real.pi * I * z * n)‖
-          = ‖(↑↑n : ℂ)‖ * ‖(↑((ArithmeticFunction.sigma 3) ↑n) : ℂ)‖ *
-              ‖exp (2 * ↑Real.pi * I * z * n)‖ := by
-            rw [norm_mul, norm_mul]
-        _ ≤ (↑n : ℝ) * (↑n : ℝ)^4 * ‖exp (2 * ↑Real.pi * I * z * n)‖ := by
-            gcongr
-            · rw [Complex.norm_natCast]
-            · rw [Complex.norm_natCast]
-              have hbound := sigma_bound 3 n
-              exact_mod_cast hbound
-        _ = ‖(↑n : ℂ) ^ 5 * exp (2 * ↑Real.pi * I * z * n)‖ := by
-            rw [norm_mul, Complex.norm_pow, Complex.norm_natCast]
-            ring
-    · have := a33 5 1 z
-      simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at this
-      exact summable_norm_iff.mpr this
-  -- Adjust the exponent form to match the goal
-  have hsum' : Summable fun n : ℕ+ => (↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-      exp (2 * ↑Real.pi * I * ↑n * z) := by
-    simp_rw [show ∀ n : ℕ+, (2 : ℂ) * ↑Real.pi * I * ↑n * z =
-        2 * ↑Real.pi * I * z * n by intro n; ring]
-    exact hsum
-  -- Key simplification: on z = I*t, the exponential becomes real
-  have hexp_simpl : ∀ n : ℕ+, exp (2 * ↑Real.pi * I * ↑n * z) =
-      Real.exp (-(2 * Real.pi * n * t)) := by
-    intro n
-    rw [hz_eq]
-    have harg : (2 : ℂ) * ↑Real.pi * I * ↑n * (I * ↑t) =
-        ↑(-(2 * Real.pi * (n : ℕ) * t)) := by
-      push_cast
-      ring_nf
-      rw [I_sq]
-      ring
-    rw [harg, ofReal_exp]
-  -- Step 2: Each term is real on imaginary axis: n * σ(3,n) * exp(-2πnt)
-  have hterm_real : ∀ n : ℕ+, ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-      exp (2 * ↑Real.pi * I * ↑n * z)).im = 0 := by
-    intro n
-    rw [hexp_simpl]
-    simp only [mul_im, natCast_re, natCast_im, zero_mul, add_zero,
-      ofReal_re, ofReal_im, mul_zero]
-  -- Step 3: Each term is positive
-  have hterm_pos : ∀ n : ℕ+, 0 < ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-      exp (2 * ↑Real.pi * I * ↑n * z)).re := by
-    intro n
-    rw [hexp_simpl]
-    simp only [mul_re, natCast_re, natCast_im, sub_zero,
-      ofReal_re, ofReal_im, mul_zero]
-    -- Term is n * σ(3,n) * exp(-2πnt), all factors positive
-    apply mul_pos
-    · apply mul_pos
-      · exact_mod_cast n.pos
-      · exact_mod_cast ArithmeticFunction.sigma_pos 3 n n.ne_zero
-    · exact Real.exp_pos _
-  -- Step 4: Sum of positive terms is positive
-  have hsum_re : Summable fun n : ℕ+ => ((↑↑n : ℂ) * ↑((ArithmeticFunction.sigma 3) ↑n) *
-      exp (2 * ↑Real.pi * I * ↑n * z)).re := by
-    obtain ⟨x, hx⟩ := hsum'
-    exact ⟨x.re, hasSum_re hx⟩
-  rw [Complex.re_tsum hsum']
-  exact Summable.tsum_pos hsum_re (fun n => le_of_lt (hterm_pos n)) 1 (hterm_pos 1)
+  rw [F_eq_nine_D_E₄_sq]
+  -- F = 9 * (D E₄)² where 9 > 0 and (D E₄)² > 0
+  have h_sq : ResToImagAxis.Pos ((D E₄.toFun) ^ 2) := by
+    have hmul := D_E₄_imag_axis_pos.mul D_E₄_imag_axis_pos
+    simpa [pow_two] using hmul
+  exact h_sq.smul (by norm_num : (0 : ℝ) < 9)
 
 end ImagAxisProperties
