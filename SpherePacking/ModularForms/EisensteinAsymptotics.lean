@@ -201,21 +201,17 @@ lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
   have hq_lt : ‖q‖ < 1 := norm_exp_two_pi_I_lt_one z
   have hq_bound : ‖q‖ ≤ Real.exp (-2 * π) := norm_exp_two_pi_I_le_exp_neg_two_pi z hz
   have hexp_lt_half : Real.exp (-2 * π) < 1 / 2 := by
-    have h2pi_gt_1 : 1 < 2 * π := by nlinarith [pi_gt_three]
-    have hexp1_gt_2 : 2 < Real.exp 1 := by
-      have := Real.add_one_lt_exp (by norm_num : (1 : ℝ) ≠ 0); linarith
+    have : 1 < 2 * π := by nlinarith [pi_gt_three]
     calc Real.exp (-2 * π) < Real.exp (-1) := Real.exp_strictMono (by linarith)
       _ < 1 / 2 := by
         rw [Real.exp_neg, one_div, inv_lt_inv₀ (Real.exp_pos _) (by norm_num : (0 : ℝ) < 2)]
-        exact hexp1_gt_2
+        have := Real.add_one_lt_exp (by norm_num : (1 : ℝ) ≠ 0); linarith
   have hq_lt_half : ‖q‖ < 1 / 2 := lt_of_le_of_lt hq_bound hexp_lt_half
   have hone_sub_q_gt_half : 1 / 2 < 1 - ‖q‖ := by linarith
   -- Use norm_tsum_logDeriv_expo_le and bound r/(1-r)³ ≤ 8r for r < 1/2
   have htsum_bound := norm_tsum_logDeriv_expo_le hq_lt
   have hsum_le_8q : ‖q‖ / (1 - ‖q‖) ^ 3 ≤ 8 * ‖q‖ := by
-    have h1 : (1 / 8 : ℝ) ≤ (1 - ‖q‖) ^ 3 := by
-      have h := pow_le_pow_left₀ (by linarith : (0 : ℝ) ≤ 1/2) hone_sub_q_gt_half.le (n := 3)
-      norm_num at h; exact h
+    have h1 : (1 / 8 : ℝ) ≤ (1 - ‖q‖) ^ 3 := by nlinarith [sq_nonneg (1 - ‖q‖)]
     calc ‖q‖ / (1 - ‖q‖) ^ 3 ≤ ‖q‖ / (1 / 8) := by
           apply div_le_div_of_nonneg_left (norm_nonneg _) (by positivity) h1
       _ = 8 * ‖q‖ := by ring
