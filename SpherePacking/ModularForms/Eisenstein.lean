@@ -981,9 +981,8 @@ lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
   -- Summability of n * r^n
   have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
     simpa [pow_one] using summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
-  have hsumm_pnat : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ)) := hsumm_nat.subtype _
   have hsumm_majorant : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
-    simpa [div_eq_mul_inv] using hsumm_pnat.mul_right (1 - r)⁻¹
+    simpa [div_eq_mul_inv] using (hsumm_nat.subtype _).mul_right (1 - r)⁻¹
   -- Term-by-term bound: |n·q^n/(1-q^n)| ≤ n·r^n/(1-r)
   have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
       n * r ^ (n : ℕ) / (1 - r) := fun n => by
@@ -1005,10 +1004,9 @@ lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
   have hsumm_norms : Summable (fun n : ℕ+ => ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖) :=
     Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun n => hterm_bound n) hsumm_majorant
   -- Closed form: ∑ n·r^n/(1-r) = r/(1-r)³
-  have hsum_nat : (∑' n : ℕ, (n : ℝ) * r ^ n) = r / (1 - r) ^ 2 :=
-    tsum_coe_mul_geometric_of_norm_lt_one hr_norm_lt_one
   have hsum_pnat : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
-    rw [← hsum_nat, ← tsum_pnat_eq_tsum_succ4 _ hsumm_nat]; simp
+    rw [tsum_pNat (f := fun n => (n : ℝ) * r ^ n) (by simp)]
+    exact tsum_coe_mul_geometric_of_norm_lt_one hr_norm_lt_one
   have hsum_majorant_eq : (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r)) = r / (1 - r) ^ 3 := by
     simp [div_eq_mul_inv, tsum_mul_right, hsum_pnat, pow_succ]; ring
   -- Final bound
@@ -1025,7 +1023,7 @@ For im(z) ≥ 1, |q| ≤ exp(-2π), so by `norm_tsum_logDeriv_expo_le`,
 |E₂| ≤ 1 + 24·exp(-2π)/(1-exp(-2π))³. -/
 lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   rw [UpperHalfPlane.isBoundedAtImInfty_iff]
-  set r₀ : ℝ := Real.exp (-2 * π) with hr₀_def
+  set r₀ : ℝ := Real.exp (-2 * π)
   refine ⟨1 + 24 * (r₀ / (1 - r₀) ^ 3), 1, ?_⟩
   intro z hz
   rw [E₂_eq]
