@@ -119,7 +119,7 @@ lemma bounded_iteratedDeriv_of_compact_support {f : ℝ → ℝ} (hf : ContDiff 
 /-- Iterated derivative of a constant times a function equals the constant times the iterated derivative. -/
 lemma iter_deriv_const_mul {f : ℝ → ℝ} (c : ℝ) :
     ∀ k : ℕ, deriv^[k] (fun x => c * f x) = fun x => c * deriv^[k] f x := by
-  intro k; induction k <;> simp_all +decide [Function.iterate_succ_apply', mul_assoc]
+  intro k; induction k <;> simp_all [Function.iterate_succ_apply', mul_assoc]
 
 lemma iteratedDeriv_const_mul' {f : ℝ → ℝ} (c : ℝ) (k : ℕ) :
     iteratedDeriv k (fun x => c * f x) = fun x => c * iteratedDeriv k f x := by
@@ -140,7 +140,7 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
           intro u x;
           -- Apply the Leibniz rule for the $k$-th derivative of a product.
           have h_leibniz : ∀ (f g : ℝ → ℝ), ContDiff ℝ ∞ f → ContDiff ℝ ∞ g → ∀ k : ℕ, iteratedDeriv k (fun x => f x * g x) = fun x => ∑ j ∈ Finset.range (k + 1), Nat.choose k j * iteratedDeriv (k - j) f x * iteratedDeriv j g x := by
-            intro f g hf hg k; induction' k with k ih generalizing f g <;> simp_all +decide [ iteratedDeriv_succ ] ;
+            intro f g hf hg k; induction' k with k ih generalizing f g <;> simp_all [ iteratedDeriv_succ ] ;
             -- Apply the product rule to each term in the sum.
             have h_prod_rule : ∀ x, deriv (fun x => ∑ j ∈ Finset.range (k + 1), Nat.choose k j * iteratedDeriv (k - j) f x * iteratedDeriv j g x) x =
               ∑ j ∈ Finset.range (k + 1), Nat.choose k j * deriv (fun x => iteratedDeriv (k - j) f x) x * iteratedDeriv j g x +
@@ -176,14 +176,14 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
                            ∑ j ∈ Finset.range (k + 1), Nat.choose k j * iteratedDeriv (k - j) f x * deriv (fun x => iteratedDeriv j g x) x =
                            ∑ j ∈ Finset.range (k + 1), Nat.choose k j * iteratedDeriv (k + 1 - j) f x * iteratedDeriv j g x +
                            ∑ j ∈ Finset.range (k + 1), Nat.choose k j * iteratedDeriv (k - j) f x * iteratedDeriv (j + 1) g x := by
-                             intro x; congr! 2; rw [ Nat.sub_add_comm ( Nat.le_of_lt_succ <| Finset.mem_range.mp <| by assumption ) ] ; simp +decide [ iteratedDeriv_succ ] ; ring;
+                             intro x; congr! 2; rw [ Nat.sub_add_comm ( Nat.le_of_lt_succ <| Finset.mem_range.mp <| by assumption ) ] ; simp [ iteratedDeriv_succ ] ; ring;
                              rw [ add_comm, iteratedDeriv_succ ];
             ext x; rw [ h_prod_rule, h_ind ] ; rw [ Finset.sum_range_succ' ] ;
-            simp +decide only [Nat.reduceSubDiff, Nat.choose_zero_right, Nat.cast_one, tsub_zero,
+            simp only [Nat.reduceSubDiff, Nat.choose_zero_right, Nat.cast_one, tsub_zero,
               one_mul, iteratedDeriv_zero] ;
             ring;
             rw [ show 2 + k = 1 + k + 1 by ring, Finset.sum_range_succ' ] ;
-            simp +decide only [add_comm, Finset.sum_range_succ, Nat.choose_self, Nat.cast_one,
+            simp only [add_comm, Finset.sum_range_succ, Nat.choose_self, Nat.cast_one,
               tsub_self, iteratedDeriv_zero, one_mul, add_left_comm, add_assoc, Nat.reduceSubDiff,
               Nat.choose_zero_right, tsub_zero, add_right_inj] ;
             ring;
@@ -205,7 +205,7 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
         have h_iter_deriv : ∀ j : ℕ, deriv^[j] (fun x => ϕ (u * x)) = fun x => u ^ j * deriv^[j] ϕ (u * x) := by
           intro j; simp only [← iteratedDeriv_eq_iterate]
           exact iteratedDeriv_comp_const_mul (hϕ.of_le (mod_cast le_top)) u
-        simp +decide only [h_iter_deriv, mul_left_comm, Nat.descFactorial_eq_prod_range,
+        simp only [h_iter_deriv, mul_left_comm, Nat.descFactorial_eq_prod_range,
           Nat.cast_prod, mul_eq_mul_left_iff, mul_eq_mul_right_iff, Nat.cast_eq_zero,
           pow_eq_zero_iff', ne_eq];
         exact Or.inl <| Or.inl <| Or.inl <| Or.inl <| Finset.prod_congr rfl fun i hi => by rw [ Nat.cast_sub <| by linarith [ Finset.mem_range.mp hj, Finset.mem_range.mp hi, Nat.sub_le k j ] ] ;
@@ -256,7 +256,7 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
         have h_term_bound : ∀ j ≤ k, abs (Nat.choose k j * Nat.descFactorial n (k - j) * x ^ (n - (k - j)) * u ^ j * iteratedDeriv j ϕ (u * x)) ≤ Nat.choose k j * Nat.descFactorial n (k - j) * M ^ (n - (k - j)) * u ^ (-(n - k) : ℤ) * B := by
           intro j hj
           by_cases h_abs : abs (u * x) ≤ M;
-          · simp_all +decide only [gt_iff_lt, mul_assoc, ge_iff_le, abs_mul, abs_pow, neg_sub,
+          · simp_all only [gt_iff_lt, mul_assoc, ge_iff_le, abs_mul, abs_pow, neg_sub,
               Nat.abs_cast];
             exact mul_le_mul_of_nonneg_left ( mul_le_mul_of_nonneg_left ( by nlinarith [ h_bound u hu x h_abs j hj, hB.2 j hj ( u * x ), show 0 ≤ |x| ^ ( n - ( k - j ) ) * |u| ^ j by positivity, show 0 ≤ M ^ ( n - ( k - j ) ) * u ^ ( ( k : ℤ ) - n ) by exact mul_nonneg ( pow_nonneg hM.1.le _ ) ( by positivity ) ] ) ( Nat.cast_nonneg _ ) ) ( Nat.cast_nonneg _ );
           · obtain left := hM.1
@@ -320,7 +320,7 @@ lemma exists_smooth_term_with_bound (n : ℕ) (c : ℝ) (ε : ℝ) (hε : 0 < ε
         · simp_all only [ge_iff_le, iteratedDeriv_eq_iterate, iter_deriv_pow', tsub_self, pow_zero,
             mul_one];
           rw [ div_mul_eq_mul_div, div_eq_iff ( by positivity ) ];
-          exact congrArg _ ( Nat.recOn k ( by norm_num ) fun n ih => by rw [ Finset.prod_range_succ' ] ; simp +decide [ Nat.factorial_succ, ih, mul_comm ] );
+          exact congrArg _ ( Nat.recOn k ( by norm_num ) fun n ih => by rw [ Finset.prod_range_succ' ] ; simp [ Nat.factorial_succ, ih, mul_comm ] );
         · simp_all only [iteratedDeriv_eq_iterate, iter_deriv_pow', ge_iff_le, mul_eq_zero,
             div_eq_zero_iff, Nat.cast_eq_zero, pow_eq_zero_iff', ne_eq, true_and];
           cases lt_or_gt_of_ne h <;> first | exact Or.inr <| Or.inl <| Finset.prod_eq_zero ( Finset.mem_range.mpr ‹_› ) <| sub_self _ | exact Or.inr <| Or.inr <| Nat.sub_ne_zero_of_lt ‹_›
@@ -505,7 +505,7 @@ theorem smooth_realization_jet : ∀ a : ℕ → ℝ, ∃ f : ℝ → ℝ, (Cont
       use fun k n => M k n;
       · assumption;
       · aesop;
-      · simp_all +decide [ iteratedFDeriv_eq_equiv_comp ];
+      · simp_all [ iteratedFDeriv_eq_equiv_comp ];
     -- Show that the k-th derivative of the sum is the sum of the k-th derivatives.
     have h_deriv_sum : ∀ k, iteratedDeriv k (fun x => ∑' n, f n x) = fun x => ∑' n, iteratedDeriv k (f n) x := by
       intro k;
@@ -521,7 +521,7 @@ theorem smooth_realization_jet : ∀ a : ℕ → ℝ, ∃ f : ℝ → ℝ, (Cont
         · intro n;
           apply_rules [ ContDiff.differentiable_iteratedDeriv, hf1 ];
           exact compareOfLessAndEq_eq_lt.mp rfl;
-        · intro n y; specialize hM3 ( k + 1 ) n y; simp_all +decide [ iteratedDeriv_succ ] ;
+        · intro n y; specialize hM3 ( k + 1 ) n y; simp_all [ iteratedDeriv_succ ] ;
         · -- Since the series of M k n is summable and |iteratedDeriv k (f n) x| ≤ M k n for all n, the series of the k-th derivatives is absolutely summable.
           have h_abs_summable : Summable (fun n => |iteratedDeriv k (f n) x|) :=
             Summable.of_nonneg_of_le ( fun n => abs_nonneg _ ) ( fun n => hM3 k n x ) ( hM2 k )
@@ -581,8 +581,8 @@ lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ
           · have h_cont_diff : ∀ n, ContDiff ℝ ∞ (deriv^[n] g) := by
               fun_prop;
             exact ( h_cont_diff _ |> ContDiff.continuous |> Continuous.intervalIntegrable ) _ _;
-        intro x; rw [ h_parts ] ; simp +decide [ Finset.sum_range_succ, ih ] ; ring;
-    intro x; specialize h_taylor x; by_cases hx : x = 0 <;> simp_all +decide [ div_eq_inv_mul, mul_assoc, mul_comm, mul_left_comm ] ;
+        intro x; rw [ h_parts ] ; simp [ Finset.sum_range_succ, ih ] ; ring;
+    intro x; specialize h_taylor x; by_cases hx : x = 0 <;> simp_all [ div_eq_inv_mul, mul_assoc, mul_comm, mul_left_comm ] ;
     -- Perform the substitution $u = \frac{t}{x}$ to transform the integral.
     have h_subst : ∫ t in (0 : ℝ)..x, (x - t) ^ k * ((k ! : ℝ)⁻¹ * deriv^[k] (deriv g) t) = ∫ u in (0 : ℝ)..1, (x - x * u) ^ k * ((k ! : ℝ)⁻¹ * deriv^[k] (deriv g) (x * u)) * x := by
       simp only [mul_comm x, intervalIntegral.integral_mul_const, ne_eq, hx, not_false_eq_true,
@@ -607,7 +607,7 @@ lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ
     -- The 2k-th derivative of a sum is the sum of the 2k-th derivatives.
     have h_poly_deriv : iteratedDeriv (2 * k) (fun x => ∑ n ∈ Finset.range (k + 1), deriv^[n] g 0 / n ! * x ^ (2 * n)) 0 = ∑ n ∈ Finset.range (k + 1), deriv^[n] g 0 / n ! * iteratedDeriv (2 * k) (fun x => x ^ (2 * n)) 0 := by
       have h_poly_deriv : ∀ m : ℕ, iteratedDeriv m (fun x => ∑ n ∈ Finset.range (k + 1), deriv^[n] g 0 / n ! * x ^ (2 * n)) = fun x => ∑ n ∈ Finset.range (k + 1), deriv^[n] g 0 / n ! * iteratedDeriv m (fun x => x ^ (2 * n)) x := by
-        intro m; induction' m with m ih <;> simp +decide [ *, iteratedDeriv_succ ] ;
+        intro m; induction' m with m ih <;> simp [ *, iteratedDeriv_succ ] ;
         -- The derivative of a sum is the sum of the derivatives, and the derivative of a constant times a function is the constant times the derivative of the function.
         funext x; exact (by
         -- The derivative of a sum is the sum of the derivatives, and the derivative of a constant times a function is the constant times the derivative of the function.
@@ -694,7 +694,7 @@ lemma exists_smooth_even_approx (f : ℝ → ℝ) (heven : Function.Even f) (hsm
         have h_diff : iteratedDeriv (2 * k) (fun x => f x - g (x ^ 2)) 0 = iteratedDeriv (2 * k) f 0 - iteratedDeriv (2 * k) (fun x => g (x ^ 2)) 0 := by
           -- Apply the linearity of the iterated derivative.
           have h_linearity : ∀ n : ℕ, iteratedDeriv n (fun x => f x - g (x ^ 2)) = fun x => iteratedDeriv n f x - iteratedDeriv n (fun x => g (x ^ 2)) x := by
-            intro n; induction n <;> simp_all +decide [ iteratedDeriv_succ ] ;
+            intro n; induction n <;> simp_all [ iteratedDeriv_succ ] ;
             -- Apply the linearity of the derivative to the difference of the two functions.
             apply funext; intro x; exact deriv_sub (by
             apply_rules [ ContDiff.differentiable_iteratedDeriv, hsmooth ];
@@ -713,7 +713,7 @@ lemma exists_smooth_even_approx (f : ℝ → ℝ) (heven : Function.Even f) (hsm
       have h_odd_deriv : ∀ k : ℕ, iteratedDeriv (2 * k + 1) (fun x => f x - g (x ^ 2)) 0 = 0 := by
         -- Since $h(x) = f(x) - g(x^2)$ is even, its odd-order derivatives at $0$ are zero.
         have h_even : Function.Even (fun x => f x - g (x ^ 2)) :=
-          fun x => by simp +decide [ heven x ]
+          fun x => by simp [ heven x ]
         -- Apply the lemma that states the odd-order derivatives of an even function at 0 are zero.
         intros k
         apply iteratedDeriv_odd_eq_zero_of_even;
@@ -758,7 +758,7 @@ lemma deriv_integral_of_smooth (F : ℝ → ℝ → ℝ) (hF : ContDiff ℝ ∞ 
                     have h_diff : ∀ t ∈ Set.Icc (0 : ℝ) 1, ContDiff ℝ ∞ (fun y => F t y) :=
                       fun t ht => hF.comp ( contDiff_const.prodMk contDiff_id )
                     exact ( h_diff t ht |> ContDiff.differentiable <| by norm_num ) |> Differentiable.differentiableOn;
-                cases max_cases x ( x + h ) <;> cases min_cases x ( x + h ) <;> simp_all +decide;
+                cases max_cases x ( x + h ) <;> cases min_cases x ( x + h ) <;> simp_all;
                 · have := exists_deriv_eq_slope ( f := fun y => F t y ) ( show x + h < x by linarith );
                   exact this h_cont_diff.1 h_cont_diff.2 |> fun ⟨ c, hc₁, hc₂ ⟩ => ⟨ c, ⟨ by linarith [ hc₁.1 ], by linarith [ hc₁.2 ] ⟩, by rw [ hc₂ ] ; rw [ div_eq_div_iff ] <;> linarith ⟩;
                 · have := exists_deriv_eq_slope ( f := fun y => F t y ) ( show x < x + h by linarith )
@@ -890,7 +890,7 @@ lemma exists_smooth_flat_factor (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f)
           apply_rules [ ContDiff.differentiable ];
           apply_rules [ ContDiff.iterate_deriv ];
           norm_num;
-      intro k; specialize hflat ( k + 1 ) ; simp_all +decide [ iteratedDeriv_eq_iterate ] ;
+      intro k; specialize hflat ( k + 1 ) ; simp_all [ iteratedDeriv_eq_iterate ] ;
       exact hflat.resolve_left <| by positivity;
 
 set_option linter.style.longLine false in
@@ -934,7 +934,7 @@ lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f
             simp_all only [ge_iff_le, sqrt_eq_zero, sqrt_zero, intervalIntegral.integral_same,
               mul_zero, zero_mul]
             have h_int_simplified : ∀ a b : ℝ, 0 ≤ a → a ≤ b → ∫ t in a..b, t * g t = (∫ u in (a / Real.sqrt h).. (b / Real.sqrt h), (u * Real.sqrt h) * g (u * Real.sqrt h)) * Real.sqrt h := by
-              intros a b ha hb; rw [ mul_comm ] ; simp +decide [ div_eq_inv_mul] ;
+              intros a b ha hb; rw [ mul_comm ] ; simp [ div_eq_inv_mul] ;
               convert intervalIntegral.integral_comp_div _ _ using 3 <;> ring_nf <;> norm_num [ hh', hh ];
             rw [ h_int_simplified _ _ le_rfl ( Real.sqrt_nonneg _ ) ] ; norm_num [ hh, hh', mul_assoc, mul_comm, mul_left_comm, div_eq_mul_inv ] ; ring_nf
             norm_num [ mul_assoc, mul_left_comm, ← intervalIntegral.integral_const_mul, hh ];
