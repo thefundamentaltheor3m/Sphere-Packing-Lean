@@ -446,8 +446,8 @@ lemma contDiff_integral_poly_mul_comp (f : ℝ → ℝ) (hf : ContDiff ℝ ∞ f
         · simp +zetaDelta at *;
           -- The integral of a continuous function is continuous, so the function x ↦ ∫ t in (0 : ℝ)..1, P.eval t * f (t * x) is continuous.
           have h_cont : Continuous (fun x => ∫ t in (0 : ℝ)..1, P.eval t * f (t * x)) := by
-            have h_integrand_cont : Continuous (fun (p : ℝ × ℝ) => P.eval p.2 * f (p.2 * p.1)) := by
-              exact Continuous.mul ( P.continuous.comp continuous_snd ) ( hf.continuous.comp ( continuous_snd.mul continuous_fst ) )
+            have h_integrand_cont : Continuous (fun (p : ℝ × ℝ) => P.eval p.2 * f (p.2 * p.1)) :=
+              Continuous.mul ( P.continuous.comp continuous_snd ) ( hf.continuous.comp ( continuous_snd.mul continuous_fst ) )
             fun_prop;
           exact h_cont;
         · -- By the induction hypothesis, the derivative of the integral is C^n.
@@ -476,8 +476,8 @@ theorem smooth_realization_jet : ∀ a : ℕ → ℝ, ∃ f : ℝ → ℝ, (Cont
   -- Define the function $f$ as the sum of the functions $f_n$ from $h_seq$.
   have h_sum : ∀ a : ℕ → ℝ, ∃ f : ℝ → ℝ, ContDiff ℝ ∞ f ∧ ∀ k, iteratedDeriv k f 0 = a k := by
     intro a
-    have h_seq : ∀ n, ∃ f_n : ℝ → ℝ, ContDiff ℝ ∞ f_n ∧ HasCompactSupport f_n ∧ (∀ k, iteratedDeriv k f_n 0 = if k = n then a n else 0) ∧ (∀ k < n, ∀ x, |iteratedDeriv k f_n x| ≤ (1 / 2) ^ (n + 1)) := by
-      exact fun n => h_seq n ( a n )
+    have h_seq : ∀ n, ∃ f_n : ℝ → ℝ, ContDiff ℝ ∞ f_n ∧ HasCompactSupport f_n ∧ (∀ k, iteratedDeriv k f_n 0 = if k = n then a n else 0) ∧ (∀ k < n, ∀ x, |iteratedDeriv k f_n x| ≤ (1 / 2) ^ (n + 1)) :=
+      fun n => h_seq n ( a n )
     choose f hf1 hf2 hf3 hf4 using h_seq;
     -- Apply the lemma `smooth_bump_scaling_bound` to each `f_n` to get bounds on their derivatives.
     have h_bounds : ∀ k, ∃ M : ℕ → ℝ, (∀ n, 0 ≤ M n) ∧ Summable M ∧ ∀ n, ∀ x, |iteratedDeriv k (f n) x| ≤ M n := by
@@ -523,9 +523,9 @@ theorem smooth_realization_jet : ∀ a : ℕ → ℝ, ∃ f : ℝ → ℝ, (Cont
           exact compareOfLessAndEq_eq_lt.mp rfl;
         · intro n y; specialize hM3 ( k + 1 ) n y; simp_all +decide [ iteratedDeriv_succ ] ;
         · -- Since the series of M k n is summable and |iteratedDeriv k (f n) x| ≤ M k n for all n, the series of the k-th derivatives is absolutely summable.
-          have h_abs_summable : Summable (fun n => |iteratedDeriv k (f n) x|) := by
-            exact Summable.of_nonneg_of_le ( fun n => abs_nonneg _ ) ( fun n => hM3 k n x ) ( hM2 k );
-          exact h_abs_summable.of_abs;
+          have h_abs_summable : Summable (fun n => |iteratedDeriv k (f n) x|) :=
+            Summable.of_nonneg_of_le ( fun n => abs_nonneg _ ) ( fun n => hM3 k n x ) ( hM2 k )
+          exact h_abs_summable.of_abs
     use fun x => ∑' n, f n x;
     aesop;
     rw [ tsum_eq_single k ] <;> aesop;
@@ -559,8 +559,8 @@ lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ
             intro t
             have h_chain : HasDerivAt (fun t => (x - t) ^ (k + 1)) (-(k + 1) * (x - t) ^ k) t := by
               -- Apply the chain rule to compute the derivative: the derivative of $(x - t)^{k+1}$ with respect to $t$ is $-(k+1)(x - t)^k$.
-              have h_chain : HasDerivAt (fun t => (x - t)) (-1) t := by
-                exact hasDerivAt_id t |> HasDerivAt.const_sub x;
+              have h_chain : HasDerivAt (fun t => (x - t)) (-1) t :=
+                hasDerivAt_id t |> HasDerivAt.const_sub x
               convert h_chain.pow ( k + 1 ) using 1 ; norm_num ; ring;
             convert h_chain.div_const ( ( k + 1 ) ! : ℝ ) using 1 ; push_cast [ Nat.factorial_succ ] ; ring;
             -- Combine and simplify the fractions
@@ -644,8 +644,8 @@ lemma iteratedDeriv_comp_sq (g : ℝ → ℝ) (hg : ContDiff ℝ ∞ g) (k : ℕ
         have h_int_smooth : ContDiff ℝ ∞ (fun x => ∫ t in (0 : ℝ)..1, (1 - t) ^ k / k ! * deriv^[k + 1] g (t * x)) := by
           have h_cont_diff : ContDiff ℝ ∞ (fun x => deriv^[k + 1] g x) := by
             fun_prop
-          have h_int_smooth : ∀ (P : Polynomial ℝ), ContDiff ℝ ∞ (fun x => ∫ t in (0 : ℝ)..1, P.eval t * deriv^[k + 1] g (t * x)) := by
-            exact fun P ↦ contDiff_integral_poly_mul_comp (deriv^[k + 1] g) h_cont_diff P;
+          have h_int_smooth : ∀ (P : Polynomial ℝ), ContDiff ℝ ∞ (fun x => ∫ t in (0 : ℝ)..1, P.eval t * deriv^[k + 1] g (t * x)) :=
+            fun P ↦ contDiff_integral_poly_mul_comp (deriv^[k + 1] g) h_cont_diff P
           convert h_int_smooth ( Polynomial.C ( 1 / ( k ! : ℝ ) ) * ( 1 - Polynomial.X ) ^ k ) using 2 ; norm_num ; ring;
           ac_rfl;
         exact h_int_smooth.comp ( contDiff_id.pow 2 );
@@ -712,8 +712,8 @@ lemma exists_smooth_even_approx (f : ℝ → ℝ) (heven : Function.Even f) (hsm
       -- Since $f$ is even, its odd-order derivatives at $0$ are zero. Therefore, for any odd $k$, we have $\text{iteratedDeriv } k (f - g(x^2)) 0 = 0$.
       have h_odd_deriv : ∀ k : ℕ, iteratedDeriv (2 * k + 1) (fun x => f x - g (x ^ 2)) 0 = 0 := by
         -- Since $h(x) = f(x) - g(x^2)$ is even, its odd-order derivatives at $0$ are zero.
-        have h_even : Function.Even (fun x => f x - g (x ^ 2)) := by
-          exact fun x => by simp +decide [ heven x ] ;
+        have h_even : Function.Even (fun x => f x - g (x ^ 2)) :=
+          fun x => by simp +decide [ heven x ]
         -- Apply the lemma that states the odd-order derivatives of an even function at 0 are zero.
         intros k
         apply iteratedDeriv_odd_eq_zero_of_even;
@@ -728,13 +728,13 @@ lemma deriv_integral_of_smooth (F : ℝ → ℝ → ℝ) (hF : ContDiff ℝ ∞ 
       have h_leibniz : HasDerivAt (fun x => ∫ t in (0 : ℝ)..1, F t x) (∫ t in (0 : ℝ)..1, deriv (fun y => F t y) x) x := by
         have : ∀ t ∈ Set.Icc (0 : ℝ) 1, HasDerivAt (fun x => F t x) (deriv (fun y => F t y) x) x := by
           -- Since $F$ is smooth, for any fixed $t$, the function $F(t, x)$ is smooth in $x$, hence differentiable at $x$.
-          have h_diff : ∀ t ∈ Set.Icc (0 : ℝ) 1, ContDiff ℝ ∞ (fun x => F t x) := by
-            exact fun t ht => hF.comp ( contDiff_const.prodMk contDiff_id );
+          have h_diff : ∀ t ∈ Set.Icc (0 : ℝ) 1, ContDiff ℝ ∞ (fun x => F t x) :=
+            fun t ht => hF.comp ( contDiff_const.prodMk contDiff_id )
           exact fun t ht => DifferentiableAt.hasDerivAt ( h_diff t ht |> ContDiff.contDiffAt |> ContDiffAt.differentiableAt <| by norm_num )
         -- Apply the Leibniz rule for differentiation under the integral sign.
         have h_leibniz : HasDerivAt (fun x => ∫ t in (0 : ℝ)..1, F t x) (∫ t in (0 : ℝ)..1, deriv (fun y => F t y) x) x := by
-          have h_cont : Continuous (fun p : ℝ × ℝ => F p.1 p.2) := by
-            exact hF.continuous
+          have h_cont : Continuous (fun p : ℝ × ℝ => F p.1 p.2) :=
+            hF.continuous
           have h_cont_deriv : Continuous (fun p : ℝ × ℝ => deriv (fun y => F p.1 y) p.2) := by
             have h_cont_deriv : ContDiff ℝ ∞ (fun p : ℝ × ℝ => deriv (fun y => F p.1 y) p.2) := by
               apply_rules [ ContDiff.fderiv_apply ];
@@ -755,8 +755,8 @@ lemma deriv_integral_of_smooth (F : ℝ → ℝ → ℝ) (hF : ContDiff ℝ ∞ 
                   constructor
                   · exact h_cont.comp_continuousOn ( continuousOn_const.prodMk continuousOn_id );
                   · -- Since $F$ is smooth, the partial derivative with respect to $y$ exists and is continuous, hence $F(t, y)$ is differentiable on any interval.
-                    have h_diff : ∀ t ∈ Set.Icc (0 : ℝ) 1, ContDiff ℝ ∞ (fun y => F t y) := by
-                      exact fun t ht => hF.comp ( contDiff_const.prodMk contDiff_id );
+                    have h_diff : ∀ t ∈ Set.Icc (0 : ℝ) 1, ContDiff ℝ ∞ (fun y => F t y) :=
+                      fun t ht => hF.comp ( contDiff_const.prodMk contDiff_id )
                     exact ( h_diff t ht |> ContDiff.differentiable <| by norm_num ) |> Differentiable.differentiableOn;
                 cases max_cases x ( x + h ) <;> cases min_cases x ( x + h ) <;> simp_all +decide;
                 · have := exists_deriv_eq_slope ( f := fun y => F t y ) ( show x + h < x by linarith );
@@ -818,8 +818,8 @@ lemma contDiff_parametric_integral (F : ℝ → ℝ → ℝ) (hF : ContDiff ℝ 
         induction' n with n ih generalizing F <;> aesop;
         · fun_prop;
         · -- The derivative of the integral with respect to x is the integral of the partial derivative of F with respect to x.
-          have h_deriv : ∀ x, HasDerivAt (fun x => ∫ t in (0 : ℝ)..1, F t x) (∫ t in (0 : ℝ)..1, deriv (fun y => F t y) x) x := by
-            exact fun x ↦ deriv_integral_of_smooth F hF x;;
+          have h_deriv : ∀ x, HasDerivAt (fun x => ∫ t in (0 : ℝ)..1, F t x) (∫ t in (0 : ℝ)..1, deriv (fun y => F t y) x) x :=
+            fun x ↦ deriv_integral_of_smooth F hF x
           -- Since the derivative of the integral function is the integral of the partial derivative of F, and the partial derivative of F is ContDiff ℝ n, the derivative of the integral function is ContDiff ℝ n.
           have h_deriv_cont_diff : ContDiff ℝ n (fun x => ∫ t in (0 : ℝ)..1, deriv (fun y => F t y) x) := by
             apply ih;
@@ -879,8 +879,8 @@ lemma exists_smooth_flat_factor (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f)
         · erw [ deriv_mul ] <;> norm_num;
           · erw [ Function.iterate_succ_apply' ] ; ring;
             cases n <;> norm_num [ Function.iterate_succ_apply' ] ; ring;
-          · have h_diff : ∀ n, ContDiff ℝ ∞ (deriv^[n] g) := by
-              exact fun n ↦ ContDiff.iterate_deriv n left;
+          · have h_diff : ∀ n, ContDiff ℝ ∞ (deriv^[n] g) :=
+              fun n ↦ ContDiff.iterate_deriv n left
             exact ( h_diff n |> ContDiff.differentiable <| by norm_num ) x;
         · refine' DifferentiableAt.mul differentiableAt_id _;
           apply_rules [ ContDiff.differentiable ];
@@ -1000,8 +1000,8 @@ lemma contDiff_comp_sqrt_of_flat (f : ℝ → ℝ) (hsmooth : ContDiff ℝ ∞ f
             rw [ mul_right_comm, mul_inv_cancel₀ ( ne_of_gt ( Real.rpow_pos_of_pos ( lt_of_le_of_ne ( le_of_not_gt hx ) ( Ne.symm x_zero ) ) _ ) ), one_mul ];
       rw [ contDiff_succ_iff_deriv ];
       -- The derivative function is ContDiff ℝ n because it's a composition of smooth functions.
-      have h_deriv_cont_diff : ContDiff ℝ n (fun x => (1 / 2) * g (Real.sqrt x)) := by
-        exact ContDiff.mul contDiff_const ( ih g hg_cd hg_id0 );
+      have h_deriv_cont_diff : ContDiff ℝ n (fun x => (1 / 2) * g (Real.sqrt x)) :=
+        ContDiff.mul contDiff_const ( ih g hg_cd hg_id0 )
       simp_all only [one_div, WithTop.natCast_ne_top, analyticOn_univ, IsEmpty.forall_iff, true_and]
       apply And.intro
       · exact fun x => ( h_deriv x |> HasDerivAt.differentiableAt );
@@ -1015,8 +1015,8 @@ theorem Function.Even.eq_smooth_comp_sq_of_smooth : ∃ g : ℝ → ℝ, f = g �
     ContDiff ℝ ∞ g := by
   -- Apply `exists_smooth_even_approx` to get g₁.
   obtain ⟨g₁, hg₁⟩ : ∃ g₁ : ℝ → ℝ, ContDiff ℝ ∞ g₁ ∧ ∀ k, iteratedDeriv k
-          (fun x => f x - g₁ (x ^ 2)) 0 = 0 := by
-    exact exists_smooth_even_approx f heven hsmooth;
+          (fun x => f x - g₁ (x ^ 2)) 0 = 0 :=
+    exists_smooth_even_approx f heven hsmooth
   -- Define $g₂(x) = h(\sqrt{x})$ where $h(x) = f(x) - g₁(x^2)$.
   set h : ℝ → ℝ := fun x => f x - g₁ (x ^ 2)
   have hg₂ : ContDiff ℝ ∞ (fun x => h (Real.sqrt x)) := by
