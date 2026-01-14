@@ -108,6 +108,23 @@ lemma HasCompactSupport.iteratedDeriv {f : ℝ → ℝ} (hf : HasCompactSupport 
   | zero => simp only [iteratedDeriv_zero]; exact hf
   | succ n ih => rw [iteratedDeriv_succ]; exact ih.deriv
 
+/-- A smooth function with compact support has bounded iterated derivatives. -/
+lemma bounded_iteratedDeriv_of_compact_support {f : ℝ → ℝ} (hf : ContDiff ℝ ∞ f)
+    (hsupp : HasCompactSupport f) (k : ℕ) : ∃ B > 0, ∀ x, |iteratedDeriv k f x| ≤ B := by
+  have h_compact := hsupp.iteratedDeriv k
+  have h_cont := hf.continuous_iteratedDeriv k (mod_cast le_top)
+  obtain ⟨B, hB⟩ := h_compact.exists_bound_of_continuous h_cont
+  exact ⟨max B 1, by positivity, fun x => (hB x).trans (le_max_left _ _)⟩
+
+/-- Iterated derivative of a constant times a function equals the constant times the iterated derivative. -/
+lemma iter_deriv_const_mul {f : ℝ → ℝ} (c : ℝ) :
+    ∀ k : ℕ, deriv^[k] (fun x => c * f x) = fun x => c * deriv^[k] f x := by
+  intro k; induction k <;> simp_all +decide [Function.iterate_succ_apply', mul_assoc]
+
+lemma iteratedDeriv_const_mul' {f : ℝ → ℝ} (c : ℝ) (k : ℕ) :
+    iteratedDeriv k (fun x => c * f x) = fun x => c * iteratedDeriv k f x := by
+  simp only [iteratedDeriv_eq_iterate]; exact iter_deriv_const_mul c k
+
 /-
 If $\phi$ is a smooth compactly supported bump function, then for any $k < n$, the $k$-th derivative of $x^n \phi(u x)$ tends to 0 uniformly as $u \to \infty$.
 -/
@@ -225,22 +242,10 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
 
       -- Since $\phi^{(j)}$ is bounded (since it is smooth and compactly supported), say by $B_j$, we can bound each term in the sum.
       obtain ⟨B, hB⟩ : ∃ B > 0, ∀ j ≤ k, ∀ x, abs (iteratedDeriv j ϕ x) ≤ B := by
-        -- Since $\phi$ is smooth and compactly supported, its derivatives are also compactly supported.
-        have h_deriv_compact_support : ∀ j ≤ k, HasCompactSupport (iteratedDeriv j ϕ) :=
-          fun j _ => hsupp.iteratedDeriv j
-        -- Since $\phi^{(j)}$ is compactly supported, it is bounded.
-        have h_deriv_bounded : ∀ j ≤ k, ∃ B > 0, ∀ x, abs (iteratedDeriv j ϕ x) ≤ B := by
-          intro j hj; specialize h_deriv_compact_support j hj;
-          have := h_deriv_compact_support.exists_bound_of_continuous ( show Continuous ( iteratedDeriv j ϕ ) from ?_ ) ;
-          simp_all only [gt_iff_lt, ge_iff_le, abs_mul, abs_pow, neg_sub, Real.norm_eq_abs]
-          obtain ⟨w, h⟩ := this
-          · exact ⟨ Max.max w 1, by positivity, fun x => le_trans ( h x ) ( le_max_left _ _ ) ⟩;
-          · apply_rules [ ContDiff.continuous_iteratedDeriv, hϕ ];
-            -- Since $j$ is a natural number, we have $j \leq \infty$.
-            norm_cast;
-            norm_num;
-        choose! B hB₁ hB₂ using h_deriv_bounded;
-        exact ⟨ ∑ j ∈ Finset.range ( k + 1 ), B j, Finset.sum_pos ( fun j hj => hB₁ j ( Finset.mem_range_succ_iff.mp hj ) ) ( by norm_num ), fun j hj x => le_trans ( hB₂ j hj x ) ( Finset.single_le_sum ( fun j _ => le_of_lt ( hB₁ j ( Finset.mem_range_succ_iff.mp ‹_› ) ) ) ( Finset.mem_range_succ_iff.mpr hj ) ) ⟩;
+        have h_deriv_bounded : ∀ j ≤ k, ∃ B > 0, ∀ x, |iteratedDeriv j ϕ x| ≤ B :=
+          fun j _ => bounded_iteratedDeriv_of_compact_support hϕ hsupp j
+        choose! B hB₁ hB₂ using h_deriv_bounded
+        exact ⟨ ∑ j ∈ Finset.range ( k + 1 ), B j, Finset.sum_pos ( fun j hj => hB₁ j ( Finset.mem_range_succ_iff.mp hj ) ) ( by norm_num ), fun j hj x => le_trans ( hB₂ j hj x ) ( Finset.single_le_sum ( fun j _ => le_of_lt ( hB₁ j ( Finset.mem_range_succ_iff.mp ‹_› ) ) ) ( Finset.mem_range_succ_iff.mpr hj ) ) ⟩
       -- Using the bounds from h_bound and hB, we can bound the sum.
       have h_sum_bound : ∀ u ≥ 1, ∀ x, abs (iteratedDeriv k (fun x => x ^ n * (ϕ (u * x))) x) ≤ ∑ j ∈ Finset.range (k + 1), Nat.choose k j * Nat.descFactorial n (k - j) * M ^ (n - (k - j)) * u ^ (-(n - k) : ℤ) * B := by
         intros u hu x
@@ -289,10 +294,7 @@ lemma exists_smooth_term_with_bound (n : ℕ) (c : ℝ) (ε : ℝ) (hε : 0 < ε
         have h_smooth_bump_scaling_bound : ∀ k < n, ∃ R, ∀ u ≥ R, ∀ x, |iteratedDeriv k (fun x => (c / n.factorial) * x^n * ϕ (u * x)) x| ≤ ε := by
           intro k hk
           have h_bound : ∀ u : ℝ, ∀ x : ℝ, iteratedDeriv k (fun x => (c / Nat.factorial n) * x^n * ϕ (u * x)) x = (c / Nat.factorial n) * iteratedDeriv k (fun x => x^n * ϕ (u * x)) x := by
-            intro u x
-            simp only [mul_assoc, iteratedDeriv_eq_iterate]
-            induction' k with k ih generalizing x <;> simp_all [ Function.iterate_succ_apply', mul_comm u ];
-            rw [ Filter.EventuallyEq.deriv_eq ( Filter.eventuallyEq_of_mem ( Metric.ball_mem_nhds _ zero_lt_one ) fun y hy => ih ( Nat.lt_of_succ_lt hk ) y ) ] ; norm_num [ mul_assoc, mul_comm, mul_left_comm ];
+            intro u x; simp only [mul_assoc]; exact congrFun (iteratedDeriv_const_mul' _ _) x
           have := smooth_bump_scaling_bound ϕ hϕ.1 hϕ.2.1 n k hk;
           obtain ⟨ R, hR ⟩ := this ( ε / ( |c / ( n ! : ℝ )| + 1 ) ) ( by positivity ) ; exact ⟨ R, fun u hu x => by rw [ h_bound u x ] ; exact abs_le.mpr ⟨ by cases abs_cases ( c / ( n ! : ℝ ) ) <;> nlinarith [ abs_le.mp ( hR u hu x ), mul_div_cancel₀ ε ( by positivity : ( |c / ( n ! : ℝ )| + 1 ) ≠ 0 ) ], by cases abs_cases ( c / ( n ! : ℝ ) ) <;> nlinarith [ abs_le.mp ( hR u hu x ), mul_div_cancel₀ ε ( by positivity : ( |c / ( n ! : ℝ )| + 1 ) ≠ 0 ) ] ⟩ ⟩ ;
         choose! R hR using h_smooth_bump_scaling_bound;
@@ -307,11 +309,7 @@ lemma exists_smooth_term_with_bound (n : ℕ) (c : ℝ) (ε : ℝ) (hε : 0 < ε
       · intro k
         -- By definition of $f$, we know that its $k$-th derivative at 0 is given by the $k$-th derivative of $\frac{c}{n!} x^n \phi(u x)$ at 0.
         have h_deriv : iteratedDeriv k (fun x => (c / n.factorial) * x^n * ϕ (u * x)) 0 = (c / n.factorial) * iteratedDeriv k (fun x => x^n * ϕ (u * x)) 0 := by
-          simp only [mul_assoc, iteratedDeriv_eq_iterate];
-          -- The derivative of a constant times a function is the constant times the derivative of the function.
-          have h_const_deriv : ∀ k : ℕ, deriv^[k] (fun x => c / (n ! : ℝ) * (x ^ n * ϕ (u * x))) = fun x => c / (n ! : ℝ) * deriv^[k] (fun x => x ^ n * ϕ (u * x)) x := by
-            intro k; induction k <;> simp_all +decide [ Function.iterate_succ_apply', mul_assoc ] ;
-          exact congr_fun ( h_const_deriv k ) 0;
+          simp only [mul_assoc]; exact congrFun (iteratedDeriv_const_mul' _ _) 0
         -- By definition of $f$, we know that its $k$-th derivative at 0 is given by the $k$-th derivative of $x^n \phi(u x)$ at 0.
         have h_deriv : iteratedDeriv k (fun x => x^n * ϕ (u * x)) 0 = iteratedDeriv k (fun x => x^n) 0 := by
           have h_deriv : ∀ x, |x| ≤ 1 / u → x^n * ϕ (u * x) = x^n := by
