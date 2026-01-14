@@ -16,8 +16,8 @@ import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
 import Mathlib.Algebra.Polynomial.Basic
 import Mathlib.Topology.Algebra.InfiniteSum.Basic
 import Mathlib.Algebra.Group.EvenFunction
-import Mathlib.Geometry.Manifold.PartitionOfUnity
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
 import Mathlib.Tactic
 
 open scoped Nat NNReal ContDiff
@@ -277,18 +277,16 @@ lemma exists_smooth_term_with_bound (n : ℕ) (c : ℝ) (ε : ℝ) (hε : 0 < ε
     (∀ k < n, ∀ x, |iteratedDeriv k f x| ≤ ε) := by
       -- Let's choose a smooth bump function $\phi$ such that $\phi(x) = 1$ for $|x| \leq 1$ and $\phi(x) = 0$ for $|x| \geq 2$.
       obtain ⟨ϕ, hϕ⟩ : ∃ ϕ : ℝ → ℝ, ContDiff ℝ ∞ ϕ ∧ HasCompactSupport ϕ ∧ (∀ x, |x| ≤ 1 → ϕ x = 1) ∧ (∀ x, |x| ≥ 2 → ϕ x = 0) := by
-        -- Apply the existence of smooth bump functions.
-        obtain ⟨ϕ, hϕ⟩ : ∃ ϕ : ℝ → ℝ, ContDiff ℝ ∞ ϕ ∧ (∀ x, |x| ≤ 1 → ϕ x = 1) ∧ (∀ x, |x| ≥ 2 → ϕ x = 0) := by
-          have := @exists_smooth_zero_one_of_isClosed;
-          specialize this ( modelWithCornersSelf ℝ ℝ ) ( show IsClosed ( { x : ℝ | |x| ≥ 2 } ) from isClosed_le continuous_const <| continuous_abs ) ( show IsClosed ( { x : ℝ | |x| ≤ 1 } ) from isClosed_le continuous_abs continuous_const ) ( by exact Set.disjoint_left.mpr fun x hx₁ hx₂ => by linarith [ hx₁.out, hx₂.out ] );
-          bound;
-          exact ⟨ w, w.contMDiff.contDiff, fun x hx => left_1 hx, fun x hx => left hx ⟩;
-        use ϕ;
-        rw [ hasCompactSupport_iff_eventuallyEq ];
-        simp_all only [ge_iff_le, EventuallyEq, Pi.zero_apply, coclosedCompact_eq_cocompact,
-          cocompact_eq_atBot_atTop, eventually_sup, eventually_atBot, eventually_atTop,
-          implies_true, and_self, and_true, true_and];
-        exact ⟨ ⟨ -2, fun x hx => hϕ.2.2 x <| by cases abs_cases x <;> linarith ⟩, ⟨ 2, fun x hx => hϕ.2.2 x <| by cases abs_cases x <;> linarith ⟩ ⟩;
+        let bump : ContDiffBump (0 : ℝ) := ⟨1, 2, by norm_num, by norm_num⟩
+        refine ⟨bump, bump.contDiff, bump.hasCompactSupport, ?_, ?_⟩
+        · intro x hx
+          have hx' : x ∈ Metric.closedBall (0 : ℝ) 1 := by
+            simpa [Real.norm_eq_abs, dist_eq_norm] using hx
+          exact bump.one_of_mem_closedBall hx'
+        · intro x hx
+          have hx' : (2 : ℝ) ≤ dist x 0 := by
+            simpa [Real.norm_eq_abs, dist_eq_norm] using hx
+          exact bump.zero_of_le_dist hx'
       -- Define the function $f_u(x) = \frac{c}{n!} x^n \phi(u x)$ for some large $u$.
       obtain ⟨u, hu⟩ : ∃ u : ℝ, 0 < u ∧ (∀ k < n, ∀ x, |iteratedDeriv k (fun x => (c / n.factorial) * x^n * ϕ (u * x)) x| ≤ ε) := by
         have h_smooth_bump_scaling_bound : ∀ k < n, ∃ R, ∀ u ≥ R, ∀ x, |iteratedDeriv k (fun x => (c / n.factorial) * x^n * ϕ (u * x)) x| ≤ ε := by
@@ -821,8 +819,7 @@ lemma contDiff_parametric_integral (F : ℝ → ℝ → ℝ) (hF : ContDiff ℝ 
         intro n
         have h_cont_diff : ContDiff ℝ n (fun p : ℝ × ℝ => F p.1 p.2) := by
           -- Since $F$ is continuously differentiable up to order infinity, it is also continuously differentiable up to any finite order $n$.
-          apply hF.of_le;
-          exact ENat.LEInfty.out
+          exact hF.of_le (mod_cast le_top)
         induction' n with n ih generalizing F <;> aesop;
         · fun_prop;
         · -- The derivative of the integral with respect to x is the integral of the partial derivative of F with respect to x.
