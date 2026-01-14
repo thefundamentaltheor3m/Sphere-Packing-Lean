@@ -184,13 +184,10 @@ lemma smooth_bump_scaling_bound (ϕ : ℝ → ℝ) (hϕ : ContDiff ℝ ∞ ϕ) (
         intro j hj
         simp only [iteratedDeriv_eq_iterate, iter_deriv_pow', mul_comm, mul_left_comm,
             mul_assoc];
-        -- By definition of iterated derivative, we know that
+        -- Use iteratedDeriv_comp_const_mul from mathlib for the chain rule
         have h_iter_deriv : ∀ j : ℕ, deriv^[j] (fun x => ϕ (u * x)) = fun x => u ^ j * deriv^[j] ϕ (u * x) := by
-          intro j; induction j <;> simp_all +decide [ Function.iterate_succ_apply', pow_succ', mul_assoc, mul_comm u ] ;
-          ext x; erw [ deriv_comp ] <;> norm_num [ mul_comm u ] ; ring;
-          apply_rules [ ContDiff.differentiable ];
-          apply_rules [ ContDiff.iterate_deriv ];
-          decide +revert;
+          intro j; simp only [← iteratedDeriv_eq_iterate]
+          exact iteratedDeriv_comp_const_mul (hϕ.of_le (mod_cast le_top)) u
         simp +decide only [h_iter_deriv, mul_left_comm, Nat.descFactorial_eq_prod_range,
           Nat.cast_prod, mul_eq_mul_left_iff, mul_eq_mul_right_iff, Nat.cast_eq_zero,
           pow_eq_zero_iff', ne_eq];
