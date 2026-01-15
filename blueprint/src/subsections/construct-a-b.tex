@@ -261,7 +261,7 @@ Combining these, one can show that $a$ is a Schwartz function.
 $a(x)$ is a Schwartz function.
 \end{proposition}
 \begin{proof}
-\uses{lem:bound-I1-I3-I5, lem:bound-I2-I4-I6, lem:integral-bound}
+\uses{lem:bound-I1-I3-I5, lem:bound-I2-I4-I6, lem:integral-bound, thm:smooth-fast-decay-schwartz}
 By Theorem \ref{thm:smooth-fast-decay-schwartz}, it suffices to show that the function is smooth and decays faster than any polynomial.
 The smoothness follows from the ``differentiation under the integral'', which is already formalized in \texttt{mathlib}.
 The decay follows from Lemmas \ref{lem:bound-I1-I3-I5} and \ref{lem:bound-I2-I4-I6}, together with Lemma \ref{lem:integral-bound}.
@@ -595,6 +595,11 @@ Combining Lemmas \ref{lemma:bound-J1-J3-J5}, \ref{lemma:bound-J2-J4-J6}, and The
 \begin{proposition}\label{prop:b-schwartz}\uses{lemma:psi-bound}\lean{MagicFunction.FourierEigenfunctions.b}\leanok
 $b(x)$ is a Schwartz function.
 \end{proposition}
+\begin{proof}
+\uses{lemma:bound-J1-J3-J5, lemma:bound-J2-J4-J6, thm:smooth-fast-decay-schwartz}
+Similar to the proof of \ref{prop:a-schwartz}.
+\end{proof}
+
 % \begin{proof}
 % We have
 % \begin{align}
