@@ -1,5 +1,4 @@
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.Order.Monotone.Defs
+import SpherePacking.ForMathlib.MDifferentiableFunProp
 
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.JacobiTheta
@@ -7,14 +6,13 @@ import SpherePacking.ModularForms.JacobiTheta
 open Filter
 open scoped Real Manifold
 
-
 /--
 Definition of $F$ and $G$ and auxiliary functions for the inequality between them
 on the imaginary axis.
 -/
 noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
 
-noncomputable def G := H₂ ^ 3 * (2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2)
+noncomputable def G := H₂ ^ 3 * ((2 : ℝ) • H₂ ^ 2 + (5 : ℝ) • H₂ * H₄ + (5 : ℝ) • H₄ ^ 2)
 
 noncomputable def negDE₂ := - (D E₂)
 
@@ -38,20 +36,18 @@ theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
     FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by sorry
 
 /- Some basic facts -/
-theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
-  have h : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) := by
-    exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
-  rw [F, pow_two]
-  exact MDifferentiable.mul h h
+lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄^2) := by
+  unfold G
+  ext τ
+  simp
 
-theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
-  sorry
+theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by unfold F; fun_prop
 
-theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by
-  exact serre_D_differentiable F_holo
+theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by rw [G_eq]; fun_prop
 
-theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := by
-  exact serre_D_differentiable G_holo
+theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by unfold F; fun_prop
+
+theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := by rw [G_eq]; fun_prop
 
 theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
   sorry
@@ -69,11 +65,7 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
     simp
     ring_nf
   -- Holomorphicity of the terms
-  · exact E₂_holo'
-  · exact E₄.holo'
-  · exact MDifferentiable.mul E₂_holo' E₄.holo'
-  · exact E₆.holo'
-  · exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
+  repeat fun_prop
 
 /--
 Modular linear differential equation satisfied by $F$.
@@ -115,22 +107,20 @@ lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
 
 lemma SerreDer_22_L₁₀_SerreDer :
     SerreDer_22_L₁₀ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by
-  have SF_holo := @serre_D_differentiable F 10 F_holo
-  have SG_holo := @serre_D_differentiable G 10 G_holo
   calc
     SerreDer_22_L₁₀ = serre_D 22 L₁₀ := rfl
     _ = serre_D 22 (serre_D 10 F * G - F * serre_D 10 G) := by rw [L₁₀_SerreDer]
     _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by
         apply serre_D_sub _ _ _
-        · exact MDifferentiable.mul SF_holo G_holo
-        · exact MDifferentiable.mul F_holo SG_holo
+        · exact MDifferentiable.mul SerreF_holo G_holo
+        · exact MDifferentiable.mul F_holo SerreG_holo
     _ = serre_D (12 + 10) ((serre_D 10 F) * G) - serre_D (10 + 12) (F * serre_D 10 G) := by ring_nf
     _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
         - serre_D (10 + 12) (F * serre_D 10 G) := by
-          simpa using (serre_D_mul 12 10 (serre_D 10 F) G SF_holo G_holo)
+          simpa using (serre_D_mul 12 10 (serre_D 10 F) G SerreF_holo G_holo)
     _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
         - ((serre_D 10 F) * (serre_D 10 G) + F * (serre_D 12 (serre_D 10 G))) := by
-          simpa using (serre_D_mul 10 12 F (serre_D 10 G) F_holo SG_holo)
+          simpa using (serre_D_mul 10 12 F (serre_D 10 G) F_holo SerreG_holo)
     _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
 
 /- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/

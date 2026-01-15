@@ -16,6 +16,7 @@ import SpherePacking.ForMathlib.Fourier
 import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 import SpherePacking.ForMathlib.InnerProductSpace
 import SpherePacking.ForMathlib.InvPowSummability
+import SpherePacking.ForMathlib.MDifferentiableFunProp
 import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 import SpherePacking.ForMathlib.Real
 import SpherePacking.ForMathlib.SlashActions
