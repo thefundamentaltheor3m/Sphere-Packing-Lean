@@ -230,21 +230,37 @@ theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))}
 
 -- set_option diagnostics true
 theorem Summable_Inverse_Powers_of_Finite_Orbits
-  {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
-  [DiscreteTopology Λ] [IsZLattice ℝ Λ] (ρ : AddAction Λ X)
-  [Fintype (Quotient ρ.orbitRel)]
-  : Inv_Pow_Norm_Summable_Over_Set_Euclidean X := by
+    {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
+    [DiscreteTopology Λ] [IsZLattice ℝ Λ] (ρ : AddAction Λ X) [Fintype (Quotient ρ.orbitRel)] :
+    Inv_Pow_Norm_Summable_Over_Set_Euclidean X := by
   rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean]
   simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs]
   intro ε hε
-  -- Translating and scaling fundamental domains could be a good idea - discussion with Bhavik
-  let bℤ : Basis _ ℤ Λ :=
-    ((ZLattice.module_free ℝ Λ).chooseBasis).reindex (ZLattice.basis_index_equiv Λ)
-  let bℝ := Basis.ofZLatticeBasis ℝ Λ bℤ
+  let bℝ := Basis.ofZLatticeBasis ℝ Λ (((ZLattice.module_free ℝ Λ).chooseBasis).reindex
+    (ZLattice.basis_index_equiv Λ))
   let D := {m | ∀ i, bℝ.repr m i ∈ Set.Ico (-1 : ℝ) 1}
-  -- let N := Fintype.card ((X ∩ D) : Set (EuclideanSpace ℝ (Fin d)))
-
-  sorry
+  obtain ⟨s, hs⟩ : ∃ s : Finset X, ∀ x ∈ s, ‖(x : EuclideanSpace ℝ (Fin d))‖ ^ (d + 1) ≠ 0 :=
+    ⟨∅, by grind⟩
+  use ∅
+  contrapose! hs with h
+  rcases d with (_ | d) <;> norm_num at *
+  · obtain ⟨t, ht⟩ := h
+    refine False.elim <| ht.not_gt <| ?_
+    rw [Finset.sum_eq_zero fun _ _ ↦ by rw [EuclideanSpace.norm_eq]; norm_num]
+    grind
+  · have := @extracted_1 (d + 1) (Set.univ : Set (EuclideanSpace ℝ (Fin (d + 1)))) Λ
+    simp only [Set.mem_Ico, Set.univ_inter, Set.coe_setOf] at *
+    have h_inf : (Set.image (fun x : ℝ ↦ x • bℝ 0) (Set.Ioo (-1) 1)).Infinite := by
+      refine Set.Infinite.image ?_ (Set.Ioo_infinite (by norm_num : (-1 : ℝ) < 1))
+      exact fun x hx y hy hxy ↦ by
+        simpa [bℝ.ne_zero] using smul_left_injective _ (bℝ.ne_zero 0) hxy
+    have h_infinite :
+        {m : EuclideanSpace ℝ (Fin (d + 1)) |
+          ∀ i, -1 ≤ (bℝ.repr m) i ∧ (bℝ.repr m) i < 1}.Infinite := by
+      refine h_inf.mono ?_
+      rintro _ ⟨x, hx, rfl⟩ i; by_cases hi : i = 0 <;> simp [hi, hx.1.le, hx.2]
+    exact False.elim <| h_infinite <|
+      Set.Finite.subset (Set.finite_coe_iff.mp <| this) fun _ hx ↦ hx
 
 -- theorem Summable_Inverse_Powers_over_Periodic_Packing_Centres (P : PeriodicSpherePacking d) :
 -- Inv_Pow_Norm_Summable_Over_Set_Euclidean P.centers :=
