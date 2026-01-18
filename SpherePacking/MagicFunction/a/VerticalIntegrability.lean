@@ -227,14 +227,44 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
       ((a : ℂ) + Complex.I * t)^2 *
       Complex.exp (Complex.I * π * r * ((b : ℂ) + Complex.I * t)))
                  (Ioi 1) volume := by
-  -- Strategy:
-  -- 1. For t > 1, z = a + I*t has Im(z) > 1
-  -- 2. By im_neg_inv_pos, -1/z has positive imaginary part
-  -- 3. Apply φ₀''_neg_inv_eq_φ₀_S_smul to get φ₀(S•w)
-  -- 4. Use norm_φ₀_S_smul_le to bound the φ₀ term
-  -- 5. The product |z²| * |cexp(...)| = (a² + t²) * exp(-πrt)
-  -- 6. Combined decay: exp(-πrt + O(t)) → 0 for r > 2
-  sorry
+  -- Strategy: Bound by C * verticalBound hb r t where C = a² + 1
+  -- Key steps:
+  -- 1. For t > 1, z = a + I*t has Im(z) = t > 1
+  -- 2. Apply φ₀''_neg_inv_eq_φ₀_S_smul to get φ₀(S•w)
+  -- 3. Use norm_φ₀_S_smul_le to bound the φ₀ term (uses ‖z‖ ≥ t)
+  -- 4. |z²| = a² + t² ≤ (a² + 1) * t² for t ≥ 1
+  -- 5. |exp(...)| = exp(-πrt) independent of b
+  -- 6. Combined bound ≤ (a² + 1) * verticalBound
+  have hbound_integ : IntegrableOn (fun t => (a^2 + 1) * ContourEndpoints.verticalBound hb r t)
+      (Ioi 1) volume := by
+    refine IntegrableOn.mono_set ?_ (Ioi_subset_Ici_self (a := 1))
+    exact (ContourEndpoints.integrableOn_verticalBound hb r hr).const_mul (a^2 + 1)
+  apply MeasureTheory.Integrable.mono' hbound_integ
+  · -- AEStronglyMeasurable: The integrand is continuous on Ioi 1
+    -- Sketch: φ₀'' ∘ (-1/(a + I*·)) is continuous because:
+    --   1. t ↦ -1/(a + I*t) is continuous (ratio of polynomials, nonzero denominator)
+    --   2. For t > 0, the image has Im > 0 (by im_neg_inv_pos)
+    --   3. φ₀'' = φ₀ on the upper half plane, and φ₀ is continuous
+    -- The product with (a + I*t)² and exp(...) is also continuous.
+    sorry
+  · -- Norm bound: ‖integrand‖ ≤ (a² + 1) * verticalBound hb r t a.e.
+    -- Strategy:
+    -- 1. For t > 1, z = a + I*t has Im(z) = t > 1
+    -- 2. By φ₀''_neg_inv_eq_φ₀_S_smul, φ₀''(-1/z) = φ₀(S•w)
+    -- 3. norm_φ₀_S_smul_le gives 3-term bound with ‖z‖ = √(a² + t²) ≥ t
+    -- 4. |z²| = a² + t² ≤ (a² + 1) * t² for t ≥ 1
+    -- 5. |exp(I*π*r*(b + I*t))| = exp(-πrt)
+    -- 6. Combined: ≤ (a² + 1) * [3-term bound] * t² * exp(-πrt) = (a² + 1) * verticalBound
+    filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
+    have ht_gt_1 : 1 < t := mem_Ioi.mp ht
+    have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one (le_of_lt ht_gt_1)
+    have ht_ge_1 : 1 ≤ t := le_of_lt ht_gt_1
+    -- The bound calculation is detailed but straightforward:
+    -- ‖integrand‖ = ‖φ₀''(-1/z)‖ * ‖z²‖ * |exp(...)|
+    --             ≤ [3-term S-bound] * (a² + t²) * exp(-πrt)
+    --             ≤ [3-term bound with ‖z‖→t] * (a² + 1) * t² * exp(-πrt)
+    --             = (a² + 1) * verticalBound hb r t
+    sorry
 
 /-! ## Relationship to verticalIntegrandX
 
