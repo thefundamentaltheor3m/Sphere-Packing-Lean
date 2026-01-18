@@ -697,10 +697,7 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ)
 lemma im_deriv_eq_zero_of_im_eq_zero {f : ℝ → ℂ} {t : ℝ}
     (hf : DifferentiableAt ℝ f t) (him : ∀ s, (f s).im = 0) :
     (deriv f t).im = 0 := by
-  have h_chain : deriv (fun s => (f s).im) t = (deriv f t).im := by
-    simpa using ((hasDerivAt_const t Complex.imCLM).clm_apply hf.hasDerivAt).deriv
-  conv_lhs at h_chain => rw [show (fun s => (f s).im) = fun _ => 0 from funext him, deriv_const]
-  exact h_chain.symm
+  simpa [funext him] using ((hasDerivAt_const t Complex.imCLM).clm_apply hf.hasDerivAt).deriv.symm
 
 /-- If F is real on the imaginary axis and MDifferentiable, then D F is also real
 on the imaginary axis. -/
@@ -709,15 +706,13 @@ theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
   have him : ∀ s, (F.resToImagAxis s).im = 0 := fun s => by
     by_cases hs : 0 < s
     · exact hF_real s hs
-    · simp [Function.resToImagAxis, ResToImagAxis, hs]
+    · simp [ResToImagAxis, hs]
   have h_im_deriv :=
     im_deriv_eq_zero_of_im_eq_zero (ResToImagAxis.Differentiable F hF_diff t ht) him
   have h_im_eq : (deriv F.resToImagAxis t).im = -2 * π * ((D F).resToImagAxis t).im := by
-    rw [deriv_resToImagAxis_eq F hF_diff ht]
-    have : ((-2 : ℂ) * ↑π) = ↑((-2 : ℝ) * π) := by push_cast; ring
-    rw [this, im_ofReal_mul]
-  have hpi : (-2 : ℝ) * π ≠ 0 := by norm_num [Real.pi_ne_zero]
-  exact (mul_eq_zero.mp (h_im_deriv ▸ h_im_eq).symm).resolve_left hpi
+    simpa [mul_assoc, ofReal_mul] using congrArg Complex.im (deriv_resToImagAxis_eq F hF_diff ht)
+  exact (mul_eq_zero.mp (h_im_deriv ▸ h_im_eq).symm).resolve_left
+    (mul_ne_zero (by norm_num) Real.pi_ne_zero)
 
 /--
 If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
