@@ -62,9 +62,13 @@ lemma norm_φ₀_I_div_t_small (C₀ : ℝ) (hC₀ : 0 < C₀)
   -- φ₀'' equals φ₀ on upper half-plane, apply the bound
   rw [φ₀''_eq _ hI_div_pos]
   have h := hbound ⟨Complex.I / t, hI_div_pos⟩ hI_div_gt
-  simp only [UpperHalfPlane.coe_im, UpperHalfPlane.coe_mk, Complex.div_ofReal_im, Complex.I_im] at h
-  -- Exact algebra: -2 * π / t = -2 * π * (1/t)
-  sorry
+  -- The bound hbound gives us the inequality for z.im = 1/t
+  -- UpperHalfPlane.im ⟨I/t, _⟩ = (I/t).im = 1/t
+  have him : UpperHalfPlane.im ⟨Complex.I / t, hI_div_pos⟩ = 1/t := by
+    simp [UpperHalfPlane.im]
+  simp only [him] at h
+  convert h using 2
+  ring
 
 /-- Lemma 4.4.4: For large t ≥ 2, φ₀(i/t) grows at most like t⁻² e^{2πt}.
     This uses the S-transform formula (4.1.5) and bounds from Cor 7.5-7.7. -/
