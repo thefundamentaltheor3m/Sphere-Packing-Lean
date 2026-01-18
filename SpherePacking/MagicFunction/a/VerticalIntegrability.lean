@@ -168,7 +168,9 @@ lemma integrableOn_goal1 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
       intro t ⟨ht_pos, _⟩
       exact goal1_eq_verticalIntegrandX r t (ne_of_gt ht_pos)
     -- verticalIntegrandX is continuous on (0, ∞), hence on (0, 1]
-    -- For compact [ε, 1], continuity gives integrability; for (0, 1], need bounded + finite measure
+    -- The integrand → 0 as t → 0+ (super-exponential decay of φ₀'' dominates)
+    -- So it extends continuously to [0, 1], and continuous functions on compact sets are integrable
+    -- TODO: Show boundedness using cusp decay + finite measure argument
     sorry
   · -- Integrability on Ioi 1 from existing infrastructure
     have h : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 0 r t) (Ici 1) volume :=
