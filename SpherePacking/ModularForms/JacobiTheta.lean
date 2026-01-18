@@ -893,18 +893,6 @@ Properties of theta functions when restricted to the positive imaginary axis z =
 
 section ImagAxisProperties
 
-/-- For even k, `I^k = (-1)^(k/2)`. -/
-lemma I_pow_even (k : ℕ) (hk : Even k) : I ^ k = (-1 : ℂ) ^ (k / 2) := by
-  obtain ⟨m, rfl⟩ := hk
-  rw [show (m + m) / 2 = m by omega, show m + m = 2 * m by ring, pow_mul, I_sq]
-
-/-- `I^k` is real for even k (since `(-1)^m` is `±1`). -/
-lemma I_pow_even_real (k : ℕ) (hk : Even k) : (I ^ k).im = 0 := by
-  rw [I_pow_even k hk]
-  induction k / 2 with
-  | zero => simp
-  | succ n ih => simp [pow_succ, ih]
-
 /-- Each term Θ₂_term n (I*t) has zero imaginary part for t > 0. -/
 lemma Θ₂_term_imag_axis_real (n : ℤ) (t : ℝ) (ht : 0 < t) :
     (Θ₂_term n ⟨I * t, by simp [ht]⟩).im = 0 := by

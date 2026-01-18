@@ -91,8 +91,11 @@ lemma tsum_pnat_eq_tsum_succ4 {α : Type*} [TopologicalSpace α] [AddCommGroup �
   simp only [add_right_inj]
   apply tsum_pnat_eq_tsum_succ
 
-
-
+/-- Closed form for ∑ n·rⁿ over ℕ+ when ‖r‖ < 1. -/
+lemma tsum_pnat_coe_mul_geometric {r : ℝ} (hr : ‖r‖ < 1) :
+    (∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ)) = r / (1 - r) ^ 2 := by
+  rw [tsum_pNat (f := fun n => (n : ℝ) * r ^ n) (by simp)]
+  exact tsum_coe_mul_geometric_of_norm_lt_one hr
 
 theorem nat_pos_tsum2' {α : Type*} [TopologicalSpace α] [AddCommMonoid α] (f : ℕ → α) :
     (Summable fun x : ℕ+ => f x) ↔ Summable fun x : ℕ => f (x + 1) :=
