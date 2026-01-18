@@ -49,7 +49,7 @@ These bounds are the key to proving convergence of the integral in Definition 4.
 
 /-- Lemma 4.4.3: For small t ∈ (0, 2), φ₀(i/t) has super-exponential decay.
     This follows from the cusp bound (4.2.1) with z = i/t. -/
-lemma norm_φ₀_I_div_t_small (C₀ : ℝ) (hC₀ : 0 < C₀)
+lemma norm_φ₀_I_div_t_small (C₀ : ℝ) (_hC₀ : 0 < C₀)
     (hbound : ∀ z : UpperHalfPlane, 1/2 < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im)) :
     ∀ t ∈ Ioo (0 : ℝ) 2, ‖φ₀'' (Complex.I / t)‖ ≤ C₀ * Real.exp (-2 * π / t) := by
   intro t ⟨ht_pos, ht_lt⟩
@@ -68,7 +68,7 @@ lemma norm_φ₀_I_div_t_small (C₀ : ℝ) (hC₀ : 0 < C₀)
     simp [UpperHalfPlane.im]
   simp only [him] at h
   convert h using 2
-  ring
+  field_simp
 
 /-- Lemma 4.4.4: For large t ≥ 2, φ₀(i/t) grows at most like t⁻² e^{2πt}.
     This uses the S-transform formula (4.1.5) and bounds from Cor 7.5-7.7. -/
@@ -93,7 +93,7 @@ The Category A goals (1, 2, 4, 6) are scalar multiples of `verticalIntegrandX`.
 /-- Helper: (I*t)² = -t². Useful for clearing I² in integrands. -/
 @[simp]
 lemma I_mul_t_sq (t : ℝ) : (Complex.I * t : ℂ)^2 = -(t^2) := by
-  simp [mul_pow, Complex.I_sq, neg_one_mul, ← Complex.ofReal_neg, ← Complex.ofReal_pow]
+  simp [mul_pow, Complex.I_sq, ← Complex.ofReal_neg, ← Complex.ofReal_pow]
 
 /-- Goal 1 integrand equals verticalIntegrandX 0 r t. -/
 lemma goal1_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
@@ -116,7 +116,7 @@ lemma goal2_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
   rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
   simp only [mul_pow, Complex.ofReal_neg, Complex.ofReal_one, neg_mul]
   conv_rhs => rw [show (I : ℂ) ^ 2 = -1 from Complex.I_sq]
-  ring
+  ring_nf
 
 /-- Goal 4 integrand equals -I * verticalIntegrandX 1 r t.
 
@@ -129,7 +129,7 @@ lemma goal4_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
   rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
   simp only [mul_pow, Complex.ofReal_one, neg_mul]
   conv_rhs => rw [show (I : ℂ) ^ 2 = -1 from Complex.I_sq]
-  ring
+  ring_nf
 
 /-- Goal 6 integrand equals verticalIntegrandX (-1) r t.
 
@@ -139,10 +139,10 @@ lemma goal6_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
     Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))) =
     ContourEndpoints.verticalIntegrandX (-1) r t := by
-  simp only [ContourEndpoints.verticalIntegrandX, mul_comm (t : ℂ) Complex.I,
-    neg_one_div_I_mul t ht, I_mul_t_sq, mul_pow, pow_two, Complex.I_sq, Complex.I_pow_four,
-    Complex.ofReal_neg, Complex.ofReal_one, mul_comm, mul_left_comm, mul_assoc, neg_mul,
-    one_mul, mul_neg, mul_one, neg_neg]
+  unfold ContourEndpoints.verticalIntegrandX
+  rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
+  ring_nf
+  simp [pow_two]
 
 /-! ## Specific Instantiations
 
