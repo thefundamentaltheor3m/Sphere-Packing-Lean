@@ -44,9 +44,9 @@ Hence: `E₂ * E₄ - E₆ = 3 * D E₄`, so `F = (E₂ * E₄ - E₆)² = 9 * (
 -/
 theorem F_eq_nine_DE₄_sq : F = (9 : ℂ) • (D E₄.toFun) ^ 2 := by
   have h : E₂ * E₄.toFun - E₆.toFun = 3 • D E₄.toFun := by
-    rw [ramanujan_E₄]; ext z; simp [smul_eq_mul]
+    rw [ramanujan_E₄]; ext z; simp
   ext z
-  simp only [F, h, Pi.smul_apply, smul_eq_mul, Pi.pow_apply, Pi.mul_apply]
+  simp only [F, h, Pi.smul_apply, smul_eq_mul, Pi.pow_apply]
   ring
 
 /- Some basic facts -/
@@ -503,7 +503,6 @@ lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
   set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩ with hz
   rw [DE₄_qexp z]
-  -- Get summability for z (converting from DE₄_summable which uses explicit form)
   have hsum : Summable fun n : ℕ+ => (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * ↑Real.pi * Complex.I * n * z) := by
     simp only [hz]; exact DE₄_summable t ht
@@ -514,22 +513,7 @@ lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
       Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := by
     intro n; simp only [hz]; exact DE₄_term_re_pos t ht n
   have htsum_pos := Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
-  -- Sum is real since each term is real on imaginary axis
-  have hsum_im : (∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
-      Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
-    rw [Complex.im_tsum hsum]
-    have hterm_im : ∀ n : ℕ+, ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
-        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
-      intro n
-      have harg := qexp_arg_imag_axis_pnat t ht n
-      -- Convert the coercion of UpperHalfPlane to ℂ
-      have hcoe : (z : ℂ) = Complex.I * t := by simp only [hz, UpperHalfPlane.coe_mk_subtype]
-      rw [hcoe]
-      rw [harg]
-      simp only [Complex.mul_im, Complex.natCast_re, Complex.natCast_im, mul_zero,
-                 zero_mul, add_zero, Complex.exp_ofReal_im]
-    simp only [hterm_im, tsum_zero]
-  simp only [Complex.mul_re, hsum_im, mul_zero, sub_zero]
+  simp only [Complex.mul_re, Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero]
   rw [Complex.re_tsum hsum]
   exact mul_pos (by norm_num : (0 : ℝ) < 240) htsum_pos
 
