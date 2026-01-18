@@ -263,64 +263,16 @@ lemma serre_D_E₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) :=
 /-! ## Construction of ModularForm from serre_D -/
 
 /-- serre_D 4 E₄ is a weight-6 modular form. -/
-def serre_D_E₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 where
-  toSlashInvariantForm := {
-    toFun := serre_D 4 E₄.toFun
-    slash_action_eq' := fun γ hγ => by
-      rw [Subgroup.mem_map] at hγ
-      obtain ⟨γ', _, hγ'_eq⟩ := hγ
-      have hE₄_slash : E₄.toFun ∣[(4 : ℤ)] γ' = E₄.toFun := by
-        have := E₄.slash_action_eq' γ ⟨γ', mem_Gamma_one γ', hγ'_eq⟩
-        rw [← hγ'_eq] at this
-        exact this
-      have h := serre_D_slash_invariant 4 E₄.toFun E₄.holo' γ' hE₄_slash
-      change serre_D 4 E₄.toFun ∣[(6 : ℤ)] γ = serre_D 4 E₄.toFun
-      rw [← hγ'_eq]
-      exact h
-  }
-  holo' := serre_D_differentiable E₄.holo'
-  bdd_at_cusps' := fun hc => by
-    apply bounded_at_cusps_of_bounded_at_infty hc
-    intro A hA
-    rw [MonoidHom.mem_range] at hA
-    obtain ⟨A', hA'_eq⟩ := hA
-    have h := serre_D_slash_invariant 4 E₄.toFun E₄.holo' A'
-      (E₄.slash_action_eq' _ ⟨A', mem_Gamma_one A', rfl⟩)
-    change IsBoundedAtImInfty (serre_D 4 E₄.toFun ∣[(6 : ℤ)] A)
-    rw [← hA'_eq]
-    convert serre_D_E₄_isBoundedAtImInfty using 1
+def serre_D_E₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 :=
+  serre_D_ModularForm 4 E₄
 
 /-- serre_D 6 E₆ is bounded at infinity. -/
 lemma serre_D_E₆_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 6 E₆.toFun) :=
   serre_D_isBoundedAtImInfty 6 E₆.holo' E₆_isBoundedAtImInfty
 
 /-- serre_D 6 E₆ is a weight-8 modular form. -/
-def serre_D_E₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 where
-  toSlashInvariantForm := {
-    toFun := serre_D 6 E₆.toFun
-    slash_action_eq' := fun γ hγ => by
-      rw [Subgroup.mem_map] at hγ
-      obtain ⟨γ', _, hγ'_eq⟩ := hγ
-      have hE₆_slash : E₆.toFun ∣[(6 : ℤ)] γ' = E₆.toFun := by
-        have := E₆.slash_action_eq' γ ⟨γ', mem_Gamma_one γ', hγ'_eq⟩
-        rw [← hγ'_eq] at this
-        exact this
-      have h := serre_D_slash_invariant 6 E₆.toFun E₆.holo' γ' hE₆_slash
-      change serre_D 6 E₆.toFun ∣[(8 : ℤ)] γ = serre_D 6 E₆.toFun
-      rw [← hγ'_eq]
-      exact h
-  }
-  holo' := serre_D_differentiable E₆.holo'
-  bdd_at_cusps' := fun hc => by
-    apply bounded_at_cusps_of_bounded_at_infty hc
-    intro A hA
-    rw [MonoidHom.mem_range] at hA
-    obtain ⟨A', hA'_eq⟩ := hA
-    have h := serre_D_slash_invariant 6 E₆.toFun E₆.holo' A'
-      (E₆.slash_action_eq' _ ⟨A', mem_Gamma_one A', rfl⟩)
-    change IsBoundedAtImInfty (serre_D 6 E₆.toFun ∣[(8 : ℤ)] A)
-    rw [← hA'_eq]
-    convert serre_D_E₆_isBoundedAtImInfty using 1
+def serre_D_E₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
+  serre_D_ModularForm 6 E₆
 
 /-! ## Limit of serre_D at infinity (for determining scalar) -/
 

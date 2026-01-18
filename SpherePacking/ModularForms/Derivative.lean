@@ -826,3 +826,32 @@ theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
     simp only [Pi.mul_apply]
     ring
   exact hD.sub hE₂f
+
+/-- The Serre derivative of a weight-k level-1 modular form is a weight-(k+2) modular form. -/
+noncomputable def serre_D_ModularForm (k : ℤ) (f : ModularForm (Gamma 1) k) :
+    ModularForm (Gamma 1) (k + 2) where
+  toSlashInvariantForm := {
+    toFun := serre_D k f.toFun
+    slash_action_eq' := fun γ hγ => by
+      rw [Subgroup.mem_map] at hγ
+      obtain ⟨γ', _, hγ'_eq⟩ := hγ
+      have hf_slash : f.toFun ∣[k] γ' = f.toFun := by
+        have := f.slash_action_eq' γ ⟨γ', mem_Gamma_one γ', hγ'_eq⟩
+        rw [← hγ'_eq] at this
+        exact this
+      have h := serre_D_slash_invariant k f.toFun f.holo' γ' hf_slash
+      change serre_D k f.toFun ∣[k + 2] γ = serre_D k f.toFun
+      rw [← hγ'_eq]
+      exact h
+  }
+  holo' := serre_D_differentiable f.holo'
+  bdd_at_cusps' := fun hc => by
+    apply bounded_at_cusps_of_bounded_at_infty hc
+    intro A hA
+    rw [MonoidHom.mem_range] at hA
+    obtain ⟨A', hA'_eq⟩ := hA
+    have h := serre_D_slash_invariant k f.toFun f.holo' A'
+      (f.slash_action_eq' _ ⟨A', mem_Gamma_one A', rfl⟩)
+    change IsBoundedAtImInfty (serre_D k f.toFun ∣[k + 2] A)
+    rw [← hA'_eq]
+    convert serre_D_isBoundedAtImInfty k f.holo' (ModularFormClass.bdd_at_infty f) using 1
