@@ -19,8 +19,8 @@ needed for Proposition 4.4.6 (the double zeros proof).
 - `norm_φ₀_I_div_t_small`: Lemma 4.4.3 - For t ∈ (0, 2), |φ₀(i/t)| ≤ C₀ e^{-2π/t}
 - `norm_φ₀_I_div_t_large`: Lemma 4.4.4 - For t ≥ 2, |φ₀(i/t)| ≤ C t⁻² e^{2πt}
 
-### General Integrability
-- `integrableOn_vertical_general`: General integrability for r > 2 on (0, ∞)
+### Integrability Goals (Proposition 4.4.6)
+- `integrableOn_goal1` through `integrableOn_goal6`: Six specific integrands
 
 ### Vanishing Lemmas (Lemma 4.4.5)
 - `tendsto_φ₀_integrand_atImInfty`: Base vanishing as Im(z) → ∞
@@ -79,50 +79,6 @@ lemma norm_φ₀_I_div_t_large (hb : ContourEndpoints.PhiBounds) :
   -- For simplicity, use that for t ≥ 2, we can bound crudely
   sorry
 
-/-! ## Integrand Boundedness
-
-For the integral ∫₀^∞ φ₀(i/t) t² e^{-πrt} dt to converge (r > 2):
-- Small t: |φ₀(i/t) t² e^{-πrt}| ≤ C₀ e^{-2π/t} · t² ≤ 4C₀ (bounded)
-- Large t: |φ₀(i/t) t² e^{-πrt}| ≤ C · e^{(2-r)πt} (exponentially decaying for r > 2)
--/
-
-/-- The integrand φ₀(i/t) t² e^{-πrt} is bounded on (0, 2] for any r. -/
-lemma integrand_bounded_small (C₀ : ℝ) (hC₀ : 0 < C₀)
-    (hbound : ∀ z : UpperHalfPlane, 1/2 < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
-    (r : ℝ) :
-    ∃ M : ℝ, ∀ t ∈ Ioo (0 : ℝ) 2,
-      ‖φ₀'' (Complex.I / t) * t ^ 2 * Real.exp (-π * r * t)‖ ≤ M := by
-  use 4 * C₀
-  intro t ⟨ht_pos, ht_lt⟩
-  have h1 := norm_φ₀_I_div_t_small C₀ hC₀ hbound t ⟨ht_pos, ht_lt⟩
-  -- Use sorry for now; proof needs careful norm handling
-  sorry
-
-/-- The integrand has exponential decay on [2, ∞) for r > 2. -/
-lemma integrand_exp_decay_large (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
-    ∃ C : ℝ, ∀ t : ℝ, 2 ≤ t →
-      ‖φ₀'' (Complex.I / t) * t^2 * Complex.exp (-π * r * t)‖ ≤ C * Real.exp ((2 - r) * π * t) := by
-  sorry
-
-/-! ## General Integrability Lemma
-
-The main result: integrability of vertical-type integrands for r > 2.
--/
-
-/-- General integrability for vertical-type integrands.
-    Pattern: φ₀'' (-1 / (a + I*t)) * (a + I*t)² * cexp(π*I*r*(b + I*t))
-    where a, b are real constants (shifts).
-
-    Key observation: -1/(a + I*t) = (-a + I*t) / (a² + t²), which has positive
-    imaginary part t/(a² + t²) > 0 for t > 0. -/
-lemma integrableOn_vertical_general (hb : ContourEndpoints.PhiBounds) (a b r : ℝ) (hr : 2 < r) :
-    IntegrableOn (fun t : ℝ => φ₀'' (-1 / (a + Complex.I * t)) * (a + Complex.I * t)^2 *
-                          Complex.exp (π * Complex.I * r * (b + Complex.I * t)))
-                 (Ioi (0 : ℝ)) volume := by
-  -- Split into (0, 2] and [2, ∞)
-  -- Small t: bounded integrand on compact set → integrable
-  -- Large t: exponential decay → integrable
-  sorry
 
 /-! ## Specific Instantiations
 
