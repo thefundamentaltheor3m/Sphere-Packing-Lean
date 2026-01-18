@@ -42,7 +42,7 @@ theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
 From `ramanujan_E₄`: `D E₄ = (1/3) * (E₂ * E₄ - E₆)`
 Hence: `E₂ * E₄ - E₆ = 3 * D E₄`, so `F = (E₂ * E₄ - E₆)² = 9 * (D E₄)²`.
 -/
-theorem F_eq_nine_D_E₄_sq : F = (9 : ℂ) • (D E₄.toFun) ^ 2 := by
+theorem F_eq_nine_DE₄_sq : F = (9 : ℂ) • (D E₄.toFun) ^ 2 := by
   -- From ramanujan_E₄: D E₄ = 3⁻¹ * (E₂ * E₄ - E₆)
   -- Therefore: E₂ * E₄ - E₆ = 3 • D E₄
   -- And: F = (E₂ * E₄ - E₆)² = (3 • D E₄)² = 9 • (D E₄)²
@@ -428,7 +428,7 @@ lemma E₄_sigma_qexp (z : UpperHalfPlane) :
 
 /-- D E₄ q-expansion via termwise differentiation.
 D E₄ = 240 * ∑ n * σ₃(n) * qⁿ from differentiating E₄ = 1 + 240 * ∑ σ₃(n) * qⁿ. -/
-theorem D_E₄_qexp (z : UpperHalfPlane) :
+theorem DE₄_qexp (z : UpperHalfPlane) :
     D E₄.toFun z = 240 * ∑' (n : ℕ+), (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z) := by
   -- Define the tsum function f(w) = ∑ σ₃(n) * exp(2πinw)
@@ -474,7 +474,7 @@ theorem D_E₄_qexp (z : UpperHalfPlane) :
           Complex.exp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by rw [zero_add, hDf]
 
 /-- Each term n*σ₃(n)*exp(-2πnt) in D E₄ q-expansion has positive real part on imaginary axis. -/
-lemma D_E₄_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
+lemma DE₄_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
     0 < ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
         ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane))).re := by
@@ -486,18 +486,18 @@ lemma D_E₄_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
   · exact_mod_cast ArithmeticFunction.sigma_pos 3 n n.ne_zero
 
 /-- D E₄ q-expansion series is summable on imaginary axis. -/
-lemma D_E₄_summable (t : ℝ) (ht : 0 < t) :
+lemma DE₄_summable (t : ℝ) (ht : 0 < t) :
     Summable fun n : ℕ+ => (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
         ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane)) := by
   simpa [pow_one] using sigma_qexp_summable_generic 1 3 ⟨Complex.I * t, by simp [ht]⟩
 
 /-- D E₄ is real on the imaginary axis. -/
-lemma D_E₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) := by
+lemma DE₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
   set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩
-  rw [D_E₄_qexp z]
+  rw [DE₄_qexp z]
   have hterm_im : ∀ n : ℕ+, ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z)).im = 0 := by
     intro n
@@ -512,24 +512,24 @@ lemma D_E₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) := by
   rw [Complex.im_tsum]
   · simp only [hterm_im, tsum_zero, mul_zero]
     norm_num
-  · exact D_E₄_summable t ht
+  · exact DE₄_summable t ht
 
 /-- The real part of (D E₄)(it) is positive for t > 0. -/
-lemma D_E₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
+lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
     0 < ((D E₄.toFun).resToImagAxis t).re := by
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
   set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩ with hz
-  rw [D_E₄_qexp z]
-  -- Get summability for z (converting from D_E₄_summable which uses explicit form)
+  rw [DE₄_qexp z]
+  -- Get summability for z (converting from DE₄_summable which uses explicit form)
   have hsum : Summable fun n : ℕ+ => (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * ↑Real.pi * Complex.I * n * z) := by
-    simp only [hz]; exact D_E₄_summable t ht
+    simp only [hz]; exact DE₄_summable t ht
   have hsum_re : Summable fun n : ℕ+ =>
       ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
         Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := ⟨_, Complex.hasSum_re hsum.hasSum⟩
   have hpos : ∀ n : ℕ+, 0 < ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := by
-    intro n; simp only [hz]; exact D_E₄_term_re_pos t ht n
+    intro n; simp only [hz]; exact DE₄_term_re_pos t ht n
   have htsum_pos := Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
   -- Sum is real since each term is real on imaginary axis
   have hsum_im : (∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
@@ -552,11 +552,11 @@ lemma D_E₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
 
 /--
 `D E₄` is positive on the imaginary axis.
-Direct proof via q-expansion: D E₄ = 240 * ∑ n*σ₃(n)*qⁿ (D_E₄_qexp).
+Direct proof via q-expansion: D E₄ = 240 * ∑ n*σ₃(n)*qⁿ (DE₄_qexp).
 On z = it, each term n*σ₃(n)*e^(-2πnt) > 0, so the sum is positive.
 -/
-lemma D_E₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) :=
-  ⟨D_E₄_imag_axis_real, D_E₄_imag_axis_re_pos⟩
+lemma DE₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) :=
+  ⟨DE₄_imag_axis_real, DE₄_imag_axis_re_pos⟩
 
 /-- Q-expansion identity: negDE₂ = 24 * ∑ n * σ₁(n) * q^n
 From Ramanujan's formula: D E₂ = (E₂² - E₄)/12, so -D E₂ = (E₄ - E₂²)/12.
@@ -789,10 +789,10 @@ theorem F_imag_axis_real : ResToImagAxis.Real F := by
 Blueprint: F = 9*(D E₄)² and D E₄ > 0 on imaginary axis.
 -/
 theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
-  rw [F_eq_nine_D_E₄_sq]
+  rw [F_eq_nine_DE₄_sq]
   -- F = 9 * (D E₄)² where 9 > 0 and (D E₄)² > 0
   have h_sq : ResToImagAxis.Pos ((D E₄.toFun) ^ 2) := by
-    have hmul := D_E₄_imag_axis_pos.mul D_E₄_imag_axis_pos
+    have hmul := DE₄_imag_axis_pos.mul DE₄_imag_axis_pos
     simpa [pow_two] using hmul
   exact h_sq.smul (by norm_num : (0 : ℝ) < 9)
 
