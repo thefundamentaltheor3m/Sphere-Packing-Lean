@@ -86,6 +86,11 @@ lemma norm_φ₀_I_div_t_large (hb : ContourEndpoints.PhiBounds) :
 The Category A goals (1, 2, 4, 6) are scalar multiples of `verticalIntegrandX`.
 -/
 
+/-- Helper: (I*t)² = -t². Useful for clearing I² in integrands. -/
+@[simp]
+lemma I_mul_t_sq (t : ℝ) : (Complex.I * t : ℂ)^2 = -(t^2) := by
+  simp [mul_pow, Complex.I_sq, neg_one_mul, ← Complex.ofReal_neg, ← Complex.ofReal_pow]
+
 /-- Goal 1 integrand equals verticalIntegrandX 0 r t. -/
 lemma goal1_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
     Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
@@ -98,21 +103,16 @@ lemma goal1_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
 /-- Goal 2 integrand equals -I * verticalIntegrandX (-1) r t.
 
 Proof sketch: Both sides reduce to φ₀''(I/t) * (-t²) * cexp(I*π*r*(-1 + I*t))
-after using -1/(I*t) = I/t and (I*t)² = -t².  -/
+after using -1/(I*t) = I/t and (I*t)² = -t². -/
 lemma goal2_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
     φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)) =
     -Complex.I * ContourEndpoints.verticalIntegrandX (-1) r t := by
   unfold ContourEndpoints.verticalIntegrandX
   rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
-  -- After rewriting: φ₀''(I/t) * (I*t)² * cexp(π*I*r*(-1 + I*t))
-  --                = -I * I * φ₀''(I/t) * (I*t)² * cexp(I*π*r*(-1 + I*t))
-  -- Key identities needed:
-  -- 1. -I * I = 1 (since I² = -1)
-  -- 2. π*I*r = I*π*r (commutativity in ℂ)
-  -- 3. -(π*I*r) = π*I*r*(-1)
-  -- The ring tactic struggles with I since it doesn't know I² = -1 automatically
-  sorry
+  simp only [mul_pow, Complex.ofReal_neg, Complex.ofReal_one, neg_mul]
+  conv_rhs => rw [show (I : ℂ) ^ 2 = -1 from Complex.I_sq]
+  ring
 
 /-- Goal 4 integrand equals -I * verticalIntegrandX 1 r t.
 
@@ -123,8 +123,9 @@ lemma goal4_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
     -Complex.I * ContourEndpoints.verticalIntegrandX 1 r t := by
   unfold ContourEndpoints.verticalIntegrandX
   rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
-  -- TODO: Complete algebra using I^2 = -1 and commutativity
-  sorry
+  simp only [mul_pow, Complex.ofReal_one, neg_mul]
+  conv_rhs => rw [show (I : ℂ) ^ 2 = -1 from Complex.I_sq]
+  ring
 
 /-- Goal 6 integrand equals verticalIntegrandX (-1) r t.
 
@@ -134,10 +135,10 @@ lemma goal6_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
     Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))) =
     ContourEndpoints.verticalIntegrandX (-1) r t := by
-  unfold ContourEndpoints.verticalIntegrandX
-  rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
-  -- TODO: Complete algebra using I^2 = -1 and commutativity
-  sorry
+  simp only [ContourEndpoints.verticalIntegrandX, mul_comm (t : ℂ) Complex.I,
+    neg_one_div_I_mul t ht, I_mul_t_sq, mul_pow, pow_two, Complex.I_sq, Complex.I_pow_four,
+    Complex.ofReal_neg, Complex.ofReal_one, mul_comm, mul_left_comm, mul_assoc, neg_mul,
+    one_mul, mul_neg, mul_one, neg_neg]
 
 /-! ## Specific Instantiations
 
