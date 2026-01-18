@@ -639,7 +639,67 @@ lemma tendsto_φ₀_integrand_minus_one (hb : ContourEndpoints.PhiBounds) (r : �
     Tendsto (fun t : ℝ => φ₀'' (-1 / ((-1 : ℂ) + Complex.I * t)) * ((-1 : ℂ) + Complex.I * t)^2 *
                          Complex.exp (π * Complex.I * r * (Complex.I * t)))
             atTop (𝓝 0) := by
-  -- Similar to plus_one but with a = -1
-  sorry
+  -- Same as plus_one but with x = -1
+  apply Metric.tendsto_atTop.mpr
+  intro ε hε
+  have htendsto := ContourEndpoints.tendsto_topEdgeBound_atTop hb r hr
+  obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp htendsto ε hε
+  use max N 1
+  intro t ht
+  have ht_ge_1 : 1 ≤ t := le_of_max_le_right ht
+  have ht_ge_N : N ≤ t := le_of_max_le_left ht
+  have ht_pos : 0 < t := by linarith
+  simp only [dist_zero_right]
+  have h_x_mem : (-1 : ℝ) ∈ Icc (-1 : ℝ) 1 := by simp
+  -- Direct approach: bound our integrand norm by topEdgeBound
+  have h_norm_bound : ‖φ₀'' (-1 / ((-1 : ℂ) + Complex.I * t)) *
+      ((-1 : ℂ) + Complex.I * t)^2 *
+      Complex.exp (π * Complex.I * r * (Complex.I * t))‖ ≤
+      ContourEndpoints.topEdgeBound hb r t := by
+    -- Both exponentials have norm exp(-πrt)
+    have hexp_our :
+        ‖Complex.exp (π * Complex.I * r * (Complex.I * t))‖ = Real.exp (-π * r * t) := by
+      rw [show π * Complex.I * r * (Complex.I * t) =
+          Complex.I * π * r * (0 + Complex.I * t) by ring]
+      exact ContourEndpoints.norm_cexp_verticalPhase 0 r t
+    have hexp_top :
+        ‖Complex.exp (Complex.I * π * r * (-1 + Complex.I * t))‖ = Real.exp (-π * r * t) := by
+      have h := ContourEndpoints.norm_cexp_verticalPhase (-1) r t
+      simp only [Complex.ofReal_neg, Complex.ofReal_one] at h
+      exact h
+    calc ‖φ₀'' (-1 / ((-1 : ℂ) + Complex.I * t)) * ((-1 : ℂ) + Complex.I * t)^2 *
+            Complex.exp (π * Complex.I * r * (Complex.I * t))‖
+        = ‖φ₀'' (-1 / ((-1 : ℂ) + Complex.I * t))‖ * ‖((-1 : ℂ) + Complex.I * t)^2‖ *
+          Real.exp (-π * r * t) := by rw [norm_mul, norm_mul, hexp_our]
+      _ = ‖φ₀'' (-1 / ((-1 : ℂ) + Complex.I * t))‖ * ‖((-1 : ℂ) + Complex.I * t)^2‖ *
+          ‖Complex.exp (Complex.I * π * r * (-1 + Complex.I * t))‖ := by rw [hexp_top]
+      _ = ‖ContourEndpoints.topEdgeIntegrand r (-1) t‖ := by
+          simp only [ContourEndpoints.topEdgeIntegrand, Complex.ofReal_neg, Complex.ofReal_one]
+          rw [norm_mul, norm_mul]
+      _ ≤ ContourEndpoints.topEdgeBound hb r t :=
+          ContourEndpoints.norm_topEdgeIntegrand_le hb r (-1) t h_x_mem ht_ge_1
+  calc ‖φ₀'' (-1 / ((-1 : ℂ) + Complex.I * t)) * ((-1 : ℂ) + Complex.I * t)^2 *
+            Complex.exp (π * Complex.I * r * (Complex.I * t))‖
+      ≤ ContourEndpoints.topEdgeBound hb r t := h_norm_bound
+    _ < ε := by
+        have := hN t ht_ge_N
+        simp only [dist_zero_right, Real.norm_eq_abs] at this
+        have hbound_nonneg : 0 ≤ ContourEndpoints.topEdgeBound hb r t := by
+          unfold ContourEndpoints.topEdgeBound
+          have hp : 0 < π := Real.pi_pos
+          have hC₀ : 0 < hb.C₀ := hb.hC₀_pos
+          have hC₂ : 0 < hb.C₂ := hb.hC₂_pos
+          have hC₄ : 0 < hb.C₄ := hb.hC₄_pos
+          have hpt : 0 < π * t := mul_pos hp ht_pos
+          have hpt2 : 0 < π^2 * t^2 := mul_pos (sq_pos_of_pos hp) (sq_pos_of_pos ht_pos)
+          apply mul_nonneg
+          · apply mul_nonneg (sq_nonneg _) (Real.exp_pos _).le
+          · apply add_nonneg
+            · apply add_nonneg
+              · exact mul_nonneg hC₀.le (Real.exp_pos _).le
+              · exact div_nonneg (mul_nonneg (by norm_num) hC₂.le) hpt.le
+            · exact mul_nonneg
+                (div_nonneg (mul_nonneg (by norm_num) hC₄.le) hpt2.le) (Real.exp_pos _).le
+        exact abs_of_nonneg hbound_nonneg ▸ this
 
 end MagicFunction.VerticalIntegrability
