@@ -241,11 +241,106 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
     exact (ContourEndpoints.integrableOn_verticalBound hb r hr).const_mul (a^2 + 1)
   apply MeasureTheory.Integrable.mono' hbound_integ
   · -- AEStronglyMeasurable: The integrand is continuous on Ioi 1
-    -- Uses similar pattern to integrableOn_verticalIntegrandX but for shifted path
-    sorry
+    -- For t > 0, Im(a + I*t) = t > 0 so -1/(a+I*t) stays in the upper half plane
+    have h_im_pos : ∀ t : ℝ, 0 < t → 0 < ((-1 : ℂ) / (a + Complex.I * t)).im :=
+      fun t ht => im_neg_inv_pos a t ht
+    -- The path factorizes through UpperHalfPlane via φ₀_continuous
+    let path : {s : ℝ // 0 < s} → UpperHalfPlane := fun s =>
+      ⟨-1 / (a + Complex.I * s), h_im_pos s s.2⟩
+    have h_path_cont : Continuous path := by
+      refine Continuous.subtype_mk ?_ _
+      apply Continuous.div continuous_const
+      · exact continuous_const.add
+          (continuous_const.mul (Complex.continuous_ofReal.comp continuous_subtype_val))
+      · intro ⟨s, hs⟩
+        simp only [ne_eq]
+        intro h_eq
+        have : (a + Complex.I * s).im = 0 := by rw [h_eq]; simp
+        simp at this
+        exact absurd this (ne_of_gt hs)
+    have h_comp_cont : Continuous (φ₀ ∘ path) := φ₀_continuous.comp h_path_cont
+    have h_cont_phi : ContinuousOn (fun t : ℝ => φ₀'' (-1 / (a + Complex.I * t))) (Ioi 0) := by
+      intro t ht
+      rw [Set.mem_Ioi] at ht
+      have h_eq : φ₀'' (-1 / (a + Complex.I * t)) = φ₀ (path ⟨t, ht⟩) := by
+        rw [φ₀''_eq _ (h_im_pos t ht)]
+      rw [ContinuousWithinAt, h_eq]
+      have h_at : ContinuousAt (φ₀ ∘ path) ⟨t, ht⟩ := h_comp_cont.continuousAt
+      have h_map_eq : Filter.map (Subtype.val : {s : ℝ // 0 < s} → ℝ) (nhds ⟨t, ht⟩) =
+          nhdsWithin t (Set.Ioi 0) := by convert map_nhds_subtype_val ⟨t, ht⟩
+      rw [← h_map_eq, Filter.tendsto_map'_iff]
+      convert h_at.tendsto using 1
+      funext x
+      simp only [Function.comp_apply, φ₀''_eq _ (h_im_pos x.val x.prop), path]
+    have h_cont : ContinuousOn (fun t : ℝ => φ₀'' (-1 / (a + Complex.I * t)) *
+        (a + Complex.I * t)^2 * Complex.exp (Complex.I * π * r * (b + Complex.I * t))) (Ioi 1) := by
+      refine (h_cont_phi.mono (Ioi_subset_Ioi (by linarith : (0:ℝ) ≤ 1))).mul ?_ |>.mul ?_
+      · exact (continuousOn_const.add
+          (continuousOn_const.mul Complex.continuous_ofReal.continuousOn)).pow _
+      · refine Complex.continuous_exp.comp_continuousOn ?_
+        exact (continuousOn_const.mul continuousOn_const).mul
+          (continuousOn_const.add
+            (continuousOn_const.mul Complex.continuous_ofReal.continuousOn))
+    exact h_cont.aestronglyMeasurable measurableSet_Ioi
   · -- Norm bound: ‖integrand‖ ≤ (a² + 1) * verticalBound hb r t a.e.
-    -- Strategy: φ₀''(-1/z) = φ₀(S•w), use norm_φ₀_S_smul_le, bound ‖z²‖ ≤ (a²+1)t²
-    sorry
+    rw [ae_restrict_iff' measurableSet_Ioi]
+    apply ae_of_all
+    intro t ht
+    simp only [mem_Ioi] at ht
+    have ht_ge_1 : 1 ≤ t := le_of_lt ht
+    have ht_pos : 0 < t := lt_of_lt_of_le one_pos ht_ge_1
+    -- Use the S-transform bound
+    let z : ℂ := a + Complex.I * t
+    have hz_im : z.im = t := by simp [z]
+    have hz_im_pos : 0 < z.im := by rw [hz_im]; exact ht_pos
+    let w : UpperHalfPlane := ⟨z, hz_im_pos⟩
+    have hw_im : w.im = t := hz_im
+    have hw_im_ge : 1 ≤ w.im := by rw [hw_im]; exact ht_ge_1
+    -- Step 1: φ₀''(-1/z) = φ₀(S•w)
+    have hφ₀_eq : φ₀'' (-1 / z) = φ₀ (ModularGroup.S • w) :=
+      ContourEndpoints.φ₀''_neg_inv_eq_φ₀_S_smul a t ht_pos
+    -- Step 2: Get the S-transform bound
+    have hS_bound := ContourEndpoints.norm_φ₀_S_smul_le hb w hw_im_ge
+    -- Step 3: Bound ‖z²‖ ≤ (a² + 1) * t² for t ≥ 1
+    have hz_sq_bound : ‖z^2‖ ≤ (a^2 + 1) * t^2 := by
+      rw [norm_pow]
+      -- ‖z‖² = normSq z = a² + t²
+      have hz_normSq : Complex.normSq z = a^2 + t^2 := by
+        simp only [z]
+        rw [mul_comm]; exact Complex.normSq_add_mul_I a t
+      have h1 : ‖z‖ = Real.sqrt (a^2 + t^2) := by
+        simp only [z]
+        have hre : (↑a + Complex.I * ↑t : ℂ).re = a := by simp
+        have him : (↑a + Complex.I * ↑t : ℂ).im = t := by simp
+        rw [Complex.norm_eq_sqrt_sq_add_sq, hre, him]
+      rw [h1, Real.sq_sqrt (by positivity)]
+      have h_t_sq_ge_1 : 1 ≤ t^2 := by nlinarith
+      have ha2t2 : a^2 + t^2 ≤ (a^2 + 1) * t^2 := by
+        have h : a^2 * 1 ≤ a^2 * t^2 := by
+          apply mul_le_mul_of_nonneg_left h_t_sq_ge_1 (sq_nonneg a)
+        nlinarith
+      exact ha2t2
+    -- Step 4: Exponential norm
+    have hexp_norm : ‖Complex.exp (Complex.I * π * r * (b + Complex.I * t))‖ =
+        Real.exp (-π * r * t) := ContourEndpoints.norm_cexp_verticalPhase b r t
+    -- Step 5: Combine bounds
+    calc ‖φ₀'' (-1 / z) * z^2 * Complex.exp (Complex.I * π * r * (b + Complex.I * t))‖
+        = ‖φ₀'' (-1 / z)‖ * ‖z^2‖ * Real.exp (-π * r * t) := by
+          rw [norm_mul, norm_mul, hexp_norm]
+      _ ≤ ‖φ₀'' (-1 / z)‖ * ((a^2 + 1) * t^2) * Real.exp (-π * r * t) := by
+          apply mul_le_mul_of_nonneg_right
+          apply mul_le_mul_of_nonneg_left hz_sq_bound (norm_nonneg _)
+          exact (Real.exp_pos _).le
+      _ = (a^2 + 1) * (‖φ₀'' (-1 / z)‖ * t^2 * Real.exp (-π * r * t)) := by ring
+      _ = (a^2 + 1) * (‖φ₀ (ModularGroup.S • w)‖ * t^2 * Real.exp (-π * r * t)) := by
+          rw [hφ₀_eq]
+      _ ≤ (a^2 + 1) * (ContourEndpoints.verticalBound hb r t) := by
+          apply mul_le_mul_of_nonneg_left _ (by nlinarith)
+          -- Show ‖φ₀(S•w)‖ * t² * exp(-πrt) ≤ verticalBound using ‖w‖ ≥ t
+          -- Strategy: Use hS_bound with ‖w‖ ≥ t to replace 1/‖w‖ terms with 1/t
+          -- Then multiply out to match verticalBound structure
+          -- (Detailed algebraic manipulation follows norm_verticalIntegrandX_le pattern)
+          sorry
 
 /-! ## Relationship to verticalIntegrandX
 
