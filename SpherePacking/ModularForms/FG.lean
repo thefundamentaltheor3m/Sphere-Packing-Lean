@@ -591,9 +591,7 @@ lemma negDE₂_summable (t : ℝ) (ht : 0 < t) :
     Summable fun n : ℕ+ => (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
         ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane)) := by
-  have h := sigma_qexp_summable_generic 1 1 ⟨Complex.I * t, by simp [ht]⟩
-  simp only [pow_one] at h
-  exact h
+  simpa [pow_one] using sigma_qexp_summable_generic 1 1 ⟨Complex.I * t, by simp [ht]⟩
 
 /-- Each term n*σ₁(n)*exp(-2πnt) in the q-expansion of negDE₂ has positive real part. -/
 lemma negDE₂_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
@@ -836,9 +834,7 @@ lemma E₂_mul_E₄_sub_E₆_summable (t : ℝ) (ht : 0 < t) :
     Summable fun n : ℕ+ => ↑n * ArithmeticFunction.sigma 3 ↑n *
       Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
         ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane)) := by
-  have h := sigma_qexp_summable_generic 1 3 ⟨Complex.I * t, by simp [ht]⟩
-  simp only [pow_one] at h
-  exact h
+  simpa [pow_one] using sigma_qexp_summable_generic 1 3 ⟨Complex.I * t, by simp [ht]⟩
 
 /-- The real part of (E₂*E₄ - E₆)(it) is positive for t > 0. -/
 lemma E₂_mul_E₄_sub_E₆_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
