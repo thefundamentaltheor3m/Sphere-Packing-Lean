@@ -693,6 +693,27 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ)
   simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z, smul_eq_mul]
   ring_nf; simp only [I_sq]; ring
 
+/-- The derivative of a function with zero imaginary part also has zero imaginary part. -/
+lemma im_deriv_eq_zero_of_im_eq_zero {f : ℝ → ℂ} {t : ℝ}
+    (hf : DifferentiableAt ℝ f t) (him : ∀ s, (f s).im = 0) :
+    (deriv f t).im = 0 := by
+  simpa [funext him] using ((hasDerivAt_const t Complex.imCLM).clm_apply hf.hasDerivAt).deriv.symm
+
+/-- If F is real on the imaginary axis and MDifferentiable, then D F is also real
+on the imaginary axis. -/
+theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
+    (hF_diff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) : ResToImagAxis.Real (D F) := fun t ht => by
+  have him : ∀ s, (F.resToImagAxis s).im = 0 := fun s => by
+    by_cases hs : 0 < s
+    · exact hF_real s hs
+    · simp [ResToImagAxis, hs]
+  have h_im_deriv :=
+    im_deriv_eq_zero_of_im_eq_zero (ResToImagAxis.Differentiable F hF_diff t ht) him
+  have h_im_eq : (deriv F.resToImagAxis t).im = -2 * π * ((D F).resToImagAxis t).im := by
+    simpa [mul_assoc, ofReal_mul] using congrArg Complex.im (deriv_resToImagAxis_eq F hF_diff ht)
+  exact (mul_eq_zero.mp (h_im_deriv ▸ h_im_eq).symm).resolve_left
+    (mul_ne_zero (by norm_num) Real.pi_ne_zero)
+
 /--
 If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
 is positive) and the derivative is positive, then $F$ is also positive.
