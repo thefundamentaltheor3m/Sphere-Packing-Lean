@@ -838,14 +838,12 @@ noncomputable def serre_D_ModularForm (k : ℤ) (f : ModularForm (Gamma 1) k) :
     ModularForm (Gamma 1) (k + 2) where
   toSlashInvariantForm := {
     toFun := serre_D k f
-    slash_action_eq' := fun γ hγ => by
-      rcases Subgroup.mem_map.mp hγ with ⟨γ', _, rfl⟩
+    slash_action_eq' := fun _ hγ => by
+      obtain ⟨γ', -, rfl⟩ := Subgroup.mem_map.mp hγ
       simpa using serre_D_slash_invariant k f f.holo' γ' (f.slash_eq_self γ')
   }
   holo' := serre_D_differentiable f.holo'
-  bdd_at_cusps' := fun hc => by
-    apply bounded_at_cusps_of_bounded_at_infty hc
-    intro A hA
-    rcases MonoidHom.mem_range.mp hA with ⟨A', rfl⟩
-    convert serre_D_isBoundedAtImInfty k f.holo' (ModularFormClass.bdd_at_infty f) using 1
-    exact serre_D_slash_invariant k f f.holo' A' (f.slash_eq_self A')
+  bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
+    obtain ⟨A', rfl⟩ := MonoidHom.mem_range.mp hA
+    exact (serre_D_slash_invariant k f f.holo' A' (f.slash_eq_self A')).symm ▸
+      serre_D_isBoundedAtImInfty k f.holo' (ModularFormClass.bdd_at_infty f)
