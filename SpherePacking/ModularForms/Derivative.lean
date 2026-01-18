@@ -829,21 +829,21 @@ theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
 
 /-- The Serre derivative of a weight-k level-1 modular form is a weight-(k+2) modular form. -/
 noncomputable def serre_D_ModularForm (k : ℤ) (f : ModularForm (Gamma 1) k) :
-    ModularForm (Gamma 1) (k + 2) where
-  toSlashInvariantForm := {
-    toFun := serre_D k f.toFun
-    slash_action_eq' := fun γ hγ => by
-      have hf_slash (γ : SL(2, ℤ)) : f.toFun ∣[k] γ = f.toFun := by
-        simpa using f.slash_action_eq' _ ⟨γ, mem_Gamma_one γ, rfl⟩
-      rcases Subgroup.mem_map.mp hγ with ⟨γ', _, rfl⟩
-      simpa using serre_D_slash_invariant k f.toFun f.holo' γ' (hf_slash γ')
+    ModularForm (Gamma 1) (k + 2) := by
+  have hf_slash (γ : SL(2, ℤ)) : (f : ℍ → ℂ) ∣[k] γ = f := by
+    simpa using f.slash_action_eq' _ ⟨γ, mem_Gamma_one γ, rfl⟩
+  exact {
+    toSlashInvariantForm := {
+      toFun := serre_D k f
+      slash_action_eq' := fun γ hγ => by
+        rcases Subgroup.mem_map.mp hγ with ⟨γ', _, rfl⟩
+        simpa using serre_D_slash_invariant k f f.holo' γ' (hf_slash γ')
+    }
+    holo' := serre_D_differentiable f.holo'
+    bdd_at_cusps' := fun hc => by
+      apply bounded_at_cusps_of_bounded_at_infty hc
+      intro A hA
+      rcases MonoidHom.mem_range.mp hA with ⟨A', rfl⟩
+      convert serre_D_isBoundedAtImInfty k f.holo' (ModularFormClass.bdd_at_infty f) using 1
+      exact serre_D_slash_invariant k f f.holo' A' (hf_slash A')
   }
-  holo' := serre_D_differentiable f.holo'
-  bdd_at_cusps' := fun hc => by
-    have hf_slash (γ : SL(2, ℤ)) : f.toFun ∣[k] γ = f.toFun := by
-      simpa using f.slash_action_eq' _ ⟨γ, mem_Gamma_one γ, rfl⟩
-    apply bounded_at_cusps_of_bounded_at_infty hc
-    intro A hA
-    rcases MonoidHom.mem_range.mp hA with ⟨A', rfl⟩
-    convert serre_D_isBoundedAtImInfty k f.holo' (ModularFormClass.bdd_at_infty f) using 1
-    exact serre_D_slash_invariant k f.toFun f.holo' A' (hf_slash A')
