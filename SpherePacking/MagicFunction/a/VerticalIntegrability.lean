@@ -6,6 +6,7 @@ Authors: Sphere Packing Contributors
 import SpherePacking.MagicFunction.a.ContourEndpoints
 import SpherePacking.MagicFunction.Segments
 import SpherePacking.ModularForms.PhiTransform
+import Mathlib.Analysis.Real.Pi.Bounds
 
 /-!
 # Vertical Contour Integrability
@@ -86,7 +87,21 @@ lemma sq_le_exp_4pi_t (t : ℝ) (ht : 2 ≤ t) : t^2 ≤ Real.exp (4 * π * t) :
     -- Use Taylor: exp(x) ≥ x²/2 for x > 0, proven via exp(x) ≥ 1 + x + x²/2
     -- This gives exp(4πt) ≥ (4πt)²/2 = 8π²t² > t²
     push_neg at ht4π
-    sorry
+    have h4πt_pos : 0 ≤ 4 * π * t := by positivity
+    have hquad := Real.quadratic_le_exp_of_nonneg h4πt_pos
+    -- exp(4πt) ≥ 1 + 4πt + (4πt)²/2 ≥ (4πt)²/2 = 8π²t²
+    -- 8π² > 8 * 9 = 72 > 1 since π > 3
+    have h8π2 : 8 * π^2 > 1 := by
+      have hπ3 : π > 3 := Real.pi_gt_three
+      nlinarith
+    have hcalc : t^2 < Real.exp (4 * π * t) := calc t^2
+        _ < 8 * π^2 * t^2 := by
+            have ht2_pos : 0 < t^2 := by positivity
+            nlinarith
+        _ = (4 * π * t)^2 / 2 := by ring
+        _ ≤ 1 + 4 * π * t + (4 * π * t)^2 / 2 := by linarith [h4πt_pos]
+        _ ≤ Real.exp (4 * π * t) := hquad
+    exact hcalc.le
 
 /-- Helper: exp(-2πt) ≤ (1/t²) * exp(2πt) for t ≥ 2. Used in Thesis Lemma 4.4.4. -/
 lemma exp_neg_le_inv_sq_exp (t : ℝ) (ht : 2 ≤ t) :
