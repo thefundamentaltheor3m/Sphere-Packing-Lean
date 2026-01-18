@@ -693,54 +693,31 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ)
   simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z, smul_eq_mul]
   ring_nf; simp only [I_sq]; ring
 
-/-- The derivative of a function with zero imaginary part also has zero imaginary part.
-This follows from the chain rule: since `im ∘ f = 0`, we have
-`deriv (im ∘ f) = im (deriv f) = 0`. -/
+/-- The derivative of a function with zero imaginary part also has zero imaginary part. -/
 lemma im_deriv_eq_zero_of_im_eq_zero {f : ℝ → ℂ} {t : ℝ}
     (hf : DifferentiableAt ℝ f t) (him : ∀ s, (f s).im = 0) :
     (deriv f t).im = 0 := by
-  -- The function s ↦ (f s).im is constantly 0, so its derivative is 0
-  have h_im_const : (fun s => (f s).im) = 0 := by ext s; simp [him s]
-  have h_deriv_zero : deriv (fun s => (f s).im) t = 0 := by simp [h_im_const]
-  -- By chain rule for CLMs: deriv (imCLM ∘ f) t = imCLM (deriv f t)
   have h_chain : deriv (fun s => (f s).im) t = (deriv f t).im := by
-    have hconst : HasDerivAt (fun _ : ℝ => (Complex.imCLM : ℂ →L[ℝ] ℝ)) 0 t :=
-      hasDerivAt_const t Complex.imCLM
-    have hf' := hf.hasDerivAt
-    simpa using (hconst.clm_apply hf').deriv
-  rw [h_chain] at h_deriv_zero
-  exact h_deriv_zero
+    simpa using ((hasDerivAt_const t Complex.imCLM).clm_apply hf.hasDerivAt).deriv
+  conv_lhs at h_chain => rw [show (fun s => (f s).im) = fun _ => 0 from funext him, deriv_const]
+  exact h_chain.symm
 
 /-- If F is real on the imaginary axis and MDifferentiable, then D F is also real
-on the imaginary axis. This follows from `deriv_resToImagAxis_eq` and the fact
-that derivatives of real-valued functions are real-valued. -/
+on the imaginary axis. -/
 theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
-    (hF_diff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) : ResToImagAxis.Real (D F) := by
-  intro t ht
-  -- From deriv_resToImagAxis_eq: deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t
-  have h_eq := deriv_resToImagAxis_eq F hF_diff ht
-  -- F.resToImagAxis has im = 0 everywhere (for t > 0 by hF_real, for t ≤ 0 by definition)
+    (hF_diff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) : ResToImagAxis.Real (D F) := fun t ht => by
   have him : ∀ s, (F.resToImagAxis s).im = 0 := fun s => by
     by_cases hs : 0 < s
     · exact hF_real s hs
     · simp [Function.resToImagAxis, ResToImagAxis, hs]
-  -- The derivative has im = 0 by the helper lemma
-  have h_diff : DifferentiableAt ℝ F.resToImagAxis t :=
-    ResToImagAxis.Differentiable F hF_diff t ht
-  have h_im_deriv : (deriv F.resToImagAxis t).im = 0 :=
-    im_deriv_eq_zero_of_im_eq_zero h_diff him
-  -- Take imaginary part of h_eq
-  -- Since -2 * π is real: (-2 * π * z).im = -2 * π * z.im
-  have h_im_mul : ∀ z : ℂ, ((-2 : ℂ) * ↑π * z).im = -2 * π * z.im := fun z => by
-    have h1 : ((-2 : ℂ) * ↑π) = ↑((-2 : ℝ) * π) := by push_cast; ring
-    rw [h1, im_ofReal_mul]
+  have h_im_deriv :=
+    im_deriv_eq_zero_of_im_eq_zero (ResToImagAxis.Differentiable F hF_diff t ht) him
   have h_im_eq : (deriv F.resToImagAxis t).im = -2 * π * ((D F).resToImagAxis t).im := by
-    conv_lhs => rw [h_eq]
-    exact h_im_mul _
-  rw [h_im_deriv] at h_im_eq
-  -- 0 = -2 * π * ((D F).resToImagAxis t).im, and since -2 * π ≠ 0, we have im = 0
+    rw [deriv_resToImagAxis_eq F hF_diff ht]
+    have : ((-2 : ℂ) * ↑π) = ↑((-2 : ℝ) * π) := by push_cast; ring
+    rw [this, im_ofReal_mul]
   have hpi : (-2 : ℝ) * π ≠ 0 := by norm_num [Real.pi_ne_zero]
-  exact (mul_eq_zero.mp h_im_eq.symm).resolve_left hpi
+  exact (mul_eq_zero.mp (h_im_deriv ▸ h_im_eq).symm).resolve_left hpi
 
 /--
 If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
