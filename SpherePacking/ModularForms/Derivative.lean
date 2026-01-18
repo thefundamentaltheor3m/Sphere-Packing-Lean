@@ -833,25 +833,17 @@ noncomputable def serre_D_ModularForm (k : ℤ) (f : ModularForm (Gamma 1) k) :
   toSlashInvariantForm := {
     toFun := serre_D k f.toFun
     slash_action_eq' := fun γ hγ => by
-      rw [Subgroup.mem_map] at hγ
-      obtain ⟨γ', _, hγ'_eq⟩ := hγ
-      have hf_slash : f.toFun ∣[k] γ' = f.toFun := by
-        have := f.slash_action_eq' γ ⟨γ', mem_Gamma_one γ', hγ'_eq⟩
-        rw [← hγ'_eq] at this
-        exact this
-      have h := serre_D_slash_invariant k f.toFun f.holo' γ' hf_slash
-      change serre_D k f.toFun ∣[k + 2] γ = serre_D k f.toFun
-      rw [← hγ'_eq]
-      exact h
+      have hf_slash (γ : SL(2, ℤ)) : f.toFun ∣[k] γ = f.toFun := by
+        simpa using f.slash_action_eq' _ ⟨γ, mem_Gamma_one γ, rfl⟩
+      rcases Subgroup.mem_map.mp hγ with ⟨γ', _, rfl⟩
+      simpa using serre_D_slash_invariant k f.toFun f.holo' γ' (hf_slash γ')
   }
   holo' := serre_D_differentiable f.holo'
   bdd_at_cusps' := fun hc => by
+    have hf_slash (γ : SL(2, ℤ)) : f.toFun ∣[k] γ = f.toFun := by
+      simpa using f.slash_action_eq' _ ⟨γ, mem_Gamma_one γ, rfl⟩
     apply bounded_at_cusps_of_bounded_at_infty hc
     intro A hA
-    rw [MonoidHom.mem_range] at hA
-    obtain ⟨A', hA'_eq⟩ := hA
-    have h := serre_D_slash_invariant k f.toFun f.holo' A'
-      (f.slash_action_eq' _ ⟨A', mem_Gamma_one A', rfl⟩)
-    change IsBoundedAtImInfty (serre_D k f.toFun ∣[k + 2] A)
-    rw [← hA'_eq]
+    rcases MonoidHom.mem_range.mp hA with ⟨A', rfl⟩
     convert serre_D_isBoundedAtImInfty k f.holo' (ModularFormClass.bdd_at_infty f) using 1
+    exact serre_D_slash_invariant k f.toFun f.holo' A' (hf_slash A')
