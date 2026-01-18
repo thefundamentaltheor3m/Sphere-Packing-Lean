@@ -636,30 +636,15 @@ lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
   set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩ with hz
   rw [negDE₂_qexp z]
-  have hsum : Summable fun n : ℕ+ =>
-      (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
-        Complex.exp (2 * ↑Real.pi * Complex.I * n * z) := negDE₂_summable t ht
+  have hsum : Summable fun n : ℕ+ => (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
+      Complex.exp (2 * ↑Real.pi * Complex.I * n * z) := negDE₂_summable t ht
   have hsum_re : Summable fun n : ℕ+ =>
       ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
         Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := ⟨_, Complex.hasSum_re hsum.hasSum⟩
   have hpos : ∀ n : ℕ+, 0 < ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
-        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := negDE₂_term_re_pos t ht
+      Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := negDE₂_term_re_pos t ht
   have htsum_pos := Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
-  -- Sum is real since each term is real on imaginary axis
-  have hsum_im : (∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
-      Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
-    rw [Complex.im_tsum hsum]
-    have hterm_im : ∀ n : ℕ+, ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
-        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
-      intro n
-      have harg := qexp_arg_imag_axis_pnat t ht n
-      simp only at harg ⊢
-      rw [show 2 * ↑Real.pi * Complex.I * ↑↑n * ↑z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) from
-        by convert harg using 2]
-      simp only [Complex.mul_im, Complex.natCast_re, Complex.natCast_im, mul_zero,
-                 zero_mul, add_zero, Complex.exp_ofReal_im]
-    simp only [hterm_im, tsum_zero]
-  simp only [Complex.mul_re, hsum_im, mul_zero, sub_zero]
+  simp only [Complex.mul_re, Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero]
   rw [Complex.re_tsum hsum]
   exact mul_pos (by norm_num : (0 : ℝ) < 24) htsum_pos
 
@@ -858,58 +843,20 @@ lemma E₂_mul_E₄_sub_E₆_summable (t : ℝ) (ht : 0 < t) :
 /-- The real part of (E₂*E₄ - E₆)(it) is positive for t > 0. -/
 lemma E₂_mul_E₄_sub_E₆_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
     0 < ((E₂ * E₄.toFun - E₆.toFun).resToImagAxis t).re := by
-  -- Unfold ResToImagAxis
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
   simp only [Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe]
-  -- From E₂_mul_E₄_sub_E₆: E₂*E₄ - E₆ = 720 * ∑ n*σ₃(n)*q^n
   set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩ with hz
-  have hqexp := E₂_mul_E₄_sub_E₆ z
-  rw [hqexp]
-  -- Summability of the series (use hsum directly)
-  have hsum : Summable fun n : ℕ+ =>
-      (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
-        Complex.exp (2 * ↑Real.pi * Complex.I * n * z) := by
-    have h := E₂_mul_E₄_sub_E₆_summable t ht
-    simp only at h
-    exact h
-  -- Summability of real parts
+  rw [E₂_mul_E₄_sub_E₆ z]
+  have hsum : Summable fun n : ℕ+ => (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+      Complex.exp (2 * ↑Real.pi * Complex.I * n * z) := E₂_mul_E₄_sub_E₆_summable t ht
   have hsum_re : Summable fun n : ℕ+ =>
       ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
-        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := by
-    obtain ⟨s, hs⟩ := hsum
-    exact ⟨s.re, Complex.hasSum_re hs⟩
-  -- Each term is positive
-  have hpos : ∀ n : ℕ+,
-      0 < ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
-        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := by
-    intro n
-    have h := E₂_mul_E₄_sub_E₆_term_re_pos t ht n
-    simp only at h
-    exact h
-  -- Sum of positive terms is positive
-  have htsum_pos : 0 < ∑' n : ℕ+,
-      ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
-        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re :=
-    Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
-  -- (720 * ∑ ...).re > 0 because 720 > 0 and the sum has positive real part
-  -- First show the sum is real (has zero imaginary part)
-  have hsum_im : (∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
-      Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
-    rw [Complex.im_tsum hsum]
-    have hterm_im : ∀ n : ℕ+, ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
-        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
-      intro n
-      -- The exponent simplifies to a real number
-      have harg : 2 * ↑Real.pi * Complex.I * n * z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-        have h := qexp_arg_imag_axis_pnat t ht n
-        simp only at h ⊢
-        convert h using 2
-      rw [harg]
-      simp only [Complex.mul_im, Complex.natCast_re, Complex.natCast_im, mul_zero,
-                 zero_mul, add_zero, Complex.exp_ofReal_im]
-    simp only [hterm_im, tsum_zero]
-  -- Now use (a * b).re = a.re * b.re - a.im * b.im with a = 720 (real)
-  simp only [Complex.mul_re, hsum_im, mul_zero, sub_zero]
+        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := ⟨_, Complex.hasSum_re hsum.hasSum⟩
+  have hpos : ∀ n : ℕ+, 0 < ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+      Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := by
+    intro n; simp only [hz]; exact E₂_mul_E₄_sub_E₆_term_re_pos t ht n
+  have htsum_pos := Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
+  simp only [Complex.mul_re, Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero]
   rw [Complex.re_tsum hsum]
   exact mul_pos (by norm_num : (0 : ℝ) < 720) htsum_pos
 
