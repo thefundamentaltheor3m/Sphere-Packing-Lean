@@ -143,16 +143,6 @@ lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := by
   rw [hΔ_eq]
   exact Delta_imag_axis_pos
 
-/-- `E₂ * E₄ - E₆` is real on the imaginary axis (E₂, E₄, E₆ are all real). -/
-lemma E₂_mul_E₄_sub_E₆_imag_axis_real : ResToImagAxis.Real (E₂ * E₄.toFun - E₆.toFun) := by
-  have hProd : ResToImagAxis.Real (E₂ * E₄.toFun) :=
-    ResToImagAxis.Real.mul E₂_imag_axis_real E₄_imag_axis_real
-  have hNeg : ResToImagAxis.Real ((-1 : ℝ) • E₆.toFun) :=
-    ResToImagAxis.Real.smul E₆_imag_axis_real
-  have hEq : E₂ * E₄.toFun - E₆.toFun = E₂ * E₄.toFun + (-1 : ℝ) • E₆.toFun := by
-    ext z; simp [sub_eq_add_neg]
-  simpa [hEq] using ResToImagAxis.Real.add hProd hNeg
-
 /-- The q-expansion exponent argument on imaginary axis z=it with ℕ+ index.
 Simplifies `2πi * n * z` where z=it to `-2πnt`. -/
 lemma qexp_arg_imag_axis_pnat (t : ℝ) (ht : 0 < t) (n : ℕ+) :
