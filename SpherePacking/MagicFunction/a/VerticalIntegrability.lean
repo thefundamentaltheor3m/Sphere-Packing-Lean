@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sphere Packing Contributors
 -/
 import SpherePacking.MagicFunction.a.ContourEndpoints
+import SpherePacking.MagicFunction.Segments
 import SpherePacking.ModularForms.PhiTransform
 
 /-!
@@ -85,14 +86,6 @@ lemma norm_φ₀_I_div_t_large (hb : ContourEndpoints.PhiBounds) :
 The Category A goals (1, 2, 4, 6) are scalar multiples of `verticalIntegrandX`.
 -/
 
-/-- Key identity: -1/(I*t) = I/t for t ≠ 0. -/
-lemma neg_one_div_I_mul (t : ℝ) (ht : t ≠ 0) : -1 / (Complex.I * t) = Complex.I / t := by
-  have hI : (Complex.I : ℂ) ≠ 0 := Complex.I_ne_zero
-  have hIt : (Complex.I * t : ℂ) ≠ 0 := mul_ne_zero hI (Complex.ofReal_ne_zero.mpr ht)
-  field_simp [hIt]
-  rw [Complex.I_sq]
-  ring
-
 /-- Goal 1 integrand equals verticalIntegrandX 0 r t. -/
 lemma goal1_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
     Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
@@ -110,10 +103,10 @@ lemma goal2_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
     φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)) =
     -Complex.I * ContourEndpoints.verticalIntegrandX (-1) r t := by
-  -- TODO: Complete algebra using I^2 = -1 and commutativity
-  -- Both sides reduce to φ₀''(I/t) * (-t²) * cexp(-I*π*r - π*r*t)
   unfold ContourEndpoints.verticalIntegrandX
   rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
+  -- TODO: Complete algebra using I^2 = -1 and commutativity
+  -- After rewriting, both sides have φ₀''(I/t) * (-t²) * cexp(I*π*r*(-1 + I*t))
   sorry
 
 /-- Goal 4 integrand equals -I * verticalIntegrandX 1 r t.
@@ -123,9 +116,9 @@ lemma goal4_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
     φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (1 + t * Complex.I)) =
     -Complex.I * ContourEndpoints.verticalIntegrandX 1 r t := by
-  -- TODO: Complete algebra using I^2 = -1 and commutativity
   unfold ContourEndpoints.verticalIntegrandX
   rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
+  -- TODO: Complete algebra using I^2 = -1 and commutativity
   sorry
 
 /-- Goal 6 integrand equals verticalIntegrandX (-1) r t.
@@ -136,9 +129,9 @@ lemma goal6_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
     Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
       Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))) =
     ContourEndpoints.verticalIntegrandX (-1) r t := by
-  -- TODO: Complete algebra using I^2 = -1 and commutativity
   unfold ContourEndpoints.verticalIntegrandX
   rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
+  -- TODO: Complete algebra using I^2 = -1 and commutativity
   sorry
 
 /-! ## Specific Instantiations
