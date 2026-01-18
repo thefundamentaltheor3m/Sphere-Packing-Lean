@@ -444,101 +444,16 @@ lemma integrableOn_goal1 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
     IntegrableOn (fun t : ℝ => Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
                           Complex.exp (Complex.I * π * r * (Complex.I * t)))
                  (Ici (0 : ℝ)) volume := by
-  -- Step 1: Reduce to Ioi 0 (singleton {0} has measure zero)
-  rw [integrableOn_Ici_iff_integrableOn_Ioi]
-  -- Step 2: Split Ioi 0 into Ioc 0 1 ∪ Ioi 1
-  rw [← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
+  rw [integrableOn_Ici_iff_integrableOn_Ioi, ← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
   constructor
-  · -- Integrability on Ioc 0 1 using Measure.integrableOn_of_bounded
+  · -- Integrability on Ioc 0 1 using the helper lemma
+    have hIoc := integrableOn_verticalIntegrandX_Ioc hb 0 r hr
     have heq : EqOn (fun t : ℝ => Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
                     Complex.exp (Complex.I * π * r * (Complex.I * t)))
                (fun t : ℝ => ContourEndpoints.verticalIntegrandX 0 r t) (Ioc 0 1) := by
       intro t ⟨ht_pos, _⟩
       exact goal1_eq_verticalIntegrandX r t (ne_of_gt ht_pos)
-    -- Continuity on (0, 1] for AEStronglyMeasurable
-    have hcont : ContinuousOn (fun t => ContourEndpoints.verticalIntegrandX 0 r t) (Ioc 0 1) := by
-      apply ContinuousOn.mono _ (Ioc_subset_Ioi_self)
-      unfold ContourEndpoints.verticalIntegrandX
-      have h_cont_phi : ContinuousOn (fun t : ℝ => φ₀'' (Complex.I / t)) (Ioi 0) := by
-        have h1 := continuousOn_φ₀''_cusp_path
-        refine h1.congr (fun t ht => ?_)
-        exact congrArg φ₀'' (neg_one_div_I_mul t (ne_of_gt (mem_Ioi.mp ht))).symm
-      refine ((continuousOn_const.mul h_cont_phi).mul ?_).mul ?_
-      · exact (continuousOn_const.mul Complex.continuous_ofReal.continuousOn).pow _
-      · refine Complex.continuous_exp.comp_continuousOn ?_
-        refine (continuousOn_const.mul continuousOn_const).mul ?_
-        exact continuousOn_const.add (continuousOn_const.mul Complex.continuous_ofReal.continuousOn)
-    -- Pointwise bound on (0, 1]: t² * ‖φ₀''(I/t)‖ * exp(-πrt) ≤ C₀ * exp(-2π)
-    have hbound : ∀ t ∈ Ioc 0 1, ‖ContourEndpoints.verticalIntegrandX 0 r t‖ ≤
-        hb.C₀ * Real.exp (-2 * π) := by
-      intro t ⟨ht_pos, ht_le⟩
-      rw [ContourEndpoints.norm_verticalIntegrandX 0 r t ht_pos]
-      have hI_div_im : (Complex.I / t).im = 1/t := by simp [Complex.div_ofReal_im]
-      have hI_div_pos : 0 < (Complex.I / t).im := by rw [hI_div_im]; positivity
-      have hφ₀_bound : ‖φ₀'' (Complex.I / t)‖ ≤ hb.C₀ * Real.exp (-2 * π / t) := by
-        rw [φ₀''_eq _ hI_div_pos]
-        have hz : UpperHalfPlane.im ⟨Complex.I / t, hI_div_pos⟩ = 1/t := by simp [UpperHalfPlane.im]
-        calc ‖φ₀ ⟨Complex.I / ↑t, hI_div_pos⟩‖
-          ≤ hb.C₀ * Real.exp (-2 * π * UpperHalfPlane.im ⟨Complex.I / t, hI_div_pos⟩) :=
-              hb.hφ₀ _ (by rw [hz, le_div_iff₀ ht_pos]; linarith)
-          _ = hb.C₀ * Real.exp (-2 * π / t) := by rw [hz]; ring_nf
-      have hr_pos : 0 < r := lt_trans (by norm_num : (0:ℝ) < 2) hr
-      have ht2_le : t^2 ≤ 1 := by nlinarith [sq_nonneg t, sq_nonneg (t - 1)]
-      have hexp_neg : Real.exp (-π * r * t) ≤ 1 := by
-        rw [Real.exp_le_one_iff]; have := mul_pos (mul_pos Real.pi_pos hr_pos) ht_pos; linarith
-      have hexp_bound : Real.exp (-2 * π / t) ≤ Real.exp (-2 * π) := by
-        apply Real.exp_le_exp_of_le
-        have h1t : 1 ≤ 1 / t := by rw [le_div_iff₀ ht_pos]; linarith
-        have hπ := Real.pi_pos
-        have h2π_pos : 0 ≤ 2 * π := by linarith
-        have h2πt : 2 * π ≤ 2 * π / t := by
-          rw [div_eq_mul_one_div]
-          conv_lhs => rw [← mul_one (2 * π)]
-          exact mul_le_mul_of_nonneg_left h1t h2π_pos
-        have hneg : -(2 * π / t) ≤ -(2 * π) := neg_le_neg h2πt
-        calc -2 * π / t = -(2 * π / t) := by ring
-          _ ≤ -(2 * π) := hneg
-          _ = -2 * π := by ring
-      calc t^2 * ‖φ₀'' (Complex.I / ↑t)‖ * Real.exp (-π * r * t)
-          ≤ 1 * (hb.C₀ * Real.exp (-2 * π / t)) * 1 := by
-            have h1 : t^2 * ‖φ₀'' (Complex.I / ↑t)‖ ≤ 1 * (hb.C₀ * Real.exp (-2 * π / t)) :=
-              mul_le_mul ht2_le hφ₀_bound (norm_nonneg _) zero_le_one
-            have h2 : 0 ≤ 1 * (hb.C₀ * Real.exp (-2 * π / t)) :=
-              mul_nonneg (by norm_num) (mul_nonneg hb.hC₀_pos.le (Real.exp_pos _).le)
-            exact mul_le_mul h1 hexp_neg (Real.exp_pos _).le h2
-        _ ≤ hb.C₀ * Real.exp (-2 * π) := by
-            simp only [one_mul, mul_one]; exact mul_le_mul_of_nonneg_left hexp_bound hb.hC₀_pos.le
-    -- Construct IntegrableOn from AEStronglyMeasurable + bounded + finite measure
-    have hmeas : AEStronglyMeasurable (fun t => ContourEndpoints.verticalIntegrandX 0 r t)
-        (volume.restrict (Ioc 0 1)) := hcont.aestronglyMeasurable measurableSet_Ioc
-    have hinteg : IntegrableOn (fun t => ContourEndpoints.verticalIntegrandX 0 r t)
-        (Ioc 0 1) volume := by
-      rw [IntegrableOn, Integrable]
-      refine ⟨hmeas, ?_⟩
-      rw [hasFiniteIntegral_def]
-      have hM := mul_nonneg hb.hC₀_pos.le (Real.exp_pos (-2 * π)).le
-      have h_bound_ae : ∀ᵐ t ∂(volume.restrict (Ioc 0 1)),
-          (‖ContourEndpoints.verticalIntegrandX 0 r t‖₊ : ℝ≥0∞) ≤
-          ↑(hb.C₀ * Real.exp (-2 * π)).toNNReal := by
-        rw [ae_restrict_iff' measurableSet_Ioc]
-        apply ae_of_all
-        intro t ht
-        rw [ENNReal.coe_le_coe]
-        have hle := hbound t ht
-        have h1 : ‖ContourEndpoints.verticalIntegrandX 0 r t‖₊ =
-            ‖ContourEndpoints.verticalIntegrandX 0 r t‖.toNNReal := by simp
-        rw [h1]
-        exact Real.toNNReal_le_toNNReal hle
-      calc ∫⁻ t, ↑‖ContourEndpoints.verticalIntegrandX 0 r t‖₊ ∂(volume.restrict (Ioc 0 1))
-          ≤ ∫⁻ _t, ↑(hb.C₀ * Real.exp (-2 * π)).toNNReal ∂(volume.restrict (Ioc 0 1)) :=
-            lintegral_mono_ae h_bound_ae
-        _ = ↑(hb.C₀ * Real.exp (-2 * π)).toNNReal * volume (Ioc (0 : ℝ) 1) := by
-            rw [lintegral_const, Measure.restrict_apply MeasurableSet.univ, univ_inter]
-        _ < ⊤ := by
-            rw [ENNReal.mul_lt_top_iff]
-            left
-            exact ⟨ENNReal.coe_lt_top, measure_Ioc_lt_top⟩
-    exact hinteg.congr_fun heq.symm measurableSet_Ioc
+    exact hIoc.congr_fun heq.symm measurableSet_Ioc
   · -- Integrability on Ioi 1 from existing infrastructure
     have h : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 0 r t)
         (Ici 1) volume := ContourEndpoints.integrableOn_verticalIntegrandX hb 0 r hr
@@ -605,124 +520,16 @@ lemma integrableOn_goal6 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
     IntegrableOn (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))))
                  (Ici (0 : ℝ)) volume := by
-  -- Step 1: Reduce to Ioi 0 (singleton {0} has measure zero)
-  rw [integrableOn_Ici_iff_integrableOn_Ioi]
-  -- Step 2: Split Ioi 0 into Ioc 0 1 ∪ Ioi 1
-  rw [← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
+  rw [integrableOn_Ici_iff_integrableOn_Ioi, ← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
   constructor
-  · -- Integrability on Ioc 0 1 (bounded interval)
-    -- The integrand equals verticalIntegrandX (-1) r t for t > 0
+  · -- Integrability on Ioc 0 1 using the helper lemma
+    have hIoc := integrableOn_verticalIntegrandX_Ioc hb (-1) r hr
     have heq : EqOn (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                       Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))))
                (fun t : ℝ => ContourEndpoints.verticalIntegrandX (-1) r t) (Ioc 0 1) := by
       intro t ⟨ht_pos, _⟩
       exact goal6_eq_verticalIntegrandX r t (ne_of_gt ht_pos)
-    -- verticalIntegrandX is continuous on (0, ∞), hence on (0, 1]
-    -- The integrand is bounded on (0, 1] using cusp decay of φ₀'' + finite measure
-    -- Step 1: AEStronglyMeasurable from continuity on Ioi 0
-    have hcont :
-        ContinuousOn (fun t => ContourEndpoints.verticalIntegrandX (-1) r t) (Ioc 0 1) := by
-      -- Use continuity infrastructure from ContourEndpoints
-      apply ContinuousOn.mono _ (Ioc_subset_Ioi_self)
-      unfold ContourEndpoints.verticalIntegrandX
-      have h_cont_phi : ContinuousOn (fun t : ℝ => φ₀'' (Complex.I / t)) (Ioi 0) := by
-        have h1 := continuousOn_φ₀''_cusp_path
-        refine h1.congr (fun t ht => ?_)
-        have ht_pos : 0 < t := mem_Ioi.mp ht
-        exact congrArg φ₀'' (neg_one_div_I_mul t (ne_of_gt ht_pos)).symm
-      refine ((continuousOn_const.mul h_cont_phi).mul ?_).mul ?_
-      · exact (continuousOn_const.mul Complex.continuous_ofReal.continuousOn).pow _
-      · refine Complex.continuous_exp.comp_continuousOn ?_
-        refine (continuousOn_const.mul continuousOn_const).mul ?_
-        exact continuousOn_const.add (continuousOn_const.mul Complex.continuous_ofReal.continuousOn)
-    have hmeas : AEStronglyMeasurable (fun t => ContourEndpoints.verticalIntegrandX (-1) r t)
-        (volume.restrict (Ioc 0 1)) :=
-      hcont.aestronglyMeasurable measurableSet_Ioc
-    -- Step 2: Show bounded on Ioc 0 1 using cusp decay
-    -- For t ∈ (0, 1], Im(I/t) = 1/t ≥ 1, so φ₀ bound applies
-    have hbound : ∀ t ∈ Ioc 0 1, ‖ContourEndpoints.verticalIntegrandX (-1) r t‖ ≤
-        hb.C₀ * Real.exp (-2 * π) := by
-      intro t ⟨ht_pos, ht_le⟩
-      have ht_ne : t ≠ 0 := ne_of_gt ht_pos
-      rw [ContourEndpoints.norm_verticalIntegrandX (-1) r t ht_pos]
-      -- ‖φ₀''(I/t)‖ ≤ C₀ * exp(-2π/t) for Im(I/t) = 1/t ≥ 1
-      have hI_div_im : (Complex.I / t).im = 1/t := by simp [Complex.div_ofReal_im]
-      have hI_div_pos : 0 < (Complex.I / t).im := by rw [hI_div_im]; positivity
-      have hI_div_ge : 1 ≤ (Complex.I / t).im := by
-        rw [hI_div_im, le_div_iff₀ ht_pos]; linarith
-      have hφ₀_bound : ‖φ₀'' (Complex.I / t)‖ ≤ hb.C₀ * Real.exp (-2 * π / t) := by
-        rw [φ₀''_eq _ hI_div_pos]
-        have hz : UpperHalfPlane.im ⟨Complex.I / t, hI_div_pos⟩ = 1/t := by simp [UpperHalfPlane.im]
-        have hI_div_ge' : 1 ≤ 1/t := by rw [le_div_iff₀ ht_pos]; linarith
-        calc ‖φ₀ ⟨Complex.I / ↑t, hI_div_pos⟩‖
-          ≤ hb.C₀ * Real.exp (-2 * π * UpperHalfPlane.im ⟨Complex.I / t, hI_div_pos⟩) :=
-              hb.hφ₀ _ (by rw [hz]; exact hI_div_ge')
-          _ = hb.C₀ * Real.exp (-2 * π / t) := by rw [hz]; ring_nf
-      -- Combine: t² * ‖φ₀''(I/t)‖ * exp(-πrt) ≤ 1 * C₀ * exp(-2π/t) * 1
-      have hπ := Real.pi_pos
-      have hr_pos : 0 < r := lt_trans (by norm_num : (0:ℝ) < 2) hr
-      have hexp_neg : Real.exp (-π * r * t) ≤ 1 := by
-        rw [Real.exp_le_one_iff]
-        have h : 0 < π * r * t := by positivity
-        linarith
-      have ht2_le : t^2 ≤ 1 := by
-        have h : |t| ≤ 1 := abs_le.mpr ⟨by linarith, ht_le⟩
-        have habs_nonneg : 0 ≤ |t| := abs_nonneg t
-        calc t^2 = |t|^2 := (sq_abs t).symm
-          _ ≤ 1^2 := sq_le_sq' (by linarith : -1 ≤ |t|) h
-          _ = 1 := one_pow 2
-      have hexp_bound : Real.exp (-2 * π / t) ≤ Real.exp (-2 * π) := by
-        apply Real.exp_le_exp_of_le
-        -- Need: -2π/t ≤ -2π, i.e., 2π/t ≥ 2π, i.e., 1/t ≥ 1, i.e., t ≤ 1 (for t > 0)
-        have h1t : 1 ≤ 1 / t := by rw [le_div_iff₀ ht_pos]; linarith
-        have h : 2 * π ≤ 2 * π / t := by
-          calc 2 * π = 2 * π * 1 := by ring
-            _ ≤ 2 * π * (1 / t) := by nlinarith
-            _ = 2 * π / t := by ring
-        have hneg : -(2 * π / t) ≤ -(2 * π) := neg_le_neg h
-        calc -2 * π / t = -(2 * π / t) := by ring
-          _ ≤ -(2 * π) := hneg
-          _ = -2 * π := by ring
-      calc t^2 * ‖φ₀'' (Complex.I / ↑t)‖ * Real.exp (-π * r * t)
-          ≤ 1 * (hb.C₀ * Real.exp (-2 * π / t)) * 1 := by
-            apply mul_le_mul (mul_le_mul ht2_le hφ₀_bound (norm_nonneg _) (by linarith))
-              hexp_neg (Real.exp_pos _).le
-            simp only [one_mul]
-            exact mul_nonneg hb.hC₀_pos.le (Real.exp_pos _).le
-        _ ≤ hb.C₀ * Real.exp (-2 * π) := by
-            simp only [one_mul, mul_one]
-            exact mul_le_mul_of_nonneg_left hexp_bound hb.hC₀_pos.le
-    -- Step 3: Construct IntegrableOn directly from AEStronglyMeasurable + bounded
-    have hinteg : IntegrableOn (fun t => ContourEndpoints.verticalIntegrandX (-1) r t)
-        (Ioc 0 1) volume := by
-      rw [IntegrableOn, Integrable]
-      constructor
-      · exact hmeas
-      · rw [hasFiniteIntegral_def]
-        have hM_pos : 0 ≤ hb.C₀ * Real.exp (-2 * π) :=
-          mul_nonneg hb.hC₀_pos.le (Real.exp_pos _).le
-        have h_bound_ae : ∀ᵐ t ∂(volume.restrict (Ioc 0 1)),
-            (‖ContourEndpoints.verticalIntegrandX (-1) r t‖₊ : ℝ≥0∞) ≤
-            ↑(hb.C₀ * Real.exp (-2 * π)).toNNReal := by
-          rw [ae_restrict_iff' measurableSet_Ioc]
-          apply ae_of_all
-          intro t ht
-          rw [ENNReal.coe_le_coe]
-          have hle := hbound t ht
-          have h1 : ‖ContourEndpoints.verticalIntegrandX (-1) r t‖₊ =
-              ‖ContourEndpoints.verticalIntegrandX (-1) r t‖.toNNReal := by simp
-          rw [h1]
-          exact Real.toNNReal_le_toNNReal hle
-        calc ∫⁻ t, ↑‖ContourEndpoints.verticalIntegrandX (-1) r t‖₊ ∂(volume.restrict (Ioc 0 1))
-            ≤ ∫⁻ _t, ↑(hb.C₀ * Real.exp (-2 * π)).toNNReal ∂(volume.restrict (Ioc 0 1)) :=
-              lintegral_mono_ae h_bound_ae
-          _ = ↑(hb.C₀ * Real.exp (-2 * π)).toNNReal * volume (Ioc (0 : ℝ) 1) := by
-              rw [lintegral_const, Measure.restrict_apply MeasurableSet.univ, univ_inter]
-          _ < ⊤ := by
-              rw [ENNReal.mul_lt_top_iff]
-              left
-              exact ⟨ENNReal.coe_lt_top, measure_Ioc_lt_top⟩
-    exact hinteg.congr_fun heq.symm measurableSet_Ioc
+    exact hIoc.congr_fun heq.symm measurableSet_Ioc
   · -- Integrability on Ioi 1 from existing infrastructure
     have h : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX (-1) r t)
         (Ici 1) volume := ContourEndpoints.integrableOn_verticalIntegrandX hb (-1) r hr
