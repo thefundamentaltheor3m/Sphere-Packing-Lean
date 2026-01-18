@@ -496,8 +496,13 @@ lemma integrableOn_goal3 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I + 1)) * (t * Complex.I + 1)^2 *
                           Complex.exp (π * Complex.I * r * (t * Complex.I)))
                  (Ioi (1 : ℝ)) volume := by
-  -- -1/(tI+1) has Im = t/(1+t²) > 0 for t > 0, so norm_φ₀_S_smul_le applies
-  sorry
+  -- Apply integrableOn_φ₀_shifted_Möbius with a = 1, b = 0
+  have h := integrableOn_φ₀_shifted_Möbius hb 1 0 r hr
+  -- Show functions are equal on Ioi 1 (straightforward algebra: 1 + I*t = t*I + 1, etc.)
+  refine h.congr_fun ?_ measurableSet_Ioi
+  intro t _
+  simp only [Complex.ofReal_zero, zero_add, Complex.ofReal_one]
+  ring_nf
 
 /-- Goal 4: Integrability of φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(1 + t*I)) on (1,∞).
     By goal4_eq_neg_I_verticalIntegrandX, this is -I * verticalIntegrandX 1 r t. -/
@@ -526,8 +531,13 @@ lemma integrableOn_goal5 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I - 1)) * (t * Complex.I - 1)^2 *
                           Complex.exp (π * Complex.I * r * (t * Complex.I)))
                  (Ioi (1 : ℝ)) volume := by
-  -- -1/(tI-1) has Im = t/(1+t²) > 0 for t > 0, so norm_φ₀_S_smul_le applies
-  sorry
+  -- Apply integrableOn_φ₀_shifted_Möbius with a = -1, b = 0
+  have h := integrableOn_φ₀_shifted_Möbius hb (-1) 0 r hr
+  -- Show functions are equal on Ioi 1 (straightforward algebra: -1 + I*t = t*I - 1, etc.)
+  refine h.congr_fun ?_ measurableSet_Ioi
+  intro t _
+  simp only [Complex.ofReal_zero, zero_add, Complex.ofReal_neg, Complex.ofReal_one]
+  ring_nf
 
 /-- Goal 6: Integrability of I * (φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(-1 + t*I))) on [0,∞).
     By goal6_eq_verticalIntegrandX, this is verticalIntegrandX (-1) r t. -/
