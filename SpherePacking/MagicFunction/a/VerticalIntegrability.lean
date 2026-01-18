@@ -114,6 +114,15 @@ lemma exp_neg_le_inv_sq_exp (t : ℝ) (ht : 2 ≤ t) :
         apply div_le_div_of_nonneg_left (le_of_lt (Real.exp_pos _)) (by positivity) ht2_le_exp
     _ = (1 / t^2) * Real.exp (2 * π * t) := by rw [one_div, div_eq_mul_inv, mul_comm]
 
+/-- Helper: t ≤ exp(2πt) for t ≥ 0. Used for 1/t ≤ (1/t²) * exp(2πt). -/
+lemma t_le_exp_two_pi_t (t : ℝ) (ht : 0 ≤ t) : t ≤ Real.exp (2 * π * t) := by
+  have hπ := Real.pi_pos
+  have h := Real.add_one_le_exp (2 * π * t)
+  have h2πminus1 : 1 ≤ 2 * π - 1 := by linarith [Real.pi_gt_three]
+  calc t ≤ t + 1 := le_add_of_nonneg_right (by linarith)
+    _ ≤ 2 * π * t + 1 := by nlinarith [mul_nonneg (by linarith : (0 : ℝ) ≤ 2 * π - 1) ht]
+    _ ≤ Real.exp (2 * π * t) := h
+
 /-- Thesis Lemma 4.4.4 (Blueprint Cor 7.13): For large t ≥ 2, φ₀(i/t) grows at most
     like t⁻² e^{2πt}. Uses the S-transform formula (4.1.5) and bounds from Cor 7.5-7.7.
 
@@ -132,7 +141,52 @@ lemma norm_φ₀_I_div_t_large (hb : ContourEndpoints.PhiBounds) :
   -- (1) exp(-2πt) ≤ t^(-2) * exp(2πt)  [since t² ≤ exp(4πt) for t ≥ 2]
   -- (2) 1/t ≤ t^(-2) * exp(2πt)  [since t ≤ exp(2πt)]
   -- (3) 1/t² * exp(2πt) = t^(-2) * exp(2πt)  [exact equality]
-  sorry
+  have hπ := Real.pi_pos
+  have hexp_pos := Real.exp_pos (2 * π * t)
+  -- Rewrite t^(-2 : ℤ) as 1/t²
+  have hpow : t ^ (-2 : ℤ) = 1 / t^2 := by
+    rw [zpow_neg, zpow_ofNat]
+    field_simp
+  rw [hpow]
+  -- Bound term 1: C₀ * exp(-2πt) ≤ C₀ * (1/t²) * exp(2πt)
+  have h1 : hb.C₀ * Real.exp (-2 * π * t) ≤ hb.C₀ * (1 / t^2) * Real.exp (2 * π * t) := by
+    have hexp_bound := exp_neg_le_inv_sq_exp t ht
+    calc hb.C₀ * Real.exp (-2 * π * t)
+        ≤ hb.C₀ * ((1 / t^2) * Real.exp (2 * π * t)) :=
+            mul_le_mul_of_nonneg_left hexp_bound hb.hC₀_pos.le
+      _ = hb.C₀ * (1 / t^2) * Real.exp (2 * π * t) := by ring
+  -- Bound term 2: (12/(πt)) * C₂ ≤ (12*C₂/π) * (1/t²) * exp(2πt)
+  -- Need: 1/t ≤ (1/t²) * exp(2πt), i.e., t ≤ exp(2πt)
+  have h2 : (12 / (π * t)) * hb.C₂ ≤ (12 * hb.C₂ / π) * (1 / t^2) * Real.exp (2 * π * t) := by
+    have ht_le_exp := t_le_exp_two_pi_t t (by linarith)
+    -- 1/t ≤ (1/t²) * exp(2πt) is equivalent to t ≤ exp(2πt) (after multiplying by t² and dividing)
+    have h_t_inv : 1 / t ≤ (1 / t^2) * Real.exp (2 * π * t) := by
+      have ht2_pos : 0 < t^2 := sq_pos_of_pos ht_pos
+      have ht2_nonneg : 0 ≤ t^2 := ht2_pos.le
+      -- 1/t ≤ exp(2πt)/t² is equivalent to t ≤ exp(2πt)
+      have hexp_ge_t : t ≤ Real.exp (2 * π * t) := ht_le_exp
+      -- Simplify: 1/t = t/t² and exp/t² ≥ t/t² iff exp ≥ t
+      calc 1 / t = t / t^2 := by field_simp
+        _ ≤ Real.exp (2 * π * t) / t^2 := div_le_div_of_nonneg_right hexp_ge_t ht2_nonneg
+        _ = (1 / t^2) * Real.exp (2 * π * t) := by ring
+    calc (12 / (π * t)) * hb.C₂
+        = 12 * hb.C₂ / π * (1 / t) := by field_simp
+      _ ≤ 12 * hb.C₂ / π * ((1 / t^2) * Real.exp (2 * π * t)) := by
+          apply mul_le_mul_of_nonneg_left h_t_inv
+          apply div_nonneg (by nlinarith [hb.hC₂_pos.le]) hπ.le
+      _ = (12 * hb.C₂ / π) * (1 / t^2) * Real.exp (2 * π * t) := by ring
+  -- Bound term 3: (36/(π²*t²)) * C₄ * exp(2πt) = (36*C₄/π²) * (1/t²) * exp(2πt)  [exact]
+  have h3 : (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t) =
+            (36 * hb.C₄ / π^2) * (1 / t^2) * Real.exp (2 * π * t) := by
+    field_simp
+  -- Combine the bounds
+  calc ‖φ₀'' (Complex.I / t)‖
+      ≤ hb.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * hb.C₂ +
+        (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t) := h
+    _ ≤ hb.C₀ * (1 / t^2) * Real.exp (2 * π * t) +
+        (12 * hb.C₂ / π) * (1 / t^2) * Real.exp (2 * π * t) +
+        (36 * hb.C₄ / π^2) * (1 / t^2) * Real.exp (2 * π * t) := by linarith [h1, h2, h3.le]
+    _ = (hb.C₀ + 12 * hb.C₂ / π + 36 * hb.C₄ / π^2) * (1 / t^2) * Real.exp (2 * π * t) := by ring
 
 /-! ## General Shifted Möbius Integrability
 
