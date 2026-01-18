@@ -43,27 +43,10 @@ From `ramanujan_E₄`: `D E₄ = (1/3) * (E₂ * E₄ - E₆)`
 Hence: `E₂ * E₄ - E₆ = 3 * D E₄`, so `F = (E₂ * E₄ - E₆)² = 9 * (D E₄)²`.
 -/
 theorem F_eq_nine_DE₄_sq : F = (9 : ℂ) • (D E₄.toFun) ^ 2 := by
-  -- From ramanujan_E₄: D E₄ = 3⁻¹ * (E₂ * E₄ - E₆)
-  -- Therefore: E₂ * E₄ - E₆ = 3 • D E₄
-  -- And: F = (E₂ * E₄ - E₆)² = (3 • D E₄)² = 9 • (D E₄)²
-  have key : E₂ * E₄.toFun - E₆.toFun = (3 : ℂ) • D E₄.toFun := by
-    have hr := ramanujan_E₄
-    ext z
-    simp only [Pi.mul_apply, Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
-    have hrz := congrFun hr z
-    simp only [Pi.mul_apply, Pi.sub_apply] at hrz
-    -- hrz : D E₄ z = 3⁻¹ z * (E₂ z * E₄ z - E₆ z) where 3⁻¹ z = (3 : ℂ)⁻¹
-    have h3ne : (3 : ℂ) ≠ 0 := by norm_num
-    -- The key: 3⁻¹ as a constant function applied to z equals (3 : ℂ)⁻¹
-    have hconst : (3⁻¹ : UpperHalfPlane → ℂ) z = (3 : ℂ)⁻¹ := rfl
-    rw [hconst] at hrz
-    -- Now hrz : D E₄ z = (3 : ℂ)⁻¹ * (E₂ z * E₄ z - E₆ z)
-    field_simp [h3ne] at hrz ⊢
-    exact hrz.symm
-  unfold F
-  rw [key]
+  have h : E₂ * E₄.toFun - E₆.toFun = 3 • D E₄.toFun := by
+    rw [ramanujan_E₄]; ext z; simp [smul_eq_mul]
   ext z
-  simp only [Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
+  simp only [F, h, Pi.smul_apply, smul_eq_mul, Pi.pow_apply, Pi.mul_apply]
   ring
 
 /- Some basic facts -/
@@ -634,21 +617,11 @@ lemma negDE₂_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
       Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
         ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane))).re := by
   rw [qexp_arg_imag_axis_pnat t ht n]
-  have hn_re : (↑↑n : ℂ).re = (n : ℝ) := Complex.ofReal_re _
-  have hn_im : (↑↑n : ℂ).im = 0 := Complex.ofReal_im _
-  have hσ_re : (↑(ArithmeticFunction.sigma 1 n) : ℂ).re = ArithmeticFunction.sigma 1 n :=
-    Complex.ofReal_re _
-  have hσ_im : (↑(ArithmeticFunction.sigma 1 n) : ℂ).im = 0 := Complex.ofReal_im _
-  have hexp_im : (Complex.exp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := Complex.exp_ofReal_im _
-  have hexp_re : (Complex.exp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).re =
-      Real.exp (-(2 * Real.pi * (n : ℝ) * t)) := Complex.exp_ofReal_re _
-  simp only [Complex.mul_re, hn_re, hn_im, hσ_re, hσ_im, hexp_im, hexp_re, mul_zero, sub_zero]
-  apply mul_pos
-  · apply mul_pos
-    · exact_mod_cast n.pos
-    · have := ArithmeticFunction.sigma_pos 1 (n : ℕ) n.ne_zero
-      exact_mod_cast this
-  · exact Real.exp_pos _
+  simp only [Complex.mul_re, Complex.exp_ofReal_re, Complex.exp_ofReal_im, mul_zero,
+    sub_zero, Complex.natCast_re, Complex.natCast_im]
+  refine mul_pos (mul_pos ?_ ?_) (Real.exp_pos _)
+  · exact_mod_cast n.pos
+  · exact_mod_cast ArithmeticFunction.sigma_pos 1 n n.ne_zero
 
 /-- `negDE₂` is real on the imaginary axis. -/
 lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by
@@ -883,24 +856,11 @@ lemma E₂_mul_E₄_sub_E₆_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
       Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
         ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane))).re := by
   rw [qexp_arg_imag_axis_pnat t ht n]
-  -- n and σ₃(n) are natural numbers, so their complex casts are real (im = 0)
-  have hn_re : (↑↑n : ℂ).re = (n : ℝ) := Complex.ofReal_re _
-  have hn_im : (↑↑n : ℂ).im = 0 := Complex.ofReal_im _
-  have hσ_re : (↑(ArithmeticFunction.sigma 3 n) : ℂ).re = ArithmeticFunction.sigma 3 n :=
-    Complex.ofReal_re _
-  have hσ_im : (↑(ArithmeticFunction.sigma 3 n) : ℂ).im = 0 := Complex.ofReal_im _
-  -- exp of real has im = 0
-  have hexp_im : (Complex.exp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := Complex.exp_ofReal_im _
-  have hexp_re : (Complex.exp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).re =
-      Real.exp (-(2 * Real.pi * (n : ℝ) * t)) := Complex.exp_ofReal_re _
-  simp only [Complex.mul_re, hn_re, hn_im, hσ_re, hσ_im, hexp_im, hexp_re,
-    mul_zero, sub_zero]
-  apply mul_pos
-  · apply mul_pos
-    · exact_mod_cast n.pos
-    · have := ArithmeticFunction.sigma_pos 3 (n : ℕ) n.ne_zero
-      exact_mod_cast this
-  · exact Real.exp_pos _
+  simp only [Complex.mul_re, Complex.exp_ofReal_re, Complex.exp_ofReal_im, mul_zero,
+    sub_zero, Complex.natCast_re, Complex.natCast_im]
+  refine mul_pos (mul_pos ?_ ?_) (Real.exp_pos _)
+  · exact_mod_cast n.pos
+  · exact_mod_cast ArithmeticFunction.sigma_pos 3 n n.ne_zero
 
 /-- The q-expansion series for E₂*E₄ - E₆ is summable. -/
 lemma E₂_mul_E₄_sub_E₆_summable (t : ℝ) (ht : 0 < t) :
