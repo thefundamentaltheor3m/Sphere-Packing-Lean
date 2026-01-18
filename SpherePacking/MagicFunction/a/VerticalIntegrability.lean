@@ -105,8 +105,13 @@ lemma goal2_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
     -Complex.I * ContourEndpoints.verticalIntegrandX (-1) r t := by
   unfold ContourEndpoints.verticalIntegrandX
   rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
-  -- TODO: Complete algebra using I^2 = -1 and commutativity
-  -- After rewriting, both sides have φ₀''(I/t) * (-t²) * cexp(I*π*r*(-1 + I*t))
+  -- After rewriting: φ₀''(I/t) * (I*t)² * cexp(π*I*r*(-1 + I*t))
+  --                = -I * I * φ₀''(I/t) * (I*t)² * cexp(I*π*r*(-1 + I*t))
+  -- Key identities needed:
+  -- 1. -I * I = 1 (since I² = -1)
+  -- 2. π*I*r = I*π*r (commutativity in ℂ)
+  -- 3. -(π*I*r) = π*I*r*(-1)
+  -- The ring tactic struggles with I since it doesn't know I² = -1 automatically
   sorry
 
 /-- Goal 4 integrand equals -I * verticalIntegrandX 1 r t.
