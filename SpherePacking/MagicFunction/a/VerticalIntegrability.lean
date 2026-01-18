@@ -70,20 +70,94 @@ lemma norm_φ₀_I_div_t_small (C₀ : ℝ) (_hC₀ : 0 < C₀)
   convert h using 2
   field_simp
 
-/-- Lemma 4.4.4: For large t ≥ 2, φ₀(i/t) grows at most like t⁻² e^{2πt}.
-    This uses the S-transform formula (4.1.5) and bounds from Cor 7.5-7.7. -/
+/-- Helper: t² ≤ exp(4πt) for t ≥ 2. Used in Thesis Lemma 4.4.4.
+    Proof: For t ≤ 4π, we have t² ≤ 4πt ≤ exp(4πt).
+    For t > 4π, exp grows much faster than any polynomial. -/
+lemma sq_le_exp_4pi_t (t : ℝ) (ht : 2 ≤ t) : t^2 ≤ Real.exp (4 * π * t) := by
+  have hπ := Real.pi_pos
+  have ht_pos : 0 < t := by linarith
+  have hx_le : 4 * π * t ≤ Real.exp (4 * π * t) := by
+    have h := Real.add_one_le_exp (4 * π * t); linarith
+  by_cases ht4π : t ≤ 4 * π
+  · -- Case t ≤ 4π: t² ≤ 4πt ≤ exp(4πt)
+    have ht2_le_4πt : t^2 ≤ 4 * π * t := by nlinarith
+    linarith
+  · -- Case t > 4π: exp(4πt) is astronomically larger than t²
+    -- Use Taylor: exp(x) ≥ x²/2 for x > 0, proven via exp(x) ≥ 1 + x + x²/2
+    -- This gives exp(4πt) ≥ (4πt)²/2 = 8π²t² > t²
+    push_neg at ht4π
+    sorry
+
+/-- Helper: exp(-2πt) ≤ (1/t²) * exp(2πt) for t ≥ 2. Used in Thesis Lemma 4.4.4. -/
+lemma exp_neg_le_inv_sq_exp (t : ℝ) (ht : 2 ≤ t) :
+    Real.exp (-2 * π * t) ≤ (1 / t^2) * Real.exp (2 * π * t) := by
+  have ht_pos : 0 < t := by linarith
+  have ht2_le_exp := sq_le_exp_4pi_t t ht
+  calc Real.exp (-2 * π * t) = Real.exp (2 * π * t) / Real.exp (4 * π * t) := by
+          rw [← Real.exp_sub]; ring_nf
+    _ ≤ Real.exp (2 * π * t) / t^2 := by
+        apply div_le_div_of_nonneg_left (le_of_lt (Real.exp_pos _)) (by positivity) ht2_le_exp
+    _ = (1 / t^2) * Real.exp (2 * π * t) := by rw [one_div, div_eq_mul_inv, mul_comm]
+
+/-- Thesis Lemma 4.4.4 (Blueprint Cor 7.13): For large t ≥ 2, φ₀(i/t) grows at most
+    like t⁻² e^{2πt}. Uses the S-transform formula (4.1.5) and bounds from Cor 7.5-7.7.
+
+    Strategy: The three-term bound from norm_φ₀''_I_div_t_le can each be bounded by
+    (constant) * t^(-2) * exp(2πt), which gives an overall bound of this form. -/
 lemma norm_φ₀_I_div_t_large (hb : ContourEndpoints.PhiBounds) :
     ∀ t : ℝ, 2 ≤ t → ‖φ₀'' (Complex.I / t)‖ ≤
       (hb.C₀ + 12 * hb.C₂ / π + 36 * hb.C₄ / π ^ 2) * t ^ (-2 : ℤ) * Real.exp (2 * π * t) := by
   intro t ht
   have ht_pos : 0 < t := by linarith
   have ht_ge_1 : 1 ≤ t := by linarith
-  -- Use the existing Corollary 7.13 bound from ContourEndpoints
+  -- Use the existing Blueprint Corollary 7.13 bound from ContourEndpoints
   have h := ContourEndpoints.norm_φ₀''_I_div_t_le hb t ht_ge_1
-  -- The bound from ContourEndpoints is a 3-term sum, we need to combine
-  -- For simplicity, use that for t ≥ 2, we can bound crudely
+  -- Each of the three terms can be bounded by its coefficient * t^(-2) * exp(2πt)
+  -- Key inequalities:
+  -- (1) exp(-2πt) ≤ t^(-2) * exp(2πt)  [since t² ≤ exp(4πt) for t ≥ 2]
+  -- (2) 1/t ≤ t^(-2) * exp(2πt)  [since t ≤ exp(2πt)]
+  -- (3) 1/t² * exp(2πt) = t^(-2) * exp(2πt)  [exact equality]
   sorry
 
+/-! ## General Shifted Möbius Integrability
+
+A unified lemma that handles all six integrability goals via parameter instantiation.
+Uses φ₀''_neg_inv_eq_φ₀_S_smul + norm_φ₀_S_smul_le infrastructure from ContourEndpoints.
+-/
+
+/-- For z = a + I*t with t > 0, we have Im(-1/z) = t/(a² + t²) > 0.
+    This ensures the Möbius-transformed argument stays in the upper half-plane. -/
+lemma im_neg_inv_pos (a t : ℝ) (ht : 0 < t) :
+    0 < ((-1 : ℂ) / (a + Complex.I * t)).im := by
+  -- Im(-1/(a + I*t)) = t/(a² + t²) > 0 since t > 0 and a² + t² > 0
+  have h_denom : a^2 + t^2 > 0 := by positivity
+  -- Direct calculation: -1/(a + I*t) = (-a + I*t) / (a² + t²)
+  -- So Im(-1/(a + I*t)) = t / (a² + t²) > 0
+  sorry
+
+/-- General integrability for φ₀''(-1/(a + I*t)) * (a + I*t)² * cexp(I*π*r*(b + I*t)) on Ioi 1.
+
+    This unified lemma covers all six integrability goals from Proposition 4.4.6:
+    - Goals 1, 2, 4, 6: Use a = 0 (Category A, reduces to verticalIntegrandX)
+    - Goals 3, 5: Use a = ±1 (Category B, shifted Möbius)
+
+    The proof uses:
+    1. φ₀''_neg_inv_eq_φ₀_S_smul: φ₀''(-1/z) = φ₀(S•w) for suitable w ∈ ℍ
+    2. norm_φ₀_S_smul_le: |φ₀(S•z)| ≤ C₀ exp(-2π·im(S•z)) for im(z) ≥ 1
+    3. Exponential decay for r > 2 dominates polynomial growth -/
+lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b r : ℝ) (hr : 2 < r) :
+    IntegrableOn (fun t : ℝ => φ₀'' (-1 / ((a : ℂ) + Complex.I * t)) *
+      ((a : ℂ) + Complex.I * t)^2 *
+      Complex.exp (Complex.I * π * r * ((b : ℂ) + Complex.I * t)))
+                 (Ioi 1) volume := by
+  -- Strategy:
+  -- 1. For t > 1, z = a + I*t has Im(z) > 1
+  -- 2. By im_neg_inv_pos, -1/z has positive imaginary part
+  -- 3. Apply φ₀''_neg_inv_eq_φ₀_S_smul to get φ₀(S•w)
+  -- 4. Use norm_φ₀_S_smul_le to bound the φ₀ term
+  -- 5. The product |z²| * |cexp(...)| = (a² + t²) * exp(-πrt)
+  -- 6. Combined decay: exp(-πrt + O(t)) → 0 for r > 2
+  sorry
 
 /-! ## Relationship to verticalIntegrandX
 
@@ -173,10 +247,10 @@ lemma integrableOn_goal1 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
     -- TODO: Show boundedness using cusp decay + finite measure argument
     sorry
   · -- Integrability on Ioi 1 from existing infrastructure
-    have h : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 0 r t) (Ici 1) volume :=
-      ContourEndpoints.integrableOn_verticalIntegrandX hb 0 r hr
-    have h' : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 0 r t) (Ioi 1) volume :=
-      h.mono_set Ioi_subset_Ici_self
+    have h : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 0 r t)
+        (Ici 1) volume := ContourEndpoints.integrableOn_verticalIntegrandX hb 0 r hr
+    have h' : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 0 r t)
+        (Ioi 1) volume := h.mono_set Ioi_subset_Ici_self
     have heq : EqOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 0 r t)
         (fun t : ℝ => Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
           Complex.exp (Complex.I * π * r * (Complex.I * t))) (Ioi 1) := by
@@ -267,10 +341,10 @@ lemma integrableOn_goal6 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
     -- verticalIntegrandX is continuous on (0, ∞), hence on (0, 1]
     sorry
   · -- Integrability on Ioi 1 from existing infrastructure
-    have h : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX (-1) r t) (Ici 1) volume :=
-      ContourEndpoints.integrableOn_verticalIntegrandX hb (-1) r hr
-    have h' : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX (-1) r t) (Ioi 1) volume :=
-      h.mono_set Ioi_subset_Ici_self
+    have h : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX (-1) r t)
+        (Ici 1) volume := ContourEndpoints.integrableOn_verticalIntegrandX hb (-1) r hr
+    have h' : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX (-1) r t)
+        (Ioi 1) volume := h.mono_set Ioi_subset_Ici_self
     have heq : EqOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX (-1) r t)
         (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
           Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)))) (Ioi 1) := by
