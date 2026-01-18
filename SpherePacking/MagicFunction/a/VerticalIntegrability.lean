@@ -152,9 +152,32 @@ lemma integrableOn_goal1 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
     IntegrableOn (fun t : ℝ => Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
                           Complex.exp (Complex.I * π * r * (Complex.I * t)))
                  (Ici (0 : ℝ)) volume := by
-  -- The integrand equals verticalIntegrandX 0 r t a.e. (except at t = 0, measure zero)
-  -- Use integrableOn_verticalIntegrandX on Ici 1, extend to [0,1) via continuity
-  sorry
+  -- Step 1: Reduce to Ioi 0 (singleton {0} has measure zero)
+  rw [integrableOn_Ici_iff_integrableOn_Ioi]
+  -- Step 2: Split Ioi 0 into Ioc 0 1 ∪ Ioi 1
+  rw [← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
+  constructor
+  · -- Integrability on Ioc 0 1 (bounded interval)
+    -- The integrand equals verticalIntegrandX 0 r t for t > 0
+    have heq : EqOn (fun t : ℝ => Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
+                    Complex.exp (Complex.I * π * r * (Complex.I * t)))
+               (fun t : ℝ => ContourEndpoints.verticalIntegrandX 0 r t) (Ioc 0 1) := by
+      intro t ⟨ht_pos, _⟩
+      exact goal1_eq_verticalIntegrandX r t (ne_of_gt ht_pos)
+    -- verticalIntegrandX is continuous on (0, ∞), hence on (0, 1]
+    -- For compact [ε, 1], continuity gives integrability; for (0, 1], need bounded + finite measure
+    sorry
+  · -- Integrability on Ioi 1 from existing infrastructure
+    have h : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 0 r t) (Ici 1) volume :=
+      ContourEndpoints.integrableOn_verticalIntegrandX hb 0 r hr
+    have h' : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 0 r t) (Ioi 1) volume :=
+      h.mono_set Ioi_subset_Ici_self
+    have heq : EqOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 0 r t)
+        (fun t : ℝ => Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
+          Complex.exp (Complex.I * π * r * (Complex.I * t))) (Ioi 1) := by
+      intro t ht
+      exact (goal1_eq_verticalIntegrandX r t (ne_of_gt (lt_of_lt_of_le one_pos (le_of_lt ht)))).symm
+    exact h'.congr_fun heq measurableSet_Ioi
 
 /-- Goal 2: Integrability of φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(-1 + t*I)) on (1,∞).
     By goal2_eq_neg_I_verticalIntegrandX, this is -I * verticalIntegrandX (-1) r t. -/
@@ -221,11 +244,34 @@ lemma integrableOn_goal5 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
 /-- Goal 6: Integrability of I * (φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(-1 + t*I))) on [0,∞).
     By goal6_eq_verticalIntegrandX, this is verticalIntegrandX (-1) r t. -/
 lemma integrableOn_goal6 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
-    Integrable (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
+    IntegrableOn (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))))
-               (volume.restrict (Ici (0 : ℝ))) := by
-  -- Use integrableOn_verticalIntegrandX with x = -1, extend from Ici 1 to Ici 0
-  sorry
+                 (Ici (0 : ℝ)) volume := by
+  -- Step 1: Reduce to Ioi 0 (singleton {0} has measure zero)
+  rw [integrableOn_Ici_iff_integrableOn_Ioi]
+  -- Step 2: Split Ioi 0 into Ioc 0 1 ∪ Ioi 1
+  rw [← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
+  constructor
+  · -- Integrability on Ioc 0 1 (bounded interval)
+    -- The integrand equals verticalIntegrandX (-1) r t for t > 0
+    have heq : EqOn (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
+                      Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))))
+               (fun t : ℝ => ContourEndpoints.verticalIntegrandX (-1) r t) (Ioc 0 1) := by
+      intro t ⟨ht_pos, _⟩
+      exact goal6_eq_verticalIntegrandX r t (ne_of_gt ht_pos)
+    -- verticalIntegrandX is continuous on (0, ∞), hence on (0, 1]
+    sorry
+  · -- Integrability on Ioi 1 from existing infrastructure
+    have h : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX (-1) r t) (Ici 1) volume :=
+      ContourEndpoints.integrableOn_verticalIntegrandX hb (-1) r hr
+    have h' : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX (-1) r t) (Ioi 1) volume :=
+      h.mono_set Ioi_subset_Ici_self
+    have heq : EqOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX (-1) r t)
+        (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
+          Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)))) (Ioi 1) := by
+      intro t ht
+      exact (goal6_eq_verticalIntegrandX r t (ne_of_gt (lt_of_lt_of_le one_pos (le_of_lt ht)))).symm
+    exact h'.congr_fun heq measurableSet_Ioi
 
 /-! ## Vanishing Lemmas (Lemma 4.4.5)
 
