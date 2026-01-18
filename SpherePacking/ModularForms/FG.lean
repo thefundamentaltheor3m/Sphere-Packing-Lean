@@ -414,47 +414,28 @@ D E₄ = 240 * ∑ n * σ₃(n) * qⁿ from differentiating E₄ = 1 + 240 * ∑
 theorem DE₄_qexp (z : UpperHalfPlane) :
     D E₄.toFun z = 240 * ∑' (n : ℕ+), (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z) := by
-  -- Define the tsum function f(w) = ∑ σ₃(n) * exp(2πinw)
+  -- Define f(w) = ∑ σ₃(n) * exp(2πinw), so E₄ = 1 + 240 * f
   let f : UpperHalfPlane → ℂ := fun w => ∑' n : ℕ+, (ArithmeticFunction.sigma 3 n : ℂ) *
     Complex.exp (2 * π * Complex.I * (n : ℂ) * (w : ℂ))
-  -- E₄ = 1 + 240 * f
-  have hE4_eq : E₄.toFun = fun w => 1 + 240 * f w := by
-    ext w
-    simp only [ModularForm.toFun_eq_coe, f]
+  have hE4_eq : E₄.toFun = (fun _ => 1) + (240 : ℂ) • f := by
+    ext w; simp only [ModularForm.toFun_eq_coe, f, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
     exact E₄_sigma_qexp w
-  -- Apply D_qexp_tsum_pnat to f
   have hDf : D f z = ∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by
-    apply D_qexp_tsum_pnat
-    · exact sigma3_qexp_summable z
-    · exact sigma3_qexp_deriv_bound
-  -- f is MDifferentiable (from E₄ being MDifferentiable)
+    apply D_qexp_tsum_pnat _ z (sigma3_qexp_summable z) sigma3_qexp_deriv_bound
   have hf_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
     have h : f = (240 : ℂ)⁻¹ • (fun w => E₄ w - 1) := by
-      ext w; simp only [f, Pi.smul_apply, smul_eq_mul]
-      rw [E₄_sigma_qexp w]; ring
-    rw [h]
-    exact (E₄.holo'.sub mdifferentiable_const).const_smul _
-  have hone_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun _ : UpperHalfPlane => (1 : ℂ)) :=
-    mdifferentiable_const
-  -- D E₄ = D (1 + 240*f) = D 1 + 240 * D f = 0 + 240 * D f = 240 * D f
-  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := D_const 1 z
+      ext w; simp only [f, Pi.smul_apply, smul_eq_mul]; rw [E₄_sigma_qexp w]; ring
+    rw [h]; exact (E₄.holo'.sub mdifferentiable_const).const_smul _
   have hD_smul : D ((240 : ℂ) • f) z = (240 : ℂ) * D f z := by
-    have := D_smul (240 : ℂ) f hf_mdiff
-    exact congrFun this z
-  have hD_add : D (fun w => (1 : ℂ) + (240 : ℂ) * f w) z =
-      D (fun _ => (1 : ℂ)) z + D ((240 : ℂ) • f) z := by
-    have heq : (fun w => (1 : ℂ) + (240 : ℂ) * f w) = (fun _ => (1 : ℂ)) + (240 : ℂ) • f := by
-      ext w; simp [Pi.smul_apply, smul_eq_mul]
-    rw [heq]
-    have := D_add (fun _ => (1 : ℂ)) ((240 : ℂ) • f) hone_mdiff (hf_mdiff.const_smul (240 : ℂ))
-    exact congrFun this z
+    rw [congrFun (D_smul 240 f hf_mdiff) z, Pi.smul_apply, smul_eq_mul]
+  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := D_const 1 z
   calc D E₄.toFun z
-      = D (fun w => 1 + 240 * f w) z := by rw [hE4_eq]
-    _ = D (fun _ => (1 : ℂ)) z + D ((240 : ℂ) • f) z := hD_add
+      = D ((fun _ => 1) + (240 : ℂ) • f) z := by rw [hE4_eq]
+    _ = D (fun _ => 1) z + D ((240 : ℂ) • f) z :=
+        congrFun (D_add _ _ mdifferentiable_const (hf_mdiff.const_smul _)) z
     _ = 0 + (240 : ℂ) * D f z := by rw [hD_one, hD_smul]
-    _ = 240 * ∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
-          Complex.exp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by rw [zero_add, hDf]
+    _ = _ := by rw [zero_add, hDf]
 
 /-- Each term n*σ₃(n)*exp(-2πnt) in D E₄ q-expansion has positive real part on imaginary axis. -/
 lemma DE₄_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
