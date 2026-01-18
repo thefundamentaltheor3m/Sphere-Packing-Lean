@@ -5,7 +5,7 @@ import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.JacobiTheta
 
 open Filter
-open scoped Real Manifold
+open scoped Real Manifold ArithmeticFunction.sigma
 
 
 /--
@@ -309,32 +309,6 @@ On z = it, q = e^(-2πt) so each term n*σ₃(n)*e^(-2πnt) > 0.
 lemma E₂_mul_E₄_sub_E₆_imag_axis_pos : ResToImagAxis.Pos (E₂ * E₄.toFun - E₆.toFun) :=
   ⟨E₂_mul_E₄_sub_E₆_imag_axis_real, E₂_mul_E₄_sub_E₆_imag_axis_re_pos⟩
 
-/--
-`D E₄` is positive on the imaginary axis.
-From Ramanujan: `D E₄ = (1/3) * (E₂*E₄ - E₆)`, and `E₂*E₄ - E₆ > 0` on imaginary axis.
--/
-lemma D_E₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) := by
-  -- D E₄ = 3⁻¹ * (E₂ * E₄ - E₆) by ramanujan_E₄
-  -- Use E₂_mul_E₄_sub_E₆_imag_axis_pos and smul by positive constant
-  have hbase := E₂_mul_E₄_sub_E₆_imag_axis_pos
-  have hkey : D E₄.toFun = (3 : ℝ)⁻¹ • (E₂ * E₄.toFun - E₆.toFun) := by
-    have hr := ramanujan_E₄
-    ext z
-    simp only [Pi.smul_apply, Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe]
-    have hrz := congrFun hr z
-    simp only [Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe] at hrz
-    -- ramanujan_E₄ uses 3⁻¹ as constant function
-    have hconst : (3⁻¹ : UpperHalfPlane → ℂ) z = (3 : ℂ)⁻¹ := rfl
-    rw [hconst] at hrz
-    rw [hrz]
-    -- (3 : ℂ)⁻¹ * x = (3 : ℝ)⁻¹ • x, where • is ℝ acting on ℂ via r • z = ↑r * z
-    rw [Complex.real_smul]
-    -- Goal: (3 : ℂ)⁻¹ * x = ↑(3 : ℝ)⁻¹ * x
-    congr 1
-    simp only [Complex.ofReal_inv, Complex.ofReal_ofNat]
-  rw [hkey]
-  exact hbase.smul (by norm_num : (0 : ℝ) < 3⁻¹)
-
 /-- E₂ q-expansion in sigma form: E₂ = 1 - 24 * ∑ σ₁(n) * q^n.
 This follows from G2_q_exp and the definition E₂ = (1/(2*ζ(2))) • G₂.
 The proof expands the definitions and simplifies using ζ(2) = π²/6. -/
@@ -426,6 +400,277 @@ lemma sigma1_qexp_deriv_bound :
                       omega
             _ = (2 * π * ↑↑n) ^ 3 := by ring
       _ ≤ u₀ n := h3
+
+/-- Summability of σ₃ q-series (for E₄ derivative). -/
+lemma sigma3_qexp_summable (z : UpperHalfPlane) :
+    Summable (fun n : ℕ+ => (ArithmeticFunction.sigma 3 n : ℂ) *
+      Complex.exp (2 * Real.pi * Complex.I * n * z)) := by
+  have h := sigma_qexp_summable_generic 0 3 z
+  simp only [pow_zero, one_mul] at h
+  exact h
+
+/-- Derivative bound for σ₃ q-series on compact sets (for D_qexp_tsum_pnat hypothesis).
+The bound uses σ₃(n) ≤ n⁴ (sigma_bound) and iter_deriv_comp_bound3 for exponential decay. -/
+lemma sigma3_qexp_deriv_bound :
+    ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K),
+        ‖(ArithmeticFunction.sigma 3 n : ℂ) * (2 * Real.pi * Complex.I * n) *
+          Complex.exp (2 * Real.pi * Complex.I * n * k.1)‖ ≤ u n := by
+  intro K hK hKc
+  -- Use iter_deriv_comp_bound3 with k=5 to get bound (2π*n)⁵ * r^n
+  -- which majorizes our bound n⁴ * (2π*n) * r^n = 2π * n⁵ * r^n
+  obtain ⟨u₀, hu₀_sum, hu₀_bound⟩ := iter_deriv_comp_bound3 K hK hKc 5
+  use fun n => u₀ n
+  constructor
+  · exact hu₀_sum.subtype _
+  · intro n k
+    have hbound := sigma_bound 3 n
+    have h5 := hu₀_bound n k
+    simp only [abs_of_pos Real.pi_pos] at h5
+    calc ‖(ArithmeticFunction.sigma 3 n : ℂ) * (2 * π * Complex.I * n) *
+            Complex.exp (2 * π * Complex.I * n * k.1)‖
+        = ‖(ArithmeticFunction.sigma 3 n : ℂ)‖ * ‖(2 * π * Complex.I * n : ℂ)‖ *
+            ‖Complex.exp (2 * π * Complex.I * n * k.1)‖ := by
+          rw [norm_mul, norm_mul]
+      _ ≤ (n : ℝ) ^ 4 * (2 * π * n) * ‖Complex.exp (2 * π * Complex.I * n * k.1)‖ := by
+          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+          have hs : ‖(ArithmeticFunction.sigma 3 n : ℂ)‖ ≤ (n : ℝ) ^ 4 := by
+            simp only [Complex.norm_natCast]
+            exact_mod_cast hbound
+          have hn : ‖(2 * π * Complex.I * n : ℂ)‖ = 2 * π * n := by
+            simp only [norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs,
+              abs_of_pos Real.pi_pos, Complex.norm_I, mul_one, Complex.norm_natCast]
+          rw [hn]
+          exact mul_le_mul hs (le_refl _) (by positivity) (by positivity)
+      _ ≤ (2 * π * n) ^ 5 * ‖Complex.exp (2 * π * Complex.I * n * k.1)‖ := by
+          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+          -- Need: n⁴ * (2π*n) ≤ (2π*n)⁵
+          -- i.e., 2π * n⁵ ≤ (2π)⁵ * n⁵
+          -- i.e., 2π ≤ (2π)⁵ which is true since 2π > 1
+          have h2pi : (1 : ℝ) ≤ 2 * π := by
+            have hpi_gt_one : (1 : ℝ) < π := by
+              calc (1 : ℝ) < 2 := by norm_num
+                _ ≤ π := Real.two_le_pi
+            linarith
+          calc (n : ℝ) ^ 4 * (2 * π * ↑↑n)
+              = (2 * π) * (n : ℝ) ^ 5 := by ring
+            _ ≤ (2 * π) ^ 5 * (n : ℝ) ^ 5 := by
+                apply mul_le_mul_of_nonneg_right _ (by positivity)
+                calc (2 * π) = (2 * π) ^ 1 := (pow_one _).symm
+                  _ ≤ (2 * π) ^ 5 := by
+                      apply pow_le_pow_right₀ h2pi
+                      omega
+            _ = (2 * π * ↑↑n) ^ 5 := by ring
+      _ ≤ u₀ n := h5
+
+/-- E₄ as explicit tsum (from E4_q_exp PowerSeries coefficients).
+Uses hasSum_qExpansion to convert from PowerSeries to tsum form. -/
+lemma E₄_sigma_qexp (z : UpperHalfPlane) :
+    E₄ z = 1 + 240 * ∑' (n : ℕ+), (ArithmeticFunction.sigma 3 n : ℂ) *
+      Complex.exp (2 * Real.pi * Complex.I * n * z) := by
+  -- Use hasSum_qExpansion to get E₄ z = ∑ (qExpansion 1 E₄).coeff m * q^m
+  have hsum := ModularFormClass.hasSum_qExpansion (h := 1) E₄ (by norm_num) (by simp) z
+  -- Convert HasSum to tsum equation
+  have heq : E₄ z = ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff m *
+      (Function.Periodic.qParam 1 z) ^ m := by
+    rw [← hsum.tsum_eq]
+    simp [smul_eq_mul]
+  rw [heq]
+  -- Split off the m=0 term
+  have hsum_smul : Summable fun m => (ModularFormClass.qExpansion 1 E₄).coeff m *
+      (Function.Periodic.qParam 1 z) ^ m :=
+    hsum.summable.congr (fun m => by simp [smul_eq_mul])
+  have hsplit : ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff m *
+      (Function.Periodic.qParam 1 z) ^ m =
+      (ModularFormClass.qExpansion 1 E₄).coeff 0 * (Function.Periodic.qParam 1 z) ^ 0 +
+      ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff (m + 1) *
+        (Function.Periodic.qParam 1 z) ^ (m + 1) :=
+    hsum_smul.tsum_eq_zero_add
+  rw [hsplit]
+  simp only [pow_zero, mul_one]
+  -- Use E4_q_exp to substitute coefficients
+  have hcoeff0 : (ModularFormClass.qExpansion 1 E₄).coeff 0 = 1 := E4_q_exp_zero
+  have hcoeffn : ∀ n : ℕ, 0 < n → (ModularFormClass.qExpansion 1 E₄).coeff n = 240 * (σ 3 n) := by
+    intro n hn
+    have h := congr_fun E4_q_exp n
+    simp only [ne_eq, hn.ne', not_false_eq_true, ↓reduceIte] at h
+    exact h
+  rw [hcoeff0]
+  congr 1
+  -- Convert sum over ℕ to sum over ℕ+
+  have hconv : ∑' m : ℕ, (ModularFormClass.qExpansion 1 E₄).coeff (m + 1) *
+      (Function.Periodic.qParam 1 z) ^ (m + 1) =
+      ∑' n : ℕ+, (ModularFormClass.qExpansion 1 E₄).coeff n *
+        (Function.Periodic.qParam 1 z) ^ (n : ℕ) := by
+    rw [← tsum_pnat_eq_tsum_succ3 (fun n => (ModularFormClass.qExpansion 1 E₄).coeff n *
+        (Function.Periodic.qParam 1 z) ^ n)]
+  rw [hconv]
+  -- Now substitute the coefficients for n ≥ 1
+  have hterm : ∀ n : ℕ+, (ModularFormClass.qExpansion 1 E₄).coeff n *
+      (Function.Periodic.qParam 1 z) ^ (n : ℕ) =
+      240 * ((σ 3 n : ℂ) * Complex.exp (2 * π * Complex.I * n * z)) := by
+    intro n
+    rw [hcoeffn n n.pos]
+    -- Function.Periodic.qParam 1 z = exp(2πiz)
+    have hq : Function.Periodic.qParam 1 z = Complex.exp (2 * π * Complex.I * z) := by
+      simp only [Function.Periodic.qParam, UpperHalfPlane.coe]
+      congr 1
+      ring_nf
+      simp
+    rw [hq]
+    -- exp(2πiz)^n = exp(2πinz)
+    have hpow : Complex.exp (2 * π * Complex.I * z) ^ (n : ℕ) =
+        Complex.exp (2 * π * Complex.I * n * z) := by
+      rw [← Complex.exp_nat_mul]
+      congr 1; ring
+    rw [hpow]
+    ring
+  rw [tsum_congr hterm, tsum_mul_left]
+
+/-- D E₄ q-expansion via termwise differentiation.
+D E₄ = 240 * ∑ n * σ₃(n) * qⁿ from differentiating E₄ = 1 + 240 * ∑ σ₃(n) * qⁿ. -/
+theorem D_E₄_qexp (z : UpperHalfPlane) :
+    D E₄.toFun z = 240 * ∑' (n : ℕ+), (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+      Complex.exp (2 * Real.pi * Complex.I * n * z) := by
+  -- Define the tsum function f(w) = ∑ σ₃(n) * exp(2πinw)
+  let f : UpperHalfPlane → ℂ := fun w => ∑' n : ℕ+, (ArithmeticFunction.sigma 3 n : ℂ) *
+    Complex.exp (2 * π * Complex.I * (n : ℂ) * (w : ℂ))
+  -- E₄ = 1 + 240 * f
+  have hE4_eq : E₄.toFun = fun w => 1 + 240 * f w := by
+    ext w
+    simp only [ModularForm.toFun_eq_coe, f]
+    exact E₄_sigma_qexp w
+  -- Apply D_qexp_tsum_pnat to f
+  have hDf : D f z = ∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+      Complex.exp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by
+    apply D_qexp_tsum_pnat
+    · exact sigma3_qexp_summable z
+    · exact sigma3_qexp_deriv_bound
+  -- f is MDifferentiable (from E₄ being MDifferentiable)
+  have hf_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+    have h : f = (240 : ℂ)⁻¹ • (fun w => E₄ w - 1) := by
+      ext w; simp only [f, Pi.smul_apply, smul_eq_mul, ModularForm.toFun_eq_coe]
+      rw [E₄_sigma_qexp w]; ring
+    rw [h]
+    exact (E₄.holo'.sub mdifferentiable_const).const_smul _
+  have hone_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun _ : UpperHalfPlane => (1 : ℂ)) :=
+    mdifferentiable_const
+  -- D E₄ = D (1 + 240*f) = D 1 + 240 * D f = 0 + 240 * D f = 240 * D f
+  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := D_const 1 z
+  have hD_smul : D ((240 : ℂ) • f) z = (240 : ℂ) * D f z := by
+    have := D_smul (240 : ℂ) f hf_mdiff
+    exact congrFun this z
+  have hD_add : D (fun w => (1 : ℂ) + (240 : ℂ) * f w) z =
+      D (fun _ => (1 : ℂ)) z + D ((240 : ℂ) • f) z := by
+    have heq : (fun w => (1 : ℂ) + (240 : ℂ) * f w) = (fun _ => (1 : ℂ)) + (240 : ℂ) • f := by
+      ext w; simp [Pi.smul_apply, smul_eq_mul]
+    rw [heq]
+    have := D_add (fun _ => (1 : ℂ)) ((240 : ℂ) • f) hone_mdiff (hf_mdiff.const_smul (240 : ℂ))
+    exact congrFun this z
+  calc D E₄.toFun z
+      = D (fun w => 1 + 240 * f w) z := by rw [hE4_eq]
+    _ = D (fun _ => (1 : ℂ)) z + D ((240 : ℂ) • f) z := hD_add
+    _ = 0 + (240 : ℂ) * D f z := by rw [hD_one, hD_smul]
+    _ = 240 * ∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+          Complex.exp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by rw [zero_add, hDf]
+
+/-- Each term n*σ₃(n)*exp(-2πnt) in D E₄ q-expansion has positive real part on imaginary axis. -/
+lemma D_E₄_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
+    0 < ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+      Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
+        ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane))).re := by
+  -- Reuse the same pattern as E₂_mul_E₄_sub_E₆_term_re_pos
+  rw [E₂_mul_E₄_sub_E₆_exp_arg t ht n]
+  have hn_re : (↑↑n : ℂ).re = (n : ℝ) := Complex.ofReal_re _
+  have hn_im : (↑↑n : ℂ).im = 0 := Complex.ofReal_im _
+  have hσ_re : (↑(ArithmeticFunction.sigma 3 n) : ℂ).re = ArithmeticFunction.sigma 3 n :=
+    Complex.ofReal_re _
+  have hσ_im : (↑(ArithmeticFunction.sigma 3 n) : ℂ).im = 0 := Complex.ofReal_im _
+  have hexp_im : (Complex.exp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).im = 0 := Complex.exp_ofReal_im _
+  have hexp_re : (Complex.exp (-(2 * Real.pi * (n : ℝ) * t) : ℝ)).re =
+      Real.exp (-(2 * Real.pi * (n : ℝ) * t)) := Complex.exp_ofReal_re _
+  simp only [Complex.mul_re, hn_re, hn_im, hσ_re, hσ_im, hexp_im, hexp_re, mul_zero, sub_zero]
+  apply mul_pos
+  · apply mul_pos
+    · exact_mod_cast n.pos
+    · have := ArithmeticFunction.sigma_pos 3 (n : ℕ) n.ne_zero
+      exact_mod_cast this
+  · exact Real.exp_pos _
+
+/-- D E₄ q-expansion series is summable on imaginary axis. -/
+lemma D_E₄_summable (t : ℝ) (ht : 0 < t) :
+    Summable fun n : ℕ+ => (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+      Complex.exp (2 * ↑Real.pi * Complex.I * ↑n *
+        ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane)) := by
+  have h := sigma_qexp_summable_generic 1 3 ⟨Complex.I * t, by simp [ht]⟩
+  simp only [pow_one] at h
+  exact h
+
+/-- D E₄ is real on the imaginary axis. -/
+lemma D_E₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) := by
+  intro t ht
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩
+  rw [D_E₄_qexp z]
+  have hterm_im : ∀ n : ℕ+, ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+      Complex.exp (2 * Real.pi * Complex.I * n * z)).im = 0 := by
+    intro n
+    have harg : 2 * Real.pi * Complex.I * n * z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
+      have h := E₂_mul_E₄_sub_E₆_exp_arg t ht n
+      simp only at h ⊢
+      convert h using 2
+    rw [harg]
+    simp only [Complex.mul_im, Complex.natCast_re, Complex.natCast_im, mul_zero,
+               zero_mul, add_zero, Complex.exp_ofReal_im]
+  simp only [Complex.mul_im]
+  rw [Complex.im_tsum]
+  · simp only [hterm_im, tsum_zero, mul_zero]
+    norm_num
+  · exact D_E₄_summable t ht
+
+/-- The real part of (D E₄)(it) is positive for t > 0. -/
+lemma D_E₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
+    0 < ((D E₄.toFun).resToImagAxis t).re := by
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+  set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩ with hz
+  rw [D_E₄_qexp z]
+  -- Get summability for z (converting from D_E₄_summable which uses explicit form)
+  have hsum : Summable fun n : ℕ+ => (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+      Complex.exp (2 * ↑Real.pi * Complex.I * n * z) := by
+    simp only [hz]; exact D_E₄_summable t ht
+  have hsum_re : Summable fun n : ℕ+ =>
+      ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := ⟨_, Complex.hasSum_re hsum.hasSum⟩
+  have hpos : ∀ n : ℕ+, 0 < ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+      Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := by
+    intro n; simp only [hz]; exact D_E₄_term_re_pos t ht n
+  have htsum_pos := Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
+  -- Sum is real since each term is real on imaginary axis
+  have hsum_im : (∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+      Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
+    rw [Complex.im_tsum hsum]
+    have hterm_im : ∀ n : ℕ+, ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
+        Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
+      intro n
+      have harg := E₂_mul_E₄_sub_E₆_exp_arg t ht n
+      -- Convert the coercion of UpperHalfPlane to ℂ
+      have hcoe : (z : ℂ) = Complex.I * t := by simp only [hz, UpperHalfPlane.coe_mk_subtype]
+      rw [hcoe]
+      rw [harg]
+      simp only [Complex.mul_im, Complex.natCast_re, Complex.natCast_im, mul_zero,
+                 zero_mul, add_zero, Complex.exp_ofReal_im]
+    simp only [hterm_im, tsum_zero]
+  simp only [Complex.mul_re, hsum_im, mul_zero, sub_zero]
+  rw [Complex.re_tsum hsum]
+  exact mul_pos (by norm_num : (0 : ℝ) < 240) htsum_pos
+
+/--
+`D E₄` is positive on the imaginary axis.
+Direct proof via q-expansion: D E₄ = 240 * ∑ n*σ₃(n)*qⁿ (D_E₄_qexp).
+On z = it, each term n*σ₃(n)*e^(-2πnt) > 0, so the sum is positive.
+-/
+lemma D_E₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) :=
+  ⟨D_E₄_imag_axis_real, D_E₄_imag_axis_re_pos⟩
 
 /-- Q-expansion identity: negDE₂ = 24 * ∑ n * σ₁(n) * q^n
 From Ramanujan's formula: D E₂ = (E₂² - E₄)/12, so -D E₂ = (E₄ - E₂²)/12.
