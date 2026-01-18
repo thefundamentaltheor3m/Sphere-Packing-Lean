@@ -241,29 +241,10 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
     exact (ContourEndpoints.integrableOn_verticalBound hb r hr).const_mul (a^2 + 1)
   apply MeasureTheory.Integrable.mono' hbound_integ
   · -- AEStronglyMeasurable: The integrand is continuous on Ioi 1
-    -- Sketch: φ₀'' ∘ (-1/(a + I*·)) is continuous because:
-    --   1. t ↦ -1/(a + I*t) is continuous (ratio of polynomials, nonzero denominator)
-    --   2. For t > 0, the image has Im > 0 (by im_neg_inv_pos)
-    --   3. φ₀'' = φ₀ on the upper half plane, and φ₀ is continuous
-    -- The product with (a + I*t)² and exp(...) is also continuous.
+    -- Uses similar pattern to integrableOn_verticalIntegrandX but for shifted path
     sorry
   · -- Norm bound: ‖integrand‖ ≤ (a² + 1) * verticalBound hb r t a.e.
-    -- Strategy:
-    -- 1. For t > 1, z = a + I*t has Im(z) = t > 1
-    -- 2. By φ₀''_neg_inv_eq_φ₀_S_smul, φ₀''(-1/z) = φ₀(S•w)
-    -- 3. norm_φ₀_S_smul_le gives 3-term bound with ‖z‖ = √(a² + t²) ≥ t
-    -- 4. |z²| = a² + t² ≤ (a² + 1) * t² for t ≥ 1
-    -- 5. |exp(I*π*r*(b + I*t))| = exp(-πrt)
-    -- 6. Combined: ≤ (a² + 1) * [3-term bound] * t² * exp(-πrt) = (a² + 1) * verticalBound
-    filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    have ht_gt_1 : 1 < t := mem_Ioi.mp ht
-    have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one (le_of_lt ht_gt_1)
-    have ht_ge_1 : 1 ≤ t := le_of_lt ht_gt_1
-    -- The bound calculation is detailed but straightforward:
-    -- ‖integrand‖ = ‖φ₀''(-1/z)‖ * ‖z²‖ * |exp(...)|
-    --             ≤ [3-term S-bound] * (a² + t²) * exp(-πrt)
-    --             ≤ [3-term bound with ‖z‖→t] * (a² + 1) * t² * exp(-πrt)
-    --             = (a² + 1) * verticalBound hb r t
+    -- Strategy: φ₀''(-1/z) = φ₀(S•w), use norm_φ₀_S_smul_le, bound ‖z²‖ ≤ (a²+1)t²
     sorry
 
 /-! ## Relationship to verticalIntegrandX
@@ -545,28 +526,120 @@ lemma integrableOn_goal6 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
 /-! ## Vanishing Lemmas (Lemma 4.4.5)
 
 These are needed for the Cauchy-Goursat deformation arguments.
+The lemmas are stated in vertical-line form for a fixed real part x, which directly
+uses the existing `tendsto_verticalIntegrandX_atTop` infrastructure.
 -/
 
-/-- Lemma 4.4.5: The integrand φ₀(-1/z) z² e^{πirz} → 0 as Im(z) → ∞ for r > 2. -/
+/-- Lemma 4.4.5 (vertical line at x = 0): The integrand → 0 as t → ∞.
+    On z = I*t, we have φ₀''(-1/(I*t)) = φ₀''(I/t) which uses verticalIntegrandX 0 r t. -/
 lemma tendsto_φ₀_integrand_atImInfty (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
-    Tendsto (fun z => φ₀'' (-1/z) * z^2 * Complex.exp (π * Complex.I * r * z))
-            (comap Complex.im atTop) (nhds 0) := by
-  -- Strategy: On vertical ray z = x + I*t,
-  -- |φ₀''(-1/z)| ≤ C exp(-2π·Im(-1/z)) for large Im(-1/z)
-  -- But Im(-1/z) = Im(z) / |z|² → 0 as Im(z) → ∞ with x fixed
-  -- So we need the S-transform bound instead
-  sorry
+    Tendsto (fun t : ℝ => φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
+                         Complex.exp (π * Complex.I * r * (Complex.I * t)))
+            atTop (𝓝 0) := by
+  -- This equals (1/I) * verticalIntegrandX 0 r t by goal1_eq_verticalIntegrandX
+  have h := ContourEndpoints.tendsto_verticalIntegrandX_atTop hb 0 r hr
+  -- The integrand differs from verticalIntegrandX 0 r t by a factor of 1/I
+  have heq : ∀ t : ℝ, t ≠ 0 →
+      φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
+        Complex.exp (π * Complex.I * r * (Complex.I * t)) =
+      (-Complex.I) * ContourEndpoints.verticalIntegrandX 0 r t := by
+    intro t ht
+    have h1 := goal1_eq_verticalIntegrandX r t ht
+    -- From h1: I * φ₀''(-1/(I*t)) * (I*t)² * exp(I*π*r*(I*t)) = verticalIntegrandX 0 r t
+    -- So: φ₀''(...) * ... = (1/I) * verticalIntegrandX = -I * verticalIntegrandX
+    have hI_inv : (Complex.I)⁻¹ = -Complex.I := Complex.inv_I
+    calc φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
+             Complex.exp (π * Complex.I * r * (Complex.I * t))
+        = φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
+             Complex.exp (Complex.I * π * r * (Complex.I * t)) := by ring
+      _ = (Complex.I)⁻¹ * Complex.I * (φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
+             Complex.exp (Complex.I * π * r * (Complex.I * t))) := by
+          rw [inv_mul_cancel₀ Complex.I_ne_zero, one_mul]
+      _ = (Complex.I)⁻¹ * (Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
+             Complex.exp (Complex.I * π * r * (Complex.I * t))) := by ring
+      _ = (Complex.I)⁻¹ * ContourEndpoints.verticalIntegrandX 0 r t := by rw [h1]
+      _ = -Complex.I * ContourEndpoints.verticalIntegrandX 0 r t := by rw [hI_inv]
+  -- Use eventually_atTop to apply heq for large t
+  have hconv : Tendsto (fun t => (-Complex.I) * ContourEndpoints.verticalIntegrandX 0 r t)
+      atTop (𝓝 0) := by
+    convert h.const_mul (-Complex.I) using 1
+    simp only [mul_zero]
+  apply hconv.congr'
+  filter_upwards [eventually_gt_atTop 0] with t ht
+  exact (heq t (ne_of_gt ht)).symm
 
-/-- Shifted variant: φ₀(-1/(z+1)) (z+1)² e^{πirz} → 0 as Im(z) → ∞. -/
+/-- Shifted variant at x = 1: φ₀(-1/(z+1)) (z+1)² e^{πirz} → 0 as Im(z) → ∞.
+    On z = I*t, we have z+1 = 1 + I*t, using verticalIntegrandX 1 r t. -/
 lemma tendsto_φ₀_integrand_plus_one (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
-    Tendsto (fun z => φ₀'' (-1/(z+1)) * (z+1)^2 * Complex.exp (π * Complex.I * r * z))
-            (comap Complex.im atTop) (nhds 0) := by
-  sorry
+    Tendsto (fun t : ℝ => φ₀'' (-1 / ((1 : ℂ) + Complex.I * t)) * ((1 : ℂ) + Complex.I * t)^2 *
+                         Complex.exp (π * Complex.I * r * (Complex.I * t)))
+            atTop (𝓝 0) := by
+  -- Our integrand has the same norm as topEdgeIntegrand r 1 t (differ by unit-modulus exp(I*π*r))
+  -- Use squeeze theorem: ‖f(t)‖ ≤ topEdgeBound → 0 implies f(t) → 0
+  apply Metric.tendsto_atTop.mpr
+  intro ε hε
+  have htendsto := ContourEndpoints.tendsto_topEdgeBound_atTop hb r hr
+  obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp htendsto ε hε
+  use max N 1
+  intro t ht
+  have ht_ge_1 : 1 ≤ t := le_of_max_le_right ht
+  have ht_ge_N : N ≤ t := le_of_max_le_left ht
+  have ht_pos : 0 < t := by linarith
+  simp only [dist_zero_right]
+  -- The integrand norm equals ‖topEdgeIntegrand r 1 t‖ (exponential phases have same norm)
+  have h_x_mem : (1 : ℝ) ∈ Icc (-1 : ℝ) 1 := by simp
+  -- Direct approach: bound our integrand norm by topEdgeBound
+  have h_norm_bound : ‖φ₀'' (-1 / ((1 : ℂ) + Complex.I * t)) * ((1 : ℂ) + Complex.I * t)^2 *
+                       Complex.exp (π * Complex.I * r * (Complex.I * t))‖ ≤
+                      ContourEndpoints.topEdgeBound hb r t := by
+    -- Both exponentials have norm exp(-πrt)
+    have hexp_our : ‖Complex.exp (π * Complex.I * r * (Complex.I * t))‖ = Real.exp (-π * r * t) := by
+      rw [show π * Complex.I * r * (Complex.I * t) = Complex.I * π * r * (0 + Complex.I * t) by ring]
+      exact ContourEndpoints.norm_cexp_verticalPhase 0 r t
+    have hexp_top : ‖Complex.exp (Complex.I * π * r * (1 + Complex.I * t))‖ = Real.exp (-π * r * t) :=
+      ContourEndpoints.norm_cexp_verticalPhase 1 r t
+    -- So the norms are equal
+    calc ‖φ₀'' (-1 / ((1 : ℂ) + Complex.I * t)) * ((1 : ℂ) + Complex.I * t)^2 *
+            Complex.exp (π * Complex.I * r * (Complex.I * t))‖
+        = ‖φ₀'' (-1 / ((1 : ℂ) + Complex.I * t))‖ * ‖((1 : ℂ) + Complex.I * t)^2‖ *
+          Real.exp (-π * r * t) := by rw [norm_mul, norm_mul, hexp_our]
+      _ = ‖φ₀'' (-1 / ((1 : ℂ) + Complex.I * t))‖ * ‖((1 : ℂ) + Complex.I * t)^2‖ *
+          ‖Complex.exp (Complex.I * π * r * (1 + Complex.I * t))‖ := by rw [hexp_top]
+      _ = ‖ContourEndpoints.topEdgeIntegrand r 1 t‖ := by
+          simp only [ContourEndpoints.topEdgeIntegrand, Complex.ofReal_one]
+          rw [norm_mul, norm_mul]
+      _ ≤ ContourEndpoints.topEdgeBound hb r t :=
+          ContourEndpoints.norm_topEdgeIntegrand_le hb r 1 t h_x_mem ht_ge_1
+  calc ‖φ₀'' (-1 / ((1 : ℂ) + Complex.I * t)) * ((1 : ℂ) + Complex.I * t)^2 *
+            Complex.exp (π * Complex.I * r * (Complex.I * t))‖
+      ≤ ContourEndpoints.topEdgeBound hb r t := h_norm_bound
+    _ < ε := by
+        have := hN t ht_ge_N
+        simp only [dist_zero_right, Real.norm_eq_abs] at this
+        have hbound_nonneg : 0 ≤ ContourEndpoints.topEdgeBound hb r t := by
+          unfold ContourEndpoints.topEdgeBound
+          have hp : 0 < π := Real.pi_pos
+          have hC₀ : 0 < hb.C₀ := hb.hC₀_pos
+          have hC₂ : 0 < hb.C₂ := hb.hC₂_pos
+          have hC₄ : 0 < hb.C₄ := hb.hC₄_pos
+          have hpt : 0 < π * t := mul_pos hp ht_pos
+          have hpt2 : 0 < π^2 * t^2 := mul_pos (sq_pos_of_pos hp) (sq_pos_of_pos ht_pos)
+          apply mul_nonneg
+          · apply mul_nonneg (sq_nonneg _) (Real.exp_pos _).le
+          · apply add_nonneg
+            · apply add_nonneg
+              · exact mul_nonneg hC₀.le (Real.exp_pos _).le
+              · exact div_nonneg (mul_nonneg (by norm_num) hC₂.le) hpt.le
+            · exact mul_nonneg (div_nonneg (mul_nonneg (by norm_num) hC₄.le) hpt2.le) (Real.exp_pos _).le
+        exact abs_of_nonneg hbound_nonneg ▸ this
 
-/-- Shifted variant: φ₀(-1/(z-1)) (z-1)² e^{πirz} → 0 as Im(z) → ∞. -/
+/-- Shifted variant at x = -1: φ₀(-1/(z-1)) (z-1)² e^{πirz} → 0 as Im(z) → ∞.
+    On z = I*t, we have z-1 = -1 + I*t, using verticalIntegrandX (-1) r t. -/
 lemma tendsto_φ₀_integrand_minus_one (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
-    Tendsto (fun z => φ₀'' (-1/(z-1)) * (z-1)^2 * Complex.exp (π * Complex.I * r * z))
-            (comap Complex.im atTop) (nhds 0) := by
+    Tendsto (fun t : ℝ => φ₀'' (-1 / ((-1 : ℂ) + Complex.I * t)) * ((-1 : ℂ) + Complex.I * t)^2 *
+                         Complex.exp (π * Complex.I * r * (Complex.I * t)))
+            atTop (𝓝 0) := by
+  -- Similar to plus_one but with a = -1
   sorry
 
 end MagicFunction.VerticalIntegrability
