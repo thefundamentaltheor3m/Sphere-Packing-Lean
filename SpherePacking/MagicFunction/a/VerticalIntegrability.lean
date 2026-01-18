@@ -156,44 +156,49 @@ lemma integrableOn_goal1 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
   -- Use integrableOn_verticalIntegrandX on Ici 1, extend to [0,1) via continuity
   sorry
 
-/-- Goal 2: Integrability of φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(-1 + t*I)) on (1,∞). -/
+/-- Goal 2: Integrability of φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(-1 + t*I)) on (1,∞).
+    By goal2_eq_neg_I_verticalIntegrandX, this is -I * verticalIntegrandX (-1) r t. -/
 lemma integrableOn_goal2 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)))
                  (Ioi (1 : ℝ)) volume := by
-  -- This follows from integrableOn_vertical_general with a = 0, b = -1
+  -- Use integrableOn_verticalIntegrandX with x = -1, then const_smul by -I
   sorry
 
-/-- Goal 3: Integrability of φ₀''(-1/(t*I + 1)) * (t*I+1)² * cexp(π*I*r*(t*I)) on (1,∞). -/
+/-- Goal 3: Integrability of φ₀''(-1/(t*I + 1)) * (t*I+1)² * cexp(π*I*r*(t*I)) on (1,∞).
+    Category B: Shifted Möbius argument at +1. Uses norm_φ₀_S_smul_le. -/
 lemma integrableOn_goal3 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I + 1)) * (t * Complex.I + 1)^2 *
                           Complex.exp (π * Complex.I * r * (t * Complex.I)))
                  (Ioi (1 : ℝ)) volume := by
-  -- This follows from integrableOn_vertical_general with a = 1, b = 0
+  -- -1/(tI+1) has Im = t/(1+t²) > 0 for t > 0, so norm_φ₀_S_smul_le applies
   sorry
 
-/-- Goal 4: Integrability of φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(1 + t*I)) on (1,∞). -/
+/-- Goal 4: Integrability of φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(1 + t*I)) on (1,∞).
+    By goal4_eq_neg_I_verticalIntegrandX, this is -I * verticalIntegrandX 1 r t. -/
 lemma integrableOn_goal4 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (1 + t * Complex.I)))
                  (Ioi (1 : ℝ)) volume := by
-  -- This follows from integrableOn_vertical_general with a = 0, b = 1
+  -- Use integrableOn_verticalIntegrandX with x = 1, then const_smul by -I
   sorry
 
-/-- Goal 5: Integrability of φ₀''(-1/(t*I - 1)) * (t*I-1)² * cexp(π*I*r*(t*I)) on (1,∞). -/
+/-- Goal 5: Integrability of φ₀''(-1/(t*I - 1)) * (t*I-1)² * cexp(π*I*r*(t*I)) on (1,∞).
+    Category B: Shifted Möbius argument at -1. Uses norm_φ₀_S_smul_le. -/
 lemma integrableOn_goal5 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I - 1)) * (t * Complex.I - 1)^2 *
                           Complex.exp (π * Complex.I * r * (t * Complex.I)))
                  (Ioi (1 : ℝ)) volume := by
-  -- This follows from integrableOn_vertical_general with a = -1, b = 0
+  -- -1/(tI-1) has Im = t/(1+t²) > 0 for t > 0, so norm_φ₀_S_smul_le applies
   sorry
 
 /-- Goal 6: Integrability of I * (φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(-1 + t*I))) on [0,∞).
-    This is I times Goal 2. -/
+    By goal6_eq_verticalIntegrandX, this is verticalIntegrandX (-1) r t. -/
 lemma integrableOn_goal6 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
     Integrable (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))))
                (volume.restrict (Ici (0 : ℝ))) := by
+  -- Use integrableOn_verticalIntegrandX with x = -1, extend from Ici 1 to Ici 0
   sorry
 
 /-! ## Vanishing Lemmas (Lemma 4.4.5)
