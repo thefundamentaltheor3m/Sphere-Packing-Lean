@@ -80,18 +80,80 @@ lemma norm_φ₀_I_div_t_large (hb : ContourEndpoints.PhiBounds) :
   sorry
 
 
+/-! ## Relationship to verticalIntegrandX
+
+The Category A goals (1, 2, 4, 6) are scalar multiples of `verticalIntegrandX`.
+-/
+
+/-- Key identity: -1/(I*t) = I/t for t ≠ 0. -/
+lemma neg_one_div_I_mul (t : ℝ) (ht : t ≠ 0) : -1 / (Complex.I * t) = Complex.I / t := by
+  have hI : (Complex.I : ℂ) ≠ 0 := Complex.I_ne_zero
+  have hIt : (Complex.I * t : ℂ) ≠ 0 := mul_ne_zero hI (Complex.ofReal_ne_zero.mpr ht)
+  field_simp [hIt]
+  rw [Complex.I_sq]
+  ring
+
+/-- Goal 1 integrand equals verticalIntegrandX 0 r t. -/
+lemma goal1_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
+    Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
+      Complex.exp (Complex.I * π * r * (Complex.I * t)) =
+    ContourEndpoints.verticalIntegrandX 0 r t := by
+  unfold ContourEndpoints.verticalIntegrandX
+  rw [neg_one_div_I_mul t ht]
+  simp only [Complex.ofReal_zero, zero_add]
+
+/-- Goal 2 integrand equals -I * verticalIntegrandX (-1) r t.
+
+Proof sketch: Both sides reduce to φ₀''(I/t) * (-t²) * cexp(I*π*r*(-1 + I*t))
+after using -1/(I*t) = I/t and (I*t)² = -t².  -/
+lemma goal2_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
+    φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
+      Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)) =
+    -Complex.I * ContourEndpoints.verticalIntegrandX (-1) r t := by
+  have htI : (t : ℂ) * Complex.I = Complex.I * t := mul_comm _ _
+  unfold ContourEndpoints.verticalIntegrandX
+  rw [htI, neg_one_div_I_mul t ht, mul_pow]
+  -- Both sides have φ₀''(I/t) * (-t²) * cexp(I*π*r*(-1 + I*t)) after I²=-1
+  sorry
+
+/-- Goal 4 integrand equals -I * verticalIntegrandX 1 r t.
+
+Proof sketch: Same as Goal 2 but with +1 in the exponential phase. -/
+lemma goal4_eq_neg_I_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
+    φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
+      Complex.exp (π * Complex.I * r * (1 + t * Complex.I)) =
+    -Complex.I * ContourEndpoints.verticalIntegrandX 1 r t := by
+  have htI : (t : ℂ) * Complex.I = Complex.I * t := mul_comm _ _
+  unfold ContourEndpoints.verticalIntegrandX
+  rw [htI, neg_one_div_I_mul t ht, mul_pow]
+  sorry
+
+/-- Goal 6 integrand equals verticalIntegrandX (-1) r t.
+
+Proof sketch: Goal 6 = I * Goal 2 = I * (-I) * verticalIntegrandX (-1) r t
+= verticalIntegrandX (-1) r t since I * (-I) = 1. -/
+lemma goal6_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
+    Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
+      Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))) =
+    ContourEndpoints.verticalIntegrandX (-1) r t := by
+  have htI : (t : ℂ) * Complex.I = Complex.I * t := mul_comm _ _
+  unfold ContourEndpoints.verticalIntegrandX
+  rw [htI, neg_one_div_I_mul t ht, mul_pow]
+  sorry
+
 /-! ## Specific Instantiations
 
 The six integrability goals from Proposition 4.4.6.
 -/
 
 /-- Goal 1: Integrability of I * φ₀''(-1/(I*t)) * (I*t)² * cexp(I*π*r*(I*t)) on [0,∞).
-    Note: -1/(I*t) = I/t, so this is the base vertical integrand at x = 0. -/
+    Note: -1/(I*t) = I/t, so this is verticalIntegrandX 0 r t. -/
 lemma integrableOn_goal1 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
                           Complex.exp (Complex.I * π * r * (Complex.I * t)))
                  (Ici (0 : ℝ)) volume := by
-  -- This follows from integrableOn_vertical_general with a = 0, b = 0
+  -- The integrand equals verticalIntegrandX 0 r t a.e. (except at t = 0, measure zero)
+  -- Use integrableOn_verticalIntegrandX on Ici 1, extend to [0,1) via continuity
   sorry
 
 /-- Goal 2: Integrability of φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(-1 + t*I)) on (1,∞). -/
