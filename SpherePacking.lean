@@ -50,6 +50,7 @@ import SpherePacking.MagicFunction.g.Basic
 import SpherePacking.MainTheorem
 import SpherePacking.ModularForms.BigO
 import SpherePacking.ModularForms.Cauchylems
+import SpherePacking.ModularForms.CoreRamanujan
 import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.DimensionFormulas

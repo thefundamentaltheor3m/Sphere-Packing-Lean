@@ -1,11 +1,13 @@
 import SpherePacking.ForMathlib.MDifferentiableFunProp
 
 import SpherePacking.ModularForms.Eisenstein
+import Mathlib.Analysis.Calculus.DiffContOnCl
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
+open Metric Filter Function
 
-open scoped ModularForm MatrixGroups Manifold
+open scoped ModularForm MatrixGroups Manifold Topology BigOperators
 
 /-!
 Definition of (Serre) derivative of modular forms.
@@ -695,6 +697,27 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ)
   simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z, smul_eq_mul]
   ring_nf; simp only [I_sq]; ring
 
+/-- The derivative of a function with zero imaginary part also has zero imaginary part. -/
+lemma im_deriv_eq_zero_of_im_eq_zero {f : ℝ → ℂ} {t : ℝ}
+    (hf : DifferentiableAt ℝ f t) (him : ∀ s, (f s).im = 0) :
+    (deriv f t).im = 0 := by
+  simpa [funext him] using ((hasDerivAt_const t Complex.imCLM).clm_apply hf.hasDerivAt).deriv.symm
+
+/-- If F is real on the imaginary axis and MDifferentiable, then D F is also real
+on the imaginary axis. -/
+theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
+    (hF_diff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) : ResToImagAxis.Real (D F) := fun t ht => by
+  have him : ∀ s, (F.resToImagAxis s).im = 0 := fun s => by
+    by_cases hs : 0 < s
+    · exact hF_real s hs
+    · simp [ResToImagAxis, hs]
+  have h_im_deriv :=
+    im_deriv_eq_zero_of_im_eq_zero (ResToImagAxis.Differentiable F hF_diff t ht) him
+  have h_im_eq : (deriv F.resToImagAxis t).im = -2 * π * ((D F).resToImagAxis t).im := by
+    simpa [mul_assoc, ofReal_mul] using congrArg Complex.im (deriv_resToImagAxis_eq F hF_diff ht)
+  exact (mul_eq_zero.mp (h_im_deriv ▸ h_im_eq).symm).resolve_left
+    (mul_ne_zero (by norm_num) Real.pi_ne_zero)
+
 /--
 If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
 is positive) and the derivative is positive, then $F$ is also positive.
@@ -732,3 +755,99 @@ If $F(it)$ is positive for sufficiently large $t$, then $F(it)$ is positive for 
 theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hSDF : ResToImagAxis.Pos (serre_D k F))
     (hF : ResToImagAxis.EventuallyPos F) : ResToImagAxis.Pos F := by
   sorry
+
+/-! ## Cauchy Estimates for D-derivative
+
+Infrastructure for bounding derivatives using Cauchy estimates on disks in the upper half plane.
+-/
+
+/-- If `f : ℍ → ℂ` is `MDifferentiable` and a closed disk in `ℂ` lies in the upper
+half-plane, then `f ∘ ofComplex` is `DiffContOnCl` on the corresponding open disk. -/
+lemma diffContOnCl_comp_ofComplex_of_mdifferentiable {f : ℍ → ℂ}
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) {c : ℂ} {R : ℝ}
+    (hclosed : Metric.closedBall c R ⊆ {z : ℂ | 0 < z.im}) :
+    DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball c R) :=
+  ⟨fun z hz => (MDifferentiableAt_DifferentiableAt
+      (hf ⟨z, hclosed (Metric.ball_subset_closedBall hz)⟩)).differentiableWithinAt,
+   fun z hz => (MDifferentiableAt_DifferentiableAt
+      (hf ⟨z, hclosed (Metric.closure_ball_subset_closedBall hz)⟩)).continuousAt.continuousWithinAt⟩
+
+/-- Closed ball centered at z with radius z.im/2 is contained in the upper half plane. -/
+lemma closedBall_center_subset_upperHalfPlane (z : ℍ) :
+    Metric.closedBall (z : ℂ) (z.im / 2) ⊆ {w : ℂ | 0 < w.im} := by
+  intro w hw
+  have hdist : dist w z ≤ z.im / 2 := Metric.mem_closedBall.mp hw
+  have habs : |w.im - z.im| ≤ z.im / 2 := calc |w.im - z.im|
+    _ = |(w - z).im| := by simp [Complex.sub_im]
+    _ ≤ ‖w - z‖ := abs_im_le_norm _
+    _ = dist w z := (dist_eq_norm _ _).symm
+    _ ≤ z.im / 2 := hdist
+  have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
+  exact lt_of_lt_of_le (by linarith [z.im_pos] : 0 < z.im / 2) hlower
+
+/-- Cauchy estimate for the D-derivative: if `f ∘ ofComplex` is holomorphic on a disk
+of radius `r` around `z` and bounded by `M` on the boundary sphere,
+then `‖D f z‖ ≤ M / (2πr)`. -/
+lemma norm_D_le_of_sphere_bound {f : ℍ → ℂ} {z : ℍ} {r M : ℝ}
+    (hr : 0 < r) (hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) r))
+    (hbdd : ∀ w ∈ Metric.sphere (z : ℂ) r, ‖(f ∘ ofComplex) w‖ ≤ M) :
+    ‖D f z‖ ≤ M / (2 * π * r) := calc ‖D f z‖
+  _ = ‖(2 * π * I)⁻¹‖ * ‖deriv (f ∘ ofComplex) z‖ := by simp [D]
+  _ = (2 * π)⁻¹ * ‖deriv (f ∘ ofComplex) z‖ := by simp [abs_of_pos Real.pi_pos]
+  _ ≤ (2 * π)⁻¹ * (M / r) := by
+        gcongr; exact Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hr hDiff hbdd
+  _ = M / (2 * π * r) := by ring
+
+/-- The D-derivative is bounded at infinity for bounded holomorphic functions.
+
+For y large (y ≥ 2·max(A,0) + 1), we use a ball of radius z.im/2 around z.
+The ball lies in the upper half plane, f is bounded by M on it, and
+`norm_D_le_of_sphere_bound` gives ‖D f z‖ ≤ M/(π·z.im) ≤ M/π. -/
+lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
+    (hbdd : IsBoundedAtImInfty f) :
+    IsBoundedAtImInfty (D f) := by
+  rw [isBoundedAtImInfty_iff] at hbdd ⊢
+  obtain ⟨M, A, hMA⟩ := hbdd
+  use M / π, 2 * max A 0 + 1
+  intro z hz
+  have hR_pos : 0 < z.im / 2 := by linarith [z.im_pos]
+  have hclosed := closedBall_center_subset_upperHalfPlane z
+  have hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) (z.im / 2)) :=
+    diffContOnCl_comp_ofComplex_of_mdifferentiable hf hclosed
+  have hf_bdd_sphere : ∀ w ∈ Metric.sphere (z : ℂ) (z.im / 2), ‖(f ∘ ofComplex) w‖ ≤ M := by
+    intro w hw
+    have hw_im_pos : 0 < w.im := hclosed (Metric.sphere_subset_closedBall hw)
+    have hdist : dist w z = z.im / 2 := Metric.mem_sphere.mp hw
+    have habs : |w.im - z.im| ≤ z.im / 2 := by
+      calc |w.im - z.im| = |(w - z).im| := by simp [Complex.sub_im]
+        _ ≤ ‖w - z‖ := abs_im_le_norm _
+        _ = dist w z := (dist_eq_norm _ _).symm
+        _ = z.im / 2 := hdist
+    have hw_im_ge_A : A ≤ w.im := by linarith [(abs_le.mp habs).1, le_max_left A 0]
+    simpa [ofComplex_apply_of_im_pos hw_im_pos] using hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
+  have hz_im_ge_1 : 1 ≤ z.im := by linarith [le_max_right A 0]
+  have hM_nonneg : 0 ≤ M := le_trans (norm_nonneg _) (hMA z (by linarith [le_max_left A 0]))
+  calc ‖D f z‖ ≤ M / (2 * π * (z.im / 2)) := norm_D_le_of_sphere_bound hR_pos hDiff hf_bdd_sphere
+    _ = M / (π * z.im) := by ring
+    _ ≤ M / (π * 1) := by gcongr
+    _ = M / π := by ring
+
+/-- The Serre derivative of a bounded holomorphic function is bounded at infinity.
+
+serre_D k f = D f - (k/12)·E₂·f. Both terms are bounded:
+- D f is bounded by `D_isBoundedAtImInfty_of_bounded`
+- (k/12)·E₂·f is bounded since E₂ and f are bounded -/
+theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
+    (hbdd : IsBoundedAtImInfty f) : IsBoundedAtImInfty (serre_D k f) := by
+  unfold serre_D
+  have hD : IsBoundedAtImInfty (D f) := D_isBoundedAtImInfty_of_bounded hf hbdd
+  have hE₂f : IsBoundedAtImInfty (fun z => k * 12⁻¹ * E₂ z * f z) := by
+    have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) :=
+      Filter.const_boundedAtFilter _ _
+    convert hconst.mul (E₂_isBoundedAtImInfty.mul hbdd) using 1
+    ext z
+    simp only [Pi.mul_apply]
+    ring
+  exact hD.sub hE₂f

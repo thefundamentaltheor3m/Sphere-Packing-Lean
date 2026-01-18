@@ -1,5 +1,6 @@
 import SpherePacking.ModularForms.Eisensteinqexpansions
 import SpherePacking.ModularForms.IsCuspForm
+import SpherePacking.ModularForms.summable_lems
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
@@ -960,3 +961,101 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
   simp [Complex.mul_im, hsum_im]
 
 end ImagAxisProperties
+
+/-! ## Boundedness of E₂ -/
+
+/-- For im(z) ≥ 1, ‖exp(2πiz)‖ ≤ exp(-2π).
+
+This bound on the q-parameter is useful for estimating q-expansions when im(z) ≥ 1. -/
+lemma norm_exp_two_pi_I_le_exp_neg_two_pi (z : ℍ) (hz : 1 ≤ z.im) :
+    ‖cexp (2 * π * Complex.I * z)‖ ≤ Real.exp (-2 * π) := by
+  have h : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
+    rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
+    simp [Complex.I_re, Complex.I_im, mul_comm]
+  rw [Complex.norm_exp, h, Real.exp_le_exp]
+  nlinarith [Real.pi_pos]
+
+/-- Bound on the q-series ∑ n·qⁿ/(1-qⁿ) that appears in E₂.
+
+For ‖q‖ < 1, we have ‖∑ₙ₌₁ n·qⁿ/(1-qⁿ)‖ ≤ ‖q‖/(1-‖q‖)³.
+
+The key estimates are:
+- |1-qⁿ| ≥ 1-|q|ⁿ ≥ 1-|q| for n ≥ 1
+- |n·qⁿ/(1-qⁿ)| ≤ n·|q|ⁿ/(1-|q|)
+- ∑ n·rⁿ = r/(1-r)², so ∑ n·rⁿ/(1-r) = r/(1-r)³ -/
+lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
+    ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤ ‖q‖ / (1 - ‖q‖) ^ 3 := by
+  set r : ℝ := ‖q‖
+  have hr_norm_lt_one : ‖r‖ < 1 := by rwa [Real.norm_of_nonneg (norm_nonneg q)]
+  have hsumm_nat : Summable (fun n : ℕ => (n : ℝ) * r ^ n) := by
+    simpa [pow_one] using summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
+  have hsumm_majorant : Summable (fun n : ℕ+ => (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
+    simpa [div_eq_mul_inv] using (hsumm_nat.subtype _).mul_right (1 - r)⁻¹
+  have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
+      n * r ^ (n : ℕ) / (1 - r) := fun n => by
+    rw [norm_div, norm_mul, Complex.norm_natCast]
+    have hdenom_lower : 1 - r ≤ ‖1 - q ^ (n : ℕ)‖ := calc
+      1 - r ≤ 1 - r ^ (n : ℕ) := by
+        have : r ^ (n : ℕ) ≤ r := by simpa using pow_le_pow_of_le_one (norm_nonneg _) hq.le n.one_le
+        linarith
+      _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow]
+      _ ≤ ‖1 - q ^ (n : ℕ)‖ := by
+        have := norm_sub_norm_le (1 : ℂ) (q ^ (n : ℕ)); simp only [norm_one] at this; linarith
+    calc ↑n * ‖q ^ (n : ℕ)‖ / ‖1 - q ^ (n : ℕ)‖ ≤ ↑n * ‖q ^ (n : ℕ)‖ / (1 - r) := by
+          exact div_le_div_of_nonneg_left (mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _))
+            (sub_pos.mpr hq) hdenom_lower
+      _ = ↑n * r ^ (n : ℕ) / (1 - r) := by rw [norm_pow]
+  have hsumm_norms : Summable (fun n : ℕ+ => ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖) :=
+    .of_nonneg_of_le (fun _ => norm_nonneg _) hterm_bound hsumm_majorant
+  calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
+      ≤ ∑' n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ := norm_tsum_le_tsum_norm hsumm_norms
+    _ ≤ ∑' n : ℕ+, (n : ℝ) * r ^ (n : ℕ) / (1 - r) :=
+        hsumm_norms.tsum_le_tsum hterm_bound hsumm_majorant
+    _ = r / (1 - r) ^ 3 := by
+        simp only [div_eq_mul_inv, tsum_mul_right, tsum_pnat_coe_mul_geometric hr_norm_lt_one,
+          pow_succ]
+        field_simp
+
+/-- Monotone version of `norm_tsum_logDeriv_expo_le`: if ‖q‖ ≤ r < 1, then
+‖∑ n·qⁿ/(1-qⁿ)‖ ≤ r/(1-r)³. Useful when we have a uniform bound on ‖q‖. -/
+lemma norm_tsum_logDeriv_expo_le_of_norm_le {q : ℂ} {r : ℝ} (hqr : ‖q‖ ≤ r) (hr : r < 1) :
+    ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤ r / (1 - r) ^ 3 := by
+  have hq : ‖q‖ < 1 := lt_of_le_of_lt hqr hr
+  have hr_nonneg : 0 ≤ r := le_trans (norm_nonneg _) hqr
+  calc ‖∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
+      ≤ ‖q‖ / (1 - ‖q‖) ^ 3 := norm_tsum_logDeriv_expo_le hq
+    _ ≤ r / (1 - r) ^ 3 := by
+        have := sub_pos.mpr hr
+        have := sub_pos.mpr hq
+        gcongr
+
+/-- E₂ is bounded at infinity.
+
+Uses `E₂_eq`: E₂(z) = 1 - 24·Σₙ₌₁ n·qⁿ/(1-qⁿ) where q = exp(2πiz).
+For im(z) ≥ 1, |q| ≤ exp(-2π), so by `norm_tsum_logDeriv_expo_le`,
+|E₂| ≤ 1 + 24·exp(-2π)/(1-exp(-2π))³. -/
+lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
+  rw [UpperHalfPlane.isBoundedAtImInfty_iff]
+  set r₀ : ℝ := Real.exp (-2 * π)
+  have hr₀_lt_one : r₀ < 1 := Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos])
+  refine ⟨1 + 24 * (r₀ / (1 - r₀) ^ 3), 1, fun z hz => ?_⟩
+  rw [E₂_eq]
+  set q : ℂ := cexp (2 * π * Complex.I * z)
+  have hq_bound : ‖q‖ ≤ r₀ := norm_exp_two_pi_I_le_exp_neg_two_pi z hz
+  -- Rewrite sum in terms of q^n
+  set S := ∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))
+  have hS_eq : ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+      (1 - cexp (2 * π * Complex.I * ↑n * ↑z)) = S := by
+    congr 1; ext n
+    have : cexp (2 * π * Complex.I * n * z) = q ^ (n : ℕ) := by
+      change _ = (cexp (2 * π * Complex.I * z)) ^ (n : ℕ)
+      rw [← Complex.exp_nat_mul]; ring_nf
+    simp [this]
+  calc ‖1 - 24 * ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
+          (1 - cexp (2 * π * Complex.I * ↑n * ↑z))‖
+      = ‖1 - 24 * S‖ := by rw [hS_eq]
+    _ ≤ 1 + 24 * ‖S‖ := by
+        calc _ ≤ ‖(1 : ℂ)‖ + ‖24 * S‖ := norm_sub_le _ _
+          _ = _ := by simp
+    _ ≤ 1 + 24 * (r₀ / (1 - r₀) ^ 3) := by
+        gcongr; exact norm_tsum_logDeriv_expo_le_of_norm_le hq_bound hr₀_lt_one
