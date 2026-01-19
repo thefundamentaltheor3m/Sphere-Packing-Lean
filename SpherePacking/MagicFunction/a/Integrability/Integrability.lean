@@ -29,38 +29,14 @@ namespace MagicFunction.a.Integrability
 
 /-! ### Helper lemmas for super-exponential decay -/
 
-/-- For t ∈ (0, 1], exp(-2π/t) * t² is monotonically increasing and bounded by exp(-2π).
-This is because exp(-2π/t) decays super-exponentially as t → 0, dominating the t² growth. -/
+/-- For t ∈ (0, 1], exp(-2π/t) * t² ≤ exp(-2π).
+Uses exp(-2π/t) ≤ exp(-2π) from `exp_neg_div_le_of_le_one` and t² ≤ 1. -/
 lemma exp_neg_two_pi_div_mul_sq_le {t : ℝ} (ht_pos : 0 < t) (ht_le : t ≤ 1) :
     rexp (-2 * π / t) * t ^ 2 ≤ rexp (-2 * π) := by
-  -- From exp_neg_div_mul_inv_sq_le with c = 2π: exp(-2π/t) * t⁻² ≤ exp(-2π)
-  -- So: exp(-2π/t) ≤ exp(-2π) * t²
-  -- Hence: exp(-2π/t) * t² ≤ exp(-2π) * t⁴ ≤ exp(-2π)
-  have hc : 2 ≤ 2 * π := by linarith [Real.two_le_pi]
-  have h := exp_neg_div_mul_inv_sq_le (2 * π) t hc ht_pos ht_le
-  -- h : exp(-2π/t) * t⁻¹² ≤ exp(-2π)
-  -- Rewrite t⁻¹² = (t²)⁻¹
-  have h_inv : t⁻¹ ^ 2 = (t ^ 2)⁻¹ := by rw [inv_pow]
-  rw [h_inv] at h
-  -- Now h : exp(-2π/t) * (t²)⁻¹ ≤ exp(-2π)
-  -- Multiply both sides by t² to get: exp(-2π/t) ≤ exp(-2π) * t²
-  have ht2_pos : 0 < t ^ 2 := by positivity
-  have h' : rexp (-2 * π / t) ≤ rexp (-2 * π) * t ^ 2 := by
-    have := mul_le_mul_of_nonneg_right h ht2_pos.le
-    simp only [mul_assoc, inv_mul_cancel₀ (ne_of_gt ht2_pos), mul_one] at this
-    convert this using 2 <;> ring
-  -- Now multiply by t² again: exp(-2π/t) * t² ≤ exp(-2π) * t⁴
-  have h_t4 : t ^ 4 ≤ 1 := by
-    have h1 : t ^ 4 ≤ t ^ 2 := by
-      have : t ^ 4 = t ^ 2 * t ^ 2 := by ring
-      have : t ^ 2 ≤ 1 := by nlinarith
-      nlinarith
-    have h2 : t ^ 2 ≤ 1 := by nlinarith
-    linarith
-  calc rexp (-2 * π / t) * t ^ 2 ≤ (rexp (-2 * π) * t ^ 2) * t ^ 2 := by
-          apply mul_le_mul_of_nonneg_right h' (sq_nonneg t)
-    _ = rexp (-2 * π) * t ^ 4 := by ring
-    _ ≤ rexp (-2 * π) * 1 := by gcongr
+  have h_exp := exp_neg_div_le_of_le_one (2 * π) t (by linarith [Real.pi_pos]) ht_pos ht_le
+  have h1 : rexp (-2 * π / t) ≤ rexp (-2 * π) := by convert h_exp using 2 <;> ring
+  calc rexp (-2 * π / t) * t ^ 2 ≤ rexp (-2 * π) * t ^ 2 := by gcongr
+    _ ≤ rexp (-2 * π) * 1 := by gcongr; nlinarith
     _ = rexp (-2 * π) := mul_one _
 
 /-- For t ∈ [1, ∞), the real integrand Φ₆ r t equals the g function from IntegralEstimates.I₆. -/
