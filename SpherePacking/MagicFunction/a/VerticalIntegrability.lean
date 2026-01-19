@@ -252,12 +252,7 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
       apply Continuous.div continuous_const
       · exact continuous_const.add
           (continuous_const.mul (Complex.continuous_ofReal.comp continuous_subtype_val))
-      · intro ⟨s, hs⟩
-        simp only [ne_eq]
-        intro h_eq
-        have : (a + Complex.I * s).im = 0 := by rw [h_eq]; simp
-        simp at this
-        exact absurd this (ne_of_gt hs)
+      · intro ⟨s, hs⟩; exact fun h => (ne_of_gt hs) (by simpa using congrArg Complex.im h)
     have h_comp_cont : Continuous (φ₀ ∘ path) := φ₀_continuous.comp h_path_cont
     have h_cont_phi : ContinuousOn (fun t : ℝ => φ₀'' (-1 / (a + Complex.I * t))) (Ioi 0) := by
       intro t ht
@@ -303,23 +298,9 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
     have hS_bound := ContourEndpoints.norm_φ₀_S_smul_le hb w hw_im_ge
     -- Step 3: Bound ‖z²‖ ≤ (a² + 1) * t² for t ≥ 1
     have hz_sq_bound : ‖z^2‖ ≤ (a^2 + 1) * t^2 := by
-      rw [norm_pow]
-      -- ‖z‖² = normSq z = a² + t²
-      have hz_normSq : Complex.normSq z = a^2 + t^2 := by
-        simp only [z]
-        rw [mul_comm]; exact Complex.normSq_add_mul_I a t
-      have h1 : ‖z‖ = Real.sqrt (a^2 + t^2) := by
-        simp only [z]
-        have hre : (↑a + Complex.I * ↑t : ℂ).re = a := by simp
-        have him : (↑a + Complex.I * ↑t : ℂ).im = t := by simp
-        rw [Complex.norm_eq_sqrt_sq_add_sq, hre, him]
-      rw [h1, Real.sq_sqrt (by positivity)]
-      have h_t_sq_ge_1 : 1 ≤ t^2 := by nlinarith
-      have ha2t2 : a^2 + t^2 ≤ (a^2 + 1) * t^2 := by
-        have h : a^2 * 1 ≤ a^2 * t^2 := by
-          apply mul_le_mul_of_nonneg_left h_t_sq_ge_1 (sq_nonneg a)
-        nlinarith
-      exact ha2t2
+      simp only [z, norm_pow, ← Complex.normSq_eq_norm_sq, mul_comm Complex.I,
+        Complex.normSq_add_mul_I]
+      nlinarith [sq_nonneg a, sq_nonneg (t - 1), sq_nonneg (a * (t - 1))]
     -- Step 4: Exponential norm
     have hexp_norm : ‖Complex.exp (Complex.I * π * r * (b + Complex.I * t))‖ =
         Real.exp (-π * r * t) := ContourEndpoints.norm_cexp_verticalPhase b r t
