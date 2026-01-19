@@ -39,11 +39,10 @@ $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1
   \]
 \end{definition}
 
-% Forward direction hasn't been proven yet
 \begin{theorem}\label{E8-defs-equivalent}\lean{span_E8Matrix}\uses{E8-Set, E8-Matrix}\leanok
   The two definitions above coincide, i.e. $\Lambda_8 = \mathrm{span}_{\Z}(\B_8)$.
 \end{theorem}
-\begin{proof}
+\begin{proof}\leanok
   We prove each side contains the other side.
 
   For a vector $\vec{v} \in \Lambda_8 \subseteq \R^8$, we have $\sum_i \vec{v}_i \equiv 0 \pmod{2}$ and $\vec{v}_i$ being either all integers or all half-integers. After some modulo arithmetic, it can be seen that $\B_8^{-1}\vec{v}$ as integer coordinates (i.e. it is congruent to $0$ modulo $1$). Hence, $\vec{v} \in \mathrm{span}_{\Z}(\B_8)$.
@@ -60,7 +59,7 @@ In this section, we establish basic properties of the $E_8$ lattice and the $\B_
 \begin{lemma}\label{E8-is-basis}\lean{span_E8Matrix_eq_top}\uses{E8-Matrix}\leanok
   $B_8$ is a $\R$-basis of $\R^8$.
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
   It suffices to prove that $\B_8 \in \mathrm{GL}_8(\R)$. We prove this by explicitly defining the inverse matrix $\B_8^{-1}$ and proving $\B_8 \B_8^{-1} = I_8$, which implies that $\det(\B_8)$ is nonzero. See the Lean code for more details.,
 \end{proof}
 
@@ -74,21 +73,21 @@ In this section, we establish basic properties of the $E_8$ lattice and the $\B_
 \begin{lemma}\label{E8-vector-norms}\lean{E8_norm_eq_sqrt_even}\uses{E8-defs-equivalent}\leanok
   All vectors in $\Lambda_8$ have norm of the form $\sqrt{2n}$, where $n$ is a nonnegative integer.
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
   Writing $\vec{v} = \sum_i c_i\B_8^i$, we have $\|v\|^2 = \sum_i \sum_j c_ic_j (\B_8^i \cdot \B_8^j)$. Computing all $64$ pairs of dot products and simplifying, we get a massive term that is a quadratic form in $c_i$ with even integer coefficients, concluding the proof.
 \end{proof}
 
 \begin{lemma}\label{instDiscreteE8Lattice}\lean{instDiscreteE8Lattice}\uses{E8-vector-norms}\leanok
   $c\Lambda_8$ is discrete, i.e. that the subspace topology induced by its inclusion into $\R^8$ is the discrete topology.
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
   Since $\Lambda_8$ is a topological group and $+$ is continuous, it suffices to prove that $\{0\}$ is open in $\Lambda_8$. This follows from the fact that there is an open ball $\B(\sqrt{2}) \subseteq \R^8$ around it containing no other lattice points, since the shortest nonzero vector has norm $\sqrt{2}$.
 \end{proof}
 
 \begin{lemma}\label{instLatticeE8}\lean{instIsZLatticeE8Lattice}\uses{instDiscreteE8Lattice, E8-is-basis}\leanok
   $c\Lambda_8$ is a $\Z$-lattice, i.e. it is discrete and spans $\R^8$ over $\R$.
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
   The first part is by \cref{instDiscreteE8Lattice}, and the second part follows from that $\B_8$ is a basis (\cref{E8-is-basis}) and hence linearly independent over $\R$.
 \end{proof}
 
@@ -101,10 +100,10 @@ In this section, we establish basic properties of the $E_8$ lattice and the $\B_
   The \emph{$E_8$ sphere packing} is the (periodic) sphere packing with separation $\sqrt{2}$, whose set of centres is $\Lambda_8$.
 \end{definition}
 
-\begin{lemma}\label{E8Packing-covol}\lean{E8Basis_volume}\uses{E8Packing}
+\begin{lemma}\label{E8Packing-covol}\lean{E8Basis_volume}\uses{E8Packing}\leanok
   $\Vol{\Lambda_8} = \mathrm{Covol}(\R^8 / \Lambda_8) = 1$.
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
   \todo{In theory this should follow directly from $\det(\Lambda_8) = 1$, but Lean hates me and \texttt{EuclideanSpace} is being annoying.}
 \end{proof}
 
