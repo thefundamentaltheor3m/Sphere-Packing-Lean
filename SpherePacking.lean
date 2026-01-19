@@ -30,6 +30,7 @@ import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.CuspPath
 import SpherePacking.MagicFunction.RealDecay
 import SpherePacking.MagicFunction.a.Basic
+import SpherePacking.MagicFunction.a.ContourEndpoints
 import SpherePacking.MagicFunction.a.Eigenfunction
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.a.Integrability.Integrability
