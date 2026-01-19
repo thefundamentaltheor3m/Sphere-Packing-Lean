@@ -220,45 +220,31 @@ lemma sigma_qexp_deriv_bound_generic (k : ℕ) :
           Complex.exp (2 * Real.pi * Complex.I * n * z.1)‖ ≤ u n := by
   intro K hK hKc
   obtain ⟨u₀, hu₀_sum, hu₀_bound⟩ := iter_deriv_comp_bound3 K hK hKc (k + 2)
-  use fun n => u₀ n
-  constructor
-  · exact hu₀_sum.subtype _
-  · intro n z
-    have hbound := sigma_bound k n
-    have hpow := hu₀_bound n z
-    simp only [abs_of_pos Real.pi_pos] at hpow
-    calc ‖(ArithmeticFunction.sigma k n : ℂ) * (2 * π * Complex.I * n) *
-            Complex.exp (2 * π * Complex.I * n * z.1)‖
-        = ‖(ArithmeticFunction.sigma k n : ℂ)‖ * ‖(2 * π * Complex.I * n : ℂ)‖ *
-            ‖Complex.exp (2 * π * Complex.I * n * z.1)‖ := by
-          rw [norm_mul, norm_mul]
-      _ ≤ (n : ℝ) ^ (k + 1) * (2 * π * n) * ‖Complex.exp (2 * π * Complex.I * n * z.1)‖ := by
-          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-          have hs : ‖(ArithmeticFunction.sigma k n : ℂ)‖ ≤ (n : ℝ) ^ (k + 1) := by
-            simp only [Complex.norm_natCast]
-            exact_mod_cast hbound
-          have hn : ‖(2 * π * Complex.I * n : ℂ)‖ = 2 * π * n := by
-            simp only [norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs,
-              abs_of_pos Real.pi_pos, Complex.norm_I, mul_one, Complex.norm_natCast]
-          rw [hn]
-          exact mul_le_mul hs (le_refl _) (by positivity) (by positivity)
-      _ ≤ (2 * π * n) ^ (k + 2) * ‖Complex.exp (2 * π * Complex.I * n * z.1)‖ := by
-          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-          have h2pi : (1 : ℝ) ≤ 2 * π := by
-            have hpi_gt_one : (1 : ℝ) < π := by
-              calc (1 : ℝ) < 2 := by norm_num
-                _ ≤ π := Real.two_le_pi
-            linarith
-          calc (n : ℝ) ^ (k + 1) * (2 * π * ↑↑n)
-              = (2 * π) * (n : ℝ) ^ (k + 2) := by ring
-            _ ≤ (2 * π) ^ (k + 2) * (n : ℝ) ^ (k + 2) := by
-                apply mul_le_mul_of_nonneg_right _ (by positivity)
-                calc (2 * π) = (2 * π) ^ 1 := (pow_one _).symm
-                  _ ≤ (2 * π) ^ (k + 2) := by
-                      apply pow_le_pow_right₀ h2pi
-                      omega
-            _ = (2 * π * ↑↑n) ^ (k + 2) := by ring
-      _ ≤ u₀ n := hpow
+  refine ⟨fun n => u₀ n, hu₀_sum.subtype _, fun n z => ?_⟩
+  have hpow := hu₀_bound n z
+  simp only [abs_of_pos Real.pi_pos] at hpow
+  have h2pi : (1 : ℝ) ≤ 2 * π := by linarith [Real.two_le_pi]
+  calc ‖(ArithmeticFunction.sigma k n : ℂ) * (2 * π * Complex.I * n) *
+          Complex.exp (2 * π * Complex.I * n * z.1)‖
+      = ‖(ArithmeticFunction.sigma k n : ℂ)‖ * ‖(2 * π * Complex.I * n : ℂ)‖ *
+          ‖Complex.exp (2 * π * Complex.I * n * z.1)‖ := by rw [norm_mul, norm_mul]
+    _ ≤ (n : ℝ) ^ (k + 1) * (2 * π * n) * ‖Complex.exp (2 * π * Complex.I * n * z.1)‖ := by
+        apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+        have hs : ‖(ArithmeticFunction.sigma k n : ℂ)‖ ≤ (n : ℝ) ^ (k + 1) := by
+          simp only [Complex.norm_natCast]; exact_mod_cast sigma_bound k n
+        have hn : ‖(2 * π * Complex.I * n : ℂ)‖ = 2 * π * n := by
+          simp only [norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs,
+            abs_of_pos Real.pi_pos, Complex.norm_I, mul_one, Complex.norm_natCast]
+        rw [hn]; exact mul_le_mul hs le_rfl (by positivity) (by positivity)
+    _ ≤ (2 * π * n) ^ (k + 2) * ‖Complex.exp (2 * π * Complex.I * n * z.1)‖ := by
+        apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+        calc (n : ℝ) ^ (k + 1) * (2 * π * ↑↑n) = (2 * π) * (n : ℝ) ^ (k + 2) := by ring
+          _ ≤ (2 * π) ^ (k + 2) * (n : ℝ) ^ (k + 2) := by
+              apply mul_le_mul_of_nonneg_right _ (by positivity)
+              calc (2 * π) = (2 * π) ^ 1 := (pow_one _).symm
+                _ ≤ (2 * π) ^ (k + 2) := pow_le_pow_right₀ h2pi (by omega)
+          _ = (2 * π * ↑↑n) ^ (k + 2) := by ring
+    _ ≤ u₀ n := hpow
 
 /-- Derivative bound for σ₁ q-series on compact sets (for D_qexp_tsum_pnat hypothesis).
 The bound uses σ₁(n) ≤ n² (sigma_bound) and iter_deriv_comp_bound3 for exponential decay. -/
