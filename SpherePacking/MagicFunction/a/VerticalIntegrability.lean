@@ -346,38 +346,18 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
               + (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t) := by
             rw [hw_im] at hS_bound
             refine hS_bound.trans ?_
-            -- Term by term: first term equal, second and third use ‖w‖ ≥ t
-            have h2 : 12 / (π * ‖(w : ℂ)‖) * hb.C₂ ≤ 12 / (π * t) * hb.C₂ := by
-              apply mul_le_mul_of_nonneg_right _ (le_of_lt hb.hC₂_pos)
-              apply div_le_div_of_nonneg_left (by positivity) (by positivity : 0 < π * t)
-              exact mul_le_mul_of_nonneg_left hw_norm_ge (le_of_lt Real.pi_pos)
-            have h3 : 36 / (π^2 * ‖(w : ℂ)‖^2) * hb.C₄ * Real.exp (2 * π * t) ≤
-                      36 / (π^2 * t^2) * hb.C₄ * Real.exp (2 * π * t) := by
-              apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
-              apply mul_le_mul_of_nonneg_right _ (le_of_lt hb.hC₄_pos)
-              apply div_le_div_of_nonneg_left (by positivity) (by positivity : 0 < π^2 * t^2)
-              apply mul_le_mul_of_nonneg_left _ (by positivity : 0 ≤ π^2)
-              exact sq_le_sq' (by linarith) hw_norm_ge
-            linarith
+            gcongr <;> [exact hb.hC₂_pos.le; exact hb.hC₄_pos.le]
           -- Multiply by t² * exp(-πrt) and simplify to verticalBound
           calc ‖φ₀ (ModularGroup.S • w)‖ * t^2 * Real.exp (-π * r * t)
               ≤ (hb.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * hb.C₂
                   + (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t))
-                * t^2 * Real.exp (-π * r * t) := by
-                apply mul_le_mul_of_nonneg_right
-                · apply mul_le_mul_of_nonneg_right hS_bound' (sq_nonneg t)
-                · exact (Real.exp_pos _).le
+                * t^2 * Real.exp (-π * r * t) := by gcongr
             _ = hb.C₀ * t^2 * (Real.exp (-2 * π * t) * Real.exp (-π * r * t))
                 + (12 * hb.C₂ / π) * t * Real.exp (-π * r * t)
                 + (36 * hb.C₄ / π^2) * (Real.exp (2 * π * t) * Real.exp (-π * r * t)) := by
                   field_simp
             _ = ContourEndpoints.verticalBound hb r t := by
-                  simp only [ContourEndpoints.verticalBound]
-                  have hexp1 : Real.exp (-2 * π * t) * Real.exp (-π * r * t) =
-                      Real.exp (-(2 * π + π * r) * t) := by rw [← Real.exp_add]; ring_nf
-                  have hexp3 : Real.exp (2 * π * t) * Real.exp (-π * r * t) =
-                      Real.exp (-(π * r - 2 * π) * t) := by rw [← Real.exp_add]; ring_nf
-                  rw [hexp1, hexp3]
+                  simp only [ContourEndpoints.verticalBound, ← Real.exp_add]; ring_nf
 
 /-! ## Relationship to verticalIntegrandX
 
