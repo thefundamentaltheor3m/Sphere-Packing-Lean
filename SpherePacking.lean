@@ -34,6 +34,7 @@ import SpherePacking.MagicFunction.a.ContourEndpoints
 import SpherePacking.MagicFunction.a.Eigenfunction
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.a.Integrability.Integrability
+import SpherePacking.MagicFunction.a.Integrability.ProductIntegrability
 import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 import SpherePacking.MagicFunction.a.IntegralEstimates.I2
