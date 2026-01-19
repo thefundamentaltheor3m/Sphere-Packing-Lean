@@ -714,6 +714,16 @@ theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
   exact (mul_eq_zero.mp (h_im_deriv ▸ h_im_eq).symm).resolve_left
     (mul_ne_zero (by norm_num) Real.pi_ne_zero)
 
+/-- If F is real on the imaginary axis and MDifferentiable, then the Serre derivative
+(of real weight) is also real on the imaginary axis. -/
+theorem serre_D_real_of_real {F : ℍ → ℂ} {k : ℤ} (hF_real : ResToImagAxis.Real F)
+    (hF_diff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) : ResToImagAxis.Real (serre_D k F) := by
+  have hD_real := D_real_of_real hF_real hF_diff
+  have hE₂_real := E₂_imag_axis_real
+  have hE₂F_real : ResToImagAxis.Real (fun z => k * 12⁻¹ * E₂ z * F z) := by
+    sorry
+  sorry
+
 /--
 If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
 is positive) and the derivative is positive, then $F$ is also positive.
