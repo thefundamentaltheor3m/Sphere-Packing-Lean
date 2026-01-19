@@ -71,10 +71,10 @@ Equivalences of \eqref{eqn:ineqB} and \eqref{eqn:ineqBnew} follows similarly; ju
 
 Now, the first inequality \eqref{eqn:ineqAnew} follows from the positivity of each $F(it)$ and $G(it)$.
 
-\begin{lemma}\label{lemma:F-G-pos}\uses{thm:ramanujan-formula, cor:theta-pos}\lean{F_imag_axis_pos, G_imag_axis_pos}
+\begin{lemma}\label{lemma:F-G-pos}\uses{thm:ramanujan-formula, cor:theta-pos}\lean{F_imag_axis_pos, G_imag_axis_pos}\leanok
 For all $t > 0$, we have $F(it) > 0$ and $G(it) > 0$.
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
 By Ramanujan's identity \eqref{eqn:DE4}, we have $F(z) = 9 E_4'(z)^2$ and
 \begin{equation}
     F(it) = 9E_4'(it)^2 = 9 \left(240\sum_{n \geq 1} n \sigma_3(n) e^{-2 \pi n t} \right)^{2} > 0.
