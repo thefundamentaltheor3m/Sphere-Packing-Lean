@@ -12,7 +12,7 @@ import SpherePacking.MagicFunction.a.IntegralEstimates.I5
 import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
 import SpherePacking.MagicFunction.RealDecay
-import SpherePacking.MagicFunction.Segments
+import SpherePacking.MagicFunction.a.Integrability.ProductIntegrability
 
 /-! # Integrability
 

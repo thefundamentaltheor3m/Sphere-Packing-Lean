@@ -27,8 +27,6 @@ import SpherePacking.ForMathlib.ZLattice
 import SpherePacking.ForMathlib.tprod
 import SpherePacking.MagicFunction.CuspPath
 import SpherePacking.MagicFunction.IntegralParametrisations
-import SpherePacking.MagicFunction.Segments
-import SpherePacking.MagicFunction.Fubini
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.RealDecay
 import SpherePacking.MagicFunction.a.Basic

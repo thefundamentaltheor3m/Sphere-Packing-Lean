@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 import SpherePacking.ModularForms.PhiTransform
 import SpherePacking.MagicFunction.RealDecay
-import SpherePacking.MagicFunction.Segments
+import SpherePacking.MagicFunction.a.Integrability.ProductIntegrability
 import Mathlib.MeasureTheory.Integral.IntegrableOn
 
 /-!
