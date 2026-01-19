@@ -435,5 +435,3 @@ theorem tendsto_rpow_mul_resToImagAxis_of_fourier_shift
     Tendsto (fun t : ℝ => t ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
   tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity)
     (isBigO_atImInfty_of_fourier_shift hn₀ hc hF ha) s
-
-#min_imports

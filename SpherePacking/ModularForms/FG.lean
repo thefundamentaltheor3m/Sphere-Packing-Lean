@@ -658,6 +658,7 @@ lemma SerreDer_22_L₁₀_SerreDer :
     _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
 
 /- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
+-- TODO: prove this with `fun_prop` after registering relevant `ResToImagAxis.Real` lemmas
 lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ := by
   rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, ResToImagAxis.Real]
   intro t ht
@@ -665,6 +666,7 @@ lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ := by
   simp only [Function.resToImagAxis_apply]
   sorry
 
+-- TODO: prove this with `fun_prop` after finishing the proof of `MLDE_F` and `MLDE_G`
 lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
   refine And.intro SerreDer_22_L₁₀_real ?_
   intro t ht
