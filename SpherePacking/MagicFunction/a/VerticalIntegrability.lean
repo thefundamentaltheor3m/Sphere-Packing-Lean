@@ -338,19 +338,9 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
           apply mul_le_mul_of_nonneg_left _ (by nlinarith)
           -- Show ‖φ₀(S•w)‖ * t² * exp(-πrt) ≤ verticalBound using ‖w‖ ≥ t
           -- Strategy: Use hS_bound with ‖w‖ ≥ t to replace 1/‖w‖ terms with 1/t
-          -- Then multiply out to match verticalBound structure
-          -- Step 1: Show ‖w‖ ≥ t
           have hw_norm_ge : t ≤ ‖(w : ℂ)‖ := by
-            have hw_eq : (w : ℂ) = a + Complex.I * t := rfl
-            rw [hw_eq]
-            have hre : (↑a + Complex.I * ↑t : ℂ).re = a := by simp
-            have him : (↑a + Complex.I * ↑t : ℂ).im = t := by simp
-            rw [Complex.norm_eq_sqrt_sq_add_sq, hre, him]
-            have h1 : t^2 ≤ a^2 + t^2 := by nlinarith [sq_nonneg a]
-            have h2 : Real.sqrt (t^2) ≤ Real.sqrt (a^2 + t^2) := Real.sqrt_le_sqrt h1
-            rwa [Real.sqrt_sq (le_of_lt ht_pos)] at h2
-          have hw_norm_pos : 0 < ‖(w : ℂ)‖ := lt_of_lt_of_le ht_pos hw_norm_ge
-          -- Step 2: Strengthen hS_bound using ‖w‖ ≥ t
+            simpa [hw_im, abs_of_pos ht_pos] using abs_im_le_norm (w : ℂ)
+          -- Strengthen hS_bound using ‖w‖ ≥ t
           have hS_bound' : ‖φ₀ (ModularGroup.S • w)‖ ≤
               hb.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * hb.C₂
               + (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t) := by
@@ -369,8 +359,7 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
               apply mul_le_mul_of_nonneg_left _ (by positivity : 0 ≤ π^2)
               exact sq_le_sq' (by linarith) hw_norm_ge
             linarith
-          -- Step 3: Multiply by t² * exp(-πrt) and simplify
-          have ht_ne : t ≠ 0 := ne_of_gt ht_pos
+          -- Multiply by t² * exp(-πrt) and simplify to verticalBound
           calc ‖φ₀ (ModularGroup.S • w)‖ * t^2 * Real.exp (-π * r * t)
               ≤ (hb.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * hb.C₂
                   + (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t))
