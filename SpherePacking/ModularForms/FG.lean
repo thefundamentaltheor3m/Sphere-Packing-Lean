@@ -221,9 +221,8 @@ lemma sigma_qexp_deriv_bound_generic (k : ℕ) :
   intro K hK hKc
   obtain ⟨u₀, hu₀_sum, hu₀_bound⟩ := iter_deriv_comp_bound3 K hK hKc (k + 2)
   refine ⟨fun n => u₀ n, hu₀_sum.subtype _, fun n z => ?_⟩
-  have hpow := hu₀_bound n z
-  simp only [abs_of_pos Real.pi_pos] at hpow
-  have h2pi : (1 : ℝ) ≤ 2 * π := by linarith [Real.two_le_pi]
+  have hpow : (2 * π * n) ^ (k + 2) * ‖Complex.exp (2 * π * Complex.I * n * z.1)‖ ≤ u₀ n := by
+    simpa [abs_of_pos Real.pi_pos] using hu₀_bound n z
   calc ‖(ArithmeticFunction.sigma k n : ℂ) * (2 * π * Complex.I * n) *
           Complex.exp (2 * π * Complex.I * n * z.1)‖
       = ‖(ArithmeticFunction.sigma k n : ℂ)‖ * ‖(2 * π * Complex.I * n : ℂ)‖ *
@@ -242,7 +241,8 @@ lemma sigma_qexp_deriv_bound_generic (k : ℕ) :
           _ ≤ (2 * π) ^ (k + 2) * (n : ℝ) ^ (k + 2) := by
               apply mul_le_mul_of_nonneg_right _ (by positivity)
               calc (2 * π) = (2 * π) ^ 1 := (pow_one _).symm
-                _ ≤ (2 * π) ^ (k + 2) := pow_le_pow_right₀ h2pi (by omega)
+                _ ≤ (2 * π) ^ (k + 2) :=
+                    pow_le_pow_right₀ (by linarith [Real.two_le_pi]) (by omega : 1 ≤ k + 2)
           _ = (2 * π * ↑↑n) ^ (k + 2) := by ring
     _ ≤ u₀ n := hpow
 
