@@ -1,14 +1,7 @@
-import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
-import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
-import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
-import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
-import Mathlib.NumberTheory.ModularForms.SlashActions
 import Mathlib.NumberTheory.ModularForms.QExpansion
-import Mathlib.Tactic.FunProp
-import Mathlib.Tactic.Positivity
 
-import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ForMathlib.AtImInfty
+import SpherePacking.ModularForms.SlashActionAuxil
 
 open UpperHalfPlane hiding I
 
@@ -180,17 +173,6 @@ theorem ResToImagAxis.Pos.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
 @[fun_prop]
 theorem ResToImagAxis.Pos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Pos F)
     (hc : 0 < c) : ResToImagAxis.Pos (c • F) := by
-  rw [Pos]
-  refine ⟨Real.smul hF.1, fun t ht ↦ ?_⟩
-  have hFreal := hF.1 t ht
-  have hFpos := hF.2 t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFpos
-  simp [ResToImagAxis, ht, mul_pos hc hFpos]
-
-@[fun_prop]
-theorem ResToImagAxis.Pos.smul' {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Pos F)
-    (hc : 0 < c) : ResToImagAxis.Pos (fun z => c • F z) := by
   rw [Pos]
   refine ⟨Real.smul hF.1, fun t ht ↦ ?_⟩
   have hFreal := hF.1 t ht
@@ -453,3 +435,5 @@ theorem tendsto_rpow_mul_resToImagAxis_of_fourier_shift
     Tendsto (fun t : ℝ => t ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
   tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity)
     (isBigO_atImInfty_of_fourier_shift hn₀ hc hF ha) s
+
+#min_imports
