@@ -27,7 +27,18 @@ open scoped Function UpperHalfPlane
 
 namespace MagicFunction.a.Integrability
 
-/-! ### Helper lemmas for super-exponential decay -/
+/-! ### Helper lemmas for I² simplification and super-exponential decay -/
+
+/-- Key identity: π * I * r * (I * t) = -π * r * t (since I² = -1). -/
+private lemma pi_I_mul_I (r t : ℝ) : (↑π * I * ↑r * (I * ↑t) : ℂ) = -(↑π * ↑r * ↑t) := by
+  ring_nf
+  simp only [I_sq]
+  ring
+
+/-- Exponential form: cexp(π * I * r * (I * t)) = cexp(-π * r * t). -/
+private lemma cexp_pi_I_mul_I (r t : ℝ) :
+    cexp (↑π * I * ↑r * (I * ↑t)) = cexp (-(↑π * ↑r * ↑t : ℂ)) := by
+  rw [pi_I_mul_I]
 
 /-- For t ∈ (0, 1], exp(-2π/t) * t² ≤ exp(-2π).
 Uses exp(-2π/t) ≤ exp(-2π) from `exp_neg_div_le_of_le_one` and t² ≤ 1. -/
@@ -42,69 +53,39 @@ lemma exp_neg_two_pi_div_mul_sq_le {t : ℝ} (ht_pos : 0 < t) (ht_le : t ≤ 1) 
 /-- For t ∈ [1, ∞), the real integrand Φ₆ r t equals the g function from IntegralEstimates.I₆. -/
 lemma Φ₆_eq_I₆_g (r : ℝ) (t : ℝ) (ht : t ∈ Ici 1) : Φ₆ r t = g r t := by
   unfold Φ₆ Φ₆' g
-  simp only [z₆'_eq_of_mem ht]
-  have h : (π : ℂ) * I * ↑r * (I * ↑t) = -((π : ℂ) * ↑r * ↑t) := by
-    ring_nf
-    simp only [I_sq]
-    ring
-  rw [h]
-  ring
+  simp only [z₆'_eq_of_mem ht, pi_I_mul_I]
+  ring_nf
 
 /-- Φ₁ equals Φ₅ times a unit-modulus phase factor cexp(-πIr).
-
-The key insight is that z₁' t + 1 = I*t = z₅' t, so the φ₀'' and z² factors
-are identical, and only the exponential differs by the phase cexp(-πIr). -/
+The key insight is that z₁' t + 1 = I*t = z₅' t. -/
 lemma Φ₁_eq_Φ₅_mul_phase {r : ℝ} {t : ℝ} (ht : t ∈ Icc 0 1) :
     Φ₁ r t = Φ₅ r t * cexp (-π * I * r) := by
   simp only [Φ₁, Φ₅, Φ₁', Φ₅', z₁'_eq_of_mem ht, z₅'_eq_of_mem ht]
-  -- z₁' t + 1 = -1 + I*t + 1 = I*t, and z₅' t = I*t
   have h_add : (-1 : ℂ) + I * ↑t + 1 = I * ↑t := by ring
-  rw [h_add]
-  -- The exponential factors: cexp(π*I*r*(-1 + I*t)) = cexp(-π*I*r) * cexp(-π*r*t)
-  -- and cexp(π*I*r*(I*t)) = cexp(-π*r*t)
-  have h_exp1 :
-      cexp (↑π * I * ↑r * (-1 + I * ↑t)) = cexp (-↑π * I * ↑r) * cexp (-↑π * ↑r * ↑t) := by
+  have h_exp1 : cexp (↑π * I * ↑r * (-1 + I * ↑t)) =
+      cexp (-↑π * I * ↑r) * cexp (-↑π * ↑r * ↑t) := by
     rw [← Complex.exp_add]
     congr 1
-    have : I * I = (-1 : ℂ) := I_mul_I
-    calc ↑π * I * ↑r * (-1 + I * ↑t) = -↑π * I * ↑r + ↑π * (I * I) * ↑r * ↑t := by ring
-      _ = -↑π * I * ↑r + ↑π * (-1) * ↑r * ↑t := by rw [this]
-      _ = -↑π * I * ↑r + (-↑π * ↑r * ↑t) := by ring
-  have h_exp5 : cexp (↑π * I * ↑r * (I * ↑t)) = cexp (-↑π * ↑r * ↑t) := by
-    congr 1
-    have : I * I = (-1 : ℂ) := I_mul_I
-    calc ↑π * I * ↑r * (I * ↑t) = ↑π * (I * I) * ↑r * ↑t := by ring
-      _ = ↑π * (-1) * ↑r * ↑t := by rw [this]
-      _ = -↑π * ↑r * ↑t := by ring
-  rw [h_exp1, h_exp5]
+    ring_nf
+    simp only [I_sq]
+    ring
+  rw [h_add, h_exp1, cexp_pi_I_mul_I]
   ring
 
 /-- Φ₃ equals Φ₅ times a unit-modulus phase factor cexp(πIr).
-
-The key insight is that z₃' t - 1 = I*t = z₅' t, so the φ₀'' and z² factors
-are identical, and only the exponential differs by the phase cexp(πIr). -/
+The key insight is that z₃' t - 1 = I*t = z₅' t. -/
 lemma Φ₃_eq_Φ₅_mul_phase {r : ℝ} {t : ℝ} (ht : t ∈ Icc 0 1) :
     Φ₃ r t = Φ₅ r t * cexp (π * I * r) := by
   simp only [Φ₃, Φ₅, Φ₃', Φ₅', z₃'_eq_of_mem ht, z₅'_eq_of_mem ht]
-  -- z₃' t - 1 = 1 + I*t - 1 = I*t, and z₅' t = I*t
   have h_sub : (1 : ℂ) + I * ↑t - 1 = I * ↑t := by ring
-  rw [h_sub]
-  -- The exponential factors: cexp(π*I*r*(1 + I*t)) = cexp(π*I*r) * cexp(-π*r*t)
-  -- and cexp(π*I*r*(I*t)) = cexp(-π*r*t)
-  have h_exp3 : cexp (↑π * I * ↑r * (1 + I * ↑t)) = cexp (↑π * I * ↑r) * cexp (-↑π * ↑r * ↑t) := by
+  have h_exp3 : cexp (↑π * I * ↑r * (1 + I * ↑t)) =
+      cexp (↑π * I * ↑r) * cexp (-↑π * ↑r * ↑t) := by
     rw [← Complex.exp_add]
     congr 1
-    have : I * I = (-1 : ℂ) := I_mul_I
-    calc ↑π * I * ↑r * (1 + I * ↑t) = ↑π * I * ↑r + ↑π * (I * I) * ↑r * ↑t := by ring
-      _ = ↑π * I * ↑r + ↑π * (-1) * ↑r * ↑t := by rw [this]
-      _ = ↑π * I * ↑r + (-↑π * ↑r * ↑t) := by ring
-  have h_exp5 : cexp (↑π * I * ↑r * (I * ↑t)) = cexp (-↑π * ↑r * ↑t) := by
-    congr 1
-    have : I * I = (-1 : ℂ) := I_mul_I
-    calc ↑π * I * ↑r * (I * ↑t) = ↑π * (I * I) * ↑r * ↑t := by ring
-      _ = ↑π * (-1) * ↑r * ↑t := by rw [this]
-      _ = -↑π * ↑r * ↑t := by ring
-  rw [h_exp3, h_exp5]
+    ring_nf
+    simp only [I_sq]
+    ring
+  rw [h_sub, h_exp3, cexp_pi_I_mul_I]
   ring
 
 /-- Norm bound for Φ₅: ‖Φ₅ r t‖ ≤ C₀ * exp(-2π) for t ∈ (0, 1] and r ≥ 0.
