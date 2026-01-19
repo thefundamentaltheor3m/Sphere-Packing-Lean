@@ -124,14 +124,9 @@ lemma im_neg_inv_t_add_I (t : ℝ) (ht : t ∈ Icc 0 1) : 1/2 ≤ (-1 / (t + I))
 
 /-- For t ∈ [0,1], Im(-1/(-t + I)) ≥ 1/2. Same formula as im_neg_inv_t_add_I since (-t)² = t². -/
 lemma im_neg_inv_neg_t_add_I (t : ℝ) (ht : t ∈ Icc 0 1) : 1/2 ≤ (-1 / (-t + I)).im := by
-  have hns : normSq (-t + I) = t^2 + 1 := by simp [normSq, sq]
-  simp only [neg_div, neg_im, one_div, inv_im, add_im, neg_im, ofReal_im, I_im, neg_neg, hns]
-  have ht2 : t^2 ≤ 1 := by nlinarith [ht.1, ht.2, sq_nonneg t]
-  have h_pos : 0 < t^2 + 1 := by positivity
-  have h_ge : t^2 + 1 ≤ 2 := by linarith
-  calc 2⁻¹ = (2 : ℝ)⁻¹ := rfl
-    _ ≤ (t^2 + 1)⁻¹ := by rwa [inv_le_inv₀ (by positivity) h_pos]
-    _ = (-0 + 1) / (t^2 + 1) := by ring
+  rw [show (-↑t : ℂ) + I = ↑(-t) + I by simp, im_neg_inv_add_I_eq (-t), neg_sq,
+    one_div_le_one_div (by positivity) (by positivity : (0 : ℝ) < t^2 + 1)]
+  nlinarith [ht.1, ht.2, sq_nonneg t]
 
 /-- For t ∈ [0,1], |(t + I)²| ≤ 2. -/
 lemma norm_sq_t_add_I_le (t : ℝ) (ht : t ∈ Icc 0 1) : ‖(t + I) ^ 2‖ ≤ 2 := by
@@ -326,15 +321,12 @@ lemma Φ₂_prod_norm_bound : ∃ C > 0, ∀ x : V, ∀ t ∈ Icc (0 : ℝ) 1,
   have h_φ : ‖φ₀'' (-1 / (t + I))‖ ≤ M := by apply hM_le; exact ⟨t, ht, rfl⟩
   -- |(t + I)²| ≤ 2
   have h_sq : ‖(↑t + I) ^ 2‖ ≤ 2 := norm_sq_t_add_I_le t ht
-  -- Exponential factor: cexp(π*I*r*(-1+t+I)) where r = ‖x‖²
-  -- = cexp(-π*I*r) * cexp(π*I*r*t) * cexp(-π*r) by expanding -1+t+I and using I²=-1
+  -- Exponential factor: cexp(π*I*r*(-1+t+I)) = exp(-πr) * phase
   have h_exp : ‖cexp (↑π * I * ↑(‖x‖ ^ 2) * (-1 + ↑t + I))‖ = Real.exp (-π * ‖x‖^2) := by
-    -- Expand and simplify the exponent
     have h_eq : (↑π * I * ↑(‖x‖ ^ 2) * (-1 + ↑t + I) : ℂ) =
-        (π * ‖x‖^2 * (t - 1) : ℝ) * I + ((-π * ‖x‖^2 : ℝ) : ℂ) := by
-      apply Complex.ext <;> simp [I_re, I_im, ofReal_re, ofReal_im] <;> ring
-    rw [h_eq, Complex.exp_add, Complex.norm_mul]
-    simp only [Complex.norm_exp_ofReal_mul_I, norm_exp_ofReal, one_mul]
+        (π * ‖x‖^2 * (t - 1) : ℝ) * I + ↑(-π * ‖x‖^2) := by apply Complex.ext <;> simp <;> ring
+    simp only [h_eq, Complex.exp_add, Complex.norm_mul, Complex.norm_exp_ofReal_mul_I,
+      norm_exp_ofReal, one_mul]
   have h1 : ‖φ₀'' (-1 / (↑t + I))‖ * ‖(↑t + I) ^ 2‖ ≤ M * 2 := by
     calc ‖φ₀'' (-1 / (↑t + I))‖ * ‖(↑t + I) ^ 2‖
         ≤ M * ‖(↑t + I) ^ 2‖ := mul_le_mul_of_nonneg_right h_φ (norm_nonneg _)
@@ -371,24 +363,9 @@ theorem Φ₂_prod_integrable :
       (gaussian_integrable_R8 π Real.pi_pos).const_mul C
     exact h_gauss.comp_fst (volume.restrict (Icc 0 1))
   -- Step 3: The bound ‖I₂_integrand‖ ≤ g holds a.e. on V × [0,1]
-  -- The product measure with restriction only sees t ∈ [0,1], where the bound holds
   have h_bound : ∀ᵐ p ∂(volume.prod (volume.restrict (Icc 0 1))), ‖I₂_integrand p‖ ≤ g p := by
-    -- The bound holds for all (x, t) with t ∈ [0,1], and the product measure only sees such t
-    -- First show that a.e. under restricted measure, t ∈ [0,1]
-    have h_ae_snd : ∀ᵐ (t : ℝ) ∂(volume.restrict (Icc 0 1)), t ∈ Icc 0 1 := by
-      rw [ae_restrict_iff' measurableSet_Icc]
-      exact ae_of_all _ (fun _ h => h)
-    -- For product measures, use ae_prod_iff_ae_ae with measurability of the bound set
-    have h_meas_bound : MeasurableSet {p : V × ℝ | ‖I₂_integrand p‖ ≤ g p} := by
-      apply measurableSet_le
-      · exact Φ₂_prod_continuous.norm.measurable
-      · exact (continuous_const.mul (Real.continuous_exp.comp
-          (continuous_const.mul ((continuous_norm.comp continuous_fst).pow 2)))).measurable
-    rw [Measure.ae_prod_iff_ae_ae h_meas_bound]
-    apply ae_of_all
-    intro x
-    filter_upwards [h_ae_snd] with t ht
-    exact hC x t ht
+    rw [volume_prod_restrict_eq, ae_restrict_iff' (MeasurableSet.univ.prod measurableSet_Icc)]
+    exact ae_of_all _ (fun ⟨x, t⟩ ⟨_, ht⟩ => hC x t ht)
   exact Integrable.mono' h_g_int h_meas h_bound
 
 /-- The I₄ integrand is continuous as a function V × ℝ → ℂ.
@@ -426,13 +403,12 @@ lemma Φ₄_prod_norm_bound : ∃ C > 0, ∀ x : V, ∀ t ∈ Icc (0 : ℝ) 1,
   have h_neg1 : ‖(-1 : ℂ)‖ = 1 := by simp
   have h_φ : ‖φ₀'' (-1 / (-t + I))‖ ≤ M := by apply hM_le; exact ⟨t, ht, rfl⟩
   have h_sq : ‖(-↑t + I) ^ 2‖ ≤ 2 := norm_sq_neg_t_add_I_le t ht
-  -- Exponential factor: cexp(π*I*r*(1-t+I)) where r = ‖x‖²
+  -- Exponential factor: cexp(π*I*r*(1-t+I)) = exp(-πr) * phase
   have h_exp : ‖cexp (↑π * I * ↑(‖x‖ ^ 2) * (1 - ↑t + I))‖ = Real.exp (-π * ‖x‖^2) := by
     have h_eq : (↑π * I * ↑(‖x‖ ^ 2) * (1 - ↑t + I) : ℂ) =
-        (π * ‖x‖^2 * (1 - t) : ℝ) * I + ((-π * ‖x‖^2 : ℝ) : ℂ) := by
-      apply Complex.ext <;> simp [I_re, I_im, ofReal_re, ofReal_im] <;> ring
-    rw [h_eq, Complex.exp_add, Complex.norm_mul]
-    simp only [Complex.norm_exp_ofReal_mul_I, norm_exp_ofReal, one_mul]
+        (π * ‖x‖^2 * (1 - t) : ℝ) * I + ↑(-π * ‖x‖^2) := by apply Complex.ext <;> simp <;> ring
+    simp only [h_eq, Complex.exp_add, Complex.norm_mul, Complex.norm_exp_ofReal_mul_I,
+      norm_exp_ofReal, one_mul]
   have h1 : ‖φ₀'' (-1 / (-↑t + I))‖ * ‖(-↑t + I) ^ 2‖ ≤ M * 2 := by
     calc ‖φ₀'' (-1 / (-↑t + I))‖ * ‖(-↑t + I) ^ 2‖
         ≤ M * ‖(-↑t + I) ^ 2‖ := mul_le_mul_of_nonneg_right h_φ (norm_nonneg _)
@@ -463,19 +439,8 @@ theorem Φ₄_prod_integrable :
       (gaussian_integrable_R8 π Real.pi_pos).const_mul C
     exact h_gauss.comp_fst (volume.restrict (Icc 0 1))
   have h_bound : ∀ᵐ p ∂(volume.prod (volume.restrict (Icc 0 1))), ‖I₄_integrand p‖ ≤ g p := by
-    have h_ae_snd : ∀ᵐ (t : ℝ) ∂(volume.restrict (Icc 0 1)), t ∈ Icc 0 1 := by
-      rw [ae_restrict_iff' measurableSet_Icc]
-      exact ae_of_all _ (fun _ h => h)
-    have h_meas_bound : MeasurableSet {p : V × ℝ | ‖I₄_integrand p‖ ≤ g p} := by
-      apply measurableSet_le
-      · exact Φ₄_prod_continuous.norm.measurable
-      · exact (continuous_const.mul (Real.continuous_exp.comp
-          (continuous_const.mul ((continuous_norm.comp continuous_fst).pow 2)))).measurable
-    rw [Measure.ae_prod_iff_ae_ae h_meas_bound]
-    apply ae_of_all
-    intro x
-    filter_upwards [h_ae_snd] with t ht
-    exact hC x t ht
+    rw [volume_prod_restrict_eq, ae_restrict_iff' (MeasurableSet.univ.prod measurableSet_Icc)]
+    exact ae_of_all _ (fun ⟨x, t⟩ ⟨_, ht⟩ => hC x t ht)
   exact Integrable.mono' h_g_int h_meas h_bound
 
 end HorizontalSegments
@@ -774,52 +739,16 @@ lemma Φ₅_prod_norm_bound : ∃ C > 0, ∀ x : V, ∀ t : ℝ, 0 < t → t ≤
     ‖I₅_integrand (x, t)‖ ≤ C * Real.exp (-2 * π / t) * t ^ 2 * Real.exp (-π * ‖x‖^2 * t) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀''_cusp_bound
   refine ⟨C₀, hC₀_pos, fun x t ht ht' => ?_⟩
-  unfold I₅_integrand Φ₅ Φ₅'
-  -- After unfolding: I * (φ₀''(-1/z₅' t) * (z₅' t)^2 * cexp(π*I*r*z₅' t))
-  -- Convert z₅' t to I * t for t ∈ (0, 1]
-  have ht_mem : t ∈ Icc 0 1 := ⟨le_of_lt ht, ht'⟩
-  have hz₅ : z₅' t = I * t := z₅'_eq_of_mem ht_mem
-  rw [hz₅]
-  -- Simplify the exponential: π * I * r * (I * t) = -π * r * t
-  have h_exp_eq : π * I * ↑(‖x‖^2) * (I * t) = -π * ‖x‖^2 * t := by
-    have h_I_sq : (I : ℂ) ^ 2 = -1 := I_sq
-    ring_nf
-    rw [h_I_sq]
-    simp only [ofReal_pow]
-    ring
-  -- Simplify (I * t)^2 = -t^2
-  have h_z_sq : (I * (t : ℂ)) ^ 2 = -(t^2 : ℂ) := by
-    have h_I_sq : (I : ℂ) ^ 2 = -1 := I_sq
-    ring_nf
-    rw [h_I_sq]
-    ring
-  simp only [h_exp_eq, h_z_sq, neg_mul, mul_neg]
-  -- Now the structure is: -(I * (φ₀''(-1/(It)) * t^2 * cexp(-π*‖x‖^2*t)))
-  -- First eliminate the outer negation, then the multiplications
-  simp only [norm_neg]
-  -- Structure: I * (φ₀'' * (t^2 * cexp))
-  rw [norm_mul, norm_mul, norm_mul]
-  have h_I : ‖(I : ℂ)‖ = 1 := Complex.norm_I
-  have h_φ := hC₀ t ht ht'
-  -- Gaussian factor - note the parenthesization after simp
-  have h_gauss : ‖cexp (-((π : ℂ) * ‖x‖^2 * t))‖ = Real.exp (-π * ‖x‖^2 * t) := by
-    rw [Complex.norm_exp]
-    congr 1
-    have h1 : (‖x‖^2 : ℂ).re = ‖x‖^2 := by simp [sq]
-    have h2 : (‖x‖^2 : ℂ).im = 0 := by simp [sq]
-    simp only [neg_re, mul_re, ofReal_re, ofReal_im, mul_zero, sub_zero, h1, h2, neg_mul]
-  -- t² factor
-  have h_t2 : ‖(t : ℂ) ^ 2‖ = t ^ 2 := by
-    simp only [norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht]
-  rw [h_I, h_t2, h_gauss, one_mul]
-  -- Goal: ‖φ₀''‖ * t^2 * exp(-π*‖x‖²*t) ≤ C₀ * exp(-(2*π)/t) * t^2 * exp(-(π*‖x‖²*t))
-  -- h_φ has C₀ * exp(-2*π/t) which equals C₀ * exp(-(2*π)/t)
-  have h_exp_match : Real.exp (-π * ‖x‖^2 * t) = Real.exp (-(π * ‖x‖^2 * t)) := by ring_nf
-  rw [h_exp_match]
-  have h_φ' : ‖φ₀'' (-1 / (I * t))‖ ≤ C₀ * Real.exp (-(2 * π) / t) := by
-    convert h_φ using 2
-    ring_nf
-  gcongr
+  simp only [I₅_integrand, Φ₅, Φ₅', z₅'_eq_of_mem ⟨le_of_lt ht, ht'⟩, I_mul_sq, cexp_pi_I_mul_I,
+    neg_mul, mul_neg, norm_neg, norm_mul, Complex.norm_I, one_mul, norm_pow,
+    Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht]
+  -- Simplify Gaussian norm
+  have h_gauss : ‖cexp (-(↑π * ↑(‖x‖^2) * ↑t))‖ = Real.exp (-π * ‖x‖^2 * t) := by
+    simp only [← ofReal_neg, ← ofReal_mul, norm_exp_ofReal]; ring_nf
+  rw [h_gauss, show -(π * ‖x‖^2 * t) = -π * ‖x‖^2 * t by ring,
+    show -(2 * π) / t = -2 * π / t by ring]
+  exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (hC₀ t ht ht') (sq_nonneg t))
+    (Real.exp_pos _).le
 
 /-- For fixed t, the x-slice of I₅_integrand is continuous.
 I₅_integrand (x, t) = I * (φ₀''(-1/(z₅' t)) * (z₅' t)² * cexp(π*I*‖x‖²*(z₅' t)))
