@@ -152,74 +152,38 @@ lemma norm_Φ₃_le {r : ℝ} (hr : r ≥ 0) :
   rw [Φ₃_eq_Φ₅_mul_phase (mem_Icc_of_Ioc ht), norm_mul, norm_cexp_pi_I_mul, mul_one]
   exact hC₀_bound t ht
 
-/-- Φ₁ is integrable on (0, 1].
-
-Uses `norm_Φ₁_le` to bound ‖Φ₁ r t‖ by a constant C₀ * exp(-2π), which is
-integrable on the finite measure space (0, 1]. -/
-theorem Φ₁_integrableOn {r : ℝ} (hr : r ≥ 0) : IntegrableOn (Φ₁ r)
-    (Ioc (0 : ℝ) 1) volume := by
-  -- Get the constant bound
-  obtain ⟨C₀, _, hC₀_bound⟩ := norm_Φ₁_le hr
-  -- The constant C₀ * exp(-2π) is integrable on Ioc 0 1 (finite measure)
-  have h_const_int : IntegrableOn (fun _ : ℝ => C₀ * rexp (-2 * π)) (Ioc 0 1) volume := by
-    refine integrableOn_const ?_ ?_
-    · simp [Real.volume_Ioc]
-    · exact ENNReal.coe_ne_top
-  -- Apply Integrable.mono' with the constant bound
+/-- Helper: A function bounded by a constant on Ioc 0 1 is integrable there. -/
+private theorem integrableOn_Ioc_of_norm_le_const {f : ℝ → ℂ} {C : ℝ}
+    (hf_cont : ContinuousOn f (Ioc 0 1))
+    (hf_bound : ∀ t ∈ Ioc 0 1, ‖f t‖ ≤ C) : IntegrableOn f (Ioc 0 1) volume := by
+  have h_const_int : IntegrableOn (fun _ : ℝ => C) (Ioc 0 1) volume :=
+    integrableOn_const (by simp [Real.volume_Ioc]) ENNReal.coe_ne_top
   refine Integrable.mono' h_const_int ?_ ?_
-  · exact ContinuousOn.aestronglyMeasurable Φ₁_contDiffOn.continuousOn measurableSet_Ioc
+  · exact hf_cont.aestronglyMeasurable measurableSet_Ioc
   · rw [ae_restrict_iff' measurableSet_Ioc]
-    refine ae_of_all _ fun t ht => ?_
-    exact hC₀_bound t ht
+    exact ae_of_all _ hf_bound
+
+/-- Φ₁ is integrable on (0, 1]. -/
+theorem Φ₁_integrableOn {r : ℝ} (hr : r ≥ 0) : IntegrableOn (Φ₁ r) (Ioc 0 1) volume := by
+  obtain ⟨C₀, _, hC₀_bound⟩ := norm_Φ₁_le hr
+  exact integrableOn_Ioc_of_norm_le_const Φ₁_contDiffOn.continuousOn hC₀_bound
 
 theorem Φ₂_integrableOn {r : ℝ} (_hr : r ≥ 0) : IntegrableOn (Φ₂ r)
     (Icc (0 : ℝ) 1) volume :=
   Φ₂_contDiffOn.continuousOn.integrableOn_Icc
 
-/-- Φ₃ is integrable on (0, 1].
-
-Uses `norm_Φ₃_le` to bound ‖Φ₃ r t‖ by a constant C₀ * exp(-2π), which is
-integrable on the finite measure space (0, 1]. -/
-theorem Φ₃_integrableOn {r : ℝ} (hr : r ≥ 0) : IntegrableOn (Φ₃ r)
-    (Ioc (0 : ℝ) 1) volume := by
-  -- Get the constant bound
+/-- Φ₃ is integrable on (0, 1]. -/
+theorem Φ₃_integrableOn {r : ℝ} (hr : r ≥ 0) : IntegrableOn (Φ₃ r) (Ioc 0 1) volume := by
   obtain ⟨C₀, _, hC₀_bound⟩ := norm_Φ₃_le hr
-  -- The constant C₀ * exp(-2π) is integrable on Ioc 0 1 (finite measure)
-  have h_const_int : IntegrableOn (fun _ : ℝ => C₀ * rexp (-2 * π)) (Ioc 0 1) volume := by
-    refine integrableOn_const ?_ ?_
-    · simp [Real.volume_Ioc]
-    · exact ENNReal.coe_ne_top
-  -- Apply Integrable.mono' with the constant bound
-  refine Integrable.mono' h_const_int ?_ ?_
-  · exact ContinuousOn.aestronglyMeasurable Φ₃_contDiffOn.continuousOn measurableSet_Ioc
-  · rw [ae_restrict_iff' measurableSet_Ioc]
-    refine ae_of_all _ fun t ht => ?_
-    exact hC₀_bound t ht
+  exact integrableOn_Ioc_of_norm_le_const Φ₃_contDiffOn.continuousOn hC₀_bound
 
-theorem Φ₄_integrableOn {r : ℝ} (_hr : r ≥ 0) : IntegrableOn (Φ₄ r)
-    (Icc (0 : ℝ) 1) volume :=
+theorem Φ₄_integrableOn {r : ℝ} (_hr : r ≥ 0) : IntegrableOn (Φ₄ r) (Icc 0 1) volume :=
   Φ₄_contDiffOn.continuousOn.integrableOn_Icc
 
-/-- Φ₅ is integrable on (0, 1].
-
-Uses `norm_Φ₅_le` to bound ‖Φ₅ r t‖ by a constant C₀ * exp(-2π), which is
-integrable on the finite measure space (0, 1]. -/
-theorem Φ₅_integrableOn {r : ℝ} (hr : r ≥ 0) : IntegrableOn (Φ₅ r)
-    (Ioc (0 : ℝ) 1) volume := by
-  -- Get the constant bound
-  obtain ⟨C₀, hC₀_pos, hC₀_bound⟩ := norm_Φ₅_le hr
-  -- The constant C₀ * exp(-2π) is integrable on Ioc 0 1 (finite measure)
-  have h_const_int : IntegrableOn (fun _ : ℝ => C₀ * rexp (-2 * π)) (Ioc 0 1) volume := by
-    refine integrableOn_const ?_ ?_
-    · simp [Real.volume_Ioc]
-    · exact ENNReal.coe_ne_top
-  -- Apply Integrable.mono' with the constant bound
-  -- (IntegrableOn is Integrable on restricted measure)
-  refine Integrable.mono' h_const_int ?_ ?_
-  · exact ContinuousOn.aestronglyMeasurable Φ₅_contDiffOn.continuousOn measurableSet_Ioc
-  · rw [ae_restrict_iff' measurableSet_Ioc]
-    refine ae_of_all _ fun t ht => ?_
-    exact hC₀_bound t ht
+/-- Φ₅ is integrable on (0, 1]. -/
+theorem Φ₅_integrableOn {r : ℝ} (hr : r ≥ 0) : IntegrableOn (Φ₅ r) (Ioc 0 1) volume := by
+  obtain ⟨C₀, _, hC₀_bound⟩ := norm_Φ₅_le hr
+  exact integrableOn_Ioc_of_norm_le_const Φ₅_contDiffOn.continuousOn hC₀_bound
 
 theorem Φ₆_integrableOn {r : ℝ} (hr : r ≥ 0) : IntegrableOn (Φ₆ r)
     (Ici (1 : ℝ)) volume := by
