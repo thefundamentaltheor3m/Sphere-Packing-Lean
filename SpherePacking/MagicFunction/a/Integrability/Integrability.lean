@@ -40,6 +40,20 @@ private lemma cexp_pi_I_mul_I (r t : ℝ) :
     cexp (↑π * I * ↑r * (I * ↑t)) = cexp (-(↑π * ↑r * ↑t : ℂ)) := by
   rw [pi_I_mul_I]
 
+/-- Square of I*t: (I * t)² = -t² (since I² = -1). -/
+private lemma I_mul_sq (t : ℝ) : (I * ↑t : ℂ) ^ 2 = -(↑t : ℂ) ^ 2 := by
+  rw [mul_pow, I_sq]
+  ring
+
+/-- Norm of cexp of pure imaginary is 1 (special case: ±π * I * r). -/
+private lemma norm_cexp_pi_I_mul (r : ℝ) : ‖cexp (↑π * I * ↑r)‖ = 1 := by
+  have h : (↑π * I * ↑r : ℂ) = ↑(π * r) * I := by push_cast; ring
+  rw [h, Complex.norm_exp_ofReal_mul_I]
+
+private lemma norm_cexp_neg_pi_I_mul (r : ℝ) : ‖cexp (-↑π * I * ↑r)‖ = 1 := by
+  have h : (-↑π * I * ↑r : ℂ) = ↑(-(π * r)) * I := by push_cast; ring
+  rw [h, Complex.norm_exp_ofReal_mul_I]
+
 /-- For t ∈ (0, 1], exp(-2π/t) * t² ≤ exp(-2π).
 Uses exp(-2π/t) ≤ exp(-2π) from `exp_neg_div_le_of_le_one` and t² ≤ 1. -/
 lemma exp_neg_two_pi_div_mul_sq_le {t : ℝ} (ht_pos : 0 < t) (ht_le : t ≤ 1) :
@@ -103,36 +117,21 @@ lemma norm_Φ₅_le {r : ℝ} (hr : r ≥ 0) :
   obtain ⟨C₀, hC₀_pos, hC₀_bound⟩ := norm_φ₀''_cusp_bound
   refine ⟨C₀, hC₀_pos, fun t ht => ?_⟩
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
-  -- Unfold Φ₅ and compute norm
   simp only [Φ₅, Φ₅', z₅'_eq_of_mem ht']
-  rw [norm_mul, norm_mul, norm_mul, Complex.norm_I]
-  -- (I*t)² = -t²
-  have h_sq : (I * ↑t : ℂ) ^ 2 = -(↑t : ℂ) ^ 2 := by rw [mul_pow, I_sq]; ring
-  rw [h_sq, norm_neg, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht.1]
-  -- cexp(π*I*r*(I*t)) = cexp(-π*r*t)
-  have h_exp : cexp (↑π * I * ↑r * (I * ↑t)) = cexp (-(↑π * ↑r * ↑t : ℂ)) := by
-    congr 1
-    have : I * I = (-1 : ℂ) := I_mul_I
-    calc ↑π * I * ↑r * (I * ↑t) = ↑π * (I * I) * ↑r * ↑t := by ring
-      _ = ↑π * (-1) * ↑r * ↑t := by rw [this]
-      _ = -(↑π * ↑r * ↑t) := by ring
-  rw [h_exp, Complex.norm_exp]
+  rw [norm_mul, norm_mul, norm_mul, Complex.norm_I, I_mul_sq,
+      norm_neg, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht.1,
+      cexp_pi_I_mul_I, Complex.norm_exp, one_mul]
   simp only [neg_re, mul_re, ofReal_re, ofReal_im, mul_zero, sub_zero]
-  -- Now we have: 1 * ‖φ₀''(...)‖ * t² * exp(-π*r*t)
-  rw [one_mul]
-  -- Use the φ₀'' bound and the exp bound
   have h_φ : ‖φ₀'' (-1 / (I * ↑t))‖ ≤ C₀ * rexp (-2 * π / t) := hC₀_bound t ht.1 ht.2
   have h_exp_r : rexp (-(π * r * t)) ≤ 1 := by
     rw [Real.exp_le_one_iff]
-    simp only [neg_nonpos]
-    apply mul_nonneg (mul_nonneg Real.pi_pos.le hr) ht.1.le
-  have h_decay : rexp (-2 * π / t) * t ^ 2 ≤ rexp (-2 * π) :=
-    exp_neg_two_pi_div_mul_sq_le ht.1 ht.2
+    apply neg_nonpos_of_nonneg
+    exact mul_nonneg (mul_nonneg Real.pi_pos.le hr) ht.1.le
   calc ‖φ₀'' (-1 / (I * ↑t))‖ * t ^ 2 * rexp (-(π * r * t))
       ≤ ‖φ₀'' (-1 / (I * ↑t))‖ * t ^ 2 := mul_le_of_le_one_right (by positivity) h_exp_r
     _ ≤ (C₀ * rexp (-2 * π / t)) * t ^ 2 := by gcongr
     _ = C₀ * (rexp (-2 * π / t) * t ^ 2) := by ring
-    _ ≤ C₀ * rexp (-2 * π) := by gcongr
+    _ ≤ C₀ * rexp (-2 * π) := by gcongr; exact exp_neg_two_pi_div_mul_sq_le ht.1 ht.2
 
 /-- Norm bound for Φ₁: ‖Φ₁ r t‖ ≤ C₀ * exp(-2π) for t ∈ (0, 1] and r ≥ 0.
 
@@ -141,33 +140,16 @@ lemma norm_Φ₁_le {r : ℝ} (hr : r ≥ 0) :
     ∃ C₀ > 0, ∀ t : ℝ, t ∈ Ioc 0 1 → ‖Φ₁ r t‖ ≤ C₀ * rexp (-2 * π) := by
   obtain ⟨C₀, hC₀_pos, hC₀_bound⟩ := norm_Φ₅_le hr
   refine ⟨C₀, hC₀_pos, fun t ht => ?_⟩
-  have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
-  rw [Φ₁_eq_Φ₅_mul_phase ht', norm_mul]
-  -- The phase factor has unit modulus
-  have h_phase : ‖cexp (-↑π * I * ↑r)‖ = 1 := by
-    rw [Complex.norm_exp]
-    -- re(-π * I * r) = 0 since I.re = 0
-    have : (-↑π * I * ↑r).re = 0 := by simp [Complex.mul_re]
-    rw [this, Real.exp_zero]
-  rw [h_phase, mul_one]
+  rw [Φ₁_eq_Φ₅_mul_phase (mem_Icc_of_Ioc ht), norm_mul, norm_cexp_neg_pi_I_mul, mul_one]
   exact hC₀_bound t ht
 
 /-- Norm bound for Φ₃: ‖Φ₃ r t‖ ≤ C₀ * exp(-2π) for t ∈ (0, 1] and r ≥ 0.
-
 Since Φ₃ = Φ₅ * (unit-modulus phase), we have ‖Φ₃‖ = ‖Φ₅‖. -/
 lemma norm_Φ₃_le {r : ℝ} (hr : r ≥ 0) :
     ∃ C₀ > 0, ∀ t : ℝ, t ∈ Ioc 0 1 → ‖Φ₃ r t‖ ≤ C₀ * rexp (-2 * π) := by
   obtain ⟨C₀, hC₀_pos, hC₀_bound⟩ := norm_Φ₅_le hr
   refine ⟨C₀, hC₀_pos, fun t ht => ?_⟩
-  have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
-  rw [Φ₃_eq_Φ₅_mul_phase ht', norm_mul]
-  -- The phase factor has unit modulus
-  have h_phase : ‖cexp (↑π * I * ↑r)‖ = 1 := by
-    rw [Complex.norm_exp]
-    -- re(π * I * r) = 0 since I.re = 0
-    have : (↑π * I * ↑r).re = 0 := by simp [Complex.mul_re]
-    rw [this, Real.exp_zero]
-  rw [h_phase, mul_one]
+  rw [Φ₃_eq_Φ₅_mul_phase (mem_Icc_of_Ioc ht), norm_mul, norm_cexp_pi_I_mul, mul_one]
   exact hC₀_bound t ht
 
 /-- Φ₁ is integrable on (0, 1].
