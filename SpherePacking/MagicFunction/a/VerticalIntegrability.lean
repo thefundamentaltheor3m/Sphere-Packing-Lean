@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sphere Packing Contributors
 -/
 import SpherePacking.MagicFunction.a.ContourEndpoints
-import SpherePacking.MagicFunction.Segments
 import SpherePacking.ModularForms.PhiTransform
 import Mathlib.Analysis.Real.Pi.Bounds
 
