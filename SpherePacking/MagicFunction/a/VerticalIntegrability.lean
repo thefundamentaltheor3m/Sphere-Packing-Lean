@@ -329,8 +329,8 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
           rw [norm_mul, norm_mul, hexp_norm]
       _ ≤ ‖φ₀'' (-1 / z)‖ * ((a^2 + 1) * t^2) * Real.exp (-π * r * t) := by
           apply mul_le_mul_of_nonneg_right
-          apply mul_le_mul_of_nonneg_left hz_sq_bound (norm_nonneg _)
-          exact (Real.exp_pos _).le
+          · apply mul_le_mul_of_nonneg_left hz_sq_bound (norm_nonneg _)
+          · exact (Real.exp_pos _).le
       _ = (a^2 + 1) * (‖φ₀'' (-1 / z)‖ * t^2 * Real.exp (-π * r * t)) := by ring
       _ = (a^2 + 1) * (‖φ₀ (ModularGroup.S • w)‖ * t^2 * Real.exp (-π * r * t)) := by
           rw [hφ₀_eq]
@@ -339,8 +339,56 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
           -- Show ‖φ₀(S•w)‖ * t² * exp(-πrt) ≤ verticalBound using ‖w‖ ≥ t
           -- Strategy: Use hS_bound with ‖w‖ ≥ t to replace 1/‖w‖ terms with 1/t
           -- Then multiply out to match verticalBound structure
-          -- (Detailed algebraic manipulation follows norm_verticalIntegrandX_le pattern)
-          sorry
+          -- Step 1: Show ‖w‖ ≥ t
+          have hw_norm_ge : t ≤ ‖(w : ℂ)‖ := by
+            have hw_eq : (w : ℂ) = a + Complex.I * t := rfl
+            rw [hw_eq]
+            have hre : (↑a + Complex.I * ↑t : ℂ).re = a := by simp
+            have him : (↑a + Complex.I * ↑t : ℂ).im = t := by simp
+            rw [Complex.norm_eq_sqrt_sq_add_sq, hre, him]
+            have h1 : t^2 ≤ a^2 + t^2 := by nlinarith [sq_nonneg a]
+            have h2 : Real.sqrt (t^2) ≤ Real.sqrt (a^2 + t^2) := Real.sqrt_le_sqrt h1
+            rwa [Real.sqrt_sq (le_of_lt ht_pos)] at h2
+          have hw_norm_pos : 0 < ‖(w : ℂ)‖ := lt_of_lt_of_le ht_pos hw_norm_ge
+          -- Step 2: Strengthen hS_bound using ‖w‖ ≥ t
+          have hS_bound' : ‖φ₀ (ModularGroup.S • w)‖ ≤
+              hb.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * hb.C₂
+              + (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t) := by
+            rw [hw_im] at hS_bound
+            refine hS_bound.trans ?_
+            -- Term by term: first term equal, second and third use ‖w‖ ≥ t
+            have h2 : 12 / (π * ‖(w : ℂ)‖) * hb.C₂ ≤ 12 / (π * t) * hb.C₂ := by
+              apply mul_le_mul_of_nonneg_right _ (le_of_lt hb.hC₂_pos)
+              apply div_le_div_of_nonneg_left (by positivity) (by positivity : 0 < π * t)
+              exact mul_le_mul_of_nonneg_left hw_norm_ge (le_of_lt Real.pi_pos)
+            have h3 : 36 / (π^2 * ‖(w : ℂ)‖^2) * hb.C₄ * Real.exp (2 * π * t) ≤
+                      36 / (π^2 * t^2) * hb.C₄ * Real.exp (2 * π * t) := by
+              apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+              apply mul_le_mul_of_nonneg_right _ (le_of_lt hb.hC₄_pos)
+              apply div_le_div_of_nonneg_left (by positivity) (by positivity : 0 < π^2 * t^2)
+              apply mul_le_mul_of_nonneg_left _ (by positivity : 0 ≤ π^2)
+              exact sq_le_sq' (by linarith) hw_norm_ge
+            linarith
+          -- Step 3: Multiply by t² * exp(-πrt) and simplify
+          have ht_ne : t ≠ 0 := ne_of_gt ht_pos
+          calc ‖φ₀ (ModularGroup.S • w)‖ * t^2 * Real.exp (-π * r * t)
+              ≤ (hb.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * hb.C₂
+                  + (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t))
+                * t^2 * Real.exp (-π * r * t) := by
+                apply mul_le_mul_of_nonneg_right
+                · apply mul_le_mul_of_nonneg_right hS_bound' (sq_nonneg t)
+                · exact (Real.exp_pos _).le
+            _ = hb.C₀ * t^2 * (Real.exp (-2 * π * t) * Real.exp (-π * r * t))
+                + (12 * hb.C₂ / π) * t * Real.exp (-π * r * t)
+                + (36 * hb.C₄ / π^2) * (Real.exp (2 * π * t) * Real.exp (-π * r * t)) := by
+                  field_simp
+            _ = ContourEndpoints.verticalBound hb r t := by
+                  simp only [ContourEndpoints.verticalBound]
+                  have hexp1 : Real.exp (-2 * π * t) * Real.exp (-π * r * t) =
+                      Real.exp (-(2 * π + π * r) * t) := by rw [← Real.exp_add]; ring_nf
+                  have hexp3 : Real.exp (2 * π * t) * Real.exp (-π * r * t) =
+                      Real.exp (-(π * r - 2 * π) * t) := by rw [← Real.exp_add]; ring_nf
+                  rw [hexp1, hexp3]
 
 /-! ## Relationship to verticalIntegrandX
 
@@ -688,10 +736,13 @@ lemma tendsto_φ₀_integrand_plus_one (hb : ContourEndpoints.PhiBounds) (r : �
                        Complex.exp (π * Complex.I * r * (Complex.I * t))‖ ≤
                       ContourEndpoints.topEdgeBound hb r t := by
     -- Both exponentials have norm exp(-πrt)
-    have hexp_our : ‖Complex.exp (π * Complex.I * r * (Complex.I * t))‖ = Real.exp (-π * r * t) := by
-      rw [show π * Complex.I * r * (Complex.I * t) = Complex.I * π * r * (0 + Complex.I * t) by ring]
+    have hexp_our :
+        ‖Complex.exp (π * Complex.I * r * (Complex.I * t))‖ = Real.exp (-π * r * t) := by
+      rw [show π * Complex.I * r * (Complex.I * t) =
+          Complex.I * π * r * (0 + Complex.I * t) by ring]
       exact ContourEndpoints.norm_cexp_verticalPhase 0 r t
-    have hexp_top : ‖Complex.exp (Complex.I * π * r * (1 + Complex.I * t))‖ = Real.exp (-π * r * t) :=
+    have hexp_top :
+        ‖Complex.exp (Complex.I * π * r * (1 + Complex.I * t))‖ = Real.exp (-π * r * t) :=
       ContourEndpoints.norm_cexp_verticalPhase 1 r t
     -- So the norms are equal
     calc ‖φ₀'' (-1 / ((1 : ℂ) + Complex.I * t)) * ((1 : ℂ) + Complex.I * t)^2 *
@@ -725,7 +776,8 @@ lemma tendsto_φ₀_integrand_plus_one (hb : ContourEndpoints.PhiBounds) (r : �
             · apply add_nonneg
               · exact mul_nonneg hC₀.le (Real.exp_pos _).le
               · exact div_nonneg (mul_nonneg (by norm_num) hC₂.le) hpt.le
-            · exact mul_nonneg (div_nonneg (mul_nonneg (by norm_num) hC₄.le) hpt2.le) (Real.exp_pos _).le
+            · exact mul_nonneg
+                (div_nonneg (mul_nonneg (by norm_num) hC₄.le) hpt2.le) (Real.exp_pos _).le
         exact abs_of_nonneg hbound_nonneg ▸ this
 
 /-- Shifted variant at x = -1: φ₀(-1/(z-1)) (z-1)² e^{πirz} → 0 as Im(z) → ∞.
