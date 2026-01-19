@@ -127,4 +127,50 @@ lemma z₆'_eq_of_mem {t : ℝ} (ht : t ∈ Ici 1) : z₆' t = I * t := by
 
 end eq_of_mem
 
+/-! ## Continuity Lemmas -/
+
+section Continuity
+
+/-- z₂ is continuous. -/
+lemma continuous_z₂ : Continuous z₂ := by
+  unfold z₂
+  fun_prop
+
+/-- z₄ is continuous. -/
+lemma continuous_z₄ : Continuous z₄ := by
+  unfold z₄
+  fun_prop
+
+/-- z₆ is continuous. -/
+lemma continuous_z₆ : Continuous z₆ := by
+  unfold z₆
+  fun_prop
+
+/-- z₂' is continuous on ℝ. -/
+lemma continuous_z₂' : Continuous z₂' := continuous_z₂.Icc_extend'
+
+/-- z₄' is continuous on ℝ. -/
+lemma continuous_z₄' : Continuous z₄' := continuous_z₄.Icc_extend'
+
+/-- z₆' is continuous on ℝ. -/
+lemma continuous_z₆' : Continuous z₆' := by
+  unfold z₆'
+  -- IciExtend f = f ∘ projIci, where projIci is max
+  simp only [IciExtend]
+  exact continuous_const.mul (continuous_ofReal.comp (continuous_const.max continuous_id))
+
+/-- For t ∈ [0,1], (z₂' t).im = 1. -/
+lemma z₂'_im_eq {t : ℝ} (ht : t ∈ Icc 0 1) : (z₂' t).im = 1 := by
+  simp [z₂', IccExtend_of_mem zero_le_one z₂ ht, z₂]
+
+/-- For t ∈ [0,1], (z₄' t).im = 1. -/
+lemma z₄'_im_eq {t : ℝ} (ht : t ∈ Icc 0 1) : (z₄' t).im = 1 := by
+  simp [z₄', IccExtend_of_mem zero_le_one z₄ ht, z₄]
+
+/-- For t ∈ [1,∞), (z₆' t).im = t. -/
+lemma z₆'_im_eq {t : ℝ} (ht : t ∈ Ici 1) : (z₆' t).im = t := by
+  simp [z₆', IciExtend_of_mem z₆ ht, z₆]
+
+end Continuity
+
 end MagicFunction.Parametrisations
