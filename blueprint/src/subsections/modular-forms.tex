@@ -536,10 +536,10 @@ Now the identities follow from the dimension calculations $\dim M_4(\Gamma_1) = 
 \end{proof}
 
 The \emph{strict} positivity of Jacobi theta functions might needed later.
-\begin{corollary}\label{cor:theta-pos}\uses{lemma:jacobi-identity, lemma:theta-transform-S-T}\lean{H₂_imag_axis_pos, H₄_imag_axis_pos}
-All three functions $t \mapsto H_2(it), H_3(it), H_4(it)$ are positive for $t > 0$.
+\begin{corollary}\label{cor:theta-pos}\uses{lemma:theta-transform-S-T}\lean{H₂_imag_axis_pos, H₄_imag_axis_pos}
+$H_2(it)$ and $H_4(it)$ are positive for $t > 0$.
 \end{corollary}
-\begin{proof}
+\begin{proof}\leanok
 By Lemma \ref{lemma:jacobi-identity} and the transformation law \eqref{eqn:H2-transform-S}, it is enough to prove the positivity for $\Theta_2(it)$, which is clear from its definition:
 \begin{equation}
     \Theta_{2}(it) = \sum_{n \in \Z} e^{- \pi (n + \frac{1}{2})^{2} t} > 0.
