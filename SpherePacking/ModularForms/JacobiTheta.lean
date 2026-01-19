@@ -655,14 +655,13 @@ noncomputable def jacobi_f_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1)
   slash_action_eq' := slashaction_generators_GL2R jacobi_f 4 jacobi_f_S_action jacobi_f_T_action
 
 /-- jacobi_g is holomorphic (MDifferentiable) since H₂, H₃, H₄ are -/
-lemma jacobi_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_g :=
-  (H₂_SIF_MDifferentiable.add H₄_SIF_MDifferentiable).sub H₃_SIF_MDifferentiable
+lemma jacobi_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_g := by unfold jacobi_g; fun_prop
 
 /-- jacobi_f is holomorphic (MDifferentiable) since jacobi_g is -/
 lemma jacobi_f_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f := by
-  change MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => (jacobi_g z) ^ 2)
-  simp only [pow_two]
-  exact jacobi_g_MDifferentiable.mul jacobi_g_MDifferentiable
+  unfold jacobi_f;
+  have _ := jacobi_g_MDifferentiable
+  fun_prop
 
 /-- jacobi_f_SIF is holomorphic -/
 lemma jacobi_f_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f_SIF :=
