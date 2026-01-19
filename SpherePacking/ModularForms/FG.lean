@@ -447,25 +447,7 @@ lemma DE₄_summable (t : ℝ) (ht : 0 < t) :
 
 /-- D E₄ is real on the imaginary axis. -/
 lemma DE₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) := by
-  intro t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
-  set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩
-  rw [DE₄_qexp z]
-  have hterm_im : ∀ n : ℕ+, ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
-      Complex.exp (2 * Real.pi * Complex.I * n * z)).im = 0 := by
-    intro n
-    have harg : 2 * Real.pi * Complex.I * n * z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-      have h := qexp_arg_imag_axis_pnat t ht n
-      simp only at h ⊢
-      convert h using 2
-    rw [harg]
-    simp only [Complex.mul_im, Complex.natCast_re, Complex.natCast_im, mul_zero,
-               zero_mul, add_zero, Complex.exp_ofReal_im]
-  simp only [Complex.mul_im]
-  rw [Complex.im_tsum]
-  · simp only [hterm_im, tsum_zero, mul_zero]
-    norm_num
-  · exact DE₄_summable t ht
+  exact D_real_of_real E₄_imag_axis_real E₄.holo'
 
 /-- The real part of (D E₄)(it) is positive for t > 0. -/
 lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
@@ -551,26 +533,7 @@ lemma negDE₂_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
 
 /-- `negDE₂` is real on the imaginary axis. -/
 lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by
-  intro t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
-  set z : UpperHalfPlane := ⟨Complex.I * t, by simp [ht]⟩
-  rw [negDE₂_qexp z]
-  have hterm_im : ∀ n : ℕ+, ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
-      Complex.exp (2 * Real.pi * Complex.I * n * z)).im = 0 := by
-    intro n
-    have harg : 2 * Real.pi * Complex.I * n * z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-      have h := qexp_arg_imag_axis_pnat t ht n
-      simp only at h ⊢
-      convert h using 2
-    rw [harg]
-    simp only [Complex.mul_im, Complex.natCast_re, Complex.natCast_im, mul_zero,
-               zero_mul, add_zero, Complex.exp_ofReal_im]
-  simp only [Complex.mul_im]
-  rw [Complex.im_tsum]
-  · simp only [hterm_im, tsum_zero, mul_zero]
-    -- 24 is real, so its imaginary part is 0
-    norm_num
-  · exact negDE₂_summable t ht
+  exact ResToImagAxis.Real.neg (D_real_of_real E₂_imag_axis_real E₂_holo')
 
 /-- The real part of negDE₂(it) is positive for t > 0. -/
 lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
@@ -753,4 +716,3 @@ theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
 theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
     FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
   sorry
-
