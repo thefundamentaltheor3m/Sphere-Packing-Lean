@@ -33,15 +33,6 @@ namespace MagicFunction.VerticalVanishing
 
 /-! ## Helper lemmas -/
 
-/-- Helper: -1/(I*t) = I/t for t ≠ 0. -/
-lemma neg_one_div_I_mul (t : ℝ) (ht : t ≠ 0) : (-1 : ℂ) / (Complex.I * t) = Complex.I / t := by
-  have hI : Complex.I ≠ 0 := Complex.I_ne_zero
-  have ht' : (t : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr ht
-  have hIt : Complex.I * t ≠ 0 := mul_ne_zero hI ht'
-  field_simp [hIt, ht']
-  ring_nf
-  simp only [Complex.I_sq]
-
 /-- Goal 1 integrand equals verticalIntegrandX 0 r t. -/
 lemma goal1_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
     Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
