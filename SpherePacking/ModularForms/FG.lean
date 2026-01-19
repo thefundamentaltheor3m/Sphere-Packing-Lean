@@ -255,14 +255,7 @@ lemma sigma1_qexp_deriv_bound :
           -- i.e., 2π * n³ ≤ (2π)³ * n³
           -- i.e., 2π ≤ (2π)³ which is true since 2π > 1
           have h2pi : (1 : ℝ) ≤ 2 * π := by
-            have := Real.two_pi_pos
-            have := Real.pi_pos
-            -- π > 3.14 > 0.5, so 2π > 1
-            -- Use that π² > π (since π > 1), so π > 1
-            -- Then 2π > 2 > 1
-            have hpi_gt_one : (1 : ℝ) < π := by
-              calc (1 : ℝ) < 2 := by norm_num
-                _ ≤ π := Real.two_le_pi
+            have _ := Real.two_le_pi
             linarith
           calc (n : ℝ) ^ 2 * (2 * π * ↑↑n)
               = (2 * π) * (n : ℝ) ^ 3 := by ring
@@ -320,9 +313,7 @@ lemma sigma3_qexp_deriv_bound :
           -- i.e., 2π * n⁵ ≤ (2π)⁵ * n⁵
           -- i.e., 2π ≤ (2π)⁵ which is true since 2π > 1
           have h2pi : (1 : ℝ) ≤ 2 * π := by
-            have hpi_gt_one : (1 : ℝ) < π := by
-              calc (1 : ℝ) < 2 := by norm_num
-                _ ≤ π := Real.two_le_pi
+            have _ := Real.two_le_pi
             linarith
           calc (n : ℝ) ^ 4 * (2 * π * ↑↑n)
               = (2 * π) * (n : ℝ) ^ 5 := by ring
@@ -753,4 +744,3 @@ theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
 theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
     FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
   sorry
-
