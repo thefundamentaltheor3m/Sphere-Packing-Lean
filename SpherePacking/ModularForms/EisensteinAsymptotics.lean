@@ -148,12 +148,8 @@ lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
   rw [hsub, norm_mul, show ‖(-24 : ℂ)‖ = 24 by simp, Real.norm_of_nonneg (Real.exp_pos _).le]
   set q : ℂ := cexp (2 * π * Complex.I * z)
   -- Rewrite sum in terms of q^n
-  have hexp_pow : ∀ n : ℕ, cexp (2 * π * Complex.I * n * z) = q ^ n := fun n => by
-    rw [← Complex.exp_nat_mul]; congr 1; ring
-  have hsum_eq : (fun n : ℕ+ => ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
-      (1 - cexp (2 * π * Complex.I * ↑n * ↑z))) =
-      (fun n : ℕ+ => ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))) := by ext n; simp only [hexp_pow]
-  rw [hsum_eq]
+  simp_rw [show ∀ n : ℕ, cexp (2 * π * Complex.I * n * z) = q ^ n by
+    intro n; rw [← Complex.exp_nat_mul]; congr 1; ring]
   -- Key bounds: ‖q‖ ≤ exp(-2π) < 1/2
   have hq_lt : ‖q‖ < 1 := norm_exp_two_pi_I_lt_one z
   have hq_bound : ‖q‖ ≤ Real.exp (-2 * π) := norm_exp_two_pi_I_le_exp_neg_two_pi z hz
