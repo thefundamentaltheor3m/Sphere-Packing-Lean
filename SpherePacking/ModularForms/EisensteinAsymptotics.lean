@@ -256,11 +256,8 @@ def serre_D_E₂_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 4 where
     toFun := serre_D 1 E₂
     slash_action_eq' := fun γ hγ => by
       rw [Subgroup.mem_map] at hγ
-      obtain ⟨γ', _, hγ'_eq⟩ := hγ
-      have h := serre_D_E₂_slash_invariant γ'
-      change serre_D 1 E₂ ∣[(4 : ℤ)] γ = serre_D 1 E₂
-      rw [← hγ'_eq]
-      exact h
+      obtain ⟨γ', _, rfl⟩ := hγ
+      exact serre_D_E₂_slash_invariant γ'
   }
   holo' := serre_D_differentiable E₂_holo'
   bdd_at_cusps' := fun hc => by
