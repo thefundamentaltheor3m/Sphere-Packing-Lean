@@ -127,9 +127,8 @@ lemma isBigO_shift {c : ℤ → ℂ} {k : ℕ} (n₀ : ℤ)
     simp only [norm_pow, norm_eq_abs] at hCa ⊢
     refine ⟨(m - n₀).toNat, fun n hn ↦ ?_⟩
     have hmn : (n : ℤ) + n₀ ≥ m := by
-      have h1 : (n : ℤ) ≥ ((m - n₀).toNat : ℤ) := Int.ofNat_le.mpr hn
-      have h2 : ((m - n₀).toNat : ℤ) ≥ m - n₀ := Int.self_le_toNat _
-      linarith
+      have := Int.self_le_toNat (m - n₀)
+      omega
     exact_mod_cast hCa (n + n₀) hmn
   -- Second: (n + n₀)^k = O(n^k) using |n + n₀| ≤ 2n for n ≥ |n₀|
   refine h_shift.trans ?_
@@ -174,22 +173,13 @@ lemma summable_fouterm_of_poly {c : ℤ → ℂ} {k : ℕ}
   let const := cexp (π * Complex.I * n₀ * z)
   let u : ℕ → ℂ := fun i => c (i + n₀) * const
   have h_factor : ∀ i : ℕ, fouterm c z (i + n₀) = u i * r ^ i := fun i => by
-    simp only [fouterm, u, r, const]
-    -- cexp(π * I * (i + n₀) * z) = cexp(π * I * n₀ * z) * cexp(π * I * z)^i
-    have hexp : cexp (↑π * Complex.I * ↑(↑i + n₀) * ↑z) = const * r ^ i := by
-      simp only [const, r, ← Complex.exp_nat_mul, Int.cast_add, Int.cast_natCast]
-      rw [← Complex.exp_add]
-      congr 1
-      ring
-    rw [hexp]
+    simp only [fouterm, u, r, const, ← Complex.exp_nat_mul, Int.cast_add, Int.cast_natCast]
+    rw [show (↑π * Complex.I * (↑i + ↑n₀) * ↑z : ℂ) =
+        ↑π * Complex.I * ↑n₀ * ↑z + ↑π * Complex.I * ↑i * ↑z by ring, Complex.exp_add]
     ring
   -- u has polynomial growth: ‖u n‖ = ‖c(n+n₀)‖ * ‖const‖ is O(n^k)
   have hu : u =O[Filter.atTop] (fun n ↦ (↑(n ^ k) : ℝ)) := by
-    simp only [u]
-    -- f(i) * const = const * f(i), and const * f is O(g) if f is O(g)
-    have heq : (fun i : ℕ => c (↑i + n₀) * const) = (fun i : ℕ => const * c (↑i + n₀)) := by
-      ext i; ring
-    rw [heq]
+    simp only [u, show ∀ i, c (↑i + n₀) * const = const * c (↑i + n₀) from fun _ => mul_comm _ _]
     exact hshift.const_mul_left const
   -- Apply summability theorem
   simp_rw [h_factor]
