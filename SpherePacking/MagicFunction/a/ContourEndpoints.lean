@@ -68,6 +68,13 @@ lemma tendsto_zero_atImInfty_ℂ_iff' {f : ℂ → ℝ} :
   simp [Metric.tendsto_nhds, dist_zero_right, Real.norm_eq_abs, Filter.eventually_iff,
     mem_atImInfty_ℂ]
 
+/-- PhiBounds instance from modular forms theory.
+    The bounds follow from cusp form decay estimates for φ₀, φ₂', φ₄'.
+    TODO: Fill from modular forms infrastructure. -/
+def phiBounds : PhiBounds := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  all_goals sorry
+
 /-! ## Corollary 7.13 - S-transform bound for φ₀''(I/t) -/
 
 /-- The point it as an element of ℍ for t > 0. -/
