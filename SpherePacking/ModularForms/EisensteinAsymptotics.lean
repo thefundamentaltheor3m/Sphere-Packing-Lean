@@ -11,18 +11,15 @@ and constructs the ModularForm structures for Serre derivatives.
 
 ## Main definitions
 
-* `PosReal` : Subtype of positive reals for limit statements
-* `iMulPosReal` : Constructs an upper half plane point from a positive real
 * `serre_D_E₄_ModularForm`, `serre_D_E₆_ModularForm`, `serre_D_E₂_ModularForm` :
   Package serre derivatives as modular forms
 
 ## Main results
 
-* `D_tendsto_zero_of_tendsto_const` : Cauchy estimate: D f → 0 if f → const
-* `E₂_tendsto_one_at_infinity`, `E₄_tendsto_one_at_infinity`, `E₆_tendsto_one_at_infinity` :
-  Limits of Eisenstein series at infinity
-* `serre_D_E₄_tendsto_at_infinity`, `serre_D_E₆_tendsto_at_infinity`,
-  `serre_D_E₂_tendsto_at_infinity` : Limits of serre derivatives (for determining scalars)
+* `D_tendsto_zero_of_tendsto_const` : Cauchy estimate: D f → 0 at i∞ if f is bounded
+* `E₂_tendsto_one_atImInfty` : E₂ → 1 at i∞
+* `serre_D_E₄_tendsto_atImInfty`, `serre_D_E₆_tendsto_atImInfty`,
+  `serre_D_E₂_tendsto_atImInfty` : Limits of serre derivatives (for determining scalars)
 -/
 
 open UpperHalfPlane hiding I
@@ -36,61 +33,37 @@ noncomputable section
 
 /-! ## Cauchy estimates and limits at infinity -/
 
-/-- Subtype of positive reals for limit statements -/
-abbrev PosReal := {y : ℝ // 0 < y}
-
-/-- The filter comap of Subtype.val on PosReal at atTop is NeBot. -/
-instance PosReal_comap_atTop_neBot :
-    (Filter.comap Subtype.val (Filter.atTop : Filter ℝ)).NeBot (α := PosReal) := by
-  rw [Filter.comap_neBot_iff]
-  intro s hs
-  rw [Filter.mem_atTop_sets] at hs
-  obtain ⟨a, ha⟩ := hs
-  exact ⟨⟨max a 1, lt_max_of_lt_right one_pos⟩, ha (max a 1) (le_max_left a 1)⟩
-
-/-- Helper to construct an upper half plane point from a positive real. -/
-def iMulPosReal (y : PosReal) : ℍ := ⟨I * y.val, by simp [y.2]⟩
-
-/-- The imaginary part of iMulPosReal y equals y. -/
-@[simp]
-lemma im_iMulPosReal (y : PosReal) : (iMulPosReal y).im = y.val := by
-  change (I * ↑↑y).im = y.val
-  simp [Complex.mul_im]
-
-/-- If f is holomorphic and bounded, with f(iy) → L as y → ∞, then D f(iy) → 0.
+/-- If f is holomorphic and bounded at infinity, then D f → 0 at i∞.
 
 **Proof via Cauchy estimates:**
-For z = iy with y large, consider the ball B(z, y/2) in ℂ.
-- Ball is contained in upper half plane: all points have Im > y/2 > 0
+For z with large Im, consider the ball B(z, Im(z)/2) in ℂ.
+- Ball is contained in upper half plane: all points have Im > Im(z)/2 > 0
 - f ∘ ofComplex is holomorphic on the ball (from MDifferentiable)
 - f is bounded by M for Im ≥ A (from IsBoundedAtImInfty)
-- By Cauchy: |deriv(f ∘ ofComplex)(z)| ≤ M / (y/2) = 2M/y
-- D f = (2πi)⁻¹ * deriv(...), so |D f(z)| ≤ M/(πy) → 0 -/
+- By Cauchy: |deriv(f ∘ ofComplex)(z)| ≤ M / (Im(z)/2) = 2M/Im(z)
+- D f = (2πi)⁻¹ * deriv(...), so |D f(z)| ≤ M/(π·Im(z)) → 0 -/
 lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
     (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
     (hbdd : IsBoundedAtImInfty f) :
-    Filter.Tendsto (fun y : PosReal => D f (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds 0) := by
+    Filter.Tendsto (D f) atImInfty (nhds 0) := by
   rw [isBoundedAtImInfty_iff] at hbdd
   obtain ⟨M, A, hMA⟩ := hbdd
   rw [Metric.tendsto_nhds]
   intro ε hε
   have hpi : 0 < π := Real.pi_pos
-  rw [Filter.Eventually, Filter.mem_comap]
+  rw [Filter.Eventually, atImInfty, Filter.mem_comap]
   use Set.Ici (max (2 * max A 0 + 1) (|M| / (π * ε) + 1))
   constructor
   · exact Filter.mem_atTop _
-  · intro y hy
-    simp only [Set.mem_preimage, Set.mem_Ici] at hy
-    have hy_pos : 0 < y.val := y.2
-    have hy_ge_A : y.val / 2 > max A 0 := by
-      have h1 : y.val ≥ 2 * max A 0 + 1 := le_trans (le_max_left _ _) hy
+  · intro z hz
+    simp only [Set.mem_preimage, Set.mem_Ici] at hz
+    have hz_pos : 0 < z.im := z.im_pos
+    have hz_ge_A : z.im / 2 > max A 0 := by
+      have h1 : z.im ≥ 2 * max A 0 + 1 := le_trans (le_max_left _ _) hz
       linarith
-    have hy_ge_bound : y.val > |M| / (π * ε) := by
-      have h1 : y.val ≥ |M| / (π * ε) + 1 := le_trans (le_max_right _ _) hy
+    have hz_ge_bound : z.im > |M| / (π * ε) := by
+      have h1 : z.im ≥ |M| / (π * ε) + 1 := le_trans (le_max_right _ _) hz
       linarith
-    let z : ℍ := iMulPosReal y
-    have hz_im : z.im = y.val := im_iMulPosReal y
     have hclosed := closedBall_center_subset_upperHalfPlane z
     have hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) (z.im / 2)) :=
       diffContOnCl_comp_ofComplex_of_mdifferentiable hf hclosed
@@ -113,7 +86,7 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
             _ = z.im / 2 := hdist
         have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
         have hA_lt : A < w.im := calc A ≤ max A 0 := hA_le_max
-          _ < z.im / 2 := by rw [hz_im]; exact hy_ge_A
+          _ < z.im / 2 := hz_ge_A
           _ ≤ w.im := hlower
         linarith
       simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw_im_pos]
@@ -123,7 +96,7 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
       calc ‖D f z‖ ≤ M / (2 * π * (z.im / 2)) := h
         _ = M / (π * z.im) := by ring
     have hM_nonneg : 0 ≤ M := by
-      have hA_le_z : A ≤ z.im := by rw [hz_im]; linarith [hA_le_max, hmax_nonneg, hy_ge_A]
+      have hA_le_z : A ≤ z.im := by linarith [hA_le_max, hmax_nonneg, hz_ge_A]
       exact le_trans (norm_nonneg _) (hMA z hA_le_z)
     simp only [dist_zero_right]
     by_cases hM_zero : M = 0
@@ -140,19 +113,10 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
             apply div_lt_div_of_pos_left habs_M_pos
             · positivity
             · apply mul_lt_mul_of_pos_left _ Real.pi_pos
-              rw [hz_im]; exact hy_ge_bound
+              exact hz_ge_bound
         _ = ε := by field_simp
 
 /-! ## Limits of Eisenstein series at infinity -/
-
-/-- iMulPosReal sends the comap filter to atImInfty. -/
-lemma tendsto_iMulPosReal_atImInfty :
-    Filter.Tendsto iMulPosReal (Filter.comap Subtype.val Filter.atTop) atImInfty := by
-  rw [atImInfty]
-  simp only [Filter.tendsto_comap_iff, Function.comp_def]
-  have h : ∀ y : PosReal, (iMulPosReal y).im = y.val := im_iMulPosReal
-  simp_rw [h]
-  exact Filter.tendsto_comap
 
 /-- exp(-c * y) → 0 as y → +∞ (for c > 0). -/
 lemma tendsto_exp_neg_mul_atTop {c : ℝ} (hc : 0 < c) :
@@ -232,24 +196,6 @@ lemma E₂_tendsto_one_atImInfty : Filter.Tendsto E₂ atImInfty (nhds 1) := by
     simpa using h.add_const 1
   exact tendsto_zero_of_exp_decay (by positivity : 0 < 2 * π) E₂_sub_one_isBigO_exp
 
-/-- E₂(iy) → 1 as y → +∞. -/
-lemma E₂_tendsto_one_at_infinity :
-    Filter.Tendsto (fun y : PosReal => E₂ (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds 1) :=
-  E₂_tendsto_one_atImInfty.comp tendsto_iMulPosReal_atImInfty
-
-/-- E₄(iy) → 1 as y → +∞. -/
-lemma E₄_tendsto_one_at_infinity :
-    Filter.Tendsto (fun y : PosReal => E₄.toFun (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds 1) :=
-  (E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄).comp tendsto_iMulPosReal_atImInfty
-
-/-- E₆(iy) → 1 as y → +∞. -/
-lemma E₆_tendsto_one_at_infinity :
-    Filter.Tendsto (fun y : PosReal => E₆.toFun (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds 1) :=
-  (E6_q_exp_zero ▸ modular_form_tendsto_atImInfty E₆).comp tendsto_iMulPosReal_atImInfty
-
 /-! ## Boundedness lemmas -/
 
 /-- E₆ is bounded at infinity (as a modular form). -/
@@ -276,40 +222,36 @@ def serre_D_E₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
 
 /-! ## Limit of serre_D at infinity (for determining scalar) -/
 
-/-- serre_D 4 E₄(iy) → -1/3 as y → +∞. -/
-lemma serre_D_E₄_tendsto_at_infinity :
-    Filter.Tendsto (fun y : PosReal => serre_D 4 E₄.toFun (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds (-(1/3 : ℂ))) := by
-  have hserre : ∀ y : PosReal, serre_D 4 E₄.toFun (iMulPosReal y) =
-      D E₄.toFun (iMulPosReal y) -
-        (4 : ℂ) * 12⁻¹ * E₂ (iMulPosReal y) * E₄.toFun (iMulPosReal y) := fun y => by
-    simp only [serre_D]
-  simp_rw [hserre]
+/-- serre_D 4 E₄ → -1/3 at i∞. -/
+lemma serre_D_E₄_tendsto_atImInfty :
+    Filter.Tendsto (serre_D 4 E₄.toFun) atImInfty (nhds (-(1/3 : ℂ))) := by
+  have hserre : serre_D 4 E₄.toFun = fun z => D E₄.toFun z -
+      (4 : ℂ) * 12⁻¹ * E₂ z * E₄.toFun z := by ext z; simp only [serre_D]
+  rw [hserre]
   have hD := D_tendsto_zero_of_tendsto_const E₄.holo' (ModularFormClass.bdd_at_infty E₄)
-  have hprod := E₂_tendsto_one_at_infinity.mul E₄_tendsto_one_at_infinity
+  have hprod := E₂_tendsto_one_atImInfty.mul
+    (E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄)
   have hlim : (0 : ℂ) - (4 : ℂ) * 12⁻¹ * 1 * 1 = -(1/3 : ℂ) := by norm_num
   rw [← hlim]
   refine hD.sub ?_
-  have hconst : Filter.Tendsto (fun _ : PosReal => (4 : ℂ) * 12⁻¹)
-      (Filter.comap Subtype.val Filter.atTop) (nhds ((4 : ℂ) * 12⁻¹)) := tendsto_const_nhds
+  have hconst : Filter.Tendsto (fun _ : ℍ => (4 : ℂ) * 12⁻¹)
+      atImInfty (nhds ((4 : ℂ) * 12⁻¹)) := tendsto_const_nhds
   convert hconst.mul hprod using 1 <;> ring_nf
 
-/-- serre_D 6 E₆(iy) → -1/2 as y → +∞. -/
-lemma serre_D_E₆_tendsto_at_infinity :
-    Filter.Tendsto (fun y : PosReal => serre_D 6 E₆.toFun (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds (-(1/2 : ℂ))) := by
-  have hserre : ∀ y : PosReal, serre_D 6 E₆.toFun (iMulPosReal y) =
-      D E₆.toFun (iMulPosReal y) -
-        (6 : ℂ) * 12⁻¹ * E₂ (iMulPosReal y) * E₆.toFun (iMulPosReal y) := fun y => by
-    simp only [serre_D]
-  simp_rw [hserre]
+/-- serre_D 6 E₆ → -1/2 at i∞. -/
+lemma serre_D_E₆_tendsto_atImInfty :
+    Filter.Tendsto (serre_D 6 E₆.toFun) atImInfty (nhds (-(1/2 : ℂ))) := by
+  have hserre : serre_D 6 E₆.toFun = fun z => D E₆.toFun z -
+      (6 : ℂ) * 12⁻¹ * E₂ z * E₆.toFun z := by ext z; simp only [serre_D]
+  rw [hserre]
   have hD := D_tendsto_zero_of_tendsto_const E₆.holo' E₆_isBoundedAtImInfty
-  have hprod := E₂_tendsto_one_at_infinity.mul E₆_tendsto_one_at_infinity
+  have hprod := E₂_tendsto_one_atImInfty.mul
+    (E6_q_exp_zero ▸ modular_form_tendsto_atImInfty E₆)
   have hlim : (0 : ℂ) - (6 : ℂ) * 12⁻¹ * 1 * 1 = -(1/2 : ℂ) := by norm_num
   rw [← hlim]
   refine hD.sub ?_
-  have hconst : Filter.Tendsto (fun _ : PosReal => (6 : ℂ) * 12⁻¹)
-      (Filter.comap Subtype.val Filter.atTop) (nhds ((6 : ℂ) * 12⁻¹)) := tendsto_const_nhds
+  have hconst : Filter.Tendsto (fun _ : ℍ => (6 : ℂ) * 12⁻¹)
+      atImInfty (nhds ((6 : ℂ) * 12⁻¹)) := tendsto_const_nhds
   convert hconst.mul hprod using 1 <;> ring_nf
 
 /-- serre_D 1 E₂ is a weight-4 modular form.
@@ -336,19 +278,17 @@ def serre_D_E₂_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 4 where
     rw [← hA'_eq]
     convert serre_D_E₂_isBoundedAtImInfty using 1
 
-/-- serre_D 1 E₂(iy) → -1/12 as y → +∞. -/
-lemma serre_D_E₂_tendsto_at_infinity :
-    Filter.Tendsto (fun y : PosReal => serre_D 1 E₂ (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds (-(1/12 : ℂ))) := by
-  have hserre : ∀ y : PosReal, serre_D 1 E₂ (iMulPosReal y) =
-      D E₂ (iMulPosReal y) - 1 * 12⁻¹ * E₂ (iMulPosReal y) * E₂ (iMulPosReal y) := fun y => by
-    simp only [serre_D]
-  simp_rw [hserre]
+/-- serre_D 1 E₂ → -1/12 at i∞. -/
+lemma serre_D_E₂_tendsto_atImInfty :
+    Filter.Tendsto (serre_D 1 E₂) atImInfty (nhds (-(1/12 : ℂ))) := by
+  have hserre : serre_D 1 E₂ = fun z => D E₂ z -
+      1 * 12⁻¹ * E₂ z * E₂ z := by ext z; simp only [serre_D]
+  rw [hserre]
   have hD := D_tendsto_zero_of_tendsto_const E₂_holo' E₂_isBoundedAtImInfty
-  have hprod := E₂_tendsto_one_at_infinity.mul E₂_tendsto_one_at_infinity
+  have hprod := E₂_tendsto_one_atImInfty.mul E₂_tendsto_one_atImInfty
   have hlim : (0 : ℂ) - (1 : ℂ) * 12⁻¹ * 1 * 1 = -(1/12 : ℂ) := by norm_num
   rw [← hlim]
   refine hD.sub ?_
-  have hconst : Filter.Tendsto (fun _ : PosReal => (1 : ℂ) * 12⁻¹)
-      (Filter.comap Subtype.val Filter.atTop) (nhds ((1 : ℂ) * 12⁻¹)) := tendsto_const_nhds
+  have hconst : Filter.Tendsto (fun _ : ℍ => (1 : ℂ) * 12⁻¹)
+      atImInfty (nhds ((1 : ℂ) * 12⁻¹)) := tendsto_const_nhds
   convert hconst.mul hprod using 1 <;> ring_nf
