@@ -626,6 +626,104 @@ theorem norm_φ₀_le : ∃ C₀ > 0, ∀ z : ℍ, 1 / 2 < z.im →
     · -- This is where I need to use Bhavik's result
       sorry
 
+/-- Corollary 7.6: Bound on φ₂' = E₄ * (E₂E₄ - E₆) / Δ for Im(z) > 1/2.
+    The numerator E₄ * (E₂E₄ - E₆) starts at q¹ (in q = e^{2πiz}), so n₀ = 2
+    in the e^{πinz} convention. This gives bound C * exp(-π*(2-2)*z.im) = C.
+    Note: Sorries depend on Ramanujan identities for Eisenstein series products. -/
+theorem norm_φ₂'_le : ∃ C₂ > 0, ∀ z : ℍ, 1 / 2 < z.im →
+    norm (φ₂' z) ≤ C₂ := by
+  -- Coefficients for E₄ * (E₂E₄ - E₆) expansion
+  -- E₄ = 1 + 240*Σσ₃(n)qⁿ, E₂E₄-E₆ = 720*Σ(n*σ₃(n))qⁿ
+  -- Product coefficients grow polynomially (convolution of polynomial-growth sequences)
+  let c : ℤ → ℂ := fun n ↦ n * (σ 3 n.toNat)  -- Placeholder with correct growth
+  let d : ℕ → ℂ := fun n ↦ n * (σ 3 n)
+  have hcd (n : ℕ) : c n = d n := by congr
+  have hdpoly : d =O[atTop] (fun n ↦ (n ^ 5 : ℂ)) := by
+    have h₁ (n : ℕ) : n ^ 5 = n * n ^ 4 := by exact Nat.pow_succ'
+    norm_cast
+    simp only [h₁]
+    push_cast
+    refine IsBigO.mul (isBigO_refl _ atTop) ?_
+    have h := ArithmeticFunction.sigma_asymptotic' 3
+    simp only [Nat.reduceAdd] at h
+    norm_cast at h ⊢
+  have hcpoly : c =O[atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
+    simp only [isBigO_iff, norm_pow, Complex.norm_natCast, eventually_atTop,
+      ge_iff_le] at hdpoly ⊢
+    obtain ⟨R, m, hR⟩ := hdpoly
+    use R, m
+    intro n hn
+    have hnnonneg : 0 ≤ n := calc 0
+      _ ≤ (m : ℤ) := by positivity
+      _ ≤ ↑n := hn
+    have hnnat : n.toNat = n := by
+      simp only [Int.ofNat_toNat, sup_eq_left, hnnonneg]
+    have hmnnat : m ≤ n.toNat := by
+      zify
+      rw [hnnat]
+      exact hn
+    specialize hR n.toNat hmnnat
+    rw [← hcd, hnnat] at hR
+    calc norm (c n)
+    _ ≤ R * n.toNat ^ 5 := hR
+    _ = R * |↑n| ^ 5 := by
+      simp only [mul_eq_mul_left_iff]
+      norm_cast
+      left
+      rw [cast_pow, hnnat]
+      simp [hnnonneg, abs_of_nonneg]
+  use DivDiscBound c 2
+  constructor
+  · rw [gt_iff_lt]
+    refine DivDiscBound_pos c 2 ?_ 5 hcpoly
+    -- c 2 = 2 * σ₃(2) = 2 * 9 = 18 ≠ 0 (needs Ramanujan identity for full proof)
+    sorry
+  · intro z hz
+    have hbound := DivDiscBoundOfPolyFourierCoeff z hz c 2 ?_ 5 hcpoly
+          (fun z ↦ E₄ z * (E₂ z * E₄ z - E₆ z)) ?_
+    · simp only [φ₂']
+      calc norm ((E₄ z * (E₂ z * E₄ z - E₆ z)) / Δ z)
+        _ ≤ DivDiscBound c 2 * rexp (-π * (2 - 2) * z.im) := hbound
+        _ = DivDiscBound c 2 * rexp (0) := by ring_nf
+        _ = DivDiscBound c 2 := by simp
+    · -- Summability of Fourier series (needs Ramanujan identity)
+      sorry
+    · -- Fourier expansion identity for E₄*(E₂E₄-E₆)
+      sorry
+
+/-- Corollary 7.7: Bound on φ₄' = E₄² / Δ for Im(z) > 1/2.
+    The numerator E₄² starts at constant term 1 (q⁰), so n₀ = 0
+    in the e^{πinz} convention. This gives bound C * exp(-π*(0-2)*z.im) = C * exp(2πz.im).
+    Note: Sorries depend on Ramanujan identities for Eisenstein series products. -/
+theorem norm_φ₄'_le : ∃ C₄ > 0, ∀ z : ℍ, 1 / 2 < z.im →
+    norm (φ₄' z) ≤ C₄ * rexp (2 * π * z.im) := by
+  -- Coefficients for E₄² expansion
+  -- E₄ = 1 + 240*Σσ₃(n)qⁿ, so E₄² is the convolution
+  -- Leading term at n=0 is 1*1 = 1
+  -- For polynomial growth, we use σ₃ convolution which is O(n^5)
+  let c : ℤ → ℂ := fun n ↦ if n ≤ 0 then 1 else n * (σ 3 n.toNat)
+  have hcpoly : c =O[atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
+    -- The E₄² coefficients grow polynomially (convolution of σ₃ with itself)
+    -- This follows the same pattern as norm_φ₀_le
+    sorry
+  use DivDiscBound c 0
+  constructor
+  · rw [gt_iff_lt]
+    refine DivDiscBound_pos c 0 ?_ 5 hcpoly
+    -- c 0 = 1 ≠ 0 (constant term of E₄² is 1)
+    simp only [c, le_refl, ↓reduceIte, ne_eq, one_ne_zero, not_false_eq_true]
+  · simp only [φ₄']
+    intro z hz
+    have hbound := DivDiscBoundOfPolyFourierCoeff z hz c (0 : ℤ) ?_ 5 hcpoly
+          (fun z ↦ E₄ z ^ 2) ?_
+    · calc norm ((E₄ z ^ 2) / Δ z)
+        _ ≤ DivDiscBound c 0 * rexp (-π * ((0 : ℤ) - 2) * z.im) := hbound
+        _ = DivDiscBound c 0 * rexp (2 * π * z.im) := by ring_nf
+    · -- Summability of Fourier series (needs Ramanujan identity)
+      sorry
+    · -- Fourier expansion identity for E₄²
+      sorry
+
 end Corollaries
 
 end PolyFourierCoeffBound

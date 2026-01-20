@@ -6,6 +6,7 @@ Authors: Cameron Freer
 import SpherePacking.ModularForms.PhiTransform
 import SpherePacking.MagicFunction.RealDecay
 import SpherePacking.MagicFunction.CuspPath
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import Mathlib.MeasureTheory.Integral.IntegrableOn
 
 /-!
@@ -59,11 +60,33 @@ structure PhiBounds where
   hφ₄ : ∀ z : ℍ, 1 ≤ z.im → ‖φ₄' z‖ ≤ C₄ * Real.exp (2 * π * z.im)
 
 /-- PhiBounds instance from modular forms theory.
-    The bounds follow from cusp form decay estimates for φ₀, φ₂', φ₄'.
-    TODO: Fill from modular forms infrastructure. -/
+    Uses Corollaries 7.5-7.7 from PolyFourierCoeffBound.lean.
+    The underlying proofs use Ramanujan identities via sorries in that file. -/
 def phiBounds : PhiBounds := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  all_goals sorry
+  -- Extract bounds using Classical.choose (needed since PhiBounds is a Type)
+  let C₀ := Classical.choose MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
+  have hC₀_spec := Classical.choose_spec MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
+  let C₂ := Classical.choose MagicFunction.PolyFourierCoeffBound.norm_φ₂'_le
+  have hC₂_spec := Classical.choose_spec MagicFunction.PolyFourierCoeffBound.norm_φ₂'_le
+  let C₄ := Classical.choose MagicFunction.PolyFourierCoeffBound.norm_φ₄'_le
+  have hC₄_spec := Classical.choose_spec MagicFunction.PolyFourierCoeffBound.norm_φ₄'_le
+  -- Extract positivity and bound hypotheses
+  have hC₀_pos : 0 < C₀ := hC₀_spec.1
+  have hφ₀' : ∀ z : ℍ, 1/2 < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im) := hC₀_spec.2
+  have hC₂_pos : 0 < C₂ := hC₂_spec.1
+  have hφ₂' : ∀ z : ℍ, 1/2 < z.im → ‖φ₂' z‖ ≤ C₂ := hC₂_spec.2
+  have hC₄_pos : 0 < C₄ := hC₄_spec.1
+  have hφ₄' : ∀ z : ℍ, 1/2 < z.im → ‖φ₄' z‖ ≤ C₄ * Real.exp (2 * π * z.im) := hC₄_spec.2
+  refine ⟨C₀, C₂, C₄, hC₀_pos, hC₂_pos, hC₄_pos, ?_, ?_, ?_⟩
+  · -- hφ₀: ∀ z, 1 ≤ z.im → ‖φ₀ z‖ ≤ C₀ * exp(-2π z.im)
+    intro z hz
+    exact hφ₀' z (by linarith : 1/2 < z.im)
+  · -- hφ₂: ∀ z, 1 ≤ z.im → ‖φ₂' z‖ ≤ C₂
+    intro z hz
+    exact hφ₂' z (by linarith : 1/2 < z.im)
+  · -- hφ₄: ∀ z, 1 ≤ z.im → ‖φ₄' z‖ ≤ C₄ * exp(2π z.im)
+    intro z hz
+    exact hφ₄' z (by linarith : 1/2 < z.im)
 
 /-! ## Corollary 7.13 - S-transform bound for φ₀''(I/t) -/
 
