@@ -448,9 +448,12 @@ lemma integrableOn_verticalIntegrandX_Ioc (x r : ℝ) (hr : 2 < r) :
     have hφ₀_bound : ‖φ₀'' (Complex.I / t)‖ ≤ phiBounds.C₀ * Real.exp (-2 * π / t) := by
       rw [φ₀''_eq _ hI_div_pos]
       have hz : UpperHalfPlane.im ⟨Complex.I / t, hI_div_pos⟩ = 1/t := by simp [UpperHalfPlane.im]
+      have hz_gt : 1/2 < 1/t := by
+        have h1 : 1 ≤ 1/t := one_le_one_div ht_pos ht_le
+        linarith
       calc ‖φ₀ ⟨Complex.I / ↑t, hI_div_pos⟩‖
         ≤ phiBounds.C₀ * Real.exp (-2 * π * UpperHalfPlane.im ⟨Complex.I / t, hI_div_pos⟩) :=
-            phiBounds.hφ₀ _ (by rw [hz, le_div_iff₀ ht_pos]; linarith)
+            phiBounds.hφ₀ _ (by rw [hz]; exact hz_gt)
         _ = phiBounds.C₀ * Real.exp (-2 * π / t) := by rw [hz]; ring_nf
     have hr_pos : 0 < r := lt_trans (by norm_num : (0:ℝ) < 2) hr
     have ht2_le : t^2 ≤ 1 := by nlinarith [sq_nonneg t, sq_nonneg (t - 1)]
