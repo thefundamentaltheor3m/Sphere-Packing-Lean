@@ -11,8 +11,8 @@ import Mathlib.Analysis.Real.Pi.Bounds
 # Vertical Contour Integrability
 
 Integrability lemmas for vertical ray integrands involving φ₀.
-Provides bounds from Lemmas 4.4.3-4.4.4 of Sidharth Hariharan's thesis and general integrability results
-needed for Proposition 4.4.6 (the double zeros proof).
+Provides bounds from Lemmas 4.4.3-4.4.4 of Sidharth Hariharan's thesis and general
+integrability results needed for Proposition 4.4.6 (the double zeros proof).
 
 ## Main results
 
