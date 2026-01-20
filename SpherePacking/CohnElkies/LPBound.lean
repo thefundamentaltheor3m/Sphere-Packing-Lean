@@ -378,29 +378,20 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             simp only [← tsum_mul_left]
             -- We want to apply `Summable.tsum_comm`, which requires some summability conditions.
             have hSummable₁ : Summable (Function.uncurry fun
-            (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x : ↑(P.centers ∩ D)) ↦
-            ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 f ↑m).re * exp (2 * ↑π * I *
-            ↑⟪(x : EuclideanSpace ℝ (Fin d)) - (x_1 : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) := by
+                (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x : ↑(P.centers ∩ D)) ↦
+                ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 f ↑m).re * exp (2 * ↑π * I *
+                ↑⟪x.val.ofLp - x_1.val.ofLp, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) := by
               sorry
-            sorry
-            -- The following broke after the bump
-            -- rw [← Summable.tsum_comm hSummable₁]
-            -- apply congrArg _ _
-            -- ext x
-            -- have hSummable₂ : Summable (Function.uncurry fun
-            -- (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x_1 : ↑(P.centers ∩ D)) ↦
-            -- ↑(𝓕 f ↑m).re * exp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)) - ↑x_1, ↑m⟫_[ℝ]))
-            --   := by
-            -- sorry
-            -- rw [← Summable.tsum_comm hSummable₂]
-            -- apply congrArg _ _
-            -- ext y
-            -- apply congrArg _ _
-            -- ext m
-            -- refine (IsUnit.mul_left_inj ?h.h).mpr ?h.a
-            -- · rw [isUnit_iff_ne_zero]
-            -- exact Complex.exp_ne_zero _
-            -- · exact (hRealFourier (m : EuclideanSpace ℝ (Fin d))).symm
+            rw [← Summable.tsum_comm hSummable₁]
+            congr! 2 with x
+            rw [← Summable.tsum_comm ?summable]
+            case summable => sorry
+            congr! 4 with y m
+            refine (IsUnit.mul_left_inj ?h.h).mpr ?h.a
+            · rw [isUnit_iff_ne_zero]
+              exact Complex.exp_ne_zero _
+            · symm
+              exact Complex.ext rfl (congrArg im (hRealFourier ↑y))
   _ = ((1 / ZLattice.covolume P.lattice) *
       ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
@@ -439,24 +430,17 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
       (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
-            sorry
-            -- The following broke after the bump
-            -- We need to turn the RHS into the real part of a complex number
-            -- rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
-            -- ∑' (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)),
-            -- (𝓕 f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
-            -- cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
-            -- -- Now we can apply the fact that the real parts of both expressions are equal if
-            -- -- they are equal in ℂ.
-            -- apply congrArg re
-            -- push_cast
-            -- apply congrArg _ _
-            -- apply congrArg _ _
-            -- ext m
-            -- rw [mul_assoc]
-            -- apply congrArg _ _
-            -- rw [mul_conj, normSq_eq_abs]
-            -- norm_cast
+            rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
+                ∑' (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)),
+                 (𝓕 ⇑f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
+                 cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
+            congr 1
+            push_cast
+            congr! 3 with m
+            rw [mul_assoc]
+            apply congrArg _ _
+            rw [mul_conj, Complex.normSq_eq_norm_sq]
+            norm_cast
   -- We split the sum up into the `m = 0` and `m ≠ 0` parts.
   _ = (1 / ZLattice.covolume P.lattice) * (
       (∑' (m : bilinFormOfRealInner.dualSubmodule P.lattice),

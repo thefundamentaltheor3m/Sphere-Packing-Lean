@@ -12,7 +12,7 @@ Given that the problem involves the \emph{arrangement} of balls in space, it is 
     \Delta_{\Pa(cX)}(cR) = \Delta_{\Pa(X)}(R).
   \]
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
   The proof follows by direct computation:
   \[
     \Delta_{\Pa(cX)}(cR) = \frac{\Vol{\Pa(cX) \cap B_d(0, cR)}}{\Vol{B_d(0, cR)}} = \frac{c^d \cdot \Vol{\Pa(X) \cap B_d(0, R)}}{c^d \cdot \Vol{B_d(0, R)}}
@@ -25,7 +25,7 @@ Given that the problem involves the \emph{arrangement} of balls in space, it is 
 \begin{lemma}\label{SpherePacking.scale_density}\lean{SpherePacking.scale_density}\uses{SpherePacking.scale}\leanok
   Let $\Pa(X)$ be a sphere packing and $c$ a positive real number. Then, the density of the scaled packing $\Pa(cX)$ is equal to the density of the original packing $\Pa(X)$.
 \end{lemma}
-\begin{proof}\uses{SpherePacking.scale_finiteDensity}
+\begin{proof}\uses{SpherePacking.scale_finiteDensity}\leanok
   One can show, using relatively unsophisticated real analysis, that
   \[
     \limsup_{R \to \infty} \Delta_{\Pa(cX)}(R) = \limsup_{cR \to \infty} \Delta_{\Pa(cX)}(cR)
