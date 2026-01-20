@@ -50,7 +50,8 @@ The following two lemmas tell us the group structure of $\Gamma(1) = \Gamma_1$ a
   We have $\Gamma(2) = \langle \alpha, \beta, -I \rangle$.
 \end{lemma}
 \begin{proof}
-  See~\cite[Exercise 1.2.4]{first course}.
+    \leanok
+    See~\cite[Exercise 1.2.4]{first course}.
 \end{proof}
 
 Let $z\in\h$, $k\in\Z$, and $\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\mathrm{SL}_2(\Z)$. We omit many of the proofs below when they exist in Mathlib already.
@@ -235,32 +236,31 @@ Also, it vanishes at the unique cusp, i.e. it is a cusp form of level $\Gamma_1$
 \end{lemma}
 \begin{proof}
     \leanok
-The fact that it is invariant under translation is clear from the definition, so we only need to check transformation under $S$. Now, note that $\eta^{24} = \Delta$, and from \ref{lemma:dedekind_eta_transformation} we have $\eta(-1/z) = \sqrt{-iz} \eta(z)$, so $\Delta(-1/z) = z^{12} \Delta(z)$ as required.
-
+    The fact that it is invariant under translation is clear from the definition, so we only need to check transformation under $S$. Now, note that $\eta^{24} = \Delta$, and from \ref{lemma:dedekind_eta_transformation} we have $\eta(-1/z) = \sqrt{-iz} \eta(z)$, so $\Delta(-1/z) = z^{12} \Delta(z)$ as required.
 \end{proof}
 
 
 
-\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}\leanok\lean{Delta_E4_eqn}
+\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}\lean{Delta_E4_eqn}\leanok
 We have
 \begin{equation}
 \Delta(z) = (E_4^3-E_6^2)/1728.
 \end{equation}
 \end{lemma}
-\begin{proof}
-We only need to show its a cuspform, since once we have this, dividing the rhs by $\Delta$ would give a modular form of weight $0$ which is a constant, and so we can determine the constant easily.
+\begin{proof}\leanok
+    We only need to show its a cuspform, since once we have this, dividing the rhs by $\Delta$ would give a modular form of weight $0$ which is a constant, and so we can determine the constant easily.
 
-To check its a cuspform, we just look at  the $q$-expansions of $E_4$ and $E_6$ and prove directly that the first term vanishes.
+    To check its a cuspform, we just look at  the $q$-expansions of $E_4$ and $E_6$ and prove directly that the first term vanishes.
 \end{proof}
 
 %Note that the RHS of \eqref{eqn:disc-logder} is equal to the $E_2(z)$.
 %As a side note, we can also consider defining $\Delta$ as \eqref{eqn:disc-prodformula}, and prove that it coincides with \eqref{eqn:disc-definition}.
 %Such an argument can be found in \cite[Section 2.4]{Bruinier}.
 
-\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition}  \leanok \lean{Delta_imag_axis_pos}
+\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition}\lean{Delta_imag_axis_pos}\leanok
 $\Delta(it) > 0$ for all $t > 0$.
 \end{corollary}
-\begin{proof}
+\begin{proof}\leanok
 By \ref{def:disc-definition}, we have
 $$
 \Delta(it) = e^{-2 \pi t} \prod_{n \ge 1} (1 - e^{-2 \pi n t})^{24} > 0.
@@ -331,7 +331,6 @@ We have
     \dim S_4(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimS4} \\
     \dim S_6(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimS6} \\
     \dim S_8(\mathrm{SL}_{2}(\mathbb{Z})) &= 0. \label{eqn:dimS8}
-    % \dim M_2(\Gamma(2)) &= 2, \label{eqn:dimM2l2}
 \end{align}
 \end{corollary}
 \begin{proof}
@@ -339,7 +338,7 @@ We have
 \end{proof}
 
 Another examples of modular forms we would like to consider are \emph{theta functions} \cite[Section~3.1]{1-2-3}.
-\begin{definition}\label{def:th00-th01-th10}
+\begin{definition}\label{def:th00-th01-th10}\lean{Θ₂, Θ₃, Θ₄}\leanok
 We define three different theta functions (so called ``Thetanullwerte'') as
 \begin{align}
   \Theta_{2}(z) = \theta_{10}(z)\,=\, & \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 z}. \notag \\
@@ -349,7 +348,7 @@ We define three different theta functions (so called ``Thetanullwerte'') as
 \end{definition}
 
 For convenience, we use the following notations for the fourth powers of the theta functions.
-\begin{definition}\label{def:H2-H3-H4}\uses{def:th00-th01-th10}
+\begin{definition}\label{def:H2-H3-H4}\uses{def:th00-th01-th10}\lean{H₂, H₃, H₄}\leanok
 Define
 \begin{equation}
     H_2 = \Theta_2^4, \quad H_3 = \Theta_3^4, \quad H_4 = \Theta_4^4. \label{eqn:H2-H3-H4}
@@ -431,26 +430,27 @@ For example, invariance for $H_2$ can be proved by
   For all $\gamma \in \Gamma_1$, $H_{2}|_2 \gamma$, $H_{3}|_2 \gamma$, and $H_{4}|_2 \gamma$ are holomorphic at $i\infty$.
 \end{lemma}
 \begin{proof}
-  We want to show that for $\gamma \in \Gamma_1$, $\|H_2|_2\gamma(z)\|$ is bounded as $z \in \mathbb{H} \to i\infty$. Firstly, by \Cref{lemma:theta-transform-S-T}, \Cref{lemma:Gamma-2-generators} and induction on group elements, we notice that $\{\pm H_2, \pm H_3, \pm H_4\}$ is closed under action by $\Gamma_1$. Hence, it suffices to prove that $H_2$, $H_3$ and $H_4$ are bounded at $i\infty$. Consider $z \in \mathbb{H}$ with $\Im(z) \geq A$. We proceed by direct algebraic manipulation:
+    \leanok
+    We want to show that for $\gamma \in \Gamma_1$, $\|H_2|_2\gamma(z)\|$ is bounded as $z \in \mathbb{H} \to i\infty$. Firstly, by \Cref{lemma:theta-transform-S-T}, \Cref{lemma:Gamma-2-generators} and induction on group elements, we notice that $\{\pm H_2, \pm H_3, \pm H_4\}$ is closed under action by $\Gamma_1$. Hence, it suffices to prove that $H_2$, $H_3$ and $H_4$ are bounded at $i\infty$. Consider $z \in \mathbb{H}$ with $\Im(z) \geq A$. We proceed by direct algebraic manipulation:
+    \begin{align}
+        \|H_2(z)\|
+        &= \left\|\sum_{n \in \Z} \exp\left(\pi i \left(n + \frac{1}{2}\right)^2 z\right)\right\|^4
+        \leq \left(\sum_{n \in \Z} \left\|\exp\left(\pi i \left(n + \frac{1}{2}\right)^2 z\right)\right)\right\|^4 \\
+        &= \left(\sum_{n \in \Z} \left\|\exp\left(-\pi \left(n + \frac{1}{2}\right)^2 \Im(z)\right)\right)\right\|^4
+        \leq \left(\sum_{n \in \Z} \left\|\exp\left(-\pi \left(n + \frac{1}{2}\right)^2 A\right)\right)\right\|^4
+    \end{align}
 
-\begin{align}
-  \|H_2(z)\|
-  &= \left\|\sum_{n \in \Z} \exp\left(\pi i \left(n + \frac{1}{2}\right)^2 z\right)\right\|^4
-  \leq \left(\sum_{n \in \Z} \left\|\exp\left(\pi i \left(n + \frac{1}{2}\right)^2 z\right)\right)\right\|^4 \\
-  &= \left(\sum_{n \in \Z} \left\|\exp\left(-\pi \left(n + \frac{1}{2}\right)^2 \Im(z)\right)\right)\right\|^4
-  \leq \left(\sum_{n \in \Z} \left\|\exp\left(-\pi \left(n + \frac{1}{2}\right)^2 A\right)\right)\right\|^4
-\end{align}
+    Where we prove the final term is convergent by noticing that it equals $\exp(-\pi A / 4)\theta(iA / 2, iA)$, which has been shown to converge in \texttt{Mathlib}. The proofs for $H_3$ and $H_4$ are similar (actually easier) and have been omitted.
 
-  Where we prove the final term is convergent by noticing that it equals $\exp(-\pi A / 4)\theta(iA / 2, iA)$, which has been shown to converge in \texttt{Mathlib}. The proofs for $H_3$ and $H_4$ are similar (actually easier) and have been omitted.
-
-  \todo{It seems the \texttt{MDifferentiable} requirement is missing.}
+    \todo{It seems the \texttt{MDifferentiable} requirement is missing.}
 \end{proof}
 
-\begin{lemma}\label{lemma:theta-modular}\uses{lemma:theta-slash-invariant,lemma:theta-bounded-im-infty}\lean{H₂_SIF_MDifferentiable,H₃_SIF_MDifferentiable,H₄_SIF_MDifferentiable}
+\begin{lemma}\label{lemma:theta-modular}\uses{lemma:theta-slash-invariant,lemma:theta-bounded-im-infty}\lean{H₂_MF,H₃_MF,H₄_MF}\leanok
 $H_{2}$, $H_{3}$, and $H_{4}$ belong to $M_2(\Gamma(2))$.
 \end{lemma}
 \begin{proof}
-  From \cref{lemma:theta-slash-invariant} and \cref{lemma:theta-bounded-im-infty}, it remains ot prove that $H_2$, $H_3$ and $H_4$ are holomorphic on $\mathbb{H}$. \todo{fill in proof.}
+    \leanok
+    From \cref{lemma:theta-slash-invariant} and \cref{lemma:theta-bounded-im-infty}, it remains ot prove that $H_2$, $H_3$ and $H_4$ are holomorphic on $\mathbb{H}$. \todo{fill in proof.}
 \end{proof}
 
 
@@ -501,28 +501,23 @@ Especially, $H_4$ is not cuspidal.
 
 
 We also have a nontrivial relation between these theta functions.
-\begin{lemma}\label{lemma:jacobi-identity}\uses{lemma:theta-modular, cor:dim-mf}
+\begin{lemma}\label{lemma:jacobi-identity}\uses{lemma:theta-modular, cor:dim-mf}\lean{jacobi_identity}\leanok
 These three theta functions satisfy the \emph{Jacobi identity}
 \begin{equation}\label{eqn:jacobi-identity}
 H_{2} + H_{4} = H_{3} \Leftrightarrow \Theta_{2}^4 + \Theta_{4}^4 = \Theta_{3}^4.
 \end{equation}
 \end{lemma}
 \begin{proof}
-Let $f = (H_2 + H_4 - H_3)^{2}$.
-Obviously, $f$ is a modular form of weight $4$ and level $\Gamma(2)$.
-However, by using the transformation rules of $H_2, H_3, H_4$, one have
-\begin{align}
-    f|_{S} &= (-H_4 - H_2 + H_3)^{2} = f\\
-    f|_{T} &= (-H_2 + H_3 - H_4)^{2} = f
-\end{align}
-so $f$ is actually a modular form of level $1$.
-By considering the limit as $z \to i\infty$, $f$ is a cusp form, so we get $f = 0$ from \eqref{eqn:dimS4}.
-% Apply \Cref{lemma:trzero} to $f = H_{2}$, and use \eqref{eqn:H2-transform-S} and \eqref{eqn:H4-transform-T} so that
-% \[
-%     \mathrm{Tr}(H_{2}) = H_{2} + H_{2} | S + H_{2} | T = H_{2} + H_{4} + H_{3} = 0.
-% \]
-% By \eqref{eqn:dimM2l2}, $H_{2}$, $H_{3}$, and $H_{4}$ are linearly dependent.
-% The relation can be identified by comparing the first two $q$-coefficients of the Fourier expansions.
+    \leanok
+    Let $f = (H_2 + H_4 - H_3)^{2}$.
+    Obviously, $f$ is a modular form of weight $4$ and level $\Gamma(2)$.
+    However, by using the transformation rules of $H_2, H_3, H_4$, one have
+    \begin{align}
+        f|_{S} &= (-H_4 - H_2 + H_3)^{2} = f\\
+        f|_{T} &= (-H_2 + H_3 - H_4)^{2} = f
+    \end{align}
+    so $f$ is actually a modular form of level $1$.
+    By considering the limit as $z \to i\infty$, $f$ is a cusp form, so we get $f = 0$ from \eqref{eqn:dimS4}.
 \end{proof}
 
 These are also related to $E_4$, $E_6$, and $\Delta$ as follows.
@@ -541,7 +536,7 @@ Now the identities follow from the dimension calculations $\dim M_4(\Gamma_1) = 
 \end{proof}
 
 The \emph{strict} positivity of Jacobi theta functions might needed later.
-\begin{corollary}\label{cor:theta-pos}\uses{lemma:jacobi-identity, lemma:theta-transform-S-T}
+\begin{corollary}\label{cor:theta-pos}\uses{lemma:jacobi-identity, lemma:theta-transform-S-T}\lean{H₂_imag_axis_pos, H₄_imag_axis_pos}
 All three functions $t \mapsto H_2(it), H_3(it), H_4(it)$ are positive for $t > 0$.
 \end{corollary}
 \begin{proof}
@@ -576,12 +571,12 @@ We define the (normalized) derivative of $F$ as
 \end{equation}
 \end{definition}
 
-$D$ is normalized as in \eqref{eqn:derivative} because of the following lemma.
-\begin{lemma}\label{lemma:der-q-series}\uses{def:derivative}
+Normalizing the derivative by $1/(2 \pi i)$ as in \eqref{eqn:derivative} is standard in the theory of modular forms, since it makes the $q$-expansion coefficients nicer.
+\begin{lemma}\label{lemma:der-q-series}\uses{def:derivative}\lean{D_qexp_tsum_pnat}\leanok
 We have an equality of operators $D = q \frac{\dd}{\dd q}$.
 In particular, the $q$-series of the derivative of a quasimodular form $F(z) = \sum_{n \ge n_0} a_n q^n$ is $F'(z) = \sum_{n \ge n_0} n a_n q^n$.
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
 Directly follows from the definition \eqref{def:derivative}, where $\frac{1}{2 \pi i}\frac{\dd}{\dd z}e^{2\pi i n z} = n e^{2\pi i n z}$.
 \end{proof}
 
@@ -630,6 +625,7 @@ Let $F$ be a modular form of weight $k$ and level $\Gamma$.
 Then, $\partial_{k}F$ is a modular form of weight $k + 2$ of the same level.
 \end{theorem}
 \begin{proof}
+    \leanok
     Immediate from Theorem \ref{thm:serre-der-equiv-action} since $F|_k\gamma = F$ for all $\gamma \in \Gamma$.
 \end{proof}
 
@@ -637,7 +633,7 @@ Then, $\partial_{k}F$ is a modular form of weight $k + 2$ of the same level.
 More generally, the following theorem holds: if $F$ is a quasimodular form of weight $k$ and depth $s$, then $\partial_{k-s}F$ is a quasimodular form of weight $k + 2$ \emph{and depth $\le s$} of the same level. We will not prove this here.
 \end{remark}
 
-\begin{theorem}\label{thm:ramanujan-formula}\uses{thm:serre-der-modularity, def:serre-der, lemma:E2-transform-general, cor:dim-mf} \lean{ramanujan_E₂, ramanujan_E₄, ramanujan_E₆, ramanujan_E₂', ramanujan_E₄', ramanujan_E₆'}
+\begin{theorem}\label{thm:ramanujan-formula}\uses{thm:serre-der-modularity, def:serre-der, lemma:E2-transform-general, cor:dim-mf} \lean{ramanujan_E₂, ramanujan_E₄, ramanujan_E₆, ramanujan_E₂', ramanujan_E₄', ramanujan_E₆'} \leanok
 We have
 \begin{align}
     E_2' &= \frac{E_2^2 - E_4}{12} \label{eqn:DE2} \\
@@ -721,20 +717,21 @@ This implies
 and by considering $q$-series ($E_4$ has an invertible $q$-series), we get $f_2 = 0$.
 \end{proof}
 
-\begin{theorem}\label{thm:serre-der-prod-rule}\uses{def:serre-der} \lean{serre_D_mul}
+\begin{theorem}\label{thm:serre-der-prod-rule}\uses{def:serre-der} \lean{serre_D_mul} \leanok
 The Serre derivative satisfies the following product rule: for any quasimodular forms $F$ and $G$,
 \begin{equation}
     \partial_{w_1 + w_2} (FG) = (\partial_{w_1}F)G + F (\partial_{w_2}G).
 \end{equation}
 \end{theorem}
 \begin{proof}
-It follows from the definition:
-\begin{align}
-    \partial_{w_1 + w_2} (FG) &= (FG)' - \frac{w_1 + w_2}{12} E_2 (FG) \\
-    &= F'G + FG' - \frac{w_1 + w_2}{12} E_2(FG) \\
-    &= \left(F' - \frac{w_1}{12}E_2 F\right)G + F \left(G' - \frac{w_2}{12}E_2 G\right) \\
-    &= (\partial_{w_1}F)G + F(\partial_{w_2}G).
-\end{align}
+    \leanok
+    It follows from the definition:
+    \begin{align}
+        \partial_{w_1 + w_2} (FG) &= (FG)' - \frac{w_1 + w_2}{12} E_2 (FG) \\
+        &= F'G + FG' - \frac{w_1 + w_2}{12} E_2(FG) \\
+        &= \left(F' - \frac{w_1}{12}E_2 F\right)G + F \left(G' - \frac{w_2}{12}E_2 G\right) \\
+        &= (\partial_{w_1}F)G + F(\partial_{w_2}G).
+    \end{align}
 \end{proof}
 
 We also have the following useful theorem for proving positivity of quasimodular forms on the imaginary axis, which is \cite[Proposition 3.5, Corollary 3.6]{Lee}.
