@@ -646,7 +646,7 @@ lemma jacobi_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_g :=
 
 /-- jacobi_f is holomorphic (MDifferentiable) since jacobi_g is -/
 lemma jacobi_f_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f := by
-  unfold jacobi_f;
+  unfold jacobi_f
   have _ := jacobi_g_MDifferentiable
   fun_prop
 
