@@ -50,7 +50,6 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
   obtain ⟨M, A, hMA⟩ := hbdd
   rw [Metric.tendsto_nhds]
   intro ε hε
-  have hpi : 0 < π := Real.pi_pos
   rw [Filter.Eventually, atImInfty, Filter.mem_comap]
   use Set.Ici (max (2 * max A 0 + 1) (|M| / (π * ε) + 1))
   constructor
