@@ -1,21 +1,8 @@
-import Mathlib.Algebra.Field.Power
-import Mathlib.Algebra.Lie.OfAssociative
-import Mathlib.Data.Real.StarOrdered
-import Mathlib.NumberTheory.ModularForms.Basic
-import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
-import Mathlib.Order.CompletePartialOrder
-
-import SpherePacking.ForMathlib.AtImInfty
-import SpherePacking.ForMathlib.Cusps
 import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 import SpherePacking.ForMathlib.MDifferentiableFunProp
 import SpherePacking.ForMathlib.SlashActions
 import SpherePacking.ForMathlib.UpperHalfPlane
-import SpherePacking.ModularForms.SlashActionAuxil
-import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.DimensionFormulas
-import SpherePacking.ModularForms.IsCuspForm
-import SpherePacking.ModularForms.ResToImagAxis
 
 /-!
 # Jacobi theta functions
@@ -995,6 +982,7 @@ Blueprint: Follows from the q-expansion having real coefficients.
 Proof strategy: H₂ = Θ₂^4 where Θ₂(it) = ∑ₙ exp(-π(n+1/2)²t) is a sum of real
 exponentials.
 -/
+@[fun_prop]
 theorem H₂_imag_axis_real : ResToImagAxis.Real H₂ := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₂]
@@ -1057,6 +1045,7 @@ lemma Θ₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
 Blueprint: Lemma 6.43 - H₂ is positive on the imaginary axis.
 Proof strategy: Each term exp(-π(n+1/2)²t) > 0, so Θ₂(it) > 0, hence H₂ = Θ₂^4 > 0.
 -/
+@[fun_prop]
 theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
   constructor
   · exact H₂_imag_axis_real
@@ -1085,6 +1074,7 @@ theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
 `H₄(it)` is real for all `t > 0`.
 Blueprint: Corollary 6.43 - follows from Θ₄ being real on the imaginary axis.
 -/
+@[fun_prop]
 theorem H₄_imag_axis_real : ResToImagAxis.Real H₄ := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₄]
@@ -1100,6 +1090,7 @@ From H₄_S_action: (H₄ ∣[2] S) = -H₂
 From ResToImagAxis.SlashActionS: relates values at t and 1/t.
 This gives H₂(i/t) = t² * H₄(it), so H₄(it) > 0 follows from H₂(i/t) > 0.
 -/
+@[fun_prop]
 theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
   constructor
   · exact H₄_imag_axis_real
