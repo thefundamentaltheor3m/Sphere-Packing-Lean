@@ -7,7 +7,6 @@ import Mathlib.Algebra.Module.ZLattice.Covolume
 import Mathlib.Dynamics.Ergodic.Action.Regular
 
 import SpherePacking.Basic.SpherePacking
-import SpherePacking.ForMathlib.Bornology
 import SpherePacking.ForMathlib.ENNReal
 import SpherePacking.ForMathlib.Encard
 import SpherePacking.ForMathlib.ENat
@@ -78,7 +77,8 @@ theorem aux3 {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ
     have h_volume' := volume.mono hL
     rw [OuterMeasure.measureOf_eq_coe, Measure.coe_toOuterMeasure, Set.biUnion_eq_iUnion,
       measure_iUnion] at h_volume'
-    · have h_le := Summable.tsum_mono (f := fun _ ↦ c) (g := fun (x : s) ↦ volume (f x)) ?_ ?_ ?_
+    · have h_le : ∑' (n : ↑s), c ≤ ∑' (n : ↑s), volume (f ↑n) :=
+          Summable.tsum_mono (f := fun _ ↦ c) (g := fun (x : s) ↦ volume (f x)) ?_ ?_ ?_
       · have h₁ := (ENNReal.tsum_set_const _ _ ▸ h_le).trans h_volume'
         rw [← Set.encard_lt_top_iff, ← ENat.toENNReal_lt, ENat.toENNReal_top]
         refine lt_of_le_of_lt ((ENNReal.le_div_iff_mul_le ?_ ?_).mpr h₁) <|
@@ -116,7 +116,7 @@ open scoped Pointwise in
 lemma aux4''
     {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (hd : 0 < d) (v : EuclideanSpace ℝ (Fin d)) :
     Finite ↑(S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))) :=
-  aux4 S _ (Bornology.isBounded_vadd_set _ _ <| ZSpan.fundamentalDomain_isBounded _) hd
+  aux4 S _ (IsBounded.vadd (ZSpan.fundamentalDomain_isBounded _) _) hd
 
 end aux_lemmas
 
@@ -871,7 +871,7 @@ theorem volume_ball_ratio_tendsto_nhds_one'
   · convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
       (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
 
-theorem Filter.map_add_atTop_eq {β : Type*} {f : ℝ → β} (C : ℝ) (α : Filter β) :
+theorem Filter.map_add_atTop_eq' {β : Type*} {f : ℝ → β} (C : ℝ) (α : Filter β) :
     Tendsto f atTop α ↔ Tendsto (fun x ↦ f (x + C)) atTop α := by
   constructor <;> intro hf
   · apply tendsto_map'_iff.mp
@@ -889,7 +889,7 @@ theorem Filter.map_add_atTop_eq {β : Type*} {f : ℝ → β} (C : ℝ) (α : Fi
 theorem volume_ball_ratio_tendsto_nhds_one'' {d : ℕ} {C C' : ℝ} (hd : 0 < d) :
     Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) atTop (𝓝 1) := by
-  apply (Filter.map_add_atTop_eq (max (-C) (-C')) _).mpr
+  apply (Filter.map_add_atTop_eq' (max (-C) (-C')) _).mpr
   simp_rw [add_assoc]
   convert volume_ball_ratio_tendsto_nhds_one' hd ?_ ?_
   · trans (-C) + C
@@ -992,8 +992,8 @@ theorem PeriodicSpherePacking.centers_union_over_lattice (S : PeriodicSpherePack
     obtain ⟨hy₁, hy₂⟩ := hg₁
     have : ∃ y : D, ↑y = g +ᵥ x := by use ⟨g +ᵥ x, hy₂⟩
     obtain ⟨y, hy⟩ := this
-    suffices : x = -g +ᵥ (y : EuclideanSpace ℝ (Fin d))
-    · rw [this]
+    suffices x = -g +ᵥ (y : EuclideanSpace ℝ (Fin d)) by
+      rw [this]
       have hy' := Subtype.coe_prop y
       use True.intro -- so weird
       refine Set.vadd_mem_vadd_set ?h.intro.intro.a
@@ -1148,8 +1148,8 @@ theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpherePackin
   letI instFintype := @Fintype.ofFinite _ <| aux4 S D hD_isBounded hd
   rw [Fintype.card_eq_zero_iff]
   refine Set.isEmpty_coe_sort.mpr ?h.a
-  suffices : S.centers = ∅
-  · rw [this]
+  suffices S.centers = ∅ by
+    rw [this]
     exact Set.empty_inter D
   exact Set.isEmpty_coe_sort.mp instEmpty
 

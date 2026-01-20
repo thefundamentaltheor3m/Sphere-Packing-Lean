@@ -41,17 +41,8 @@ theorem logDeriv_tprod_eq_tsum2 {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ �
       convert this
       simp
     · use 0
-    · intro b hb
-      rw [DifferentiableOn]
-      intro z hz
-      apply DifferentiableAt.differentiableWithinAt
-      have hp : ∀ (i : ℕ), i ∈ Finset.range b →  DifferentiableAt ℂ (f i) z := by
-        intro i hi
-        have := (hd i z hz).differentiableAt
-        apply this
-        exact IsOpen.mem_nhds hs hz
-      have := DifferentiableAt.finset_prod hp
-      convert this
+    · intro _ _
+      exact DifferentiableOn.finset_prod fun i a ↦ hd i
     · exact hnez
 
 
@@ -83,17 +74,8 @@ theorem logDeriv_tprod_eq_tsum {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ �
       simp only [Finset.prod_apply]
     · exact htend
     · use 0
-    · intro b hb
-      rw [DifferentiableOn]
-      intro z hz
-      apply DifferentiableAt.differentiableWithinAt
-      have hp : ∀ (i : ℕ), i ∈ Finset.range b → DifferentiableAt ℂ (f i) z := by
-        intro i hi
-        have := (hd i z hz).differentiableAt
-        apply this
-        exact IsOpen.mem_nhds hs hz
-      have := DifferentiableAt.finset_prod hp
-      convert this
+    · intro _ _
+      exact DifferentiableOn.finset_prod fun i a ↦ hd i
     · exact hnez
 
 lemma logDeriv_one_sub_exp (r : ℂ) : logDeriv (fun z => 1 - r * cexp (z)) =
@@ -185,19 +167,19 @@ lemma logDeriv_eqOn_iff' (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableO
     · have hderiv : EqOn (deriv (f * g⁻¹))  (deriv f * g⁻¹ - f * deriv g / g ^ 2) s := by
         intro z hz
         rw [deriv_mul]
-        have hgi : g⁻¹ = (fun x => x⁻¹) ∘ g := by
-          ext y
-          simp only [Pi.inv_apply, comp_apply]
-        rw [hgi, deriv_comp, deriv_inv]
-        simp only [comp_apply, neg_mul, mul_neg, Pi.sub_apply, Pi.mul_apply, Pi.div_apply,
-          Pi.pow_apply]
-        ring
-        · refine differentiableAt_inv ?_
-          exact hgn z hz
-        · apply hg.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
+        · have hgi : g⁻¹ = (fun x => x⁻¹) ∘ g := by
+            ext y
+            simp only [Pi.inv_apply, comp_apply]
+          rw [hgi, deriv_comp, deriv_inv]
+          · simp only [comp_apply, neg_mul, mul_neg, Pi.sub_apply, Pi.mul_apply, Pi.div_apply,
+              Pi.pow_apply]
+            ring
+          · refine differentiableAt_inv ?_
+            exact hgn z hz
+          · apply hg.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
         · exact hf.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
         · apply DifferentiableAt.inv
-          exact hg.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
+          · exact hg.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
           exact hgn z hz
       · have H3 :=
           Convex.is_const_of_fderivWithin_eq_zero (f := f * g⁻¹) (𝕜 := ℂ) (s := s) ?_ ?_ ?_ hy ht

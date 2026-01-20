@@ -9,7 +9,7 @@ open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureThe
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
-open ArithmeticFunction
+open scoped ArithmeticFunction.sigma
 
 
 /- The eta function. Best to define it on all of ℂ since we want to take its logDeriv. -/
@@ -25,7 +25,6 @@ lemma tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ → 
   apply HasProdUniformlyOn.tendstoUniformlyOn_finsetRange
   · apply Summable.hasProdUniformlyOn_nat_one_add hK hu ?_ hcts
     filter_upwards with n x hx using h n x hx
-  simp
 
 /-this is being PRd-/
 lemma prod_tendstoUniformlyOn_tprod' {α : Type*} [TopologicalSpace α] {f : ℕ → α → ℂ} (K : Set α)
@@ -217,8 +216,8 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
           rw [ hl]
           apply tsum_congr
           intro b
-          simp
-          left
+          simp only [Nat.cast_add, Nat.cast_one, mul_eq_mul_left_iff, Nat.cast_eq_zero,
+            ArithmeticFunction.sigma_eq_zero, Nat.add_eq_zero_iff, one_ne_zero, and_false, or_false]
           congr 1
           ring
     · exact isOpen_lt continuous_const Complex.continuous_im
@@ -290,14 +289,14 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
             ((z :ℂ)^(2 : ℤ))⁻¹ *
               (logDeriv η) (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) := by
     rw [logDeriv_comp, mul_comm]
-    congr
-    conv =>
-      enter [1,1]
-      intro z
-      rw [neg_div]
-      simp
-    simp only [deriv.fun_neg', deriv_inv', neg_neg, inv_inj]
-    norm_cast
+    · congr
+      conv =>
+        enter [1,1]
+        intro z
+        rw [neg_div]
+        simp
+      simp only [deriv.fun_neg', deriv_inv', neg_neg, inv_inj]
+      norm_cast
     · simpa only using
       eta_DifferentiableAt_UpperHalfPlane (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ)
     conv =>
@@ -307,8 +306,8 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
       simp
     apply DifferentiableAt.neg
     apply DifferentiableAt.inv
-    simp only [differentiableAt_fun_id]
-    exact ne_zero z
+    · simp only [differentiableAt_fun_id]
+    · exact ne_zero z
   rw [h0, show ((csqrt) * η) = (fun x => (csqrt) x * η x) by rfl, logDeriv_mul]
   · nth_rw 2 [logDeriv_apply]
     unfold csqrt

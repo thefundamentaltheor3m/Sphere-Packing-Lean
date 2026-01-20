@@ -8,7 +8,7 @@ open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureThe
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
-open ArithmeticFunction
+open scoped ArithmeticFunction.sigma
 
 
 lemma cc (f : ℤ → ℂ) (hc : CauchySeq fun N : ℕ => ∑ m ∈ Finset.Icc (-N : ℤ) N, f m)
@@ -59,12 +59,6 @@ lemma sum_Icc_eq_sum_Ico_succ {α : Type*} [AddCommMonoid α] (f : ℤ → α)
     Finset.sum_insert]
   rw [add_comm]
 
-lemma auxl2 (a b c : ℂ) : ‖(a - b)‖≤ ‖(a - b + c)‖ + ‖c‖ := by
-  nth_rw 1 [show a - b = (a - b + c) + -c by ring]
-  have : ‖(a - b + c + -c)‖ ≤ ‖(a - b+ c)‖ + ‖-c‖ := by
-    exact norm_add_le (a - b + c) (-c)
-  simpa using this
-
 lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n, f n = f (-n))
   (hc : CauchySeq (fun N : ℕ => ∑ m ∈ Finset.Icc (-N : ℤ) N, f m) ) :
   CauchySeq (fun N : ℕ => ∑ m ∈ Finset.Ico (-N : ℤ) N, f m) := by
@@ -107,11 +101,9 @@ lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n, f n = f (-n
     have H3 := H n m N hn hm
     simp [dist_eq_norm] at *
     rw [sum_Icc_eq_sum_Ico_succ _, sum_Icc_eq_sum_Ico_succ _] at H3
-    · have := auxl2 (∑ m ∈ Finset.Ico (-↑n) ↑n, f m) (∑ m ∈ Finset.Ico (-↑m) ↑m, f m) (f n - f m)
-      apply le_trans this
+    · apply le_trans (norm_le_add_norm_add _ (f n - f m))
       gcongr
-      · simp at *
-        apply le_trans _ H3
+      · apply le_trans _ H3
         apply le_of_eq
         congr
         ring
@@ -143,24 +135,25 @@ theorem extracted_2_δ (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
 theorem telescope_aux (z : ℍ) (m : ℤ) (b : ℕ) :
   ∑ n ∈ Finset.Ico (-b : ℤ) b, (1 / ((m : ℂ) * ↑z + ↑n) - 1 / (↑m * ↑z + ↑n + 1)) =
     1 / (↑m * ↑z - ↑b) - 1 / (↑m * ↑z + ↑b) := by
-  induction' b with b ihb
-  · aesop
-  simp only [Nat.cast_add, Nat.cast_one, one_div, Finset.sum_sub_distrib] at *
-  rw [fsb, Finset.sum_union, Finset.sum_union, Finset.sum_pair, Finset.sum_pair,add_sub_add_comm,
-    ihb]
-  · simp only [neg_add_rev, Int.reduceNeg, Int.cast_add, Int.cast_neg,
-               Int.cast_one, Int.cast_natCast]
-    ring
-  · omega
-  · omega
-  · simp only [neg_add_rev, Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Ico,
-    le_add_iff_nonneg_left, Left.nonneg_neg_iff, Int.reduceLE, add_neg_lt_iff_lt_add, false_and,
-    not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
-    lt_self_iff_false, and_false, and_self]
-  · simp only [neg_add_rev, Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Ico,
-    le_add_iff_nonneg_left, Left.nonneg_neg_iff, Int.reduceLE, add_neg_lt_iff_lt_add, false_and,
-    not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
-    lt_self_iff_false, and_false, and_self]
+  induction b with
+  | zero => aesop
+  | succ b ihb =>
+    simp only [Nat.cast_add, Nat.cast_one, one_div, Finset.sum_sub_distrib] at *
+    rw [fsb, Finset.sum_union, Finset.sum_union, Finset.sum_pair, Finset.sum_pair,add_sub_add_comm,
+      ihb]
+    · simp only [neg_add_rev, Int.reduceNeg, Int.cast_add, Int.cast_neg,
+                 Int.cast_one, Int.cast_natCast]
+      ring
+    · omega
+    · omega
+    · simp only [neg_add_rev, Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Ico,
+      le_add_iff_nonneg_left, Left.nonneg_neg_iff, Int.reduceLE, add_neg_lt_iff_lt_add, false_and,
+      not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
+      lt_self_iff_false, and_false, and_self]
+    · simp only [neg_add_rev, Int.reduceNeg, Finset.disjoint_insert_right, Finset.mem_Ico,
+      le_add_iff_nonneg_left, Left.nonneg_neg_iff, Int.reduceLE, add_neg_lt_iff_lt_add, false_and,
+      not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
+      lt_self_iff_false, and_false, and_self]
 
 theorem tendstozero_inv_linear (z : ℍ) (b : ℤ) :
   Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z + ↑d)) atTop (𝓝 0) := by
@@ -199,7 +192,7 @@ theorem tendstozero_inv_linear (z : ℍ) (b : ℤ) :
         rw [EisensteinSeries.norm_eq_max_natAbs ]
         simp [hx]
       simp
-      apply tendsto_inverse_atTop_nhds_zero_nat.congr
+      apply tendsto_inv_atTop_nhds_zero_nat.congr
       intro x
       exact Eq.symm (Real.rpow_neg_one ↑x)
     have := r_pos z
@@ -243,7 +236,7 @@ theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ) :
         rw [EisensteinSeries.norm_eq_max_natAbs ]
         simp [hx]
       simp
-      apply tendsto_inverse_atTop_nhds_zero_nat.congr
+      apply tendsto_inv_atTop_nhds_zero_nat.congr
       intro x
       exact Eq.symm (Real.rpow_neg_one ↑x)
     have := r_pos z
@@ -260,13 +253,13 @@ theorem extracted_3 (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
   have h1 : Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z - ↑d)) atTop (𝓝 0) := by
     have := tendstozero_inv_linear z (-b)
     rw [← tendsto_const_smul_iff₀ (c := (-1 : ℂ) ) ] at this
-    simp at *
-    apply this.congr
-    intro x
-    rw [neg_inv]
-    congr
-    ring
-    norm_cast
+    · simp at *
+      · apply this.congr
+        intro x
+        rw [neg_inv]
+        congr
+        ring
+    · norm_cast
   have h2 : Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z + ↑d)) atTop (𝓝 0) := by
     apply tendstozero_inv_linear z b
   have := Filter.Tendsto.sub h1 h2
@@ -354,7 +347,7 @@ lemma t8 (z : ℍ) :
     rw [Finset.mul_sum]
     congr
     ext d
-    let Z : ℍ := ⟨(d +1)* z, by simp; apply mul_pos; linarith; exact z.2⟩
+    let Z : ℍ := ⟨(d +1)* z, by simp; exact mul_pos (by linarith) z.2⟩
     have := q_exp_iden 2 (by norm_num) (z := Z)
     simp only [coe_mk_subtype, one_div, neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one,
       Nat.factorial_one, Nat.cast_one, div_one, pow_one, Z] at *
@@ -403,5 +396,5 @@ lemma G2_cauchy (z : ℍ) :
   simp
   apply CauchySeq.const_add
   apply Filter.Tendsto.cauchySeq (x := -
-    8 * π ^ 2 * ∑' (n : ℕ+), (sigma 1 n) * cexp (2 * π * Complex.I * n * z))
+    8 * π ^ 2 * ∑' (n : ℕ+), (σ 1 n) * cexp (2 * π * Complex.I * n * z))
   apply G2_c_tendsto z

@@ -6,10 +6,15 @@ Authors: Sidharth Hariharan
 
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.Complex.UpperHalfPlane.MoebiusAction
+import Mathlib.Analysis.RCLike.Basic
+import Mathlib.Data.Complex.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+
+open Set Complex Real
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 
-open Set Complex Real
+local notation "ℍ₀" => UpperHalfPlane.upperHalfPlaneSet
 
 namespace MagicFunction.Parametrisations
 
@@ -43,40 +48,61 @@ end Parametrisations
 
 section UpperHalfPlane
 
--- Show that the things that go into functions defined on ℍ do, indeed, lie in ℍ
+open scoped UpperHalfPlane
 
-lemma z₁'_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₁' t).im := by
+lemma im_z₁'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₁' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
   simp only [z₁', IccExtend_of_mem zero_le_one z₁ ht', z₁, add_im, neg_im, one_im, neg_zero, mul_im,
     I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, gt_iff_lt]
   exact ht.1
 
-lemma z₂'_in_upper_half_plane {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₂' t).im := by
-  -- have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
+lemma im_z₂'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₂' t).im := by
   simp [z₂', IccExtend_of_mem zero_le_one z₂ ht, z₂]
 
-lemma z₃'_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₃' t).im := by
+lemma im_z₃'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₃' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
   simp only [z₃', IccExtend_of_mem zero_le_one z₃ ht', z₃, add_im, one_im, mul_im, I_re, ofReal_im,
     mul_zero, I_im, ofReal_re, one_mul, zero_add, gt_iff_lt]
   exact ht.1
 
-lemma z₄'_in_upper_half_plane {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₄' t).im := by
-  -- have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioo ht
+lemma im_z₄'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₄' t).im := by
   simp [z₄', IccExtend_of_mem zero_le_one z₄ ht, z₄]
 
-lemma z₅'_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₅' t).im := by
+lemma im_z₅'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₅' t).im := by
   have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
   simp only [z₅', IccExtend_of_mem zero_le_one z₅ ht', z₅, mul_im, I_re, ofReal_im, mul_zero, I_im,
     ofReal_re, one_mul, zero_add, gt_iff_lt]
   exact ht.1
 
-lemma z₆'_in_upper_half_plane {t : ℝ} (ht : t ∈ Ioi (1 : ℝ)) : 0 < (z₆' t).im := by
-  have ht' : t ∈ Ici 1 := mem_Ici_of_Ioi ht
-  simp only [z₆', IciExtend_of_mem z₆ ht', z₆, mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re,
-    one_mul, zero_add, gt_iff_lt]
-  rw [mem_Ioi] at ht
-  exact zero_lt_one.trans ht
+lemma im_z₆'_pos {t : ℝ} (ht : t ∈ Ici (1 : ℝ)) : 0 < (z₆' t).im := by
+  simp only [z₆', IciExtend_of_mem z₆ ht, z₆, mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re,
+    one_mul, zero_add]
+  rw [mem_Ici] at ht
+  linarith
+
+lemma z₁'_mem_upperHalfPlane_set {t : ℝ} (ht : t ∈ Ioc (0 : ℝ) 1) : z₁' t ∈ ℍ₀ := im_z₁'_pos ht
+
+lemma z₂'_mem_upperHalfPlane_set {t : ℝ} (ht : t ∈ Icc (0 : ℝ) 1) : z₂' t ∈ ℍ₀ := im_z₂'_pos ht
+
+lemma z₃'_mem_upperHalfPlane_set {t : ℝ} (ht : t ∈ Ioc (0 : ℝ) 1) : z₃' t ∈ ℍ₀ := im_z₃'_pos ht
+
+lemma z₄'_mem_upperHalfPlane_set {t : ℝ} (ht : t ∈ Icc (0 : ℝ) 1) : z₄' t ∈ ℍ₀ := im_z₄'_pos ht
+
+lemma z₅'_mem_upperHalfPlane_set {t : ℝ} (ht : t ∈ Ioc (0 : ℝ) 1) : z₅' t ∈ ℍ₀ := im_z₅'_pos ht
+
+lemma z₆'_mem_upperHalfPlane_set {t : ℝ} (ht : t ∈ Ici (1 : ℝ)) : z₆' t ∈ ℍ₀ := im_z₆'_pos ht
+
+lemma z₁'_mapsto : MapsTo z₁' (Ioc 0 1) ℍ₀ := fun _ ht ↦ z₁'_mem_upperHalfPlane_set ht
+
+lemma z₂'_mapsto : MapsTo z₂' (Icc 0 1) ℍ₀ := fun _ ht ↦ z₂'_mem_upperHalfPlane_set ht
+
+lemma z₃'_mapsto : MapsTo z₃' (Ioc 0 1) ℍ₀ := fun _ ht ↦ z₃'_mem_upperHalfPlane_set ht
+
+lemma z₄'_mapsto : MapsTo z₄' (Icc 0 1) ℍ₀ := fun _ ht ↦ z₄'_mem_upperHalfPlane_set ht
+
+lemma z₅'_mapsto : MapsTo z₅' (Ioc 0 1) ℍ₀ := fun _ ht ↦ z₅'_mem_upperHalfPlane_set ht
+
+lemma z₆'_mapsto : MapsTo z₆' (Ici 1) ℍ₀ := fun _ ht ↦ z₆'_mem_upperHalfPlane_set ht
 
 end UpperHalfPlane
 

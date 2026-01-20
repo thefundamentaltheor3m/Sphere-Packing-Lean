@@ -25,67 +25,67 @@ theorem aut_iter_deriv (d : ℤ) (k : ℕ) :
     EqOn (iteratedDerivWithin k (fun z : ℂ => 1 / (z + d)) {z : ℂ | 0 < z.im})
       (fun t : ℂ => (-1) ^ k * k ! * (1 / (t + d) ^ (k + 1))) {z : ℂ | 0 < z.im} := by
   intro x hx
-  induction' k with k IH generalizing x
-  · simp only [iteratedDerivWithin_zero, pow_zero, Nat.factorial_zero, one_mul]
+  induction k generalizing x with
+  | zero =>
+    simp only [iteratedDerivWithin_zero, pow_zero, Nat.factorial_zero, one_mul]
     simp at *
-  rw [iteratedDerivWithin_succ]
-  simp only [one_div, Nat.cast_succ, Nat.factorial, Nat.cast_mul]
-  have := (IH hx)
-  have H : derivWithin (fun (z : ℂ) => (-1: ℂ) ^ k * ↑k ! * ((z + ↑d) ^ (k + 1))⁻¹)
-             {z : ℂ | 0 < z.im} x =
-           (-1) ^ (↑k + 1) * ((↑k + 1) * ↑k !) * ((x + ↑d) ^ (↑k + 1 + 1))⁻¹ := by
-    rw [DifferentiableAt.derivWithin]
-    · simp only [deriv_const_mul_field']
-
-      have h0 : (fun z : ℂ => ((z + d) ^ (k + 1))⁻¹) = (fun z : ℂ => (z + d) ^ (k + 1))⁻¹ := by
-        rfl
-      rw [h0]
-      have h1 : (fun z : ℂ => ((z + d) ^ (k + 1))) = (fun z : ℂ => (z + d)) ^ (k + 1) := by
-        rfl
-      rw [h1]
-      rw [deriv_inv'', deriv_pow, deriv_add_const', deriv_id'']
-      simp only [Nat.cast_add, Nat.cast_one, add_tsub_cancel_right, mul_one]
-      rw [pow_add]
-      simp [pow_one]
-
-      have Hw : (-(((k : ℂ) + 1) * (x + ↑d) ^ k) / ((x + ↑d) ^ k * (x + ↑d)) ^ 2) =
-                -(↑k + 1) / (x + ↑d) ^ (k + 2) :=
-        by
-        rw [div_eq_div_iff]
+  | succ k IH =>
+    rw [iteratedDerivWithin_succ]
+    simp only [one_div, Nat.cast_succ, Nat.factorial, Nat.cast_mul]
+    have := (IH hx)
+    have H : derivWithin (fun (z : ℂ) => (-1: ℂ) ^ k * ↑k ! * ((z + ↑d) ^ (k + 1))⁻¹)
+               {z : ℂ | 0 < z.im} x =
+             (-1) ^ (↑k + 1) * ((↑k + 1) * ↑k !) * ((x + ↑d) ^ (↑k + 1 + 1))⁻¹ := by
+      rw [DifferentiableAt.derivWithin]
+      · simp only [deriv_const_mul_field']
+        have h0 : (fun z : ℂ => ((z + d) ^ (k + 1))⁻¹) = (fun z : ℂ => (z + d) ^ (k + 1))⁻¹ := by
+          rfl
+        rw [h0]
+        have h1 : (fun z : ℂ => ((z + d) ^ (k + 1))) = (fun z : ℂ => (z + d)) ^ (k + 1) := by
+          rfl
+        rw [h1]
+        rw [deriv_inv'', deriv_pow, deriv_add_const', deriv_id'']
+        · simp only [Nat.cast_add, Nat.cast_one, add_tsub_cancel_right, mul_one]
+          rw [pow_add]
+          simp [pow_one]
+          have Hw : (-(((k : ℂ) + 1) * (x + ↑d) ^ k) / ((x + ↑d) ^ k * (x + ↑d)) ^ 2) =
+                    -(↑k + 1) / (x + ↑d) ^ (k + 2) :=
+            by
+            rw [div_eq_div_iff]
+            · norm_cast
+              simp
+              ring
+            · norm_cast
+              apply pow_ne_zero
+              apply mul_ne_zero
+              · apply pow_ne_zero k (upper_ne_int ⟨x, hx⟩ d)
+              apply upper_ne_int ⟨x, hx⟩ d
+            norm_cast
+            apply pow_ne_zero (k + 2) (upper_ne_int ⟨x, hx⟩ d)
+          rw [Hw]
+          ring
+        · fun_prop
+        · fun_prop
         norm_cast
-        simp
-        ring
-        norm_cast
-        apply pow_ne_zero
-        apply mul_ne_zero
-        apply pow_ne_zero k (upper_ne_int ⟨x, hx⟩ d)
-        apply upper_ne_int ⟨x, hx⟩ d
-        norm_cast
-        apply pow_ne_zero (k + 2) (upper_ne_int ⟨x, hx⟩ d)
-      rw [Hw]
-      ring
-      fun_prop
-      fun_prop
-      norm_cast
-      apply pow_ne_zero (k + 1) (upper_ne_int ⟨x, hx⟩ d)
-    · apply DifferentiableAt.mul
-      · fun_prop
-      · apply DifferentiableAt.inv
-        fun_prop
         apply pow_ne_zero (k + 1) (upper_ne_int ⟨x, hx⟩ d)
-    · apply IsOpen.uniqueDiffWithinAt _ hx
-      refine isOpen_lt ?_ ?_
-      · fun_prop
-      · fun_prop
-  rw [←H]
-  apply derivWithin_congr
-  · norm_cast at *
+      · apply DifferentiableAt.mul
+        · fun_prop
+        · apply DifferentiableAt.inv
+          · fun_prop
+          apply pow_ne_zero (k + 1) (upper_ne_int ⟨x, hx⟩ d)
+      · apply IsOpen.uniqueDiffWithinAt _ hx
+        refine isOpen_lt ?_ ?_
+        · fun_prop
+        · fun_prop
+    rw [←H]
+    apply derivWithin_congr
+    · norm_cast at *
+      simp at *
+      intro r hr
+      apply IH hr
+    norm_cast at *
     simp at *
-    intro r hr
-    apply IH hr
-  norm_cast at *
-  simp at *
-  apply this
+    apply this
 
 theorem aut_iter_deriv' (d : ℤ) (k : ℕ) :
     EqOn (iteratedDerivWithin k (fun z : ℂ => 1 / (z - d)) {z : ℂ | 0 < z.im})
