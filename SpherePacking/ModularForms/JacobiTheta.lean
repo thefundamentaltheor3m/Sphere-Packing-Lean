@@ -261,6 +261,12 @@ noncomputable def H₄_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₄
   slash_action_eq' := slashaction_generators_Γ2 H₄ (2 : ℤ) H₄_α_action H₄_β_action H₄_negI_action
 
+@[simp] lemma H₂_SIF_coe : (H₂_SIF : ℍ → ℂ) = H₂ := rfl
+
+@[simp] lemma H₃_SIF_coe : (H₃_SIF : ℍ → ℂ) = H₃ := rfl
+
+@[simp] lemma H₄_SIF_coe : (H₄_SIF : ℍ → ℂ) = H₄ := rfl
+
 end H_SlashInvariant
 
 
@@ -345,6 +351,15 @@ lemma H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF :=
       have := congrArg (fun f : ℍ → ℂ => f τ) hfun_eq.symm
       simpa [Function.comp] using this)
   simpa [mdifferentiableWithinAt_univ] using hMD_within
+
+lemma H₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := by
+  simpa [H₂_SIF, SlashInvariantForm.coe_mk] using H₂_SIF_MDifferentiable
+
+lemma H₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃ := by
+  simpa [H₃_SIF, SlashInvariantForm.coe_mk] using H₃_SIF_MDifferentiable
+
+lemma H₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := by
+  simpa [H₄_SIF, SlashInvariantForm.coe_mk] using H₄_SIF_MDifferentiable
 
 end H_MDifferentiable
 
@@ -559,6 +574,12 @@ noncomputable def H₄_MF : ModularForm (Γ 2) 2 := {
   holo' := H₄_SIF_MDifferentiable
   bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_H₄_slash
 }
+
+@[simp] lemma H₂_MF_coe : (H₂_MF : ℍ → ℂ) = H₂ := rfl
+
+@[simp] lemma H₃_MF_coe : (H₃_MF : ℍ → ℂ) = H₃ := rfl
+
+@[simp] lemma H₄_MF_coe : (H₄_MF : ℍ → ℂ) = H₄ := rfl
 
 /-!
 ## Jacobi identity
@@ -971,6 +992,7 @@ Blueprint: Follows from the q-expansion having real coefficients.
 Proof strategy: H₂ = Θ₂^4 where Θ₂(it) = ∑ₙ exp(-π(n+1/2)²t) is a sum of real
 exponentials.
 -/
+@[fun_prop]
 theorem H₂_imag_axis_real : ResToImagAxis.Real H₂ := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₂]
@@ -1033,6 +1055,7 @@ lemma Θ₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
 Blueprint: Lemma 6.43 - H₂ is positive on the imaginary axis.
 Proof strategy: Each term exp(-π(n+1/2)²t) > 0, so Θ₂(it) > 0, hence H₂ = Θ₂^4 > 0.
 -/
+@[fun_prop]
 theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
   constructor
   · exact H₂_imag_axis_real
@@ -1061,6 +1084,7 @@ theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
 `H₄(it)` is real for all `t > 0`.
 Blueprint: Corollary 6.43 - follows from Θ₄ being real on the imaginary axis.
 -/
+@[fun_prop]
 theorem H₄_imag_axis_real : ResToImagAxis.Real H₄ := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, H₄]
@@ -1076,6 +1100,7 @@ From H₄_S_action: (H₄ ∣[2] S) = -H₂
 From ResToImagAxis.SlashActionS: relates values at t and 1/t.
 This gives H₂(i/t) = t² * H₄(it), so H₄(it) > 0 follows from H₂(i/t) > 0.
 -/
+@[fun_prop]
 theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
   constructor
   · exact H₄_imag_axis_real
