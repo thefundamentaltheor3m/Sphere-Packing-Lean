@@ -33,7 +33,8 @@ open scoped ArithmeticFunction.sigma
 
 namespace MagicFunction.PolyFourierCoeffBound
 
-private noncomputable def fouterm (coeff : ℤ → ℂ) (x : ℂ) (i : ℤ) : ℂ :=
+/-- Fourier term: c(i) * exp(πi·i·x). Used in Fourier series for quotients by discriminant. -/
+noncomputable def fouterm (coeff : ℤ → ℂ) (x : ℂ) (i : ℤ) : ℂ :=
   (coeff i) * cexp (π * I * i * x)
 
 variable (z : ℍ) (hz : 1 / 2 < z.im)
