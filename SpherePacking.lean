@@ -25,12 +25,16 @@ import SpherePacking.ForMathlib.Vec
 import SpherePacking.ForMathlib.VolumeOfBalls
 import SpherePacking.ForMathlib.ZLattice
 import SpherePacking.ForMathlib.tprod
+import SpherePacking.MagicFunction.CuspPath
 import SpherePacking.MagicFunction.IntegralParametrisations
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.MagicFunction.RealDecay
 import SpherePacking.MagicFunction.a.Basic
+import SpherePacking.MagicFunction.a.ContourEndpoints
 import SpherePacking.MagicFunction.a.Eigenfunction
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.a.Integrability.Integrability
+import SpherePacking.MagicFunction.a.Integrability.ProductIntegrability
 import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 import SpherePacking.MagicFunction.a.IntegralEstimates.I2
@@ -40,6 +44,7 @@ import SpherePacking.MagicFunction.a.IntegralEstimates.I5
 import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 import SpherePacking.MagicFunction.a.Schwartz
 import SpherePacking.MagicFunction.a.SpecialValues
+import SpherePacking.MagicFunction.a.VerticalVanishing
 import SpherePacking.MagicFunction.b.Basic
 import SpherePacking.MagicFunction.b.Eigenfunction
 import SpherePacking.MagicFunction.b.Schwartz

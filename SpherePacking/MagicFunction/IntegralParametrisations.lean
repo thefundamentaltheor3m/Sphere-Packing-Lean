@@ -50,34 +50,23 @@ section UpperHalfPlane
 open scoped UpperHalfPlane
 
 lemma im_z₁'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₁' t).im := by
-  have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
-  simp only [z₁', IccExtend_of_mem zero_le_one z₁ ht', z₁, add_im, neg_im, one_im, neg_zero, mul_im,
-    I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, gt_iff_lt]
-  exact ht.1
+  simp [z₁', IccExtend_of_mem zero_le_one z₁ (mem_Icc_of_Ioc ht), z₁, ht.1]
 
 lemma im_z₂'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₂' t).im := by
   simp [z₂', IccExtend_of_mem zero_le_one z₂ ht, z₂]
 
 lemma im_z₃'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₃' t).im := by
-  have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
-  simp only [z₃', IccExtend_of_mem zero_le_one z₃ ht', z₃, add_im, one_im, mul_im, I_re, ofReal_im,
-    mul_zero, I_im, ofReal_re, one_mul, zero_add, gt_iff_lt]
-  exact ht.1
+  simp [z₃', IccExtend_of_mem zero_le_one z₃ (mem_Icc_of_Ioc ht), z₃, ht.1]
 
 lemma im_z₄'_pos {t : ℝ} (ht : t ∈ Icc 0 1) : 0 < (z₄' t).im := by
   simp [z₄', IccExtend_of_mem zero_le_one z₄ ht, z₄]
 
 lemma im_z₅'_pos {t : ℝ} (ht : t ∈ Ioc 0 1) : 0 < (z₅' t).im := by
-  have ht' : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
-  simp only [z₅', IccExtend_of_mem zero_le_one z₅ ht', z₅, mul_im, I_re, ofReal_im, mul_zero, I_im,
-    ofReal_re, one_mul, zero_add, gt_iff_lt]
-  exact ht.1
+  simp [z₅', IccExtend_of_mem zero_le_one z₅ (mem_Icc_of_Ioc ht), z₅, ht.1]
 
 lemma im_z₆'_pos {t : ℝ} (ht : t ∈ Ici (1 : ℝ)) : 0 < (z₆' t).im := by
   simp only [z₆', IciExtend_of_mem z₆ ht, z₆, mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re,
-    one_mul, zero_add]
-  rw [mem_Ici] at ht
-  linarith
+    one_mul, zero_add, mem_Ici] at ht ⊢; linarith
 
 lemma z₁'_mem_upperHalfPlane_set {t : ℝ} (ht : t ∈ Ioc (0 : ℝ) 1) : z₁' t ∈ ℍ₀ := im_z₁'_pos ht
 
@@ -126,5 +115,51 @@ lemma z₆'_eq_of_mem {t : ℝ} (ht : t ∈ Ici 1) : z₆' t = I * t := by
   rw [z₆', IciExtend_of_mem z₆ ht, z₆]
 
 end eq_of_mem
+
+/-! ## Continuity Lemmas -/
+
+section Continuity
+
+/-- z₂ is continuous. -/
+lemma continuous_z₂ : Continuous z₂ := by
+  unfold z₂
+  fun_prop
+
+/-- z₄ is continuous. -/
+lemma continuous_z₄ : Continuous z₄ := by
+  unfold z₄
+  fun_prop
+
+/-- z₆ is continuous. -/
+lemma continuous_z₆ : Continuous z₆ := by
+  unfold z₆
+  fun_prop
+
+/-- z₂' is continuous on ℝ. -/
+lemma continuous_z₂' : Continuous z₂' := continuous_z₂.Icc_extend'
+
+/-- z₄' is continuous on ℝ. -/
+lemma continuous_z₄' : Continuous z₄' := continuous_z₄.Icc_extend'
+
+/-- z₆' is continuous on ℝ. -/
+lemma continuous_z₆' : Continuous z₆' := by
+  unfold z₆'
+  -- IciExtend f = f ∘ projIci, where projIci is max
+  simp only [IciExtend]
+  exact continuous_const.mul (continuous_ofReal.comp (continuous_const.max continuous_id))
+
+/-- For t ∈ [0,1], (z₂' t).im = 1. -/
+lemma z₂'_im_eq {t : ℝ} (ht : t ∈ Icc 0 1) : (z₂' t).im = 1 := by
+  simp [z₂', IccExtend_of_mem zero_le_one z₂ ht, z₂]
+
+/-- For t ∈ [0,1], (z₄' t).im = 1. -/
+lemma z₄'_im_eq {t : ℝ} (ht : t ∈ Icc 0 1) : (z₄' t).im = 1 := by
+  simp [z₄', IccExtend_of_mem zero_le_one z₄ ht, z₄]
+
+/-- For t ∈ [1,∞), (z₆' t).im = t. -/
+lemma z₆'_im_eq {t : ℝ} (ht : t ∈ Ici 1) : (z₆' t).im = t := by
+  simp [z₆', IciExtend_of_mem z₆ ht, z₆]
+
+end Continuity
 
 end MagicFunction.Parametrisations
