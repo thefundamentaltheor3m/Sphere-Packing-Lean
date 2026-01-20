@@ -211,69 +211,49 @@ lemma sigma1_qexp_summable (z : UpperHalfPlane) :
   simp only [pow_zero, one_mul] at h
   exact h
 
+/-- Generic derivative bound for σ_k q-series on compact sets.
+Uses σ_k(n) ≤ n^(k+1) (sigma_bound) and iter_deriv_comp_bound3 for exponential decay. -/
+lemma sigma_qexp_deriv_bound_generic (k : ℕ) :
+    ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (z : K),
+        ‖(ArithmeticFunction.sigma k n : ℂ) * (2 * Real.pi * Complex.I * n) *
+          Complex.exp (2 * Real.pi * Complex.I * n * z.1)‖ ≤ u n := by
+  intro K hK hKc
+  obtain ⟨u₀, hu₀_sum, hu₀_bound⟩ := iter_deriv_comp_bound3 K hK hKc (k + 2)
+  refine ⟨fun n => u₀ n, hu₀_sum.subtype _, fun n z => ?_⟩
+  have hpow : (2 * π * n) ^ (k + 2) * ‖Complex.exp (2 * π * Complex.I * n * z.1)‖ ≤ u₀ n := by
+    simpa [abs_of_pos Real.pi_pos] using hu₀_bound n z
+  calc ‖(ArithmeticFunction.sigma k n : ℂ) * (2 * π * Complex.I * n) *
+          Complex.exp (2 * π * Complex.I * n * z.1)‖
+      = ‖(ArithmeticFunction.sigma k n : ℂ)‖ * ‖(2 * π * Complex.I * n : ℂ)‖ *
+          ‖Complex.exp (2 * π * Complex.I * n * z.1)‖ := by rw [norm_mul, norm_mul]
+    _ ≤ (n : ℝ) ^ (k + 1) * (2 * π * n) * ‖Complex.exp (2 * π * Complex.I * n * z.1)‖ := by
+        apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+        have hs : ‖(ArithmeticFunction.sigma k n : ℂ)‖ ≤ (n : ℝ) ^ (k + 1) := by
+          simp only [Complex.norm_natCast]; exact_mod_cast sigma_bound k n
+        have hn : ‖(2 * π * Complex.I * n : ℂ)‖ = 2 * π * n := by
+          simp only [norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs,
+            abs_of_pos Real.pi_pos, Complex.norm_I, mul_one, Complex.norm_natCast]
+        rw [hn]; exact mul_le_mul hs le_rfl (by positivity) (by positivity)
+    _ ≤ (2 * π * n) ^ (k + 2) * ‖Complex.exp (2 * π * Complex.I * n * z.1)‖ := by
+        apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+        calc (n : ℝ) ^ (k + 1) * (2 * π * ↑↑n) = (2 * π) * (n : ℝ) ^ (k + 2) := by ring
+          _ ≤ (2 * π) ^ (k + 2) * (n : ℝ) ^ (k + 2) := by
+              apply mul_le_mul_of_nonneg_right _ (by positivity)
+              calc (2 * π) = (2 * π) ^ 1 := (pow_one _).symm
+                _ ≤ (2 * π) ^ (k + 2) :=
+                    pow_le_pow_right₀ (by linarith [Real.two_le_pi]) (by omega : 1 ≤ k + 2)
+          _ = (2 * π * ↑↑n) ^ (k + 2) := by ring
+    _ ≤ u₀ n := hpow
+
 /-- Derivative bound for σ₁ q-series on compact sets (for D_qexp_tsum_pnat hypothesis).
 The bound uses σ₁(n) ≤ n² (sigma_bound) and iter_deriv_comp_bound3 for exponential decay. -/
 lemma sigma1_qexp_deriv_bound :
     ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
       ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K),
         ‖(ArithmeticFunction.sigma 1 n : ℂ) * (2 * Real.pi * Complex.I * n) *
-          Complex.exp (2 * Real.pi * Complex.I * n * k.1)‖ ≤ u n := by
-  intro K hK hKc
-  -- Use iter_deriv_comp_bound3 with k=3 to get bound (2π*n)³ * r^n
-  -- which majorizes our bound n² * (2π*n) * r^n = 2π * n³ * r^n
-  obtain ⟨u₀, hu₀_sum, hu₀_bound⟩ := iter_deriv_comp_bound3 K hK hKc 3
-  use fun n => u₀ n
-  constructor
-  · exact hu₀_sum.subtype _
-  · intro n k
-    have hbound := sigma_bound 1 n
-    -- From iter_deriv_comp_bound3: (2π * n)³ * ‖exp(...)‖ ≤ u₀ n
-    have h3 := hu₀_bound n k
-    -- Note: h3 has form (2 * |π| * n)^3 * ‖exp(...)‖ ≤ u₀ n
-    -- which is (2 * π * n)^3 * ‖exp(...)‖ ≤ u₀ n since π > 0
-    simp only [abs_of_pos Real.pi_pos] at h3
-    -- Our bound: σ₁(n) * (2π*n) * ‖exp(...)‖ ≤ n² * (2π*n) * ‖exp(...)‖
-    -- Need to show: n² * (2π*n) ≤ (2π*n)³ for n ≥ 1
-    calc ‖(ArithmeticFunction.sigma 1 n : ℂ) * (2 * π * Complex.I * n) *
-            Complex.exp (2 * π * Complex.I * n * k.1)‖
-        = ‖(ArithmeticFunction.sigma 1 n : ℂ)‖ * ‖(2 * π * Complex.I * n : ℂ)‖ *
-            ‖Complex.exp (2 * π * Complex.I * n * k.1)‖ := by
-          rw [norm_mul, norm_mul]
-      _ ≤ (n : ℝ) ^ 2 * (2 * π * n) * ‖Complex.exp (2 * π * Complex.I * n * k.1)‖ := by
-          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-          have hs : ‖(ArithmeticFunction.sigma 1 n : ℂ)‖ ≤ (n : ℝ) ^ 2 := by
-            simp only [Complex.norm_natCast]
-            exact_mod_cast hbound
-          have hn : ‖(2 * π * Complex.I * n : ℂ)‖ = 2 * π * n := by
-            simp only [norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs,
-              abs_of_pos Real.pi_pos, Complex.norm_I, mul_one, Complex.norm_natCast]
-          rw [hn]
-          exact mul_le_mul hs (le_refl _) (by positivity) (by positivity)
-      _ ≤ (2 * π * n) ^ 3 * ‖Complex.exp (2 * π * Complex.I * n * k.1)‖ := by
-          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-          -- Need: n² * (2π*n) ≤ (2π*n)³
-          -- i.e., 2π * n³ ≤ (2π)³ * n³
-          -- i.e., 2π ≤ (2π)³ which is true since 2π > 1
-          have h2pi : (1 : ℝ) ≤ 2 * π := by
-            have := Real.two_pi_pos
-            have := Real.pi_pos
-            -- π > 3.14 > 0.5, so 2π > 1
-            -- Use that π² > π (since π > 1), so π > 1
-            -- Then 2π > 2 > 1
-            have hpi_gt_one : (1 : ℝ) < π := by
-              calc (1 : ℝ) < 2 := by norm_num
-                _ ≤ π := Real.two_le_pi
-            linarith
-          calc (n : ℝ) ^ 2 * (2 * π * ↑↑n)
-              = (2 * π) * (n : ℝ) ^ 3 := by ring
-            _ ≤ (2 * π) ^ 3 * (n : ℝ) ^ 3 := by
-                apply mul_le_mul_of_nonneg_right _ (by positivity)
-                calc (2 * π) = (2 * π) ^ 1 := (pow_one _).symm
-                  _ ≤ (2 * π) ^ 3 := by
-                      apply pow_le_pow_right₀ h2pi
-                      omega
-            _ = (2 * π * ↑↑n) ^ 3 := by ring
-      _ ≤ u₀ n := h3
+          Complex.exp (2 * Real.pi * Complex.I * n * k.1)‖ ≤ u n :=
+  sigma_qexp_deriv_bound_generic 1
 
 /-- Summability of σ₃ q-series (for E₄ derivative). -/
 lemma sigma3_qexp_summable (z : UpperHalfPlane) :
@@ -287,53 +267,8 @@ lemma sigma3_qexp_deriv_bound :
     ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
       ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K),
         ‖(ArithmeticFunction.sigma 3 n : ℂ) * (2 * Real.pi * Complex.I * n) *
-          Complex.exp (2 * Real.pi * Complex.I * n * k.1)‖ ≤ u n := by
-  intro K hK hKc
-  -- Use iter_deriv_comp_bound3 with k=5 to get bound (2π*n)⁵ * r^n
-  -- which majorizes our bound n⁴ * (2π*n) * r^n = 2π * n⁵ * r^n
-  obtain ⟨u₀, hu₀_sum, hu₀_bound⟩ := iter_deriv_comp_bound3 K hK hKc 5
-  use fun n => u₀ n
-  constructor
-  · exact hu₀_sum.subtype _
-  · intro n k
-    have hbound := sigma_bound 3 n
-    have h5 := hu₀_bound n k
-    simp only [abs_of_pos Real.pi_pos] at h5
-    calc ‖(ArithmeticFunction.sigma 3 n : ℂ) * (2 * π * Complex.I * n) *
-            Complex.exp (2 * π * Complex.I * n * k.1)‖
-        = ‖(ArithmeticFunction.sigma 3 n : ℂ)‖ * ‖(2 * π * Complex.I * n : ℂ)‖ *
-            ‖Complex.exp (2 * π * Complex.I * n * k.1)‖ := by
-          rw [norm_mul, norm_mul]
-      _ ≤ (n : ℝ) ^ 4 * (2 * π * n) * ‖Complex.exp (2 * π * Complex.I * n * k.1)‖ := by
-          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-          have hs : ‖(ArithmeticFunction.sigma 3 n : ℂ)‖ ≤ (n : ℝ) ^ 4 := by
-            simp only [Complex.norm_natCast]
-            exact_mod_cast hbound
-          have hn : ‖(2 * π * Complex.I * n : ℂ)‖ = 2 * π * n := by
-            simp only [norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs,
-              abs_of_pos Real.pi_pos, Complex.norm_I, mul_one, Complex.norm_natCast]
-          rw [hn]
-          exact mul_le_mul hs (le_refl _) (by positivity) (by positivity)
-      _ ≤ (2 * π * n) ^ 5 * ‖Complex.exp (2 * π * Complex.I * n * k.1)‖ := by
-          apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-          -- Need: n⁴ * (2π*n) ≤ (2π*n)⁵
-          -- i.e., 2π * n⁵ ≤ (2π)⁵ * n⁵
-          -- i.e., 2π ≤ (2π)⁵ which is true since 2π > 1
-          have h2pi : (1 : ℝ) ≤ 2 * π := by
-            have hpi_gt_one : (1 : ℝ) < π := by
-              calc (1 : ℝ) < 2 := by norm_num
-                _ ≤ π := Real.two_le_pi
-            linarith
-          calc (n : ℝ) ^ 4 * (2 * π * ↑↑n)
-              = (2 * π) * (n : ℝ) ^ 5 := by ring
-            _ ≤ (2 * π) ^ 5 * (n : ℝ) ^ 5 := by
-                apply mul_le_mul_of_nonneg_right _ (by positivity)
-                calc (2 * π) = (2 * π) ^ 1 := (pow_one _).symm
-                  _ ≤ (2 * π) ^ 5 := by
-                      apply pow_le_pow_right₀ h2pi
-                      omega
-            _ = (2 * π * ↑↑n) ^ 5 := by ring
-      _ ≤ u₀ n := h5
+          Complex.exp (2 * Real.pi * Complex.I * n * k.1)‖ ≤ u n :=
+  sigma_qexp_deriv_bound_generic 3
 
 /-- E₄ as explicit tsum (from E4_q_exp PowerSeries coefficients).
 Uses hasSum_qExpansion to convert from PowerSeries to tsum form. -/
