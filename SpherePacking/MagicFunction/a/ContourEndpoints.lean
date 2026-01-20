@@ -114,19 +114,21 @@ lemma norm_φ₀_S_smul_le (z : ℍ) (hz : 1 ≤ z.im) :
   refine h_tri.trans ?_
   -- Step 3: Bound each of the three terms
   have hz_ne : (z : ℂ) ≠ 0 := ne_zero z
+  -- Derive 1/2 < z.im from 1 ≤ z.im for phiBounds lemmas
+  have hz' : 1/2 < z.im := by linarith
   -- Bound (i): ‖φ₀ z‖ ≤ C₀ * exp(-2πt)  [from phiBounds.hφ₀]
-  have hbound1 : ‖φ₀ z‖ ≤ phiBounds.C₀ * exp (-2 * π * z.im) := phiBounds.hφ₀ z hz
+  have hbound1 : ‖φ₀ z‖ ≤ phiBounds.C₀ * exp (-2 * π * z.im) := phiBounds.hφ₀ z hz'
   -- Bound (ii): ‖(12I)/(πz) * φ₂' z‖ ≤ (12/(π‖z‖)) * C₂
   have hbound2 : ‖(12 * Complex.I) / (↑π * z) * φ₂' z‖ ≤ (12 / (π * ‖(z : ℂ)‖)) * phiBounds.C₂ := by
     rw [norm_mul, norm_coeff_12I_div (z : ℂ) hz_ne]
-    exact mul_le_mul_of_nonneg_left (phiBounds.hφ₂ z hz) (by positivity)
+    exact mul_le_mul_of_nonneg_left (phiBounds.hφ₂ z hz') (by positivity)
   -- Bound (iii): ‖36/(π²z²) * φ₄' z‖ ≤ (36/(π²‖z‖²)) * C₄ * exp(2πt)
   have hbound3 : ‖36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖ ≤
       (36 / (π^2 * ‖(z : ℂ)‖^2)) * phiBounds.C₄ * exp (2 * π * z.im) := by
     rw [norm_mul, norm_coeff_36_div_sq (z : ℂ) hz_ne]
     calc 36 / (π ^ 2 * ‖(z : ℂ)‖ ^ 2) * ‖φ₄' z‖
         ≤ 36 / (π ^ 2 * ‖(z : ℂ)‖ ^ 2) * (phiBounds.C₄ * exp (2 * π * z.im)) :=
-          mul_le_mul_of_nonneg_left (phiBounds.hφ₄ z hz) (by positivity)
+          mul_le_mul_of_nonneg_left (phiBounds.hφ₄ z hz') (by positivity)
       _ = 36 / (π ^ 2 * ‖(z : ℂ)‖ ^ 2) * phiBounds.C₄ * exp (2 * π * z.im) := by ring
   -- Combine bounds
   linarith
