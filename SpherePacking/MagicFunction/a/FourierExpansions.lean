@@ -168,10 +168,32 @@ lemma summable_fouterm_of_poly {c : ℤ → ℂ} {k : ℕ}
   have hr : ‖Complex.exp (π * Complex.I * z)‖ < 1 := norm_exp_pi_I_z_lt_one z
   -- Shifted coefficients have polynomial growth
   have hshift := isBigO_shift n₀ hpoly
-  -- The detailed proof needs careful handling of the factorization
-  -- fouterm c z (i + n₀) = (c(i+n₀) * const) * exp(πiz)^i
-  -- and application of summable_real_norm_mul_geometric_of_norm_lt_one
-  sorry
+  -- Factor fouterm c z (i + n₀) = u(i) * r^i
+  -- where r = cexp(π * I * z) and u(i) = c(i + n₀) * cexp(π * I * n₀ * z)
+  let r := cexp (π * Complex.I * z)
+  let const := cexp (π * Complex.I * n₀ * z)
+  let u : ℕ → ℂ := fun i => c (i + n₀) * const
+  have h_factor : ∀ i : ℕ, fouterm c z (i + n₀) = u i * r ^ i := fun i => by
+    simp only [fouterm, u, r, const]
+    -- cexp(π * I * (i + n₀) * z) = cexp(π * I * n₀ * z) * cexp(π * I * z)^i
+    have hexp : cexp (↑π * Complex.I * ↑(↑i + n₀) * ↑z) = const * r ^ i := by
+      simp only [const, r, ← Complex.exp_nat_mul, Int.cast_add, Int.cast_natCast]
+      rw [← Complex.exp_add]
+      congr 1
+      ring
+    rw [hexp]
+    ring
+  -- u has polynomial growth: ‖u n‖ = ‖c(n+n₀)‖ * ‖const‖ is O(n^k)
+  have hu : u =O[Filter.atTop] (fun n ↦ (↑(n ^ k) : ℝ)) := by
+    simp only [u]
+    -- f(i) * const = const * f(i), and const * f is O(g) if f is O(g)
+    have heq : (fun i : ℕ => c (↑i + n₀) * const) = (fun i : ℕ => const * c (↑i + n₀)) := by
+      ext i; ring
+    rw [heq]
+    exact hshift.const_mul_left const
+  -- Apply summability theorem
+  simp_rw [h_factor]
+  exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hu)
 
 /-- Summability for (E₂E₄ - E₆)² expansion (n₀ = 4). -/
 lemma summable_E₂E₄E₆_sq (z : ℍ) :
