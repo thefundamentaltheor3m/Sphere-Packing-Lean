@@ -136,13 +136,9 @@ lemma tendsto_zero_of_exp_decay {f : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
 /-- A modular form tends to its value at infinity as z → i∞. -/
 lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :
     Filter.Tendsto f.toFun atImInfty (nhds ((qExpansion 1 f).coeff 0)) := by
-  have hdecay := ModularFormClass.exp_decay_sub_atImInfty' f
-  obtain ⟨c, hc, hO⟩ := hdecay
-  have hval := qExpansion_coeff_zero f (by norm_num : (0 : ℝ) < 1) one_mem_strictPeriods_SL2Z
-  rw [hval]
-  have htend : Filter.Tendsto (fun z => f z - valueAtInfty f.toFun) atImInfty (nhds 0) :=
-    tendsto_zero_of_exp_decay hc hO
-  simpa using htend.add_const (valueAtInfty f.toFun)
+  obtain ⟨c, hc, hO⟩ := ModularFormClass.exp_decay_sub_atImInfty' f
+  rw [qExpansion_coeff_zero f (by norm_num : (0 : ℝ) < 1) one_mem_strictPeriods_SL2Z]
+  simpa using (tendsto_zero_of_exp_decay hc hO).add_const (valueAtInfty f.toFun)
 
 /-- E₂ - 1 = O(exp(-2π·Im z)) at infinity. -/
 lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
