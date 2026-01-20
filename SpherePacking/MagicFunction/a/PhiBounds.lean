@@ -25,7 +25,8 @@ noncomputable section
 namespace MagicFunction.a
 
 /-- Bundle of Corollary 7.5-7.7 bounds as hypotheses.
-    Blueprint states these for Im(z) > 1/2, which is the condition we use. -/
+    Blueprint states these for Im(z) > 1/2; we use Im(z) ≥ 1 as a convenient
+    safe strip that covers all rectangle contour points. -/
 structure PhiBounds where
   C₀ : ℝ
   C₂ : ℝ

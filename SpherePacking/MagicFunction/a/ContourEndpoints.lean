@@ -9,6 +9,7 @@ import SpherePacking.MagicFunction.CuspPath
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.PhiBounds
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.MagicFunction.a.PhiBounds
 import Mathlib.MeasureTheory.Integral.IntegrableOn
 
 /-!
@@ -46,57 +47,9 @@ noncomputable section
 
 namespace MagicFunction.ContourEndpoints
 
-/-! ## Filter for imaginary part tending to infinity on ℂ -/
-
-/-- The filter on ℂ of sets containing { z | M ≤ z.im } for some M.
-    This is the preimage of `atTop` under `Complex.im`. -/
-def atImInfty_ℂ : Filter ℂ := Filter.comap Complex.im atTop
-
-/-- Characterization of membership in `atImInfty_ℂ`. -/
-lemma mem_atImInfty_ℂ {s : Set ℂ} : s ∈ atImInfty_ℂ ↔ ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → z ∈ s := by
-  simp only [atImInfty_ℂ, Filter.mem_comap, Filter.mem_atTop_sets]
-  exact ⟨fun ⟨_, ⟨a, ha⟩, hts⟩ => ⟨a, fun z hz => hts (ha z.im hz)⟩,
-         fun ⟨M, hM⟩ => ⟨Ici M, ⟨M, fun _ hb => hb⟩, fun z hz => hM z hz⟩⟩
-
-/-- Tendsto characterization for `atImInfty_ℂ` to `𝓝 0`. -/
-lemma tendsto_zero_atImInfty_ℂ_iff {f : ℂ → ℂ} :
-    Tendsto f atImInfty_ℂ (𝓝 0) ↔ ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε := by
-  simp [Metric.tendsto_nhds, dist_zero_right, Filter.eventually_iff, mem_atImInfty_ℂ]
-
-/-- Tendsto characterization for `atImInfty_ℂ` to `𝓝 0` (real-valued version). -/
-lemma tendsto_zero_atImInfty_ℂ_iff' {f : ℂ → ℝ} :
-    Tendsto f atImInfty_ℂ (𝓝 0) ↔ ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → |f z| < ε := by
-  simp [Metric.tendsto_nhds, dist_zero_right, Real.norm_eq_abs, Filter.eventually_iff,
-    mem_atImInfty_ℂ]
-
-/-- PhiBounds instance from modular forms theory.
-    Uses Corollaries 7.5-7.7 from PolyFourierCoeffBound.lean.
-    The underlying proofs use Ramanujan identities via sorries in that file. -/
-def phiBounds : PhiBounds := by
-  -- Extract bounds using Classical.choose (needed since PhiBounds is a Type)
-  let C₀ := Classical.choose MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  have hC₀_spec := Classical.choose_spec MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  let C₂ := Classical.choose MagicFunction.PolyFourierCoeffBound.norm_φ₂'_le
-  have hC₂_spec := Classical.choose_spec MagicFunction.PolyFourierCoeffBound.norm_φ₂'_le
-  let C₄ := Classical.choose MagicFunction.PolyFourierCoeffBound.norm_φ₄'_le
-  have hC₄_spec := Classical.choose_spec MagicFunction.PolyFourierCoeffBound.norm_φ₄'_le
-  -- Extract positivity and bound hypotheses
-  have hC₀_pos : 0 < C₀ := hC₀_spec.1
-  have hφ₀' : ∀ z : ℍ, 1/2 < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im) := hC₀_spec.2
-  have hC₂_pos : 0 < C₂ := hC₂_spec.1
-  have hφ₂' : ∀ z : ℍ, 1/2 < z.im → ‖φ₂' z‖ ≤ C₂ := hC₂_spec.2
-  have hC₄_pos : 0 < C₄ := hC₄_spec.1
-  have hφ₄' : ∀ z : ℍ, 1/2 < z.im → ‖φ₄' z‖ ≤ C₄ * Real.exp (2 * π * z.im) := hC₄_spec.2
-  refine ⟨C₀, C₂, C₄, hC₀_pos, hC₂_pos, hC₄_pos, ?_, ?_, ?_⟩
-  · -- hφ₀: ∀ z, 1 ≤ z.im → ‖φ₀ z‖ ≤ C₀ * exp(-2π z.im)
-    intro z hz
-    exact hφ₀' z (by linarith : 1/2 < z.im)
-  · -- hφ₂: ∀ z, 1 ≤ z.im → ‖φ₂' z‖ ≤ C₂
-    intro z hz
-    exact hφ₂' z (by linarith : 1/2 < z.im)
-  · -- hφ₄: ∀ z, 1 ≤ z.im → ‖φ₄' z‖ ≤ C₄ * exp(2π z.im)
-    intro z hz
-    exact hφ₄' z (by linarith : 1/2 < z.im)
+-- Re-export PhiBounds for backwards compatibility with other files
+abbrev PhiBounds := MagicFunction.a.PhiBounds
+abbrev phiBounds := MagicFunction.a.phiBounds
 
 /-! ## Corollary 7.13 - S-transform bound for φ₀''(I/t) -/
 
