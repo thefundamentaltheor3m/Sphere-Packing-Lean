@@ -44,14 +44,11 @@ lemma neg_one_div_I_mul (t : ℝ) (ht : t ≠ 0) : (-1 : ℂ) / (I * t) = I / t 
 Follows from continuity of E₂, E₄, E₆, Δ (via their MDifferentiability) and Δ ≠ 0. -/
 lemma φ₀_continuous : Continuous φ₀ := by
   unfold φ₀
-  have hE₂ : Continuous E₂ := MDifferentiable.continuous E₂_holo'
-  have hE₄ : Continuous (fun z : UpperHalfPlane => E₄ z) := MDifferentiable.continuous E₄.holo'
-  have hE₆ : Continuous (fun z : UpperHalfPlane => E₆ z) := MDifferentiable.continuous E₆.holo'
-  have hΔ : Continuous (fun z : UpperHalfPlane => Δ z) := MDifferentiable.continuous Delta.holo'
-  have h24 : Continuous (fun z : UpperHalfPlane => E₂ z * E₄ z) := hE₂.mul hE₄
-  have h246 : Continuous (fun z : UpperHalfPlane => E₂ z * E₄ z - E₆ z) := h24.sub hE₆
-  have h_sq : Continuous (fun z : UpperHalfPlane => (E₂ z * E₄ z - E₆ z)^2) := h246.pow 2
-  exact Continuous.div h_sq hΔ (fun z => Δ_ne_zero z)
+  have hE₂ := MDifferentiable.continuous E₂_holo'
+  have hE₄ := MDifferentiable.continuous E₄.holo'
+  have hE₆ := MDifferentiable.continuous E₆.holo'
+  have hΔ := MDifferentiable.continuous Delta.holo'
+  exact ((hE₂.mul hE₄).sub hE₆).pow 2 |>.div hΔ (fun z => Δ_ne_zero z)
 
 /-- ContinuousOn for the cusp-approaching path: t ↦ φ₀''(-1/(I*t)) is continuous on (0, ∞).
 Since -1/(I*t) = I/t and Im(I/t) = 1/t > 0 for t > 0, this factors through φ₀_continuous. -/
