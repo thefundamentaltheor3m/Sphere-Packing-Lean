@@ -2,10 +2,11 @@ import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Order.Monotone.Defs
 
 import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ModularForms.JacobiTheta
 
-open Filter
-open scoped Real Manifold ArithmeticFunction.sigma
+open Filter Complex
+open scoped Real Manifold ArithmeticFunction.sigma UpperHalfPlane
 
 
 /--
@@ -14,7 +15,7 @@ on the imaginary axis.
 -/
 noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
 
-noncomputable def G := H₂ ^ 3 * (2 * H₂ ^ 2 + 5 * H₂ * H₄ + 5 * H₄ ^ 2)
+noncomputable def G := H₂ ^ 3 * ((2 : ℝ) • H₂ ^ 2 + (5 : ℝ) • H₂ * H₄ + (5 : ℝ) • H₄ ^ 2)
 
 noncomputable def negDE₂ := - (D E₂)
 
@@ -416,7 +417,6 @@ lemma DE₄_imag_axis_pos : ResToImagAxis.Pos (D E₄.toFun) :=
 From Ramanujan's formula: D E₂ = (E₂² - E₄)/12, so -D E₂ = (E₄ - E₂²)/12.
 And the derivative of E₂ = 1 - 24∑ σ₁(n) q^n gives -D E₂ = 24 ∑ n σ₁(n) q^n.
 See blueprint equation at line 136 of modform-ineq.tex.
-
 Proof outline:
 1. E₂_sigma_qexp: E₂ = 1 - 24 * ∑ σ₁(n) * q^n
 2. D_qexp_tsum_pnat: D(∑ a(n) * q^n) = ∑ n * a(n) * q^n
@@ -499,72 +499,18 @@ Properties of G and F when restricted to the positive imaginary axis z = I*t.
 
 section ImagAxisProperties
 
-open UpperHalfPlane hiding I
-open Complex
-
 /--
 `G(it) > 0` for all `t > 0`.
 Blueprint: Lemma 8.6 - follows from H₂(it) > 0 and H₄(it) > 0.
 G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is positive since all factors are positive.
 -/
-theorem G_imag_axis_pos : ResToImagAxis.Pos G := by
-  unfold G
-  have hH₂ : ResToImagAxis.Pos H₂ := H₂_imag_axis_pos
-  have hH₄ : ResToImagAxis.Pos H₄ := H₄_imag_axis_pos
-  have hH₂_sq : ResToImagAxis.Pos (fun z : ℍ => H₂ z ^ 2) := by
-    have hmul : ResToImagAxis.Pos (fun z : ℍ => H₂ z * H₂ z) := ResToImagAxis.Pos.mul hH₂ hH₂
-    simpa [pow_two] using hmul
-  have hH₂_cube : ResToImagAxis.Pos (fun z : ℍ => H₂ z ^ 3) := by
-    have hmul : ResToImagAxis.Pos (fun z : ℍ => (H₂ z ^ 2) * H₂ z) :=
-      ResToImagAxis.Pos.mul hH₂_sq hH₂
-    simpa [pow_succ, pow_two, mul_assoc] using hmul
-  have hH₄_sq : ResToImagAxis.Pos (fun z : ℍ => H₄ z ^ 2) := by
-    have hmul : ResToImagAxis.Pos (fun z : ℍ => H₄ z * H₄ z) := ResToImagAxis.Pos.mul hH₄ hH₄
-    simpa [pow_two] using hmul
-  have hterm1 : ResToImagAxis.Pos (fun z : ℍ => 2 * H₂ z ^ 2) := by
-    simpa using (ResToImagAxis.Pos.smul (F := fun z : ℍ => H₂ z ^ 2) hH₂_sq (by norm_num))
-  have hterm2 : ResToImagAxis.Pos (fun z : ℍ => 5 * H₂ z * H₄ z) := by
-    have h5H₂ : ResToImagAxis.Pos (fun z : ℍ => (5 : ℝ) * H₂ z) :=
-      ResToImagAxis.Pos.smul (F := H₂) hH₂ (by norm_num)
-    have hmul : ResToImagAxis.Pos (fun z : ℍ => ((5 : ℝ) * H₂ z) * H₄ z) :=
-      ResToImagAxis.Pos.mul h5H₂ hH₄
-    simpa [mul_assoc] using hmul
-  have hterm3 : ResToImagAxis.Pos (fun z : ℍ => 5 * H₄ z ^ 2) := by
-    simpa using (ResToImagAxis.Pos.smul (F := fun z : ℍ => H₄ z ^ 2) hH₄_sq (by norm_num))
-  have hquad :
-      ResToImagAxis.Pos
-        (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) :=
-    ResToImagAxis.Pos.add (ResToImagAxis.Pos.add hterm1 hterm2) hterm3
-  have hmul :
-      ResToImagAxis.Pos
-        (fun z : ℍ =>
-          H₂ z ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)) :=
-    ResToImagAxis.Pos.mul hH₂_cube hquad
-  simpa using hmul
+theorem G_imag_axis_pos : ResToImagAxis.Pos G := by unfold G; fun_prop (disch := positivity)
 
 /--
 `G(it)` is real for all `t > 0`.
 Blueprint: G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²), product of real functions.
 -/
-theorem G_imag_axis_real : ResToImagAxis.Real G :=
-  G_imag_axis_pos.1
-
-/--
-`F(it)` is real for all `t > 0`.
-Blueprint: Follows from E₂, E₄, E₆ having real values on the imaginary axis.
--/
-theorem F_imag_axis_real : ResToImagAxis.Real F := by
-  unfold F
-  have hProd : ResToImagAxis.Real (E₂ * E₄.toFun) :=
-    ResToImagAxis.Real.mul E₂_imag_axis_real E₄_imag_axis_real
-  have hNeg : ResToImagAxis.Real ((-1 : ℝ) • E₆.toFun) :=
-    ResToImagAxis.Real.smul E₆_imag_axis_real
-  have hSub : ResToImagAxis.Real (E₂ * E₄.toFun - E₆.toFun) := by
-    have hEq : E₂ * E₄.toFun - E₆.toFun = E₂ * E₄.toFun + (-1 : ℝ) • E₆.toFun := by
-      ext z
-      simp [sub_eq_add_neg]
-    simpa [hEq] using ResToImagAxis.Real.add hProd hNeg
-  simpa [pow_two] using ResToImagAxis.Real.mul hSub hSub
+theorem G_imag_axis_real : ResToImagAxis.Real G := G_imag_axis_pos.1
 
 /--
 `F(it) > 0` for all `t > 0`.
@@ -572,11 +518,14 @@ Blueprint: F = 9*(D E₄)² and D E₄ > 0 on imaginary axis.
 -/
 theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   rw [F_eq_nine_DE₄_sq]
-  -- F = 9 * (D E₄)² where 9 > 0 and (D E₄)² > 0
-  have h_sq : ResToImagAxis.Pos ((D E₄.toFun) ^ 2) := by
-    have hmul := DE₄_imag_axis_pos.mul DE₄_imag_axis_pos
-    simpa [pow_two] using hmul
-  exact h_sq.smul (by norm_num : (0 : ℝ) < 9)
+  have _ := DE₄_imag_axis_pos
+  fun_prop (disch := positivity)
+
+/--
+`F(it)` is real for all `t > 0`.
+Blueprint: Follows from E₂, E₄, E₆ having real values on the imaginary axis.
+-/
+theorem F_imag_axis_real : ResToImagAxis.Real F := F_imag_axis_pos.1
 
 end ImagAxisProperties
 
@@ -607,6 +556,7 @@ lemma SerreDer_22_L₁₀_SerreDer :
     _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
 
 /- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
+-- TODO: prove this with `fun_prop` after registering relevant `ResToImagAxis.Real` lemmas
 lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ := by
   rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, ResToImagAxis.Real]
   intro t ht
@@ -614,6 +564,7 @@ lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ := by
   simp only [Function.resToImagAxis_apply]
   sorry
 
+-- TODO: prove this with `fun_prop` after finishing the proof of `MLDE_F` and `MLDE_G`
 lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
   refine And.intro SerreDer_22_L₁₀_real ?_
   intro t ht
