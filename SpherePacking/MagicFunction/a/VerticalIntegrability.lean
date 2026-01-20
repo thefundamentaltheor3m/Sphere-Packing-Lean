@@ -519,6 +519,18 @@ lemma integrableOn_Ici_of_eqOn_verticalIntegrandX (hb : ContourEndpoints.PhiBoun
   · exact (integrableOn_verticalIntegrandX_Ioi hb x r hr).congr_fun
       (hEq.mono (Ioi_subset_Ioi (by norm_num : (0:ℝ) ≤ 1))).symm measurableSet_Ioi
 
+/-- Integrability on (1,∞) for functions equal to -I * verticalIntegrandX on (1,∞).
+    Factors out the common proof pattern from Goals 2 and 4. -/
+lemma integrableOn_Ioi_of_eq_neg_I_verticalIntegrandX (hb : ContourEndpoints.PhiBounds)
+    (x r : ℝ) (hr : 2 < r) {f : ℝ → ℂ}
+    (hEq : ∀ t : ℝ, t ≠ 0 → f t = -Complex.I * ContourEndpoints.verticalIntegrandX x r t) :
+    IntegrableOn f (Ioi 1) volume := by
+  have h := integrableOn_verticalIntegrandX_Ioi hb x r hr
+  have hsmul : IntegrableOn (fun t => -Complex.I * ContourEndpoints.verticalIntegrandX x r t)
+      (Ioi 1) volume := by rw [IntegrableOn] at h ⊢; exact h.smul (-Complex.I)
+  exact hsmul.congr_fun (fun t ht =>
+    (hEq t (ne_of_gt (lt_trans one_pos ht))).symm) measurableSet_Ioi
+
 /-- Helper simp lemma: t*I + 1 = 1 + I*t -/
 @[simp]
 lemma t_mul_I_add_one (t : ℝ) : (t : ℂ) * Complex.I + 1 = (1 : ℂ) + Complex.I * t := by ring
@@ -546,12 +558,8 @@ lemma integrableOn_goal1 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
 lemma integrableOn_goal2 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)))
-                 (Ioi (1 : ℝ)) volume := by
-  have h := integrableOn_verticalIntegrandX_Ioi hb (-1) r hr
-  have hsmul : IntegrableOn (fun t => -Complex.I * ContourEndpoints.verticalIntegrandX (-1) r t)
-      (Ioi 1) volume := by rw [IntegrableOn] at h ⊢; exact h.smul (-Complex.I)
-  exact hsmul.congr_fun (fun t ht =>
-    (goal2_eq_neg_I_verticalIntegrandX r t (ne_of_gt (lt_trans one_pos ht))).symm) measurableSet_Ioi
+                 (Ioi (1 : ℝ)) volume :=
+  integrableOn_Ioi_of_eq_neg_I_verticalIntegrandX hb (-1) r hr (goal2_eq_neg_I_verticalIntegrandX r)
 
 /-- Goal 3: Integrability of φ₀''(-1/(t*I + 1)) * (t*I+1)² * cexp(π*I*r*(t*I)) on (1,∞).
     Category B: Shifted Möbius argument at +1. Derived from integrableOn_φ₀_shifted_Möbius. -/
@@ -570,12 +578,8 @@ lemma integrableOn_goal3 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
 lemma integrableOn_goal4 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (1 + t * Complex.I)))
-                 (Ioi (1 : ℝ)) volume := by
-  have h := integrableOn_verticalIntegrandX_Ioi hb 1 r hr
-  have hsmul : IntegrableOn (fun t => -Complex.I * ContourEndpoints.verticalIntegrandX 1 r t)
-      (Ioi 1) volume := by rw [IntegrableOn] at h ⊢; exact h.smul (-Complex.I)
-  exact hsmul.congr_fun (fun t ht =>
-    (goal4_eq_neg_I_verticalIntegrandX r t (ne_of_gt (lt_trans one_pos ht))).symm) measurableSet_Ioi
+                 (Ioi (1 : ℝ)) volume :=
+  integrableOn_Ioi_of_eq_neg_I_verticalIntegrandX hb 1 r hr (goal4_eq_neg_I_verticalIntegrandX r)
 
 /-- Goal 5: Integrability of φ₀''(-1/(t*I - 1)) * (t*I-1)² * cexp(π*I*r*(t*I)) on (1,∞).
     Category B: Shifted Möbius argument at -1. Derived from integrableOn_φ₀_shifted_Möbius. -/
