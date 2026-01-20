@@ -21,7 +21,7 @@ needed for Proposition 4.4.6 (the double zeros proof).
 - `norm_φ₀_I_div_t_large`: Lemma 4.4.4 - For t ≥ 2, |φ₀(i/t)| ≤ C t⁻² e^{2πt}
 
 ### Integrability Goals (Proposition 4.4.6)
-- `integrableOn_goal1` through `integrableOn_goal6`: Six specific integrands
+- `integrableOn_goal1` through `integrableOn_goal7`: Seven specific integrands
 
 ## References
 
@@ -393,6 +393,19 @@ lemma goal6_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
   ring_nf
   simp [pow_two]
 
+/-- Goal 7 integrand equals verticalIntegrandX 1 r t.
+
+Proof sketch: Goal 7 = I * Goal 4 = I * (-I) * verticalIntegrandX 1 r t
+= verticalIntegrandX 1 r t since I * (-I) = 1. -/
+lemma goal7_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
+    Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
+      Complex.exp (π * Complex.I * r * (1 + t * Complex.I))) =
+    ContourEndpoints.verticalIntegrandX 1 r t := by
+  unfold ContourEndpoints.verticalIntegrandX
+  rw [mul_comm (t : ℂ) Complex.I, neg_one_div_I_mul t ht]
+  ring_nf
+  simp [pow_two]
+
 /-! ## Helper lemmas for integrability proofs -/
 
 /-- Wrapper for integrability on Ioi 1 (avoids repeated mono_set). -/
@@ -608,6 +621,34 @@ lemma integrableOn_goal6 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r
           Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)))) (Ioi 1) := by
       intro t ht
       exact (goal6_eq_verticalIntegrandX r t (ne_of_gt (lt_of_lt_of_le one_pos (le_of_lt ht)))).symm
+    exact h'.congr_fun heq measurableSet_Ioi
+
+/-- Goal 7: Integrability of I * (φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(1 + t*I))) on [0,∞).
+    By goal7_eq_verticalIntegrandX, this is verticalIntegrandX 1 r t. -/
+lemma integrableOn_goal7 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
+    IntegrableOn (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
+                          Complex.exp (π * Complex.I * r * (1 + t * Complex.I))))
+                 (Ici (0 : ℝ)) volume := by
+  rw [integrableOn_Ici_iff_integrableOn_Ioi, ← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
+  constructor
+  · -- Integrability on Ioc 0 1 using the helper lemma
+    have hIoc := integrableOn_verticalIntegrandX_Ioc hb 1 r hr
+    have heq : EqOn (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
+                      Complex.exp (π * Complex.I * r * (1 + t * Complex.I))))
+               (fun t : ℝ => ContourEndpoints.verticalIntegrandX 1 r t) (Ioc 0 1) := by
+      intro t ⟨ht_pos, _⟩
+      exact goal7_eq_verticalIntegrandX r t (ne_of_gt ht_pos)
+    exact hIoc.congr_fun heq.symm measurableSet_Ioc
+  · -- Integrability on Ioi 1 from existing infrastructure
+    have h : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 1 r t)
+        (Ici 1) volume := ContourEndpoints.integrableOn_verticalIntegrandX hb 1 r hr
+    have h' : IntegrableOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 1 r t)
+        (Ioi 1) volume := h.mono_set Ioi_subset_Ici_self
+    have heq : EqOn (fun t : ℝ => ContourEndpoints.verticalIntegrandX 1 r t)
+        (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
+          Complex.exp (π * Complex.I * r * (1 + t * Complex.I)))) (Ioi 1) := by
+      intro t ht
+      exact (goal7_eq_verticalIntegrandX r t (ne_of_gt (lt_of_lt_of_le one_pos (le_of_lt ht)))).symm
     exact h'.congr_fun heq measurableSet_Ioi
 
 
