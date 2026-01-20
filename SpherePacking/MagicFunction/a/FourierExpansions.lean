@@ -112,13 +112,38 @@ lemma norm_exp_pi_I_z_lt_one (z : ℍ) : ‖Complex.exp (π * Complex.I * z)‖ 
   exact Real.exp_lt_one_iff.mpr hneg
 
 /-- Shifting a function by a constant preserves Big-O growth.
-    For c : ℤ → ℂ with c = O(n^k), the shifted function i ↦ c(i + n₀) is also O(n^k). -/
+    For c : ℤ → ℂ with c = O(n^k), the shifted function i ↦ c(i + n₀) is also O(n^k).
+
+    Proof: Following hpoly' in PolyFourierCoeffBound.lean - first show the shifted
+    function is O((n + n₀)^k), then show |n + n₀| ≤ 2n for n ≥ |n₀|. -/
 lemma isBigO_shift {c : ℤ → ℂ} {k : ℕ} (n₀ : ℤ)
     (hc : c =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ))) :
     (fun i : ℕ ↦ c (i + n₀)) =O[Filter.atTop] (fun n ↦ (↑(n ^ k) : ℝ)) := by
-  -- For large i, |i + n₀| ≤ C * i for some C, so |i + n₀|^k ≤ C^k * i^k
-  -- Thus O(|i + n₀|^k) ⊆ O(i^k)
-  sorry
+  -- First: shift the hypothesis to ℕ
+  have h_shift : (fun n : ℕ => c (n + n₀)) =O[Filter.atTop] (fun n : ℕ => (n + n₀ : ℂ) ^ k) := by
+    simp only [Asymptotics.isBigO_iff, Filter.eventually_atTop] at hc ⊢
+    obtain ⟨C, m, hCa⟩ := hc
+    use C
+    simp only [norm_pow, norm_eq_abs] at hCa ⊢
+    refine ⟨(m - n₀).toNat, fun n hn ↦ ?_⟩
+    have hmn : (n : ℤ) + n₀ ≥ m := by
+      have h1 : (n : ℤ) ≥ ((m - n₀).toNat : ℤ) := Int.ofNat_le.mpr hn
+      have h2 : ((m - n₀).toNat : ℤ) ≥ m - n₀ := Int.self_le_toNat _
+      linarith
+    exact_mod_cast hCa (n + n₀) hmn
+  -- Second: (n + n₀)^k = O(n^k) using |n + n₀| ≤ 2n for n ≥ |n₀|
+  refine h_shift.trans ?_
+  simp only [Asymptotics.isBigO_iff, Filter.eventually_atTop]
+  use 2 ^ k
+  simp only [norm_pow, RCLike.norm_natCast]
+  refine ⟨n₀.natAbs, fun n hn => ?_⟩
+  have h_bound : ‖(n + n₀ : ℂ)‖ ≤ 2 * n := by
+    simp only [← Int.cast_natCast (R := ℂ), ← Int.cast_add, Complex.norm_intCast]
+    norm_cast
+    cases abs_cases (n + n₀ : ℤ) <;> omega
+  calc ‖(n : ℂ) + n₀‖ ^ k ≤ (2 * n) ^ k := by exact pow_le_pow_left₀ (norm_nonneg _) h_bound k
+    _ = 2 ^ k * n ^ k := by ring
+    _ = 2 ^ k * (n ^ k : ℕ) := by norm_cast
 
 /-! ## Summability Lemmas
 
