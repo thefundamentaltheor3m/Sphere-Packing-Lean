@@ -44,10 +44,6 @@ noncomputable section
 
 namespace MagicFunction.ContourEndpoints
 
--- Re-export PhiBounds for backwards compatibility with other files
-abbrev PhiBounds := MagicFunction.a.PhiBounds
-abbrev phiBounds := MagicFunction.a.phiBounds
-
 /-! ## Corollary 7.13 - S-transform bound for φ₀''(I/t) -/
 
 /-- The point it as an element of ℍ for t > 0. -/
