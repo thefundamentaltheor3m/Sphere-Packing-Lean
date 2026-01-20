@@ -56,7 +56,6 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
   · exact Filter.mem_atTop _
   · intro z hz
     simp only [Set.mem_preimage, Set.mem_Ici] at hz
-    have hz_pos : 0 < z.im := z.im_pos
     have hz_ge_A : z.im / 2 > max A 0 := by
       have h1 : z.im ≥ 2 * max A 0 + 1 := le_trans (le_max_left _ _) hz
       linarith
@@ -66,8 +65,7 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
     have hclosed := closedBall_center_subset_upperHalfPlane z
     have hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) (z.im / 2)) :=
       diffContOnCl_comp_ofComplex_of_mdifferentiable hf hclosed
-    have hz_im_pos : 0 < z.im := z.im_pos
-    have hR_pos : 0 < z.im / 2 := by linarith
+    have hR_pos : 0 < z.im / 2 := by positivity
     have hmax_nonneg : 0 ≤ max A 0 := le_max_right _ _
     have hA_le_max : A ≤ max A 0 := le_max_left _ _
     have hf_bdd_sphere : ∀ w ∈ Metric.sphere (z : ℂ) (z.im / 2), ‖(f ∘ ofComplex) w‖ ≤ M := by
