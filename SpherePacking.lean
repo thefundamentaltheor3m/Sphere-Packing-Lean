@@ -41,6 +41,7 @@ import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 import SpherePacking.MagicFunction.a.IntegralEstimates.I5
 import SpherePacking.MagicFunction.a.IntegralEstimates.I6
+import SpherePacking.MagicFunction.a.PhiBounds
 import SpherePacking.MagicFunction.a.Schwartz
 import SpherePacking.MagicFunction.a.SpecialValues
 import SpherePacking.MagicFunction.a.VerticalIntegrability
