@@ -93,7 +93,8 @@ private lemma c_φ₄_poly : c_φ₄ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) 
     simp only [h, ↓reduceIte]
   exact c_φ₀₂_poly.congr' heq.symm Filter.EventuallyEq.rfl
 
-open MagicFunction.PolyFourierCoeffBound ArithmeticFunction in
+open MagicFunction.PolyFourierCoeffBound ArithmeticFunction
+
 /-- PhiBounds instance from modular forms theory using explicit DivDiscBound constants.
     This avoids the axiom of choice by using computable bounds directly.
     The bounds follow from Corollaries 7.5-7.7 which use Ramanujan identities.
@@ -117,14 +118,42 @@ def phiBounds : PhiBounds where
     -- c_φ₄ 0 = 1 ≠ 0
     simp only [c_φ₄, le_refl, ↓reduceIte, ne_eq, one_ne_zero, not_false_eq_true]
   hφ₀ := fun z hz => by
-    -- From DivDiscBoundOfPolyFourierCoeff with n₀=4
-    sorry
+    -- φ₀ = ((E₂E₄ - E₆)²) / Δ, n₀=4 gives exp(-π*(4-2)*z.im) = exp(-2π*z.im)
+    have hcsum : Summable fun (i : ℕ) => fouterm c_φ₀₂ z (i + 4) := by
+      -- Summability from polynomial growth + exponential decay (Ramanujan)
+      sorry
+    have hf : ∀ x : ℍ, ((E₂ x) * (E₄ x) - (E₆ x)) ^ 2 = ∑' (n : ℕ), fouterm c_φ₀₂ x (n + 4) := by
+      -- Fourier expansion identity (Ramanujan)
+      sorry
+    have h := DivDiscBoundOfPolyFourierCoeff z hz c_φ₀₂ 4 hcsum 5 c_φ₀₂_poly
+        (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) hf
+    simp only [φ₀]
+    convert h using 2
+    ring_nf
   hφ₂ := fun z hz => by
-    -- From DivDiscBoundOfPolyFourierCoeff with n₀=2
-    sorry
+    -- φ₂' = E₄(E₂E₄ - E₆) / Δ, n₀=2 gives exp(-π*(2-2)*z.im) = 1 (constant bound)
+    have hcsum : Summable fun (i : ℕ) => fouterm c_φ₀₂ z (i + 2) := by
+      sorry
+    have hf : ∀ x : ℍ, E₄ x * (E₂ x * E₄ x - E₆ x) = ∑' (n : ℕ), fouterm c_φ₀₂ x (n + 2) := by
+      sorry
+    have h := DivDiscBoundOfPolyFourierCoeff z hz c_φ₀₂ 2 hcsum 5 c_φ₀₂_poly
+        (fun z ↦ E₄ z * (E₂ z * E₄ z - E₆ z)) hf
+    simp only [φ₂']
+    calc ‖(E₄ z * (E₂ z * E₄ z - E₆ z)) / Δ z‖
+        ≤ DivDiscBound c_φ₀₂ 2 * Real.exp (-π * (2 - 2) * z.im) := h
+      _ = DivDiscBound c_φ₀₂ 2 * Real.exp 0 := by ring_nf
+      _ = DivDiscBound c_φ₀₂ 2 := by simp
   hφ₄ := fun z hz => by
-    -- From DivDiscBoundOfPolyFourierCoeff with n₀=0
-    sorry
+    -- φ₄' = E₄² / Δ, n₀=0 gives exp(-π*(0-2)*z.im) = exp(2π*z.im)
+    have hcsum : Summable fun (i : ℕ) => fouterm c_φ₄ z (i + 0) := by
+      sorry
+    have hf : ∀ x : ℍ, E₄ x ^ 2 = ∑' (n : ℕ), fouterm c_φ₄ x (n + 0) := by
+      sorry
+    have h := DivDiscBoundOfPolyFourierCoeff z hz c_φ₄ 0 hcsum 5 c_φ₄_poly
+        (fun z ↦ E₄ z ^ 2) hf
+    simp only [φ₄']
+    convert h using 2
+    ring_nf
 
 end MagicFunction.a
 
