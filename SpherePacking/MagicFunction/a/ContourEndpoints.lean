@@ -58,6 +58,13 @@ structure PhiBounds where
   hφ₂ : ∀ z : ℍ, 1 ≤ z.im → ‖φ₂' z‖ ≤ C₂
   hφ₄ : ∀ z : ℍ, 1 ≤ z.im → ‖φ₄' z‖ ≤ C₄ * Real.exp (2 * π * z.im)
 
+/-- PhiBounds instance from modular forms theory.
+    The bounds follow from cusp form decay estimates for φ₀, φ₂', φ₄'.
+    TODO: Fill from modular forms infrastructure. -/
+def phiBounds : PhiBounds := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  all_goals sorry
+
 /-! ## Corollary 7.13 - S-transform bound for φ₀''(I/t) -/
 
 /-- The point it as an element of ℍ for t > 0. -/
