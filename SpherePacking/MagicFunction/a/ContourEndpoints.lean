@@ -6,6 +6,7 @@ Authors: Cameron Freer
 import SpherePacking.ModularForms.PhiTransform
 import SpherePacking.MagicFunction.RealDecay
 import SpherePacking.MagicFunction.CuspPath
+import SpherePacking.MagicFunction.a.PhiBounds
 import Mathlib.MeasureTheory.Integral.IntegrableOn
 
 /-!
@@ -35,6 +36,7 @@ safe strip that covers all rectangle contour points.
 -/
 
 open MeasureTheory Set Filter Real UpperHalfPlane TopologicalSpace
+open MagicFunction.a (PhiBounds phiBounds)
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators
 
@@ -42,21 +44,9 @@ noncomputable section
 
 namespace MagicFunction.ContourEndpoints
 
-/-! ## PhiBounds structure (Corollaries 7.5-7.7 as hypotheses) -/
-
-/-- Bundle of Corollary 7.5-7.7 bounds as hypotheses.
-    Blueprint states these for Im(z) > 1/2; we use Im(z) ≥ 1 as a convenient
-    safe strip that covers all rectangle contour points. -/
-structure PhiBounds where
-  C₀ : ℝ
-  C₂ : ℝ
-  C₄ : ℝ
-  hC₀_pos : 0 < C₀
-  hC₂_pos : 0 < C₂
-  hC₄_pos : 0 < C₄
-  hφ₀ : ∀ z : ℍ, 1 ≤ z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im)
-  hφ₂ : ∀ z : ℍ, 1 ≤ z.im → ‖φ₂' z‖ ≤ C₂
-  hφ₄ : ∀ z : ℍ, 1 ≤ z.im → ‖φ₄' z‖ ≤ C₄ * Real.exp (2 * π * z.im)
+-- Re-export PhiBounds for backwards compatibility with other files
+abbrev PhiBounds := MagicFunction.a.PhiBounds
+abbrev phiBounds := MagicFunction.a.phiBounds
 
 /-! ## Corollary 7.13 - S-transform bound for φ₀''(I/t) -/
 
