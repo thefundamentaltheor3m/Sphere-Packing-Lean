@@ -53,13 +53,6 @@ open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
 open MagicFunction.a.RealIntegrands MagicFunction.a.ComplexIntegrands
 open MagicFunction.a.RadialFunctions MagicFunction.VerticalIntegrability
 
-
--- These are needed to prove the hypotheses for unbounded Cauchy-Gour
-lemma φ₀_bound_exp_decay : ∃ C₀ > 0, ∀ z : ℂ, ‖φ₀'' z‖ ≤
-  C₀ * Real.exp (-2 * Real.pi * (Complex.im z)) := by sorry
-lemma φ₂_bound_exp_decay : ∃ C₂ > 0, ∀ z : ℂ, ‖φ₂'' z‖ ≤ C₂ := by sorry
-lemma φ₄_bound_exp_decay : ∃ C₄ > 0, ∀ z : ℂ, ‖φ₄'' z‖ ≤
-  C₄ * Real.exp (2 * Real.pi * (Complex.im z)) := by sorry
 def d (r : ℝ) := -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *  ∫ t in Ici (0 : ℝ),
   I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
   cexp (I * π * r * (I * t))
@@ -148,10 +141,10 @@ lemma cauchy_goursat_int_1 : ∫ (t : ℝ) in Ioi 1, I * integrand_1 r (-1 + t *
     sorry
   · unfold integrand_1
     simp only [ofReal_neg, ofReal_one, neg_add_cancel_comm]
-    exact (integrableOn_goal2 sorry r hr)
+    exact (integrableOn_goal2 (hb := sorry) r hr)
   · unfold integrand_1
     simp only [ofReal_zero, zero_add]
-    apply (integrableOn_goal3 sorry r hr)
+    apply (integrableOn_goal3 (hb := sorry) r hr)
   · sorry
 
 lemma cauchy_goursat_int_3 : ∫ (t : ℝ) in Ioi 1, I * integrand_3 r (1 + t * I) =
@@ -172,10 +165,10 @@ lemma cauchy_goursat_int_3 : ∫ (t : ℝ) in Ioi 1, I * integrand_3 r (1 + t * 
     sorry
   · unfold integrand_3
     simp only [ofReal_one, add_sub_cancel_left]
-    exact (integrableOn_goal4 sorry r hr)
+    exact (integrableOn_goal4 (hb := sorry) r hr)
   · unfold integrand_3
     simp only [ofReal_zero, zero_add]
-    apply (integrableOn_goal5 sorry r hr)
+    apply (integrableOn_goal5 (hb := sorry) r hr)
   · sorry
 
 lemma int_1_eq : φ₀_int_1 r = I₁' r + I₂' r + ∫ t in Ici (1 : ℝ),
@@ -204,16 +197,17 @@ lemma int_1_eq : φ₀_int_1 r = I₁' r + I₂' r + ∫ t in Ici (1 : ℝ),
       congr 1
       · rw [MagicFunction.a.RadialFunctions.I₂'_eq]
         unfold integrand_1
-        rw [const_add_variable_change (hf := sorry) 0 1 (-1)]
-        simp only [sub_zero, neg_add_cancel]
-        apply intervalIntegral.integral_congr
-        simp only [EqOn, Left.neg_nonpos_iff, zero_le_one, uIcc_of_le, mem_Icc, one_mul,
-          sub_neg_eq_add, ofReal_add, ofReal_one, neg_mul, and_imp]
-        intro x hx hx'
-        conv_rhs =>
-          rw [mul_assoc, mul_assoc, ← Complex.exp_add, ← Complex.exp_add]
-        congr 3 <;> ring_nf
-        rw [I_sq]; ring
+        rw [const_add_variable_change (hf := _) 0 1 (-1)]
+        · simp only [sub_zero, neg_add_cancel]
+          apply intervalIntegral.integral_congr
+          simp only [EqOn, Left.neg_nonpos_iff, zero_le_one, uIcc_of_le, mem_Icc, one_mul,
+            sub_neg_eq_add, ofReal_add, ofReal_one, neg_mul, and_imp]
+          intro x hx hx'
+          conv_rhs =>
+            rw [mul_assoc, mul_assoc, ← Complex.exp_add, ← Complex.exp_add]
+          congr 3 <;> ring_nf
+          rw [I_sq]; ring
+        · sorry
 
       · rw [smul_eq_mul, ← integral_const_mul, integral_Ici_eq_integral_Ioi]
         refine (setIntegral_congr_ae (by measurability) (ae_of_all _ (fun x hx => ?_)))
@@ -252,17 +246,18 @@ lemma int_3_eq : φ₀_int_3 r = I₃' r + I₄' r + ∫ t in Ici (1 : ℝ),
       congr 1
       · unfold integrand_3
         rw [I₄'_eq]
-        rw [const_add_variable_change (hf := sorry) 1 0 0];
-        simp only [zero_sub, sub_neg_eq_add, ofReal_add,
-          ofReal_one, one_mul, zero_add, neg_mul]
-        rw [sign_variable_change 0 (-1)]
-        simp only [ofReal_neg, neg_zero, neg_neg, intervalIntegral.integral_neg, neg_inj]
-        apply intervalIntegral.integral_congr
-        simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, and_imp]; intro x hx hx'
-        conv_rhs =>
-          rw [mul_assoc, mul_assoc, ← Complex.exp_add, ← Complex.exp_add]
-        congr 3 <;> ring_nf
-        rw [I_sq]; ring
+        rw [const_add_variable_change (hf := _) 1 0 0];
+        · simp only [zero_sub, sub_neg_eq_add, ofReal_add,
+            ofReal_one, one_mul, zero_add, neg_mul]
+          rw [sign_variable_change 0 (-1)]
+          simp only [ofReal_neg, neg_zero, neg_neg, intervalIntegral.integral_neg, neg_inj]
+          apply intervalIntegral.integral_congr
+          simp only [EqOn, zero_le_one, uIcc_of_le, mem_Icc, and_imp]; intro x hx hx'
+          conv_rhs =>
+            rw [mul_assoc, mul_assoc, ← Complex.exp_add, ← Complex.exp_add]
+          congr 3 <;> ring_nf
+          rw [I_sq]; ring
+        · sorry
 
       · rw [smul_eq_mul, ← integral_const_mul, integral_Ici_eq_integral_Ioi]
         refine (setIntegral_congr_ae (by measurability) (ae_of_all _ (fun x hx => ?_)))
@@ -272,8 +267,7 @@ lemma int_3_eq : φ₀_int_3 r = I₃' r + I₄' r + ∫ t in Ici (1 : ℝ),
   · apply IntegrableOn.integrable
     unfold integrand_3
     simp only [add_sub_cancel_left]
-    sorry -- Required nonexistent goal
-    -- exact (integrableOn_goal6 (hb := sorry) r hr)
+    exact (integrableOn_goal7 (hb := sorry) r hr)
 
 lemma d_eq_2 : d r = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by
   calc
@@ -314,8 +308,11 @@ lemma d_eq_2 : d r = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := 
       (I *  ↑a) ^ 2 * cexp (I * ↑π * ↑r * (I * ↑a)))) (Ici 0) := by
       conv =>
         pattern (_ * _)
-        rw [rw1]
-      sorry -- nonexistent goal
+        rw [rw1, mul_comm I a, mul_comm I π, mul_assoc I, mul_assoc I]
+      conv =>
+        pattern (_ + 1)
+        rw [add_comm]
+      exact (integrableOn_goal7 (hb := sorry) r hr)
 
     have hI' : IntegrableOn (fun (a : ℝ) ↦ cexp (-(I * ↑π * ↑r)) * (I * φ₀'' (-1 / (I * ↑a)) *
       (I * ↑a) ^ 2 * cexp (I * ↑π * ↑r * (I * ↑a)))) (Ici 0) := by
@@ -367,26 +364,47 @@ lemma d_eq_1 : d r = I₁' r + I₂' r + I₃' r + I₄' r + I₅' r +
   cexp (I * π * r * (I * t)) +
   -2 * I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
   cexp (I * π * r * (I * t))) := by
+
+  have hI : Integrable (fun (t : ℝ) ↦ I * (cexp (I * (I * (↑r * (↑t * ↑π)))) *
+    (φ₀'' (-1 / (1 + I * ↑t)) * (1 + I * ↑t) ^ 2))) (volume.restrict (Ici 1)) := by
+    apply IntegrableOn.integrable
+    apply (integrableOn_Ici_iff_integrableOn_Ioi (by finiteness)).2
+    have := integrableOn_goal3 (hb := sorry) r hr
+    ac_nf at this
+    exact (IntegrableOn.const_mul' this)
+
+  have hI' : Integrable (fun (a : ℝ) ↦ I * (cexp (I * (I * (↑r * (↑a * ↑π)))) *
+    (φ₀'' (-1 / (I * ↑a - 1)) * (I * ↑a - 1) ^ 2))) (volume.restrict (Ici 1)) := by
+    apply IntegrableOn.integrable
+    apply (integrableOn_Ici_iff_integrableOn_Ioi (by finiteness)).2
+    have := integrableOn_goal5 (hb := sorry) r hr
+    ac_nf at this
+    exact (IntegrableOn.const_mul' this)
+
   rw [d_eq_2 (hr := hr) _, int_1_eq (hr := hr), int_3_eq (hr := hr)]
   ac_nf; simp only [neg_mul, mul_neg, add_right_inj]
   unfold φ₀_int_5
 
-  rw [← integral_const_mul, ← integral_add sorry sorry]
-  ac_nf; simp only [neg_mul, mul_neg]
-  rw [← integral_add _ _]
+  rw [← integral_const_mul, ← integral_add _ _]
+  · ac_nf; simp only [neg_mul, mul_neg]
+    rw [← integral_add _ _]
 
-  · refine setIntegral_congr_ae (by measurability) (ae_of_all _ (fun x hx => ?_))
-    ring
-  · apply Integrable.add
-    · apply IntegrableOn.integrable
+    · refine setIntegral_congr_ae (by measurability) (ae_of_all _ (fun x hx => ?_))
+      ring
+    · exact (Integrable.add hI hI')
+    · apply Integrable.neg
+      apply Integrable.const_mul
+      conv =>
+        pattern (_ * _)
+        rw [← mul_assoc, mul_comm, mul_assoc]
+      apply Integrable.const_mul
+      have := integrableOn_shiftedMöbius (hb := sorry) 0 r hr
+      simp only [ofReal_zero, add_zero] at this
+      ac_nf; ac_nf at this
       apply (integrableOn_Ici_iff_integrableOn_Ioi (by finiteness)).2
-      sorry -- nonexistent goal
-    · apply IntegrableOn.integrable
-      apply (integrableOn_Ici_iff_integrableOn_Ioi (by finiteness)).2
-      have := integrableOn_goal5 sorry r hr
-      ac_nf at this
-      exact (IntegrableOn.const_mul' this)
-  · sorry
+      exact this
+  · exact hI
+  · exact hI'
 
 lemma integrand_eq_2φ₀ : ∀ z : ℂ, I * φ₀'' (-1 / (z + 1)) * (z + 1)^2 +
   I * φ₀'' (-1 / (z - 1)) * (z - 1)^2 +
