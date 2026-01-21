@@ -803,15 +803,8 @@ theorem antiDerPos {F : ℍ → ℂ} (hFderiv : MDifferentiable 𝓘(ℂ) 𝓘(�
   obtain ⟨hF_real, t₀, ht₀_pos, hF_pos⟩ := hFepos
   obtain ⟨-, hDF_pos⟩ := hDF
   let g := fun t => (F.resToImagAxis t).re
-  have hg : ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t := fun t ht => by
-    have hdiff : DifferentiableAt ℝ F.resToImagAxis t :=
-      ResToImagAxis.Differentiable F hFderiv t ht
-    have hderivC : HasDerivAt F.resToImagAxis (-2 * π * (D F).resToImagAxis t) t :=
-      hdiff.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hFderiv ht)
-    have hconst : HasDerivAt (fun _ : ℝ => (Complex.reCLM : ℂ →L[ℝ] ℝ)) 0 t := by
-      simpa using (hasDerivAt_const (x := t) (c := (Complex.reCLM : ℂ →L[ℝ] ℝ)))
-    have hreal := hconst.clm_apply hderivC
-    simpa [g] using hreal
+  have hg : ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t :=
+    fun t ht => hasDerivAt_resToImagAxis_re hFderiv ht
   have hn : ∀ t ∈ Set.Ioi (0 : ℝ), deriv g t < 0 := fun t (ht : 0 < t) => by
     rw [(hg t ht).deriv]
     have ht' : 0 < (ResToImagAxis (D F) t).re := hDF_pos t ht
