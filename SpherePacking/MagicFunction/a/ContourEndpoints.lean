@@ -333,6 +333,20 @@ lemma tendsto_verticalBound_atTop (r : ℝ) (hr : 2 < r) :
   simp only [verticalBound]
   ring_nf
 
+/-- The vertical bound is nonnegative for t ≥ 1. -/
+lemma verticalBound_nonneg (r t : ℝ) (ht : 1 ≤ t) : 0 ≤ verticalBound r t := by
+  simp only [verticalBound]
+  have hp := Real.pi_pos
+  have ht_pos : 0 < t := by linarith
+  refine add_nonneg (add_nonneg ?_ ?_) ?_
+  · exact mul_nonneg (mul_nonneg (le_of_lt phiBounds.hC₀_pos) (sq_nonneg t))
+        (le_of_lt (Real.exp_pos _))
+  · apply mul_nonneg _ (le_of_lt (Real.exp_pos _))
+    apply mul_nonneg (div_nonneg (by linarith [phiBounds.hC₂_pos]) (le_of_lt hp))
+    linarith
+  · exact mul_nonneg (div_nonneg (by linarith [phiBounds.hC₄_pos]) (sq_nonneg π))
+        (le_of_lt (Real.exp_pos _))
+
 /-- Vertical integrand → 0 as t → ∞ for r > 2. -/
 lemma tendsto_verticalIntegrandX_atTop (x r : ℝ) (hr : 2 < r) :
     Tendsto (fun t => verticalIntegrandX x r t) atTop (𝓝 0) := by
@@ -355,19 +369,28 @@ lemma tendsto_verticalIntegrandX_atTop (x r : ℝ) (hr : 2 < r) :
     _ < ε := by
         have := hN₁ t ht_ge_N₁
         simp only [dist_zero_right, Real.norm_eq_abs] at this
-        have hbound_pos : 0 ≤ verticalBound r t := by
-          simp only [verticalBound]
-          have hp := Real.pi_pos
-          have ht_pos : 0 < t := by linarith
-          refine add_nonneg (add_nonneg ?_ ?_) ?_
-          · exact mul_nonneg (mul_nonneg (le_of_lt phiBounds.hC₀_pos) (sq_nonneg t))
-                (le_of_lt (Real.exp_pos _))
-          · apply mul_nonneg _ (le_of_lt (Real.exp_pos _))
-            apply mul_nonneg (div_nonneg (by linarith [phiBounds.hC₂_pos]) (le_of_lt hp))
-            linarith
-          · exact mul_nonneg (div_nonneg (by linarith [phiBounds.hC₄_pos]) (sq_nonneg π))
-                (le_of_lt (Real.exp_pos _))
-        rwa [abs_of_nonneg hbound_pos] at this
+        rwa [abs_of_nonneg (verticalBound_nonneg r t ht_ge_1)] at this
+
+/-- Uniform vanishing: the vertical integrand is arbitrarily small for all z
+    with sufficiently large imaginary part. This is the form needed by Cauchy-Goursat. -/
+lemma uniform_vanishing_verticalIntegrandX (r : ℝ) (hr : 2 < r) :
+    ∀ ε > 0, ∃ M : ℝ, ∀ x t : ℝ, M ≤ t → ‖verticalIntegrandX x r t‖ < ε := by
+  intro ε hε
+  -- Get M from tendsto_verticalBound_atTop
+  have hbound := tendsto_verticalBound_atTop r hr
+  rw [Metric.tendsto_atTop] at hbound
+  obtain ⟨N, hN⟩ := hbound ε hε
+  use max N 1
+  intro x t ht
+  have ht_ge_1 : 1 ≤ t := le_trans (le_max_right N 1) ht
+  have ht_ge_N : N ≤ t := le_trans (le_max_left N 1) ht
+  -- Use: ‖integrand‖ ≤ bound < ε
+  calc ‖verticalIntegrandX x r t‖
+      ≤ verticalBound r t := norm_verticalIntegrandX_le x r t ht_ge_1
+    _ < ε := by
+        have := hN t ht_ge_N
+        simp only [dist_zero_right, Real.norm_eq_abs] at this
+        rwa [abs_of_nonneg (verticalBound_nonneg r t ht_ge_1)] at this
 
 /-! ## Top Edge Integral → 0 -/
 
@@ -570,6 +593,20 @@ lemma tendsto_topEdgeBound_atTop (r : ℝ) (hr : 2 < r) :
   simp only [add_zero] at hsum
   exact hsum
 
+/-- The top edge bound is nonnegative for T ≥ 1. -/
+lemma topEdgeBound_nonneg (r T : ℝ) (hT : 1 ≤ T) : 0 ≤ topEdgeBound r T := by
+  unfold topEdgeBound
+  have hT_pos : 0 < T := by linarith
+  have hp := Real.pi_pos
+  have h_inner : 0 ≤ phiBounds.C₀ * Real.exp (-2 * π * T) + 12 * phiBounds.C₂ / (π * T) +
+      36 * phiBounds.C₄ / (π^2 * T^2) * Real.exp (2 * π * T) := by
+    refine add_nonneg (add_nonneg ?_ ?_) ?_
+    · exact mul_nonneg (le_of_lt phiBounds.hC₀_pos) (le_of_lt (Real.exp_pos _))
+    · exact div_nonneg (by linarith [phiBounds.hC₂_pos]) (by positivity)
+    · exact mul_nonneg (div_nonneg (by linarith [phiBounds.hC₄_pos]) (by positivity))
+        (le_of_lt (Real.exp_pos _))
+  exact mul_nonneg (mul_nonneg (sq_nonneg _) (le_of_lt (Real.exp_pos _))) h_inner
+
 /-- Uniform bound on top edge integrand for x ∈ [-1,1], T ≥ 1.
     Uses S-transform bound (norm_φ₀_S_smul_le) with ‖z‖ ≥ T.
 
@@ -653,6 +690,28 @@ lemma norm_topEdgeIntegrand_le (r : ℝ) (x T : ℝ)
     _ = (1 + T)^2 * Real.exp (-π * r * T) *
           (phiBounds.C₀ * Real.exp (-2 * π * T) + 12 * phiBounds.C₂ / (π * T) +
             36 * phiBounds.C₄ / (π^2 * T^2) * Real.exp (2 * π * T)) := by ring
+
+/-- Uniform vanishing: the top edge integrand is arbitrarily small for all z = x + iT
+    with x ∈ [-1,1] and sufficiently large T. This is the form needed by Cauchy-Goursat. -/
+lemma uniform_vanishing_topEdgeIntegrand (r : ℝ) (hr : 2 < r) :
+    ∀ ε > 0, ∃ M : ℝ, ∀ x T : ℝ, x ∈ Icc (-1 : ℝ) 1 → M ≤ T →
+      ‖topEdgeIntegrand r x T‖ < ε := by
+  intro ε hε
+  -- Get M from tendsto_topEdgeBound_atTop
+  have hbound := tendsto_topEdgeBound_atTop r hr
+  rw [Metric.tendsto_atTop] at hbound
+  obtain ⟨N, hN⟩ := hbound ε hε
+  use max N 1
+  intro x T hx hT
+  have hT_ge_1 : 1 ≤ T := le_trans (le_max_right N 1) hT
+  have hT_ge_N : N ≤ T := le_trans (le_max_left N 1) hT
+  -- Use: ‖integrand‖ ≤ bound < ε
+  calc ‖topEdgeIntegrand r x T‖
+      ≤ topEdgeBound r T := norm_topEdgeIntegrand_le r x T hx hT_ge_1
+    _ < ε := by
+        have := hN T hT_ge_N
+        simp only [dist_zero_right, Real.norm_eq_abs] at this
+        rwa [abs_of_nonneg (topEdgeBound_nonneg r T hT_ge_1)] at this
 
 /-- Top horizontal edge integral vanishes as height T → ∞.
     This is the "integrand at i∞ disappears" fact from Proposition 7.14.
