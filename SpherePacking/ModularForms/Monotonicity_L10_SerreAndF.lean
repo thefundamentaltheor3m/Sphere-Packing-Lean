@@ -32,6 +32,16 @@ namespace MonotoneFG
 
 /-! ## Helper lemmas -/
 
+/-- Reindex σ₃ q-expansion from ℕ+ to ℕ using n ↦ m+1. -/
+lemma sigma3_qexp_reindex_pnat_nat (z : ℍ) :
+    ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
+      cexp (2 * π * Complex.I * (n - 1) * z) =
+    ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
+      cexp (2 * π * Complex.I * m * z) := by
+  simpa [tsum_pnat_eq_tsum_succ3] using
+    (tsum_pnat_eq_tsum_succ3 (f := fun n : ℕ => (n : ℂ) * (↑(ArithmeticFunction.sigma 3 n) : ℂ) *
+      cexp (2 * π * Complex.I * ((n : ℂ) - 1) * z)))
+
 /-- If f/g → c ≠ 0, then eventually f ≠ 0. -/
 lemma eventually_ne_zero_of_tendsto_div {f g : ℍ → ℂ} {c : ℂ} (hc : c ≠ 0)
     (h : Filter.Tendsto (fun z => f z / g z) atImInfty (nhds c)) :
@@ -407,18 +417,7 @@ theorem F_vanishing_order :
       congr 1; apply tsum_congr; intro n
       rw [mul_div_assoc, ← Complex.exp_sub]; congr 2; ring
     simp_rw [h_eq]
-    -- Reindex ℕ+ to ℕ via `tsum_pnat_eq_tsum_succ3`: n ↦ m+1
-    have h_reindex : ∀ z : ℍ,
-        ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
-          cexp (2 * π * Complex.I * (n - 1) * z) =
-        ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
-          cexp (2 * π * Complex.I * m * z) := by
-      intro z
-      simpa [tsum_pnat_eq_tsum_succ3] using
-        (tsum_pnat_eq_tsum_succ3 (f := fun n : ℕ =>
-          (n : ℂ) * (↑(ArithmeticFunction.sigma 3 n) : ℂ) *
-            cexp (2 * π * Complex.I * ((n : ℂ) - 1) * z)))
-    simp_rw [h_reindex]
+    simp_rw [sigma3_qexp_reindex_pnat_nat]
     -- Apply QExp.tendsto_nat with coefficient function a(m) = (m+1) * σ₃(m+1)
     set a : ℕ → ℂ := fun m => ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) with ha
     have ha0 : a 0 = 1 := by simp [ha, ArithmeticFunction.sigma_one]
@@ -716,17 +715,7 @@ theorem D_F_div_F_tendsto :
       congr 1; apply tsum_congr; intro n
       rw [mul_div_assoc, ← Complex.exp_sub]; congr 2; ring
     simp_rw [h_eq]
-    have h_reindex : ∀ z : ℍ,
-        ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
-          cexp (2 * π * Complex.I * (n - 1) * z) =
-        ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
-          cexp (2 * π * Complex.I * m * z) := by
-      intro z
-      simpa [tsum_pnat_eq_tsum_succ3] using
-        (tsum_pnat_eq_tsum_succ3 (f := fun n : ℕ =>
-          (n : ℂ) * (↑(ArithmeticFunction.sigma 3 n) : ℂ) *
-            cexp (2 * π * Complex.I * ((n : ℂ) - 1) * z)))
-    simp_rw [h_reindex]
+    simp_rw [sigma3_qexp_reindex_pnat_nat]
     set a : ℕ → ℂ := fun m => ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) with ha
     have ha0 : a 0 = 1 := by simp [ha, ArithmeticFunction.sigma_one]
     have h_tendsto : Filter.Tendsto
