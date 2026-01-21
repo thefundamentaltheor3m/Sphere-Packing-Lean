@@ -730,8 +730,7 @@ theorem D_nonneg_from_antitone {F : ℍ → ℂ}
     ∀ t, 0 < t → 0 ≤ ((D F).resToImagAxis t).re := by
   intro t ht
   have hderiv_nonpos : deriv (fun s => (F.resToImagAxis s).re) t ≤ 0 :=
-    hanti.derivWithin_nonpos (s := Set.Ioi 0) (x := t)
-      |> (derivWithin_of_isOpen isOpen_Ioi ht).symm.trans_le
+    (derivWithin_of_isOpen isOpen_Ioi ht).symm.trans_le hanti.derivWithin_nonpos
   rw [(hasDerivAt_resToImagAxis_re hdiff ht).deriv] at hderiv_nonpos
   nlinarith [Real.pi_pos]
 
