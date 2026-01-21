@@ -371,13 +371,11 @@ lemma uniform_vanishing_verticalIntegrandX (r : ℝ) (hr : 2 < r) :
   have hbound := tendsto_verticalBound_atTop r hr
   rw [Metric.tendsto_atTop] at hbound
   obtain ⟨N, hN⟩ := hbound ε hε
-  use max N 1
-  intro x t ht
+  refine ⟨max N 1, fun x t ht => ?_⟩
   have ht1 : 1 ≤ t := le_trans (le_max_right N 1) ht
   have htN : N ≤ t := le_trans (le_max_left N 1) ht
-  calc ‖verticalIntegrandX x r t‖
-      ≤ verticalBound r t := norm_verticalIntegrandX_le x r t ht1
-    _ < ε := by simpa [abs_of_nonneg (verticalBound_nonneg r t ht1)] using hN t htN
+  exact lt_of_le_of_lt (norm_verticalIntegrandX_le x r t ht1)
+    (by simpa [abs_of_nonneg (verticalBound_nonneg r t ht1)] using hN t htN)
 
 /-! ## Top Edge Integral → 0 -/
 
@@ -680,13 +678,11 @@ lemma uniform_vanishing_topEdgeIntegrand (r : ℝ) (hr : 2 < r) :
   have hbound := tendsto_topEdgeBound_atTop r hr
   rw [Metric.tendsto_atTop] at hbound
   obtain ⟨N, hN⟩ := hbound ε hε
-  use max N 1
-  intro x T hx hT
+  refine ⟨max N 1, fun x T hx hT => ?_⟩
   have hT1 : 1 ≤ T := le_trans (le_max_right N 1) hT
   have hTN : N ≤ T := le_trans (le_max_left N 1) hT
-  calc ‖topEdgeIntegrand r x T‖
-      ≤ topEdgeBound r T := norm_topEdgeIntegrand_le r x T hx hT1
-    _ < ε := by simpa [abs_of_nonneg (topEdgeBound_nonneg r T hT1)] using hN T hTN
+  exact lt_of_le_of_lt (norm_topEdgeIntegrand_le r x T hx hT1)
+    (by simpa [abs_of_nonneg (topEdgeBound_nonneg r T hT1)] using hN T hTN)
 
 /-- Top horizontal edge integral vanishes as height T → ∞.
     This is the "integrand at i∞ disappears" fact from Proposition 7.14.
