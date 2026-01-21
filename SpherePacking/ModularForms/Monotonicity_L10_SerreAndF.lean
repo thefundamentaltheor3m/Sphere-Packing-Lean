@@ -496,21 +496,9 @@ theorem D_diff_qexp (z : ℍ) :
     calc (n : ℝ) * ↑(σ 3 ↑n) ≤ (n : ℝ) * (n : ℝ)^4 := by
            gcongr; exact_mod_cast sigma_bound 3 n
        _ = (n : ℝ)^5 := by ring
-  -- Step 3: Summability of a(n) * q^n (using |a(n)| ≤ n⁵)
+  -- Step 3: Summability of a(n) * q^n using sigma_qexp_summable_generic
   have hsum : Summable (fun n : ℕ+ => a n * cexp (2 * π * I * ↑n * ↑z)) := by
-    have hpos : 0 < 2 * π * z.im := by nlinarith [pi_pos, z.im_pos]
-    apply Summable.of_norm_bounded (g := fun n : ℕ+ => ((n : ℕ) : ℝ)^5 * rexp (-(2 * π * z.im) * n))
-        ((Real.summable_pow_mul_exp_neg_nat_mul 5 hpos).subtype _)
-    intro n
-    calc ‖a n * cexp (2 * π * I * ↑n * ↑z)‖
-        = ‖a n‖ * ‖cexp (2 * π * I * ↑n * ↑z)‖ := norm_mul _ _
-      _ ≤ (n : ℝ)^5 * ‖cexp (2 * π * I * ↑n * ↑z)‖ := by gcongr; exact norm_a_le n
-      _ = (n : ℝ)^5 * rexp (-(2 * π * z.im) * ↑n) := by
-          congr 1; rw [Complex.norm_exp]; congr 1
-          simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
-            Complex.I_re, Complex.I_im, Complex.natCast_re, Complex.natCast_im,
-            UpperHalfPlane.coe_re, UpperHalfPlane.coe_im, mul_zero, mul_one,
-            zero_add, add_zero, sub_zero]; ring
+    simpa [pow_one] using sigma_qexp_summable_generic 1 3 z
   -- Step 4: Derivative bounds for a(n) * q^n (using |a(n)| ≤ n⁵, so derivative ≤ n⁶)
   have hsum_deriv : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
       ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K), ‖a n * (2 * π * I * ↑n) *
