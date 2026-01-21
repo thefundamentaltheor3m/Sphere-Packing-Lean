@@ -230,6 +230,64 @@ lemma summable_pow_shift (k : ℕ) : Summable fun m : ℕ => (m + 1 : ℝ) ^ k *
   push_cast
   ring_nf
 
+/-- Derivative bounds for q-expansion coefficients.
+Given `‖a n‖ ≤ n^k`, produces bounds `‖a n * 2πin * exp(2πin z)‖ ≤ 2π * n^(k+1) * exp(-2πn * y_min)`
+on compact K ⊆ {z : 0 < z.im}. This is a key hypothesis for `D_qexp_tsum_pnat`. -/
+lemma qexp_deriv_bound_of_coeff_bound {a : ℕ+ → ℂ} {k : ℕ} (ha : ∀ n : ℕ+, ‖a n‖ ≤ (n : ℝ)^k) :
+    ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (z : K),
+        ‖a n * (2 * π * I * ↑n) * cexp (2 * π * I * ↑n * z.1)‖ ≤ u n := by
+  intro K hK_sub hK_compact
+  by_cases hK_nonempty : K.Nonempty
+  · obtain ⟨k_min, hk_min_mem, hk_min_le⟩ := hK_compact.exists_isMinOn hK_nonempty
+      Complex.continuous_im.continuousOn
+    have hy_min_pos : 0 < k_min.im := hK_sub hk_min_mem
+    have hpos : 0 < 2 * π * k_min.im := by nlinarith [pi_pos]
+    have h := Real.summable_pow_mul_exp_neg_nat_mul (k + 1) hpos
+    have hconv : Summable (fun n : ℕ+ =>
+        2 * π * ((n : ℕ) : ℝ)^(k + 1) * rexp (-(2 * π * k_min.im) * (n : ℕ))) := by
+      have : Summable (fun n : ℕ+ =>
+          ((n : ℕ) : ℝ)^(k + 1) * rexp (-(2 * π * k_min.im) * (n : ℕ))) := h.subtype _
+      convert this.mul_left (2 * π) using 1
+      ext n; ring
+    use fun n => 2 * π * (n : ℝ)^(k + 1) * rexp (-2 * π * ↑n * k_min.im)
+    constructor
+    · apply hconv.of_nonneg_of_le
+      · intro n; positivity
+      · intro n
+        have h1 : -2 * π * ↑↑n * k_min.im = -(2 * π * k_min.im) * ↑↑n := by ring
+        simp only [h1]; exact le_refl _
+    · intro n ⟨z, hz_mem⟩
+      have hz_im : k_min.im ≤ z.im := hk_min_le hz_mem
+      have hn_pos : (0 : ℝ) < n := by exact_mod_cast n.pos
+      have h_norm_2pin : ‖(2 : ℂ) * π * I * ↑↑n‖ = 2 * π * n := by
+        rw [norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real,
+            Complex.norm_I, mul_one, Complex.norm_natCast, Real.norm_of_nonneg pi_pos.le]
+      calc ‖a n * (2 * π * I * ↑↑n) * cexp (2 * π * I * ↑↑n * z)‖
+          = ‖a n‖ * ‖(2 * π * I * ↑↑n)‖ * ‖cexp (2 * π * I * ↑↑n * z)‖ := by
+            rw [norm_mul, norm_mul]
+        _ ≤ (n : ℝ)^k * (2 * π * n) * rexp (-2 * π * n * z.im) := by
+            rw [h_norm_2pin]
+            have hexp : ‖cexp (2 * π * I * ↑↑n * z)‖ ≤ rexp (-2 * π * n * z.im) := by
+              rw [Complex.norm_exp]
+              have : (2 * π * I * ↑↑n * z).re = -2 * π * n * z.im := by
+                simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
+                  Complex.I_re, Complex.I_im, Complex.natCast_re, Complex.natCast_im,
+                  mul_zero, mul_one, zero_add, add_zero, sub_zero]; ring
+              rw [this]
+            gcongr; exact ha n
+        _ ≤ (n : ℝ)^k * (2 * π * n) * rexp (-2 * π * n * k_min.im) := by
+            apply mul_le_mul_of_nonneg_left _ (by positivity)
+            apply Real.exp_le_exp_of_le
+            apply mul_le_mul_of_nonpos_left hz_im
+            nlinarith [pi_pos, hn_pos]
+        _ = 2 * π * (n : ℝ)^(k + 1) * rexp (-2 * π * n * k_min.im) := by ring
+  · use fun _ => 0
+    constructor
+    · exact summable_zero
+    · intro n ⟨z, hz_mem⟩
+      exfalso; exact hK_nonempty ⟨z, hz_mem⟩
+
 /-- (E₂E₄ - E₆) / q → 720 as im(z) → ∞.
 This is used in both F_vanishing_order and D_F_div_F_tendsto. -/
 lemma E₂E₄_sub_E₆_div_q_tendsto :
@@ -363,60 +421,8 @@ theorem D_diff_qexp (z : ℍ) :
   -- Step 3: Summability of a(n) * q^n using sigma_qexp_summable_generic
   have hsum : Summable (fun n : ℕ+ => a n * cexp (2 * π * I * ↑n * ↑z)) := by
     simpa [pow_one] using sigma_qexp_summable_generic 1 3 z
-  -- Step 4: Derivative bounds for a(n) * q^n (using |a(n)| ≤ n⁵, so derivative ≤ n⁶)
-  have hsum_deriv : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
-      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K), ‖a n * (2 * π * I * ↑n) *
-        cexp (2 * π * I * ↑n * k.1)‖ ≤ u n := by
-    intro K hK_sub hK_compact
-    by_cases hK_nonempty : K.Nonempty
-    · obtain ⟨k_min, hk_min_mem, hk_min_le⟩ := hK_compact.exists_isMinOn hK_nonempty
-        Complex.continuous_im.continuousOn
-      have hy_min_pos : 0 < k_min.im := hK_sub hk_min_mem
-      have hpos : 0 < 2 * π * k_min.im := by nlinarith [pi_pos]
-      have h := Real.summable_pow_mul_exp_neg_nat_mul 6 hpos
-      have hconv : Summable (fun n : ℕ+ =>
-          2 * π * ((n : ℕ) : ℝ)^6 * rexp (-(2 * π * k_min.im) * (n : ℕ))) := by
-        have : Summable (fun n : ℕ+ => ((n : ℕ) : ℝ)^6 * rexp (-(2 * π * k_min.im) * (n : ℕ))) :=
-          h.subtype _
-        convert this.mul_left (2 * π) using 1
-        ext n; ring
-      use fun n => 2 * π * (n : ℝ)^6 * rexp (-2 * π * ↑n * k_min.im)
-      constructor
-      · apply hconv.of_nonneg_of_le
-        · intro n; positivity
-        · intro n
-          have h1 : -2 * π * ↑↑n * k_min.im = -(2 * π * k_min.im) * ↑↑n := by ring
-          simp only [h1]; exact le_refl _
-      · intro n ⟨k, hk_mem⟩
-        have hk_im : k_min.im ≤ k.im := hk_min_le hk_mem
-        have hn_pos : (0 : ℝ) < n := by exact_mod_cast n.pos
-        have h_norm_2pin : ‖(2 : ℂ) * π * I * ↑↑n‖ = 2 * π * n := by
-          rw [norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real,
-              Complex.norm_I, mul_one, Complex.norm_natCast, Real.norm_of_nonneg pi_pos.le]
-        calc ‖a n * (2 * π * I * ↑↑n) * cexp (2 * π * I * ↑↑n * k)‖
-            = ‖a n‖ * ‖(2 * π * I * ↑↑n)‖ * ‖cexp (2 * π * I * ↑↑n * k)‖ := by
-              rw [norm_mul, norm_mul]
-          _ ≤ (n : ℝ)^5 * (2 * π * n) * rexp (-2 * π * n * k.im) := by
-              rw [h_norm_2pin]
-              have hexp : ‖cexp (2 * π * I * ↑↑n * k)‖ ≤ rexp (-2 * π * n * k.im) := by
-                rw [Complex.norm_exp]
-                have : (2 * π * I * ↑↑n * k).re = -2 * π * n * k.im := by
-                  simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
-                    Complex.I_re, Complex.I_im, Complex.natCast_re, Complex.natCast_im,
-                    mul_zero, mul_one, zero_add, add_zero, sub_zero]; ring
-                rw [this]
-              gcongr; exact norm_a_le n
-          _ ≤ (n : ℝ)^5 * (2 * π * n) * rexp (-2 * π * n * k_min.im) := by
-              apply mul_le_mul_of_nonneg_left _ (by positivity)
-              apply Real.exp_le_exp_of_le
-              apply mul_le_mul_of_nonpos_left hk_im
-              nlinarith [pi_pos, hn_pos]
-          _ = 2 * π * (n : ℝ)^6 * rexp (-2 * π * n * k_min.im) := by ring
-    · use fun _ => 0
-      constructor
-      · exact summable_zero
-      · intro n ⟨k, hk_mem⟩
-        exfalso; exact hK_nonempty ⟨k, hk_mem⟩
+  -- Step 4: Derivative bounds using the extracted helper
+  have hsum_deriv := qexp_deriv_bound_of_coeff_bound norm_a_le
   -- Step 5: Apply D_qexp_tsum_pnat with b(n) = 720 * a(n) = 720 * n * σ₃(n)
   -- This avoids needing D_const_mul and MDifferentiable for the tsum
   let b : ℕ+ → ℂ := fun n => 720 * (↑n * ↑(σ 3 n))
