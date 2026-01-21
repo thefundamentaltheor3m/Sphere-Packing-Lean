@@ -153,10 +153,15 @@ open scoped MatrixGroups ComplexConjugate
 
 lemma _root_.ModularGroup.ST_eq : S * T = !![(0 : ℤ), -1; 1, 1] := by decide
 
+lemma _root_.ModularGroup.S_eq : S = !![(0 : ℤ), -1; 1, 0] := by rfl
+
 private lemma det_aux : !![(0 : ℤ), -1; 1, 1].det = 1 := by decide
 
 lemma _root_.ModularGroup.ST_eq' : S * T = ⟨!![(0 : ℤ), -1; 1, 1], det_aux⟩ := by
   simp only [← ModularGroup.ST_eq]; norm_cast
+
+lemma _root_.ModularGroup.S_eq' : S = ⟨!![(0 : ℤ), -1; 1, 0], det_aux⟩ := by
+  simp only [← ModularGroup.S_eq]; norm_cast
 
 lemma neg_inv_one_add_eq_ST_coe (z : ℍ) :
     -1 / ((z : ℂ) + 1) = UpperHalfPlane.coe ((S * T) • z) := by
@@ -171,6 +176,21 @@ lemma neg_inv_one_add_eq_ST (z : ℍ) :
     ⟨-1 / ((z : ℂ) + 1), neg_inv_one_add_mem z⟩ = (S * T) • z := by
   apply UpperHalfPlane.ext
   rw [← neg_inv_one_add_eq_ST_coe]
+  norm_cast
+
+lemma neg_inv_eq_S_coe (z : ℍ) :
+    -1 / (z) = UpperHalfPlane.coe (S • z) := by
+  rw [specialLinearGroup_apply]
+  simp_all [S_eq]
+
+lemma neg_inv_mem (z : ℍ) : 0 < (-1 / (z : ℂ)).im := by
+  rw [neg_inv_eq_S_coe, coe_im]
+  exact (S • z).2
+
+lemma neg_inv_eq_S (z : ℍ) :
+    ⟨-1 / (z : ℂ), neg_inv_mem z⟩ = S • z := by
+  apply UpperHalfPlane.ext
+  rw [← neg_inv_eq_S_coe]
   norm_cast
 
 end transforms_mem
