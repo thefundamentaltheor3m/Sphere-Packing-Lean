@@ -230,6 +230,54 @@ lemma summable_pow_shift (k : ℕ) : Summable fun m : ℕ => (m + 1 : ℝ) ^ k *
   push_cast
   ring_nf
 
+/-- (E₂E₄ - E₆) / q → 720 as im(z) → ∞.
+This is used in both F_vanishing_order and D_F_div_F_tendsto. -/
+lemma E₂E₄_sub_E₆_div_q_tendsto :
+    Filter.Tendsto (fun z : ℍ => (E₂ z * E₄ z - E₆ z) / cexp (2 * π * I * z))
+      atImInfty (nhds (720 : ℂ)) := by
+  have h_rw : ∀ z : ℍ, E₂ z * E₄ z - E₆ z =
+      720 * ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
+        cexp (2 * π * Complex.I * n * z) := E₂_mul_E₄_sub_E₆
+  have h_eq : ∀ z : ℍ,
+      (E₂ z * E₄ z - E₆ z) / cexp (2 * π * Complex.I * z) =
+      720 * (∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
+        cexp (2 * π * Complex.I * (n - 1) * z)) := by
+    intro z
+    rw [h_rw z, mul_div_assoc, ← tsum_div_const]
+    congr 1; apply tsum_congr; intro n
+    rw [mul_div_assoc, ← Complex.exp_sub]; congr 2; ring
+  simp_rw [h_eq, sigma3_qexp_reindex_pnat_nat]
+  set a : ℕ → ℂ := fun m => ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) with ha
+  have ha0 : a 0 = 1 := by simp [ha, ArithmeticFunction.sigma_one]
+  have h_tendsto : Filter.Tendsto
+      (fun z : ℍ => ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m))
+      atImInfty (nhds (a 0)) := by
+    apply QExp.tendsto_nat a
+    have hbound : ∀ m : ℕ, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 5 := by
+      intro m
+      simp only [ha, norm_mul, Complex.norm_natCast]
+      have h1 : (ArithmeticFunction.sigma 3 (m + 1) : ℝ) ≤ ((m + 1 : ℕ) : ℝ) ^ 4 := by
+        exact_mod_cast (sigma_bound 3 (m + 1))
+      calc (↑(m + 1) : ℝ) * (ArithmeticFunction.sigma 3 (m + 1) : ℝ)
+          ≤ (↑(m + 1) : ℝ) * (↑(m + 1) : ℝ) ^ 4 :=
+            mul_le_mul_of_nonneg_left h1 (Nat.cast_nonneg _)
+        _ = (↑(m + 1) : ℝ) ^ 5 := by ring
+    apply Summable.of_nonneg_of_le
+    · intro m; positivity
+    · intro m
+      calc ‖a m‖ * rexp (-2 * π * m)
+          ≤ ((m + 1 : ℕ) : ℝ) ^ 5 * rexp (-2 * π * m) :=
+            mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
+        _ = (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) := by simp
+    · exact summable_pow_shift 5
+  have h_eq2 : ∀ z : ℍ,
+      ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
+        cexp (2 * π * Complex.I * m * z) =
+      ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m) := by
+    intro z; apply tsum_congr; intro m; simp only [ha]; ring_nf
+  simp_rw [h_eq2, ha0] at h_tendsto ⊢
+  convert h_tendsto.const_mul (720 : ℂ) using 2; ring
+
 /--
 Helper lemma: `Θ₂(z) / exp(πiz/4) → 2` as `im(z) → ∞`.
 This follows from `Θ₂ = exp(πiz/4) * jacobiTheta₂(z/2, z)` and `jacobiTheta₂(z/2, z) → 2`.
@@ -266,54 +314,7 @@ theorem F_vanishing_order :
   -- Strategy: Show (E₂E₄ - E₆) / q → 720, then square
   -- From E₂_mul_E₄_sub_E₆: E₂E₄ - E₆ = 720 * ∑' n : ℕ+, n * σ₃(n) * q^n
   -- Dividing by q and using QExp.tendsto_nat: limit is 720 * σ₃(1) = 720
-  have h_diff_tendsto : Filter.Tendsto (fun z : ℍ => (E₂ z * E₄ z - E₆ z) / cexp (2 * π * I * z))
-      atImInfty (nhds (720 : ℂ)) := by
-    -- Use E₂_mul_E₄_sub_E₆ and reindex from ℕ+ to ℕ, then apply QExp.tendsto_nat
-    have h_rw : ∀ z : ℍ, E₂ z * E₄ z - E₆ z =
-        720 * ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
-          cexp (2 * π * Complex.I * n * z) := E₂_mul_E₄_sub_E₆
-    have h_eq : ∀ z : ℍ,
-        (E₂ z * E₄ z - E₆ z) / cexp (2 * π * Complex.I * z) =
-        720 * (∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
-          cexp (2 * π * Complex.I * (n - 1) * z)) := by
-      intro z
-      rw [h_rw z, mul_div_assoc, ← tsum_div_const]
-      congr 1; apply tsum_congr; intro n
-      rw [mul_div_assoc, ← Complex.exp_sub]; congr 2; ring
-    simp_rw [h_eq]
-    simp_rw [sigma3_qexp_reindex_pnat_nat]
-    -- Apply QExp.tendsto_nat with coefficient function a(m) = (m+1) * σ₃(m+1)
-    set a : ℕ → ℂ := fun m => ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) with ha
-    have ha0 : a 0 = 1 := by simp [ha, ArithmeticFunction.sigma_one]
-    have h_tendsto : Filter.Tendsto
-        (fun z : ℍ => ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m))
-        atImInfty (nhds (a 0)) := by
-      apply QExp.tendsto_nat a
-      -- Summability: ‖a m‖ ≤ (m+1)^5, and (m+1)^5 * exp(-2πm) is summable
-      have hbound : ∀ m : ℕ, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 5 := by
-        intro m
-        simp only [ha, norm_mul, Complex.norm_natCast]
-        have h1 : (ArithmeticFunction.sigma 3 (m + 1) : ℝ) ≤ ((m + 1 : ℕ) : ℝ) ^ 4 := by
-          exact_mod_cast (sigma_bound 3 (m + 1))
-        calc (↑(m + 1) : ℝ) * (ArithmeticFunction.sigma 3 (m + 1) : ℝ)
-            ≤ (↑(m + 1) : ℝ) * (↑(m + 1) : ℝ) ^ 4 :=
-              mul_le_mul_of_nonneg_left h1 (Nat.cast_nonneg _)
-          _ = (↑(m + 1) : ℝ) ^ 5 := by ring
-      apply Summable.of_nonneg_of_le
-      · intro m; positivity
-      · intro m
-        calc ‖a m‖ * rexp (-2 * π * m)
-            ≤ ((m + 1 : ℕ) : ℝ) ^ 5 * rexp (-2 * π * m) :=
-              mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
-          _ = (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) := by simp
-      · exact summable_pow_shift 5
-    have h_eq2 : ∀ z : ℍ,
-        ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
-          cexp (2 * π * Complex.I * m * z) =
-        ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m) := by
-      intro z; apply tsum_congr; intro m; simp only [ha]; ring_nf
-    simp_rw [h_eq2, ha0] at h_tendsto ⊢
-    convert h_tendsto.const_mul (720 : ℂ) using 2; ring
+  have h_diff_tendsto := E₂E₄_sub_E₆_div_q_tendsto
   -- F / q² = ((E₂E₄ - E₆) / q)² → 720²
   have h_exp_eq : ∀ z : ℍ, cexp (2 * π * I * 2 * z) = cexp (2 * π * I * z) ^ 2 := by
     intro z; rw [← Complex.exp_nat_mul]; congr 1; ring
@@ -560,56 +561,10 @@ theorem D_F_div_F_tendsto :
       rw [hF_eq z, hf_zero, sq, zero_mul]
     rw [hDF_eq z, hF_eq z, sq]
     field_simp [hfz]
-  -- Step 5: f/q → 720 (from F_vanishing_order proof)
+  -- Step 5: f/q → 720 (use extracted helper after showing f z = E₂ z * E₄ z - E₆ z)
   have hf_div_q : Filter.Tendsto (fun z : ℍ => f z / cexp (2 * π * Complex.I * z))
-      atImInfty (nhds (720 : ℂ)) := by
-    -- This is exactly h_diff_tendsto from F_vanishing_order proof
-    -- Note: E₄ z = E₄.toFun z by ModularForm.toFun_eq_coe
-    have h_f_eq : ∀ z : ℍ, f z = E₂ z * E₄ z - E₆ z := fun z => by
-      simp only [hf_def, ModularForm.toFun_eq_coe]
-    have h_rw : ∀ z : ℍ, E₂ z * E₄ z - E₆ z =
-        720 * ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
-          cexp (2 * π * Complex.I * n * z) := E₂_mul_E₄_sub_E₆
-    have h_eq : ∀ z : ℍ,
-        f z / cexp (2 * π * Complex.I * z) =
-        720 * (∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
-          cexp (2 * π * Complex.I * (n - 1) * z)) := by
-      intro z
-      rw [h_f_eq z, h_rw z, mul_div_assoc, ← tsum_div_const]
-      congr 1; apply tsum_congr; intro n
-      rw [mul_div_assoc, ← Complex.exp_sub]; congr 2; ring
-    simp_rw [h_eq]
-    simp_rw [sigma3_qexp_reindex_pnat_nat]
-    set a : ℕ → ℂ := fun m => ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) with ha
-    have ha0 : a 0 = 1 := by simp [ha, ArithmeticFunction.sigma_one]
-    have h_tendsto : Filter.Tendsto
-        (fun z : ℍ => ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m))
-        atImInfty (nhds (a 0)) := by
-      apply QExp.tendsto_nat a
-      have hbound : ∀ m : ℕ, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 5 := by
-        intro m
-        simp only [ha, norm_mul, Complex.norm_natCast]
-        have h1 : (ArithmeticFunction.sigma 3 (m + 1) : ℝ) ≤ ((m + 1 : ℕ) : ℝ) ^ 4 := by
-          exact_mod_cast (sigma_bound 3 (m + 1))
-        calc (↑(m + 1) : ℝ) * (ArithmeticFunction.sigma 3 (m + 1) : ℝ)
-            ≤ (↑(m + 1) : ℝ) * (↑(m + 1) : ℝ) ^ 4 :=
-              mul_le_mul_of_nonneg_left h1 (Nat.cast_nonneg _)
-          _ = (↑(m + 1) : ℝ) ^ 5 := by ring
-      apply Summable.of_nonneg_of_le
-      · intro m; positivity
-      · intro m
-        calc ‖a m‖ * rexp (-2 * π * m)
-            ≤ ((m + 1 : ℕ) : ℝ) ^ 5 * rexp (-2 * π * m) :=
-              mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
-          _ = (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) := by simp
-      · exact summable_pow_shift 5
-    have h_eq2 : ∀ z : ℍ,
-        ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
-          cexp (2 * π * Complex.I * m * z) =
-        ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m) := by
-      intro z; apply tsum_congr; intro m; simp only [ha]; ring_nf
-    simp_rw [h_eq2, ha0] at h_tendsto ⊢
-    convert h_tendsto.const_mul (720 : ℂ) using 2; ring
+      atImInfty (nhds (720 : ℂ)) :=
+    E₂E₄_sub_E₆_div_q_tendsto.congr fun z => by simp only [hf_def, ModularForm.toFun_eq_coe]
   -- Step 6: D(f)/q → 720 (by D_diff_div_q_tendsto)
   have hDf_div_q : Filter.Tendsto (fun z : ℍ => D f z / cexp (2 * π * Complex.I * z))
       atImInfty (nhds (720 : ℂ)) := D_diff_div_q_tendsto
