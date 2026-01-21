@@ -31,32 +31,25 @@ namespace MonotoneFG
 theorem G_vanishing_order :
     Filter.Tendsto (fun z : ℍ => G z / cexp (2 * π * I * (3/2) * z))
       atImInfty (nhds (20480 : ℂ)) := by
-  have h_exp_eq : ∀ z : ℍ, cexp (2 * π * I * (3 / 2) * z) = cexp (3 * π * I * z) := by
-    intro z
-    ring_nf
-  simp_rw [h_exp_eq]
+  simp only [show ∀ z : ℍ, cexp (2 * π * I * (3 / 2) * z) = cexp (3 * π * I * z) from
+    fun z => by ring_nf]
+  have h_exp_pow : ∀ z : ℍ, cexp (π * I * z) ^ 3 = cexp (3 * π * I * z) := fun z => by
+    simp only [← Complex.exp_nat_mul]; ring_nf
   have h_eq : ∀ z : ℍ, G z / cexp (3 * π * I * z) =
-      (H₂ z / cexp (π * I * z)) ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := by
-    intro z
-    have hne : cexp (π * I * z) ≠ 0 := Complex.exp_ne_zero _
-    have hne3 : cexp (3 * π * I * z) ≠ 0 := Complex.exp_ne_zero _
-    have h_exp_pow : cexp (π * I * z) ^ 3 = cexp (3 * π * I * z) := by
-      rw [← Complex.exp_nat_mul]
-      ring_nf
+      (H₂ z / cexp (π * I * z)) ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := fun z => by
     simp only [G, Pi.mul_apply, Pi.pow_apply, Pi.add_apply, Pi.smul_apply,
       Complex.real_smul, div_pow, h_exp_pow]
     push_cast
-    field_simp [hne, hne3]
+    field_simp [Complex.exp_ne_zero]
   simp_rw [h_eq]
   have h_poly : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
       atImInfty (nhds 5) := by
-    have h1 : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2) atImInfty (nhds 0) := by
-      simpa using (H₂_tendsto_atImInfty.pow 2).const_mul 2
-    have h2 : Filter.Tendsto (fun z : ℍ => 5 * H₂ z * H₄ z) atImInfty (nhds 0) := by
-      simpa [mul_assoc] using (H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty).const_mul 5
-    have h3 : Filter.Tendsto (fun z : ℍ => 5 * H₄ z ^ 2) atImInfty (nhds 5) := by
-      simpa using (H₄_tendsto_atImInfty.pow 2).const_mul 5
-    simpa [add_assoc] using h1.add (h2.add h3)
+    have h1 := (H₂_tendsto_atImInfty.pow 2).const_mul 2
+    have h2 := (H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty).const_mul 5
+    have h3 := (H₄_tendsto_atImInfty.pow 2).const_mul 5
+    convert h1.add (h2.add h3) using 2
+    · simp only [pow_two]; ring
+    · norm_num
   convert (H₂_div_exp_tendsto.pow 3).mul h_poly
   norm_num
 
