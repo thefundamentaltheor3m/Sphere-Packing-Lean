@@ -603,7 +603,6 @@ lemma tendsto_topEdgeBound_atTop (r : ℝ) (hr : 2 < r) :
 /-- The top edge bound is nonnegative for T ≥ 1. -/
 lemma topEdgeBound_nonneg (r T : ℝ) (hT : 1 ≤ T) : 0 ≤ topEdgeBound r T := by
   simp only [topEdgeBound]
-  have : 0 < T := by linarith
   have := phiBounds.hC₀_pos; have := phiBounds.hC₂_pos; have := phiBounds.hC₄_pos
   positivity
 
