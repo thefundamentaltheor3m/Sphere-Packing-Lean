@@ -60,14 +60,13 @@ lemma mem_atImInfty_ℂ {s : Set ℂ} : s ∈ atImInfty_ℂ ↔ ∃ M : ℝ, ∀
 /-- Tendsto characterization for `atImInfty_ℂ` to `𝓝 0`. -/
 lemma tendsto_zero_atImInfty_ℂ_iff {f : ℂ → ℂ} :
     Tendsto f atImInfty_ℂ (𝓝 0) ↔ ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε := by
-  rw [Metric.tendsto_nhds]
-  simp [dist_zero_right, Filter.eventually_iff, mem_atImInfty_ℂ]
+  simp [Metric.tendsto_nhds, dist_zero_right, Filter.eventually_iff, mem_atImInfty_ℂ]
 
 /-- Tendsto characterization for `atImInfty_ℂ` to `𝓝 0` (real-valued version). -/
 lemma tendsto_zero_atImInfty_ℂ_iff' {f : ℂ → ℝ} :
     Tendsto f atImInfty_ℂ (𝓝 0) ↔ ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → |f z| < ε := by
-  rw [Metric.tendsto_nhds]
-  simp [dist_zero_right, Real.norm_eq_abs, Filter.eventually_iff, mem_atImInfty_ℂ]
+  simp [Metric.tendsto_nhds, dist_zero_right, Real.norm_eq_abs, Filter.eventually_iff,
+    mem_atImInfty_ℂ]
 
 /-! ## Corollary 7.13 - S-transform bound for φ₀''(I/t) -/
 
@@ -730,10 +729,8 @@ lemma tendsto_verticalIntegrandX_atImInfty_ℂ (x r : ℝ) (hr : 2 < r) :
     The top edge integrand tends to 0 under `atTop` filter on T. -/
 lemma tendsto_topEdgeIntegrand_atTop (r : ℝ) (hr : 2 < r) (x : ℝ) (hx : x ∈ Icc (-1 : ℝ) 1) :
     Tendsto (fun T : ℝ => topEdgeIntegrand r x T) atTop (𝓝 0) := by
-  rw [Metric.tendsto_atTop]
-  intro ε hε
-  obtain ⟨M, hM⟩ := uniform_vanishing_topEdgeIntegrand r hr ε hε
-  exact ⟨M, fun T hT => by simpa using hM x T hx hT⟩
+  simpa [Metric.tendsto_atTop] using fun ε hε =>
+    (uniform_vanishing_topEdgeIntegrand r hr ε hε).imp fun M hM T hT => hM x T hx hT
 
 /-- The uniform vanishing property expressed as: eventually, the integrand norm
     is bounded by any positive ε, uniformly in x. -/
