@@ -27,43 +27,31 @@ open scoped ModularForm MatrixGroups Manifold ArithmeticFunction.sigma
 
 namespace MonotoneFG
 
-/--
-The vanishing order of G at infinity is 3/2.
-Blueprint: H₂ = Θ₂⁴ ~ 16q^(1/2), H₄ → 1 as im(z) → ∞.
-So G = H₂³(2H₂² + 5H₂H₄ + 5H₄²) ~ H₂³ * 5 = 5 * 16³ * q^(3/2) = 20480 * q^(3/2).
-Here q^(3/2) = exp(3πiz) = exp(2πi * (3/2) * z).
--/
+/-- G / q^(3/2) → 20480 as im(z) → ∞. Here q^(3/2) = exp(2πi · (3/2) · z). -/
 theorem G_vanishing_order :
     Filter.Tendsto (fun z : ℍ => G z / cexp (2 * π * I * (3/2) * z))
       atImInfty (nhds (20480 : ℂ)) := by
-  have hH₂_asymp := H₂_div_exp_tendsto
-  have hH₂_zero := H₂_tendsto_atImInfty
-  have hH₄_one := H₄_tendsto_atImInfty
-  have h_exp_eq : ∀ z : ℍ, cexp (2 * π * I * (3 / 2) * z) = cexp (3 * π * I * z) := by
-    intro z; congr 1; ring
-  simp_rw [h_exp_eq]
+  simp only [show ∀ z : ℍ, cexp (2 * π * I * (3 / 2) * z) = cexp (3 * π * I * z) from
+    fun z => by ring_nf]
+  have h_exp_pow : ∀ z : ℍ, cexp (π * I * z) ^ 3 = cexp (3 * π * I * z) := fun z => by
+    simp only [← Complex.exp_nat_mul]; ring_nf
   have h_eq : ∀ z : ℍ, G z / cexp (3 * π * I * z) =
-      (H₂ z / cexp (π * I * z)) ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := by
-    intro z
-    have hne : cexp (π * I * z) ≠ 0 := Complex.exp_ne_zero _
-    have hne3 : cexp (3 * π * I * z) ≠ 0 := Complex.exp_ne_zero _
-    have h_exp_pow : cexp (π * I * z) ^ 3 = cexp (3 * π * I * z) := by
-      rw [← Complex.exp_nat_mul]; congr 1; ring
+      (H₂ z / cexp (π * I * z)) ^ 3 * (2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := fun z => by
     simp only [G, Pi.mul_apply, Pi.pow_apply, Pi.add_apply, Pi.smul_apply,
       Complex.real_smul, div_pow, h_exp_pow]
     push_cast
-    field_simp [hne, hne3]
+    field_simp [Complex.exp_ne_zero]
   simp_rw [h_eq]
   have h_poly : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
       atImInfty (nhds 5) := by
-    have h1 : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2) atImInfty (nhds 0) := by
-      simpa using (hH₂_zero.pow 2).const_mul 2
-    have h2 : Filter.Tendsto (fun z : ℍ => 5 * H₂ z * H₄ z) atImInfty (nhds 0) := by
-      simpa [mul_assoc] using (hH₂_zero.mul hH₄_one).const_mul 5
-    have h3 : Filter.Tendsto (fun z : ℍ => 5 * H₄ z ^ 2) atImInfty (nhds 5) := by
-      simpa using (hH₄_one.pow 2).const_mul 5
-    simpa [add_assoc] using h1.add (h2.add h3)
-  convert (hH₂_asymp.pow 3).mul h_poly; norm_num
+    have h1 := (H₂_tendsto_atImInfty.pow 2).const_mul 2
+    have h2 := (H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty).const_mul 5
+    have h3 := (H₄_tendsto_atImInfty.pow 2).const_mul 5
+    convert h1.add (h2.add h3) using 2
+    · simp only [pow_two]; ring
+    · norm_num
+  convert (H₂_div_exp_tendsto.pow 3).mul h_poly
+  norm_num
 
 /--
 Log-derivative limit for G: `(D G)/G → 3/2` as `z → i∞`.
