@@ -722,10 +722,9 @@ lemma hasDerivAt_resToImagAxis_re {F : ℍ → ℂ} (hdiff : MDifferentiable �
   have hderivC := hdiffAt.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hdiff ht)
   simpa using (hasDerivAt_const t (Complex.reCLM : ℂ →L[ℝ] ℝ)).clm_apply hderivC
 
-/-- If F is real on the imaginary axis, MDifferentiable, and antitone,
+/-- If F is MDifferentiable and antitone on the imaginary axis,
 then D F has non-negative real part on the imaginary axis. -/
 theorem D_nonneg_from_antitone {F : ℍ → ℂ}
-    (_hreal : ResToImagAxis.Real F)
     (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (hanti : AntitoneOn (fun t => (F.resToImagAxis t).re) (Set.Ioi 0)) :
     ∀ t, 0 < t → 0 ≤ ((D F).resToImagAxis t).re := by
