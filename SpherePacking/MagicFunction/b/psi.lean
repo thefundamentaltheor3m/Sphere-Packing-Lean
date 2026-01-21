@@ -181,14 +181,9 @@ lemma ψI_eq : ψI = 128 • ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₄_MF - H
       128 • ((F3 ((S * T) • z) + F4 ((S * T) • z)) / ((F2 ((S * T) • z)) ^ 2)) := by
     simp only [nsmul_eq_mul, Nat.cast_ofNat, sl_moeb, map_mul, Pi.div_apply, Pi.add_apply,
       Pi.mul_apply, Pi.ofNat_apply, Pi.pow_apply]
-  rw [rewriting, h2', h3' , h4']
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
-  rw [hh2 , hh3, hh4]
-  rw [slash_mul, slash_mul, slash_mul, H₂_S_action, H₃_S_action, H₄_S_action,
-    SlashAction.neg_slash, SlashAction.neg_slash, SlashAction.neg_slash, H₂_T_action,
-    H₃_T_action, H₄_T_action, neg_neg, ← add_mul]
+  rw [rewriting, h2', h3' , h4', H₂_MF_coe , H₃_MF_coe, H₄_MF_coe, slash_mul, slash_mul, slash_mul,
+    H₂_S_action, H₃_S_action, H₄_S_action, SlashAction.neg_slash, SlashAction.neg_slash,
+    SlashAction.neg_slash, H₂_T_action, H₃_T_action, H₄_T_action, neg_neg, ← add_mul]
   nth_rw 2 [pow_two]
   have z_plus_one_squared_nonzero (z : ℍ) : (z + 1 : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
@@ -218,11 +213,8 @@ lemma ψT_eq : ψT = 128 * ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₂_MF + H�
   have H4slashT' (z : ℍ): (H₄_MF : ℍ → ℂ) (T • z) = ((H₄_MF : ℍ → ℂ) ∣[(2 : ℤ)] (T)) (z) := by
     exact Eq.symm (Complex.ext (congrArg Complex.re (slashT z ⇑H₄_MF))
         (congrArg Complex.im (slashT z ⇑H₄_MF)))
-  rw [H2slashT', H3slashT', H4slashT']
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
-  rw [hh2, hh3, hh4, H₂_T_action, H₃_T_action, H₄_T_action]
+  rw [H2slashT', H3slashT', H4slashT', H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, H₂_T_action, H₃_T_action,
+    H₄_T_action]
   simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm (H₃ z) (H₂ z)]
 -- proof of ψT_eq complete.
 
@@ -243,11 +235,8 @@ lemma ψS_eq' : ψS = 128 * ((H₄_MF - H₂_MF) / (H₃_MF ^ 2) - (H₂_MF + H�
   have H4slashS'' (z : ℍ): (H₄_MF : ℍ → ℂ) (S • z) =
       ((H₄_MF : ℍ → ℂ) ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
     exact slashS'' z ⇑H₄_MF
-  rw [H2slashS'', H3slashS'', H4slashS'']
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
-  rw [hh2 , hh3, hh4, H₂_S_action, H₃_S_action, H₄_S_action]
+  rw [H2slashS'', H3slashS'', H4slashS'', H₂_MF_coe , H₃_MF_coe, H₄_MF_coe, H₂_S_action,
+    H₃_S_action, H₄_S_action]
   have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
     exact ne_zero z
@@ -287,11 +276,8 @@ lemma ψT_slash_T : ψT ∣[-2] T = ψI := by
   rw [ψT_eq , ψI_eq , slashT']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply, Pi.smul_apply, Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat]
-  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
-  rw [hh2, hh3, hh4, H₂_T_action, H₃_T_action, H₄_T_action]
+  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF, H₂_MF_coe, H₃_MF_coe, H₄_MF_coe,
+    H₂_T_action, H₃_T_action, H₄_T_action]
   simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm  (- (H₂ z)) (H₄ z), sub_eq_add_neg]
 -- proof of ψT_slash_T complete.
 
@@ -300,11 +286,8 @@ lemma ψS_slash_S : ψS ∣[-2] S = ψI := by
   rw [ψS_eq' , ψI_eq , slashS']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply, Pi.smul_apply, Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat]
-  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
-  rw [hh2 , hh3, hh4, H₂_S_action, H₃_S_action, H₄_S_action]
+  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF, H₂_MF_coe , H₃_MF_coe, H₄_MF_coe,
+    H₂_S_action, H₃_S_action, H₄_S_action]
   simp only [Pi.neg_apply, neg_mul, sub_neg_eq_add, even_two, Even.neg_pow]
   have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
@@ -332,13 +315,9 @@ lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
   rw [ψS_eq', ψT_eq, slashST']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.sub_apply, Pi.div_apply,
     Pi.pow_apply, Pi.add_apply]
-  rw [slashST'' z ⇑H₂_MF, slashST'' z ⇑H₃_MF, slashST'' z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
-  rw [hh2 , hh3, hh4, slash_mul, slash_mul, slash_mul, H₂_S_action, H₃_S_action, H₄_S_action,
-    SlashAction.neg_slash, SlashAction.neg_slash, SlashAction.neg_slash,
-    H₂_T_action, H₃_T_action, H₄_T_action]
+  rw [slashST'' z ⇑H₂_MF, slashST'' z ⇑H₃_MF, slashST'' z ⇑H₄_MF, H₂_MF_coe , H₃_MF_coe, H₄_MF_coe,
+    slash_mul, slash_mul, slash_mul, H₂_S_action, H₃_S_action, H₄_S_action, SlashAction.neg_slash,
+    SlashAction.neg_slash, SlashAction.neg_slash, H₂_T_action, H₃_T_action, H₄_T_action]
   simp only [Pi.neg_apply, neg_neg, neg_mul, sub_neg_eq_add, even_two, Even.neg_pow]
   have z_plus_one_squared_nonzero (z : ℍ) : (z + 1 : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
@@ -366,11 +345,8 @@ lemma ψS_slash_T : ψS ∣[-2] T = -ψS := by
   rw [ψS_eq', slashT']
   simp only [Pi.mul_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply,  Pi.sub_apply]
-  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
-  rw [hh2 , hh3, hh4, H₂_T_action, H₃_T_action, H₄_T_action]
+  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF, H₂_MF_coe , H₃_MF_coe, H₄_MF_coe,
+    H₂_T_action, H₃_T_action, H₄_T_action]
   simp only [Pi.ofNat_apply, Pi.neg_apply, sub_neg_eq_add, Pi.mul_apply, Pi.sub_apply, Pi.div_apply,
     Pi.pow_apply, Pi.add_apply]
   rw [sub_eq_add_neg, add_comm, ← sub_neg_eq_add, ← neg_sub', mul_neg, add_comm,
@@ -382,11 +358,8 @@ lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
   rw [ψT_eq, slashS']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply, Pi.neg_apply]
-  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
-  rw [hh2 , hh3, hh4, H₂_S_action, H₃_S_action, H₄_S_action]
+  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF, H₂_MF_coe , H₃_MF_coe, H₄_MF_coe,
+    H₂_S_action, H₃_S_action, H₄_S_action]
   simp only [Pi.neg_apply, neg_mul, even_two, Even.neg_pow]
   have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
@@ -415,7 +388,6 @@ lemma ψI_slash_TS : ψI ∣[-2] (T * S) = -ψT := by
   rw [slash_mul]
   have def_ψT : ψT = ψI ∣[-2] (T) := rfl
   rw [← def_ψT, ψT_slash_S]
-
 
 lemma ψS_slash_STS : ψS ∣[-2] (S * T * S) = -ψT := by
   ext z
