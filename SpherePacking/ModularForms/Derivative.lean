@@ -730,24 +730,10 @@ theorem D_nonneg_from_antitone {F : ℍ → ℂ}
     (hanti : AntitoneOn (fun t => (F.resToImagAxis t).re) (Set.Ioi 0)) :
     ∀ t, 0 < t → 0 ≤ ((D F).resToImagAxis t).re := by
   intro t ht
-  -- Define g as the real part of F restricted to imaginary axis
-  let g := fun s => (F.resToImagAxis s).re
-  -- Show g has derivative -2π * ((D F).resToImagAxis t).re at t
-  have hg : HasDerivAt g (-2 * π * ((D F).resToImagAxis t).re) t := by
-    have hdiffAt : DifferentiableAt ℝ F.resToImagAxis t :=
-      ResToImagAxis.Differentiable F hdiff t ht
-    have hderivC : HasDerivAt F.resToImagAxis (-2 * π * (D F).resToImagAxis t) t :=
-      hdiffAt.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hdiff ht)
-    have hconst : HasDerivAt (fun _ : ℝ => (Complex.reCLM : ℂ →L[ℝ] ℝ)) 0 t := by
-      simpa using (hasDerivAt_const (x := t) (c := (Complex.reCLM : ℂ →L[ℝ] ℝ)))
-    have hg_clm := hconst.clm_apply hderivC
-    simpa [g] using hg_clm
-  -- Antitone implies derivative ≤ 0
-  have hderiv_nonpos : deriv g t ≤ 0 :=
+  have hderiv_nonpos : deriv (fun s => (F.resToImagAxis s).re) t ≤ 0 :=
     hanti.derivWithin_nonpos (s := Set.Ioi 0) (x := t)
       |> (derivWithin_of_isOpen isOpen_Ioi ht).symm.trans_le
-  -- Conclude from deriv g t = -2π * ((D F).resToImagAxis t).re ≤ 0
-  rw [hg.deriv] at hderiv_nonpos
+  rw [(hasDerivAt_resToImagAxis_re hdiff ht).deriv] at hderiv_nonpos
   nlinarith [Real.pi_pos]
 
 /-- If F is real on the imaginary axis, MDifferentiable, and strictly antitone,
