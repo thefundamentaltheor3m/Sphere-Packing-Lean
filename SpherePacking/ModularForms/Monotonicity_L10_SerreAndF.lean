@@ -115,30 +115,11 @@ Blueprint: Follows from differential equations (65) and (66).
 -/
 theorem serre_D_L₁₀_eq (z : ℍ) :
     serre_D 22 L₁₀ z = Δ z * (7200 * (-(D E₂ z)) * G z + 640 * H₂ z * F z) := by
-  -- From serre_D_L₁₀: ∂₂₂L₁₀ = (∂₁₂∂₁₀F)G - F(∂₁₂∂₁₀G)
-  rw [serre_D_L₁₀]
-  -- From MLDE_F: ∂₁₂∂₁₀F = (5/6)F + 7200Δ(-E₂')
-  -- From MLDE_G: ∂₁₂∂₁₀G = (5/6)G - 640ΔH₂
-  have hF_eq := MLDE_F
-  have hG_eq := MLDE_G
-  -- Apply at point z
-  have hF_z := congrFun hF_eq z
-  have hG_z := congrFun hG_eq z
-  simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply] at hF_z hG_z
-  rw [hF_z, hG_z]
-  -- Expand negDE₂ and simplify constant functions
-  simp only [negDE₂, Pi.neg_apply]
-  -- Use Δ_fun_eq_Δ to replace Δ_fun z with Δ z
-  simp only [Δ_fun_eq_Δ]
-  -- Handle constant functions
-  have h5 : (5 : ℍ → ℂ) z = (5 : ℂ) := rfl
-  have h6 : (6⁻¹ : ℍ → ℂ) z = (6 : ℂ)⁻¹ := rfl
-  have h7200 : (7200 : ℍ → ℂ) z = (7200 : ℂ) := rfl
-  have h640 : (640 : ℍ → ℂ) z = (640 : ℂ) := rfl
-  rw [h5, h6, h7200, h640]
-  -- Substituting: (5/6)E₄FG + 7200Δ·(-D E₂)·G - F·((5/6)E₄G - 640·Δ·H₂)
-  --             = (5/6)E₄FG + 7200Δ·(-D E₂)·G - (5/6)E₄FG + 640·Δ·H₂·F
-  --             = Δ·(7200·(-D E₂)·G + 640·H₂·F)
+  have hF_z := congrFun MLDE_F z
+  have hG_z := congrFun MLDE_G z
+  simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply, negDE₂, Pi.neg_apply, Δ_fun_eq_Δ,
+    Pi.ofNat_apply, Pi.inv_apply] at hF_z hG_z
+  rw [serre_D_L₁₀, hF_z, hG_z]
   ring
 
 /-!
