@@ -268,36 +268,16 @@ theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) :
     set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
     rw [serre_D_L₁₀_eq z]
     change 0 < (Δ z * (7200 * negDE₂ z * G z + 640 * H₂ z * F z)).re
-    have hΔ_pos : (Δ z).re > 0 := by
-      have := Delta_imag_axis_pos.2 t ht
-      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
-    have hΔ_real : (Δ z).im = 0 := by
-      have := Delta_imag_axis_pos.1 t ht
-      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
-    have hnegDE₂_pos : (negDE₂ z).re > 0 := by
-      have := negDE₂_imag_axis_pos.2 t ht
-      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
-    have hnegDE₂_real : (negDE₂ z).im = 0 := by
-      have := negDE₂_imag_axis_pos.1 t ht
-      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
-    have hG_pos : (G z).re > 0 := by
-      have := G_imag_axis_pos.2 t ht
-      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
-    have hG_real : (G z).im = 0 := by
-      have := G_imag_axis_real t ht
-      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
-    have hH₂_pos : (H₂ z).re > 0 := by
-      have := H₂_imag_axis_pos.2 t ht
-      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
-    have hH₂_real : (H₂ z).im = 0 := by
-      have := H₂_imag_axis_pos.1 t ht
-      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
-    have hF_pos : (F z).re > 0 := by
-      have := F_imag_axis_pos.2 t ht
-      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
-    have hF_real : (F z).im = 0 := by
-      have := F_imag_axis_real t ht
-      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at this; exact this
+    have hΔ_pos := re_pos_of_pos Delta_imag_axis_pos ht z rfl
+    have hΔ_real := im_eq_zero_of_real Delta_imag_axis_pos.1 ht z rfl
+    have hnegDE₂_pos := re_pos_of_pos negDE₂_imag_axis_pos ht z rfl
+    have hnegDE₂_real := im_eq_zero_of_real negDE₂_imag_axis_pos.1 ht z rfl
+    have hG_pos := re_pos_of_pos G_imag_axis_pos ht z rfl
+    have hG_real := im_eq_zero_of_real G_imag_axis_real ht z rfl
+    have hH₂_pos := re_pos_of_pos H₂_imag_axis_pos ht z rfl
+    have hH₂_real := im_eq_zero_of_real H₂_imag_axis_pos.1 ht z rfl
+    have hF_pos := re_pos_of_pos F_imag_axis_pos ht z rfl
+    have hF_real := im_eq_zero_of_real F_imag_axis_real ht z rfl
     have hsum_pos : (7200 * negDE₂ z * G z + 640 * H₂ z * F z).re > 0 := by
       have h1_re : (7200 * negDE₂ z * G z).re = 7200 * (negDE₂ z).re * (G z).re := by
         rw [Complex.mul_re, Complex.mul_re]
