@@ -45,6 +45,44 @@ noncomputable section
 
 namespace MagicFunction.ContourEndpoints
 
+/-! ## Filter for imaginary part tending to infinity on ℂ -/
+
+/-- The filter on ℂ of sets containing { z | M ≤ z.im } for some M.
+    This is the preimage of `atTop` under `Complex.im`. -/
+def atImInfty_ℂ : Filter ℂ := Filter.comap Complex.im atTop
+
+/-- Characterization of membership in `atImInfty_ℂ`. -/
+lemma mem_atImInfty_ℂ {s : Set ℂ} : s ∈ atImInfty_ℂ ↔ ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → z ∈ s := by
+  constructor
+  · intro hs
+    rw [atImInfty_ℂ, Filter.mem_comap] at hs
+    obtain ⟨t, ht, hts⟩ := hs
+    rw [Filter.mem_atTop_sets] at ht
+    obtain ⟨a, ha⟩ := ht
+    refine ⟨a, fun z hz => ?_⟩
+    apply hts
+    rw [Set.mem_preimage]
+    exact ha z.im hz
+  · intro ⟨M, hM⟩
+    rw [atImInfty_ℂ, Filter.mem_comap]
+    refine ⟨Ici M, ?_, ?_⟩
+    · rw [Filter.mem_atTop_sets]
+      exact ⟨M, fun b hb => hb⟩
+    · intro z hz
+      exact hM z hz
+
+/-- Tendsto characterization for `atImInfty_ℂ` to `𝓝 0`. -/
+lemma tendsto_zero_atImInfty_ℂ_iff {f : ℂ → ℂ} :
+    Tendsto f atImInfty_ℂ (𝓝 0) ↔ ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε := by
+  rw [Metric.tendsto_nhds]
+  simp [dist_zero_right, Filter.eventually_iff, mem_atImInfty_ℂ]
+
+/-- Tendsto characterization for `atImInfty_ℂ` to `𝓝 0` (real-valued version). -/
+lemma tendsto_zero_atImInfty_ℂ_iff' {f : ℂ → ℝ} :
+    Tendsto f atImInfty_ℂ (𝓝 0) ↔ ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → |f z| < ε := by
+  rw [Metric.tendsto_nhds]
+  simp [dist_zero_right, Real.norm_eq_abs, Filter.eventually_iff, mem_atImInfty_ℂ]
+
 /-! ## Corollary 7.13 - S-transform bound for φ₀''(I/t) -/
 
 /-- The point it as an element of ℍ for t > 0. -/
@@ -684,6 +722,40 @@ lemma uniform_vanishing_topEdgeIntegrand (r : ℝ) (hr : 2 < r) :
   have hTN : N ≤ T := le_trans (le_max_left N 1) hT
   exact lt_of_le_of_lt (norm_topEdgeIntegrand_le r x T hx hT1)
     (by simpa [abs_of_nonneg (topEdgeBound_nonneg r T hT1)] using hN T hTN)
+
+/-! ## Filter-based uniform vanishing (alternative formulation)
+
+These lemmas express uniform vanishing using the `atImInfty_ℂ` filter,
+providing a filter-theoretic interface that composes well with other lemmas.
+
+Note: The bounds `topEdgeBound` require `x ∈ [-1,1]` because `‖z‖ ≤ 1+T` is used.
+For the full Cauchy-Goursat application, the rectangle contour has bounded real part,
+so this restriction is acceptable.
+-/
+
+/-- Filter version of uniform_vanishing_verticalIntegrandX.
+    The vertical integrand tends to 0 under the `atImInfty_ℂ` filter
+    (composed with the embedding t ↦ x + it for any fixed x). -/
+lemma tendsto_verticalIntegrandX_atImInfty_ℂ (x r : ℝ) (hr : 2 < r) :
+    Tendsto (fun t : ℝ => verticalIntegrandX x r t) atTop (𝓝 0) :=
+  tendsto_verticalIntegrandX_atTop x r hr
+
+/-- Filter version of uniform_vanishing_topEdgeIntegrand for a fixed x ∈ [-1,1].
+    The top edge integrand tends to 0 under `atTop` filter on T. -/
+lemma tendsto_topEdgeIntegrand_atTop (r : ℝ) (hr : 2 < r) (x : ℝ) (hx : x ∈ Icc (-1 : ℝ) 1) :
+    Tendsto (fun T : ℝ => topEdgeIntegrand r x T) atTop (𝓝 0) := by
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  obtain ⟨M, hM⟩ := uniform_vanishing_topEdgeIntegrand r hr ε hε
+  exact ⟨M, fun T hT => by simpa using hM x T hx hT⟩
+
+/-- The uniform vanishing property expressed as: eventually, the integrand norm
+    is bounded by any positive ε, uniformly in x. -/
+lemma eventually_norm_topEdgeIntegrand_lt (r : ℝ) (hr : 2 < r) (ε : ℝ) (hε : 0 < ε) :
+    ∀ᶠ T in atTop, ∀ x ∈ Icc (-1 : ℝ) 1, ‖topEdgeIntegrand r x T‖ < ε := by
+  obtain ⟨M, hM⟩ := uniform_vanishing_topEdgeIntegrand r hr ε hε
+  filter_upwards [eventually_ge_atTop M] with T hT x hx
+  exact hM x T hx hT
 
 /-- Top horizontal edge integral vanishes as height T → ∞.
     This is the "integrand at i∞ disappears" fact from Proposition 7.14.
