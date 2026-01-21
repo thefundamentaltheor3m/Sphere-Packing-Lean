@@ -179,7 +179,7 @@ lemma neg_inv_one_add_eq_ST (z : ℍ) :
   norm_cast
 
 lemma neg_inv_eq_S_coe (z : ℍ) :
-    -1 / (z) = UpperHalfPlane.coe (S • z) := by
+    -1 / z = UpperHalfPlane.coe (S • z) := by
   rw [specialLinearGroup_apply]
   simp_all [S_eq]
 
