@@ -53,23 +53,9 @@ def atImInfty_ℂ : Filter ℂ := Filter.comap Complex.im atTop
 
 /-- Characterization of membership in `atImInfty_ℂ`. -/
 lemma mem_atImInfty_ℂ {s : Set ℂ} : s ∈ atImInfty_ℂ ↔ ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → z ∈ s := by
-  constructor
-  · intro hs
-    rw [atImInfty_ℂ, Filter.mem_comap] at hs
-    obtain ⟨t, ht, hts⟩ := hs
-    rw [Filter.mem_atTop_sets] at ht
-    obtain ⟨a, ha⟩ := ht
-    refine ⟨a, fun z hz => ?_⟩
-    apply hts
-    rw [Set.mem_preimage]
-    exact ha z.im hz
-  · intro ⟨M, hM⟩
-    rw [atImInfty_ℂ, Filter.mem_comap]
-    refine ⟨Ici M, ?_, ?_⟩
-    · rw [Filter.mem_atTop_sets]
-      exact ⟨M, fun b hb => hb⟩
-    · intro z hz
-      exact hM z hz
+  simp only [atImInfty_ℂ, Filter.mem_comap, Filter.mem_atTop_sets]
+  exact ⟨fun ⟨_, ⟨a, ha⟩, hts⟩ => ⟨a, fun z hz => hts (ha z.im hz)⟩,
+         fun ⟨M, hM⟩ => ⟨Ici M, ⟨M, fun _ hb => hb⟩, fun z hz => hM z hz⟩⟩
 
 /-- Tendsto characterization for `atImInfty_ℂ` to `𝓝 0`. -/
 lemma tendsto_zero_atImInfty_ℂ_iff {f : ℂ → ℂ} :
