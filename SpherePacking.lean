@@ -84,6 +84,8 @@ import SpherePacking.ModularForms.tendstolems
 import SpherePacking.ModularForms.tsumderivWithin
 import SpherePacking.ModularForms.uniformcts
 import SpherePacking.ModularForms.upperhalfplane
+import SpherePacking.ModularForms.Monotonicity
+import SpherePacking.ModularForms.Monotonicity_L10_GAndEventuallyPos
 import SpherePacking.Tactic.NormNumI
 import SpherePacking.Tactic.NormNumI_Scratch
 import SpherePacking.Tactic.Test.NormNumI
