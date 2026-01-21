@@ -69,27 +69,13 @@ section Holo_Lemmas
 /-! # Complex Differentiability -/
 
 theorem φ₀''_holo : Holo(φ₀'') := by
-  -- φ₀'' = F / Δ where F = (E₂ * E₄ - E₆)² and both are holomorphic on ℍ
   have hF := UpperHalfPlane.mdifferentiable_iff.mp F_holo
   have hΔ := UpperHalfPlane.mdifferentiable_iff.mp Delta.holo'
-  have h_set : ℍ₀ = {z : ℂ | 0 < z.im} := rfl
-  rw [h_set]
   have h_eq : EqOn φ₀'' (fun z => (F ∘ UpperHalfPlane.ofComplex) z / (Δ ∘ UpperHalfPlane.ofComplex) z)
-      {z | 0 < z.im} := by
-    intro z hz
-    simp only [mem_setOf_eq] at hz
-    unfold φ₀'' F φ₀
-    simp only [hz, dite_true, Function.comp_apply]
-    have key : UpperHalfPlane.ofComplex z = ⟨z, hz⟩ := UpperHalfPlane.ofComplex_apply_of_im_pos hz
-    simp only [key]
-    rfl
+      ℍ₀ := fun z hz => by simp [φ₀''_def hz, F, φ₀, UpperHalfPlane.ofComplex_apply_of_im_pos hz]
   refine DifferentiableOn.congr ?_ h_eq
-  apply DifferentiableOn.div hF hΔ
-  intro z hz
-  simp only [Function.comp_apply]
-  have h : UpperHalfPlane.ofComplex z = ⟨z, hz⟩ := UpperHalfPlane.ofComplex_apply_of_im_pos hz
-  rw [h]
-  exact Δ_ne_zero _
+  exact hF.div hΔ fun z hz => by
+    simp [Function.comp_apply, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Δ_ne_zero]
 
 theorem Φ₁'_holo : Holo(Φ₁' r) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
@@ -166,7 +152,7 @@ theorem Φ₅'_holo : Holo(Φ₅' r) := by
 
 theorem Φ₅'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₅' r) ℍ₀ := Φ₅'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
-theorem Φ₆'_holo : Holo(Φ₆' r) := (φ₀''_holo.comp differentiableOn_id <| fun _ a ↦ a).mul
+theorem Φ₆'_holo : Holo(Φ₆' r) := (φ₀''_holo.comp differentiableOn_id (mapsTo_id _)).mul
   (Complex.differentiable_exp.comp <| (differentiable_const _).mul
     differentiable_fun_id).differentiableOn
 
@@ -199,10 +185,7 @@ section Corollaries
 /-- φ₀'' is holomorphic on the upper half-plane (using `Set.univ ×ℂ Ioi 0` notation).
     This is equivalent to `φ₀''_holo` since `Set.univ ×ℂ Ioi 0 = ℍ₀`. -/
 theorem φ₀''_differentiable : DifferentiableOn ℂ φ₀'' (Set.univ ×ℂ Ioi 0) := by
-  have h_set : (Set.univ : Set ℝ) ×ℂ (Ioi 0) = ℍ₀ := by
-    ext z; simp [reProdIm, upperHalfPlaneSet]
-  rw [h_set]
-  exact φ₀''_holo
+  simpa [upperHalfPlaneSet, reProdIm] using φ₀''_holo
 
 /-- φ₀'' is continuous on the upper half-plane. -/
 theorem φ₀''_continuous : ContinuousOn φ₀'' (Set.univ ×ℂ Ioi 0) :=
