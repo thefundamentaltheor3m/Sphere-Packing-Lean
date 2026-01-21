@@ -249,20 +249,14 @@ theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) :
     set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
     rw [serre_D_L₁₀_eq z]
     change (Δ z * (7200 * negDE₂ z * G z + 640 * H₂ z * F z)).im = 0
-    have hΔ_real := im_eq_zero_of_real Delta_imag_axis_pos.1 ht z rfl
-    have hG_real := im_eq_zero_of_real G_imag_axis_real ht z rfl
-    have hH₂_real := im_eq_zero_of_real H₂_imag_axis_pos.1 ht z rfl
-    have hF_real := im_eq_zero_of_real F_imag_axis_real ht z rfl
-    have hnegDE₂_real := im_eq_zero_of_real negDE₂_imag_axis_real ht z rfl
-    have h1 : (7200 * negDE₂ z * G z).im = 0 := by
-      rw [Complex.mul_im, Complex.mul_im]
-      simp only [(by norm_num : (7200 : ℂ).im = 0), hnegDE₂_real, hG_real]; ring
-    have h2 : (640 * H₂ z * F z).im = 0 := by
-      rw [Complex.mul_im, Complex.mul_im]
-      simp only [(by norm_num : (640 : ℂ).im = 0), hH₂_real, hF_real]; ring
-    have hsum_real : (7200 * negDE₂ z * G z + 640 * H₂ z * F z).im = 0 := by
-      rw [Complex.add_im, h1, h2]; ring
-    rw [Complex.mul_im, hΔ_real, hsum_real]; ring
+    simp only [Complex.mul_im, Complex.add_im,
+      (by norm_num : (7200 : ℂ).im = 0), (by norm_num : (640 : ℂ).im = 0),
+      im_eq_zero_of_real Delta_imag_axis_pos.1 ht z rfl,
+      im_eq_zero_of_real G_imag_axis_real ht z rfl,
+      im_eq_zero_of_real H₂_imag_axis_pos.1 ht z rfl,
+      im_eq_zero_of_real F_imag_axis_real ht z rfl,
+      im_eq_zero_of_real negDE₂_imag_axis_real ht z rfl]
+    ring
   -- Part 2: Positive on imaginary axis
   · simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
     set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
