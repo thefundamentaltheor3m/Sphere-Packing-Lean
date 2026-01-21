@@ -11,8 +11,8 @@ import Mathlib.Analysis.Real.Pi.Bounds
 # Vertical Contour Integrability
 
 Integrability lemmas for vertical ray integrands involving φ₀.
-Provides bounds from Lemmas 4.4.3-4.4.4 of Sidharth Hariharan's thesis and general integrability results
-needed for Proposition 4.4.6 (the double zeros proof).
+Provides bounds from Lemmas 4.4.3-4.4.4 of Sidharth Hariharan's thesis and general
+integrability results needed for Proposition 4.4.6 (the double zeros proof).
 
 ## Main results
 
@@ -30,6 +30,7 @@ needed for Proposition 4.4.6 (the double zeros proof).
 -/
 
 open MeasureTheory Set Filter Real Complex TopologicalSpace
+open MagicFunction.a (PhiBounds phiBounds)
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators
 
@@ -122,14 +123,15 @@ lemma t_le_exp_two_pi_t (t : ℝ) (ht : 0 ≤ t) : t ≤ Real.exp (2 * π * t) :
 
     Strategy: The three-term bound from norm_φ₀''_I_div_t_le can each be bounded by
     (constant) * t^(-2) * exp(2πt), which gives an overall bound of this form. -/
-lemma norm_φ₀_I_div_t_large (hb : ContourEndpoints.PhiBounds) :
+lemma norm_φ₀_I_div_t_large :
     ∀ t : ℝ, 2 ≤ t → ‖φ₀'' (Complex.I / t)‖ ≤
-      (hb.C₀ + 12 * hb.C₂ / π + 36 * hb.C₄ / π ^ 2) * t ^ (-2 : ℤ) * Real.exp (2 * π * t) := by
+      (phiBounds.C₀ + 12 * phiBounds.C₂ / π + 36 * phiBounds.C₄ / π ^ 2) *
+        t ^ (-2 : ℤ) * Real.exp (2 * π * t) := by
   intro t ht
   have ht_pos : 0 < t := by linarith
   have ht_ge_1 : 1 ≤ t := by linarith
   -- Use the existing Blueprint Corollary 7.13 bound from ContourEndpoints
-  have h := ContourEndpoints.norm_φ₀''_I_div_t_le hb t ht_ge_1
+  have h := ContourEndpoints.norm_φ₀''_I_div_t_le t ht_ge_1
   -- Each of the three terms can be bounded by its coefficient * t^(-2) * exp(2πt)
   -- Key inequalities:
   -- (1) exp(-2πt) ≤ t^(-2) * exp(2πt)  [since t² ≤ exp(4πt) for t ≥ 2]
@@ -143,15 +145,17 @@ lemma norm_φ₀_I_div_t_large (hb : ContourEndpoints.PhiBounds) :
     field_simp
   rw [hpow]
   -- Bound term 1: C₀ * exp(-2πt) ≤ C₀ * (1/t²) * exp(2πt)
-  have h1 : hb.C₀ * Real.exp (-2 * π * t) ≤ hb.C₀ * (1 / t^2) * Real.exp (2 * π * t) := by
+  have h1 : phiBounds.C₀ * Real.exp (-2 * π * t) ≤
+      phiBounds.C₀ * (1 / t^2) * Real.exp (2 * π * t) := by
     have hexp_bound := exp_neg_le_inv_sq_exp t ht
-    calc hb.C₀ * Real.exp (-2 * π * t)
-        ≤ hb.C₀ * ((1 / t^2) * Real.exp (2 * π * t)) :=
-            mul_le_mul_of_nonneg_left hexp_bound hb.hC₀_pos.le
-      _ = hb.C₀ * (1 / t^2) * Real.exp (2 * π * t) := by ring
+    calc phiBounds.C₀ * Real.exp (-2 * π * t)
+        ≤ phiBounds.C₀ * ((1 / t^2) * Real.exp (2 * π * t)) :=
+            mul_le_mul_of_nonneg_left hexp_bound phiBounds.hC₀_pos.le
+      _ = phiBounds.C₀ * (1 / t^2) * Real.exp (2 * π * t) := by ring
   -- Bound term 2: (12/(πt)) * C₂ ≤ (12*C₂/π) * (1/t²) * exp(2πt)
   -- Need: 1/t ≤ (1/t²) * exp(2πt), i.e., t ≤ exp(2πt)
-  have h2 : (12 / (π * t)) * hb.C₂ ≤ (12 * hb.C₂ / π) * (1 / t^2) * Real.exp (2 * π * t) := by
+  have h2 : (12 / (π * t)) * phiBounds.C₂ ≤
+      (12 * phiBounds.C₂ / π) * (1 / t^2) * Real.exp (2 * π * t) := by
     have ht_le_exp := t_le_exp_two_pi_t t (by linarith)
     -- 1/t ≤ (1/t²) * exp(2πt) is equivalent to t ≤ exp(2πt) (after multiplying by t² and dividing)
     have h_t_inv : 1 / t ≤ (1 / t^2) * Real.exp (2 * π * t) := by
@@ -163,24 +167,25 @@ lemma norm_φ₀_I_div_t_large (hb : ContourEndpoints.PhiBounds) :
       calc 1 / t = t / t^2 := by field_simp
         _ ≤ Real.exp (2 * π * t) / t^2 := div_le_div_of_nonneg_right hexp_ge_t ht2_nonneg
         _ = (1 / t^2) * Real.exp (2 * π * t) := by ring
-    calc (12 / (π * t)) * hb.C₂
-        = 12 * hb.C₂ / π * (1 / t) := by field_simp
-      _ ≤ 12 * hb.C₂ / π * ((1 / t^2) * Real.exp (2 * π * t)) := by
+    calc (12 / (π * t)) * phiBounds.C₂
+        = 12 * phiBounds.C₂ / π * (1 / t) := by field_simp
+      _ ≤ 12 * phiBounds.C₂ / π * ((1 / t^2) * Real.exp (2 * π * t)) := by
           apply mul_le_mul_of_nonneg_left h_t_inv
-          apply div_nonneg (by nlinarith [hb.hC₂_pos.le]) hπ.le
-      _ = (12 * hb.C₂ / π) * (1 / t^2) * Real.exp (2 * π * t) := by ring
+          apply div_nonneg (by nlinarith [phiBounds.hC₂_pos.le]) hπ.le
+      _ = (12 * phiBounds.C₂ / π) * (1 / t^2) * Real.exp (2 * π * t) := by ring
   -- Bound term 3: (36/(π²*t²)) * C₄ * exp(2πt) = (36*C₄/π²) * (1/t²) * exp(2πt)  [exact]
-  have h3 : (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t) =
-            (36 * hb.C₄ / π^2) * (1 / t^2) * Real.exp (2 * π * t) := by
+  have h3 : (36 / (π^2 * t^2)) * phiBounds.C₄ * Real.exp (2 * π * t) =
+            (36 * phiBounds.C₄ / π^2) * (1 / t^2) * Real.exp (2 * π * t) := by
     field_simp
   -- Combine the bounds
   calc ‖φ₀'' (Complex.I / t)‖
-      ≤ hb.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * hb.C₂ +
-        (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t) := h
-    _ ≤ hb.C₀ * (1 / t^2) * Real.exp (2 * π * t) +
-        (12 * hb.C₂ / π) * (1 / t^2) * Real.exp (2 * π * t) +
-        (36 * hb.C₄ / π^2) * (1 / t^2) * Real.exp (2 * π * t) := by linarith [h1, h2, h3.le]
-    _ = (hb.C₀ + 12 * hb.C₂ / π + 36 * hb.C₄ / π^2) * (1 / t^2) * Real.exp (2 * π * t) := by ring
+      ≤ phiBounds.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * phiBounds.C₂ +
+        (36 / (π^2 * t^2)) * phiBounds.C₄ * Real.exp (2 * π * t) := h
+    _ ≤ phiBounds.C₀ * (1 / t^2) * Real.exp (2 * π * t) +
+        (12 * phiBounds.C₂ / π) * (1 / t^2) * Real.exp (2 * π * t) +
+        (36 * phiBounds.C₄ / π^2) * (1 / t^2) * Real.exp (2 * π * t) := by linarith [h1, h2, h3.le]
+    _ = (phiBounds.C₀ + 12 * phiBounds.C₂ / π + 36 * phiBounds.C₄ / π^2) *
+        (1 / t^2) * Real.exp (2 * π * t) := by ring
 
 /-! ## General Shifted Möbius Integrability
 
@@ -216,12 +221,12 @@ lemma im_neg_inv_pos (a t : ℝ) (ht : 0 < t) :
     1. φ₀''_neg_inv_eq_φ₀_S_smul: φ₀''(-1/z) = φ₀(S•w) for suitable w ∈ ℍ
     2. norm_φ₀_S_smul_le: |φ₀(S•z)| ≤ C₀ exp(-2π·im(S•z)) for im(z) ≥ 1
     3. Exponential decay for r > 2 dominates polynomial growth -/
-lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b r : ℝ) (hr : 2 < r) :
+lemma integrableOn_φ₀_shifted_Möbius (a b r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / ((a : ℂ) + Complex.I * t)) *
       ((a : ℂ) + Complex.I * t)^2 *
       Complex.exp (Complex.I * π * r * ((b : ℂ) + Complex.I * t)))
                  (Ioi 1) volume := by
-  -- Strategy: Bound by C * verticalBound hb r t where C = a² + 1
+  -- Strategy: Bound by C * verticalBound r t where C = a² + 1
   -- Key steps:
   -- 1. For t > 1, z = a + I*t has Im(z) = t > 1
   -- 2. Apply φ₀''_neg_inv_eq_φ₀_S_smul to get φ₀(S•w)
@@ -229,10 +234,10 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
   -- 4. |z²| = a² + t² ≤ (a² + 1) * t² for t ≥ 1
   -- 5. |exp(...)| = exp(-πrt) independent of b
   -- 6. Combined bound ≤ (a² + 1) * verticalBound
-  have hbound_integ : IntegrableOn (fun t => (a^2 + 1) * ContourEndpoints.verticalBound hb r t)
+  have hbound_integ : IntegrableOn (fun t => (a^2 + 1) * ContourEndpoints.verticalBound r t)
       (Ioi 1) volume := by
     refine IntegrableOn.mono_set ?_ (Ioi_subset_Ici_self (a := 1))
-    exact (ContourEndpoints.integrableOn_verticalBound hb r hr).const_mul (a^2 + 1)
+    exact (ContourEndpoints.integrableOn_verticalBound r hr).const_mul (a^2 + 1)
   apply MeasureTheory.Integrable.mono' hbound_integ
   · -- AEStronglyMeasurable: The integrand is continuous on Ioi 1
     -- For t > 0, Im(a + I*t) = t > 0 so -1/(a+I*t) stays in the upper half plane
@@ -289,7 +294,7 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
     have hφ₀_eq : φ₀'' (-1 / z) = φ₀ (ModularGroup.S • w) :=
       ContourEndpoints.φ₀''_neg_inv_eq_φ₀_S_smul a t ht_pos
     -- Step 2: Get the S-transform bound
-    have hS_bound := ContourEndpoints.norm_φ₀_S_smul_le hb w hw_im_ge
+    have hS_bound := ContourEndpoints.norm_φ₀_S_smul_le w hw_im_ge
     -- Step 3: Bound ‖z²‖ ≤ (a² + 1) * t² for t ≥ 1
     have hz_sq_bound : ‖z^2‖ ≤ (a^2 + 1) * t^2 := by
       simp only [z, norm_pow, ← Complex.normSq_eq_norm_sq, mul_comm Complex.I,
@@ -309,7 +314,7 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
       _ = (a^2 + 1) * (‖φ₀'' (-1 / z)‖ * t^2 * Real.exp (-π * r * t)) := by ring
       _ = (a^2 + 1) * (‖φ₀ (ModularGroup.S • w)‖ * t^2 * Real.exp (-π * r * t)) := by
           rw [hφ₀_eq]
-      _ ≤ (a^2 + 1) * (ContourEndpoints.verticalBound hb r t) := by
+      _ ≤ (a^2 + 1) * (ContourEndpoints.verticalBound r t) := by
           apply mul_le_mul_of_nonneg_left _ (by nlinarith)
           -- Show ‖φ₀(S•w)‖ * t² * exp(-πrt) ≤ verticalBound using ‖w‖ ≥ t
           -- Strategy: Use hS_bound with ‖w‖ ≥ t to replace 1/‖w‖ terms with 1/t
@@ -317,21 +322,21 @@ lemma integrableOn_φ₀_shifted_Möbius (hb : ContourEndpoints.PhiBounds) (a b 
             simpa [hw_im, abs_of_pos ht_pos] using abs_im_le_norm (w : ℂ)
           -- Strengthen hS_bound using ‖w‖ ≥ t
           have hS_bound' : ‖φ₀ (ModularGroup.S • w)‖ ≤
-              hb.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * hb.C₂
-              + (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t) := by
+              phiBounds.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * phiBounds.C₂
+              + (36 / (π^2 * t^2)) * phiBounds.C₄ * Real.exp (2 * π * t) := by
             rw [hw_im] at hS_bound
             refine hS_bound.trans ?_
-            gcongr <;> [exact hb.hC₂_pos.le; exact hb.hC₄_pos.le]
+            gcongr <;> [exact phiBounds.hC₂_pos.le; exact phiBounds.hC₄_pos.le]
           -- Multiply by t² * exp(-πrt) and simplify to verticalBound
           calc ‖φ₀ (ModularGroup.S • w)‖ * t^2 * Real.exp (-π * r * t)
-              ≤ (hb.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * hb.C₂
-                  + (36 / (π^2 * t^2)) * hb.C₄ * Real.exp (2 * π * t))
+              ≤ (phiBounds.C₀ * Real.exp (-2 * π * t) + (12 / (π * t)) * phiBounds.C₂
+                  + (36 / (π^2 * t^2)) * phiBounds.C₄ * Real.exp (2 * π * t))
                 * t^2 * Real.exp (-π * r * t) := by gcongr
-            _ = hb.C₀ * t^2 * (Real.exp (-2 * π * t) * Real.exp (-π * r * t))
-                + (12 * hb.C₂ / π) * t * Real.exp (-π * r * t)
-                + (36 * hb.C₄ / π^2) * (Real.exp (2 * π * t) * Real.exp (-π * r * t)) := by
+            _ = phiBounds.C₀ * t^2 * (Real.exp (-2 * π * t) * Real.exp (-π * r * t))
+                + (12 * phiBounds.C₂ / π) * t * Real.exp (-π * r * t)
+                + (36 * phiBounds.C₄ / π^2) * (Real.exp (2 * π * t) * Real.exp (-π * r * t)) := by
                   field_simp
-            _ = ContourEndpoints.verticalBound hb r t := by
+            _ = ContourEndpoints.verticalBound r t := by
                   simp only [ContourEndpoints.verticalBound, ← Real.exp_add]; ring_nf
 
 /-! ## Relationship to verticalIntegrandX
@@ -409,16 +414,14 @@ lemma goal7_eq_verticalIntegrandX (r t : ℝ) (ht : t ≠ 0) :
 /-! ## Helper lemmas for integrability proofs -/
 
 /-- Wrapper for integrability on Ioi 1 (avoids repeated mono_set). -/
-lemma integrableOn_verticalIntegrandX_Ioi (hb : ContourEndpoints.PhiBounds)
-    (x r : ℝ) (hr : 2 < r) :
+lemma integrableOn_verticalIntegrandX_Ioi (x r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t => ContourEndpoints.verticalIntegrandX x r t) (Ioi 1) volume :=
-  (ContourEndpoints.integrableOn_verticalIntegrandX hb x r hr).mono_set Ioi_subset_Ici_self
+  (ContourEndpoints.integrableOn_verticalIntegrandX x r hr).mono_set Ioi_subset_Ici_self
 
 /-- Integrability of verticalIntegrandX on Ioc 0 1.
     For t ∈ (0, 1], Im(I/t) = 1/t ≥ 1, so the cusp bound ‖φ₀(z)‖ ≤ C₀ exp(-2π·Im(z)) applies.
     Combined with t² ≤ 1 and exp(-πrt) ≤ 1, we get ‖integrand‖ ≤ C₀ exp(-2π). -/
-lemma integrableOn_verticalIntegrandX_Ioc (hb : ContourEndpoints.PhiBounds)
-    (x r : ℝ) (hr : 2 < r) :
+lemma integrableOn_verticalIntegrandX_Ioc (x r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t => ContourEndpoints.verticalIntegrandX x r t) (Ioc 0 1) volume := by
   -- Continuity on (0, 1] for AEStronglyMeasurable
   have hcont : ContinuousOn (fun t => ContourEndpoints.verticalIntegrandX x r t) (Ioc 0 1) := by
@@ -437,18 +440,21 @@ lemma integrableOn_verticalIntegrandX_Ioc (hb : ContourEndpoints.PhiBounds)
       (volume.restrict (Ioc 0 1)) := hcont.aestronglyMeasurable measurableSet_Ioc
   -- Pointwise bound: for t ∈ (0, 1], ‖verticalIntegrandX x r t‖ ≤ C₀ * exp(-2π)
   have hbound : ∀ t ∈ Ioc 0 1, ‖ContourEndpoints.verticalIntegrandX x r t‖ ≤
-      hb.C₀ * Real.exp (-2 * π) := by
+      phiBounds.C₀ * Real.exp (-2 * π) := by
     intro t ⟨ht_pos, ht_le⟩
     rw [ContourEndpoints.norm_verticalIntegrandX x r t ht_pos]
     have hI_div_im : (Complex.I / t).im = 1/t := by simp [Complex.div_ofReal_im]
     have hI_div_pos : 0 < (Complex.I / t).im := by rw [hI_div_im]; positivity
-    have hφ₀_bound : ‖φ₀'' (Complex.I / t)‖ ≤ hb.C₀ * Real.exp (-2 * π / t) := by
+    have hφ₀_bound : ‖φ₀'' (Complex.I / t)‖ ≤ phiBounds.C₀ * Real.exp (-2 * π / t) := by
       rw [φ₀''_eq _ hI_div_pos]
       have hz : UpperHalfPlane.im ⟨Complex.I / t, hI_div_pos⟩ = 1/t := by simp [UpperHalfPlane.im]
+      have hz_gt : 1/2 < 1/t := by
+        have h1 : 1 ≤ 1/t := one_le_one_div ht_pos ht_le
+        linarith
       calc ‖φ₀ ⟨Complex.I / ↑t, hI_div_pos⟩‖
-        ≤ hb.C₀ * Real.exp (-2 * π * UpperHalfPlane.im ⟨Complex.I / t, hI_div_pos⟩) :=
-            hb.hφ₀ _ (by rw [hz, le_div_iff₀ ht_pos]; linarith)
-        _ = hb.C₀ * Real.exp (-2 * π / t) := by rw [hz]; ring_nf
+        ≤ phiBounds.C₀ * Real.exp (-2 * π * UpperHalfPlane.im ⟨Complex.I / t, hI_div_pos⟩) :=
+            phiBounds.hφ₀ _ (by rw [hz]; exact hz_gt)
+        _ = phiBounds.C₀ * Real.exp (-2 * π / t) := by rw [hz]; ring_nf
     have hr_pos : 0 < r := lt_trans (by norm_num : (0:ℝ) < 2) hr
     have ht2_le : t^2 ≤ 1 := by nlinarith [sq_nonneg t, sq_nonneg (t - 1)]
     have hexp_neg : Real.exp (-π * r * t) ≤ 1 := by
@@ -466,21 +472,22 @@ lemma integrableOn_verticalIntegrandX_Ioc (hb : ContourEndpoints.PhiBounds)
         _ ≤ -(2 * π) := hneg
         _ = -2 * π := by ring
     calc t^2 * ‖φ₀'' (Complex.I / ↑t)‖ * Real.exp (-π * r * t)
-        ≤ 1 * (hb.C₀ * Real.exp (-2 * π / t)) * 1 := by
-          have h1 : t^2 * ‖φ₀'' (Complex.I / ↑t)‖ ≤ 1 * (hb.C₀ * Real.exp (-2 * π / t)) :=
+        ≤ 1 * (phiBounds.C₀ * Real.exp (-2 * π / t)) * 1 := by
+          have h1 : t^2 * ‖φ₀'' (Complex.I / ↑t)‖ ≤ 1 * (phiBounds.C₀ * Real.exp (-2 * π / t)) :=
             mul_le_mul ht2_le hφ₀_bound (norm_nonneg _) zero_le_one
-          have h2 : 0 ≤ 1 * (hb.C₀ * Real.exp (-2 * π / t)) :=
-            mul_nonneg (by norm_num) (mul_nonneg hb.hC₀_pos.le (Real.exp_pos _).le)
+          have h2 : 0 ≤ 1 * (phiBounds.C₀ * Real.exp (-2 * π / t)) :=
+            mul_nonneg (by norm_num) (mul_nonneg phiBounds.hC₀_pos.le (Real.exp_pos _).le)
           exact mul_le_mul h1 hexp_neg (Real.exp_pos _).le h2
-      _ ≤ hb.C₀ * Real.exp (-2 * π) := by
-          simp only [one_mul, mul_one]; exact mul_le_mul_of_nonneg_left hexp_bound hb.hC₀_pos.le
+      _ ≤ phiBounds.C₀ * Real.exp (-2 * π) := by
+          simp only [one_mul, mul_one]
+          exact mul_le_mul_of_nonneg_left hexp_bound phiBounds.hC₀_pos.le
   -- Construct IntegrableOn from AEStronglyMeasurable + bounded + finite measure
   rw [IntegrableOn, Integrable]
   refine ⟨hmeas, ?_⟩
   rw [hasFiniteIntegral_def]
   have h_bound_ae : ∀ᵐ t ∂(volume.restrict (Ioc 0 1)),
       (‖ContourEndpoints.verticalIntegrandX x r t‖₊ : ℝ≥0∞) ≤
-      ↑(hb.C₀ * Real.exp (-2 * π)).toNNReal := by
+      ↑(phiBounds.C₀ * Real.exp (-2 * π)).toNNReal := by
     rw [ae_restrict_iff' measurableSet_Ioc]
     apply ae_of_all
     intro t ht
@@ -491,9 +498,9 @@ lemma integrableOn_verticalIntegrandX_Ioc (hb : ContourEndpoints.PhiBounds)
     rw [h1]
     exact Real.toNNReal_le_toNNReal hle
   calc ∫⁻ t, ↑‖ContourEndpoints.verticalIntegrandX x r t‖₊ ∂(volume.restrict (Ioc 0 1))
-      ≤ ∫⁻ _t, ↑(hb.C₀ * Real.exp (-2 * π)).toNNReal ∂(volume.restrict (Ioc 0 1)) :=
+      ≤ ∫⁻ _t, ↑(phiBounds.C₀ * Real.exp (-2 * π)).toNNReal ∂(volume.restrict (Ioc 0 1)) :=
         lintegral_mono_ae h_bound_ae
-    _ = ↑(hb.C₀ * Real.exp (-2 * π)).toNNReal * volume (Ioc (0 : ℝ) 1) := by
+    _ = ↑(phiBounds.C₀ * Real.exp (-2 * π)).toNNReal * volume (Ioc (0 : ℝ) 1) := by
         rw [lintegral_const, Measure.restrict_apply MeasurableSet.univ, univ_inter]
     _ < ⊤ := by
         rw [ENNReal.mul_lt_top_iff]
@@ -508,24 +515,22 @@ lemma IntegrableOn.const_mul' {c : ℂ} {f : ℝ → ℂ} {s : Set ℝ}
 
 /-- Integrability on [0,∞) for functions equal to verticalIntegrandX on (0,∞).
     Factors out the common proof pattern from Goals 1, 6, and 7. -/
-lemma integrableOn_Ici_of_eqOn_verticalIntegrandX (hb : ContourEndpoints.PhiBounds)
-    (x r : ℝ) (hr : 2 < r) {f : ℝ → ℂ}
+lemma integrableOn_Ici_of_eqOn_verticalIntegrandX (x r : ℝ) (hr : 2 < r) {f : ℝ → ℂ}
     (hEq : EqOn f (fun t => ContourEndpoints.verticalIntegrandX x r t) (Ioi 0)) :
     IntegrableOn f (Ici 0) volume := by
   rw [integrableOn_Ici_iff_integrableOn_Ioi, ← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
   constructor
-  · exact (integrableOn_verticalIntegrandX_Ioc hb x r hr).congr_fun
+  · exact (integrableOn_verticalIntegrandX_Ioc x r hr).congr_fun
       (hEq.mono Ioc_subset_Ioi_self).symm measurableSet_Ioc
-  · exact (integrableOn_verticalIntegrandX_Ioi hb x r hr).congr_fun
+  · exact (integrableOn_verticalIntegrandX_Ioi x r hr).congr_fun
       (hEq.mono (Ioi_subset_Ioi (by norm_num : (0:ℝ) ≤ 1))).symm measurableSet_Ioi
 
 /-- Integrability on (1,∞) for functions equal to -I * verticalIntegrandX on (1,∞).
     Factors out the common proof pattern from Goals 2 and 4. -/
-lemma integrableOn_Ioi_of_eqOn_neg_I_verticalIntegrandX (hb : ContourEndpoints.PhiBounds)
-    (x r : ℝ) (hr : 2 < r) {f : ℝ → ℂ}
+lemma integrableOn_Ioi_of_eqOn_neg_I_verticalIntegrandX (x r : ℝ) (hr : 2 < r) {f : ℝ → ℂ}
     (hEq : EqOn f (fun t => -Complex.I * ContourEndpoints.verticalIntegrandX x r t) (Ioi 1)) :
     IntegrableOn f (Ioi 1) volume :=
-  (IntegrableOn.const_mul' (integrableOn_verticalIntegrandX_Ioi hb x r hr)).congr_fun
+  (IntegrableOn.const_mul' (integrableOn_verticalIntegrandX_Ioi x r hr)).congr_fun
     (fun _ ht => (hEq ht).symm) measurableSet_Ioi
 
 /-- Helper simp lemma: t*I + 1 = 1 + I*t -/
@@ -538,12 +543,12 @@ lemma t_mul_I_sub_one (t : ℝ) : (t : ℂ) * Complex.I - 1 = (-1 : ℂ) + Compl
 
 /-- Integrability for shifted Möbius integrands with exponential phase t*I.
     Factors out the common proof pattern from Goals 3 and 5. -/
-lemma integrableOn_shiftedMöbius (hb : ContourEndpoints.PhiBounds) (a r : ℝ) (hr : 2 < r) :
+lemma integrableOn_shiftedMöbius (a r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I + a)) * (t * Complex.I + a)^2 *
                           Complex.exp (π * Complex.I * r * (t * Complex.I)))
                  (Ioi 1) volume := by
   simpa [t_mul_I_add_one, t_mul_I_sub_one, mul_comm, add_comm] using
-    integrableOn_φ₀_shifted_Möbius hb a 0 r hr
+    integrableOn_φ₀_shifted_Möbius a 0 r hr
 
 /-! ## Specific Instantiations
 
@@ -552,64 +557,64 @@ The seven integrability goals from Proposition 4.4.6.
 
 /-- Goal 1: Integrability of I * φ₀''(-1/(I*t)) * (I*t)² * cexp(I*π*r*(I*t)) on [0,∞).
     Note: -1/(I*t) = I/t, so this is verticalIntegrandX 0 r t. -/
-lemma integrableOn_goal1 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
+lemma integrableOn_goal1 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => Complex.I * φ₀'' (-1 / (Complex.I * t)) * (Complex.I * t)^2 *
                           Complex.exp (Complex.I * π * r * (Complex.I * t)))
                  (Ici (0 : ℝ)) volume :=
-  integrableOn_Ici_of_eqOn_verticalIntegrandX hb 0 r hr fun t ht =>
+  integrableOn_Ici_of_eqOn_verticalIntegrandX 0 r hr fun t ht =>
     goal1_eq_verticalIntegrandX r t (ne_of_gt ht)
 
 /-- Goal 2: Integrability of φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(-1 + t*I)) on (1,∞).
     By goal2_eq_neg_I_verticalIntegrandX, this is -I * verticalIntegrandX (-1) r t. -/
-lemma integrableOn_goal2 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
+lemma integrableOn_goal2 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (-1 + t * Complex.I)))
                  (Ioi (1 : ℝ)) volume :=
-  integrableOn_Ioi_of_eqOn_neg_I_verticalIntegrandX hb (-1) r hr fun {t} ht =>
+  integrableOn_Ioi_of_eqOn_neg_I_verticalIntegrandX (-1) r hr fun {t} ht =>
     goal2_eq_neg_I_verticalIntegrandX r t (ne_of_gt (lt_trans one_pos ht))
 
 /-- Goal 3: Integrability of φ₀''(-1/(t*I + 1)) * (t*I+1)² * cexp(π*I*r*(t*I)) on (1,∞).
     Category B: Shifted Möbius argument at +1. Derived from integrableOn_shiftedMöbius. -/
-lemma integrableOn_goal3 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
+lemma integrableOn_goal3 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I + 1)) * (t * Complex.I + 1)^2 *
                           Complex.exp (π * Complex.I * r * (t * Complex.I)))
                  (Ioi (1 : ℝ)) volume :=
-  integrableOn_shiftedMöbius hb 1 r hr
+  integrableOn_shiftedMöbius 1 r hr
 
 /-- Goal 4: Integrability of φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(1 + t*I)) on (1,∞).
     By goal4_eq_neg_I_verticalIntegrandX, this is -I * verticalIntegrandX 1 r t. -/
-lemma integrableOn_goal4 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
+lemma integrableOn_goal4 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (1 + t * Complex.I)))
                  (Ioi (1 : ℝ)) volume :=
-  integrableOn_Ioi_of_eqOn_neg_I_verticalIntegrandX hb 1 r hr fun {t} ht =>
+  integrableOn_Ioi_of_eqOn_neg_I_verticalIntegrandX 1 r hr fun {t} ht =>
     goal4_eq_neg_I_verticalIntegrandX r t (ne_of_gt (lt_trans one_pos ht))
 
 /-- Goal 5: Integrability of φ₀''(-1/(t*I - 1)) * (t*I-1)² * cexp(π*I*r*(t*I)) on (1,∞).
     Category B: Shifted Möbius argument at -1. Derived from integrableOn_shiftedMöbius. -/
-lemma integrableOn_goal5 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
+lemma integrableOn_goal5 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => φ₀'' (-1 / (t * Complex.I - 1)) * (t * Complex.I - 1)^2 *
                           Complex.exp (π * Complex.I * r * (t * Complex.I)))
                  (Ioi (1 : ℝ)) volume := by
-  convert integrableOn_shiftedMöbius hb (-1) r hr using 2
+  convert integrableOn_shiftedMöbius (-1) r hr using 2
   simp [sub_eq_add_neg]
 
 /-- Goal 6: Integrability of I * (φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(-1 + t*I))) on [0,∞).
     By goal6_eq_verticalIntegrandX, this is verticalIntegrandX (-1) r t. -/
-lemma integrableOn_goal6 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
+lemma integrableOn_goal6 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (-1 + t * Complex.I))))
                  (Ici (0 : ℝ)) volume :=
-  integrableOn_Ici_of_eqOn_verticalIntegrandX hb (-1) r hr fun t ht =>
+  integrableOn_Ici_of_eqOn_verticalIntegrandX (-1) r hr fun t ht =>
     goal6_eq_verticalIntegrandX r t (ne_of_gt ht)
 
 /-- Goal 7: Integrability of I * (φ₀''(-1/(t*I)) * (t*I)² * cexp(π*I*r*(1 + t*I))) on [0,∞).
     By goal7_eq_verticalIntegrandX, this is verticalIntegrandX 1 r t. -/
-lemma integrableOn_goal7 (hb : ContourEndpoints.PhiBounds) (r : ℝ) (hr : 2 < r) :
+lemma integrableOn_goal7 (r : ℝ) (hr : 2 < r) :
     IntegrableOn (fun t : ℝ => Complex.I * (φ₀'' (-1 / (t * Complex.I)) * (t * Complex.I)^2 *
                           Complex.exp (π * Complex.I * r * (1 + t * Complex.I))))
                  (Ici (0 : ℝ)) volume :=
-  integrableOn_Ici_of_eqOn_verticalIntegrandX hb 1 r hr fun t ht =>
+  integrableOn_Ici_of_eqOn_verticalIntegrandX 1 r hr fun t ht =>
     goal7_eq_verticalIntegrandX r t (ne_of_gt ht)
 
 
