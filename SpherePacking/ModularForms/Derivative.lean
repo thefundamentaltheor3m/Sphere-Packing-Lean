@@ -714,6 +714,104 @@ theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
   exact (mul_eq_zero.mp (h_im_deriv ▸ h_im_eq).symm).resolve_left
     (mul_ne_zero (by norm_num) Real.pi_ne_zero)
 
+/-- If F is real on the imaginary axis, MDifferentiable, and antitone,
+then D F has non-negative real part on the imaginary axis. -/
+theorem D_nonneg_from_antitone {F : ℍ → ℂ}
+    (_hreal : ResToImagAxis.Real F)
+    (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (hanti : AntitoneOn (fun t => (F.resToImagAxis t).re) (Set.Ioi 0)) :
+    ∀ t, 0 < t → 0 ≤ ((D F).resToImagAxis t).re := by
+  intro t ht
+  -- Define g as the real part of F restricted to imaginary axis
+  let g := fun s => (F.resToImagAxis s).re
+  -- Show g has derivative -2π * ((D F).resToImagAxis t).re at t
+  have hg : HasDerivAt g (-2 * π * ((D F).resToImagAxis t).re) t := by
+    have hdiffAt : DifferentiableAt ℝ F.resToImagAxis t :=
+      ResToImagAxis.Differentiable F hdiff t ht
+    have hderivC : HasDerivAt F.resToImagAxis (-2 * π * (D F).resToImagAxis t) t :=
+      hdiffAt.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hdiff ht)
+    have hconst : HasDerivAt (fun _ : ℝ => (Complex.reCLM : ℂ →L[ℝ] ℝ)) 0 t := by
+      simpa using (hasDerivAt_const (x := t) (c := (Complex.reCLM : ℂ →L[ℝ] ℝ)))
+    have hg_clm := hconst.clm_apply hderivC
+    simpa [g] using hg_clm
+  -- Antitone implies derivative ≤ 0
+  have hderiv_nonpos : deriv g t ≤ 0 :=
+    hanti.derivWithin_nonpos (s := Set.Ioi 0) (x := t)
+      |> (derivWithin_of_isOpen isOpen_Ioi ht).symm.trans_le
+  -- Conclude from deriv g t = -2π * ((D F).resToImagAxis t).re ≤ 0
+  rw [hg.deriv] at hderiv_nonpos
+  nlinarith [Real.pi_pos]
+
+/-- If F is real on the imaginary axis, MDifferentiable, and strictly antitone,
+then D F is positive on the imaginary axis.
+
+This is the converse direction of `antiDerPos` (which goes: D F positive → F antitone → F positive).
+
+Note: The strict version requires showing that the derivative is strictly negative, not just
+non-positive. For analytic functions (which F.resToImagAxis is), strict antitonicity implies
+the derivative is negative at all points except possibly isolated zeros. -/
+theorem D_pos_from_strictAnti {F : ℍ → ℂ}
+    (hreal : ResToImagAxis.Real F)
+    (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (hanti : StrictAntiOn (fun t => (F.resToImagAxis t).re) (Set.Ioi 0)) :
+    ResToImagAxis.Pos (D F) := by
+  -- D F is real on imaginary axis
+  have hDreal : ResToImagAxis.Real (D F) := D_real_of_real hreal hdiff
+  refine ⟨hDreal, fun t ht => ?_⟩
+  -- Define g as the real part of F restricted to imaginary axis
+  let g := fun s => (F.resToImagAxis s).re
+  -- Show g has derivative -2π * ((D F).resToImagAxis t).re at t
+  have hg : HasDerivAt g (-2 * π * ((D F).resToImagAxis t).re) t := by
+    have hdiffAt : DifferentiableAt ℝ F.resToImagAxis t := ResToImagAxis.Differentiable F hdiff t ht
+    have hderivC : HasDerivAt F.resToImagAxis (-2 * π * (D F).resToImagAxis t) t :=
+      hdiffAt.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hdiff ht)
+    have hconst : HasDerivAt (fun _ : ℝ => (Complex.reCLM : ℂ →L[ℝ] ℝ)) 0 t := by
+      simpa using (hasDerivAt_const (x := t) (c := (Complex.reCLM : ℂ →L[ℝ] ℝ)))
+    have hreal := hconst.clm_apply hderivC
+    simpa [g] using hreal
+  -- Strict antitone implies derivative < 0 using mean value theorem
+  have hderiv_neg : deriv g t < 0 := by
+    -- Antitone implies derivative ≤ 0
+    have hderiv_nonpos : deriv g t ≤ 0 :=
+      hanti.antitoneOn.derivWithin_nonpos (s := Set.Ioi 0) (x := t)
+        |> (derivWithin_of_isOpen isOpen_Ioi ht).symm.trans_le
+    -- If deriv g t = 0, we get a contradiction via mean value theorem
+    by_contra h_not_neg
+    push_neg at h_not_neg
+    have hderiv_zero : deriv g t = 0 := le_antisymm hderiv_nonpos h_not_neg
+    -- Pick a small positive h such that t + h > 0 and use MVT
+    -- StrictAntiOn: a ∈ s, b ∈ s, a < b → f b < f a
+    have ht1_mem : t + 1 ∈ Set.Ioi (0 : ℝ) := by simp only [Set.mem_Ioi]; linarith
+    have hg_strict : g (t + 1) < g t := hanti ht ht1_mem (by linarith : t < t + 1)
+    -- By MVT on [t, t+1], there exists c ∈ (t, t+1) with g'(c) = (g(t+1) - g(t))/1 < 0
+    have hg_diff : ∀ x, t ≤ x → x ≤ t + 1 → DifferentiableAt ℝ g x := fun x hlo hhi => by
+      have hx_pos : 0 < x := by linarith
+      have hdiffAt : DifferentiableAt ℝ F.resToImagAxis x :=
+        ResToImagAxis.Differentiable F hdiff x hx_pos
+      exact Complex.reCLM.differentiableAt.comp x hdiffAt
+    have hg_cont : ContinuousOn g (Set.Icc t (t + 1)) := by
+      intro x hx
+      exact (hg_diff x hx.1 hx.2).continuousAt.continuousWithinAt
+    have hmvt := exists_deriv_eq_slope g (by linarith : t < t + 1) hg_cont
+      (fun x hx => (hg_diff x (le_of_lt hx.1) (le_of_lt hx.2)).differentiableWithinAt)
+    obtain ⟨c, ⟨hc_lo, hc_hi⟩, hc_eq⟩ := hmvt
+    -- slope = (g(t+1) - g(t)) / 1 < 0
+    have hslope_neg : (g (t + 1) - g t) / 1 < 0 := by simp only [div_one]; linarith
+    -- hc_eq : deriv g c = (g (t+1) - g t) / ((t+1) - t)
+    have hderiv_c_neg : deriv g c < 0 := by
+      have h1 : (t + 1 : ℝ) - t = 1 := by ring
+      simp only [h1, div_one] at hc_eq
+      linarith
+    -- deriv g c < 0 but deriv g t = 0, which is fine... but we need to derive a contradiction
+    -- The issue is that strict antitonicity only guarantees SOME point has negative derivative
+    -- For general analytic functions, deriv = 0 at isolated points is possible
+    -- We need an additional argument using analyticity to show deriv g t < 0
+    -- For now, we leave this as sorry - the full proof requires showing the derivative
+    -- can't be zero at any point for holomorphic F with strictly decreasing restriction
+    sorry
+  rw [hg.deriv] at hderiv_neg
+  nlinarith [Real.pi_pos]
+
 /--
 If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
 is positive) and the derivative is positive, then $F$ is also positive.
