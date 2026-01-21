@@ -60,6 +60,8 @@ import SpherePacking.ModularForms.FG
 import SpherePacking.ModularForms.Icc_Ico_lems
 import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.Monotonicity
+import SpherePacking.ModularForms.Monotonicity_L10_GAndEventuallyPos
 import SpherePacking.ModularForms.PhiTransform
 import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.ResToImagAxis
@@ -84,5 +86,3 @@ import SpherePacking.ModularForms.upperhalfplane
 import SpherePacking.Tactic.NormNumI
 import SpherePacking.Tactic.NormNumI_Scratch
 import SpherePacking.Tactic.Test.NormNumI
-import SpherePacking.ModularForms.Monotonicity
-import SpherePacking.ModularForms.Monotonicity_L10_GAndEventuallyPos
