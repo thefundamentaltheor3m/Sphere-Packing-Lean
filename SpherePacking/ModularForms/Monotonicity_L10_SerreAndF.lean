@@ -92,21 +92,20 @@ The cross terms `(∂₁₀F)(∂₁₀G)` cancel in the subtraction.
 theorem serre_D_L₁₀ (z : ℍ) :
     serre_D 22 L₁₀ z = serre_D 12 (serre_D 10 F) z * G z
       - F z * serre_D 12 (serre_D 10 G) z := by
-  have hF := F_holo; have hG := G_holo
-  have hDF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := serre_D_differentiable hF
-  have hDG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := serre_D_differentiable hG
+  have hDF := serre_D_differentiable F_holo (k := 10)
+  have hDG := serre_D_differentiable G_holo (k := 10)
   rw [show L₁₀ = serre_D 10 F * G - F * serre_D 10 G from rfl]
-  have hsub := serre_D_sub (22 : ℤ) _ _ (hDF.mul hG) (hF.mul hDG)
+  have hsub := serre_D_sub (22 : ℤ) _ _ (hDF.mul G_holo) (F_holo.mul hDG)
   simp only [Int.cast_ofNat] at hsub
   rw [hsub, Pi.sub_apply]
   have h1 : serre_D 22 (serre_D 10 F * G) z =
       serre_D 12 (serre_D 10 F) z * G z + serre_D 10 F z * serre_D 10 G z := by
     conv_lhs => rw [show (22 : ℂ) = 12 + 10 by norm_num]
-    simpa [Pi.mul_apply, Pi.add_apply] using congrFun (serre_D_mul 12 10 _ G hDF hG) z
+    simpa [Pi.mul_apply, Pi.add_apply] using congrFun (serre_D_mul 12 10 _ G hDF G_holo) z
   have h2 : serre_D 22 (F * serre_D 10 G) z =
       serre_D 10 F z * serre_D 10 G z + F z * serre_D 12 (serre_D 10 G) z := by
     conv_lhs => rw [show (22 : ℂ) = 10 + 12 by norm_num]
-    simpa [Pi.mul_apply, Pi.add_apply] using congrFun (serre_D_mul 10 12 F _ hF hDG) z
+    simpa [Pi.mul_apply, Pi.add_apply] using congrFun (serre_D_mul 10 12 F _ F_holo hDG) z
   rw [h1, h2]; ring
 
 /--
