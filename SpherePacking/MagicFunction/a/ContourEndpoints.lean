@@ -358,7 +358,6 @@ lemma tendsto_verticalBound_atTop (r : ℝ) (hr : 2 < r) :
 /-- The vertical bound is nonnegative for t ≥ 1. -/
 lemma verticalBound_nonneg (r t : ℝ) (ht : 1 ≤ t) : 0 ≤ verticalBound r t := by
   simp only [verticalBound]
-  have : 0 < t := by linarith
   have := phiBounds.hC₀_pos; have := phiBounds.hC₂_pos; have := phiBounds.hC₄_pos
   positivity
 
