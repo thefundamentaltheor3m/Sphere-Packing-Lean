@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
 
 /-!
 # PhiBounds Structure
@@ -26,6 +27,7 @@ namespace MagicFunction.a
 
 /-- Bundle of Corollary 7.5-7.7 bounds as hypotheses.
     Blueprint states these for Im(z) > 1/2, which is the condition we use. -/
+    Blueprint states these for Im(z) > 1/2, which is the condition we use. -/
 structure PhiBounds where
   C₀ : ℝ
   C₂ : ℝ
@@ -33,6 +35,9 @@ structure PhiBounds where
   hC₀_pos : 0 < C₀
   hC₂_pos : 0 < C₂
   hC₄_pos : 0 < C₄
+  hφ₀ : ∀ z : ℍ, 1/2 < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im)
+  hφ₂ : ∀ z : ℍ, 1/2 < z.im → ‖φ₂' z‖ ≤ C₂
+  hφ₄ : ∀ z : ℍ, 1/2 < z.im → ‖φ₄' z‖ ≤ C₄ * Real.exp (2 * π * z.im)
   hφ₀ : ∀ z : ℍ, 1/2 < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im)
   hφ₂ : ∀ z : ℍ, 1/2 < z.im → ‖φ₂' z‖ ≤ C₂
   hφ₄ : ∀ z : ℍ, 1/2 < z.im → ‖φ₄' z‖ ≤ C₄ * Real.exp (2 * π * z.im)
