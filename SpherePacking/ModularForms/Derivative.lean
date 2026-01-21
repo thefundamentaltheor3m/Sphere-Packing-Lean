@@ -714,6 +714,14 @@ theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
   exact (mul_eq_zero.mp (h_im_deriv ▸ h_im_eq).symm).resolve_left
     (mul_ne_zero (by norm_num) Real.pi_ne_zero)
 
+/-- The real part of F.resToImagAxis has derivative -2π * ((D F).resToImagAxis t).re at t. -/
+lemma hasDerivAt_resToImagAxis_re {F : ℍ → ℂ} (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    {t : ℝ} (ht : 0 < t) :
+    HasDerivAt (fun s => (F.resToImagAxis s).re) (-2 * π * ((D F).resToImagAxis t).re) t := by
+  have hdiffAt := ResToImagAxis.Differentiable F hdiff t ht
+  have hderivC := hdiffAt.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hdiff ht)
+  simpa using (hasDerivAt_const t (Complex.reCLM : ℂ →L[ℝ] ℝ)).clm_apply hderivC
+
 /-- If F is real on the imaginary axis, MDifferentiable, and antitone,
 then D F has non-negative real part on the imaginary axis. -/
 theorem D_nonneg_from_antitone {F : ℍ → ℂ}
