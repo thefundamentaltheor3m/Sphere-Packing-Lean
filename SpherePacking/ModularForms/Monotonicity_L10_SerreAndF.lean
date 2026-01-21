@@ -3,7 +3,9 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-import SpherePacking.ModularForms.Monotonicity_ImagAxis
+import SpherePacking.ModularForms.FG
+import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.summable_lems
 
 /-!
@@ -27,6 +29,16 @@ open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMa
 open scoped ModularForm MatrixGroups Manifold ArithmeticFunction.sigma
 
 namespace MonotoneFG
+
+/-! ## Helper lemmas -/
+
+/-- If f/g → c ≠ 0, then eventually f ≠ 0. -/
+lemma eventually_ne_zero_of_tendsto_div {f g : ℍ → ℂ} {c : ℂ} (hc : c ≠ 0)
+    (h : Filter.Tendsto (fun z => f z / g z) atImInfty (nhds c)) :
+    ∀ᶠ z : ℍ in atImInfty, f z ≠ 0 := by
+  have h_quot_ne := h.eventually_ne hc
+  filter_upwards [h_quot_ne] with z hz hf
+  exact hz (by simp [hf])
 
 /-!
 ## Section 1: Definition and Properties of L₁,₀
@@ -789,8 +801,9 @@ theorem G_vanishing_order :
     have hne3 : cexp (3 * π * I * z) ≠ 0 := Complex.exp_ne_zero _
     have h_exp_pow : cexp (π * I * z) ^ 3 = cexp (3 * π * I * z) := by
       rw [← Complex.exp_nat_mul]; congr 1; ring
-    unfold G
-    simp only [Pi.mul_apply, Pi.pow_apply, Pi.add_apply, Pi.ofNat_apply, div_pow, h_exp_pow]
+    simp only [G, Pi.mul_apply, Pi.pow_apply, Pi.add_apply, Pi.smul_apply,
+      Complex.real_smul, div_pow, h_exp_pow]
+    push_cast
     field_simp [hne, hne3]
   simp_rw [h_eq]
   -- The polynomial part: 2H₂² + 5H₂H₄ + 5H₄² → 0 + 0 + 5 = 5
