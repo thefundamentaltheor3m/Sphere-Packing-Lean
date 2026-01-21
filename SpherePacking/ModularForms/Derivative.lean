@@ -749,23 +749,10 @@ theorem D_pos_from_strictAnti {F : ℍ → ℂ}
     (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (hanti : StrictAntiOn (fun t => (F.resToImagAxis t).re) (Set.Ioi 0)) :
     ResToImagAxis.Pos (D F) := by
-  -- D F is real on imaginary axis
-  have hDreal : ResToImagAxis.Real (D F) := D_real_of_real hreal hdiff
-  refine ⟨hDreal, fun t ht => ?_⟩
-  -- Define g as the real part of F restricted to imaginary axis
+  refine ⟨D_real_of_real hreal hdiff, fun t ht => ?_⟩
   let g := fun s => (F.resToImagAxis s).re
-  -- Show g has derivative -2π * ((D F).resToImagAxis t).re at t
-  have hg : HasDerivAt g (-2 * π * ((D F).resToImagAxis t).re) t := by
-    have hdiffAt : DifferentiableAt ℝ F.resToImagAxis t := ResToImagAxis.Differentiable F hdiff t ht
-    have hderivC : HasDerivAt F.resToImagAxis (-2 * π * (D F).resToImagAxis t) t :=
-      hdiffAt.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hdiff ht)
-    have hconst : HasDerivAt (fun _ : ℝ => (Complex.reCLM : ℂ →L[ℝ] ℝ)) 0 t := by
-      simpa using (hasDerivAt_const (x := t) (c := (Complex.reCLM : ℂ →L[ℝ] ℝ)))
-    have hreal := hconst.clm_apply hderivC
-    simpa [g] using hreal
-  -- Strict antitone implies derivative < 0 using mean value theorem
+  have hg := hasDerivAt_resToImagAxis_re hdiff ht
   have hderiv_neg : deriv g t < 0 := by
-    -- Antitone implies derivative ≤ 0
     have hderiv_nonpos : deriv g t ≤ 0 :=
       hanti.antitoneOn.derivWithin_nonpos (s := Set.Ioi 0) (x := t)
         |> (derivWithin_of_isOpen isOpen_Ioi ht).symm.trans_le
