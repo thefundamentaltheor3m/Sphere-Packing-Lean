@@ -338,33 +338,24 @@ theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) :
 Using Lemma 8.11 (vanishing orders), we show L₁,₀(it) > 0 for large t.
 -/
 
-/-- Summability of (m+1)^5 * exp(-2πm) via comparison with shifted sum. -/
-lemma summable_pow5_shift : Summable fun m : ℕ => (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) := by
-  have h := Real.summable_pow_mul_exp_neg_nat_mul 5 (by positivity : 0 < 2 * π)
-  have h_eq : ∀ m : ℕ, (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) =
-      rexp (2 * π) * ((m + 1) ^ 5 * rexp (-2 * π * (m + 1))) := by
-    intro m
-    have h1 : rexp (-2 * π * m) = rexp (2 * π) * rexp (-2 * π * (m + 1)) := by
-      rw [← Real.exp_add]; congr 1; ring
-    rw [h1]; ring
+/-- Summability of (m+1)^k * exp(-2πm) via comparison with shifted sum. -/
+lemma summable_pow_shift (k : ℕ) : Summable fun m : ℕ => (m + 1 : ℝ) ^ k * rexp (-2 * π * m) := by
+  have h := Real.summable_pow_mul_exp_neg_nat_mul k (by positivity : 0 < 2 * π)
+  have h_eq : ∀ m : ℕ, (m + 1 : ℝ) ^ k * rexp (-2 * π * m) =
+      rexp (2 * π) * ((m + 1) ^ k * rexp (-2 * π * (m + 1))) := fun m => by
+    have : rexp (-2 * π * m) = rexp (2 * π) * rexp (-2 * π * (m + 1)) := by
+      rw [← Real.exp_add]
+      congr 1
+      ring
+    rw [this]
+    ring
   simp_rw [h_eq]
   apply Summable.mul_left
   convert h.comp_injective Nat.succ_injective using 1
-  ext m; simp only [Function.comp_apply, Nat.succ_eq_add_one]; push_cast; ring_nf
-
-/-- Summability of (m+1)^6 * exp(-2πm) via comparison with shifted sum. -/
-lemma summable_pow6_shift : Summable fun m : ℕ => (m + 1 : ℝ) ^ 6 * rexp (-2 * π * m) := by
-  have h := Real.summable_pow_mul_exp_neg_nat_mul 6 (by positivity : 0 < 2 * π)
-  have h_eq : ∀ m : ℕ, (m + 1 : ℝ) ^ 6 * rexp (-2 * π * m) =
-      rexp (2 * π) * ((m + 1) ^ 6 * rexp (-2 * π * (m + 1))) := by
-    intro m
-    have h1 : rexp (-2 * π * m) = rexp (2 * π) * rexp (-2 * π * (m + 1)) := by
-      rw [← Real.exp_add]; congr 1; ring
-    rw [h1]; ring
-  simp_rw [h_eq]
-  apply Summable.mul_left
-  convert h.comp_injective Nat.succ_injective using 1
-  ext m; simp only [Function.comp_apply, Nat.succ_eq_add_one]; push_cast; ring_nf
+  ext m
+  simp only [Function.comp_apply, Nat.succ_eq_add_one]
+  push_cast
+  ring_nf
 
 /--
 Helper lemma: `Θ₂(z) / exp(πiz/4) → 2` as `im(z) → ∞`.
@@ -442,7 +433,7 @@ theorem F_vanishing_order :
             ≤ ((m + 1 : ℕ) : ℝ) ^ 5 * rexp (-2 * π * m) :=
               mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
           _ = (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) := by simp
-      · exact summable_pow5_shift
+      · exact summable_pow_shift 5
     have h_eq2 : ∀ z : ℍ,
         ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
           cexp (2 * π * Complex.I * m * z) =
@@ -652,7 +643,7 @@ theorem D_diff_div_q_tendsto :
           ≤ ((m + 1 : ℕ) : ℝ) ^ 6 * rexp (-2 * π * m) :=
             mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
         _ = (m + 1 : ℝ) ^ 6 * rexp (-2 * π * m) := by simp
-    · exact summable_pow6_shift
+    · exact summable_pow_shift 6
   have h_eq2 : ∀ z : ℍ,
       ∑' m : ℕ, (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) *
         cexp (2 * π * I * m * z) =
@@ -738,7 +729,7 @@ theorem D_F_div_F_tendsto :
             ≤ ((m + 1 : ℕ) : ℝ) ^ 5 * rexp (-2 * π * m) :=
               mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
           _ = (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) := by simp
-      · exact summable_pow5_shift
+      · exact summable_pow_shift 5
     have h_eq2 : ∀ z : ℍ,
         ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
           cexp (2 * π * Complex.I * m * z) =
