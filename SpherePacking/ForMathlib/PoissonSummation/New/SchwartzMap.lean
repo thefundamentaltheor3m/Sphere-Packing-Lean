@@ -6,23 +6,18 @@ Authors: Sidharth Hariharan, Yongxi Lin, Matthew Cushman
 Reference: Loukas Grafakos, *Classical Fourier Analysis*
 -/
 
-import Mathlib
+import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.Analysis.CStarAlgebra.Classes
+import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+import Mathlib.Analysis.Fourier.AddCircleMulti
 
 /-!
 # Summability of mFourier coefficients of Schwartz Functions on ℝⁿ
 -/
 
-open Set Algebra Submodule MeasureTheory UnitAddTorus FourierTransform Asymptotics
-
-open Asymptotics Topology Real Filter ContinuousMap ZLattice Submodule WithLp
+open Set Algebra Submodule MeasureTheory UnitAddTorus FourierTransform Asymptotics Topology Real Filter ContinuousMap ZLattice Submodule WithLp
 
 variable {d : Type*} [Fintype d] {f : EuclideanSpace ℝ d → ℂ}
-
-#synth InnerProductSpace ℝ (EuclideanSpace ℝ d)
-
-/- I am using EuclideanSpace ℝ d instead of d → ℝ because the first one has an instance of
-InnerProductSpace. We need this instance for Real.fourierIntegral 𝓕.
--/
 
 namespace RpowDecay
 
