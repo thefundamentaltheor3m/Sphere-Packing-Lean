@@ -8,7 +8,7 @@ import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.a.VerticalIntegrability
-import SpherePacking.MagicFunction.a.VerticalVanishing
+import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 
 noncomputable section
 
@@ -59,11 +59,14 @@ noncomputable section
 open Set Complex Real MeasureTheory
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
 open MagicFunction.a.RealIntegrands MagicFunction.a.ComplexIntegrands
-open MagicFunction.VerticalIntegrability MagicFunction.VerticalVanishing
-open MagicFunction.ContourEndpoints
+open MagicFunction.VerticalIntegrability MagicFunction.ContourEndpoints
 
-lemma φ₀''_differentiable : DifferentiableOn ℂ φ₀'' (Set.univ ×ℂ Ioi 0) := sorry
-lemma φ₀''_continuous : ContinuousOn φ₀'' (Set.univ ×ℂ Ioi 0) := sorry
+lemma φ₀''_differentiable : DifferentiableOn ℂ φ₀'' (Set.univ ×ℂ Ioi 0) := by
+  convert φ₀''_holo
+  ext
+  constructor
+  · intro ⟨_, hx⟩; exact hx
+  · intro hx; exact ⟨Set.mem_univ _, hx⟩
 
 lemma cadd_real_neq_zero {r : ℝ} {x : ℂ} {hx : x ∈ Set.univ ×ℂ Ioi 0} : x + r ≠ 0 := by
   obtain ⟨_, hx_im⟩ := hx
@@ -199,7 +202,7 @@ lemma φ₀_int_4_eq : φ₀_int_4 r = I₅' r + φ₀_int_5 r := by
     · simp only [neg_mul, neg_inj, mul_eq_mul_left_iff, OfNat.ofNat_ne_zero, or_false]
       rw [← integral_Ici_eq_integral_Ioi]
   · apply IntegrableOn.integrable
-    exact (integrableOn_goal1 (hb := phiBounds) r hr)
+    exact (integrableOn_goal1 r hr)
 
 lemma cauchy_goursat_int_1 : ∫ (t : ℝ) in Ioi 1, I * integrand_1 r (-1 + t * I) =
   (∫ (x : ℝ) in -1..0, integrand_1 r (x + 1 * I)) +
@@ -215,7 +218,7 @@ lemma cauchy_goursat_int_1 : ∫ (t : ℝ) in Ioi 1, I * integrand_1 r (-1 + t *
   · unfold integrand_1
     apply ContinuousOn.mul
     · apply ContinuousOn.mul
-      · refine (ContinuousOn.comp' φ₀''_continuous
+      · refine (ContinuousOn.comp' φ₀''_differentiable.continuousOn
           (?_ : ContinuousOn (fun (t : ℂ) => (-1 / (t + 1))) _) ?_)
         · apply inv_cadd_real_continuous'; simp
         · refine MapsTo.mono_left inv_cadd_real_image ?_
@@ -239,11 +242,16 @@ lemma cauchy_goursat_int_1 : ∫ (t : ℝ) in Ioi 1, I * integrand_1 r (-1 + t *
     · fun_prop
   · unfold integrand_1
     simp only [ofReal_neg, ofReal_one, neg_add_cancel_comm]
-    exact (integrableOn_goal2 (hb := phiBounds) r hr)
+    exact (integrableOn_goal2 r hr)
   · unfold integrand_1
     simp only [ofReal_zero, zero_add]
-    apply (integrableOn_goal3 (hb := phiBounds) r hr)
-  · sorry
+    apply (integrableOn_goal3 r hr)
+  · intro ε hε
+    obtain ⟨M, s⟩ := uniform_vanishing_verticalIntegrandX r hr ε hε
+    use M
+    intro z
+    have x := z.re; have t := z.im
+
 
 lemma cauchy_goursat_int_3 : ∫ (t : ℝ) in Ioi 1, I * integrand_3 r (1 + t * I) =
   (∫ (x : ℝ) in 1..0, integrand_3 r (x + 1 * I)) +
@@ -262,7 +270,7 @@ lemma cauchy_goursat_int_3 : ∫ (t : ℝ) in Ioi 1, I * integrand_3 r (1 + t * 
       · conv =>
           pattern (_ - _)
           rw [sub_eq_add_neg, ← neg_one_coe]
-        refine (ContinuousOn.comp' φ₀''_continuous
+        refine (ContinuousOn.comp' φ₀''_differentiable.continuousOn
           (?_ : ContinuousOn (fun (t : ℂ) => (-1 / (t + ↑(-1 : ℝ)))) _) ?_)
         · apply inv_cadd_real_continuous'; simp
         · refine MapsTo.mono_left inv_cadd_real_image ?_
@@ -289,10 +297,10 @@ lemma cauchy_goursat_int_3 : ∫ (t : ℝ) in Ioi 1, I * integrand_3 r (1 + t * 
     · fun_prop
   · unfold integrand_3
     simp only [ofReal_one, add_sub_cancel_left]
-    exact (integrableOn_goal4 phiBounds r hr)
+    exact (integrableOn_goal4 r hr)
   · unfold integrand_3
     simp only [ofReal_zero, zero_add]
-    apply (integrableOn_goal5 phiBounds r hr)
+    apply (integrableOn_goal5 r hr)
   · sorry
 
 lemma int_1_eq : φ₀_int_1 r = I₁' r + I₂' r + ∫ t in Ici (1 : ℝ),
@@ -334,7 +342,7 @@ lemma int_1_eq : φ₀_int_1 r = I₁' r + I₂' r + ∫ t in Ici (1 : ℝ),
             (fun z => φ₀'' (-1 / (z + ↑(0 : ℝ)))) ∘ (fun (t : ℝ) => ↑t + I) := by funext; simp
           rw [this]
           apply ContinuousOn.comp
-            (ContinuousOn.comp φ₀''_continuous inv_cadd_real_continuous inv_cadd_real_image)
+            (ContinuousOn.comp φ₀''_differentiable.continuousOn inv_cadd_real_continuous inv_cadd_real_image)
           · fun_prop
           · intros x hx
             exact ⟨Set.mem_univ _, (by simp)⟩
@@ -345,7 +353,7 @@ lemma int_1_eq : φ₀_int_1 r = I₁' r + I₂' r + ∫ t in Ici (1 : ℝ),
   · apply IntegrableOn.integrable
     unfold integrand_1
     simp only [neg_add_cancel_comm]
-    exact (integrableOn_goal6 phiBounds r hr)
+    exact (integrableOn_goal6 r hr)
 
 lemma int_3_eq : φ₀_int_3 r = I₃' r + I₄' r + ∫ t in Ici (1 : ℝ),
   I * φ₀'' (-1 / (I * t - 1)) * (I * t - 1)^2 *
@@ -388,7 +396,7 @@ lemma int_3_eq : φ₀_int_3 r = I₃' r + I₄' r + ∫ t in Ici (1 : ℝ),
             (fun z => φ₀'' (-1 / (z + ↑(-1 : ℝ)))) ∘ (fun (t : ℝ) => ↑t + I) := by funext; simp; rfl
           rw [this]
           apply ContinuousOn.comp
-            (ContinuousOn.comp φ₀''_continuous inv_cadd_real_continuous inv_cadd_real_image)
+            (ContinuousOn.comp φ₀''_differentiable.continuousOn inv_cadd_real_continuous inv_cadd_real_image)
           · fun_prop
           · intros x hx
             exact ⟨Set.mem_univ _, (by simp)⟩
@@ -399,7 +407,7 @@ lemma int_3_eq : φ₀_int_3 r = I₃' r + I₄' r + ∫ t in Ici (1 : ℝ),
   · apply IntegrableOn.integrable
     unfold integrand_3
     simp only [add_sub_cancel_left]
-    exact (integrableOn_goal7 phiBounds r hr)
+    exact (integrableOn_goal7 r hr)
 
 lemma d_eq_2 : d r = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := by
   calc
@@ -441,7 +449,7 @@ lemma d_eq_2 : d r = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := 
     conv =>
       pattern (_ + 1)
       rw [add_comm]
-    exact (integrableOn_goal7 phiBounds r hr)
+    exact (integrableOn_goal7 r hr)
   have hI' : IntegrableOn (fun (a : ℝ) ↦ cexp (-(I * ↑π * ↑r)) * (I * φ₀'' (-1 / (I * ↑a)) *
     (I * ↑a) ^ 2 * cexp (I * ↑π * ↑r * (I * ↑a)))) (Ici 0) := by
     conv =>
@@ -450,7 +458,7 @@ lemma d_eq_2 : d r = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := 
     conv =>
       pattern (_ - 1)
       rw [sub_eq_add_neg, add_comm]
-    exact (integrableOn_goal6 phiBounds r hr)
+    exact (integrableOn_goal6 r hr)
   rw [sin_eq_exp, ← integral_const_mul_of_integrable _]
   · simp only [neg_mul, add_mul, sub_mul]
     rw [integral_add (hf := _) (hg := _),
@@ -467,15 +475,15 @@ lemma d_eq_2 : d r = φ₀_int_1 r + I₅' r + φ₀_int_5 r + φ₀_int_3 r := 
       ring
     · exact hI
     · apply IntegrableOn.const_mul'
-      exact integrableOn_goal1 phiBounds r hr
+      exact integrableOn_goal1 r hr
     · apply Integrable.sub
       · exact hI
       · apply IntegrableOn.const_mul'
-        exact integrableOn_goal1 phiBounds r hr
+        exact integrableOn_goal1 r hr
     · apply IntegrableOn.integrable
       exact hI'
   · apply IntegrableOn.integrable
-    exact (integrableOn_goal1 phiBounds r hr)
+    exact (integrableOn_goal1 r hr)
 
 
 lemma d_eq_1 : d r = I₁' r + I₂' r + I₃' r + I₄' r + I₅' r +
@@ -490,14 +498,14 @@ lemma d_eq_1 : d r = I₁' r + I₂' r + I₃' r + I₄' r + I₅' r +
     (φ₀'' (-1 / (1 + I * ↑t)) * (1 + I * ↑t) ^ 2))) (volume.restrict (Ici 1)) := by
     apply IntegrableOn.integrable
     apply (integrableOn_Ici_iff_integrableOn_Ioi (by finiteness)).2
-    have := integrableOn_goal3 phiBounds r hr
+    have := integrableOn_goal3 r hr
     ac_nf at this
     exact (IntegrableOn.const_mul' this)
   have hI' : Integrable (fun (a : ℝ) ↦ I * (cexp (I * (I * (↑r * (↑a * ↑π)))) *
     (φ₀'' (-1 / (I * ↑a - 1)) * (I * ↑a - 1) ^ 2))) (volume.restrict (Ici 1)) := by
     apply IntegrableOn.integrable
     apply (integrableOn_Ici_iff_integrableOn_Ioi (by finiteness)).2
-    have := integrableOn_goal5 phiBounds r hr
+    have := integrableOn_goal5 r hr
     ac_nf at this
     exact (IntegrableOn.const_mul' this)
   rw [d_eq_2 (hr := hr) _, int_1_eq (hr := hr), int_3_eq (hr := hr)]
@@ -515,7 +523,7 @@ lemma d_eq_1 : d r = I₁' r + I₂' r + I₃' r + I₄' r + I₅' r +
         pattern (_ * _)
         rw [← mul_assoc, mul_comm, mul_assoc]
       apply Integrable.const_mul
-      have := integrableOn_shiftedMöbius phiBounds 0 r hr
+      have := integrableOn_shiftedMöbius 0 r hr
       simp only [ofReal_zero, add_zero] at this
       ac_nf; ac_nf at this
       apply (integrableOn_Ici_iff_integrableOn_Ioi (by finiteness)).2
