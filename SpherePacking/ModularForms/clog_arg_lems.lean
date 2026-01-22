@@ -13,37 +13,38 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 lemma arg_pow_aux (n : ℕ) (x : ℂ) (hx : x ≠ 0) (hna : |arg x| < π / n) :
   Complex.arg (x ^ n) = n * Complex.arg x := by
-  induction' n with n hn2
-  · simp only [pow_zero, arg_one, CharP.cast_eq_zero, zero_mul]
-  by_cases hn0 : n = 0
-  · simp only [hn0, zero_add, pow_one, Nat.cast_one, one_mul]
-  · rw [pow_succ, arg_mul, hn2, Nat.cast_add]
-    · ring
-    · apply lt_trans hna
+  induction n with
+  | zero => simp only [pow_zero, arg_one, CharP.cast_eq_zero, zero_mul]
+  | succ n hn2 =>
+    by_cases hn0 : n = 0
+    · simp only [hn0, zero_add, pow_one, Nat.cast_one, one_mul]
+    · rw [pow_succ, arg_mul, hn2, Nat.cast_add]
+      · ring
+      · apply lt_trans hna
+        gcongr
+        exact (lt_add_one n)
+      · apply pow_ne_zero n hx
+      · exact hx
+      simp only [mem_Ioc]
+      rw [hn2]
+      · rw [abs_lt] at hna
+        constructor
+        · have hnal := hna.1
+          rw [← neg_div] at hnal
+          rw [div_lt_iff₀' ] at hnal
+          · rw [Nat.cast_add, add_mul] at hnal
+            simpa only [gt_iff_lt, Nat.cast_one, one_mul] using hnal
+          · norm_cast
+            omega
+        · have hnal := hna.2
+          rw [lt_div_iff₀', Nat.cast_add] at hnal
+          · rw [add_mul] at hnal
+            simpa only [ge_iff_le, Nat.cast_one, one_mul] using hnal.le
+          · norm_cast
+            omega
+      apply lt_trans hna
       gcongr
       exact (lt_add_one n)
-    · apply pow_ne_zero n hx
-    · exact hx
-    simp only [mem_Ioc]
-    rw [hn2]
-    · rw [abs_lt] at hna
-      constructor
-      · have hnal := hna.1
-        rw [← neg_div] at hnal
-        rw [div_lt_iff₀' ] at hnal
-        · rw [Nat.cast_add, add_mul] at hnal
-          simpa only [gt_iff_lt, Nat.cast_one, one_mul] using hnal
-        · norm_cast
-          omega
-      · have hnal := hna.2
-        rw [lt_div_iff₀', Nat.cast_add] at hnal
-        · rw [add_mul] at hnal
-          simpa only [ge_iff_le, Nat.cast_one, one_mul] using hnal.le
-        · norm_cast
-          omega
-    apply lt_trans hna
-    gcongr
-    exact (lt_add_one n)
 
 lemma one_add_abs_half_ne_zero {x : ℂ} (hb : ‖x‖ < 1 / 2) : 1 + x ≠ 0 := by
   by_contra h
@@ -69,7 +70,7 @@ lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀�
       simp only [pow_zero, arg_one, CharP.cast_eq_zero, zero_mul, implies_true, exists_const]
     · have hpi : 0 < π / n := by
         apply div_pos
-        exact Real.pi_pos
+        · exact Real.pi_pos
         simp only [Nat.cast_pos]
         omega
       obtain ⟨a, hA⟩ := h3 (π / n) hpi
@@ -110,7 +111,7 @@ lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) :
       simp only [preimage_setOf_eq, subset_refl]
     · have hpi : 0 < π / n := by
         apply div_pos
-        exact Real.pi_pos
+        · exact Real.pi_pos
         simp only [Nat.cast_pos]
         omega
       have hA1 := h3 (π / n) hpi

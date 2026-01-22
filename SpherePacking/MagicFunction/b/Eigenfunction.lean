@@ -1,6 +1,6 @@
 /-
 Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
-Released under Apache 2.0 license as described in the file LJCENSE.
+Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 
@@ -20,9 +20,33 @@ theorem perm_J₅ : fourierTransformCLE ℂ (J₅) = -J₆ := by sorry
 
 -- Should use results from `RadialSchwartz.Radial` and linearity to prove the reverse.
 
-theorem perm_₃_J₄ : fourierTransformCLE ℂ (J₃ + J₄) = -(J₁ + J₂) := by sorry
+theorem perm_₃_J₄ : fourierTransformCLE ℂ (J₃ + J₄) = -(J₁ + J₂) := by
+  have h₁ : fourierTransformCLE ℂ (fourierTransformCLE ℂ J₁) = J₁ := by
+    ext x
+    simpa [J₁, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply,
+      Real.fourierInv_eq_fourier_neg] using
+        congrArg (· (-x)) (J₁.continuous.fourierInv_fourier_eq J₁.integrable
+          (fourierTransformCLE ℂ J₁).integrable)
+  have h₂ : fourierTransformCLE ℂ (fourierTransformCLE ℂ J₂) = J₂ := by
+    ext x
+    simpa [J₂, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply,
+      Real.fourierInv_eq_fourier_neg] using
+        congrArg (· (-x)) (J₂.continuous.fourierInv_fourier_eq J₂.integrable
+          (fourierTransformCLE ℂ J₂).integrable)
+  simpa only [neg_add_rev, add_comm, map_add, map_neg, neg_neg, h₁, h₂] using
+    congrArg (-fourierTransformCLE ℂ ·) perm_J₁_J₂ |>.symm
 
-theorem perm_J₆ : fourierTransformCLE ℂ (J₆) = -J₅ := by sorry
+theorem perm_J₆ : fourierTransformCLE ℂ (J₆) = -J₅ := by
+  have h : (fourierTransformCLE ℂ).symm J₆ = fourierTransformCLE ℂ J₆ := by
+    ext x
+    simp only [fourierTransformCLE_symm_apply, fourierTransformCLE_apply, fourier_coe,
+      fourierInv_coe, Real.fourierInv_eq_fourier_comp_neg]
+    suffices (fun x ↦ J₆ (-x)) = ⇑J₆ by exact congr(𝓕 $this x)
+    ext
+    simp [J₆, schwartzMap_multidimensional_of_schwartzMap_real, compCLM_apply]
+  have := (congrArg (fourierTransformCLE ℂ).symm perm_J₅).symm
+  simp only [map_neg, ContinuousLinearEquiv.symm_apply_apply, ← h] at this ⊢
+  rw [← this, neg_neg]
 
 end Integral_Permutations
 

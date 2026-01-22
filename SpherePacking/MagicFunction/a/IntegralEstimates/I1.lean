@@ -173,9 +173,21 @@ end Bounding_Integrand
 
 section Integrability
 
-lemma Bound_integrableOn (r C₀ : ℝ) (hC₀_pos : C₀ > 0)
-    (hC₀ : ∀ x ∈ Ici 1, ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x)) :
-    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := sorry
+lemma Bound_integrableOn (r C₀ : ℝ) :
+    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := by
+  set μ := volume.restrict (Ici (1 : ℝ))
+  have h_g : Integrable (fun s ↦ C₀ * rexp (-2 * π * s)) μ :=
+    ((integrableOn_Ici_iff_integrableOn_Ioi).mpr
+      (integrableOn_exp_mul_Ioi (by linarith [pi_pos]) 1)).const_mul C₀
+  have hφ : AEStronglyMeasurable (fun s ↦ rexp (-π * r / s)) μ :=
+    (Real.continuous_exp.measurable.comp (measurable_const.mul measurable_inv)).aestronglyMeasurable
+  have hb : ∀ᵐ s ∂μ, ‖rexp (-π * r / s)‖ ≤ rexp (π * |r|) :=
+    (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s (hs : 1 ≤ s) ↦ by
+      simp only [Real.norm_eq_abs, abs_of_nonneg (exp_pos _).le]
+      refine exp_le_exp.mpr <| (le_abs_self _).trans ?_
+      rw [abs_div, abs_mul, abs_neg, abs_of_nonneg pi_pos.le, abs_of_nonneg (by linarith : 0 ≤ s)]
+      exact div_le_self (by positivity) hs
+  simpa [mul_comm] using h_g.bdd_mul hφ hb
 
 end Integrability
 
@@ -191,7 +203,7 @@ lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, �
     positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_aux_2 r
   use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀ hC₀_pos hC₀) measurableSet_Ici hC₀
+  exact setIntegral_mono_on hint (Bound_integrableOn r C₀) measurableSet_Ici hC₀
 
 theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₁' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
