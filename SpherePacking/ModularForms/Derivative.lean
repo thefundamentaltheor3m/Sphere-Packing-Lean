@@ -847,3 +847,24 @@ theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
     simp only [Pi.mul_apply]
     ring
   exact hD.sub hE₂f
+
+/-- A level-1 modular form is invariant under slash action by any element of SL(2,ℤ). -/
+@[simp]
+lemma ModularForm.slash_eq_self {k : ℤ} (f : ModularForm (Gamma 1) k) (γ : SL(2, ℤ)) :
+    (f : ℍ → ℂ) ∣[k] γ = f := by
+  simpa using f.slash_action_eq' _ ⟨γ, mem_Gamma_one γ, rfl⟩
+
+/-- The Serre derivative of a weight-k level-1 modular form is a weight-(k+2) modular form. -/
+noncomputable def serre_D_ModularForm (k : ℤ) (f : ModularForm (Gamma 1) k) :
+    ModularForm (Gamma 1) (k + 2) where
+  toSlashInvariantForm := {
+    toFun := serre_D k f
+    slash_action_eq' := fun _ hγ => by
+      obtain ⟨γ', -, rfl⟩ := Subgroup.mem_map.mp hγ
+      simpa using serre_D_slash_invariant k f f.holo' γ' (f.slash_eq_self γ')
+  }
+  holo' := serre_D_differentiable f.holo'
+  bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
+    obtain ⟨A', rfl⟩ := MonoidHom.mem_range.mp hA
+    exact (serre_D_slash_invariant k f f.holo' A' (f.slash_eq_self A')).symm ▸
+      serre_D_isBoundedAtImInfty k f.holo' (ModularFormClass.bdd_at_infty f)
