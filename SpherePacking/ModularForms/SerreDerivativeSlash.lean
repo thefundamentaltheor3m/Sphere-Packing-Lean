@@ -99,15 +99,10 @@ lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
                Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
   simp only [serre_D, Pi.sub_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul]
   rw [hD_lin, D_D₂ γ z]
-  have hα_val : α = 3 / π^2 := by
-    simp only [hα_def, riemannZeta_two]
-    field_simp [Complex.ofReal_ne_zero.mpr Real.pi_ne_zero]
-    ring
-  have hden_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+  have hα_val : α = 3 / π^2 := by simp only [hα_def, riemannZeta_two]; field_simp; ring
   have hpi_ne : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-  have hD₂_eq : D₂ γ z = (2 * π * I * (γ 1 0 : ℂ)) / denom γ z := rfl
-  rw [hD₂_eq, hα_val]
-  field_simp [hden_ne, hpi_ne]
+  rw [show D₂ γ z = (2 * π * I * (γ 1 0 : ℂ)) / denom γ z from rfl, hα_val]
+  field_simp [UpperHalfPlane.denom_ne_zero γ z, hpi_ne]
   ring_nf
   simp only [Complex.I_sq]
   ring

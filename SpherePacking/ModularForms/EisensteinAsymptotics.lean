@@ -244,15 +244,10 @@ def serre_D_E₂_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 4 where
       exact serre_D_E₂_slash_invariant γ'
   }
   holo' := serre_D_differentiable E₂_holo'
-  bdd_at_cusps' := fun hc => by
-    apply bounded_at_cusps_of_bounded_at_infty hc
-    intro A hA
-    rw [MonoidHom.mem_range] at hA
-    obtain ⟨A', hA'_eq⟩ := hA
-    have h := serre_D_E₂_slash_invariant A'
-    change IsBoundedAtImInfty (serre_D 1 E₂ ∣[(4 : ℤ)] A)
-    rw [← hA'_eq]
-    convert serre_D_E₂_isBoundedAtImInfty using 1
+  bdd_at_cusps' := fun hc =>
+    bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
+      obtain ⟨A', rfl⟩ := MonoidHom.mem_range.mp hA
+      exact (serre_D_E₂_slash_invariant A').symm ▸ serre_D_E₂_isBoundedAtImInfty
 
 /-- serre_D 1 E₂ → -1/12 at i∞. -/
 lemma serre_D_E₂_tendsto_atImInfty :
