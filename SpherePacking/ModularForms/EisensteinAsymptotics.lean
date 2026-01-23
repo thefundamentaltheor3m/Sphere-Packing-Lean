@@ -56,31 +56,24 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
   · exact Filter.mem_atTop _
   · intro z hz
     simp only [Set.mem_preimage, Set.mem_Ici] at hz
-    have hz_ge_A : z.im / 2 > max A 0 := by
-      have h1 : z.im ≥ 2 * max A 0 + 1 := le_trans (le_max_left _ _) hz
-      linarith
-    have hz_ge_bound : z.im > |M| / (π * ε) := by
-      have h1 : z.im ≥ |M| / (π * ε) + 1 := le_trans (le_max_right _ _) hz
-      linarith
-    have hclosed := closedBall_center_subset_upperHalfPlane z
+    have hz_ge_A : z.im / 2 > max A 0 := by linarith [le_trans (le_max_left _ _) hz]
+    have hz_ge_bound : z.im > |M| / (π * ε) := by linarith [le_trans (le_max_right _ _) hz]
     have hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) (z.im / 2)) :=
-      diffContOnCl_comp_ofComplex_of_mdifferentiable hf hclosed
+      diffContOnCl_comp_ofComplex_of_mdifferentiable hf (closedBall_center_subset_upperHalfPlane z)
     have hR_pos : 0 < z.im / 2 := by positivity
     have hmax_nonneg : 0 ≤ max A 0 := le_max_right _ _
     have hA_le_max : A ≤ max A 0 := le_max_left _ _
     have hf_bdd_sphere : ∀ w ∈ Metric.sphere (z : ℂ) (z.im / 2), ‖(f ∘ ofComplex) w‖ ≤ M := by
       intro w hw
-      have hw_mem_closed : w ∈ Metric.closedBall (z : ℂ) (z.im / 2) :=
-        Metric.sphere_subset_closedBall hw
-      have hw_im_pos : 0 < w.im := hclosed hw_mem_closed
+      have hw_im_pos : 0 < w.im :=
+        closedBall_center_subset_upperHalfPlane z (Metric.sphere_subset_closedBall hw)
       have hw_im_ge_A : A ≤ w.im := by
-        have hdist : dist w z = z.im / 2 := Metric.mem_sphere.mp hw
         have habs : |w.im - z.im| ≤ z.im / 2 := by
           calc |w.im - z.im|
             _ = |(w - z).im| := by simp [Complex.sub_im]
             _ ≤ ‖w - z‖ := abs_im_le_norm _
             _ = dist w z := (dist_eq_norm _ _).symm
-            _ = z.im / 2 := hdist
+            _ = z.im / 2 := Metric.mem_sphere.mp hw
         have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
         have hA_lt : A < w.im := calc A ≤ max A 0 := hA_le_max
           _ < z.im / 2 := hz_ge_A
@@ -102,15 +95,13 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
         _ = 0 := by simp [hM_zero]
         _ < ε := hε
     · have hM_pos : 0 < M := lt_of_le_of_ne hM_nonneg (Ne.symm hM_zero)
-      have habs_M_pos : 0 < |M| := abs_pos.mpr hM_zero
       calc ‖D f z‖
         _ ≤ M / (π * z.im) := hDf_bound
         _ = |M| / (π * z.im) := by rw [abs_of_pos hM_pos]
         _ < |M| / (π * (|M| / (π * ε))) := by
-            apply div_lt_div_of_pos_left habs_M_pos
+            apply div_lt_div_of_pos_left (abs_pos.mpr hM_zero)
             · positivity
-            · apply mul_lt_mul_of_pos_left _ Real.pi_pos
-              exact hz_ge_bound
+            · apply mul_lt_mul_of_pos_left hz_ge_bound Real.pi_pos
         _ = ε := by field_simp
 
 /-! ## Limits of Eisenstein series at infinity -/
@@ -151,7 +142,6 @@ lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
   simp_rw [show ∀ n : ℕ, cexp (2 * π * Complex.I * n * z) = q ^ n by
     intro n; rw [← Complex.exp_nat_mul]; congr 1; ring]
   -- Key bounds: ‖q‖ ≤ exp(-2π) < 1/2
-  have hq_lt : ‖q‖ < 1 := norm_exp_two_pi_I_lt_one z
   have hq_bound : ‖q‖ ≤ Real.exp (-2 * π) := norm_exp_two_pi_I_le_exp_neg_two_pi z hz
   have hexp_lt_half : Real.exp (-2 * π) < 1 / 2 := by
     have : 1 < 2 * π := by nlinarith [pi_gt_three]
@@ -162,7 +152,7 @@ lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
   have hq_lt_half : ‖q‖ < 1 / 2 := lt_of_le_of_lt hq_bound hexp_lt_half
   have hone_sub_q_gt_half : 1 / 2 < 1 - ‖q‖ := by linarith
   -- Use norm_tsum_logDeriv_expo_le and bound r/(1-r)³ ≤ 8r for r < 1/2
-  have htsum_bound := norm_tsum_logDeriv_expo_le hq_lt
+  have htsum_bound := norm_tsum_logDeriv_expo_le (norm_exp_two_pi_I_lt_one z)
   have hsum_le_8q : ‖q‖ / (1 - ‖q‖) ^ 3 ≤ 8 * ‖q‖ := by
     have h1 : (1 / 8 : ℝ) ≤ (1 - ‖q‖) ^ 3 := by nlinarith [sq_nonneg (1 - ‖q‖)]
     calc ‖q‖ / (1 - ‖q‖) ^ 3 ≤ ‖q‖ / (1 / 8) := by

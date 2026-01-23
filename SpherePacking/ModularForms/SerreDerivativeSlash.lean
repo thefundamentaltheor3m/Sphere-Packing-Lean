@@ -82,10 +82,8 @@ lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
   have hprod := ModularForm.mul_slash_SL2 (2 : ℤ) (2 : ℤ) γ E₂ E₂
   ext z
   rw [hserre12]
-  simp only [SlashAction.add_slash, Pi.add_apply]
-  have hsmul := ModularForm.SL_smul_slash (4 : ℤ) γ (E₂ * E₂) (1 / 12 : ℂ)
-  rw [hsmul]
-  simp only [Pi.smul_apply, smul_eq_mul]
+  simp only [SlashAction.add_slash, Pi.add_apply, ModularForm.SL_smul_slash, Pi.smul_apply,
+    smul_eq_mul]
   have hequiv_z : (serre_D 2 E₂ ∣[(4 : ℤ)] γ) z = serre_D 2 (E₂ ∣[(2 : ℤ)] γ) z := by
     have h := congrFun hequiv z
     simp only [Int.reduceAdd] at h
@@ -98,10 +96,7 @@ lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
   rw [hprod_z]
   set α := (1 : ℂ) / (2 * riemannZeta 2) with hα_def
   have hE₂slash_fun : (E₂ ∣[(2 : ℤ)] γ) = E₂ - α • D₂ γ := by
-    ext w
-    have h := congrFun hE₂slash w
-    simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul] at h
-    exact h
+    ext w; simpa using congrFun hE₂slash w
   rw [hE₂slash_fun]
   simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
   have hD_lin : D (E₂ - α • D₂ γ) z = D E₂ z - α * D (D₂ γ) z := by
@@ -112,17 +107,14 @@ lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
   simp only [serre_D, Pi.sub_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul]
   rw [hD_lin, hDd]
   have hα_val : α = 3 / π^2 := by
-    simp only [hα_def]
-    rw [riemannZeta_two]
-    have hpi_ne : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-    field_simp [hpi_ne]
+    simp only [hα_def, riemannZeta_two]
+    field_simp [Complex.ofReal_ne_zero.mpr Real.pi_ne_zero]
     ring
   have hden_ne : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
   have hpi_ne : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   have hD₂_eq : D₂ γ z = (2 * π * I * (γ 1 0 : ℂ)) / denom γ z := rfl
   rw [hD₂_eq, hα_val]
   field_simp [hden_ne, hpi_ne]
-  have hI_sq : (I : ℂ)^2 = -1 := Complex.I_sq
   ring_nf
-  simp only [hI_sq]
+  simp only [Complex.I_sq]
   ring
