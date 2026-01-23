@@ -635,10 +635,6 @@ theorem G_functional_equation (z : ℍ) :
   simp only [hG_expand, hH₂_S, hH₄_S, ofReal_ofNat]
   ring
 
-/--
-On the imaginary axis z = it, we have G(i/t) = t^10 * H₄(it)³ * (2*H₄(it)² + 5*H₂(it)*H₄(it) + 5*H₂(it)²).
-Note: -z^10 = -(it)^10 = -i^10*t^10 = -(-1)^5*t^10 = t^10 for real t > 0.
--/
 theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
     GReal (1 / t) = t ^ 10 * H₄.resToImagAxis t ^ 3
       * (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t
@@ -660,14 +656,7 @@ Proof outline (following blueprint Lemma 8.8):
 5. Numerator → 36/π², denominator → 2, so limit = 18/π²
 -/
 theorem FmodG_rightLimitAt_zero :
-    Tendsto FmodGReal (nhdsWithin 0 (Set.Ioi 0)) (nhdsWithin (18 * (π ^ (-2 : ℤ))) Set.univ) := by
-  rw [nhdsWithin_univ]
-  -- The key insight: lim_{t→0⁺} FmodGReal(t) = lim_{s→∞} FmodGReal(1/s)
-  -- We use functional equations and the decay of cusp forms at infinity.
-  -- F(i/s)/G(i/s) → 18/π² as s → ∞ because:
-  -- - Numerator: s²*F(is) → 0, s*F₁(is) → 0, 36/π²*E₄(is)² → 36/π²
-  -- - Denominator: H₄(is)³*(2*H₄(is)² + ...) → 1³ * 2 = 2
-  -- - Ratio: (36/π²) / 2 = 18/π²
+    Tendsto FmodGReal (nhdsWithin 0 (Set.Ioi 0)) (nhds (18 * (π ^ (-2 : ℤ)))) := by
   sorry
 
 /--
