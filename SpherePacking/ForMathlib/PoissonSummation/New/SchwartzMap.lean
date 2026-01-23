@@ -15,27 +15,36 @@ import Mathlib.Analysis.Fourier.AddCircleMulti
 # Summability of mFourier coefficients of Schwartz Functions on ℝⁿ
 -/
 
-open Set Algebra Submodule MeasureTheory UnitAddTorus FourierTransform Asymptotics Topology Real Filter ContinuousMap ZLattice Submodule WithLp
+open Set Algebra Submodule MeasureTheory UnitAddTorus FourierTransform Asymptotics Topology Real
+  Filter ContinuousMap ZLattice Submodule WithLp
 
-variable {d : Type*} [Fintype d] {f : EuclideanSpace ℝ d → ℂ}
+variable {d : Type*} [Fintype d] {E : Type} [NormedAddCommGroup E] [NormedSpace ℂ E]
+
+def equivBox (a : d → ℝ) : UnitAddTorus d ≃ univ.pi (fun i => Ioc (a i) (a i + 1)) := sorry
+
+noncomputable def measurableEquivBox (a : d → ℝ) :
+    UnitAddTorus d ≃ᵐ univ.pi fun i => Ioc (a i) (a i + 1) where
+  toEquiv := sorry
+  measurable_toFun := sorry
+  measurable_invFun := sorry
+
+theorem integral_preimage (f : UnitAddTorus d → E) (n : d → ℤ) (a : d → ℝ) :
+    ∫ x : UnitAddTorus d, f x =
+    ∫ (x : d → ℝ) in univ.pi fun i => Ioc (a i) (a i + 1), f (fun i => x i) := by
+  sorry
+
+theorem mFourierCoeff_eq_Integral (f : UnitAddTorus d → E) (n : d → ℤ) (a : d → ℝ) :
+    mFourierCoeff f n =
+    ∫ (x : d → ℝ) in univ.pi fun i => Ioc (a i) (a i + 1),
+    mFourier (-n) (fun i => x i) • f (fun i => x i) := by
+  sorry
+
+variable {f : C(EuclideanSpace ℝ d, ℂ)} {x : UnitAddTorus d} {k : d → ℤ}
 
 namespace RpowDecay
 
-#check Function.Periodic.lift
-
-def Periodicization (f : EuclideanSpace ℝ d → ℂ) : UnitAddTorus d → ℂ :=
-  -- fun x ↦ Quotient.liftOn' x f
-  sorry
-  /- In the proof of the one dimensional case for the Poisson summation formula. They first use
-  `f : ℝ → ℂ` to get a periodic function defined by `∑' (n : ℤ), f (x + n)`. They then use
-  `Function.Periodic.lift` to get a function defined on the circle.
-
-  Here's one approach to define the d dimensional periodicization. Just like the one dimensional
-  case, we use `periodic_tsum_comp_add_zsmul` to get a periodic function defined by
-  ∑' n : d → ℤ, f (x + n). We then use Function.Periodic.lift to get a function defined on
-  (ℝ/ℤ)ᵈ. However, we are not done yet because in Mathlib, UnitAddTorus d is defined as (ℝ/ℤ)ᵈ.
-  We need to use an isomorphism between ℝᵈ/ℤᵈ and (ℝ/ℤ)ᵈ to get a function in UnitAddTorus d → ℂ.
-  -/
+noncomputable def Periodicization (f : EuclideanSpace ℝ d → ℂ) (x : UnitAddTorus d) : ℂ :=
+  ∑' (k : (d → ℤ)), f (toLp 2 (fun i => (x i).out + k i))
 
 lemma Summable_mFourier_coeff {b : ℝ} (hb : Fintype.card d < b)
     (hf : f =O[cocompact (EuclideanSpace ℝ d)] (‖·‖ ^ (-b)))
@@ -139,5 +148,3 @@ theorem _root_.ZLattice.tsum_mFourier_coeff_eq_tsum_fourierIntegral (f : 𝓢(Eu
   ∑' n : Λ, 𝓕 f (fun i => n.val i) * ZLattice.mFourier Λ n (fun i => x i) := by sorry
 
 end SchwartzMap
-
-#min_imports
