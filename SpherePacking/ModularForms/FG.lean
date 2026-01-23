@@ -16,6 +16,9 @@ on the imaginary axis.
 -/
 noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
 
+/-- F₁ = E₂ * E₄ - E₆, the square root of F. -/
+noncomputable def F₁ := E₂ * E₄.toFun - E₆.toFun
+
 noncomputable def G := H₂ ^ 3 * ((2 : ℝ) • H₂ ^ 2 + (5 : ℝ) • H₂ * H₄ + (5 : ℝ) • H₄ ^ 2)
 
 noncomputable def negDE₂ := - (D E₂)
@@ -528,6 +531,8 @@ Blueprint: Follows from E₂, E₄, E₆ having real values on the imaginary axi
 -/
 theorem F_imag_axis_real : ResToImagAxis.Real F := F_imag_axis_pos.1
 
+theorem F₁_imag_axis_real : ResToImagAxis.Real F₁ := by unfold F₁; fun_prop
+
 end ImagAxisProperties
 
 lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
@@ -587,68 +592,47 @@ theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) := by
   sorry
 
 /- Functional equation of $F$ -/
-noncomputable def F₁ := E₂ * E₄.toFun - E₆.toFun
-
 theorem F_functional_equation (z : ℍ) :
     F (S • z) = z ^ 12 * F z - 12 * I * π ^ (-1 : ℤ) * z ^ 11 * (F₁ * E₄.toFun) z
       - 36 * π ^ (-2 : ℤ) * z ^ 10 * (E₄.toFun z) ^ 2 := by
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
-  have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-  have hI : Complex.I ≠ 0 := Complex.I_ne_zero
-  -- First, expand F and F₁ at specific points
-  have hF_Sz : F (S • z) = (E₂ (S • z) * E₄ (S • z) - E₆ (S • z)) ^ 2 := rfl
-  have hF_z : F z = (E₂ z * E₄ z - E₆ z) ^ 2 := rfl
-  have hF₁E₄_z : (F₁ * E₄.toFun) z = (E₂ z * E₄ z - E₆ z) * E₄ z := rfl
-  rw [hF_Sz, hF_z, hF₁E₄_z, E₂_S_transform, E₄_S_transform, E₆_S_transform]
-  -- Let A = E₂ z * E₄ z - E₆ z (the key expression, which is F₁)
-  set A := E₂ z * E₄ z - E₆ z with hA
-  -- The numerator E₂(S•z) * E₄(S•z) - E₆(S•z) simplifies to z⁶ * (A + 6E₄/(πIz))
-  have h_numer : (z : ℂ) ^ 2 * (E₂ z + 6 / (π * Complex.I * z)) * (z ^ 4 * E₄ z) -
-                 z ^ 6 * E₆ z = z ^ 6 * (A + 6 * E₄ z / (π * Complex.I * z)) := by
-    ring_nf; rw [hA]; ring
-  rw [h_numer]
-  -- Algebraic simplification using field_simp and ring
-  have hπIz : (π : ℂ) * Complex.I * z ≠ 0 := mul_ne_zero (mul_ne_zero hπ hI) hz
-  have hπ2 : (π : ℂ) ^ 2 ≠ 0 := pow_ne_zero 2 hπ
-  have hI3 : Complex.I ^ 3 = -Complex.I := by rw [pow_succ, I_sq]; ring
+  have hπ : (π : ℂ) ≠ 0 := ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hπIz : (π : ℂ) * I * z ≠ 0 := mul_ne_zero (mul_ne_zero hπ I_ne_zero) (ne_zero z)
+  -- Expand F, F₁ and apply S-transformation formulas
+  have hLHS : F (S • z) = (E₂ (S • z) * E₄ (S • z) - E₆ (S • z)) ^ 2 := rfl
+  have hRHS : F z = (E₂ z * E₄ z - E₆ z) ^ 2 := rfl
+  have hF₁E₄ : (F₁ * E₄.toFun) z = (E₂ z * E₄ z - E₆ z) * E₄ z := rfl
+  rw [hLHS, hRHS, hF₁E₄, E₂_S_transform, E₄_S_transform, E₆_S_transform]
   simp only [zpow_neg, zpow_one, ModularForm.toFun_eq_coe]
-  field_simp
-  ring_nf
-  simp only [I_sq, hI3]
-  ring
+  have hI3 : I ^ 3 = -I := by rw [pow_succ, I_sq]; ring
+  field_simp; ring_nf; simp only [I_sq, hI3]; field_simp; ring
 
 theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
     FReal (1 / t) = t ^ 12 * FReal t - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun).resToImagAxis t
-      - 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun.resToImagAxis t) ^ 2 := by
+      + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun.resToImagAxis t) ^ 2 := by
   sorry
 
 /- Functional equation of $G$ -/
 theorem G_functional_equation (z : ℍ) :
     G (S • z) = -z ^ 10 * H₄ z ^ 3 * (2 * H₄ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₂ z ^ 2) := by
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
   -- H₂(S • z) = -z² * H₄(z) from (H₂ ∣[2] S) = -H₄
   have hH₂_S : H₂ (S • z) = -z ^ 2 * H₄ z := by
     have h := congrFun H₂_S_action z
-    rw [SL_slash_apply, ModularGroup.denom_S] at h
-    simp only [zpow_neg, zpow_two, Pi.neg_apply] at h
-    field_simp [hz] at h
-    -- h : H₂ (S • z) = -(↑z ^ 2 * H₄ z), need to show = -↑z ^ 2 * H₄ z
+    simp only [SL_slash_apply, denom_S, zpow_neg, zpow_two, Pi.neg_apply] at h
+    field_simp [ne_zero z] at h
     simp only [neg_mul] at h ⊢
     exact h
   -- H₄(S • z) = -z² * H₂(z) from (H₄ ∣[2] S) = -H₂
   have hH₄_S : H₄ (S • z) = -z ^ 2 * H₂ z := by
     have h := congrFun H₄_S_action z
-    rw [SL_slash_apply, ModularGroup.denom_S] at h
-    simp only [zpow_neg, zpow_two, Pi.neg_apply] at h
-    field_simp [hz] at h
+    simp only [SL_slash_apply, denom_S, zpow_neg, zpow_two, Pi.neg_apply] at h
+    field_simp [ne_zero z] at h
     simp only [neg_mul] at h ⊢
     exact h
   -- Expand G(S • z)
   have hG_expand : G (S • z) = H₂ (S • z) ^ 3 *
       ((2 : ℝ) * H₂ (S • z) ^ 2 + (5 : ℝ) * H₂ (S • z) * H₄ (S • z) +
        (5 : ℝ) * H₄ (S • z) ^ 2) := rfl
-  rw [hG_expand, hH₂_S, hH₄_S]
-  simp only [ofReal_ofNat]
+  simp only [hG_expand, hH₂_S, hH₄_S, ofReal_ofNat]
   ring
 
 /--
