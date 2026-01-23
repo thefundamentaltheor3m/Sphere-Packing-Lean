@@ -84,16 +84,10 @@ lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
   rw [hserre12]
   simp only [SlashAction.add_slash, Pi.add_apply, ModularForm.SL_smul_slash, Pi.smul_apply,
     smul_eq_mul]
-  have hequiv_z : (serre_D 2 E₂ ∣[(4 : ℤ)] γ) z = serre_D 2 (E₂ ∣[(2 : ℤ)] γ) z := by
-    have h := congrFun hequiv z
-    simp only [Int.reduceAdd] at h
-    exact h
-  rw [hequiv_z]
-  have hprod_z : ((E₂ * E₂) ∣[(4 : ℤ)] γ) z = (E₂ ∣[(2 : ℤ)] γ) z * (E₂ ∣[(2 : ℤ)] γ) z := by
-    have h := congrFun hprod z
-    simp only [Pi.mul_apply, Int.reduceAdd] at h
-    exact h
-  rw [hprod_z]
+  rw [show (serre_D 2 E₂ ∣[(4 : ℤ)] γ) z = serre_D 2 (E₂ ∣[(2 : ℤ)] γ) z by
+        simpa using congrFun hequiv z,
+      show ((E₂ * E₂) ∣[(4 : ℤ)] γ) z = (E₂ ∣[(2 : ℤ)] γ) z * (E₂ ∣[(2 : ℤ)] γ) z by
+        simpa using congrFun hprod z]
   set α := (1 : ℂ) / (2 * riemannZeta 2) with hα_def
   have hE₂slash_fun : (E₂ ∣[(2 : ℤ)] γ) = E₂ - α • D₂ γ := by
     ext w; simpa using congrFun hE₂slash w
@@ -103,9 +97,8 @@ lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
     have hαD₂ := (MDifferentiable_D₂ γ).const_smul α
     simp only [D_sub E₂ _ E₂_holo' hαD₂, D_smul α _ (MDifferentiable_D₂ γ),
                Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
-  have hDd : D (D₂ γ) z = -(γ 1 0 : ℂ)^2 / (denom γ z)^2 := D_D₂ γ z
   simp only [serre_D, Pi.sub_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul]
-  rw [hD_lin, hDd]
+  rw [hD_lin, D_D₂ γ z]
   have hα_val : α = 3 / π^2 := by
     simp only [hα_def, riemannZeta_two]
     field_simp [Complex.ofReal_ne_zero.mpr Real.pi_ne_zero]
