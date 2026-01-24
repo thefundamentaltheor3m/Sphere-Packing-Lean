@@ -162,11 +162,8 @@ theorem MLDE_F_X42 : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 1
     have h := congrFun ramanujan_E₆ z
     simp only [Pi.mul_apply, Pi.sub_apply, Pi.pow_apply] at h
     convert h using 2
-  have hO := congrFun hD_outer z
-  have hC := congrFun hD_cE₂F z
-  simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply, smul_eq_mul] at hO hC
-  have hDF_z := congrFun F_aux z
-  simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply, smul_eq_mul] at hDF_z
+  have hO := congrFun hD_outer z; have hC := congrFun hD_cE₂F z; have hDF_z := congrFun F_aux z
+  simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply, smul_eq_mul] at hO hC hDF_z
   have hD1 := congrFun D_E2cu_E4sq z; have hD2 := congrFun D_E2sq_E4_E6 z
   have hD3 := congrFun D_E2_E4cu z; have hD4 := congrFun D_E2_E6sq z
   have hD5 := congrFun D_E4sq_E6 z
