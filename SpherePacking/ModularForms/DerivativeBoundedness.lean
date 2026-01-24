@@ -43,8 +43,7 @@ This is even stronger than boundedness: D(E₄) vanishes at infinity.
 and D(qⁿ) = n·qⁿ for q = exp(2πiz) (up to normalizing constants).
 Since the sum has no q⁰ term, it vanishes as ‖q‖ → 0.
 
-**Blocker**: Need D-tsum interchange lemma. See Issue #90 for the q-expansion approach
-to Ramanujan's identities. Could use `D_E4_qexp` once that's proved. -/
+**Blocker**: Filled in #268 using `D_E4_qexp`. -/
 lemma D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (D E₄.toFun) := by
   sorry
 

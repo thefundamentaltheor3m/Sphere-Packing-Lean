@@ -75,8 +75,7 @@ theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
     simpa [ModularForm.coe_smul, smul_eq_mul] using this
   -- Determine c = -1/12 using limit uniqueness
   have hc_val : c = -(1/12 : ℂ) :=
-    scalar_eq_of_tendsto hfun serre_D_E₂_tendsto_atImInfty
-      (E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄)
+    scalar_eq_of_tendsto hfun serre_D_E₂_tendsto_atImInfty E₄_tendsto_one_atImInfty
   -- Now substitute c = -1/12
   ext z
   rw [hfun z, hc_val]
@@ -113,8 +112,7 @@ theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
     simpa [ModularForm.coe_smul, smul_eq_mul] using this
   -- Determine c = -1/3 using limit uniqueness
   have hc_val : c = -(1/3 : ℂ) :=
-    scalar_eq_of_tendsto hfun serre_D_E₄_tendsto_atImInfty
-      (E6_q_exp_zero ▸ modular_form_tendsto_atImInfty E₆)
+    scalar_eq_of_tendsto hfun serre_D_E₄_tendsto_atImInfty E₆_tendsto_one_atImInfty
   ext z
   rw [hfun z, hc_val]
   -- Simplify Pi.mul_apply and constant function coercion
@@ -149,10 +147,7 @@ theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.to
   -- Determine c = -1/2 using limit uniqueness (E₄² → 1² = 1)
   have hc_val : c = -(1/2 : ℂ) := by
     have hlim_E₄_sq : Filter.Tendsto (fun z => E₄.toFun z * E₄.toFun z) atImInfty (nhds 1) := by
-      have h := (E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄).mul
-        (E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄)
-      simp only [mul_one, ModularForm.toFun_eq_coe] at h ⊢
-      exact h
+      simpa [mul_one] using E₄_tendsto_one_atImInfty.mul E₄_tendsto_one_atImInfty
     exact scalar_eq_of_tendsto hfun serre_D_E₆_tendsto_atImInfty hlim_E₄_sq
   ext z
   rw [hfun z, hc_val]

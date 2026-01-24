@@ -174,6 +174,14 @@ lemma E₂_tendsto_one_atImInfty : Filter.Tendsto E₂ atImInfty (nhds 1) := by
     simpa using h.add_const 1
   exact tendsto_zero_of_exp_decay (by positivity : 0 < 2 * π) E₂_sub_one_isBigO_exp
 
+/-- E₄ → 1 at i∞. -/
+lemma E₄_tendsto_one_atImInfty : Filter.Tendsto E₄.toFun atImInfty (nhds 1) :=
+  E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄
+
+/-- E₆ → 1 at i∞. -/
+lemma E₆_tendsto_one_atImInfty : Filter.Tendsto E₆.toFun atImInfty (nhds 1) :=
+  E6_q_exp_zero ▸ modular_form_tendsto_atImInfty E₆
+
 /-! ## Boundedness lemmas -/
 
 /-- E₆ is bounded at infinity (as a modular form). -/
@@ -207,8 +215,7 @@ lemma serre_D_E₄_tendsto_atImInfty :
       (4 : ℂ) * 12⁻¹ * E₂ z * E₄.toFun z := by ext z; simp only [serre_D]
   rw [hserre]
   have hD := D_tendsto_zero_of_tendsto_const E₄.holo' (ModularFormClass.bdd_at_infty E₄)
-  have hprod := E₂_tendsto_one_atImInfty.mul
-    (E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄)
+  have hprod := E₂_tendsto_one_atImInfty.mul E₄_tendsto_one_atImInfty
   have hlim : (0 : ℂ) - (4 : ℂ) * 12⁻¹ * 1 * 1 = -(1/3 : ℂ) := by norm_num
   rw [← hlim]
   refine hD.sub ?_
@@ -223,8 +230,7 @@ lemma serre_D_E₆_tendsto_atImInfty :
       (6 : ℂ) * 12⁻¹ * E₂ z * E₆.toFun z := by ext z; simp only [serre_D]
   rw [hserre]
   have hD := D_tendsto_zero_of_tendsto_const E₆.holo' E₆_isBoundedAtImInfty
-  have hprod := E₂_tendsto_one_atImInfty.mul
-    (E6_q_exp_zero ▸ modular_form_tendsto_atImInfty E₆)
+  have hprod := E₂_tendsto_one_atImInfty.mul E₆_tendsto_one_atImInfty
   have hlim : (0 : ℂ) - (6 : ℂ) * 12⁻¹ * 1 * 1 = -(1/2 : ℂ) := by norm_num
   rw [← hlim]
   refine hD.sub ?_
