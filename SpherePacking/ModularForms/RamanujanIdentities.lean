@@ -137,28 +137,18 @@ theorem MLDE_F_X42 : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 1
   have hDF := DF_holo'
   rw [serre_D_10_F]
   unfold serre_D
-  have hcE₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) ((5 * 6⁻¹ : ℂ) • E₂) := hE₂.const_smul (5 * 6⁻¹)
   have hcE₂_eq : (5 * 6⁻¹ : ℂ) • E₂ = 5 * 6⁻¹ * E₂ := by ext z; simp [smul_eq_mul]
-  have h56E₂F : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂ * F) := by
-    have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂) := by rwa [← hcE₂_eq]
-    exact MDifferentiable.mul h1 hF
-  have hD_outer : D (D F - 5 * 6⁻¹ * E₂ * F) = D (D F) - D (5 * 6⁻¹ * E₂ * F) := by
-    have hcE₂F : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂ * F) := h56E₂F
-    rw [D_sub (D F) (5 * 6⁻¹ * E₂ * F) hDF hcE₂F]
-  have hD_E₂F : D (E₂ * F) = E₂ * D F + D E₂ * F := by rw [D_mul E₂ F hE₂ hF]; ring
+  have h56E₂_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂) := hcE₂_eq ▸ hE₂.const_smul _
+  have h56E₂F : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂ * F) := h56E₂_holo.mul hF
+  have hD_outer : D (D F - 5 * 6⁻¹ * E₂ * F) = D (D F) - D (5 * 6⁻¹ * E₂ * F) :=
+    D_sub (D F) (5 * 6⁻¹ * E₂ * F) hDF h56E₂F
   have hD_cE₂F : D (5 * 6⁻¹ * E₂ * F) = 5 * 6⁻¹ * (E₂ * D F + D E₂ * F) := by
-    have hcE₂' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂) := by rwa [← hcE₂_eq]
+    have hD56E₂ : D (5 * 6⁻¹ * E₂) = 5 * 6⁻¹ * D E₂ := by
+      rw [← hcE₂_eq, D_smul (5 * 6⁻¹) E₂ hE₂]; ext z; simp [smul_eq_mul]
     calc D (5 * 6⁻¹ * E₂ * F)
         = D ((5 * 6⁻¹ * E₂) * F) := by ring_nf
-      _ = (5 * 6⁻¹ * E₂) * D F + D (5 * 6⁻¹ * E₂) * F := by
-          rw [D_mul (5 * 6⁻¹ * E₂) F hcE₂' hF]; ring
-      _ = (5 * 6⁻¹ * E₂) * D F + (5 * 6⁻¹ * D E₂) * F := by
-          congr 1
-          have : D (5 * 6⁻¹ * E₂) = 5 * 6⁻¹ * D E₂ := by
-            rw [← hcE₂_eq, D_smul (5 * 6⁻¹) E₂ hE₂]
-            ext z; simp [smul_eq_mul]
-          rw [this]
-      _ = 5 * 6⁻¹ * (E₂ * D F + D E₂ * F) := by ring_nf
+      _ = (5 * 6⁻¹ * E₂) * D F + D (5 * 6⁻¹ * E₂) * F := by rw [D_mul _ F h56E₂_holo hF]; ring
+      _ = 5 * 6⁻¹ * (E₂ * D F + D E₂ * F) := by rw [hD56E₂]; ring_nf
   rw [ramanujan_E₂] at hD_cE₂F
   ext z
   simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply, smul_eq_mul]
