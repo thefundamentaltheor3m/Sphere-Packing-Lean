@@ -44,16 +44,12 @@ the non-primed versions are in terms of D. -/
 `f → L` at i∞, and `g → 1` at i∞, then `c = L`.
 
 This captures the "uniqueness of limits" argument used in dimension-1 proofs. -/
-lemma scalar_eq_of_tendsto {f g : ℍ → ℂ} {c L : ℂ}
-    (hfun : ∀ z, f z = c * g z)
-    (hf_lim : Filter.Tendsto f atImInfty (nhds L))
-    (hg_lim : Filter.Tendsto g atImInfty (nhds 1)) :
+lemma scalar_eq_of_tendsto {f g : ℍ → ℂ} {c L : ℂ} (hfun : ∀ z, f z = c * g z)
+    (hf_lim : Filter.Tendsto f atImInfty (nhds L)) (hg_lim : Filter.Tendsto g atImInfty (nhds 1)) :
     c = L := by
-  have hlim_c : Filter.Tendsto (fun z => c * g z) atImInfty (nhds c) := by
-    simpa using tendsto_const_nhds.mul hg_lim
-  have hlim_eq : Filter.Tendsto f atImInfty (nhds c) := by
-    convert hlim_c using 1; ext z; exact hfun z
-  exact (tendsto_nhds_unique hf_lim hlim_eq).symm
+  refine (tendsto_nhds_unique hf_lim ?_).symm
+  simpa [mul_one] using (show Filter.Tendsto f atImInfty (nhds (c * 1)) by
+    convert tendsto_const_nhds.mul hg_lim using 1; ext z; exact hfun z)
 
 /--
 Serre derivative of E₂: `serre_D 1 E₂ = - 12⁻¹ * E₄`.
@@ -74,19 +70,9 @@ theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
   have := (finrank_eq_one_iff_of_nonzero' E₄ hE₄_ne).mp hrank serre_D_E₂_ModularForm
   obtain ⟨c, hc⟩ := this
-  -- hc : c • E₄ = serre_D_E₂_ModularForm, so serre_D_E₂_ModularForm = c • E₄
-  -- We need to show c = -1/12
-  -- First establish that serre_D 1 E₂ equals c * E₄ as functions
-  have hcoe : (serre_D_E₂_ModularForm : ℍ → ℂ) = serre_D 1 E₂ := rfl
-  -- From hc : c • E₄ = serre_D_E₂_ModularForm, we get the function equality
-  have hfun : ∀ z, serre_D 1 E₂ z = c * E₄.toFun z := by
-    intro z
-    rw [← hcoe]
+  have hfun : ∀ z, serre_D 1 E₂ z = c * E₄.toFun z := fun z => by
     have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
-    -- Args needed for normalization even if linter says unused
-    set_option linter.unusedSimpArgs false in
-    simp only [ModularForm.coe_smul, Pi.smul_apply, smul_eq_mul] at this
-    exact this
+    simpa [ModularForm.coe_smul, smul_eq_mul] using this
   -- Determine c = -1/12 using limit uniqueness
   have hc_val : c = -(1/12 : ℂ) :=
     scalar_eq_of_tendsto hfun serre_D_E₂_tendsto_atImInfty
@@ -122,19 +108,9 @@ theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
   have := (finrank_eq_one_iff_of_nonzero' E₆ hE₆_ne).mp hrank serre_D_E₄_ModularForm
   obtain ⟨c, hc⟩ := this
-  -- hc : c • E₆ = serre_D_E₄_ModularForm, so serre_D_E₄_ModularForm = c • E₆
-  -- We need to show c = -1/3
-  -- First establish that serre_D 4 E₄ equals c * E₆ as functions
-  have hcoe : (serre_D_E₄_ModularForm : ℍ → ℂ) = serre_D 4 E₄.toFun := rfl
-  -- From hc : c • E₆ = serre_D_E₄_ModularForm, we get the function equality
-  have hfun : ∀ z, serre_D 4 E₄.toFun z = c * E₆.toFun z := by
-    intro z
-    rw [← hcoe]
+  have hfun : ∀ z, serre_D 4 E₄.toFun z = c * E₆.toFun z := fun z => by
     have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
-    -- Args needed for normalization even if linter says unused
-    set_option linter.unusedSimpArgs false in
-    simp only [ModularForm.coe_smul, Pi.smul_apply, smul_eq_mul] at this
-    exact this
+    simpa [ModularForm.coe_smul, smul_eq_mul] using this
   -- Determine c = -1/3 using limit uniqueness
   have hc_val : c = -(1/3 : ℂ) :=
     scalar_eq_of_tendsto hfun serre_D_E₄_tendsto_atImInfty
@@ -191,20 +167,9 @@ theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.to
   rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
   have := (finrank_eq_one_iff_of_nonzero' E₄_sq hE₄_sq_ne).mp hrank serre_D_E₆_ModularForm
   obtain ⟨c, hc⟩ := this
-  -- hc : c • E₄_sq = serre_D_E₆_ModularForm
-  -- So serre_D_E₆_ModularForm = c * E₄²
-  have hcoe : (serre_D_E₆_ModularForm : ℍ → ℂ) = serre_D 6 E₆.toFun := rfl
-  have hfun : ∀ z, serre_D 6 E₆.toFun z = c * (E₄.toFun z * E₄.toFun z) := by
-    intro z
-    rw [← hcoe]
+  have hfun : ∀ z, serre_D 6 E₆.toFun z = c * (E₄.toFun z * E₄.toFun z) := fun z => by
     have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
-    -- Args needed for normalization even if linter says unused
-    set_option linter.unusedSimpArgs false in
-    simp only [ModularForm.coe_smul, Pi.smul_apply, smul_eq_mul] at this
-    -- Need to relate E₄_sq to E₄.toFun * E₄.toFun
-    -- E₄_sq = (4 + 4 = 8) ▸ (E₄.mul E₄), so the underlying function is E₄ * E₄
-    -- The ▸ cast preserves function values
-    convert this using 2
+    simp at this; convert this using 2
   -- Determine c = -1/2 using limit uniqueness (E₄² → 1² = 1)
   have hc_val : c = -(1/2 : ℂ) := by
     have hlim_E₄_sq : Filter.Tendsto (fun z => E₄.toFun z * E₄.toFun z) atImInfty (nhds 1) := by
