@@ -41,20 +41,18 @@ These are the main theorems. The primed versions are in terms of serre_D,
 the non-primed versions are in terms of D. -/
 
 /-- Determine scalar coefficient from limits: if `f = c * g` pointwise,
-`f(iy) → L`, and `g(iy) → 1` as `y → ∞`, then `c = L`.
+`f → L` at i∞, and `g → 1` at i∞, then `c = L`.
 
 This captures the "uniqueness of limits" argument used in dimension-1 proofs. -/
 lemma scalar_eq_of_tendsto {f g : ℍ → ℂ} {c L : ℂ}
     (hfun : ∀ z, f z = c * g z)
-    (hf_lim : Filter.Tendsto (f ∘ iMulPosReal) (Filter.comap Subtype.val Filter.atTop) (nhds L))
-    (hg_lim : Filter.Tendsto (g ∘ iMulPosReal) (Filter.comap Subtype.val Filter.atTop) (nhds 1)) :
+    (hf_lim : Filter.Tendsto f atImInfty (nhds L))
+    (hg_lim : Filter.Tendsto g atImInfty (nhds 1)) :
     c = L := by
-  have hlim_c : Filter.Tendsto (fun y => c * g (iMulPosReal y))
-      (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
+  have hlim_c : Filter.Tendsto (fun z => c * g z) atImInfty (nhds c) := by
     simpa using tendsto_const_nhds.mul hg_lim
-  have hlim_eq : Filter.Tendsto (f ∘ iMulPosReal)
-      (Filter.comap Subtype.val Filter.atTop) (nhds c) := by
-    convert hlim_c using 1; ext y; exact hfun (iMulPosReal y)
+  have hlim_eq : Filter.Tendsto f atImInfty (nhds c) := by
+    convert hlim_c using 1; ext z; exact hfun z
   exact (tendsto_nhds_unique hf_lim hlim_eq).symm
 
 /--
@@ -91,7 +89,8 @@ theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
     exact this
   -- Determine c = -1/12 using limit uniqueness
   have hc_val : c = -(1/12 : ℂ) :=
-    scalar_eq_of_tendsto hfun serre_D_E₂_tendsto_at_infinity E₄_tendsto_one_at_infinity
+    scalar_eq_of_tendsto hfun serre_D_E₂_tendsto_atImInfty
+      (E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄)
   -- Now substitute c = -1/12
   ext z
   rw [hfun z, hc_val]
@@ -115,7 +114,7 @@ theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   -- serre_D_E₄_ModularForm gives us a ModularForm Γ(1) 6
   -- weight_six_one_dimensional says the space is 1-dimensional, spanned by E₆
   -- So serre_D 4 E₄ = c * E₆ for some c
-  -- serre_D_E₄_tendsto_at_infinity gives c = -1/3
+  -- serre_D_E₄_tendsto_atImInfty gives c = -1/3
   have hrank : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 6) = 1 :=
     weight_six_one_dimensional
   -- Apply finrank_eq_one_iff_of_nonzero' to get that serre_D_E₄_ModularForm = c * E₆
@@ -138,7 +137,8 @@ theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
     exact this
   -- Determine c = -1/3 using limit uniqueness
   have hc_val : c = -(1/3 : ℂ) :=
-    scalar_eq_of_tendsto hfun serre_D_E₄_tendsto_at_infinity E₆_tendsto_one_at_infinity
+    scalar_eq_of_tendsto hfun serre_D_E₄_tendsto_atImInfty
+      (E6_q_exp_zero ▸ modular_form_tendsto_atImInfty E₆)
   ext z
   rw [hfun z, hc_val]
   -- Simplify Pi.mul_apply and constant function coercion
@@ -207,10 +207,12 @@ theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.to
     convert this using 2
   -- Determine c = -1/2 using limit uniqueness (E₄² → 1² = 1)
   have hc_val : c = -(1/2 : ℂ) := by
-    have hlim_E₄_sq : Filter.Tendsto ((fun z => E₄.toFun z * E₄.toFun z) ∘ iMulPosReal)
-        (Filter.comap Subtype.val Filter.atTop) (nhds 1) := by
-      simpa using E₄_tendsto_one_at_infinity.mul E₄_tendsto_one_at_infinity
-    exact scalar_eq_of_tendsto hfun serre_D_E₆_tendsto_at_infinity hlim_E₄_sq
+    have hlim_E₄_sq : Filter.Tendsto (fun z => E₄.toFun z * E₄.toFun z) atImInfty (nhds 1) := by
+      have h := (E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄).mul
+        (E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄)
+      simp only [mul_one, ModularForm.toFun_eq_coe] at h ⊢
+      exact h
+    exact scalar_eq_of_tendsto hfun serre_D_E₆_tendsto_atImInfty hlim_E₄_sq
   ext z
   rw [hfun z, hc_val]
   simp only [Pi.mul_apply]

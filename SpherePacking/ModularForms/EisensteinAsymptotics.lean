@@ -1,5 +1,4 @@
 import SpherePacking.ModularForms.SerreDerivativeSlash
-import SpherePacking.ModularForms.CoreRamanujan
 import SpherePacking.ModularForms.DimensionFormulas
 import Mathlib.Analysis.Real.Pi.Bounds
 

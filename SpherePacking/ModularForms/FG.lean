@@ -1,6 +1,7 @@
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Order.Monotone.Defs
 
+import SpherePacking.ModularForms.CoreRamanujan
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ModularForms.JacobiTheta
