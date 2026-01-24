@@ -218,17 +218,10 @@ theorem MLDE_F_X42 : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 1
              show (6⁻¹ : ℍ → ℂ) z = 6⁻¹ from rfl, show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl,
              show (72⁻¹ : ℍ → ℂ) z = 72⁻¹ from rfl, show (288⁻¹ : ℍ → ℂ) z = 288⁻¹ from rfl,
              show (1728⁻¹ : ℍ → ℂ) z = 1728⁻¹ from rfl]
-  set e2 := E₂ z with he2
-  set e4 := E₄.toFun z with he4
-  set e6 := E₆.toFun z with he6
-  have h2    : (2    : ℂ) ≠ 0 := by norm_num
-  have h3    : (3    : ℂ) ≠ 0 := by norm_num
-  have h6    : (6    : ℂ) ≠ 0 := by norm_num
-  have h12   : (12   : ℂ) ≠ 0 := by norm_num
-  have h72   : (72   : ℂ) ≠ 0 := by norm_num
-  have h288  : (288  : ℂ) ≠ 0 := by norm_num
-  have h1728 : (1728 : ℂ) ≠ 0 := by norm_num
-  field_simp [h2, h3, h6, h12, h72, h288, h1728]
+  set e2 := E₂ z
+  set e4 := E₄.toFun z
+  set e6 := E₆.toFun z
+  field_simp (disch := norm_num)
   ring
 
 end
