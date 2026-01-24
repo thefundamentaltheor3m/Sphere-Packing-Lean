@@ -783,12 +783,8 @@ lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
 /-- E₂ transforms under SL(2,ℤ) as: E₂ ∣[2] γ = E₂ - α • D₂ γ where α = 1/(2ζ(2)) -/
 lemma E₂_slash_transform (γ : SL(2, ℤ)) :
     (E₂ ∣[(2 : ℤ)] γ) = E₂ - (1 / (2 * riemannZeta 2)) • D₂ γ := by
-  rw [E₂]
-  have hG := G₂_transform γ
-  have hsm := ModularForm.SL_smul_slash (2 : ℤ) γ G₂ (1 / (2 * riemannZeta 2))
-  rw [hsm, hG]
   ext z
-  simp only [Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
+  simp [E₂, G₂_transform γ]
   ring
 
 /-- E₂ transforms under S as: E₂(-1/z) = z² · (E₂(z) + 6/(πIz)).
@@ -797,14 +793,10 @@ lemma E₂_S_transform (z : ℍ) :
     E₂ (ModularGroup.S • z) = z ^ 2 * (E₂ z + 6 / (π * Complex.I * z)) := by
   have h := E₂_transform z
   rw [SL_slash_apply, ModularGroup.denom_S, zpow_neg, zpow_two] at h
-  have hz : (z : ℂ) ≠ 0 := ne_zero z
-  have hz2 : (z : ℂ) * (z : ℂ) ≠ 0 := mul_ne_zero hz hz
-  have h2 : E₂ (ModularGroup.S • z) = (E₂ z + 6 / (π * Complex.I * z)) * ((z : ℂ) * (z : ℂ)) := by
-    have := congrArg (· * ((z : ℂ) * (z : ℂ))) h
-    simp only at this
-    rw [mul_assoc, inv_mul_cancel₀ hz2, mul_one] at this
-    exact this
-  rw [h2, sq, mul_comm]
+  have hz2 : (z : ℂ) * (z : ℂ) ≠ 0 := mul_ne_zero (ne_zero z) (ne_zero z)
+  rw [sq, mul_comm]
+  -- `only` is required here; without it simp rewrites the congrArg term structure
+  simpa only [mul_assoc, inv_mul_cancel₀ hz2, mul_one] using congrArg (· * ((z : ℂ) * (z : ℂ))) h
 
 lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ, (n + 1) *
     cexp (2 * π * Complex.I * (n + 1) * z) / (1 - cexp (2 * π * Complex.I * (n + 1) * z)) =
