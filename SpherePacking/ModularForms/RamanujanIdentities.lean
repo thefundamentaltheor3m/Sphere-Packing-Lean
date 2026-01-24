@@ -133,23 +133,10 @@ Compare with MLDE_F in FG.lean which uses negDE₂:
 -/
 theorem MLDE_F_X42 : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 172800 * Δ_fun * X₄₂ := by
   have hE₂ := E₂_holo'
-  have hE₄ := E₄.holo'
-  have hE₆ := E₆.holo'
-  have hE₂E₄ := MDifferentiable.mul hE₂ hE₄
-  have hE₂E₆ := MDifferentiable.mul hE₂ hE₆
-  have hE₄E₆ := MDifferentiable.mul hE₄ hE₆
-  have hE₄sq := MDifferentiable.mul hE₄ hE₄
-  have hE₆sq := MDifferentiable.mul hE₆ hE₆
-  have hE₂sq := MDifferentiable.mul hE₂ hE₂
-  have hE₂cu := MDifferentiable.mul hE₂ hE₂sq
-  have hE₄cu := MDifferentiable.mul hE₄ hE₄sq
-  have hE₂E₄_sub_E₆ := MDifferentiable.sub hE₂E₄ hE₆
   have hF := F_holo
   have hDF := DF_holo'
   rw [serre_D_10_F]
   unfold serre_D
-  have h56 : (5 : ℂ) * 6⁻¹ ≠ 0 := by norm_num
-  have hE₂F := MDifferentiable.mul hE₂ hF
   have hcE₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) ((5 * 6⁻¹ : ℂ) • E₂) := hE₂.const_smul (5 * 6⁻¹)
   have hcE₂_eq : (5 * 6⁻¹ : ℂ) • E₂ = 5 * 6⁻¹ * E₂ := by ext z; simp [smul_eq_mul]
   have h56E₂F : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂ * F) := by
