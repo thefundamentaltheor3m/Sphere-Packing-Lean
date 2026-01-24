@@ -419,27 +419,17 @@ The tendsto lemmas for H₂, H₃, H₄ are already in AtImInfty.lean:
 -/
 
 /-- theta_g is MDifferentiable (from MDifferentiable of f₂, f₄, H₂, H₄) -/
-lemma theta_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_g := by
-  unfold theta_g
-  apply MDifferentiable.add
-  · apply MDifferentiable.mul
-    · apply MDifferentiable.add
-      · apply MDifferentiable.mul mdifferentiable_const H₂_SIF_MDifferentiable
-      · exact H₄_SIF_MDifferentiable
-    · exact f₂_MDifferentiable
-  · apply MDifferentiable.mul
-    · apply MDifferentiable.add H₂_SIF_MDifferentiable
-      · apply MDifferentiable.mul mdifferentiable_const H₄_SIF_MDifferentiable
-    · exact f₄_MDifferentiable
+lemma theta_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_g :=
+  ((mdifferentiable_const.mul H₂_SIF_MDifferentiable).add H₄_SIF_MDifferentiable).mul
+    f₂_MDifferentiable |>.add <|
+  (H₂_SIF_MDifferentiable.add (mdifferentiable_const.mul H₄_SIF_MDifferentiable)).mul
+    f₄_MDifferentiable
 
 /-- theta_h is MDifferentiable (from MDifferentiable of f₂, f₄) -/
 lemma theta_h_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_h := by
-  unfold theta_h
-  apply MDifferentiable.add
-  · apply MDifferentiable.add
-    · simp only [pow_two]; exact f₂_MDifferentiable.mul f₂_MDifferentiable
-    · exact f₂_MDifferentiable.mul f₄_MDifferentiable
-  · simp only [pow_two]; exact f₄_MDifferentiable.mul f₄_MDifferentiable
+  simp only [theta_h, sq]
+  exact ((f₂_MDifferentiable.mul f₂_MDifferentiable).add
+    (f₂_MDifferentiable.mul f₄_MDifferentiable)).add (f₄_MDifferentiable.mul f₄_MDifferentiable)
 
 /-- theta_g is slash-invariant under Γ(1) in GL₂(ℝ) form -/
 lemma theta_g_slash_invariant_GL :
