@@ -1,7 +1,7 @@
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.DimensionFormulas
-import SpherePacking.ModularForms.AtImInfty
+import SpherePacking.ForMathlib.AtImInfty
 import SpherePacking.ModularForms.EisensteinAsymptotics
 
 /-!
