@@ -70,7 +70,6 @@ noncomputable def X₄₂ := 288⁻¹ * (E₄.toFun - E₂ * E₂)
 private lemma serre_D_10_F : serre_D 10 F = D F - 5 * 6⁻¹ * E₂ * F := by
   ext z; simp only [serre_D, Pi.sub_apply, Pi.mul_apply]; norm_num
 
-private lemma DF_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D F) := D_differentiable F_holo
 private lemma E₂sq_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ ^ 2) := E₂_holo'.pow 2
 private lemma E₂cu_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ ^ 3) := E₂_holo'.pow 3
 private lemma E₄sq_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₄.toFun ^ 2) := E₄.holo'.pow 2
@@ -134,14 +133,13 @@ Compare with MLDE_F in FG.lean which uses negDE₂:
 theorem MLDE_F_X42 : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 172800 * Δ_fun * X₄₂ := by
   have hE₂ := E₂_holo'
   have hF := F_holo
-  have hDF := DF_holo'
   rw [serre_D_10_F]
   unfold serre_D
   have hcE₂_eq : (5 * 6⁻¹ : ℂ) • E₂ = 5 * 6⁻¹ * E₂ := by ext z; simp [smul_eq_mul]
   have h56E₂_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂) := hcE₂_eq ▸ hE₂.const_smul _
   have h56E₂F : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂ * F) := h56E₂_holo.mul hF
   have hD_outer : D (D F - 5 * 6⁻¹ * E₂ * F) = D (D F) - D (5 * 6⁻¹ * E₂ * F) :=
-    D_sub (D F) (5 * 6⁻¹ * E₂ * F) hDF h56E₂F
+    D_sub (D F) (5 * 6⁻¹ * E₂ * F) (D_differentiable F_holo) h56E₂F
   have hD_cE₂F : D (5 * 6⁻¹ * E₂ * F) = 5 * 6⁻¹ * (E₂ * D F + D E₂ * F) := by
     have hD56E₂ : D (5 * 6⁻¹ * E₂) = 5 * 6⁻¹ * D E₂ := by
       rw [← hcE₂_eq, D_smul (5 * 6⁻¹) E₂ hE₂]; ext z; simp [smul_eq_mul]
