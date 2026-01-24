@@ -1062,3 +1062,11 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
           _ = _ := by simp
     _ ≤ 1 + 24 * (r₀ / (1 - r₀) ^ 3) := by
         gcongr; exact norm_tsum_logDeriv_expo_le_of_norm_le hq_bound hr₀_lt_one
+
+/-- E₄ is bounded at infinity (as a modular form). -/
+lemma E₄_isBoundedAtImInfty : IsBoundedAtImInfty E₄.toFun :=
+  ModularFormClass.bdd_at_infty E₄
+
+/-- The product E₂ · E₄ is bounded at infinity. -/
+lemma E₂_mul_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (E₂ * E₄.toFun) :=
+  E₂_isBoundedAtImInfty.mul E₄_isBoundedAtImInfty

@@ -192,6 +192,27 @@ lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
 lemma serre_D_E₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) :=
   serre_D_isBoundedAtImInfty 1 E₂_holo' E₂_isBoundedAtImInfty
 
+/-- D E₄ is bounded at infinity.
+
+The q-expansion D(E₄) = 240·Σn·σ₃(n)·qⁿ has no constant term, so D(E₄) → 0 as im(z) → ∞.
+
+**Blocker**: Filled in #268 using `D_E4_qexp`. -/
+lemma D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (D E₄.toFun) := by
+  sorry
+
+/-- serre_D 4 E₄ is bounded at infinity. -/
+lemma serre_D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 4 E₄.toFun) := by
+  unfold serre_D
+  have h1 : IsBoundedAtImInfty (D E₄.toFun) := D_E₄_isBoundedAtImInfty
+  have h2 : IsBoundedAtImInfty (fun z => (4 : ℂ) * 12⁻¹ * E₂ z * E₄.toFun z) := by
+    have hconst : IsBoundedAtImInfty (fun _ : ℍ => (4 : ℂ) * 12⁻¹) :=
+      Filter.const_boundedAtFilter _ _
+    convert hconst.mul E₂_mul_E₄_isBoundedAtImInfty using 1
+    ext z
+    simp only [Pi.mul_apply]
+    ring
+  exact h1.sub h2
+
 /-! ## Construction of ModularForm from serre_D -/
 
 /-- serre_D 4 E₄ is a weight-6 modular form. -/
