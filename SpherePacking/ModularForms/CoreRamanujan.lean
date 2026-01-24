@@ -62,28 +62,15 @@ The proof uses:
 4. Constant term: serre_D 1 E₂(iy) → -1/12 as y → ∞
 -/
 theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
-  -- Use dimension argument
-  have hrank : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 4) = 1 :=
-    weight_four_one_dimensional
-  -- Apply finrank_eq_one_iff_of_nonzero' to get that serre_D_E₂_ModularForm = c * E₄
-  have hE₄_ne : E₄ ≠ 0 := E4_ne_zero
-  rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
-  have := (finrank_eq_one_iff_of_nonzero' E₄ hE₄_ne).mp hrank serre_D_E₂_ModularForm
-  obtain ⟨c, hc⟩ := this
+  have hrank := Module.rank_eq_one_iff_finrank_eq_one.mp weight_four_one_dimensional
+  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' E₄ E4_ne_zero).mp hrank serre_D_E₂_ModularForm
   have hfun : ∀ z, serre_D 1 E₂ z = c * E₄.toFun z := fun z => by
-    have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
-    simpa [ModularForm.coe_smul, smul_eq_mul] using this
-  -- Determine c = -1/12 using limit uniqueness
+    simpa [ModularForm.coe_smul, smul_eq_mul] using
+      congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
   have hc_val : c = -(1/12 : ℂ) :=
     scalar_eq_of_tendsto hfun serre_D_E₂_tendsto_atImInfty E₄_tendsto_one_atImInfty
-  -- Now substitute c = -1/12
   ext z
-  rw [hfun z, hc_val]
-  -- Simplify Pi.mul_apply and constant function coercion
-  simp only [Pi.mul_apply]
-  -- Goal: -(1 / 12) * E₄.toFun z = (-12⁻¹) z * E₄.toFun z
-  -- The (-12⁻¹) z is a constant function evaluated at z, which equals -12⁻¹
-  congr 1
+  simp only [hfun z, hc_val, Pi.mul_apply]
   norm_num
 
 /-- Serre derivative of E₄: `serre_D 4 E₄ = - 3⁻¹ * E₆`.
@@ -95,32 +82,15 @@ Uses the dimension argument:
 4. Constant term is -1/3 (from D E₄ → 0, E₂ → 1, E₄ → 1)
 -/
 theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
-  -- Use the dimension argument
-  -- serre_D_E₄_ModularForm gives us a ModularForm Γ(1) 6
-  -- weight_six_one_dimensional says the space is 1-dimensional, spanned by E₆
-  -- So serre_D 4 E₄ = c * E₆ for some c
-  -- serre_D_E₄_tendsto_atImInfty gives c = -1/3
-  have hrank : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 6) = 1 :=
-    weight_six_one_dimensional
-  -- Apply finrank_eq_one_iff_of_nonzero' to get that serre_D_E₄_ModularForm = c * E₆
-  have hE₆_ne : E₆ ≠ 0 := E6_ne_zero
-  rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
-  have := (finrank_eq_one_iff_of_nonzero' E₆ hE₆_ne).mp hrank serre_D_E₄_ModularForm
-  obtain ⟨c, hc⟩ := this
+  have hrank := Module.rank_eq_one_iff_finrank_eq_one.mp weight_six_one_dimensional
+  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' E₆ E6_ne_zero).mp hrank serre_D_E₄_ModularForm
   have hfun : ∀ z, serre_D 4 E₄.toFun z = c * E₆.toFun z := fun z => by
-    have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
-    simpa [ModularForm.coe_smul, smul_eq_mul] using this
-  -- Determine c = -1/3 using limit uniqueness
+    simpa [ModularForm.coe_smul, smul_eq_mul] using
+      congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
   have hc_val : c = -(1/3 : ℂ) :=
     scalar_eq_of_tendsto hfun serre_D_E₄_tendsto_atImInfty E₆_tendsto_one_atImInfty
   ext z
-  rw [hfun z, hc_val]
-  -- Simplify Pi.mul_apply and constant function coercion
-  simp only [Pi.mul_apply]
-  -- Goal: -(1 / 3) * E₆.toFun z = (-3⁻¹) z * E₆.toFun z
-  -- The (-3⁻¹) z is a constant function evaluated at z, which equals -3⁻¹
-  -- Convert to same form
-  congr 1
+  simp only [hfun z, hc_val, Pi.mul_apply]
   norm_num
 
 /-- Serre derivative of E₆: `serre_D 6 E₆ = - 2⁻¹ * E₄²`.
@@ -133,29 +103,23 @@ Uses the dimension argument:
 theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by
   let E₄_sq : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
     (by norm_num : (4 : ℤ) + 4 = 8) ▸ E₄.mul E₄
-  have hrank : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 8) = 1 :=
-    weight_eight_one_dimensional 8 (by norm_num) ⟨4, rfl⟩ (by norm_num)
+  have hrank := Module.rank_eq_one_iff_finrank_eq_one.mp
+    (weight_eight_one_dimensional 8 (by norm_num) ⟨4, rfl⟩ (by norm_num))
   have hE₄_sq_ne : E₄_sq ≠ 0 := fun h => E4_ne_zero <| by
-    ext z; have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
-    simp at this; exact mul_self_eq_zero.mp this
-  rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
-  have := (finrank_eq_one_iff_of_nonzero' E₄_sq hE₄_sq_ne).mp hrank serre_D_E₆_ModularForm
-  obtain ⟨c, hc⟩ := this
+    ext z
+    have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
+    simp at this
+    exact mul_self_eq_zero.mp this
+  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' E₄_sq hE₄_sq_ne).mp hrank serre_D_E₆_ModularForm
   have hfun : ∀ z, serre_D 6 E₆.toFun z = c * (E₄.toFun z * E₄.toFun z) := fun z => by
     have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
-    simp at this; convert this using 2
-  -- Determine c = -1/2 using limit uniqueness (E₄² → 1² = 1)
-  have hc_val : c = -(1/2 : ℂ) := by
-    have hlim_E₄_sq : Filter.Tendsto (fun z => E₄.toFun z * E₄.toFun z) atImInfty (nhds 1) := by
-      simpa [mul_one] using E₄_tendsto_one_atImInfty.mul E₄_tendsto_one_atImInfty
-    exact scalar_eq_of_tendsto hfun serre_D_E₆_tendsto_atImInfty hlim_E₄_sq
+    simp at this
+    convert this using 2
+  have hc_val : c = -(1/2 : ℂ) := scalar_eq_of_tendsto hfun serre_D_E₆_tendsto_atImInfty
+    (by simpa [mul_one] using E₄_tendsto_one_atImInfty.mul E₄_tendsto_one_atImInfty)
   ext z
-  rw [hfun z, hc_val]
-  simp only [Pi.mul_apply]
-  -- Goal: -(1/2) * (E₄.toFun z * E₄.toFun z) = (-2⁻¹) z * E₄.toFun z * E₄.toFun z
-  -- The (-2⁻¹) z is a constant function evaluated at z, which equals -2⁻¹
+  simp only [hfun z, hc_val, Pi.mul_apply]
   ring_nf
-  congr 1
   norm_num
 
 /-! ## Derived Ramanujan identities (D instead of serre_D) -/
