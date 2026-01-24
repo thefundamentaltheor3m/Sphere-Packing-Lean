@@ -149,17 +149,11 @@ theorem MLDE_F_X42 : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 1
   ext z
   simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply, smul_eq_mul]
   have hR2 : D E₂ z = (12 : ℂ)⁻¹ * (E₂ z * E₂ z - E₄.toFun z) := by
-    have h := congrFun ramanujan_E₂ z
-    simp only [Pi.mul_apply, Pi.sub_apply, Pi.pow_apply] at h
-    convert h using 2
+    simpa [Pi.mul_apply, Pi.sub_apply, Pi.pow_apply] using congrFun ramanujan_E₂ z
   have hR4 : D E₄.toFun z = (3 : ℂ)⁻¹ * (E₂ z * E₄.toFun z - E₆.toFun z) := by
-    have h := congrFun ramanujan_E₄ z
-    simp only [Pi.mul_apply, Pi.sub_apply] at h
-    convert h using 2
+    simpa [Pi.mul_apply, Pi.sub_apply] using congrFun ramanujan_E₄ z
   have hR6 : D E₆.toFun z = (2 : ℂ)⁻¹ * (E₂ z * E₆.toFun z - E₄.toFun z * E₄.toFun z) := by
-    have h := congrFun ramanujan_E₆ z
-    simp only [Pi.mul_apply, Pi.sub_apply, Pi.pow_apply] at h
-    convert h using 2
+    simpa [Pi.mul_apply, Pi.sub_apply, Pi.pow_apply] using congrFun ramanujan_E₆ z
   have hO := congrFun hD_outer z; have hC := congrFun hD_cE₂F z; have hDF_z := congrFun F_aux z
   simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply, smul_eq_mul] at hO hC hDF_z
   have hD1 := congrFun D_E2cu_E4sq z; have hD2 := congrFun D_E2sq_E4_E6 z
