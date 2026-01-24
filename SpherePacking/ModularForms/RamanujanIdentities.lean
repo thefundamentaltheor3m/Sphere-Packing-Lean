@@ -8,8 +8,6 @@ This file contains q-expansion identities derived from the Ramanujan identities.
 
 ## Main results
 
-* `D_exp_eq_n_mul` : D applied to exp(2πinz) gives n * exp(2πinz)
-* `D_E4_qexp` : Q-expansion of D(E₄) = 240·Σ n·σ₃(n)·qⁿ
 * `E₂_mul_E₄_sub_E₆` : E₂·E₄ - E₆ = 720·Σ n·σ₃(n)·qⁿ
 
 ## References
@@ -33,23 +31,6 @@ section Ramanujan_qExpansion
 open scoped ArithmeticFunction.sigma
 
 /--
-Helper: D applied to exp(2πinz) gives n * exp(2πinz).
-This follows from: d/dz[exp(2πinz)] = 2πin * exp(2πinz),
-so D[exp(2πinz)] = (2πi)⁻¹ * 2πin * exp(2πinz) = n * exp(2πinz).
--/
-lemma D_exp_eq_n_mul (n : ℕ) (z : ℍ) :
-    D (fun w : ℍ => cexp (2 * π * I * n * w)) z = n * cexp (2 * π * I * n * z) := by
-  simpa using D_qexp_term n 1 z
-
-/--
-The normalized derivative D multiplies q-expansion coefficients by n.
-Since E₄ = 1 + 240·Σσ₃(n)·qⁿ, we have D(E₄) = 240·Σn·σ₃(n)·qⁿ.
--/
-lemma D_E4_qexp (z : ℍ) :
-    D E₄.toFun z = 240 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) :=
-  DE₄_qexp z
-
-/--
 The q-expansion identity E₂E₄ - E₆ = 720·Σn·σ₃(n)·qⁿ.
 This follows from Ramanujan's formula: E₂E₄ - E₆ = 3·D(E₄),
 combined with D(E₄) = 240·Σn·σ₃(n)·qⁿ (since D multiplies q-coefficients by n).
@@ -66,7 +47,7 @@ theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
     ring_nf at h ⊢
     exact h.symm
   -- Substitute D(E₄) = 240 * ∑' n, n * σ₃(n) * q^n
-  rw [hRam, D_E4_qexp]
+  rw [hRam, DE₄_qexp]
   ring
 
 end Ramanujan_qExpansion
