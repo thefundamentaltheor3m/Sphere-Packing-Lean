@@ -87,9 +87,7 @@ private lemma D_E2cu_E4sq : D (E₂ ^ 3 * E₄.toFun ^ 2) =
 private lemma D_E2sq_E4_E6 : D (E₂ ^ 2 * E₄.toFun * E₆.toFun) =
     2 * E₂ * D E₂ * E₄.toFun * E₆.toFun + E₂ ^ 2 * D E₄.toFun * E₆.toFun +
     E₂ ^ 2 * E₄.toFun * D E₆.toFun := by
-  have hE₂sqE₄ := MDifferentiable.mul E₂sq_holo' E₄.holo'
-  have heq : E₂ ^ 2 * E₄.toFun * E₆.toFun = (E₂ ^ 2 * E₄.toFun) * E₆.toFun := by funext z; ring
-  rw [heq, D_mul (E₂ ^ 2 * E₄.toFun) E₆.toFun hE₂sqE₄ E₆.holo',
+  rw [D_mul (E₂ ^ 2 * E₄.toFun) E₆.toFun (E₂sq_holo'.mul E₄.holo') E₆.holo',
       D_mul (E₂ ^ 2) E₄.toFun E₂sq_holo' E₄.holo', D_sq E₂ E₂_holo']
   ring_nf
 
@@ -206,12 +204,10 @@ theorem MLDE_F_X42 : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 1
     show (3 : ℍ → ℂ) z = 3 from rfl, show (6 : ℍ → ℂ) z = 6 from rfl,
     show (12 : ℍ → ℂ) z = 12 from rfl, show (72 : ℍ → ℂ) z = 72 from rfl,
     show (288 : ℍ → ℂ) z = 288 from rfl, show (1728 : ℍ → ℂ) z = 1728 from rfl,
-    show (172800 : ℍ → ℂ) z = 172800 from rfl,
-    show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl, show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl,
-    show (6⁻¹ : ℍ → ℂ) z = 6⁻¹ from rfl, show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl,
-    show (72⁻¹ : ℍ → ℂ) z = 72⁻¹ from rfl, show (288⁻¹ : ℍ → ℂ) z = 288⁻¹ from rfl,
-    show (1728⁻¹ : ℍ → ℂ) z = 1728⁻¹ from rfl]
-  set e2 := E₂ z; set e4 := E₄.toFun z; set e6 := E₆.toFun z
+    show (172800 : ℍ → ℂ) z = 172800 from rfl, show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl,
+    show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl, show (6⁻¹ : ℍ → ℂ) z = 6⁻¹ from rfl,
+    show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl, show (72⁻¹ : ℍ → ℂ) z = 72⁻¹ from rfl,
+    show (288⁻¹ : ℍ → ℂ) z = 288⁻¹ from rfl, show (1728⁻¹ : ℍ → ℂ) z = 1728⁻¹ from rfl]
   field_simp (disch := norm_num)
   ring
 
