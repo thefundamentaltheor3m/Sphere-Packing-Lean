@@ -208,19 +208,17 @@ theorem MLDE_F_X42 : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 1
   rw [hO, hC]
   simp only [Pi.smul_apply, smul_eq_mul] at hDDF_z ⊢
   simp only [hDDF_z, hD1, hD2, hD3, hD4, hD5, hDF_z, hR2, hR4, hR6]
-  simp only [F, Δ_fun, X₄₂, Pi.add_apply, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply]
-  simp only [show (5 : ℍ → ℂ) z = 5 from rfl, show (2 : ℍ → ℂ) z = 2 from rfl,
-             show (3 : ℍ → ℂ) z = 3 from rfl, show (6 : ℍ → ℂ) z = 6 from rfl,
-             show (12 : ℍ → ℂ) z = 12 from rfl, show (72 : ℍ → ℂ) z = 72 from rfl,
-             show (288 : ℍ → ℂ) z = 288 from rfl, show (1728 : ℍ → ℂ) z = 1728 from rfl,
-             show (172800 : ℍ → ℂ) z = 172800 from rfl,
-             show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl, show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl,
-             show (6⁻¹ : ℍ → ℂ) z = 6⁻¹ from rfl, show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl,
-             show (72⁻¹ : ℍ → ℂ) z = 72⁻¹ from rfl, show (288⁻¹ : ℍ → ℂ) z = 288⁻¹ from rfl,
-             show (1728⁻¹ : ℍ → ℂ) z = 1728⁻¹ from rfl]
-  set e2 := E₂ z
-  set e4 := E₄.toFun z
-  set e6 := E₆.toFun z
+  simp only [F, Δ_fun, X₄₂, Pi.add_apply, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply,
+    show (5 : ℍ → ℂ) z = 5 from rfl, show (2 : ℍ → ℂ) z = 2 from rfl,
+    show (3 : ℍ → ℂ) z = 3 from rfl, show (6 : ℍ → ℂ) z = 6 from rfl,
+    show (12 : ℍ → ℂ) z = 12 from rfl, show (72 : ℍ → ℂ) z = 72 from rfl,
+    show (288 : ℍ → ℂ) z = 288 from rfl, show (1728 : ℍ → ℂ) z = 1728 from rfl,
+    show (172800 : ℍ → ℂ) z = 172800 from rfl,
+    show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl, show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl,
+    show (6⁻¹ : ℍ → ℂ) z = 6⁻¹ from rfl, show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl,
+    show (72⁻¹ : ℍ → ℂ) z = 72⁻¹ from rfl, show (288⁻¹ : ℍ → ℂ) z = 288⁻¹ from rfl,
+    show (1728⁻¹ : ℍ → ℂ) z = 1728⁻¹ from rfl]
+  set e2 := E₂ z; set e4 := E₄.toFun z; set e6 := E₆.toFun z
   field_simp (disch := norm_num)
   ring
 
