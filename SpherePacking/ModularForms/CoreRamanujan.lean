@@ -133,37 +133,13 @@ Uses the dimension argument:
 3. Constant term is -1/2 (from D E₆ → 0, E₂ → 1, E₆ → 1)
 -/
 theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by
-  -- Similar to ramanujan_E₄' but for weight 8
-  -- E₄² is a weight-8 modular form via ModularForm.mul
   let E₄_sq : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
-    have h : (4 : ℤ) + 4 = 8 := by norm_num
-    h ▸ ModularForm.mul E₄ E₄
-  -- Weight-8 is 1-dimensional
+    (by norm_num : (4 : ℤ) + 4 = 8) ▸ E₄.mul E₄
   have hrank : Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) 8) = 1 :=
-    weight_eight_one_dimensional 8 (by norm_num : (3 : ℤ) ≤ 8) ⟨4, rfl⟩ (by norm_num : 8 < 12)
-  -- E₄² is nonzero
-  have hE₄_sq_ne : E₄_sq ≠ 0 := by
-    simp only [ne_eq, E₄_sq]
-    intro h
-    -- If E₄ * E₄ = 0 as modular form, then E₄ = 0
-    have hE₄_ne := E4_ne_zero
-    -- h : (4 + 4 = 8) ▸ (E₄.mul E₄) = 0
-    -- Extract that E₄ * E₄ = 0 as functions
-    have h' : (E₄.mul E₄ : ℍ → ℂ) = 0 := by
-      ext z
-      have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
-      simp only [ModularForm.coe_mul, Pi.mul_apply, ModularForm.coe_zero, Pi.zero_apply] at this
-      exact this
-    -- E₄ z * E₄ z = 0 for all z, so E₄ z = 0 for all z
-    have h'' : ∀ z : ℍ, E₄.toFun z = 0 := fun z => by
-      have := congrFun h' z
-      simp only [ModularForm.coe_mul, Pi.mul_apply, Pi.zero_apply] at this
-      exact mul_self_eq_zero.mp this
-    -- This means E₄ = 0 as a function, contradicting E4_ne_zero
-    apply hE₄_ne
-    ext z
-    simp only [ModularForm.coe_zero, Pi.zero_apply]
-    exact h'' z
+    weight_eight_one_dimensional 8 (by norm_num) ⟨4, rfl⟩ (by norm_num)
+  have hE₄_sq_ne : E₄_sq ≠ 0 := fun h => E4_ne_zero <| by
+    ext z; have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
+    simp at this; exact mul_self_eq_zero.mp this
   rw [Module.rank_eq_one_iff_finrank_eq_one] at hrank
   have := (finrank_eq_one_iff_of_nonzero' E₄_sq hE₄_sq_ne).mp hrank serre_D_E₆_ModularForm
   obtain ⟨c, hc⟩ := this
@@ -191,88 +167,36 @@ theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.to
 
 @[simp]
 theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
-  -- From ramanujan_E₂': serre_D 1 E₂ = -12⁻¹ * E₄
-  -- serre_D 1 E₂ = D E₂ - (1/12) * E₂ * E₂
-  -- So: D E₂ - (1/12) * E₂² = -12⁻¹ * E₄
-  -- Hence: D E₂ = (1/12) * E₂² - (1/12) * E₄ = (1/12) * (E₂² - E₄)
   have h := ramanujan_E₂'
-  ext z
   unfold serre_D at h
+  ext z
   have hz := congrFun h z
-  simp only [Pi.mul_apply] at hz
-  -- Simplify constant function: (-12⁻¹) z = -12⁻¹
-  have hconst : (-12⁻¹ : ℍ → ℂ) z = -12⁻¹ := rfl
-  rw [hconst] at hz
-  -- hz : D E₂ z - 1 * 12⁻¹ * E₂ z * E₂ z = -12⁻¹ * E₄.toFun z
-  have step1 : D E₂ z = 1 * 12⁻¹ * E₂ z * E₂ z - 12⁻¹ * E₄.toFun z := by
-    calc D E₂ z
-        = (D E₂ z - 1 * 12⁻¹ * E₂ z * E₂ z) + 1 * 12⁻¹ * E₂ z * E₂ z := by ring
-      _ = -12⁻¹ * E₄.toFun z + 1 * 12⁻¹ * E₂ z * E₂ z := by rw [hz]
-      _ = 1 * 12⁻¹ * E₂ z * E₂ z - 12⁻¹ * E₄.toFun z := by ring
-  -- Simplify 1 * 12⁻¹ = 12⁻¹
-  simp only [one_mul] at step1
-  rw [step1]
-  -- Simplify the goal - Pi args normalize constant functions
-  set_option linter.unusedSimpArgs false in
-  simp only [Pi.mul_apply, Pi.sub_apply, Pi.one_apply, Pi.inv_apply, Pi.ofNat_apply]
-  ring
+  simp only [Pi.mul_apply, Pi.sub_apply, show (-12⁻¹ : ℍ → ℂ) z = -12⁻¹ from rfl] at hz ⊢
+  calc D E₂ z = (D E₂ z - 1 * 12⁻¹ * E₂ z * E₂ z) + 1 * 12⁻¹ * E₂ z * E₂ z := by ring
+    _ = -12⁻¹ * E₄.toFun z + 12⁻¹ * E₂ z * E₂ z := by rw [hz]; ring
+    _ = 12⁻¹ * (E₂ z * E₂ z - E₄.toFun z) := by ring
 
 @[simp]
 theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
-  -- From ramanujan_E₄': serre_D 4 E₄ = -1/3 * E₆
-  -- serre_D 4 E₄ = D E₄ - (4/12) * E₂ * E₄ = D E₄ - (1/3) * E₂ * E₄
-  -- So: D E₄ - (1/3) * E₂ * E₄ = -1/3 * E₆
-  -- Hence: D E₄ = (1/3) * E₂ * E₄ - (1/3) * E₆ = (1/3) * (E₂ * E₄ - E₆)
   have h := ramanujan_E₄'
-  ext z
   unfold serre_D at h
+  ext z
   have hz := congrFun h z
-  simp only [Pi.mul_apply] at hz
-  -- Simplify constant function: (-3⁻¹) z = -3⁻¹
-  have hconst : (-3⁻¹ : ℍ → ℂ) z = -3⁻¹ := rfl
-  rw [hconst] at hz
-  -- hz : D E₄.toFun z - 4 * 12⁻¹ * E₂ z * E₄.toFun z = -3⁻¹ * E₆.toFun z
-  have step1 : D E₄.toFun z = 4 * 12⁻¹ * E₂ z * E₄.toFun z - 3⁻¹ * E₆.toFun z := by
-    calc D E₄.toFun z
-        = (D E₄.toFun z - 4 * 12⁻¹ * E₂ z * E₄.toFun z) + 4 * 12⁻¹ * E₂ z * E₄.toFun z := by ring
-      _ = -3⁻¹ * E₆.toFun z + 4 * 12⁻¹ * E₂ z * E₄.toFun z := by rw [hz]
-      _ = 4 * 12⁻¹ * E₂ z * E₄.toFun z - 3⁻¹ * E₆.toFun z := by ring
-  -- 4/12 = 1/3
-  have h412 : (4 : ℂ) * 12⁻¹ = 3⁻¹ := by norm_num
-  rw [h412] at step1
-  rw [step1]
-  -- Simplify the goal - Pi args normalize constant functions
-  set_option linter.unusedSimpArgs false in
-  simp only [Pi.mul_apply, Pi.sub_apply, Pi.one_apply, Pi.inv_apply, Pi.ofNat_apply]
-  ring
+  simp only [Pi.mul_apply, Pi.sub_apply, show (-3⁻¹ : ℍ → ℂ) z = -3⁻¹ from rfl] at hz ⊢
+  calc D E₄.toFun z
+      = (D E₄.toFun z - 4 * 12⁻¹ * E₂ z * E₄.toFun z) + 4 * 12⁻¹ * E₂ z * E₄.toFun z := by ring
+    _ = -3⁻¹ * E₆.toFun z + 3⁻¹ * E₂ z * E₄.toFun z := by rw [hz]; ring
+    _ = 3⁻¹ * (E₂ z * E₄.toFun z - E₆.toFun z) := by ring
 
 @[simp]
 theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
-  -- From ramanujan_E₆': serre_D 6 E₆ = -1/2 * E₄²
-  -- serre_D 6 E₆ = D E₆ - (6/12) * E₂ * E₆ = D E₆ - (1/2) * E₂ * E₆
-  -- So: D E₆ - (1/2) * E₂ * E₆ = -1/2 * E₄²
-  -- Hence: D E₆ = (1/2) * E₂ * E₆ - (1/2) * E₄² = (1/2) * (E₂ * E₆ - E₄²)
   have h := ramanujan_E₆'
-  ext z
   unfold serre_D at h
+  ext z
   have hz := congrFun h z
-  simp only [Pi.mul_apply] at hz
-  -- hz has (-2⁻¹) z which is the constant function evaluated at z, equal to -2⁻¹
-  -- Need to simplify constant functions
-  have hconst : (-2⁻¹ : ℍ → ℂ) z = -2⁻¹ := rfl
-  rw [hconst] at hz
-  -- hz : D E₆.toFun z - 6 * 12⁻¹ * E₂ z * E₆.toFun z = -2⁻¹ * E₄.toFun z * E₄.toFun z
-  have step1 : D E₆.toFun z = 6 * 12⁻¹ * E₂ z * E₆.toFun z - 2⁻¹ * E₄.toFun z * E₄.toFun z := by
-    calc D E₆.toFun z
-        = (D E₆.toFun z - 6 * 12⁻¹ * E₂ z * E₆.toFun z) + 6 * 12⁻¹ * E₂ z * E₆.toFun z := by ring
-      _ = -2⁻¹ * E₄.toFun z * E₄.toFun z + 6 * 12⁻¹ * E₂ z * E₆.toFun z := by rw [hz]
-      _ = 6 * 12⁻¹ * E₂ z * E₆.toFun z - 2⁻¹ * E₄.toFun z * E₄.toFun z := by ring
-  -- 6/12 = 1/2
-  have h612 : (6 : ℂ) * 12⁻¹ = 2⁻¹ := by norm_num
-  rw [h612] at step1
-  rw [step1]
-  -- Simplify the goal - Pi args normalize constant functions
-  set_option linter.unusedSimpArgs false in
-  simp only [Pi.mul_apply, Pi.sub_apply, Pi.one_apply, Pi.inv_apply, Pi.ofNat_apply]
-  ring
+  simp only [Pi.mul_apply, Pi.sub_apply, show (-2⁻¹ : ℍ → ℂ) z = -2⁻¹ from rfl] at hz ⊢
+  calc D E₆.toFun z
+      = (D E₆.toFun z - 6 * 12⁻¹ * E₂ z * E₆.toFun z) + 6 * 12⁻¹ * E₂ z * E₆.toFun z := by ring
+    _ = -2⁻¹ * E₄.toFun z * E₄.toFun z + 2⁻¹ * E₂ z * E₆.toFun z := by rw [hz]; ring
+    _ = 2⁻¹ * (E₂ z * E₆.toFun z - E₄.toFun z * E₄.toFun z) := by ring
 
