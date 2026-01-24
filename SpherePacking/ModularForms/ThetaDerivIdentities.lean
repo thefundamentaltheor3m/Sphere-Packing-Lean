@@ -687,19 +687,9 @@ lemma f₄_sq_mul_eq (z : ℍ) (hg_z : theta_g z = 0) :
 
 /-- From g = 0 and h = 0, deduce f₂ = 0.
 
-Proof: We have two equations:
-1. g = (2H₂ + H₄)f₂ + (H₂ + 2H₄)f₄ = 0
-2. h = f₂² + f₂f₄ + f₄² = 0
-
-From (1): f₄ = -((2H₂ + H₄)/(H₂ + 2H₄)) * f₂ (where H₂ + 2H₄ ≠ 0 generically)
-
-Substituting into (2) and simplifying gives f₂² times a non-zero expression = 0.
-Since holomorphic functions have isolated zeros or are identically zero,
-and f₂ is holomorphic on all of ℍ, we get f₂ = 0.
-
-Alternative approach: Use that 3(H₂² + H₂H₄ + H₄²) = 3E₄ (blueprint identity).
-Then 3E₄ · h = 0 with E₄ having invertible q-series implies h-summand relations
-that force f₂ = f₄ = 0. -/
+Proof: From g = 0 we get a relation between f₂ and f₄. Combined with h = 0,
+we show f₄² · (3 · H_sum_sq) = 0. Since H_sum_sq → 1 ≠ 0, we get f₄ = 0,
+then f₂ = 0 follows from h = f₂² = 0. -/
 lemma f₂_eq_zero : f₂ = 0 := by
   have hg := theta_g_eq_zero
   have hh := theta_h_eq_zero
