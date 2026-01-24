@@ -52,8 +52,6 @@ import SpherePacking.ModularForms.Cauchylems
 import SpherePacking.ModularForms.CoreRamanujan
 import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.Derivative
-import SpherePacking.ModularForms.DerivativeBoundedness
-import SpherePacking.ModularForms.Derivative_Cauchy
 import SpherePacking.ModularForms.DimensionFormulas
 import SpherePacking.ModularForms.E2
 import SpherePacking.ModularForms.Eisenstein

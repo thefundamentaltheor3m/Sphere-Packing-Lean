@@ -463,60 +463,6 @@ noncomputable def theta_h_SIF : SlashInvariantForm (Γ 1) 8 where
   toFun := theta_h
   slash_action_eq' := theta_h_slash_invariant_GL
 
-/-- D f → 0 at infinity for bounded holomorphic functions.
-Uses Cauchy estimate: ‖D f z‖ ≤ M/(π·z.im) → 0 as im(z) → ∞. -/
-lemma D_tendsto_zero_atImInfty {f : ℍ → ℂ}
-    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
-    (hbdd : IsBoundedAtImInfty f) :
-    Tendsto (D f) atImInfty (𝓝 0) := by
-  rw [Metric.tendsto_nhds]
-  rw [isBoundedAtImInfty_iff] at hbdd
-  obtain ⟨M, A, hMA⟩ := hbdd
-  intro ε hε
-  rw [Filter.eventually_atImInfty]
-  -- For im(z) ≥ max(2*max(A,0)+1, M/(π*ε)+1), we have ‖D f z‖ < ε
-  use max (2 * max A 0 + 1) (M / (π * ε) + 1)
-  intro z hz
-  have hz_large : z.im ≥ 2 * max A 0 + 1 := le_trans (le_max_left _ _) hz
-  have hz_half_gt_A : z.im / 2 > max A 0 := by linarith
-  have hR_pos : 0 < z.im / 2 := by linarith [z.im_pos]
-  -- Cauchy estimate gives ‖D f z‖ ≤ M/(π·z.im)
-  have hclosed := closedBall_center_subset_upperHalfPlane z
-  have hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) (z.im / 2)) :=
-    diffContOnCl_comp_ofComplex_of_mdifferentiable hf hclosed
-  have hf_bdd_sphere : ∀ w ∈ Metric.sphere (z : ℂ) (z.im / 2), ‖(f ∘ ofComplex) w‖ ≤ M := by
-    intro w hw
-    have hw_im_pos : 0 < w.im := hclosed (Metric.sphere_subset_closedBall hw)
-    have hdist : dist w z = z.im / 2 := Metric.mem_sphere.mp hw
-    have habs : |w.im - z.im| ≤ z.im / 2 := by
-      calc |w.im - z.im| = |(w - z).im| := by simp [Complex.sub_im]
-        _ ≤ ‖w - z‖ := Complex.abs_im_le_norm _
-        _ = dist w z := (dist_eq_norm _ _).symm
-        _ = z.im / 2 := hdist
-    have hw_im_ge_A : A ≤ w.im := by
-      have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
-      linarith [le_max_left A 0]
-    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw_im_pos]
-    exact hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
-  have hD_bound := norm_D_le_of_sphere_bound hR_pos hDiff hf_bdd_sphere
-  -- Now show M/(π·z.im) < ε using hz
-  have hz_im_large : z.im > M / (π * ε) := by
-    have := le_trans (le_max_right (2 * max A 0 + 1) _) hz
-    linarith
-  have hM_nonneg : 0 ≤ M := le_trans (norm_nonneg _) (hMA z (by linarith [le_max_left A 0]))
-  rw [dist_zero_right]
-  -- Handle M = 0 case separately (norm is 0, which is < ε)
-  rcases hM_nonneg.eq_or_lt with hM_zero | hM_pos
-  · rw [← hM_zero, zero_div] at hD_bound
-    exact lt_of_le_of_lt hD_bound hε
-  · have h_simpl : M / (π * (M / (π * ε))) = ε := by field_simp
-    calc ‖D f z‖ ≤ M / (2 * π * (z.im / 2)) := hD_bound
-      _ = M / (π * z.im) := by ring
-      _ < M / (π * (M / (π * ε))) := by
-          apply div_lt_div_of_pos_left hM_pos (by positivity)
-          exact mul_lt_mul_of_pos_left hz_im_large Real.pi_pos
-      _ = ε := h_simpl
-
 /-- If D F → 0 and F → c, then serre_D k F → -k/12 * c.
 Uses E₂_tendsto_one_atImInfty to compute E₂ * F → c. -/
 lemma serre_D_tendsto_of_tendsto {k : ℤ} {F : ℍ → ℂ} {c : ℂ}
@@ -542,7 +488,7 @@ we get f₂ → 0 - 0 = 0. -/
 lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
   have hH₂ := H₂_tendsto_atImInfty
   have hH₄ := H₄_tendsto_atImInfty
-  have hD_H₂ := D_tendsto_zero_atImInfty H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂
+  have hD_H₂ := D_tendsto_zero_of_tendsto_const H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂
   have h_serre_H₂ : Tendsto (serre_D 2 H₂) atImInfty (𝓝 0) := by
     simpa using serre_D_tendsto_of_tendsto hD_H₂ hH₂
   have h_prod : Tendsto (fun z => H₂ z * (H₂ z + 2 * H₄ z)) atImInfty (𝓝 0) := by
@@ -559,7 +505,7 @@ So f₄ → -1/6 + (1/6)*1 = 0. -/
 lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
   have hH₂ := H₂_tendsto_atImInfty
   have hH₄ := H₄_tendsto_atImInfty
-  have hD_H₄ := D_tendsto_zero_atImInfty H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
+  have hD_H₄ := D_tendsto_zero_of_tendsto_const H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
   have h_serre_H₄ : Tendsto (serre_D 2 H₄) atImInfty (𝓝 (-(1/6 : ℂ))) := by
     convert serre_D_tendsto_of_tendsto hD_H₄ hH₄ using 2; norm_num
   have h_sum : Tendsto (fun z => 2 * H₂ z + H₄ z) atImInfty (𝓝 1) := by
