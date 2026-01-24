@@ -588,11 +588,7 @@ under the slash action of weight `k`, then `serre_D k F` is invariant under the 
 of weight `k + 2`.
 -/
 theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
-    ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by
-  -- The proof uses D_slash, mul_slash_SL2, E₂_slash_transform, and the key identity:
-  -- (2πi)⁻¹ + (1/12) * (1/(2ζ(2))) * (2πi) = 0
-  -- This cancels the anomaly terms from D_slash and E₂_slash_transform.
-  sorry
+    ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by sorry
 
 theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (γ : SL(2, ℤ)) (h : F ∣[k] γ = F) :
