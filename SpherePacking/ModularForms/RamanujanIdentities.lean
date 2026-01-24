@@ -48,25 +48,7 @@ lemma D_exp_eq_n_mul (n : ℕ) (z : ℍ) :
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
     simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
     rfl
-  rw [hcomp]
-  -- deriv of exp(c*z) is c*exp(c*z)
-  have hderiv : deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z =
-      (2 * π * I * n) * cexp (2 * π * I * n * z) := by
-    -- Use the derivative chain rule lemma directly
-    have hdiff_lin : DifferentiableAt ℂ (fun w => 2 * π * I * n * w) (z : ℂ) := by fun_prop
-    have hderiv_lin : deriv (fun w : ℂ => 2 * π * I * n * w) (z : ℂ) = 2 * π * I * n := by
-      rw [deriv_const_mul _ differentiableAt_id]
-      simp only [deriv_id'', mul_one]
-    calc deriv (fun w : ℂ => cexp (2 * π * I * n * w)) z
-        = cexp (2 * π * I * n * z) * deriv (fun w => 2 * π * I * n * w) z := by
-            exact deriv_cexp hdiff_lin
-      _ = cexp (2 * π * I * n * z) * (2 * π * I * n) := by rw [hderiv_lin]
-      _ = (2 * π * I * n) * cexp (2 * π * I * n * z) := by ring
-  rw [hderiv]
-  -- Simplify (2πi)⁻¹ * (2πin) = n
-  have h2pi : (2 * π * I : ℂ) ≠ 0 := by
-    simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true, ofReal_eq_zero,
-      Real.pi_ne_zero, I_ne_zero, or_self]
+  rw [hcomp, deriv_cexp (by fun_prop), deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]
   field_simp
 
 /--
@@ -234,16 +216,11 @@ lemma D_E4_qexp (z : ℍ) :
       simp only [riemannZeta_four]
     -- Coefficient = (1/(π^4/90)) * ((-2πi)^4 / 6) = (90/π^4) * (16π^4) / 6 = 240
     have hcoeff : (1 / riemannZeta 4) * ((-2 * π * I) ^ 4 / Nat.factorial 3) = (240 : ℂ) := by
-      rw [hzeta]
-      -- (-2πi)^4 = 16π^4 since I^4 = 1
       have hI4 : I ^ 4 = (1 : ℂ) := by norm_num [pow_succ, I_sq]
       have h1 : (-2 * (π : ℂ) * I) ^ 4 = 16 * (π : ℂ) ^ 4 := by
-        have : (-2 * (π : ℂ) * I) ^ 4 = (-2) ^ 4 * (π : ℂ) ^ 4 * I ^ 4 := by ring
-        rw [this, hI4]
-        norm_num
-      rw [h1]
-      simp only [Nat.factorial_succ, Nat.reduceAdd]
-      have hpi : (π : ℂ) ≠ 0 := ofReal_ne_zero.mpr Real.pi_ne_zero
+        calc (-2 * (π : ℂ) * I) ^ 4 = (-2) ^ 4 * (π : ℂ) ^ 4 * I ^ 4 := by ring
+          _ = 16 * (π : ℂ) ^ 4 := by simp [hI4]; norm_num
+      simp only [hzeta, h1, Nat.factorial]
       field_simp
       ring
     convert mul_comm _ _ using 1
@@ -448,25 +425,11 @@ theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
   -- From ramanujan_E₄: D E₄ = (1/3) * (E₂ * E₄ - E₆)
   -- So: E₂ * E₄ - E₆ = 3 * D E₄
   have hRam : (E₂ z) * (E₄ z) - (E₆ z) = 3 * D E₄.toFun z := by
-    -- ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)
-    -- Evaluating at z and rearranging gives the result
-    have h3 : (3 : ℂ) ≠ 0 := by norm_num
     have h := congrFun ramanujan_E₄ z
-    -- h : D E₄.toFun z = (3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)) z
-    -- Instead of simp, unfold Pi.mul directly
-    -- (c * f) z where c : ℂ and f : ℍ → ℂ evaluates to c * f z
-    -- But the * here might be Pi.mul with c as constant function
-    -- Let's work around by computing the value directly
-    calc E₂ z * E₄ z - E₆ z
-        = E₂ z * E₄.toFun z - E₆.toFun z := by rfl
-      _ = 3 * (3⁻¹ * (E₂ z * E₄.toFun z - E₆.toFun z)) := by field_simp
-      _ = 3 * D E₄.toFun z := by
-          congr 1
-          -- The RHS of h is (3⁻¹ * (E₂ * E₄.toFun - E₆.toFun)) z
-          -- We need to show this equals 3⁻¹ * (E₂ z * E₄.toFun z - E₆.toFun z)
-          -- This follows from how Pi multiplication works
-          simp only [Pi.mul_apply, Pi.sub_apply] at h
-          exact h.symm
+    simp only [Pi.mul_apply, Pi.sub_apply, show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl] at h
+    field_simp at h ⊢
+    ring_nf at h ⊢
+    exact h.symm
   -- Substitute D(E₄) = 240 * ∑' n, n * σ₃(n) * q^n
   rw [hRam, D_E4_qexp]
   ring
