@@ -35,6 +35,21 @@ open scoped ModularForm MatrixGroups Manifold Interval Real NNReal ENNReal Topol
 
 noncomputable section
 
+/-! ## Helper lemmas for dimension-one arguments -/
+
+/-- In a rank-one module, every element is a scalar multiple of any nonzero element. -/
+lemma exists_smul_eq_of_rank_one {M : Type*} [AddCommGroup M] [Module ℂ M]
+    (hrank : Module.rank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, f = c • e := by
+  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' e he).mp
+    (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f
+  exact ⟨c, hc.symm⟩
+
+/-- Convert smul equality of modular forms to pointwise equality. -/
+lemma smul_modularForm_eq_pointwise {Γ : Subgroup SL(2, ℤ)} {k : ℤ} {f g : ModularForm Γ k}
+    {c : ℂ} (h : f = c • g) (z : ℍ) : (f : ℍ → ℂ) z = c * (g : ℍ → ℂ) z := by
+  simpa [ModularForm.coe_smul, smul_eq_mul] using
+    congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
+
 /-! ## The Ramanujan Identities
 
 These are the main theorems. The primed versions are in terms of serre_D,
@@ -62,11 +77,10 @@ The proof uses:
 4. Constant term: serre_D 1 E₂(iy) → -1/12 as y → ∞
 -/
 theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
-  have hrank := Module.rank_eq_one_iff_finrank_eq_one.mp weight_four_one_dimensional
-  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' E₄ E4_ne_zero).mp hrank serre_D_E₂_ModularForm
-  have hfun : ∀ z, serre_D 1 E₂ z = c * E₄.toFun z := fun z => by
-    simpa [ModularForm.coe_smul, smul_eq_mul] using
-      congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
+  obtain ⟨c, hc⟩ := exists_smul_eq_of_rank_one weight_four_one_dimensional E4_ne_zero
+    serre_D_E₂_ModularForm
+  have hfun : ∀ z, serre_D 1 E₂ z = c * E₄.toFun z :=
+    fun z => smul_modularForm_eq_pointwise hc z
   have hc_val : c = -(1/12 : ℂ) :=
     scalar_eq_of_tendsto hfun serre_D_E₂_tendsto_atImInfty E₄_tendsto_one_atImInfty
   ext z
@@ -82,11 +96,10 @@ Uses the dimension argument:
 4. Constant term is -1/3 (from D E₄ → 0, E₂ → 1, E₄ → 1)
 -/
 theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
-  have hrank := Module.rank_eq_one_iff_finrank_eq_one.mp weight_six_one_dimensional
-  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' E₆ E6_ne_zero).mp hrank serre_D_E₄_ModularForm
-  have hfun : ∀ z, serre_D 4 E₄.toFun z = c * E₆.toFun z := fun z => by
-    simpa [ModularForm.coe_smul, smul_eq_mul] using
-      congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
+  obtain ⟨c, hc⟩ := exists_smul_eq_of_rank_one weight_six_one_dimensional E6_ne_zero
+    serre_D_E₄_ModularForm
+  have hfun : ∀ z, serre_D 4 E₄.toFun z = c * E₆.toFun z :=
+    fun z => smul_modularForm_eq_pointwise hc z
   have hc_val : c = -(1/3 : ℂ) :=
     scalar_eq_of_tendsto hfun serre_D_E₄_tendsto_atImInfty E₆_tendsto_one_atImInfty
   ext z
@@ -103,16 +116,16 @@ Uses the dimension argument:
 theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by
   let E₄_sq : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
     (by norm_num : (4 : ℤ) + 4 = 8) ▸ E₄.mul E₄
-  have hrank := Module.rank_eq_one_iff_finrank_eq_one.mp
-    (weight_eight_one_dimensional 8 (by norm_num) ⟨4, rfl⟩ (by norm_num))
   have hE₄_sq_ne : E₄_sq ≠ 0 := fun h => E4_ne_zero <| by
     ext z
     have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
     simp at this
     exact mul_self_eq_zero.mp this
-  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' E₄_sq hE₄_sq_ne).mp hrank serre_D_E₆_ModularForm
+  obtain ⟨c, hc⟩ := exists_smul_eq_of_rank_one
+    (weight_eight_one_dimensional 8 (by norm_num) ⟨4, rfl⟩ (by norm_num)) hE₄_sq_ne
+    serre_D_E₆_ModularForm
   have hfun : ∀ z, serre_D 6 E₆.toFun z = c * (E₄.toFun z * E₄.toFun z) := fun z => by
-    have := congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) hc.symm) z
+    have := smul_modularForm_eq_pointwise hc z
     simp at this
     convert this using 2
   have hc_val : c = -(1/2 : ℂ) := scalar_eq_of_tendsto hfun serre_D_E₆_tendsto_atImInfty
