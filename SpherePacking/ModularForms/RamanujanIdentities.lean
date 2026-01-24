@@ -176,15 +176,15 @@ theorem MLDE_F_X42 : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 1
   have hD5 := congrFun D_E4sq_E6 z
   simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply] at hD1 hD2 hD3 hD4 hD5
   have hsmul1 : (5 * 6⁻¹ : ℂ) • (E₂ ^ 3 * E₄.toFun ^ 2) = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 := by
-    ext w; simp [smul_eq_mul]; ring
+    ext; simp [smul_eq_mul]; ring
   have hsmul2 : (5 * 2⁻¹ : ℂ) • (E₂ ^ 2 * E₄.toFun * E₆.toFun) =
-      5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun := by ext w; simp [smul_eq_mul]; ring
+      5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun := by ext; simp [smul_eq_mul]; ring
   have hsmul3 : (5 * 6⁻¹ : ℂ) • (E₂ * E₄.toFun ^ 3) = 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 := by
-    ext w; simp [smul_eq_mul]; ring
+    ext; simp [smul_eq_mul]; ring
   have hsmul4 : (5 * 3⁻¹ : ℂ) • (E₂ * E₆.toFun ^ 2) = 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 := by
-    ext w; simp [smul_eq_mul]; ring
+    ext; simp [smul_eq_mul]; ring
   have hsmul5 : (5 * 6⁻¹ : ℂ) • (E₄.toFun ^ 2 * E₆.toFun) = 5 * 6⁻¹ * E₄.toFun ^ 2 * E₆.toFun := by
-    ext w; simp [smul_eq_mul]; ring
+    ext; simp [smul_eq_mul]; ring
   have hs1 := E2cu_E4sq_holo'.const_smul (5 * 6⁻¹ : ℂ)
   have hs2 := E2sq_E4_E6_holo'.const_smul (5 * 2⁻¹ : ℂ)
   have hs3 := E2_E4cu_holo'.const_smul (5 * 6⁻¹ : ℂ)
