@@ -463,23 +463,14 @@ Using these equations and Lemma \ref{lemma:lv1-lv2-identities}, we can rewrite $
 Applying $|_{-2}S$ and $|_{-2}T$ to the expression of $\psi_I$ proves \eqref{eqn:psiS-new} and \eqref{eqn:psiT-new}.
 \end{proof}
 
-% \begin{lemma}\label{lemma: psi I psi T psi S explicit}\uses{def:psiI-psiT-psiS}\lean{ψI_eq}
-% More explicitly, we have
-% \begin{align}
-%     \psi_I(z) &= 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2} + 128 \frac{H_4(z) - H_2(z)}{H_3(z)^2} \label{eqn:psiI-explicit} \\
-%     \psi_T(z) &= 128 \frac{H_3(z) + H_4(z)}{H_2(z)^2} + 128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} \label{eqn:psiT-explicit} \\
-%     \psi_S(z) &= -128 \frac{H_2(z) + H_3(z)}{H_4(z)^2} - 128 \frac{H_2(z) - H_4(z)}{H_3(z)^2} \label{eqn:psiS-explicit}
-% \end{align}
-% \end{lemma}
 
-% \begin{lemma}\label{lemma:psiI-psiT-psiS-fourier}\uses{lemma: psi I psi T psi S explicit}
-% The Fourier expansions of these functions are
-% \begin{align}
-%     \psi_I(z)\,=\,&q^{-1} + 144 - 5120 q^{1/2} + 70524 q - 626688 q^{3/2} + 4265600 q^2 + O(q^{5/2}) \label{eqn: psi fourier I}\\
-%     \psi_T(z)\,=\,&q^{-1} + 144 + 5120 q^{1/2} + 70524 q + 626688 q^{3/2} + 4265600 q^2 + O(q^{5/2}) \label{eqn: psi fourier T}\\
-%     \psi_S(z)\,=\,&-10240 q^{1/2} - 1253376 q^{3/2} - 48328704 q^{5/2} - 1059078144 q^{7/2}+O(q^{9/2}).\label{eqn: psi fourier S}
-% \end{align}
-% \end{lemma}
+\begin{lemma}\label{lemma:psiI-psiT-psiS-fourier}\uses{lemma:psi-new}
+The Fourier expansions of these functions are
+\begin{align}
+    \psi_I(z)\,=\,&q^{-1} + 144 + O(q^{1/2}) \label{eqn: psi fourier I}\\
+    \psi_T(z)\,=\,&q^{-1} + 144 + O(q^{1/2}) \label{eqn: psi fourier T}
+\end{align}
+\end{lemma}
 
 Now, we are ready to define function $b$.
 Again, the definition here is slightly different from that in \cite{Via2017}, where all the contours are chosen to be the straight lines.
@@ -488,6 +479,7 @@ Again, the definition here is slightly different from that in \cite{Via2017}, wh
 \begin{definition}\label{def:b-definition}\uses{def:psiI-psiT-psiS}
 Define $b_\rad : \R \to \C$ by
 \begin{equation}
+    \label{eqn:b-definition}
     b_\rad(r) := J_1(r) + J_2(r) + J_3(r) + J_4(r) + J_5(r) + J_6(r)
 \end{equation}
 where for $r \in \R$,
@@ -501,13 +493,6 @@ where for $r \in \R$,
 \end{align}
 Here all the contours are straight line segments.
 Then we define $b : \R^8 \to \C$ by $b(x) := b_\rad(\|x\|^2)$.
-% For $x\in\R^8$ define
-% \begin{align}\label{eqn:b-definition}
-%     b(x):= & \int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz
-%         + \int\limits_{1}^{i}\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz \\
-%     -& 2\,\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i \|x\|^2 z}\,dz
-%     - 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i \|x\|^2 z}\,dz \nonumber.
-% \end{align}
 \end{definition}
 
 Now we prove that $b$ is a Schwartz function and satisfies condition \eqref{eqn:b-fourier}.
@@ -559,22 +544,7 @@ There exist a constant $C > 0$ such that
     \end{align}
 \end{lemma}
 
-% \begin{lemma}\label{lemma:psiS-bound}\uses{lemma:psiS-new, lemma:mod-div-disc-bound, prop:H2-fourier, prop:H3-fourier, prop:H4-fourier}
-% There exists a constant $C_S > 0$ such that
-% \begin{equation}\label{eqn:psiS-bound}
-%     |\psi_S(z)| \le C_S e^{- \pi \Im z}
-% \end{equation}
-% for all $z$ with $\Im z > 1/2$.
-% \end{lemma}
-% \begin{proof}
-% Proof is similar to that of Lemma \ref{cor:phi0-bound}.
-% By Proposition \ref{prop:H2-fourier}, \ref{prop:H3-fourier} and \ref{prop:H4-fourier}, we can write Fourier expansion of the numerator of $\psi_S$ as
-% \begin{equation}
-%     H_2(z)^3 (2 H_2(z)^2 + 5 H_2(z) H_4(z) + 5 H_4(z)^2) = \sum_{n \ge 3} a_n e^{\pi i n z}
-% \end{equation}
-% with $a_3 = 16^3 \cdot 5 = 20480$ and $a_n = O(n^k)$ for some $k > 0$.
-% Now the result follows from Lemma \ref{lemma:mod-div-disc-bound}.
-% \end{proof}
+
 
 % \begin{lemma}\label{lemma:psiI-new}
 
@@ -600,22 +570,7 @@ $b(x)$ is a Schwartz function.
 Similar to the proof of \ref{prop:a-schwartz}.
 \end{proof}
 
-% \begin{proof}
-% We have
-% \begin{align}
-%     &\int\limits_{-1}^{i}\psi_T(z)\,e^{\pi i r^2 z}\,dz=\int\limits_{0}^{i+1}\psi_I(z)\,e^{\pi i r^2 (z-1)}\,dz=\notag\\
-%     &\int\limits_{i\infty}^{-1/(i+1)}\psi_I\Big(\frac{-1}{z}\Big)\,e^{\pi i r^2 (-1/z-1)}\,z^{-2}\,dz=\int\limits_{i\infty}^{-1/(i+1)}\psi_S(z)\,z^{-4}\,e^{\pi i r^2 (-1/z-1)}\,dz.\notag
-% \end{align}
-% Using \eqref{eqn:psiS-bound}, we can estimate the first summand in the left-hand side of~\eqref{eqn:b-definition}
-% \begin{equation}
-%     \left|\int\limits_{-1}^i \psi_T(z)\,e^{\pi i r^2 z}\,dz \right|\leq C_1\,r\,K_1(2\pi r).
-% \end{equation}
-% We combine this inequality with analogous estimates for the other three summands and obtain
-% \begin{equation}
-%     |b(r)|\leq C_2\,r\,K_1(2\pi r)+C_3\,\frac{e^{-\pi(r^2+1)}}{r^2+1}.
-% \end{equation}
-% Here $C_1$, $C_2$, and $C_3$ are some positive constants. Similar estimates hold for all derivatives $\frac{\dd^k}{\dd^k r} b(r)$.
-% \end{proof}
+
 
 \begin{proposition}\label{prop:b-fourier}\uses{def:b-definition, lemma:Gaussian-Fourier, def:psiI-psiT-psiS, prop:b-schwartz}\lean{MagicFunction.b.Fourier.eig_b}\leanok
 $b(x)$ satisfies \eqref{eqn:b-fourier}.
@@ -669,7 +624,7 @@ Now we regard the radial function $b$ as a function on $\R_{\geq0}$. We check th
 % The denominator is not a cusp form (i.e. has a nonzero constant term), hence Lemma \ref{lemma:mod-div-disc-bound} concludes the proof with $n_0 = 0$.
 % \end{proof}
 
-\begin{corollary}\label{cor:psiI-near-0-infty}\uses{lemma:psi-bound, lemma:psiS-bound, def:psiI-psiT-psiS}
+\begin{corollary}\label{cor:psiI-near-0-infty}\uses{lemma:psi-bound, def:psiI-psiT-psiS}
 We have
 \begin{align}
     \psi_I(it) &= O(t^2 e^{\pi/t}) \quad \text{as } t \to 0 \label{eqn:psiI-near-0} \\
