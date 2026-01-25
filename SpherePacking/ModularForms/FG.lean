@@ -52,14 +52,6 @@ theorem F_eq_nine_DE₄_sq : F = (9 : ℂ) • (D E₄.toFun) ^ 2 := by
   ring
 
 /- Some basic facts -/
-/-- Helper until MDifferentiable.pow is upstreamed to mathlib -/
-lemma MDifferentiable.pow {f : UpperHalfPlane → ℂ} (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (n : ℕ) :
-    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => f z ^ n) := by
-  induction n with
-  | zero => exact fun _ => mdifferentiableAt_const
-  | succ n ih =>
-    have : (fun z => f z ^ (n + 1)) = (fun z => f z ^ n * f z) := by ext z; ring
-    rw [this]; exact ih.mul hf
 
 theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
   have h : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) := by

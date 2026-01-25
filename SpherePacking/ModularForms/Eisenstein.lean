@@ -809,7 +809,7 @@ Properties of Eisenstein series when restricted to the positive imaginary axis z
 
 section ImagAxisProperties
 
-open Complex hiding I
+open _root_.Complex hiding I
 
 /-- `(-2πi)^k` is real for even k. -/
 lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
