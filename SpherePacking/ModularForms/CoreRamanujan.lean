@@ -44,6 +44,16 @@ lemma exists_smul_eq_of_rank_one {M : Type*} [AddCommGroup M] [Module ℂ M]
     (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f
   exact ⟨c, hc.symm⟩
 
+/-- Symmetric version: `c • e = f` instead of `f = c • e`. -/
+lemma exists_smul_eq_of_rank_one' {M : Type*} [AddCommGroup M] [Module ℂ M]
+    (hrank : Module.rank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, c • e = f :=
+  (finrank_eq_one_iff_of_nonzero' e he).mp (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f
+
+/-- Finrank version with symmetric equality. -/
+lemma exists_smul_eq_of_finrank_one' {M : Type*} [AddCommGroup M] [Module ℂ M]
+    (hrank : Module.finrank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, c • e = f :=
+  (finrank_eq_one_iff_of_nonzero' e he).mp hrank f
+
 /-- Convert smul equality of modular forms to pointwise equality. -/
 lemma smul_modularForm_eq_pointwise {Γ : Subgroup SL(2, ℤ)} {k : ℤ} {f g : ModularForm Γ k}
     {c : ℂ} (h : f = c • g) (z : ℍ) : (f : ℍ → ℂ) z = c * (g : ℍ → ℂ) z := by
@@ -136,6 +146,11 @@ theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.to
   norm_num
 
 /-! ## Derived Ramanujan identities (D instead of serre_D) -/
+
+/-- Relationship between D and serre_D: `D f = serre_D k f + k/12 * E₂ * f`. -/
+lemma D_eq_serre_D_add (k : ℤ) (f : ℍ → ℂ) (z : ℍ) :
+    D f z = serre_D k f z + (k : ℂ) * 12⁻¹ * E₂ z * f z := by
+  simp only [serre_D_apply]; ring
 
 @[simp]
 theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by

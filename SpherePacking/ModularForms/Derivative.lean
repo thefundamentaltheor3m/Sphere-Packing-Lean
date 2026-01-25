@@ -322,6 +322,13 @@ Note that the definition makes sense for any analytic function $F : \mathbb{H} \
 noncomputable def serre_D (k : ℂ) : (ℍ → ℂ) → (ℍ → ℂ) :=
   fun (F : ℍ → ℂ) => (fun z => D F z - k * 12⁻¹ * E₂ z * F z)
 
+@[simp]
+lemma serre_D_apply (k : ℂ) (F : ℍ → ℂ) (z : ℍ) :
+    serre_D k F z = D F z - k * 12⁻¹ * E₂ z * F z := rfl
+
+lemma serre_D_eq (k : ℂ) (F : ℍ → ℂ) :
+    serre_D k F = fun z => D F z - k * 12⁻¹ * E₂ z * F z := rfl
+
 /--
 Basic properties of Serre derivative: linearity, Leibniz rule, etc.
 -/
