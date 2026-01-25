@@ -887,10 +887,7 @@ lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
 
 lemma E₂_q_exp (z : ℍ) :
     E₂ z = 1 - 24 * ∑' (n : ℕ+), sigma 1 n * cexp (2 * π * Complex.I * n * z) := by
-  rw [E₂]
-  simp only [Pi.smul_apply, smul_eq_mul]
-  rw [G2_q_exp, mul_sub, riemannZeta_two]
-  have hpi : (π : ℂ) ≠ 0 := by simp
+  simp only [E₂, Pi.smul_apply, smul_eq_mul, G2_q_exp, mul_sub, riemannZeta_two]
   congr 1
   · field_simp
   · rw [← mul_assoc, ← mul_assoc]
