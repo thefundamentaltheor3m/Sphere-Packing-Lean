@@ -190,7 +190,7 @@ lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
 
 /-- serre_D 1 E₂ is bounded at infinity. -/
 lemma serre_DE₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) :=
-  serre_D_isBoundedAtImInfty 1 E₂_holo' E₂_isBoundedAtImInfty
+  serre_D_isBoundedAtImInfty_of_bounded 1 E₂_holo' E₂_isBoundedAtImInfty
 
 /-- D E₄ is bounded at infinity (by Cauchy estimate: D f → 0 when f is bounded). -/
 lemma DE₄_isBoundedAtImInfty : IsBoundedAtImInfty (D E₄.toFun) :=
@@ -198,7 +198,7 @@ lemma DE₄_isBoundedAtImInfty : IsBoundedAtImInfty (D E₄.toFun) :=
 
 /-- serre_D 4 E₄ is bounded at infinity. -/
 lemma serre_DE₄_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 4 E₄.toFun) :=
-  serre_D_isBoundedAtImInfty 4 E₄.holo' E₄_isBoundedAtImInfty
+  serre_D_isBoundedAtImInfty_of_bounded 4 E₄.holo' E₄_isBoundedAtImInfty
 
 /-! ## Construction of ModularForm from serre_D -/
 
@@ -208,7 +208,7 @@ def serre_DE₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 :=
 
 /-- serre_D 6 E₆ is bounded at infinity. -/
 lemma serre_DE₆_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 6 E₆.toFun) :=
-  serre_D_isBoundedAtImInfty 6 E₆.holo' E₆_isBoundedAtImInfty
+  serre_D_isBoundedAtImInfty_of_bounded 6 E₆.holo' E₆_isBoundedAtImInfty
 
 /-- serre_D 6 E₆ is a weight-8 modular form. -/
 def serre_DE₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=

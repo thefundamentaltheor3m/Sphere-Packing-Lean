@@ -775,7 +775,7 @@ lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
 serre_D k f = D f - (k/12)·E₂·f. Both terms are bounded:
 - D f is bounded by `D_isBoundedAtImInfty_of_bounded`
 - (k/12)·E₂·f is bounded since E₂ and f are bounded -/
-theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
+theorem serre_D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ} (k : ℂ)
     (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
     (hbdd : IsBoundedAtImInfty f) : IsBoundedAtImInfty (serre_D k f) := by
   unfold serre_D
@@ -808,4 +808,4 @@ noncomputable def serre_D_ModularForm (k : ℤ) (f : ModularForm (Gamma 1) k) :
   bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
     obtain ⟨A', rfl⟩ := MonoidHom.mem_range.mp hA
     exact (serre_D_slash_invariant k f f.holo' A' (f.slash_eq_self A')).symm ▸
-      serre_D_isBoundedAtImInfty k f.holo' (ModularFormClass.bdd_at_infty f)
+      serre_D_isBoundedAtImInfty_of_bounded k f.holo' (ModularFormClass.bdd_at_infty f)
