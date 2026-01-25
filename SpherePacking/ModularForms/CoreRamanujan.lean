@@ -148,42 +148,39 @@ theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.to
 /-! ## Derived Ramanujan identities (D instead of serre_D) -/
 
 /-- Relationship between D and serre_D: `D f = serre_D k f + k/12 * E₂ * f`. -/
-lemma D_eq_serre_D_add (k : ℤ) (f : ℍ → ℂ) (z : ℍ) :
-    D f z = serre_D k f z + (k : ℂ) * 12⁻¹ * E₂ z * f z := by
+lemma D_eq_serre_D_add (k : ℂ) (f : ℍ → ℂ) (z : ℍ) :
+    D f z = serre_D k f z + k * 12⁻¹ * E₂ z * f z := by
   simp only [serre_D_apply]; ring
 
 @[simp]
 theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
-  have h := ramanujan_E₂'
-  unfold serre_D at h
   ext z
-  have hz := congrFun h z
-  simp only [Pi.mul_apply, Pi.sub_apply, show (-12⁻¹ : ℍ → ℂ) z = -12⁻¹ from rfl] at hz ⊢
-  calc D E₂ z = (D E₂ z - 1 * 12⁻¹ * E₂ z * E₂ z) + 1 * 12⁻¹ * E₂ z * E₂ z := by ring
+  have hz : serre_D 1 E₂ z = -12⁻¹ * E₄.toFun z := congrFun ramanujan_E₂' z
+  simp only [Pi.mul_apply, Pi.sub_apply,
+    show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl] at hz ⊢
+  calc D E₂ z = serre_D 1 E₂ z + 1 * 12⁻¹ * E₂ z * E₂ z := D_eq_serre_D_add 1 E₂ z
     _ = -12⁻¹ * E₄.toFun z + 12⁻¹ * E₂ z * E₂ z := by rw [hz]; ring
-    _ = 12⁻¹ * (E₂ z * E₂ z - E₄.toFun z) := by ring
+    _ = _ := by ring
 
 @[simp]
 theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
-  have h := ramanujan_E₄'
-  unfold serre_D at h
   ext z
-  have hz := congrFun h z
-  simp only [Pi.mul_apply, Pi.sub_apply, show (-3⁻¹ : ℍ → ℂ) z = -3⁻¹ from rfl] at hz ⊢
+  have hz : serre_D 4 E₄.toFun z = -3⁻¹ * E₆.toFun z := congrFun ramanujan_E₄' z
+  simp only [Pi.mul_apply, Pi.sub_apply,
+    show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl] at hz ⊢
   calc D E₄.toFun z
-      = (D E₄.toFun z - 4 * 12⁻¹ * E₂ z * E₄.toFun z) + 4 * 12⁻¹ * E₂ z * E₄.toFun z := by ring
+      = serre_D 4 E₄.toFun z + 4 * 12⁻¹ * E₂ z * E₄.toFun z := D_eq_serre_D_add 4 E₄.toFun z
     _ = -3⁻¹ * E₆.toFun z + 3⁻¹ * E₂ z * E₄.toFun z := by rw [hz]; ring
-    _ = 3⁻¹ * (E₂ z * E₄.toFun z - E₆.toFun z) := by ring
+    _ = _ := by ring
 
 @[simp]
 theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
-  have h := ramanujan_E₆'
-  unfold serre_D at h
   ext z
-  have hz := congrFun h z
-  simp only [Pi.mul_apply, Pi.sub_apply, show (-2⁻¹ : ℍ → ℂ) z = -2⁻¹ from rfl] at hz ⊢
+  have hz : serre_D 6 E₆.toFun z = -2⁻¹ * E₄.toFun z * E₄.toFun z := congrFun ramanujan_E₆' z
+  simp only [Pi.mul_apply, Pi.sub_apply,
+    show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl] at hz ⊢
   calc D E₆.toFun z
-      = (D E₆.toFun z - 6 * 12⁻¹ * E₂ z * E₆.toFun z) + 6 * 12⁻¹ * E₂ z * E₆.toFun z := by ring
+      = serre_D 6 E₆.toFun z + 6 * 12⁻¹ * E₂ z * E₆.toFun z := D_eq_serre_D_add 6 E₆.toFun z
     _ = -2⁻¹ * E₄.toFun z * E₄.toFun z + 2⁻¹ * E₂ z * E₆.toFun z := by rw [hz]; ring
-    _ = 2⁻¹ * (E₂ z * E₆.toFun z - E₄.toFun z * E₄.toFun z) := by ring
+    _ = _ := by ring
 
