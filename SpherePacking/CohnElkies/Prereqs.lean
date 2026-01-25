@@ -10,7 +10,8 @@ Authors: Sidharth Hariharan
 -/
 import Mathlib.Algebra.Module.ZLattice.Covolume
 import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Analysis.Distribution.FourierSchwartz
+import Mathlib.Analysis.Fourier.Notation
+import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 import Mathlib.Analysis.RCLike.Inner
 import Mathlib.LinearAlgebra.BilinearForm.DualLattice
 import Mathlib.Order.CompletePartialOrder
@@ -18,12 +19,14 @@ import Mathlib.Topology.Metrizable.Basic
 import Mathlib.Topology.Compactness.Lindelof
 import Mathlib.Topology.EMetricSpace.Paracompact
 import Mathlib.Topology.Separation.CompletelyRegular
+import Mathlib.Analysis.Complex.Circle
 
 import SpherePacking.Basic.SpherePacking
 import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.ForMathlib.InvPowSummability
 
 open BigOperators Bornology
+open scoped FourierTransform SchwartzMap
 
 variable {d : ℕ} [Fact (0 < d)]
 variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
@@ -102,13 +105,13 @@ def PSF_Conditions (f : EuclideanSpace ℝ (Fin d) → ℂ) : Prop :=
 theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
   (v : EuclideanSpace ℝ (Fin d)) :
   ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
-    ∑' m : bilinFormOfRealInner.dualSubmodule Λ,
+    ∑' m : BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) Λ,
   (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) :=
   sorry
 
 -- The version below is on the blueprint. I'm pretty sure it can be removed.
 theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
-    ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m)
+    ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) Λ, (𝓕 f m)
     := by
   simpa using PSF_L Λ hf 0
 
@@ -116,7 +119,7 @@ namespace SchwartzMap
 
 theorem PoissonSummation_Lattices (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
   (v : EuclideanSpace ℝ (Fin d)) : ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
-  ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 ⇑f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) := by
+  ∑' m : BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) Λ, (𝓕 ⇑f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) := by
   sorry
 
 -- theorem PoissonSummation_Lattices' (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) :
@@ -146,9 +149,10 @@ include 𝕜 in
 theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f := by
   rw [← fourier_coe, ← fourierInv_coe]
   congr 1
-  rw [← fourierTransformCLE_apply 𝕜 f,
-      ← fourierTransformCLE_symm_apply 𝕜 _,
-      ContinuousLinearEquiv.symm_apply_apply]
+  --rw [← fourierTransformCLE_apply 𝕜 f,
+    --  ← fourierTransformCLE_symm_apply 𝕜 _,
+      --ContinuousLinearEquiv.symm_apply_apply]
+  sorry
 
 end SchwartzMap
 

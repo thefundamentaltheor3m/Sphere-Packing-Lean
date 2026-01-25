@@ -34,7 +34,7 @@ structure SpherePacking (d : ℕ) where
   centers : Set (EuclideanSpace ℝ (Fin d))
   separation : ℝ
   separation_pos : 0 < separation := by positivity
-  centers_dist : Pairwise (separation ≤ dist · · : centers → centers → Prop)
+  centers_dist : Pairwise (separation < dist · · : centers → centers → Prop)
 
 structure PeriodicSpherePacking (d : ℕ) extends SpherePacking d where
   lattice : Submodule ℤ (EuclideanSpace ℝ (Fin d))
@@ -52,7 +52,7 @@ theorem SpherePacking.centers_dist' (S : SpherePacking d) (x y : EuclideanSpace 
   -- exact S.centers_dist this
   have := S.centers_dist this
   simp only at this
-  exact this
+  exact le_of_lt this
 
 instance PeriodicSpherePacking.instLatticeDiscrete (S : PeriodicSpherePacking d) :
     DiscreteTopology S.lattice :=
@@ -72,7 +72,7 @@ instance SpherePacking.instCentersDiscrete (S : SpherePacking d) :
   use S.separation, S.separation_pos
   intro a ha h_dist
   contrapose! h_dist
-  exact S.centers_dist <| Subtype.coe_ne_coe.mp h_dist
+  exact le_of_lt <| S.centers_dist <| Subtype.coe_ne_coe.mp h_dist
 
 noncomputable instance PeriodicSpherePacking.addAction (S : PeriodicSpherePacking d) :
     AddAction S.lattice S.centers where
@@ -115,17 +115,17 @@ noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
 -- constructor <;> rintro rfl <;> rfl
 
 theorem PeriodicSpherePacking.basis_Z_span
-    (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    (S : PeriodicSpherePacking d) {ι : Type*} (b : Basis ι ℤ S.lattice) :
     Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) = S.lattice :=
   Basis.ofZLatticeBasis_span ℝ S.lattice b
 
 theorem PeriodicSpherePacking.mem_basis_Z_span
-    (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (v) :
+    (S : PeriodicSpherePacking d) {ι : Type*} (b : Basis ι ℤ S.lattice) (v) :
     v ∈ Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) ↔ v ∈ S.lattice :=
   SetLike.ext_iff.mp (S.basis_Z_span b) v
 
 theorem PeriodicSpherePacking.basis_R_span
-    (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    (S : PeriodicSpherePacking d) {ι : Type*} (b : Basis ι ℤ S.lattice) :
     Submodule.span ℝ (Set.range (b.ofZLatticeBasis ℝ _)) = ⊤ :=
   Basis.span_eq _
 
@@ -142,7 +142,7 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
   separation := c * S.separation
   separation_pos := mul_pos hc S.separation_pos
   centers_dist := fun ⟨x, hx⟩ ⟨y, hy⟩ _ ↦ by
-    change c * S.separation ≤ ‖x - y‖
+    change c * S.separation < ‖x - y‖
     obtain ⟨x', ⟨hx', rfl⟩⟩ := Set.mem_smul_set.mp hx
     obtain ⟨y', ⟨hy', rfl⟩⟩ := Set.mem_smul_set.mp hy
     rw [← smul_sub, norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le]
@@ -150,7 +150,7 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
     have : x' ≠ y' := by rintro rfl; tauto
     have : (⟨x', hx'⟩ : S.centers) ≠ ⟨y', hy'⟩ := by simp [this]
     have := S.centers_dist this
-    exact (mul_le_mul_iff_right₀ hc).mpr this
+    exact (mul_lt_mul_iff_right₀ hc).mpr this
 
 
 noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :
@@ -171,10 +171,10 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
     rintro x ⟨x, hx, rfl⟩ hx'
     -- rw [mul_lt_mul_left hc] at hx'
     -- rw [hε' x hx hx', smul_zero]
-    simp only [DistribMulAction.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero]
+    simp only [DistribSMul.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero]
     right
     specialize hε' x hx
-    simp only [DistribMulAction.toLinearMap_apply, AddSubgroupClass.coe_norm,
+    simp only [DistribSMul.toLinearMap_apply, AddSubgroupClass.coe_norm,
       Submodule.mk_eq_zero] at hx' hε'
     rw [norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le, mul_lt_mul_iff_right₀ hc] at hx'
     exact hε' hx'
