@@ -716,7 +716,7 @@ lemma f₂_eq_zero : f₂ = 0 := by
     ((UpperHalfPlane.mul_eq_zero_iff f₄_sq_MDiff three_H_sum_sq_MDifferentiable).mp h_f₄_sq_3H
       ).resolve_right three_H_sum_sq_ne_zero
   -- From f₄² = f₄ * f₄ = 0: f₄ = 0
-  have h_f₄_mul : f₄ * f₄ = 0 := by convert h_f₄_sq_zero using 1; ext z; exact (sq (f₄ z)).symm
+  have h_f₄_mul : f₄ * f₄ = 0 := by rw [← pow_two]; exact h_f₄_sq_zero
   exact (UpperHalfPlane.mul_eq_zero_iff f₄_MDifferentiable f₄_MDifferentiable).mp h_f₄_mul
     |>.elim id id
 
@@ -740,25 +740,22 @@ lemma f₃_eq_zero : f₃ = 0 := by
 /-- Serre derivative of H₂: ∂₂H₂ = (1/6)(H₂² + 2H₂H₄) -/
 theorem serre_D_H₂ :
     serre_D 2 H₂ = fun z => (1/6 : ℂ) * (H₂ z ^ 2 + 2 * H₂ z * H₄ z) := by
-  funext z
-  have := congrFun f₂_eq_zero z
-  simp only [f₂, Pi.sub_apply, Pi.smul_apply, Pi.mul_apply, Pi.add_apply,
-    smul_eq_mul, Pi.zero_apply, sub_eq_zero] at this
+  funext z; have := congrFun f₂_eq_zero z
+  simp only [f₂, Pi.sub_apply, Pi.smul_apply, Pi.mul_apply, Pi.add_apply, smul_eq_mul,
+    Pi.zero_apply, sub_eq_zero] at this
   convert this using 1; ring
 
 /-- Serre derivative of H₃: ∂₂H₃ = (1/6)(H₂² - H₄²) -/
 theorem serre_D_H₃ : serre_D 2 H₃ = fun z => (1/6 : ℂ) * (H₂ z ^ 2 - H₄ z ^ 2) := by
-  funext z
-  have := congrFun f₃_eq_zero z
-  simp only [f₃, Pi.sub_apply, Pi.smul_apply, Pi.pow_apply,
-    smul_eq_mul, Pi.zero_apply, sub_eq_zero] at this
+  funext z; have := congrFun f₃_eq_zero z
+  simp only [f₃, Pi.sub_apply, Pi.smul_apply, Pi.pow_apply, smul_eq_mul, Pi.zero_apply,
+    sub_eq_zero] at this
   exact this
 
 /-- Serre derivative of H₄: ∂₂H₄ = -(1/6)(2H₂H₄ + H₄²) -/
 theorem serre_D_H₄ :
     serre_D 2 H₄ = fun z => -(1/6 : ℂ) * (2 * H₂ z * H₄ z + H₄ z ^ 2) := by
-  funext z
-  have := congrFun f₄_eq_zero z
-  simp only [f₄, Pi.add_apply, Pi.smul_apply, Pi.mul_apply,
-    smul_eq_mul, Pi.zero_apply, add_eq_zero_iff_eq_neg] at this
+  funext z; have := congrFun f₄_eq_zero z
+  simp only [f₄, Pi.add_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul, Pi.zero_apply,
+    add_eq_zero_iff_eq_neg] at this
   convert this using 1; ring
