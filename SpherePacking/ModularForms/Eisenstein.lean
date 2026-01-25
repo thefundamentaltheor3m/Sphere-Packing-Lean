@@ -907,14 +907,17 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
   ring
 
 /-- `E₄(it)` is real for all `t > 0`. -/
+@[fun_prop]
 theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun :=
   E_even_imag_axis_real 4 (by norm_num) (by norm_num)
 
 /-- `E₆(it)` is real for all `t > 0`. -/
+@[fun_prop]
 theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun :=
   E_even_imag_axis_real 6 (by norm_num) (by norm_num)
 
 /-- `E₂(it)` is real for all `t > 0`. -/
+@[fun_prop]
 theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
@@ -1059,3 +1062,11 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
           _ = _ := by simp
     _ ≤ 1 + 24 * (r₀ / (1 - r₀) ^ 3) := by
         gcongr; exact norm_tsum_logDeriv_expo_le_of_norm_le hq_bound hr₀_lt_one
+
+/-- E₄ is bounded at infinity (as a modular form). -/
+lemma E₄_isBoundedAtImInfty : IsBoundedAtImInfty E₄.toFun :=
+  ModularFormClass.bdd_at_infty E₄
+
+/-- The product E₂ · E₄ is bounded at infinity. -/
+lemma E₂_mul_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (E₂ * E₄.toFun) :=
+  E₂_isBoundedAtImInfty.mul E₄_isBoundedAtImInfty

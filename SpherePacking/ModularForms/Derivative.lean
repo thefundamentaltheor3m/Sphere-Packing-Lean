@@ -596,65 +596,6 @@ theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiabl
   rw [serre_D_slash_equivariant, h]
   exact hF
 
-/--
-Serre derivative of Eisenstein series. Use `serre_D_slash_invariant` and compare constant terms.
-Note that the dimensions of the spaces of modular forms are all 1.
--/
-theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by sorry
-
-theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by sorry
-
-theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by sorry
-
-@[simp]
-theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
-  ext z
-  have h := ramanujan_E₂'
-  unfold serre_D at h
-  have h1 := congrFun h z
-  simp [field]
-  field_simp at h1
-  simpa [add_comm, sub_eq_iff_eq_add] using h1
-
-@[simp]
-theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
-  ext z
-  have h := ramanujan_E₄'
-  unfold serre_D at h
-  have h1 := congrFun h z
-  simp [field]
-  simp [field] at h1
-  ring_nf
-  ring_nf at h1
-  have hc : (12 : ℂ) ≠ 0 := by norm_num
-  apply (mul_right_inj' hc).mp
-  ring_nf
-  simpa [add_comm, sub_eq_iff_eq_add] using h1
-
-@[simp]
-theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
-  ext z
-  have h := ramanujan_E₆'
-  unfold serre_D at h
-  have h1 := congrFun h z
-  simp [field]
-  simp [field] at h1
-  ring_nf
-  ring_nf at h1
-  have hc : (12 : ℂ) ≠ 0 := by norm_num
-  apply (mul_right_inj' hc).mp
-  ring_nf
-  simpa [add_comm, sub_eq_iff_eq_add] using h1
-
-/- TODO: remove later -/
-example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.toFun - E₆.toFun) :=
-  by
-  rw [D_mul E₄.toFun E₄.toFun]
-  · simp only [ramanujan_E₄]
-    ring_nf
-  · exact E₄.holo'
-  · exact E₄.holo'
-
 /-
 Interaction between (Serre) derivative and restriction to the imaginary axis.
 -/
@@ -693,6 +634,63 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ)
   simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z, smul_eq_mul]
   ring_nf; simp only [I_sq]; ring
 
+/-- The derivative of a function with zero imaginary part also has zero imaginary part. -/
+lemma im_deriv_eq_zero_of_im_eq_zero {f : ℝ → ℂ} {t : ℝ}
+    (hf : DifferentiableAt ℝ f t) (him : ∀ s, (f s).im = 0) :
+    (deriv f t).im = 0 := by
+  simpa [funext him] using ((hasDerivAt_const t Complex.imCLM).clm_apply hf.hasDerivAt).deriv.symm
+
+/-- If F is real on the imaginary axis and MDifferentiable, then D F is also real
+on the imaginary axis. -/
+theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
+    (hF_diff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) : ResToImagAxis.Real (D F) := fun t ht => by
+  have him : ∀ s, (F.resToImagAxis s).im = 0 := fun s => by
+    by_cases hs : 0 < s
+    · exact hF_real s hs
+    · simp [ResToImagAxis, hs]
+  have h_im_deriv :=
+    im_deriv_eq_zero_of_im_eq_zero (ResToImagAxis.Differentiable F hF_diff t ht) him
+  have h_im_eq : (deriv F.resToImagAxis t).im = -2 * π * ((D F).resToImagAxis t).im := by
+    simpa [mul_assoc, ofReal_mul] using congrArg Complex.im (deriv_resToImagAxis_eq F hF_diff ht)
+  exact (mul_eq_zero.mp (h_im_deriv ▸ h_im_eq).symm).resolve_left
+    (mul_ne_zero (by norm_num) Real.pi_ne_zero)
+
+/-- The real part of F.resToImagAxis has derivative -2π * ((D F).resToImagAxis t).re at t. -/
+lemma hasDerivAt_resToImagAxis_re {F : ℍ → ℂ} (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    {t : ℝ} (ht : 0 < t) :
+    HasDerivAt (fun s => (F.resToImagAxis s).re) (-2 * π * ((D F).resToImagAxis t).re) t := by
+  have hdiffAt := ResToImagAxis.Differentiable F hdiff t ht
+  have hderivC := hdiffAt.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hdiff ht)
+  simpa using (hasDerivAt_const t (Complex.reCLM : ℂ →L[ℝ] ℝ)).clm_apply hderivC
+
+/-- If F is MDifferentiable and antitone on the imaginary axis,
+then D F has non-negative real part on the imaginary axis. -/
+theorem D_nonneg_from_antitone {F : ℍ → ℂ}
+    (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (hanti : AntitoneOn (fun t => (F.resToImagAxis t).re) (Set.Ioi 0)) :
+    ∀ t, 0 < t → 0 ≤ ((D F).resToImagAxis t).re := by
+  intro t ht
+  have hderiv_nonpos : deriv (fun s => (F.resToImagAxis s).re) t ≤ 0 :=
+    (derivWithin_of_isOpen isOpen_Ioi ht).symm.trans_le hanti.derivWithin_nonpos
+  rw [(hasDerivAt_resToImagAxis_re hdiff ht).deriv] at hderiv_nonpos
+  nlinarith [Real.pi_pos]
+
+/-- If F is real on the imaginary axis, MDifferentiable, and has strictly negative derivative
+on the imaginary axis, then D F is positive on the imaginary axis.
+
+Note: `StrictAntiOn` is NOT sufficient - a strictly decreasing function can have deriv = 0
+at isolated points (e.g., -x³ at x=0). Use this theorem when you can prove the derivative
+is strictly negative, typically from q-expansion analysis. -/
+theorem D_pos_from_deriv_neg {F : ℍ → ℂ}
+    (hreal : ResToImagAxis.Real F)
+    (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (hderiv_neg : ∀ t, 0 < t → deriv (fun s => (F.resToImagAxis s).re) t < 0) :
+    ResToImagAxis.Pos (D F) := by
+  refine ⟨D_real_of_real hreal hdiff, fun t ht => ?_⟩
+  have hderiv := hderiv_neg t ht
+  rw [(hasDerivAt_resToImagAxis_re hdiff ht).deriv] at hderiv
+  nlinarith [Real.pi_pos]
+
 /--
 If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
 is positive) and the derivative is positive, then $F$ is also positive.
@@ -703,15 +701,8 @@ theorem antiDerPos {F : ℍ → ℂ} (hFderiv : MDifferentiable 𝓘(ℂ) 𝓘(�
   obtain ⟨hF_real, t₀, ht₀_pos, hF_pos⟩ := hFepos
   obtain ⟨-, hDF_pos⟩ := hDF
   let g := fun t => (F.resToImagAxis t).re
-  have hg : ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t := fun t ht => by
-    have hdiff : DifferentiableAt ℝ F.resToImagAxis t :=
-      ResToImagAxis.Differentiable F hFderiv t ht
-    have hderivC : HasDerivAt F.resToImagAxis (-2 * π * (D F).resToImagAxis t) t :=
-      hdiff.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hFderiv ht)
-    have hconst : HasDerivAt (fun _ : ℝ => (Complex.reCLM : ℂ →L[ℝ] ℝ)) 0 t := by
-      simpa using (hasDerivAt_const (x := t) (c := (Complex.reCLM : ℂ →L[ℝ] ℝ)))
-    have hreal := hconst.clm_apply hderivC
-    simpa [g] using hreal
+  have hg : ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t :=
+    fun t ht => hasDerivAt_resToImagAxis_re hFderiv ht
   have hn : ∀ t ∈ Set.Ioi (0 : ℝ), deriv g t < 0 := fun t (ht : 0 < t) => by
     rw [(hg t ht).deriv]
     have ht' : 0 < (ResToImagAxis (D F) t).re := hDF_pos t ht
@@ -813,7 +804,7 @@ lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
 serre_D k f = D f - (k/12)·E₂·f. Both terms are bounded:
 - D f is bounded by `D_isBoundedAtImInfty_of_bounded`
 - (k/12)·E₂·f is bounded since E₂ and f are bounded -/
-theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
+theorem serre_D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ} (k : ℂ)
     (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
     (hbdd : IsBoundedAtImInfty f) : IsBoundedAtImInfty (serre_D k f) := by
   unfold serre_D
@@ -826,3 +817,24 @@ theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
     simp only [Pi.mul_apply]
     ring
   exact hD.sub hE₂f
+
+/-- A level-1 modular form is invariant under slash action by any element of SL(2,ℤ). -/
+@[simp]
+lemma ModularForm.slash_eq_self {k : ℤ} (f : ModularForm (Gamma 1) k) (γ : SL(2, ℤ)) :
+    (f : ℍ → ℂ) ∣[k] γ = f := by
+  simpa using f.slash_action_eq' _ ⟨γ, mem_Gamma_one γ, rfl⟩
+
+/-- The Serre derivative of a weight-k level-1 modular form is a weight-(k+2) modular form. -/
+noncomputable def serre_D_ModularForm (k : ℤ) (f : ModularForm (Gamma 1) k) :
+    ModularForm (Gamma 1) (k + 2) where
+  toSlashInvariantForm := {
+    toFun := serre_D k f
+    slash_action_eq' := fun _ hγ => by
+      obtain ⟨γ', -, rfl⟩ := Subgroup.mem_map.mp hγ
+      simpa using serre_D_slash_invariant k f f.holo' γ' (f.slash_eq_self γ')
+  }
+  holo' := serre_D_differentiable f.holo'
+  bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
+    obtain ⟨A', rfl⟩ := MonoidHom.mem_range.mp hA
+    exact (serre_D_slash_invariant k f f.holo' A' (f.slash_eq_self A')).symm ▸
+      serre_D_isBoundedAtImInfty_of_bounded k f.holo' (ModularFormClass.bdd_at_infty f)
