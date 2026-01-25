@@ -279,11 +279,9 @@ theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResTo
 /-- If `F` is real-valued, then the real part of `F.resToImagAxis` is equal to itself. -/
 theorem ResToImagAxis.real_part_eq {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (t : ℝ) :
     (F.resToImagAxis t).re = F.resToImagAxis t := by
-  by_cases ht : 0 < t
-  · have hFreal := hF t ht
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal ⊢
-    exact Complex.ext rfl (by simp [hFreal])
-  · simp [Function.resToImagAxis, ResToImagAxis, ht]
+  simp only [Function.resToImagAxis, ResToImagAxis]
+  split_ifs with ht
+  exacts [Complex.ext rfl (by simpa [Function.resToImagAxis, ResToImagAxis, ht] using (hF t ht).symm), rfl]
 
 /-!
 ## Polynomial decay of functions with exponential bounds
