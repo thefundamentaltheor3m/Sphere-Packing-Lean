@@ -128,32 +128,24 @@ lemma D_eq_serre_D_add (k : ℂ) (f : ℍ → ℂ) (z : ℍ) :
 @[simp]
 theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
   ext z
-  have hz : serre_D 1 E₂ z = -12⁻¹ * E₄.toFun z := congrFun ramanujan_E₂' z
-  simp only [Pi.mul_apply, Pi.sub_apply,
-    show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl] at hz ⊢
-  calc D E₂ z = serre_D 1 E₂ z + 1 * 12⁻¹ * E₂ z * E₂ z := D_eq_serre_D_add 1 E₂ z
-    _ = -12⁻¹ * E₄.toFun z + 12⁻¹ * E₂ z * E₂ z := by rw [hz]; ring
-    _ = _ := by ring
+  rw [D_eq_serre_D_add 1 E₂ z]
+  simp only [congrFun ramanujan_E₂' z, Pi.mul_apply, Pi.sub_apply,
+    show (-12⁻¹ : ℍ → ℂ) z = -12⁻¹ from rfl, show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl]
+  ring
 
 @[simp]
 theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
   ext z
-  have hz : serre_D 4 E₄.toFun z = -3⁻¹ * E₆.toFun z := congrFun ramanujan_E₄' z
-  simp only [Pi.mul_apply, Pi.sub_apply,
-    show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl] at hz ⊢
-  calc D E₄.toFun z
-      = serre_D 4 E₄.toFun z + 4 * 12⁻¹ * E₂ z * E₄.toFun z := D_eq_serre_D_add 4 E₄.toFun z
-    _ = -3⁻¹ * E₆.toFun z + 3⁻¹ * E₂ z * E₄.toFun z := by rw [hz]; ring
-    _ = _ := by ring
+  rw [D_eq_serre_D_add 4 E₄.toFun z]
+  simp only [congrFun ramanujan_E₄' z, Pi.mul_apply, Pi.sub_apply,
+    show (-3⁻¹ : ℍ → ℂ) z = -3⁻¹ from rfl, show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl]
+  ring
 
 @[simp]
 theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
   ext z
-  have hz : serre_D 6 E₆.toFun z = -2⁻¹ * E₄.toFun z * E₄.toFun z := congrFun ramanujan_E₆' z
-  simp only [Pi.mul_apply, Pi.sub_apply,
-    show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl] at hz ⊢
-  calc D E₆.toFun z
-      = serre_D 6 E₆.toFun z + 6 * 12⁻¹ * E₂ z * E₆.toFun z := D_eq_serre_D_add 6 E₆.toFun z
-    _ = -2⁻¹ * E₄.toFun z * E₄.toFun z + 2⁻¹ * E₂ z * E₆.toFun z := by rw [hz]; ring
-    _ = _ := by ring
+  rw [D_eq_serre_D_add 6 E₆.toFun z]
+  simp only [congrFun ramanujan_E₆' z, Pi.mul_apply, Pi.sub_apply,
+    show (-2⁻¹ : ℍ → ℂ) z = -2⁻¹ from rfl, show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl]
+  ring
 

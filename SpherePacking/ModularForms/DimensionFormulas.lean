@@ -92,7 +92,7 @@ lemma delta_eq_E4E6_const : ∃ (c : ℂ), (c • Delta) = Delta_E4_E6_aux := by
     simp
     exact ModularForm.levelOne_weight_zero_rank_one
   simp at this
-  exact exists_smul_eq_of_finrank_one' hr Delta_ne_zero Delta_E4_E6_aux
+  apply (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).mp hr Delta_E4_E6_aux
 
 lemma cuspform_weight_lt_12_zero (k : ℤ) (hk : k < 12) : Module.rank ℂ (CuspForm Γ(1) k) = 0 := by
   have := CuspForms_iso_Modforms k
