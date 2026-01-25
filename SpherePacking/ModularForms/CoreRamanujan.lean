@@ -35,31 +35,6 @@ open scoped ModularForm MatrixGroups Manifold Interval Real NNReal ENNReal Topol
 
 noncomputable section
 
-/-! ## Helper lemmas for dimension-one arguments -/
-
-/-- In a rank-one module, every element is a scalar multiple of any nonzero element. -/
-lemma exists_smul_eq_of_rank_one {M : Type*} [AddCommGroup M] [Module ℂ M]
-    (hrank : Module.rank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, f = c • e := by
-  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' e he).mp
-    (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f
-  exact ⟨c, hc.symm⟩
-
-/-- Symmetric version: `c • e = f` instead of `f = c • e`. -/
-lemma exists_smul_eq_of_rank_one' {M : Type*} [AddCommGroup M] [Module ℂ M]
-    (hrank : Module.rank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, c • e = f :=
-  (finrank_eq_one_iff_of_nonzero' e he).mp (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f
-
-/-- Finrank version with symmetric equality. -/
-lemma exists_smul_eq_of_finrank_one' {M : Type*} [AddCommGroup M] [Module ℂ M]
-    (hrank : Module.finrank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, c • e = f :=
-  (finrank_eq_one_iff_of_nonzero' e he).mp hrank f
-
-/-- Convert smul equality of modular forms to pointwise equality. -/
-lemma smul_modularForm_eq_pointwise {Γ : Subgroup SL(2, ℤ)} {k : ℤ} {f g : ModularForm Γ k}
-    {c : ℂ} (h : f = c • g) (z : ℍ) : (f : ℍ → ℂ) z = c * (g : ℍ → ℂ) z := by
-  simpa [ModularForm.coe_smul, smul_eq_mul] using
-    congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
-
 /-! ## The Ramanujan Identities
 
 These are the main theorems. The primed versions are in terms of serre_D,

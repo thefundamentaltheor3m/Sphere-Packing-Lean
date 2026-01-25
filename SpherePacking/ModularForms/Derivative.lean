@@ -814,7 +814,7 @@ serre_D k f = D f - (k/12)·E₂·f. Both terms are bounded:
 theorem serre_D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ} (k : ℂ)
     (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
     (hbdd : IsBoundedAtImInfty f) : IsBoundedAtImInfty (serre_D k f) := by
-  unfold serre_D
+  simp only [serre_D_eq]
   have hD : IsBoundedAtImInfty (D f) := D_isBoundedAtImInfty_of_bounded hf hbdd
   have hE₂f : IsBoundedAtImInfty (fun z => k * 12⁻¹ * E₂ z * f z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) :=

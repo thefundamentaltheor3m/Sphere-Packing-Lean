@@ -92,7 +92,7 @@ lemma delta_eq_E4E6_const : ∃ (c : ℂ), (c • Delta) = Delta_E4_E6_aux := by
     simp
     exact ModularForm.levelOne_weight_zero_rank_one
   simp at this
-  apply (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).mp hr Delta_E4_E6_aux
+  exact exists_smul_eq_of_finrank_one' hr Delta_ne_zero Delta_E4_E6_aux
 
 lemma cuspform_weight_lt_12_zero (k : ℤ) (hk : k < 12) : Module.rank ℂ (CuspForm Γ(1) k) = 0 := by
   have := CuspForms_iso_Modforms k
@@ -294,11 +294,8 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
       intro h
       rw [← IsCuspForm_iff_coeffZero_eq_zero] at h
       exact hf h
-    have r6 := weight_six_one_dimensional
-    rw [Module.rank_eq_one_iff_finrank_eq_one] at r6
-    rw [finrank_eq_one_iff_of_nonzero' E₆ E6_ne_zero] at r6
-    have r6f := r6 ((f.mul f).mul f)
-    obtain ⟨c6, hc6⟩ := r6f
+    obtain ⟨c6, hc6⟩ := exists_smul_eq_of_rank_one' weight_six_one_dimensional E6_ne_zero
+      ((f.mul f).mul f)
     have hc6e : c6 = ((qExpansion 1 f).coeff 0)^3 := by
       have := qExpansion_mul_coeff 1 4 2 (f.mul f) f
       have h2 := qExpansion_mul_coeff 1 2 2 f f
@@ -312,11 +309,8 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
         map_mul] at *
       rw [← mul_assoc]
       exact hh
-    have r4 := weight_four_one_dimensional
-    rw [Module.rank_eq_one_iff_finrank_eq_one] at r4
-    rw [finrank_eq_one_iff_of_nonzero' E₄ E4_ne_zero] at r4
-    have r4f := r4 (f.mul f)
-    obtain ⟨c4, hc4⟩ := r4f
+    obtain ⟨c4, hc4⟩ := exists_smul_eq_of_rank_one' weight_four_one_dimensional E4_ne_zero
+      (f.mul f)
     have hc4e : c4 = ((qExpansion 1 f).coeff 0)^2 := by
       have := qExpansion_mul_coeff 1 2 2 f f
       rw [← hc4] at this
