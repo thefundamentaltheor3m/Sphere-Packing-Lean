@@ -89,8 +89,7 @@ The proof uses:
 theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   obtain ⟨c, hc⟩ := exists_smul_eq_of_rank_one weight_four_one_dimensional E4_ne_zero
     serre_DE₂_ModularForm
-  have hfun : ∀ z, serre_D 1 E₂ z = c * E₄.toFun z :=
-    fun z => smul_modularForm_eq_pointwise hc z
+  have hfun : ∀ z, serre_D 1 E₂ z = c * E₄.toFun z := smul_modularForm_eq_pointwise hc
   have hc_val : c = -(1/12 : ℂ) :=
     scalar_eq_of_tendsto hfun serre_DE₂_tendsto_atImInfty E₄_tendsto_one_atImInfty
   ext z
@@ -108,8 +107,7 @@ Uses the dimension argument:
 theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   obtain ⟨c, hc⟩ := exists_smul_eq_of_rank_one weight_six_one_dimensional E6_ne_zero
     serre_DE₄_ModularForm
-  have hfun : ∀ z, serre_D 4 E₄.toFun z = c * E₆.toFun z :=
-    fun z => smul_modularForm_eq_pointwise hc z
+  have hfun : ∀ z, serre_D 4 E₄.toFun z = c * E₆.toFun z := smul_modularForm_eq_pointwise hc
   have hc_val : c = -(1/3 : ℂ) :=
     scalar_eq_of_tendsto hfun serre_DE₄_tendsto_atImInfty E₆_tendsto_one_atImInfty
   ext z
