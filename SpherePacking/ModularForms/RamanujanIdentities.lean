@@ -1,7 +1,7 @@
 import SpherePacking.ModularForms.EisensteinAsymptotics
 
 /-!
-# Core Ramanujan Identities for Eisenstein Series
+# Ramanujan Identities for Eisenstein Series
 
 This file contains the fundamental Ramanujan identities for Eisenstein series
 (Blueprint Theorem 6.50).
