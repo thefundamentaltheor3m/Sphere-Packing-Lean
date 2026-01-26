@@ -363,6 +363,26 @@ theorem DE₄_qexp (z : UpperHalfPlane) :
     _ = 0 + (240 : ℂ) * D f z := by rw [hD_one, hD_smul]
     _ = _ := by rw [zero_add, hDf]
 
+/--
+The q-expansion identity E₂E₄ - E₆ = 720·Σn·σ₃(n)·qⁿ.
+This follows from Ramanujan's formula: E₂E₄ - E₆ = 3·D(E₄),
+combined with D(E₄) = 240·Σn·σ₃(n)·qⁿ (since D multiplies q-coefficients by n).
+-/
+theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
+    (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)
+    := by
+  -- From ramanujan_E₄: D E₄ = (1/3) * (E₂ * E₄ - E₆)
+  -- So: E₂ * E₄ - E₆ = 3 * D E₄
+  have hRam : (E₂ z) * (E₄ z) - (E₆ z) = 3 * D E₄.toFun z := by
+    have h := congrFun ramanujan_E₄ z
+    simp only [Pi.mul_apply, Pi.sub_apply, show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl] at h
+    field_simp at h ⊢
+    ring_nf at h ⊢
+    exact h.symm
+  -- Substitute D(E₄) = 240 * ∑' n, n * σ₃(n) * q^n
+  rw [hRam, DE₄_qexp]
+  ring
+
 /-- Each term n*σ₃(n)*exp(-2πnt) in D E₄ q-expansion has positive real part on imaginary axis. -/
 lemma DE₄_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
     0 < ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
