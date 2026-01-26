@@ -81,7 +81,14 @@ theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0
     (F ∣[k] S) z = I ^ (-k) * t ^ (-k) * F z')
 
 theorem ResToImagAxis.SlashActionS' (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0 < t) :
-    F.resToImagAxis (1 / t) = (Complex.I) ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by sorry
+    F.resToImagAxis (1 / t) = (Complex.I) ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by
+  have hS := ResToImagAxis.SlashActionS F k ht
+  calc F.resToImagAxis (1 / t)
+      = I ^ k * I ^ (-k) * (t ^ k * t ^ (-k)) * F.resToImagAxis (1 / t) := by
+          simp only [zpow_neg, mul_inv_cancel₀ (zpow_ne_zero k I_ne_zero),
+                     mul_inv_cancel₀ (zpow_ne_zero k (ofReal_ne_zero.mpr ht.ne')), one_mul]
+    _ = I ^ k * t ^ k * (I ^ (-k) * t ^ (-k) * F.resToImagAxis (1 / t)) := by ring
+    _ = I ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by rw [← hS]
 
 /--
 Realness, positivity and essential positivity are closed under the addition and multiplication.

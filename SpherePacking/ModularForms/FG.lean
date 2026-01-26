@@ -641,53 +641,45 @@ theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
       * (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t
         + 5 * H₂.resToImagAxis t ^ 2) := by
   have ht_inv : 0 < 1 / t := one_div_pos.mpr ht
-  -- Define z = I * t on the imaginary axis
-  set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
-  -- Key: S • z = I / t on the imaginary axis
-  have hS_z : S • z = ⟨I / t, by simp [ht]⟩ := by
-    apply UpperHalfPlane.ext
-    simp only [UpperHalfPlane.modular_S_smul, coe_mk_subtype, hz_def]
-    have hne : (I : ℂ) * t ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht.ne')
-    have : (-(I * (t : ℂ)))⁻¹ = I / t := by
-      field_simp [hne]
-      simp only [I_sq]
-      ring
-    exact this
-  -- G.resToImagAxis (1/t) = G(S • z) = G(I/t)
-  have hG_res : G.resToImagAxis (1 / t) = G (S • z) := by
-    simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
-    congr 1
-    apply UpperHalfPlane.ext
-    simp only [coe_mk_subtype, div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
-  -- Apply G_functional_equation
-  have hG_eq := G_functional_equation z
-  -- (I * t)^10 = -t^10 since I^10 = -1
-  have hz_pow : (z : ℂ) ^ 10 = -t ^ 10 := by
-    simp only [hz_def, coe_mk_subtype, mul_pow]
-    have : (I : ℂ) ^ 10 = -1 := by norm_num [I_sq, pow_succ, pow_zero]
-    simp only [this]; ring
-  -- G(1/t) = t^10 * H₄(t)^3 * (...)
-  have hG_val : G.resToImagAxis (1 / t) = (t : ℂ) ^ 10 * H₄ z ^ 3 *
-      (2 * H₄ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₂ z ^ 2) := by
-    rw [hG_res, hG_eq, hz_pow]; ring
-  -- H₂ z = H₂.resToImagAxis t and H₄ z = H₄.resToImagAxis t
-  have hH₂_z : H₂ z = H₂.resToImagAxis t := by
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, hz_def]
-  have hH₄_z : H₄ z = H₄.resToImagAxis t := by
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, hz_def]
+  -- Use SlashActionS' to relate H₂ and H₄ at 1/t and t
+  -- H₂.resToImagAxis (1/t) = I² * t² * (H₂ ∣[2] S).resToImagAxis t = t² * H₄.resToImagAxis t
+  have hH₂_transform : H₂.resToImagAxis (1 / t) = (t : ℂ) ^ 2 * H₄.resToImagAxis t := by
+    rw [ResToImagAxis.SlashActionS' H₂ 2 ht, H₂_S_action]
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, zpow_two,
+               Pi.neg_apply, I_mul_I]
+    ring
+  -- H₄.resToImagAxis (1/t) = t² * H₂.resToImagAxis t
+  have hH₄_transform : H₄.resToImagAxis (1 / t) = (t : ℂ) ^ 2 * H₂.resToImagAxis t := by
+    rw [ResToImagAxis.SlashActionS' H₄ 2 ht, H₄_S_action]
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, zpow_two,
+               Pi.neg_apply, I_mul_I]
+    ring
+  -- G.resToImagAxis (1/t) in terms of H₂ and H₄ resToImagAxis at 1/t
+  have hG_expand : G.resToImagAxis (1 / t) = H₂.resToImagAxis (1 / t) ^ 3 *
+      (2 * H₂.resToImagAxis (1 / t) ^ 2 +
+       5 * H₂.resToImagAxis (1 / t) * H₄.resToImagAxis (1 / t) +
+       5 * H₄.resToImagAxis (1 / t) ^ 2) := by
+    simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, G,
+               Pi.pow_apply, Pi.mul_apply, Pi.add_apply, Pi.smul_apply,
+               Complex.real_smul, Complex.ofReal_ofNat]
   -- Use that H₂ and H₄ are real on the imaginary axis
   have hH₂_im : (H₂.resToImagAxis t).im = 0 := H₂_imag_axis_real t ht
   have hH₄_im : (H₄.resToImagAxis t).im = 0 := H₄_imag_axis_real t ht
-  -- H₂ and H₄ equal their real parts as complex numbers
   have hH₂_eq : H₂.resToImagAxis t = (H₂.resToImagAxis t).re :=
     Complex.ext rfl (by simp only [ofReal_im]; exact hH₂_im)
   have hH₄_eq : H₄.resToImagAxis t = (H₄.resToImagAxis t).re :=
     Complex.ext rfl (by simp only [ofReal_im]; exact hH₄_im)
-  -- Final computation: show ↑(z.re) = z for a real-valued complex expression
-  rw [GReal, hG_val, hH₂_z, hH₄_z, hH₂_eq, hH₄_eq]
-  -- The expression is built from ofReal of real numbers, so its imaginary part is 0
+  -- Substitute transformations and simplify
+  have hG_val : G.resToImagAxis (1 / t) = (t : ℂ) ^ 10 * H₄.resToImagAxis t ^ 3 *
+      (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t +
+       5 * H₂.resToImagAxis t ^ 2) := by
+    rw [hG_expand, hH₂_transform, hH₄_transform]
+    ring
+  -- Final computation
+  rw [GReal, hG_val, hH₂_eq, hH₄_eq]
   set x : ℝ := (H₄.resToImagAxis t).re with hx_def
   set y : ℝ := (H₂.resToImagAxis t).re with hy_def
+  -- Show the expression has imaginary part 0
   have him : ((t : ℂ) ^ 10 * (x : ℂ) ^ 3 *
       (2 * (x : ℂ) ^ 2 + 5 * (y : ℂ) * (x : ℂ) + 5 * (y : ℂ) ^ 2)).im = 0 := by
     simp only [mul_im, add_im, ofReal_re, ofReal_im, pow_succ, pow_zero, mul_zero,
