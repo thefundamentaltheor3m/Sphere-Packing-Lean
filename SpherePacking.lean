@@ -49,7 +49,6 @@ import SpherePacking.MagicFunction.g.Basic
 import SpherePacking.MainTheorem
 import SpherePacking.ModularForms.BigO
 import SpherePacking.ModularForms.Cauchylems
-import SpherePacking.ModularForms.RamanujanIdentities
 import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.DimensionFormulas
@@ -63,6 +62,7 @@ import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.PhiTransform
 import SpherePacking.ModularForms.QExpansion
+import SpherePacking.ModularForms.RamanujanIdentities
 import SpherePacking.ModularForms.ResToImagAxis
 import SpherePacking.ModularForms.SerreDerivativeSlash
 import SpherePacking.ModularForms.SlashActionAuxil
