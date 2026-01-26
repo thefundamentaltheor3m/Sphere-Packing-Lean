@@ -80,6 +80,9 @@ theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0
     rw [modular_slash_S_apply, h]; simp [hzdef, mul_zpow I (t : ℂ) (-k), mul_comm (F z')] :
     (F ∣[k] S) z = I ^ (-k) * t ^ (-k) * F z')
 
+theorem ResToImagAxis.SlashActionS' (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0 < t) :
+    F.resToImagAxis (1 / t) = (Complex.I) ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by sorry
+
 /--
 Realness, positivity and essential positivity are closed under the addition and multiplication.
 -/
