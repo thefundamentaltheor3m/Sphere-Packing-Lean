@@ -137,9 +137,15 @@ for all $z$ with $\Im z > 1/2$.
 \end{corollary}
 \begin{proof}
 By Ramanujan's formula, $E_2 E_4 - E_6 = 3E_4' = 720 \sum_{n \ge 1} n \sigma_3(n) e^{2 \pi i n z}$ and
+\ifplastex
+\begin{equation*}
+    (E_2(z) E_4(z) - E_6(z))^{2} = 720^{2} e^{4 \pi i z} + O(e^{5 \pi i z}).
+\end{equation*}
+\else
 \begin{equation}
     (E_2(z) E_4(z) - E_6(z))^{2} = 720^{2} e^{4 \pi i z} + O(e^{5 \pi i z}). \notag
 \end{equation}
+\fi
 Then the result follows from Lemma~\ref{lemma:mod-div-disc-bound} with $f(z) = (E_2 E_4 - E_6)^2$ and $n_0 = 4$.
 \end{proof}
 
@@ -419,9 +425,15 @@ it suffices to check that $h$ is invariant under their action. This follows imme
 from \eqref{eqn:H2-transform-S}--\eqref{eqn:H4-transform-S} and \eqref{eqn: h define}. Next we analyze the poles of $h$.
 It is known \cite[Chapter~I Lemma~4.1]{Mumford} that $\theta_{10}$ has no zeros in the upper-half plane and hence $h$ has poles only at the cusps.
 At the cusp $i\infty$ this modular form has the Fourier expansion
+\ifplastex
+\begin{equation*}
+h(z)\,=\,q^{-1} + 16 - 132 q + 640 q^2 - 2550 q^3+O(q^4).
+\end{equation*}
+\else
 \begin{equation}
 h(z)\,=\,q^{-1} + 16 - 132 q + 640 q^2 - 2550 q^3+O(q^4).\notag
 \end{equation}
+\fi
 Let $I=\left(\begin{smallmatrix}1&0\\0&1\end{smallmatrix}\right)$,
 $T=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$, and
 $S=\left(\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right)$ be elements of $\Gamma_1$.
