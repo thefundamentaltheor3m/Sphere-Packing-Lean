@@ -610,7 +610,83 @@ theorem F_functional_equation (z : ℍ) :
 theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
     FReal (1 / t) = t ^ 12 * FReal t - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun).resToImagAxis t
       + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun.resToImagAxis t) ^ 2 := by
-  sorry
+  have ht_inv : 0 < 1 / t := one_div_pos.mpr ht
+  -- Define z = I * t on the imaginary axis
+  set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
+  -- Key: S • z = I / t on the imaginary axis
+  have hS_z : S • z = ⟨I / t, by simp [ht]⟩ := by
+    apply UpperHalfPlane.ext
+    simp only [UpperHalfPlane.modular_S_smul, hz_def, div_eq_mul_inv]
+    change (-(I * ↑t))⁻¹ = I * (↑t)⁻¹
+    have hne : (I : ℂ) * t ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht.ne')
+    field_simp [hne]
+    simp only [I_sq]
+    ring
+  -- F.resToImagAxis (1/t) = F(S • z)
+  have hF_res : F.resToImagAxis (1 / t) = F (S • z) := by
+    simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
+    congr 1; apply UpperHalfPlane.ext
+    simp only [coe_mk_subtype, div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
+  -- Apply F_functional_equation
+  have hF_eq := F_functional_equation z
+  -- Powers of (I * t): (I*t)^12 = t^12, (I*t)^11 = -I*t^11, (I*t)^10 = -t^10
+  have hz_pow12 : (z : ℂ) ^ 12 = t ^ 12 := by
+    simp only [hz_def, coe_mk_subtype, mul_pow]
+    have hI12 : (I : ℂ) ^ 12 = 1 := by norm_num [I_sq, pow_succ, pow_zero]
+    rw [hI12, one_mul]
+  have hz_pow11 : (z : ℂ) ^ 11 = -I * t ^ 11 := by
+    simp only [hz_def, coe_mk_subtype, mul_pow]
+    congr 1
+    norm_num [I_sq, pow_succ, pow_zero]
+  have hz_pow10 : (z : ℂ) ^ 10 = -t ^ 10 := by
+    simp only [hz_def, coe_mk_subtype, mul_pow]
+    have hI10 : (I : ℂ) ^ 10 = -1 := by norm_num [I_sq, pow_succ, pow_zero]
+    rw [hI10]; ring
+  -- Compute F(S • z) using the functional equation
+  have hF_val : F.resToImagAxis (1 / t) = (t : ℂ) ^ 12 * F z
+      - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun) z
+      + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun z) ^ 2 := by
+    rw [hF_res, hF_eq, hz_pow12, hz_pow11, hz_pow10]
+    have hI2 : (I : ℂ) ^ 2 = -1 := I_sq
+    ring_nf
+    rw [hI2]
+    ring
+  -- Relate F z, (F₁ * E₄) z, E₄ z to resToImagAxis values
+  have hF_z : F z = F.resToImagAxis t := by
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, hz_def]
+  have hF₁E₄_z : (F₁ * E₄.toFun) z = (F₁ * E₄.toFun).resToImagAxis t := by
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, hz_def]
+  have hE₄_z : E₄.toFun z = E₄.toFun.resToImagAxis t := by
+    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, hz_def]
+  -- Use that F, F₁*E₄, E₄² are real on the imaginary axis
+  have hF_im : (F.resToImagAxis t).im = 0 := F_imag_axis_real t ht
+  have hF₁E₄_im : ((F₁ * E₄.toFun).resToImagAxis t).im = 0 :=
+    ResToImagAxis.Real.mul F₁_imag_axis_real E₄_imag_axis_real t ht
+  have hE₄_im : (E₄.toFun.resToImagAxis t).im = 0 := E₄_imag_axis_real t ht
+  -- Express complex values as real coercions
+  have hF_eq_re : F.resToImagAxis t = (FReal t : ℂ) := by
+    unfold FReal
+    exact Complex.ext rfl (by simp only [ofReal_im]; exact hF_im)
+  have hF₁E₄_eq_re : (F₁ * E₄.toFun).resToImagAxis t =
+      (((F₁ * E₄.toFun).resToImagAxis t).re : ℂ) :=
+    Complex.ext rfl (by simp only [ofReal_im]; exact hF₁E₄_im)
+  have hE₄_eq_re : E₄.toFun.resToImagAxis t = ((E₄.toFun.resToImagAxis t).re : ℂ) :=
+    Complex.ext rfl (by simp only [ofReal_im]; exact hE₄_im)
+  -- Final computation: show LHS equals RHS by working in ℂ then taking .re
+  rw [FReal, hF_val, hF_z, hF₁E₄_z, hE₄_z, hF_eq_re, hF₁E₄_eq_re, hE₄_eq_re]
+  set a : ℝ := FReal t with ha_def
+  set b : ℝ := ((F₁ * E₄.toFun).resToImagAxis t).re with hb_def
+  set c : ℝ := (E₄.toFun.resToImagAxis t).re with hc_def
+  -- Show the expression has imaginary part 0, noting π is real
+  have him : ((t : ℂ) ^ 12 * (a : ℂ) - 12 * π ^ (-1 : ℤ) * t ^ 11 * (b : ℂ)
+      + 36 * π ^ (-2 : ℤ) * t ^ 10 * (c : ℂ) ^ 2).im = 0 := by
+    simp only [sub_im, add_im, mul_im, ofReal_re, ofReal_im, pow_succ, pow_zero,
+               mul_zero, zero_mul, add_zero, one_mul, zpow_neg, zpow_ofNat,
+               inv_im, normSq_ofReal]
+    ring
+  conv_rhs => rw [← Complex.re_add_im ((t : ℂ) ^ 12 * (a : ℂ) - 12 * π ^ (-1 : ℤ) * t ^ 11 * (b : ℂ)
+      + 36 * π ^ (-2 : ℤ) * t ^ 10 * (c : ℂ) ^ 2)]
+  simp only [him, ofReal_zero, zero_mul, add_zero]
 
 /- Functional equation of $G$ -/
 theorem G_functional_equation (z : ℍ) :
