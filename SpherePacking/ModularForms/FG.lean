@@ -717,27 +717,41 @@ theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
       * (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t
         + 5 * H₂.resToImagAxis t ^ 2) := by
   have ht_inv : 0 < 1 / t := one_div_pos.mpr ht
-  -- Use SlashActionS' to relate H₂ and H₄ at 1/t and t
-  -- H₂.resToImagAxis (1/t) = I² * t² * (H₂ ∣[2] S).resToImagAxis t = t² * H₄.resToImagAxis t
-  have hH₂_transform : H₂.resToImagAxis (1 / t) = (t : ℂ) ^ 2 * H₄.resToImagAxis t := by
-    rw [ResToImagAxis.SlashActionS' H₂ 2 ht, H₂_S_action]
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, zpow_two,
-               Pi.neg_apply, I_mul_I]
+  -- Define z = I * t on the imaginary axis
+  set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
+  -- Key: S • z = I / t on the imaginary axis
+  have hS_z : S • z = ⟨I / t, by simp [ht]⟩ := by
+    apply UpperHalfPlane.ext
+    simp only [UpperHalfPlane.modular_S_smul, hz_def, div_eq_mul_inv]
+    change (-(I * ↑t))⁻¹ = I * (↑t)⁻¹
+    have hne : (I : ℂ) * t ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht.ne')
+    field_simp [hne]
+    simp only [I_sq]
     ring
-  -- H₄.resToImagAxis (1/t) = t² * H₂.resToImagAxis t
-  have hH₄_transform : H₄.resToImagAxis (1 / t) = (t : ℂ) ^ 2 * H₂.resToImagAxis t := by
-    rw [ResToImagAxis.SlashActionS' H₄ 2 ht, H₄_S_action]
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, zpow_two,
-               Pi.neg_apply, I_mul_I]
+  -- G.resToImagAxis (1/t) = G(S • z)
+  have hG_res : G.resToImagAxis (1 / t) = G (S • z) := by
+    simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
+    congr 1; apply UpperHalfPlane.ext
+    simp only [coe_mk_subtype, div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
+  -- Apply G_functional_equation
+  have hG_eq := G_functional_equation z
+  -- Power of (I * t): (I*t)^10 = -t^10
+  have hz_pow10 : (z : ℂ) ^ 10 = -t ^ 10 := by
+    simp only [hz_def, coe_mk_subtype, mul_pow]
+    have hI10 : (I : ℂ) ^ 10 = -1 := by norm_num [I_sq, pow_succ, pow_zero]
+    rw [hI10]; ring
+  -- Compute G(S • z) using the functional equation
+  have hG_val : G.resToImagAxis (1 / t) = (t : ℂ) ^ 10 * H₄.resToImagAxis t ^ 3 *
+      (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t +
+       5 * H₂.resToImagAxis t ^ 2) := by
+    rw [hG_res, hG_eq, hz_pow10]
+    -- Relate H₂ z, H₄ z to resToImagAxis values
+    have hH₂_z : H₂ z = H₂.resToImagAxis t := by
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, hz_def]
+    have hH₄_z : H₄ z = H₄.resToImagAxis t := by
+      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, hz_def]
+    rw [hH₂_z, hH₄_z]
     ring
-  -- G.resToImagAxis (1/t) in terms of H₂ and H₄ resToImagAxis at 1/t
-  have hG_expand : G.resToImagAxis (1 / t) = H₂.resToImagAxis (1 / t) ^ 3 *
-      (2 * H₂.resToImagAxis (1 / t) ^ 2 +
-       5 * H₂.resToImagAxis (1 / t) * H₄.resToImagAxis (1 / t) +
-       5 * H₄.resToImagAxis (1 / t) ^ 2) := by
-    simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, G,
-               Pi.pow_apply, Pi.mul_apply, Pi.add_apply, Pi.smul_apply,
-               Complex.real_smul, Complex.ofReal_ofNat]
   -- Use that H₂ and H₄ are real on the imaginary axis
   have hH₂_im : (H₂.resToImagAxis t).im = 0 := H₂_imag_axis_real t ht
   have hH₄_im : (H₄.resToImagAxis t).im = 0 := H₄_imag_axis_real t ht
@@ -745,12 +759,6 @@ theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
     Complex.ext rfl (by simp only [ofReal_im]; exact hH₂_im)
   have hH₄_eq : H₄.resToImagAxis t = (H₄.resToImagAxis t).re :=
     Complex.ext rfl (by simp only [ofReal_im]; exact hH₄_im)
-  -- Substitute transformations and simplify
-  have hG_val : G.resToImagAxis (1 / t) = (t : ℂ) ^ 10 * H₄.resToImagAxis t ^ 3 *
-      (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t +
-       5 * H₂.resToImagAxis t ^ 2) := by
-    rw [hG_expand, hH₂_transform, hH₄_transform]
-    ring
   -- Final computation
   rw [GReal, hG_val, hH₂_eq, hH₄_eq]
   set x : ℝ := (H₄.resToImagAxis t).re with hx_def
