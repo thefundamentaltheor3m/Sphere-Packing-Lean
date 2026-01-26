@@ -56,42 +56,6 @@ variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥
 -- let `conj z` denote the complex conjugate of a complex number `z`:
 local notation "conj" => starRingEnd ℂ
 
-lemma SchwartzMap.summableOn_iff {E V : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    [NormedAddCommGroup V] [NormedSpace ℝ V] (f : 𝓢(E, V)) (X : Set E) :
-    Summable (fun (x : X) => f x) ↔ ∃ ε > 0, IsSeparated ε X := by
-  admit
-
-alias ⟨_, SchwartzMap.summableOn⟩ := SchwartzMap.summableOn_iff
-
-theorem _root_.Continuous.re {α 𝕜 : Type*} [TopologicalSpace α] [RCLike 𝕜] {f : α → 𝕜}
-    (hf : Continuous f) : Continuous (fun x ↦ RCLike.re (f x)) :=
-  RCLike.continuous_re.comp hf
-
-theorem Summable.re {α 𝕜 : Type*} [RCLike 𝕜] {f : α → 𝕜} (hf : Summable f) :
-    Summable (fun x ↦ RCLike.re (f x)) := by
-  rw [← summable_norm_iff] at hf ⊢
-  exact Summable.of_nonneg_of_le (fun x ↦ norm_nonneg _) (fun x ↦ RCLike.abs_re_le_norm _) hf
-
-lemma ZLattice.isSeparated (L : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology L]
-    [hL : IsZLattice ℝ L] : ∃ ε > 0, IsSeparated ε (L : Set (EuclideanSpace ℝ (Fin d))) := by
-  admit
-
-lemma SpherePacking.centers_isSeparated (S : SpherePacking d) :
-    IsSeparated (ENNReal.ofReal S.separation) S.centers := by
-  -- By definition of `SpherePacking`, the centers are pairwise separated by a positive distance.
-  have h_separated : ∀ x y : S.centers, x ≠ y →
-    dist (x : EuclideanSpace ℝ (Fin d)) (y : EuclideanSpace ℝ (Fin d)) > S.separation := by
-    -- By definition of `SpherePacking`, the centers are pairwise separated by a positive
-    -- distance. Therefore, for any two distinct centers `x` and `y`, we have `dist x y > S.
-    -- separation`.
-    intros x y hxy
-    apply S.centers_dist hxy;
-  -- By definition of `IsSeparated`, we need to show that for any two distinct points in
-  -- `S.centers`, their distance is greater than `S.separation`. This follows directly
-  -- from `h_separated`.
-  intros x hx y hy hxy;
-  rw [ edist_dist ] ; aesop;
-
 section Complex_Function_Helpers
 
 /-- If the real part of a function is equal to the function itself,
@@ -115,16 +79,13 @@ end Complex_Function_Helpers
 
 section Nonnegativity
 
-include hne_zero in
-/-- The Fourier transform of `f` is not identically zero. -/
-theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
-  /-rw [← fourierTransformCLE_apply ℝ f]
-  intro hFourierZero
+/-- The Fourier transform of a Schwartz function is non-zero if the function is non-zero. -/
+theorem fourier_ne_zero (hne_zero : f ≠ 0) : 𝓕 f ≠ 0 := by
+  intro hfourier_zero
   apply hne_zero
-  rw [← ContinuousLinearEquiv.map_eq_zero_iff (fourierTransformCLE ℝ)]
-  exact hFourierZero
--/
-  sorry
+  rw [← ContinuousLinearEquiv.map_eq_zero_iff <|
+    FourierTransform.fourierCLE ℝ (𝓢(EuclideanSpace ℝ (Fin d), ℂ))]
+  exact hfourier_zero
 
 include hCohnElkies₂ in
 /-- If the real part of the Fourier transform `𝓕 f` is nonnegative everywhere,
@@ -500,23 +461,52 @@ lemma hsummable₂ : Summable (Function.uncurry fun
   simp [Function.uncurry_def]
   sorry
 
+omit [Nonempty ↑P.centers] in
 lemma hsummable₃ : Summable (fun
     (m : ↥(BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice)) =>
       (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
         exp (2 * π * I * ⟪x.val, (m.val).ofLp⟫_[ℝ])) ^ 2)) := by
-  sorry
+  have := @SchwartzMap.summableOn_iff;
+  contrapose! this;
+  refine ⟨ ℝ, ℝ, inferInstance, inferInstance, inferInstance, inferInstance, ?_, ?_ ⟩;
+  · exact 0;
+  refine ⟨ Set.univ, Or.inl ⟨ ?_, ?_ ⟩ ⟩ <;> norm_num [ Metric.IsSeparated ];
+  · exact summable_zero;
+  · intro x hx; rw [ Set.Pairwise ] ; norm_num [ hx ] ;
+    rcases x with ( _ | _ | x ) <;> norm_num at hx ⊢;
+    · exact ⟨ 0, 1, by norm_num ⟩;
+    · refine ⟨ 0, ?_, ?_, ?_ ⟩ <;> norm_num [ hx ];
+      · exact { cauchy := Quot.mk ( ⇑CauSeq.equiv ) ‹_› };
+      · exact ne_of_lt hx;
+      · exact Subtype.mk_le_mk.mpr ( le_of_eq ( abs_of_nonneg <| by assumption ) )
 
+omit [Nonempty ↑P.centers] in
 lemma hsummable₅ : Summable
     fun (m : ↥(BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice)) ↦
     (((𝓕 f) ↑m).re : ℂ) * ((normSq (∑' (x : ↑(P.centers ∩ D)),
     cexp (2 * (↑π * (I * ⟪x.val.ofLp, (m.val).ofLp⟫_[ℝ]))))) : ℂ) := by
-  sorry
+  -- The series over the dual submodule is summable because it's a Fourier series with a
+  --Schwartz function.
+  have h_fourier_series : Summable
+    (fun m : ↥(BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice) =>
+      (𝓕 f m).re * (norm (∑' x : ↥(P.centers ∩ D),
+        Complex.exp (2 * Real.pi * Complex.I * ⟪x.val, (m.val).ofLp⟫_[ℝ])) ^ 2)) := by
+    -- Apply the hypothesis `hsummable₃` to conclude the proof.
+    apply hsummable₃;
+  convert Complex.ofRealCLM.summable h_fourier_series using 2 ;
+  norm_num [ Complex.normSq_eq_norm_sq ] ; ring_nf!; aesop;
 
 lemma hsummable₆ (i : ↑(P.centers ∩ D)) [Fintype ↑(P.centers ∩ D)] : Summable fun
     (m : ↥(BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice)) ↦
     ∑ (x_1 : ↑(P.centers ∩ D)), ↑((𝓕 f) ↑m).re *
     cexp (2 * ↑π * I * ⟪(i.val).ofLp - (x_1.val).ofLp, (m.val).ofLp⟫_[ℝ]) := by
-  sorry
+  convert hsummable₂.comp_injective
+    ( show Function.Injective ( fun m : ↥ ( LinearMap.BilinForm.dualSubmodule
+      ( innerₗ ( EuclideanSpace ℝ ( Fin d ) ) ) P.lattice ) => ( m, i ) ) from ?_ ) using 1;
+  rotate_left;
+  · exact f;
+  · exact fun m n h => by injection h;
+  · ext; simp +decide [ Function.comp, tsum_fintype ] ;
 
 lemma hsummable₇ {i : ↑(P.centers ∩ D)} (x_1 : ↑(P.centers ∩ D))
     [Fintype ↑(P.centers ∩ D)] : Summable fun

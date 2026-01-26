@@ -20,12 +20,13 @@ import Mathlib.Topology.Compactness.Lindelof
 import Mathlib.Topology.EMetricSpace.Paracompact
 import Mathlib.Topology.Separation.CompletelyRegular
 import Mathlib.Analysis.Complex.Circle
+import Mathlib.Topology.MetricSpace.MetricSeparated
 
 import SpherePacking.Basic.SpherePacking
 import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.ForMathlib.InvPowSummability
 
-open BigOperators Bornology
+open BigOperators Bornology Metric
 open scoped FourierTransform SchwartzMap
 
 variable {d : ℕ} [Fact (0 < d)]
@@ -111,7 +112,8 @@ theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
 
 -- The version below is on the blueprint. I'm pretty sure it can be removed.
 theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
-    ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) Λ, (𝓕 f m)
+    ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) *
+    ∑' m : BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) Λ, (𝓕 f m)
     := by
   simpa using PSF_L Λ hf 0
 
@@ -119,7 +121,8 @@ namespace SchwartzMap
 
 theorem PoissonSummation_Lattices (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
   (v : EuclideanSpace ℝ (Fin d)) : ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
-  ∑' m : BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) Λ, (𝓕 ⇑f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) := by
+  ∑' m : BilinForm.dualSubmodule
+  (innerₗ (EuclideanSpace ℝ (Fin d))) Λ, (𝓕 ⇑f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) := by
   sorry
 
 -- theorem PoissonSummation_Lattices' (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) :
@@ -310,5 +313,42 @@ theorem Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
           apply congrArg conj
           push_cast
           ring_nf
+
+
+lemma SchwartzMap.summableOn_iff {E V : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [NormedAddCommGroup V] [NormedSpace ℝ V] (f : 𝓢(E, V)) (X : Set E) :
+    Summable (fun (x : X) => f x) ↔ ∃ ε > 0, IsSeparated ε X := by
+  admit
+
+alias ⟨_, SchwartzMap.summableOn⟩ := SchwartzMap.summableOn_iff
+
+theorem Continuous.re {α 𝕜 : Type*} [TopologicalSpace α] [RCLike 𝕜] {f : α → 𝕜}
+    (hf : Continuous f) : Continuous (fun x ↦ RCLike.re (f x)) :=
+  RCLike.continuous_re.comp hf
+
+theorem Summable.re {α 𝕜 : Type*} [RCLike 𝕜] {f : α → 𝕜} (hf : Summable f) :
+    Summable (fun x ↦ RCLike.re (f x)) := by
+  rw [← summable_norm_iff] at hf ⊢
+  exact Summable.of_nonneg_of_le (fun x ↦ norm_nonneg _) (fun x ↦ RCLike.abs_re_le_norm _) hf
+
+lemma ZLattice.isSeparated (L : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology L]
+    [hL : IsZLattice ℝ L] : ∃ ε > 0, IsSeparated ε (L : Set (EuclideanSpace ℝ (Fin d))) := by
+  admit
+
+lemma SpherePacking.centers_isSeparated (S : SpherePacking d) :
+    IsSeparated (ENNReal.ofReal S.separation) S.centers := by
+  -- By definition of `SpherePacking`, the centers are pairwise separated by a positive distance.
+  have h_separated : ∀ x y : S.centers, x ≠ y →
+    dist (x : EuclideanSpace ℝ (Fin d)) (y : EuclideanSpace ℝ (Fin d)) > S.separation := by
+    -- By definition of `SpherePacking`, the centers are pairwise separated by a positive
+    -- distance. Therefore, for any two distinct centers `x` and `y`, we have `dist x y > S.
+    -- separation`.
+    intros x y hxy
+    apply S.centers_dist hxy;
+  -- By definition of `IsSeparated`, we need to show that for any two distinct points in
+  -- `S.centers`, their distance is greater than `S.separation`. This follows directly
+  -- from `h_separated`.
+  intros x hx y hy hxy;
+  rw [ edist_dist ] ; aesop;
 
 end Misc
