@@ -681,12 +681,11 @@ theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
     rw [hI2]
     ring
   -- Relate F z, (F₁ * E₄) z, E₄ z to resToImagAxis values
-  have hF_z : F z = F.resToImagAxis t := by
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, hz_def]
+  have hF_z : F z = F.resToImagAxis t := by rw [hz_def]; exact ResToImagAxis.I_mul_t_eq F t ht
   have hF₁E₄_z : (F₁ * E₄.toFun) z = (F₁ * E₄.toFun).resToImagAxis t := by
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, hz_def]
+    rw [hz_def]; exact ResToImagAxis.I_mul_t_eq (F₁ * E₄.toFun) t ht
   have hE₄_z : E₄.toFun z = E₄.toFun.resToImagAxis t := by
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, hz_def]
+    rw [hz_def]; exact ResToImagAxis.I_mul_t_eq E₄.toFun t ht
   -- Use that F, F₁*E₄, E₄² are real on the imaginary axis
   have hF_im : (F.resToImagAxis t).im = 0 := F_imag_axis_real t ht
   have hF₁E₄_im : ((F₁ * E₄.toFun).resToImagAxis t).im = 0 :=
@@ -751,9 +750,7 @@ theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
   have hG_eq := G_functional_equation z
   -- Power of (I * t): (I*t)^10 = -t^10
   have hz_pow10 : (z : ℂ) ^ 10 = -t ^ 10 := by
-    simp only [hz_def, coe_mk_subtype, mul_pow]
-    have hI10 : (I : ℂ) ^ 10 = -1 := by norm_num [I_sq, pow_succ, pow_zero]
-    rw [hI10]; ring
+    simp only [hz_def, coe_mk_subtype, ← zpow_natCast, I_mul_t_pow']
   -- Compute G(S • z) using the functional equation
   have hG_val : G.resToImagAxis (1 / t) = (t : ℂ) ^ 10 * H₄.resToImagAxis t ^ 3 *
       (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t +
@@ -761,9 +758,9 @@ theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
     rw [hG_res, hG_eq, hz_pow10]
     -- Relate H₂ z, H₄ z to resToImagAxis values
     have hH₂_z : H₂ z = H₂.resToImagAxis t := by
-      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, hz_def]
+      rw [hz_def]; exact ResToImagAxis.I_mul_t_eq H₂ t ht
     have hH₄_z : H₄ z = H₄.resToImagAxis t := by
-      simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte, hz_def]
+      rw [hz_def]; exact ResToImagAxis.I_mul_t_eq H₄ t ht
     rw [hH₂_z, hH₄_z]
     ring
   -- Use that H₂ and H₄ are real on the imaginary axis
