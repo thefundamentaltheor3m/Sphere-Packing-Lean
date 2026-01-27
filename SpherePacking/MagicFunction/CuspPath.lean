@@ -54,6 +54,6 @@ lemma continuousOn_φ₀''_cusp_path :
   rw [← h_map_eq, Filter.tendsto_map'_iff]
   convert h_at.tendsto using 1
   funext x
-  simp only [Function.comp_apply, φ₀''_def (h_im_pos x.val x.prop), path]
+  simp [φ₀''_def (h_im_pos x.val x.prop), path]
 
 end
