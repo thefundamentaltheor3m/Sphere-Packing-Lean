@@ -53,24 +53,17 @@ lemma integrableOn_exp_mul_Ici (c : ℝ) (hc : c < 0) :
 /-- t * exp(-a*t) → 0 as t → ∞ for a > 0. -/
 lemma tendsto_mul_exp_neg_atTop (a : ℝ) (ha : 0 < a) :
     Tendsto (fun t => t * exp (-a * t)) atTop (nhds 0) := by
-  have h := tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 1 a ha
-  simp only [rpow_one] at h
-  exact h
+  simpa [rpow_one] using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 1 a ha
 
 /-- t² * exp(-a*t) → 0 as t → ∞ for a > 0. -/
 lemma tendsto_sq_mul_exp_neg_atTop (a : ℝ) (ha : 0 < a) :
     Tendsto (fun t => t^2 * exp (-a * t)) atTop (nhds 0) := by
-  have h := tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 2 a ha
-  simp only [rpow_two] at h
-  exact h
+  simpa [rpow_two] using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 2 a ha
 
 /-- exp(-a*t) → 0 as t → ∞ for a > 0. -/
 lemma tendsto_exp_neg_atTop (a : ℝ) (ha : 0 < a) :
     Tendsto (fun t => exp (-a * t)) atTop (nhds 0) := by
-  -- Use t^0 * exp(-at) → 0 from mathlib
-  have h := tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 0 a ha
-  simp only [rpow_zero, one_mul] at h
-  exact h
+  simpa [rpow_zero] using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 0 a ha
 
 /-- Helper: t * exp(-a*t) = O(exp(-(a/2)*t)) as t → ∞ for a > 0. -/
 private lemma isBigO_mul_exp_neg (a : ℝ) (ha : 0 < a) :
@@ -80,11 +73,11 @@ private lemma isBigO_mul_exp_neg (a : ℝ) (ha : 0 < a) :
   obtain ⟨N, hN⟩ := h 1 (by linarith)
   refine Asymptotics.IsBigO.of_bound 1 ?_
   filter_upwards [Filter.eventually_ge_atTop (max N 1)] with t ht
-  have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
+  have ht_pos : 0 < t := by linarith [le_of_max_le_right ht]
   simp only [one_mul, norm_mul, Real.norm_eq_abs, abs_of_pos ht_pos, abs_of_pos (exp_pos _)]
   have h1 : t * exp (-(a/2) * t) < 1 := by
-    simpa [dist_zero_right, abs_of_pos ht_pos,
-      abs_of_pos (by positivity : 0 < t * exp (-(a/2) * t))] using hN t (le_of_max_le_left ht)
+    simpa [dist_zero_right, abs_of_pos ht_pos, abs_of_pos (by positivity : 0 < t * _)]
+      using hN t (le_of_max_le_left ht)
   calc t * exp (-a * t)
       = t * (exp (-(a/2) * t) * exp (-(a/2) * t)) := by rw [← exp_add]; ring_nf
     _ = (t * exp (-(a/2) * t)) * exp (-(a/2) * t) := by ring
@@ -98,12 +91,12 @@ private lemma isBigO_sq_mul_exp_neg (a : ℝ) (ha : 0 < a) :
   obtain ⟨N, hN⟩ := h 1 (by linarith)
   refine Asymptotics.IsBigO.of_bound 1 ?_
   filter_upwards [Filter.eventually_ge_atTop (max N 1)] with t ht
-  have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
+  have ht_pos : 0 < t := by linarith [le_of_max_le_right ht]
   simp only [one_mul, norm_mul, Real.norm_eq_abs, abs_of_pos (sq_pos_of_pos ht_pos),
     abs_of_pos (exp_pos _)]
   have h1 : t^2 * exp (-(a/2) * t) < 1 := by
     simpa [dist_zero_right, abs_of_pos (sq_pos_of_pos ht_pos),
-      abs_of_pos (by positivity : 0 < t^2 * exp (-(a/2) * t))] using hN t (le_of_max_le_left ht)
+      abs_of_pos (by positivity : 0 < t^2 * _)] using hN t (le_of_max_le_left ht)
   calc t^2 * exp (-a * t)
       = t^2 * (exp (-(a/2) * t) * exp (-(a/2) * t)) := by rw [← exp_add]; ring_nf
     _ = (t^2 * exp (-(a/2) * t)) * exp (-(a/2) * t) := by ring
