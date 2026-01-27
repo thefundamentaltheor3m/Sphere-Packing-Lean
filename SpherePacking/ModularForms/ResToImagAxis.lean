@@ -286,6 +286,10 @@ theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResTo
   simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFpos_t
   simp [ResToImagAxis, htpos, mul_pos hc hFpos_t]
 
+theorem ResToImagAxis.I_mul_t_eq (F : ℍ → ℂ) (t : ℝ) (ht : 0 < t) :
+    F ⟨I * t, by simp [ht]⟩ = F.resToImagAxis t := by
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+
 /-- If `F` is real-valued, then the real part of `F.resToImagAxis` is equal to itself. -/
 theorem ResToImagAxis.real_part_eq {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (t : ℝ) :
     (F.resToImagAxis t).re = F.resToImagAxis t := by
