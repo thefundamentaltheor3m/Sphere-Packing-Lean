@@ -86,12 +86,9 @@ lemma integrableOn_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
     obtain ⟨N, hN⟩ := h 1 (by linarith)
     refine Asymptotics.IsBigO.of_bound 1 ?_
     filter_upwards [Filter.eventually_ge_atTop (max N 1)] with t ht
-    have ht_ge_N : t ≥ N := le_of_max_le_left ht
-    have ht_ge_1 : t ≥ 1 := le_of_max_le_right ht
-    have ht_pos : 0 < t := by linarith
-    simp only [one_mul, norm_mul, Real.norm_eq_abs]
-    rw [abs_of_pos ht_pos, abs_of_pos (exp_pos _), abs_of_pos (exp_pos _)]
-    have h1 := hN t ht_ge_N
+    have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
+    simp only [one_mul, norm_mul, Real.norm_eq_abs, abs_of_pos ht_pos, abs_of_pos (exp_pos _)]
+    have h1 := hN t (le_of_max_le_left ht)
     simp only [dist_zero_right, Real.norm_eq_abs] at h1
     rw [abs_of_pos (by positivity : 0 < t * exp (-(a/2) * t))] at h1
     calc t * exp (-a * t)
@@ -114,12 +111,10 @@ lemma integrableOn_sq_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
     obtain ⟨N, hN⟩ := h 1 (by linarith)
     refine Asymptotics.IsBigO.of_bound 1 ?_
     filter_upwards [Filter.eventually_ge_atTop (max N 1)] with t ht
-    have ht_ge_N : t ≥ N := le_of_max_le_left ht
-    have ht_ge_1 : t ≥ 1 := le_of_max_le_right ht
-    have ht_pos : 0 < t := by linarith
-    simp only [one_mul, norm_mul, Real.norm_eq_abs]
-    rw [abs_of_pos (sq_pos_of_pos ht_pos), abs_of_pos (exp_pos _), abs_of_pos (exp_pos _)]
-    have h1 := hN t ht_ge_N
+    have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
+    simp only [one_mul, norm_mul, Real.norm_eq_abs, abs_of_pos (sq_pos_of_pos ht_pos),
+      abs_of_pos (exp_pos _)]
+    have h1 := hN t (le_of_max_le_left ht)
     simp only [dist_zero_right, Real.norm_eq_abs] at h1
     rw [abs_of_pos (by positivity : 0 < t^2 * exp (-(a/2) * t))] at h1
     calc t^2 * exp (-a * t)
