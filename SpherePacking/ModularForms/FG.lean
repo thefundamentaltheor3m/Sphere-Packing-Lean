@@ -691,25 +691,10 @@ theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
 /- Functional equation of $G$ -/
 theorem G_functional_equation (z : ℍ) :
     G (S • z) = -z ^ 10 * H₄ z ^ 3 * (2 * H₄ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₂ z ^ 2) := by
-  -- H₂(S • z) = -z² * H₄(z) from (H₂ ∣[2] S) = -H₄
-  have hH₂_S : H₂ (S • z) = -z ^ 2 * H₄ z := by
-    have h := congrFun H₂_S_action z
-    simp only [SL_slash_apply, denom_S, zpow_neg, zpow_two, Pi.neg_apply] at h
-    field_simp [ne_zero z] at h
-    simp only [neg_mul] at h ⊢
-    exact h
-  -- H₄(S • z) = -z² * H₂(z) from (H₄ ∣[2] S) = -H₂
-  have hH₄_S : H₄ (S • z) = -z ^ 2 * H₂ z := by
-    have h := congrFun H₄_S_action z
-    simp only [SL_slash_apply, denom_S, zpow_neg, zpow_two, Pi.neg_apply] at h
-    field_simp [ne_zero z] at h
-    simp only [neg_mul] at h ⊢
-    exact h
-  -- Expand G(S • z)
   have hG_expand : G (S • z) = H₂ (S • z) ^ 3 *
       ((2 : ℝ) * H₂ (S • z) ^ 2 + (5 : ℝ) * H₂ (S • z) * H₄ (S • z) +
        (5 : ℝ) * H₄ (S • z) ^ 2) := rfl
-  simp only [hG_expand, hH₂_S, hH₄_S, ofReal_ofNat]
+  simp only [hG_expand, H₂_S_action', H₄_S_action', ofReal_ofNat]
   ring
 
 theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
