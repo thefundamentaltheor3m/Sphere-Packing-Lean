@@ -115,17 +115,17 @@ noncomputable def SpherePacking.density (S : SpherePacking d) : ℝ≥0∞ :=
 -- constructor <;> rintro rfl <;> rfl
 
 theorem PeriodicSpherePacking.basis_Z_span
-    (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    (S : PeriodicSpherePacking d) {ι : Type*} (b : Basis ι ℤ S.lattice) :
     Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) = S.lattice :=
   Basis.ofZLatticeBasis_span ℝ S.lattice b
 
 theorem PeriodicSpherePacking.mem_basis_Z_span
-    (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (v) :
+    (S : PeriodicSpherePacking d) {ι : Type*} (b : Basis ι ℤ S.lattice) (v) :
     v ∈ Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) ↔ v ∈ S.lattice :=
   SetLike.ext_iff.mp (S.basis_Z_span b) v
 
 theorem PeriodicSpherePacking.basis_R_span
-    (S : PeriodicSpherePacking d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    (S : PeriodicSpherePacking d) {ι : Type*} (b : Basis ι ℤ S.lattice) :
     Submodule.span ℝ (Set.range (b.ofZLatticeBasis ℝ _)) = ⊤ :=
   Basis.span_eq _
 
@@ -171,10 +171,10 @@ noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c :
     rintro x ⟨x, hx, rfl⟩ hx'
     -- rw [mul_lt_mul_left hc] at hx'
     -- rw [hε' x hx hx', smul_zero]
-    simp only [DistribMulAction.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero]
+    simp only [DistribSMul.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero]
     right
     specialize hε' x hx
-    simp only [DistribMulAction.toLinearMap_apply, AddSubgroupClass.coe_norm,
+    simp only [DistribSMul.toLinearMap_apply, AddSubgroupClass.coe_norm,
       Submodule.mk_eq_zero] at hx' hε'
     rw [norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le, mul_lt_mul_iff_right₀ hc] at hx'
     exact hε' hx'

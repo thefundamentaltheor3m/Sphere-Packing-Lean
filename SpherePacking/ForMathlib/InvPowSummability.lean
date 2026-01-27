@@ -3,7 +3,7 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Bhavik Mehta
 -/
-import Mathlib.Analysis.Distribution.SchwartzSpace
+import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 import Mathlib.Topology.Separation.CompletelyRegular
 import Mathlib.Algebra.Module.ZLattice.Basic
 
@@ -232,7 +232,7 @@ theorem extracted_1 {d : ℕ} {X : Set (EuclideanSpace ℝ (Fin d))}
 theorem Summable_Inverse_Powers_of_Finite_Orbits
   {X : Set (EuclideanSpace ℝ (Fin d))} {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
   [DiscreteTopology Λ] [IsZLattice ℝ Λ] (ρ : AddAction Λ X)
-  [Fintype (Quotient ρ.orbitRel)]
+  [Finite (Quotient ρ.orbitRel)]
   : Inv_Pow_Norm_Summable_Over_Set_Euclidean X := by
   rw [Inv_Pow_Norm_Summable_Over_Set_Euclidean]
   simp only [one_div, summable_iff_vanishing_norm, gt_iff_lt, Real.norm_eq_abs]

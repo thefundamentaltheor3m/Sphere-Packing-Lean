@@ -44,10 +44,8 @@ open Module
 
 lemma AddCommGroup.ModEq.zsmul' {α : Type*} [AddCommGroup α] {p a b : α} {n : ℤ}
     (h : a ≡ b [PMOD p]) :
-    n • a ≡ n • b [PMOD p] := by
-  obtain ⟨k, hk⟩ := h
-  refine ⟨n * k, ?_⟩
-  rw [← zsmul_sub, hk, mul_smul]
+    n • a ≡ n • b [PMOD p] :=
+  (h.zsmul (z := n)).of_zsmul
 
 @[simps]
 def LinearMap.intCast {ι : Type*} (R : Type*) [Ring R] : (ι → ℤ) →ₗ[ℤ] (ι → R) where
@@ -58,7 +56,7 @@ def LinearMap.intCast {ι : Type*} (R : Type*) [Ring R] : (ι → ℤ) →ₗ[�
 def Submodule.evenLatticeInt (n : ℕ) : Submodule ℤ (Fin n → ℤ) where
   carrier := {v | ∑ i, v i ≡ 0 [PMOD 2]}
   add_mem' := by
-    simp only [AddCommGroup.modEq_iff_int_modEq, Set.mem_setOf_eq, Pi.add_apply,
+    simp only [AddCommGroup.modEq_iff_intModEq, Set.mem_setOf_eq, Pi.add_apply,
       Finset.sum_add_distrib]
     intro a b ha hb
     exact (ha.add hb).trans (by simp)
@@ -83,22 +81,23 @@ lemma Submodule.coe_evenLattice (R : Type*) (n : ℕ) [Ring R] [CharZero R] :
     constructor
     · exact fun i ↦ ⟨f i, by simp⟩
     · rw [evenLatticeInt, mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk,
-        Set.mem_setOf_eq, AddCommGroup.modEq_comm] at hf
-      obtain ⟨a, ha⟩ := hf
-      simp only [sub_zero, smul_eq_mul] at ha
-      rw [AddCommGroup.modEq_comm]
-      use a
-      simp [← Int.cast_sum, ha]
+        Set.mem_setOf_eq] at hf
+      simp only [LinearMap.intCast_apply, ← Int.cast_sum]
+      convert hf.map (Int.castRingHom R) using 2 <;> simp
   simp only [evenLatticeInt, mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, Set.mem_setOf_eq]
   rintro ⟨hv, hv'⟩
   choose w hw using hv
   use w
   constructor
   · simp_rw [← hw, ← Int.cast_sum] at hv'
-    obtain ⟨a, ha⟩ := hv'
-    simp only [zsmul_eq_mul] at ha ⊢
-    use a
-    norm_cast at ha
+    rw [AddCommGroup.modEq_iff_zsmul] at hv' ⊢
+    obtain ⟨m, hm⟩ := hv'
+    refine ⟨m, ?_⟩
+    apply Int.cast_injective (α := R)
+    simp only [zsmul_eq_mul, Int.cast_mul, Int.cast_ofNat, Int.cast_sub, Int.cast_zero,
+      Int.cast_sum]
+    simp only [zsmul_eq_mul, Int.cast_sum] at hm
+    exact hm
   · simpa [funext_iff]
 
 lemma Submodule.mem_evenLattice {R : Type*} [Ring R] [CharZero R] (n : ℕ)
@@ -350,7 +349,7 @@ private lemma E8Inverse_mul_E8Matrix {R : Type*} [Field R] [CharZero R] :
 
 private lemma E8Matrix_mul_E8Inverse {R : Type*} [Field R] [CharZero R] :
     E8Matrix R * E8Inverse R = 1 := by
-  rw [Matrix.mul_eq_one_comm, E8Inverse_mul_E8Matrix]
+  rw [mul_eq_one_comm, E8Inverse_mul_E8Matrix]
 
 private lemma exists_cast_eq_vecMul_E8Inverse_aux {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (w : Fin 8 → ℤ) (hv : v ∈ Submodule.E8 R)
@@ -377,16 +376,25 @@ private lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
       simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse]
       ring
     obtain ⟨h0, h1⟩ := Submodule.mem_E8.1 hv
-    obtain ⟨a, ha⟩ := h1.symm
-    simp only [sub_zero, zsmul_eq_mul] at ha
-    rw [ha, mul_inv_cancel_right₀ (NeZero.ne 2)] at h0'
+    rw [AddCommGroup.modEq_iff_zsmul] at h1
+    obtain ⟨a, ha⟩ := h1
+    simp only [zsmul_eq_mul, zero_sub] at ha
+    have ha' : ∑ i, v i = ((-a : ℤ) : R) * 2 := by
+      simp only [Int.cast_neg, neg_mul]
+      rw [ha]
+      ring
+    rw [ha', mul_inv_cancel_right₀ (NeZero.ne 2)] at h0'
     obtain h0 | h0 := h0
     · obtain ⟨n, hn⟩ := h0 7
-      use a - 4 * n
-      simp [hn, h0']
+      use -a - 4 * n
+      simp only [Int.cast_sub, Int.cast_neg, Int.cast_mul, Int.cast_ofNat, hn, h0']
     · obtain ⟨n, hn⟩ := h0 7
-      use a - 2 * n
-      norm_num [hn, h0', mul_add, add_comm, ← mul_assoc]
+      use -a - 2 * n
+      simp only [Int.cast_sub, Int.cast_neg, Int.cast_mul, Int.cast_ofNat, h0']
+      obtain ⟨_, hn'⟩ := hn
+      simp only [two_nsmul] at hn'
+      rw [hn']
+      ring
   obtain ⟨c7, hc7⟩ : ∃ n : ℤ, (n : R) = c' 7 := by
     have hc7 : c' 7 = 2 * v 7 := by
       simp [c', Matrix.vecMul_eq_sum, Fin.sum_univ_eight, E8Inverse, mul_comm]
@@ -519,7 +527,7 @@ lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
   exact mod_cast this
 
 noncomputable abbrev E8Lattice : Submodule ℤ (EuclideanSpace ℝ (Fin 8)) :=
-  (Submodule.E8 ℝ).map (WithLp.linearEquiv 2 _ (Fin 8 → ℝ)).symm
+  (Submodule.E8 ℝ).map (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm.toLinearMap
 
 instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
@@ -527,14 +535,15 @@ instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   rintro ⟨v, hv⟩ h
   simp only [dist_zero_right, AddSubgroupClass.coe_norm] at h
   simp only [Submodule.mk_eq_zero]
-  simp only [Submodule.mem_map, WithLp.linearEquiv_symm_apply] at hv
+  simp only [Submodule.mem_map] at hv
   obtain ⟨v, hv, rfl⟩ := hv
-  simp only [AddEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm,
-    WithLp.addEquiv_symm_apply] at h
   suffices v = 0 from congrArg (WithLp.toLp 2) this
   refine (E8_norm_lower_bound v hv).resolve_right ?_
   have : 1 < √2 := by rw [Real.lt_sqrt zero_le_one, sq, mul_one]; exact one_lt_two
-  linarith
+  simp only [not_le]
+  calc ‖WithLp.toLp 2 v‖ = ‖(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm v‖ := rfl
+    _ < 1 := h
+    _ < √2 := this
 
 lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ := by
   simp only [Submodule.span, sInf_eq_top, Set.mem_setOf_eq]
@@ -545,18 +554,22 @@ lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ
 lemma span_E8_eq_top' :
     Submodule.span ℝ (E8Lattice : Set (EuclideanSpace ℝ (Fin 8))) = ⊤ := by
   change Submodule.span ℝ ((WithLp.linearEquiv 2 ℝ (Fin 8 → ℝ)).symm '' _) = _
-  rw [Submodule.span_image, span_E8_eq_top]
+  have h : (⇑(WithLp.linearEquiv 2 ℝ (Fin 8 → ℝ)).symm : (Fin 8 → ℝ) → _) =
+      (⇑(WithLp.linearEquiv 2 ℝ (Fin 8 → ℝ)).symm.toLinearMap : (Fin 8 → ℝ) → _) := rfl
+  rw [h, ← Submodule.map_span, span_E8_eq_top]
   simp
 
 lemma span_E8Matrix_eq_E8Lattice :
     Submodule.span ℤ
       (Set.range fun i ↦ (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i)) =
       E8Lattice := by
-  have : Set.range (fun i ↦ (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i)) =
+  have heq : Set.range (fun i ↦ (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i)) =
       (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm '' Set.range (E8Matrix ℝ).row := by
     rw [← Set.range_comp]
     rfl
-  rw [this, Submodule.span_image, span_E8Matrix ℝ]
+  have hcoe : (⇑(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm : (Fin 8 → ℝ) → _) =
+      (⇑(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm.toLinearMap : (Fin 8 → ℝ) → _) := rfl
+  rw [heq, hcoe, ← Submodule.map_span, span_E8Matrix ℝ]
 
 instance instIsZLatticeE8Lattice : IsZLattice ℝ E8Lattice where
   span_top := by rw [span_E8_eq_top']
@@ -604,16 +617,18 @@ noncomputable def E8Packing : PeriodicSpherePacking 8 where
   lattice := E8Lattice
   centers := E8Lattice
   centers_dist := by
-    simp only [Pairwise, E8Lattice, Submodule.map_coe, WithLp.linearEquiv_symm_apply, ne_eq,
-      Subtype.forall, Subtype.mk.injEq, Set.mem_image, SetLike.mem_coe, forall_exists_index,
-      forall_and_index]
-    intro _ a ha rfl _ b hb rfl hab
-    rw [(WithLp.toLp_injective _).eq_iff] at hab
-    have : a - b ∈ Submodule.E8 ℝ := Submodule.sub_mem _ ha hb
-    simp only [AddEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm,
-      WithLp.addEquiv_symm_apply] at hab
-    simpa [Subtype.dist_eq, WithLp.ofLp_eq_zero, sub_eq_zero, hab] using
-      E8_norm_lower_bound _ this
+    simp only [Pairwise, E8Lattice, ne_eq, Subtype.forall, Subtype.mk.injEq]
+    intro a ha b hb hab
+    rw [SetLike.mem_coe, Submodule.mem_map] at ha hb
+    obtain ⟨a', ha', rfl⟩ := ha
+    obtain ⟨b', hb', rfl⟩ := hb
+    have hsub : a' - b' ∈ Submodule.E8 ℝ := Submodule.sub_mem _ ha' hb'
+    have hne : a' ≠ b' := by
+      contrapose! hab
+      simp [hab]
+    simp only [dist_eq_norm, AddSubgroupClass.coe_norm, AddSubgroupClass.coe_sub]
+    have hne' : a' - b' ≠ 0 := sub_ne_zero.mpr hne
+    convert (E8_norm_lower_bound _ hsub).resolve_left hne' using 2
   lattice_action x y := add_mem
 
 lemma E8Packing_separation : E8Packing.separation = √2 := rfl
