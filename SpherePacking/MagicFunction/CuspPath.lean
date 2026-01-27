@@ -33,12 +33,9 @@ lemma φ₀''_eq (z : ℂ) (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := by
 
 /-- Key identity: -1/(I*t) = I/t for t ≠ 0 -/
 lemma neg_one_div_I_mul (t : ℝ) (ht : t ≠ 0) : (-1 : ℂ) / (I * t) = I / t := by
-  have hI : (I : ℂ) ≠ 0 := Complex.I_ne_zero
   have ht' : (t : ℂ) ≠ 0 := ofReal_ne_zero.mpr ht
-  have hIt : (I : ℂ) * t ≠ 0 := mul_ne_zero hI ht'
-  field_simp [hIt, ht']
-  ring_nf
-  simp only [Complex.I_sq]
+  field_simp [mul_ne_zero Complex.I_ne_zero ht', ht']
+  simp
 
 /-- φ₀ : ℍ → ℂ is continuous.
 Follows from continuity of E₂, E₄, E₆, Δ (via their MDifferentiability) and Δ ≠ 0. -/
@@ -67,7 +64,6 @@ lemma continuousOn_φ₀''_cusp_path :
       simp only [ne_eq, mul_eq_zero, I_ne_zero, ofReal_eq_zero, false_or]
       exact ne_of_gt hs
   have h_comp_cont : Continuous (φ₀ ∘ path) := φ₀_continuous.comp h_path_cont
-  -- Transfer to ContinuousOn via the homeomorphism
   intro t ht
   rw [Set.mem_Ioi] at ht
   have h_eq : φ₀'' (-1 / (I * t)) = φ₀ (path ⟨t, ht⟩) := by
