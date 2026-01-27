@@ -10,7 +10,7 @@ under SL(2,ℤ), despite E₂ itself not being modular.
 
 * `D_D₂` : Derivative of the anomaly function D₂: `D(D₂ γ) z = -c²/denom²`
 * `MDifferentiable_D₂` : D₂ γ is MDifferentiable
-* `serre_D_E₂_slash_invariant` : serre_D 1 E₂ is weight-4 slash-invariant
+* `serre_DE₂_slash_invariant` : serre_D 1 E₂ is weight-4 slash-invariant
 
 ## Strategy
 
@@ -73,7 +73,7 @@ After expansion, the anomaly terms involving D₂ γ and D(D₂ γ) cancel using
 - D(D₂ γ) = -c²/denom² (from D_D₂)
 - The identity α = α² π²/3 (from ζ(2) = π²/6)
 -/
-lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
+lemma serre_DE₂_slash_invariant (γ : SL(2, ℤ)) :
     (serre_D 1 E₂) ∣[(4 : ℤ)] γ = serre_D 1 E₂ := by
   have hserre12 : serre_D 1 E₂ = serre_D 2 E₂ + (1 / 12 : ℂ) • (E₂ * E₂) := by
     ext z; simp only [serre_D, Pi.add_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul]; ring
