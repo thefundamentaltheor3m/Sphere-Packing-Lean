@@ -295,7 +295,8 @@ theorem ResToImagAxis.Real.real_part_eq {F : ℍ → ℂ} (hF : ResToImagAxis.Re
     (F.resToImagAxis t).re = F.resToImagAxis t := by
   simp only [Function.resToImagAxis, ResToImagAxis]
   split_ifs with ht
-  exacts [Complex.ext rfl (by simpa [Function.resToImagAxis, ResToImagAxis, ht] using (hF t ht).symm), rfl]
+  exacts [Complex.ext rfl (by simpa [Function.resToImagAxis, ResToImagAxis, ht]
+    using (hF t ht).symm), rfl]
 
 theorem ResToImagAxis.Real.eq_real_part {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (t : ℝ) :
     F.resToImagAxis t = (F.resToImagAxis t).re := by
