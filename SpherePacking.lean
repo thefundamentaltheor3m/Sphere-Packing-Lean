@@ -25,10 +25,10 @@ import SpherePacking.ForMathlib.Vec
 import SpherePacking.ForMathlib.VolumeOfBalls
 import SpherePacking.ForMathlib.ZLattice
 import SpherePacking.ForMathlib.tprod
-import SpherePacking.MagicFunction.CuspPath
+import SpherePacking.MagicFunction.a.Integrability.CuspPath
 import SpherePacking.MagicFunction.IntegralParametrisations
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
-import SpherePacking.MagicFunction.RealDecay
+import SpherePacking.MagicFunction.a.Integrability.RealDecay
 import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.a.Eigenfunction
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
