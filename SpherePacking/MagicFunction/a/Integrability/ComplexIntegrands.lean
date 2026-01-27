@@ -77,6 +77,10 @@ theorem φ₀''_holo : Holo(φ₀'') := by
   exact hF.div hΔ fun z hz => by
     simp [Function.comp_apply, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Δ_ne_zero]
 
+/-- φ₀'' is continuous on the upper half-plane. -/
+lemma φ₀''_continuous : ContinuousOn φ₀'' ℍ₀ :=
+  φ₀''_holo.continuousOn
+
 theorem Φ₁'_holo : Holo(Φ₁' r) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
       differentiable_fun_id).differentiableOn)
