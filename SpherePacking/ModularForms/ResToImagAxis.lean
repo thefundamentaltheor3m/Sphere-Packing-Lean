@@ -277,7 +277,7 @@ theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResTo
   simp [ResToImagAxis, htpos, mul_pos hc hFpos_t]
 
 /-- If `F` is real-valued, then the real part of `F.resToImagAxis` is equal to itself. -/
-theorem ResToImagAxis.real_part_eq {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (t : ℝ) :
+theorem ResToImagAxis.Real.real_part_eq {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (t : ℝ) :
     (F.resToImagAxis t).re = F.resToImagAxis t := by
   simp only [Function.resToImagAxis, ResToImagAxis]
   split_ifs with ht
