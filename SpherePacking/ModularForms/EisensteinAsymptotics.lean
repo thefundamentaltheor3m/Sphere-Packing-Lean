@@ -10,15 +10,15 @@ and constructs the ModularForm structures for Serre derivatives.
 
 ## Main definitions
 
-* `serre_D_E₄_ModularForm`, `serre_D_E₆_ModularForm`, `serre_D_E₂_ModularForm` :
+* `serre_DE₄_ModularForm`, `serre_DE₆_ModularForm`, `serre_DE₂_ModularForm` :
   Package serre derivatives as modular forms
 
 ## Main results
 
 * `D_tendsto_zero_of_tendsto_const` : Cauchy estimate: D f → 0 at i∞ if f is bounded
 * `E₂_tendsto_one_atImInfty` : E₂ → 1 at i∞
-* `serre_D_E₄_tendsto_atImInfty`, `serre_D_E₆_tendsto_atImInfty`,
-  `serre_D_E₂_tendsto_atImInfty` : Limits of serre derivatives (for determining scalars)
+* `serre_DE₄_tendsto_atImInfty`, `serre_DE₆_tendsto_atImInfty`,
+  `serre_DE₂_tendsto_atImInfty` : Limits of serre derivatives (for determining scalars)
 -/
 
 open UpperHalfPlane hiding I
@@ -189,103 +189,82 @@ lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
   ModularFormClass.bdd_at_infty E₆
 
 /-- serre_D 1 E₂ is bounded at infinity. -/
-lemma serre_D_E₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) :=
-  serre_D_isBoundedAtImInfty 1 E₂_holo' E₂_isBoundedAtImInfty
+lemma serre_DE₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) :=
+  serre_D_isBoundedAtImInfty_of_bounded 1 E₂_holo' E₂_isBoundedAtImInfty
 
-/-- D E₄ is bounded at infinity.
-
-The q-expansion D(E₄) = 240·Σn·σ₃(n)·qⁿ has no constant term, so D(E₄) → 0 as im(z) → ∞.
-
-**Blocker**: Filled in #268 using `D_E4_qexp`. -/
-lemma D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (D E₄.toFun) := by
-  sorry
+/-- D E₄ is bounded at infinity (by Cauchy estimate: D f → 0 when f is bounded). -/
+lemma DE₄_isBoundedAtImInfty : IsBoundedAtImInfty (D E₄.toFun) :=
+  D_isBoundedAtImInfty_of_bounded E₄.holo' E₄_isBoundedAtImInfty
 
 /-- serre_D 4 E₄ is bounded at infinity. -/
-lemma serre_D_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 4 E₄.toFun) := by
-  unfold serre_D
-  have h1 : IsBoundedAtImInfty (D E₄.toFun) := D_E₄_isBoundedAtImInfty
-  have h2 : IsBoundedAtImInfty (fun z => (4 : ℂ) * 12⁻¹ * E₂ z * E₄.toFun z) := by
-    have hconst : IsBoundedAtImInfty (fun _ : ℍ => (4 : ℂ) * 12⁻¹) :=
-      Filter.const_boundedAtFilter _ _
-    convert hconst.mul E₂_mul_E₄_isBoundedAtImInfty using 1
-    ext z
-    simp only [Pi.mul_apply]
-    ring
-  exact h1.sub h2
+lemma serre_DE₄_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 4 E₄.toFun) :=
+  serre_D_isBoundedAtImInfty_of_bounded 4 E₄.holo' E₄_isBoundedAtImInfty
 
 /-! ## Construction of ModularForm from serre_D -/
 
 /-- serre_D 4 E₄ is a weight-6 modular form. -/
-def serre_D_E₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 :=
+def serre_DE₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 :=
   serre_D_ModularForm 4 E₄
 
 /-- serre_D 6 E₆ is bounded at infinity. -/
-lemma serre_D_E₆_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 6 E₆.toFun) :=
-  serre_D_isBoundedAtImInfty 6 E₆.holo' E₆_isBoundedAtImInfty
+lemma serre_DE₆_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 6 E₆.toFun) :=
+  serre_D_isBoundedAtImInfty_of_bounded 6 E₆.holo' E₆_isBoundedAtImInfty
 
 /-- serre_D 6 E₆ is a weight-8 modular form. -/
-def serre_D_E₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
+def serre_DE₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
   serre_D_ModularForm 6 E₆
 
 /-! ## Limit of serre_D at infinity (for determining scalar) -/
 
-/-- serre_D 4 E₄ → -1/3 at i∞. -/
-lemma serre_D_E₄_tendsto_atImInfty :
-    Filter.Tendsto (serre_D 4 E₄.toFun) atImInfty (nhds (-(1/3 : ℂ))) := by
-  have hserre : serre_D 4 E₄.toFun = fun z => D E₄.toFun z -
-      (4 : ℂ) * 12⁻¹ * E₂ z * E₄.toFun z := by ext z; simp only [serre_D]
-  rw [hserre]
-  have hD := D_tendsto_zero_of_tendsto_const E₄.holo' (ModularFormClass.bdd_at_infty E₄)
-  have hprod := E₂_tendsto_one_atImInfty.mul E₄_tendsto_one_atImInfty
-  have hlim : (0 : ℂ) - (4 : ℂ) * 12⁻¹ * 1 * 1 = -(1/3 : ℂ) := by norm_num
+/-- General limit: if `f → 1` at i∞ and f is holomorphic and bounded, then `serre_D k f → -k/12`. -/
+lemma serre_D_tendsto_neg_k_div_12 (k : ℤ) (f : ℍ → ℂ)
+    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_lim : Filter.Tendsto f atImInfty (nhds 1)) :
+    Filter.Tendsto (serre_D k f) atImInfty (nhds (-(k : ℂ) / 12)) := by
+  rw [show serre_D k f = fun z => D f z - (k : ℂ) * 12⁻¹ * E₂ z * f z from serre_D_eq k f]
+  have hD := D_tendsto_zero_of_tendsto_const hf_holo hf_bdd
+  have hprod := E₂_tendsto_one_atImInfty.mul hf_lim
+  have hlim : (0 : ℂ) - (k : ℂ) * 12⁻¹ * 1 * 1 = -(k : ℂ) / 12 := by ring
   rw [← hlim]
   refine hD.sub ?_
-  have hconst : Filter.Tendsto (fun _ : ℍ => (4 : ℂ) * 12⁻¹)
-      atImInfty (nhds ((4 : ℂ) * 12⁻¹)) := tendsto_const_nhds
+  have hconst : Filter.Tendsto (fun _ : ℍ => (k : ℂ) * 12⁻¹)
+      atImInfty (nhds ((k : ℂ) * 12⁻¹)) := tendsto_const_nhds
   convert hconst.mul hprod using 1 <;> ring_nf
 
+/-- serre_D 4 E₄ → -1/3 at i∞. -/
+lemma serre_DE₄_tendsto_atImInfty :
+    Filter.Tendsto (serre_D 4 E₄.toFun) atImInfty (nhds (-(1/3 : ℂ))) := by
+  convert serre_D_tendsto_neg_k_div_12 4 E₄.toFun E₄.holo'
+    (ModularFormClass.bdd_at_infty E₄) E₄_tendsto_one_atImInfty using 2
+  norm_num
+
 /-- serre_D 6 E₆ → -1/2 at i∞. -/
-lemma serre_D_E₆_tendsto_atImInfty :
+lemma serre_DE₆_tendsto_atImInfty :
     Filter.Tendsto (serre_D 6 E₆.toFun) atImInfty (nhds (-(1/2 : ℂ))) := by
-  have hserre : serre_D 6 E₆.toFun = fun z => D E₆.toFun z -
-      (6 : ℂ) * 12⁻¹ * E₂ z * E₆.toFun z := by ext z; simp only [serre_D]
-  rw [hserre]
-  have hD := D_tendsto_zero_of_tendsto_const E₆.holo' E₆_isBoundedAtImInfty
-  have hprod := E₂_tendsto_one_atImInfty.mul E₆_tendsto_one_atImInfty
-  have hlim : (0 : ℂ) - (6 : ℂ) * 12⁻¹ * 1 * 1 = -(1/2 : ℂ) := by norm_num
-  rw [← hlim]
-  refine hD.sub ?_
-  have hconst : Filter.Tendsto (fun _ : ℍ => (6 : ℂ) * 12⁻¹)
-      atImInfty (nhds ((6 : ℂ) * 12⁻¹)) := tendsto_const_nhds
-  convert hconst.mul hprod using 1 <;> ring_nf
+  convert serre_D_tendsto_neg_k_div_12 6 E₆.toFun E₆.holo'
+    E₆_isBoundedAtImInfty E₆_tendsto_one_atImInfty using 2
+  norm_num
 
 /-- serre_D 1 E₂ is a weight-4 modular form.
 Note: E₂ itself is NOT a modular form, but serre_D 1 E₂ IS. -/
-def serre_D_E₂_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 4 where
+def serre_DE₂_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 4 where
   toSlashInvariantForm := {
     toFun := serre_D 1 E₂
     slash_action_eq' := fun γ hγ => by
       rw [Subgroup.mem_map] at hγ
       obtain ⟨γ', _, rfl⟩ := hγ
-      exact serre_D_E₂_slash_invariant γ'
+      exact serre_DE₂_slash_invariant γ'
   }
   holo' := serre_D_differentiable E₂_holo'
   bdd_at_cusps' := fun hc =>
     bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
       obtain ⟨A', rfl⟩ := MonoidHom.mem_range.mp hA
-      exact (serre_D_E₂_slash_invariant A').symm ▸ serre_D_E₂_isBoundedAtImInfty
+      exact (serre_DE₂_slash_invariant A').symm ▸ serre_DE₂_isBoundedAtImInfty
 
 /-- serre_D 1 E₂ → -1/12 at i∞. -/
-lemma serre_D_E₂_tendsto_atImInfty :
+lemma serre_DE₂_tendsto_atImInfty :
     Filter.Tendsto (serre_D 1 E₂) atImInfty (nhds (-(1/12 : ℂ))) := by
-  have hserre : serre_D 1 E₂ = fun z => D E₂ z -
-      1 * 12⁻¹ * E₂ z * E₂ z := by ext z; simp only [serre_D]
-  rw [hserre]
-  have hD := D_tendsto_zero_of_tendsto_const E₂_holo' E₂_isBoundedAtImInfty
-  have hprod := E₂_tendsto_one_atImInfty.mul E₂_tendsto_one_atImInfty
-  have hlim : (0 : ℂ) - (1 : ℂ) * 12⁻¹ * 1 * 1 = -(1/12 : ℂ) := by norm_num
-  rw [← hlim]
-  refine hD.sub ?_
-  have hconst : Filter.Tendsto (fun _ : ℍ => (1 : ℂ) * 12⁻¹)
-      atImInfty (nhds ((1 : ℂ) * 12⁻¹)) := tendsto_const_nhds
-  convert hconst.mul hprod using 1 <;> ring_nf
+  have h := serre_D_tendsto_neg_k_div_12 1 E₂ E₂_holo'
+    E₂_isBoundedAtImInfty E₂_tendsto_one_atImInfty
+  simp only [Int.cast_one, neg_div] at h
+  exact h

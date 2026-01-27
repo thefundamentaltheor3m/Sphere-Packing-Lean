@@ -132,9 +132,15 @@ Similarly, \eqref{eqn:ddg} can be proved using Proposition \ref{prop:theta-der} 
 \end{corollary}
 \begin{proof}
 From \eqref{eqn:E2} and Lemma \ref{cor:disc-pos},
+\ifplastex
+\begin{equation*}
+    7200 (-E_2'(it)) \Delta(it) = 7200 \cdot 24 \left(\sum_{n \ge 1} n \sigma_1(n) e^{-2 \pi n t}\right) \cdot \Delta(it) > 0.
+\end{equation*}
+\else
 \begin{equation}
     7200 (-E_2'(it)) \Delta(it) = 7200 \cdot 24 \left(\sum_{n \ge 1} n \sigma_1(n) e^{-2 \pi n t}\right) \cdot \Delta(it) > 0. \notag
 \end{equation}
+\fi
 Negativity of \eqref{eqn:ddg}, i.e. $-640 \Delta(it) H_2(it) < 0$ follows from Corollary \ref{cor:theta-pos} and \ref{cor:disc-pos}.
 \end{proof}
 

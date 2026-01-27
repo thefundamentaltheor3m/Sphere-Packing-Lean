@@ -322,6 +322,13 @@ Note that the definition makes sense for any analytic function $F : \mathbb{H} \
 noncomputable def serre_D (k : ℂ) : (ℍ → ℂ) → (ℍ → ℂ) :=
   fun (F : ℍ → ℂ) => (fun z => D F z - k * 12⁻¹ * E₂ z * F z)
 
+@[simp]
+lemma serre_D_apply (k : ℂ) (F : ℍ → ℂ) (z : ℍ) :
+    serre_D k F z = D F z - k * 12⁻¹ * E₂ z * F z := rfl
+
+lemma serre_D_eq (k : ℂ) (F : ℍ → ℂ) :
+    serre_D k F = fun z => D F z - k * 12⁻¹ * E₂ z * F z := rfl
+
 /--
 Basic properties of Serre derivative: linearity, Leibniz rule, etc.
 -/
@@ -655,6 +662,42 @@ theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
   exact (mul_eq_zero.mp (h_im_deriv ▸ h_im_eq).symm).resolve_left
     (mul_ne_zero (by norm_num) Real.pi_ne_zero)
 
+/-- The real part of F.resToImagAxis has derivative -2π * ((D F).resToImagAxis t).re at t. -/
+lemma hasDerivAt_resToImagAxis_re {F : ℍ → ℂ} (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    {t : ℝ} (ht : 0 < t) :
+    HasDerivAt (fun s => (F.resToImagAxis s).re) (-2 * π * ((D F).resToImagAxis t).re) t := by
+  have hdiffAt := ResToImagAxis.Differentiable F hdiff t ht
+  have hderivC := hdiffAt.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hdiff ht)
+  simpa using (hasDerivAt_const t (Complex.reCLM : ℂ →L[ℝ] ℝ)).clm_apply hderivC
+
+/-- If F is MDifferentiable and antitone on the imaginary axis,
+then D F has non-negative real part on the imaginary axis. -/
+theorem D_nonneg_from_antitone {F : ℍ → ℂ}
+    (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (hanti : AntitoneOn (fun t => (F.resToImagAxis t).re) (Set.Ioi 0)) :
+    ∀ t, 0 < t → 0 ≤ ((D F).resToImagAxis t).re := by
+  intro t ht
+  have hderiv_nonpos : deriv (fun s => (F.resToImagAxis s).re) t ≤ 0 :=
+    (derivWithin_of_isOpen isOpen_Ioi ht).symm.trans_le hanti.derivWithin_nonpos
+  rw [(hasDerivAt_resToImagAxis_re hdiff ht).deriv] at hderiv_nonpos
+  nlinarith [Real.pi_pos]
+
+/-- If F is real on the imaginary axis, MDifferentiable, and has strictly negative derivative
+on the imaginary axis, then D F is positive on the imaginary axis.
+
+Note: `StrictAntiOn` is NOT sufficient - a strictly decreasing function can have deriv = 0
+at isolated points (e.g., -x³ at x=0). Use this theorem when you can prove the derivative
+is strictly negative, typically from q-expansion analysis. -/
+theorem D_pos_from_deriv_neg {F : ℍ → ℂ}
+    (hreal : ResToImagAxis.Real F)
+    (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (hderiv_neg : ∀ t, 0 < t → deriv (fun s => (F.resToImagAxis s).re) t < 0) :
+    ResToImagAxis.Pos (D F) := by
+  refine ⟨D_real_of_real hreal hdiff, fun t ht => ?_⟩
+  have hderiv := hderiv_neg t ht
+  rw [(hasDerivAt_resToImagAxis_re hdiff ht).deriv] at hderiv
+  nlinarith [Real.pi_pos]
+
 /--
 If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
 is positive) and the derivative is positive, then $F$ is also positive.
@@ -665,15 +708,8 @@ theorem antiDerPos {F : ℍ → ℂ} (hFderiv : MDifferentiable 𝓘(ℂ) 𝓘(�
   obtain ⟨hF_real, t₀, ht₀_pos, hF_pos⟩ := hFepos
   obtain ⟨-, hDF_pos⟩ := hDF
   let g := fun t => (F.resToImagAxis t).re
-  have hg : ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t := fun t ht => by
-    have hdiff : DifferentiableAt ℝ F.resToImagAxis t :=
-      ResToImagAxis.Differentiable F hFderiv t ht
-    have hderivC : HasDerivAt F.resToImagAxis (-2 * π * (D F).resToImagAxis t) t :=
-      hdiff.hasDerivAt.congr_deriv (deriv_resToImagAxis_eq F hFderiv ht)
-    have hconst : HasDerivAt (fun _ : ℝ => (Complex.reCLM : ℂ →L[ℝ] ℝ)) 0 t := by
-      simpa using (hasDerivAt_const (x := t) (c := (Complex.reCLM : ℂ →L[ℝ] ℝ)))
-    have hreal := hconst.clm_apply hderivC
-    simpa [g] using hreal
+  have hg : ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t :=
+    fun t ht => hasDerivAt_resToImagAxis_re hFderiv ht
   have hn : ∀ t ∈ Set.Ioi (0 : ℝ), deriv g t < 0 := fun t (ht : 0 < t) => by
     rw [(hg t ht).deriv]
     have ht' : 0 < (ResToImagAxis (D F) t).re := hDF_pos t ht
@@ -775,10 +811,10 @@ lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
 serre_D k f = D f - (k/12)·E₂·f. Both terms are bounded:
 - D f is bounded by `D_isBoundedAtImInfty_of_bounded`
 - (k/12)·E₂·f is bounded since E₂ and f are bounded -/
-theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
+theorem serre_D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ} (k : ℂ)
     (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
     (hbdd : IsBoundedAtImInfty f) : IsBoundedAtImInfty (serre_D k f) := by
-  unfold serre_D
+  simp only [serre_D_eq]
   have hD : IsBoundedAtImInfty (D f) := D_isBoundedAtImInfty_of_bounded hf hbdd
   have hE₂f : IsBoundedAtImInfty (fun z => k * 12⁻¹ * E₂ z * f z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) :=
@@ -808,4 +844,4 @@ noncomputable def serre_D_ModularForm (k : ℤ) (f : ModularForm (Gamma 1) k) :
   bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
     obtain ⟨A', rfl⟩ := MonoidHom.mem_range.mp hA
     exact (serre_D_slash_invariant k f f.holo' A' (f.slash_eq_self A')).symm ▸
-      serre_D_isBoundedAtImInfty k f.holo' (ModularFormClass.bdd_at_infty f)
+      serre_D_isBoundedAtImInfty_of_bounded k f.holo' (ModularFormClass.bdd_at_infty f)
