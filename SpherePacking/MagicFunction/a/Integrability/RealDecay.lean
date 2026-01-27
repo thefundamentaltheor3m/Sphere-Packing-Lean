@@ -82,14 +82,13 @@ private lemma isBigO_mul_exp_neg (a : ℝ) (ha : 0 < a) :
   filter_upwards [Filter.eventually_ge_atTop (max N 1)] with t ht
   have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
   simp only [one_mul, norm_mul, Real.norm_eq_abs, abs_of_pos ht_pos, abs_of_pos (exp_pos _)]
-  have h1 := hN t (le_of_max_le_left ht)
-  simp only [dist_zero_right, Real.norm_eq_abs] at h1
-  rw [abs_of_pos (by positivity : 0 < t * exp (-(a/2) * t))] at h1
+  have h1 : t * exp (-(a/2) * t) < 1 := by
+    simpa [dist_zero_right, abs_of_pos ht_pos,
+      abs_of_pos (by positivity : 0 < t * exp (-(a/2) * t))] using hN t (le_of_max_le_left ht)
   calc t * exp (-a * t)
       = t * (exp (-(a/2) * t) * exp (-(a/2) * t)) := by rw [← exp_add]; ring_nf
     _ = (t * exp (-(a/2) * t)) * exp (-(a/2) * t) := by ring
-    _ ≤ 1 * exp (-(a/2) * t) := mul_le_mul_of_nonneg_right (le_of_lt h1) (exp_pos _).le
-    _ = exp (-(a / 2) * t) := one_mul _
+    _ ≤ exp (-(a/2) * t) := by nlinarith [exp_pos (-(a/2) * t)]
 
 /-- Helper: t² * exp(-a*t) = O(exp(-(a/2)*t)) as t → ∞ for a > 0. -/
 private lemma isBigO_sq_mul_exp_neg (a : ℝ) (ha : 0 < a) :
@@ -102,14 +101,13 @@ private lemma isBigO_sq_mul_exp_neg (a : ℝ) (ha : 0 < a) :
   have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
   simp only [one_mul, norm_mul, Real.norm_eq_abs, abs_of_pos (sq_pos_of_pos ht_pos),
     abs_of_pos (exp_pos _)]
-  have h1 := hN t (le_of_max_le_left ht)
-  simp only [dist_zero_right, Real.norm_eq_abs] at h1
-  rw [abs_of_pos (by positivity : 0 < t^2 * exp (-(a/2) * t))] at h1
+  have h1 : t^2 * exp (-(a/2) * t) < 1 := by
+    simpa [dist_zero_right, abs_of_pos (sq_pos_of_pos ht_pos),
+      abs_of_pos (by positivity : 0 < t^2 * exp (-(a/2) * t))] using hN t (le_of_max_le_left ht)
   calc t^2 * exp (-a * t)
       = t^2 * (exp (-(a/2) * t) * exp (-(a/2) * t)) := by rw [← exp_add]; ring_nf
     _ = (t^2 * exp (-(a/2) * t)) * exp (-(a/2) * t) := by ring
-    _ ≤ 1 * exp (-(a/2) * t) := mul_le_mul_of_nonneg_right (le_of_lt h1) (exp_pos _).le
-    _ = exp (-(a / 2) * t) := one_mul _
+    _ ≤ exp (-(a/2) * t) := by nlinarith [exp_pos (-(a/2) * t)]
 
 /-- t * exp(-a*t) is integrable on [1,∞) for a > 0. -/
 lemma integrableOn_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
