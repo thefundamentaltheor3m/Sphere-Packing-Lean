@@ -776,12 +776,8 @@ theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
     rw [hH₂_z, hH₄_z]
     ring
   -- Use that H₂ and H₄ are real on the imaginary axis
-  have hH₂_im : (H₂.resToImagAxis t).im = 0 := H₂_imag_axis_real t ht
-  have hH₄_im : (H₄.resToImagAxis t).im = 0 := H₄_imag_axis_real t ht
-  have hH₂_eq : H₂.resToImagAxis t = (H₂.resToImagAxis t).re :=
-    Complex.ext rfl (by simp only [ofReal_im]; exact hH₂_im)
-  have hH₄_eq : H₄.resToImagAxis t = (H₄.resToImagAxis t).re :=
-    Complex.ext rfl (by simp only [ofReal_im]; exact hH₄_im)
+  have hH₂_eq := ResToImagAxis.Real.eq_real_part H₂_imag_axis_real t
+  have hH₄_eq := ResToImagAxis.Real.eq_real_part H₄_imag_axis_real t
   -- Final computation
   rw [GReal, hG_val, hH₂_eq, hH₄_eq]
   set x : ℝ := (H₄.resToImagAxis t).re with hx_def
