@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 
-import Mathlib.Analysis.Distribution.SchwartzSpace
+import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 import Mathlib.Analysis.InnerProductSpace.Calculus
 import Mathlib.Data.Real.StarOrdered
 import Mathlib.Analysis.Calculus.ContDiff.Bounds

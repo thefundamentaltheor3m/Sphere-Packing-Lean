@@ -1,7 +1,7 @@
 import SpherePacking.ModularForms.EisensteinAsymptotics
 
 /-!
-# Core Ramanujan Identities for Eisenstein Series
+# Ramanujan Identities for Eisenstein Series
 
 This file contains the fundamental Ramanujan identities for Eisenstein series
 (Blueprint Theorem 6.50).
@@ -35,21 +35,6 @@ open scoped ModularForm MatrixGroups Manifold Interval Real NNReal ENNReal Topol
 
 noncomputable section
 
-/-! ## Helper lemmas for dimension-one arguments -/
-
-/-- In a rank-one module, every element is a scalar multiple of any nonzero element. -/
-lemma exists_smul_eq_of_rank_one {M : Type*} [AddCommGroup M] [Module ℂ M]
-    (hrank : Module.rank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, f = c • e := by
-  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' e he).mp
-    (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f
-  exact ⟨c, hc.symm⟩
-
-/-- Convert smul equality of modular forms to pointwise equality. -/
-lemma smul_modularForm_eq_pointwise {Γ : Subgroup SL(2, ℤ)} {k : ℤ} {f g : ModularForm Γ k}
-    {c : ℂ} (h : f = c • g) (z : ℍ) : (f : ℍ → ℂ) z = c * (g : ℍ → ℂ) z := by
-  simpa [ModularForm.coe_smul, smul_eq_mul] using
-    congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
-
 /-! ## The Ramanujan Identities
 
 These are the main theorems. The primed versions are in terms of serre_D,
@@ -79,8 +64,7 @@ The proof uses:
 theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   obtain ⟨c, hc⟩ := exists_smul_eq_of_rank_one weight_four_one_dimensional E4_ne_zero
     serre_DE₂_ModularForm
-  have hfun : ∀ z, serre_D 1 E₂ z = c * E₄.toFun z :=
-    fun z => smul_modularForm_eq_pointwise hc z
+  have hfun : ∀ z, serre_D 1 E₂ z = c * E₄.toFun z := smul_modularForm_eq_pointwise hc
   have hc_val : c = -(1/12 : ℂ) :=
     scalar_eq_of_tendsto hfun serre_DE₂_tendsto_atImInfty E₄_tendsto_one_atImInfty
   ext z
@@ -98,8 +82,7 @@ Uses the dimension argument:
 theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   obtain ⟨c, hc⟩ := exists_smul_eq_of_rank_one weight_six_one_dimensional E6_ne_zero
     serre_DE₄_ModularForm
-  have hfun : ∀ z, serre_D 4 E₄.toFun z = c * E₆.toFun z :=
-    fun z => smul_modularForm_eq_pointwise hc z
+  have hfun : ∀ z, serre_D 4 E₄.toFun z = c * E₆.toFun z := smul_modularForm_eq_pointwise hc
   have hc_val : c = -(1/3 : ℂ) :=
     scalar_eq_of_tendsto hfun serre_DE₄_tendsto_atImInfty E₆_tendsto_one_atImInfty
   ext z
@@ -137,38 +120,32 @@ theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.to
 
 /-! ## Derived Ramanujan identities (D instead of serre_D) -/
 
+/-- Relationship between D and serre_D: `D f = serre_D k f + k/12 * E₂ * f`. -/
+lemma D_eq_serre_D_add (k : ℂ) (f : ℍ → ℂ) (z : ℍ) :
+    D f z = serre_D k f z + k * 12⁻¹ * E₂ z * f z := by
+  simp only [serre_D_apply]; ring
+
 @[simp]
 theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
-  have h := ramanujan_E₂'
-  unfold serre_D at h
   ext z
-  have hz := congrFun h z
-  simp only [Pi.mul_apply, Pi.sub_apply, show (-12⁻¹ : ℍ → ℂ) z = -12⁻¹ from rfl] at hz ⊢
-  calc D E₂ z = (D E₂ z - 1 * 12⁻¹ * E₂ z * E₂ z) + 1 * 12⁻¹ * E₂ z * E₂ z := by ring
-    _ = -12⁻¹ * E₄.toFun z + 12⁻¹ * E₂ z * E₂ z := by rw [hz]; ring
-    _ = 12⁻¹ * (E₂ z * E₂ z - E₄.toFun z) := by ring
+  rw [D_eq_serre_D_add 1 E₂ z]
+  simp only [congrFun ramanujan_E₂' z, Pi.mul_apply, Pi.sub_apply,
+    show (-12⁻¹ : ℍ → ℂ) z = -12⁻¹ from rfl, show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl]
+  ring
 
 @[simp]
 theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
-  have h := ramanujan_E₄'
-  unfold serre_D at h
   ext z
-  have hz := congrFun h z
-  simp only [Pi.mul_apply, Pi.sub_apply, show (-3⁻¹ : ℍ → ℂ) z = -3⁻¹ from rfl] at hz ⊢
-  calc D E₄.toFun z
-      = (D E₄.toFun z - 4 * 12⁻¹ * E₂ z * E₄.toFun z) + 4 * 12⁻¹ * E₂ z * E₄.toFun z := by ring
-    _ = -3⁻¹ * E₆.toFun z + 3⁻¹ * E₂ z * E₄.toFun z := by rw [hz]; ring
-    _ = 3⁻¹ * (E₂ z * E₄.toFun z - E₆.toFun z) := by ring
+  rw [D_eq_serre_D_add 4 E₄.toFun z]
+  simp only [congrFun ramanujan_E₄' z, Pi.mul_apply, Pi.sub_apply,
+    show (-3⁻¹ : ℍ → ℂ) z = -3⁻¹ from rfl, show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl]
+  ring
 
 @[simp]
 theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
-  have h := ramanujan_E₆'
-  unfold serre_D at h
   ext z
-  have hz := congrFun h z
-  simp only [Pi.mul_apply, Pi.sub_apply, show (-2⁻¹ : ℍ → ℂ) z = -2⁻¹ from rfl] at hz ⊢
-  calc D E₆.toFun z
-      = (D E₆.toFun z - 6 * 12⁻¹ * E₂ z * E₆.toFun z) + 6 * 12⁻¹ * E₂ z * E₆.toFun z := by ring
-    _ = -2⁻¹ * E₄.toFun z * E₄.toFun z + 2⁻¹ * E₂ z * E₆.toFun z := by rw [hz]; ring
-    _ = 2⁻¹ * (E₂ z * E₆.toFun z - E₄.toFun z * E₄.toFun z) := by ring
+  rw [D_eq_serre_D_add 6 E₆.toFun z]
+  simp only [congrFun ramanujan_E₆' z, Pi.mul_apply, Pi.sub_apply,
+    show (-2⁻¹ : ℍ → ℂ) z = -2⁻¹ from rfl, show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl]
+  ring
 
