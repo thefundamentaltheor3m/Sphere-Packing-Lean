@@ -38,7 +38,7 @@ theorem g_zero : g 0 = 1 := by
   norm_cast
   exact pi_ne_zero
 
-theorem fourier_g_zero : fourierTransformCLE ℂ g 0 = 1 := by
+theorem fourier_g_zero : (FourierTransform.fourierCLE ℂ _) g 0 = 1 := by
   simp only [g, map_add, map_smul, eig_a, eig_b, add_apply, smul_apply, a_zero, smul_eq_mul]
   have : (-b) 0 = -(b 0) := rfl
   ring_nf
@@ -48,6 +48,7 @@ theorem fourier_g_zero : fourierTransformCLE ℂ g 0 = 1 := by
   norm_cast
   exact pi_ne_zero
 
-theorem g_zero_eq_fourier_g_zero : g 0 = fourierTransformCLE ℂ g 0 := by rw [g_zero, fourier_g_zero]
+theorem g_zero_eq_fourier_g_zero : g 0 = (FourierTransform.fourierCLE ℂ _) g 0 := by
+  rw [g_zero, fourier_g_zero]
 
 end Zero

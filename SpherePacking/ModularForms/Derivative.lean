@@ -322,6 +322,13 @@ Note that the definition makes sense for any analytic function $F : \mathbb{H} \
 noncomputable def serre_D (k : ℂ) : (ℍ → ℂ) → (ℍ → ℂ) :=
   fun (F : ℍ → ℂ) => (fun z => D F z - k * 12⁻¹ * E₂ z * F z)
 
+@[simp]
+lemma serre_D_apply (k : ℂ) (F : ℍ → ℂ) (z : ℍ) :
+    serre_D k F z = D F z - k * 12⁻¹ * E₂ z * F z := rfl
+
+lemma serre_D_eq (k : ℂ) (F : ℍ → ℂ) :
+    serre_D k F = fun z => D F z - k * 12⁻¹ * E₂ z * F z := rfl
+
 /--
 Basic properties of Serre derivative: linearity, Leibniz rule, etc.
 -/
@@ -596,65 +603,6 @@ theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiabl
   rw [serre_D_slash_equivariant, h]
   exact hF
 
-/--
-Serre derivative of Eisenstein series. Use `serre_D_slash_invariant` and compare constant terms.
-Note that the dimensions of the spaces of modular forms are all 1.
--/
-theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by sorry
-
-theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by sorry
-
-theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by sorry
-
-@[simp]
-theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
-  ext z
-  have h := ramanujan_E₂'
-  unfold serre_D at h
-  have h1 := congrFun h z
-  simp [field]
-  field_simp at h1
-  simpa [add_comm, sub_eq_iff_eq_add] using h1
-
-@[simp]
-theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
-  ext z
-  have h := ramanujan_E₄'
-  unfold serre_D at h
-  have h1 := congrFun h z
-  simp [field]
-  simp [field] at h1
-  ring_nf
-  ring_nf at h1
-  have hc : (12 : ℂ) ≠ 0 := by norm_num
-  apply (mul_right_inj' hc).mp
-  ring_nf
-  simpa [add_comm, sub_eq_iff_eq_add] using h1
-
-@[simp]
-theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
-  ext z
-  have h := ramanujan_E₆'
-  unfold serre_D at h
-  have h1 := congrFun h z
-  simp [field]
-  simp [field] at h1
-  ring_nf
-  ring_nf at h1
-  have hc : (12 : ℂ) ≠ 0 := by norm_num
-  apply (mul_right_inj' hc).mp
-  ring_nf
-  simpa [add_comm, sub_eq_iff_eq_add] using h1
-
-/- TODO: remove later -/
-example : D (E₄.toFun * E₄.toFun) = 2 * 3⁻¹ * E₄.toFun * (E₂ * E₄.toFun - E₆.toFun) :=
-  by
-  rw [D_mul E₄.toFun E₄.toFun]
-  · simp only [ramanujan_E₄]
-    ring_nf
-  · exact E₄.holo'
-  · exact E₄.holo'
-
 /-
 Interaction between (Serre) derivative and restriction to the imaginary axis.
 -/
@@ -863,10 +811,10 @@ lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
 serre_D k f = D f - (k/12)·E₂·f. Both terms are bounded:
 - D f is bounded by `D_isBoundedAtImInfty_of_bounded`
 - (k/12)·E₂·f is bounded since E₂ and f are bounded -/
-theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
+theorem serre_D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ} (k : ℂ)
     (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
     (hbdd : IsBoundedAtImInfty f) : IsBoundedAtImInfty (serre_D k f) := by
-  unfold serre_D
+  simp only [serre_D_eq]
   have hD : IsBoundedAtImInfty (D f) := D_isBoundedAtImInfty_of_bounded hf hbdd
   have hE₂f : IsBoundedAtImInfty (fun z => k * 12⁻¹ * E₂ z * f z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) :=
@@ -896,4 +844,4 @@ noncomputable def serre_D_ModularForm (k : ℤ) (f : ModularForm (Gamma 1) k) :
   bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
     obtain ⟨A', rfl⟩ := MonoidHom.mem_range.mp hA
     exact (serre_D_slash_invariant k f f.holo' A' (f.slash_eq_self A')).symm ▸
-      serre_D_isBoundedAtImInfty k f.holo' (ModularFormClass.bdd_at_infty f)
+      serre_D_isBoundedAtImInfty_of_bounded k f.holo' (ModularFormClass.bdd_at_infty f)
