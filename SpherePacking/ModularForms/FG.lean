@@ -592,6 +592,42 @@ $t \mapsto F(it) / G(it)$ is monotone decreasing.
 theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) := by
   sorry
 
+lemma I_zpow_four : (I : ℂ) ^ (4 : ℤ) = 1 := by
+  rw [show (4 : ℤ) = (4 : ℕ) from rfl, zpow_natCast]; exact Complex.I_pow_four
+
+lemma I_zpow_mod_four (n : ℤ) : (I : ℂ) ^ n = I ^ (n % 4) := by
+  have h : n = n % 4 + 4 * (n / 4) := (Int.emod_add_mul_ediv n 4).symm
+  have hadd := zpow_add₀ I_ne_zero (n % 4) (4 * (n / 4))
+  have hmul : (I : ℂ) ^ (4 * (n / 4)) = 1 := by rw [zpow_mul, I_zpow_four, one_zpow]
+  rw [hmul, mul_one] at hadd
+  conv_lhs => rw [h]
+  exact hadd
+
+lemma I_mul_t_pow (t : ℝ) (n : ℤ) : (I * t) ^ n = I ^ (n % 4) * t ^ n := by
+  rw [mul_zpow, I_zpow_mod_four]
+
+lemma I_mul_t_pow' (t : ℝ) (n : ℕ) : (I * t) ^ (n : ℤ) =
+    match n % 4 with
+    | 0 => t ^ (n : ℤ)
+    | 1 => I * t ^ (n : ℤ)
+    | 2 => -(t ^ (n : ℤ))
+    | 3 => -I * t ^ (n : ℤ)
+    | _ => 0  -- unreachable
+    := by
+  have hmod : n % 4 < 4 := Nat.mod_lt n (by norm_num)
+  have hInt : (n : ℤ) % 4 = (n % 4 : ℕ) := (Int.natCast_mod n 4).symm
+  rw [I_mul_t_pow, hInt]
+  interval_cases n % 4
+  · simp only [CharP.cast_eq_zero, zpow_zero, one_mul]
+  · simp only [Nat.cast_one, zpow_one]
+  · simp only [Nat.cast_ofNat, zpow_natCast]
+    calc I ^ 2 * (t : ℂ) ^ n = -1 * (t : ℂ) ^ n := by rw [I_sq]
+      _ = -((t : ℂ) ^ n) := by ring
+  · simp only [Nat.cast_ofNat, zpow_natCast]
+    calc I ^ 3 * (t : ℂ) ^ n = I ^ 2 * I * (t : ℂ) ^ n := by ring
+      _ = -1 * I * (t : ℂ) ^ n := by rw [I_sq]
+      _ = -I * (t : ℂ) ^ n := by ring
+
 /- Functional equation of $F$ -/
 theorem F_functional_equation (z : ℍ) :
     F (S • z) = z ^ 12 * F z - 12 * I * π ^ (-1 : ℤ) * z ^ 11 * (F₁ * E₄.toFun) z
@@ -629,19 +665,12 @@ theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
     simp only [coe_mk_subtype, div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
   -- Apply F_functional_equation
   have hF_eq := F_functional_equation z
-  -- Powers of (I * t): (I*t)^12 = t^12, (I*t)^11 = -I*t^11, (I*t)^10 = -t^10
   have hz_pow12 : (z : ℂ) ^ 12 = t ^ 12 := by
-    simp only [hz_def, coe_mk_subtype, mul_pow]
-    have hI12 : (I : ℂ) ^ 12 = 1 := by norm_num [I_sq, pow_succ, pow_zero]
-    rw [hI12, one_mul]
+    simp only [hz_def, coe_mk_subtype, ← zpow_natCast, I_mul_t_pow']
   have hz_pow11 : (z : ℂ) ^ 11 = -I * t ^ 11 := by
-    simp only [hz_def, coe_mk_subtype, mul_pow]
-    congr 1
-    norm_num [I_sq, pow_succ, pow_zero]
+    simp only [hz_def, coe_mk_subtype, ← zpow_natCast, I_mul_t_pow']
   have hz_pow10 : (z : ℂ) ^ 10 = -t ^ 10 := by
-    simp only [hz_def, coe_mk_subtype, mul_pow]
-    have hI10 : (I : ℂ) ^ 10 = -1 := by norm_num [I_sq, pow_succ, pow_zero]
-    rw [hI10]; ring
+    simp only [hz_def, coe_mk_subtype, ← zpow_natCast, I_mul_t_pow']
   -- Compute F(S • z) using the functional equation
   have hF_val : F.resToImagAxis (1 / t) = (t : ℂ) ^ 12 * F z
       - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun) z
