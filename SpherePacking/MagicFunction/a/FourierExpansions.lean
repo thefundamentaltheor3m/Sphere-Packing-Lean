@@ -253,9 +253,7 @@ lemma b_E₄_poly : b_E₄ =O[Filter.atTop] (fun n ↦ (n ^ 4 : ℝ)) := by
   simp only [Real.norm_eq_abs, abs_of_nonneg (by positivity : (0 : ℝ) ≤ n ^ 4)]
   have hσ : (σ 3 n : ℝ) ≤ n ^ 4 := by exact_mod_cast sigma_bound 3 n
   have h240 : ‖(240 : ℂ)‖ = 240 := by norm_num
-  calc ‖(240 : ℂ)‖ * ((σ 3) n : ℝ)
-      ≤ 240 * n ^ 4 := by rw [h240]; nlinarith
-    _ = 240 * n ^ 4 := by ring
+  calc ‖(240 : ℂ)‖ * ((σ 3) n : ℝ) ≤ 240 * n ^ 4 := by rw [h240]; nlinarith
 
 /-! ## Even Extension Lemmas
 
