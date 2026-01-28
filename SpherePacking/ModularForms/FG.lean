@@ -895,56 +895,30 @@ lemma rpow_mul_F₁E₄_resToImagAxis_tendsto_zero :
 /-- s² * FReal s → 0 as s → ∞. -/
 lemma sq_mul_FReal_tendsto_zero :
     Tendsto (fun s : ℝ => s ^ 2 * FReal s) atTop (nhds 0) := by
-  -- From rpow_sq_mul_FReal_resToImagAxis_tendsto_zero and F being real on imaginary axis
-  have h := rpow_sq_mul_FReal_resToImagAxis_tendsto_zero
-  -- Apply re to get real-valued limit
-  have hre_cont : Tendsto Complex.re (nhds (0 : ℂ)) (nhds (0 : ℂ).re) := continuous_re.tendsto 0
-  simp only [Complex.zero_re] at hre_cont
-  have hre := hre_cont.comp h
-  -- The function matches: for s > 0, s^2 * FReal s = re(s^2 * F.resToImagAxis s)
-  refine hre.congr' ?_
+  refine ((continuous_re.tendsto 0).comp rpow_sq_mul_FReal_resToImagAxis_tendsto_zero).congr' ?_
   filter_upwards [eventually_gt_atTop 0] with s hs
   unfold FReal
   simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte]
-  have hF_real := F_imag_axis_real s hs
-  -- (s : ℂ) ^ (2 : ℂ) = (s ^ 2 : ℂ) for s > 0 (using cpow definition)
-  -- Use ofReal_cpow: for x ≥ 0, (x : ℂ) ^ (y : ℂ) = (x ^ y : ℂ)
+  -- (s : ℂ) ^ (2 : ℂ) = (s ^ 2 : ℂ) for s > 0
   have h_cpow : (s : ℂ) ^ (2 : ℂ) = ((s ^ 2 : ℝ) : ℂ) := by
-    have := Complex.ofReal_cpow (le_of_lt hs) (2 : ℝ)
-    simp only [Complex.ofReal_ofNat] at this
     rw [show (s ^ 2 : ℝ) = s ^ (2 : ℝ) from (Real.rpow_natCast s 2).symm]
-    exact this.symm
-  simp only [Complex.mul_re]
-  rw [h_cpow, Complex.ofReal_re, Complex.ofReal_im]
+    exact (Complex.ofReal_cpow (le_of_lt hs) 2).symm
+  simp only [Complex.mul_re, h_cpow, Complex.ofReal_re, Complex.ofReal_im]
   ring
 
 /-- s * (F₁*E₄).resToImagAxis s (real part) → 0 as s → ∞. -/
 lemma mul_F₁E₄_re_tendsto_zero :
     Tendsto (fun s : ℝ => s * ((F₁ * E₄.toFun).resToImagAxis s).re) atTop (nhds 0) := by
-  -- From rpow_mul_F₁E₄_resToImagAxis_tendsto_zero and F₁*E₄ being real on imaginary axis
-  have h := rpow_mul_F₁E₄_resToImagAxis_tendsto_zero
-  -- Apply re to get real-valued limit
-  have hre_cont : Tendsto Complex.re (nhds (0 : ℂ)) (nhds (0 : ℂ).re) := continuous_re.tendsto 0
-  simp only [Complex.zero_re] at hre_cont
-  have hre := hre_cont.comp h
-  -- The function matches: for s > 0, s * (F₁*E₄)(is).re = re(s * (F₁*E₄).resToImagAxis s)
-  refine hre.congr' ?_
+  refine ((continuous_re.tendsto 0).comp rpow_mul_F₁E₄_resToImagAxis_tendsto_zero).congr' ?_
   filter_upwards [eventually_gt_atTop 0] with s hs
   simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte,
-    Complex.cpow_one]
-  have hF₁E₄_real := ResToImagAxis.Real.mul F₁_imag_axis_real E₄_imag_axis_real s hs
-  -- s * (F₁*E₄)(is) has real part = s * re((F₁*E₄)(is)) since s is real and im = 0
-  simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
+    Complex.cpow_one, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
   ring
 
 /-- E₄.resToImagAxis s (real part) → 1 as s → ∞. -/
 lemma E₄_re_resToImagAxis_tendsto_one :
-    Tendsto (fun s : ℝ => (E₄.toFun.resToImagAxis s).re) atTop (nhds 1) := by
-  -- Complex.re is continuous, so compose with E₄_resToImagAxis_tendsto_one
-  have h := E₄_resToImagAxis_tendsto_one
-  have hre_cont : Tendsto Complex.re (nhds (1 : ℂ)) (nhds (1 : ℂ).re) := continuous_re.tendsto 1
-  simp only [Complex.one_re] at hre_cont
-  exact hre_cont.comp h
+    Tendsto (fun s : ℝ => (E₄.toFun.resToImagAxis s).re) atTop (nhds 1) :=
+  (continuous_re.tendsto 1).comp E₄_resToImagAxis_tendsto_one
 
 /-- The numerator expression N(s) = s² * FReal s - 12/π * s * (F₁*E₄)(is) + 36/π² * E₄(is)²
 tends to 36/π² as s → ∞. -/
@@ -953,34 +927,22 @@ lemma numerator_tendsto_at_infty :
       s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s * ((F₁ * E₄.toFun).resToImagAxis s).re
         + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2)
       atTop (nhds (36 * π ^ (-2 : ℤ))) := by
-  -- s² * FReal s → 0, s * (F₁*E₄) → 0, E₄ → 1
-  -- So limit is 0 - 12/π * 0 + 36/π² * 1 = 36/π²
-  have hF_decay := sq_mul_FReal_tendsto_zero
-  have hF₁E₄_decay := mul_F₁E₄_re_tendsto_zero
-  have hE₄_lim := E₄_re_resToImagAxis_tendsto_one
-  -- Combine the limits
-  convert (hF_decay.sub (hF₁E₄_decay.const_mul (12 * π ^ (-1 : ℤ)))).add
-    (hE₄_lim.pow 2 |>.const_mul (36 * π ^ (-2 : ℤ))) using 1
+  -- 0 - 12/π * 0 + 36/π² * 1 = 36/π²
+  convert (sq_mul_FReal_tendsto_zero.sub
+      (mul_F₁E₄_re_tendsto_zero.const_mul (12 * π ^ (-1 : ℤ)))).add
+    (E₄_re_resToImagAxis_tendsto_one.pow 2 |>.const_mul (36 * π ^ (-2 : ℤ))) using 1
   · ext s; ring
   · simp only [sq, mul_one, sub_zero, mul_zero, zero_add]
 
 /-- H₂.resToImagAxis s (real part) tends to 0 as s → ∞. -/
 lemma H₂_re_resToImagAxis_tendsto_zero :
-    Tendsto (fun s : ℝ => (H₂.resToImagAxis s).re) atTop (nhds 0) := by
-  -- Complex.re is continuous, so compose with H₂_resToImagAxis_tendsto_zero
-  have h := H₂_resToImagAxis_tendsto_zero
-  have hre_cont : Tendsto Complex.re (nhds (0 : ℂ)) (nhds (0 : ℂ).re) := continuous_re.tendsto 0
-  simp only [Complex.zero_re] at hre_cont
-  exact hre_cont.comp h
+    Tendsto (fun s : ℝ => (H₂.resToImagAxis s).re) atTop (nhds 0) :=
+  (continuous_re.tendsto 0).comp H₂_resToImagAxis_tendsto_zero
 
 /-- H₄.resToImagAxis s (real part) tends to 1 as s → ∞. -/
 lemma H₄_re_resToImagAxis_tendsto_one :
-    Tendsto (fun s : ℝ => (H₄.resToImagAxis s).re) atTop (nhds 1) := by
-  -- Complex.re is continuous, so compose with H₄_resToImagAxis_tendsto_one
-  have h := H₄_resToImagAxis_tendsto_one
-  have hre_cont : Tendsto Complex.re (nhds (1 : ℂ)) (nhds (1 : ℂ).re) := continuous_re.tendsto 1
-  simp only [Complex.one_re] at hre_cont
-  exact hre_cont.comp h
+    Tendsto (fun s : ℝ => (H₄.resToImagAxis s).re) atTop (nhds 1) :=
+  (continuous_re.tendsto 1).comp H₄_resToImagAxis_tendsto_one
 
 /-- The denominator expression D(s) = H₄(is)³ * (2*H₄(is)² + 5*H₂(is)*H₄(is) + 5*H₂(is)²)
 tends to 2 as s → ∞. -/
@@ -988,12 +950,11 @@ lemma denominator_tendsto_at_infty :
     Tendsto (fun s : ℝ => (H₄.resToImagAxis s).re ^ 3 *
       (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
         + 5 * (H₂.resToImagAxis s).re ^ 2)) atTop (nhds 2) := by
-  have hH₂_lim := H₂_re_resToImagAxis_tendsto_zero
-  have hH₄_lim := H₄_re_resToImagAxis_tendsto_one
-  -- Combine: 1³ * (2*1² + 5*0*1 + 5*0²) = 2
-  have hlim : (1 : ℝ) ^ 3 * (2 * 1 ^ 2 + 5 * 0 * 1 + 5 * 0 ^ 2) = 2 := by norm_num
-  convert (hH₄_lim.pow 3).mul ((hH₄_lim.pow 2 |>.const_mul 2).add
-    ((hH₂_lim.mul hH₄_lim |>.const_mul 5).add (hH₂_lim.pow 2 |>.const_mul 5))) using 1
+  -- 1³ * (2*1² + 5*0*1 + 5*0²) = 2
+  convert (H₄_re_resToImagAxis_tendsto_one.pow 3).mul
+    ((H₄_re_resToImagAxis_tendsto_one.pow 2 |>.const_mul 2).add
+    ((H₂_re_resToImagAxis_tendsto_zero.mul H₄_re_resToImagAxis_tendsto_one |>.const_mul 5).add
+    (H₂_re_resToImagAxis_tendsto_zero.pow 2 |>.const_mul 5))) using 1
   · ext s; ring
   · norm_num
 
@@ -1063,98 +1024,54 @@ theorem FmodG_rightLimitAt_zero :
     have hG := G_functional_eq_real hs
     unfold FmodGReal
     rw [hG]
-    -- Simplify using the fact that all values are real
     have hs10_ne : s ^ 10 ≠ 0 := pow_ne_zero 10 (ne_of_gt hs)
-    have hG_ne : s ^ 10 * (H₄.resToImagAxis s).re ^ 3 *
-        (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
-          + 5 * (H₂.resToImagAxis s).re ^ 2) ≠ 0 := by
-      apply mul_ne_zero (mul_ne_zero hs10_ne ?_) ?_
-      all_goals { by_contra h; apply hne; simp_all }
     -- Convert complex values to real parts using the fact they're real on imaginary axis
-    have hF₁E₄_eq := ResToImagAxis.Real.eq_real_part
-      (ResToImagAxis.Real.mul F₁_imag_axis_real E₄_imag_axis_real) s
-    have hE₄_eq := ResToImagAxis.Real.eq_real_part E₄_imag_axis_real s
-    -- Rewrite hF using real parts (before it gets expanded by simp)
-    rw [hF₁E₄_eq, hE₄_eq] at hF
-    -- hF: (FReal (1/s) : ℂ) = s^12*FReal(s) - 12/π*s^11*↑(F₁E₄).re + 36/π²*s^10*(↑E₄.re)²
-    -- This is equality in ℂ, extract to ℝ
+    rw [ResToImagAxis.Real.eq_real_part
+        (ResToImagAxis.Real.mul F₁_imag_axis_real E₄_imag_axis_real) s,
+      ResToImagAxis.Real.eq_real_part E₄_imag_axis_real s] at hF
+    -- Extract real equality from complex equality using ofReal_injective
     have hF_real_eq : FReal (1 / s) = s ^ 12 * FReal s
         - 12 * π ^ (-1 : ℤ) * s ^ 11 * ((F₁ * E₄.toFun).resToImagAxis s).re
         + 36 * π ^ (-2 : ℤ) * s ^ 10 * (E₄.toFun.resToImagAxis s).re ^ 2 := by
       apply Complex.ofReal_injective
-      simp only [Complex.ofReal_sub, Complex.ofReal_add, Complex.ofReal_mul, Complex.ofReal_pow]
-      have hpi1 : (↑(π ^ (-1 : ℤ)) : ℂ) = ↑π ^ (-1 : ℤ) := Complex.ofReal_zpow π _
-      have hpi2 : (↑(π ^ (-2 : ℤ)) : ℂ) = ↑π ^ (-2 : ℤ) := Complex.ofReal_zpow π _
-      rw [hpi1, hpi2]
+      simp only [Complex.ofReal_sub, Complex.ofReal_add, Complex.ofReal_mul, Complex.ofReal_pow,
+        Complex.ofReal_zpow π]
       convert hF using 1
-    -- Now compute FReal / GReal
     rw [hF_real_eq]
-    -- Factor out s^10 from numerator
-    have hnum_factor : s ^ 12 * FReal s - 12 * π ^ (-1 : ℤ) * s ^ 11 *
+    -- Factor out s^10 and cancel
+    calc _ = s ^ 10 * (s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s *
           ((F₁ * E₄.toFun).resToImagAxis s).re +
-        36 * π ^ (-2 : ℤ) * s ^ 10 * (E₄.toFun.resToImagAxis s).re ^ 2 =
-        s ^ 10 * (s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s *
-          ((F₁ * E₄.toFun).resToImagAxis s).re +
-        36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2) := by ring
-    rw [hnum_factor]
-    -- Cancel s^10
-    -- First reassociate the denominator: s^10 * H₄.re^3 * (...) = s^10 * (H₄.re^3 * (...))
-    have hden_assoc : s ^ 10 * (H₄.resToImagAxis s).re ^ 3 *
+        36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2) /
+        (s ^ 10 * ((H₄.resToImagAxis s).re ^ 3 *
         (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
-          + 5 * (H₂.resToImagAxis s).re ^ 2) =
-        s ^ 10 * ((H₄.resToImagAxis s).re ^ 3 *
-        (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
-          + 5 * (H₂.resToImagAxis s).re ^ 2)) := by ring
-    rw [hden_assoc, mul_div_mul_left _ _ hs10_ne]
+          + 5 * (H₂.resToImagAxis s).re ^ 2))) := by ring_nf
+      _ = _ := mul_div_mul_left _ _ hs10_ne
   -- Step 4: Compute the limit using Tendsto.div
   have hlim := hNum.div hDen (by norm_num : (2 : ℝ) ≠ 0)
-  -- Step 5: Convert the limit at atTop for FmodGReal(1/s) to limit at nhdsWithin 0 for FmodGReal
+  -- Step 5: Convert limit at atTop for FmodGReal(1/s) to limit at nhdsWithin 0 for FmodGReal
   rw [Metric.tendsto_nhdsWithin_nhds]
   intro ε hε
-  -- Get the limit behavior for the composed function
   rw [Metric.tendsto_atTop] at hlim
   obtain ⟨N, hN⟩ := hlim ε hε
-  -- Also get the eventual equality
   obtain ⟨M, hM⟩ := Filter.eventually_atTop.mp hEq
-  -- Choose δ = 1/max(N, M, 1)
   use 1 / max (max N M) 1
   refine ⟨one_div_pos.mpr (lt_of_lt_of_le one_pos (le_max_right _ _)), ?_⟩
   intro t ht_mem ht_dist
-  -- ht_mem : t ∈ Set.Ioi 0 (i.e., 0 < t)
-  -- ht_dist : dist t 0 < 1 / max (max N M) 1
   simp only [Set.mem_Ioi] at ht_mem
   simp only [dist_zero_right, Real.norm_eq_abs, abs_of_pos ht_mem] at ht_dist
-  -- So t < 1/max(N, M, 1), hence 1/t > max(N, M, 1)
-  have hmax_pos : 0 < max (max N M) 1 := lt_of_lt_of_le one_pos (le_max_right _ _)
+  -- t < 1/max(N, M, 1) implies 1/t > max(N, M, 1)
   have h1t : 1 / t > max (max N M) 1 := by
-    have ht_pos : 0 < t := ht_mem
     rw [one_div, gt_iff_lt, ← one_div]
     calc max (max N M) 1 = 1 / (1 / max (max N M) 1) := by field_simp
-      _ < 1 / t := by
-          apply one_div_lt_one_div_of_lt ht_pos
-          exact ht_dist
+      _ < 1 / t := one_div_lt_one_div_of_lt ht_mem ht_dist
   have h1t_N : 1 / t > N := lt_of_le_of_lt (le_max_left _ _) (lt_of_le_of_lt (le_max_left _ _) h1t)
   have h1t_M : 1 / t ≥ M :=
     le_of_lt (lt_of_le_of_lt (le_max_right N M) (lt_of_le_of_lt (le_max_left _ _) h1t))
-  -- Apply the eventual equality and the limit
-  have hFmodG_eq := hM (1 / t) h1t_M
-  have hdist := hN (1 / t) (le_of_lt h1t_N)
-  -- FmodGReal t = FmodGReal (1 / (1/t))
-  have heq : FmodGReal t = FmodGReal (1 / (1 / t)) := by
-    congr 1
-    field_simp
-  rw [heq, hFmodG_eq]
-  -- The key is that hdist shows the expression is close to 36/π² / 2 = 18/π²
-  simp only [Pi.div_apply] at hdist
-  -- 36/π² / 2 = 18/π²
-  have h36_18 : (36 : ℝ) * π ^ (-2 : ℤ) / 2 = 18 * π ^ (-2 : ℤ) := by
-    have hπ_ne : (π : ℝ) ≠ 0 := Real.pi_ne_zero
-    field_simp [hπ_ne]
-    ring
-  rw [h36_18] at hdist
-  -- The expressions match after substitution (1/(1/t) = t)
-  simp only [one_div] at hdist hFmodG_eq ⊢
-  exact hdist
+  rw [show FmodGReal t = FmodGReal (1 / (1 / t)) by field_simp, hM (1 / t) h1t_M]
+  simp only [Pi.div_apply] at hN
+  convert hN (1 / t) (le_of_lt h1t_N) using 2
+  field_simp [Real.pi_ne_zero]
+  ring
 
 /--
 Main inequalities between $F$ and $G$ on the imaginary axis.
