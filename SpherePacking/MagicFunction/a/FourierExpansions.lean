@@ -486,29 +486,11 @@ lemma antidiagonal_qexp_factor (a b : ℕ → ℂ) (z : ℍ) (n : ℕ) :
           2 * ↑π * Complex.I * ↑l * ↑z) := by rw [← Complex.exp_add]
     _ = a k * b l * cexp (2 * ↑π * Complex.I * ↑n * ↑z) := by rw [hexp]
 
-/-- The norm of exp(πiz) for z : ℍ is less than 1.
-    Proof: |exp(πiz)| = exp(Re(πiz)) = exp(-π·z.im) < 1 since z.im > 0. -/
+/-- The norm of exp(πiz) for z : ℍ is less than 1. -/
 lemma norm_exp_pi_I_z_lt_one (z : ℍ) : ‖Complex.exp (π * Complex.I * z)‖ < 1 := by
-  rw [Complex.norm_exp]
-  have him : (π * Complex.I * (z : ℂ)).re = -π * z.im := by
-    have h1 : (π * Complex.I : ℂ).re = 0 := by simp [Complex.I_re]
-    have h2 : (π * Complex.I : ℂ).im = π := by simp [Complex.I_im]
-    simp only [mul_re, h1, zero_mul, h2]
-    simp only [UpperHalfPlane.coe_im]
-    ring
-  rw [him]
-  have hneg : -π * z.im < 0 := by nlinarith [Real.pi_pos, z.im_pos]
-  exact Real.exp_lt_one_iff.mpr hneg
-
-/-- The norm of exp(2πiz) for z : ℍ is less than 1. -/
-lemma norm_exp_2pi_I_z_lt_one (z : ℍ) : ‖cexp (2 * π * Complex.I * z)‖ < 1 := by
-  have h1 := norm_exp_pi_I_z_lt_one z
-  rw [show (2 : ℂ) * π * Complex.I * z = (π * Complex.I * z) + (π * Complex.I * z) by ring]
-  rw [Complex.exp_add, Complex.norm_mul]
-  have hnorm_nonneg : 0 ≤ ‖cexp (π * Complex.I * z)‖ := norm_nonneg _
-  calc ‖cexp (π * Complex.I * z)‖ * ‖cexp (π * Complex.I * z)‖
-      = ‖cexp (π * Complex.I * z)‖ ^ 2 := sq _ |>.symm
-    _ < 1 := sq_lt_one_iff₀ hnorm_nonneg |>.mpr h1
+  rw [show π * Complex.I * (z : ℂ) = (π : ℂ) * z * Complex.I by ring, Complex.norm_exp_mul_I]
+  simp only [mul_im, ofReal_re, coe_re, ofReal_im, coe_im, mul_zero, sub_zero]
+  exact Real.exp_lt_one_iff.mpr (by nlinarith [Real.pi_pos, z.im_pos])
 
 /-- Generic summability of Cauchy product q-series with polynomial growth coefficients. -/
 lemma summable_cauchy_q_series_of_poly {a b : ℕ → ℂ} {k ℓ : ℕ}
@@ -516,7 +498,7 @@ lemma summable_cauchy_q_series_of_poly {a b : ℕ → ℂ} {k ℓ : ℕ}
     (hb : b =O[Filter.atTop] (fun n ↦ (n ^ ℓ : ℝ))) (z : ℍ) :
     Summable (fun n ↦ cauchyCoeff a b n * cexp (2 * π * Complex.I * n * z)) := by
   let r := cexp (2 * π * Complex.I * z)
-  have hr : ‖r‖ < 1 := norm_exp_2pi_I_z_lt_one z
+  have hr : ‖r‖ < 1 := exp_upperHalfPlane_lt_one z
   have hpoly : cauchyCoeff a b =O[Filter.atTop] (fun n ↦ (↑(n ^ (k + ℓ + 1)) : ℝ)) := by
     have := cauchyCoeff_poly ha hb; convert this using 2; simp
   have h_eq : ∀ n : ℕ, cauchyCoeff a b n * cexp (2 * π * Complex.I * n * z) =
