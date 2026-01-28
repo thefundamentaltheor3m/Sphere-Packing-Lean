@@ -273,6 +273,42 @@ lemma evenExt_odd (a : ℕ → ℂ) (n : ℕ) : evenExt a (2 * n + 1) = 0 := by
   · intro ⟨m, hm⟩
     omega
 
+/-- Cauchy product at 0 is zero if right factor vanishes at 0. -/
+lemma cauchyCoeff_zero_of_right_zero {a b : ℕ → ℂ} (hb0 : b 0 = 0) :
+    cauchyCoeff a b 0 = 0 := by
+  simp only [cauchyCoeff, Finset.Nat.antidiagonal_zero, Finset.sum_singleton, hb0, mul_zero]
+
+/-- Cauchy product at 1 is zero if both factors vanish at 0. -/
+lemma cauchyCoeff_one_zero_of_both_zero {a b : ℕ → ℂ} (ha0 : a 0 = 0) (hb0 : b 0 = 0) :
+    cauchyCoeff a b 1 = 0 := by
+  simp only [cauchyCoeff]
+  apply Finset.sum_eq_zero
+  intro ⟨i, j⟩ hij
+  simp only [Finset.mem_antidiagonal] at hij
+  rcases Nat.eq_zero_or_pos i with hi | hi
+  · simp only [hi, ha0, zero_mul]
+  · simp only [Nat.lt_one_iff.mp (by omega : j < 1), hb0, mul_zero]
+
+/-- evenExt of Cauchy product vanishes for small indices when right factor vanishes at 0.
+    For shift 2: need m < 2. For shift 4 with self-product: need m < 4 and both factors zero at 0. -/
+lemma evenExt_cauchyCoeff_zero_of_lt_two {a b : ℕ → ℂ} (hb0 : b 0 = 0) (m : ℕ) (hm : m < 2) :
+    evenExt (cauchyCoeff a b) m = 0 := by
+  have hc0 : cauchyCoeff a b 0 = 0 := cauchyCoeff_zero_of_right_zero hb0
+  interval_cases m
+  · rw [show (0 : ℕ) = 2 * 0 by omega, evenExt_even, hc0]
+  · exact evenExt_odd _ 0
+
+/-- evenExt of Cauchy self-product vanishes for m < 4 when factor vanishes at 0. -/
+lemma evenExt_cauchyCoeff_zero_of_lt_four {a : ℕ → ℂ} (ha0 : a 0 = 0) (m : ℕ) (hm : m < 4) :
+    evenExt (cauchyCoeff a a) m = 0 := by
+  have hc0 : cauchyCoeff a a 0 = 0 := cauchyCoeff_zero_of_right_zero ha0
+  have hc1 : cauchyCoeff a a 1 = 0 := cauchyCoeff_one_zero_of_both_zero ha0 ha0
+  interval_cases m
+  · rw [show (0 : ℕ) = 2 * 0 by omega, evenExt_even, hc0]
+  · exact evenExt_odd _ 0
+  · rw [show (2 : ℕ) = 2 * 1 by omega, evenExt_even, hc1]
+  · exact evenExt_odd _ 1
+
 /-- Even extension preserves polynomial growth. If a = O(n^k), then evenExt a = O(n^k). -/
 lemma evenExt_poly {a : ℕ → ℂ} {k : ℕ}
     (ha : a =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ))) :
@@ -664,55 +700,19 @@ lemma E₂E₄E₆_sq_fourier (x : ℍ) :
   have hcauchy_sum := cauchy_a_E₂E₄E₆_q_series_summable x
   rw [q_series_eq_r_series (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) x hcauchy_sum]
   -- Step 6: Show the first 4 terms are zero, then reindex
-  -- Since a_E₂E₄E₆(0) = 0:
-  -- - cauchyCoeff(a,a)(0) = a(0)*a(0) = 0
-  -- - cauchyCoeff(a,a)(1) = a(0)*a(1) + a(1)*a(0) = 0
-  -- In r-space: evenExt puts 0 for odd, so m=0,1,2,3 all give 0
   have ha0 : a_E₂E₄E₆ 0 = 0 := by simp only [a_E₂E₄E₆, ↓reduceIte]
-  have hcauchy0 : cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ 0 = 0 := by
-    simp only [cauchyCoeff]
-    -- antidiagonal 0 = {(0,0)}, so this is a(0)*a(0) = 0*0 = 0
-    rw [Finset.Nat.antidiagonal_zero, Finset.sum_singleton, ha0, zero_mul]
-  have hcauchy1 : cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ 1 = 0 := by
-    simp only [cauchyCoeff]
-    apply Finset.sum_eq_zero
-    intro ⟨i, j⟩ hij
-    simp only [Finset.mem_antidiagonal] at hij
-    rcases Nat.eq_zero_or_pos i with hi | hi
-    · simp only [hi, ha0, zero_mul]
-    · have hj : j = 0 := by omega
-      simp only [hj, ha0, mul_zero]
-  have heven0 : evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) 0 = 0 := by
-    have h : (0 : ℕ) = 2 * 0 := by omega
-    rw [h, evenExt_even, hcauchy0]
-  have heven1 : evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) 1 = 0 := by
-    have h : (1 : ℕ) = 2 * 0 + 1 := by omega
-    rw [h, evenExt_odd]
-  have heven2 : evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) 2 = 0 := by
-    have h : (2 : ℕ) = 2 * 1 := by omega
-    rw [h, evenExt_even, hcauchy1]
-  have heven3 : evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) 3 = 0 := by
-    have h : (3 : ℕ) = 2 * 1 + 1 := by omega
-    rw [h, evenExt_odd]
-  have hzero_small : ∀ m < 4, evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) m *
-      cexp (π * Complex.I * m * x) = 0 := by
-    intro m hm
-    interval_cases m <;> simp only [heven0, heven1, heven2, heven3, zero_mul]
   -- Summability of r-series
   have hsum_r : Summable (fun m ↦ evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) m *
       cexp (π * Complex.I * m * x)) := summable_evenExt_r_series a_E₂E₄E₆_poly a_E₂E₄E₆_poly x
-  -- The full sum equals sum from m=4 onwards
+  -- The full sum equals sum from m=4 onwards (first 4 terms vanish since a(0) = 0)
   have hsplit : ∑' m, evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) m * cexp (π * Complex.I * m * x) =
       ∑' (n : ℕ), evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) (n + 4) *
         cexp (π * Complex.I * (n + 4) * x) := by
     rw [← hsum_r.sum_add_tsum_nat_add 4]
-    -- First 4 terms are zero
     have h04 : ∑ m ∈ Finset.range 4, evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) m *
-        cexp (π * Complex.I * m * x) = 0 := by
-      apply Finset.sum_eq_zero
-      intro m hm
+        cexp (π * Complex.I * m * x) = 0 := Finset.sum_eq_zero fun m hm ↦ by
       simp only [Finset.mem_range] at hm
-      exact hzero_small m hm
+      simp only [evenExt_cauchyCoeff_zero_of_lt_four ha0 m hm, zero_mul]
     rw [h04, zero_add]
     -- Match the index expressions
     congr 1
@@ -750,37 +750,19 @@ lemma E₄_E₂E₄E₆_fourier (x : ℍ) :
   have hcauchy_sum := cauchy_b_E₄_a_E₂E₄E₆_q_series_summable x
   rw [q_series_eq_r_series (cauchyCoeff b_E₄ a_E₂E₄E₆) x hcauchy_sum]
   -- Step 5: Show the first 2 terms are zero, then reindex
-  -- Since a_E₂E₄E₆(0) = 0:
-  -- cauchyCoeff(b,a)(0) = b(0)*a(0) = 1*0 = 0
-  -- In r-space: evenExt(cauchyCoeff) 0 = 0, evenExt(cauchyCoeff) 1 = 0 (odd)
   have ha0 : a_E₂E₄E₆ 0 = 0 := by simp only [a_E₂E₄E₆, ↓reduceIte]
-  have hcauchy0 : cauchyCoeff b_E₄ a_E₂E₄E₆ 0 = 0 := by
-    simp only [cauchyCoeff]
-    rw [Finset.Nat.antidiagonal_zero, Finset.sum_singleton, ha0, mul_zero]
-  have heven0 : evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) 0 = 0 := by
-    have h : (0 : ℕ) = 2 * 0 := by omega
-    rw [h, evenExt_even, hcauchy0]
-  have heven1 : evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) 1 = 0 := by
-    have h : (1 : ℕ) = 2 * 0 + 1 := by omega
-    rw [h, evenExt_odd]
-  have hzero_small : ∀ m < 2, evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) m *
-      cexp (π * Complex.I * m * x) = 0 := by
-    intro m hm
-    interval_cases m <;> simp only [heven0, heven1, zero_mul]
   -- Summability of r-series
   have hsum_r : Summable (fun m ↦ evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) m *
       cexp (π * Complex.I * m * x)) := summable_evenExt_r_series b_E₄_poly a_E₂E₄E₆_poly x
-  -- The full sum equals sum from m=2 onwards
+  -- The full sum equals sum from m=2 onwards (first 2 terms vanish since a(0) = 0)
   have hsplit : ∑' m, evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) m * cexp (π * Complex.I * m * x) =
       ∑' (n : ℕ), evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) (n + 2) *
         cexp (π * Complex.I * (n + 2) * x) := by
     rw [← hsum_r.sum_add_tsum_nat_add 2]
     have h02 : ∑ m ∈ Finset.range 2, evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) m *
-        cexp (π * Complex.I * m * x) = 0 := by
-      apply Finset.sum_eq_zero
-      intro m hm
+        cexp (π * Complex.I * m * x) = 0 := Finset.sum_eq_zero fun m hm ↦ by
       simp only [Finset.mem_range] at hm
-      exact hzero_small m hm
+      simp only [evenExt_cauchyCoeff_zero_of_lt_two ha0 m hm, zero_mul]
     rw [h02, zero_add]
     congr 1
     ext n
