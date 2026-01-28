@@ -693,12 +693,7 @@ lemma E₂E₄E₆_sq_fourier (x : ℍ) :
         cexp (π * Complex.I * m * x) = 0 := Finset.sum_eq_zero fun m hm ↦ by
       simp only [Finset.mem_range] at hm
       simp only [evenExt_cauchyCoeff_zero_of_lt_four ha0 m hm, zero_mul]
-    rw [h04, zero_add]
-    -- Match the index expressions
-    congr 1
-    ext n
-    congr 2
-    push_cast; ring
+    rw [h04, zero_add]; congr 1; ext n; congr 2; push_cast; ring
   rw [hsplit]
   -- Now match with fouterm
   congr 1
@@ -743,11 +738,7 @@ lemma E₄_E₂E₄E₆_fourier (x : ℍ) :
         cexp (π * Complex.I * m * x) = 0 := Finset.sum_eq_zero fun m hm ↦ by
       simp only [Finset.mem_range] at hm
       simp only [evenExt_cauchyCoeff_zero_of_lt_two ha0 m hm, zero_mul]
-    rw [h02, zero_add]
-    congr 1
-    ext n
-    congr 2
-    push_cast; ring
+    rw [h02, zero_add]; congr 1; ext n; congr 2; push_cast; ring
   rw [hsplit]
   -- Now match with fouterm
   congr 1
