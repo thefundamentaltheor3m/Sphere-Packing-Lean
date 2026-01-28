@@ -579,6 +579,22 @@ lemma q_series_eq_r_series (a : ℕ → ℂ) (z : ℍ)
   push_cast
   ring
 
+/-- Summability of r-series (exp(πinz)) with polynomial-growth evenExt coefficients. -/
+lemma summable_evenExt_r_series {a b : ℕ → ℂ} {k ℓ : ℕ}
+    (ha : a =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ)))
+    (hb : b =O[Filter.atTop] (fun n ↦ (n ^ ℓ : ℝ))) (z : ℍ) :
+    Summable (fun m ↦ evenExt (cauchyCoeff a b) m * cexp (π * Complex.I * m * z)) := by
+  have hr : ‖cexp (π * Complex.I * z)‖ < 1 := norm_exp_pi_I_z_lt_one z
+  have hpoly : evenExt (cauchyCoeff a b) =O[Filter.atTop]
+      (fun n ↦ (↑(n ^ (k + ℓ + 1)) : ℝ)) := by
+    have := evenExt_poly (cauchyCoeff_poly ha hb)
+    convert this using 2; simp
+  have h_eq : ∀ n : ℕ, evenExt (cauchyCoeff a b) n * cexp (π * Complex.I * n * z) =
+      evenExt (cauchyCoeff a b) n * (cexp (π * Complex.I * z)) ^ n := fun n => by
+    rw [← Complex.exp_nat_mul]; congr 1; ring
+  simp_rw [h_eq]
+  exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hpoly)
+
 /-! ## Summability Lemmas
 
 The Fourier series terms are summable because:
@@ -695,21 +711,8 @@ lemma E₂E₄E₆_sq_fourier (x : ℍ) :
     intro m hm
     interval_cases m <;> simp only [heven0, heven1, heven2, heven3, zero_mul]
   -- Summability of r-series
-  -- We use summable_fouterm_of_poly pattern: c_E₂E₄E₆ has O(n^11) growth
   have hsum_r : Summable (fun m ↦ evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) m *
-      cexp (π * Complex.I * m * x)) := by
-    -- evenExt(cauchyCoeff) has poly growth, so poly × geometric is summable
-    have hr : ‖cexp (π * Complex.I * x)‖ < 1 := norm_exp_pi_I_z_lt_one x
-    have hpoly : evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) =O[Filter.atTop] (fun n ↦ (n ^ 11 : ℝ)) :=
-      evenExt_poly (cauchyCoeff_poly a_E₂E₄E₆_poly a_E₂E₄E₆_poly)
-    have hpoly' : evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) =O[Filter.atTop]
-        (fun n ↦ (↑(n ^ 11) : ℝ)) := by convert hpoly using 2; simp
-    have h_eq : ∀ n : ℕ, evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) n *
-        cexp (π * Complex.I * n * x) =
-        evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) n * (cexp (π * Complex.I * x)) ^ n := fun n => by
-      rw [← Complex.exp_nat_mul]; congr 1; ring
-    simp_rw [h_eq]
-    exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hpoly')
+      cexp (π * Complex.I * m * x)) := summable_evenExt_r_series a_E₂E₄E₆_poly a_E₂E₄E₆_poly x
   -- The full sum equals sum from m=4 onwards
   have hsplit : ∑' m, evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) m * cexp (π * Complex.I * m * x) =
       ∑' (n : ℕ), evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) (n + 4) *
@@ -780,18 +783,7 @@ lemma E₄_E₂E₄E₆_fourier (x : ℍ) :
     interval_cases m <;> simp only [heven0, heven1, zero_mul]
   -- Summability of r-series
   have hsum_r : Summable (fun m ↦ evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) m *
-      cexp (π * Complex.I * m * x)) := by
-    have hr : ‖cexp (π * Complex.I * x)‖ < 1 := norm_exp_pi_I_z_lt_one x
-    have hpoly : evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) =O[Filter.atTop] (fun n ↦ (n ^ 10 : ℝ)) :=
-      evenExt_poly (cauchyCoeff_poly b_E₄_poly a_E₂E₄E₆_poly)
-    have hpoly' : evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) =O[Filter.atTop]
-        (fun n ↦ (↑(n ^ 10) : ℝ)) := by convert hpoly using 2; simp
-    have h_eq : ∀ n : ℕ, evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) n *
-        cexp (π * Complex.I * n * x) =
-        evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) n * (cexp (π * Complex.I * x)) ^ n := fun n => by
-      rw [← Complex.exp_nat_mul]; congr 1; ring
-    simp_rw [h_eq]
-    exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hpoly')
+      cexp (π * Complex.I * m * x)) := summable_evenExt_r_series b_E₄_poly a_E₂E₄E₆_poly x
   -- The full sum equals sum from m=2 onwards
   have hsplit : ∑' m, evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) m * cexp (π * Complex.I * m * x) =
       ∑' (n : ℕ), evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) (n + 2) *
