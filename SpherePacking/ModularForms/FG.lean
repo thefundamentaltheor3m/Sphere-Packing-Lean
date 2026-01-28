@@ -5,6 +5,7 @@ import SpherePacking.ModularForms.RamanujanIdentities
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.EisensteinAsymptotics
 
 open UpperHalfPlane hiding I
 open Filter Complex ModularGroup ModularForm SlashAction
@@ -854,9 +855,42 @@ lemma F₁_mul_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (F₁ * E₄.toFun) 
 /-- F₁ has exponential decay at infinity (it's essentially D E₄ which decays). -/
 lemma F₁_isBigO_exp_atImInfty :
     F₁ =O[atImInfty] fun τ => Real.exp (-(2 * π) * τ.im) := by
-  -- F₁ = E₂*E₄ - E₆ = 720 * ∑_{n≥1} n*σ₃(n)*q^n (a cusp form in disguise)
-  -- The leading Fourier coefficient has index 1, giving O(exp(-2πy)) decay
-  sorry
+  -- F₁ = E₂*E₄ - E₆ = (E₂ - 1)*E₄ + (E₄ - 1) - (E₆ - 1)
+  -- Each of (E₂ - 1), (E₄ - 1), (E₆ - 1) is O(exp(-2πy))
+  have hE₂ : (fun z : ℍ => E₂ z - 1) =O[atImInfty] fun z => Real.exp (-(2 * π) * z.im) :=
+    E₂_sub_one_isBigO_exp
+  have hE₄_bdd := ModularFormClass.bdd_at_infty E₄
+  -- valueAtInfty E₄ = 1 since E₄ → 1 at infinity
+  have hE₄_val : valueAtInfty (⇑E₄) = 1 :=
+    E₄_tendsto_one_atImInfty.limUnder_eq
+  have hE₄ : (fun z : ℍ => E₄ z - 1) =O[atImInfty] fun z => Real.exp (-(2 * π) * z.im) := by
+    have h := ModularFormClass.exp_decay_sub_atImInfty E₄ (by norm_num : (0 : ℝ) < 1)
+      ModularFormClass.one_mem_strictPeriods_SL2Z
+    simp only [div_one] at h
+    convert h using 2 with z
+    · rw [hE₄_val]
+    · congr 1; ring
+  -- valueAtInfty E₆ = 1 since E₆ → 1 at infinity
+  have hE₆_val : valueAtInfty (⇑E₆) = 1 :=
+    E₆_tendsto_one_atImInfty.limUnder_eq
+  have hE₆ : (fun z : ℍ => E₆ z - 1) =O[atImInfty] fun z => Real.exp (-(2 * π) * z.im) := by
+    have h := ModularFormClass.exp_decay_sub_atImInfty E₆ (by norm_num : (0 : ℝ) < 1)
+      ModularFormClass.one_mem_strictPeriods_SL2Z
+    simp only [div_one] at h
+    convert h using 2 with z
+    · rw [hE₆_val]
+    · congr 1; ring
+  -- F₁ = (E₂ - 1)*E₄ + (E₄ - 1) - (E₆ - 1)
+  have heq : F₁ = fun z => (E₂ z - 1) * E₄ z + (E₄ z - 1) - (E₆ z - 1) := by
+    ext z; simp only [F₁, Pi.sub_apply, Pi.mul_apply, ModularForm.toFun_eq_coe]; ring
+  rw [heq]
+  -- (E₂ - 1) * E₄ = O(exp(-2πy)) since (E₂ - 1) = O(exp(-2πy)) and E₄ is bounded
+  have hprod : (fun z => (E₂ z - 1) * E₄ z) =O[atImInfty]
+      fun z => Real.exp (-(2 * π) * z.im) := by
+    calc (fun z => (E₂ z - 1) * E₄ z) =O[atImInfty]
+        fun z => Real.exp (-(2 * π) * z.im) * 1 := hE₂.mul hE₄_bdd
+      _ = fun z => Real.exp (-(2 * π) * z.im) := by simp
+  exact (hprod.add hE₄).sub hE₆
 
 /-- s * F₁.resToImagAxis s → 0 as s → ∞. -/
 lemma rpow_mul_F₁_resToImagAxis_tendsto_zero :
@@ -888,7 +922,10 @@ lemma rpow_mul_F₁E₄_resToImagAxis_tendsto_zero :
   have hE₄_bdd := F₁_mul_E₄_isBoundedAtImInfty
   -- F₁ * E₄ is bounded times F₁ which decays, so product decays
   have hprod_bigO : (F₁ * E₄.toFun) =O[atImInfty] fun τ => Real.exp (-(2 * π) * τ.im) := by
-    sorry  -- Technical: multiply bounded by decaying gives decaying
+    have hE₄_bdd' := ModularFormClass.bdd_at_infty E₄
+    calc (F₁ * E₄.toFun) =O[atImInfty] fun τ => Real.exp (-(2 * π) * τ.im) * 1 :=
+      hF₁_bigO.mul hE₄_bdd'
+      _ = fun τ => Real.exp (-(2 * π) * τ.im) := by simp
   have hc : (0 : ℝ) < 2 * π := by positivity
   exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp hc hprod_bigO 1
 
