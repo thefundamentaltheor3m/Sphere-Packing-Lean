@@ -475,84 +475,45 @@ lemma norm_exp_pi_I_z_lt_one (z : ℍ) : ‖Complex.exp (π * Complex.I * z)‖ 
   have hneg : -π * z.im < 0 := by nlinarith [Real.pi_pos, z.im_pos]
   exact Real.exp_lt_one_iff.mpr hneg
 
-/-- Summability of Cauchy product of b_E₄ q-series. -/
-lemma cauchy_b_E₄_q_series_summable (z : ℍ) :
-    Summable (fun n ↦ cauchyCoeff b_E₄ b_E₄ n * cexp (2 * π * Complex.I * n * z)) := by
-  -- The Cauchy product has O(n^9) growth (from cauchyCoeff_poly with O(n^4) × O(n^4))
-  -- Combined with exponential decay exp(-2πn·z.im), this is summable.
-  -- Factor as u(n) * r^n where r = exp(2πiz), u(n) = cauchyCoeff b_E₄ b_E₄ n
+/-- The norm of exp(2πiz) for z : ℍ is less than 1. -/
+lemma norm_exp_2pi_I_z_lt_one (z : ℍ) : ‖cexp (2 * π * Complex.I * z)‖ < 1 := by
+  have h1 := norm_exp_pi_I_z_lt_one z
+  rw [show (2 : ℂ) * π * Complex.I * z = (π * Complex.I * z) + (π * Complex.I * z) by ring]
+  rw [Complex.exp_add, Complex.norm_mul]
+  have hnorm_nonneg : 0 ≤ ‖cexp (π * Complex.I * z)‖ := norm_nonneg _
+  calc ‖cexp (π * Complex.I * z)‖ * ‖cexp (π * Complex.I * z)‖
+      = ‖cexp (π * Complex.I * z)‖ ^ 2 := sq _ |>.symm
+    _ < 1 := sq_lt_one_iff₀ hnorm_nonneg |>.mpr h1
+
+/-- Generic summability of Cauchy product q-series with polynomial growth coefficients. -/
+lemma summable_cauchy_q_series_of_poly {a b : ℕ → ℂ} {k ℓ : ℕ}
+    (ha : a =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ)))
+    (hb : b =O[Filter.atTop] (fun n ↦ (n ^ ℓ : ℝ))) (z : ℍ) :
+    Summable (fun n ↦ cauchyCoeff a b n * cexp (2 * π * Complex.I * n * z)) := by
   let r := cexp (2 * π * Complex.I * z)
-  -- ‖r‖ = ‖exp(2πiz)‖ = ‖exp(πiz)²‖ = ‖exp(πiz)‖² < 1 since ‖exp(πiz)‖ < 1
-  have hr : ‖r‖ < 1 := by
-    have h1 := norm_exp_pi_I_z_lt_one z
-    simp only [r, show (2 : ℂ) * π * Complex.I * z = (π * Complex.I * z) + (π * Complex.I * z) by ring]
-    rw [Complex.exp_add, Complex.norm_mul]
-    have hnorm_nonneg : 0 ≤ ‖cexp (π * Complex.I * z)‖ := norm_nonneg _
-    calc ‖cexp (π * Complex.I * z)‖ * ‖cexp (π * Complex.I * z)‖
-        = ‖cexp (π * Complex.I * z)‖ ^ 2 := sq _ |>.symm
-      _ < 1 := sq_lt_one_iff₀ hnorm_nonneg |>.mpr h1
-  -- u = cauchyCoeff b_E₄ b_E₄ has O(n^9) growth
-  have hpoly : cauchyCoeff b_E₄ b_E₄ =O[Filter.atTop] (fun n ↦ (↑(n ^ 9) : ℝ)) := by
-    have := cauchyCoeff_poly b_E₄_poly b_E₄_poly
-    convert this using 2; simp
-  -- Factor the expression
-  have h_eq : ∀ n : ℕ, cauchyCoeff b_E₄ b_E₄ n * cexp (2 * π * Complex.I * n * z) =
-      cauchyCoeff b_E₄ b_E₄ n * r ^ n := fun n => by
-    simp only [r, ← Complex.exp_nat_mul]
-    congr 1
-    ring
+  have hr : ‖r‖ < 1 := norm_exp_2pi_I_z_lt_one z
+  have hpoly : cauchyCoeff a b =O[Filter.atTop] (fun n ↦ (↑(n ^ (k + ℓ + 1)) : ℝ)) := by
+    have := cauchyCoeff_poly ha hb; convert this using 2; simp
+  have h_eq : ∀ n : ℕ, cauchyCoeff a b n * cexp (2 * π * Complex.I * n * z) =
+      cauchyCoeff a b n * r ^ n := fun n => by
+    simp only [r, ← Complex.exp_nat_mul]; congr 1; ring
   simp_rw [h_eq]
   exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hpoly)
+
+/-- Summability of Cauchy product of b_E₄ q-series. -/
+lemma cauchy_b_E₄_q_series_summable (z : ℍ) :
+    Summable (fun n ↦ cauchyCoeff b_E₄ b_E₄ n * cexp (2 * π * Complex.I * n * z)) :=
+  summable_cauchy_q_series_of_poly b_E₄_poly b_E₄_poly z
 
 /-- Summability of Cauchy product of a_E₂E₄E₆ q-series. -/
 lemma cauchy_a_E₂E₄E₆_q_series_summable (z : ℍ) :
-    Summable (fun n ↦ cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) := by
-  -- Same pattern as cauchy_b_E₄_q_series_summable with O(n^11) growth
-  let r := cexp (2 * π * Complex.I * z)
-  have hr : ‖r‖ < 1 := by
-    have h1 := norm_exp_pi_I_z_lt_one z
-    simp only [r]
-    rw [show (2 : ℂ) * π * Complex.I * z = (π * Complex.I * z) + (π * Complex.I * z) by ring]
-    rw [Complex.exp_add, Complex.norm_mul]
-    have hnorm_nonneg : 0 ≤ ‖cexp (π * Complex.I * z)‖ := norm_nonneg _
-    calc ‖cexp (π * Complex.I * z)‖ * ‖cexp (π * Complex.I * z)‖
-        = ‖cexp (π * Complex.I * z)‖ ^ 2 := sq _ |>.symm
-      _ < 1 := sq_lt_one_iff₀ hnorm_nonneg |>.mpr h1
-  have hpoly : cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (↑(n ^ 11) : ℝ)) := by
-    have := cauchyCoeff_poly a_E₂E₄E₆_poly a_E₂E₄E₆_poly
-    convert this using 2; simp
-  have h_eq : ∀ n : ℕ, cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z) =
-      cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ n * r ^ n := fun n => by
-    simp only [r, ← Complex.exp_nat_mul]
-    congr 1
-    ring
-  simp_rw [h_eq]
-  exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hpoly)
+    Summable (fun n ↦ cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) :=
+  summable_cauchy_q_series_of_poly a_E₂E₄E₆_poly a_E₂E₄E₆_poly z
 
 /-- Summability of Cauchy product of b_E₄ and a_E₂E₄E₆ q-series. -/
 lemma cauchy_b_E₄_a_E₂E₄E₆_q_series_summable (z : ℍ) :
-    Summable (fun n ↦ cauchyCoeff b_E₄ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) := by
-  -- Same pattern with O(n^10) growth
-  let r := cexp (2 * π * Complex.I * z)
-  have hr : ‖r‖ < 1 := by
-    have h1 := norm_exp_pi_I_z_lt_one z
-    simp only [r]
-    rw [show (2 : ℂ) * π * Complex.I * z = (π * Complex.I * z) + (π * Complex.I * z) by ring]
-    rw [Complex.exp_add, Complex.norm_mul]
-    have hnorm_nonneg : 0 ≤ ‖cexp (π * Complex.I * z)‖ := norm_nonneg _
-    calc ‖cexp (π * Complex.I * z)‖ * ‖cexp (π * Complex.I * z)‖
-        = ‖cexp (π * Complex.I * z)‖ ^ 2 := sq _ |>.symm
-      _ < 1 := sq_lt_one_iff₀ hnorm_nonneg |>.mpr h1
-  have hpoly : cauchyCoeff b_E₄ a_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (↑(n ^ 10) : ℝ)) := by
-    have := cauchyCoeff_poly b_E₄_poly a_E₂E₄E₆_poly
-    convert this using 2; simp
-  have h_eq : ∀ n : ℕ, cauchyCoeff b_E₄ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z) =
-      cauchyCoeff b_E₄ a_E₂E₄E₆ n * r ^ n := fun n => by
-    simp only [r, ← Complex.exp_nat_mul]
-    congr 1
-    ring
-  simp_rw [h_eq]
-  exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hpoly)
+    Summable (fun n ↦ cauchyCoeff b_E₄ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) :=
+  summable_cauchy_q_series_of_poly b_E₄_poly a_E₂E₄E₆_poly z
 
 /-! ## Q-Series Representations
 
