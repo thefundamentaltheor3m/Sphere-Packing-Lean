@@ -431,13 +431,13 @@ lemma a_E₂E₄E₆_q_series_summable (z : ℍ) :
 
 /-- Norm summability of b_E₄ q-series. -/
 lemma b_E₄_q_series_norm_summable (z : ℍ) :
-    Summable (fun n ↦ ‖b_E₄ n * cexp (2 * π * Complex.I * n * z)‖) := by
-  exact (b_E₄_q_series_summable z).norm
+    Summable (fun n ↦ ‖b_E₄ n * cexp (2 * π * Complex.I * n * z)‖) :=
+  (b_E₄_q_series_summable z).norm
 
 /-- Norm summability of a_E₂E₄E₆ q-series. -/
 lemma a_E₂E₄E₆_q_series_norm_summable (z : ℍ) :
-    Summable (fun n ↦ ‖a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)‖) := by
-  exact (a_E₂E₄E₆_q_series_summable z).norm
+    Summable (fun n ↦ ‖a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)‖) :=
+  (a_E₂E₄E₆_q_series_summable z).norm
 
 /-- The antidiagonal sum of q-series factors as cauchyCoeff times q^n. -/
 lemma antidiagonal_qexp_factor (a b : ℕ → ℂ) (z : ℍ) (n : ℕ) :
