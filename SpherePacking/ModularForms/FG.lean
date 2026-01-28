@@ -950,12 +950,11 @@ lemma denominator_tendsto_at_infty :
     Tendsto (fun s : ℝ => (H₄.resToImagAxis s).re ^ 3 *
       (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
         + 5 * (H₂.resToImagAxis s).re ^ 2)) atTop (nhds 2) := by
-  -- 1³ * (2*1² + 5*0*1 + 5*0²) = 2
-  convert (H₄_re_resToImagAxis_tendsto_one.pow 3).mul
-    ((H₄_re_resToImagAxis_tendsto_one.pow 2 |>.const_mul 2).add
-    ((H₂_re_resToImagAxis_tendsto_zero.mul H₄_re_resToImagAxis_tendsto_one |>.const_mul 5).add
-    (H₂_re_resToImagAxis_tendsto_zero.pow 2 |>.const_mul 5))) using 1
-  · ext s; ring
+  -- H₄ → 1, H₂ → 0, so 1³ * (2*1² + 5*0*1 + 5*0²) = 2
+  set h4 := H₄_re_resToImagAxis_tendsto_one; set h2 := H₂_re_resToImagAxis_tendsto_zero
+  convert (h4.pow 3).mul ((h4.pow 2).const_mul 2 |>.add
+    ((h2.mul h4).const_mul 5 |>.add (h2.pow 2 |>.const_mul 5))) using 1
+  · ext; ring
   · norm_num
 
 /-- G(1/s) = s^10 * (H₄(is))³ * (2(H₄(is))² + 5H₂(is)H₄(is) + 5(H₂(is))²) -/
