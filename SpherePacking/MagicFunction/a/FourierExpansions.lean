@@ -32,7 +32,7 @@ This means:
 ## References
 
 - Blueprint Corollaries 7.5-7.7
-- PR #268: q-expansion identities for Eisenstein series
+- `SpherePacking.ModularForms.FG`: q-expansion identities (`E₂_mul_E₄_sub_E₆`, `E₄_sigma_qexp`)
 -/
 
 open Real Complex UpperHalfPlane
@@ -201,34 +201,17 @@ lemma summable_E₄_sq (z : ℍ) :
     Summable fun (i : ℕ) ↦ fouterm c_E₄_sq z (i + 0) :=
   summable_fouterm_of_poly c_E₄_sq_poly z 0
 
-/-! ## Q-expansion identities
-
-These are proved in FG.lean; we re-export them here with the exact signatures
-needed by downstream code. -/
-
-/-- Q-expansion of E₂E₄ - E₆.
-    E₂·E₄ - E₆ = 720·∑_{n≥1} n·σ₃(n)·q^n where q = exp(2πiz). -/
-lemma E₂_mul_E₄_sub_E₆_qexp (z : ℍ) :
-    E₂ z * E₄ z - E₆ z = 720 * ∑' (n : ℕ+), (n : ℂ) * (σ 3 n : ℂ) *
-      Complex.exp (2 * π * Complex.I * n * z) := E₂_mul_E₄_sub_E₆ z
-
-/-- Q-expansion of E₄ (standard result).
-    E₄ = 1 + 240·∑_{n≥1} σ₃(n)·q^n where q = exp(2πiz). -/
-lemma E₄_qexp (z : ℍ) :
-    E₄ z = 1 + 240 * ∑' (n : ℕ+), (σ 3 n : ℂ) *
-      Complex.exp (2 * π * Complex.I * n * z) := E₄_sigma_qexp z
-
 /-! ## Fourier Expansion Identities
 
 These connect the Eisenstein series products to fouterm sums.
-The proofs use the q-expansion stubs above. -/
+The proofs use `E₂_mul_E₄_sub_E₆` and `E₄_sigma_qexp` from `FG.lean`. -/
 
 /-- Fourier expansion of (E₂E₄ - E₆)².
     In q = exp(2πiz) convention: (E₂E₄ - E₆) = 720·∑_{n≥1} n·σ₃(n)·qⁿ
     The square starts at q², which is r⁴ in r = exp(πiz) convention. -/
 lemma E₂E₄E₆_sq_fourier (x : ℍ) :
     ((E₂ x) * (E₄ x) - (E₆ x)) ^ 2 = ∑' (n : ℕ), fouterm c_E₂E₄E₆ x (n + 4) := by
-  -- From E₂_mul_E₄_sub_E₆_qexp and Cauchy product of q-series
+  -- From E₂_mul_E₄_sub_E₆ and Cauchy product of q-series
   -- (720 * ∑ n·σ₃(n)·q^n)² = 720² * (∑ n·σ₃(n)·q^n)²
   -- Cauchy product: (∑ aₙq^n)² = ∑ (∑_{j+k=n} aⱼaₖ) q^n
   -- Starting at n=1, square starts at n=2 in q-space = index 4 in r-space
@@ -238,7 +221,7 @@ lemma E₂E₄E₆_sq_fourier (x : ℍ) :
     Product starts at q¹, which is r² in fouterm convention. -/
 lemma E₄_E₂E₄E₆_fourier (x : ℍ) :
     E₄ x * (E₂ x * E₄ x - E₆ x) = ∑' (n : ℕ), fouterm c_E₂E₄E₆ x (n + 2) := by
-  -- From E₄_qexp and E₂_mul_E₄_sub_E₆_qexp
+  -- From E₄_sigma_qexp and E₂_mul_E₄_sub_E₆
   -- E₄ starts at q⁰, E₂E₄-E₆ starts at q¹, so product starts at q¹ = r²
   sorry
 
@@ -246,7 +229,7 @@ lemma E₄_E₂E₄E₆_fourier (x : ℍ) :
     E₄ = 1 + 240·∑_{n≥1} σ₃(n)·qⁿ, so E₄² starts at constant term 1. -/
 lemma E₄_sq_fourier (x : ℍ) :
     E₄ x ^ 2 = ∑' (n : ℕ), fouterm c_E₄_sq x (n + 0) := by
-  -- From E₄_qexp: E₄² = (1 + 240·∑...)² starts at q⁰ = r⁰
+  -- From E₄_sigma_qexp: E₄² = (1 + 240·∑...)² starts at q⁰ = r⁰
   sorry
 
 end MagicFunction.a.FourierExpansions
