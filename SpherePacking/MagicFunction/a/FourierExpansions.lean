@@ -221,6 +221,36 @@ lemma a_E₂E₄E₆_q_series_summable (z : ℍ) :
   push_cast
   ring
 
+/-- Norm summability of b_E₄ q-series. -/
+lemma b_E₄_q_series_norm_summable (z : ℍ) :
+    Summable (fun n ↦ ‖b_E₄ n * cexp (2 * π * Complex.I * n * z)‖) := by
+  exact (b_E₄_q_series_summable z).norm
+
+/-- Norm summability of a_E₂E₄E₆ q-series. -/
+lemma a_E₂E₄E₆_q_series_norm_summable (z : ℍ) :
+    Summable (fun n ↦ ‖a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)‖) := by
+  exact (a_E₂E₄E₆_q_series_summable z).norm
+
+/-- The antidiagonal sum of q-series factors as cauchyCoeff times q^n. -/
+lemma antidiagonal_qexp_factor (a b : ℕ → ℂ) (z : ℍ) (n : ℕ) :
+    ∑ kl ∈ Finset.antidiagonal n,
+      (a kl.1 * cexp (2 * π * Complex.I * kl.1 * z)) *
+      (b kl.2 * cexp (2 * π * Complex.I * kl.2 * z)) =
+    cauchyCoeff a b n * cexp (2 * π * Complex.I * n * z) := by
+  simp only [cauchyCoeff]
+  rw [Finset.sum_mul]
+  apply Finset.sum_congr rfl
+  intro ⟨k, l⟩ hkl
+  simp only [Finset.mem_antidiagonal] at hkl
+  have hexp : 2 * ↑π * Complex.I * ↑k * ↑z + 2 * ↑π * Complex.I * ↑l * ↑z =
+      2 * ↑π * Complex.I * ↑n * ↑z := by rw [← hkl]; push_cast; ring
+  calc a k * cexp (2 * ↑π * Complex.I * ↑k * ↑z) * (b l * cexp (2 * ↑π * Complex.I * ↑l * ↑z))
+      = a k * b l * (cexp (2 * ↑π * Complex.I * ↑k * ↑z) *
+          cexp (2 * ↑π * Complex.I * ↑l * ↑z)) := by ring
+    _ = a k * b l * cexp (2 * ↑π * Complex.I * ↑k * ↑z +
+          2 * ↑π * Complex.I * ↑l * ↑z) := by rw [← Complex.exp_add]
+    _ = a k * b l * cexp (2 * ↑π * Complex.I * ↑n * ↑z) := by rw [hexp]
+
 /-- Summability of Cauchy product of b_E₄ q-series. -/
 lemma cauchy_b_E₄_q_series_summable (z : ℍ) :
     Summable (fun n ↦ cauchyCoeff b_E₄ b_E₄ n * cexp (2 * π * Complex.I * n * z)) := by
@@ -419,10 +449,8 @@ The proofs use `E₂_mul_E₄_sub_E₆` and `E₄_sigma_qexp` from `FG.lean`. -/
     The square starts at q², which is r⁴ in r = exp(πiz) convention. -/
 lemma E₂E₄E₆_sq_fourier (x : ℍ) :
     ((E₂ x) * (E₄ x) - (E₆ x)) ^ 2 = ∑' (n : ℕ), fouterm c_E₂E₄E₆ x (n + 4) := by
-  -- From E₂_mul_E₄_sub_E₆ and Cauchy product of q-series
-  -- (720 * ∑ n·σ₃(n)·q^n)² = 720² * (∑ n·σ₃(n)·q^n)²
-  -- Cauchy product: (∑ aₙq^n)² = ∑ (∑_{j+k=n} aⱼaₖ) q^n
-  -- Starting at n=1, square starts at n=2 in q-space = index 4 in r-space
+  -- Same pattern as E₄_sq_fourier, but with shift by 4 since a_E₂E₄E₆(0) = 0
+  -- The Cauchy product starts at q^2 = r^4
   sorry
 
 /-- Fourier expansion of E₄(E₂E₄ - E₆).
@@ -432,31 +460,6 @@ lemma E₄_E₂E₄E₆_fourier (x : ℍ) :
   -- From E₄_sigma_qexp and E₂_mul_E₄_sub_E₆
   -- E₄ starts at q⁰, E₂E₄-E₆ starts at q¹, so product starts at q¹ = r²
   sorry
-
-/-- Norm summability of b_E₄ q-series. -/
-lemma b_E₄_q_series_norm_summable (z : ℍ) :
-    Summable (fun n ↦ ‖b_E₄ n * cexp (2 * π * Complex.I * n * z)‖) := by
-  exact (b_E₄_q_series_summable z).norm
-
-/-- The antidiagonal sum of q-series factors as cauchyCoeff times q^n. -/
-lemma antidiagonal_qexp_factor (a b : ℕ → ℂ) (z : ℍ) (n : ℕ) :
-    ∑ kl ∈ Finset.antidiagonal n,
-      (a kl.1 * cexp (2 * π * Complex.I * kl.1 * z)) *
-      (b kl.2 * cexp (2 * π * Complex.I * kl.2 * z)) =
-    cauchyCoeff a b n * cexp (2 * π * Complex.I * n * z) := by
-  simp only [cauchyCoeff]
-  rw [Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro ⟨k, l⟩ hkl
-  simp only [Finset.mem_antidiagonal] at hkl
-  have hexp : 2 * ↑π * Complex.I * ↑k * ↑z + 2 * ↑π * Complex.I * ↑l * ↑z =
-      2 * ↑π * Complex.I * ↑n * ↑z := by rw [← hkl]; push_cast; ring
-  calc a k * cexp (2 * ↑π * Complex.I * ↑k * ↑z) * (b l * cexp (2 * ↑π * Complex.I * ↑l * ↑z))
-      = a k * b l * (cexp (2 * ↑π * Complex.I * ↑k * ↑z) *
-          cexp (2 * ↑π * Complex.I * ↑l * ↑z)) := by ring
-    _ = a k * b l * cexp (2 * ↑π * Complex.I * ↑k * ↑z +
-          2 * ↑π * Complex.I * ↑l * ↑z) := by rw [← Complex.exp_add]
-    _ = a k * b l * cexp (2 * ↑π * Complex.I * ↑n * ↑z) := by rw [hexp]
 
 /-- Fourier expansion of E₄².
     E₄ = 1 + 240·∑_{n≥1} σ₃(n)·qⁿ, so E₄² starts at constant term 1. -/
