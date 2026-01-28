@@ -159,15 +159,62 @@ lemma evenExt_odd (a : ℕ → ℂ) (n : ℕ) : evenExt a (2 * n + 1) = 0 := by
 lemma b_E₄_q_series_summable (z : ℍ) :
     Summable (fun n ↦ b_E₄ n * cexp (2 * π * Complex.I * n * z)) := by
   -- b_E₄(0) = 1, b_E₄(n) = 240 * σ₃(n) for n ≥ 1
-  -- The tail (n ≥ 1) is summable via sigma3_qexp_summable, and n=0 term is finite.
-  sorry
+  -- Use: (tail n ≥ 1) is 240 * sigma3_qexp which is summable
+  have hsigma := sigma3_qexp_summable z
+  -- Define the ℕ-indexed function f such that f(n+1) = original(n) for n : ℕ+
+  let f : ℕ → ℂ := fun n ↦ (σ 3 n : ℂ) * cexp (2 * π * Complex.I * n * z)
+  -- f(n+1) is summable via summable_pnat_iff_summable_succ
+  have hf_tail : Summable (fun n : ℕ ↦ f (n + 1)) := by
+    rw [← summable_pnat_iff_summable_succ]
+    convert hsigma using 1
+  -- Our tail b_E₄(n+1) = 240 * f(n+1)
+  have htail : Summable (fun n : ℕ ↦
+      b_E₄ (n + 1) * cexp (2 * π * Complex.I * ((n : ℂ) + 1) * z)) := by
+    have hconv : (fun n : ℕ ↦ b_E₄ (n + 1) * cexp (2 * π * Complex.I * ((n : ℂ) + 1) * z)) =
+        (fun n : ℕ ↦ (240 : ℂ) * f (n + 1)) := by
+      ext n
+      simp only [b_E₄, Nat.add_one_ne_zero, ↓reduceIte, f]
+      push_cast
+      ring
+    rw [hconv]
+    exact Summable.mul_left 240 hf_tail
+  -- Add back the n=0 term using summable_nat_add_iff
+  rw [← summable_nat_add_iff 1]
+  convert htail using 2 with n
+  congr 2
+  push_cast
+  ring
 
 /-- Summability of a_E₂E₄E₆ q-series. -/
 lemma a_E₂E₄E₆_q_series_summable (z : ℍ) :
     Summable (fun n ↦ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) := by
   -- a_E₂E₄E₆(0) = 0, a_E₂E₄E₆(n) = 720 * n * σ₃(n) for n ≥ 1
-  -- The tail (n ≥ 1) is summable via sigma_qexp_summable_generic 1 3, and n=0 term is 0.
-  sorry
+  -- Use sigma_qexp_summable_generic 1 3 for n * σ₃(n)
+  have hsigma := sigma_qexp_summable_generic 1 3 z
+  simp only [pow_one] at hsigma
+  -- Define the ℕ-indexed function
+  let f : ℕ → ℂ := fun n ↦ (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * n * z)
+  -- f(n+1) is summable
+  have hf_tail : Summable (fun n : ℕ ↦ f (n + 1)) := by
+    rw [← summable_pnat_iff_summable_succ]
+    convert hsigma using 1
+  -- Our tail a_E₂E₄E₆(n+1) = 720 * f(n+1)
+  have htail : Summable (fun n : ℕ ↦
+      a_E₂E₄E₆ (n + 1) * cexp (2 * π * Complex.I * ((n : ℂ) + 1) * z)) := by
+    have hconv : (fun n : ℕ ↦ a_E₂E₄E₆ (n + 1) * cexp (2 * π * Complex.I * ((n : ℂ) + 1) * z)) =
+        (fun n : ℕ ↦ (720 : ℂ) * f (n + 1)) := by
+      ext n
+      simp only [a_E₂E₄E₆, Nat.add_one_ne_zero, ↓reduceIte, f]
+      push_cast
+      ring
+    rw [hconv]
+    exact Summable.mul_left 720 hf_tail
+  -- Add back the n=0 term
+  rw [← summable_nat_add_iff 1]
+  convert htail using 2 with n
+  congr 2
+  push_cast
+  ring
 
 /-- Summability of Cauchy product of b_E₄ q-series. -/
 lemma cauchy_b_E₄_q_series_summable (z : ℍ) :
