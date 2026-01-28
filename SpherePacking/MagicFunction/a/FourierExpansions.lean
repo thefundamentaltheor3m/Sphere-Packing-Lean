@@ -433,11 +433,45 @@ lemma E₄_E₂E₄E₆_fourier (x : ℍ) :
   -- E₄ starts at q⁰, E₂E₄-E₆ starts at q¹, so product starts at q¹ = r²
   sorry
 
+/-- Norm summability of b_E₄ q-series. -/
+lemma b_E₄_q_series_norm_summable (z : ℍ) :
+    Summable (fun n ↦ ‖b_E₄ n * cexp (2 * π * Complex.I * n * z)‖) := by
+  exact (b_E₄_q_series_summable z).norm
+
+/-- The antidiagonal sum of q-series factors as cauchyCoeff times q^n. -/
+lemma antidiagonal_qexp_factor (a b : ℕ → ℂ) (z : ℍ) (n : ℕ) :
+    ∑ kl ∈ Finset.antidiagonal n,
+      (a kl.1 * cexp (2 * π * Complex.I * kl.1 * z)) *
+      (b kl.2 * cexp (2 * π * Complex.I * kl.2 * z)) =
+    cauchyCoeff a b n * cexp (2 * π * Complex.I * n * z) := by
+  simp only [cauchyCoeff]
+  rw [Finset.sum_mul]
+  apply Finset.sum_congr rfl
+  intro ⟨k, l⟩ hkl
+  simp only [Finset.mem_antidiagonal] at hkl
+  have hexp : 2 * ↑π * Complex.I * ↑k * ↑z + 2 * ↑π * Complex.I * ↑l * ↑z =
+      2 * ↑π * Complex.I * ↑n * ↑z := by rw [← hkl]; push_cast; ring
+  calc a k * cexp (2 * ↑π * Complex.I * ↑k * ↑z) * (b l * cexp (2 * ↑π * Complex.I * ↑l * ↑z))
+      = a k * b l * (cexp (2 * ↑π * Complex.I * ↑k * ↑z) *
+          cexp (2 * ↑π * Complex.I * ↑l * ↑z)) := by ring
+    _ = a k * b l * cexp (2 * ↑π * Complex.I * ↑k * ↑z +
+          2 * ↑π * Complex.I * ↑l * ↑z) := by rw [← Complex.exp_add]
+    _ = a k * b l * cexp (2 * ↑π * Complex.I * ↑n * ↑z) := by rw [hexp]
+
 /-- Fourier expansion of E₄².
     E₄ = 1 + 240·∑_{n≥1} σ₃(n)·qⁿ, so E₄² starts at constant term 1. -/
 lemma E₄_sq_fourier (x : ℍ) :
     E₄ x ^ 2 = ∑' (n : ℕ), fouterm c_E₄_sq x (n + 0) := by
-  -- From E₄_sigma_qexp: E₄² = (1 + 240·∑...)² starts at q⁰ = r⁰
+  -- Step 1: E₄ as q-series
+  have hE₄ := E₄_as_q_series x
+  -- Step 2: E₄² = (∑ b_E₄(n) q^n)²
+  simp only [sq, hE₄]
+  -- Step 3: Apply Cauchy product formula
+  have hnorm_f := b_E₄_q_series_norm_summable x
+  have hsum_f := b_E₄_q_series_summable x
+  -- The product of two summable series equals tsum of Cauchy product
+  rw [tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm' hnorm_f hsum_f hnorm_f hsum_f]
+  -- Now convert from q-series to r-series and match with fouterm
   sorry
 
 end MagicFunction.a.FourierExpansions
