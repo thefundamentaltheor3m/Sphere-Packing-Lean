@@ -219,6 +219,9 @@ lemma a_E₂E₄E₆_q_series_summable (z : ℍ) :
 /-- Summability of Cauchy product of b_E₄ q-series. -/
 lemma cauchy_b_E₄_q_series_summable (z : ℍ) :
     Summable (fun n ↦ cauchyCoeff b_E₄ b_E₄ n * cexp (2 * π * Complex.I * n * z)) := by
+  -- The Cauchy product has O(n^9) growth (from cauchyCoeff_poly with O(n^4) × O(n^4))
+  -- Combined with exponential decay exp(-2πn·z.im), this is summable.
+  -- We use the same polynomial×geometric summability pattern as summable_fouterm_of_poly.
   sorry
 
 /-- Summability of Cauchy product of a_E₂E₄E₆ q-series. -/
