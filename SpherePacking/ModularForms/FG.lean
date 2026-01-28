@@ -949,8 +949,10 @@ lemma E₄_re_resToImagAxis_tendsto_one :
 /-- The numerator expression N(s) = s² * FReal s - 12/π * s * (F₁*E₄)(is) + 36/π² * E₄(is)²
 tends to 36/π² as s → ∞. -/
 lemma numerator_tendsto_at_infty :
-    Tendsto (fun s : ℝ => s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s * ((F₁ * E₄.toFun).resToImagAxis s).re
-      + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2) atTop (nhds (36 * π ^ (-2 : ℤ))) := by
+    Tendsto (fun s : ℝ =>
+      s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s * ((F₁ * E₄.toFun).resToImagAxis s).re
+        + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2)
+      atTop (nhds (36 * π ^ (-2 : ℤ))) := by
   -- s² * FReal s → 0, s * (F₁*E₄) → 0, E₄ → 1
   -- So limit is 0 - 12/π * 0 + 36/π² * 1 = 36/π²
   have hF_decay := sq_mul_FReal_tendsto_zero
@@ -993,7 +995,7 @@ lemma denominator_tendsto_at_infty :
   convert (hH₄_lim.pow 3).mul ((hH₄_lim.pow 2 |>.const_mul 2).add
     ((hH₂_lim.mul hH₄_lim |>.const_mul 5).add (hH₂_lim.pow 2 |>.const_mul 5))) using 1
   · ext s; ring
-  · ring
+  · norm_num
 
 /-- G(1/s) = s^10 * (H₄(is))³ * (2(H₄(is))² + 5H₂(is)H₄(is) + 5(H₂(is))²) -/
 lemma G_functional_eq_real {s : ℝ} (hs : 0 < s) :
@@ -1043,14 +1045,12 @@ theorem FmodG_rightLimitAt_zero :
   -- Step 1: Establish the limit of numerator and denominator expressions
   have hNum := numerator_tendsto_at_infty
   have hDen := denominator_tendsto_at_infty
-
   -- Step 2: The denominator is eventually nonzero (since it tends to 2)
   have hDen_ne : ∀ᶠ s in atTop, (H₄.resToImagAxis s).re ^ 3 *
       (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
         + 5 * (H₂.resToImagAxis s).re ^ 2) ≠ 0 := by
     have h2_ne : (2 : ℝ) ≠ 0 := by norm_num
     exact hDen.eventually_ne h2_ne
-
   -- Step 3: Show FmodGReal(1/s) equals Num(s)/Den(s) for large s
   have hEq : ∀ᶠ s in atTop, FmodGReal (1/s) =
       (s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s * ((F₁ * E₄.toFun).resToImagAxis s).re
@@ -1063,12 +1063,6 @@ theorem FmodG_rightLimitAt_zero :
     have hG := G_functional_eq_real hs
     unfold FmodGReal
     rw [hG]
-    -- Extract real part from hF (F is real on imaginary axis)
-    have hF_real := F_imag_axis_real (1/s) (one_div_pos.mpr hs)
-    have hF₁E₄_real := ResToImagAxis.Real.mul F₁_imag_axis_real E₄_imag_axis_real s hs
-    have hE₄_real := E₄_imag_axis_real s hs
-    -- Convert hF to real equation
-    simp only [Function.resToImagAxis, ResToImagAxis, hs, one_div_pos.mpr hs, ↓reduceDIte] at hF hF_real hF₁E₄_real hE₄_real
     -- Simplify using the fact that all values are real
     have hs10_ne : s ^ 10 ≠ 0 := pow_ne_zero 10 (ne_of_gt hs)
     have hG_ne : s ^ 10 * (H₄.resToImagAxis s).re ^ 3 *
@@ -1076,12 +1070,44 @@ theorem FmodG_rightLimitAt_zero :
           + 5 * (H₂.resToImagAxis s).re ^ 2) ≠ 0 := by
       apply mul_ne_zero (mul_ne_zero hs10_ne ?_) ?_
       all_goals { by_contra h; apply hne; simp_all }
-    -- The key algebraic step
-    sorry
-
+    -- Convert complex values to real parts using the fact they're real on imaginary axis
+    have hF₁E₄_eq := ResToImagAxis.Real.eq_real_part
+      (ResToImagAxis.Real.mul F₁_imag_axis_real E₄_imag_axis_real) s
+    have hE₄_eq := ResToImagAxis.Real.eq_real_part E₄_imag_axis_real s
+    -- Rewrite hF using real parts (before it gets expanded by simp)
+    rw [hF₁E₄_eq, hE₄_eq] at hF
+    -- hF: (FReal (1/s) : ℂ) = s^12*FReal(s) - 12/π*s^11*↑(F₁E₄).re + 36/π²*s^10*(↑E₄.re)²
+    -- This is equality in ℂ, extract to ℝ
+    have hF_real_eq : FReal (1 / s) = s ^ 12 * FReal s
+        - 12 * π ^ (-1 : ℤ) * s ^ 11 * ((F₁ * E₄.toFun).resToImagAxis s).re
+        + 36 * π ^ (-2 : ℤ) * s ^ 10 * (E₄.toFun.resToImagAxis s).re ^ 2 := by
+      apply Complex.ofReal_injective
+      simp only [Complex.ofReal_sub, Complex.ofReal_add, Complex.ofReal_mul, Complex.ofReal_pow]
+      have hpi1 : (↑(π ^ (-1 : ℤ)) : ℂ) = ↑π ^ (-1 : ℤ) := Complex.ofReal_zpow π _
+      have hpi2 : (↑(π ^ (-2 : ℤ)) : ℂ) = ↑π ^ (-2 : ℤ) := Complex.ofReal_zpow π _
+      rw [hpi1, hpi2]
+      convert hF using 1
+    -- Now compute FReal / GReal
+    rw [hF_real_eq]
+    -- Factor out s^10 from numerator
+    have hnum_factor : s ^ 12 * FReal s - 12 * π ^ (-1 : ℤ) * s ^ 11 *
+          ((F₁ * E₄.toFun).resToImagAxis s).re +
+        36 * π ^ (-2 : ℤ) * s ^ 10 * (E₄.toFun.resToImagAxis s).re ^ 2 =
+        s ^ 10 * (s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s *
+          ((F₁ * E₄.toFun).resToImagAxis s).re +
+        36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2) := by ring
+    rw [hnum_factor]
+    -- Cancel s^10
+    -- First reassociate the denominator: s^10 * H₄.re^3 * (...) = s^10 * (H₄.re^3 * (...))
+    have hden_assoc : s ^ 10 * (H₄.resToImagAxis s).re ^ 3 *
+        (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
+          + 5 * (H₂.resToImagAxis s).re ^ 2) =
+        s ^ 10 * ((H₄.resToImagAxis s).re ^ 3 *
+        (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
+          + 5 * (H₂.resToImagAxis s).re ^ 2)) := by ring
+    rw [hden_assoc, mul_div_mul_left _ _ hs10_ne]
   -- Step 4: Compute the limit using Tendsto.div
   have hlim := hNum.div hDen (by norm_num : (2 : ℝ) ≠ 0)
-
   -- Step 5: Convert the limit at atTop for FmodGReal(1/s) to limit at nhdsWithin 0 for FmodGReal
   rw [Metric.tendsto_nhdsWithin_nhds]
   intro ε hε
@@ -1108,7 +1134,8 @@ theorem FmodG_rightLimitAt_zero :
           apply one_div_lt_one_div_of_lt ht_pos
           exact ht_dist
   have h1t_N : 1 / t > N := lt_of_le_of_lt (le_max_left _ _) (lt_of_le_of_lt (le_max_left _ _) h1t)
-  have h1t_M : 1 / t ≥ M := le_of_lt (lt_of_le_of_lt (le_max_right N M) (lt_of_le_of_lt (le_max_left _ _) h1t))
+  have h1t_M : 1 / t ≥ M :=
+    le_of_lt (lt_of_le_of_lt (le_max_right N M) (lt_of_le_of_lt (le_max_left _ _) h1t))
   -- Apply the eventual equality and the limit
   have hFmodG_eq := hM (1 / t) h1t_M
   have hdist := hN (1 / t) (le_of_lt h1t_N)
