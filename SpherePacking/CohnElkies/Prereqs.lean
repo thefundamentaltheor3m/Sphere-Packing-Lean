@@ -329,19 +329,24 @@ lemma ZLattice.isSeparated (L : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [Dis
   admit
 
 lemma SpherePacking.centers_isSeparated (S : SpherePacking d) :
-    IsSeparated (ENNReal.ofReal S.separation) S.centers := by
+    IsSeparated ((ENNReal.ofReal S.separation) / 2) S.centers := by
   -- By definition of `SpherePacking`, the centers are pairwise separated by a positive distance.
   have h_separated : ∀ x y : S.centers, x ≠ y →
-    dist (x : EuclideanSpace ℝ (Fin d)) (y : EuclideanSpace ℝ (Fin d)) > S.separation := by
+    dist (x : EuclideanSpace ℝ (Fin d)) (y : EuclideanSpace ℝ (Fin d)) ≥ S.separation := by
     -- By definition of `SpherePacking`, the centers are pairwise separated by a positive
     -- distance. Therefore, for any two distinct centers `x` and `y`, we have `dist x y > S.
     -- separation`.
     intros x y hxy
-    apply S.centers_dist hxy;
+    exact S.centers_dist hxy
   -- By definition of `IsSeparated`, we need to show that for any two distinct points in
   -- `S.centers`, their distance is greater than `S.separation`. This follows directly
   -- from `h_separated`.
   intros x hx y hy hxy;
-  rw [ edist_dist ] ; aesop;
+  rw [ edist_dist ] ;
+  refine @lt_of_lt_of_le _ _ _ (ENNReal.ofReal (S.separation)) _ ?_ ?_
+  · exact
+      ENNReal.half_lt_self
+        (Ne.symm <| ne_of_lt <| (by simp ; exact S.separation_pos)) (by simp)
+  · aesop;
 
 end Misc

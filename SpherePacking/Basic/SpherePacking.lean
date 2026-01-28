@@ -34,7 +34,7 @@ structure SpherePacking (d : ℕ) where
   centers : Set (EuclideanSpace ℝ (Fin d))
   separation : ℝ
   separation_pos : 0 < separation := by positivity
-  centers_dist : Pairwise (separation < dist · · : centers → centers → Prop)
+  centers_dist : Pairwise (separation ≤ dist · · : centers → centers → Prop)
 
 structure PeriodicSpherePacking (d : ℕ) extends SpherePacking d where
   lattice : Submodule ℤ (EuclideanSpace ℝ (Fin d))
@@ -52,7 +52,7 @@ theorem SpherePacking.centers_dist' (S : SpherePacking d) (x y : EuclideanSpace 
   -- exact S.centers_dist this
   have := S.centers_dist this
   simp only at this
-  exact le_of_lt this
+  exact this
 
 instance PeriodicSpherePacking.instLatticeDiscrete (S : PeriodicSpherePacking d) :
     DiscreteTopology S.lattice :=
@@ -72,7 +72,7 @@ instance SpherePacking.instCentersDiscrete (S : SpherePacking d) :
   use S.separation, S.separation_pos
   intro a ha h_dist
   contrapose! h_dist
-  exact le_of_lt <| S.centers_dist <| Subtype.coe_ne_coe.mp h_dist
+  exact S.centers_dist <| Subtype.coe_ne_coe.mp h_dist
 
 noncomputable instance PeriodicSpherePacking.addAction (S : PeriodicSpherePacking d) :
     AddAction S.lattice S.centers where
@@ -142,7 +142,7 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
   separation := c * S.separation
   separation_pos := mul_pos hc S.separation_pos
   centers_dist := fun ⟨x, hx⟩ ⟨y, hy⟩ _ ↦ by
-    change c * S.separation < ‖x - y‖
+    change c * S.separation ≤ ‖x - y‖
     obtain ⟨x', ⟨hx', rfl⟩⟩ := Set.mem_smul_set.mp hx
     obtain ⟨y', ⟨hy', rfl⟩⟩ := Set.mem_smul_set.mp hy
     rw [← smul_sub, norm_smul, norm_eq_abs, abs_eq_self.mpr hc.le]
@@ -150,7 +150,7 @@ def SpherePacking.scale (S : SpherePacking d) {c : ℝ} (hc : 0 < c) : SpherePac
     have : x' ≠ y' := by rintro rfl; tauto
     have : (⟨x', hx'⟩ : S.centers) ≠ ⟨y', hy'⟩ := by simp [this]
     have := S.centers_dist this
-    exact (mul_lt_mul_iff_right₀ hc).mpr this
+    exact (mul_le_mul_iff_right₀ hc).mpr this
 
 
 noncomputable def PeriodicSpherePacking.scale (S : PeriodicSpherePacking d) {c : ℝ} (hc : 0 < c) :

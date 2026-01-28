@@ -178,8 +178,9 @@ lemma hsummable₁ (y : EuclideanSpace ℝ (Fin d)) :
   have h_translated_summable : Summable (fun x : P.centers => f (x - y)) := by
     -- Since $P.centers$ is a separated set and $f$ is a Schwartz function, the series
     -- $\sum_{x \in P.centers} f(x - y)$ converges absolutely.
-    have h_translated_summable : IsSeparated (ENNReal.ofReal P.separation) (P.centers - {y}) := by
-      have h_translated_summable : IsSeparated (ENNReal.ofReal P.separation) P.centers := by
+    have h_translated_summable :
+      IsSeparated ((ENNReal.ofReal P.separation) / 2) (P.centers - {y}) := by
+      have h_translated_summable : IsSeparated ((ENNReal.ofReal P.separation) / 2) P.centers := by
         exact SpherePacking.centers_isSeparated P.toSpherePacking
       generalize_proofs at *; (
       intro x hx y hy; aesop;);
@@ -189,8 +190,8 @@ lemma hsummable₁ (y : EuclideanSpace ℝ (Fin d)) :
       -- and the positive ε from h_translated_summable.
       apply (SchwartzMap.summableOn f (P.centers - {y}));
       -- Since $P.separation$ is positive, we can take $\epsilon = P.separation$.
-      use ENNReal.ofReal P.separation;
-      exact ⟨ ENNReal.ofReal_pos.mpr P.separation_pos, h_translated_summable ⟩;
+      use (ENNReal.ofReal P.separation) / 2;
+      exact ⟨ by simp; exact P.separation_pos, h_translated_summable ⟩;
     convert h_translated_summable.comp_injective
       ( show Function.Injective ( fun x : P.centers =>
         ⟨ x - y, by aesop ⟩ : P.centers →
