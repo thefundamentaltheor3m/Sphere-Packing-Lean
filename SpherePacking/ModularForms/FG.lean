@@ -807,12 +807,8 @@ lemma F₁_isBigO_exp_atImInfty :
     F₁ =O[atImInfty] fun τ => Real.exp (-(2 * π) * τ.im) := by
   -- F₁ = E₂*E₄ - E₆ = (E₂ - 1)*E₄ + (E₄ - 1) - (E₆ - 1)
   -- Each of (E₂ - 1), (E₄ - 1), (E₆ - 1) is O(exp(-2πy))
-  have hE₂ : (fun z : ℍ => E₂ z - 1) =O[atImInfty] fun z => Real.exp (-(2 * π) * z.im) :=
-    E₂_sub_one_isBigO_exp
-  have hE₄_bdd := ModularFormClass.bdd_at_infty E₄
   -- valueAtInfty E₄ = 1 since E₄ → 1 at infinity
-  have hE₄_val : valueAtInfty (⇑E₄) = 1 :=
-    E₄_tendsto_one_atImInfty.limUnder_eq
+  have hE₄_val : valueAtInfty (⇑E₄) = 1 := E₄_tendsto_one_atImInfty.limUnder_eq
   have hE₄ : (fun z : ℍ => E₄ z - 1) =O[atImInfty] fun z => Real.exp (-(2 * π) * z.im) := by
     have h := ModularFormClass.exp_decay_sub_atImInfty E₄ (by norm_num : (0 : ℝ) < 1)
       ModularFormClass.one_mem_strictPeriods_SL2Z
@@ -821,8 +817,7 @@ lemma F₁_isBigO_exp_atImInfty :
     · rw [hE₄_val]
     · congr 1; ring
   -- valueAtInfty E₆ = 1 since E₆ → 1 at infinity
-  have hE₆_val : valueAtInfty (⇑E₆) = 1 :=
-    E₆_tendsto_one_atImInfty.limUnder_eq
+  have hE₆_val : valueAtInfty (⇑E₆) = 1 := E₆_tendsto_one_atImInfty.limUnder_eq
   have hE₆ : (fun z : ℍ => E₆ z - 1) =O[atImInfty] fun z => Real.exp (-(2 * π) * z.im) := by
     have h := ModularFormClass.exp_decay_sub_atImInfty E₆ (by norm_num : (0 : ℝ) < 1)
       ModularFormClass.one_mem_strictPeriods_SL2Z
@@ -838,46 +833,36 @@ lemma F₁_isBigO_exp_atImInfty :
   have hprod : (fun z => (E₂ z - 1) * E₄ z) =O[atImInfty]
       fun z => Real.exp (-(2 * π) * z.im) := by
     calc (fun z => (E₂ z - 1) * E₄ z) =O[atImInfty]
-        fun z => Real.exp (-(2 * π) * z.im) * 1 := hE₂.mul hE₄_bdd
+        fun z => Real.exp (-(2 * π) * z.im) * 1 := E₂_sub_one_isBigO_exp.mul E₄_isBoundedAtImInfty
       _ = fun z => Real.exp (-(2 * π) * z.im) := by simp
   exact (hprod.add hE₄).sub hE₆
 
 /-- s * F₁.resToImagAxis s → 0 as s → ∞. -/
 lemma rpow_mul_F₁_resToImagAxis_tendsto_zero :
-    Tendsto (fun t : ℝ => (t : ℂ) ^ (1 : ℂ) * F₁.resToImagAxis t) atTop (nhds 0) := by
-  have hbigO := F₁_isBigO_exp_atImInfty
-  have hc : (0 : ℝ) < 2 * π := by positivity
-  exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp hc hbigO 1
+    Tendsto (fun t : ℝ => (t : ℂ) ^ (1 : ℂ) * F₁.resToImagAxis t) atTop (nhds 0) :=
+  tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity) (F₁_isBigO_exp_atImInfty) 1
 
 /-- s² * FReal s → 0 as s → ∞. -/
 lemma rpow_sq_mul_FReal_resToImagAxis_tendsto_zero :
     Tendsto (fun t : ℝ => (t : ℂ) ^ (2 : ℂ) * F.resToImagAxis t) atTop (nhds 0) := by
   -- F = F₁², so F = O(exp(-4π*y)) (double the decay rate)
-  have hF₁_bigO := F₁_isBigO_exp_atImInfty
-  -- F = F₁² = O(exp(-4πy))
   have hF_bigO : F =O[atImInfty] fun τ => Real.exp (-(4 * π) * τ.im) := by
     calc F = F₁ ^ 2 := rfl
-      _ =O[atImInfty] fun τ => (Real.exp (-(2 * π) * τ.im)) ^ 2 := hF₁_bigO.pow 2
+      _ =O[atImInfty] fun τ => (Real.exp (-(2 * π) * τ.im)) ^ 2 := F₁_isBigO_exp_atImInfty.pow 2
       _ = fun τ => Real.exp (-(4 * π) * τ.im) := by
           ext τ; rw [← Real.exp_nat_mul]; ring_nf
-  have hc : (0 : ℝ) < 4 * π := by positivity
-  exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp hc hF_bigO 2
+  exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity) hF_bigO 2
 
 /-- s * (F₁ * E₄).resToImagAxis s → 0 as s → ∞.
 This follows from F₁ decaying and E₄ → 1. -/
 lemma rpow_mul_F₁E₄_resToImagAxis_tendsto_zero :
     Tendsto (fun t : ℝ => (t : ℂ) ^ (1 : ℂ) * (F₁ * E₄.toFun).resToImagAxis t) atTop (nhds 0) := by
   -- F₁ * E₄ is bounded by F₁ (since E₄ is bounded), and F₁ = O(exp(-2πy))
-  have hF₁_bigO := F₁_isBigO_exp_atImInfty
-  have hE₄_bdd := F₁_mul_E₄_isBoundedAtImInfty
-  -- F₁ * E₄ is bounded times F₁ which decays, so product decays
   have hprod_bigO : (F₁ * E₄.toFun) =O[atImInfty] fun τ => Real.exp (-(2 * π) * τ.im) := by
-    have hE₄_bdd' := ModularFormClass.bdd_at_infty E₄
     calc (F₁ * E₄.toFun) =O[atImInfty] fun τ => Real.exp (-(2 * π) * τ.im) * 1 :=
-      hF₁_bigO.mul hE₄_bdd'
+      F₁_isBigO_exp_atImInfty.mul E₄_isBoundedAtImInfty
       _ = fun τ => Real.exp (-(2 * π) * τ.im) := by simp
-  have hc : (0 : ℝ) < 2 * π := by positivity
-  exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp hc hprod_bigO 1
+  exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity) hprod_bigO 1
 
 /-- s² * FReal s → 0 as s → ∞. -/
 lemma sq_mul_FReal_tendsto_zero :
@@ -938,9 +923,10 @@ lemma denominator_tendsto_at_infty :
       (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
         + 5 * (H₂.resToImagAxis s).re ^ 2)) atTop (nhds 2) := by
   -- H₄ → 1, H₂ → 0, so 1³ * (2*1² + 5*0*1 + 5*0²) = 2
-  set h4 := H₄_re_resToImagAxis_tendsto_one; set h2 := H₂_re_resToImagAxis_tendsto_zero
-  convert (h4.pow 3).mul ((h4.pow 2).const_mul 2 |>.add
-    ((h2.mul h4).const_mul 5 |>.add (h2.pow 2 |>.const_mul 5))) using 1
+  convert (H₄_re_resToImagAxis_tendsto_one.pow 3).mul
+    ((H₄_re_resToImagAxis_tendsto_one.pow 2).const_mul 2 |>.add
+      ((H₂_re_resToImagAxis_tendsto_zero.mul H₄_re_resToImagAxis_tendsto_one).const_mul 5 |>.add
+        (H₂_re_resToImagAxis_tendsto_zero.pow 2 |>.const_mul 5))) using 1
   · ext; ring
   · norm_num
 
