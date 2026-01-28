@@ -319,7 +319,7 @@ lemma toIntCoeff_poly {a : ℕ → ℂ} {k : ℕ}
     toIntCoeff a =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ)) := by
   rw [Asymptotics.isBigO_iff] at ha ⊢
   obtain ⟨C, hC⟩ := ha
-  use C
+  use |C|  -- Use |C| for robustness if caller provides negative C
   rw [Filter.eventually_atTop] at hC ⊢
   obtain ⟨N, hN⟩ := hC
   refine ⟨(N : ℤ), fun m hm ↦ ?_⟩
@@ -337,7 +337,8 @@ lemma toIntCoeff_poly {a : ℕ → ℂ} {k : ℕ}
   simp only [Real.norm_eq_abs, abs_of_nonneg hnat_nonneg] at this
   simp only [Real.norm_eq_abs, abs_of_nonneg hint_nonneg]
   calc ‖a m.toNat‖ ≤ C * (m.toNat : ℝ) ^ k := this
-    _ = C * (m : ℝ) ^ k := by rw [hm_real_eq]
+    _ ≤ |C| * (m.toNat : ℝ) ^ k := mul_le_mul_of_nonneg_right (le_abs_self C) hnat_nonneg
+    _ = |C| * (m : ℝ) ^ k := by rw [hm_real_eq]
 
 /-- c_E₂E₄E₆ has polynomial growth O(n^11).
     Cauchy product of two O(n^5) sequences, then even extension. -/
