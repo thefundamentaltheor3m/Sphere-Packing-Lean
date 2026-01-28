@@ -471,8 +471,18 @@ lemma E₄_sq_fourier (x : ℍ) :
   have hsum_f := b_E₄_q_series_summable x
   -- The product of two summable series equals tsum of Cauchy product
   rw [tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm' hnorm_f hsum_f hnorm_f hsum_f]
-  -- Now convert from q-series to r-series and match with fouterm
-  sorry
+  -- Step 4: Factor out exponential using antidiagonal_qexp_factor
+  simp only [antidiagonal_qexp_factor]
+  -- Step 5: Convert q-series to r-series
+  have hcauchy_sum : Summable (fun n ↦ cauchyCoeff b_E₄ b_E₄ n *
+      cexp (2 * π * Complex.I * n * x)) := by
+    apply cauchy_b_E₄_q_series_summable
+  rw [q_series_eq_r_series (cauchyCoeff b_E₄ b_E₄) x hcauchy_sum]
+  -- Step 6: Match with fouterm c_E₄_sq
+  -- c_E₄_sq n = toIntCoeff (evenExt (cauchyCoeff b_E₄ b_E₄)) n
+  -- For n : ℕ, toIntCoeff a n = a n, and fouterm uses exp(πinz)
+  -- Both sides are definitionally equal after unfolding
+  congr 1
 
 end MagicFunction.a.FourierExpansions
 
