@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.ForMathlib.SpecificLimits
+import SpherePacking.ModularForms.FG
 
 /-!
 # Fourier Expansion Identities for Phi Bounds
@@ -200,24 +201,22 @@ lemma summable_E₄_sq (z : ℍ) :
     Summable fun (i : ℕ) ↦ fouterm c_E₄_sq z (i + 0) :=
   summable_fouterm_of_poly c_E₄_sq_poly z 0
 
-/-! ## Stubs from PR #268
+/-! ## Q-expansion identities
 
-These q-expansion identities are proved in PR #268. We state them here as sorries
-so that downstream code can be structured around them. -/
+These are proved in FG.lean; we re-export them here with the exact signatures
+needed by downstream code. -/
 
-/-- Q-expansion of E₂E₄ - E₆ (from PR #268).
+/-- Q-expansion of E₂E₄ - E₆.
     E₂·E₄ - E₆ = 720·∑_{n≥1} n·σ₃(n)·q^n where q = exp(2πiz). -/
 lemma E₂_mul_E₄_sub_E₆_qexp (z : ℍ) :
     E₂ z * E₄ z - E₆ z = 720 * ∑' (n : ℕ+), (n : ℂ) * (σ 3 n : ℂ) *
-      Complex.exp (2 * π * Complex.I * n * z) := by
-  sorry -- From PR #268: E₂_mul_E₄_sub_E₆
+      Complex.exp (2 * π * Complex.I * n * z) := E₂_mul_E₄_sub_E₆ z
 
 /-- Q-expansion of E₄ (standard result).
     E₄ = 1 + 240·∑_{n≥1} σ₃(n)·q^n where q = exp(2πiz). -/
 lemma E₄_qexp (z : ℍ) :
     E₄ z = 1 + 240 * ∑' (n : ℕ+), (σ 3 n : ℂ) *
-      Complex.exp (2 * π * Complex.I * n * z) := by
-  sorry -- Standard q-expansion, should be in Eisenstein.lean or PR #268
+      Complex.exp (2 * π * Complex.I * n * z) := E₄_sigma_qexp z
 
 /-! ## Fourier Expansion Identities
 
