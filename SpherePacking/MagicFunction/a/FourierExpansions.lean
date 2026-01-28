@@ -91,9 +91,141 @@ lemma cauchyCoeff_poly {a b : ℕ → ℂ} {k ℓ : ℕ}
     (ha : a =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ)))
     (hb : b =O[Filter.atTop] (fun n ↦ (n ^ ℓ : ℝ))) :
     cauchyCoeff a b =O[Filter.atTop] (fun n ↦ (n ^ (k + ℓ + 1) : ℝ)) := by
-  -- Strategy: For n ≥ max(Na, Nb), bound ‖cauchyCoeff a b n‖ ≤ (n+1) * Ca * Cb * n^k * n^ℓ
-  -- which is O(n^{k+ℓ+1}).
-  sorry
+  -- Strategy: We split the bound into large indices (where Big-O bounds apply) and
+  -- small indices (bounded by a constant). The sum has (n+1) terms, absorbed by n^{k+ℓ+1}.
+  simp only [Asymptotics.isBigO_iff] at ha hb ⊢
+  obtain ⟨Ca, hCa⟩ := ha
+  obtain ⟨Cb, hCb⟩ := hb
+  simp only [Filter.eventually_atTop] at hCa hCb ⊢
+  obtain ⟨Na, hNa⟩ := hCa
+  obtain ⟨Nb, hNb⟩ := hCb
+  -- For small indices, compute explicit bound on |a| and |b|
+  let Ma : ℝ := if h : Na = 0 then 1 else
+    (Finset.sup' (Finset.range Na) (Finset.nonempty_range_iff.mpr h)
+      (fun i ↦ ‖a i‖)) + 1
+  let Mb : ℝ := if h : Nb = 0 then 1 else
+    (Finset.sup' (Finset.range Nb) (Finset.nonempty_range_iff.mpr h)
+      (fun j ↦ ‖b j‖)) + 1
+  have hMa_pos : 0 < Ma := by
+    simp only [Ma]; split_ifs with h
+    · norm_num
+    · have hn : (Finset.range Na).Nonempty := Finset.nonempty_range_iff.mpr h
+      have hnn : 0 ≤ Finset.sup' (Finset.range Na) hn (fun i ↦ ‖a i‖) :=
+        Finset.le_sup'_of_le _ (Finset.mem_range.mpr (Nat.pos_of_ne_zero h)) (norm_nonneg _)
+      linarith
+  have hMb_pos : 0 < Mb := by
+    simp only [Mb]; split_ifs with h
+    · norm_num
+    · have hn : (Finset.range Nb).Nonempty := Finset.nonempty_range_iff.mpr h
+      have hnn : 0 ≤ Finset.sup' (Finset.range Nb) hn (fun j ↦ ‖b j‖) :=
+        Finset.le_sup'_of_le _ (Finset.mem_range.mpr (Nat.pos_of_ne_zero h)) (norm_nonneg _)
+      linarith
+  -- The key constant
+  let C := 2 * (max |Ca| Ma) * (max |Cb| Mb)
+  use C
+  refine ⟨max Na Nb + 1, fun n hn ↦ ?_⟩
+  have hNa' : n ≥ Na := le_of_max_le_left (Nat.le_of_succ_le hn)
+  have hNb' : n ≥ Nb := le_of_max_le_right (Nat.le_of_succ_le hn)
+  have hn_ge1 : 1 ≤ n := Nat.one_le_of_lt (Nat.lt_of_lt_of_le (Nat.lt_succ_self _) hn)
+  have hn_pos : (1 : ℝ) ≤ n := Nat.one_le_cast.mpr hn_ge1
+  have hn_pos' : (0 : ℝ) < n := by linarith
+  -- Key: for ANY i ≤ n, we have ‖a i‖ ≤ max(|Ca|, Ma) * n^k
+  have ha_bound : ∀ i ≤ n, ‖a i‖ ≤ (max |Ca| Ma) * (n : ℝ) ^ k := fun i hi ↦ by
+    by_cases hi' : i < Na
+    · have hMa_bound : ‖a i‖ < Ma := by
+        simp only [Ma]
+        split_ifs with h
+        · omega
+        · calc ‖a i‖ ≤ Finset.sup' (Finset.range Na) _ (fun i ↦ ‖a i‖) :=
+              Finset.le_sup' (fun i ↦ ‖a i‖) (Finset.mem_range.mpr hi')
+            _ < _ + 1 := by linarith
+      calc ‖a i‖ ≤ Ma := le_of_lt hMa_bound
+        _ ≤ max |Ca| Ma := le_max_right _ _
+        _ = (max |Ca| Ma) * 1 := (mul_one _).symm
+        _ ≤ (max |Ca| Ma) * (n : ℝ) ^ k := by
+            apply mul_le_mul_of_nonneg_left _ (le_max_of_le_right (le_of_lt hMa_pos))
+            calc (1 : ℝ) = 1 ^ k := (one_pow k).symm
+              _ ≤ (n : ℝ) ^ k := by apply pow_le_pow_left₀ (by norm_num) hn_pos
+    · push_neg at hi'
+      have h_ik_nonneg : (0 : ℝ) ≤ (i : ℝ) ^ k := pow_nonneg (Nat.cast_nonneg _) k
+      have := hNa i hi'
+      rw [Real.norm_eq_abs, abs_of_nonneg h_ik_nonneg] at this
+      calc ‖a i‖ ≤ Ca * (i : ℝ) ^ k := this
+        _ ≤ |Ca| * (i : ℝ) ^ k := by
+            apply mul_le_mul_of_nonneg_right (le_abs_self Ca)
+            exact pow_nonneg (Nat.cast_nonneg _) k
+        _ ≤ |Ca| * (n : ℝ) ^ k := by
+            apply mul_le_mul_of_nonneg_left _ (abs_nonneg Ca)
+            exact pow_le_pow_left₀ (Nat.cast_nonneg _) (Nat.cast_le.mpr hi) k
+        _ ≤ (max |Ca| Ma) * (n : ℝ) ^ k := by
+            apply mul_le_mul_of_nonneg_right (le_max_left _ _)
+            exact pow_nonneg (Nat.cast_nonneg _) k
+  have hb_bound : ∀ j ≤ n, ‖b j‖ ≤ (max |Cb| Mb) * (n : ℝ) ^ ℓ := fun j hj ↦ by
+    by_cases hj' : j < Nb
+    · have hMb_bound : ‖b j‖ < Mb := by
+        simp only [Mb]
+        split_ifs with h
+        · omega
+        · calc ‖b j‖ ≤ Finset.sup' (Finset.range Nb) _ (fun j ↦ ‖b j‖) :=
+              Finset.le_sup' (fun j ↦ ‖b j‖) (Finset.mem_range.mpr hj')
+            _ < _ + 1 := by linarith
+      calc ‖b j‖ ≤ Mb := le_of_lt hMb_bound
+        _ ≤ max |Cb| Mb := le_max_right _ _
+        _ = (max |Cb| Mb) * 1 := (mul_one _).symm
+        _ ≤ (max |Cb| Mb) * (n : ℝ) ^ ℓ := by
+            apply mul_le_mul_of_nonneg_left _ (le_max_of_le_right (le_of_lt hMb_pos))
+            calc (1 : ℝ) = 1 ^ ℓ := (one_pow ℓ).symm
+              _ ≤ (n : ℝ) ^ ℓ := by apply pow_le_pow_left₀ (by norm_num) hn_pos
+    · push_neg at hj'
+      have h_jl_nonneg : (0 : ℝ) ≤ (j : ℝ) ^ ℓ := pow_nonneg (Nat.cast_nonneg _) ℓ
+      have := hNb j hj'
+      rw [Real.norm_eq_abs, abs_of_nonneg h_jl_nonneg] at this
+      calc ‖b j‖ ≤ Cb * (j : ℝ) ^ ℓ := this
+        _ ≤ |Cb| * (j : ℝ) ^ ℓ := by
+            apply mul_le_mul_of_nonneg_right (le_abs_self Cb)
+            exact pow_nonneg (Nat.cast_nonneg _) ℓ
+        _ ≤ |Cb| * (n : ℝ) ^ ℓ := by
+            apply mul_le_mul_of_nonneg_left _ (abs_nonneg Cb)
+            exact pow_le_pow_left₀ (Nat.cast_nonneg _) (Nat.cast_le.mpr hj) ℓ
+        _ ≤ (max |Cb| Mb) * (n : ℝ) ^ ℓ := by
+            apply mul_le_mul_of_nonneg_right (le_max_left _ _)
+            exact pow_nonneg (Nat.cast_nonneg _) ℓ
+  -- Now compute the bound
+  have h_const_pos : 0 < max |Ca| Ma * max |Cb| Mb := by
+    apply mul_pos
+    · exact lt_max_of_lt_right hMa_pos
+    · exact lt_max_of_lt_right hMb_pos
+  calc ‖cauchyCoeff a b n‖
+      = ‖∑ kl ∈ Finset.antidiagonal n, a kl.1 * b kl.2‖ := rfl
+    _ ≤ ∑ kl ∈ Finset.antidiagonal n, ‖a kl.1 * b kl.2‖ := norm_sum_le _ _
+    _ ≤ ∑ kl ∈ Finset.antidiagonal n, ‖a kl.1‖ * ‖b kl.2‖ := by
+        apply Finset.sum_le_sum; intro x _; exact norm_mul_le _ _
+    _ ≤ ∑ kl ∈ Finset.antidiagonal n, ((max |Ca| Ma) * (n : ℝ) ^ k) * ((max |Cb| Mb) * (n : ℝ) ^ ℓ) := by
+        apply Finset.sum_le_sum
+        intro ⟨i, j⟩ hij
+        simp only [Finset.mem_antidiagonal] at hij
+        have hi : i ≤ n := by omega
+        have hj : j ≤ n := by omega
+        apply mul_le_mul (ha_bound i hi) (hb_bound j hj) (norm_nonneg _)
+        apply mul_nonneg (le_max_of_le_right (le_of_lt hMa_pos))
+        exact pow_nonneg (Nat.cast_nonneg _) k
+    _ = ((Finset.antidiagonal n).card : ℝ) * (((max |Ca| Ma) * (n : ℝ) ^ k) * ((max |Cb| Mb) * (n : ℝ) ^ ℓ)) := by
+        rw [Finset.sum_const, nsmul_eq_mul]
+    _ = ((n + 1) : ℝ) * (((max |Ca| Ma) * (n : ℝ) ^ k) * ((max |Cb| Mb) * (n : ℝ) ^ ℓ)) := by
+        rw [Finset.Nat.card_antidiagonal]; simp
+    _ = (max |Ca| Ma) * (max |Cb| Mb) * ((n : ℝ) + 1) * (n : ℝ) ^ (k + ℓ) := by ring
+    _ ≤ (max |Ca| Ma) * (max |Cb| Mb) * (2 * (n : ℝ)) * (n : ℝ) ^ (k + ℓ) := by
+        have h1 : (n : ℝ) + 1 ≤ 2 * n := by linarith
+        have h2 : (max |Ca| Ma) * (max |Cb| Mb) * (n : ℝ) ^ (k + ℓ) ≥ 0 := by
+          apply mul_nonneg (le_of_lt h_const_pos)
+          exact pow_nonneg (Nat.cast_nonneg _) (k + ℓ)
+        nlinarith
+    _ = C * (n : ℝ) ^ (k + ℓ + 1) := by
+        simp only [C]
+        have h_pow : (n : ℝ) ^ (k + ℓ + 1) = n * (n : ℝ) ^ (k + ℓ) := by ring
+        rw [h_pow]; ring
+    _ = C * ‖(n : ℝ) ^ (k + ℓ + 1)‖ := by
+        rw [Real.norm_eq_abs, abs_of_nonneg (pow_nonneg (Nat.cast_nonneg _) _)]
 
 /-- a_E₂E₄E₆ has polynomial growth O(n^5). -/
 lemma a_E₂E₄E₆_poly : a_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
@@ -125,21 +257,6 @@ lemma b_E₄_poly : b_E₄ =O[Filter.atTop] (fun n ↦ (n ^ 4 : ℝ)) := by
       ≤ 240 * n ^ 4 := by rw [h240]; nlinarith
     _ = 240 * n ^ 4 := by ring
 
-/-- c_E₂E₄E₆ has polynomial growth O(n^11).
-    Cauchy product of two O(n^5) sequences, then even extension. -/
-lemma c_E₂E₄E₆_poly : c_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 11 : ℝ)) := by
-  sorry
-
-/-- c_E₄_E₂E₄E₆ has polynomial growth O(n^10).
-    Cauchy product of O(n^4) and O(n^5) sequences, then even extension. -/
-lemma c_E₄_E₂E₄E₆_poly : c_E₄_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 10 : ℝ)) := by
-  sorry
-
-/-- c_E₄_sq has polynomial growth O(n^9).
-    Cauchy product of two O(n^4) sequences, then even extension. -/
-lemma c_E₄_sq_poly : c_E₄_sq =O[Filter.atTop] (fun n ↦ (n ^ 9 : ℝ)) := by
-  sorry
-
 /-! ## Even Extension Lemmas
 
 Properties of the even extension map used for q→r series conversion. -/
@@ -157,6 +274,99 @@ lemma evenExt_odd (a : ℕ → ℂ) (n : ℕ) : evenExt a (2 * n + 1) = 0 := by
   · rfl
   · intro ⟨m, hm⟩
     omega
+
+/-- Even extension preserves polynomial growth. If a = O(n^k), then evenExt a = O(n^k). -/
+lemma evenExt_poly {a : ℕ → ℂ} {k : ℕ}
+    (ha : a =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ))) :
+    evenExt a =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ)) := by
+  rw [Asymptotics.isBigO_iff] at ha ⊢
+  obtain ⟨C, hC⟩ := ha
+  -- Use |C| to ensure we have a nonnegative constant
+  use |C|
+  rw [Filter.eventually_atTop] at hC ⊢
+  obtain ⟨N, hN⟩ := hC
+  refine ⟨2 * N, fun m hm ↦ ?_⟩
+  simp only [Real.norm_eq_abs]
+  by_cases heven : Even m
+  · -- m = 2*n for some n, and evenExt a (2*n) = a n
+    obtain ⟨n, hn⟩ := heven
+    have hn_2n : m = 2 * n := by omega
+    have hn_ge : n ≥ N := by omega
+    rw [hn_2n, evenExt_even]
+    have hn_nonneg : (0 : ℝ) ≤ (n : ℝ) ^ k := pow_nonneg (Nat.cast_nonneg _) k
+    have hm_nonneg : (0 : ℝ) ≤ ((2 * n : ℕ) : ℝ) ^ k := pow_nonneg (Nat.cast_nonneg _) k
+    have hbound := hN n hn_ge
+    simp only [Real.norm_eq_abs, abs_of_nonneg hn_nonneg] at hbound
+    rw [abs_of_nonneg hm_nonneg]
+    have hC_abs : C ≤ |C| := le_abs_self C
+    have hn_le_2n : (n : ℝ) ≤ (2 * n : ℕ) := by simp only [Nat.cast_mul, Nat.cast_ofNat]; linarith
+    have hpow_le : (n : ℝ) ^ k ≤ ((2 * n : ℕ) : ℝ) ^ k := pow_le_pow_left₀ (Nat.cast_nonneg _) hn_le_2n k
+    calc ‖a n‖ ≤ C * (n : ℝ) ^ k := hbound
+      _ ≤ |C| * (n : ℝ) ^ k := mul_le_mul_of_nonneg_right hC_abs hn_nonneg
+      _ ≤ |C| * ((2 * n : ℕ) : ℝ) ^ k := mul_le_mul_of_nonneg_left hpow_le (abs_nonneg C)
+  · -- m is odd, so evenExt a m = 0
+    have heq : evenExt a m = 0 := by
+      simp only [evenExt]
+      rw [Function.extend_apply']
+      · rfl
+      · intro ⟨n, hn⟩; exact heven ⟨n, by omega⟩
+    rw [heq, norm_zero]
+    have hm_nonneg : (0 : ℝ) ≤ (m : ℝ) ^ k := pow_nonneg (Nat.cast_nonneg _) k
+    rw [abs_of_nonneg hm_nonneg]
+    exact mul_nonneg (abs_nonneg C) hm_nonneg
+
+/-- toIntCoeff preserves polynomial growth (for atTop on ℤ). -/
+lemma toIntCoeff_poly {a : ℕ → ℂ} {k : ℕ}
+    (ha : a =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ))) :
+    toIntCoeff a =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ)) := by
+  rw [Asymptotics.isBigO_iff] at ha ⊢
+  obtain ⟨C, hC⟩ := ha
+  use C
+  rw [Filter.eventually_atTop] at hC ⊢
+  obtain ⟨N, hN⟩ := hC
+  refine ⟨(N : ℤ), fun m hm ↦ ?_⟩
+  simp only [toIntCoeff]
+  have hm_nonneg : 0 ≤ m := le_trans (Int.natCast_nonneg N) hm
+  simp only [not_lt.mpr hm_nonneg, ↓reduceIte]
+  have htoNat : m.toNat ≥ N := by omega
+  have hm_eq : (m.toNat : ℤ) = m := Int.toNat_of_nonneg hm_nonneg
+  have hm_real_eq : (m.toNat : ℝ) = (m : ℝ) := by
+    have h : (m.toNat : ℤ) = m := hm_eq
+    exact congrArg (↑· : ℤ → ℝ) h
+  have := hN m.toNat htoNat
+  have hnat_nonneg : (0 : ℝ) ≤ (m.toNat : ℝ) ^ k := pow_nonneg (Nat.cast_nonneg _) k
+  have hint_nonneg : (0 : ℝ) ≤ (m : ℝ) ^ k := by rw [← hm_real_eq]; exact hnat_nonneg
+  simp only [Real.norm_eq_abs, abs_of_nonneg hnat_nonneg] at this
+  simp only [Real.norm_eq_abs, abs_of_nonneg hint_nonneg]
+  calc ‖a m.toNat‖ ≤ C * (m.toNat : ℝ) ^ k := this
+    _ = C * (m : ℝ) ^ k := by rw [hm_real_eq]
+
+/-- c_E₂E₄E₆ has polynomial growth O(n^11).
+    Cauchy product of two O(n^5) sequences, then even extension. -/
+lemma c_E₂E₄E₆_poly : c_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 11 : ℝ)) := by
+  unfold c_E₂E₄E₆
+  apply toIntCoeff_poly
+  apply evenExt_poly
+  -- cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆: O(n^5) × O(n^5) → O(n^{5+5+1}) = O(n^11)
+  exact cauchyCoeff_poly a_E₂E₄E₆_poly a_E₂E₄E₆_poly
+
+/-- c_E₄_E₂E₄E₆ has polynomial growth O(n^10).
+    Cauchy product of O(n^4) and O(n^5) sequences, then even extension. -/
+lemma c_E₄_E₂E₄E₆_poly : c_E₄_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 10 : ℝ)) := by
+  unfold c_E₄_E₂E₄E₆
+  apply toIntCoeff_poly
+  apply evenExt_poly
+  -- cauchyCoeff b_E₄ a_E₂E₄E₆: O(n^4) × O(n^5) → O(n^{4+5+1}) = O(n^10)
+  exact cauchyCoeff_poly b_E₄_poly a_E₂E₄E₆_poly
+
+/-- c_E₄_sq has polynomial growth O(n^9).
+    Cauchy product of two O(n^4) sequences, then even extension. -/
+lemma c_E₄_sq_poly : c_E₄_sq =O[Filter.atTop] (fun n ↦ (n ^ 9 : ℝ)) := by
+  unfold c_E₄_sq
+  apply toIntCoeff_poly
+  apply evenExt_poly
+  -- cauchyCoeff b_E₄ b_E₄: O(n^4) × O(n^4) → O(n^{4+4+1}) = O(n^9)
+  exact cauchyCoeff_poly b_E₄_poly b_E₄_poly
 
 /-! ## Q-Series Summability -/
 
@@ -251,23 +461,98 @@ lemma antidiagonal_qexp_factor (a b : ℕ → ℂ) (z : ℍ) (n : ℕ) :
           2 * ↑π * Complex.I * ↑l * ↑z) := by rw [← Complex.exp_add]
     _ = a k * b l * cexp (2 * ↑π * Complex.I * ↑n * ↑z) := by rw [hexp]
 
+/-- The norm of exp(πiz) for z : ℍ is less than 1.
+    Proof: |exp(πiz)| = exp(Re(πiz)) = exp(-π·z.im) < 1 since z.im > 0. -/
+lemma norm_exp_pi_I_z_lt_one (z : ℍ) : ‖Complex.exp (π * Complex.I * z)‖ < 1 := by
+  rw [Complex.norm_exp]
+  have him : (π * Complex.I * (z : ℂ)).re = -π * z.im := by
+    have h1 : (π * Complex.I : ℂ).re = 0 := by simp [Complex.I_re]
+    have h2 : (π * Complex.I : ℂ).im = π := by simp [Complex.I_im]
+    simp only [mul_re, h1, zero_mul, h2]
+    simp only [UpperHalfPlane.coe_im]
+    ring
+  rw [him]
+  have hneg : -π * z.im < 0 := by nlinarith [Real.pi_pos, z.im_pos]
+  exact Real.exp_lt_one_iff.mpr hneg
+
 /-- Summability of Cauchy product of b_E₄ q-series. -/
 lemma cauchy_b_E₄_q_series_summable (z : ℍ) :
     Summable (fun n ↦ cauchyCoeff b_E₄ b_E₄ n * cexp (2 * π * Complex.I * n * z)) := by
   -- The Cauchy product has O(n^9) growth (from cauchyCoeff_poly with O(n^4) × O(n^4))
   -- Combined with exponential decay exp(-2πn·z.im), this is summable.
-  -- We use the same polynomial×geometric summability pattern as summable_fouterm_of_poly.
-  sorry
+  -- Factor as u(n) * r^n where r = exp(2πiz), u(n) = cauchyCoeff b_E₄ b_E₄ n
+  let r := cexp (2 * π * Complex.I * z)
+  -- ‖r‖ = ‖exp(2πiz)‖ = ‖exp(πiz)²‖ = ‖exp(πiz)‖² < 1 since ‖exp(πiz)‖ < 1
+  have hr : ‖r‖ < 1 := by
+    have h1 := norm_exp_pi_I_z_lt_one z
+    simp only [r, show (2 : ℂ) * π * Complex.I * z = (π * Complex.I * z) + (π * Complex.I * z) by ring]
+    rw [Complex.exp_add, Complex.norm_mul]
+    have hnorm_nonneg : 0 ≤ ‖cexp (π * Complex.I * z)‖ := norm_nonneg _
+    calc ‖cexp (π * Complex.I * z)‖ * ‖cexp (π * Complex.I * z)‖
+        = ‖cexp (π * Complex.I * z)‖ ^ 2 := sq _ |>.symm
+      _ < 1 := sq_lt_one_iff₀ hnorm_nonneg |>.mpr h1
+  -- u = cauchyCoeff b_E₄ b_E₄ has O(n^9) growth
+  have hpoly : cauchyCoeff b_E₄ b_E₄ =O[Filter.atTop] (fun n ↦ (↑(n ^ 9) : ℝ)) := by
+    have := cauchyCoeff_poly b_E₄_poly b_E₄_poly
+    convert this using 2; simp
+  -- Factor the expression
+  have h_eq : ∀ n : ℕ, cauchyCoeff b_E₄ b_E₄ n * cexp (2 * π * Complex.I * n * z) =
+      cauchyCoeff b_E₄ b_E₄ n * r ^ n := fun n => by
+    simp only [r, ← Complex.exp_nat_mul]
+    congr 1
+    ring
+  simp_rw [h_eq]
+  exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hpoly)
 
 /-- Summability of Cauchy product of a_E₂E₄E₆ q-series. -/
 lemma cauchy_a_E₂E₄E₆_q_series_summable (z : ℍ) :
     Summable (fun n ↦ cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) := by
-  sorry
+  -- Same pattern as cauchy_b_E₄_q_series_summable with O(n^11) growth
+  let r := cexp (2 * π * Complex.I * z)
+  have hr : ‖r‖ < 1 := by
+    have h1 := norm_exp_pi_I_z_lt_one z
+    simp only [r]
+    rw [show (2 : ℂ) * π * Complex.I * z = (π * Complex.I * z) + (π * Complex.I * z) by ring]
+    rw [Complex.exp_add, Complex.norm_mul]
+    have hnorm_nonneg : 0 ≤ ‖cexp (π * Complex.I * z)‖ := norm_nonneg _
+    calc ‖cexp (π * Complex.I * z)‖ * ‖cexp (π * Complex.I * z)‖
+        = ‖cexp (π * Complex.I * z)‖ ^ 2 := sq _ |>.symm
+      _ < 1 := sq_lt_one_iff₀ hnorm_nonneg |>.mpr h1
+  have hpoly : cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (↑(n ^ 11) : ℝ)) := by
+    have := cauchyCoeff_poly a_E₂E₄E₆_poly a_E₂E₄E₆_poly
+    convert this using 2; simp
+  have h_eq : ∀ n : ℕ, cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z) =
+      cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ n * r ^ n := fun n => by
+    simp only [r, ← Complex.exp_nat_mul]
+    congr 1
+    ring
+  simp_rw [h_eq]
+  exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hpoly)
 
 /-- Summability of Cauchy product of b_E₄ and a_E₂E₄E₆ q-series. -/
 lemma cauchy_b_E₄_a_E₂E₄E₆_q_series_summable (z : ℍ) :
     Summable (fun n ↦ cauchyCoeff b_E₄ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) := by
-  sorry
+  -- Same pattern with O(n^10) growth
+  let r := cexp (2 * π * Complex.I * z)
+  have hr : ‖r‖ < 1 := by
+    have h1 := norm_exp_pi_I_z_lt_one z
+    simp only [r]
+    rw [show (2 : ℂ) * π * Complex.I * z = (π * Complex.I * z) + (π * Complex.I * z) by ring]
+    rw [Complex.exp_add, Complex.norm_mul]
+    have hnorm_nonneg : 0 ≤ ‖cexp (π * Complex.I * z)‖ := norm_nonneg _
+    calc ‖cexp (π * Complex.I * z)‖ * ‖cexp (π * Complex.I * z)‖
+        = ‖cexp (π * Complex.I * z)‖ ^ 2 := sq _ |>.symm
+      _ < 1 := sq_lt_one_iff₀ hnorm_nonneg |>.mpr h1
+  have hpoly : cauchyCoeff b_E₄ a_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (↑(n ^ 10) : ℝ)) := by
+    have := cauchyCoeff_poly b_E₄_poly a_E₂E₄E₆_poly
+    convert this using 2; simp
+  have h_eq : ∀ n : ℕ, cauchyCoeff b_E₄ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z) =
+      cauchyCoeff b_E₄ a_E₂E₄E₆ n * r ^ n := fun n => by
+    simp only [r, ← Complex.exp_nat_mul]
+    congr 1
+    ring
+  simp_rw [h_eq]
+  exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hpoly)
 
 /-! ## Q-Series Representations
 
@@ -334,21 +619,6 @@ lemma q_series_eq_r_series (a : ℕ → ℂ) (z : ℍ)
   ring
 
 /-! ## Auxiliary lemmas for summability -/
-
-/-- The norm of exp(πiz) for z : ℍ is less than 1.
-    Proof: |exp(πiz)| = exp(Re(πiz)) = exp(-π·z.im) < 1 since z.im > 0. -/
-lemma norm_exp_pi_I_z_lt_one (z : ℍ) : ‖Complex.exp (π * Complex.I * z)‖ < 1 := by
-  rw [Complex.norm_exp]
-  -- (π * I * z).re = -π * z.im because I.re = 0, I.im = 1
-  have him : (π * Complex.I * (z : ℂ)).re = -π * z.im := by
-    have h1 : (π * Complex.I : ℂ).re = 0 := by simp [Complex.I_re]
-    have h2 : (π * Complex.I : ℂ).im = π := by simp [Complex.I_im]
-    simp only [mul_re, h1, zero_mul, h2]
-    simp only [UpperHalfPlane.coe_im]
-    ring
-  rw [him]
-  have hneg : -π * z.im < 0 := by nlinarith [Real.pi_pos, z.im_pos]
-  exact Real.exp_lt_one_iff.mpr hneg
 
 /-- Shifting a function by a constant preserves Big-O growth.
     For c : ℤ → ℂ with c = O(n^k), the shifted function i ↦ c(i + n₀) is also O(n^k).
@@ -449,17 +719,180 @@ The proofs use `E₂_mul_E₄_sub_E₆` and `E₄_sigma_qexp` from `FG.lean`. -/
     The square starts at q², which is r⁴ in r = exp(πiz) convention. -/
 lemma E₂E₄E₆_sq_fourier (x : ℍ) :
     ((E₂ x) * (E₄ x) - (E₆ x)) ^ 2 = ∑' (n : ℕ), fouterm c_E₂E₄E₆ x (n + 4) := by
-  -- Same pattern as E₄_sq_fourier, but with shift by 4 since a_E₂E₄E₆(0) = 0
-  -- The Cauchy product starts at q^2 = r^4
-  sorry
+  -- Step 1: (E₂E₄ - E₆) as q-series
+  have hE₂E₄E₆ := E₂E₄_sub_E₆_as_q_series x
+  -- Step 2: Square
+  simp only [sq, hE₂E₄E₆]
+  -- Step 3: Apply Cauchy product formula
+  have hnorm := a_E₂E₄E₆_q_series_norm_summable x
+  have hsum := a_E₂E₄E₆_q_series_summable x
+  rw [tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm' hnorm hsum hnorm hsum]
+  -- Step 4: Factor out exponential
+  simp only [antidiagonal_qexp_factor]
+  -- Step 5: Convert q-series to r-series
+  have hcauchy_sum := cauchy_a_E₂E₄E₆_q_series_summable x
+  rw [q_series_eq_r_series (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) x hcauchy_sum]
+  -- Step 6: Show the first 4 terms are zero, then reindex
+  -- Since a_E₂E₄E₆(0) = 0:
+  -- - cauchyCoeff(a,a)(0) = a(0)*a(0) = 0
+  -- - cauchyCoeff(a,a)(1) = a(0)*a(1) + a(1)*a(0) = 0
+  -- In r-space: evenExt puts 0 for odd, so m=0,1,2,3 all give 0
+  have ha0 : a_E₂E₄E₆ 0 = 0 := by simp only [a_E₂E₄E₆, ↓reduceIte]
+  have hcauchy0 : cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ 0 = 0 := by
+    simp only [cauchyCoeff]
+    -- antidiagonal 0 = {(0,0)}, so this is a(0)*a(0) = 0*0 = 0
+    rw [Finset.Nat.antidiagonal_zero, Finset.sum_singleton, ha0, zero_mul]
+  have hcauchy1 : cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ 1 = 0 := by
+    simp only [cauchyCoeff]
+    apply Finset.sum_eq_zero
+    intro ⟨i, j⟩ hij
+    simp only [Finset.mem_antidiagonal] at hij
+    rcases Nat.eq_zero_or_pos i with hi | hi
+    · simp only [hi, ha0, zero_mul]
+    · have hj : j = 0 := by omega
+      simp only [hj, ha0, mul_zero]
+  have heven0 : evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) 0 = 0 := by
+    have h : (0 : ℕ) = 2 * 0 := by omega
+    rw [h, evenExt_even, hcauchy0]
+  have heven1 : evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) 1 = 0 := by
+    have h : (1 : ℕ) = 2 * 0 + 1 := by omega
+    rw [h, evenExt_odd]
+  have heven2 : evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) 2 = 0 := by
+    have h : (2 : ℕ) = 2 * 1 := by omega
+    rw [h, evenExt_even, hcauchy1]
+  have heven3 : evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) 3 = 0 := by
+    have h : (3 : ℕ) = 2 * 1 + 1 := by omega
+    rw [h, evenExt_odd]
+  have hzero_small : ∀ m < 4, evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) m *
+      cexp (π * Complex.I * m * x) = 0 := by
+    intro m hm
+    interval_cases m <;> simp only [heven0, heven1, heven2, heven3, zero_mul]
+  -- Summability of r-series
+  -- We use summable_fouterm_of_poly pattern: c_E₂E₄E₆ has O(n^11) growth
+  have hsum_r : Summable (fun m ↦ evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) m *
+      cexp (π * Complex.I * m * x)) := by
+    -- evenExt(cauchyCoeff) has poly growth, so poly × geometric is summable
+    have hr : ‖cexp (π * Complex.I * x)‖ < 1 := norm_exp_pi_I_z_lt_one x
+    have hpoly : evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) =O[Filter.atTop] (fun n ↦ (n ^ 11 : ℝ)) :=
+      evenExt_poly (cauchyCoeff_poly a_E₂E₄E₆_poly a_E₂E₄E₆_poly)
+    have hpoly' : evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) =O[Filter.atTop]
+        (fun n ↦ (↑(n ^ 11) : ℝ)) := by convert hpoly using 2; simp
+    have h_eq : ∀ n : ℕ, evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) n *
+        cexp (π * Complex.I * n * x) =
+        evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) n * (cexp (π * Complex.I * x)) ^ n := fun n => by
+      rw [← Complex.exp_nat_mul]; congr 1; ring
+    simp_rw [h_eq]
+    exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hpoly')
+  -- The full sum equals sum from m=4 onwards
+  have hsplit : ∑' m, evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) m * cexp (π * Complex.I * m * x) =
+      ∑' (n : ℕ), evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) (n + 4) *
+        cexp (π * Complex.I * (n + 4) * x) := by
+    rw [← hsum_r.sum_add_tsum_nat_add 4]
+    -- First 4 terms are zero
+    have h04 : ∑ m ∈ Finset.range 4, evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆) m *
+        cexp (π * Complex.I * m * x) = 0 := by
+      apply Finset.sum_eq_zero
+      intro m hm
+      simp only [Finset.mem_range] at hm
+      exact hzero_small m hm
+    rw [h04, zero_add]
+    -- Match the index expressions
+    congr 1
+    ext n
+    congr 2
+    push_cast; ring
+  rw [hsplit]
+  -- Now match with fouterm
+  congr 1
+  ext n
+  simp only [fouterm, c_E₂E₄E₆, toIntCoeff]
+  have hpos : ¬((n : ℤ) + 4 < 0) := by omega
+  simp only [hpos, ↓reduceIte]
+  have htoNat : ((n : ℤ) + 4).toNat = n + 4 := by omega
+  rw [htoNat]
+  congr 2
+  push_cast
+  ring
 
 /-- Fourier expansion of E₄(E₂E₄ - E₆).
     Product starts at q¹, which is r² in fouterm convention. -/
 lemma E₄_E₂E₄E₆_fourier (x : ℍ) :
     E₄ x * (E₂ x * E₄ x - E₆ x) = ∑' (n : ℕ), fouterm c_E₄_E₂E₄E₆ x (n + 2) := by
-  -- From E₄_sigma_qexp and E₂_mul_E₄_sub_E₆
-  -- E₄ starts at q⁰, E₂E₄-E₆ starts at q¹, so product starts at q¹ = r²
-  sorry
+  -- Step 1: E₄ and (E₂E₄ - E₆) as q-series
+  have hE₄ := E₄_as_q_series x
+  have hE₂E₄E₆ := E₂E₄_sub_E₆_as_q_series x
+  rw [hE₂E₄E₆, hE₄]
+  -- Step 2: Apply Cauchy product formula
+  have hnorm_b := b_E₄_q_series_norm_summable x
+  have hsum_b := b_E₄_q_series_summable x
+  have hnorm_a := a_E₂E₄E₆_q_series_norm_summable x
+  have hsum_a := a_E₂E₄E₆_q_series_summable x
+  rw [tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm' hnorm_b hsum_b hnorm_a hsum_a]
+  -- Step 3: Factor out exponential
+  simp only [antidiagonal_qexp_factor]
+  -- Step 4: Convert q-series to r-series
+  have hcauchy_sum := cauchy_b_E₄_a_E₂E₄E₆_q_series_summable x
+  rw [q_series_eq_r_series (cauchyCoeff b_E₄ a_E₂E₄E₆) x hcauchy_sum]
+  -- Step 5: Show the first 2 terms are zero, then reindex
+  -- Since a_E₂E₄E₆(0) = 0:
+  -- cauchyCoeff(b,a)(0) = b(0)*a(0) = 1*0 = 0
+  -- In r-space: evenExt(cauchyCoeff) 0 = 0, evenExt(cauchyCoeff) 1 = 0 (odd)
+  have ha0 : a_E₂E₄E₆ 0 = 0 := by simp only [a_E₂E₄E₆, ↓reduceIte]
+  have hcauchy0 : cauchyCoeff b_E₄ a_E₂E₄E₆ 0 = 0 := by
+    simp only [cauchyCoeff]
+    rw [Finset.Nat.antidiagonal_zero, Finset.sum_singleton, ha0, mul_zero]
+  have heven0 : evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) 0 = 0 := by
+    have h : (0 : ℕ) = 2 * 0 := by omega
+    rw [h, evenExt_even, hcauchy0]
+  have heven1 : evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) 1 = 0 := by
+    have h : (1 : ℕ) = 2 * 0 + 1 := by omega
+    rw [h, evenExt_odd]
+  have hzero_small : ∀ m < 2, evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) m *
+      cexp (π * Complex.I * m * x) = 0 := by
+    intro m hm
+    interval_cases m <;> simp only [heven0, heven1, zero_mul]
+  -- Summability of r-series
+  have hsum_r : Summable (fun m ↦ evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) m *
+      cexp (π * Complex.I * m * x)) := by
+    have hr : ‖cexp (π * Complex.I * x)‖ < 1 := norm_exp_pi_I_z_lt_one x
+    have hpoly : evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) =O[Filter.atTop] (fun n ↦ (n ^ 10 : ℝ)) :=
+      evenExt_poly (cauchyCoeff_poly b_E₄_poly a_E₂E₄E₆_poly)
+    have hpoly' : evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) =O[Filter.atTop]
+        (fun n ↦ (↑(n ^ 10) : ℝ)) := by convert hpoly using 2; simp
+    have h_eq : ∀ n : ℕ, evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) n *
+        cexp (π * Complex.I * n * x) =
+        evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) n * (cexp (π * Complex.I * x)) ^ n := fun n => by
+      rw [← Complex.exp_nat_mul]; congr 1; ring
+    simp_rw [h_eq]
+    exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hpoly')
+  -- The full sum equals sum from m=2 onwards
+  have hsplit : ∑' m, evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) m * cexp (π * Complex.I * m * x) =
+      ∑' (n : ℕ), evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) (n + 2) *
+        cexp (π * Complex.I * (n + 2) * x) := by
+    rw [← hsum_r.sum_add_tsum_nat_add 2]
+    have h02 : ∑ m ∈ Finset.range 2, evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆) m *
+        cexp (π * Complex.I * m * x) = 0 := by
+      apply Finset.sum_eq_zero
+      intro m hm
+      simp only [Finset.mem_range] at hm
+      exact hzero_small m hm
+    rw [h02, zero_add]
+    congr 1
+    ext n
+    congr 2
+    push_cast; ring
+  rw [hsplit]
+  -- Now match with fouterm
+  congr 1
+  ext n
+  simp only [fouterm, c_E₄_E₂E₄E₆, toIntCoeff]
+  have hpos : ¬((n : ℤ) + 2 < 0) := by omega
+  simp only [hpos, ↓reduceIte]
+  have htoNat : ((n : ℤ) + 2).toNat = n + 2 := by omega
+  rw [htoNat]
+  congr 2
+  push_cast
+  ring
 
 /-- Fourier expansion of E₄².
     E₄ = 1 + 240·∑_{n≥1} σ₃(n)·qⁿ, so E₄² starts at constant term 1. -/
