@@ -579,41 +579,6 @@ lemma q_series_eq_r_series (a : ℕ → ℂ) (z : ℍ)
   push_cast
   ring
 
-/-! ## Auxiliary lemmas for summability -/
-
-/-- Shifting a function by a constant preserves Big-O growth.
-    For c : ℤ → ℂ with c = O(n^k), the shifted function i ↦ c(i + n₀) is also O(n^k).
-
-    Proof: Following hpoly' in PolyFourierCoeffBound.lean - first show the shifted
-    function is O((n + n₀)^k), then show |n + n₀| ≤ 2n for n ≥ |n₀|. -/
-lemma isBigO_shift {c : ℤ → ℂ} {k : ℕ} (n₀ : ℤ)
-    (hc : c =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ))) :
-    (fun i : ℕ ↦ c (i + n₀)) =O[Filter.atTop] (fun n ↦ (↑(n ^ k) : ℝ)) := by
-  -- First: shift the hypothesis to ℕ
-  have h_shift : (fun n : ℕ => c (n + n₀)) =O[Filter.atTop] (fun n : ℕ => (n + n₀ : ℂ) ^ k) := by
-    simp only [Asymptotics.isBigO_iff, Filter.eventually_atTop] at hc ⊢
-    obtain ⟨C, m, hCa⟩ := hc
-    use C
-    simp only [norm_pow, norm_eq_abs] at hCa ⊢
-    refine ⟨(m - n₀).toNat, fun n hn ↦ ?_⟩
-    have hmn : (n : ℤ) + n₀ ≥ m := by
-      have := Int.self_le_toNat (m - n₀)
-      omega
-    exact_mod_cast hCa (n + n₀) hmn
-  -- Second: (n + n₀)^k = O(n^k) using |n + n₀| ≤ 2n for n ≥ |n₀|
-  refine h_shift.trans ?_
-  simp only [Asymptotics.isBigO_iff, Filter.eventually_atTop]
-  use 2 ^ k
-  simp only [norm_pow, RCLike.norm_natCast]
-  refine ⟨n₀.natAbs, fun n hn => ?_⟩
-  have h_bound : ‖(n + n₀ : ℂ)‖ ≤ 2 * n := by
-    simp only [← Int.cast_natCast (R := ℂ), ← Int.cast_add, Complex.norm_intCast]
-    norm_cast
-    cases abs_cases (n + n₀ : ℤ) <;> omega
-  calc ‖(n : ℂ) + n₀‖ ^ k ≤ (2 * n) ^ k := by exact pow_le_pow_left₀ (norm_nonneg _) h_bound k
-    _ = 2 ^ k * n ^ k := by ring
-    _ = 2 ^ k * (n ^ k : ℕ) := by norm_cast
-
 /-! ## Summability Lemmas
 
 The Fourier series terms are summable because:
@@ -635,8 +600,8 @@ lemma summable_fouterm_of_poly {c : ℤ → ℂ} {k : ℕ}
     (z : ℍ) (n₀ : ℤ) : Summable fun (i : ℕ) ↦ fouterm c z (i + n₀) := by
   -- Key fact: ‖exp(πiz)‖ < 1 for z : ℍ
   have hr : ‖Complex.exp (π * Complex.I * z)‖ < 1 := norm_exp_pi_I_z_lt_one z
-  -- Shifted coefficients have polynomial growth
-  have hshift := isBigO_shift n₀ hpoly
+  -- Shifted coefficients have polynomial growth (reusing hpoly' from PolyFourierCoeffBound)
+  have hshift := hpoly' c n₀ k hpoly
   -- Factor fouterm c z (i + n₀) = u(i) * r^i
   -- where r = cexp(π * I * z) and u(i) = c(i + n₀) * cexp(π * I * n₀ * z)
   let r := cexp (π * Complex.I * z)
@@ -650,7 +615,8 @@ lemma summable_fouterm_of_poly {c : ℤ → ℂ} {k : ℕ}
   -- u has polynomial growth: ‖u n‖ = ‖c(n+n₀)‖ * ‖const‖ is O(n^k)
   have hu : u =O[Filter.atTop] (fun n ↦ (↑(n ^ k) : ℝ)) := by
     simp only [u, show ∀ i, c (↑i + n₀) * const = const * c (↑i + n₀) from fun _ => mul_comm _ _]
-    exact hshift.const_mul_left const
+    convert hshift.const_mul_left const using 2 with n
+    simp only [Nat.cast_pow]
   -- Apply summability theorem
   simp_rw [h_factor]
   exact Summable.of_norm (summable_real_norm_mul_geometric_of_norm_lt_one hr hu)
