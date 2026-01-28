@@ -9,7 +9,29 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 open scoped ArithmeticFunction.sigma
 
-noncomputable section Definitions
+noncomputable section
+
+/-! ## Helper lemmas for dimension-one arguments -/
+
+/-- In a rank-one module, every element is a scalar multiple of any nonzero element. -/
+lemma exists_smul_eq_of_rank_one {M : Type*} [AddCommGroup M] [Module ℂ M]
+    (hrank : Module.rank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, f = c • e := by
+  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' e he).mp
+    (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f
+  exact ⟨c, hc.symm⟩
+
+/-- Symmetric version: `c • e = f` instead of `f = c • e`. -/
+lemma exists_smul_eq_of_rank_one' {M : Type*} [AddCommGroup M] [Module ℂ M]
+    (hrank : Module.rank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, c • e = f :=
+  (finrank_eq_one_iff_of_nonzero' e he).mp (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f
+
+/-- Convert smul equality of modular forms to pointwise equality. -/
+lemma smul_modularForm_eq_pointwise {Γ : Subgroup SL(2, ℤ)} {k : ℤ} {f g : ModularForm Γ k}
+    {c : ℂ} (h : f = c • g) (z : ℍ) : (f : ℍ → ℂ) z = c * (g : ℍ → ℂ) z := by
+  simpa [ModularForm.coe_smul, smul_eq_mul] using
+    congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
+
+section Definitions
 
 /- The Eisenstein Series E₄ and E₆ -/
 
@@ -790,17 +812,6 @@ lemma PowerSeries.coeff_add (f g : PowerSeries ℂ) (n : ℕ) :
 
 open ArithmeticFunction
 
-section Ramanujan_Formula
-
--- In this section, we state some simplifications that are used in Cor 7.5-7.7 of the blueprint
-
-theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
-    (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)
-    := by
-  sorry
-
-end Ramanujan_Formula
-
 /-!
 ## Imaginary Axis Properties
 
@@ -809,7 +820,7 @@ Properties of Eisenstein series when restricted to the positive imaginary axis z
 
 section ImagAxisProperties
 
-open Complex hiding I
+open _root_.Complex hiding I
 
 /-- `(-2πi)^k` is real for even k. -/
 lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :

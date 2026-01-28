@@ -149,13 +149,8 @@ variable (𝕜 : Type*) [RCLike 𝕜]
 
 include 𝕜 in
 @[simp]
-theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f := by
-  rw [← fourier_coe, ← fourierInv_coe]
-  congr 1
-  --rw [← fourierTransformCLE_apply 𝕜 f,
-    --  ← fourierTransformCLE_symm_apply 𝕜 _,
-      --ContinuousLinearEquiv.symm_apply_apply]
-  sorry
+theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f :=
+  f.continuous.fourierInv_fourier_eq f.integrable ((FourierTransform.fourierCLE 𝕜 _) f).integrable
 
 end SchwartzMap
 
