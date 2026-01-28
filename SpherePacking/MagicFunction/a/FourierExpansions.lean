@@ -472,10 +472,8 @@ lemma antidiagonal_qexp_factor (a b : ℕ → ℂ) (z : ℍ) (n : ℕ) :
       (a kl.1 * cexp (2 * π * Complex.I * kl.1 * z)) *
       (b kl.2 * cexp (2 * π * Complex.I * kl.2 * z)) =
     cauchyCoeff a b n * cexp (2 * π * Complex.I * n * z) := by
-  simp only [cauchyCoeff]
-  rw [Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro ⟨k, l⟩ hkl
+  simp only [cauchyCoeff, Finset.sum_mul]
+  refine Finset.sum_congr rfl fun ⟨k, l⟩ hkl ↦ ?_
   simp only [Finset.mem_antidiagonal] at hkl
   have hexp : 2 * ↑π * Complex.I * ↑k * ↑z + 2 * ↑π * Complex.I * ↑l * ↑z =
       2 * ↑π * Complex.I * ↑n * ↑z := by rw [← hkl]; push_cast; ring
