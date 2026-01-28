@@ -145,12 +145,15 @@ lemma evenExt_odd (a : ℕ → ℂ) (n : ℕ) : evenExt a (2 * n + 1) = 0 := by
 /-- Summability of b_E₄ q-series. -/
 lemma b_E₄_q_series_summable (z : ℍ) :
     Summable (fun n ↦ b_E₄ n * cexp (2 * π * Complex.I * n * z)) := by
-  -- b_E₄ has polynomial growth O(n^4), exp has exponential decay
+  -- b_E₄(0) = 1, b_E₄(n) = 240 * σ₃(n) for n ≥ 1
+  -- The tail (n ≥ 1) is summable via sigma3_qexp_summable, and n=0 term is finite.
   sorry
 
 /-- Summability of a_E₂E₄E₆ q-series. -/
 lemma a_E₂E₄E₆_q_series_summable (z : ℍ) :
     Summable (fun n ↦ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) := by
+  -- a_E₂E₄E₆(0) = 0, a_E₂E₄E₆(n) = 720 * n * σ₃(n) for n ≥ 1
+  -- The tail (n ≥ 1) is summable via sigma_qexp_summable_generic 1 3, and n=0 term is 0.
   sorry
 
 /-- Summability of Cauchy product of b_E₄ q-series. -/
