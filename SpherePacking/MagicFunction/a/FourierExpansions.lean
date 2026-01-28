@@ -130,6 +130,11 @@ lemma b_E₄_poly : b_E₄ =O[Filter.atTop] (fun n ↦ (n ^ 4 : ℝ)) := by
 lemma c_E₂E₄E₆_poly : c_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 11 : ℝ)) := by
   sorry
 
+/-- c_E₄_E₂E₄E₆ has polynomial growth O(n^10).
+    Cauchy product of O(n^4) and O(n^5) sequences, then even extension. -/
+lemma c_E₄_E₂E₄E₆_poly : c_E₄_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 10 : ℝ)) := by
+  sorry
+
 /-- c_E₄_sq has polynomial growth O(n^9).
     Cauchy product of two O(n^4) sequences, then even extension. -/
 lemma c_E₄_sq_poly : c_E₄_sq =O[Filter.atTop] (fun n ↦ (n ^ 9 : ℝ)) := by
@@ -396,8 +401,8 @@ lemma summable_E₂E₄E₆_sq (z : ℍ) :
 
 /-- Summability for E₄(E₂E₄ - E₆) expansion (n₀ = 2). -/
 lemma summable_E₄_E₂E₄E₆ (z : ℍ) :
-    Summable fun (i : ℕ) ↦ fouterm c_E₂E₄E₆ z (i + 2) :=
-  summable_fouterm_of_poly c_E₂E₄E₆_poly z 2
+    Summable fun (i : ℕ) ↦ fouterm c_E₄_E₂E₄E₆ z (i + 2) :=
+  summable_fouterm_of_poly c_E₄_E₂E₄E₆_poly z 2
 
 /-- Summability for E₄² expansion (n₀ = 0). -/
 lemma summable_E₄_sq (z : ℍ) :
@@ -423,7 +428,7 @@ lemma E₂E₄E₆_sq_fourier (x : ℍ) :
 /-- Fourier expansion of E₄(E₂E₄ - E₆).
     Product starts at q¹, which is r² in fouterm convention. -/
 lemma E₄_E₂E₄E₆_fourier (x : ℍ) :
-    E₄ x * (E₂ x * E₄ x - E₆ x) = ∑' (n : ℕ), fouterm c_E₂E₄E₆ x (n + 2) := by
+    E₄ x * (E₂ x * E₄ x - E₆ x) = ∑' (n : ℕ), fouterm c_E₄_E₂E₄E₆ x (n + 2) := by
   -- From E₄_sigma_qexp and E₂_mul_E₄_sub_E₆
   -- E₄ starts at q⁰, E₂E₄-E₆ starts at q¹, so product starts at q¹ = r²
   sorry
