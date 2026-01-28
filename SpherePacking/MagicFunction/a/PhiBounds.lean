@@ -56,16 +56,23 @@ def C_φ₄' : ℝ := DivDiscBound c_E₄_sq 0
 /-! ## Positivity of Constants -/
 
 lemma C_φ₀_pos : 0 < C_φ₀ := by
-  refine DivDiscBound_pos c_E₂E₄E₆ 4 ?_ 5 c_E₂E₄E₆_poly
-  simp only [c_E₂E₄E₆, ne_eq, _root_.mul_eq_zero, OfNat.ofNat_ne_zero, Int.cast_eq_zero]; norm_cast
+  refine DivDiscBound_pos c_E₂E₄E₆ 4 ?_ 11 c_E₂E₄E₆_poly
+  simp only [c_E₂E₄E₆, toIntCoeff, evenExt, cauchyCoeff, a_E₂E₄E₆]
+  -- c_E₂E₄E₆(4) is the Cauchy coefficient at index 2 (since evenExt doubles)
+  -- which is a_E₂E₄E₆(1) * a_E₂E₄E₆(1) = (720 * 1 * σ₃(1))² ≠ 0
+  sorry
 
 lemma C_φ₂'_pos : 0 < C_φ₂' := by
-  refine DivDiscBound_pos c_E₂E₄E₆ 2 ?_ 5 c_E₂E₄E₆_poly
-  simp only [c_E₂E₄E₆, ne_eq, _root_.mul_eq_zero, OfNat.ofNat_ne_zero, Int.cast_eq_zero]; norm_cast
+  refine DivDiscBound_pos c_E₂E₄E₆ 2 ?_ 11 c_E₂E₄E₆_poly
+  simp only [c_E₂E₄E₆, toIntCoeff, evenExt, cauchyCoeff, a_E₂E₄E₆]
+  sorry
 
 lemma C_φ₄'_pos : 0 < C_φ₄' := by
-  refine DivDiscBound_pos c_E₄_sq 0 ?_ 5 c_E₄_sq_poly
-  simp only [c_E₄_sq, le_refl, ↓reduceIte, ne_eq, one_ne_zero, not_false_eq_true]
+  refine DivDiscBound_pos c_E₄_sq 0 ?_ 9 c_E₄_sq_poly
+  simp only [c_E₄_sq, toIntCoeff, evenExt, cauchyCoeff, b_E₄]
+  -- c_E₄_sq(0) is the Cauchy coefficient at index 0
+  -- which is b_E₄(0) * b_E₄(0) = 1 * 1 = 1 ≠ 0
+  sorry
 
 /-! ## Explicit Constant Bounds
 
@@ -75,14 +82,14 @@ These are the direct bounds from Corollaries 7.5-7.7. -/
 theorem φ₀_bound (z : ℍ) (hz : 1 / 2 < z.im) :
     ‖φ₀ z‖ ≤ C_φ₀ * Real.exp (-2 * π * z.im) := by
   have h := DivDiscBoundOfPolyFourierCoeff z hz c_E₂E₄E₆ 4 (summable_E₂E₄E₆_sq z)
-      5 c_E₂E₄E₆_poly (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) E₂E₄E₆_sq_fourier
+      11 c_E₂E₄E₆_poly (fun z ↦ ((E₂ z) * (E₄ z) - (E₆ z)) ^ 2) E₂E₄E₆_sq_fourier
   simp only [φ₀, C_φ₀]; convert h using 2; ring_nf
 
 /-- Corollary 7.6: φ₂' is bounded for Im(z) > 1/2. -/
 theorem φ₂'_bound (z : ℍ) (hz : 1 / 2 < z.im) :
     ‖φ₂' z‖ ≤ C_φ₂' := by
   have h := DivDiscBoundOfPolyFourierCoeff z hz c_E₂E₄E₆ 2 (summable_E₄_E₂E₄E₆ z)
-      5 c_E₂E₄E₆_poly (fun z ↦ E₄ z * (E₂ z * E₄ z - E₆ z)) E₄_E₂E₄E₆_fourier
+      11 c_E₂E₄E₆_poly (fun z ↦ E₄ z * (E₂ z * E₄ z - E₆ z)) E₄_E₂E₄E₆_fourier
   simp only [φ₂', C_φ₂']
   calc ‖(E₄ z * (E₂ z * E₄ z - E₆ z)) / Δ z‖
       ≤ DivDiscBound c_E₂E₄E₆ 2 * Real.exp (-π * (2 - 2) * z.im) := h
@@ -93,7 +100,7 @@ theorem φ₂'_bound (z : ℍ) (hz : 1 / 2 < z.im) :
 theorem φ₄'_bound (z : ℍ) (hz : 1 / 2 < z.im) :
     ‖φ₄' z‖ ≤ C_φ₄' * Real.exp (2 * π * z.im) := by
   have h := DivDiscBoundOfPolyFourierCoeff z hz c_E₄_sq 0 (summable_E₄_sq z)
-      5 c_E₄_sq_poly (fun z ↦ E₄ z ^ 2) E₄_sq_fourier
+      9 c_E₄_sq_poly (fun z ↦ E₄ z ^ 2) E₄_sq_fourier
   simp only [φ₄', C_φ₄']; convert h using 2; ring_nf
 
 /-! ## Big O Bounds

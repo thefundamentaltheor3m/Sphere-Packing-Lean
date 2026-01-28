@@ -45,55 +45,153 @@ namespace MagicFunction.a.FourierExpansions
 
 /-! ## Coefficient Functions
 
-These match the coefficient growth patterns needed for DivDiscBound. -/
+The coefficient functions are defined to give exact Fourier expansions.
+The key is converting from q-expansions (exp(2πinz)) to r-expansions (exp(πinz)).
 
-/-- Coefficient function with growth O(n^5), used for E₂E₄-E₆ related expansions. -/
-def c_E₂E₄E₆ : ℤ → ℂ := fun n ↦ n * (σ 3 n.toNat)
+Since q = exp(2πiz) = r² where r = exp(πiz), a q-series ∑ aₙ qⁿ becomes
+an r-series with only even indices: ∑ a_{m/2} rᵐ for even m.
 
-/-- Coefficient function for E₄², with constant term 1. -/
-def c_E₄_sq : ℤ → ℂ := fun n ↦ if n ≤ 0 then 1 else n * (σ 3 n.toNat)
+We use `Function.extend (fun n ↦ 2 * n)` for this even-indexing. -/
 
-/-- c_E₂E₄E₆ has polynomial growth O(n^5). -/
-lemma c_E₂E₄E₆_poly : c_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
-  -- Coefficients n·σ₃(n) grow as O(n) × O(n^4) = O(n^5)
-  let d : ℕ → ℂ := fun n ↦ n * (σ 3 n)
-  have hcd (n : ℕ) : c_E₂E₄E₆ n = d n := by simp [c_E₂E₄E₆, d]
-  have hdpoly : d =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℂ)) := by
-    have h₁ (n : ℕ) : n ^ 5 = n * n ^ 4 := Nat.pow_succ'
-    norm_cast
-    simp only [h₁]
+/-- Q-expansion coefficient for E₂E₄ - E₆: coefficient at qⁿ is 720·n·σ₃(n) for n ≥ 1. -/
+def a_E₂E₄E₆ : ℕ → ℂ := fun n ↦ if n = 0 then 0 else 720 * n * (σ 3 n)
+
+/-- Q-expansion coefficient for E₄: coefficient at qⁿ is 240·σ₃(n) for n ≥ 1, and 1 for n = 0. -/
+def b_E₄ : ℕ → ℂ := fun n ↦ if n = 0 then 1 else 240 * (σ 3 n)
+
+/-- Cauchy product (convolution) of two sequences at index n. -/
+def cauchyCoeff (a b : ℕ → ℂ) (n : ℕ) : ℂ :=
+  ∑ kl ∈ Finset.antidiagonal n, a kl.1 * b kl.2
+
+/-- Even extension: extend a sequence to all naturals, zero on odd indices.
+    evenExt a m = a(m/2) if m is even, 0 if m is odd. -/
+def evenExt (a : ℕ → ℂ) : ℕ → ℂ := Function.extend (fun n ↦ 2 * n) a 0
+
+/-- Convert ℕ coefficient to ℤ coefficient (zero for negative indices). -/
+def toIntCoeff (a : ℕ → ℂ) : ℤ → ℂ := fun k ↦ if k < 0 then 0 else a k.toNat
+
+/-- Coefficient function for (E₂E₄ - E₆)²: uses Cauchy product of a_E₂E₄E₆ with itself,
+    then even extension for q→r conversion. -/
+def c_E₂E₄E₆ : ℤ → ℂ := toIntCoeff (evenExt (cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆))
+
+/-- Coefficient function for E₄ * (E₂E₄ - E₆): uses Cauchy product of b_E₄ and a_E₂E₄E₆,
+    then even extension. -/
+def c_E₄_E₂E₄E₆ : ℤ → ℂ := toIntCoeff (evenExt (cauchyCoeff b_E₄ a_E₂E₄E₆))
+
+/-- Coefficient function for E₄²: uses Cauchy product of b_E₄ with itself,
+    then even extension. -/
+def c_E₄_sq : ℤ → ℂ := toIntCoeff (evenExt (cauchyCoeff b_E₄ b_E₄))
+
+/-- a_E₂E₄E₆ has polynomial growth O(n^5). -/
+lemma a_E₂E₄E₆_poly : a_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
+  -- a_E₂E₄E₆(n) = 720 * n * σ₃(n) for n ≥ 1, σ₃(n) = O(n^4)
+  sorry
+
+/-- b_E₄ has polynomial growth O(n^4). -/
+lemma b_E₄_poly : b_E₄ =O[Filter.atTop] (fun n ↦ (n ^ 4 : ℝ)) := by
+  -- b_E₄(n) = 240 * σ₃(n) for n ≥ 1, σ₃(n) = O(n^4)
+  sorry
+
+/-- c_E₂E₄E₆ has polynomial growth O(n^11).
+    Cauchy product of two O(n^5) sequences, then even extension. -/
+lemma c_E₂E₄E₆_poly : c_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 11 : ℝ)) := by
+  sorry
+
+/-- c_E₄_sq has polynomial growth O(n^9).
+    Cauchy product of two O(n^4) sequences, then even extension. -/
+lemma c_E₄_sq_poly : c_E₄_sq =O[Filter.atTop] (fun n ↦ (n ^ 9 : ℝ)) := by
+  sorry
+
+/-! ## Even Extension Lemmas
+
+Properties of the even extension map used for q→r series conversion. -/
+
+/-- evenExt at even index equals original coefficient. -/
+lemma evenExt_even (a : ℕ → ℂ) (n : ℕ) : evenExt a (2 * n) = a n := by
+  simp only [evenExt]
+  rw [Function.Injective.extend_apply]
+  exact fun m₁ m₂ h ↦ by omega
+
+/-- evenExt at odd index is zero. -/
+lemma evenExt_odd (a : ℕ → ℂ) (n : ℕ) : evenExt a (2 * n + 1) = 0 := by
+  simp only [evenExt]
+  rw [Function.extend_apply']
+  · rfl
+  · intro ⟨m, hm⟩
+    omega
+
+/-! ## Q-Series Summability -/
+
+/-- Summability of b_E₄ q-series. -/
+lemma b_E₄_q_series_summable (z : ℍ) :
+    Summable (fun n ↦ b_E₄ n * cexp (2 * π * Complex.I * n * z)) := by
+  -- b_E₄ has polynomial growth O(n^4), exp has exponential decay
+  sorry
+
+/-- Summability of a_E₂E₄E₆ q-series. -/
+lemma a_E₂E₄E₆_q_series_summable (z : ℍ) :
+    Summable (fun n ↦ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) := by
+  sorry
+
+/-- Summability of Cauchy product of b_E₄ q-series. -/
+lemma cauchy_b_E₄_q_series_summable (z : ℍ) :
+    Summable (fun n ↦ cauchyCoeff b_E₄ b_E₄ n * cexp (2 * π * Complex.I * n * z)) := by
+  sorry
+
+/-- Summability of Cauchy product of a_E₂E₄E₆ q-series. -/
+lemma cauchy_a_E₂E₄E₆_q_series_summable (z : ℍ) :
+    Summable (fun n ↦ cauchyCoeff a_E₂E₄E₆ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) := by
+  sorry
+
+/-- Summability of Cauchy product of b_E₄ and a_E₂E₄E₆ q-series. -/
+lemma cauchy_b_E₄_a_E₂E₄E₆_q_series_summable (z : ℍ) :
+    Summable (fun n ↦ cauchyCoeff b_E₄ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) := by
+  sorry
+
+/-! ## Q-Series Representations
+
+Expressing Eisenstein series as ℕ-indexed q-series. -/
+
+/-- E₄ as ℕ-indexed q-series with b_E₄ coefficients. -/
+lemma E₄_as_q_series (z : ℍ) :
+    E₄ z = ∑' (n : ℕ), b_E₄ n * cexp (2 * π * Complex.I * n * z) := by
+  -- E₄ = 1 + 240 * ∑_{n:ℕ+} σ₃(n) * exp(2πinz)
+  -- b_E₄(0) = 1, b_E₄(n+1) = 240 * σ₃(n+1)
+  -- Split ℕ sum into n=0 term and n≥1 terms, match with ℕ+ sum
+  sorry
+
+/-- E₂E₄ - E₆ as ℕ-indexed q-series with a_E₂E₄E₆ coefficients. -/
+lemma E₂E₄_sub_E₆_as_q_series (z : ℍ) :
+    E₂ z * E₄ z - E₆ z = ∑' (n : ℕ), a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z) := by
+  -- E₂E₄ - E₆ = 720 * ∑_{n:ℕ+} n * σ₃(n) * exp(2πinz)
+  -- a_E₂E₄E₆(0) = 0, a_E₂E₄E₆(n+1) = 720 * (n+1) * σ₃(n+1)
+  sorry
+
+/-! ## Q-Series to R-Series Conversion -/
+
+/-- Converting a q-series (exp(2πinz)) to r-series (exp(πinz)) using even extension. -/
+lemma q_series_eq_r_series (a : ℕ → ℂ) (z : ℍ)
+    (hsum : Summable (fun n ↦ a n * cexp (2 * π * Complex.I * n * z))) :
+    ∑' (n : ℕ), a n * cexp (2 * π * Complex.I * n * z) =
+    ∑' (m : ℕ), evenExt a m * cexp (π * Complex.I * m * z) := by
+  let f := fun m ↦ evenExt a m * cexp (π * Complex.I * m * z)
+  have heven_sum : Summable (fun k ↦ f (2 * k)) := by
+    convert hsum using 1
+    ext k
+    simp only [f, evenExt_even]
+    congr 2
     push_cast
-    refine Asymptotics.IsBigO.mul (Asymptotics.isBigO_refl _ Filter.atTop) ?_
-    have h := ArithmeticFunction.sigma_asymptotic' 3
-    simp only [Nat.reduceAdd] at h
-    norm_cast at h ⊢
-  simp only [Asymptotics.isBigO_iff, norm_pow, Complex.norm_natCast, Filter.eventually_atTop,
-    ge_iff_le] at hdpoly ⊢
-  obtain ⟨R, m, hR⟩ := hdpoly
-  use R, m
-  intro n hn
-  have hnnonneg : 0 ≤ n := calc 0 ≤ (m : ℤ) := by positivity
-    _ ≤ ↑n := hn
-  have hnnat : n.toNat = n := by simp only [Int.ofNat_toNat, sup_eq_left, hnnonneg]
-  have hmnnat : m ≤ n.toNat := by zify; rw [hnnat]; exact hn
-  specialize hR n.toNat hmnnat
-  rw [← hcd, hnnat] at hR
-  calc norm (c_E₂E₄E₆ n)
-  _ ≤ R * n.toNat ^ 5 := hR
-  _ = R * |↑n| ^ 5 := by
-    simp only [mul_eq_mul_left_iff]; norm_cast; left
-    rw [Nat.cast_pow, hnnat]; simp [hnnonneg, abs_of_nonneg]
-
-/-- c_E₄_sq has polynomial growth O(n^5). -/
-lemma c_E₄_sq_poly : c_E₄_sq =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
-  have heq : c_E₄_sq =ᶠ[Filter.atTop] c_E₂E₄E₆ := by
-    simp only [Filter.EventuallyEq, Filter.eventually_atTop, ge_iff_le]
-    use 1
-    intro n hn
-    simp only [c_E₄_sq, c_E₂E₄E₆]
-    have h : ¬n ≤ 0 := by omega
-    simp only [h, ↓reduceIte]
-  exact c_E₂E₄E₆_poly.congr' heq.symm Filter.EventuallyEq.rfl
+    ring
+  have hodd_sum : Summable (fun k ↦ f (2 * k + 1)) := by
+    simp only [f, evenExt_odd, zero_mul]; exact summable_zero
+  rw [← tsum_even_add_odd heven_sum hodd_sum]
+  simp only [f, evenExt_odd, zero_mul, tsum_zero, add_zero]
+  congr 1
+  ext k
+  simp only [evenExt_even]
+  congr 2
+  push_cast
+  ring
 
 /-! ## Auxiliary lemmas for summability -/
 
