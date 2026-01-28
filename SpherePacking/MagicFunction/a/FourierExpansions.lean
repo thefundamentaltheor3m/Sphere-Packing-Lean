@@ -429,16 +429,6 @@ lemma a_E₂E₄E₆_q_series_summable (z : ℍ) :
   push_cast
   ring
 
-/-- Norm summability of b_E₄ q-series. -/
-lemma b_E₄_q_series_norm_summable (z : ℍ) :
-    Summable (fun n ↦ ‖b_E₄ n * cexp (2 * π * Complex.I * n * z)‖) :=
-  (b_E₄_q_series_summable z).norm
-
-/-- Norm summability of a_E₂E₄E₆ q-series. -/
-lemma a_E₂E₄E₆_q_series_norm_summable (z : ℍ) :
-    Summable (fun n ↦ ‖a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)‖) :=
-  (a_E₂E₄E₆_q_series_summable z).norm
-
 /-- The antidiagonal sum of q-series factors as cauchyCoeff times q^n. -/
 lemma antidiagonal_qexp_factor (a b : ℕ → ℂ) (z : ℍ) (n : ℕ) :
     ∑ kl ∈ Finset.antidiagonal n,
@@ -664,10 +654,9 @@ lemma E₂E₄E₆_sq_fourier (x : ℍ) :
   have hE₂E₄E₆ := E₂E₄_sub_E₆_as_q_series x
   -- Step 2: Square
   simp only [sq, hE₂E₄E₆]
-  -- Step 3: Apply Cauchy product formula
-  have hnorm := a_E₂E₄E₆_q_series_norm_summable x
+  -- Step 3: Apply Cauchy product formula (inline norm summability)
   have hsum := a_E₂E₄E₆_q_series_summable x
-  rw [tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm' hnorm hsum hnorm hsum]
+  rw [tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm' hsum.norm hsum hsum.norm hsum]
   -- Step 4: Factor out exponential
   simp only [antidiagonal_qexp_factor]
   -- Step 5: Convert q-series to r-series
@@ -750,12 +739,10 @@ lemma E₄_E₂E₄E₆_fourier (x : ℍ) :
   have hE₄ := E₄_as_q_series x
   have hE₂E₄E₆ := E₂E₄_sub_E₆_as_q_series x
   rw [hE₂E₄E₆, hE₄]
-  -- Step 2: Apply Cauchy product formula
-  have hnorm_b := b_E₄_q_series_norm_summable x
+  -- Step 2: Apply Cauchy product formula (inline norm summability)
   have hsum_b := b_E₄_q_series_summable x
-  have hnorm_a := a_E₂E₄E₆_q_series_norm_summable x
   have hsum_a := a_E₂E₄E₆_q_series_summable x
-  rw [tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm' hnorm_b hsum_b hnorm_a hsum_a]
+  rw [tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm' hsum_b.norm hsum_b hsum_a.norm hsum_a]
   -- Step 3: Factor out exponential
   simp only [antidiagonal_qexp_factor]
   -- Step 4: Convert q-series to r-series
@@ -819,11 +806,9 @@ lemma E₄_sq_fourier (x : ℍ) :
   have hE₄ := E₄_as_q_series x
   -- Step 2: E₄² = (∑ b_E₄(n) q^n)²
   simp only [sq, hE₄]
-  -- Step 3: Apply Cauchy product formula
-  have hnorm_f := b_E₄_q_series_norm_summable x
+  -- Step 3: Apply Cauchy product formula (inline norm summability)
   have hsum_f := b_E₄_q_series_summable x
-  -- The product of two summable series equals tsum of Cauchy product
-  rw [tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm' hnorm_f hsum_f hnorm_f hsum_f]
+  rw [tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm' hsum_f.norm hsum_f hsum_f.norm hsum_f]
   -- Step 4: Factor out exponential using antidiagonal_qexp_factor
   simp only [antidiagonal_qexp_factor]
   -- Step 5: Convert q-series to r-series
