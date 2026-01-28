@@ -315,12 +315,10 @@ theorem Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
           ring_nf
 
 
-lemma SchwartzMap.summableOn_iff {E V : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    [NormedAddCommGroup V] [NormedSpace ℝ V] (f : 𝓢(E, V)) (X : Set E) :
-    Summable (fun (x : X) => f x) ↔ ∃ ε > 0, IsSeparated ε X := by
+lemma SchwartzMap.summableOn {E V : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [NormedAddCommGroup V] [NormedSpace ℝ V] (f : 𝓢(E, V)) (X : Set E)
+    (hX : ∃ ε > 0, IsSeparated ε X) : Summable (fun (x : X) => f x) := by
   admit
-
-alias ⟨_, SchwartzMap.summableOn⟩ := SchwartzMap.summableOn_iff
 
 theorem Continuous.re {α 𝕜 : Type*} [TopologicalSpace α] [RCLike 𝕜] {f : α → 𝕜}
     (hf : Continuous f) : Continuous (fun x ↦ RCLike.re (f x)) :=
