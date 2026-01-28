@@ -807,23 +807,6 @@ lemma F₁_fourier_expansion (z : ℍ) :
   unfold F₁
   exact E₂_mul_E₄_sub_E₆ z
 
-/-- Tendsto conversion: if F tends to c at atImInfty, then F.resToImagAxis tends to c at atTop. -/
-lemma tendsto_resToImagAxis_of_tendsto_atImInfty {F : ℍ → ℂ} {c : ℂ}
-    (hF : Tendsto F atImInfty (nhds c)) :
-    Tendsto F.resToImagAxis atTop (nhds c) := by
-  rw [Metric.tendsto_atTop]
-  intro ε hε
-  -- Get eventual proximity from hF
-  have hF_met : ∀ᶠ z in atImInfty, dist (F z) c < ε := Metric.tendsto_nhds.mp hF ε hε
-  obtain ⟨A, hA⟩ := Filter.eventually_atImInfty.mp hF_met
-  use max A 1
-  intro t ht
-  have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
-  simp only [Function.resToImagAxis, ResToImagAxis, ht_pos, ↓reduceDIte]
-  set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
-  have hz_im : z.im = t := by simp [UpperHalfPlane.im, z]
-  exact hA z (by simpa [hz_im] using le_of_max_le_left ht)
-
 /-- E₄.resToImagAxis tends to 1 at atTop. -/
 lemma E₄_resToImagAxis_tendsto_one :
     Tendsto E₄.toFun.resToImagAxis atTop (nhds 1) :=
@@ -840,17 +823,8 @@ lemma H₄_resToImagAxis_tendsto_one :
   tendsto_resToImagAxis_of_tendsto_atImInfty H₄_tendsto_atImInfty
 
 /-- F₁ * E₄ is bounded at infinity (needed for the decay argument). -/
-lemma F₁_mul_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (F₁ * E₄.toFun) := by
-  -- F₁ = E₂ * E₄ - E₆ is bounded since E₂, E₄, E₆ are all bounded at infinity
-  have hE₂_bdd := E₂_isBoundedAtImInfty
-  have hE₄_bdd := ModularFormClass.bdd_at_infty E₄
-  have hE₆_bdd := E₆_isBoundedAtImInfty
-  -- E₂ * E₄ is bounded (both factors are bounded)
-  have hE₂E₄_bdd := E₂_mul_E₄_isBoundedAtImInfty
-  -- F₁ = E₂*E₄ - E₆ is bounded
-  have hF₁_bdd : IsBoundedAtImInfty F₁ := hE₂E₄_bdd.sub hE₆_bdd
-  -- F₁ * E₄ is bounded
-  exact hF₁_bdd.mul hE₄_bdd
+lemma F₁_mul_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (F₁ * E₄.toFun) :=
+  BoundedAtFilter.mul (E₂_mul_E₄_isBoundedAtImInfty.sub E₆_isBoundedAtImInfty) E₄_isBoundedAtImInfty
 
 /-- F₁ has exponential decay at infinity (it's essentially D E₄ which decays). -/
 lemma F₁_isBigO_exp_atImInfty :
