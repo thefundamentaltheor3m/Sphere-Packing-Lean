@@ -82,6 +82,19 @@ def c_E₄_E₂E₄E₆ : ℤ → ℂ := toIntCoeff (evenExt (cauchyCoeff b_E₄
     then even extension. -/
 def c_E₄_sq : ℤ → ℂ := toIntCoeff (evenExt (cauchyCoeff b_E₄ b_E₄))
 
+/-! ## Polynomial Growth Infrastructure -/
+
+/-- Cauchy product of two polynomial-growth sequences has polynomial growth.
+    If a = O(n^k) and b = O(n^ℓ), then cauchyCoeff a b = O(n^(k + ℓ + 1)).
+    This follows from |∑_{i+j=n} a(i)·b(j)| ≤ (n+1) · sup|a(i)| · sup|b(j)|. -/
+lemma cauchyCoeff_poly {a b : ℕ → ℂ} {k ℓ : ℕ}
+    (ha : a =O[Filter.atTop] (fun n ↦ (n ^ k : ℝ)))
+    (hb : b =O[Filter.atTop] (fun n ↦ (n ^ ℓ : ℝ))) :
+    cauchyCoeff a b =O[Filter.atTop] (fun n ↦ (n ^ (k + ℓ + 1) : ℝ)) := by
+  -- Strategy: For n ≥ max(Na, Nb), bound ‖cauchyCoeff a b n‖ ≤ (n+1) * Ca * Cb * n^k * n^ℓ
+  -- which is O(n^{k+ℓ+1}).
+  sorry
+
 /-- a_E₂E₄E₆ has polynomial growth O(n^5). -/
 lemma a_E₂E₄E₆_poly : a_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
   -- a_E₂E₄E₆(n) = 720 * n * σ₃(n) for n ≥ 1. Since σ₃(n) ≤ n^4, the product is O(n^5).
