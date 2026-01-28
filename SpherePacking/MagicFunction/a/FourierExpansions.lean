@@ -84,13 +84,33 @@ def c_E₄_sq : ℤ → ℂ := toIntCoeff (evenExt (cauchyCoeff b_E₄ b_E₄))
 
 /-- a_E₂E₄E₆ has polynomial growth O(n^5). -/
 lemma a_E₂E₄E₆_poly : a_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
-  -- a_E₂E₄E₆(n) = 720 * n * σ₃(n) for n ≥ 1, σ₃(n) = O(n^4)
-  sorry
+  -- a_E₂E₄E₆(n) = 720 * n * σ₃(n) for n ≥ 1. Since σ₃(n) ≤ n^4, the product is O(n^5).
+  rw [Asymptotics.isBigO_iff]
+  use 720
+  filter_upwards [Filter.eventually_gt_atTop 0] with n hn
+  simp only [a_E₂E₄E₆, Nat.ne_of_gt hn, ↓reduceIte]
+  rw [Complex.norm_mul, Complex.norm_mul, Complex.norm_natCast, Complex.norm_natCast]
+  simp only [Real.norm_eq_abs, abs_of_nonneg (by positivity : (0 : ℝ) ≤ n ^ 5)]
+  have hσ : (σ 3 n : ℝ) ≤ n ^ 4 := by exact_mod_cast sigma_bound 3 n
+  have h720 : ‖(720 : ℂ)‖ = 720 := by norm_num
+  calc ‖(720 : ℂ)‖ * n * ((σ 3) n : ℝ)
+      ≤ 720 * n * n ^ 4 := by rw [h720]; nlinarith
+    _ = 720 * n ^ 5 := by ring
 
 /-- b_E₄ has polynomial growth O(n^4). -/
 lemma b_E₄_poly : b_E₄ =O[Filter.atTop] (fun n ↦ (n ^ 4 : ℝ)) := by
-  -- b_E₄(n) = 240 * σ₃(n) for n ≥ 1, σ₃(n) = O(n^4)
-  sorry
+  -- b_E₄(n) = 240 * σ₃(n) for n ≥ 1. Since σ₃(n) ≤ n^4, the product is O(n^4).
+  rw [Asymptotics.isBigO_iff]
+  use 240
+  filter_upwards [Filter.eventually_gt_atTop 0] with n hn
+  simp only [b_E₄, Nat.ne_of_gt hn, ↓reduceIte]
+  rw [Complex.norm_mul, Complex.norm_natCast]
+  simp only [Real.norm_eq_abs, abs_of_nonneg (by positivity : (0 : ℝ) ≤ n ^ 4)]
+  have hσ : (σ 3 n : ℝ) ≤ n ^ 4 := by exact_mod_cast sigma_bound 3 n
+  have h240 : ‖(240 : ℂ)‖ = 240 := by norm_num
+  calc ‖(240 : ℂ)‖ * ((σ 3) n : ℝ)
+      ≤ 240 * n ^ 4 := by rw [h240]; nlinarith
+    _ = 240 * n ^ 4 := by ring
 
 /-- c_E₂E₄E₆ has polynomial growth O(n^11).
     Cauchy product of two O(n^5) sequences, then even extension. -/
@@ -155,17 +175,36 @@ Expressing Eisenstein series as ℕ-indexed q-series. -/
 /-- E₄ as ℕ-indexed q-series with b_E₄ coefficients. -/
 lemma E₄_as_q_series (z : ℍ) :
     E₄ z = ∑' (n : ℕ), b_E₄ n * cexp (2 * π * Complex.I * n * z) := by
-  -- E₄ = 1 + 240 * ∑_{n:ℕ+} σ₃(n) * exp(2πinz)
+  rw [E₄_sigma_qexp z]
+  -- E₄ z = 1 + 240 * ∑' (n : ℕ+), σ₃(n) * exp(2πinz)
+  -- Goal: 1 + 240 * ∑' (n : ℕ+), σ₃(n) * ... = ∑' (n : ℕ), b_E₄ n * ...
   -- b_E₄(0) = 1, b_E₄(n+1) = 240 * σ₃(n+1)
-  -- Split ℕ sum into n=0 term and n≥1 terms, match with ℕ+ sum
-  sorry
+  have hsum : Summable (fun n : ℕ ↦ b_E₄ n * cexp (2 * π * Complex.I * n * z)) :=
+    b_E₄_q_series_summable z
+  rw [← tsum_pnat_eq_tsum_succ4 (fun n ↦ b_E₄ n * cexp (2 * π * Complex.I * n * z)) hsum]
+  -- Goal: 1 + 240 * ... = b_E₄(0) * exp(0) + ∑' (n : ℕ+) b_E₄(n) * ...
+  simp only [b_E₄, ↓reduceIte, Nat.cast_zero, mul_zero, PNat.ne_zero]
+  -- Goal: 1 + 240 * ∑' ... = 1 * cexp(0 * z) + ∑' (240 * σ₃) * ...
+  rw [← tsum_mul_left]
+  congr 1
+  · simp
+  · congr 1; ext n; ring
 
 /-- E₂E₄ - E₆ as ℕ-indexed q-series with a_E₂E₄E₆ coefficients. -/
 lemma E₂E₄_sub_E₆_as_q_series (z : ℍ) :
     E₂ z * E₄ z - E₆ z = ∑' (n : ℕ), a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z) := by
-  -- E₂E₄ - E₆ = 720 * ∑_{n:ℕ+} n * σ₃(n) * exp(2πinz)
+  rw [E₂_mul_E₄_sub_E₆ z]
+  -- E₂E₄ - E₆ = 720 * ∑' (n : ℕ+), n * σ₃(n) * exp(2πinz)
   -- a_E₂E₄E₆(0) = 0, a_E₂E₄E₆(n+1) = 720 * (n+1) * σ₃(n+1)
-  sorry
+  have hsum : Summable (fun n : ℕ ↦ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) :=
+    a_E₂E₄E₆_q_series_summable z
+  rw [← tsum_pnat_eq_tsum_succ4 (fun n ↦ a_E₂E₄E₆ n * cexp (2 * π * Complex.I * n * z)) hsum]
+  simp only [a_E₂E₄E₆, Nat.cast_zero, mul_zero, ↓reduceIte, zero_mul, zero_add, PNat.ne_zero]
+  -- Goal: 720 * ∑' n * σ₃(n) * ... = ∑' (720 * n * σ₃(n)) * ...
+  rw [← tsum_mul_left]
+  congr 1
+  ext n
+  ring
 
 /-! ## Q-Series to R-Series Conversion -/
 
