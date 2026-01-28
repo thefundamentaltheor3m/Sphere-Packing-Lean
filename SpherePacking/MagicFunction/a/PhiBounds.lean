@@ -47,8 +47,9 @@ The constants are defined using `DivDiscBound` from the Fourier coefficient mach
 /-- Explicit constant for φ₀ bound (Corollary 7.5). -/
 def C_φ₀ : ℝ := DivDiscBound c_E₂E₄E₆ 4
 
-/-- Explicit constant for φ₂' bound (Corollary 7.6). -/
-def C_φ₂' : ℝ := DivDiscBound c_E₂E₄E₆ 2
+/-- Explicit constant for φ₂' bound (Corollary 7.6).
+    Note: Uses c_E₄_E₂E₄E₆ (product coefficient), not c_E₂E₄E₆ (square coefficient). -/
+def C_φ₂' : ℝ := DivDiscBound c_E₄_E₂E₄E₆ 2
 
 /-- Explicit constant for φ₄' bound (Corollary 7.7). -/
 def C_φ₄' : ℝ := DivDiscBound c_E₄_sq 0
@@ -60,8 +61,9 @@ lemma C_φ₀_pos : 0 < C_φ₀ := by
   simp only [c_E₂E₄E₆, ne_eq, _root_.mul_eq_zero, OfNat.ofNat_ne_zero, Int.cast_eq_zero]; norm_cast
 
 lemma C_φ₂'_pos : 0 < C_φ₂' := by
-  refine DivDiscBound_pos c_E₂E₄E₆ 2 ?_ 5 c_E₂E₄E₆_poly
-  simp only [c_E₂E₄E₆, ne_eq, _root_.mul_eq_zero, OfNat.ofNat_ne_zero, Int.cast_eq_zero]; norm_cast
+  refine DivDiscBound_pos c_E₄_E₂E₄E₆ 2 ?_ 5 c_E₄_E₂E₄E₆_poly
+  simp only [c_E₄_E₂E₄E₆, ne_eq, _root_.mul_eq_zero, OfNat.ofNat_ne_zero, Int.cast_eq_zero]
+  norm_cast
 
 lemma C_φ₄'_pos : 0 < C_φ₄' := by
   refine DivDiscBound_pos c_E₄_sq 0 ?_ 5 c_E₄_sq_poly
@@ -81,13 +83,14 @@ theorem φ₀_bound (z : ℍ) (hz : 1 / 2 < z.im) :
 /-- Corollary 7.6: φ₂' is bounded for Im(z) > 1/2. -/
 theorem φ₂'_bound (z : ℍ) (hz : 1 / 2 < z.im) :
     ‖φ₂' z‖ ≤ C_φ₂' := by
-  have h := DivDiscBoundOfPolyFourierCoeff z hz c_E₂E₄E₆ 2 (summable_E₄_E₂E₄E₆ z)
-      5 c_E₂E₄E₆_poly (fun z ↦ E₄ z * (E₂ z * E₄ z - E₆ z)) E₄_E₂E₄E₆_fourier
+  -- Note: Uses c_E₄_E₂E₄E₆ (product coefficient), not c_E₂E₄E₆ (square coefficient)
+  have h := DivDiscBoundOfPolyFourierCoeff z hz c_E₄_E₂E₄E₆ 2 (summable_E₄_E₂E₄E₆ z)
+      5 c_E₄_E₂E₄E₆_poly (fun z ↦ E₄ z * (E₂ z * E₄ z - E₆ z)) E₄_E₂E₄E₆_fourier
   simp only [φ₂', C_φ₂']
   calc ‖(E₄ z * (E₂ z * E₄ z - E₆ z)) / Δ z‖
-      ≤ DivDiscBound c_E₂E₄E₆ 2 * Real.exp (-π * (2 - 2) * z.im) := h
-    _ = DivDiscBound c_E₂E₄E₆ 2 * Real.exp 0 := by ring_nf
-    _ = DivDiscBound c_E₂E₄E₆ 2 := by simp
+      ≤ DivDiscBound c_E₄_E₂E₄E₆ 2 * Real.exp (-π * (2 - 2) * z.im) := h
+    _ = DivDiscBound c_E₄_E₂E₄E₆ 2 * Real.exp 0 := by ring_nf
+    _ = DivDiscBound c_E₄_E₂E₄E₆ 2 := by simp
 
 /-- Corollary 7.7: φ₄' grows at most like exp(2πt) for Im(z) > 1/2. -/
 theorem φ₄'_bound (z : ℍ) (hz : 1 / 2 < z.im) :

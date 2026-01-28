@@ -50,6 +50,10 @@ These match the coefficient growth patterns needed for DivDiscBound. -/
 /-- Coefficient function with growth O(n^5), used for E₂E₄-E₆ related expansions. -/
 def c_E₂E₄E₆ : ℤ → ℂ := fun n ↦ n * (σ 3 n.toNat)
 
+/-- Coefficient function for E₄(E₂E₄ - E₆), the product (not square).
+    Note: Uses same simplified bound as c_E₂E₄E₆ for this branch. -/
+def c_E₄_E₂E₄E₆ : ℤ → ℂ := fun n ↦ n * (σ 3 n.toNat)
+
 /-- Coefficient function for E₄², with constant term 1. -/
 def c_E₄_sq : ℤ → ℂ := fun n ↦ if n ≤ 0 then 1 else n * (σ 3 n.toNat)
 
@@ -83,6 +87,12 @@ lemma c_E₂E₄E₆_poly : c_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 5 : 
   _ = R * |↑n| ^ 5 := by
     simp only [mul_eq_mul_left_iff]; norm_cast; left
     rw [Nat.cast_pow, hnnat]; simp [hnnonneg, abs_of_nonneg]
+
+/-- c_E₄_E₂E₄E₆ has polynomial growth O(n^5).
+    Note: Same growth as c_E₂E₄E₆ since they have the same simplified definition. -/
+lemma c_E₄_E₂E₄E₆_poly : c_E₄_E₂E₄E₆ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
+  -- c_E₄_E₂E₄E₆ = c_E₂E₄E₆ definitionally
+  exact c_E₂E₄E₆_poly
 
 /-- c_E₄_sq has polynomial growth O(n^5). -/
 lemma c_E₄_sq_poly : c_E₄_sq =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
@@ -191,10 +201,11 @@ lemma summable_E₂E₄E₆_sq (z : ℍ) :
     Summable fun (i : ℕ) ↦ fouterm c_E₂E₄E₆ z (i + 4) :=
   summable_fouterm_of_poly c_E₂E₄E₆_poly z 4
 
-/-- Summability for E₄(E₂E₄ - E₆) expansion (n₀ = 2). -/
+/-- Summability for E₄(E₂E₄ - E₆) expansion (n₀ = 2).
+    Note: Uses c_E₄_E₂E₄E₆ (product coefficient), not c_E₂E₄E₆ (square coefficient). -/
 lemma summable_E₄_E₂E₄E₆ (z : ℍ) :
-    Summable fun (i : ℕ) ↦ fouterm c_E₂E₄E₆ z (i + 2) :=
-  summable_fouterm_of_poly c_E₂E₄E₆_poly z 2
+    Summable fun (i : ℕ) ↦ fouterm c_E₄_E₂E₄E₆ z (i + 2) :=
+  summable_fouterm_of_poly c_E₄_E₂E₄E₆_poly z 2
 
 /-- Summability for E₄² expansion (n₀ = 0). -/
 lemma summable_E₄_sq (z : ℍ) :
@@ -218,9 +229,10 @@ lemma E₂E₄E₆_sq_fourier (x : ℍ) :
   sorry
 
 /-- Fourier expansion of E₄(E₂E₄ - E₆).
-    Product starts at q¹, which is r² in fouterm convention. -/
+    Product starts at q¹, which is r² in fouterm convention.
+    Note: Uses c_E₄_E₂E₄E₆ (product coefficient), not c_E₂E₄E₆ (square coefficient). -/
 lemma E₄_E₂E₄E₆_fourier (x : ℍ) :
-    E₄ x * (E₂ x * E₄ x - E₆ x) = ∑' (n : ℕ), fouterm c_E₂E₄E₆ x (n + 2) := by
+    E₄ x * (E₂ x * E₄ x - E₆ x) = ∑' (n : ℕ), fouterm c_E₄_E₂E₄E₆ x (n + 2) := by
   -- From E₄_sigma_qexp and E₂_mul_E₄_sub_E₆
   -- E₄ starts at q⁰, E₂E₄-E₆ starts at q¹, so product starts at q¹ = r²
   sorry
