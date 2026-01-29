@@ -469,8 +469,8 @@ lemma PS1 (z : ℍ) (m : ℤ) : limUnder atTop
     funext N
     rw [telescope_aux]
   rw [this]
-  have h0 := tendstozero_inv_linear z m
-  have h1 := tendstozero_inv_linear_neg z m
+  have h0 := tendsto_zero_inv_linear z m
+  have h1 := tendsto_zero_inv_linear_sub z m
   have h2 := Filter.Tendsto.sub h1 h0
   simpa using h2
 

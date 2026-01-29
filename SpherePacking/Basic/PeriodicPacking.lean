@@ -108,13 +108,13 @@ lemma aux4 (hD_isBounded : IsBounded D) (hd : 0 < d) : Finite ↑(S.centers ∩ 
   · intros
     exact measurableSet_ball
 
-lemma aux4' {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (hd : 0 < d) :
+lemma aux4' {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (hd : 0 < d) :
     Finite ↑(S.centers ∩ fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
   aux4 S _ (ZSpan.fundamentalDomain_isBounded _) hd
 
 open scoped Pointwise in
 lemma aux4''
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (hd : 0 < d) (v : EuclideanSpace ℝ (Fin d)) :
+    {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (hd : 0 < d) (v : EuclideanSpace ℝ (Fin d)) :
     Finite ↑(S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))) :=
   aux4 S _ (IsBounded.vadd (ZSpan.fundamentalDomain_isBounded _) _) hd
 
@@ -191,7 +191,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
       simpa using hx.right
 
 noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
     Quotient S.addAction.orbitRel ≃ ↑(S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))) := by
   refine S.addActionOrbitRelEquiv _ ?_
   intro x
@@ -323,7 +323,7 @@ theorem PeriodicSpherePacking.encard_centers_inter_isFundamentalDomain
   convert Set.encard_eq_coe_toFinset_card _
 
 theorem PeriodicSpherePacking.card_centers_inter_fundamentalDomain (hd : 0 < d)
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
     haveI := @Fintype.ofFinite _ <| aux4' S b hd
     (S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps := by
   rw [numReps]
@@ -331,7 +331,7 @@ theorem PeriodicSpherePacking.card_centers_inter_fundamentalDomain (hd : 0 < d)
   simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv' b).symm
 
 theorem PeriodicSpherePacking.encard_centers_inter_fundamentalDomain (hd : 0 < d)
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) :
+    {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) :
     (S.centers ∩ (fundamentalDomain (b.ofZLatticeBasis ℝ _))).encard = S.numReps := by
   rw [← S.card_centers_inter_fundamentalDomain hd b]
   convert Set.encard_eq_coe_toFinset_card _
@@ -345,8 +345,9 @@ theorem PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 
   simpa [Set.mem_toFinset] using (S.addActionOrbitRelEquiv'' b _).symm
 
 theorem PeriodicSpherePacking.encard_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
+    {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
     (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).encard = S.numReps := by
+  have := Fintype.ofFinite ι
   rw [← S.card_centers_inter_vadd_fundamentalDomain hd b]
   convert Set.encard_eq_coe_toFinset_card _
 
@@ -416,7 +417,7 @@ private theorem aux
 
 -- Theorem 2.3, lower bound
 theorem PeriodicSpherePacking.aux_ge
-    (hd : 0 < d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice)
+    (hd : 0 < d) {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     (↑S.centers ∩ ball 0 R).encard ≥
       S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)).encard := by
@@ -454,11 +455,12 @@ theorem PeriodicSpherePacking.aux_ge
       exact hux
 
 private theorem aux'
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice)
+    {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     ball 0 R
       ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L),
         x +ᵥ (fundamentalDomain (b.ofZLatticeBasis ℝ _) : Set (EuclideanSpace ℝ (Fin d))) := by
+  have := Fintype.ofFinite ι
   intro x hx
   simp only [Set.mem_iUnion, exists_prop]
   use floor (b.ofZLatticeBasis ℝ _) x
@@ -479,7 +481,7 @@ private theorem aux'
 
 -- Theorem 2.3, upper bound - the proof is similar to lower bound
 theorem PeriodicSpherePacking.aux_le
-    (hd : 0 < d) {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice)
+    (hd : 0 < d) {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     (↑S.centers ∩ ball 0 R).encard
       ≤ S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)).encard := by
@@ -543,7 +545,7 @@ either :)
 
 open scoped Pointwise
 variable {d : ℕ} (S : PeriodicSpherePacking d)
-  {ι : Type*} [Fintype ι]
+  {ι : Type*} [Finite ι]
   (D : Set (EuclideanSpace ℝ (Fin d))) {L : ℝ} (R : ℝ)
 
 private theorem hD_isAddFundamentalDomain
@@ -712,7 +714,7 @@ open MeasureTheory Measure Metric ZSpan
 
 variable
   {d : ℕ} {S : PeriodicSpherePacking d}
-  {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) {L : ℝ} (R : ℝ)
+  {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {L : ℝ} (R : ℝ)
 
 theorem aux_big_le
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
@@ -905,7 +907,7 @@ section DensityEqFdDensity
 
 variable
   {d : ℕ} {S : PeriodicSpherePacking d}
-  {ι : Type*} [Fintype ι] (b : Basis ι ℤ S.lattice) {L : ℝ} (R : ℝ)
+  {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) {L : ℝ} (R : ℝ)
 
 private lemma PeriodicSpherePacking.tendsto_finiteDensity
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
