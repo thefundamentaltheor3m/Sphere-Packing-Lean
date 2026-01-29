@@ -14,16 +14,14 @@ import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 In this file, we prove that all the complex integrands Φ₁' through Φ₆' that appear in our integrals
 `I₁`-`I₆` are holomorphic on the upper half-plane.
 
-## Main Results:
+## Main Results
 
-This file includes the following (families of) theorems:
-
-* [PROVED] `Φⱼ'_holo`: For j = 1…6, `Φⱼ'` is Complex-differentiable on the upper half-plane.
-* [PROVED] `Φⱼ'_contDiffOn_ℂ`: For j = 1…6, `Φⱼ'` is Complex-smooth on the upper half-plane.
-* [PROVED] `Φⱼ'_contDiffOn`: For j = 1…6, `Φⱼ'` is Real-smooth on the upper half-plane.
-* [PROVED] `φ₀''_holo`: `φ₀''` is Complex-differentiable on the upper half-plane.
-* [PROVED] `φ₀''_differentiable`: `φ₀''` is differentiable on `Set.univ ×ℂ Ioi 0`.
-* [PROVED] `φ₀''_continuous`: `φ₀''` is continuous on `Set.univ ×ℂ Ioi 0`.
+* `Φⱼ'_holo`: For j = 1…6, `Φⱼ'` is Complex-differentiable on the upper half-plane.
+* `Φⱼ'_contDiffOn_ℂ`: For j = 1…6, `Φⱼ'` is Complex-smooth on the upper half-plane.
+* `Φⱼ'_contDiffOn`: For j = 1…6, `Φⱼ'` is Real-smooth on the upper half-plane.
+* `φ₀''_holo`: `φ₀''` is Complex-differentiable on the upper half-plane.
+* `φ₀''_continuous`: `φ₀''` is continuous on the upper half-plane.
+* `φ₀_continuous`: `φ₀ : ℍ → ℂ` is continuous.
 -/
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
@@ -190,6 +188,12 @@ theorem φ₀''_differentiable : DifferentiableOn ℂ φ₀'' (Set.univ ×ℂ Io
 /-- φ₀'' is continuous on the upper half-plane. -/
 theorem φ₀''_continuous : ContinuousOn φ₀'' (Set.univ ×ℂ Ioi 0) :=
   φ₀''_differentiable.continuousOn
+
+/-- φ₀ : ℍ → ℂ is continuous. Follows from φ₀''_holo. -/
+theorem φ₀_continuous : Continuous φ₀ := by
+  have h_eq : φ₀ = φ₀'' ∘ (↑· : ℍ → ℂ) := funext fun z => (φ₀''_coe_upperHalfPlane z).symm
+  rw [h_eq]
+  exact φ₀''_holo.continuousOn.comp_continuous continuous_subtype_val fun z => z.2
 
 end Corollaries
 
