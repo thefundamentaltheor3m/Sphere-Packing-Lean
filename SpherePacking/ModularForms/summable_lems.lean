@@ -148,59 +148,6 @@ theorem HasSum.pos_add_zero_add_neg {α : Type*} [TopologicalSpace α] [AddCommG
     simpa using (hasSum_nat_add_iff _).mp hg
   (this (fun n => f n) hpos).nonneg_add_neg hneg
 
-
-/-this is from the mod forms repo-/
-theorem int_tsum_pNat {α : Type*} [UniformSpace α] [CommRing α] [IsUniformAddGroup α]
-  [CompleteSpace α]
-  [T2Space α] (f : ℤ → α) (hf2 : Summable f) :
-  ∑' n, f n = f 0 + ∑' n : ℕ+, f n + ∑' m : ℕ+, f (-m) := by
-  have hpos : HasSum (fun n : ℕ => f (n + 1)) (∑' n : ℕ+, f n) :=
-    by
-    rw [←_root_.Equiv.pnatEquivNat.hasSum_iff]
-    simp_rw [Equiv.pnatEquivNat] at *
-    simp only [Equiv.coe_fn_mk] at *
-    have hf3 : Summable ((fun n : ℕ => f (↑n + 1)) ∘ PNat.natPred) :=
-      by
-      have hs : Summable fun n : ℕ+ => f n := by apply (int_nat_sum f hf2).subtype
-      apply Summable.congr hs
-      intro b; simp; congr; simp
-    rw [Summable.hasSum_iff hf3]
-    congr
-    funext
-    simp
-    congr
-    norm_cast
-    simp
-  have hneg : HasSum (fun n : ℕ => f (-n.succ)) (∑' n : ℕ+, f (-n)) :=
-    by
-    rw [←_root_.Equiv.pnatEquivNat.hasSum_iff]
-    simp_rw [Equiv.pnatEquivNat] at *
-    rw [Summable.hasSum_iff _]
-    · congr
-      funext
-      simp only [Nat.succ_eq_add_one, Nat.cast_add, Nat.cast_one, neg_add_rev, Int.reduceNeg,
-        Equiv.coe_fn_mk, comp_apply]
-      congr
-      simp_rw [PNat.natPred]
-      simp
-      ring
-    rw [Equiv.summable_iff]
-    have H : Summable fun d : ℤ => f d.pred :=
-      by
-      have := succEquiv.symm.summable_iff.2 hf2
-      apply this
-    have H2 := summable_neg _ H
-    have := int_nat_sum _ H2
-    apply Summable.congr this
-    intro b
-    simp only [Nat.succ_eq_add_one, Nat.cast_add, Nat.cast_one, neg_add_rev, Int.reduceNeg]
-    congr
-    simp_rw [Int.pred]
-    ring
-  have := (HasSum.pos_add_zero_add_neg hpos hneg).tsum_eq
-  rw [this]
-  ring_nf
-
 theorem upp_half_not_ints (z : ℍ) (n : ℤ) : (z : ℂ) ≠ n :=
   by
   simp only [ne_eq]
@@ -1383,7 +1330,7 @@ theorem aux_iter_der_tsum (k : ℕ) (hk : 1 ≤ k) (x : ℍ) :
     have h2 := tsum_ider_der_eq k x
     simp only [one_div, mem_setOf_eq] at h2
     rw [h2]
-    rw [int_tsum_pNat]
+    rw [tsum_int_eq_zero_add_tsum_pnat]
     · simp only [Int.cast_zero, add_zero, Int.cast_natCast, Int.cast_neg]
       rw [Summable.tsum_add]
       · rw [tsum_mul_left]
@@ -1776,7 +1723,7 @@ lemma sum_int_pnatt (z : ℍ) (d : ℕ+) :
   2/ d + ∑' (m : ℤ), (1 / ((m : ℂ) * ↑z - d) - 1 / (↑m * ↑z + d)) = ∑' m : ℕ+,
     ((1 / ((m : ℂ) * ↑z - d) + 1 / (-↑m * ↑z + -d)) - (1 / ((m : ℂ) * ↑z + d)) - 1 / (-↑m * ↑z + d))
       := by
-  rw [int_tsum_pNat _ (summable_diff_right z d)]
+  rw [tsum_int_eq_zero_add_tsum_pnat (summable_diff_right z d)]
   simp only [Int.cast_zero, zero_mul, zero_sub, one_div, zero_add, Int.cast_natCast, Int.cast_neg,
     neg_mul]
   ring_nf

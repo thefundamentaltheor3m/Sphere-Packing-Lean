@@ -89,7 +89,8 @@ theorem derivWithin_mul2 (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableO
   simp only [restrict_apply, Pi.add_apply, Pi.mul_apply]
   rw [derivWithin_fun_mul (hf y y.2) (hd y y.2)]
 
-lemma iteratedDerivWithin_mul (f g : ℂ → ℂ) (s : Set ℂ) (hs : IsOpen s) (x : ℂ) (hx : x ∈ s) (m : ℕ)
+lemma iteratedDerivWithin_mul' (f g : ℂ → ℂ) (s : Set ℂ) (hs : IsOpen s)
+    (x : ℂ) (hx : x ∈ s) (m : ℕ)
     (hf : ContDiffOn ℂ ⊤ f s) (hg : ContDiffOn ℂ ⊤ g s) :
     iteratedDerivWithin m (f * g) s x =
     ∑ i ∈ Finset.range m.succ, (m.choose i) * (iteratedDerivWithin i f s x) *
@@ -148,8 +149,8 @@ lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularFor
   | zero => simpa using qExpansion_mul_coeff_zero n a b f g
   | succ m hm =>
     simp_rw [PowerSeries.coeff_mul ,qExpansion_coeff, cuspFunction_mul ] at *
-    have :=iteratedDerivWithin_mul (f := cuspFunction n f) (g := cuspFunction n g) (Metric.ball 0 1)
-      (isOpen_ball) 0 (by simp) (m+1) ?_ ?_
+    have := iteratedDerivWithin_mul' (f := cuspFunction n f) (g := cuspFunction n g)
+      (Metric.ball 0 1) (isOpen_ball) 0 (by simp) (m+1) ?_ ?_
     · simp_rw [← iteratedDeriv_eq_iteratedDerivWithin (m+1) _ (Metric.ball 0 1) (isOpen_ball) 0
         (by simp)] at this
       conv at this =>

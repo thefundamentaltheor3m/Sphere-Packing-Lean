@@ -9,7 +9,29 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 open scoped ArithmeticFunction.sigma
 
-noncomputable section Definitions
+noncomputable section
+
+/-! ## Helper lemmas for dimension-one arguments -/
+
+/-- In a rank-one module, every element is a scalar multiple of any nonzero element. -/
+lemma exists_smul_eq_of_rank_one {M : Type*} [AddCommGroup M] [Module ℂ M]
+    (hrank : Module.rank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, f = c • e := by
+  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' e he).mp
+    (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f
+  exact ⟨c, hc.symm⟩
+
+/-- Symmetric version: `c • e = f` instead of `f = c • e`. -/
+lemma exists_smul_eq_of_rank_one' {M : Type*} [AddCommGroup M] [Module ℂ M]
+    (hrank : Module.rank ℂ M = 1) {e : M} (he : e ≠ 0) (f : M) : ∃ c : ℂ, c • e = f :=
+  (finrank_eq_one_iff_of_nonzero' e he).mp (Module.rank_eq_one_iff_finrank_eq_one.mp hrank) f
+
+/-- Convert smul equality of modular forms to pointwise equality. -/
+lemma smul_modularForm_eq_pointwise {Γ : Subgroup SL(2, ℤ)} {k : ℤ} {f g : ModularForm Γ k}
+    {c : ℂ} (h : f = c • g) (z : ℍ) : (f : ℍ → ℂ) z = c * (g : ℍ → ℂ) z := by
+  simpa [ModularForm.coe_smul, smul_eq_mul] using
+    congrFun (congrArg (↑· : ModularForm _ _ → ℍ → ℂ) h) z
+
+section Definitions
 
 /- The Eisenstein Series E₄ and E₆ -/
 
@@ -790,17 +812,6 @@ lemma PowerSeries.coeff_add (f g : PowerSeries ℂ) (n : ℕ) :
 
 open ArithmeticFunction
 
-section Ramanujan_Formula
-
--- In this section, we state some simplifications that are used in Cor 7.5-7.7 of the blueprint
-
-theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
-    (E₂ z) * (E₄ z) - (E₆ z) = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)
-    := by
-  sorry
-
-end Ramanujan_Formula
-
 /-!
 ## Imaginary Axis Properties
 
@@ -809,7 +820,7 @@ Properties of Eisenstein series when restricted to the positive imaginary axis z
 
 section ImagAxisProperties
 
-open Complex hiding I
+open _root_.Complex hiding I
 
 /-- `(-2πi)^k` is real for even k. -/
 lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
@@ -907,14 +918,17 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
   ring
 
 /-- `E₄(it)` is real for all `t > 0`. -/
+@[fun_prop]
 theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun :=
   E_even_imag_axis_real 4 (by norm_num) (by norm_num)
 
 /-- `E₆(it)` is real for all `t > 0`. -/
+@[fun_prop]
 theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun :=
   E_even_imag_axis_real 6 (by norm_num) (by norm_num)
 
 /-- `E₂(it)` is real for all `t > 0`. -/
+@[fun_prop]
 theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
@@ -1059,3 +1073,11 @@ lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
           _ = _ := by simp
     _ ≤ 1 + 24 * (r₀ / (1 - r₀) ^ 3) := by
         gcongr; exact norm_tsum_logDeriv_expo_le_of_norm_le hq_bound hr₀_lt_one
+
+/-- E₄ is bounded at infinity (as a modular form). -/
+lemma E₄_isBoundedAtImInfty : IsBoundedAtImInfty E₄.toFun :=
+  ModularFormClass.bdd_at_infty E₄
+
+/-- The product E₂ · E₄ is bounded at infinity. -/
+lemma E₂_mul_E₄_isBoundedAtImInfty : IsBoundedAtImInfty (E₂ * E₄.toFun) :=
+  E₂_isBoundedAtImInfty.mul E₄_isBoundedAtImInfty
