@@ -80,6 +80,16 @@ theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0
     rw [modular_slash_S_apply, h]; simp [hzdef, mul_zpow I (t : ℂ) (-k), mul_comm (F z')] :
     (F ∣[k] S) z = I ^ (-k) * t ^ (-k) * F z')
 
+theorem ResToImagAxis.SlashActionS' (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0 < t) :
+    F.resToImagAxis (1 / t) = (Complex.I) ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by
+  have hS := ResToImagAxis.SlashActionS F k ht
+  calc F.resToImagAxis (1 / t)
+      = I ^ k * I ^ (-k) * (t ^ k * t ^ (-k)) * F.resToImagAxis (1 / t) := by
+          simp only [zpow_neg, mul_inv_cancel₀ (zpow_ne_zero k I_ne_zero),
+                     mul_inv_cancel₀ (zpow_ne_zero k (ofReal_ne_zero.mpr ht.ne')), one_mul]
+    _ = I ^ k * t ^ k * (I ^ (-k) * t ^ (-k) * F.resToImagAxis (1 / t)) := by ring
+    _ = I ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by rw [← hS]
+
 /--
 Realness, positivity and essential positivity are closed under the addition and multiplication.
 -/
@@ -276,6 +286,23 @@ theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResTo
   simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFpos_t
   simp [ResToImagAxis, htpos, mul_pos hc hFpos_t]
 
+theorem ResToImagAxis.I_mul_t_eq (F : ℍ → ℂ) (t : ℝ) (ht : 0 < t) :
+    F ⟨I * t, by simp [ht]⟩ = F.resToImagAxis t := by
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
+
+/-- If `F` is real-valued, then the real part of `F.resToImagAxis` is equal to itself. -/
+theorem ResToImagAxis.Real.real_part_eq {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (t : ℝ) :
+    (F.resToImagAxis t).re = F.resToImagAxis t := by
+  simp only [Function.resToImagAxis, ResToImagAxis]
+  split_ifs with ht
+  exacts [Complex.ext rfl (by simpa [Function.resToImagAxis, ResToImagAxis, ht]
+    using (hF t ht).symm), rfl]
+
+theorem ResToImagAxis.Real.eq_real_part {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (t : ℝ) :
+    F.resToImagAxis t = (F.resToImagAxis t).re := by
+  rw [← ResToImagAxis.Real.real_part_eq hF t]
+  rfl
+
 /-!
 ## Polynomial decay of functions with exponential bounds
 
@@ -435,3 +462,20 @@ theorem tendsto_rpow_mul_resToImagAxis_of_fourier_shift
     Tendsto (fun t : ℝ => t ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
   tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity)
     (isBigO_atImInfty_of_fourier_shift hn₀ hc hF ha) s
+
+/-- Tendsto conversion: if F tends to c at atImInfty, then F.resToImagAxis tends to c at atTop. -/
+lemma tendsto_resToImagAxis_of_tendsto_atImInfty {F : ℍ → ℂ} {c : ℂ}
+    (hF : Tendsto F atImInfty (nhds c)) :
+    Tendsto F.resToImagAxis atTop (nhds c) := by
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  -- Get eventual proximity from hF
+  have hF_met : ∀ᶠ z in atImInfty, dist (F z) c < ε := Metric.tendsto_nhds.mp hF ε hε
+  obtain ⟨A, hA⟩ := Filter.eventually_atImInfty.mp hF_met
+  use max A 1
+  intro t ht
+  have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
+  simp only [Function.resToImagAxis, ResToImagAxis, ht_pos, ↓reduceDIte]
+  set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
+  have hz_im : z.im = t := by simp [UpperHalfPlane.im, z]
+  exact hA z (by simpa [hz_im] using le_of_max_le_left ht)
