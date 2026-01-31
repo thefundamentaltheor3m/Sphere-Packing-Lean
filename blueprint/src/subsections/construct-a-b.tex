@@ -66,24 +66,7 @@ For \eqref{eqn:phi0-trans-S},
 %     +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i \|x\|^2 z}\,dz.\nonumber
 % \end{align}
 For our formalization, we choose rectangular contours for the first and the second integral, and write it as follows.
-\begin{definition}\label{def:a-definition}\lean{MagicFunction.a.RealIntegrals.a',MagicFunction.a.RadialFunctions.a}\leanok
-\uses{def:phi4-phi2-phi0}
-Define $a_{\rad} : \R \to \C$ by
-\begin{align}\label{eqn:a-rad-definition}
-    a_\rad(r) := I_1(r) + I_2(r) + I_3(r) + I_4(r) + I_5(r) + I_6(r)
-\end{align}
-where
-\begin{align}
-    I_1(r) &:= \int_{-1}^{-1 + i} \phi_0 \left(\frac{-1}{z+1}\right) (z + 1)^2 e^{\pi i r z} \dd z \label{eqn:a-I1} \\
-    I_2(r) &:= \int_{-1 + i}^{i} \phi_0 \left(\frac{-1}{z+1}\right) (z + 1)^2 e^{\pi i r z} \dd z \label{eqn:a-I2} \\
-    I_3(r) &:= \int_{1}^{1 + i} \phi_0 \left(\frac{-1}{z-1}\right) (z - 1)^2 e^{\pi i r z} \dd z \label{eqn:a-I3} \\
-    I_4(r) &:= \int_{1 + i}^{i} \phi_0 \left(\frac{-1}{z-1}\right) (z - 1)^2 e^{\pi i r z} \dd z \label{eqn:a-I4} \\
-    I_5(r) &:= -2 \int_{0}^{i} \phi_0 \left(\frac{-1}{z}\right) z^2 e^{\pi i r z} \dd z \label{eqn:a-I5} \\
-    I_6(r) &:= 2 \int_{i}^{i\infty} \phi_0(z) e^{\pi i r z} \dd z \label{eqn:a-I6}
-\end{align}
-Here all the contours are chosen to be straight line segments.
-Now, define $a(x) := a_{\rad}(\|x\|^2)$ for $x \in \R^8$.
-\end{definition}
+\inputleannode{def:a-definition}
 In the original paper, the integrals $I_1$ and $I_2$ are combined, as well as $I_3$ and $I_4$.
 We choose to write them separately to simplify the formalization.
 
@@ -93,38 +76,11 @@ Now we prove that $a$ satisfies condition \eqref{eqn:a-fourier}.
 The following lemma will be used to prove Schwartzness of $a$ and $b$.
 
 
-\begin{lemma}\label{lemma:mod-div-disc-bound}\lean{MagicFunction.PolyFourierCoeffBound.DivDiscBoundOfPolyFourierCoeff}\leanok
-Let $f(z)$ be a holomorphic function with a Fourier expansion
-\begin{equation}
-    f(z) = \sum_{n \ge n_0} c_f(n) e^{\pi i n z}
-\end{equation}
-with $c_f(n_0) \ne 0$.
-Assume that $c_f(n)$ has a polynomial growth, i.e. $|c_f(n)| = O(n^k)$ for some $k \in \N$.
-Then there exists a constant $C_f > 0$ such that
-\begin{equation}
-    \left|\frac{f(z)}{\Delta(z)}\right| \le C_f e^{-\pi (n_0 - 2) \Im z}
-\end{equation}
-for all $z$ with $\Im z > 1/2$.
-\end{lemma}
+\inputleannode{lemma:mod-div-disc-bound}
 When $f(z)$ is a (quasi)modular form, we can take $k$ to be the weight of $f$.
 
 
-\begin{proof}\uses{def:disc-definition}\leanok
-By the product formula \eqref{eqn:disc-definition},
-\begin{align}
-    \left|\frac{f(z)}{\Delta(z)}\right| &= \left|\frac{\sum_{n \ge n_0} c_f(n) e^{\pi i n z}}{e^{2 \pi i z}\prod_{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\
-    &= |e^{\pi i (n_0 - 2)z}| \cdot \frac{|\sum_{n \ge n_0} c_f(n) e^{\pi i (n - n_0) z}|}{\prod_{n \ge 1} |1 - e^{2\pi i n z}|^{24}} \\
-    &\le e^{-\pi (n_0 - 2) \Im z} \cdot \frac{\sum_{n \ge n_0} |c_f(n)| e^{-\pi (n - n_0) \Im z}}{\prod_{n \ge 1} (1 - e^{- 2\pi n \Im z})^{24}} \\
-    &\le e^{-\pi (n_0 - 2) \Im z} \cdot \frac{\sum_{n \ge n_0} |c_f(n)| e^{-\pi (n - n_0) / 2}}{\prod_{n \ge 1} (1 - e^{-\pi n})^{24}} \\
-    &= C_f \cdot e^{-\pi (n_0 - 2) \Im z}
-\end{align}
-where
-\begin{equation}
-    C_f = \frac{\sum_{n \ge n_0} |c_f(n)| e^{-\pi (n - n_0) / 2}}{\prod_{n \ge 1} (1 - e^{-\pi n})^{24}}.
-\end{equation}
-Note that the summation in the numerator converges absolutely because of polynomial growth.
-The denominator also converges, which is simply $e^{\pi} \cdot \Delta(i/2)$.
-\end{proof}
+
 
 As corollaries, we have the following bound for $\phi_0$, $\phi_{-2}$, and $\phi_{-4}$.
 
@@ -262,50 +218,12 @@ For the integrals $I_2$, $I_4$, and $I_6$, it is easier to see this since the co
 \end{proof}
 
 Combining these, one can show that $a$ is a Schwartz function.
-\begin{proposition}\label{prop:a-schwartz}\lean{MagicFunction.FourierEigenfunctions.a}\leanok
-\uses{def:a-definition, cor:phi0-bound}
-$a(x)$ is a Schwartz function.
-\end{proposition}
-\begin{proof}
-\uses{lem:bound-I1-I3-I5, lem:bound-I2-I4-I6, lem:integral-bound, thm:smooth-fast-decay-schwartz}
-By Theorem \ref{thm:smooth-fast-decay-schwartz}, it suffices to show that the function is smooth and decays faster than any polynomial.
-The smoothness follows from the ``differentiation under the integral'', which is already formalized in \texttt{mathlib}.
-The decay follows from Lemmas \ref{lem:bound-I1-I3-I5} and \ref{lem:bound-I2-I4-I6}, together with Lemma \ref{lem:integral-bound}.
-\end{proof}
+\inputleannode{prop:a-schwartz}
+
 
 % TODO: Update the proof
-\begin{proposition}\label{prop:a-fourier}
-\uses{lemma:Ek-Fourier, def:E2, def:a-definition, lemma:Gaussian-Fourier, prop:a-schwartz}\lean{MagicFunction.a.Fourier.eig_a}
-$a(x)$ satisfies \eqref{eqn:a-fourier}.
-\end{proposition}
-\begin{proof}
-We recall that the Fourier transform of a Gaussian function is
-\begin{equation}\label{eqn:gaussian Fourier}
-    \mathcal{F}(e^{\pi i \|x\|^2 z})(y)=z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
-\end{equation}
-Next, we exchange the contour integration with respect to $z$ variable and Fourier transform with respect to $x$ variable in \eqref{eqn:a-definition}.
-This can be done, since the corresponding double integral converges absolutely. In this way we obtain
-\begin{align}
-    \widehat{a}(y)=&\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz
-    +\int\limits_{1}^i\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz\notag \\
-    -&2\int\limits_{0}^i\phi_0\Big(\frac{-1}{z}\Big)\,z^2\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz +2\int\limits_{i}^{i\infty}\phi_0(z)\,z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z})}\,dz.\notag
-\end{align}
-Now we make a change of variables $w=\frac{-1}{z}$. We obtain
-\begin{align}
-    \widehat{a}(y)=&\int\limits_{1}^i\phi_0\Big(1-\frac{1}{w-1}\Big)\,(\frac{-1}{w}+1)^2\,w^{2}\,e^{\pi i \|y\|^2 \,w}\,dw\notag\\
-    +&\int\limits_{-1}^i\phi_0\Big(1-\frac{1}{w+1}\Big)\,(\frac{-1}{w}-1)^2\,w^2\,e^{\pi i \|y\|^2 \,w}\,dw\\
-    -&2\int\limits_{i \infty}^i\phi_0(w)\,e^{\pi i \|y\|^2 \,w}\,dw +2\int\limits_{i}^{0}\phi_0\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|y\|^2 \,w}\,dw.\notag
-\end{align}
-Since $\phi_0$ is $1$-periodic we have
-\begin{align}
-    \widehat{a}(y)\,=\,&\int\limits_{1}^i\phi_0\Big(\frac{-1}{z-1}\Big)\,(z-1)^2\,e^{\pi i \|y\|^2 \,z}\,dz
-    +\int\limits_{-1}^i\phi_0\Big(\frac{-1}{z+1}\Big)\,(z+1)^2\,e^{\pi i \|y\|^2 \,z}\,dz\notag \\
-    +&2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i \|y\|^2 \,z}\,dz
-    -2\int\limits_{0}^{i}\phi_0\Big(\frac{-1}{z}\Big)\,z^{2}\,e^{\pi i \|y\|^2 \,z}\,dz\notag \\
-    \,=\,&a(y).
-\end{align}
-This finishes the proof of the proposition.
-\end{proof}
+\inputleannode{prop:a-fourier}
+
 
 Next, we check that $a$ has double zeroes at all $\Lambda_8$-lattice points of length greater then $\sqrt{2}$.
 Using \eqref{eqn:phi0-bound}, \eqref{eqn:phi2-bound}, and \eqref{eqn:phi4-bound}, we can control the behavior of $\phi_0$ near $0$ and $i\infty$.
@@ -397,17 +315,8 @@ On the other hand, from the definition~\eqref{eqn:a-definition} we see that $a(r
 \end{proof}
 From the identity~\eqref{eqn:a-another-integral} we see that the values $a(r)$ are in $i\R$ for all $r\in\R_{\geq0}$.
 % In particular, we have
-\begin{proposition}\label{prop:a0}\uses{prop:a-another-integral}\lean{MagicFunction.a.SpecialValues.a_zero}\leanok
-We have $a(0) = -\frac{i}{8640}$.
-% \begin{equation}
-% a(0)=\frac{-i\,8640}{\pi}\qquad
-% a(\sqrt{2})=0\qquad
-% a^\prime(\sqrt{2})=\frac{i\,72\sqrt{2}}{\pi}.
-% \end{equation}
-\end{proposition}
-\begin{proof}
-These identities follow immediately from the previous proposition.
-\end{proof}
+\inputleannode{prop:a0}
+
 
 Now we construct function $b$. To this end we consider the function
 \begin{definition}\label{def: h}\uses{def:H2-H3-H4}
@@ -574,51 +483,13 @@ There exist a constant $C > 0$ such that
 
 Combining Lemmas \ref{lemma:bound-J1-J3-J5}, \ref{lemma:bound-J2-J4-J6}, and Theorem \ref{thm:smooth-fast-decay-schwartz}, we can prove that $b(x)$ is a Schwartz function.
 
-\begin{proposition}\label{prop:b-schwartz}\uses{lemma:psi-bound}\lean{MagicFunction.FourierEigenfunctions.b}\leanok
-$b(x)$ is a Schwartz function.
-\end{proposition}
-\begin{proof}
-\uses{lemma:bound-J1-J3-J5, lemma:bound-J2-J4-J6, thm:smooth-fast-decay-schwartz}
-Similar to the proof of \ref{prop:a-schwartz}.
-\end{proof}
+\inputleannode{prop:b-schwartz}
 
 
 
-\begin{proposition}\label{prop:b-fourier}\uses{def:b-definition, lemma:Gaussian-Fourier, def:psiI-psiT-psiS, prop:b-schwartz}\lean{MagicFunction.b.Fourier.eig_b}\leanok
-$b(x)$ satisfies \eqref{eqn:b-fourier}.
-\end{proposition}
-\begin{proof}
-Here, we repeat the arguments used in the proof of Proposition~\ref{prop:a-fourier}.
-We use identity~\eqref{eqn:gaussian Fourier} and change contour integration in $z$ and Fourier transform in $x$. Thus we obtain
-\begin{align}
-    \mathcal{F}(b)(x)= & \int\limits_{-1}^{i}\psi_T(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz
-        + \int\limits_{1}^{i}\psi_T(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz \notag \\
-    -& 2\,\int\limits_{0}^{i}\psi_I(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz
-    - 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,z^{-4}\,e^{\pi i \|x\|^2 (\frac{-1}{z})}\,dz. \notag
-\end{align}
-We make the change of variables $w=\frac{-1}{z}$ and arrive at
-\begin{align}
-    \mathcal{F}(b)(x)= & \int\limits_{1}^{i}\psi_T\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|x\|^2 w}\,dw
-        + \int\limits_{-1}^{i}\psi_T\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|x\|^2 w}\,dw \notag \\
-    -& 2\,\int\limits_{i\infty}^{i}\psi_I\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|x\|^2 w}\,dw
-    - 2\,\int\limits_{i}^{0}\psi_S\Big(\frac{-1}{w}\Big)\,w^{2}\,e^{\pi i \|x\|^2 w}\,dw.\notag
-\end{align}
-Now we observe that the definitions \eqref{eqn:psiI-define}--\eqref{eqn:psiS-define} imply
-\begin{align}
-    \psi_T|_{-2}S=&-\psi_T \notag \\
-    \psi_I|_{-2}S=&\psi_S \notag \\
-    \psi_S|_{-2}S=&\psi_I. \notag
-\end{align}
-Therefore, we arrive at
-\begin{align}
-    \mathcal{F}(b)(x)= & \int\limits_{1}^{i}-\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz
-        + \int\limits_{-1}^{i}-\psi_T(z)\,e^{\pi i \|x\|^2 z}\,dz \notag \\
-    +& 2\,\int\limits_{i}^{i\infty}\psi_S(z)\,e^{\pi i \|x\|^2 z}\,dz
-    + 2\,\int\limits_{0}^{i}\psi_I(z)\,e^{\pi i \|x\|^2 w}\,dw.\notag
-\end{align}
-Now from~\eqref{eqn:b-definition} we see that
-$$ \mathcal{F}(b)(x)=-b(x). $$
-\end{proof}
+
+\inputleannode{prop:b-fourier}
+
 Now we regard the radial function $b$ as a function on $\R_{\geq0}$. We check that $b$ has double roots at $\Lambda_8$-points.
 
 % \begin{lemma}\label{lemma:psiI-bound}\uses{lemma:mod-div-disc-bound, prop:H2-fourier, prop:H3-fourier, prop:H4-fourier, def:psiI-psiT-psiS, lemma:theta-transform-S-T, lemma:disc-cuspform}
@@ -720,14 +591,5 @@ On the other hand, from the definition \eqref{eqn:b-definition} we see that $b(r
 We see from \eqref{eqn:b-another-integral} that $b(r)\in i\R$ far all $r\in\R_\geq{0}$.
 Another immediate corollary of this proposition is
 
-\begin{proposition}\label{prop:b0}\uses{prop:b-another-integral}\lean{MagicFunction.b.SpecialValues.b_zero}\leanok
-We have $b(0) = 0$.
-% \begin{equation}\label{eqn: b values}
-% b(0)=0\qquad
-% % b(\sqrt{2})=0\qquad
-% % b^\prime(\sqrt{2})=\frac{i}{2\sqrt{2}\,\pi}.
-% \end{equation}
-\end{proposition}
-\begin{proof}
-    These identities follow immediately from the previous proposition. % Mentioning this here because this should not be \leanok-ed (yet).
-\end{proof}
+\inputleannode{prop:b0}
+

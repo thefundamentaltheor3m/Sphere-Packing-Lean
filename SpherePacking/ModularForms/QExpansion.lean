@@ -1,5 +1,6 @@
 import Mathlib.Analysis.Normed.Group.Tannery
 import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
+import Mathlib.NumberTheory.ModularForms.Bounds
 import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ForMathlib.AtImInfty
 
@@ -18,6 +19,21 @@ open UpperHalfPlane hiding I
 open Complex Asymptotics Topology Filter
 
 namespace QExp
+
+attribute [blueprint
+  "lemma:mod_form_poly_growth"
+  (statement := /--
+  Let $\Gamma$ be a finite index subgroup of $\mathrm{SL}_2(\Z)$ and $f \in \mathcal{M}_k(\Gamma)$
+  be a modular form of weight $k$. Then the Fourier coefficients $a_n(f)$ has a polynomial growth,
+  i.e. $|a_n(f)| = O(n^k)$.
+  -/)
+  (proof := /--
+  Note that the assumption on the polynomial growth holds when $f$ is a holomorphic modular form,
+  where the proof can be found in \cite[p. 94]{Serre73} for the case of level 1 modular forms. This
+  has been done in Lean 4 by David Loeffler.
+  -/)
+  (latexEnv := "lemma")]
+  ModularFormClass.qExpansion_isBigO
 
 lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * rexp (-2 * π * n)) :
     Tendsto (fun z : ℍ ↦ ∑' n, a n * cexp (2 * π * I * z * n)) atImInfty (𝓝 (a 0)) := by

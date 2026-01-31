@@ -1,3 +1,4 @@
+import Architect
 import Mathlib.Algebra.Field.Power
 import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Data.Real.StarOrdered
@@ -36,11 +37,65 @@ local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
 noncomputable def Θ₂_term (n : ℤ) (τ : ℍ) : ℂ := cexp (π * I * (n + 1 / 2 : ℂ) ^ 2 * τ)
 noncomputable def Θ₃_term (n : ℤ) (τ : ℍ) : ℂ := cexp (π * I * (n : ℂ) ^ 2 * τ)
 noncomputable def Θ₄_term (n : ℤ) (τ : ℍ) : ℂ := (-1) ^ n * cexp (π * I * (n : ℂ) ^ 2 * τ)
+@[blueprint
+  "def:th00-th01-th10"
+  (statement := /--
+  We define three different theta functions (so called ``Thetanullwerte'') as
+  \begin{align}
+    \Theta_{2}(z) = \theta_{10}(z)\,=\, & \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 z}. \notag \\
+    \Theta_{3}(z) = \theta_{00}(z)\,=\, & \sum_{n\in\Z}e^{\pi i n^2 z} \notag \\
+    \Theta_{4}(z) = \theta_{01}(z)\,=\, & \sum_{n\in\Z}(-1)^n\,e^{\pi i n^2 z} \notag \\
+  \end{align}
+  -/)]
 noncomputable def Θ₂ (τ : ℍ) : ℂ := ∑' n : ℤ, Θ₂_term n τ
+@[blueprint
+  "def:th00-th01-th10"
+  (statement := /--
+  We define three different theta functions (so called ``Thetanullwerte'') as
+  \begin{align}
+    \Theta_{2}(z) = \theta_{10}(z)\,=\, & \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 z}. \notag \\
+    \Theta_{3}(z) = \theta_{00}(z)\,=\, & \sum_{n\in\Z}e^{\pi i n^2 z} \notag \\
+    \Theta_{4}(z) = \theta_{01}(z)\,=\, & \sum_{n\in\Z}(-1)^n\,e^{\pi i n^2 z} \notag \\
+  \end{align}
+  -/)]
 noncomputable def Θ₃ (τ : ℍ) : ℂ := ∑' n : ℤ, Θ₃_term n τ
+@[blueprint
+  "def:th00-th01-th10"
+  (statement := /--
+  We define three different theta functions (so called ``Thetanullwerte'') as
+  \begin{align}
+    \Theta_{2}(z) = \theta_{10}(z)\,=\, & \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 z}. \notag \\
+    \Theta_{3}(z) = \theta_{00}(z)\,=\, & \sum_{n\in\Z}e^{\pi i n^2 z} \notag \\
+    \Theta_{4}(z) = \theta_{01}(z)\,=\, & \sum_{n\in\Z}(-1)^n\,e^{\pi i n^2 z} \notag \\
+  \end{align}
+  -/)]
 noncomputable def Θ₄ (τ : ℍ) : ℂ := ∑' n : ℤ, Θ₄_term n τ
+@[blueprint
+  "def:H2-H3-H4"
+  (statement := /--
+  Define
+  \begin{equation}
+      H_2 = \Theta_2^4, \quad H_3 = \Theta_3^4, \quad H_4 = \Theta_4^4. \label{eqn:H2-H3-H4}
+  \end{equation}
+  -/)]
 noncomputable def H₂ (τ : ℍ) : ℂ := (Θ₂ τ) ^ 4
+@[blueprint
+  "def:H2-H3-H4"
+  (statement := /--
+  Define
+  \begin{equation}
+      H_2 = \Theta_2^4, \quad H_3 = \Theta_3^4, \quad H_4 = \Theta_4^4. \label{eqn:H2-H3-H4}
+  \end{equation}
+  -/)]
 noncomputable def H₃ (τ : ℍ) : ℂ := (Θ₃ τ) ^ 4
+@[blueprint
+  "def:H2-H3-H4"
+  (statement := /--
+  Define
+  \begin{equation}
+      H_2 = \Theta_2^4, \quad H_3 = \Theta_3^4, \quad H_4 = \Theta_4^4. \label{eqn:H2-H3-H4}
+  \end{equation}
+  -/)]
 noncomputable def H₄ (τ : ℍ) : ℂ := (Θ₄ τ) ^ 4
 
 /-- Theta functions as specializations of jacobiTheta₂ -/
@@ -75,6 +130,63 @@ lemma H₃_negI_action : (H₃ ∣[(2 : ℤ)] negI.1) = H₃ := modular_slash_ne
 lemma H₄_negI_action : (H₄ ∣[(2 : ℤ)] negI.1) = H₄ := modular_slash_negI_of_even H₄ (2: ℤ) even_two
 
 /-- These three transformation laws follow directly from tsum definition. -/
+@[blueprint
+  "lemma:theta-transform-S-T"
+  (statement := /--
+  These elements act on the theta functions in the following way
+  \begin{align}
+      H_2 | S &= -H_4 \label{eqn:H2-transform-S} \\
+      H_3 | S &= -H_3 \label{eqn:H3-transform-S} \\
+      H_4 | S &= -H_2 \label{eqn:H4-transform-S}
+  \end{align}
+  and
+  \begin{align}
+      H_2 | T &= -H_2 \label{eqn:H2-transform-T} \\
+      H_3 | T &= H_4 \label{eqn:H3-transform-T} \\
+      H_4 | T &= H_3 \label{eqn:H4-transform-T}
+  \end{align}
+  -/)
+  (proof := /--
+  The last three identities easily follow from the definition.
+  For example, \eqref{eqn:H2-transform-T} follows from
+  \begin{align}
+      \Theta_{2}(z + 1) &= \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 (z + 1)}
+      = \sum_{n \in \Z} e^{\pi i (n + \frac{1}{2})^{2}} e^{\pi i (n + \frac{1}{2})^{2} z} \\
+      &= \sum_{n \in \Z} e^{\pi i (n^2 + n + \frac{1}{4})} e^{\pi i (n + \frac{1}{2})^{2} z} =
+      \sum_{n \in \Z} (-1)^{n^2 + n}e^{\pi i / 4} e^{\pi i (n + \frac{1}{2})^{2} z} \\
+      &= e^{\pi i / 4} \Theta_{2}(z)
+  \end{align}
+  and taking 4th power.
+  \eqref{eqn:H2-transform-S} and \eqref{eqn:H4-transform-S} are equivalent under $z \leftrightarrow
+  -1/z$, so it is enough to show \eqref{eqn:H2-transform-S} and \eqref{eqn:H3-transform-S}.
+  These identities follow from the identities of the \emph{two-variable} Jacobi theta function,
+  which is defined as (be careful for the variables, where we use $\tau$ instead of $z$)
+  \begin{equation}
+      \theta(z, \tau) = \sum_{n \in \mathbb{Z}} e^{2 \pi i n z + \pi i n^2 \tau} \label{eqn:jacobi2}
+  \end{equation}
+  and already formalized by David Loeffler.
+  This function specialize to the theta functions as
+  \begin{align}
+      \Theta_{2}(\tau) &= e^{\pi i \tau / 4} \theta(-\tau / 2, \tau) \label{eqn:Th2-as-jacobi2} \\
+      \Theta_{3}(\tau) &= \theta(0, \tau) \label{eqn:Th3-as-jacobi2} \\
+      \Theta_{4}(\tau) &= \theta(1/2, \tau) \label{eqn:Th4-as-jacobi2} \\
+  \end{align}
+
+  Poisson summation formula gives
+  \begin{equation}
+      \theta(z, \tau) = \frac{1}{\sqrt{-i \tau}} e^{-\frac{\pi i z^2}{\tau}}
+      \theta\left(\frac{z}{\tau}, -\frac{1}{\tau}\right) \label{eqn:jacobi2transform}
+  \end{equation}
+  and applying the specializations above yield the identities.
+  For example, \eqref{eqn:H4-transform-S} follows from
+  \begin{equation}
+      \Theta_{4}(\tau) = \theta\left(\frac{1}{2}, \tau\right) = \frac{1}{\sqrt{-i\tau}} e^{-
+      \frac{\pi i }{4 \tau}} \theta\left(\frac{1}{2 \tau}, -\frac{1}{\tau}\right) =
+      \frac{1}{\sqrt{-i\tau}} \Theta_{2}\left(-\frac{1}{\tau}\right)
+  \end{equation}
+  and taking 4th power.
+  -/)
+  (latexEnv := "lemma")]
 lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
   ext x
   suffices hΘ₂ : Θ₂ ((1 : ℝ) +ᵥ x) = cexp (π * I / 4) * Θ₂ x by
@@ -103,6 +215,63 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
     rw [Complex.exp_add]
     rw [mul_comm (π * I), Complex.exp_int_mul, Complex.exp_pi_mul_I, this.neg_one_zpow, one_mul]
 
+@[blueprint
+  "lemma:theta-transform-S-T"
+  (statement := /--
+  These elements act on the theta functions in the following way
+  \begin{align}
+      H_2 | S &= -H_4 \label{eqn:H2-transform-S} \\
+      H_3 | S &= -H_3 \label{eqn:H3-transform-S} \\
+      H_4 | S &= -H_2 \label{eqn:H4-transform-S}
+  \end{align}
+  and
+  \begin{align}
+      H_2 | T &= -H_2 \label{eqn:H2-transform-T} \\
+      H_3 | T &= H_4 \label{eqn:H3-transform-T} \\
+      H_4 | T &= H_3 \label{eqn:H4-transform-T}
+  \end{align}
+  -/)
+  (proof := /--
+  The last three identities easily follow from the definition.
+  For example, \eqref{eqn:H2-transform-T} follows from
+  \begin{align}
+      \Theta_{2}(z + 1) &= \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 (z + 1)}
+      = \sum_{n \in \Z} e^{\pi i (n + \frac{1}{2})^{2}} e^{\pi i (n + \frac{1}{2})^{2} z} \\
+      &= \sum_{n \in \Z} e^{\pi i (n^2 + n + \frac{1}{4})} e^{\pi i (n + \frac{1}{2})^{2} z} =
+      \sum_{n \in \Z} (-1)^{n^2 + n}e^{\pi i / 4} e^{\pi i (n + \frac{1}{2})^{2} z} \\
+      &= e^{\pi i / 4} \Theta_{2}(z)
+  \end{align}
+  and taking 4th power.
+  \eqref{eqn:H2-transform-S} and \eqref{eqn:H4-transform-S} are equivalent under $z \leftrightarrow
+  -1/z$, so it is enough to show \eqref{eqn:H2-transform-S} and \eqref{eqn:H3-transform-S}.
+  These identities follow from the identities of the \emph{two-variable} Jacobi theta function,
+  which is defined as (be careful for the variables, where we use $\tau$ instead of $z$)
+  \begin{equation}
+      \theta(z, \tau) = \sum_{n \in \mathbb{Z}} e^{2 \pi i n z + \pi i n^2 \tau} \label{eqn:jacobi2}
+  \end{equation}
+  and already formalized by David Loeffler.
+  This function specialize to the theta functions as
+  \begin{align}
+      \Theta_{2}(\tau) &= e^{\pi i \tau / 4} \theta(-\tau / 2, \tau) \label{eqn:Th2-as-jacobi2} \\
+      \Theta_{3}(\tau) &= \theta(0, \tau) \label{eqn:Th3-as-jacobi2} \\
+      \Theta_{4}(\tau) &= \theta(1/2, \tau) \label{eqn:Th4-as-jacobi2} \\
+  \end{align}
+
+  Poisson summation formula gives
+  \begin{equation}
+      \theta(z, \tau) = \frac{1}{\sqrt{-i \tau}} e^{-\frac{\pi i z^2}{\tau}}
+      \theta\left(\frac{z}{\tau}, -\frac{1}{\tau}\right) \label{eqn:jacobi2transform}
+  \end{equation}
+  and applying the specializations above yield the identities.
+  For example, \eqref{eqn:H4-transform-S} follows from
+  \begin{equation}
+      \Theta_{4}(\tau) = \theta\left(\frac{1}{2}, \tau\right) = \frac{1}{\sqrt{-i\tau}} e^{-
+      \frac{\pi i }{4 \tau}} \theta\left(\frac{1}{2 \tau}, -\frac{1}{\tau}\right) =
+      \frac{1}{\sqrt{-i\tau}} \Theta_{2}\left(-\frac{1}{\tau}\right)
+  \end{equation}
+  and taking 4th power.
+  -/)
+  (latexEnv := "lemma")]
 lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
   ext x
   simp_rw [modular_slash_T_apply, H₃, H₄, Θ₃, Θ₄, Θ₃_term, Θ₄_term]
@@ -117,6 +286,63 @@ lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
   · rw [hb.neg_one_zpow, Odd.neg_one_zpow]
     simp [sq, hb]
 
+@[blueprint
+  "lemma:theta-transform-S-T"
+  (statement := /--
+  These elements act on the theta functions in the following way
+  \begin{align}
+      H_2 | S &= -H_4 \label{eqn:H2-transform-S} \\
+      H_3 | S &= -H_3 \label{eqn:H3-transform-S} \\
+      H_4 | S &= -H_2 \label{eqn:H4-transform-S}
+  \end{align}
+  and
+  \begin{align}
+      H_2 | T &= -H_2 \label{eqn:H2-transform-T} \\
+      H_3 | T &= H_4 \label{eqn:H3-transform-T} \\
+      H_4 | T &= H_3 \label{eqn:H4-transform-T}
+  \end{align}
+  -/)
+  (proof := /--
+  The last three identities easily follow from the definition.
+  For example, \eqref{eqn:H2-transform-T} follows from
+  \begin{align}
+      \Theta_{2}(z + 1) &= \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 (z + 1)}
+      = \sum_{n \in \Z} e^{\pi i (n + \frac{1}{2})^{2}} e^{\pi i (n + \frac{1}{2})^{2} z} \\
+      &= \sum_{n \in \Z} e^{\pi i (n^2 + n + \frac{1}{4})} e^{\pi i (n + \frac{1}{2})^{2} z} =
+      \sum_{n \in \Z} (-1)^{n^2 + n}e^{\pi i / 4} e^{\pi i (n + \frac{1}{2})^{2} z} \\
+      &= e^{\pi i / 4} \Theta_{2}(z)
+  \end{align}
+  and taking 4th power.
+  \eqref{eqn:H2-transform-S} and \eqref{eqn:H4-transform-S} are equivalent under $z \leftrightarrow
+  -1/z$, so it is enough to show \eqref{eqn:H2-transform-S} and \eqref{eqn:H3-transform-S}.
+  These identities follow from the identities of the \emph{two-variable} Jacobi theta function,
+  which is defined as (be careful for the variables, where we use $\tau$ instead of $z$)
+  \begin{equation}
+      \theta(z, \tau) = \sum_{n \in \mathbb{Z}} e^{2 \pi i n z + \pi i n^2 \tau} \label{eqn:jacobi2}
+  \end{equation}
+  and already formalized by David Loeffler.
+  This function specialize to the theta functions as
+  \begin{align}
+      \Theta_{2}(\tau) &= e^{\pi i \tau / 4} \theta(-\tau / 2, \tau) \label{eqn:Th2-as-jacobi2} \\
+      \Theta_{3}(\tau) &= \theta(0, \tau) \label{eqn:Th3-as-jacobi2} \\
+      \Theta_{4}(\tau) &= \theta(1/2, \tau) \label{eqn:Th4-as-jacobi2} \\
+  \end{align}
+
+  Poisson summation formula gives
+  \begin{equation}
+      \theta(z, \tau) = \frac{1}{\sqrt{-i \tau}} e^{-\frac{\pi i z^2}{\tau}}
+      \theta\left(\frac{z}{\tau}, -\frac{1}{\tau}\right) \label{eqn:jacobi2transform}
+  \end{equation}
+  and applying the specializations above yield the identities.
+  For example, \eqref{eqn:H4-transform-S} follows from
+  \begin{equation}
+      \Theta_{4}(\tau) = \theta\left(\frac{1}{2}, \tau\right) = \frac{1}{\sqrt{-i\tau}} e^{-
+      \frac{\pi i }{4 \tau}} \theta\left(\frac{1}{2 \tau}, -\frac{1}{\tau}\right) =
+      \frac{1}{\sqrt{-i\tau}} \Theta_{2}\left(-\frac{1}{\tau}\right)
+  \end{equation}
+  and taking 4th power.
+  -/)
+  (latexEnv := "lemma")]
 lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by
   -- H₄|T = H₃|T^2 = Θ₂(0, z + 2) = Θ₂(0, z) = H₃
   ext x
@@ -144,6 +370,63 @@ lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α.1) = H₄ := by
   simp [α_eq_T_sq, sq, slash_mul, H₃_T_action, H₄_T_action]
 
 /-- Use jacobiTheta₂_functional_equation -/
+@[blueprint
+  "lemma:theta-transform-S-T"
+  (statement := /--
+  These elements act on the theta functions in the following way
+  \begin{align}
+      H_2 | S &= -H_4 \label{eqn:H2-transform-S} \\
+      H_3 | S &= -H_3 \label{eqn:H3-transform-S} \\
+      H_4 | S &= -H_2 \label{eqn:H4-transform-S}
+  \end{align}
+  and
+  \begin{align}
+      H_2 | T &= -H_2 \label{eqn:H2-transform-T} \\
+      H_3 | T &= H_4 \label{eqn:H3-transform-T} \\
+      H_4 | T &= H_3 \label{eqn:H4-transform-T}
+  \end{align}
+  -/)
+  (proof := /--
+  The last three identities easily follow from the definition.
+  For example, \eqref{eqn:H2-transform-T} follows from
+  \begin{align}
+      \Theta_{2}(z + 1) &= \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 (z + 1)}
+      = \sum_{n \in \Z} e^{\pi i (n + \frac{1}{2})^{2}} e^{\pi i (n + \frac{1}{2})^{2} z} \\
+      &= \sum_{n \in \Z} e^{\pi i (n^2 + n + \frac{1}{4})} e^{\pi i (n + \frac{1}{2})^{2} z} =
+      \sum_{n \in \Z} (-1)^{n^2 + n}e^{\pi i / 4} e^{\pi i (n + \frac{1}{2})^{2} z} \\
+      &= e^{\pi i / 4} \Theta_{2}(z)
+  \end{align}
+  and taking 4th power.
+  \eqref{eqn:H2-transform-S} and \eqref{eqn:H4-transform-S} are equivalent under $z \leftrightarrow
+  -1/z$, so it is enough to show \eqref{eqn:H2-transform-S} and \eqref{eqn:H3-transform-S}.
+  These identities follow from the identities of the \emph{two-variable} Jacobi theta function,
+  which is defined as (be careful for the variables, where we use $\tau$ instead of $z$)
+  \begin{equation}
+      \theta(z, \tau) = \sum_{n \in \mathbb{Z}} e^{2 \pi i n z + \pi i n^2 \tau} \label{eqn:jacobi2}
+  \end{equation}
+  and already formalized by David Loeffler.
+  This function specialize to the theta functions as
+  \begin{align}
+      \Theta_{2}(\tau) &= e^{\pi i \tau / 4} \theta(-\tau / 2, \tau) \label{eqn:Th2-as-jacobi2} \\
+      \Theta_{3}(\tau) &= \theta(0, \tau) \label{eqn:Th3-as-jacobi2} \\
+      \Theta_{4}(\tau) &= \theta(1/2, \tau) \label{eqn:Th4-as-jacobi2} \\
+  \end{align}
+
+  Poisson summation formula gives
+  \begin{equation}
+      \theta(z, \tau) = \frac{1}{\sqrt{-i \tau}} e^{-\frac{\pi i z^2}{\tau}}
+      \theta\left(\frac{z}{\tau}, -\frac{1}{\tau}\right) \label{eqn:jacobi2transform}
+  \end{equation}
+  and applying the specializations above yield the identities.
+  For example, \eqref{eqn:H4-transform-S} follows from
+  \begin{equation}
+      \Theta_{4}(\tau) = \theta\left(\frac{1}{2}, \tau\right) = \frac{1}{\sqrt{-i\tau}} e^{-
+      \frac{\pi i }{4 \tau}} \theta\left(\frac{1}{2 \tau}, -\frac{1}{\tau}\right) =
+      \frac{1}{\sqrt{-i\tau}} \Theta_{2}\left(-\frac{1}{\tau}\right)
+  \end{equation}
+  and taking 4th power.
+  -/)
+  (latexEnv := "lemma")]
 lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
   ext ⟨x, hx⟩
   have hx' : x ≠ 0 := by simp [Complex.ext_iff, hx.ne.symm]
@@ -197,6 +480,63 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     rw [H₄, Θ₄_as_jacobiTheta₂]
     rfl
 
+@[blueprint
+  "lemma:theta-transform-S-T"
+  (statement := /--
+  These elements act on the theta functions in the following way
+  \begin{align}
+      H_2 | S &= -H_4 \label{eqn:H2-transform-S} \\
+      H_3 | S &= -H_3 \label{eqn:H3-transform-S} \\
+      H_4 | S &= -H_2 \label{eqn:H4-transform-S}
+  \end{align}
+  and
+  \begin{align}
+      H_2 | T &= -H_2 \label{eqn:H2-transform-T} \\
+      H_3 | T &= H_4 \label{eqn:H3-transform-T} \\
+      H_4 | T &= H_3 \label{eqn:H4-transform-T}
+  \end{align}
+  -/)
+  (proof := /--
+  The last three identities easily follow from the definition.
+  For example, \eqref{eqn:H2-transform-T} follows from
+  \begin{align}
+      \Theta_{2}(z + 1) &= \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 (z + 1)}
+      = \sum_{n \in \Z} e^{\pi i (n + \frac{1}{2})^{2}} e^{\pi i (n + \frac{1}{2})^{2} z} \\
+      &= \sum_{n \in \Z} e^{\pi i (n^2 + n + \frac{1}{4})} e^{\pi i (n + \frac{1}{2})^{2} z} =
+      \sum_{n \in \Z} (-1)^{n^2 + n}e^{\pi i / 4} e^{\pi i (n + \frac{1}{2})^{2} z} \\
+      &= e^{\pi i / 4} \Theta_{2}(z)
+  \end{align}
+  and taking 4th power.
+  \eqref{eqn:H2-transform-S} and \eqref{eqn:H4-transform-S} are equivalent under $z \leftrightarrow
+  -1/z$, so it is enough to show \eqref{eqn:H2-transform-S} and \eqref{eqn:H3-transform-S}.
+  These identities follow from the identities of the \emph{two-variable} Jacobi theta function,
+  which is defined as (be careful for the variables, where we use $\tau$ instead of $z$)
+  \begin{equation}
+      \theta(z, \tau) = \sum_{n \in \mathbb{Z}} e^{2 \pi i n z + \pi i n^2 \tau} \label{eqn:jacobi2}
+  \end{equation}
+  and already formalized by David Loeffler.
+  This function specialize to the theta functions as
+  \begin{align}
+      \Theta_{2}(\tau) &= e^{\pi i \tau / 4} \theta(-\tau / 2, \tau) \label{eqn:Th2-as-jacobi2} \\
+      \Theta_{3}(\tau) &= \theta(0, \tau) \label{eqn:Th3-as-jacobi2} \\
+      \Theta_{4}(\tau) &= \theta(1/2, \tau) \label{eqn:Th4-as-jacobi2} \\
+  \end{align}
+
+  Poisson summation formula gives
+  \begin{equation}
+      \theta(z, \tau) = \frac{1}{\sqrt{-i \tau}} e^{-\frac{\pi i z^2}{\tau}}
+      \theta\left(\frac{z}{\tau}, -\frac{1}{\tau}\right) \label{eqn:jacobi2transform}
+  \end{equation}
+  and applying the specializations above yield the identities.
+  For example, \eqref{eqn:H4-transform-S} follows from
+  \begin{equation}
+      \Theta_{4}(\tau) = \theta\left(\frac{1}{2}, \tau\right) = \frac{1}{\sqrt{-i\tau}} e^{-
+      \frac{\pi i }{4 \tau}} \theta\left(\frac{1}{2 \tau}, -\frac{1}{\tau}\right) =
+      \frac{1}{\sqrt{-i\tau}} \Theta_{2}\left(-\frac{1}{\tau}\right)
+  \end{equation}
+  and taking 4th power.
+  -/)
+  (latexEnv := "lemma")]
 lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   ext x
   have hx' : (x : ℂ) ≠ 0 := by obtain ⟨x, hx⟩ := x; change x ≠ 0; simp [Complex.ext_iff, hx.ne.symm]
@@ -213,6 +553,63 @@ lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   rw [inv_pow, inv_I, even_two.neg_pow, I_sq, mul_neg_one, inv_inv, neg_mul, inv_mul_cancel₀]
   exact pow_ne_zero _ hx'
 
+@[blueprint
+  "lemma:theta-transform-S-T"
+  (statement := /--
+  These elements act on the theta functions in the following way
+  \begin{align}
+      H_2 | S &= -H_4 \label{eqn:H2-transform-S} \\
+      H_3 | S &= -H_3 \label{eqn:H3-transform-S} \\
+      H_4 | S &= -H_2 \label{eqn:H4-transform-S}
+  \end{align}
+  and
+  \begin{align}
+      H_2 | T &= -H_2 \label{eqn:H2-transform-T} \\
+      H_3 | T &= H_4 \label{eqn:H3-transform-T} \\
+      H_4 | T &= H_3 \label{eqn:H4-transform-T}
+  \end{align}
+  -/)
+  (proof := /--
+  The last three identities easily follow from the definition.
+  For example, \eqref{eqn:H2-transform-T} follows from
+  \begin{align}
+      \Theta_{2}(z + 1) &= \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 (z + 1)}
+      = \sum_{n \in \Z} e^{\pi i (n + \frac{1}{2})^{2}} e^{\pi i (n + \frac{1}{2})^{2} z} \\
+      &= \sum_{n \in \Z} e^{\pi i (n^2 + n + \frac{1}{4})} e^{\pi i (n + \frac{1}{2})^{2} z} =
+      \sum_{n \in \Z} (-1)^{n^2 + n}e^{\pi i / 4} e^{\pi i (n + \frac{1}{2})^{2} z} \\
+      &= e^{\pi i / 4} \Theta_{2}(z)
+  \end{align}
+  and taking 4th power.
+  \eqref{eqn:H2-transform-S} and \eqref{eqn:H4-transform-S} are equivalent under $z \leftrightarrow
+  -1/z$, so it is enough to show \eqref{eqn:H2-transform-S} and \eqref{eqn:H3-transform-S}.
+  These identities follow from the identities of the \emph{two-variable} Jacobi theta function,
+  which is defined as (be careful for the variables, where we use $\tau$ instead of $z$)
+  \begin{equation}
+      \theta(z, \tau) = \sum_{n \in \mathbb{Z}} e^{2 \pi i n z + \pi i n^2 \tau} \label{eqn:jacobi2}
+  \end{equation}
+  and already formalized by David Loeffler.
+  This function specialize to the theta functions as
+  \begin{align}
+      \Theta_{2}(\tau) &= e^{\pi i \tau / 4} \theta(-\tau / 2, \tau) \label{eqn:Th2-as-jacobi2} \\
+      \Theta_{3}(\tau) &= \theta(0, \tau) \label{eqn:Th3-as-jacobi2} \\
+      \Theta_{4}(\tau) &= \theta(1/2, \tau) \label{eqn:Th4-as-jacobi2} \\
+  \end{align}
+
+  Poisson summation formula gives
+  \begin{equation}
+      \theta(z, \tau) = \frac{1}{\sqrt{-i \tau}} e^{-\frac{\pi i z^2}{\tau}}
+      \theta\left(\frac{z}{\tau}, -\frac{1}{\tau}\right) \label{eqn:jacobi2transform}
+  \end{equation}
+  and applying the specializations above yield the identities.
+  For example, \eqref{eqn:H4-transform-S} follows from
+  \begin{equation}
+      \Theta_{4}(\tau) = \theta\left(\frac{1}{2}, \tau\right) = \frac{1}{\sqrt{-i\tau}} e^{-
+      \frac{\pi i }{4 \tau}} \theta\left(\frac{1}{2 \tau}, -\frac{1}{\tau}\right) =
+      \frac{1}{\sqrt{-i\tau}} \Theta_{2}\left(-\frac{1}{\tau}\right)
+  \end{equation}
+  and taking 4th power.
+  -/)
+  (latexEnv := "lemma")]
 lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
   rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, modular_S_sq,
     ModularForm.slash_neg' _ _ (by decide), slash_one]
@@ -249,14 +646,40 @@ lemma H₄_β_action : (H₄ ∣[(2 : ℤ)] β.1) = H₄ := calc
     simp [sq, slash_mul, H₂_T_inv_action, H₂_S_action]
 
 /-- H₂, H₃, H₄ are modular forms of weight 2 and level Γ(2) -/
+@[blueprint
+  "lemma:theta-slash-invariant"
+  (statement := /--
+  $H_{2}$, $H_{3}$, and $H_{4}$ are slash invariant under $\Gamma(2)$, i.e. for all $\gamma \in
+  \Gamma(2)$ and $i \in \{2, 3, 4\}$, we have $H_i|\gamma = H_i|\gamma^{-1} = H_i$.
+  -/)
+  (proof := /--
+    By \cref{lemma:Gamma-2-generators} and \cref{lemma:slash-operator-chain-rule}, it suffices to
+    show that the $H_i$ are invariant under slash actions with respect to $\alpha$, $\beta$, and
+    $-I$.
+  Invariance under $-I$ follows from Lemma \ref{lemma:slash-negI-even-weight}.
+  The rest follows from Lemma \ref{lemma:slash-operator-chain-rule},
+  \ref{lemma:theta-transform-S-T}, and the matrix identities
+  \begin{equation}
+      \alpha = T^2, \quad \beta = -S\alpha^{-1}S = -ST^{-2}S. \label{eqn:matrix}
+  \end{equation}
+  For example, invariance for $H_2$ can be proved by
+  \begin{align}
+      H_2|\alpha &= H_2 |T^{2} = -H_2 |T = H_2 \\
+      H_2|\beta &= H_2 |(-S\alpha^{-1}S) = H_2 | (S\alpha^{-1}S) =-H_4 |(\alpha^{-1}S) = -H_4 |S  =
+      H_2.
+  \end{align}
+  -/)
+  (latexEnv := "lemma")]
 noncomputable def H₂_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₂
   slash_action_eq' := slashaction_generators_Γ2 H₂ (2 : ℤ) H₂_α_action H₂_β_action H₂_negI_action
 
+@[blueprint "lemma:theta-slash-invariant"]
 noncomputable def H₃_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₃
   slash_action_eq' := slashaction_generators_Γ2 H₃ (2 : ℤ) H₃_α_action H₃_β_action H₃_negI_action
 
+@[blueprint "lemma:theta-slash-invariant"]
 noncomputable def H₄_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₄
   slash_action_eq' := slashaction_generators_Γ2 H₄ (2 : ℤ) H₄_α_action H₄_β_action H₄_negI_action
@@ -500,6 +923,37 @@ theorem isBoundedAtImInfty_H₄ : IsBoundedAtImInfty H₄ := by
   rw [summable_jacobiTheta₂_term_iff]
   exact z.prop
 
+@[blueprint
+  "lemma:theta-bounded-im-infty"
+  (statement := /--
+  For all $\gamma \in \Gamma_1$, $H_{2}|_2 \gamma$, $H_{3}|_2 \gamma$, and $H_{4}|_2 \gamma$ are
+  holomorphic at $i\infty$.
+  -/)
+  (proof := /--
+  We want to show that for $\gamma \in \Gamma_1$, $\|H_2|_2\gamma(z)\|$ is bounded as $z \in
+  \mathbb{H} \to i\infty$. Firstly, by \Cref{lemma:theta-transform-S-T},
+  \Cref{lemma:Gamma-2-generators} and induction on group elements, we notice that $\{\pm H_2, \pm
+  H_3, \pm H_4\}$ is closed under action by $\Gamma_1$. Hence, it suffices to prove that $H_2$,
+  $H_3$ and $H_4$ are bounded at $i\infty$. Consider $z \in \mathbb{H}$ with $\Im(z) \geq A$. We
+  proceed by direct algebraic manipulation:
+  \begin{align}
+      \|H_2(z)\|
+      &= \left\|\sum_{n \in \Z} \exp\left(\pi i \left(n + \frac{1}{2}\right)^2 z\right)\right\|^4
+      \leq \left(\sum_{n \in \Z} \left\|\exp\left(\pi i \left(n + \frac{1}{2}\right)^2
+      z\right)\right)\right\|^4 \\
+      &= \left(\sum_{n \in \Z} \left\|\exp\left(-\pi \left(n + \frac{1}{2}\right)^2
+      \Im(z)\right)\right)\right\|^4
+      \leq \left(\sum_{n \in \Z} \left\|\exp\left(-\pi \left(n + \frac{1}{2}\right)^2
+      A\right)\right)\right\|^4
+  \end{align}
+
+  Where we prove the final term is convergent by noticing that it equals $\exp(-\pi A / 4)\theta(iA
+  / 2, iA)$, which has been shown to converge in \texttt{Mathlib}. The proofs for $H_3$ and $H_4$
+  are similar (actually easier) and have been omitted.
+
+  \todo{It seems the \texttt{MDifferentiable} requirement is missing.}
+  -/)
+  (latexEnv := "lemma")]
 theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
       ∧ IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] γ) ∧ IsBoundedAtImInfty (H₄ ∣[(2 : ℤ)] γ) := by
   apply Subgroup.closure_induction_left (s := {S, T, ↑negI})
@@ -557,18 +1011,42 @@ theorem isBoundedAtImInfty_H₄_slash :
 
 end H_isBoundedAtImInfty
 
+@[blueprint
+  "lemma:theta-modular"
+  (statement := /-- $H_{2}$, $H_{3}$, and $H_{4}$ belong to $M_2(\Gamma(2))$. -/)
+  (proof := /--
+  From \cref{lemma:theta-slash-invariant} and \cref{lemma:theta-bounded-im-infty}, it remains ot
+  prove that $H_2$, $H_3$ and $H_4$ are holomorphic on $\mathbb{H}$. \todo{fill in proof.}
+  -/)
+  (latexEnv := "lemma")]
 noncomputable def H₂_MF : ModularForm (Γ 2) 2 := {
   H₂_SIF with
   holo' := H₂_SIF_MDifferentiable
   bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_H₂_slash
 }
 
+@[blueprint
+  "lemma:theta-modular"
+  (statement := /-- $H_{2}$, $H_{3}$, and $H_{4}$ belong to $M_2(\Gamma(2))$. -/)
+  (proof := /--
+  From \cref{lemma:theta-slash-invariant} and \cref{lemma:theta-bounded-im-infty}, it remains ot
+  prove that $H_2$, $H_3$ and $H_4$ are holomorphic on $\mathbb{H}$. \todo{fill in proof.}
+  -/)
+  (latexEnv := "lemma")]
 noncomputable def H₃_MF : ModularForm (Γ 2) 2 := {
   H₃_SIF with
   holo' := H₃_SIF_MDifferentiable
   bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_H₃_slash
 }
 
+@[blueprint
+  "lemma:theta-modular"
+  (statement := /-- $H_{2}$, $H_{3}$, and $H_{4}$ belong to $M_2(\Gamma(2))$. -/)
+  (proof := /--
+  From \cref{lemma:theta-slash-invariant} and \cref{lemma:theta-bounded-im-infty}, it remains ot
+  prove that $H_2$, $H_3$ and $H_4$ are holomorphic on $\mathbb{H}$. \todo{fill in proof.}
+  -/)
+  (latexEnv := "lemma")]
 noncomputable def H₄_MF : ModularForm (Γ 2) 2 := {
   H₄_SIF with
   holo' := H₄_SIF_MDifferentiable
@@ -898,6 +1376,27 @@ theorem jacobi_g_eq_zero : jacobi_g = 0 := by
   simpa [jacobi_f] using congr_fun jacobi_f_eq_zero z
 
 /-- Jacobi identity: H₂ + H₄ = H₃ (Blueprint Lemma 6.41) -/
+@[blueprint
+  "lemma:jacobi-identity"
+  (statement := /--
+  These three theta functions satisfy the \emph{Jacobi identity}
+  \begin{equation}\label{eqn:jacobi-identity}
+  H_{2} + H_{4} = H_{3} \Leftrightarrow \Theta_{2}^4 + \Theta_{4}^4 = \Theta_{3}^4.
+  \end{equation}
+  -/)
+  (proof := /--
+  Let $f = (H_2 + H_4 - H_3)^{2}$.
+  Obviously, $f$ is a modular form of weight $4$ and level $\Gamma(2)$.
+  However, by using the transformation rules of $H_2, H_3, H_4$, one have
+  \begin{align}
+      f|_{S} &= (-H_4 - H_2 + H_3)^{2} = f\\
+      f|_{T} &= (-H_2 + H_3 - H_4)^{2} = f
+  \end{align}
+  so $f$ is actually a modular form of level $1$.
+  By considering the limit as $z \to i\infty$, $f$ is a cusp form, so we get $f = 0$ from
+  \Cref{cor:dim-mf}.
+  -/)
+  (latexEnv := "lemma")]
 theorem jacobi_identity : H₂ + H₄ = H₃ := by
   ext z; simpa [jacobi_g, sub_eq_zero] using congr_fun jacobi_g_eq_zero z
 
@@ -1055,7 +1554,19 @@ lemma Θ₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
 Blueprint: Lemma 6.43 - H₂ is positive on the imaginary axis.
 Proof strategy: Each term exp(-π(n+1/2)²t) > 0, so Θ₂(it) > 0, hence H₂ = Θ₂^4 > 0.
 -/
-@[fun_prop]
+@[fun_prop, blueprint
+  "cor:theta-pos"
+  (statement := /--
+  All three functions $t \mapsto H_2(it), H_3(it), H_4(it)$ are positive for $t > 0$.
+  -/)
+  (proof := /--
+  By Lemma \ref{lemma:jacobi-identity} and the transformation law \eqref{eqn:H2-transform-S}, it is
+  enough to prove the positivity for $\Theta_2(it)$, which is clear from its definition:
+  \begin{equation}
+      \Theta_{2}(it) = \sum_{n \in \Z} e^{- \pi (n + \frac{1}{2})^{2} t} > 0.
+  \end{equation}
+  -/)
+  (latexEnv := "corollary")]
 theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
   constructor
   · exact H₂_imag_axis_real
@@ -1100,7 +1611,19 @@ From H₄_S_action: (H₄ ∣[2] S) = -H₂
 From ResToImagAxis.SlashActionS: relates values at t and 1/t.
 This gives H₂(i/t) = t² * H₄(it), so H₄(it) > 0 follows from H₂(i/t) > 0.
 -/
-@[fun_prop]
+@[fun_prop, blueprint
+  "cor:theta-pos"
+  (statement := /--
+  All three functions $t \mapsto H_2(it), H_3(it), H_4(it)$ are positive for $t > 0$.
+  -/)
+  (proof := /--
+  By Lemma \ref{lemma:jacobi-identity} and the transformation law \eqref{eqn:H2-transform-S}, it is
+  enough to prove the positivity for $\Theta_2(it)$, which is clear from its definition:
+  \begin{equation}
+      \Theta_{2}(it) = \sum_{n \in \Z} e^{- \pi (n + \frac{1}{2})^{2} t} > 0.
+  \end{equation}
+  -/)
+  (latexEnv := "corollary")]
 theorem H₄_imag_axis_pos : ResToImagAxis.Pos H₄ := by
   constructor
   · exact H₄_imag_axis_real

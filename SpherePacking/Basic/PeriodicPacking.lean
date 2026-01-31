@@ -3,6 +3,7 @@ Copyright (c) 2024 Gareth Ma. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gareth Ma
 -/
+import Architect
 import Mathlib.Algebra.Module.ZLattice.Covolume
 import Mathlib.Dynamics.Ergodic.Action.Regular
 
@@ -416,6 +417,43 @@ private theorem aux
     _ = R := by ring
 
 -- Theorem 2.3, lower bound
+@[blueprint
+  "lemma:periodic-points-bounds"
+  (statement := /--
+  For all $R$, we have the following inequality relating the number of points from $X$ (periodic
+  w.r.t. $\Lambda$) in a ball with the number of points from $\Lambda$:
+  \[
+    \left|\Lambda \cap \mathcal{B}_d(R - L)\right|\left|X / \Lambda\right|
+    \leq \left|X \cap \mathcal{B}_d(R)\right|
+    \leq \left|\Lambda \cap \mathcal{B}_d(R + L)\right|\left|X / \Lambda\right|
+  \]
+  -/)
+  (proof := /--
+  For the first inequality, we notice that $\bigcup_{x \in \Lambda \cap \mathcal{B}_d(R - L)} (x +
+  \mathcal{D}) \subseteq \mathcal{B}_d(R)$, because for $x \in \Lambda \cap \mathcal{B}_d(R - L)$
+  and $y \in x + \mathcal{D}$, we have $\|x\| < R - L$ and $\|y - x\| \leq L$, so $\|y\| < R$ by
+  triangle inequality. Intersecting both sides with $X$ and simplifying, we have
+  
+  \[
+    \left(\bigcup_{x \in \Lambda \cap \mathcal{B}_d(R - L)} (x + \mathcal{D})\right) \cap X =
+    \bigcup_{x \in \Lambda \cap \mathcal{B}_d(R - L)} ((x + \mathcal{D}) \cap X) \subseteq
+    \mathcal{B}_d(R) \cap X
+  \]
+  
+  Consider the (finite) cardinality on both sides and noting that $|(x + \mathcal{D}) \cap X| = |X /
+  \Lambda|$ for all $x$, we see that $|\Lambda \cap \mathcal{B}_d(R - L)||X / \Lambda| \leq |X \cap
+  \mathcal{B}_d(R)|$, as desired.
+  
+  The proof of the second inequality is similar. We again observe that $\mathcal{B}_d(R) \subseteq
+  \bigcup_{x \in \Lambda \cap \mathcal{B}_d(R + L)} (x + \mathcal{D})$, which follows from the
+  tiling property of fundamental domain (i.e. every point can be translated by a $\Lambda$ lattice
+  point into $\mathcal{D}$). Intersecting both sides with $X$ and considering cardinality of both
+  sides concludes the proof.
+  
+  There are several technicalities when formalising in Lean, such as having to prove $|\Lambda \cap
+  \mathcal{B}_d(R)|$ is countable and finite. Those are handled at \texttt{aux3}.
+  -/)
+  (latexEnv := "lemma")]
 theorem PeriodicSpherePacking.aux_ge
     (hd : 0 < d) {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
@@ -480,6 +518,43 @@ private theorem aux'
     exact fract_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
 
 -- Theorem 2.3, upper bound - the proof is similar to lower bound
+@[blueprint
+  "lemma:periodic-points-bounds"
+  (statement := /--
+  For all $R$, we have the following inequality relating the number of points from $X$ (periodic
+  w.r.t. $\Lambda$) in a ball with the number of points from $\Lambda$:
+  \[
+    \left|\Lambda \cap \mathcal{B}_d(R - L)\right|\left|X / \Lambda\right|
+    \leq \left|X \cap \mathcal{B}_d(R)\right|
+    \leq \left|\Lambda \cap \mathcal{B}_d(R + L)\right|\left|X / \Lambda\right|
+  \]
+  -/)
+  (proof := /--
+  For the first inequality, we notice that $\bigcup_{x \in \Lambda \cap \mathcal{B}_d(R - L)} (x +
+  \mathcal{D}) \subseteq \mathcal{B}_d(R)$, because for $x \in \Lambda \cap \mathcal{B}_d(R - L)$
+  and $y \in x + \mathcal{D}$, we have $\|x\| < R - L$ and $\|y - x\| \leq L$, so $\|y\| < R$ by
+  triangle inequality. Intersecting both sides with $X$ and simplifying, we have
+  
+  \[
+    \left(\bigcup_{x \in \Lambda \cap \mathcal{B}_d(R - L)} (x + \mathcal{D})\right) \cap X =
+    \bigcup_{x \in \Lambda \cap \mathcal{B}_d(R - L)} ((x + \mathcal{D}) \cap X) \subseteq
+    \mathcal{B}_d(R) \cap X
+  \]
+  
+  Consider the (finite) cardinality on both sides and noting that $|(x + \mathcal{D}) \cap X| = |X /
+  \Lambda|$ for all $x$, we see that $|\Lambda \cap \mathcal{B}_d(R - L)||X / \Lambda| \leq |X \cap
+  \mathcal{B}_d(R)|$, as desired.
+  
+  The proof of the second inequality is similar. We again observe that $\mathcal{B}_d(R) \subseteq
+  \bigcup_{x \in \Lambda \cap \mathcal{B}_d(R + L)} (x + \mathcal{D})$, which follows from the
+  tiling property of fundamental domain (i.e. every point can be translated by a $\Lambda$ lattice
+  point into $\mathcal{D}$). Intersecting both sides with $X$ and considering cardinality of both
+  sides concludes the proof.
+  
+  There are several technicalities when formalising in Lean, such as having to prove $|\Lambda \cap
+  \mathcal{B}_d(R)|$ is countable and finite. Those are handled at \texttt{aux3}.
+  -/)
+  (latexEnv := "lemma")]
 theorem PeriodicSpherePacking.aux_le
     (hd : 0 < d) {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
@@ -673,6 +748,32 @@ open ZSpan
 variable (b : Basis ι ℤ S.lattice)
 
 -- Theorem 2.2 lower bound, in terms of fundamental domain of Z-lattice
+@[blueprint
+  "lemma:lattice-points-bound"
+  (statement := /--
+  For all $R$, we have the following inequality relating the number of lattice points from $\Lambda$
+  in a ball with the volume of the ball and the fundamental region $\mathcal{D}$:
+  
+  \[
+    \frac{\mathrm{Vol}(\mathcal{B}_d(R - L))}{\mathrm{Vol}(\mathcal{D})}
+    \leq \left|\Lambda \cap \mathcal{B}_d(R)\right|
+    \leq \frac{\mathrm{Vol}(\mathcal{B}_d(R + L))}{\mathrm{Vol}(\mathcal{D})}
+  \]
+  -/)
+  (proof := /--
+  For the first inequality, it suffices to prove that $\mathcal{B}_d(R - L) \subseteq \bigcup_{x \in
+  \Lambda \cap \mathcal{B}_d(R)} (x + \mathcal{D})$, since the cosets on the right are disjoint. For
+  a vector $v \in \mathcal{B}_d(R - L)$, we have $\|v\| < R - L$ by definition. Since $\mathcal{D}$
+  is a fundamental domain, there exists a lattice point $x \in \Lambda$ such that $v \in x +
+  \mathcal{D}$. Rearranging gives $v - x \in \mathcal{D}$, which means $\|v - x\| \leq L$. By the
+  triangle inequality, $\|x\| < R$, i.e. $x \in \mathcal{B}_d(L)$, concluding the proof.
+  
+  For the second inequality, we prove that $\bigcup_{x \in \Lambda \cap \mathcal{B}_d(R)} (x +
+  \mathcal{D}) \subseteq \mathcal{B}_d(R + L)$. Consider a vector $x \in \Lambda \cap
+  \mathcal{B}_d(R)$ and a vector $y \in x + \mathcal{D}$. From above, we know $\|x\| < R$ and $\|y -
+  x\| \leq L$, so $\|y\| < R + L$, concluding the proof.
+  -/)
+  (latexEnv := "lemma")]
 theorem PeriodicSpherePacking.aux2_ge'
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
@@ -690,6 +791,32 @@ theorem PeriodicSpherePacking.aux2_ge'
     exact hy
 
 -- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice
+@[blueprint
+  "lemma:lattice-points-bound"
+  (statement := /--
+  For all $R$, we have the following inequality relating the number of lattice points from $\Lambda$
+  in a ball with the volume of the ball and the fundamental region $\mathcal{D}$:
+  
+  \[
+    \frac{\mathrm{Vol}(\mathcal{B}_d(R - L))}{\mathrm{Vol}(\mathcal{D})}
+    \leq \left|\Lambda \cap \mathcal{B}_d(R)\right|
+    \leq \frac{\mathrm{Vol}(\mathcal{B}_d(R + L))}{\mathrm{Vol}(\mathcal{D})}
+  \]
+  -/)
+  (proof := /--
+  For the first inequality, it suffices to prove that $\mathcal{B}_d(R - L) \subseteq \bigcup_{x \in
+  \Lambda \cap \mathcal{B}_d(R)} (x + \mathcal{D})$, since the cosets on the right are disjoint. For
+  a vector $v \in \mathcal{B}_d(R - L)$, we have $\|v\| < R - L$ by definition. Since $\mathcal{D}$
+  is a fundamental domain, there exists a lattice point $x \in \Lambda$ such that $v \in x +
+  \mathcal{D}$. Rearranging gives $v - x \in \mathcal{D}$, which means $\|v - x\| \leq L$. By the
+  triangle inequality, $\|x\| < R$, i.e. $x \in \mathcal{B}_d(L)$, concluding the proof.
+  
+  For the second inequality, we prove that $\bigcup_{x \in \Lambda \cap \mathcal{B}_d(R)} (x +
+  \mathcal{D}) \subseteq \mathcal{B}_d(R + L)$. Consider a vector $x \in \Lambda \cap
+  \mathcal{B}_d(R)$ and a vector $y \in x + \mathcal{D}$. From above, we know $\|x\| < R$ and $\|y -
+  x\| \leq L$, so $\|y\| < R + L$, concluding the proof.
+  -/)
+  (latexEnv := "lemma")]
 theorem PeriodicSpherePacking.aux2_le'
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
@@ -888,6 +1015,23 @@ theorem Filter.map_add_atTop_eq' {β : Type*} {f : ℝ → β} (C : ℝ) (α : F
     · simp [le_sub_iff_add_le]
     · simp [sub_add_cancel]
 
+@[blueprint
+  "lemma:volume-ball-ratio-limit"
+  (statement := /--
+  For any constant $C > 0$, we have
+  
+  \[
+    \lim_{R \to \infty} \frac{\mathrm{Vol}(\mathcal{B}_d(R))}{\mathrm{Vol}(\mathcal{B}_d(R + C))} =
+    1
+  \]
+  -/)
+  (proof := /--
+  Write out the formula for volume of a ball and simplify. More specifically, we have
+  $\mathrm{Vol}(\mathcal{B}_d(R)) = R^d \pi^{d / 2} / \Gamma\left(\frac{d}{2} + 1\right)$, so
+  $\mathrm{Vol}(\mathcal{B}_d(R)) / \mathrm{Vol}(\mathcal{B}_d(R + C)) = R^d / (R + C)^d = \left(1 -
+  \frac{1}{R + C}\right)^d = 1$.
+  -/)
+  (latexEnv := "lemma")]
 theorem volume_ball_ratio_tendsto_nhds_one'' {d : ℕ} {C C' : ℝ} (hd : 0 < d) :
     Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) atTop (𝓝 1) := by
@@ -931,6 +1075,40 @@ private lemma PeriodicSpherePacking.tendsto_finiteDensity
     · left
       exact one_ne_zero
 
+@[blueprint
+  "theorem:psp-density"
+  (statement := /--
+  For a periodic sphere packing $\mathcal{P} = \mathcal{P}(X)$ with centers $X$ periodic to the
+  lattice $\Lambda$ and separation $r$,
+  
+  \[
+    \Delta_{\mathcal{P}} = |X / \Lambda| \cdot \frac{\Vol{\mathcal{B}_d(r / 2)}}{\Vol{\R^d /
+    \Lambda}}
+  \]
+  -/)
+  (proof := /--
+  Fix any fundamental domain $\mathcal{D}$ (induced by any basis) of the lattice $\Lambda$.
+  Combining \cref{lemma:sp-finite-density-bound}, \cref{lemma:lattice-points-bound} and
+  \cref{lemma:periodic-points-bounds}, we get the following inequality for the \textit{finite}
+  density:
+  
+  \[
+    |X / \Lambda| \cdot \frac{\Vol{\mathcal{B}_d(r / 2)}}{\Vol{\R^d / \Lambda}} \cdot
+    \frac{\Vol{\mathcal{B}_d(R - r / 2 - 2L)}}{\Vol{\mathcal{B}_d(R)}}
+    \leq \Delta_{\mathcal{P}}(R)
+    \leq |X / \Lambda| \cdot \frac{\Vol{\mathcal{B}_d(r / 2)}}{\Vol{\R^d / \Lambda}} \cdot
+    \frac{\Vol{\mathcal{B}_d(R + r / 2 + 2L)}}{\Vol{\mathcal{B}_d(R)}}
+  \]
+  
+  Taking limit on both sides as $R \to \infty$ and apply the Sandwich theorem and
+  \cref{lemma:volume-ball-ratio-limit}, we get
+  
+  \[
+    \Delta_{\mathcal{P}} = \limsup_{R \to \infty} \Delta_{\mathcal{P}}(R) = \lim_{R \to \infty}
+    \Delta_{\mathcal{P}}(R) = |X / \Lambda| \cdot \frac{\Vol{\mathcal{B}_d(r / 2)}}{\Vol{\R^d /
+    \Lambda}}
+  \]
+  -/)]
 theorem PeriodicSpherePacking.density_eq
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     S.density
@@ -1185,6 +1363,16 @@ end Empty_Centers
 
 section Periodic_Constant_Eq_Constant
 
+@[blueprint
+  "thm:periodic-packing-optimal"
+  (statement := /--
+  For all $d$, the periodic sphere packing constant in $\R^d$ is equal to the sphere packing
+  constant in $\R^d$.
+  -/)
+  (proof := /--
+  \todo{State this in Lean (ready).}
+  \todo{Fill in proof here (see~\cite[Appendix A]{ElkiesCohn})}
+  -/)]
 theorem periodic_constant_eq_constant (hd : 0 < d) :
     PeriodicSpherePackingConstant d = SpherePackingConstant d := by
   sorry

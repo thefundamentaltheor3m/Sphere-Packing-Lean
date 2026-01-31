@@ -2,50 +2,16 @@
 
 Given that the problem involves the \emph{arrangement} of balls in space, it is intuitive not to worry about the radius of the balls (so long as they are all equal to each other). However, Definition~\ref{SpherePacking.balls} involves a choice of separation radius. In principle, we would want two sphere packing configurations that differ only in separation radii to `encode the same information'. In this brief subsection, we will describe how to change the separation radius of a sphere packing by \emph{scaling} the packing by a positive real number and prove that this does not affect its density. This will give us the freedom to choose any separation radius we like when attempting to define the optimal sphere packing in $\R^d$.
 
-\begin{definition}\label{SpherePacking.scale}\lean{SpherePacking.scale}\uses{SpherePacking}\leanok
-  Given a sphere packing $\Pa(X)$ with separation radius $r$, we defined the \emph{scaled packing} with respect to a real number $c > 0$ to be the packing $\Pa(cX)$, where $cX = \setof{cx \in V}{x \in X}$ has separation radius $cr$.
-\end{definition}
+\inputleannode{SpherePacking.scale}
 
-\begin{lemma}\label{SpherePacking.scale_finiteDensity}\lean{SpherePacking.scale_finiteDensity}\uses{SpherePacking.finiteDensity, SpherePacking.scale}\leanok
-  Let $\Pa(X)$ be a sphere packing and $c$ a positive real number. Then, for all $R > 0$,
-  \[
-    \Delta_{\Pa(cX)}(cR) = \Delta_{\Pa(X)}(R).
-  \]
-\end{lemma}
-\begin{proof}\leanok
-  The proof follows by direct computation:
-  \[
-    \Delta_{\Pa(cX)}(cR) = \frac{\Vol{\Pa(cX) \cap B_d(0, cR)}}{\Vol{B_d(0, cR)}} = \frac{c^d \cdot \Vol{\Pa(X) \cap B_d(0, R)}}{c^d \cdot \Vol{B_d(0, R)}}
-    % = \frac{\Vol{\Pa(X) \cap B_d(0, R)}}{\Vol{B_d(0, R)}}
-    = \Delta_{\Pa(X)}(R)
-  \]
-  where the second equality follows from applying the fact that scaling a (measurable) set by a factor of $c$ scales its volume by a factor of $c^d$ to the fact that $\Pa(cX) \cap B_d(0, cR) = c \cdot (\Pa(X) \cap B_d(0, cR))$.
-\end{proof}
+\inputleannode{SpherePacking.scale_finiteDensity}
 
-\begin{lemma}\label{SpherePacking.scale_density}\lean{SpherePacking.scale_density}\uses{SpherePacking.scale}\leanok
-  Let $\Pa(X)$ be a sphere packing and $c$ a positive real number. Then, the density of the scaled packing $\Pa(cX)$ is equal to the density of the original packing $\Pa(X)$.
-\end{lemma}
-\begin{proof}\uses{SpherePacking.scale_finiteDensity}\leanok
-  One can show, using relatively unsophisticated real analysis, that
-  \[
-    \limsup_{R \to \infty} \Delta_{\Pa(cX)}(R) = \limsup_{cR \to \infty} \Delta_{\Pa(cX)}(cR)
-  \]
-  Lemma~\ref{SpherePacking.scale_finiteDensity} tells us that $\Delta_{\Pa(cX)}(cR) = \Delta_{\Pa(X)}(R)$ for every $R > 0$. Therefore,
-  \[
-    \limsup_{cR \to \infty} \Delta_{\Pa(cX)}(cR) = \limsup_{cR \to \infty} \Delta_{\Pa(X)}(R) = \limsup_{R \to \infty} \Delta_{\Pa(X)}(R)
-  \]
-  where the second equality is the result of a similar change of variables to the one done above.
-\end{proof}
+
+\inputleannode{SpherePacking.scale_density}
+
 
 Therefore, as expected, we do not need to worry about the separation radius when constructing sphere packings. This will be useful when we attempt to construct the optimal sphere packing in $\R^8$---and even more so when attempting to \emph{formalise} this construction---because the underlying structure of the packing is given by a set known as the $E_8$ lattice, which has separation radius $\sqrt{2}$.
 
 We can also use Lemma~\ref{SpherePacking.scale_density} to simplify the computation of the sphere packing constant by taking the supremum not over \emph{all} sphere packings but only over those with density $1$.
 
-\begin{lemma}\label{SpherePacking.constant_eq_constant_normalized}\lean{SpherePacking.constant_eq_constant_normalized}\uses{SpherePackingConstant, SpherePacking.density}\leanok
-  \[
-    \Delta_d = \sup\limits_{\substack{\Pa \subset \R^d \\ \text{sphere packing} \\ \text{sep.~rad.} = 1}} \Delta_{\Pa}
-  \]
-\end{lemma}
-\begin{proof}\uses{SpherePacking.scale_density}\leanok
-  That the supremum over packings of unit density is at most the sphere packing constant is obvious. For the reverse inequality, let $\Pa(X)$ be any sphere packing with separation radius $r$. We know, from Lemma~\ref{SpherePacking.scale_density}, that the density of $\Pa(X)$ is equal to that of the scaled packing $\Pa\!\left(\frac{X}{r}\right)$. Since the scaled packing has separation radius $1$, its density is naturally at most the supremum over all packings of unit density, meaning that the same is true of $\Pa(X)$.
-\end{proof}
+\inputleannode{SpherePacking.constant_eq_constant_normalized}

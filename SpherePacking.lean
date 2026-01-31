@@ -1,3 +1,4 @@
+import Architect
 import SpherePacking.Basic.E8
 import SpherePacking.Basic.PeriodicPacking
 import SpherePacking.Basic.SpherePacking

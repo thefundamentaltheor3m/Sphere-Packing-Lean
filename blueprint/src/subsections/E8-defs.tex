@@ -2,114 +2,41 @@
 
 There are several equivalent definitions of the $E_8$ lattice. Below, we formalise two of them, and prove they are equivalent.
 
-\begin{definition}{($E_8$-lattice, Definition 1)}\label{E8-Set}\lean{Submodule.E8}\leanok
-  We define the \emph{$E_8$-lattice} (as a subset of $\R^8$) to be
-$$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1}^8x_i\equiv 0\;(\mathrm{mod\;2})\}.$$
-\end{definition}
+\inputleannode{E8-Set}
 
-\begin{definition}{($E_8$-lattice, Definition 2)}\label{E8-Matrix}\lean{E8Matrix}\leanok
-  We define the \emph{$E_8$ basis vectors} to be the set of vectors
-  \[ \B_8 =
-  \left\{
-    \begin{bmatrix}
-      1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0
-    \end{bmatrix},
-    \begin{bmatrix}
-      0 \\ 1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0
-    \end{bmatrix},
-    \begin{bmatrix}
-      0 \\ 0 \\ 1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0
-    \end{bmatrix},
-    \begin{bmatrix}
-      0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0 \\ 0 \\ 0
-    \end{bmatrix},
-    \begin{bmatrix}
-      0 \\ 0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0 \\ 0
-    \end{bmatrix},
-    \begin{bmatrix}
-      0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 1 \\ 1 \\ 0
-    \end{bmatrix},
-    \begin{bmatrix}
-      -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2
-    \end{bmatrix},
-    \begin{bmatrix}
-      0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0
-    \end{bmatrix}
-  \right\}
-  \]
-\end{definition}
+\inputleannode{E8-Matrix}
 
-\begin{theorem}\label{E8-defs-equivalent}\lean{span_E8Matrix}\uses{E8-Set, E8-Matrix}\leanok
-  The two definitions above coincide, i.e. $\Lambda_8 = \mathrm{span}_{\Z}(\B_8)$.
-\end{theorem}
-\begin{proof}\leanok
-  We prove each side contains the other side.
+\inputleannode{E8-defs-equivalent}
 
-  For a vector $\vec{v} \in \Lambda_8 \subseteq \R^8$, we have $\sum_i \vec{v}_i \equiv 0 \pmod{2}$ and $\vec{v}_i$ being either all integers or all half-integers. After some modulo arithmetic, it can be seen that $\B_8^{-1}\vec{v}$ as integer coordinates (i.e. it is congruent to $0$ modulo $1$). Hence, $\vec{v} \in \mathrm{span}_{\Z}(\B_8)$.
-
-  For the opposite direction, we write the vector as $\vec{v} = \sum_i c_i\B_8^i \in \mathrm{span}_{\Z}(\B_8)$ with $c_i$ being integers and $\B_8^i$ being the $i$-th basis vector. Expanding the definition then gives $\vec{v} = \left(c_1 - \frac{1}{2}c_7, -c_1 + c_2 - \frac{1}{2}c_7, \cdots, -\frac{1}{2}c_7\right)$. Again, after some modulo arithmetic, it can be seen that $\sum_i \vec{v}_i$ is indeed $0$ modulo $2$ and are all either integers and half-integers, concluding the proof.
-
-  (Note: this proof doesn't depend on that $\B_8$ is linearly independent.)
-\end{proof}
 
 \subsection{Basic Properties of $E_8$ lattice}
 
 In this section, we establish basic properties of the $E_8$ lattice and the $\B_8$ vectors.
 
-\begin{lemma}\label{E8-is-basis}\lean{span_E8Matrix_eq_top}\uses{E8-Matrix}\leanok
-  $B_8$ is a $\R$-basis of $\R^8$.
-\end{lemma}
-\begin{proof}\leanok
-  It suffices to prove that $\B_8 \in \mathrm{GL}_8(\R)$. We prove this by explicitly defining the inverse matrix $\B_8^{-1}$ and proving $\B_8 \B_8^{-1} = I_8$, which implies that $\det(\B_8)$ is nonzero. See the Lean code for more details.,
-\end{proof}
+\inputleannode{E8-is-basis}
 
-\begin{lemma}\label{E8-Lattice}\lean{E8Lattice}\uses{E8-Set, E8-defs-equivalent}\leanok
-  $\Lambda_8$ is an additive subgroup of $\R^8$.
-\end{lemma}
-\begin{proof}\leanok
-  Trivially follows from that $\Lambda_8 \subseteq \R^8$ is the $\Z$-span of $\B_8$ and hence an additive group.
-\end{proof}
 
-\begin{lemma}\label{E8-vector-norms}\lean{E8_norm_eq_sqrt_even}\uses{E8-defs-equivalent}\leanok
-  All vectors in $\Lambda_8$ have norm of the form $\sqrt{2n}$, where $n$ is a nonnegative integer.
-\end{lemma}
-\begin{proof}\leanok
-  Writing $\vec{v} = \sum_i c_i\B_8^i$, we have $\|v\|^2 = \sum_i \sum_j c_ic_j (\B_8^i \cdot \B_8^j)$. Computing all $64$ pairs of dot products and simplifying, we get a massive term that is a quadratic form in $c_i$ with even integer coefficients, concluding the proof.
-\end{proof}
+\inputleannode{E8-Lattice}
 
-\begin{lemma}\label{instDiscreteE8Lattice}\lean{instDiscreteE8Lattice}\uses{E8-vector-norms}\leanok
-  $c\Lambda_8$ is discrete, i.e. that the subspace topology induced by its inclusion into $\R^8$ is the discrete topology.
-\end{lemma}
-\begin{proof}\leanok
-  Since $\Lambda_8$ is a topological group and $+$ is continuous, it suffices to prove that $\{0\}$ is open in $\Lambda_8$. This follows from the fact that there is an open ball $\B(\sqrt{2}) \subseteq \R^8$ around it containing no other lattice points, since the shortest nonzero vector has norm $\sqrt{2}$.
-\end{proof}
 
-\begin{lemma}\label{instLatticeE8}\lean{instIsZLatticeE8Lattice}\uses{instDiscreteE8Lattice, E8-is-basis}\leanok
-  $c\Lambda_8$ is a $\Z$-lattice, i.e. it is discrete and spans $\R^8$ over $\R$.
-\end{lemma}
-\begin{proof}\leanok
-  The first part is by \cref{instDiscreteE8Lattice}, and the second part follows from that $\B_8$ is a basis (\cref{E8-is-basis}) and hence linearly independent over $\R$.
-\end{proof}
+\inputleannode{E8-vector-norms}
+
+
+\inputleannode{instDiscreteE8Lattice}
+
+
+\inputleannode{instLatticeE8}
+
 
 \todo{Prove $E_8$ is unimodular.}
 \todo{Prove $E_8$ is positive-definite.}
 
 \subsection{The $E_8$ sphere packing}
 
-\begin{definition}\label{E8Packing}\lean{E8Packing}\uses{E8-Lattice,E8-vector-norms}\leanok
-  The \emph{$E_8$ sphere packing} is the (periodic) sphere packing with separation $\sqrt{2}$, whose set of centres is $\Lambda_8$.
-\end{definition}
+\inputleannode{E8Packing}
 
-\begin{lemma}\label{E8Packing-covol}\lean{E8Basis_volume}\uses{E8Packing}\leanok
-  $\Vol{\Lambda_8} = \mathrm{Covol}(\R^8 / \Lambda_8) = 1$.
-\end{lemma}
-\begin{proof}\leanok
-  \todo{In theory this should follow directly from $\det(\Lambda_8) = 1$, but Lean hates me and \texttt{EuclideanSpace} is being annoying.}
-\end{proof}
+\inputleannode{E8Packing-covol}
 
-\begin{theorem}\label{E8Packing-density}\uses{theorem:psp-density,E8Packing-covol}\lean{E8Packing_density}\leanok
-  We have $\Delta_{\mathcal{P}(E_8)} = \frac{\pi^4}{384}$.
-\end{theorem}
-\begin{proof}\leanok
-  By \cref{theorem:psp-density}, we have $\Delta_{\mathcal{P}(E_8)} = |E_8 / E_8| \cdot \frac{\Vol{\mathcal{B}_8(\sqrt{2} / 2)}}{\mathrm{Covol}(E_8)} = \frac{\pi^4}{384}$, where the last equality follows from \cref{E8Packing-covol} and the formula for volume of a ball: $\Vol{\mathcal{B}_d(R)} = R^d \pi^{d / 2} / \Gamma\left(\frac{d}{2} + 1\right)$.
-\end{proof}
+
+\inputleannode{E8Packing-density}
+

@@ -1,44 +1,11 @@
 In 2003 Cohn and Elkies \cite{ElkiesCohn}  developed  linear programming bounds that apply directly to sphere packings. The goal of this section is to formalize the Cohn--Elkies linear programming bound.
 
 The following theorem is the key result of \cite{ElkiesCohn}. (Note that the original theorem is stated for a class of functions more general then Schwartz functions.)
-\begin{theorem}[Cohn--Elkies {\cite{ElkiesCohn}}]\label{thm:Cohn-Elkies-periodic}\uses{def:Fourier-Transform, SpherePacking.density}\lean{LinearProgrammingBound'}\leanok
+\inputleannode{thm:Cohn-Elkies-periodic}
 
-Let $X\subset\mathbb{R}^d$ be a discrete subset such that $\|x-y\|\geq 1$ for any distinct $x,y\in X$. Suppose that $X$ is $\Lambda$-periodic with respect to some lattice $\Lambda\subset\mathbb{R}^d$. Let $f:\R^d\to\R$ be a Schwartz function that is not identically zero and satisfies the following conditions:
-\begin{equation}\label{eqn:Cohn-Elkies-condition-1}f(x)\leq 0\mbox{ for } \|x\|\geq 1\end{equation} and
-\begin{equation}\label{eqn:Cohn-Elkies-condition-2}\widehat{f}(x)\geq0\mbox{ for all } x\in\R^d.\end{equation}
-  Then the density of any $\Lambda$-periodic sphere packing is bounded above by $$\frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)).$$
-\end{theorem}
-\begin{proof}\uses{thm:Poisson-summation-formula}\leanok
-Here we reproduce the proof given in \cite{ElkiesCohn}.
 
-The inequality
-\begin{equation}\label{eqn: sharp X 1}
-\sharp (X/\Lambda)\cdot f(0)\geq \sum_{x\in X}\sum_{y\in X/\Lambda}f(x-y)=\sum_{x\in X/\Lambda}\sum_{y\in X/\Lambda}\sum_{\ell\in  \Lambda}f(x-y+l)\end{equation}
-follows from the condition \eqref{eqn:Cohn-Elkies-condition-1} of the theorem and the assumption on the distances between points in $X$.
-The equality
-$$\sum_{x\in X/\Lambda}\sum_{y\in X/\Lambda}\sum_{\ell\in  \Lambda}f(x-y+l)=\sum_{x\in X/\Lambda}\sum_{y\in X/\Lambda}\frac{1}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\,\sum_{m\in \Lambda^*} \widehat{f}(m)\,e^{2\pi i m(x-y)}.$$
-follows from the Poisson summation formula.
-The right hand side of the above equation can be written as
-$$\sum_{x\in X/\Lambda}\sum_{y\in X/\Lambda}\frac{1}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\,\sum_{m\in \Lambda^*} \widehat{f}(m)\,e^{2\pi i m(x-y)}=\frac{1}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\,\sum_{m\in \Lambda^*} \widehat{f}(m)\cdot\big|\sum_{x\in X/\Lambda}e^{2\pi i m x}\big|^2.$$
-Note that $\big|\sum_{x\in X/\Lambda}e^{2\pi i m x}\big|^2\geq0$ for all $m\in\Lambda^*$. Moreover,  the term corresponding to $m=0$ satisfies $\big|\sum_{x\in X/\Lambda}e^{2\pi i 0 x}\big|^2=\sharp (X/\Lambda)^2$.
-Now we use the condition \eqref{eqn:Cohn-Elkies-condition-2} and estimate
-\begin{equation}\label{eqn: sharp X 2}\frac{1}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\,\sum_{m\in \Lambda^*} \widehat{f}(m)\cdot\big|\sum_{x\in X/\Lambda}e^{2\pi i m(x-y)}\big|^2
-\geq \frac{\sharp (X/\Lambda)^2}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\cdot \widehat{f}(0).
-\end{equation}
-Comparing inequalities \eqref{eqn: sharp X 1} and \eqref{eqn: sharp X 2} we arrive at
-$$\frac{\sharp (X/\Lambda)}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\leq \frac{f(0)}{\widehat{f}(0)}.$$
-Now we see that the density of the periodic packing $\mathcal{P}_X$ with balls of radius $1/2$ is bounded by
-$$\Delta(\mathcal{P}_X)=\frac{\sharp (X/\Lambda)}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\cdot{\mathrm{vol}(B_d(0,1/2))}\leq
-\frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)).$$
-This finishes the proof of the theorem for periodic packings.
-\end{proof}
+\inputleannode{thm:Cohn-Elkies-general}
 
-\begin{theorem}[Cohn--Elkies {\cite{ElkiesCohn}}]\label{thm:Cohn-Elkies-general}\lean{LinearProgrammingBound}\leanok
-  Let $f:\R^d\to\R$ be a Schwartz function that is not identically zero and satisfies \eqref{eqn:Cohn-Elkies-condition-1} and \eqref{eqn:Cohn-Elkies-condition-2}. Then the density of any $\Lambda$-periodic sphere packing is bounded above by $$\frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)).$$
-\end{theorem}
-\begin{proof}\uses{thm:Cohn-Elkies-periodic,thm:periodic-packing-optimal}\lean{periodic_constant_eq_constant, periodic_constant_eq_periodic_constant_normalized}\leanok
-  The result follows immediately from Theorem~\ref{thm:periodic-packing-optimal} and \Cref{thm:Cohn-Elkies-periodic}.
-\end{proof}
 
 The main step in our proof of \cref{MainTheorem} is the explicit construction of an optimal function. It will be convenient for us to scale this function by $\sqrt{2}$.
 \begin{theorem}\label{thm:g}\uses{thm:g1}

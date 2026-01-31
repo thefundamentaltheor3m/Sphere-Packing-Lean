@@ -1,3 +1,4 @@
+import Architect
 import SpherePacking.ModularForms.Eisenstein
 import Mathlib.Analysis.Calculus.DiffContOnCl
 
@@ -12,6 +13,15 @@ Definition of (Serre) derivative of modular forms.
 Prove Ramanujan's formulas on derivatives of Eisenstein series.
 -/
 
+@[blueprint
+  "def:derivative"
+  (statement := /--
+  Let $F$ be a quasimodular form.
+  We define the (normalized) derivative of $F$ as
+  \begin{equation}\label{eqn:derivative}
+      F' = DF := \frac{1}{2\pi i} \frac{\dd}{\dd z} F.
+  \end{equation}
+  -/)]
 noncomputable def D (F : ℍ → ℂ) : ℍ → ℂ :=
   fun (z : ℍ) => (2 * π * I)⁻¹ * ((deriv (F ∘ ofComplex)) z)
 
@@ -283,6 +293,18 @@ This is the form most commonly used for Eisenstein series q-expansions.
 uses `tsum_pNat` and `nat_pos_tsum2` to convert between sums,
 then applies `D_qexp_tsum`.
 -/
+@[blueprint
+  "lemma:der-q-series"
+  (statement := /--
+  We have an equality of operators $D = q \frac{\dd}{\dd q}$.
+  In particular, the $q$-series of the derivative of a quasimodular form $F(z) = \sum_{n \ge n_0}
+  a_n q^n$ is $F'(z) = \sum_{n \ge n_0} n a_n q^n$.
+  -/)
+  (proof := /--
+  Directly follows from the definition \eqref{def:derivative}, where $\frac{1}{2 \pi
+  i}\frac{\dd}{\dd z}e^{2\pi i n z} = n e^{2\pi i n z}$.
+  -/)
+  (latexEnv := "lemma")]
 theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
     (hsum : Summable (fun n : ℕ+ => a n * cexp (2 * π * I * n * z)))
     (hsum_deriv : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
@@ -319,6 +341,15 @@ theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
 Serre derivative of weight $k$.
 Note that the definition makes sense for any analytic function $F : \mathbb{H} \to \mathbb{C}$.
 -/
+@[blueprint
+  "def:serre-der"
+  (statement := /--
+  For $k \in \mathbb{R}$, define the weight $k$ Serre derivative $\partial_{k}$ of a modular form
+  $F$ as
+  \begin{equation}\label{eqn:serre-der}
+      \partial_{k}F := F' - \frac{k}{12} E_2 F.
+  \end{equation}
+  -/)]
 noncomputable def serre_D (k : ℂ) : (ℍ → ℂ) → (ℍ → ℂ) :=
   fun (F : ℍ → ℂ) => (fun z => D F z - k * 12⁻¹ * E₂ z * F z)
 
@@ -353,6 +384,23 @@ theorem serre_D_smul (k : ℤ) (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable
     _ = c • (D F - k * 12⁻¹ * E₂ * F) := by rw [←smul_sub]
     _ = c • (serre_D k F) := by rfl
 
+@[blueprint
+  "thm:serre-der-prod-rule"
+  (statement := /--
+  The Serre derivative satisfies the following product rule: for any quasimodular forms $F$ and $G$,
+  \begin{equation}
+      \partial_{w_1 + w_2} (FG) = (\partial_{w_1}F)G + F (\partial_{w_2}G).
+  \end{equation}
+  -/)
+  (proof := /--
+  It follows from the definition:
+  \begin{align}
+      \partial_{w_1 + w_2} (FG) &= (FG)' - \frac{w_1 + w_2}{12} E_2 (FG) \\
+      &= F'G + FG' - \frac{w_1 + w_2}{12} E_2(FG) \\
+      &= \left(F' - \frac{w_1}{12}E_2 F\right)G + F \left(G' - \frac{w_2}{12}E_2 G\right) \\
+      &= (\partial_{w_1}F)G + F(\partial_{w_2}G).
+  \end{align}
+  -/)]
 theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G) :
     serre_D (k₁ + k₂) (F * G) = (serre_D k₁ F) * G + F * (serre_D k₂ G) := by
@@ -594,9 +642,59 @@ Serre derivative is equivariant under the slash action. More precisely, if `F` i
 under the slash action of weight `k`, then `serre_D k F` is invariant under the slash action
 of weight `k + 2`.
 -/
+@[blueprint
+  "thm:serre-der-equiv-action"
+  (statement := /--
+  Serre derivative $\partial_{k}$ is equivariant with the slash action of
+  $\mathrm{SL}_{2}(\mathbb{Z})$ in the following sense:
+  \begin{equation}
+      \partial_{k} (F|_{k}\gamma) = (\partial_{k} F)|_{k+2}\gamma, \quad \forall \gamma \in
+      \mathrm{SL}_{2}(\mathbb{Z}).
+  \end{equation}
+  -/)
+  (proof := /--
+  Let $G = \partial_{k}F = F' - \frac{k}{12}E_2 F$.
+  From $F \in M_k(\Gamma)$, we have
+  \begin{equation}
+      (F|_{k}\gamma)(z) := (cz + d)^{-k} F\left(\frac{az + b}{cz + d}\right), \quad \gamma =
+      \begin{pmatrix}a & b \\ c & d\end{pmatrix} \in \Gamma.
+  \end{equation}
+  By taking the derivative of the above equation, we get
+  \begin{align}
+      \frac{\dd}{\dd z}(F|_{k} \gamma)(z) &= -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz +
+      d}\right) + (cz + d)^{-k} (cz + d)^{-2} \frac{\dd F}{\dd z}\left(\frac{az + b}{cz + d}\right)
+      \\
+      &= -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k - 2} \frac{\dd
+      F}{\dd z}\left(\frac{az + b}{cz + d}\right) \\
+      &= -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + 2 \pi i (cz + d)^{-k - 2}
+      F'\left(\frac{az + b}{cz + d}\right) \\
+      \Leftrightarrow (F|_{k} \gamma)'(z) &= -\frac{kc}{2 \pi i} (cz + d)^{-k - 1} F\left(\frac{az +
+      b}{cz + d}\right) + (cz + d)^{-k - 2} F'\left(\frac{az + b}{cz + d}\right).
+  \end{align}
+  Combined with \eqref{eqn:E2-transform-general}, we get
+  \begin{align}
+      ((\partial_k F)|_{k+2}\gamma)(z) &= (cz + d)^{-k-2} \left(F'\left(\frac{az + b}{cz + d}\right)
+      - \frac{k}{12}E_2\left(\frac{az + b}{cz + d}\right)F\left(\frac{az + b}{cz + d}\right)\right)
+      \\
+      &= (cz + d)^{-k-2} F'\left(\frac{az + b}{cz + d}\right) - \frac{k}{12} \left(E_2(z) -
+      \frac{6ic}{\pi(cz + d)}\right) \cdot (cz + d)^{-k} F\left(\frac{az + b}{cz + d}\right) \\
+      &= (F|_{k}\gamma)'(z) - \frac{k}{12} E_2(z) (F|_{k}\gamma)(z) \\
+      &= \partial_{k} (F|_{k}\gamma)(z).
+  \end{align}
+  -/)]
 theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by sorry
 
+@[blueprint
+  "thm:serre-der-modularity"
+  (statement := /--
+  Let $F$ be a modular form of weight $k$ and level $\Gamma$.
+  Then, $\partial_{k}F$ is a modular form of weight $k + 2$ of the same level.
+  -/)
+  (proof := /--
+  Immediate from Theorem \ref{thm:serre-der-equiv-action} since $F|_k\gamma = F$ for all $\gamma \in
+  \Gamma$.
+  -/)]
 theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (γ : SL(2, ℤ)) (h : F ∣[k] γ = F) :
     serre_D k F ∣[k + 2] γ = serre_D k F := by

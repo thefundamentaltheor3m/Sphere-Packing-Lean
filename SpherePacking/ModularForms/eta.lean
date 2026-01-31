@@ -1,3 +1,4 @@
+import Architect
 import SpherePacking.ModularForms.E2
 import SpherePacking.ModularForms.csqrt
 import SpherePacking.ModularForms.logDeriv_lems
@@ -13,6 +14,15 @@ open scoped ArithmeticFunction.sigma
 
 
 /- The eta function. Best to define it on all of ℂ since we want to take its logDeriv. -/
+@[blueprint
+  "def:dedekind_eta"
+  (statement := /--
+  The Dedekind eta function is defined as
+  $$
+      \eta(z) = q^{1/24} \prod_{n \ge 1} (1 - q^n)
+  $$
+  where $q = e^{2\pi i z}$.
+  -/)]
 noncomputable def η (z : ℂ) := cexp (2 * π * Complex.I * z / 24) * ∏' (n : ℕ),
     (1 - cexp (2 * π * Complex.I * (n + 1) * z))
 
@@ -405,6 +415,22 @@ lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn (
     have := eta_nonzero_on_UpperHalfPlane ⟨-1 / x, by simpa using pnat_div_upper 1 ⟨x, hx⟩⟩
     simpa only [ne_eq, coe_mk_subtype] using this
 
+@[blueprint
+  "lemma:dedekind_eta_transformation"
+  (statement := /--
+  The Dedekind eta function transforms as
+  $$
+      \eta\left(-\frac{1}{z}\right) = \sqrt{-iz} \eta(z).
+  $$
+  -/)
+  (proof := /--
+  Consider the logarithmic derivative of $\eta$, which one can easily see is equal to $\frac{\pi
+  i}{12} E_2$.
+  The result then follows from the transformation of $E_2$.
+  
+  See \cite[proposition 1.2.5]{first course}.
+  -/)
+  (latexEnv := "lemma")]
 lemma eta_equality : {z : ℂ | 0 < z.im}.EqOn ((η ∘ (fun z : ℂ => -1/z)))
    ((csqrt (Complex.I))⁻¹ • ((csqrt) * η)) := by
   have h := eta_logderivs_const

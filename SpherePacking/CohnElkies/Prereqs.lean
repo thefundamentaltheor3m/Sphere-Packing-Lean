@@ -8,6 +8,7 @@ Authors: Sidharth Hariharan
 ## THE RIGHT ONES (NOT THE ONES FROM HERE). THIS FILE IS JUST A TEMPORARY SOLUTION TO MAKE THE
 ## COHN-ELKIES FILE WORK.
 -/
+import Architect
 import Mathlib.Algebra.Module.ZLattice.Covolume
 import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
@@ -115,6 +116,43 @@ theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) 
 
 namespace SchwartzMap
 
+attribute [blueprint
+  "def:Schwartz-Space"
+  (statement := /--
+  A $C^\infty$~function $f:\R^d\to\C$ is called a \emph{Schwartz function} if it decays to zero as
+  $\|x\|\to\infty$ faster then any inverse power of $\|x\|$, and the same holds for all partial
+  derivatives of $f$, ie, if for all $k, n \in \N$, there exists a constant $C \in \R$ such that for
+  all $x \in \R^d$, $\norm{x}^k \cdot \norm{f^{(n)}(x)} \leq C$, where $f^{(n)}$ denotes the $n$-th
+  derivative of $f$ considered along with the appropriate operator norm. The set of all Schwartz
+  functions from $\R^d$ to $\C$ is called the \emph{Schwartz space}. It is an $\R$-vector space.
+  -/)]
+  SchwartzMap
+
+attribute [blueprint
+  "def:dual-lattice"
+  (statement := /--
+  The \emph{dual lattice} of a lattice $\Lambda$ is the set
+  \[ \Lambda^* := \setof{v \in \R^d}{\forall l \in \Lambda, \left\langle v,l \right\rangle \in \Z}
+  \]
+  -/)]
+  LinearMap.BilinForm.dualSubmodule
+
+@[blueprint
+  "thm:Poisson-summation-formula"
+  (title := "Poisson summation formula")
+  (statement := /--
+  Let $\Lambda$ be a lattice in $\R^d$, and let $f:\R^d\to\R$ be a Schwartz function. Then, for all
+  $v \in \R^d$,
+  \[
+    \sum_{\ell\in\Lambda}f(\ell + v) = \frac{1}{\Vol{\R^d/\Lambda}}
+    \sum_{m\in\Lambda^*}\widehat{f}(m) e^{-2\pi i \ang{v, m}}.
+  \]
+  -/)
+  (proof := /--
+  One possible proof would be by induction on $d$. However, there are numerous nuances involved,
+  particularly in manipulating nested infinite sums. Ideas would be appreciated.
+  -/)
+  (proofUses := ["lemma:inv-power-summable", "lemma:Schwartz-summable"])]
 theorem PoissonSummation_Lattices (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
   (v : EuclideanSpace ℝ (Fin d)) :
   ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
@@ -135,6 +173,21 @@ open scoped FourierTransform
 
 section FourierSchwartz
 
+attribute [blueprint
+  "def:Fourier-Transform"
+  (statement := /--
+  The Fourier transform of an $L^1$-function $f:\R^d\to\C$ is defined as
+
+  \[
+    \mathcal{F}(f)(y) = \widehat{f}(y) := \int_{\R^d} f(x)e^{-2\pi i \langle x, y \rangle}
+    \,\mathrm{d}x, \quad y \in \R^d
+  \]
+
+  where $\langle x, y \rangle = \frac12\|x\|^2 + \frac12\|y\|^2 - \frac12\|x - y\|^2$ is the
+  standard scalar product in $\R^d$.
+  -/)]
+  FourierTransform.fourier
+
 namespace SchwartzMap
 
 variable (𝕜 : Type*) [RCLike 𝕜]
@@ -143,6 +196,22 @@ variable (𝕜 : Type*) [RCLike 𝕜]
   {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
   [MeasurableSpace V] [BorelSpace V]
   (f : 𝓢(V, E))
+
+attribute [blueprint
+  "lemma:Fourier-transform-is-automorphism"
+  (statement := /--
+  The Fourier transform is a continuous, linear automorphism of the space of Schwartz functions.
+  -/)
+  (proof := /--
+  We do not elaborate here as the result already exists in Mathlib. We do, however, mention that the
+  Lean implementation \emph{defines} a continuous linear equivalence on the Schwartz space
+  \emph{using} the Fourier transform (see \verb|SchwartzMap.fourierTransformCLM|). The `proof' that
+  for any Schwartz function $f$, its Fourier transform and its image under this continuous linear
+  equivalence are, indeed, the same $\R^d \to \R$ function, is stated in Mathlib solely for the
+  purpose of \verb|rw| and \verb|simp| tactics, and is proven simply by \verb|rfl|.
+  -/)
+  (latexEnv := "lemma")]
+  SchwartzMap.fourierTransformCLM
 
 include 𝕜 in
 @[simp]

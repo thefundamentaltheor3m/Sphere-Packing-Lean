@@ -6,6 +6,7 @@ Authors: Sidharth Hariharan
 
 -- import Mathlib
 
+import Architect
 import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 import SpherePacking.MagicFunction.b.Basic
 
@@ -162,7 +163,13 @@ def b' : 𝓢(ℝ, ℂ) :=
   + MagicFunction.b.SchwartzIntegrals.J₆'
 
 /-- The -1-Fourier Eigenfunction of Viazovska's Magic Function. -/
-@[simps!]
+@[simps!, blueprint
+  "prop:b-schwartz"
+  (statement := /-- $b(x)$ is a Schwartz function. -/)
+  (proof := /-- Similar to the proof of \ref{prop:a-schwartz}. -/)
+  (proofUses := ["thm:smooth-fast-decay-schwartz", "lemma:bound-J1-J3-J5", "lemma:bound-J2-J4-J6",
+    "lemma:psi-bound"])
+  (latexEnv := "proposition")]
 def b : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := schwartzMap_multidimensional_of_schwartzMap_real
   (EuclideanSpace ℝ (Fin 8)) b'
 

@@ -3,103 +3,41 @@ In this section, we recall and develop some theory of (quasi)modular forms.
 \subsection{Modular forms and examples}
 
 Let $\h$ be the upper half-plane $\{z\in\C\mid\Im(z)>0\}$.
-\begin{lemma}\label{def:Gamma-1-Action}\leanok
-    The modular group $\Gamma_1:=\mathrm{SL}_2(\Z)$ acts on $\h$ by linear fractional transformations
-$$\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)z:=\frac{az+b}{cz+d}.$$
-\end{lemma}
-\begin{proof}
-    \leanok
-\end{proof}
+\inputleannode{def:Gamma-1-Action}
+
 
 Let $N$ be a positive integer.
-\begin{definition}\label{def:level-N-princ-cong-subgp}\leanok
-The \emph{level $N$ principal congruence subgroup} of $\Gamma_1$ is
-$$
-    \Gamma(N):=\left\{\left.\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\Gamma_1\right|\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\equiv\left(\begin{smallmatrix}1&0\\0&1\end{smallmatrix}\right)\;\mathrm{mod}\;N\right\}.
-$$
-\end{definition}
+\inputleannode{def:level-N-princ-cong-subgp}
 
-\begin{definition}\label{def:congruence-subgroup}\uses{def:level-N-princ-cong-subgp}\leanok
-    A subgroup $\Gamma\subset\Gamma_1$ is called a \emph{congruence subgroup} if $\Gamma(N)\subset\Gamma$ for some $N\in\N$.
-\end{definition}
+\inputleannode{def:congruence-subgroup}
 
-\begin{definition}\label{def:Gamma-generators}\uses{def:level-N-princ-cong-subgp}\lean{ModularGroup.S,ModularGroup.T,α,β}\leanok
-  Define the matrices
-
-  \[
-    S = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix} \in \Gamma_1,
-    T = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix} \in \Gamma_1,
-    \alpha = \begin{pmatrix} 1 & 2 \\ 0 & 1 \end{pmatrix} \in \Gamma_2 \subset \Gamma_1,
-    \beta = \begin{pmatrix} 1 & 0 \\ 2 & 1 \end{pmatrix} \in \Gamma_2 \subset \Gamma_1.
-  \]
-
-  It is easily verifiable that $\alpha = T^2$ and $\beta = -S\alpha^{-1}S = -ST^{-2}S$.
-\end{definition}
+\inputleannode{def:Gamma-generators}
 
 The following two lemmas tell us the group structure of $\Gamma(1) = \Gamma_1$ and $\Gamma(2)$, which we will use later on to define the theta forms.
 
-\begin{lemma}\label{lemma:Gamma-1-generators}\uses{def:Gamma-generators}\lean{SL2Z_generate}\leanok
-  We have $\Gamma(1) = \langle S, T, -I \rangle$.
-\end{lemma}
-\begin{proof}
-    \leanok
-  See~\cite[Exercise 1.1.1]{first course}.
-\end{proof}
+\inputleannode{lemma:Gamma-1-generators}
 
-\begin{lemma}\label{lemma:Gamma-2-generators}\uses{def:Gamma-generators}\lean{Γ2_generate}\leanok
-  We have $\Gamma(2) = \langle \alpha, \beta, -I \rangle$.
-\end{lemma}
-\begin{proof}
-    \leanok
-    See~\cite[Exercise 1.2.4]{first course}.
-\end{proof}
+
+\inputleannode{lemma:Gamma-2-generators}
+
 
 Let $z\in\h$, $k\in\Z$, and $\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\mathrm{SL}_2(\Z)$. We omit many of the proofs below when they exist in Mathlib already.
-\begin{definition}\label{def:automorphy-factor}\leanok \lean{UpperHalfPlane.denom}
-    The \emph{automorphy factor} of weight $k$ is defined as
-$$j_k(z,\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)):=(cz+d)^{-k}.$$
-\end{definition}
+\inputleannode{def:automorphy-factor}
 
-\begin{lemma}\label{lemma:automorphy-factor-chain-rule}\uses{def:automorphy-factor}\leanok \lean{UpperHalfPlane.denom_cocycle}
-    The automorphy factor satisfies the \emph{chain rule}
-$$j_k(z,\gamma_1\gamma_2)=j_k(z,\gamma_1)\,j_k(\gamma_2z,\gamma_1). $$
-\end{lemma}
-\begin{proof}
-    \leanok
-\end{proof}
+\inputleannode{lemma:automorphy-factor-chain-rule}
 
-\begin{definition}\label{def:slash-operator}\uses{def:automorphy-factor, def:Gamma-1-Action}\leanok
-    Let $F$ be a function on $\h$ and $\gamma\in\mathrm{SL}_2(\Z)$. Then the \emph{slash operator} acts on $F$ by
-$$(F|_k\gamma)(z):=j_k(z,\gamma)\,F(\gamma z). $$
-\end{definition}
 
-\begin{lemma}\label{lemma:slash-operator-chain-rule}\uses{lemma:automorphy-factor-chain-rule}\lean{SlashAction.slash_mul}\leanok
-  The chain rule implies $$F|_k\gamma_1\gamma_2=(F|_k\gamma_1)|_k\gamma_2.$$
-\end{lemma}
-\begin{proof}
-    \leanok
-\end{proof}
+\inputleannode{def:slash-operator}
+
+\inputleannode{lemma:slash-operator-chain-rule}
+
 
 In particular, this lemma implies that if $\Gamma = \langle M_i \rangle_{i \in \mathcal{I}} \rangle$, then the slash action $F|\gamma$ is uniquely determined by the action of generators, i.e. $F|M_i$ and $F|M_i^{-1}$.
 
-\begin{lemma}\label{lemma:slash-negI-even-weight}\uses{def:slash-operator}\lean{modular_slash_negI_of_even}\leanok
-   For even $k$, $F|_{k}(-I) = F$.
-\end{lemma}
-\begin{proof}
-    \leanok
-Follows from the definition of the slash operator:
-$(F|_{k}(-I))(z) = (-1)^{-k}F((-I)z) = F(z)$.
-\end{proof}
+\inputleannode{lemma:slash-negI-even-weight}
 
-\begin{definition}\label{def:Mk}\uses{def:congruence-subgroup}\lean{ModularForm}\leanok
-	Let  $\Gamma$ denote a subgroup of $\mathrm{SL}_2(\mathbb{Z})$, then a modular form  of level $\Gamma$ and weight $k \in \mathbb{Z}$ is a function $f : \mathbb{H} \to \mathbb{C}$ such that:
-	\begin{enumerate}
-		\item For all $\gamma \in \Gamma$ we have $f\mid_k \gamma = f$  (such functions are called slash invariant).
-		\item $f$ is holomorphic on $\mathbb{H}$.
-		\item For all $\gamma \in \mathrm{SL}_2(\mathbb{Z})$, there exist $A, B \in \mathbb{R}$ such that for all $z \in \mathbb{H}$, with $ A \le \mathrm{Im}(z)$, we have $|(f \mid_k \gamma) (z) |\le B$. Here $| - |$ denotes the standard complex absolute value.
-	\end{enumerate}
-    This defines a complex vector space which we denote by $M_{k}(\Gamma)$.
-\end{definition}
+
+\inputleannode{def:Mk}
 By replacing condition $(3)$ above with (4) below defines the subspace of cusp forms, which we denote by $S_k(\Gamma)$.
 
 \begin{enumerate}
@@ -109,202 +47,79 @@ By replacing condition $(3)$ above with (4) below defines the subspace of cusp f
 
 
 Let us consider several examples of modular forms.
-\begin{definition}\label{def:Ek} \lean{ModularForm.eisensteinSeries_MF }
-For an even integer $k\geq 4$ we define the \emph{weight $k$ Eisenstein series} as
-\begin{equation}\label{eqn:Ek-definition}
-E_k(z):=\frac{1}{2}\sum_{(c,d)\in\Z^2, (c,d)=1}(cz+d)^{-k}.\end{equation}
-\end{definition}
-\begin{lemma}\label{lemma:Ek-is-modular-form}\uses{def:Mk, def:Ek}\lean{EisensteinSeries.eisensteinSeries_SIF}
-For all $k$, $E_k\in M_k(\Gamma_1)$.
-Especially, we have
-\begin{equation}\label{eqn:Ek-trans-S}
-    E_k \left(-\frac{1}{z}\right) = z^k E_k(z).
-\end{equation}
-\end{lemma}
-\begin{proof}
-    \leanok
-This follows from the fact that the sum converges absolutely.
-Now apply slash operator with $\gamma = \left(\begin{smallmatrix} 0 & -1 \\ 1 & 0 \end{smallmatrix}\right)$ gives \eqref{eqn:Ek-trans-S}.
-\end{proof}
+\inputleannode{def:Ek}
+\inputleannode{lemma:Ek-is-modular-form}
+
 
 Since modular forms are holomorphic and periodic they have a Fourier expansions. One thing that we
 will need is the growth of the Fourier coefficients, which is given by the following lemma.
 
-\begin{lemma}\label{lemma:mod_form_poly_growth}\leanok : Let $\Gamma$ be a finite index subgroup of $\mathrm{SL}_2(\Z)$ and $f \in \mathcal{M}_k(\Gamma)$ be a modular form of weight $k$. Then the Fourier coefficients $a_n(f)$ has a polynomial growth, i.e. $|a_n(f)| = O(n^k)$.
-\end{lemma}
-
-\begin{proof}\leanok
-Note that the assumption on the polynomial growth holds when $f$ is a holomorphic modular form, where the proof can be found in \cite[p. 94]{Serre73} for the case of level 1 modular forms. This has been done in Lean 4 by David Loeffler.
-\end{proof}
+\inputleannode{lemma:mod_form_poly_growth}
 
 For Eisenstein series, we can see this directly from the following:
 
-\begin{lemma}\label{lemma:Ek-Fourier}\uses{def:Ek}\lean{E_k_q_expansion}\leanok
-The Eisenstein series possesses the Fourier expansion
-\begin{equation}\label{eqn:Ek-Fourier}E_k(z)=1+\frac{2}{\zeta(1-k)}\sum_{n=1}^\infty \sigma_{k-1}(n)\,e^{2\pi i z}, \end{equation}
-where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
-\begin{align}
-  E_4(z)\,=\,& 1+240\sum_{n=1}^\infty \sigma_3(n)\,e^{2\pi i n z} \notag \\
-  E_6(z)\,=\,& 1-504\sum_{n=1}^\infty \sigma_5(n)\,e^{2\pi i n z}. \notag
-\end{align}
-\end{lemma}
+\inputleannode{lemma:Ek-Fourier}
 
-\begin{proof}
-\leanok
-\end{proof}
+
 
 The infinite sum \eqref{eqn:Ek-definition} does not converge absolutely for $k=2$.
 On the other hand, the expression \eqref{eqn:Ek-Fourier} converges to a holomorphic function on the upper half-plane and we will take it as a definition of $E_2$ (See Definition \ref{def:E2} below).
 
 
 The discriminant form is a unique normalized cusp form of weight 12, which can be defined as:
-\begin{definition}\label{def:disc-definition}\lean{Δ}\leanok\uses{def:dedekind_eta}
-The \emph{discriminant form} $\Delta(z)$ is given by
-\begin{equation}\label{eqn:disc-definition}
-\Delta(z) = e^{2 \pi i z} \prod_{n \ge 1} (1 - e^{2 \pi i n z})^{24}.
-\end{equation}
-\end{definition}
+\inputleannode{def:disc-definition}
 
 This product formula allows us to prove positivity of $\Delta(it)$ for $t > 0$ later. But we need to first check its a modular form. For this we first need some definitions/ results.
 
 We define it as a $q$-series, which gives a holomorphic function on $\mathfrak{H}$.
-\begin{definition}\label{def:E2}\lean{E₂_eq}\leanok
-We set
-\begin{equation}\label{eqn:E2}
-    E_2(z):= 1-24\sum_{n=1}^\infty \sigma_1(n)\,e^{2\pi i n z}.
-\end{equation}
-\end{definition}
+\inputleannode{def:E2}
 
-\begin{lemma}\label{lemma:E2-transform-S}\uses{def:E2}\leanok\lean{E₂_transform}
-This function is not modular, however it satisfies
-\begin{equation}\label{eqn:E2-S-transform}
-    z^{-2}\,E_2\left(-\frac{1}{z}\right) = E_2(z) -\frac{6i}{\pi}\, \frac{1}{z}.
-\end{equation}
-\end{lemma}
+\inputleannode{lemma:E2-transform-S}
 
-\begin{proof}\leanok
-This is exercise 1.2.8 of \cite{first course}.
-\end{proof}
+
 
 More generally, we have
-\begin{lemma}\label{lemma:E2-transform-general}\leanok\lean{G₂_transform}\uses{lemma:E2-transform-S, def:E2}
-\begin{equation}\label{eqn:E2-transform-general}
-(cz + d)^{-2} E_2\left(\frac{az + b}{cx + d}\right) = E_2(z) - \frac{6ic}{\pi (cz + d)}, \quad \begin{pmatrix} a & b \\ c & d\end{pmatrix} \in \mathrm{SL}_{2}(\mathbb{Z}).
-\end{equation}
-\end{lemma}
-\begin{proof}
-    \leanok
-    Use the fact that $\mathrm{SL}_2(\mathbb{Z})$ is generated by $S$ and $T$.
-    Then \eqref{eqn:E2-transform-general} follows from \eqref{eqn:E2-S-transform} and $E_2|_T = E_2$.
-\end{proof}
-
-\begin{definition}\label{def:dedekind_eta}\leanok \lean{η}
-The Dedekind eta function is defined as
-$$
-    \eta(z) = q^{1/24} \prod_{n \ge 1} (1 - q^n)
-$$
-where $q = e^{2\pi i z}$.
-\end{definition}
-
-\begin{lemma}\label{lemma:dedekind_eta_transformation}\lean{eta_equality}\uses{def:dedekind_eta}
-The Dedekind eta function transforms as
-$$
-    \eta\left(-\frac{1}{z}\right) = \sqrt{-iz} \eta(z).
-$$
-\end{lemma}
-\begin{proof}
-    \leanok
-    Consider the logarithmic derivative of $\eta$, which one can easily see is equal to $\frac{\pi i}{12} E_2$.
-    The result then follows from the transformation of $E_2$.
-
-    See \cite[proposition 1.2.5]{first course}.
-\end{proof}
+\inputleannode{lemma:E2-transform-general}
 
 
-\begin{lemma}\label{lemma:disc-cuspform}\uses{def:disc-definition, lemma:dedekind_eta_transformation}\leanok\lean{Delta}
-$\Delta(z) \in M_{12}(\Gamma_1)$.
-Especially, we have
-\begin{equation}\label{eqn:disc-trans-S}
-    \Delta\left(-\frac{1}{z}\right) = z^{12} \Delta(z).
-\end{equation}
-Also, it vanishes at the unique cusp, i.e. it is a cusp form of level $\Gamma_1$ and weight $12$.
-\end{lemma}
-\begin{proof}
-    \leanok
-    The fact that it is invariant under translation is clear from the definition, so we only need to check transformation under $S$. Now, note that $\eta^{24} = \Delta$, and from \ref{lemma:dedekind_eta_transformation} we have $\eta(-1/z) = \sqrt{-iz} \eta(z)$, so $\Delta(-1/z) = z^{12} \Delta(z)$ as required.
-\end{proof}
+\inputleannode{def:dedekind_eta}
+
+\inputleannode{lemma:dedekind_eta_transformation}
 
 
 
-\begin{lemma}\label{lemma:disc-E4E6}\uses{def:disc-definition}\lean{Delta_E4_eqn}\leanok
-We have
-\begin{equation}
-\Delta(z) = (E_4^3-E_6^2)/1728.
-\end{equation}
-\end{lemma}
-\begin{proof}\leanok
-    We only need to show its a cuspform, since once we have this, dividing the rhs by $\Delta$ would give a modular form of weight $0$ which is a constant, and so we can determine the constant easily.
+\inputleannode{lemma:disc-cuspform}
 
-    To check its a cuspform, we just look at  the $q$-expansions of $E_4$ and $E_6$ and prove directly that the first term vanishes.
-\end{proof}
+
+
+
+\inputleannode{lemma:disc-E4E6}
+
 
 %Note that the RHS of \eqref{eqn:disc-logder} is equal to the $E_2(z)$.
 %As a side note, we can also consider defining $\Delta$ as \eqref{eqn:disc-prodformula}, and prove that it coincides with \eqref{eqn:disc-definition}.
 %Such an argument can be found in \cite[Section 2.4]{Bruinier}.
 
-\begin{corollary}\label{cor:disc-pos}\uses{def:disc-definition}\lean{Delta_imag_axis_pos}\leanok
-$\Delta(it) > 0$ for all $t > 0$.
-\end{corollary}
-\begin{proof}\leanok
-By \ref{def:disc-definition}, we have
-$$
-\Delta(it) = e^{-2 \pi t} \prod_{n \ge 1} (1 - e^{-2 \pi n t})^{24} > 0.
-$$
-\end{proof}
+\inputleannode{cor:disc-pos}
+
 
 The following nonvanishing result, which directly follows from \Cref{def:disc-definition}, will be used in the construction of the magic function.
-\begin{corollary}\label{cor:disc-nonvanishing}\uses{def:disc-definition}\leanok\lean{Δ_ne_zero}
-$\Delta(z) \neq 0$ for all $z \in \h$.
-\end{corollary}
-\begin{proof}
-    \leanok
-This follows from the product formula.
-\end{proof}
+\inputleannode{cor:disc-nonvanishing}
+
 
 
 A key fact in the theory of modular forms is that the spaces $M_k(\Gamma)$ are finite-dimensional.
 To prove this we will do use the following non-standard proof. First we have the following result.
 
-\begin{theorem}\label{thm:nonpos_wt}\uses{def:Mk}\lean{ModularFormClass.levelOne_neg_weight_eq_zero, ModularForm.levelOne_weight_zero_rank_one}\leanok
-    Let $k \in \Z$ with $k < 0$. Then $M_k(\Gamma_1) = \{0\}$ and moreover $\dim M_0(\Gamma(1)) = 1$.
-\end{theorem}
-\begin{proof}
-    \leanok
-    The proof makes use of the maximum modulus principle, as its already been formalised we skip the details here but see the lean proof for details.
-\end{proof}
+\inputleannode{thm:nonpos_wt}
 
 
-\begin{theorem}\label{thm:lvl1_dims}\uses{def:Mk, lemma:disc-E4E6, def:disc-definition}\lean{ModularForm.dimension_level_one}\leanok
-    Let $k \in \Z$ with $k \ge 0$ and even. Then $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor $ if $k \equiv 2 \mod 12$ and $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor + 1$ if $k \not\equiv 2 \mod 12$.
-\end{theorem}
-\begin{proof}
-\leanok
-First we note that for $2 < k$ we have $\dim(M_k(\Gamma_1)) = 1 + \dim S_k(\Gamma_1)$. This follows since we know the $E_k$ are in $M_k$ so by scaling appropriately, any non-cuspform $f \in M_k$ we would have $f - a E_k \in S_k$ for some $a$.
 
-Next, note that  $S_k(\Gamma_1)$ is isomorphic to $M_{k-12}(\Gamma_1)$, since if $f \in S_k$ then $f/ \Delta$ is now a modular form (using the product expansion of $\Delta$ and its non-vanishing on $\mathfrak{H}$) of weight $k-12$. Note its important that $f$ is a cuspform so that the quotient by $\Delta$ is a modular form.
+\inputleannode{thm:lvl1_dims}
 
-So we only need to know the dimensions of $M_k(\Gamma_1)$ for $0 \le k \le 12$. For $k = 0$ we have $\dim M_0(\Gamma_1) = 1$ by \Cref{thm:nonpos_wt}.  For $k = 4$ we have $\dim M_4(\Gamma_1) = 1$ since if there was a cuspform $f$ of weight $4$ then $f/ \Delta$ would be a modular form of negative weight, i.e. zero, so $f=0$. Similarly for $k=6,8,10$. For $k=12$ we have $\dim S_{12}(\Gamma_1) = 1$ since the discriminant form is a cusp form of weight $12$ and any other cusp form of weight $12$ would be a scalar multiple of $\Delta$ (since their ratio would be a modular form of weight $0$). So we have $\dim M_{12}(\Gamma_1) = 2$.
 
-Finally we need to check that $\dim M_2(\Gamma_1) = 0$. Firstly, there can't be any cuspforms here by the same argument as above. So we need to check that there are no modular forms of weight $2$. If we did have one, call it $f$ then $f^2$ would be a non-cuspform of weight $4$ and so $f^2 = a E_4$, where in fact $a=a_0(f)^2$ (since $(f^2-a_0(f)E_4)$ is now a cuspform of weight $4$ which means its zero). Similarly, $f^3 = a_0(f)^3 E_6$. But now taking powers to make them weight $12$ forms we see that $a_0(f)^6(E_4^3 - E_6^2) = 0 = 1728 a_0(f)^6 \Delta$
-but $a_0(f) \ne 0$ (since its assumed to not be a cuspform), this would mean $\Delta =0$ which we know can't happen.
-\end{proof}
+\inputleannode{thm:dim-mf-general-level}
 
-\begin{theorem}\label{thm:dim-mf-general-level}\uses{def:Mk, thm:lvl1_dims}\leanok \lean{dim_gen_cong_levels}
-Let $\Gamma$ be a congruence subgroup. Then $M_k(\Gamma)$ is finite-dimensional.
-\end{theorem}
-\begin{proof}
-We know that $\dim(M_k(\Gamma_1))$ is finite dimensional from the above, now this means that there is some $r_k$ such that any element of $M_k(\Gamma_1)$ vanishing at infinity to degree $> r_k$ must be zero. Now take $f \in M_k(\Gamma)$ and vanishes to degree $n$ at infinity, then consider $F = \prod_\gamma f\mid_k \gamma$ where the product is over a set of representatives of $\Gamma_1 \backslash \Gamma$. Then $F$ is a modular form of weight $k d$ where $d = [\Gamma_1: \Gamma]$ and vanishes at infinity to degree at least $n$. So if $n > r_{kd}$ then $F=0$ meaning the $f=0$.
-\end{proof}
 
 % the following theorem:
 % \begin{theorem}\label{theorem-Mk-finite-dimensional}\uses{def:Mk}
@@ -316,137 +131,31 @@ We know that $\dim(M_k(\Gamma_1))$ is finite dimensional from the above, now thi
 % A key fact in the theory of modular forms is that they form a finite-dimensional vector space (for a fixed weight and level).
 % Especially, we use the following dimension results.
 
-\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:lvl1_dims}\leanok
-We have
-\begin{align}
-    \dim M_2(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimM2} \\
-    \dim M_4(\mathrm{SL}_{2}(\mathbb{Z})) &= 1, \label{eqn:dimM4} \\
-    \dim M_6(\mathrm{SL}_{2}(\mathbb{Z})) &= 1, \label{eqn:dimM6} \\
-    \dim M_8(\mathrm{SL}_{2}(\mathbb{Z})) &= 1, \label{eqn:dimM8} \\
-    \dim S_4(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimS4} \\
-    \dim S_6(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimS6} \\
-    \dim S_8(\mathrm{SL}_{2}(\mathbb{Z})) &= 0. \label{eqn:dimS8}
-\end{align}
-\end{corollary}
-\begin{proof}
-\leanok
-\end{proof}
+\inputleannode{cor:dim-mf}
+
 
 Another examples of modular forms we would like to consider are \emph{theta functions} \cite[Section~3.1]{1-2-3}.
-\begin{definition}\label{def:th00-th01-th10}\lean{Θ₂, Θ₃, Θ₄}\leanok
-We define three different theta functions (so called ``Thetanullwerte'') as
-\begin{align}
-  \Theta_{2}(z) = \theta_{10}(z)\,=\, & \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 z}. \notag \\
-  \Theta_{3}(z) = \theta_{00}(z)\,=\, & \sum_{n\in\Z}e^{\pi i n^2 z} \notag \\
-  \Theta_{4}(z) = \theta_{01}(z)\,=\, & \sum_{n\in\Z}(-1)^n\,e^{\pi i n^2 z} \notag \\
-\end{align}
-\end{definition}
+\inputleannode{def:th00-th01-th10}
 
 For convenience, we use the following notations for the fourth powers of the theta functions.
-\begin{definition}\label{def:H2-H3-H4}\uses{def:th00-th01-th10}\lean{H₂, H₃, H₄}\leanok
-Define
-\begin{equation}
-    H_2 = \Theta_2^4, \quad H_3 = \Theta_3^4, \quad H_4 = \Theta_4^4. \label{eqn:H2-H3-H4}
-\end{equation}
-\end{definition}
+\inputleannode{def:H2-H3-H4}
 Note that we only need these fourth powers to define \eqref{def:b-definition}.
 
 The group $\Gamma_1$ is generated by the elements $T=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$, $S=\left(\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\right)$, and $-I = \left(\begin{smallmatrix}-1&0\\0&-1\end{smallmatrix}\right)$ (\Cref{lemma:Gamma-1-generators}), and the transformation of functions under $\Gamma(2)$ is determined by that under $\Gamma_1$ (by \Cref{lemma:slash-operator-chain-rule}).
 The following lemma shows how the theta functions (and their powers) transform under the slash action of these matrices.
 
-\begin{lemma}\label{lemma:theta-transform-S-T}\uses{def:th00-th01-th10, def:H2-H3-H4}\lean{H₂_T_action,H₃_T_action,H₄_T_action,H₂_S_action,H₃_S_action,H₄_S_action}\leanok
-These elements act on the theta functions in the following way
-\begin{align}
-    H_2 | S &= -H_4 \label{eqn:H2-transform-S} \\
-    H_3 | S &= -H_3 \label{eqn:H3-transform-S} \\
-    H_4 | S &= -H_2 \label{eqn:H4-transform-S}
-\end{align}
-and
-\begin{align}
-    H_2 | T &= -H_2 \label{eqn:H2-transform-T} \\
-    H_3 | T &= H_4 \label{eqn:H3-transform-T} \\
-    H_4 | T &= H_3 \label{eqn:H4-transform-T}
-\end{align}
-\end{lemma}
-\begin{proof}\leanok
-The last three identities easily follow from the definition.
-For example, \eqref{eqn:H2-transform-T} follows from
-\begin{align}
-    \Theta_{2}(z + 1) &= \sum_{n\in\Z}e^{\pi i (n+\frac12)^2 (z + 1)}
-    = \sum_{n \in \Z} e^{\pi i (n + \frac{1}{2})^{2}} e^{\pi i (n + \frac{1}{2})^{2} z} \\
-    &= \sum_{n \in \Z} e^{\pi i (n^2 + n + \frac{1}{4})} e^{\pi i (n + \frac{1}{2})^{2} z} = \sum_{n \in \Z} (-1)^{n^2 + n}e^{\pi i / 4} e^{\pi i (n + \frac{1}{2})^{2} z} \\
-    &= e^{\pi i / 4} \Theta_{2}(z)
-\end{align}
-and taking 4th power.
-\eqref{eqn:H2-transform-S} and \eqref{eqn:H4-transform-S} are equivalent under $z \leftrightarrow -1/z$, so it is enough to show \eqref{eqn:H2-transform-S} and \eqref{eqn:H3-transform-S}.
-These identities follow from the identities of the \emph{two-variable} Jacobi theta function, which is defined as (be careful for the variables, where we use $\tau$ instead of $z$)
-\begin{equation}
-    \theta(z, \tau) = \sum_{n \in \mathbb{Z}} e^{2 \pi i n z + \pi i n^2 \tau} \label{eqn:jacobi2}
-\end{equation}
-and already formalized by David Loeffler.
-This function specialize to the theta functions as
-\begin{align}
-    \Theta_{2}(\tau) &= e^{\pi i \tau / 4} \theta(-\tau / 2, \tau) \label{eqn:Th2-as-jacobi2} \\
-    \Theta_{3}(\tau) &= \theta(0, \tau) \label{eqn:Th3-as-jacobi2} \\
-    \Theta_{4}(\tau) &= \theta(1/2, \tau) \label{eqn:Th4-as-jacobi2} \\
-\end{align}
+\inputleannode{lemma:theta-transform-S-T}
 
-Poisson summation formula gives
-\begin{equation}
-    \theta(z, \tau) = \frac{1}{\sqrt{-i \tau}} e^{-\frac{\pi i z^2}{\tau}} \theta\left(\frac{z}{\tau}, -\frac{1}{\tau}\right) \label{eqn:jacobi2transform}
-\end{equation}
-and applying the specializations above yield the identities.
-For example, \eqref{eqn:H4-transform-S} follows from
-\begin{equation}
-    \Theta_{4}(\tau) = \theta\left(\frac{1}{2}, \tau\right) = \frac{1}{\sqrt{-i\tau}} e^{- \frac{\pi i }{4 \tau}} \theta\left(\frac{1}{2 \tau}, -\frac{1}{\tau}\right) = \frac{1}{\sqrt{-i\tau}} \Theta_{2}\left(-\frac{1}{\tau}\right)
-\end{equation}
-and taking 4th power.
-\end{proof}
 
 Using the above identities, we can prove that these are modular forms.
-\begin{lemma}\label{lemma:theta-slash-invariant}\uses{lemma:slash-operator-chain-rule,lemma:slash-negI-even-weight,lemma:theta-transform-S-T,lemma:Gamma-2-generators}\lean{H₂_SIF,H₃_SIF,H₄_SIF}\leanok
-  $H_{2}$, $H_{3}$, and $H_{4}$ are slash invariant under $\Gamma(2)$, i.e. for all $\gamma \in \Gamma(2)$ and $i \in \{2, 3, 4\}$, we have $H_i|\gamma = H_i|\gamma^{-1} = H_i$.
-\end{lemma}
-\begin{proof}\leanok
-  By \cref{lemma:Gamma-2-generators} and \cref{lemma:slash-operator-chain-rule}, it suffices to show that the $H_i$ are invariant under slash actions with respect to $\alpha$, $\beta$, and $-I$.
-Invariance under $-I$ follows from Lemma \ref{lemma:slash-negI-even-weight}.
-The rest follows from Lemma \ref{lemma:slash-operator-chain-rule}, \ref{lemma:theta-transform-S-T}, and the matrix identities
-\begin{equation}
-    \alpha = T^2, \quad \beta = -S\alpha^{-1}S = -ST^{-2}S. \label{eqn:matrix}
-\end{equation}
-For example, invariance for $H_2$ can be proved by
-\begin{align}
-    H_2|\alpha &= H_2 |T^{2} = -H_2 |T = H_2 \\
-    H_2|\beta &= H_2 |(-S\alpha^{-1}S) = H_2 | (S\alpha^{-1}S) =-H_4 |(\alpha^{-1}S) = -H_4 |S  = H_2.
-\end{align}
-\end{proof}
+\inputleannode{lemma:theta-slash-invariant}
 
-\begin{lemma}\label{lemma:theta-bounded-im-infty}\uses{lemma:theta-slash-invariant, lemma:Gamma-1-generators}\lean{isBoundedAtImInfty_H_slash}\leanok
-  For all $\gamma \in \Gamma_1$, $H_{2}|_2 \gamma$, $H_{3}|_2 \gamma$, and $H_{4}|_2 \gamma$ are holomorphic at $i\infty$.
-\end{lemma}
-\begin{proof}
-    \leanok
-    We want to show that for $\gamma \in \Gamma_1$, $\|H_2|_2\gamma(z)\|$ is bounded as $z \in \mathbb{H} \to i\infty$. Firstly, by \Cref{lemma:theta-transform-S-T}, \Cref{lemma:Gamma-2-generators} and induction on group elements, we notice that $\{\pm H_2, \pm H_3, \pm H_4\}$ is closed under action by $\Gamma_1$. Hence, it suffices to prove that $H_2$, $H_3$ and $H_4$ are bounded at $i\infty$. Consider $z \in \mathbb{H}$ with $\Im(z) \geq A$. We proceed by direct algebraic manipulation:
-    \begin{align}
-        \|H_2(z)\|
-        &= \left\|\sum_{n \in \Z} \exp\left(\pi i \left(n + \frac{1}{2}\right)^2 z\right)\right\|^4
-        \leq \left(\sum_{n \in \Z} \left\|\exp\left(\pi i \left(n + \frac{1}{2}\right)^2 z\right)\right)\right\|^4 \\
-        &= \left(\sum_{n \in \Z} \left\|\exp\left(-\pi \left(n + \frac{1}{2}\right)^2 \Im(z)\right)\right)\right\|^4
-        \leq \left(\sum_{n \in \Z} \left\|\exp\left(-\pi \left(n + \frac{1}{2}\right)^2 A\right)\right)\right\|^4
-    \end{align}
 
-    Where we prove the final term is convergent by noticing that it equals $\exp(-\pi A / 4)\theta(iA / 2, iA)$, which has been shown to converge in \texttt{Mathlib}. The proofs for $H_3$ and $H_4$ are similar (actually easier) and have been omitted.
+\inputleannode{lemma:theta-bounded-im-infty}
 
-    \todo{It seems the \texttt{MDifferentiable} requirement is missing.}
-\end{proof}
 
-\begin{lemma}\label{lemma:theta-modular}\uses{lemma:theta-slash-invariant,lemma:theta-bounded-im-infty}\lean{H₂_MF,H₃_MF,H₄_MF}\leanok
-$H_{2}$, $H_{3}$, and $H_{4}$ belong to $M_2(\Gamma(2))$.
-\end{lemma}
-\begin{proof}
-    \leanok
-    From \cref{lemma:theta-slash-invariant} and \cref{lemma:theta-bounded-im-infty}, it remains ot prove that $H_2$, $H_3$ and $H_4$ are holomorphic on $\mathbb{H}$. \todo{fill in proof.}
-\end{proof}
+\inputleannode{lemma:theta-modular}
+
 
 
 They have Fourier expansions as follows.
@@ -496,24 +205,8 @@ Especially, $H_4$ is not cuspidal.
 
 
 We also have a nontrivial relation between these theta functions.
-\begin{lemma}\label{lemma:jacobi-identity}\uses{lemma:theta-modular, cor:dim-mf}\lean{jacobi_identity}\leanok
-These three theta functions satisfy the \emph{Jacobi identity}
-\begin{equation}\label{eqn:jacobi-identity}
-H_{2} + H_{4} = H_{3} \Leftrightarrow \Theta_{2}^4 + \Theta_{4}^4 = \Theta_{3}^4.
-\end{equation}
-\end{lemma}
-\begin{proof}
-    \leanok
-    Let $f = (H_2 + H_4 - H_3)^{2}$.
-    Obviously, $f$ is a modular form of weight $4$ and level $\Gamma(2)$.
-    However, by using the transformation rules of $H_2, H_3, H_4$, one have
-    \begin{align}
-        f|_{S} &= (-H_4 - H_2 + H_3)^{2} = f\\
-        f|_{T} &= (-H_2 + H_3 - H_4)^{2} = f
-    \end{align}
-    so $f$ is actually a modular form of level $1$.
-    By considering the limit as $z \to i\infty$, $f$ is a cusp form, so we get $f = 0$ from \eqref{eqn:dimS4}.
-\end{proof}
+\inputleannode{lemma:jacobi-identity}
+
 
 These are also related to $E_4$, $E_6$, and $\Delta$ as follows.
 \begin{lemma}\label{lemma:lv1-lv2-identities}\uses{lemma:theta-transform-S-T, lemma:theta-modular, lemma:disc-cuspform}
@@ -531,15 +224,8 @@ Now the identities follow from the dimension calculations $\dim M_4(\Gamma_1) = 
 \end{proof}
 
 The \emph{strict} positivity of Jacobi theta functions might needed later.
-\begin{corollary}\label{cor:theta-pos}\uses{lemma:jacobi-identity, lemma:theta-transform-S-T}\lean{H₂_imag_axis_pos, H₄_imag_axis_pos}
-All three functions $t \mapsto H_2(it), H_3(it), H_4(it)$ are positive for $t > 0$.
-\end{corollary}
-\begin{proof}
-By Lemma \ref{lemma:jacobi-identity} and the transformation law \eqref{eqn:H2-transform-S}, it is enough to prove the positivity for $\Theta_2(it)$, which is clear from its definition:
-\begin{equation}
-    \Theta_{2}(it) = \sum_{n \in \Z} e^{- \pi (n + \frac{1}{2})^{2} t} > 0.
-\end{equation}
-\end{proof}
+\inputleannode{cor:theta-pos}
+
 
 \subsection{Quasimodular forms and derivatives}
 
@@ -558,101 +244,30 @@ Also, it is easy to see that the space of quasimodular forms is closed under the
 In this project, we are \emph{not} going to formalize the above definition of quasimodular forms.
 Instead, we only use $E_2$ (defined in \Cref{def:E2}) and define the normalized derivative operator $D$ (\Cref{def:derivative}) and the Serre derivative $\partial_k$ (\Cref{def:serre-der}) as the main tools to work with quasimodular forms.
 
-\begin{definition}\label{def:derivative} \lean{D} \leanok
-Let $F$ be a quasimodular form.
-We define the (normalized) derivative of $F$ as
-\begin{equation}\label{eqn:derivative}
-    F' = DF := \frac{1}{2\pi i} \frac{\dd}{\dd z} F.
-\end{equation}
-\end{definition}
+\inputleannode{def:derivative}
 
 Normalizing the derivative by $1/(2 \pi i)$ as in \eqref{eqn:derivative} is standard in the theory of modular forms, since it makes the $q$-expansion coefficients nicer.
-\begin{lemma}\label{lemma:der-q-series}\uses{def:derivative}\lean{D_qexp_tsum_pnat}\leanok
-We have an equality of operators $D = q \frac{\dd}{\dd q}$.
-In particular, the $q$-series of the derivative of a quasimodular form $F(z) = \sum_{n \ge n_0} a_n q^n$ is $F'(z) = \sum_{n \ge n_0} n a_n q^n$.
-\end{lemma}
-\begin{proof}\leanok
-Directly follows from the definition \eqref{def:derivative}, where $\frac{1}{2 \pi i}\frac{\dd}{\dd z}e^{2\pi i n z} = n e^{2\pi i n z}$.
-\end{proof}
+\inputleannode{lemma:der-q-series}
+
 
 The most important example of quasimodular form is the weight 2 Eisenstein series $E_2$ (\Cref{def:E2}).
 Using it, we can define the \emph{Serre derivative} of a quasimodular form.
 
-\begin{definition}\label{def:serre-der}\uses{def:derivative, def:E2}\leanok \lean{serre_D}
-For $k \in \mathbb{R}$, define the weight $k$ Serre derivative $\partial_{k}$ of a modular form $F$ as
-\begin{equation}\label{eqn:serre-der}
-    \partial_{k}F := F' - \frac{k}{12} E_2 F.
-\end{equation}
-\end{definition}
+\inputleannode{def:serre-der}
 
-\begin{theorem}
-\label{thm:serre-der-equiv-action}\uses{def:serre-der, def:E2, lemma:E2-transform-general}\lean{serre_D_slash_equivariant}\leanok
-Serre derivative $\partial_{k}$ is equivariant with the slash action of $\mathrm{SL}_{2}(\mathbb{Z})$ in the following sense:
-\begin{equation}
-    \partial_{k} (F|_{k}\gamma) = (\partial_{k} F)|_{k+2}\gamma, \quad \forall \gamma \in \mathrm{SL}_{2}(\mathbb{Z}).
-\end{equation}
-\end{theorem}
-\begin{proof}
-Let $G = \partial_{k}F = F' - \frac{k}{12}E_2 F$.
-From $F \in M_k(\Gamma)$, we have
-\begin{equation}
-    (F|_{k}\gamma)(z) := (cz + d)^{-k} F\left(\frac{az + b}{cz + d}\right), \quad \gamma = \begin{pmatrix}a & b \\ c & d\end{pmatrix} \in \Gamma.
-\end{equation}
-By taking the derivative of the above equation, we get
-\begin{align}
-    \frac{\dd}{\dd z}(F|_{k} \gamma)(z) &= -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k} (cz + d)^{-2} \frac{\dd F}{\dd z}\left(\frac{az + b}{cz + d}\right) \\
-    &= -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k - 2} \frac{\dd F}{\dd z}\left(\frac{az + b}{cz + d}\right) \\
-    &= -kc (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + 2 \pi i (cz + d)^{-k - 2} F'\left(\frac{az + b}{cz + d}\right) \\
-    \Leftrightarrow (F|_{k} \gamma)'(z) &= -\frac{kc}{2 \pi i} (cz + d)^{-k - 1} F\left(\frac{az + b}{cz + d}\right) + (cz + d)^{-k - 2} F'\left(\frac{az + b}{cz + d}\right).
-\end{align}
-Combined with \eqref{eqn:E2-transform-general}, we get
-\begin{align}
-    ((\partial_k F)|_{k+2}\gamma)(z) &= (cz + d)^{-k-2} \left(F'\left(\frac{az + b}{cz + d}\right) - \frac{k}{12}E_2\left(\frac{az + b}{cz + d}\right)F\left(\frac{az + b}{cz + d}\right)\right) \\
-    &= (cz + d)^{-k-2} F'\left(\frac{az + b}{cz + d}\right) - \frac{k}{12} \left(E_2(z) - \frac{6ic}{\pi(cz + d)}\right) \cdot (cz + d)^{-k} F\left(\frac{az + b}{cz + d}\right) \\
-    &= (F|_{k}\gamma)'(z) - \frac{k}{12} E_2(z) (F|_{k}\gamma)(z) \\
-    &= \partial_{k} (F|_{k}\gamma)(z).
-\end{align}
-\end{proof}
+\inputleannode{thm:serre-der-equiv-action}
+
 
 As a direct consequence of Theorem \ref{thm:serre-der-equiv-action}, we can check that the Serre derivative preserves the modularity of a modular form.
-\begin{theorem}\label{thm:serre-der-modularity}\uses{def:serre-der, def:Mk, thm:serre-der-equiv-action}\lean{serre_D_slash_invariant}\leanok
-Let $F$ be a modular form of weight $k$ and level $\Gamma$.
-Then, $\partial_{k}F$ is a modular form of weight $k + 2$ of the same level.
-\end{theorem}
-\begin{proof}
-    \leanok
-    Immediate from Theorem \ref{thm:serre-der-equiv-action} since $F|_k\gamma = F$ for all $\gamma \in \Gamma$.
-\end{proof}
+\inputleannode{thm:serre-der-modularity}
+
 
 \begin{remark}
 More generally, the following theorem holds: if $F$ is a quasimodular form of weight $k$ and depth $s$, then $\partial_{k-s}F$ is a quasimodular form of weight $k + 2$ \emph{and depth $\le s$} of the same level. We will not prove this here.
 \end{remark}
 
-\begin{theorem}\label{thm:ramanujan-formula}\uses{thm:serre-der-modularity, def:serre-der, lemma:E2-transform-general, cor:dim-mf} \lean{ramanujan_E₂, ramanujan_E₄, ramanujan_E₆, ramanujan_E₂', ramanujan_E₄', ramanujan_E₆'} \leanok
-We have
-\begin{align}
-    E_2' &= \frac{E_2^2 - E_4}{12} \label{eqn:DE2} \\
-    E_4' &= \frac{E_2 E_4 - E_6}{3} \label{eqn:DE4} \\
-    E_6' &= \frac{E_2 E_6 - E_4^2}{2} \label{eqn:DE6}
-\end{align}
-\end{theorem}
-\begin{proof}
-In terms of Serre derivatives, these are equivalent to
-\begin{align}
-    \partial_{1}E_2 &= -\frac{1}{12} E_4 \label{eqn:SE2} \\
-    \partial_{4}E_4 &= -\frac{1}{3} E_6 \label{eqn:SE4} \\
-    \partial_{6}E_6 &= -\frac{1}{2} E_4^2 \label{eqn:SE6}
-\end{align}
-By Theorem \ref{thm:serre-der-modularity}, all the Serre derivatives are, in fact, modular.
-To be precise, the modularity of $\partial_{4} E_4$ and $\partial_6 E_6$ directly follows from Theorem \ref{thm:serre-der-modularity}, and that of $\partial_{1}E_2$ follows from \eqref{eqn:E2-transform-general}.
-Differentiating and squaring then gives us the following:
-\begin{align}
-    E_2'|_{4}\gamma &= E_2' - \frac{ic}{\pi(cz + d)} E_2 - \frac{3c^2}{\pi^2 (cz + d)^2} \label{eqn:DE2-transform} \\
-    E_2^2|_{4}\gamma &= E_2^2 - \frac{12ic}{\pi(cz + d)} E_2 - \frac{36c^2}{\pi^2 (cz + d)^2} \label{eqn:E2sq-transform}
-\end{align}
-Hence, \eqref{eqn:DE2}$-\frac{1}{12}$\eqref{eqn:E2sq-transform} is a modular form of weight 4.
-By \Cref{cor:dim-mf}, they should be multiples of $E_4, E_6, E_4^2$, and the proportionality constants can be determined by observing the constant terms of $q$-expansions.
-\end{proof}
+\inputleannode{thm:ramanujan-formula}
+
 \begin{corollary}\label{cor:logder-disc-E2}\uses{thm:ramanujan-formula, def:disc-definition}
 \begin{equation}\label{eqn:logder-disc-E2}
     \Delta' = E_2 \Delta.
@@ -712,22 +327,8 @@ This implies
 and by considering $q$-series ($E_4$ has an invertible $q$-series), we get $f_2 = 0$.
 \end{proof}
 
-\begin{theorem}\label{thm:serre-der-prod-rule}\uses{def:serre-der} \lean{serre_D_mul} \leanok
-The Serre derivative satisfies the following product rule: for any quasimodular forms $F$ and $G$,
-\begin{equation}
-    \partial_{w_1 + w_2} (FG) = (\partial_{w_1}F)G + F (\partial_{w_2}G).
-\end{equation}
-\end{theorem}
-\begin{proof}
-    \leanok
-    It follows from the definition:
-    \begin{align}
-        \partial_{w_1 + w_2} (FG) &= (FG)' - \frac{w_1 + w_2}{12} E_2 (FG) \\
-        &= F'G + FG' - \frac{w_1 + w_2}{12} E_2(FG) \\
-        &= \left(F' - \frac{w_1}{12}E_2 F\right)G + F \left(G' - \frac{w_2}{12}E_2 G\right) \\
-        &= (\partial_{w_1}F)G + F(\partial_{w_2}G).
-    \end{align}
-\end{proof}
+\inputleannode{thm:serre-der-prod-rule}
+
 
 We also have the following useful theorem for proving positivity of quasimodular forms on the imaginary axis, which is \cite[Proposition 3.5, Corollary 3.6]{Lee}.
 \begin{theorem}\label{thm:anti-serre-der-pos}\uses{def:serre-der, cor:logder-disc-E2}

@@ -1,3 +1,4 @@
+import Architect
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Order.Monotone.Defs
 
@@ -14,8 +15,26 @@ open scoped Real Manifold ArithmeticFunction.sigma UpperHalfPlane
 Definition of $F$ and $G$ and auxiliary functions for the inequality between them
 on the imaginary axis.
 -/
+@[blueprint
+  "def:FG-definition"
+  (statement := /--
+  Define two (quasi) modular forms as
+  \begin{align}
+      F(z) &= (E_2(z) E_4(z) - E_6(z))^2 \label{eqn:defF} \\
+      G(z) &= H_2(z)^{3} (2 H_{2}(z)^{2} + 5 H_{2}(z) H_{4}(z) + 5 H_{4}(z)^{2}). \label{eqn:defG}
+  \end{align}
+  -/)]
 noncomputable def F := (E₂ * E₄.toFun - E₆.toFun) ^ 2
 
+@[blueprint
+  "def:FG-definition"
+  (statement := /--
+  Define two (quasi) modular forms as
+  \begin{align}
+      F(z) &= (E_2(z) E_4(z) - E_6(z))^2 \label{eqn:defF} \\
+      G(z) &= H_2(z)^{3} (2 H_{2}(z)^{2} + 5 H_{2}(z) H_{4}(z) + 5 H_{4}(z)^{2}). \label{eqn:defG}
+  \end{align}
+  -/)]
 noncomputable def G := H₂ ^ 3 * ((2 : ℝ) • H₂ ^ 2 + (5 : ℝ) • H₂ * H₄ + (5 : ℝ) • H₄ ^ 2)
 
 noncomputable def negDE₂ := - (D E₂)
@@ -103,6 +122,52 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
 /--
 Modular linear differential equation satisfied by $F$.
 -/
+@[blueprint
+  "lemma:FG-de"
+  (statement := /--
+  $F$ and $G$ satisfy the following differential equations:
+  \begin{align}
+      \partial_{12}\partial_{10} F - \frac{5}{6} E_{4} F &= 7200 \Delta (-E_{2}') \label{eqn:ddf} \\
+      \partial_{12}\partial_{10} G - \frac{5}{6} E_{4} G &= -640 \Delta H_{2} \label{eqn:ddg}
+  \end{align}
+  -/)
+  (proof := /--
+  Both can be shown by direct computations.
+  By Ramanujan's identities (Theorem \ref{thm:ramanujan-formula}) and the product rule of Serre
+  derivatives (Theorem \ref{thm:serre-der-prod-rule}), we have
+  \begin{align}
+      \partial_{5} (E_2 E_4 - E_6) &= (E_2 E_4 - E_6)' - \frac{5}{12} E_2 (E_2 E_4 - E_6) \\
+      &= \frac{E_2^2 - E_4}{12} \cdot E_4 + E_2 \cdot \frac{E_2 E_4 - E_6}{3} - \frac{E_2 E_6 -
+      E_4^2}{2} - \frac{5}{12}E_2 (E_2 E_4 - E_6) \\
+      &= -\frac{5}{12} (E_2 E_6 - E_4^2) \label{eqn:S5} \\
+      \partial_{7} (E_2 E_6 - E_4^2) &= (E_2 E_6 - E_4^2)' - \frac{7}{12} E_2 (E_2 E_6 - E_4^2) \\
+      &= \frac{E_2^2 - E_4}{12} \cdot E_6 + E_2 \cdot \frac{E_2 E_6 - E_4^2}{2} - 2 E_4 \cdot
+      \frac{E_2 E_4 - E_6}{3} - \frac{7}{12} E_2 (E_2 E_6 - E_4^2) \\
+      &= -\frac{7}{12} E_4 (E_2 E_4 - E_6) \label{eqn:S7}
+  \end{align}
+  and using these we can compute
+  \begin{align}
+      \partial_{10} F &= \partial_{10} (E_2 E_4 - E_6)^2 \\
+      &= 2 (E_2 E_4 - E_6) \partial_{5} (E_2 E_4 - E_6) \\
+      &= -\frac{6}{5} (E_2 E_4 - E_6) (E_2 E_6 - E_4^2), \\
+      \partial_{12}\partial_{10} F &= -\frac{5}{6} \partial_{12} ((E_2 E_4 - E_6) (E_2 E_6 - E_4))
+      \\
+      &= -\frac{5}{6} (\partial_{5}(E_2 E_4 - E_6)) (E_2 E_6 - E_4^2) - \frac{5}{6} (E_2 E_4 - E_6)
+      (\partial_{7} (E_2 E_6 - E_4)) \\
+      &= \frac{25}{72} (E_2 E_6 - E_4^2)^2 + \frac{35}{72} E_4 (E_2 E_4 - E_6)^2, \\
+      \partial_{12}\partial_{10}F - \frac{5}{6} E_4 F &= \frac{25}{72}(E_2 E_6 - E_4^2)^2 +
+      \frac{35}{72} E_4 (E_2 E_4 - E_6)^2 - \frac{5}{6} E_4 (E_2 E_4 - E_6)^2 \\
+      &= \frac{25}{72} ((E_2 E_6 - E_4^2)^2 - E_4 (E_2 E_4 - E_6)^2) \\
+      &= \frac{25}{72} (- E_2^2 E_4^3 + E_2^2 E_6^2 + E_4^4 - E_4 E_6^3) \\
+      &= -\frac{25}{72} (E_4^3 - E_6^2) (E_2^2 - E_4) \\
+      &= 7200 \cdot \frac{E_4^3 - E_6^2}{1728} \cdot \frac{-E_2^2 + E_4}{12}\\
+      &= 7200 \Delta (-E_2')
+  \end{align}
+  which proves \eqref{eqn:ddf}.
+  Similarly, \eqref{eqn:ddg} can be proved using Proposition \ref{prop:theta-der} and Lemma
+  \ref{lemma:lv1-lv2-identities}.
+  -/)
+  (latexEnv := "lemma")]
 theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 7200 * Δ_fun * negDE₂ := by
   ext x
   rw [negDE₂, Δ_fun, serre_D, serre_D, F_aux]
@@ -113,6 +178,7 @@ theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 7200 * Δ_fun * ne
 /--
 Modular linear differential equation satisfied by $G$.
 -/
+@[blueprint "lemma:FG-de"]
 theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
   sorry
 
@@ -517,6 +583,17 @@ section ImagAxisProperties
 Blueprint: Lemma 8.6 - follows from H₂(it) > 0 and H₄(it) > 0.
 G = H₂³ (2H₂² + 5H₂H₄ + 5H₄²) is positive since all factors are positive.
 -/
+@[blueprint
+  "lemma:F-G-pos"
+  (statement := /-- For all $t > 0$, we have $F(it) > 0$ and $G(it) > 0$. -/)
+  (proof := /--
+  By Ramanujan's identity \eqref{eqn:DE4}, we have $F(z) = 9 E_4'(z)^2$ and
+  \begin{equation}
+      F(it) = 9E_4'(it)^2 = 9 \left(240\sum_{n \geq 1} n \sigma_3(n) e^{-2 \pi n t} \right)^{2} > 0.
+  \end{equation}
+  $G(it) > 0$ follows from positivity of $H_2(it)$ and $H_4(it)$ (Lemma \ref{cor:theta-pos}).
+  -/)
+  (latexEnv := "lemma")]
 theorem G_imag_axis_pos : ResToImagAxis.Pos G := by unfold G; fun_prop (disch := positivity)
 
 /--
@@ -529,6 +606,17 @@ theorem G_imag_axis_real : ResToImagAxis.Real G := G_imag_axis_pos.1
 `F(it) > 0` for all `t > 0`.
 Blueprint: F = 9*(D E₄)² and D E₄ > 0 on imaginary axis.
 -/
+@[blueprint
+  "lemma:F-G-pos"
+  (statement := /-- For all $t > 0$, we have $F(it) > 0$ and $G(it) > 0$. -/)
+  (proof := /--
+  By Ramanujan's identity \eqref{eqn:DE4}, we have $F(z) = 9 E_4'(z)^2$ and
+  \begin{equation}
+      F(it) = 9E_4'(it)^2 = 9 \left(240\sum_{n \geq 1} n \sigma_3(n) e^{-2 \pi n t} \right)^{2} > 0.
+  \end{equation}
+  $G(it) > 0$ follows from positivity of $H_2(it)$ and $H_4(it)$ (Lemma \ref{cor:theta-pos}).
+  -/)
+  (latexEnv := "lemma")]
 theorem F_imag_axis_pos : ResToImagAxis.Pos F := by
   rw [F_eq_nine_DE₄_sq]
   have _ := DE₄_imag_axis_pos
@@ -578,6 +666,30 @@ lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ := by
   sorry
 
 -- TODO: prove this with `fun_prop` after finishing the proof of `MLDE_F` and `MLDE_G`
+@[blueprint
+  "cor:MLDE-pos"
+  (statement := /--
+  \eqref{eqn:ddf} (resp. \eqref{eqn:ddg}) is positive (resp. negative) on the (positive) imaginary
+  axis.
+  -/)
+  (proof := /--
+  From \eqref{eqn:E2} and Lemma \ref{cor:disc-pos},
+  \ifplastex
+  \begin{equation*}
+      7200 (-E_2'(it)) \Delta(it) = 7200 \cdot 24 \left(\sum_{n \ge 1} n \sigma_1(n) e^{-2 \pi n
+      t}\right) \cdot \Delta(it) > 0.
+  \end{equation*}
+  \else
+  \begin{equation}
+      7200 (-E_2'(it)) \Delta(it) = 7200 \cdot 24 \left(\sum_{n \ge 1} n \sigma_1(n) e^{-2 \pi n
+      t}\right) \cdot \Delta(it) > 0. \notag
+  \end{equation}
+  \fi
+  Negativity of \eqref{eqn:ddg}, i.e. $-640 \Delta(it) H_2(it) < 0$ follows from Corollary
+  \ref{cor:theta-pos} and \ref{cor:disc-pos}.
+  -/)
+  (proofUses := ["cor:disc-pos", "cor:theta-pos"])
+  (latexEnv := "corollary")]
 lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
   refine And.intro SerreDer_22_L₁₀_real ?_
   intro t ht
@@ -595,12 +707,86 @@ lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ := antiSerreDerPos SerreDer_22_L�
 /--
 $t \mapsto F(it) / G(it)$ is monotone decreasing.
 -/
+@[blueprint
+  "prop:Qdec"
+  (statement := /-- The function $t \mapsto Q(t)$ is monotone decreasing. -/)
+  (proof := /--
+  It is enough to show that
+  \begin{align}
+      \frac{\dd}{\dd t} \left(\frac{F(it)}{G(it)}\right) < 0 &\Leftrightarrow (- 2\pi)
+      \frac{F'(it)G(it) - F(it) G'(it)}{G(it)^{2}} < 0 \\
+      &\Leftrightarrow F'(it) G(it) - F(it) G'(it) > 0 \\
+      &\Leftrightarrow (\partial_{10}F)(it) G(it) - F(it) (\partial_{10}G)(it) > 0.
+  \end{align}
+  Let $\mathcal{L}_{1, 0} := (\partial_{10}F) G - F (\partial_{10} G) = F'G - FG'$.
+  Then
+  \begin{align}
+  \frac{\mathcal{L}_{1, 0}}{FG} = \frac{F'G - FG'}{FG} = \frac{F'}{F} - \frac{G'}{G}
+  \end{align}
+  The vanishing order of $F$ and $G$ at the infinity are $2$ and $\frac{3}{2}$ respectively, so by
+  Lemma \ref{lemma:log-der-inf}, we have
+  \begin{align}
+      \lim_{t \to \infty} \frac{\mathcal{L}_{1, 0}(it)}{F(it) G(it)} = \lim_{t \to \infty}
+      \left(\frac{F'(it)}{F(it)} - \frac{G'(it)}{G(it)}\right) = 2 - \frac{3}{2} = \frac{1}{2} > 0
+  \end{align}
+  so $\mathcal{L}_{1, 0}(it) > 0$ for sufficiently large $t$.
+  Its Serre derivative $\partial_{22} \mathcal{L}_{1, 0}$ is positive by Corollary
+  \ref{cor:MLDE-pos}:
+  \begin{align}
+      \partial_{22} \mathcal{L}_{1, 0} = (\partial_{12} \partial_{10} F) G - F
+      (\partial_{12}\partial_{10} G)
+      = \Delta (7200 (-E_{2}') G + 640 H_2 F) > 0.
+  \end{align}
+  Hence $\mathcal{L}_{1, 0}(it) > 0$ by Theorem \ref{thm:anti-serre-der-pos}, and the monotonicity
+  follows.
+  -/)
+  (proofUses := ["cor:MLDE-pos", "thm:anti-serre-der-pos", "lemma:log-der-inf"])
+  (latexEnv := "proposition")]
 theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) := by
   sorry
 
 /--
 $\lim_{t \to 0^+} F(it) / G(it) = 18 / \pi^2$.
 -/
+@[blueprint
+  "lemma:Qlim"
+  (statement := /--
+  We have
+  \begin{equation}
+      \lim_{t \to 0^+} Q(t) = \frac{18}{\pi^2}.
+  \end{equation}
+  -/)
+  (proof := /--
+  We have
+  \begin{equation}
+      \lim_{t \to 0^+} Q(t) = \lim_{t \to 0^+} \frac{F(it)}{G(it)} = \lim_{t \to \infty}
+      \frac{F(i/t)}{G(i/t)}.
+  \end{equation}
+  By using the transformation laws of Eisenstein series \eqref{eqn:E2-S-transform},
+  \eqref{eqn:Ek-trans-S} (for $k = 4, 6$) and the thetanull functions, \eqref{eqn:H2-transform-S},
+  \eqref{eqn:H4-transform-S}, we get
+  \begin{align}
+      F\left(\frac{i}{t}\right) &= t^{12} F(it) - \frac{12t^{11}}{\pi} (E_2(it)E_4(it) -
+      E_6(it))E_4(it) + \frac{36t^{10}}{\pi^2}E_4(it)^2, \\
+      G\left(\frac{i}{t}\right) &= t^{10} H_{4}(it)^{3}(2H_{4}(it)^{2} + 5 H_{4}(it)H_{2}(it) + 5
+      H_{2}(it)^{2}).
+  \end{align}
+  Since $F$, $E_2 E_4 - E_6$ and $H_2$ are cusp forms, we have $\lim_{t \to \infty}t^k A(it) = 0$
+  when $A(z)$ is one of these forms and $k \geq 0$.
+  From $\lim_{t \to \infty} E_4(it) = 1 = \lim_{t \to \infty}H_{4}(it)$, we get
+  \begin{align}
+      \lim_{t \to \infty} \frac{F(i/t)}{G(i/t)}
+      &= \lim_{t \to \infty} \frac{t^{12} F(it) - \frac{12t^{11}}{\pi} (E_2(it)E_4(it) -
+      E_6(it))E_4(it) + \frac{36t^{10}}{\pi^2}E_4(it)^2}{t^{10} H_{4}(it)^{3}(2H_{4}(it)^{2} + 5
+      H_{4}(it)H_{2}(it) + 5 H_{2}(it)^{2})} \\
+      &= \lim_{t \to \infty} \frac{t^{2} F(it) - \frac{12t}{\pi} (E_2(it)E_4(it) - E_6(it))E_4(it) +
+      \frac{36}{\pi^2}E_4(it)^2}{H_{4}(it)^{3}(2H_{4}(it)^{2} + 5 H_{4}(it)H_{2}(it) + 5
+      H_{2}(it)^{2})} \\
+      &= \frac{18}{\pi^2}.
+  \end{align}
+  -/)
+  (proofUses := ["lemma:E2-transform-S", "lemma:theta-transform-S-T", "lemma:Ek-is-modular-form"])
+  (latexEnv := "lemma")]
 theorem FmodG_rightLimitAt_zero :
     Tendsto FmodGReal (nhdsWithin 0 (Set.Ioi 0)) (nhdsWithin (18 * (π ^ (-2 : ℤ))) Set.univ) := by
   sorry
@@ -608,10 +794,27 @@ theorem FmodG_rightLimitAt_zero :
 /--
 Main inequalities between $F$ and $G$ on the imaginary axis.
 -/
+@[blueprint
+  "cor:ineqAnew"
+  (statement := /-- \eqref{eqn:ineqAnew} holds. -/)
+  (proof := /-- This directly follows from Lemma \ref{lemma:F-G-pos}. -/)
+  (proofUses := ["lemma:F-G-pos"])
+  (latexEnv := "corollary")]
 theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
     FReal t + 18 * (π ^ (-2 : ℤ)) * GReal t > 0 := by
   sorry
 
+@[blueprint
+  "cor:ineqBnew"
+  (statement := /-- \eqref{eqn:ineqBnew} holds. -/)
+  (proof := /--
+  \begin{equation}
+      \frac{F(it)}{G(it)} = Q(t) < \lim_{u \to 0^+} Q(u) = \frac{18}{\pi^2}
+  \end{equation}
+  and by Lemma \ref{lemma:F-G-pos}, \eqref{eqn:ineqBnew} follows.
+  -/)
+  (proofUses := [FmodG_rightLimitAt_zero, FmodG_antitone, "lemma:F-G-pos"])
+  (latexEnv := "corollary")]
 theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
     FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
   sorry
