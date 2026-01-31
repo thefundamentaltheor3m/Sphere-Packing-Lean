@@ -1,3 +1,4 @@
+import Architect
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.clog_arg_lems
 import SpherePacking.ModularForms.eta
@@ -16,7 +17,32 @@ open ArithmeticFunction
 
 noncomputable section Definitions
 
+attribute [blueprint
+  "def:Mk"
+  (statement := /--
+  Let  $\Gamma$ denote a subgroup of $\mathrm{SL}_2(\mathbb{Z})$, then a modular form  of level
+  $\Gamma$ and weight $k \in \mathbb{Z}$ is a function $f : \mathbb{H} \to \mathbb{C}$ such that:
+  \begin{enumerate}
+   \item For all $\gamma \in \Gamma$ we have $f\mid_k \gamma = f$  (such functions are called slash
+   invariant).
+   \item $f$ is holomorphic on $\mathbb{H}$.
+   \item For all $\gamma \in \mathrm{SL}_2(\mathbb{Z})$, there exist $A, B \in \mathbb{R}$ such that
+   for all $z \in \mathbb{H}$, with $ A \le \mathrm{Im}(z)$, we have $|(f \mid_k \gamma) (z) |\le
+   B$. Here $| - |$ denotes the standard complex absolute value.
+  \end{enumerate}
+     This defines a complex vector space which we denote by $M_{k}(\Gamma)$.
+  -/)]
+  ModularForm CuspForm ModularFormClass CuspFormClass
+
 /- The discriminant form -/
+@[blueprint
+  "def:disc-definition"
+  (statement := /--
+  The \emph{discriminant form} $\Delta(z)$ is given by
+  \begin{equation}\label{eqn:disc-definition}
+  \Delta(z) = e^{2 \pi i z} \prod_{n \ge 1} (1 - e^{2 \pi i n z})^{24}.
+  \end{equation}
+  -/)]
 def Δ (z : UpperHalfPlane) := cexp (2 * π * Complex.I * z) * ∏' (n : ℕ),
     (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24
 
@@ -42,6 +68,11 @@ lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
 
 
 /-This should be easy from the definition and the Mulitpliable bit. -/
+@[blueprint
+  "cor:disc-nonvanishing"
+  (statement := /-- $\Delta(z) \neq 0$ for all $z \in \h$. -/)
+  (proof := /-- This follows from the product formula. -/)
+  (latexEnv := "corollary")]
 lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by
   rw [Delta_eq_eta_pow]
   simpa using eta_nonzero_on_UpperHalfPlane z
@@ -314,6 +345,23 @@ lemma Discriminant_zeroAtImInfty :
     exact tendsto_comap
   · apply Delta_boundedfactor
 
+@[blueprint
+  "lemma:disc-cuspform"
+  (statement := /--
+  $\Delta(z) \in M_{12}(\Gamma_1)$.
+  Especially, we have
+  \begin{equation}\label{eqn:disc-trans-S}
+      \Delta\left(-\frac{1}{z}\right) = z^{12} \Delta(z).
+  \end{equation}
+  Also, it vanishes at the unique cusp, i.e. it is a cusp form of level $\Gamma_1$ and weight $12$.
+  -/)
+  (proof := /--
+  The fact that it is invariant under translation is clear from the definition, so we only need to
+  check transformation under $S$. Now, note that $\eta^{24} = \Delta$, and from
+  \ref{lemma:dedekind_eta_transformation} we have $\eta(-1/z) = \sqrt{-iz} \eta(z)$, so
+  $\Delta(-1/z) = z^{12} \Delta(z)$ as required.
+  -/)
+  (latexEnv := "lemma")]
 def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun := Discriminant_SIF
   slash_action_eq' := Discriminant_SIF.slash_action_eq'
@@ -594,6 +642,16 @@ lemma tprod_pos_nat_im (z : ℍ) :
   exact Real.exp_pos _
 
 /- Δ(it) is positive on the (positive) imaginary axis. -/
+@[blueprint
+  "cor:disc-pos"
+  (statement := /-- $\Delta(it) > 0$ for all $t > 0$. -/)
+  (proof := /--
+  By \ref{def:disc-definition}, we have
+  $$
+  \Delta(it) = e^{-2 \pi t} \prod_{n \ge 1} (1 - e^{-2 \pi n t})^{24} > 0.
+  $$
+  -/)
+  (latexEnv := "corollary")]
 lemma Delta_imag_axis_pos : ResToImagAxis.Pos Δ := by
   rw [ResToImagAxis.Pos]
   refine And.intro Delta_imag_axis_real ?_

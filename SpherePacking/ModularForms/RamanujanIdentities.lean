@@ -1,3 +1,4 @@
+import Architect
 import SpherePacking.ModularForms.EisensteinAsymptotics
 
 /-!
@@ -61,6 +62,38 @@ The proof uses:
 3. Dimension formula: weight-4 forms are 1-dimensional, spanned by E₄
 4. Constant term: serre_D 1 E₂(iy) → -1/12 as y → ∞
 -/
+@[blueprint
+  "thm:ramanujan-formula"
+  (statement := /--
+  We have
+  \begin{align}
+      E_2' &= \frac{E_2^2 - E_4}{12} \label{eqn:DE2} \\
+      E_4' &= \frac{E_2 E_4 - E_6}{3} \label{eqn:DE4} \\
+      E_6' &= \frac{E_2 E_6 - E_4^2}{2} \label{eqn:DE6}
+  \end{align}
+  -/)
+  (proof := /--
+  In terms of Serre derivatives, these are equivalent to
+  \begin{align}
+      \partial_{1}E_2 &= -\frac{1}{12} E_4 \label{eqn:SE2} \\
+      \partial_{4}E_4 &= -\frac{1}{3} E_6 \label{eqn:SE4} \\
+      \partial_{6}E_6 &= -\frac{1}{2} E_4^2 \label{eqn:SE6}
+  \end{align}
+  By Theorem \ref{thm:serre-der-modularity}, all the Serre derivatives are, in fact, modular.
+  To be precise, the modularity of $\partial_{4} E_4$ and $\partial_6 E_6$ directly follows from
+  Theorem \ref{thm:serre-der-modularity}, and that of $\partial_{1}E_2$ follows from
+  \eqref{eqn:E2-transform-general}.
+  Differentiating and squaring then gives us the following:
+  \begin{align}
+      E_2'|_{4}\gamma &= E_2' - \frac{ic}{\pi(cz + d)} E_2 - \frac{3c^2}{\pi^2 (cz + d)^2}
+      \label{eqn:DE2-transform} \\
+      E_2^2|_{4}\gamma &= E_2^2 - \frac{12ic}{\pi(cz + d)} E_2 - \frac{36c^2}{\pi^2 (cz + d)^2}
+      \label{eqn:E2sq-transform}
+  \end{align}
+  Hence, \eqref{eqn:DE2}$-\frac{1}{12}$\eqref{eqn:E2sq-transform} is a modular form of weight 4.
+  By \Cref{cor:dim-mf}, they should be multiples of $E_4, E_6, E_4^2$, and the proportionality
+  constants can be determined by observing the constant terms of $q$-expansions.
+  -/)]
 theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   obtain ⟨c, hc⟩ := exists_smul_eq_of_rank_one weight_four_one_dimensional E4_ne_zero
     serre_DE₂_ModularForm
@@ -79,6 +112,7 @@ Uses the dimension argument:
 3. Weight-6 modular forms are 1-dimensional (weight_six_one_dimensional)
 4. Constant term is -1/3 (from D E₄ → 0, E₂ → 1, E₄ → 1)
 -/
+@[blueprint "thm:ramanujan-formula"]
 theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   obtain ⟨c, hc⟩ := exists_smul_eq_of_rank_one weight_six_one_dimensional E6_ne_zero
     serre_DE₄_ModularForm
@@ -96,6 +130,7 @@ Uses the dimension argument:
 2. Weight-8 modular forms are 1-dimensional, spanned by E₄²
 3. Constant term is -1/2 (from D E₆ → 0, E₂ → 1, E₆ → 1)
 -/
+@[blueprint "thm:ramanujan-formula"]
 theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by
   let E₄_sq : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
     (by norm_num : (4 : ℤ) + 4 = 8) ▸ E₄.mul E₄
@@ -125,7 +160,7 @@ lemma D_eq_serre_D_add (k : ℂ) (f : ℍ → ℂ) (z : ℍ) :
     D f z = serre_D k f z + k * 12⁻¹ * E₂ z * f z := by
   simp only [serre_D_apply]; ring
 
-@[simp]
+@[simp, blueprint "thm:ramanujan-formula"]
 theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
   ext z
   rw [D_eq_serre_D_add 1 E₂ z]
@@ -133,7 +168,7 @@ theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
     show (-12⁻¹ : ℍ → ℂ) z = -12⁻¹ from rfl, show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl]
   ring
 
-@[simp]
+@[simp, blueprint "thm:ramanujan-formula"]
 theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
   ext z
   rw [D_eq_serre_D_add 4 E₄.toFun z]
@@ -141,11 +176,10 @@ theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun
     show (-3⁻¹ : ℍ → ℂ) z = -3⁻¹ from rfl, show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl]
   ring
 
-@[simp]
+@[simp, blueprint "thm:ramanujan-formula"]
 theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
   ext z
   rw [D_eq_serre_D_add 6 E₆.toFun z]
   simp only [congrFun ramanujan_E₆' z, Pi.mul_apply, Pi.sub_apply,
     show (-2⁻¹ : ℍ → ℂ) z = -2⁻¹ from rfl, show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl]
   ring
-

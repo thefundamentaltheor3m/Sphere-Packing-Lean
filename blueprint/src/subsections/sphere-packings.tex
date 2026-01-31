@@ -8,40 +8,17 @@ This subsection gives an overview for the setup of the problem, both informally 
 
 Arguably the most important definition in this subsection is that of \emph{packing density}, which measures which portion of $d$-dimensional Euclidean space is covered by a given sphere packing. Taking the supremum over all packings gives what we refer to as the \emph{sphere packing constant}, which is the quantity we are interested in optimising.
 
-\begin{definition}\label{SpherePacking.balls}\lean{SpherePacking.balls}\leanok  % Do we want to replace the notation \mathcal{P} with \mathcal{P}_X or \mathcal{P}(X)?
-  Given a set $X \subset \R^d$ and a real number $r > 0$ (known as the \emph{separation radius}) such that $\|x - y\| \geq r$ for all distinct $x, y \in X$, we define the \emph{sphere packing} $\Pa(X)$ with centres at $X$ to be the union of all open balls of radius $r$ centred at points in $X$:
-  \[
-    \Pa(X) := \bigcup_{x \in X} B_d(x, r)
-  \]
-\end{definition}
-
-\begin{remark}\label{SpherePacking}\lean{SpherePacking}\leanok
-  Note that a sphere packing is uniquely defined from a given set of centres (which, in order to be a valid set of centres, must admit a corresponding separation radius). Therefore, as a conscious choice during the formalisation process, we will define everything that depends on sphere packings in terms of \verb|SpherePacking|, a \verb|structure| that bundles all the identifying information of a packing, but not the actual balls themselves. For the purposes of this blueprint, however, we will refrain from making this distinction.
-\end{remark}
+\inputleannode{SpherePacking.balls}
+\inputleannode{SpherePacking}
 
 We now define a notion of density for bounded regions of space by considering the density inside balls of finite radius.
 
-\begin{definition}\label{SpherePacking.finiteDensity}\lean{SpherePacking.finiteDensity}\uses{SpherePacking, SpherePacking.balls}\leanok
-  The \emph{finite density} of a packing $\mathcal{P}$ is defined as
-  \[
-    \Delta_{\mathcal{P}}(R):=\frac{\mathrm{Vol}(\mathcal{P}\cap B_d(0,R))}{\mathrm{Vol}(B_d(0,R))},\quad R>0.
-  \]
-\end{definition}
+\inputleannode{SpherePacking.finiteDensity}
 
 As intuitive as it seems to take the density of a packing to be the limit of the finite densities as the radius of the ball goes to infinity, it is not immediately clear that this limit exists. Therefore, we define the density of a sphere packing as a limit superior instead.
 
-\begin{definition}\label{SpherePacking.density}\lean{SpherePacking.density}\uses{SpherePacking, SpherePacking.finiteDensity}\leanok
-  We define the \emph{density} of a packing $\mathcal{P}$ as the limit superior
-  \[
-    \Delta_{\mathcal{P}}:=\limsup\limits_{R\to\infty}\Delta_{\mathcal{P}}(R).
-  \]
-\end{definition}
+\inputleannode{SpherePacking.density}
 
 We may now define the sphere packing constant, the quantity that the sphere packing problem requires us to compute.
 
-\begin{definition}\label{SpherePackingConstant}\lean{SpherePackingConstant}\uses{SpherePacking.balls, SpherePacking.density}\leanok
-  The \emph{sphere packing constant} is defined as supremum of packing densities over all possible packings:
-  \[
-    \Delta_d:=\sup\limits_{\substack{\mathcal{P}\subset\R^d\\ \scriptscriptstyle\mathrm{sphere}\;\mathrm{packing}}}\Delta_{\mathcal{P}}.
-  \]
-\end{definition}
+\inputleannode{SpherePackingConstant}

@@ -6,6 +6,7 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
+import Architect
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.MagicFunction.IntegralParametrisations
 
@@ -120,6 +121,30 @@ def I₅' : ℝ → ℂ := fun x ↦ -2 * ∫ t in (0 : ℝ)..1, Φ₅ x t
 
 def I₆' : ℝ → ℂ := fun x ↦ 2 * ∫ t in Ici (1 : ℝ), Φ₆ x t
 
+@[blueprint
+  "def:a-definition"
+  (statement := /--
+  Define $a_{\rad} : \R \to \C$ by
+  \begin{align}\label{eqn:a-rad-definition}
+      a_\rad(r) := I_1(r) + I_2(r) + I_3(r) + I_4(r) + I_5(r) + I_6(r)
+  \end{align}
+  where
+  \begin{align}
+      I_1(r) &:= \int_{-1}^{-1 + i} \phi_0 \left(\frac{-1}{z+1}\right) (z + 1)^2 e^{\pi i r z} \dd z
+      \label{eqn:a-I1} \\
+      I_2(r) &:= \int_{-1 + i}^{i} \phi_0 \left(\frac{-1}{z+1}\right) (z + 1)^2 e^{\pi i r z} \dd z
+      \label{eqn:a-I2} \\
+      I_3(r) &:= \int_{1}^{1 + i} \phi_0 \left(\frac{-1}{z-1}\right) (z - 1)^2 e^{\pi i r z} \dd z
+      \label{eqn:a-I3} \\
+      I_4(r) &:= \int_{1 + i}^{i} \phi_0 \left(\frac{-1}{z-1}\right) (z - 1)^2 e^{\pi i r z} \dd z
+      \label{eqn:a-I4} \\
+      I_5(r) &:= -2 \int_{0}^{i} \phi_0 \left(\frac{-1}{z}\right) z^2 e^{\pi i r z} \dd z
+      \label{eqn:a-I5} \\
+      I_6(r) &:= 2 \int_{i}^{i\infty} \phi_0(z) e^{\pi i r z} \dd z \label{eqn:a-I6}
+  \end{align}
+  Here all the contours are chosen to be straight line segments.
+  Now, define $a(x) := a_{\rad}(\|x\|^2)$ for $x \in \R^8$.
+  -/)]
 def a' : ℝ → ℂ := fun x ↦ I₁' x + I₂' x + I₃' x + I₄' x + I₅' x + I₆' x
 
 end Real_Input
@@ -144,6 +169,7 @@ def I₅ : V → ℂ := fun x ↦ I₅' (‖x‖ ^ 2)
 
 def I₆ : V → ℂ := fun x ↦ I₆' (‖x‖ ^ 2)
 
+@[blueprint "def:a-definition"]
 def a : V → ℂ := fun x ↦ a' (‖x‖ ^ 2)
 
 end Vector_Input

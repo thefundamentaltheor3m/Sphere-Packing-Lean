@@ -6,6 +6,7 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
+import Architect
 import SpherePacking.ForMathlib.Fourier
 import SpherePacking.ForMathlib.SpecificLimits
 import SpherePacking.ForMathlib.tprod
@@ -446,6 +447,43 @@ This section contains the proof of the main result of this file.
 -/
 
 include f hf z hz c n₀ hcsum k hpoly in
+@[blueprint
+  "lemma:mod-div-disc-bound"
+  (statement := /--
+  Let $f(z)$ be a holomorphic function with a Fourier expansion
+  \begin{equation}
+      f(z) = \sum_{n \ge n_0} c_f(n) e^{\pi i n z}
+  \end{equation}
+  with $c_f(n_0) \ne 0$.
+  Assume that $c_f(n)$ has a polynomial growth, i.e. $|c_f(n)| = O(n^k)$ for some $k \in \N$.
+  Then there exists a constant $C_f > 0$ such that
+  \begin{equation}
+      \left|\frac{f(z)}{\Delta(z)}\right| \le C_f e^{-\pi (n_0 - 2) \Im z}
+  \end{equation}
+  for all $z$ with $\Im z > 1/2$.
+  -/)
+  (proof := /--
+  By the product formula \eqref{eqn:disc-definition},
+  \begin{align}
+      \left|\frac{f(z)}{\Delta(z)}\right| &= \left|\frac{\sum_{n \ge n_0} c_f(n) e^{\pi i n z}}{e^{2
+      \pi i z}\prod_{n \ge 1} (1 - e^{2\pi i n z})^{24}}\right| \\
+      &= |e^{\pi i (n_0 - 2)z}| \cdot \frac{|\sum_{n \ge n_0} c_f(n) e^{\pi i (n - n_0)
+      z}|}{\prod_{n \ge 1} |1 - e^{2\pi i n z}|^{24}} \\
+      &\le e^{-\pi (n_0 - 2) \Im z} \cdot \frac{\sum_{n \ge n_0} |c_f(n)| e^{-\pi (n - n_0) \Im
+      z}}{\prod_{n \ge 1} (1 - e^{- 2\pi n \Im z})^{24}} \\
+      &\le e^{-\pi (n_0 - 2) \Im z} \cdot \frac{\sum_{n \ge n_0} |c_f(n)| e^{-\pi (n - n_0) /
+      2}}{\prod_{n \ge 1} (1 - e^{-\pi n})^{24}} \\
+      &= C_f \cdot e^{-\pi (n_0 - 2) \Im z}
+  \end{align}
+  where
+  \begin{equation}
+      C_f = \frac{\sum_{n \ge n_0} |c_f(n)| e^{-\pi (n - n_0) / 2}}{\prod_{n \ge 1} (1 - e^{-\pi
+      n})^{24}}.
+  \end{equation}
+  Note that the summation in the numerator converges absolutely because of polynomial growth.
+  The denominator also converges, which is simply $e^{\pi} \cdot \Delta(i/2)$.
+  -/)
+  (latexEnv := "lemma")]
 theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
   (DivDiscBound c n₀) * rexp (-π * (n₀ - 2) * z.im) := calc
   _ = norm ((∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /

@@ -3,6 +3,7 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+import Architect
 import Mathlib.Logic.IsEmpty
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
@@ -528,6 +529,57 @@ variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded
   hD_unique_covers
 
+@[blueprint
+  "thm:Cohn-Elkies-periodic"
+  (title := "Cohn--Elkies {\\cite{ElkiesCohn}}")
+  (statement := /--
+  Let $X\subset\mathbb{R}^d$ be a discrete subset such that $\|x-y\|\geq 1$ for any distinct $x,y\in
+  X$. Suppose that $X$ is $\Lambda$-periodic with respect to some lattice
+  $\Lambda\subset\mathbb{R}^d$. Let $f:\R^d\to\R$ be a Schwartz function that is not identically
+  zero and satisfies the following conditions:
+  \begin{equation}\label{eqn:Cohn-Elkies-condition-1}f(x)\leq 0\mbox{ for } \|x\|\geq
+  1\end{equation} and
+  \begin{equation}\label{eqn:Cohn-Elkies-condition-2}\widehat{f}(x)\geq0\mbox{ for all }
+  x\in\R^d.\end{equation}
+    Then the density of any $\Lambda$-periodic sphere packing is bounded above by
+    $$\frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)).$$
+  -/)
+  (proof := /--
+  Here we reproduce the proof given in \cite{ElkiesCohn}.
+  
+  The inequality
+  \begin{equation}\label{eqn: sharp X 1}
+  \sharp (X/\Lambda)\cdot f(0)\geq \sum_{x\in X}\sum_{y\in X/\Lambda}f(x-y)=\sum_{x\in
+  X/\Lambda}\sum_{y\in X/\Lambda}\sum_{\ell\in  \Lambda}f(x-y+l)\end{equation}
+  follows from the condition \eqref{eqn:Cohn-Elkies-condition-1} of the theorem and the assumption
+  on the distances between points in $X$.
+  The equality
+  $$\sum_{x\in X/\Lambda}\sum_{y\in X/\Lambda}\sum_{\ell\in  \Lambda}f(x-y+l)=\sum_{x\in
+  X/\Lambda}\sum_{y\in X/\Lambda}\frac{1}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\,\sum_{m\in \Lambda^*}
+  \widehat{f}(m)\,e^{2\pi i m(x-y)}.$$
+  follows from the Poisson summation formula.
+  The right hand side of the above equation can be written as
+  $$\sum_{x\in X/\Lambda}\sum_{y\in
+  X/\Lambda}\frac{1}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\,\sum_{m\in \Lambda^*}
+  \widehat{f}(m)\,e^{2\pi i m(x-y)}=\frac{1}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\,\sum_{m\in
+  \Lambda^*} \widehat{f}(m)\cdot\big|\sum_{x\in X/\Lambda}e^{2\pi i m x}\big|^2.$$
+  Note that $\big|\sum_{x\in X/\Lambda}e^{2\pi i m x}\big|^2\geq0$ for all $m\in\Lambda^*$.
+  Moreover,  the term corresponding to $m=0$ satisfies $\big|\sum_{x\in X/\Lambda}e^{2\pi i 0
+  x}\big|^2=\sharp (X/\Lambda)^2$.
+  Now we use the condition \eqref{eqn:Cohn-Elkies-condition-2} and estimate
+  \begin{equation}\label{eqn: sharp X 2}\frac{1}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\,\sum_{m\in
+  \Lambda^*} \widehat{f}(m)\cdot\big|\sum_{x\in X/\Lambda}e^{2\pi i m(x-y)}\big|^2
+  \geq \frac{\sharp (X/\Lambda)^2}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\cdot \widehat{f}(0).
+  \end{equation}
+  Comparing inequalities \eqref{eqn: sharp X 1} and \eqref{eqn: sharp X 2} we arrive at
+  $$\frac{\sharp (X/\Lambda)}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\leq \frac{f(0)}{\widehat{f}(0)}.$$
+  Now we see that the density of the periodic packing $\mathcal{P}_X$ with balls of radius $1/2$ is
+  bounded by
+  $$\Delta(\mathcal{P}_X)=\frac{\sharp
+  (X/\Lambda)}{\mathrm{vol}(\mathbb{R}^d/\Lambda)}\cdot{\mathrm{vol}(B_d(0,1/2))}\leq
+  \frac{f(0)}{\widehat{f}(0)}\cdot \mathrm{vol}(B_d(0,1/2)).$$
+  This finishes the proof of the theorem for periodic packings.
+  -/)]
 theorem LinearProgrammingBound' (hd : 0 < d) (hf : Summable f) :
   P.density ≤ (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
   volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
@@ -637,6 +689,19 @@ section Main_Theorem
 
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
 
+@[blueprint
+  "thm:Cohn-Elkies-general"
+  (title := "Cohn--Elkies {\\cite{ElkiesCohn}}")
+  (statement := /--
+  Let $f:\R^d\to\R$ be a Schwartz function that is not identically zero and satisfies
+  \eqref{eqn:Cohn-Elkies-condition-1} and \eqref{eqn:Cohn-Elkies-condition-2}. Then the density of
+  any $\Lambda$-periodic sphere packing is bounded above by $$\frac{f(0)}{\widehat{f}(0)}\cdot
+  \mathrm{vol}(B_d(0,1/2)).$$
+  -/)
+  (proof := /--
+  The result follows immediately from Theorem~\ref{thm:periodic-packing-optimal} and
+  \Cref{thm:Cohn-Elkies-periodic}.
+  -/)]
 theorem LinearProgrammingBound (hd : 0 < d) (hf : Summable f) : SpherePackingConstant d ≤
   (f 0).re.toNNReal / (𝓕 ⇑f 0).re.toNNReal * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))
   := by

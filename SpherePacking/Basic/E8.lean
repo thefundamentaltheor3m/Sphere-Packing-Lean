@@ -3,6 +3,7 @@ Copyright (c) 2025 Bhavik Mehta. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bhavik Mehta, Gareth Ma
 -/
+import Architect
 import SpherePacking.Basic.PeriodicPacking
 
 /-!
@@ -108,6 +109,14 @@ lemma Submodule.mem_evenLattice {R : Type*} [Ring R] [CharZero R] (n : ℕ)
   rfl
 
 -- TODO (BM): this shouldn't be noncomputable... check with @zwarich
+@[blueprint
+  "E8-Set"
+  (statement := /--
+  {($E_8$-lattice, Definition 1)}
+    We define the \emph{$E_8$-lattice} (as a subset of $\R^8$) to be
+  $$\Lambda_8=\{(x_i)\in\Z^8\cup(\Z+\textstyle\frac12\displaystyle )^8|\;\sum_{i=1}^8x_i\equiv
+  0\;(\mathrm{mod\;2})\}.$$
+  -/)]
 noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
     Submodule ℤ (Fin 8 → R) where
   carrier :=
@@ -257,6 +266,40 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
 
 section E8_basis
 
+@[blueprint
+  "E8-Matrix"
+  (statement := /--
+  {($E_8$-lattice, Definition 2)}
+    We define the \emph{$E_8$ basis vectors} to be the set of vectors
+    \[ \B_8 =
+    \left\{
+      \begin{bmatrix}
+        1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0
+      \end{bmatrix},
+      \begin{bmatrix}
+        0 \\ 1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0
+      \end{bmatrix},
+      \begin{bmatrix}
+        0 \\ 0 \\ 1 \\ -1 \\ 0 \\ 0 \\ 0 \\ 0
+      \end{bmatrix},
+      \begin{bmatrix}
+        0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0 \\ 0 \\ 0
+      \end{bmatrix},
+      \begin{bmatrix}
+        0 \\ 0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0 \\ 0
+      \end{bmatrix},
+      \begin{bmatrix}
+        0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 1 \\ 1 \\ 0
+      \end{bmatrix},
+      \begin{bmatrix}
+        -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2 \\ -1/2
+      \end{bmatrix},
+      \begin{bmatrix}
+        0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 1 \\ -1 \\ 0
+      \end{bmatrix}
+    \right\}
+    \]
+  -/)]
 def E8Matrix (R : Type*) [Field R] : Matrix (Fin 8) (Fin 8) R := !![
     2,   0,   0,   0,   0,   0,   0,   0;
    -1,   1,   0,   0,   0,   0,   0,   0;
@@ -307,6 +350,15 @@ private lemma E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
 lemma linearIndependent_E8Matrix (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row := (E8Matrix_is_basis _).1
 
+@[blueprint
+  "E8-is-basis"
+  (statement := /-- $B_8$ is a $\R$-basis of $\R^8$. -/)
+  (proof := /--
+  It suffices to prove that $\B_8 \in \mathrm{GL}_8(\R)$. We prove this by explicitly defining the
+  inverse matrix $\B_8^{-1}$ and proving $\B_8 \B_8^{-1} = I_8$, which implies that $\det(\B_8)$ is
+  nonzero. See the Lean code for more details.,
+  -/)
+  (latexEnv := "lemma")]
 lemma span_E8Matrix_eq_top (R : Type*) [Field R] [NeZero (2 : R)] :
     Submodule.span R (Set.range (E8Matrix R).row) = ⊤ := (E8Matrix_is_basis _).2
 
@@ -428,6 +480,28 @@ private lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
   rw [funext_iff]
   simp [Fin.forall_fin_succ, *]
 
+@[blueprint
+  "E8-defs-equivalent"
+  (statement := /--
+  The two definitions above coincide, i.e. $\Lambda_8 = \mathrm{span}_{\Z}(\B_8)$.
+  -/)
+  (proof := /--
+  We prove each side contains the other side.
+  
+  For a vector $\vec{v} \in \Lambda_8 \subseteq \R^8$, we have $\sum_i \vec{v}_i \equiv 0 \pmod{2}$
+  and $\vec{v}_i$ being either all integers or all half-integers. After some modulo arithmetic, it
+  can be seen that $\B_8^{-1}\vec{v}$ as integer coordinates (i.e. it is congruent to $0$ modulo
+  $1$). Hence, $\vec{v} \in \mathrm{span}_{\Z}(\B_8)$.
+  
+  For the opposite direction, we write the vector as $\vec{v} = \sum_i c_i\B_8^i \in
+  \mathrm{span}_{\Z}(\B_8)$ with $c_i$ being integers and $\B_8^i$ being the $i$-th basis vector.
+  Expanding the definition then gives $\vec{v} = \left(c_1 - \frac{1}{2}c_7, -c_1 + c_2 -
+  \frac{1}{2}c_7, \cdots, -\frac{1}{2}c_7\right)$. Again, after some modulo arithmetic, it can be
+  seen that $\sum_i \vec{v}_i$ is indeed $0$ modulo $2$ and are all either integers and
+  half-integers, concluding the proof.
+  
+  (Note: this proof doesn't depend on that $\B_8$ is linearly independent.)
+  -/)]
 theorem span_E8Matrix (R : Type*) [Field R] [CharZero R] :
     Submodule.span ℤ (Set.range (E8Matrix R).row) = Submodule.E8 R := by
   apply Submodule.span_eq_of_le
@@ -507,6 +581,17 @@ end E8_basis
 
 open InnerProductSpace RCLike
 
+@[blueprint
+  "E8-vector-norms"
+  (statement := /--
+  All vectors in $\Lambda_8$ have norm of the form $\sqrt{2n}$, where $n$ is a nonnegative integer.
+  -/)
+  (proof := /--
+  Writing $\vec{v} = \sum_i c_i\B_8^i$, we have $\|v\|^2 = \sum_i \sum_j c_ic_j (\B_8^i \cdot
+  \B_8^j)$. Computing all $64$ pairs of dot products and simplifying, we get a massive term that is
+  a quadratic form in $c_i$ with even integer coefficients, concluding the proof.
+  -/)
+  (latexEnv := "lemma")]
 lemma E8_norm_eq_sqrt_even
     (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
     ∃ n : ℤ, Even n ∧ n = ‖WithLp.toLp 2 v‖ ^ 2 := by
@@ -526,9 +611,29 @@ lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
   rw [← hn', Real.sq_sqrt zero_le_two]
   exact mod_cast this
 
+@[blueprint
+  "E8-Lattice"
+  (statement := /-- $\Lambda_8$ is an additive subgroup of $\R^8$. -/)
+  (proof := /--
+  Trivially follows from that $\Lambda_8 \subseteq \R^8$ is the $\Z$-span of $\B_8$ and hence an
+  additive group.
+  -/)
+  (latexEnv := "lemma")]
 noncomputable abbrev E8Lattice : Submodule ℤ (EuclideanSpace ℝ (Fin 8)) :=
   (Submodule.E8 ℝ).map (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm.toLinearMap
 
+@[blueprint
+  (statement := /--
+  $c\Lambda_8$ is discrete, i.e. that the subspace topology induced by its inclusion into $\R^8$ is
+  the discrete topology.
+  -/)
+  (proof := /--
+  Since $\Lambda_8$ is a topological group and $+$ is continuous, it suffices to prove that $\{0\}$
+  is open in $\Lambda_8$. This follows from the fact that there is an open ball $\B(\sqrt{2})
+  \subseteq \R^8$ around it containing no other lattice points, since the shortest nonzero vector
+  has norm $\sqrt{2}$.
+  -/)
+  (latexEnv := "lemma")]
 instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
   use 1, by norm_num
@@ -571,6 +676,16 @@ lemma span_E8Matrix_eq_E8Lattice :
       (⇑(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm.toLinearMap : (Fin 8 → ℝ) → _) := rfl
   rw [heq, hcoe, ← Submodule.map_span, span_E8Matrix ℝ]
 
+@[blueprint
+  "instLatticeE8"
+  (statement := /--
+  $c\Lambda_8$ is a $\Z$-lattice, i.e. it is discrete and spans $\R^8$ over $\R$.
+  -/)
+  (proof := /--
+  The first part is by \cref{instDiscreteE8Lattice}, and the second part follows from that $\B_8$ is
+  a basis (\cref{E8-is-basis}) and hence linearly independent over $\R$.
+  -/)
+  (latexEnv := "lemma")]
 instance instIsZLatticeE8Lattice : IsZLattice ℝ E8Lattice where
   span_top := by rw [span_E8_eq_top']
 
@@ -612,6 +727,11 @@ section Packing
 
 open scoped Real
 
+@[blueprint
+  (statement := /--
+  The \emph{$E_8$ sphere packing} is the (periodic) sphere packing with separation $\sqrt{2}$, whose
+  set of centres is $\Lambda_8$.
+  -/)]
 noncomputable def E8Packing : PeriodicSpherePacking 8 where
   separation := √2
   lattice := E8Lattice
@@ -665,6 +785,14 @@ lemma ZSpan.volume_fundamentalDomain' {ι : Type*} [Fintype ι] [DecidableEq ι]
     volume (fundamentalDomain b) = ENNReal.ofReal |(Matrix.of b).myDet| :=
   volume_fundamentalDomain b
 
+@[blueprint
+  "E8Packing-covol"
+  (statement := /-- $\Vol{\Lambda_8} = \mathrm{Covol}(\R^8 / \Lambda_8) = 1$. -/)
+  (proof := /--
+  \todo{In theory this should follow directly from $\det(\Lambda_8) = 1$, but Lean hates me and
+  \texttt{EuclideanSpace} is being annoying.}
+  -/)
+  (latexEnv := "lemma")]
 lemma E8Basis_volume : volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
   rw [volume_fundamentalDomain', of_basis_eq_matrix, E8Matrix_myDet_eq_one]
   simp
@@ -693,6 +821,15 @@ lemma E8_Basis_volume :
   rw [E8Basis_volume]
 
 open MeasureTheory ZSpan in
+@[blueprint
+  "E8Packing-density"
+  (statement := /-- We have $\Delta_{\mathcal{P}(E_8)} = \frac{\pi^4}{384}$. -/)
+  (proof := /--
+  By \cref{theorem:psp-density}, we have $\Delta_{\mathcal{P}(E_8)} = |E_8 / E_8| \cdot
+  \frac{\Vol{\mathcal{B}_8(\sqrt{2} / 2)}}{\mathrm{Covol}(E_8)} = \frac{\pi^4}{384}$, where the last
+  equality follows from \cref{E8Packing-covol} and the formula for volume of a ball:
+  $\Vol{\mathcal{B}_d(R)} = R^d \pi^{d / 2} / \Gamma\left(\frac{d}{2} + 1\right)$.
+  -/)]
 theorem E8Packing_density : E8Packing.density = ENNReal.ofReal π ^ 4 / 384 := by
   rw [PeriodicSpherePacking.density_eq E8_ℤBasis ?_ (by omega) (L := 16)]
   · rw [E8Packing_numReps, Nat.cast_one, one_mul, volume_ball, finrank_euclideanSpace,

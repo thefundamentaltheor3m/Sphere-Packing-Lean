@@ -27,13 +27,7 @@ for all $t > 0$.
 Here we formalize the proof of the inequalities by Lee \cite{Lee}.
 First, we can rewrite the inequality in \ref{prop:ineqA} as follows.
 
-\begin{definition}\label{def:FG-definition}\uses{def:E2, def:Ek, def:H2-H3-H4}\lean{F,G}\leanok
-Define two (quasi) modular forms as
-\begin{align}
-    F(z) &= (E_2(z) E_4(z) - E_6(z))^2 \label{eqn:defF} \\
-    G(z) &= H_2(z)^{3} (2 H_{2}(z)^{2} + 5 H_{2}(z) H_{4}(z) + 5 H_{4}(z)^{2}). \label{eqn:defG}
-\end{align}
-\end{definition}
+\inputleannode{def:FG-definition}
 
 \begin{lemma}\label{lemma:F-G-phi-psi-identities}\uses{def:FG-definition, lemma:psi-new}
 We have
@@ -71,78 +65,17 @@ Equivalences of \eqref{eqn:ineqB} and \eqref{eqn:ineqBnew} follows similarly; ju
 
 Now, the first inequality \eqref{eqn:ineqAnew} follows from the positivity of each $F(it)$ and $G(it)$.
 
-\begin{lemma}\label{lemma:F-G-pos}\uses{thm:ramanujan-formula, cor:theta-pos}\lean{F_imag_axis_pos, G_imag_axis_pos}\leanok
-For all $t > 0$, we have $F(it) > 0$ and $G(it) > 0$.
-\end{lemma}
-\begin{proof}\leanok
-By Ramanujan's identity \eqref{eqn:DE4}, we have $F(z) = 9 E_4'(z)^2$ and
-\begin{equation}
-    F(it) = 9E_4'(it)^2 = 9 \left(240\sum_{n \geq 1} n \sigma_3(n) e^{-2 \pi n t} \right)^{2} > 0.
-\end{equation}
-$G(it) > 0$ follows from positivity of $H_2(it)$ and $H_4(it)$ (Lemma \ref{cor:theta-pos}).
-\end{proof}
+\inputleannode{lemma:F-G-pos}
 
-\begin{corollary}\label{cor:ineqAnew}\uses{lemma:F-G-pos}\lean{FG_inequality_1}\leanok
-\eqref{eqn:ineqAnew} holds.
-\end{corollary}
-\begin{proof}
-This directly follows from Lemma \ref{lemma:F-G-pos}.
-\end{proof}
+
+\inputleannode{cor:ineqAnew}
+
 
 To prove the second inequality \eqref{eqn:ineqBnew}, we need some identities satisfied by $F$ and $G$.
-\begin{lemma}\label{lemma:FG-de}\uses{thm:ramanujan-formula, thm:serre-der-prod-rule, prop:theta-der, lemma:lv1-lv2-identities}\lean{MLDE_F, MLDE_G}\leanok
-$F$ and $G$ satisfy the following differential equations:
-\begin{align}
-    \partial_{12}\partial_{10} F - \frac{5}{6} E_{4} F &= 7200 \Delta (-E_{2}') \label{eqn:ddf} \\
-    \partial_{12}\partial_{10} G - \frac{5}{6} E_{4} G &= -640 \Delta H_{2} \label{eqn:ddg}
-\end{align}
-\end{lemma}
-\begin{proof}
-Both can be shown by direct computations.
-By Ramanujan's identities (Theorem \ref{thm:ramanujan-formula}) and the product rule of Serre derivatives (Theorem \ref{thm:serre-der-prod-rule}), we have
-\begin{align}
-    \partial_{5} (E_2 E_4 - E_6) &= (E_2 E_4 - E_6)' - \frac{5}{12} E_2 (E_2 E_4 - E_6) \\
-    &= \frac{E_2^2 - E_4}{12} \cdot E_4 + E_2 \cdot \frac{E_2 E_4 - E_6}{3} - \frac{E_2 E_6 - E_4^2}{2} - \frac{5}{12}E_2 (E_2 E_4 - E_6) \\
-    &= -\frac{5}{12} (E_2 E_6 - E_4^2) \label{eqn:S5} \\
-    \partial_{7} (E_2 E_6 - E_4^2) &= (E_2 E_6 - E_4^2)' - \frac{7}{12} E_2 (E_2 E_6 - E_4^2) \\
-    &= \frac{E_2^2 - E_4}{12} \cdot E_6 + E_2 \cdot \frac{E_2 E_6 - E_4^2}{2} - 2 E_4 \cdot \frac{E_2 E_4 - E_6}{3} - \frac{7}{12} E_2 (E_2 E_6 - E_4^2) \\
-    &= -\frac{7}{12} E_4 (E_2 E_4 - E_6) \label{eqn:S7}
-\end{align}
-and using these we can compute
-\begin{align}
-    \partial_{10} F &= \partial_{10} (E_2 E_4 - E_6)^2 \\
-    &= 2 (E_2 E_4 - E_6) \partial_{5} (E_2 E_4 - E_6) \\
-    &= -\frac{6}{5} (E_2 E_4 - E_6) (E_2 E_6 - E_4^2), \\
-    \partial_{12}\partial_{10} F &= -\frac{5}{6} \partial_{12} ((E_2 E_4 - E_6) (E_2 E_6 - E_4)) \\
-    &= -\frac{5}{6} (\partial_{5}(E_2 E_4 - E_6)) (E_2 E_6 - E_4^2) - \frac{5}{6} (E_2 E_4 - E_6) (\partial_{7} (E_2 E_6 - E_4)) \\
-    &= \frac{25}{72} (E_2 E_6 - E_4^2)^2 + \frac{35}{72} E_4 (E_2 E_4 - E_6)^2, \\
-    \partial_{12}\partial_{10}F - \frac{5}{6} E_4 F &= \frac{25}{72}(E_2 E_6 - E_4^2)^2 + \frac{35}{72} E_4 (E_2 E_4 - E_6)^2 - \frac{5}{6} E_4 (E_2 E_4 - E_6)^2 \\
-    &= \frac{25}{72} ((E_2 E_6 - E_4^2)^2 - E_4 (E_2 E_4 - E_6)^2) \\
-    &= \frac{25}{72} (- E_2^2 E_4^3 + E_2^2 E_6^2 + E_4^4 - E_4 E_6^3) \\
-    &= -\frac{25}{72} (E_4^3 - E_6^2) (E_2^2 - E_4) \\
-    &= 7200 \cdot \frac{E_4^3 - E_6^2}{1728} \cdot \frac{-E_2^2 + E_4}{12}\\
-    &= 7200 \Delta (-E_2')
-\end{align}
-which proves \eqref{eqn:ddf}.
-Similarly, \eqref{eqn:ddg} can be proved using Proposition \ref{prop:theta-der} and Lemma \ref{lemma:lv1-lv2-identities}.
-\end{proof}
+\inputleannode{lemma:FG-de}
 
-\begin{corollary}\label{cor:MLDE-pos}\uses{lemma:FG-de, cor:disc-pos, cor:theta-pos, def:E2}\leanok
-\eqref{eqn:ddf} (resp. \eqref{eqn:ddg}) is positive (resp. negative) on the (positive) imaginary axis.
-\end{corollary}
-\begin{proof}
-From \eqref{eqn:E2} and Lemma \ref{cor:disc-pos},
-\ifplastex
-\begin{equation*}
-    7200 (-E_2'(it)) \Delta(it) = 7200 \cdot 24 \left(\sum_{n \ge 1} n \sigma_1(n) e^{-2 \pi n t}\right) \cdot \Delta(it) > 0.
-\end{equation*}
-\else
-\begin{equation}
-    7200 (-E_2'(it)) \Delta(it) = 7200 \cdot 24 \left(\sum_{n \ge 1} n \sigma_1(n) e^{-2 \pi n t}\right) \cdot \Delta(it) > 0. \notag
-\end{equation}
-\fi
-Negativity of \eqref{eqn:ddg}, i.e. $-640 \Delta(it) H_2(it) < 0$ follows from Corollary \ref{cor:theta-pos} and \ref{cor:disc-pos}.
-\end{proof}
+
+\inputleannode{cor:MLDE-pos}
 
 
 The second inequality \eqref{eqn:ineqBnew} follows from the following two observations.
@@ -152,31 +85,8 @@ Since $G(it) > 0$ for all $t > 0$, we can define the quotient
 \end{equation}
 as a function on $(0, \infty)$.
 
-\begin{lemma}\label{lemma:Qlim}\uses{lemma:E2-transform-S, lemma:Ek-is-modular-form, lemma:theta-transform-S-T}\lean{FmodG_rightLimitAt_zero}\leanok
-We have
-\begin{equation}
-    \lim_{t \to 0^+} Q(t) = \frac{18}{\pi^2}.
-\end{equation}
-\end{lemma}
-\begin{proof}
-We have
-\begin{equation}
-    \lim_{t \to 0^+} Q(t) = \lim_{t \to 0^+} \frac{F(it)}{G(it)} = \lim_{t \to \infty} \frac{F(i/t)}{G(i/t)}.
-\end{equation}
-By using the transformation laws of Eisenstein series \eqref{eqn:E2-S-transform}, \eqref{eqn:Ek-trans-S} (for $k = 4, 6$) and the thetanull functions, \eqref{eqn:H2-transform-S}, \eqref{eqn:H4-transform-S}, we get
-\begin{align}
-    F\left(\frac{i}{t}\right) &= t^{12} F(it) - \frac{12t^{11}}{\pi} (E_2(it)E_4(it) - E_6(it))E_4(it) + \frac{36t^{10}}{\pi^2}E_4(it)^2, \\
-    G\left(\frac{i}{t}\right) &= t^{10} H_{4}(it)^{3}(2H_{4}(it)^{2} + 5 H_{4}(it)H_{2}(it) + 5 H_{2}(it)^{2}).
-\end{align}
-Since $F$, $E_2 E_4 - E_6$ and $H_2$ are cusp forms, we have $\lim_{t \to \infty}t^k A(it) = 0$ when $A(z)$ is one of these forms and $k \geq 0$.
-From $\lim_{t \to \infty} E_4(it) = 1 = \lim_{t \to \infty}H_{4}(it)$, we get
-\begin{align}
-    \lim_{t \to \infty} \frac{F(i/t)}{G(i/t)}
-    &= \lim_{t \to \infty} \frac{t^{12} F(it) - \frac{12t^{11}}{\pi} (E_2(it)E_4(it) - E_6(it))E_4(it) + \frac{36t^{10}}{\pi^2}E_4(it)^2}{t^{10} H_{4}(it)^{3}(2H_{4}(it)^{2} + 5 H_{4}(it)H_{2}(it) + 5 H_{2}(it)^{2})} \\
-    &= \lim_{t \to \infty} \frac{t^{2} F(it) - \frac{12t}{\pi} (E_2(it)E_4(it) - E_6(it))E_4(it) + \frac{36}{\pi^2}E_4(it)^2}{H_{4}(it)^{3}(2H_{4}(it)^{2} + 5 H_{4}(it)H_{2}(it) + 5 H_{2}(it)^{2})} \\
-    &= \frac{18}{\pi^2}.
-\end{align}
-\end{proof}
+\inputleannode{lemma:Qlim}
+
 
 \begin{lemma}\label{lemma:log-der-inf}\uses{lemma:der-q-series}
 Let $F$ be a quasimodular form where the vanishing order of $F$ at infinity is $n_0 > 0$, i.e. $F(z) = \sum_{n \geq n_0} a_n q^{n}$ with $a_{n_0} \ne 0$. Then
@@ -191,44 +101,12 @@ Let $F$ be a quasimodular form where the vanishing order of $F$ at infinity is $
     \end{equation}
 \end{proof}
 
-\begin{proposition}\label{prop:Qdec}\uses{thm:ramanujan-formula, thm:serre-der-prod-rule, cor:MLDE-pos, thm:anti-serre-der-pos, lemma:log-der-inf}\lean{FmodG_antitone}\leanok
-The function $t \mapsto Q(t)$ is monotone decreasing.
-\end{proposition}
-\begin{proof}
-It is enough to show that
-\begin{align}
-    \frac{\dd}{\dd t} \left(\frac{F(it)}{G(it)}\right) < 0 &\Leftrightarrow (- 2\pi) \frac{F'(it)G(it) - F(it) G'(it)}{G(it)^{2}} < 0 \\
-    &\Leftrightarrow F'(it) G(it) - F(it) G'(it) > 0 \\
-    &\Leftrightarrow (\partial_{10}F)(it) G(it) - F(it) (\partial_{10}G)(it) > 0.
-\end{align}
-Let $\mathcal{L}_{1, 0} := (\partial_{10}F) G - F (\partial_{10} G) = F'G - FG'$.
-Then
-\begin{align}
-\frac{\mathcal{L}_{1, 0}}{FG} = \frac{F'G - FG'}{FG} = \frac{F'}{F} - \frac{G'}{G}
-\end{align}
-The vanishing order of $F$ and $G$ at the infinity are $2$ and $\frac{3}{2}$ respectively, so by Lemma \ref{lemma:log-der-inf}, we have
-\begin{align}
-    \lim_{t \to \infty} \frac{\mathcal{L}_{1, 0}(it)}{F(it) G(it)} = \lim_{t \to \infty} \left(\frac{F'(it)}{F(it)} - \frac{G'(it)}{G(it)}\right) = 2 - \frac{3}{2} = \frac{1}{2} > 0
-\end{align}
-so $\mathcal{L}_{1, 0}(it) > 0$ for sufficiently large $t$.
-Its Serre derivative $\partial_{22} \mathcal{L}_{1, 0}$ is positive by Corollary \ref{cor:MLDE-pos}:
-\begin{align}
-    \partial_{22} \mathcal{L}_{1, 0} = (\partial_{12} \partial_{10} F) G - F (\partial_{12}\partial_{10} G)
-    = \Delta (7200 (-E_{2}') G + 640 H_2 F) > 0.
-\end{align}
-Hence $\mathcal{L}_{1, 0}(it) > 0$ by Theorem \ref{thm:anti-serre-der-pos}, and the monotonicity follows.
-\end{proof}
+\inputleannode{prop:Qdec}
 
 
-\begin{corollary}\label{cor:ineqBnew} \uses{lemma:Qlim, prop:Qdec, lemma:F-G-pos}\lean{FG_inequality_2}
-\eqref{eqn:ineqBnew} holds.
-\end{corollary}
-\begin{proof}
-\begin{equation}
-    \frac{F(it)}{G(it)} = Q(t) < \lim_{u \to 0^+} Q(u) = \frac{18}{\pi^2}
-\end{equation}
-and by Lemma \ref{lemma:F-G-pos}, \eqref{eqn:ineqBnew} follows.
-\end{proof}
+
+\inputleannode{cor:ineqBnew}
+
 
 
 Finally, we are ready to prove Theorem~\ref{thm:g}.

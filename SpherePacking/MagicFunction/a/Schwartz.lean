@@ -8,6 +8,7 @@ M4R File
 
 -- import Mathlib
 
+import Architect
 import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 import SpherePacking.MagicFunction.a.Basic
 
@@ -180,7 +181,20 @@ def a' : 𝓢(ℝ, ℂ) :=
   + MagicFunction.a.SchwartzIntegrals.I₆'
 
 /-- The +1-Fourier Eigenfunction of Viazovska's Magic Function. -/
-@[simps!]
+@[simps!, blueprint
+  "prop:a-schwartz"
+  (statement := /-- $a(x)$ is a Schwartz function. -/)
+  (proof := /--
+  By Theorem \ref{thm:smooth-fast-decay-schwartz}, it suffices to show that the function is smooth
+  and decays faster than any polynomial.
+  The smoothness follows from the ``differentiation under the integral'', which is already
+  formalized in \texttt{mathlib}.
+  The decay follows from Lemmas \ref{lem:bound-I1-I3-I5} and \ref{lem:bound-I2-I4-I6}, together with
+  Lemma \ref{lem:integral-bound}.
+  -/)
+  (proofUses := ["thm:smooth-fast-decay-schwartz", "lem:bound-I1-I3-I5", "lem:bound-I2-I4-I6",
+    "lem:integral-bound"])
+  (latexEnv := "proposition")]
 def a : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) := schwartzMap_multidimensional_of_schwartzMap_real
   (EuclideanSpace ℝ (Fin 8)) a'
 
