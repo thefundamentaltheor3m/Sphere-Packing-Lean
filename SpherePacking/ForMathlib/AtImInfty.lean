@@ -1,6 +1,5 @@
 import Mathlib.Analysis.Normed.Group.Tannery
 import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
-import Mathlib.Topology.Order.Basic
 
 /-
 Probably put this at Analysis/Complex/UpperHalfPlane/FunctionsBoundedAtInfty.lean

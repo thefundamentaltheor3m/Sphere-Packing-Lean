@@ -493,10 +493,6 @@ lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
       (2 * p.1.1 + p.1.2) * p.2.1 + (p.1.1 + 2 * p.1.2) * p.2.2) ((0, 1), (0, 0)) := by fun_prop
   simpa [theta_g] using hcont.tendsto.comp (hu.prodMk_nhds hv)
 
--- Test: does fun_prop prove continuity of a polynomial on ℂ×ℂ?
-example : ContinuousAt (fun p : ℂ × ℂ => p.1 ^ 2 + p.1 * p.2 + p.2 ^ 2) (0, 0) := by
-  fun_prop
-
 /-- Continuous mapping theorem for two convergent components. -/
 theorem Tendsto.continuousAt_comp_prodMk
     {α β γ δ : Type*} [TopologicalSpace β] [TopologicalSpace γ] [TopologicalSpace δ]

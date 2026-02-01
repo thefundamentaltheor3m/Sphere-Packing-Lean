@@ -18,8 +18,6 @@ variable {α ι : Type*}
 open SlashInvariantFormClass ModularFormClass
 variable {k : ℤ} {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup SL(2, ℤ)} (n : ℕ) (f : F)
 
-open scoped Real MatrixGroups CongruenceSubgroup
-
 def ModForm_mk (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) : ModularForm Γ k where
   toFun := f
   slash_action_eq' := f.slash_action_eq'
