@@ -485,13 +485,13 @@ lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
 
 /-- theta_g tends to 0 at infinity.
 theta_g = (2H₂ + H₄)f₂ + (H₂ + 2H₄)f₄.
-Since 2H₂ + H₄ → 1, H₂ + 2H₄ → 2, and f₂, f₄ → 0, we get theta_g → 0. -/
+Using pair-of-pairs: (H₂, H₄) → (0, 1) and (f₂, f₄) → (0, 0), so theta_g → 0. -/
 lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
-  have h_coef1 : Tendsto (2 * H₂ + H₄) atImInfty (𝓝 1) := by
-    simpa using (H₂_tendsto_atImInfty.const_mul 2).add H₄_tendsto_atImInfty
-  have h_coef2 : Tendsto (H₂ + 2 * H₄) atImInfty (𝓝 2) := by
-    simpa using H₂_tendsto_atImInfty.add (H₄_tendsto_atImInfty.const_mul 2)
-  simpa [theta_g] using (h_coef1.mul f₂_tendsto_atImInfty).add (h_coef2.mul f₄_tendsto_atImInfty)
+  have hu := H₂_tendsto_atImInfty.prodMk_nhds H₄_tendsto_atImInfty
+  have hv := f₂_tendsto_atImInfty.prodMk_nhds f₄_tendsto_atImInfty
+  have hcont : ContinuousAt (fun p : (ℂ × ℂ) × (ℂ × ℂ) =>
+      (2 * p.1.1 + p.1.2) * p.2.1 + (p.1.1 + 2 * p.1.2) * p.2.2) ((0, 1), (0, 0)) := by fun_prop
+  simpa [theta_g] using hcont.tendsto.comp (hu.prodMk_nhds hv)
 
 -- Test: does fun_prop prove continuity of a polynomial on ℂ×ℂ?
 example : ContinuousAt (fun p : ℂ × ℂ => p.1 ^ 2 + p.1 * p.2 + p.2 ^ 2) (0, 0) := by
