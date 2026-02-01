@@ -479,9 +479,7 @@ lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
   have h_prod : Tendsto (H₂ * (H₂ + 2 * H₄)) atImInfty (𝓝 0) := by
     simpa using H₂_tendsto_atImInfty.mul
       (H₂_tendsto_atImInfty.add (H₄_tendsto_atImInfty.const_mul 2))
-  have h_final := h_serre_H₂.sub (h_prod.const_mul (1/6 : ℂ))
-  simp only [mul_zero, sub_zero] at h_final
-  convert h_final using 1
+  simpa [f₂] using h_serre_H₂.sub (h_prod.const_mul (1/6 : ℂ))
 
 /-- f₄ tends to 0 at infinity.
 Proof: f₄ = serre_D 2 H₄ + (1/6)H₄(2H₂ + H₄)
@@ -500,9 +498,7 @@ lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
     simpa using H₄_tendsto_atImInfty.mul h_sum
   have h_scaled : Tendsto (fun z => (1/6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))
       atImInfty (𝓝 (1/6 : ℂ)) := by simpa using h_prod.const_mul (1/6 : ℂ)
-  have h_final := h_serre_H₄.add h_scaled
-  simp only [neg_add_cancel] at h_final
-  convert h_final using 1
+  simpa [f₄] using h_serre_H₄.add h_scaled
 
 /-- theta_g tends to 0 at infinity.
 theta_g = (2H₂ + H₄)f₂ + (H₂ + 2H₄)f₄.
@@ -512,26 +508,15 @@ lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
     simpa using (H₂_tendsto_atImInfty.const_mul 2).add H₄_tendsto_atImInfty
   have h_coef2 : Tendsto (H₂ + 2 * H₄) atImInfty (𝓝 2) := by
     simpa using H₂_tendsto_atImInfty.add (H₄_tendsto_atImInfty.const_mul 2)
-  have h_term1 : Tendsto ((2 * H₂ + H₄) * f₂) atImInfty (𝓝 0) := by
-    simpa using h_coef1.mul f₂_tendsto_atImInfty
-  have h_term2 : Tendsto ((H₂ + 2 * H₄) * f₄) atImInfty (𝓝 0) := by
-    simpa using h_coef2.mul f₄_tendsto_atImInfty
-  have hsum := h_term1.add h_term2
-  simp only [add_zero] at hsum
-  convert hsum using 1
+  simpa [theta_g] using (h_coef1.mul f₂_tendsto_atImInfty).add (h_coef2.mul f₄_tendsto_atImInfty)
 
 /-- theta_h tends to 0 at infinity.
 theta_h = f₂² + f₂f₄ + f₄² → 0 + 0 + 0 = 0 as f₂, f₄ → 0. -/
 lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
-  have h_f₂_sq : Tendsto (f₂ ^ 2) atImInfty (𝓝 0) := by
-    simpa [sq] using f₂_tendsto_atImInfty.mul f₂_tendsto_atImInfty
-  have h_f₄_sq : Tendsto (f₄ ^ 2) atImInfty (𝓝 0) := by
-    simpa [sq] using f₄_tendsto_atImInfty.mul f₄_tendsto_atImInfty
-  have h_f₂f₄ : Tendsto (f₂ * f₄) atImInfty (𝓝 0) := by
-    simpa using f₂_tendsto_atImInfty.mul f₄_tendsto_atImInfty
-  have hsum := (h_f₂_sq.add h_f₂f₄).add h_f₄_sq
-  simp only [add_zero] at hsum
-  convert hsum using 1
+  simpa [theta_h, sq] using
+    ((f₂_tendsto_atImInfty.mul f₂_tendsto_atImInfty).add
+      (f₂_tendsto_atImInfty.mul f₄_tendsto_atImInfty)).add
+      (f₄_tendsto_atImInfty.mul f₄_tendsto_atImInfty)
 
 /-- Build a cusp form from a SlashInvariantForm that's MDifferentiable and
 tends to zero at infinity. This pattern is reused for theta_g and theta_h. -/
@@ -608,13 +593,11 @@ lemma H_sum_sq_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H_sum_sq :=
 
 /-- H_sum_sq → 1 at infinity -/
 lemma H_sum_sq_tendsto : Tendsto H_sum_sq atImInfty (𝓝 1) := by
-  have h1 : Tendsto (H₂ ^ 2) atImInfty (𝓝 0) := by
-    simpa [sq] using H₂_tendsto_atImInfty.mul H₂_tendsto_atImInfty
-  have h2 : Tendsto (H₂ * H₄) atImInfty (𝓝 0) := by
-    simpa using H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty
-  have h3 : Tendsto (H₄ ^ 2) atImInfty (𝓝 1) := by
-    simpa [sq] using H₄_tendsto_atImInfty.mul H₄_tendsto_atImInfty
-  simpa [zero_add, add_zero] using (h1.add h2).add h3
+  unfold H_sum_sq
+  simpa [sq] using
+    ((H₂_tendsto_atImInfty.mul H₂_tendsto_atImInfty).add
+      (H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty)).add
+      (H₄_tendsto_atImInfty.mul H₄_tendsto_atImInfty)
 
 /-- H_sum_sq ≠ 0 (since it tends to 1 ≠ 0) -/
 lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 := fun h =>
