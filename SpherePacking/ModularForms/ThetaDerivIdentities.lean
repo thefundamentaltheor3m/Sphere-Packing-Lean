@@ -427,9 +427,9 @@ lemma theta_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_g :=
 
 /-- theta_h is MDifferentiable (from MDifferentiable of f₂, f₄) -/
 lemma theta_h_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_h := by
-  simp only [theta_h, sq]
-  exact ((f₂_MDifferentiable.mul f₂_MDifferentiable).add
-    (f₂_MDifferentiable.mul f₄_MDifferentiable)).add (f₄_MDifferentiable.mul f₄_MDifferentiable)
+  unfold theta_h
+  exact ((f₂_MDifferentiable.pow 2).add (f₂_MDifferentiable.mul f₄_MDifferentiable)).add
+    (f₄_MDifferentiable.pow 2)
 
 /-- theta_g is slash-invariant under Γ(1) in GL₂(ℝ) form -/
 lemma theta_g_slash_invariant_GL :
@@ -461,15 +461,11 @@ lemma serre_D_tendsto_of_tendsto {k : ℤ} {F : ℍ → ℂ} {c : ℂ}
     Tendsto (serre_D k F) atImInfty (𝓝 (-(k : ℂ) / 12 * c)) := by
   -- serre_D k F = D F - k/12 * E₂ * F
   -- D F → 0, E₂ → 1, F → c, so serre_D k F → 0 - k/12 * 1 * c = -k/12 * c
-  have hE₂_F : Tendsto (fun z => E₂ z * F z) atImInfty (𝓝 c) := by
-    simpa [one_mul] using E₂_tendsto_one_atImInfty.mul hF
   have h_coef : Tendsto (fun z => (k : ℂ) * 12⁻¹ * E₂ z * F z) atImInfty
       (𝓝 ((k : ℂ) / 12 * c)) := by
-    convert hE₂_F.const_mul ((k : ℂ) * 12⁻¹) using 2
-    ring
+    convert (E₂_tendsto_one_atImInfty.mul hF).const_mul ((k : ℂ) * 12⁻¹) using 2 <;> ring
   convert hD.sub h_coef using 2
-  simp only [div_eq_mul_inv]
-  ring
+  simp only [div_eq_mul_inv]; ring
 
 /-- f₂ tends to 0 at infinity.
 Proof: f₂ = serre_D 2 H₂ - (1/6)H₂(H₂ + 2H₄)
@@ -585,10 +581,8 @@ Proof: g is a level-1 cusp form of weight 6. By IsCuspForm_weight_lt_eq_zero,
 all cusp forms of weight < 12 vanish. Hence g = 0. -/
 lemma theta_g_eq_zero : theta_g = 0 := by
   obtain ⟨g_MF, hg_cusp, hg_eq⟩ := theta_g_IsCuspForm
-  have hzero := IsCuspForm_weight_lt_eq_zero 6 (by norm_num : (6 : ℤ) < 12) g_MF hg_cusp
-  funext z
-  rw [← hg_eq z, hzero]
-  rfl
+  ext z
+  simp [← hg_eq, IsCuspForm_weight_lt_eq_zero 6 (by norm_num) g_MF hg_cusp]
 
 /-- h = 0 by dimension argument.
 
@@ -596,10 +590,8 @@ Proof: h is a level-1 cusp form of weight 8. By IsCuspForm_weight_lt_eq_zero,
 all cusp forms of weight < 12 vanish. Hence h = 0. -/
 lemma theta_h_eq_zero : theta_h = 0 := by
   obtain ⟨h_MF, hh_cusp, hh_eq⟩ := theta_h_IsCuspForm
-  have hzero := IsCuspForm_weight_lt_eq_zero 8 (by norm_num : (8 : ℤ) < 12) h_MF hh_cusp
-  funext z
-  rw [← hh_eq z, hzero]
-  rfl
+  ext z
+  simp [← hh_eq, IsCuspForm_weight_lt_eq_zero 8 (by norm_num) h_MF hh_cusp]
 
 /-!
 ## H_sum_sq: H₂² + H₂H₄ + H₄²
@@ -610,20 +602,18 @@ noncomputable def H_sum_sq : ℍ → ℂ := fun z => H₂ z ^ 2 + H₂ z * H₄ 
 
 /-- H_sum_sq is MDifferentiable -/
 lemma H_sum_sq_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H_sum_sq := by
-  have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => H₂ z ^ 2) := by
-    simpa [sq] using H₂_SIF_MDifferentiable.mul H₂_SIF_MDifferentiable
-  have h2 := H₂_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable
-  have h3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => H₄ z ^ 2) := by
-    simpa [sq] using H₄_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable
-  exact (h1.add h2).add h3
+  unfold H_sum_sq
+  exact ((H₂_SIF_MDifferentiable.pow 2).add (H₂_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)).add
+    (H₄_SIF_MDifferentiable.pow 2)
 
 /-- H_sum_sq → 1 at infinity -/
 lemma H_sum_sq_tendsto : Tendsto H_sum_sq atImInfty (𝓝 1) := by
-  have h_H₂ := H₂_tendsto_atImInfty
-  have h_H₄ := H₄_tendsto_atImInfty
-  have h1 : Tendsto (fun z => H₂ z ^ 2) atImInfty (𝓝 0) := by simpa [sq] using h_H₂.mul h_H₂
-  have h2 : Tendsto (fun z => H₂ z * H₄ z) atImInfty (𝓝 0) := by simpa using h_H₂.mul h_H₄
-  have h3 : Tendsto (fun z => H₄ z ^ 2) atImInfty (𝓝 1) := by simpa [sq] using h_H₄.mul h_H₄
+  have h1 : Tendsto (fun z => H₂ z ^ 2) atImInfty (𝓝 0) := by
+    simpa [sq] using H₂_tendsto_atImInfty.mul H₂_tendsto_atImInfty
+  have h2 : Tendsto (fun z => H₂ z * H₄ z) atImInfty (𝓝 0) := by
+    simpa using H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty
+  have h3 : Tendsto (fun z => H₄ z ^ 2) atImInfty (𝓝 1) := by
+    simpa [sq] using H₄_tendsto_atImInfty.mul H₄_tendsto_atImInfty
   simpa [zero_add, add_zero] using (h1.add h2).add h3
 
 /-- H_sum_sq ≠ 0 (since it tends to 1 ≠ 0) -/
@@ -706,8 +696,7 @@ lemma f₂_eq_zero : f₂ = 0 := by
         = (2 * H₂ z + H₄ z) ^ 2 * theta_h z := f₄_sq_mul_eq z (congrFun hg z)
       _ = _ := by rw [hh_z, mul_zero]
   -- f₄² is MDifferentiable
-  have f₄_sq_MDiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (f₄ ^ 2) := by
-    simpa [sq] using f₄_MDifferentiable.mul f₄_MDifferentiable
+  have f₄_sq_MDiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (f₄ ^ 2) := f₄_MDifferentiable.pow 2
   -- By mul_eq_zero_iff: f₄² = 0 (since 3 * H_sum_sq ≠ 0)
   have h_f₄_sq_zero : f₄ ^ 2 = 0 :=
     ((UpperHalfPlane.mul_eq_zero_iff f₄_sq_MDiff three_H_sum_sq_MDifferentiable).mp h_f₄_sq_3H
@@ -719,10 +708,9 @@ lemma f₂_eq_zero : f₂ = 0 := by
 
 /-- From f₂ = 0 and h = 0, deduce f₄ = 0 -/
 lemma f₄_eq_zero : f₄ = 0 := by
-  funext z
+  ext z
   have hz := congrFun theta_h_eq_zero z
-  unfold theta_h at hz
-  simp only [Pi.add_apply, Pi.pow_apply, Pi.mul_apply, Pi.zero_apply, f₂_eq_zero] at hz
+  simp only [theta_h, Pi.add_apply, Pi.pow_apply, Pi.mul_apply, Pi.zero_apply, f₂_eq_zero] at hz
   simpa [sq_eq_zero_iff] using hz
 
 /-- From f₂ + f₄ = f₃ and both = 0, f₃ = 0 -/
