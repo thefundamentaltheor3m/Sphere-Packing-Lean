@@ -591,11 +591,10 @@ lemma H_sum_sq_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H_sum_sq :=
 
 /-- H_sum_sq → 1 at infinity -/
 lemma H_sum_sq_tendsto : Tendsto H_sum_sq atImInfty (𝓝 1) := by
+  have hg : ContinuousAt (fun p : ℂ × ℂ => p.1 ^ 2 + p.1 * p.2 + p.2 ^ 2) (0, 1) := by fun_prop
   unfold H_sum_sq
   simpa [sq] using
-    ((H₂_tendsto_atImInfty.mul H₂_tendsto_atImInfty).add
-      (H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty)).add
-      (H₄_tendsto_atImInfty.mul H₄_tendsto_atImInfty)
+    Tendsto.continuousAt_comp_prodMk H₂_tendsto_atImInfty H₄_tendsto_atImInfty hg
 
 /-- H_sum_sq ≠ 0 (since it tends to 1 ≠ 0) -/
 lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 := fun h =>
