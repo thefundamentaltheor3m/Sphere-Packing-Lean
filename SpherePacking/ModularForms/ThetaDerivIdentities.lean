@@ -455,14 +455,10 @@ noncomputable def theta_h_SIF : SlashInvariantForm (Γ 1) 8 where
 
 /-- f₂ tends to 0 at infinity.
 Proof: f₂ = serre_D 2 H₂ - (1/6)H₂(H₂ + 2H₄)
-Since H₂ → 0 and serre_D 2 H₂ = D H₂ - (1/6)E₂ H₂ → 0,
-we get f₂ → 0 - 0 = 0. -/
+Since H₂ → 0, both serre_D 2 H₂ → 0 and H₂(H₂ + 2H₄) → 0, so f₂ → 0. -/
 lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
-  have h_serre_H₂ : Tendsto (serre_D 2 H₂) atImInfty (𝓝 0) := by
-    have hD := D_tendsto_zero_of_tendsto_const H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂
-    have hE₂H₂ : Tendsto (fun z => E₂ z * H₂ z) atImInfty (𝓝 0) := by
-      simpa using E₂_tendsto_one_atImInfty.mul H₂_tendsto_atImInfty
-    convert hD.sub (hE₂H₂.const_mul ((2 : ℂ) / 12)) using 2 <;> simp [serre_D]; ring
+  have h_serre_H₂ := serre_D_tendsto_zero_of_tendsto_zero 2 H₂
+    H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂ H₂_tendsto_atImInfty
   have h_prod : Tendsto (H₂ * (H₂ + 2 * H₄)) atImInfty (𝓝 0) := by
     simpa using H₂_tendsto_atImInfty.mul
       (H₂_tendsto_atImInfty.add (H₄_tendsto_atImInfty.const_mul 2))
