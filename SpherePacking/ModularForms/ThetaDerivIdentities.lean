@@ -702,9 +702,8 @@ lemma f₂_eq_zero : f₂ = 0 := by
     ((UpperHalfPlane.mul_eq_zero_iff f₄_sq_MDiff three_H_sum_sq_MDifferentiable).mp h_f₄_sq_3H
       ).resolve_right three_H_sum_sq_ne_zero
   -- From f₄² = f₄ * f₄ = 0: f₄ = 0
-  have h_f₄_mul : f₄ * f₄ = 0 := by rw [← pow_two]; exact h_f₄_sq_zero
-  exact (UpperHalfPlane.mul_eq_zero_iff f₄_MDifferentiable f₄_MDifferentiable).mp h_f₄_mul
-    |>.elim id id
+  exact (UpperHalfPlane.mul_eq_zero_iff f₄_MDifferentiable f₄_MDifferentiable).mp
+    (pow_two f₄ ▸ h_f₄_sq_zero) |>.elim id id
 
 /-- From f₂ = 0 and h = 0, deduce f₄ = 0 -/
 lemma f₄_eq_zero : f₄ = 0 := by
