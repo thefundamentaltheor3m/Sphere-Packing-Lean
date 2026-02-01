@@ -10,6 +10,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Set
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Data.Set.Pointwise.Support
 import Mathlib.Topology.MetricSpace.MetricSeparated
+import Mathlib.Analysis.Complex.Basic
 
 import SpherePacking.CohnElkies.Prereqs
 import SpherePacking.ForMathlib.VolumeOfBalls
@@ -93,11 +94,7 @@ include hCohnElkies₂ in
 theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   rw [← f.fourierInversion ℝ, fourierInv_eq]
   simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul]
-  have hcalc₁ :
-    (∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v).re =
-    ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := by
-    rw [← RCLike.re_eq_complex_re, ← integral_re (𝓕 f).integrable]
-  rw [hcalc₁]
+  rw [← RCLike.re_eq_complex_re, ← integral_re (𝓕 f).integrable]
   exact integral_nonneg hCohnElkies₂
 
 include hReal hRealFourier hCohnElkies₂ hne_zero in
@@ -113,30 +110,23 @@ theorem f_zero_pos : 0 < (f 0).re := by
   -- We need to take real parts at haux₁
   rw [← re_add_im (f 0), hImZero hReal, ofReal_zero, zero_mul, add_zero] at haux₁
   -- We need to take real and imaginary parts inside the integral.
-  have haux₂ : ∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v =
-    ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re :=
-    calc ∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v
-    _ = ↑(∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re) +
-    (∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).im) * I
-      := by
-         rw [← re_add_im (∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v)]
-         rw [← RCLike.re_eq_complex_re, ← integral_re (𝓕 f).integrable, RCLike.re_eq_complex_re]
-         rw [← RCLike.im_eq_complex_im, ← integral_im (𝓕 f).integrable, RCLike.im_eq_complex_im]
-    _ = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re
-      := by
+  have haux₂ : ∫ v, 𝓕 (⇑f) v = ∫ v, (𝓕 (⇑f) v).re :=
+    calc
+    ∫ v, 𝓕 (⇑f) v = ↑(∫ v, (𝓕 (⇑f) v).re) + (∫ v, (𝓕 (⇑f) v).im) * I := by
+      rw [← re_add_im (∫ (v : EuclideanSpace ℝ (Fin d)), 𝓕 (⇑f) v)]
+      rw [← RCLike.re_eq_complex_re, ← integral_re (𝓕 f).integrable, RCLike.re_eq_complex_re]
+      rw [← RCLike.im_eq_complex_im, ← integral_im (𝓕 f).integrable, RCLike.im_eq_complex_im]
+    _ = ∫ v, (𝓕 (⇑f) v).re := by
          rw [add_eq_left]
-         suffices hwhat : ∀ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).im = 0 by
+         suffices hwhat : ∀ v, (𝓕 (⇑f) v).im = 0 by
            simp only [hwhat, ofReal_zero, zero_mul, integral_zero]
          exact hFourierImZero hRealFourier
   rw [haux₂] at haux₁
   norm_cast at haux₁
   rw [haux₁, lt_iff_not_ge]
   by_contra hantisymm₁
-  have hantisymm₂ : 0 ≤ ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := integral_nonneg
-    hCohnElkies₂
-  have hintzero : 0 = ∫ (v : EuclideanSpace ℝ (Fin d)), (𝓕 (⇑f) v).re := by
-    --rw [ge_iff_le] at hantisymm₁
-    exact antisymm' hantisymm₁ hantisymm₂
+  have hantisymm₂ : 0 ≤ ∫ v, (𝓕 (⇑f) v).re := integral_nonneg hCohnElkies₂
+  have hintzero : 0 = ∫ v, (𝓕 (⇑f) v).re := antisymm' hantisymm₁ hantisymm₂
   have h𝓕frezero : ∀ x, (𝓕 ⇑f x).re = 0 := by
     -- Integral of a nonneg continuous function is zero iff the function is zero
     suffices hfun : (fun x => (𝓕 ⇑f x).re) = 0 by
@@ -145,10 +135,8 @@ theorem f_zero_pos : 0 < (f 0).re := by
       _ = (fun x => (𝓕 ⇑f x).re) x := rfl
       _ = (0 : (EuclideanSpace ℝ (Fin d)) → ℝ) x := by rw [hfun]
       _ = 0 := by rw [Pi.zero_apply]
-    refine (Continuous.integral_zero_iff_zero_of_nonneg (𝓕 f).continuous.re
-      ?_ hCohnElkies₂).mp hintzero.symm
-    rw [← RCLike.re_eq_complex_re]
-    refine MeasureTheory.Integrable.re (𝓕 f).integrable
+    exact ((𝓕 f).continuous.re.integral_zero_iff_zero_of_nonneg
+      (𝓕 f).integrable.re hCohnElkies₂).mp hintzero.symm
   have h𝓕fzero : 𝓕 f = 0 := by
     ext x
     rw [← re_add_im (𝓕 f x), hFourierImZero hRealFourier, ofReal_zero, zero_mul,
@@ -161,7 +149,7 @@ end Nonnegativity
 
 section Fundamental_Domain_Dependent
 
-variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.centers]
+variable {P : PeriodicSpherePacking d} (hP : P.separation = 1)
 variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
 variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
 
@@ -170,33 +158,20 @@ variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_meas
 
 lemma hsummable₁ (y : EuclideanSpace ℝ (Fin d)) :
     Summable fun (b : P.centers) ↦ (f (b.val - y)).re := by
-  -- Since translation by y maps the centers of P to another set of points that are still
-  -- separated by at least 1 (because the distance between any two points in P.centers - y
-  -- is the same as the distance between the corresponding points in P.centers), the
-  -- summability of the translated function should follow from the summability of f over
-  -- the original set.
-  have h_translated_summable : Summable (fun x : P.centers => f (x - y)) := by
-    -- Since $P.centers$ is a separated set and $f$ is a Schwartz function, the series
-    -- $\sum_{x \in P.centers} f(x - y)$ converges absolutely.
-    have h_translated_summable :
-      IsSeparated ((ENNReal.ofReal P.separation) / 2) (P.centers - {y}) := by
-      have h_translated_summable : IsSeparated ((ENNReal.ofReal P.separation) / 2) P.centers := by
-        exact SpherePacking.centers_isSeparated P.toSpherePacking
-      generalize_proofs at *; (
-      intro x hx y hy; aesop;);
+  have h_translated_summable : Summable (fun x : P.centers ↦ f (x - y)) := by
     have h_translated_summable :
       Summable (fun x : (P.centers - {y} : Set (EuclideanSpace ℝ (Fin d))) => f x) := by
-      -- Apply the SchwartzMap.summableOn lemma with the separated set P.centers - {y}
-      -- and the positive ε from h_translated_summable.
-      apply (SchwartzMap.summableOn f (P.centers - {y}));
-      -- Since $P.separation$ is positive, we can take $\epsilon = P.separation$.
+      apply (f.summableOn (P.centers - {y}));
       use (ENNReal.ofReal P.separation) / 2;
-      exact ⟨ by simp; exact P.separation_pos, h_translated_summable ⟩;
+      refine ⟨by simp; exact P.separation_pos, ?_⟩;
+      have := P.toSpherePacking.centers_isSeparated
+      generalize_proofs at *
+      exact fun x hx y hy ↦ by aesop
     convert h_translated_summable.comp_injective
-      ( show Function.Injective ( fun x : P.centers =>
-        ⟨ x - y, by aesop ⟩ : P.centers →
-          ( P.centers - { y } : Set ( EuclideanSpace ℝ ( Fin d ) ) ) ) from
-            fun x y hxy => by aesop ) using 1;
+      (show Function.Injective (fun x : P.centers ↦
+        ⟨x - y, by aesop⟩ : P.centers →
+          (P.centers - {y} : Set (EuclideanSpace ℝ (Fin d)))) from
+            fun x y hxy ↦ by aesop) using 1;
   convert h_translated_summable.re using 1
 
 include hP hCohnElkies₁ in
@@ -252,7 +227,7 @@ private theorem calc_aux_1 (hd : 0 < d) :
                 rw [← sub_eq_zero] at x_neq_b
                 simp [x_neq_b]
             · rw [← summable_abs_iff]
-              apply Summable.of_nonneg_of_le (by simp) (?_) (f := fun x => ∑' (y : ↑(P.centers ∩
+              apply Summable.of_nonneg_of_le (by simp) ?_ (f := fun x => ∑' (y : ↑(P.centers ∩
                 D)), ‖if h : x.val - y.val = 0 then 0 else (f (x.val - y.val)).re‖) ?_
               · intro b
                 rw [← Real.norm_eq_abs]
@@ -277,7 +252,7 @@ private theorem calc_aux_1 (hd : 0 < d) :
                   rw [summable_abs_iff]
                   exact hsummable₁ y.val
             · apply summable_of_finite_support
-              apply Set.Finite.subset (s := {x: ↑P.centers | x.val ∈ D})
+              apply Set.Finite.subset (s := { x : ↑P.centers | x.val ∈ D })
               · rw [Set.finite_coe_iff] at sum_finite
                 apply Set.Finite.of_finite_image (f := Subtype.val)
                 · conv =>
@@ -325,27 +300,6 @@ private theorem calc_aux_1 (hd : 0 < d) :
               rw [PeriodicSpherePacking.numReps']
               exact Nat.card_eq_fintype_card
 
---Aristotle
-lemma hsummable₄ (P : PeriodicSpherePacking d)
-    (x y : EuclideanSpace ℝ (Fin d)) :
-    Summable fun (ℓ : P.lattice) ↦ f (x - y + ℓ.val) := by
-  have := f.summableOn
-    ( Set.range ( fun ℓ : P.lattice => ( ℓ : EuclideanSpace ℝ ( Fin d ) ) + ( x - y ) ) ) (by
-  have h_separated : ∃ ε > 0, IsSeparated ε (P.lattice : Set (EuclideanSpace ℝ (Fin d))) := by
-    exact ZLattice.isSeparated P.lattice;
-  -- Since addition by a constant preserves the separation property, the range of the
-  -- function ℓ ↦ ℓ + (x - y) is also separated.
-  obtain ⟨ε, hε_pos, hε_sep⟩ := h_separated;
-  use ε, hε_pos;
-  intro x hx y hy hxy;
-  aesop);
-  convert this.comp_injective
-    ( show Function.Injective ( fun ℓ : P.lattice =>
-      ⟨ ( ℓ : EuclideanSpace ℝ ( Fin d ) ) + ( x - y ), Set.mem_range_self ℓ ⟩ )
-        from fun a b h => by simpa using congr_arg Subtype.val h ) using 1;
-  exact funext fun _ => by simp +decide [ add_comm ];
-
-omit [Nonempty ↑P.centers] in
 include hD_isBounded in
 lemma calc_steps' (hd : 0 < d) :
     ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), (f (↑x - ↑y + ↑ℓ)).re =
@@ -358,145 +312,119 @@ lemma calc_steps' (hd : 0 < d) :
   apply tsum_congr
   intro y
   rw [re_tsum]
-  exact hsummable₄ P x.val y.val
+  have := f.summableOn
+    (Set.range (fun ℓ : P.lattice ↦ ℓ.val + (x - y)))
+    (by
+      obtain ⟨ε, hε_pos, _⟩ := ZLattice.isSeparated P.lattice
+      use ε, hε_pos
+      exact fun x hx y hy hxy ↦ by aesop)
+  convert this.comp_injective
+    (show Function.Injective (fun ℓ : P.lattice => ⟨ℓ.val + (x - y), Set.mem_range_self ℓ⟩)
+    from fun a b h => by simpa using congr_arg Subtype.val h) using 1;
+  exact funext fun _ => by simp [add_comm];
 
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following theorem.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
 -- If there are assumptions needed beyond PSF, we should require them here, not in `PSF_Conditions`.
 
-
---Aristotle
-/-
-Helper lemma: Any center point can be shifted by a lattice vector to land in the
-fundamental domain D.
--/
 lemma hunion_lemma_1
-  (P : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
   (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
   (x : EuclideanSpace ℝ (Fin d)) (hx : x ∈ P.centers) :
     ∃ y ∈ P.centers ∩ D, ∃ ℓ ∈ P.lattice, x = y + ℓ := by
-      obtain ⟨ g, hg₁, hg₂ ⟩ := hD_unique_covers x;
-      refine ⟨ g +ᵥ x, ?_, -g, ?_ ⟩ <;> simp_all +decide;
-      · convert P.lattice_action g.2 hx using 1;
-      · ext ; simp +decide [ add_comm ];
-        exact eq_neg_add_of_add_eq rfl
+      obtain ⟨ g, hg₁, hg₂ ⟩ := hD_unique_covers x
+      refine ⟨ g +ᵥ x, ?_, -g, ?_ ⟩ <;> simp_all
+      · convert P.lattice_action g.2 hx using 1
+      · ext ; simp [add_comm]; exact eq_neg_add_of_add_eq rfl
 
---Aristotle corrected my theorem assuming extra hypotheses on D
-/-
-The corrected version of hunion, assuming D is a fundamental domain.
--/
-lemma hunion_corrected (P : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
+lemma hunion_corrected
     (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
     [Fintype ↑(P.centers ∩ D)] :
     P.centers = ⋃ (x ∈ (P.centers ∩ D).toFinset),
       (x +ᵥ (P.lattice : Set (EuclideanSpace ℝ (Fin d)))) := by
-      -- Let's first show that the union of the lattice translates of the fundamental
-      -- domain covers all centers.
       apply Set.ext
       intro x
       simp [Set.mem_iUnion, Set.mem_vadd_set];
       constructor;
       · intro hx
-        obtain ⟨y, hyD, hy⟩ := hunion_lemma_1 P D hD_unique_covers x hx
+        obtain ⟨y, hyD, hy⟩ := hunion_lemma_1 hD_unique_covers x hx
         use y
         aesop;
       · rintro ⟨ y, ⟨ hy₁, hy₂ ⟩, z, hz₁, rfl ⟩;
         exact P.lattice_action hz₁ hy₁ |> fun h => by simpa [ add_comm ] using h;
 
-
---Aristotle
 include hD_unique_covers in
-omit [Nonempty ↑P.centers] in
 lemma pairwise_disj [Fintype ↑(P.centers ∩ D)] :
-    ((P.centers ∩ D).toFinset : Set (EuclideanSpace ℝ (Fin d))).Pairwise
-    (Function.onFun Disjoint fun x ↦ x +ᵥ (P.lattice : Set (EuclideanSpace ℝ (Fin d)))) := by
-  intro x hx y hy hxy; simp_all +decide [ Set.disjoint_left ] ;
+    (SetLike.coe (P.centers ∩ D).toFinset).Pairwise
+    (Disjoint.onFun  fun x ↦ x +ᵥ (SetLike.coe P.lattice)) := by
+  intro x hx y hy hxy
+  simp_all [Set.disjoint_left]
   rintro z ⟨ g, hg, rfl ⟩ ⟨ h, hh, hz ⟩;
-  -- Since $g$ and $h$ are in the lattice, their difference $g - h$ is also in the lattice.
-  have h_diff : (⟨g - h, by
-    exact Submodule.sub_mem _ hg hh⟩ : P.lattice) +ᵥ x = y := by
-    -- By rearranging $y + h = x + g$, we get $y = x + g - h$.
-    have hy_eq : y = x + g - h := by
-      exact eq_sub_of_add_eq hz;
-    simp_all +decide [ add_comm, add_left_comm, add_assoc, sub_eq_add_neg, vadd_eq_add ];
+  have h_diff : (⟨g - h, Submodule.sub_mem _ hg hh⟩ : P.lattice) +ᵥ x = y := by
+    have hy_eq : y = x + g - h := eq_sub_of_add_eq hz
+    simp_all [ add_comm, add_left_comm, add_assoc, sub_eq_add_neg, vadd_eq_add ]
     exact add_comm _ _
-  generalize_proofs at *;
-  -- Since $g - h$ is in the lattice and $x \in D$, by the uniqueness part of
-  -- $hD_unique_covers$, we must have $g - h = 0$.
-  have h_zero : (⟨g - h, by
-    assumption⟩ : P.lattice) = 0 := by
-    exact ExistsUnique.unique ( hD_unique_covers x ) ( by aesop ) ( by aesop )
-  generalize_proofs at *;
-  simp_all +decide
+  have h_zero : (⟨g - h, Submodule.sub_mem _ hg hh⟩ : P.lattice) = 0 :=
+    (hD_unique_covers x).unique (by aesop) (by aesop)
+  generalize_proofs at *
+  simp_all
 
 variable (P) in
-noncomputable def eq₁ (y : EuclideanSpace ℝ (Fin d)) : ↥P.lattice ≃
-    ↑(y +ᵥ (P.lattice : Set (EuclideanSpace ℝ (Fin d)))) :=
+noncomputable def eq₁ (y : EuclideanSpace ℝ (Fin d)) :
+    ↥P.lattice ≃ ↑(y +ᵥ (SetLike.coe P.lattice)) :=
   {
-    toFun := fun x ↦ ⟨y + x, by
-      -- Since $x$ is in the lattice, adding $y$ to $x$ should still be in the lattice
-      --shifted by $y$.
-      simp [Set.mem_vadd_set]⟩,
+    toFun := fun x ↦ ⟨y + x, by simp [Set.mem_vadd_set]⟩,
     invFun := fun z ↦ ⟨z - y, by
-      -- Since $z$ is in the set $y +ᵥ (P.lattice : Set (EuclideanSpace ℝ (Fin d)))$, there
-      -- exists some $ℓ \in P.lattice$ such that $z = y + ℓ$.
-      obtain ⟨ℓ, hℓ⟩ : ∃ ℓ ∈ P.lattice, z = y + ℓ := by
-        -- By definition of $y +ᵥ (P.lattice : Set (EuclideanSpace ℝ (Fin d)))$, if $z \in
-        -- y +ᵥ (P.lattice : Set (EuclideanSpace ℝ (Fin d)))$, then there exists some $ℓ
-        -- \in P.lattice$ such that $z = y + ℓ$.
-        obtain ⟨ℓ, hℓ⟩ := z.2;
-        use ℓ;
-        aesop;
-      -- Substitute $z = y + ℓ$ into the expression $(z - y)$ and simplify.
-      rw [hℓ.right]
-      simp [hℓ.left]⟩,
+        obtain ⟨ℓ, hℓ⟩ : ∃ ℓ ∈ P.lattice, z = y + ℓ := by
+          obtain ⟨ℓ, hℓ⟩ := z.2;
+          use ℓ;
+          aesop;
+        rw [hℓ.right]
+        simp [hℓ.left]⟩,
     left_inv := by simp [Function.LeftInverse]
     right_inv := by simp [Function.RightInverse, Function.LeftInverse]
   }
 
---Aristotle
-omit [Nonempty ↑P.centers] in
 lemma hsummable₈ (x : EuclideanSpace ℝ (Fin d)) (i : EuclideanSpace ℝ (Fin d))
-    (fintype_centers : Fintype ↑(P.centers ∩ D)) (hi : i ∈ (P.centers ∩ D).toFinset) :
-    Summable (fun (x_1 : ↑(i +ᵥ (P.lattice : Set (EuclideanSpace ℝ (Fin d))))) ↦
-    (f (x_1.val - x)).re) := by
+    [Fintype ↑(P.centers ∩ D)] (hi : i ∈ (P.centers ∩ D).toFinset) :
+    Summable (fun (x_1 : ↑(i +ᵥ (SetLike.coe P.lattice))) ↦ (f (x_1.val - x)).re) := by
   have h_summable_shifted : Summable (fun (x_1 : P.lattice) => (f (x_1 + i - x)).re) := by
-    convert SchwartzMap.summableOn f ( Set.range
-      ( fun x_1 : P.lattice => ( x_1 : EuclideanSpace ℝ ( Fin d ) ) + i - x ) ) using 1;
+    convert f.summableOn (Set.range
+      (fun x_1 : P.lattice => x_1.val + i - x)) using 1;
     constructor <;> intro h;
     · exact (SchwartzMap.summableOn _ _)
     · have h_summable_shifted :
         Summable (fun (x_1 : P.lattice) => (f (x_1 + i - x))) := by
-        convert SchwartzMap.summableOn f ( Set.range
-        ( fun x_1 : P.lattice => ( x_1 : EuclideanSpace ℝ ( Fin d ) ) + i - x ) ) using 1;
+        convert f.summableOn (Set.range
+        (fun x_1 : P.lattice => x_1.val + i - x)) using 1;
         constructor <;> intro h;
         · assumption;
         · convert h _ |> Summable.comp_injective <| show
-            Function.Injective ( fun x_1 : P.lattice => ⟨
-                ( x_1 : EuclideanSpace ℝ ( Fin d ) ) + i - x, Set.mem_range_self x_1 ⟩ :
-                P.lattice → Set.range ( fun x_1 : P.lattice =>
-                ( x_1 : EuclideanSpace ℝ ( Fin d ) ) + i - x ) ) from
+            Function.Injective (fun x_1 : P.lattice => ⟨x_1.val + i - x,
+              Set.mem_range_self x_1⟩ :
+                P.lattice → Set.range (fun x_1 : P.lattice =>
+                x_1.val + i - x)) from
                 fun x y hxy => by aesop;
           have h_separated : ∃ ε > 0,
             IsSeparated ε (P.lattice : Set (EuclideanSpace ℝ (Fin d))) := by
-            have := P.lattice_isZLattice;
-            convert ZLattice.isSeparated P.lattice;
-          obtain ⟨ ε, ε_pos, hε ⟩ := h_separated; use ε, ε_pos; intro x hx y hy; aesop;
+              convert ZLattice.isSeparated P.lattice;
+          obtain ⟨ ε, ε_pos, hε⟩ := h_separated;
+          use ε, ε_pos;
+          intro x hx y hy;
+          aesop;
       convert h_summable_shifted.re using 1;
-  convert h_summable_shifted.comp_injective ( show Function.Injective
-    ( fun x : { x : EuclideanSpace ℝ ( Fin d ) //
-      x ∈ i +ᵥ ( P.lattice : Set ( EuclideanSpace ℝ ( Fin d ) ) ) } ↦
+  convert h_summable_shifted.comp_injective (show Function.Injective
+    (fun x : { x : EuclideanSpace ℝ (Fin d) //
+      x ∈ i +ᵥ (SetLike.coe P.lattice) } ↦
         ⟨ x.val - i, by
       obtain ⟨y, hy⟩ : ∃ y ∈ P.lattice, x.val = y + i := by
-        rcases x with ⟨ x, hx ⟩ ; rcases hx with ⟨ y, hy, rfl ⟩ ;
-        exact ⟨ y, hy, by simp +decide [ add_comm ] ⟩ ;
+        rcases x with ⟨x, hx⟩ ; rcases hx with ⟨y, hy, rfl⟩ ;
+        exact ⟨y, hy, by simp [add_comm]⟩ ;
       generalize_proofs at *;
-      simp +decide [ hy.2, hy.1 ] ⟩ : { x : EuclideanSpace ℝ ( Fin d ) //
-        x ∈ i +ᵥ ( P.lattice : Set ( EuclideanSpace ℝ ( Fin d ) ) ) } → P.lattice )
+      simp [hy.2, hy.1 ]⟩ : { x // x ∈ i +ᵥ (SetLike.coe P.lattice) } → P.lattice )
           from ?_ ) using 1
   all_goals generalize_proofs at *;
-  · ext; simp +decide ;
+  · ext; simp
   · exact fun x y hxy => Subtype.ext <| by simpa using congr_arg Subtype.val hxy;
 
 include hD_isBounded hD_unique_covers in
@@ -509,11 +437,10 @@ private theorem calc_steps_aux_1 (hd : 0 < d) :
   simp [tsum_fintype]
   rw [Summable.tsum_finsetSum (fun i hi ↦ hsummable₁ _), Finset.sum_comm]
   congr with x
-  rw [tsum_congr_set_coe (fun b ↦ (f (b - x.val)).re) (hunion_corrected P D hD_unique_covers),
-    @Summable.tsum_finset_bUnion_disjoint _ _ _ _ (fun b ↦ (f (b - x.val)).re) _
-      _ _ _ _ (pairwise_disj hD_unique_covers)
-        (fun i hi ↦ by
-          simp [Function.comp_def]; exact hsummable₈ _ _ fintype_centers hi),
+  rw [tsum_congr_set_coe (fun b ↦ (f (b - x.val)).re) (hunion_corrected hD_unique_covers),
+    @Summable.tsum_finset_bUnion_disjoint _ _ _ _
+      (fun b ↦ (f (b - x.val)).re) _ _ _ _ _ (pairwise_disj hD_unique_covers)
+        (fun i hi ↦ by simp [Function.comp_def]; exact hsummable₈ _ _ hi),
           ← Finset.sum_set_coe]
   congr with y
   rw [← Equiv.tsum_eq (eq₁ P y.val)]
@@ -521,13 +448,10 @@ private theorem calc_steps_aux_1 (hd : 0 < d) :
   congr! 4 with ℓ
   exact add_sub_right_comm _ _ _
 
-noncomputable section AristotleLemmas
-
-/-
-If a lattice has a bounded fundamental domain (or just a bounded set whose translates
-cover the space), then the lattice spans the whole space.
--/
-lemma lattice_span_eq_top {d : ℕ} {P : PeriodicSpherePacking d} {D : Set (EuclideanSpace ℝ (Fin d))}
+/-- If a lattice has a bounded fundamental domain (or just a bounded set whose translates
+    cover the space), then the lattice spans the whole space. -/
+lemma lattice_span_eq_top {d : ℕ} {P : PeriodicSpherePacking d}
+    {D : Set (EuclideanSpace ℝ (Fin d))}
     (hD_isBounded : Bornology.IsBounded D) (hD_covers : ∀ x, ∃ g : P.lattice, g +ᵥ x ∈ D) :
     Submodule.span ℝ (P.lattice : Set (EuclideanSpace ℝ (Fin d))) = ⊤ := by
       by_contra h_not_span
@@ -550,21 +474,21 @@ lemma lattice_span_eq_top {d : ℕ} {P : PeriodicSpherePacking d} {D : Set (Eucl
         -- complement of $S$ with norm $> R$. Use this fact.
         obtain ⟨z, hz_perp, hz_norm⟩ :
           ∃ z : EuclideanSpace ℝ (Fin d), z ∈ S.orthogonal ∧ z ≠ 0 := by
-          exact Submodule.ne_bot_iff _ |>.1 ( show Sᗮ ≠ ⊥ from fun h => hS_proper <| by
-            rw [ Submodule.orthogonal_eq_bot_iff ] at h; aesop ) |>
-              fun ⟨ z, hz ⟩ => ⟨ z, hz.1, hz.2 ⟩;
-        exact ⟨ ( R / ‖z‖ + 1 ) • z, Submodule.smul_mem _ _ hz_perp, by
-          rw [ norm_smul, Real.norm_of_nonneg ( by positivity ) ] ;
+          exact Submodule.ne_bot_iff _ |>.1 (show Sᗮ ≠ ⊥ from fun h => hS_proper <| by
+            rw [Submodule.orthogonal_eq_bot_iff] at h; aesop) |>
+              fun ⟨z, hz⟩ => ⟨z, hz.1, hz.2⟩;
+        exact ⟨(R / ‖z‖ + 1) • z, Submodule.smul_mem _ _ hz_perp, by
+          rw [norm_smul, Real.norm_of_nonneg (by positivity)] ;
           nlinarith [ norm_pos_iff.mpr hz_norm, div_mul_cancel₀ R
-            ( norm_ne_zero_iff.mpr hz_norm ) ] ⟩;
+            (norm_ne_zero_iff.mpr hz_norm)]⟩;
       -- Since $g$ is in the lattice, we have $g \in S$.
       obtain ⟨g, hg⟩ : ∃ g : EuclideanSpace ℝ (Fin d), g ∈ S ∧ g +ᵥ z ∈ D := by
-        exact Exists.elim ( hD_covers z ) fun g hg => ⟨ g, Submodule.subset_span g.2, hg ⟩;
+        exact Exists.elim (hD_covers z) fun g hg => ⟨g, Submodule.subset_span g.2, hg⟩;
       -- Since $g \in S$ and $z \in S^\perp$, we have $\|g + z\|^2 = \|g\|^2 + \|z\|^2$.
       have h_norm_sq : ‖g +ᵥ z‖^2 = ‖g‖^2 + ‖z‖^2 := by
-        simp_all +decide [ Submodule.mem_orthogonal', norm_add_sq_real ];
-        simpa [ real_inner_comm ] using hz.1 g hg.1;
-      nlinarith [ hR _ hg.2, norm_nonneg ( g +ᵥ z ), norm_nonneg g, norm_nonneg z ]
+        simp_all +decide [Submodule.mem_orthogonal', norm_add_sq_real];
+        simpa [real_inner_comm] using hz.1 g hg.1;
+      nlinarith [hR _ hg.2, norm_nonneg (g +ᵥ z), norm_nonneg g, norm_nonneg z]
 
 lemma dual_eq_span_of_basis {d : ℕ} (L : Submodule ℤ (EuclideanSpace ℝ (Fin d)))
     [DiscreteTopology L] [IsZLattice ℝ L] :
@@ -576,60 +500,40 @@ lemma dual_eq_span_of_basis {d : ℕ} (L : Submodule ℤ (EuclideanSpace ℝ (Fi
           have h_basis : ∃ (b : Basis (Fin d) ℤ L), True := by
             have h_basis : Module.finrank ℤ L = d := by
               convert ZLattice.rank ℝ L;
-              norm_num [ Module.finrank_pi ];
+              norm_num [Module.finrank_pi];
             have h_basis : ∃ (b : Basis (Fin (Module.finrank ℤ L)) ℤ L), True := by
               simp +zetaDelta at *;
-              exact ⟨ ( Module.finBasis ℤ L ) ⟩;
+              exact ⟨Module.finBasis ℤ L⟩;
             aesop;
-          exact ⟨ h_basis.choose, Module.Basis.ofZLatticeBasis_span ℝ L h_basis.choose ⟩;
-        obtain ⟨ b, hb ⟩ := h_basis;
+          exact ⟨h_basis.choose, Module.Basis.ofZLatticeBasis_span ℝ L h_basis.choose⟩;
+        obtain ⟨b, hb⟩ := h_basis;
         convert LinearMap.BilinForm.dualSubmodule_span_of_basis
-          ( innerₗ ( EuclideanSpace ℝ ( Fin d ) ) ) _ _;
+          (innerₗ (EuclideanSpace ℝ (Fin d))) _ _;
         any_goals exact b.ofZLatticeBasis ℝ L;
         any_goals try infer_instance;
         · convert Iff.rfl;
-          rw [ hb ];
+          rw [hb];
           constructor;
-          · exact fun h => ⟨ _, h ⟩;
+          · exact fun h => ⟨_, h⟩;
           intro h;
           convert LinearMap.BilinForm.dualSubmodule_span_of_basis
-            ( innerₗ ( EuclideanSpace ℝ ( Fin d ) ) ) _ _;
+            (innerₗ (EuclideanSpace ℝ (Fin d))) _ _;
           · exact hb.symm;
           · infer_instance;
         · intro x hx;
           exact inner_self_eq_zero.mp (hx x)
 
-end AristotleLemmas
-
-omit [Nonempty ↑P.centers] in
-lemma one : ∃ ε > 0,
-  IsSeparated ε ((BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice) :
-  Set (EuclideanSpace ℝ (Fin d))) := by
-  -- By `lattice_span_eq_top` (using `hD_isBounded` and `hD_unique_covers`), `P.lattice`
-  -- spans the entire space.
-  have h_span : Submodule.span ℝ (P.lattice : Set (EuclideanSpace ℝ (Fin d))) = ⊤ := by
-    have := P.lattice_isZLattice;
-    exact IsZLattice.span_top;
-  -- By `dual_eq_span_of_basis` (using `h_span`), `dual` is equal to `Submodule.span ℤ
-  -- (Set.range b)` for some basis `b`.
+lemma one : ∃ ε > 0, IsSeparated ε
+    (SetLike.coe (BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice)) := by
   obtain ⟨b, hb⟩ : ∃ b : Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d)),
     (LinearMap.BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice) =
     (Submodule.span ℤ (Set.range b)) := by
       convert dual_eq_span_of_basis P.lattice using 1;
-  -- Since `dual` is equal to `Submodule.span ℤ (Set.range b)`, we can apply `ZLattice.
-  -- isSeparated` to `dual`.
-  have h_dual_separated : ∃ ε > 0, IsSeparated ε (Submodule.span ℤ (Set.range b) :
-    Set (EuclideanSpace ℝ (Fin d))) := by
-    convert ZLattice.isSeparated ( Submodule.span ℤ ( Set.range b ) ) using 1;
+  have h_dual_separated : ∃ ε > 0,
+      IsSeparated ε (SetLike.coe (Submodule.span ℤ (Set.range b))) := by
+    convert ZLattice.isSeparated (Submodule.span ℤ (Set.range b)) using 1;
   grind
 
-variable (f) in
-omit [Nonempty ↑P.centers] in
-lemma summable_norm : Summable (fun (m : ↥(BilinForm.dualSubmodule
-    (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice)) => ‖↑((𝓕 f) m.val).re‖) := by
-  refine ((𝓕 f).summableOn _ one).re.norm
-
-omit [Nonempty ↑P.centers] in
 lemma hsummable₆ (i : ↑(P.centers ∩ D)) [Fintype ↑(P.centers ∩ D)] : Summable fun
     (m : ↥(BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice)) ↦
     ∑ (x_1 : ↑(P.centers ∩ D)), ↑((𝓕 f) ↑m).re *
@@ -639,30 +543,17 @@ lemma hsummable₆ (i : ↑(P.centers ∩ D)) [Fintype ↑(P.centers ∩ D)] : S
   simp
   apply Summable.of_nonneg_of_le
   rotate_right;
-  · exact (fun m ↦ |↑((𝓕 f) ↑m).re| * Nat.card ((P.centers ∩ D).toFinset));
-  · -- The absolute value of any real number is non-negative, and the norm of a complex
-    -- number is also non-negative. Therefore, their product is non-negative.
-    intros b
-    apply mul_nonneg
-    · apply abs_nonneg
-    · apply norm_nonneg
-  · intro b; gcongr; simp ;
-    convert norm_sum_le _ _ using 2 ; norm_num [ Complex.norm_exp ];
-    -- Since the set is finite, the cardinality as a natural number is the same as the
-    -- cardinality as a Fintype.
+  · exact (fun m ↦ |↑((𝓕 f) ↑m).re| * Nat.card ((P.centers ∩ D).toFinset))
+  · intros b
+    apply mul_nonneg (abs_nonneg _) (norm_nonneg _)
+  · intro b
+    gcongr
+    simp
+    convert norm_sum_le _ _ using 2
+    norm_num [ Complex.norm_exp ]
     convert Nat.card_eq_fintype_card using 1
-  · -- Since the Fourier transform of a Schwartz function is also a Schwartz function, and
-    -- the dual lattice is discrete, the sum of the absolute values should be summable.
-    have h_summable : Summable (fun m : ↥(LinearMap.BilinForm.dualSubmodule
-      (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice) => |(𝓕 f m.val).re|) := by
-      exact summable_norm f;
-    -- Since multiplying a summable series by a constant preserves summability, we can
-    -- conclude that the series is summable.
-    apply Summable.mul_right; exact h_summable
+  · exact ((𝓕 f).summableOn _ one).re.norm.mul_right _
 
-/- Aristotle failed to find a proof but i was able to use proofs of hsummable₂ to
-  reconstruct an Aristotle-like proof of this. -/
-omit [Nonempty ↑P.centers] in
 include hCohnElkies₂ in
 lemma hsummable₃ (hF : Fintype ↑(P.centers ∩ D)) : Summable (fun
     (m : ↥(BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice)) =>
@@ -673,9 +564,7 @@ lemma hsummable₃ (hF : Fintype ↑(P.centers ∩ D)) : Summable (fun
   apply Summable.of_nonneg_of_le
   rotate_right;
   · exact (fun m ↦ |↑((𝓕 f) ↑m.1).re| * (Nat.card ((P.centers ∩ D).toFinset)) ^ 2);
-  · -- The absolute value of any real number is non-negative, and the norm of a complex
-    -- number is also non-negative. Therefore, their product is non-negative.
-    intros b
+  · intros b
     apply mul_nonneg
     · apply abs_nonneg
     · apply sq_nonneg
@@ -683,19 +572,12 @@ lemma hsummable₃ (hF : Fintype ↑(P.centers ∩ D)) : Summable (fun
     gcongr;
     · exact hCohnElkies₂ b;
     · rw[Complex.le_def]; exact ⟨le_rfl, rfl⟩
-    · refine le_trans ( norm_sum_le _ _ ) ?_;
-      norm_num [ Complex.norm_exp ];
-      rw [ ← Nat.card_eq_fintype_card ];
+    · refine le_trans (norm_sum_le _ _) ?_
+      norm_num [ Complex.norm_exp ]
+      rw [ ← Nat.card_eq_fintype_card ]
       exact le_rfl
-  · refine Summable.mul_right _ ?_;
-    have h_summable : Summable (fun m : ↥(BilinForm.dualSubmodule
-      (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice) => ‖(𝓕 f m).re‖) := by
-      -- Apply the lemma that states the summability of the real parts of the Fourier
-      -- transform of f over the dual lattice.
-      apply summable_norm;
-    exact h_summable
+  · exact ((𝓕 f).summableOn _ one).re.norm.mul_right _
 
-omit [Nonempty P.centers] in
 lemma hsummable₂ (hF : Fintype ↑(P.centers ∩ D)) : Summable (Function.uncurry fun
     (m : ↥(BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice))
     (x : ↑(P.centers ∩ D)) ↦
@@ -708,43 +590,30 @@ lemma hsummable₂ (hF : Fintype ↑(P.centers ∩ D)) : Summable (Function.uncu
   apply Summable.of_nonneg_of_le
   rotate_right;
   · exact (fun m ↦ |↑((𝓕 f) ↑m.1).re| * Nat.card ((P.centers ∩ D).toFinset));
-  · -- The absolute value of any real number is non-negative, and the norm of a complex
-    -- number is also non-negative. Therefore, their product is non-negative.
-    intros b
-    apply mul_nonneg
-    · apply abs_nonneg
-    · apply norm_nonneg
+  · exact fun b ↦ mul_nonneg (abs_nonneg _) (norm_nonneg _)
   · intro b;
     gcongr;
-    refine le_trans ( norm_sum_le _ _ ) ?_;
-    norm_num [ Complex.norm_exp ];
-    rw [ ← Nat.card_eq_fintype_card ];
+    refine le_trans (norm_sum_le _ _) ?_
+    norm_num [ Complex.norm_exp ]
+    rw [ ← Nat.card_eq_fintype_card ]
     exact le_rfl
   · refine Summable.mul_right _ ?_;
     have h_summable : Summable (fun m : ↥(BilinForm.dualSubmodule
       (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice) => ‖(𝓕 f m).re‖) := by
-      -- Apply the lemma that states the summability of the real parts of the Fourier
-      -- transform of f over the dual lattice.
-      apply summable_norm;
+      apply ((𝓕 f).summableOn _ one).re.norm;
     rw [ summable_prod_of_nonneg ] <;> norm_num;
     · exact ⟨ fun _ _ => by exact ⟨ _, hasSum_fintype _ ⟩, by
         simpa [ abs_mul ] using h_summable.mul_left _ ⟩;
     · exact fun _ => abs_nonneg _
 
-omit [Nonempty ↑P.centers] in
 lemma hsummable₇ {i : ↑(P.centers ∩ D)} (x_1 : ↑(P.centers ∩ D)) : Summable fun
     (m : ↥(BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice)) ↦
     ↑((𝓕 f) ↑m).re *
-    cexp (2 * ↑π * I * ⟪(i.val).ofLp - (x_1.val).ofLp, (m.val).ofLp⟫_[ℝ]) := by
-  apply Summable.of_norm
-  refine Summable.of_nonneg_of_le (fun m ↦ norm_nonneg _) (fun m ↦ ?_) (summable_norm f)
-  simp
-  -- The norm of the exponential term is 1, so the inequality simplifies to |(𝓕 f m).re|
-  -- ≤ |(𝓕 f m).re|, which is trivially true.
-  simp [Complex.norm_exp]
+    cexp (2 * ↑π * I * ⟪(i.val).ofLp - (x_1.val).ofLp, (m.val).ofLp⟫_[ℝ]) :=
+  Summable.of_norm <| Summable.of_nonneg_of_le (fun m ↦ norm_nonneg _)
+    (fun m ↦ by simp [Complex.norm_exp]) (((𝓕 f).summableOn _ one).re.norm)
 
 include hD_isBounded hCohnElkies₂ in
-omit [Nonempty ↑P.centers] in
 lemma hsummable₅ (hd : d > 0) : Summable
     fun (m : ↥(BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice)) ↦
     (((𝓕 f) ↑m).re : ℂ) * ((normSq (∑' (x : ↑(P.centers ∩ D)),
@@ -753,7 +622,7 @@ lemma hsummable₅ (hd : d > 0) : Summable
   have fintype_centers: Fintype ↑(P.centers ∩ D) := by apply Fintype.ofFinite
   convert Complex.ofRealCLM.summable (hsummable₃ hCohnElkies₂ fintype_centers)
   using 2 ;
-  · norm_num [ Complex.normSq_eq_norm_sq ]; ring_nf!;
+  · norm_num [Complex.normSq_eq_norm_sq]; ring_nf!;
 
 include hP hD_isBounded hD_unique_covers hRealFourier hCohnElkies₁ hCohnElkies₂ in
 private theorem calc_steps (hd : 0 < d) :
@@ -762,22 +631,16 @@ private theorem calc_steps (hd : 0 < d) :
   have : Fact (0 < d) := ⟨hd⟩
   calc
   ↑(P.numReps' hd hD_isBounded) * (f 0).re
-  _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)),
-      (f (x - ↑y)).re
-        := by
-            rw [ge_iff_le]
-            exact calc_aux_1 hCohnElkies₁ hP hD_isBounded hd
-  _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
-      (f (↑x - ↑y + ↑ℓ)).re
-        :=
-            calc_steps_aux_1 hD_isBounded hD_unique_covers hd
+  _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re := by
+    simpa [ge_iff_le] using calc_aux_1 hCohnElkies₁ hP hD_isBounded hd
+  _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice), (f (↑x - ↑y + ↑ℓ)).re :=
+      calc_steps_aux_1 hD_isBounded hD_unique_covers hd
   -- We now take the real part out so we can apply the PSF-L to the stuff inside.
   -- The idea would be to say, in subsequent lines, that "it suffices to show that the numbers
   -- whose real parts we're taking are equal as complex numbers" and then apply the PSF-L and
   -- other complex-valued stuff.
-  _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
-      f (↑x - ↑y + ↑ℓ)).re
-        := calc_steps' hD_isBounded hd
+  _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice), f (↑x - ↑y + ↑ℓ)).re :=
+    calc_steps' hD_isBounded hd
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice) *
       ∑' m : BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice, (𝓕 f m) *
@@ -829,8 +692,7 @@ private theorem calc_steps (hd : 0 < d) :
       (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪x.val, (m.val).ofLp⟫_[ℝ])) *
       conj (∑' x : ↑(P.centers ∩ D),
-      exp (2 * π * I * ⟪x.val, (m.val).ofLp⟫_[ℝ]))
-      ).re
+      exp (2 * π * I * ⟪x.val, (m.val).ofLp⟫_[ℝ]))).re
         := by
             simp_rw [conj_tsum]
             congr! 7 with m x
