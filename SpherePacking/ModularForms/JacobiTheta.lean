@@ -870,19 +870,20 @@ lemma isBoundedAtImInfty_jacobi_f_slash :
   rw [← hA, jacobi_f_slash_eq A']
   exact isBoundedAtImInfty_jacobi_f
 
-/-- jacobi_f as a ModularForm of weight 4 and level Γ(1) -/
-noncomputable def jacobi_f_MF : ModularForm (Γ 1) 4 := {
-  jacobi_f_SIF with
-  holo' := jacobi_f_SIF_MDifferentiable
-  bdd_at_cusps' := fun hc =>
-    bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_jacobi_f_slash
-}
+/-- jacobi_f as a ModularForm of weight 4 and level Γ(1), with IsCuspForm proof -/
+noncomputable def jacobi_f_MF : ModularForm (Γ 1) 4 :=
+  (IsCuspForm_of_SIF_tendsto_zero jacobi_f_SIF jacobi_f_SIF_MDifferentiable
+    jacobi_f_tendsto_atImInfty).choose
 
 /-- jacobi_f_MF is a cusp form because it vanishes at i∞ -/
-theorem jacobi_f_MF_IsCuspForm : IsCuspForm (Γ 1) 4 jacobi_f_MF := by
-  rw [IsCuspForm_iff_coeffZero_eq_zero, ModularFormClass.qExpansion_coeff]; simp
-  exact IsZeroAtImInfty.cuspFunction_apply_zero jacobi_f_tendsto_atImInfty
-    (by norm_num : (0 : ℝ) < 1)
+theorem jacobi_f_MF_IsCuspForm : IsCuspForm (Γ 1) 4 jacobi_f_MF :=
+  (IsCuspForm_of_SIF_tendsto_zero jacobi_f_SIF jacobi_f_SIF_MDifferentiable
+    jacobi_f_tendsto_atImInfty).choose_spec.1
+
+/-- jacobi_f_MF agrees with jacobi_f_SIF pointwise -/
+lemma jacobi_f_MF_eq : ∀ z, jacobi_f_MF z = jacobi_f_SIF z :=
+  (IsCuspForm_of_SIF_tendsto_zero jacobi_f_SIF jacobi_f_SIF_MDifferentiable
+    jacobi_f_tendsto_atImInfty).choose_spec.2
 
 /-- The main dimension vanishing: jacobi_f_MF = 0 -/
 theorem jacobi_f_MF_eq_zero : jacobi_f_MF = 0 :=
@@ -890,7 +891,8 @@ theorem jacobi_f_MF_eq_zero : jacobi_f_MF = 0 :=
 
 /-- jacobi_f = 0 as a function -/
 theorem jacobi_f_eq_zero : jacobi_f = 0 :=
-  congr_arg (·.toFun) jacobi_f_MF_eq_zero
+  funext fun z => (jacobi_f_MF_eq z).symm.trans <|
+    congrFun (congrArg (·.toFun) jacobi_f_MF_eq_zero) z
 
 /-- jacobi_g = 0 as a function (from g² = 0) -/
 theorem jacobi_g_eq_zero : jacobi_g = 0 := by
