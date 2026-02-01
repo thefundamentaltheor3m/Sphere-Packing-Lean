@@ -593,8 +593,8 @@ lemma H_sum_sq_tendsto : Tendsto H_sum_sq atImInfty (𝓝 1) := by
     Tendsto.continuousAt_comp_prodMk H₂_tendsto_atImInfty H₄_tendsto_atImInfty hg
 
 /-- H_sum_sq ≠ 0 (since it tends to 1 ≠ 0) -/
-lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 := fun h =>
-  one_ne_zero (tendsto_nhds_unique tendsto_const_nhds (h ▸ H_sum_sq_tendsto)).symm
+lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 :=
+  ne_zero_of_tendsto_ne_zero one_ne_zero H_sum_sq_tendsto
 
 /-- 3 * H_sum_sq ≠ 0 -/
 lemma three_H_sum_sq_ne_zero : (fun z => 3 * H_sum_sq z) ≠ 0 := by
