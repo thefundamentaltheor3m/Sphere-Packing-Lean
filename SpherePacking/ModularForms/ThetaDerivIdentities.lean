@@ -453,29 +453,16 @@ noncomputable def theta_h_SIF : SlashInvariantForm (Γ 1) 8 where
   toFun := theta_h
   slash_action_eq' := theta_h_slash_invariant_GL
 
-/-- If D F → 0 and F → c, then serre_D k F → -k/12 * c.
-Uses E₂_tendsto_one_atImInfty to compute E₂ * F → c. -/
-lemma serre_D_tendsto_of_tendsto {k : ℤ} {F : ℍ → ℂ} {c : ℂ}
-    (hD : Tendsto (D F) atImInfty (𝓝 0))
-    (hF : Tendsto F atImInfty (𝓝 c)) :
-    Tendsto (serre_D k F) atImInfty (𝓝 (-(k : ℂ) / 12 * c)) := by
-  -- serre_D k F = D F - k/12 * E₂ * F
-  -- D F → 0, E₂ → 1, F → c, so serre_D k F → 0 - k/12 * 1 * c = -k/12 * c
-  have h_coef : Tendsto (fun z => (k : ℂ) * 12⁻¹ * E₂ z * F z) atImInfty
-      (𝓝 ((k : ℂ) / 12 * c)) := by
-    convert (E₂_tendsto_one_atImInfty.mul hF).const_mul ((k : ℂ) * 12⁻¹) using 2 <;> ring
-  convert hD.sub h_coef using 2
-  simp only [div_eq_mul_inv]; ring
-
 /-- f₂ tends to 0 at infinity.
 Proof: f₂ = serre_D 2 H₂ - (1/6)H₂(H₂ + 2H₄)
 Since H₂ → 0 and serre_D 2 H₂ = D H₂ - (1/6)E₂ H₂ → 0,
 we get f₂ → 0 - 0 = 0. -/
 lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
   have h_serre_H₂ : Tendsto (serre_D 2 H₂) atImInfty (𝓝 0) := by
-    simpa using serre_D_tendsto_of_tendsto
-      (D_tendsto_zero_of_tendsto_const H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂)
-      H₂_tendsto_atImInfty
+    have hD := D_tendsto_zero_of_tendsto_const H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂
+    have hE₂H₂ : Tendsto (fun z => E₂ z * H₂ z) atImInfty (𝓝 0) := by
+      simpa using E₂_tendsto_one_atImInfty.mul H₂_tendsto_atImInfty
+    convert hD.sub (hE₂H₂.const_mul ((2 : ℂ) / 12)) using 2 <;> simp [serre_D]; ring
   have h_prod : Tendsto (H₂ * (H₂ + 2 * H₄)) atImInfty (𝓝 0) := by
     simpa using H₂_tendsto_atImInfty.mul
       (H₂_tendsto_atImInfty.add (H₄_tendsto_atImInfty.const_mul 2))
@@ -488,8 +475,7 @@ H₄(2H₂ + H₄) → 1*(0 + 1) = 1
 So f₄ → -1/6 + (1/6)*1 = 0. -/
 lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
   have h_serre_H₄ : Tendsto (serre_D 2 H₄) atImInfty (𝓝 (-(1/6 : ℂ))) := by
-    convert serre_D_tendsto_of_tendsto
-      (D_tendsto_zero_of_tendsto_const H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄)
+    convert serre_D_tendsto_neg_k_div_12 2 H₄ H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
       H₄_tendsto_atImInfty using 2
     norm_num
   have h_sum : Tendsto (2 * H₂ + H₄) atImInfty (𝓝 1) := by
