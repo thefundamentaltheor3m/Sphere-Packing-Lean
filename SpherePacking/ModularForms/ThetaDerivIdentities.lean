@@ -496,13 +496,25 @@ lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
     simpa using H₂_tendsto_atImInfty.add (H₄_tendsto_atImInfty.const_mul 2)
   simpa [theta_g] using (h_coef1.mul f₂_tendsto_atImInfty).add (h_coef2.mul f₄_tendsto_atImInfty)
 
+-- Test: does fun_prop prove continuity of a polynomial on ℂ×ℂ?
+example : ContinuousAt (fun p : ℂ × ℂ => p.1 ^ 2 + p.1 * p.2 + p.2 ^ 2) (0, 0) := by
+  fun_prop
+
+/-- Continuous mapping theorem for two convergent components. -/
+theorem Tendsto.continuousAt_comp_prodMk
+    {α β γ δ : Type*} [TopologicalSpace β] [TopologicalSpace γ] [TopologicalSpace δ]
+    {l : Filter α} {f : α → β} {g : α → γ} {a : β} {b : γ} {h : β × γ → δ}
+    (hf : Tendsto f l (𝓝 a)) (hg : Tendsto g l (𝓝 b))
+    (hh : ContinuousAt h (a, b)) :
+    Tendsto (fun x => h (f x, g x)) l (𝓝 (h (a, b))) :=
+  hh.tendsto.comp (hf.prodMk_nhds hg)
+
 /-- theta_h tends to 0 at infinity.
 theta_h = f₂² + f₂f₄ + f₄² → 0 + 0 + 0 = 0 as f₂, f₄ → 0. -/
 lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
+  have hg : ContinuousAt (fun p : ℂ × ℂ => p.1 ^ 2 + p.1 * p.2 + p.2 ^ 2) (0, 0) := by fun_prop
   simpa [theta_h, sq] using
-    ((f₂_tendsto_atImInfty.mul f₂_tendsto_atImInfty).add
-      (f₂_tendsto_atImInfty.mul f₄_tendsto_atImInfty)).add
-      (f₄_tendsto_atImInfty.mul f₄_tendsto_atImInfty)
+    Tendsto.continuousAt_comp_prodMk f₂_tendsto_atImInfty f₄_tendsto_atImInfty hg
 
 /-- Build a cusp form from a SlashInvariantForm that's MDifferentiable and
 tends to zero at infinity. This pattern is reused for theta_g and theta_h. -/
