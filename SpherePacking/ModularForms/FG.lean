@@ -1,10 +1,10 @@
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Order.Monotone.Defs
 
-import SpherePacking.ModularForms.RamanujanIdentities
 import SpherePacking.ModularForms.Derivative
 import SpherePacking.ModularForms.Eisenstein
 import SpherePacking.ModularForms.JacobiTheta
+import SpherePacking.ModularForms.RamanujanIdentities
 
 open Filter Complex
 open scoped Real Manifold ArithmeticFunction.sigma UpperHalfPlane
@@ -84,21 +84,23 @@ theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal
 theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ GReal t := by
   sorry
 
-theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
-    + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun
-    := by
+/-- D F expanded as a linear combination using smul (•). -/
+theorem F_aux : D F = (5 * 6⁻¹ : ℂ) • (E₂ ^ 3 * E₄.toFun ^ 2)
+    - (5 * 2⁻¹ : ℂ) • (E₂ ^ 2 * E₄.toFun * E₆.toFun)
+    + (5 * 6⁻¹ : ℂ) • (E₂ * E₄.toFun ^ 3)
+    + (5 * 3⁻¹ : ℂ) • (E₂ * E₆.toFun ^ 2)
+    - (5 * 6⁻¹ : ℂ) • (E₄.toFun ^ 2 * E₆.toFun) := by
   rw [F, D_sq, D_sub, D_mul]
-  · ring_nf
-    rw [ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
-    ext z
-    simp
-    ring_nf
-  -- Holomorphicity of the terms
+  · ext z; simp only [Pi.add_apply, Pi.sub_apply, Pi.smul_apply, Pi.mul_apply, Pi.pow_apply,
+      smul_eq_mul, congrFun ramanujan_E₂ z, congrFun ramanujan_E₄ z, congrFun ramanujan_E₆ z,
+      show (2 : ℍ → ℂ) z = 2 from rfl, show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl,
+      show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl, show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl]
+    ring
   · exact E₂_holo'
   · exact E₄.holo'
-  · exact MDifferentiable.mul E₂_holo' E₄.holo'
+  · exact E₂_holo'.mul E₄.holo'
   · exact E₆.holo'
-  · exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
+  · exact (E₂_holo'.mul E₄.holo').sub E₆.holo'
 
 /--
 Modular linear differential equation satisfied by $F$.
@@ -115,6 +117,114 @@ Modular linear differential equation satisfied by $G$.
 -/
 theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
   sorry
+
+/-! ## X₄₂ variant of MLDE -/
+
+/-- X₄₂ = 288⁻¹ * (E₄ - E₂²), related to negDE₂ by `negDE₂ = 24 * X₄₂`. -/
+noncomputable def X₄₂ := 288⁻¹ * (E₄.toFun - E₂ * E₂)
+
+lemma negDE₂_eq_24_X₄₂ : negDE₂ = 24 * X₄₂ := by
+  ext z
+  simp [negDE₂, X₄₂, ramanujan_E₂, Pi.mul_apply, Pi.sub_apply]
+  ring
+
+private lemma serre_D_10_F : serre_D 10 F = D F - 5 * 6⁻¹ * E₂ * F := by
+  ext z; simp [serre_D_apply]; norm_num
+
+private lemma E₂sq_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ ^ 2) := E₂_holo'.pow 2
+private lemma E₂cu_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ ^ 3) := E₂_holo'.pow 3
+private lemma E₄sq_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₄.toFun ^ 2) := E₄.holo'.pow 2
+private lemma E₄cu_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₄.toFun ^ 3) := E₄.holo'.pow 3
+private lemma E₆sq_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₆.toFun ^ 2) := E₆.holo'.pow 2
+
+/-- D(E₂³ * E₄²) expanded using product rule. -/
+private lemma D_E2cu_E4sq : D (E₂ ^ 3 * E₄.toFun ^ 2) =
+    3 * E₂ ^ 2 * D E₂ * E₄.toFun ^ 2 + E₂ ^ 3 * 2 * E₄.toFun * D E₄.toFun := by
+  rw [D_mul (E₂ ^ 3) (E₄.toFun ^ 2) E₂cu_holo' E₄sq_holo',
+      D_cube E₂ E₂_holo', D_sq E₄.toFun E₄.holo']
+  ring_nf
+
+/-- D(E₂² * E₄ * E₆) expanded using product rule. -/
+private lemma D_E2sq_E4_E6 : D (E₂ ^ 2 * E₄.toFun * E₆.toFun) =
+    2 * E₂ * D E₂ * E₄.toFun * E₆.toFun + E₂ ^ 2 * D E₄.toFun * E₆.toFun +
+    E₂ ^ 2 * E₄.toFun * D E₆.toFun := by
+  rw [D_mul (E₂ ^ 2 * E₄.toFun) E₆.toFun (E₂sq_holo'.mul E₄.holo') E₆.holo',
+      D_mul (E₂ ^ 2) E₄.toFun E₂sq_holo' E₄.holo', D_sq E₂ E₂_holo']
+  ring_nf
+
+/-- D(E₂ * E₄³) expanded using product rule. -/
+private lemma D_E2_E4cu : D (E₂ * E₄.toFun ^ 3) =
+    D E₂ * E₄.toFun ^ 3 + E₂ * 3 * E₄.toFun ^ 2 * D E₄.toFun := by
+  rw [D_mul E₂ (E₄.toFun ^ 3) E₂_holo' E₄cu_holo', D_cube E₄.toFun E₄.holo']
+  ring_nf
+
+/-- D(E₂ * E₆²) expanded using product rule. -/
+private lemma D_E2_E6sq : D (E₂ * E₆.toFun ^ 2) =
+    D E₂ * E₆.toFun ^ 2 + E₂ * 2 * E₆.toFun * D E₆.toFun := by
+  rw [D_mul E₂ (E₆.toFun ^ 2) E₂_holo' E₆sq_holo', D_sq E₆.toFun E₆.holo']
+  ring_nf
+
+/-- D(E₄² * E₆) expanded using product rule. -/
+private lemma D_E4sq_E6 : D (E₄.toFun ^ 2 * E₆.toFun) =
+    2 * E₄.toFun * D E₄.toFun * E₆.toFun + E₄.toFun ^ 2 * D E₆.toFun := by
+  rw [D_mul (E₄.toFun ^ 2) E₆.toFun E₄sq_holo' E₆.holo', D_sq E₄.toFun E₄.holo']
+
+private lemma E2cu_E4sq_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ ^ 3 * E₄.toFun ^ 2) :=
+  E₂cu_holo'.mul E₄sq_holo'
+private lemma E2sq_E4_E6_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ ^ 2 * E₄.toFun * E₆.toFun) :=
+  (E₂sq_holo'.mul E₄.holo').mul E₆.holo'
+private lemma E2_E4cu_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun ^ 3) :=
+  E₂_holo'.mul E₄cu_holo'
+private lemma E2_E6sq_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₆.toFun ^ 2) :=
+  E₂_holo'.mul E₆sq_holo'
+private lemma E4sq_E6_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₄.toFun ^ 2 * E₆.toFun) :=
+  E₄sq_holo'.mul E₆.holo'
+
+/-- D(D F) expanded using F_aux. -/
+private lemma DDF_eq : D (D F) = (5 * 6⁻¹ : ℂ) • D (E₂ ^ 3 * E₄.toFun ^ 2)
+    - (5 * 2⁻¹ : ℂ) • D (E₂ ^ 2 * E₄.toFun * E₆.toFun)
+    + (5 * 6⁻¹ : ℂ) • D (E₂ * E₄.toFun ^ 3)
+    + (5 * 3⁻¹ : ℂ) • D (E₂ * E₆.toFun ^ 2)
+    - (5 * 6⁻¹ : ℂ) • D (E₄.toFun ^ 2 * E₆.toFun) := by
+  have hs1 := E2cu_E4sq_holo'.const_smul (5 * 6⁻¹ : ℂ)
+  have hs2 := E2sq_E4_E6_holo'.const_smul (5 * 2⁻¹ : ℂ)
+  have hs3 := E2_E4cu_holo'.const_smul (5 * 6⁻¹ : ℂ)
+  have hs4 := E2_E6sq_holo'.const_smul (5 * 3⁻¹ : ℂ)
+  have hs5 := E4sq_E6_holo'.const_smul (5 * 6⁻¹ : ℂ)
+  rw [F_aux]
+  simp only [D_sub _ _ (hs1.sub hs2 |>.add hs3 |>.add hs4) hs5,
+    D_add _ _ (hs1.sub hs2 |>.add hs3) hs4, D_add _ _ (hs1.sub hs2) hs3, D_sub _ _ hs1 hs2,
+    D_smul _ _ E2cu_E4sq_holo', D_smul _ _ E2sq_E4_E6_holo', D_smul _ _ E2_E4cu_holo',
+    D_smul _ _ E2_E6sq_holo', D_smul _ _ E4sq_E6_holo']
+
+/-- MLDE for `F` (X₄₂ variant): `serre_D 12 (serre_D 10 F) = (5/6)·E₄·F + 172800·Δ·X₄₂`. -/
+theorem MLDE_F_X42 : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 172800 * Δ_fun * X₄₂ := by
+  have hcE₂_eq : (5 * 6⁻¹ : ℂ) • E₂ = 5 * 6⁻¹ * E₂ := by ext; simp [smul_eq_mul]
+  have h56E₂_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂) := hcE₂_eq ▸ E₂_holo'.const_smul _
+  have h56E₂F : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂ * F) := h56E₂_holo.mul F_holo
+  have hD_outer : D (D F - 5 * 6⁻¹ * E₂ * F) = D (D F) - D (5 * 6⁻¹ * E₂ * F) :=
+    D_sub _ _ (D_differentiable F_holo) h56E₂F
+  have hD_cE₂F : D (5 * 6⁻¹ * E₂ * F) = 5 * 6⁻¹ * (E₂ * D F + D E₂ * F) := by
+    have : D (5 * 6⁻¹ * E₂) = 5 * 6⁻¹ * D E₂ := by
+      rw [← hcE₂_eq, D_smul _ _ E₂_holo']; ext; simp [smul_eq_mul]
+    calc D (5 * 6⁻¹ * E₂ * F)
+        = D ((5 * 6⁻¹ * E₂) * F) := by ring_nf
+      _ = (5 * 6⁻¹ * E₂) * D F + D (5 * 6⁻¹ * E₂) * F := by rw [D_mul _ F h56E₂_holo F_holo]; ring
+      _ = 5 * 6⁻¹ * (E₂ * D F + D E₂ * F) := by rw [this]; ring_nf
+  rw [ramanujan_E₂] at hD_cE₂F; rw [serre_D_10_F]; simp only [serre_D_eq]
+  ext z
+  simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul,
+    congrFun hD_outer z, congrFun hD_cE₂F z, congrFun DDF_eq z, congrFun F_aux z,
+    congrFun D_E2cu_E4sq z, congrFun D_E2sq_E4_E6 z, congrFun D_E2_E4cu z,
+    congrFun D_E2_E6sq z, congrFun D_E4sq_E6 z, congrFun ramanujan_E₂ z,
+    congrFun ramanujan_E₄ z, congrFun ramanujan_E₆ z,
+    show (5 : ℍ → ℂ) z = 5 from rfl, show (2 : ℍ → ℂ) z = 2 from rfl,
+    show (3 : ℍ → ℂ) z = 3 from rfl, show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl,
+    show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl, show (6⁻¹ : ℍ → ℂ) z = 6⁻¹ from rfl,
+    show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl]
+  simp [F, Δ_fun, X₄₂]
+  field_simp (disch := norm_num)
+  ring
 
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
 
