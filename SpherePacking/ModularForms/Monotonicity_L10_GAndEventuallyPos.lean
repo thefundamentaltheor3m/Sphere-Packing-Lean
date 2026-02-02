@@ -1000,11 +1000,7 @@ theorem L₁₀_div_FG_tendsto :
     simp [hL_real, h_FG_real]
   -- The real part equals the quotient of real parts
   have h_FG_ne : F z * G z ≠ 0 := mul_ne_zero hz_F_ne hz_G_ne
-  have h_re_ne : (F z * G z).re ≠ 0 := by
-    intro h_re_zero
-    apply h_FG_ne
-    rw [Complex.ext_iff]
-    simp [h_re_zero, h_FG_real]
+  have h_re_ne : (F z * G z).re ≠ 0 := by contrapose! h_FG_ne; exact Complex.ext h_FG_ne h_FG_real
   have h_quot_eq : (L₁₀ z / (F z * G z)).re = (L₁₀ z).re / (F z * G z).re := by
     rw [Complex.div_re]
     simp only [hL_real, h_FG_real, mul_zero, add_zero, zero_div]
