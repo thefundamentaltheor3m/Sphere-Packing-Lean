@@ -359,35 +359,17 @@ theorem D_Θ₂_div_Θ₂_tendsto :
       ext z; rw [h_eq_jac]
     rw [hD_eq]
     exact D_jacobiTheta₂_half_mul_tendsto_zero
+  -- h → 2 ≠ 0 implies h ≠ 0 eventually
+  have h_ne_zero : ∀ᶠ z : ℍ in atImInfty, h z ≠ 0 :=
+    hh_tendsto.eventually_ne (by norm_num : (2 : ℂ) ≠ 0)
   -- Step 5: D(h)/h → 0 since D(h) → 0 and h → 2 ≠ 0
   have hDh_div_h_tendsto : Filter.Tendsto (fun z => D h z / h z) atImInfty (nhds (0 : ℂ)) := by
-    have h_ne_zero : ∀ᶠ z : ℍ in atImInfty, h z ≠ 0 := by
-      -- h → 2, and 2 ≠ 0, so eventually h ≠ 0
-      have h_ball : Metric.ball (2 : ℂ) 1 ∈ nhds (2 : ℂ) :=
-        Metric.isOpen_ball.mem_nhds (by norm_num : dist (2 : ℂ) 2 < 1)
-      have := hh_tendsto.eventually h_ball
-      filter_upwards [this] with z hz
-      -- hz : dist (h z) 2 < 1
-      intro h_eq
-      rw [h_eq] at hz
-      have : dist (0 : ℂ) 2 = 2 := by simp [dist_eq_norm]
-      linarith [this]
-    have h2 : (2 : ℂ) ≠ 0 := by norm_num
-    have h_div_tendsto := hDh_tendsto.div hh_tendsto h2
-    simp only [zero_div] at h_div_tendsto
-    exact h_div_tendsto.congr' (by filter_upwards [h_ne_zero] with z hz; rfl)
+    have h_div_tendsto := hDh_tendsto.div hh_tendsto (by norm_num : (2 : ℂ) ≠ 0)
+    simpa using h_div_tendsto.congr' (by filter_upwards [h_ne_zero] with z _; rfl)
   -- Step 6: D(Θ₂)/Θ₂ = D(f·h)/(f·h) = D(f)/f + D(h)/h
   have h_logderiv_eq : ∀ᶠ z : ℍ in atImInfty, D Θ₂ z / Θ₂ z = D f z / f z + D h z / h z := by
     have hf_ne : ∀ z : ℍ, f z ≠ 0 := fun z => Complex.exp_ne_zero _
-    have hh_ne : ∀ᶠ z : ℍ in atImInfty, h z ≠ 0 := by
-      have h_ball : Metric.ball (2 : ℂ) 1 ∈ nhds (2 : ℂ) :=
-        Metric.isOpen_ball.mem_nhds (by norm_num : dist (2 : ℂ) 2 < 1)
-      have := hh_tendsto.eventually h_ball
-      filter_upwards [this] with z hz
-      intro h_eq; rw [h_eq] at hz
-      have : dist (0 : ℂ) 2 = 2 := by simp [dist_eq_norm]
-      linarith [this]
-    filter_upwards [hh_ne] with z hz
+    filter_upwards [h_ne_zero] with z hz
     -- Θ₂ = f · h, so D(Θ₂) = D(f·h) = f·D(h) + h·D(f)
     have h_Θ₂_eq : Θ₂ z = f z * h z := by simp only [h, mul_div_cancel₀ _ (hf_ne z)]
     -- Show Θ₂ = f * h as functions
@@ -912,10 +894,7 @@ theorem D_G_div_G_tendsto :
     simp only [add_zero]
   -- D(B)/B → 0/5 = 0
   have h_DB_B_tendsto : Filter.Tendsto (fun z => D B z / B z) atImInfty (nhds 0) := by
-    have h_B_ne : ∀ᶠ z in atImInfty, B z ≠ 0 :=
-      h_B_tendsto.eventually_ne (by norm_num : (5 : ℂ) ≠ 0)
-    have h := h_DB_tendsto.div h_B_tendsto (by norm_num : (5 : ℂ) ≠ 0)
-    simp only [zero_div] at h; exact h
+    simpa using h_DB_tendsto.div h_B_tendsto (by norm_num : (5 : ℂ) ≠ 0)
   -- Finally: D(G)/G = D(A)/A + D(B)/B → 3/2 + 0 = 3/2
   have h_DG_G : ∀ z, A z ≠ 0 → B z ≠ 0 → D G z / G z = D A z / A z + D B z / B z := by
     intro z hA_ne hB_ne
