@@ -753,22 +753,23 @@ theorem D_G_div_G_tendsto :
   let B : ℍ → ℂ := fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2
   -- G = A * B
   have hG_eq : ∀ z, G z = A z * B z := fun z => rfl
-  -- MDifferentiability of A, B
+  -- MDifferentiability of A, B and their summands
   have hH₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 2) := by rw [pow_two]; exact hH₂.mul hH₂
   have hH₄sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 2) := by rw [pow_two]; exact hH₄.mul hH₄
   have hA : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A := hH₂sq.mul hH₂
-  have hB : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B := by
-    have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2) := by
-      have : (fun z => 2 * H₂ z ^ 2) = (2 : ℂ) • (H₂ ^ 2) := by ext z; simp [smul_eq_mul]
-      rw [this]; exact hH₂sq.const_smul 2
-    have h2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₂ z * H₄ z) := by
-      have : (fun z => 5 * H₂ z * H₄ z) = (5 : ℂ) • (H₂ * H₄) := by
-        ext z; simp [smul_eq_mul, mul_assoc]
-      rw [this]; exact (hH₂.mul hH₄).const_smul 5
-    have h3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₄ z ^ 2) := by
-      have : (fun z => 5 * H₄ z ^ 2) = (5 : ℂ) • (H₄ ^ 2) := by ext z; simp [smul_eq_mul]
-      rw [this]; exact hH₄sq.const_smul 5
-    exact (h1.add h2).add h3
+  have h_2H₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2) := by
+    have : (fun z => 2 * H₂ z ^ 2) = (2 : ℂ) • (H₂ ^ 2) := by ext z; simp [smul_eq_mul]
+    rw [this]; exact hH₂sq.const_smul 2
+  have h_5H₂H₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₂ z * H₄ z) := by
+    have : (fun z => 5 * H₂ z * H₄ z) = (5 : ℂ) • (H₂ * H₄) := by
+      ext z; simp [smul_eq_mul, mul_assoc]
+    rw [this]; exact (hH₂.mul hH₄).const_smul 5
+  have h_5H₄sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₄ z ^ 2) := by
+    have : (fun z => 5 * H₄ z ^ 2) = (5 : ℂ) • (H₄ ^ 2) := by ext z; simp [smul_eq_mul]
+    rw [this]; exact hH₄sq.const_smul 5
+  have h_2H₂sq_5H₂H₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z) :=
+    h_2H₂sq.add h_5H₂H₄
+  have hB : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B := (h_2H₂sq.add h_5H₂H₄).add h_5H₄sq
   -- D(A)/A = 3·D(H₂)/H₂
   have h_DA_A : ∀ z, H₂ z ≠ 0 → D A z / A z = 3 * (D H₂ z / H₂ z) := by
     intro z hH₂_ne
@@ -835,33 +836,11 @@ theorem D_G_div_G_tendsto :
       -- Put together using D_add
       have h_add1 : D (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w) z =
           D (fun w => 2 * H₂ w ^ 2) z + D (fun w => 5 * H₂ w * H₄ w) z := by
-        have hmd1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun w => 2 * H₂ w ^ 2) := by
-          have : (fun w => 2 * H₂ w ^ 2) = (2 : ℂ) • (H₂ ^ 2) := by ext w; simp [smul_eq_mul]
-          rw [this]; exact hH₂sq.const_smul 2
-        have hmd2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun w => 5 * H₂ w * H₄ w) := by
-          have : (fun w => 5 * H₂ w * H₄ w) = (5 : ℂ) • (H₂ * H₄) := by
-            ext w; simp [smul_eq_mul, mul_assoc]
-          rw [this]; exact (hH₂.mul hH₄).const_smul 5
-        simpa using congrFun (D_add (fun w => 2 * H₂ w ^ 2) (fun w => 5 * H₂ w * H₄ w) hmd1 hmd2) z
+        simpa using congrFun (D_add _ _ h_2H₂sq h_5H₂H₄) z
       have h_add2 : D B z = D (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w) z +
           D (fun w => 5 * H₄ w ^ 2) z := by
-        have hmd12 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w) := by
-          have hmd1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun w => 2 * H₂ w ^ 2) := by
-            have : (fun w => 2 * H₂ w ^ 2) = (2 : ℂ) • (H₂ ^ 2) := by ext w; simp [smul_eq_mul]
-            rw [this]; exact hH₂sq.const_smul 2
-          have hmd2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun w => 5 * H₂ w * H₄ w) := by
-            have : (fun w => 5 * H₂ w * H₄ w) = (5 : ℂ) • (H₂ * H₄) := by
-              ext w; simp [smul_eq_mul, mul_assoc]
-            rw [this]; exact (hH₂.mul hH₄).const_smul 5
-          exact hmd1.add hmd2
-        have hmd3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun w => 5 * H₄ w ^ 2) := by
-          have : (fun w => 5 * H₄ w ^ 2) = (5 : ℂ) • (H₄ ^ 2) := by ext w; simp [smul_eq_mul]
-          rw [this]; exact hH₄sq.const_smul 5
         have h_B_fn : B = fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w + 5 * H₄ w ^ 2 := rfl
-        have := congrFun (D_add (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w)
-          (fun w => 5 * H₄ w ^ 2) hmd12 hmd3) z
-        simp only [Pi.add_apply] at this
-        rw [h_B_fn]; exact this
+        simpa [h_B_fn] using congrFun (D_add _ _ h_2H₂sq_5H₂H₄ h_5H₄sq) z
       rw [h_add2, h_add1, h_term1, h_term2, h_term3]
     simp_rw [h_D_B]
     -- Now compute limits: all terms → 0
