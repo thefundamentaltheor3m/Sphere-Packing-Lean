@@ -51,44 +51,33 @@ theorem G_vanishing_order :
   convert (H₂_div_exp_tendsto.pow 3).mul h_poly
   norm_num
 
-/--
-Log-derivative limit for G: `(D G)/G → 3/2` as `z → i∞`.
-This follows from G having vanishing order 3/2: G ~ c·q^(3/2) where q = exp(2πiz).
-Taking logarithmic derivative: D(log G) = (D G)/G → 3/2.
--/
--- Helper: D(exp(πiz))/exp(πiz) = 1/2
--- This follows from D = (2πi)⁻¹·d/dz and d/dz(exp(πiz)) = πi·exp(πiz)
--- So D(exp(πiz)) = (2πi)⁻¹·πi·exp(πiz) = (1/2)·exp(πiz)
-theorem D_exp_pi_div_exp_pi (z : ℍ) :
-    D (fun w => cexp (π * Complex.I * w)) z / cexp (π * Complex.I * z) = 1 / 2 := by
-  -- D = (2πi)⁻¹·d/dz, and d/dz(exp(πiz)) = πi·exp(πiz)
-  -- So D(exp(πiz)) = (2πi)⁻¹·πi·exp(πiz) = (1/2)·exp(πiz)
-  -- Therefore D(exp(πiz))/exp(πiz) = 1/2
+/-- D(exp(c*z))/exp(c*z) = c/(2πi) for any coefficient c. -/
+theorem D_cexp_div (c : ℂ) (z : ℍ) :
+    D (fun w => cexp (c * w)) z / cexp (c * z) = c / (2 * π * I) := by
   simp only [D]
-  -- Compute deriv ((fun w : ℍ => cexp(π*I*w)) ∘ ofComplex) at (z : ℂ)
-  -- Uses: d/dz(exp(πiz)) = πi·exp(πiz), and ofComplex is identity on upper half plane
-  have h_deriv : deriv ((fun w : ℍ => cexp (π * Complex.I * w)) ∘ ⇑ofComplex) (z : ℂ) =
-      π * Complex.I * cexp (π * Complex.I * z) := by
-    -- Step 1: Compute derivative of (fun w => cexp(πIw)) using chain rule
-    have h_exp_deriv : HasDerivAt (fun w : ℂ => cexp (π * Complex.I * w))
-        (π * Complex.I * cexp (π * Complex.I * z)) (z : ℂ) := by
-      have h_at_piIz : HasDerivAt cexp (cexp (π * Complex.I * z)) (π * Complex.I * z) :=
-        Complex.hasDerivAt_exp (π * Complex.I * z)
-      have h_linear : HasDerivAt (fun w : ℂ => π * Complex.I * w) (π * Complex.I) (z : ℂ) := by
-        have h := (hasDerivAt_id (z : ℂ)).const_mul (π * Complex.I)
-        simp only [mul_one, id] at h
-        exact h
-      exact h_at_piIz.scomp (z : ℂ) h_linear
-    -- Step 2: Show the composed function equals the simple function in a neighborhood
-    have h_agree : ((fun w : ℍ => cexp (π * Complex.I * w)) ∘ ⇑ofComplex) =ᶠ[nhds (z : ℂ)]
-        (fun w : ℂ => cexp (π * Complex.I * w)) := by
-      have him : 0 < (z : ℂ).im := z.2
-      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_upperHalfPlaneSet
-      filter_upwards [h_open.mem_nhds him] with w hw
+  have h_deriv : deriv ((fun w : ℍ => cexp (c * w)) ∘ ⇑ofComplex) (z : ℂ) =
+      c * cexp (c * z) := by
+    have h_exp_deriv : HasDerivAt (fun w : ℂ => cexp (c * w))
+        (c * cexp (c * z)) (z : ℂ) := by
+      have h_at_arg : HasDerivAt cexp (cexp (c * z)) (c * z) := Complex.hasDerivAt_exp (c * z)
+      have h_linear : HasDerivAt (fun w : ℂ => c * w) c (z : ℂ) := by
+        simpa using (hasDerivAt_id (z : ℂ)).const_mul c
+      exact h_at_arg.scomp (z : ℂ) h_linear
+    have h_agree : ((fun w : ℍ => cexp (c * w)) ∘ ⇑ofComplex) =ᶠ[nhds (z : ℂ)]
+        (fun w : ℂ => cexp (c * w)) := by
+      filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.2] with w hw
       simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
     exact h_agree.deriv_eq.trans h_exp_deriv.deriv
   rw [h_deriv]
   field_simp [Complex.exp_ne_zero]
+
+-- Helper: D(exp(πiz))/exp(πiz) = 1/2
+theorem D_exp_pi_div_exp_pi (z : ℍ) :
+    D (fun w => cexp (π * Complex.I * w)) z / cexp (π * Complex.I * z) = 1 / 2 := by
+  have h := D_cexp_div (π * I) z
+  have hsimpl : π * I / (2 * π * I) = (1 : ℂ) / 2 := by field_simp
+  rw [hsimpl] at h
+  exact h
 
 -- Helper: D(jacobiTheta₂(z/2, z)) → 0 as im(z) → ∞
 -- jacobiTheta₂(z/2, z) = Σ_{n∈ℤ} exp(π·I·n·(n+1)·z)
@@ -296,33 +285,13 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
   simpa using tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
 
 -- Helper: D(exp(πiz/4))/exp(πiz/4) = 1/8
--- This follows from D = (2πi)⁻¹·d/dz and d/dz(exp(πiz/4)) = (πi/4)·exp(πiz/4)
--- So D(exp(πiz/4)) = (2πi)⁻¹·(πi/4)·exp(πiz/4) = (1/8)·exp(πiz/4)
 theorem D_exp_pi_quarter_div_exp_pi_quarter (z : ℍ) :
     D (fun w => cexp (π * Complex.I * w / 4)) z / cexp (π * Complex.I * z / 4) = 1 / 8 := by
-  simp only [D]
-  have h_deriv : deriv ((fun w : ℍ => cexp (π * Complex.I * w / 4)) ∘ ⇑ofComplex) (z : ℂ) =
-      (π * Complex.I / 4) * cexp (π * Complex.I * z / 4) := by
-    have h_exp_deriv : HasDerivAt (fun w : ℂ => cexp (π * Complex.I * w / 4))
-        ((π * Complex.I / 4) * cexp (π * Complex.I * z / 4)) (z : ℂ) := by
-      have h_at_arg : HasDerivAt cexp (cexp (π * Complex.I * z / 4)) (π * Complex.I * z / 4) :=
-        Complex.hasDerivAt_exp (π * Complex.I * z / 4)
-      have h_linear : HasDerivAt (fun w : ℂ => π * Complex.I * w / 4)
-          (π * Complex.I / 4) (z : ℂ) := by
-        have h := (hasDerivAt_id (z : ℂ)).const_mul (π * Complex.I / 4)
-        simp only [mul_one, id] at h
-        convert h using 1; ring_nf
-      exact h_at_arg.scomp (z : ℂ) h_linear
-    have h_agree : ((fun w : ℍ => cexp (π * Complex.I * w / 4)) ∘ ⇑ofComplex) =ᶠ[nhds (z : ℂ)]
-        (fun w : ℂ => cexp (π * Complex.I * w / 4)) := by
-      have him : 0 < (z : ℂ).im := z.2
-      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_upperHalfPlaneSet
-      filter_upwards [h_open.mem_nhds him] with w hw
-      simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
-    exact h_agree.deriv_eq.trans h_exp_deriv.deriv
-  rw [h_deriv]
-  field_simp [Complex.exp_ne_zero]
-  ring
+  have h := D_cexp_div (π * I / 4) z
+  simp only [show ∀ w : ℍ, (π * I / 4 : ℂ) * w = π * I * w / 4 from fun w => by ring] at h
+  have hsimpl : π * I / 4 / (2 * π * I) = (1 : ℂ) / 8 := by field_simp; ring
+  rw [hsimpl] at h
+  exact h
 
 -- Helper: D(Θ₂)/Θ₂ → 1/8 (since Θ₂ has vanishing order 1/8 in q = exp(2πiz))
 -- This follows from Θ₂/exp(πiz/4) → 2 and D(exp(πiz/4))/exp(πiz/4) = 1/8.
