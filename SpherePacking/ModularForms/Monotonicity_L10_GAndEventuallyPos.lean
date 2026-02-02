@@ -63,10 +63,8 @@ theorem D_cexp_div (c : ℂ) (z : ℍ) :
       have h_linear : HasDerivAt (fun w : ℂ => c * w) c (z : ℂ) := by
         simpa using (hasDerivAt_id (z : ℂ)).const_mul c
       exact h_at_arg.scomp (z : ℂ) h_linear
-    have h_agree : ((fun w : ℍ => cexp (c * w)) ∘ ⇑ofComplex) =ᶠ[nhds (z : ℂ)]
-        (fun w : ℂ => cexp (c * w)) := by
-      filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.2] with w hw
-      simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
+    have h_agree := (UpperHalfPlane.eventuallyEq_coe_comp_ofComplex z.2).fun_comp
+      (fun w => cexp (c * w))
     exact h_agree.deriv_eq.trans h_exp_deriv.deriv
   rw [h_deriv]
   field_simp [Complex.exp_ne_zero]
@@ -92,13 +90,12 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
     intro z
     simp only [D, Function.comp_def]
     congr 1
-    -- Key: coe ∘ ofComplex =ᶠ id near z (since im(z) > 0)
     have h_eq : (fun x => jacobiTheta₂ (↑(ofComplex x) / 2) (↑(ofComplex x) : ℂ)) =ᶠ[nhds (z : ℂ)]
         (fun x => jacobiTheta₂ (x / 2) x) := by
-      have him : 0 < (z : ℂ).im := z.2
-      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_upperHalfPlaneSet
-      filter_upwards [h_open.mem_nhds him] with w hw
-      simp only [ofComplex_apply_of_im_pos hw, coe_mk_subtype]
+      have h := UpperHalfPlane.eventuallyEq_coe_comp_ofComplex z.2
+      filter_upwards [h] with w hw
+      simp only [Function.comp_apply, id_eq] at hw
+      simp only [hw]
     rw [h_eq.deriv_eq]
     -- deriv jacobiTheta₂(t/2, t) at t = z
     -- By chain rule: ∂/∂z + (1/2)·∂/∂w applied to jacobiTheta₂(w, z)
