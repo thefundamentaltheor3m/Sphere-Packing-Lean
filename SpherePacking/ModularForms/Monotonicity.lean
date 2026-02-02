@@ -99,11 +99,8 @@ theorem Q_differentiableOn : DifferentiableOn ℝ Q (Set.Ioi 0) := by
   have hG_re_diff : DifferentiableAt ℝ (fun s => (G.resToImagAxis s).re) t :=
     Complex.reCLM.differentiableAt.comp t hG_diff
   -- G.resToImagAxis(t).re > 0, hence ≠ 0
-  have hG_pos := G_imag_axis_pos.2 t ht
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hG_pos
   have hG_ne_zero : (G.resToImagAxis t).re ≠ 0 := by
-    simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
-    exact ne_of_gt hG_pos
+    simpa [ResToImagAxis, ht] using ne_of_gt (G_imag_axis_pos.2 t ht)
   -- Quotient is differentiable
   have hQ_diff_at : DifferentiableAt ℝ
       (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) t :=
