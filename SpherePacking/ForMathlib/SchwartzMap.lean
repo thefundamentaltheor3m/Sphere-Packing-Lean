@@ -106,6 +106,10 @@ section SmoothCutoff
 
 open Real
 
+lemma log_of_two_le_1 : log 2 ≤ 1 := by
+  rw [log_le_iff_le_exp zero_lt_two, ← mul_one 2]
+  exact two_mul_le_exp
+
 lemma exists_smooth_cutoff_orig :
     ∃ f : ℝ → ℝ, ContDiff ℝ ∞ f ∧ (∀ x : ℝ, x ≤ -1 → f x = 0) ∧ (∀ x : ℝ, x ≥ 0 → f x = 1) := by
       let bump : ContDiffBump (0 : ℝ) := ⟨1, 2, one_pos, one_lt_two⟩
@@ -113,12 +117,9 @@ lemma exists_smooth_cutoff_orig :
       · intro x hx
         apply bump.zero_of_le_dist
         simp only [bump, Function.comp_apply, dist_zero_right, norm_eq_abs, abs_exp]
-        rw [← log_le_iff_le_exp (by norm_num)]
-        apply le_trans _ (le_neg_of_le_neg hx)
-        rw [log_le_iff_le_exp (by norm_num), ← mul_one 2]
-        exact two_mul_le_exp
+        rw [← log_le_iff_le_exp zero_lt_two]
+        exact le_trans log_of_two_le_1 (le_neg_of_le_neg hx)
       · exact fun _ _ ↦ bump.one_of_mem_closedBall (by simpa [bump])
-
 
 end SmoothCutoff
 
