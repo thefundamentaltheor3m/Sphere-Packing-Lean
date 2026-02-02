@@ -294,9 +294,7 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
                 exact mul_le_mul_of_nonneg_right this (le_of_lt hpos)
             convert h1 using 2
         _ = 3 * π * ↑|k| ^ 2 * rexp (-π * (1 * ↑k ^ 2 - 1 * ↑|k|)) := by ring_nf
-  have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
-  simp only [mul_zero] at h_mul
-  exact h_mul
+  simpa using tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
 
 -- Helper: D(exp(πiz/4))/exp(πiz/4) = 1/8
 -- This follows from D = (2πi)⁻¹·d/dz and d/dz(exp(πiz/4)) = (πi/4)·exp(πiz/4)
@@ -696,9 +694,7 @@ theorem D_Θ₄_tendsto_zero :
               _ ≤ (-π * 1) * (k : ℝ) ^ 2 := mul_le_mul_of_nonneg_right h1 hk_sq_nonneg
               _ = -π * 1 * (k : ℝ) ^ 2 := by ring
         _ = 3 * π * ↑|k| ^ 2 * rexp (-π * ↑k ^ 2) := by ring_nf
-  have h_mul := tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
-  simp only [mul_zero] at h_mul
-  exact h_mul
+  simpa using tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
 
 -- Helper: D(H₄) → 0 (since D(Θ₄) → 0 and Θ₄ → 1)
 theorem D_H₄_tendsto_zero :
