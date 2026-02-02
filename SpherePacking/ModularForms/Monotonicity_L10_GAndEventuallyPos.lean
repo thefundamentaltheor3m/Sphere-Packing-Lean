@@ -74,10 +74,7 @@ theorem D_cexp_div (c : ℂ) (z : ℍ) :
 -- Helper: D(exp(πiz))/exp(πiz) = 1/2
 theorem D_exp_pi_div_exp_pi (z : ℍ) :
     D (fun w => cexp (π * Complex.I * w)) z / cexp (π * Complex.I * z) = 1 / 2 := by
-  have h := D_cexp_div (π * I) z
-  have hsimpl : π * I / (2 * π * I) = (1 : ℂ) / 2 := by field_simp
-  rw [hsimpl] at h
-  exact h
+  simpa [show π * I / (2 * π * I) = (1 : ℂ) / 2 by field_simp] using D_cexp_div (π * I) z
 
 -- Helper: D(jacobiTheta₂(z/2, z)) → 0 as im(z) → ∞
 -- jacobiTheta₂(z/2, z) = Σ_{n∈ℤ} exp(π·I·n·(n+1)·z)
@@ -288,9 +285,8 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
 theorem D_exp_pi_quarter_div_exp_pi_quarter (z : ℍ) :
     D (fun w => cexp (π * Complex.I * w / 4)) z / cexp (π * Complex.I * z / 4) = 1 / 8 := by
   have h := D_cexp_div (π * I / 4) z
-  simp only [show ∀ w : ℍ, (π * I / 4 : ℂ) * w = π * I * w / 4 from fun w => by ring] at h
-  have hsimpl : π * I / 4 / (2 * π * I) = (1 : ℂ) / 8 := by field_simp; ring
-  rw [hsimpl] at h
+  simp only [show ∀ w : ℍ, (π * I / 4 : ℂ) * w = π * I * w / 4 from fun w => by ring,
+    show π * I / 4 / (2 * π * I) = (1 : ℂ) / 8 by field_simp; ring] at h
   exact h
 
 -- Helper: D(Θ₂)/Θ₂ → 1/8 (since Θ₂ has vanishing order 1/8 in q = exp(2πiz))
