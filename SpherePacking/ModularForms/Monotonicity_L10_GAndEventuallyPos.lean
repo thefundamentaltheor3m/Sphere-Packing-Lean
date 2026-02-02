@@ -88,8 +88,7 @@ theorem D_exp_pi_div_exp_pi (z : ℍ) :
       simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
     exact h_agree.deriv_eq.trans h_exp_deriv.deriv
   rw [h_deriv]
-  have h_exp_ne : cexp (π * Complex.I * z) ≠ 0 := Complex.exp_ne_zero _
-  field_simp [h_exp_ne]
+  field_simp [Complex.exp_ne_zero]
 
 -- Helper: D(jacobiTheta₂(z/2, z)) → 0 as im(z) → ∞
 -- jacobiTheta₂(z/2, z) = Σ_{n∈ℤ} exp(π·I·n·(n+1)·z)
@@ -322,8 +321,7 @@ theorem D_exp_pi_quarter_div_exp_pi_quarter (z : ℍ) :
       simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
     exact h_agree.deriv_eq.trans h_exp_deriv.deriv
   rw [h_deriv]
-  have h_exp_ne : cexp (π * Complex.I * z / 4) ≠ 0 := Complex.exp_ne_zero _
-  field_simp [h_exp_ne]
+  field_simp [Complex.exp_ne_zero]
   ring
 
 -- Helper: D(Θ₂)/Θ₂ → 1/8 (since Θ₂ has vanishing order 1/8 in q = exp(2πiz))
