@@ -279,6 +279,16 @@ theorem D_exp_pi_quarter_div_exp_pi_quarter (z : ℍ) :
   simpa only [show ∀ w : ℍ, (π * I / 4 : ℂ) * w = π * I * w / 4 from fun w => by ring,
     show π * I / 4 / (2 * π * I) = (1 : ℂ) / 8 by field_simp; ring] using D_cexp_div (π * I / 4) z
 
+/-- Differentiability of t ↦ jacobiTheta₂(t/2, t) at points in the upper half-plane. -/
+lemma differentiableAt_jacobiTheta₂_half (τ : ℍ) :
+    DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) τ.val := by
+  let f : ℂ → ℂ × ℂ := fun t => (t / 2, t)
+  have hf : DifferentiableAt ℂ f τ.val :=
+    (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
+  have hg : DifferentiableAt ℂ (fun p : ℂ × ℂ => jacobiTheta₂ p.1 p.2) (f τ.val) := by
+    simpa [f] using (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
+  simpa [f] using hg.comp τ.val hf
+
 -- Helper: D(Θ₂)/Θ₂ → 1/8 (since Θ₂ has vanishing order 1/8 in q = exp(2πiz))
 -- This follows from Θ₂/exp(πiz/4) → 2 and D(exp(πiz/4))/exp(πiz/4) = 1/8.
 -- The vanishing order is preserved under taking logarithmic derivatives.
@@ -348,18 +358,9 @@ theorem D_Θ₂_div_Θ₂_tendsto :
         -- Use the same proof pattern as in hΘ₂_holo below
         have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
         let F : ℂ → ℂ := fun t => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t
-        have hF : DifferentiableAt ℂ F τ.val := by
-          have h_exp : DifferentiableAt ℂ (fun t : ℂ => cexp ((π * I / 4) * t)) τ.val :=
-            (differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp
-          have h_theta : DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) τ.val := by
-            let f' : ℂ → ℂ × ℂ := fun t : ℂ => (t / 2, t)
-            let g : ℂ × ℂ → ℂ := fun p => jacobiTheta₂ p.1 p.2
-            have hg : DifferentiableAt ℂ g (f' τ.val) :=
-              (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
-            have hf' : DifferentiableAt ℂ f' τ.val :=
-              (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
-            exact hg.comp τ.val hf'
-          exact h_exp.mul h_theta
+        have hF : DifferentiableAt ℂ F τ.val :=
+          ((differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp).mul
+            (differentiableAt_jacobiTheta₂_half τ)
         have h_ev : F =ᶠ[nhds τ.val] (Θ₂ ∘ ofComplex) := by
           refine Filter.eventually_of_mem hU ?_
           intro z hz
@@ -436,18 +437,9 @@ theorem D_H₂_div_H₂_tendsto :
         have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
         -- Define the function on ℂ
         let F : ℂ → ℂ := fun t => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t
-        have hF : DifferentiableAt ℂ F τ.val := by
-          have h_exp : DifferentiableAt ℂ (fun t : ℂ => cexp ((π * I / 4) * t)) τ.val := by
-            exact (differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp
-          have h_theta : DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) τ.val := by
-            let f : ℂ → ℂ × ℂ := fun t : ℂ => (t / 2, t)
-            let g : ℂ × ℂ → ℂ := fun p => jacobiTheta₂ p.1 p.2
-            have hg : DifferentiableAt ℂ g (f τ.val) := by
-              simpa [f] using (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
-            have hf : DifferentiableAt ℂ f τ.val :=
-              (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
-            simpa [f, g] using (DifferentiableAt.fun_comp' τ.1 hg hf)
-          exact h_exp.mul h_theta
+        have hF : DifferentiableAt ℂ F τ.val :=
+          ((differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp).mul
+            (differentiableAt_jacobiTheta₂_half τ)
         have h_ev : F =ᶠ[nhds τ.val] (Θ₂ ∘ ofComplex) := by
           refine Filter.eventually_of_mem hU ?_
           intro z hz
