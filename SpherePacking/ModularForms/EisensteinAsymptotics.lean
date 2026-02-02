@@ -216,20 +216,40 @@ def serre_DE₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
 
 /-! ## Limit of serre_D at infinity (for determining scalar) -/
 
-/-- General limit: if `f → 1` at i∞ and f is holomorphic and bounded, then `serre_D k f → -k/12`. -/
-lemma serre_D_tendsto_neg_k_div_12 (k : ℤ) (f : ℍ → ℂ)
+/-- General limit: if `f → c` at i∞ and f is holomorphic and bounded, then `serre_D k f → -k*c/12`.
+
+This is the continuous mapping theorem applied to `serre_D k f = D f - (k/12) * E₂ * f`:
+- D f → 0 (Cauchy estimate from boundedness)
+- E₂ → 1
+- f → c
+Therefore `serre_D k f → 0 - (k/12) * 1 * c = -k*c/12`. -/
+lemma serre_D_tendsto_of_tendsto (k : ℤ) (f : ℍ → ℂ) (c : ℂ)
     (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
-    (hf_lim : Filter.Tendsto f atImInfty (nhds 1)) :
-    Filter.Tendsto (serre_D k f) atImInfty (nhds (-(k : ℂ) / 12)) := by
+    (hf_lim : Filter.Tendsto f atImInfty (nhds c)) :
+    Filter.Tendsto (serre_D k f) atImInfty (nhds (-(k : ℂ) * c / 12)) := by
   rw [show serre_D k f = fun z => D f z - (k : ℂ) * 12⁻¹ * E₂ z * f z from serre_D_eq k f]
   have hD := D_tendsto_zero_of_tendsto_const hf_holo hf_bdd
   have hprod := E₂_tendsto_one_atImInfty.mul hf_lim
-  have hlim : (0 : ℂ) - (k : ℂ) * 12⁻¹ * 1 * 1 = -(k : ℂ) / 12 := by ring
+  have hlim : (0 : ℂ) - (k : ℂ) * 12⁻¹ * 1 * c = -(k : ℂ) * c / 12 := by ring
   rw [← hlim]
   refine hD.sub ?_
   have hconst : Filter.Tendsto (fun _ : ℍ => (k : ℂ) * 12⁻¹)
       atImInfty (nhds ((k : ℂ) * 12⁻¹)) := tendsto_const_nhds
   convert hconst.mul hprod using 1 <;> ring_nf
+
+/-- Special case: if `f → 1` at i∞, then `serre_D k f → -k/12`. -/
+lemma serre_D_tendsto_neg_k_div_12 (k : ℤ) (f : ℍ → ℂ)
+    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_lim : Filter.Tendsto f atImInfty (nhds 1)) :
+    Filter.Tendsto (serre_D k f) atImInfty (nhds (-(k : ℂ) / 12)) := by
+  simpa using serre_D_tendsto_of_tendsto k f 1 hf_holo hf_bdd hf_lim
+
+/-- Special case: if `f → 0` at i∞, then `serre_D k f → 0`. -/
+lemma serre_D_tendsto_zero_of_tendsto_zero (k : ℤ) (f : ℍ → ℂ)
+    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_lim : Filter.Tendsto f atImInfty (nhds 0)) :
+    Filter.Tendsto (serre_D k f) atImInfty (nhds 0) := by
+  simpa using serre_D_tendsto_of_tendsto k f 0 hf_holo hf_bdd hf_lim
 
 /-- serre_D 4 E₄ → -1/3 at i∞. -/
 lemma serre_DE₄_tendsto_atImInfty :
