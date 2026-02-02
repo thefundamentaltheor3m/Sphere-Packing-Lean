@@ -848,7 +848,7 @@ theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
   have hDF := D_real_of_real F_imag_axis_real F_holo t ht
   have hDG := D_real_of_real G_imag_axis_real G_holo t ht
   simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hF hG hDF hDG
-  simp only [sub_im, mul_im, hF, hG, hDF, hDG, mul_zero, zero_mul, add_zero, sub_zero]
+  simp [sub_im, mul_im, hF, hG, hDF, hDG]
 
 /--
 `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`.
