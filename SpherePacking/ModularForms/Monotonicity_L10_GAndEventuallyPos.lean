@@ -819,7 +819,7 @@ theorem D_G_div_G_tendsto :
         have h2 : D ((2 : ℂ) • (H₂ ^ 2)) z = 2 * D (H₂ ^ 2) z := by
           rw [D_smul 2 (H₂ ^ 2) hH₂sq]; simp
         have h3 : D (H₂ ^ 2) z = 2 * H₂ z * D H₂ z := by
-          have := congrFun (D_sq H₂ hH₂) z; simp only [Pi.mul_apply] at this; exact this
+          simpa using congrFun (D_sq H₂ hH₂) z
         rw [h1, h2, h3]; ring
       -- D(5H₂H₄) = 5 · (H₂ · D(H₄) + D(H₂) · H₄)
       have h_term2 : D (fun w => 5 * H₂ w * H₄ w) z = 5 * (H₂ z * D H₄ z + D H₂ z * H₄ z) := by
@@ -828,8 +828,7 @@ theorem D_G_div_G_tendsto :
         have h2 : D ((5 : ℂ) • (H₂ * H₄)) z = 5 * D (H₂ * H₄) z := by
           rw [D_smul 5 (H₂ * H₄) (hH₂.mul hH₄)]; simp
         have h3 : D (H₂ * H₄) z = D H₂ z * H₄ z + H₂ z * D H₄ z := by
-          have := congrFun (D_mul H₂ H₄ hH₂ hH₄) z; simp only [Pi.add_apply, Pi.mul_apply] at this
-          exact this
+          simpa using congrFun (D_mul H₂ H₄ hH₂ hH₄) z
         rw [h1, h2, h3]; ring
       -- D(5H₄²) = 10H₄ · D(H₄)
       have h_term3 : D (fun w => 5 * H₄ w ^ 2) z = 10 * H₄ z * D H₄ z := by
@@ -837,7 +836,7 @@ theorem D_G_div_G_tendsto :
         have h2 : D ((5 : ℂ) • (H₄ ^ 2)) z = 5 * D (H₄ ^ 2) z := by
           rw [D_smul 5 (H₄ ^ 2) hH₄sq]; simp
         have h3 : D (H₄ ^ 2) z = 2 * H₄ z * D H₄ z := by
-          have := congrFun (D_sq H₄ hH₄) z; simp only [Pi.mul_apply] at this; exact this
+          simpa using congrFun (D_sq H₄ hH₄) z
         rw [h1, h2, h3]; ring
       -- Put together using D_add
       have h_add1 : D (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w) z =
@@ -849,8 +848,7 @@ theorem D_G_div_G_tendsto :
           have : (fun w => 5 * H₂ w * H₄ w) = (5 : ℂ) • (H₂ * H₄) := by
             ext w; simp [smul_eq_mul, mul_assoc]
           rw [this]; exact (hH₂.mul hH₄).const_smul 5
-        have := congrFun (D_add (fun w => 2 * H₂ w ^ 2) (fun w => 5 * H₂ w * H₄ w) hmd1 hmd2) z
-        simp only [Pi.add_apply] at this; exact this
+        simpa using congrFun (D_add (fun w => 2 * H₂ w ^ 2) (fun w => 5 * H₂ w * H₄ w) hmd1 hmd2) z
       have h_add2 : D B z = D (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w) z +
           D (fun w => 5 * H₄ w ^ 2) z := by
         have hmd12 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w) := by
@@ -883,8 +881,7 @@ theorem D_G_div_G_tendsto :
       have h_sub1 := H₂_tendsto_atImInfty.mul D_H₄_tendsto_zero
       have h_sub2 := D_H₂_tendsto_zero.mul H₄_tendsto_atImInfty
       simp only [zero_mul, mul_zero] at h_sub1 h_sub2
-      have := (tendsto_const_nhds (x := (5 : ℂ))).mul (h_sub1.add h_sub2)
-      simp only [add_zero, mul_zero] at this; exact this
+      simpa using (tendsto_const_nhds (x := (5 : ℂ))).mul (h_sub1.add h_sub2)
     have h_t3 : Filter.Tendsto (fun z => 10 * H₄ z * D H₄ z) atImInfty (nhds 0) := by
       have := (tendsto_const_nhds (x := (10 : ℂ))).mul
         (H₄_tendsto_atImInfty.mul D_H₄_tendsto_zero)
