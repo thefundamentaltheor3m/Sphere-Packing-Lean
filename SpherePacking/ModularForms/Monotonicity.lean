@@ -129,21 +129,14 @@ Proof structure:
 theorem deriv_Q (t : ℝ) (ht : 0 < t) :
     deriv Q t = (-2 * π) * (L₁₀ ⟨Complex.I * t, by simp [ht]⟩).re /
       (G ⟨Complex.I * t, by simp [ht]⟩).re ^ 2 := by
-  -- Helper: z = I * t on the upper half-plane
   set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩ with hz_def
-  -- Differentiability of real parts
-  have hF_diff : DifferentiableAt ℝ F.resToImagAxis t := ResToImagAxis.Differentiable F F_holo t ht
-  have hG_diff : DifferentiableAt ℝ G.resToImagAxis t := ResToImagAxis.Differentiable G G_holo t ht
-  have hF_re_diff : DifferentiableAt ℝ (fun s => (F.resToImagAxis s).re) t :=
-    Complex.reCLM.differentiableAt.comp t hF_diff
-  have hG_re_diff : DifferentiableAt ℝ (fun s => (G.resToImagAxis s).re) t :=
-    Complex.reCLM.differentiableAt.comp t hG_diff
+  -- Get HasDerivAt for real parts of F and G on imaginary axis
+  have hF_deriv := hasDerivAt_resToImagAxis_re F_holo ht
+  have hG_deriv := hasDerivAt_resToImagAxis_re G_holo ht
   -- G(it).re > 0, hence ≠ 0
-  have hG_pos : 0 < (G z).re := by
-    have h := G_imag_axis_pos.2 t ht
-    simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at h
-    exact h
-  have hG_ne : (G z).re ≠ 0 := ne_of_gt hG_pos
+  have hG_pos : 0 < (G z).re := by simpa [ResToImagAxis, ht] using G_imag_axis_pos.2 t ht
+  have hG_ne : (G.resToImagAxis t).re ≠ 0 := by
+    simpa [ResToImagAxis, ht, hz_def] using ne_of_gt hG_pos
   -- Q equals F.re / G.re locally
   have hQ_eq : Q =ᶠ[nhds t] (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) := by
     filter_upwards [lt_mem_nhds ht] with s hs
@@ -153,43 +146,18 @@ theorem deriv_Q (t : ℝ) (ht : 0 < t) :
   have hdiv : deriv (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) t =
       (deriv (fun s => (F.resToImagAxis s).re) t * (G.resToImagAxis t).re -
        (F.resToImagAxis t).re * deriv (fun s => (G.resToImagAxis s).re) t) /
-      (G.resToImagAxis t).re ^ 2 := by
-    have hG_ne' : (G.resToImagAxis t).re ≠ 0 := by
-      simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
-      simp only [hz_def] at hG_ne
-      exact hG_ne
-    exact deriv_div hF_re_diff hG_re_diff hG_ne'
-  rw [hdiv]
-  -- Derivative of real part equals real part of derivative for F, G
-  -- Using HasFDerivAt.comp_hasDerivAt: deriv (reCLM ∘ h) = reCLM ∘ deriv h
-  have hF_deriv_re : deriv (fun s => (F.resToImagAxis s).re) t =
-      (deriv F.resToImagAxis t).re :=
-    (Complex.reCLM.hasFDerivAt.comp_hasDerivAt t hF_diff.hasDerivAt).deriv
-  have hG_deriv_re : deriv (fun s => (G.resToImagAxis s).re) t =
-      (deriv G.resToImagAxis t).re :=
-    (Complex.reCLM.hasFDerivAt.comp_hasDerivAt t hG_diff.hasDerivAt).deriv
-  -- Apply chain rule for resToImagAxis
-  rw [hF_deriv_re, hG_deriv_re, deriv_resToImagAxis_eq F F_holo ht,
-      deriv_resToImagAxis_eq G G_holo ht]
+      (G.resToImagAxis t).re ^ 2 :=
+    deriv_div hF_deriv.differentiableAt hG_deriv.differentiableAt hG_ne
+  rw [hdiv, hF_deriv.deriv, hG_deriv.deriv]
   -- Simplify using realness on imaginary axis
   simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, hz_def]
-  -- F and G are real on the imaginary axis
   have hF_real := F_imag_axis_real t ht
   have hG_real := G_imag_axis_real t ht
   simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hF_real hG_real
-  -- Use L₁₀ definition: L₁₀ = D F · G - F · D G
   have hL₁₀ := L₁₀_eq_FD_G_sub_F_DG z
-  -- Simplify: (-2 * π : ℂ).im = 0 since π is real
-  have h2pi_im : (-2 * (π : ℂ)).im = 0 := by simp
-  have h2_re : (-2 : ℂ).re = -2 := by simp
-  -- Unfold z
   simp only [hz_def] at hL₁₀ hF_real hG_real
-  -- Final simplification
-  simp only [mul_re, ofReal_re, ofReal_im, mul_zero, sub_zero, h2pi_im, h2_re]
   rw [hL₁₀]
-  simp only [mul_re, sub_re]
-  -- Since F.im = G.im = 0
-  simp only [hF_real, hG_real, mul_zero, sub_zero, zero_mul]
+  simp only [mul_re, sub_re, hF_real, hG_real, mul_zero, sub_zero, zero_mul]
   ring
 
 /--
@@ -201,12 +169,7 @@ theorem deriv_Q_neg (t : ℝ) (ht : 0 < t) : deriv Q t < 0 := by
   have hL := L₁₀_pos_imag_axis.2 t ht
   have hG := G_imag_axis_pos.2 t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hL hG
-  -- (-2π) * (positive) / (positive)² < 0
-  apply div_neg_of_neg_of_pos
-  · apply mul_neg_of_neg_of_pos
-    · simp [pi_pos]
-    · exact hL
-  · exact sq_pos_of_pos hG
+  exact div_neg_of_neg_of_pos (by nlinarith [Real.pi_pos]) (by positivity)
 
 /--
 **Proposition 8.12**: `Q` is strictly decreasing on `(0, ∞)`.

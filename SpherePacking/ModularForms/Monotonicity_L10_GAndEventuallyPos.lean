@@ -944,57 +944,17 @@ theorem D_G_div_G_tendsto :
   exact (h_DG_G z hA hB).symm
 
 /--
-If `F` is real on the imaginary axis and MDifferentiable, then `D F` is also real on
-the imaginary axis.
--/
-theorem D_imag_axis_real_of_imag_axis_real {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
-    (hreal : ResToImagAxis.Real F) : ResToImagAxis.Real (D F) := by
-  intro t ht
-  have hderiv := deriv_resToImagAxis_eq F hF ht
-  have hDiff : DifferentiableAt ℝ F.resToImagAxis t := ResToImagAxis.Differentiable F hF t ht
-  have h := Complex.imCLM.hasFDerivAt.comp_hasDerivAt t hDiff.hasDerivAt
-  have hderiv_im : (deriv F.resToImagAxis t).im = 0 := by
-    have : (Complex.imCLM ∘ F.resToImagAxis) = fun _ => 0 := by
-      ext s
-      simp only [Function.comp_apply, Complex.imCLM_apply]
-      by_cases hs : 0 < s
-      · exact hreal s hs
-      · simp only [Function.resToImagAxis_apply, ResToImagAxis, hs, ↓reduceDIte, zero_im]
-    rw [show (deriv F.resToImagAxis t).im = Complex.imCLM (deriv F.resToImagAxis t) from rfl]
-    rw [← h.deriv, this, deriv_const']
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
-  have h2 : (-2 * ↑π * (D F ⟨I * ↑t, by simp [ht]⟩)).im = (deriv F.resToImagAxis t).im := by
-    rw [hderiv]
-    simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
-  have hsimp : (-2 * ↑π * D F ⟨I * ↑t, by simp [ht]⟩).im =
-      -2 * π * (D F ⟨I * ↑t, by simp [ht]⟩).im := by
-    simp only [neg_mul, neg_im, mul_comm (2 : ℂ), mul_assoc]
-    rw [mul_im, mul_im]
-    simp only [ofReal_re, ofReal_im, zero_mul, add_zero]
-    ring
-  rw [hsimp, hderiv_im] at h2
-  have hcoef : -2 * π ≠ 0 := by positivity
-  exact mul_eq_zero.mp h2 |>.resolve_left hcoef
-
-/--
 `L₁,₀(it)` is real for all `t > 0`.
 -/
 theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
   intro t ht
-  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
-  have hL₁₀ := L₁₀_eq_FD_G_sub_F_DG z
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
-  rw [hL₁₀]
-  have hF_real := F_imag_axis_real t ht
-  have hG_real := G_imag_axis_real t ht
-  have hDF_real := D_imag_axis_real_of_imag_axis_real F_holo F_imag_axis_real t ht
-  have hDG_real := D_imag_axis_real_of_imag_axis_real G_holo G_imag_axis_real t ht
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte]
-    at hF_real hG_real hDF_real hDG_real
-  simp only [sub_im, mul_im]
-  have hz : z = ⟨I * ↑t, by simp [ht]⟩ := rfl
-  rw [hz]
-  simp only [hG_real, mul_zero, hDF_real, zero_mul, add_zero, hDG_real, hF_real, sub_zero]
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, L₁₀_eq_FD_G_sub_F_DG]
+  have hF := F_imag_axis_real t ht
+  have hG := G_imag_axis_real t ht
+  have hDF := D_real_of_real F_imag_axis_real F_holo t ht
+  have hDG := D_real_of_real G_imag_axis_real G_holo t ht
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hF hG hDF hDG
+  simp only [sub_im, mul_im, hF, hG, hDF, hDG, mul_zero, zero_mul, add_zero, sub_zero]
 
 /--
 `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`.
