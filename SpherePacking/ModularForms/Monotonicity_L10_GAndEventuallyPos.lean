@@ -83,7 +83,7 @@ theorem D_exp_pi_div_exp_pi (z : ℍ) :
     have h_agree : ((fun w : ℍ => cexp (π * Complex.I * w)) ∘ ⇑ofComplex) =ᶠ[nhds (z : ℂ)]
         (fun w : ℂ => cexp (π * Complex.I * w)) := by
       have him : 0 < (z : ℂ).im := z.2
-      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
+      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_upperHalfPlaneSet
       filter_upwards [h_open.mem_nhds him] with w hw
       simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
     exact h_agree.deriv_eq.trans h_exp_deriv.deriv
@@ -111,7 +111,7 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
     have h_eq : (fun x => jacobiTheta₂ (↑(ofComplex x) / 2) (↑(ofComplex x) : ℂ)) =ᶠ[nhds (z : ℂ)]
         (fun x => jacobiTheta₂ (x / 2) x) := by
       have him : 0 < (z : ℂ).im := z.2
-      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
+      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_upperHalfPlaneSet
       filter_upwards [h_open.mem_nhds him] with w hw
       simp only [ofComplex_apply_of_im_pos hw, coe_mk_subtype]
     rw [h_eq.deriv_eq]
@@ -319,7 +319,7 @@ theorem D_exp_pi_quarter_div_exp_pi_quarter (z : ℍ) :
     have h_agree : ((fun w : ℍ => cexp (π * Complex.I * w / 4)) ∘ ⇑ofComplex) =ᶠ[nhds (z : ℂ)]
         (fun w : ℂ => cexp (π * Complex.I * w / 4)) := by
       have him : 0 < (z : ℂ).im := z.2
-      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_lt continuous_const Complex.continuous_im
+      have h_open : IsOpen {w : ℂ | 0 < w.im} := isOpen_upperHalfPlaneSet
       filter_upwards [h_open.mem_nhds him] with w hw
       simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
     exact h_agree.deriv_eq.trans h_exp_deriv.deriv
