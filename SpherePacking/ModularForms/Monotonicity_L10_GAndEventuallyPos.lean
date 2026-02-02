@@ -143,10 +143,7 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
         have hprod := h1.prodMk h2
         convert hprod.hasFDerivAt using 1
         ext : 1
-        simp only [f', ContinuousLinearMap.coe_mk', LinearMap.coe_mk, AddHom.coe_mk,
-          ContinuousLinearMap.smulRight_apply, ContinuousLinearMap.one_apply,
-          Prod.smul_mk, smul_eq_mul, mul_one, Prod.mk.injEq]
-        exact ⟨(one_mul _).symm, trivial⟩
+        simp only [ContinuousLinearMap.toSpanSingleton_apply, one_smul, hf_1]
       -- Fréchet derivative of g at f(z)
       have hf_val : f (z : ℂ) = ((z : ℂ) / 2, (z : ℂ)) := by simp [f]
       have hg : HasFDerivAt g (jacobiTheta₂_fderiv ((z : ℂ) / 2) z) (f (z : ℂ)) := by
