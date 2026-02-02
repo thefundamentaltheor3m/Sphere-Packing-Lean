@@ -937,21 +937,11 @@ lemma G_functional_eq_real {s : ℝ} (hs : 0 < s) :
         + 5 * (H₂.resToImagAxis s).re ^ 2) := by
   -- From G_functional_equation' and the fact that H₂, H₄ are real on imaginary axis
   have hG := G_functional_equation' hs
-  -- H₂ and H₄ are real on imaginary axis, so they equal their real parts
   have hH₂_eq := ResToImagAxis.Real.eq_real_part H₂_imag_axis_real s
   have hH₄_eq := ResToImagAxis.Real.eq_real_part H₄_imag_axis_real s
-  -- The RHS of G_functional_equation' has complex values that equal their real parts
-  set x := (H₄.resToImagAxis s).re with hx_def
-  set y := (H₂.resToImagAxis s).re with hy_def
-  -- Convert: H₄.resToImagAxis s = ↑x and H₂.resToImagAxis s = ↑y
-  have hH₄_x : H₄.resToImagAxis s = (x : ℂ) := hH₄_eq
-  have hH₂_y : H₂.resToImagAxis s = (y : ℂ) := hH₂_eq
-  rw [hH₂_y, hH₄_x] at hG
-  -- Now hG : (GReal (1/s) : ℂ) = (s : ℂ)^10 * (x : ℂ)^3 * (...)
-  -- Convert to real equality using the fact that ↑a = ↑b implies a = b
+  rw [hH₂_eq, hH₄_eq] at hG
   apply Complex.ofReal_injective
   convert hG using 1
-  -- Show: ↑(s ^ 10 * x ^ 3 * (...)) = (s : ℂ) ^ 10 * (x : ℂ) ^ 3 * (...)
   push_cast
   ring
 
@@ -971,10 +961,6 @@ Proof outline (following blueprint Lemma 8.8):
 -/
 theorem FmodG_rightLimitAt_zero :
     Tendsto FmodGReal (nhdsWithin 0 (Set.Ioi 0)) (nhds (18 * (π ^ (-2 : ℤ)))) := by
-  -- Main strategy: change of variables t → 1/s, where t → 0⁺ becomes s → ∞
-  -- Then use functional equations to express FmodGReal(1/s) in terms of values at s
-  -- and compute the limit as s → ∞
-
   -- Step 1: Establish the limit of numerator and denominator expressions
   have hNum := numerator_tendsto_at_infty
   have hDen := denominator_tendsto_at_infty
