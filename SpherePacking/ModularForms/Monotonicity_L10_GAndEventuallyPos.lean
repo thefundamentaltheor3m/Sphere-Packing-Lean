@@ -284,10 +284,8 @@ theorem D_jacobiTheta₂_half_mul_tendsto_zero :
 -- Helper: D(exp(πiz/4))/exp(πiz/4) = 1/8
 theorem D_exp_pi_quarter_div_exp_pi_quarter (z : ℍ) :
     D (fun w => cexp (π * Complex.I * w / 4)) z / cexp (π * Complex.I * z / 4) = 1 / 8 := by
-  have h := D_cexp_div (π * I / 4) z
-  simp only [show ∀ w : ℍ, (π * I / 4 : ℂ) * w = π * I * w / 4 from fun w => by ring,
-    show π * I / 4 / (2 * π * I) = (1 : ℂ) / 8 by field_simp; ring] at h
-  exact h
+  simpa only [show ∀ w : ℍ, (π * I / 4 : ℂ) * w = π * I * w / 4 from fun w => by ring,
+    show π * I / 4 / (2 * π * I) = (1 : ℂ) / 8 by field_simp; ring] using D_cexp_div (π * I / 4) z
 
 -- Helper: D(Θ₂)/Θ₂ → 1/8 (since Θ₂ has vanishing order 1/8 in q = exp(2πiz))
 -- This follows from Θ₂/exp(πiz/4) → 2 and D(exp(πiz/4))/exp(πiz/4) = 1/8.
