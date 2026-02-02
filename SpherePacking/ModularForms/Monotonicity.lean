@@ -90,26 +90,16 @@ Key steps:
 theorem Q_differentiableOn : DifferentiableOn ℝ Q (Set.Ioi 0) := by
   intro t ht
   simp only [Set.mem_Ioi] at ht
-  -- F.resToImagAxis and G.resToImagAxis are differentiable at t
-  have hF_diff : DifferentiableAt ℝ F.resToImagAxis t := ResToImagAxis.Differentiable F F_holo t ht
-  have hG_diff : DifferentiableAt ℝ G.resToImagAxis t := ResToImagAxis.Differentiable G G_holo t ht
-  -- Their real parts are also differentiable
-  have hF_re_diff : DifferentiableAt ℝ (fun s => (F.resToImagAxis s).re) t :=
-    Complex.reCLM.differentiableAt.comp t hF_diff
-  have hG_re_diff : DifferentiableAt ℝ (fun s => (G.resToImagAxis s).re) t :=
-    Complex.reCLM.differentiableAt.comp t hG_diff
-  -- G.resToImagAxis(t).re > 0, hence ≠ 0
-  have hG_ne_zero : (G.resToImagAxis t).re ≠ 0 := by
-    simpa [ResToImagAxis, ht] using ne_of_gt (G_imag_axis_pos.2 t ht)
-  -- Quotient is differentiable
-  have hQ_diff_at : DifferentiableAt ℝ
-      (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) t :=
-    hF_re_diff.div hG_re_diff hG_ne_zero
-  -- Q equals this quotient locally on (0, ∞)
-  apply hQ_diff_at.differentiableWithinAt.congr_of_eventuallyEq_of_mem
+  -- Real parts are differentiable via hasDerivAt_resToImagAxis_re
+  have hF_re_diff := (hasDerivAt_resToImagAxis_re F_holo ht).differentiableAt
+  have hG_re_diff := (hasDerivAt_resToImagAxis_re G_holo ht).differentiableAt
+  have hG_ne : (G.resToImagAxis t).re ≠ 0 :=
+    ne_of_gt (G_imag_axis_pos.2 t ht)
+  -- Q equals F.re / G.re locally on (0, ∞)
+  apply (hF_re_diff.div hG_re_diff hG_ne).differentiableWithinAt.congr_of_eventuallyEq_of_mem
   · filter_upwards [self_mem_nhdsWithin] with s hs
     simp only [Set.mem_Ioi] at hs
-    simp only [Q, hs, ↓reduceDIte, Function.resToImagAxis_apply, ResToImagAxis]
+    simp [Q, hs, ResToImagAxis]
   · simp only [Set.mem_Ioi, ht]
 
 /--
