@@ -867,21 +867,15 @@ theorem L₁₀_div_FG_tendsto :
     intro z hF hG
     rw [L₁₀_eq_FD_G_sub_F_DG]
     field_simp [hF, hG]
-  -- Step 2: Get the complex limit from D_F_div_F_tendsto and D_G_div_G_tendsto
-  have hF_lim := D_F_div_F_tendsto
-  have hG_lim := D_G_div_G_tendsto
-  have h_complex_limit : Filter.Tendsto (fun z : ℍ => D F z / F z - D G z / G z)
-      atImInfty (nhds ((2 : ℂ) - 3 / 2)) := hF_lim.sub hG_lim
-  -- Step 3: F and G are nonzero for large imaginary part (from vanishing order limits)
+  -- Step 2: Get the complex limit and eventually nonzero properties
   have hF_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (720^2 : ℂ) ≠ 0) F_vanishing_order
   have hG_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (20480 : ℂ) ≠ 0) G_vanishing_order
-  -- Step 4: L₁₀/(FG) → 1/2 in ℂ
+  -- Step 3: L₁₀/(FG) → 1/2 in ℂ
   have h_L_over_FG : Filter.Tendsto (fun z : ℍ => L₁₀ z / (F z * G z))
       atImInfty (nhds (1 / 2 : ℂ)) := by
-    have h_limit_val : (2 : ℂ) - 3 / 2 = 1 / 2 := by norm_num
-    rw [← h_limit_val]
-    apply h_complex_limit.congr'
-    filter_upwards [hF_ne, hG_ne] with z hF hG using (h_wronskian z hF hG).symm
+    have h := (D_F_div_F_tendsto.sub D_G_div_G_tendsto).congr' (by
+      filter_upwards [hF_ne, hG_ne] with z hF hG using (h_wronskian z hF hG).symm)
+    convert h using 2; norm_num
   -- Step 5: Restrict to imaginary axis and take real parts
   -- On the imaginary axis, L₁₀, F, G are all real (L₁₀_imag_axis_real),
   -- so the quotient is real and the real part limit equals 1/2.
