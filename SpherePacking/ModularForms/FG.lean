@@ -621,8 +621,6 @@ lemma I_mul_t_pow_nat (t : ℝ) (n : ℕ) : (I * t) ^ n =
 theorem F_functional_equation (z : ℍ) :
     F (S • z) = z ^ 12 * F z - 12 * I * π ^ (-1 : ℤ) * z ^ 11 * (F₁ * E₄.toFun) z
       - 36 * π ^ (-2 : ℤ) * z ^ 10 * (E₄.toFun z) ^ 2 := by
-  have hπ : (π : ℂ) ≠ 0 := ofReal_ne_zero.mpr Real.pi_ne_zero
-  have hπIz : (π : ℂ) * I * z ≠ 0 := mul_ne_zero (mul_ne_zero hπ I_ne_zero) (ne_zero z)
   -- Expand F, F₁ and apply S-transformation formulas
   have hLHS : F (S • z) = (E₂ (S • z) * E₄ (S • z) - E₆ (S • z)) ^ 2 := rfl
   have hRHS : F z = (E₂ z * E₄ z - E₆ z) ^ 2 := rfl
@@ -654,12 +652,10 @@ theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
     simp only [coe_mk_subtype, div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
   -- Apply F_functional_equation
   have hF_eq := F_functional_equation z
-  have hz_pow12 : (z : ℂ) ^ 12 = t ^ 12 := by
-    simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
+  have hz_pow12 : (z : ℂ) ^ 12 = t ^ 12 := by simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
   have hz_pow11 : (z : ℂ) ^ 11 = -I * t ^ 11 := by
     simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
-  have hz_pow10 : (z : ℂ) ^ 10 = -t ^ 10 := by
-    simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
+  have hz_pow10 : (z : ℂ) ^ 10 = -t ^ 10 := by simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
   -- Compute F(S • z) using the functional equation
   have hF_val : F.resToImagAxis (1 / t) = (t : ℂ) ^ 12 * F z
       - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun) z
@@ -738,8 +734,7 @@ theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
   -- Apply G_functional_equation
   have hG_eq := G_functional_equation z
   -- Power of (I * t): (I*t)^10 = -t^10
-  have hz_pow10 : (z : ℂ) ^ 10 = -t ^ 10 := by
-    simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
+  have hz_pow10 : (z : ℂ) ^ 10 = -t ^ 10 := by simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
   -- Compute G(S • z) using the functional equation
   have hG_val : G.resToImagAxis (1 / t) = (t : ℂ) ^ 10 * H₄.resToImagAxis t ^ 3 *
       (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t +
