@@ -535,24 +535,14 @@ theorem D_F_div_F_tendsto :
     · exact MDifferentiable.mul E₂_holo' E₄.holo'
     · exact E₆.holo'
   -- Step 3: D(F) = 2·f·D(f) by chain rule
-  have hDF_eq : ∀ z, D F z = 2 * f z * D f z := by
-    intro z
-    have h := D_sq f hf_holo
-    have hF_eq' : F = f ^ 2 := by
-      ext z
-      simp only [F, hf_def, sq, Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe,
-        Pi.pow_apply]
+  have hDF_eq : ∀ z, D F z = 2 * f z * D f z := fun z => by
+    have hF_eq' : F = f ^ 2 := funext fun w => by simp [F, hf_def, sq]
     rw [hF_eq']
-    exact congr_fun h z
+    exact congr_fun (D_sq f hf_holo) z
   -- Step 4: Therefore D(F)/F = 2·D(f)/f
-  have hDF_div_eq : ∀ z, F z ≠ 0 → D F z / F z = 2 * (D f z / f z) := by
-    intro z hFz
-    have hfz : f z ≠ 0 := by
-      intro hf_zero
-      apply hFz
-      rw [hF_eq z, hf_zero, sq, zero_mul]
-    rw [hDF_eq z, hF_eq z, sq]
-    field_simp [hfz]
+  have hDF_div_eq : ∀ z, F z ≠ 0 → D F z / F z = 2 * (D f z / f z) := fun z hFz => by
+    have hfz : f z ≠ 0 := fun h => hFz (by simp [hF_eq, h])
+    rw [hDF_eq z, hF_eq z, sq]; field_simp [hfz]
   -- Step 5: f/q → 720 (use extracted helper after showing f z = E₂ z * E₄ z - E₆ z)
   have hf_div_q : Filter.Tendsto (fun z : ℍ => f z / cexp (2 * π * Complex.I * z))
       atImInfty (nhds (720 : ℂ)) :=
@@ -583,10 +573,7 @@ theorem D_F_div_F_tendsto :
     exact (h_eq z hexp).symm
   -- Step 8: D(F)/F → 2·1 = 2
   have h_F_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (720^2 : ℂ) ≠ 0) F_vanishing_order
-  have h_2_eq : (2 : ℂ) = 2 * 1 := by ring
-  rw [h_2_eq]
-  apply (hDf_div_f.const_mul (2 : ℂ)).congr'
-  filter_upwards [h_F_ne] with z hFz
-  exact (hDF_div_eq z hFz).symm
+  simpa using (hDf_div_f.const_mul (2 : ℂ)).congr' (by
+    filter_upwards [h_F_ne] with z hFz; exact (hDF_div_eq z hFz).symm)
 
 end MonotoneFG
