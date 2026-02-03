@@ -284,12 +284,6 @@ theorem ResToImagAxis.Real.eq_real_part {F : ℍ → ℂ} (hF : ResToImagAxis.Re
   exacts [Complex.ext rfl (by simpa [Function.resToImagAxis, ResToImagAxis, ht]
     using (hF t ht)), rfl]
 
-/-- If F.resToImagAxis → c, then re ∘ F.resToImagAxis → c.re. -/
-lemma tendsto_re_resToImagAxis {F : ℍ → ℂ} {c : ℂ}
-    (h : Filter.Tendsto F.resToImagAxis Filter.atTop (nhds c)) :
-    Filter.Tendsto (fun t => (F.resToImagAxis t).re) Filter.atTop (nhds c.re) :=
-  Complex.continuous_re.continuousAt.tendsto.comp h
-
 /-!
 ## Polynomial decay of functions with exponential bounds
 

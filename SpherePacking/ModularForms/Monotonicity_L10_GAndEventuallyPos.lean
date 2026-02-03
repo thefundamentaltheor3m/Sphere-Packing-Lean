@@ -876,14 +876,14 @@ theorem L₁₀_div_FG_tendsto :
     have h := (D_F_div_F_tendsto.sub D_G_div_G_tendsto).congr' (by
       filter_upwards [hF_ne, hG_ne] with z hF hG using (h_wronskian z hF hG).symm)
     convert h using 2; norm_num
-  -- Step 4: Restrict to imaginary axis using bridge lemma
+  -- Step 4: Restrict to imaginary axis using bridge lemma, then extract real part
   have h_axis := tendsto_resToImagAxis_of_tendsto_atImInfty h_L_over_FG
-  have h_re := tendsto_re_resToImagAxis h_axis
+  have h_re := Complex.continuous_re.continuousAt.tendsto.comp h_axis
   -- Step 5: Show quotient of real parts equals real part of quotient
   simp only [show (1 / 2 : ℂ).re = (1 / 2 : ℝ) by norm_num] at h_re
   refine h_re.congr' ?_
   filter_upwards [Filter.eventually_gt_atTop 0] with t ht_pos
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte]
+  simp only [Function.comp_apply, Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte]
   set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩ with hz
   have hL := L₁₀_imag_axis_real t ht_pos
   have hF := F_imag_axis_real t ht_pos
