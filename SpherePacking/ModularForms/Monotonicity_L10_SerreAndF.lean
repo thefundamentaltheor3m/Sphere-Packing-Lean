@@ -477,14 +477,6 @@ theorem D_diff_div_q_tendsto :
     have h := PNat.natPred_add_one m
     simp only [← h, Nat.cast_add, Nat.cast_one, add_sub_cancel_right]
   simp_rw [h_reindex]
-  -- Apply QExp.tendsto_nat pattern
-  -- a(m) = (m+1)² * σ₃(m+1), a(0) = 1² * σ₃(1) = 1 * 1 = 1
-  have ha : ∀ m : ℕ, (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) =
-      if m = 0 then 1 else (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) := by
-    intro m
-    split_ifs with h
-    · simp [h, ArithmeticFunction.sigma_one]
-    · rfl
   -- Apply QExp.tendsto_nat with coefficient function a(m) = (m+1)² * σ₃(m+1)
   set a : ℕ → ℂ := fun m => (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) with ha_def
   have ha0 : a 0 = 1 := by simp [ha_def, ArithmeticFunction.sigma_one]
