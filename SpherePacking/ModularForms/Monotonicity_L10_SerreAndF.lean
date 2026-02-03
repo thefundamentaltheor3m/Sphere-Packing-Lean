@@ -46,8 +46,7 @@ lemma sigma3_qexp_reindex_pnat_nat (z : ℍ) :
 lemma eventually_ne_zero_of_tendsto_div {f g : ℍ → ℂ} {c : ℂ} (hc : c ≠ 0)
     (h : Filter.Tendsto (fun z => f z / g z) atImInfty (nhds c)) :
     ∀ᶠ z : ℍ in atImInfty, f z ≠ 0 := by
-  have h_quot_ne := h.eventually_ne hc
-  filter_upwards [h_quot_ne] with z hz hf
+  filter_upwards [h.eventually_ne hc] with z hz hf
   exact hz (by simp [hf])
 
 /-!
@@ -205,17 +204,14 @@ lemma summable_pow_shift (k : ℕ) : Summable fun m : ℕ => (m + 1 : ℝ) ^ k *
       rexp (2 * π) * ((m + 1) ^ k * rexp (-2 * π * (m + 1))) := fun m => by
     have : rexp (-2 * π * m) = rexp (2 * π) * rexp (-2 * π * (m + 1)) := by
       rw [← Real.exp_add]
-      congr 1
-      ring
+      ring_nf
     rw [this]
     ring
   simp_rw [h_eq]
   apply Summable.mul_left
   convert h.comp_injective Nat.succ_injective using 1
   ext m
-  simp only [Function.comp_apply, Nat.succ_eq_add_one]
-  push_cast
-  ring_nf
+  simp [Function.comp_apply, Nat.succ_eq_add_one]
 
 /-- Derivative bounds for q-expansion coefficients.
 Given `‖a n‖ ≤ n^k`, produces bounds `‖a n * 2πin * exp(2πin z)‖ ≤ 2π * n^(k+1) * exp(-2πn * y_min)`
@@ -330,8 +326,7 @@ This follows from `Θ₂ = exp(πiz/4) * jacobiTheta₂(z/2, z)` and `jacobiThet
 theorem Θ₂_div_exp_tendsto :
     Filter.Tendsto (fun z : ℍ => Θ₂ z / cexp (π * Complex.I * z / 4))
       atImInfty (nhds (2 : ℂ)) := by
-  have h := jacobiTheta₂_half_mul_apply_tendsto_atImInfty
-  convert h using 1
+  convert jacobiTheta₂_half_mul_apply_tendsto_atImInfty using 1
   ext z
   rw [Θ₂_as_jacobiTheta₂]
   field_simp [Complex.exp_ne_zero]
@@ -356,11 +351,7 @@ theorem F_vanishing_order :
     Filter.Tendsto (fun z : ℍ => F z / cexp (2 * π * Complex.I * 2 * z))
       atImInfty (nhds (720 ^ 2 : ℂ)) := by
   -- F = (E₂E₄ - E₆)² and we want to show F / q² → 720² where q = exp(2πiz)
-  -- Strategy: Show (E₂E₄ - E₆) / q → 720, then square
-  -- From E₂_mul_E₄_sub_E₆: E₂E₄ - E₆ = 720 * ∑' n : ℕ+, n * σ₃(n) * q^n
-  -- Dividing by q and using QExp.tendsto_nat: limit is 720 * σ₃(1) = 720
-  have h_diff_tendsto := E₂E₄_sub_E₆_div_q_tendsto
-  -- F / q² = ((E₂E₄ - E₆) / q)² → 720²
+  -- F = (E₂E₄ - E₆)², so F/q² = ((E₂E₄ - E₆)/q)² → 720²
   have h_exp_eq : ∀ z : ℍ, cexp (2 * π * I * 2 * z) = cexp (2 * π * I * z) ^ 2 := by
     intro z; rw [← Complex.exp_nat_mul]; congr 1; ring
   have h_F_eq : ∀ z : ℍ, F z / cexp (2 * π * I * 2 * z) =
@@ -369,7 +360,7 @@ theorem F_vanishing_order :
     simp only [F, h_exp_eq, sq, div_mul_div_comm, Pi.mul_apply, Pi.sub_apply,
       ModularForm.toFun_eq_coe]
   simp_rw [h_F_eq]
-  exact h_diff_tendsto.pow 2
+  exact E₂E₄_sub_E₆_div_q_tendsto.pow 2
 
 /-- D(E₂E₄ - E₆) equals 720 times the q-expansion with n²·σ₃(n) coefficients.
 
@@ -473,10 +464,7 @@ theorem D_diff_div_q_tendsto :
     apply tsum_congr; intro m
     simp only [Equiv.pnatEquivNat_apply, PNat.natPred_add_one]
     congr 2
-    -- Need: ↑↑m - 1 = ↑m.natPred in ℂ
-    -- From PNat.natPred_add_one: m.natPred + 1 = ↑m
-    have h := PNat.natPred_add_one m
-    simp only [← h, Nat.cast_add, Nat.cast_one, add_sub_cancel_right]
+    simp only [← PNat.natPred_add_one m, Nat.cast_add, Nat.cast_one, add_sub_cancel_right]
   simp_rw [h_reindex]
   -- Apply QExp.tendsto_nat with coefficient function a(m) = (m+1)² * σ₃(m+1)
   set a : ℕ → ℂ := fun m => (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) with ha_def
