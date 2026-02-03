@@ -191,17 +191,10 @@ theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos (serre_D 22 L₁₀) :
         simp only [(by norm_num : (640 : ℂ).re = 640), (by norm_num : (640 : ℂ).im = 0),
           hH₂_real, hF_real]; ring
       rw [Complex.add_re, h1_re, h2_re]
-      apply add_pos
-      · exact mul_pos (mul_pos (by norm_num : (0 : ℝ) < 7200) hnegDE₂_pos) hG_pos
-      · exact mul_pos (mul_pos (by norm_num : (0 : ℝ) < 640) hH₂_pos) hF_pos
+      positivity
     have hsum_real : (7200 * negDE₂ z * G z + 640 * H₂ z * F z).im = 0 := by
-      have h1 : (7200 * negDE₂ z * G z).im = 0 := by
-        rw [Complex.mul_im, Complex.mul_im]
-        simp only [(by norm_num : (7200 : ℂ).im = 0), hnegDE₂_real, hG_real]; ring
-      have h2 : (640 * H₂ z * F z).im = 0 := by
-        rw [Complex.mul_im, Complex.mul_im]
-        simp only [(by norm_num : (640 : ℂ).im = 0), hH₂_real, hF_real]; ring
-      rw [Complex.add_im, h1, h2]; ring
+      simp only [Complex.add_im, Complex.mul_im, hnegDE₂_real, hG_real, hH₂_real, hF_real]
+      ring
     rw [Complex.mul_re, hΔ_real, hsum_real, mul_zero, sub_zero]
     exact mul_pos hΔ_pos hsum_pos
 
