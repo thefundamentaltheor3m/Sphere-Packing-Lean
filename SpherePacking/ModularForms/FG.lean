@@ -617,6 +617,24 @@ lemma I_mul_t_pow_nat (t : ℝ) (n : ℕ) : (I * t) ^ n =
   rw [mul_pow, Complex.I_pow_eq_pow_mod]
   interval_cases n % 4 <;> simp
 
+-- /-- For any function F : ℍ → ℂ and t > 0, F.resToImagAxis (1/t) = F(S • (I*t)). -/
+-- lemma resToImagAxis_one_div_eq_S_smul (F : ℍ → ℂ) {t : ℝ} (ht : 0 < t) :
+--     let z : ℍ := ⟨I * t, by simp [ht]⟩
+--     F.resToImagAxis (1 / t) = F (S • z) := by
+--   have ht_inv : 0 < 1 / t := one_div_pos.mpr ht
+--   set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
+--   have hS_z : S • z = ⟨I / t, by simp [ht]⟩ := by
+--     apply UpperHalfPlane.ext
+--     simp only [UpperHalfPlane.modular_S_smul, hz_def, div_eq_mul_inv]
+--     change (-(I * ↑t))⁻¹ = I * (↑t)⁻¹
+--     have hne : (I : ℂ) * t ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht.ne')
+--     field_simp [hne]
+--     simp only [I_sq]
+--     ring
+--   simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
+--   congr 1; apply UpperHalfPlane.ext
+--   simp only [coe_mk_subtype, div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
+
 /- Functional equation of $F$ -/
 theorem F_functional_equation (z : ℍ) :
     F (S • z) = z ^ 12 * F z - 12 * I * π ^ (-1 : ℤ) * z ^ 11 * (F₁ * E₄.toFun) z
@@ -633,23 +651,10 @@ theorem F_functional_equation (z : ℍ) :
 theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
     FReal (1 / t) = t ^ 12 * FReal t - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun).resToImagAxis t
       + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun.resToImagAxis t) ^ 2 := by
-  have ht_inv : 0 < 1 / t := one_div_pos.mpr ht
   -- Define z = I * t on the imaginary axis
   set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
-  -- Key: S • z = I / t on the imaginary axis
-  have hS_z : S • z = ⟨I / t, by simp [ht]⟩ := by
-    apply UpperHalfPlane.ext
-    simp only [UpperHalfPlane.modular_S_smul, hz_def, div_eq_mul_inv]
-    change (-(I * ↑t))⁻¹ = I * (↑t)⁻¹
-    have hne : (I : ℂ) * t ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht.ne')
-    field_simp [hne]
-    simp only [I_sq]
-    ring
   -- F.resToImagAxis (1/t) = F(S • z)
-  have hF_res : F.resToImagAxis (1 / t) = F (S • z) := by
-    simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
-    congr 1; apply UpperHalfPlane.ext
-    simp only [coe_mk_subtype, div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
+  have hF_res : F.resToImagAxis (1 / t) = F (S • z) := ResToImagAxis.one_div_eq_S_smul F ht
   -- Apply F_functional_equation
   have hF_eq := F_functional_equation z
   have hz_pow12 : (z : ℂ) ^ 12 = t ^ 12 := by simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
@@ -714,24 +719,10 @@ theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
     GReal (1 / t) = t ^ 10 * H₄.resToImagAxis t ^ 3
       * (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t
         + 5 * H₂.resToImagAxis t ^ 2) := by
-  have ht_inv : 0 < 1 / t := one_div_pos.mpr ht
   -- Define z = I * t on the imaginary axis
   set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
-  -- Key: S • z = I / t on the imaginary axis
-  have hS_z : S • z = ⟨I / t, by simp [ht]⟩ := by
-    apply UpperHalfPlane.ext
-    simp only [UpperHalfPlane.modular_S_smul, hz_def, div_eq_mul_inv]
-    change (-(I * ↑t))⁻¹ = I * (↑t)⁻¹
-    have hne : (I : ℂ) * t ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht.ne')
-    field_simp [hne]
-    simp only [I_sq]
-    ring
   -- G.resToImagAxis (1/t) = G(S • z)
-  have hG_res : G.resToImagAxis (1 / t) = G (S • z) := by
-    simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
-    congr 1; apply UpperHalfPlane.ext
-    simp only [coe_mk_subtype, div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
-  -- Apply G_functional_equation
+  have hG_res : G.resToImagAxis (1 / t) = G (S • z) := ResToImagAxis.one_div_eq_S_smul G ht
   have hG_eq := G_functional_equation z
   -- Power of (I * t): (I*t)^10 = -t^10
   have hz_pow10 : (z : ℂ) ^ 10 = -t ^ 10 := by simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]

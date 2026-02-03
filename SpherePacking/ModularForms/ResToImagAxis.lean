@@ -90,6 +90,24 @@ theorem ResToImagAxis.SlashActionS' (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 
     _ = I ^ k * t ^ k * (I ^ (-k) * t ^ (-k) * F.resToImagAxis (1 / t)) := by ring
     _ = I ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by rw [← hS]
 
+/-- For any function F : ℍ → ℂ and t > 0, F.resToImagAxis (1/t) = F(S • (I*t)). -/
+theorem ResToImagAxis.one_div_eq_S_smul (F : ℍ → ℂ) {t : ℝ} (ht : 0 < t) :
+    let z : ℍ := ⟨I * t, by simp [ht]⟩
+    F.resToImagAxis (1 / t) = F (S • z) := by
+  have ht_inv : 0 < 1 / t := one_div_pos.mpr ht
+  set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
+  have hS_z : S • z = ⟨I / t, by simp [ht]⟩ := by
+    apply UpperHalfPlane.ext
+    simp only [UpperHalfPlane.modular_S_smul, hz_def, div_eq_mul_inv]
+    change (-(I * ↑t))⁻¹ = I * (↑t)⁻¹
+    have hne : (I : ℂ) * t ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht.ne')
+    field_simp [hne]
+    simp only [I_sq]
+    ring
+  simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
+  congr 1; apply UpperHalfPlane.ext
+  simp only [coe_mk_subtype, div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
+
 /--
 Realness, positivity and essential positivity are closed under the addition and multiplication.
 -/
