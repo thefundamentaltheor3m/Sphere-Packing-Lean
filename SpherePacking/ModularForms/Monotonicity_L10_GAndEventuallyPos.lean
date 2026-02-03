@@ -876,74 +876,32 @@ theorem L₁₀_div_FG_tendsto :
     have h := (D_F_div_F_tendsto.sub D_G_div_G_tendsto).congr' (by
       filter_upwards [hF_ne, hG_ne] with z hF hG using (h_wronskian z hF hG).symm)
     convert h using 2; norm_num
-  -- Step 5: Restrict to imaginary axis and take real parts
-  -- On the imaginary axis, L₁₀, F, G are all real (L₁₀_imag_axis_real),
-  -- so the quotient is real and the real part limit equals 1/2.
-
-  -- Use the epsilon-delta characterization of Tendsto
-  rw [Metric.tendsto_atTop]
-  intro ε hε
-  -- Get the complex limit in metric form using Metric.tendsto_nhds
-  rw [Metric.tendsto_nhds] at h_L_over_FG
-  obtain ⟨A₀, hA₀⟩ := Filter.eventually_atImInfty.mp (h_L_over_FG ε hε)
-  -- Get bounds where F, G are nonzero
-  obtain ⟨A₁, hA₁⟩ := Filter.eventually_atImInfty.mp hF_ne
-  obtain ⟨A₂, hA₂⟩ := Filter.eventually_atImInfty.mp hG_ne
-  use max (max (max A₀ A₁) A₂) 1
-  intro t ht
-  have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_trans (le_max_right _ _) ht)
-  have ht_A₀ : A₀ ≤ t :=
-    le_trans (le_max_left A₀ A₁) (le_trans (le_max_left _ _) (le_trans (le_max_left _ _) ht))
-  have ht_A₁ : A₁ ≤ t :=
-    le_trans (le_max_right A₀ A₁) (le_trans (le_max_left _ _) (le_trans (le_max_left _ _) ht))
-  have ht_A₂ : A₂ ≤ t := le_trans (le_max_right _ A₂) (le_trans (le_max_left _ _) ht)
-  let z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
-  have hz_im : z.im = t := by simp [z, UpperHalfPlane.im]
-  have hz_F_ne : F z ≠ 0 := hA₁ z (by rw [hz_im]; exact ht_A₁)
-  have hz_G_ne : G z ≠ 0 := hA₂ z (by rw [hz_im]; exact ht_A₂)
-  -- Get the complex distance bound
-  have h_dist := hA₀ z (by rw [hz_im]; exact ht_A₀)
-  -- Need: dist (resToImagAxis expr t) (1/2) < ε
-  -- Show the real expression equals the real part of the complex expression
+  -- Step 4: Restrict to imaginary axis using bridge lemma
+  have h_axis := tendsto_resToImagAxis_of_tendsto_atImInfty h_L_over_FG
+  have h_re := tendsto_re_resToImagAxis h_axis
+  -- Step 5: Show quotient of real parts equals real part of quotient
+  simp only [show (1 / 2 : ℂ).re = (1 / 2 : ℝ) by norm_num] at h_re
+  refine h_re.congr' ?_
+  filter_upwards [Filter.eventually_gt_atTop 0] with t ht_pos
   simp only [Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte]
-  have hL_real := L₁₀_imag_axis_real t ht_pos
-  have hF_real := F_imag_axis_real t ht_pos
-  have hG_real := G_imag_axis_real t ht_pos
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte]
-    at hL_real hF_real hG_real
-  have hz_eq : (⟨Complex.I * t, by simp [ht_pos]⟩ : ℍ) = z := rfl
-  rw [hz_eq] at hL_real hF_real hG_real
-  -- The complex quotient is real on the imaginary axis
-  have h_FG_real : (F z * G z).im = 0 := by rw [Complex.mul_im]; simp [hF_real, hG_real]
-  have h_quot_real : (L₁₀ z / (F z * G z)).im = 0 := by
-    rw [Complex.div_im]
-    simp [hL_real, h_FG_real]
-  -- The real part equals the quotient of real parts
-  have h_FG_ne : F z * G z ≠ 0 := mul_ne_zero hz_F_ne hz_G_ne
-  have h_re_ne : (F z * G z).re ≠ 0 := by contrapose! h_FG_ne; exact Complex.ext h_FG_ne h_FG_real
-  have h_quot_eq : (L₁₀ z / (F z * G z)).re = (L₁₀ z).re / (F z * G z).re := by
-    rw [Complex.div_re]
-    simp only [hL_real, h_FG_real, mul_zero, add_zero, zero_div]
-    rw [Complex.normSq_eq_norm_sq]
-    have h_norm_eq : ‖F z * G z‖ = |(F z * G z).re| := by
-      rw [Complex.norm_def]
-      conv_lhs => rw [show Complex.normSq (F z * G z) =
-        (F z * G z).re * (F z * G z).re + (F z * G z).im * (F z * G z).im from rfl]
-      simp only [h_FG_real, mul_zero, add_zero]
-      exact Real.sqrt_mul_self_eq_abs _
-    rw [h_norm_eq, sq_abs]
-    field_simp [h_re_ne]
-  have h_FG_re : (F z * G z).re = (F z).re * (G z).re := by
-    rw [Complex.mul_re]; simp [hF_real, hG_real]
-  -- dist in ℝ equals dist in ℂ when both are real
-  calc dist ((L₁₀ z).re / ((F z).re * (G z).re)) (1 / 2)
-      = dist ((L₁₀ z / (F z * G z)).re) ((1 / 2 : ℂ).re) := by
-          rw [h_quot_eq, h_FG_re]; norm_num
-    _ = |((L₁₀ z / (F z * G z)) - 1 / 2).re| := by
-          rw [Real.dist_eq, Complex.sub_re]
-    _ ≤ ‖L₁₀ z / (F z * G z) - 1 / 2‖ := abs_re_le_norm _
-    _ = dist (L₁₀ z / (F z * G z)) (1 / 2) := by rw [Complex.dist_eq]
-    _ < ε := h_dist
+  set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩ with hz
+  have hL := L₁₀_imag_axis_real t ht_pos
+  have hF := F_imag_axis_real t ht_pos
+  have hG := G_imag_axis_real t ht_pos
+  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte] at hL hF hG
+  rw [← hz] at hL hF hG
+  have hFG : (F z * G z).im = 0 := by rw [Complex.mul_im, hF, hG]; ring
+  have hFG_re : (F z * G z).re = (F z).re * (G z).re := by rw [Complex.mul_re, hF, hG]; ring
+  rw [Complex.div_re, hFG_re]
+  simp only [hL, hFG, mul_zero, add_zero, zero_div, Complex.normSq_eq_norm_sq]
+  have h_norm : ‖F z * G z‖^2 = ((F z).re * (G z).re)^2 := by
+    rw [Complex.sq_norm, Complex.normSq_mul]
+    simp only [Complex.normSq_apply, hF, hG, mul_zero, add_zero]
+    ring
+  rw [h_norm]
+  by_cases h_ne : (F z).re * (G z).re = 0
+  · simp [h_ne]
+  · field_simp [h_ne]
 
 theorem L₁₀_eventually_pos_imag_axis : ResToImagAxis.EventuallyPos L₁₀ := by
   refine ⟨L₁₀_imag_axis_real, ?_⟩
