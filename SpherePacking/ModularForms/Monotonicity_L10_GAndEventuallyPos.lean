@@ -45,8 +45,8 @@ theorem G_vanishing_order :
   have h_poly : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
       atImInfty (nhds 5) := by
     have hpair := H₂_tendsto_atImInfty.prodMk_nhds H₄_tendsto_atImInfty
-    have hcont : Continuous (fun p : ℂ × ℂ => 2 * p.1 ^ 2 + 5 * p.1 * p.2 + 5 * p.2 ^ 2) :=
-      by continuity
+    have hcont : Continuous (fun p : ℂ × ℂ => 2 * p.1 ^ 2 + 5 * p.1 * p.2 + 5 * p.2 ^ 2) := by
+      fun_prop
     simpa using hcont.continuousAt.tendsto.comp hpair
   convert (H₂_div_exp_tendsto.pow 3).mul h_poly
   norm_num
