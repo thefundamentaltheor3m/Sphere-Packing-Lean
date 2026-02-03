@@ -217,6 +217,18 @@ lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
   rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, modular_S_sq,
     ModularForm.slash_neg' _ _ (by decide), slash_one]
 
+lemma H₂_S_action' (z : ℍ) : H₂ (S • z) = - z ^ 2 * H₄ z := by
+    have h := congrFun H₂_S_action z
+    simp only [SL_slash_apply, denom_S, zpow_neg, zpow_two, Pi.neg_apply] at h
+    field_simp [ne_zero] at h ⊢
+    exact h
+
+lemma H₄_S_action' (z : ℍ) : H₄ (S • z) = - z ^ 2 * H₂ z := by
+    have h := congrFun H₄_S_action z
+    simp only [SL_slash_apply, denom_S, zpow_neg, zpow_two, Pi.neg_apply] at h
+    field_simp [ne_zero z] at h ⊢
+    exact h
+
 lemma H₂_S_inv_action : (H₂ ∣[(2 : ℤ)] S⁻¹) = -H₄ := by
   rw [← neg_eq_iff_eq_neg.mpr H₄_S_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
 
