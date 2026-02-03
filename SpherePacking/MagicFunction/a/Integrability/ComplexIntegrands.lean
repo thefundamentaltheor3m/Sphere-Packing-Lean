@@ -5,6 +5,7 @@ Authors: Sidharth Hariharan
 -/
 
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
+import SpherePacking.ModularForms.FG
 
 import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 
@@ -19,8 +20,10 @@ This file includes the following (families of) theorems:
 
 * [PROVED] `Φⱼ'_holo`: For j = 1…6, `Φⱼ'` is Complex-differentiable on the upper half-plane.
 * [PROVED] `Φⱼ'_contDiffOn_ℂ`: For j = 1…6, `Φⱼ'` is Complex-smooth on the upper half-plane.
-* [TODO] `Φⱼ'_contDiffOn`: For j = 1…6, `Φⱼ'` is Real-smooth on the upper half-plane.
-* [TODO] `φ₀''_holo`: `φ₀''` is Complex-differentiable on the upper half-plane.
+* [PROVED] `Φⱼ'_contDiffOn`: For j = 1…6, `Φⱼ'` is Real-smooth on the upper half-plane.
+* [PROVED] `φ₀''_holo`: `φ₀''` is Complex-differentiable on the upper half-plane.
+* [PROVED] `φ₀''_differentiable`: `φ₀''` is differentiable on `Set.univ ×ℂ Ioi 0`.
+* [PROVED] `φ₀''_continuous`: `φ₀''` is continuous on `Set.univ ×ℂ Ioi 0`.
 -/
 
 open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
@@ -66,7 +69,13 @@ section Holo_Lemmas
 /-! # Complex Differentiability -/
 
 theorem φ₀''_holo : Holo(φ₀'') := by
-  sorry
+  have hF := UpperHalfPlane.mdifferentiable_iff.mp F_holo
+  have hΔ := UpperHalfPlane.mdifferentiable_iff.mp Delta.holo'
+  have h_eq : EqOn φ₀'' (fun z => (F ∘ UpperHalfPlane.ofComplex) z / (Δ ∘ UpperHalfPlane.ofComplex) z)
+      ℍ₀ := fun z hz => by simp [φ₀''_def hz, F, φ₀, UpperHalfPlane.ofComplex_apply_of_im_pos hz]
+  refine DifferentiableOn.congr ?_ h_eq
+  exact hF.div hΔ fun z hz => by
+    simp [Function.comp_apply, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Δ_ne_zero]
 
 theorem Φ₁'_holo : Holo(Φ₁' r) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
@@ -143,7 +152,7 @@ theorem Φ₅'_holo : Holo(Φ₅' r) := by
 
 theorem Φ₅'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₅' r) ℍ₀ := Φ₅'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
-theorem Φ₆'_holo : Holo(Φ₆' r) := (φ₀''_holo.comp differentiableOn_id <| fun _ a ↦ a).mul
+theorem Φ₆'_holo : Holo(Φ₆' r) := (φ₀''_holo.comp differentiableOn_id (mapsTo_id _)).mul
   (Complex.differentiable_exp.comp <| (differentiable_const _).mul
     differentiable_fun_id).differentiableOn
 
@@ -155,18 +164,33 @@ section ContDiffOn_Real
 
 /-! # Real Differentiability -/
 
-theorem Φ₁'_contDiffOn : ContDiffOn ℝ ∞ (Φ₁' r) ℍ₀ := by sorry
+theorem Φ₁'_contDiffOn : ContDiffOn ℝ ∞ (Φ₁' r) ℍ₀ := Φ₁'_contDiffOn_ℂ.restrict_scalars ℝ
 
-theorem Φ₂'_contDiffOn : ContDiffOn ℝ ∞ (Φ₂' r) ℍ₀ := by sorry
+theorem Φ₂'_contDiffOn : ContDiffOn ℝ ∞ (Φ₂' r) ℍ₀ := Φ₂'_contDiffOn_ℂ.restrict_scalars ℝ
 
-theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ := by sorry
+theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ := Φ₃'_contDiffOn_ℂ.restrict_scalars ℝ
 
-theorem Φ₄'_contDiffOn : ContDiffOn ℝ ∞ (Φ₄' r) ℍ₀ := by sorry
+theorem Φ₄'_contDiffOn : ContDiffOn ℝ ∞ (Φ₄' r) ℍ₀ := Φ₄'_contDiffOn_ℂ.restrict_scalars ℝ
 
-theorem Φ₅'_contDiffOn : ContDiffOn ℝ ∞ (Φ₅' r) ℍ₀ := by sorry
+theorem Φ₅'_contDiffOn : ContDiffOn ℝ ∞ (Φ₅' r) ℍ₀ := Φ₅'_contDiffOn_ℂ.restrict_scalars ℝ
 
-theorem Φ₆'_contDiffOn : ContDiffOn ℝ ∞ (Φ₆' r) ℍ₀ := by sorry
+theorem Φ₆'_contDiffOn : ContDiffOn ℝ ∞ (Φ₆' r) ℍ₀ := Φ₆'_contDiffOn_ℂ.restrict_scalars ℝ
 
 end ContDiffOn_Real
+
+section Corollaries
+
+/-! # Corollaries using alternative set notation -/
+
+/-- φ₀'' is holomorphic on the upper half-plane (using `Set.univ ×ℂ Ioi 0` notation).
+    This is equivalent to `φ₀''_holo` since `Set.univ ×ℂ Ioi 0 = ℍ₀`. -/
+theorem φ₀''_differentiable : DifferentiableOn ℂ φ₀'' (Set.univ ×ℂ Ioi 0) := by
+  simpa [upperHalfPlaneSet, reProdIm] using φ₀''_holo
+
+/-- φ₀'' is continuous on the upper half-plane. -/
+theorem φ₀''_continuous : ContinuousOn φ₀'' (Set.univ ×ℂ Ioi 0) :=
+  φ₀''_differentiable.continuousOn
+
+end Corollaries
 
 end MagicFunction.a.ComplexIntegrands
