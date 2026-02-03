@@ -106,7 +106,8 @@ theorem serre_D_L₁₀ (z : ℍ) :
       serre_D 10 F z * serre_D 10 G z + F z * serre_D 12 (serre_D 10 G) z := by
     conv_lhs => rw [show (22 : ℂ) = 10 + 12 by norm_num]
     simpa [Pi.mul_apply, Pi.add_apply] using congrFun (serre_D_mul 10 12 F _ F_holo hDG) z
-  rw [h1, h2]; ring
+  rw [h1, h2]
+  ring
 
 /--
 `∂₂₂ L₁,₀ = Δ(7200(-E₂')G + 640H₂F)` on the upper half-plane.
