@@ -617,24 +617,6 @@ lemma I_mul_t_pow_nat (t : ℝ) (n : ℕ) : (I * t) ^ n =
   rw [mul_pow, Complex.I_pow_eq_pow_mod]
   interval_cases n % 4 <;> simp
 
--- /-- For any function F : ℍ → ℂ and t > 0, F.resToImagAxis (1/t) = F(S • (I*t)). -/
--- lemma resToImagAxis_one_div_eq_S_smul (F : ℍ → ℂ) {t : ℝ} (ht : 0 < t) :
---     let z : ℍ := ⟨I * t, by simp [ht]⟩
---     F.resToImagAxis (1 / t) = F (S • z) := by
---   have ht_inv : 0 < 1 / t := one_div_pos.mpr ht
---   set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
---   have hS_z : S • z = ⟨I / t, by simp [ht]⟩ := by
---     apply UpperHalfPlane.ext
---     simp only [UpperHalfPlane.modular_S_smul, hz_def, div_eq_mul_inv]
---     change (-(I * ↑t))⁻¹ = I * (↑t)⁻¹
---     have hne : (I : ℂ) * t ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht.ne')
---     field_simp [hne]
---     simp only [I_sq]
---     ring
---   simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
---   congr 1; apply UpperHalfPlane.ext
---   simp only [coe_mk_subtype, div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
-
 /- Functional equation of $F$ -/
 theorem F_functional_equation (z : ℍ) :
     F (S • z) = z ^ 12 * F z - 12 * I * π ^ (-1 : ℤ) * z ^ 11 * (F₁ * E₄.toFun) z
@@ -653,23 +635,13 @@ theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
       + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun.resToImagAxis t) ^ 2 := by
   -- Define z = I * t on the imaginary axis
   set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
-  -- F.resToImagAxis (1/t) = F(S • z)
-  have hF_res : F.resToImagAxis (1 / t) = F (S • z) := ResToImagAxis.one_div_eq_S_smul F ht
-  -- Apply F_functional_equation
-  have hF_eq := F_functional_equation z
-  have hz_pow12 : (z : ℂ) ^ 12 = t ^ 12 := by simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
-  have hz_pow11 : (z : ℂ) ^ 11 = -I * t ^ 11 := by
-    simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
-  have hz_pow10 : (z : ℂ) ^ 10 = -t ^ 10 := by simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
   -- Compute F(S • z) using the functional equation
   have hF_val : F.resToImagAxis (1 / t) = (t : ℂ) ^ 12 * F z
       - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun) z
       + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun z) ^ 2 := by
-    rw [hF_res, hF_eq, hz_pow12, hz_pow11, hz_pow10]
-    have hI2 : (I : ℂ) ^ 2 = -1 := I_sq
-    ring_nf
-    rw [hI2]
-    ring
+    rw [ResToImagAxis.one_div_eq_S_smul F ht, F_functional_equation z]
+    simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
+    ring_nf; simp only [I_sq]; ring
   -- Relate F z, (F₁ * E₄) z, E₄ z to resToImagAxis values
   have hF_z : F z = F.resToImagAxis t := by rw [hz_def]; exact ResToImagAxis.I_mul_t_eq F t ht
   have hF₁E₄_z : (F₁ * E₄.toFun) z = (F₁ * E₄.toFun).resToImagAxis t := by
@@ -721,22 +693,13 @@ theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
         + 5 * H₂.resToImagAxis t ^ 2) := by
   -- Define z = I * t on the imaginary axis
   set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
-  -- G.resToImagAxis (1/t) = G(S • z)
-  have hG_res : G.resToImagAxis (1 / t) = G (S • z) := ResToImagAxis.one_div_eq_S_smul G ht
-  have hG_eq := G_functional_equation z
-  -- Power of (I * t): (I*t)^10 = -t^10
-  have hz_pow10 : (z : ℂ) ^ 10 = -t ^ 10 := by simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
   -- Compute G(S • z) using the functional equation
   have hG_val : G.resToImagAxis (1 / t) = (t : ℂ) ^ 10 * H₄.resToImagAxis t ^ 3 *
       (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t +
        5 * H₂.resToImagAxis t ^ 2) := by
-    rw [hG_res, hG_eq, hz_pow10]
-    -- Relate H₂ z, H₄ z to resToImagAxis values
-    have hH₂_z : H₂ z = H₂.resToImagAxis t := by
-      rw [hz_def]; exact ResToImagAxis.I_mul_t_eq H₂ t ht
-    have hH₄_z : H₄ z = H₄.resToImagAxis t := by
-      rw [hz_def]; exact ResToImagAxis.I_mul_t_eq H₄ t ht
-    rw [hH₂_z, hH₄_z]
+    rw [ResToImagAxis.one_div_eq_S_smul G ht, G_functional_equation z]
+    simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat,
+      ResToImagAxis.I_mul_t_eq H₂ t ht, ResToImagAxis.I_mul_t_eq H₄ t ht]
     ring
   -- Use that H₂ and H₄ are real on the imaginary axis
   have hH₂_eq := ResToImagAxis.Real.eq_real_part H₂_imag_axis_real t
