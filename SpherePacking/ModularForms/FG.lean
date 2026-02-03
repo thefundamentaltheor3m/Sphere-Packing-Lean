@@ -600,9 +600,9 @@ lemma L₁₀_eventuallyPos : ResToImagAxis.EventuallyPos L₁₀ := by
 lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ := antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventuallyPos
 
 /--
-$t \mapsto F(it) / G(it)$ is monotone decreasing.
+$t \mapsto F(it) / G(it)$ is strictly decreasing.
 -/
-theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) := by
+theorem FmodG_strictAntiOn : StrictAntiOn FmodGReal (Set.Ioi 0) := by
   sorry
 
 lemma I_mul_t_pow_nat (t : ℝ) (n : ℕ) : (I * t) ^ n =
@@ -985,8 +985,29 @@ Main inequalities between $F$ and $G$ on the imaginary axis.
 -/
 theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
     FReal t + 18 * (π ^ (-2 : ℤ)) * GReal t > 0 := by
-  sorry
+  have hF : 0 < FReal t := F_imag_axis_pos.2 t ht
+  have hG : 0 < GReal t := G_imag_axis_pos.2 t ht
+  positivity
 
 theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
     FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
-  sorry
+  have hG : 0 < GReal t := G_imag_axis_pos.2 t ht
+  rw [sub_neg]
+  -- Helper: FmodGReal u ≤ L for any u > 0 (from limit + strict antitonicity)
+  have hLe : ∀ u, 0 < u → FmodGReal u ≤ 18 * (π ^ (-2 : ℤ)) := fun u hu => by
+    by_contra hGt; push_neg at hGt
+    have hLim := FmodG_rightLimitAt_zero; rw [Metric.tendsto_nhdsWithin_nhds] at hLim
+    obtain ⟨δ, _, hLim'⟩ := hLim _ (sub_pos.mpr hGt)
+    set s := min (u / 2) (δ / 2)
+    have hs : 0 < s := by positivity
+    have hsd : dist s 0 < δ := by simp [abs_of_pos hs]; linarith [min_le_right (u / 2) (δ / 2)]
+    have hBound := hLim' hs hsd; rw [Real.dist_eq] at hBound
+    have hStrict := FmodG_strictAntiOn (Set.mem_Ioi.mpr hs) (Set.mem_Ioi.mpr hu)
+      (lt_of_le_of_lt (min_le_left _ _) (by linarith : u / 2 < u))
+    linarith [abs_sub_lt_iff.mp hBound]
+  -- FmodGReal t < L: by strict antitonicity, FmodGReal t < FmodGReal (t/2) ≤ L
+  have hGoal : FmodGReal t < 18 * (π ^ (-2 : ℤ)) :=
+    lt_of_lt_of_le (FmodG_strictAntiOn (Set.mem_Ioi.mpr (by linarith : (0:ℝ) < t/2))
+      (Set.mem_Ioi.mpr ht) (by linarith : t / 2 < t)) (hLe (t / 2) (by linarith))
+  calc FReal t = FmodGReal t * GReal t := by unfold FmodGReal; field_simp
+    _ < 18 * (π ^ (-2 : ℤ)) * GReal t := mul_lt_mul_of_pos_right hGoal hG
