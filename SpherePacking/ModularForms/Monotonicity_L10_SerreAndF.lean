@@ -494,8 +494,8 @@ theorem D_diff_div_q_tendsto :
   have h_eq2 : ∀ z : ℍ,
       ∑' m : ℕ, (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) *
         cexp (2 * π * I * m * z) =
-      ∑' m : ℕ, a m * cexp (2 * π * I * z * m) := by
-    intro z; apply tsum_congr; intro m; simp only [ha_def]; ring_nf
+      ∑' m : ℕ, a m * cexp (2 * π * I * z * m) := fun z => by
+    simpa [ha_def] using tsum_congr (fun m => by ring_nf)
   simp_rw [h_eq2, ha0] at h_tendsto ⊢
   convert h_tendsto.const_mul (720 : ℂ) using 2; ring
 
