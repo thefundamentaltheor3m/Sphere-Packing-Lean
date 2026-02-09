@@ -627,8 +627,7 @@ theorem F_functional_equation (z : ℍ) :
   have hF₁E₄ : (F₁ * E₄.toFun) z = (E₂ z * E₄ z - E₆ z) * E₄ z := rfl
   rw [hLHS, hRHS, hF₁E₄, E₂_S_transform, E₄_S_transform, E₆_S_transform]
   simp only [zpow_neg, zpow_one, ModularForm.toFun_eq_coe]
-  have hI3 : I ^ 3 = -I := by rw [pow_succ, I_sq]; ring
-  field_simp; ring_nf; simp only [I_sq, hI3]; field_simp; ring
+  field_simp; ring_nf; simp only [I_sq, I_pow_three]; field_simp; ring
 
 theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
     FReal (1 / t) = t ^ 12 * FReal t - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun).resToImagAxis t
@@ -821,9 +820,7 @@ lemma sq_mul_FReal_tendsto_zero :
   unfold FReal
   simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte]
   -- (s : ℂ) ^ (2 : ℂ) = (s ^ 2 : ℂ) for s > 0
-  have h_cpow : (s : ℂ) ^ (2 : ℂ) = ((s ^ 2 : ℝ) : ℂ) := by
-    rw [show (s ^ 2 : ℝ) = s ^ (2 : ℝ) from (Real.rpow_natCast s 2).symm]
-    exact (Complex.ofReal_cpow (le_of_lt hs) 2).symm
+  have h_cpow : (s : ℂ) ^ (2 : ℂ) = ((s ^ 2 : ℝ) : ℂ) := by norm_cast
   simp only [Complex.mul_re, h_cpow, Complex.ofReal_re, Complex.ofReal_im]
   ring
 
@@ -955,30 +952,28 @@ theorem FmodG_rightLimitAt_zero :
       _ = _ := mul_div_mul_left _ _ hs10_ne
   -- Step 4: Compute the limit using Tendsto.div
   have hlim := hNum.div hDen (by norm_num : (2 : ℝ) ≠ 0)
-  -- Step 5: Convert limit at atTop for FmodGReal(1/s) to limit at nhdsWithin 0 for FmodGReal
-  rw [Metric.tendsto_nhdsWithin_nhds]
-  intro ε hε
-  rw [Metric.tendsto_atTop] at hlim
-  obtain ⟨N, hN⟩ := hlim ε hε
-  obtain ⟨M, hM⟩ := Filter.eventually_atTop.mp hEq
-  use 1 / max (max N M) 1
-  refine ⟨one_div_pos.mpr (lt_of_lt_of_le one_pos (le_max_right _ _)), ?_⟩
-  intro t ht_mem ht_dist
-  simp only [Set.mem_Ioi] at ht_mem
-  simp only [dist_zero_right, Real.norm_eq_abs, abs_of_pos ht_mem] at ht_dist
-  -- t < 1/max(N, M, 1) implies 1/t > max(N, M, 1)
-  have h1t : 1 / t > max (max N M) 1 := by
-    rw [one_div, gt_iff_lt, ← one_div]
-    calc max (max N M) 1 = 1 / (1 / max (max N M) 1) := by field_simp
-      _ < 1 / t := one_div_lt_one_div_of_lt ht_mem ht_dist
-  have h1t_N : 1 / t > N := lt_of_le_of_lt (le_max_left _ _) (lt_of_le_of_lt (le_max_left _ _) h1t)
-  have h1t_M : 1 / t ≥ M :=
-    le_of_lt (lt_of_le_of_lt (le_max_right N M) (lt_of_le_of_lt (le_max_left _ _) h1t))
-  rw [show FmodGReal t = FmodGReal (1 / (1 / t)) by field_simp, hM (1 / t) h1t_M]
-  simp only [Pi.div_apply] at hN
-  convert hN (1 / t) (le_of_lt h1t_N) using 2
-  field_simp [Real.pi_ne_zero]
-  ring
+  -- Step 5: Use composition with tendsto_inv_nhdsGT_zero
+  have h_compose : Tendsto (fun t => (t⁻¹ ^ 2 * FReal t⁻¹ - 12 * π ^ (-1 : ℤ) * t⁻¹ *
+        ((F₁ * E₄.toFun).resToImagAxis t⁻¹).re + 36 * π ^ (-2 : ℤ) *
+        (E₄.toFun.resToImagAxis t⁻¹).re ^ 2) / ((H₄.resToImagAxis t⁻¹).re ^ 3 *
+        (2 * (H₄.resToImagAxis t⁻¹).re ^ 2 + 5 * (H₂.resToImagAxis t⁻¹).re *
+        (H₄.resToImagAxis t⁻¹).re + 5 * (H₂.resToImagAxis t⁻¹).re ^ 2)))
+      (nhdsWithin (0 : ℝ) (Set.Ioi 0)) (nhds (18 * π ^ (-2 : ℤ))) := by
+    convert hlim.comp tendsto_inv_nhdsGT_zero using 2; ring
+  -- Transfer hEq through the inverse: 1/t⁻¹ = t for t > 0
+  have hEq' : ∀ᶠ t in nhdsWithin (0 : ℝ) (Set.Ioi 0), FmodGReal t =
+      (t⁻¹ ^ 2 * FReal t⁻¹ - 12 * π ^ (-1 : ℤ) * t⁻¹ * ((F₁ * E₄.toFun).resToImagAxis t⁻¹).re
+        + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis t⁻¹).re ^ 2) /
+      ((H₄.resToImagAxis t⁻¹).re ^ 3 *
+        (2 * (H₄.resToImagAxis t⁻¹).re ^ 2 +
+          5 * (H₂.resToImagAxis t⁻¹).re * (H₄.resToImagAxis t⁻¹).re +
+          5 * (H₂.resToImagAxis t⁻¹).re ^ 2)) := by
+    have h := tendsto_inv_nhdsGT_zero.eventually hEq
+    filter_upwards [h, self_mem_nhdsWithin] with t ht ht_pos
+    simp only [Set.mem_Ioi] at ht_pos
+    simp only [one_div, inv_inv] at ht
+    exact ht
+  exact h_compose.congr' (hEq'.mono fun _ h => h.symm)
 
 /--
 Main inequalities between $F$ and $G$ on the imaginary axis.
