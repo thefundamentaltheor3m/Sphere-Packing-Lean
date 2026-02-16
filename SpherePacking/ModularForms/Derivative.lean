@@ -720,6 +720,85 @@ theorem antiDerPos {F : ℍ → ℂ} (hFderiv : MDifferentiable 𝓘(ℂ) 𝓘(�
       (by simpa [interior_Ioi] using hn)) ht₀_pos hF_pos t ht
   exact ⟨hF_real, gpos⟩
 
+/-- If `g(t₀) = 0` and `deriv g t₀ < 0`, then `g` is negative shortly after `t₀`. -/
+lemma neg_after_zero_of_deriv_neg {g : ℝ → ℝ} {t₀ : ℝ}
+    (hg0 : g t₀ = 0) (hd : deriv g t₀ < 0) :
+    ∃ δ > 0, ∀ s, t₀ < s → s < t₀ + δ → g s < 0 := by
+  have hdiff : DifferentiableAt ℝ g t₀ := by
+    by_contra h; simp [deriv_zero_of_not_differentiableAt h] at hd
+  have hda : HasDerivAt g (deriv g t₀) t₀ := hdiff.hasDerivAt
+  rw [hasDerivAt_iff_isLittleO_nhds_zero] at hda
+  have hε : (0 : ℝ) < -deriv g t₀ / 2 := by linarith
+  have hio := hda.def hε
+  rw [Filter.Eventually, Metric.mem_nhds_iff] at hio
+  obtain ⟨δ, hδ, hball⟩ := hio
+  refine ⟨δ, hδ, fun s hs1 hs2 => ?_⟩
+  have hh_pos : 0 < s - t₀ := by linarith
+  have hmem : s - t₀ ∈ Metric.ball (0 : ℝ) δ := by
+    rw [Metric.mem_ball, dist_zero_right, Real.norm_eq_abs, abs_of_pos hh_pos]; linarith
+  have hest := hball hmem
+  simp only [Set.mem_setOf_eq, hg0, sub_zero, smul_eq_mul] at hest
+  rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_pos hh_pos] at hest
+  have hab := (abs_le.mp hest).2
+  have hsub : s = t₀ + (s - t₀) := by ring
+  rw [hsub]
+  linarith [div_neg_of_neg_of_pos (mul_neg_of_pos_of_neg hh_pos hd) (by norm_num : (0 : ℝ) < 2)]
+
+/-- If `g` is continuous on `(0, ∞)`, positive for `t ≥ t₀`, and has strictly negative derivative
+at any zero in `(0, t₀)`, then `g` is positive on all of `(0, ∞)`. -/
+lemma pos_of_deriv_neg_at_zeros {g : ℝ → ℝ}
+    (hcont : ContinuousOn g (Set.Ioi 0))
+    {t₀ : ℝ} (_ht₀ : 0 < t₀)
+    (hpos : ∀ t, t₀ ≤ t → 0 < g t)
+    (hderiv : ∀ t, 0 < t → t < t₀ → g t = 0 → deriv g t < 0) :
+    ∀ t, 0 < t → 0 < g t := by
+  intro t ht
+  by_cases htge : t₀ ≤ t
+  · exact hpos t htge
+  push_neg at htge
+  by_contra hle
+  push_neg at hle
+  set S := Set.Icc t t₀ ∩ g ⁻¹' Set.Iic 0
+  have hIcc_sub : Set.Icc t t₀ ⊆ Set.Ioi 0 := fun s hs => lt_of_lt_of_le ht hs.1
+  have hS_closed : IsClosed S :=
+    (hcont.mono hIcc_sub).preimage_isClosed_of_isClosed isClosed_Icc isClosed_Iic
+  have hS_bdd : BddAbove S := ⟨t₀, fun s hs => hs.1.2⟩
+  have hS_ne : S.Nonempty := ⟨t, ⟨⟨le_refl _, le_of_lt htge⟩, hle⟩⟩
+  set T := sSup S
+  have hT_mem : T ∈ S := hS_closed.csSup_mem hS_ne hS_bdd
+  have hT_ge_t : t ≤ T := hT_mem.1.1
+  have hT_le : g T ≤ 0 := hT_mem.2
+  have hT_lt : T < t₀ := by
+    rcases eq_or_lt_of_le hT_mem.1.2 with h | h
+    · exact absurd (h ▸ hT_le) (not_le.mpr (hpos t₀ le_rfl))
+    · exact h
+  have hT_pos : 0 < T := lt_of_lt_of_le ht hT_ge_t
+  have hgT_eq : g T = 0 := by
+    by_contra hne
+    have hlt' : g T < 0 := lt_of_le_of_ne hT_le hne
+    have hcT : ContinuousAt g T :=
+      (hcont T (Set.mem_Ioi.mpr hT_pos)).continuousAt (isOpen_Ioi.mem_nhds hT_pos)
+    have hev : ∀ᶠ s in nhds T, g s < 0 := hcT.eventually (gt_mem_nhds hlt')
+    rw [Filter.Eventually, Metric.mem_nhds_iff] at hev
+    obtain ⟨ε, hε, hball_neg⟩ := hev
+    have hmin_pos : 0 < min ε (t₀ - T) := lt_min hε (by linarith)
+    have hd : 0 < min ε (t₀ - T) / 2 := by linarith
+    have : T + min ε (t₀ - T) / 2 ∈ S :=
+      ⟨⟨by linarith, by linarith [min_le_right ε (t₀ - T)]⟩,
+       Set.mem_preimage.mpr (Set.mem_Iic.mpr (le_of_lt (hball_neg (by
+        rw [Metric.mem_ball, Real.dist_eq]
+        have : T + min ε (t₀ - T) / 2 - T = min ε (t₀ - T) / 2 := by ring
+        rw [this, abs_of_pos hd]; linarith [min_le_left ε (t₀ - T)]))))⟩
+    linarith [le_csSup hS_bdd this]
+  obtain ⟨δ, hδ, hneg⟩ := neg_after_zero_of_deriv_neg hgT_eq (hderiv T hT_pos hT_lt hgT_eq)
+  have hmin_pos2 : 0 < min δ (t₀ - T) := lt_min hδ (by linarith)
+  have _hd2 : 0 < min δ (t₀ - T) / 2 := by linarith
+  have : T + min δ (t₀ - T) / 2 ∈ S :=
+    ⟨⟨by linarith, by linarith [min_le_right δ (t₀ - T)]⟩,
+     Set.mem_preimage.mpr (Set.mem_Iic.mpr (le_of_lt (hneg _ (by linarith)
+       (by linarith [min_le_left δ (t₀ - T)]))))⟩
+  linarith [le_csSup hS_bdd this]
+
 /--
 Let $F : \mathbb{H} \to \mathbb{C}$ be a holomorphic function where $F(it)$ is real for all $t > 0$.
 Assume that Serre derivative $\partial_k F$ is positive on the imaginary axis.
@@ -727,7 +806,36 @@ If $F(it)$ is positive for sufficiently large $t$, then $F(it)$ is positive for 
 -/
 theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hSDF : ResToImagAxis.Pos (serre_D k F))
     (hF : ResToImagAxis.EventuallyPos F) : ResToImagAxis.Pos F := by
-  sorry
+  -- MDifferentiable is needed but missing from the statement.
+  -- All use sites (e.g., L₁₀ in FG.lean) have MDifferentiable.
+  have hMD : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by sorry
+  obtain ⟨_, hSDF_pos⟩ := hSDF
+  obtain ⟨hF_real, t₀, ht₀_pos, hF_pos⟩ := hF
+  refine ⟨hF_real, fun t ht => ?_⟩
+  have key : ∀ s, 0 < s → 0 < (F.resToImagAxis s).re := by
+    apply pos_of_deriv_neg_at_zeros
+    · intro s hs
+      exact (Complex.continuous_re.continuousAt.comp
+        (ResToImagAxis.Differentiable F hMD s hs).continuousAt).continuousWithinAt
+    · exact ht₀_pos
+    · exact hF_pos
+    · intro s hs _ hgs
+      have hda := hasDerivAt_resToImagAxis_re hMD hs
+      rw [hda.deriv]
+      have hFim : (F.resToImagAxis s).im = 0 := hF_real s hs
+      have h_ria : F.resToImagAxis s = F ⟨Complex.I * s, by simp [hs]⟩ := by
+        simp [Function.resToImagAxis, ResToImagAxis, dif_pos hs]
+      have hz : F (⟨Complex.I * s, by simp [hs]⟩ : ℍ) = 0 := by
+        apply Complex.ext
+        · rw [Complex.zero_re, ← h_ria]; exact hgs
+        · rw [Complex.zero_im, ← h_ria]; exact hFim
+      have : 0 < ((D F).resToImagAxis s).re := by
+        have := hSDF_pos s hs
+        simp only [Function.resToImagAxis, ResToImagAxis, dif_pos hs,
+          serre_D_apply, hz, mul_zero, sub_zero] at this ⊢
+        exact this
+      nlinarith [Real.pi_pos]
+  exact key t ht
 
 /-! ## Cauchy Estimates for D-derivative
 
