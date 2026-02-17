@@ -910,20 +910,14 @@ theorem FmodG_rightLimitAt_zero :
   -- Step 1: Establish the limit of numerator and denominator expressions
   have hNum := numerator_tendsto_at_infty
   have hDen := denominator_tendsto_at_infty
-  -- Step 2: The denominator is eventually nonzero (since it tends to 2)
-  have hDen_ne : ∀ᶠ s in atTop, (H₄.resToImagAxis s).re ^ 3 *
-      (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
-        + 5 * (H₂.resToImagAxis s).re ^ 2) ≠ 0 := by
-    have h2_ne : (2 : ℝ) ≠ 0 := by norm_num
-    exact hDen.eventually_ne h2_ne
-  -- Step 3: Show FmodGReal(1/s) equals Num(s)/Den(s) for large s
+  -- Step 2: Show FmodGReal(1/s) equals Num(s)/Den(s) for large s
   have hEq : ∀ᶠ s in atTop, FmodGReal (1/s) =
       (s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s * ((F₁ * E₄.toFun).resToImagAxis s).re
         + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2) /
       ((H₄.resToImagAxis s).re ^ 3 *
         (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
           + 5 * (H₂.resToImagAxis s).re ^ 2)) := by
-    filter_upwards [eventually_gt_atTop 0, hDen_ne] with s hs hne
+    filter_upwards [eventually_gt_atTop 0] with s hs
     have hF := F_functional_equation' hs
     have hG := G_functional_eq_real hs
     unfold FmodGReal
@@ -960,19 +954,8 @@ theorem FmodG_rightLimitAt_zero :
         (H₄.resToImagAxis t⁻¹).re + 5 * (H₂.resToImagAxis t⁻¹).re ^ 2)))
       (nhdsWithin (0 : ℝ) (Set.Ioi 0)) (nhds (18 * π ^ (-2 : ℤ))) := by
     convert hlim.comp tendsto_inv_nhdsGT_zero using 2; ring
-  -- Transfer hEq through the inverse: 1/t⁻¹ = t for t > 0
-  have hEq' : ∀ᶠ t in nhdsWithin (0 : ℝ) (Set.Ioi 0), FmodGReal t =
-      (t⁻¹ ^ 2 * FReal t⁻¹ - 12 * π ^ (-1 : ℤ) * t⁻¹ * ((F₁ * E₄.toFun).resToImagAxis t⁻¹).re
-        + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis t⁻¹).re ^ 2) /
-      ((H₄.resToImagAxis t⁻¹).re ^ 3 *
-        (2 * (H₄.resToImagAxis t⁻¹).re ^ 2 +
-          5 * (H₂.resToImagAxis t⁻¹).re * (H₄.resToImagAxis t⁻¹).re +
-          5 * (H₂.resToImagAxis t⁻¹).re ^ 2)) := by
-    have h := tendsto_inv_nhdsGT_zero.eventually hEq
-    filter_upwards [h, self_mem_nhdsWithin] with t ht ht_pos
-    simp only [Set.mem_Ioi] at ht_pos
-    simp only [one_div, inv_inv] at ht
-    exact ht
+  have hEq' := (tendsto_inv_nhdsGT_zero.eventually hEq).mono fun t ht => by
+    simpa only [one_div, inv_inv] using ht
   exact h_compose.congr' (hEq'.mono fun _ h => h.symm)
 
 /--
