@@ -781,7 +781,50 @@ theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
 
 theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (1 / 2 : ℂ) x) atImInfty (𝓝 1) := by
-  sorry
+  simp_rw [jacobiTheta₂, jacobiTheta₂_term]
+  convert tendsto_tsum_of_dominated_convergence
+    (f := fun (z : ℍ) (n : ℤ) ↦ cexp (2 * π * I * n * (1 / 2 : ℂ) + π * I * n ^ 2 * z))
+    (𝓕 := atImInfty)
+    (g := fun k ↦ if k = 0 then 1 else 0)
+    (bound := fun n : ℤ ↦ rexp (-π * n ^ 2)) ?_ ?_ ?_
+  · simp
+  · apply summable_ofReal.mp
+    have := (summable_jacobiTheta₂_term_iff 0 I).mpr (by simp)
+    rw [← summable_norm_iff, ← summable_ofReal] at this
+    simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, mul_assoc, ← sq, I_sq,
+      mul_neg_one, norm_exp, re_ofReal_mul, neg_re, mul_neg, ← neg_mul, ← ofReal_intCast,
+      ← ofReal_pow, ofReal_re] at this
+    exact this
+  · intro k
+    simp only
+    split_ifs with hk
+    · subst hk
+      simp
+    · rw [tendsto_zero_iff_norm_tendsto_zero]
+      have hnorm (z : ℍ) :
+          ‖cexp (2 * π * I * k * (1 / 2 : ℂ) + π * I * k ^ 2 * z)‖ = rexp (-π * k ^ 2 * z.im) := by
+        simpa [jacobiTheta₂_term, coe_im] using
+          (norm_jacobiTheta₂_term k (1 / 2 : ℂ) (z : ℂ))
+      simp_rw [hnorm]
+      have hk2_pos : 0 < (k : ℝ) ^ 2 := by
+        exact sq_pos_of_ne_zero (Int.cast_ne_zero.mpr hk)
+      have hcoef_neg : (-π * (k : ℝ) ^ 2) < 0 := by
+        nlinarith [Real.pi_pos, hk2_pos]
+      have harg : Tendsto (fun z : ℍ ↦ -π * (k : ℝ) ^ 2 * z.im) atImInfty atBot := by
+        exact tendsto_im_atImInfty.const_mul_atTop_of_neg hcoef_neg
+      exact (Real.tendsto_exp_atBot).comp harg
+  · rw [eventually_atImInfty]
+    use 1, fun z hz k ↦ ?_
+    have hnorm (z : ℍ) (k : ℤ) :
+        ‖cexp (2 * π * I * k * (1 / 2 : ℂ) + π * I * k ^ 2 * z)‖ = rexp (-π * k ^ 2 * z.im) := by
+      simpa [jacobiTheta₂_term, coe_im] using
+        (norm_jacobiTheta₂_term k (1 / 2 : ℂ) (z : ℂ))
+    rw [hnorm]
+    have hcoef_nonpos : (-π * (k : ℝ) ^ 2) ≤ 0 := by
+      nlinarith [Real.pi_pos, sq_nonneg (k : ℝ)]
+    have hmul : (-π * (k : ℝ) ^ 2) * z.im ≤ (-π * (k : ℝ) ^ 2) * 1 := by
+      exact mul_le_mul_of_nonpos_left hz hcoef_nonpos
+    simpa using Real.exp_le_exp.mpr hmul
 
 theorem Θ₂_tendsto_atImInfty : Tendsto Θ₂ atImInfty (𝓝 0) := by
   rw [funext Θ₂_as_jacobiTheta₂, ← zero_mul (2 : ℂ)]
