@@ -37,8 +37,8 @@ lemma DifferentiableAt_MDifferentiableAt {G : ℂ → ℂ} {z : ℍ}
   -- which is a neighborhood of ↑z
   apply DifferentiableAt.congr_of_eventuallyEq h
   filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
-  simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
-  exact congrArg G (UpperHalfPlane.coe_mk w hw)
+  simpa [Function.comp_apply, ofComplex_apply_of_im_pos hw] using
+    congrArg G (UpperHalfPlane.coe_mk w hw)
 
 /--
 The derivative operator `D` preserves MDifferentiability.
@@ -499,7 +499,7 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
       -- gz = γ • ⟨w, hw⟩, so F gz = F (γ • ⟨w, hw⟩)
       congr 1
       -- Show gz = ofComplex (num/denom) as points in ℍ
-      apply Subtype.ext
+      apply UpperHalfPlane.ext
       rw [ofComplex_apply_of_im_pos hmob_im]
       exact hsmul_coe
   rw [hcomp]

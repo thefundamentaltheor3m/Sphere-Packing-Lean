@@ -105,7 +105,7 @@ lemma φ₀''_mem_upperHalfPlane {z : ℂ} (hz : z ∈ upperHalfPlaneSet) : φ�
   φ₀''_def hz
 
 lemma φ₀''_coe_upperHalfPlane (z : ℍ) : φ₀'' (z : ℂ) = φ₀ z := by
-  rw [φ₀''_def <| UpperHalfPlane.im_pos z]; rfl
+  simpa using (φ₀''_def (z := (z : ℂ)) (UpperHalfPlane.im_pos z))
 
 instance : atImInfty.NeBot := by
   rw [atImInfty, Filter.comap_neBot_iff ]
@@ -325,19 +325,16 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
   rw [@FormalMultilinearSeries.ext_iff] at this
   have h5 := this m
   simp only [PowerSeries.coeff_mk, qExpansionFormalMultilinearSeries, qq, qExpansion2] at h5
-  let t := c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ m
-  let v := (PowerSeries.coeff m) (qExpansion n f) •
-    ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ m
-  have htv : (c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ).toFun =
-    ( (PowerSeries.coeff m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m
-      ℂ).toFun := by
-    rw [h5]
-  have h6 := congrFun htv m
-  simpa only [ContinuousMultilinearMap.toMultilinearMap_smul, Pi.natCast_def,
-    MultilinearMap.toFun_eq_coe, MultilinearMap.smul_apply, ContinuousMultilinearMap.coe_coe,
-    ContinuousMultilinearMap.mkPiAlgebraFin_apply, List.ofFn_const, List.prod_replicate,
-    smul_eq_mul, mul_eq_mul_right_iff, pow_eq_zero_iff', Nat.cast_eq_zero, ne_eq, and_not_self,
-    or_false, qExpansion2, qq] using h6
+  have htv : c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ =
+      (PowerSeries.coeff m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ := by
+    calc
+      c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ =
+          FormalMultilinearSeries.ofScalars ℂ (fun m ↦ (PowerSeries.coeff m) (qExpansion n f)) m := h5
+      _ = (PowerSeries.coeff m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ := by
+        simp [FormalMultilinearSeries.ofScalars]
+  have h6 := congrArg
+    (fun g : ContinuousMultilinearMap ℂ (fun _ : Fin m => ℂ) ℂ => g (fun _ => (1 : ℂ))) htv
+  simpa [ContinuousMultilinearMap.smul_apply, ContinuousMultilinearMap.mkPiAlgebraFin_apply] using h6
 
 lemma deriv_mul_eq (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
     deriv (f * g) = deriv f * g + f * deriv g := by
@@ -584,7 +581,23 @@ theorem E4E6_coeff_zero_eq_zero :
           Γ(1)) 6) E₆ ^ 2) 12)) =
     0 := by
   simp only [one_div, DirectSum.sub_apply]
-  rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2, qExpansion_sub]
+  have hsub :
+      qExpansion (1 : ℕ)
+        ⇑((((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
+          (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)) =
+      qExpansion 1 (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
+        qExpansion 1 (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12) := by
+    rw [show qExpansion (1 : ℕ)
+      ⇑((((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
+        (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)) =
+      qExpansion (1 : ℕ)
+        (⇑(((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
+          ⇑(((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)) by rfl]
+    simpa using
+      (sp_qExpansion_sub (k := 12)
+        ((((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12))
+        ((((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)))
+  rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2, hsub]
   simp only [_root_.map_smul, map_sub, smul_eq_mul,
     mul_eq_zero, inv_eq_zero, OfNat.ofNat_ne_zero, false_or]
   have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
@@ -788,7 +801,7 @@ lemma E4_pow_q_exp_one : (qExpansion 1 ((E₄).mul ((E₄).mul E₄))).coeff 1 =
 lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
   have := Ek_q_exp_zero k hk hk2
   intro h
-  rw [h, ← Nat.cast_one (R := ℝ), qExpansion_zero] at this
+  rw [h, ← Nat.cast_one (R := ℝ), sp_qExpansion_zero] at this
   simp at this
 
 /-This is in the mod forms repo-/

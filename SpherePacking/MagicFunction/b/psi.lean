@@ -526,31 +526,25 @@ section rels_explicit
 lemma ψS_slash_ST_explicit₁ {t : ℝ} (ht : t ∈ Ioc 0 1) :
     ψT' (z₁' t) = ψS' (-1 / (z₁' t + 1)) * (z₁' t + 1) ^ 2 := by
   rw [ψT'_comp_z₁'_eq_ψT_comp_z₁'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
-  congr
 
 lemma ψS_slash_ST_explicit₂ {t : ℝ} (ht : t ∈ Icc 0 1) :
     ψT' (z₂' t) = ψS' (-1 / (z₂' t + 1)) * (z₂' t + 1) ^ 2 := by
   rw [ψT'_comp_z₂'_eq_ψT_comp_z₂'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
-  congr
 
 lemma ψS_slash_ST_explicit₃ {t : ℝ} (ht : t ∈ Ioc 0 1) :
     ψT' (z₃' t) = ψS' (-1 / (z₃' t + 1)) * (z₃' t + 1) ^ 2 := by
   rw [ψT'_comp_z₃'_eq_ψT_comp_z₃'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
-  congr
 
 lemma ψS_slash_ST_explicit₄ {t : ℝ} (ht : t ∈ Icc 0 1) :
     ψT' (z₄' t) = ψS' (-1 / (z₄' t + 1)) * (z₄' t + 1) ^ 2 := by
   rw [ψT'_comp_z₄'_eq_ψT_comp_z₄'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
-  congr
 
 lemma ψS_slash_S_explicit₅ {t : ℝ} (ht : t ∈ Ioc 0 1) :
     ψI' (z₅' t) = ψS' (-1 / z₅' t) * (z₅' t) ^ 2 := by
   rw [ψI'_comp_z₅'_eq_ψI_comp_z₅'_of_mem ht, ← ψS_slash_S, ψS_slash_S_apply' _]
-  congr
 
 lemma ψS_slash_ST_explicit₆ {t : ℝ} (ht : t ∈ Ici 1) :
   ψT' (z₆' t) = ψS' (-1 / (z₆' t + 1)) * (z₆' t + 1) ^ 2 := by
   rw [ψT'_comp_z₆'_eq_ψT_comp_z₆'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
-  congr
 
 end rels_explicit

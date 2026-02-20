@@ -114,7 +114,6 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) = limUnd
     congr
     ext n
     congr 1
-    simp only [UpperHalfPlane.coe]
     have hz := ne_zero z
     rw [← neg_ne_zero] at hz
     field_simp
@@ -385,7 +384,6 @@ theorem extracted_66c (z : ℍ) :
     rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
     congr
     field_simp
-    simp only [UpperHalfPlane.coe]
     ring_nf
     simp_all only [ne_eq, Int.cast_neg, mul_neg]
     rfl
@@ -752,7 +750,6 @@ lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂
       congr
       · simp only [UpperHalfPlane.coe, inv_pow, inv_inj]
         norm_cast
-      simp only [UpperHalfPlane.coe]
       ring
     · simpa only [h2, D2_T, sub_zero] using G2_periodic
   · simp only [SlashAction.slash_one, D2_one, sub_zero]

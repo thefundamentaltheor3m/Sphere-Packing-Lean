@@ -17,33 +17,27 @@ theorem logDeriv_tprod_eq_tsum2 {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ �
     (hd : ∀ i : ℕ, DifferentiableOn ℂ (f i) s) (hm : Summable fun i ↦ logDeriv (f i) ↑x)
     (htend : MultipliableLocallyUniformlyOn f s) (hnez : ∏' (i : ℕ), f i ↑x ≠ 0) :
     logDeriv (∏' i : ℕ, f i ·) x = ∑' i : ℕ, logDeriv (f i) x := by
-    have h2 := Summable.hasSum hm
-    rw [Summable.hasSum_iff_tendsto_nat hm] at h2
-    apply symm
-    rw [← Summable.hasSum_iff hm]
-    rw [Summable.hasSum_iff_tendsto_nat hm]
-    let g := (∏' i : ℕ, f i ·)
-    have := logDeriv_tendsto (f := fun (n : ℕ) ↦ ∏ i ∈ Finset.range n, (f i)) (g := g) (s := s) hs
-      (p := atTop)
-    simp only [eventually_atTop, ge_iff_le, ne_eq, forall_exists_index, Subtype.forall, g] at this
-    have HT := this x x.2 ?_ ?_ ?_ ?_
-    conv =>
-      enter [1]
-      ext n
-      rw [← logDeriv_prod _ _ _ (by intro i hi; apply hf i)
-        (by intro i hi; apply (hd i x x.2).differentiableAt; exact IsOpen.mem_nhds hs x.2)]
-    · apply HT.congr
-      intro m
-      congr
-      ext i
-      simp only [Finset.prod_apply]
-    · have := htend.hasProdLocallyUniformlyOn.tendstoLocallyUniformlyOn_finsetRange
-      convert this
-      simp
-    · use 0
-    · intro _ _
-      exact DifferentiableOn.finset_prod fun i a ↦ hd i
-    · exact hnez
+  have h2 := Summable.hasSum hm
+  rw [Summable.hasSum_iff_tendsto_nat hm] at h2
+  let g : ℂ → ℂ := fun z ↦ ∏' i : ℕ, f i z
+  have hlog :
+      Tendsto (fun n ↦ logDeriv (fun z ↦ ∏ i ∈ Finset.range n, f i z) ↑x) atTop
+        (𝓝 (logDeriv g ↑x)) := by
+    refine logDeriv_tendsto (s := s) hs x.2 ?_ ?_ ?_
+    · have hF := htend.hasProdLocallyUniformlyOn.tendstoLocallyUniformlyOn_finsetRange
+      simpa [g] using hF
+    · exact Filter.Eventually.of_forall fun n ↦
+        DifferentiableOn.fun_finset_prod (u := Finset.range n) (s := s) (f := f) fun i _ ↦ hd i
+    · simpa [g] using hnez
+  have hlog' :
+      Tendsto (fun n ↦ ∑ i ∈ Finset.range n, logDeriv (f i) ↑x) atTop (𝓝 (logDeriv g ↑x)) := by
+    convert hlog using 1
+    ext n
+    symm
+    rw [logDeriv_prod (by intro i hi; exact hf i)
+      (by intro i hi; exact (hd i x x.2).differentiableAt (IsOpen.mem_nhds hs x.2))]
+  have hEq : logDeriv g ↑x = ∑' i : ℕ, logDeriv (f i) ↑x := tendsto_nhds_unique hlog' h2
+  simpa [g] using hEq
 
 
 theorem logDeriv_tprod_eq_tsum {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ → ℂ → ℂ)
@@ -52,31 +46,28 @@ theorem logDeriv_tprod_eq_tsum {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ �
     (htend : TendstoLocallyUniformlyOn (fun n ↦ ∏ i ∈ Finset.range n, f i)
     (fun x ↦ ∏' (i : ℕ), f i x) atTop s) (hnez : ∏' (i : ℕ), f i ↑x ≠ 0) :
     logDeriv (∏' i : ℕ, f i ·) x = ∑' i : ℕ, logDeriv (f i) x := by
-    have h2 := Summable.hasSum hm
-    rw [Summable.hasSum_iff_tendsto_nat hm] at h2
-    apply symm
-    rw [← Summable.hasSum_iff hm]
-    rw [Summable.hasSum_iff_tendsto_nat hm]
-    let g := (∏' i : ℕ, f i ·)
-    have :=
-      logDeriv_tendsto (f := fun n ↦ ∏ i ∈ Finset.range n, (f i)) (g:=g) (s := s) hs (p := atTop)
-    simp only [eventually_atTop, ge_iff_le, ne_eq, forall_exists_index, Subtype.forall, g] at this
-    have HT := this x x.2 ?_ ?_ ?_ ?_
-    conv =>
-      enter [1]
-      ext n
-      rw [← logDeriv_prod _ _ _ (by intro i hi; apply hf i)
-        (by intro i hi; apply (hd i x x.2).differentiableAt; exact IsOpen.mem_nhds hs x.2)]
-    · apply HT.congr
-      intro m
-      congr
-      ext i
-      simp only [Finset.prod_apply]
-    · exact htend
-    · use 0
-    · intro _ _
-      exact DifferentiableOn.finset_prod fun i a ↦ hd i
-    · exact hnez
+  have h2 := Summable.hasSum hm
+  rw [Summable.hasSum_iff_tendsto_nat hm] at h2
+  let g : ℂ → ℂ := fun z ↦ ∏' i : ℕ, f i z
+  have hlog :
+      Tendsto (fun n ↦ logDeriv (fun z ↦ ∏ i ∈ Finset.range n, f i z) ↑x) atTop
+        (𝓝 (logDeriv g ↑x)) := by
+    refine logDeriv_tendsto (s := s) hs x.2 ?_ ?_ ?_
+    · convert htend using 1
+      ext n z
+      simp [Finset.prod_apply]
+    · exact Filter.Eventually.of_forall fun n ↦
+        DifferentiableOn.fun_finset_prod (u := Finset.range n) (s := s) (f := f) fun i _ ↦ hd i
+    · simpa [g] using hnez
+  have hlog' :
+      Tendsto (fun n ↦ ∑ i ∈ Finset.range n, logDeriv (f i) ↑x) atTop (𝓝 (logDeriv g ↑x)) := by
+    convert hlog using 1
+    ext n
+    symm
+    rw [logDeriv_prod (by intro i hi; exact hf i)
+      (by intro i hi; exact (hd i x x.2).differentiableAt (IsOpen.mem_nhds hs x.2))]
+  have hEq : logDeriv g ↑x = ∑' i : ℕ, logDeriv (f i) ↑x := tendsto_nhds_unique hlog' h2
+  simpa [g] using hEq
 
 lemma logDeriv_one_sub_exp (r : ℂ) : logDeriv (fun z => 1 - r * cexp (z)) =
     fun z => -r * cexp z / (1 - r * cexp ( z)) := by
