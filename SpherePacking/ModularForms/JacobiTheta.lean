@@ -150,9 +150,8 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
   calc
   _ = cexp (-π * I / x) * jacobiTheta₂ (-1 / (2 * x)) (-1 / x) ^ 4 * x ^ (-2 : ℤ) := by
     rw [modular_slash_S_apply, H₂, Θ₂_as_jacobiTheta₂]
-    simp only [coe_mk_subtype, inv_neg, UpperHalfPlane.coe_mk, mul_neg, mul_pow, ←
-      Complex.exp_nat_mul, Nat.cast_ofNat, Int.reduceNeg, zpow_neg, neg_mul, mul_eq_mul_right_iff,
-      inv_eq_zero]
+    simp only [inv_neg, mul_neg, mul_pow, ← Complex.exp_nat_mul, Nat.cast_ofNat, Int.reduceNeg,
+      zpow_neg, neg_mul, mul_eq_mul_right_iff, inv_eq_zero]
     rw [mul_comm 4, div_mul_cancel₀ _ (by norm_num)]
     left
     congr 3
@@ -194,7 +193,7 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     rw [neg_mul, ← Complex.exp_add, neg_mul (π : ℂ), neg_div, neg_add_cancel, Complex.exp_zero,
       neg_one_mul]
   _ = -H₄ ⟨x, hx⟩ := by
-    simpa [H₄, Θ₄_as_jacobiTheta₂]
+    simp [H₄, Θ₄_as_jacobiTheta₂]
 
 lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   ext x

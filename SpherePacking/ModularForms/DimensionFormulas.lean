@@ -45,8 +45,8 @@ lemma mul_Delta_IsCuspForm (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 
   rw [IsCuspForm_iff_coeffZero_eq_zero]
   rw [qExpansion_ext2 _ _ (mul_Delta_map_eq_mul k f)]
   rw [← Nat.cast_one (R := ℝ), qExpansion_mul_coeff]
-  simp only [PowerSeries.coeff_mul, Finset.antidiagonal_zero, Prod.mk_zero_zero, Finset.sum_singleton,
-    Prod.fst_zero, Prod.snd_zero]
+  simp only [PowerSeries.coeff_mul, Finset.antidiagonal_zero, Prod.mk_zero_zero,
+    Finset.sum_singleton, Prod.fst_zero, Prod.snd_zero]
   simp only [mul_eq_zero]
   right
   rw [Nat.cast_one, ← IsCuspForm_iff_coeffZero_eq_zero]
@@ -228,13 +228,13 @@ lemma weight_six_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 6) = 1 := 
       rw [← Nat.cast_one (R := ℝ), qExpansion_coe_sub,
         qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)]
       have hnorm0 := modularForm_normalise f hf2
-      have hcInv : c⁻¹ = ((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ := by simpa [hc]
+      have hcInv : c⁻¹ = ((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ := by simp [hc]
       have hnorm : (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) = 1 := by
         calc
           (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) =
               (PowerSeries.coeff 0) (qExpansion 1 (c⁻¹ • ⇑f)) := by rfl
-          _ = (PowerSeries.coeff 0) (qExpansion 1 (((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ • ⇑f)) := by
-              simpa [hcInv]
+          _ = (PowerSeries.coeff 0) (qExpansion 1 (((PowerSeries.coeff 0)
+                (qExpansion 1 ⇑f))⁻¹ • ⇑f)) := by simp [hcInv]
           _ = 1 := hnorm0
       have hnorm' : PowerSeries.constantCoeff (qExpansion 1 (c⁻¹ • ⇑f)) = 1 := by
         simpa [PowerSeries.constantCoeff] using hnorm
@@ -266,13 +266,13 @@ lemma weight_four_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 4) = 1 :=
       rw [← Nat.cast_one (R := ℝ), qExpansion_coe_sub,
         qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)]
       have hnorm0 := modularForm_normalise f hf2
-      have hcInv : c⁻¹ = ((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ := by simpa [hc]
+      have hcInv : c⁻¹ = ((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ := by simp [hc]
       have hnorm : (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) = 1 := by
         calc
           (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) =
               (PowerSeries.coeff 0) (qExpansion 1 (c⁻¹ • ⇑f)) := by rfl
-          _ = (PowerSeries.coeff 0) (qExpansion 1 (((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ • ⇑f)) := by
-              simpa [hcInv]
+          _ = (PowerSeries.coeff 0) (qExpansion 1 (((PowerSeries.coeff 0)
+                (qExpansion 1 ⇑f))⁻¹ • ⇑f)) := by simp [hcInv]
           _ = 1 := hnorm0
       have hnorm' : PowerSeries.constantCoeff (qExpansion 1 (c⁻¹ • ⇑f)) = 1 := by
         simpa [PowerSeries.constantCoeff] using hnorm
@@ -304,13 +304,13 @@ lemma weight_eight_one_dimensional (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even 
       rw [← Nat.cast_one (R := ℝ), qExpansion_coe_sub,
         qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)]
       have hnorm0 := modularForm_normalise f hf2
-      have hcInv : c⁻¹ = ((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ := by simpa [hc]
+      have hcInv : c⁻¹ = ((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ := by simp [hc]
       have hnorm : (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) = 1 := by
         calc
           (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) =
               (PowerSeries.coeff 0) (qExpansion 1 (c⁻¹ • ⇑f)) := by rfl
           _ = (PowerSeries.coeff 0) (qExpansion 1 (((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ • ⇑f)) := by
-              simpa [hcInv]
+              simp [hcInv]
           _ = 1 := hnorm0
       have hE := Ek_q_exp_zero k hk hk2
       have hnorm' : PowerSeries.constantCoeff (qExpansion 1 (c⁻¹ • ⇑f)) = 1 := by
@@ -462,7 +462,8 @@ lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk
     rw [this, Submodule.Quotient.eq, CuspFormSubmodule_mem_iff_coeffZero_eq_zero]
     set c : ℂ := (qExpansion 1 f).coeff 0
     have hsub1 : qExpansion 1 ⇑(c • E k hk - f) = qExpansion 1 (⇑(c • E k hk) - ⇑f) := by rfl
-    have hsub2 : qExpansion 1 (⇑(c • E k hk) - ⇑f) = qExpansion 1 ⇑(c • E k hk) - qExpansion 1 ⇑f := by
+    have hsub2 : qExpansion 1 (⇑(c • E k hk) - ⇑f) =
+        qExpansion 1 ⇑(c • E k hk) - qExpansion 1 ⇑f := by
       simpa using (qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ))
         (hh := by positivity) (hΓ := by simp) (f := (c • E k hk)) (g := f))
     have hmain : (PowerSeries.coeff 0) (qExpansion 1 ⇑(c • E k hk) - qExpansion 1 ⇑f) = 0 := by

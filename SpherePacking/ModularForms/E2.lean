@@ -51,14 +51,14 @@ lemma extracted_77 (z : ℍ) (n : ℤ) : Summable fun b : ℤ ↦ (((b : ℂ) * 
     ).mul_left ((z : ℂ)^2)⁻¹
   apply this.congr
   intro b
-  simp only [UpperHalfPlane.coe, Int.cast_neg, neg_mul]
+  simp only [Int.cast_neg, neg_mul]
   field_simp
   norm_cast
   congr 1
   rw [← mul_pow]
   congr
   have hz := ne_zero z --this come our with a coe that should be fixed
-  simp only [UpperHalfPlane.coe, ne_eq] at hz
+  simp only [ne_eq] at hz
   field_simp
   ring
 
@@ -82,7 +82,7 @@ theorem extracted_66 (z : ℍ) :
     congr 1
     rw [show ((d : ℂ) * ↑z + ↑n) ^ 2 = (-↑d * ↑z - ↑n) ^ 2 by ring, ← mul_pow]
     congr
-    simp only [UpperHalfPlane.coe] at *
+    simp only at *
     rw [mul_add]
     field_simp
     ring_nf
@@ -103,10 +103,10 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) = limUnd
       rw [int_sum_neg]
       congr
       ext n
-      simp only [UpperHalfPlane.coe, Int.cast_neg, neg_mul, inv_inj]
+      simp only [Int.cast_neg, neg_mul, inv_inj]
       ring
     have := G2_cauchy ⟨-(1 : ℂ) / z, by simpa using pnat_div_upper 1 z⟩
-    simp only [coe_mk_subtype, one_div] at this
+    simp only [one_div] at this
     apply this.congr
     ext N
     congr
@@ -683,8 +683,8 @@ lemma G2_q_exp (z : ℍ) : G₂ z = (2 * riemannZeta 2) - 8 * π ^ 2 *
   apply Filter.Tendsto.add
   · simp only [tendsto_const_nhds_iff]
   · have := G2_c_tendsto z
-    simp only [UpperHalfPlane.coe, neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one,
-      Nat.factorial_one, Nat.cast_one, div_one, pow_one] at *
+    simp only [neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one, Nat.factorial_one,
+      Nat.cast_one, div_one, pow_one] at *
     apply this
 
 lemma G2_periodic : (G₂ ∣[(2 : ℤ)] ModularGroup.T) = G₂ := by
@@ -748,7 +748,7 @@ lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂
       ring_nf
       rw [modular_S_smul]
       congr
-      · simp only [UpperHalfPlane.coe, inv_pow, inv_inj]
+      · simp only [inv_pow, inv_inj]
         norm_cast
       ring
     · simpa only [h2, D2_T, sub_zero] using G2_periodic
@@ -819,11 +819,11 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ, (n + 1) *
     ext n
     rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp]
   have h1 := tsum_pnat_eq_tsum_succ3 (fun n => sigma 1 (n) * cexp (2 * π * Complex.I * (n) * z))
-  simp only [UpperHalfPlane.coe] at *
+  simp only at *
   rw [← h1]
   have h2 := fun n : ℕ => tsum_pnat_eq_tsum_succ3
     ( fun m => ↑(n + 1) * (cexp (2 * ↑π * Complex.I * ↑z) ^ (n + 1)) ^ (m))
-  simp only [UpperHalfPlane.coe] at h2
+  simp only at h2
   conv =>
     enter [1,1]
     ext n
@@ -834,7 +834,7 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ, (n + 1) *
       rw [pow_right_comm]
   have h3 := tsum_pnat_eq_tsum_succ3
       (fun n ↦ ∑' (m : ℕ+), ↑(n) * (cexp (2 * ↑π * Complex.I * ↑z) ^ (m : ℕ)) ^ (n))
-  simp only [UpperHalfPlane.coe] at h3
+  simp only at h3
   rw [← h3, ← this]
   simp only [pow_one]
   rw [Summable.tsum_prod' ]
@@ -849,8 +849,8 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ, (n + 1) *
   · have := a4 2 z
     apply this.congr
     intro b
-    simp only [uncurry, Nat.add_one_sub_one, pow_one, UpperHalfPlane.coe, mul_eq_mul_left_iff,
-      Nat.cast_eq_zero, PNat.ne_zero, or_false]
+    simp only [uncurry, Nat.add_one_sub_one, pow_one, mul_eq_mul_left_iff, Nat.cast_eq_zero,
+      PNat.ne_zero, or_false]
     ring_nf
   · intro e
     have := a1 2 e z

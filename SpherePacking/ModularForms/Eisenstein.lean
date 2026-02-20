@@ -36,11 +36,11 @@ section Definitions
 /- The Eisenstein Series E₄ and E₆ -/
 
 def E₄ : ModularForm (CongruenceSubgroup.Gamma ↑1) 4 :=
-  (1/2 : ℂ) • eisensteinSeries_MF (by norm_num) standardcongruencecondition /-they need 1/2 for the
+  (1/2 : ℂ) • eisensteinSeriesMF (by norm_num) standardcongruencecondition /-they need 1/2 for the
     normalization to match up (since the sum here is taken over coprime integers).-/
 
 def E₆ : ModularForm (CongruenceSubgroup.Gamma ↑1) 6 :=
-  (1/2 : ℂ) • eisensteinSeries_MF (by norm_num) standardcongruencecondition
+  (1/2 : ℂ) • eisensteinSeriesMF (by norm_num) standardcongruencecondition
 
 lemma E4_eq : E₄ = E 4 (by norm_num) := rfl
 
@@ -119,7 +119,7 @@ instance : atImInfty.NeBot := by
     positivity
   use ⟨z, hz⟩
   apply hx
-  simp only [UpperHalfPlane.im, coe_mk_subtype]
+  simp only [UpperHalfPlane.im]
   have : x ≤ |x| := by
     apply le_abs_self
   apply le_trans this
@@ -141,7 +141,7 @@ theorem cuspfunc_lim_coef {k : ℤ} {F : Type u_1} [inst : FunLike F ℍ ℂ] (n
   have hft := hf ⟨(Periodic.invQParam (↑n) q), hq2⟩
   have := eq_cuspFunction (h := n) f
     ⟨(Periodic.invQParam (↑n) q), hq2⟩ (by simp) (by simp [inst_2.1])
-  simp only [smul_eq_mul, ne_eq, coe_mk_subtype] at *
+  simp only [smul_eq_mul, ne_eq] at *
   rw [Function.Periodic.qParam_right_inv] at this hft
   · rw [← this] at hft
     exact hft
@@ -244,7 +244,7 @@ lemma qParam_surj_onto_ball (r : ℝ) (hr : 0 < r) (hr2 : r < 1) [NeZero n] : �
     := by
   use ⟨(Periodic.invQParam n r), ?_⟩
   · have hq := Function.Periodic.qParam_right_inv (h := n) (q := r) ?_ ?_
-    · simp only [UpperHalfPlane.coe]
+    · simp
       rw [hq]
       simp [hr.le]
     · exact Ne.symm (NeZero.ne' _)
@@ -298,7 +298,7 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
         simpa using hfz
     refine ⟨H21 , zero_lt_one, ?_⟩
     intro y hy
-    rw [EMetric.mem_ball, edist_zero_right, enorm_eq_nnnorm, ENNReal.coe_lt_one_iff, ←
+    rw [Metric.mem_eball, edist_zero_right, enorm_eq_nnnorm, ENNReal.coe_lt_one_iff, ←
       NNReal.coe_lt_one,
     coe_nnnorm] at hy
     simp
@@ -328,13 +328,14 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
   have htv : c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ =
       (PowerSeries.coeff m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ := by
     calc
-      c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ =
-          FormalMultilinearSeries.ofScalars ℂ (fun m ↦ (PowerSeries.coeff m) (qExpansion n f)) m := h5
-      _ = (PowerSeries.coeff m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ := by
-        simp [FormalMultilinearSeries.ofScalars]
+      _ = FormalMultilinearSeries.ofScalars ℂ (fun m ↦ (PowerSeries.coeff m) (qExpansion n f)) m :=
+          h5
+      _ = (PowerSeries.coeff m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ :=
+          by simp [FormalMultilinearSeries.ofScalars]
   have h6 := congrArg
     (fun g : ContinuousMultilinearMap ℂ (fun _ : Fin m => ℂ) ℂ => g (fun _ => (1 : ℂ))) htv
-  simpa [ContinuousMultilinearMap.smul_apply, ContinuousMultilinearMap.mkPiAlgebraFin_apply] using h6
+  simpa [ContinuousMultilinearMap.smul_apply, ContinuousMultilinearMap.mkPiAlgebraFin_apply]
+    using h6
 
 lemma deriv_mul_eq (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
     deriv (f * g) = deriv f * g + f * deriv g := by
@@ -807,7 +808,7 @@ lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 
   have hqzero : PowerSeries.constantCoeff (qExpansion 1 (0 : ℍ → ℂ)) = 0 := by
     simpa using congrArg (fun p : PowerSeries ℂ => p.coeff 0)
       ((qExpansion_zero (h := (1 : ℕ))) : qExpansion 1 (0 : ℍ → ℂ) = 0)
-  have : (0 : ℂ) = 1 := by simpa [hqzero] using hcoeff
+  have : (0 : ℂ) = 1 := by simp [hqzero] at hcoeff
   exact zero_ne_one this
 
 /-This is in the mod forms repo-/
