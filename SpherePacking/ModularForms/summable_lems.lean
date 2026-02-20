@@ -1542,8 +1542,8 @@ theorem tsum_sigma_eqn2 (k : ℕ) (z : ℍ) :
     ∑' (c : Fin 2 → ℕ+), (c 0 ^ k : ℂ) * Complex.exp (2 * ↑π * Complex.I * z * c 0 * c 1) =
       ∑' e : ℕ+, sigma k e * Complex.exp (2 * ↑π * Complex.I * z * e) := by
   rw [← (piFinTwoEquiv fun _ => ℕ+).symm.tsum_eq]
-  rw [← sigmaAntidiagonalEquivProd.tsum_eq]
-  simp only [sigmaAntidiagonalEquivProd, mapdiv, PNat.mk_coe, Equiv.coe_fn_mk, Fin.isValue,
+  rw [← spSigmaAntidiagonalEquivProd.tsum_eq]
+  simp only [spSigmaAntidiagonalEquivProd, mapdiv, PNat.mk_coe, Equiv.coe_fn_mk, Fin.isValue,
     piFinTwoEquiv_symm_apply, Fin.cons_zero, Fin.cons_one]
   simp_rw [sigma_eq_sum_div']
   simp only [Nat.cast_sum, Nat.cast_pow]
@@ -1629,8 +1629,8 @@ theorem a1 (k : ℕ) (e : ℕ+) (z : ℍ) :
 /-This is straight from the mod forms repo-/
 theorem a4 (k : ℕ) (z : ℍ) :
     Summable (uncurry fun b c : ℕ+ => ↑b ^ (k - 1) * exp (2 * ↑π * Complex.I * ↑c * ↑z * ↑b)) := by
-  rw [sigmaAntidiagonalEquivProd.summable_iff.symm]
-  simp only [sigmaAntidiagonalEquivProd, mapdiv, PNat.mk_coe, Equiv.coe_fn_mk]
+  rw [spSigmaAntidiagonalEquivProd.summable_iff.symm]
+  simp only [spSigmaAntidiagonalEquivProd, mapdiv, PNat.mk_coe, Equiv.coe_fn_mk]
   apply (summable_auxil_1 (k - 1) z).congr
   intro b
   simp only [comp_apply, uncurry_apply_pair, PNat.mk_coe, mul_eq_mul_left_iff, pow_eq_zero_iff',

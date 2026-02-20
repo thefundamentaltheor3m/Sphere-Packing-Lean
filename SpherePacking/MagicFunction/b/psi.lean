@@ -76,15 +76,7 @@ private lemma slashS (z : ℍ) (F : ℍ → ℂ) : (F ∣[(2 : ℤ)] (S)) (z) =
 private lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (2 : ℕ) := by
   rw [SL_slash_apply, S, denom]
-  simp only [Int.reduceNeg, sl_moeb, coe2_smul, Fin.isValue,
-    SpecialLinearGroup.coe_GL_coe_matrix, SpecialLinearGroup.map_apply_coe,
-    RingHom.mapMatrix_apply, Int.coe_castRingHom, map_apply, of_apply, cons_val', cons_val_zero,
-    cons_val_fin_one, cons_val_one, Int.cast_one, ofReal_one, one_mul, Int.cast_zero,
-    ofReal_zero, add_zero, neg_neg, mul_eq_mul_left_iff]
-  have pow_coe_nat (a : ℂ) : a ^ (2 : ℕ) = a ^ (2 : ℤ) := by
-    rw [zpow_two, pow_two]
-  left
-  rw [pow_coe_nat]
+  simp [zpow_two, pow_two]
 
 private lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
     (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
