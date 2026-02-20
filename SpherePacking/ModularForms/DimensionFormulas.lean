@@ -44,7 +44,9 @@ lemma mul_Delta_IsCuspForm (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 
   IsCuspForm (CongruenceSubgroup.Gamma 1) k (mul_Delta_map k f) := by
   rw [IsCuspForm_iff_coeffZero_eq_zero]
   rw [qExpansion_ext2 _ _ (mul_Delta_map_eq_mul k f)]
-  rw [← Nat.cast_one (R := ℝ), sp_qExpansion_mul_coeff_zero]
+  rw [← Nat.cast_one (R := ℝ), qExpansion_mul_coeff]
+  simp only [PowerSeries.coeff_mul, Finset.antidiagonal_zero, Prod.mk_zero_zero, Finset.sum_singleton,
+    Prod.fst_zero, Prod.snd_zero]
   simp only [mul_eq_zero]
   right
   rw [Nat.cast_one, ← IsCuspForm_iff_coeffZero_eq_zero]
@@ -158,7 +160,8 @@ lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff 1 = 1 :=
   rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2]
   have hsub1 : qExpansion 1 ⇑(A - B) = qExpansion 1 (⇑A - ⇑B) := by rfl
   have hsub2 : qExpansion 1 (⇑A - ⇑B) = qExpansion 1 ⇑A - qExpansion 1 ⇑B := by
-    simpa using (sp_qExpansion_sub (f := A) (g := B))
+    simpa using (qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ))
+      (hh := by positivity) (hΓ := by simp) (f := A) (g := B))
   have hmain : (PowerSeries.coeff 1) ((1728⁻¹ : ℂ) • (qExpansion 1 ⇑A - qExpansion 1 ⇑B)) = 1 := by
     have h4 := qExpansion_pow E₄ 3
     have h6 := qExpansion_pow E₆ 2
@@ -195,7 +198,8 @@ theorem Delta_E4_eqn : Delta = Delta_E4_E6_aux := by
   · have h1 := Delta_q_one_term
     have h2 := Delta_E4_E6_aux_q_one_term
     rw [← H] at h2
-    have hs := sp_qExpansion_smul 1 c Delta
+    have hs := (qExpansion_smul (Γ := Γ(1)) (h := (1 : ℕ))
+      (hh := by positivity) (hΓ := by simp) c Delta).symm
     have hsmul : qExpansion 1 ⇑(c • Delta) = qExpansion 1 (c • ⇑Delta) := by rfl
     rw [hsmul, ← Nat.cast_one (R := ℝ), ← hs] at h2
     simp at h2
@@ -221,7 +225,8 @@ lemma weight_six_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 6) = 1 := 
     set c := (qExpansion 1 f).coeff 0 with hc
     have hcusp : IsCuspForm Γ(1) 6 (E₆ - c⁻¹• f) := by
       rw [IsCuspForm_iff_coeffZero_eq_zero]
-      rw [← Nat.cast_one (R := ℝ), qExpansion_coe_sub, sp_qExpansion_sub]
+      rw [← Nat.cast_one (R := ℝ), qExpansion_coe_sub,
+        qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)]
       have hnorm0 := modularForm_normalise f hf2
       have hcInv : c⁻¹ = ((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ := by simpa [hc]
       have hnorm : (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) = 1 := by
@@ -258,7 +263,8 @@ lemma weight_four_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 4) = 1 :=
     set c := (qExpansion 1 f).coeff 0 with hc
     have hcusp : IsCuspForm Γ(1) 4 (E₄ - c⁻¹• f) := by
       rw [IsCuspForm_iff_coeffZero_eq_zero]
-      rw [← Nat.cast_one (R := ℝ), qExpansion_coe_sub, sp_qExpansion_sub]
+      rw [← Nat.cast_one (R := ℝ), qExpansion_coe_sub,
+        qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)]
       have hnorm0 := modularForm_normalise f hf2
       have hcInv : c⁻¹ = ((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ := by simpa [hc]
       have hnorm : (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) = 1 := by
@@ -295,7 +301,8 @@ lemma weight_eight_one_dimensional (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even 
     set c := (qExpansion 1 f).coeff 0 with hc
     have hcusp : IsCuspForm Γ(1) k (E k hk - c⁻¹• f) := by
       rw [IsCuspForm_iff_coeffZero_eq_zero]
-      rw [← Nat.cast_one (R := ℝ), qExpansion_coe_sub, sp_qExpansion_sub]
+      rw [← Nat.cast_one (R := ℝ), qExpansion_coe_sub,
+        qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)]
       have hnorm0 := modularForm_normalise f hf2
       have hcInv : c⁻¹ = ((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ := by simpa [hc]
       have hnorm : (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) = 1 := by
@@ -456,7 +463,8 @@ lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk
     set c : ℂ := (qExpansion 1 f).coeff 0
     have hsub1 : qExpansion 1 ⇑(c • E k hk - f) = qExpansion 1 (⇑(c • E k hk) - ⇑f) := by rfl
     have hsub2 : qExpansion 1 (⇑(c • E k hk) - ⇑f) = qExpansion 1 ⇑(c • E k hk) - qExpansion 1 ⇑f := by
-      simpa using (sp_qExpansion_sub (f := (c • E k hk)) (g := f))
+      simpa using (qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ))
+        (hh := by positivity) (hΓ := by simp) (f := (c • E k hk)) (g := f))
     have hmain : (PowerSeries.coeff 0) (qExpansion 1 ⇑(c • E k hk) - qExpansion 1 ⇑f) = 0 := by
       have hsmul : qExpansion 1 ⇑(c • E k hk) = c • qExpansion 1 (E k hk) := by
         calc

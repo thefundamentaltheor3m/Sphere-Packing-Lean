@@ -594,7 +594,8 @@ theorem E4E6_coeff_zero_eq_zero :
         (⇑(((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
           ⇑(((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)) by rfl]
     simpa using
-      (sp_qExpansion_sub (k := 12)
+      (qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ))
+        (hh := by positivity) (hΓ := by simp)
         ((((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12))
         ((((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)))
   rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2, hsub]
@@ -799,10 +800,15 @@ lemma E4_pow_q_exp_one : (qExpansion 1 ((E₄).mul ((E₄).mul E₄))).coeff 1 =
   ring
 
 lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
-  have := Ek_q_exp_zero k hk hk2
+  have hq := Ek_q_exp_zero k hk hk2
   intro h
-  rw [h, ← Nat.cast_one (R := ℝ), sp_qExpansion_zero] at this
-  simp at this
+  have hcoeff : PowerSeries.constantCoeff (qExpansion 1 (0 : ℍ → ℂ)) = 1 := by
+    simpa [h] using hq
+  have hqzero : PowerSeries.constantCoeff (qExpansion 1 (0 : ℍ → ℂ)) = 0 := by
+    simpa using congrArg (fun p : PowerSeries ℂ => p.coeff 0)
+      ((qExpansion_zero (h := (1 : ℕ))) : qExpansion 1 (0 : ℍ → ℂ) = 0)
+  have : (0 : ℂ) = 1 := by simpa [hqzero] using hcoeff
+  exact zero_ne_one this
 
 /-This is in the mod forms repo-/
 lemma E4_ne_zero : E₄ ≠ 0 := by
