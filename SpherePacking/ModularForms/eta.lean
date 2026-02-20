@@ -173,7 +173,10 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
       · have := tsum_log_deriv_eqn z
         have h0 := logDeriv_z_term z
         simp only [UpperHalfPlane.coe] at *
-        rw [this, E₂, h0]
+        rw [this, h0]
+        have hE2 : E₂ z = (1 / (2 * riemannZeta 2)) * G₂ z := by
+          simpa [E₂, EisensteinSeries.E2, smul_eq_mul, G₂]
+        rw [hE2]
         simp
         rw [G2_q_exp]
         rw [riemannZeta_two]

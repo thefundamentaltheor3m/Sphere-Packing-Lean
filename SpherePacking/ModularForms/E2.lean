@@ -14,7 +14,7 @@ noncomputable section
 def G₂ : ℍ → ℂ := EisensteinSeries.G2
 
 /-- Compatibility alias for Mathlib's `EisensteinSeries.E2`. -/
-def E₂ : ℍ → ℂ := (1 / (2 * riemannZeta 2)) • G₂
+def E₂ : ℍ → ℂ := EisensteinSeries.E2
 
 /-- Compatibility alias for Mathlib's `EisensteinSeries.D2`. -/
 def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := fun z => (2 * π * Complex.I * γ 1 0) / (denom γ z)
@@ -62,37 +62,31 @@ lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂
 
 /-- E₂ is 1-periodic: E₂(z + 1) = E₂(z). -/
 lemma E₂_periodic (z : ℍ) : E₂ ((1 : ℝ) +ᵥ z) = E₂ z := by
-  have h := congrFun G2_periodic z
+  have h := congrFun (EisensteinSeries.E2_slash_action ModularGroup.T) z
   rw [modular_slash_T_apply] at h
-  simp [E₂, h]
+  simpa [E₂, EisensteinSeries.D2_T] using h
 
 lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
     E₂ z + 6 / (π * Complex.I * z) := by
-  rw [E₂]
-  have := G₂_transform (ModularGroup.S)
-  have hsm := ModularForm.SL_smul_slash (2 : ℤ) ModularGroup.S G₂ (1 / (2 * riemannZeta 2))
-  rw [hsm]
-  simp only [SL_slash, one_div, mul_inv_rev, Pi.smul_apply, smul_eq_mul] at *
-  rw [this]
-  simp only [Pi.sub_apply]
-  rw [D2_S]
-  ring_nf
-  rw [sub_eq_add_neg]
-  congr
-  rw [riemannZeta_two]
+  have h := congrFun (EisensteinSeries.E2_slash_action ModularGroup.S) z
+  have h' : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
+      E₂ z - (1 / (2 * riemannZeta 2)) * (2 * π * Complex.I / z) := by
+    simpa [E₂, EisensteinSeries.D2_S, smul_eq_mul] using h
+  rw [riemannZeta_two] at h'
   have hpi : (π : ℂ) ≠ 0 := by simp
-  ring_nf
-  simp only [inv_pow, inv_I, mul_neg, neg_mul, neg_inj, mul_eq_mul_right_iff, OfNat.ofNat_ne_zero,
-    or_false]
-  rw [← inv_pow, pow_two, ← mul_assoc, mul_inv_cancel₀ hpi, one_mul]
-  ring
+  have hI : (Complex.I : ℂ) ≠ 0 := Complex.I_ne_zero
+  have hz : (z : ℂ) ≠ 0 := ne_zero z
+  calc
+    (E₂ ∣[(2 : ℤ)] ModularGroup.S) z = E₂ z - 1 / (2 * (π ^ 2 / (6 : ℂ))) * (2 * π * Complex.I / z) := h'
+    _ = E₂ z + 6 / (π * Complex.I * z) := by
+      field_simp [hpi, hI, hz]
+      ring_nf
+      simp [Complex.I_sq, add_comm]
 
 /-- E₂ transforms under SL(2,ℤ) as: E₂ ∣[2] γ = E₂ - α • D₂ γ where α = 1/(2ζ(2)). -/
 lemma E₂_slash_transform (γ : SL(2, ℤ)) :
     (E₂ ∣[(2 : ℤ)] γ) = E₂ - (1 / (2 * riemannZeta 2)) • D₂ γ := by
-  ext z
-  simp [E₂, G₂_transform γ]
-  ring
+  simpa [E₂, D₂] using (EisensteinSeries.E2_slash_action γ)
 
 /-- E₂ transforms under S as: E₂(-1/z) = z² · (E₂(z) + 6/(πIz)). -/
 lemma E₂_S_transform (z : ℍ) :
@@ -148,9 +142,9 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ, (n + 1) *
 
 lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
     1 - 24 * ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)) := by
-  rw [E₂]
+  rw [E₂, EisensteinSeries.E2]
   simp [smul_eq_mul]
-  rw [G2_q_exp]
+  rw [EisensteinSeries.G2_eq_tsum_cexp]
   rw [mul_sub]
   congr 1
   · rw [riemannZeta_two]
@@ -162,22 +156,13 @@ lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
       have hpi : (π : ℂ) ≠ 0 := by simp
       grind
     · calc
-        ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * n * z)
-            = ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * z) ^ (n : ℕ) := by
-                apply tsum_congr
-                intro n
-                have hpow : cexp (2 * π * Complex.I * n * z) =
-                    cexp (2 * π * Complex.I * z) ^ (n : ℕ) := by
-                  rw [← Complex.exp_nat_mul]
-                  congr 1
-                  ring
-                simp [hpow]
-        _ = ∑' n : ℕ+, (n : ℂ) ^ 1 * cexp (2 * π * Complex.I * z) ^ (n : ℕ) /
-            (1 - cexp (2 * π * Complex.I * z) ^ (n : ℕ)) := by
-              simpa [pow_one] using
-                (tsum_pow_div_one_sub_eq_tsum_sigma
-                  (r := cexp (2 * π * Complex.I * z))
-                    (UpperHalfPlane.norm_exp_two_pi_I_lt_one z) 1).symm
+        ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * z) ^ (n : ℕ)
+            = ∑' n : ℕ+, (n : ℂ) ^ 1 * cexp (2 * π * Complex.I * z) ^ (n : ℕ) /
+                (1 - cexp (2 * π * Complex.I * z) ^ (n : ℕ)) := by
+                  simpa [pow_one] using
+                    (tsum_pow_div_one_sub_eq_tsum_sigma
+                      (r := cexp (2 * π * Complex.I * z))
+                        (UpperHalfPlane.norm_exp_two_pi_I_lt_one z) 1).symm
         _ = ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * n * z) /
             (1 - cexp (2 * π * Complex.I * n * z)) := by
               apply tsum_congr
