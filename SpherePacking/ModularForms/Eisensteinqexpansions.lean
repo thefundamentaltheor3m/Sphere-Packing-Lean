@@ -219,8 +219,8 @@ lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : 
       ext j
       ring_nf
     · simp
-      rw [← sigmaAntidiagonalEquivProd.summable_iff]
-      simp [sigmaAntidiagonalEquivProd]
+      rw [← spSigmaAntidiagonalEquivProd.summable_iff]
+      simp [spSigmaAntidiagonalEquivProd]
       apply (summable_auxil_1 (k - 1) z).congr
       intro b
       simp [mapdiv]
@@ -228,8 +228,8 @@ lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : 
     intro b
     have A3 := a1 k b z
     apply A3.subtype
-  rw [sigmaAntidiagonalEquivProd.summable_iff.symm]
-  simp [sigmaAntidiagonalEquivProd, mapdiv]
+  rw [spSigmaAntidiagonalEquivProd.summable_iff.symm]
+  simp [spSigmaAntidiagonalEquivProd, mapdiv]
   apply (summable_auxil_1 (k - 1) z).congr
   intro b
   simp
