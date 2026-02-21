@@ -1040,19 +1040,16 @@ private lemma jacobiTheta₂_half_mul_term_bound :
   intro z hz k
   have h_opnorm := ContinuousLinearMap.le_opNorm
     (jacobiTheta₂_term_fderiv k (↑z / 2) ↑z) ((1 : ℂ) / 2, 1)
-  have h_v_norm : ‖((1 : ℂ) / 2, (1 : ℂ))‖ = 1 := by
-    simp only [Prod.norm_def]
-    norm_num
-  rw [h_v_norm, mul_one] at h_opnorm
+  rw [show ‖((1 : ℂ) / 2, (1 : ℂ))‖ = 1 from by simp [Prod.norm_def]; norm_num,
+    mul_one] at h_opnorm
   have h_fderiv_bound := norm_jacobiTheta₂_term_fderiv_le k (↑z / 2) ↑z
-  have h_imz_pos : (0 : ℝ) < z.im := z.im_pos
   have h_imz_div2 : |(↑z / 2 : ℂ).im| ≤ z.im / 2 := by
     have h1 : (↑z / 2 : ℂ).im = z.im / 2 := by
       have h2 : (2 : ℂ) = (2 : ℝ) := by norm_cast
       rw [h2]
       simp only [Complex.div_ofReal_im, UpperHalfPlane.coe_im]
     rw [h1, abs_of_pos (by linarith : z.im / 2 > 0)]
-  have h_term_bound := norm_jacobiTheta₂_term_le h_imz_pos h_imz_div2 (le_refl z.im) k
+  have h_term_bound := norm_jacobiTheta₂_term_le z.im_pos h_imz_div2 (le_refl z.im) k
   calc ‖(jacobiTheta₂_term_fderiv k (↑z / 2) ↑z) (1 / 2, 1)‖
       ≤ ‖jacobiTheta₂_term_fderiv k (↑z / 2) ↑z‖ := h_opnorm
     _ ≤ 3 * π * ↑|k| ^ 2 * ‖jacobiTheta₂_term k (↑z / 2) ↑z‖ := h_fderiv_bound
@@ -1186,17 +1183,15 @@ private theorem D_H₂_div_H₂_tendsto :
     rw [h_H₂_eq_fn, h_pow4]
     have h_pow4_ne : (Θ₂ z) ^ 4 ≠ 0 := pow_ne_zero 4 hΘ₂
     field_simp [hΘ₂, h_pow4_ne]
-  have hΘ₂_ne := Θ₂_eventually_ne_zero
   rw [← show (4 : ℂ) * (1 / 8) = 1 / 2 from by norm_num]
   apply (D_Θ₂_div_Θ₂_tendsto.const_mul (4 : ℂ)).congr'
-  filter_upwards [hΘ₂_ne] with z hz
+  filter_upwards [Θ₂_eventually_ne_zero] with z hz
   exact (h_logderiv z hz).symm
 
 private theorem D_H₂_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D H₂ z) atImInfty (nhds 0) := by
-  have hH₂_ne := H₂_eventually_ne_zero
   have h_eq : (fun z => D H₂ z) =ᶠ[atImInfty] fun z => (D H₂ z / H₂ z) * H₂ z := by
-    filter_upwards [hH₂_ne] with z hz
+    filter_upwards [H₂_eventually_ne_zero] with z hz
     exact (div_mul_cancel₀ (D H₂ z) hz).symm
   have hlim := D_H₂_div_H₂_tendsto.mul H₂_tendsto_atImInfty
   simp only [mul_zero] at hlim
@@ -1280,8 +1275,7 @@ private theorem D_Θ₄_tendsto_zero :
       intro z hz k
       have h_opnorm := ContinuousLinearMap.le_opNorm
         (jacobiTheta₂_term_fderiv k (1/2) ↑z) ((0 : ℂ), 1)
-      have h_v_norm : ‖((0 : ℂ), (1 : ℂ))‖ = 1 := by simp [Prod.norm_def]
-      rw [h_v_norm, mul_one] at h_opnorm
+      rw [show ‖((0 : ℂ), (1 : ℂ))‖ = 1 from by simp [Prod.norm_def], mul_one] at h_opnorm
       have h_fderiv_bound := norm_jacobiTheta₂_term_fderiv_le k (1/2 : ℂ) ↑z
       have h_half_im : |(1/2 : ℂ).im| ≤ 0 := by simp
       have h_term_bound := norm_jacobiTheta₂_term_le z.im_pos h_half_im (le_refl z.im) k
@@ -1416,17 +1410,14 @@ theorem D_G_div_G_tendsto :
   have hB : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B := (h_2H₂sq.add h_5H₂H₄).add h_5H₄sq
   have h_DA_A : ∀ z, H₂ z ≠ 0 → D A z / A z = 3 * (D H₂ z / H₂ z) := by
     intro z hH₂_ne
-    have h_cube : D (fun w => H₂ w ^ 3) z = 3 * H₂ z ^ 2 * D H₂ z := by
-      simpa [Pi.mul_apply, Pi.pow_apply] using congrFun (D_cube H₂ hH₂) z
     simp only [A]
-    rw [h_cube]
+    rw [show D (fun w => H₂ w ^ 3) z = 3 * H₂ z ^ 2 * D H₂ z from by
+      simpa [Pi.mul_apply, Pi.pow_apply] using congrFun (D_cube H₂ hH₂) z]
     field_simp [pow_ne_zero 3 hH₂_ne, pow_ne_zero 2 hH₂_ne]
   have h_DA_A_tendsto : Filter.Tendsto (fun z => D A z / A z) atImInfty (nhds ((3 : ℂ) / 2)) := by
-    have h_eq : (3 : ℂ) / 2 = 3 * (1 / 2) := by norm_num
-    rw [h_eq]
-    have hH₂_ne := H₂_eventually_ne_zero
+    rw [show (3 : ℂ) / 2 = 3 * (1 / 2) from by norm_num]
     apply (D_H₂_div_H₂_tendsto.const_mul 3).congr'
-    filter_upwards [hH₂_ne] with z hz
+    filter_upwards [H₂_eventually_ne_zero] with z hz
     exact (h_DA_A z hz).symm
   have h_B_tendsto : Filter.Tendsto B atImInfty (nhds 5) := by
     have h := ((H₂_tendsto_atImInfty.pow 2).const_mul 2).add
@@ -1436,19 +1427,15 @@ theorem D_G_div_G_tendsto :
     refine h.congr' ?_
     filter_upwards with z
     simp only [B, pow_two]; ring
-  have h_DB_tendsto : Filter.Tendsto (fun z => D B z) atImInfty (nhds 0) := D_B_tendsto_zero
   have h_DB_B_tendsto : Filter.Tendsto (fun z => D B z / B z) atImInfty (nhds 0) := by
-    simpa using h_DB_tendsto.div h_B_tendsto (by norm_num : (5 : ℂ) ≠ 0)
+    simpa using D_B_tendsto_zero.div h_B_tendsto (by norm_num : (5 : ℂ) ≠ 0)
   have h_DG_G : ∀ z, A z ≠ 0 → B z ≠ 0 → D G z / G z = D A z / A z + D B z / B z := by
     intro z hA_ne hB_ne
     rw [show G = A * B from funext hG_eq]
     exact logderiv_mul_eq A B hA hB z hA_ne hB_ne
   have hA_ne : ∀ᶠ z in atImInfty, A z ≠ 0 := by
-    have hH₂_ne := H₂_div_exp_tendsto.eventually_ne (by norm_num : (16 : ℂ) ≠ 0)
-    filter_upwards [hH₂_ne] with z hz hzero
-    simp only [A] at hzero
-    have := eq_zero_of_pow_eq_zero hzero
-    exact hz (by simp [this])
+    filter_upwards [H₂_eventually_ne_zero] with z hz
+    exact pow_ne_zero 3 hz
   have hB_ne : ∀ᶠ z in atImInfty, B z ≠ 0 :=
     h_B_tendsto.eventually_ne (by norm_num : (5 : ℂ) ≠ 0)
   rw [show (3 : ℂ) / 2 = 3 / 2 + 0 from by norm_num]
@@ -1481,11 +1468,11 @@ theorem L₁₀_div_FG_tendsto :
   have hG_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (20480 : ℂ) ≠ 0) G_vanishing_order
   have h_L_over_FG : Filter.Tendsto (fun z : ℍ => L₁₀ z / (F z * G z))
       atImInfty (nhds (1 / 2 : ℂ)) := by
-    have h := (D_F_div_F_tendsto.sub D_G_div_G_tendsto).congr' (by
-      filter_upwards [hF_ne, hG_ne] with z hF hG using (h_wronskian z hF hG).symm)
-    convert h using 2; norm_num
-  have h_axis := tendsto_resToImagAxis_of_tendsto_atImInfty h_L_over_FG
-  have h_re := Complex.continuous_re.continuousAt.tendsto.comp h_axis
+    convert (D_F_div_F_tendsto.sub D_G_div_G_tendsto).congr' (by
+      filter_upwards [hF_ne, hG_ne] with z hF hG using (h_wronskian z hF hG).symm) using 2
+    norm_num
+  have h_re := Complex.continuous_re.continuousAt.tendsto.comp
+    (tendsto_resToImagAxis_of_tendsto_atImInfty h_L_over_FG)
   simp only [show (1 / 2 : ℂ).re = (1 / 2 : ℝ) by norm_num] at h_re
   refine h_re.congr' ?_
   filter_upwards [Filter.eventually_gt_atTop 0] with t ht_pos
