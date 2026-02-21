@@ -635,6 +635,16 @@ These are used to establish `L₁₀_eventuallyPos` (large-t positivity of L₁,
 
 section AsymptoticAnalysis
 
+/-- If `‖a m‖ ≤ (m+1)^p` then `∑ a(m) q^m → a(0)` as `im(z) → ∞`. -/
+private theorem qexp_tendsto_of_poly_bound {a : ℕ → ℂ} {p : ℕ}
+    (hbound : ∀ m, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ p) :
+    Filter.Tendsto (fun z : ℍ => ∑' m : ℕ, a m * cexp (2 * π * I * z * m))
+      atImInfty (nhds (a 0)) := by
+  apply QExp.tendsto_nat
+  exact .of_nonneg_of_le (fun _ => by positivity)
+    (fun m => mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _))
+    (by push_cast [Nat.cast_add, Nat.cast_one] at hbound ⊢; exact summable_pow_shift p)
+
 /-- Reindex σ₃ q-expansion from ℕ+ to ℕ using n ↦ m+1. -/
 private lemma sigma3_qexp_reindex_pnat_nat (z : ℍ) :
     ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
@@ -670,37 +680,24 @@ theorem E₂E₄_sub_E₆_div_q_tendsto :
   simp_rw [h_eq, sigma3_qexp_reindex_pnat_nat]
   set a : ℕ → ℂ := fun m => ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) with ha
   have ha0 : a 0 = 1 := by simp [ha, ArithmeticFunction.sigma_one]
-  have h_tendsto : Filter.Tendsto
-      (fun z : ℍ => ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m))
-      atImInfty (nhds (a 0)) := by
-    apply QExp.tendsto_nat a
-    have hbound : ∀ m : ℕ, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 5 := by
-      intro m
-      simp only [ha, norm_mul, Complex.norm_natCast]
-      have h1 : (ArithmeticFunction.sigma 3 (m + 1) : ℝ) ≤ ((m + 1 : ℕ) : ℝ) ^ 4 := by
-        exact_mod_cast (sigma_bound 3 (m + 1))
-      calc (↑(m + 1) : ℝ) * (ArithmeticFunction.sigma 3 (m + 1) : ℝ)
-          ≤ (↑(m + 1) : ℝ) * (↑(m + 1) : ℝ) ^ 4 :=
-            mul_le_mul_of_nonneg_left h1 (Nat.cast_nonneg _)
-        _ = (↑(m + 1) : ℝ) ^ 5 := by ring
-    apply Summable.of_nonneg_of_le
-    · intro m; positivity
-    · intro m
-      calc ‖a m‖ * rexp (-2 * π * m)
-          ≤ ((m + 1 : ℕ) : ℝ) ^ 5 * rexp (-2 * π * m) :=
-            mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
-        _ = (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) := by simp
-    · exact summable_pow_shift 5
+  have hbound : ∀ m, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 5 := fun m => by
+    simp only [ha, norm_mul, Complex.norm_natCast]
+    calc (↑(m + 1) : ℝ) * ↑(ArithmeticFunction.sigma 3 (m + 1))
+        ≤ (↑(m + 1) : ℝ) * (↑(m + 1) : ℝ) ^ 4 :=
+          mul_le_mul_of_nonneg_left (by exact_mod_cast sigma_bound 3 (m + 1))
+            (Nat.cast_nonneg _)
+      _ = _ := by ring
   have h_eq2 : ∀ z : ℍ,
       ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
         cexp (2 * π * Complex.I * m * z) =
       ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m) := by
     intro z; apply tsum_congr; intro m; simp only [ha]; ring_nf
-  simp_rw [h_eq2, ha0] at h_tendsto ⊢
-  convert h_tendsto.const_mul (720 : ℂ) using 2; ring
+  simp_rw [h_eq2]
+  have := (qexp_tendsto_of_poly_bound hbound).const_mul (720 : ℂ)
+  rwa [ha0, mul_one] at this
 
 /-- `Θ₂(z) / exp(πiz/4) → 2` as `im(z) → ∞`. -/
-private theorem Θ₂_div_exp_tendsto :
+theorem Θ₂_div_exp_tendsto :
     Filter.Tendsto (fun z : ℍ => Θ₂ z / cexp (π * Complex.I * z / 4))
       atImInfty (nhds (2 : ℂ)) := by
   convert jacobiTheta₂_half_mul_apply_tendsto_atImInfty using 1
@@ -709,7 +706,7 @@ private theorem Θ₂_div_exp_tendsto :
   field_simp [Complex.exp_ne_zero]
 
 /-- `H₂(z) / exp(πiz) → 16` as `im(z) → ∞`. -/
-private theorem H₂_div_exp_tendsto :
+theorem H₂_div_exp_tendsto :
     Filter.Tendsto (fun z : ℍ => H₂ z / cexp (π * Complex.I * z))
       atImInfty (nhds (16 : ℂ)) := by
   have h_eq : ∀ z : ℍ, H₂ z / cexp (π * I * z) =
@@ -808,34 +805,21 @@ private theorem D_diff_div_q_tendsto :
   set a : ℕ → ℂ := fun m =>
     (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) with ha_def
   have ha0 : a 0 = 1 := by simp [ha_def, ArithmeticFunction.sigma_one]
-  have h_tendsto : Filter.Tendsto
-      (fun z : ℍ => ∑' m : ℕ, a m * cexp (2 * π * I * z * m))
-      atImInfty (nhds (a 0)) := by
-    apply QExp.tendsto_nat a
-    have hbound : ∀ m : ℕ, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 6 := by
-      intro m
-      simp only [ha_def, norm_mul, Complex.norm_natCast, Complex.norm_pow]
-      have h1 : (ArithmeticFunction.sigma 3 (m + 1) : ℝ) ≤ ((m + 1 : ℕ) : ℝ) ^ 4 := by
-        exact_mod_cast (sigma_bound 3 (m + 1))
-      calc (↑(m + 1) : ℝ) ^ 2 * (ArithmeticFunction.sigma 3 (m + 1) : ℝ)
-          ≤ (↑(m + 1) : ℝ) ^ 2 * (↑(m + 1) : ℝ) ^ 4 :=
-            mul_le_mul_of_nonneg_left h1 (pow_nonneg (Nat.cast_nonneg _) _)
-        _ = (↑(m + 1) : ℝ) ^ 6 := by ring
-    apply Summable.of_nonneg_of_le
-    · intro m; positivity
-    · intro m
-      calc ‖a m‖ * rexp (-2 * π * m)
-          ≤ ((m + 1 : ℕ) : ℝ) ^ 6 * rexp (-2 * π * m) :=
-            mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
-        _ = (m + 1 : ℝ) ^ 6 * rexp (-2 * π * m) := by simp
-    · exact summable_pow_shift 6
+  have hbound : ∀ m, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 6 := fun m => by
+    simp only [ha_def, norm_mul, Complex.norm_natCast, Complex.norm_pow]
+    calc (↑(m + 1) : ℝ) ^ 2 * ↑(ArithmeticFunction.sigma 3 (m + 1))
+        ≤ (↑(m + 1) : ℝ) ^ 2 * (↑(m + 1) : ℝ) ^ 4 :=
+          mul_le_mul_of_nonneg_left (by exact_mod_cast sigma_bound 3 (m + 1))
+            (pow_nonneg (Nat.cast_nonneg _) _)
+      _ = _ := by ring
   have h_eq2 : ∀ z : ℍ,
       ∑' m : ℕ, (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) *
         cexp (2 * π * I * m * z) =
       ∑' m : ℕ, a m * cexp (2 * π * I * z * m) := fun z => by
     simpa [ha_def] using tsum_congr (fun m => by ring_nf)
-  simp_rw [h_eq2, ha0] at h_tendsto ⊢
-  convert h_tendsto.const_mul (720 : ℂ) using 2; ring
+  simp_rw [h_eq2]
+  have := (qexp_tendsto_of_poly_bound hbound).const_mul (720 : ℂ)
+  rwa [ha0, mul_one] at this
 
 /-- `(D F)/F → 2` as `im(z) → ∞`.
 The log-derivative limit, following from F having vanishing order 2. -/
