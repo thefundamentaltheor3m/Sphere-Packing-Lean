@@ -652,7 +652,7 @@ lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ :=
 ## Asymptotic Analysis of F at Infinity
 
 Vanishing orders and log-derivative limits for the F-side analysis.
-These are used to establish `L₁₀_eventuallyPos` (large-t positivity of L₁,₀).
+These are used to establish `L₁₀_eventually_pos_imag_axis` (large-t positivity of L₁,₀).
 -/
 
 section AsymptoticAnalysis
@@ -1499,11 +1499,9 @@ theorem L₁₀_eventually_pos_imag_axis : ResToImagAxis.EventuallyPos L₁₀ :
 
 end AsymptoticAnalysis
 
-/- $\mathcal{L}_{1, 0}$ is eventually positive on the imaginary axis. -/
-lemma L₁₀_eventuallyPos : ResToImagAxis.EventuallyPos L₁₀ := L₁₀_eventually_pos_imag_axis
-
 /- $\mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
-lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ := antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventuallyPos
+lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ :=
+  antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventually_pos_imag_axis
 
 /-!
 ## Monotonicity of Q = F/G on the Imaginary Axis
