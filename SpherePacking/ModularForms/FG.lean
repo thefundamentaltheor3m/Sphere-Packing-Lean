@@ -892,61 +892,39 @@ lemma I_mul_t_pow_nat (t : ℝ) (n : ℕ) : (I * t) ^ n =
 theorem F_functional_equation (z : ℍ) :
     F (S • z) = z ^ 12 * F z - 12 * I * π ^ (-1 : ℤ) * z ^ 11 * (F₁ * E₄.toFun) z
       - 36 * π ^ (-2 : ℤ) * z ^ 10 * (E₄.toFun z) ^ 2 := by
-  -- Expand F, F₁ and apply S-transformation formulas
   have hLHS : F (S • z) = (E₂ (S • z) * E₄ (S • z) - E₆ (S • z)) ^ 2 := rfl
   have hRHS : F z = (E₂ z * E₄ z - E₆ z) ^ 2 := rfl
   have hF₁E₄ : (F₁ * E₄.toFun) z = (E₂ z * E₄ z - E₆ z) * E₄ z := rfl
   rw [hLHS, hRHS, hF₁E₄, E₂_S_transform, E₄_S_transform, E₆_S_transform]
-  simp only [zpow_neg, zpow_one, ModularForm.toFun_eq_coe]
-  field_simp; ring_nf; simp only [I_sq, I_pow_three]; field_simp; ring
+  simp only [ModularForm.toFun_eq_coe, zpow_neg, zpow_one]
+  field_simp
+  ring_nf
+  simp only [I_sq, I_pow_three]
+  field_simp
+  ring
 
 theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
     FReal (1 / t) = t ^ 12 * FReal t - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun).resToImagAxis t
       + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun.resToImagAxis t) ^ 2 := by
-  -- Define z = I * t on the imaginary axis
-  set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
-  -- Compute F(S • z) using the functional equation
-  have hF_val : F.resToImagAxis (1 / t) = (t : ℂ) ^ 12 * F z
-      - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun) z
-      + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun z) ^ 2 := by
+  let z : ℍ := ⟨I * t, by simp [ht]⟩
+  have hF :
+      F.resToImagAxis (1 / t) = (t : ℂ) ^ 12 * F z
+        - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun) z
+        + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun z) ^ 2 := by
     rw [ResToImagAxis.one_div_eq_S_smul F ht, F_functional_equation z]
-    simp only [hz_def, UpperHalfPlane.coe_mk_subtype, I_mul_t_pow_nat]
-    ring_nf; simp only [I_sq]; ring
-  -- Relate F z, (F₁ * E₄) z, E₄ z to resToImagAxis values
-  have hF_z : F z = F.resToImagAxis t := by rw [hz_def]; exact ResToImagAxis.I_mul_t_eq F t ht
-  have hF₁E₄_z : (F₁ * E₄.toFun) z = (F₁ * E₄.toFun).resToImagAxis t := by
-    rw [hz_def]; exact ResToImagAxis.I_mul_t_eq (F₁ * E₄.toFun) t ht
-  have hE₄_z : E₄.toFun z = E₄.toFun.resToImagAxis t := by
-    rw [hz_def]; exact ResToImagAxis.I_mul_t_eq E₄.toFun t ht
-  -- Use that F, F₁*E₄, E₄² are real on the imaginary axis
-  have hF_im : (F.resToImagAxis t).im = 0 := F_imag_axis_real t ht
-  have hF₁E₄_im : ((F₁ * E₄.toFun).resToImagAxis t).im = 0 :=
-    ResToImagAxis.Real.mul F₁_imag_axis_real E₄_imag_axis_real t ht
-  have hE₄_im : (E₄.toFun.resToImagAxis t).im = 0 := E₄_imag_axis_real t ht
-  -- Express complex values as real coercions
-  have hF_eq_re : F.resToImagAxis t = (FReal t : ℂ) := by
-    unfold FReal
-    exact Complex.ext rfl (by simp only [ofReal_im]; exact hF_im)
-  have hF₁E₄_eq_re : (F₁ * E₄.toFun).resToImagAxis t =
-      (((F₁ * E₄.toFun).resToImagAxis t).re : ℂ) :=
-    Complex.ext rfl (by simp only [ofReal_im]; exact hF₁E₄_im)
-  have hE₄_eq_re : E₄.toFun.resToImagAxis t = ((E₄.toFun.resToImagAxis t).re : ℂ) :=
-    Complex.ext rfl (by simp only [ofReal_im]; exact hE₄_im)
-  -- Final computation: show LHS equals RHS by working in ℂ then taking .re
-  rw [FReal, hF_val, hF_z, hF₁E₄_z, hE₄_z, hF_eq_re, hF₁E₄_eq_re, hE₄_eq_re]
-  set a : ℝ := FReal t with ha_def
-  set b : ℝ := ((F₁ * E₄.toFun).resToImagAxis t).re with hb_def
-  set c : ℝ := (E₄.toFun.resToImagAxis t).re with hc_def
-  -- Show the expression has imaginary part 0, noting π is real
-  have him : ((t : ℂ) ^ 12 * (a : ℂ) - 12 * π ^ (-1 : ℤ) * t ^ 11 * (b : ℂ)
-      + 36 * π ^ (-2 : ℤ) * t ^ 10 * (c : ℂ) ^ 2).im = 0 := by
-    simp only [sub_im, add_im, mul_im, ofReal_re, ofReal_im, pow_succ, pow_zero,
-               mul_zero, zero_mul, add_zero, one_mul, zpow_neg, zpow_ofNat,
-               inv_im, normSq_ofReal]
+    simp only [z, UpperHalfPlane.coe_mk_subtype, I_mul_t_pow_nat]
+    ring_nf
+    simp only [I_sq]
     ring
-  conv_rhs => rw [← Complex.re_add_im ((t : ℂ) ^ 12 * (a : ℂ) - 12 * π ^ (-1 : ℤ) * t ^ 11 * (b : ℂ)
-      + 36 * π ^ (-2 : ℤ) * t ^ 10 * (c : ℂ) ^ 2)]
-  simp only [him, ofReal_zero, zero_mul, add_zero]
+  have hFz : F z = F.resToImagAxis t := by
+    simpa [z] using (ResToImagAxis.I_mul_t_eq F t ht)
+  have hF₁E₄z : (F₁ * E₄.toFun) z = (F₁ * E₄.toFun).resToImagAxis t := by
+    simpa [z] using (ResToImagAxis.I_mul_t_eq (F₁ * E₄.toFun) t ht)
+  have hE₄z : E₄.toFun z = E₄.toFun.resToImagAxis t := by
+    simpa [z] using (ResToImagAxis.I_mul_t_eq E₄.toFun t ht)
+  rw [hFz, hF₁E₄z, hE₄z] at hF
+  rw [F_eq_FReal ht, F_eq_FReal (one_div_pos.mpr ht)] at hF
+  exact hF
 
 /- Functional equation of $G$ -/
 theorem G_functional_equation (z : ℍ) :
@@ -961,32 +939,17 @@ theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
     GReal (1 / t) = t ^ 10 * H₄.resToImagAxis t ^ 3
       * (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t
         + 5 * H₂.resToImagAxis t ^ 2) := by
-  -- Define z = I * t on the imaginary axis
-  set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
-  -- Compute G(S • z) using the functional equation
-  have hG_val : G.resToImagAxis (1 / t) = (t : ℂ) ^ 10 * H₄.resToImagAxis t ^ 3 *
+  let z : ℍ := ⟨I * t, by simp [ht]⟩
+  have hG :
+      G.resToImagAxis (1 / t) = (t : ℂ) ^ 10 * H₄.resToImagAxis t ^ 3 *
       (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t +
        5 * H₂.resToImagAxis t ^ 2) := by
     rw [ResToImagAxis.one_div_eq_S_smul G ht, G_functional_equation z]
-    simp only [hz_def, UpperHalfPlane.coe_mk_subtype, I_mul_t_pow_nat,
+    simp only [z, UpperHalfPlane.coe_mk_subtype, I_mul_t_pow_nat,
       ResToImagAxis.I_mul_t_eq H₂ t ht, ResToImagAxis.I_mul_t_eq H₄ t ht]
     ring
-  -- Use that H₂ and H₄ are real on the imaginary axis
-  have hH₂_eq := ResToImagAxis.Real.eq_real_part H₂_imag_axis_real t
-  have hH₄_eq := ResToImagAxis.Real.eq_real_part H₄_imag_axis_real t
-  -- Final computation
-  rw [GReal, hG_val, hH₂_eq, hH₄_eq]
-  set x : ℝ := (H₄.resToImagAxis t).re with hx_def
-  set y : ℝ := (H₂.resToImagAxis t).re with hy_def
-  -- Show the expression has imaginary part 0
-  have him : ((t : ℂ) ^ 10 * (x : ℂ) ^ 3 *
-      (2 * (x : ℂ) ^ 2 + 5 * (y : ℂ) * (x : ℂ) + 5 * (y : ℂ) ^ 2)).im = 0 := by
-    simp only [mul_im, add_im, ofReal_re, ofReal_im, pow_succ, pow_zero, mul_zero,
-               zero_mul, add_zero, one_mul]
-    ring
-  conv_rhs => rw [← Complex.re_add_im ((t : ℂ) ^ 10 * (x : ℂ) ^ 3 *
-      (2 * (x : ℂ) ^ 2 + 5 * (y : ℂ) * (x : ℂ) + 5 * (y : ℂ) ^ 2))]
-  simp only [him, ofReal_zero, zero_mul, add_zero]
+  rw [G_eq_GReal (one_div_pos.mpr ht)] at hG
+  exact hG
 
 /-!
 ### Helper lemmas for the limit computation
@@ -1178,33 +1141,21 @@ Proof outline (following blueprint Lemma 8.8):
 -/
 theorem FmodG_rightLimitAt_zero :
     Tendsto FmodGReal (nhdsWithin 0 (Set.Ioi 0)) (nhds (18 * (π ^ (-2 : ℤ)))) := by
-  -- Step 1: Establish the limit of numerator and denominator expressions
   have hNum := numerator_tendsto_at_infty
   have hDen := denominator_tendsto_at_infty
-  -- Step 2: The denominator is eventually nonzero (since it tends to 2)
-  have hDen_ne : ∀ᶠ s in atTop, (H₄.resToImagAxis s).re ^ 3 *
-      (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
-        + 5 * (H₂.resToImagAxis s).re ^ 2) ≠ 0 := by
-    have h2_ne : (2 : ℝ) ≠ 0 := by norm_num
-    exact hDen.eventually_ne h2_ne
-  -- Step 3: Show FmodGReal(1/s) equals Num(s)/Den(s) for large s
-  have hEq : ∀ᶠ s in atTop, FmodGReal (1/s) =
+  have hEq : ∀ᶠ s in atTop, FmodGReal (1 / s) =
       (s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s * ((F₁ * E₄.toFun).resToImagAxis s).re
         + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2) /
       ((H₄.resToImagAxis s).re ^ 3 *
         (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
           + 5 * (H₂.resToImagAxis s).re ^ 2)) := by
-    filter_upwards [eventually_gt_atTop 0, hDen_ne] with s hs hne
+    filter_upwards [eventually_gt_atTop 0] with s hs
     have hF := F_functional_equation' hs
     have hG := G_functional_eq_real hs
-    unfold FmodGReal
-    rw [hG]
     have hs10_ne : s ^ 10 ≠ 0 := pow_ne_zero 10 (ne_of_gt hs)
-    -- Convert complex values to real parts using the fact they're real on imaginary axis
     rw [ResToImagAxis.Real.eq_real_part
         (ResToImagAxis.Real.mul F₁_imag_axis_real E₄_imag_axis_real) s,
       ResToImagAxis.Real.eq_real_part E₄_imag_axis_real s] at hF
-    -- Extract real equality from complex equality using ofReal_injective
     have hF_real_eq : FReal (1 / s) = s ^ 12 * FReal s
         - 12 * π ^ (-1 : ℤ) * s ^ 11 * ((F₁ * E₄.toFun).resToImagAxis s).re
         + 36 * π ^ (-2 : ℤ) * s ^ 10 * (E₄.toFun.resToImagAxis s).re ^ 2 := by
@@ -1212,8 +1163,8 @@ theorem FmodG_rightLimitAt_zero :
       simp only [Complex.ofReal_sub, Complex.ofReal_add, Complex.ofReal_mul, Complex.ofReal_pow,
         Complex.ofReal_zpow π]
       convert hF using 1
-    rw [hF_real_eq]
-    -- Factor out s^10 and cancel
+    unfold FmodGReal
+    rw [hG, hF_real_eq]
     calc _ = s ^ 10 * (s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s *
           ((F₁ * E₄.toFun).resToImagAxis s).re +
         36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2) /
@@ -1221,17 +1172,14 @@ theorem FmodG_rightLimitAt_zero :
         (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
           + 5 * (H₂.resToImagAxis s).re ^ 2))) := by ring_nf
       _ = _ := mul_div_mul_left _ _ hs10_ne
-  -- Step 4: Compute the limit using Tendsto.div
   have hlim := hNum.div hDen (by norm_num : (2 : ℝ) ≠ 0)
-  -- Step 5: Use composition with tendsto_inv_nhdsGT_zero
-  have h_compose : Tendsto (fun t => (t⁻¹ ^ 2 * FReal t⁻¹ - 12 * π ^ (-1 : ℤ) * t⁻¹ *
+  have hComp : Tendsto (fun t => (t⁻¹ ^ 2 * FReal t⁻¹ - 12 * π ^ (-1 : ℤ) * t⁻¹ *
         ((F₁ * E₄.toFun).resToImagAxis t⁻¹).re + 36 * π ^ (-2 : ℤ) *
         (E₄.toFun.resToImagAxis t⁻¹).re ^ 2) / ((H₄.resToImagAxis t⁻¹).re ^ 3 *
         (2 * (H₄.resToImagAxis t⁻¹).re ^ 2 + 5 * (H₂.resToImagAxis t⁻¹).re *
         (H₄.resToImagAxis t⁻¹).re + 5 * (H₂.resToImagAxis t⁻¹).re ^ 2)))
       (nhdsWithin (0 : ℝ) (Set.Ioi 0)) (nhds (18 * π ^ (-2 : ℤ))) := by
     convert hlim.comp tendsto_inv_nhdsGT_zero using 2; ring
-  -- Transfer hEq through the inverse: 1/t⁻¹ = t for t > 0
   have hEq' : ∀ᶠ t in nhdsWithin (0 : ℝ) (Set.Ioi 0), FmodGReal t =
       (t⁻¹ ^ 2 * FReal t⁻¹ - 12 * π ^ (-1 : ℤ) * t⁻¹ * ((F₁ * E₄.toFun).resToImagAxis t⁻¹).re
         + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis t⁻¹).re ^ 2) /
@@ -1239,12 +1187,10 @@ theorem FmodG_rightLimitAt_zero :
         (2 * (H₄.resToImagAxis t⁻¹).re ^ 2 +
           5 * (H₂.resToImagAxis t⁻¹).re * (H₄.resToImagAxis t⁻¹).re +
           5 * (H₂.resToImagAxis t⁻¹).re ^ 2)) := by
-    have h := tendsto_inv_nhdsGT_zero.eventually hEq
-    filter_upwards [h, self_mem_nhdsWithin] with t ht ht_pos
+    filter_upwards [tendsto_inv_nhdsGT_zero.eventually hEq, self_mem_nhdsWithin] with t ht ht_pos
     simp only [Set.mem_Ioi] at ht_pos
-    simp only [one_div, inv_inv] at ht
-    exact ht
-  exact h_compose.congr' (hEq'.mono fun _ h => h.symm)
+    simpa [one_div, inv_inv] using ht
+  exact hComp.congr' (hEq'.mono fun _ ht => ht.symm)
 
 /--
 Main inequalities between $F$ and $G$ on the imaginary axis.
