@@ -148,24 +148,7 @@ theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H�
 
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
 
-lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := by
-  -- Δ_fun = 1728⁻¹ * (E₄³ - E₆²) = Δ by Delta_E4_eqn + Delta_apply
-  have hΔ_eq : Δ_fun = Δ := by
-    ext z
-    -- Δ_fun z = (1728)⁻¹ * (E₄ z^3 - E₆ z^2) by definition
-    have hLHS : Δ_fun z = (1728 : ℂ)⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := rfl
-    -- Δ z = Delta_E4_E6_aux z = (1/1728) * (E₄ z^3 - E₆ z^2)
-    have hRHS : Δ z = (1 / 1728 : ℂ) * (E₄ z ^ 3 - E₆ z ^ 2) := by
-      rw [← Delta_apply z, Delta_E4_eqn]
-      have hAux := CuspForm_to_ModularForm_Fun_coe (CongruenceSubgroup.Gamma 1) 12
-        ((1 / 1728 : ℂ) • (((DirectSum.of _ 4 E₄) ^ 3 - (DirectSum.of _ 6 E₆) ^ 2) 12))
-        (by rw [IsCuspForm_iff_coeffZero_eq_zero]; exact E4E6_coeff_zero_eq_zero)
-      simp only [Delta_E4_E6_aux, pow_two, pow_three, DirectSum.of_mul_of, DirectSum.sub_apply,
-        Int.reduceAdd, DirectSum.of_eq_same, one_div] at hAux ⊢
-      exact congrFun hAux z
-    rw [hLHS, hRHS]; ring
-  rw [hΔ_eq]
-  exact Delta_imag_axis_pos
+lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := Δ_fun_eq_Δ ▸ Delta_imag_axis_pos
 
 /-- The q-expansion exponent argument on imaginary axis z=it with ℕ+ index.
 Simplifies `2πi * n * z` where z=it to `-2πnt`. -/
@@ -231,9 +214,7 @@ lemma E₂_sigma_qexp (z : UpperHalfPlane) :
 lemma sigma1_qexp_summable (z : UpperHalfPlane) :
     Summable (fun n : ℕ+ => (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z)) := by
-  have h := sigma_qexp_summable_generic 0 1 z
-  simp only [pow_zero, one_mul] at h
-  exact h
+  simpa [pow_zero, one_mul] using sigma_qexp_summable_generic 0 1 z
 
 /-- Generic derivative bound for σ_k q-series on compact sets.
 Uses σ_k(n) ≤ n^(k+1) (sigma_bound) and iter_deriv_comp_bound3 for exponential decay. -/
@@ -425,8 +406,8 @@ lemma DE₄_summable (t : ℝ) (ht : 0 < t) :
   simpa [pow_one] using sigma_qexp_summable_generic 1 3 ⟨Complex.I * t, by simp [ht]⟩
 
 /-- D E₄ is real on the imaginary axis. -/
-lemma DE₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) := by
-  exact D_real_of_real E₄_imag_axis_real E₄.holo'
+lemma DE₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) :=
+  D_real_of_real E₄_imag_axis_real E₄.holo'
 
 /-- The real part of (D E₄)(it) is positive for t > 0. -/
 lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
@@ -443,7 +424,7 @@ lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
   have hpos : ∀ n : ℕ+, 0 < ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := by
     intro n; simp only [hz]; exact DE₄_term_re_pos t ht n
-  have htsum_pos := Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
+  have htsum_pos := Summable.tsum_pos hsum_re (fun n => (hpos n).le) 1 (hpos 1)
   simp only [Complex.mul_re, Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero]
   rw [Complex.re_tsum hsum]
   exact mul_pos (by norm_num : (0 : ℝ) < 240) htsum_pos
@@ -510,8 +491,8 @@ lemma negDE₂_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
   · exact_mod_cast ArithmeticFunction.sigma_pos 1 n n.ne_zero
 
 /-- `negDE₂` is real on the imaginary axis. -/
-lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by
-  exact ResToImagAxis.Real.neg (D_real_of_real E₂_imag_axis_real E₂_holo')
+lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ :=
+  ResToImagAxis.Real.neg (D_real_of_real E₂_imag_axis_real E₂_holo')
 
 /-- The real part of negDE₂(it) is positive for t > 0. -/
 lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
@@ -526,7 +507,7 @@ lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
         Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := ⟨_, Complex.hasSum_re hsum.hasSum⟩
   have hpos : ∀ n : ℕ+, 0 < ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := negDE₂_term_re_pos t ht
-  have htsum_pos := Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
+  have htsum_pos := Summable.tsum_pos hsum_re (fun n => (hpos n).le) 1 (hpos 1)
   simp only [Complex.mul_re, Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero]
   rw [Complex.re_tsum hsum]
   exact mul_pos (by norm_num : (0 : ℝ) < 24) htsum_pos
