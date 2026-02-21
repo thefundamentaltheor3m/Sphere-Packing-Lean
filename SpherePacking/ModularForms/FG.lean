@@ -1037,27 +1037,12 @@ private theorem D_jacobiTheta₂_half_mul_tendsto_zero :
         _ ≤ 3 * π * ↑|k| ^ 2 * rexp (-π * 1 * (↑k ^ 2 - ↑|k|)) := by
             apply mul_le_mul_of_nonneg_left _ (by positivity)
             apply Real.exp_le_exp_of_le
-            have hk_sq : (k : ℝ) ^ 2 = (↑|k| : ℝ) ^ 2 := by
-              rw [Int.cast_abs, sq_abs]
             have hk_ge : (↑|k| : ℝ) ^ 2 - ↑|k| ≥ 0 := by
-              by_cases hk0 : k = 0
-              · simp [hk0]
-              · have h : (↑|k| : ℝ) ^ 2 - ↑|k| = ↑|k| * (↑|k| - 1) := by ring
-                rw [h]
-                apply mul_nonneg (by positivity : (0 : ℝ) ≤ ↑|k|)
-                have : |k| ≥ 1 := Int.one_le_abs hk0
-                have hcast : (1 : ℝ) ≤ ↑|k| := by exact_mod_cast this
-                linarith
-            rw [hk_sq]
-            have h1 : -π * z.im * ((↑|k| : ℝ) ^ 2 - ↑|k|) ≤ -π * 1 * ((↑|k|) ^ 2 - ↑|k|) := by
-              by_cases hzero : (↑|k| : ℝ) ^ 2 - ↑|k| = 0
-              · simp only [hzero, mul_zero, le_refl]
-              · have hpos : (↑|k| : ℝ) ^ 2 - ↑|k| > 0 := lt_of_le_of_ne hk_ge (Ne.symm hzero)
-                have hz1 : z.im ≥ 1 := hz
-                have hpi_pos : π > 0 := Real.pi_pos
-                have : -π * z.im ≤ -π * 1 := by nlinarith
-                exact mul_le_mul_of_nonneg_right this (le_of_lt hpos)
-            convert h1 using 2
+              rcases eq_or_ne k 0 with rfl | hk0
+              · simp
+              · nlinarith [show (1 : ℝ) ≤ ↑|k| from by exact_mod_cast Int.one_le_abs hk0]
+            rw [show (k : ℝ) ^ 2 = (↑|k| : ℝ) ^ 2 from by rw [Int.cast_abs, sq_abs]]
+            nlinarith [mul_nonneg (mul_nonneg (le_of_lt Real.pi_pos) (sub_nonneg.mpr hz)) hk_ge]
         _ = 3 * π * ↑|k| ^ 2 * rexp (-π * (1 * ↑k ^ 2 - 1 * ↑|k|)) := by ring_nf
   simpa using tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
 
@@ -1075,6 +1060,24 @@ lemma differentiableAt_jacobiTheta₂_half (τ : ℍ) :
   have hg : DifferentiableAt ℂ (fun p : ℂ × ℂ => jacobiTheta₂ p.1 p.2) (f τ.val) := by
     simpa [f] using (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
   simpa [f] using hg.comp τ.val hf
+
+private lemma Θ₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₂ := by
+  intro τ
+  have hΘ₂_diff : DifferentiableAt ℂ (Θ₂ ∘ ofComplex) τ.val := by
+    have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
+    have hF : DifferentiableAt ℂ
+        (fun t => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t) τ.val :=
+      ((differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp).mul
+        (differentiableAt_jacobiTheta₂_half τ)
+    have h_ev : (fun t => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t) =ᶠ[nhds τ.val]
+        (Θ₂ ∘ ofComplex) := by
+      refine Filter.eventually_of_mem hU fun z hz => ?_
+      simp only [Function.comp_apply, ofComplex_apply_of_im_pos hz, Θ₂_as_jacobiTheta₂,
+        coe_mk_subtype]; ring_nf
+    exact hF.congr_of_eventuallyEq h_ev.symm
+  have h_eq : (Θ₂ ∘ ofComplex) ∘ UpperHalfPlane.coe = Θ₂ := by
+    ext x; simp [Function.comp, ofComplex_apply]
+  rw [← h_eq]; exact DifferentiableAt_MDifferentiableAt hΘ₂_diff
 
 private theorem D_Θ₂_div_Θ₂_tendsto :
     Filter.Tendsto (fun z : ℍ => D Θ₂ z / Θ₂ z) atImInfty (nhds ((1 : ℂ) / 8)) := by
@@ -1117,29 +1120,10 @@ private theorem D_Θ₂_div_Θ₂_tendsto :
         rw [← h_eq]
         exact
           DifferentiableAt_MDifferentiableAt (G := h ∘ ofComplex) (z := τ) h_diff
-      have hΘ₂_diff : DifferentiableAt ℂ (Θ₂ ∘ ofComplex) τ.val := by
-        have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
-        let F : ℂ → ℂ := fun t => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t
-        have hF : DifferentiableAt ℂ F τ.val :=
-          ((differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp).mul
-            (differentiableAt_jacobiTheta₂_half τ)
-        have h_ev : F =ᶠ[nhds τ.val] (Θ₂ ∘ ofComplex) := by
-          refine Filter.eventually_of_mem hU ?_
-          intro z hz
-          simp only [Function.comp_apply, F]
-          have h_arg : cexp ((π * I / 4) * z) = cexp (π * I * z / 4) := by ring_nf
-          rw [h_arg, ofComplex_apply_of_im_pos hz, Θ₂_as_jacobiTheta₂]
-          simp only [coe_mk_subtype]
-        exact hF.congr_of_eventuallyEq h_ev.symm
-      have hf_diff : DifferentiableAt ℂ (f ∘ ofComplex) τ.val := by
-        have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
-        have h_exp_diff : DifferentiableAt ℂ (fun t : ℂ => cexp (π * I * t / 4)) τ.val :=
-          ((differentiableAt_id.const_mul (π * I)).div_const 4).cexp
-        have h_ev : (fun t : ℂ => cexp (π * I * t / 4)) =ᶠ[nhds τ.val] (f ∘ ofComplex) := by
-          refine Filter.eventually_of_mem hU ?_
-          intro z hz
-          simp only [Function.comp_apply, f, ofComplex_apply_of_im_pos hz, coe_mk_subtype]
-        exact h_exp_diff.congr_of_eventuallyEq h_ev.symm
+      have hΘ₂_diff : DifferentiableAt ℂ (Θ₂ ∘ ofComplex) τ.val :=
+        MDifferentiableAt_DifferentiableAt (Θ₂_MDifferentiable τ)
+      have hf_diff : DifferentiableAt ℂ (f ∘ ofComplex) τ.val :=
+        MDifferentiableAt_DifferentiableAt (hf_md τ)
       have hf_ne' : (f ∘ ofComplex) τ.val ≠ 0 := by
         simp only [Function.comp_apply, f]
         exact Complex.exp_ne_zero _
@@ -1156,17 +1140,11 @@ private theorem D_Θ₂_div_Θ₂_tendsto :
           rw [congrFun h_D_prod z]; simp only [Pi.mul_apply, Pi.add_apply]
       _ = D f z / f z + D h z / h z := by field_simp [hf_ne z, hz]
   have h_sum_limit : Filter.Tendsto (fun z => D f z / f z + D h z / h z) atImInfty
-      (nhds ((1 : ℂ) / 8 + 0)) := by
-    have hf_const : Filter.Tendsto (fun z => D f z / f z) atImInfty (nhds ((1 : ℂ) / 8)) := by
-      simp_rw [hf_logderiv]
-      exact tendsto_const_nhds
-    exact hf_const.add hDh_div_h_tendsto
-  have h_sum_limit' : Filter.Tendsto (fun z => D f z / f z + D h z / h z) atImInfty
       (nhds ((1 : ℂ) / 8)) := by
-    convert h_sum_limit using 2; ring
-  refine h_sum_limit'.congr' ?_
-  filter_upwards [h_logderiv_eq] with z hz
-  exact hz.symm
+    have hf_const : Filter.Tendsto (fun z => D f z / f z) atImInfty (nhds ((1 : ℂ) / 8)) := by
+      simp_rw [hf_logderiv]; exact tendsto_const_nhds
+    simpa using hf_const.add hDh_div_h_tendsto
+  exact h_sum_limit.congr' (by filter_upwards [h_logderiv_eq] with z hz; exact hz.symm)
 
 private theorem D_H₂_div_H₂_tendsto :
     Filter.Tendsto (fun z : ℍ => D H₂ z / H₂ z) atImInfty (nhds ((1 : ℂ) / 2)) := by
@@ -1175,28 +1153,7 @@ private theorem D_H₂_div_H₂_tendsto :
     intro z hΘ₂
     rw [hH₂_eq]
     have h_pow4 : D (fun w => (Θ₂ w) ^ 4) z = 4 * (Θ₂ z) ^ 3 * D Θ₂ z := by
-      have hΘ₂_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₂ := by
-        intro τ
-        suffices h_diff : DifferentiableAt ℂ (Θ₂ ∘ ofComplex) τ.val by
-          have h_eq : (Θ₂ ∘ ofComplex) ∘ UpperHalfPlane.coe = Θ₂ := by
-            ext x; simp [Function.comp, ofComplex_apply]
-          rw [← h_eq]
-          exact
-            DifferentiableAt_MDifferentiableAt (G := Θ₂ ∘ ofComplex) (z := τ) h_diff
-        have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
-        let F : ℂ → ℂ := fun t => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t
-        have hF : DifferentiableAt ℂ F τ.val :=
-          ((differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp).mul
-            (differentiableAt_jacobiTheta₂_half τ)
-        have h_ev : F =ᶠ[nhds τ.val] (Θ₂ ∘ ofComplex) := by
-          refine Filter.eventually_of_mem hU ?_
-          intro z hz
-          simp only [Function.comp_apply, F]
-          have h_arg : cexp ((π * I / 4) * z) = cexp (π * I * z / 4) := by
-            congr 1; ring
-          rw [h_arg, ofComplex_apply_of_im_pos hz, Θ₂_as_jacobiTheta₂]
-          simp only [coe_mk_subtype]
-        exact DifferentiableAt.congr_of_eventuallyEq hF h_ev.symm
+      have hΘ₂_holo := Θ₂_MDifferentiable
       have hΘ₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (Θ₂ ^ 2) := by
         rw [pow_two]; exact MDifferentiable.mul hΘ₂_holo hΘ₂_holo
       have h_pow4_eq : (fun w => (Θ₂ w) ^ 4) = (Θ₂ ^ 2) ^ 2 := by
@@ -1217,8 +1174,7 @@ private theorem D_H₂_div_H₂_tendsto :
     have h_pow4_ne : (Θ₂ z) ^ 4 ≠ 0 := pow_ne_zero 4 hΘ₂
     field_simp [hΘ₂, h_pow4_ne]
   have hΘ₂_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (2 : ℂ) ≠ 0) Θ₂_div_exp_tendsto
-  have h_eq : (4 : ℂ) * (1 / 8) = 1 / 2 := by norm_num
-  rw [← h_eq]
+  rw [← show (4 : ℂ) * (1 / 8) = 1 / 2 from by norm_num]
   apply (D_Θ₂_div_Θ₂_tendsto.const_mul (4 : ℂ)).congr'
   filter_upwards [hΘ₂_ne] with z hz
   exact (h_logderiv z hz).symm
@@ -1329,14 +1285,7 @@ private theorem D_Θ₄_tendsto_zero :
         _ ≤ 3 * π * ↑|k| ^ 2 * rexp (-π * 1 * ↑k ^ 2) := by
             apply mul_le_mul_of_nonneg_left _ (by positivity)
             apply Real.exp_le_exp_of_le
-            have hk_sq_nonneg : (0 : ℝ) ≤ (k : ℝ) ^ 2 := sq_nonneg _
-            have hz1 : z.im ≥ 1 := hz
-            have hpi_pos : π > 0 := Real.pi_pos
-            have h1 : -π * z.im ≤ -π * 1 := by nlinarith
-            calc -π * z.im * (k : ℝ) ^ 2
-                = (-π * z.im) * (k : ℝ) ^ 2 := by ring
-              _ ≤ (-π * 1) * (k : ℝ) ^ 2 := mul_le_mul_of_nonneg_right h1 hk_sq_nonneg
-              _ = -π * 1 * (k : ℝ) ^ 2 := by ring
+            nlinarith [mul_nonneg (sub_nonneg.mpr hz) (sq_nonneg (k : ℝ)), Real.pi_pos]
         _ = 3 * π * ↑|k| ^ 2 * rexp (-π * ↑k ^ 2) := by ring_nf
   simpa using tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
 
@@ -1372,8 +1321,7 @@ private theorem D_H₄_tendsto_zero :
   have h_lim := (tendsto_const_nhds (x := (4 : ℂ))).mul
     ((Θ₄_tendsto_atImInfty.pow 3).mul D_Θ₄_tendsto_zero)
   simp only [mul_zero] at h_lim
-  convert h_lim using 1
-  ext z; ring
+  exact h_lim.congr fun z => by ring
 
 /-- `(D G)/G → 3/2` as `im(z) → ∞`. -/
 theorem D_G_div_G_tendsto :
@@ -1466,7 +1414,7 @@ theorem D_G_div_G_tendsto :
       have := (tendsto_const_nhds (x := (4 : ℂ))).mul
         (H₂_tendsto_atImInfty.mul D_H₂_tendsto_zero)
       simp only [mul_zero] at this
-      convert this using 1; ext z; ring
+      exact this.congr fun z => by ring
     have h_t2 : Filter.Tendsto (fun z => 5 * (H₂ z * D H₄ z + D H₂ z * H₄ z))
         atImInfty (nhds 0) := by
       have h_sub1 := H₂_tendsto_atImInfty.mul D_H₄_tendsto_zero
@@ -1477,7 +1425,7 @@ theorem D_G_div_G_tendsto :
       have := (tendsto_const_nhds (x := (10 : ℂ))).mul
         (H₄_tendsto_atImInfty.mul D_H₄_tendsto_zero)
       simp only [mul_zero] at this
-      convert this using 1; ext z; ring
+      exact this.congr fun z => by ring
     convert (h_t1.add h_t2).add h_t3 using 1
     simp only [add_zero]
   have h_DB_B_tendsto : Filter.Tendsto (fun z => D B z / B z) atImInfty (nhds 0) := by
@@ -1500,8 +1448,7 @@ theorem D_G_div_G_tendsto :
     exact hz (by simp [this])
   have hB_ne : ∀ᶠ z in atImInfty, B z ≠ 0 :=
     h_B_tendsto.eventually_ne (by norm_num : (5 : ℂ) ≠ 0)
-  have h_sum : (3 : ℂ) / 2 = 3 / 2 + 0 := by norm_num
-  rw [h_sum]
+  rw [show (3 : ℂ) / 2 = 3 / 2 + 0 from by norm_num]
   apply (h_DA_A_tendsto.add h_DB_B_tendsto).congr'
   filter_upwards [hA_ne, hB_ne] with z hA hB
   exact (h_DG_G z hA hB).symm
