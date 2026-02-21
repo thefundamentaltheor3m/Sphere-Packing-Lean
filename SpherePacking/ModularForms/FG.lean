@@ -11,7 +11,7 @@ import SpherePacking.ModularForms.summable_lems
 
 open Filter Complex
 open UpperHalfPlane (atImInfty ofComplex ofComplex_apply ofComplex_apply_of_im_pos coe_mk_subtype
-  eventuallyEq_coe_comp_ofComplex isOpen_upperHalfPlaneSet)
+  eventuallyEq_coe_comp_ofComplex isOpen_upperHalfPlaneSet IsBoundedAtImInfty)
 open scoped Real Manifold CongruenceSubgroup ArithmeticFunction.sigma UpperHalfPlane
 
 
@@ -1189,200 +1189,43 @@ private theorem D_H₂_div_H₂_tendsto :
   exact (h_logderiv z hz).symm
 
 private theorem D_H₂_tendsto_zero :
-    Filter.Tendsto (fun z : ℍ => D H₂ z) atImInfty (nhds 0) := by
-  have h_eq : (fun z => D H₂ z) =ᶠ[atImInfty] fun z => (D H₂ z / H₂ z) * H₂ z := by
-    filter_upwards [H₂_eventually_ne_zero] with z hz
-    exact (div_mul_cancel₀ (D H₂ z) hz).symm
-  have hlim := D_H₂_div_H₂_tendsto.mul H₂_tendsto_atImInfty
-  simp only [mul_zero] at hlim
-  exact hlim.congr' h_eq.symm
-
-private lemma summable_sq_mul_exp_neg_pi_sq :
-    Summable fun n : ℤ ↦ (n : ℝ) ^ 2 * rexp (-π * n ^ 2) := by
-  have h := summable_pow_mul_jacobiTheta₂_term_bound 0 (by norm_num : (0 : ℝ) < 1) 2
-  simp only [mul_zero, one_mul] at h
-  convert h using 1
-  ext n
-  congr 1
-  · rw [← sq_abs, Int.cast_abs]
-  · ring_nf
-
-private theorem D_Θ₄_tendsto_zero :
-    Filter.Tendsto (fun z : ℍ => D Θ₄ z) atImInfty (nhds 0) := by
-  have h_D_eq_tsum : ∀ z : ℍ, D Θ₄ z = (2 * π * I)⁻¹ *
-      ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (1/2) z) (0, 1) := by
-    intro z
-    simp only [D, Θ₄_as_jacobiTheta₂, Function.comp_def]
-    congr 1
-    have h_eq : (fun x => jacobiTheta₂ (1/2) (↑(ofComplex x) : ℂ)) =ᶠ[nhds (z : ℂ)]
-        (fun x => jacobiTheta₂ (1/2) x) :=
-      (UpperHalfPlane.eventuallyEq_coe_comp_ofComplex z.2).fun_comp (jacobiTheta₂ (1/2))
-    rw [h_eq.deriv_eq]
-    have hFD := hasFDerivAt_jacobiTheta₂ (1/2 : ℂ) z.2
-    have h_embed : HasDerivAt (fun t : ℂ => ((1 : ℂ)/2, t)) (0, 1) (z : ℂ) :=
-      (hasDerivAt_const (z : ℂ) (1/2)).prodMk (hasDerivAt_id (z : ℂ))
-    have h_chain := hFD.comp_hasDerivAt (z : ℂ) h_embed
-    simp only [Function.comp_def] at h_chain
-    rw [h_chain.deriv]
-    exact ((hasSum_jacobiTheta₂_term_fderiv (1/2 : ℂ) z.2).mapL
-      (ContinuousLinearMap.apply ℂ ℂ (0, 1))).tsum_eq.symm
-  simp_rw [h_D_eq_tsum]
-  have h_tsum_tendsto : Filter.Tendsto
-      (fun z : ℍ => ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (1/2) z) (0, 1)) atImInfty (nhds 0) := by
-    conv => rhs; rw [show (0 : ℂ) = ∑' (k : ℤ), (0 : ℂ) from tsum_zero.symm]
-    apply tendsto_tsum_of_dominated_convergence (α := ℍ) (𝓕 := atImInfty)
-      (f := fun z n => (jacobiTheta₂_term_fderiv n (1/2) z) ((0 : ℂ), 1))
-      (g := fun _ => 0)
-      (bound := fun n => 3 * π * |n| ^ 2 * Real.exp (-π * n ^ 2))
-    · simpa [mul_assoc] using summable_sq_mul_exp_neg_pi_sq.mul_left (3 * π)
-    · intro n
-      by_cases hn0 : n = 0
-      · subst hn0
-        set_option linter.unusedSimpArgs false in
-        simp only [jacobiTheta₂_term_fderiv, Int.cast_zero, mul_zero, sq,
-          zero_mul, zero_smul, add_zero, Complex.exp_zero, one_smul,
-          ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-          ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd', smul_eq_mul]
-        exact tendsto_const_nhds
-      · simp only [jacobiTheta₂_term_fderiv, ContinuousLinearMap.smul_apply,
-          ContinuousLinearMap.add_apply, ContinuousLinearMap.coe_fst',
-          ContinuousLinearMap.coe_snd', smul_eq_mul]
-        have h_simp : ∀ z : ℍ,
-            cexp (2 * ↑π * I * ↑n * (1/2 : ℂ) + ↑π * I * ↑n ^ 2 * ↑z) *
-            (2 * ↑π * I * ↑n * 0 + ↑π * I * ↑n ^ 2 * 1) =
-            cexp (↑π * I * ↑n + ↑π * I * ↑n ^ 2 * ↑z) * (↑π * I * ↑n ^ 2) := fun z => by ring_nf
-        simp_rw [h_simp]
-        have hnsq_pos : n ^ 2 > 0 := sq_pos_of_ne_zero hn0
-        have h_exp_tendsto : Filter.Tendsto
-            (fun z : ℍ => cexp ((π : ℂ) * I * n + (π : ℂ) * I * (n : ℂ) ^ 2 * z))
-            atImInfty (nhds 0) := by
-          rw [Complex.tendsto_exp_nhds_zero_iff]
-          have h_re_eq : ∀ z : ℍ,
-              ((π : ℂ) * I * n + (π : ℂ) * I * (n : ℂ) ^ 2 * z).re = -π * (n : ℝ) ^ 2 * z.im := by
-            intro z
-            simp only [add_re, mul_re, ofReal_re, ofReal_im, Complex.I_re, Complex.I_im,
-              intCast_re, intCast_im, sq, UpperHalfPlane.coe_re, UpperHalfPlane.coe_im, mul_im]
-            ring
-          simp_rw [h_re_eq]
-          have h_const_neg : -π * (n : ℝ) ^ 2 < 0 := by
-            have hnsq' : (0 : ℝ) < (n : ℝ) ^ 2 := by exact_mod_cast hnsq_pos
-            nlinarith [Real.pi_pos]
-          rw [Filter.tendsto_const_mul_atBot_of_neg h_const_neg]
-          exact Filter.tendsto_im_atImInfty
-        convert h_exp_tendsto.mul tendsto_const_nhds using 1; simp
-    · apply Filter.eventually_atImInfty.mpr
-      use 1
-      intro z hz k
-      have h_opnorm := ContinuousLinearMap.le_opNorm
-        (jacobiTheta₂_term_fderiv k (1/2) ↑z) ((0 : ℂ), 1)
-      rw [show ‖((0 : ℂ), (1 : ℂ))‖ = 1 from by simp [Prod.norm_def], mul_one] at h_opnorm
-      have h_fderiv_bound := norm_jacobiTheta₂_term_fderiv_le k (1/2 : ℂ) ↑z
-      have h_half_im : |(1/2 : ℂ).im| ≤ 0 := by simp
-      have h_term_bound := norm_jacobiTheta₂_term_le z.im_pos h_half_im (le_refl z.im) k
-      calc ‖(jacobiTheta₂_term_fderiv k (1/2) ↑z) (0, 1)‖
-          ≤ ‖jacobiTheta₂_term_fderiv k (1/2) ↑z‖ := h_opnorm
-        _ ≤ 3 * π * ↑|k| ^ 2 * ‖jacobiTheta₂_term k (1/2) ↑z‖ := h_fderiv_bound
-        _ ≤ 3 * π * ↑|k| ^ 2 * rexp (-π * (z.im * ↑k ^ 2 - 2 * 0 * ↑|k|)) := by
-            exact mul_le_mul_of_nonneg_left h_term_bound (by positivity)
-        _ = 3 * π * ↑|k| ^ 2 * rexp (-π * z.im * ↑k ^ 2) := by ring_nf
-        _ ≤ 3 * π * ↑|k| ^ 2 * rexp (-π * 1 * ↑k ^ 2) := by
-            apply mul_le_mul_of_nonneg_left _ (by positivity)
-            apply Real.exp_le_exp_of_le
-            nlinarith [mul_nonneg (sub_nonneg.mpr hz) (sq_nonneg (k : ℝ)), Real.pi_pos]
-        _ = 3 * π * ↑|k| ^ 2 * rexp (-π * ↑k ^ 2) := by ring_nf
-  simpa using tendsto_const_nhds (x := (2 * π * I)⁻¹).mul h_tsum_tendsto
+    Filter.Tendsto (fun z : ℍ => D H₂ z) atImInfty (nhds 0) :=
+  D_tendsto_zero_of_isBoundedAtImInfty H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂
 
 private theorem D_H₄_tendsto_zero :
-    Filter.Tendsto (fun z : ℍ => D H₄ z) atImInfty (nhds 0) := by
-  have hΘ₄_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₄ := by
-    intro τ
-    have hθ : DifferentiableAt ℂ (fun z : ℂ => jacobiTheta₂ (1 / 2 : ℂ) z) (τ : ℂ) :=
-      differentiableAt_jacobiTheta₂_snd (1 / 2 : ℂ) τ.2
-    have hMD : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ)
-        ((fun z : ℂ => jacobiTheta₂ (1 / 2 : ℂ) z) ∘ UpperHalfPlane.coe) τ :=
-      DifferentiableAt_MDifferentiableAt (G := fun z : ℂ => jacobiTheta₂ (1 / 2 : ℂ) z) hθ
-    convert hMD using 1
-    ext x; simp [Θ₄_as_jacobiTheta₂, Function.comp]
-  have h_D_H₄_pt : ∀ z, D H₄ z = (4 : ℂ) * (Θ₄ z) ^ 3 * D Θ₄ z := by
-    intro z
-    have : D H₄ z = D (fun w => Θ₄ w ^ 4) z := by congr 1
-    rw [this, D_pow4_eq Θ₄ hΘ₄_holo z]
-  simp_rw [h_D_H₄_pt]
-  have h_lim := (tendsto_const_nhds (x := (4 : ℂ))).mul
-    ((Θ₄_tendsto_atImInfty.pow 3).mul D_Θ₄_tendsto_zero)
-  simp only [mul_zero] at h_lim
-  exact h_lim.congr fun z => by ring
+    Filter.Tendsto (fun z : ℍ => D H₄ z) atImInfty (nhds 0) :=
+  D_tendsto_zero_of_isBoundedAtImInfty H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
 
-/-- `D(2H₂² + 5H₂H₄ + 5H₄²) → 0` as `im(z) → ∞`. -/
+/-- `D(2H₂² + 5H₂H₄ + 5H₄²) → 0` as `im(z) → ∞`, by the Cauchy estimate. -/
 private theorem D_B_tendsto_zero :
     Filter.Tendsto (fun z : ℍ =>
       D (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w + 5 * H₄ w ^ 2) z)
       atImInfty (nhds 0) := by
-  have hH₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
-  have hH₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
+  have hH₂ := H₂_SIF_MDifferentiable
+  have hH₄ := H₄_SIF_MDifferentiable
   have hH₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 2) := by rw [pow_two]; exact hH₂.mul hH₂
   have hH₄sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 2) := by rw [pow_two]; exact hH₄.mul hH₄
-  have h_2H₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2) := by
+  have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2) := by
     have : (fun z => 2 * H₂ z ^ 2) = (2 : ℂ) • (H₂ ^ 2) := by ext z; simp [smul_eq_mul]
     rw [this]; exact hH₂sq.const_smul 2
-  have h_5H₂H₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₂ z * H₄ z) := by
+  have h2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₂ z * H₄ z) := by
     have : (fun z => 5 * H₂ z * H₄ z) = (5 : ℂ) • (H₂ * H₄) := by
       ext z; simp [smul_eq_mul, mul_assoc]
     rw [this]; exact (hH₂.mul hH₄).const_smul 5
-  have h_5H₄sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₄ z ^ 2) := by
+  have h3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₄ z ^ 2) := by
     have : (fun z => 5 * H₄ z ^ 2) = (5 : ℂ) • (H₄ ^ 2) := by ext z; simp [smul_eq_mul]
     rw [this]; exact hH₄sq.const_smul 5
-  have h_2H₂sq_5H₂H₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
-      (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z) := h_2H₂sq.add h_5H₂H₄
-  have h_D_B : ∀ z, D (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w + 5 * H₄ w ^ 2) z =
-      4 * H₂ z * D H₂ z + 5 * (H₂ z * D H₄ z + D H₂ z * H₄ z) + 10 * H₄ z * D H₄ z := by
-    intro z
-    have h_term1 : D (fun w => 2 * H₂ w ^ 2) z = 4 * H₂ z * D H₂ z := by
-      have h1 : (fun w => 2 * H₂ w ^ 2) = (2 : ℂ) • (H₂ ^ 2) := by ext w; simp [smul_eq_mul]
-      have h2 : D ((2 : ℂ) • (H₂ ^ 2)) z = 2 * D (H₂ ^ 2) z := by
-        rw [D_smul 2 (H₂ ^ 2) hH₂sq]; simp
-      have h3 : D (H₂ ^ 2) z = 2 * H₂ z * D H₂ z := by
-        simpa using congrFun (D_sq H₂ hH₂) z
-      rw [h1, h2, h3]; ring
-    have h_term2 : D (fun w => 5 * H₂ w * H₄ w) z =
-        5 * (H₂ z * D H₄ z + D H₂ z * H₄ z) := by
-      have h1 : (fun w => 5 * H₂ w * H₄ w) = (5 : ℂ) • (H₂ * H₄) := by
-        ext w; simp [smul_eq_mul, mul_assoc]
-      have h2 : D ((5 : ℂ) • (H₂ * H₄)) z = 5 * D (H₂ * H₄) z := by
-        rw [D_smul 5 (H₂ * H₄) (hH₂.mul hH₄)]; simp
-      have h3 : D (H₂ * H₄) z = D H₂ z * H₄ z + H₂ z * D H₄ z := by
-        simpa using congrFun (D_mul H₂ H₄ hH₂ hH₄) z
-      rw [h1, h2, h3]; ring
-    have h_term3 : D (fun w => 5 * H₄ w ^ 2) z = 10 * H₄ z * D H₄ z := by
-      have h1 : (fun w => 5 * H₄ w ^ 2) = (5 : ℂ) • (H₄ ^ 2) := by ext w; simp [smul_eq_mul]
-      have h2 : D ((5 : ℂ) • (H₄ ^ 2)) z = 5 * D (H₄ ^ 2) z := by
-        rw [D_smul 5 (H₄ ^ 2) hH₄sq]; simp
-      have h3 : D (H₄ ^ 2) z = 2 * H₄ z * D H₄ z := by
-        simpa using congrFun (D_sq H₄ hH₄) z
-      rw [h1, h2, h3]; ring
-    have h_add1 : D (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w) z =
-        D (fun w => 2 * H₂ w ^ 2) z + D (fun w => 5 * H₂ w * H₄ w) z := by
-      simpa using congrFun (D_add _ _ h_2H₂sq h_5H₂H₄) z
-    have h_add2 : D (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w + 5 * H₄ w ^ 2) z =
-        D (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w) z +
-        D (fun w => 5 * H₄ w ^ 2) z := by
-      simpa using congrFun (D_add _ _ h_2H₂sq_5H₂H₄ h_5H₄sq) z
-    rw [h_add2, h_add1, h_term1, h_term2, h_term3]
-  simp_rw [h_D_B]
-  have h_t1 : Filter.Tendsto (fun z => 4 * H₂ z * D H₂ z) atImInfty (nhds 0) := by
-    simpa [mul_zero] using ((tendsto_const_nhds (x := (4 : ℂ))).mul
-      (H₂_tendsto_atImInfty.mul D_H₂_tendsto_zero)).congr fun z => by ring
-  have h_t2 : Filter.Tendsto (fun z => 5 * (H₂ z * D H₄ z + D H₂ z * H₄ z))
-      atImInfty (nhds 0) := by
-    have h_sub1 := H₂_tendsto_atImInfty.mul D_H₄_tendsto_zero
-    have h_sub2 := D_H₂_tendsto_zero.mul H₄_tendsto_atImInfty
-    simp only [zero_mul, mul_zero] at h_sub1 h_sub2
-    simpa using (tendsto_const_nhds (x := (5 : ℂ))).mul (h_sub1.add h_sub2)
-  have h_t3 : Filter.Tendsto (fun z => 10 * H₄ z * D H₄ z) atImInfty (nhds 0) := by
-    simpa [mul_zero] using ((tendsto_const_nhds (x := (10 : ℂ))).mul
-      (H₄_tendsto_atImInfty.mul D_H₄_tendsto_zero)).congr fun z => by ring
-  convert (h_t1.add h_t2).add h_t3 using 1
-  simp
+  have hB_md := (h1.add h2).add h3
+  have hB_bdd : IsBoundedAtImInfty
+      (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := by
+    have h := ((H₂_tendsto_atImInfty.pow 2).const_mul 2).add
+      (((H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty).const_mul 5).add
+        ((H₄_tendsto_atImInfty.pow 2).const_mul 5))
+    simp only [zero_pow two_ne_zero, one_pow, mul_zero, mul_one, zero_add] at h
+    have heq : (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) =
+        (fun z => 2 * H₂ z ^ 2 + (5 * (H₂ z * H₄ z) + 5 * H₄ z ^ 2)) := by ext z; ring
+    rw [heq]; exact h.isBigO_one ℝ
+  exact D_tendsto_zero_of_isBoundedAtImInfty hB_md hB_bdd
 
 /-- `(D G)/G → 3/2` as `im(z) → ∞`. -/
 theorem D_G_div_G_tendsto :

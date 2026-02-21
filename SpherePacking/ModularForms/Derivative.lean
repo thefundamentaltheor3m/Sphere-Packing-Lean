@@ -806,6 +806,43 @@ lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
     _ ≤ M / (π * 1) := by gcongr
     _ = M / π := by ring
 
+/-- The D-derivative of a bounded holomorphic function tends to zero at infinity.
+
+For z with im(z) = y, a Cauchy estimate on a ball of radius y/2 gives
+‖D f z‖ ≤ M / (π · y), which tends to zero as y → ∞. -/
+theorem D_tendsto_zero_of_isBoundedAtImInfty {f : ℍ → ℂ}
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
+    (hbdd : IsBoundedAtImInfty f) :
+    Filter.Tendsto (D f) atImInfty (nhds 0) := by
+  obtain ⟨M, A, hMA⟩ := isBoundedAtImInfty_iff.mp hbdd
+  -- ‖D f z‖ ≤ M / (π · z.im) by Cauchy estimate; the bound → 0 since z.im → ∞.
+  suffices h : ∀ᶠ z : ℍ in atImInfty, ‖D f z‖ ≤ M / (π * z.im) by
+    apply squeeze_zero_norm' h
+    have := Filter.tendsto_im_atImInfty.inv_tendsto_atTop.const_mul (M / π)
+    simp only [Pi.inv_apply, mul_zero] at this
+    exact this.congr fun z => by field_simp
+  have h_sphere_bdd : ∀ z : ℍ, 2 * max A 0 + 1 ≤ z.im →
+      ∀ w ∈ Metric.sphere (z : ℂ) (z.im / 2), ‖(f ∘ ofComplex) w‖ ≤ M := by
+    intro z hz_ge w hw
+    have hw_im_pos : 0 < w.im :=
+      closedBall_center_subset_upperHalfPlane z (Metric.sphere_subset_closedBall hw)
+    have hdist : dist w z = z.im / 2 := Metric.mem_sphere.mp hw
+    have habs : |w.im - z.im| ≤ z.im / 2 := by
+      calc |w.im - z.im| = |(w - z).im| := by simp [Complex.sub_im]
+        _ ≤ ‖w - z‖ := abs_im_le_norm _
+        _ = dist w z := (dist_eq_norm _ _).symm
+        _ = z.im / 2 := hdist
+    have hw_im_ge_A : A ≤ w.im := by linarith [(abs_le.mp habs).1, le_max_left A 0]
+    simpa [ofComplex_apply_of_im_pos hw_im_pos] using hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
+  rw [Filter.eventually_iff_exists_mem]
+  refine ⟨{z : ℍ | 2 * max A 0 + 1 ≤ z.im},
+    (atImInfty_mem _).mpr ⟨_, fun _ h => h⟩, fun z hz => ?_⟩
+  calc ‖D f z‖
+      ≤ M / (2 * π * (z.im / 2)) := norm_D_le_of_sphere_bound (by linarith [z.im_pos])
+          (diffContOnCl_comp_ofComplex_of_mdifferentiable hf
+            (closedBall_center_subset_upperHalfPlane z)) (h_sphere_bdd z hz)
+    _ = M / (π * z.im) := by ring
+
 /-- The Serre derivative of a bounded holomorphic function is bounded at infinity.
 
 serre_D k f = D f - (k/12)·E₂·f. Both terms are bounded:
