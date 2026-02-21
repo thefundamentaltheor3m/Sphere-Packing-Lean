@@ -149,6 +149,17 @@ Modular linear differential equation satisfied by $G$.
 theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
   sorry
 
+/-- `D(f⁴) = 4f³·Df`, using `D_sq` twice through the `(f²)²` factorization. -/
+private lemma D_pow4_eq (f : ℍ → ℂ) (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (z : ℍ) :
+    D (fun w => f w ^ 4) z = 4 * (f z) ^ 3 * D f z := by
+  have hfsq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (f ^ 2) := by rw [pow_two]; exact hf.mul hf
+  have h_eq : (fun w => f w ^ 4) = (f ^ 2) ^ 2 := by ext w; simp only [Pi.pow_apply]; ring
+  have h1 : D ((f ^ 2) ^ 2) z = 2 * (f z) ^ 2 * D (f ^ 2) z := by
+    simpa [Pi.mul_apply, Pi.pow_apply] using congrFun (D_sq (f ^ 2) hfsq) z
+  have h2 : D (f ^ 2) z = 2 * f z * D f z := by
+    simpa [Pi.mul_apply] using congrFun (D_sq f hf) z
+  rw [h_eq, h1, h2]; ring
+
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
 
 lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := Δ_fun_eq_Δ ▸ Delta_imag_axis_pos
@@ -1150,23 +1161,8 @@ private theorem D_H₂_div_H₂_tendsto :
   have h_logderiv : ∀ z : ℍ, Θ₂ z ≠ 0 → D H₂ z / H₂ z = 4 * (D Θ₂ z / Θ₂ z) := by
     intro z hΘ₂
     rw [hH₂_eq]
-    have h_pow4 : D (fun w => (Θ₂ w) ^ 4) z = 4 * (Θ₂ z) ^ 3 * D Θ₂ z := by
-      have hΘ₂_holo := Θ₂_MDifferentiable
-      have hΘ₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (Θ₂ ^ 2) := by
-        rw [pow_two]; exact MDifferentiable.mul hΘ₂_holo hΘ₂_holo
-      have h_pow4_eq : (fun w => (Θ₂ w) ^ 4) = (Θ₂ ^ 2) ^ 2 := by
-        ext w; simp only [Pi.pow_apply]; ring
-      have h_D_pow4_fn : D ((Θ₂ ^ 2) ^ 2) = 2 * (Θ₂ ^ 2) * D (Θ₂ ^ 2) := D_sq (Θ₂ ^ 2) hΘ₂sq
-      have h_D_sq_fn : D (Θ₂ ^ 2) = 2 * Θ₂ * D Θ₂ := D_sq Θ₂ hΘ₂_holo
-      calc D (fun w => (Θ₂ w) ^ 4) z
-          = D ((Θ₂ ^ 2) ^ 2) z := by rw [h_pow4_eq]
-        _ = D (Θ₂ ^ 2) z * (Θ₂ ^ 2) z + (Θ₂ ^ 2) z * D (Θ₂ ^ 2) z := by
-            rw [pow_two ((Θ₂ ^ 2) : ℍ → ℂ), congrFun (D_mul (Θ₂ ^ 2) (Θ₂ ^ 2) hΘ₂sq hΘ₂sq) z]
-            simp only [Pi.add_apply, Pi.mul_apply]
-        _ = 2 * (Θ₂ z) ^ 2 * D (Θ₂ ^ 2) z := by simp only [Pi.pow_apply]; ring
-        _ = 2 * (Θ₂ z) ^ 2 * (2 * Θ₂ z * D Θ₂ z) := by
-            rw [h_D_sq_fn]; simp only [Pi.mul_apply, Pi.ofNat_apply]
-        _ = 4 * (Θ₂ z) ^ 3 * D Θ₂ z := by ring
+    have h_pow4 : D (fun w => (Θ₂ w) ^ 4) z = 4 * (Θ₂ z) ^ 3 * D Θ₂ z :=
+      D_pow4_eq Θ₂ Θ₂_MDifferentiable z
     have h_H₂_eq_fn : H₂ = fun w => (Θ₂ w) ^ 4 := by ext w; rfl
     rw [h_H₂_eq_fn, h_pow4]
     have h_pow4_ne : (Θ₂ z) ^ 4 ≠ 0 := pow_ne_zero 4 hΘ₂
@@ -1294,19 +1290,10 @@ private theorem D_H₄_tendsto_zero :
       DifferentiableAt_MDifferentiableAt (G := fun z : ℂ => jacobiTheta₂ (1 / 2 : ℂ) z) hθ
     convert hMD using 1
     ext x; simp [Θ₄_as_jacobiTheta₂, Function.comp]
-  have hΘ₄sq_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (Θ₄ ^ 2) := by
-    rw [pow_two]; exact MDifferentiable.mul hΘ₄_holo hΘ₄_holo
-  have h_D_sq : D (Θ₄ ^ 2) = 2 * Θ₄ * D Θ₄ := D_sq Θ₄ hΘ₄_holo
   have h_D_H₄_pt : ∀ z, D H₄ z = (4 : ℂ) * (Θ₄ z) ^ 3 * D Θ₄ z := by
     intro z
-    have h1 : D H₄ z = D ((Θ₄ ^ 2) ^ 2) z := by
-      congr 1; ext w; simp only [H₄, Pi.pow_apply]; ring
-    have h2 : D ((Θ₄ ^ 2) ^ 2) z = (2 : ℂ) * (Θ₄ z ^ 2) * D (Θ₄ ^ 2) z := by
-      simpa [Pi.mul_apply, Pi.pow_apply] using congrFun (D_sq (Θ₄ ^ 2) hΘ₄sq_holo) z
-    have h3 : D (Θ₄ ^ 2) z = (2 : ℂ) * Θ₄ z * D Θ₄ z := by
-      simpa [Pi.mul_apply] using congrFun h_D_sq z
-    rw [h1, h2, h3]
-    ring
+    have : D H₄ z = D (fun w => Θ₄ w ^ 4) z := by congr 1
+    rw [this, D_pow4_eq Θ₄ hΘ₄_holo z]
   simp_rw [h_D_H₄_pt]
   have h_lim := (tendsto_const_nhds (x := (4 : ℂ))).mul
     ((Θ₄_tendsto_atImInfty.pow 3).mul D_Θ₄_tendsto_zero)
