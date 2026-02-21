@@ -60,7 +60,6 @@ import SpherePacking.ModularForms.FG
 import SpherePacking.ModularForms.Icc_Ico_lems
 import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.ModularForms.JacobiTheta
-import SpherePacking.ModularForms.Monotonicity_L10_SerreAndF
 import SpherePacking.ModularForms.PhiTransform
 import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.RamanujanIdentities
