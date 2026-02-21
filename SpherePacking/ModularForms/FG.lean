@@ -160,6 +160,15 @@ private lemma D_pow4_eq (f : ℍ → ℂ) (hf : MDifferentiable 𝓘(ℂ) 𝓘(�
     simpa [Pi.mul_apply] using congrFun (D_sq f hf) z
   rw [h_eq, h1, h2]; ring
 
+/-- Pointwise log-derivative of a product: `D(f·h)/(f·h) = Df/f + Dh/h`. -/
+private lemma logderiv_mul_eq (f h : ℍ → ℂ)
+    (hf_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h)
+    (z : ℍ) (hf_ne : f z ≠ 0) (hh_ne : h z ≠ 0) :
+    D (f * h) z / (f z * h z) = D f z / f z + D h z / h z := by
+  rw [congrFun (D_mul f h hf_md hh_md) z]
+  simp only [Pi.mul_apply, Pi.add_apply]
+  field_simp [hf_ne, hh_ne]
+
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
 
 lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := Δ_fun_eq_Δ ▸ Delta_imag_axis_pos
@@ -1120,46 +1129,37 @@ private theorem D_Θ₂_div_Θ₂_tendsto :
     hh_tendsto.eventually_ne (by norm_num : (2 : ℂ) ≠ 0)
   have hDh_div_h_tendsto : Filter.Tendsto (fun z => D h z / h z) atImInfty (nhds (0 : ℂ)) := by
     simpa using hDh_tendsto.div hh_tendsto (by norm_num : (2 : ℂ) ≠ 0)
+  have hf_ne : ∀ z : ℍ, f z ≠ 0 := fun z => Complex.exp_ne_zero _
+  have hf_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+    intro τ
+    have h_diff : DifferentiableAt ℂ (fun t : ℂ => cexp (π * I * t / 4)) (τ : ℂ) :=
+      ((differentiableAt_id.const_mul (π * I)).div_const 4).cexp
+    simpa [f, Function.comp] using
+      (DifferentiableAt_MDifferentiableAt
+        (G := fun t : ℂ => cexp (π * I * t / 4)) (z := τ) h_diff)
+  have hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h := by
+    intro τ
+    suffices h_diff : DifferentiableAt ℂ (h ∘ ofComplex) τ.val by
+      have h_eq : (h ∘ ofComplex) ∘ UpperHalfPlane.coe = h := by
+        ext x; simp [Function.comp, ofComplex_apply, h]
+      rw [← h_eq]
+      exact DifferentiableAt_MDifferentiableAt (G := h ∘ ofComplex) (z := τ) h_diff
+    have hΘ₂_diff : DifferentiableAt ℂ (Θ₂ ∘ ofComplex) τ.val :=
+      MDifferentiableAt_DifferentiableAt (Θ₂_MDifferentiable τ)
+    have hf_diff : DifferentiableAt ℂ (f ∘ ofComplex) τ.val :=
+      MDifferentiableAt_DifferentiableAt (hf_md τ)
+    have hf_ne' : (f ∘ ofComplex) τ.val ≠ 0 := by
+      simp only [Function.comp_apply, f]; exact Complex.exp_ne_zero _
+    have h_eq' : (h ∘ ofComplex) =ᶠ[nhds τ.val] (Θ₂ ∘ ofComplex) / (f ∘ ofComplex) := by
+      have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
+      filter_upwards [hU] with w hw
+      simp only [Function.comp_apply, h, Pi.div_apply, ofComplex_apply_of_im_pos hw]
+    exact (hΘ₂_diff.div hf_diff hf_ne').congr_of_eventuallyEq h_eq'.symm
   have h_logderiv_eq : ∀ᶠ z : ℍ in atImInfty, D Θ₂ z / Θ₂ z = D f z / f z + D h z / h z := by
-    have hf_ne : ∀ z : ℍ, f z ≠ 0 := fun z => Complex.exp_ne_zero _
-    filter_upwards [h_ne_zero] with z hz
-    have h_Θ₂_eq : Θ₂ z = f z * h z := by simp only [h, mul_div_cancel₀ _ (hf_ne z)]
     have h_Θ₂_fn : Θ₂ = f * h := by
       ext w; simp only [h, Pi.mul_apply, mul_div_cancel₀ _ (hf_ne w)]
-    have hf_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
-      intro τ
-      have h_diff : DifferentiableAt ℂ (fun t : ℂ => cexp (π * I * t / 4)) (τ : ℂ) :=
-        ((differentiableAt_id.const_mul (π * I)).div_const 4).cexp
-      simpa [f, Function.comp] using
-        (DifferentiableAt_MDifferentiableAt
-          (G := fun t : ℂ => cexp (π * I * t / 4)) (z := τ) h_diff)
-    have hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h := by
-      intro τ
-      suffices h_diff : DifferentiableAt ℂ (h ∘ ofComplex) τ.val by
-        have h_eq : (h ∘ ofComplex) ∘ UpperHalfPlane.coe = h := by
-          ext x; simp [Function.comp, ofComplex_apply, h]
-        rw [← h_eq]
-        exact
-          DifferentiableAt_MDifferentiableAt (G := h ∘ ofComplex) (z := τ) h_diff
-      have hΘ₂_diff : DifferentiableAt ℂ (Θ₂ ∘ ofComplex) τ.val :=
-        MDifferentiableAt_DifferentiableAt (Θ₂_MDifferentiable τ)
-      have hf_diff : DifferentiableAt ℂ (f ∘ ofComplex) τ.val :=
-        MDifferentiableAt_DifferentiableAt (hf_md τ)
-      have hf_ne' : (f ∘ ofComplex) τ.val ≠ 0 := by
-        simp only [Function.comp_apply, f]
-        exact Complex.exp_ne_zero _
-      have h_eq' : (h ∘ ofComplex) =ᶠ[nhds τ.val] (Θ₂ ∘ ofComplex) / (f ∘ ofComplex) := by
-        have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
-        filter_upwards [hU] with w hw
-        simp only [Function.comp_apply, h, Pi.div_apply, ofComplex_apply_of_im_pos hw]
-      exact (hΘ₂_diff.div hf_diff hf_ne').congr_of_eventuallyEq h_eq'.symm
-    have h_D_prod := D_mul f h hf_md hh_md
-    have h_D_Θ₂ : D Θ₂ = D (f * h) := by rw [h_Θ₂_fn]
-    calc D Θ₂ z / Θ₂ z
-        = D (f * h) z / (f z * h z) := by rw [h_D_Θ₂, h_Θ₂_eq]
-      _ = (D f z * h z + f z * D h z) / (f z * h z) := by
-          rw [congrFun h_D_prod z]; simp only [Pi.mul_apply, Pi.add_apply]
-      _ = D f z / f z + D h z / h z := by field_simp [hf_ne z, hz]
+    filter_upwards [h_ne_zero] with z hz
+    rw [h_Θ₂_fn]; exact logderiv_mul_eq f h hf_md hh_md z (hf_ne z) hz
   have h_sum_limit : Filter.Tendsto (fun z => D f z / f z + D h z / h z) atImInfty
       (nhds ((1 : ℂ) / 8)) := by
     have hf_const : Filter.Tendsto (fun z => D f z / f z) atImInfty (nhds ((1 : ℂ) / 8)) := by
@@ -1381,7 +1381,7 @@ private theorem D_B_tendsto_zero :
     simpa [mul_zero] using ((tendsto_const_nhds (x := (10 : ℂ))).mul
       (H₄_tendsto_atImInfty.mul D_H₄_tendsto_zero)).congr fun z => by ring
   convert (h_t1.add h_t2).add h_t3 using 1
-  simp only [add_zero]
+  simp
 
 /-- `(D G)/G → 3/2` as `im(z) → ∞`. -/
 theorem D_G_div_G_tendsto :
@@ -1434,11 +1434,8 @@ theorem D_G_div_G_tendsto :
     simpa using h_DB_tendsto.div h_B_tendsto (by norm_num : (5 : ℂ) ≠ 0)
   have h_DG_G : ∀ z, A z ≠ 0 → B z ≠ 0 → D G z / G z = D A z / A z + D B z / B z := by
     intro z hA_ne hB_ne
-    have h_DG : D G z = D A z * B z + A z * D B z := by
-      rw [show G = A * B from funext hG_eq]
-      simpa [Pi.add_apply, Pi.mul_apply] using congrFun (D_mul A B hA hB) z
-    rw [hG_eq, h_DG]
-    field_simp
+    rw [show G = A * B from funext hG_eq]
+    exact logderiv_mul_eq A B hA hB z hA_ne hB_ne
   have hA_ne : ∀ᶠ z in atImInfty, A z ≠ 0 := by
     have hH₂_ne := H₂_div_exp_tendsto.eventually_ne (by norm_num : (16 : ℂ) ≠ 0)
     filter_upwards [hH₂_ne] with z hz hzero
