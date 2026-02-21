@@ -628,14 +628,12 @@ private theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos SerreDer_22_L�
     set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
     rw [serre_D_L₁₀_eq z]
     change (Δ z * (7200 * negDE₂ z * G z + 640 * H₂ z * F z)).im = 0
-    simp only [Complex.mul_im, Complex.add_im,
-      (by norm_num : (7200 : ℂ).im = 0), (by norm_num : (640 : ℂ).im = 0),
+    simp [Complex.mul_im, Complex.add_im,
       Delta_imag_axis_pos.1.im_eq_zero_at ht z rfl,
       G_imag_axis_real.im_eq_zero_at ht z rfl,
       H₂_imag_axis_pos.1.im_eq_zero_at ht z rfl,
       F_imag_axis_real.im_eq_zero_at ht z rfl,
       negDE₂_imag_axis_real.im_eq_zero_at ht z rfl]
-    ring
   -- Part 2: Positive on imaginary axis
   · simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
     set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
