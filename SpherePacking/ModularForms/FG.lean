@@ -1428,15 +1428,10 @@ theorem Q_strictAntiOn : StrictAntiOn Q (Set.Ioi 0) := by
     rw [interior_Ioi] at ht
     exact deriv_Q_neg t ht
 
-/-- Corollary: `Q` is strictly anti-monotone (decreasing) as a function on positive reals. -/
-theorem Q_strictAnti : ∀ {t₁ t₂ : ℝ}, 0 < t₁ → t₁ < t₂ → Q t₂ < Q t₁ := by
-  intro t₁ t₂ ht₁ ht₁₂
-  exact Q_strictAntiOn (Set.mem_Ioi.mpr ht₁) (Set.mem_Ioi.mpr (lt_trans ht₁ ht₁₂)) ht₁₂
-
 /--
-$t \mapsto F(it) / G(it)$ is monotone decreasing.
+$t \mapsto F(it) / G(it)$ is strictly decreasing.
 -/
-theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) := by
+theorem FmodG_strictAntiOn : StrictAntiOn FmodGReal (Set.Ioi 0) := by
   sorry
 
 /--
