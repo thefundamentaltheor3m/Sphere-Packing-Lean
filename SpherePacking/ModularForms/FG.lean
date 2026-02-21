@@ -169,6 +169,13 @@ private lemma logderiv_mul_eq (f h : ℍ → ℂ)
   simp only [Pi.mul_apply, Pi.add_apply]
   field_simp [hf_ne, hh_ne]
 
+/-- `(a / b).re = a.re / b.re` when both `a` and `b` are real-valued complex numbers. -/
+private lemma div_re_of_im_eq_zero {a b : ℂ} (ha : a.im = 0) (hb : b.im = 0) :
+    (a / b).re = a.re / b.re := by
+  conv_lhs => rw [show a = ↑a.re from Complex.ext rfl (by simp [ha]),
+    show b = ↑b.re from Complex.ext rfl (by simp [hb]), ← Complex.ofReal_div]
+  exact Complex.ofReal_re _
+
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
 
 lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := Δ_fun_eq_Δ ▸ Delta_imag_axis_pos
@@ -1489,18 +1496,9 @@ theorem L₁₀_div_FG_tendsto :
   have hG := G_imag_axis_real t ht_pos
   simp only [Function.resToImagAxis_apply, ResToImagAxis, ht_pos, ↓reduceDIte] at hL hF hG
   rw [← hz] at hL hF hG
-  have hFG : (F z * G z).im = 0 := by rw [Complex.mul_im, hF, hG]; ring
+  have hFG_im : (F z * G z).im = 0 := by rw [Complex.mul_im, hF, hG]; ring
   have hFG_re : (F z * G z).re = (F z).re * (G z).re := by rw [Complex.mul_re, hF, hG]; ring
-  rw [Complex.div_re, hFG_re]
-  simp only [hL, hFG, mul_zero, add_zero, zero_div, Complex.normSq_eq_norm_sq]
-  have h_norm : ‖F z * G z‖^2 = ((F z).re * (G z).re)^2 := by
-    rw [Complex.sq_norm, Complex.normSq_mul]
-    simp only [Complex.normSq_apply, hF, hG, mul_zero, add_zero]
-    ring
-  rw [h_norm]
-  by_cases h_ne : (F z).re * (G z).re = 0
-  · simp [h_ne]
-  · field_simp [h_ne]
+  rw [div_re_of_im_eq_zero hL hFG_im, hFG_re]
 
 theorem L₁₀_eventually_pos_imag_axis : ResToImagAxis.EventuallyPos L₁₀ := by
   refine ⟨L₁₀_imag_axis_real, ?_⟩
