@@ -602,43 +602,16 @@ private theorem serre_D_L₁₀_eq (z : ℍ) :
 /-- `∂₂₂ L₁,₀(it) > 0` for all `t > 0`.
 Blueprint: Corollary 8.9 - both terms in the expression are positive. -/
 private theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
-  refine ⟨?_, fun t ht => ?_⟩
-  -- Part 1: Real on imaginary axis
-  · intro t ht
-    simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
-    set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
-    rw [serre_D_L₁₀_eq z]
-    change (Δ z * (7200 * negDE₂ z * G z + 640 * H₂ z * F z)).im = 0
-    simp [Complex.mul_im, Complex.add_im,
-      Delta_imag_axis_pos.1.im_eq_zero_at ht z rfl,
-      G_imag_axis_real.im_eq_zero_at ht z rfl,
-      H₂_imag_axis_pos.1.im_eq_zero_at ht z rfl,
-      F_imag_axis_real.im_eq_zero_at ht z rfl,
-      negDE₂_imag_axis_real.im_eq_zero_at ht z rfl]
-  -- Part 2: Positive on imaginary axis
-  · simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
-    set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
-    rw [serre_D_L₁₀_eq z]
-    change 0 < (Δ z * (7200 * negDE₂ z * G z + 640 * H₂ z * F z)).re
-    have hΔ_pos := Delta_imag_axis_pos.re_pos_at ht z rfl
-    have hΔ_real := Delta_imag_axis_pos.1.im_eq_zero_at ht z rfl
-    have hnegDE₂_pos := negDE₂_imag_axis_pos.re_pos_at ht z rfl
-    have hnegDE₂_real := negDE₂_imag_axis_pos.1.im_eq_zero_at ht z rfl
-    have hG_pos := G_imag_axis_pos.re_pos_at ht z rfl
-    have hG_real := G_imag_axis_real.im_eq_zero_at ht z rfl
-    have hH₂_pos := H₂_imag_axis_pos.re_pos_at ht z rfl
-    have hH₂_real := H₂_imag_axis_pos.1.im_eq_zero_at ht z rfl
-    have hF_pos := F_imag_axis_pos.re_pos_at ht z rfl
-    have hF_real := F_imag_axis_real.im_eq_zero_at ht z rfl
-    have hsum_pos : (7200 * negDE₂ z * G z + 640 * H₂ z * F z).re > 0 := by
-      simp only [Complex.add_re, Complex.mul_re, hnegDE₂_real, hG_real, hH₂_real, hF_real,
-        mul_zero, sub_zero]
-      positivity
-    have hsum_real : (7200 * negDE₂ z * G z + 640 * H₂ z * F z).im = 0 := by
-      simp only [Complex.add_im, Complex.mul_im, hnegDE₂_real, hG_real, hH₂_real, hF_real]
-      ring
-    rw [Complex.mul_re, hΔ_real, hsum_real, mul_zero, sub_zero]
-    exact mul_pos hΔ_pos hsum_pos
+  have h_eq : SerreDer_22_L₁₀ = Δ * ((7200 : ℝ) • (negDE₂ * G) + (640 : ℝ) • (H₂ * F)) := by
+    ext z; simp only [Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.neg_apply,
+      Complex.real_smul, serre_D_L₁₀_eq z, negDE₂]; push_cast; ring
+  rw [h_eq]
+  have := Delta_imag_axis_pos
+  have := negDE₂_imag_axis_pos
+  have := G_imag_axis_pos
+  have := H₂_imag_axis_pos
+  have := F_imag_axis_pos
+  fun_prop (disch := positivity)
 
 lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ :=
   serre_D_L₁₀_pos_imag_axis.1
