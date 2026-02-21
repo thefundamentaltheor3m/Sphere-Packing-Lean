@@ -50,9 +50,7 @@ lemma Δ_fun_eq_Δ : Δ_fun = Δ := by
   calc
     Δ_fun z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
       simp [Δ_fun, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply]
-    _ = Delta_E4_E6_aux z := by simp [hE4E6]
-    _ = Delta z := by simp [Delta_E4_eqn]
-    _ = Δ z := by simp [Delta_apply]
+    _ = Δ z := by simp [← hE4E6, ← Delta_E4_eqn, Delta_apply]
 
 noncomputable def L₁₀ := (D F) * G - F * (D G)
 
