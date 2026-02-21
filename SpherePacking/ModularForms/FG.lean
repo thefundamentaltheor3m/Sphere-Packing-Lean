@@ -709,6 +709,12 @@ private theorem H₂_div_exp_tendsto :
     simp only [H₂, div_pow, ← Complex.exp_nat_mul]; congr 2; ring
   simp_rw [h_eq]; convert Θ₂_div_exp_tendsto.pow 4; norm_num
 
+private lemma Θ₂_eventually_ne_zero : ∀ᶠ z : ℍ in atImInfty, Θ₂ z ≠ 0 :=
+  eventually_ne_zero_of_tendsto_div (by norm_num : (2 : ℂ) ≠ 0) Θ₂_div_exp_tendsto
+
+private lemma H₂_eventually_ne_zero : ∀ᶠ z : ℍ in atImInfty, H₂ z ≠ 0 :=
+  eventually_ne_zero_of_tendsto_div (by norm_num : (16 : ℂ) ≠ 0) H₂_div_exp_tendsto
+
 /-- The vanishing order of F at infinity is 2.
 Blueprint: F = 720² * q² * (1 + O(q)), so F / q² → 720² as im(z) → ∞. -/
 theorem F_vanishing_order :
@@ -1165,7 +1171,7 @@ private theorem D_H₂_div_H₂_tendsto :
     rw [h_H₂_eq_fn, h_pow4]
     have h_pow4_ne : (Θ₂ z) ^ 4 ≠ 0 := pow_ne_zero 4 hΘ₂
     field_simp [hΘ₂, h_pow4_ne]
-  have hΘ₂_ne := eventually_ne_zero_of_tendsto_div (by norm_num : (2 : ℂ) ≠ 0) Θ₂_div_exp_tendsto
+  have hΘ₂_ne := Θ₂_eventually_ne_zero
   rw [← show (4 : ℂ) * (1 / 8) = 1 / 2 from by norm_num]
   apply (D_Θ₂_div_Θ₂_tendsto.const_mul (4 : ℂ)).congr'
   filter_upwards [hΘ₂_ne] with z hz
@@ -1173,8 +1179,7 @@ private theorem D_H₂_div_H₂_tendsto :
 
 private theorem D_H₂_tendsto_zero :
     Filter.Tendsto (fun z : ℍ => D H₂ z) atImInfty (nhds 0) := by
-  have hH₂_ne : ∀ᶠ z : ℍ in atImInfty, H₂ z ≠ 0 :=
-    eventually_ne_zero_of_tendsto_div (by norm_num : (16 : ℂ) ≠ 0) H₂_div_exp_tendsto
+  have hH₂_ne := H₂_eventually_ne_zero
   have h_eq : (fun z => D H₂ z) =ᶠ[atImInfty] fun z => (D H₂ z / H₂ z) * H₂ z := by
     filter_upwards [hH₂_ne] with z hz
     exact (div_mul_cancel₀ (D H₂ z) hz).symm
@@ -1342,8 +1347,7 @@ theorem D_G_div_G_tendsto :
   have h_DA_A_tendsto : Filter.Tendsto (fun z => D A z / A z) atImInfty (nhds ((3 : ℂ) / 2)) := by
     have h_eq : (3 : ℂ) / 2 = 3 * (1 / 2) := by norm_num
     rw [h_eq]
-    have hH₂_ne : ∀ᶠ z in atImInfty, H₂ z ≠ 0 :=
-      eventually_ne_zero_of_tendsto_div (by norm_num : (16 : ℂ) ≠ 0) H₂_div_exp_tendsto
+    have hH₂_ne := H₂_eventually_ne_zero
     apply (D_H₂_div_H₂_tendsto.const_mul 3).congr'
     filter_upwards [hH₂_ne] with z hz
     exact (h_DA_A z hz).symm
