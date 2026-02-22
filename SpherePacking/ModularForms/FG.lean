@@ -1091,34 +1091,6 @@ private theorem D_exp_pi_quarter_div_exp_pi_quarter (z : ℍ) :
   simpa only [show ∀ w : ℍ, (π * I / 4 : ℂ) * w = π * I * w / 4 from fun w => by ring,
     show π * I / 4 / (2 * π * I) = (1 : ℂ) / 8 by field_simp; ring] using D_cexp_div (π * I / 4) z
 
-/-- Differentiability of t ↦ jacobiTheta₂(t/2, t) at points in the upper half-plane. -/
-lemma differentiableAt_jacobiTheta₂_half (τ : ℍ) :
-    DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) τ.val := by
-  let f : ℂ → ℂ × ℂ := fun t => (t / 2, t)
-  have hf : DifferentiableAt ℂ f τ.val :=
-    (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
-  have hg : DifferentiableAt ℂ (fun p : ℂ × ℂ => jacobiTheta₂ p.1 p.2) (f τ.val) := by
-    simpa [f] using (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
-  simpa [f] using hg.comp τ.val hf
-
-private lemma Θ₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₂ := by
-  intro τ
-  have hΘ₂_diff : DifferentiableAt ℂ (Θ₂ ∘ ofComplex) τ.val := by
-    have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
-    have hF : DifferentiableAt ℂ
-        (fun t => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t) τ.val :=
-      ((differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp).mul
-        (differentiableAt_jacobiTheta₂_half τ)
-    have h_ev : (fun t => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t) =ᶠ[nhds τ.val]
-        (Θ₂ ∘ ofComplex) := by
-      refine Filter.eventually_of_mem hU fun z hz => ?_
-      simp only [Function.comp_apply, ofComplex_apply_of_im_pos hz, Θ₂_as_jacobiTheta₂,
-        coe_mk_subtype]; ring_nf
-    exact hF.congr_of_eventuallyEq h_ev.symm
-  have h_eq : (Θ₂ ∘ ofComplex) ∘ UpperHalfPlane.coe = Θ₂ := by
-    ext x; simp [Function.comp, ofComplex_apply]
-  rw [← h_eq]; exact DifferentiableAt_MDifferentiableAt hΘ₂_diff
-
 private theorem D_Θ₂_div_Θ₂_tendsto :
     Filter.Tendsto (fun z : ℍ => D Θ₂ z / Θ₂ z) atImInfty (nhds ((1 : ℂ) / 8)) := by
   let f : ℍ → ℂ := fun w => cexp (π * Complex.I * w / 4)
