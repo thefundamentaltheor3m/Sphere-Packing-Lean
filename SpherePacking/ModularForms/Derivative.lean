@@ -595,7 +595,23 @@ under the slash action of weight `k`, then `serre_D k F` is invariant under the 
 of weight `k + 2`.
 -/
 theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
-    ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by sorry
+    ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by
+  intro γ
+  have hdecomp : serre_D (↑k) F = D F + ((-↑k * (12 : ℂ)⁻¹) • (E₂ * F)) := by
+    ext w; simp only [serre_D_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul, Pi.mul_apply]; ring
+  rw [hdecomp, SlashAction.add_slash, ModularForm.SL_smul_slash]
+  have hprod : (E₂ * F) ∣[((k : ℤ) + 2)] γ = (E₂ ∣[(2 : ℤ)] γ) * (F ∣[k] γ) := by
+    rw [show (k : ℤ) + 2 = 2 + k from by ring]
+    exact ModularForm.mul_slash_SL2 2 k γ E₂ F
+  ext z
+  simp only [hprod, E₂_slash_transform γ, serre_D_eq, D_slash k F hF γ, Pi.add_apply,
+    Pi.smul_apply, smul_eq_mul, Pi.mul_apply, Pi.sub_apply]
+  have hD₂ : D₂ γ z = (2 * ↑π * I * ↑((↑γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0)) / denom γ (z : ℂ) := rfl
+  rw [hD₂, riemannZeta_two]
+  field_simp [ofReal_ne_zero.mpr Real.pi_ne_zero, denom_ne_zero γ z]
+  ring_nf
+  simp only [I_sq]
+  ring
 
 theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (γ : SL(2, ℤ)) (h : F ∣[k] γ = F) :
