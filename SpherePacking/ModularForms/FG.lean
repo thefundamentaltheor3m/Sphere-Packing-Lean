@@ -1353,9 +1353,6 @@ Proposition 8.12 from the blueprint: the function `Q(t) = F(it)/G(it)` is strict
 decreasing on `(0, ∞)`.
 -/
 
-/-- `L₁,₀(it) > 0` for all `t > 0`. -/
-theorem L₁₀_pos_imag_axis : ResToImagAxis.Pos L₁₀ := L₁₀_pos
-
 /-- The function `Q(t) = Re(F(it)/G(it))` for `t > 0`. -/
 noncomputable def Q (t : ℝ) : ℝ :=
   if ht : 0 < t then
