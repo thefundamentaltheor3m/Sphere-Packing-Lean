@@ -1,5 +1,4 @@
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.Order.Monotone.Defs
+import SpherePacking.ForMathlib.MDifferentiableFunProp
 
 import SpherePacking.ModularForms.RamanujanIdentities
 import SpherePacking.ModularForms.Derivative
@@ -13,7 +12,6 @@ open Filter Complex
 open UpperHalfPlane (atImInfty ofComplex ofComplex_apply ofComplex_apply_of_im_pos coe_mk_subtype
   eventuallyEq_coe_comp_ofComplex isOpen_upperHalfPlaneSet IsBoundedAtImInfty)
 open scoped Real Manifold CongruenceSubgroup ArithmeticFunction.sigma UpperHalfPlane
-
 
 /--
 Definition of $F$ and $G$ and auxiliary functions for the inequality between them
@@ -85,31 +83,18 @@ theorem F_eq_nine_DE₄_sq : F = (9 : ℂ) • (D E₄.toFun) ^ 2 := by
   ring
 
 /- Some basic facts -/
-
-theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
-  have h : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) :=
-    MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
-  rw [F, pow_two]
-  exact MDifferentiable.mul h h
-
-theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
-  have hH₂ := H₂_SIF_MDifferentiable
-  have hH₄ := H₄_SIF_MDifferentiable
+lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄^2) := by
   unfold G
-  have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2) :=
-    (MDifferentiable.pow hH₂ 2).const_smul (2 : ℂ)
-  have h2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₂ z * H₄ z) := by
-    have : (fun z => 5 * H₂ z * H₄ z) = (fun z => (5 : ℂ) * (H₂ z * H₄ z)) := by ext z; ring
-    rw [this]; exact (hH₂.mul hH₄).const_smul (5 : ℂ)
-  have h3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₄ z ^ 2) :=
-    (MDifferentiable.pow hH₄ 2).const_smul (5 : ℂ)
-  exact (MDifferentiable.pow hH₂ 3).mul ((h1.add h2).add h3)
+  ext τ
+  simp
 
-theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) :=
-  serre_D_differentiable F_holo
+theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by unfold F; fun_prop
 
-theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) :=
-  serre_D_differentiable G_holo
+theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by rw [G_eq]; fun_prop
+
+theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by unfold F; fun_prop
+
+theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := by rw [G_eq]; fun_prop
 
 theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
   sorry
@@ -127,11 +112,7 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
     simp
     ring_nf
   -- Holomorphicity of the terms
-  · exact E₂_holo'
-  · exact E₄.holo'
-  · exact MDifferentiable.mul E₂_holo' E₄.holo'
-  · exact E₆.holo'
-  · exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
+  repeat fun_prop
 
 /--
 Modular linear differential equation satisfied by $F$.
@@ -579,22 +560,20 @@ lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
 
 lemma SerreDer_22_L₁₀_SerreDer :
     SerreDer_22_L₁₀ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by
-  have SF_holo := @serre_D_differentiable F 10 F_holo
-  have SG_holo := @serre_D_differentiable G 10 G_holo
   calc
     SerreDer_22_L₁₀ = serre_D 22 L₁₀ := rfl
     _ = serre_D 22 (serre_D 10 F * G - F * serre_D 10 G) := by rw [L₁₀_SerreDer]
     _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by
         apply serre_D_sub _ _ _
-        · exact MDifferentiable.mul SF_holo G_holo
-        · exact MDifferentiable.mul F_holo SG_holo
+        · exact MDifferentiable.mul SerreF_holo G_holo
+        · exact MDifferentiable.mul F_holo SerreG_holo
     _ = serre_D (12 + 10) ((serre_D 10 F) * G) - serre_D (10 + 12) (F * serre_D 10 G) := by ring_nf
     _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
         - serre_D (10 + 12) (F * serre_D 10 G) := by
-          simpa using (serre_D_mul 12 10 (serre_D 10 F) G SF_holo G_holo)
+          simpa using (serre_D_mul 12 10 (serre_D 10 F) G SerreF_holo G_holo)
     _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
         - ((serre_D 10 F) * (serre_D 10 G) + F * (serre_D 12 (serre_D 10 G))) := by
-          simpa using (serre_D_mul 10 12 F (serre_D 10 G) F_holo SG_holo)
+          simpa using (serre_D_mul 10 12 F (serre_D 10 G) F_holo SerreG_holo)
     _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
 
 /-!
