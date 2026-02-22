@@ -903,10 +903,159 @@ theorem jacobi_g_eq_zero : jacobi_g = 0 := by
 theorem jacobi_identity : H₂ + H₄ = H₃ := by
   ext z; simpa [jacobi_g, sub_eq_zero] using congr_fun jacobi_g_eq_zero z
 
+private noncomputable def theta_prod : ℍ → ℂ := H₂ * H₃ * H₄
+
+private lemma theta_prod_S_action : (theta_prod ∣[(6 : ℤ)] S) = -theta_prod := by
+  simp only [theta_prod, show (6 : ℤ) = (2 + 2) + 2 from by norm_num,
+    mul_slash_SL2 (2 + 2) 2 S _ _, mul_slash_SL2 2 2 S _ _,
+    H₂_S_action, H₃_S_action, H₄_S_action]
+  ext z; simp [Pi.mul_apply, Pi.neg_apply]; ring
+
+private lemma theta_prod_T_action : (theta_prod ∣[(6 : ℤ)] T) = -theta_prod := by
+  simp only [theta_prod, show (6 : ℤ) = (2 + 2) + 2 from by norm_num,
+    mul_slash_SL2 (2 + 2) 2 T _ _, mul_slash_SL2 2 2 T _ _,
+    H₂_T_action, H₃_T_action, H₄_T_action]
+  ext z; simp [Pi.mul_apply, Pi.neg_apply]; ring
+
+private noncomputable def theta_prod_sq : ℍ → ℂ := fun z => (H₂ z * H₃ z * H₄ z) ^ 2
+
+private lemma theta_prod_sq_eq_mul : theta_prod_sq = theta_prod * theta_prod := by
+  ext z; simp [theta_prod_sq, theta_prod, sq, Pi.mul_apply]
+
+private lemma theta_prod_sq_S_action : (theta_prod_sq ∣[(12 : ℤ)] S) = theta_prod_sq := by
+  rw [theta_prod_sq_eq_mul, show (12 : ℤ) = 6 + 6 from by norm_num,
+    mul_slash_SL2 6 6 S _ _, theta_prod_S_action, neg_mul_neg]
+
+private lemma theta_prod_sq_T_action : (theta_prod_sq ∣[(12 : ℤ)] T) = theta_prod_sq := by
+  rw [theta_prod_sq_eq_mul, show (12 : ℤ) = 6 + 6 from by norm_num,
+    mul_slash_SL2 6 6 T _ _, theta_prod_T_action, neg_mul_neg]
+
+private lemma theta_prod_sq_SL2Z_invariant :
+    ∀ γ : SL(2, ℤ), theta_prod_sq ∣[(12 : ℤ)] γ = theta_prod_sq :=
+  slashaction_generators_SL2Z theta_prod_sq 12
+    theta_prod_sq_S_action theta_prod_sq_T_action
+
+private lemma theta_prod_sq_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_prod_sq := by
+  change MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => (H₂ z * H₃ z * H₄ z) ^ 2)
+  exact ((H₂_SIF_MDifferentiable.mul H₃_SIF_MDifferentiable).mul H₄_SIF_MDifferentiable).pow 2
+
+private lemma theta_prod_sq_tendsto_atImInfty : Tendsto theta_prod_sq atImInfty (𝓝 0) := by
+  change Tendsto (fun z => (H₂ z * H₃ z * H₄ z) ^ 2) atImInfty (𝓝 0)
+  have : (0 : ℂ) = (0 * 1 * 1) ^ 2 := by norm_num
+  rw [this]
+  exact ((H₂_tendsto_atImInfty.mul H₃_tendsto_atImInfty).mul H₄_tendsto_atImInfty).pow 2
+
+private lemma isBoundedAtImInfty_theta_prod_sq : IsBoundedAtImInfty theta_prod_sq :=
+  IsZeroAtImInfty.isBoundedAtImInfty theta_prod_sq_tendsto_atImInfty
+
+private lemma theta_prod_sq_slash_eq (A' : SL(2, ℤ)) :
+    theta_prod_sq ∣[(12 : ℤ)] (SpecialLinearGroup.mapGL ℝ A') = theta_prod_sq := by
+  simpa [ModularForm.SL_slash] using theta_prod_sq_SL2Z_invariant A'
+
+private lemma isBoundedAtImInfty_theta_prod_sq_slash :
+    ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (theta_prod_sq ∣[(12 : ℤ)] (A : GL (Fin 2) ℝ)) := by
+  intro A ⟨A', hA⟩
+  rw [← hA, theta_prod_sq_slash_eq A']
+  exact isBoundedAtImInfty_theta_prod_sq
+
+private noncomputable def theta_prod_sq_SIF :
+    SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
+  toFun := theta_prod_sq
+  slash_action_eq' := slashaction_generators_GL2R theta_prod_sq 12
+    theta_prod_sq_S_action theta_prod_sq_T_action
+
+private noncomputable def theta_prod_sq_MF : ModularForm (CongruenceSubgroup.Gamma 1) 12 := {
+  theta_prod_sq_SIF with
+  holo' := theta_prod_sq_MDifferentiable
+  bdd_at_cusps' := fun hc =>
+    bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_theta_prod_sq_slash
+}
+
+private lemma theta_prod_sq_MF_IsCuspForm :
+    IsCuspForm (CongruenceSubgroup.Gamma 1) 12 theta_prod_sq_MF := by
+  rw [IsCuspForm_iff_coeffZero_eq_zero, ModularFormClass.qExpansion_coeff]; simp
+  exact IsZeroAtImInfty.cuspFunction_apply_zero theta_prod_sq_tendsto_atImInfty
+    (by norm_num : (0 : ℝ) < 1)
+
+private noncomputable def theta_prod_sq_CF : CuspForm (CongruenceSubgroup.Gamma 1) 12 :=
+  IsCuspForm_to_CuspForm _ _ theta_prod_sq_MF theta_prod_sq_MF_IsCuspForm
+
+private lemma theta_prod_sq_CF_apply (z : ℍ) :
+    theta_prod_sq_CF z = theta_prod_sq z := by
+  have := CuspForm_to_ModularForm_Fun_coe _ _ theta_prod_sq_MF theta_prod_sq_MF_IsCuspForm
+  exact congr_fun this z
+
+private lemma finrank_cuspform_12 :
+    Module.finrank ℂ (CuspForm (CongruenceSubgroup.Gamma 1) 12) = 1 := by
+  apply Module.finrank_eq_of_rank_eq
+  rw [LinearEquiv.rank_eq (CuspForms_iso_Modforms 12)]
+  simp
+  exact ModularForm.levelOne_weight_zero_rank_one
+
+private lemma theta_prod_sq_proportional :
+    ∃ c : ℂ, c • Delta = theta_prod_sq_CF :=
+  (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).mp finrank_cuspform_12 theta_prod_sq_CF
+
+private lemma Θ₂_div_exp_tendsto :
+    Tendsto (fun z : ℍ ↦ Θ₂ z / cexp (π * I * ↑z / 4)) atImInfty (nhds 2) := by
+  simp_rw [Θ₂_as_jacobiTheta₂, mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
+  exact jacobiTheta₂_half_mul_apply_tendsto_atImInfty
+
+private lemma H₂_div_exp_tendsto :
+    Tendsto (fun z : ℍ ↦ H₂ z / cexp (↑π * I * ↑z)) atImInfty (nhds 16) := by
+  have h_eq : ∀ z : ℍ, H₂ z / cexp (↑π * I * ↑z) = (jacobiTheta₂ (↑z / 2) ↑z) ^ 4 := by
+    intro z
+    rw [H₂, Θ₂_as_jacobiTheta₂, mul_pow]
+    have he : cexp (↑π * I * ↑z / 4) ^ 4 = cexp (↑π * I * ↑z) := by
+      rw [← Complex.exp_nat_mul]; congr 1; ring
+    rw [he, mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
+  simp_rw [h_eq]
+  have h16 : (2 : ℂ) ^ 4 = (16 : ℂ) := by norm_num
+  rw [← h16]
+  exact jacobiTheta₂_half_mul_apply_tendsto_atImInfty.pow 4
+
 lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
     Delta τ = ((H₂ τ) * (H₃ τ) * (H₄ τ))^2 / (256 : ℂ) := by
-
-  sorry
+  obtain ⟨c, hc⟩ := theta_prod_sq_proportional
+  have hc_pw : ∀ z : ℍ, c * Delta z = theta_prod_sq z := by
+    intro z
+    have h := DFunLike.congr_fun hc z
+    rw [show (c • Delta : CuspForm _ _) z = c * Delta z from rfl] at h
+    rwa [theta_prod_sq_CF_apply] at h
+  have hc_eq : c = 256 := by
+    have hD_asymp : Tendsto (fun z : ℍ ↦ Delta z / cexp (2 * ↑π * I * ↑z))
+        atImInfty (nhds 1) := by
+      have h_eq : ∀ z : ℍ, Delta z / cexp (2 * ↑π * I * ↑z) =
+          ∏' (n : ℕ), (1 - cexp (2 * ↑π * I * (↑n + 1) * ↑z)) ^ 24 := by
+        intro z; rw [Delta_apply, Δ]
+        rw [mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
+      simp_rw [h_eq]; exact Delta_boundedfactor
+    have hP_asymp : Tendsto (fun z : ℍ ↦ theta_prod_sq z / cexp (2 * ↑π * I * ↑z))
+        atImInfty (nhds 256) := by
+      have h_rewrite : ∀ z : ℍ, theta_prod_sq z / cexp (2 * ↑π * I * ↑z) =
+          (H₂ z / cexp (↑π * I * ↑z)) ^ 2 * (H₃ z) ^ 2 * (H₄ z) ^ 2 := by
+        intro z
+        have hq : cexp (2 * ↑π * I * ↑z) = cexp (↑π * I * ↑z) ^ 2 := by
+          rw [← Complex.exp_nat_mul]; ring_nf
+        simp only [theta_prod_sq]
+        rw [hq]; field_simp
+      simp_rw [h_rewrite]
+      have : (256 : ℂ) = 16 ^ 2 * 1 ^ 2 * 1 ^ 2 := by norm_num
+      rw [this]
+      exact ((H₂_div_exp_tendsto.pow 2).mul (H₃_tendsto_atImInfty.pow 2)).mul
+        (H₄_tendsto_atImInfty.pow 2)
+    have h_eq_fns : ∀ z : ℍ, c * (Delta z / cexp (2 * ↑π * I * ↑z)) =
+        theta_prod_sq z / cexp (2 * ↑π * I * ↑z) := by
+      intro z; rw [← mul_div_assoc, hc_pw]
+    have hc_lim : Tendsto (fun z : ℍ ↦ c * (Delta z / cexp (2 * ↑π * I * ↑z)))
+        atImInfty (nhds c) := by
+      have := hD_asymp.const_mul c; rwa [mul_one] at this
+    exact tendsto_nhds_unique (hc_lim.congr h_eq_fns) hP_asymp
+  have h := hc_pw τ
+  rw [hc_eq] at h
+  simp only [theta_prod_sq] at h
+  rw [eq_div_iff (show (256 : ℂ) ≠ 0 by norm_num), mul_comm]
+  exact h
 
 /-!
 ## Imaginary Axis Properties
