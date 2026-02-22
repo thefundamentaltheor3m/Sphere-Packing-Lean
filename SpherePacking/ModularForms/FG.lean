@@ -1,16 +1,11 @@
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.Order.Monotone.Defs
+import SpherePacking.ForMathlib.MDifferentiableFunProp
 
+import SpherePacking.ModularForms.QExpansion
 import SpherePacking.ModularForms.RamanujanIdentities
-import SpherePacking.ModularForms.Derivative
-import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.ModularForms.JacobiTheta
-import SpherePacking.ModularForms.EisensteinAsymptotics
 
 open UpperHalfPlane hiding I
 open Filter Complex ModularGroup ModularForm SlashAction
-open scoped Real Manifold SlashAction ArithmeticFunction.sigma UpperHalfPlane
-
+open scoped Real Manifold CongruenceSubgroup SlashAction ArithmeticFunction.sigma UpperHalfPlane
 
 /--
 Definition of $F$ and $G$ and auxiliary functions for the inequality between them
@@ -26,6 +21,32 @@ noncomputable def G := H₂ ^ 3 * ((2 : ℝ) • H₂ ^ 2 + (5 : ℝ) • H₂ *
 noncomputable def negDE₂ := - (D E₂)
 
 noncomputable def Δ_fun := 1728⁻¹ * (E₄.toFun ^ 3 - E₆.toFun ^ 2)
+
+/-- The discriminant Δ_fun = 1728⁻¹(E₄³ - E₆²) equals the standard discriminant Δ. -/
+lemma Δ_fun_eq_Δ : Δ_fun = Δ := by
+  funext z
+  have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
+    ext w
+    rw [pow_three, @DirectSum.of_mul_of, DirectSum.of_mul_of]
+    simp
+    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₄ (GradedMonoid.GMul.mul E₄ E₄)) rfl]
+    rfl
+  have hd6 : (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12) = E₆.mul E₆ := by
+    ext w
+    rw [pow_two, @DirectSum.of_mul_of]
+    simp
+    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₆ E₆) rfl]
+    rfl
+  have h := congr_fun (congr_arg (fun f => f.toFun) Delta_E4_E6_eq) z
+  have hE4E6 : Delta_E4_E6_aux z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
+    simp only [ModForm_mk, ModularForm.toFun_eq_coe, one_div, DirectSum.sub_apply] at h
+    simp only [hds, hd6] at h
+    simp only [pow_three, pow_two] at h ⊢
+    convert h using 2
+  calc
+    Δ_fun z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by
+      simp [Δ_fun, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply]
+    _ = Δ z := by simp [← hE4E6, ← Delta_E4_eqn, Delta_apply]
 
 noncomputable def L₁₀ := (D F) * G - F * (D G)
 
@@ -57,31 +78,18 @@ theorem F_eq_nine_DE₄_sq : F = (9 : ℂ) • (D E₄.toFun) ^ 2 := by
   ring
 
 /- Some basic facts -/
-
-theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by
-  have h : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun - E₆.toFun) := by
-    exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
-  rw [F, pow_two]
-  exact MDifferentiable.mul h h
-
-theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by
-  have hH₂ := H₂_SIF_MDifferentiable
-  have hH₄ := H₄_SIF_MDifferentiable
+lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄^2) := by
   unfold G
-  have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2) :=
-    (MDifferentiable.pow hH₂ 2).const_smul (2 : ℂ)
-  have h2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₂ z * H₄ z) := by
-    have : (fun z => 5 * H₂ z * H₄ z) = (fun z => (5 : ℂ) * (H₂ z * H₄ z)) := by ext z; ring
-    rw [this]; exact (hH₂.mul hH₄).const_smul (5 : ℂ)
-  have h3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₄ z ^ 2) :=
-    (MDifferentiable.pow hH₄ 2).const_smul (5 : ℂ)
-  exact (MDifferentiable.pow hH₂ 3).mul ((h1.add h2).add h3)
+  ext τ
+  simp
 
-theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by
-  exact serre_D_differentiable F_holo
+theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by unfold F; fun_prop
 
-theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := by
-  exact serre_D_differentiable G_holo
+theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by rw [G_eq]; fun_prop
+
+theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by unfold F; fun_prop
+
+theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := by rw [G_eq]; fun_prop
 
 theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
   sorry
@@ -99,11 +107,7 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
     simp
     ring_nf
   -- Holomorphicity of the terms
-  · exact E₂_holo'
-  · exact E₄.holo'
-  · exact MDifferentiable.mul E₂_holo' E₄.holo'
-  · exact E₆.holo'
-  · exact MDifferentiable.sub (MDifferentiable.mul E₂_holo' E₄.holo') E₆.holo'
+  repeat fun_prop
 
 /--
 Modular linear differential equation satisfied by $F$.
@@ -123,24 +127,7 @@ theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H�
 
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
 
-lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := by
-  -- Δ_fun = 1728⁻¹ * (E₄³ - E₆²) = Δ by Delta_E4_eqn + Delta_apply
-  have hΔ_eq : Δ_fun = Δ := by
-    ext z
-    -- Δ_fun z = (1728)⁻¹ * (E₄ z^3 - E₆ z^2) by definition
-    have hLHS : Δ_fun z = (1728 : ℂ)⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := rfl
-    -- Δ z = Delta_E4_E6_aux z = (1/1728) * (E₄ z^3 - E₆ z^2)
-    have hRHS : Δ z = (1 / 1728 : ℂ) * (E₄ z ^ 3 - E₆ z ^ 2) := by
-      rw [← Delta_apply z, Delta_E4_eqn]
-      have hAux := CuspForm_to_ModularForm_Fun_coe (CongruenceSubgroup.Gamma 1) 12
-        ((1 / 1728 : ℂ) • (((DirectSum.of _ 4 E₄) ^ 3 - (DirectSum.of _ 6 E₆) ^ 2) 12))
-        (by rw [IsCuspForm_iff_coeffZero_eq_zero]; exact E4E6_coeff_zero_eq_zero)
-      simp only [Delta_E4_E6_aux, pow_two, pow_three, DirectSum.of_mul_of, DirectSum.sub_apply,
-        Int.reduceAdd, DirectSum.of_eq_same, one_div] at hAux ⊢
-      exact congrFun hAux z
-    rw [hLHS, hRHS]; ring
-  rw [hΔ_eq]
-  exact Delta_imag_axis_pos
+lemma Δ_fun_imag_axis_pos : ResToImagAxis.Pos Δ_fun := Δ_fun_eq_Δ ▸ Delta_imag_axis_pos
 
 /-- The q-expansion exponent argument on imaginary axis z=it with ℕ+ index.
 Simplifies `2πi * n * z` where z=it to `-2πnt`. -/
@@ -206,9 +193,7 @@ lemma E₂_sigma_qexp (z : UpperHalfPlane) :
 lemma sigma1_qexp_summable (z : UpperHalfPlane) :
     Summable (fun n : ℕ+ => (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I * n * z)) := by
-  have h := sigma_qexp_summable_generic 0 1 z
-  simp only [pow_zero, one_mul] at h
-  exact h
+  simpa [pow_zero, one_mul] using sigma_qexp_summable_generic 0 1 z
 
 /-- Generic derivative bound for σ_k q-series on compact sets.
 Uses σ_k(n) ≤ n^(k+1) (sigma_bound) and iter_deriv_comp_bound3 for exponential decay. -/
@@ -400,8 +385,8 @@ lemma DE₄_summable (t : ℝ) (ht : 0 < t) :
   simpa [pow_one] using sigma_qexp_summable_generic 1 3 ⟨Complex.I * t, by simp [ht]⟩
 
 /-- D E₄ is real on the imaginary axis. -/
-lemma DE₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) := by
-  exact D_real_of_real E₄_imag_axis_real E₄.holo'
+lemma DE₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) :=
+  D_real_of_real E₄_imag_axis_real E₄.holo'
 
 /-- The real part of (D E₄)(it) is positive for t > 0. -/
 lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
@@ -418,7 +403,7 @@ lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
   have hpos : ∀ n : ℕ+, 0 < ((n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := by
     intro n; simp only [hz]; exact DE₄_term_re_pos t ht n
-  have htsum_pos := Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
+  have htsum_pos := Summable.tsum_pos hsum_re (fun n => (hpos n).le) 1 (hpos 1)
   simp only [Complex.mul_re, Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero]
   rw [Complex.re_tsum hsum]
   exact mul_pos (by norm_num : (0 : ℝ) < 240) htsum_pos
@@ -485,8 +470,8 @@ lemma negDE₂_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
   · exact_mod_cast ArithmeticFunction.sigma_pos 1 n n.ne_zero
 
 /-- `negDE₂` is real on the imaginary axis. -/
-lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by
-  exact ResToImagAxis.Real.neg (D_real_of_real E₂_imag_axis_real E₂_holo')
+lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ :=
+  ResToImagAxis.Real.neg (D_real_of_real E₂_imag_axis_real E₂_holo')
 
 /-- The real part of negDE₂(it) is positive for t > 0. -/
 lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
@@ -501,7 +486,7 @@ lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
         Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := ⟨_, Complex.hasSum_re hsum.hasSum⟩
   have hpos : ∀ n : ℕ+, 0 < ((n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * ↑Real.pi * Complex.I * n * z)).re := negDE₂_term_re_pos t ht
-  have htsum_pos := Summable.tsum_pos hsum_re (fun n => le_of_lt (hpos n)) 1 (hpos 1)
+  have htsum_pos := Summable.tsum_pos hsum_re (fun n => (hpos n).le) 1 (hpos 1)
   simp only [Complex.mul_re, Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero]
   rw [Complex.re_tsum hsum]
   exact mul_pos (by norm_num : (0 : ℝ) < 24) htsum_pos
@@ -557,40 +542,61 @@ lemma L₁₀_SerreDer : L₁₀ = (serre_D 10 F) * G - F * (serre_D 10 G) := by
 
 lemma SerreDer_22_L₁₀_SerreDer :
     SerreDer_22_L₁₀ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by
-  have SF_holo := @serre_D_differentiable F 10 F_holo
-  have SG_holo := @serre_D_differentiable G 10 G_holo
   calc
     SerreDer_22_L₁₀ = serre_D 22 L₁₀ := rfl
     _ = serre_D 22 (serre_D 10 F * G - F * serre_D 10 G) := by rw [L₁₀_SerreDer]
     _ = serre_D 22 (serre_D 10 F * G) - serre_D 22 (F * serre_D 10 G) := by
         apply serre_D_sub _ _ _
-        · exact MDifferentiable.mul SF_holo G_holo
-        · exact MDifferentiable.mul F_holo SG_holo
+        · exact MDifferentiable.mul SerreF_holo G_holo
+        · exact MDifferentiable.mul F_holo SerreG_holo
     _ = serre_D (12 + 10) ((serre_D 10 F) * G) - serre_D (10 + 12) (F * serre_D 10 G) := by ring_nf
     _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
         - serre_D (10 + 12) (F * serre_D 10 G) := by
-          simpa using (serre_D_mul 12 10 (serre_D 10 F) G SF_holo G_holo)
+          simpa using (serre_D_mul 12 10 (serre_D 10 F) G SerreF_holo G_holo)
     _ = serre_D 12 (serre_D 10 F) * G + (serre_D 10 F) * (serre_D 10 G)
         - ((serre_D 10 F) * (serre_D 10 G) + F * (serre_D 12 (serre_D 10 G))) := by
-          simpa using (serre_D_mul 10 12 F (serre_D 10 G) F_holo SG_holo)
+          simpa using (serre_D_mul 10 12 F (serre_D 10 G) F_holo SerreG_holo)
     _ = (serre_D 12 (serre_D 10 F)) * G - F * (serre_D 12 (serre_D 10 G)) := by ring_nf
 
-/- $\partial_{22} \mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
--- TODO: prove this with `fun_prop` after registering relevant `ResToImagAxis.Real` lemmas
-lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ := by
-  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G, ResToImagAxis.Real]
-  intro t ht
-  ring_nf
-  simp only [Function.resToImagAxis_apply]
-  sorry
+/-!
+### Serre Derivative Positivity of L₁,₀
 
--- TODO: prove this with `fun_prop` after finishing the proof of `MLDE_F` and `MLDE_G`
-lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
-  refine And.intro SerreDer_22_L₁₀_real ?_
-  intro t ht
-  rw [SerreDer_22_L₁₀_SerreDer, MLDE_F, MLDE_G]
-  ring_nf
-  sorry
+We compute `∂₂₂ L₁,₀` explicitly via the modular linear differential equations for F and G,
+and show it is positive on the imaginary axis.
+-/
+
+/-- `∂₂₂ L₁,₀ = Δ(7200(-E₂')G + 640H₂F)` on the upper half-plane.
+Blueprint: Follows from differential equations (65) and (66). -/
+private theorem serre_D_L₁₀_eq (z : ℍ) :
+    SerreDer_22_L₁₀ z = Δ z * (7200 * (-(D E₂ z)) * G z + 640 * H₂ z * F z) := by
+  have hF_z := congrFun MLDE_F z
+  have hG_z := congrFun MLDE_G z
+  simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply, negDE₂, Pi.neg_apply, Δ_fun_eq_Δ,
+    Pi.ofNat_apply, Pi.inv_apply] at hF_z hG_z
+  have h := congrFun SerreDer_22_L₁₀_SerreDer z
+  simp only [Pi.mul_apply, Pi.sub_apply] at h
+  rw [h, hF_z, hG_z]
+  ring
+
+/-- `∂₂₂ L₁,₀(it) > 0` for all `t > 0`.
+Blueprint: Corollary 8.9 - both terms in the expression are positive. -/
+private theorem serre_D_L₁₀_pos_imag_axis : ResToImagAxis.Pos SerreDer_22_L₁₀ := by
+  have h_eq : SerreDer_22_L₁₀ = Δ * ((7200 : ℝ) • (negDE₂ * G) + (640 : ℝ) • (H₂ * F)) := by
+    ext z; simp only [Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.neg_apply,
+      Complex.real_smul, serre_D_L₁₀_eq z, negDE₂]; push_cast; ring
+  rw [h_eq]
+  have := Delta_imag_axis_pos
+  have := negDE₂_imag_axis_pos
+  have := G_imag_axis_pos
+  have := H₂_imag_axis_pos
+  have := F_imag_axis_pos
+  fun_prop (disch := positivity)
+
+lemma SerreDer_22_L₁₀_real : ResToImagAxis.Real SerreDer_22_L₁₀ :=
+  serre_D_L₁₀_pos_imag_axis.1
+
+lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ :=
+  serre_D_L₁₀_pos_imag_axis
 
 /- $\mathcal{L}_{1, 0}$ is eventually positive on the imaginary axis. -/
 lemma L₁₀_eventuallyPos : ResToImagAxis.EventuallyPos L₁₀ := by
@@ -598,6 +604,253 @@ lemma L₁₀_eventuallyPos : ResToImagAxis.EventuallyPos L₁₀ := by
 
 /- $\mathcal{L}_{1, 0}$ is positive on the imaginary axis. -/
 lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ := antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventuallyPos
+
+/-!
+## Asymptotic Analysis of F at Infinity
+
+Vanishing orders and log-derivative limits for the F-side analysis.
+These are used to establish `L₁₀_eventuallyPos` (large-t positivity of L₁,₀).
+-/
+
+section AsymptoticAnalysis
+
+/-- Reindex σ₃ q-expansion from ℕ+ to ℕ using n ↦ m+1. -/
+private lemma sigma3_qexp_reindex_pnat_nat (z : ℍ) :
+    ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
+      cexp (2 * π * Complex.I * (n - 1) * z) =
+    ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
+      cexp (2 * π * Complex.I * m * z) := by
+  simpa [tsum_pnat_eq_tsum_succ3] using
+    (tsum_pnat_eq_tsum_succ3 (f := fun n : ℕ => (n : ℂ) * (↑(ArithmeticFunction.sigma 3 n) : ℂ) *
+      cexp (2 * π * Complex.I * ((n : ℂ) - 1) * z)))
+
+/-- If f/g → c ≠ 0, then eventually f ≠ 0. -/
+private lemma eventually_ne_zero_of_tendsto_div {f g : ℍ → ℂ} {c : ℂ} (hc : c ≠ 0)
+    (h : Filter.Tendsto (fun z => f z / g z) atImInfty (nhds c)) :
+    ∀ᶠ z : ℍ in atImInfty, f z ≠ 0 := by
+  filter_upwards [h.eventually_ne hc] with z hz hf
+  exact hz (by simp [hf])
+
+/-- (E₂E₄ - E₆) / q → 720 as im(z) → ∞. -/
+theorem E₂E₄_sub_E₆_div_q_tendsto :
+    Filter.Tendsto (fun z : ℍ => (E₂ z * E₄ z - E₆ z) / cexp (2 * π * I * z))
+      atImInfty (nhds (720 : ℂ)) := by
+  have h_rw : ∀ z : ℍ, E₂ z * E₄ z - E₆ z =
+      720 * ∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
+        cexp (2 * π * Complex.I * n * z) := E₂_mul_E₄_sub_E₆
+  have h_eq : ∀ z : ℍ,
+      (E₂ z * E₄ z - E₆ z) / cexp (2 * π * Complex.I * z) =
+      720 * (∑' n : ℕ+, ↑n * ↑(ArithmeticFunction.sigma 3 n) *
+        cexp (2 * π * Complex.I * (n - 1) * z)) := by
+    intro z
+    rw [h_rw z, mul_div_assoc, ← tsum_div_const]
+    congr 1; apply tsum_congr; intro n
+    rw [mul_div_assoc, ← Complex.exp_sub]; congr 2; ring
+  simp_rw [h_eq, sigma3_qexp_reindex_pnat_nat]
+  set a : ℕ → ℂ := fun m => ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) with ha
+  have ha0 : a 0 = 1 := by simp [ha, ArithmeticFunction.sigma_one]
+  have h_tendsto : Filter.Tendsto
+      (fun z : ℍ => ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m))
+      atImInfty (nhds (a 0)) := by
+    apply QExp.tendsto_nat a
+    have hbound : ∀ m : ℕ, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 5 := by
+      intro m
+      simp only [ha, norm_mul, Complex.norm_natCast]
+      have h1 : (ArithmeticFunction.sigma 3 (m + 1) : ℝ) ≤ ((m + 1 : ℕ) : ℝ) ^ 4 := by
+        exact_mod_cast (sigma_bound 3 (m + 1))
+      calc (↑(m + 1) : ℝ) * (ArithmeticFunction.sigma 3 (m + 1) : ℝ)
+          ≤ (↑(m + 1) : ℝ) * (↑(m + 1) : ℝ) ^ 4 :=
+            mul_le_mul_of_nonneg_left h1 (Nat.cast_nonneg _)
+        _ = (↑(m + 1) : ℝ) ^ 5 := by ring
+    apply Summable.of_nonneg_of_le
+    · intro m; positivity
+    · intro m
+      calc ‖a m‖ * rexp (-2 * π * m)
+          ≤ ((m + 1 : ℕ) : ℝ) ^ 5 * rexp (-2 * π * m) :=
+            mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
+        _ = (m + 1 : ℝ) ^ 5 * rexp (-2 * π * m) := by simp
+    · exact summable_pow_shift 5
+  have h_eq2 : ∀ z : ℍ,
+      ∑' m : ℕ, ↑(m + 1) * ↑(ArithmeticFunction.sigma 3 (m + 1)) *
+        cexp (2 * π * Complex.I * m * z) =
+      ∑' m : ℕ, a m * cexp (2 * π * Complex.I * z * m) := by
+    intro z; apply tsum_congr; intro m; simp only [ha]; ring_nf
+  simp_rw [h_eq2, ha0] at h_tendsto ⊢
+  convert h_tendsto.const_mul (720 : ℂ) using 2; ring
+
+/-- `Θ₂(z) / exp(πiz/4) → 2` as `im(z) → ∞`. -/
+private theorem Θ₂_div_exp_tendsto :
+    Filter.Tendsto (fun z : ℍ => Θ₂ z / cexp (π * Complex.I * z / 4))
+      atImInfty (nhds (2 : ℂ)) := by
+  convert jacobiTheta₂_half_mul_apply_tendsto_atImInfty using 1
+  ext z
+  rw [Θ₂_as_jacobiTheta₂]
+  field_simp [Complex.exp_ne_zero]
+
+/-- `H₂(z) / exp(πiz) → 16` as `im(z) → ∞`. -/
+private theorem H₂_div_exp_tendsto :
+    Filter.Tendsto (fun z : ℍ => H₂ z / cexp (π * Complex.I * z))
+      atImInfty (nhds (16 : ℂ)) := by
+  have h_eq : ∀ z : ℍ, H₂ z / cexp (π * I * z) =
+      (Θ₂ z / cexp (π * I * z / 4)) ^ 4 := fun z => by
+    simp only [H₂, div_pow, ← Complex.exp_nat_mul]; congr 2; ring
+  simp_rw [h_eq]; convert Θ₂_div_exp_tendsto.pow 4; norm_num
+
+/-- The vanishing order of F at infinity is 2.
+Blueprint: F = 720² * q² * (1 + O(q)), so F / q² → 720² as im(z) → ∞. -/
+theorem F_vanishing_order :
+    Filter.Tendsto (fun z : ℍ => F z / cexp (2 * π * Complex.I * 2 * z))
+      atImInfty (nhds (720 ^ 2 : ℂ)) := by
+  have h_exp_eq : ∀ z : ℍ, cexp (2 * π * I * 2 * z) = cexp (2 * π * I * z) ^ 2 := by
+    intro z; rw [← Complex.exp_nat_mul]; congr 1; ring
+  have h_F_eq : ∀ z : ℍ, F z / cexp (2 * π * I * 2 * z) =
+      ((E₂ z * E₄ z - E₆ z) / cexp (2 * π * I * z)) ^ 2 := by
+    intro z
+    simp only [F, h_exp_eq, sq, div_mul_div_comm, Pi.mul_apply, Pi.sub_apply,
+      ModularForm.toFun_eq_coe]
+  simp_rw [h_F_eq]
+  exact E₂E₄_sub_E₆_div_q_tendsto.pow 2
+
+/-- D(E₂E₄ - E₆) = 720 * ∑ n²·σ₃(n)·qⁿ.
+Key for the log-derivative limit: `(D F)/F → 2` as `z → i∞`. -/
+theorem D_diff_qexp (z : ℍ) :
+    D (fun w => E₂ w * E₄ w - E₆ w) z =
+      720 * ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
+        cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := by
+  have h_eq : ∀ w : ℍ, E₂ w * E₄ w - E₆ w =
+      720 * ∑' (n : ℕ+), ↑n * ↑(σ 3 n) * cexp (2 * π * I * ↑n * w) := E₂_mul_E₄_sub_E₆
+  let a : ℕ+ → ℂ := fun n => ↑n * ↑(σ 3 n)
+  have norm_a_le : ∀ n : ℕ+, ‖a n‖ ≤ (n : ℝ)^5 := fun n => by
+    simp only [a, Complex.norm_mul, Complex.norm_natCast]
+    calc (n : ℝ) * ↑(σ 3 ↑n) ≤ (n : ℝ) * (n : ℝ)^4 := by
+           gcongr; exact_mod_cast sigma_bound 3 n
+       _ = (n : ℝ)^5 := by ring
+  have hsum : Summable (fun n : ℕ+ => a n * cexp (2 * π * I * ↑n * ↑z)) := by
+    simpa [pow_one] using sigma_qexp_summable_generic 1 3 z
+  have hsum_deriv := qexp_deriv_bound_of_coeff_bound norm_a_le
+  let b : ℕ+ → ℂ := fun n => 720 * (↑n * ↑(σ 3 n))
+  have h_eq' : ∀ w : ℍ, E₂ w * E₄ w - E₆ w =
+      ∑' (n : ℕ+), b n * cexp (2 * π * I * ↑n * w) :=
+    fun w => by rw [h_eq]; simp only [b, ← tsum_mul_left]; congr 1; funext n; ring
+  have hsum' : Summable (fun n : ℕ+ => b n * cexp (2 * π * I * ↑n * ↑z)) := by
+    convert hsum.mul_left 720 using 1; funext n; simp only [b]; ring
+  have hsum_deriv' : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+      ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (k : K), ‖b n * (2 * π * I * ↑n) *
+        cexp (2 * π * I * ↑n * k.1)‖ ≤ u n := by
+    intro K hK_sub hK_compact
+    obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK_sub hK_compact
+    refine ⟨fun n => 720 * u n, hu_sum.mul_left 720, fun n k => ?_⟩
+    calc ‖b n * (2 * π * I * ↑n) * cexp (2 * π * I * ↑n * k.1)‖
+        = 720 * ‖a n * (2 * π * I * ↑n) * cexp (2 * π * I * ↑n * k.1)‖ := by
+          simp only [b, a, norm_mul, Complex.norm_ofNat]; ring
+      _ ≤ 720 * u n := mul_le_mul_of_nonneg_left (hu_bound n k) (by norm_num)
+  have hD := D_qexp_tsum_pnat b z hsum' hsum_deriv'
+  calc D (fun w => E₂ w * E₄ w - E₆ w) z
+      = D (fun w => ∑' (n : ℕ+), b n * cexp (2 * π * I * ↑n * w)) z := by
+        congr 1; ext w; exact h_eq' w
+    _ = ∑' (n : ℕ+), (n : ℂ) * b n * cexp (2 * π * I * ↑n * z) := hD
+    _ = 720 * ∑' (n : ℕ+), (n : ℂ) ^ 2 * ↑(σ 3 n) * cexp (2 * π * I * ↑n * z) := by
+        simp only [b, ← tsum_mul_left, sq]; congr 1; funext n; ring
+
+/-- D(E₂E₄ - E₆) / q → 720. -/
+private theorem D_diff_div_q_tendsto :
+    Filter.Tendsto (fun z : ℍ => D (fun w => E₂ w * E₄ w - E₆ w) z /
+      cexp (2 * π * Complex.I * z))
+      atImInfty (nhds (720 : ℂ)) := by
+  have h_rw : ∀ z : ℍ, D (fun w => E₂ w * E₄ w - E₆ w) z =
+      720 * ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
+        cexp (2 * ↑Real.pi * Complex.I * ↑n * z) := D_diff_qexp
+  simp_rw [h_rw]
+  have h_eq : ∀ z : ℍ,
+      (720 * ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
+        cexp (2 * ↑Real.pi * Complex.I * ↑n * z)) / cexp (2 * π * I * z) =
+      720 * (∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
+        cexp (2 * π * I * (↑n - 1) * z)) := by
+    intro z
+    rw [mul_div_assoc, ← tsum_div_const]
+    congr 1; apply tsum_congr; intro n
+    rw [mul_div_assoc, ← Complex.exp_sub]
+    congr 2; ring
+  simp_rw [h_eq]
+  have h_reindex : ∀ z : ℍ,
+      ∑' n : ℕ+, (↑↑n : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) ↑n) *
+        cexp (2 * π * I * (↑n - 1) * z) =
+      ∑' m : ℕ, (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) *
+        cexp (2 * π * I * m * z) := by
+    intro z
+    rw [← Equiv.tsum_eq (Equiv.pnatEquivNat)]
+    apply tsum_congr; intro m
+    simp only [Equiv.pnatEquivNat_apply, PNat.natPred_add_one]
+    congr 2
+    simp only [← PNat.natPred_add_one m, Nat.cast_add, Nat.cast_one, add_sub_cancel_right]
+  simp_rw [h_reindex]
+  set a : ℕ → ℂ := fun m =>
+    (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) with ha_def
+  have ha0 : a 0 = 1 := by simp [ha_def, ArithmeticFunction.sigma_one]
+  have h_tendsto : Filter.Tendsto
+      (fun z : ℍ => ∑' m : ℕ, a m * cexp (2 * π * I * z * m))
+      atImInfty (nhds (a 0)) := by
+    apply QExp.tendsto_nat a
+    have hbound : ∀ m : ℕ, ‖a m‖ ≤ ((m + 1 : ℕ) : ℝ) ^ 6 := by
+      intro m
+      simp only [ha_def, norm_mul, Complex.norm_natCast, Complex.norm_pow]
+      have h1 : (ArithmeticFunction.sigma 3 (m + 1) : ℝ) ≤ ((m + 1 : ℕ) : ℝ) ^ 4 := by
+        exact_mod_cast (sigma_bound 3 (m + 1))
+      calc (↑(m + 1) : ℝ) ^ 2 * (ArithmeticFunction.sigma 3 (m + 1) : ℝ)
+          ≤ (↑(m + 1) : ℝ) ^ 2 * (↑(m + 1) : ℝ) ^ 4 :=
+            mul_le_mul_of_nonneg_left h1 (pow_nonneg (Nat.cast_nonneg _) _)
+        _ = (↑(m + 1) : ℝ) ^ 6 := by ring
+    apply Summable.of_nonneg_of_le
+    · intro m; positivity
+    · intro m
+      calc ‖a m‖ * rexp (-2 * π * m)
+          ≤ ((m + 1 : ℕ) : ℝ) ^ 6 * rexp (-2 * π * m) :=
+            mul_le_mul_of_nonneg_right (hbound m) (Real.exp_nonneg _)
+        _ = (m + 1 : ℝ) ^ 6 * rexp (-2 * π * m) := by simp
+    · exact summable_pow_shift 6
+  have h_eq2 : ∀ z : ℍ,
+      ∑' m : ℕ, (↑(m + 1) : ℂ) ^ 2 * ↑((ArithmeticFunction.sigma 3) (m + 1)) *
+        cexp (2 * π * I * m * z) =
+      ∑' m : ℕ, a m * cexp (2 * π * I * z * m) := fun z => by
+    simpa [ha_def] using tsum_congr (fun m => by ring_nf)
+  simp_rw [h_eq2, ha0] at h_tendsto ⊢
+  convert h_tendsto.const_mul (720 : ℂ) using 2; ring
+
+/-- `(D F)/F → 2` as `im(z) → ∞`.
+The log-derivative limit, following from F having vanishing order 2. -/
+theorem D_F_div_F_tendsto :
+    Filter.Tendsto (fun z : ℍ => D F z / F z) atImInfty (nhds (2 : ℂ)) := by
+  set f : ℍ → ℂ := fun z => E₂ z * E₄.toFun z - E₆.toFun z with hf_def
+  have hF_eq : ∀ z, F z = (f z) ^ 2 := fun z => by
+    simp only [F, hf_def, sq, Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe]
+  have hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+    apply MDifferentiable.sub
+    · exact MDifferentiable.mul E₂_holo' E₄.holo'
+    · exact E₆.holo'
+  have hDF_eq : ∀ z, D F z = 2 * f z * D f z := fun z => by
+    have hF_eq' : F = f ^ 2 := funext fun w => by simp [F, hf_def, sq]
+    rw [hF_eq']
+    exact congr_fun (D_sq f hf_holo) z
+  have hDF_div_eq : ∀ z, F z ≠ 0 → D F z / F z = 2 * (D f z / f z) := fun z hFz => by
+    have hfz : f z ≠ 0 := fun h => hFz (by simp [hF_eq, h])
+    rw [hDF_eq z, hF_eq z, sq]; field_simp [hfz]
+  have hf_div_q : Filter.Tendsto (fun z : ℍ => f z / cexp (2 * π * Complex.I * z))
+      atImInfty (nhds (720 : ℂ)) :=
+    E₂E₄_sub_E₆_div_q_tendsto.congr fun z => by simp only [hf_def, ModularForm.toFun_eq_coe]
+  have hDf_div_q : Filter.Tendsto (fun z : ℍ => D f z / cexp (2 * π * Complex.I * z))
+      atImInfty (nhds (720 : ℂ)) := D_diff_div_q_tendsto
+  have h_720_ne : (720 : ℂ) ≠ 0 := by norm_num
+  have hDf_div_f : Filter.Tendsto (fun z : ℍ => D f z / f z) atImInfty (nhds 1) := by
+    have h_eq : ∀ z : ℍ, D f z / f z = (D f z / cexp (2 * π * Complex.I * z)) /
+        (f z / cexp (2 * π * Complex.I * z)) := fun z => by field_simp [Complex.exp_ne_zero]
+    simp_rw [h_eq, show (1 : ℂ) = 720 / 720 from by norm_num]
+    exact hDf_div_q.div hf_div_q h_720_ne
+  have h_F_ne := eventually_ne_zero_of_tendsto_div
+    (by norm_num : (720^2 : ℂ) ≠ 0) F_vanishing_order
+  simpa using (hDf_div_f.const_mul (2 : ℂ)).congr' (by
+    filter_upwards [h_F_ne] with z hFz; exact (hDF_div_eq z hFz).symm)
+
+end AsymptoticAnalysis
 
 /--
 $t \mapsto F(it) / G(it)$ is strictly decreasing.
@@ -963,8 +1216,8 @@ Main inequalities between $F$ and $G$ on the imaginary axis.
 -/
 theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
     FReal t + 18 * (π ^ (-2 : ℤ)) * GReal t > 0 := by
-  have hF : 0 < FReal t := F_imag_axis_pos.2 t ht
-  have hG : 0 < GReal t := G_imag_axis_pos.2 t ht
+  have := F_imag_axis_pos.2 t ht
+  have := G_imag_axis_pos.2 t ht
   positivity
 
 theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
