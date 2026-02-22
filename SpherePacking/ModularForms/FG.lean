@@ -1347,25 +1347,14 @@ lemma L₁₀_pos : ResToImagAxis.Pos L₁₀ :=
   antiSerreDerPos SerreDer_22_L₁₀_pos L₁₀_eventually_pos_imag_axis
 
 /-!
-## Monotonicity of Q = F/G on the Imaginary Axis
+## Monotonicity of F/G on the Imaginary Axis
 
-Proposition 8.12 from the blueprint: the function `Q(t) = F(it)/G(it)` is strictly
+Proposition 8.12 from the blueprint: the function `FmodGReal(t) = F(it)/G(it)` is strictly
 decreasing on `(0, ∞)`.
 -/
 
-/-- The function `Q(t) = Re(F(it)/G(it))` for `t > 0`. -/
-noncomputable def Q (t : ℝ) : ℝ :=
-  if ht : 0 < t then
-    (F ⟨Complex.I * t, by simp [ht]⟩).re / (G ⟨Complex.I * t, by simp [ht]⟩).re
-  else 0
-
-/-- `Q(t) = F(it)/G(it)` equals the real quotient for `t > 0`. -/
-theorem Q_eq_F_div_G (t : ℝ) (ht : 0 < t) :
-    Q t = (F ⟨Complex.I * t, by simp [ht]⟩).re / (G ⟨Complex.I * t, by simp [ht]⟩).re := by
-  simp [Q, ht]
-
-/-- `Q` is differentiable on `(0, ∞)`. -/
-theorem Q_differentiableOn : DifferentiableOn ℝ Q (Set.Ioi 0) := by
+/-- `FmodGReal` is differentiable on `(0, ∞)`. -/
+theorem FmodGReal_differentiableOn : DifferentiableOn ℝ FmodGReal (Set.Ioi 0) := by
   intro t ht
   simp only [Set.mem_Ioi] at ht
   have hF_re_diff := (hasDerivAt_resToImagAxis_re F_holo ht).differentiableAt
@@ -1375,12 +1364,12 @@ theorem Q_differentiableOn : DifferentiableOn ℝ Q (Set.Ioi 0) := by
   apply (hF_re_diff.div hG_re_diff hG_ne).differentiableWithinAt.congr_of_eventuallyEq_of_mem
   · filter_upwards [self_mem_nhdsWithin] with s hs
     simp only [Set.mem_Ioi] at hs
-    simp [Q, hs, ResToImagAxis]
-  · simp only [Set.mem_Ioi, ht]
+    simp [FmodGReal, FReal, GReal, hs, ResToImagAxis]
+  · simp [ht]
 
-/-- The derivative of Q is `(-2π) * L₁,₀(it) / G(it)²`. -/
-theorem deriv_Q (t : ℝ) (ht : 0 < t) :
-    deriv Q t = (-2 * π) * (L₁₀ ⟨Complex.I * t, by simp [ht]⟩).re /
+/-- The derivative of `FmodGReal` is `(-2π) * L₁,₀(it) / G(it)²`. -/
+theorem deriv_FmodGReal (t : ℝ) (ht : 0 < t) :
+    deriv FmodGReal t = (-2 * π) * (L₁₀ ⟨Complex.I * t, by simp [ht]⟩).re /
       (G ⟨Complex.I * t, by simp [ht]⟩).re ^ 2 := by
   set z : ℍ := ⟨Complex.I * t, by simp [ht]⟩ with hz_def
   have hF_deriv := hasDerivAt_resToImagAxis_re F_holo ht
@@ -1388,10 +1377,12 @@ theorem deriv_Q (t : ℝ) (ht : 0 < t) :
   have hG_pos : 0 < (G z).re := by simpa [ResToImagAxis, ht] using G_imag_axis_pos.2 t ht
   have hG_ne : (G.resToImagAxis t).re ≠ 0 := by
     simpa [ResToImagAxis, ht, hz_def] using ne_of_gt hG_pos
-  have hQ_eq : Q =ᶠ[nhds t] (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) := by
+  have heq : FmodGReal =ᶠ[nhds t]
+      (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) := by
     filter_upwards [lt_mem_nhds ht] with s hs
-    simp only [Q, hs, ↓reduceDIte, Function.resToImagAxis_apply, ResToImagAxis]
-  rw [hQ_eq.deriv_eq]
+    simp only [FmodGReal, FReal, GReal, Function.resToImagAxis_apply, ResToImagAxis,
+      hs, ↓reduceDIte]
+  rw [heq.deriv_eq]
   have hdiv : deriv (fun s => (F.resToImagAxis s).re / (G.resToImagAxis s).re) t =
       (deriv (fun s => (F.resToImagAxis s).re) t * (G.resToImagAxis t).re -
        (F.resToImagAxis t).re * deriv (fun s => (G.resToImagAxis s).re) t) /
@@ -1408,28 +1399,22 @@ theorem deriv_Q (t : ℝ) (ht : 0 < t) :
   simp only [mul_re, sub_re, hF_real, hG_real, mul_zero, sub_zero, zero_mul]
   ring
 
-/-- `deriv Q t < 0` for all `t > 0`. -/
-theorem deriv_Q_neg (t : ℝ) (ht : 0 < t) : deriv Q t < 0 := by
-  rw [deriv_Q t ht]
+/-- `deriv FmodGReal t < 0` for all `t > 0`. -/
+theorem deriv_FmodGReal_neg (t : ℝ) (ht : 0 < t) : deriv FmodGReal t < 0 := by
+  rw [deriv_FmodGReal t ht]
   have hL := L₁₀_pos.2 t ht
   have hG := G_imag_axis_pos.2 t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hL hG
   exact div_neg_of_neg_of_pos (by nlinarith [Real.pi_pos]) (by positivity)
 
-/-- **Proposition 8.12**: `Q` is strictly decreasing on `(0, ∞)`. -/
-theorem Q_strictAntiOn : StrictAntiOn Q (Set.Ioi 0) := by
+/-- **Proposition 8.12**: `FmodGReal` is strictly decreasing on `(0, ∞)`. -/
+theorem FmodG_strictAntiOn : StrictAntiOn FmodGReal (Set.Ioi 0) := by
   apply strictAntiOn_of_deriv_neg
   · exact convex_Ioi 0
-  · exact Q_differentiableOn.continuousOn
+  · exact FmodGReal_differentiableOn.continuousOn
   · intro t ht
     rw [interior_Ioi] at ht
-    exact deriv_Q_neg t ht
-
-/--
-$t \mapsto F(it) / G(it)$ is strictly decreasing.
--/
-theorem FmodG_strictAntiOn : StrictAntiOn FmodGReal (Set.Ioi 0) := by
-  sorry
+    exact deriv_FmodGReal_neg t ht
 
 /--
 $\lim_{t \to 0^+} F(it) / G(it) = 18 / \pi^2$.
