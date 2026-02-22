@@ -1,20 +1,8 @@
-import Mathlib.Algebra.Field.Power
-import Mathlib.Algebra.Lie.OfAssociative
-import Mathlib.Data.Real.StarOrdered
-import Mathlib.NumberTheory.ModularForms.Basic
-import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
-import Mathlib.Order.CompletePartialOrder
-
-import SpherePacking.ForMathlib.AtImInfty
-import SpherePacking.ForMathlib.Cusps
 import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
+import SpherePacking.ForMathlib.MDifferentiableFunProp
 import SpherePacking.ForMathlib.SlashActions
 import SpherePacking.ForMathlib.UpperHalfPlane
-import SpherePacking.ModularForms.SlashActionAuxil
-import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.DimensionFormulas
-import SpherePacking.ModularForms.IsCuspForm
-import SpherePacking.ModularForms.ResToImagAxis
 
 /-!
 # Jacobi theta functions
@@ -364,12 +352,15 @@ lemma H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF :=
       simpa [Function.comp] using this)
   simpa [mdifferentiableWithinAt_univ] using hMD_within
 
+@[fun_prop]
 lemma H₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := by
   simpa [H₂_SIF, SlashInvariantForm.coe_mk] using H₂_SIF_MDifferentiable
 
+@[fun_prop]
 lemma H₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃ := by
   simpa [H₃_SIF, SlashInvariantForm.coe_mk] using H₃_SIF_MDifferentiable
 
+@[fun_prop]
 lemma H₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := by
   simpa [H₄_SIF, SlashInvariantForm.coe_mk] using H₄_SIF_MDifferentiable
 
@@ -663,14 +654,13 @@ noncomputable def jacobi_f_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1)
   slash_action_eq' := slashaction_generators_GL2R jacobi_f 4 jacobi_f_S_action jacobi_f_T_action
 
 /-- jacobi_g is holomorphic (MDifferentiable) since H₂, H₃, H₄ are -/
-lemma jacobi_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_g :=
-  (H₂_SIF_MDifferentiable.add H₄_SIF_MDifferentiable).sub H₃_SIF_MDifferentiable
+lemma jacobi_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_g := by unfold jacobi_g; fun_prop
 
 /-- jacobi_f is holomorphic (MDifferentiable) since jacobi_g is -/
 lemma jacobi_f_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f := by
-  change MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => (jacobi_g z) ^ 2)
-  simp only [pow_two]
-  exact jacobi_g_MDifferentiable.mul jacobi_g_MDifferentiable
+  unfold jacobi_f
+  have _ := jacobi_g_MDifferentiable
+  fun_prop
 
 /-- jacobi_f_SIF is holomorphic -/
 lemma jacobi_f_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f_SIF :=
