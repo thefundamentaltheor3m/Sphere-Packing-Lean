@@ -10,7 +10,7 @@ Authors: Sidharth Hariharan
 -/
 import Mathlib.Algebra.Module.ZLattice.Covolume
 import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Analysis.Distribution.FourierSchwartz
+import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 import Mathlib.Analysis.RCLike.Inner
 import Mathlib.LinearAlgebra.BilinearForm.DualLattice
 import Mathlib.Order.CompletePartialOrder
@@ -102,21 +102,24 @@ def PSF_Conditions (f : EuclideanSpace ℝ (Fin d) → ℂ) : Prop :=
 theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
   (v : EuclideanSpace ℝ (Fin d)) :
   ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
-    ∑' m : bilinFormOfRealInner.dualSubmodule Λ,
+    ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) Λ,
   (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) :=
   sorry
 
 -- The version below is on the blueprint. I'm pretty sure it can be removed.
 theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
-    ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m)
+    ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) *
+      ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) Λ, (𝓕 f m)
     := by
   simpa using PSF_L Λ hf 0
 
 namespace SchwartzMap
 
 theorem PoissonSummation_Lattices (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
-  (v : EuclideanSpace ℝ (Fin d)) : ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
-  ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 ⇑f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) := by
+  (v : EuclideanSpace ℝ (Fin d)) :
+  ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
+    ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) Λ,
+      (𝓕 ⇑f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) := by
   sorry
 
 -- theorem PoissonSummation_Lattices' (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) :
@@ -143,12 +146,8 @@ variable (𝕜 : Type*) [RCLike 𝕜]
 
 include 𝕜 in
 @[simp]
-theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f := by
-  rw [← fourier_coe, ← fourierInv_coe]
-  congr 1
-  rw [← fourierTransformCLE_apply 𝕜 f,
-      ← fourierTransformCLE_symm_apply 𝕜 _,
-      ContinuousLinearEquiv.symm_apply_apply]
+theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f :=
+  f.continuous.fourierInv_fourier_eq f.integrable ((FourierTransform.fourierCLE 𝕜 _) f).integrable
 
 end SchwartzMap
 

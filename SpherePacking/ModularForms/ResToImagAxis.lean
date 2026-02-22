@@ -276,6 +276,14 @@ theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResTo
   simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFpos_t
   simp [ResToImagAxis, htpos, mul_pos hc hFpos_t]
 
+/-- If `F` is real-valued, then `F` is equal to the real part of itself on imaginary axis. -/
+theorem ResToImagAxis.Real.eq_real_part {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (t : ℝ) :
+    F.resToImagAxis t = (F.resToImagAxis t).re := by
+  simp only [Function.resToImagAxis, ResToImagAxis]
+  split_ifs with ht
+  exacts [Complex.ext rfl (by simpa [Function.resToImagAxis, ResToImagAxis, ht]
+    using (hF t ht)), rfl]
+
 /-!
 ## Polynomial decay of functions with exponential bounds
 
@@ -435,3 +443,32 @@ theorem tendsto_rpow_mul_resToImagAxis_of_fourier_shift
     Tendsto (fun t : ℝ => t ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
   tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity)
     (isBigO_atImInfty_of_fourier_shift hn₀ hc hF ha) s
+
+/-- Extract the imaginary part condition at a specific point from `ResToImagAxis.Real`. -/
+lemma ResToImagAxis.Real.im_eq_zero_at {F : ℍ → ℂ} (hF : ResToImagAxis.Real F)
+    {t : ℝ} (ht : 0 < t) (z : ℍ) (hz : z = ⟨Complex.I * t, by simp [ht]⟩) :
+    (F z).im = 0 := by
+  subst hz; simpa [Function.resToImagAxis, ResToImagAxis, ht] using hF t ht
+
+/-- Extract the positivity condition at a specific point from `ResToImagAxis.Pos`. -/
+lemma ResToImagAxis.Pos.re_pos_at {F : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
+    {t : ℝ} (ht : 0 < t) (z : ℍ) (hz : z = ⟨Complex.I * t, by simp [ht]⟩) :
+    0 < (F z).re := by
+  subst hz; simpa [Function.resToImagAxis, ResToImagAxis, ht] using hF.2 t ht
+
+/-- Tendsto conversion: if F tends to c at atImInfty, then F.resToImagAxis tends to c at atTop. -/
+lemma tendsto_resToImagAxis_of_tendsto_atImInfty {F : ℍ → ℂ} {c : ℂ}
+    (hF : Tendsto F atImInfty (nhds c)) :
+    Tendsto F.resToImagAxis atTop (nhds c) := by
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  -- Get eventual proximity from hF
+  have hF_met : ∀ᶠ z in atImInfty, dist (F z) c < ε := Metric.tendsto_nhds.mp hF ε hε
+  obtain ⟨A, hA⟩ := Filter.eventually_atImInfty.mp hF_met
+  use max A 1
+  intro t ht
+  have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
+  simp only [Function.resToImagAxis, ResToImagAxis, ht_pos, ↓reduceDIte]
+  set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
+  have hz_im : z.im = t := by simp [UpperHalfPlane.im, z]
+  exact hA z (by simpa [hz_im] using le_of_max_le_left ht)
