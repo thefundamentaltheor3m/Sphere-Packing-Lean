@@ -907,24 +907,8 @@ private theorem D_H₂_div_H₂_tendsto :
       (differentiableAt_id.const_mul (π * I)).cexp
     simpa [f, Function.comp] using
       DifferentiableAt_MDifferentiableAt (G := fun t : ℂ => cexp (π * I * t)) (z := τ) h_diff
-  have hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h := by
-    intro τ
-    suffices h_diff : DifferentiableAt ℂ (h ∘ ofComplex) τ.val by
-      have h_eq : (h ∘ ofComplex) ∘ UpperHalfPlane.coe = h := by
-        ext x; simp [Function.comp, ofComplex_apply, h]
-      rw [← h_eq]
-      exact DifferentiableAt_MDifferentiableAt (G := h ∘ ofComplex) (z := τ) h_diff
-    have hH₂_diff : DifferentiableAt ℂ (H₂ ∘ ofComplex) τ.val :=
-      MDifferentiableAt_DifferentiableAt (H₂_SIF_MDifferentiable τ)
-    have hf_diff : DifferentiableAt ℂ (f ∘ ofComplex) τ.val :=
-      MDifferentiableAt_DifferentiableAt (hf_md τ)
-    have hf_ne' : (f ∘ ofComplex) τ.val ≠ 0 := by
-      simp only [Function.comp_apply, f]; exact Complex.exp_ne_zero _
-    have h_eq' : (h ∘ ofComplex) =ᶠ[nhds τ.val] (H₂ ∘ ofComplex) / (f ∘ ofComplex) := by
-      have hU : {z : ℂ | 0 < z.im} ∈ nhds τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
-      filter_upwards [hU] with w hw
-      simp only [Function.comp_apply, h, Pi.div_apply, ofComplex_apply_of_im_pos hw]
-    exact (hH₂_diff.div hf_diff hf_ne').congr_of_eventuallyEq h_eq'.symm
+  have hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h :=
+    MDifferentiable_div H₂_SIF_MDifferentiable hf_md hf_ne
   have hh_tendsto : Filter.Tendsto h atImInfty (nhds (16 : ℂ)) := H₂_div_exp_tendsto
   have hDh_tendsto : Filter.Tendsto (D h) atImInfty (nhds 0) :=
     D_tendsto_zero_of_isBoundedAtImInfty hh_md (hh_tendsto.isBigO_one ℝ)

@@ -156,6 +156,25 @@ theorem D_cube (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     _ = D F * F ^ 2 + F * (2 * F * D F) := by rw [D_sq F hF]
     _ = 3 * F^2 * D F := by ring_nf
 
+/-- Division of MDifferentiable functions on ℍ is MDifferentiable, when the denominator
+is everywhere nonzero. -/
+lemma MDifferentiable_div {F G : ℍ → ℂ}
+    (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G)
+    (hG_ne : ∀ z : ℍ, G z ≠ 0) :
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => F z / G z) := by
+  intro τ
+  suffices h : DifferentiableAt ℂ ((fun z => F z / G z) ∘ ofComplex) τ.val by
+    have h_eq : ((fun z => F z / G z) ∘ ofComplex) ∘ UpperHalfPlane.coe = fun z => F z / G z := by
+      ext x; simp [Function.comp, ofComplex_apply]
+    rw [← h_eq]; exact DifferentiableAt_MDifferentiableAt h
+  have h_eq : (fun z => F z / G z) ∘ ofComplex =ᶠ[nhds τ.val]
+      (F ∘ ofComplex) / (G ∘ ofComplex) := by
+    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds τ.2] with w hw
+    simp [Function.comp, Pi.div_apply, ofComplex_apply_of_im_pos hw]
+  exact ((MDifferentiableAt_DifferentiableAt (hF τ)).div
+    (MDifferentiableAt_DifferentiableAt (hG τ))
+    (by simp [Function.comp]; exact hG_ne _)).congr_of_eventuallyEq h_eq.symm
+
 @[simp]
 theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
   have h : deriv (Function.const _ c ∘ ofComplex) z = 0 := by
