@@ -957,21 +957,12 @@ private theorem D_H₄_tendsto_zero :
 private theorem D_B_tendsto_zero :
     Filter.Tendsto (D (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w + 5 * H₄ w ^ 2))
       atImInfty (nhds 0) := by
-  have hH₂ := H₂_SIF_MDifferentiable
-  have hH₄ := H₄_SIF_MDifferentiable
-  have hH₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 2) := by rw [pow_two]; exact hH₂.mul hH₂
-  have hH₄sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 2) := by rw [pow_two]; exact hH₄.mul hH₄
-  have h1 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2) := by
-    have : (fun z => 2 * H₂ z ^ 2) = (2 : ℂ) • (H₂ ^ 2) := by ext z; simp [smul_eq_mul]
-    rw [this]; exact hH₂sq.const_smul 2
-  have h2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₂ z * H₄ z) := by
-    have : (fun z => 5 * H₂ z * H₄ z) = (5 : ℂ) • (H₂ * H₄) := by
-      ext z; simp [smul_eq_mul, mul_assoc]
-    rw [this]; exact (hH₂.mul hH₄).const_smul 5
-  have h3 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₄ z ^ 2) := by
-    have : (fun z => 5 * H₄ z ^ 2) = (5 : ℂ) • (H₄ ^ 2) := by ext z; simp [smul_eq_mul]
-    rw [this]; exact hH₄sq.const_smul 5
-  have hB_md := (h1.add h2).add h3
+  have hB_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
+      (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := by
+    have : (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) =
+        (2 : ℂ) • H₂ ^ 2 + ((5 : ℂ) • (H₂ * H₄) + (5 : ℂ) • H₄ ^ 2) := by
+      ext z; simp [smul_eq_mul, Pi.add_apply, Pi.mul_apply, Pi.pow_apply]; ring
+    rw [this]; fun_prop
   have hB_bdd : IsBoundedAtImInfty
       (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) := by
     have h := ((H₂_tendsto_atImInfty.pow 2).const_mul 2).add
@@ -987,26 +978,16 @@ private theorem D_B_tendsto_zero :
 theorem D_G_div_G_tendsto :
     Filter.Tendsto (fun z : ℍ => D G z / G z) atImInfty (nhds ((3 : ℂ) / 2)) := by
   have hH₂ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := H₂_SIF_MDifferentiable
-  have hH₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := H₄_SIF_MDifferentiable
   let A : ℍ → ℂ := fun z => H₂ z ^ 3
   let B : ℍ → ℂ := fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2
   have hG_eq : ∀ z, G z = A z * B z := fun z => rfl
-  have hH₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₂ ^ 2) := by rw [pow_two]; exact hH₂.mul hH₂
-  have hH₄sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (H₄ ^ 2) := by rw [pow_two]; exact hH₄.mul hH₄
-  have hA : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A := hH₂sq.mul hH₂
-  have h_2H₂sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2) := by
-    have : (fun z => 2 * H₂ z ^ 2) = (2 : ℂ) • (H₂ ^ 2) := by ext z; simp [smul_eq_mul]
-    rw [this]; exact hH₂sq.const_smul 2
-  have h_5H₂H₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₂ z * H₄ z) := by
-    have : (fun z => 5 * H₂ z * H₄ z) = (5 : ℂ) • (H₂ * H₄) := by
-      ext z; simp [smul_eq_mul, mul_assoc]
-    rw [this]; exact (hH₂.mul hH₄).const_smul 5
-  have h_5H₄sq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 5 * H₄ z ^ 2) := by
-    have : (fun z => 5 * H₄ z ^ 2) = (5 : ℂ) • (H₄ ^ 2) := by ext z; simp [smul_eq_mul]
-    rw [this]; exact hH₄sq.const_smul 5
-  have h_2H₂sq_5H₂H₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z) :=
-    h_2H₂sq.add h_5H₂H₄
-  have hB : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B := (h_2H₂sq.add h_5H₂H₄).add h_5H₄sq
+  have hA : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A := by
+    have : A = H₂ ^ 2 * H₂ := by ext z; simp [Pi.mul_apply, Pi.pow_apply, A]; ring
+    rw [this]; fun_prop
+  have hB : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B := by
+    have : B = (2 : ℂ) • H₂ ^ 2 + ((5 : ℂ) • (H₂ * H₄) + (5 : ℂ) • H₄ ^ 2) := by
+      ext z; simp [smul_eq_mul, Pi.add_apply, Pi.mul_apply, Pi.pow_apply, B]; ring
+    rw [this]; fun_prop
   have h_DA_A : ∀ z, H₂ z ≠ 0 → D A z / A z = 3 * (D H₂ z / H₂ z) := by
     intro z hH₂_ne
     simp only [A]
