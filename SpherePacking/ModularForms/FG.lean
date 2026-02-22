@@ -1069,8 +1069,8 @@ private lemma jacobiTheta₂_half_mul_term_bound :
     _ = 3 * π * ↑|k| ^ 2 * rexp (-π * (1 * ↑k ^ 2 - 1 * ↑|k|)) := by ring_nf
 
 private theorem D_jacobiTheta₂_half_mul_tendsto_zero :
-    Filter.Tendsto (fun z : ℍ => D (fun w : ℍ => jacobiTheta₂ (w / 2) w) z)
-      atImInfty (nhds 0) := by
+    Filter.Tendsto (D (fun w : ℍ => jacobiTheta₂ (w / 2) w)) atImInfty (nhds 0) := by
+  show Filter.Tendsto (fun z => D (fun w : ℍ => jacobiTheta₂ (w / 2) w) z) atImInfty (nhds 0)
   simp_rw [D_jacobiTheta₂_half_mul_eq_tsum]
   have h_tsum_tendsto : Filter.Tendsto
       (fun z : ℍ => ∑' n : ℤ, (jacobiTheta₂_term_fderiv n (z / 2) z) ((1 : ℂ) / 2, 1))
@@ -1125,9 +1125,9 @@ private theorem D_Θ₂_div_Θ₂_tendsto :
   let h : ℍ → ℂ := fun w => Θ₂ w / f w
   have hf_logderiv : ∀ z : ℍ, D f z / f z = 1 / 8 := D_exp_pi_quarter_div_exp_pi_quarter
   have hh_tendsto : Filter.Tendsto h atImInfty (nhds (2 : ℂ)) := Θ₂_div_exp_tendsto
-  have hDh_tendsto : Filter.Tendsto (fun z => D h z) atImInfty (nhds (0 : ℂ)) := by
-    have : (fun z => D h z) = fun z => D (fun w : ℍ => jacobiTheta₂ (w / 2) w) z := by
-      ext z; congr 1; ext w; simp only [h, f, Θ₂_as_jacobiTheta₂]; field_simp [Complex.exp_ne_zero]
+  have hDh_tendsto : Filter.Tendsto (D h) atImInfty (nhds (0 : ℂ)) := by
+    have : D h = D (fun w : ℍ => jacobiTheta₂ (w / 2) w) := by
+      congr 1; ext w; simp only [h, f, Θ₂_as_jacobiTheta₂]; field_simp [Complex.exp_ne_zero]
     rw [this]; exact D_jacobiTheta₂_half_mul_tendsto_zero
   have h_ne_zero : ∀ᶠ z : ℍ in atImInfty, h z ≠ 0 :=
     hh_tendsto.eventually_ne (by norm_num : (2 : ℂ) ≠ 0)
@@ -1189,17 +1189,16 @@ private theorem D_H₂_div_H₂_tendsto :
   exact (h_logderiv z hz).symm
 
 private theorem D_H₂_tendsto_zero :
-    Filter.Tendsto (fun z : ℍ => D H₂ z) atImInfty (nhds 0) :=
+    Filter.Tendsto (D H₂) atImInfty (nhds 0) :=
   D_tendsto_zero_of_isBoundedAtImInfty H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂
 
 private theorem D_H₄_tendsto_zero :
-    Filter.Tendsto (fun z : ℍ => D H₄ z) atImInfty (nhds 0) :=
+    Filter.Tendsto (D H₄) atImInfty (nhds 0) :=
   D_tendsto_zero_of_isBoundedAtImInfty H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
 
 /-- `D(2H₂² + 5H₂H₄ + 5H₄²) → 0` as `im(z) → ∞`, by the Cauchy estimate. -/
 private theorem D_B_tendsto_zero :
-    Filter.Tendsto (fun z : ℍ =>
-      D (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w + 5 * H₄ w ^ 2) z)
+    Filter.Tendsto (D (fun w => 2 * H₂ w ^ 2 + 5 * H₂ w * H₄ w + 5 * H₄ w ^ 2))
       atImInfty (nhds 0) := by
   have hH₂ := H₂_SIF_MDifferentiable
   have hH₄ := H₄_SIF_MDifferentiable
