@@ -60,12 +60,22 @@ noncomputable def GReal (t : ℝ) : ℝ := (G.resToImagAxis t).re
 
 noncomputable def FmodGReal (t : ℝ) : ℝ := (FReal t) / (GReal t)
 
-theorem F_eq_FReal {t : ℝ} (ht : 0 < t) : F.resToImagAxis t = FReal t := by sorry
+theorem F_eq_FReal {t : ℝ} (_ht : 0 < t) : F.resToImagAxis t = FReal t :=
+  (((E₂_imag_axis_real.mul E₄_imag_axis_real).sub E₆_imag_axis_real).pow 2
+    |>.eq_real_part t)
 
-theorem G_eq_GReal {t : ℝ} (ht : 0 < t) : G.resToImagAxis t = GReal t := by sorry
+private lemma G_imag_axis_real' : ResToImagAxis.Real G :=
+  (H₂_imag_axis_real.pow 3).mul
+    (((H₂_imag_axis_real.pow 2).smul.add
+      (H₂_imag_axis_real.smul.mul H₄_imag_axis_real)).add
+      (H₄_imag_axis_real.pow 2).smul)
+
+theorem G_eq_GReal {t : ℝ} (_ht : 0 < t) : G.resToImagAxis t = GReal t :=
+  G_imag_axis_real'.eq_real_part t
 
 theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
-    FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by sorry
+    FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by
+  simp only [FmodGReal, F_eq_FReal ht, G_eq_GReal ht, Complex.ofReal_div]
 
 /--
 `F = 9 * (D E₄)²` by Ramanujan's formula.
@@ -93,11 +103,11 @@ theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by u
 
 theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := by rw [G_eq]; fun_prop
 
-theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
-  sorry
+theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t :=
+  Complex.reCLM.differentiableAt.comp t (ResToImagAxis.Differentiable F F_holo t ht)
 
-theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ GReal t := by
-  sorry
+theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ GReal t :=
+  Complex.reCLM.differentiableAt.comp t (ResToImagAxis.Differentiable G G_holo t ht)
 
 theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
     + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun
