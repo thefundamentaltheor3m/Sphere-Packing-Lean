@@ -66,19 +66,7 @@ lemma ψI_apply_eq_factor (z : ℍ) :
     simp [hJ]
     ring
   have hΔ0 : (Δ z : ℂ) ≠ 0 := by simpa [Delta_apply] using (Δ_ne_zero z)
-  calc
-    ψI z = (ψI z * (Δ z)) / (Δ z) := by
-      field_simp [hΔ0]
-    _ =
-        ((1 / 2 : ℂ) *
-          (H₄ z ^ (3 : ℕ) *
-            (2 * H₄ z ^ (2 : ℕ) + 5 * H₄ z * H₂ z + 5 * H₂ z ^ (2 : ℕ)))) / (Δ z) := by
-      simp [hmul]
-    _ =
-        (1 / 2 : ℂ) *
-          (H₄ z ^ (3 : ℕ) *
-            (2 * H₄ z ^ (2 : ℕ) + 5 * H₄ z * H₂ z + 5 * H₂ z ^ (2 : ℕ))) / (Δ z) := by
-      ring
+  exact eq_div_of_mul_eq hΔ0 hmul
 
 /-- Exponential growth bound for `ψI` on vertical rays in the upper half-plane. -/
 public lemma exists_ψI_bound_exp :

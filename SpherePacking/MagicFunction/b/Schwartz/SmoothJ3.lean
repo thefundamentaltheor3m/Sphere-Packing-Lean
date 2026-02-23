@@ -91,12 +91,7 @@ lemma J₃'_eq (x : ℝ) :
                       ac_rfl
       _ = (∫ t in (0 : ℝ)..1,
               (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * x * (z₅' t))) *
-            cexp (π * (Complex.I : ℂ) * x) := by
-              simpa [mul_assoc] using
-                (intervalIntegral.integral_mul_const (a := (0 : ℝ)) (b := (1 : ℝ))
-                  (r := cexp (π * (Complex.I : ℂ) * x))
-                  (f := fun t : ℝ =>
-                    (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * x * (z₅' t))))
+            cexp (π * (Complex.I : ℂ) * x) := integral_mul_const _ _
   -- Relate the remaining integral to `J₅'`.
   have hK :
       (∫ t in (0 : ℝ)..1,

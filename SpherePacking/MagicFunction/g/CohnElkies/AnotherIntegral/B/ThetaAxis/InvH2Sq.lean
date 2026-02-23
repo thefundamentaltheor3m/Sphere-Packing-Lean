@@ -786,14 +786,7 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
               ‖A‖ * ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ ≤
                 (e / 256) * ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ :=
             mul_le_mul_of_nonneg_right hA_le (norm_nonneg _)
-          have hmulDiff :
-              (e / 256) * ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ ≤
-                (e / 256) *
-                  (((8 + (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) ^ 2 +
-                      (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) *
-                    Real.exp (-(4 : ℝ) * Real.pi * t)) :=
-            mul_le_mul_of_nonneg_left hdiff' he256
-          exact le_trans hmulA hmulDiff
+          exact le_mul_of_le_mul_of_nonneg_left hmulA hdiff he256
     _ ≤ (256 * ((8 + (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) ^ 2 +
           (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256))) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
           set K : ℝ := (8 + C0) ^ 2 + C0
@@ -835,15 +828,7 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
                     simpa using congrArg (fun z : ℝ => K * z) hE
               _ = ((1 / 256 : ℝ) * K) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
                     ac_rfl
-          have :
-              (e / 256) *
-                  (((8 + (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) ^ 2 +
-                      (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) *
-                    Real.exp (-(4 : ℝ) * Real.pi * t)) ≤
-                (256 * K) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-            rw [hrewrite]
-            exact hmul
-          simpa [K, C0, mul_assoc, mul_left_comm, mul_comm] using this
+          exact le_of_eq_of_le hrewrite hmul
 
 end
 

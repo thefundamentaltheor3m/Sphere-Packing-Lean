@@ -380,16 +380,7 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
           rw [hdecomp] at htri'
           exact htri'
     _ ≤ ((4 * (M + 4) ^ 3) * Cθ) * Real.exp (-(5 : ℝ) * Real.pi * t) +
-          176 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-          have h1 :
-              ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
-                ((4 * (M + 4) ^ 3) * Cθ) * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-            simpa [mul_assoc] using hpow'
-          have h2 :
-              ‖y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-                    (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖
-                ≤ 176 * Real.exp (-(5 : ℝ) * Real.pi * t) := hy_tail
-          exact add_le_add h1 h2
+          176 * Real.exp (-(5 : ℝ) * Real.pi * t) := add_le_add hpow' hy_tail
     _ ≤ (((4 * (M + 4) ^ 3) * Cθ + 176) * Real.exp (-(5 : ℝ) * Real.pi * t)) := by
           ring_nf
           linarith
@@ -561,20 +552,7 @@ lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
           rw [hdecomp] at htri'
           exact htri'
     _ ≤ ((4 * (1 + C1 + 3) ^ 3) * C2) * Real.exp (-(3 : ℝ) * Real.pi * t) +
-          48 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-          have h1 :
-              ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
-                ((4 * (1 + C1 + 3) ^ 3) * C2) * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-            simpa [mul_assoc] using hpow'
-          have h2 :
-              ‖y ^ (4 : ℕ) - (1 : ℂ) - (8 : ℂ) * q' - (24 : ℂ) * (q' ^ (2 : ℕ))‖ ≤
-                48 * Real.exp (-(3 : ℝ) * Real.pi * t) := hy4
-          have h2' :
-              ‖y ^ (4 : ℕ) - (1 : ℂ) - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-                    (24 : ℂ) * ((Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ))‖ ≤
-                48 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-            simpa [q', pow_two] using h2
-          exact add_le_add h1 h2'
+          48 * Real.exp (-(3 : ℝ) * Real.pi * t) := add_le_add hpow' hy4
     _ ≤ (((4 * (1 + C1 + 3) ^ 3) * C2 + 48) * Real.exp (-(3 : ℝ) * Real.pi * t)) := by
           ring_nf
           linarith
@@ -750,17 +728,7 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
           rw [hdecomp] at htri'
           exact htri'
     _ ≤ ((4 * (1 + C1 + 3) ^ 3) * C2) * Real.exp (-(3 : ℝ) * Real.pi * t) +
-          48 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-          have h1 :
-              ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
-                ((4 * (1 + C1 + 3) ^ 3) * C2) * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-            simpa [mul_assoc] using hpow'
-          have h2 :
-              ‖y ^ (4 : ℕ) - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-                    (24 : ℂ) * ((Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ))‖ ≤
-                48 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-            simpa [q', pow_two] using hy4
-          exact add_le_add h1 h2
+          48 * Real.exp (-(3 : ℝ) * Real.pi * t) := add_le_add hpow' hy4
     _ ≤ (((4 * (1 + C1 + 3) ^ 3) * C2 + 48) * Real.exp (-(3 : ℝ) * Real.pi * t)) := by
           ring_nf
           linarith

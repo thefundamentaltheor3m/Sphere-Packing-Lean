@@ -492,11 +492,7 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
         have hx' : x ∈ F := by simpa [Fset] using hx
         have hxInner : x ∈ g +ᵥ coordCubeInner (d := d) L (S.separation / 2) := by
           simpa [hSsep] using (hF_inner x hx')
-        have hball :
-            ball x (S.separation / 2) ⊆ g +ᵥ coordCube (d := d) L :=
-          PeriodicConstantApprox.ball_subset_vadd_coordCube_of_mem_vadd_inner (d := d) (hL := hL)
-            (v := g) (x := x) (r := (S.separation / 2)) hxInner
-        simpa [D] using hball)
+        exact ball_subset_vadd_coordCube_of_mem_vadd_inner hL hxInner)
   have hPsep : P.separation = 1 := by simpa [P, hSsep]
   refine ⟨P, hPsep, ?_⟩
   have hD_bounded : IsBounded D := by

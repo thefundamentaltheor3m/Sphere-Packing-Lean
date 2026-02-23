@@ -124,9 +124,6 @@ public lemma norm_modular_rewrite_Ioc_exp_bound (k : ℕ) (Cψ : ℝ) (ψS : ℍ
     {t : ℝ} (ht : t ∈ Ioc (0 : ℝ) 1) :
     ‖ψZ (z t)‖ ≤ Cψ * Real.exp (-Real.pi * (1 / t)) * t ^ k := by
   have hone : (1 : ℝ) ≤ 1 / t := one_le_one_div ht.1 ht.2
-  have hψS : ‖ψS.resToImagAxis (1 / t)‖ ≤ Cψ * Real.exp (-Real.pi * (1 / t)) := hCψ (1 / t) hone
-  have hmul :=
-    norm_modular_rewrite_Ioc_bound (k := k) (ψS := ψS) (ψZ := ψZ) (z := z) hEq ht hψS
-  simpa [mul_assoc] using hmul
+  exact norm_modular_rewrite_Ioc_bound k ψS ψZ z hEq ht (hCψ (1 / t) hone)
 
 end MagicFunction

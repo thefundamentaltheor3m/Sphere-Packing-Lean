@@ -286,11 +286,7 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
           = ∑' n : ℕ, (f n + f n) := by
               refine tsum_congr ?_
               intro n
-              have hidx : (-(n + 1 : ℤ)) = -(n : ℤ) - 1 := by ring
-              have hz : Θ₂_term (- (n : ℤ) + (-1 : ℤ)) τ = Θ₂_term (n : ℤ) τ := by
-                have : (- (n : ℤ) + (-1 : ℤ)) = -(n : ℤ) - 1 := by ring
-                simpa [this] using hsymmZ (n := (n : ℤ))
-              simp [f, hidx, hz, sub_eq_add_neg]
+              exact add_left_cancel_iff.mpr (hsymm n)
       _ = ∑' n : ℕ, (2 : ℂ) * f n := by
             refine tsum_congr ?_
             intro n

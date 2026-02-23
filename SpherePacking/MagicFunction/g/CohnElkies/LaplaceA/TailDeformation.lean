@@ -302,12 +302,7 @@ lemma tendsto_intervalIntegral_Φ₂'_top {u : ℝ} (hu : 2 < u) :
       intervalIntegral.norm_integral_le_of_norm_le_const (a := (-1 : ℝ)) (b := (0 : ℝ))
         (f := fun x : ℝ => Φ₂' u ((x : ℂ) + (m : ℂ) * Complex.I))
         (C := K * (m ^ (2 : ℕ) * Real.exp (-a * m))) hnorm
-  -- Convert the norm estimate to a `Tendsto` statement.
-  refine (tendsto_zero_iff_norm_tendsto_zero).2 ?_
-  exact
-    tendsto_of_tendsto_of_tendsto_of_le_of_le'
-      (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℝ)) atTop (𝓝 0))
-      htend (Filter.Eventually.of_forall fun _ => norm_nonneg _) hbound
+  exact squeeze_zero_norm' hbound htend
 
 /-- Top-edge decay needed for the right rectangle deformation (`Φ₄'`). -/
 lemma tendsto_intervalIntegral_Φ₄'_top {u : ℝ} (hu : 2 < u) :
@@ -349,11 +344,7 @@ lemma tendsto_intervalIntegral_Φ₄'_top {u : ℝ} (hu : 2 < u) :
       intervalIntegral.norm_integral_le_of_norm_le_const (a := (1 : ℝ)) (b := (0 : ℝ))
         (f := fun x : ℝ => Φ₄' u ((x : ℂ) + (m : ℂ) * Complex.I))
         (C := K * (m ^ (2 : ℕ) * Real.exp (-a * m))) hnorm
-  refine (tendsto_zero_iff_norm_tendsto_zero).2 ?_
-  exact
-    tendsto_of_tendsto_of_tendsto_of_le_of_le'
-      (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℝ)) atTop (𝓝 0))
-      htend (Filter.Eventually.of_forall fun _ => norm_nonneg _) hbound
+  exact squeeze_zero_norm' hbound htend
 
 lemma I₂'_eq_intervalIntegral_bottom (u : ℝ) :
     MagicFunction.a.RealIntegrals.I₂' u =

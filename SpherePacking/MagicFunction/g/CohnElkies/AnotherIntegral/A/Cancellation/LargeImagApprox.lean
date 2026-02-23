@@ -376,12 +376,7 @@ lemma phi4_numerator_bound
     have hABC : ‖(A - B) - C‖ ≤ ‖A - B‖ + ‖C‖ := norm_sub_le (A - B) C
     calc
       ‖(E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)‖
-          = ‖(A - B) - C‖ := by
-              have hfull :
-                  (E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z) =
-                    (A - B) - C := by
-                simpa [A, B, C] using hdecomp
-              simpa using congrArg norm hfull
+          = ‖(A - B) - C‖ := enorm_eq_iff_norm_eq.mp (congrArg enorm hdecomp)
       _ ≤ ‖A - B‖ + ‖C‖ := hABC
       _ ≤ (‖A‖ + ‖B‖) + ‖C‖ := by
             simpa [add_assoc, add_left_comm, add_comm] using (add_le_add_left hAB ‖C‖)

@@ -247,33 +247,6 @@ lemma cuspFunction_smul
           (ModularFormClass.analyticAt_cuspFunction_zero (f := f) hh hΓ).continuousAt)
       a)
 
-/-- `qExpansion` is additive. -/
-public lemma qExpansion_add
-    [DiscreteTopology Γ] [Γ.HasDetPlusMinusOne]
-    (f g : ModularForm Γ k) (hh : 0 < h) (hΓ : h ∈ Γ.strictPeriods) :
-    qExpansion h (f + g) = qExpansion h f + qExpansion h g := by
-  ext n
-  have hf' : ContDiffAt ℂ n (cuspFunction h f) 0 :=
-    (ModularFormClass.analyticAt_cuspFunction_zero (f := f) hh hΓ).contDiffAt
-  have hg' : ContDiffAt ℂ n (cuspFunction h g) 0 :=
-    (ModularFormClass.analyticAt_cuspFunction_zero (f := g) hh hΓ).contDiffAt
-  have hcf : cuspFunction h (f + g) = cuspFunction h f + cuspFunction h g := by
-    simpa [Pi.add_apply] using
-      cuspFunction_add (Γ := Γ) (k := k) (h := h) f g hh hΓ
-  simp [qExpansion_coeff, hcf, iteratedDeriv_add hf' hg', mul_add]
-
-/-- `qExpansion` commutes with scalar multiplication. -/
-public lemma qExpansion_smul
-    [DiscreteTopology Γ] [Γ.HasDetOne]
-    (a : ℂ) (f : ModularForm Γ k) (hh : 0 < h) (hΓ : h ∈ Γ.strictPeriods) :
-    qExpansion h (a • f) = a • qExpansion h f := by
-  ext n
-  have hcf : cuspFunction h (a • f) = a • cuspFunction h f := by
-    simpa [Pi.smul_apply] using (cuspFunction_smul (Γ := Γ) (k := k) (h := h) a f hh hΓ)
-  -- Work coefficientwise and use linearity of iterated derivatives.
-  simp [qExpansion_coeff, hcf]
-  ring
-
 end Linearity
 
 end

@@ -66,9 +66,7 @@ lemma D₂_apply (γ : SL(2, ℤ)) (z : ℍ) :
   by rfl
 
 lemma extracted_77 (z : ℍ) (n : ℤ) : Summable fun b : ℤ ↦ (((b : ℂ) * ↑z + ↑n) ^ 2)⁻¹ := by
-  have := (
-      G2_summable_aux (-n) ⟨-1 /z, by simpa using pnat_div_upper 1 z⟩ 2 (by norm_num)
-    ).mul_left ((z : ℂ)^2)⁻¹
+  have := (linear_right_summable (-1 /z) (-n) Int.le_rfl).mul_left ((z : ℂ)^2)⁻¹
   refine this.congr ?_
   intro b
   have hz : (z : ℂ) ≠ 0 := by simpa using (ne_zero z)
@@ -506,7 +504,7 @@ lemma G2_alt_eq (z : ℍ) : G₂ z = ∑' m : ℤ, ∑' n : ℤ,
       rw [tsum_limUnder_atTop, tsum_limUnder_atTop, auxr z m]
       · have H := G2_prod_summable1_δ z m
         simpa using H
-      · have H := G2_summable_aux m z 2 (by norm_num)
+      · have H := linear_right_summable z m Int.le_rfl
         simpa using H
     · refine hG2AltProd.congr ?_
       intro b

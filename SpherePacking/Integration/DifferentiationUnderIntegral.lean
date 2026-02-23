@@ -119,10 +119,7 @@ public lemma ae_bound_gN_succ_Ioo
   refine ⟨K, ?_, ?_⟩
   · filter_upwards [hμmem] with t ht
     intro x hx
-    have hh : ‖hf t‖ ≤ Mh := hMh t ht
-    simpa [K] using
-      (norm_gN_le_const (coeff := coeff) (hf := hf) (coeff_norm_le := coeff_norm_le)
-        (M := Mh) hMh0 (t := t) (x := x) (x₀ := x₀) hx hh (n := n + 1))
+    exact norm_gN_le_const coeff_norm_le hMh0 hx (hMh t ht) (n + 1)
   · simpa [K, μ] using (integrable_const (c := K) (μ := μ))
 
 /-- Integrability of `gN n x` over `(0, 1)`.
@@ -157,12 +154,7 @@ public lemma integrable_gN_Ioo
     simpa [K] using
       (norm_gN_le_const (coeff := coeff) (hf := hf) (coeff_norm_le := coeff_norm_le)
         (M := Mh) hMh0 (t := t) (x := x) (x₀ := x) hx hh (n := n))
-  have hμ_finite : μ univ < ⊤ := by
-    simp [μ, μIoo01, Measure.restrict_apply, MeasurableSet.univ]
-  haveI : IsFiniteMeasure μ := ⟨hμ_finite⟩
-  have hK : Integrable (fun _ : ℝ => K) μ := by
-    simp [μ]
-  exact Integrable.mono' hK hmeas hbound
+  exact Integrable.of_bound hmeas K hbound
 
 /-- Differentiate under the integral sign on `(0, 1)` for the integrand `gN n`. -/
 public lemma hasDerivAt_integral_gN_Ioo
