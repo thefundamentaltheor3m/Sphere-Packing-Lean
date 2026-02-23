@@ -240,15 +240,8 @@ lemma neg_two_pi_I_pow_even_real (k : ℕ) (hk : Even k) :
     rcases m.even_or_odd with hm | hm <;> simp [hm.neg_one_pow]
   simp [Complex.mul_im, h1, h2]
 
-/-- On imaginary axis z = I*t, the q-expansion exponent 2πi·n·z reduces to -(2πnt).
-This is useful for reusing the same algebraic simplification across `E₂`, `E₄`, `E₆`. -/
-lemma exp_imag_axis_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
-    2 * Real.pi * Complex.I * (⟨Complex.I * t, by simp [ht]⟩ : ℍ) * n =
-    (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-  push_cast
-  ring_nf
-  simp only [I_sq]
-  ring
+/-- The common combination `E₂ * E₄ - E₆`. -/
+@[expose] public noncomputable def A_E : ℍ → ℂ := fun z => (E₂ z) * (E₄ z) - (E₆ z)
 
 /-- `E_k(it)` is real for all `t > 0` when `k` is even and `k ≥ 4`.
 This is the generalized theorem from which `E₄_imag_axis_real` and `E₆_imag_axis_real` follow. -/
@@ -314,78 +307,43 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
   simp only [mul_im, div_im, hinv_zeta_im, hsum_im, hpow_im, hfact_im]
   ring
 
-/-- `E₄(it)` is real for all `t > 0`. -/
-@[fun_prop]
-theorem E₄_imag_axis_real : ResToImagAxis.Real E₄.toFun :=
-  E_even_imag_axis_real 4 (by norm_num) (by norm_num)
+/-- Term `n` in the shifted `ℕ`-Fourier expansion of `A_E`. -/
+@[expose] public noncomputable def A_E_term (z : ℍ) (n : ℕ) : ℂ :=
+  A_E_coeff n * cexp (2 * Real.pi * Complex.I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))
 
-/-- `E₆(it)` is real for all `t > 0`. -/
-@[fun_prop]
-theorem E₆_imag_axis_real : ResToImagAxis.Real E₆.toFun :=
-  E_even_imag_axis_real 6 (by norm_num) (by norm_num)
+/-- The norm of `A_E_coeff n` expressed as a real number. -/
+public lemma norm_A_E_coeff (n : ℕ) :
+    ‖A_E_coeff n‖ = (720 : ℝ) * ((n + 1 : ℕ) : ℝ) * (σ 3 (n + 1) : ℝ) := by
+  -- `simp` rewrites `((n+1 : ℕ) : ℂ)` as `(n : ℂ) + 1`, so package the corresponding norm lemma.
+  have hn : ‖(n : ℂ) + 1‖ = (n : ℝ) + 1 := by
+    simpa [Nat.cast_add, Nat.cast_one] using (Complex.norm_natCast (n + 1))
+  simp [A_E_coeff, hn, Nat.cast_add, Nat.cast_one, mul_assoc, mul_comm]
 
-/-- `E₂(it)` is real for all `t > 0`. -/
-@[fun_prop]
-theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
-  intro t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
-  let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
-  change (E₂ z).im = 0
-  have hq := E₂_eq z
-  rw [hq]
-  simp only [sub_im, one_im, zero_sub]
-  -- Step 1: Show each term in the sum is real on the imaginary axis
-  have hterm_im : ∀ n : ℕ+, (↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
-      (1 - cexp (2 * ↑Real.pi * Complex.I * n * z))).im = 0 := by
-    intro n
-    have hexp_arg : 2 * ↑Real.pi * Complex.I * n * z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-      have h1 : 2 * ↑Real.pi * Complex.I * z * n = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-        simpa [z] using exp_imag_axis_arg (t := t) ht n
-      simpa [mul_assoc, mul_left_comm, mul_comm] using h1
-    -- Using simp only: `simp` gives false positive linter warning but args are needed
-    have hone_sub_real : (1 - cexp (2 * ↑Real.pi * Complex.I * ↑↑n * ↑z)).im = 0 := by
-      simp only [Complex.sub_im, Complex.one_im, hexp_arg, exp_ofReal_im, sub_zero]
-    have hnum_real : (↑n * cexp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
-      simp only [mul_im, natCast_im, hexp_arg, exp_ofReal_im, mul_zero, zero_mul, add_zero]
-    simp [Complex.div_im, hnum_real, hone_sub_real]
-  -- Step 2: Summability of the series
-  have hsum : Summable fun n : ℕ+ => ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
-      (1 - cexp (2 * ↑Real.pi * Complex.I * n * z)) := by
-    set r : ℂ := cexp (2 * ↑Real.pi * Complex.I * z) with hr
-    have hr_norm : ‖r‖ < 1 := by
-      simpa [hr] using exp_upperHalfPlane_lt_one z
-    have hs : Summable fun n : ℕ => (n : ℂ) * r ^ n / (1 - r ^ n) := by
-      simpa [pow_one] using
-        (summable_norm_pow_mul_geometric_div_one_sub (k := 1) (r := r) hr_norm)
-    refine (hs.comp_injective PNat.coe_injective).congr ?_
-    intro n
-    have hpow : r ^ (n : ℕ) = cexp (2 * ↑Real.pi * Complex.I * (↑n : ℂ) * z) := by
-      rw [hr]
-      simpa [mul_assoc, mul_left_comm, mul_comm] using
-        (Complex.exp_nat_mul (2 * ↑Real.pi * Complex.I * z) (n : ℕ)).symm
-    simp [hpow]
-  -- Step 3: The sum has zero imaginary part
-  have hsum_im : (∑' (n : ℕ+), ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
-      (1 - cexp (2 * ↑Real.pi * Complex.I * n * z))).im = 0 := by
-    rw [Complex.im_tsum hsum]
-    simp [hterm_im]
-  -- Step 4: 24 * sum is real, so -(24 * sum).im = 0
-  simp [Complex.mul_im, hsum_im]
+private def E4Coeff : ℕ → ℂ := fun n => if n = 0 then 1 else (240 : ℂ) * (σ 3 n)
 
-end ImagAxisProperties
+private noncomputable def E4qSeries : ℍ → ℂ :=
+  fun w => ∑' n : ℕ, E4Coeff n * cexp (2 * Real.pi * Complex.I * n * w)
 
-/-! ## Boundedness of E₂ -/
+private lemma one_mem_strictPeriods :
+    (1 : ℝ) ∈ ((Γ(1) : Subgroup (GL (Fin 2) ℝ))).strictPeriods := by simp
 
-/-- For im(z) ≥ 1, ‖exp(2πiz)‖ ≤ exp(-2π).
+private lemma E4qSeries_hasSum
+    (w : ℍ) :
+    HasSum (fun n : ℕ => E4Coeff n * cexp (2 * Real.pi * Complex.I * n * w)) (E₄ w) := by
+  have hsum :=
+    ModularFormClass.hasSum_qExpansion (f := E₄) (h := (1 : ℝ)) (by positivity)
+      one_mem_strictPeriods w
+  refine HasSum.congr_fun hsum (fun n => ?_)
+  have hcoeff : (ModularFormClass.qExpansion (1 : ℝ) E₄).coeff n = E4Coeff n := by
+    simpa [E4Coeff] using congr_fun E4_q_exp n
+  have hqpow : (𝕢 (1 : ℝ) w) ^ n = cexp (2 * Real.pi * Complex.I * n * w) := by
+    simpa [Function.Periodic.qParam, mul_assoc, mul_left_comm, mul_comm] using
+      (Complex.exp_nat_mul (2 * Real.pi * Complex.I * w) n).symm
+  simp [hcoeff, hqpow, smul_eq_mul, mul_left_comm, mul_comm]
 
-This bound on the q-parameter is useful for estimating q-expansions when im(z) ≥ 1. -/
-lemma norm_exp_two_pi_I_le_exp_neg_two_pi (z : ℍ) (hz : 1 ≤ z.im) :
-    ‖cexp (2 * π * Complex.I * z)‖ ≤ Real.exp (-2 * π) := by
-  have h : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
-    rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
-    simp [Complex.I_re, Complex.I_im, mul_comm]
-  rw [Complex.norm_exp, h, Real.exp_le_exp]
-  nlinarith [Real.pi_pos]
+private lemma E4qSeries_eq : E4qSeries = E₄.toFun := by
+  ext w
+  simpa [E4qSeries] using (E4qSeries_hasSum w).tsum_eq
 
 /-- Closed form for ∑ n·rⁿ over ℕ+ when ‖r‖ < 1. -/
 private lemma tsum_pnat_coe_mul_geometric {r : ℝ} (hr : ‖r‖ < 1) :
@@ -397,7 +355,39 @@ private lemma tsum_pnat_coe_mul_geometric {r : ℝ} (hr : ‖r‖ < 1) :
 
 /-- Bound on the q-series ∑ n·qⁿ/(1-qⁿ) that appears in E₂.
 
-For ‖q‖ < 1, we have ‖∑ₙ₌₁ n·qⁿ/(1-qⁿ)‖ ≤ ‖q‖/(1-‖q‖)³.
+/-- The Fourier expansion of `E₂ * E₄ - E₆` as an `ℕ+`-indexed series. -/
+public theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
+    (E₂ z) * (E₄ z) - (E₆ z) =
+      720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * Real.pi * Complex.I * n * z) := by
+  have hDE4 :
+      D E₄.toFun z = ∑' n : ℕ, (n : ℂ) * E4Coeff n * cexp (2 * Real.pi * Complex.I * n * z) := by
+    -- Differentiate the `q`-expansion termwise, then identify it with `E₄`.
+    have hD :
+        D E4qSeries z =
+          ∑' n : ℕ, (n : ℂ) * E4Coeff n * cexp (2 * Real.pi * Complex.I * n * z) := by
+      simpa [E4qSeries] using D_qexp_tsum E4Coeff z (by
+        intro K hK hKc
+        simpa using E4qSeries_derivBound K hK hKc)
+    simpa [E4qSeries_eq] using hD
+  have hRam := congrArg (fun f : ℍ → ℂ => f z) ramanujan_E₄
+  have h3 : (3 : ℂ) ≠ 0 := by norm_num
+  have hmain : (E₂ z) * (E₄ z) - (E₆ z) = (3 : ℂ) * D E₄.toFun z := by
+    simp_all
+  have htail :
+      (∑' n : ℕ, (n : ℂ) * E4Coeff n * cexp (2 * Real.pi * Complex.I * n * z)) =
+        (240 : ℂ) * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * Real.pi * Complex.I * n * z) := by
+    let f : ℕ → ℂ := fun n => (n : ℂ) * E4Coeff n * cexp (2 * Real.pi * Complex.I * n * z)
+    have hf0 : f 0 = 0 := by simp [f, E4Coeff]
+    have htsum : (∑' n : ℕ, f n) = ∑' n : ℕ+, f n := by
+      simpa using (tsum_pNat (f := f) hf0).symm
+    calc
+      (∑' n : ℕ, (n : ℂ) * E4Coeff n * cexp (2 * Real.pi * Complex.I * n * z))
+          = ∑' n : ℕ+, f n := by simpa [f] using htsum
+      _ =
+          (240 : ℂ) *
+            ∑' n : ℕ+, n * (σ 3 n) * cexp (2 * Real.pi * Complex.I * n * z) := by
+          simp [f, E4Coeff, tsum_mul_left, mul_assoc, mul_left_comm, mul_comm]
+  grind only
 
 The key estimates are:
 - |1-qⁿ| ≥ 1-|q|ⁿ ≥ 1-|q| for n ≥ 1

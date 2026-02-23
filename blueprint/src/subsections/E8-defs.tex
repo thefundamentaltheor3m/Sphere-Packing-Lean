@@ -91,8 +91,7 @@ In this section, we establish basic properties of the $E_8$ lattice and the $\B_
   The first part is by \cref{instDiscreteE8Lattice}, and the second part follows from that $\B_8$ is a basis (\cref{E8-is-basis}) and hence linearly independent over $\R$.
 \end{proof}
 
-\todo{Prove $E_8$ is unimodular.}
-\todo{Prove $E_8$ is positive-definite.}
+The remaining standard lattice-theoretic properties (e.g. unimodularity and positive-definiteness) are available in the Lean development of the $E_8$ lattice.
 
 \subsection{The $E_8$ sphere packing}
 
@@ -104,7 +103,6 @@ In this section, we establish basic properties of the $E_8$ lattice and the $\B_
   $\Vol{\Lambda_8} = \mathrm{Covol}(\R^8 / \Lambda_8) = 1$.
 \end{lemma}
 \begin{proof}\leanok
-  \todo{In theory this should follow directly from $\det(\Lambda_8) = 1$, but Lean hates me and \texttt{EuclideanSpace} is being annoying.}
 \end{proof}
 
 \begin{theorem}\label{E8Packing-density}\uses{theorem:psp-density,E8Packing-covol}\lean{E8Packing_density}\leanok

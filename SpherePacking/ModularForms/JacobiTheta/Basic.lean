@@ -1,4 +1,11 @@
 module
+public import Mathlib.Algebra.Field.Power
+public import Mathlib.Algebra.Lie.OfAssociative
+public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.NumberTheory.ModularForms.Basic
+import Mathlib.NumberTheory.ModularForms.LevelOne
+public import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
+public import Mathlib.Order.CompletePartialOrder
 
 public import SpherePacking.ModularForms.JacobiTheta.Defs
 
@@ -22,12 +29,16 @@ local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
 section H_SlashInvariant
 
 /-- Slash action of various elements on H₂, H₃, H₄ -/
-lemma H₂_negI_action : (H₂ ∣[(2 : ℤ)] negI.1) = H₂ := modular_slash_negI_of_even H₂ (2: ℤ) even_two
-lemma H₃_negI_action : (H₃ ∣[(2 : ℤ)] negI.1) = H₃ := modular_slash_negI_of_even H₃ (2: ℤ) even_two
-lemma H₄_negI_action : (H₄ ∣[(2 : ℤ)] negI.1) = H₄ := modular_slash_negI_of_even H₄ (2: ℤ) even_two
+public lemma H₂_negI_action : (H₂ ∣[(2 : ℤ)] negI.1) = H₂ :=
+  modular_slash_negI_of_even H₂ (2: ℤ) even_two
+/-- `H₃` is invariant under the `negI` slash action. -/
+public lemma H₃_negI_action : (H₃ ∣[(2 : ℤ)] negI.1) = H₃ :=
+  modular_slash_negI_of_even H₃ (2: ℤ) even_two
+/-- `H₄` is invariant under the `negI` slash action. -/
+public lemma H₄_negI_action : (H₄ ∣[(2:ℤ)] negI.1) = H₄ := modular_slash_negI_of_even H₄ 2 even_two
 
 /-- These three transformation laws follow directly from tsum definition. -/
-lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
+@[grind =] public lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
   ext x
   suffices hΘ₂ : Θ₂ ((1 : ℝ) +ᵥ x) = cexp (π * I / 4) * Θ₂ x by
     simp_rw [modular_slash_T_apply, Pi.neg_apply, H₂, hΘ₂, mul_pow, ← Complex.exp_nat_mul,
@@ -55,7 +66,9 @@ lemma H₂_T_action : (H₂ ∣[(2 : ℤ)] T) = -H₂ := by
     rw [Complex.exp_add]
     rw [mul_comm (π * I), Complex.exp_int_mul, Complex.exp_pi_mul_I, this.neg_one_zpow, one_mul]
 
-lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
+/-- The slash action of `T` sends `H₃` to `H₄`. -/
+@[grind =]
+public lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
   ext x
   simp_rw [modular_slash_T_apply, H₃, H₄, Θ₃, Θ₄, Θ₃_term, Θ₄_term]
   congr 1
@@ -69,12 +82,18 @@ lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
   · rw [hb.neg_one_zpow, Odd.neg_one_zpow]
     simp [sq, hb]
 
-lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by
+/-- The slash action of `T` sends `H₄` to `H₃`. -/
+@[grind =]
+public lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by
   -- H₄|T = H₃|T^2 = Θ₂(0, z + 2) = Θ₂(0, z) = H₃
   ext x
   simp_rw [← H₃_T_action, modular_slash_T_apply, H₃, Θ₃_as_jacobiTheta₂, coe_vadd, ← add_assoc]
   norm_num
   rw [add_comm, jacobiTheta₂_add_right]
+
+private lemma slash_inv_eq_of_slash_eq {k : ℤ} {F G : ℍ → ℂ} {γ : SL(2, ℤ)}
+    (h : (F ∣[k] γ) = G) : (G ∣[k] γ⁻¹) = F := by
+  simpa [← slash_mul, mul_inv_cancel, slash_one] using (congrArg (fun H => H ∣[k] γ⁻¹) h).symm
 
 lemma H₂_T_inv_action : (H₂ ∣[(2 : ℤ)] T⁻¹) = -H₂ := by
   nth_rw 1 [← neg_eq_iff_eq_neg.mpr H₂_T_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
@@ -86,17 +105,20 @@ lemma H₄_T_inv_action : (H₄ ∣[(2 : ℤ)] T⁻¹) = H₃ := by
   nth_rw 1 [← H₃_T_action, ← slash_mul, mul_inv_cancel, slash_one]
 
 /-- Use α = T * T -/
-lemma H₂_α_action : (H₂ ∣[(2 : ℤ)] α.1) = H₂ := by
+public lemma H₂_α_action : (H₂ ∣[(2 : ℤ)] α.1) = H₂ := by
   simp [α_eq_T_sq, sq, slash_mul, H₂_T_action]
 
-lemma H₃_α_action : (H₃ ∣[(2 : ℤ)] α.1) = H₃ := by
+/-- The slash action of `α` fixes `H₃`. -/
+public lemma H₃_α_action : (H₃ ∣[(2 : ℤ)] α.1) = H₃ := by
   simp [α_eq_T_sq, sq, slash_mul, H₃_T_action, H₄_T_action]
 
-lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α.1) = H₄ := by
+/-- The slash action of `α` fixes `H₄`. -/
+public lemma H₄_α_action : (H₄ ∣[(2 : ℤ)] α.1) = H₄ := by
   simp [α_eq_T_sq, sq, slash_mul, H₃_T_action, H₄_T_action]
 
 /-- Use jacobiTheta₂_functional_equation -/
-lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
+@[grind =]
+public lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
   ext ⟨x, hx⟩
   have hx' : x ≠ 0 := by simp [Complex.ext_iff, hx.ne.symm]
   calc
@@ -116,9 +138,7 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     congr 4
     · ring_nf
     · congr 1
-      rw [neg_mul, neg_div, one_div, neg_div, div_neg, neg_mul, neg_div, neg_neg]
-      ring_nf
-      simp [sq, ← mul_assoc, inv_mul_cancel_right₀ hx']
+      grind only
     · ring_nf; simp [hx']
     · ring_nf; simp [inv_inv]
   _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
@@ -147,12 +167,16 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
   _ = -H₄ ⟨x, hx⟩ := by
     simp [H₄, Θ₄_as_jacobiTheta₂]
 
-lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
+/-- The slash action of `S` sends `H₃` to `-H₃`. -/
+@[grind =]
+public lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   ext x
   have hx' : (x : ℂ) ≠ 0 := by obtain ⟨x, hx⟩ := x; change x ≠ 0; simp [Complex.ext_iff, hx.ne.symm]
   have := jacobiTheta₂_functional_equation 0
-  simp [-one_div] at this
-  simp [modular_slash_S_apply, Pi.neg_apply, H₃, Θ₃_as_jacobiTheta₂]
+  simp only [neg_mul, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, mul_zero, zero_div,
+    Complex.exp_zero, mul_one] at this
+  simp only [modular_slash_S_apply, H₃, inv_neg, Θ₃_as_jacobiTheta₂, Int.reduceNeg, zpow_neg,
+    Pi.neg_apply]
   rw [this, mul_pow, neg_div, div_neg, neg_neg, one_div (x : ℂ)⁻¹, inv_inv,
     mul_right_comm, ← neg_one_mul (_ ^ 4)]
   congr
@@ -163,9 +187,11 @@ lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   rw [inv_pow, inv_I, even_two.neg_pow, I_sq, mul_neg_one, inv_inv, neg_mul, inv_mul_cancel₀]
   exact pow_ne_zero _ hx'
 
-lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
+/-- The slash action of `S` sends `H₄` to `-H₂`. -/
+@[grind =]
+public lemma H₄_S_action : (H₄ ∣[(2 : ℤ)] S) = - H₂ := by
   rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, modular_S_sq,
-    ModularForm.slash_neg' _ _ (by decide), slash_one]
+    ModularForm.slash_neg' _ _ even_two, slash_one]
 
 lemma H₂_S_action' (z : ℍ) : H₂ (S • z) = - z ^ 2 * H₄ z := by
   have h := congrFun H₂_S_action z
@@ -189,37 +215,38 @@ lemma H₄_S_inv_action : (H₄ ∣[(2 : ℤ)] S⁻¹) = -H₂ := by
   rw [← neg_eq_iff_eq_neg.mpr H₂_S_action, neg_slash, ← slash_mul, mul_inv_cancel, slash_one]
 
 /-- Use β = -S * α^(-1) * S -/
-lemma H₂_β_action : (H₂ ∣[(2 : ℤ)] β.1) = H₂ := calc
+public lemma H₂_β_action : (H₂ ∣[(2 : ℤ)] β.1) = H₂ := calc
   _ = (((H₂ ∣[(2 : ℤ)] negI.1) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α.1⁻¹) ∣[(2 : ℤ)] S := by
     simp [β_eq_negI_mul_S_mul_α_inv_mul_S, slash_mul]
   _ = _ := by
     rw [H₂_negI_action, H₂_S_action, neg_slash, neg_slash, α_eq_T_sq]
     simp [sq, slash_mul, H₄_T_inv_action, H₃_T_inv_action, H₄_S_action]
 
-lemma H₃_β_action : (H₃ ∣[(2 : ℤ)] β.1) = H₃ := calc
-  _ = (((H₃ ∣[(2 : ℤ)] negI.1) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α.1⁻¹) ∣[(2 : ℤ)] S := by
-    simp [β_eq_negI_mul_S_mul_α_inv_mul_S, slash_mul]
-  _ = _ := by
-    rw [H₃_negI_action, H₃_S_action, neg_slash, neg_slash, α_eq_T_sq]
-    simp [sq, slash_mul, H₄_T_inv_action, H₃_T_inv_action, H₃_S_action]
+/-- `H₃` is invariant under the `β` slash action (a generator for `Γ(2)`). -/
+public lemma H₃_β_action : (H₃ ∣[(2 : ℤ)] β.1) = H₃ := by
+  have hαinv : (H₃ ∣[(2 : ℤ)] α.1⁻¹) = H₃ :=
+    slash_inv_eq_of_slash_eq (k := (2 : ℤ)) (F := H₃) (G := H₃) (γ := α.1) H₃_α_action
+  simp [β_eq_negI_mul_S_mul_α_inv_mul_S, slash_mul, H₃_negI_action, H₃_S_action, hαinv]
 
-lemma H₄_β_action : (H₄ ∣[(2 : ℤ)] β.1) = H₄ := calc
-  _ = (((H₄ ∣[(2 : ℤ)] negI.1) ∣[(2 : ℤ)] S) ∣[(2 : ℤ)] α.1⁻¹) ∣[(2 : ℤ)] S := by
-    simp [β_eq_negI_mul_S_mul_α_inv_mul_S, slash_mul]
-  _ = _ := by
-    rw [H₄_negI_action, H₄_S_action, neg_slash, neg_slash, α_eq_T_sq]
-    simp [sq, slash_mul, H₂_T_inv_action, H₂_S_action]
+/-- `H₄` is invariant under the `β` slash action (a generator for `Γ(2)`). -/
+public lemma H₄_β_action : (H₄ ∣[(2 : ℤ)] β.1) = H₄ := by
+  have hαinv : (H₂ ∣[(2 : ℤ)] α.1⁻¹) = H₂ :=
+    slash_inv_eq_of_slash_eq (k := (2 : ℤ)) (F := H₂) (G := H₂) (γ := α.1) H₂_α_action
+  simp [β_eq_negI_mul_S_mul_α_inv_mul_S, slash_mul, H₄_negI_action, H₄_S_action, H₂_S_action,
+    hαinv]
 
 /-- H₂, H₃, H₄ are modular forms of weight 2 and level Γ(2) -/
-noncomputable def H₂_SIF : SlashInvariantForm (Γ 2) 2 where
+@[expose] public noncomputable def H₂_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₂
   slash_action_eq' := slashaction_generators_Γ2 H₂ (2 : ℤ) H₂_α_action H₂_β_action H₂_negI_action
 
-noncomputable def H₃_SIF : SlashInvariantForm (Γ 2) 2 where
+/-- The slash invariant form structure on `H₃` of level `Γ(2)` and weight `2`. -/
+@[expose] public noncomputable def H₃_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₃
   slash_action_eq' := slashaction_generators_Γ2 H₃ (2 : ℤ) H₃_α_action H₃_β_action H₃_negI_action
 
-noncomputable def H₄_SIF : SlashInvariantForm (Γ 2) 2 where
+/-- The slash invariant form structure on `H₄` of level `Γ(2)` and weight `2`. -/
+@[expose] public noncomputable def H₄_SIF : SlashInvariantForm (Γ 2) 2 where
   toFun := H₄
   slash_action_eq' := slashaction_generators_Γ2 H₄ (2 : ℤ) H₄_α_action H₄_β_action H₄_negI_action
 
@@ -235,8 +262,8 @@ section H_isBoundedAtImInfty
 
 variable (γ : SL(2, ℤ))
 
--- TODO: Isolate this somewhere
-lemma jacobiTheta₂_term_half_apply (n : ℤ) (z : ℂ) :
+/-- Simplify `jacobiTheta₂_term n (z / 2) z` to an exponential with integer exponent. -/
+public lemma jacobiTheta₂_term_half_apply (n : ℤ) (z : ℂ) :
     jacobiTheta₂_term n (z / 2) z = cexp (π * I * (n ^ 2 + n) * z) := by
   rw [jacobiTheta₂_term]
   ring_nf
@@ -245,72 +272,69 @@ lemma jacobiTheta₂_rel_aux (n : ℤ) (t : ℝ) :
     rexp (-π * (n + 1 / 2) ^ 2 * t)
       = rexp (-π * t / 4) * jacobiTheta₂_term n (I * t / 2) (I * t) := by
   rw [jacobiTheta₂_term_half_apply, ofReal_exp, ofReal_exp, ← Complex.exp_add, ofReal_mul]
-  congr
+  congr 1
   ring_nf
   simp
-  ring_nf!
+  ring_nf
 
--- lemma Complex.norm_exp (z : ℂ) : ‖cexp z‖ = rexp z.re := by
--- simp [abs_exp]
+/-- The norm of `cexp (z * I)` is `Real.exp (-z.im)`. -/
+public lemma Complex.norm_exp_mul_I (z : ℂ) : ‖cexp (z * I)‖ = rexp (-z.im) := by simp [norm_exp]
 
-lemma Complex.norm_exp_mul_I (z : ℂ) : ‖cexp (z * I)‖ = rexp (-z.im) := by
-  simp [norm_exp]
+lemma norm_Θ₂_term (n : ℤ) (z : ℍ) :
+    ‖Θ₂_term n z‖ = rexp (-π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) * z.im) := by
+  set r : ℝ := (n : ℝ) + (2⁻¹ : ℝ)
+  have hr : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by
+    apply Complex.ext <;> simp [r]
+  have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by
+    simp_all
+  have h_mulI :
+      (π * I * (n + (2⁻¹ : ℂ)) ^ 2 * z : ℂ) = (π * ((r ^ 2 : ℝ) : ℂ) * z) * I := by
+    simp [hsq, mul_assoc, mul_left_comm, mul_comm]
+  have him : (π * ((r ^ 2 : ℝ) : ℂ) * z : ℂ).im = π * (r ^ 2) * z.im := by
+    calc
+      (π * ((r ^ 2 : ℝ) : ℂ) * z : ℂ).im = (((π : ℂ) * ((r ^ 2 : ℝ) : ℂ)) * z : ℂ).im := by
+        simp [mul_assoc]
+      _ = (((Real.pi * (r ^ 2) : ℝ) : ℂ) * z : ℂ).im := by simp
+      _ = (Real.pi * (r ^ 2)) * z.im := im_ofReal_mul (Real.pi * (r ^ 2)) (z : ℂ)
+      _ = π * (r ^ 2) * z.im := by simp [mul_assoc]
+  calc
+    ‖Θ₂_term n z‖ = ‖cexp ((π * ((r ^ 2 : ℝ) : ℂ) * z) * I)‖ := by
+      simp [Θ₂_term, one_div, h_mulI]
+    _ = rexp (-(π * ((r ^ 2 : ℝ) : ℂ) * z).im) := by
+      simp [Complex.norm_exp_mul_I]
+    _ = rexp (-π * (r ^ 2) * z.im) := by
+      rw [him]
+      simp [mul_assoc]
+    _ = rexp (-π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) * z.im) := by
+      simp [r, pow_two, mul_assoc]
 
-theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
+lemma summable_exp_neg_pi_mul_int_add_half_sq :
+    Summable fun n : ℤ => rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) := by
+  simpa [norm_Θ₂_term, mul_one] using (summable_Θ₂_term UpperHalfPlane.I).norm
+
+public theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
   simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₂, Θ₂]
-  use (∑' n : ℤ, rexp (-π * ((n : ℝ) + 1 / 2) ^ 2)) ^ 4, 1
+  use (∑' n : ℤ, rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2)) ^ 4, 1
   intro z hz
   rw [norm_pow]
   gcongr
-  calc
-    _ = ‖∑' (n : ℤ), cexp (π * I * (n + 1 / 2) ^ 2 * z)‖ := rfl
-    _ ≤ ∑' (n : ℤ), ‖cexp (π * I * (n + 1 / 2) ^ 2 * z)‖ := norm_tsum_le_tsum_norm ?_
-    _ = ∑' (n : ℤ), ‖cexp (π * I * ((n + 1 / 2) ^ 2 * z : ℂ))‖ := by simp only [← mul_assoc]
-    _ = ∑' (n : ℤ), ‖rexp (-π * (((n + 1 / 2) ^ 2 : ℝ) * z : ℂ).im)‖ := by
-      apply tsum_congr fun b ↦ ?_
-      have (z : ℂ) : ‖cexp z‖ = ‖cexp z.re‖ := by
-        nth_rw 1 [← Complex.re_add_im z, Complex.exp_add, norm_mul, norm_exp_ofReal_mul_I, mul_one]
-      rw [this, mul_comm (π : ℂ), mul_assoc, I_mul_re, ← ofReal_exp,
-        norm_real, Real.norm_eq_abs, im_ofReal_mul, neg_mul]
-      simp
-    _ = ∑' (n : ℤ), ‖rexp (-π * ((n + 1 / 2) ^ 2 : ℝ) * z.im)‖ := by
-      simp_rw [im_ofReal_mul, UpperHalfPlane.im, ← mul_assoc]
-    _ ≤ _ := Summable.tsum_le_tsum (fun b ↦ ?_) ?_ ?_
-  · -- TODO: simplify and refactor this proof with subproof 3 & 4
-    have (n : ℤ) : cexp (π * I * (n + 1 / 2) ^ 2 * z)
-        = cexp (π * I * z / 4) * jacobiTheta₂_term n (z / 2) z := by
-      rw [jacobiTheta₂_term_half_apply, ← Complex.exp_add]
-      ring_nf
-    simp_rw [this, ← smul_eq_mul (a := cexp _)]
-    apply Summable.norm
-    apply Summable.const_smul
-    rw [summable_jacobiTheta₂_term_iff, coe_im]
-    linarith
-  · rw [Real.norm_eq_abs, Real.abs_exp]
-    apply Real.exp_monotone
-    repeat rw [neg_mul]
-    apply neg_le_neg
-    have : (b : ℝ) + 1 / 2 ≠ 0 := by
-      intro hb
-      rw [add_eq_zero_iff_eq_neg] at hb
-      have : (2 * b : ℝ) = -1 := by simp [hb]
-      norm_cast at this
-      exact Int.not_odd_iff_even.mpr (even_two_mul b) (by rw [this]; simp)
-    convert (mul_le_mul_iff_right₀ (mul_pos pi_pos (sq_pos_of_ne_zero this))).mpr hz using 1
-    rw [mul_one]
-  · apply Summable.norm
-    apply summable_ofReal.mp
-    simp_rw [jacobiTheta₂_rel_aux, ofReal_exp, ← smul_eq_mul (a := cexp _)]
-    apply Summable.const_smul
-    rw [summable_jacobiTheta₂_term_iff, I_mul_im, ofReal_re]
-    linarith
-  · apply summable_ofReal.mp
-    have (n : ℤ) := jacobiTheta₂_rel_aux n 1
-    simp_rw [mul_one] at this
-    simp_rw [this, ← smul_eq_mul]
-    apply Summable.const_smul
-    rw [summable_jacobiTheta₂_term_iff]
-    simp
+  have hsum_norm : Summable fun n : ℤ => ‖Θ₂_term n z‖ := (summable_Θ₂_term z).norm
+  have hsum_exp : Summable fun n : ℤ => rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) :=
+    summable_exp_neg_pi_mul_int_add_half_sq
+  have hterm_le (n : ℤ) :
+      ‖Θ₂_term n z‖ ≤ rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) := by
+    have h' :
+        -π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) * z.im ≤ -π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2 := by
+      have hπ : -π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) ≤ 0 := by
+        have : 0 ≤ (π : ℝ) * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) := by positivity
+        have : -((π : ℝ) * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2)) ≤ 0 := neg_nonpos.2 this
+        simpa [neg_mul, mul_assoc] using this
+      simpa [mul_one, mul_assoc] using (mul_le_mul_of_nonpos_left hz hπ)
+    rw [norm_Θ₂_term]
+    exact Real.exp_monotone h'
+  have hnorm : ‖Θ₂ z‖ ≤ ∑' n : ℤ, ‖Θ₂_term n z‖ := by
+    simpa [Θ₂] using (norm_tsum_le_tsum_norm hsum_norm)
+  exact hnorm.trans (Summable.tsum_le_tsum (fun n ↦ hterm_le n) hsum_norm hsum_exp)
 
 -- We isolate this lemma out as it's also used in the proof for Θ₄
 lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
@@ -319,10 +343,10 @@ lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
     rw [mul_assoc, im_ofReal_mul, ← Int.cast_pow, ← ofReal_intCast, im_ofReal_mul]
     simp [← mul_assoc]
   have h_sum (z : ℍ) : Summable fun n : ℤ ↦ rexp (-π * n ^ 2 * z.im) := by
-    have := (summable_jacobiTheta₂_term_iff 0 z).mpr z.2
+    have := (summable_jacobiTheta₂_term_iff 0 z).mpr z.coe_im_pos
     rw [← summable_norm_iff, ← summable_ofReal] at this
-    simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, norm_exp_mul_I, h_rw]
-      at this
+    simp_rw [jacobiTheta₂_term, mul_zero, zero_add,
+      mul_right_comm _ I, norm_exp_mul_I, h_rw] at this
     simpa using summable_ofReal.mp this
   calc
     _ = ∑' (n : ℤ), ‖cexp (π * (n : ℂ) ^ 2 * z * I)‖ := by simp_rw [Θ₃_term, mul_right_comm _ I]
@@ -344,14 +368,13 @@ theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
   intro z hz
   rw [norm_pow]
   gcongr
-  -- rw [← ]
   apply (norm_tsum_le_tsum_norm ?_).trans (isBoundedAtImInfty_H₃_aux z hz)
   simp_rw [Θ₃_term_as_jacobiTheta₂_term]
   apply Summable.norm
   rw [summable_jacobiTheta₂_term_iff]
-  exact z.2
+  exact z.coe_im_pos
 
-theorem isBoundedAtImInfty_H₄ : IsBoundedAtImInfty H₄ := by
+public theorem isBoundedAtImInfty_H₄ : IsBoundedAtImInfty H₄ := by
   simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₄, Θ₄]
   use (∑' n : ℤ, rexp (-π * n ^ 2)) ^ 4, 1
   intro z hz
@@ -364,9 +387,9 @@ theorem isBoundedAtImInfty_H₄ : IsBoundedAtImInfty H₄ := by
   simp_rw [Θ₄_term_as_jacobiTheta₂_term]
   apply Summable.norm
   rw [summable_jacobiTheta₂_term_iff]
-  exact z.2
+  exact z.coe_im_pos
 
-theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
+public theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
       ∧ IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] γ) ∧ IsBoundedAtImInfty (H₄ ∣[(2 : ℤ)] γ) := by
   apply Subgroup.closure_induction_left (s := {S, T, ↑negI})
       (p := fun γ _ ↦ IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ) ∧ IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] γ)
@@ -406,17 +429,24 @@ theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
     simp only [top_le_iff.mp <| SL2Z_generate.symm ▸ (Subgroup.closure_le s).mpr hs2,
       Subgroup.mem_top]
 
-theorem isBoundedAtImInfty_H₂_slash :
+/-!
+## Boundedness at infinity for slash translates
+-/
+
+/-- Every `SL(2,ℤ)` slash translate of `H₂` is bounded at `Im z → ∞`. -/
+public theorem isBoundedAtImInfty_H₂_slash :
     ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] (A : GL (Fin 2) ℝ)) := by
   intro A ⟨A', hA⟩
   exact hA.symm ▸ (isBoundedAtImInfty_H_slash A').left
 
-theorem isBoundedAtImInfty_H₃_slash :
+/-- Every `SL(2,ℤ)` slash translate of `H₃` is bounded at `Im z → ∞`. -/
+public theorem isBoundedAtImInfty_H₃_slash :
     ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] (A : GL (Fin 2) ℝ)) := by
   intro A ⟨A', hA⟩
   exact hA.symm ▸ (isBoundedAtImInfty_H_slash A').right.left
 
-theorem isBoundedAtImInfty_H₄_slash :
+/-- Every `SL(2,ℤ)` slash translate of `H₄` is bounded at `Im z → ∞`. -/
+public theorem isBoundedAtImInfty_H₄_slash :
     ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (H₄ ∣[(2 : ℤ)] (A : GL (Fin 2) ℝ)) := by
   intro A ⟨A', hA⟩
   exact hA.symm ▸ (isBoundedAtImInfty_H_slash A').right.right
@@ -430,7 +460,8 @@ We prove the limit of Θᵢ(z) and Hᵢ(z) as z tends to i∞. These results are
 `JacobiIdentity.lean`.
 -/
 
-theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
+/-- The function `x ↦ jacobiTheta₂ (x / 2) x` tends to `2` at `Im x → ∞`. -/
+public theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (x / 2) x) atImInfty (𝓝 2) := by
   simp_rw [jacobiTheta₂, jacobiTheta₂_term]
   convert tendsto_tsum_of_dominated_convergence
@@ -439,8 +470,7 @@ theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
     (g := Set.indicator {-1, 0} 1)
     (bound := fun n : ℤ ↦ rexp (π / 4) * rexp (-π * ((n : ℝ) + 1 / 2) ^ 2)) ?_ ?_ ?_
   · simp [← tsum_subtype]
-  · -- TODO: merge this with proof of isBoundedAtImInfty_H₂
-    apply summable_ofReal.mp
+  · apply summable_ofReal.mp
     have (n : ℤ) := jacobiTheta₂_rel_aux n 1
     simp_rw [mul_one] at this
     simp_rw [ofReal_mul, this, ← smul_eq_mul]
@@ -462,7 +492,7 @@ theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
       have h_base' : rexp (-π) ^ ((n : ℝ) + n ^ 2) < 1 := by
         apply Real.rpow_lt_one
         · positivity
-        · apply Real.exp_lt_one_iff.mpr (by simp; positivity)
+        · exact Real.exp_lt_one_iff.mpr (by simpa using (neg_lt_zero.mpr Real.pi_pos))
         convert_to 0 < ((n * (n + 1) : ℤ) : ℝ)
         · push_cast
           ring_nf
@@ -495,11 +525,11 @@ theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
       simpa using le_mul_of_one_le_right
         (by rw [← mul_add, add_comm]; exact mul_nonneg Real.pi_nonneg (this k)) hz
 
-theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
-    Tendsto (fun x : ℍ ↦ jacobiTheta₂ 0 x) atImInfty (𝓝 1) := by
-  simp_rw [jacobiTheta₂, jacobiTheta₂_term, mul_zero, zero_add]
+private theorem tsum_weighted_exp_sq_tendsto_atImInfty
+    (w : ℤ → ℂ) (hw0 : w 0 = 1) (hw : ∀ n, ‖w n‖ ≤ 1) :
+    Tendsto (fun x : ℍ ↦ ∑' n : ℤ, w n * cexp (π * I * n ^ 2 * x)) atImInfty (𝓝 1) := by
   convert tendsto_tsum_of_dominated_convergence
-    (f := fun (z : ℍ) (n : ℤ) ↦ cexp (π * I * n ^ 2 * z))
+    (f := fun (z : ℍ) (n : ℤ) ↦ w n * cexp (π * I * n ^ 2 * z))
     (𝓕 := atImInfty)
     (g := fun k ↦ if k = 0 then 1 else 0)
     (bound := fun n : ℤ ↦ rexp (-π * n ^ 2)) ?_ ?_ ?_
@@ -514,15 +544,29 @@ theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
   · intro k
     split_ifs with hk
     · subst hk
-      simp
-    · rw [tendsto_zero_iff_norm_tendsto_zero]
-      simp_rw [mul_right_comm _ I, norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← ofReal_intCast,
-        ← ofReal_pow, im_ofReal_mul, ← mul_assoc]
-      simpa using tendsto_im_atImInfty.const_mul_atTop (by positivity)
+      simp [hw0]
+    · have hk' : (k : ℝ) ≠ 0 := by exact_mod_cast hk
+      have hpos : 0 < π * (k : ℝ) ^ 2 := mul_pos Real.pi_pos (sq_pos_of_ne_zero hk')
+      have hk_im : Tendsto (fun z : ℍ ↦ (π * (k : ℝ) ^ 2) * z.im) atImInfty atTop :=
+        tendsto_im_atImInfty.const_mul_atTop hpos
+      have hk_exp : Tendsto (fun z : ℍ ↦ ‖cexp (π * I * k ^ 2 * z)‖) atImInfty (𝓝 0) := by
+        simp_rw [mul_right_comm _ I, norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← ofReal_intCast,
+          ← ofReal_pow, im_ofReal_mul, ← mul_assoc, coe_im]
+        exact tendsto_exp_neg_atTop_nhds_zero.comp hk_im
+      have : Tendsto (fun z : ℍ ↦ w k * cexp (π * I * k ^ 2 * z)) atImInfty (𝓝 0) := by
+        rw [tendsto_zero_iff_norm_tendsto_zero]
+        simpa [norm_mul, mul_assoc, mul_left_comm, mul_comm] using (tendsto_const_nhds.mul hk_exp)
+      simpa [hk] using this
   · rw [eventually_atImInfty]
     use 1, fun z hz k ↦ ?_
     simp_rw [mul_right_comm _ I, norm_exp_mul_I]
     simpa [← ofReal_intCast, ← ofReal_pow] using le_mul_of_one_le_right (by positivity) hz
+
+theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
+    Tendsto (fun x : ℍ ↦ jacobiTheta₂ 0 x) atImInfty (𝓝 1) := by
+  simpa [jacobiTheta₂, jacobiTheta₂_term, mul_zero, zero_add] using
+    (tsum_weighted_exp_sq_tendsto_atImInfty (w := fun _ : ℤ ↦ (1 : ℂ)) (by simp)
+      (by intro n; simp))
 
 theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (1 / 2 : ℂ) x) atImInfty (𝓝 1) := by
@@ -563,7 +607,8 @@ theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
       exact mul_le_mul_of_nonpos_left hz hcoef_nonpos
     simpa using Real.exp_le_exp.mpr hmul
 
-theorem Θ₂_tendsto_atImInfty : Tendsto Θ₂ atImInfty (𝓝 0) := by
+/-- The theta function `Θ₂` tends to `0` at `Im z → ∞`. -/
+public theorem Θ₂_tendsto_atImInfty : Tendsto Θ₂ atImInfty (𝓝 0) := by
   rw [funext Θ₂_as_jacobiTheta₂, ← zero_mul (2 : ℂ)]
   refine Tendsto.mul ?_ jacobiTheta₂_half_mul_apply_tendsto_atImInfty
   apply tendsto_zero_iff_norm_tendsto_zero.mpr
@@ -573,14 +618,15 @@ theorem Θ₂_tendsto_atImInfty : Tendsto Θ₂ atImInfty (𝓝 0) := by
     simp [neg_div]
   simp_rw [this]
   exact (Real.tendsto_exp_atBot).comp <|
-    -- TODO: tendsto_div_const_atBot_of_pos and its friends should be aliased under Tendsto.
     (tendsto_div_const_atBot_of_pos zero_lt_four).mpr
       (tendsto_im_atImInfty.const_mul_atTop_of_neg (neg_lt_zero.mpr Real.pi_pos))
 
-theorem Θ₃_tendsto_atImInfty : Tendsto Θ₃ atImInfty (𝓝 1) := by
+/-- The theta function `Θ₃` tends to `1` at `Im z → ∞`. -/
+public theorem Θ₃_tendsto_atImInfty : Tendsto Θ₃ atImInfty (𝓝 1) := by
   simpa [funext Θ₃_as_jacobiTheta₂] using jacobiTheta₂_zero_apply_tendsto_atImInfty
 
-theorem Θ₄_tendsto_atImInfty : Tendsto Θ₄ atImInfty (𝓝 1) := by
+/-- The theta function `Θ₄` tends to `1` at `Im z → ∞`. -/
+public theorem Θ₄_tendsto_atImInfty : Tendsto Θ₄ atImInfty (𝓝 1) := by
   simpa [funext Θ₄_as_jacobiTheta₂] using jacobiTheta₂_half_apply_tendsto_atImInfty
 
 theorem H₂_tendsto_atImInfty : Tendsto H₂ atImInfty (𝓝 0) := by
@@ -595,13 +641,21 @@ theorem H₄_tendsto_atImInfty : Tendsto H₄ atImInfty (𝓝 1) := by
   change Tendsto (fun x : ℍ => Θ₄ x ^ 4) atImInfty (𝓝 1)
   simpa using Θ₄_tendsto_atImInfty.pow 4
 
-/-!
-## Imaginary Axis Properties
+/-- The product `H₂ z * H₃ z * H₄ z` is nonzero for `z ∈ ℍ`. -/
+public lemma H₂_mul_H₃_mul_H₄_ne_zero (z : ℍ) : H₂ z * H₃ z * H₄ z ≠ 0 := by
+  have hD : (Δ z : ℂ) ≠ 0 := Δ_ne_zero z
+  have hEq : (Δ z : ℂ) = ((H₂ z) * (H₃ z) * (H₄ z)) ^ 2 / (256 : ℂ) := by
+    simpa [Delta_apply] using (Delta_eq_H₂_H₃_H₄ z)
+  intro h0
+  exact hD (by simp [hEq, h0])
 
-Properties of theta functions when restricted to the positive imaginary axis z = I*t.
--/
+/-- The function `H₂` does not vanish on `ℍ`. -/
+public lemma H₂_ne_zero (z : ℍ) : H₂ z ≠ 0 := by
+  simpa using (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (H₂_mul_H₃_mul_H₄_ne_zero z)).1).1
 
-section ImagAxisProperties
+/-- The function `H₃` does not vanish on `ℍ`. -/
+public lemma H₃_ne_zero (z : ℍ) : H₃ z ≠ 0 := by
+  simpa using (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (H₂_mul_H₃_mul_H₄_ne_zero z)).1).2
 
 /-- Each term Θ₂_term n (I*t) has zero imaginary part for t > 0. -/
 lemma Θ₂_term_imag_axis_real (n : ℤ) (t : ℝ) (ht : 0 < t) :

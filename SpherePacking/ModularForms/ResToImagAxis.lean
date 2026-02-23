@@ -1,36 +1,111 @@
 module
-
-public import Mathlib.Geometry.Manifold.Notation
+public import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+public import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
+public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+public import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
+public import Mathlib.NumberTheory.ModularForms.SlashActions
 public import Mathlib.NumberTheory.ModularForms.QExpansion
 
-public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ModularForms.SlashActionAuxil
+public import SpherePacking.ForMathlib.AtImInfty
 
-@[expose] public section
+
+/-!
+# Polynomial decay on the imaginary axis
+
+This file studies the restriction of functions `F : ℍ → ℂ` to the positive imaginary axis
+`t ↦ F (I * t)` and proves polynomial decay results from exponential bounds at `atImInfty`.
+
+## Main definitions
+* `ResToImagAxis`
+* `ResToImagAxis.Real`, `ResToImagAxis.Pos`, `ResToImagAxis.EventuallyPos`
+
+## Main statements
+* `tendsto_rpow_mul_resToImagAxis_of_isBigO_exp`
+* `cuspForm_rpow_mul_resToImagAxis_tendsto_zero`
+-/
+
+
+open scoped Real Topology Manifold ModularForm MatrixGroups
 
 open UpperHalfPlane hiding I
-
-open Real Complex ContinuousMap Matrix CongruenceSubgroup ModularGroup Filter Asymptotics
-
-open scoped Interval Real Topology Manifold ModularForm MatrixGroups
+open Real Complex CongruenceSubgroup ModularGroup Filter Asymptotics
 
 /--
 Restrict a function `F : ℍ → ℂ` to the positive imaginary axis, i.e. `t ↦ F (I * t)`.
 If $t \le 0$, then `F (I * t)` is not defined, and we return `0` in that case.
 -/
-noncomputable def ResToImagAxis (F : ℍ → ℂ) : ℝ → ℂ :=
+@[expose] public noncomputable def ResToImagAxis (F : ℍ → ℂ) : ℝ → ℂ :=
   fun t => if ht : 0 < t then F ⟨(I * t), by simp [ht]⟩ else 0
 
 namespace Function
 
 /-- Dot notation alias for `ResToImagAxis`. -/
-noncomputable def resToImagAxis (F : ℍ → ℂ) : ℝ → ℂ := ResToImagAxis F
+@[expose] public noncomputable def resToImagAxis (F : ℍ → ℂ) : ℝ → ℂ := ResToImagAxis F
 
-@[simp] lemma resToImagAxis_eq_resToImagAxis (F : ℍ → ℂ) :
+/-- The dot-notation definition `F.resToImagAxis` is `ResToImagAxis F`. -/
+@[simp] public lemma resToImagAxis_eq_resToImagAxis (F : ℍ → ℂ) :
     F.resToImagAxis = ResToImagAxis F := rfl
 
-@[simp] lemma resToImagAxis_apply (F : ℍ → ℂ) (t : ℝ) :
+/-- Unfold `F.resToImagAxis t` to `ResToImagAxis F t`. -/
+@[simp] public lemma resToImagAxis_apply (F : ℍ → ℂ) (t : ℝ) :
     F.resToImagAxis t = ResToImagAxis F t := rfl
+
+/--
+If `F` is continuous on `ℍ`, then its restriction to the imaginary axis is continuous on `Ioi 0`.
+-/
+public lemma continuousOn_resToImagAxis_Ioi_of {F : ℍ → ℂ} (hF : Continuous F) :
+    ContinuousOn F.resToImagAxis (Set.Ioi (0 : ℝ)) := by
+  rw [continuousOn_iff_continuous_restrict]
+  let z : Set.Ioi (0 : ℝ) → UpperHalfPlane :=
+    fun t =>
+      ⟨(Complex.I : ℂ) * (t : ℝ), by
+        have ht : (0 : ℝ) < (t : ℝ) := t.property
+        simpa [Complex.mul_im] using ht⟩
+  have hz : Continuous z := by
+    fun_prop
+  refine (hF.comp hz).congr fun t => ?_
+  have ht : (0 : ℝ) < (t : ℝ) := t.property
+  simp [Set.restrict, ResToImagAxis, z, ht]
+
+/-- A variant of `continuousOn_resToImagAxis_Ioi_of` on the closed ray `Ici 1`. -/
+public lemma continuousOn_resToImagAxis_Ici_one_of {F : ℍ → ℂ} (hF : Continuous F) :
+    ContinuousOn F.resToImagAxis (Set.Ici (1 : ℝ)) := by
+  refine (continuousOn_resToImagAxis_Ioi_of hF).mono fun _ ht => by
+    simpa [Set.mem_Ioi] using lt_of_lt_of_le zero_lt_one ht
+
+/-- If `F z → l` as `im z → ∞`, then `F (I * t) → l` as `t → ∞`. -/
+public lemma tendsto_resToImagAxis_atImInfty (F : ℍ → ℂ) (l : ℂ)
+    (hF : Tendsto F UpperHalfPlane.atImInfty (𝓝 l)) :
+    Tendsto (fun t : ℝ => F.resToImagAxis t) atTop (𝓝 l) := by
+  refine Metric.tendsto_nhds.2 ?_
+  intro ε hε
+  rcases (Filter.eventually_atImInfty).1 (by
+    simpa [Metric.ball] using hF.eventually (Metric.ball_mem_nhds l hε)) with ⟨A, hA⟩
+  refine (eventually_atTop.2 ⟨max A 1, ?_⟩)
+  intro t ht
+  have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ((le_max_right _ _).trans ht)
+  have hAt : A ≤ t := (le_max_left _ _).trans ht
+  simpa [ResToImagAxis, ht0] using hA ⟨Complex.I * t, by simp [ht0]⟩
+    (by simpa using hAt)
+
+@[grind =] lemma resToImagAxis_im_add (F G : ℍ → ℂ) {t : ℝ} (ht : 0 < t) :
+    ((F + G).resToImagAxis t).im = (F.resToImagAxis t).im + (G.resToImagAxis t).im := by
+  simp [ResToImagAxis, ht]
+
+@[grind =] lemma resToImagAxis_im_mul (F G : ℍ → ℂ) {t : ℝ} (ht : 0 < t) :
+    ((F * G).resToImagAxis t).im =
+      (F.resToImagAxis t).re * (G.resToImagAxis t).im +
+        (F.resToImagAxis t).im * (G.resToImagAxis t).re := by
+  simp [ResToImagAxis, ht, mul_im]
+
+@[grind =] lemma resToImagAxis_im_smul (c : ℝ) (F : ℍ → ℂ) {t : ℝ} (ht : 0 < t) :
+    ((c • F).resToImagAxis t).im = c * (F.resToImagAxis t).im := by
+  simp [ResToImagAxis, ht]
+
+@[grind =] lemma resToImagAxis_re_add (F G : ℍ → ℂ) {t : ℝ} (ht : 0 < t) :
+    ((F + G).resToImagAxis t).re = (F.resToImagAxis t).re + (G.resToImagAxis t).re := by
+  simp [ResToImagAxis, ht]
 
 end Function
 
@@ -38,27 +113,27 @@ end Function
 Function $F : \mathbb{H} \to \mathbb{C}$ whose restriction to the imaginary axis is real-valued,
 i.e. imaginary part is zero.
 -/
-@[fun_prop]
-noncomputable def ResToImagAxis.Real (F : ℍ → ℂ) : Prop :=
+@[expose] public noncomputable def ResToImagAxis.Real (F : ℍ → ℂ) : Prop :=
   ∀ t : ℝ, 0 < t → (F.resToImagAxis t).im = 0
 
 /--
 Function $F : \mathbb{H} \to \mathbb{C}$ is real and positive on the imaginary axis.
 -/
-@[fun_prop]
-noncomputable def ResToImagAxis.Pos (F : ℍ → ℂ) : Prop :=
+@[expose] public noncomputable def ResToImagAxis.Pos (F : ℍ → ℂ) : Prop :=
   ResToImagAxis.Real F ∧ ∀ t : ℝ, 0 < t → 0 < (F.resToImagAxis t).re
 
 /--
 Function $F : \mathbb{H} \to \mathbb{C}$ whose restriction to the imaginary axis is eventually
 positive, i.e. there exists $t_0 > 0$ such that for all $t \ge t_0$, $F(it)$ is real and positive.
 -/
-@[fun_prop]
-noncomputable def ResToImagAxis.EventuallyPos (F : ℍ → ℂ) : Prop :=
+@[expose] public noncomputable def ResToImagAxis.EventuallyPos (F : ℍ → ℂ) : Prop :=
   ResToImagAxis.Real F ∧ ∃ t₀ : ℝ, 0 < t₀ ∧ ∀ t : ℝ, t₀ ≤ t → 0 < (F.resToImagAxis t).re
 
-@[fun_prop]
-theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDiff F) (t : ℝ)
+/--
+If `F` is complex-differentiable on `ℍ`, then `t ↦ F (I * t)` is real-differentiable for `t > 0`.
+-/
+public theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
+    (t : ℝ)
     (ht : 0 < t) : DifferentiableAt ℝ F.resToImagAxis t := by
   rw [Function.resToImagAxis_eq_resToImagAxis]
   have h_diff : DifferentiableAt ℝ (fun t : ℝ => F (ofComplex (Complex.I * t))) t := by
@@ -78,15 +153,16 @@ theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDiff F) (t : ℝ)
 /--
 Restriction and slash action under S: $(F |_k S) (it) = (it)^{-k} * F(it)$
 -/
-theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0 < t) :
+public theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0 < t) :
     (F ∣[k] S).resToImagAxis t = (Complex.I) ^ (-k) * t ^ (-k) * F.resToImagAxis (1 / t) := by
-  set z : ℍ := ⟨I * t, by simp [ht]⟩ with hzdef
-  set z' : ℍ := ⟨I * (1 / t : ℝ), by simpa [one_div_pos.2 ht]⟩ with hz'def
-  have h : mk (-z)⁻¹ z.im_inv_neg_coe_pos = z' :=
-    UpperHalfPlane.ext (by simp [hzdef, hz'def, mul_comm])
-  simpa [ResToImagAxis, ht, hz'def] using (by
-    rw [modular_slash_S_apply, h]; simp [hzdef, mul_zpow I (t : ℂ) (-k), mul_comm (F z')] :
-    (F ∣[k] S) z = I ^ (-k) * t ^ (-k) * F z')
+  have ht' : 0 < (1 / t : ℝ) := one_div_pos.2 ht
+  set z : ℍ := ⟨I * t, by simp [ht]⟩
+  set z' : ℍ := ⟨I * (1 / t : ℝ), by simpa [ht']⟩
+  have h : mk (-z)⁻¹ z.im_inv_neg_coe_pos = z' := by
+    ext1
+    simp [z, z', Complex.ofReal_inv, mul_comm]
+  simp [Function.resToImagAxis, ResToImagAxis, ht, modular_slash_S_apply,
+    mul_zpow I (t : ℂ) (-k), mul_assoc, mul_comm]
 
 theorem ResToImagAxis.SlashActionS' (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0 < t) :
     F.resToImagAxis (1 / t) = (Complex.I) ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by
@@ -142,39 +218,24 @@ theorem ResToImagAxis.Real.neg {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) : R
 theorem ResToImagAxis.Real.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
     (hG : ResToImagAxis.Real G) : ResToImagAxis.Real (F + G) := by
   intro t ht
-  have hFreal := hF t ht
-  have hGreal := hG t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal hGreal
-  simp [ResToImagAxis, ht, hFreal, hGreal]
+  grind [hF t ht, hG t ht]
 
-@[fun_prop]
-theorem ResToImagAxis.Real.sub {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
-    (hG : ResToImagAxis.Real G) : ResToImagAxis.Real (F - G) := by
-  simpa [sub_eq_add_neg] using ResToImagAxis.Real.add hF hG.neg
-
-@[fun_prop]
-theorem ResToImagAxis.Real.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
+/-- The property `ResToImagAxis.Real` is closed under multiplication. -/
+public theorem ResToImagAxis.Real.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Real F)
     (hG : ResToImagAxis.Real G) : ResToImagAxis.Real (F * G) := by
   intro t ht
-  have hFreal := hF t ht
-  have hGreal := hG t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal hGreal
-  simp [ResToImagAxis, ht, hFreal, hGreal]
+  grind [hF t ht, hG t ht]
 
-@[fun_prop]
-theorem ResToImagAxis.Real.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Real F) :
+/-- The property `ResToImagAxis.Real` is closed under real scalar multiplication. -/
+public theorem ResToImagAxis.Real.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Real F) :
     ResToImagAxis.Real (c • F) := by
   intro t ht
-  have hFreal := hF t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal
-  simp [ResToImagAxis, ht, hFreal]
+  grind [hF t ht]
 
-@[fun_prop]
-theorem ResToImagAxis.Real.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (n : ℕ) :
-    ResToImagAxis.Real (F ^ n) := by
-  induction n with
-  | zero => exact ResToImagAxis.Real.one
-  | succ n hn => exact hn.mul hF
+/-- The property `ResToImagAxis.Real` is closed under negation. -/
+public theorem ResToImagAxis.Real.neg {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) :
+    ResToImagAxis.Real (-F) := by
+  simpa using (ResToImagAxis.Real.smul (F := F) (c := (-1 : ℝ)) hF)
 
 @[fun_prop]
 theorem ResToImagAxis.Real.inv {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) :
@@ -227,64 +288,30 @@ theorem ResToImagAxis.Real.re_div_mul_eq {F G H : ℍ → ℂ} (hG : ResToImagAx
 theorem ResToImagAxis.Pos.const (c : ℝ) (hc : 0 < c) : ResToImagAxis.Pos (fun _ => c) :=
   ⟨ResToImagAxis.Real.const c, fun t ht ↦ by simp [ResToImagAxis, ht, hc]⟩
 
-@[fun_prop]
-theorem ResToImagAxis.Pos.one : ResToImagAxis.Pos (fun _ => 1) :=
-  ResToImagAxis.Pos.const 1 one_pos
-
-@[fun_prop]
-theorem ResToImagAxis.Pos.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
+/-- The property `ResToImagAxis.Pos` is closed under addition. -/
+public theorem ResToImagAxis.Pos.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
     (hG : ResToImagAxis.Pos G) : ResToImagAxis.Pos (F + G) := by
-  rw [Pos]
-  refine ⟨Real.add hF.1 hG.1, fun t ht ↦ ?_⟩
-  have hFpos := hF.2 t ht
-  have hGpos := hG.2 t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFpos hGpos
-  simp [ResToImagAxis, ht, add_pos hFpos hGpos]
+  refine ⟨Real.add hF.1 hG.1, fun t ht => by grind [hF.2 t ht, hG.2 t ht]⟩
 
-@[fun_prop]
-theorem ResToImagAxis.Pos.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
+/-- The property `ResToImagAxis.Pos` is closed under multiplication. -/
+public theorem ResToImagAxis.Pos.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
     (hG : ResToImagAxis.Pos G) : ResToImagAxis.Pos (F * G) := by
   rw [Pos]
   refine ⟨Real.mul hF.1 hG.1, fun t ht ↦ ?_⟩
   rw [Real.re_mul_eq hF.1 hG.1 t]
   exact mul_pos (hF.2 t ht) (hG.2 t ht)
 
-@[fun_prop]
-theorem ResToImagAxis.Pos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Pos F)
+/-- The property `ResToImagAxis.Pos` is closed under positive scalar multiplication. -/
+public theorem ResToImagAxis.Pos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToImagAxis.Pos F)
     (hc : 0 < c) : ResToImagAxis.Pos (c • F) := by
   rw [Pos]
   refine ⟨Real.smul hF.1, fun t ht ↦ ?_⟩
-  have hFreal := hF.1 t ht
-  have hFpos := hF.2 t ht
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFreal
-  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte] at hFpos
-  simp [ResToImagAxis, ht, mul_pos hc hFpos]
+  have hF' : 0 < (ResToImagAxis F t).re := by
+    simpa [ResToImagAxis, ht] using hF.2 t ht
+  have hmul : (ResToImagAxis (c • F) t).re = c * (ResToImagAxis F t).re := by
+    simp [ResToImagAxis, ht]
+  simpa [hmul] using mul_pos hc hF'
 
-@[fun_prop]
-theorem ResToImagAxis.Pos.pow {F : ℍ → ℂ} (hF : ResToImagAxis.Pos F) (n : ℕ) :
-    ResToImagAxis.Pos (F ^ n) := by
-  induction n with
-  | zero => exact ResToImagAxis.Pos.one
-  | succ n hn => exact hn.mul hF
-
-@[fun_prop]
-theorem ResToImagAxis.EventuallyPos.from_pos {F : ℍ → ℂ} (hF : ResToImagAxis.Pos F) :
-    ResToImagAxis.EventuallyPos F := by
-  refine ⟨hF.1, ⟨1, by positivity, fun t ht ↦ ?_⟩⟩
-  have ht_pos : 0 < t := by linarith
-  exact hF.2 t ht_pos
-
-@[fun_prop]
-theorem ResToImagAxis.EventuallyPos.one :
-    ResToImagAxis.EventuallyPos (fun _ => 1) :=
-  ResToImagAxis.EventuallyPos.from_pos ResToImagAxis.Pos.one
-
-@[fun_prop]
-theorem ResToImagAxis.EventuallyPos.const (c : ℝ) (hc : 0 < c) :
-    ResToImagAxis.EventuallyPos (fun _ => c) :=
-  ResToImagAxis.EventuallyPos.from_pos (ResToImagAxis.Pos.const c hc)
-
-@[fun_prop]
 theorem ResToImagAxis.EventuallyPos.add {F G : ℍ → ℂ}
     (hF : ResToImagAxis.EventuallyPos F) (hG : ResToImagAxis.EventuallyPos G) :
     ResToImagAxis.EventuallyPos (F + G) := by
@@ -376,18 +403,17 @@ One application is to cusp forms, which satisfy such exponential decay bounds.
 If `F : ℍ → ℂ` is `O(exp(-c * im τ))` at `atImInfty` for some `c > 0`, then
 the restriction to the imaginary axis `t ↦ F(it)` is `O(exp(-c * t))` at `atTop`.
 -/
-lemma isBigO_resToImagAxis_of_isBigO_atImInfty {F : ℍ → ℂ} {c : ℝ} (_hc : 0 < c)
+lemma isBigO_resToImagAxis_of_isBigO_atImInfty {F : ℍ → ℂ} {c : ℝ}
     (hF : F =O[atImInfty] fun τ => Real.exp (-c * τ.im)) :
     F.resToImagAxis =O[atTop] fun t => Real.exp (-c * t) := by
   rw [Asymptotics.isBigO_iff] at hF ⊢
-  obtain ⟨C, hC⟩ := hF; use C
-  rw [Filter.eventually_atImInfty] at hC; obtain ⟨A, hA⟩ := hC
+  rcases hF with ⟨C, hC⟩
+  rcases (Filter.eventually_atImInfty).1 hC with ⟨A, hA⟩
+  refine ⟨C, ?_⟩
   filter_upwards [Filter.eventually_ge_atTop (max A 1)] with t ht
   have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
-  simp only [Function.resToImagAxis, ResToImagAxis, ht_pos, ↓reduceDIte]
-  set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
-  have him : z.im = t := by change (Complex.I * t).im = t; simp
-  simpa [him] using hA z (by simpa [him] using le_of_max_le_left ht)
+  simpa [ResToImagAxis, ht_pos] using
+    hA ⟨Complex.I * t, by simp [ht_pos]⟩ (by simpa using le_of_max_le_left ht)
 
 /--
 The analytic kernel: if `g : ℝ → ℂ` is eventually bounded by `C * exp(-b * t)` for some
@@ -402,7 +428,7 @@ lemma tendsto_rpow_mul_of_isBigO_exp {g : ℝ → ℂ} {s b : ℝ} (hb : 0 < b)
   refine ((isBigO_refl _ _).mul (Complex.isBigO_ofReal_right.mpr hg)).trans_tendsto ?_
   refine (tendsto_ofReal_iff.mpr (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero s b hb)).congr' ?_
   filter_upwards [eventually_gt_atTop 0] with t ht
-  rw [Complex.ofReal_mul, Complex.ofReal_cpow (le_of_lt ht)]
+  simp [Complex.ofReal_mul, Complex.ofReal_cpow (le_of_lt ht)]
 
 /--
 If `F : ℍ → ℂ` is `O(exp(-c * im τ))` at `atImInfty` for some `c > 0`, then
@@ -459,8 +485,8 @@ then `F = O(exp(-2π n₀ · im z))` at `atImInfty`.
 The key bound is: for `im z ≥ c`,
   `‖F(z)‖ ≤ (∑_m ‖a_m‖ · exp(-2π c m)) · exp(-2π n₀ · im z)`
 -/
-lemma isBigO_atImInfty_of_fourier_shift
-    {F : ℍ → ℂ} {a : ℕ → ℂ} {n₀ : ℕ} {c : ℝ} (_hn₀ : 0 < n₀) (_hc : 0 < c)
+public lemma isBigO_atImInfty_of_fourier_shift
+    {F : ℍ → ℂ} {a : ℕ → ℂ} {n₀ : ℕ} {c : ℝ}
     (hF : ∀ z : ℍ, F z =
       ∑' m : ℕ, a m * cexp (2 * π * I * ((m + n₀ : ℕ) : ℂ) * (z : ℂ)))
     (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π * c) * (m : ℝ)))) :
@@ -526,40 +552,11 @@ at height `c > 0`, then `t^s * F(it) → 0` as `t → ∞` for any real power `s
 This converts a Fourier expansion representation directly into polynomial decay on the
 imaginary axis.
 -/
-theorem tendsto_rpow_mul_resToImagAxis_of_fourier_shift
-    {F : ℍ → ℂ} {a : ℕ → ℂ} {n₀ : ℕ} {c : ℝ} (hn₀ : 0 < n₀) (hc : 0 < c)
+public theorem tendsto_rpow_mul_resToImagAxis_of_fourier_shift
+    {F : ℍ → ℂ} {a : ℕ → ℂ} {n₀ : ℕ} {c : ℝ} (hn₀ : 0 < n₀)
     (hF : ∀ z : ℍ, F z =
       ∑' m : ℕ, a m * Complex.exp (2 * π * Complex.I * ((m + n₀ : ℕ) : ℂ) * (z : ℂ)))
     (ha : Summable (fun m : ℕ => ‖a m‖ * rexp (-(2 * π * c) * (m : ℝ)))) (s : ℝ) :
     Tendsto (fun t : ℝ => t ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
-  tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity)
-    (isBigO_atImInfty_of_fourier_shift hn₀ hc hF ha) s
-
-/-- Extract the imaginary part condition at a specific point from `ResToImagAxis.Real`. -/
-lemma ResToImagAxis.Real.im_eq_zero_at {F : ℍ → ℂ} (hF : ResToImagAxis.Real F)
-    {t : ℝ} (ht : 0 < t) (z : ℍ) (hz : z = ⟨Complex.I * t, by simp [ht]⟩) :
-    (F z).im = 0 := by
-  subst hz; simpa [Function.resToImagAxis, ResToImagAxis, ht] using hF t ht
-
-/-- Extract the positivity condition at a specific point from `ResToImagAxis.Pos`. -/
-lemma ResToImagAxis.Pos.re_pos_at {F : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
-    {t : ℝ} (ht : 0 < t) (z : ℍ) (hz : z = ⟨Complex.I * t, by simp [ht]⟩) :
-    0 < (F z).re := by
-  subst hz; simpa [Function.resToImagAxis, ResToImagAxis, ht] using hF.2 t ht
-
-/-- Tendsto conversion: if F tends to c at atImInfty, then F.resToImagAxis tends to c at atTop. -/
-lemma tendsto_resToImagAxis_of_tendsto_atImInfty {F : ℍ → ℂ} {c : ℂ}
-    (hF : Tendsto F atImInfty (nhds c)) :
-    Tendsto F.resToImagAxis atTop (nhds c) := by
-  rw [Metric.tendsto_atTop]
-  intro ε hε
-  -- Get eventual proximity from hF
-  have hF_met : ∀ᶠ z in atImInfty, dist (F z) c < ε := Metric.tendsto_nhds.mp hF ε hε
-  obtain ⟨A, hA⟩ := Filter.eventually_atImInfty.mp hF_met
-  use max A 1
-  intro t ht
-  have ht_pos : 0 < t := lt_of_lt_of_le one_pos (le_of_max_le_right ht)
-  simp only [Function.resToImagAxis, ResToImagAxis, ht_pos, ↓reduceDIte]
-  set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
-  have hz_im : z.im = t := by simp [UpperHalfPlane.im, z]
-  exact hA z (by simpa [hz_im] using le_of_max_le_left ht)
+  tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (F := F) (c := 2 * π * (n₀ : ℝ)) (s := s)
+    (by positivity [hn₀]) (isBigO_atImInfty_of_fourier_shift hF ha)

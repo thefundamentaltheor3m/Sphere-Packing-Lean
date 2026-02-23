@@ -7,27 +7,32 @@ M4R File
 -/
 module
 
-
-public import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
+import SpherePacking.MagicFunction.a.IntegralEstimates.BoundingAuxIci
+import SpherePacking.MagicFunction.a.IntegralEstimates.I3
+import SpherePacking.Integration.InvChangeOfVariables
 
-@[expose] public section
+/-!
+# Bounds for `I₁'`
 
-/-! # Constructing Upper-Bounds for I₁
+This file rewrites the auxiliary integral `I₁'` as an integral over `Ici 1` and proves the bound
+used in Proposition 7.8 of the blueprint.
 
-The purpose of this file is to construct bounds on the integral `I₁` that is part of the definition
-of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
+## Main definitions
+* `g`
 
-## TODO:
-- Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
+## Main statements
+* `Complete_Change_of_Variables`
+* `I₁'_bounding`
 -/
 
-open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
-  MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
-open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
-open scoped Function UpperHalfPlane
-
 namespace MagicFunction.a.IntegralEstimates.I₁
+
+open scoped Function UpperHalfPlane Real Complex
+open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
+  MagicFunction.PolyFourierCoeffBound
+open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
 
 noncomputable section Change_of_Variables
 
@@ -36,21 +41,14 @@ variable (r : ℝ)
 /-! We begin by performing changes of variables. We use `Ioc` intervals everywhere because of the
 way `intervalIntegral` is defined. -/
 
--- Change of variable result is based on
--- #check intervalIntegral.integral_comp_smul_deriv
-
--- Interval integrals can be reconciled with `Ioc` integrals using
--- #check intervalIntegral_eq_integral_uIoc
--- taking advantage of the fact that we have the following:
--- example : uIoc 0 1 = Ioc 0 1 := rfl
-
 section Setup
 
 def f : ℝ → ℝ := fun t ↦ 1 / t
 
 def f' : ℝ → ℝ := fun t ↦ -1 / t ^ 2
 
-def g : ℝ → ℝ → ℂ := fun r s ↦ -I
+/-- The integrand on `Ici 1` obtained from `I₁'` after an inversion change of variables. -/
+@[expose] public def g : ℝ → ℝ → ℂ := fun r s ↦ -I
   * φ₀'' (I * s)
   * (s ^ (-4 : ℤ))
   * cexp (-π * I * r)
@@ -59,22 +57,15 @@ def g : ℝ → ℝ → ℂ := fun r s ↦ -I
 lemma aux_measurable : MeasurableSet ((Ioc 0 1) : Set ℝ) := measurableSet_Ioc
 
 lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioc 0 1) : HasDerivWithinAt f (f' x) (Ioc 0 1) x := by
-  have hf : f = fun t ↦ (t ^ (-1 : ℤ)) := by
-    ext t
-    rw [f, div_eq_mul_inv, zpow_neg, zpow_one, one_mul]
-  have hf' : f' = fun t ↦ -(t ^ (-2 : ℤ)) := by
-    ext t
-    rw [f', div_eq_mul_inv, zpow_neg, neg_mul, one_mul]
-    rfl
-  simp only [hf, hf']
-  have : -x ^ (-2 : ℤ) = (-1 : ℤ) * x ^ ((-1 : ℤ) - 1) := by simp
-  rw [this]
-  exact hasDerivWithinAt_zpow (-1 : ℤ) x (Or.inl (ne_of_gt hx.1)) (Ioc 0 1)
+  have hf : f = fun t : ℝ ↦ t⁻¹ := by
+    funext t
+    simp [f, one_div]
+  simpa [hf, f', one_div, div_eq_mul_inv, pow_two, mul_assoc, mul_left_comm, mul_comm] using
+    (hasDerivWithinAt_inv (x := x) (ne_of_gt hx.1) (Ioc 0 1))
 
 lemma aux_injOn : InjOn f (Ioc 0 1) := by
-  intro _ _ _ _ hf
-  simp only [f, div_eq_mul_inv, one_mul, inv_inj] at hf
-  exact hf
+  intro x _ y _ hxy
+  exact inv_injective (by simpa [f, one_div] using hxy)
 
 end Setup
 
@@ -85,17 +76,12 @@ lemma Changing_Domain_of_Integration (r : ℝ) :
   congr
   ext x
   constructor <;> intro hx
-  · use x⁻¹
-    simp only [mem_Ici] at hx ⊢
-    constructor
-    · refine ⟨by positivity, ?_⟩
-      rw [← mul_one x⁻¹, inv_mul_le_one₀ (by positivity)]
-      exact hx
-    · rw [f, div_inv_eq_mul, one_mul]
-  · obtain ⟨y, hy₁, hy₂⟩ := hx
-    rw [← hy₂, f]
-    simp only [one_div, mem_Ici]
-    exact one_le_inv_iff₀.mpr hy₁
+  · refine ⟨x⁻¹, ?_, ?_⟩
+    · have hx' : (1 : ℝ) ≤ x := by simpa [mem_Ici] using hx
+      exact ⟨by positivity, inv_le_one_of_one_le₀ hx'⟩
+    · simp [f]
+  · obtain ⟨y, hy, rfl⟩ := hx
+    simpa [mem_Ici, f, one_div] using (one_le_inv_iff₀).2 hy
 
 lemma Changing_Variables (r : ℝ) : ∫ (s : ℝ) in f '' (Ioc (0 : ℝ) (1 : ℝ)), (g r s) =
     ∫ (t : ℝ) in Ioc 0 1, |f' t| • (g r (f t)) :=
@@ -106,33 +92,23 @@ lemma Writing_as_intervalIntegral (r : ℝ) :
   rw [integral_of_le zero_le_one]
 
 lemma Reconciling_Change_of_Variables (r : ℝ) :
-    I₁' r = ∫ t in Ioc 0 1, |f' t| • (g r (f t)) := by
-  simp only [I₁'_eq_Ioc, f, f', g]
-  apply setIntegral_congr_ae₀ nullMeasurableSet_Ioc
-  apply ae_of_all
-  intro t ht
-  obtain ⟨ht₀, ht₁⟩ := ht
-  simp only [Int.reduceNeg, zpow_neg, real_smul]
-  have h₁ : |-1 / t ^ 2| = 1 / t ^ 2 := by rw [neg_div, abs_neg, abs_of_nonneg (by positivity)]
-  have h₃ : -1 / (I * t) = I / t := by
-    rw [div_mul_eq_div_div_swap, div_I, neg_div, neg_mul, neg_neg, mul_comm, mul_div, mul_one]
-  have ht₀' : (t : ℂ) ^ 2 ≠ 0 := by
-    norm_cast
-    simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff]
-    exact ne_of_gt ht₀
-  rw [h₁, h₃]
-  simp only [neg_mul, ofReal_div, ofReal_one, ofReal_pow, mul_div_assoc', mul_one, div_zpow,
-    one_zpow, inv_div, div_one, div_div_eq_mul_div, mul_neg, div_mul_eq_mul_div, one_mul, neg_div']
-  rw [eq_div_iff ht₀', neg_mul, neg_inj]
-  ring_nf
-  ac_rfl
+    I₁' r = ∫ t in Ioc 0 1, |(-1 / t ^ 2)| • (g r (1 / t)) := by
+  simp only [I₁'_eq_Ioc, g]
+  refine setIntegral_congr_ae₀ nullMeasurableSet_Ioc (ae_of_all _ fun t ht => ?_)
+  -- shared algebraic reconciliation lemma (also used in `I₃`/`I₅`)
+  simpa [mul_assoc, mul_left_comm, mul_comm] using
+    (MagicFunction.a.IntegralEstimates.I₃.inv_integrand_eq_integrand (t := t) ht.1 r
+      (cexp (-π * I * r)))
 
-theorem Complete_Change_of_Variables (r : ℝ) : I₁' r = ∫ s in Ici (1 : ℝ), (g r s) := by
-  rw [Reconciling_Change_of_Variables, ← Changing_Variables, ← Changing_Domain_of_Integration]
+/-- Rewrite `I₁' r` as an integral of `g r` over `Ici 1`. -/
+public theorem Complete_Change_of_Variables (r : ℝ) :
+    I₁' r = ∫ s in Ici (1 : ℝ), (g r s) := by
+  refine (Reconciling_Change_of_Variables (r := r)).trans ?_
+  simpa using
+    (SpherePacking.Integration.InvChangeOfVariables.integral_Ici_one_eq_integral_abs_deriv_smul
+      (g := g r)).symm
 
-end Change
-
-end Change_of_Variables
+end Change_of_Variables.Change
 
 ----------------------------------------------------------------
 
@@ -150,28 +126,25 @@ lemma I₁'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀
   conv_rhs => rw [← mul_one ‖φ₀'' (I * ↑s)‖]
   gcongr
   rw [abs_of_nonneg (zero_le_one.trans hs)]
-  apply inv_le_one_of_one_le₀
-  exact one_le_zpow₀ hs <| Int.zero_le_ofNat 4
+  exact inv_le_one_of_one_le₀ (one_le_zpow₀ hs <| Int.zero_le_ofNat 4)
 
 lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
     ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
   use C₀, hC₀_pos
   intro s hs
-  rw [mem_Ici] at hs
+  have hs' : (1 : ℝ) ≤ s := by simpa [mem_Ici] using hs
   apply (I₁'_bounding_aux_1 r s hs).trans
   gcongr
-  have him : (I * s).im = s := by simp
-  have hpos : 0 < s := by positivity
-  have hpos' : 0 < (I * ↑s).im := by rw [him]; exact hpos
-  let z : ℍ := ⟨I * s, hpos'⟩
-  have him' : z.im = s := by simp [z, him, UpperHalfPlane.im]
-  have him'_gt_half : 1 / 2 < z.im := by rw [him']; linarith
-  specialize hC₀ z him'_gt_half
-  simp only [z, him'] at hC₀
-  simp only [φ₀'', mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, hpos,
+  have hs_pos : 0 < s := by positivity
+  let z : ℍ := ⟨I * s, by simpa using hs_pos⟩
+  have him' : z.im = s := by simp [z, UpperHalfPlane.im]
+  have him'_gt_half : 1 / 2 < z.im := by simpa [him'] using (by linarith [hs'])
+  have hC₀z := hC₀ z him'_gt_half
+  simp only [z, him'] at hC₀z
+  simp only [φ₀'', mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, hs_pos,
     ↓reduceDIte]
-  exact hC₀
+  exact hC₀z
 
 end Bounding_Integrand
 
@@ -204,13 +177,12 @@ lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, �
     ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
   wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
   · refine ⟨1, by positivity, ?_⟩
-    haveI h₁ : CompleteSpace ℝ := inferInstance
-    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
-    conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
-    positivity
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_aux_2 r
-  use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀) measurableSet_Ici hC₀
+    simpa [MeasureTheory.integral_undef (μ := volume.restrict (Ici (1 : ℝ)))
+      (f := fun t ↦ ‖g r t‖) (by simpa [IntegrableOn] using hint)] using
+      (by positivity : (0 : ℝ) ≤
+        ∫ (s : ℝ) in Ici 1, (1 : ℝ) * rexp (-2 * π * s) * rexp (-π * r / s))
+  rcases I₁'_bounding_aux_2 r with ⟨C₀, hC₀_pos, hC₀⟩
+  exact ⟨C₀, hC₀_pos, setIntegral_mono_on hint (bound_integrableOn_Ici r C₀) measurableSet_Ici hC₀⟩
 
 theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₁' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
@@ -232,10 +204,5 @@ end Bounding
 
 end I₁
 
-end IntegralEstimates
-
-end a
-
-end MagicFunction
-
+end MagicFunction.a.IntegralEstimates
 ----------------------------------------------------------------

@@ -1,26 +1,44 @@
 module
-
 public import Mathlib.NumberTheory.LSeries.Dirichlet
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
+public import Mathlib.Algebra.Order.Field.Power
+public import Mathlib.Analysis.Normed.Group.Basic
+public import Mathlib.Data.EReal.Inv
+public import Mathlib.NumberTheory.ArithmeticFunction.Misc
+public import Mathlib.Topology.Algebra.InfiniteSum.Order
+public import Mathlib.Topology.MetricSpace.Bounded
 
 public import SpherePacking.ModularForms.Delta
 
-@[expose] public section
 
-open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex
+/-!
+# `q`-expansion for Eisenstein series
 
+This file defines the normalized level-one Eisenstein series `E k` (for `k >= 3`) and proves a
+`q`-expansion formula compatible with the conventions used in this repository.
+
+## Main definitions
+* `standardcongruencecondition`
+* `E`
+
+## Main statement
+* `E_k_q_expansion`
+-/
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 open scoped ArithmeticFunction.sigma
 
+open EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
+  Metric Filter Function Complex
+
 noncomputable section Definitions
 
-def standardcongruencecondition : Fin 2 → ZMod ((1 : ℕ+) : ℕ) := 0
+/-- The standard congruence condition used to define Eisenstein series at level one. -/
+@[expose] public def standardcongruencecondition : Fin 2 → ZMod ((1 : ℕ+) : ℕ) := 0
 
-def E (k : ℤ) (hk : 3 ≤ k) : ModularForm (CongruenceSubgroup.Gamma ↑1) k :=
-  (1/2 : ℂ) • eisensteinSeriesMF hk standardcongruencecondition /-they need 1/2 for the
-    normalization to match up (since the sum here is taken over coprime integers).-/
+/-- The (normalized) Eisenstein series of weight `k` as a modular form on `Γ(1)`. -/
+@[expose] public def E (k : ℤ) (hk : 3 ≤ k) : ModularForm (CongruenceSubgroup.Gamma ↑1) k :=
+  (1/2 : ℂ) • ModularForm.eisensteinSeriesMF hk standardcongruencecondition -- normalization
 
 /-Forwards to `EisensteinSeries.q_expansion_riemannZeta` from mathlib. -/
 lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) :
