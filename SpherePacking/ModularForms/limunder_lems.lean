@@ -1,5 +1,22 @@
+module
+public import Mathlib.Topology.Instances.Complex
+import Mathlib.Order.Filter.AtTopBot.Interval
 import Mathlib.Analysis.CStarAlgebra.Classes
 import SpherePacking.ModularForms.Icc_Ico_lems
+
+/-!
+# Lemmas about `limUnder`
+
+This file collects basic facts about `Filter.limUnder` along `atTop`, geared toward
+limits of Cauchy sequences and expressing infinite sums as `limUnder` of partial sums.
+
+## Main statements
+* `limUnder_add`
+* `limUnder_mul_const`
+* `limUnder_sub`
+* `limUnder_congr_eventually`
+* `tsum_limUnder_atTop`
+-/
 
 open TopologicalSpace Set
   Metric Filter Function Complex
@@ -7,50 +24,31 @@ open TopologicalSpace Set
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 
-lemma limUnder_add {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f g : α → ℂ)
+/-- For Cauchy sequences, `limUnder` commutes with addition. -/
+public lemma limUnder_add {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f g : α → ℂ)
     (hf : CauchySeq f) (hg : CauchySeq g) :
     (limUnder atTop f) + (limUnder atTop g) = limUnder atTop (f + g) := by
-  nth_rw 3 [Filter.Tendsto.limUnder_eq]
-  rw [@Pi.add_def]
-  apply Filter.Tendsto.add
-  · refine CauchySeq.tendsto_limUnder hf
-  refine CauchySeq.tendsto_limUnder hg
+  simpa using (Filter.Tendsto.limUnder_eq ((hf.tendsto_limUnder).add (hg.tendsto_limUnder))).symm
 
-
-lemma limUnder_mul_const {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f : α → ℂ)
+/-- For Cauchy sequences, constant scalar multiplication commutes with `limUnder`. -/
+public lemma limUnder_mul_const {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f : α → ℂ)
     (hf : CauchySeq f) (c : ℂ) :
-    c * (limUnder atTop f)= limUnder atTop (c • f) := by
-  nth_rw 2 [Filter.Tendsto.limUnder_eq]
-  apply Filter.Tendsto.const_mul
-  refine CauchySeq.tendsto_limUnder hf
+    c * limUnder atTop f = limUnder atTop (c • f) := by
+  simpa using (Filter.Tendsto.limUnder_eq ((hf.tendsto_limUnder).const_mul c)).symm
 
-
-lemma limUnder_sub {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f g : α → ℂ)
+/-- For Cauchy sequences, `limUnder` commutes with subtraction. -/
+public lemma limUnder_sub {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f g : α → ℂ)
     (hf : CauchySeq f) (hg : CauchySeq g) :
     (limUnder atTop f) - (limUnder atTop g) = limUnder atTop (f - g) := by
-  nth_rw 3 [Filter.Tendsto.limUnder_eq]
-  rw [@Pi.sub_def]
-  apply Filter.Tendsto.sub
-  · refine CauchySeq.tendsto_limUnder hf
-  refine CauchySeq.tendsto_limUnder hg
+  simpa using (Filter.Tendsto.limUnder_eq ((hf.tendsto_limUnder).sub (hg.tendsto_limUnder))).symm
 
-
-lemma limUnder_congr_eventually (f g : ℕ → ℂ) (h : ∀ᶠ n in atTop, f n = g n)
-  (hf : CauchySeq f) (hg : CauchySeq g) :
+/-- If `f = g` eventually along `atTop`, then `limUnder atTop f = limUnder atTop g`. -/
+public lemma limUnder_congr_eventually (f g : ℕ → ℂ) (h : ∀ᶠ n in atTop, f n = g n)
+  (hf : CauchySeq f) :
   limUnder atTop f = limUnder atTop g := by
-  have h0 := CauchySeq.tendsto_limUnder hf
-  have h1 := CauchySeq.tendsto_limUnder hg
-  rw [Filter.Tendsto.limUnder_eq (x := (limUnder atTop f)) ]
-  · rw [Filter.Tendsto.limUnder_eq ]
-    apply Filter.Tendsto.congr' _ h1
-    symm
-    apply h
-  exact h0
+  exact (Filter.Tendsto.limUnder_eq ((CauchySeq.tendsto_limUnder hf).congr' h)).symm
 
-
-lemma tsum_limUnder_atTop (f : ℤ → ℂ) (hf : Summable f) : ∑' n, f n =
+/-- A summable series over `ℤ` is the `limUnder` of its symmetric partial sums over `Ico (-N) N`. -/
+public lemma tsum_limUnder_atTop (f : ℤ → ℂ) (hf : Summable f) : ∑' n, f n =
     limUnder atTop (fun N : ℕ => ∑ n ∈ Finset.Ico (-N : ℤ) N, f n) := by
-  rw [Filter.Tendsto.limUnder_eq]
-  have := hf.hasSum
-  have V := this.comp verga
-  apply V
+  simpa using (Filter.Tendsto.limUnder_eq (hf.hasSum.comp (Finset.tendsto_Ico_neg (R := ℤ)))).symm

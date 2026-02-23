@@ -1,13 +1,25 @@
-import Mathlib.Data.Rat.Star
-import Mathlib.LinearAlgebra.Dimension.Localization
-import Mathlib.NumberTheory.ModularForms.LevelOne
-import SpherePacking.ModularForms.Eisenstein
+module
+public import Mathlib.Data.Rat.Star
+public import Mathlib.LinearAlgebra.Dimension.Localization
+public import Mathlib.LinearAlgebra.Dimension.Free
+public import Mathlib.NumberTheory.ModularForms.LevelOne
+public import Mathlib.Algebra.Group.Int.Even
+public import SpherePacking.ModularForms.EisensteinBase
+public import SpherePacking.ModularForms.CuspFormIsoModforms
+public import SpherePacking.ModularForms.Eisenstein
+
+/-!
+# Dimension Formulas
+
+This file proves identities for `Delta` in terms of `E₄`/`E₆` and derives rank/dimension statements
+for level-one modular forms.
+-/
+
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+  Real MatrixGroups CongruenceSubgroup ArithmeticFunction.sigma
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups SlashInvariantFormClass ModularFormClass
-
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
-  Real MatrixGroups CongruenceSubgroup
 
 noncomputable section
 
@@ -31,6 +43,7 @@ lemma mul_Delta_map_eq_mul (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 
   ext z
   rw [mul_Delta_map, mcast_apply ]
 
+/-
 lemma mul_Delta_IsCuspForm (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) :
   IsCuspForm (CongruenceSubgroup.Gamma 1) k (mul_Delta_map k f) := by
   rw [IsCuspForm_iff_coeffZero_eq_zero]
@@ -83,16 +96,14 @@ def CuspForms_iso_Modforms (k : ℤ) : CuspForm (CongruenceSubgroup.Gamma 1) k �
         rw [Delta_apply]
         rw [mul_div_cancel_right₀]
         apply Δ_ne_zero
+-/
 
 lemma delta_eq_E4E6_const : ∃ (c : ℂ), (c • Delta) = Delta_E4_E6_aux := by
-  have := CuspForms_iso_Modforms 12
-  have hr : Module.finrank ℂ (CuspForm Γ(1) 12) = 1 := by
-    apply Module.finrank_eq_of_rank_eq
-    rw [LinearEquiv.rank_eq this]
-    simp
-    exact ModularForm.levelOne_weight_zero_rank_one
-  simp at this
-  apply (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).mp hr Delta_E4_E6_aux
+  have hr : Module.finrank ℂ (CuspForm Γ(1) 12) = 1 :=
+    Module.finrank_eq_of_rank_eq <| by
+      simpa [LinearEquiv.rank_eq (CuspForms_iso_Modforms 12)] using
+        ModularForm.levelOne_weight_zero_rank_one
+  exact (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).1 hr Delta_E4_E6_aux
 
 lemma cuspform_weight_lt_12_zero (k : ℤ) (hk : k < 12) : Module.rank ℂ (CuspForm Γ(1) k) = 0 := by
   have := CuspForms_iso_Modforms k
@@ -101,6 +112,7 @@ lemma cuspform_weight_lt_12_zero (k : ℤ) (hk : k < 12) : Module.rank ℂ (Cusp
   apply ModularForm.levelOne_neg_weight_rank_zero
   linarith
 
+/-
 lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1) k)
     (hf : IsCuspForm Γ(1) k f) : f = 0 := by
   have hfc2:= CuspForm_to_ModularForm_coe _ _ f hf
@@ -115,73 +127,134 @@ lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1
     (IsCuspForm_to_CuspForm Γ(1) k f hf)
   rw [this]
   simp only [CuspForm.zero_apply]
+-/
 
-lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
+/-- The discriminant cusp form as a scaled version of `E₄^3 - E₆^2`. -/
+public lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
   ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 - (DirectSum.of _ 6 E₆)^2) 12 )) := by
-  rw [ModForm_mk]
-  rw [Delta_E4_E6_aux]
-  have := CuspForm_to_ModularForm_Fun_coe _ _ ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 -
-    (DirectSum.of _ 6 E₆)^2) 12 )) ?_
-  · simp at *
-    ext z
-    have hg := congr_fun this z
-    simp at *
-    rw [← hg]
-    rfl
-  rw [IsCuspForm_iff_coeffZero_eq_zero]
-  exact E4E6_coeff_zero_eq_zero
+  ext z
+  simpa [ModForm_mk, Delta_E4_E6_aux, one_div, IsGLPos.smul_apply, sub_apply, smul_eq_mul] using
+    congrArg (fun F => (F z : ℂ))
+      (CuspForm_to_ModularForm_Fun_coe _ _
+        ((1 / 1728 : ℂ) •
+          (((DirectSum.of _ 4 E₄) ^ 3 - (DirectSum.of _ 6 E₆) ^ 2) 12)) (by
+          rw [IsCuspForm_iff_coeffZero_eq_zero]
+          exact E4E6_coeff_zero_eq_zero))
+
+private lemma qExpansion_Delta_E4_E6_aux_eq :
+    qExpansion 1 Delta_E4_E6_aux = qExpansion 1 (ModForm_mk Γ(1) 12 Delta_E4_E6_aux) := by
+  simpa [ModForm_mk] using qExpansion_ext2 Delta_E4_E6_aux
+    (ModForm_mk Γ(1) 12 Delta_E4_E6_aux) rfl
 
 lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff 1 = 1 := by
-  have := Delta_E4_E6_eq
-  have h1 : (qExpansion 1 Delta_E4_E6_aux) = qExpansion 1 (ModForm_mk Γ(1) 12 Delta_E4_E6_aux) := by
-    apply qExpansion_ext2 Delta_E4_E6_aux (ModForm_mk Γ(1) 12 Delta_E4_E6_aux) ?_
-    ext z
-    rw [Delta_E4_E6_aux, ModForm_mk]
-    simp
-    rfl
-  rw [h1, Delta_E4_E6_eq]
-  simp only [one_div, DirectSum.sub_apply]
-  rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2]
-  rw [qExpansion_sub]
+  rw [qExpansion_Delta_E4_E6_aux_eq, Delta_E4_E6_eq]
+  -- Coefficient `q` of `E₄^3 - E₆^2` is `1728`, so scaling by `1/1728` gives `1`.
+  simp only [one_div, DirectSum.sub_apply, ModularForm.IsGLPos.coe_smul, ModularForm.coe_sub]
+  have hsmul :=
+    (by
+      simpa using qExpansion_smul2 (n := 1) (a := (1728⁻¹ : ℂ))
+        (f := (((DirectSum.of (ModularForm Γ(1)) 4) E₄) ^ 3) 12 -
+          (((DirectSum.of (ModularForm Γ(1)) 6) E₆) ^ 2) 12))
+  rw [← hsmul]
+  simp only [qExpansion_sub1, map_smul, map_sub, smul_eq_mul]
   have h4 := qExpansion_pow E₄ 3
   have h6 := qExpansion_pow E₆ 2
   simp only [Nat.cast_ofNat, Int.reduceMul] at h4 h6
   rw [h4, h6]
-  simp
-  rw [pow_three, pow_two]
-  simp_rw [PowerSeries.coeff_mul]
-  rw [antidiagonal_one]
-  simp [Finset.mem_singleton, Prod.mk.injEq, one_ne_zero, zero_ne_one, and_self,
-    not_false_eq_true, Finset.sum_insert, Finset.antidiagonal_zero, Prod.mk_zero_zero,
-    Finset.sum_singleton, Prod.fst_zero, Prod.snd_zero]
-  have he4 := E4_q_exp_zero
-  have he6 := E6_q_exp_zero
-  simp at *
-  simp_rw [E4_q_exp_one, he4, he6]
-  ring_nf
-  rw [antidiagonal_one]
-  simp [Finset.mem_singleton, Prod.mk.injEq, one_ne_zero, zero_ne_one, and_self,
-    not_false_eq_true, Finset.sum_insert, Finset.sum_singleton]
-  simp_rw [E4_q_exp_one, he4, E6_q_exp_one]
-  ring
+  have hE4c : PowerSeries.constantCoeff (qExpansion 1 E₄) = (1 : ℂ) := by
+    simpa [PowerSeries.coeff_zero_eq_constantCoeff_apply] using
+      (E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1)
+  have hE6c : PowerSeries.constantCoeff (qExpansion 1 E₆) = (1 : ℂ) := by
+    simpa [PowerSeries.coeff_zero_eq_constantCoeff_apply] using
+      (E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1)
+  have hcoeff :
+      (((qExpansion 1 E₄) ^ 3 - (qExpansion 1 E₆) ^ 2) : PowerSeries ℂ).coeff 1 = 1728 := by
+    simp [map_sub, PowerSeries.coeff_one_pow, hE4c, hE6c, E4_q_exp_one, E6_q_exp_one]
+    norm_num
+  have h1728 : (1728 : ℂ) ≠ 0 := by norm_num
+  have hcoeff' :
+      ((qExpansion 1 E₄ ^ 3).coeff 1 - (qExpansion 1 E₆ ^ 2).coeff 1) = (1728 : ℂ) := by
+    simpa [map_sub] using hcoeff
+  rw [hcoeff']
+  simp [h1728]
 
-theorem Delta_E4_eqn : Delta = Delta_E4_E6_aux := by
+/-- Identify `Delta` with the auxiliary cusp form `Delta_E4_E6_aux`. -/
+public theorem Delta_E4_eqn : Delta = Delta_E4_E6_aux := by
   ext z
   obtain ⟨c, H⟩ := delta_eq_E4E6_const
-  suffices h2 : c = 1 by
-    rw [h2] at H
-    simp at H
-    rw [H]
-  · have h1 := Delta_q_one_term
-    have h2 := Delta_E4_E6_aux_q_one_term
-    have := qExpansion_smul 1 c Delta
-    rw [← H] at h2
-    rw [← Nat.cast_one (R := ℝ), ← this] at h2
-    simp at h2
-    rw [h1] at h2
-    simpa using h2
+  have h1 := Delta_q_one_term
+  have h2 := Delta_E4_E6_aux_q_one_term
+  have hc : c = 1 := by
+    have hsmul : (qExpansion 1 (c • Delta)).coeff 1 = c * (qExpansion 1 Delta).coeff 1 := by
+      simpa [smul_eq_mul, CuspForm.coe_smul] using
+        congrArg (fun p : PowerSeries ℂ => p.coeff 1)
+          (by simpa using (qExpansion_smul2 (n := 1) (a := c)
+            (f := ModForm_mk (CongruenceSubgroup.Gamma 1) 12 Delta)).symm)
+    -- Compare `q`-coefficients at `1`.
+    have h2' : (qExpansion 1 (c • Delta)).coeff 1 = 1 := by simpa [← H] using h2
+    have : c * (qExpansion 1 Delta).coeff 1 = 1 := by simpa [hsmul] using h2'
+    simpa [h1] using this
+  simpa [hc] using congrArg (fun f => (f z : ℂ)) H
 
+/-- The pointwise formula `Delta(z) = (1/1728) * (E₄(z)^3 - E₆(z)^2)`. -/
+public lemma Delta_apply_eq_one_div_1728_mul_E4_pow_three_sub_E6_sq (z : ℍ) :
+    (Delta z : ℂ) = (1 / 1728 : ℂ) * ((E₄ z) ^ (3 : ℕ) - (E₆ z) ^ (2 : ℕ)) := by
+  have hΔ : (Delta z : ℂ) = (Delta_E4_E6_aux z : ℂ) := by
+    simpa using congrArg (fun f => (f z : ℂ)) Delta_E4_eqn
+  have hE : (Delta_E4_E6_aux z : ℂ) =
+      (1 / 1728 : ℂ) * ((E₄ z) ^ (3 : ℕ) - (E₆ z) ^ (2 : ℕ)) := by
+    have h := congrArg (fun F : ModularForm Γ(1) 12 => (F z : ℂ)) Delta_E4_E6_eq
+    simpa [ModForm_mk, one_div, IsGLPos.smul_apply, sub_apply, DirectSum.sub_apply, smul_eq_mul,
+      pow_two, pow_three, DirectSum.of_mul_of, mul_assoc] using h
+  exact hΔ.trans hE
 
+/-- The second `q`-coefficient of `Delta` is `-24`. -/
+public lemma Delta_q_exp_two : (qExpansion 1 Delta).coeff 2 = (-24 : ℂ) := by
+  rw [Delta_E4_eqn]
+  rw [qExpansion_Delta_E4_E6_aux_eq, Delta_E4_E6_eq]
+  simp only [one_div, DirectSum.sub_apply, ModularForm.IsGLPos.coe_smul, ModularForm.coe_sub]
+  have hsmul :=
+    (by
+      simpa using qExpansion_smul2 (n := 1) (a := (1728⁻¹ : ℂ))
+        (f := (((DirectSum.of (ModularForm Γ(1)) 4) E₄) ^ 3) 12 -
+          (((DirectSum.of (ModularForm Γ(1)) 6) E₆) ^ 2) 12))
+  rw [← hsmul]
+  simp only [qExpansion_sub1, map_smul, map_sub, smul_eq_mul]
+  have h4 := qExpansion_pow E₄ 3
+  have h6 := qExpansion_pow E₆ 2
+  simp only [Nat.cast_ofNat, Int.reduceMul] at h4 h6
+  rw [h4, h6]
+  have hσ3 : (σ 3 2 : ℕ) = 9 := by decide
+  have hσ5 : (σ 5 2 : ℕ) = 33 := by decide
+  have hE4_2 : (qExpansion 1 E₄).coeff 2 = (240 : ℂ) * (9 : ℂ) := by
+    simpa [hσ3] using congr_fun E4_q_exp 2
+  have hE6_2 : (qExpansion 1 E₆).coeff 2 = (-(504 : ℂ)) * (33 : ℂ) := by
+    simpa [hσ5] using congr_fun E6_q_exp 2
+  have hanti2 : Finset.antidiagonal 2 = {(0, 2), (1, 1), (2, 0)} := by decide
+  suffices h :
+      1728⁻¹ *
+          (240 * 9 + (240 * 240 + 240 * 9) +
+                (240 *
+                      (∑ p ∈ Finset.antidiagonal 1,
+                          (qExpansion 1 E₄).coeff p.1 * (qExpansion 1 E₄).coeff p.2) +
+                    240 * 9) -
+              (-(504 * 33) + (504 * 504 + -(504 * 33)))) = (-24 : ℂ) by
+    simpa [pow_three, pow_two, PowerSeries.coeff_mul, hanti2, E4_q_exp_zero, E4_q_exp_one, hE4_2,
+      E6_q_exp_zero, E6_q_exp_one, hE6_2] using h
+  have hanti1 : Finset.antidiagonal 1 = {(0, 1), (1, 0)} := by decide
+  have hs :
+      (∑ x ∈ Finset.antidiagonal 1, (qExpansion 1 E₄).coeff x.1 * (qExpansion 1 E₄).coeff x.2) =
+        (480 : ℂ) := by
+    rw [hanti1]
+    suffices h : (240 : ℂ) + 240 = 480 by
+      simpa [E4_q_exp_zero, E4_q_exp_one] using h
+    norm_num
+  simp [hs]
+  have h1728 : (1728 : ℂ) ≠ 0 := by norm_num
+  field_simp [h1728]
+  norm_num
+
+/-
 lemma weight_six_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 6) = 1 := by
   rw [rank_eq_one_iff ]
   refine ⟨E₆,E6_ne_zero, ?_⟩
@@ -502,11 +575,12 @@ lemma dim_modforms_lvl_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
     · simp only [Nat.cast_ofNat, Int.reduceSub, dim_weight_two, add_zero, dvd_refl, ↓reduceIte]
       norm_cast
 
-lemma ModularForm.dimension_level_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
+public lemma ModularForm.dimension_level_one (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
     Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) (k)) = if 12 ∣ ((k) : ℤ) - 2 then
     Nat.floor ((k : ℚ)/ 12) else Nat.floor ((k : ℚ) / 12) + 1 := by
   apply dim_modforms_lvl_one k hk hk2
 
-lemma dim_gen_cong_levels (k : ℤ) (Γ : Subgroup SL(2, ℤ)) (hΓ : Subgroup.index Γ ≠ 0) :
+public lemma dim_gen_cong_levels (k : ℤ) (Γ : Subgroup SL(2, ℤ)) (hΓ : Subgroup.index Γ ≠ 0) :
     FiniteDimensional ℂ (ModularForm Γ k) := by sorry
 --use the norm to turn it into a level one question.
+-/

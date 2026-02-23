@@ -1,4 +1,5 @@
 import Mathlib.Analysis.CStarAlgebra.Classes
+import SpherePacking.Tactic.NormNumI
 
 open Complex
 
@@ -13,7 +14,7 @@ lemma congr_aux_1' (x : ℝ) :
   obtain rfl | hx := eq_or_ne x 0
   · simp
   have : (x:ℂ) ≠ 0 := mod_cast hx
-  have : 1 + I ≠ 0 := sorry -- ought to be by done by a norm_num extension
+  have : 1 + I ≠ 0 := by norm_num1
   field_simp
   linear_combination - I_sq
 
@@ -44,7 +45,6 @@ example : 1 = 3 * I ^ 2 + 4 := by
     Complex.I_im, pow_succ, pow_zero]
   simp only [one_re, one_im, Complex.re_ofNat, Complex.im_ofNat]
   norm_num1
-  rfl
 
 example : -2 = (I - 1) * (1 + I) := by
   refine Eq.trans ((Complex.eta _)).symm ?_
@@ -53,7 +53,6 @@ example : -2 = (I - 1) * (1 + I) := by
     Complex.sub_re, Complex.sub_im, Complex.I_re, Complex.I_im, Complex.neg_re, Complex.neg_im,
     one_re, one_im, Complex.re_ofNat, Complex.im_ofNat]
   norm_num1
-  rfl
 
 lemma congr_aux_1'' (x : ℝ) :
     -1 / (↑x - 1 + I * ↑x + 1) = (I - 1) / (2 * ↑x) := by
@@ -66,6 +65,6 @@ lemma congr_aux_1'' (x : ℝ) :
   rw [div_mul_eq_div_div]
   congr! 1
   conv_lhs => norm_num1
-  have : 1 + I ≠ 0 := sorry -- ought to be by done by a norm_num extension
+  have : 1 + I ≠ 0 := by norm_num1
   field_simp
-  linear_combination - I_sq
+  norm_num1

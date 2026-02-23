@@ -1,26 +1,40 @@
-import Mathlib.Analysis.CStarAlgebra.Module.Defs
-import SpherePacking.ModularForms.qExpansion_lems
+module
+public import SpherePacking.ModularForms.qExpansion_lems
 
-import SpherePacking.ForMathlib.Cusps
+public import SpherePacking.ForMathlib.Cusps
 
-open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex MatrixGroups
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+/-!
+# Cusp forms as a submodule
 
+This file treats cusp forms as a submodule of modular forms via the linear map
+`CuspForm_to_ModularForm`. It also defines the predicate `IsCuspForm` for modular forms and
+records a characterization for level one in terms of the constant `q`-coefficient.
+
+## Main declarations
+* `ModForm_mk`, `CuspForm_to_ModularForm`, `CuspFormSubmodule`
+* `IsCuspForm`, `IsCuspForm_to_CuspForm`
+* `IsCuspForm_iff_coeffZero_eq_zero`
+-/
+
+open scoped MatrixGroups CongruenceSubgroup
+
+open ModularForm UpperHalfPlane Set Filter Function
+open SlashInvariantFormClass ModularFormClass
 
 noncomputable section Definitions
 
-
-
 variable {α ι : Type*}
 
-open SlashInvariantFormClass ModularFormClass
 variable {k : ℤ} {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup SL(2, ℤ)} (n : ℕ) (f : F)
 
-open scoped Real MatrixGroups CongruenceSubgroup
+/-!
+## Cusp forms as a range submodule
+-/
 
-def ModForm_mk (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) : ModularForm Γ k where
+/-- Coerce a cusp form to a modular form by forgetting the vanishing-at-cusps data. -/
+@[expose] public def ModForm_mk (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) :
+    ModularForm Γ k where
   toFun := f
   slash_action_eq' := f.slash_action_eq'
   holo' := f.holo'
@@ -34,19 +48,20 @@ lemma ModForm_mk_inj (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) (h
   simp only [CuspForm.zero_apply, ne_eq, ModForm_mk, zero_apply] at *
   exact hx
 
-def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspForm Γ k →ₗ[ℂ] ModularForm Γ k
+/-- The linear map sending a cusp form to the underlying modular form. -/
+@[expose] public def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) :
+    CuspForm Γ k →ₗ[ℂ] ModularForm Γ k
   where
-  toFun f := ModForm_mk Γ k f
-  map_add' := by
-    intro f g
-    simp only [ModForm_mk, CuspForm.coe_add]
-    rfl
-  map_smul' := by
-    intro m f
-    simp only [ModForm_mk, RingHom.id_apply]
-    rfl
+  toFun := ModForm_mk Γ k
+  map_add' := by intro f g; rfl
+  map_smul' := by intro m f; rfl
 
-def CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : Submodule ℂ (ModularForm Γ k) :=
+/-- The submodule of modular forms coming from cusp forms.
+
+This is the range of `CuspForm_to_ModularForm`.
+-/
+@[expose] public def CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) :
+    Submodule ℂ (ModularForm Γ k) :=
   LinearMap.range (CuspForm_to_ModularForm Γ k)
 
 def CuspForm_iso_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) :
@@ -66,21 +81,31 @@ lemma mem_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularFor
   rw [CuspFormSubmodule, LinearMap.mem_range] at hf
   aesop
 
-instance (priority := 100) CuspFormSubmodule.funLike : FunLike (CuspFormSubmodule Γ k) ℍ ℂ where
+/-- `CuspFormSubmodule` is a function space `ℍ → ℂ` by coercion. -/
+public instance (priority := 100) CuspFormSubmodule.funLike :
+    FunLike (CuspFormSubmodule Γ k) ℍ ℂ where
   coe f := f.1.toFun
   coe_injective' f g h := by cases f; cases g; congr; exact DFunLike.ext' h
 
-instance (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspFormClass (CuspFormSubmodule Γ k) Γ k where
+/-- The range submodule inherits a `CuspFormClass` structure. -/
+public instance (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspFormClass (CuspFormSubmodule Γ k) Γ k where
   slash_action_eq f := f.1.slash_action_eq'
   holo f := f.1.holo'
   zero_at_cusps := by
     rintro ⟨_, ⟨g, rfl⟩⟩ c hc
     simpa [CuspForm_to_ModularForm, ModForm_mk] using g.zero_at_cusps' hc
 
-def IsCuspForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k) : Prop :=
+/-!
+## The predicate `IsCuspForm`
+-/
+
+/-- A modular form is a cusp form if it lies in `CuspFormSubmodule`. -/
+@[expose] public def IsCuspForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k) : Prop :=
   f ∈ CuspFormSubmodule Γ k
 
-def IsCuspForm_to_CuspForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k)
+/-- Extract a cusp form from a proof of `IsCuspForm`. -/
+@[expose] public def IsCuspForm_to_CuspForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ)
+    (f : ModularForm Γ k)
     (hf : IsCuspForm Γ k f) : CuspForm Γ k := by
   rw [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range] at hf
   exact hf.choose
@@ -96,36 +121,30 @@ lemma CuspForm_to_ModularForm_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : Modu
   simp only [ModForm_mk, LinearMap.coe_mk, AddHom.coe_mk] at *
   exact hgg
 
-lemma CuspForm_to_ModularForm_Fun_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k)
+/-- The extracted cusp form has the same underlying function as the original modular form. -/
+@[simp] public lemma CuspForm_to_ModularForm_Fun_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ)
+    (f : ModularForm Γ k)
     (hf : IsCuspForm Γ k f) : (IsCuspForm_to_CuspForm Γ k f hf).toFun =
     f.toFun := by
   rw [IsCuspForm_to_CuspForm]
   rw [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range] at hf
-  have hg := hf.choose_spec
-  simp_rw [CuspForm_to_ModularForm] at hg
-  have hgg := congr_arg (fun x ↦ x.toFun) hg
-  simp only [ModForm_mk, LinearMap.coe_mk, AddHom.coe_mk, SlashInvariantForm.toFun_eq_coe,
-    SlashInvariantForm.coe_mk, toSlashInvariantForm_coe, CuspForm.toSlashInvariantForm_coe] at *
-  exact hgg
+  simpa [CuspForm_to_ModularForm, ModForm_mk] using congrArg (fun x ↦ x.toFun) hf.choose_spec
 
-lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
+/-- For level one, `IsCuspForm` is equivalent to vanishing of the constant `q`-coefficient. -/
+public lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     IsCuspForm Γ(1) k f ↔ (qExpansion 1 f).coeff 0 = 0 := by
   constructor
   · intro h
     rw [qExpansion_coeff]
     simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul]
-    rw [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range] at h
-    obtain ⟨g, hg⟩ := h
+    rcases (by simpa [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range] using h) with ⟨g, rfl⟩
     have := CuspFormClass.cuspFunction_apply_zero (h := 1) g (by positivity) (by simp)
-    simp only [CuspForm_to_ModularForm, ModForm_mk, LinearMap.coe_mk, AddHom.coe_mk] at hg
-    rw [← hg]
-    exact this
+    simpa [CuspForm_to_ModularForm, ModForm_mk]
   · intro h
     rw [IsCuspForm]
     rw [CuspFormSubmodule, LinearMap.mem_range]
     use ⟨f.toSlashInvariantForm , f.holo', ?_⟩
-    · simp only [CuspForm_to_ModularForm, ModForm_mk]
-      rfl
+    · simp only [CuspForm_to_ModularForm]; rfl
     · intro c hc
       apply zero_at_cusps_of_zero_at_infty hc
       intro A ⟨A', hA'⟩
@@ -136,27 +155,17 @@ lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
       simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul] at h
       have := modform_tendto_ndhs_zero f 1
       simp only [Nat.cast_one, comp_apply, h] at this
-      have hgg : (fun x ↦ (⇑f ∘ ↑ofComplex) (Periodic.invQParam (1 : ℕ) x)) = ((⇑f ∘ ↑ofComplex) ∘
-        (Periodic.invQParam (1 : ℕ))) := by
-        rfl
-      simp only [Nat.cast_one, comp_apply] at hgg
-      rw [hgg] at this
       have hgg2 := this.comp (Function.Periodic.qParam_tendsto (h := 1) ( Real.zero_lt_one))
       have hgg3 := hgg2.comp tendsto_coe_atImInfty
       rw [IsZeroAtImInfty, ZeroAtFilter]
-      apply hgg3.congr'
-      rw [Filter.eventuallyEq_iff_exists_mem]
-      use ⊤
-      simp only [top_eq_univ, univ_mem, eqOn_univ, true_and]
-      ext y
-      simp only [comp_apply]
+      refine hgg3.congr' <| Filter.Eventually.of_forall fun y => ?_
       have h5 := periodic_comp_ofComplex (h := 1) f (by simp)
-      have := Function.Periodic.qParam_left_inv_mod_period (h := 1) (Ne.symm (zero_ne_one' ℝ)) y
-      obtain ⟨m, hm⟩ := this
-      have h6 := Function.Periodic.int_mul h5 m y
-      simp only [comp_apply, Periodic, ofReal_one, mul_one, ofComplex_apply] at *
-      rw [← hm] at h6
-      exact h6
+      rcases Function.Periodic.qParam_left_inv_mod_period (h := 1) (Ne.symm (zero_ne_one' ℝ)) y with
+        ⟨m, hm⟩
+      simpa [Periodic, Complex.ofReal_one, ofComplex_apply, Function.comp, hm] using
+        (Function.Periodic.int_mul h5 m y)
+
+end Definitions
 
 lemma CuspFormSubmodule_mem_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     f ∈ CuspFormSubmodule Γ(1) k ↔ (qExpansion 1 f).coeff 0 = 0 := by

@@ -1,17 +1,30 @@
-import SpherePacking.ModularForms.tendstolems
-import Mathlib.Algebra.Lie.OfAssociative
-import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Analysis.Complex.LocallyUniformLimit
-import Mathlib.Topology.Algebra.InfiniteSum.UniformOn
-import Mathlib.Topology.Separation.CompletelyRegular
+module
+public import SpherePacking.ModularForms.tendstolems
+public import Mathlib.Algebra.Lie.OfAssociative
+public import Mathlib.Algebra.Order.Ring.Star
+public import Mathlib.Analysis.Complex.LocallyUniformLimit
+public import Mathlib.Analysis.Calculus.LogDerivUniformlyOn
+public import Mathlib.Topology.Algebra.InfiniteSum.UniformOn
+public import Mathlib.Topology.Separation.CompletelyRegular
+import Mathlib.NumberTheory.TsumDivisorsAntidiagonal
 
+/-!
+# Lemmas about `logDeriv`
 
-open  TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex
+This file collects auxiliary lemmas about the logarithmic derivative `logDeriv`, including
+formulas for `logDeriv` of exponential expressions and a basic summability statement.
+
+## Main statements
+* `logDeriv_one_sub_exp_comp`
+* `logDeriv_q_expo_summable`
+-/
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
+open TopologicalSpace Set MeasureTheory intervalIntegral
+  Metric Filter Function Complex
 
+/-
 theorem logDeriv_tprod_eq_tsum2 {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ → ℂ → ℂ)
     (hf : ∀ i, f i x ≠ 0)
     (hd : ∀ i : ℕ, DifferentiableOn ℂ (f i) s) (hm : Summable fun i ↦ logDeriv (f i) ↑x)
@@ -77,52 +90,26 @@ theorem logDeriv_tprod_eq_tsum {s : Set ℂ} (hs : IsOpen s) (x : s) (f : ℕ �
     · intro _ _
       exact DifferentiableOn.finset_prod fun i a ↦ hd i
     · exact hnez
+-/
 
 lemma logDeriv_one_sub_exp (r : ℂ) : logDeriv (fun z => 1 - r * cexp (z)) =
     fun z => -r * cexp z / (1 - r * cexp ( z)) := by
   ext z
-  rw [logDeriv]
-  simp only [Pi.div_apply, differentiableAt_const, differentiableAt_exp, DifferentiableAt.fun_mul,
-    deriv_fun_sub, deriv_const', deriv_fun_mul, zero_mul, Complex.deriv_exp, zero_add, zero_sub,
-    neg_mul]
+  simp [logDeriv]
 
-lemma logDeriv_one_sub_exp_comp (r : ℂ) (g : ℂ → ℂ) (hg : Differentiable ℂ g) :
+/-- A chain rule computation for `logDeriv` of `(fun z => 1 - r * cexp z) ∘ g`. -/
+public lemma logDeriv_one_sub_exp_comp (r : ℂ) (g : ℂ → ℂ) (hg : Differentiable ℂ g) :
     logDeriv ((fun z => 1 - r * cexp (z)) ∘ g) =
     fun z => -r * ((deriv g) z) * cexp (g z) / (1 - r * cexp (g (z))) := by
   ext y
   rw [logDeriv_comp _ (hg y), logDeriv_one_sub_exp]
-  · simp only [neg_mul]
-    ring
-  simp only [differentiableAt_const, differentiableAt_exp, DifferentiableAt.fun_mul,
-    DifferentiableAt.fun_sub]
+  · ring
+  · fun_prop
 
-lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fun n : ℕ =>
+/-- If `‖r‖ < 1`, then the series `∑ n, n * r^n / (1 - r^n)` is summable. -/
+public lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fun n : ℕ =>
     (n * r^n / (1 - r^n)) := by
-  have := aux47 r hr
-  have h1 : Tendsto (fun n : ℕ => (1 : ℂ)) atTop (𝓝 1) := by simp
-  have h2 := Filter.Tendsto.div h1 this (by simp)
-  rw [Metric.tendsto_atTop] at h2
-  simp only [gt_iff_lt, ge_iff_le, Pi.div_apply, one_div, ne_eq, one_ne_zero, not_false_eq_true,
-    div_self, dist_eq_norm] at h2
-  have h3 := h2 1 (by norm_num)
-  apply Summable.of_norm_bounded_eventually_nat (g := fun n => 2 * ‖n * r^n‖)
-  · apply Summable.mul_left
-    simp
-    have := (summable_norm_pow_mul_geometric_of_norm_lt_one 1 hr)
-    simp at this
-    apply this
-  · simp
-    obtain ⟨N, hN⟩ := h3
-    use N
-    intro n hn
-    have h4 := hN n hn
-    have := norm_lt_of_mem_ball h4 (E := ℂ)
-    simp at *
-    rw [div_eq_mul_inv]
-    rw [mul_comm]
-    gcongr
-    apply le_trans this.le
-    norm_cast
+  simpa [pow_one] using (summable_norm_pow_mul_geometric_div_one_sub (𝕜 := ℂ) 1 (r := r) hr)
 
 lemma func_div (a b c d : ℂ → ℂ) (x : ℂ) (hb : b x ≠ 0) (hd : d x ≠ 0) :
      (a / b) x = (c /d) x ↔ (a * d) x = (b * c) x := by

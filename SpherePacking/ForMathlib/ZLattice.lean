@@ -1,10 +1,17 @@
-import Mathlib.Algebra.Module.ZLattice.Basic
+module
+public import Mathlib.Algebra.Module.ZLattice.Basic
 
-open ZSpan Module
+
+/-!
+# Z-lattices
+
+This file proves results such as `ZSpan.ceil_sub_mem_fundamentalDomain`, `ZSpan.floor_eq_zero`.
+-/
+
+open ZSpan
 
 variable {E ι K : Type*} [NormedField K] [LinearOrder K] [IsStrictOrderedRing K]
-  [NormedAddCommGroup E] [NormedSpace K E]
-  (b : Basis ι K E) [FloorRing K] [Fintype ι] (m : E)
+  [NormedAddCommGroup E] [NormedSpace K E] (b : Module.Basis ι K E) [FloorRing K] [Fintype ι]
 
 theorem ZSpan.ceil_sub_mem_fundamentalDomain (v) : ceil b v - v ∈ fundamentalDomain b := by
   rw [mem_fundamentalDomain]
@@ -23,11 +30,36 @@ theorem ZSpan.ceil_sub_mem_fundamentalDomain (v) : ceil b v - v ∈ fundamentalD
       rw [this, sub_self]
       exact zero_lt_one
 
-theorem ZSpan.floor_eq_zero (v : E) : v ∈ fundamentalDomain b ↔ floor b v = 0 := by
+/-- A point is in the fundamental domain iff its `floor` vector is zero. -/
+public theorem ZSpan.floor_eq_zero (v : E) : v ∈ fundamentalDomain b ↔ floor b v = 0 := by
   simp_rw [mem_fundamentalDomain, ← Int.floor_eq_zero_iff]
   constructor <;> intro h
-  · simp_rw [floor, h, zero_smul, Finset.sum_const, smul_zero]
+  · simp [floor, h]
   · intro i
-    have := repr_floor_apply b v i
-    rw [h, ZeroMemClass.coe_zero, map_zero, Finsupp.coe_zero, Pi.zero_apply] at this
-    exact_mod_cast this.symm
+    exact_mod_cast (by simpa [h] using (repr_floor_apply b v i).symm)
+
+section BasisIndexEquiv
+
+variable {d : ℕ}
+
+local notation "E" => EuclideanSpace ℝ (Fin d)
+
+namespace ZLattice
+
+/--
+Reindex the chosen `ℤ`-basis of a full-rank lattice in `ℝ^d` by `Fin d`.
+
+This is useful for building `Basis (Fin d) ℤ Λ` via `.reindex` without carrying around an
+abstract basis-index type.
+-/
+public noncomputable def basis_index_equiv (Λ : Submodule ℤ E)
+    [DiscreteTopology Λ] [IsZLattice ℝ Λ] :
+    (Module.Free.ChooseBasisIndex ℤ Λ) ≃ (Fin d) := by
+  refine Fintype.equivFinOfCardEq ?_
+  rw [← Module.finrank_eq_card_chooseBasisIndex (R := ℤ) (M := Λ),
+    ZLattice.rank (K := ℝ) (L := Λ),
+    finrank_euclideanSpace, Fintype.card_fin]
+
+end ZLattice
+
+end BasisIndexEquiv
