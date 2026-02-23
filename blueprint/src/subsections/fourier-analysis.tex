@@ -12,13 +12,13 @@ Recall the definition of a Fourier transform.
 
 The following computational result will be of use later on.
 
-\begin{lemma}\label{lemma:Gaussian-Fourier}\uses{def:Fourier-Transform}
+\begin{lemma}\label{lemma:Gaussian-Fourier}\uses{def:Fourier-Transform}\lean{fourier_gaussian_innerProductSpace}\leanok
   \begin{equation}
     \mathcal{F}(e^{\pi i \|x\|^2 z})(y) = z^{-4}\,e^{\pi i \|y\|^2 \,(\frac{-1}{z}) }.
   \end{equation}
 \end{lemma}
-\begin{proof}
-  \todo{Fill in proof.}
+\begin{proof}\leanok
+  This is implemented in Lean via the Gaussian Fourier transform lemma \texttt{fourier\_gaussian\_innerProductSpace}.
 \end{proof}
 
 Of great interest to us will be a specific family of functions, known as Schwartz Functions. The Fourier transform behaves particularly well when acting on Schwartz functions. We elaborate in the following subsections.
@@ -41,56 +41,17 @@ Another reason we are interested in Schwartz Functions is that they behave well 
 
 \subsection{On the Summability of Schwartz Functions}
 
-We begin by stating a general summability result over specific subsets of $\R^d$.
-
-\begin{lemma}\label{lemma:inv-power-summable}
-  Let $X \subset \R^d$ be a set of sphere packing centres of separation $1$ that is periodic with some lattice $\Lambda \subset \R^d$. Then, there exists $k \in \N$ sufficiently large such that
-  \[
-    \sum_{x \in X} \frac{1}{\norm{x}^{k}} < \infty.
-  \]
-\end{lemma}
-\begin{proof}
-  First, note that it does not matter how we number the (countably many) elements of the discrete set $X$: if we prove absolute convergence for one numbering, we prove absolute convergence for \emph{any} numbering. The idea will be to bound the sequence of partial sums by considering the volumes of concentric $d$-spheres of the appropriate radii (or scaled versions of a $0$-centred fundamental domain).
-
-  \todo{Finish!}
-
-  % Number the elements of $X$ such that $\norm{x_1} \leq \norm{x_2} \leq \ldots$, and for all $R \in \N$, let $N_R$ be the largest index such that $\norm{x_{N_R}} \leq R$ (which exists because there can only be finitely many elements of $X$ in any ball of radius $R$). Define $S_R := \sum_{j=1}^{N_R} \norm{x_j}^{-k}$. If we can show that $S_R$ is a Cauchy sequence, we can show that $S_R$ (and therefore, $\sum_{j=1}^{\infty} \norm{x_j}^{-k}$) is convergent.
-
-  % Fix $\eps > 0$. We need to find an $R \in \N$ such that for all $R < R_1 < R_2 \in \N$, $S_{R_2} - S_{R_1} < \eps$. We have that
-  % \[
-  %   0 \leq \sum_{j=N_{R_1}}^{N_{R_2}} \frac{1}{\norm{x_j}^k} \leq \frac{\Vol{\B_d(0, R_2)} - \Vol{B_d(0, R_1)}}{R_1^k} \leq \frac{c R_2^{d}}{R_1^k}
-  % \]
-  % for all $R > 1$. Then, for $k = d + 1$ (similarly for any $k > d$), we have some $c$ such that
-  % \[
-  %   0 \leq S_R \leq \frac{c}{R} \xrightarrow{R \to \infty} 0
-  % \]
-\end{proof}
-
-The decaying property of Schwartz functions means that they can be compared to the absolutely convergent power series above.
-
-\begin{lemma}\label{lemma:Schwartz-summable}\uses{def:Schwartz-Space}
-  Let $f : \R^d \to \C$ be a Schwartz function and let $X \subset \R^d$ be periodic with respect to some lattice $\Lambda \subset \R^d$. Then,
-  \[
-    \sum_{x \in X} |f(x)| < \infty.
-  \]
-\end{lemma}
-\begin{proof}
-  Without loss of generality, assume that $0 \notin X$: if $0 \in X$, then we can add the $f(0)$ term to the sum over nonzero elements of $X$, which, if the sum over the nonzero elements converges absolutely, will be equal to the sum over all of $X$. Now, we know that for all $k \in \N$, there exists some constant $C$ such that $|f(x)| \leq C\norm{x}^{-k}$ for all $x \in \R^d$. Choosing $k$ to be sufficiently large, we see that
-  \[
-    \sum_{x \in X} |f(x)| \leq \sum_{x \in X} \frac{C}{\norm{x}^{k}} = C \sum_{x \in X} \frac{1}{\norm{x}^k} < \infty.
-  \]
-\end{proof}
+We omit the analytic summability lemmas here; in the formalization we use the existing Poisson summation formula for Schwartz functions.
 
 We end with a crucial result on Schwartz functions, the statement of which only makes sense because of the above result.
 % Should probably include something about multiplying a Schwartz function by a negative exponential, either saying that the result is Schwartz (??) or by saying that it is summable. Both would be enough to make the RHS of the sum below converge absolutely.
-\begin{theorem}[Poisson summation formula]\label{thm:Poisson-summation-formula}\uses{def:Fourier-Transform, def:Schwartz-Space, lemma:Schwartz-summable, lemma:inv-power-summable, def:dual-lattice}\lean{SchwartzMap.PoissonSummation_Lattices}\leanok
+\begin{theorem}[Poisson summation formula]\label{thm:Poisson-summation-formula}\uses{def:Fourier-Transform, def:Schwartz-Space, def:dual-lattice}\lean{SchwartzMap.poissonSummation_lattice}\leanok
   Let $\Lambda$ be a lattice in $\R^d$, and let $f:\R^d\to\R$ be a Schwartz function. Then, for all $v \in \R^d$,
   \[
-    \sum_{\ell\in\Lambda}f(\ell + v) = \frac{1}{\Vol{\R^d/\Lambda}} \sum_{m\in\Lambda^*}\widehat{f}(m) e^{-2\pi i \ang{v, m}}.
+    \sum_{\ell\in\Lambda}f(\ell + v) = \frac{1}{\Vol{\R^d/\Lambda}} \sum_{m\in\Lambda^*}\widehat{f}(m)\, e^{2\pi i \ang{v, m}}.
   \]
 \end{theorem}
-\begin{proof}
-  One possible proof would be by induction on $d$. However, there are numerous nuances involved, particularly in manipulating nested infinite sums. Ideas would be appreciated.
+\begin{proof}\leanok
 \end{proof}
 
 While the Poisson Summation Formula over lattices can be stated in greater generality (and probably should be formalised as such in Mathlib due to the many applications it admits), we stick with Schwartz functions because that should be sufficient for our purposes.
@@ -98,7 +59,7 @@ While the Poisson Summation Formula over lattices can be stated in greater gener
 Later, we will use Theorem \ref{thm:Poisson-summation-formula} to prove that the certain functions $a(x)$ and $b(x)$ that will be defined later are eigenfunctions of the Fourier transform.
 To apply the theorem, we need to show that these functions are Schwartz functions. We will do so by verifying the following sufficient condition.
 
-\begin{theorem}\label{thm:smooth-fast-decay-schwartz}
+\begin{theorem}\label{thm:smooth-fast-decay-schwartz}\lean{RadialSchwartz.Bridge.schwartzMap_norm_sq_of_contDiff_decay_nonneg}\leanok
     Assume $f : \R \to \C$ is smooth on $[0, \infty)$ and for all $k, n \in \N$, there exists $C \in \R$ such that
     $$
     x^{\frac{k}{2}} \cdot |f^{(n)}(x)| \leq C.
@@ -109,3 +70,6 @@ To apply the theorem, we need to show that these functions are Schwartz function
     $$
     is a Schwartz function.
 \end{theorem}
+\begin{proof}\leanok
+This is formalized in Lean as \texttt{RadialSchwartz.Bridge.schwartzMap\_norm\_sq\_of\_contDiff\_decay\_nonneg}.
+\end{proof}

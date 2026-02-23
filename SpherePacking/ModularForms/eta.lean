@@ -2,11 +2,26 @@ module
 
 public import SpherePacking.ModularForms.E2
 public import SpherePacking.ModularForms.csqrt
-public import SpherePacking.ModularForms.upperhalfplane
+public import SpherePacking.ModularForms.logDeriv_lems
+public import SpherePacking.ModularForms.multipliable_lems
 public import Mathlib.NumberTheory.ModularForms.DedekindEta
 
 @[expose] public section
 
+/-!
+# Dedekind eta function
+
+This file defines the Dedekind eta function `η` and establishes basic analytic properties on the
+upper half-plane, including nonvanishing, differentiability, and a formula for its logarithmic
+derivative in terms of the Eisenstein series `E₂`.
+
+## Main declarations
+* `η`
+* `eta_nonzero_on_UpperHalfPlane`
+* `eta_DifferentiableAt_UpperHalfPlane`
+* `eta_logDeriv`
+* `eta_equality`
+-/
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex
@@ -30,8 +45,9 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
         enter [1,1]
         intro z
         rw [neg_div]
-        simp
-      simp only [deriv.fun_neg', deriv_inv', neg_neg, inv_inj]
+      simp only [deriv.fun_neg', one_div]
+      rw [deriv_inv]
+      simp only [neg_neg]
       norm_cast
     · simpa [η] using
         (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := (-1 / (z : ℂ)))
@@ -40,11 +56,14 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
       enter [2]
       ext z
       rw [neg_div]
-      simp
     apply DifferentiableAt.neg
-    apply DifferentiableAt.inv
-    · simp only [differentiableAt_fun_id]
-    · exact ne_zero z
+    have h : DifferentiableAt ℂ (fun z : ℂ => z)⁻¹ (↑z : ℂ) := by
+      refine
+        DifferentiableAt.inv (h := fun z : ℂ => z) (z := (↑z : ℂ))
+          differentiableAt_fun_id (ne_zero z)
+    change DifferentiableAt ℂ (fun z : ℂ => 1 / z) (↑z : ℂ)
+    simp only [one_div]
+    exact h
   rw [h0, show ((csqrt) * η) = (fun x => (csqrt) x * η x) by rfl, logDeriv_mul]
   · nth_rw 2 [logDeriv_apply]
     unfold csqrt
@@ -67,10 +86,10 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
         rw [Rb]
         have E := E₂_transform z
         simp only [one_div, neg_mul, smul_eq_mul, SL_slash_def, modular_S_smul,
-                   ModularGroup.denom_S, Int.reduceNeg, zpow_neg] at *
+          ModularGroup.denom_S, Int.reduceNeg, zpow_neg] at *
         have h00 : UpperHalfPlane.mk (-z : ℂ)⁻¹ z.im_inv_neg_coe_pos =
-                   (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) := by
-          simp
+            (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) := by
+          ext1
           ring_nf
         rw [h00] at E
         rw [← mul_assoc, mul_comm, ← mul_assoc]
@@ -83,8 +102,8 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
             exact Real.pi_ne_zero
           field_simp
           ring
-        rw [mul_comm]
-      simpa only [UpperHalfPlane.coe, ne_eq] using (ne_zero z)
+        · rw [mul_comm]
+      · simpa only [UpperHalfPlane.coe, ne_eq] using (ne_zero z)
   · simp only [csqrt, one_div, ne_eq, Complex.exp_ne_zero, not_false_eq_true]
   · simpa [η] using (ModularForm.eta_ne_zero (z := (z : ℂ)) z.2)
   · exact csqrt_differentiableAt z
@@ -94,11 +113,11 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
 lemma eta_logderivs : {z : ℂ | 0 < z.im}.EqOn (logDeriv (η ∘ (fun z : ℂ => -1/z)))
   (logDeriv ((csqrt) * η)) := by
   intro z hz
-  have := eta_logDeriv_eql ⟨z, hz⟩
-  exact this
+  simpa using eta_logDeriv_eql (z := ⟨z, hz⟩)
 
-lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn ((η ∘ (fun z : ℂ => -1/z)))
-  (z • ((csqrt) * η)) := by
+lemma eta_logderivs_const :
+    ∃ z : ℂ, z ≠ 0 ∧
+      {z : ℂ | 0 < z.im}.EqOn (η ∘ fun z : ℂ => -1 / z) (z • (csqrt * η)) := by
   have h := eta_logderivs
   rw [logDeriv_eqOn_iff] at h
   · exact h
@@ -149,8 +168,9 @@ lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn (
       (by simpa using pnat_div_upper 1 ⟨x, hx⟩)
     simpa only [ne_eq] using this
 
-lemma eta_equality : {z : ℂ | 0 < z.im}.EqOn ((η ∘ (fun z : ℂ => -1/z)))
-   ((csqrt (Complex.I))⁻¹ • ((csqrt) * η)) := by
+/-- A functional equation for `η` under `z ↦ -1/z` on the upper half-plane. -/
+public lemma eta_equality : {z : ℂ | 0 < z.im}.EqOn ((η ∘ (fun z : ℂ => -1 / z)))
+    ((csqrt (Complex.I))⁻¹ • ((csqrt) * η)) := by
   have h := eta_logderivs_const
   obtain ⟨z, hz, h⟩ := h
   intro x hx
