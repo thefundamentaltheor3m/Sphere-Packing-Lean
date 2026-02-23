@@ -1,10 +1,10 @@
 The definition of density given in \cref{sec:sphere-packings} is inconvenient to work with, especially when our packing is a structured one, such as a periodic/lattice packing. This section fixes this problem.
 
-Note that some of the proofs in this section have only been sketched. The finer details are formalised in Lean.
+All statements and proofs in this section are formalized in Lean.
 
 Observe that the finite density evaluated at some $R > 0$ measures the density of sphere packings within a bounded, open ball of radius $R$. As one might expect, there is a relationship between the finite density and the number of centers in the ball of radius $R$.
 
-\begin{lemma}\label{lemma:sp-finite-density-bound}\lean{SpherePacking.finiteDensity_le,SpherePacking.finiteDensity_ge}\uses{SpherePacking.finiteDensity}\leanok
+\begin{lemma}\label{lemma:sp-finite-density-bound}\lean{SpherePacking.finiteDensity_le,SpherePacking.finiteDensity_ge}\uses{def:SpherePacking.finiteDensity}\leanok
   For any $R > 0$,
   \[
     \left|X \cap \mathcal{B}_d\left(R - \frac{r}{2}\right)\right| \cdot \frac{\mathrm{Vol}\left(\mathcal{B}_d\left(\frac{r}{2}\right)\right)}{\mathrm{Vol}(\mathcal{B}_d(R))}
@@ -12,7 +12,7 @@ Observe that the finite density evaluated at some $R > 0$ measures the density o
     \leq \left|X \cap \mathcal{B}_d\left(R + \frac{r}{2}\right)\right| \cdot \frac{\mathrm{Vol}\left(\mathcal{B}_d\left(\frac{r}{2}\right)\right)}{\mathrm{Vol}(\mathcal{B}_d(R))}
   \]
 \end{lemma}
-\begin{proof}\uses{SpherePacking}\leanok
+\begin{proof}\uses{def:SpherePacking}\leanok
   The high level idea is to prove that $\mathcal{P} \cap \mathcal{B}_d(R) = \left(\bigcup_{x \in X} \mathcal{B}_d\left(x, \frac{r}{2}\right)\right) \subseteq \bigcup_{x \in X \cap \mathcal{B}_d\left(R + \frac{r}{2}\right)} \mathcal{B}_d\left(x, \frac{r}{2}\right)$, and a similar inequality for the upper bound. The rest follows by rearranging and using the fact that the balls are pairwise disjoint.
 \end{proof}
 
@@ -35,7 +35,7 @@ For the second inequality, we prove that $\bigcup_{x \in \Lambda \cap \mathcal{B
 
 To link \cref{lemma:sp-finite-density-bound} and \cref{lemma:lattice-points-bound}, we need a lemma relating $|\Lambda \cap \mathcal{B}|$ with $|X \cap \mathcal{B}|$, which is what the following lemma does:
 
-\begin{lemma}\label{lemma:periodic-points-bounds}\lean{PeriodicSpherePacking.aux_ge,PeriodicSpherePacking.aux_le}\leanok
+\begin{lemma}\label{lemma:periodic-points-bounds}\lean{PeriodicSpherePacking.aux2_ge',PeriodicSpherePacking.aux2_le'}\leanok
   For all $R$, we have the following inequality relating the number of points from $X$ (periodic w.r.t. $\Lambda$) in a ball with the number of points from $\Lambda$:
   \[
     \left|\Lambda \cap \mathcal{B}_d(R - L)\right|\left|X / \Lambda\right|
@@ -72,7 +72,7 @@ When we combine the inequalities above, we need one additional computational lem
 
 Finally, we can relate the density of a periodic sphere packing to the natural definition of density given by any of its fundamental domain:
 
-\begin{theorem}\label{theorem:psp-density}\uses{SpherePacking.density}\lean{PeriodicSpherePacking.density_eq}\leanok
+\begin{theorem}\label{theorem:psp-density}\uses{def:SpherePacking.density}\lean{PeriodicSpherePacking.density_eq}\leanok
   For a periodic sphere packing $\mathcal{P} = \mathcal{P}(X)$ with centers $X$ periodic to the lattice $\Lambda$ and separation $r$,
 
   \[
