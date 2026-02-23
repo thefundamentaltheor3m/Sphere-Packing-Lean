@@ -1,10 +1,7 @@
 module
-
 public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.DimensionFormulas
 public import Mathlib.Analysis.Real.Pi.Bounds
-
-@[expose] public section
 
 /-!
 # Asymptotic Behavior of Eisenstein Series
@@ -45,8 +42,8 @@ For z with large Im, consider the ball B(z, Im(z)/2) in ℂ.
 - f is bounded by M for Im ≥ A (from IsBoundedAtImInfty)
 - By Cauchy: |deriv(f ∘ ofComplex)(z)| ≤ M / (Im(z)/2) = 2M/Im(z)
 - D f = (2πi)⁻¹ * deriv(...), so |D f(z)| ≤ M/(π·Im(z)) → 0 -/
-lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
-    (hf : MDiff f)
+public lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
     (hbdd : IsBoundedAtImInfty f) :
     Filter.Tendsto (D f) atImInfty (nhds 0) := by
   rw [isBoundedAtImInfty_iff] at hbdd
@@ -77,11 +74,7 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
             _ ≤ ‖w - z‖ := abs_im_le_norm _
             _ = dist w z := (dist_eq_norm _ _).symm
             _ = z.im / 2 := Metric.mem_sphere.mp hw
-        have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
-        have hA_lt : A < w.im := calc A ≤ max A 0 := hA_le_max
-          _ < z.im / 2 := hz_ge_A
-          _ ≤ w.im := hlower
-        linarith
+        grind only [= max_def, = abs.eq_1]
       simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw_im_pos]
       exact hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
     have hDf_bound : ‖D f z‖ ≤ M / (π * z.im) := by
@@ -110,27 +103,27 @@ lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
 /-! ## Limits of Eisenstein series at infinity -/
 
 /-- exp(-c * y) → 0 as y → +∞ (for c > 0). -/
-lemma tendsto_exp_neg_mul_atTop {c : ℝ} (hc : 0 < c) :
+public lemma tendsto_exp_neg_mul_atTop {c : ℝ} (hc : 0 < c) :
     Filter.Tendsto (fun y : ℝ => Real.exp (-c * y)) Filter.atTop (nhds 0) := by
   have : Filter.Tendsto (fun y => -c * y) Filter.atTop Filter.atBot := by
     simpa using Filter.tendsto_id.const_mul_atTop_of_neg (neg_neg_of_pos hc)
   exact Real.tendsto_exp_atBot.comp this
 
 /-- If f = O(exp(-c * Im z)) as z → i∞ for c > 0, then f → 0 at i∞. -/
-lemma tendsto_zero_of_exp_decay {f : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
+public lemma tendsto_zero_of_exp_decay {f : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
     (hO : f =O[atImInfty] fun τ => Real.exp (-c * τ.im)) :
     Filter.Tendsto f atImInfty (nhds 0) :=
   hO.trans_tendsto ((tendsto_exp_neg_mul_atTop hc).comp tendsto_im_atImInfty)
 
 /-- A modular form tends to its value at infinity as z → i∞. -/
-lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :
+public lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :
     Filter.Tendsto f.toFun atImInfty (nhds ((qExpansion 1 f).coeff 0)) := by
   obtain ⟨c, hc, hO⟩ := ModularFormClass.exp_decay_sub_atImInfty' f
   rw [qExpansion_coeff_zero f (by norm_num : (0 : ℝ) < 1) one_mem_strictPeriods_SL2Z]
   simpa using (tendsto_zero_of_exp_decay hc hO).add_const (valueAtInfty f.toFun)
 
 /-- E₂ - 1 = O(exp(-2π·Im z)) at infinity. -/
-lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
+public lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
     fun z => Real.exp (-(2 * π) * z.im) := by
   rw [Asymptotics.isBigO_iff]
   refine ⟨192, Filter.eventually_atImInfty.mpr ⟨1, fun z hz => ?_⟩⟩
@@ -164,56 +157,51 @@ lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
       rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
       simp [Complex.I_re, Complex.I_im, mul_comm]
     rw [Complex.norm_exp, hre]
-  calc 24 * ‖∑' n : ℕ+, ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
-      ≤ 24 * (‖q‖ / (1 - ‖q‖) ^ 3) := by gcongr
-    _ ≤ 24 * (8 * ‖q‖) := by gcongr
-    _ = 192 * ‖q‖ := by ring
-    _ = 192 * Real.exp (-(2 * π) * z.im) := by rw [hq_eq_exp]; ring_nf
+  grind only
 
 /-- E₂ → 1 at i∞. -/
-lemma E₂_tendsto_one_atImInfty : Filter.Tendsto E₂ atImInfty (nhds 1) := by
-  suffices h : Filter.Tendsto (fun z : ℍ => E₂ z - 1) atImInfty (nhds 0) by
-    simpa using h.add_const 1
-  exact tendsto_zero_of_exp_decay (by positivity : 0 < 2 * π) E₂_sub_one_isBigO_exp
+public lemma E₂_tendsto_one_atImInfty : Filter.Tendsto E₂ atImInfty (nhds 1) := tendsto_E₂_atImInfty
 
 /-- E₄ → 1 at i∞. -/
-lemma E₄_tendsto_one_atImInfty : Filter.Tendsto E₄.toFun atImInfty (nhds 1) :=
+public lemma E₄_tendsto_one_atImInfty : Filter.Tendsto E₄.toFun atImInfty (nhds 1) :=
   E4_q_exp_zero ▸ modular_form_tendsto_atImInfty E₄
 
 /-- E₆ → 1 at i∞. -/
-lemma E₆_tendsto_one_atImInfty : Filter.Tendsto E₆.toFun atImInfty (nhds 1) :=
+public lemma E₆_tendsto_one_atImInfty : Filter.Tendsto E₆.toFun atImInfty (nhds 1) :=
   E6_q_exp_zero ▸ modular_form_tendsto_atImInfty E₆
 
 /-! ## Boundedness lemmas -/
 
 /-- E₆ is bounded at infinity (as a modular form). -/
-lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
+public lemma E₆_isBoundedAtImInfty : IsBoundedAtImInfty E₆.toFun :=
   ModularFormClass.bdd_at_infty E₆
 
 /-- serre_D 1 E₂ is bounded at infinity. -/
-lemma serre_DE₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) :=
-  serre_D_isBoundedAtImInfty_of_bounded 1 E₂_holo' E₂_isBoundedAtImInfty
+public lemma serre_DE₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂) :=
+  serre_D_isBoundedAtImInfty 1 E₂_holo' E₂_isBoundedAtImInfty
 
+/-
 /-- D E₄ is bounded at infinity (by Cauchy estimate: D f → 0 when f is bounded). -/
-lemma DE₄_isBoundedAtImInfty : IsBoundedAtImInfty (D E₄.toFun) :=
+public lemma DE₄_isBoundedAtImInfty : IsBoundedAtImInfty (D E₄.toFun) :=
   D_isBoundedAtImInfty_of_bounded E₄.holo' E₄_isBoundedAtImInfty
 
 /-- serre_D 4 E₄ is bounded at infinity. -/
-lemma serre_DE₄_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 4 E₄.toFun) :=
-  serre_D_isBoundedAtImInfty_of_bounded 4 E₄.holo' E₄_isBoundedAtImInfty
+public lemma serre_DE₄_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 4 E₄.toFun) :=
+  serre_D_isBoundedAtImInfty 4 E₄.holo' E₄_isBoundedAtImInfty
+-/
 
 /-! ## Construction of ModularForm from serre_D -/
 
 /-- serre_D 4 E₄ is a weight-6 modular form. -/
-def serre_DE₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 :=
+public def serre_DE₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 :=
   serre_D_ModularForm 4 E₄
 
 /-- serre_D 6 E₆ is bounded at infinity. -/
-lemma serre_DE₆_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 6 E₆.toFun) :=
-  serre_D_isBoundedAtImInfty_of_bounded 6 E₆.holo' E₆_isBoundedAtImInfty
+public lemma serre_DE₆_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 6 E₆.toFun) :=
+  serre_D_isBoundedAtImInfty 6 E₆.holo' E₆_isBoundedAtImInfty
 
 /-- serre_D 6 E₆ is a weight-8 modular form. -/
-def serre_DE₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
+public def serre_DE₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=
   serre_D_ModularForm 6 E₆
 
 /-! ## Limit of serre_D at infinity (for determining scalar) -/
@@ -226,7 +214,7 @@ This is the continuous mapping theorem applied to `serre_D k f = D f - (k/12) * 
 - f → c
 Therefore `serre_D k f → 0 - (k/12) * 1 * c = -k*c/12`. -/
 lemma serre_D_tendsto_of_tendsto (k : ℤ) (f : ℍ → ℂ) (c : ℂ)
-    (hf_holo : MDiff f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
     (hf_lim : Filter.Tendsto f atImInfty (nhds c)) :
     Filter.Tendsto (serre_D k f) atImInfty (nhds (-(k : ℂ) * c / 12)) := by
   rw [show serre_D k f = fun z => D f z - (k : ℂ) * 12⁻¹ * E₂ z * f z from serre_D_eq k f]
@@ -241,27 +229,27 @@ lemma serre_D_tendsto_of_tendsto (k : ℤ) (f : ℍ → ℂ) (c : ℂ)
 
 /-- Special case: if `f → 1` at i∞, then `serre_D k f → -k/12`. -/
 lemma serre_D_tendsto_neg_k_div_12 (k : ℤ) (f : ℍ → ℂ)
-    (hf_holo : MDiff f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
     (hf_lim : Filter.Tendsto f atImInfty (nhds 1)) :
     Filter.Tendsto (serre_D k f) atImInfty (nhds (-(k : ℂ) / 12)) := by
   simpa using serre_D_tendsto_of_tendsto k f 1 hf_holo hf_bdd hf_lim
 
 /-- Special case: if `f → 0` at i∞, then `serre_D k f → 0`. -/
 lemma serre_D_tendsto_zero_of_tendsto_zero (k : ℤ) (f : ℍ → ℂ)
-    (hf_holo : MDiff f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
     (hf_lim : Filter.Tendsto f atImInfty (nhds 0)) :
     Filter.Tendsto (serre_D k f) atImInfty (nhds 0) := by
   simpa using serre_D_tendsto_of_tendsto k f 0 hf_holo hf_bdd hf_lim
 
 /-- serre_D 4 E₄ → -1/3 at i∞. -/
-lemma serre_DE₄_tendsto_atImInfty :
+public lemma serre_DE₄_tendsto_atImInfty :
     Filter.Tendsto (serre_D 4 E₄.toFun) atImInfty (nhds (-(1/3 : ℂ))) := by
   convert serre_D_tendsto_neg_k_div_12 4 E₄.toFun E₄.holo'
     (ModularFormClass.bdd_at_infty E₄) E₄_tendsto_one_atImInfty using 2
   norm_num
 
 /-- serre_D 6 E₆ → -1/2 at i∞. -/
-lemma serre_DE₆_tendsto_atImInfty :
+public lemma serre_DE₆_tendsto_atImInfty :
     Filter.Tendsto (serre_D 6 E₆.toFun) atImInfty (nhds (-(1/2 : ℂ))) := by
   convert serre_D_tendsto_neg_k_div_12 6 E₆.toFun E₆.holo'
     E₆_isBoundedAtImInfty E₆_tendsto_one_atImInfty using 2
@@ -269,7 +257,7 @@ lemma serre_DE₆_tendsto_atImInfty :
 
 /-- serre_D 1 E₂ is a weight-4 modular form.
 Note: E₂ itself is NOT a modular form, but serre_D 1 E₂ IS. -/
-def serre_DE₂_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 4 where
+public def serre_DE₂_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 4 where
   toSlashInvariantForm := {
     toFun := serre_D 1 E₂
     slash_action_eq' := fun γ hγ => by
@@ -284,7 +272,7 @@ def serre_DE₂_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 4 where
       exact (serre_DE₂_slash_invariant A').symm ▸ serre_DE₂_isBoundedAtImInfty
 
 /-- serre_D 1 E₂ → -1/12 at i∞. -/
-lemma serre_DE₂_tendsto_atImInfty :
+public lemma serre_DE₂_tendsto_atImInfty :
     Filter.Tendsto (serre_D 1 E₂) atImInfty (nhds (-(1/12 : ℂ))) := by
   have h := serre_D_tendsto_neg_k_div_12 1 E₂ E₂_holo'
     E₂_isBoundedAtImInfty E₂_tendsto_one_atImInfty
@@ -294,7 +282,7 @@ lemma serre_DE₂_tendsto_atImInfty :
 /-! ## Generic q-expansion summability and derivative bounds -/
 
 /-- Summability of (m+1)^k * exp(-2πm) via comparison with shifted sum. -/
-lemma summable_pow_shift (k : ℕ) :
+public lemma summable_pow_shift (k : ℕ) :
     Summable fun m : ℕ => (m + 1 : ℝ) ^ k * rexp (-2 * π * m) := by
   have h := Real.summable_pow_mul_exp_neg_nat_mul k (by positivity : 0 < 2 * π)
   have h_eq : ∀ m : ℕ, (m + 1 : ℝ) ^ k * rexp (-2 * π * m) =
@@ -310,11 +298,12 @@ lemma summable_pow_shift (k : ℕ) :
   ext m
   simp [Function.comp_apply, Nat.succ_eq_add_one]
 
+/-
 /-- Derivative bounds for q-expansion coefficients.
 Given `‖a n‖ ≤ n^k`, produces bounds
 `‖a n * 2πin * exp(2πin z)‖ ≤ 2π * n^(k+1) * exp(-2πn * y_min)`
 on compact K ⊆ {z : 0 < z.im}. This is a key hypothesis for `D_qexp_tsum_pnat`. -/
-lemma qexp_deriv_bound_of_coeff_bound {a : ℕ+ → ℂ} {k : ℕ}
+public lemma qexp_deriv_bound_of_coeff_bound {a : ℕ+ → ℂ} {k : ℕ}
     (ha : ∀ n : ℕ+, ‖a n‖ ≤ (n : ℝ)^k) :
     ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
       ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ (n : ℕ+) (z : K),
@@ -369,3 +358,4 @@ lemma qexp_deriv_bound_of_coeff_bound {a : ℕ+ → ℂ} {k : ℕ}
     · exact summable_zero
     · intro n ⟨z, hz_mem⟩
       exfalso; exact hK_nonempty ⟨z, hz_mem⟩
+-/

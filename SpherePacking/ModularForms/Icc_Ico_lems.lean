@@ -1,11 +1,8 @@
 module
-
 public import Mathlib.Algebra.Order.Group.Int
 public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.Data.Int.Star
 public import Mathlib.Tactic.Cases
-
-@[expose] public section
 
 open TopologicalSpace Set
   Metric Filter Function Complex
@@ -13,16 +10,10 @@ open TopologicalSpace Set
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 
-lemma Icc_succ (n : ℕ) : Finset.Icc (-(n + 1) : ℤ) (n + 1) = Finset.Icc (-n : ℤ) n ∪
-  {(-(n+1) : ℤ), (n + 1 : ℤ)} := by
-  refine Finset.ext_iff.mpr ?_
-  intro a
-  simp only [neg_add_rev, Int.reduceNeg, Finset.mem_Icc, add_neg_le_iff_le_add, Finset.union_insert,
-    Finset.mem_insert, Finset.mem_union, Finset.mem_singleton]
-  omega
+public lemma Icc_succ (n : ℕ) : Finset.Icc (-(n + 1) : ℤ) (n + 1) = Finset.Icc (-n : ℤ) n ∪
+  {(-(n+1) : ℤ), (n + 1 : ℤ)} := Finset.Icc_succ_succ n n
 
-
-lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m ∈ Finset.Icc (-N : ℤ) N, f m =
+public lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m ∈ Finset.Icc (-N : ℤ) N, f m =
   f N + f (-N : ℤ) + ∑ m ∈ Finset.Icc (-(N - 1) : ℤ) (N - 1), f m := by
   induction N with
   | zero => aesop
@@ -39,7 +30,7 @@ lemma trex (f : ℤ → ℂ) (N : ℕ) (hn : 1 ≤ N) : ∑ m ∈ Finset.Icc (-N
     simp
 
 
-lemma Icc_sum_even (f : ℤ → ℂ) (hf : ∀ n, f n = f (-n)) (N : ℕ) :
+public lemma Icc_sum_even (f : ℤ → ℂ) (hf : ∀ n, f n = f (-n)) (N : ℕ) :
     ∑ m ∈ Finset.Icc (-N : ℤ) N, f m = 2 * ∑ m ∈ Finset.range (N + 1), f m - f 0 := by
   induction N with
   | zero =>
@@ -63,19 +54,13 @@ lemma Icc_sum_even (f : ℤ → ℂ) (hf : ∀ n, f n = f (-n)) (N : ℕ) :
 
 
 
-lemma verga2 : Tendsto (fun N : ℕ => Finset.Icc (-N : ℤ) N) atTop atTop :=
+public lemma verga2 : Tendsto (fun N : ℕ => Finset.Icc (-N : ℤ) N) atTop atTop :=
   tendsto_atTop_finset_of_monotone (fun _ _ _ ↦ Finset.Icc_subset_Icc (by gcongr) (by gcongr))
   (fun x ↦ ⟨x.natAbs, by simp [le_abs, neg_le]⟩)
 
-lemma int_add_abs_self_nonneg (n : ℤ) : 0 ≤ n + |n| := by
-  by_cases h : 0 ≤ n
-  · apply add_nonneg h
-    exact abs_nonneg n
-  simp at *
-  rw [abs_of_neg h]
-  simp
+public lemma int_add_abs_self_nonneg (n : ℤ) : 0 ≤ n + |n| := add_abs_nonneg n
 
-lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
+public lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
   apply tendsto_atTop_finset_of_monotone (fun _ _ _ ↦ Finset.Ico_subset_Ico (by omega) (by gcongr))
   intro x
   use (x).natAbs + 1
@@ -87,8 +72,5 @@ lemma verga : Tendsto (fun N : ℕ => Finset.Ico (-N : ℤ) N) atTop atTop := by
   refine Int.lt_add_one_iff.mpr ?_
   exact le_abs_self x
 
-lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) = Finset.Ico (-(b : ℤ)) (b) ∪
-    {-((b+1) : ℤ), (b : ℤ)} := by
-  ext n
-  simp
-  omega
+public lemma fsb (b : ℕ) : Finset.Ico (-(b+1) : ℤ) (b+1) = Finset.Ico (-(b : ℤ)) (b) ∪
+    {-((b+1) : ℤ), (b : ℤ)} := Finset.Ico_succ_succ b b
