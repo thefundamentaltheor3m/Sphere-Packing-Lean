@@ -107,6 +107,11 @@ end Definitions
 @[simp] public lemma φ₀''_def {z : ℂ} (hz : 0 < z.im) : φ₀'' z = φ₀ ⟨z, hz⟩ := by
   simp [φ₀'', hz]
 
+/-- Unfold `φ₀''` when `z` is in `upperHalfPlaneSet`. -/
+@[simp] public lemma φ₀''_mem_upperHalfPlane {z : ℂ} (hz : z ∈ upperHalfPlaneSet) :
+    φ₀'' z = φ₀ ⟨z, hz⟩ :=
+  φ₀''_def hz
+
 /-- Unfold `φ₀''` on an upper-half-plane point `z : ℍ`. -/
 @[simp] public lemma φ₀''_coe_upperHalfPlane (z : ℍ) : φ₀'' (z : ℂ) = φ₀ z := by
   simp [φ₀'', UpperHalfPlane.im_pos z]
@@ -170,6 +175,13 @@ private lemma tendsto_tsum_mul_pow_nhdsWithin_ne_zero_half (c : ℕ → ℂ)
         simp only [norm_mul, norm_pow]
         refine mul_le_mul_of_nonneg_left ?_ (norm_nonneg (c m))
         exact pow_le_pow_left₀ (norm_nonneg q) (le_of_lt hq) m))
+
+lemma cuspfunc_Zero [hn : NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0 =
+    (qExpansion n f).coeff 0 := by
+  simpa [smul_eq_mul] using
+    (ModularFormClass.hasSum_qExpansion_of_norm_lt (h := n) (q := (0 : ℂ)) f
+          (by have := hn.1; positivity) (by simp) (by simp)).tsum_eq.symm.trans
+      (tsum_zero_pow fun m => (qExpansion n f).coeff m)
 
 lemma modfom_q_exp_cuspfunc (c : ℕ → ℂ) (f : F) [ModularFormClass F Γ(n) k] [NeZero n]
     (hf : ∀ τ : ℍ, HasSum (fun m : ℕ ↦ (c m) • 𝕢 n τ ^ m) (f τ)) : ∀ q : ℂ, ‖q‖ < 1 →
@@ -292,6 +304,16 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
     smul_eq_mul, mul_eq_mul_right_iff, pow_eq_zero_iff', Nat.cast_eq_zero, ne_eq, and_not_self,
     or_false, qExpansion2, qq] using h6
 
+lemma deriv_mul_eq (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
+    deriv (f * g) = deriv f * g + f * deriv g := by
+  ext y
+  exact deriv_mul (hf y) (hg y)
+
+lemma auxasdf (n : ℕ) : (PowerSeries.coeff n) ((qExpansion 1 E₄) * (qExpansion 1 E₆)) =
+    ∑ p ∈ Finset.antidiagonal n, (PowerSeries.coeff p.1)
+    ((qExpansion 1 E₄)) * (PowerSeries.coeff p.2) ((qExpansion 1 E₆)) := by
+  apply PowerSeries.coeff_mul
+
 /-- A crude upper bound on the divisor sum `σ k n`. -/
 public lemma sigma_bound (k n : ℕ) : σ k n ≤ n ^ (k + 1) := by
   rw [ArithmeticFunction.sigma_apply]
@@ -387,6 +409,11 @@ lemma Ek_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
     simpa using hSummable
   · simpa using hSummable
 
+/-- The constant `q`-coefficient of `E k` is `1`. -/
+public lemma Ek_q_exp_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
+    (qExpansion 1 (E k hk)).coeff 0 = 1 := by
+  simpa using congr_fun (Ek_q_exp k hk hk2) 0
+
 private lemma E4_q_exp_const :
     (1 / (riemannZeta (4 : ℕ))) * ((-2 * (π : ℂ) * Complex.I) ^ 4 / (4 - 1)!) = (240 : ℂ) := by
   have hz : riemannZeta (4 : ℕ) = (π : ℂ) ^ 4 / 90 := by
@@ -417,6 +444,11 @@ public lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff m) =
 /-- The constant `q`-coefficient of `E₄` is `1`. -/
 public lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 := by
   simpa using congr_fun E4_q_exp 0
+
+
+@[simp]
+theorem Complex.I_pow_six : Complex.I ^ 6 = -1 := by
+  norm_num1
 
 @[simp]
 theorem bernoulli'_five : bernoulli' 5 = 0 := by
@@ -643,6 +675,43 @@ public lemma E4_q_exp_one : (qExpansion 1 E₄).coeff 1 = 240 := by
 /-- The `q`-coefficient of `E₆` at `n = 1` is `-504`. -/
 public lemma E6_q_exp_one : (qExpansion 1 E₆).coeff 1 = -504 := by
   simpa using congr_fun E6_q_exp 1
+
+/-- The antidiagonal of `1` is the two-element set `{(1,0),(0,1)}`. -/
+public lemma antidiagonal_one : Finset.antidiagonal 1 = {(1,0), (0,1)} := by
+  ext p
+  rcases p with ⟨x, y⟩
+  simp [Nat.add_eq_one_iff, or_comm]
+
+lemma E4_pow_q_exp_one : (qExpansion 1 ((E₄).mul ((E₄).mul E₄))).coeff 1 = 3 * 240 := by
+  rw [← Nat.cast_one (R := ℝ), qExpansion_mul_coeff, qExpansion_mul_coeff]
+  simp [PowerSeries.coeff_mul, Finset.antidiagonal_zero, antidiagonal_one,
+    E4_q_exp_zero, E4_q_exp_one]
+  ring
+
+/-- The Eisenstein series `E k` is nonzero (detected by its constant `q`-coefficient). -/
+public lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
+  intro h
+  simpa [h, qExpansion_zero (1 : ℝ)] using Ek_q_exp_zero k hk hk2
+
+/-- The Eisenstein series `E₄` is nonzero. -/
+public lemma E4_ne_zero : E₄ ≠ 0 := by
+  simpa [E4_eq] using Ek_ne_zero 4 (by norm_num) (by exact Nat.even_iff.mpr rfl)
+
+/-- The Eisenstein series `E₆` is nonzero. -/
+public lemma E6_ne_zero : E₆ ≠ 0 := by
+  simpa [E6_eq] using Ek_ne_zero 6 (by norm_num) (by exact Nat.even_iff.mpr rfl)
+
+/-- Normalize a non-cusp modular form so that its constant `q`-coefficient becomes `1`. -/
+public lemma modularForm_normalise (f : ModularForm Γ(1) k) (hf : ¬ IsCuspForm Γ(1) k f) :
+    (qExpansion 1 (((qExpansion 1 f).coeff 0)⁻¹ • f)).coeff 0 = 1 := by
+  rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2, Nat.cast_one]
+  refine inv_mul_cancel₀ (by
+    intro h
+    exact hf ((IsCuspForm_iff_coeffZero_eq_zero k f).2 h))
+
+lemma PowerSeries.coeff_add (f g : PowerSeries ℂ) (n : ℕ) :
+    (f + g).coeff n = (f.coeff n) + (g.coeff n) :=
+  rfl
 
 open ArithmeticFunction
 

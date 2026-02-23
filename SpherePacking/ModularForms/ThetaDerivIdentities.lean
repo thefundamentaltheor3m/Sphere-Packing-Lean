@@ -104,10 +104,13 @@ lemma f₄_decompose :
 /-- f₂ is MDifferentiable -/
 lemma f₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₂ := by simpa [f₂] using (by fun_prop)
 
+/-- f₃ is MDifferentiable -/
+lemma f₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₃ := by simpa [f₃] using (by fun_prop)
+
 /-- f₄ is MDifferentiable -/
 lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by simpa [f₄] using (by fun_prop)
 
-attribute [local fun_prop] f₂_MDifferentiable f₄_MDifferentiable
+attribute [local fun_prop] f₂_MDifferentiable f₃_MDifferentiable f₄_MDifferentiable
 
 /-!
 ## Phase 3-4: Relation f₂ + f₄ = f₃
@@ -630,10 +633,17 @@ lemma f₄_eq_zero : f₄ = 0 := by
   · funext τ
     simpa [ofComplex_apply_of_im_pos τ.im_pos] using hF4zero _ τ.im_pos
 
+lemma f₃_eq_zero : f₃ = 0 := by
+  simpa [f₂_eq_zero, f₄_eq_zero] using (f₂_add_f₄_eq_f₃).symm
+
 /-- Serre derivative identity for `H₂` (Blueprint Proposition 6.52). -/
 public theorem serre_D_two_H₂ :
     serre_D 2 H₂ = (1 / 6 : ℂ) • (H₂ * (H₂ + (2 : ℂ) • H₄)) := by
   exact sub_eq_zero.mp (by simpa [f₂] using (f₂_eq_zero : f₂ = 0))
+
+public theorem serre_D_two_H₃ :
+    serre_D 2 H₃ = (1 / 6 : ℂ) • (H₂ ^ 2 - H₄ ^ 2) := by
+  exact sub_eq_zero.mp (by simpa [f₃] using (f₃_eq_zero : f₃ = 0))
 
 /-- Serre derivative identity for `H₄` (Blueprint Proposition 6.52). -/
 public theorem serre_D_two_H₄ :

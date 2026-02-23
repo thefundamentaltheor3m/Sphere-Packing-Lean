@@ -266,8 +266,7 @@ To prove this we will do use the following non-standard proof. First we have the
 \end{proof}
 
 
-\begin{theorem}\label{thm:lvl1_dims}\uses{def:holomorphic-modular-form, lemma:disc-E4E6, def:disc-definition}\leanok
-%\lean{ModularForm.dimension_level_one}
+\begin{theorem}\label{thm:lvl1_dims}\uses{def:holomorphic-modular-form, lemma:disc-E4E6, def:disc-definition}\lean{ModularForm.dimension_level_one}\leanok
     Let $k \in \Z$ with $k \ge 0$ and even. Then $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor $ if $k \equiv 2 \mod 12$ and $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor + 1$ if $k \not\equiv 2 \mod 12$.
 \end{theorem}
 \begin{proof}\leanok
@@ -281,8 +280,7 @@ Finally we need to check that $\dim M_2(\Gamma_1) = 0$. Firstly, there can't be 
 but $a_0(f) \ne 0$ (since its assumed to not be a cuspform), this would mean $\Delta =0$ which we know can't happen.
 \end{proof}
 
-\begin{theorem}\label{thm:dim-mf-general-level}\uses{def:Mk, thm:lvl1_dims}\leanok
-%\lean{dim_gen_cong_levels}
+\begin{theorem}\label{thm:dim-mf-general-level}\uses{def:Mk, thm:lvl1_dims}\lean{dim_gen_cong_levels}\leanok
 Let $\Gamma$ be a congruence subgroup. Then $M_k(\Gamma)$ is finite-dimensional.
 \end{theorem}
 \begin{proof}\leanok
@@ -299,8 +297,7 @@ We know that $\dim(M_k(\Gamma_1))$ is finite dimensional from the above, now thi
 % A key fact in the theory of modular forms is that they form a finite-dimensional vector space (for a fixed weight and level).
 % Especially, we use the following dimension results.
 
-\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:lvl1_dims}\leanok
-% \lean{ModularForm.dimension_level_one}
+\begin{corollary}\label{cor:dim-mf}\uses{def:Mk, thm:lvl1_dims}\lean{ModularForm.dimension_level_one}\leanok
 We have
 \begin{align}
     \dim M_2(\mathrm{SL}_{2}(\mathbb{Z})) &= 0, \label{eqn:dimM2} \\
@@ -547,8 +544,7 @@ We define the (normalized) derivative of $F$ as
 \end{definition}
 
 Normalizing the derivative by $1/(2 \pi i)$ as in \eqref{eqn:derivative} is standard in the theory of modular forms, since it makes the $q$-expansion coefficients nicer.
-\begin{lemma}\label{lemma:der-q-series}\uses{def:derivative}\leanok
-% \lean{D_qexp_tsum_pnat}
+\begin{lemma}\label{lemma:der-q-series}\uses{def:derivative}\lean{D_qexp_tsum_pnat}\leanok
 We have an equality of operators $D = q \frac{\dd}{\dd q}$.
 In particular, the $q$-series of the derivative of a quasimodular form $F(z) = \sum_{n \ge n_0} a_n q^n$ is $F'(z) = \sum_{n \ge n_0} n a_n q^n$.
 \end{lemma}
@@ -646,9 +642,7 @@ By Ramanujan's formula \eqref{eqn:DE4} and \eqref{eqn:DE6},
 \end{proof}
 
 Similar argument allow us to compute (Serre) derivatives of $H_2, H_3, H_4$.
-\begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T, lemma:jacobi-identity}\leanok
-\lean{serre_D_two_H₂,serre_D_two_H₄}
-% \lean{serre_D_two_H₂,serre_D_two_H₃,serre_D_two_H₄}
+\begin{proposition}\label{prop:theta-der}\uses{def:serre-der, lemma:theta-transform-S-T, lemma:jacobi-identity}\lean{serre_D_two_H₂,serre_D_two_H₃,serre_D_two_H₄}\leanok
 We have
 \begin{align}
     H_2' &= \frac{1}{6} (H_{2}^{2} + 2 H_{2} H_{4} + E_2 H_2) \label{eqn:H2-der}\\

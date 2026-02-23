@@ -11,7 +11,6 @@ public import SpherePacking.ModularForms.PhiTransform
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.MeasureTheory.Integral.ExpDecay
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
-import SpherePacking.ForMathlib.Intervals
 import SpherePacking.ForMathlib.UpperHalfPlane
 
 /-!
@@ -570,7 +569,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       simpa [IntegrableOn] using hint
     -- Combine `(1,A]` and `(A,∞)`.
     have hIoi1_split : Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A := by
-      simpa using (SpherePacking.ForMathlib.Ioi_eq_Ioc_union_Ioi (a := (1 : ℝ)) (b := A) hA1)
+      simpa using (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) hA1).symm
     have hIoi1 : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi (1 : ℝ)) :=
       by
         rw [hIoi1_split]

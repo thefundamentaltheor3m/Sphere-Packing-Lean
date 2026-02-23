@@ -272,73 +272,17 @@ theorem calc_steps_part1 (hd : 0 < d) :
           (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
         exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
           := by
-              let A : SchwartzMap.dualLattice (d := d) P.lattice → ℂ :=
-                SpherePacking.CohnElkies.expSum P D
-              let r : SchwartzMap.dualLattice (d := d) P.lattice → ℝ := fun m =>
-                (𝓕 ⇑f (m : EuclideanSpace ℝ (Fin d))).re * (‖A m‖ ^ 2)
-              have hFourier :
-                  ∀ m : SchwartzMap.dualLattice (d := d) P.lattice,
-                    𝓕 f (m : EuclideanSpace ℝ (Fin d)) = (𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d)) := by
-                intro m
-                simpa using congrArg (fun g : EuclideanSpace ℝ (Fin d) → ℂ =>
-                  g (m : EuclideanSpace ℝ (Fin d))) (SchwartzMap.fourier_coe (f := f))
-              have hterm :
-                  ∀ m : SchwartzMap.dualLattice (d := d) P.lattice,
-                    ((𝓕 f m).re : ℂ) * A m * conj (A m) = (r m : ℂ) := by
-                intro m
-                have hFourierRe :
-                    (𝓕 f m).re = (𝓕 ⇑f (m : EuclideanSpace ℝ (Fin d))).re := by
-                  simpa using congrArg Complex.re (hFourier m)
-                calc
-                  ((𝓕 f m).re : ℂ) * A m * conj (A m)
-                      = ((𝓕 f m).re : ℂ) * (A m * conj (A m)) := by
-                        simp [mul_assoc]
-                  _ = ((𝓕 f m).re : ℂ) * (‖A m‖ ^ 2) := by
-                        simp [Complex.mul_conj']
-                  _ = ((𝓕 ⇑f (m : EuclideanSpace ℝ (Fin d))).re : ℂ) * (‖A m‖ ^ 2) := by
-                        simp [hFourierRe]
-                  _ = (r m : ℂ) := by
-                        simp [r]
-              have hsum :
-                  (∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
-                      ((𝓕 f m).re : ℂ) * A m * conj (A m))
-                    =
-                    ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (r m : ℂ) := by
-                exact tsum_congr fun m => hterm m
-              have hsum' :
-                  (∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (r m : ℂ))
-                    =
-                    ((∑' m : SchwartzMap.dualLattice (d := d) P.lattice, r m : ℝ) : ℂ) := by
-                exact
-                  (Complex.ofReal_tsum (L := .unconditional _)
-                      (fun m : SchwartzMap.dualLattice (d := d) P.lattice => r m)).symm
-              -- Turn the complex series into an `ofReal` series, then take real parts.
-              have hcalc :
-                  ((1 / ZLattice.covolume P.lattice volume) *
-                        ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
-                          ((𝓕 f m).re : ℂ) * A m * conj (A m)).re
-                      =
-                      (1 / ZLattice.covolume P.lattice volume) *
-                        ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
-                          (𝓕 ⇑f (m : EuclideanSpace ℝ (Fin d))).re * (‖A m‖ ^ 2) := by
-                calc
-                  ((1 / ZLattice.covolume P.lattice volume) *
-                          ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
-                            ((𝓕 f m).re : ℂ) * A m * conj (A m)).re
-                      =
-                      ((1 / ZLattice.covolume P.lattice volume : ℂ) *
-                          ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (r m : ℂ)).re := by
-                        simp [hsum]
-                  _ = (1 / ZLattice.covolume P.lattice volume) *
-                      ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, r m := by
-                        rw [hsum']
-                        simp
-                  _ = (1 / ZLattice.covolume P.lattice volume) *
-                      ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
-                        (𝓕 ⇑f (m : EuclideanSpace ℝ (Fin d))).re * (‖A m‖ ^ 2) := by
-                        rfl
-              -- Unfold `A` and rewrite `‖A m‖` as `norm (∑' x, ...)` (definitional).
-              simpa [A, r] using hcalc
+            rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
+                ∑' (m : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice)),
+                 (𝓕 ⇑f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
+                 cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
+            congr 1
+            push_cast
+            congr! 3 with m
+            rw [mul_assoc]
+            apply congrArg _ _
+            rw [mul_conj, Complex.normSq_eq_norm_sq]
+            norm_cast
 
 include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ in
 omit hne_zero hReal hRealFourier hCohnElkies₁ hP [Nonempty ↑P.centers] in

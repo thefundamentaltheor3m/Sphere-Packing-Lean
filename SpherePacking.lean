@@ -65,7 +65,6 @@ import SpherePacking.ForMathlib.InnerProductSpace
 import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.ForMathlib.IntegralProd
 import SpherePacking.ForMathlib.IntervalIntegral
-import SpherePacking.ForMathlib.Intervals
 import SpherePacking.ForMathlib.InvPowSummability
 import SpherePacking.ForMathlib.IteratedDeriv
 import SpherePacking.ForMathlib.MDifferentiableFunProp
@@ -212,6 +211,11 @@ import SpherePacking.ModularForms.Cauchylems
 import SpherePacking.ModularForms.CuspFormIsoModforms
 import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.Derivative
+import SpherePacking.ModularForms.DimGenCongLevels.Aux
+import SpherePacking.ModularForms.DimGenCongLevels.Basic
+import SpherePacking.ModularForms.DimGenCongLevels.FiniteDimensional
+import SpherePacking.ModularForms.DimGenCongLevels.NormReduction
+import SpherePacking.ModularForms.DimGenCongLevels.NormTransfer
 import SpherePacking.ModularForms.DimensionFormulas
 import SpherePacking.ModularForms.E2
 import SpherePacking.ModularForms.Eisenstein

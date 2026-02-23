@@ -32,32 +32,11 @@ public theorem continuous_coeFun {n : ℕ} : Continuous (coeFun n) := by
 /-- A homeomorphism `α × (Fin n → α) ≃ (Fin (n+1) → α)`, specialized to constant families. -/
 def finSuccPiHomeomorph (α : Type*) [TopologicalSpace α] (n : ℕ) :
     (α × (Fin n → α)) ≃ₜ (Fin n.succ → α) where
-  toEquiv :=
-    { toFun := fun p => Fin.cons p.1 p.2
-      invFun := fun f => (f 0, fun i => f (Fin.succ i))
-      left_inv := by
-        rintro ⟨a, f⟩
-        ext <;> simp
-      right_inv := by
-        intro f
-        ext i
-        cases i using Fin.cases with
-        | zero => simp
-        | succ i => simp }
+  toEquiv := Fin.consEquiv (fun _ ↦ α)
   continuous_toFun := by
-    -- `Fin.cons` is continuous coordinatewise.
-    refine continuous_pi ?_
-    intro i
-    cases i using Fin.cases with
-    | zero =>
-        simpa using continuous_fst
-    | succ i =>
-        simpa using (continuous_apply i |>.comp continuous_snd)
-  continuous_invFun := by
-    refine (continuous_apply (0 : Fin n.succ)).prodMk ?_
-    refine continuous_pi ?_
-    intro i
-    simpa using (continuous_apply (Fin.succ i))
+    simp only [Fin.consEquiv]
+    refine Continuous.finCons (by fun_prop) (by fun_prop)
+  continuous_invFun := by fun_prop
 
 /-- `coeFun` is an open quotient map, so it presents `(ℝ/ℤ)^n` as a quotient of `ℝ^n`. -/
 public theorem isOpenQuotientMap_coeFun (n : ℕ) : IsOpenQuotientMap (coeFun n) := by
@@ -92,7 +71,7 @@ public theorem isOpenQuotientMap_coeFun (n : ℕ) : IsOpenQuotientMap (coeFun n)
         ext i
         cases i using Fin.cases with
         | zero => simp [coeFun, eY, finSuccPiHomeomorph, eX, Prod.map]
-        | succ i => simp [coeFun, eY, finSuccPiHomeomorph, eX, Prod.map]
+        | succ i => simp [coeFun, eY, finSuccPiHomeomorph, eX, Prod.map, Fin.tail]
       have hhomeoY : IsOpenQuotientMap eY := eY.isOpenQuotientMap
       -- Compose: `Fin n.succ → ℝ` --eX--> `ℝ × (Fin n → ℝ)` --Prod.map--> ...
       --   --> `Fin n.succ → UnitAddCircle` via the homeomorphism.

@@ -130,34 +130,28 @@ public theorem D_mul (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G)
   simp [D, hderiv, mul_add, mul_assoc, mul_left_comm, mul_comm]
 
 @[simp]
-theorem D_sq (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
+public theorem D_sq (F : ℍ → ℂ) (hF : MDiff F) :
     D (F ^ 2) = 2 * F * D F := by
-  calc
-    D (F ^ 2) = D (F * F) := by rw [pow_two]
-    _ = D F * F + F * D F := by rw [D_mul F F hF hF]
-    _ = 2 * F * D F := by ring_nf
+  rw [pow_two, D_mul F F hF hF]
+  ring_nf
 
+
+/-- A specialization of the Leibniz rule: `D (F^3)`. -/
 @[simp]
-theorem D_cube (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
+public theorem D_cube (F : ℍ → ℂ) (hF : MDiff F) :
     D (F ^ 3) = 3 * F ^ 2 * D F := by
-  have hF2 : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (F ^ 2) := by rw [pow_two]; exact MDifferentiable.mul hF hF
-  calc
-    D (F ^ 3) = D (F * F ^ 2) := by ring_nf
-    _ = D F * F ^ 2 + F * D (F ^ 2) := by rw [D_mul F (F ^ 2) hF hF2]
-    _ = D F * F ^ 2 + F * (2 * F * D F) := by rw [D_sq F hF]
-    _ = 3 * F^2 * D F := by ring_nf
+  have hF2 : MDiff (F ^ 2) := by simpa [pow_two] using (MDifferentiable.mul hF hF)
+  rw [show F ^ 3 = F * F ^ 2 by ring_nf]
+  rw [D_mul F (F ^ 2) hF hF2, D_sq F hF]
+  ring_nf
 
+
+/-- The derivative of a constant function is zero. -/
 @[simp]
-theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
-  have h : deriv (Function.const _ c ∘ ofComplex) z = 0 := by
-    have h' : Function.const _ c ∘ ofComplex = Function.const _ c := by rfl
-    rw [h']
-    exact deriv_const _ c
-  calc
-    D (Function.const _ c) z
-    _ = (2 * π * I)⁻¹ * deriv (Function.const _ c ∘ ofComplex) z := by rfl
-    _ = (2 * π * I)⁻¹ * 0 := by rw [h]
-    _ = 0 := by ring_nf
+public theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
+  unfold D
+  change (2 * π * I)⁻¹ * deriv (fun _ : ℂ => c) (z : ℂ) = 0
+  simp [deriv_const]
 
 /-! ### Termwise differentiation of q-series (Lemma 6.45) -/
 
@@ -176,22 +170,16 @@ lemma derivWithin_qexp (a c : ℂ) (w : ℂ) (hw : 0 < w.im) :
   ((hasDerivAt_qexp a c w).hasDerivWithinAt).derivWithin
     (isOpen_upperHalfPlaneSet.uniqueDiffWithinAt hw)
 
-/--
-**Lemma 6.45 (Blueprint)**: The normalized derivative $D$ acts as $q \frac{d}{dq}$ on $q$-series.
-For a single q-power term: D(a·qⁿ) = n·a·qⁿ where q = exp(2πiz) and n ∈ ℤ.
-
-The key calculation:
-- d/dz(exp(2πinz)) = 2πin·exp(2πinz)
-- D(exp(2πinz)) = (2πi)⁻¹·(2πin·exp(2πinz)) = n·exp(2πinz)
--/
-theorem D_qexp_term (n : ℤ) (a : ℂ) (z : ℍ) :
+/-- Lemma 6.45 (Blueprint): D acts as q·d/dq on one q-term: D(a·qⁿ) = n·a·qⁿ. -/
+public theorem D_qexp_term (n : ℤ) (a : ℂ) (z : ℍ) :
     D (fun w => a * cexp (2 * π * I * n * w)) z =
       n * a * cexp (2 * π * I * n * z) := by
   simp only [D]
-  have h_agree : ((fun w : ℍ => a * cexp (2 * π * I * n * w)) ∘ ofComplex) =ᶠ[nhds (z : ℂ)]
-      (fun w : ℂ => a * cexp (2 * π * I * n * w)) := by
+  have h_agree :
+      ((fun w : ℍ => a * cexp (2 * π * I * n * w)) ∘ ofComplex)
+          =ᶠ[nhds (z : ℂ)] fun w : ℂ => a * cexp (2 * π * I * n * w) := by
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.2] with w hw
-    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, UpperHalfPlane.coe_mk]
+    simp [Function.comp_apply, ofComplex_apply_of_im_pos hw]
   rw [h_agree.deriv_eq, (hasDerivAt_qexp a n z).deriv]
   field_simp [two_pi_I_ne_zero]
 
@@ -268,17 +256,12 @@ public theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
   simp_rw [h_deriv_simp, ← tsum_mul_left]
   congr 1; funext n; field_simp [two_pi_I_ne_zero]
 
-/-
 /--
-Simplified version of `D_qexp_tsum` for ℕ+-indexed series (starting from n=1).
-This is the form most commonly used for Eisenstein series q-expansions.
-
-**Thin layer implementation:** Extends `a : ℕ+ → ℂ` to `ℕ → ℂ` with `a' 0 = 0`,
-uses `tsum_pNat` and `nat_pos_tsum2` to convert between sums,
+`D_qexp_tsum` for ℕ+-indexed series (n ≥ 1), as used for Eisenstein q-expansions.
+Extends `a : ℕ+ → ℂ` to `a' : ℕ → ℂ` with `a' 0 = 0`, converts via `tsum_pNat`,
 then applies `D_qexp_tsum`.
 -/
 public theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
-    (hsum : Summable (fun n : ℕ+ => a n * cexp (2 * π * I * n * z)))
     (hsum_deriv : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
         ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ n (k : K), ‖a n * (2 * π * I * n) *
           cexp (2 * π * I * n * k.1)‖ ≤ u n) :
@@ -294,26 +277,24 @@ public theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
     obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK hKc
     let u' : ℕ → ℝ := fun n => if h : 0 < n then u ⟨n, h⟩ else 0
     have hu' : ∀ n : ℕ+, u' n = u n := fun n => dif_pos n.pos
-    refine ⟨u', (nat_pos_tsum2 u' (by simp [u'])).mp (hu_sum.congr fun n => by rw [hu']),
-      fun n k => ?_⟩
-    by_cases hn : 0 < n
-    · simp only [a', u', dif_pos hn]; exact hu_bound _ k
-    · simp only [Nat.not_lt, Nat.le_zero] at hn; simp [a', u', hn]
+    refine ⟨u', (nat_pos_tsum2 u' (by simp [u'])).mp (hu_sum.congr fun n => by rw [hu']), ?_⟩
+    intro n k; by_cases hn : 0 < n
+    · simpa [a', u', dif_pos hn] using hu_bound ⟨n, hn⟩ k
+    · simp [a', u', hn]
   -- Apply D_qexp_tsum and convert sums via tsum_pNat
-  have hD := D_qexp_tsum a' z ((nat_pos_tsum2 _ (by simp [a'])).mp
-    (hsum.congr fun n => by rw [ha'])) hsum_deriv'
+  have hD := D_qexp_tsum a' z hsum_deriv'
   calc D (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) z
       = D (fun w : ℍ => ∑' n : ℕ, a' n * cexp (2 * π * I * n * (w : ℂ))) z := by
-          congr 1; ext w; rw [← tsum_pNat _ (by simp [a'])]; exact tsum_congr fun n => by rw [ha']
+          congr 1
+          ext w
+          rw [← tsum_pNat _ (by simp [a'])]
+          exact tsum_congr fun n => by rw [ha']
     _ = ∑' n : ℕ, (n : ℂ) * a' n * cexp (2 * π * I * n * (z : ℂ)) := hD
     _ = ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
-          rw [← tsum_pNat _ (by simp [a'])]; exact tsum_congr fun n => by rw [ha']
--/
+          rw [← tsum_pNat _ (by simp [a'])]
+          exact tsum_congr fun n => by rw [ha']
 
-/--
-Serre derivative of weight $k$.
-Note that the definition makes sense for any analytic function $F : \mathbb{H} \to \mathbb{C}$.
--/
+/-- Serre derivative of weight `k` for functions `F : ℍ → ℂ`. -/
 @[expose] public noncomputable def serre_D (k : ℂ) : (ℍ → ℂ) → (ℍ → ℂ) :=
   fun (F : ℍ → ℂ) => (fun z => D F z - k * 12⁻¹ * E₂ z * F z)
 
@@ -729,6 +710,35 @@ public lemma mul_re_of_im_eq_zero {x y : ℂ} (hx : x.im = 0) (hy : y.im = 0) :
     (x * y).re = x.re * y.re := by
   simp [Complex.mul_re, hx, hy]
 
+lemma strictAntiOn_Ioi_zero_of_deriv_neg {f : ℝ → ℝ}
+    (hcont : ∀ x : ℝ, 0 < x → ContinuousWithinAt f (Set.Ioi (0 : ℝ)) x)
+    (hn : ∀ x ∈ Set.Ioi (0 : ℝ), deriv f x < 0) : StrictAntiOn f (Set.Ioi (0 : ℝ)) := by
+  exact
+    strictAntiOn_of_deriv_neg (convex_Ioi (0 : ℝ)) (fun x hx => hcont x hx)
+      (by simpa [interior_Ioi] using hn)
+
+/--
+If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
+is positive) and the derivative is positive, then $F$ is also positive.
+-/
+theorem antiDerPos {F : ℍ → ℂ} (hFderiv : MDiff F)
+    (hFepos : ResToImagAxis.EventuallyPos F) (hDF : ResToImagAxis.Pos (D F)) :
+    ResToImagAxis.Pos F := by
+  obtain ⟨hF_real, t₀, ht₀_pos, hF_pos⟩ := hFepos
+  obtain ⟨-, hDF_pos⟩ := hDF
+  let g := fun t => (F.resToImagAxis t).re
+  have hg :
+      ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t :=
+    fun t ht => by
+      simpa [g] using hasDerivAt_re_resToImagAxis F hFderiv t ht
+  have hn : ∀ t ∈ Set.Ioi (0 : ℝ), deriv g t < 0 := fun t (ht : 0 < t) => by
+    rw [(hg t ht).deriv]
+    have ht' : 0 < (ResToImagAxis (D F) t).re := hDF_pos t ht
+    nlinarith [Real.pi_pos, ht']
+  have hAnti : StrictAntiOn g (Set.Ioi (0 : ℝ)) :=
+    strictAntiOn_Ioi_zero_of_deriv_neg (fun x hx => (hg x hx).continuousAt.continuousWithinAt) hn
+  exact ⟨hF_real, fun t ht => StrictAntiOn.eventuallyPos_Ioi hAnti ht₀_pos hF_pos t ht⟩
+
 /--
 Logarithmic derivative of the discriminant: `D Δ = E₂ * Δ` (used in `antiSerreDerPos`).
 -/
@@ -777,28 +787,6 @@ public theorem D_Delta_eq_E₂_mul_Delta : D Δ = E₂ * Δ := by
     _ = E₂ z * (η (z : ℂ) ^ (24 : ℕ)) := by
           field_simp [h2piI]
     _ = E₂ z * Δ z := by simp [hηpow]
-
-/--
-If $F$ is a modular form where $F(it)$ is positive for sufficiently large $t$ (i.e. constant term
-is positive) and the derivative is positive, then $F$ is also positive.
--/
-theorem antiDerPos {F : ℍ → ℂ} (hFderiv : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
-    (hFepos : ResToImagAxis.EventuallyPos F) (hDF : ResToImagAxis.Pos (D F)) :
-    ResToImagAxis.Pos F := by
-  obtain ⟨hF_real, t₀, ht₀_pos, hF_pos⟩ := hFepos
-  obtain ⟨-, hDF_pos⟩ := hDF
-  let g := fun t => (F.resToImagAxis t).re
-  have hg : ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t :=
-    fun t ht => hasDerivAt_resToImagAxis_re hFderiv ht
-  have hn : ∀ t ∈ Set.Ioi (0 : ℝ), deriv g t < 0 := fun t (ht : 0 < t) => by
-    rw [(hg t ht).deriv]
-    have ht' : 0 < (ResToImagAxis (D F) t).re := hDF_pos t ht
-    nlinarith [Real.pi_pos]
-  have gpos := fun t ht =>
-    StrictAntiOn.eventuallyPos_Ioi (strictAntiOn_of_deriv_neg (convex_Ioi 0)
-    (fun x hx => (hg x hx).continuousAt.continuousWithinAt)
-      (by simpa [interior_Ioi] using hn)) ht₀_pos hF_pos t ht
-  exact ⟨hF_real, gpos⟩
 
 /--
 Let $F : \mathbb{H} \to \mathbb{C}$ be holomorphic with $F(it)$ real for all $t > 0$.
