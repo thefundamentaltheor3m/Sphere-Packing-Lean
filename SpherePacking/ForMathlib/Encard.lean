@@ -1,10 +1,15 @@
-import Mathlib.Data.Set.Card
-import Mathlib.Topology.Algebra.InfiniteSum.Defs
-import Mathlib.Topology.Instances.ENat
-import Mathlib.Data.ENat.Lattice
+module
+public import Mathlib.Data.ENat.Lattice
+public import Mathlib.Data.Set.Card
+public import Mathlib.Topology.Algebra.InfiniteSum.Defs
+public import Mathlib.Topology.Instances.ENat
+public import Mathlib.Data.ENat.Lattice
+
+import Mathlib.Topology.Algebra.InfiniteSum.Basic
+import Mathlib.Topology.Algebra.InfiniteSum.Constructions
 import Mathlib.Topology.Algebra.InfiniteSum.Order
 import Mathlib.Topology.Order.T5
-import SpherePacking.ForMathlib.ENat
+public import SpherePacking.ForMathlib.ENat
 
 
 -- TODO (BM): make `Scott` a def so we don't end up with a weird topology on ENat
@@ -22,11 +27,13 @@ section tsum
 
 variable {ι : Sort*} {α β : Type*} {f g : α → ℕ∞} {s t : Set α}
 
+/-- The sum of an `ENat`-valued series is the supremum of its finite partial sums. -/
 protected theorem hasSum : HasSum f (⨆ s : Finset α, ∑ a ∈ s, f a) :=
   tendsto_atTop_iSup fun _ _ ↦ Finset.sum_le_sum_of_subset
 
+/-- Any `ENat`-valued series is summable. -/
 @[simp] protected theorem summable : Summable f :=
-  ⟨_, ENat.hasSum⟩
+  hasSum.summable
 
 protected theorem tsum_eq_iSup_sum : ∑' x, f x = (⨆ s : Finset α, ∑ a ∈ s, f a) :=
   ENat.hasSum.tsum_eq
@@ -137,10 +144,12 @@ protected theorem tsum_eq_top_iff : ∑' a, f a = ⊤ ↔ f.support.Infinite ∨
 
 protected theorem tsum_subtype_eq_top_iff {s : Set α} :
     ∑' (a : s), f a = ⊤ ↔ (s ∩ f.support).Infinite ∨ ∃ a ∈ s, f a = ⊤ := by
-  simp only [ENat.tsum_eq_top_iff, Subtype.exists, exists_prop]
-  convert Iff.rfl
-  convert Set.finite_image_iff Subtype.val_injective.injOn
-  aesop
+  have hsupp_img : (Subtype.val '' support (fun a : s ↦ f a)) = s ∩ f.support := by
+    ext a; simp [mem_support, and_comm]
+  have hsupp : (support (fun a : s ↦ f a)).Infinite ↔ (s ∩ f.support).Infinite := by
+    simpa [hsupp_img] using (Set.infinite_image_iff (s := support (fun a : s ↦ f a))
+      (f := Subtype.val) Subtype.val_injective.injOn).symm
+  simp [ENat.tsum_eq_top_iff, hsupp]
 
 protected theorem tsum_subtype_eq_top_of_inter_support_infinite {s : Set α}
     (hf : (s ∩ f.support).Infinite) : ∑' (a : s), f a = ⊤ :=
@@ -151,20 +160,20 @@ protected theorem tsum_subtype_const_eq_top_of_ne_zero {s : Set α} (hs : s.Infi
   ENat.tsum_subtype_eq_top_of_inter_support_infinite (f := fun _ ↦ c)
     <| by rwa [support_const hc, inter_univ]
 
-protected theorem tsum_comp_le_tsum_of_injective {f : α → β} (hf : Injective f) (g : β → ℕ∞) :
-    ∑' x, g (f x) ≤ ∑' y, g y :=
-  Summable.tsum_le_tsum_of_inj f hf (fun _ _ ↦ zero_le _) (fun _ ↦ le_rfl)
-    ENat.summable ENat.summable
+protected theorem tsum_comp_le_tsum_of_injective {φ : α → β} (hφ : Injective φ) (g : β → ℕ∞) :
+    ∑' x, g (φ x) ≤ ∑' y, g y :=
+  (summable (f := fun x => g (φ x))).tsum_le_tsum_of_inj φ hφ (fun _ _ ↦ zero_le _)
+    (fun _ ↦ le_rfl) (summable (f := g))
 
-protected theorem tsum_le_tsum_comp_of_surjective {f : α → β} (hf : Surjective f) (g : β → ℕ∞) :
-    ∑' y, g y ≤ ∑' x, g (f x) :=
-  calc ∑' y, g y = ∑' y, g (f (surjInv hf y)) := by simp only [surjInv_eq hf]
-    _ ≤ ∑' x, g (f x) := ENat.tsum_comp_le_tsum_of_injective (injective_surjInv hf) _
+protected theorem tsum_le_tsum_comp_of_surjective {φ : α → β} (hφ : Surjective φ) (g : β → ℕ∞) :
+    ∑' y, g y ≤ ∑' x, g (φ x) :=
+  calc ∑' y, g y = ∑' y, g (φ (surjInv hφ y)) := by simp [surjInv_eq hφ]
+    _ ≤ ∑' x, g (φ x) := tsum_comp_le_tsum_of_injective (injective_surjInv hφ) _
 
-protected theorem tsum_comp_eq_tsum_of_bijective {f : α → β} (hf : f.Bijective) (g : β → ℕ∞) :
-    ∑' x, g (f x) = ∑' y, g y :=
-  (ENat.tsum_comp_le_tsum_of_injective hf.injective g).antisymm
-    (ENat.tsum_le_tsum_comp_of_surjective hf.surjective g)
+protected theorem tsum_comp_eq_tsum_of_bijective {φ : α → β} (hφ : φ.Bijective) (g : β → ℕ∞) :
+    ∑' x, g (φ x) = ∑' y, g y :=
+  (tsum_comp_le_tsum_of_injective hφ.injective g).antisymm
+    (tsum_le_tsum_comp_of_surjective hφ.surjective g)
 
 protected theorem tsum_comp_eq_tsum_of_equiv (e : α ≃ β) (g : β → ℕ∞) :
     ∑' x, g (e x) = ∑' y, g y := by
@@ -180,7 +189,7 @@ protected theorem tsum_subtype_sigma {β : α → Type*} (f : ∀ a, β a → �
 
 protected theorem tsum_subtype_sigma' {β : α → Type*} (f : (Σ a, β a) → ℕ∞) :
     ∑' p : Σ a, β a, f p = ∑' (a) (b), f ⟨a, b⟩ :=
-  Summable.tsum_sigma' (fun _ ↦ ENat.summable) ENat.summable
+  Summable.tsum_sigma' (fun _ ↦ summable) summable
 
 variable {ι : Type*}
 
@@ -208,19 +217,15 @@ protected theorem tsum_subtype_iUnion_le [Fintype ι] (f : α → ℕ∞) (t : �
 theorem tsum_subtype_iUnion_eq_tsum (f : α → ℕ∞) (t : ι → Set α) (ht : Pairwise (Disjoint on t)) :
     ∑' x : ⋃ i, t i, f x = ∑' i, ∑' x : t i, f x :=
   calc ∑' x : ⋃ i, t i, f x = ∑' x : Σ i, t i, f x.2 :=
-    (ENat.tsum_comp_eq_tsum_of_bijective (sigmaToiUnion_bijective t (fun _ _ hij ↦ ht hij)) _).symm
-    _ = _ := ENat.tsum_subtype_sigma' _
+    (tsum_comp_eq_tsum_of_bijective (sigmaToiUnion_bijective t (fun _ _ hij ↦ ht hij)) _).symm
+    _ = _ := tsum_subtype_sigma' _
 
-end tsum
-
-end ENat
-
+end ENat.tsum
 open Function
 
-theorem Set.encard_iUnion_of_pairwiseDisjoint {ι α : Type*} {s : ι → Set α}
+/-- `encard` is additive on pairwise disjoint unions. -/
+public theorem Set.encard_iUnion_of_pairwiseDisjoint {ι α : Type*} {s : ι → Set α}
     (hs : Set.PairwiseDisjoint Set.univ s) : (⋃ i, s i).encard = ∑' i, (s i).encard := by
-  have : Pairwise (Disjoint on s) := by
-    rwa [Set.PairwiseDisjoint, Set.pairwise_univ] at hs
-  have := ENat.tsum_subtype_iUnion_eq_tsum (fun x => 1) s this
-  simp only [ENat.tsum_set_one] at this
-  exact this
+  simpa [ENat.tsum_set_one] using
+    (ENat.tsum_subtype_iUnion_eq_tsum (f := fun _ : α => (1 : ℕ∞)) (t := s) (by
+      simpa [Set.PairwiseDisjoint, Set.pairwise_univ] using hs))

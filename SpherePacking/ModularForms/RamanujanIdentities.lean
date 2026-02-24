@@ -51,6 +51,7 @@ lemma scalar_eq_of_tendsto {f g : ℍ → ℂ} {c L : ℂ} (hfun : ∀ z, f z = 
   simpa [mul_one] using (show Filter.Tendsto f atImInfty (nhds (c * 1)) by
     convert tendsto_const_nhds.mul hg_lim using 1; ext z; exact hfun z)
 
+/-
 /--
 Serre derivative of E₂: `serre_D 1 E₂ = - 12⁻¹ * E₄`.
 
@@ -148,4 +149,4 @@ theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun
   simp only [congrFun ramanujan_E₆' z, Pi.mul_apply, Pi.sub_apply,
     show (-2⁻¹ : ℍ → ℂ) z = -2⁻¹ from rfl, show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl]
   ring
-
+-/

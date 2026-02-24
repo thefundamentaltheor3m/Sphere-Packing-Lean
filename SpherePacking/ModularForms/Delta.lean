@@ -1,37 +1,41 @@
-import SpherePacking.ModularForms.SlashActionAuxil
-import SpherePacking.ModularForms.clog_arg_lems
-import SpherePacking.ModularForms.eta
-import SpherePacking.ModularForms.ResToImagAxis
+module
+public import SpherePacking.ModularForms.SlashActionAuxil
+public import SpherePacking.ModularForms.clog_arg_lems
+public import SpherePacking.ModularForms.eta
+public import SpherePacking.ModularForms.ResToImagAxis
 import Mathlib.NumberTheory.ModularForms.QExpansion
 import SpherePacking.Tactic.NormNumI
 
-import SpherePacking.ForMathlib.Cusps
+public import SpherePacking.ForMathlib.Cusps
 
-open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex MatrixGroups
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+/-!
+# Discriminant Product Formula
 
-open ArithmeticFunction
+This file proves results such as `DiscriminantProductFormula`, `Delta_eq_eta_pow`,
+`Discriminant_T_invariant`, `Discriminant_S_invariant`, `I_in_atImInfty`.
+-/
+
+open scoped BigOperators Real Nat NNReal ENNReal Topology
+
+open ModularForm UpperHalfPlane Complex MatrixGroups Function Set Filter ArithmeticFunction
 
 noncomputable section Definitions
 
-/- The discriminant form -/
-def Δ (z : UpperHalfPlane) := cexp (2 * π * Complex.I * z) * ∏' (n : ℕ),
+/-- The discriminant modular form `Δ` as an explicit infinite product. -/
+@[expose] public def Δ (z : UpperHalfPlane) := cexp (2 * π * Complex.I * z) * ∏' (n : ℕ),
     (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24
 
-lemma DiscriminantProductFormula (z : ℍ) : Δ z = cexp (2 * π * Complex.I * z) * ∏' (n : ℕ+),
+/-- Reindex `Δ` from a product over `ℕ` to a product over `ℕ+`. -/
+public lemma DiscriminantProductFormula (z : ℍ) :
+    Δ z = cexp (2 * π * Complex.I * z) * ∏' (n : ℕ+),
     (1 - cexp (2 * π * Complex.I * (n) * z)) ^ 24 := by
-    simp [Δ]
-    conv =>
-      enter [1,1]
-      ext n
-      rw [show (n : ℂ) + 1 = ((n + 1) : ℕ) by simp]
-    have := tprod_pnat_eq_tprod_succ (f := (fun n => (1 - cexp (2 * π * Complex.I * (n) * z)) ^ 24))
-    rw [this]
+  simpa [Δ, Nat.cast_add, Nat.cast_one, add_mul] using
+    (tprod_pnat_eq_tprod_succ (f := fun n : ℕ =>
+      (1 - cexp (2 * π * Complex.I * (n : ℂ) * z)) ^ 24)).symm
 
-
-lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
+/-- The discriminant form is the 24th power of the Dedekind eta function. -/
+public lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
   rw [η, Δ, mul_pow]
   congr
   · rw [← Complex.exp_nat_mul]
@@ -41,284 +45,262 @@ lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
   apply MultipliableEtaProductExpansion
 
 
-/-This should be easy from the definition and the Mulitpliable bit. -/
-lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by
-  rw [Delta_eq_eta_pow]
-  simpa using eta_nonzero_on_UpperHalfPlane z
+/-- The discriminant `Δ z` is nonzero on the upper half-plane. -/
+public lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by
+  simpa [Delta_eq_eta_pow] using pow_ne_zero 24 (eta_nonzero_on_UpperHalfPlane z)
 
-/-This one is easy.-/
-lemma Discriminant_T_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.T) = Δ := by
+/-- Invariance of `Δ` under the translation `T : z ↦ z + 1`. -/
+public lemma Discriminant_T_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.T) = Δ := by
   ext z
   rw [ modular_slash_T_apply, Δ, Δ]
   simp only [coe_vadd, ofReal_one]
-  have h1 : cexp (2 * ↑π * Complex.I * (1 + ↑z)) = cexp (2 * ↑π * Complex.I * (↑z)) := by
-    simpa using exp_periodo z 1
-  rw [h1]
-  simp only [mul_eq_mul_left_iff, Complex.exp_ne_zero, or_false]
-  apply tprod_congr
-  intro b
-  have := exp_periodo z (b+1)
-  simp only [Nat.cast_add, Nat.cast_one] at this
-  rw [this]
+  congr 1
+  · simpa using exp_periodo z 1
+  · refine tprod_congr fun b => ?_
+    simpa [Nat.cast_add, Nat.cast_one] using
+      congrArg (fun t => (1 - t) ^ (24 : ℕ)) (exp_periodo z (b + 1))
 
 
-/-This is the hard one. -/
-lemma Discriminant_S_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.S) = Δ := by
+/-- Invariance of `Δ` under the inversion `S : z ↦ -1/z`. -/
+public lemma Discriminant_S_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.S) = Δ := by
   ext z
-  rw [ modular_slash_S_apply, Delta_eq_eta_pow, Delta_eq_eta_pow]
-  have he := eta_equality z.2
-  simp only [comp_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul, UpperHalfPlane.coe_mk,
-    Int.reduceNeg, zpow_neg] at *
-  have hi : -1/(z.1 : ℂ) = (-(z : ℂ))⁻¹ := by
-    rw [neg_div]
-    rw [← neg_inv]
-    simp [UpperHalfPlane.coe]
-  rw [hi] at he
-  rw [he, mul_pow, mul_pow, inv_pow, csqrt_I]
-  simp only [inv_one, one_mul, UpperHalfPlane.coe]
-  rw [mul_comm]
-  have hzz := csqrt_pow_24 z.1 (ne_zero z)
-  rw [hzz, ← mul_assoc]
-  have hz := ne_zero z
-  simp only [UpperHalfPlane.coe, ne_eq] at hz
-  norm_cast
-  field_simp
+  rw [modular_slash_S_apply, Delta_eq_eta_pow, Delta_eq_eta_pow]
+  have he : η ((-z : ℂ)⁻¹) = (csqrt Complex.I)⁻¹ * (csqrt (z : ℂ) * η (z : ℂ)) := by
+    simpa [Function.comp, Pi.smul_apply, Pi.mul_apply, smul_eq_mul, div_eq_mul_inv] using
+      (eta_equality z.2)
+  have hz : (z : ℂ) ≠ 0 := ne_zero z
+  rw [he]
+  simp [mul_pow, inv_pow, csqrt_I, csqrt_pow_24 (z := (z : ℂ)) hz, zpow_neg]
+  field_simp [hz]
 
 /-- Δ as a SlashInvariantForm of weight 12 -/
-def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
+@[expose] public def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun := Δ
   slash_action_eq' :=
     slashaction_generators_GL2R Δ 12 Discriminant_S_invariant Discriminant_T_invariant
 
 /-- Δ is 1-periodic: Δ(z + 1) = Δ(z) -/
-lemma Δ_periodic (z : ℍ) : Δ ((1 : ℝ) +ᵥ z) = Δ z := by
-  simpa using SlashInvariantForm.vAdd_width_periodic 1 12 1 Discriminant_SIF z
+public lemma Δ_periodic (z : ℍ) : Δ ((1 : ℝ) +ᵥ z) = Δ z :=
+  by simpa using SlashInvariantForm.vAdd_width_periodic 1 12 1 Discriminant_SIF z
 
 /-- Δ transforms under S as: Δ(-1/z) = z¹² · Δ(z) -/
-lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ z := by
-  have h := Discriminant_S_invariant
-  simp only [funext_iff] at h
-  specialize h z
+public lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ z := by
+  have h := congrFun Discriminant_S_invariant z
   rw [SL_slash_apply] at h
   simp only [ModularGroup.denom_S, zpow_neg] at h
   field_simp [ne_zero z] at h
   rw [h, mul_comm]
 
-instance : atImInfty.NeBot := by
-  rw [atImInfty, Filter.comap_neBot_iff ]
-  simp only [mem_atTop_sets, ge_iff_le, forall_exists_index]
-  intro t x hx
-  have := ENNReal.nhdsGT_ofNat_neBot
-  let z : ℂ := Complex.mk (0 : ℝ) (|x| + 1)
-  have h0 : 0 ≤ |x| := by
-    apply abs_nonneg
-  have hz : 0 < z.im := by
-    positivity
-  use ⟨z, hz⟩
-  apply hx
-  simp only [UpperHalfPlane.im, coe_mk_subtype]
-  have : x ≤ |x| := by
-    apply le_abs_self
-  apply le_trans this
-  simp only [le_add_iff_nonneg_right, zero_le_one, z]
-
-
 lemma I_in_atImInfty (A : ℝ) : { z : ℍ | A ≤ z.im} ∈ atImInfty := by
   rw [atImInfty_mem]
-  use A
-  simp only [mem_setOf_eq, imp_self, implies_true]
+  exact ⟨A, fun _ hz ↦ hz⟩
 
 
-instance natPosSMul : SMul ℕ+ ℍ where
-  smul x z := UpperHalfPlane.mk (x * z) <| by simp; apply z.2
+/-- Scalar multiplication of `ℍ` by a positive natural number. -/
+public instance natPosSMul : SMul ℕ+ ℍ where
+  smul x z := UpperHalfPlane.mk (x * z) <| by
+    have hx : 0 < (x : ℝ) := by exact_mod_cast x.pos
+    simpa [mul_im] using mul_pos hx z.2
 
-theorem natPosSMul_apply (c : ℕ+) (z : ℍ) : ((c • z : ℍ) : ℂ) = (c : ℂ) * (z : ℂ) := by rfl
+/-- Coercion formula for the `ℕ+`-scalar action on `ℍ`. -/
+public theorem natPosSMul_apply (c : ℕ+) (z : ℍ) :
+    ((c • z : ℍ) : ℂ) = (c : ℂ) * (z : ℂ) := rfl
 
-def pnat_smul_stable (S : Set ℍ) := ∀ n : ℕ+, ∀ (s : ℍ), s ∈ S → n • s ∈ S
+/-- A set `S ⊆ ℍ` is stable under scaling by positive naturals. -/
+@[expose] public def pnat_smul_stable (S : Set ℍ) :=
+    ∀ n : ℕ+, ∀ (s : ℍ), s ∈ S → n • s ∈ S
 
-lemma atImInfy_pnat_mono (S : Set ℍ) (hS : S ∈ atImInfty) (B : ℝ) : ∃ A : ℝ,
-    pnat_smul_stable (S ∩ {z : ℍ | max A B ≤ z.im}) ∧ S ∩ {z : ℍ | max A B ≤ z.im} ∈ atImInfty := by
+/-- Inside `atImInfty`, shrink to a subset stable under positive-integer scaling. -/
+public lemma atImInfy_pnat_mono (S : Set ℍ) (hS : S ∈ atImInfty) (B : ℝ) :
+    ∃ A : ℝ,
+      pnat_smul_stable (S ∩ {z : ℍ | max A B ≤ z.im}) ∧
+        S ∩ {z : ℍ | max A B ≤ z.im} ∈ atImInfty := by
   have hS2 := hS
   rw [atImInfty_mem] at hS
   obtain ⟨A, hA⟩ := hS
   use A
   constructor
   · intro n s hs
-    simp only [mem_inter_iff, mem_setOf_eq] at *
+    rcases hs with ⟨hsS, hsIm⟩
+    have hsIm' : A ≤ s.im ∧ B ≤ s.im := by
+      simpa [max_le_iff] using hsIm
+    have hn : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast (PNat.one_le n)
+    have hmul : s.im ≤ (n : ℝ) * s.im := (le_mul_iff_one_le_left s.2).2 hn
     have K : max A B ≤ (n • s).im := by
       rw [UpperHalfPlane.im, natPosSMul_apply]
       simp only [mul_im, natCast_re, coe_im, natCast_im, coe_re, zero_mul, add_zero]
-      have hs2 := hs.2
-      simp at *
-      constructor
-      · apply le_trans hs2.1
-        have hn : (1 : ℝ) ≤ n := by
-          norm_cast
-          exact PNat.one_le n
-        apply (le_mul_iff_one_le_left s.2).mpr hn
-      apply le_trans hs2.2
-      have hn : (1 : ℝ) ≤ n := by
-        norm_cast
-        exact PNat.one_le n
-      apply (le_mul_iff_one_le_left s.2).mpr hn
-    refine ⟨?_, K⟩
-    simp at K
-    apply hA _ K.1
-  · simp only [ inter_mem_iff, hS2, true_and]
-    apply I_in_atImInfty
+      exact (max_le_iff.2 ⟨le_trans hsIm'.1 hmul, le_trans hsIm'.2 hmul⟩)
+    exact ⟨hA _ (le_trans (le_max_left A B) K), K⟩
+  · exact Filter.inter_mem hS2 (I_in_atImInfty (A := max A B))
 
-lemma cexp_two_pi_I_im_antimono (a b : ℍ) (h : a.im ≤ b.im) (n : ℕ) :
-    ‖(cexp (2 * ↑π * Complex.I * n * b))‖
-    ≤ ‖(cexp (2 * ↑π * Complex.I *n * a))‖:= by
-  simp_rw [Complex.norm_exp]
-  simp
+/-!
+## Helper lemmas (kept modular)
+
+These are intentionally kept as named `private` lemmas rather than being inlined inside the main
+asymptotic/imag-axis proofs. Inlining them saves little (if any) code, but it hurts readability and
+reusability.
+-/
+
+private lemma cexp_two_pi_I_im_antimono (a b : ℍ) (h : a.im ≤ b.im) (n : ℕ) :
+    ‖cexp (2 * ↑π * Complex.I * n * b)‖ ≤ ‖cexp (2 * ↑π * Complex.I * n * a)‖ := by
+  simp only [mul_right_comm, norm_exp, mul_re, re_ofNat, Complex.I_re, mul_zero, im_ofNat,
+    Complex.I_im, mul_one, sub_self, coe_re, zero_mul, mul_im, add_zero, coe_im, zero_sub,
+    ofReal_re, neg_mul, zero_add, ofReal_im, sub_zero, natCast_re, natCast_im, Real.exp_le_exp,
+    neg_le_neg_iff]
   gcongr
 
-theorem tendsto_neg_cexp_atImInfty (k : ℕ) :
-  Tendsto (fun x : ℍ ↦ -cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) atImInfty (𝓝 0) := by
-  have := Tendsto.neg (f := (fun x : ℍ ↦ cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)))
-    (l := atImInfty) (y := 0)
-  simp only [neg_zero] at this
-  apply this
-  refine tendsto_exp_nhds_zero_iff.mpr ?_
-  simp
-  apply Filter.Tendsto.const_mul_atTop (by positivity)
-  exact tendsto_iff_comap.mpr fun ⦃U⦄ a ↦ a
+private lemma tendsto_neg_cexp_atImInfty (k : ℕ) :
+    Tendsto (fun x : ℍ ↦ -cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) atImInfty (𝓝 0) := by
+  simpa using
+    (tendsto_exp_nhds_zero_iff.mpr
+        (by
+          simpa [mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero, Complex.I_re,
+            mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, add_re, natCast_re, one_re,
+            add_im, natCast_im, one_im, coe_re, zero_add, coe_im, zero_sub, tendsto_neg_atBot_iff,
+            mul_assoc, mul_left_comm, mul_comm] using
+            (tendsto_im_atImInfty.const_mul_atTop
+              (by positivity : 0 < (2 * π * ((k : ℝ) + 1)))))).neg
 
-theorem log_one_neg_cexp_tendto_zero (k : ℕ) :
-  Tendsto (fun x : ℍ ↦ Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) ^ 24))
-    atImInfty (𝓝 0) := by
-  have : (fun x : ℍ ↦ Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) ^ 24)) =
-      (Complex.log) ∘ ((fun x => x ^ 24) ∘ (fun x : ℍ ↦ ((1 - cexp (2 * π * Complex.I *
-      (k + 1) * x))))) := by
-    ext x
-    simp
-  rw [this]
-  apply Tendsto.comp (y := 𝓝 1)
-  · nth_rw 1 [← Complex.log_one]
-    refine ContinuousAt.tendsto (x := 1) (f := Complex.log) ?_
-    apply continuousAt_clog
-    simp
-  apply Tendsto.comp (y := 𝓝 1)
-  · exact (continuous_pow 24).tendsto' ( 1 : ℂ) (1 : ℂ) (by simp)
-  · simp_rw [sub_eq_add_neg]
-    nth_rw 3 [show (1 : ℂ) = 1 + 0 by ring]
-    apply Tendsto.add
-    · simp only [tendsto_const_nhds_iff]
-    apply tendsto_neg_cexp_atImInfty
-
+private lemma log_one_neg_cexp_tendto_zero (k : ℕ) :
+    Tendsto (fun x : ℍ ↦ Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) ^ 24))
+      atImInfty (𝓝 0) := by
+  have hpow :
+      Tendsto (fun x : ℍ ↦ (1 - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) ^ 24) atImInfty
+        (𝓝 (1 : ℂ)) := by
+    have hsub :
+        Tendsto (fun x : ℍ ↦ (1 : ℂ) - cexp (2 * ↑π * Complex.I * (↑k + 1) * ↑x)) atImInfty
+          (𝓝 (1 : ℂ)) := by
+      simpa [sub_eq_add_neg] using (tendsto_const_nhds.add (tendsto_neg_cexp_atImInfty k))
+    simpa using (hsub.pow 24)
+  have hclog :
+      Tendsto Complex.log (𝓝 (1 : ℂ)) (𝓝 0) := by
+    simpa [Complex.log_one] using (continuousAt_clog (x := (1 : ℂ)) one_mem_slitPlane).tendsto
+  exact hclog.comp hpow
 
 variable {α ι : Type*}
 
 lemma Complex.cexp_tsum_eq_tprod_func (f : ι → α → ℂ) (hfn : ∀ x n, f n x ≠ 0)
     (hf : ∀ x : α, Summable fun n => log (f n x)) :
     (cexp ∘ (fun a : α => (∑' n : ι, log (f n a)))) = fun a : α => ∏' n : ι, f n a := by
-  ext a
-  apply (HasProd.tprod_eq ?_).symm
-  apply ((hf a).hasSum.cexp).congr
-  intro _
-  congr
-  exact funext fun x ↦ exp_log (hfn a x)
+  funext a
+  simpa [Function.comp] using
+    (Complex.cexp_tsum_eq_tprod (f := fun n : ι => f n a) (hfn a) (hf a))
 
-theorem Delta_boundedfactor :
+/-- The bounded factor in the discriminant product tends to `1` at `Im z → ∞`. -/
+public theorem Delta_boundedfactor :
   Tendsto (fun x : ℍ ↦ ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x)) ^ 24) atImInfty
     (𝓝 1) := by
-  have := Complex.cexp_tsum_eq_tprod_func (fun n : ℕ => fun x : ℍ => (1 - (cexp (2 * ↑π * Complex.I
-    * (↑n + 1) * ↑x))) ^ 24 ) ?_ ?_
-  conv =>
-    enter [1]
-    rw [← this]
-  · apply Tendsto.comp (y := (𝓝 0))
-    · exact Complex.continuous_exp.tendsto' 0 1 Complex.exp_zero
-    have := tendsto_tsum_of_dominated_convergence (𝓕 := atImInfty) (g := fun (x : ℕ) => (0 : ℂ))
-        (f := (fun x : ℍ ↦ fun (n : ℕ) => Complex.log ((1 - cexp (2 * ↑π * Complex.I * (↑n + 1) *
-          (x : ℂ))) ^ 24)))
-        (bound := fun k => ‖(24 *((3/2)* cexp (2 * ↑π * Complex.I * (↑k + 1) * Complex.I)))‖)
-    simp at this
-    apply this
-    · apply Summable.mul_left
-      apply Summable.mul_left
-      simpa using (summable_exp_pow UpperHalfPlane.I)
-    · apply log_one_neg_cexp_tendto_zero
-    · have := fun k => (tendsto_neg_cexp_atImInfty k)
-      have h0 := this 0
-      have h1 := clog_pow2 24 _ h0
-      simp only [CharP.cast_eq_zero, zero_add, mul_one, Nat.cast_ofNat] at h1
-      rw [Metric.tendsto_nhds] at h0
-      have h00 := h0 (1/2) (one_half_pos)
-      simp only [CharP.cast_eq_zero, zero_add, mul_one, dist_zero_right, norm_neg, one_div] at h00
-      rw [Filter.eventually_iff_exists_mem ] at *
-      obtain ⟨a, ha0, ha⟩ := h1
-      obtain ⟨a2, ha2, ha3⟩ := h00
-      have hminmem: min a a2 ∈ atImInfty := by
-        simp only [inf_eq_inter, inter_mem_iff, ha0, ha2, and_self]
-      have hT := atImInfy_pnat_mono (min a a2) hminmem 1
-      obtain ⟨A, hA, hAmem⟩ := hT
-      use (a ⊓ a2) ∩ {z | A ⊔ 1 ≤ z.im}
-      refine ⟨hAmem, ?_⟩
-      intro b hb k
-      let K : ℕ+ := ⟨k+1, Nat.zero_lt_succ k⟩
-      have haa := ha (K • b) (by have h8 := hA K b hb; simp only [inf_eq_inter, sup_le_iff,
-        mem_inter_iff, mem_setOf_eq] at h8; exact h8.1.1)
-      simp only [natPosSMul_apply, PNat.mk_coe, Nat.cast_add, Nat.cast_one, K] at haa
-      have := Complex.norm_log_one_add_half_le_self (z := -cexp (2 * ↑π * Complex.I * (↑k + 1) * b))
-      rw [sub_eq_add_neg]
-      simp_rw [← mul_assoc] at haa
-      rw [haa]
-      simp only [forall_exists_index, and_imp, gt_iff_lt, CharP.cast_eq_zero, zero_add, mul_one,
-        dist_zero_right, norm_neg, inf_eq_inter, inter_mem_iff, sup_le_iff, mem_inter_iff,
-        mem_setOf_eq, one_div, Complex.norm_mul, norm_ofNat, Nat.ofNat_pos, mul_le_mul_iff_right₀,
-        ge_iff_le] at *
-      apply le_trans (this ?_)
-      · simp only [Nat.ofNat_pos, div_pos_iff_of_pos_left, mul_le_mul_iff_right₀]
-        have hr := cexp_two_pi_I_im_antimono UpperHalfPlane.I b (n := k + 1) ?_
-        · simpa using hr
-        simp only [UpperHalfPlane.I_im, hb.2.2]
-      have HH := ha3 (K • b) (by
-        have h8 := hA K b hb; simp only [mem_inter_iff, mem_setOf_eq] at h8; exact h8.1.2)
-      simp only [natPosSMul_apply, PNat.mk_coe, Nat.cast_add, Nat.cast_one, ← mul_assoc, K] at HH
-      exact HH.le
-  · intro x n
-    simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff]
-    apply term_ne_zero
-  · intro x
-    simp only
-    have := log_summable_pow (fun n => -cexp (2 * ↑π * Complex.I * (↑n + 1) * x)) ?_ 24
-    · apply this.congr
+  let f : ℕ → ℍ → ℂ :=
+    fun (n : ℕ) (x : ℍ) => (1 - (cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑x))) ^ 24
+  have hfn : ∀ x n, f n x ≠ 0 := by
+    intro x n
+    simp [f, pow_eq_zero_iff]
+    simpa using term_ne_zero x n
+  have hf : ∀ x : ℍ, Summable fun n : ℕ => log (f n x) := by
+    intro x
+    simp only [f]
+    have h := log_summable_pow (fun n => -cexp (2 * ↑π * Complex.I * (↑n + 1) * x)) ?_ 24
+    · refine h.congr ?_
       intro b
       rw [sub_eq_add_neg]
-    · rw [←summable_norm_iff]
+    · rw [← summable_norm_iff]
       simpa using (summable_exp_pow x)
+  have hcexp :
+      (cexp ∘ fun a : ℍ => ∑' n : ℕ, log (f n a)) = fun a : ℍ => ∏' n : ℕ, f n a :=
+    Complex.cexp_tsum_eq_tprod_func (f := f) hfn hf
+  have ht : Tendsto (cexp ∘ fun x : ℍ => ∑' n : ℕ, log (f n x)) atImInfty (𝓝 1) := by
+    apply Tendsto.comp (y := 𝓝 0)
+    · exact Complex.continuous_exp.tendsto' 0 1 Complex.exp_zero
+    have hsum :
+        Tendsto (fun x : ℍ ↦ ∑' n : ℕ, log (f n x)) atImInfty (𝓝 (∑' _ : ℕ, (0 : ℂ))) := by
+      refine
+        tendsto_tsum_of_dominated_convergence (𝓕 := atImInfty) (g := fun _ : ℕ => (0 : ℂ))
+          (f := fun x : ℍ ↦ fun n : ℕ => log (f n x))
+          (bound := fun k =>
+            ‖(24 * ((3 / 2) * cexp (2 * ↑π * Complex.I * (↑k + 1) * Complex.I)))‖) ?_ ?_ ?_
+      · simp_rw [norm_mul, mul_assoc]
+        apply Summable.mul_left
+        apply Summable.mul_left
+        simpa [mul_assoc] using summable_exp_pow UpperHalfPlane.I
+      · intro k
+        simpa only [f] using log_one_neg_cexp_tendto_zero k
+      · have hneg := tendsto_neg_cexp_atImInfty
+        have h0 := hneg 0
+        have h1 := clog_pow2 24 _ h0
+        simp only [CharP.cast_eq_zero, zero_add, mul_one, Nat.cast_ofNat] at h1
+        rw [Metric.tendsto_nhds] at h0
+        have h00 := h0 (1/2) (one_half_pos)
+        simp only [CharP.cast_eq_zero, zero_add, mul_one, dist_zero_right, norm_neg, one_div] at h00
+        rw [Filter.eventually_iff_exists_mem] at *
+        obtain ⟨a, ha0, ha⟩ := h1
+        obtain ⟨a2, ha2, ha3⟩ := h00
+        have hminmem : min a a2 ∈ atImInfty := by
+          simp only [inf_eq_inter, inter_mem_iff, ha0, ha2, and_self]
+        have hT := atImInfy_pnat_mono (min a a2) hminmem 1
+        obtain ⟨A, hA, hAmem⟩ := hT
+        use (a ⊓ a2) ∩ {z | A ⊔ 1 ≤ z.im}
+        refine ⟨hAmem, ?_⟩
+        intro b hb k
+        simp only [f]
+        let K : ℕ+ := ⟨k+1, Nat.zero_lt_succ k⟩
+        have haa := ha (K • b) (by
+          have h8 := hA K b hb
+          simp only [inf_eq_inter, sup_le_iff, mem_inter_iff, mem_setOf_eq] at h8
+          exact h8.1.1)
+        simp only [natPosSMul_apply, PNat.mk_coe, Nat.cast_add, Nat.cast_one, K] at haa
+        have hlog :=
+          Complex.norm_log_one_add_half_le_self (z := -cexp (2 * ↑π * Complex.I * (↑k + 1) * b))
+        rw [sub_eq_add_neg]
+        simp_rw [← mul_assoc] at haa
+        rw [haa]
+        simp only [gt_iff_lt, CharP.cast_eq_zero, zero_add, mul_one,
+          dist_zero_right, norm_neg, inf_eq_inter, inter_mem_iff, sup_le_iff, mem_inter_iff,
+          mem_setOf_eq, one_div, Complex.norm_mul, norm_ofNat, Nat.ofNat_pos, mul_le_mul_iff_right₀,
+          ge_iff_le] at *
+        have HH := ha3 (K • b) (by
+          have h8 := hA K b hb
+          simp only [mem_inter_iff, mem_setOf_eq] at h8
+          exact h8.1.2)
+        simp only [natPosSMul_apply, PNat.mk_coe, Nat.cast_add, Nat.cast_one, ← mul_assoc, K] at HH
+        refine le_trans (hlog HH.le) ?_
+        have hr := cexp_two_pi_I_im_antimono UpperHalfPlane.I b (n := k + 1) ?_
+        · simpa using hr
+        · simpa [UpperHalfPlane.I_im] using hb.2.2
+    simpa [tsum_zero] using hsum
+  have ht' : Tendsto (fun x : ℍ => ∏' n : ℕ, f n x) atImInfty (𝓝 1) := by
+    simpa [hcexp] using ht
+  simpa [f] using ht'
 
-open Real
-
-lemma Discriminant_zeroAtImInfty :
+/-- The discriminant has a zero at the cusp `∞` after any `SL(2,ℤ)` slash action. -/
+public lemma Discriminant_zeroAtImInfty :
     ∀ γ ∈ 𝒮ℒ, IsZeroAtImInfty (Discriminant_SIF ∣[(12 : ℤ)] (γ : GL (Fin 2) ℝ)) := by
   intro γ ⟨γ', hγ⟩
   rw [IsZeroAtImInfty, ZeroAtFilter]
-  have := Discriminant_SIF.slash_action_eq' γ ⟨γ', CongruenceSubgroup.mem_Gamma_one γ', hγ⟩
-  simp at *
-  rw [this]
-  simp [Discriminant_SIF]
+  have hslash' : (⇑Discriminant_SIF ∣[(12 : ℤ)] γ) = ⇑Discriminant_SIF := by
+    simpa [SlashInvariantForm.toFun_eq_coe] using
+      Discriminant_SIF.slash_action_eq' γ ⟨γ', CongruenceSubgroup.mem_Gamma_one γ', hγ⟩
+  rw [hslash']
+  simp only [Discriminant_SIF, SlashInvariantForm.coe_mk]
   unfold Δ
   rw [show (0 : ℂ) = 0 * 1 by ring]
   apply Tendsto.mul
   · rw [tendsto_zero_iff_norm_tendsto_zero]
     simp only [Complex.norm_exp, mul_re, re_ofNat, ofReal_re, im_ofNat,
       ofReal_im, mul_zero, sub_zero, Complex.I_re, mul_im, zero_mul, add_zero, Complex.I_im,
-      mul_one, sub_self, coe_re, coe_im, zero_sub, tendsto_exp_comp_nhds_zero,
+      mul_one, sub_self, coe_re, coe_im, zero_sub, Real.tendsto_exp_comp_nhds_zero,
       tendsto_neg_atBot_iff]
     rw [Filter.tendsto_const_mul_atTop_iff_pos ]
-    · exact two_pi_pos
+    · exact Real.two_pi_pos
     rw [atImInfty]
     exact tendsto_comap
   · apply Delta_boundedfactor
 
-def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
+/-- The discriminant cusp form of weight `12` on `Γ(1)`. -/
+@[expose] public def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun := Discriminant_SIF
   slash_action_eq' := Discriminant_SIF.slash_action_eq'
   holo' := by
-    rw [mdifferentiable_iff]
+    rw [UpperHalfPlane.mdifferentiable_iff]
     simp only [SlashInvariantForm.coe_mk]
     have := eta_DifferentiableAt_UpperHalfPlane
     have he2 : DifferentiableOn ℂ (fun z => (η z) ^ 24) {z | 0 < z.im} := by
@@ -331,47 +313,51 @@ def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
     apply he2.congr
     intro z hz
     have := Delta_eq_eta_pow (⟨z, hz⟩ : ℍ)
-    simp only [coe_mk_subtype, comp_apply] at *
+    simp only [comp_apply] at *
     rw [ofComplex_apply_of_im_pos hz]
     exact this
   zero_at_cusps' hc := zero_at_cusps_of_zero_at_infty hc Discriminant_zeroAtImInfty
 
-lemma Delta_apply (z : ℍ) : Delta z = Δ z := by rfl
+/-- Unfolding lemma for `Delta`. -/
+public lemma Delta_apply (z : ℍ) : Delta z = Δ z := rfl
 
-lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ => Real.exp (-2 * π * τ.im)) := by
+/-- The discriminant cusp form is nonzero. -/
+public lemma Delta_ne_zero : Delta ≠ 0 := by
+  refine (DFunLike.ne_iff).2 ⟨UpperHalfPlane.I, ?_⟩
+  simpa [Delta_apply] using Δ_ne_zero UpperHalfPlane.I
+
+/-- The discriminant cusp form is `Theta`-equivalent to `exp (-2π Im z)` at `Im z → ∞`. -/
+public lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ => Real.exp (-2 * π * τ.im)) := by
   rw [Asymptotics.IsTheta]
   refine ⟨by simpa using CuspFormClass.exp_decay_atImInfty (h := 1) Delta, ?_⟩
-  rw [Asymptotics.isBigO_iff']
-  have := Delta_boundedfactor.norm
-  simp only [norm_one] at this
-  have h12 : (1 : ℝ) / 2 < 1 := one_half_lt_one
-  have hl := Filter.Tendsto.eventually_const_le h12 this
-  rw [Metric.tendsto_nhds] at *
-  use 2
-  refine ⟨by simp, ?_⟩
-  rw [Filter.eventually_iff_exists_mem] at *
-  obtain ⟨A1, hA1, hA2⟩ := hl
-  use A1
-  refine ⟨hA1, ?_⟩
-  intro z hz
-  rw [Delta_apply, Δ]
-  simp only [neg_mul, Real.norm_eq_abs, Real.abs_exp, norm_mul]
-  have hA3 := hA2 z hz
-  conv =>
-    enter [2,2,1]
-    rw [Complex.norm_exp]
-  simp only [mul_re, re_ofNat, ofReal_re, im_ofNat, ofReal_im, mul_zero, sub_zero, Complex.I_re,
-    mul_im, zero_mul, add_zero, Complex.I_im, mul_one, sub_self, coe_re, coe_im, zero_sub]
-  have hm : 0 ≤ 2 * rexp (-(2 * π * z.im)) := by
-    positivity
-  have h4 := mul_le_mul_of_nonneg_left hA3 hm
-  conv at h4 =>
-    enter [1]
-    rw [mul_comm, ← mul_assoc]
-    simp
-  simp only [gt_iff_lt, one_div, Nat.ofNat_pos, mul_nonneg_iff_of_pos_left, ge_iff_le] at *
-  rw [← mul_assoc]
-  exact h4
+  let g : ℍ → ℂ :=
+    fun z : ℍ => ∏' n : ℕ, (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24
+  have ht : Tendsto (fun z : ℍ => ‖g z‖) atImInfty (𝓝 (1 : ℝ)) := by
+    simpa [g] using Delta_boundedfactor.norm
+  have hl : ∀ᶠ z : ℍ in atImInfty, (1 : ℝ) / 2 ≤ ‖g z‖ := by
+    have hlt : ∀ᶠ x in 𝓝 (1 : ℝ), (1 : ℝ) / 2 < x :=
+      Ioi_mem_nhds (by linarith : (1 : ℝ) / 2 < 1)
+    exact (ht.eventually hlt).mono fun _ hx => le_of_lt hx
+  refine Asymptotics.IsBigO.of_bound (2 : ℝ) ?_
+  filter_upwards [hl] with z hz
+  have hExp : ‖cexp (2 * π * Complex.I * (z : ℂ))‖ = Real.exp (-2 * π * z.im) := by
+    simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]
+  have hnonneg : 0 ≤ Real.exp (-2 * π * z.im) := le_of_lt (Real.exp_pos _)
+  have h2 : Real.exp (-2 * π * z.im) ≤ 2 * (Real.exp (-2 * π * z.im) * ‖g z‖) := by
+    have h1 : (1 : ℝ) ≤ 2 * ‖g z‖ := by
+      nlinarith [hz]
+    have := mul_le_mul_of_nonneg_left h1 hnonneg
+    simpa [mul_assoc, mul_left_comm, mul_comm] using this
+  calc
+    ‖Real.exp (-2 * π * z.im)‖ = Real.exp (-2 * π * z.im) := by
+      simp
+    _ ≤ 2 * (Real.exp (-2 * π * z.im) * ‖g z‖) := h2
+    _ = 2 * (‖cexp (2 * π * Complex.I * (z : ℂ))‖ * ‖g z‖) := by
+      exact congrArg (fun t => 2 * (t * ‖g z‖)) hExp.symm
+    _ = 2 * ‖cexp (2 * π * Complex.I * (z : ℂ)) * g z‖ := by
+      simp [mul_comm]
+    _ = 2 * ‖Delta z‖ := by
+      simp [Delta_apply, Δ, g, mul_left_comm, mul_comm]
 
 lemma CuspForm_apply (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) (z : ℍ) :
   f.toFun z = f z := by rfl
@@ -408,8 +394,10 @@ theorem div_Delta_is_SIF (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k)
   rw [zpow_add₀ (by apply (denom_ne_zero γ z))]
   ring
 
-def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k) :
-  ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) where
+/-- Division by the discriminant, viewed as a map `CuspForm Γ(1) k → ModularForm Γ(1) (k - 12)`. -/
+@[expose] public def CuspForm_div_Discriminant (k : ℤ)
+    (f : CuspForm (CongruenceSubgroup.Gamma 1) k) :
+    ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) where
     toFun := f / Delta
     slash_action_eq' := by
       intro γ hγ
@@ -467,15 +455,17 @@ def CuspForm_div_Discriminant (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 
       · apply hB3
         apply hz.2
 
-lemma CuspForm_div_Discriminant_apply (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k)
+/-- Pointwise evaluation of `CuspForm_div_Discriminant`. -/
+public lemma CuspForm_div_Discriminant_apply (k : ℤ) (f : CuspForm (CongruenceSubgroup.Gamma 1) k)
     (z : ℍ) : (CuspForm_div_Discriminant k f) z = f z / Δ z := rfl
 
-theorem CuspForm_div_Discriminant_Add (k : ℤ) (x y : CuspForm (CongruenceSubgroup.Gamma 1) k) :
-  (fun f ↦ CuspForm_div_Discriminant k f) (x + y) =
-    (fun f ↦ CuspForm_div_Discriminant k f) x + (fun f ↦ CuspForm_div_Discriminant k f) y := by
+/-- The map `CuspForm_div_Discriminant k` is additive. -/
+public theorem CuspForm_div_Discriminant_Add (k : ℤ)
+    (x y : CuspForm (CongruenceSubgroup.Gamma 1) k) :
+    CuspForm_div_Discriminant k (x + y) =
+      CuspForm_div_Discriminant k x + CuspForm_div_Discriminant k y := by
   ext z
-  simp only [CuspForm_div_Discriminant_apply, CuspForm.add_apply, ModularForm.add_apply]
-  ring
+  simp [CuspForm_div_Discriminant_apply, add_div]
 
 lemma cexp_aux1 (t : ℝ) : cexp (2 * ↑π * Complex.I * (Complex.I * t)) = rexp (-2 * π * t) := by
   calc
@@ -489,7 +479,7 @@ lemma cexp_aux2 (t : ℝ) (n : ℕ)
     _ = rexp (-(2 * π * (n + 1) * t)) := by simp
 
 lemma cexp_aux3 (t : ℝ) (n : ℕ) (ht : 0 < t) : 0 < 1 - rexp (-(2 * π * (n + 1) * t)) := by
-  have _ : rexp (-(2 * π * (n + 1) * t)) < 1 := exp_lt_one_iff.mpr (by simp; positivity)
+  have _ : rexp (-(2 * π * (n + 1) * t)) < 1 := Real.exp_lt_one_iff.mpr (by simp; positivity)
   linarith
 
 lemma cexp_aux4 (t : ℝ) (n : ℕ) : (cexp (-2 * π * (n + 1) * t)).im = 0 := by
@@ -498,36 +488,37 @@ lemma cexp_aux4 (t : ℝ) (n : ℕ) : (cexp (-2 * π * (n + 1) * t)).im = 0 := b
 lemma cexp_aux5 (t : ℝ) : (cexp (-(2 * π * t))).im = 0 := by
   simpa [Complex.ofReal_mul, Complex.ofReal_neg] using exp_ofReal_im (-(2 * π * t))
 
-/- Auxiliary lemmas for imaginary part of products and powers -/
-lemma Complex.im_finset_prod_eq_zero_of_im_eq_zero {ι : Type*} (s : Finset ι)
-    (f : ι → ℂ) (h : ∀ i ∈ s, (f i).im = 0) :
-    (∏ i ∈ s, f i).im = 0 := by
-  classical
-  revert h; refine Finset.induction_on s (fun _ => by simp) ?_; intro a s ha ih h
-  simp [Finset.prod_insert, ha, Complex.mul_im, h a (by simp),
-    ih (fun i hi => h i (by simp [hi]))]
+/-- If `Im z = 0` then `Im (z^m) = 0`. -/
+public lemma Complex.im_pow_eq_zero_of_im_eq_zero {z : ℂ} (hz : z.im = 0) (m : ℕ) :
+    (z ^ m).im = 0 :=
+  (Complex.im_eq_zero_iff_isSelfAdjoint _).2 <|
+    IsSelfAdjoint.pow ((Complex.im_eq_zero_iff_isSelfAdjoint z).1 hz) m
 
-lemma Complex.im_pow_eq_zero_of_im_eq_zero {z : ℂ} (hz : z.im = 0) (m : ℕ) :
-    (z ^ m).im = 0 := by
-  induction m with
-  | zero => simp
-  | succ m ih => simp [pow_succ, Complex.mul_im, *]
+private lemma Complex_im_finset_prod_eq_zero_of_im_eq_zero (s : Finset ℕ) (f : ℕ → ℂ)
+    (h : ∀ i ∈ s, (f i).im = 0) : (∏ i ∈ s, f i).im = 0 := by
+  refine (Complex.im_eq_zero_iff_isSelfAdjoint _).2 ?_
+  revert h
+  refine Finset.induction_on s (by intro; simp) ?_
+  intro a s ha ih h
+  simpa [Finset.prod_insert, ha] using
+    IsSelfAdjoint.mul
+      ((Complex.im_eq_zero_iff_isSelfAdjoint (f a)).1 (h a (by simp [ha])))
+      (ih (fun i hi => h i (by simp [hi])))
 
-lemma Complex.im_tprod_eq_zero_of_im_eq_zero (f : ℕ → ℂ)
-    (hf : Multipliable f) (him : ∀ n, (f n).im = 0) :
-    (∏' n : ℕ, f n).im = 0 := by
-  classical
+private lemma Complex_im_tprod_eq_zero_of_im_eq_zero (f : ℕ → ℂ) (hf : Multipliable f)
+    (him : ∀ n, (f n).im = 0) : (∏' n : ℕ, f n).im = 0 := by
   have hz : ∀ n, (∏ i ∈ Finset.range n, f i).im = 0 := fun n =>
-    Complex.im_finset_prod_eq_zero_of_im_eq_zero (s := Finset.range n) (f := f)
+    Complex_im_finset_prod_eq_zero_of_im_eq_zero (s := Finset.range n) (f := f)
       (by intro i _; simpa using him i)
-  have h1 := ((Complex.continuous_im.tendsto _).comp hf.hasProd.tendsto_prod_nat)
   have h2 : Tendsto (fun n => (∏ i ∈ Finset.range n, f i).im) atTop (𝓝 (0 : ℝ)) := by simp [hz]
-  exact tendsto_nhds_unique h1 h2
+  exact tendsto_nhds_unique ((Complex.continuous_im.tendsto _).comp hf.hasProd.tendsto_prod_nat) h2
 
-/- Δ(it) is real on the (positive) imaginary axis. -/
-lemma Delta_imag_axis_real : ResToImagAxis.Real Δ := by
+/-- `Δ (i t)` is real for `t > 0`. -/
+public lemma Delta_imag_axis_real : ResToImagAxis.Real Δ := by
   intro t ht
-  simp [ResToImagAxis, ht, Δ]
+  have cexp_aux4 (t : ℝ) (n : ℕ) : (cexp (-2 * π * (n + 1) * t)).im = 0 := by
+    simpa [Complex.ofReal_mul, Complex.ofReal_neg] using exp_ofReal_im (-2 * π * (n + 1) * t)
+  simp only [resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, Δ, mul_im]
   set g : ℕ → ℂ := fun n => (1 - cexp (2 * π * Complex.I * (n + 1) * (Complex.I * t))) ^ 24
   have hArg (n : ℕ) :
       2 * (π : ℂ) * Complex.I * (n + 1) * (Complex.I * t) = -(2 * (π : ℂ) * (n + 1) * t) := by
@@ -547,16 +538,25 @@ lemma Delta_imag_axis_real : ResToImagAxis.Real Δ := by
     simpa [g, hz] using
       (Multipliable_pow _ (by simpa using MultipliableEtaProductExpansion z) 24)
   have htprod_im : (∏' n : ℕ, g n).im = 0 :=
-    Complex.im_tprod_eq_zero_of_im_eq_zero g hmul him_g
+    Complex_im_tprod_eq_zero_of_im_eq_zero g hmul him_g
   have him_pref : (cexp (2 * π * Complex.I * (Complex.I * t))).im = 0 := by
-    have : (cexp (-(2 * (π : ℂ) * t))).im = 0 := by simpa using cexp_aux5 t
+    have : (cexp (-(2 * π * t))).im = 0 := by
+      simpa [Complex.ofReal_mul, Complex.ofReal_neg] using exp_ofReal_im (-(2 * π * t))
     simpa [by simpa using hArg 0] using this
   simp [g, him_pref, htprod_im]
 
-lemma re_ResToImagAxis_Delta_eq_real_prod (t : ℝ) (ht : 0 < t) :
+/-- Real-part formula for `Δ (i t)` on the imaginary axis, rewritten as a real infinite product. -/
+public lemma re_ResToImagAxis_Delta_eq_real_prod (t : ℝ) (ht : 0 < t) :
   (Δ.resToImagAxis t).re =
     Real.exp (-2 * π * t) *
       ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 := by
+  have cexp_aux2 (t : ℝ) (n : ℕ) :
+      cexp (2 * π * Complex.I * (n + 1) * (Complex.I * t)) = rexp (-(2 * π * (n + 1) * t)) := by
+    calc
+      _ = cexp (2 * ↑π * (n + 1) * (Complex.I * Complex.I) * t) := by ring_nf
+      _ = rexp (-(2 * π * (n + 1) * t)) := by simp
+  have cexp_aux1 (t : ℝ) : cexp (2 * ↑π * Complex.I * (Complex.I * t)) = rexp (-2 * π * t) := by
+    simpa using (cexp_aux2 t 0)
   set fR : ℕ → ℝ := fun n => (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24
   have hMap' :
       Complex.ofReal (∏' n : ℕ, fR n) = ∏' n : ℕ, ((fR n : ℝ) : ℂ) := by
@@ -569,39 +569,38 @@ lemma re_ResToImagAxis_Delta_eq_real_prod (t : ℝ) (ht : 0 < t) :
   simpa [ResToImagAxis, ht, Delta_apply, Δ, cexp_aux1, cexp_aux2, hMap', fR] using
     Complex.ofReal_re (Real.exp (-2 * π * t) * ∏' n : ℕ, fR n)
 
-lemma tprod_pos_nat_im (z : ℍ) :
-  0 < ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24 := by
-  have hpos_pow : ∀ n : ℕ, 0 < (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24 :=
-    fun n =>
-      pow_pos (by simpa [mul_comm, mul_left_comm, mul_assoc] using cexp_aux3 (t := z.im) n z.2) _
+private lemma Delta_tprod_pos_nat_im (z : ℍ) :
+    0 < ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24 := by
+  have hpos_pow :
+      ∀ n : ℕ, 0 < (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24 := fun n =>
+        pow_pos (sub_pos.2 ((Real.exp_lt_one_iff).2 (neg_lt_zero.2 (by positivity)))) _
   have hsum_log :
-      Summable (fun n : ℕ =>
-        Real.log ((1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24)) := by
+      Summable (fun n : ℕ => Real.log ((1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24)) := by
     simp only [Real.log_pow, Nat.cast_ofNat, ← smul_eq_mul]
     apply Summable.const_smul
-    simp [sub_eq_add_neg]
     apply Real.summable_log_one_add_of_summable
     apply Summable.neg
     have h0 : Summable (fun n : ℕ => Real.exp (n * (-(2 * π * z.im)))) :=
       (Real.summable_exp_nat_mul_iff.mpr
-        (by simpa using (neg_lt_zero.mpr (by positivity : 0 < 2 * π * z.im))))
+        (by
+          simpa using (neg_lt_zero.mpr (by positivity : 0 < 2 * π * z.im))))
     simpa [Nat.cast_add, Nat.cast_one, mul_comm, mul_left_comm, mul_assoc] using
       ((summable_nat_add_iff 1).2 h0)
   rw [← Real.rexp_tsum_eq_tprod
-        (f := fun n : ℕ =>
-          (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24)
+        (f := fun n : ℕ => (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * z.im))) ^ 24)
         hpos_pow hsum_log]
   exact Real.exp_pos _
 
-/- Δ(it) is positive on the (positive) imaginary axis. -/
-lemma Delta_imag_axis_pos : ResToImagAxis.Pos Δ := by
+/-- `Δ (i t)` is positive for `t > 0`. -/
+public lemma Delta_imag_axis_pos : ResToImagAxis.Pos Δ := by
   rw [ResToImagAxis.Pos]
   refine And.intro Delta_imag_axis_real ?_
   intro t ht
   have hprod :
       0 < ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 := by
-    let z : ℍ := ⟨Complex.I * t, by simp [ht]⟩
-    have hz : z.im = t := by simp [UpperHalfPlane.im, z]
-    simpa [hz] using tprod_pos_nat_im z
+    simpa [UpperHalfPlane.im] using
+      (Delta_tprod_pos_nat_im (z := ⟨Complex.I * t, by simp [ht]⟩))
   rw [re_ResToImagAxis_Delta_eq_real_prod t ht]
   exact mul_pos (Real.exp_pos _) hprod
+
+end Definitions

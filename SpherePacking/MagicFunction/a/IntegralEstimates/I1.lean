@@ -6,24 +6,33 @@ Authors: Sidharth Hariharan
 M4R File
 -/
 
+module
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
-import SpherePacking.MagicFunction.a.Basic
+public import SpherePacking.MagicFunction.a.Basic
+import SpherePacking.MagicFunction.a.IntegralEstimates.BoundingAuxIci
+import SpherePacking.MagicFunction.a.IntegralEstimates.I3
+import SpherePacking.Integration.InvChangeOfVariables
 
-/-! # Constructing Upper-Bounds for I₁
+/-!
+# Bounds for `I₁'`
 
-The purpose of this file is to construct bounds on the integral `I₁` that is part of the definition
-of the function `a`. We follow the proof of Proposition 7.8 in the blueprint.
+This file rewrites the auxiliary integral `I₁'` as an integral over `Ici 1` and proves the bound
+used in Proposition 7.8 of the blueprint.
 
-## TODO:
-- Integrability of `g` and `C₀ * rexp (-2 * π * s) * rexp (-π * r / s)`
+## Main definitions
+* `g`
+
+## Main statements
+* `Complete_Change_of_Variables`
+* `I₁'_bounding`
 -/
 
-open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals
-  MagicFunction.a.RadialFunctions MagicFunction.PolyFourierCoeffBound
-open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
-open scoped Function UpperHalfPlane
-
 namespace MagicFunction.a.IntegralEstimates.I₁
+
+open scoped Function UpperHalfPlane Real Complex
+open MagicFunction.Parametrisations MagicFunction.a.RealIntegrals MagicFunction.a.RadialFunctions
+  MagicFunction.PolyFourierCoeffBound
+open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegral
 
 noncomputable section Change_of_Variables
 
@@ -32,21 +41,14 @@ variable (r : ℝ)
 /-! We begin by performing changes of variables. We use `Ioc` intervals everywhere because of the
 way `intervalIntegral` is defined. -/
 
--- Change of variable result is based on
--- #check intervalIntegral.integral_comp_smul_deriv
-
--- Interval integrals can be reconciled with `Ioc` integrals using
--- #check intervalIntegral_eq_integral_uIoc
--- taking advantage of the fact that we have the following:
--- example : uIoc 0 1 = Ioc 0 1 := rfl
-
 section Setup
 
 def f : ℝ → ℝ := fun t ↦ 1 / t
 
 def f' : ℝ → ℝ := fun t ↦ -1 / t ^ 2
 
-def g : ℝ → ℝ → ℂ := fun r s ↦ -I
+/-- The integrand on `Ici 1` obtained from `I₁'` after an inversion change of variables. -/
+@[expose] public def g : ℝ → ℝ → ℂ := fun r s ↦ -I
   * φ₀'' (I * s)
   * (s ^ (-4 : ℤ))
   * cexp (-π * I * r)
@@ -102,33 +104,23 @@ lemma Writing_as_intervalIntegral (r : ℝ) :
   simp [intervalIntegral_eq_integral_uIoc]
 
 lemma Reconciling_Change_of_Variables (r : ℝ) :
-    I₁' r = ∫ t in Ioc 0 1, |f' t| • (g r (f t)) := by
-  simp only [I₁'_eq_Ioc, f, f', g]
-  apply setIntegral_congr_ae₀ nullMeasurableSet_Ioc
-  apply ae_of_all
-  intro t ht
-  obtain ⟨ht₀, ht₁⟩ := ht
-  simp only [Int.reduceNeg, zpow_neg, real_smul]
-  have h₁ : |-1 / t ^ 2| = 1 / t ^ 2 := by rw [neg_div, abs_neg, abs_of_nonneg (by positivity)]
-  have h₃ : -1 / (I * t) = I / t := by
-    rw [div_mul_eq_div_div_swap, div_I, neg_div, neg_mul, neg_neg, mul_comm, mul_div, mul_one]
-  have ht₀' : (t : ℂ) ^ 2 ≠ 0 := by
-    norm_cast
-    simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff]
-    exact ne_of_gt ht₀
-  rw [h₁, h₃]
-  simp only [neg_mul, ofReal_div, ofReal_one, ofReal_pow, mul_div_assoc', mul_one, div_zpow,
-    one_zpow, inv_div, div_one, div_div_eq_mul_div, mul_neg, div_mul_eq_mul_div, one_mul, neg_div']
-  rw [eq_div_iff ht₀', neg_mul, neg_inj]
-  ring_nf
-  ac_rfl
+    I₁' r = ∫ t in Ioc 0 1, |(-1 / t ^ 2)| • (g r (1 / t)) := by
+  simp only [I₁'_eq_Ioc, g]
+  refine setIntegral_congr_ae₀ nullMeasurableSet_Ioc (ae_of_all _ fun t ht => ?_)
+  -- shared algebraic reconciliation lemma (also used in `I₃`/`I₅`)
+  simpa [mul_assoc, mul_left_comm, mul_comm] using
+    (MagicFunction.a.IntegralEstimates.I₃.inv_integrand_eq_integrand (t := t) ht.1 r
+      (cexp (-π * I * r)))
 
-theorem Complete_Change_of_Variables (r : ℝ) : I₁' r = ∫ s in Ici (1 : ℝ), (g r s) := by
-  rw [Reconciling_Change_of_Variables, ← Changing_Variables, ← Changing_Domain_of_Integration]
+/-- Rewrite `I₁' r` as an integral of `g r` over `Ici 1`. -/
+public theorem Complete_Change_of_Variables (r : ℝ) :
+    I₁' r = ∫ s in Ici (1 : ℝ), (g r s) := by
+  refine (Reconciling_Change_of_Variables (r := r)).trans ?_
+  simpa using
+    (SpherePacking.Integration.InvChangeOfVariables.integral_Ici_one_eq_integral_abs_deriv_smul
+      (g := g r)).symm
 
-end Change
-
-end Change_of_Variables
+end Change_of_Variables.Change
 
 ----------------------------------------------------------------
 
@@ -171,26 +163,6 @@ lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
 
 end Bounding_Integrand
 
-section Integrability
-
-lemma Bound_integrableOn (r C₀ : ℝ) :
-    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := by
-  set μ := volume.restrict (Ici (1 : ℝ))
-  have h_g : Integrable (fun s ↦ C₀ * rexp (-2 * π * s)) μ :=
-    ((integrableOn_Ici_iff_integrableOn_Ioi).mpr
-      (integrableOn_exp_mul_Ioi (by linarith [pi_pos]) 1)).const_mul C₀
-  have hφ : AEStronglyMeasurable (fun s ↦ rexp (-π * r / s)) μ :=
-    (Real.continuous_exp.measurable.comp (measurable_const.mul measurable_inv)).aestronglyMeasurable
-  have hb : ∀ᵐ s ∂μ, ‖rexp (-π * r / s)‖ ≤ rexp (π * |r|) :=
-    (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s (hs : 1 ≤ s) ↦ by
-      simp only [Real.norm_eq_abs, abs_of_nonneg (exp_pos _).le]
-      refine exp_le_exp.mpr <| (le_abs_self _).trans ?_
-      rw [abs_div, abs_mul, abs_neg, abs_of_nonneg pi_pos.le, abs_of_nonneg (by linarith : 0 ≤ s)]
-      exact div_le_self (by positivity) hs
-  simpa [mul_comm] using h_g.bdd_mul hφ hb
-
-end Integrability
-
 section Bounding_Integral
 
 lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, ‖g r s‖ ≤
@@ -203,7 +175,7 @@ lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, �
     positivity
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_aux_2 r
   use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (Bound_integrableOn r C₀) measurableSet_Ici hC₀
+  exact setIntegral_mono_on hint (bound_integrableOn_Ici r C₀) measurableSet_Ici hC₀
 
 theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₁' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
@@ -225,10 +197,5 @@ end Bounding
 
 end I₁
 
-end IntegralEstimates
-
-end a
-
-end MagicFunction
-
+end MagicFunction.a.IntegralEstimates
 ----------------------------------------------------------------

@@ -4,37 +4,43 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Bhavik Mehta
 -/
 
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.RingTheory.Binomial
+module
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
-/-! # Fourier Series
-The purpose of this file is to include some results on Fourier series.
+/-!
+# Fourier series
+
+This file collects a few basic results about Fourier series used in this repository.
 -/
 
-open Complex Real
+namespace SpherePacking.ForMathlib.Fourier
+
+open Complex
 
 variable {U : Set ℂ} (f : U → ℂ) (c : ℕ → ℂ)
 
-/--
-Predicate for a function `f : U → ℂ` to have `c : ℕ → ℂ` as its fourier series, ie for all `x ∈ U`,
-`∑' n, c n * exp (π * I * n * x) = f x`.
-Note we write this using `HasSum` to assert that the sum exists and is equal to `f x`.
--/
-def HasFourierSeries : Prop := ∀ (x : U), HasSum (fun n ↦ c n * exp (π * I * n * x)) (f x)
+/-- `HasFourierSeries f c` means that `c` is a Fourier series for `f`, i.e. for every `x : U` we
+have `∑' n, c n * exp (π * I * n * x) = f x`.
 
-/--
-Predicate for a function `f : U → ℂ` to have `c : ℕ → ℂ` as its `2π`-fourier series, ie for all
-`x ∈ U`, `∑' n, c n * exp (2 * π * I * n * x) = f x`.
-Note we write this using `HasSum` to assert that the sum exists and is equal to `f x`.
+We use `HasSum` to assert both existence of the series and its value.
 -/
-def Has2PiFourierSeries : Prop := ∀ (x : U),
-  HasSum (fun n ↦ c n * exp (2 * π * I * n * x)) (f x)
+@[expose] public def HasFourierSeries : Prop :=
+  ∀ (x : U), HasSum (fun n ↦ c n * exp (Real.pi * I * n * x)) (f x)
+
+/-- `Has2PiFourierSeries f c` means that `c` is a `2π`-Fourier series for `f`, i.e. for every
+`x : U` we have `∑' n, c n * exp (2 * π * I * n * x) = f x`.
+
+We use `HasSum` to assert both existence of the series and its value.
+-/
+@[expose] public def Has2PiFourierSeries : Prop :=
+  ∀ (x : U), HasSum (fun n ↦ c n * exp (2 * Real.pi * I * n * x)) (f x)
 
 section Odd_Even_Trick
 
 open Function
 
-theorem hasFourierSeries_iff_has2PiFourierSeries :
+/-- Relate `2π`-Fourier series to `π`-Fourier series by extending coefficients to even indices. -/
+public theorem hasFourierSeries_iff_has2PiFourierSeries :
     Has2PiFourierSeries f c ↔ HasFourierSeries f (extend (fun n ↦ 2 * n) c 0) := by
   simp only [HasFourierSeries, Subtype.forall, Has2PiFourierSeries]
   apply forall₂_congr
@@ -42,7 +48,7 @@ theorem hasFourierSeries_iff_has2PiFourierSeries :
   have hinj : Injective (fun n ↦ 2 * n) := mul_right_injective₀ two_ne_zero
   rw [← hasSum_extend_zero hinj]
   congr! 2 with n
-  rw [apply_extend (· * cexp (π * I * n * a))]
+  rw [apply_extend (· * cexp (Real.pi * I * n * a))]
   simp only [Pi.comp_zero, zero_mul, const_zero]
   by_cases h : ∃ i, 2 * i = n
   · obtain ⟨i, rfl⟩ := h
@@ -52,4 +58,4 @@ theorem hasFourierSeries_iff_has2PiFourierSeries :
     ring
   · simp [h]
 
-end Odd_Even_Trick
+end SpherePacking.ForMathlib.Fourier.Odd_Even_Trick

@@ -1,34 +1,37 @@
-import Mathlib.Algebra.Group.NatPowAssoc
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+module
+public import Mathlib.Analysis.Calculus.Deriv.Basic
+public import Mathlib.Analysis.Calculus.FDeriv.Defs
+public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+public import Mathlib.Analysis.SpecialFunctions.Complex.Log
 import Mathlib.Analysis.SpecialFunctions.Complex.LogDeriv
-import Mathlib.NumberTheory.ArithmeticFunction.Defs
-import Mathlib.NumberTheory.ArithmeticFunction.Moebius
-import Mathlib.NumberTheory.ModularForms.Basic
-import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Defs
+import Mathlib.Tactic.FunProp
 
-open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex
+/-!
+# Complex square root
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+This file defines `csqrt z = exp (log z / 2)` and proves basic calculus and power identities used
+in modular-form computations.
+-/
 
-open ArithmeticFunction
+open UpperHalfPlane Complex
 
+/-- The complex square root defined as `exp (log z / 2)`.
 
-noncomputable def csqrt : ℂ → ℂ := (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log a)))
+This is a convenient explicit choice of a square root on the slit plane.
+-/
+@[expose] public noncomputable def csqrt : ℂ → ℂ := fun a ↦ cexp ((1 / (2 : ℂ)) * log a)
 
-lemma csqrt_deriv (z : ℍ) : deriv (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log a))) z =
-    (2 : ℂ)⁻¹ • (fun a : ℂ => cexp (-(1 / (2 : ℂ)) * (log a))) z:= by
-  have : (fun a ↦ cexp (1 / 2 * Complex.log a)) = cexp ∘ (fun a ↦ (1 / 2 * Complex.log a)) := by
-    ext z
-    simp
-  have hzz : ↑z ∈ slitPlane := by
-    rw [@mem_slitPlane_iff]
-    right
-    have hz := z.2
-    exact Ne.symm (ne_of_lt hz)
+private lemma coe_mem_slitPlane (z : ℍ) : (z : ℂ) ∈ slitPlane := by
+  simpa [mem_slitPlane_iff] using
+    (Or.inr (Ne.symm (ne_of_lt z.2)) : (0 < (z : ℂ).re) ∨ (z : ℂ).im ≠ 0)
+
+/-- The derivative of the map `a ↦ exp (log a / 2)` on the upper half-plane. -/
+public lemma csqrt_deriv (z : ℍ) : deriv (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log a))) z =
+    (2 : ℂ)⁻¹ • (fun a : ℂ => cexp (-(1 / (2 : ℂ)) * (log a))) z := by
+  have : (fun a ↦ cexp (1 / 2 * Complex.log a)) = cexp ∘ fun a ↦ (1 / 2 * Complex.log a) := rfl
+  have hzz : (z : ℂ) ∈ slitPlane := coe_mem_slitPlane z
   rw [this, deriv_comp]
-  · simp
+  · simp only [one_div, Complex.deriv_exp, deriv_const_mul_field', neg_mul, smul_eq_mul]
     rw [Complex.exp_neg]
     field_simp
     have hsq : cexp (Complex.log (z : ℂ) / 2) ^ 2 = cexp (Complex.log (z : ℂ)) := by
@@ -39,37 +42,24 @@ lemma csqrt_deriv (z : ℍ) : deriv (fun a : ℂ => cexp ((1 / (2 : ℂ))* (log 
   · apply DifferentiableAt.const_mul
     refine Complex.differentiableAt_log hzz
 
-lemma csqrt_differentiableAt (z : ℍ) : DifferentiableAt ℂ csqrt z := by
+/-- The function `csqrt` is complex differentiable at points of the upper half-plane. -/
+public lemma csqrt_differentiableAt (z : ℍ) : DifferentiableAt ℂ csqrt z := by
   unfold csqrt
-  apply DifferentiableAt.cexp
-  apply DifferentiableAt.const_mul
-  apply Complex.differentiableAt_log
-  rw [@mem_slitPlane_iff]
-  right
-  have hz := z.2
-  exact Ne.symm (ne_of_lt hz)
+  simpa using
+    ((Complex.differentiableAt_log (coe_mem_slitPlane z)).const_mul (1 / (2 : ℂ))).cexp
 
-
-lemma csqrt_I : (csqrt (Complex.I)) ^ 24 = 1 := by
+/-- The identity `(csqrt z)^24 = z^12` for `z ≠ 0`. -/
+public lemma csqrt_pow_24 (z : ℂ) (hz : z ≠ 0) : (csqrt z) ^ 24 = z ^ 12 := by
   unfold csqrt
   rw [← Complex.exp_nat_mul]
-  conv =>
-    enter [1,1]
-    rw [← mul_assoc]
-    rw [show ((24 : ℕ) : ℂ) * (1 / 2) = (12 : ℕ) by
-      field_simp; ring]
-  rw [Complex.exp_nat_mul]
-  rw [Complex.exp_log I_ne_zero]
-  have hi4 := Complex.I_pow_four
-  have : Complex.I ^ 12 = (.I ^ 4) ^ 3 := by rw [← @npow_mul]
-  simp [this, hi4]
+  simp only [Nat.cast_ofNat]
+  have hmul : (24 : ℂ) * ((1 / (2 : ℂ)) * Complex.log z) = (12 : ℂ) * Complex.log z := by
+    ring
+  rw [hmul]
+  simpa [Complex.exp_log hz] using (Complex.exp_nat_mul (Complex.log z) 12)
 
-lemma csqrt_pow_24 (z : ℂ) (hz : z ≠ 0) : (csqrt z) ^ 24 = z ^ 12 := by
-  unfold csqrt
-  rw [← Complex.exp_nat_mul]
-  conv =>
-    enter [1,1]
-    rw [← mul_assoc]
-    rw [show ((24 : ℕ) : ℂ) * (1 / 2) = (12 : ℕ) by
-      field_simp; ring]
-  rw [Complex.exp_nat_mul, Complex.exp_log hz]
+/-- The special value `(csqrt I)^24 = 1`. -/
+public lemma csqrt_I : (csqrt (Complex.I)) ^ 24 = 1 := by
+  have hI12 : (Complex.I : ℂ) ^ 12 = 1 := by
+    simpa [Complex.I_pow_four] using (pow_mul (Complex.I : ℂ) 4 3)
+  simpa [hI12] using csqrt_pow_24 (z := Complex.I) I_ne_zero
