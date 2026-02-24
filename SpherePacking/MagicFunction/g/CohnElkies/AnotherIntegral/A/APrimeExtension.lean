@@ -754,9 +754,7 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
     DifferentiableAt ℂ I₆'C u0 := by
   have hu0re : 0 < u0.re := by simpa [rightHalfPlane] using hu0
   set ε : ℝ := u0.re / 2
-  have hε : 0 < ε := by
-    dsimp [ε]
-    nlinarith [hu0re]
+  have hε : 0 < ε := by positivity
   let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ici (1 : ℝ))
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   have hbase_bound : ∀ t ∈ Set.Ici (1 : ℝ), ‖base₆ t‖ ≤ C₀ := by

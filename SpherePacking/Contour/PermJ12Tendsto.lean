@@ -161,8 +161,8 @@ private lemma exists_gAct_im_ge_of_dist_lt
   have hLower : (1 : ℝ) / (2 * z.im) ≤ z.im / Complex.normSq (z - 1) :=
     one_div_two_im_le_im_div_normSq_sub_one (z := z) hz_im_pos hz1 habs_re
   have hA_lt : A < (1 : ℝ) / (2 * z.im) := by
-    have hmul : z.im * (2 * A) < (1 : ℝ) := (lt_div_iff₀ (by nlinarith)).1 hz_im_lt
-    exact (lt_div_iff₀ (by nlinarith [hz_im_pos])).2 (by
+    have hmul : z.im * (2 * A) < (1 : ℝ) := (lt_div_iff₀ (by positivity)).1 hz_im_lt
+    exact (lt_div_iff₀ (by positivity)).2 (by
       simpa [mul_assoc, mul_left_comm, mul_comm] using hmul)
   refine ⟨hz_im_pos, ?_⟩
   have : A < (gAct (⟨z, hz_im_pos⟩ : UpperHalfPlane)).im := by
@@ -206,9 +206,7 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of
     have hdiv : 0 < ε / M := div_pos hε hMpos
     exact lt_min (by norm_num) hdiv
   let δ : ℝ := min δexp (min δ0 (1 / (2 * A)))
-  have hδ_pos : 0 < δ := lt_min hδexp_pos (lt_min hδ0_pos (by
-    have : 0 < (2 * A : ℝ) := by nlinarith [hApos]
-    simpa using one_div_pos.2 this))
+  have hδ_pos : 0 < δ := lt_min hδexp_pos (lt_min hδ0_pos (by positivity))
   refine ⟨δ, hδ_pos, ?_⟩
   intro z hzcl hdistz
   by_cases hz1 : z = (1 : ℂ)

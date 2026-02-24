@@ -489,8 +489,7 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
         _ = (Csum * Cinv2) * Real.exp (-(5 : ℝ) * Real.pi * t) := h2
         _ ≤ (Csum * Cinv2) * Real.exp (-Real.pi * t) := hterm
     have hu_term : ‖(192 : ℂ) * (u : ℂ)‖ ≤ (192 : ℝ) * Real.exp (-Real.pi * t) := by
-      have hu0 : 0 ≤ u := by
-        simpa [u] using (Real.exp_pos (-(2 : ℝ) * Real.pi * t)).le
+      have hu0 : 0 ≤ u := by positivity
       have habs : |u| ≤ Real.exp (-Real.pi * t) := by
         simpa [abs_of_nonneg hu0] using hu_le
       have hEq : ‖(192 : ℂ) * (u : ℂ)‖ = (192 : ℝ) * |u| := by

@@ -75,13 +75,7 @@ public lemma exists_phi2'_phi4'_bound_exp :
   -- One constant dominating both bounds.
   let C : ℝ :=
     max 1 (max (CE4 ^ (2 : ℕ) * CΔ) (CE4 * (CE2 * CE4 + CE6) * CΔ))
-  have hCpos : 0 < C := by
-    have : (0 : ℝ) < 1 := by norm_num
-    -- `C ≥ 1`.
-    have h1 : (1 : ℝ) ≤ C := by
-      dsimp [C]
-      exact le_max_left _ _
-    exact lt_of_lt_of_le this h1
+  have hCpos : 0 < C := by positivity
   refine ⟨C, A, hCpos, ?_⟩
   intro z hzA
   have hzΔ : AΔ ≤ z.im := le_trans hAΔ hzA
@@ -140,9 +134,7 @@ public lemma exists_phi2'_phi4'_bound_exp :
           have hnonneg : 0 ≤ ‖E₄ z‖ := norm_nonneg _
           gcongr
         exact hmul'.trans hmul''
-      have hnonneg : 0 ≤ CE4 * (CE2 * CE4 + CE6) := by
-        have : 0 ≤ CE2 * CE4 + CE6 := by nlinarith [hCE2.le, hCE4.le, hCE6.le]
-        nlinarith [hCE4.le, this]
+      have hnonneg : 0 ≤ CE4 * (CE2 * CE4 + CE6) := by positivity
       calc
         ‖φ₂' z‖
             = ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) * (Δ z)⁻¹‖ := by

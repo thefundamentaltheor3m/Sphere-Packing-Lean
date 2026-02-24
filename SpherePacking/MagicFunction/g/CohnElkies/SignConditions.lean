@@ -98,9 +98,7 @@ public theorem fourier_g_nonneg : ∀ x : ℝ⁸, (𝓕 g x).re ≥ 0 := by
       simpa [FourierTransform.fourierCLE_apply, SchwartzMap.fourier_coe] using
         (fourier_g_zero : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g 0 = 1)
     simp [h0]
-  · have hx' : 0 < ‖x‖ ^ 2 := by
-      have : 0 < ‖x‖ := norm_pos_iff.2 hx
-      simpa using (pow_pos this 2)
+  · have hx' : 0 < ‖x‖ ^ 2 := by positivity
     set u : ℝ := ‖x‖ ^ 2 with hu
     have hEq := fourier_g_eq_integral_B (x := x) hx'
     set IB : ℝ := ∫ t in Set.Ioi (0 : ℝ), B t * Real.exp (-π * u * t) with hIB

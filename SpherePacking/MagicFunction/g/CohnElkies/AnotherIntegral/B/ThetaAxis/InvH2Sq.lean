@@ -637,12 +637,7 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
     have hmul : 0 ≤ CH2 * Real.exp (-(5 : ℝ) * Real.pi * (1 : ℝ)) := h0.trans h
     exact nonneg_of_mul_nonneg_left hmul (Real.exp_pos _)
   set C0 : ℝ := 16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256
-  have hC0 : 0 ≤ C0 := by
-    have : 0 ≤ (16 : ℝ) + (160 / 256 : ℝ) * CH2 + (CH2 ^ 2) / 256 := by
-      have h1 : 0 ≤ (160 / 256 : ℝ) * CH2 := mul_nonneg (by positivity) hCH2
-      have h2 : 0 ≤ (CH2 ^ 2) / 256 := by positivity
-      nlinarith
-    simpa [C0] using this
+  have hC0 : 0 ≤ C0 := by positivity
   have heu : e * u = 1 := by
     calc
       e * u = Real.exp (2 * Real.pi * t) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
@@ -792,7 +787,7 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
           set K : ℝ := (8 + C0) ^ 2 + C0
           have hK : 0 ≤ K := by
             have hsq : 0 ≤ (8 + C0) ^ 2 := by positivity
-            have : 0 ≤ (8 + C0) ^ 2 + C0 := by nlinarith [hsq, hC0]
+            have : 0 ≤ (8 + C0) ^ 2 + C0 := by positivity
             simpa [K] using this
           have hcoeff : (1 / 256 : ℝ) * K ≤ 256 * K := by
             have h : (1 / 256 : ℝ) ≤ 256 := by norm_num

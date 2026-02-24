@@ -192,7 +192,7 @@ public lemma aAnotherIntegralC_analyticOnNhd :
         _ = (2 / c) * Real.exp ((c / 2) * t + (-c * t)) := by simp [Real.exp_add]
         _ = (2 / c) * Real.exp (-(c / 2) * t) := by ring_nf
     have hInt_base : Integrable (fun t : ℝ => aAnotherIntegrand (ε / 2) t) μ := by
-      have hε2 : 0 < ε / 2 := by nlinarith [hε]
+      have hε2 : 0 < ε / 2 := by positivity
       simpa [μ, μIoi0, IntegrableOn] using (aAnotherIntegrand_integrable_of_pos (u := ε / 2) hε2)
     have hF_int : Integrable (fun t : ℝ => aAnotherIntegrandC u t) μ := by
       refine Integrable.mono' (g := fun t : ℝ => ‖aAnotherIntegrand (ε / 2) t‖)

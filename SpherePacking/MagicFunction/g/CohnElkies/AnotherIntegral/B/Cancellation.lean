@@ -256,7 +256,7 @@ public lemma bAnotherBase_integrable_mul_exp {u : ℝ} (hu : 0 < u) :
       exact hf_Icc.mono_set Set.Ioc_subset_Icc_self
     -- Tail integrability on `t > 1`.
     let b' : ℝ := (π * u) / 2
-    have hb' : 0 < b' := by dsimp [b']; linarith
+    have hb' : 0 < b' := by positivity
     have hf_Ici : ContinuousOn f (Set.Ici (1 : ℝ)) := hf_cont.continuousOn
     have hO : f =O[atTop] fun t : ℝ => Real.exp (-b' * t) := by
       refine Asymptotics.isBigO_of_div_tendsto_nhds (l := atTop) ?_ (c := (0 : ℝ)) ?_

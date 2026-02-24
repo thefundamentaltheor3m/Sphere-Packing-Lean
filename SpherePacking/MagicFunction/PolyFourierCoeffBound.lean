@@ -264,10 +264,8 @@ by
   gcongr
   · exact aux_8 z
   · apply tprod_le_of_nonneg_of_multipliable
-    · intro n; simp only [neg_mul]
-      have : (1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 24 =
-          ((1 - rexp (-(2 * π * ↑↑n * z.im))) ^ 12) ^ 2 := by ring_nf
-      rw [this]; exact sq_nonneg _
+    · intro n
+      positivity
     · intro n; simp only [neg_mul]; gcongr
       · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
       · have hre : -(2 * π * n * z.im) = (2 * π * I * n * z).re := by simp
@@ -341,10 +339,7 @@ lemma step_12 :
   · exact aux_11
   · apply tprod_le_of_nonneg_of_multipliable
     · intro n
-      have hx :
-          (1 - rexp (-(π * (n : ℝ)))) ^ 24 = ((1 - rexp (-(π * (n : ℝ)))) ^ 12) ^ 2 := by
-        simpa using pow_mul (1 - rexp (-(π * (n : ℝ)))) 12 2
-      simpa [Pi.zero_apply, hx] using sq_nonneg ((1 - rexp (-(π * (n : ℝ)))) ^ 12)
+      positivity
     · intro n
       have h0 : 0 ≤ 1 - rexp (-π * (n : ℝ)) := by
         refine sub_nonneg.2 (Real.exp_le_one_iff.2 ?_)

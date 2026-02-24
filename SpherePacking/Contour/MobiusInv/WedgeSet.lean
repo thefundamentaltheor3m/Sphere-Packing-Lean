@@ -34,7 +34,7 @@ public lemma mobiusInv_lineMap_z₁_mem_wedgeSet
     mobiusInv (AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) t) ∈ wedgeSet := by
   simpa [SpherePacking.Contour.lineMap_z₁line (t := t)] using
     (show mobiusInv (SpherePacking.Contour.z₁line t) ∈ wedgeSet from by
-      have hdenom : 0 < (1 + t ^ 2 : ℝ) := by nlinarith [sq_nonneg t]
+      have hdenom : 0 < (1 + t ^ 2 : ℝ) := by positivity
       have hre : (mobiusInv (SpherePacking.Contour.z₁line t)).re = 1 / (1 + t ^ 2) := by
         simpa [SpherePacking.Contour.z₁line, mobiusInv, pow_two, add_assoc, add_comm,
           add_left_comm] using (mobiusInv_re_im (-1) t).1
@@ -59,7 +59,7 @@ public lemma mobiusInv_lineMap_z₂_mem_wedgeSet
   simpa [SpherePacking.Contour.lineMap_z₂line (t := t)] using
     (show mobiusInv (SpherePacking.Contour.z₂line t) ∈ wedgeSet from by
       set x : ℝ := t - 1
-      have hdenom : 0 < (x ^ 2 + 1 : ℝ) := by nlinarith [sq_nonneg x]
+      have hdenom : 0 < (x ^ 2 + 1 : ℝ) := by positivity
       have hre : (mobiusInv (SpherePacking.Contour.z₂line t)).re = (1 - t) / (x ^ 2 + 1) := by
         have : (mobiusInv ((x : ℂ) + Complex.I * (1 : ℂ))).re = (-x) / (x ^ 2 + 1) := by
           simpa [mobiusInv, pow_two] using (mobiusInv_re_im x 1).1

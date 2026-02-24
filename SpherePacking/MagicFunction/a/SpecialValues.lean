@@ -287,7 +287,7 @@ lemma f0_norm_bound_on_strip :
       refine abs_le.2 ?_
       constructor <;> linarith [hzRe0, hzRe1]
     have hIm : |2 * z.im| = 2 * z.im := by
-      have : 0 ≤ 2 * z.im := by nlinarith [hzIm_nonneg]
+      have : 0 ≤ 2 * z.im := by positivity
       simp [abs_of_nonneg this]
     calc
       ‖(2 : ℂ) * z - 1‖

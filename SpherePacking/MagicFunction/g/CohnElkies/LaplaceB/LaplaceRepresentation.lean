@@ -189,7 +189,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       have hmaps :
           Set.MapsTo (fun t : ℝ => I * (t : ℂ)) (Set.Ioi A) {z : ℂ | 0 < z.im} := by
         intro t ht
-        have ht0 : 0 < t := lt_of_lt_of_le (by linarith [hA1]) (le_of_lt ht)
+        have ht0 : 0 < t := lt_of_lt_of_le (by positivity) (le_of_lt ht)
         simpa using ht0
       have hcont : ContinuousOn f (Set.Ioi A) := by
         simpa [f] using (continuousOn_bContourIntegrandT (u := u)).comp hmul hmaps
