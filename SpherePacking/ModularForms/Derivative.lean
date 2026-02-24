@@ -38,8 +38,7 @@ lemma DifferentiableAt_MDifferentiableAt {G : ℂ → ℂ} {z : ℍ}
   -- which is a neighborhood of ↑z
   apply DifferentiableAt.congr_of_eventuallyEq h
   filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
-  simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw]
-  exact congrArg G (UpperHalfPlane.coe_mk w hw)
+  simp [Function.comp_apply, ofComplex_apply_of_im_pos hw]
 
 /--
 The derivative operator `D` preserves MDifferentiability.
@@ -222,7 +221,7 @@ theorem D_qexp_term (n : ℤ) (a : ℂ) (z : ℍ) :
   have h_agree : ((fun w : ℍ => a * cexp (2 * π * I * n * w)) ∘ ofComplex) =ᶠ[nhds (z : ℂ)]
       (fun w : ℂ => a * cexp (2 * π * I * n * w)) := by
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.2] with w hw
-    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, UpperHalfPlane.coe_mk]
   rw [h_agree.deriv_eq, (hasDerivAt_qexp a n z).deriv]
   field_simp [two_pi_I_ne_zero]
 
@@ -288,7 +287,7 @@ theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
   have h_agree : ((fun w : ℍ => ∑' n, a n * cexp (2 * π * I * n * w)) ∘ ofComplex) =ᶠ[nhds (z : ℂ)]
       (fun w => ∑' n, a n * cexp (2 * π * I * n * w)) := by
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.2] with w hw
-    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, coe_mk_subtype]
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, UpperHalfPlane.coe_mk]
   rw [h_agree.deriv_eq, h_tsum_deriv.deriv]
   -- Simplify derivWithin using helper
   have h_deriv_simp : ∀ n, derivWithin (fun w => a n * cexp (2 * π * I * n * w))
@@ -522,7 +521,7 @@ lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(�
       -- gz = γ • ⟨w, hw⟩, so F gz = F (γ • ⟨w, hw⟩)
       congr 1
       -- Show gz = ofComplex (num/denom) as points in ℍ
-      apply Subtype.ext
+      apply UpperHalfPlane.ext
       rw [ofComplex_apply_of_im_pos hmob_im]
       exact hsmul_coe
   rw [hcomp]

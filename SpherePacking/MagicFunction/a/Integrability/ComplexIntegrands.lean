@@ -51,8 +51,7 @@ theorem range_upperHalfPlane_coe : range UpperHalfPlane.coe = ℍ₀ := by
   · obtain ⟨y, hy⟩ := hz
     rw [← hy]
     exact y.2
-  · use ⟨z, hz⟩
-    exact coe_mk_subtype hz
+  · exact ⟨⟨z, hz⟩, rfl⟩
 
 theorem zero_not_mem_upperHalfPlaneSet : (0 : ℂ) ∉ ℍ₀ := by simp
 

@@ -219,8 +219,8 @@ lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : 
       ext j
       ring_nf
     · simp
-      rw [← sigmaAntidiagonalEquivProd.summable_iff]
-      simp [sigmaAntidiagonalEquivProd]
+      rw [← spSigmaAntidiagonalEquivProd.summable_iff]
+      simp [spSigmaAntidiagonalEquivProd]
       apply (summable_auxil_1 (k - 1) z).congr
       intro b
       simp [mapdiv]
@@ -228,8 +228,8 @@ lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : 
     intro b
     have A3 := a1 k b z
     apply A3.subtype
-  rw [sigmaAntidiagonalEquivProd.summable_iff.symm]
-  simp [sigmaAntidiagonalEquivProd, mapdiv]
+  rw [spSigmaAntidiagonalEquivProd.summable_iff.symm]
+  simp [spSigmaAntidiagonalEquivProd, mapdiv]
   apply (summable_auxil_1 (k - 1) z).congr
   intro b
   simp
@@ -305,11 +305,11 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
         ∑' n : ℕ+, σ (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by
   rw [_root_.E]
   rw [IsGLPos.smul_apply]
-  have : (eisensteinSeries_MF hk standardcongruencecondition) z =
-    (eisensteinSeries_SIF standardcongruencecondition k) z := rfl
-  rw [this]
-  have := eisensteinSeries_SIF_apply standardcongruencecondition k z
-  rw [this, eisensteinSeries, standardcongruencecondition]
+  have hmf : (eisensteinSeries_MF hk standardcongruencecondition) z =
+      (eisensteinSeriesSIF standardcongruencecondition k) z := rfl
+  rw [hmf]
+  have hsif := eisensteinSeriesSIF_apply standardcongruencecondition k z
+  rw [hsif, eisensteinSeries, standardcongruencecondition]
   simp
   simp_rw [eisSummand]
   have HE1 := EQ1 k hk hk2 z

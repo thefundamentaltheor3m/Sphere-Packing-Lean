@@ -166,14 +166,17 @@ lemma eta_DifferentiableAt_UpperHalfPlane (z : ℍ) : DifferentiableAt ℂ η z 
 lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z := by
   unfold η
   rw [logDeriv_mul]
-  · have HG := logDeriv_tprod_eq_tsum (s := {x : ℂ | 0 < x.im}) ?_ z
+  · have HG := logDeriv_tprod_eq_tsum (s := {x : ℂ | 0 < x.im}) ?_ ⟨(z : ℂ), z.2⟩
      (fun (n : ℕ) => fun (x : ℂ) => 1 - cexp (2 * π * Complex.I * (n + 1) * x)) ?_ ?_ ?_ ?_ ?_
     · simp only [mem_setOf_eq, UpperHalfPlane.coe] at *
       rw [HG]
       · have := tsum_log_deriv_eqn z
         have h0 := logDeriv_z_term z
         simp only [UpperHalfPlane.coe] at *
-        rw [this, E₂, h0]
+        rw [this, h0]
+        have hE2 : E₂ z = (1 / (2 * riemannZeta 2)) * G₂ z := by
+          simpa [E₂, EisensteinSeries.E2, smul_eq_mul, G₂]
+        rw [hE2]
         simp
         rw [G2_q_exp]
         rw [riemannZeta_two]
@@ -198,8 +201,20 @@ lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z :=
                (8 * ↑π ^ 2 * ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (2 * ↑π * Complex.I * ↑↑n * ↑z))) =
             (↑π * Complex.I * (1 / 12) * -(((π : ℂ) ^ 2 * (1 / 6))⁻¹ * (1 / 2) * (↑π ^ 2 * 8)) *
             ∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1)) := by
+              have htsum :
+                  (∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (2 * ↑π * Complex.I * ↑↑n * ↑z)) =
+                    (∑' (n : ℕ+), ↑((σ 1) ↑n) * cexp (↑π * Complex.I * 2 * ↑↑n * z.1)) := by
+                apply tsum_congr
+                intro n
+                congr 1
+                ring
+              rw [htsum]
               ring_nf
-              rfl
+              congr 3
+              apply tsum_congr
+              intro n
+              congr 1
+              ring
           simp only [UpperHalfPlane.coe] at *
           rw [hr]
           congr 1

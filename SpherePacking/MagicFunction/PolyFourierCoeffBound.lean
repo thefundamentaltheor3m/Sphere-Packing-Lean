@@ -184,7 +184,7 @@ private lemma step_1 :
     norm ((f z) / (Δ z)) = norm (
       (∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
       (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)
-    ) := by simp [DiscriminantProductFormula, hf, fouterm, UpperHalfPlane.coe];
+    ) := by simp [DiscriminantProductFormula, hf, fouterm];
 
 private lemma step_2 :
     norm ((∑' (n : ℕ), c (n + n₀) * cexp (π * I * (n + n₀) * z)) /
@@ -282,7 +282,7 @@ by
   have hpow : ∀ {ι} (f : ι → ℝ), Multipliable f → ∀ n, Multipliable (fun i => f i ^ n) := by
     intro ι f hf n
     induction n with
-    | zero => simpa using (multipliable_one : Multipliable (fun _ : ι => (1 : ℝ)))
+    | zero => simp [(multipliable_one : Multipliable (fun _ : ι => (1 : ℝ)))]
     | succ n hn => simpa [pow_succ] using (hn.mul hf)
   gcongr
   · exact aux_8 z
