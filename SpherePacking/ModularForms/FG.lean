@@ -135,16 +135,13 @@ private lemma logderiv_mul_eq (f h : ℍ → ℂ)
     (hf_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h)
     (z : ℍ) (hf_ne : f z ≠ 0) (hh_ne : h z ≠ 0) :
     D (f * h) z / (f z * h z) = D f z / f z + D h z / h z := by
-  rw [congrFun (D_mul f h hf_md hh_md) z]
-  simp only [Pi.mul_apply, Pi.add_apply]
+  simp only [congrFun (D_mul f h hf_md hh_md) z, Pi.mul_apply, Pi.add_apply]
   field_simp [hf_ne, hh_ne]
 
-/-- `(a / b).re = a.re / b.re` when both `a` and `b` are real-valued complex numbers. -/
-private lemma div_re_of_im_eq_zero {a b : ℂ} (ha : a.im = 0) (hb : b.im = 0) :
+/-- `(a / b).re = a.re / b.re` when `b` is a real-valued complex number. -/
+private lemma div_re_of_im_eq_zero {a b : ℂ} (hb : b.im = 0) :
     (a / b).re = a.re / b.re := by
-  conv_lhs => rw [show a = ↑a.re from Complex.ext rfl (by simp [ha]),
-    show b = ↑b.re from Complex.ext rfl (by simp [hb]), ← Complex.ofReal_div]
-  exact Complex.ofReal_re _
+  rw [show b = ↑b.re from Complex.ext rfl (by simp [hb])]; exact Complex.div_ofReal_re a b.re
 
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
 
@@ -155,11 +152,9 @@ Simplifies `2πi * n * z` where z=it to `-2πnt`. -/
 lemma qexp_arg_imag_axis_pnat (t : ℝ) (ht : 0 < t) (n : ℕ+) :
     2 * ↑Real.pi * Complex.I * ↑n * ↑(⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane) =
     (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-  have h1 : 2 * ↑Real.pi * Complex.I * (⟨Complex.I * t, by simp [ht]⟩ : UpperHalfPlane) * n =
-      (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
-    simpa using exp_imag_axis_arg (t := t) ht n
-  simp only [mul_assoc, mul_left_comm, mul_comm] at h1 ⊢
-  convert h1 using 2
+  have h := exp_imag_axis_arg t ht n
+  simp only [mul_assoc, mul_left_comm, mul_comm] at h ⊢
+  convert h using 2
 
 /-- Generic summability for n^a * σ_b(n) * exp(2πinz) series.
 Uses σ_b(n) ≤ n^(b+1) (sigma_bound) and a33 (a+b+1) for exponential summability. -/
@@ -882,14 +877,11 @@ theorem D_cexp_div (c : ℂ) (z : ℍ) :
     D (fun w => cexp (c * w)) z / cexp (c * z) = c / (2 * π * I) := by
   simp only [D]
   have h_deriv : deriv ((fun w : ℍ => cexp (c * w)) ∘ ⇑ofComplex) (z : ℂ) =
-      c * cexp (c * z) := by
-    have h_exp_deriv : HasDerivAt (fun w : ℂ => cexp (c * w)) (c * cexp (c * z)) (z : ℂ) :=
-      (Complex.hasDerivAt_exp (c * z)).scomp (z : ℂ)
-        (by simpa using (hasDerivAt_id (z : ℂ)).const_mul c)
-    exact ((UpperHalfPlane.eventuallyEq_coe_comp_ofComplex z.2).fun_comp
-      (fun w => cexp (c * w))).deriv_eq.trans h_exp_deriv.deriv
-  rw [h_deriv]
-  field_simp [Complex.exp_ne_zero]
+      c * cexp (c * z) :=
+    ((eventuallyEq_coe_comp_ofComplex z.2).fun_comp (fun w => cexp (c * w))).deriv_eq.trans
+      ((Complex.hasDerivAt_exp (c * (z : ℂ))).scomp (z : ℂ)
+        (by simpa using (hasDerivAt_id (z : ℂ)).const_mul c)).deriv
+  rw [h_deriv]; field_simp [Complex.exp_ne_zero]
 
 private theorem D_exp_pi_div_exp_pi (z : ℍ) :
     D (fun w => cexp (π * Complex.I * w)) z / cexp (π * Complex.I * z) = 1 / 2 := by
@@ -1037,7 +1029,7 @@ theorem L₁₀_div_FG_tendsto :
   rw [← hz] at hL hF hG
   have hFG_im : (F z * G z).im = 0 := by rw [Complex.mul_im, hF, hG]; ring
   have hFG_re : (F z * G z).re = (F z).re * (G z).re := by rw [Complex.mul_re, hF, hG]; ring
-  rw [div_re_of_im_eq_zero hL hFG_im, hFG_re]
+  rw [div_re_of_im_eq_zero hFG_im, hFG_re]
 
 theorem L₁₀_eventually_pos_imag_axis : ResToImagAxis.EventuallyPos L₁₀ := by
   refine ⟨L₁₀_imag_axis_real, ?_⟩
