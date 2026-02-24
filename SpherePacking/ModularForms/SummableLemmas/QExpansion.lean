@@ -693,6 +693,13 @@ public theorem tsum_sigma_eqn2 (k : ℕ) (z : ℍ) :
   rw [hs.tsum_prod]
   simpa [q] using (tsum_prod_pow_eq_tsum_sigma (𝕜 := ℂ) k hq)
 
+/-- Summability of `∑_{d : ℤ} 1 / ((n z) + d)^k` for `k ≥ 2` and `z ∈ ℍ`. -/
+public lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
+    Summable fun d : ℤ => ((((n : ℂ) * z) + d) ^ k)⁻¹ := by
+  apply summable_inv_of_isBigO_rpow_inv (show 1 < (k : ℝ) by norm_cast)
+  lift k to ℕ using (by linarith)
+  simpa using (linear_bigO_pow n z k)
+
 /-- A cleaner version of `tsum_sigma_eqn2` with product indexing by `ℕ+ × ℕ+`. -/
 public theorem tsum_sigma_eqn {k : ℕ} (z : ℍ) :
     ∑' c : ℕ+ × ℕ+, (c.1 ^ k : ℂ) * Complex.exp (2 * ↑π * Complex.I * z * c.1 * c.2) =

@@ -81,6 +81,11 @@ public theorem fourier_scaledMagic_zero : FT scaledMagic 0 = (1 / 16 : ℂ) := b
 public theorem fourier_scaledMagic_zero_fun : 𝓕 (⇑scaledMagic) 0 = (1 / 16 : ℂ) := by
   simpa [FourierTransform.fourierCLE_apply, SchwartzMap.fourier_coe] using fourier_scaledMagic_zero
 
+/-- The ratio `(scaledMagic 0).re / (𝓕 (⇑scaledMagic) 0).re` equals `16`. -/
+public theorem scaledMagic_ratio :
+    (scaledMagic 0).re / (𝓕 (⇑scaledMagic) 0).re = (16 : ℝ) := by
+  simp [scaledMagic_zero, fourier_scaledMagic_zero_fun]
+
 end FourierScalingAtZero
 
 end SpherePacking

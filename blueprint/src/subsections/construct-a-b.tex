@@ -66,9 +66,7 @@ For \eqref{eqn:phi0-trans-S},
 %     +2\int\limits_{i}^{i\infty}\phi_0(z)\,e^{\pi i \|x\|^2 z}\,dz.
 % \end{align}
 For our formalization, we choose rectangular contours for the first and the second integral, and write it as follows.
-\begin{definition}\label{def:a-definition}\leanok
-\lean{MagicFunction.a.RealIntegrals.a'}
-% \lean{MagicFunction.a.RealIntegrals.a',MagicFunction.a.RadialFunctions.a}
+\begin{definition}\label{def:a-definition}\lean{MagicFunction.a.RealIntegrals.a',MagicFunction.a.RadialFunctions.a}\leanok
 \uses{def:phi4-phi2-phi0}
 Define $a_{\rad} : \R \to \C$ by
 \begin{align}\label{eqn:a-rad-definition}
@@ -482,9 +480,7 @@ Now, we are ready to define function $b$.
 Again, the definition here is slightly different from that in \cite{Via2017}, where all the contours are chosen to be the straight lines.
 
 
-\begin{definition}\label{def:b-definition}\uses{def:psiI-psiT-psiS}\leanok
-\lean{MagicFunction.b.RealIntegrals.b'}
-% \lean{MagicFunction.b.RealIntegrals.b',MagicFunction.b.RadialFunctions.b}
+\begin{definition}\label{def:b-definition}\uses{def:psiI-psiT-psiS}\lean{MagicFunction.b.RealIntegrals.b',MagicFunction.b.RadialFunctions.b}\leanok
 Define $b_\rad : \R \to \C$ by
 \begin{equation}
     b_\rad(r) := J_1(r) + J_2(r) + J_3(r) + J_4(r) + J_5(r) + J_6(r)

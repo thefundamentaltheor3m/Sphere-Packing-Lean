@@ -65,6 +65,11 @@ public theorem int_sum_neg {α : Type*} [AddCommMonoid α] [TopologicalSpace α]
     (f : ℤ → α) : ∑' d : ℤ, f d = ∑' d, f (-d) :=
   by simp
 
+/-- If `f` is summable over `ℤ`, then so is `fun d => f (-d)`. -/
+public theorem summable_neg {α : Type*} [TopologicalSpace α] [AddCommMonoid α] (f : ℤ → α)
+    (hf : Summable f) : Summable fun d => f (-d) :=
+  by simpa [Function.comp] using (Equiv.summable_iff (e := Equiv.neg ℤ) (f := f)).2 hf
+
 /-- Rewrite a `tsum` over `ℕ+` as a shifted `tsum` over `ℕ`. -/
 public lemma tsum_pnat_eq_tsum_succ3 {α : Type*} [TopologicalSpace α] [AddCommMonoid α] [T2Space α]
   (f : ℕ → α) : ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f (n + 1) :=

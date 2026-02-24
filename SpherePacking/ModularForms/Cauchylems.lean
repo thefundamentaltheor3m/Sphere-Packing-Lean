@@ -110,6 +110,12 @@ public lemma CauchySeq_Icc_iff_CauchySeq_Ico (f : ℤ → ℂ) (hs : ∀ n, f n 
   · have HG := Filter.Tendsto.add hbb haa
     simpa using HG
 
+/-- A Cauchy-sequence statement extracted from `G2_prod_summable1`. -/
+public theorem extracted_2 (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
+  ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, 1 / (((b : ℂ) * ↑z + ↑n) ^ 2 * (↑b * ↑z + ↑n + 1)) := by
+  simpa using (Filter.Tendsto.cauchySeq
+    ((G2_prod_summable1 z b).hasSum.comp (by simpa using (Finset.tendsto_Ico_neg (R := ℤ)))))
+
 /-- A Cauchy-sequence statement after inserting the correction term `δ`. -/
 public theorem extracted_2_δ (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
   ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, (1 / (((b : ℂ) * ↑z + ↑n) ^ 2 * (↑b * ↑z + ↑n + 1)) + δ b n) := by
@@ -151,6 +157,19 @@ public theorem extracted_3 (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
     tendstozero_inv_linear z b
   have := Filter.Tendsto.sub h1 h2
   simpa using this
+
+/-- A Cauchy-sequence statement for the series `∑ (b * z + n)⁻²` over symmetric intervals. -/
+public theorem extracted_4 (z : ℍ) (b : ℤ) :
+  CauchySeq fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, (1 / ((b : ℂ) * ↑z + ↑n) ^ 2 ) := by
+  apply Filter.Tendsto.cauchySeq (x := ∑' x : ℤ, (((b : ℂ) * (z : ℂ) + x) ^ 2)⁻¹)
+  have ht := (G2_summable_aux b z 2 (by norm_num)).hasSum.comp Finset.tendsto_Ico_neg
+  simpa using ht
+
+theorem extracted_5 (z : ℍ) (b : ℤ) :
+  CauchySeq fun N : ℕ ↦ ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, (1 / ((b : ℂ) * ↑z - ↑n) ^ 2 ) := by
+  apply Filter.Tendsto.cauchySeq (x := ∑' x : ℤ, (((b : ℂ) * (z : ℂ) - x) ^ 2)⁻¹)
+  simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, one_div] using
+    (summable_neg _ (G2_summable_aux b z 2 (by norm_num))).hasSum.comp Finset.tendsto_Ico_neg
 
 public lemma CauchySeq.congr (f g : ℕ → ℂ) (hf : f = g) (hh : CauchySeq g) : CauchySeq f := by
   simpa [hf] using hh

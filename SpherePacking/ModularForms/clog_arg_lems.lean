@@ -39,82 +39,9 @@ lemma arg_pow_aux (n : ℕ) (x : ℂ) (hna : |arg x| < π / n) :
         simpa [Complex.arg_coe_angle_toReal_eq_arg] using htoreal
 
 lemma one_add_abs_half_ne_zero {x : ℂ} (hb : ‖x‖ < 1 / 2) : 1 + x ≠ 0 := by
-  by_contra h
-  rw [@add_eq_zero_iff_neg_eq] at h
-  rw [← h] at hb
-  simp at hb
-  linarith
-
-lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀ᶠ m : ℕ in atTop,
-    Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
-  simp only [eventually_atTop, ge_iff_le]
-  have hf1 := hf.const_add 1
-  simp only [add_zero] at hf1
-  have h2 := (Complex.continuousAt_arg (x := 1) ?_)
-  · rw [ContinuousAt] at *
-    have h3 := h2.comp hf1
-    simp only [arg_one] at h3
-    rw [Metric.tendsto_nhds] at *
-    simp only [gt_iff_lt, dist_zero_right, eventually_atTop, ge_iff_le,
-      dist_self_add_left, arg_one, Real.norm_eq_abs, comp_apply] at *
-    by_cases hn0 : n = 0
-    · rw [hn0]
-      simp only [pow_zero, arg_one, CharP.cast_eq_zero, zero_mul, implies_true, exists_const]
-    · have hpi : 0 < π / n := by
-        apply div_pos
-        · exact Real.pi_pos
-        simp only [Nat.cast_pos]
-        omega
-      obtain ⟨a, hA⟩ := h3 (π / n) hpi
-      obtain ⟨a2, ha2⟩ := hf (1/2) (one_half_pos)
-      use max a a2
-      intro b hb
-      rw [arg_pow_aux n (1 + f b) ?_]
-      · apply hA b
-        exact le_of_max_le_left hb
-  simp only [one_mem_slitPlane]
-
-lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) : ∀ᶠ m : ℍ in atImInfty,
-    Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
-  rw [Filter.eventually_iff_exists_mem ]
-  have hf1 := hf.const_add 1
-  simp only [add_zero] at hf1
-  have h2 := (Complex.continuousAt_arg (x := 1) ?_)
-  · rw [ContinuousAt] at *
-    have h3 := h2.comp hf1
-    simp only [arg_one] at h3
-    rw [Metric.tendsto_nhds] at *
-    simp only [gt_iff_lt, dist_zero_right, dist_self_add_left, arg_one, Real.norm_eq_abs,
-      comp_apply] at *
-    by_cases hn0 : n = 0
-    · simp_rw [hn0]
-      simp only [pow_zero, arg_one, CharP.cast_eq_zero, zero_mul, implies_true, and_true]
-      rw [atImInfty]
-      simp only [mem_comap, mem_atTop_sets, ge_iff_le]
-      use {n | 1 ≤ n.im}
-      use {r : ℝ | 1 ≤ r}
-      refine ⟨?_, ?_⟩
-      · use 1
-        intro b hb
-        aesop
-      simp only [preimage_setOf_eq, subset_refl]
-    · have hpi : 0 < π / n := by
-        apply div_pos
-        · exact Real.pi_pos
-        simp only [Nat.cast_pos]
-        omega
-      have hA1 := h3 (π / n) hpi
-      have hA2 := hf (1/2) (one_half_pos)
-      rw [Filter.eventually_iff_exists_mem ] at hA1 hA2
-      obtain ⟨a, ha1, hA1⟩ := hA1
-      obtain ⟨a2, ha2, hA2⟩ := hA2
-      use min a a2
-      refine ⟨by rw [atImInfty] at *; simp at *; refine ⟨ha1, ha2⟩, ?_⟩
-      intro b hb
-      rw [arg_pow_aux n (1 + f b) ?_]
-      · apply hA1 b
-        exact mem_of_mem_inter_left hb
-  simp only [one_mem_slitPlane]
+  intro h
+  have hx : x = (-1 : ℂ) := eq_neg_of_add_eq_zero_left (by simpa [add_comm] using h)
+  exact (not_lt_of_ge (by norm_num : (1 / 2 : ℝ) ≤ (1 : ℝ))) (by simpa [hx] using hb)
 
 lemma arg_pow_filter {α : Type*} (l : Filter α) (n : ℕ) (f : α → ℂ) (hf : Tendsto f l (𝓝 0)) :
     ∀ᶠ m : α in l, Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
@@ -132,6 +59,14 @@ lemma arg_pow_filter {α : Type*} (l : Filter α) (n : ℕ) (f : α → ℂ) (hf
   filter_upwards [(Metric.tendsto_nhds.1 harg) (π / n) hpi] with m hmarg
   have hmarg' : |Complex.arg (1 + f m)| < π / n := by simpa [Real.dist_eq] using hmarg
   simpa using arg_pow_aux n (1 + f m) hmarg'
+
+lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀ᶠ m : ℕ in atTop,
+    Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
+  simpa using arg_pow_filter (l := atTop) n f hf
+
+lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) : ∀ᶠ m : ℍ in atImInfty,
+    Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
+  simpa using arg_pow_filter (l := atImInfty) n f hf
 
 lemma clog_pow_filter {α : Type*} (l : Filter α) (n : ℕ) (f : α → ℂ) (hf : Tendsto f l (𝓝 0)) :
     ∀ᶠ m : α in l, Complex.log ((1 + f m) ^ n) = n * Complex.log (1 + f m) := by

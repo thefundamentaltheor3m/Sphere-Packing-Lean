@@ -38,6 +38,11 @@ public lemma norm_phase_eq_one (w x : V) :
     ‖cexp (↑(-2 * (π * ⟪x, w⟫)) * Complex.I)‖ = (1 : ℝ) := by
   simpa using (Complex.norm_exp_ofReal_mul_I (-2 * (π * ⟪x, w⟫)))
 
+/-- Multiplying by the phase factor preserves the norm. -/
+public lemma norm_phase_mul (w : V) (x : V) (z : ℂ) :
+    ‖cexp (↑(-2 * (π * ⟪x, w⟫)) * Complex.I) * z‖ = ‖z‖ := by
+  simpa [norm_mul] using congrArg (fun r : ℝ => r * ‖z‖) (norm_phase_eq_one w x)
+
 section
 
 variable [MeasureSpace V] [BorelSpace V]

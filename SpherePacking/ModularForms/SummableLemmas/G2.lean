@@ -43,6 +43,13 @@ public lemma G_2_alt_summable_δ (z : ℍ) : Summable fun (m : Fin 2 → ℤ) =>
     · exfalso
       exact hm (by simp [δ, h00, h01])
 
+/-- For fixed `b`, summability of the `c`-slice of the alternative `G_2` series. -/
+public theorem G2_prod_summable1 (z : ℍ) (b : ℤ) :
+    Summable fun c : ℤ ↦ ((b : ℂ) * ↑z + ↑c + 1)⁻¹ * (((b : ℂ) * ↑z + ↑c) ^ 2)⁻¹ := by
+  have hs := G_2_alt_summable z
+  simp only [Fin.isValue, one_div, mul_inv_rev] at hs
+  exact (((finTwoArrowEquiv _).symm.summable_iff).2 hs).prod_factor b
+
 /-- A `δ`-corrected version of `G2_prod_summable1`. -/
 public theorem G2_prod_summable1_δ (z : ℍ) (b : ℤ) :
     Summable fun c : ℤ ↦ ((b : ℂ) * ↑z + ↑c + 1)⁻¹ * (((b : ℂ) * ↑z + ↑c) ^ 2)⁻¹ + δ b c := by

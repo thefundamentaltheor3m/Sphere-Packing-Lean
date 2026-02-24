@@ -113,102 +113,17 @@ public lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fu
 
 lemma func_div (a b c d : ℂ → ℂ) (x : ℂ) (hb : b x ≠ 0) (hd : d x ≠ 0) :
      (a / b) x = (c /d) x ↔ (a * d) x = (b * c) x := by
-  constructor
-  · intro h
-    simp only [Pi.div_apply] at h
-    rw [div_eq_div_iff] at h
-    · nth_rw 2 [mul_comm]
-      exact h
-    · exact hb
-    exact hd
-  intro h
-  simp only [Pi.div_apply]
-  rw [div_eq_div_iff]
-  · simp only [Pi.mul_apply] at h
-    nth_rw 2 [mul_comm]
-    exact h
-  · apply hb
-  apply hd
+  simpa [Pi.div_apply, Pi.mul_apply, mul_assoc, mul_left_comm, mul_comm] using
+    (div_eq_div_iff hb hd : a x / b x = c x / d x ↔ a x * d x = c x * b x)
 
 lemma deriv_EqOn_congr {f g : ℂ → ℂ} (s : Set ℂ) (hfg : s.EqOn f g) (hs : IsOpen s) :
     s.EqOn (deriv f) ( deriv g) := by
   intro x hx
-  rw [← derivWithin_of_isOpen hs hx]
-  rw [← derivWithin_of_isOpen hs hx]
-  apply derivWithin_congr hfg
-  apply hfg hx
+  simpa [derivWithin_of_isOpen hs hx] using
+    (derivWithin_congr hfg (hfg hx))
 
 lemma logDeriv_eqOn_iff' (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn ℂ f s)
-    (hg : DifferentiableOn ℂ g s) (hs : s.Nonempty) (hs2 : IsOpen s) (hsc : Convex ℝ s)
+    (hg : DifferentiableOn ℂ g s) (hs2 : IsOpen s) (hsc : Convex ℝ s)
     (hgn : ∀ x, x ∈ s → g x ≠ 0) (hfn : ∀ x, x ∈ s → f x ≠ 0) :
-    EqOn (logDeriv f) (logDeriv g) s ↔ ∃ z : ℂ, z ≠ 0 ∧ EqOn (f) (z • g) s where
-  mp h := by
-    simp_rw [logDeriv] at h
-    rw [@nonempty_def] at hs
-    obtain ⟨t, ht⟩ := hs
-    use (f t) * (g t)⁻¹
-    refine ⟨by apply mul_ne_zero (hfn t ht) (by simpa using (hgn t ht)) , ?_⟩
-    intro y hy
-    have h2 := h hy
-    rw [func_div] at h2
-    · have hderiv : EqOn (deriv (f * g⁻¹))  (deriv f * g⁻¹ - f * deriv g / g ^ 2) s := by
-        intro z hz
-        rw [deriv_mul]
-        · have hgi : g⁻¹ = (fun x => x⁻¹) ∘ g := by
-            ext y
-            simp only [Pi.inv_apply, comp_apply]
-          rw [hgi, deriv_comp, deriv_inv]
-          · simp only [comp_apply, neg_mul, mul_neg, Pi.sub_apply, Pi.mul_apply, Pi.div_apply,
-              Pi.pow_apply]
-            ring
-          · refine differentiableAt_inv ?_
-            exact hgn z hz
-          · apply hg.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
-        · exact hf.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
-        · apply DifferentiableAt.inv
-          · exact hg.differentiableAt (x := z) (IsOpen.mem_nhds hs2 hz)
-          exact hgn z hz
-      · have H3 :=
-          Convex.is_const_of_fderivWithin_eq_zero (f := f * g⁻¹) (𝕜 := ℂ) (s := s) ?_ ?_ ?_ hy ht
-        · simp only [Pi.mul_apply, Pi.inv_apply] at H3
-          rw [← H3]
-          field_simp [hgn y hy]
-          simp_all
-        · exact hsc
-        · apply DifferentiableOn.mul
-          · exact hf
-          · apply DifferentiableOn.inv
-            · exact hg
-            · exact hgn
-        · have he : s.EqOn  (deriv f * g⁻¹ - f * deriv g / g ^ 2)  0 := by
-            intro z hz
-            have Hmul : (deriv f z) * (g z) = (f z) * (deriv g z) :=
-                (func_div (deriv f) f (deriv g) g z (hfn z hz) (hgn z hz)) |>.1 (by
-                  simpa [logDeriv, Pi.div_apply] using h hz)
-            have : (deriv f z) * (g z)⁻¹ - (f z) * (deriv g z) / (g z) ^ 2 = 0 := by
-              grind
-            exact this
-          · intro v hv
-            have H := h hv
-            rw [func_div] at H
-            · have ha := hderiv hv
-              have hb := he hv
-              rw [hb] at ha
-              simp only [Pi.zero_apply] at ha
-              rw [fderivWithin_of_isOpen hs2 hv]
-              exact Eq.symm (ContinuousLinearMap.ext_ring (_root_.id (Eq.symm ha)))
-            · exact  hfn v hv
-            · exact  hgn v hv
-    · exact  hfn y hy
-    · exact hgn y hy
-  mpr h := by
-    obtain ⟨z, hz0, hz⟩ := h
-    intro x hx
-    have h := hz hx
-    simp_rw [logDeriv_apply]
-    have HJ := deriv_EqOn_congr s hz hs2 hx
-    rw [HJ, h]
-    rw [deriv_const_smul]
-    · simp
-      rw [mul_div_mul_left (deriv g x) (g x) hz0]
-    · exact hg.differentiableAt (x := x) (IsOpen.mem_nhds hs2 hx)
+    EqOn (logDeriv f) (logDeriv g) s ↔ ∃ z : ℂ, z ≠ 0 ∧ EqOn f (z • g) s := by
+  simpa using logDeriv_eqOn_iff hf hg hs2 hsc.isPreconnected hgn hfn

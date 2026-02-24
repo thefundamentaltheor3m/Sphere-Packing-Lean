@@ -47,12 +47,11 @@ namespace UpperHalfPlane
 
 theorem range_upperHalfPlane_coe : range UpperHalfPlane.coe = ℍ₀ := by
   ext z
-  rw [mem_range]
-  constructor <;> intro hz
-  · obtain ⟨y, hy⟩ := hz
-    rw [← hy]
+  constructor
+  · rintro ⟨y, rfl⟩
     exact y.2
-  · use ⟨z, hz⟩
+  · intro hz
+    exact ⟨⟨z, hz⟩, rfl⟩
 
 theorem zero_not_mem_upperHalfPlaneSet : (0 : ℂ) ∉ ℍ₀ := by simp
 
@@ -174,7 +173,8 @@ theorem Φ₄'_holo : Holo(Φ₄' r) := Φ₃'_holo
 
 theorem Φ₄'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₄' r) ℍ₀ := Φ₃'_contDiffOn_ℂ
 
-theorem Φ₅'_holo : Holo(Φ₅' r) := by
+/-- The integrand `Φ₅' r` is holomorphic on `upperHalfPlaneSet`. -/
+public theorem Φ₅'_holo : Holo(Φ₅' r) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
       differentiable_fun_id).differentiableOn)
   refine DifferentiableOn.mul ?_ <| differentiableOn_pow 2
@@ -186,12 +186,12 @@ theorem Φ₅'_holo : Holo(Φ₅' r) := by
       (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
     have : ∀ z ∈ ℍ₀, UpperHalfPlane.smulAux' g z = -1 / z := fun _ _ ↦ by
       simp [smulAux', g, num, denom, σ, ← sub_eq_add_neg]
-    refine MapsTo.congr ?_ this
-    intro _ hz
-    rw [mem_setOf_eq, smulAux'_im]
-    exact div_pos (mul_pos (abs_pos.mpr g.det.ne_zero) hz) (normSq_denom_pos _ (ne_of_gt hz))
+    exact MapsTo.congr (mapsTo_smulAux' g) this
 
-theorem Φ₅'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₅' r) ℍ₀ := Φ₅'_holo.contDiffOn isOpen_upperHalfPlaneSet
+/-- The integrand `Φ₅' r` is smooth as a complex function on `upperHalfPlaneSet`. -/
+public theorem Φ₅'_contDiffOn_ℂ :
+    ContDiffOn ℂ ∞ (Φ₅' r) ℍ₀ :=
+  Φ₅'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
 /-- The integrand `Φ₆' r` is holomorphic on `upperHalfPlaneSet`. -/
 public theorem Φ₆'_holo : Holo(Φ₆' r) := by
@@ -221,6 +221,7 @@ public theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ :=
 
 public theorem Φ₄'_contDiffOn : ContDiffOn ℝ ∞ (Φ₄' r) ℍ₀ := Φ₄'_contDiffOn_ℂ.restrict_scalars ℝ
 
+/-- The integrand `Φ₅' r` is smooth as a real function on `upperHalfPlaneSet`. -/
 public theorem Φ₅'_contDiffOn : ContDiffOn ℝ ∞ (Φ₅' r) ℍ₀ := Φ₅'_contDiffOn_ℂ.restrict_scalars ℝ
 
 /-- The integrand `Φ₆' r` is smooth as a real function on `upperHalfPlaneSet`. -/

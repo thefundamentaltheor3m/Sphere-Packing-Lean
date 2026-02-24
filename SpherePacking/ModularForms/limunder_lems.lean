@@ -1,8 +1,6 @@
 module
 public import Mathlib.Topology.Instances.Complex
 import Mathlib.Order.Filter.AtTopBot.Interval
-import Mathlib.Analysis.CStarAlgebra.Classes
-import SpherePacking.ModularForms.Icc_Ico_lems
 
 /-!
 # Lemmas about `limUnder`
@@ -18,11 +16,7 @@ limits of Cauchy sequences and expressing infinite sums as `limUnder` of partial
 * `tsum_limUnder_atTop`
 -/
 
-open TopologicalSpace Set
-  Metric Filter Function Complex
-
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
-
+open Filter
 
 /-- For Cauchy sequences, `limUnder` commutes with addition. -/
 public lemma limUnder_add {α : Type*} [Preorder α] [(atTop : Filter α).NeBot] (f g : α → ℂ)

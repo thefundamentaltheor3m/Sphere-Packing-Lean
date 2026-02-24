@@ -114,6 +114,16 @@ namespace MagicFunction.b.RadialFunctions
 /-- The function on `V` induced from the radial profile `J₆'` by `x = ‖v‖^2`. -/
 @[expose] public def J₆ (x : V) : ℂ := J₆' (‖x‖ ^ 2)
 
+/-- The magic function `b` on `V`, obtained from the radial profile `b'` by `x = ‖v‖^2`. -/
+@[expose] public def b (x : V) : ℂ := b' (‖x‖ ^ 2)
+
+section Eq
+
+/-- Expand `b` as the sum of the six defining integrals. -/
+public lemma b_eq (x : V) : b x = J₁ x + J₂ x + J₃ x + J₄ x + J₅ x + J₆ x := rfl
+
+end Eq
+
 end MagicFunction.b.RadialFunctions
 
 end

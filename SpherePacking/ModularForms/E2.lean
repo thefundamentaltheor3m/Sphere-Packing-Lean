@@ -133,9 +133,7 @@ theorem series_eql' (z : ℍ) :
 
 theorem extracted_summable (z : ℍ) (n : ℕ+) : Summable fun m : ℕ ↦
     cexp (2 * ↑π * Complex.I * (-↑↑n / ↑z) * ↑m) := by
-  have A1 := a1 1 1 ⟨ -n / z , pnat_div_upper n z⟩
-  simp at A1
-  apply A1
+  simpa using a1 1 1 ⟨-n / z, pnat_div_upper n z⟩
 
 theorem tsum_exp_tendsto_zero (z : ℍ) :
     Tendsto (fun x : ℕ+ ↦ 2 / ↑z * 2 * ↑π * Complex.I *
@@ -522,20 +520,9 @@ lemma G2_transf_aux (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) - -
   G₂ z := by
   rw [G2_inde_lhs, G2_alt_eq z , ← G2_alt_indexing2_δ , G2_alt_indexing_δ]
 
-public lemma ModularGroup.coe_mul (A B : SL(2, ℤ)) :
+@[simp] public lemma ModularGroup.coe_mul (A B : SL(2, ℤ)) :
     (ModularGroup.coe A) * B = ModularGroup.coe (A * B) := by
-  have : Matrix.SpecialLinearGroup.toGLPos ∘ (Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) =
-    ModularGroup.coe := by
-    funext A
-    rfl
-  let C := MonoidHom.comp Matrix.SpecialLinearGroup.toGLPos
-    (Matrix.SpecialLinearGroup.map (n := Fin 2) (Int.castRingHom ℝ))
-  have hC : C = ModularGroup.coe := by
-    rw [← this]
-    rfl
-  have := C.map_mul A B
-  rw [hC] at this
-  exact this.symm
+  simp [ModularGroup.coe]
 
 lemma denom_diff (A B : SL(2, ℤ)) (z : ℍ) : ((A * B) 1 0) * (denom B z) =
   (A 1 0) * B.1.det + (B 1 0) * denom (A * B) z := by

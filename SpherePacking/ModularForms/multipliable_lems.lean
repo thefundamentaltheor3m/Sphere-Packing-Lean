@@ -19,13 +19,8 @@ expansions (notably eta and delta product formulas).
 * `tprod_pow`
 -/
 
-open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex
-
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
-
-open ArithmeticFunction
-
+open scoped BigOperators Real
+open UpperHalfPlane Complex
 
 /-this is being PRd-/
 lemma Complex.summable_nat_multipliable_one_add (f : ℕ → ℂ) (hf : Summable f) :
@@ -39,17 +34,14 @@ public theorem term_ne_zero (z : ℍ) (n : ℕ) :
   intro h
   simpa [h.symm] using exp_upperHalfPlane_lt_one_nat z n
 
-theorem ball_pow_ne_1 (x : ℂ) (hx : x ∈ ball 0 1) (n : ℕ) : 1 + (fun n ↦ -x ^ (n + 1)) n ≠ 0 := by
-  simp only [mem_ball, dist_zero_right] at *
+theorem ball_pow_ne_1 (x : ℂ) (hx : x ∈ Metric.ball 0 1) (n : ℕ) :
+    1 + (fun n ↦ -x ^ (n + 1)) n ≠ 0 := by
+  simp only [Metric.mem_ball, dist_zero_right] at hx
   rw [← sub_eq_add_neg, sub_ne_zero]
-  have hxn : ‖(x ^ (n + 1))‖ < 1 := by
-    simp only [norm_pow]
-    refine pow_lt_one₀ ?_ hx ?_
-    · exact norm_nonneg x
-    omega
+  have hxn : ‖x ^ (n + 1)‖ < 1 := by
+    simpa [norm_pow] using pow_lt_one₀ (norm_nonneg x) hx (Nat.succ_ne_zero n)
   intro h
-  rw [← h] at hxn
-  simp only [norm_one, lt_self_iff_false] at hxn
+  simp [h.symm] at hxn
 
 /-- If `x` lies in the open unit ball, then `∏ (1 - x^(i+1))` is a convergent infinite product. -/
 public theorem multipliable_lt_one (x : ℂ) (hx : x ∈ Metric.ball 0 1) :
@@ -106,20 +98,15 @@ public lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) :
 variable {a a₁ a₂ : ℝ} {ι : Type*}
 
 theorem hasProd_le_nonneg (f g : ι → ℝ) (h : ∀ i, f i ≤ g i) (h0 : ∀ i, 0 ≤ f i)
-  (hf : HasProd f a₁) (hg : HasProd g a₂) : a₁ ≤ a₂ := by
-  apply le_of_tendsto_of_tendsto' hf hg
-  intro s
-  apply Finset.prod_le_prod
-  intros i hi
-  · exact h0 i
-  intros i hi
-  exact h i
+  (hf : HasProd f a₁) (hg : HasProd g a₂) : a₁ ≤ a₂ :=
+  le_of_tendsto_of_tendsto' hf hg fun _ ↦ Finset.prod_le_prod (fun i _ ↦ h0 i) (fun i _ ↦ h i)
 
 theorem HasProd.le_one_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i)
-    (ha : HasProd g a) : a ≤ 1 := by
-  apply hasProd_le_nonneg (f := g) (g := fun _ => 1) h h0 ha hasProd_one
+    (ha : HasProd g a) : a ≤ 1 :=
+  hasProd_le_nonneg (f := g) (g := fun _ => 1) h h0 ha hasProd_one
 
-theorem one_le_tprod_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i) : ∏' i, g i ≤ 1 := by
+theorem one_le_tprod_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i) :
+    ∏' i, g i ≤ 1 := by
   by_cases hg : Multipliable g
   · apply hg.hasProd.le_one_nonneg g h h0
   · rw [tprod_eq_one_of_not_multipliable hg]
