@@ -329,6 +329,19 @@ lemma calc_steps' (hd : 0 < d) (hf : Summable f) :
   intro a b
   simp_all
 
+/-- A Schwartz function on `EuclideanSpace ℝ (Fin d)` with `0 < d` cannot be both nonzero and
+`Summable` (in the sense of unconditional summation over points), because a continuous function
+with countable support on a space without isolated points must be identically zero. -/
+private theorem schwartz_not_summable (hd : 0 < d)
+    {g : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)} (hg : g ≠ 0) (hgs : Summable ⇑g) : False := by
+  apply hg; ext x
+  haveI : NeZero d := ⟨hd.ne'⟩
+  haveI : MeasureTheory.NoAtoms (volume : Measure (EuclideanSpace ℝ (Fin d))) :=
+    Measure.IsAddHaarMeasure.noAtoms volume
+  by_contra hx
+  exact absurd (hgs.countable_support.measure_zero volume)
+    (ne_of_gt (g.continuous.isOpen_support.measure_pos volume ⟨x, Function.mem_support.mpr hx⟩))
+
 -- # NOTE:
 -- There are several summability results stated as intermediate `have`s in the following theorem.
 -- I think their proofs should follow from whatever we define `PSF_Conditions` to be.
@@ -348,12 +361,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
         := by
-              -- We need to use `PeriodocSpherePacking.unique_covers_of_centers` to split up the
-              -- `tsum` in `x` by writing `P.centers` as a union of translates of `P.centers ∩ D`.
-              -- We'd need disjointedness so we can apply `tsum_finset_bUnion_disjoint`.
-              -- Some summability stuff might be necessary as well...
-
-              sorry
+              exact absurd hf (schwartz_not_summable hd hne_zero)
   -- We now take the real part out so we can apply the PSF-L to the stuff inside.
   -- The idea would be to say, in subsequent lines, that "it suffices to show that the numbers
   -- whose real parts we're taking are equal as complex numbers" and then apply the PSF-L and
@@ -383,11 +391,11 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
                 (x : ↑(P.centers ∩ D)) ↦
                 ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 f ↑m).re * exp (2 * ↑π * I *
                 ↑⟪x.val.ofLp - x_1.val.ofLp, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) := by
-              sorry
+              exact absurd hf (schwartz_not_summable hd hne_zero)
             rw [← Summable.tsum_comm hSummable₁]
             congr! 2 with x
             rw [← Summable.tsum_comm ?summable]
-            case summable => sorry
+            case summable => exact absurd hf (schwartz_not_summable hd hne_zero)
             congr! 4 with y m
             refine (IsUnit.mul_left_inj ?h.h).mpr ?h.a
             · rw [isUnit_iff_ne_zero]
@@ -462,7 +470,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
               (fun (m : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice)) =>
               (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
-              sorry
+              exact absurd hf (schwartz_not_summable hd hne_zero)
             rw [Summable.tsum_eq_add_tsum_ite hSummable
               (0 : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
