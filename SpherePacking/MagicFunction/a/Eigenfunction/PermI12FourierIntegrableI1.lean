@@ -195,11 +195,7 @@ lemma integral_norm_permI1Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
                 (r := ‖φ₀'' ((I : ℂ) / t)‖)
                 (f := fun x : ℝ⁸ ↦ t ^ 2 * rexp (-(Real.pi * (t * (‖x‖ ^ 2))))))
       _ = ‖φ₀'' ((I : ℂ) / t)‖ * (t ^ 2 * ∫ x : ℝ⁸, rexp (-(Real.pi * (t * (‖x‖ ^ 2))))) := by
-            congr 1
-            simpa [mul_assoc] using
-              (MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ⁸))
-                (r := t ^ 2)
-                (f := fun x : ℝ⁸ ↦ rexp (-(Real.pi * (t * (‖x‖ ^ 2))))))
+            rw [integral_const_mul]
       _ = ‖φ₀'' ((I : ℂ) / t)‖ * (t ^ 2 * (1 / t) ^ (4 : ℕ)) := by
             rw [hgauss_int]
       _ = ‖φ₀'' ((I : ℂ) / t)‖ * (1 / t ^ 2) := by

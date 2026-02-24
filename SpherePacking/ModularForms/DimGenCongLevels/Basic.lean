@@ -33,9 +33,7 @@ public lemma finiteDimensional_modularForm_neg_weight (Γ : Subgroup SL(2, ℤ))
   have hz : ∀ f : ModularForm Γ k, f = 0 :=
     ModularForm.isZero_of_neg_weight (𝒢 := (Γ : Subgroup (GL (Fin 2) ℝ))) (k := k) hk
   haveI : Subsingleton (ModularForm Γ k) := ⟨fun f g => by simp [hz f, hz g]⟩
-  refine (Module.finite_def).2 ?_
-  have htop : (⊤ : Submodule ℂ (ModularForm Γ k)) = ⊥ := by ext f; simp [Subsingleton.elim f 0]
-  simpa [htop] using (Submodule.fg_bot : (⊥ : Submodule ℂ (ModularForm Γ k)).FG)
+  exact (Module.finite_def).2 Module.Finite.fg_top
 
 /-- Modular forms of weight `0` are finite-dimensional (in fact, equivalent to `ℂ`). -/
 public lemma finiteDimensional_modularForm_weight_zero (Γ : Subgroup SL(2, ℤ))

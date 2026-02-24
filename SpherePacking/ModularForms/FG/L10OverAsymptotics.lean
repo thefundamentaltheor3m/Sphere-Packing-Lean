@@ -112,10 +112,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
                 cexp (2 * π * Complex.I * (z : ℂ)) := by simp [hq1]
         _ = cexp
               ((2 * π * Complex.I * ((n + 1 : ℕ) : ℂ) * (z : ℂ)) -
-                (2 * π * Complex.I * (z : ℂ))) := by
-              simpa [div_eq_mul_inv] using
-                (Complex.exp_sub (2 * π * Complex.I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))
-                  (2 * π * Complex.I * (z : ℂ))).symm
+                (2 * π * Complex.I * (z : ℂ))) := by rw [exp_sub]
         _ = cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
               -- Simplify the exponent using `(n+1) = n+1`.
               have hn1 : ((n + 1 : ℕ) : ℂ) = (n : ℂ) + 1 := by
@@ -508,14 +505,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
     simpa [UpperHalfPlane.IsZeroAtImInfty] using hDG0_zero
   have hH2_fun : H₂ = qπ * H₂' := by
     funext z
-    have hq : qπ z ≠ 0 := hqπ_ne z
-    have : qπ z * H₂' z = H₂ z := by
-      calc
-        qπ z * H₂' z = qπ z * (H₂ z / qπ z) := by
-          simp [hH2'_def]
-        _ = H₂ z := by
-          simp [div_eq_mul_inv, mul_left_comm, hq]
-    exact this.symm
+    exact (mul_div_cancel₀ (H₂ z) (hqπ_ne z)).symm
   -- Clear definitional values to avoid `whnf` unfolding huge definitions in later algebra.
   clear_value H₂'
   clear hH2'_def
@@ -776,12 +766,7 @@ private lemma L₁₀_eval_and_over_im_zero (hL10_real : ResToImagAxis.Real L₁
     (a : ℂ) (ha : a = q₂ z * q₃ z) (ha_ne : a ≠ 0) (ha_im : a.im = 0) :
     L₁₀.resToImagAxis t = a * L₁₀_over z ∧ (L₁₀_over z).im = 0 := by
   have hL10_eval_z : L₁₀ z = a * L₁₀_over z := by
-    have : a * (L₁₀ z / a) = L₁₀ z := by
-      calc
-        a * (L₁₀ z / a) = (a * L₁₀ z) / a := by
-          simpa [mul_assoc] using (mul_div_assoc a (L₁₀ z) a).symm
-        _ = L₁₀ z := by
-          simpa [mul_assoc] using (mul_div_cancel_left₀ (L₁₀ z) ha_ne)
+    have : a * (L₁₀ z / a) = L₁₀ z := mul_div_cancel₀ (L₁₀ z) ha_ne
     simpa [L₁₀_over, ha.symm, mul_div_assoc] using this.symm
   have hres : L₁₀.resToImagAxis t = L₁₀ z := by
     simp [Function.resToImagAxis, ResToImagAxis, ht, hzdef.symm]

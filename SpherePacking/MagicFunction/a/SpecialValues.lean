@@ -821,17 +821,7 @@ lemma tendsto_A_div_q :
           (mul_div_assoc (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))
             (cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ)))
             (cexp (2 * π * Complex.I * (z : ℂ))))
-      calc
-        (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
-                cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ))) /
-              cexp (2 * π * Complex.I * (z : ℂ)) =
-            (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ)) *
-              (cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ)) /
-                cexp (2 * π * Complex.I * (z : ℂ))) := by
-              simpa [mul_assoc] using hmul
-        _ = (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ)) *
-              cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
-              rw [hdiv]
+      rw [hmul, ←hdiv]
     calc
       ((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z)
           = (720 : ℂ) *

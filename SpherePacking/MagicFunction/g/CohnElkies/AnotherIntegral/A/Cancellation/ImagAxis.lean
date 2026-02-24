@@ -424,12 +424,7 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
         -- `q^(n+2) = q^2 * q^n ≤ q^2 * q1^n`.
         simpa [pow_add, mul_assoc, mul_left_comm, mul_comm] using
           (mul_le_mul_of_nonneg_left hqn (pow_nonneg hq_nonneg _))
-      -- Substitute the norm identity.
-      have : ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ ≤ q ^ (2 : ℕ) * q1 ^ n := by
-        calc
-          ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ = q ^ (n + 2) := hnorm
-          _ ≤ q ^ (2 : ℕ) * q1 ^ n := hqpow_le
-      exact this
+      exact le_of_eq_of_le hnorm hqpow_le
     -- Combine the coefficient and exponential bounds.
     calc
       ‖f n‖ = ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ)) * cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ := by

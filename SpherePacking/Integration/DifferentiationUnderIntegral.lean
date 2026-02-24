@@ -75,7 +75,7 @@ lemma norm_cexp_mul_coeff_le
 
 private lemma norm_gN_le_const
     (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
-    {M : ℝ} (hM0 : 0 ≤ M) {t x x₀ : ℝ} (hx : x ∈ Metric.ball x₀ (1 : ℝ))
+    {M : ℝ} {t x x₀ : ℝ} (hx : x ∈ Metric.ball x₀ (1 : ℝ))
     (hh : ‖hf t‖ ≤ M) (n : ℕ) :
     ‖gN (coeff := coeff) (hf := hf) n x t‖ ≤
       (2 * Real.pi) ^ n * (M * Real.exp ((|x₀| + 1) * (2 * Real.pi))) := by
@@ -84,10 +84,8 @@ private lemma norm_gN_le_const
   have hexp : ‖cexp ((x : ℂ) * coeff t)‖ ≤ Real.exp ((|x₀| + 1) * (2 * Real.pi)) :=
     norm_cexp_mul_coeff_le (coeff := coeff) (coeff_norm_le := coeff_norm_le) (t := t) hx
   have hhexp :
-      ‖hf t * cexp ((x : ℂ) * coeff t)‖ ≤ M * Real.exp ((|x₀| + 1) * (2 * Real.pi)) := by
-    calc
-      ‖hf t * cexp ((x : ℂ) * coeff t)‖ ≤ ‖hf t‖ * ‖cexp ((x : ℂ) * coeff t)‖ := norm_mul_le _ _
-      _ ≤ M * Real.exp ((|x₀| + 1) * (2 * Real.pi)) := by gcongr
+      ‖hf t * cexp ((x : ℂ) * coeff t)‖ ≤ M * Real.exp ((|x₀| + 1) * (2 * Real.pi)) :=
+    norm_mul_le_of_le hh hexp
   calc
     ‖gN (coeff := coeff) (hf := hf) n x t‖ =
         ‖(coeff t) ^ n * (hf t * cexp ((x : ℂ) * coeff t))‖ := by
@@ -119,7 +117,7 @@ public lemma ae_bound_gN_succ_Ioo
   refine ⟨K, ?_, ?_⟩
   · filter_upwards [hμmem] with t ht
     intro x hx
-    exact norm_gN_le_const coeff_norm_le hMh0 hx (hMh t ht) (n + 1)
+    exact norm_gN_le_const coeff_norm_le hx (hMh t ht) (n + 1)
   · simpa [K, μ] using (integrable_const (c := K) (μ := μ))
 
 /-- Integrability of `gN n x` over `(0, 1)`.
@@ -153,7 +151,7 @@ public lemma integrable_gN_Ioo
     have hx : x ∈ Metric.ball x (1 : ℝ) := Metric.mem_ball_self (by norm_num)
     simpa [K] using
       (norm_gN_le_const (coeff := coeff) (hf := hf) (coeff_norm_le := coeff_norm_le)
-        (M := Mh) hMh0 (t := t) (x := x) (x₀ := x) hx hh (n := n))
+        (M := Mh) (t := t) (x := x) (x₀ := x) hx hh (n := n))
   exact Integrable.of_bound hmeas K hbound
 
 /-- Differentiate under the integral sign on `(0, 1)` for the integrand `gN n`. -/
@@ -288,8 +286,7 @@ public lemma hasDerivAt_integral_gN
     have hh : ‖hf t‖ ≤ Mh := hMh t ht
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using
       (norm_gN_le_const (coeff := coeff) (hf := hf) (coeff_norm_le := coeff_norm_le)
-        (M := Mh) ((norm_nonneg (hf 1)).trans (hMh 1 (by simp))) (t := t) (x := x) (x₀ := x₀) hx hh
-        (n := n + 1))
+        (M := Mh) (t := t) (x := x) (x₀ := x₀) hx hh (n := n + 1))
   haveI : IsFiniteMeasure μ := ⟨by simp [μ, Measure.restrict_apply, MeasurableSet.univ]⟩
   simpa [μ, intervalIntegral_eq_integral_uIoc, zero_le_one] using
     (hasDerivAt_integral_of_dominated_loc_of_deriv_le
@@ -298,8 +295,7 @@ public lemma hasDerivAt_integral_gN
         (F' := fun x t => gN (coeff := coeff) (hf := hf) (n + 1) x t)
         (bound := bound) (Metric.ball_mem_nhds x₀ (by norm_num))
         hmeas hint hmeas' hbound
-        (by simpa [bound] using (integrable_const (μ := μ)
-          (c := (2 * Real.pi) ^ (n + 1) * Mh * Real.exp ((|x₀| + 1) * (2 * Real.pi)))))
+        (integrable_const _)
         (ae_of_all _ fun t x _ => hasDerivAt_gN n x t)).2
 
 /-- Specialize `hasDerivAt_integral_gN` assuming `hf` and `coeff` are continuous. -/

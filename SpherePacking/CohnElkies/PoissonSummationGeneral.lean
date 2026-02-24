@@ -370,13 +370,9 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
                 congrArg₂ (· * ·)
                   (hfourier (w := SchwartzMap.PoissonSummation.Standard.intVec (d := d) n))
                   (hexp (w := SchwartzMap.PoissonSummation.Standard.intVec (d := d) n))
-        _ = cC * ∑' n : Fin d → ℤ, F (equivIntVecToDual (d := d) L n) := by
-              simpa using
-                (tsum_mul_left (a := cC)
-                  (f := fun n : Fin d → ℤ => F (equivIntVecToDual (d := d) L n)))
+        _ = cC * ∑' n : Fin d → ℤ, F (equivIntVecToDual (d := d) L n) := tsum_mul_left
         _ = cC * ∑' m : dualLattice (d := d) L, F m := by
-              simpa using congrArg (fun t => cC * t)
-                ((equivIntVecToDual (d := d) L).tsum_eq (f := F))
+              rw [(equivIntVecToDual (d := d) L).tsum_eq]
     -- Put everything together.
     simp [hsum, hdetC, F]
   -- Assemble with `hlhs` and `hrhs`.
