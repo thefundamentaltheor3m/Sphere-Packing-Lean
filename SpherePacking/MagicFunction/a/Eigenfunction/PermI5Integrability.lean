@@ -112,11 +112,7 @@ lemma integrable_permI5Kernel_slice (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
               simp [hI3]
     have hbnd3 :=
       MagicFunction.a.IntegralEstimates.I₃.I₃'_bounding_aux_1 (r := ‖x‖ ^ 2) s hs
-    calc
-      ‖MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s‖ =
-          ‖MagicFunction.a.IntegralEstimates.I₃.g (‖x‖ ^ 2) s‖ := hnormg
-      _ ≤ ‖φ₀'' (I * (s : ℂ))‖ * rexp (-π * (‖x‖ ^ 2) / s) := by
-          simpa using hbnd3
+    exact le_of_eq_of_le hnormg hbnd3
   exact hnorm.le.trans hbnd
 
 lemma integral_norm_permI5Kernel_bound (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
@@ -168,11 +164,7 @@ lemma integral_norm_permI5Kernel_bound (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
                 simp [hI3]
       have hbnd3 :=
         MagicFunction.a.IntegralEstimates.I₃.I₃'_bounding_aux_1 (r := ‖x‖ ^ 2) s hs
-      calc
-        ‖MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s‖ =
-            ‖MagicFunction.a.IntegralEstimates.I₃.g (‖x‖ ^ 2) s‖ := hnormg
-        _ ≤ ‖φ₀'' (I * (s : ℂ))‖ * rexp (-π * (‖x‖ ^ 2) / s) := by
-            simpa using hbnd3
+      exact le_of_eq_of_le hnormg hbnd3
     exact hnorm.le.trans hbnd
   have hmono :=
     MeasureTheory.integral_mono_of_nonneg (μ := (volume : Measure ℝ⁸)) hf_nonneg hgi hle

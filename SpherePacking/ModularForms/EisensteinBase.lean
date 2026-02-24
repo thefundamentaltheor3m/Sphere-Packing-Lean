@@ -1023,8 +1023,6 @@ lemma E₂_isZeroAtImInfty_sub_one : IsZeroAtImInfty (fun z : ℍ => E₂ z - 1)
 public theorem tendsto_E₂_atImInfty : Tendsto E₂ atImInfty (𝓝 (1 : ℂ)) := by
   have h0 : Tendsto (fun z : ℍ => E₂ z - 1) atImInfty (𝓝 (0 : ℂ)) :=
     E₂_isZeroAtImInfty_sub_one
-  have h1 : Tendsto (fun z : ℍ => (E₂ z - 1) + 1) atImInfty (𝓝 ((0 : ℂ) + 1)) :=
-    h0.add tendsto_const_nhds
-  simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
+  exact tendsto_sub_nhds_zero_iff.mp h0
 
 end

@@ -243,15 +243,8 @@ lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
         simp [MagicFunction.a.ComplexIntegrands.Φ₆', expTerm]
       rw [this]
       have hmul := norm_mul_le (φ₀'' ((t : ℂ) * Complex.I)) expTerm
-      -- Replace `φ₀''` bound and the exponential norm.
-      have hφ' : ‖φ₀'' ((t : ℂ) * Complex.I)‖ ≤ C₀ * Real.exp (-2 * π * t) := by
-        simpa [hz_im, zH] using hφ₀''
-      calc
-        ‖φ₀'' ((t : ℂ) * Complex.I) * expTerm‖
-            ≤ ‖φ₀'' ((t : ℂ) * Complex.I)‖ *
-                ‖expTerm‖ := hmul
-        _ ≤ (C₀ * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) := by
-              gcongr
+      refine norm_mul_le_of_le ?_ hExpLe
+      simpa [hz_im, zH] using hφ₀''
     -- Combine the exponentials into `exp(-b*t)` (with `b = π*(u+2)`).
     have hcomb :
         (C₀ : ℝ) * Real.exp (-(2 * π * t)) * Real.exp (-(π * u * t)) =
@@ -397,9 +390,7 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
                     ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ +
                       ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ :=
                 norm_sub_le _ _
-              have hab' :=
-                add_le_add_left hab (‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖)
-              simpa [add_assoc, add_comm, add_left_comm] using hab'
+              exact add_le_add_left hab ‖36 / ↑π ^ 2 * φ₄' wH‖
       _ = ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ +
             ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ +
               ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ := by ring

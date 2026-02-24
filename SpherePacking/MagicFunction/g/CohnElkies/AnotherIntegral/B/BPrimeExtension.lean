@@ -209,11 +209,6 @@ private lemma norm_add_I_mul_le_two (a : ℂ) (t : ℝ) (ht : t ∈ Icc (0 : ℝ
     _ = 1 + t := by simp [ha, Complex.norm_real, abs_of_nonneg ht.1]
     _ ≤ 2 := by nlinarith [ht.2]
 
-lemma norm_z₁'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₁' t‖ ≤ 2 := by
-  have hz : z₁' t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := by
-    simp [z₁'_eq_of_mem (t := t) ht]
-  simpa [hz] using norm_add_I_mul_le_two (-1 : ℂ) t ht (by simp)
-
 lemma norm_z₃'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₃' t‖ ≤ 2 := by
   have hz : z₃' t = (1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := by
     simp [z₃'_eq_of_mem (t := t) ht]
@@ -268,7 +263,7 @@ lemma J₁'C_differentiable : Differentiable ℂ J₁'C := by
   have hk_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k t‖ ≤ 2 * π := by
     intro t ht
     have htIcc : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)
-    have hz : ‖z₁' t‖ ≤ 2 := norm_z₁'_le t htIcc
+    have hz : ‖z₁' t‖ ≤ 2 := norm_z₁'_le_two t
     simpa [k, mul_assoc, mul_left_comm, mul_comm] using
       (norm_pi_mul_I_mul_le (z := z₁' t) (N := (2 : ℝ)) hz)
   have hdInt :=
@@ -697,14 +692,7 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
       -- Rewrite `F` and use `z₆' t = I * t` to simplify the exponent.
       have hψ' : ψS' ((Complex.I : ℂ) * (t : ℂ)) = ψS.resToImagAxis t := by
         simpa [hz] using hψ
-      have hIexp :
-          (Complex.I : ℂ) * (Complex.I * ((t : ℂ) * (π : ℂ))) =
-            -((t : ℂ) * (π : ℂ)) := by
-        calc
-          (Complex.I : ℂ) * (Complex.I * ((t : ℂ) * (π : ℂ))) =
-              ((Complex.I : ℂ) * (Complex.I : ℂ)) * ((t : ℂ) * (π : ℂ)) := by
-                rw [← mul_assoc]
-          _ = -((t : ℂ) * (π : ℂ)) := by simp
+      have hIexp := I_mul_I_mul (↑t * ↑π)
       have hIexp' :
           u * ((Complex.I : ℂ) * (Complex.I * ((t : ℂ) * (π : ℂ)))) =
             -(u * ((t : ℂ) * (π : ℂ))) := by

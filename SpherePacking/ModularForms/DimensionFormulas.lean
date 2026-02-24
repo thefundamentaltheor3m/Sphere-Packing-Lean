@@ -533,9 +533,7 @@ lemma finiteDimensional_modularForm_level_one (k : ℤ) :
   by_cases hkneg : k < 0
   · have hr : Module.rank ℂ (ModularForm Γ(1) k) = 0 :=
       ModularForm.levelOne_neg_weight_rank_zero (k := k) hkneg
-    have hr' : Module.rank ℂ (ModularForm Γ(1) k) < Cardinal.aleph0 := by
-      simpa [hr] using Cardinal.aleph0_pos
-    exact finiteDimensional_of_rank_lt_aleph0 (V := ModularForm Γ(1) k) hr'
+    exact Module.finite_of_rank_eq_nat hr
   · have hk0le : 0 ≤ k := le_of_not_gt hkneg
     by_cases hk0 : k = 0
     · subst hk0

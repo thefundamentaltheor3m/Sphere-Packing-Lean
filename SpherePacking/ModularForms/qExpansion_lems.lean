@@ -59,8 +59,7 @@ public theorem modularForm_tendsto_atImInfty {k : ℤ} (n : ℕ) (f : ModularFor
         (𝓝 (UpperHalfPlane.valueAtInfty (f : ℍ → ℂ))) := by
     simpa [hzero] using ht
   refine ht'.congr fun τ ↦ ?_
-  simpa [SlashInvariantFormClass.cuspFunction, Periodic.qParam] using
-    (SlashInvariantFormClass.eq_cuspFunction (f := f) (h := (n : ℝ)) τ hmem hn_ne)
+  exact eq_cuspFunction f τ hmem hn_ne
 
 theorem derivWithin_mul2 (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn ℂ f s)
     (hd : DifferentiableOn ℂ g s) :

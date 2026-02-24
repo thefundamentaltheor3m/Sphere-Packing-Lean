@@ -149,9 +149,7 @@ public lemma integrable_pow_mul_of_volume_restrict_Ioo01 {coeff : ℝ → ℂ} {
   have hmem : ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 := by
     simpa [μ] using
       (ae_restrict_mem (μ := (volume : Measure ℝ)) (s := Ioo (0 : ℝ) 1) measurableSet_Ioo)
-  simpa [μ] using
-    (integrable_pow_mul_of_ae_mem_Ioo01 (μ := μ) (coeff := coeff) (g := g) (n := n) (r := r)
-      hμ_ne (by simpa [μ] using hmeas) hmem hcoeff hg)
+  exact integrable_pow_mul_of_ae_mem_Ioo01 hμ_ne hmeas hmem hcoeff hg
 
 /--
 For `r` in a unit ball around `r₀`, compare `rexp (-π * r)` to `rexp (-π * r₀)` up to a factor

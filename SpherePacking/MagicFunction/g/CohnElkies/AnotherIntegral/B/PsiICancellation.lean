@@ -388,12 +388,7 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
         linarith
       have hb0 : 0 ≤ Csum * Real.exp (-(3 : ℝ) * Real.pi * t) :=
         mul_nonneg hCsum (Real.exp_pos _).le
-      have h1 :
-          ‖(x - x0) * y0‖ ≤ (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) * ((e / 256) + 1) := by
-        calc
-          ‖(x - x0) * y0‖ ≤ ‖x - x0‖ * ‖y0‖ := by simp
-          _ ≤ (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) * ((e / 256) + 1) := by
-                exact mul_le_mul hx' hy0' (norm_nonneg _) hb0
+      have h1 := norm_mul_le_of_le hx hy0'
       have hE :
           (e / 256) * Real.exp (-(3 : ℝ) * Real.pi * t) =
             (1 / 256) * Real.exp (-Real.pi * t) := by
@@ -426,13 +421,9 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
               simp [mul_add]
         _ =
             (Csum / 256) * Real.exp (-Real.pi * t) +
-              (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) := by
-              simpa using
-                congrArg (fun r : ℝ => r + (Csum * Real.exp (-(3 : ℝ) * Real.pi * t))) hfirst
-        _ ≤ (Csum / 256) * Real.exp (-Real.pi * t) + (Csum * Real.exp (-Real.pi * t)) := by
-              have h' :=
-                add_le_add_right hterm3 ((Csum / 256) * Real.exp (-Real.pi * t))
-              simpa [add_assoc, add_left_comm, add_comm] using h'
+              (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) := by rw [hfirst]
+        _ ≤ (Csum / 256) * Real.exp (-Real.pi * t) + (Csum * Real.exp (-Real.pi * t)) :=
+              (add_le_add_iff_left (Csum / 256 * rexp (-π * t))).mpr hterm3
         _ = (Csum + Csum / 256) * Real.exp (-Real.pi * t) := by ring
     have hx0dy :
         ‖x0 * (y - y0)‖ ≤ (50 * Cinv2) * Real.exp (-Real.pi * t) := by
@@ -657,15 +648,8 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
         simpa using congrArg (fun r : ℝ => (128 : ℝ) * r) hEq
       have hmul' :
           (128 : ℝ) * ‖z * w - 1‖ ≤
-            (128 : ℝ) * (((CH2 + CH4 + 200) * (Cinv3 + 2) + Cinv3) * Real.exp (-Real.pi * t)) := by
-        calc
-          (128 : ℝ) * ‖z * w - 1‖ ≤
-              (128 : ℝ) *
-                (((CH2 + CH4 + 200) * Real.exp (-Real.pi * t)) * (Cinv3 + 2) +
-                      Cinv3 * Real.exp (-Real.pi * t)) := hmul
-          _ =
-              (128 : ℝ) *
-                (((CH2 + CH4 + 200) * (Cinv3 + 2) + Cinv3) * Real.exp (-Real.pi * t)) := hEq'
+            (128 : ℝ) * (((CH2 + CH4 + 200) * (Cinv3 + 2) + Cinv3) * Real.exp (-Real.pi * t)) :=
+        le_of_le_of_eq hmul hEq'
       simpa [mul_assoc] using hmul'
   -- Finish with `ψI = 128*(x*y + z*w)` and triangle inequality.
   have hψI' : ψI.resToImagAxis t = (128 : ℂ) * (x * y + z * w) := by

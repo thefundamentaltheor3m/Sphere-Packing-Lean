@@ -150,9 +150,7 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
     · have htT' : T ≤ t := le_of_not_ge htT
       have htT0 : T0 ≤ t := le_trans (le_max_left _ _) htT'
       have hnear : ‖H₃.resToImagAxis t - (1 : ℂ)‖ ≤ 1 / 2 := (hT0 t htT0).1
-      have : (1 / 2 : ℝ) ≤ ‖H₃.resToImagAxis t‖ :=
-        half_le_norm_of_norm_sub_one_le_half (x := H₃.resToImagAxis t) (by simpa using hnear)
-      exact (min_le_right _ _).trans this
+      exact inf_le_of_right_le (half_le_norm_of_norm_sub_one_le_half hnear)
   have hH4_lower : ∀ t : ℝ, 1 ≤ t → min m4 (1 / 2 : ℝ) ≤ ‖H₄.resToImagAxis t‖ := by
     intro t ht
     by_cases htT : t ≤ T
@@ -163,9 +161,7 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
     · have htT' : T ≤ t := le_of_not_ge htT
       have htT0 : T0 ≤ t := le_trans (le_max_left _ _) htT'
       have hnear : ‖H₄.resToImagAxis t - (1 : ℂ)‖ ≤ 1 / 2 := (hT0 t htT0).2
-      have : (1 / 2 : ℝ) ≤ ‖H₄.resToImagAxis t‖ :=
-        half_le_norm_of_norm_sub_one_le_half (x := H₄.resToImagAxis t) (by simpa using hnear)
-      exact (min_le_right _ _).trans this
+      exact inf_le_of_right_le (half_le_norm_of_norm_sub_one_le_half hnear)
   have hH4_upper : ∀ t : ℝ, 1 ≤ t → ‖H₄.resToImagAxis t‖ ≤ M4 := by
     intro t ht
     by_cases htT : t ≤ T

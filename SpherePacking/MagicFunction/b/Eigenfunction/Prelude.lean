@@ -163,9 +163,7 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
           simp [g, f, hψS_inv, mul_assoc, mul_left_comm, mul_comm]
       _ =
           (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) := by
-          simpa [mul_assoc] using
-            congrArg (fun u : ℂ =>
-              (-I : ℂ) * ψS.resToImagAxis (1 / t) * u * cexp (-π * r * t)) hscalC
+          rw [hscalC]
   simp [hLHS, hRHS]
 
 /-- Change-of-variables formula expressing `J₅'` as an integral over `Ici (1 : ℝ)`. -/
