@@ -130,7 +130,7 @@ public lemma exists_ψI_bound_exp :
     simpa using hEvNum
   rcases (UpperHalfPlane.atImInfty_mem _).1 hSet with ⟨A0, hA0⟩
   rcases exists_inv_Delta_bound_exp with ⟨CΔ, AΔ, hCΔ, hΔ⟩
-  refine ⟨2 * CΔ, max A0 AΔ, by nlinarith [hCΔ], ?_⟩
+  refine ⟨2 * CΔ, max A0 AΔ, by positivity, ?_⟩
   intro z hz
   have hz0 : A0 ≤ z.im := le_trans (le_max_left _ _) hz
   have hzΔ : AΔ ≤ z.im := le_trans (le_max_right _ _) hz

@@ -212,7 +212,7 @@ lemma integrable_integral_norm_permI1Kernel (w : ℝ⁸) :
         IntegrableOn (fun t : ℝ ↦ (1 / t ^ 2) * rexp (-(2 * π) / t)) (Ioc (0 : ℝ) 1) volume := by
       simpa [div_eq_mul_inv] using
         (SpherePacking.Integration.integrableOn_one_div_sq_mul_exp_neg_div
-          (c := (2 * π)) (by nlinarith [Real.pi_pos]))
+          (c := (2 * π)) (by positivity))
     have h0' :
         IntegrableOn
           (fun t : ℝ ↦ (C₀ : ℝ) * ((1 / t ^ 2) * rexp (-(2 * π) / t)))

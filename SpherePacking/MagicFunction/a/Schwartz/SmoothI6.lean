@@ -180,8 +180,7 @@ lemma hasDerivAt_integral_gN_of_gt_neg2 (n : ℕ) (r₀ : ℝ) (hr₀ : -2 < r�
   let ε : ℝ := (r₀ + 2) / 2
   have ε_pos : 0 < ε := by
     have : 0 < r₀ + 2 := by linarith
-    have : 0 < (r₀ + 2) / 2 := by nlinarith
-    simpa [ε] using this
+    positivity
   have hb : 0 < π * ε := mul_pos Real.pi_pos ε_pos
   let bound : ℝ → ℝ :=
     fun t ↦ (π ^ (n + 1)) * (t ^ (n + 1) * rexp (-(π * ε) * t)) * C₀

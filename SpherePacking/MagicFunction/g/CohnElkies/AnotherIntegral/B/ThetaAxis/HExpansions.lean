@@ -141,7 +141,7 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
         (4 * (Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t))) * (‖x‖ + ‖y‖) ^ 3 ≤
           (4 * (Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t))) * (M + 4) ^ 3 :=
       have hnonneg : (0 : ℝ) ≤ 4 * (Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t)) := by
-        nlinarith [hA]
+        positivity
       mul_le_mul_of_nonneg_left hsum hnonneg
     have h' :
         4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 ≤
@@ -169,9 +169,7 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
     have hstep :
         (4 * (M + 4) ^ 3) * (Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t)) ≤
           (4 * (M + 4) ^ 3) * (Cθ * Real.exp (-(5 : ℝ) * Real.pi * t)) :=
-      mul_le_mul_of_nonneg_left hCθexp (by
-        have hM4 : 0 ≤ M + 4 := by linarith
-        exact mul_nonneg (by positivity : (0 : ℝ) ≤ 4) (pow_nonneg hM4 3))
+      mul_le_mul_of_nonneg_left hCθexp (by positivity)
     have := le_trans hpow0 hstep
     -- rearrange to match the stated RHS
     simpa [mul_assoc, mul_left_comm, mul_comm] using this
@@ -892,7 +890,7 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
       simp [Function.resToImagAxis, ResToImagAxis, ht0, Theta3_eq_jacobiTheta, τ]
     have hnormΘ₃ : (1 : ℝ) ≤ ‖Θ₃.resToImagAxis t‖ := by
       have hnorm_jac : ‖jacobiTheta τ‖ = (1 + 2 * (∑' n : ℕ, f n)) := by
-        have hnonneg : 0 ≤ (1 + 2 * (∑' n : ℕ, f n)) := by nlinarith [hFnonneg]
+        have hnonneg : 0 ≤ (1 + 2 * (∑' n : ℕ, f n)) := by positivity
         rw [hjac]
         calc
           ‖(↑(1 + 2 * ∑' n : ℕ, f n) : ℂ)‖ = |1 + 2 * ∑' n : ℕ, f n| :=

@@ -297,7 +297,7 @@ public theorem decay_J₅' :
   have hpoly : x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x) ≤ B := by
     -- use the bound produced by `exists_bound_pow_mul_exp_neg_mul_sqrt`
     simpa [mul_assoc] using hB x hx
-  have hpow0 : 0 ≤ 2 * Kn := by nlinarith [hKn_nonneg]
+  have hpow0 : 0 ≤ 2 * Kn := by positivity
   have hiterJnorm : ‖iteratedDeriv n J₅' x‖ ≤ 2 * ‖I n x‖ := by
     have : ‖iteratedDeriv n J₅' x‖ = (2 : ℝ) * ‖I n x‖ := by
       simp [hiterJ]

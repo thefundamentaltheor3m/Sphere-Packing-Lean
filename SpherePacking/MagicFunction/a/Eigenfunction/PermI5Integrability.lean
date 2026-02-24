@@ -202,7 +202,7 @@ lemma integrable_integral_norm_permI5Kernel (w : ℝ⁸) :
         (fun s : ℝ ↦
           (MagicFunction.a.Schwartz.I1Decay.Cφ : ℝ) * s ^ 4 * rexp (-2 * π * s))
         μIciOne := by
-    have hb : 0 < (2 * π) := by nlinarith [Real.pi_pos]
+    have hb : 0 < (2 * π) := by positivity
     have harg : ∀ s : ℝ, (-(2 * π) * s) = (-2 * π * s) := by
       intro s
       ring

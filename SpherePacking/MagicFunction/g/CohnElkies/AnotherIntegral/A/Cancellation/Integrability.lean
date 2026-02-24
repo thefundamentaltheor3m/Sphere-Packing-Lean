@@ -68,10 +68,7 @@ lemma phi0Cancellation_compact_case {M A C t : ℝ} (ht1 : 1 ≤ t) (htA : t ≤
   have hscale :
       M ≤ (M / Real.exp (-2 * π * A)) * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) :=
     M_le_divExp_mul_tpow2_exp (M := M) (A := A) (t := t) hM0 ht1 htA
-  have hfac0 : 0 ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-    have ht2nn : 0 ≤ t ^ (2 : ℕ) := by
-      simpa [pow_two] using (sq_nonneg t)
-    exact mul_nonneg ht2nn (le_of_lt (Real.exp_pos _))
+  have hfac0 : 0 ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by positivity
   have hmul :
       (M / Real.exp (-2 * π * A)) * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) ≤
         C * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) :=
@@ -594,9 +591,7 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
     have : 0 ≤ t := ht0.le
     nlinarith [ht.2]
   have hexp_le_one : Real.exp (-π * u * t) ≤ 1 := by
-    have hnonneg : 0 ≤ π * u * t := by
-      have : 0 ≤ (π : ℝ) * u := by positivity [Real.pi_pos.le, hu.le]
-      exact mul_nonneg this ht0.le
+    have hnonneg : 0 ≤ π * u * t := by positivity
     have hneg : -(π * u * t) ≤ 0 := neg_nonpos.mpr hnonneg
     have hEq : (-π * u * t) = -(π * u * t) := by ring
     have : (-π * u * t) ≤ 0 := by simpa [hEq] using hneg
@@ -792,9 +787,7 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
           fun t : ℝ => Real.exp (-((2 * π + π * u) / 2) * t) := by
       -- Let `b = (2π + πu) / 2 > 0`.
       set b : ℝ := (2 * π + π * u) / 2
-      have hb : 0 < b := by
-        have : 0 < (2 * π + π * u) := by positivity
-        simpa [b] using (half_pos this)
+      have hb : 0 < b := ha
       have hlittle :
           (fun t : ℝ => (t ^ (2 : ℕ) : ℝ)) =o[atTop] fun t : ℝ => Real.exp (b * t) :=
         isLittleO_pow_exp_pos_mul_atTop 2 hb

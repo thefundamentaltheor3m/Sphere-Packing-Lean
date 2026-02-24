@@ -541,7 +541,7 @@ lemma tendsto_cubeShell_ratio_zero :
         fun L : ℝ => (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d := by
     filter_upwards [eventually_gt_atTop (0 : ℝ)] with L hLpos
     have hL : L ≠ 0 := ne_of_gt hLpos
-    have hLd : L ^ d ≠ 0 := by simpa using pow_ne_zero d hL
+    have hLd : L ^ d ≠ 0 := by positivity
     -- rewrite by dividing each term by `L^d` and using `div_pow`
     calc
       ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)
@@ -742,9 +742,7 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
         (b := volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)) (c := c)
         (hb0 := Or.inl hvolR_ne0) (hbt := Or.inl hvolR_ne_top)).1 hcR'
   have hvolR2_ne0 : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) ≠ 0 := by
-    have hR2pos : 0 < R + Cshift := by
-      dsimp [Cshift, r]
-      nlinarith [hRpos, hCpos]
+    have hR2pos : 0 < R + Cshift := by positivity
     exact (volume_ball_pos _ hR2pos).ne.symm
   have hvolR2_ne_top : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) ≠ ∞ :=
     (volume_ball_lt_top _).ne

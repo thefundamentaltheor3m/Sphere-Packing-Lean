@@ -59,16 +59,7 @@ public lemma exists_phi2'_sub_720_bound_ge :
     linarith
   -- Choose a convenient (positive) constant.
   let C : ℝ := 1 + CΔinv * (E4B * CA + 720 * (CE4 + CΔq))
-  refine ⟨C, A, by
-      have : 0 ≤ CΔinv * (E4B * CA + 720 * (CE4 + CΔq)) := by
-        have : 0 ≤ (E4B * CA + 720 * (CE4 + CΔq)) := by
-          have h0 : 0 ≤ E4B * CA := mul_nonneg (le_of_lt hE4B_pos) hCA_pos.le
-          have h1 : 0 ≤ 720 * (CE4 + CΔq) := by
-            have : 0 ≤ (CE4 + CΔq) := add_nonneg hCE4_pos.le hCΔq_pos.le
-            nlinarith
-          exact add_nonneg h0 h1
-        exact mul_nonneg (le_of_lt hCΔinv_pos) this
-      linarith, hA1, ?_⟩
+  refine ⟨C, A, by positivity, hA1, ?_⟩
   intro t ht0 htA
   have ht1 : 1 ≤ t := le_trans hA1 htA
   let z : ℍ := zI t ht0
@@ -195,14 +186,7 @@ public lemma exists_phi2'_sub_720_bound_ge :
                     K * q ^ (2 : ℕ) := by
                 simpa [K] using hnum
               have h2 : ‖(Δ z)⁻¹‖ ≤ CΔinv * Real.exp (2 * π * t) := hΔinv'
-              have hK : 0 ≤ K * q ^ (2 : ℕ) := by
-                have : 0 ≤ K := by
-                  dsimp [K]
-                  exact add_nonneg (mul_nonneg (le_of_lt hE4B_pos) hCA_pos.le)
-                    (by
-                      have : 0 ≤ (CE4 + CΔq) := add_nonneg hCE4_pos.le hCΔq_pos.le
-                      nlinarith)
-                exact mul_nonneg this (pow_nonneg hq_nonneg _)
+              have hK : 0 ≤ K * q ^ (2 : ℕ) := by positivity
               exact mul_le_mul h1 h2 (norm_nonneg _) hK
       _ = (CΔinv * K) * q := by
               -- `q^2 * exp(2πt) = q` since `q = exp(-2πt)`.
@@ -430,9 +414,7 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
   have hq1_nonneg : 0 ≤ q1 := (Real.exp_pos _).le
   have hq1_lt_one : q1 < 1 := by simpa [q1] using exp_neg_two_pi_lt_one
   let B240 : ℝ := 1 + 240 * q1
-  have hB240_pos : 0 < B240 := by
-    have : 0 ≤ (240 : ℝ) * q1 := mul_nonneg (by norm_num) hq1_nonneg
-    linarith
+  have hB240_pos : 0 < B240 := by positivity
   -- A convenient constant (positive).
   let C : ℝ := 1 + CΔinv *
       ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq)
@@ -584,9 +566,7 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
     set K : ℝ := (240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq
     set num : ℂ :=
       (E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)
-    have hK : 0 ≤ K := by
-      dsimp [K]
-      nlinarith [hB240_pos.le, hCE4_pos.le, hCΔ3_pos.le, hCΔq_pos.le]
+    have hK : 0 ≤ K := by positivity
     have hrew_num :
         φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ) = num / (Δ z) := by
       simpa [num] using hrew

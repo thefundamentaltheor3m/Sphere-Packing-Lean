@@ -169,13 +169,7 @@ public lemma F_pos : ResToImagAxis.Pos F := by
       exact mul_nonneg (mul_nonneg (by positivity) (by positivity)) (by positivity)
     have hterm_pos1 : 0 < (term 1).re := by
       rw [hterm_re]
-      have hσ : 0 < (σ 3 (1 : ℕ+) : ℝ) := by
-        have : (0 : ℕ) < σ 3 (1 : ℕ) := by
-          simp
-        exact_mod_cast this
-      have : 0 < r ^ (1 : ℕ) := by
-        simpa using pow_pos hr_pos 1
-      exact mul_pos (mul_pos (by norm_num) hσ) this
+      positivity
     have htsum_pos : 0 < ∑' n : ℕ+, (term n).re :=
       hsum_re.tsum_pos hterm_nonneg 1 hterm_pos1
     have hA_re : A.re = 720 * ∑' n : ℕ+, (term n).re := by
@@ -404,7 +398,7 @@ lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
       IsCompact.exists_forall_le' (s := K) hKc him_cont (a := (0 : ℝ)) him_pos
     let r : ℝ := Real.exp (-2 * Real.pi * δ)
     have hr_norm : ‖r‖ < 1 := by
-      have hr_nonneg : 0 ≤ r := by simpa [r] using (Real.exp_pos (-2 * Real.pi * δ)).le
+      have hr_nonneg : 0 ≤ r := by positivity
       have hr_lt_one : r < 1 := Real.exp_lt_one_iff.mpr (by nlinarith [Real.pi_pos, hδ_pos])
       simpa [Real.norm_of_nonneg hr_nonneg] using hr_lt_one
     let u : ℕ → ℝ := fun n => (48 * Real.pi) * (((n : ℝ) ^ 3 : ℝ) * r ^ n)
@@ -681,30 +675,8 @@ lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
         (hs.mul_left 24) (fun n => hbound n)
     have hpos :
         0 < ∑' n : ℕ,
-          (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t) := by
-      have hnonneg (n : ℕ) :
-          0 ≤ (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t) := by
-        have h24 : 0 ≤ (24 : ℝ) := by norm_num
-        have hn0 : 0 ≤ (n : ℝ) := by positivity
-        have hσ0 : 0 ≤ (σ 1 n : ℝ) := by exact_mod_cast (Nat.zero_le _)
-        have hexp0 : 0 ≤ Real.exp (-2 * Real.pi * (n : ℝ) * t) := (Real.exp_pos _).le
-        have : 0 ≤ (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) :=
-          mul_nonneg (mul_nonneg h24 hn0) hσ0
-        exact mul_nonneg this hexp0
-      have hpos1 :
-          0 <
-            (24 : ℝ) * ((1 : ℕ) : ℝ) * (σ 1 1 : ℝ) *
-            Real.exp (-2 * Real.pi * ((1 : ℕ) : ℝ) * t) := by
-        have hσ11 : (σ 1 1 : ℝ) = 1 := by
-          norm_cast
-        have h24 : (0 : ℝ) < 24 := by norm_num
-        have hone : (0 : ℝ) < ((1 : ℕ) : ℝ) := by norm_num
-        have hσpos : (0 : ℝ) < (σ 1 1 : ℝ) := by simp
-        have hexp : 0 < Real.exp (-2 * Real.pi * ((1 : ℕ) : ℝ) * t) := Real.exp_pos _
-        -- A product of positive terms is positive.
-        simpa [mul_assoc] using (mul_pos (mul_pos (mul_pos h24 hone) hσpos) hexp)
-      -- One strictly positive term implies the whole sum is positive.
-      simpa using hsumRe.tsum_pos hnonneg 1 hpos1
+          (24 : ℝ) * (n : ℝ) * (σ 1 n : ℝ) * Real.exp (-2 * Real.pi * (n : ℝ) * t) :=
+      Summable.tsum_pos hsumRe (fun i ↦ by positivity) 1 (by positivity)
     have hre_tsum :
         (negDE₂ τ).re =
           ∑' n : ℕ,

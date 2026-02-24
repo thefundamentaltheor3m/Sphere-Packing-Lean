@@ -533,7 +533,7 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
   have hF_int : Integrable (F u0) μ := by
     have hmeas : AEStronglyMeasurable (F u0) μ := hF_meas.self_of_nhds
     let b : ℝ := Real.pi * u0.re
-    have hb : 0 < b := by nlinarith [Real.pi_pos, hu0re]
+    have hb : 0 < b := by positivity
     let g : ℝ → ℝ := fun t => Real.exp (-b * t)
     have hExpIci : IntegrableOn g (Set.Ici (1 : ℝ)) (volume : Measure ℝ) := by
       -- `n = 0` in the shared lemma: `t^0 * exp(-b*t)` on `[1,∞)`.
@@ -573,7 +573,7 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
     have : 0 < u0.re / (2 : ℝ) := div_pos hu0re (by norm_num)
     simpa [ε] using this
   let b : ℝ := Real.pi * ε
-  have hb : 0 < b := by nlinarith [Real.pi_pos, ε_pos]
+  have hb : 0 < b := by positivity
   let bound : ℝ → ℝ := fun t => (Mψ * Real.pi) * t * Real.exp (-b * t)
   have bound_int : Integrable bound μ := by
     have hIci :

@@ -659,9 +659,7 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
     let useq : ℕ → ℝ := fun n => ‖xseq n‖ ^ 2
     have huseq_gt2 : ∀ n : ℕ, 2 < useq n := by
       intro n
-      have hcn_pos : 0 < c n := by
-        have : 0 < (1 / ((n : ℝ) + 1)) := by positivity
-        linarith [this]
+      have hcn_pos : 0 < c n := by positivity
       have hcn_one : 1 < c n := by
         have : 0 < (1 / ((n : ℝ) + 1)) := by positivity
         linarith [this]
@@ -798,8 +796,7 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
                     (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t))‖
               ≤ (‖(π / 2160 : ℂ)‖ * M) * (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) := by
         intro n
-        have hsin_nonneg : 0 ≤ (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) := by
-          simpa using sq_nonneg (Real.sin (π * (useq n) / 2))
+        have hsin_nonneg : 0 ≤ (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) := by positivity
         calc
           ‖(π / 2160 : ℂ) *
                 (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) *

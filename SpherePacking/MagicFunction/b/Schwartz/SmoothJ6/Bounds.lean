@@ -206,11 +206,7 @@ public theorem decay_J₆' :
       refine (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ici).2 <| .of_forall ?_
       intro t ht
       have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
-      have : 0 ≤ (t ^ n * Real.exp (-Real.pi * t)) := by positivity
-      have hpi : 0 ≤ (Real.pi ^ n : ℝ) := pow_nonneg Real.pi_pos.le n
-      have : 0 ≤ (Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) := mul_nonneg hpi this
-      have : 0 ≤ (Real.pi ^ n) * (t ^ n * Real.exp (-Real.pi * t)) * Cψ := mul_nonneg this hCψ0
-      simpa [bound] using this
+      positivity
     simpa [Kn] using (integral_nonneg_of_ae hnonneg)
   let C : ℝ := 2 * Kn * B
   refine ⟨C, ?_⟩
@@ -308,7 +304,7 @@ public theorem decay_J₆' :
             (z := F n x) (B := Kn * Real.exp (-Real.pi * x)) hFn)
       _ = 2 * Kn * Real.exp (-Real.pi * x) := by ring_nf
   have hpoly : x ^ k * Real.exp (-Real.pi * x) ≤ B := hB x hx
-  have hpow0 : 0 ≤ 2 * Kn := by nlinarith [hKn_nonneg]
+  have hpow0 : 0 ≤ 2 * Kn := by positivity
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖
         = x ^ k * ‖iteratedDeriv n RealIntegrals.J₆' x‖ := by simp [hxabs, hnorm_iter]
