@@ -148,13 +148,7 @@ public lemma tsum_centers_eq_tsum_centersInter_centersInter_lattice
           (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice (Λ := P.lattice) f
             ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d))))
       · -- Summability over the finite index `x`.
-        -- (`Summable.of_finite` takes `f` as an implicit argument.)
-        simpa using
-          (Summable.of_finite
-            (f := fun x : ↑(P.centers ∩ D) =>
-              ∑' ℓ : P.lattice,
-                ‖f ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)) +
-                  (ℓ : EuclideanSpace ℝ (Fin d)))‖))
+        exact Summable.of_finite
     · rintro ⟨x, ℓ⟩
       have hle :
           |(f ((e (x, ℓ) : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)))).re| ≤

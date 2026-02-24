@@ -855,13 +855,7 @@ lemma tendsto_A_div_q :
       _ = (720 : ℂ) * ∑' n : ℕ, a n * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
             simp [hshift]
   -- Conclude by comparing with the `q`-series limit.
-  have hEq :
-      (fun z : ℍ =>
-          (720 : ℂ) * ∑' n : ℕ, a n * cexp (2 * π * Complex.I * z * n)) =
-        fun z : ℍ => ((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z) := by
-    funext z
-    simpa [mul_assoc, mul_left_comm, mul_comm] using (hA_eq z).symm
-  simpa [hEq] using hseries''
+  exact (tendsto_congr hA_eq).mpr hseries''
 
 lemma tendsto_phi2'_atImInfty :
     Tendsto (fun z : ℍ => φ₂' z) atImInfty (𝓝 (720 : ℂ)) := by

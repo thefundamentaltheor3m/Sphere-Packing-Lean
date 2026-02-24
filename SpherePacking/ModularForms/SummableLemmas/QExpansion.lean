@@ -226,15 +226,7 @@ theorem summable_iter_aut (k : ℕ) (z : ℍ) :
         (-1) ^ k * k ! * (1 / ((z : ℂ) + d) ^ (k + 1)))
     (L := SummationFilter.unconditional _) (fun d => ?_)).2 ?_
   · simpa [Int.cast_natCast, one_div, Pi.add_apply] using iter_div_aut_add (d := (d : ℤ)) k z.2
-  by_cases hk : 1 ≤ k
-  · refine Summable.add
-      (Summable.mul_left ((-1 : ℂ) ^ k * k !) <| ?_)
-      (Summable.mul_left ((-1 : ℂ) ^ k * k !) <| ?_)
-    · simpa [one_div] using (summable_1 k z hk).comp_injective PNat.coe_injective
-    · simpa [one_div] using (summable_2 k z hk).comp_injective PNat.coe_injective
-  · simp only [not_le, Nat.lt_one_iff] at hk
-    simpa [hk, one_div] using lhs_summable z
-
+  exact summable_3 k z
 
 lemma sub_bound (s : {z : ℂ | 0 < z.im}) (A B : ℝ) (hB : 0 < B)
     (hs : (⟨(s : ℂ), s.2⟩ : ℍ) ∈ verticalStrip A B) (k : ℕ)
@@ -700,13 +692,6 @@ public theorem tsum_sigma_eqn2 (k : ℕ) (z : ℍ) :
     simpa [q, mul_assoc] using (summable_prod_mul_pow (𝕜 := ℂ) k hq)
   rw [hs.tsum_prod]
   simpa [q] using (tsum_prod_pow_eq_tsum_sigma (𝕜 := ℂ) k hq)
-
-/-- Summability of `∑_{d : ℤ} 1 / ((n z) + d)^k` for `k ≥ 2` and `z ∈ ℍ`. -/
-public lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
-    Summable fun d : ℤ => ((((n : ℂ) * z) + d) ^ k)⁻¹ := by
-  apply summable_inv_of_isBigO_rpow_inv (show 1 < (k : ℝ) by norm_cast)
-  lift k to ℕ using (by linarith)
-  simpa using (linear_bigO_pow n z k)
 
 /-- A cleaner version of `tsum_sigma_eqn2` with product indexing by `ℕ+ × ℕ+`. -/
 public theorem tsum_sigma_eqn {k : ℕ} (z : ℍ) :

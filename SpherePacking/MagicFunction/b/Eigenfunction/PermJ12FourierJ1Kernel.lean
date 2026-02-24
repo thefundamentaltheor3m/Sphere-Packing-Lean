@@ -121,12 +121,8 @@ lemma integral_norm_permJ1Kernel (w : EuclideanSpace ℝ (Fin 8))
           refine MeasureTheory.integral_congr_ae <| Filter.Eventually.of_forall fun x => ?_
           simpa [mul_assoc] using (norm_permJ1Kernel (w := w) (x := x) (t := t))
     _ =
-        ‖ψT' (z₁line t)‖ * (∫ x : EuclideanSpace ℝ (Fin 8), rexp (-(π * (t * (‖x‖ ^ 2))))) := by
-          simpa [mul_assoc] using
-            (MeasureTheory.integral_const_mul
-              (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
-              (r := ‖ψT' (z₁line t)‖)
-              (f := fun x : EuclideanSpace ℝ (Fin 8) => rexp (-(π * (t * (‖x‖ ^ 2))))))
+        ‖ψT' (z₁line t)‖ * (∫ x : EuclideanSpace ℝ (Fin 8), rexp (-(π * (t * (‖x‖ ^ 2))))) :=
+          MeasureTheory.integral_const_mul ‖ψT' (z₁line t)‖ fun a ↦ rexp (-(π * (t * ‖a‖ ^ 2)))
     _ = ‖ψT' (z₁line t)‖ * (1 / t) ^ (4 : ℕ) := by simp [hgauss]
 
 lemma integrable_permJ1Kernel_slice (w : EuclideanSpace ℝ (Fin 8))

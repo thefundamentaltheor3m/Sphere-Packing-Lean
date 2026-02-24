@@ -168,13 +168,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
             (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
               cexp (2 * π * Complex.I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))) * (q₁ z)⁻¹ := by
             refine congrArg (fun s => (720 : ℂ) * s) ?_
-            -- Push the right multiplication by `(q₁ z)⁻¹` through the `tsum`.
-            simpa [mul_assoc] using
-              (tsum_mul_right
-                (f := fun n : ℕ =>
-                  ((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
-                    cexp (2 * π * Complex.I * ((n + 1 : ℕ) : ℂ) * (z : ℂ)))
-                (a := (q₁ z)⁻¹)).symm
+            exact tsum_mul_right.symm
       _ = (720 : ℂ) * ∑' n : ℕ,
             (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
               cexp (2 * π * Complex.I * ((n + 1 : ℕ) : ℂ) * (z : ℂ))) / q₁ z := by

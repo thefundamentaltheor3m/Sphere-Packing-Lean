@@ -435,24 +435,7 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
     have hY_nonneg : 0 ≤ Cφ * Real.exp (2 * π * t) := le_trans (norm_nonneg _) hφ2
     calc
       ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ ≤
-          (c12π * ‖(wH : ℂ)‖) * ‖φ₂' wH‖ := by
-        -- Two applications of `‖ab‖ ≤ ‖a‖‖b‖`.
-        have h1 :
-            ‖((12 * Complex.I) / (π : ℂ) * (wH : ℂ)) * φ₂' wH‖ ≤
-              ‖(12 * Complex.I) / (π : ℂ) * (wH : ℂ)‖ * ‖φ₂' wH‖ := by
-          exact norm_mul_le (((12 * Complex.I) / (π : ℂ)) * (wH : ℂ)) (φ₂' wH)
-        have h2 :
-            ‖(12 * Complex.I) / (π : ℂ) * (wH : ℂ)‖ ≤
-              c12π * ‖(wH : ℂ)‖ := by
-          exact norm_mul_le ((12 * Complex.I) / (π : ℂ)) (wH : ℂ)
-        have h2' :=
-          mul_le_mul_of_nonneg_right h2 (norm_nonneg (φ₂' wH))
-        -- Normalize associativity.
-        have hmul : ‖(12 * Complex.I) / (π : ℂ) * (wH : ℂ)‖ * ‖φ₂' wH‖ ≤
-            (c12π * ‖(wH : ℂ)‖) * ‖φ₂' wH‖ := by
-          exact h2'
-        -- Chain the bounds.
-        exact le_trans h1 hmul
+          (c12π * ‖(wH : ℂ)‖) * ‖φ₂' wH‖ := norm_mul₃_le
       _ ≤ (c12π * (2 * t)) * (Cφ * Real.exp (2 * π * t)) := by
         -- First use `‖φ₂'‖ ≤ Cφ*exp`, then `‖w‖ ≤ 2t`.
         have hφ :
@@ -464,13 +447,7 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
         have hw' :
             c12π * ‖(wH : ℂ)‖ ≤ c12π * (2 * t) :=
           mul_le_mul_of_nonneg_left hw_norm (norm_nonneg _)
-        have hw'' :=
-          mul_le_mul_of_nonneg_right hw' hY_nonneg
-        have hw''' :
-            (c12π * ‖(wH : ℂ)‖) * (Cφ * Real.exp (2 * π * t)) ≤
-              (c12π * (2 * t)) * (Cφ * Real.exp (2 * π * t)) := by
-          simpa [mul_assoc] using hw''
-        exact le_trans hφ hw'''
+        exact le_mul_of_le_mul_of_nonneg_right hφ hw' hY_nonneg
       _ ≤ (2 * c12π * Cφ) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
         -- Use `t ≤ t^2` (since `t ≥ 1`) and `0 ≤ Cφ*exp`.
         have htY :

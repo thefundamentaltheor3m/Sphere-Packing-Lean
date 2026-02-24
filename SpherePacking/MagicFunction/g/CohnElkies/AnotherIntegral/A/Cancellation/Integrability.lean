@@ -866,11 +866,7 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
                       congrArg (fun x : ℝ => -x) harg
                     -- Keep `t` inside to avoid `mul_eq_mul_right_iff` cancellations.
                     simpa [mul_assoc] using (hneg.trans (by ring))
-                  have hexp : Real.exp (-(2 * b * t)) = Real.exp (-(2 * π + π * u) * t) :=
-                    congrArg Real.exp harg'
-                  -- Apply the rewrite under the outer scalar multiplication.
-                  have := congrArg (fun s : ℝ => (C * (t ^ (2 : ℕ) : ℝ)) * s) hexp
-                  simpa [mul_assoc] using this
+                  rw [hb2, neg_mul]
       simpa using hO''
     have hIntIoi :
         IntegrableOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))

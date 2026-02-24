@@ -34,10 +34,10 @@ def qKerBelow
     simp [qExpansion_zero (h := h)]
   add_mem' := by
     intro f g hf hg n hn
-    simp [qExpansion_add (Γ := Γ) (k := k) (h := h) f g hh hΓ, hf n hn, hg n hn]
+    simp [qExpansion_add (Γ := Γ) (h := h) hh hΓ f g, hf n hn, hg n hn]
   smul_mem' := by
     intro a f hf n hn
-    simp [qExpansion_smul (Γ := Γ) (k := k) (h := h) a f hh hΓ, hf n hn]
+    simp [qExpansion_smul (Γ := Γ) (k := k) (h := h) hh hΓ a f, hf n hn]
 
 lemma qKerBelow_antitone
     [DiscreteTopology Γ] [Γ.HasDetOne] (hh : 0 < h) (hΓ : h ∈ Γ.strictPeriods) :

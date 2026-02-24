@@ -152,13 +152,8 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
           (-2 : ℂ) *
             ∫ x : ℝ⁸,
               cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-                ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s := by
-            simpa using
-              (MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ⁸))
-                (r := (-2 : ℂ))
-                (f := fun x : ℝ⁸ ↦
-                  cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-                    ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s))
+                ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s :=
+            integral_const_mul (-2) _
   have htoIter :
       (∫ x : ℝ⁸,
             cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
@@ -251,17 +246,7 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
                       (∫ s in Ici (1 : ℝ), (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) =
                         ∫ s in Ici (1 : ℝ), (-I) * (φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) := by
                         simp [mul_assoc]
-                  calc
-                    (-2 : ℂ) * ∫ s in Ici (1 : ℝ), (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)
-                        =
-                        (-2 : ℂ) *
-                          ∫ s in Ici (1 : ℝ),
-                            (-I) * (φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) := by
-                          exact congrArg (fun z : ℂ => (-2 : ℂ) * z) hrew
-                    _ =
-                        (-2 : ℂ) * ((-I : ℂ) *
-                          ∫ s in Ici (1 : ℝ), φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) := by
-                          rw [hpull]
+                  rw [hrew, hconst_mul]
             _ =
                 (2 : ℂ) *
                   ((I : ℂ) *

@@ -643,13 +643,8 @@ lemma A_E_sq_eq_tsum (z : ℍ) :
     (A_E z) ^ 2 = (∑' n : ℕ, t n) ^ 2 := by simp [hA]
     _ = (∑' n : ℕ, t n) * (∑' n : ℕ, t n) := by simp [pow_two]
     _ = ∑' m : ℕ, ∑ p ∈ Finset.antidiagonal m, t p.1 * t p.2 := by simp [hprod]
-    _ = ∑' m : ℕ, A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
-          have hanti' :
-              (fun m : ℕ => ∑ p ∈ Finset.antidiagonal m, t p.1 * t p.2) =
-                fun m : ℕ => A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
-            funext m
-            exact hanti m
-          simpa using congrArg (fun f : (ℕ → ℂ) => ∑' m : ℕ, f m) hanti'
+    _ = ∑' m : ℕ, A_E_sq_coeff m * cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) :=
+          tsum_congr hanti
 
 /-!
 ### Converting to `fouterm` coefficients

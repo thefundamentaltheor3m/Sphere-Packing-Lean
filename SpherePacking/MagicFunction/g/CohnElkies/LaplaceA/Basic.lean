@@ -437,33 +437,10 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
                       - 36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ := by
                         rw [hEq]
               _ ≤ ‖φ₀ zH - (12 * Complex.I) / (π * zH) * φ₂' zH‖ +
-                    ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ := by
-                      simpa [sub_eq_add_neg, add_assoc] using
-                        (norm_add_le
-                          (φ₀ zH - (12 * Complex.I) / (π * zH) * φ₂' zH)
-                          (-(36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH)))
+                    ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ := norm_sub_le _ _
               _ ≤ ‖φ₀ zH‖ + ‖(12 * Complex.I) / (π * zH) * φ₂' zH‖ +
                     ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ := by
-                      have hsub :
-                          ‖φ₀ zH - (12 * Complex.I) / (π * zH) * φ₂' zH‖ ≤
-                            ‖φ₀ zH‖ + ‖(12 * Complex.I) / (π * zH) * φ₂' zH‖ :=
-                        norm_sub_le (φ₀ zH) ((12 * Complex.I) / (π * zH) * φ₂' zH)
-                      have hsub' :
-                          ‖φ₀ zH - (12 * Complex.I) / (π * zH) * φ₂' zH‖ +
-                              ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ ≤
-                            (‖φ₀ zH‖ + ‖(12 * Complex.I) / (π * zH) * φ₂' zH‖) +
-                              ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ :=
-                        add_le_add_left hsub
-                          ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖
-                      calc
-                        ‖φ₀ zH - (12 * Complex.I) / (π * zH) * φ₂' zH‖ +
-                            ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖
-                            ≤
-                            (‖φ₀ zH‖ + ‖(12 * Complex.I) / (π * zH) * φ₂' zH‖) +
-                              ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ := hsub'
-                        _ = ‖φ₀ zH‖ + ‖(12 * Complex.I) / (π * zH) * φ₂' zH‖ +
-                              ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ := by
-                              simp [add_assoc]
+                      exact add_le_add_left (norm_sub_le _ _) _
           have h2 :
               ‖(12 * Complex.I) / (π * (zH : ℂ)) * φ₂' zH‖ ≤
                 C2 * ((B4 * BA) * (CΔ * Real.exp (2 * π * t))) := by
@@ -550,16 +527,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
                       (t ^ (2 : ℕ)) * (Cφ * Real.exp (2 * π * t)) * Real.exp (-π * u * t) =
                         Cφ * ((t ^ (2 : ℕ)) * (Real.exp (2 * π * t) * Real.exp (-π * u * t))) := by
                     ring
-                  calc
-                    (t ^ (2 : ℕ)) * (Cφ * Real.exp (2 * π * t)) * Real.exp (-π * u * t) =
-                        Cφ *
-                          ((t ^ (2 : ℕ)) *
-                            (Real.exp (2 * π * t) * Real.exp (-π * u * t))) := by
-                      simpa using hrearr
-                    _ = Cφ * ((t ^ (2 : ℕ)) * Real.exp (-a * t)) := by
-                      exact congrArg (fun x : ℝ => Cφ * ((t ^ (2 : ℕ)) * x)) hExpRew
-                    _ = Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by
-                      simp
+                  rw [hrearr, hExpRew]
         exact hpoint
       have hint :
           Integrable (fun t : ℝ => aLaplaceIntegrand u t)

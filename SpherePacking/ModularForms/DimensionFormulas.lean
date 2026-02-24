@@ -658,17 +658,11 @@ public lemma dim_gen_cong_levels (k : ℤ) (Γ : Subgroup SL(2, ℤ)) (hΓ : Sub
         map_add' := by
           intro f g
           ext n
-          simp [
-            SpherePacking.ModularForms.qExpansion_add
-              (Γ := GΓ) (k := k) (h := h) f g hh hperΓ
-          ]
+          simp [qExpansion_add hh hperΓ f g]
         map_smul' := by
           intro a f
           ext n
-          simp [
-            SpherePacking.ModularForms.qExpansion_smul
-              (Γ := GΓ) (k := k) (h := h) a f hh hperΓ
-          ] }
+          simp [qExpansion_smul hh hperΓ a f] }
       have htrunc_inj : Function.Injective trunc := by
         intro f g hfg
         have hcoeff : ∀ m < N, (qExpansion h (f - g)).coeff m = 0 := by

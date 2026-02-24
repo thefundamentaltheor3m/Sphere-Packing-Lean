@@ -134,18 +134,7 @@ lemma integral_norm_permI2Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
             exact hnorm x
       _ =
           ‖φ₀'' (-1 / (z₂line t + 1))‖ *
-            ∫ x : ℝ⁸, ‖z₂line t + 1‖ ^ 2 * rexp (-(Real.pi * (‖x‖ ^ 2))) := by
-            have hconst :
-                (∫ x : ℝ⁸,
-                      ‖φ₀'' (-1 / (z₂line t + 1))‖ *
-                        (‖z₂line t + 1‖ ^ 2 * rexp (-(Real.pi * (‖x‖ ^ 2)))) ) =
-                    ‖φ₀'' (-1 / (z₂line t + 1))‖ *
-                      ∫ x : ℝ⁸, ‖z₂line t + 1‖ ^ 2 * rexp (-(Real.pi * (‖x‖ ^ 2))) := by
-              simpa [mul_assoc] using
-                (MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ⁸))
-                  (r := ‖φ₀'' (-1 / (z₂line t + 1))‖)
-                  (f := fun x : ℝ⁸ ↦ ‖z₂line t + 1‖ ^ 2 * rexp (-(Real.pi * (‖x‖ ^ 2)))))
-            simpa using hconst
+            ∫ x : ℝ⁸, ‖z₂line t + 1‖ ^ 2 * rexp (-(Real.pi * (‖x‖ ^ 2))) := integral_const_mul _ _
       _ =
           ‖φ₀'' (-1 / (z₂line t + 1))‖ *
             (‖z₂line t + 1‖ ^ 2 * ∫ x : ℝ⁸, rexp (-(Real.pi * (‖x‖ ^ 2)))) := by
