@@ -90,17 +90,13 @@ lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5
   ext τ
   simp
 
-attribute [fun_prop] E₂_holo' H₂_MDifferentiable H₄_MDifferentiable
-
 theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by unfold F; fun_prop
 
 theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by rw [G_eq]; fun_prop
 
-theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) :=
-  serre_D_differentiable F_holo
+theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by unfold F; fun_prop
 
-theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) :=
-  serre_D_differentiable G_holo
+theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := by rw [G_eq]; fun_prop
 
 theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
   sorry
@@ -118,11 +114,7 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
     simp
     ring_nf
   -- Holomorphicity of the terms
-  · exact E₂_holo'
-  · exact E₄.holo'
-  · exact E₂_holo'.mul E₄.holo'
-  · exact E₆.holo'
-  · exact (E₂_holo'.mul E₄.holo').sub E₆.holo'
+  repeat fun_prop
 
 /--
 Modular linear differential equation satisfied by $F$.
@@ -1051,11 +1043,8 @@ theorem D_G_div_G_tendsto :
   let A := H₂ ^ 3
   let B := (2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2
   have hG_eq : G = A * B := G_eq
-  have hA : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A := H₂_MDifferentiable.pow 3
-  have hB : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B := by
-    show MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
-      ((2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2)
-    fun_prop
+  have hA : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A := by fun_prop
+  have hB : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B := by fun_prop
   have h_DA_A : ∀ z, H₂ z ≠ 0 → D A z / A z = 3 * (D H₂ z / H₂ z) := by
     intro z hH₂_ne
     change D (H₂ ^ 3) z / (H₂ z ^ 3) = 3 * (D H₂ z / H₂ z)
