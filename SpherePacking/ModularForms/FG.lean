@@ -116,12 +116,6 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
   -- Holomorphicity of the terms
   repeat fun_prop
 
-/--
-Modular linear differential equation satisfied by $F$.
--/
-theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 7200 * Δ_fun * negDE₂ := by
-  sorry
-
 private lemma serre_D_10_F : serre_D 10 F = D F - 5 * 6⁻¹ * E₂ * F := by
   ext z; simp [serre_D_apply]; norm_num
 
@@ -188,9 +182,10 @@ private lemma DDF_eq : D (D F) = (5 * 6⁻¹ : ℂ) • D (E₂ ^ 3 * E₄.toFun
     D_smul _ _ E2cu_E4sq_holo', D_smul _ _ E2sq_E4_E6_holo', D_smul _ _ E2_E4cu_holo',
     D_smul _ _ E2_E6sq_holo', D_smul _ _ E4sq_E6_holo']
 
-/-- Corrected MLDE for F with E₄ factor:
-`serre_D 12 (serre_D 10 F) = (5/6) E₄ F + 7200 Δ negDE₂`. -/
-theorem MLDE_F' : serre_D 12 (serre_D 10 F) =
+/--
+Modular linear differential equation satisfied by $F$.
+-/
+theorem MLDE_F : serre_D 12 (serre_D 10 F) =
     5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ_fun * negDE₂ := by
   have hcE₂_eq : (5 * 6⁻¹ : ℂ) • E₂ = 5 * 6⁻¹ * E₂ := by ext; simp [smul_eq_mul]
   have h56E₂_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂) := hcE₂_eq ▸ E₂_holo'.const_smul _
@@ -223,7 +218,7 @@ theorem MLDE_F' : serre_D 12 (serre_D 10 F) =
 /--
 Modular linear differential equation satisfied by $G$.
 -/
-theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
+theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * E₄.toFun * G - 640 * Δ_fun * H₂ := by
   sorry
 
 /-- Pointwise log-derivative of a product: `D(f·h)/(f·h) = Df/f + Dh/h`. -/
