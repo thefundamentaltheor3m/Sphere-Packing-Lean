@@ -663,27 +663,7 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       (volume_ball_ratio_tendsto_nhds_one'' (d := d) (C := (0 : ℝ)) (C' := Cshift) hd)
   have hmul_tend : Tendsto (fun R : ℝ => c * ratio R) atTop (𝓝 c) := by
     simpa [mul_one] using (ENNReal.Tendsto.const_mul hratio_tend (a := c))
-  have hb_add : b + cubeShellErr L < c := by
-    have hc_ne_top : c ≠ ∞ := by
-      have hc_lt_one : c < 1 := lt_of_lt_of_le hcS (SpherePacking.density_le_one (S := S))
-      exact ne_of_lt (lt_trans hc_lt_one (by simp))
-    have hb_ne_top : b ≠ ∞ := hbc.ne_top
-    have herr_ne_top : cubeShellErr L ≠ ∞ := hLerr.ne_top
-    have hbc_le : b ≤ c := le_of_lt hbc
-    have hLerr_real :
-        (cubeShellErr L).toReal < (c - b).toReal :=
-      (ENNReal.toReal_lt_toReal herr_ne_top (ENNReal.sub_ne_top hc_ne_top)).2 hLerr
-    have hLerr_real' :
-        (cubeShellErr L).toReal < c.toReal - b.toReal := by
-      simpa [ENNReal.toReal_sub_of_le hbc_le hc_ne_top] using hLerr_real
-    have hsum_real : (b + cubeShellErr L).toReal < c.toReal := by
-      have : b.toReal + (cubeShellErr L).toReal < c.toReal := by
-        linarith
-      simpa [ENNReal.toReal_add hb_ne_top herr_ne_top, add_comm, add_left_comm,
-        add_assoc] using this
-    have hb_err_ne_top : b + cubeShellErr L ≠ ∞ :=
-      ENNReal.Finiteness.add_ne_top hb_ne_top herr_ne_top
-    exact (ENNReal.toReal_lt_toReal hb_err_ne_top hc_ne_top).1 hsum_real
+  have hb_add : b + cubeShellErr L < c := lt_tsub_iff_left.mp hLerr
   have hratio_event :
       ∀ᶠ R in (atTop : Filter ℝ), b + cubeShellErr L < c * ratio R := by
     exact hmul_tend.eventually (Ioi_mem_nhds hb_add)
@@ -922,27 +902,7 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
           (((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) /
                 volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))) *
               volBall ≤
-            ((sg.card : ℝ≥0∞) / volCube) * volBall :=
-        by
-          have hdiv₂' :
-              volBall *
-                  (((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) /
-                      volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))) ≤
-                volBall * ((sg.card : ℝ≥0∞) / volCube) :=
-            mul_le_mul_right hdiv₁ volBall
-          have hL :
-              volBall *
-                  (((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) /
-                      volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))) =
-                (((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) /
-                    volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))) *
-                  volBall := by
-            ac_rfl
-          have hR :
-              volBall * ((sg.card : ℝ≥0∞) / volCube) =
-                ((sg.card : ℝ≥0∞) / volCube) * volBall := by
-            ac_rfl
-          simpa [hL, hR, mul_assoc] using hdiv₂'
+            ((sg.card : ℝ≥0∞) / volCube) * volBall := mul_le_mul_left hdiv₁ volBall
       have hL :
           ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall /
               volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) =
@@ -1018,34 +978,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     simpa [hden, volBall] using hPdens
   refine ⟨P, hPsep, ?_⟩
   -- `b < sgDensity - cubeShellErr L ≤ P.density`.
-  have hb_lt :
-      b < (sg.card : ℝ≥0∞) * volBall / volCube - cubeShellErr L := by
-    -- Convert `b + err < A` into `b < A - err` via `ENNReal.toReal`.
-    set A : ℝ≥0∞ := (sg.card : ℝ≥0∞) * volBall / volCube
-    have hle : cubeShellErr L ≤ A := by
-      have : cubeShellErr L ≤ b + cubeShellErr L := by simp
-      exact this.trans (le_of_lt (by simpa [A] using hsg_density))
-    have hbA : b + cubeShellErr L < A := by
-      simpa [A] using hsg_density
-    have hb_ne_top : b ≠ ∞ := hbc.ne_top
-    have hA_ne_top : A ≠ ∞ := by
-      have hnum_ne_top : ((sg.card : ℝ≥0∞) * volBall) ≠ ∞ :=
-        ENNReal.mul_ne_top (by simp) (by
-          simpa [volBall] using
-            (measure_ball_lt_top (μ := volume) (x := (0 : EuclideanSpace ℝ (Fin d))) (r := r)).ne)
-      have : ((sg.card : ℝ≥0∞) * volBall) / volCube ≠ ∞ :=
-        ENNReal.div_ne_top hnum_ne_top hvolCube_ne0
-      simpa [A] using this
-    have herr_ne_top : cubeShellErr L ≠ ∞ := ne_top_of_le_ne_top hA_ne_top hle
-    have hbA_real : (b + cubeShellErr L).toReal < A.toReal :=
-      (ENNReal.toReal_lt_toReal hbA.ne_top hA_ne_top).2 hbA
-    have hbA_real' : b.toReal + (cubeShellErr L).toReal < A.toReal := by
-      simpa [ENNReal.toReal_add hb_ne_top herr_ne_top] using hbA_real
-    have hb_sub_real : b.toReal < A.toReal - (cubeShellErr L).toReal := by
-      linarith
-    have hb_sub_real' : b.toReal < (A - cubeShellErr L).toReal := by
-      simpa [ENNReal.toReal_sub_of_le hle hA_ne_top] using hb_sub_real
-    exact (ENNReal.toReal_lt_toReal hb_ne_top (ENNReal.sub_ne_top hA_ne_top)).1 hb_sub_real'
+  have hb_lt : b < (sg.card : ℝ≥0∞) * volBall / volCube - cubeShellErr L :=
+    lt_tsub_iff_right.mpr hsg_density
   have hF_card_add : F.card + sb.card = sg.card := by
     simpa [F, sb] using
       (Finset.card_filter_add_card_filter_not (s := sg)

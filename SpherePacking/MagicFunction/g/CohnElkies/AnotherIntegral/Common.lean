@@ -66,21 +66,13 @@ public lemma differentiableAt_intervalIntegral_mul_exp
     intro t ht
     have hb : ‖base t‖ ≤ Cbase := hbase_bound t ht
     have hk' : ‖k t‖ ≤ K := hk_bound t ht
-    have hexp_le : ‖Complex.exp (u0 * k t)‖ ≤ Real.exp (‖u0‖ * K) := by
-      have h1 : ‖u0 * k t‖ ≤ ‖u0‖ * K := by
-        calc
-          ‖u0 * k t‖ ≤ ‖u0‖ * ‖k t‖ := by
-            exact norm_mul_le u0 (k t)
-          _ ≤ ‖u0‖ * K := by gcongr
-      exact (Complex.norm_exp_le_exp_norm _).trans (Real.exp_le_exp.2 h1)
-    have : ‖F u0 t‖ ≤ B := by
-      have hstep1 :
-          ‖F u0 t‖ ≤ ‖base t‖ * Real.exp (‖u0‖ * K) := by
-        simpa [F, norm_mul] using mul_le_mul_of_nonneg_left hexp_le (norm_nonneg (base t))
-      have hstep2 : ‖base t‖ * Real.exp (‖u0‖ * K) ≤ Cbase * Real.exp (‖u0‖ * K) := by
-        exact mul_le_mul_of_nonneg_right hb (Real.exp_nonneg _)
-      simpa [B, mul_assoc] using hstep1.trans hstep2
-    exact this
+    refine norm_mul_le_of_le (hbase_bound t ht) ?_
+    have h1 : ‖u0 * k t‖ ≤ ‖u0‖ * K := by
+      calc
+        ‖u0 * k t‖ ≤ ‖u0‖ * ‖k t‖ := by
+          exact norm_mul_le u0 (k t)
+        _ ≤ ‖u0‖ * K := by gcongr
+    exact (Complex.norm_exp_le_exp_norm _).trans (Real.exp_le_exp.2 h1)
   let E : ℝ := Real.exp ((‖u0‖ + 1) * K)
   let bound : ℝ → ℝ := fun _ => Cbase * (K * E)
   have bound_int : IntervalIntegrable bound volume (0 : ℝ) 1 := by

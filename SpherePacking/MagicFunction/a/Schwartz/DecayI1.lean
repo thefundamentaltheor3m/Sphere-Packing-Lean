@@ -300,17 +300,7 @@ lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
       ∀ᵐ s ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ), ‖gN (n + 1) r s‖ ≤ bound s := by
     refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall ?_
     intro s hs r hr
-    have hrabs : |r| ≤ R := by
-      have hr1 : |r - r₀| < 1 := by
-        -- `dist r r₀ < 1` rewrites to `|r - r₀| < 1` on `ℝ`.
-        simpa [Metric.mem_ball, Real.dist_eq] using hr
-      have hle : |r| ≤ |r - r₀| + |r₀| := by
-        simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using (abs_add_le (r - r₀) r₀)
-      have htail : |r - r₀| + |r₀| < 1 + |r₀| := by
-        simpa [add_assoc, add_left_comm, add_comm] using (add_lt_add_left hr1 |r₀|)
-      have : |r| < 1 + |r₀| := lt_of_le_of_lt hle htail
-      have : |r| ≤ |r₀| + 1 := by nlinarith
-      simpa [R, add_assoc, add_left_comm, add_comm] using this
+    have hrabs : |r| ≤ R := SpherePacking.ForMathlib.abs_le_abs_add_of_mem_ball hr
     have hExp : rexp (-π * r / s) ≤ rexp (π * R) := by
       refine (exp_neg_pi_mul_div_le_exp_pi_abs (r := r) (s := s) hs).trans ?_
       exact Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hrabs Real.pi_pos.le)

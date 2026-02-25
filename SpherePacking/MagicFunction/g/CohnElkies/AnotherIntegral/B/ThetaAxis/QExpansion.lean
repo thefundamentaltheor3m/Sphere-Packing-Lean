@@ -396,16 +396,8 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
   have hsumNorm : Summable (fun n : ℕ ↦ ‖f (n + 2)‖) :=
     Summable.of_nonneg_of_le (fun _ ↦ norm_nonneg _) hterm hsumMajor
   have htail :
-      ‖∑' n : ℕ, f (n + 2)‖ ≤ Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹) := by
-    have h0 := norm_tsum_le_tsum_norm hsumNorm
-    refine h0.trans ?_
-    have hmono := hsumNorm.tsum_mono hsumMajor (by
-      intro n; exact hterm n)
-    have hsum :
-        (∑' n : ℕ, Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * (r ^ n)) =
-          Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹) := by
-      simpa using hu.tsum_eq
-    exact hmono.trans (le_of_eq hsum)
+      ‖∑' n : ℕ, f (n + 2)‖ ≤ Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹) :=
+    tsum_of_norm_bounded hu hterm
   rw [hrew]
   calc
     ‖(2 : ℂ) * ∑' n : ℕ, f (n + 2)‖ = (2 : ℝ) * ‖∑' n : ℕ, f (n + 2)‖ := by

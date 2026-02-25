@@ -319,40 +319,8 @@ theorem I₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
         _ = π ^ m := by ring
     simpa [hEq] using hnorm
   -- Rewrite `I₅'` as `(-2) * g5 * I₁'`.
-  have hI : RealIntegrals.I₅' = fun x : ℝ ↦ (-2 : ℂ) * g5 x * RealIntegrals.I₁' x := by
-    ext x
-    symm
-    -- Match the shared integral and simplify exponentials.
-    have hI5 :
-        RealIntegrals.I₅' x =
-          (-2 : ℂ) * ∫ t in (0 : ℝ)..1, (-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t) := by
-      simp [I₅'_eq, mul_assoc, mul_left_comm, mul_comm]
-    have hI1 :
-        RealIntegrals.I₁' x =
-          (∫ t in (0 : ℝ)..1, (-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t)) *
-            cexp (-π * I * x) := by
-      calc
-        RealIntegrals.I₁' x =
-            ∫ t in (0 : ℝ)..1,
-              ((-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t)) * cexp (-π * I * x) := by
-                simp [I₁'_eq, mul_assoc, mul_left_comm, mul_comm]
-        _ =
-            (∫ t in (0 : ℝ)..1, (-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t)) *
-              cexp (-π * I * x) := by
-                simp
-    let J : ℂ :=
-      ∫ t in (0 : ℝ)..1, (-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t)
-    have hJ1 : RealIntegrals.I₁' x = J * cexp (-π * I * x) := by
-      simpa [J] using hI1
-    have hJ5 : RealIntegrals.I₅' x = (-2 : ℂ) * J := by
-      simpa [J] using hI5
-    calc
-      (-2 : ℂ) * g5 x * RealIntegrals.I₁' x
-          = (-2 : ℂ) * g5 x * (J * cexp (-π * I * x)) := by simp [hJ1]
-      _ = (-2 : ℂ) * J * (g5 x * cexp (-π * I * x)) := by ac_rfl
-      _ = (-2 : ℂ) * J := by
-            simp [g5, c5, Complex.exp_neg, mul_left_comm, mul_comm]
-      _ = RealIntegrals.I₅' x := by simpa using hJ5.symm
+  have hI : RealIntegrals.I₅' = fun x : ℝ ↦ (-2 : ℂ) * g5 x * RealIntegrals.I₁' x :=
+    I₅'_eq_mul_exp_mul_I₁'
   -- Build the bound for `g5 * I₁'` first, then scale by `‖-2‖ = 2`.
   let Cprod : ℝ :=
     ∑ i ∈ Finset.range (n + 1),

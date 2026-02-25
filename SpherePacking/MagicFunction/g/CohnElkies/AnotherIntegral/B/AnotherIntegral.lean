@@ -132,23 +132,9 @@ lemma bRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
       intro t ht
       simp [hpoint t]
     rw [hcongr]
-    have hAnother : Integrable (fun t : ℝ => bAnotherIntegrand u t) μ0 :=
-      hIntegrable (fun t : ℝ => bAnotherIntegrand u t) hAnotherInt
-    have hCorr :
-        Integrable
-          (fun t : ℝ =>
-            ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t)) μ0 :=
-      hIntegrable
-        (fun t : ℝ =>
-          ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t))
-        hCorrInt
-    change
-      (∫ t, (bAnotherIntegrand u t +
-            ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t)) ∂μ0) =
-        (∫ t, bAnotherIntegrand u t ∂μ0) +
-          ∫ t,
-            (((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t)) ∂μ0
-    simpa [μ0] using (MeasureTheory.integral_add hAnother hCorr)
+    with_reducible
+      exact integral_add (hIntegrable (bAnotherIntegrand u) hAnotherInt)
+       (hIntegrable (fun a ↦ (144 + ↑(rexp (2 * π * a))) * ↑(rexp (-π * u * a))) hCorrInt)
   have hCorr_eval :
       (∫ t in Set.Ioi (0 : ℝ),
           ((144 : ℂ) + ((Real.exp (2 * π * t) : ℝ) : ℂ)) * Real.exp (-π * u * t)) =
