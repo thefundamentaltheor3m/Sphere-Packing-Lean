@@ -1,10 +1,13 @@
 import SpherePacking.ForMathlib.MDifferentiableFunProp
 
 import SpherePacking.ModularForms.Derivative
-import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.DimensionFormulas
+import SpherePacking.ModularForms.Eisenstein
+import SpherePacking.ModularForms.EisensteinAsymptotics
+import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.QExpansion
+import SpherePacking.ModularForms.RamanujanIdentities
+import SpherePacking.ModularForms.ResToImagAxis
 import SpherePacking.ModularForms.summable_lems
 
 open Filter Complex
@@ -87,13 +90,17 @@ lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5
   ext τ
   simp
 
+attribute [fun_prop] E₂_holo' H₂_MDifferentiable H₄_MDifferentiable
+
 theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by unfold F; fun_prop
 
 theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by rw [G_eq]; fun_prop
 
-theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by unfold F; fun_prop
+theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) :=
+  serre_D_differentiable F_holo
 
-theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := by rw [G_eq]; fun_prop
+theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) :=
+  serre_D_differentiable G_holo
 
 theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
   sorry
@@ -101,12 +108,9 @@ theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal
 theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ GReal t := by
   sorry
 
-/-- D F expanded as a linear combination using smul (•). -/
-theorem F_aux : D F = (5 * 6⁻¹ : ℂ) • (E₂ ^ 3 * E₄.toFun ^ 2)
-    - (5 * 2⁻¹ : ℂ) • (E₂ ^ 2 * E₄.toFun * E₆.toFun)
-    + (5 * 6⁻¹ : ℂ) • (E₂ * E₄.toFun ^ 3)
-    + (5 * 3⁻¹ : ℂ) • (E₂ * E₆.toFun ^ 2)
-    - (5 * 6⁻¹ : ℂ) • (E₄.toFun ^ 2 * E₆.toFun) := by
+theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
+    + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun
+    := by
   rw [F, D_sq, D_sub, D_mul]
   · ring_nf
     rw [ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
@@ -114,38 +118,17 @@ theorem F_aux : D F = (5 * 6⁻¹ : ℂ) • (E₂ ^ 3 * E₄.toFun ^ 2)
     simp
     ring_nf
   -- Holomorphicity of the terms
-  repeat fun_prop
+  · exact E₂_holo'
+  · exact E₄.holo'
+  · exact E₂_holo'.mul E₄.holo'
+  · exact E₆.holo'
+  · exact (E₂_holo'.mul E₄.holo').sub E₆.holo'
 
 /--
 Modular linear differential equation satisfied by $F$.
 -/
-theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ_fun * negDE₂ := by
-  have hcE₂_eq : (5 * 6⁻¹ : ℂ) • E₂ = 5 * 6⁻¹ * E₂ := by ext; simp [smul_eq_mul]
-  have h56E₂_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂) := hcE₂_eq ▸ E₂_holo'.const_smul _
-  have h56E₂F : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂ * F) := h56E₂_holo.mul F_holo
-  have hD_outer : D (D F - 5 * 6⁻¹ * E₂ * F) = D (D F) - D (5 * 6⁻¹ * E₂ * F) :=
-    D_sub _ _ (D_differentiable F_holo) h56E₂F
-  have hD_cE₂F : D (5 * 6⁻¹ * E₂ * F) = 5 * 6⁻¹ * (E₂ * D F + D E₂ * F) := by
-    have : D (5 * 6⁻¹ * E₂) = 5 * 6⁻¹ * D E₂ := by
-      rw [← hcE₂_eq, D_smul _ _ E₂_holo']; ext; simp [smul_eq_mul]
-    calc D (5 * 6⁻¹ * E₂ * F)
-        = D ((5 * 6⁻¹ * E₂) * F) := by ring_nf
-      _ = (5 * 6⁻¹ * E₂) * D F + D (5 * 6⁻¹ * E₂) * F := by rw [D_mul _ F h56E₂_holo F_holo]; ring
-      _ = 5 * 6⁻¹ * (E₂ * D F + D E₂ * F) := by rw [this]; ring_nf
-  rw [ramanujan_E₂] at hD_cE₂F; rw [serre_D_10_F]; simp only [serre_D_eq]
-  ext z
-  simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul,
-    congrFun hD_outer z, congrFun hD_cE₂F z, congrFun DDF_eq z, congrFun F_aux z,
-    congrFun D_E2cu_E4sq z, congrFun D_E2sq_E4_E6 z, congrFun D_E2_E4cu z,
-    congrFun D_E2_E6sq z, congrFun D_E4sq_E6 z, congrFun ramanujan_E₂ z,
-    congrFun ramanujan_E₄ z, congrFun ramanujan_E₆ z,
-    show (5 : ℍ → ℂ) z = 5 from rfl, show (2 : ℍ → ℂ) z = 2 from rfl,
-    show (3 : ℍ → ℂ) z = 3 from rfl, show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl,
-    show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl, show (6⁻¹ : ℍ → ℂ) z = 6⁻¹ from rfl,
-    show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl]
-  simp [F, Δ_fun, negDE₂, ramanujan_E₂]
-  field_simp (disch := norm_num)
-  ring
+theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 7200 * Δ_fun * negDE₂ := by
+  sorry
 
 /--
 Modular linear differential equation satisfied by $G$.
@@ -970,8 +953,11 @@ theorem D_G_div_G_tendsto :
   let A := H₂ ^ 3
   let B := (2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2
   have hG_eq : G = A * B := G_eq
-  have hA : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A := by fun_prop
-  have hB : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B := by fun_prop
+  have hA : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A := H₂_MDifferentiable.pow 3
+  have hB : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B := by
+    show MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
+      ((2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2)
+    fun_prop
   have h_DA_A : ∀ z, H₂ z ≠ 0 → D A z / A z = 3 * (D H₂ z / H₂ z) := by
     intro z hH₂_ne
     change D (H₂ ^ 3) z / (H₂ z ^ 3) = 3 * (D H₂ z / H₂ z)
