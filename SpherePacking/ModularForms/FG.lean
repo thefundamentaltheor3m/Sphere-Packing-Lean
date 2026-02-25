@@ -102,32 +102,6 @@ theorem F_aux : D F = (5 * 6⁻¹ : ℂ) • (E₂ ^ 3 * E₄.toFun ^ 2)
   · exact E₆.holo'
   · exact (E₂_holo'.mul E₄.holo').sub E₆.holo'
 
-/--
-Modular linear differential equation satisfied by $F$.
--/
-theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 7200 * Δ_fun * negDE₂ := by
-  ext x
-  rw [negDE₂, Δ_fun, serre_D, serre_D, F_aux]
-  unfold serre_D
-  rw [F_aux]
-  sorry
-
-/--
-Modular linear differential equation satisfied by $G$.
--/
-theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
-  sorry
-
-/-! ## X₄₂ variant of MLDE -/
-
-/-- X₄₂ = 288⁻¹ * (E₄ - E₂²), related to negDE₂ by `negDE₂ = 24 * X₄₂`. -/
-noncomputable def X₄₂ := 288⁻¹ * (E₄.toFun - E₂ * E₂)
-
-lemma negDE₂_eq_24_X₄₂ : negDE₂ = 24 * X₄₂ := by
-  ext z
-  simp [negDE₂, X₄₂, ramanujan_E₂, Pi.mul_apply, Pi.sub_apply]
-  ring
-
 private lemma serre_D_10_F : serre_D 10 F = D F - 5 * 6⁻¹ * E₂ * F := by
   ext z; simp [serre_D_apply]; norm_num
 
@@ -197,8 +171,10 @@ private lemma DDF_eq : D (D F) = (5 * 6⁻¹ : ℂ) • D (E₂ ^ 3 * E₄.toFun
     D_smul _ _ E2cu_E4sq_holo', D_smul _ _ E2sq_E4_E6_holo', D_smul _ _ E2_E4cu_holo',
     D_smul _ _ E2_E6sq_holo', D_smul _ _ E4sq_E6_holo']
 
-/-- MLDE for `F` (X₄₂ variant): `serre_D 12 (serre_D 10 F) = (5/6)·E₄·F + 172800·Δ·X₄₂`. -/
-theorem MLDE_F_X42 : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 172800 * Δ_fun * X₄₂ := by
+/--
+Modular linear differential equation satisfied by $F$.
+-/
+theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ_fun * negDE₂ := by
   have hcE₂_eq : (5 * 6⁻¹ : ℂ) • E₂ = 5 * 6⁻¹ * E₂ := by ext; simp [smul_eq_mul]
   have h56E₂_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂) := hcE₂_eq ▸ E₂_holo'.const_smul _
   have h56E₂F : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂ * F) := h56E₂_holo.mul F_holo
@@ -222,9 +198,15 @@ theorem MLDE_F_X42 : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * E₄.toFun * F + 1
     show (3 : ℍ → ℂ) z = 3 from rfl, show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl,
     show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl, show (6⁻¹ : ℍ → ℂ) z = 6⁻¹ from rfl,
     show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl]
-  simp [F, Δ_fun, X₄₂]
+  simp [F, Δ_fun, negDE₂, ramanujan_E₂]
   field_simp (disch := norm_num)
   ring
+
+/--
+Modular linear differential equation satisfied by $G$.
+-/
+theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
+  sorry
 
 /- Positivity of (quasi)modular forms on the imaginary axis. -/
 
