@@ -428,20 +428,7 @@ lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
       have htri :=
         norm_add_le (x ^ (2 : ℕ) - main ^ (2 : ℕ))
           (main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ))
-      have hle :
-          ‖x ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)‖
-            ≤ ‖x ^ (2 : ℕ) - main ^ (2 : ℕ)‖ +
-                ‖main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) -
-                    (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)‖ := by
-        calc
-          ‖x ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)‖
-              = ‖(x ^ (2 : ℕ) - main ^ (2 : ℕ)) +
-                    (main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) -
-                      (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ))‖ := by
-                    simpa [hsplit] using congrArg norm hsplit
-          _ ≤ ‖x ^ (2 : ℕ) - main ^ (2 : ℕ)‖ +
-                ‖main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) -
-                    (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)‖ := htri
+      have hle := le_of_eq_of_le (congrArg Norm.norm hsplit) htri
       nlinarith [hle, hsq, hmain_sq]
     have h1 :
       (e / 256) * ((4096 : ℝ) * Real.exp (-(6 : ℝ) * Real.pi * t)) =

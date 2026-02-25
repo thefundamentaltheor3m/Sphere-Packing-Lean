@@ -123,17 +123,8 @@ public lemma exists_phi2'_phi4'_bound_exp :
             gcongr
     have hφ2' :
         ‖φ₂' z‖ ≤ (CE4 * (CE2 * CE4 + CE6) * CΔ) * Real.exp (2 * π * z.im) := by
-      have hmul :
-          ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z))‖ ≤ CE4 * (CE2 * CE4 + CE6) := by
-        have hmul' :
-            ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z))‖ ≤
-              ‖E₄ z‖ * ‖(E₂ z) * (E₄ z) - (E₆ z)‖ := by
-          exact norm_mul_le (E₄ z) ((E₂ z) * (E₄ z) - (E₆ z))
-        have hmul'' :
-            ‖E₄ z‖ * ‖(E₂ z) * (E₄ z) - (E₆ z)‖ ≤ CE4 * (CE2 * CE4 + CE6) := by
-          have hnonneg : 0 ≤ ‖E₄ z‖ := norm_nonneg _
-          gcongr
-        exact hmul'.trans hmul''
+      have hmul : ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z))‖ ≤ CE4 * (CE2 * CE4 + CE6) :=
+        norm_mul_le_of_le (hE4 z hzE4) hcore
       have hnonneg : 0 ≤ CE4 * (CE2 * CE4 + CE6) := by positivity
       calc
         ‖φ₂' z‖

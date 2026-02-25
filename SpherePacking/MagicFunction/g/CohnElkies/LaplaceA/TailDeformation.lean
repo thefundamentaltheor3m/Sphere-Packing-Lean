@@ -643,15 +643,7 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
           (Complex.I : ℂ) * (∫ t in Set.Ioi (1 : ℝ), f2 t - (2 : ℂ) * f5 t + f4 t) := by
       simpa [μ] using (MeasureTheory.integral_const_mul (μ := μ) (r := (Complex.I : ℂ))
         (f := fun t : ℝ => f2 t - (2 : ℂ) * f5 t + f4 t))
-    -- Finish.
-    calc
-      (∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * (f2 t - (2 : ℂ) * f5 t + f4 t)) =
-          (Complex.I : ℂ) * (∫ t in Set.Ioi (1 : ℝ), f2 t - (2 : ℂ) * f5 t + f4 t) := hI
-      _ =
-          (Complex.I : ℂ) *
-            ((∫ t in Set.Ioi (1 : ℝ), f2 t) - (2 : ℂ) * (∫ t in Set.Ioi (1 : ℝ), f5 t) +
-              ∫ t in Set.Ioi (1 : ℝ), f4 t) := by
-            simpa using congrArg (fun z : ℂ => (Complex.I : ℂ) * z) hinner
+    rw [← hinter, ← hI]
   -- Combine everything.
   calc
     MagicFunction.a.RealIntegrals.I₆' u

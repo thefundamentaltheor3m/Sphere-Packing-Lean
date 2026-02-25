@@ -455,34 +455,13 @@ lemma exists_phi0_cancellation_bound :
             have hxyz : ‖x - y + z'‖ ≤ (‖x‖ + ‖y‖) + ‖z'‖ := by
               have h1 : ‖x - y + z'‖ ≤ ‖x - y‖ + ‖z'‖ := by
                 simpa [sub_eq_add_neg, add_assoc] using (norm_add_le (x - y) z')
-              have h2 : ‖x - y‖ + ‖z'‖ ≤ (‖x‖ + ‖y‖) + ‖z'‖ := by
-                have h2' : ‖z'‖ + ‖x - y‖ ≤ ‖z'‖ + (‖x‖ + ‖y‖) := add_le_add_right hxy ‖z'‖
-                have hx : ‖x - y‖ + ‖z'‖ = ‖z'‖ + ‖x - y‖ :=
-                  add_comm ‖x - y‖ ‖z'‖
-                have hz : ‖z'‖ + (‖x‖ + ‖y‖) = (‖x‖ + ‖y‖) + ‖z'‖ :=
-                  add_comm ‖z'‖ (‖x‖ + ‖y‖)
-                calc
-                  ‖x - y‖ + ‖z'‖ = ‖z'‖ + ‖x - y‖ := hx
-                  _ ≤ ‖z'‖ + (‖x‖ + ‖y‖) := h2'
-                  _ = (‖x‖ + ‖y‖) + ‖z'‖ := hz
-              exact h1.trans h2
+              exact le_add_of_le_add_right h1 hxy
             have hsum' :
                 (‖x‖ + ‖y‖) + ‖z'‖ ≤
                   (C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) +
                     ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) +
-                    ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) := by
-              have hxy' :
-                  ‖x‖ + ‖y‖ ≤
-                    C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) +
-                      ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-                exact add_le_add hnorm1 hnorm2
-              have hxyz' :
-                  (‖x‖ + ‖y‖) + ‖z'‖ ≤
-                    (C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) +
-                      ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) +
-                        ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-                exact add_le_add hxy' hnorm3
-              simpa [add_assoc] using hxyz'
+                    ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) :=
+              add_le_add_three hnorm1 hnorm2 hnorm3
             exact hxyz.trans hsum'
         -- Factor the common term.
         have hsum' :

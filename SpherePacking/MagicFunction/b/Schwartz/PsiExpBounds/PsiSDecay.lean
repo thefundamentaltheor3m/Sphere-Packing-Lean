@@ -225,14 +225,7 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
             + (5 : ℂ) * (H₂.resToImagAxis t) * (H₄.resToImagAxis t)‖ ≤
           2 * (CH2' ^ 2) + 5 * CH2' * M4 := by
       exact (norm_add_le _ _).trans (by linarith [h1, h2])
-    have h123 :
-        ‖(2 : ℂ) * (H₂.resToImagAxis t) ^ 2
-            + (5 : ℂ) * (H₂.resToImagAxis t) * (H₄.resToImagAxis t)
-            + (5 : ℂ) * (H₄.resToImagAxis t) ^ 2‖ ≤
-          (2 * (CH2' ^ 2) + 5 * CH2' * M4) + 5 * (M4 ^ 2) := by
-      -- triangle to `((A + B) + C)` (note: `+` is left-associative)
-      exact (norm_add_le _ _).trans (by linarith [h12, h3])
-    simpa [P, add_assoc, add_left_comm, add_comm] using h123
+    exact norm_add_le_of_le h12 h3
   -- Now bound `ψS.resToImagAxis t` using `ψS_apply_eq_factor`.
   let z : ℍ := ⟨Complex.I * t, by simp [ht0]⟩
   have hψS :

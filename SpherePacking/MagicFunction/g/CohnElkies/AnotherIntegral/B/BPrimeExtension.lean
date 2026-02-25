@@ -391,32 +391,7 @@ lemma J₅'C_differentiable : Differentiable ℂ J₅'C := by
   have hbase0_cont : ContinuousOn base0 (Ι (0 : ℝ) 1) := by
     -- `ψI` is continuous on `ℍ`, hence on `Ioc`.
     -- Use `ψI' = ψI` on `Ioc` since `0 < Im (z₅' t)`.
-    have hψI : Continuous ψI := by
-      have hH2 : Continuous H₂ := (mdifferentiable_H₂.continuous)
-      have hH3 : Continuous H₃ := (mdifferentiable_H₃.continuous)
-      have hH4 : Continuous H₄ := (mdifferentiable_H₄.continuous)
-      have hψ :
-          ψI =
-            fun z : ℍ =>
-              (128 : ℂ) * ((H₃ z + H₄ z) / (H₂ z) ^ 2) +
-                (128 : ℂ) * ((H₄ z - H₂ z) / (H₃ z) ^ 2) := by
-        have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
-        have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
-        have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
-        funext z
-        simpa [hh2, hh3, hh4, mul_assoc, mul_left_comm, mul_comm, sub_eq_add_neg, add_assoc] using
-          congrArg (fun f : ℍ → ℂ => f z) ψI_eq
-      rw [hψ]
-      have hH2sq : Continuous fun z : ℍ => (H₂ z) ^ (2 : ℕ) := hH2.pow 2
-      have hH3sq : Continuous fun z : ℍ => (H₃ z) ^ (2 : ℕ) := hH3.pow 2
-      have hterm1 :
-          Continuous fun z : ℍ => (H₃ z + H₄ z) / (H₂ z) ^ (2 : ℕ) :=
-        (hH3.add hH4).div hH2sq (fun z => pow_ne_zero 2 (H₂_ne_zero z))
-      have hterm2 :
-          Continuous fun z : ℍ => (H₄ z - H₂ z) / (H₃ z) ^ (2 : ℕ) :=
-        (hH4.sub hH2).div hH3sq (fun z => pow_ne_zero 2 (H₃_ne_zero z))
-      simpa [mul_assoc, add_assoc, add_left_comm, add_comm] using
-        (continuous_const.mul hterm1).add (continuous_const.mul hterm2)
+    have hψI : Continuous ψI := b.PsiBounds.continuous_ψI
     have hcont : Continuous fun t : Ioc (0 : ℝ) 1 => base0 (t : ℝ) := by
       let zH : Ioc (0 : ℝ) 1 → ℍ :=
         fun t => ⟨z₅' (t : ℝ), im_z₅'_pos (t := (t : ℝ)) t.2⟩

@@ -793,21 +793,8 @@ lemma tendsto_A_div_q :
           cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ)) /
               cexp (2 * π * Complex.I * (z : ℂ)) =
             cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
-        have hx :
-            cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ)) /
-                cexp (2 * π * Complex.I * (z : ℂ)) =
-              (cexp (2 * π * Complex.I * (z : ℂ)) *
-                    cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
-                cexp (2 * π * Complex.I * (z : ℂ)) :=
-          congrArg (fun t : ℂ => t / cexp (2 * π * Complex.I * (z : ℂ))) hexp
-        calc
-          cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ)) /
-                cexp (2 * π * Complex.I * (z : ℂ)) =
-              (cexp (2 * π * Complex.I * (z : ℂ)) *
-                    cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
-                cexp (2 * π * Complex.I * (z : ℂ)) := hx
-          _ = cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
-            exact mul_div_cancel_left₀ (cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) hz
+        refine (eq_div_of_mul_eq hz ?_).symm
+        rw [hexp, mul_comm]
       dsimp [a]
       -- Pull the coefficient out of the division, then simplify the exponential quotient.
       have hmul :

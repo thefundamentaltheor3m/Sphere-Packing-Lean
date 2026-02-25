@@ -313,20 +313,7 @@ lemma aRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
     intro t ht
     dsimp [corr]
     ring_nf
-  have hAnotherInt :
-      IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioi (0 : ℝ)) := by
-    -- `aAnotherIntegrand = aLaplaceIntegrand - correction`.
-    have hEq :
-        (fun t : ℝ => aAnotherIntegrand u t) =
-          fun t : ℝ =>
-            aLaplaceIntegrand u t -
-              corr t := by
-      funext t
-      -- Rearrange `hpoint` to isolate `aAnotherIntegrand`.
-      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-        (eq_sub_of_add_eq (hpoint t).symm)
-    -- Now use integrability stability under subtraction.
-    simpa [hEq] using hLapInt.sub hCorrInt
+  have hAnotherInt := aAnotherIntegrand_integrable_of_pos hu0
   -- Split the Laplace integral into the "another integral" plus explicit terms.
   have hLapInt_decomp :
       (∫ t in Set.Ioi (0 : ℝ), aLaplaceIntegrand u t) =
@@ -364,12 +351,11 @@ lemma aRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
       (∫ t in Set.Ioi (0 : ℝ), corr t) =
         (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
           (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-            (18144 : ℂ) / (π ^ (3 : ℕ) * u) := by
-    simpa using
-      (corrIntegral_eval (u := u) (hu0 := hu0) (hu := hu) (c36 := c36) (c8640 := c8640)
-        (c18144 := c18144) (hc36 := hc36) (hc8640 := hc8640) (hc18144 := hc18144) (corr := corr)
-        (hcorr := rfl) (hIexp := hIexp) (hItexp := hItexp) (hI2exp := hI2exp)
-        (hExpInt := hExpInt) (hTExpInt := hTExpInt) (h2ExpInt := h2ExpInt))
+            (18144 : ℂ) / (π ^ (3 : ℕ) * u) :=
+    corrIntegral_eval (u := u) (hu0 := hu0) (hu := hu) (c36 := c36) (c8640 := c8640)
+      (c18144 := c18144) (hc36 := hc36) (hc8640 := hc8640) (hc18144 := hc18144) (corr := corr)
+      (hcorr := rfl) (hIexp := hIexp) (hItexp := hItexp) (hI2exp := hI2exp)
+      (hExpInt := hExpInt) (hTExpInt := hTExpInt) (h2ExpInt := h2ExpInt)
   -- Put everything together (fresh lemma to avoid heartbeat timeouts).
   set E : ℂ :=
     (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -

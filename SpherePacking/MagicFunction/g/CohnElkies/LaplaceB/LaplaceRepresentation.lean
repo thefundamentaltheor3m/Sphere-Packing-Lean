@@ -742,18 +742,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       intro t ht
       have ht0 : 0 < t := lt_trans (by norm_num) ht
       have hz : 0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im := by simpa using ht0
-      have hsum := hITS (((Complex.I : ℂ) * (t : ℂ) : ℂ)) hz
-      -- Rearrange `T + S = -I` into `S = -I - T`.
-      have : bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ)) =
-          (-bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) -
-            bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ)) := by
-        have hsum' :
-            bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ)) +
-                bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ)) =
-              -bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) := by
-          simpa [add_comm, add_left_comm, add_assoc] using hsum
-        simpa [sub_eq_add_neg, add_assoc] using (eq_sub_of_add_eq hsum')
-      simp [this]
+      with_reducible exact eq_sub_iff_add_eq'.mpr (hITS (I * ↑t) hz)
     rw [hcongr]
     -- Apply linearity of the integral on `Ioi 1`.
     have hI1 :
@@ -785,16 +774,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
   have hVI_split :
       VI =
         (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) +
-          (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) := by
-    have hUnion :
-        (∫ t in Set.Ioi (0 : ℝ),
-              bContourIntegrandI u (I * (t : ℂ))) =
-            (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) +
-              (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) :=
-      setIntegral_Ioi0_eq_add_Ioc_Ioi (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
-        hintI
-    dsimp [VI]
-    simp [hUnion]
+          (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) :=
+    setIntegral_Ioi0_eq_add_Ioc_Ioi hintI
   -- Now put everything together.
   have hsum :
       MagicFunction.b.RealIntegrals.J₁' u +
