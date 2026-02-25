@@ -80,6 +80,34 @@ theorem ResToImagAxis.SlashActionS (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0
     rw [modular_slash_S_apply, h]; simp [hzdef, mul_zpow I (t : ℂ) (-k), mul_comm (F z')] :
     (F ∣[k] S) z = I ^ (-k) * t ^ (-k) * F z')
 
+theorem ResToImagAxis.SlashActionS' (F : ℍ → ℂ) (k : ℤ) {t : ℝ} (ht : 0 < t) :
+    F.resToImagAxis (1 / t) = (Complex.I) ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by
+  have hS := ResToImagAxis.SlashActionS F k ht
+  calc F.resToImagAxis (1 / t)
+      = I ^ k * I ^ (-k) * (t ^ k * t ^ (-k)) * F.resToImagAxis (1 / t) := by
+          simp only [zpow_neg, mul_inv_cancel₀ (zpow_ne_zero k I_ne_zero),
+                     mul_inv_cancel₀ (zpow_ne_zero k (ofReal_ne_zero.mpr ht.ne')), one_mul]
+    _ = I ^ k * t ^ k * (I ^ (-k) * t ^ (-k) * F.resToImagAxis (1 / t)) := by ring
+    _ = I ^ k * t ^ k * (F ∣[k] S).resToImagAxis t := by rw [← hS]
+
+/-- For any function F : ℍ → ℂ and t > 0, F.resToImagAxis (1/t) = F(S • (I*t)). -/
+theorem ResToImagAxis.one_div_eq_S_smul (F : ℍ → ℂ) {t : ℝ} (ht : 0 < t) :
+    let z : ℍ := ⟨I * t, by simp [ht]⟩
+    F.resToImagAxis (1 / t) = F (S • z) := by
+  have ht_inv : 0 < 1 / t := one_div_pos.mpr ht
+  set z : ℍ := ⟨I * t, by simp [ht]⟩ with hz_def
+  have hS_z : S • z = ⟨I / t, by simp [ht]⟩ := by
+    apply UpperHalfPlane.ext
+    simp only [UpperHalfPlane.modular_S_smul, hz_def, div_eq_mul_inv]
+    change (-(I * ↑t))⁻¹ = I * (↑t)⁻¹
+    have hne : (I : ℂ) * t ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht.ne')
+    field_simp [hne]
+    simp only [I_sq]
+    ring
+  simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
+  congr 1; apply UpperHalfPlane.ext
+  simp only [coe_mk_subtype, div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
+
 /--
 Realness, positivity and essential positivity are closed under the addition and multiplication.
 -/
@@ -275,6 +303,10 @@ theorem ResToImagAxis.EventuallyPos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResTo
   simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFreal_t
   simp only [Function.resToImagAxis, ResToImagAxis, htpos, ↓reduceDIte] at hFpos_t
   simp [ResToImagAxis, htpos, mul_pos hc hFpos_t]
+
+theorem ResToImagAxis.I_mul_t_eq (F : ℍ → ℂ) (t : ℝ) (ht : 0 < t) :
+    F ⟨I * t, by simp [ht]⟩ = F.resToImagAxis t := by
+  simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
 
 /-- If `F` is real-valued, then `F` is equal to the real part of itself on imaginary axis. -/
 theorem ResToImagAxis.Real.eq_real_part {F : ℍ → ℂ} (hF : ResToImagAxis.Real F) (t : ℝ) :
