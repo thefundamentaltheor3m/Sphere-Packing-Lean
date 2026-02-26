@@ -487,10 +487,10 @@ lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
 /-- theta_h tends to 0 at infinity.
 theta_h = f₂² + f₂f₄ + f₄² → 0 + 0 + 0 = 0 as f₂, f₄ → 0. -/
 lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
-  simpa [theta_h, sq] using
-    ((f₂_tendsto_atImInfty.mul f₂_tendsto_atImInfty).add
+  simpa [theta_h] using
+    ((f₂_tendsto_atImInfty.pow 2).add
       (f₂_tendsto_atImInfty.mul f₄_tendsto_atImInfty)).add
-      (f₄_tendsto_atImInfty.mul f₄_tendsto_atImInfty)
+      (f₄_tendsto_atImInfty.pow 2)
 
 /-- Build a cusp form from a SlashInvariantForm that's MDifferentiable and
 tends to zero at infinity. This pattern is reused for theta_g and theta_h. -/
@@ -578,11 +578,8 @@ lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 := fun h =>
   one_ne_zero (tendsto_nhds_unique tendsto_const_nhds (h ▸ H_sum_sq_tendsto)).symm
 
 /-- 3 * H_sum_sq ≠ 0 -/
-lemma three_H_sum_sq_ne_zero : (fun z => 3 * H_sum_sq z) ≠ 0 := by
-  intro h
-  apply H_sum_sq_ne_zero
-  funext z
-  exact (mul_eq_zero.mp (congrFun h z)).resolve_left (by norm_num)
+lemma three_H_sum_sq_ne_zero : (fun z => 3 * H_sum_sq z) ≠ 0 :=
+  fun h => H_sum_sq_ne_zero (funext fun z => (mul_eq_zero.mp (congrFun h z)).resolve_left (by norm_num))
 
 /-- 3 * H_sum_sq is MDifferentiable -/
 lemma three_H_sum_sq_MDifferentiable :
@@ -617,14 +614,11 @@ private lemma H_sum_sq_SL2Z_invariant :
   slashaction_generators_SL2Z H_sum_sq 4 H_sum_sq_S_action H_sum_sq_T_action
 
 private lemma isBoundedAtImInfty_H_sum_sq : IsBoundedAtImInfty H_sum_sq := by
-  rw [isBoundedAtImInfty_iff]
-  obtain ⟨A, _, hA⟩ :=
-    (atImInfty_basis.tendsto_iff Metric.nhds_basis_ball).mp H_sum_sq_tendsto 1 one_pos
-  exact ⟨‖(1 : ℂ)‖ + 1, A, fun z hz => by
-    have := hA z (Set.mem_preimage.mpr (Set.mem_Ici.mpr hz))
-    rw [Metric.mem_ball, dist_eq_norm] at this
-    linarith [norm_add_le (H_sum_sq z - 1) (1 : ℂ),
-      show ‖H_sum_sq z‖ = ‖(H_sum_sq z - 1) + 1‖ from by ring_nf]⟩
+  have : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by ext z; simp [H_sum_sq, sq]
+  rw [this]
+  exact ((isBoundedAtImInfty_H₂.mul isBoundedAtImInfty_H₂).add
+    (isBoundedAtImInfty_H₂.mul isBoundedAtImInfty_H₄)).add
+    (isBoundedAtImInfty_H₄.mul isBoundedAtImInfty_H₄)
 
 private noncomputable def H_sum_sq_SIF : SlashInvariantForm (Γ 1) 4 where
   toFun := H_sum_sq
@@ -648,10 +642,7 @@ theorem E₄_eq_H_sum_sq : E₄.toFun = H_sum_sq := by
     rw [IsCuspForm_iff_coeffZero_eq_zero, ModularFormClass.qExpansion_coeff]; simp
     exact IsZeroAtImInfty.cuspFunction_apply_zero h_diff_tendsto (by norm_num : (0 : ℝ) < 1)
   have h_zero := IsCuspForm_weight_lt_eq_zero 4 (by norm_num) (E₄ - H_sum_sq_MF) h_cusp
-  funext z
-  have := DFunLike.congr_fun h_zero z
-  simp [sub_eq_zero] at this
-  exact this
+  funext z; simpa [sub_eq_zero] using DFunLike.congr_fun h_zero z
 
 /-!
 ## Phase 9: Deduce f₂ = f₃ = f₄ = 0
@@ -728,10 +719,7 @@ lemma f₂_eq_zero : f₂ = 0 := by
 
 /-- From f₂ = 0 and h = 0, deduce f₄ = 0 -/
 lemma f₄_eq_zero : f₄ = 0 := by
-  ext z
-  have hz := congrFun theta_h_eq_zero z
-  simp only [theta_h, Pi.add_apply, Pi.pow_apply, Pi.mul_apply, Pi.zero_apply, f₂_eq_zero] at hz
-  simpa [sq_eq_zero_iff] using hz
+  funext z; simpa [theta_h, sq_eq_zero_iff, f₂_eq_zero] using congrFun theta_h_eq_zero z
 
 /-- From f₂ + f₄ = f₃ and both = 0, f₃ = 0 -/
 lemma f₃_eq_zero : f₃ = 0 := by
