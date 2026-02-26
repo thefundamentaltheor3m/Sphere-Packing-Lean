@@ -114,10 +114,7 @@ public theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf�
   · intro hintf
     have hzero_ae : f =ᵐ[volume] 0 := (integral_eq_zero_iff_of_nonneg hnn hf₂).1 hintf
     have hne_zero : (volume : Measure E) {y | f y ≠ 0} = 0 := by
-      have : ∀ᵐ y, ¬ f y ≠ 0 := by
-        filter_upwards [hzero_ae] with y hy
-        simp [hy]
-      simpa using (ae_iff.mp this)
+      assumption
     funext x
     by_contra hx
     have hposatx : 0 < f x := lt_of_le_of_ne (hnn x) (Ne.symm hx)

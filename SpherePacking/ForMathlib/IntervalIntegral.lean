@@ -18,15 +18,7 @@ open MeasureTheory intervalIntegral
 public lemma intervalIntegral_comp_one_sub_eq {β : Type*} [NormedAddCommGroup β] [NormedSpace ℝ β]
     [CompleteSpace β] (f : ℝ → β) :
     (∫ t : ℝ in (0 : ℝ)..1, f (1 - t)) = ∫ t : ℝ in (0 : ℝ)..1, f t := by
-  calc
-    (∫ t : ℝ in (0 : ℝ)..1, f (1 - t)) = (-1 : ℝ)⁻¹ • ∫ t : ℝ in (1 : ℝ)..0, f t := by
-      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-        (intervalIntegral.integral_comp_mul_add (f := f) (a := (0 : ℝ)) (b := (1 : ℝ))
-          (c := (-1 : ℝ)) (hc := by simp) (d := (1 : ℝ)))
-    _ = (-1 : ℝ)⁻¹ • (-∫ t : ℝ in (0 : ℝ)..1, f t) := by
-      rw [intervalIntegral.integral_symm (μ := (volume : Measure ℝ)) (f := f) (a := (0 : ℝ))
-        (b := (1 : ℝ))]
-    _ = ∫ t : ℝ in (0 : ℝ)..1, f t := by simp
+  simp
 
 /-- A variant of `intervalIntegral_comp_one_sub_eq` with a prefactor `(-1 : ℂ)`. -/
 public lemma intervalIntegral_neg_one_mul_comp_one_sub_eq_neg (f : ℝ → ℂ) :

@@ -518,10 +518,7 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
         _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q * q1 ^ n) := by gcongr
         _ = q * b n := by ring
     have hsumMajor : Summable (fun n : ℕ => q * b n) := hb_summ.mul_left q
-    have hsumNorm : Summable (fun n : ℕ => ‖g n‖) :=
-      Summable.of_nonneg_of_le (f := fun n : ℕ => q * b n) (g := fun n : ℕ => ‖g n‖)
-        (fun _ => norm_nonneg _) hg_norm_le hsumMajor
-    exact hsumNorm.of_norm
+    exact Summable.of_norm_bounded hsumMajor hg_norm_le
   -- Identify the tail `∑_{n≥2}` as `∑' f n`.
   have hsplit :
       (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - cexp (2 * π * Complex.I * z) =

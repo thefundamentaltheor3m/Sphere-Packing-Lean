@@ -413,10 +413,8 @@ lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
       simp [a, u]
     have hk_im : δ ≤ k.1.im := hδ_le k.1 k.2
     have hnorm_exp :
-        ‖cexp (2 * π * Complex.I * (n : ℂ) * k.1)‖ ≤ r ^ n := by
-      simpa [r] using
-        (SpherePacking.ForMathlib.norm_cexp_two_pi_I_mul_nat_mul_le_pow_of_le_im
-          (n := n) (δ := δ) (z := k.1) hk_im)
+        ‖cexp (2 * π * Complex.I * (n : ℂ) * k.1)‖ ≤ r ^ n :=
+          SpherePacking.ForMathlib.norm_cexp_two_pi_I_mul_nat_mul_le_pow_of_le_im n hk_im
     have hσ : (σ 1 n : ℝ) ≤ (n : ℝ) ^ 2 := by
       exact_mod_cast (sigma_bound 1 n)
     have ha_norm : ‖a n‖ ≤ (24 : ℝ) * (n : ℝ) ^ 2 := by
@@ -476,10 +474,8 @@ lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
       _ = ∑' n : ℕ, -((n : ℂ) * a n * cexp (2 * π * Complex.I * n * τ)) := by
             simpa using
               (tsum_neg (f := fun n : ℕ => (n : ℂ) * a n * cexp (2 * π * Complex.I * n * τ))).symm
-      _ = ∑' n : ℕ, (24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ) := by
-            refine tsum_congr ?_
-            intro n
-            exact hterm n
+      _ = ∑' n : ℕ, (24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ) :=
+        tsum_congr hterm
   have hsum_term (τ : UpperHalfPlane) :
       Summable (fun n : ℕ =>
         (24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ)) := by
@@ -567,10 +563,7 @@ lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
       calc
         (∑' n : ℕ,
             ((24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ)).im) =
-            ∑' _n : ℕ, (0 : ℝ) := by
-              refine tsum_congr ?_
-              intro n
-              simpa using hterm_im n
+            ∑' _n : ℕ, (0 : ℝ) := tsum_congr hterm_im
         _ = 0 := by simp
     simpa using hsum_im
   · intro t ht

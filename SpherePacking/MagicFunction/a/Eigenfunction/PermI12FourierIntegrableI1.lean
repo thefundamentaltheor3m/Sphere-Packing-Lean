@@ -94,12 +94,7 @@ lemma integrable_permI2Kernel_slice (w : ℝ⁸) (t : ℝ) :
           SpherePacking.Contour.z₂line t))
           (volume : Measure ℝ⁸) :=
       (integrable_gaussian_cexp_pi_mul_I_mul (z := SpherePacking.Contour.z₂line t) hz).const_mul c
-    have hg' :
-        g = fun x : ℝ⁸ ↦ c * cexp ((π : ℂ) * I * (‖x‖ ^ 2 : ℝ) *
-          SpherePacking.Contour.z₂line t) := by
-      funext x
-      simp [g, c, MagicFunction.a.ComplexIntegrands.Φ₁', mul_assoc]
-    simpa [hg'] using hc
+    assumption
   have hprod : Integrable (fun x : ℝ⁸ ↦ phase x * g x) (volume : Measure ℝ⁸) :=
     Integrable.bdd_mul (hg := hg) (f := phase) (g := g) (c := (1 : ℝ))
       (by simpa [phase] using (aestronglyMeasurable_phase (V := ℝ⁸) (w := w)))
@@ -232,10 +227,7 @@ lemma integrable_integral_norm_permI1Kernel (w : ℝ⁸) :
   have ht0 : 0 < t := ht.1
   have ht1 : t ≤ 1 := ht.2
   have him : ((I : ℂ) / t).im = t⁻¹ := by
-    calc
-      ((I : ℂ) / t).im = ((I : ℂ) * (t : ℂ)⁻¹).im := by simp [div_eq_mul_inv]
-      _ = ((I : ℂ) * ((t⁻¹ : ℝ) : ℂ)).im := by simp [Complex.ofReal_inv]
-      _ = t⁻¹ := by simp
+    norm_num
   have hzpos : 0 < ((I : ℂ) / t).im := by
     simpa [him] using (inv_pos.2 ht0)
   let z : UpperHalfPlane := ⟨(I : ℂ) / t, hzpos⟩

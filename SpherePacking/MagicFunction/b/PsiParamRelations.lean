@@ -42,11 +42,10 @@ private lemma vadd_one_z₁'_eq_z₅' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
   ext1
   simp [z₁'_eq_of_mem (t := t) ht, z₅'_eq_of_mem (t := t) ht, add_left_comm, add_comm]
 
-private lemma vadd_one_z₅'_eq_z₃' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
+private lemma vadd_one_z₅'_eq_z₃' (t : ℝ)
     (hz5 : 0 < (z₅' t).im) (hz3 : 0 < (z₃' t).im) :
     ((1 : ℝ) +ᵥ (⟨z₅' t, hz5⟩ : ℍ) : ℍ) = ⟨z₃' t, hz3⟩ := by
-  ext1
-  simp [z₃'_eq_of_mem (t := t) ht, z₅'_eq_of_mem (t := t) ht, add_comm]
+  rfl
 
 /-- Compatibility of the primed extensions `ψT'` and `ψI'` along the parametrisations `z₁'`/`z₅'`.
 
@@ -82,6 +81,6 @@ public lemma ψT'_z₃'_eq_ψI'_z₅' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     refine ψT'_eq_ψI'_of_ψT_eq_ψI hz3 hz5 ?_
     have hT : ψT ((1 : ℝ) +ᵥ (⟨z₅' t, hz5⟩ : ℍ)) = ψI ⟨z₅' t, hz5⟩ :=
       ψT_vadd_one_eq_ψI ⟨z₅' t, hz5⟩
-    simpa [vadd_one_z₅'_eq_z₃' (t := t) ht hz5 hz3] using hT
+    simpa [vadd_one_z₅'_eq_z₃' (t := t) hz5 hz3] using hT
 
 end MagicFunction.b.PsiParamRelations

@@ -274,9 +274,7 @@ public lemma mFourier_apply_coeFunE_exp (n : Fin d → ℤ) (x : E) :
         RCLike.wInner (𝕜 := ℝ) 1 x.ofLp
           (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n).ofLp := by
     -- On `PiLp`, the inner product is the `wInner` of the underlying functions with weight `1`.
-    simpa using
-      (RCLike.inner_eq_wInner_one (𝕜 := ℝ) (f := x)
-        (g := SchwartzMap.PoissonSummation.Standard.intVec (d := d) n))
+    exact RCLike.inner_eq_wInner_one x (intVec n)
   have h :
       UnitAddTorus.mFourier n (PoissonSummation.Standard.coeFunE (d := d) x) =
         (𝐞 (RCLike.wInner (𝕜 := ℝ) 1 x.ofLp

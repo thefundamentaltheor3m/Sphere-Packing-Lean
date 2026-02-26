@@ -67,10 +67,7 @@ lemma aAnotherRHS_analyticOnNhd :
   have hsin_arg : AnalyticOnNhd ℂ (fun u : ℂ => (π : ℂ) * u / 2) ACDomain := by
     have hmul : AnalyticOnNhd ℂ (fun u : ℂ => (π : ℂ) * u) ACDomain :=
       (analyticOnNhd_const.mul analyticOnNhd_id)
-    have htwo : AnalyticOnNhd ℂ (fun _u : ℂ => (2 : ℂ)) ACDomain := analyticOnNhd_const
-    refine hmul.div htwo ?_
-    intro _u _hu
-    norm_num
+    exact AnalyticOnNhd.div_const hmul
   have hsin : AnalyticOnNhd ℂ (fun u : ℂ => Complex.sin ((π : ℂ) * u / 2)) ACDomain := by
     -- `sin` is analytic everywhere, so we can compose with the affine map `u ↦ π*u/2`.
     have hsin_univ : AnalyticOnNhd ℂ (fun z : ℂ => Complex.sin z) (Set.univ : Set ℂ) := by

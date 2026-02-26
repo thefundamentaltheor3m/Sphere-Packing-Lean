@@ -183,9 +183,7 @@ lemma integral_norm_permI5Kernel_bound (w : ℝ⁸) (s : ℝ) (hs : 1 ≤ s) :
       have :
           (∫ x : ℝ⁸, ‖φ₀'' (I * (s : ℂ))‖ * rexp (-(π * (‖x‖ ^ 2)) / s)) =
             ‖φ₀'' (I * (s : ℂ))‖ * ∫ x : ℝ⁸, rexp (-(π * (‖x‖ ^ 2)) / s) := by
-        simpa using
-          (MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ⁸))
-            (r := ‖φ₀'' (I * (s : ℂ))‖) (f := fun x : ℝ⁸ ↦ rexp (-(π * (‖x‖ ^ 2)) / s)))
+        exact integral_const_mul ‖φ₀'' (I * ↑s)‖ fun a => rexp (-(π * ‖a‖ ^ 2) / s)
       simp [this, hgauss_int']
 
 lemma ae_integrable_permI5Kernel_slice (w : ℝ⁸) :

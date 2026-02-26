@@ -90,11 +90,7 @@ public lemma differentiableAt_intervalIntegral_mul_exp
         simpa [sub_eq_add_neg, add_assoc] using (norm_add_le u0 (u - u0))
       exact this.trans (by nlinarith)
     have hexp_le : ‖Complex.exp (u * k t)‖ ≤ E := by
-      have h1 : ‖u * k t‖ ≤ (‖u0‖ + 1) * K := by
-        calc
-          ‖u * k t‖ ≤ ‖u‖ * ‖k t‖ := by
-            exact norm_mul_le u (k t)
-          _ ≤ (‖u0‖ + 1) * K := by gcongr
+      have h1 : ‖u * k t‖ ≤ (‖u0‖ + 1) * K := norm_mul_le_of_le hu' (hk_bound t ht)
       exact (Complex.norm_exp_le_exp_norm _).trans (Real.exp_le_exp.2 h1)
     have : ‖F' u t‖ ≤ bound t := by
       have hstep1 :

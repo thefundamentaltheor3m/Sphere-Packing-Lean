@@ -65,9 +65,7 @@ lemma continuousOn_bAnotherBase : ContinuousOn bAnotherBase (Set.Ioi (0 : ℝ)) 
       ContinuousOn
         (fun t : ℝ => ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ))
         (Set.Ioi (0 : ℝ)) := (hψ.sub continuousOn_const).sub hexp
-  refine h.congr ?_
-  intro t ht
-  simp [bAnotherBase]
+  assumption
 
 /-!
 ## Global boundedness on the positive imaginary axis

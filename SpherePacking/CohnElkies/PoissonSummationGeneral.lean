@@ -100,9 +100,7 @@ lemma volume_real_fundamentalDomain_stdBasis :
   have hb :
       ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis).map f.toLinearEquiv =
         Pi.basisFun ℝ (Fin d) := by
-    ext i j
-    -- Both sides are coordinate vectors.
-    simp [f, EuclideanSpace.basisFun_apply, EuclideanSpace.equiv, Pi.single_apply]
+    rfl
   have himage :
       f.toLinearEquiv '' ZSpan.fundamentalDomain ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis) =
         ZSpan.fundamentalDomain (Pi.basisFun ℝ (Fin d)) := by

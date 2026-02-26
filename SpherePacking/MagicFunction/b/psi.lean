@@ -252,11 +252,7 @@ public lemma ψT_slash_T : ψT ∣[-2] T = ψI := by
 public lemma ψS_slash_S : ψS ∣[-2] S = ψI := by
   have hk : Even (-2 : ℤ) := ⟨-1, by ring⟩
   rw [ψS, ← slash_mul, ModularGroup.modular_S_sq]
-  calc
-    ψI ∣[(-2 : ℤ)] (-1 : SL(2, ℤ)) = ψI ∣[(-2 : ℤ)] (1 : SL(2, ℤ)) :=
-      ModularForm.slash_neg_one' (k := (-2 : ℤ)) (f := ψI) hk
-    _ = ψI := SlashAction.slash_one (k := (-2 : ℤ)) (a := ψI)
--- proof of ψS_slash_S complete
+  norm_num
 
 /-- Modular relation: `ψS ∣[-2] (S * T) = ψT`. -/
 public lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by

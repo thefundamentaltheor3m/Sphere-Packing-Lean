@@ -526,15 +526,11 @@ public theorem E4E6_coeff_zero_eq_zero :
     ext z
     rw [pow_three]
     rw [@DirectSum.of_mul_of, DirectSum.of_mul_of]
-    simp only [Int.reduceAdd, DirectSum.of_eq_same]
-    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₄ (GradedMonoid.GMul.mul E₄ E₄)) rfl]
     rfl
   have hd6 : ((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12 = E₆.mul E₆ := by
     ext z
     rw [pow_two]
     rw [@DirectSum.of_mul_of]
-    simp only [Int.reduceAdd, DirectSum.of_eq_same]
-    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₆ E₆) rfl]
     rfl
   rw [hds, hd6]
   rw [← Nat.cast_one (R := ℝ)]
@@ -678,9 +674,7 @@ public lemma E6_q_exp_one : (qExpansion 1 E₆).coeff 1 = -504 := by
 
 /-- The antidiagonal of `1` is the two-element set `{(1,0),(0,1)}`. -/
 public lemma antidiagonal_one : Finset.antidiagonal 1 = {(1,0), (0,1)} := by
-  ext p
-  rcases p with ⟨x, y⟩
-  simp [Nat.add_eq_one_iff, or_comm]
+  trivial
 
 lemma E4_pow_q_exp_one : (qExpansion 1 ((E₄).mul ((E₄).mul E₄))).coeff 1 = 3 * 240 := by
   rw [← Nat.cast_one (R := ℝ), qExpansion_mul_coeff, qExpansion_mul_coeff]
@@ -983,10 +977,7 @@ lemma E₂_isZeroAtImInfty_sub_one : IsZeroAtImInfty (fun z : ℍ => E₂ z - 1)
       (∑' n : ℕ+, (n : ℂ) * cexp (2 * π * Complex.I * n * z) /
           (1 - cexp (2 * π * Complex.I * n * z))) = S := by
     congr 1; ext n
-    have : cexp (2 * π * Complex.I * n * z) = q ^ (n : ℕ) := by
-      change _ = (cexp (2 * π * Complex.I * z)) ^ (n : ℕ)
-      simpa [q, mul_assoc, mul_left_comm, mul_comm] using
-        (Complex.exp_nat_mul (2 * π * Complex.I * z) (n : ℕ))
+    have : cexp (2 * π * Complex.I * n * z) = q ^ (n : ℕ) := exp_aux z ↑n
     simp [this]
   have hq_norm : ‖q‖ = Real.exp (-((2 * Real.pi) * z.im)) := by
     simp [q, Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm, mul_re]

@@ -496,9 +496,7 @@ lemma norm_A_E_sq_coeff_le (m : ℕ) :
             simpa using (norm_sum_le (Finset.antidiagonal m)
               (fun p => A_E_coeff p.1 * A_E_coeff p.2))
     _ ≤ ∑ p ∈ Finset.antidiagonal m, (720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 10 := by
-            refine Finset.sum_le_sum ?_
-            intro p hp
-            exact hterm p hp
+            exact Finset.sum_le_sum hterm
     _ = ((Finset.antidiagonal m).card : ℝ) * ((720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 10) := by
             -- `∑ _ ∈ s, c = card(s) * c`.
             simp [Finset.sum_const, nsmul_eq_mul]
@@ -908,9 +906,7 @@ lemma A_E_sq_fourierCoeff_hf :
   have hodd_sum : (∑' m : ℕ, f (2 * m + 1)) = 0 := by
     -- since all odd terms are zero
     have : (∑' m : ℕ, f (2 * m + 1)) = ∑' m : ℕ, (0 : ℂ) := by
-      refine tsum_congr ?_
-      intro m
-      simpa using hodd_term m
+      exact tsum_congr hodd_term
     simpa using this.trans (tsum_zero : (∑' m : ℕ, (0 : ℂ)) = 0)
   have heven_sum : (∑' m : ℕ, f (2 * m)) = ∑' m : ℕ, g m := by
     refine tsum_congr ?_

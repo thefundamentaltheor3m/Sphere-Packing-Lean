@@ -100,9 +100,7 @@ public theorem summable_diff (z : ℍ) (d : ℤ) :
     simp
   by_cases hd2 : 0 < d
   · have := lhs_summable ⟨ -d / z, by simpa using pos_nat_div_upper d hd2 z⟩
-    apply this.congr
-    intro b
-    simp
+    assumption
   let D := (-d).natAbs
   have hd : 0 < D := by
     aesop

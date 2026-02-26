@@ -892,10 +892,7 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
       have hnorm_jac : ‖jacobiTheta τ‖ = (1 + 2 * (∑' n : ℕ, f n)) := by
         have hnonneg : 0 ≤ (1 + 2 * (∑' n : ℕ, f n)) := by positivity
         rw [hjac]
-        calc
-          ‖(↑(1 + 2 * ∑' n : ℕ, f n) : ℂ)‖ = |1 + 2 * ∑' n : ℕ, f n| :=
-            RCLike.norm_ofReal (1 + 2 * ∑' n : ℕ, f n)
-          _ = 1 + 2 * ∑' n : ℕ, f n := abs_of_nonneg hnonneg
+        exact Complex.norm_of_nonneg hnonneg
       have hjac_ge : (1 : ℝ) ≤ ‖jacobiTheta τ‖ := by
         have : (1 : ℝ) ≤ (1 + 2 * (∑' n : ℕ, f n)) := by nlinarith [hFnonneg]
         simpa [hnorm_jac] using this
@@ -917,9 +914,7 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
   have hx_inv : ‖(x ^ (2 : ℕ))⁻¹‖ ≤ 1 := by
     have hx : (1 : ℝ) ≤ ‖x‖ := hnorm_H3_ge_one t ht
     have hx2 : (1 : ℝ) ≤ ‖x‖ ^ (2 : ℕ) := by
-      have : (1 : ℝ) ^ (2 : ℕ) ≤ ‖x‖ ^ (2 : ℕ) :=
-        pow_le_pow_left₀ (by positivity : 0 ≤ (1 : ℝ)) hx 2
-      simpa using this
+      exact one_le_pow₀ (hnorm_H3_ge_one t ht)
     have hinv : (‖x‖ ^ (2 : ℕ))⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hx2
     simpa [x, norm_inv, norm_pow] using hinv
   have hxsub : ‖x - (1 : ℂ)‖ ≤ C0 * Real.exp (-Real.pi * t) := by

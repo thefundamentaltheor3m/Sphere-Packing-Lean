@@ -36,11 +36,7 @@ theorem MeasureTheory.MeasureSpace.volume_subsingleton
 
 theorem EuclideanSpace.ball_subsingleton [IsEmpty ι]
     (x : EuclideanSpace ℝ ι) : Subsingleton (ball x r) := by
-  apply Subsingleton.intro
-  intro ⟨x, _⟩ ⟨y, _⟩
-  congr 1
-  ext t
-  exact False.elim (IsEmpty.false t)
+  exact Set.subsingleton_coe_of_subsingleton
 
 /-- The Lebesgue volume of a Euclidean ball is finite. -/
 public theorem EuclideanSpace.volume_ball_lt_top

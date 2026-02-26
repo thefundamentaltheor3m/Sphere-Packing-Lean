@@ -117,9 +117,7 @@ public lemma exists_ψI_bound_exp :
       -- Triangle inequality on `num z = (num z - 1) + 1`.
       simpa [sub_add_cancel] using (norm_add_le (num z - (1 : ℂ)) (1 : ℂ))
     have hdist' : ‖num z - (1 : ℂ)‖ < 1 := by
-      have hdist' := hdist
-      rw [dist_eq_norm] at hdist'
-      exact hdist'
+      assumption
     have hlt : ‖num z‖ < (2 : ℝ) := by
       have h1 :
           ‖num z‖ < 1 + 1 :=
@@ -415,17 +413,7 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     simpa [hUnion1] using (hint_mid.union hint_tail)
   have hUnion0 :
       Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) := by
-    ext t
-    constructor
-    · intro ht
-      by_cases ht1 : t ≤ 1
-      · exact Or.inl ⟨ht, ht1⟩
-      · exact Or.inr (lt_of_not_ge ht1)
-    · intro ht
-      rcases ht with ht | ht
-      · exact ht.1
-      · have ht' : (1 : ℝ) < t := by simpa using ht
-        exact lt_trans (by norm_num) ht'
+    norm_num
   have h := hint_small.union hint_large
   -- Rewrite the domain of integration using the set identity.
   rw [hUnion0]

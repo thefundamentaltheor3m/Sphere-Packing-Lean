@@ -117,11 +117,8 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
         ∫ x in SchwartzMap.PoissonSummation.Standard.iocCube (d := d),
           UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) •
             (descended (d := d) f (PoissonSummation.Standard.coeFunE (d := d) x))
-            ∂(volume : Measure E) := by
-    simpa [UnitAddTorus.mFourierCoeff] using
-      (PoissonSummation.Standard.integral_eq_integral_preimage_coeFunE (d := d)
-        (g := fun y : UnitAddTorus (Fin d) =>
-          UnitAddTorus.mFourier (-n) y • (descended (d := d) f y)) hmeas)
+            ∂(volume : Measure E) := integral_eq_integral_preimage_coeFunE
+              (fun y => (UnitAddTorus.mFourier (-n)) y • (descended f) y) hmeas
   -- Expand `descended` back to the periodization on `E`, and swap `tsum` and integral.
   have hsum_int :
       (∫ x in SchwartzMap.PoissonSummation.Standard.iocCube (d := d),

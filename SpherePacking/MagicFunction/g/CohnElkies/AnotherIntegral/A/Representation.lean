@@ -77,10 +77,8 @@ lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
       (∫ t in Set.Ioi (0 : ℝ),
           (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t)) =
         ∫ t in Set.Ioi (0 : ℝ), ((g2 t + g1 t) + g0 t) := by
-    refine MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
-      measurableSet_Ioi ?_
-    intro t ht
-    exact congrArg (fun f : ℝ → ℂ => f t) hsplit
+    exact ext (congrArg re (congrArg (integral (volume.restrict (Set.Ioi 0))) hsplit))
+      (congrArg im (congrArg (integral (volume.restrict (Set.Ioi 0))) hsplit))
   rw [hcongr]
   -- Switch to the restricted measure and split the integral.
   let μ0 : Measure ℝ := μIoi0
@@ -340,12 +338,7 @@ lemma aRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
       simpa [MeasureTheory.IntegrableOn] using hCorrInt
     -- Avoid `simp`/`simpa` here: rewriting set integrals to restricted-measure integrals can be
     -- expensive, so we `change` the goal to the restricted-measure form and apply `integral_add`.
-    let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))
-    change
-        (∫ t, aAnotherIntegrand u t + corr t ∂ μ) =
-          (∫ t, aAnotherIntegrand u t ∂ μ) +
-            ∫ t, corr t ∂ μ
-    exact MeasureTheory.integral_add (μ := μ) hIntA hIntC
+    exact integral_add hIntA hIntC
   -- Evaluate the correction integral using the Laplace evaluation lemmas.
   have hCorr_eval :
       (∫ t in Set.Ioi (0 : ℝ), corr t) =

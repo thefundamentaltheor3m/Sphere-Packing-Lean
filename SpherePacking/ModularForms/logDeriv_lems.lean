@@ -117,10 +117,7 @@ lemma func_div (a b c d : ℂ → ℂ) (x : ℂ) (hb : b x ≠ 0) (hd : d x ≠ 
     (div_eq_div_iff hb hd : a x / b x = c x / d x ↔ a x * d x = c x * b x)
 
 lemma deriv_EqOn_congr {f g : ℂ → ℂ} (s : Set ℂ) (hfg : s.EqOn f g) (hs : IsOpen s) :
-    s.EqOn (deriv f) ( deriv g) := by
-  intro x hx
-  simpa [derivWithin_of_isOpen hs hx] using
-    (derivWithin_congr hfg (hfg hx))
+    s.EqOn (deriv f) ( deriv g) := EqOn.deriv hfg hs
 
 lemma logDeriv_eqOn_iff' (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn ℂ f s)
     (hg : DifferentiableOn ℂ g s) (hs2 : IsOpen s) (hsc : Convex ℝ s)

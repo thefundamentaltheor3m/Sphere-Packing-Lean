@@ -43,9 +43,7 @@ lemma gRadial_re_nonpos_of_two_lt {u : ℝ} (hu : 2 < u) : (gRadial u).re ≤ 0 
     simpa using (integral_Ioi_ofReal_mul_exp (u := u) (f := A))
   have hEq' : gRadial u =
       (π / 2160 : ℂ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * (IA : ℂ) := by
-    have hEq' := hEq
-    rw [hIntA] at hEq'
-    exact hEq'
+    exact Eq.symm (CancelDenoms.derive_trans (id (Eq.symm hIntA)) (id (Eq.symm hEq)))
   have hEqReal : gRadial u =
       (((π / 2160 : ℝ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IA : ℝ) : ℂ) := by
     have hcoef : (π / 2160 : ℂ) = ((π / 2160 : ℝ) : ℂ) := by

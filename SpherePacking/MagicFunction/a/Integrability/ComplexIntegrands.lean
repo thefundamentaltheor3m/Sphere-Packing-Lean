@@ -46,12 +46,7 @@ section Helpers
 namespace UpperHalfPlane
 
 theorem range_upperHalfPlane_coe : range UpperHalfPlane.coe = ℍ₀ := by
-  ext z
-  constructor
-  · rintro ⟨y, rfl⟩
-    exact y.2
-  · intro hz
-    exact ⟨⟨z, hz⟩, rfl⟩
+  simp
 
 theorem zero_not_mem_upperHalfPlaneSet : (0 : ℂ) ∉ ℍ₀ := by simp
 

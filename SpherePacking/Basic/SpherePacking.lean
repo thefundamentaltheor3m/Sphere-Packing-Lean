@@ -353,7 +353,7 @@ theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
 
 /-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
 -/
-theorem SpherePacking.inter_ball_encard_ge (hd : 0 < d) (R : ℝ) :
+theorem SpherePacking.inter_ball_encard_ge (R : ℝ) :
     (S.centers ∩ ball 0 R).encard ≥
       volume (S.balls ∩ ball 0 (R - S.separation / 2))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)) := by
@@ -362,10 +362,7 @@ theorem SpherePacking.inter_ball_encard_ge (hd : 0 < d) (R : ℝ) :
   change volume _ ≤ volume _ at h
   simp_rw [Set.biUnion_eq_iUnion, S.volume_iUnion_balls_eq_tsum _ (le_refl _),
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
-  haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  rwa [← ENNReal.div_le_iff_le_mul] at h <;> left
-  · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
-  · exact (volume_ball_lt_top _).ne
+  exact ENNReal.div_le_of_le_mul h
 
 public theorem SpherePacking.finite_centers_inter_ball (R : ℝ) :
     Finite ↑(S.centers ∩ ball 0 R) := by
@@ -405,6 +402,6 @@ public theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
   exact (ENNReal.div_le_iff_le_mul
     (Or.inl (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm)
     (Or.inl (volume_ball_lt_top _).ne)).1 <|
-      (by simpa [add_sub_cancel_right] using (S.inter_ball_encard_ge hd (R + S.separation / 2)))
+      (by simpa [add_sub_cancel_right] using (S.inter_ball_encard_ge (R + S.separation / 2)))
 
 end BasicResults

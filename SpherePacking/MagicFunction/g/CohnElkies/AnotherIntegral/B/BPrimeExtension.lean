@@ -134,9 +134,7 @@ private lemma exists_bound_norm_ψT'_comp_of_im_pos_all (z : ℝ → ℂ) (hz : 
         (ψT := ψT) (ψT' := ψT') (MagicFunction.b.PsiBounds.continuous_ψT) (z := z) hz hIm ?_
     intro t
     simp [ψT', hIm t]
-  simpa using
-    (SpherePacking.Integration.exists_bound_norm_uIoc_zero_one_of_continuous (f := fun t : ℝ =>
-      ψT' (z t)) hcont)
+  exact Integration.exists_bound_norm_uIoc_zero_one_of_continuous (fun t => ψT' (z t)) hcont
 
 lemma ψI'_z₅'_eq (t : ℝ) (ht : t ∈ Ι (0 : ℝ) 1) :
     ψI' (z₅' t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
@@ -160,14 +158,9 @@ lemma exists_bound_norm_ψI'_z₅' :
   have hEqIoc :
       ∀ t : ℝ, t ∈ Ioc (0 : ℝ) 1 →
         ψI' (z₅' t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
-    intro t ht
-    have ht' : t ∈ Ι (0 : ℝ) 1 := by
-      simpa [uIoc_of_le (zero_le_one : (0 : ℝ) ≤ 1)] using ht
-    simpa using ψI'_z₅'_eq (t := t) ht'
+    exact fun t a => b.Schwartz.J5Smooth.ψI'_z₅'_eq t a
   have hψIle : ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := by
-    simpa using
-      (MagicFunction.norm_modular_rewrite_Ioc_bound
-        (k := (2 : ℕ)) (ψS := ψS) (ψZ := ψI') (z := z₅') (hEq := hEqIoc) htIoc hψS)
+    exact norm_modular_rewrite_Ioc_bound 2 ψS ψI' z₅' hEqIoc htIoc (hM (1 / t) htIci)
   calc
     ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := hψIle
     _ ≤ M := by simpa [mul_one] using (mul_le_mul_of_nonneg_left ht2 hM0)
@@ -478,9 +471,7 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
     have hmul : ContinuousOn (fun t : ℝ => u * k t) (Set.Ici (1 : ℝ)) :=
       (continuousOn_const.mul hk_cont)
     have hexp : ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Set.Ici (1 : ℝ)) := by
-      have hexp0 : ContinuousOn Complex.exp (Set.univ : Set ℂ) :=
-        (Complex.continuous_exp.continuousOn : ContinuousOn Complex.exp (Set.univ : Set ℂ))
-      simpa [Function.comp] using hexp0.comp hmul (by intro _ _; simp)
+      exact ContinuousOn.cexp hmul
     have hcont : ContinuousOn (fun t : ℝ => F u t) (Set.Ici (1 : ℝ)) := hcont_base.mul hexp
     simpa [μ] using (hcont.aestronglyMeasurable (μ := (volume : Measure ℝ)) measurableSet_Ici)
   have hF'_meas :
@@ -488,9 +479,7 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
     have hmul : ContinuousOn (fun t : ℝ => u0 * k t) (Set.Ici (1 : ℝ)) :=
       (continuousOn_const.mul hk_cont)
     have hexp : ContinuousOn (fun t : ℝ => Complex.exp (u0 * k t)) (Set.Ici (1 : ℝ)) := by
-      have hexp0 : ContinuousOn Complex.exp (Set.univ : Set ℂ) :=
-        (Complex.continuous_exp.continuousOn : ContinuousOn Complex.exp (Set.univ : Set ℂ))
-      simpa [Function.comp] using hexp0.comp hmul (by intro _ _; simp)
+      exact ContinuousOn.cexp hmul
     have hcont : ContinuousOn (fun t : ℝ => F' u0 t) (Set.Ici (1 : ℝ)) := by
       have hbk : ContinuousOn (fun t : ℝ => base t * k t) (Set.Ici (1 : ℝ)) :=
         hcont_base.mul hk_cont

@@ -154,9 +154,7 @@ lemma tendsto_mul_t_resToImagAxis_A_E :
         exact_mod_cast (sigma_bound 3 (n + 1))
       have hcoeff :
           ((n + 1 : ℕ) : ℝ) * (σ 3 (n + 1) : ℝ) ≤ ((n + 1 : ℕ) : ℝ) ^ 5 := by
-        have hn0 : 0 ≤ ((n + 1 : ℕ) : ℝ) := by positivity
-        have := mul_le_mul_of_nonneg_left hσ hn0
-        simpa [pow_succ, mul_assoc] using this
+        nlinarith
       have hnorm_a :
           ‖a n‖ = (720 : ℝ) * ((n + 1 : ℕ) : ℝ) * (σ 3 (n + 1) : ℝ) := by
         simpa [a] using (norm_A_E_coeff (n := n))
@@ -231,9 +229,7 @@ lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
       norm_num1
     calc
       (z : ℂ) ^ (6 : ℕ) = (Complex.I * (t : ℂ)) ^ (6 : ℕ) := by
-        change ((UpperHalfPlane.mk (Complex.I * t) (by simp [ht]) : ℍ) : ℂ) ^ (6 : ℕ) =
-          (Complex.I * (t : ℂ)) ^ (6 : ℕ)
-        simp
+        rfl
       _ = (Complex.I ^ (6 : ℕ)) * ((t : ℂ) ^ (6 : ℕ)) := by simp [mul_pow]
       _ = -((t : ℂ) ^ (6 : ℕ)) := by simp [hI6]
   have hz5 : (z : ℂ) ^ (5 : ℕ) = Complex.I * ((t : ℂ) ^ (5 : ℕ)) := by
@@ -296,15 +292,7 @@ lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
             (Matrix.SpecialLinearGroup.toGL
                   ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ModularGroup.S) • z) =
           (z : ℂ) ^ (4 : ℕ) * E₄ z := by
-      have :
-          (E 4 (by decide))
-              (Matrix.SpecialLinearGroup.toGL
-                    ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ModularGroup.S) • z) =
-            E₄
-              (Matrix.SpecialLinearGroup.toGL
-                    ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ModularGroup.S) • z) := by
-        simp
-      exact this.trans hE4_gl
+      assumption
     have hE6_gl :
         E₆
             (Matrix.SpecialLinearGroup.toGL
@@ -316,15 +304,7 @@ lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
             (Matrix.SpecialLinearGroup.toGL
                   ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ModularGroup.S) • z) =
           (z : ℂ) ^ (6 : ℕ) * E₆ z := by
-      have :
-          (E 6 (by decide))
-              (Matrix.SpecialLinearGroup.toGL
-                    ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ModularGroup.S) • z) =
-            E₆
-              (Matrix.SpecialLinearGroup.toGL
-                    ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ModularGroup.S) • z) := by
-        simp
-      exact this.trans hE6_gl
+      assumption
     rw [hE2', hE4', hE6']
     -- Regroup the main product into `z^6 * (...)`.
     rw [hmul]

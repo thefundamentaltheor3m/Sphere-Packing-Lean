@@ -176,23 +176,13 @@ private lemma L₁₀_over_tendsto_atImInfty :
             refine congrArg (fun s => (720 : ℂ) * s) ?_
             refine tsum_congr ?_
             intro n
-            simpa [mul_assoc] using
-              (mul_div_assoc
-                  (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))
-                  (cexp (2 * π * Complex.I * ((n + 1 : ℕ) : ℂ) * (z : ℂ)))
-                  (q₁ z))
+            ring
       _ = (720 : ℂ) * ∑' n : ℕ,
             ((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
               cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
             refine congrArg (fun s => (720 : ℂ) * s) ?_
             refine tsum_congr ?_
-            intro n
-            have :=
-              congrArg
-                (fun x =>
-                  ((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) * x)
-                (hexp_cancel n)
-            simpa [mul_assoc] using this
+            tauto
       _ = (720 : ℂ) * ∑' n : ℕ,
             ((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
               cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
@@ -224,9 +214,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
           exact_mod_cast (sigma_bound 3 (n + 1))
         have hcoeff :
             (n + 1 : ℝ) * (σ 3 (n + 1) : ℝ) ≤ (n + 1 : ℝ) ^ 5 := by
-          have hn0 : 0 ≤ (n + 1 : ℝ) := by positivity
-          have := mul_le_mul_of_nonneg_left hσ hn0
-          simpa [pow_succ, mul_assoc] using this
+          nlinarith
         have hn_add : (n + 1 : ℝ) ≤ 2 * (n : ℝ) := by
           have hn1' : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn1
           linarith
@@ -289,12 +277,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
         (hsumm_pow.mul_left 32)
       have hsumm0 : Summable (fun n : ℕ => (if n = 0 then (1 : ℝ) else 0)) := by
         refine summable_of_finite_support ((Set.finite_singleton (0 : ℕ)).subset ?_)
-        intro n hn
-        have hn0 : (if n = 0 then (1 : ℝ) else 0) ≠ 0 := by simpa [Function.support] using hn
-        have : n = 0 := by
-          by_contra h
-          exact hn0 (by simp [h])
-        simp [this]
+        norm_num
       have hdecomp :
           (fun n : ℕ => (if n = 0 then (1 : ℝ) else 32 * ((n : ℝ) ^ 5 * r ^ n))) =
             (fun n : ℕ => (if n = 0 then (1 : ℝ) else 0) + (32 : ℝ) * ((n : ℝ) ^ 5 * r ^ n)) := by
@@ -330,12 +313,8 @@ private lemma L₁₀_over_tendsto_atImInfty :
     simpa [F₀, hconst] using h
   have hF0_bdd : IsBoundedAtImInfty F₀ := by
     have hzero : Tendsto (fun z : UpperHalfPlane =>
-      F₀ z - (518400 : ℂ)) UpperHalfPlane.atImInfty (nhds 0) := by
-      have hconst :
-          Tendsto (fun _ : UpperHalfPlane =>
-            (518400 : ℂ)) UpperHalfPlane.atImInfty (nhds (518400 : ℂ)) :=
-        tendsto_const_nhds
-      simpa using hF0lim'.sub hconst
+      F₀ z - (518400 : ℂ)) UpperHalfPlane.atImInfty (nhds 0) :=
+        tendsto_sub_nhds_zero_iff.mpr hF0lim'
     have hbdd_diff : IsBoundedAtImInfty (fun z : UpperHalfPlane => F₀ z - (518400 : ℂ)) :=
       UpperHalfPlane.IsZeroAtImInfty.isBoundedAtImInfty hzero
     have hbdd_const : IsBoundedAtImInfty (fun _ : UpperHalfPlane => (518400 : ℂ)) :=
@@ -525,13 +504,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
         _ = (q₁ z) ^ 2 := by simp [q₁]
     have hA : A z = q₁ z * B z := by
       -- Multiply the defining equation `B = A / q₁` by `q₁` and cancel.
-      have hq : q₁ z ≠ 0 := hq₁_ne z
-      calc
-        A z = (q₁ z * A z) / q₁ z := by
-          simpa using (mul_div_cancel_left₀ (A z) hq).symm
-        _ = q₁ z * (A z / q₁ z) := by
-          simpa [mul_assoc] using (mul_div_assoc (q₁ z) (A z) (q₁ z))
-        _ = q₁ z * B z := by rfl
+      exact Eq.symm (mul_div_cancel₀ (A z) (hq₁_ne z))
     -- Now expand `F = A^2` and `F₀ = B^2`.
     calc
       F z = (A z) ^ 2 := by simp [F, A, A_E]
@@ -557,20 +530,14 @@ private lemma L₁₀_over_tendsto_atImInfty :
       have hz : G z = (H₂ ^ 3 * poly) z := congrArg (fun f : UpperHalfPlane → ℂ => f z) hG_fun
       exact hz.trans rfl
     have hG0z : G₀ z = (H₂' z) ^ 3 * poly z := by
-      have hz :
-          G₀ z =
-            (fun w : UpperHalfPlane => (H₂' w) ^ 3 * poly w) z :=
-        congrArg (fun f : UpperHalfPlane → ℂ => f z) hG0_def
-      exact hz.trans rfl
+      rfl
     -- Rewrite everything in terms of `qπ` and cancel powers.
     rw [hGz, hG0z, hH2, hq3]
     have hpow := (mul_pow (qπ z) (H₂' z) 3)
     -- Prevent `whnf` from unfolding large definitions by generalizing.
     rw [hpow]
     generalize ha : (qπ z) ^ 3 = a
-    generalize hb : (H₂' z) ^ 3 = b
-    generalize hc : poly z = c
-    simpa using (mul_assoc a b c)
+    exact Semigroup.mul_assoc a (H₂' z ^ 3) (poly z)
   -- Compute the limit of `L₁₀/(q₂*q₃)`.
   have hDF_over :
       (fun z : UpperHalfPlane => (D F z) / q₂ z) =

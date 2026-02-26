@@ -93,10 +93,6 @@ public lemma summable_norm_comp_add_zlattice (f : 𝓢(EuclideanSpace ℝ (Fin d
           (C + 1) * ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖⁻¹ ^ k := by
         simpa [div_eq_mul_inv, inv_pow] using (hle.trans (by simpa using hmono))
       simpa using this
-    have hfail' :
-        ¬ ‖(fun ℓ : Λ => ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖) ℓ‖ ≤
-            (fun ℓ : Λ => (C + 1) * ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖⁻¹ ^ k) ℓ := by
-      simpa using hfail
-    exact hfail' hgood
+    trivial
 
 end SpherePacking.CohnElkies.LPBoundAux.ZLatticeSummability

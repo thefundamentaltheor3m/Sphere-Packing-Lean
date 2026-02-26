@@ -518,9 +518,7 @@ theorem aux_iter_der_tsum (k : ℕ) (hk : 1 ≤ k) (x : ℍ) :
     exact x.2
   · exact x.2
   · refine IsOpen.uniqueDiffOn ?_
-    refine isOpen_lt ?_ ?_
-    · fun_prop
-    · fun_prop
+    exact isOpen_upperHalfPlaneSet
 
 theorem aux_iter_der_tsum_eqOn (k : ℕ) (hk : 2 ≤ k) :
     EqOn (iteratedDerivWithin (k - 1)
@@ -695,10 +693,7 @@ public theorem tsum_sigma_eqn2 (k : ℕ) (z : ℍ) :
 
 /-- Summability of `∑_{d : ℤ} 1 / ((n z) + d)^k` for `k ≥ 2` and `z ∈ ℍ`. -/
 public lemma G2_summable_aux (n : ℤ) (z : ℍ) (k : ℤ) (hk : 2 ≤ k) :
-    Summable fun d : ℤ => ((((n : ℂ) * z) + d) ^ k)⁻¹ := by
-  apply summable_inv_of_isBigO_rpow_inv (show 1 < (k : ℝ) by norm_cast)
-  lift k to ℕ using (by linarith)
-  simpa using (linear_bigO_pow n z k)
+    Summable fun d : ℤ => ((((n : ℂ) * z) + d) ^ k)⁻¹ := linear_right_summable (↑z) n hk
 
 /-- A cleaner version of `tsum_sigma_eqn2` with product indexing by `ℕ+ × ℕ+`. -/
 public theorem tsum_sigma_eqn {k : ℕ} (z : ℍ) :

@@ -477,10 +477,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           (MagicFunction.Parametrisations.z₄'_eq_of_mem (t := t) ht')
       have hz' :
           ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I = (1 : ℂ) - (t : ℂ) + (I : ℂ) := by
-        have hcast : ((1 - t : ℝ) : ℂ) = (1 : ℂ) - (t : ℂ) := by
-          norm_cast
-        -- Reduce to `1 * I = I`.
-        simp [hcast]
+        norm_num
       have hz_g :
           MagicFunction.Parametrisations.z₄' t =
             ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I := by
@@ -952,9 +949,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hRight_full' : R0 + R1 = (-VI) * bContourWeight u (1 : ℂ) := by
       simpa [hR0, hR1] using hRight_full
     have hCenter' : C + S = -I1 := by
-      have h := hCenter
-      -- Replace integrals by abbreviations.
-      simpa [hC, hS, hI1] using h
+      assumption
     have hCenterVI' : I0 + I1 = VI := by
       simpa [hI0, hI1] using hCenterVI
     -- Center contribution equals `2*I*VI`.

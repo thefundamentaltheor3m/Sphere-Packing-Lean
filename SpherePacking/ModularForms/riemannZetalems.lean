@@ -28,6 +28,4 @@ lemma zeta_two_eqn : ∑' (n : ℤ), ((n : ℂ) ^ 2)⁻¹ = 2 * riemannZeta 2 :=
   apply Summable.of_nat_of_neg_add_one
   · apply this
   rw [← summable_nat_add_iff 1] at this
-  apply this.congr
-  intro b
-  congr
+  assumption

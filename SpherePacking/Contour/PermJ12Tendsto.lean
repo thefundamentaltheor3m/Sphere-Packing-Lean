@@ -246,10 +246,7 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of
     rcases
       exists_gAct_im_ge_of_dist_lt (wedgeSet := wedgeSet) (gAct := gAct)
         (hg := hg) hApos (hzcl := hzcl) (hz1 := hz1) hdist_im with ⟨hz', hA'⟩
-    have hzEq : (⟨z, hz_im_pos⟩ : UpperHalfPlane) = ⟨z, hz'⟩ := by
-      ext
-      rfl
-    simpa [zH, hzEq] using hA'
+    assumption
   have hψS_bound : ‖ψS (gAct zH)‖ ≤ (1 : ℝ) := hA _ hA_le_im
   have hψT_norm : ‖ψT' z‖ ≤ ‖(z - 1) ^ k‖ := by
     have hψ : ψT' z = -ψS (gAct zH) * (z - 1) ^ k := by

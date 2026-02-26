@@ -468,14 +468,7 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
               (Cinv2 * Real.exp (-(2 : ℝ) * Real.pi * t)) =
             (Csum * Cinv2) * Real.exp (-(5 : ℝ) * Real.pi * t) := by
         -- reassociate and fold `exp(-3πt) * exp(-2πt)` into `exp(-5πt)`
-        calc
-          (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) *
-              (Cinv2 * Real.exp (-(2 : ℝ) * Real.pi * t)) =
-              (Csum * Cinv2) *
-                (Real.exp (-(3 : ℝ) * Real.pi * t) * Real.exp (-(2 : ℝ) * Real.pi * t)) := by
-                ring
-          _ = (Csum * Cinv2) * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-                rw [hExp]
+        exact CancelDenoms.mul_subst rfl hExp rfl
       have hterm :
           (Csum * Cinv2) * Real.exp (-(5 : ℝ) * Real.pi * t) ≤
             (Csum * Cinv2) * Real.exp (-Real.pi * t) := by
@@ -653,13 +646,7 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
   -- Finish with `ψI = 128*(x*y + z*w)` and triangle inequality.
   have hψI' : ψI.resToImagAxis t = (128 : ℂ) * (x * y + z * w) := by
     -- rewrite divisions into inverses, and match `x*y`/`z*w`
-    have hψI'' :
-        ψI.resToImagAxis t =
-          (128 : ℂ) *
-            (x * ((H₂.resToImagAxis t) ^ (2 : ℕ))⁻¹ +
-              z * ((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹) := by
-      simpa [div_eq_mul_inv, mul_add, add_mul, mul_assoc] using hψI
-    simpa [y, w, mul_add, add_mul, mul_assoc, add_assoc] using hψI''
+    assumption
   calc
     ‖ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - ((Real.exp (2 * π * t) : ℝ) : ℂ)‖
         = ‖ψI.resToImagAxis t - (144 : ℂ) - (e : ℂ)‖ := by simp [hres, e]

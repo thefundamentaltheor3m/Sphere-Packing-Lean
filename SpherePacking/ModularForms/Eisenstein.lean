@@ -99,9 +99,7 @@ private lemma E4qSeries_derivBound :
   have hk_im : δ ≤ k.1.im := hδ_le k.1 k.2
   have hnorm_exp :
       ‖cexp (2 * Real.pi * Complex.I * (n : ℂ) * k.1)‖ ≤ r ^ n := by
-    simpa [r] using
-      (SpherePacking.ForMathlib.norm_cexp_two_pi_I_mul_nat_mul_le_pow_of_le_im
-        (n := n) (δ := δ) (z := k.1) hk_im)
+    exact SpherePacking.ForMathlib.norm_cexp_two_pi_I_mul_nat_mul_le_pow_of_le_im n hk_im
   have hσ : (σ 3 n : ℝ) ≤ (n : ℝ) ^ 4 := by
     exact_mod_cast (sigma_bound 3 n)
   have hcoeff_norm : ‖E4Coeff n‖ ≤ (240 : ℝ) * (n : ℝ) ^ 4 := by

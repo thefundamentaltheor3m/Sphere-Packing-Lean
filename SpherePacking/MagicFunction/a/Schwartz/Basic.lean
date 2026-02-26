@@ -342,9 +342,7 @@ theorem I₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     have hsmoothInf : ContDiffAt ℝ (∞ : WithTop ℕ∞) (fun y : ℝ ↦ g5 y * RealIntegrals.I₁' y) x := by
       have : ContDiff ℝ ∞ (fun y : ℝ ↦ g5 y * RealIntegrals.I₁' y) := hg5_smooth.mul I₁'_smooth'
       exact this.contDiffAt
-    have hn : (n : WithTop ℕ∞) ≤ (∞ : WithTop ℕ∞) := by
-      exact_mod_cast (show (n : ℕ∞) ≤ (⊤ : ℕ∞) from le_top)
-    exact hsmoothInf.of_le hn
+    exact ContDiffAt.of_le hsmoothInf hn'
   have hsmul :
       iteratedFDeriv ℝ n ((-2 : ℂ) • fun y : ℝ ↦ g5 y * RealIntegrals.I₁' y) x =
         (-2 : ℂ) • iteratedFDeriv ℝ n (fun y : ℝ ↦ g5 y * RealIntegrals.I₁' y) x := by
@@ -633,11 +631,7 @@ public theorem a_eq_sum_integrals_SchwartzIntegrals : a =
   + MagicFunction.a.SchwartzIntegrals.I₄
   + MagicFunction.a.SchwartzIntegrals.I₅
   + MagicFunction.a.SchwartzIntegrals.I₆ := by
-  ext x
-  simp [a, a', MagicFunction.a.SchwartzIntegrals.I₁, MagicFunction.a.SchwartzIntegrals.I₂,
-    MagicFunction.a.SchwartzIntegrals.I₃, MagicFunction.a.SchwartzIntegrals.I₄,
-    MagicFunction.a.SchwartzIntegrals.I₅, MagicFunction.a.SchwartzIntegrals.I₆,
-    schwartzMap_multidimensional_of_schwartzMap_real, SchwartzMap.add_apply, add_assoc]
+  rfl
 
 end MagicFunction.FourierEigenfunctions
 

@@ -387,13 +387,7 @@ lemma phi4_numerator_bound
             ((504 * CΔq) * q ^ (2 : ℕ)) =
         ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq) * q ^ (2 : ℕ) := by
     -- Factor `q^2` and collect coefficients.
-    have hEq' :
-        ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2) * q ^ (2 : ℕ) + CΔ3 * q ^ (2 : ℕ) +
-              (504 * CΔq) * q ^ (2 : ℕ) =
-          (((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2) + CΔ3 + 504 * CΔq) * q ^ (2 : ℕ) := by
-      ring
-    -- Reassociate on the coefficient side.
-    simpa [add_assoc, add_left_comm, add_comm] using hEq'
+    exact Eq.symm (distrib_three_right (240 ^ 2 + 2 * B240 * CE4 + CE4 ^ 2) CΔ3 (504 * CΔq) (q ^ 2))
   exact htmp.trans (le_of_eq hEq)
 
 /-- For large `t`, `φ₄' (it)` differs from `exp (2π t) + 504` by `O(exp (-2π t))`. -/
@@ -488,11 +482,7 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
     let E : ℂ := (Real.exp (2 * π * t) : ℂ)
     let qC : ℂ := (q : ℂ)
     let approx : ℂ := qC + (-24 : ℂ) * (qC ^ (2 : ℕ))
-    have hE_norm : ‖E‖ = Real.exp (2 * π * t) := by
-      dsimp [E]
-      calc
-        ‖(Real.exp (2 * π * t) : ℂ)‖ = ‖Real.exp (2 * π * t)‖ := Complex.norm_real _
-        _ = Real.exp (2 * π * t) := Real.norm_of_nonneg (Real.exp_pos _).le
+    have hE_norm : ‖E‖ = Real.exp (2 * π * t) := norm_ofReal_exp (2 * π * t)
     have hmain :
         ‖E * (Δ z - approx)‖ ≤ (Real.exp (2 * π * t)) * (CΔ3 * q ^ (3 : ℕ)) := by
       calc
@@ -549,10 +539,7 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
   have hnum :
       ‖(E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)‖ ≤
         ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq) * q ^ (2 : ℕ) := by
-    simpa using
-      (phi4_numerator_bound (t := t) (q := q) (z := z)
-        (B240 := B240) (CE4 := CE4) (CΔ3 := CΔ3) (CΔq := CΔq)
-        hE4sq hExpΔ hΔ2err)
+    exact phi4_numerator_bound hE4sq hExpΔ (hΔq t ht0 ht1)
   -- Rewrite `φ₄'` and apply the numerator bound together with the inverse-Δ bound.
   have hrew :
       φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ) =

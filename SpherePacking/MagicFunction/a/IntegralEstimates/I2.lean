@@ -118,11 +118,9 @@ public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 /
 
 lemma im_parametrisation_upper : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (↑t + I)).im < 1 := by
   intro t ht
-  rw [im_parametrisation_eq t ht, one_div, ← inv_one, inv_lt_inv₀]
-  · obtain ⟨ht₀, ht₁⟩ := ht
-    simp_all only [inv_one, lt_add_iff_pos_left, pow_pos]
-  · positivity
-  · exact one_pos
+  have h : (1 : ℝ) < t ^ 2 + 1 := by nlinarith [sq_pos_of_pos ht.1]
+  simpa [im_parametrisation_eq t ht] using (one_div_lt_one_div_of_lt one_pos h)
+
 end Bounding_Integrand
 
 section Bounding_Integral
