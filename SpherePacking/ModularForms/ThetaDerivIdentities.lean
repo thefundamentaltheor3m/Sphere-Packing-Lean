@@ -599,7 +599,7 @@ Their difference is a weight-4 cusp form, hence zero by dimension vanishing.
 /-- S-action on H_sum_sq: invariant since H₂|S = -H₄ and H₄|S = -H₂ -/
 private lemma H_sum_sq_S_action : (H_sum_sq ∣[(4 : ℤ)] S) = H_sum_sq := by
   have h_eq : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by
-    ext z; simp [H_sum_sq, sq]; ring
+    ext z; simp [H_sum_sq, sq]
   simp only [h_eq, show (4 : ℤ) = 2 + 2 from by norm_num,
     SlashAction.add_slash, mul_slash_SL2 2 2 S _ _, H₂_S_action, H₄_S_action]
   ext z; simp [Pi.mul_apply, Pi.add_apply]; ring
