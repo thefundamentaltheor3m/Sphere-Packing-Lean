@@ -244,11 +244,7 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
           ψI' ((t : ℂ) + Complex.I) =
             ψT' ((t : ℂ) + Complex.I) + ψS' ((t : ℂ) + Complex.I) := by
         simpa [ψI', ψT', ψS', hz] using h
-      calc
-        ψI' ((t : ℂ) + Complex.I) - ψT' ((t : ℂ) + Complex.I)
-            = (ψT' ((t : ℂ) + Complex.I) + ψS' ((t : ℂ) + Complex.I)) -
-              ψT' ((t : ℂ) + Complex.I) := by simp [h']
-        _ = ψS' ((t : ℂ) + Complex.I) := by ring
+      exact sub_eq_of_eq_add' h'
     -- Integrate the pointwise identity.
     have hInt :
         (∫ t in (0 : ℝ)..1, ψI' ((t : ℂ) + Complex.I)) -
@@ -273,9 +269,7 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
             ∫ t in (0 : ℝ)..1, ψS' ((t : ℂ) + Complex.I) := by
         refine intervalIntegral.integral_congr (μ := MeasureTheory.volume) ?_
         intro t ht
-        have : ψI' ((t : ℂ) + Complex.I) - ψT' ((t : ℂ) + Complex.I) = ψS' ((t : ℂ) + Complex.I) :=
-          hrel t
-        simp [this]
+        exact Complex.ext (congrArg Complex.re (hrel t)) (congrArg Complex.im (hrel t))
       simpa [hSub] using hCongr
     simpa [hJ2, hJ4, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hInt
   have hdiffψS :

@@ -612,12 +612,7 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
         simpa using (Real.exp_le_exp.2 this)
       have hB : ‖B‖ ≤ ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) := by
         have hExpNorm :
-            ‖(Real.exp (2 * π * t) : ℂ)‖ = Real.exp (2 * π * t) := by
-          have hpos : 0 < Real.exp (2 * π * t) := Real.exp_pos _
-          calc
-            ‖(Real.exp (2 * π * t) : ℂ)‖ = |Real.exp (2 * π * t)| := by
-              simpa using (RCLike.norm_ofReal (K := ℂ) (Real.exp (2 * π * t)))
-            _ = Real.exp (2 * π * t) := by simp [abs_of_pos hpos]
+            ‖(Real.exp (2 * π * t) : ℂ)‖ = Real.exp (2 * π * t) := norm_ofReal_exp (2 * π * t)
         have hB' :
             ‖B‖ = ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π * t) := by
           -- Avoid rewriting `Real.exp` into `Complex.exp`.

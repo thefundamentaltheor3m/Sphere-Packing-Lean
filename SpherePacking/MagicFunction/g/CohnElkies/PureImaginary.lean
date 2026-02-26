@@ -121,10 +121,7 @@ lemma a'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (a' u
                   simp [sub_eq_add_neg, add_assoc]
             _ = ((aR - bR + cR - dR : ℝ) : ℂ) := h3
         -- Finish by unfolding `innerR`.
-        have hinner : aR - bR + cR - dR = innerR t := by
-          simp [innerR, aR, bR, cR, dR, φre]
-        -- Replace `innerR t` by the real expression and conclude.
-        simpa [hinner] using hcomb
+        assumption
       have hmul :
           ((((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
                   ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
@@ -233,15 +230,7 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
                       Real.exp (2 * π * t) : ℝ) : ℂ) := by
           simp
         -- Assemble.
-        calc
-          ((ψI' ((Complex.I : ℂ) * (t : ℂ))).re : ℂ) - (144 : ℂ) -
-                Real.exp (2 * π * t) =
-              (((ψI' ((Complex.I : ℂ) * (t : ℂ))).re - (144 : ℝ) : ℝ) : ℂ) -
-                Real.exp (2 * π * t) := by
-                simp [sub_eq_add_neg, add_assoc]
-          _ =
-              ((((ψI' ((Complex.I : ℂ) * (t : ℂ))).re - (144 : ℝ)) -
-                      Real.exp (2 * π * t) : ℝ) : ℂ) := hsub2
+        norm_num
       calc
         ((ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - Real.exp (2 * π * t)) *
               Real.exp (-π * u * t)) =

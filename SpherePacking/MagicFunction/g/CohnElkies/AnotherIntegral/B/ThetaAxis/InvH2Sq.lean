@@ -351,10 +351,7 @@ lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
           (160 * Real.exp (-Real.pi * t)) * (CH2 * Real.exp (-(5 : ℝ) * Real.pi * t)) +
             (CH2 * Real.exp (-(5 : ℝ) * Real.pi * t)) ^ 2 := by
       have hfac : x ^ (2 : ℕ) - main ^ (2 : ℕ) = (x - main) * (x + main) := by ring
-      have hx_le : ‖x‖ ≤ ‖main‖ + ‖r‖ := by
-        have : x = main + r := by simp [r]
-        have : ‖x‖ ≤ ‖main‖ + ‖r‖ := by simpa [this] using norm_add_le main r
-        exact this
+      have hx_le : ‖x‖ ≤ ‖main‖ + ‖r‖ := norm_le_norm_add_norm_sub' x main
       have hxplus :
           ‖x + main‖ ≤ (160 * Real.exp (-Real.pi * t)) + ‖r‖ := by
         have : ‖x + main‖ ≤ ‖x‖ + ‖main‖ := norm_add_le _ _
@@ -660,10 +657,7 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
                   exact ne_of_gt this
                 have hR : (e / 256 : ℝ) ≠ 0 := by
                   exact div_ne_zero he0 (by norm_num)
-                intro hAz
-                have hAz' : ((e / 256 : ℝ) : ℂ) = 0 := by simpa [A] using hAz
-                have : (e / 256 : ℝ) = 0 := (Complex.ofReal_eq_zero).1 hAz'
-                exact hR this
+                exact ofReal_ne_zero.mpr hR
               calc
                 A * w⁻¹ = A * ((x ^ (2 : ℕ))⁻¹ * A⁻¹) := by
                   simp [w, mul_inv_rev]

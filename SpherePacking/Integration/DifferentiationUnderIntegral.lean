@@ -149,9 +149,7 @@ public lemma integrable_gN_Ioo
     intro t ht
     have hh : ‖hf t‖ ≤ Mh := hMh t ht
     have hx : x ∈ Metric.ball x (1 : ℝ) := Metric.mem_ball_self (by norm_num)
-    simpa [K] using
-      (norm_gN_le_const (coeff := coeff) (hf := hf) (coeff_norm_le := coeff_norm_le)
-        (M := Mh) (t := t) (x := x) (x₀ := x) hx hh (n := n))
+    exact norm_gN_le_const coeff_norm_le hx (hMh t ht) n
   exact Integrable.of_bound hmeas K hbound
 
 /-- Differentiate under the integral sign on `(0, 1)` for the integrand `gN n`. -/
@@ -173,13 +171,9 @@ public lemma hasDerivAt_integral_gN_Ioo
     simpa [μ, μIoo01] using
       aestronglyMeasurable_gN_Ioo (coeff := coeff) (hf := hf) continuousOn_hf continuous_coeff n x
   have hF_int : Integrable (gN (coeff := coeff) (hf := hf) n x₀) μ := by
-    simpa [μ] using
-      integrable_gN_Ioo (coeff := coeff) (hf := hf) continuousOn_hf continuous_coeff
-        exists_bound_norm_hf coeff_norm_le n x₀
+    exact integrable_gN_Ioo continuousOn_hf continuous_coeff exists_bound_norm_hf coeff_norm_le n x₀
   have hF'_meas : AEStronglyMeasurable (gN (coeff := coeff) (hf := hf) (n + 1) x₀) μ := by
-    simpa [μ, μIoo01] using
-      aestronglyMeasurable_gN_Ioo (coeff := coeff) (hf := hf) continuousOn_hf continuous_coeff
-        (n + 1) x₀
+    exact aestronglyMeasurable_gN_Ioo continuousOn_hf continuous_coeff (n + 1) x₀
   rcases
       ae_bound_gN_succ_Ioo (coeff := coeff) (hf := hf) (exists_bound_norm_h := exists_bound_norm_hf)
         (coeff_norm_le := coeff_norm_le) (n := n) (x₀ := x₀) with
@@ -221,10 +215,8 @@ public theorem contDiff_integral_g_Ioo
     ContDiff ℝ (⊤ : ℕ∞) (fun x : ℝ => ∫ t in Ioo (0 : ℝ) 1, g (coeff := coeff) (hf := hf) x t) := by
   let I : ℕ → ℝ → ℂ := fun n x => ∫ t, gN (coeff := coeff) (hf := hf) n x t ∂μIoo01
   have hI : ∀ n x, HasDerivAt (fun y : ℝ => I n y) (I (n + 1) x) x := by
-    intro n x
-    simpa [I] using
-      (hasDerivAt_integral_gN_Ioo (coeff := coeff) (hf := hf) continuousOn_hf continuous_coeff
-        exists_bound_norm_hf coeff_norm_le n x)
+    exact fun n x => hasDerivAt_integral_gN_Ioo continuousOn_hf continuous_coeff
+      exists_bound_norm_hf coeff_norm_le n x
   have h0 :
       (fun x : ℝ =>
           ∫ t in Ioo (0 : ℝ) 1, g (coeff := coeff) (hf := hf) x t) =

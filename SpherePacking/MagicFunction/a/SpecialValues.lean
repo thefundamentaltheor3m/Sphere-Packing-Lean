@@ -449,9 +449,7 @@ lemma tendsto_top_f0 :
       ring_nf
     simpa [mul_assoc] using hmain.const_mul C₀
   -- squeeze the norm to `0`
-  refine tendsto_zero_iff_norm_tendsto_zero.2 ?_
-  refine squeeze_zero' (Eventually.of_forall fun _ => norm_nonneg _) hbound ?_
-  exact hdecay
+  exact squeeze_zero_norm' hbound hdecay
 
 lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) +
@@ -491,9 +489,7 @@ lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
       (∫ y : ℝ in (1 : ℝ)..m, f0 ((1 : ℝ) + y * Complex.I)) -
           ∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I) =
         ∫ y : ℝ in (1 : ℝ)..m, (f0 ((1 : ℝ) + y * Complex.I) - f0 ((0 : ℝ) + y * Complex.I)) := by
-    simpa using (intervalIntegral.integral_sub (μ := MeasureTheory.volume)
-      (a := (1 : ℝ)) (b := m) (f := fun y : ℝ => f0 ((1 : ℝ) + y * Complex.I))
-      (g := fun y : ℝ => f0 ((0 : ℝ) + y * Complex.I)) hIntR hIntL).symm
+    exact Eq.symm (integral_sub (hInt 1) (hInt 0))
   have hVert :
       (∫ y : ℝ in (1 : ℝ)..m, (f0 ((1 : ℝ) + y * Complex.I) - f0 ((0 : ℝ) + y * Complex.I))) =
         ∫ y : ℝ in (1 : ℝ)..m, (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) := by
@@ -804,10 +800,7 @@ lemma tendsto_A_div_q :
             (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ)) *
               (cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ)) /
                 cexp (2 * π * Complex.I * (z : ℂ))) := by
-        simpa [mul_assoc] using
-          (mul_div_assoc (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))
-            (cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ)))
-            (cexp (2 * π * Complex.I * (z : ℂ))))
+        ring
       rw [hmul, ←hdiv]
     calc
       ((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z)
@@ -1084,10 +1077,7 @@ end StripContour
 
 /-- The special value at the origin: `a 0 = -8640 * I / π`. -/
 public theorem a_zero :
-    FourierEigenfunctions.a (0 : ℝ⁸) = -8640 * Complex.I / π := by
-  simpa using
-    (MagicFunction.a.SpecialValues.a_zero_value :
-      FourierEigenfunctions.a (0 : ℝ⁸) = -8640 * Complex.I / π)
+    FourierEigenfunctions.a (0 : ℝ⁸) = -8640 * Complex.I / π := a_zero_value
 
 end Zero
 

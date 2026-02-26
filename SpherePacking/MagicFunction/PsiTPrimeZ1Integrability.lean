@@ -111,9 +111,7 @@ public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
         simpa [g, mul_assoc, mul_left_comm, mul_comm] using hmul
       exact hmul'.trans (le_of_eq hR)
     simpa [hnorm_g] using this
-  have hg_int : Integrable g μIoc01 :=
-    Integrable.mono' hmajor hmeas_g hg_bound
-  simpa [g] using hg_int
+  exact Integrable.mono' hmajor hmeas_g hg_bound
 
 end
 

@@ -95,9 +95,7 @@ public lemma norm_iteratedFDeriv_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
   have hnorm_iter :
       ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ =
         ‖iteratedDeriv m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ := by
-    simpa using
-      (norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := m)
-        (f := fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) (x := x))
+    exact norm_iteratedFDeriv_eq_norm_iteratedDeriv
   have hiter' :
       iteratedDeriv m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x =
         c ^ m * Complex.exp ((x : ℂ) * c) := by

@@ -260,9 +260,7 @@ public theorem G2_c_tendsto (z : ℍ) :
         rw [← this]
         have := (a4 2 z).prod_symm.prod
         apply Summable.mul_left
-        apply this.congr
-        intro b
-        congr
+        assumption
     have := hf.hasSum
     have V := this.comp tendsto_finset_range
     simpa [neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one, Nat.factorial_one,

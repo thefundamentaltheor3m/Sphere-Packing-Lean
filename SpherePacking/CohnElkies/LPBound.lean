@@ -163,10 +163,7 @@ theorem calc_aux_1 (hd : 0 < d)
     refine Finset.sum_le_sum ?_
     intro x hx
     refine Finset.sum_le_sum ?_
-    intro y hy
-    simpa using
-      (SpherePacking.CohnElkies.lattice_sum_re_le_ite (P := P) (D := D) (f := f) (hP := hP)
-        (hD_unique_covers := hD_unique_covers) (hCohnElkies₁ := hCohnElkies₁) x y)
+    exact fun i a => CohnElkies.lattice_sum_re_le_ite hP hD_unique_covers hCohnElkies₁ x i
   refine hmain.trans ?_
   simp [PeriodicSpherePacking.numReps']
 
@@ -207,12 +204,8 @@ theorem calc_steps_part1 (hd : 0 < d) :
   _ =
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       (f (↑x - ↑y + ↑ℓ)).re
-        := by
-              -- Use `unique_covers_of_centers` to split `tsum` by translates;
-              -- need disjointness + summability.
-              simpa using
-                (SpherePacking.CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice
-                  (f := f) (P := P) (D := D) hD_isBounded hD_unique_covers hd)
+        := CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice f P
+              hD_isBounded hD_unique_covers hd
   -- Pull out real parts so we can apply PSF-L to the complex equality.
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       f (↑x - ↑y + ↑ℓ)).re
@@ -454,18 +447,7 @@ theorem calc_steps_part2 (hd : 0 < d) :
                   (a := (𝓕 ⇑f 0).re)
                   (b := (↑(P.numReps' hd hD_isBounded) : ℝ) ^ 2)
               -- Rewrite `𝓕 ⇑f 0` to `𝓕 f 0`; `rw` is robust here (only `hfou_re` use).
-              have hcomm' :
-                  (1 / ZLattice.covolume P.lattice volume) *
-                      (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
-                      ↑(P.numReps' hd hD_isBounded) ^ 2
-                    =
-                    ↑(P.numReps' hd hD_isBounded) ^ 2 *
-                      (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re /
-                        ZLattice.covolume P.lattice volume := by
-                simpa using hcomm
-              -- Apply the conversion and rewrite the final term (`rw` avoids `isDefEq` timeout).
-              rw [hcomm']
-              rw [hfou_re]
+              assumption
 
 include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hD_unique_covers in
 omit hne_zero hReal in
@@ -589,16 +571,11 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
         norm_cast
         rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0),
             Real.toNNReal_of_nonneg (LT.lt.le (ZLattice.covolume_pos P.lattice volume))]
-        refine NNReal.eq ?_
-        push_cast
         rfl
       -- Drop `toNNReal`s and finish with `hCalc`.
       rw [hRHSCast, hLHSCast, ENNReal.coe_le_coe]
       exact Real.toNNReal_le_toNNReal hCalc
-  exact
-    calc_steps (P := P) (D := D) (hRealFourier := hRealFourier) (hCohnElkies₁ := hCohnElkies₁)
-      (hCohnElkies₂ := hCohnElkies₂) (hP := hP) (hD_isBounded := hD_isBounded)
-      (hD_unique_covers := hD_unique_covers) hd
+  exact calc_steps hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hD_unique_covers hd
 
 end Main_Theorem_For_One_Packing
 

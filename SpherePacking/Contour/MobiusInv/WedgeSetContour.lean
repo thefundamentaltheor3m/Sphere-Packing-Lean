@@ -123,13 +123,9 @@ private lemma perm_12_contour_mobiusInv_wedgeSet_aux
   let δb : Path ((1 : ℂ) + Complex.I) Complex.I := Path.segment ((1 : ℂ) + Complex.I) Complex.I
   let η : Path zmid ztop := Path.segment zmid ztop
   have h1 : (∫ᶜ z in γa, ω z) + ∫ᶜ z in η, ω z = ∫ᶜ z in δa, ω z := by
-    have h :=
-      perm_J12_contour_h1_mobiusInv_wedgeSet (Ψ₁' := Ψ₁') closed_ω_wedgeSet (r := r)
-    simpa [ω, γa, δa, η, zmid, ztop] using h
+    exact perm_J12_contour_h1_mobiusInv_wedgeSet closed_ω_wedgeSet r
   have h2 : ∫ᶜ z in γb, ω z = (∫ᶜ z in δb, ω z) + ∫ᶜ z in η, ω z := by
-    have h :=
-      perm_J12_contour_h2_mobiusInv_wedgeSet (Ψ₁' := Ψ₁') closed_ω_wedgeSet (r := r)
-    simpa [ω, γb, δb, η, zmid, ztop] using h
+    exact perm_J12_contour_h2_mobiusInv_wedgeSet closed_ω_wedgeSet r
   have hsum :
       (∫ᶜ z in γa, ω z) + ∫ᶜ z in γb, ω z =
         (∫ᶜ z in δa, ω z) + ∫ᶜ z in δb, ω z := by

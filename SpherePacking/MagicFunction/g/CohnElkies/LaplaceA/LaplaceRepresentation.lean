@@ -91,10 +91,7 @@ public theorem aRadial_eq_laplace_phi0_main {u : ℝ} (hu : 2 < u) :
       (MeasureTheory.setIntegral_union (μ := volume)
         (f := fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I))
         (s := Set.Ioc (0 : ℝ) 1) (t := Set.Ioi (1 : ℝ))
-        (hst := by
-          refine Set.disjoint_left.2 ?_
-          intro x hx1 hx2
-          exact (not_lt_of_ge hx1.2) hx2)
+        (hst := Set.Ioc_disjoint_Ioi_same)
         (ht := measurableSet_Ioi) h5Ioc h5Ioi1).symm
   -- Combine the two `Φ₅'` pieces into a single ray integral.
   set coeff : ℂ :=
@@ -142,11 +139,7 @@ public theorem aRadial_eq_laplace_phi0_main {u : ℝ} (hu : 2 < u) :
     -- Pull the negation out of the integral.
     have hneg :
         (∫ t in Set.Ioi (0 : ℝ), -aLaplaceIntegrand u t) =
-          - (∫ t in Set.Ioi (0 : ℝ), aLaplaceIntegrand u t) := by
-      -- `setIntegral` is an integral against a restricted measure.
-      simpa using
-        (MeasureTheory.integral_neg (μ := volume.restrict (Set.Ioi (0 : ℝ)))
-          (f := fun t : ℝ => aLaplaceIntegrand u t))
+          - (∫ t in Set.Ioi (0 : ℝ), aLaplaceIntegrand u t) := integral_neg (aLaplaceIntegrand u)
     simpa using hcongr.trans hneg
   -- Finish by substitution and normalization.
   rw [hcoeff, hΦ5]

@@ -592,11 +592,7 @@ lemma finiteDimensional_modularForm_level_one (k : ℤ) :
           exact hkNat ▸ (show FiniteDimensional ℂ (ModularForm Γ(1) (kN : ℤ)) by infer_instance)
       · have hz : ∀ f : ModularForm Γ(1) k, f = 0 := fun f =>
           ModularForm.levelOne_eq_zero_of_odd_weight (k := k) hk2 f
-        haveI : Subsingleton (ModularForm Γ(1) k) := by
-          refine ⟨fun f g => ?_⟩
-          calc
-            f = 0 := hz f
-            _ = g := by simp [hz g]
+        haveI : Subsingleton (ModularForm Γ(1) k) := subsingleton_of_forall_eq 0 hz
         exact finiteDimensional_of_subsingleton (V := ModularForm Γ(1) k)
 
 lemma finiteDimensional_modularForm_congr {k : ℤ} {H K : Subgroup (GL (Fin 2) ℝ)}
@@ -612,10 +608,7 @@ lemma finiteDimensional_modularForm_SL2Z (k : ℤ) : FiniteDimensional ℂ (Modu
   have htop : FiniteDimensional ℂ (ModularForm (Subgroup.map f (⊤ : Subgroup SL(2, ℤ))) k) := by
     have hΓ : (Γ(1) : Subgroup SL(2, ℤ)) = ⊤ := by
       simpa using (CongruenceSubgroup.Gamma_one_top : CongruenceSubgroup.Gamma 1 = ⊤)
-    have hmap :
-        Subgroup.map f (Γ(1) : Subgroup SL(2, ℤ)) = Subgroup.map f (⊤ : Subgroup SL(2, ℤ)) :=
-      congrArg (fun H : Subgroup SL(2, ℤ) => Subgroup.map f H) hΓ
-    exact finiteDimensional_modularForm_congr (k := k) hmap hΓ1
+    exact finiteDimensional_modularForm_congr (congrArg (Subgroup.map f) hΓ) hΓ1
   have hrange : f.range = Subgroup.map f (⊤ : Subgroup SL(2, ℤ)) := by
     simpa [f] using (MonoidHom.range_eq_map f)
   exact finiteDimensional_modularForm_congr (k := k) hrange.symm htop

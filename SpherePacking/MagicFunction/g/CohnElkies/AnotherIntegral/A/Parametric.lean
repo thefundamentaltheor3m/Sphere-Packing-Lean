@@ -111,12 +111,7 @@ public lemma aAnotherIntegralC_analyticOnNhd :
           Set.MapsTo (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) (Set.Ioi (0 : ℝ))
             upperHalfPlaneSet := by
         intro t ht
-        have him : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := by
-          calc
-            (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im
-                = (((Complex.I : ℂ) * (t : ℂ)⁻¹) : ℂ).im := by simp [div_eq_mul_inv]
-            _ = (((Complex.I : ℂ) * ((t⁻¹ : ℝ) : ℂ)) : ℂ).im := by simp [Complex.ofReal_inv]
-            _ = t⁻¹ := by simp
+        have him : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := imag_I_div t
         have : 0 < (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im := by
           rw [him]
           exact inv_pos.2 (by simpa using ht)
@@ -232,11 +227,7 @@ public lemma aAnotherIntegralC_analyticOnNhd :
             ‖Complex.exp (-(π : ℂ) * ((ε / 2 : ℝ) : ℂ) * (t : ℂ))‖ =
               Real.exp (-π * (ε / 2) * t) := by
           simp [Complex.norm_exp]
-        have hEq :
-            Real.exp (-π * (ε / 2) * t) =
-              ‖Complex.exp (-(π : ℂ) * ((ε / 2 : ℝ) : ℂ) * (t : ℂ))‖ := by
-          simpa using hnormε.symm
-        exact le_trans hExp (le_of_eq hEq)
+        exact le_of_le_of_eq hExp (id (Eq.symm hnormε))
       have hmul :
           ‖aAnotherBase t‖ * ‖Complex.exp (-(π : ℂ) * u * (t : ℂ))‖ ≤
             ‖aAnotherBase t‖ * ‖Complex.exp (-(π : ℂ) * ((ε / 2 : ℝ) : ℂ) * (t : ℂ))‖ :=
@@ -378,16 +369,7 @@ public lemma aAnotherIntegralC_analyticOnNhd :
     have hDeriv :
         HasDerivAt aAnotherIntegralC
           (∫ t in Set.Ioi (0 : ℝ), (-(π : ℂ) * (t : ℂ)) * aAnotherIntegrandC u t) u := by
-      have hfun : (fun z : ℂ => ∫ t, aAnotherIntegrandC z t ∂μ) = aAnotherIntegralC := by
-        funext z
-        simp [aAnotherIntegralC, μ, μIoi0]
-      have hDerivμ :
-          HasDerivAt aAnotherIntegralC
-            (∫ t, (-(π : ℂ) * (t : ℂ)) * aAnotherIntegrandC u t ∂μ) u := by
-        -- Rewrite the function in the goal without unfolding the integrand (which `simp` would do).
-        rw [← hfun]
-        exact hDerivCore
-      simpa [μ, μIoi0] using hDerivμ
+      assumption
     exact hDeriv.differentiableAt.differentiableWithinAt
   exact hDiff.analyticOnNhd rightHalfPlane_isOpen
 

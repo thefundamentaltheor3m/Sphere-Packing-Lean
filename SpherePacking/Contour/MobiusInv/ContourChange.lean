@@ -81,9 +81,7 @@ public lemma curveIntegral_segment_eq_neg_curveIntegral_segment_map'_of
           t ∈ Set.Ioo (0 : ℝ) 1 := by
       have hne1 :
           ∀ᵐ t : ℝ ∂((volume : Measure ℝ).restrict (Set.Ioc (0 : ℝ) 1)), t ≠ 1 := by
-        have : ((volume : Measure ℝ).restrict (Set.Ioc (0 : ℝ) 1)) ({(1 : ℝ)} : Set ℝ) = 0 := by
-          simp
-        simpa [Set.mem_singleton_iff] using (measure_eq_zero_iff_ae_notMem.1 this)
+        exact Measure.ae_ne (volume.restrict (Set.Ioc 0 1)) 1
       filter_upwards [ae_restrict_mem measurableSet_Ioc, hne1] with t ht htne1
       exact ⟨ht.1, lt_of_le_of_ne ht.2 htne1⟩
     filter_upwards [htIoo] with t ht

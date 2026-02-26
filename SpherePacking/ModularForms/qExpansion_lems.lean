@@ -208,10 +208,7 @@ public lemma qExpansion_sub1 {a b : ℤ} (f : ModularForm Γ(1) a) (g : ModularF
 
 @[simp] --generalize this away from ℂ
 lemma IteratedDeriv_zero_fun (n : ℕ) (z : ℂ) : iteratedDeriv n (fun _ : ℂ => (0 : ℂ)) z = 0 := by
-  induction n with
-  | zero => simp
-  | succ n hn =>
-    simp
+  norm_num
 
 lemma iteratedDeriv_const_eq_zero (m : ℕ) (hm : 0 < m) (c : ℂ) :
     iteratedDeriv m (fun _ : ℂ => c) = fun _ : ℂ => 0 := by

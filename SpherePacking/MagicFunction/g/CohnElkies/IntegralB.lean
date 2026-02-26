@@ -757,11 +757,7 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
           _ = ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖ := by
                   exact hnorm2.symm
       -- Apply `norm_integral_le_of_norm_le` on the restricted measure.
-      have :=
-        (MeasureTheory.norm_integral_le_of_norm_le (μ := μ) (f := fun t : ℝ =>
-              (B t : ℂ) * Real.exp (-π * (useq n) * t))
-            (g := fun t : ℝ => ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖) hM_int hle)
-      simpa [M, μ] using this
+      exact norm_integral_le_of_norm_le hM_int hle
     have hsin_tendsto :
         Filter.Tendsto (fun n : ℕ => (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ)) Filter.atTop
           (𝓝 (0 : ℝ)) := by
@@ -773,10 +769,7 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
           ContinuousAt (fun u : ℝ => (Real.sin (π * u / 2)) ^ (2 : ℕ)) (2 : ℝ) := by
         have hlin : Continuous (fun u : ℝ => π * u / 2) := by
           have hmul : Continuous (fun u : ℝ => π * u) := continuous_const.mul continuous_id
-          have hmul' :
-              Continuous (fun u : ℝ => (π * u) * ((2 : ℝ)⁻¹)) :=
-            hmul.mul continuous_const
-          simpa [div_eq_mul_inv, mul_assoc] using hmul'
+          exact Continuous.div_const hmul 2
         have hsin : Continuous (fun u : ℝ => Real.sin (π * u / 2)) :=
           Real.continuous_sin.comp hlin
         exact (hsin.pow 2).continuousAt

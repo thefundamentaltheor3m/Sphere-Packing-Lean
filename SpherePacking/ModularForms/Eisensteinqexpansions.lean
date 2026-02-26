@@ -203,9 +203,7 @@ theorem q_exp_iden_2 (k : ℕ) (hk : 3 ≤ k) (hk2 : Even k) (z : ℍ) :
 lemma EQ0 (k : ℕ) (z : ℍ) : ∑' (x : Fin 2 → ℤ),
     1 / (x 0 * (z : ℂ) + x 1) ^ ↑k = ∑' x : ℤ × ℤ, 1 / ((x.1 : ℂ) * z + x.2) ^ k := by
   rw [← (piFinTwoEquiv fun _ => ℤ).tsum_eq]
-  apply tsum_congr
-  intro x
-  simp
+  rfl
 
 lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : Fin 2 → ℤ),
     1 / (x 0 * (z : ℂ) + x 1) ^ ↑k = 2 * riemannZeta ↑k +
@@ -309,10 +307,7 @@ public lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z 
   simp only [one_div, PNat.val_ofNat, smul_eq_mul, neg_mul]
   simp_rw [eisSummand]
   have inv_pow_eq_zpow_neg (a : ℂ) : (a ^ k)⁻¹ = a ^ (- (k : ℤ)) := by
-    have hk' : a ^ k = a ^ (k : ℤ) := (zpow_natCast a k).symm
-    calc
-      (a ^ k)⁻¹ = (a ^ (k : ℤ))⁻¹ := congrArg (fun t => t⁻¹) hk'
-      _ = a ^ (- (k : ℤ)) := (zpow_neg a (k : ℤ)).symm
+    norm_num
   have HE1' := EQ1 k hk hk2 z
   simp only [one_div, inv_pow_eq_zpow_neg] at HE1'
   have HE2' := EQ2 k hk z

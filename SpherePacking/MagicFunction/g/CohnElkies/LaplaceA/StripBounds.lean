@@ -141,9 +141,7 @@ public lemma exists_phi2'_phi4'_bound_exp :
       dsimp [C]
       exact le_trans (le_max_right _ _) (le_max_right _ _)
     exact hφ2'.trans (mul_le_mul_of_nonneg_right hCdom (Real.exp_pos _).le)
-  refine ⟨hφ2, ?_⟩
-  -- `φ₄'` bound from `hφ4`.
-  exact hφ4
+  exact ⟨hφ2, hφ4⟩
 
 /-- A convenient form of `φ₀_S_transform`, clearing the denominators by multiplying by `z^2`. -/
 public lemma φ₀_S_transform_mul_sq (w : ℍ) :
@@ -646,9 +644,7 @@ lemma integrableOn_Φ₂'_imag_axis_Ioi {u : ℝ} (hu : 2 < u) {Cφ Aφ C₀ A :
     intro t ht
     have ht1 : 1 ≤ t := le_trans hA1 (le_of_lt ht)
     have htAφ : Aφ ≤ t := le_trans hAA (le_of_lt ht)
-    simpa [K, a] using
-      (norm_Φ₂'_imag_axis_le (u := u) (t := t) (Cφ := Cφ) (Aφ := Aφ) (C₀ := C₀)
-        hC₀_pos hC₀ hφbd ht1 htAφ)
+    exact norm_Φ₂'_imag_axis_le hC₀_pos hC₀ hφbd ht1 htAφ
   -- `IntegrableOn` is definitional: reduce to `Integrable` on a restricted measure.
   change Integrable (fun t : ℝ => Φ₂' u ((t : ℂ) * Complex.I)) (volume.restrict (Set.Ioi A))
   exact MeasureTheory.Integrable.mono' (μ := volume.restrict (Set.Ioi A)) hdomReal hMeas hdom

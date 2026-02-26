@@ -81,12 +81,7 @@ public lemma lattice_sum_re_le_ite (hP : P.separation = 1)
             (x : EuclideanSpace ℝ (Fin d)) + (ℓ : EuclideanSpace ℝ (Fin d)) ≠
               (x : EuclideanSpace ℝ (Fin d)) := by
           intro h
-          apply hℓ
-          refine Subtype.ext ?_
-          have : (x : EuclideanSpace ℝ (Fin d)) + (ℓ : EuclideanSpace ℝ (Fin d)) =
-              (x : EuclideanSpace ℝ (Fin d)) + (0 : EuclideanSpace ℝ (Fin d)) := by
-            simpa using h
-          simpa using add_left_cancel this
+          exact (iff_false_intro hℓ).mp (hℓ_eq_zero_of_vadd_eq h)
         have hdist : P.separation ≤ dist
             ((x : EuclideanSpace ℝ (Fin d)) + (ℓ : EuclideanSpace ℝ (Fin d)))
             (x : EuclideanSpace ℝ (Fin d)) :=

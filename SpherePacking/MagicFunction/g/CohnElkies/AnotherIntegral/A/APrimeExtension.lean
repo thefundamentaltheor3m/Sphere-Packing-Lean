@@ -136,10 +136,7 @@ lemma norm_φ₀''_le_of_half_lt {C₀ : ℝ}
   exact hφ'.trans hmul
 
 lemma im_I_div (t : ℝ) : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := by
-  by_cases ht : t = 0
-  · subst ht
-    simp
-  · simp [div_eq_mul_inv, Complex.mul_im, ht]
+  simp
 
 lemma neg_one_div_I_mul (t : ℝ) :
     (-1 : ℂ) / ((Complex.I : ℂ) * (t : ℂ)) = (Complex.I : ℂ) / (t : ℂ) := by

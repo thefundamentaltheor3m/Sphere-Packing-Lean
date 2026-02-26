@@ -162,11 +162,7 @@ lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} 
   have hle : volume (⋃ g ∈ t, g +ᵥ coordCube (d := d) L) ≤
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) :=
     volume.mono hsub
-  have hsum :
-      (∑ g ∈ t, volume (g +ᵥ coordCube (d := d) L)) =
-        (t.card : ℝ≥0∞) * volume (coordCube (d := d) L) := by
-    simp [measure_vadd, mul_comm]
-  simpa [hvol_union, hsum] using hle
+  simp_all
 
 end CoverVolumeBound
 
@@ -484,9 +480,7 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
     periodize_to_periodicSpherePacking (d := d) S (Λ := Λ) D Fset
       (hD_unique_covers := PeriodicConstantApprox.coordCube_unique_covers_vadd (d := d) L hL g)
       (hF_centers := by
-        intro x hx
-        have hx' : x ∈ F := by simpa [Fset] using hx
-        exact hF_centers x hx')
+        assumption)
       (hF_ball := by
         intro x hx
         have hx' : x ∈ F := by simpa [Fset] using hx
@@ -714,13 +708,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     (volume_ball_lt_top _).ne
   have hc_mul :
       c * volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) <
-        ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall := by
-    -- `hcR'` is `c < A / volume(ball R)`
-    simpa [mul_assoc, mul_left_comm, mul_comm] using
-      (ENNReal.lt_div_iff_mul_lt (a :=
-        ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall)
-        (b := volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)) (c := c)
-        (hb0 := Or.inl hvolR_ne0) (hbt := Or.inl hvolR_ne_top)).1 hcR'
+        ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall :=
+    ENNReal.mul_lt_of_lt_div hcR'
   have hvolR2_ne0 : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) ≠ 0 := by
     have hR2pos : 0 < R + Cshift := by positivity
     exact (volume_ball_pos _ hR2pos).ne.symm
@@ -797,12 +786,7 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     -- bound the sum of fibers by `t.card * maxFiber`
     have hsum_le :
         Finset.sum t (fun g => (s.filter fun x => f x = g).card) ≤
-          Finset.sum t (fun _g => sg.card) := by
-      refine Finset.sum_le_sum ?_
-      intro g hg
-      have : (s.filter fun x => f x = g).card ≤ (s.filter fun x => f x = g0).card :=
-        hg0max g hg
-      simpa [sg, fiber] using this
+          Finset.sum t (fun _g => sg.card) := Finset.sum_le_sum hg0max
     have hsum_eq : Finset.sum t (fun _g => sg.card) = t.card * sg.card := by
       simp [Finset.sum_const]
     have hs_le_nat : s.card ≤ t.card * sg.card := by
@@ -890,13 +874,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
                     volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))) /
                 volCube =
               ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) /
-                volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) := by
-          simpa [mul_assoc] using
-            (div_mul_div_cancel_right
-              (a := ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞))
-              (b := volCube)
-              (c := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)))
-                hvolCube_ne0 hvolCube_ne_top)
+                volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) :=
+          div_mul_div_cancel_right hvolCube_ne0 hvolCube_ne_top
         simpa [hcancel] using h₂
       have hdiv₂ :
           (((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) /

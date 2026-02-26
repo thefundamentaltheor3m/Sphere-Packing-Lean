@@ -142,10 +142,7 @@ theorem Θ₂_imag_axis_real : ResToImagAxis.Real Θ₂ := by
   have hsum : Summable (fun n : ℤ => Θ₂_term n τ) := summable_Θ₂_term τ
   have hterm_im (n : ℤ) : (Θ₂_term n τ).im = 0 := by
     have h := congrArg Complex.im (Θ₂_term_eq_ofReal_exp_imag_axis (n := n) (t := t) ht)
-    -- avoid rewriting `(Real.exp _ : ℂ)` into `Complex.exp _` (whose `im` is not definitionaly `0`)
-    have : ((Real.exp (-(Real.pi * (((n : ℝ) + (1 / 2 : ℝ)) ^ 2) * t)) : ℂ)).im = 0 := by
-      simp only [Complex.ofReal_im]
-    simpa [τ] using h.trans this
+    assumption
   rw [Θ₂, im_tsum hsum]
   simp [hterm_im]
 
@@ -977,10 +974,7 @@ private theorem tsum_weighted_exp_sq_tendsto_atImInfty
   · rw [eventually_atImInfty]
     refine ⟨1, fun z hz k ↦ ?_⟩
     have hwk : ‖w k‖ ≤ 1 := hw k
-    have hmul : ‖w k * cexp (π * I * k ^ 2 * z)‖ ≤ ‖cexp (π * I * k ^ 2 * z)‖ := by
-      simpa [norm_mul] using
-        (mul_le_of_le_one_left (a := ‖w k‖) (b := ‖cexp (π * I * k ^ 2 * z)‖)
-          (norm_nonneg _) hwk)
+    have hmul : ‖w k * cexp (π * I * k ^ 2 * z)‖ ≤ ‖cexp (π * I * k ^ 2 * z)‖ := by simpa
     refine hmul.trans ?_
     simp_rw [mul_right_comm _ I, norm_exp_mul_I]
     simpa [← ofReal_intCast, ← ofReal_pow] using le_mul_of_one_le_right (by positivity) hz

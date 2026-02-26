@@ -26,9 +26,7 @@ public lemma fderiv_scalarOneForm_symm {f : ℂ → ℂ} {x u v : ℂ}
     fderiv ℝ (scalarOneForm f) x u v = fderiv ℝ (scalarOneForm f) x v u := by
   let L : ℂ →L[ℂ] (ℂ →L[ℂ] ℂ) := (ContinuousLinearMap.mul ℂ ℂ).flip
   have hEq : scalarOneForm f = fun z => L (f z) := by
-    funext z
-    ext
-    simp [L, scalarOneForm_apply]
+    rfl
   have hωF :
       HasFDerivAt (𝕜 := ℝ) (scalarOneForm f)
         ((ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ) (L (deriv f x))).restrictScalars ℝ) x := by

@@ -65,11 +65,7 @@ lemma continuousOn_phi0''_div_Ioi :
         {z : ℂ | 0 < z.im} := by
     intro t ht
     have him : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := by
-      calc
-        (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im
-            = (((Complex.I : ℂ) * (t : ℂ)⁻¹) : ℂ).im := by simp [div_eq_mul_inv]
-        _ = (((Complex.I : ℂ) * ((t⁻¹ : ℝ) : ℂ)) : ℂ).im := by simp [Complex.ofReal_inv]
-        _ = t⁻¹ := by simp
+      norm_num
     simpa [him] using (inv_pos.2 (by simpa using ht) : 0 < (t⁻¹ : ℝ))
   exact hcontφ.comp hcontIdiv hmaps
 
@@ -314,9 +310,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
             have hB2_nonneg : 0 ≤ B2 := le_trans (norm_nonneg (E₂ zH)) hE2
             have hmul' := mul_le_mul hE2 hE4 (norm_nonneg (E₄ zH)) hB2_nonneg
             simpa [norm_mul] using hmul'
-          have hadd : ‖E₂ zH * E₄ zH‖ + ‖E₆ zH‖ ≤ BA := by
-            simpa [BA] using add_le_add hmul hE6
-          exact le_trans hsub hadd
+          exact norm_sub_le_of_le hmul (hB6 zH hzA6)
         have hφ0 : ‖φ₀ zH‖ ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
           have hBA_nonneg : 0 ≤ BA :=
             le_trans (norm_nonneg (E₂ zH * E₄ zH - E₆ zH)) hAterm

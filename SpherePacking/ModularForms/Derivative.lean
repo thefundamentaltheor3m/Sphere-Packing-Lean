@@ -894,9 +894,7 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
     -- Combine signs.
     rw [hderiv, mul_assoc]
     have hpos : 0 < (d t) ^ (-a) * ((serre_D k F).resToImagAxis t).re := mul_pos hdpowpos hSpos
-    have hmul : (-2 * π : ℝ) * ((d t) ^ (-a) * ((serre_D k F).resToImagAxis t).re) < 0 :=
-      mul_neg_of_neg_of_pos hneg hpos
-    simpa [mul_assoc] using hmul
+    exact mul_neg_of_neg_of_pos hneg hpos
   have hAnti : StrictAntiOn h (Set.Ioi (0 : ℝ)) :=
     strictAntiOn_of_deriv_neg (convex_Ioi (0 : ℝ))
       (fun x hx => (hh x hx).continuousAt.continuousWithinAt)
@@ -1157,12 +1155,7 @@ noncomputable def serreD_modularForm (k : ℤ) (F : ModularForm Γ(1) k) :
       have hSerreGL :
           serre_D k F.toFun ∣[(k + 2 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ γ) =
             serre_D k F.toFun := by
-        calc
-          serre_D k F.toFun ∣[(k + 2 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ γ) =
-              serre_D k F.toFun ∣[(k + 2 : ℤ)] γ := by
-                simpa using
-                  (ModularForm.SL_slash (f := serre_D k F.toFun) (k := (k + 2 : ℤ)) γ).symm
-          _ = serre_D k F.toFun := hSerre
+        assumption
       rw [hSerreGL]
       exact hbdd }
 
@@ -1335,11 +1328,9 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   -- Package `serre_D 1 E₂` as a weight-4 level-1 modular form.
   let F₄ : ModularForm Γ(1) 4 :=
     { toFun := serre_D 1 E₂
-      slash_action_eq' := by
-        intro γ hγ
-        rcases (Subgroup.mem_map.1 hγ) with ⟨γ', hγ', rfl⟩
-        have hSerre := hSerre_slash γ'
-        simpa [ModularForm.SL_slash] using hSerre
+      slash_action_eq' := fun γ a =>
+          slashaction_generators_GL2R (serre_D 1 E₂) 4 (hSerre_slash ModularGroup.S)
+          (hSerre_slash ModularGroup.T) γ a
       holo' := serre_D_differentiable (k := (1 : ℂ)) E₂_holo'
       bdd_at_cusps' := by
         intro c hc
@@ -1378,9 +1369,7 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
     have hmain :
         Tendsto (fun z : ℍ => serre_D 1 E₂ z) atImInfty (𝓝 (-(12⁻¹ : ℂ))) := by
       simpa [serre_D, mul_assoc, mul_one] using (hDlim.sub hterm)
-    have : Tendsto (fun z : ℍ => F₄.toFun z) atImInfty (𝓝 (-(12⁻¹ : ℂ))) := by
-      simpa [F₄] using hmain
-    simpa using this
+    assumption
   have hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ)) := by
     have hE₄lim :
         Tendsto (fun z : ℍ => (12⁻¹ : ℂ) * E₄ z) atImInfty
@@ -1396,9 +1385,7 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   have hz' : F₄ z = (-12⁻¹ : ℂ) * E₄ z := by
     have : F₄ z = -((12⁻¹ : ℂ) * E₄ z) := (eq_neg_iff_add_eq_zero).2 (by simpa using hz)
     simpa [neg_mul] using this
-  have hz'' : F₄.toFun z = (-12⁻¹ : ℂ) * E₄ z := by
-    simpa [ModularForm.toFun_eq_coe] using hz'
-  simpa [F₄, mul_assoc] using hz''
+  assumption
 
 public theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   let F₆ : ModularForm Γ(1) 6 := serreD_modularForm 4 E₄

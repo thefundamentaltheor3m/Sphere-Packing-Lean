@@ -138,18 +138,10 @@ public lemma integrable_pow_mul_of_volume_restrict_Ioo01 {coeff : ℝ → ℂ} {
     Integrable (fun t : ℝ ↦ (coeff t) ^ n * g r t)
       ((volume : Measure ℝ).restrict (Ioo (0 : ℝ) 1)) := by
   let μ : Measure ℝ := (volume : Measure ℝ).restrict (Ioo (0 : ℝ) 1)
-  have hμ_ne : μ univ ≠ ⊤ := by
-    have hμ_fin : μ univ < ⊤ := by
-      have hμ_univ :
-          μ univ = (volume : Measure ℝ) (Ioo (0 : ℝ) 1) := by
-        simp [μ, Measure.restrict_apply, MeasurableSet.univ]
-      rw [hμ_univ]
-      exact (measure_Ioo_lt_top (a := (0 : ℝ)) (b := (1 : ℝ)))
-    exact ne_of_lt hμ_fin
   have hmem : ∀ᵐ t ∂μ, t ∈ Ioo (0 : ℝ) 1 := by
     simpa [μ] using
       (ae_restrict_mem (μ := (volume : Measure ℝ)) (s := Ioo (0 : ℝ) 1) measurableSet_Ioo)
-  exact integrable_pow_mul_of_ae_mem_Ioo01 hμ_ne hmeas hmem hcoeff hg
+  exact integrable_pow_mul_of_ae_mem_Ioo01 (measure_ne_top μ univ) hmeas hmem hcoeff hg
 
 /--
 For `r` in a unit ball around `r₀`, compare `rexp (-π * r)` to `rexp (-π * r₀)` up to a factor
@@ -312,10 +304,7 @@ public lemma iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
     ∀ n : ℕ, iteratedDeriv n I = fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g r t := by
   intro n
   let μ : Measure ℝ := (volume : Measure ℝ).restrict (Ioo (0 : ℝ) 1)
-  haveI : IsFiniteMeasure μ := by
-    simpa [μ] using
-      (inferInstance :
-        IsFiniteMeasure ((volume : Measure ℝ).restrict (Ioo (0 : ℝ) 1)))
+  haveI : IsFiniteMeasure μ := isFiniteMeasure_restrict_Ioo 0 1
   have hmeas (n : ℕ) (r : ℝ) :
       AEStronglyMeasurable (fun t : ℝ ↦ (coeff t) ^ n * g r t) μ := by
     have hcoeff_contOn : ContinuousOn (fun t : ℝ ↦ (coeff t) ^ n) (Ioo (0 : ℝ) 1) :=
@@ -328,17 +317,12 @@ public lemma iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
       measurableSet_Ioo)
   have hint (n : ℕ) (r : ℝ) :
       Integrable (fun t : ℝ ↦ (coeff t) ^ n * g r t) μ := by
-    simpa [μ] using
-      (integrable_pow_mul_of_volume_restrict_Ioo01 (coeff := coeff) (g := g) (n := n) (r := r)
-        (hmeas := by simpa [μ] using hmeas n r) hcoeff hg_bound)
+    exact integrable_pow_mul_of_volume_restrict_Ioo01 (hmeas n r) hcoeff hg_bound
   have hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
       HasDerivAt (fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g r t)
         (∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ (n + 1) * g r₀ t) r₀ := by
-    simpa [μ] using
-      (hasDerivAt_setIntegral_pow_mul_of_uniform_bound_ball_one (μ := μ) (coeff := coeff) (g := g)
-        (A := A) (n := n) (x₀ := r₀) (hμ := rfl) (hg_bound := hg_bound) (hcoeff := hcoeff)
-        (hg_repr := hg_repr) (hmeas := fun n r => by simpa [μ] using hmeas n r)
-        (hint := fun n r => by simpa [μ] using hint n r))
+    exact hasDerivAt_setIntegral_pow_mul_of_uniform_bound_ball_one rfl hg_bound hcoeff
+      hg_repr hmeas hint
   induction n with
   | zero =>
     funext r

@@ -45,17 +45,13 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
   have hEvH3 : ∀ᶠ t in atTop, ‖H₃.resToImagAxis t - (1 : ℂ)‖ ≤ (1 / 2 : ℝ) := by
     have hsub :
         Tendsto (fun t : ℝ => H₃.resToImagAxis t - (1 : ℂ)) atTop (𝓝 (0 : ℂ)) := by
-      simpa using
-        htendH3.sub
-          (tendsto_const_nhds : Tendsto (fun _ : ℝ => (1 : ℂ)) atTop (𝓝 (1 : ℂ)))
+      exact tendsto_sub_nhds_zero_iff.mpr htendH3
     have := (hsub.norm)
     exact this.eventually (Iic_mem_nhds (by norm_num))
   have hEvH4 : ∀ᶠ t in atTop, ‖H₄.resToImagAxis t - (1 : ℂ)‖ ≤ (1 / 2 : ℝ) := by
     have hsub :
         Tendsto (fun t : ℝ => H₄.resToImagAxis t - (1 : ℂ)) atTop (𝓝 (0 : ℂ)) := by
-      simpa using
-        htendH4.sub
-          (tendsto_const_nhds : Tendsto (fun _ : ℝ => (1 : ℂ)) atTop (𝓝 (1 : ℂ)))
+      exact tendsto_sub_nhds_zero_iff.mpr htendH4
     have := (hsub.norm)
     exact this.eventually (Iic_mem_nhds (by norm_num))
   rcases (eventually_atTop.1 (hEvH3.and hEvH4)) with ⟨T0, hT0⟩
@@ -124,10 +120,7 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
       -- reverse triangle inequality: `‖1‖ - ‖1 - x‖ ≤ ‖x‖`
       have h' : ‖(1 : ℂ)‖ - ‖(1 : ℂ) - x‖ ≤ ‖x‖ := by
         refine (sub_le_iff_le_add).2 ?_
-        have h :=
-          (sub_le_iff_le_add).1 (norm_sub_norm_le (1 : ℂ) x)
-        -- `‖1‖ ≤ ‖1 - x‖ + ‖x‖`
-        simpa [add_comm, add_left_comm, add_assoc, norm_sub_rev] using h
+        exact norm_le_norm_add_norm_sub' 1 x
       simpa [norm_one, norm_sub_rev] using h'
     have hhalf : (1 / 2 : ℝ) ≤ (1 : ℝ) - ‖x - (1 : ℂ)‖ := by
       linarith
@@ -144,9 +137,7 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
     intro t ht
     by_cases htT : t ≤ T
     · have htI : t ∈ Icc (1 : ℝ) T := ⟨ht, htT⟩
-      have : m3 ≤ ‖H₃.resToImagAxis t‖ := by
-        exact hm3le t htI
-      exact (min_le_left _ _).trans this
+      exact inf_le_of_left_le (hm3le t htI)
     · have htT' : T ≤ t := le_of_not_ge htT
       have htT0 : T0 ≤ t := le_trans (le_max_left _ _) htT'
       have hnear : ‖H₃.resToImagAxis t - (1 : ℂ)‖ ≤ 1 / 2 := (hT0 t htT0).1
@@ -155,9 +146,7 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
     intro t ht
     by_cases htT : t ≤ T
     · have htI : t ∈ Icc (1 : ℝ) T := ⟨ht, htT⟩
-      have : m4 ≤ ‖H₄.resToImagAxis t‖ := by
-        exact hm4le t htI
-      exact (min_le_left _ _).trans this
+      exact inf_le_of_left_le (hm4le t htI)
     · have htT' : T ≤ t := le_of_not_ge htT
       have htT0 : T0 ≤ t := le_trans (le_max_left _ _) htT'
       have hnear : ‖H₄.resToImagAxis t - (1 : ℂ)‖ ≤ 1 / 2 := (hT0 t htT0).2

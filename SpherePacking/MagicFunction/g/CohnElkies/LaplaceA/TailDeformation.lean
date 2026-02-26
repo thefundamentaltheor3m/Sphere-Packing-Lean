@@ -294,9 +294,7 @@ lemma tendsto_intervalIntegral_Φ₂'_top {u : ℝ} (hu : 2 < u) :
         simpa [Set.uIoc_of_le hle] using hx
       have hx0 : -1 ≤ x := le_of_lt hx'.1
       have hx1 : x ≤ 0 := hx'.2
-      simpa [K, a, mul_assoc] using
-        (norm_Φ₂'_strip_le (u := u) (x := x) (t := m) (Cφ := Cφ) (Aφ := Aφ) (C₀ := C₀)
-          hC₀_pos hC₀ hφbd hx0 hx1 hm1 hmA)
+      exact norm_Φ₂'_strip_le hC₀_pos hC₀ hφbd hx0 hx1 hm1 hmA
     -- Apply the uniform bound on `Ι (-1) 0`.
     simpa using
       intervalIntegral.norm_integral_le_of_norm_le_const (a := (-1 : ℝ)) (b := (0 : ℝ))
@@ -337,9 +335,7 @@ lemma tendsto_intervalIntegral_Φ₄'_top {u : ℝ} (hu : 2 < u) :
         simpa [Set.uIoc_of_ge (show (0 : ℝ) ≤ 1 by norm_num)] using hx
       have hx0 : 0 ≤ x := le_of_lt hx'.1
       have hx1 : x ≤ 1 := hx'.2
-      simpa [K, a, mul_assoc] using
-        (norm_Φ₄'_strip_le (u := u) (x := x) (t := m) (Cφ := Cφ) (Aφ := Aφ) (C₀ := C₀)
-          hC₀_pos hC₀ hφbd hx0 hx1 hm1 hmA)
+      exact norm_Φ₄'_strip_le hC₀_pos hC₀ hφbd hx0 hx1 hm1 hmA
     simpa using
       intervalIntegral.norm_integral_le_of_norm_le_const (a := (1 : ℝ)) (b := (0 : ℝ))
         (f := fun x : ℝ => Φ₄' u ((x : ℂ) + (m : ℂ) * Complex.I))

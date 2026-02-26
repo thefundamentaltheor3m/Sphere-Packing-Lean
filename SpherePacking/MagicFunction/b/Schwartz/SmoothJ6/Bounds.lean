@@ -78,9 +78,7 @@ lemma gN_integrable (n : ℕ) (x : ℝ) (hx : x ∈ s) : Integrable (gN n x) μ 
   have hx' : -1 < x := by simpa [s] using hx
   let f : ℝ → ℂ := gN_J6_integrand ψS.resToImagAxis n x
   have hf : gN n x = f := by
-    funext t
-    simp [gN, SmoothIntegralIciOne.gN, SmoothIntegralIciOne.g, SmoothIntegralIciOne.coeff, f,
-      gN_J6_integrand, mul_left_comm, mul_comm]
+    rfl
   have hmeas : AEStronglyMeasurable f ((volume : Measure ℝ).restrict (Ici (1 : ℝ))) := by
     simpa [hf, μ, μIciOne] using (gN_measurable (n := n) (x := x))
   have hInt : Integrable f ((volume : Measure ℝ).restrict (Ici (1 : ℝ))) := by

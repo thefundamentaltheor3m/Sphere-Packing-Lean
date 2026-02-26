@@ -43,10 +43,7 @@ variable {k : ℤ} {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup SL(2, ℤ)} (n
 lemma ModForm_mk_inj (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) (hf : f ≠ 0) :
   ModForm_mk _ _ f ≠ 0 := by
   rw [@DFunLike.ne_iff] at *
-  obtain ⟨x, hx⟩ := hf
-  use x
-  simp only [CuspForm.zero_apply, ne_eq, ModForm_mk, zero_apply] at *
-  exact hx
+  assumption
 
 /-- The linear map sending a cusp form to the underlying modular form. -/
 @[expose] public def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) :
@@ -122,9 +119,7 @@ public instance (Γ : Subgroup SL(2, ℤ)) (k : ℤ) : CuspFormClass (CuspFormSu
     (f : ModularForm Γ k)
     (hf : IsCuspForm Γ k f) : (IsCuspForm_to_CuspForm Γ k f hf).toFun =
     f.toFun := by
-  rw [IsCuspForm_to_CuspForm]
-  rw [IsCuspForm, CuspFormSubmodule, LinearMap.mem_range] at hf
-  simpa [CuspForm_to_ModularForm, ModForm_mk] using congrArg (fun x ↦ x.toFun) hf.choose_spec
+  norm_num
 
 /-- For level one, `IsCuspForm` is equivalent to vanishing of the constant `q`-coefficient. -/
 public lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :

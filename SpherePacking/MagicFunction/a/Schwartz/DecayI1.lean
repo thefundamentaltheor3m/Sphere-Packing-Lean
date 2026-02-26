@@ -238,9 +238,7 @@ lemma g_continuousOn (r : ℝ) : ContinuousOn (fun s : ℝ ↦ g r s) (Ici (1 : 
             (Ici (1 : ℝ)) := h2.mul hconstExp
     dsimp [h]
     exact h3.mul (exp_div_continuousOn (r := r))
-  refine hh.congr ?_
-  intro s hs
-  simp [h, g, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
+  assumption
 
 lemma gN_measurable (n : ℕ) (r : ℝ) : AEStronglyMeasurable (gN n r) μ := by
   have h : ContinuousOn (fun s : ℝ ↦ gN n r s) (Ici (1 : ℝ)) := by
@@ -401,16 +399,9 @@ lemma xpow_mul_exp_neg_pi_div_le (k : ℕ) {x s : ℝ} (hx : 0 ≤ x) (hs : 1 �
   set u : ℝ := (π * x) / s
   have hu0 : 0 ≤ u := div_nonneg (by positivity) (zero_le_one.trans hs)
   have hu : u ^ k * rexp (-u) ≤ Cpow := hCpow u hu0
-  have hu_mul : u * s = π * x := by
-    have : ((π * x) / s) * s = π * x := by
-      simp [div_eq_mul_inv, mul_assoc, hs0]
-    simpa [u] using this
+  have hu_mul : u * s = π * x := div_mul_cancel₀ (π * x) hs0
   have hx' : x = u * s / π := by
-    have : u * s / π = x := by
-      calc
-        u * s / π = (π * x) / π := by simp [hu_mul]
-        _ = x := by field_simp [hpi0]
-    simpa using this.symm
+    exact CancelDenoms.cancel_factors_eq_div (id (Eq.symm hu_mul)) hpi0
   have hxpow : x ^ k = (π ^ k)⁻¹ * s ^ k * u ^ k := by
     simp [hx', mul_pow, div_eq_mul_inv, inv_pow, mul_assoc, mul_left_comm, mul_comm]
   have hexp : rexp (-π * x / s) = rexp (-u) := by
@@ -463,16 +454,12 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
   have hf' :
       (∫ s in Ici (1 : ℝ), f s) = x ^ k * (∫ s in Ici (1 : ℝ),
         rexp (-2 * π * s) * rexp (-π * x / s)) := by
-    simpa [f, mul_assoc, mul_left_comm, mul_comm] using
-      (MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ).restrict (Ici (1 : ℝ)))
-        (x ^ k) (fun s : ℝ ↦ rexp (-2 * π * s) * rexp (-π * x / s)))
+    exact integral_const_mul (x ^ k) fun a => rexp (-2 * π * a) * rexp (-π * x / a)
   have hg' :
       (∫ s in Ici (1 : ℝ), g s) = ((π ^ k)⁻¹ * Cpow) * (∫ s in Ici (1 : ℝ),
         s ^ k * rexp (-2 * π * s)) := by
     -- pull out the constant factor
-    simpa [g, mul_assoc, mul_left_comm, mul_comm] using
-      (MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ).restrict (Ici (1 : ℝ)))
-        (((π ^ k)⁻¹ * Cpow)) (fun s : ℝ ↦ s ^ k * rexp (-2 * π * s)))
+    exact integral_const_mul ((π ^ k)⁻¹ * Cpow) fun a => a ^ k * rexp (-2 * π * a)
   simpa [hf', hg', mul_assoc, mul_left_comm, mul_comm] using hset
 
 /--

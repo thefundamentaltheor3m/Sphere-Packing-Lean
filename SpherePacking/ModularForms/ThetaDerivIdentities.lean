@@ -174,9 +174,7 @@ lemma f₂_S_action : (f₂ ∣[(4 : ℤ)] S) = -f₄ := by
   -- Step 3: Product (H₂ * (H₂ + 2•H₄))|[4]S = H₄ * (H₄ + 2•H₂)
   have h_prod : ((H₂ * (H₂ + (2 : ℂ) • H₄)) ∣[(4 : ℤ)] S) = H₄ * (H₄ + (2 : ℂ) • H₂) := by
     rw [four_eq_two_add_two, mul_slash_SL2 2 2 S _ _, H₂_S_action, h_lin_comb]
-    ext z
-    simp [Pi.mul_apply, Pi.neg_apply, Pi.add_apply, Pi.smul_apply]
-    ring
+    exact neg_mul_neg H₄ (H₄ + 2 • H₂)
   -- Combine: f₂|[4]S = -serre_D 2 H₄ - (1/6) * H₄ * (2*H₂ + H₄) = -f₄
   rw [f₂_decompose, add_slash, SL_smul_slash, h_serre_term, h_prod]
   ext z

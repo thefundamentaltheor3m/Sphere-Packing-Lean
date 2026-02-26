@@ -90,10 +90,7 @@ public lemma differentiableOn_ψT_ofComplex :
   intro z hz
   have hψ :=
     congrArg (fun f : UpperHalfPlane → ℂ => f (UpperHalfPlane.ofComplex z)) ψT_eq
-  simpa [show (H₂_MF : UpperHalfPlane → ℂ) = H₂ from rfl,
-    show (H₃_MF : UpperHalfPlane → ℂ) = H₃ from rfl,
-    show (H₄_MF : UpperHalfPlane → ℂ) = H₄ from rfl,
-    mul_assoc, mul_left_comm, mul_comm] using hψ
+  assumption
 
 /-- Holomorphicity of `ψT'` on the upper half-plane. -/
 public lemma differentiableOn_ψT'_upper :
