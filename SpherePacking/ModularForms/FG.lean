@@ -130,8 +130,8 @@ theorem MLDE_F : serre_D 12 (serre_D 10 F) =
   rw [serre_D_10_F]; simp only [serre_D_eq]
   -- Compute D(D F - cE₂F) using automated simp + fun_prop discharge
   simp (disch := fun_prop) only [D_sub, D_add, D_mul, D_sq, D_cube, F_aux,
-    ramanujan_E₂, ramanujan_E₄, ramanujan_E₆,
-    D_five_fun, D_inv_two_fun, D_inv_three_fun, D_inv_six_fun]
+    ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
+  simp only [pi_ofNat_eq_const, pi_inv_const_eq_const, D_const_fun]
   -- Close algebraic identity
   ext z; simp [F, Δ_fun, negDE₂]; field_simp (disch := norm_num); ring
 
