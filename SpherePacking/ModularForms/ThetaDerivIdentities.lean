@@ -4,6 +4,7 @@ import SpherePacking.ModularForms.DimensionFormulas
 import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.ForMathlib.AtImInfty
 import SpherePacking.ModularForms.EisensteinAsymptotics
+import SpherePacking.Tactic.TendstoPoly
 
 /-!
 # Theta Derivative Identities
@@ -460,9 +461,10 @@ Since H₂ → 0, both serre_D 2 H₂ → 0 and H₂(H₂ + 2H₄) → 0, so f�
 lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
   have h_serre_H₂ := serre_D_tendsto_zero_of_tendsto_zero 2 H₂
     H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂ H₂_tendsto_atImInfty
-  have h_prod : Tendsto (H₂ * (H₂ + 2 * H₄)) atImInfty (𝓝 0) := by
-    simpa using H₂_tendsto_atImInfty.mul
-      (H₂_tendsto_atImInfty.add (H₄_tendsto_atImInfty.const_mul 2))
+  have h_prod : Tendsto (fun z => H₂ z * (H₂ z + 2 * H₄ z)) atImInfty (𝓝 0) := by
+    have := H₂_tendsto_atImInfty
+    have := H₄_tendsto_atImInfty
+    tendsto_poly
   simpa [f₂] using h_serre_H₂.sub (h_prod.const_mul (1/6 : ℂ))
 
 /-- f₄ tends to 0 at infinity.
@@ -475,39 +477,32 @@ lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
     convert serre_D_tendsto_neg_k_div_12 2 H₄ H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
       H₄_tendsto_atImInfty using 2
     norm_num
-  have h_sum : Tendsto (2 * H₂ + H₄) atImInfty (𝓝 1) := by
-    simpa using (H₂_tendsto_atImInfty.const_mul 2).add H₄_tendsto_atImInfty
-  have h_prod : Tendsto (H₄ * (2 * H₂ + H₄)) atImInfty (𝓝 1) := by
-    simpa using H₄_tendsto_atImInfty.mul h_sum
   have h_scaled : Tendsto (fun z => (1/6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))
-      atImInfty (𝓝 (1/6 : ℂ)) := by simpa using h_prod.const_mul (1/6 : ℂ)
+      atImInfty (𝓝 (1/6 : ℂ)) := by
+    have := H₂_tendsto_atImInfty
+    have := H₄_tendsto_atImInfty
+    tendsto_poly
   simpa [f₄] using h_serre_H₄.add h_scaled
 
 /-- theta_g tends to 0 at infinity.
 theta_g = (2H₂ + H₄)f₂ + (H₂ + 2H₄)f₄.
 Using pair-of-pairs: (H₂, H₄) → (0, 1) and (f₂, f₄) → (0, 0), so theta_g → 0. -/
 lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
-  have hu := H₂_tendsto_atImInfty.prodMk_nhds H₄_tendsto_atImInfty
-  have hv := f₂_tendsto_atImInfty.prodMk_nhds f₄_tendsto_atImInfty
-  have hcont : ContinuousAt (fun p : (ℂ × ℂ) × (ℂ × ℂ) =>
-      (2 * p.1.1 + p.1.2) * p.2.1 + (p.1.1 + 2 * p.1.2) * p.2.2) ((0, 1), (0, 0)) := by fun_prop
-  simpa [theta_g] using hcont.tendsto.comp (hu.prodMk_nhds hv)
-
-/-- Continuous mapping theorem for two convergent components. -/
-theorem Tendsto.continuousAt_comp_prodMk
-    {α β γ δ : Type*} [TopologicalSpace β] [TopologicalSpace γ] [TopologicalSpace δ]
-    {l : Filter α} {f : α → β} {g : α → γ} {a : β} {b : γ} {h : β × γ → δ}
-    (hf : Tendsto f l (𝓝 a)) (hg : Tendsto g l (𝓝 b))
-    (hh : ContinuousAt h (a, b)) :
-    Tendsto (fun x => h (f x, g x)) l (𝓝 (h (a, b))) :=
-  hh.tendsto.comp (hf.prodMk_nhds hg)
+  have := H₂_tendsto_atImInfty
+  have := H₄_tendsto_atImInfty
+  have := f₂_tendsto_atImInfty
+  have := f₄_tendsto_atImInfty
+  change Tendsto (fun z => (2 * H₂ z + H₄ z) * f₂ z + (H₂ z + 2 * H₄ z) * f₄ z)
+    atImInfty (𝓝 0)
+  tendsto_poly
 
 /-- theta_h tends to 0 at infinity.
 theta_h = f₂² + f₂f₄ + f₄² → 0 + 0 + 0 = 0 as f₂, f₄ → 0. -/
 lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
-  have hg : ContinuousAt (fun p : ℂ × ℂ => p.1 ^ 2 + p.1 * p.2 + p.2 ^ 2) (0, 0) := by fun_prop
-  simpa [theta_h, sq] using
-    Tendsto.continuousAt_comp_prodMk f₂_tendsto_atImInfty f₄_tendsto_atImInfty hg
+  have := f₂_tendsto_atImInfty
+  have := f₄_tendsto_atImInfty
+  change Tendsto (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) atImInfty (𝓝 0)
+  tendsto_poly
 
 /-- g is a cusp form of level 1. -/
 lemma theta_g_IsCuspForm :
@@ -558,10 +553,10 @@ lemma H_sum_sq_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H_sum_sq :=
 
 /-- H_sum_sq → 1 at infinity -/
 lemma H_sum_sq_tendsto : Tendsto H_sum_sq atImInfty (𝓝 1) := by
-  have hg : ContinuousAt (fun p : ℂ × ℂ => p.1 ^ 2 + p.1 * p.2 + p.2 ^ 2) (0, 1) := by fun_prop
+  have := H₂_tendsto_atImInfty
+  have := H₄_tendsto_atImInfty
   unfold H_sum_sq
-  simpa [sq] using
-    Tendsto.continuousAt_comp_prodMk H₂_tendsto_atImInfty H₄_tendsto_atImInfty hg
+  tendsto_poly
 
 /-- H_sum_sq ≠ 0 (since it tends to 1 ≠ 0) -/
 lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 :=

@@ -13,6 +13,7 @@ import SpherePacking.ForMathlib.UpperHalfPlane
 import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.ModularForms.Delta
 import SpherePacking.ModularForms.DimensionFormulas
+import SpherePacking.Tactic.TendstoPoly
 import SpherePacking.ModularForms.IsCuspForm
 import SpherePacking.ModularForms.ResToImagAxis
 
@@ -846,13 +847,17 @@ Combined with the dimension vanishing for weight 4 cusp forms, this proves the J
 /-- The function g := H₂ + H₄ - H₃ tends to 0 at i∞.
     Since H₂ → 0, H₃ → 1, H₄ → 1, we have g → 0 + 1 - 1 = 0. -/
 theorem jacobi_g_tendsto_atImInfty : Tendsto jacobi_g atImInfty (𝓝 0) := by
-  convert (H₂_tendsto_atImInfty.add H₄_tendsto_atImInfty).sub H₃_tendsto_atImInfty using 1
-  norm_num
+  have := H₂_tendsto_atImInfty
+  have := H₃_tendsto_atImInfty
+  have := H₄_tendsto_atImInfty
+  change Tendsto (fun z => H₂ z + H₄ z - H₃ z) atImInfty (𝓝 0)
+  tendsto_poly
 
 /-- The function f := g² tends to 0 at i∞. -/
 theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
-  convert jacobi_g_tendsto_atImInfty.pow 2 using 1
-  norm_num
+  have := jacobi_g_tendsto_atImInfty
+  change Tendsto (fun z => jacobi_g z ^ 2) atImInfty (𝓝 0)
+  tendsto_poly
 
 /-- jacobi_f is bounded at i∞ (follows from tending to 0) -/
 lemma isBoundedAtImInfty_jacobi_f : IsBoundedAtImInfty jacobi_f :=
