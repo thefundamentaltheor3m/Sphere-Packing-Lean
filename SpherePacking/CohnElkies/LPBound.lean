@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Sidharth Hariharan
+Authors: Sidharth Hariharan, Stefano Rocca
 -/
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.MeasureTheory.Integral.Bochner.Set
@@ -11,6 +11,7 @@ import SpherePacking.CohnElkies.Prereqs
 import SpherePacking.Basic.PeriodicPacking
 
 open scoped FourierTransform ENNReal SchwartzMap InnerProductSpace Pointwise BigOperators
+
 open Metric Filter MeasureTheory Complex Real ZSpan Bornology LinearMap SchwartzMap Module
   Submodule
 
@@ -73,11 +74,8 @@ end Complex_Function_Helpers
 section Nonnegativity
 
 /-- The Fourier transform of a Schwartz function is non-zero if the function is non-zero. -/
-theorem fourier_ne_zero (hne_zero : f ≠ 0) : 𝓕 f ≠ 0 := by
-  intro hfourier_zero
-  apply hne_zero
-  rw [← (FourierTransform.fourierCLE ℝ (𝓢(EuclideanSpace ℝ (Fin d), ℂ))).map_eq_zero_iff]
-  exact hfourier_zero
+theorem fourier_ne_zero (hne_zero : f ≠ 0) : 𝓕 f ≠ 0 := fun h ↦
+  hne_zero ((FourierTransform.fourierCLE ℝ (𝓢(EuclideanSpace ℝ (Fin d), ℂ))).map_eq_zero_iff.mp h)
 
 /-- If the real part of the Fourier transform `𝓕 f` is nonnegative everywhere,
     then the real part of `f` at zero is nonnegative. -/
@@ -89,17 +87,10 @@ theorem f_nonneg_at_zero (hCohnElkies₂ : ∀ x, (𝓕 f x).re ≥ 0) : 0 ≤ (
 
 include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
-  -- We know from previous that f(0) is nonneg. If zero, then the integral of 𝓕 f is zero, making
-  -- 𝓕 f zero (it's continuous and nonneg: if it's pos anywhere, it's pos on a nbhd, and hence the
-  -- integral must be pos too, but it's zero, contra). By Schwartz, f is identically zero iff 𝓕 f
-  -- is (𝓕 is a linear iso). But 𝓕 f is zero while f is not, contra! So f(0) is positive.
-  -- apply ne_of_gt
   have haux₁ : f 0 = 𝓕⁻ (𝓕 ⇑f) 0 := by rw [f.fourierInversion ℝ]
   rw [fourierInv_eq] at haux₁
   simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul] at haux₁
-  -- We need to take real parts at haux₁
   rw [← re_add_im <| f 0, hImZero hReal, ofReal_zero, zero_mul, add_zero] at haux₁
-  -- We need to take real and imaginary parts inside the integral.
   have haux₂ : ∫ v, 𝓕 ⇑f v = ∫ v, (𝓕 ⇑f v).re :=
     calc ∫ v, 𝓕 ⇑f v
     _ = ↑(∫ v, (𝓕 ⇑f v).re) + (∫ v, (𝓕 ⇑f v).im) * I := by
@@ -108,8 +99,8 @@ theorem f_zero_pos : 0 < (f 0).re := by
         ← RCLike.im_eq_complex_im, ← integral_im (𝓕 f).integrable, RCLike.im_eq_complex_im]
     _ = ∫ v, (𝓕 ⇑f v).re := by
       rw [add_eq_left]
-      suffices hwhat : ∀ v, (𝓕 ⇑f v).im = 0 by
-        simp only [hwhat, ofReal_zero, zero_mul, integral_zero]
+      suffices ∀ v, (𝓕 ⇑f v).im = 0 by
+        simp only [this, ofReal_zero, zero_mul, integral_zero]
       exact hFourierImZero hRealFourier
   rw [haux₂] at haux₁
   norm_cast at haux₁
@@ -119,11 +110,9 @@ theorem f_zero_pos : 0 < (f 0).re := by
   ext x
   rw [← re_add_im <| 𝓕 f x, hFourierImZero hRealFourier, ofReal_zero, zero_mul,
     add_zero, SchwartzMap.zero_apply, ofReal_eq_zero]
-  have h𝓕frezero :=
-    funext_iff.1 <| ((𝓕 f).continuous.re.integral_zero_iff_zero_of_nonneg
-      (𝓕 f).integrable.re hCohnElkies₂).mp (le_antisymm
-        integral_nonpos (integral_nonneg hCohnElkies₂))
-  exact h𝓕frezero x
+  exact funext_iff.1 ((𝓕 f).continuous.re.integral_zero_iff_zero_of_nonneg
+      (𝓕 f).integrable.re hCohnElkies₂ |>.mp (le_antisymm
+        integral_nonpos (integral_nonneg hCohnElkies₂))) x
 
 end Nonnegativity
 
@@ -170,9 +159,6 @@ private theorem calc_aux_1 (hd : 0 < d) :
         rw [tsum_subtype (f := fun x ↦ (f 0).re),
           tsum_subtype (f := fun x => if ↑x ∈ D then (f 0).re else 0)]
         exact tsum_congr fun p ↦ by simp [Set.indicator, ite_and]
-    -- First, we need to un-distribute the tsums on the RHS.
-    -- Then, we need to use some sort of `tsum_ite_eq`.
-    -- Both of the above require some summability stuff.
     rw [← Summable.tsum_add]
     · apply tsum_congr
       intro x
@@ -188,15 +174,8 @@ private theorem calc_aux_1 (hd : 0 < d) :
         · exact Summable.of_finite
         · simpa [Subtype.val_inj] using (hasSum_ite_eq _ _).summable
       · simp only [dite_eq_ite, add_zero]
-        refine tsum_congr (fun b ↦ ?_)
-        have x_neq_b : x.val ≠ b.val := by
-          by_contra!
-          rw [this] at hx
-          have b_in_d := b.property.right
-          contradiction
-        dsimp [Ne] at x_neq_b
-        rw [← sub_eq_zero] at x_neq_b
-        simp [x_neq_b]
+        exact tsum_congr fun b ↦
+          by simp [show x.val - b.val ≠ 0 from sub_ne_zero.mpr (fun h ↦ hx (h ▸ b.property.right))]
     · rw [← summable_abs_iff]
       refine Summable.of_nonneg_of_le (by simp) ?_
         (f := fun x => ∑' (y : ↑(P.centers ∩ D)),
@@ -225,25 +204,22 @@ private theorem calc_aux_1 (hd : 0 < d) :
   _ ≤ ∑' (x : ↑(P.centers ∩ D)), (f 0).re := by
     rw [← tsub_nonpos, add_sub_cancel_right]
     refine tsum_nonpos <| fun x ↦ tsum_nonpos fun y ↦ ?_
-    cases eq_or_ne (x.val - y.val) 0
-    · case inl h =>
-      simp only [h, ↓reduceDIte, le_refl]
-    · case inr h =>
+    cases eq_or_ne (x.val - y.val) 0 with
+    | inl h => simp [h]
+    | inr h =>
       simp only [h, ↓reduceDIte]
       apply hCohnElkies₁ (x - y)
-      -- Both `x` and `y` are in `P.centers` and are distinct. `hP` then implies the result.
       rw [← hP]
       exact P.centers_dist' _ _ x.prop (Subtype.mem y).1 (sub_ne_zero.mp h)
   _ = (P.numReps' hd hD_isBounded) * (f 0).re := by
     simp only [tsum_const, nsmul_eq_mul, mul_eq_mul_right_iff, Nat.cast_inj]
-    cases eq_or_ne (f 0).re 0
-    · case inl h =>
-        simp [h]
-    · case inr h =>
-        left
-        let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
-        rw [PeriodicSpherePacking.numReps']
-        exact Nat.card_eq_fintype_card
+    cases eq_or_ne (f 0).re 0 with
+    | inl h => simp [h]
+    | inr h =>
+      left
+      let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
+      rw [PeriodicSpherePacking.numReps']
+      exact Nat.card_eq_fintype_card
 
 include hD_isBounded in
 lemma calc_steps' (hd : 0 < d) :
@@ -255,7 +231,7 @@ lemma calc_steps' (hd : 0 < d) :
   rw [re_tsum]
   have := f.summableOn (Set.range (fun ℓ : P.lattice ↦ ℓ.val + (x - y)))
     (by
-      obtain ⟨ε, hε_pos, _⟩ := ZLattice.isSeparated P.lattice
+      obtain ⟨ε, hε_pos, _⟩ := ZLattice.isSeparated (K := ℝ) P.lattice
       use ε, hε_pos
       exact fun x hx y hy hxy ↦ by aesop)
   convert this.comp_injective
@@ -303,19 +279,11 @@ lemma pairwise_disj [Fintype ↑(P.centers ∩ D)] :
 
 variable (P) in
 noncomputable def eq₁ (y : EuclideanSpace ℝ (Fin d)) :
-    ↥P.lattice ≃ ↑(y +ᵥ (SetLike.coe P.lattice)) :=
-  {
-    toFun := fun x ↦ ⟨y + x, by simp [Set.mem_vadd_set]⟩,
-    invFun := fun z ↦ ⟨z - y, by
-        obtain ⟨ℓ, hℓ⟩ : ∃ ℓ ∈ P.lattice, z = y + ℓ := by
-          obtain ⟨ℓ, hℓ⟩ := z.2
-          use ℓ
-          aesop
-        rw [hℓ.right]
-        simp [hℓ.left]⟩,
-    left_inv := by simp [Function.LeftInverse]
-    right_inv := by simp [Function.RightInverse, Function.LeftInverse]
-  }
+    ↥P.lattice ≃ ↑(y +ᵥ (SetLike.coe P.lattice)) where
+  toFun x := ⟨y + x, by simp [Set.mem_vadd_set]⟩
+  invFun z := ⟨z - y, by obtain ⟨ℓ, hℓ⟩ := z.2; aesop⟩
+  left_inv := by simp [Function.LeftInverse]
+  right_inv := by simp [Function.RightInverse, Function.LeftInverse]
 
 lemma hsummable₈ [Fintype ↑(P.centers ∩ D)]
     (y i : EuclideanSpace ℝ (Fin d)) (hi : i ∈ (P.centers ∩ D).toFinset) :
@@ -333,7 +301,7 @@ lemma hsummable₈ [Fintype ↑(P.centers ∩ D)]
             (fun x_1 : P.lattice ↦ ⟨x_1.val + i - y, Set.mem_range_self x_1⟩ :
               P.lattice → Set.range (fun x_1 : P.lattice ↦
                 x_1.val + i - y)).Injective from fun x y hxy => by aesop
-          obtain ⟨ε, ε_pos, hε⟩ := ZLattice.isSeparated P.lattice
+          obtain ⟨ε, ε_pos, hε⟩ := ZLattice.isSeparated (K := ℝ) P.lattice
           use ε, ε_pos
           intro x hx y hy
           aesop
@@ -427,14 +395,8 @@ lemma dual_eq_span_of_basis {d : ℕ} (L : Submodule ℤ (EuclideanSpace ℝ (Fi
 
 lemma one : ∃ ε > 0, IsSeparated ε
     (SetLike.coe (BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice)) := by
-  obtain ⟨b, hb⟩ : ∃ b : Basis (Fin d) ℝ (EuclideanSpace ℝ (Fin d)),
-      (BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice) =
-      span ℤ (Set.range b) := by
-    convert dual_eq_span_of_basis P.lattice using 1
-  have h_dual_separated : ∃ ε > 0,
-      IsSeparated ε (SetLike.coe (span ℤ (Set.range b))) := by
-    convert ZLattice.isSeparated (span ℤ (Set.range b)) using 1
-  grind
+  obtain ⟨b, hb⟩ := dual_eq_span_of_basis P.lattice
+  rw [hb]; exact ZLattice.isSeparated (K := ℝ) _
 
 lemma hsummable₆ (i : ↑(P.centers ∩ D)) [Fintype ↑(P.centers ∩ D)] :
     Summable fun (m : ↥(BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice)) ↦
@@ -503,10 +465,6 @@ private theorem calc_steps (hd : 0 < d) :
     simpa [ge_iff_le] using calc_aux_1 hCohnElkies₁ hP hD_isBounded hd
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice), (f (↑x - ↑y + ↑ℓ)).re :=
     calc_steps_aux_1 hD_isBounded hD_unique_covers hd
-  -- We now take the real part out so we can apply the PSF-L to the stuff inside.
-  -- The idea would be to say, in subsequent lines, that "it suffices to show that the numbers
-  -- whose real parts we're taking are equal as complex numbers" and then apply the PSF-L and
-  -- other complex-valued stuff.
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice), f (↑x - ↑y + ↑ℓ)).re :=
     calc_steps' hD_isBounded hd
   _ = (∑' x : ↑(P.centers ∩ D), ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice) *
@@ -518,10 +476,8 @@ private theorem calc_steps (hd : 0 < d) :
       ∑' m : BilinForm.dualSubmodule (innerₗ (EuclideanSpace ℝ (Fin d))) P.lattice,
       (𝓕 f m).re * ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪x.val - y.val, m.val⟫_[ℝ])).re := by
-    apply congrArg re
-    simp only [tsum_mul_left]
-    apply congrArg _ _
-    simp only [← tsum_mul_left]
+    apply congrArg re; simp only [tsum_mul_left]
+    apply congrArg _ _; simp only [← tsum_mul_left]
     let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
     simp [tsum_fintype]
     rw [Summable.tsum_finsetSum (fun i hi ↦ hsummable₆ i)]
@@ -573,31 +529,22 @@ private theorem calc_steps (hd : 0 < d) :
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) +
       (𝓕 ⇑f 0).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
-    let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
-    apply congrArg _ _
-    rw [add_comm, (hsummable₃ hCohnElkies₂ hD_isBounded hd).tsum_eq_add_tsum_ite 0]
-    simp only [ZeroMemClass.coe_zero, dite_eq_ite]
+    let myInstFintype := P.instFintypeNumReps' hd hD_isBounded; congr 1
+    rw [add_comm, (hsummable₃ hCohnElkies₂ hD_isBounded hd).tsum_eq_add_tsum_ite 0]; simp
   _ ≥ (1 / ZLattice.covolume P.lattice) * (𝓕 ⇑f 0).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
-    -- We need to show that the `m ≠ 0` part is nonpositive.
-    -- We begin by subtracting both sides, and thereby, isolating the `m ≠ 0` part.
     rw [ge_iff_le, ← tsub_nonpos, mul_assoc,
       ← mul_sub (1 / ZLattice.covolume P.lattice volume) _ _]
     simp only [dite_eq_ite, sub_add_cancel_right, mul_neg, Left.neg_nonpos_iff]
-    -- We now get rid of the `1 / ZLattice.covolume P.lattice volume` factor.
-    apply mul_nonneg (one_div_nonneg.mpr (by simp [ZLattice.covolume]))
-    refine tsum_nonneg <| fun m ↦ ?_
-    cases eq_or_ne m 0
-    · case inl h =>
-        simp only [h, ↓reduceIte, le_refl]
-    · case inr h =>
-        simp only [h, ↓reduceIte]
-        exact mul_nonneg (by rw [← ge_iff_le]; exact hCohnElkies₂ m) (sq_nonneg _)
+    exact mul_nonneg (one_div_nonneg.mpr (by simp [ZLattice.covolume]))
+      (tsum_nonneg fun m ↦ by
+        cases eq_or_ne m 0 with
+        | inl h => simp [h]
+        | inr h => simp only [h, ↓reduceIte]; exact mul_nonneg (hCohnElkies₂ m) (sq_nonneg _))
   _ = (1 / ZLattice.covolume P.lattice) * (𝓕 ⇑f 0).re * ↑(P.numReps' hd hD_isBounded) ^ 2 := by
-    apply congrArg _ _
-    let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
-    simp [PeriodicSpherePacking.numReps', RCLike.wInner_zero_right, ofReal_zero,
-      mul_zero, Complex.exp_zero, nsmul_eq_mul, mul_one]
+    congr 1; let myInstFintype := P.instFintypeNumReps' hd hD_isBounded
+    simp [PeriodicSpherePacking.numReps', RCLike.wInner_zero_right, ofReal_zero, mul_zero,
+      Complex.exp_zero, nsmul_eq_mul, mul_one]
   _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 ⇑f 0).re / ZLattice.covolume P.lattice volume := by
     simp only [div_eq_mul_inv, mul_comm, one_mul, ← mul_assoc]
 
@@ -628,80 +575,57 @@ theorem LinearProgrammingBound' (hd : 0 < d) :
     rw [hP]
     rw [ge_iff_le] at hCalc
     have vol_pos := EuclideanSpace.volume_ball_pos (0 : EuclideanSpace ℝ (Fin d)) one_half_pos
-    have vol_ne_top : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ ∞ := by
-      rw [← lt_top_iff_ne_top]
-      exact EuclideanSpace.volume_ball_lt_top 0
-    cases eq_or_ne (𝓕 f 0) 0
-    · case inl h𝓕f =>
-      rw [h𝓕f, zero_re]
-      -- For `ENNReal.div_zero`, we need `f 0 ≠ 0`. This can be deduced from the fact that
-      -- `𝓕 f ≥ 0` and `f ≠ 0`.
-      have ne_zero_at_zero : ((f 0).re.toNNReal : ENNReal) ≠ 0 :=
-        ENNReal.coe_ne_zero.mpr (ne_of_lt (toNNReal_pos.mpr
-        (f_zero_pos hne_zero hReal hRealFourier hCohnElkies₂))).symm
-      -- Now we can safely divide by zero!
-      rw [ENat.toENNReal_coe, toNNReal_zero, ENNReal.coe_zero, ENNReal.div_zero ne_zero_at_zero]
-      -- We now need to multiply by ⊤.
-      rw [ENNReal.top_mul (ne_of_lt vol_pos).symm]
+    have vol_ne_top : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ ∞ :=
+      (EuclideanSpace.volume_ball_lt_top 0).ne
+    cases eq_or_ne (𝓕 f 0) 0 with
+    | inl h𝓕f =>
+      rw [h𝓕f, zero_re, ENat.toENNReal_coe, toNNReal_zero, ENNReal.coe_zero,
+        ENNReal.div_zero (ENNReal.coe_ne_zero.mpr (ne_of_lt (toNNReal_pos.mpr
+          (f_zero_pos hne_zero hReal hRealFourier hCohnElkies₂))).symm),
+        ENNReal.top_mul (ne_of_lt vol_pos).symm]
       exact le_top
-    · case inr h𝓕f =>
-      -- First, we shift things around and cancel volumes on the right
+    | inr h𝓕f =>
       rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
           ← mul_assoc, ENNReal.mul_le_mul_iff_left (ne_of_lt vol_pos).symm vol_ne_top]
-      -- Next, we simplify `hCalc` by replacing `numReps'` with `numReps`
       rw [← P.numReps_eq_numReps' Fact.out hD_isBounded hD_unique_covers] at hCalc
-      -- Next, we multiply both sides by `(𝓕 (⇑f) 0).re.toNNReal`, cancelling accordingly.
       have hfouaux₁ : ((𝓕 f 0).re.toNNReal : ENNReal) ≠ 0 := by
-        intro hContra
-        apply h𝓕f
+        intro hContra; apply h𝓕f
         simp only [ENNReal.coe_eq_zero, toNNReal_eq_zero] at hContra
-        specialize hCohnElkies₂ 0
-        rw [ge_iff_le] at hCohnElkies₂
-        -- We can't simply do antisymm because we have an equality in ℂ, not ℝ!
-        rw [← re_add_im (𝓕 f 0), le_antisymm hContra hCohnElkies₂,
+        rw [← re_add_im (𝓕 f 0), le_antisymm hContra (hCohnElkies₂ 0),
             hFourierImZero hRealFourier 0, ofReal_zero, zero_mul, add_zero]
       have hfouaux₂ : ((𝓕 f 0).re.toNNReal : ENNReal) ≠ ⊤ := ENNReal.coe_ne_top
       rw [← ENNReal.mul_le_mul_iff_left hfouaux₁ hfouaux₂,
           div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _,
           mul_assoc ((f 0).re.toNNReal : ENNReal) _ _, ENNReal.inv_mul_cancel hfouaux₁ hfouaux₂]
-      -- We put it in a more desirable form and consolidate.
       rw [mul_one, mul_assoc, ← ENNReal.div_eq_inv_mul]
-      -- Next, we multiply both sides on the left by `↑P.numReps`.
       have hnRaux₁ : ENat.toENNReal (P.numReps : ENat) ≠ 0 := by
         rw [ENat.toENNReal_coe, ne_eq, Nat.cast_eq_zero, ← ne_eq]
         unfold PeriodicSpherePacking.numReps
         haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) := by
-          rw [nonempty_quotient_iff]
-          assumption
+          rw [nonempty_quotient_iff]; assumption
         exact Fintype.card_ne_zero
       rw [← ENNReal.mul_le_mul_iff_right hnRaux₁ (ne_of_beq_false rfl).symm]
-      -- We put it in a more desirable form and consolidate.
       rw [ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc]
-      -- Now, we use the nonnegativity of... everything... to get the `toNNReal`s to the outside.
       have hRHSCast : (P.numReps : ENNReal) * (f 0).re.toNNReal =
           (P.numReps * (f 0).re).toNNReal := by
-        norm_cast
-        refine NNReal.eq ?_
-        have haux₁ : 0 ≤ ↑P.numReps * (f 0).re := mul_nonneg (Nat.cast_nonneg' P.numReps)
-          (f_nonneg_at_zero hCohnElkies₂)
-        rw [Real.toNNReal_of_nonneg (f_nonneg_at_zero hCohnElkies₂),
-            Real.toNNReal_of_nonneg haux₁]
-        push_cast
-        rfl
+        norm_cast; exact NNReal.eq (by
+          rw [Real.toNNReal_of_nonneg (f_nonneg_at_zero hCohnElkies₂),
+              Real.toNNReal_of_nonneg (mul_nonneg (Nat.cast_nonneg' _)
+                (f_nonneg_at_zero hCohnElkies₂))]
+          push_cast; rfl)
       have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
           ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
           (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
         simp only [div_eq_mul_inv]
-        have haux₁ : 0 ≤ P.numReps ^ 2 * (𝓕 f 0).re * (ZLattice.covolume P.lattice volume)⁻¹ := by
-          refine mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0)) ?_
-          exact inv_nonneg.1 <| LT.lt.le (by simp [ZLattice.covolume_pos])
+        have haux₁ : 0 ≤ P.numReps ^ 2 * (𝓕 f 0).re * (ZLattice.covolume P.lattice volume)⁻¹ :=
+          mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0))
+            (inv_nonneg.1 <| LT.lt.le (by simp [ZLattice.covolume_pos]))
         rw [Real.toNNReal_of_nonneg haux₁,
           ← ENNReal.coe_inv <| LT.lt.ne' (by simp [ZLattice.covolume_pos])]
         norm_cast
         rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0),
-            Real.toNNReal_of_nonneg (LT.lt.le (ZLattice.covolume_pos P.lattice volume))]
+            Real.toNNReal_of_nonneg (ZLattice.covolume_pos P.lattice volume).le]
         exact NNReal.eq (by push_cast; rfl)
-      -- We can now get rid of the `toNNReal`s and use `hCalc` to finish the proof!
       rw [hRHSCast, hLHSCast, ENNReal.coe_le_coe]
       exact Real.toNNReal_le_toNNReal hCalc
   exact calc_steps hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hD_unique_covers hd
@@ -710,24 +634,19 @@ end Main_Theorem_For_One_Packing
 
 section Main_Theorem
 
-include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂
-
+include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ in
 theorem LinearProgrammingBound (hd : 0 < d) :
   SpherePackingConstant d ≤ (f 0).re.toNNReal / (𝓕 ⇑f 0).re.toNNReal *
     volume (ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
   rw [← periodic_constant_eq_constant hd,
     periodic_constant_eq_periodic_constant_normalized hd]
-  refine iSup_le (fun P ↦ ?_)
-  rw [iSup_le_iff]
-  intro hP
-  cases isEmpty_or_nonempty P.centers
-  · case inl instEmpty =>
-      rw [P.density_of_centers_empty hd]
-      exact zero_le _
-  · case inr instNonempty =>
-      let b := (ZLattice.module_free ℝ P.lattice).chooseBasis.reindex P.basis_index_equiv
-      exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
-        (fundamentalDomain_isBounded (b.ofZLatticeBasis ℝ P.lattice))
-        (P.fundamental_domain_unique_covers b) hd
+  refine iSup_le fun P ↦ iSup_le fun hP ↦ ?_
+  cases isEmpty_or_nonempty P.centers with
+  | inl => rw [P.density_of_centers_empty hd]; exact zero_le _
+  | inr =>
+    let b := (ZLattice.module_free ℝ P.lattice).chooseBasis.reindex P.basis_index_equiv
+    exact LinearProgrammingBound' hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hP
+      (fundamentalDomain_isBounded (b.ofZLatticeBasis ℝ P.lattice))
+      (P.fundamental_domain_unique_covers b) hd
 
 end Main_Theorem
