@@ -1,11 +1,14 @@
 import SpherePacking.ForMathlib.MDifferentiableFunProp
 
-import SpherePacking.ModularForms.RamanujanIdentities
 import SpherePacking.ModularForms.Derivative
-import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.DimensionFormulas
+import SpherePacking.ModularForms.Eisenstein
+import SpherePacking.ModularForms.ThetaDerivIdentities
+import SpherePacking.ModularForms.EisensteinAsymptotics
+import SpherePacking.ModularForms.JacobiTheta
 import SpherePacking.ModularForms.QExpansion
+import SpherePacking.ModularForms.RamanujanIdentities
+import SpherePacking.ModularForms.ResToImagAxis
 import SpherePacking.ModularForms.summable_lems
 
 open Filter Complex
@@ -88,6 +91,7 @@ lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5
   ext τ
   simp
 
+@[fun_prop]
 theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by unfold F; fun_prop
 
 theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by rw [G_eq]; fun_prop
@@ -114,21 +118,108 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
   -- Holomorphicity of the terms
   repeat fun_prop
 
+private lemma serre_D_10_F : serre_D 10 F = D F - 5 * 6⁻¹ * E₂ * F := by
+  ext z; simp [serre_D_apply]; norm_num
+
 /--
 Modular linear differential equation satisfied by $F$.
 -/
-theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 7200 * Δ_fun * negDE₂ := by
-  ext x
-  rw [negDE₂, Δ_fun, serre_D, serre_D, F_aux]
-  unfold serre_D
-  rw [F_aux]
-  sorry
+theorem MLDE_F : serre_D 12 (serre_D 10 F) =
+    5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ_fun * negDE₂ := by
+  -- Unfold serre_D to D-level, substitute D F formula
+  rw [serre_D_10_F]; simp only [serre_D_eq]
+  -- Compute D(D F - cE₂F) using automated simp + fun_prop discharge
+  simp (disch := fun_prop) only [D_sub, D_add, D_mul, D_sq, D_cube, F_aux,
+    ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
+  simp only [pi_ofNat_eq_const, pi_inv_const_eq_const, D_const_fun]
+  -- Close algebraic identity
+  ext z; simp [F, Δ_fun, negDE₂]; field_simp (disch := norm_num); ring
+
+/-- Δ_fun expressed in terms of theta functions. -/
+private lemma Δ_fun_theta (z : ℍ) :
+    Δ_fun z = (H₂ z * (H₂ z + H₄ z) * H₄ z) ^ 2 / 256 := by
+  rw [congrFun Δ_fun_eq_Δ z, ← Delta_apply, Delta_eq_H₂_H₃_H₄ z, ← jacobi_identity]
+  simp [Pi.add_apply]
+
+-- Cast helpers for bridging serre_D (k : ℂ) with serre_D_mul/add/smul (k : ℤ)
+private lemma c6s :
+    serre_D ((6 : ℤ) : ℂ) = serre_D (((2 : ℤ) : ℂ) + ((4 : ℤ) : ℂ)) := by norm_cast
+private lemma c4s :
+    serre_D ((4 : ℤ) : ℂ) = serre_D (((2 : ℤ) : ℂ) + ((2 : ℤ) : ℂ)) := by norm_cast
+private lemma c22 :
+    ((2 : ℤ) : ℂ) + ((2 : ℤ) : ℂ) = ((4 : ℤ) : ℂ) := by push_cast; norm_num
+private lemma c24 :
+    ((2 : ℤ) : ℂ) + ((4 : ℤ) : ℂ) = ((6 : ℤ) : ℂ) := by push_cast; norm_num
+private lemma c2n : ((2 : ℤ) : ℂ) = (2 : ℂ) := by norm_cast
+
+/-- First Serre derivative of G: serre_D 10 G = (5/3) H₂³((H₂+H₄)³ + H₄³). -/
+private lemma serre_D_10_G_eq : serre_D 10 G = fun z =>
+    (5/3 : ℂ) * H₂ z ^ 3 * ((H₂ z + H₄ z) ^ 3 + H₄ z ^ 3) := by
+  rw [G_eq, show (10 : ℂ) = (6 : ℤ) + (4 : ℤ) from by push_cast; norm_num,
+      serre_D_mul 6 4 _ _ (by fun_prop) (by fun_prop)]
+  have hc : H₂ ^ 3 = H₂ * (H₂ * H₂) := by ext z; simp [pow_succ, pow_zero, mul_assoc]
+  rw [hc, c6s, serre_D_mul 2 4 _ _ (by fun_prop) (by fun_prop),
+      c4s, serre_D_mul 2 2 _ _ (by fun_prop) (by fun_prop)]
+  simp only [c22]
+  conv_lhs => rw [serre_D_add 4 _ _ (by fun_prop) (by fun_prop)]
+  rw [serre_D_add 4 _ _ (by fun_prop) (by fun_prop),
+      serre_D_smul 4 _ _ (by fun_prop), serre_D_smul 4 _ _ (by fun_prop)]
+  rw [c4s, serre_D_mul 2 2 _ _ (by fun_prop) (by fun_prop),
+      serre_D_smul 2 _ _ (by fun_prop)]
+  have h_sq : H₂ ^ 2 = H₂ * H₂ := by ext z; simp [sq]
+  have h_sq4 : H₄ ^ 2 = H₄ * H₄ := by ext z; simp [sq]
+  rw [h_sq, h_sq4]; simp only [c22]
+  rw [c4s, serre_D_mul 2 2 _ _ (by fun_prop) (by fun_prop),
+      serre_D_mul 2 2 _ _ (by fun_prop) (by fun_prop)]
+  simp only [c2n]; rw [serre_D_H₂, serre_D_H₄]
+  ext z; simp [Pi.mul_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul]; ring
+
+/-- serre_D 10 G as a scalar multiple for easier manipulation. -/
+private lemma serre_D_10_G_smul : serre_D 10 G =
+    (5/3 : ℂ) • (H₂ ^ 3 * ((H₂ + H₄) ^ 3 + H₄ ^ 3)) := by
+  rw [serre_D_10_G_eq]; ext z
+  simp [Pi.smul_apply, smul_eq_mul, Pi.mul_apply, Pi.add_apply, Pi.pow_apply]; ring
+
+/-- Second Serre derivative of G as a polynomial in H₂, H₄. -/
+private lemma serre_D_12_serre_D_10_G_eq : serre_D 12 (serre_D 10 G) = fun z =>
+    (5/6 : ℂ) * H₂ z ^ 3 * (2 * H₂ z ^ 4 + 7 * H₂ z ^ 3 * H₄ z
+    + 9 * H₂ z ^ 2 * H₄ z ^ 2 + 4 * H₂ z * H₄ z ^ 3 + 2 * H₄ z ^ 4) := by
+  rw [serre_D_10_G_smul,
+      show serre_D (12 : ℂ) = serre_D ((12 : ℤ) : ℂ) from by norm_cast,
+      serre_D_smul 12 _ _ (by fun_prop),
+      show serre_D ((12 : ℤ) : ℂ) = serre_D (((6 : ℤ) : ℂ) + ((6 : ℤ) : ℂ)) from by norm_cast,
+      serre_D_mul 6 6 _ _ (by fun_prop) (by fun_prop)]
+  have hc : H₂ ^ 3 = H₂ * (H₂ * H₂) := by ext z; simp [pow_succ, pow_zero, mul_assoc]
+  rw [hc, c6s, serre_D_mul 2 4 _ _ (by fun_prop) (by fun_prop),
+      c4s, serre_D_mul 2 2 _ _ (by fun_prop) (by fun_prop)]
+  simp only [c24]
+  rw [serre_D_add 6 _ _ (by fun_prop) (by fun_prop)]
+  have h3c : (H₂ + H₄) ^ 3 = (H₂ + H₄) * ((H₂ + H₄) * (H₂ + H₄)) := by
+    ext z; simp [Pi.add_apply, pow_succ, pow_zero]; ring
+  rw [h3c, c6s, serre_D_mul 2 4 _ _ (by fun_prop) (by fun_prop),
+      c4s, serre_D_mul 2 2 _ _ (by fun_prop) (by fun_prop)]
+  simp only [c24]
+  have h4c : H₄ ^ 3 = H₄ * (H₄ * H₄) := by ext z; simp [pow_succ, pow_zero, mul_assoc]
+  rw [h4c, c6s, serre_D_mul 2 4 _ _ (by fun_prop) (by fun_prop),
+      c4s, serre_D_mul 2 2 _ _ (by fun_prop) (by fun_prop)]
+  rw [serre_D_add 2 _ _ (by fun_prop) (by fun_prop)]
+  simp only [c2n]; rw [serre_D_H₂, serre_D_H₄]
+  ext z; simp [Pi.mul_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul]; ring
 
 /--
 Modular linear differential equation satisfied by $G$.
 -/
-theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
-  sorry
+theorem MLDE_G : serre_D 12 (serre_D 10 G) =
+    5 * 6⁻¹ * E₄.toFun * G - 640 * Δ_fun * H₂ := by
+  rw [serre_D_12_serre_D_10_G_eq]
+  ext z
+  simp only [Pi.mul_apply, Pi.sub_apply,
+    E₄_eq_H_sum_sq, Δ_fun_theta z, H_sum_sq,
+    show (5 : ℍ → ℂ) z = 5 from rfl, show (6⁻¹ : ℍ → ℂ) z = 6⁻¹ from rfl,
+    show (640 : ℍ → ℂ) z = 640 from rfl]
+  simp only [G, Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.pow_apply,
+    Complex.real_smul, Complex.ofReal_ofNat]
+  ring
 
 /-- Pointwise log-derivative of a product: `D(f·h)/(f·h) = Df/f + Dh/h`. -/
 private lemma logderiv_mul_eq (f h : ℍ → ℂ)
