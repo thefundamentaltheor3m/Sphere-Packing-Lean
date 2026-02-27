@@ -9,6 +9,18 @@ open Metric Filter Function
 
 open scoped ModularForm MatrixGroups Manifold Topology BigOperators
 
+/-- Constant Pi functions (numeric literals) are MDifferentiable. -/
+@[fun_prop]
+lemma MDifferentiable.pi_ofNat (n : ℕ) [n.AtLeastTwo] :
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (@OfNat.ofNat (ℍ → ℂ) n _) := mdifferentiable_const
+
+/-- Inverse of a constant Pi function (e.g. `6⁻¹ : ℍ → ℂ`) is MDifferentiable. -/
+@[fun_prop]
+lemma MDifferentiable.pi_inv_ofNat (n : ℕ) [n.AtLeastTwo] :
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (@OfNat.ofNat (ℍ → ℂ) n _)⁻¹ := by
+  change MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun (_ : ℍ) => (OfNat.ofNat n : ℂ)⁻¹)
+  exact mdifferentiable_const
+
 /-!
 Definition of (Serre) derivative of modular forms.
 Prove Ramanujan's formulas on derivatives of Eisenstein series.
@@ -121,6 +133,12 @@ theorem D_smul (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(
     _ = c * D F z := by rfl
 
 @[simp]
+theorem D_neg (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
+    D (-F) = -D F := by
+  have : -F = (-1 : ℂ) • F := by ext; simp
+  rw [this, D_smul _ _ hF]; ext; simp
+
+@[simp]
 theorem D_mul (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G)
     : D (F * G) = D F * G + F * D G := by
   ext z
@@ -186,6 +204,17 @@ theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
     _ = (2 * π * I)⁻¹ * deriv (Function.const _ c ∘ ofComplex) z := by rfl
     _ = (2 * π * I)⁻¹ * 0 := by rw [h]
     _ = 0 := by ring_nf
+
+@[simp] lemma D_two_fun : D (2 : ℍ → ℂ) = 0 := by ext z; exact D_const _ z
+@[simp] lemma D_three_fun : D (3 : ℍ → ℂ) = 0 := by ext z; exact D_const _ z
+@[simp] lemma D_five_fun : D (5 : ℍ → ℂ) = 0 := by ext z; exact D_const _ z
+@[simp] lemma D_six_fun : D (6 : ℍ → ℂ) = 0 := by ext z; exact D_const _ z
+@[simp] lemma D_inv_two_fun : D ((2 : ℍ → ℂ)⁻¹) = 0 := by
+  ext z; change D (Function.const ℍ ((2 : ℂ)⁻¹)) z = 0; exact D_const _ z
+@[simp] lemma D_inv_three_fun : D ((3 : ℍ → ℂ)⁻¹) = 0 := by
+  ext z; change D (Function.const ℍ ((3 : ℂ)⁻¹)) z = 0; exact D_const _ z
+@[simp] lemma D_inv_six_fun : D ((6 : ℍ → ℂ)⁻¹) = 0 := by
+  ext z; change D (Function.const ℍ ((6 : ℂ)⁻¹)) z = 0; exact D_const _ z
 
 /-! ### Termwise differentiation of q-series (Lemma 6.45) -/
 

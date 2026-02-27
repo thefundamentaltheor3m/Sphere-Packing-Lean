@@ -91,6 +91,7 @@ lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5
   ext τ
   simp
 
+@[fun_prop]
 theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by unfold F; fun_prop
 
 theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by rw [G_eq]; fun_prop
@@ -120,101 +121,19 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
 private lemma serre_D_10_F : serre_D 10 F = D F - 5 * 6⁻¹ * E₂ * F := by
   ext z; simp [serre_D_apply]; norm_num
 
-private lemma F_aux' : D F = (5 * 6⁻¹ : ℂ) • (E₂ ^ 3 * E₄.toFun ^ 2)
-    - (5 * 2⁻¹ : ℂ) • (E₂ ^ 2 * E₄.toFun * E₆.toFun)
-    + (5 * 6⁻¹ : ℂ) • (E₂ * E₄.toFun ^ 3)
-    + (5 * 3⁻¹ : ℂ) • (E₂ * E₆.toFun ^ 2)
-    - (5 * 6⁻¹ : ℂ) • (E₄.toFun ^ 2 * E₆.toFun) := by
-  rw [F_aux]; ext z; simp [Pi.smul_apply, smul_eq_mul]; ring
-
-private lemma E₂sq_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ ^ 2) := E₂_holo'.pow 2
-private lemma E₂cu_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ ^ 3) := E₂_holo'.pow 3
-private lemma E₄sq_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₄.toFun ^ 2) := E₄.holo'.pow 2
-private lemma E₄cu_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₄.toFun ^ 3) := E₄.holo'.pow 3
-private lemma E₆sq_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₆.toFun ^ 2) := E₆.holo'.pow 2
-
-private lemma D_E2cu_E4sq : D (E₂ ^ 3 * E₄.toFun ^ 2) =
-    3 * E₂ ^ 2 * D E₂ * E₄.toFun ^ 2 + E₂ ^ 3 * 2 * E₄.toFun * D E₄.toFun := by
-  rw [D_mul (E₂ ^ 3) (E₄.toFun ^ 2) E₂cu_holo' E₄sq_holo',
-      D_cube E₂ E₂_holo', D_sq E₄.toFun E₄.holo']; ring_nf
-
-private lemma D_E2sq_E4_E6 : D (E₂ ^ 2 * E₄.toFun * E₆.toFun) =
-    2 * E₂ * D E₂ * E₄.toFun * E₆.toFun + E₂ ^ 2 * D E₄.toFun * E₆.toFun +
-    E₂ ^ 2 * E₄.toFun * D E₆.toFun := by
-  rw [D_mul (E₂ ^ 2 * E₄.toFun) E₆.toFun (E₂sq_holo'.mul E₄.holo') E₆.holo',
-      D_mul (E₂ ^ 2) E₄.toFun E₂sq_holo' E₄.holo', D_sq E₂ E₂_holo']; ring_nf
-
-private lemma D_E2_E4cu : D (E₂ * E₄.toFun ^ 3) =
-    D E₂ * E₄.toFun ^ 3 + E₂ * 3 * E₄.toFun ^ 2 * D E₄.toFun := by
-  rw [D_mul E₂ (E₄.toFun ^ 3) E₂_holo' E₄cu_holo', D_cube E₄.toFun E₄.holo']; ring_nf
-
-private lemma D_E2_E6sq : D (E₂ * E₆.toFun ^ 2) =
-    D E₂ * E₆.toFun ^ 2 + E₂ * 2 * E₆.toFun * D E₆.toFun := by
-  rw [D_mul E₂ (E₆.toFun ^ 2) E₂_holo' E₆sq_holo', D_sq E₆.toFun E₆.holo']; ring_nf
-
-private lemma D_E4sq_E6 : D (E₄.toFun ^ 2 * E₆.toFun) =
-    2 * E₄.toFun * D E₄.toFun * E₆.toFun + E₄.toFun ^ 2 * D E₆.toFun := by
-  rw [D_mul (E₄.toFun ^ 2) E₆.toFun E₄sq_holo' E₆.holo', D_sq E₄.toFun E₄.holo']
-
-private lemma E2cu_E4sq_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ ^ 3 * E₄.toFun ^ 2) :=
-  E₂cu_holo'.mul E₄sq_holo'
-private lemma E2sq_E4_E6_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ ^ 2 * E₄.toFun * E₆.toFun) :=
-  (E₂sq_holo'.mul E₄.holo').mul E₆.holo'
-private lemma E2_E4cu_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₄.toFun ^ 3) :=
-  E₂_holo'.mul E₄cu_holo'
-private lemma E2_E6sq_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₂ * E₆.toFun ^ 2) :=
-  E₂_holo'.mul E₆sq_holo'
-private lemma E4sq_E6_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (E₄.toFun ^ 2 * E₆.toFun) :=
-  E₄sq_holo'.mul E₆.holo'
-
-private lemma DDF_eq : D (D F) = (5 * 6⁻¹ : ℂ) • D (E₂ ^ 3 * E₄.toFun ^ 2)
-    - (5 * 2⁻¹ : ℂ) • D (E₂ ^ 2 * E₄.toFun * E₆.toFun)
-    + (5 * 6⁻¹ : ℂ) • D (E₂ * E₄.toFun ^ 3)
-    + (5 * 3⁻¹ : ℂ) • D (E₂ * E₆.toFun ^ 2)
-    - (5 * 6⁻¹ : ℂ) • D (E₄.toFun ^ 2 * E₆.toFun) := by
-  have hs1 := E2cu_E4sq_holo'.const_smul (5 * 6⁻¹ : ℂ)
-  have hs2 := E2sq_E4_E6_holo'.const_smul (5 * 2⁻¹ : ℂ)
-  have hs3 := E2_E4cu_holo'.const_smul (5 * 6⁻¹ : ℂ)
-  have hs4 := E2_E6sq_holo'.const_smul (5 * 3⁻¹ : ℂ)
-  have hs5 := E4sq_E6_holo'.const_smul (5 * 6⁻¹ : ℂ)
-  rw [F_aux']
-  simp only [D_sub _ _ (hs1.sub hs2 |>.add hs3 |>.add hs4) hs5,
-    D_add _ _ (hs1.sub hs2 |>.add hs3) hs4, D_add _ _ (hs1.sub hs2) hs3, D_sub _ _ hs1 hs2,
-    D_smul _ _ E2cu_E4sq_holo', D_smul _ _ E2sq_E4_E6_holo', D_smul _ _ E2_E4cu_holo',
-    D_smul _ _ E2_E6sq_holo', D_smul _ _ E4sq_E6_holo']
-
 /--
 Modular linear differential equation satisfied by $F$.
 -/
 theorem MLDE_F : serre_D 12 (serre_D 10 F) =
     5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ_fun * negDE₂ := by
-  have hcE₂_eq : (5 * 6⁻¹ : ℂ) • E₂ = 5 * 6⁻¹ * E₂ := by ext; simp [smul_eq_mul]
-  have h56E₂_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂) := hcE₂_eq ▸ E₂_holo'.const_smul _
-  have h56E₂F : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (5 * 6⁻¹ * E₂ * F) := h56E₂_holo.mul F_holo
-  have hD_outer : D (D F - 5 * 6⁻¹ * E₂ * F) = D (D F) - D (5 * 6⁻¹ * E₂ * F) :=
-    D_sub _ _ (D_differentiable F_holo) h56E₂F
-  have hD_cE₂F : D (5 * 6⁻¹ * E₂ * F) = 5 * 6⁻¹ * (E₂ * D F + D E₂ * F) := by
-    have : D (5 * 6⁻¹ * E₂) = 5 * 6⁻¹ * D E₂ := by
-      rw [← hcE₂_eq, D_smul _ _ E₂_holo']; ext; simp [smul_eq_mul]
-    calc D (5 * 6⁻¹ * E₂ * F)
-        = D ((5 * 6⁻¹ * E₂) * F) := by ring_nf
-      _ = (5 * 6⁻¹ * E₂) * D F + D (5 * 6⁻¹ * E₂) * F := by
-          rw [D_mul _ F h56E₂_holo F_holo]; ring
-      _ = 5 * 6⁻¹ * (E₂ * D F + D E₂ * F) := by rw [this]; ring_nf
-  rw [ramanujan_E₂] at hD_cE₂F; rw [serre_D_10_F]; simp only [serre_D_eq]
-  ext z
-  simp only [Pi.add_apply, Pi.mul_apply, Pi.sub_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul,
-    congrFun hD_outer z, congrFun hD_cE₂F z, congrFun DDF_eq z, congrFun F_aux z,
-    congrFun D_E2cu_E4sq z, congrFun D_E2sq_E4_E6 z, congrFun D_E2_E4cu z,
-    congrFun D_E2_E6sq z, congrFun D_E4sq_E6 z, congrFun ramanujan_E₂ z,
-    congrFun ramanujan_E₄ z, congrFun ramanujan_E₆ z,
-    show (5 : ℍ → ℂ) z = 5 from rfl, show (2 : ℍ → ℂ) z = 2 from rfl,
-    show (3 : ℍ → ℂ) z = 3 from rfl, show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl,
-    show (3⁻¹ : ℍ → ℂ) z = 3⁻¹ from rfl, show (6⁻¹ : ℍ → ℂ) z = 6⁻¹ from rfl,
-    show (12⁻¹ : ℍ → ℂ) z = 12⁻¹ from rfl]
-  simp [F, Δ_fun, negDE₂, ramanujan_E₂]
-  field_simp (disch := norm_num)
-  ring
+  -- Unfold serre_D to D-level, substitute D F formula
+  rw [serre_D_10_F]; simp only [serre_D_eq]
+  -- Compute D(D F - cE₂F) using automated simp + fun_prop discharge
+  simp (disch := fun_prop) only [D_sub, D_add, D_mul, D_sq, D_cube, F_aux,
+    ramanujan_E₂, ramanujan_E₄, ramanujan_E₆,
+    D_five_fun, D_inv_two_fun, D_inv_three_fun, D_inv_six_fun]
+  -- Close algebraic identity
+  ext z; simp [F, Δ_fun, negDE₂]; field_simp (disch := norm_num); ring
 
 /-- Δ_fun expressed in terms of theta functions. -/
 private lemma Δ_fun_theta (z : ℍ) :
