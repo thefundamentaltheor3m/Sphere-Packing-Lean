@@ -28,7 +28,7 @@ lemma const_add_variable_change [MulOneClass E] (x₁ x₂ x₁' : ℝ)
     rw [← one_mul (f t)]
   have : ∀ x, HasDerivAt g 1 x := by
     intro x
-    unfold g;
+    unfold g
     simpa using (hasDerivAt_id' x)
   have : ∀ t, g t = (t - (x₁' - x₁)) := by unfold g; simp
   rw [← intervalIntegral.integral_comp_smul_deriv' (f := g) (f' := fun _ ↦ 1)]
@@ -129,11 +129,8 @@ lemma UpperHalfPlane_open_nhd {x : ℂ} {hx : x ∈ Set.univ ×ℂ Set.Ioi 0} :
   constructor
   · exact fun h => h_open.1.prod h_open.2;
   · intro h
-    convert h.preimage _
-    rotate_left
-    · exact fun x => ( ( x.re, x.im ), x.im );
-    · fun_prop
-    · exact Subset.antisymm (fun ⦃a⦄ a_1 ↦ a_1) fun ⦃a⦄ a_1 ↦ a_1
+    apply h.preimage (f := (fun (x : ℂ) => ( ( x.re, x.im ), x.im )))
+    fun_prop
 
 def d (r : ℝ) := -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *  ∫ t in Ici (0 : ℝ),
   I * φ₀'' (-1 / (I * t)) * (I * t)^2 *
@@ -540,28 +537,86 @@ lemma d_eq_1 : d r = I₁' r + I₂' r + I₃' r + I₄' r + I₅' r +
   · exact hI
   · exact hI'
 
-lemma integrand_eq_2φ₀ : ∀ z : ℂ, I * φ₀'' (-1 / (z + 1)) * (z + 1)^2 +
+lemma S_invariant_ℤ_periodic (f : UpperHalfPlane → ℂ)
+  (hf : ∀ z : UpperHalfPlane, f ((1 : ℝ) +ᵥ z) = f z)
+  (k : ℤ) (z : UpperHalfPlane) : f ((k : ℝ) +ᵥ z) = f z := by
+  wlog kpos : k ≥ 0 with h
+  · have kneg : (-k) > 0 := by
+      simp only [Int.neg_pos]
+      exact lt_of_not_ge kpos
+    have this : z = ((↑(-k) : ℝ) +ᵥ (k : ℝ) +ᵥ z) := by simp
+    conv_rhs => rw [this]
+    rw [h r (hr := hr) f hf (-k) _ (le_of_lt kneg)]
+  · rw [Int.eq_natAbs_of_nonneg kpos]
+    generalize k.natAbs = n
+    simp only [Int.cast_natCast]
+    induction n
+    · simp
+    · simp only [Nat.cast_add, Nat.cast_one]
+      rw [add_comm, add_vadd]
+      rw [hf]; assumption
+
+lemma integrand_eq_2φ₀ : ∀ z : ℂ, z.im > 0 → I * φ₀'' (-1 / (z + 1)) * (z + 1)^2 +
   I * φ₀'' (-1 / (z - 1)) * (z - 1)^2 +
   -2 * I * φ₀'' (-1 / z) * z^2 = 2 * I * φ₀'' z := by
-  intro z
-  by_cases z ∈ UpperHalfPlane.upperHalfPlaneSet
-  unfold φ₀''
+  intro z hz
+  set z' : UpperHalfPlane := ⟨z, hz⟩
+  have : z + 1 = ↑(ModularGroup.T • z') := by
+    unfold z'
+    rw [UpperHalfPlane.modular_T_smul, UpperHalfPlane.coe_vadd]
+    simp; ac_rfl
+  have : ∀ k : ℤ, -1 / (z + k) = ↑(ModularGroup.S • ((k : ℝ) +ᵥ z')) := by
+    intro k
+    unfold z'
+    rw [UpperHalfPlane.modular_S_smul, UpperHalfPlane.coe_mk, UpperHalfPlane.coe_vadd]
+    field_simp; congr 2; simp only [ofReal_intCast, UpperHalfPlane.coe_mk_subtype]; ac_rfl
+  rw [
+    (by simp : z + 1 = z + ↑(1 : ℤ)),
+    (by simp; rfl : z - 1 = z + ↑(-1 : ℤ)),
+    (by simp: -1 / z = -1 / (z + ↑(0 : ℤ)))
+  ]
+  rw [φ₀''_mem_upperHalfPlane hz]
+  rw [this, this, this]
+  rw [φ₀''_coe_upperHalfPlane, φ₀''_coe_upperHalfPlane, φ₀''_coe_upperHalfPlane]
+  rw [φ₀_S_transform, φ₀_S_transform, φ₀_S_transform]
+  rw [
+    S_invariant_ℤ_periodic r (hr := hr) (f := φ₀) (hf := φ₀_periodic),
+    S_invariant_ℤ_periodic r (hr := hr) (f := φ₀) (hf := φ₀_periodic),
+    S_invariant_ℤ_periodic r (hr := hr) (f := φ₀) (hf := φ₀_periodic),
+    S_invariant_ℤ_periodic r (hr := hr) (f := φ₂') (hf := φ₂'_periodic),
+    S_invariant_ℤ_periodic r (hr := hr) (f := φ₂') (hf := φ₂'_periodic),
+    S_invariant_ℤ_periodic r (hr := hr) (f := φ₂') (hf := φ₂'_periodic),
+    S_invariant_ℤ_periodic r (hr := hr) (f := φ₄') (hf := φ₄'_periodic),
+    S_invariant_ℤ_periodic r (hr := hr) (f := φ₄') (hf := φ₄'_periodic),
+    S_invariant_ℤ_periodic r (hr := hr) (f := φ₄') (hf := φ₄'_periodic),
+  ]
+  unfold z'
+  simp only [Int.cast_one, UpperHalfPlane.coe_vadd, ofReal_one,
+    UpperHalfPlane.coe_mk_subtype, Int.reduceNeg, Int.cast_neg, ofReal_neg,
+    neg_mul, Int.cast_zero, zero_vadd]
+  have : (1 + z) ≠ 0 := by
+    by_contra
+    rw [eq_neg_of_add_eq_zero_right this] at hz
+    simp at hz
+  have : (-1 + z) ≠ 0 := by
+    by_contra
+    rw [eq_neg_of_add_eq_zero_right this] at hz
+    simp at hz
+  have : z ≠ 0 := by by_contra; rw [this] at hz; simp at hz
+  field_simp
+  ring
 
 theorem d_eq_a : d r = a' r := by
   rw [d_eq_1 (hr := hr) _]
+  unfold a'
+  simp only [add_right_inj]
   conv_lhs =>
     pattern (_ * (cexp _) + _ * (cexp _) + _ * (cexp _))
     rw [← add_mul, ← add_mul]
-  -- TODO: Rewrite under binder here using assumption
-  conv_lhs =>
-    pattern (_ * cexp (_))
-    rw [integrand_eq_2φ₀ (hr := hr)]
-    rw [mul_assoc, mul_assoc]
-  unfold a'; simp only [add_right_inj]
-  rw [integral_const_mul]
-  unfold I₆'; simp only [mul_eq_mul_left_iff, OfNat.ofNat_ne_zero, or_false]
-  refine (setIntegral_congr_ae (by measurability) ?_)
-  apply ae_of_all; intros a ia
-  rw [← z₆'_eq_of_mem ia]
+  unfold I₆'; rw [← integral_const_mul]
+  refine setIntegral_congr_ae (by measurability) (ae_of_all _ ?_)
+  intro t ht
+  rw [integrand_eq_2φ₀ (hr := hr) _ _ (by simp; exact lt_of_le_of_lt' ht (by simp))]
   unfold Φ₆ Φ₆'
+  rw [← z₆'_eq_of_mem ht]
   ring_nf

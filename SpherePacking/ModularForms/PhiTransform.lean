@@ -45,6 +45,12 @@ noncomputable section
 theorem φ₀_periodic (z : ℍ) : φ₀ ((1 : ℝ) +ᵥ z) = φ₀ z := by
   simp only [φ₀, E₂_periodic, E₄_periodic, E₆_periodic, Δ_periodic]
 
+theorem φ₂'_periodic (z : ℍ) : φ₂' ((1 : ℝ) +ᵥ z) = φ₂' z := by
+  simp only [φ₂', E₂_periodic, E₄_periodic, E₆_periodic, Δ_periodic]
+
+theorem φ₄'_periodic (z : ℍ) : φ₄' ((1 : ℝ) +ᵥ z) = φ₄' z := by
+  simp only [φ₄', E₄_periodic, Δ_periodic]
+
 /-! ## Main Theorem: S-transformation of φ₀ -/
 
 /-- The S-transformation formula for φ₀:
