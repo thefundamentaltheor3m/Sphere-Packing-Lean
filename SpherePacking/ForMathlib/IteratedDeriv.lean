@@ -97,8 +97,8 @@ public lemma norm_iteratedFDeriv_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
       ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ = Real.pi ^ m := by
     calc
       ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ =
-          ‖iteratedDeriv m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ := by
-            exact norm_iteratedFDeriv_eq_norm_iteratedDeriv
+          ‖iteratedDeriv m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ :=
+            norm_iteratedFDeriv_eq_norm_iteratedDeriv
       _ = ‖c ^ m * Complex.exp ((x : ℂ) * c)‖ := by
             simpa using congrArg (fun F : ℝ → ℂ => ‖F x‖) (iteratedDeriv_cexp_mul_const (c := c) m)
       _ = ‖c ^ m‖ * ‖Complex.exp ((x : ℂ) * c)‖ := by simp
@@ -118,8 +118,8 @@ public lemma norm_iteratedFDeriv_smul_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
         ‖(-1 / 2 : ℂ)‖ * ‖iteratedFDeriv ℝ m e x‖ := by
     calc
       ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ (-1 / 2 : ℂ) • e t) x‖ =
-          ‖iteratedDeriv m (fun t : ℝ ↦ (-1 / 2 : ℂ) • e t) x‖ := by
-            exact norm_iteratedFDeriv_eq_norm_iteratedDeriv
+          ‖iteratedDeriv m (fun t : ℝ ↦ (-1 / 2 : ℂ) • e t) x‖ :=
+            norm_iteratedFDeriv_eq_norm_iteratedDeriv
       _ = ‖(-1 / 2 : ℂ) • iteratedDeriv m e x‖ := by
             simp
       _ = ‖(-1 / 2 : ℂ)‖ * ‖iteratedDeriv m e x‖ := by simp
@@ -150,8 +150,8 @@ public theorem decay_iteratedFDeriv_mul_of_bound_left
         ∑ i ∈ Finset.range (n + 1),
           (n.choose i : ℝ) * ‖iteratedFDeriv ℝ i f x‖ * ‖iteratedFDeriv ℝ (n - i) g x‖ :=
     norm_iteratedFDeriv_mul_le (𝕜 := ℝ) (N := (⊤ : ℕ∞)) hf_cont hg_cont x (n := n)
-      (hn := by
-        exact WithTop.coe_le_coe.2 (show (n : ℕ∞) ≤ (⊤ : ℕ∞) from le_top))
+      (hn :=
+        WithTop.coe_le_coe.2 (show (n : ℕ∞) ≤ (⊤ : ℕ∞) from le_top))
   have hmain :
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun y : ℝ ↦ f y * g y) x‖ ≤
         ∑ i ∈ Finset.range (n + 1),

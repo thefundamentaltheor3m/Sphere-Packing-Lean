@@ -86,11 +86,11 @@ lemma bAnotherRHS_analyticOnNhd :
     have : u - 2 ≠ 0 := sub_ne_zero.2 hu_ne2
     exact mul_ne_zero hπ this
   have hterm1 :
-      AnalyticOnNhd ℂ (fun u : ℂ => (144 : ℂ) / ((π : ℂ) * u)) ACDomain := by
-    exact analyticOnNhd_const.div (analyticOnNhd_const.mul analyticOnNhd_id) hden1
+      AnalyticOnNhd ℂ (fun u : ℂ => (144 : ℂ) / ((π : ℂ) * u)) ACDomain :=
+    analyticOnNhd_const.div (analyticOnNhd_const.mul analyticOnNhd_id) hden1
   have hterm2 :
-      AnalyticOnNhd ℂ (fun u : ℂ => (1 : ℂ) / ((π : ℂ) * (u - 2))) ACDomain := by
-    exact analyticOnNhd_const.div (analyticOnNhd_const.mul hsub2) hden2
+      AnalyticOnNhd ℂ (fun u : ℂ => (1 : ℂ) / ((π : ℂ) * (u - 2))) ACDomain :=
+    analyticOnNhd_const.div (analyticOnNhd_const.mul hsub2) hden2
   have hinner :
       AnalyticOnNhd ℂ
         (fun u : ℂ =>

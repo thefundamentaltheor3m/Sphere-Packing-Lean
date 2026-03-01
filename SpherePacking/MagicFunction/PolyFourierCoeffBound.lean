@@ -144,14 +144,7 @@ lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i *
   have hne : cexp (↑π * I * (n₀ : ℂ) * z) ≠ 0 :=
     Complex.exp_ne_zero (↑π * I * (n₀ : ℂ) * z)
   -- cancel the `n₀` shift in the exponential.
-  calc
-    c (↑i + n₀) * cexp (↑π * I * (↑(↑i + n₀) : ℂ) * z) * (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹ =
-        c (↑i + n₀) * (cexp (↑π * I * (i : ℂ) * z) * cexp (↑π * I * (n₀ : ℂ) * z)) *
-          (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹ := by
-        simpa [mul_assoc] using
-          congrArg (fun w ↦ c (↑i + n₀) * w * (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹) hsplit
-    _ = c (↑i + n₀) * cexp (↑π * I * (i : ℂ) * z) := by
-        simp [mul_assoc]
+  grind only
 
 include hcsum in
 lemma aux_4 : Summable fun (i : ℕ) ↦ norm (c (i + n₀)) *
@@ -177,10 +170,7 @@ lemma aux_tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
   rw [← Real.rexp_tsum_eq_tprod]
   · exact Real.exp_pos _
   · intro i
-    refine pow_pos (sub_pos.2 ?_) _
-    refine Real.exp_lt_one_iff.2 (by
-      have : (0 : ℝ) < (i : ℝ) := by exact_mod_cast i.pos
-      nlinarith)
+    simp_all
   · have hnat : Summable fun b : ℕ ↦ Real.exp (-c * (b : ℝ)) := by
       -- `Real.summable_exp_nat_mul_iff` is stated for `exp (n * a)`.
       simpa [mul_assoc, mul_comm, mul_left_comm] using
@@ -593,39 +583,22 @@ lemma A_E_sq_eq_tsum (z : ℍ) :
         let u : ℂ := 2 * π * I * ((p.1 + 1 : ℕ) : ℂ) * (z : ℂ)
         let v : ℂ := 2 * π * I * ((p.2 + 1 : ℕ) : ℂ) * (z : ℂ)
         have huv : u + v = 2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ) := by
-          dsimp [u, v]
-          -- Combine coefficients using `hcast`.
-          calc
-            (2 * π * I * ((p.1 + 1 : ℕ) : ℂ) * (z : ℂ)) +
-                (2 * π * I * ((p.2 + 1 : ℕ) : ℂ) * (z : ℂ))
-                = 2 * π * I * ((((p.1 + 1 : ℕ) : ℂ) + ((p.2 + 1 : ℕ) : ℂ)) * (z : ℂ)) := by
-                    simp [mul_assoc, mul_add, add_mul]
-            _ = 2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ) := by
-                    simpa [mul_assoc] using congrArg (fun x : ℂ => 2 * π * I * (x * (z : ℂ))) hcast
+          grind only
         have : cexp u * cexp v = cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
           calc
-            cexp u * cexp v = cexp (u + v) := by
-              exact (Complex.exp_add u v).symm
+            cexp u * cexp v = cexp (u + v) :=
+              (Complex.exp_add u v).symm
             _ = cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by simp [huv]
         simpa [e₁, e₂, u, v] using this
       -- Expand `t` and use `hexp`.
       dsimp [t, A_E_term, e₁, e₂]
-      calc
-        (A_E_coeff p.1 * cexp (2 * π * I * ((p.1 + 1 : ℕ) : ℂ) * (z : ℂ))) *
-            (A_E_coeff p.2 * cexp (2 * π * I * ((p.2 + 1 : ℕ) : ℂ) * (z : ℂ)))
-            = (A_E_coeff p.1 * A_E_coeff p.2) * (e₁ * e₂) := by
-                simp [e₁, e₂, mul_assoc, mul_left_comm, mul_comm]
-        _ = (A_E_coeff p.1 * A_E_coeff p.2) *
-              cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
-                simp [hexp]
+      exact CancelDenoms.mul_subst rfl hexp rfl
     calc
       (∑ p ∈ Finset.antidiagonal m, t p.1 * t p.2)
           = ∑ p ∈ Finset.antidiagonal m,
               (A_E_coeff p.1 * A_E_coeff p.2) *
-                cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
-                refine Finset.sum_congr rfl ?_
-                intro p hp
-                exact hmul p hp
+                cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) :=
+                Finset.sum_congr rfl hmul
       _ = (∑ p ∈ Finset.antidiagonal m, A_E_coeff p.1 * A_E_coeff p.2) *
             cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
             simp [Finset.sum_mul, mul_assoc]
@@ -830,9 +803,7 @@ lemma A_E_sq_fourierCoeff_hf :
     have hidx : ((2 * m + 1 : ℕ) : ℤ) + (4 : ℤ) = (Int.ofNat (2 * m + 5)) := by
       simpa [hidxNat] using (Int.ofNat_add_ofNat (2 * m + 1) 4)
     have hcond : ¬(4 ≤ (2 * m + 5) ∧ Even (2 * m + 5)) := by
-      intro h
-      have : ¬Even (2 * m + 5) := by simp [parity_simps]
-      exact this h.2
+      grind only [= Nat.even_iff]
     -- Unfold and simplify.
     dsimp [f, fouterm]
     -- Rewrite the index to an `ofNat` and use `hcond`.
@@ -896,32 +867,19 @@ lemma A_E_sq_fourierCoeff_hf :
     exact (summable_zero : Summable (0 : ℕ → ℂ))
   have hs_g : Summable g := by
     simpa [g] using A_E_sq_series_summable (x := x)
-  have he : Summable (fun m : ℕ => f (2 * m)) := by
-    refine Summable.congr hs_g ?_
-    intro m
-    exact (heven_term m).symm
+  have he : Summable (fun m : ℕ => f (2 * m)) :=
+    (summable_congr heven_term).mpr hs_g
   have hsplit :
       (∑' m : ℕ, f (2 * m)) + (∑' m : ℕ, f (2 * m + 1)) = ∑' n : ℕ, f n :=
     tsum_even_add_odd (f := f) he ho
   have hodd_sum : (∑' m : ℕ, f (2 * m + 1)) = 0 := by
     -- since all odd terms are zero
-    have : (∑' m : ℕ, f (2 * m + 1)) = ∑' m : ℕ, (0 : ℂ) := by
-      exact tsum_congr hodd_term
+    have : (∑' m : ℕ, f (2 * m + 1)) = ∑' m : ℕ, (0 : ℂ) :=
+      tsum_congr hodd_term
     simpa using this.trans (tsum_zero : (∑' m : ℕ, (0 : ℂ)) = 0)
   have heven_sum : (∑' m : ℕ, f (2 * m)) = ∑' m : ℕ, g m := by
-    refine tsum_congr ?_
-    intro m
-    exact heven_term m
-  have hsumf : (∑' n : ℕ, f n) = ∑' m : ℕ, g m := by
-    calc
-      (∑' n : ℕ, f n) = (∑' m : ℕ, f (2 * m)) + (∑' m : ℕ, f (2 * m + 1)) := by
-        simpa [add_comm, add_left_comm, add_assoc] using hsplit.symm
-      _ = (∑' m : ℕ, f (2 * m)) := by simp [hodd_sum]
-      _ = ∑' m : ℕ, g m := heven_sum
-  -- Now use Bhavik's `2π i`-series.
-  have hA2' : (A_E x) ^ 2 = ∑' m : ℕ, g m := by
-    simpa [g] using hA2
-  simpa [f, hsumf] using hA2'
+    exact tsum_congr heven_term
+  grind only
 
 /-- Exponential decay for the magic function `φ₀` in the upper half-plane.
 

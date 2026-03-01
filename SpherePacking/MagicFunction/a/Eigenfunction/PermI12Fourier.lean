@@ -144,8 +144,8 @@ public lemma permI1Kernel_measurable (w : EuclideanSpace ℝ (Fin 8)) :
             ContinuousAt
               (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ =>
                 (π : ℂ) * I * ((‖q.1‖ ^ 2 : ℝ) : ℂ) * (z₁line q.2 : ℂ))
-              p := by
-          exact ((continuousAt_const.mul continuousAt_const).mul hnormSqC).mul hz₁
+              p :=
+          ((continuousAt_const.mul continuousAt_const).mul hnormSqC).mul hz₁
         have hexp :
             ContinuousAt
               (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ =>

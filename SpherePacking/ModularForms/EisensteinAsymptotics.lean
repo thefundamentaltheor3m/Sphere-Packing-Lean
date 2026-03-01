@@ -74,11 +74,7 @@ public lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
             _ ≤ ‖w - z‖ := abs_im_le_norm _
             _ = dist w z := (dist_eq_norm _ _).symm
             _ = z.im / 2 := Metric.mem_sphere.mp hw
-        have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
-        have hA_lt : A < w.im := calc A ≤ max A 0 := hA_le_max
-          _ < z.im / 2 := hz_ge_A
-          _ ≤ w.im := hlower
-        linarith
+        grind only [= max_def, = abs.eq_1]
       simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw_im_pos]
       exact hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
     have hDf_bound : ‖D f z‖ ≤ M / (π * z.im) := by
@@ -163,11 +159,7 @@ public lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
       rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
       simp [Complex.I_re, Complex.I_im, mul_comm]
     rw [Complex.norm_exp, hre]
-  calc 24 * ‖∑' n : ℕ+, ↑n * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖
-      ≤ 24 * (‖q‖ / (1 - ‖q‖) ^ 3) := by gcongr
-    _ ≤ 24 * (8 * ‖q‖) := by gcongr
-    _ = 192 * ‖q‖ := by ring
-    _ = 192 * Real.exp (-(2 * π) * z.im) := by rw [hq_eq_exp]; ring_nf
+  grind only
 
 /-- E₂ → 1 at i∞. -/
 public lemma E₂_tendsto_one_atImInfty : Filter.Tendsto E₂ atImInfty (nhds 1) := tendsto_E₂_atImInfty

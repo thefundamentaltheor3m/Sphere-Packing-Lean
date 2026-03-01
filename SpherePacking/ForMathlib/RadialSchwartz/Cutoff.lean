@@ -34,8 +34,8 @@ open Complex Real
   simpa [cutoff] using Real.smoothTransition.zero_of_nonpos (x := 2 * r + 1) (by linarith)
 
 /-- `cutoff r = 0` for `r ≤ -1`. -/
-@[simp] public lemma cutoff_eq_zero_of_le {r : ℝ} (hr : r ≤ -1) : cutoff r = 0 := by
-  exact cutoff_eq_zero_of_le_neg_half (r := r) (by linarith [hr])
+@[simp] public lemma cutoff_eq_zero_of_le {r : ℝ} (hr : r ≤ -1) : cutoff r = 0 :=
+  cutoff_eq_zero_of_le_neg_half (r := r) (by linarith [hr])
 
 /-- `cutoff r = 1` for `0 ≤ r`. -/
 @[simp] public lemma cutoff_eq_one_of_nonneg {r : ℝ} (hr : 0 ≤ r) : cutoff r = 1 := by
@@ -70,8 +70,8 @@ public lemma cutoffC_contDiff : ContDiff ℝ (⊤ : ℕ∞) cutoffC := by
 
 /-- `cutoff (‖x‖^2) = 1` for all `x`. -/
 @[simp] public lemma cutoff_norm_sq_eq_one {F : Type*} [NormedAddCommGroup F]
-    [InnerProductSpace ℝ F] (x : F) : cutoff (‖x‖ ^ 2) = 1 := by
-  exact cutoff_eq_one_of_nonneg (r := ‖x‖ ^ 2) (sq_nonneg ‖x‖)
+    [InnerProductSpace ℝ F] (x : F) : cutoff (‖x‖ ^ 2) = 1 :=
+  cutoff_eq_one_of_nonneg (r := ‖x‖ ^ 2) (sq_nonneg ‖x‖)
 
 /-- `cutoffC (‖x‖^2) = 1` for all `x`. -/
 @[simp] public lemma cutoffC_norm_sq_eq_one {F : Type*} [NormedAddCommGroup F]

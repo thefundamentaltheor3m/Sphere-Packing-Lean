@@ -20,8 +20,8 @@ private lemma sigma_le_pow_succ (k n : ℕ) : σ k n ≤ n ^ (k + 1) := by
       simpa [ArithmeticFunction.sigma_apply, nsmul_eq_mul] using
         (Finset.sum_le_card_nsmul (Nat.divisors n) (fun d => d ^ k) (n ^ k) fun d hd =>
           Nat.pow_le_pow_left (Nat.le_of_dvd (Nat.pos_of_ne_zero hn) (Nat.mem_divisors.mp hd).1) k)
-    _ ≤ n * n ^ k := by
-      exact Nat.mul_le_mul_right _ (Nat.card_divisors_le_self n)
+    _ ≤ n * n ^ k :=
+      Nat.mul_le_mul_right _ (Nat.card_divisors_le_self n)
     _ = n ^ (k + 1) := by simp [pow_succ, Nat.mul_comm]
 
 /-- A crude bound `σ 3 n ≤ n ^ 4`. -/

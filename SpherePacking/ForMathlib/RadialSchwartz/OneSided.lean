@@ -67,8 +67,8 @@ public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
   by_cases hx₁ : x < -1
   · simp [C, iteratedFDeriv_cutoffC_mul_eq_zero_of_lt (f := f) hx₁ n, hC0]
   · by_cases hx₂ : x ≤ 0
-    · have hxIcc : x ∈ Icc (-1 : ℝ) 0 := by
-        exact ⟨le_of_not_gt hx₁, hx₂⟩
+    · have hxIcc : x ∈ Icc (-1 : ℝ) 0 :=
+        ⟨le_of_not_gt hx₁, hx₂⟩
       exact (hCmid x hxIcc).trans (le_trans (le_max_left _ _) (le_max_left _ _))
     · have hxpos : 0 < x := lt_of_not_ge hx₂
       have hx0 : 0 ≤ x := le_of_lt hxpos

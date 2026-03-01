@@ -113,8 +113,8 @@ public lemma fourier_I₁_eq_curveIntegral (w : ℝ⁸) :
         ∫ x : ℝ⁸,
           ∫ t in Ioc (0 : ℝ) 1,
             cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-              ((I : ℂ) * MagicFunction.a.ComplexIntegrands.Φ₁' (‖x‖ ^ 2) (z₁line t)) := by
-          exact congrArg (fun F : ℝ⁸ → ℂ => ∫ x : ℝ⁸, F x) hmul
+              ((I : ℂ) * MagicFunction.a.ComplexIntegrands.Φ₁' (‖x‖ ^ 2) (z₁line t)) :=
+          congrArg (fun F : ℝ⁸ → ℂ => ∫ x : ℝ⁸, F x) hmul
     _ =
         ∫ x : ℝ⁸, ∫ t in Ioc (0 : ℝ) 1, f x t := by
           simp [f, permI1Kernel, mul_assoc]

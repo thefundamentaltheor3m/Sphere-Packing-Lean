@@ -724,8 +724,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       simpa [s] using (hX.mem_toFinset.1 hx)
     have hx_ball : x ∈ ball 0 R₁ := hx_mem.2
     have hx_gball :
-        (f x : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R₁ + C) := by
-      exact PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC hx_ball
+        (f x : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R₁ + C) :=
+      PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC hx_ball
     have : f x ∈ {g : cubeLattice (d := d) L hLpos |
         (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R₁ + C)} := by
       simpa using hx_gball
@@ -936,8 +936,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   -- `b < sgDensity - cubeShellErr L ≤ P.density`.
   have hb_lt : b < (sg.card : ℝ≥0∞) * volBall / volCube - cubeShellErr L :=
     lt_tsub_iff_right.mpr hsg_density
-  have hF_card_add : F.card + sb.card = sg.card := by
-    exact Finset.card_filter_add_card_filter_not fun x => x ∈ innerSet
+  have hF_card_add : F.card + sb.card = sg.card :=
+    Finset.card_filter_add_card_filter_not fun x => x ∈ innerSet
   have hP_lower :
       (sg.card : ℝ≥0∞) * volBall / volCube - cubeShellErr L ≤ P.density := by
     -- show `sgDensity ≤ P.density + cubeShellErr L`, then rewrite with `tsub_le_iff_right`

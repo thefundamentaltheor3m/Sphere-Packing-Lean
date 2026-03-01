@@ -90,9 +90,7 @@ theorem extracted_66 (z : ℍ) :
     congr
     ext d
     have hz : (z : ℂ) ≠ 0 := by simpa using (ne_zero z)
-    simp only [Int.cast_neg]
-    field_simp [hz]
-    ring_nf
+    grind only
   · intro i hi
     exact extracted_77 z i
 
@@ -111,15 +109,7 @@ lemma G2_S_act (z : ℍ) : (z.1 ^ 2)⁻¹ * G₂ (ModularGroup.S • z) = limUnd
       simp only [Int.cast_neg, neg_mul, inv_inj]
       ring
     have := G2_cauchy ⟨-(1 : ℂ) / z, by simpa using pnat_div_upper 1 z⟩
-    simp only [one_div] at this
-    apply this.congr
-    ext N
-    congr
-    ext m
-    congr
-    ext n
-    congr 1
-    field_simp [ne_zero z]
+    grind only
 
 
 theorem series_eql' (z : ℍ) :
@@ -205,17 +195,7 @@ theorem extracted_12 (z : ℍ) :
       funext N
       set Z : ℍ := ⟨-(N : ℂ) / z, by simpa using pnat_div_upper N z⟩
       have hS := series_eql' Z
-      have hsum :
-          (∑' n : ℕ+, (1 / ((Z : ℂ) - n) + 1 / (Z + n))) =
-            (↑π * Complex.I -
-                2 * ↑π * Complex.I *
-                  ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * (Z : ℂ) * n)) -
-              1 / (Z : ℂ) := by
-        have := congrArg (fun t : ℂ => t - 1 / (Z : ℂ)) hS
-        simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using this.symm
-      have hz : (1 / (Z : ℂ)) = (z : ℂ) / (-(N : ℂ)) := by
-        simp [Z]
-      simpa [Z, hz, mul_sub] using congrArg (fun t : ℂ => (2 / (z : ℂ)) * t) hsum
+      grind only
     rw [this]
     have h3 : (fun N : ℕ+ =>
         (2 / (z : ℂ) * (↑π * Complex.I - 2 * ↑π * Complex.I *
@@ -364,9 +344,7 @@ theorem extracted_66c (z : ℍ) :
     congr
     ext d
     have hz : (z : ℂ) ≠ 0 := by simpa using (ne_zero z)
-    simp only [Int.cast_neg]
-    field_simp [hz]
-    ring_nf
+    grind only
   · intro i hi
     exact extracted_77 z i
 
@@ -779,15 +757,7 @@ public lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ, (n + 1) *
       simpa [r, mul_assoc, mul_left_comm, mul_comm] using (exp_aux z (n + 1))
     simp [this]
   -- Combine.
-  calc
-    (∑' n : ℕ,
-          (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) /
-            (1 - cexp (2 * π * Complex.I * (n + 1) * z))) =
-        ∑' n : ℕ, (n + 1) * r ^ (n + 1) / (1 - r ^ (n + 1)) := hL'
-    _ = ∑' n : ℕ+, (n : ℂ) * r ^ (n : ℕ) / (1 - r ^ (n : ℕ)) := hL
-    _ = ∑' n : ℕ+, (sigma 1 n : ℂ) * r ^ (n : ℕ) := hσ
-    _ = ∑' n : ℕ, sigma 1 (n + 1) * r ^ (n + 1) := hR.symm
-    _ = ∑' n : ℕ, sigma 1 (n + 1) * cexp (2 * π * Complex.I * (n + 1) * z) := hR'.symm
+  grind only
 
 /-- A standard Fourier expansion formula for `E₂`. -/
 public lemma E₂_eq (z : UpperHalfPlane) : E₂ z =

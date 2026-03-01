@@ -41,13 +41,13 @@ theorem split_one : (1 : ℂ) = ⟨1, 0⟩ := rfl
 /-- Split an addition into componentwise addition in `Complex.mk` form. -/
 theorem split_add {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ}
     (h₁ : z₁ = ⟨a₁, b₁⟩) (h₂ : z₂ = ⟨a₂, b₂⟩) :
-    z₁ + z₂ = ⟨(a₁ + a₂), (b₁ + b₂)⟩ := by
-  exact Ring.add_congr h₁ h₂ rfl
+    z₁ + z₂ = ⟨(a₁ + a₂), (b₁ + b₂)⟩ :=
+  Ring.add_congr h₁ h₂ rfl
 
 /-- Split a multiplication into real and imaginary parts in `Complex.mk` form. -/
 theorem split_mul {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ} (h₁ : z₁ = ⟨a₁, b₁⟩) (h₂ : z₂ = ⟨a₂, b₂⟩) :
-    z₁ * z₂ = ⟨(a₁ * a₂ - b₁ * b₂), (a₁ * b₂ + b₁ * a₂)⟩ := by
-  exact Ring.mul_congr h₁ h₂ rfl
+    z₁ * z₂ = ⟨(a₁ * a₂ - b₁ * b₂), (a₁ * b₂ + b₁ * a₂)⟩ :=
+  Ring.mul_congr h₁ h₂ rfl
 
 /-- Split an inverse into real and imaginary parts in `Complex.mk` form. -/
 theorem split_inv {z : ℂ} {x y : ℝ} (h : z = ⟨x, y⟩) :

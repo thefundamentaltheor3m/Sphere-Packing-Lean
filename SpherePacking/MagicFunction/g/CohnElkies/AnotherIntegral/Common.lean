@@ -66,8 +66,7 @@ public lemma differentiableAt_intervalIntegral_mul_exp
     refine norm_mul_le_of_le (hbase_bound t ht) ?_
     have h1 : ‖u0 * k t‖ ≤ ‖u0‖ * K := by
       calc
-        ‖u0 * k t‖ ≤ ‖u0‖ * ‖k t‖ := by
-          exact norm_mul_le u0 (k t)
+        ‖u0 * k t‖ ≤ ‖u0‖ * ‖k t‖ := norm_mul_le u0 (k t)
         _ ≤ ‖u0‖ * K := by gcongr
     exact (Complex.norm_exp_le_exp_norm _).trans (Real.exp_le_exp.2 h1)
   let E : ℝ := Real.exp ((‖u0‖ + 1) * K)

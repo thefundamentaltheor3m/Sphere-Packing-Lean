@@ -106,10 +106,7 @@ public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
                   congrArg (fun u : ℝ => (Cψ : ℝ) * (rexp (-Real.pi / t) * u)) hpow_simp
           _ = (Cψ : ℝ) * ((1 / t ^ (2 : ℕ)) * rexp (-Real.pi / t)) := by
                 ac_rfl
-      have hmul' :
-          g t ≤ ((Cψ : ℝ) * rexp (-Real.pi / t) * t ^ k) * (1 / t) ^ (k + 2) := by
-        simpa [g, mul_assoc, mul_left_comm, mul_comm] using hmul
-      exact hmul'.trans (le_of_eq hR)
+      exact le_of_le_of_eq hmul hR
     simpa [hnorm_g] using this
   exact Integrable.mono' hmajor hmeas_g hg_bound
 

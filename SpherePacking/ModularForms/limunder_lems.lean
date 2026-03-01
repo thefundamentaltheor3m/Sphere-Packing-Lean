@@ -39,8 +39,8 @@ public lemma limUnder_sub {α : Type*} [Preorder α] [(atTop : Filter α).NeBot]
 /-- If `f = g` eventually along `atTop`, then `limUnder atTop f = limUnder atTop g`. -/
 public lemma limUnder_congr_eventually (f g : ℕ → ℂ) (h : ∀ᶠ n in atTop, f n = g n)
   (hf : CauchySeq f) :
-  limUnder atTop f = limUnder atTop g := by
-  exact (Filter.Tendsto.limUnder_eq ((CauchySeq.tendsto_limUnder hf).congr' h)).symm
+  limUnder atTop f = limUnder atTop g :=
+  (Filter.Tendsto.limUnder_eq ((CauchySeq.tendsto_limUnder hf).congr' h)).symm
 
 /-- A summable series over `ℤ` is the `limUnder` of its symmetric partial sums over `Ico (-N) N`. -/
 public lemma tsum_limUnder_atTop (f : ℤ → ℂ) (hf : Summable f) : ∑' n, f n =

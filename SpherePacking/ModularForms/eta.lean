@@ -56,8 +56,8 @@ public lemma prod_tendstoUniformlyOn_tprod'
     (u : ℕ → ℝ) (hu : Summable u) (h : ∀ n x, x ∈ K → ‖f n x‖ ≤ u n)
     (hcts : ∀ n, ContinuousOn (fun x => f n x) K) :
     TendstoUniformlyOn (fun n : ℕ => fun a : α => ∏ i ∈ Finset.range n, (1 + f i a))
-      (fun a => ∏' i, (1 + f i a)) atTop K := by
-  exact tendstoUniformlyOn_tprod' (K := K) (f := f) hK (u := u) hu h hcts
+      (fun a => ∏' i, (1 + f i a)) atTop K :=
+  tendstoUniformlyOn_tprod' (K := K) (f := f) hK (u := u) hu h hcts
 
 lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.range n,
     fun x_1 ↦ 1 + -cexp (2 * ↑π * Complex.I *  (↑x + 1) * x_1))
