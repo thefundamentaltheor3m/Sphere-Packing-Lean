@@ -32,12 +32,12 @@ variable (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)) (a : EuclideanSpace ℝ (Fi
 
 /-- A Schwartz function is summable on any translate of a discrete `ℤ`-lattice. -/
 public theorem summable_lattice_translate :
-    Summable (fun ℓ : Λ => f (a + (ℓ : EuclideanSpace ℝ (Fin d)))) := by
-  exact Summable.of_norm (summable_norm_comp_add_zlattice (Λ := Λ) f a)
+    Summable (fun ℓ : Λ => f (a + (ℓ : EuclideanSpace ℝ (Fin d)))) :=
+  Summable.of_norm (summable_norm_comp_add_zlattice (Λ := Λ) f a)
 
 /-- The real part of a Schwartz function is summable on any translate of a discrete `ℤ`-lattice. -/
 public theorem summable_lattice_translate_re :
-    Summable (fun ℓ : Λ => (f (a + (ℓ : EuclideanSpace ℝ (Fin d)))).re) := by
-  exact Complex.reCLM.summable (summable_lattice_translate (Λ := Λ) f a)
+    Summable (fun ℓ : Λ => (f (a + (ℓ : EuclideanSpace ℝ (Fin d)))).re) :=
+  Complex.reCLM.summable (summable_lattice_translate (Λ := Λ) f a)
 
 end SpherePacking.CohnElkies.LPBoundSummability.ZLattice

@@ -101,8 +101,8 @@ private lemma FmodG_strictAnti_aux : StrictAntiOn FmodGReal (Set.Ioi (0 : ℝ)) 
       simpa using deriv_FmodGReal_neg (t := t) ht')
 
 /-- The function `FmodGReal` is antitone on the positive real axis. -/
-public theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) := by
-  exact (FmodG_strictAnti_aux).antitoneOn
+public theorem FmodG_antitone : AntitoneOn FmodGReal (Set.Ioi 0) :=
+  (FmodG_strictAnti_aux).antitoneOn
 
 lemma tendsto_mul_t_resToImagAxis_A_E :
     Tendsto (fun t : ℝ => (t : ℂ) * (A_E.resToImagAxis t)) atTop (nhds (0 : ℂ)) := by
@@ -187,8 +187,7 @@ lemma modular_S_smul_imagAxis (t : ℝ) (ht : 0 < t) :
       (UpperHalfPlane.modular_S_smul (z := UpperHalfPlane.mk (Complex.I * t) (by simp [ht])))
 
 lemma pow_six_mul_inv (t : ℂ) (ht : t ≠ 0) :
-    t ^ (6 : ℕ) * t⁻¹ = t ^ (5 : ℕ) := by
-  simp [pow_succ, mul_assoc, ht]
+    t ^ (6 : ℕ) * t⁻¹ = t ^ (5 : ℕ) := by simp [pow_succ, mul_assoc, ht]
 
 lemma pow_six_mul_inv_mul (t x : ℂ) (ht : t ≠ 0) :
     t ^ (6 : ℕ) * (t⁻¹ * x) = t ^ (5 : ℕ) * x := by
@@ -215,47 +214,23 @@ lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
   have hE6 : E₆ (ModularGroup.S • z) = z ^ (6 : ℕ) * E₆ z := E₆_S_transform z
   -- Simplify the powers of `z = i*t` appearing in the transformation.
   have hz2 : (z : ℂ) ^ (2 : ℕ) = -((t : ℂ) ^ (2 : ℕ)) := by
-    calc
-      (z : ℂ) ^ (2 : ℕ) = (Complex.I * (t : ℂ)) ^ (2 : ℕ) := by simp [z]
-      _ = (Complex.I ^ (2 : ℕ)) * ((t : ℂ) ^ (2 : ℕ)) := by simp [mul_pow]
-      _ = -((t : ℂ) ^ (2 : ℕ)) := by simp
+    simp [z, mul_pow]
   have hz4 : (z : ℂ) ^ (4 : ℕ) = (t : ℂ) ^ (4 : ℕ) := by
-    calc
-      (z : ℂ) ^ (4 : ℕ) = (Complex.I * (t : ℂ)) ^ (4 : ℕ) := by simp [z]
-      _ = (Complex.I ^ (4 : ℕ)) * ((t : ℂ) ^ (4 : ℕ)) := by simp [mul_pow]
-      _ = (t : ℂ) ^ (4 : ℕ) := by simp
+    simp [z, mul_pow]
   have hz6 : (z : ℂ) ^ (6 : ℕ) = -((t : ℂ) ^ (6 : ℕ)) := by
-    have hI6 : (Complex.I ^ (6 : ℕ) : ℂ) = -1 := by
-      norm_num1
+    have hI6 : (Complex.I ^ (6 : ℕ) : ℂ) = -1 := by norm_num1
     calc
-      (z : ℂ) ^ (6 : ℕ) = (Complex.I * (t : ℂ)) ^ (6 : ℕ) := by
-        rfl
+      (z : ℂ) ^ (6 : ℕ) = (Complex.I * (t : ℂ)) ^ (6 : ℕ) := by simp [z]
       _ = (Complex.I ^ (6 : ℕ)) * ((t : ℂ) ^ (6 : ℕ)) := by simp [mul_pow]
       _ = -((t : ℂ) ^ (6 : ℕ)) := by simp [hI6]
   have hz5 : (z : ℂ) ^ (5 : ℕ) = Complex.I * ((t : ℂ) ^ (5 : ℕ)) := by
-    have hI5 : (Complex.I ^ (5 : ℕ) : ℂ) = Complex.I := by
-      norm_num1
+    have hI5 : (Complex.I ^ (5 : ℕ) : ℂ) = Complex.I := by norm_num1
     calc
       (z : ℂ) ^ (5 : ℕ) = (Complex.I * (t : ℂ)) ^ (5 : ℕ) := by simp [z]
       _ = (Complex.I ^ (5 : ℕ)) * ((t : ℂ) ^ (5 : ℕ)) := by simp [mul_pow]
       _ = Complex.I * ((t : ℂ) ^ (5 : ℕ)) := by simp [hI5]
   have hdiv : (6 : ℂ) / (π * Complex.I * z) = -((6 : ℂ) / π) * ((t : ℂ)⁻¹) := by
-    have hden : (π : ℂ) * Complex.I * (Complex.I * (t : ℂ)) = -(π * (t : ℂ)) := by
-      calc
-        (π : ℂ) * Complex.I * (Complex.I * (t : ℂ))
-            = (π : ℂ) * ((Complex.I * Complex.I) * (t : ℂ)) := by
-                ac_rfl
-        _ = (π : ℂ) * ((-1 : ℂ) * (t : ℂ)) := by simp
-        _ = -(π * (t : ℂ)) := by simp [mul_comm]
-    calc
-      (6 : ℂ) / (π * Complex.I * z) = (6 : ℂ) / (π * Complex.I * (Complex.I * (t : ℂ))) := by
-        simp [z, mul_assoc]
-      _ = (6 : ℂ) / (-(π * (t : ℂ))) := by
-        simp [hden]
-      _ = -((6 : ℂ) / (π * (t : ℂ))) := by
-        simpa using (div_neg (a := (6 : ℂ)) (b := π * (t : ℂ)))
-      _ = -((6 : ℂ) / π) * ((t : ℂ)⁻¹) := by
-        simp [div_eq_mul_inv, mul_assoc, mul_comm]
+    grind only
   -- Put everything together and simplify.
   have hAE :
       A_E (ModularGroup.S • z) =
@@ -267,12 +242,7 @@ lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
     have hmul :
         ((z : ℂ) ^ (2 : ℕ) * (E₂ z + a)) * ((z : ℂ) ^ (4 : ℕ) * E₄ z) =
           (z : ℂ) ^ (6 : ℕ) * ((E₂ z + a) * E₄ z) := by
-      calc
-        ((z : ℂ) ^ (2 : ℕ) * (E₂ z + a)) * ((z : ℂ) ^ (4 : ℕ) * E₄ z) =
-            ((z : ℂ) ^ (2 : ℕ) * (z : ℂ) ^ (4 : ℕ)) * ((E₂ z + a) * E₄ z) := by
-              ac_rfl
-        _ = (z : ℂ) ^ (6 : ℕ) * ((E₂ z + a) * E₄ z) := by
-          simp [pow_two_mul_pow_four (z := (z : ℂ))]
+      ring
     dsimp [A_E]
     have hE2' :
         E₂
@@ -319,19 +289,7 @@ lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
     have hcorr :
         (-((t : ℂ) ^ (6 : ℕ))) * (a * E₄ z) =
           ((6 : ℂ) / π) * ((t : ℂ) ^ (5 : ℕ)) * E₄ z := by
-      rw [ha]
-      -- Cancel the two negatives and rewrite `t^6 * (t⁻¹ * E₄ z)` as `t^5 * E₄ z`.
-      have hcore :
-          ((t : ℂ) ^ (6 : ℕ)) * (((6 : ℂ) / π) * (((t : ℂ)⁻¹) * E₄ z)) =
-            ((6 : ℂ) / π) * (((t : ℂ) ^ (5 : ℕ)) * E₄ z) := by
-        calc
-          ((t : ℂ) ^ (6 : ℕ)) * (((6 : ℂ) / π) * (((t : ℂ)⁻¹) * E₄ z)) =
-              ((6 : ℂ) / π) * (((t : ℂ) ^ (6 : ℕ)) * (((t : ℂ)⁻¹) * E₄ z)) := by
-                ac_rfl
-          _ = ((6 : ℂ) / π) * (((t : ℂ) ^ (5 : ℕ)) * E₄ z) := by
-                rw [pow_six_mul_inv_mul (t := (t : ℂ)) (x := E₄ z) ht0]
-      -- `simp` handles the signs and associates the products.
-      simpa [mul_assoc] using hcore
+      grind only
     -- Conclude after rewriting the correction term.
     rw [hcorr]
     rw [← (E4_apply (z := z)), ← (E6_apply (z := z))]
@@ -347,9 +305,7 @@ lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :
   have hres_inv : A_E.resToImagAxis t⁻¹ = A_E (ModularGroup.S • z) := by
     have hleft : A_E.resToImagAxis t⁻¹ = A_E zinv := by
       simp [Function.resToImagAxis, ResToImagAxis, htinv, zinv]
-    have hright : A_E zinv = A_E (ModularGroup.S • z) := by
-      simpa using (congrArg A_E hS').symm
-    exact hleft.trans hright
+    exact Mathlib.Meta.NormNumI.eq_of_eq_of_eq_of_eq hleft (congrArg A_E hS) rfl rfl
   have hres_t : A_E.resToImagAxis t = A_E z := by
     have : A_E.resToImagAxis t = A_E z0 := by
       simp [Function.resToImagAxis, ResToImagAxis, ht, z0]
@@ -603,10 +559,7 @@ public theorem FmodG_rightLimitAt_zero :
             ((18 : ℂ) / ((π ^ (2 : ℕ) : ℝ) : ℂ)).re := by
         have h0 := congrArg Complex.re (Complex.ofReal_div 18 (π ^ (2 : ℕ) : ℝ))
         simpa only [Complex.ofReal_re] using h0
-      have hden : ((π ^ (2 : ℕ) : ℝ) : ℂ) = (π : ℂ) ^ (2 : ℕ) := by simp
-      have h' : (18 / (π ^ (2 : ℕ)) : ℝ) = ((18 : ℂ) / (π ^ (2 : ℕ))).re := by
-        simpa [hden] using h
-      exact h'.symm
+      simp_all
     simpa [hre] using hRe'
   have hEq :
       FmodGReal =ᶠ[𝓝[>] (0 : ℝ)] fun t : ℝ => (F.resToImagAxis t / G.resToImagAxis t).re := by
@@ -619,10 +572,7 @@ public theorem FmodG_rightLimitAt_zero :
       Tendsto FmodGReal (𝓝[>] (0 : ℝ)) (nhds (18 / (π ^ (2 : ℕ)) : ℝ)) :=
     (hRe.congr' hEq.symm)
   -- Rewrite the target constant as `18 * π^(-2)`.
-  have hconst : (18 / (π ^ (2 : ℕ)) : ℝ) = 18 * (π ^ (-2 : ℤ)) := by
-    -- `π^(-2) = (π^2)⁻¹`.
-    simp [div_eq_mul_inv, zpow_neg, zpow_ofNat]
-  simpa [nhdsWithin_univ, hconst] using hR
+  simpa
 
 /--
 Main inequalities between $F$ and $G$ on the imaginary axis.

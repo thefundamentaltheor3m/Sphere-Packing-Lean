@@ -275,9 +275,7 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       exact hmul.trans hψI
     have hs_finite_lt : (volume : Measure ℝ) (Set.Ioc (0 : ℝ) 1) < (⊤ : ENNReal) :=
       (measure_Ioc_lt_top (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ)))
-    exact
-      IntegrableOn.of_bound (μ := (volume : Measure ℝ)) (s := Set.Ioc (0 : ℝ) 1)
-        hs_finite_lt hmeas Cψ0 hbound
+    exact IntegrableOn.of_bound hs_finite_lt hmeas Cψ0 hbound
   rcases exists_ψI_bound_exp with ⟨CI, AI, hCI, hI⟩
   let A : ℝ := max AI 1
   have hint_mid :

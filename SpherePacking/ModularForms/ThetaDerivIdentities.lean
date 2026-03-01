@@ -164,7 +164,7 @@ lemma f₂_S_action : (f₂ ∣[(4 : ℤ)] S) = -f₄ := by
   have h_serre_term : (serre_D (2 : ℤ) H₂ ∣[(4 : ℤ)] S) = -serre_D (2 : ℤ) H₄ := by
     rw [four_eq_two_add_two,
         serre_D_slash_equivariant (2 : ℤ) H₂ H₂_SIF_MDifferentiable S, H₂_S_action]
-    simpa using serre_D_smul 2 (-1) H₄ H₄_SIF_MDifferentiable
+    simpa using serre_D_smul 2 (-1) H₄
   -- Step 2: (H₂ + 2•H₄)|[2]S = -(H₄ + 2•H₂)
   have h_lin_comb : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] S) = -(H₄ + (2 : ℂ) • H₂) := by
     rw [add_slash, SL_smul_slash, H₂_S_action, H₄_S_action]
@@ -197,7 +197,7 @@ lemma f₂_T_action : (f₂ ∣[(4 : ℤ)] T) = -f₂ := by
   have h_serre_term : (serre_D (2 : ℤ) H₂ ∣[(4 : ℤ)] T) = -serre_D (2 : ℤ) H₂ := by
     rw [four_eq_two_add_two,
         serre_D_slash_equivariant (2 : ℤ) H₂ H₂_SIF_MDifferentiable T, H₂_T_action]
-    simpa using serre_D_smul 2 (-1) H₂ H₂_SIF_MDifferentiable
+    simpa using serre_D_smul 2 (-1) H₂
   -- Step 2: (H₂ + 2•H₄)|[2]T = H₂ + 2•H₄ using Jacobi: H₃ = H₂ + H₄
   -- -H₂ + 2H₃ = -H₂ + 2(H₂ + H₄) = H₂ + 2H₄
   have h_lin_comb : ((H₂ + (2 : ℂ) • H₄) ∣[(2 : ℤ)] T) = H₂ + (2 : ℂ) • H₄ := by
@@ -225,7 +225,7 @@ Proof outline (symmetric to f₂_S_action):
 lemma f₄_S_action : (f₄ ∣[(4 : ℤ)] S) = -f₂ := by
   have h_serre_term : (serre_D (2 : ℤ) H₄ ∣[(4 : ℤ)] S) = -serre_D (2 : ℤ) H₂ := by
     rw [four_eq_two_add_two, serre_D_slash_equivariant (2 : ℤ) H₄ mdifferentiable_H₄ S, H₄_S_action]
-    simpa using serre_D_smul 2 (-1) H₂ mdifferentiable_H₂
+    simpa using serre_D_smul 2 (-1) H₂
   have h_prod : ((H₄ * ((2 : ℂ) • H₂ + H₄)) ∣[(4 : ℤ)] S) = H₂ * (H₂ + (2 : ℂ) • H₄) := by
     rw [four_eq_two_add_two, mul_slash_SL2 2 2 S _ _, H₄_S_action, add_slash,
       SL_smul_slash, H₂_S_action, H₄_S_action]
@@ -530,11 +530,7 @@ lemma E₄_mul_f₂_sq_eq_zero : (fun z : ℍ => (E₄ z) * (f₂ z) ^ 2) = 0 :=
       simp [A, B, pow_two, mul_comm]
       ring
     simpa [hE4] using this
-  have : (3 : ℂ) * (E₄ z * (x ^ 2)) = 0 := by
-    have : (3 * E₄ z) * (x ^ 2) = 0 := by simpa [hpoly] using hlin
-    simpa [mul_assoc, mul_left_comm, mul_comm] using this
-  have hx0 : E₄ z * (x ^ 2) = 0 := (mul_eq_zero.mp this).resolve_left (by norm_num)
-  simpa [x] using hx0
+  simp_all
 
 lemma f₂_eq_zero : f₂ = 0 := by
   have hmul0 := E₄_mul_f₂_sq_eq_zero
@@ -572,9 +568,7 @@ lemma f₂_eq_zero : f₂ = 0 := by
     exact False.elim ((one_ne_zero : (1 : ℂ) ≠ 0) this)
   · funext τ
     have : (f₂ (ofComplex (τ : ℂ))) ^ 2 = 0 := hF2sq _ τ.im_pos
-    have : (f₂ τ) ^ 2 = 0 := by
-      simpa [ofComplex_apply_of_im_pos τ.im_pos] using this
-    exact (sq_eq_zero_iff.1 this)
+    simpa
 
 lemma analyticOnNhd_H₂_add_two_mul_H₄ :
     AnalyticOnNhd ℂ

@@ -40,10 +40,7 @@ public lemma differentiableAt_intervalIntegral_mul_exp
   let F : ℂ → ℝ → ℂ := fun u t => base t * Complex.exp (u * k t)
   let F' : ℂ → ℝ → ℂ := fun u t => base t * (k t) * Complex.exp (u * k t)
   have hexp (u : ℂ) : ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Ι (0 : ℝ) 1) := by
-    have hexp0 : ContinuousOn Complex.exp (Set.univ : Set ℂ) :=
-      (Complex.continuous_exp.continuousOn : ContinuousOn Complex.exp (Set.univ : Set ℂ))
-    simpa [Function.comp] using
-      hexp0.comp (continuousOn_const.mul hk) (by intro _ _; simp)
+    fun_prop
   have hF_meas :
       ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) (volume.restrict (Ι (0 : ℝ) 1)) := by
     refine Filter.Eventually.of_forall (fun u => ?_)
@@ -105,11 +102,11 @@ public lemma differentiableAt_intervalIntegral_mul_exp
             exact mul_le_mul_of_nonneg_left hinner (norm_nonneg (base t))
       have hstep2 :
           ‖base t‖ * (‖k t‖ * E) ≤ Cbase * (K * E) := by
-        have hk'' : ‖k t‖ * E ≤ K * E := by
-          exact mul_le_mul_of_nonneg_right hk' (Real.exp_nonneg _)
+        have hk'' : ‖k t‖ * E ≤ K * E :=
+          mul_le_mul_of_nonneg_right hk' (Real.exp_nonneg _)
         have hbase' :
-            ‖base t‖ * (‖k t‖ * E) ≤ Cbase * (‖k t‖ * E) := by
-          exact mul_le_mul_of_nonneg_right hb (mul_nonneg (norm_nonneg _) (Real.exp_nonneg _))
+            ‖base t‖ * (‖k t‖ * E) ≤ Cbase * (‖k t‖ * E) :=
+          mul_le_mul_of_nonneg_right hb (mul_nonneg (norm_nonneg _) (Real.exp_nonneg _))
         exact (hbase'.trans (mul_le_mul_of_nonneg_left hk'' hCbase))
       simpa [bound, E, mul_assoc] using (hstep1.trans hstep2)
     exact this

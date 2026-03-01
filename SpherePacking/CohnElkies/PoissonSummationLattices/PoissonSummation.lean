@@ -178,12 +178,11 @@ public lemma existsUnique_add_intVec_mem_iocCube (x : E) :
   · -- uniqueness
     intro n' hn'
     funext i
-    have hn'i : (x i : ℝ) + n' i ∈ Set.Ioc (0 : ℝ) 1 := by
-      simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply] using
-        (show ∀ i : Fin d,
-            (x + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n') i ∈ Set.Ioc (0 : ℝ) 1 by
-            simpa [iocCube] using hn') i
-    exact hn_unique i (n' i) (by simpa [zsmul_one] using hn'i)
+    have hcoords : ∀ i : Fin d,
+        (x + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n') i ∈ Set.Ioc (0 : ℝ) 1 := by
+      simpa [iocCube] using hn'
+    exact hn_unique i (n' i) (by
+      simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, zsmul_one] using hcoords i)
 
 /-! #### Elements of the standard lattice are integer vectors -/
 
@@ -260,9 +259,8 @@ public theorem continuous_coeFunE : Continuous (coeFunE (d := d)) := by
 /-- `coeFunE` is an open quotient map (so `UnitAddTorus` is the quotient `ℝ^d/ℤ^d`). -/
 public theorem isOpenQuotientMap_coeFunE : IsOpenQuotientMap (coeFunE (d := d)) := by
   simpa [coeFunE] using
-    IsOpenQuotientMap.comp (UnitAddTorus.isOpenQuotientMap_coeFun d) (by
-      simpa using
-        (PiLp.homeomorph (p := (2 : ENNReal)) (β := fun _ : Fin d => ℝ)).isOpenQuotientMap)
+    IsOpenQuotientMap.comp (UnitAddTorus.isOpenQuotientMap_coeFun d)
+      (PiLp.homeomorph (p := (2 : ENNReal)) (β := fun _ : Fin d => ℝ)).isOpenQuotientMap
 
 /-- Adding an integer vector does not change the image in `(ℝ/ℤ)^d`. -/
 @[simp]

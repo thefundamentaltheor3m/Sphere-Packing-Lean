@@ -71,13 +71,10 @@ public lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
 /-- If each factor is nonzero and the logarithms are summable, then the `tprod` is nonzero. -/
 public lemma tprod_ne_zero (x : ℍ) (f : ℕ → ℍ → ℂ) (hf : ∀ i x, 1 + f i x ≠ 0)
   (hu : ∀ x : ℍ, Summable fun n => f n x) : (∏' i : ℕ, (1 + f i) x) ≠ 0 := by
-  have htprod :
-      cexp (∑' n : ℕ, log (1 + f n x)) = ∏' n : ℕ, (1 + f n x) :=
+  have htprod :=
     Complex.cexp_tsum_eq_tprod (fun n => hf n x) (Complex.summable_log_one_add_of_summable (hu x))
-  have hne : cexp (∑' n : ℕ, log (1 + f n x)) ≠ 0 := by
-    simp
-  -- rewrite the goal via `htprod`.
-  simpa [htprod, Pi.add_apply, Pi.one_apply] using hne
+  simpa [htprod, Pi.add_apply, Pi.one_apply] using
+    Complex.exp_ne_zero (∑' n : ℕ, log (1 + f n x))
 
 /-- If `f` is multipliable, then so is `fun i => f i ^ n`. -/
 public lemma Multipliable_pow {ι : Type*} (f : ι → ℂ) (hf : Multipliable f) (n : ℕ) :

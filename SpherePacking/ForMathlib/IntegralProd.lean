@@ -26,9 +26,6 @@ public lemma aestronglyMeasurable_integral_norm_prod_right'
     {μ : Measure β} {ν : Measure α} [SFinite μ] [SFinite ν] {f : α × β → E}
     (hf : AEStronglyMeasurable f (ν.prod μ)) :
     AEStronglyMeasurable (fun b : β => ∫ a : α, ‖f (a, b)‖ ∂ν) μ := by
-  simpa using
-    (MeasureTheory.AEStronglyMeasurable.integral_prod_right'
-      (μ := μ) (ν := ν) (f := fun p : β × α => ‖f (p.2, p.1)‖)
-      (by simpa using (hf.norm.prod_swap (μ := μ) (ν := ν))))
+  simpa using (hf.norm.prod_swap).integral_prod_right'
 
 end SpherePacking.ForMathlib

@@ -127,12 +127,7 @@ lemma integral_norm_permI1Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
       simp [Complex.I_sq]
     simpa [hz_add1] using this
   have hpow : ‖(SpherePacking.Contour.z₁line t + 1) ^ 2‖ = t ^ 2 := by
-    have ht0' : 0 ≤ t := ht0.le
-    calc
-      ‖(SpherePacking.Contour.z₁line t + 1) ^ 2‖ = ‖(I : ℂ) * (t : ℂ)‖ ^ 2 := by
-        simp [norm_pow]
-      _ = ‖(t : ℂ)‖ ^ 2 := by simp [norm_I]
-      _ = t ^ 2 := by simp [Complex.norm_real, abs_of_nonneg ht0']
+    simp
   have hexp (x : ℝ⁸) :
       ‖cexp (Real.pi * I * (‖x‖ ^ 2) * (SpherePacking.Contour.z₁line t : ℂ))‖ =
         rexp (-(Real.pi * (t * (‖x‖ ^ 2)))) := by

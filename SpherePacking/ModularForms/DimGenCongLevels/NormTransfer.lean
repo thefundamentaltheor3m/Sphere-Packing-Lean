@@ -67,16 +67,7 @@ lemma norm_apply_eq_mul_restProd
         restProd (Γ := Γ) (k := k) f τ := by
     simp [NormReduction.restProd, q₁, Finset.prod_apply]
     rfl
-  calc
-    (ModularForm.norm 𝒮ℒ f) τ =
-        ∏ q : Q Γ,
-          (SlashInvariantForm.quotientFunc (ℋ := 𝒮ℒ) (𝒢 := G Γ) (k := k) f q) τ := hnorm
-    _ =
-        (SlashInvariantForm.quotientFunc (ℋ := 𝒮ℒ) (𝒢 := G Γ) (k := k) f q₁) τ *
-          ∏ q ∈ (Finset.univ : Finset (Q Γ)).erase q₁,
-            (SlashInvariantForm.quotientFunc (ℋ := 𝒮ℒ) (𝒢 := G Γ) (k := k) f q) τ := hsplit
-    _ = f τ * restProd (Γ := Γ) (k := k) f τ := by
-        simp [hone, hrest]
+  simp_all
 
 lemma cuspFunction_norm_eq_mul_restProd_of_ne_zero
     (Γ : Subgroup SL(2, ℤ)) [(G Γ).IsFiniteRelIndex 𝒮ℒ] (f : ModularForm (G Γ) k) {h : ℝ} {q : ℂ}
@@ -110,8 +101,8 @@ lemma valueAtInfty_norm_eq_zero_of_valueAtInfty_eq_zero
   have hperSL : cuspWidth (Γ := Γ) ∈ (𝒮ℒ : Subgroup (GL (Fin 2) ℝ)).strictPeriods :=
     cuspWidth_mem_strictPeriods_levelOne (Γ := Γ)
   haveI : (G Γ).IsArithmetic := instIsArithmetic (Γ := Γ) hΓ
-  haveI : (G Γ).IsFiniteRelIndex 𝒮ℒ := by
-    exact Subgroup.IsArithmetic.isFiniteRelIndexSL (𝒢 := (G Γ))
+  haveI : (G Γ).IsFiniteRelIndex 𝒮ℒ :=
+    Subgroup.IsArithmetic.isFiniteRelIndexSL (𝒢 := (G Γ))
   have ht_f :
       Tendsto (fun τ : ℍ => f τ) UpperHalfPlane.atImInfty (𝓝 (0 : ℂ)) := by
     simpa [hval0] using
@@ -180,9 +171,7 @@ public lemma qExpansion_coeff_eq_zero_norm_of_qExpansion_coeff_eq_zero
     filter_upwards [hne] with q hq
     have hq0 : q ≠ 0 := by
       simpa [Set.mem_compl_iff, Set.mem_singleton_iff] using hq
-    simpa [τfun] using
-      cuspFunction_norm_eq_mul_restProd_of_ne_zero (Γ := Γ) (k := k) f (h := cuspWidth (Γ := Γ))
-        (q := q) hq0
+    exact cuspFunction_norm_eq_mul_restProd_of_ne_zero Γ f hq0
   have hO_prod_punct :
       (fun q : ℂ =>
           cuspFunction (cuspWidth (Γ := Γ)) f q *
@@ -205,10 +194,7 @@ public lemma qExpansion_coeff_eq_zero_norm_of_qExpansion_coeff_eq_zero
   have hcf0 : ‖cuspFunction (cuspWidth (Γ := Γ)) (ModularForm.norm 𝒮ℒ f) 0‖ = 0 := by
     have h0 :=
       ModularFormClass.cuspFunction_apply_zero (f := ModularForm.norm 𝒮ℒ f) hh hperSL
-    calc
-      ‖cuspFunction (cuspWidth (Γ := Γ)) (ModularForm.norm 𝒮ℒ f) 0‖ =
-          ‖valueAtInfty (ModularForm.norm 𝒮ℒ f)‖ := by simpa using congrArg norm h0
-      _ = 0 := by simpa using congrArg norm hnorm0
+    simp_all
   have hO_norm :
       cuspFunction (cuspWidth (Γ := Γ)) (ModularForm.norm 𝒮ℒ f) =O[𝓝 (0 : ℂ)] fun q : ℂ =>
         ‖q‖ ^ N :=

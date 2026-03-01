@@ -181,11 +181,7 @@ private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n
     _ ≤ (π * t) ^ n * (C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) := by gcongr
     _ = bound t := by
       have hmulpow : (π * t) ^ n = (π ^ n) * (t ^ n) := by simp [mul_pow, mul_comm]
-      have hexpC' : C₀ * rexp (-2 * π * t) * rexp (-π * r * t) = C₀ * rexp (-(π * (r + 2)) * t) :=
-        by simpa [mul_assoc] using congrArg (fun u => C₀ * u) hexp
-      dsimp [bound]
-      rw [hmulpow, hexpC']
-      ring_nf
+      grind only
 
 private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) :
     HasDerivAt (fun r : ℝ ↦ ∫ t in Ici (1 : ℝ), gN n r t)
@@ -226,11 +222,7 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
     have hg'' :
         ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) := by
       have hnonneg : 0 ≤ C₀ * rexp (-2 * π * t) := by positivity
-      have hmul :
-          C₀ * rexp (-2 * π * t) * rexp (-π * r * t) ≤
-            C₀ * rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) := by
-        simpa [mul_assoc] using mul_le_mul_of_nonneg_left hexp_r hnonneg
-      exact hg'.trans hmul
+      exact le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) hexp_r hnonneg
     calc
       ‖gN (n + 1) r t‖ = ‖coeff t‖ ^ (n + 1) * ‖g r t‖ := gN_norm (n := n + 1) (r := r) (t := t)
       _ ≤ (π * t) ^ (n + 1) * (C₀ * rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t)) := by
@@ -240,13 +232,7 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
       _ = bound t := by
         have hmulpow : (π * t) ^ (n + 1) = (π ^ (n + 1)) * (t ^ (n + 1)) := by
           simp [mul_pow, mul_comm]
-        have hexpC' :
-            C₀ * rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) =
-              C₀ * rexp (-(π * (r₀ + 1)) * t) := by
-          simpa [mul_assoc] using congrArg (fun u => C₀ * u) hexp
-        dsimp [bound]
-        rw [hmulpow, hexpC']
-        ring_nf
+        grind only
   have bound_integrable : Integrable bound μ := by
     have hInt :
         IntegrableOn
@@ -357,11 +343,7 @@ lemma iteratedDeriv_bound (n : ℕ) :
     have hg0 : ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := hC₀ r t ht
     have hg1 : ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r) := by
       have hnonneg : 0 ≤ C₀ * rexp (-2 * π * t) := by positivity
-      have hmul :
-          C₀ * rexp (-2 * π * t) * rexp (-π * r * t) ≤
-            C₀ * rexp (-2 * π * t) * rexp (-π * r) := by
-        simpa [mul_assoc] using (mul_le_mul_of_nonneg_left (hExp t ht) hnonneg)
-      exact hg0.trans hmul
+      exact le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) (hExp t ht) hnonneg
     have hb1 : 0 ≤ ‖g r t‖ := by positivity
     have hb2 : 0 ≤ (π ^ n) * (t ^ n) :=
       mul_nonneg (pow_nonneg Real.pi_pos.le n) (pow_nonneg ht0 n)
@@ -403,9 +385,7 @@ lemma iteratedDeriv_bound (n : ℕ) :
       _ = 2 * (A * rexp (-π * r)) := by simp [A]
       _ ≤ (2 * (A + 1)) * rexp (-π * r) := by
         have hexp : 0 ≤ rexp (-π * r) := by positivity
-        have : A * rexp (-π * r) ≤ (A + 1) * rexp (-π * r) :=
-          mul_le_mul_of_nonneg_right hA_le hexp
-        nlinarith
+        grind only
   simpa [mul_assoc, mul_left_comm, mul_comm] using hnorm
 
 /--

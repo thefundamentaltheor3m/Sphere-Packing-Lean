@@ -170,8 +170,8 @@ private lemma two_div_one_sub_exp_pi_mul_le (t : ℝ) (ht : 1 ≤ t) :
   have hInv :
       (1 / (1 - Real.exp (-Real.pi * t))) ≤ (1 / (1 - Real.exp (-Real.pi))) := by
     refine one_div_le_one_div_of_le hden_pos ?_
-    have : Real.exp (-Real.pi * t) ≤ Real.exp (-Real.pi) := by
-      exact Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht])
+    have : Real.exp (-Real.pi * t) ≤ Real.exp (-Real.pi) :=
+      Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht])
     linarith
   simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
     (mul_le_mul_of_nonneg_left hInv (by norm_num : (0 : ℝ) ≤ 2))
@@ -264,9 +264,7 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
     intro n
     unfold Θ₂_term
     -- It suffices to show that the exponents coincide.
-    refine congrArg Complex.exp ?_
-    simp [one_div, pow_two, sub_eq_add_neg, add_assoc, mul_assoc, mul_comm]
-    ring
+    grind only
   have hTheta2_nat :
       Θ₂.resToImagAxis t = (2 : ℂ) * ∑' n : ℕ, f n := by
     have hres : Θ₂.resToImagAxis t = Θ₂ τ := by
@@ -326,8 +324,8 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
         (∑' n : ℕ, f n) - f 0 - f 1 = (∑' n : ℕ, f n) - (f 0 + f 1) := by abel
         _ = ∑' n : ℕ, f (n + 2) := hshift
     have htail' :
-        (2 : ℂ) * ((∑' n : ℕ, f n) - f 0 - f 1) = (2 : ℂ) * ∑' n : ℕ, f (n + 2) := by
-      exact congrArg (fun x : ℂ => (2 : ℂ) * x) htail
+        (2 : ℂ) * ((∑' n : ℕ, f n) - f 0 - f 1) = (2 : ℂ) * ∑' n : ℕ, f (n + 2) :=
+      congrArg (fun x : ℂ => (2 : ℂ) * x) htail
     have hfac :
         Θ₂.resToImagAxis t
             - (2 : ℂ) * (Real.exp (-Real.pi * t / 4) : ℂ)
@@ -354,10 +352,7 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
             Real.exp (-Real.pi * ((↑n + 2 + (2 : ℝ)⁻¹) ^ 2) * t) := by
         simpa [f, τ, Nat.cast_add, add_assoc, add_left_comm, add_comm] using
           (norm_Theta2_term_resToImagAxis (n := (n + 2 : ℕ)) (t := t) htpos)
-      have hlin : (↑n + 2 + (2 : ℝ)⁻¹) = (n : ℝ) + (5 / 2 : ℝ) := by
-        have hinv : (2 : ℝ)⁻¹ = (1 / 2 : ℝ) := by norm_num
-        nlinarith [hinv]
-      simpa [hlin] using h0
+      grind only
     rw [hnorm]
     have hbase : ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 * t ≥ (25 / 4 : ℝ) * t + n := by
       have hn : 0 ≤ (n : ℝ) := by positivity
@@ -369,12 +364,7 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
       have hmul :
           ((25 / 4 : ℝ) + n) * t ≤ ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 * t :=
         mul_le_mul_of_nonneg_right hsq_ge ht0
-      calc
-        (25 / 4 : ℝ) * t + n ≤ (25 / 4 : ℝ) * t + (n : ℝ) * t := by
-          have h := add_le_add_right hn_le ((25 / 4 : ℝ) * t)
-          simpa [add_assoc, add_left_comm, add_comm] using h
-        _ = ((25 / 4 : ℝ) + n) * t := by ring
-        _ ≤ ((n : ℝ) + (5 / 2 : ℝ)) ^ 2 * t := hmul
+      grind only
     have hexp :
         Real.exp (-Real.pi * (((n : ℝ) + (5 / 2 : ℝ)) ^ 2) * t) ≤
           Real.exp (-(25 / 4 : ℝ) * Real.pi * t + n * (-Real.pi)) := by
@@ -385,8 +375,8 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
     calc
       Real.exp (-Real.pi * (((n : ℝ) + (5 / 2 : ℝ)) ^ 2) * t)
           ≤ Real.exp (-(25 / 4 : ℝ) * Real.pi * t + n * (-Real.pi)) := hexp
-      _ = Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * Real.exp (n * (-Real.pi)) := by
-            exact Real.exp_add (-(25 / 4 : ℝ) * Real.pi * t) (n * (-Real.pi))
+      _ = Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * Real.exp (n * (-Real.pi)) :=
+            Real.exp_add (-(25 / 4 : ℝ) * Real.pi * t) (n * (-Real.pi))
       _ = Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * (r ^ n) := by simp [hrpow]
   have hu : HasSum (fun n : ℕ ↦ Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * (r ^ n))
       (Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) :=
@@ -492,10 +482,7 @@ public lemma exists_bound_norm_Theta3_resToImagAxis_sub_one_sub_two_exp_Ici_one 
     _ ≤ (2 : ℝ) * (Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) := by
           gcongr
     _ = (2 / (1 - Real.exp (-Real.pi))) * Real.exp (-(4 : ℝ) * Real.pi * t) := by
-          have : (2 : ℝ) * (Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) =
-              (2 / (1 - r)) * Real.exp (-(4 : ℝ) * Real.pi * t) := by
-            simp [div_eq_mul_inv, mul_assoc, mul_comm]
-          simpa [r, this]
+          ring
 
 /-- Isolate the `n = ±1` contribution to `Θ₄(it)` for `t ≥ 1`. -/
 public lemma exists_bound_norm_Theta4_resToImagAxis_sub_one_add_two_exp_Ici_one :
@@ -605,10 +592,7 @@ public lemma exists_bound_norm_Theta4_resToImagAxis_sub_one_add_two_exp_Ici_one 
     _ ≤ (2 : ℝ) * (Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) := by
           gcongr
     _ = (2 / (1 - Real.exp (-Real.pi))) * Real.exp (-(4 : ℝ) * Real.pi * t) := by
-          have : (2 : ℝ) * (Real.exp (-(4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) =
-              (2 / (1 - r)) * Real.exp (-(4 : ℝ) * Real.pi * t) := by
-            simp [div_eq_mul_inv, mul_assoc, mul_comm]
-          simpa [r, this]
+          ring
 
 
 end

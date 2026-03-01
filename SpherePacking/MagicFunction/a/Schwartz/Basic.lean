@@ -13,6 +13,7 @@ public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
 public import SpherePacking.MagicFunction.a.Basic
 
 import Mathlib.Analysis.Calculus.ContDiff.Bounds
+import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 
 import SpherePacking.ForMathlib.IteratedDeriv
 
@@ -55,7 +56,7 @@ namespace MagicFunction.a.SchwartzProperties
 
 open MagicFunction MagicFunction.a MagicFunction.a.RadialFunctions MagicFunction.a.RealIntegrals
   MagicFunction.Parametrisations MagicFunction.a.ComplexIntegrands MagicFunction.a.RealIntegrands
-open Set Complex Real
+open Set Complex Real MeasureTheory
 
 section Smooth
 
@@ -101,41 +102,27 @@ theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' := by
 private lemma I₅'_eq_mul_exp_mul_I₁' :
     RealIntegrals.I₅' = fun x : ℝ ↦ (-2 : ℂ) * cexp (π * I * x) * RealIntegrals.I₁' x := by
   ext x
-  -- Pull the constant factor `cexp (-π * I * x)` out of `I₁'` and cancel.
-  have hI1 :
-      RealIntegrals.I₁' x =
-        (∫ t in (0 : ℝ)..1, (-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t)) *
-          cexp (-π * I * x) := by
+  let f : ℝ → ℂ :=
+    fun t => (-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t)
+  have hI1 : RealIntegrals.I₁' x = (∫ t in (0 : ℝ)..1, f t) * cexp (-π * I * x) := by
     calc
-      RealIntegrals.I₁' x =
-          ∫ t in (0 : ℝ)..1,
-            ((-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t)) * cexp (-π * I * x) := by
-              simp [I₁'_eq, mul_assoc, mul_left_comm, mul_comm]
-      _ =
-          (∫ t in (0 : ℝ)..1, (-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t)) *
-            cexp (-π * I * x) := by
-              simp
-  have hI5 :
-      RealIntegrals.I₅' x =
-        (-2 : ℂ) * ∫ t in (0 : ℝ)..1, (-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t) := by
-    simp [I₅'_eq, mul_assoc, mul_left_comm, mul_comm]
-  -- Rewrite `I₁'` using `hI1`, cancel exponentials, and match `hI5`.
+      RealIntegrals.I₁' x = ∫ t in (0 : ℝ)..1, f t * cexp (-π * I * x) := by
+        simpa [f, mul_assoc, mul_left_comm, mul_comm] using (I₁'_eq (r := x))
+      _ = (∫ t in (0 : ℝ)..1, f t) * cexp (-π * I * x) := by
+        simp [intervalIntegral.integral_mul_const]
+  have hI5 : RealIntegrals.I₅' x = (-2 : ℂ) * ∫ t in (0 : ℝ)..1, f t := by
+    simpa [f, mul_assoc, mul_left_comm, mul_comm] using (I₅'_eq (r := x))
+  have hexp : cexp (π * I * x) * cexp (-(π * I * x)) = 1 := by
+    rw [← Complex.exp_add]; simp
+  -- rewrite RHS using `hI1`, cancel the exponentials, and match `hI5`
+  rw [hI5, hI1]
   symm
-  let J : ℂ := ∫ t in (0 : ℝ)..1, (-I) * φ₀'' (-1 / (I * t)) * t ^ 2 * cexp (-π * x * t)
-  have hJ1 : RealIntegrals.I₁' x = J * cexp (-π * I * x) := by
-    simpa [J] using hI1
-  have hJ5 : RealIntegrals.I₅' x = (-2 : ℂ) * J := by
-    simpa [J] using hI5
   calc
-    (-2 : ℂ) * cexp (π * I * x) * RealIntegrals.I₁' x
-        = (-2 : ℂ) * cexp (π * I * x) * (J * cexp (-π * I * x)) := by
-            simp [hJ1]
-    _ = (-2 : ℂ) * J * (cexp (π * I * x) * cexp (-π * I * x)) := by
-          ac_rfl
-    _ = (-2 : ℂ) * J := by
-          simp [Complex.exp_neg, mul_assoc]
-    _ = RealIntegrals.I₅' x := by
-          simpa using hJ5.symm
+    (-2 : ℂ) * cexp (π * I * x) * ((∫ t in (0 : ℝ)..1, f t) * cexp (-π * I * x))
+        = (-2 : ℂ) * (∫ t in (0 : ℝ)..1, f t) * (cexp (π * I * x) * cexp (-π * I * x)) := by
+          ring
+    _ = (-2 : ℂ) * ∫ t in (0 : ℝ)..1, f t := by
+          simp [hexp]
 
 theorem I₅'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₅' := by
   have hExp : ContDiff ℝ ∞ (fun x : ℝ ↦ cexp (((π : ℂ) * I) * (x : ℂ))) :=
@@ -195,40 +182,12 @@ theorem I₃'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
         ‖c3‖ = ‖(2 * π : ℂ)‖ * ‖(I : ℂ)‖ := by simp [c3]
         _ = ‖(2 * π : ℝ)‖ := by simp [Complex.norm_real]
         _ = (2 * π : ℝ) := by simpa using Real.norm_of_nonneg hnonneg
-    have hnorm :
-        ‖iteratedDeriv m g3 x‖ ≤ (2 * π) ^ m := by
-      calc
-        ‖iteratedDeriv m g3 x‖ = ‖c3 ^ m * g3 x‖ := by simp [hiter]
-        _ = ‖c3‖ ^ m * ‖g3 x‖ := by simp [norm_pow]
-        _ ≤ (2 * π) ^ m * 1 := by
-              gcongr
-              · simp [hc3_norm]
-              · simp [hnorm_g3]
-        _ = (2 * π) ^ m := by ring
-    simpa [hEq] using hnorm
+    simp_all
   -- Rewrite `I₃'` as `g3 * I₁'`.
   have hI : RealIntegrals.I₃' = fun x : ℝ ↦ g3 x * RealIntegrals.I₁' x := by
     ext x
-    have hEqOn : EqOn
-        (fun t => I * φ₀'' (-1 / (z₃' t - 1)) * (z₃' t - 1) ^ 2 * cexp (π * I * x * z₃' t))
-        (fun t => cexp (2 * π * I * x) * (I * φ₀'' (-1 / (z₁' t + 1)) * (z₁' t + 1) ^ 2 *
-                                          cexp (π * I * x * z₁' t)))
-        (uIcc 0 1) := fun t ht => by
-      rw [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht
-      have h1 := z₁'_eq_of_mem ht; have h3 := z₃'_eq_of_mem ht
-      simp_rw [
-        show z₃' t - 1 = I * t by simp [h3],
-        show z₃' t = z₁' t + 2 by simp [h1, h3]; ring,
-        show z₁' t + 1 = I * t by simp [h1],
-        mul_add, Complex.exp_add, mul_comm, mul_left_comm, mul_assoc]
-    -- The rewrite in `hEqOn` produces the factor `exp (I * (x * (π * 2)))`.
-    -- Rewrite it as `g3 x = exp ((x : ℂ) * ((2π) * I))`.
-    have hfac : cexp (I * ((x : ℂ) * ((π : ℂ) * (2 : ℂ)))) = g3 x := by
-      have hexp : (I : ℂ) * ((x : ℂ) * ((π : ℂ) * (2 : ℂ))) = (x : ℂ) * c3 := by
-        simp [c3, mul_left_comm, mul_comm]
-      simp [g3, hexp]
-    simpa [RealIntegrals.I₃', Φ₃, Φ₃', RealIntegrals.I₁', Φ₁, Φ₁', mul_comm, mul_left_comm,
-      mul_assoc, g3, hfac] using intervalIntegral.integral_congr (a := 0) (b := 1) hEqOn
+    simpa [g3, c3, mul_assoc, mul_left_comm, mul_comm] using
+      congrArg (fun F : ℝ → ℂ => F x) I₃'_eq_exp_mul_I₁'
   let C3 : ℝ :=
     ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * (2 * π) ^ i * C1 (n - i)
   refine ⟨C3, ?_⟩
@@ -307,20 +266,10 @@ theorem I₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
         ‖c5‖ = ‖(π : ℂ)‖ * ‖(I : ℂ)‖ := by simp [c5]
         _ = ‖(π : ℝ)‖ := by simp [Complex.norm_real]
         _ = (π : ℝ) := by simpa using Real.norm_of_nonneg hnonneg
-    have hnorm :
-        ‖iteratedDeriv m g5 x‖ ≤ π ^ m := by
-      calc
-        ‖iteratedDeriv m g5 x‖ = ‖c5 ^ m * g5 x‖ := by simp [hiter]
-        _ = ‖c5‖ ^ m * ‖g5 x‖ := by simp [norm_pow]
-        _ ≤ (π : ℝ) ^ m * 1 := by
-          gcongr
-          · simp [hc5_norm]
-          · simp [hnorm_g5]
-        _ = π ^ m := by ring
-    simpa [hEq] using hnorm
+    simp_all
   -- Rewrite `I₅'` as `(-2) * g5 * I₁'`.
-  have hI : RealIntegrals.I₅' = fun x : ℝ ↦ (-2 : ℂ) * g5 x * RealIntegrals.I₁' x :=
-    I₅'_eq_mul_exp_mul_I₁'
+  have hI : RealIntegrals.I₅' = fun x : ℝ ↦ (-2 : ℂ) * g5 x * RealIntegrals.I₁' x := by
+    exact I₅'_eq_mul_exp_mul_I₁'
   -- Build the bound for `g5 * I₁'` first, then scale by `‖-2‖ = 2`.
   let Cprod : ℝ :=
     ∑ i ∈ Finset.range (n + 1),
@@ -614,12 +563,7 @@ public theorem a_eq_sum_integrals_RadialFunctions : a =
     MagicFunction.a.RadialFunctions.I₃, MagicFunction.a.RadialFunctions.I₄,
     MagicFunction.a.RadialFunctions.I₅, MagicFunction.a.RadialFunctions.I₆,
     schwartzMap_multidimensional_of_schwartzMap_real, SchwartzMap.add_apply,
-    MagicFunction.a.SchwartzIntegrals.I₁'_apply_of_nonneg (r := ‖x‖ ^ 2) hr,
-    MagicFunction.a.SchwartzIntegrals.I₂'_apply_of_nonneg (r := ‖x‖ ^ 2) hr,
-    MagicFunction.a.SchwartzIntegrals.I₃'_apply_of_nonneg (r := ‖x‖ ^ 2) hr,
-    MagicFunction.a.SchwartzIntegrals.I₄'_apply_of_nonneg (r := ‖x‖ ^ 2) hr,
-    MagicFunction.a.SchwartzIntegrals.I₅'_apply_of_nonneg (r := ‖x‖ ^ 2) hr,
-    MagicFunction.a.SchwartzIntegrals.I₆'_apply_of_nonneg (r := ‖x‖ ^ 2) hr, add_assoc]
+    hr, add_assoc]
 
 /--
 Expand `a` as the sum of the six defining integrals from `MagicFunction.a.SchwartzIntegrals`.

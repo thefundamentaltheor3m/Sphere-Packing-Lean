@@ -43,11 +43,9 @@ public lemma norm_cexp_two_pi_I_mul_le_of_le_im {δ : ℝ} {z : ℂ} (hδ : δ �
 public lemma norm_cexp_two_pi_I_mul_nat_mul_le_pow_of_le_im (n : ℕ) {δ : ℝ} {z : ℂ}
     (hδ : δ ≤ z.im) :
     ‖cexp (2 * Real.pi * Complex.I * (n : ℂ) * z)‖ ≤ (Real.exp (-2 * Real.pi * δ)) ^ n := by
-  have hmul :
-      2 * Real.pi * Complex.I * (n : ℂ) * z = (n : ℂ) * (2 * Real.pi * Complex.I * z) := by
+  have hmul : 2 * Real.pi * Complex.I * (n : ℂ) * z = (n : ℂ) * (2 * Real.pi * Complex.I * z) := by
     ac_rfl
   simpa [hmul, norm_pow, Complex.exp_nat_mul (2 * Real.pi * Complex.I * z) n] using
-    pow_le_pow_left₀ (norm_nonneg _)
-      (norm_cexp_two_pi_I_mul_le_of_le_im (δ := δ) (z := z) hδ) n
+    pow_le_pow_left₀ (norm_nonneg _) (norm_cexp_two_pi_I_mul_le_of_le_im (δ := δ) (z := z) hδ) n
 
 end SpherePacking.ForMathlib

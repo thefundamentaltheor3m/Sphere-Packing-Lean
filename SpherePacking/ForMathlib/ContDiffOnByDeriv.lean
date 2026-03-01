@@ -34,19 +34,15 @@ public lemma contDiffOn_family_nat_of_hasDerivAt
     {F : ℕ → ℝ → E} {s : Set ℝ} (hs : IsOpen s)
     (hF : ∀ n : ℕ, ∀ x : ℝ, x ∈ s → HasDerivAt (F n) (F (n + 1) x) x) :
     ∀ m : ℕ, ∀ n : ℕ, ContDiffOn ℝ m (F n) s := by
-  have hdiff : ∀ n : ℕ, DifferentiableOn ℝ (F n) s :=
-    fun n _ hx => (hF n _ hx).differentiableAt.differentiableWithinAt
+  have hdiff n : DifferentiableOn ℝ (F n) s :=
+    fun _ hx => (hF n _ hx).differentiableAt.differentiableWithinAt
   intro m
   induction m with
-  | zero =>
-      intro n
-      exact contDiffOn_zero.2 (hdiff n).continuousOn
+  | zero => intro n; exact contDiffOn_zero.2 (hdiff n).continuousOn
   | succ m ih =>
       intro n
-      refine
-        (contDiffOn_succ_iff_deriv_of_isOpen (𝕜 := ℝ) (f := F n) (s := s) (n := m) hs).2
-          ⟨hdiff n, by simp,
-            (ih (n + 1)).congr fun x hx => by simpa using (hF n x hx).deriv⟩
+      refine (contDiffOn_succ_iff_deriv_of_isOpen (𝕜 := ℝ) (f := F n) (s := s) (n := m) hs).2
+        ⟨hdiff n, by simp, (ih (n + 1)).congr fun x hx => by simpa using (hF n x hx).deriv⟩
 
 /-- Upgrade `contDiffOn_family_nat_of_hasDerivAt` to the `C^∞` statement. -/
 public theorem contDiffOn_family_infty_of_hasDerivAt

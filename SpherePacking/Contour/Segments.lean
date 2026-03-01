@@ -55,18 +55,13 @@ public lemma continuous_z₁line : Continuous z₁line := by
   simpa [z₁line] using (continuous_const.add (continuous_const.mul Complex.continuous_ofReal))
 
 public lemma continuous_z₂line : Continuous z₂line := by
-  have h : Continuous fun t : ℝ => (-1 : ℂ) + ((t : ℂ) + Complex.I) :=
-    continuous_const.add (Complex.continuous_ofReal.add continuous_const)
-  have hz : z₂line = fun t : ℝ => (-1 : ℂ) + ((t : ℂ) + Complex.I) := by
-    funext t
-    simp [z₂line, add_assoc]
-  simpa [hz] using h
+  simpa [z₂line] using (continuous_const.add Complex.continuous_ofReal).add continuous_const
 
-public lemma z₁line_im (t : ℝ) : (z₁line t).im = t := by
-  simp [z₁line]
+public lemma z₁line_im (t : ℝ) : (z₁line t).im = t := by simp [z₁line]
 
-@[simp] public lemma z₂line_im (t : ℝ) : (z₂line t).im = 1 := by
-  simp [z₂line, add_assoc]
+@[simp] public lemma z₂line_im (t : ℝ) : (z₂line t).im = 1 := by simp [z₂line, add_assoc]
+
+public lemma z₃line_im (t : ℝ) : (z₃line t).im = t := by simp [z₃line]
 
 @[simp] public lemma z₄line_im (t : ℝ) : (z₄line t).im = 1 := by
   simp [z₄line, sub_eq_add_neg, add_assoc]
@@ -81,15 +76,13 @@ public lemma lineMap_z₁line (t : ℝ) :
   simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₁line, add_comm, mul_comm]
 
 public lemma dir_z₁line :
-    ((-1 : ℂ) + Complex.I) - (-1 : ℂ) = (Complex.I : ℂ) := by
-  ring
+    ((-1 : ℂ) + Complex.I) - (-1 : ℂ) = (Complex.I : ℂ) := by ring
 
 public lemma lineMap_z₂line (t : ℝ) :
     AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t = z₂line t := by
   simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₂line, add_left_comm, add_comm]
 
-public lemma dir_z₂line : Complex.I - ((-1 : ℂ) + Complex.I) = (1 : ℂ) := by
-  ring
+public lemma dir_z₂line : Complex.I - ((-1 : ℂ) + Complex.I) = (1 : ℂ) := by ring
 
 public lemma lineMap_z₃line (t : ℝ) :
     AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) t = z₃line t := by

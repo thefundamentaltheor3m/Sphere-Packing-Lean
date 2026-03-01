@@ -93,14 +93,7 @@ lemma norm_Θ₂_resToImagAxis_le (t : ℝ) (ht : 0 < t) :
     have hnonneg' : 0 ≤ F_nat 0 (2⁻¹ : ℝ) t := by simpa using hnonneg
     simpa [Real.norm_eq_abs, abs_of_nonneg hnonneg'] using
       (F_nat_zero_le (a := (1 / 2 : ℝ)) (ha := (by norm_num : (0 : ℝ) ≤ (1 / 2 : ℝ))) ht)
-  calc
-    ‖Θ₂.resToImagAxis t‖ ≤ ∑' n : ℤ, ‖Θ₂_term n τ‖ := htri
-    _ = F_int 0 ((1 / 2 : ℝ) : UnitAddCircle) t := hsum
-    _ = F_nat 0 (1 / 2 : ℝ) t + F_nat 0 (1 / 2 : ℝ) t := hFint
-    _ = 2 * F_nat 0 (1 / 2 : ℝ) t := by ring
-    _ ≤ 2 * (rexp (-π * ((1 / 2 : ℝ) ^ 2) * t) / (1 - rexp (-π * t))) := by
-          simpa using (mul_le_mul_of_nonneg_left hbd_nat' (by norm_num : (0 : ℝ) ≤ 2))
-    _ = (2 * rexp (-π * ((1 / 2 : ℝ) ^ 2) * t)) / (1 - rexp (-π * t)) := by ring
+  grind only
 
 /-- Exponential decay bound for `H₂` on the positive imaginary axis. -/
 public lemma exists_bound_norm_H₂_resToImagAxis_exp_Ici_one :
@@ -140,8 +133,8 @@ public lemma exists_bound_norm_H₂_resToImagAxis_exp_Ici_one :
   have hH2 :
       ‖H₂.resToImagAxis t‖ = ‖Θ₂.resToImagAxis t‖ ^ 4 := by
     simp [H₂, Function.resToImagAxis, ResToImagAxis, ht0, norm_pow]
-  have hpow : ‖Θ₂.resToImagAxis t‖ ^ 4 ≤ (Cθ * rexp (-π * (t / 4))) ^ 4 := by
-    exact pow_le_pow_left₀ (norm_nonneg _) hΘ2 4
+  have hpow : ‖Θ₂.resToImagAxis t‖ ^ 4 ≤ (Cθ * rexp (-π * (t / 4))) ^ 4 :=
+    pow_le_pow_left₀ (norm_nonneg _) hΘ2 4
   calc
     ‖H₂.resToImagAxis t‖ = ‖Θ₂.resToImagAxis t‖ ^ 4 := hH2
     _ ≤ (Cθ * rexp (-π * (t / 4))) ^ 4 := hpow

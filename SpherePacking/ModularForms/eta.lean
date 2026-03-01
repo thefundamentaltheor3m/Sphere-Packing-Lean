@@ -95,13 +95,8 @@ lemma eta_tndntunif : TendstoLocallyUniformlyOn (fun n ↦ ∏ x ∈ Finset.rang
 
 theorem eta_tprod_ne_zero (z : ℍ) :
   ∏' (n : ℕ), (1 - cexp (2 * ↑π * Complex.I * (↑n + 1) * ↑z)) ≠ 0 := by
-  have h :=
-    tprod_ne_zero z (fun n x => -cexp (2 * ↑π * Complex.I * (n + 1) * x))
-      (by intro i x; simpa [sub_eq_add_neg] using term_ne_zero x i) (by
-        intro x
-        rw [← summable_norm_iff]
-        simpa using summable_exp_pow x)
-  simpa [sub_eq_add_neg, Pi.add_apply, Pi.one_apply] using h
+  simpa [ModularForm.eta_q_eq_cexp, Nat.cast_add, Nat.cast_one] using
+    (ModularForm.eta_tprod_ne_zero (z := (↑z : ℂ)) (hz := by simpa using z.2))
 
 /-- The eta function does not vanish on the upper half-plane. -/
 public lemma eta_nonzero_on_UpperHalfPlane (z : ℍ) : η z ≠ 0 := by
@@ -113,31 +108,27 @@ lemma logDeriv_eta_factor (i : ℕ) (z : ℂ) :
       -(2 * ↑π * Complex.I * (↑i + 1)) *
           cexp (2 * ↑π * Complex.I * (↑i + 1) * z) /
         (1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * z)) := by
-  let c : ℂ := 2 * ↑π * Complex.I * (↑i + 1)
-  have h :=
+  simpa [logDeriv_one_sub_exp_comp, deriv_const_mul, mul_assoc, mul_left_comm, mul_comm] using
     congrArg (fun f => f z)
-      (logDeriv_one_sub_exp_comp (r := (1 : ℂ)) (fun x : ℂ => c * x) (by fun_prop))
-  simpa [c, deriv_const_mul, mul_assoc, mul_left_comm, mul_comm] using h
+      (logDeriv_one_sub_exp_comp (r := (1 : ℂ))
+        (fun x : ℂ => (2 * ↑π * Complex.I * (↑i + 1)) * x) (by fun_prop))
 
 lemma tsum_log_deriv_eqn (z : ℍ) :
   ∑' (i : ℕ), logDeriv (fun x ↦ 1 - cexp (2 * ↑π * Complex.I * (↑i + 1) * x)) ↑z =
   ∑' n : ℕ, -(2 * ↑π * Complex.I * (↑n + 1)) *
              cexp (2 * π * Complex.I * (n + 1) * z) /
              (1 - cexp (2 * π *  Complex.I * (n + 1) * z)) := by
-  congr
-  ext i
+  refine tsum_congr fun i => ?_
   simpa [UpperHalfPlane.coe, mul_assoc] using logDeriv_eta_factor i (↑z : ℂ)
 
 lemma logDeriv_z_term (z : ℍ) : logDeriv (fun z ↦ cexp (2 * ↑π * Complex.I * z / 24)) ↑z =
     2* ↑π * Complex.I / 24 := by
-  have : (fun z ↦ cexp (2 * ↑π * Complex.I * z / 24)) =
-      (fun z ↦ cexp (z)) ∘ (fun z => (2 * ↑π * Complex.I / 24) * z) := by
-    ext y
-    simp only [Function.comp_apply]
-    congr
-    ring
-  rw [this, logDeriv_comp, deriv_const_mul]
-  · simp only [Complex.logDeriv_exp, Pi.one_apply, deriv_id'', mul_one, one_mul]
+  have hcomp :
+      (fun z ↦ cexp (2 * ↑π * Complex.I * z / 24)) =
+        (fun z ↦ cexp z) ∘ fun z => (2 * ↑π * Complex.I / 24) * z := by
+    ext y; simp [Function.comp, mul_assoc, div_eq_mul_inv]; ring_nf
+  rw [hcomp, logDeriv_comp, deriv_const_mul]
+  · simp [Complex.logDeriv_exp]
   all_goals fun_prop
 
 
@@ -150,33 +141,16 @@ theorem eta_differentiableAt (z : ℍ) :
 /-- The eta function is complex differentiable at every point of the upper half-plane. -/
 public lemma eta_DifferentiableAt_UpperHalfPlane (z : ℍ) : DifferentiableAt ℂ η z := by
   unfold η
-  apply DifferentiableAt.mul
+  refine (DifferentiableAt.mul ?_ (eta_differentiableAt z))
   · have : DifferentiableAt ℂ (fun z : ℂ => 2 * ↑π * Complex.I * z / 24) z := by fun_prop
     simpa using DifferentiableAt.cexp this
-  · apply eta_differentiableAt
 
 lemma summable_logDeriv_eta_factor (z : ℍ) :
     Summable fun n : ℕ =>
       logDeriv (fun x ↦ 1 - cexp (2 * π * Complex.I * (n + 1) * x)) (↑z : ℂ) := by
-  set q : ℂ := cexp (2 * ↑π * Complex.I * (z : ℂ))
-  have hq : ‖q‖ < 1 := by simpa [q] using exp_upperHalfPlane_lt_one z
-  have hS : Summable fun n : ℕ => n * q ^ n / (1 - q ^ n) := logDeriv_q_expo_summable q hq
-  have hS' : Summable fun n : ℕ => (n + 1) * q ^ (n + 1) / (1 - q ^ (n + 1)) := by
-    simpa using (summable_nat_add_iff 1).2 hS
-  refine (hS'.mul_left (-2 * ↑π * Complex.I)).congr ?_
-  intro n
-  have hexp : cexp (2 * ↑π * Complex.I * (↑n + 1) * (↑z : ℂ)) = q ^ (n + 1) := by
-    simpa [q, Nat.cast_add, Nat.cast_one, mul_assoc] using (exp_aux z (n + 1))
-  have hlog' :
-      logDeriv (fun x ↦ 1 - cexp (2 * π * Complex.I * (n + 1) * x)) (↑z : ℂ) =
-        -(2 * ↑π * Complex.I * (↑n + 1)) * q ^ (n + 1) / (1 - q ^ (n + 1)) := by
-    simpa [Nat.cast_add, Nat.cast_one, hexp, q] using (logDeriv_eta_factor n (↑z : ℂ))
-  calc
-    (-2 * ↑π * Complex.I) * ((n + 1) * q ^ (n + 1) / (1 - q ^ (n + 1))) =
-        -(2 * ↑π * Complex.I * (↑n + 1)) * q ^ (n + 1) / (1 - q ^ (n + 1)) := by
-          ring
-    _ = logDeriv (fun x ↦ 1 - cexp (2 * π * Complex.I * (n + 1) * x)) (↑z : ℂ) := by
-          simpa using hlog'.symm
+  simpa [ModularForm.eta_q_eq_cexp, Nat.cast_add, Nat.cast_one] using
+    (ModularForm.summable_logDeriv_one_sub_eta_q (z := (↑z : ℂ)) (hz := by simpa using z.2))
+
 /-- The logarithmic derivative of `η` is `(π * I / 12) * E₂`. -/
 public lemma eta_logDeriv (z : ℍ) : logDeriv η z = (π * Complex.I / 12) * E₂ z := by
   unfold η

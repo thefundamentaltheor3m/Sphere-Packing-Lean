@@ -42,15 +42,10 @@ public lemma mobiusInv_lineMap_z₁_mem_wedgeSet
         simpa [SpherePacking.Contour.z₁line, mobiusInv, pow_two, add_assoc, add_comm,
           add_left_comm] using (mobiusInv_re_im (-1) t).2
       refine (wedgeSet_iff (z := mobiusInv (SpherePacking.Contour.z₁line t))).2 ?_
-      refine ⟨?_, ?_, ?_⟩
+      refine ⟨?_, ?_⟩
       · rw [him]
         exact div_pos ht0 hdenom
-      · rw [hre, him]
-        field_simp [hdenom.ne']
-        nlinarith [ht0]
-      · rw [hre, him]
-        field_simp [hdenom.ne']
-        nlinarith [ht0, ht1])
+      · constructor <;> (rw [hre, him]; field_simp [hdenom.ne']; nlinarith [ht0, ht1]))
 
 /-- Along `-1 + I → I`, the Mobius inversion map lands in `wedgeSet`. -/
 public lemma mobiusInv_lineMap_z₂_mem_wedgeSet
@@ -61,25 +56,16 @@ public lemma mobiusInv_lineMap_z₂_mem_wedgeSet
       set x : ℝ := t - 1
       have hdenom : 0 < (x ^ 2 + 1 : ℝ) := by positivity
       have hre : (mobiusInv (SpherePacking.Contour.z₂line t)).re = (1 - t) / (x ^ 2 + 1) := by
-        have : (mobiusInv ((x : ℂ) + Complex.I * (1 : ℂ))).re = (-x) / (x ^ 2 + 1) := by
-          simpa [mobiusInv, pow_two] using (mobiusInv_re_im x 1).1
         simpa [SpherePacking.Contour.z₂line, x, sub_eq_add_neg, add_assoc, add_left_comm,
-          add_comm] using this
+          add_comm, mobiusInv, pow_two] using (mobiusInv_re_im x 1).1
       have him : (mobiusInv (SpherePacking.Contour.z₂line t)).im = 1 / (x ^ 2 + 1) := by
-        have : (mobiusInv ((x : ℂ) + Complex.I * (1 : ℂ))).im = 1 / (x ^ 2 + 1) := by
-          simpa [mobiusInv, pow_two] using (mobiusInv_re_im x 1).2
         simpa [SpherePacking.Contour.z₂line, x, sub_eq_add_neg, add_assoc, add_left_comm,
-          add_comm] using this
+          add_comm, mobiusInv, pow_two] using (mobiusInv_re_im x 1).2
       refine (wedgeSet_iff (z := mobiusInv (SpherePacking.Contour.z₂line t))).2 ?_
-      refine ⟨?_, ?_, ?_⟩
+      refine ⟨?_, ?_⟩
       · rw [him]
         exact (one_div_pos.2 hdenom)
-      · rw [hre, him]
-        field_simp [hdenom.ne']
-        nlinarith [x]
-      · rw [hre, him]
-        field_simp [hdenom.ne']
-        nlinarith [ht0, ht1, x])
+      · constructor <;> (rw [hre, him]; field_simp [hdenom.ne']; nlinarith [ht0, ht1, x]))
 
 end
 

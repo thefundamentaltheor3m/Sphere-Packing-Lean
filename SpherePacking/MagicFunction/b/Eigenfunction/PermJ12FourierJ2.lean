@@ -82,14 +82,7 @@ lemma norm_permJ2Kernel (w x : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
   dsimp [permJ2Kernel]
   rw [norm_mul]
   rw [norm_phase_eq_one (w := w) (x := x)]
-  simp only [one_mul]
-  rw [norm_mul]
-  -- `dsimp [permJ2Kernel]` unfolds `z₂line`, so we restate `hgauss` in that unfolded form.
-  have hgauss' :
-      ‖cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * ((-1 : ℂ) + (t : ℂ) + Complex.I))‖ =
-          rexp (-(π * ‖x‖ ^ 2)) := by
-    simpa [SpherePacking.Contour.z₂line, add_assoc, add_left_comm, add_comm] using hgauss
-  rw [hgauss']
+  simp_all
 
 lemma integrable_permJ2Kernel_slice (w : EuclideanSpace ℝ (Fin 8)) (t : ℝ) :
     Integrable (fun x : EuclideanSpace ℝ (Fin 8) ↦ permJ2Kernel w (x, t))
@@ -243,11 +236,7 @@ lemma integrable_permJ2Kernel (w : EuclideanSpace ℝ (Fin 8)) :
           (fun p : ℝ × EuclideanSpace ℝ (Fin 8) => ‖permJ2Kernel w (p.2, p.1)‖)
           (μIoc01.prod (volume : Measure (EuclideanSpace ℝ (Fin 8)))) := by
       -- Continuity of the swapped kernel.
-      have :
-          Continuous
-            (fun p : ℝ × EuclideanSpace ℝ (Fin 8) => ‖permJ2Kernel w (p.2, p.1)‖) := by
-        simpa using (hcont.norm.comp continuous_swap)
-      exact this.aestronglyMeasurable
+      fun_prop
     exact MeasureTheory.AEStronglyMeasurable.integral_prod_right'
       (μ := μIoc01) (ν := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
       (f := fun p : ℝ × EuclideanSpace ℝ (Fin 8) => ‖permJ2Kernel w (p.2, p.1)‖) hswap

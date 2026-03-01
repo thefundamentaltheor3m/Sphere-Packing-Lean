@@ -40,11 +40,9 @@ public lemma differentiableOn_mul_cexp_pi_I_mul_real
     {s : Set ℂ} {ψ : ℂ → ℂ} (hψ : DifferentiableOn ℂ ψ s) (r : ℝ) :
     DifferentiableOn ℂ
       (fun z : ℂ => ψ z * cexp ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z)) s := by
-  have hexp :
-      DifferentiableOn ℂ
-        (fun z : ℂ => cexp (((Real.pi : ℂ) * Complex.I * (r : ℂ)) * z)) s :=
-    (differentiable_id.const_mul ((Real.pi : ℂ) * Complex.I * (r : ℂ))).cexp.differentiableOn
-  simpa [mul_assoc] using hψ.mul hexp
+  simpa [mul_assoc] using
+    hψ.mul
+      ((differentiable_id.const_mul ((Real.pi : ℂ) * Complex.I * (r : ℂ))).cexp.differentiableOn)
 
 /--
 `TendstoPsiOneHypotheses wedgeSet ψS ψT' Ψ₁' gAct k` bundles the hypotheses used to prove
@@ -118,16 +116,12 @@ private lemma one_div_two_im_le_im_div_normSq_sub_one {z : ℂ}
     have hnormSq : Complex.normSq (z - 1) = (z.re - 1) ^ 2 + z.im ^ 2 := by
       simp [Complex.normSq, sub_eq_add_neg, pow_two, add_comm]
     nlinarith [hnormSq, hre_sq]
-  have hInv :
-      (1 : ℝ) / (2 * z.im ^ 2) ≤ (1 : ℝ) / Complex.normSq (z - 1) :=
-    one_div_le_one_div_of_le hnormSq_pos hnormSq_le
   have hMul :
       z.im * ((1 : ℝ) / (2 * z.im ^ 2)) ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) :=
-    mul_le_mul_of_nonneg_left hInv (le_of_lt hz_im_pos)
-  have h1 : (1 : ℝ) / (2 * z.im) = z.im * ((1 : ℝ) / (2 * z.im ^ 2)) := by
-    field_simp [hz_im_ne]
+    mul_le_mul_of_nonneg_left (one_div_le_one_div_of_le hnormSq_pos hnormSq_le)
+      (le_of_lt hz_im_pos)
   calc
-    (1 : ℝ) / (2 * z.im) = z.im * ((1 : ℝ) / (2 * z.im ^ 2)) := h1
+    (1 : ℝ) / (2 * z.im) = z.im * ((1 : ℝ) / (2 * z.im ^ 2)) := by field_simp [hz_im_ne]
     _ ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) := hMul
     _ = z.im / Complex.normSq (z - 1) := by simp [div_eq_mul_inv]
 
@@ -254,8 +248,8 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of
     calc
       ‖ψT' z‖ = ‖ψS (gAct zH)‖ * ‖(z - 1) ^ k‖ := by
             simp [hψ, norm_neg]
-      _ ≤ (1 : ℝ) * ‖(z - 1) ^ k‖ := by
-            exact mul_le_mul_of_nonneg_right hψS_bound (norm_nonneg _)
+      _ ≤ (1 : ℝ) * ‖(z - 1) ^ k‖ :=
+            mul_le_mul_of_nonneg_right hψS_bound (norm_nonneg _)
       _ = ‖(z - 1) ^ k‖ := by simp
   have hmain :
       ‖Ψ₁' r z‖ ≤ (dist z (1 : ℂ)) ^ k * M := by
@@ -281,18 +275,13 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of
       _ ≤ ‖(z - 1) ^ k‖ * expNorm r z := by
             have hexp : 0 ≤ expNorm r z := by simp [expNorm]
             exact mul_le_mul_of_nonneg_right hψT_norm hexp
-      _ ≤ ‖(z - 1) ^ k‖ * M := by
-            exact mul_le_mul_of_nonneg_left hexpZ (norm_nonneg _)
+      _ ≤ ‖(z - 1) ^ k‖ * M :=
+            mul_le_mul_of_nonneg_left hexpZ (norm_nonneg _)
       _ = (dist z (1 : ℂ)) ^ k * M := by
             simp [hpow]
   have : ‖Ψ₁' r z‖ < ε := by
-    have hε' : (dist z (1 : ℂ)) ^ k * M < ε := by
-      have htmp : (dist z (1 : ℂ)) ^ k * M < (ε / M) * M :=
-        mul_lt_mul_of_pos_right hdist_pow hMpos
-      have hMne : M ≠ 0 := ne_of_gt hMpos
-      have hcancel : (ε / M) * M = ε := by
-        field_simp [hMne]
-      simpa [hcancel] using htmp
+    have hε' : (dist z (1 : ℂ)) ^ k * M < ε :=
+      (lt_div_iff₀ hMpos).mp hdist_pow
     exact lt_of_le_of_lt hmain hε'
   simpa [dist_eq_norm] using this
 

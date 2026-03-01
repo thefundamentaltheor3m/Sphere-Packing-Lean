@@ -56,11 +56,7 @@ public lemma ACDomain_isPreconnected : IsPreconnected ACDomain := by
             have hp : (0 : ℝ) < (p.1 : ℝ) := p.1.2
             simpa using hp
       continuous_invFun := by
-        have hfst : Continuous fun z : {u : ℂ // 0 < u.re} => (⟨z.1.re, z.2⟩ : Set.Ioi (0 : ℝ)) :=
-          (Complex.continuous_re.comp continuous_subtype_val).subtype_mk fun z => z.2
-        have hsnd : Continuous fun z : {u : ℂ // 0 < u.re} => z.1.im :=
-          Complex.continuous_im.comp continuous_subtype_val
-        exact hfst.prodMk hsnd }
+        fun_prop }
   let h : ℂ ≃ₜ {u : ℂ // 0 < u.re} :=
     (Complex.equivRealProdCLM.toHomeomorph.trans
           ((Real.expOrderIso.toHomeomorph).prodCongr (Homeomorph.refl ℝ))).trans h₃
@@ -79,12 +75,7 @@ public lemma ACDomain_isPreconnected : IsPreconnected ACDomain := by
         simpa using this
       · intro hz
         refine ⟨h.symm z, ?_, by simp⟩
-        have hz' : z ≠ z2 := by
-          simpa [Set.mem_compl_iff, Set.mem_singleton_iff] using hz
-        have : h.symm z ≠ h.symm z2 := by
-          intro hEq
-          exact hz' (by simpa using congrArg h hEq)
-        simpa using this
+        simpa
     simpa [himage] using (hconn.isPreconnected.image h h.continuous.continuousOn)
   have hval :
       ((Subtype.val : {u : ℂ // 0 < u.re} → ℂ) '' ({z2}ᶜ :

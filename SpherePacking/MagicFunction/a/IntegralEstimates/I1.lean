@@ -57,22 +57,15 @@ def f' : ℝ → ℝ := fun t ↦ -1 / t ^ 2
 lemma aux_measurable : MeasurableSet ((Ioc 0 1) : Set ℝ) := measurableSet_Ioc
 
 lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioc 0 1) : HasDerivWithinAt f (f' x) (Ioc 0 1) x := by
-  have hf : f = fun t ↦ (t ^ (-1 : ℤ)) := by
-    ext t
-    rw [f, div_eq_mul_inv, zpow_neg, zpow_one, one_mul]
-  have hf' : f' = fun t ↦ -(t ^ (-2 : ℤ)) := by
-    ext t
-    rw [f', div_eq_mul_inv, zpow_neg, neg_mul, one_mul]
-    rfl
-  simp only [hf, hf']
-  have : -x ^ (-2 : ℤ) = (-1 : ℤ) * x ^ ((-1 : ℤ) - 1) := by simp
-  rw [this]
-  exact hasDerivWithinAt_zpow (-1 : ℤ) x (Or.inl (ne_of_gt hx.1)) (Ioc 0 1)
+  have hf : f = fun t : ℝ ↦ t⁻¹ := by
+    funext t
+    simp [f, one_div]
+  simpa [hf, f', one_div, div_eq_mul_inv, pow_two, mul_assoc, mul_left_comm, mul_comm] using
+    (hasDerivWithinAt_inv (x := x) (ne_of_gt hx.1) (Ioc 0 1))
 
 lemma aux_injOn : InjOn f (Ioc 0 1) := by
-  intro _ _ _ _ hf
-  simp only [f, div_eq_mul_inv, one_mul, inv_inj] at hf
-  exact hf
+  intro x _ y _ hxy
+  exact inv_injective (by simpa [f, one_div] using hxy)
 
 end Setup
 
@@ -83,17 +76,12 @@ lemma Changing_Domain_of_Integration (r : ℝ) :
   congr
   ext x
   constructor <;> intro hx
-  · use x⁻¹
-    simp only [mem_Ici] at hx ⊢
-    constructor
-    · refine ⟨by positivity, ?_⟩
-      rw [← mul_one x⁻¹, inv_mul_le_one₀ (by positivity)]
-      exact hx
-    · rw [f, div_inv_eq_mul, one_mul]
-  · obtain ⟨y, hy₁, hy₂⟩ := hx
-    rw [← hy₂, f]
-    simp only [one_div, mem_Ici]
-    exact one_le_inv_iff₀.mpr hy₁
+  · refine ⟨x⁻¹, ?_, ?_⟩
+    · have hx' : (1 : ℝ) ≤ x := by simpa [mem_Ici] using hx
+      exact ⟨by positivity, inv_le_one_of_one_le₀ hx'⟩
+    · simp [f]
+  · obtain ⟨y, hy, rfl⟩ := hx
+    simpa [mem_Ici, f, one_div] using (one_le_inv_iff₀).2 hy
 
 lemma Changing_Variables (r : ℝ) : ∫ (s : ℝ) in f '' (Ioc (0 : ℝ) (1 : ℝ)), (g r s) =
     ∫ (t : ℝ) in Ioc 0 1, |f' t| • (g r (f t)) :=
@@ -138,28 +126,25 @@ lemma I₁'_bounding_aux_1 (r : ℝ) : ∀ x ∈ Ici 1, ‖g r x‖ ≤ ‖φ₀
   conv_rhs => rw [← mul_one ‖φ₀'' (I * ↑s)‖]
   gcongr
   rw [abs_of_nonneg (zero_le_one.trans hs)]
-  apply inv_le_one_of_one_le₀
-  exact one_le_zpow₀ hs <| Int.zero_le_ofNat 4
+  exact inv_le_one_of_one_le₀ (one_le_zpow₀ hs <| Int.zero_le_ofNat 4)
 
 lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
     ‖g r x‖ ≤ C₀ * rexp (-2 * π * x) * rexp (-π * r / x) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le -- The `PolyFourierCoeffBound` of `φ₀`
   use C₀, hC₀_pos
   intro s hs
-  rw [mem_Ici] at hs
+  have hs' : (1 : ℝ) ≤ s := by simpa [mem_Ici] using hs
   apply (I₁'_bounding_aux_1 r s hs).trans
   gcongr
-  have him : (I * s).im = s := by simp
-  have hpos : 0 < s := by positivity
-  have hpos' : 0 < (I * ↑s).im := by rw [him]; exact hpos
-  let z : ℍ := ⟨I * s, hpos'⟩
-  have him' : z.im = s := by simp [z, him, UpperHalfPlane.im]
-  have him'_gt_half : 1 / 2 < z.im := by rw [him']; linarith
-  specialize hC₀ z him'_gt_half
-  simp only [z, him'] at hC₀
-  simp only [φ₀'', mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, hpos,
+  have hs_pos : 0 < s := by positivity
+  let z : ℍ := ⟨I * s, by simpa using hs_pos⟩
+  have him' : z.im = s := by simp [z, UpperHalfPlane.im]
+  have him'_gt_half : 1 / 2 < z.im := by simpa [him'] using (by linarith [hs'])
+  have hC₀z := hC₀ z him'_gt_half
+  simp only [z, him'] at hC₀z
+  simp only [φ₀'', mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, hs_pos,
     ↓reduceDIte]
-  exact hC₀
+  exact hC₀z
 
 end Bounding_Integrand
 
@@ -169,13 +154,12 @@ lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, �
     ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
   wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
   · refine ⟨1, by positivity, ?_⟩
-    haveI h₁ : CompleteSpace ℝ := inferInstance
-    have h₂ : ¬ (Integrable (fun t ↦ ‖g r t‖) (volume.restrict (Ici 1))) := hint
-    conv_lhs => simp only [integral, h₁, h₂, ↓reduceDIte]
-    positivity
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_aux_2 r
-  use C₀, hC₀_pos
-  exact setIntegral_mono_on hint (bound_integrableOn_Ici r C₀) measurableSet_Ici hC₀
+    simpa [MeasureTheory.integral_undef (μ := volume.restrict (Ici (1 : ℝ)))
+      (f := fun t ↦ ‖g r t‖) (by simpa [IntegrableOn] using hint)] using
+      (by positivity : (0 : ℝ) ≤
+        ∫ (s : ℝ) in Ici 1, (1 : ℝ) * rexp (-2 * π * s) * rexp (-π * r / s))
+  rcases I₁'_bounding_aux_2 r with ⟨C₀, hC₀_pos, hC₀⟩
+  exact ⟨C₀, hC₀_pos, setIntegral_mono_on hint (bound_integrableOn_Ici r C₀) measurableSet_Ici hC₀⟩
 
 theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₁' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by

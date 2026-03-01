@@ -66,11 +66,10 @@ public theorem contDiff_integral
     (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) := by
   simpa using
-    (SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ
-      (I := fun (n : ℕ) (x : ℝ) => I (coeff := coeff) (hf := hf) n x)
+    SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I (coeff := coeff) (hf := hf))
       (fun n x =>
         hasDerivAt_I_succ (coeff := coeff) (hf := hf) continuous_hf continuous_coeff
-          exists_bound_norm_h coeff_norm_le (n := n) (x₀ := x)))
+          exists_bound_norm_h coeff_norm_le n x)
 
 /-- Wrapper around `contDiff_integral` when the target function is given by `f x = I 0 x`. -/
 public theorem contDiff_of_eq_I0
@@ -80,10 +79,7 @@ public theorem contDiff_of_eq_I0
     (exists_bound_norm_h : ∃ M, ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ M)
     (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi) :
     ContDiff ℝ (⊤ : ℕ∞) f := by
-  have h0 : f = fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x := by
-    funext x
-    simpa using hfEq x
-  simpa [h0] using
+  simpa [funext hfEq] using
     (contDiff_integral (coeff := coeff) (hf := hf) continuous_hf continuous_coeff
       exists_bound_norm_h coeff_norm_le)
 
@@ -113,10 +109,8 @@ public theorem decay_integral
   have hxabs : ‖x‖ = x := by simp [Real.norm_eq_abs, abs_of_nonneg hx]
   have hderiv :
       ‖iteratedFDeriv ℝ n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖ =
-        ‖iteratedDeriv n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖ := by
-    simpa using
-      (norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n)
-        (f := fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) (x := x))
+        ‖iteratedDeriv n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖ :=
+    norm_iteratedFDeriv_eq_norm_iteratedDeriv
   have hrepr :
       iteratedDeriv n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x =
         I (coeff := coeff) (hf := hf) n x := by
@@ -188,10 +182,7 @@ public theorem decay_of_eq_I0_of_coeff_re
     (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
     (coeff_re : ∀ t : ℝ, (coeff t).re = (-Real.pi : ℝ)) :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C := by
-  have h0 : f = fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x := by
-    funext x
-    simpa using hfEq x
-  simpa [h0] using
+  simpa [funext hfEq] using
     (decay_integral_of_coeff_re (coeff := coeff) (hf := hf)
       continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le coeff_re)
 

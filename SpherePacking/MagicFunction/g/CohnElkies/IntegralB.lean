@@ -295,27 +295,7 @@ lemma factor_sin_sq (u : ℝ) (IA IB I : ℂ)
           (1 / (60 * π) : ℂ) *
             ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
       (π / 2160 : ℂ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * I := by
-  set s : ℂ := ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ)
-  have h := congrArg (fun z : ℂ => s * z) hBracket
-  have hs : s * ((π / 2160 : ℂ) * I) = (π / 2160 : ℂ) * (s * I) := by
-    simp [mul_assoc, mul_left_comm, mul_comm]
-  have h' :
-      s * (-(π / 2160 : ℂ)) *
-            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
-          s * (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
-        s * ((π / 2160 : ℂ) * I) := by
-    simpa [s, mul_add, mul_assoc] using h
-  have h'' :
-      s * (-(π / 2160 : ℂ)) *
-            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) +
-          s * (1 / (60 * π) : ℂ) * ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
-        (π / 2160 : ℂ) * (s * I) := by
-    simpa [hs] using h'
-  simpa [s, mul_assoc] using h''
+  grind only
 
 lemma bracket_arith (u : ℝ) (IA IB : ℂ)
     (hπ : (π : ℂ) ≠ 0) (huC : (u : ℂ) ≠ 0) (hu2C : (u - 2 : ℂ) ≠ 0) :
@@ -418,10 +398,7 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
   have hItExp :
       (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) =
         ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) :=
-    by
-      simpa [Complex.ofReal_mul] using
-        (MagicFunction.g.CohnElkies.IntegralReps.integral_mul_exp_neg_pi_mul_Ioi_complex
-          (u := u) hu)
+      IntegralReps.integral_mul_exp_neg_pi_mul_Ioi_complex hx
   have hAterm :
       ((↑π * I) / 8640 : ℂ) * a' u =
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
@@ -597,10 +574,7 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
     -- Apply the coefficient rewrites.
     rw [hIB, hJ1coef, hJ0coef]
     -- Only the `(-IA)` factor remains; rewrite it and reassociate.
-    have hIAcoef : (π / 2160 : ℂ) * (-IA) = (-(π / 2160 : ℂ)) * IA := by
-      simp
-    -- Rewrite the `(-IA)` term; the remaining terms match definitionally.
-    rw [hIAcoef]
+    ring
   have hBracket :
       (-(π / 2160 : ℂ)) *
             ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
@@ -750,12 +724,12 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
                           rw [Complex.norm_of_nonneg hexp_nonneg]
           _ = ‖(B t : ℂ)‖ * Real.exp ((-π : ℝ) * ((useq n) * t)) := by
                   simp [mul_assoc]
-          _ ≤ ‖(B t : ℂ)‖ * Real.exp ((-π : ℝ) * ((2 : ℝ) * t)) := by
-                  exact mul_le_mul_of_nonneg_left hexp hBN
+          _ ≤ ‖(B t : ℂ)‖ * Real.exp ((-π : ℝ) * ((2 : ℝ) * t)) :=
+                  mul_le_mul_of_nonneg_left hexp hBN
           _ = ‖(B t : ℂ)‖ * Real.exp (-π * (2 : ℝ) * t) := by
                   simp [mul_assoc]
-          _ = ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖ := by
-                  exact hnorm2.symm
+          _ = ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖ :=
+                  hnorm2.symm
       -- Apply `norm_integral_le_of_norm_le` on the restricted measure.
       exact norm_integral_le_of_norm_le hM_int hle
     have hsin_tendsto :
@@ -768,8 +742,7 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
       have hcontS :
           ContinuousAt (fun u : ℝ => (Real.sin (π * u / 2)) ^ (2 : ℕ)) (2 : ℝ) := by
         have hlin : Continuous (fun u : ℝ => π * u / 2) := by
-          have hmul : Continuous (fun u : ℝ => π * u) := continuous_const.mul continuous_id
-          exact Continuous.div_const hmul 2
+          fun_prop
         have hsin : Continuous (fun u : ℝ => Real.sin (π * u / 2)) :=
           Real.continuous_sin.comp hlin
         exact (hsin.pow 2).continuousAt
@@ -862,16 +835,8 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
       exact squeeze_zero (fun _ => norm_nonneg _) hle' hbound_tendsto
     have hSeq0 :
         Filter.Tendsto (fun n : ℕ => (𝓕 g : 𝓢(ℝ⁸, ℂ)) (xseq n)) Filter.atTop
-          (𝓝 (0 : ℂ)) := by
-      have hfun :
-          (fun n : ℕ => (𝓕 g : 𝓢(ℝ⁸, ℂ)) (xseq n)) =
-            fun n : ℕ =>
-              (π / 2160 : ℂ) *
-                (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) *
-                  (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t)) := by
-        funext n
-        exact hEqseq n
-      simpa [hfun] using hRHSseq0
+          (𝓝 (0 : ℂ)) :=
+      (Filter.tendsto_congr hEqseq).mpr hRHSseq0
     have hLHS : ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) = 0 := tendsto_nhds_unique hFseq hSeq0
     -- Avoid `simp` rewriting `Real.sin` into `Complex.sin`.
     rw [hLHS]

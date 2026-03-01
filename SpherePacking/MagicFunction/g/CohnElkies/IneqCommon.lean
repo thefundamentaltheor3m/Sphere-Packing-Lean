@@ -25,8 +25,8 @@ open Real Complex
 
 noncomputable section
 
-private lemma complex_eq_ofReal_of_im_eq_zero (z : ℂ) (hz : z.im = 0) : z = (z.re : ℂ) := by
-  exact Complex.ext (by simp) (by simp [hz])
+private lemma complex_eq_ofReal_of_im_eq_zero (z : ℂ) (hz : z.im = 0) : z = (z.re : ℂ) :=
+  Complex.ext (by simp) (by simp [hz])
 
 /-- The constant `c = 18 / π^2` appearing in the definitions of `A` and `B`. -/
 public abbrev c : ℝ := 18 * (π ^ (-2 : ℤ))
@@ -159,8 +159,8 @@ public lemma A_eq_neg_mul_FG_div_Delta (t : ℝ) (ht : 0 < t) :
               t ^ 2 * (π ^ 2)⁻¹ * GReal s * Δr⁻¹ = t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ := by
             exact mul_mul_mul_comm' (t ^ 2) ((π ^ 2)⁻¹) (GReal s) (Δr⁻¹)
           have hcomm :
-              t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ = t ^ 2 * GReal s * Δr⁻¹ * (π ^ 2)⁻¹ := by
-            exact mul_right_comm (t ^ 2 * GReal s) ((π ^ 2)⁻¹) (Δr⁻¹)
+              t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ = t ^ 2 * GReal s * Δr⁻¹ * (π ^ 2)⁻¹ :=
+            mul_right_comm (t ^ 2 * GReal s) ((π ^ 2)⁻¹) (Δr⁻¹)
           have hswap18 :
               t ^ 2 * (π ^ 2)⁻¹ * GReal s * Δr⁻¹ * 18 =
                 t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ * 18 :=
@@ -214,8 +214,8 @@ public lemma B_eq_neg_mul_FG_div_Delta (t : ℝ) (ht : 0 < t) :
               t ^ 2 * (π ^ 2)⁻¹ * GReal s * Δr⁻¹ = t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ := by
             exact mul_mul_mul_comm' (t ^ 2) ((π ^ 2)⁻¹) (GReal s) (Δr⁻¹)
           have hcomm :
-              t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ = t ^ 2 * GReal s * Δr⁻¹ * (π ^ 2)⁻¹ := by
-            exact mul_right_comm (t ^ 2 * GReal s) ((π ^ 2)⁻¹) (Δr⁻¹)
+              t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ = t ^ 2 * GReal s * Δr⁻¹ * (π ^ 2)⁻¹ :=
+            mul_right_comm (t ^ 2 * GReal s) ((π ^ 2)⁻¹) (Δr⁻¹)
           have hswap18 :
               t ^ 2 * (π ^ 2)⁻¹ * GReal s * Δr⁻¹ * 18 =
                 t ^ 2 * GReal s * (π ^ 2)⁻¹ * Δr⁻¹ * 18 :=

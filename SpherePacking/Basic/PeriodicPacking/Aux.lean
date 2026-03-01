@@ -43,15 +43,13 @@ private lemma isBounded_iUnion_ball_centers_inter (hD_isBounded : IsBounded D) :
   refine (isBounded_iff_forall_norm_le).2 ⟨L + S.separation / 2, ?_⟩
   intro x hx
   rcases Set.mem_iUnion₂.1 hx with ⟨y, hy, hx⟩
-  have hyL : ‖y‖ ≤ L := hL y hy.2
-  have hxy : ‖x - y‖ < S.separation / 2 := by simpa [mem_ball, dist_eq_norm] using hx
-  exact (norm_le_norm_add_norm_sub' x y).trans (by gcongr)
+  exact (norm_le_norm_add_norm_sub' x y).trans <|
+    add_le_add (hL y hy.2) (le_of_lt (by simpa [mem_ball, dist_eq_norm] using hx))
 
 private lemma pairwiseDisjoint_ball_centers_inter (D : Set (EuclideanSpace ℝ (Fin d))) :
     Set.PairwiseDisjoint (S.centers ∩ D) (fun x ↦ ball x (S.separation / 2)) := by
   intro x hx y hy hxy
-  refine ball_disjoint_ball ?_
-  simpa [add_halves] using S.centers_dist' _ _ hx.left hy.left hxy
+  exact ball_disjoint_ball (by simpa [add_halves] using S.centers_dist' _ _ hx.left hy.left hxy)
 
 private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     {ι τ : Type*} {s : Set ι} {f : ι → Set (EuclideanSpace ℝ τ)} {c : ℝ≥0∞} (hc : 0 < c)
@@ -72,9 +70,7 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     intro i j hij
     by_cases hi : i ∈ s <;> by_cases hj : j ∈ s
     · simpa [As, hi, hj] using h_disjoint hi hj hij
-    · simp [As, hi, hj]
-    · simp [As, hi, hj]
-    · simp [As, hi, hj]
+    all_goals simp [As, hi, hj]
   have hUnion_subset : (⋃ i, As i) ⊆ ⋃ x ∈ s, f x := by
     intro x hx
     rcases Set.mem_iUnion.1 hx with ⟨i, hi⟩
@@ -86,9 +82,7 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     ne_top_of_le_ne_top (volume_ball_lt_top _).ne (volume.mono hL)
   have hfinite : Set.Finite { i : ι | c ≤ volume (As i) } :=
     Measure.finite_const_le_meas_of_disjoint_iUnion (μ := volume) hc As_mble As_disj hUnion_fin
-  refine hfinite.subset ?_
-  intro i hi
-  simpa [As, hi] using h_volume i hi
+  refine hfinite.subset (by intro i hi; simpa [As, hi] using h_volume i hi)
 
 /-- A periodic packing has only finitely many centers in a bounded set (in positive dimension). -/
 public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd : 0 < d) :
@@ -114,8 +108,7 @@ open scoped Pointwise in
 lemma finite_centers_inter_vadd_fundamentalDomain
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (hd : 0 < d) (v : EuclideanSpace ℝ (Fin d)) :
     Finite ↑(S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))) :=
-  finite_centers_inter_of_isBounded S _
-    (IsBounded.vadd (ZSpan.fundamentalDomain_isBounded _) _) hd
+  finite_centers_inter_of_isBounded S _ ((ZSpan.fundamentalDomain_isBounded _).vadd v) hd
 
 end aux_lemmas
 
@@ -133,11 +126,11 @@ public lemma disjoint_vadd_of_unique_covers {Λ : Submodule ℤ (EuclideanSpace 
     {D : Set (EuclideanSpace ℝ (Fin d))}
     (hD_unique_covers : ∀ x, ∃! g : Λ, g +ᵥ x ∈ D) {g h : Λ} (hgh : g ≠ h) :
     Disjoint (g +ᵥ D) (h +ᵥ D) := by
-  refine Set.disjoint_left.2 fun x hxg hxh => ?_
-  rcases hD_unique_covers x with ⟨g0, -, hg0uniq⟩
-  exact hgh <| neg_injective <|
-    (hg0uniq _ (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxg)).trans
-      (hg0uniq _ (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxh)).symm
+  refine Set.disjoint_left.2 (by
+    intro x hxg hxh
+    exact hgh <| neg_injective <| (hD_unique_covers x).unique
+      (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxg)
+      (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxh))
 
 end Pointwise
 
@@ -386,8 +379,7 @@ private theorem aux
   obtain ⟨y, ⟨_, hy⟩, hy'⟩ := hx
   obtain ⟨z, hz, rfl⟩ := Set.mem_vadd_set.mp hy'
   simp only [mem_ball, dist_zero_right, vadd_eq_add] at hy ⊢
-  have hzL : ‖z‖ ≤ L := hL z hz
-  have hsum : ‖y‖ + ‖z‖ < R := by linarith [hy, hzL]
+  have hsum : ‖y‖ + ‖z‖ < R := by linarith [hy, hL z hz]
   exact lt_of_le_of_lt (norm_add_le _ _) hsum
 
 private theorem disjoint_vadd_fundamentalDomain
@@ -397,12 +389,9 @@ private theorem disjoint_vadd_fundamentalDomain
       (y +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
   let Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)) :=
     Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _))
-  have hx' : x ∈ Λ := by
-    simpa [Λ, S.basis_Z_span] using hx
-  have hy' : y ∈ Λ := by
-    simpa [Λ, S.basis_Z_span] using hy
-  have hxy' : (⟨x, hx'⟩ : Λ) ≠ ⟨y, hy'⟩ :=
-    fun h => hxy (by simpa using congrArg Subtype.val h)
+  have hx' : x ∈ Λ := by simpa [Λ, S.basis_Z_span] using hx
+  have hy' : y ∈ Λ := by simpa [Λ, S.basis_Z_span] using hy
+  have hxy' : (⟨x, hx'⟩ : Λ) ≠ ⟨y, hy'⟩ := fun h => hxy (by simpa using congrArg Subtype.val h)
   simpa [Λ] using
     (disjoint_vadd_of_unique_covers (d := d) (Λ := Λ)
       (D := fundamentalDomain (b.ofZLatticeBasis ℝ _))
@@ -415,13 +404,12 @@ public theorem PeriodicSpherePacking.aux_ge
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     (↑S.centers ∩ ball 0 R).encard ≥
       S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)).encard := by
-  have := aux S (b.ofZLatticeBasis ℝ _) hL R
-  have := Set.inter_subset_inter_right S.centers this
-  rw [Set.biUnion_eq_iUnion, Set.inter_iUnion] at this
-  have := Set.encard_mono this
-  rw [Set.encard_iUnion_of_pairwiseDisjoint] at this
-  · simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
-    · convert this.ge
+  have hsub := Set.inter_subset_inter_right S.centers (aux S (b.ofZLatticeBasis ℝ _) hL R)
+  rw [Set.biUnion_eq_iUnion, Set.inter_iUnion] at hsub
+  have henc := Set.encard_mono hsub
+  rw [Set.encard_iUnion_of_pairwiseDisjoint] at henc
+  · simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
+    · convert henc.ge
       rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
   · intro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     have hxy' : x ≠ y := fun h => hxy (Subtype.ext h)
@@ -437,10 +425,8 @@ private theorem aux'
         x +ᵥ (fundamentalDomain (b.ofZLatticeBasis ℝ _) : Set (EuclideanSpace ℝ (Fin d))) := by
   letI : Fintype ι := Fintype.ofFinite ι
   intro x hx
-  simp only [Set.mem_iUnion, exists_prop]
-  use floor (b.ofZLatticeBasis ℝ _) x
-  constructor
-  · constructor
+  refine Set.mem_iUnion₂.2 ⟨floor (b.ofZLatticeBasis ℝ _) x, ?_, ?_⟩
+  · refine ⟨?_, ?_⟩
     · rw [SetLike.mem_coe, ← S.mem_basis_Z_span b]
       exact Submodule.coe_mem _
     · rw [mem_ball_zero_iff] at hx ⊢
@@ -457,13 +443,12 @@ public theorem PeriodicSpherePacking.aux_le
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (R : ℝ) :
     (↑S.centers ∩ ball 0 R).encard
       ≤ S.numReps • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)).encard := by
-  have := aux' S b hL R
-  have := Set.inter_subset_inter_right S.centers this
-  rw [Set.biUnion_eq_iUnion, Set.inter_iUnion] at this
-  have := Set.encard_mono this
-  rw [Set.encard_iUnion_of_pairwiseDisjoint] at this
-  · simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at this
-    · convert this
+  have hsub := Set.inter_subset_inter_right S.centers (aux' S b hL R)
+  rw [Set.biUnion_eq_iUnion, Set.inter_iUnion] at hsub
+  have henc := Set.encard_mono hsub
+  rw [Set.encard_iUnion_of_pairwiseDisjoint] at henc
+  · simp_rw [S.encard_centers_inter_vadd_fundamentalDomain hd] at henc
+    · convert henc
       rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
   · intro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     have hxy' : x ≠ y := fun h => hxy (Subtype.ext h)

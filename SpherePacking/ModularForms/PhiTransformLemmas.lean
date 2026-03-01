@@ -52,15 +52,14 @@ public theorem φ₀_S_transform_mul_sq (z : ℍ) :
         36 / (π ^ 2) * φ₄' z := by
   have hz : (z : ℂ) ≠ 0 := ne_zero z
   have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-  have hmul := congrArg (fun w : ℂ => w * (z : ℂ) ^ (2 : ℕ)) (φ₀_S_transform z)
-  have hz2 : (z : ℂ) ^ (2 : ℕ) ≠ 0 := pow_ne_zero _ hz
   have hsimp :
       (φ₀ z - (12 * Complex.I) / (π * z) * φ₂' z - 36 / (π ^ 2 * z ^ (2 : ℕ)) * φ₄' z) *
             (z : ℂ) ^ (2 : ℕ) =
           φ₀ z * (z : ℂ) ^ (2 : ℕ) - (12 * Complex.I) / π * (z : ℂ) * φ₂' z -
             36 / (π ^ 2) * φ₄' z := by
     simp [pow_two, sub_eq_add_neg, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-    field_simp [hz, hz2, hπ]
-  simpa [hsimp] using hmul
+    field_simp [hz, hπ]
+  simpa [hsimp] using
+    congrArg (fun w : ℂ => w * (z : ℂ) ^ (2 : ℕ)) (φ₀_S_transform z)
 
 end

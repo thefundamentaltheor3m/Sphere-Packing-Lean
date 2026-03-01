@@ -161,11 +161,8 @@ The coefficient appearing in the exponent when rewriting `g r t` as
 
 /-- Continuity of `coeff`. -/
 public lemma continuous_coeff : Continuous coeff := by
-  have hsub : Continuous fun t : ℝ ↦ ((t : ℂ) - 1) :=
-    Complex.continuous_ofReal.sub continuous_const
-  have hmul : Continuous fun t : ℝ ↦ (π * I : ℂ) * (((t : ℂ) - 1)) :=
-    continuous_const.mul hsub
-  simpa [coeff] using (continuous_const.add hmul)
+  simpa [coeff] using
+    (continuous_const.add (continuous_const.mul (Complex.continuous_ofReal.sub continuous_const)))
 
 /-- A convenient expansion of `coeff t` as a sum. -/
 public lemma coeff_eq_sum (t : ℝ) :
@@ -183,10 +180,7 @@ public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
   have ht1 : t ≤ 1 := le_of_lt ht.2
   have hsub : ‖(t : ℂ) - 1‖ ≤ 1 := by
     have habs : |t - 1| ≤ 1 := by
-      have habs : |t - 1| = 1 - t := by
-        simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-          abs_of_nonpos (sub_nonpos.mpr ht1)
-      simpa [habs] using sub_le_self (1 : ℝ) ht0
+      grind only [= mem_Ioo, = abs.eq_1, = max_def]
     have hnorm : ‖(t : ℂ) - 1‖ = |t - 1| := by
       simpa [Real.norm_eq_abs] using (Complex.norm_real (t - 1))
     simpa [hnorm] using habs
@@ -263,9 +257,8 @@ lemma iteratedDeriv_I₂'_eq_integral_gN (n : ℕ) :
 
 lemma iteratedDeriv_bound (n : ℕ) :
     ∃ C₁ > 0, ∀ r : ℝ, ‖iteratedDeriv n I₂' r‖ ≤ C₁ * rexp (-π * r) := by
-  simpa using (iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul
-    (I := I₂') (coeff := coeff) (g := g) (n := n) g_norm_bound_uniform coeff_norm_le
-    (by simpa [gN] using (iteratedDeriv_I₂'_eq_integral_gN (n := n))))
+  simpa using iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul (n := n) g_norm_bound_uniform
+    coeff_norm_le (by simpa [gN] using iteratedDeriv_I₂'_eq_integral_gN (n := n))
 
 /--
 Schwartz-style decay estimate for `I₂'`: all iterated derivatives decay faster than any power.
@@ -274,10 +267,9 @@ The prime in the name indicates that this result is about the auxiliary integral
 -/
 public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₂' x‖ ≤ C := by
-  intro k n
-  obtain ⟨C₁, hC₁_pos, hC₁⟩ := iteratedDeriv_bound (n := n)
-  simpa using (MagicFunction.a.IntegralEstimates.decay_of_bounding_uniform_norm_iteratedDeriv
-    (I := I₂') (n := n) ⟨C₁, hC₁_pos, fun x _ => hC₁ x⟩ k)
+  intro k n; rcases iteratedDeriv_bound (n := n) with ⟨C₁, hC₁_pos, hC₁⟩; simpa using
+    (MagicFunction.a.IntegralEstimates.decay_of_bounding_uniform_norm_iteratedDeriv (I := I₂')
+      (n := n) ⟨C₁, hC₁_pos, fun x _ => hC₁ x⟩ k)
 
 end Schwartz_Decay.Higher_iteratedFDerivs
 end I₂

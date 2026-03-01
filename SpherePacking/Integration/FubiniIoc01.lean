@@ -29,12 +29,11 @@ public lemma integral_integral_swap_muIoc01
   calc
     (∫ x : V, ∫ t : ℝ, f x t ∂μIoc01) =
         ∫ t : ℝ, ∫ x : V, f x t ∂(volume : Measure V) ∂μIoc01 := by
-          simpa using
-            (MeasureTheory.integral_integral_swap (μ := (volume : Measure V)) (ν := μIoc01) hint)
+          simpa using (MeasureTheory.integral_integral_swap (μ := volume) (ν := μIoc01) hint)
     _ = ∫ t : ℝ, g t ∂μIoc01 := by
-          refine MeasureTheory.integral_congr_ae ?_
-          refine (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ioc).2 <|
-            Filter.Eventually.of_forall fun t ht => by simp [hfg t ht]
+          refine MeasureTheory.integral_congr_ae <|
+            (ae_restrict_iff' (μ := (volume : Measure ℝ)) measurableSet_Ioc).2 <|
+              Filter.Eventually.of_forall fun t ht => by simp [hfg t ht]
 
 /-- Version of `integral_integral_swap_muIoc01` written with `∫ t in Ioc (0,1], ...`. -/
 public lemma integral_integral_swap_Ioc01

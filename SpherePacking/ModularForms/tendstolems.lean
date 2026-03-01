@@ -1,8 +1,6 @@
 module
-public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.Topology.Instances.Complex
 import Mathlib.Analysis.SpecificLimits.Normed
-public import Mathlib.Topology.EMetricSpace.Paracompact
 
 /-!
 # Tendsto Lemmas
@@ -23,8 +21,8 @@ open Filter TopologicalSpace
 
 /-- If `f : ℤ → ℂ` tends to `x` at `atTop`, then `fun n : ℕ => f n` tends to `x` at `atTop`. -/
 public lemma int_tendsto_nat {f : ℤ → ℂ} {x : ℂ} (hf : Tendsto f atTop (𝓝 x)) :
-    Tendsto (fun n : ℕ => f n) atTop (𝓝 x) := by
-  exact hf.comp tendsto_natCast_atTop_atTop
+    Tendsto (fun n : ℕ => f n) atTop (𝓝 x) :=
+  hf.comp tendsto_natCast_atTop_atTop
 
 /-- If `fun n : ℕ+ => f n` tends to `x`, then `f` tends to `x` (viewing `ℕ+` as cofinal in `ℕ`). -/
 public lemma pnat_tendsto_nat {α : Type*} [TopologicalSpace α] (f : ℕ → α) (x : α)

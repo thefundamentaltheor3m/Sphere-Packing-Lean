@@ -122,17 +122,7 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
       have hz_im_ne' : (z.im : ℝ) ≠ 0 := hz_im_ne
       -- `field_simp` is faster here than rewriting powers by hand.
       field_simp [hz_im_ne']
-    have h2 : z.im * ((1 : ℝ) / Complex.normSq (z - 1)) = z.im / Complex.normSq (z - 1) := by
-      simp [div_eq_mul_inv]
-    have hMul' : (1 : ℝ) / (2 * z.im) ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) := by
-      -- Rewrite the left side using `h1.symm`, then apply `hMul`.
-      calc
-        (1 : ℝ) / (2 * z.im) = z.im * ((1 : ℝ) / (2 * z.im ^ 2)) := h1.symm
-        _ ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) := hMul
-    -- Rewrite the right side as a division.
-    calc
-      (1 : ℝ) / (2 * z.im) ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) := hMul'
-      _ = z.im / Complex.normSq (z - 1) := h2
+    lia
   have hhalf : (1 / 2 : ℝ) < (1 : ℝ) / (2 * z.im) := by
     have hpos : 0 < 2 * z.im := by linarith [hz_im_pos]
     have hlt : 2 * z.im < 2 := by nlinarith [hz_im_lt1]
@@ -191,12 +181,7 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
   have hpow_small' : (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M < ε := by
     have habs : |(C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M| < ε := by
       simpa [Real.dist_eq] using hpow_small
-    have hnonneg :
-        0 ≤ (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M := by
-      have hdist_nonneg : 0 ≤ dist z (1 : ℂ) := dist_nonneg
-      have hpow_nonneg : 0 ≤ (dist z (1 : ℂ)) ^ (2 : ℕ) := pow_nonneg hdist_nonneg _
-      exact mul_nonneg (mul_nonneg hC₀_pos.le hpow_nonneg) (le_of_lt hMpos)
-    simpa [abs_of_nonneg hnonneg] using habs
+    exact lt_of_abs_lt habs
   have : ‖MagicFunction.a.ComplexIntegrands.Φ₃' r z‖ < ε := lt_of_le_of_lt hmain hpow_small'
   simpa [dist_eq_norm] using this
 

@@ -99,27 +99,7 @@ lemma a'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (a' u
                 ((aR - bR + cR - dR : ℝ) : ℂ) := by
           -- Rewrite by `ha hb hc hd`, then collapse using `ofReal_add/ofReal_sub`.
           -- (We do this explicitly to avoid `simp` recursion issues.)
-          have h1 : (aR : ℂ) - (bR : ℂ) = ((aR - bR : ℝ) : ℂ) := by
-            simp [Complex.ofReal_sub]
-          have h2 : ((aR - bR : ℝ) : ℂ) + (cR : ℂ) = ((aR - bR + cR : ℝ) : ℂ) := by
-            simp [Complex.ofReal_add]
-          have h3 :
-              ((aR - bR + cR : ℝ) : ℂ) - (dR : ℂ) =
-                ((aR - bR + cR - dR : ℝ) : ℂ) := by
-            simp [sub_eq_add_neg, add_left_comm, add_comm]
-          -- Put everything together.
-          calc
-            (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-                    ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-                    ((8640 / π : ℝ) : ℂ) * t -
-                    ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) =
-                (aR : ℂ) - (bR : ℂ) + (cR : ℂ) - (dR : ℂ) := by
-                  rw [ha, hb, hc, hd]
-            _ = ((aR - bR : ℝ) : ℂ) + (cR : ℂ) - (dR : ℂ) := by
-                  rw [h1]
-            _ = ((aR - bR + cR : ℝ) : ℂ) - (dR : ℂ) := by
-                  simp [sub_eq_add_neg, add_assoc]
-            _ = ((aR - bR + cR - dR : ℝ) : ℂ) := h3
+          simp_all
         -- Finish by unfolding `innerR`.
         assumption
       have hmul :
@@ -176,15 +156,7 @@ lemma a'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (a' u
   rw [hsin]
   have hsinIm : (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ).im = 0 := by
     exact Complex.ofReal_im ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ)
-  have hprodIm : ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E).im = 0 := by
-    rw [Complex.mul_im]
-    rw [hEim, hsinIm]
-    simp
-  have : ((4 * (Complex.I : ℂ)) * ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E)).re = 0 := by
-    rw [Complex.mul_re]
-    rw [hprodIm]
-    simp
-  simpa [mul_assoc] using this
+  simp_all
 
 lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u).re = 0 := by
   have hEq := IntegralReps.bRadial_eq_another_integral_main (u := u) hu hu2
@@ -217,20 +189,7 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
             ((innerR t : ℝ) : ℂ) := by
         -- Everything is `ofReal` after replacing `ψI'` by its real part.
         dsimp [innerR]
-        rw [hψ]
-        -- Now both sides are casts from `ℝ`.
-        have hsub1 :
-            ((ψI' ((Complex.I : ℂ) * (t : ℂ))).re : ℂ) - (144 : ℂ) =
-              (((ψI' ((Complex.I : ℂ) * (t : ℂ))).re - (144 : ℝ) : ℝ) : ℂ) := by
-          simp
-        have hsub2 :
-            (((ψI' ((Complex.I : ℂ) * (t : ℂ))).re - (144 : ℝ) : ℝ) : ℂ) -
-                Real.exp (2 * π * t) =
-              ((((ψI' ((Complex.I : ℂ) * (t : ℂ))).re - (144 : ℝ)) -
-                      Real.exp (2 * π * t) : ℝ) : ℂ) := by
-          simp
-        -- Assemble.
-        norm_num
+        simpa
       calc
         ((ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - Real.exp (2 * π * t)) *
               Real.exp (-π * u * t)) =
@@ -261,8 +220,8 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
         (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) := by
     simp [Complex.ofReal_pow]
   rw [hsin]
-  have hsinIm : (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ).im = 0 := by
-    exact Complex.ofReal_im ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ)
+  have hsinIm : (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ).im = 0 :=
+    Complex.ofReal_im ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ)
   have hprodIm : ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E).im = 0 := by
     rw [Complex.mul_im]
     rw [hEim, hsinIm]

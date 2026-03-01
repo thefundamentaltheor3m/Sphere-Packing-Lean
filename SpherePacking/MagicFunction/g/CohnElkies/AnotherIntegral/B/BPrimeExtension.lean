@@ -120,8 +120,8 @@ private lemma norm_pi_mul_I_mul_le (z : ℂ) {N : ℝ} (hz : ‖z‖ ≤ N) :
   calc
     ‖(π : ℂ) * (Complex.I : ℂ) * z‖ = ‖(π : ℂ) * (Complex.I : ℂ)‖ * ‖z‖ := by
       simp [mul_assoc]
-    _ ≤ ‖(π : ℂ) * (Complex.I : ℂ)‖ * N := by
-      exact mul_le_mul_of_nonneg_left hz (norm_nonneg ((π : ℂ) * (Complex.I : ℂ)))
+    _ ≤ ‖(π : ℂ) * (Complex.I : ℂ)‖ * N :=
+      mul_le_mul_of_nonneg_left hz (norm_nonneg ((π : ℂ) * (Complex.I : ℂ)))
     _ = N * π := by
       simpa [mul_comm, mul_assoc] using congrArg (fun r : ℝ => r * N) norm_pi_mul_I
 
@@ -255,7 +255,6 @@ lemma J₁'C_differentiable : Differentiable ℂ J₁'C := by
     simpa [base] using hMψ t ht
   have hk_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k t‖ ≤ 2 * π := by
     intro t ht
-    have htIcc : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)
     have hz : ‖z₁' t‖ ≤ 2 := norm_z₁'_le_two t
     simpa [k, mul_assoc, mul_left_comm, mul_comm] using
       (norm_pi_mul_I_mul_le (z := z₁' t) (N := (2 : ℝ)) hz)
@@ -421,10 +420,9 @@ lemma J₅'C_differentiable : Differentiable ℂ J₅'C := by
       _ = 2 * Mψ := by simp
   have hk_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k t‖ ≤ π := by
     intro t ht
-    have htIcc : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)
-    have hz : ‖z₅' t‖ ≤ 1 := norm_z₅'_le t htIcc
     simpa [k, mul_assoc, mul_left_comm, mul_comm] using
-      (norm_pi_mul_I_mul_le (z := z₅' t) (N := (1 : ℝ)) hz)
+      (norm_pi_mul_I_mul_le (z := z₅' t) (N := (1 : ℝ))
+        (norm_z₅'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))))
   have hd :=
     differentiableAt_intervalIntegral_mul_exp (u0 := u0) (Cbase := (2 * Mψ)) (K := π)
       hbase_cont hk_cont hbase_bound hk_bound
@@ -461,10 +459,7 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
   have hcont_base : ContinuousOn base (Set.Ici (1 : ℝ)) := by
     simpa [base] using (continuousOn_const.mul hcont_res)
   have hk_cont : ContinuousOn k (Set.Ici (1 : ℝ)) := by
-    have : Continuous k := by
-      dsimp [k]
-      exact continuous_const.mul Complex.continuous_ofReal
-    exact this.continuousOn
+    fun_prop
   have hF_meas :
       ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) μ := by
     refine Filter.Eventually.of_forall (fun u => ?_)
@@ -528,8 +523,8 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
       _ ≤ Mψ * Real.exp (-b * t) := by
         -- Use the bounds on `base` and the exact expression for `‖exp‖`.
         have :
-            ‖base t‖ * ‖Complex.exp (u0 * k t)‖ ≤ Mψ * ‖Complex.exp (u0 * k t)‖ := by
-          exact mul_le_mul_of_nonneg_right hb0 (norm_nonneg _)
+            ‖base t‖ * ‖Complex.exp (u0 * k t)‖ ≤ Mψ * ‖Complex.exp (u0 * k t)‖ :=
+          mul_le_mul_of_nonneg_right hb0 (norm_nonneg _)
         simpa [hexp] using this
   -- Uniform bound for `F'` on a ball around `u0`.
   let ε : ℝ := u0.re / 2
@@ -556,13 +551,7 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
     have hu' : ‖u - u0‖ < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hu
     have hre : |u.re - u0.re| ≤ ‖u - u0‖ := by
       simpa using (abs_re_le_norm (u - u0))
-    have hre_lt : |u.re - u0.re| < ε := lt_of_le_of_lt hre hu'
-    have hlt : -ε < u.re - u0.re := (abs_lt.1 hre_lt).1
-    have hsub : u0.re - ε < u.re := by linarith [hlt]
-    have hhalf : u0.re / 2 < u.re := by
-      have : u0.re - u0.re / 2 < u.re := by simpa [ε] using hsub
-      nlinarith
-    exact le_of_lt hhalf
+    grind only [= abs.eq_1, = max_def]
   have h_bound :
       ∀ᵐ t ∂μ, ∀ u ∈ Metric.ball u0 ε, ‖F' u t‖ ≤ bound t := by
     refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall ?_
@@ -598,8 +587,8 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
         have h1 :
             ‖k t‖ * ‖Complex.exp (u * k t)‖ ≤ (Real.pi * t) * Real.exp (-b * t) := by
           -- bound `‖k t‖` exactly and `‖exp‖` by `hexp_le`.
-          have h2 : ‖k t‖ ≤ Real.pi * t := by
-            exact le_of_eq hk_norm
+          have h2 : ‖k t‖ ≤ Real.pi * t :=
+            le_of_eq hk_norm
           exact mul_le_mul h2 hexp_le (norm_nonneg _) (mul_nonneg Real.pi_pos.le ht0)
         have h2 :
             ‖base t‖ * (‖k t‖ * ‖Complex.exp (u * k t)‖) ≤

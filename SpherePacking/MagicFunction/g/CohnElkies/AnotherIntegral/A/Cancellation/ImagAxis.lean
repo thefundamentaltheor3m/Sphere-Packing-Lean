@@ -339,13 +339,7 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
         simpa using add_pow_le (a := (n : ℝ)) (b := (2 : ℝ)) (by positivity) (by positivity) 5
       have hn5 : 0 ≤ (n : ℝ) ^ 5 := by positivity
       -- Massage constants (`2^(5-1)=16`, `2^5=32`) and absorb.
-      have hpow4 : (2 ^ 4 : ℝ) = 16 := by norm_num
-      have hpow5 : (2 ^ 5 : ℝ) = 32 := by norm_num
-      have : ((n : ℝ) + (2 : ℝ)) ^ 5 ≤ (16 : ℝ) * ((n : ℝ) ^ 5 + (32 : ℝ)) := by
-        simpa [hpow4, hpow5] using hbase
-      have : ((n : ℝ) + (2 : ℝ)) ^ 5 ≤ (512 : ℝ) * ((n : ℝ) ^ 5 + 1) := by
-        nlinarith [this, hn5]
-      simpa [Nat.cast_add, pow_succ] using this
+      grind only
     -- Multiply by `q1^n ≥ 0`.
     have hq1n : 0 ≤ q1 ^ n := pow_nonneg hq1_nonneg _
     calc
@@ -384,13 +378,7 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
           ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ = ((n + 2) * (σ 3 (n + 2)) : ℝ) := by
         have hn2 : ‖(n + 2 : ℂ)‖ = (n + 2 : ℝ) := by
           simpa using (Complex.norm_natCast (n + 2))
-        have hs : ‖(σ 3 (n + 2) : ℂ)‖ = (σ 3 (n + 2) : ℝ) := by
-          simp
-        calc
-          ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ =
-              ‖(n + 2 : ℂ)‖ * ‖(σ 3 (n + 2) : ℂ)‖ := by simp
-          _ = (n + 2 : ℝ) * (σ 3 (n + 2) : ℝ) := by simp [hn2]
-          _ = ((n + 2) * (σ 3 (n + 2)) : ℝ) := by simp
+        simp_all
       have hcast : ((n + 2) * (σ 3 (n + 2)) : ℝ) ≤ ((n + 2) ^ 5 : ℝ) := by
         exact_mod_cast hcoeff_nat
       -- Rewrite the left-hand side using `hnorm`, then cast the RHS exponent.
@@ -491,13 +479,7 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
             ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ = ((n + 1) * (σ 3 (n + 1)) : ℝ) := by
           have hn1 : ‖(n + 1 : ℂ)‖ = (n + 1 : ℝ) := by
             simpa using (Complex.norm_natCast (n + 1))
-          have hs : ‖(σ 3 (n + 1) : ℂ)‖ = (σ 3 (n + 1) : ℝ) := by
-            simp
-          calc
-            ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ =
-                ‖(n + 1 : ℂ)‖ * ‖(σ 3 (n + 1) : ℂ)‖ := by simp
-            _ = (n + 1 : ℝ) * (σ 3 (n + 1) : ℝ) := by simp [hn1]
-            _ = ((n + 1) * (σ 3 (n + 1)) : ℝ) := by simp
+          simp_all
         have hcast' : ((n + 1) * (σ 3 (n + 1)) : ℝ) ≤ ((n + 1) ^ 5 : ℝ) := by
           exact_mod_cast hcoeff_nat
         have hmain : ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ ≤ ((n + 1) ^ 5 : ℝ) := by
@@ -539,16 +521,7 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
             simpa [Finset.range_one, add_comm, add_left_comm, add_assoc] using
               (hg_summ.sum_add_tsum_nat_add 1).symm
       _ = ∑' n : ℕ, f n := by
-            refine tsum_congr ?_
-            intro n
-            have hn : n + 1 + 1 = n + 2 := by omega
-            have harg :
-                (Complex.I : ℂ) * (↑π * ((↑n + (1 + 1)) * (2 * (z : ℂ)))) =
-                  (Complex.I : ℂ) * (↑π * (2 * ((↑n + 2) * (z : ℂ)))) := by
-              ring_nf
-            simp [g, f, hn, harg, add_left_comm, add_comm,
-              mul_assoc, mul_left_comm, mul_comm]
-            norm_num
+            grind only
   -- Now bound the tail series using the majorant `b`.
   have hnorm_summ : Summable (fun n : ℕ => ‖f n‖) := by
     have hsumMajor : Summable (fun n : ℕ => q ^ (2 : ℕ) * b n) := hb_summ.mul_left (q ^ (2 : ℕ))

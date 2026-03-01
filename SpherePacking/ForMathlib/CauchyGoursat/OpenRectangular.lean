@@ -57,8 +57,7 @@ lemma tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero
       intro x hx'
       exact le_of_lt <| hM (x + m * I) (by simpa using hm)
   _ = (1 / 2) * ε := by
-      have hx0 : (|x₂ - x₁| : ℝ) ≠ 0 := ne_of_gt hx
-      field_simp [mul_assoc, hx0]
+      field_simp [mul_assoc, (show (|x₂ - x₁| : ℝ) ≠ 0 from ne_of_gt hx)]
   _ < ε := by linarith
 
 end Tendsto_Zero
@@ -89,10 +88,9 @@ lemma hzero (hcont : ContinuousOn f ([[x₁, x₂]] ×ℂ (Ici y))) (s : Set ℂ
         refine hdiff z ⟨?_, hzns⟩
         rw [mem_reProdIm] at hz ⊢
         refine ⟨hz.1, ?_⟩
-        have hz_im : y < z.im := by
+        exact (by
           have hz_im := (mem_Ioo.1 hz.2).1
-          simpa [min_eq_left hm] using hz_im
-        exact hz_im))
+          simpa [min_eq_left hm] using hz_im)))
 
 /-- A direct consequence of the **Cauchy-Goursat Theorem for rectangles**: given the conditions of
 the Cauchy-Goursat Theorem between two vertical lines in the Complex plane, fixing some `y`, the
@@ -252,10 +250,7 @@ public theorem rect_deform_of_tendsto_top {f : ℂ → E} {x₁ x₂ y : ℝ}
                 (I • ∫ t in y..m, f ((x₁ : ℂ) + (t : ℂ) * I))) =ᶠ[atTop]
         fun m : ℝ => ∫ x in x₁..x₂, f ((x : ℂ) + (m : ℂ) * I) := by
     filter_upwards [eventually_ge_atTop y] with m hm
-    have h0 := hrect m hm
-    have h1 :=
-      congrArg (fun z : E => z + ∫ x in x₁..x₂, f ((x : ℂ) + (m : ℂ) * I)) h0
-    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
+    grind only
   have hF0 :
       Tendsto
           (fun m : ℝ =>
@@ -283,12 +278,7 @@ public theorem rect_deform_of_tendsto_top {f : ℂ → E} {x₁ x₂ y : ℝ}
     have hV₁' := hV₁.const_smul I
     have hV₂' := hV₂.const_smul I
     exact (tendsto_const_nhds.add hV₂').sub hV₁'
-  have :
-      (∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) +
-            (I • ∫ t in Set.Ioi y, f ((x₂ : ℂ) + (t : ℂ) * I)) -
-              (I • ∫ t in Set.Ioi y, f ((x₁ : ℂ) + (t : ℂ) * I)) = (0 : E) :=
-    tendsto_nhds_unique hFlim hF0
-  simpa using this
+  simpa using tendsto_nhds_unique hFlim hF0
 
 end Contour_Deformation_Tendsto_Top
 

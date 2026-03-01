@@ -45,8 +45,7 @@ section Helpers
 
 namespace UpperHalfPlane
 
-theorem range_upperHalfPlane_coe : range UpperHalfPlane.coe = ℍ₀ := by
-  simp
+theorem range_upperHalfPlane_coe : range UpperHalfPlane.coe = ℍ₀ := range_coe
 
 theorem zero_not_mem_upperHalfPlaneSet : (0 : ℂ) ∉ ℍ₀ := by simp
 
@@ -77,10 +76,9 @@ private lemma differentiableOn_E₂_E₄_E₆_Delta :
       DifferentiableOn ℂ ((E₄ : ℍ → ℂ) ∘ UpperHalfPlane.ofComplex) ℍ₀ ∧
         DifferentiableOn ℂ ((E₆ : ℍ → ℂ) ∘ UpperHalfPlane.ofComplex) ℍ₀ ∧
           DifferentiableOn ℂ ((Δ : ℍ → ℂ) ∘ UpperHalfPlane.ofComplex) ℍ₀ := by
-  refine ⟨(UpperHalfPlane.mdifferentiable_iff (f := E₂)).1 E₂_holo', ?_⟩
-  refine ⟨(UpperHalfPlane.mdifferentiable_iff (f := (E₄ : ℍ → ℂ))).1 E₄.holo', ?_⟩
-  refine ⟨(UpperHalfPlane.mdifferentiable_iff (f := (E₆ : ℍ → ℂ))).1 E₆.holo', ?_⟩
-  exact differentiableOn_Delta_ofComplex
+  refine ⟨(mdifferentiable_iff (f := E₂)).1 E₂_holo', ?_⟩
+  refine ⟨(mdifferentiable_iff (f := (E₄ : ℍ → ℂ))).1 E₄.holo', ?_⟩
+  exact ⟨(mdifferentiable_iff (f := (E₆ : ℍ → ℂ))).1 E₆.holo', differentiableOn_Delta_ofComplex⟩
 
 private lemma mapsTo_smulAux' (g : GL (Fin 2) ℝ) : MapsTo (UpperHalfPlane.smulAux' g) ℍ₀ ℍ₀ := by
   intro z hz

@@ -50,10 +50,7 @@ public theorem φ₀_S_transform (z : ℍ) :
     simp [div_eq_mul_inv, hA, A_E]
     ring
   rw [h_numer]
-  have h_sq : (z ^ 6 * (A + 6 * E₄ z / (π * Complex.I * z))) ^ 2 =
-              z ^ 12 * (A + 6 * E₄ z / (π * Complex.I * z)) ^ 2 := by
-    rw [mul_pow, sq (z ^ 6 : ℂ), ← pow_add]
-  rw [h_sq]
+  rw [mul_pow, sq (z ^ 6 : ℂ), ← pow_add]
   have h_div : z ^ 12 * (A + 6 * E₄ z / (π * Complex.I * z)) ^ 2 / (z ^ 12 * Δ z) =
                (A + 6 * E₄ z / (π * Complex.I * z)) ^ 2 / Δ z := by
     rw [mul_comm (z ^ 12 : ℂ) (Δ z)]; field_simp

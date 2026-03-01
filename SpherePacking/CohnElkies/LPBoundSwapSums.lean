@@ -90,23 +90,7 @@ public lemma calc_steps_swap_sums (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
           (Complex.norm_exp_I_mul_ofReal (x := 2 * π *
             ⟪(x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)),
               (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))
-      have hbound : ‖c * a m * e x y m‖ ≤ ‖c‖ * ‖(𝓕 f) (m : EuclideanSpace ℝ (Fin d))‖ := by
-        have ha : ‖a m‖ = ‖(𝓕 f) (m : EuclideanSpace ℝ (Fin d))‖ := by
-          simpa using congrArg norm (hFourierReal m).symm
-        have hEq : ‖c * a m * e x y m‖ = ‖c‖ * ‖(𝓕 f) (m : EuclideanSpace ℝ (Fin d))‖ := by
-          have h1 : ‖c * a m * e x y m‖ = ‖c * a m‖ * ‖e x y m‖ :=
-            norm_mul (c * a m) (e x y m)
-          have h2 : ‖c * a m‖ * ‖e x y m‖ = (‖c‖ * ‖a m‖) * ‖e x y m‖ :=
-            congrArg (fun t : ℝ => t * ‖e x y m‖) (norm_mul c (a m))
-          have h3 : (‖c‖ * ‖a m‖) * ‖e x y m‖ = ‖c‖ * ‖a m‖ * ‖e x y m‖ := rfl
-          have h4 : ‖c‖ * ‖a m‖ * ‖e x y m‖ = ‖c‖ * ‖a m‖ := by
-            rw [hnexp]
-            exact mul_one (‖c‖ * ‖a m‖)
-          have h5 : ‖c‖ * ‖a m‖ = ‖c‖ * ‖(𝓕 f) (m : EuclideanSpace ℝ (Fin d))‖ :=
-            congrArg (fun t : ℝ => ‖c‖ * t) ha
-          exact h1.trans (h2.trans (h3.trans (h4.trans h5)))
-        exact hEq.le
-      exact hbound
+      simp_all
   -- Reduce the goal to the `c,a,e`-form, then commute the finite sums with the `m`-sum.
   have hmain :
       (∑' x : ↑(P.centers ∩ D),
@@ -136,9 +120,7 @@ public lemma calc_steps_swap_sums (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
               c * (a m * e x y m) := by
         intro y _
         simpa [mul_assoc] using hSummable_c_mul_a_mul_e x y
-      simpa using
-        (Summable.tsum_finsetSum (s := (Finset.univ : Finset ↑(P.centers ∩ D)))
-              (f := fun y m => c * (a m * e x y m)) hy').symm
+      exact Eq.symm (Summable.tsum_finsetSum hy')
     simp_rw [hy_comm]
     -- Commute `x` with `m`.
     have hx_comm :
@@ -161,9 +143,7 @@ public lemma calc_steps_swap_sums (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
           intro y _
           simpa [mul_assoc] using hSummable_c_mul_a_mul_e x y
         simpa using this
-      simpa using
-        (Summable.tsum_finsetSum (s := (Finset.univ : Finset ↑(P.centers ∩ D)))
-              (f := fun x m => ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m)) hx').symm
+      exact Eq.symm (Summable.tsum_finsetSum hx')
     simp_rw [hx_comm]
     -- Pull constants out of the finite sums pointwise in `m`.
     refine tsum_congr ?_
@@ -171,20 +151,14 @@ public lemma calc_steps_swap_sums (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
     have hy_factor :
         ∀ x : ↑(P.centers ∩ D),
           (∑ y : ↑(P.centers ∩ D), (c * a m) * e x y m) =
-            (c * a m) * (∑ y : ↑(P.centers ∩ D), e x y m) := by
-      intro x
-      simpa using
-        (Finset.mul_sum (s := (Finset.univ : Finset ↑(P.centers ∩ D)))
-              (a := c * a m) (f := fun y => e x y m)).symm
+            (c * a m) * (∑ y : ↑(P.centers ∩ D), e x y m) :=
+      fun x => Eq.symm (Finset.mul_sum Finset.univ (fun i => e x i m) (c * a m))
     have hx_factor :
         (∑ x : ↑(P.centers ∩ D),
               (c * a m) * (∑ y : ↑(P.centers ∩ D), e x y m)) =
             (c * a m) *
-              (∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), e x y m) := by
-      simpa using
-        (Finset.mul_sum (s := (Finset.univ : Finset ↑(P.centers ∩ D)))
-              (a := c * a m)
-              (f := fun x => ∑ y : ↑(P.centers ∩ D), e x y m)).symm
+              (∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), e x y m) :=
+      Eq.symm (Finset.mul_sum Finset.univ (fun i => ∑ y, e i y m) (c * a m))
     calc
       (∑ x : ↑(P.centers ∩ D),
             ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m))

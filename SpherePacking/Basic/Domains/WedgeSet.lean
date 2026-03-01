@@ -48,56 +48,42 @@ public lemma isOpen_wedgeSet : IsOpen wedgeSet := by
 
 /-- The wedge set is convex. -/
 public lemma convex_wedgeSet : Convex ℝ wedgeSet := by
-  let A : Set ℂ := {z : ℂ | (0 : ℝ) < z.im}
-  let B : Set ℂ := {z : ℂ | z.re - z.im < (1 : ℝ)}
-  let C : Set ℂ := {z : ℂ | (1 : ℝ) < z.re + z.im}
-  have hlin_re_sub_im : IsLinearMap ℝ (fun z : ℂ => z.re - z.im) := by
-    refine .mk ?_ ?_
-    · intro z w
-      simp [sub_eq_add_neg, add_assoc, add_comm, add_left_comm]
-    · intro c z
-      simp [sub_eq_add_neg, mul_add, mul_comm]
-  have hlin_re_add_im : IsLinearMap ℝ (fun z : ℂ => z.re + z.im) := by
-    refine .mk ?_ ?_
-    · intro z w
-      simp [add_comm, add_left_comm]
-    · intro c z
-      simp [mul_add, mul_comm]
-  have hEq : wedgeSet = A ∩ (B ∩ C) := by
+  have hEq :
+      wedgeSet =
+        {z : ℂ | (0 : ℝ) < z.im} ∩
+          ({z : ℂ | z.re - z.im < (1 : ℝ)} ∩ {z : ℂ | (1 : ℝ) < z.re + z.im}) := by
     ext z
     constructor
     · intro hz
       refine ⟨hz.1, ?_⟩
       refine ⟨?_, ?_⟩
-      · dsimp [B]
+      · change z.re - z.im < (1 : ℝ)
         linarith [hz.2.1]
-      · dsimp [C]
+      · change (1 : ℝ) < z.re + z.im
         linarith [hz.2.2]
     · rintro ⟨hA, hBC⟩
       rcases hBC with ⟨hB, hC⟩
-      refine ⟨hA, ?_, ?_⟩
-      · dsimp [B] at hB
-        linarith [hB]
-      · dsimp [C] at hC
-        linarith [hC]
-  have hAconv : Convex ℝ A := by
-    simpa [A] using (convex_halfSpace_gt (f := fun z : ℂ => z.im) (.mk add_im smul_im) (0 : ℝ))
-  have hBconv : Convex ℝ B := by
-    have : Convex ℝ {z : ℂ | z.re - z.im < (1 : ℝ)} :=
-      convex_halfSpace_lt (f := fun z : ℂ => z.re - z.im) hlin_re_sub_im (1 : ℝ)
-    simpa [B] using this
-  have hCconv : Convex ℝ C := by
-    have : Convex ℝ {z : ℂ | (1 : ℝ) < z.re + z.im} :=
-      convex_halfSpace_gt (f := fun z : ℂ => z.re + z.im) hlin_re_add_im (1 : ℝ)
-    simpa [C] using this
-  simpa [hEq, A, B, C] using hAconv.inter (hBconv.inter hCconv)
+      have hB' : z.re - z.im < (1 : ℝ) := by simpa using hB
+      have hC' : (1 : ℝ) < z.re + z.im := by simpa using hC
+      refine ⟨hA, ?_, ?_⟩ <;> linarith [hB', hC']
+  have hA : Convex ℝ {z : ℂ | (0 : ℝ) < z.im} := by
+    simpa using (convex_halfSpace_gt (f := fun z : ℂ => z.im) (.mk add_im smul_im) (0 : ℝ))
+  have hB : Convex ℝ {z : ℂ | z.re - z.im < (1 : ℝ)} := by
+    refine convex_halfSpace_lt (f := fun z : ℂ => z.re - z.im) ?_ (1 : ℝ)
+    refine .mk (by intro z w; simp [sub_eq_add_neg, add_assoc, add_left_comm, add_comm]) ?_
+    intro c z; simp [sub_eq_add_neg, mul_add, mul_comm]
+  have hC : Convex ℝ {z : ℂ | (1 : ℝ) < z.re + z.im} := by
+    refine convex_halfSpace_gt (f := fun z : ℂ => z.re + z.im) ?_ (1 : ℝ)
+    refine .mk (by intro z w; simp [add_left_comm, add_comm]) ?_
+    intro c z; simp [mul_add, mul_comm]
+  simpa [hEq, Set.inter_assoc, Set.inter_left_comm, Set.inter_comm] using hA.inter (hB.inter hC)
 
 public lemma wedgeSet_subset_upperHalfPlaneSet :
     wedgeSet ⊆ UpperHalfPlane.upperHalfPlaneSet := fun _ hz => hz.1
 
 private lemma closure_wedgeSet_subset_im_nonneg :
-    closure wedgeSet ⊆ {z : ℂ | 0 ≤ z.im} := by
-  exact closure_minimal (fun z hz => le_of_lt hz.1) (isClosed_le continuous_const continuous_im)
+    closure wedgeSet ⊆ {z : ℂ | 0 ≤ z.im} :=
+  closure_minimal (fun _ hz => le_of_lt hz.1) (isClosed_le continuous_const continuous_im)
 
 /-- A point in `closure wedgeSet` satisfies `|z.re - 1| ≤ z.im`. -/
 public lemma closure_wedgeSet_subset_abs_re_sub_one_le_im :
@@ -110,17 +96,16 @@ public lemma closure_wedgeSet_subset_abs_re_sub_one_le_im :
 public lemma mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one
     {z : ℂ} (hz : z ∈ closure wedgeSet) (hne : z ≠ (1 : ℂ)) :
     z ∈ UpperHalfPlane.upperHalfPlaneSet := by
-  have him_nonneg : 0 ≤ z.im := closure_wedgeSet_subset_im_nonneg hz
-  have habs : |z.re - 1| ≤ z.im := closure_wedgeSet_subset_abs_re_sub_one_le_im hz
-  have hzIm_ne : z.im ≠ 0 := by
+  have hzIm_pos : 0 < z.im := by
+    refine lt_of_le_of_ne (closure_wedgeSet_subset_im_nonneg hz) ?_
     intro hzIm
     apply hne
     have hre : z.re = 1 := by
       have habs0 : |z.re - 1| = 0 :=
-        le_antisymm (by simpa [hzIm] using habs) (abs_nonneg _)
+        le_antisymm (by simpa [hzIm] using closure_wedgeSet_subset_abs_re_sub_one_le_im hz)
+          (abs_nonneg _)
       exact sub_eq_zero.mp (abs_eq_zero.mp habs0)
-    apply Complex.ext <;> simp [hre, hzIm]
-  have hzIm_pos : 0 < z.im := lt_of_le_of_ne him_nonneg (Ne.symm hzIm_ne)
+    exact Complex.ext (by simp [hre]) (by simp [hzIm])
   simpa [UpperHalfPlane.upperHalfPlaneSet] using hzIm_pos
 
 /-- Membership in `wedgeSet` for the vertical line segment from `1` to `1 + I`. -/

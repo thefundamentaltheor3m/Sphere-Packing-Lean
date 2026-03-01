@@ -141,10 +141,10 @@ public theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt �
 
 /-! Auxiliary Serre-derivative computations used for the MLDEs below. -/
 
-lemma serre_D_smulC (k c : ℂ) (F : UpperHalfPlane → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
+lemma serre_D_smulC (k c : ℂ) (F : UpperHalfPlane → ℂ) :
     serre_D k (c • F) = c • (serre_D k F) := by
   ext z
-  simp [serre_D, D_smul c F hF, smul_eq_mul, mul_assoc]
+  simp [serre_D, D_smul c F, smul_eq_mul, mul_assoc]
   ring
 
 lemma serre_D_addC (k : ℂ) (F G : UpperHalfPlane → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
@@ -245,7 +245,7 @@ public theorem MLDE_F :
   -- Compute `∂₁₂(∂₁₀F)` and reduce to a pointwise polynomial identity.
   rw [hSerre10]
   -- Pull the scalar out.
-  rw [serre_D_smulC (k := (12 : ℂ)) (c := ((-5 : ℂ) * 6⁻¹)) (A * B) hAB_holo]
+  rw [serre_D_smulC (k := (12 : ℂ)) (c := ((-5 : ℂ) * 6⁻¹)) (A * B)]
   -- Expand `serre_D 12 (A * B)` via the product rule.
   rw [hAB]
   -- Rewrite `serre_D 5 A` and `serre_D 7 B` using the auxiliary identities.
@@ -362,9 +362,9 @@ public theorem MLDE_G :
     -- Reassociate for convenience.
     simp only [one_div]
     -- Pull scalars out of `serre_D` and substitute the computed monomial identities.
-    rw [serre_D_smulC (k := (4 : ℂ)) (c := (2 : ℂ)) (H₂ ^ 2) hH2_sq]
-    rw [serre_D_smulC (k := (4 : ℂ)) (c := (5 : ℂ)) (H₂ * H₄) hH2_mul_H4]
-    rw [serre_D_smulC (k := (4 : ℂ)) (c := (5 : ℂ)) (H₄ ^ 2) hH4_sq]
+    rw [serre_D_smulC (k := (4 : ℂ)) (c := (2 : ℂ)) (H₂ ^ 2)]
+    rw [serre_D_smulC (k := (4 : ℂ)) (c := (5 : ℂ)) (H₂ * H₄)]
+    rw [serre_D_smulC (k := (4 : ℂ)) (c := (5 : ℂ)) (H₄ ^ 2)]
     rw [hS4_H2_sq, hS4_H2_mul_H4, hS4_H4_sq]
     ext z
     simp [smul_eq_mul, pow_succ, mul_assoc, mul_comm, Pi.mul_apply, Pi.add_apply, Pi.sub_apply]
@@ -454,10 +454,10 @@ public theorem MLDE_G :
     rw [serre_D_addC (k := (12 : ℂ)) (U1 + U2) U3 hU12 hU3]
     rw [serre_D_addC (k := (12 : ℂ)) U1 U2 hU1 hU2]
     -- Pull the scalar coefficients out.
-    rw [serre_D_smulC (k := (12 : ℂ)) (c := (5 / 3 : ℂ)) (H₂ ^ 6) hH2_pow6]
-    rw [serre_D_smulC (k := (12 : ℂ)) (c := (5 : ℂ)) (H₂ ^ 5 * H₄) hH2pow5_mul_H4]
-    rw [serre_D_smulC (k := (12 : ℂ)) (c := (5 : ℂ)) (H₂ ^ 4 * H₄ ^ 2) hH2pow4_mul_H4sq]
-    rw [serre_D_smulC (k := (12 : ℂ)) (c := (10 / 3 : ℂ)) (H₂ ^ 3 * H₄ ^ 3) hH2cube_mul_H4cube]
+    rw [serre_D_smulC (k := (12 : ℂ)) (c := (5 / 3 : ℂ)) (H₂ ^ 6)]
+    rw [serre_D_smulC (k := (12 : ℂ)) (c := (5 : ℂ)) (H₂ ^ 5 * H₄)]
+    rw [serre_D_smulC (k := (12 : ℂ)) (c := (5 : ℂ)) (H₂ ^ 4 * H₄ ^ 2)]
+    rw [serre_D_smulC (k := (12 : ℂ)) (c := (10 / 3 : ℂ)) (H₂ ^ 3 * H₄ ^ 3)]
   -- Substitute the explicit monomial identities.
   rw [hS12_S10_G, hS12_H2_pow6, hS12_H2pow5_mul_H4, hS12_H2pow4_mul_H4sq, hS12_H2cube_mul_H4cube]
   -- Now everything is a polynomial identity in `H₂` and `H₄`, plus the standard level-1 objects.

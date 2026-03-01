@@ -38,15 +38,15 @@ private lemma curveIntegral_segment_eq_intervalIntegral (a b : ℂ) (f : ℂ →
 public lemma curveIntegral_segment_z₃ (f : ℂ → ℂ) :
     (∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I), scalarOneForm f z) =
       ∫ t in (0 : ℝ)..1, (Complex.I : ℂ) * f (z₃' t) := by
-    simpa using curveIntegral_segment_eq_intervalIntegral (1 : ℂ) ((1 : ℂ) + Complex.I) f z₃'
-      lineMap_z₃_eq_z₃'
+  simpa using curveIntegral_segment_eq_intervalIntegral (1 : ℂ) ((1 : ℂ) + Complex.I) f z₃'
+    lineMap_z₃_eq_z₃'
 
 /-- Rewrite the segment integral on `1 + I → I` as an interval integral in the parameter `t`. -/
 public lemma curveIntegral_segment_z₄ (f : ℂ → ℂ) :
     (∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I, scalarOneForm f z) =
       ∫ t in (0 : ℝ)..1, (-1 : ℂ) * f (z₄' t) := by
-    simpa using curveIntegral_segment_eq_intervalIntegral ((1 : ℂ) + Complex.I) Complex.I f z₄'
-      lineMap_z₄_eq_z₄'
+  simpa using curveIntegral_segment_eq_intervalIntegral ((1 : ℂ) + Complex.I) Complex.I f z₄'
+    lineMap_z₄_eq_z₄'
 
 end
 

@@ -25,9 +25,7 @@ public lemma exists_bound_pow_mul_exp_neg_mul (k : ℕ) {b : ℝ} (hb : 0 < b) :
   have hA' : ∀ x, A' ≤ x → f x ≤ 1 :=
     fun x hx => le_of_lt <| hA x <| le_trans (le_max_left _ _) hx
   have hcont : Continuous f := by
-    have hlin : Continuous fun x : ℝ ↦ (-b) * x :=
-      (continuous_const.mul continuous_id : Continuous fun x : ℝ ↦ (-b) * x)
-    simpa [f, mul_assoc] using (continuous_id.pow k).mul (Real.continuous_exp.comp hlin)
+    fun_prop
   have hne : (Set.Icc (0 : ℝ) A').Nonempty := by
     refine Set.nonempty_Icc.2 ?_
     dsimp [A']
@@ -80,19 +78,13 @@ public lemma exp_neg_pi_div_mul_exp_neg_pi_mul_le (x t : ℝ) (hx : 0 ≤ x) (ht
     have hrhs : -2 * Real.pi * Real.sqrt x = -(Real.pi * (2 * Real.sqrt x)) := by ring_nf
     rw [hsum, hrhs]
     exact neg_le_neg hIneqπ
-  have hprod :
-      Real.exp (-Real.pi / t) * Real.exp (-Real.pi * x * t) =
-        Real.exp ((-Real.pi / t) + (-Real.pi * x * t)) := by
-    simp [Real.exp_add]
-  rw [hprod]
-  exact Real.exp_le_exp.2 hExpArg
+  simpa [Real.exp_add] using Real.exp_le_exp.2 hExpArg
 
 /-- For `b, x ≥ 0` and `t ≥ 1`, we have `exp (-b*x*t) ≤ exp (-b*x)`. -/
 public lemma exp_neg_mul_mul_le_exp_neg_mul_of_one_le {b x t : ℝ} (hb : 0 ≤ b) (hx : 0 ≤ x)
     (ht : (1 : ℝ) ≤ t) :
     Real.exp (-b * x * t) ≤ Real.exp (-b * x) := by
-  have hAt : b * x ≤ b * x * t := by
-    simpa [mul_assoc] using le_mul_of_one_le_right (mul_nonneg hb hx) ht
+  have hAt : b * x ≤ b * x * t := le_mul_of_one_le_right (mul_nonneg hb hx) ht
   simpa [mul_assoc, mul_left_comm, mul_comm] using Real.exp_le_exp.2 (neg_le_neg hAt)
 
 end SpherePacking.ForMathlib

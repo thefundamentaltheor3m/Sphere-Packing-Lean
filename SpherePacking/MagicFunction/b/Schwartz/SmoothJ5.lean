@@ -146,13 +146,7 @@ lemma exists_bound_norm_ψI'_z₅' :
     simpa using pow_le_pow_left₀ ht0' htle 2
   have hψIle : ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := by
     have hEq := ψI'_z₅'_eq (t := t) ⟨ht.1, htle⟩
-    calc
-      ‖ψI' (z₅' t)‖ =
-          ‖ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ)‖ := by
-            simp [hEq]
-      _ ≤ ‖ψS.resToImagAxis (1 / t)‖ * t ^ 2 := by
-            simp [norm_pow, Complex.norm_real, abs_of_nonneg ht0']
-      _ ≤ M * t ^ 2 := by gcongr
+    simp_all
   have hM0 : 0 ≤ M := (norm_nonneg _).trans hψS
   calc
     ‖ψI' (z₅' t)‖ ≤ M * t ^ 2 := hψIle
@@ -287,10 +281,7 @@ public theorem decay_J₅' :
             (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0 hcoeff hψI hcexp)
       have hboundt : 0 ≤ bound t := by
         positivity [hCψ0]
-      calc
-        ‖gN n x t‖ ≤ bound t * (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)) := hgn
-        _ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) :=
-            mul_le_mul_of_nonneg_left hExp hboundt
+      exact le_mul_of_le_mul_of_nonneg_left hgn hExp hboundt
     simpa [I, Kn] using
       (norm_integral_le_integral_bound_mul_const (μ := μ) (f := gN n x) (bound := bound)
         (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)

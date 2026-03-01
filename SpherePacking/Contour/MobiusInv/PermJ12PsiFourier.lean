@@ -24,33 +24,16 @@ public lemma permJ12_Ψ₁_fourier_eq_neg_deriv_mul
     (hI : (Complex.I : ℂ) ^ (q + 2) = (1 : ℂ)) :
     ψ z * (((Complex.I : ℂ) / z) ^ (q + 2)) * Complex.exp (A * (r : ℂ) * ((-1 : ℂ) / z)) =
       -(deriv mobiusInv z) * (ψ (mobiusInv z) * Complex.exp (A * (r : ℂ) * mobiusInv z)) := by
-  have hmob : mobiusInv z = (-1 : ℂ) / z := by simp [mobiusInv, div_eq_mul_inv]
   have hz0 : z ≠ 0 := by
     intro hz0
     exact (ne_of_gt hz) (by simp [hz0])
-  have hIz : ((Complex.I : ℂ) / z) ^ (q + 2) = (1 : ℂ) / z ^ (q + 2) := by
-    simpa [hI] using (div_pow (Complex.I : ℂ) z (q + 2))
-  have hden : (1 : ℂ) / z ^ (2 : ℕ) * ((1 : ℂ) / z ^ q) = (1 : ℂ) / z ^ (q + 2) := by
-    simp [div_eq_mul_inv, pow_add, mul_left_comm, mul_comm]
-  have hcore :
-      ψ z * (((Complex.I : ℂ) / z) ^ (q + 2)) = -(deriv mobiusInv z) * ψ (mobiusInv z) := by
-    calc
-      ψ z * (((Complex.I : ℂ) / z) ^ (q + 2)) = ψ z * ((1 : ℂ) / z ^ (q + 2)) := by
-        simp [hIz]
-      _ = ψ z * ((1 : ℂ) / z ^ (2 : ℕ) * ((1 : ℂ) / z ^ q)) := by
-        rw [← hden]
-      _ = (1 : ℂ) / z ^ (2 : ℕ) * (ψ z * ((1 : ℂ) / z ^ q)) := by
-        ac_rfl
-      _ = (1 : ℂ) / z ^ (2 : ℕ) * (ψ z / z ^ q) := by
-        simp [div_eq_mul_inv]
-      _ = -(deriv mobiusInv z) * ψ (mobiusInv z) := by
-        simp [deriv_mobiusInv, hψ, div_eq_mul_inv, mul_assoc, mul_comm]
-  -- finish by matching the exponential factors
-  calc
-    ψ z * (((Complex.I : ℂ) / z) ^ (q + 2)) * Complex.exp (A * (r : ℂ) * ((-1 : ℂ) / z)) =
-        (-(deriv mobiusInv z) * ψ (mobiusInv z)) * Complex.exp (A * (r : ℂ) * ((-1 : ℂ) / z)) := by
-      simp [hcore, mul_assoc]
-    _ = -(deriv mobiusInv z) * (ψ (mobiusInv z) * Complex.exp (A * (r : ℂ) * mobiusInv z)) := by
-      simp [hmob, mul_assoc]
+  have hmob : mobiusInv z = (-1 : ℂ) / z := by simp [mobiusInv, div_eq_mul_inv]
+  by_cases hψz : ψ z = 0
+  · have hψm : ψ (mobiusInv z) = 0 := by simpa [hψz] using hψ
+    simp [hψz, hψm, mul_assoc]
+  · have hψ' : ψ ((-1 : ℂ) / z) = -(ψ z) / z ^ q := by simpa [hmob] using hψ
+    simp [hmob, deriv_mobiusInv, hψ', div_pow, hI, mul_assoc, mul_comm, mul_left_comm]
+    field_simp [hz0, hψz]
+    ring_nf
 
 end SpherePacking.Contour

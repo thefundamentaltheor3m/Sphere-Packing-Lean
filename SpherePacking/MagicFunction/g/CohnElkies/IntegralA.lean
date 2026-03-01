@@ -122,18 +122,7 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
                 Real.exp (-π * u * t)) := by
         -- `(-a) * (b * c) = -(a * (b * c))`, then reassociate.
         simp [mul_assoc]
-      calc
-        (((-(t ^ (2 : ℕ)) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) +
-                c * ψI' ((Complex.I : ℂ) * (t : ℂ))) *
-              Real.exp (-π * u * t)) =
-            (-(t ^ (2 : ℕ) : ℂ)) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) * Real.exp (-π * u * t) +
-              c * ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t) := by
-            simp [add_mul, mul_assoc]
-        _ =
-            -(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) *
-                  Real.exp (-π * u * t)) +
-              c * (ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) := by
-            simp [mul_assoc, c]
+      grind only
     rw [hsplit]
     -- Use `integral_add` on the restricted measure.
     have hIntA0 :
@@ -200,75 +189,8 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
         field_simp [hπ]
         norm_num
       exact_mod_cast h36R
-    have hc :
-        (-(1 / (60 * π)) : ℂ) =
-          (π / 2160 : ℂ) * (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) := by
-      simpa using h36.symm
-    -- Pull out the `((↑π*I)/8640) * (4*I)` and `(I/(240*π)) * (4*I)` scalar products.
-    have hA :
-        ((↑π * Complex.I) / 8640 : ℂ) *
-              ((4 * (Complex.I : ℂ)) * ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IA) =
-          (-(π / 2160 : ℂ)) *
-            (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IA) := by
-      calc
-        ((↑π * Complex.I) / 8640 : ℂ) *
-              ((4 * (Complex.I : ℂ)) * ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IA)
-            =
-                (((↑π * Complex.I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) *
-                  (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IA) := by
-                -- Reassociate `a * (b * s * IA)` into `(a*b) * (s*IA)`.
-                rw [← mul_assoc ((↑π * Complex.I) / 8640 : ℂ)
-                    ((4 * (Complex.I : ℂ)) * ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ)) IA]
-                rw [← mul_assoc ((↑π * Complex.I) / 8640 : ℂ) (4 * (Complex.I : ℂ))
-                    ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ)]
-                rw [mul_assoc (((↑π * Complex.I) / 8640 : ℂ) * (4 * (Complex.I : ℂ)))
-                    ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) IA]
-        _ = (-(π / 2160 : ℂ)) * (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IA) := by
-              simpa using congrArg (fun z : ℂ =>
-                z * (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IA)) hcoefA
-    have hB :
-        (-(Complex.I / (240 * (↑π)) : ℂ)) *
-              ((-4 * (Complex.I : ℂ)) * ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IB) =
-          (-(1 / (60 * π)) : ℂ) *
-            (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IB) := by
-      calc
-        (-(Complex.I / (240 * (↑π)) : ℂ)) *
-              ((-4 * (Complex.I : ℂ)) * ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IB)
-            =
-                ((-(Complex.I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) *
-                  (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IB) := by
-                rw [← mul_assoc (-(Complex.I / (240 * (↑π)) : ℂ))
-                    ((-4 * (Complex.I : ℂ)) * ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ)) IB]
-                rw [← mul_assoc (-(Complex.I / (240 * (↑π)) : ℂ)) (-4 * (Complex.I : ℂ))
-                    ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ)]
-                rw [mul_assoc ((-(Complex.I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ)))
-                    ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) IB]
-        _ = (-(1 / (60 * π)) : ℂ) * (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IB) := by
-              simpa using congrArg (fun z : ℂ =>
-                z * (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IB)) hcoefB
-    -- Substitute the coefficient computations and finish by ring arithmetic.
-    rw [hA, hB, hc]
-    ring
+    grind only
   -- Finish by rewriting the RHS using `hA_integral`.
-  calc
-    gRadial u
-        =
-          ((↑π * Complex.I) / 8640 : ℂ) * a' u + (-(Complex.I / (240 * (↑π)) : ℂ)) * b' u := by
-          simpa [sub_eq_add_neg] using hg
-    _ =
-          ((↑π * Complex.I) / 8640 : ℂ) *
-              ((4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IA) +
-            (-(Complex.I / (240 * (↑π)) : ℂ)) *
-              ((-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IB) := by
-          simp [ha', hb', mul_assoc, mul_left_comm, mul_comm]
-    _ =
-          (π / 2160 : ℂ) *
-            (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-              (-IA + (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB) := by
-          simpa [mul_assoc] using hmain
-    _ = (π / 2160 : ℂ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-          (∫ t in Set.Ioi (0 : ℝ), (A t : ℂ) * Real.exp (-π * u * t)) := by
-          -- Rewrite the RHS using the previously established identity.
-          rw [← hA_integral]
+  simp_all
 
 end MagicFunction.g.CohnElkies

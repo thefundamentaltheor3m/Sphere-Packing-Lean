@@ -275,12 +275,7 @@ lemma integrable_gN (n : ℕ) (r : ℝ) : Integrable (gN n r) μ := by
     have : 0 ≤ (2 * π : ℝ) := by positivity
     exact mul_nonneg (pow_nonneg this n) (mul_nonneg Cφ_pos.le (Real.exp_pos _).le)
   have hmul := mul_le_mul_of_nonneg_left hExp hcoef0
-  have hmul' :
-      (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * r / s)) ≤
-        (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (π * |r|)) := by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using hmul
-  have harg : (-2 * π * s : ℝ) = (-(2 * π) * s) := by ring
-  simpa [K, harg, mul_assoc, mul_left_comm, mul_comm] using hmul'
+  grind only
 
 lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
     HasDerivAt (fun r : ℝ ↦ ∫ s, gN n r s ∂μ) (∫ s, gN (n + 1) r₀ s ∂μ) r₀ := by
@@ -298,7 +293,8 @@ lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
       ∀ᵐ s ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ), ‖gN (n + 1) r s‖ ≤ bound s := by
     refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall ?_
     intro s hs r hr
-    have hrabs : |r| ≤ R := SpherePacking.ForMathlib.abs_le_abs_add_of_mem_ball hr
+    have hrabs : |r| ≤ R := by
+      exact SpherePacking.ForMathlib.abs_le_abs_add_of_mem_ball hr
     have hExp : rexp (-π * r / s) ≤ rexp (π * R) := by
       refine (exp_neg_pi_mul_div_le_exp_pi_abs (r := r) (s := s) hs).trans ?_
       exact Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hrabs Real.pi_pos.le)
@@ -310,12 +306,7 @@ lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
       have : 0 ≤ (2 * π : ℝ) := by positivity
       exact mul_nonneg (pow_nonneg this (n + 1)) (mul_nonneg Cφ_pos.le (Real.exp_pos _).le)
     have hmul := mul_le_mul_of_nonneg_left hExp hcoef0
-    have hmul' :
-        (2 * π) ^ (n + 1) * (Cφ * rexp (-2 * π * s) * rexp (-π * r / s)) ≤
-          (2 * π) ^ (n + 1) * (Cφ * rexp (-2 * π * s) * rexp (π * R)) := by
-      simpa [mul_assoc, mul_left_comm, mul_comm] using hmul
-    have harg : (-2 * π * s : ℝ) = (-(2 * π) * s) := by ring
-    simpa [bound, harg, mul_assoc, mul_left_comm, mul_comm] using hmul'
+    grind only
   have h_diff :
       ∀ᵐ s ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ),
         HasDerivAt (fun x : ℝ ↦ gN n x s) (gN (n + 1) r s) r := by
@@ -399,18 +390,15 @@ lemma xpow_mul_exp_neg_pi_div_le (k : ℕ) {x s : ℝ} (hx : 0 ≤ x) (hs : 1 �
   set u : ℝ := (π * x) / s
   have hu0 : 0 ≤ u := div_nonneg (by positivity) (zero_le_one.trans hs)
   have hu : u ^ k * rexp (-u) ≤ Cpow := hCpow u hu0
-  have hu_mul : u * s = π * x := div_mul_cancel₀ (π * x) hs0
-  have hx' : x = u * s / π := by
-    exact CancelDenoms.cancel_factors_eq_div (id (Eq.symm hu_mul)) hpi0
+  have hu_mul : u * s = π * x := by
+    exact div_mul_cancel₀ (π * x) hs0
+  have hx' : x = u * s / π :=
+    CancelDenoms.cancel_factors_eq_div (id (Eq.symm hu_mul)) hpi0
   have hxpow : x ^ k = (π ^ k)⁻¹ * s ^ k * u ^ k := by
     simp [hx', mul_pow, div_eq_mul_inv, inv_pow, mul_assoc, mul_left_comm, mul_comm]
   have hexp : rexp (-π * x / s) = rexp (-u) := by
     have hxarg : (-π * x / s : ℝ) = -u := by
-      dsimp [u]
-      have hxneg : (-π : ℝ) * x = -(π * x) := by ring
-      calc
-        (-π * x / s : ℝ) = (-(π * x)) / s := by simp [hxneg]
-        _ = -(π * x / s) := by simp [neg_div]
+      ring
     simpa using congrArg rexp hxarg
   calc
     x ^ k * rexp (-π * x / s) = x ^ k * rexp (-u) := by
@@ -453,8 +441,8 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
   -- pull constants out of the integrals to match the desired shape
   have hf' :
       (∫ s in Ici (1 : ℝ), f s) = x ^ k * (∫ s in Ici (1 : ℝ),
-        rexp (-2 * π * s) * rexp (-π * x / s)) := by
-    exact integral_const_mul (x ^ k) fun a => rexp (-2 * π * a) * rexp (-π * x / a)
+        rexp (-2 * π * s) * rexp (-π * x / s)) :=
+    integral_const_mul (x ^ k) fun a => rexp (-2 * π * a) * rexp (-π * x / a)
   have hg' :
       (∫ s in Ici (1 : ℝ), g s) = ((π ^ k)⁻¹ * Cpow) * (∫ s in Ici (1 : ℝ),
         s ^ k * rexp (-2 * π * s)) := by
@@ -494,14 +482,14 @@ public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₁' x‖ = x ^ k * ‖iteratedDeriv n I₁' x‖ := by
       simp [Real.norm_of_nonneg hx, hFDeriv]
-    _ ≤ x ^ k * (∫ s in Ici (1:ℝ), (2*π) ^ n * (Cφ * rexp (-2*π*s) * rexp (-π*x/s))) := by
-      exact mul_le_mul_of_nonneg_left (norm_iteratedDeriv_le (n := n) (x := x)) hxk0
+    _ ≤ x ^ k * (∫ s in Ici (1:ℝ), (2*π) ^ n * (Cφ * rexp (-2*π*s) * rexp (-π*x/s))) :=
+      mul_le_mul_of_nonneg_left (norm_iteratedDeriv_le (n := n) (x := x)) hxk0
     _ = x ^ k * (((2*π) ^ n * Cφ) * (∫ s in Ici (1:ℝ), rexp (-2*π*s) * rexp (-π*x/s))) := by
       simpa using congrArg (fun t ↦ x ^ k * t) hIntConst
     _ = ((2*π) ^ n * Cφ) * (x ^ k * (∫ s in Ici (1:ℝ), rexp (-2*π*s) * rexp (-π*x/s))) := by
       ring
-    _ ≤ ((2 * π) ^ n * Cφ) * (((π ^ k)⁻¹ * Cpow) * I) := by
-      exact mul_le_mul_of_nonneg_left hxpow hmult
+    _ ≤ ((2 * π) ^ n * Cφ) * (((π ^ k)⁻¹ * Cpow) * I) :=
+      mul_le_mul_of_nonneg_left hxpow hmult
     _ = C := by simp [C, I, mul_assoc, mul_left_comm, mul_comm]
 
 end

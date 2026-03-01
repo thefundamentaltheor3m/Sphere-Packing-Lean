@@ -30,8 +30,6 @@ public theorem B_pos {t : ℝ} (ht : 0 < t) : 0 < B t := by
   have hFG : FReal s - c * GReal s < 0 := by
     simpa [c] using (FG_inequality_2 (t := s) hs)
   have ht2 : 0 < t ^ (2 : ℕ) := pow_pos ht _
-  have : 0 < (-(t ^ (2 : ℕ))) * ((FReal s - c * GReal s) / (Δ.resToImagAxis s).re) :=
-    mul_pos_of_neg_of_neg (neg_lt_zero.2 ht2) (div_neg_of_neg_of_pos hFG hΔpos)
-  simpa [hB] using this
+  simpa [hB] using mul_pos_of_neg_of_neg (neg_lt_zero.2 ht2) (div_neg_of_neg_of_pos hFG hΔpos)
 
 end MagicFunction.g.CohnElkies

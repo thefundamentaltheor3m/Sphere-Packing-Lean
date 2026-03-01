@@ -350,8 +350,8 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
       have hsum : ‖w - 1‖ + ‖(1 : ℂ)‖ ≤ Cinv3 * Real.exp (-Real.pi * t) + 1 := by
         simpa using add_le_add hw1 (le_of_eq (by simp : ‖(1 : ℂ)‖ = (1 : ℝ)))
       calc
-        ‖w‖ = ‖(w - 1) + 1‖ := by
-              exact congrArg (fun z : ℂ => ‖z‖) hw
+        ‖w‖ = ‖(w - 1) + 1‖ :=
+              congrArg (fun z : ℂ => ‖z‖) hw
         _ ≤ ‖w - 1‖ + ‖(1 : ℂ)‖ := htri
         _ ≤ Cinv3 * Real.exp (-Real.pi * t) + 1 := hsum
     have hterm : Cinv3 * Real.exp (-Real.pi * t) ≤ Cinv3 := by
@@ -454,8 +454,8 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
       have h1 :
           ‖x - x0‖ * ‖y - y0‖ ≤
             (Csum * Real.exp (-(3 : ℝ) * Real.pi * t)) *
-              (Cinv2 * Real.exp (-(2 : ℝ) * Real.pi * t)) := by
-        exact mul_le_mul hx' hy' (norm_nonneg _) hb0
+              (Cinv2 * Real.exp (-(2 : ℝ) * Real.pi * t)) :=
+        mul_le_mul hx' hy' (norm_nonneg _) hb0
       have hExp :
           Real.exp (-(3 : ℝ) * Real.pi * t) * Real.exp (-(2 : ℝ) * Real.pi * t) =
             Real.exp (-(5 : ℝ) * Real.pi * t) := by
@@ -489,31 +489,14 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
         simp
       calc
         ‖(192 : ℂ) * (u : ℂ)‖ = (192 : ℝ) * |u| := hEq
-        _ ≤ (192 : ℝ) * Real.exp (-Real.pi * t) := by
-              exact mul_le_mul_of_nonneg_left habs (by linarith)
+        _ ≤ (192 : ℝ) * Real.exp (-Real.pi * t) :=
+              mul_le_mul_of_nonneg_left habs (by linarith)
     -- `x*y - x0*y0 = (x-x0)*y0 + x0*(y-y0) + (x-x0)*(y-y0)`.
     have hsplit :
         (128 : ℂ) * (x * y) - (e : ℂ) - (16 : ℂ) =
           (128 : ℂ) * ((x - x0) * y0 + x0 * (y - y0) + (x - x0) * (y - y0)) -
             (192 : ℂ) * (u : ℂ) := by
-      have hmain : (e : ℂ) + (16 : ℂ) = (128 : ℂ) * (x0 * y0) + (192 : ℂ) * (u : ℂ) := by
-        -- rearrange `hxy0_main`
-        have h' :=
-          congrArg (fun z : ℂ => z + (192 : ℂ) * (u : ℂ)) hxy0_main
-        -- `... - 192*u + 192*u = ...`
-        simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h'.symm
-      have hxy :
-          x * y - x0 * y0 = (x - x0) * y0 + x0 * (y - y0) + (x - x0) * (y - y0) := by
-        ring
-      calc
-        (128 : ℂ) * (x * y) - (e : ℂ) - (16 : ℂ)
-            = (128 : ℂ) * (x * y) - ((e : ℂ) + (16 : ℂ)) := by ring
-        _ = (128 : ℂ) * (x * y) - ((128 : ℂ) * (x0 * y0) + (192 : ℂ) * (u : ℂ)) := by
-              simp [hmain]
-        _ = (128 : ℂ) * (x * y - x0 * y0) - (192 : ℂ) * (u : ℂ) := by ring
-        _ = (128 : ℂ) * ((x - x0) * y0 + x0 * (y - y0) + (x - x0) * (y - y0)) -
-              (192 : ℂ) * (u : ℂ) := by
-              simp [hxy]
+      grind only
     -- Bound the RHS using triangle inequality.
     rw [hsplit]
     have htri :=
@@ -528,15 +511,8 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
       let a : ℂ := (x - x0) * y0
       let b : ℂ := x0 * (y - y0)
       let c : ℂ := (x - x0) * (y - y0)
-      have htri' : ‖a + b + c‖ ≤ ‖a‖ + ‖b‖ + ‖c‖ := by
-        have hab : ‖a + b‖ ≤ ‖a‖ + ‖b‖ := norm_add_le a b
-        have hab' : ‖a + b‖ + ‖c‖ ≤ (‖a‖ + ‖b‖) + ‖c‖ := by
-          exact add_le_add hab le_rfl
-        calc
-          ‖a + b + c‖ = ‖(a + b) + c‖ := by simp [add_assoc]
-          _ ≤ ‖a + b‖ + ‖c‖ := norm_add_le _ _
-          _ ≤ (‖a‖ + ‖b‖) + ‖c‖ := hab'
-          _ = ‖a‖ + ‖b‖ + ‖c‖ := by simp [add_assoc]
+      have htri' : ‖a + b + c‖ ≤ ‖a‖ + ‖b‖ + ‖c‖ :=
+        norm_add₃_le
       have ha : ‖a‖ ≤ (Csum + Csum / 256) * Real.exp (-Real.pi * t) := by
         simpa [a] using hxdy
       have hb : ‖b‖ ≤ (50 * Cinv2) * Real.exp (-Real.pi * t) := by
@@ -552,8 +528,8 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
             (‖a‖ + ‖b‖) + ‖c‖ ≤
                 ((Csum + Csum / 256) * Real.exp (-Real.pi * t) +
                       (50 * Cinv2) * Real.exp (-Real.pi * t)) +
-                    (Csum * Cinv2) * Real.exp (-Real.pi * t) := by
-          exact add_le_add hab hc
+                    (Csum * Cinv2) * Real.exp (-Real.pi * t) :=
+          add_le_add hab hc
         calc
           ‖a + b + c‖ ≤ ‖a‖ + ‖b‖ + ‖c‖ := htri'
           _ = (‖a‖ + ‖b‖) + ‖c‖ := by simp [add_assoc]
@@ -614,35 +590,7 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
           have h' : 0 ≤ CH2 + CH4 + 200 := by linarith [hCH2, hCH4]
           exact mul_nonneg h' (Real.exp_pos _).le
         exact mul_le_mul hz1 hw_bd (norm_nonneg _) h0
-      have hzwn :
-          ‖z * w - 1‖ ≤ ((CH2 + CH4 + 200) * Real.exp (-Real.pi * t)) * (Cinv3 + 2) +
-              Cinv3 * Real.exp (-Real.pi * t) := by
-        exact le_trans hzw (add_le_add hz1' hw1)
-      have h128 : 0 ≤ (128 : ℝ) := by linarith
-      have hmul :
-          (128 : ℝ) * ‖z * w - 1‖ ≤
-            (128 : ℝ) *
-              (((CH2 + CH4 + 200) * Real.exp (-Real.pi * t)) * (Cinv3 + 2) +
-                    Cinv3 * Real.exp (-Real.pi * t)) :=
-        mul_le_mul_of_nonneg_left hzwn h128
-      -- factor out `exp(-πt)`
-      have hEq :
-          (((CH2 + CH4 + 200) * Real.exp (-Real.pi * t)) * (Cinv3 + 2) +
-                Cinv3 * Real.exp (-Real.pi * t)) =
-            ((CH2 + CH4 + 200) * (Cinv3 + 2) + Cinv3) * Real.exp (-Real.pi * t) := by
-        ring
-      -- conclude
-      have hEq' :
-          (128 : ℝ) *
-              (((CH2 + CH4 + 200) * Real.exp (-Real.pi * t)) * (Cinv3 + 2) +
-                    Cinv3 * Real.exp (-Real.pi * t)) =
-            (128 : ℝ) * (((CH2 + CH4 + 200) * (Cinv3 + 2) + Cinv3) * Real.exp (-Real.pi * t)) := by
-        simpa using congrArg (fun r : ℝ => (128 : ℝ) * r) hEq
-      have hmul' :
-          (128 : ℝ) * ‖z * w - 1‖ ≤
-            (128 : ℝ) * (((CH2 + CH4 + 200) * (Cinv3 + 2) + Cinv3) * Real.exp (-Real.pi * t)) :=
-        le_of_le_of_eq hmul hEq'
-      simpa [mul_assoc] using hmul'
+      grind only
   -- Finish with `ψI = 128*(x*y + z*w)` and triangle inequality.
   have hψI' : ψI.resToImagAxis t = (128 : ℂ) * (x * y + z * w) := by
     -- rewrite divisions into inverses, and match `x*y`/`z*w`
@@ -666,8 +614,8 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
           norm_add_le _ _
     _ ≤ ((128 : ℝ) * ((Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2)) + 192) *
             Real.exp (-Real.pi * t) +
-          (128 : ℝ) * ((CH2 + CH4 + 200) * (Cinv3 + 2) + Cinv3) * Real.exp (-Real.pi * t) := by
-          exact add_le_add hA hB
+          (128 : ℝ) * ((CH2 + CH4 + 200) * (Cinv3 + 2) + Cinv3) * Real.exp (-Real.pi * t) :=
+          add_le_add hA hB
     _ ≤ ((128 : ℝ) *
             (((Csum + Csum / 256) + (50 * Cinv2) + (Csum * Cinv2)) +
               ((CH2 + CH4 + 200) * (Cinv3 + 2) + Cinv3)) + 192) * Real.exp (-Real.pi * t) := by

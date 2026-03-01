@@ -99,7 +99,7 @@ public theorem PeriodicSpherePacking.unique_covers_of_centers (S : PeriodicSpher
       (g +ᵥ x : EuclideanSpace ℝ (Fin d)) ∈ S.centers ∩ D := by
   intro x
   rcases hD_unique_covers (x : EuclideanSpace ℝ (Fin d)) with ⟨g, hg, hguniq⟩
-  refine ⟨g, ⟨S.lattice_action g.property x.property, hg⟩, fun g' hg' => hguniq g' hg'.2⟩
+  exact ⟨g, ⟨S.lattice_action g.property x.property, hg⟩, fun g' hg' => hguniq g' hg'.2⟩
 
 end Disjoint_Covering_of_Centers
 
@@ -126,8 +126,7 @@ public theorem PeriodicSpherePacking.fundamental_domain_unique_covers :
   intro y hy
   have hy_mem : (y : EuclideanSpace ℝ (Fin d)) ∈ span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) := by
     simpa [hspan] using y.property
-  apply Subtype.ext
-  exact congrArg
+  exact Subtype.ext <| congrArg
     (fun z : span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) => (z : EuclideanSpace ℝ (Fin d)))
     (hguniq ⟨(y : EuclideanSpace ℝ (Fin d)), hy_mem⟩ hy)
 
@@ -193,10 +192,8 @@ public theorem PeriodicSpherePacking.density_of_centers_empty (S : PeriodicSpher
   simp only [Set.toFinset_card, ENat.toENNReal_coe, ENNReal.div_eq_zero_iff, mul_eq_zero,
     Nat.cast_eq_zero, ENNReal.coe_ne_top, or_false]
   left
-  letI instFintype := @Fintype.ofFinite _ <|
-    finite_centers_inter_of_isBounded S D hD_isBounded hd
-  rw [Fintype.card_eq_zero_iff]
-  refine Set.isEmpty_coe_sort.mpr ?_
-  simp [Set.isEmpty_coe_sort.mp instEmpty]
+  letI := @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded S D hD_isBounded hd
+  haveI : IsEmpty (↥(S.centers ∩ D)) := ⟨fun x => instEmpty.false ⟨x.1, x.2.1⟩⟩
+  simp
 
 end Empty_Centers

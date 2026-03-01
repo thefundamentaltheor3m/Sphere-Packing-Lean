@@ -115,9 +115,7 @@ private lemma Θ₂_term_eq_ofReal_exp_imag_axis (n : ℤ) (t : ℝ) (ht : 0 < t
   have hr : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by
     apply Complex.ext <;> simp [r]
   have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by
-    calc
-      (n + (2⁻¹ : ℂ)) ^ 2 = (r : ℂ) ^ 2 := by simp [hr]
-      _ = ((r ^ 2 : ℝ) : ℂ) := by simp [pow_two]
+    simp_all
   have harg :
       (π * Complex.I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I * t : ℂ)) : ℂ) =
         ((-(Real.pi * (r ^ 2) * t) : ℝ) : ℂ) := by
@@ -365,9 +363,7 @@ public lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     congr 4
     · ring_nf
     · congr 1
-      rw [neg_mul, neg_div, one_div, neg_div, div_neg, neg_mul, neg_div, neg_neg]
-      ring_nf
-      simp [sq, ← mul_assoc, inv_mul_cancel_right₀ hx']
+      grind only
     · ring_nf; simp [hx']
     · ring_nf; simp [inv_inv]
   _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
@@ -586,9 +582,7 @@ lemma norm_Θ₂_term (n : ℤ) (z : ℍ) :
   have hr : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by
     apply Complex.ext <;> simp [r]
   have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by
-    calc
-      (n + (2⁻¹ : ℂ)) ^ 2 = (r : ℂ) ^ 2 := by simp [hr]
-      _ = ((r ^ 2 : ℝ) : ℂ) := by simp [pow_two]
+    simp_all
   have h_mulI :
       (π * I * (n + (2⁻¹ : ℂ)) ^ 2 * z : ℂ) = (π * ((r ^ 2 : ℝ) : ℂ) * z) * I := by
     simp [hsq, mul_assoc, mul_left_comm, mul_comm]
@@ -964,12 +958,9 @@ private theorem tsum_weighted_exp_sq_tendsto_atImInfty
         simp_rw [mul_right_comm _ I, norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← ofReal_intCast,
           ← ofReal_pow, im_ofReal_mul, ← mul_assoc, coe_im]
         exact tendsto_exp_neg_atTop_nhds_zero.comp hk_im
-      have hk_exp' :
-          Tendsto (fun z : ℍ ↦ ‖w k‖ * ‖cexp (π * I * k ^ 2 * z)‖) atImInfty (𝓝 0) := by
-        simpa using (tendsto_const_nhds.mul hk_exp)
       have : Tendsto (fun z : ℍ ↦ w k * cexp (π * I * k ^ 2 * z)) atImInfty (𝓝 0) := by
         rw [tendsto_zero_iff_norm_tendsto_zero]
-        simpa [norm_mul, mul_assoc, mul_left_comm, mul_comm] using hk_exp'
+        simpa [norm_mul, mul_assoc, mul_left_comm, mul_comm] using (tendsto_const_nhds.mul hk_exp)
       simpa [hk] using this
   · rw [eventually_atImInfty]
     refine ⟨1, fun z hz k ↦ ?_⟩
@@ -1101,18 +1092,15 @@ lemma thetaDeltaFun_div_exp_tendsto_atImInfty :
     simpa [h] using jacobiTheta₂_zero_apply_tendsto_atImInfty
   have hk : Tendsto k atImInfty (𝓝 1) := by
     simpa [k] using jacobiTheta₂_half_apply_tendsto_atImInfty
-  have hghk : Tendsto (fun z : ℍ => g z * h z * k z) atImInfty (𝓝 (2 * 1 * 1 : ℂ)) := by
-    have : Tendsto (fun z : ℍ => g z * (h z * k z)) atImInfty (𝓝 (2 * (1 * 1) : ℂ)) :=
-      hg.mul (hh.mul hk)
-    simpa [mul_assoc] using this
+  have hghk : Tendsto (fun z : ℍ => g z * h z * k z) atImInfty (𝓝 (2 : ℂ)) := by
+    simpa [mul_assoc] using hg.mul (hh.mul hk)
   have :
       Tendsto (fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ)) atImInfty (𝓝 1) := by
-    have : Tendsto (fun z : ℍ => (g z * h z * k z) ^ 8) atImInfty (𝓝 ((2 * 1 * 1 : ℂ) ^ 8)) :=
-      hghk.pow 8
-    have : Tendsto (fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ)) atImInfty
-        (𝓝 (((2 * 1 * 1 : ℂ) ^ 8) / (256 : ℂ))) := by
-      simpa [div_eq_mul_inv] using this.mul tendsto_const_nhds
-    simpa using (this.trans (by norm_num))
+    have hlim :
+        Tendsto (fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ)) atImInfty
+          (𝓝 ((2 : ℂ) ^ 8 / (256 : ℂ))) := by
+      simpa [div_eq_mul_inv] using (hghk.pow 8).mul tendsto_const_nhds
+    simpa using (show ((2 : ℂ) ^ 8 / (256 : ℂ)) = (1 : ℂ) by norm_num) ▸ hlim
   have hrewrite :
       (fun z : ℍ => thetaDeltaFun z / cexp (2 * π * I * (z : ℂ))) =
         fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ) := by
@@ -1125,17 +1113,7 @@ lemma thetaDeltaFun_div_exp_tendsto_atImInfty :
       simpa [k] using (Θ₄_as_jacobiTheta₂ z)
     have hfz : thetaDelta_f z = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 4 := by
       dsimp [thetaDelta_f, H₂, H₃, H₄]
-      have hpow :
-          (Θ₂ z * Θ₃ z * Θ₄ z) ^ 4 =
-            (Θ₂ z) ^ 4 * (Θ₃ z) ^ 4 * (Θ₄ z) ^ 4 := by
-        calc
-          (Θ₂ z * Θ₃ z * Θ₄ z) ^ 4 = ((Θ₂ z * Θ₃ z) * Θ₄ z) ^ 4 := by
-            simp [mul_assoc]
-          _ = (Θ₂ z * Θ₃ z) ^ 4 * (Θ₄ z) ^ 4 := by
-            simp [mul_pow]
-          _ = (Θ₂ z) ^ 4 * (Θ₃ z) ^ 4 * (Θ₄ z) ^ 4 := by
-            simp [mul_pow, mul_assoc]
-      simpa [mul_assoc] using hpow.symm
+      ring
     have hfz2 : (thetaDelta_f z) ^ 2 = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 := by
       calc
         (thetaDelta_f z) ^ 2 = ((Θ₂ z * Θ₃ z * Θ₄ z) ^ 4) ^ 2 := by
@@ -1144,11 +1122,7 @@ lemma thetaDeltaFun_div_exp_tendsto_atImInfty :
           simpa [show 4 * 2 = 8 by norm_num] using (pow_mul (Θ₂ z * Θ₃ z * Θ₄ z) 4 2).symm
     have hΘprod :
         Θ₂ z * Θ₃ z * Θ₄ z = cexp (π * I * (z : ℂ) / 4) * (g z * h z * k z) := by
-      calc
-        Θ₂ z * Θ₃ z * Θ₄ z = (cexp (π * I * (z : ℂ) / 4) * g z) * h z * k z := by
-          simp [hΘ₂, hΘ₃, hΘ₄, mul_assoc]
-        _ = cexp (π * I * (z : ℂ) / 4) * (g z * h z * k z) := by
-          simp [mul_assoc, mul_left_comm, mul_comm]
+      grind only
     have hexp : cexp (π * I * (z : ℂ) / 4) ^ 8 = cexp (2 * π * I * (z : ℂ)) := by
       have h := (Complex.exp_nat_mul (π * I * (z : ℂ) / 4) 8).symm
       have harg : (8 : ℂ) * (π * I * (z : ℂ) / 4) = 2 * π * I * (z : ℂ) := by
@@ -1162,8 +1136,8 @@ lemma thetaDeltaFun_div_exp_tendsto_atImInfty :
               simp [hΘprod]
         _ = cexp (π * I * (z : ℂ) / 4) ^ 8 * (g z * h z * k z) ^ 8 := by
               simp [mul_pow]
-        _ = cexp (2 * π * I * (z : ℂ)) * (g z * h z * k z) ^ 8 := by
-              exact congrArg (fun t : ℂ => t * (g z * h z * k z) ^ 8) hexp
+        _ = cexp (2 * π * I * (z : ℂ)) * (g z * h z * k z) ^ 8 :=
+              congrArg (fun t : ℂ => t * (g z * h z * k z) ^ 8) hexp
     calc
       thetaDeltaFun z / cexp (2 * π * I * (z : ℂ)) =
           ((256 : ℂ)⁻¹) * (thetaDelta_f z) ^ 2 / cexp (2 * π * I * (z : ℂ)) := by
@@ -1179,13 +1153,7 @@ lemma thetaDeltaFun_div_exp_tendsto_atImInfty :
             set a : ℂ := cexp (2 * π * I * (z : ℂ))
             set b : ℂ := (g z * h z * k z) ^ 8
             have ha : a ≠ 0 := by simp [a]
-            have hcancel : a * (b * a⁻¹) = b := by
-              simp [a, b, mul_left_comm, mul_comm]
-            calc
-              ((256 : ℂ)⁻¹) * (a * b) / a = ((256 : ℂ)⁻¹) * (a * (b * a⁻¹)) := by
-                simp [a, b, div_eq_mul_inv, mul_assoc]
-              _ = ((256 : ℂ)⁻¹) * b := by
-                simpa using congrArg (fun t : ℂ => ((256 : ℂ)⁻¹) * t) hcancel
+            grind only
       _ = (g z * h z * k z) ^ 8 / (256 : ℂ) := by
             simp [div_eq_mul_inv, mul_left_comm, mul_comm]
   simpa [hrewrite] using this
@@ -1335,8 +1303,8 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
       funext z
       simp [hEqFun, div_eq_mul_inv, mul_left_comm, mul_comm]
     simpa [hrew] using this
-  have hc_one : c = (1 : ℂ) := by
-    exact (tendsto_nhds_unique hlim_thetaDeltaCF' hlim_thetaDeltaCF)
+  have hc_one : c = (1 : ℂ) :=
+    (tendsto_nhds_unique hlim_thetaDeltaCF' hlim_thetaDeltaCF)
   -- Conclude equality of cusp forms and then evaluate at `τ`.
   have hEqCF : thetaDelta_CF = Delta := by
     -- From `hc : c • Delta = thetaDelta_CF` and `c = 1`.

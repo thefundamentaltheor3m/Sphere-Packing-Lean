@@ -36,21 +36,17 @@ public lemma integrableOn_one_div_sq_mul_exp_neg_div (c : ℝ) (hc : 0 < c) :
   have hs : MeasurableSet s := measurableSet_Ioc
   have hf' : ∀ t ∈ s, HasDerivWithinAt f (f' t) s t := by
     intro t ht
-    have ht0 : t ≠ 0 := ne_of_gt ht.1
-    simpa [f, f', one_div, div_eq_mul_inv, pow_two, ht0] using
-      (hasDerivAt_inv ht0).hasDerivWithinAt
+    simpa [f, f', one_div, div_eq_mul_inv, pow_two, ne_of_gt ht.1] using
+      (hasDerivAt_inv (ne_of_gt ht.1)).hasDerivWithinAt
   have hfinj : InjOn f s := by
     intro a ha b hb hab
-    have : (a : ℝ)⁻¹ = b⁻¹ := by simpa [f, one_div] using hab
-    exact inv_injective this
+    exact inv_injective (by simpa [f, one_div] using hab)
   have himage : f '' s = Ici (1 : ℝ) := by
     simpa [f, s] using (InvChangeOfVariables.Ici_one_eq_image_inv_Ioc).symm
   have hdecay :
       IntegrableOn (fun y : ℝ ↦ rexp (-(c * y))) (Ici (1 : ℝ)) volume := by
-    have hb : 0 < c := hc
-    -- `n = 0` in the shared lemma: `y^0 * exp(-c*y)` on `[1,∞)`.
     simpa [pow_zero, one_mul] using
-      (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := c) hb)
+      (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := c) hc)
   have hiff :=
     (MeasureTheory.integrableOn_image_iff_integrableOn_abs_deriv_smul (hs := hs) (hf' := hf')
       (hf := hfinj) (g := fun y : ℝ ↦ rexp (-(c * y))))
@@ -63,10 +59,7 @@ public lemma integrableOn_one_div_sq_mul_exp_neg_div (c : ℝ) (hc : 0 < c) :
     simpa [smul_eq_mul] using hmain
   refine hmain'.congr_fun (hs := hs) ?_
   intro t ht
-  have habs : |f' t| = (1 : ℝ) / t ^ 2 := by
-    dsimp [f']
-    have ht2 : 0 ≤ t ^ (2 : ℕ) := pow_two_nonneg t
-    simp [abs_div, abs_of_nonneg ht2]
+  have habs : |f' t| = (1 : ℝ) / t ^ 2 := by simp [f', abs_div, abs_of_nonneg (pow_two_nonneg t)]
   have harg : (-(c * f t) : ℝ) = -c / t := by
     simp [f, div_eq_mul_inv]
   simp [habs, harg]

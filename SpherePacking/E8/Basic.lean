@@ -49,8 +49,7 @@ open Module
 
 lemma AddCommGroup.ModEq.zsmul' {α : Type*} [AddCommGroup α] {p a b : α} {n : ℤ}
     (h : a ≡ b [PMOD p]) :
-    n • a ≡ n • b [PMOD p] :=
-  (h.zsmul (z := n)).of_zsmul
+    n • a ≡ n • b [PMOD p] := (h.zsmul (z := n)).of_zsmul
 
 /-- The coefficientwise cast map `(ι → ℤ) → (ι → R)` as a `ℤ`-linear map. -/
 @[expose, simps]
@@ -90,19 +89,16 @@ public lemma Submodule.coe_evenLattice (R : Type*) (n : ℕ) [Ring R] [CharZero 
   · rintro ⟨hv, hv'⟩
     choose w hw using hv
     refine ⟨w, ?_, by ext i; simpa using hw i⟩
-    have hwZ :
-        (∑ i, w i : ℤ) ≡ 0 [PMOD 2] :=
+    simpa [evenLatticeInt] using
       (AddCommGroup.intCast_modEq_intCast' (G := R) (a := ∑ i, w i) (b := 0) (n := 2)).1
         (by simpa [← hw, Int.cast_sum] using hv')
-    simpa [evenLatticeInt] using hwZ
 
 /-- Membership in `evenLattice` (as a proposition). -/
 public lemma Submodule.mem_evenLattice {R : Type*} [Ring R] [CharZero R] (n : ℕ)
     {v : Fin n → R} :
     v ∈ Submodule.evenLattice R n ↔
       (∀ i, ∃ n : ℤ, (n : R) = v i) ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
-  rw [← SetLike.mem_coe, Submodule.coe_evenLattice]
-  rfl
+  simp [← SetLike.mem_coe, Submodule.coe_evenLattice]
 
 /-- The `E8` lattice as a `ℤ`-submodule of `Fin 8 → R`, defined by parity conditions. -/
 public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
@@ -204,8 +200,7 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     rw [sup_le_iff]
     constructor
     · intro v hv
-      rw [mem_evenLattice] at hv
-      simp [mem_E8, hv]
+      simp [mem_E8, (mem_evenLattice (R := R) (n := 8)).1 hv]
     · rw [Submodule.span_le]
       simpa [mem_E8, (show (8 * 2⁻¹ : R) = (2 : ℤ) • 2 by norm_num)] using
         AddCommGroup.zsmul_modEq_zero (p := (2 : R)) 2
@@ -213,8 +208,7 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     intro x
     rw [mem_E8]
     rintro ⟨hx | hx, hx'⟩
-    · refine mem_sup_left ?_
-      exact (mem_evenLattice (R := R) (n := 8)).2 ⟨hx, hx'⟩
+    · exact Submodule.mem_sup_left ((mem_evenLattice (R := R) (n := 8)).2 ⟨hx, hx'⟩)
     simp only [Odd] at hx
     choose y hy hy' using hx
     choose z hz using hy
@@ -344,15 +338,13 @@ lemma exists_cast_eq_vecMul_E8Inverse_aux {R : Type*} [Field R] [CharZero R]
     ∃ c : ℤ, c = ∑ i, v i * w i := by
   obtain ⟨(hv' | hv'), hv⟩ := Submodule.mem_E8''.1 hv
   · choose v' hv' using hv'
-    simp only [← hv']
-    norm_cast
-    simp
+    refine ⟨∑ i, v' i * w i, ?_⟩
+    simp [← hv', Int.cast_sum, Int.cast_mul]
   · choose v' hv' using hv'
-    simp only [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum]
-    norm_cast
-    simp only [Int.cast_sum, Int.cast_mul, hw, Int.cast_zero, mul_zero, add_zero]
-    norm_cast
-    simp
+    refine ⟨∑ i, v' i * w i, ?_⟩
+    have hwR : (∑ i, (w i : R)) = 0 := by
+      simpa [Int.cast_sum] using congrArg (fun z : ℤ => (z : R)) hw
+    simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum, Int.cast_sum, Int.cast_mul, hwR]
 
 lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (hv : v ∈ Submodule.E8 R) :

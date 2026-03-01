@@ -117,15 +117,7 @@ public theorem aRadial_eq_laplace_phi0_main {u : ℝ} (hu : 2 < u) :
       ring
     have htrig := MagicFunction.g.CohnElkies.Trig.two_sub_exp_pi_mul_I_sub_exp_neg_pi_mul_I u
     have hhalf := MagicFunction.g.CohnElkies.Trig.two_sub_two_cos_eq_four_sin_sq u
-    calc
-      coeff
-          =
-          -((2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
-                Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I))) := hrew
-      _ = -(((2 - 2 * Real.cos (π * u) : ℝ) : ℂ)) := by
-            simpa using congrArg Neg.neg htrig
-      _ = -((4 * (Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) := by
-            simpa using congrArg (fun r : ℝ => -((r : ℂ))) hhalf
+    grind only
   -- Convert the `Φ₅'`-ray integral to the Laplace integral.
   have hΦ5 :
       (∫ t in Set.Ioi (0 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) =

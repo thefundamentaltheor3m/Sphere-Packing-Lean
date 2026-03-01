@@ -102,8 +102,6 @@ public theorem perm_J₃_J₄_of
     have : J₁ + J₂ = -FT.symm (J₃ + J₄) := by
       simpa [FT] using (FT.symm_apply_apply (J₁ + J₂)).symm.trans this
     simpa using congrArg Neg.neg this
-  have hsymm' : FT.symm (J₃ + J₄) = FT (J₃ + J₄) := by
-    simpa [FT] using hsymm
-  simpa [FT, hsymm'] using h.symm
+  lia
 
 end SpherePacking.Contour

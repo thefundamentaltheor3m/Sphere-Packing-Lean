@@ -143,8 +143,8 @@ lemma integrableOn_ψS'_vertical_left :
       MeasureTheory.AEStronglyMeasurable (fun t : ℝ => ψS' (t * Complex.I))
         (MeasureTheory.volume.restrict (Ioi (1 : ℝ))) := by
     have hψS : Continuous ψS := MagicFunction.b.PsiBounds.continuous_ψS
-    have hcont : ContinuousOn ψS.resToImagAxis (Ioi (1 : ℝ)) := by
-      exact (Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) hψS).mono
+    have hcont : ContinuousOn ψS.resToImagAxis (Ioi (1 : ℝ)) :=
+      (Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) hψS).mono
         (Set.Ioi_subset_Ici_self : Ioi (1 : ℝ) ⊆ Ici (1 : ℝ))
     have hcont' : ContinuousOn (fun t : ℝ => ψS' (t * Complex.I)) (Ioi (1 : ℝ)) := by
       refine hcont.congr ?_
@@ -264,13 +264,7 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
               (μ := MeasureTheory.volume) (a := (0 : ℝ)) (b := (1 : ℝ)))
             (continuous_ψT'_add_I.intervalIntegrable
               (μ := MeasureTheory.volume) (a := (0 : ℝ)) (b := (1 : ℝ))))
-      have hCongr :
-          (∫ t in (0 : ℝ)..1, (ψI' ((t : ℂ) + Complex.I) - ψT' ((t : ℂ) + Complex.I))) =
-            ∫ t in (0 : ℝ)..1, ψS' ((t : ℂ) + Complex.I) := by
-        refine intervalIntegral.integral_congr (μ := MeasureTheory.volume) ?_
-        intro t ht
-        exact Complex.ext (congrArg Complex.re (hrel t)) (congrArg Complex.im (hrel t))
-      simpa [hSub] using hCongr
+      simp_all
     simpa [hJ2, hJ4, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hInt
   have hdiffψS :
       DifferentiableOn ℂ (fun z : ℂ => ψS (UpperHalfPlane.ofComplex z)) {z : ℂ | 0 < z.im} := by
@@ -422,18 +416,16 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
     rw [h0]
     have hIci :
         (∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t)) =
-          ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t) := by
-      simpa using
-        (MeasureTheory.integral_Ici_eq_integral_Ioi (μ := MeasureTheory.volume)
-          (f := fun t : ℝ => (Complex.I : ℂ) * ψS' (z₆' t)) (x := (1 : ℝ)))
+          ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t) :=
+      MeasureTheory.integral_Ici_eq_integral_Ioi
     have hparam :
         (∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * ψS' (z₆' t)) =
           ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * ψS' (t * Complex.I) := by
       refine MeasureTheory.integral_congr_ae ?_
       refine MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi ?_
       intro t ht
-      have ht' : t ∈ Set.Ici (1 : ℝ) := by
-        exact le_of_lt (by simpa [Set.mem_Ioi] using ht)
+      have ht' : t ∈ Set.Ici (1 : ℝ) :=
+        le_of_lt (by simpa [Set.mem_Ioi] using ht)
       simp [MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t) ht', mul_comm]
     -- Pull `I` outside as a scalar and simplify.
     simp [hIci, hparam, MeasureTheory.integral_const_mul, smul_eq_mul]

@@ -202,10 +202,8 @@ private lemma perm_J12_contour_h_aux
     have hbd : q1 = (AffineMap.lineMap q0 q1) (1 : ℝ) := by
       simp [AffineMap.lineMap_apply_one]
     rw [← Path.cast_segment hac hbd]
-    simpa using
-      (curveIntegral_cast (ω := ω)
-        (γ := Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
-          ((AffineMap.lineMap q0 q1) (1 : ℝ))) hac hbd)
+    exact curveIntegral_cast ω
+      (Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) 1)) ((AffineMap.lineMap q0 q1) 1)) hac hbd
   have hseg0 :
       (∫ᶜ z in Path.segment (mobiusInv p0) q0, ω z) =
         ∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)))
@@ -216,10 +214,8 @@ private lemma perm_J12_contour_h_aux
     have hbd : q0 = (AffineMap.lineMap q0 q1) (0 : ℝ) := by
       simp [AffineMap.lineMap_apply_zero]
     rw [← Path.cast_segment hac hbd]
-    simpa using
-      (curveIntegral_cast (ω := ω)
-        (γ := Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)))
-          ((AffineMap.lineMap q0 q1) (0 : ℝ))) hac hbd)
+    exact curveIntegral_cast ω
+      (Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) 0)) ((AffineMap.lineMap q0 q1) 0)) hac hbd
   -- Rewrite the endpoint segments via casting and finish.
   have hfinal := hflat
   -- LHS endpoint segment

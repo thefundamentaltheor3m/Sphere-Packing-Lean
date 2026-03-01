@@ -146,10 +146,8 @@ public lemma exists_phi2'_sub_720_bound_ge :
     have hA :
         ‖Aterm‖ ≤ (E4B * CA) * q ^ (2 : ℕ) := by
       have hmul :
-          ‖Aterm‖ ≤ E4B * (CA * q ^ (2 : ℕ)) := by
-        have hprod :=
-          mul_le_mul hE4norm hAerr (norm_nonneg _) (le_of_lt hE4B_pos)
-        simpa [Aterm, norm_mul, mul_assoc] using hprod
+          ‖Aterm‖ ≤ E4B * (CA * q ^ (2 : ℕ)) :=
+        norm_mul_le_of_le hE4norm (hAq t ht0 ht1)
       simpa [mul_assoc, mul_left_comm, mul_comm] using hmul
     have hB :
         ‖Bterm‖ ≤ (720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by
@@ -167,8 +165,8 @@ public lemma exists_phi2'_sub_720_bound_ge :
       ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)‖ =
           ‖Aterm + Bterm‖ := by simpa using congrArg norm hdecomp
       _ ≤ ‖Aterm‖ + ‖Bterm‖ := norm_add_le _ _
-      _ ≤ (E4B * CA) * q ^ (2 : ℕ) + (720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by
-            exact add_le_add hA hB
+      _ ≤ (E4B * CA) * q ^ (2 : ℕ) + (720 * (CE4 + CΔq)) * q ^ (2 : ℕ) :=
+            add_le_add hA hB
       _ = (E4B * CA + 720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by ring
   -- Multiply by `‖Δ⁻¹‖ = O(exp(2πt))` to obtain `O(q)`.
   have :
@@ -211,7 +209,7 @@ lemma sq_add_sub_decomp (a b c : ℂ) :
     (a + b) ^ (2 : ℕ) - c = ((a ^ (2 : ℕ) - c) + (2 : ℂ) * a * b) + b ^ (2 : ℕ) := by
   ring
 
-lemma norm_base240_sq_sub_target480_eq {q : ℝ} (hq_nonneg : 0 ≤ q) :
+lemma norm_base240_sq_sub_target480_eq {q : ℝ} :
     ‖(((1 : ℂ) + (240 : ℂ) * (q : ℂ)) ^ (2 : ℕ) -
           ((1 : ℂ) + (480 : ℂ) * (q : ℂ)))‖ =
         (240 ^ 2 : ℝ) * q ^ (2 : ℕ) := by
@@ -221,13 +219,7 @@ lemma norm_base240_sq_sub_target480_eq {q : ℝ} (hq_nonneg : 0 ≤ q) :
         (240 ^ 2 : ℂ) * (q : ℂ) ^ (2 : ℕ) := by
     simp [pow_two]
     ring
-  have hq : ‖(q : ℂ) ^ (2 : ℕ)‖ = q ^ (2 : ℕ) := by
-    simp [norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hq_nonneg]
-  calc
-    ‖((1 : ℂ) + (240 : ℂ) * (q : ℂ)) ^ (2 : ℕ) - ((1 : ℂ) + (480 : ℂ) * (q : ℂ))‖ =
-        ‖(240 ^ 2 : ℂ) * (q : ℂ) ^ (2 : ℕ)‖ := by simp [h]
-    _ = ‖(240 ^ 2 : ℂ)‖ * ‖(q : ℂ) ^ (2 : ℕ)‖ := by simp
-    _ = (240 ^ 2 : ℝ) * q ^ (2 : ℕ) := by simp [hq]
+  simp_all
 
 lemma norm_two_mul_base240_mul_e_le
     {q CE4 B240 : ℝ} {e : ℂ}
@@ -258,12 +250,7 @@ lemma norm_e_sq_le
     ‖e ^ (2 : ℕ)‖ = ‖e‖ ^ (2 : ℕ) := by simp [norm_pow]
     _ ≤ (CE4 * q ^ (2 : ℕ)) ^ (2 : ℕ) := pow_le_pow_left₀ (norm_nonneg _) he _
     _ = (CE4 ^ 2) * q ^ (4 : ℕ) := by
-          have hqpow : (q ^ (2 : ℕ)) ^ (2 : ℕ) = q ^ (4 : ℕ) := by
-            simpa using (pow_mul q 2 2).symm
-          calc
-            (CE4 * q ^ (2 : ℕ)) ^ (2 : ℕ) = CE4 ^ (2 : ℕ) * (q ^ (2 : ℕ)) ^ (2 : ℕ) := by
-              simp [mul_pow]
-            _ = (CE4 ^ 2) * q ^ (4 : ℕ) := by simp [hqpow]
+          ring
     _ ≤ (CE4 ^ 2) * q ^ (2 : ℕ) := mul_le_mul_of_nonneg_left hq4_le_q2 hCE4sq
 
 lemma norm_sq_sub_le_three_norms (base target e : ℂ) :
@@ -311,7 +298,7 @@ lemma norm_base_add_e_sq_sub_one_sub_480q_le
         ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2) * q ^ (2 : ℕ) := by
   simpa using
     (norm_base_add_e_sq_sub_one_sub_480q_le_core (q := q) (CE4 := CE4) (B240 := B240) (e := e)
-      (by simpa using (le_of_eq (norm_base240_sq_sub_target480_eq (q := q) hq_nonneg)))
+      (by simpa using (le_of_eq (norm_base240_sq_sub_target480_eq (q := q))))
       (norm_two_mul_base240_mul_e_le (q := q) (CE4 := CE4) (B240 := B240) (e := e) he hbase_norm)
       (norm_e_sq_le (q := q) (CE4 := CE4) (e := e) hq_nonneg hq_le_one he))
 
@@ -358,37 +345,8 @@ lemma phi4_numerator_bound
     set C : ℂ := (504 : ℂ) * (Δ z - qC)
     have hAB : ‖A - B‖ ≤ ‖A‖ + ‖B‖ := norm_sub_le A B
     have hABC : ‖(A - B) - C‖ ≤ ‖A - B‖ + ‖C‖ := norm_sub_le (A - B) C
-    calc
-      ‖(E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)‖
-          = ‖(A - B) - C‖ := enorm_eq_iff_norm_eq.mp (congrArg enorm hdecomp)
-      _ ≤ ‖A - B‖ + ‖C‖ := hABC
-      _ ≤ (‖A‖ + ‖B‖) + ‖C‖ := by
-            simpa [add_assoc, add_left_comm, add_comm] using (add_le_add_left hAB ‖C‖)
-      _ = ‖A‖ + ‖B‖ + ‖C‖ := by simp [add_assoc]
-      _ = ‖(E₄ z) ^ (2 : ℕ) - ((1 : ℂ) + (480 : ℂ) * qC)‖ +
-            ‖(Real.exp (2 * π * t) : ℂ) * (Δ z) - ((1 : ℂ) + (-24 : ℂ) * qC)‖ +
-            ‖(504 : ℂ) * (Δ z - qC)‖ := by
-            simp [A, B, C]
-  have h1 : ‖(E₄ z) ^ (2 : ℕ) - ((1 : ℂ) + (480 : ℂ) * qC)‖ ≤
-      ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2) * q ^ (2 : ℕ) := by
-    simpa [qC] using hE4sq
-  have h2 : ‖(Real.exp (2 * π * t) : ℂ) * (Δ z) - ((1 : ℂ) + (-24 : ℂ) * qC)‖ ≤
-      CΔ3 * q ^ (2 : ℕ) := by
-    simpa [qC] using hExpΔ
-  have h3 : ‖(504 : ℂ) * (Δ z - qC)‖ ≤ (504 * CΔq) * q ^ (2 : ℕ) := hterm3
-  have htmp :
-      ‖(E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)‖ ≤
-        (((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2) * q ^ (2 : ℕ)) +
-          (CΔ3 * q ^ (2 : ℕ)) + ((504 * CΔq) * q ^ (2 : ℕ)) := by
-    have := le_trans htri (add_le_add (add_le_add h1 h2) h3)
-    simpa [add_assoc] using this
-  have hEq :
-      (((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2) * q ^ (2 : ℕ)) + (CΔ3 * q ^ (2 : ℕ)) +
-            ((504 * CΔq) * q ^ (2 : ℕ)) =
-        ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq) * q ^ (2 : ℕ) := by
-    -- Factor `q^2` and collect coefficients.
-    exact Eq.symm (distrib_three_right (240 ^ 2 + 2 * B240 * CE4 + CE4 ^ 2) CΔ3 (504 * CΔq) (q ^ 2))
-  exact htmp.trans (le_of_eq hEq)
+    grind only
+  grind only
 
 /-- For large `t`, `φ₄' (it)` differs from `exp (2π t) + 504` by `O(exp (-2π t))`. -/
 public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
@@ -529,9 +487,7 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
         (Real.exp (2 * π * t)) * (CΔ3 * q ^ (3 : ℕ)) := by
       simpa [hdiff.symm] using hmain
     -- Conclude.
-    have hfinal : ‖E * Δ z - ((1 : ℂ) + (-24 : ℂ) * qC)‖ ≤ CΔ3 * q ^ (2 : ℕ) := by
-      simpa [hRHS] using hmain'
-    simpa [E, qC] using hfinal
+    exact le_of_le_of_eq hmain' hRHS
   -- `Δ = q + O(q^2)`.
   have hΔ2err : ‖Δ z - (q : ℂ)‖ ≤ CΔq * q ^ (2 : ℕ) := by
     simpa [z, q] using hΔq t ht0 ht1

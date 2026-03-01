@@ -80,15 +80,7 @@ public lemma integrable_gN_J6 (f : ℝ → ℂ)
     _ = bound t := by
           have hp : (Real.pi * t) ^ n = (Real.pi ^ n) * t ^ n := by
             simp [mul_pow, mul_comm]
-          have hmulExp :
-              (C * Real.exp (-Real.pi * t)) * Real.exp (-Real.pi * x * t) =
-                C * Real.exp (-(Real.pi * (x + 1)) * t) := by
-            calc
-              (C * Real.exp (-Real.pi * t)) * Real.exp (-Real.pi * x * t) =
-                  C * (Real.exp (-Real.pi * t) * Real.exp (-Real.pi * x * t)) := by ring_nf
-              _ = C * Real.exp (-(Real.pi * (x + 1)) * t) := by rw [hexp]
-          rw [hp, hmulExp]
-          simp [bound, mul_assoc, mul_left_comm, mul_comm]
+          grind only
 
 end
 

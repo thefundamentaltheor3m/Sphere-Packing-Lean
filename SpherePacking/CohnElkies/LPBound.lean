@@ -104,8 +104,8 @@ theorem f_zero_pos : 0 < (f 0).re := by
   have hf0 : f 0 = 0 := by
     simpa [hf0re.symm] using (hReal 0).symm
   have hint0 : (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v) = 0 := by
-    have hInv : 𝓕⁻ (𝓕 ⇑f) 0 = f 0 := by
-      exact congrArg (fun g : EuclideanSpace ℝ (Fin d) → ℂ => g 0) (f.fourierInversion)
+    have hInv : 𝓕⁻ (𝓕 ⇑f) 0 = f 0 :=
+      congrArg (fun g : EuclideanSpace ℝ (Fin d) → ℂ => g 0) (f.fourierInversion)
     simpa [fourierInv_eq, inner_zero_right, AddChar.map_zero_eq_one, one_smul, hf0] using hInv
   have hintRe : ∫ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).re = 0 := by
     have : (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v).re = 0 := by
@@ -446,7 +446,6 @@ theorem calc_steps_part2 (hd : 0 < d) :
                   (c := ZLattice.covolume P.lattice volume)
                   (a := (𝓕 ⇑f 0).re)
                   (b := (↑(P.numReps' hd hD_isBounded) : ℝ) ^ 2)
-              -- Rewrite `𝓕 ⇑f 0` to `𝓕 f 0`; `rw` is robust here (only `hfou_re` use).
               assumption
 
 include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hD_unique_covers in

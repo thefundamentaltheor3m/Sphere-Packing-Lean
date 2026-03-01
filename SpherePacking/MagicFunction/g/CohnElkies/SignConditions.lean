@@ -38,9 +38,8 @@ lemma gRadial_re_nonpos_of_two_lt {u : ℝ} (hu : 2 < u) : (gRadial u).re ≤ 0 
   have hEq := gRadial_eq_integral_A (u := u) hu
   set IA : ℝ := ∫ t in Set.Ioi (0 : ℝ), A t * Real.exp (-π * u * t) with hIA
   have hIntA :
-      (∫ t in Set.Ioi (0 : ℝ), (A t : ℂ) * Real.exp (-π * u * t)) = (IA : ℂ) := by
-    rw [hIA]
-    simpa using (integral_Ioi_ofReal_mul_exp (u := u) (f := A))
+      (∫ t in Set.Ioi (0 : ℝ), (A t : ℂ) * Real.exp (-π * u * t)) = (IA : ℂ) :=
+    integral_Ioi_ofReal_mul_exp u A
   have hEq' : gRadial u =
       (π / 2160 : ℂ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * (IA : ℂ) := by
     exact Eq.symm (CancelDenoms.derive_trans (id (Eq.symm hIntA)) (id (Eq.symm hEq)))
@@ -58,7 +57,7 @@ lemma gRadial_re_nonpos_of_two_lt {u : ℝ} (hu : 2 < u) : (gRadial u).re ≤ 0 
       (gRadial u).re =
         (π / 2160 : ℝ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IA := by
     have hRe0 := congrArg Complex.re hEqReal
-    simpa only [Complex.ofReal_re] using hRe0
+    assumption
   have hIntegral :
       IA ≤ 0 := by
     refine MeasureTheory.setIntegral_nonpos (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
@@ -71,9 +70,9 @@ lemma gRadial_re_nonpos_of_two_lt {u : ℝ} (hu : 2 < u) : (gRadial u).re ≤ 0 
   have hPref :
       0 ≤ (π / 2160 : ℝ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) := by
     positivity
-  have hProd : (π / 2160 : ℝ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IA ≤ 0 := by
-    exact mul_nonpos_of_nonneg_of_nonpos hPref hIntegral
-  simpa [hRe, mul_assoc] using hProd
+  have hProd : (π / 2160 : ℝ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IA ≤ 0 :=
+    mul_nonpos_of_nonneg_of_nonpos hPref hIntegral
+  exact le_of_eq_of_le hRe hProd
 
 lemma gRadial_re_nonpos_of_two_le {u : ℝ} (hu : 2 ≤ u) : (gRadial u).re ≤ 0 := by
   have hclosed : IsClosed {u : ℝ | (gRadial u).re ≤ 0} :=
@@ -101,9 +100,8 @@ public theorem fourier_g_nonneg : ∀ x : ℝ⁸, (𝓕 g x).re ≥ 0 := by
     have hEq := fourier_g_eq_integral_B (x := x) hx'
     set IB : ℝ := ∫ t in Set.Ioi (0 : ℝ), B t * Real.exp (-π * u * t) with hIB
     have hIntB :
-        (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) = (IB : ℂ) := by
-      rw [hIB]
-      simpa using (integral_Ioi_ofReal_mul_exp (u := u) (f := B))
+        (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) = (IB : ℂ) :=
+      integral_Ioi_ofReal_mul_exp u B
     set s : ℝ := (π / 2160 : ℝ) * (Real.sin (π * u / 2)) ^ (2 : ℕ)
     have hEqReal : (𝓕 g x) = ((s * IB : ℝ) : ℂ) := by
       have hEq' := hEq
@@ -114,15 +112,10 @@ public theorem fourier_g_nonneg : ∀ x : ℝ⁸, (𝓕 g x).re ≥ 0 := by
       rw [hcoef] at hEq''
       rw [(Complex.ofReal_pow (Real.sin (π * u / 2)) (2 : ℕ)).symm] at hEq''
       rw [(Complex.ofReal_mul (π / 2160 : ℝ) ((Real.sin (π * u / 2)) ^ (2 : ℕ))).symm] at hEq''
-      have hsC :
-          (((π / 2160 : ℝ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) = (s : ℂ) := by
-        rfl
-      rw [hsC] at hEq''
-      rw [(Complex.ofReal_mul s IB).symm] at hEq''
-      exact hEq''
+      simpa
     have hRe : (𝓕 g x).re = s * IB := by
       have hRe0 := congrArg Complex.re hEqReal
-      simpa [Complex.ofReal_re] using hRe0
+      assumption
     have hIntegral :
         0 ≤ IB := by
       refine MeasureTheory.setIntegral_nonneg (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
@@ -134,8 +127,7 @@ public theorem fourier_g_nonneg : ∀ x : ℝ⁸, (𝓕 g x).re ≥ 0 := by
     have hs : 0 ≤ s := by
       dsimp [s]
       positivity
-    have hProd : 0 ≤ s * IB := by
-      exact mul_nonneg hs hIntegral
-    simpa [hRe, mul_assoc] using hProd
+    have hProd : 0 ≤ s * IB := mul_nonneg hs hIntegral
+    exact le_of_le_of_eq hProd (id (Eq.symm hRe))
 
 end MagicFunction.g.CohnElkies
