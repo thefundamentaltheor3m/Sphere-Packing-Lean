@@ -125,14 +125,14 @@ lemma UpperHalfPlane_open_nhd {x : ℂ} {hx : x ∈ Set.univ ×ℂ Set.Ioi 0} :
   refine IsOpen.mem_nhds ?_ hx
   have h_open : IsOpen (Set.univ : Set (ℝ × ℝ)) ∧ IsOpen (Set.Ioi (0 : ℝ)) := by
     exact ⟨ isOpen_univ, isOpen_Ioi ⟩;
-  convert h_open.1.prod h_open.2 using 1;
-  apply Iff.intro;
+  convert h_open.1.prod h_open.2
+  constructor
   · exact fun h => h_open.1.prod h_open.2;
-  · intro h;
-    convert h.preimage _;
-    rotate_left;
+  · intro h
+    convert h.preimage _
+    rotate_left
     · exact fun x => ( ( x.re, x.im ), x.im );
-    · fun_prop;
+    · fun_prop
     · exact Subset.antisymm (fun ⦃a⦄ a_1 ↦ a_1) fun ⦃a⦄ a_1 ↦ a_1
 
 def d (r : ℝ) := -4 * (Complex.sin (Real.pi * r / 2) ^ 2) *  ∫ t in Ici (0 : ℝ),
@@ -209,6 +209,12 @@ lemma cauchy_goursat_int_1 : ∫ (t : ℝ) in Ioi 1, I * integrand_1 r (-1 + t *
   I • ∫ (t : ℝ) in Ioi 1, integrand_1 r (0 + t * I) := by
   rw [integral_const_mul]
   rw [← smul_eq_mul]
+  -- set g := fun (z : ℂ) => if z.re ∈ Icc (-1) 1 then integrand_1 r z else 0
+
+  -- -- Big rewriting to do here with g
+  -- have integrand_1_eq_g : integrand_1 r = g := by sorry
+  -- rw [integrand_1_eq_g]
+
   have : (-1 : ℝ) = (-1 : ℂ) := by simp
   rw [← this, ← sub_eq_zero.1
    (integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
@@ -247,10 +253,13 @@ lemma cauchy_goursat_int_1 : ∫ (t : ℝ) in Ioi 1, I * integrand_1 r (-1 + t *
     simp only [ofReal_zero, zero_add]
     apply (integrableOn_goal3 r hr)
   · intro ε hε
-    obtain ⟨M, s⟩ := uniform_vanishing_verticalIntegrandX r hr ε hε
-    use M
-    intro z
-    have x := z.re; have t := z.im
+    sorry
+    -- obtain ⟨M, s⟩ := uniform_vanishing_topEdgeIntegrand r hr ε hε
+    -- use M
+    -- intro z hz
+    -- have s := s (z.re + 1) z.im hz
+    -- convert s
+    -- unfold integrand_1; unfold verticalIntegrandX
 
 
 lemma cauchy_goursat_int_3 : ∫ (t : ℝ) in Ioi 1, I * integrand_3 r (1 + t * I) =
@@ -341,8 +350,8 @@ lemma int_1_eq : φ₀_int_1 r = I₁' r + I₂' r + ∫ t in Ici (1 : ℝ),
           have : (fun (t : ℝ) => φ₀'' (-1 / (↑t + I))) =
             (fun z => φ₀'' (-1 / (z + ↑(0 : ℝ)))) ∘ (fun (t : ℝ) => ↑t + I) := by funext; simp
           rw [this]
-          apply ContinuousOn.comp
-            (ContinuousOn.comp φ₀''_differentiable.continuousOn inv_cadd_real_continuous inv_cadd_real_image)
+          apply ContinuousOn.comp (ContinuousOn.comp φ₀''_differentiable.continuousOn
+            inv_cadd_real_continuous inv_cadd_real_image)
           · fun_prop
           · intros x hx
             exact ⟨Set.mem_univ _, (by simp)⟩
@@ -395,8 +404,8 @@ lemma int_3_eq : φ₀_int_3 r = I₃' r + I₄' r + ∫ t in Ici (1 : ℝ),
           have : (fun (t : ℝ) => φ₀'' (-1 / (↑t + 1 * I - 1))) =
             (fun z => φ₀'' (-1 / (z + ↑(-1 : ℝ)))) ∘ (fun (t : ℝ) => ↑t + I) := by funext; simp; rfl
           rw [this]
-          apply ContinuousOn.comp
-            (ContinuousOn.comp φ₀''_differentiable.continuousOn inv_cadd_real_continuous inv_cadd_real_image)
+          apply ContinuousOn.comp (ContinuousOn.comp φ₀''_differentiable.continuousOn
+            inv_cadd_real_continuous inv_cadd_real_image)
           · fun_prop
           · intros x hx
             exact ⟨Set.mem_univ _, (by simp)⟩
@@ -534,13 +543,16 @@ lemma d_eq_1 : d r = I₁' r + I₂' r + I₃' r + I₄' r + I₅' r +
 lemma integrand_eq_2φ₀ : ∀ z : ℂ, I * φ₀'' (-1 / (z + 1)) * (z + 1)^2 +
   I * φ₀'' (-1 / (z - 1)) * (z - 1)^2 +
   -2 * I * φ₀'' (-1 / z) * z^2 = 2 * I * φ₀'' z := by
-  sorry
+  intro z
+  by_cases z ∈ UpperHalfPlane.upperHalfPlaneSet
+  unfold φ₀''
 
 theorem d_eq_a : d r = a' r := by
   rw [d_eq_1 (hr := hr) _]
   conv_lhs =>
     pattern (_ * (cexp _) + _ * (cexp _) + _ * (cexp _))
     rw [← add_mul, ← add_mul]
+  -- TODO: Rewrite under binder here using assumption
   conv_lhs =>
     pattern (_ * cexp (_))
     rw [integrand_eq_2φ₀ (hr := hr)]
