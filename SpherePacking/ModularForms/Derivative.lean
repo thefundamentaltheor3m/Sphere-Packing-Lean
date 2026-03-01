@@ -604,9 +604,7 @@ public theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ}
   have hg : HasDerivAt g I t := by simpa using ofRealCLM.hasDerivAt.const_mul I
   have hF' := (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt
   rw [(hF'.scomp t hg).deriv]
-  have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by
-    simp only [D]
-    field_simp
+  have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by simp only [D]; field_simp
   simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z, smul_eq_mul]
   ring_nf
   simp only [I_sq]
@@ -1265,11 +1263,9 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   -- Package `serre_D 1 E₂` as a weight-4 level-1 modular form.
   let F₄ : ModularForm Γ(1) 4 :=
     { toFun := serre_D 1 E₂
-      slash_action_eq' := by
-        intro γ hγ
-        rcases (Subgroup.mem_map.1 hγ) with ⟨γ', hγ', rfl⟩
-        have hSerre := hSerre_slash γ'
-        simpa [ModularForm.SL_slash] using hSerre
+      slash_action_eq' := fun γ a =>
+          slashaction_generators_GL2R (serre_D 1 E₂) 4 (hSerre_slash ModularGroup.S)
+          (hSerre_slash ModularGroup.T) γ a
       holo' := serre_D_differentiable (k := (1 : ℂ)) E₂_holo'
       bdd_at_cusps' := by
         intro c hc

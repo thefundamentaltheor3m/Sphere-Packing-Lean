@@ -264,8 +264,7 @@ public lemma hasDerivAt_integral_gN
     have hh : ‖hf t‖ ≤ Mh := hMh t ht
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using
       (norm_gN_le_const (coeff := coeff) (hf := hf) (coeff_norm_le := coeff_norm_le)
-        (M := Mh) (t := t) (x := x) (x₀ := x₀) hx hh
-        (n := n + 1))
+        (M := Mh) (t := t) (x := x) (x₀ := x₀) hx hh (n := n + 1))
   haveI : IsFiniteMeasure μ := ⟨by simp [μ, Measure.restrict_apply, MeasurableSet.univ]⟩
   simpa [μ, intervalIntegral_eq_integral_uIoc, zero_le_one] using
     (hasDerivAt_integral_of_dominated_loc_of_deriv_le

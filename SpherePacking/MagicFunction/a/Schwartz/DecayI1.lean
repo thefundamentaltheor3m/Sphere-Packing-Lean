@@ -293,8 +293,7 @@ lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
       ∀ᵐ s ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ), ‖gN (n + 1) r s‖ ≤ bound s := by
     refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall ?_
     intro s hs r hr
-    have hrabs : |r| ≤ R := by
-      exact SpherePacking.ForMathlib.abs_le_abs_add_of_mem_ball hr
+    have hrabs : |r| ≤ R := SpherePacking.ForMathlib.abs_le_abs_add_of_mem_ball hr
     have hExp : rexp (-π * r / s) ≤ rexp (π * R) := by
       refine (exp_neg_pi_mul_div_le_exp_pi_abs (r := r) (s := s) hs).trans ?_
       exact Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hrabs Real.pi_pos.le)
@@ -390,10 +389,8 @@ lemma xpow_mul_exp_neg_pi_div_le (k : ℕ) {x s : ℝ} (hx : 0 ≤ x) (hs : 1 �
   set u : ℝ := (π * x) / s
   have hu0 : 0 ≤ u := div_nonneg (by positivity) (zero_le_one.trans hs)
   have hu : u ^ k * rexp (-u) ≤ Cpow := hCpow u hu0
-  have hu_mul : u * s = π * x := by
-    exact div_mul_cancel₀ (π * x) hs0
-  have hx' : x = u * s / π :=
-    CancelDenoms.cancel_factors_eq_div (id (Eq.symm hu_mul)) hpi0
+  have hu_mul : u * s = π * x := div_mul_cancel₀ (π * x) hs0
+  have hx' : x = u * s / π := CancelDenoms.cancel_factors_eq_div (id (Eq.symm hu_mul)) hpi0
   have hxpow : x ^ k = (π ^ k)⁻¹ * s ^ k * u ^ k := by
     simp [hx', mul_pow, div_eq_mul_inv, inv_pow, mul_assoc, mul_left_comm, mul_comm]
   have hexp : rexp (-π * x / s) = rexp (-u) := by

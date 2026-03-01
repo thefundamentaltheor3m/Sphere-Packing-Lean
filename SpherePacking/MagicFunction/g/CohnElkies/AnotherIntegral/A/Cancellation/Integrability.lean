@@ -68,10 +68,7 @@ lemma phi0Cancellation_compact_case {M A C t : ℝ} (ht1 : 1 ≤ t) (htA : t ≤
   have hscale :
       M ≤ (M / Real.exp (-2 * π * A)) * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) :=
     M_le_divExp_mul_tpow2_exp (M := M) (A := A) (t := t) hM0 ht1 htA
-  have hfac0 : 0 ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-    have ht2nn : 0 ≤ t ^ (2 : ℕ) := by
-      simpa [pow_two] using (sq_nonneg t)
-    exact mul_nonneg ht2nn (le_of_lt (Real.exp_pos _))
+  have hfac0 : 0 ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by positivity
   have hmul :
       (M / Real.exp (-2 * π * A)) * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) ≤
         C * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) :=
