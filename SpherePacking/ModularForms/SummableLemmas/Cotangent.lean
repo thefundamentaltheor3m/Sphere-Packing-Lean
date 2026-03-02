@@ -30,11 +30,7 @@ lemma pnat_inv_sub_squares (z : ℍ) :
   funext n
   have hsub : (z : ℂ) - n ≠ 0 := by simpa [sub_eq_zero] using upp_half_not_ints z (n : ℤ)
   have hplus : (z : ℂ) + n ≠ 0 := upper_half_plane_ne_int_add z n
-  rw [one_div_add_one_div (ha := hsub) (hb := hplus)]
-  have hnum : (z : ℂ) - n + (z + n) = 2 * (z : ℂ) := by ring
-  have hden : ((z : ℂ) - n) * ((z : ℂ) + n) = (z : ℂ) ^ 2 - n ^ 2 := by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using (sq_sub_sq (z : ℂ) (n : ℂ)).symm
-  rw [hnum, hden, div_eq_mul_inv, one_div]
+  grind only
 
 
 lemma upper_half_plane_ne_int_pow_two (z : ℍ) (n : ℤ) : (z : ℂ) ^ 2 - n ^ 2 ≠ 0 := by
@@ -114,12 +110,7 @@ public theorem summable_diff (z : ℍ) (d : ℤ) :
     rfl
   have := lhs_summable ⟨ -D/ z, by simpa using pnat_div_upper ⟨D, hd⟩ z⟩
   rw [← summable_mul_left_iff (a := -1) (by norm_num)]
-  simp only [not_lt, one_div, neg_mul, one_mul, neg_add_rev] at *
-  rw [hd22] at this
-  apply this.congr
-  intro b
-  field_simp
-  simp [neg_inv, sub_eq_add_neg, add_comm]
+  grind only
 
 lemma arg1 (a b c d e f g h : ℂ) : e / f + g / h - a / b - c / d = e / f + g / h + a / -b + c / -d
     := by ring

@@ -39,16 +39,14 @@ lemma ball_subset_coordCube {x : EuclideanSpace ℝ (Fin d)} {r L : ℝ}
   intro y hy i
   have hxi := hx i
   have hsub : |y i - x i| < r := abs_coord_sub_lt_of_mem_ball (d := d) hy i
-  have hsub' : -r < y i - x i ∧ y i - x i < r := abs_lt.mp hsub
-  have hy_lower : 0 ≤ y i := by
+  have hy0 : 0 ≤ y i := by
     have hx0 : 0 ≤ x i - r := sub_nonneg.mpr hxi.1
-    have hy_ge : x i - r < y i := by linarith [hsub'.1]
-    exact hx0.trans (le_of_lt hy_ge)
-  have hy_upper : y i < L := by
-    have hy_lt : y i < x i + r := by linarith [hsub'.2]
-    have hx_le : x i + r ≤ L := by linarith [hxi.2]
-    exact lt_of_lt_of_le hy_lt hx_le
-  exact ⟨hy_lower, hy_upper⟩
+    have : x i - r < y i := by linarith [(abs_lt.mp hsub).1]
+    exact hx0.trans (le_of_lt this)
+  have hyL : y i < L := by
+    have : y i < x i + r := by linarith [(abs_lt.mp hsub).2]
+    exact lt_of_lt_of_le this (by linarith [hxi.2])
+  exact ⟨hy0, hyL⟩
 
 /--
 If `ball x r ⊆ A` and `ball y r ⊆ B` with `A` and `B` disjoint, then the centers satisfy
@@ -63,12 +61,10 @@ public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)}
   let m : EuclideanSpace ℝ (Fin d) := midpoint ℝ x y
   have hhalf : (1 / 2 : ℝ) * dist x y < r := by nlinarith
   have hmx : m ∈ ball x r := by
-    have : dist m x < r := by simpa [m] using hhalf
-    simpa [Metric.mem_ball, dist_comm] using this
+    simpa [Metric.mem_ball, dist_comm, m] using (by simpa [m] using hhalf : dist m x < r)
   have hmy : m ∈ ball y r := by
-    have : dist m y < r := by simpa [m, dist_comm] using hhalf
-    simpa [Metric.mem_ball, dist_comm] using this
-  exact (Set.disjoint_left.1 hAB (hx hmx) (hy hmy))
+    simpa [Metric.mem_ball, dist_comm, m] using (by simpa [m, dist_comm] using hhalf : dist m y < r)
+  exact Set.disjoint_left.1 hAB (hx hmx) (hy hmy)
 
 open scoped Pointwise in
 /-- The union of all lattice translates of a set `F` of representatives. -/
@@ -80,13 +76,7 @@ open scoped Pointwise in
 public lemma mem_periodizedCenters_iff {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {F : Set (EuclideanSpace ℝ (Fin d))} {x : EuclideanSpace ℝ (Fin d)} :
     x ∈ periodizedCenters (d := d) Λ F ↔ ∃ g : Λ, ∃ f ∈ F, x = g +ᵥ f := by
-  constructor
-  · intro hx
-    rcases Set.mem_iUnion.1 hx with ⟨g : Λ, hg⟩
-    rcases Set.mem_vadd_set.1 hg with ⟨f, hf, rfl⟩
-    exact ⟨g, f, hf, rfl⟩
-  · rintro ⟨g, f, hf, rfl⟩
-    exact Set.mem_iUnion.2 ⟨g, Set.mem_vadd_set.2 ⟨f, hf, rfl⟩⟩
+  simp [periodizedCenters, Set.mem_iUnion, Set.mem_vadd_set, eq_comm]
 
 /-! ## Basic closure properties -/
 
@@ -105,19 +95,13 @@ public lemma ball_vadd_subset_vadd {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin 
     (hx : ball x r ⊆ D) :
     ball (g +ᵥ x) r ⊆ g +ᵥ D := by
   intro y hy
-  have hback : (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y ∈ ball x r := by
-    have :
-        (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y ∈
-          (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ ball (g +ᵥ x) r := by
-      refine Set.mem_vadd_set.2 ⟨y, ?_, rfl⟩
-      simpa [Submodule.vadd_def, vadd_eq_add] using hy
-    -- `(-g)+ᵥ ball (g+ᵥ x) r = ball x r`
-    simpa [Metric.vadd_ball, add_vadd, Submodule.vadd_def, vadd_eq_add] using this
-  have hzD : (-g : Λ) +ᵥ y ∈ D := by
-    apply hx
-    simpa [Submodule.vadd_def, vadd_eq_add] using hback
-  refine Set.mem_vadd_set.2 ⟨(-g : Λ) +ᵥ y, hzD, ?_⟩
-  simp [Submodule.vadd_def, vadd_eq_add]
+  refine Set.mem_vadd_set.2 ⟨(-g : Λ) +ᵥ y, ?_, by simp [Submodule.vadd_def, vadd_eq_add]⟩
+  apply hx
+  have :
+      (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y ∈
+        (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ ball (g +ᵥ x) r :=
+    Set.mem_vadd_set.2 ⟨y, by simpa [Submodule.vadd_def, vadd_eq_add] using hy, rfl⟩
+  simpa [Metric.vadd_ball, add_vadd, Submodule.vadd_def, vadd_eq_add] using this
 
 /--
 Construct a periodic sphere packing by translating a set of representatives `F ⊆ S.centers`
@@ -159,8 +143,8 @@ along a lattice `Λ`.
       have hdist := S.centers_dist' fa fb (hF_centers hfa) (hF_centers hfb) hne
       -- rewrite the distance using translation invariance
       have : S.separation ≤ dist (ga +ᵥ fa) (ga +ᵥ fb) := by
-        have htrans : dist (ga +ᵥ fa) (ga +ᵥ fb) = dist fa fb := by
-          exact dist_vadd_cancel_left (ga : EuclideanSpace ℝ (Fin d)) fa fb
+        have htrans : dist (ga +ᵥ fa) (ga +ᵥ fb) = dist fa fb :=
+          dist_vadd_cancel_left (ga : EuclideanSpace ℝ (Fin d)) fa fb
         simpa [htrans] using hdist
       simpa [ha, hb] using this
     · -- different lattice translates: use disjointness of translated domains + midpoint argument
@@ -219,28 +203,25 @@ public lemma fundamentalDomain_cubeBasis_eq_coordCube (L : ℝ) (hL : 0 < L) :
   constructor
   · intro hx i
     specialize hx i
-    have hmul (t : ℝ) : (L : ℝ) * (L⁻¹ * t) = t := by
-      calc
-        (L : ℝ) * (L⁻¹ * t) = (L * L⁻¹) * t := by simp [mul_assoc]
-        _ = (1 : ℝ) * t := by simp [mul_inv_cancel₀ (ne_of_gt hL)]
-        _ = t := by simp
     refine ⟨?_, ?_⟩
-    · have : 0 ≤ (L : ℝ) * (L⁻¹ * x i) := mul_nonneg (le_of_lt hL) hx.1
-      simpa [hmul] using this
-    · have : (L : ℝ) * (L⁻¹ * x i) < (L : ℝ) * 1 := mul_lt_mul_of_pos_left hx.2 hL
-      simpa [hmul] using this
+    · have : 0 ≤ (L : ℝ) * (L⁻¹ * x.ofLp i) := mul_nonneg (le_of_lt hL) hx.1
+      have : 0 ≤ (L * L⁻¹) * x.ofLp i := by simpa [mul_assoc] using this
+      simpa [mul_inv_cancel₀ (ne_of_gt hL)] using this
+    · have : (L : ℝ) * (L⁻¹ * x.ofLp i) < (L : ℝ) * 1 := mul_lt_mul_of_pos_left hx.2 hL
+      have : (L * L⁻¹) * x.ofLp i < (L : ℝ) * 1 := by simpa [mul_assoc] using this
+      simpa [mul_inv_cancel₀ (ne_of_gt hL)] using this
   · intro hx i
     specialize hx i
     have hLinv : 0 < (L⁻¹ : ℝ) := inv_pos.mpr hL
     refine ⟨mul_nonneg (le_of_lt hLinv) hx.1, ?_⟩
-    have : (L⁻¹ : ℝ) * x i < (L⁻¹ : ℝ) * L := mul_lt_mul_of_pos_left hx.2 hLinv
+    have : (L⁻¹ : ℝ) * x.ofLp i < (L⁻¹ : ℝ) * L := mul_lt_mul_of_pos_left hx.2 hLinv
     simpa [mul_assoc, inv_mul_cancel₀ (ne_of_gt hL), one_mul] using this
 
 lemma ball_subset_coordCube_of_mem_inner {L r : ℝ} {x : EuclideanSpace ℝ (Fin d)}
     (hx : x ∈ coordCubeInner (d := d) L r) :
     ball x r ⊆ coordCube (d := d) L := by
   simpa [coordCube, coordCubeInner] using
-    (ball_subset_coordCube (d := d) (x := x) (r := r) (L := L) hx)
+    ball_subset_coordCube (d := d) (x := x) (r := r) (L := L) hx
 
 public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))}
     {D F : Set (EuclideanSpace ℝ (Fin d))}
@@ -257,10 +238,8 @@ public lemma periodizedCenters_inter_eq_of_subset {Λ : Submodule ℤ (Euclidean
       simpa using (hg0uniq 0 (by simpa using hF_sub hfF)).symm
     simpa [hg, hg0] using hfF
   · intro hxF
-    refine ⟨?_, hF_sub hxF⟩
-    refine (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F) (x := x)).2 ?_
-    refine ⟨0, x, hxF, ?_⟩
-    simp
+    refine ⟨(mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F) (x := x)).2 ?_, hF_sub hxF⟩
+    exact ⟨0, x, hxF, by simp⟩
 
 end PeriodicConstantCube
 
@@ -274,24 +253,21 @@ variable {d : ℕ}
 
 private lemma volume_preimage_ofLp (s : Set (Fin d → ℝ)) (hs : MeasurableSet s) :
     volume ((fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) ⁻¹' s) = volume s := by
-  simpa using
-    (PiLp.volume_preserving_ofLp (ι := Fin d)).measure_preimage hs.nullMeasurableSet
+  simpa using (PiLp.volume_preserving_ofLp (ι := Fin d)).measure_preimage hs.nullMeasurableSet
 
 public lemma coordCube_unique_covers (L : ℝ) (hL : 0 < L) :
-    ∀ x, ∃! g : cubeLattice (d := d) L hL, g +ᵥ x ∈ coordCube (d := d) L := by
-  intro x
-  -- use the library fundamental-domain fact, then rewrite by our explicit cube description
-  simpa [cubeLattice, fundamentalDomain_cubeBasis_eq_coordCube (d := d) (L := L) (hL := hL)] using
-    (exist_unique_vadd_mem_fundamentalDomain (cubeBasis (d := d) L hL) x)
+    ∀ x, ∃! g : cubeLattice (d := d) L hL, g +ᵥ x ∈ coordCube (d := d) L := fun x => by
+    simpa [cubeLattice, fundamentalDomain_cubeBasis_eq_coordCube (d := d) (L := L) (hL := hL)] using
+      exist_unique_vadd_mem_fundamentalDomain (cubeBasis (d := d) L hL) x
 
 public lemma isBounded_coordCube (L : ℝ) (hL : 0 < L) : IsBounded (coordCube (d := d) L) := by
   simpa [fundamentalDomain_cubeBasis_eq_coordCube (d := d) (L := L) (hL := hL)] using
-    (fundamentalDomain_isBounded (cubeBasis (d := d) L hL))
+    fundamentalDomain_isBounded (cubeBasis (d := d) L hL)
 
 public lemma measurableSet_coordCube (L : ℝ) (hL : 0 < L) :
     MeasurableSet (coordCube (d := d) L) := by
   simpa [fundamentalDomain_cubeBasis_eq_coordCube (d := d) (L := L) (hL := hL)] using
-    (fundamentalDomain_measurableSet (cubeBasis (d := d) L hL))
+    fundamentalDomain_measurableSet (cubeBasis (d := d) L hL)
 
 public lemma coordCube_eq_preimage_ofLp (L : ℝ) :
     coordCube (d := d) L =
@@ -308,8 +284,7 @@ public lemma volume_coordCube (L : ℝ) :
       volume (coordCube (d := d) L) =
         volume (Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) := by
     simpa [coordCube_eq_preimage_ofLp (d := d) (L := L)] using
-      (volume_preimage_ofLp (d := d) (s := Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L)
-        hmeas)
+      (volume_preimage_ofLp (d := d) (s := Set.pi Set.univ fun _ : Fin d ↦ Set.Ico (0 : ℝ) L) hmeas)
   -- compute the product volume
   rw [hpre, volume_pi, Measure.pi_pi]
   simp [Real.volume_Ico, sub_zero]
@@ -338,8 +313,7 @@ public lemma volume_coordCubeInner (L r : ℝ) :
 public lemma coordCubeInner_subset_coordCube {L r : ℝ} (hr : 0 < r) :
     coordCubeInner (d := d) L r ⊆ coordCube (d := d) L := by
   intro x hx i
-  have hxi : x i ∈ Set.Icc r (L - r) := hx i
-  exact ⟨le_trans hr.le hxi.1, lt_of_le_of_lt hxi.2 (sub_lt_self L hr)⟩
+  exact ⟨le_trans hr.le (hx i).1, lt_of_le_of_lt (hx i).2 (sub_lt_self L hr)⟩
 
 end PeriodicConstant
 
@@ -395,16 +369,11 @@ public lemma finite_lattice_in_ball (L : ℝ) (hL : 0 < L) (R : ℝ) :
     simpa [cubeLattice] using
       (ZSpan.setFinite_inter (b := cubeBasis (d := d) L hL)
         (s := ball (0 : EuclideanSpace ℝ (Fin d)) R) Metric.isBounded_ball)
-  -- pull back along the coercion `cubeLattice → EuclideanSpace`
-  let s : Set (cubeLattice (d := d) L hL) := {g | (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 R}
-  have hfinImage :
-      Set.Finite ((fun g : cubeLattice (d := d) L hL => (g : EuclideanSpace ℝ (Fin d))) '' s) := by
-    refine hfinE.subset ?_
-    rintro x ⟨g, hg, rfl⟩
-    exact ⟨hg, g.property⟩
-  refine Set.Finite.of_finite_image (s := s) (f := fun g : cubeLattice (d := d) L hL =>
-      (g : EuclideanSpace ℝ (Fin d))) hfinImage
-      (Set.injOn_of_injective Subtype.val_injective)
+  let f : cubeLattice (d := d) L hL ↪ EuclideanSpace ℝ (Fin d) :=
+    ⟨fun g => (g : EuclideanSpace ℝ (Fin d)), Subtype.val_injective⟩
+  refine (Set.Finite.preimage_embedding f hfinE).subset ?_
+  intro g hg
+  exact ⟨hg, g.property⟩
 
 end PeriodicConstantApprox
 

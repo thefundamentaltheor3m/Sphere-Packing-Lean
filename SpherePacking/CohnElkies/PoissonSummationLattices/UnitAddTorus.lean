@@ -25,28 +25,24 @@ namespace SchwartzMap.UnitAddTorus
 /-- Continuity of the coordinatewise quotient map `coeFun`. -/
 @[continuity]
 public theorem continuous_coeFun {n : ℕ} : Continuous (coeFun n) := by
-  refine continuous_pi (fun i => ?_)
   simpa [coeFun, UnitAddCircle] using
-    (AddCircle.continuous_mk' (p := (1 : ℝ))).comp (continuous_apply i)
+    (continuous_pi fun i => (AddCircle.continuous_mk' (p := (1 : ℝ))).comp (continuous_apply i))
 
 /-- A homeomorphism `α × (Fin n → α) ≃ (Fin (n+1) → α)`, specialized to constant families. -/
 def finSuccPiHomeomorph (α : Type*) [TopologicalSpace α] (n : ℕ) :
     (α × (Fin n → α)) ≃ₜ (Fin n.succ → α) where
   toEquiv := Fin.consEquiv (fun _ ↦ α)
   continuous_toFun := by
-    simp only [Fin.consEquiv]
-    refine Continuous.finCons (by fun_prop) (by fun_prop)
+    simpa [Fin.consEquiv] using Continuous.finCons (by fun_prop) (by fun_prop)
   continuous_invFun := by fun_prop
 
 /-- `coeFun` is an open quotient map, so it presents `(ℝ/ℤ)^n` as a quotient of `ℝ^n`. -/
 public theorem isOpenQuotientMap_coeFun (n : ℕ) : IsOpenQuotientMap (coeFun n) := by
   induction n with
   | zero =>
-      have h :
-          coeFun 0 =
-            (Homeomorph.homeomorphOfUnique (Fin 0 → ℝ) (UnitAddTorus (Fin 0)) : _ → _) := by
-        funext x
-        exact Subsingleton.elim _ _
+      have h : coeFun 0 =
+          (Homeomorph.homeomorphOfUnique (Fin 0 → ℝ) (UnitAddTorus (Fin 0)) : _ → _) := by
+        funext x; exact Subsingleton.elim _ _
       simpa [h] using
         (Homeomorph.homeomorphOfUnique (Fin 0 → ℝ) (UnitAddTorus (Fin 0))).isOpenQuotientMap
   | succ n ih =>
@@ -93,10 +89,8 @@ theorem measurePreserving_coeFun (n : ℕ) (t : ℝ) :
 theorem volume_restrict_pi_eq_pi_restrict (n : ℕ) (t : ℝ) :
     (volume : Measure (Fin n → ℝ)).restrict (Set.univ.pi fun _ : Fin n => Set.Ioc t (t + 1)) =
       Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)) := by
-  simpa using
-    (Measure.restrict_pi_pi
-      (μ := fun _ : Fin n => (volume : Measure ℝ))
-      (s := fun _ : Fin n => Set.Ioc t (t + 1)))
+  simpa using (Measure.restrict_pi_pi
+    (μ := fun _ : Fin n => (volume : Measure ℝ)) (s := fun _ : Fin n => Set.Ioc t (t + 1)))
 
 theorem mFourier_apply_coeFun (n : ℕ) (k : Fin n → ℤ) (x : Fin n → ℝ) :
     UnitAddTorus.mFourier k (coeFun n x) =
@@ -128,23 +122,14 @@ public theorem integral_eq_integral_preimage_coeFun (n : ℕ) (t : ℝ) (g : Uni
     (∫ y : UnitAddTorus (Fin n), g y) =
       ∫ x, g (coeFun n x) ∂(volume : Measure (Fin n → ℝ)).restrict
         (Set.univ.pi fun _ : Fin n => Set.Ioc t (t + 1)) := by
-  have hmp :
-      MeasurePreserving (coeFun n)
-        (Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)))
-        (volume : Measure (UnitAddTorus (Fin n))) :=
-    measurePreserving_coeFun n t
+  have hmp := measurePreserving_coeFun n t
   have h1 :
       (∫ y : UnitAddTorus (Fin n), g y) =
         ∫ x, g (coeFun n x) ∂(Measure.pi fun _ : Fin n =>
           (volume : Measure ℝ).restrict (Set.Ioc t (t + 1))) := by
     rw [← hmp.map_eq]
-    simpa using
-      (MeasureTheory.integral_map (hφ := hmp.aemeasurable) (f := g)
-        (hfm := by simpa [hmp.map_eq] using hg))
-  have hμ :
-      (Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1))) =
-        (volume : Measure (Fin n → ℝ)).restrict (Set.univ.pi fun _ : Fin n => Set.Ioc t (t + 1)) :=
-    (volume_restrict_pi_eq_pi_restrict n t).symm
-  simpa [hμ] using h1
+    simpa using (MeasureTheory.integral_map (hφ := hmp.aemeasurable) (f := g)
+      (hfm := by simpa [hmp.map_eq] using hg))
+  simpa [(volume_restrict_pi_eq_pi_restrict n t).symm] using h1
 
 end SchwartzMap.UnitAddTorus

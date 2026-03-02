@@ -25,13 +25,7 @@ theorem summable_1 (k : ℕ) (z : ℍ) (hk : 1 ≤ k) :
   have hlin : (fun n : ℕ => (((z : ℂ) - n))⁻¹) =O[cofinite] fun n => (|(n : ℝ)|⁻¹) := by
     -- Start from the "`(-z) + n`" version (`m = -1`) and rewrite to `z - n`.
     refine (Asymptotics.IsBigO.neg_left <| linear_bigO_nat (-1) z).congr_left ?_
-    intro n
-    calc
-      -((((-1 : ℤ) : ℂ) * (z : ℂ) + n)⁻¹) = (-( ((-1 : ℤ) : ℂ) * (z : ℂ) + n))⁻¹ := by
-        simpa using (inv_neg (a := (((-1 : ℤ) : ℂ) * (z : ℂ) + n))).symm
-      _ = ((z : ℂ) - n)⁻¹ := by
-        congr 1
-        ring
+    grind only
   simpa using (summable_pow_inv_of_linear_bigO (k := k) hk hlin)
 
 theorem summable_2 (k : ℕ) (z : ℍ) (hk : 1 ≤ k) :
@@ -45,8 +39,7 @@ theorem summable_3 (m : ℕ) (y : ℍ) :
       (-1 : ℂ) ^ m * ↑m ! * (1 / ((y : ℂ) - ↑n) ^ (m + 1)) +
         (-1) ^ m * ↑m ! * (1 / ((y : ℂ) + ↑n) ^ (m + 1)) := by
   by_cases hm : m = 0
-  · simp_rw [hm]
-    simp
+  · subst hm
     simpa using lhs_summable y
   have hm1 : 1 ≤ m := Nat.one_le_iff_ne_zero.2 hm
   simp_rw [← mul_add]
@@ -173,8 +166,7 @@ theorem exp_series_ite_deriv_uexp2 (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
           iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * s) ^ n) ℍ' x :=
       htsum
     _ = ∑' n : ℕ, iteratedDerivWithin k (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) ℍ'
-          x := by
-        exact tsum_congr (fun n => hterm n)
+          x := tsum_congr (fun n => hterm n)
 
 theorem exp_series_ite_deriv_uexp'' (k : ℕ) (x : {z : ℂ | 0 < z.im}) :
     iteratedDerivWithin k (fun z => ∑' n : ℕ, Complex.exp (2 * ↑π * Complex.I * n * z))
@@ -528,9 +520,7 @@ theorem aux_iter_der_tsum_eqOn (k : ℕ) (hk : 2 ≤ k) :
   intro z hz
   have hk0 : 1 ≤ k - 1 := le_tsub_of_add_le_left hk
   have := aux_iter_der_tsum (k - 1) hk0 ⟨z, hz⟩
-  have hk1 : k - 1 + 1 = k := Nat.sub_add_cancel (by linarith)
-  rw [hk1] at this
-  norm_cast at *
+  grind only
 
 
 theorem pos_sum_eq (k : ℕ) (hk : 0 < k) :
@@ -628,9 +618,7 @@ public theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
           simpa [mul_assoc] using (neg_pow (2 * (↑π * Complex.I)) k)
         simp [hneg]
       _ = (-1 : ℂ) ^ ((k - 1) + k) * (2 * ↑π * Complex.I) ^ k := by
-        rw [mul_assoc]
-        simpa [mul_assoc] using congrArg (fun t : ℂ => t * (2 * ↑π * Complex.I) ^ k)
-          ((pow_add (-1 : ℂ) (k - 1) k).symm)
+        ring
       _ = -(2 * ↑π * Complex.I) ^ k := by
         simp [Odd.neg_one_pow hodd, mul_assoc]
   rw [← mul_assoc]
@@ -658,9 +646,7 @@ public theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
       apply symm; apply Nat.add_sub_of_le
       linarith
     nth_rw 2 [hke]
-    norm_cast
-    rw [pow_add]
-    simp
+    ring
   rw [he2]
 
 /-- A Lambert-series identity rewriting a double `tsum` in terms of `sigma`. -/

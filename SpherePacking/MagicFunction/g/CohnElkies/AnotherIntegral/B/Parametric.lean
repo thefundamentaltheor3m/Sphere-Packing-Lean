@@ -87,10 +87,7 @@ public lemma bAnotherIntegralC_analyticOnNhd :
   let ratio (x : ℂ) (t : ℝ) : ℂ :=
     Complex.exp ((-(π : ℂ) * (x - (r : ℂ))) * (t : ℂ))
   have hratio_meas : ∀ x : ℂ, Measurable (ratio x) := by
-    intro x
-    have hcont : Continuous fun t : ℝ => (-(π : ℂ) * (x - (r : ℂ))) * (t : ℂ) :=
-      continuous_const.mul continuous_ofReal
-    simpa [ratio] using (Complex.continuous_exp.comp hcont).measurable
+    fun_prop
   -- Factorization: `bAnotherIntegrandC x = base * ratio x`.
   have hfactor (x : ℂ) (t : ℝ) : bAnotherIntegrandC x t = base t * ratio x t := by
     have harg :
@@ -131,12 +128,7 @@ public lemma bAnotherIntegralC_analyticOnNhd :
     have hxpos : 0 ≤ x.re - r := (sub_pos.2 hxre).le
     have hpi : (-Real.pi) ≤ 0 := by linarith [Real.pi_pos]
     have hzre : ((-(π : ℂ) * (x - (r : ℂ))) * (t : ℂ)).re ≤ 0 := by
-      have hzre_eq :
-          ((-(π : ℂ) * (x - (r : ℂ))) * (t : ℂ)).re = (-Real.pi) * (x.re - r) * t := by
-        simp [mul_comm]
-      have hzre0 : (-Real.pi) * (x.re - r) * t ≤ 0 :=
-        mul_nonpos_of_nonpos_of_nonneg (mul_nonpos_of_nonpos_of_nonneg hpi hxpos) ht.le
-      simpa [hzre_eq] using hzre0
+      simp_all
     simpa [ratio, Complex.norm_exp, Real.exp_le_one_iff] using hzre
   have hIoi : ∀ᵐ t ∂μ, 0 < t := by
     simpa [μ] using
@@ -222,8 +214,8 @@ public lemma bAnotherIntegralC_analyticOnNhd :
     have := hexp.const_mul (bAnotherBase t)
     simpa [-bAnotherBase_eq, bAnotherIntegrandC, F', mul_assoc, mul_left_comm, mul_comm] using this
   have hderiv :
-      HasDerivAt (fun z : ℂ => ∫ t, bAnotherIntegrandC z t ∂μ) (∫ t, F' u t ∂μ) u := by
-    exact (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ) (s := Metric.ball u ε)
+      HasDerivAt (fun z : ℂ => ∫ t, bAnotherIntegrandC z t ∂μ) (∫ t, F' u t ∂μ) u :=
+    (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ) (s := Metric.ball u ε)
       (F := fun z t => bAnotherIntegrandC z t) (x₀ := u) (bound := bound)
       (Metric.ball_mem_nhds u hε) hF_meas hF_int hF'_meas hbound hbound_int hdiff).2
   -- `bAnotherIntegralC` is definitionally the same restricted integral.

@@ -85,15 +85,15 @@ lemma continuousOn_J₅_g :
     have hprod2 :
         ContinuousOn
           (fun p : ℝ⁸ × ℝ ↦ (-I : ℂ) * ψS' ((Complex.I : ℂ) * (p.2 : ℂ)) * ((p.2 : ℂ) ^ (-4 : ℤ)))
-          (univ ×ˢ Ici (1 : ℝ)) := by
-      exact hprod1.mul hzpow'
+          (univ ×ˢ Ici (1 : ℝ)) :=
+      hprod1.mul hzpow'
     have hprod3 :
         ContinuousOn
           (fun p : ℝ⁸ × ℝ ↦
             (-I : ℂ) * ψS' ((Complex.I : ℂ) * (p.2 : ℂ)) * ((p.2 : ℂ) ^ (-4 : ℤ)) *
               cexp ((-π : ℂ) * ((‖p.1‖ : ℂ) ^ 2) / (p.2 : ℂ)))
-          (univ ×ˢ Ici (1 : ℝ)) := by
-      exact hprod2.mul (SpherePacking.ForMathlib.continuousOn_exp_norm_sq_div (E := ℝ⁸))
+          (univ ×ˢ Ici (1 : ℝ)) :=
+      hprod2.mul (SpherePacking.ForMathlib.continuousOn_exp_norm_sq_div (E := ℝ⁸))
     refine hprod3.congr ?_
     intro p hp
     simp [J5Change.g, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
@@ -112,8 +112,8 @@ lemma aestronglyMeasurable_kernel (w : ℝ⁸) :
     simp [kernel]
   have hmeas :
       AEStronglyMeasurable (kernel w)
-        (((volume : Measure ℝ⁸).prod (volume : Measure ℝ)).restrict (univ ×ˢ Ici (1 : ℝ))) := by
-    exact ContinuousOn.aestronglyMeasurable hker (MeasurableSet.univ.prod measurableSet_Ici)
+        (((volume : Measure ℝ⁸).prod (volume : Measure ℝ)).restrict (univ ×ˢ Ici (1 : ℝ))) :=
+    ContinuousOn.aestronglyMeasurable hker (MeasurableSet.univ.prod measurableSet_Ici)
   have hμ :
       ((volume : Measure ℝ⁸).prod μIciOne) =
         (((volume : Measure ℝ⁸).prod (volume : Measure ℝ)).restrict (univ ×ˢ Ici (1 : ℝ))) := by
@@ -245,16 +245,15 @@ public lemma integrable_kernel (w : ℝ⁸) :
             (∫ x : ℝ⁸, ‖kernel w (x, s)‖) =
               ∫ x : ℝ⁸,
                 (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖) *
-                  rexp (-π * (‖x‖ ^ 2) / s) := by
-          exact congrArg (fun f : ℝ⁸ → ℝ => ∫ x : ℝ⁸, f x) hnorm
+                  rexp (-π * (‖x‖ ^ 2) / s) :=
+          congrArg (fun f : ℝ⁸ → ℝ => ∫ x : ℝ⁸, f x) hnorm
         have hEq1 :
             (∫ x : ℝ⁸,
                   (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖) *
                     rexp (-π * (‖x‖ ^ 2) / s)) =
               (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖) *
-                (∫ x : ℝ⁸, rexp (-π * (‖x‖ ^ 2) / s)) := by
-          exact
-            (MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ⁸))
+                (∫ x : ℝ⁸, rexp (-π * (‖x‖ ^ 2) / s)) :=
+          (MeasureTheory.integral_const_mul (μ := (volume : Measure ℝ⁸))
               (‖ψS' ((Complex.I : ℂ) * (s : ℂ))‖ * ‖(s ^ (-4 : ℤ) : ℂ)‖)
               (fun x : ℝ⁸ ↦ rexp (-π * (‖x‖ ^ 2) / s)))
         calc

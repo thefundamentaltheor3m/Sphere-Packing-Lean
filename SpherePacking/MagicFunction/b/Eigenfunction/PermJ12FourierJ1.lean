@@ -72,8 +72,8 @@ lemma integrable_permJ1Kernel (w : EuclideanSpace ℝ (Fin 8)) :
           continuous_const.mul (continuous_const.mul hinner)
         have harg :
             Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
-              ((((-2 : ℝ) * ((π : ℝ) * (⟪p.1, w⟫ : ℝ))) : ℝ) : ℂ) * (Complex.I : ℂ) := by
-          exact (Complex.continuous_ofReal.comp hreal).mul continuous_const
+              ((((-2 : ℝ) * ((π : ℝ) * (⟪p.1, w⟫ : ℝ))) : ℝ) : ℂ) * (Complex.I : ℂ) :=
+          (Complex.continuous_ofReal.comp hreal).mul continuous_const
         simpa [mul_assoc] using (Complex.continuous_exp.comp harg)
       have hψ : ContinuousOn (fun p : EuclideanSpace ℝ (Fin 8) × ℝ => ψT' (z₁line p.2)) sProd := by
         refine hcontψ.comp continuousOn_snd ?_

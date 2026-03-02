@@ -184,8 +184,7 @@ private lemma φ₀''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z - 1) = φ�
     ext1
     simp [zH, sub_eq_add_neg, add_comm]
   calc
-    φ₀'' (z - 1) = φ₀ (⟨z - 1, hz1⟩ : ℍ) := by
-      simpa using (φ₀''_def (z := z - 1) hz1)
+    φ₀'' (z - 1) = φ₀ (⟨z - 1, hz1⟩ : ℍ) := by simpa using (φ₀''_def (z := z - 1) hz1)
     _ = φ₀ zH := by
       simpa [hvneg] using (φ₀_periodic_neg_one zH)
     _ = φ₀'' z := by
@@ -198,8 +197,7 @@ private lemma φ₂''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₂'' (z - 1) = φ�
     ext1
     simp [zH, sub_eq_add_neg, add_comm]
   calc
-    φ₂'' (z - 1) = φ₂' (⟨z - 1, hz1⟩ : ℍ) := by
-      simpa using (φ₂''_def (z := z - 1) hz1)
+    φ₂'' (z - 1) = φ₂' (⟨z - 1, hz1⟩ : ℍ) := by simpa using (φ₂''_def (z := z - 1) hz1)
     _ = φ₂' zH := by
       simpa [hvneg] using (φ₂'_periodic_neg_one zH)
     _ = φ₂'' z := by
@@ -209,11 +207,9 @@ private lemma φ₄''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₄'' (z - 1) = φ�
   have hz1 : 0 < (z - 1).im := by simpa using hz
   let zH : ℍ := ⟨z, hz⟩
   have hvneg : ((-1 : ℝ) +ᵥ zH : ℍ) = ⟨z - 1, hz1⟩ := by
-    ext1
-    simp [zH, sub_eq_add_neg, add_comm]
+    ext1; simpa [zH, sub_eq_add_neg] using (add_comm (-1 : ℂ) z)
   calc
-    φ₄'' (z - 1) = φ₄' (⟨z - 1, hz1⟩ : ℍ) := by
-      simpa using (φ₄''_def (z := z - 1) hz1)
+    φ₄'' (z - 1) = φ₄' (⟨z - 1, hz1⟩ : ℍ) := by simpa using (φ₄''_def (z := z - 1) hz1)
     _ = φ₄' zH := by
       simpa [hvneg] using (φ₄'_periodic_neg_one zH)
     _ = φ₄'' z := by
@@ -434,10 +430,7 @@ lemma tendsto_top_f0 :
               (by positivity))
     have hexp :
         Tendsto (fun m : ℝ => Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by
-      have hexp' :
-          Tendsto (fun m : ℝ => Real.exp (-((2 * Real.pi) * m))) atTop (𝓝 (0 : ℝ)) :=
-        tendsto_exp_neg_atTop_nhds_zero.comp hu
-      simpa [Function.comp, neg_mul] using hexp'
+      simpa
     have hmain :
         Tendsto (fun m : ℝ => (2 * m + 1) * Real.exp (-2 * Real.pi * m)) atTop (𝓝 (0 : ℝ)) := by
       have hsum :
@@ -633,15 +626,7 @@ lemma integral_f0_height_one_eq_neg_I6 :
                       ∂MeasureTheory.volume) := by
                     simp [smul_eq_mul]
   -- Solve for `bottom`.
-  have : bottom = -I₆' (0 : ℝ) := by
-    -- from `bottom + I•limit = 0`
-    have : bottom = -Complex.I •
-        (∫ y in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)
-          ∂MeasureTheory.volume) := by
-      have := eq_neg_of_add_eq_zero_left hA0
-      simpa [bottom] using this
-    simpa [hI6] using this
-  simpa [bottom] using this
+  grind only
 
 /-! ### Evaluating the remaining `φ₂''` term. -/
 
@@ -705,13 +690,7 @@ lemma strip_identity_phi2 (m : ℝ) (hm : 1 ≤ m) :
     have hper' : φ₂'' ((1 : ℂ) + (y : ℂ) * Complex.I) = φ₂'' ((y : ℂ) * Complex.I) := by
       simpa [add_assoc, add_comm, add_left_comm] using hper
     simpa [hper', add_assoc, add_comm, add_left_comm, mul_assoc]
-  have hrect' :
-      (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + (1 : ℝ) * Complex.I)) -
-          (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) = 0 := by
-    have hrect' := hrect
-    rw [hVert] at hrect'
-    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hrect'
-  exact sub_eq_zero.mp hrect'
+  grind only
 
 lemma summable_coeff_A_over_q :
     Summable (fun n : ℕ =>
@@ -785,23 +764,7 @@ lemma tendsto_A_div_q :
           _ = cexp (2 * π * Complex.I * (z : ℂ)) *
                 cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
                 simp [Complex.exp_add, mul_left_comm, mul_comm]
-      have hdiv :
-          cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ)) /
-              cexp (2 * π * Complex.I * (z : ℂ)) =
-            cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
-        refine (eq_div_of_mul_eq hz ?_).symm
-        rw [hexp, mul_comm]
-      dsimp [a]
-      -- Pull the coefficient out of the division, then simplify the exponential quotient.
-      have hmul :
-          ((((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ)) *
-                cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ))) /
-              cexp (2 * π * Complex.I * (z : ℂ)) =
-            (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ)) *
-              (cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ)) /
-                cexp (2 * π * Complex.I * (z : ℂ))) := by
-        ring
-      rw [hmul, ←hdiv]
+      grind only
     calc
       ((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z)
           = (720 : ℂ) *

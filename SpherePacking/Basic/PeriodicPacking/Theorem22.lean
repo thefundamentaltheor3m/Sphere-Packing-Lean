@@ -68,9 +68,8 @@ theorem PeriodicSpherePacking.aux2_ge
   rw [ge_iff_le, ENNReal.div_le_iff]
   · convert volume.mono <| ball_subset_iUnion_lattice_inter_ball_vadd S D R hD_unique_covers hL
     rw [OuterMeasure.measureOf_eq_coe, Measure.coe_toOuterMeasure]
-    have : Countable ↑S.lattice := inferInstance
     have : Countable ↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
-      Set.Countable.mono (Set.inter_subset_left) this
+      Set.Countable.mono (Set.inter_subset_left) (inferInstance : Countable ↑S.lattice)
     rw [Set.biUnion_eq_iUnion, measure_iUnion]
     · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
     · intro i j hij
@@ -108,9 +107,8 @@ theorem PeriodicSpherePacking.aux2_le
   rw [ENNReal.le_div_iff_mul_le]
   · convert volume.mono <| iUnion_lattice_inter_ball_vadd_subset_ball S D R hL
     rw [OuterMeasure.measureOf_eq_coe, Measure.coe_toOuterMeasure]
-    have : Countable ↑S.lattice := inferInstance
     have : Countable ↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
-      Set.Countable.mono (Set.inter_subset_left) this
+      Set.Countable.mono (Set.inter_subset_left) (inferInstance : Countable ↑S.lattice)
     rw [Set.biUnion_eq_iUnion, measure_iUnion]
     · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
     · intro i j hij
@@ -140,13 +138,12 @@ public theorem PeriodicSpherePacking.aux2_ge'
         / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
   refine S.aux2_ge _ R ?_ (fundamentalDomain_measurableSet _) hL hd
   intro x
-  obtain ⟨⟨v, hv⟩, hv'⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
-  simp only [S.basis_Z_span] at hv hv' ⊢
-  use ⟨v, hv⟩, hv'.left, ?_
-  intro ⟨y, hy⟩ hy'
-  have := hv'.right ⟨y, ?_⟩ hy'
-  · rwa [Subtype.ext_iff] at this ⊢
-  · simpa [S.basis_Z_span] using hy
+  rcases exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x with
+    ⟨⟨v, hv⟩, hvD, hvuniq⟩
+  refine ⟨⟨v, by simpa [S.basis_Z_span] using hv⟩, hvD, ?_⟩
+  rintro ⟨y, hy⟩ hyD
+  have := hvuniq ⟨y, by simpa [S.basis_Z_span] using hy⟩ hyD
+  exact Subtype.ext (by simpa using congrArg Subtype.val this)
 
 -- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice
 public theorem PeriodicSpherePacking.aux2_le'
@@ -156,13 +153,12 @@ public theorem PeriodicSpherePacking.aux2_le'
         / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
   refine S.aux2_le _ R ?_ (fundamentalDomain_measurableSet _) hL hd
   intro x
-  obtain ⟨⟨v, hv⟩, hv'⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
-  simp only [S.basis_Z_span] at hv hv' ⊢
-  use ⟨v, hv⟩, hv'.left, ?_
-  intro ⟨y, hy⟩ hy'
-  have := hv'.right ⟨y, ?_⟩ hy'
-  · rwa [Subtype.ext_iff] at this ⊢
-  · simpa [S.basis_Z_span] using hy
+  rcases exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x with
+    ⟨⟨v, hv⟩, hvD, hvuniq⟩
+  refine ⟨⟨v, by simpa [S.basis_Z_span] using hv⟩, hvD, ?_⟩
+  rintro ⟨y, hy⟩ hyD
+  have := hvuniq ⟨y, by simpa [S.basis_Z_span] using hy⟩ hyD
+  exact Subtype.ext (by simpa using congrArg Subtype.val this)
 
 section finiteDensity_limit
 
@@ -269,10 +265,7 @@ lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
     intro k' hk₀ hk₁
     have := hk k' hk₁
     rwa [sub_zero, ofReal_one, one_rpow, ←one_div, one_sub_div, add_sub_cancel_right,
-      ENNReal.ofReal_rpow_of_nonneg] at this
-    · positivity
-    · positivity
-    · positivity
+      ENNReal.ofReal_rpow_of_nonneg] at this <;> positivity
   refine Tendsto.ennrpow_const d (tendsto_ofReal (Tendsto.const_sub 1 ?_))
   exact tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id)
 
@@ -348,9 +341,8 @@ public theorem Filter.map_add_atTop_eq' {β : Type*} {f : ℝ → β} (C : ℝ) 
     simpa using (Filter.map_add_atTop_eq (α := ℝ) (k := C))
   constructor <;> intro hf
   · exact tendsto_map'_iff.mp (by simpa [hmap] using hf)
-  · exact (by
-      have : Tendsto f (Filter.map (fun x : ℝ => x + C) atTop) α := tendsto_map'_iff.mpr hf
-      simpa [hmap] using this)
+  · have : Tendsto f (Filter.map (fun x : ℝ => x + C) atTop) α := tendsto_map'_iff.mpr hf
+    simpa [hmap] using this
 
 /--
 As `R → ∞`, the ratio `volume (ball 0 (R + C)) / volume (ball 0 (R + C'))` tends to `1`,

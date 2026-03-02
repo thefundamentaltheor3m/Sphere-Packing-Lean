@@ -57,23 +57,13 @@ lemma Theta2_term_resToImagAxis_eq (n : ℤ) (t : ℝ) (ht : 0 < t) :
   have hr : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by
     apply Complex.ext <;> simp [r]
   have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by
-    calc
-      (n + (2⁻¹ : ℂ)) ^ 2 = (r : ℂ) ^ 2 := by simp [hr]
-      _ = ((r ^ 2 : ℝ) : ℂ) := by simp [pow_two]
+    simp_all
   have harg :
       (π * I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I : ℂ) * t) : ℂ) =
         (-(Real.pi * (r ^ 2) * t) : ℂ) := by
     have hI : (I : ℂ) * ((I : ℂ) * (t : ℂ)) = -(t : ℂ) := by
       simpa using I_mul_I_mul (t : ℂ)
-    calc
-      (π * I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I : ℂ) * t) : ℂ) =
-          (Real.pi : ℂ) * ((r ^ 2 : ℝ) : ℂ) * (I * ((I : ℂ) * (t : ℂ))) := by
-            simpa [hsq] using (show
-              (π * I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I : ℂ) * t) : ℂ) =
-                (π : ℂ) * (n + (2⁻¹ : ℂ)) ^ 2 * (I * ((I : ℂ) * (t : ℂ))) from by
-                  ac_rfl)
-      _ = (Real.pi : ℂ) * ((r ^ 2 : ℝ) : ℂ) * (-(t : ℂ)) := by simp [hI]
-      _ = (-(Real.pi * (r ^ 2) * t) : ℂ) := by simp [mul_left_comm, mul_comm]
+    grind only
   have :
       Θ₂_term n ⟨(Complex.I : ℂ) * t, by simp [ht]⟩ =
         (Real.exp (-(Real.pi * (r ^ 2) * t)) : ℂ) := by
@@ -318,21 +308,7 @@ lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
         have hEq :
             main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ) =
               (4096 : ℂ) * (Real.exp (-(6 : ℝ) * Real.pi * t) : ℂ) := by
-          set q1 : ℂ := (Real.exp (-Real.pi * t) : ℂ)
-          set q3 : ℂ := (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)
-          have hmain' : main = (16 : ℂ) * q1 + (64 : ℂ) * q3 := by
-            simp [main, q1, q3, -Complex.ofReal_exp]
-          have hq1_sq' : q1 ^ (2 : ℕ) = (u : ℂ) := by
-            simpa [q1] using hq1_sq_c
-          have hq1q3' : q1 * q3 = ((u ^ (2 : ℕ) : ℝ) : ℂ) := by
-            simpa [q1, q3] using hq1q3_c
-          have hq3_sq' : q3 ^ (2 : ℕ) = (Real.exp (-(6 : ℝ) * Real.pi * t) : ℂ) := by
-            simpa [q3] using hq3_sq_c
-          simp [hmain', pow_two, sub_eq_add_neg, -Complex.ofReal_exp]
-          ring_nf
-          simp (config := { failIfUnchanged := false })
-            [hq1_sq', hq1q3', hq3_sq', -Complex.ofReal_exp]
-          ring_nf
+          grind only
         have hnorm :
             ‖(4096 : ℂ) * (Real.exp (-(6 : ℝ) * Real.pi * t) : ℂ)‖ =
               (4096 : ℝ) * Real.exp (-(6 : ℝ) * Real.pi * t) := by
@@ -404,13 +380,7 @@ lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
                     ring_nf
                     simp [Complex.ofReal_mul, mul_left_comm, mul_comm]
           _ = w - (1 : ℂ) - ((8 * u : ℝ) : ℂ) := by
-                have hA256u' : A * (256 * (u : ℂ)) = (1 : ℂ) := by
-                  simpa [Complex.ofReal_mul, mul_assoc, mul_left_comm, mul_comm] using hA256u
-                have hA2048u2' :
-                      A * (2048 * ((u : ℂ) * (u : ℂ))) = (8 : ℂ) * (u : ℂ) := by
-                    simpa [pow_two, Complex.ofReal_mul, mul_left_comm, mul_comm] using hA2048u2
-                simp
-                  [w, sub_eq_add_neg, add_assoc, add_comm, hA256u', hA2048u2', pow_two]
+                grind only
       simpa using h.symm
     have hbr :
       ‖x ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)‖
@@ -425,8 +395,7 @@ lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
       have htri :=
         norm_add_le (x ^ (2 : ℕ) - main ^ (2 : ℕ))
           (main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ))
-      have hle := le_of_eq_of_le (congrArg Norm.norm hsplit) htri
-      nlinarith [hle, hsq, hmain_sq]
+      grind only
     have h1 :
       (e / 256) * ((4096 : ℝ) * Real.exp (-(6 : ℝ) * Real.pi * t)) =
         16 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
@@ -476,12 +445,7 @@ lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
                     simpa using h
             _ = Real.exp (-(4 : ℝ) * Real.pi * t) := by
                   simpa using congrArg Real.exp hsum
-        calc
-          e * (Real.exp (-Real.pi * t) * Real.exp (-(5 : ℝ) * Real.pi * t))
-              = Real.exp (2 * Real.pi * t) * Real.exp (-(6 : ℝ) * Real.pi * t) := by
-                  dsimp [e]
-                  exact congrArg (fun z : ℝ => Real.exp (2 * Real.pi * t) * z) hbc
-          _ = Real.exp (-(4 : ℝ) * Real.pi * t) := hab
+        exact CancelDenoms.derive_trans hbc hab
       calc
         (e / 256) * ((160 * Real.exp (-Real.pi * t)) * (CH2 * Real.exp (-(5 : ℝ) * Real.pi * t)))
               =
@@ -554,43 +518,7 @@ lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
             (CH2 * Real.exp (-(5 : ℝ) * Real.pi * t)) ^ 2 ) := by
           simp [hA_norm]
     _ ≤ C0 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
-          set s1 : ℝ := (4096 : ℝ) * Real.exp (-(6 : ℝ) * Real.pi * t)
-          set s2 : ℝ :=
-              (160 * Real.exp (-Real.pi * t)) * (CH2 * Real.exp (-(5 : ℝ) * Real.pi * t))
-          set s3 : ℝ := (CH2 * Real.exp (-(5 : ℝ) * Real.pi * t)) ^ 2
-          have hsum :
-              (e / 256) * (s1 + s2 + s3) ≤
-                C0 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
-            set E4 : ℝ := Real.exp (-(4 : ℝ) * Real.pi * t)
-            have hsum' :
-                (e / 256) * s1 + (e / 256) * s2 + (e / 256) * s3 ≤
-                  (16 * E4) + ((160 / 256) * CH2 * E4) + ((CH2 ^ 2) / 256 * E4) := by
-              have hEq :
-                  (e / 256) * s1 + (e / 256) * s2 + (e / 256) * s3 =
-                    (16 * E4) + ((160 / 256) * CH2 * E4) + (e / 256) * s3 := by
-                simp [h1, h2]
-              calc
-                (e / 256) * s1 + (e / 256) * s2 + (e / 256) * s3
-                    = (16 * E4) + ((160 / 256) * CH2 * E4) + (e / 256) * s3 := hEq
-                _ ≤ (16 * E4) + ((160 / 256) * CH2 * E4) + ((CH2 ^ 2) / 256 * E4) := by
-                  have := add_le_add_left h3 ((16 * E4) + ((160 / 256) * CH2 * E4))
-                  simpa [add_assoc, E4] using this
-            have hmul :
-                (e / 256) * (s1 + s2 + s3) =
-                  (e / 256) * s1 + (e / 256) * s2 + (e / 256) * s3 := by
-              ring
-            have hfactor :
-                (16 * E4) + ((160 / 256) * CH2 * E4) + ((CH2 ^ 2) / 256 * E4) = C0 * E4 := by
-              simp [C0]
-              ring
-            have hsum'' :
-                (e / 256) * (s1 + s2 + s3) ≤
-                  (16 * E4) + ((160 / 256) * CH2 * E4) + ((CH2 ^ 2) / 256 * E4) := by
-              simpa [hmul] using hsum'
-            have : (e / 256) * (s1 + s2 + s3) ≤ C0 * E4 :=
-              le_trans hsum'' (le_of_eq hfactor)
-            simpa [E4] using this
-          simpa [s1, s2, s3] using hsum
+          grind only
   simpa [w, A, x, e, u, C0] using hw_tail
 
 /-- Refined inverse-square expansion for `H₂(it)` extracting the constant `-1/32`. -/
@@ -775,8 +703,8 @@ public lemma exists_bound_norm_inv_H2_sq_sub_exp_add_const_Ici_one :
             exact mul_le_mul_of_nonneg_right h hK
           have hmul :
               ((1 / 256 : ℝ) * K) * Real.exp (-(2 : ℝ) * Real.pi * t) ≤
-                (256 * K) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-            exact mul_le_mul_of_nonneg_right hcoeff (Real.exp_pos _).le
+                (256 * K) * Real.exp (-(2 : ℝ) * Real.pi * t) :=
+            mul_le_mul_of_nonneg_right hcoeff (Real.exp_pos _).le
           have hrewrite :
               (e / 256) *
                   (((8 + (16 + (160 / 256) * CH2 + (CH2 ^ 2) / 256)) ^ 2 +

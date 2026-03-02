@@ -81,29 +81,26 @@ private theorem fourier_J_eq_curveIntegral_of
     funext x
     simpa [J_apply (x := x), cexp_neg_two_pi_inner_mul_I (x := x) (w := w)] using
       phase_mul_J'_eq_integral_permJKernel (w := w) (x := x)
-  let f : V → ℝ → ℂ := fun x t ↦ permJKernel w (x, t)
   have hint :
-      Integrable (Function.uncurry f)
+      Integrable (Function.uncurry fun x t => permJKernel w (x, t))
         ((volume : Measure V).prod μ) := by
-    simpa [f, Function.uncurry] using (integrable_permJKernel (w := w))
-  have hswapEq :
-      (∫ x : V, ∫ t : ℝ, f x t ∂μ) = ∫ t : ℝ, g w t ∂μ := by
-    have hswap :=
-      MeasureTheory.integral_integral_swap (μ := (volume : Measure V)) (ν := μ) (f := f) hint
-    have hAE :
-        (fun t : ℝ => (∫ x : V, f x t ∂(volume : Measure V))) =ᵐ[μ] fun t => g w t := by
-      simpa [f] using (integral_permJKernel_x_ae (w := w))
-    calc
-      (∫ x : V, ∫ t : ℝ, f x t ∂μ) = ∫ t : ℝ, ∫ x : V, f x t ∂(volume : Measure V) ∂μ := by
-            simpa using hswap
-      _ = ∫ t : ℝ, g w t ∂μ := by
-            simpa using (MeasureTheory.integral_congr_ae hAE)
+    simpa [Function.uncurry] using (integrable_permJKernel (w := w))
+  have hAE :
+      (fun t : ℝ => (∫ x : V, permJKernel w (x, t) ∂(volume : Measure V))) =ᵐ[μ] fun t =>
+        g w t := by
+    simpa using (integral_permJKernel_x_ae (w := w))
+  have hswap :
+      (∫ x : V, ∫ t : ℝ, permJKernel w (x, t) ∂μ) =
+        ∫ t : ℝ, ∫ x : V, permJKernel w (x, t) ∂(volume : Measure V) ∂μ := by
+    simpa using
+      (MeasureTheory.integral_integral_swap (μ := (volume : Measure V)) (ν := μ)
+        (f := fun x t => permJKernel w (x, t)) hint)
   calc
     (∫ x : V,
           cexp (-(2 * (↑Real.pi : ℂ) * (↑⟪x, w⟫ : ℂ) * Complex.I)) * (J : V → ℂ) x) =
-        ∫ x : V, ∫ t : ℝ, f x t ∂μ := by
-          simp [htoIter, f]
-    _ = ∫ t : ℝ, g w t ∂μ := hswapEq
+        ∫ x : V, ∫ t : ℝ, permJKernel w (x, t) ∂μ := by simp [htoIter]
+    _ = ∫ t : ℝ, ∫ x : V, permJKernel w (x, t) ∂(volume : Measure V) ∂μ := hswap
+    _ = ∫ t : ℝ, g w t ∂μ := by simpa using (MeasureTheory.integral_congr_ae hAE)
     _ =
         (∫ᶜ z in Path.segment a b,
           scalarOneForm (Ψ_fourier (‖w‖ ^ (2 : ℕ))) z) := integral_g_eq_curveIntegral (w := w)

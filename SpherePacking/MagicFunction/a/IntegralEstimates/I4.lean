@@ -147,9 +147,7 @@ public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
   have ht0 : 0 ≤ t := le_of_lt ht.1
   have ht1 : t ≤ 1 := le_of_lt ht.2
   have habs : |1 - t| ≤ 1 := by
-    have hle' : 0 ≤ 1 - t := sub_nonneg.mpr ht1
-    have : 1 - t ≤ 1 := sub_le_self (1 : ℝ) ht0
-    simpa [abs_of_nonneg hle'] using this
+    grind only [= mem_Ioo, = abs.eq_1, = max_def]
   have hsub : ‖(1 : ℂ) - (t : ℂ)‖ ≤ 1 := by
     have hnorm_sub : ‖(1 : ℂ) - (t : ℂ)‖ = |1 - t| := by
       simpa [Real.norm_eq_abs] using (Complex.norm_real (1 - t))

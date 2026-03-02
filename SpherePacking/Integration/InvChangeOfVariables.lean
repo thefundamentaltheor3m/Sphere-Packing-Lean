@@ -51,9 +51,8 @@ public lemma Ici_one_eq_image_inv_Ioc :
   constructor
   · intro hx
     have hx0 : 0 < x := lt_of_lt_of_le zero_lt_one hx
-    refine ⟨x⁻¹, ⟨?_, ?_⟩, by simp⟩
-    · simpa [one_div] using inv_pos.2 hx0
-    · simpa [one_div] using (inv_le_one₀ hx0).2 hx
+    refine ⟨x⁻¹, ⟨by simpa [one_div] using inv_pos.2 hx0,
+      by simpa [one_div] using (inv_le_one₀ hx0).2 hx⟩, by simp⟩
   · rintro ⟨y, hy, rfl⟩
     simpa [one_div, mem_Ici] using (one_le_inv_iff₀.2 hy)
 

@@ -86,9 +86,7 @@ public theorem scaledMagic_cohnElkies₁' : ∀ x : ℝ⁸, ‖x‖ ≥ 1 → (s
     simp [Real.mul_self_sqrt (by positivity : (0 : ℝ) ≤ 2), pow_two]
     simp [mul_comm]
   have h2 : (2 : ℝ) ≤ ‖(Real.sqrt 2) • x‖ ^ (2 : ℕ) := by
-    have : (2 : ℝ) * (1 : ℝ) ≤ (2 : ℝ) * ‖x‖ ^ (2 : ℕ) :=
-      mul_le_mul_of_nonneg_left hxSq (by positivity : (0 : ℝ) ≤ 2)
-    simpa [hnorm] using this
+    simp_all
   have h := g_nonpos_of_norm_sq_ge_two (x := (Real.sqrt 2) • x) h2
   simpa [SpherePacking.scaledMagic] using h
 

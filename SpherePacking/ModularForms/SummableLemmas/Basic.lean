@@ -49,11 +49,11 @@ These are used throughout the modular-forms development to build points in `ℍ`
 /-- The imaginary part of `-(n : ℂ) / z` is positive when `n > 0` and `z ∈ ℍ`. -/
 public lemma pos_nat_div_upper (n : ℤ) (hn : 0 < n) (z : ℍ) : 0 < (-(n : ℂ) / z).im := by
   simpa [neg_div, div_neg, div_eq_mul_inv, Complex.mul_im, mul_assoc, mul_left_comm, mul_comm] using
-    (mul_pos (by exact_mod_cast hn : (0 : ℝ) < (n : ℝ)) (UpperHalfPlane.im_inv_neg_coe_pos z))
+    mul_pos (by exact_mod_cast hn) (UpperHalfPlane.im_inv_neg_coe_pos z)
 
 /-- A `ℕ+` version of `pos_nat_div_upper`. -/
-public lemma pnat_div_upper (n : ℕ+) (z : ℍ) : 0 < (-(n : ℂ) / z).im :=
-  by simpa using (UpperHalfPlane.im_pnat_div_pos (n := (n : ℕ)) z)
+public lemma pnat_div_upper (n : ℕ+) (z : ℍ) : 0 < (-(n : ℂ) / z).im := by
+  simpa using UpperHalfPlane.im_pnat_div_pos (n := (n : ℕ)) z
 
 /-- The scalar `(-1)^n * n!` is nonzero in `ℂ`. -/
 public lemma neg_one_pow_mul_factorial_ne_zero (n : ℕ) :
@@ -62,18 +62,17 @@ public lemma neg_one_pow_mul_factorial_ne_zero (n : ℕ) :
 
 /-- Reindex a `tsum` over `ℤ` via negation. -/
 public theorem int_sum_neg {α : Type*} [AddCommMonoid α] [TopologicalSpace α] [T2Space α]
-    (f : ℤ → α) : ∑' d : ℤ, f d = ∑' d, f (-d) :=
-  by simp
+    (f : ℤ → α) : ∑' d : ℤ, f d = ∑' d, f (-d) := by simp
 
 /-- If `f` is summable over `ℤ`, then so is `fun d => f (-d)`. -/
 public theorem summable_neg {α : Type*} [TopologicalSpace α] [AddCommMonoid α] (f : ℤ → α)
-    (hf : Summable f) : Summable fun d => f (-d) :=
-  by simpa [Function.comp] using (Equiv.summable_iff (e := Equiv.neg ℤ) (f := f)).2 hf
+    (hf : Summable f) : Summable fun d => f (-d) := by
+  simpa [Function.comp] using (Equiv.summable_iff (e := Equiv.neg ℤ) (f := f)).2 hf
 
 /-- Rewrite a `tsum` over `ℕ+` as a shifted `tsum` over `ℕ`. -/
 public lemma tsum_pnat_eq_tsum_succ3 {α : Type*} [TopologicalSpace α] [AddCommMonoid α] [T2Space α]
-  (f : ℕ → α) : ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f (n + 1) :=
-  by simpa using (tsum_pnat_eq_tsum_succ (f := f))
+  (f : ℕ → α) : ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f (n + 1) := by
+  simpa using tsum_pnat_eq_tsum_succ (f := f)
 
 /-- If `f 0 = 0`, then summability over `ℕ+` is equivalent to summability over `ℕ`. -/
 public theorem nat_pos_tsum2 {α : Type _} [TopologicalSpace α] [AddCommMonoid α]
@@ -90,8 +89,7 @@ public theorem tsum_pNat {α : Type _} [AddCommGroup α] [UniformSpace α] [IsUn
     [T2Space α] [CompleteSpace α] (f : ℕ → α) (hf : f 0 = 0) : ∑' n : ℕ+, f n = ∑' n, f n := by
   by_cases hf2 : Summable f
   · simpa [hf2.tsum_eq_zero_add, hf] using (tsum_pnat_eq_tsum_succ (f := f))
-  have hf2' : ¬ Summable fun x : ℕ+ => f x := by
-    simpa [nat_pos_tsum2 f hf] using hf2
+  have hf2' : ¬ Summable fun x : ℕ+ => f x := by simpa [nat_pos_tsum2 f hf] using hf2
   simp [tsum_eq_zero_of_not_summable hf2, tsum_eq_zero_of_not_summable hf2']
 
 /-- Closed form for ∑ n·rⁿ over ℕ+ when ‖r‖ < 1. -/
@@ -101,14 +99,14 @@ public lemma tsum_pnat_coe_mul_geometric {r : ℝ} (hr : ‖r‖ < 1) :
 
 public theorem nat_pos_tsum2' {α : Type*} [TopologicalSpace α] [AddCommMonoid α] (f : ℕ → α) :
     (Summable fun x : ℕ+ => f x) ↔ Summable fun x : ℕ => f (x + 1) := by
-  simpa using (summable_pnat_iff_summable_succ (f := f))
+  simpa using summable_pnat_iff_summable_succ (f := f)
 
 /-- Decompose a `tsum` over `ℤ` into `0`, positive and negative contributions (as `ℕ+` sums). -/
 public theorem int_tsum_pNat {α : Type*} [UniformSpace α] [CommRing α] [IsUniformAddGroup α]
   [CompleteSpace α]
   [T2Space α] (f : ℤ → α) (hf2 : Summable f) :
   ∑' n, f n = f 0 + ∑' n : ℕ+, f n + ∑' m : ℕ+, f (-m) := by
-  simpa [add_assoc, add_left_comm, add_comm] using (tsum_int_eq_zero_add_tsum_pnat (f := f) hf2)
+  simpa [add_assoc, add_left_comm, add_comm] using tsum_int_eq_zero_add_tsum_pnat (f := f) hf2
 
 /-- A point in `ℍ` is never an integer (viewed in `ℂ`). -/
 public theorem upp_half_not_ints (z : ℍ) (n : ℤ) : (z : ℂ) ≠ n := by
@@ -116,4 +114,4 @@ public theorem upp_half_not_ints (z : ℍ) (n : ℤ) : (z : ℂ) ≠ n := by
 
 /-- For `z ∈ ℍ`, the complex number `(z : ℂ) + n` is nonzero for any integer `n`. -/
 public lemma upper_half_plane_ne_int_add (z : ℍ) (n : ℤ) : (z : ℂ) + n ≠ 0 := by
-  simpa [add_eq_zero_iff_eq_neg, Int.cast_neg] using (upp_half_not_ints z (-n))
+  simpa [add_eq_zero_iff_eq_neg, Int.cast_neg] using upp_half_not_ints z (-n)

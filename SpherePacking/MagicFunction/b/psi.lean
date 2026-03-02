@@ -86,8 +86,7 @@ lemma slashS (z : ℍ) (F : ℍ → ℂ) : (F ∣[(2 : ℤ)] (S)) (z) =
 The prime in `slashS'` indicates the `k = -2` specialization (compare `slashS`). -/
 public lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (2 : ℕ) := by
-  rw [SL_slash_apply, S, denom]
-  simp [sl_moeb, zpow_two, pow_two]
+  simp [SL_slash_apply, S, denom, sl_moeb, zpow_two, pow_two]
 
 lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
     (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
@@ -115,9 +114,7 @@ lemma slashST (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (S * T)) (z) =
 The prime in `slashST'` indicates the `k = -2` specialization (compare `slashST`). -/
 public lemma slashST' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S * T)) (z) =
     F ((S * T) • z ) * (z + 1 : ℂ) ^ (2 : ℕ) := by
-  rw [SL_slash_apply, ModularGroup.S_mul_T, denom]
-  simp
-  simp [zpow_two, pow_two]
+  simp [SL_slash_apply, ModularGroup.S_mul_T, denom, sl_moeb, zpow_two, pow_two]
 
 lemma slashST'' (z : ℍ) (F : ℍ → ℂ) : F ((S * T) • z) =
     (F ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
@@ -142,9 +139,9 @@ public lemma ψI_eq :
     simp only [nsmul_eq_mul, Nat.cast_ofNat, sl_moeb, map_mul, Pi.div_apply, Pi.add_apply,
       Pi.mul_apply, Pi.ofNat_apply, Pi.pow_apply]
   rw [rewriting, slashST'' z ⇑H₂_MF, slashST'' z ⇑H₃_MF, slashST'' z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := by exact rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
+  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
+  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
+  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
   rw [hh2 , hh3, hh4]
   rw [slash_mul, slash_mul, slash_mul, H₂_S_action, H₃_S_action, H₄_S_action,
     SlashAction.neg_slash, SlashAction.neg_slash, SlashAction.neg_slash, H₂_T_action,
@@ -191,9 +188,9 @@ public lemma ψS_eq' :
   simp only [Pi.smul_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply,
     Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat, Pi.mul_apply, Pi.ofNat_apply]
   rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := by exact rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
+  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
+  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
+  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
   rw [hh2 , hh3, hh4, H₂_S_action, H₃_S_action, H₄_S_action]
   have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
@@ -215,9 +212,7 @@ public lemma ψS_eq' :
   rw [← div_div, mul_div, div_self z_square_nonzero, mul_one]
   simp only [Pi.neg_apply, sub_neg_eq_add, mul_neg, neg_mul, neg_neg, mul_eq_mul_left_iff,
     OfNat.ofNat_ne_zero, or_false]
-  nth_rw 2 [add_comm]
-  rw [← sub_eq_add_neg, ← pow_two, ← pow_two, ← neg_add, ← neg_div', ← sub_eq_add_neg ]
-  nth_rw 2 [add_comm]
+  ring
 -- proof of ψS_eq' complete.
 
 /-- A rearranged explicit formula for `ψS`, derived from `ψS_eq'`. -/

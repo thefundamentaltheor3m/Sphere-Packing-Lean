@@ -82,9 +82,4 @@ def sigmaAntidiagonalEquivProd : (Σ n : ℕ+, Nat.divisorsAntidiagonal n) ≃ �
     · simp only
     simp only
   right_inv := by
-    rintro ⟨n, ⟨k, l⟩, h⟩
-    · simp_rw [mapdiv]
-      exfalso
-      simp at *
-    simp_rw [mapdiv]
-    norm_cast
+    tauto

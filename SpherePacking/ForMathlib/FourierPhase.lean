@@ -63,8 +63,8 @@ variable [MeasureSpace V]
 /-- Almost everywhere, the phase factor has norm at most `1`. -/
 public lemma ae_norm_phase_le_one (w : V) :
     (∀ᵐ x : V ∂(volume : Measure V),
-      ‖cexp (↑(-2 * (π * ⟪x, w⟫)) * Complex.I)‖ ≤ (1 : ℝ)) := by
-  exact Filter.Eventually.of_forall (fun x => (norm_phase_eq_one (w := w) (x := x)).le)
+      ‖cexp (↑(-2 * (π * ⟪x, w⟫)) * Complex.I)‖ ≤ (1 : ℝ)) :=
+  Filter.Eventually.of_forall (fun x => (norm_phase_eq_one (w := w) (x := x)).le)
 
 end
 

@@ -243,10 +243,7 @@ public theorem decay_J₁' :
             (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0 hcoeff hψT hcexp)
       have hboundt : 0 ≤ bound t := by
         positivity [hCψ0]
-      calc
-        ‖gN n x t‖ ≤ bound t * (Real.exp (-Real.pi * (1 / t)) * Real.exp (-Real.pi * x * t)) := hgn
-        _ ≤ bound t * Real.exp (-2 * Real.pi * Real.sqrt x) :=
-            mul_le_mul_of_nonneg_left hExp hboundt
+      exact le_mul_of_le_mul_of_nonneg_left hgn hExp hboundt
     simpa [I, Kn] using
       (norm_integral_le_integral_bound_mul_const (μ := μ) (f := gN n x) (bound := bound)
         (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)

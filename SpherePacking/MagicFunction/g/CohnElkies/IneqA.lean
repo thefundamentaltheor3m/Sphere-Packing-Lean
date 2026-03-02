@@ -30,8 +30,6 @@ public theorem A_neg {t : ℝ} (ht : 0 < t) : A t < 0 := by
   have hFG : 0 < FReal s + c * GReal s := by
     simpa [c] using (FG_inequality_1 (t := s) hs)
   have ht2 : 0 < t ^ (2 : ℕ) := pow_pos ht _
-  have : (-(t ^ (2 : ℕ))) * ((FReal s + c * GReal s) / (Δ.resToImagAxis s).re) < 0 :=
-    mul_neg_of_neg_of_pos (neg_lt_zero.2 ht2) (div_pos hFG hΔpos)
-  simpa [hA] using this
+  simpa [hA] using mul_neg_of_neg_of_pos (neg_lt_zero.2 ht2) (div_pos hFG hΔpos)
 
 end MagicFunction.g.CohnElkies

@@ -29,10 +29,8 @@ public lemma iteratedDeriv_eq_of_hasDerivAt_succ
     (hI : ∀ n x, HasDerivAt (fun y : ℝ => I n y) (I (n + 1) x) x) (n : ℕ) :
     iteratedDeriv n (fun x : ℝ => I 0 x) = fun x : ℝ => I n x := by
   induction n with
-  | zero => funext x; simp [iteratedDeriv_zero]
-  | succ n ih =>
-      funext x
-      simpa [iteratedDeriv_succ, ih] using (hI n x).deriv
+  | zero => ext x; simp [iteratedDeriv_zero]
+  | succ n ih => ext x; simpa [iteratedDeriv_succ, ih] using (hI n x).deriv
 
 /-- Under the same recurrence hypothesis as `iteratedDeriv_eq_of_hasDerivAt_succ`, the iterated
 derivative is differentiable. -/
@@ -92,29 +90,20 @@ public lemma norm_iteratedFDeriv_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
     ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * ((Real.pi : ℂ) * Complex.I))) x‖ ≤
       Real.pi ^ m := by
   let c : ℂ := (Real.pi : ℂ) * Complex.I
-  have hnorm_iter :
-      ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ =
-        ‖iteratedDeriv m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ := by
-    exact norm_iteratedFDeriv_eq_norm_iteratedDeriv
-  have hiter' :
-      iteratedDeriv m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x =
-        c ^ m * Complex.exp ((x : ℂ) * c) := by
-    simpa using
-      congrArg (fun F : ℝ → ℂ => F x) (iteratedDeriv_cexp_mul_const (c := c) m)
   have hnorm_exp : ‖Complex.exp ((x : ℂ) * c)‖ = 1 := by
-    have hz : (x : ℂ) * c = ((x * Real.pi : ℝ) : ℂ) * Complex.I := by
-      simp [c, mul_left_comm, mul_comm]
-    simp [hz, c, Complex.norm_exp]
-  have hc_norm : ‖c‖ = Real.pi := by
-    simp [c, abs_of_nonneg Real.pi_pos.le]
-  have hmain :
-      ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ ≤ Real.pi ^ m := by
+    have : ((x : ℂ) * c).re = 0 := by simp [c, mul_left_comm, mul_comm]
+    simp [Complex.norm_exp, this]
+  have hEq :
+      ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ = Real.pi ^ m := by
     calc
       ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ =
-          ‖c ^ m * Complex.exp ((x : ℂ) * c)‖ := by simp [hnorm_iter, hiter']
-      _ ≤ ‖c ^ m‖ * ‖Complex.exp ((x : ℂ) * c)‖ := by simp
-      _ = Real.pi ^ m := by simp [norm_pow, hc_norm, hnorm_exp]
-  simpa [c] using hmain
+          ‖iteratedDeriv m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ :=
+            norm_iteratedFDeriv_eq_norm_iteratedDeriv
+      _ = ‖c ^ m * Complex.exp ((x : ℂ) * c)‖ := by
+            simpa using congrArg (fun F : ℝ → ℂ => ‖F x‖) (iteratedDeriv_cexp_mul_const (c := c) m)
+      _ = ‖c ^ m‖ * ‖Complex.exp ((x : ℂ) * c)‖ := by simp
+      _ = Real.pi ^ m := by simp [norm_pow, c, abs_of_nonneg Real.pi_pos.le, hnorm_exp]
+  simpa [c] using hEq.le
 
 /-- Bound the norm of the `m`-th iterated derivative of `(-1/2) • exp (t * π i)`. -/
 public lemma norm_iteratedFDeriv_smul_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
@@ -122,34 +111,25 @@ public lemma norm_iteratedFDeriv_smul_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
         (fun t : ℝ ↦ (-1 / 2 : ℂ) • Complex.exp ((t : ℂ) * ((Real.pi : ℂ) * Complex.I))) x‖ ≤
       (1 / 2 : ℝ) * Real.pi ^ m := by
   let e : ℝ → ℂ := fun t ↦ Complex.exp ((t : ℂ) * ((Real.pi : ℂ) * Complex.I))
-  have he_cont : ContDiff ℝ (⊤ : ℕ∞) e := by
-    have hlin : ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ ↦ (t : ℂ) * ((Real.pi : ℂ) * Complex.I)) :=
-      (Complex.ofRealCLM.contDiff.mul contDiff_const)
-    simpa [e] using hlin.cexp
-  have heAt : ContDiffAt ℝ m e x :=
-    (he_cont.contDiffAt).of_le <| by
-      exact WithTop.coe_le_coe.2 (show (m : ℕ∞) ≤ (⊤ : ℕ∞) from le_top)
-  have hsmul :
-      iteratedFDeriv ℝ m (fun t : ℝ ↦ (-1 / 2 : ℂ) • e t) x =
-        (-1 / 2 : ℂ) • iteratedFDeriv ℝ m e x := by
-    simpa [e] using
-      (iteratedFDeriv_const_smul_apply (𝕜 := ℝ) (i := m) (f := e) (a := (-1 / 2 : ℂ)) (x := x) heAt)
-  have hnorm : ‖(-1 / 2 : ℂ)‖ = (1 / 2 : ℝ) := by norm_num
   have hiter : ‖iteratedFDeriv ℝ m e x‖ ≤ Real.pi ^ m := by
     simpa [e] using norm_iteratedFDeriv_cexp_mul_pi_I_le (m := m) (x := x)
-  have hnorm' :
+  have hsmul :
       ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ (-1 / 2 : ℂ) • e t) x‖ =
-        ‖(-1 / 2 : ℂ) • iteratedFDeriv ℝ m e x‖ :=
-    congrArg (fun z => ‖z‖) hsmul
+        ‖(-1 / 2 : ℂ)‖ * ‖iteratedFDeriv ℝ m e x‖ := by
+    calc
+      ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ (-1 / 2 : ℂ) • e t) x‖ =
+          ‖iteratedDeriv m (fun t : ℝ ↦ (-1 / 2 : ℂ) • e t) x‖ :=
+            norm_iteratedFDeriv_eq_norm_iteratedDeriv
+      _ = ‖(-1 / 2 : ℂ) • iteratedDeriv m e x‖ := by
+            simp
+      _ = ‖(-1 / 2 : ℂ)‖ * ‖iteratedDeriv m e x‖ := by simp
+      _ = ‖(-1 / 2 : ℂ)‖ * ‖iteratedFDeriv ℝ m e x‖ := by
+            simp [norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := m) (f := e) (x := x)]
   calc
     ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ (-1 / 2 : ℂ) • e t) x‖ =
-        ‖(-1 / 2 : ℂ)‖ * ‖iteratedFDeriv ℝ m e x‖ := by
-          rw [hnorm']
-          simpa using (norm_smul (-1 / 2 : ℂ) (iteratedFDeriv ℝ m e x))
-    _ ≤ ‖(-1 / 2 : ℂ)‖ * Real.pi ^ m := by
-          exact mul_le_mul_of_nonneg_left hiter (norm_nonneg _)
-    _ = (1 / 2 : ℝ) * Real.pi ^ m := by
-          exact congrArg (fun a : ℝ => a * Real.pi ^ m) hnorm
+        ‖(-1 / 2 : ℂ)‖ * ‖iteratedFDeriv ℝ m e x‖ := hsmul
+    _ ≤ ‖(-1 / 2 : ℂ)‖ * Real.pi ^ m := by gcongr
+    _ = (1 / 2 : ℝ) * Real.pi ^ m := by simp
 
 /-- If `f` has bounded derivatives and `g` has one-sided decay of all derivatives, then the product
 `f * g` has one-sided decay for a fixed iterated derivative order. -/
@@ -161,8 +141,7 @@ public theorem decay_iteratedFDeriv_mul_of_bound_left
       ∀ m : ℕ, ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ m g x‖ ≤ C) :
     ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun y : ℝ ↦ f y * g y) x‖ ≤ C := by
   let Cg : ℕ → ℝ := fun m ↦ Classical.choose (hdec_g m)
-  let C : ℝ :=
-    ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * (B i) * Cg (n - i)
+  let C : ℝ := ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * B i * Cg (n - i)
   refine ⟨C, ?_⟩
   intro x hx
   have hxk0 : 0 ≤ ‖x‖ ^ k := by positivity
@@ -171,45 +150,34 @@ public theorem decay_iteratedFDeriv_mul_of_bound_left
         ∑ i ∈ Finset.range (n + 1),
           (n.choose i : ℝ) * ‖iteratedFDeriv ℝ i f x‖ * ‖iteratedFDeriv ℝ (n - i) g x‖ :=
     norm_iteratedFDeriv_mul_le (𝕜 := ℝ) (N := (⊤ : ℕ∞)) hf_cont hg_cont x (n := n)
-      (hn := by
-        exact WithTop.coe_le_coe.2 (show (n : ℕ∞) ≤ (⊤ : ℕ∞) from le_top))
+      (hn :=
+        WithTop.coe_le_coe.2 (show (n : ℕ∞) ≤ (⊤ : ℕ∞) from le_top))
   have hmain :
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun y : ℝ ↦ f y * g y) x‖ ≤
         ∑ i ∈ Finset.range (n + 1),
           ‖x‖ ^ k *
             ((n.choose i : ℝ) * ‖iteratedFDeriv ℝ i f x‖ * ‖iteratedFDeriv ℝ (n - i) g x‖) := by
-    have h' := mul_le_mul_of_nonneg_left hmul hxk0
-    simpa [Finset.mul_sum, mul_assoc, mul_left_comm, mul_comm] using h'
+    simpa [Finset.mul_sum, mul_assoc, mul_left_comm, mul_comm] using
+      mul_le_mul_of_nonneg_left hmul hxk0
   have hterm :
       ∀ i ∈ Finset.range (n + 1),
         ‖x‖ ^ k * ((n.choose i : ℝ) * ‖iteratedFDeriv ℝ i f x‖ * ‖iteratedFDeriv ℝ (n - i) g x‖) ≤
-          (n.choose i : ℝ) * (B i) * Cg (n - i) := by
-    intro i hi
+          (n.choose i : ℝ) * B i * Cg (n - i) := by
+    intro i _
     have hfi : ‖iteratedFDeriv ℝ i f x‖ ≤ B i := hbound_f i x
     have hgi : ‖x‖ ^ k * ‖iteratedFDeriv ℝ (n - i) g x‖ ≤ Cg (n - i) := by
       simpa [Cg] using (Classical.choose_spec (hdec_g (n - i)) x hx)
-    calc
-      ‖x‖ ^ k * ((n.choose i : ℝ) * ‖iteratedFDeriv ℝ i f x‖ * ‖iteratedFDeriv ℝ (n - i) g x‖) =
-          (n.choose i : ℝ) * ‖iteratedFDeriv ℝ i f x‖ *
-            (‖x‖ ^ k * ‖iteratedFDeriv ℝ (n - i) g x‖) := by
-              ring_nf
-      _ ≤ (n.choose i : ℝ) * (B i) * Cg (n - i) := by
-            have hchoose0 : 0 ≤ (n.choose i : ℝ) := by positivity
-            have hBi0 : 0 ≤ B i := (norm_nonneg _).trans hfi
-            have hleft : (n.choose i : ℝ) * ‖iteratedFDeriv ℝ i f x‖ ≤ (n.choose i : ℝ) * B i :=
-              mul_le_mul_of_nonneg_left hfi hchoose0
-            have hright0 : 0 ≤ ‖x‖ ^ k * ‖iteratedFDeriv ℝ (n - i) g x‖ := by positivity
-            have hprod :
-                ((n.choose i : ℝ) * ‖iteratedFDeriv ℝ i f x‖) *
-                    (‖x‖ ^ k * ‖iteratedFDeriv ℝ (n - i) g x‖) ≤
-                  ((n.choose i : ℝ) * B i) * Cg (n - i) :=
-              mul_le_mul hleft hgi hright0 (mul_nonneg hchoose0 hBi0)
-            simpa [mul_assoc, mul_left_comm, mul_comm] using hprod
+    have hchoose0 : 0 ≤ (n.choose i : ℝ) := by positivity
+    have hBi0 : 0 ≤ B i := (norm_nonneg _).trans hfi
+    have hleft : (n.choose i : ℝ) * ‖iteratedFDeriv ℝ i f x‖ ≤ (n.choose i : ℝ) * B i :=
+      mul_le_mul_of_nonneg_left hfi hchoose0
+    have hprod := mul_le_mul hleft hgi (by positivity) (mul_nonneg hchoose0 hBi0)
+    grind only
   have hsum :
       (∑ i ∈ Finset.range (n + 1),
           ‖x‖ ^ k * ((n.choose i : ℝ) * ‖iteratedFDeriv ℝ i f x‖ *
             ‖iteratedFDeriv ℝ (n - i) g x‖)) ≤
-        ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * (B i) * Cg (n - i) :=
+        ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * B i * Cg (n - i) :=
     Finset.sum_le_sum fun i hi => hterm i hi
   exact le_trans hmain (by simpa [C] using hsum)
 

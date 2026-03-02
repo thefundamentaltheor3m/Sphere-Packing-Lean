@@ -84,8 +84,8 @@ lemma exists_qKerBelow_eq_bot
     · exact qKerBelow_antitone (Γ := Γ) (k := k) (h := h) hh hΓ (Nat.le_of_not_ge hNM)
   have hiInf :
       (⨅ M : ℕ, qKerBelow (Γ := Γ) (k := k) (h := h) hh hΓ M) =
-        qKerBelow (Γ := Γ) (k := k) (h := h) hh hΓ N := by
-    exact le_antisymm (iInf_le _ N) (le_iInf hle)
+        qKerBelow (Γ := Γ) (k := k) (h := h) hh hΓ N :=
+    le_antisymm (iInf_le _ N) (le_iInf hle)
   refine ⟨N, ?_⟩
   simpa [hiInf] using qKerBelow_iInf_eq_bot (Γ := Γ) (k := k) (h := h) hh hΓ
 

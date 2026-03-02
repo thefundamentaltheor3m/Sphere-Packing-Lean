@@ -62,20 +62,17 @@ section hpoly_aux
 
 include hpoly in
 theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (n ^ k : ℝ)) := by
-  have h_shift : (fun n : ℕ => c (n + n₀)) =O[atTop] (fun n : ℕ => (n + n₀ : ℂ) ^ k) := by
+  have h_shift : (fun n : ℕ ↦ c (n + n₀)) =O[atTop] (fun n : ℕ ↦ ((n + n₀ : ℤ) : ℝ) ^ k) := by
     simp only [isBigO_iff, eventually_atTop] at hpoly ⊢
-    obtain ⟨C, m, hCa⟩ := hpoly
-    use C
-    simp only [norm_pow, norm_eq_abs] at hCa ⊢
-    refine ⟨(m - n₀).toNat, fun n hn ↦ ?_⟩
-    exact_mod_cast hCa (n + n₀) (by grind)
+    rcases hpoly with ⟨C, m, hCa⟩
+    refine ⟨C, (m - n₀).toNat, fun n hn ↦ ?_⟩
+    exact hCa (n + n₀) (by grind)
   refine h_shift.trans ?_
   simp only [isBigO_iff, eventually_atTop]
-  use 2 ^ k
-  simp only [norm_pow, RCLike.norm_natCast]
-  refine ⟨n₀.natAbs, fun n hn => ?_⟩
+  refine ⟨2 ^ k, n₀.natAbs, fun n hn ↦ ?_⟩
+  simp only [Real.norm_eq_abs, abs_pow, abs_of_nonneg, Nat.cast_nonneg]
   rw [← mul_pow]
-  apply pow_le_pow_left₀ (norm_nonneg _)
+  apply pow_le_pow_left₀ (abs_nonneg _)
   norm_cast
   cases abs_cases (n + n₀ : ℤ) <;> grind
 
@@ -102,9 +99,7 @@ lemma summable_norm_mul_rexp_neg_pi_div_two :
       _ = (rexp (-(π : ℝ) / 2)) ^ n := by simp [r, Complex.norm_exp, div_eq_mul_inv]
       _ = rexp ((n : ℝ) * (-(π : ℝ) / 2)) := by
             simpa using (Real.exp_nat_mul (-(π : ℝ) / 2) n).symm
-      _ = rexp (-π * n / 2) := by
-            congr 1
-            ring
+      _ = rexp (-π * n / 2) := by congr 1; ring
   simp [hpow]
 
 end summable_aux
@@ -117,10 +112,9 @@ lemma aux_1 (x : ℂ) : norm (cexp (I * x)) = rexp (-x.im) := by
   simpa using (Complex.norm_exp (I * x))
 
 -- Below was written by Bhavik
-lemma aux_2 (x : ℂ) : 1 - Real.exp x.re ≤ norm (1 - cexp x) := calc
-  norm (1 - cexp x) ≥ |‖(1 : ℂ)‖ - norm (cexp x)| := abs_norm_sub_norm_le 1 (cexp x)
-  _ = |1 - rexp x.re| := by simp [Complex.norm_exp]
-  _ ≥ _ := le_abs_self _
+lemma aux_2 (x : ℂ) : 1 - Real.exp x.re ≤ norm (1 - cexp x) := by
+  refine (le_abs_self (1 - Real.exp x.re)).trans ?_
+  simpa [Complex.norm_exp] using (abs_norm_sub_norm_le (1 : ℂ) (cexp x))
 
 include hcsum in
 lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i * z)‖ := by
@@ -136,22 +130,12 @@ lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i *
         ↑π * I * (↑(↑i + n₀) : ℂ) * z =
           ↑π * I * (i : ℂ) * z + ↑π * I * (n₀ : ℂ) * z := by
       simp; ring
-    -- rewrite the exponent as a sum, then apply `exp_add`.
-    -- (`rw` is more reliable here than `simpa`.)
-    rw [harg]
-    simpa using
+    simpa [harg.symm] using
       (Complex.exp_add (↑π * I * (i : ℂ) * z) (↑π * I * (n₀ : ℂ) * z))
   have hne : cexp (↑π * I * (n₀ : ℂ) * z) ≠ 0 :=
     Complex.exp_ne_zero (↑π * I * (n₀ : ℂ) * z)
   -- cancel the `n₀` shift in the exponential.
-  calc
-    c (↑i + n₀) * cexp (↑π * I * (↑(↑i + n₀) : ℂ) * z) * (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹ =
-        c (↑i + n₀) * (cexp (↑π * I * (i : ℂ) * z) * cexp (↑π * I * (n₀ : ℂ) * z)) *
-          (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹ := by
-        simpa [mul_assoc] using
-          congrArg (fun w ↦ c (↑i + n₀) * w * (cexp (↑π * I * (n₀ : ℂ) * z))⁻¹) hsplit
-    _ = c (↑i + n₀) * cexp (↑π * I * (i : ℂ) * z) := by
-        simp [mul_assoc]
+  grind only
 
 include hcsum in
 lemma aux_4 : Summable fun (i : ℕ) ↦ norm (c (i + n₀)) *
@@ -160,27 +144,21 @@ lemma aux_4 : Summable fun (i : ℕ) ↦ norm (c (i + n₀)) *
 
 lemma aux_5 (z : ℍ) : norm (∏' (n : ℕ+), (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24) =
   ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
-  simpa [← norm_pow] using
-    (Multipliable.norm_tprod (MultipliableDeltaProductExpansion_pnat z))
+  simpa [← norm_pow] using (Multipliable.norm_tprod (MultipliableDeltaProductExpansion_pnat z))
 
 lemma aux_6 (z : ℍ) : 0 ≤ ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * ↑↑n * z)) ^ 24 := by
-  rw [← aux_5 z]
-  exact norm_nonneg _
+  simp [← aux_5 z]
 
 lemma aux_7 (a : ℤ) :
     norm (cexp (↑π * I * a * z)) ≤ rexp (-π * a * z.im) := by
-  simpa [mul_assoc, mul_left_comm, mul_comm] using
-    (le_of_eq (aux_1 (x := (↑π * (a * z)))))
+  simpa [mul_assoc, mul_left_comm, mul_comm] using le_of_eq (aux_1 (x := (↑π * (a * z))))
 
 lemma aux_tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
     0 < ∏' (n : ℕ+), (1 - rexp (-c * (n : ℝ))) ^ 24 := by
   rw [← Real.rexp_tsum_eq_tprod]
   · exact Real.exp_pos _
   · intro i
-    refine pow_pos (sub_pos.2 ?_) _
-    refine Real.exp_lt_one_iff.2 (by
-      have : (0 : ℝ) < (i : ℝ) := by exact_mod_cast i.pos
-      nlinarith)
+    simp_all
   · have hnat : Summable fun b : ℕ ↦ Real.exp (-c * (b : ℝ)) := by
       -- `Real.summable_exp_nat_mul_iff` is stated for `exp (n * a)`.
       simpa [mul_assoc, mul_comm, mul_left_comm] using
@@ -192,7 +170,7 @@ lemma aux_tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
 
 lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 := by
   simpa [mul_assoc, mul_left_comm, mul_comm] using
-    (aux_tprod_one_sub_rexp_pow_24_pos (c := 2 * π * z.im) (by positivity))
+    aux_tprod_one_sub_rexp_pow_24_pos (c := 2 * π * z.im) (by positivity)
 
 lemma aux_ring (i : ℕ) : (I * ↑π * ↑i * z) = I * ((↑π * ↑i) * z) := by
   simp [mul_assoc]
@@ -235,12 +213,7 @@ lemma step_8 :
       (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
   · exact aux_6 z
-  · calc
-      ‖∑' n : ℕ, c (n + n₀) * cexp (π * I * n * z)‖
-          ≤ ∑' n : ℕ, ‖c (n + n₀) * cexp (π * I * n * z)‖ := by
-            exact norm_tsum_le_tsum_norm (aux_3 z c n₀ hcsum)
-      _ = ∑' n : ℕ, ‖c (n + n₀)‖ * ‖cexp (π * I * n * z)‖ := by
-            simp
+  · simpa [norm_mul] using norm_tsum_le_tsum_norm (aux_3 z c n₀ hcsum)
 
 include hcsum in
 lemma step_9 :
@@ -250,17 +223,15 @@ lemma step_9 :
     (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := by
   gcongr
   · exact aux_6 z
-  · exact (aux_4 z c n₀ hcsum)
+  · exact aux_4 z c n₀ hcsum
   · exact aux_10 z c n₀ hcsum
-  · next j =>
-    simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]
+  · simp [Complex.norm_exp, mul_assoc, mul_left_comm, mul_comm]
 
 lemma step_10 :
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
     (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) ≤
     rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n * z.im)) /
-    (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) :=
-by
+    (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
   gcongr
   · exact aux_8 z
   · apply tprod_le_of_nonneg_of_multipliable
@@ -294,26 +265,18 @@ lemma step_11 :
   have hsum :
       (∑' n : ℕ, ‖c (n + n₀)‖ * rexp (-π * n * z.im)) ≤
         ∑' n : ℕ, ‖c (n + n₀)‖ * rexp (-π * n / 2) := by
-    refine
-      Summable.tsum_le_tsum (f := fun n : ℕ ↦ ‖c (n + n₀)‖ * rexp (-π * n * z.im))
-        (g := fun n : ℕ ↦ ‖c (n + n₀)‖ * rexp (-π * n / 2)) (fun n ↦ ?_)
-        (by simpa using aux_10 z c n₀ hcsum) hg
-    have hn0 : 0 ≤ ‖c (n + n₀)‖ := norm_nonneg _
-    refine mul_le_mul_of_nonneg_left ?_ hn0
-    refine Real.exp_le_exp.2 ?_
+    refine Summable.tsum_le_tsum
+      (f := fun n : ℕ ↦ ‖c (n + n₀)‖ * rexp (-π * n * z.im))
+      (g := fun n : ℕ ↦ ‖c (n + n₀)‖ * rexp (-π * n / 2)) (fun n ↦ ?_)
+      (by simpa using aux_10 z c n₀ hcsum) hg
     have hz' : (1 / 2 : ℝ) ≤ z.im := le_of_lt hz
     have hn : 0 ≤ (π : ℝ) * (n : ℝ) := by positivity
-    have hmul : (π : ℝ) * (n : ℝ) * 2⁻¹ ≤ (π : ℝ) * (n : ℝ) * z.im := by
-      have := mul_le_mul_of_nonneg_left hz' hn
-      simpa [mul_assoc, mul_left_comm, mul_comm, one_div] using this
-    have := neg_le_neg hmul
-    simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, neg_mul, one_div] using this
-  have hD0 :
-      0 ≤ (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24)⁻¹ := by
-    exact inv_nonneg.2 (le_of_lt (aux_8 z))
-  have hA0 : 0 ≤ rexp (-π * (n₀ - 2) * z.im) := by positivity
-  rw [div_eq_mul_inv, div_eq_mul_inv]
-  exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hsum hA0) hD0
+    refine mul_le_mul_of_nonneg_left ?_ (norm_nonneg _)
+    refine Real.exp_le_exp.2 ?_
+    have := neg_le_neg (mul_le_mul_of_nonneg_left hz' hn)
+    simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, neg_mul] using this
+  gcongr
+  · exact (aux_8 z).le
 
 lemma step_12a {r : ℝ} (hr : 0 < r) :
     Multipliable fun b : ℕ+ ↦ (1 - rexp (-r * (b : ℝ))) ^ 24 := by
@@ -337,22 +300,20 @@ lemma step_12 :
     (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := by
   gcongr
   · exact aux_11
-  · apply tprod_le_of_nonneg_of_multipliable
+  · have h0 (n : ℕ+) : 0 ≤ 1 - rexp (-π * (n : ℝ)) := by
+      refine sub_nonneg.2 (Real.exp_le_one_iff.2 ?_)
+      have hn : (0 : ℝ) ≤ (n : ℝ) := by positivity
+      have hπ : (-π : ℝ) ≤ 0 := by nlinarith [Real.pi_pos]
+      simpa [mul_assoc, mul_comm, mul_left_comm] using mul_nonpos_of_nonpos_of_nonneg hπ hn
+    apply tprod_le_of_nonneg_of_multipliable
+    · intro n; exact pow_nonneg (h0 n) 24
     · intro n
-      positivity
-    · intro n
-      have h0 : 0 ≤ 1 - rexp (-π * (n : ℝ)) := by
-        refine sub_nonneg.2 (Real.exp_le_one_iff.2 ?_)
-        have hn : (0 : ℝ) ≤ (n : ℝ) := by
-          exact_mod_cast (Nat.zero_le (n : ℕ))
-        have hπ : (-π : ℝ) ≤ 0 := by nlinarith [Real.pi_pos]
-        exact mul_nonpos_of_nonpos_of_nonneg hπ hn
-      refine pow_le_pow_left₀ h0 (sub_le_sub_left ?_ 1) 24
+      refine pow_le_pow_left₀ (h0 n) (sub_le_sub_left ?_ 1) 24
       refine Real.exp_le_exp.2 ?_
       have hz2 : (1 : ℝ) ≤ 2 * z.im := by nlinarith [hz]
       have hn : 0 ≤ (π : ℝ) * (n : ℝ) := by positivity
-      have := mul_le_mul_of_nonneg_left hz2 hn
-      simpa [mul_assoc, mul_left_comm, mul_comm, mul_one] using (neg_le_neg this)
+      have := neg_le_neg (mul_le_mul_of_nonneg_left hz2 hn)
+      simpa [mul_assoc, mul_left_comm, mul_comm, mul_one] using this
     · exact step_12a pi_pos
     · simpa [mul_assoc, mul_left_comm, mul_comm] using
         (step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z)))
@@ -430,12 +391,11 @@ include hpoly hcn₀ in
 theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
   rw [DivDiscBound]
   refine div_pos ?_ aux_11
-  have hs :
-      Summable (fun n : ℕ => ‖c (n + n₀)‖ * rexp (-π * n / 2)) :=
-    summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly
-  refine Summable.tsum_pos hs ?_ 0 ?_
-  · intro n; positivity
-  · simpa using (norm_pos_iff.2 hcn₀)
+  refine
+    Summable.tsum_pos
+      (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
+      (fun _ => by positivity) 0 ?_
+  simpa using (norm_pos_iff.2 hcn₀)
 
 end positivity
 
@@ -460,8 +420,7 @@ lemma norm_A_E_coeff_le (n : ℕ) :
 lemma norm_A_E_coeff_le_of_le {n m : ℕ} (hn : n ≤ m) :
     ‖A_E_coeff n‖ ≤ (720 : ℝ) * ((m + 1 : ℕ) : ℝ) ^ 5 := by
   refine (norm_A_E_coeff_le (n := n)).trans ?_
-  have hnm : ((n + 1 : ℕ) : ℝ) ≤ (m + 1 : ℕ) := by exact_mod_cast Nat.succ_le_succ hn
-  exact mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) hnm 5) (by positivity)
+  gcongr
 
 lemma norm_A_E_sq_coeff_le (m : ℕ) :
     ‖A_E_sq_coeff m‖ ≤ (720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 11 := by
@@ -493,10 +452,9 @@ lemma norm_A_E_sq_coeff_le (m : ℕ) :
         = ‖∑ p ∈ Finset.antidiagonal m, A_E_coeff p.1 * A_E_coeff p.2‖ := by
             simp [A_E_sq_coeff]
     _ ≤ ∑ p ∈ Finset.antidiagonal m, ‖A_E_coeff p.1 * A_E_coeff p.2‖ := by
-            simpa using (norm_sum_le (Finset.antidiagonal m)
-              (fun p => A_E_coeff p.1 * A_E_coeff p.2))
-    _ ≤ ∑ p ∈ Finset.antidiagonal m, (720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 10 := by
-            exact Finset.sum_le_sum hterm
+            simpa using norm_sum_le (Finset.antidiagonal m) (fun p => A_E_coeff p.1 * A_E_coeff p.2)
+    _ ≤ ∑ p ∈ Finset.antidiagonal m, (720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 10 :=
+      Finset.sum_le_sum hterm
     _ = ((Finset.antidiagonal m).card : ℝ) * ((720 : ℝ) ^ 2 * ((m + 1 : ℕ) : ℝ) ^ 10) := by
             -- `∑ _ ∈ s, c = card(s) * c`.
             simp [Finset.sum_const, nsmul_eq_mul]
@@ -593,39 +551,22 @@ lemma A_E_sq_eq_tsum (z : ℍ) :
         let u : ℂ := 2 * π * I * ((p.1 + 1 : ℕ) : ℂ) * (z : ℂ)
         let v : ℂ := 2 * π * I * ((p.2 + 1 : ℕ) : ℂ) * (z : ℂ)
         have huv : u + v = 2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ) := by
-          dsimp [u, v]
-          -- Combine coefficients using `hcast`.
-          calc
-            (2 * π * I * ((p.1 + 1 : ℕ) : ℂ) * (z : ℂ)) +
-                (2 * π * I * ((p.2 + 1 : ℕ) : ℂ) * (z : ℂ))
-                = 2 * π * I * ((((p.1 + 1 : ℕ) : ℂ) + ((p.2 + 1 : ℕ) : ℂ)) * (z : ℂ)) := by
-                    simp [mul_assoc, mul_add, add_mul]
-            _ = 2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ) := by
-                    simpa [mul_assoc] using congrArg (fun x : ℂ => 2 * π * I * (x * (z : ℂ))) hcast
+          grind only
         have : cexp u * cexp v = cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
           calc
-            cexp u * cexp v = cexp (u + v) := by
-              exact (Complex.exp_add u v).symm
+            cexp u * cexp v = cexp (u + v) :=
+              (Complex.exp_add u v).symm
             _ = cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by simp [huv]
         simpa [e₁, e₂, u, v] using this
       -- Expand `t` and use `hexp`.
       dsimp [t, A_E_term, e₁, e₂]
-      calc
-        (A_E_coeff p.1 * cexp (2 * π * I * ((p.1 + 1 : ℕ) : ℂ) * (z : ℂ))) *
-            (A_E_coeff p.2 * cexp (2 * π * I * ((p.2 + 1 : ℕ) : ℂ) * (z : ℂ)))
-            = (A_E_coeff p.1 * A_E_coeff p.2) * (e₁ * e₂) := by
-                simp [e₁, e₂, mul_assoc, mul_left_comm, mul_comm]
-        _ = (A_E_coeff p.1 * A_E_coeff p.2) *
-              cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
-                simp [hexp]
+      exact CancelDenoms.mul_subst rfl hexp rfl
     calc
       (∑ p ∈ Finset.antidiagonal m, t p.1 * t p.2)
           = ∑ p ∈ Finset.antidiagonal m,
               (A_E_coeff p.1 * A_E_coeff p.2) *
-                cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
-                refine Finset.sum_congr rfl ?_
-                intro p hp
-                exact hmul p hp
+                cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) :=
+                Finset.sum_congr rfl hmul
       _ = (∑ p ∈ Finset.antidiagonal m, A_E_coeff p.1 * A_E_coeff p.2) *
             cexp (2 * π * I * ((m + 2 : ℕ) : ℂ) * (z : ℂ)) := by
             simp [Finset.sum_mul, mul_assoc]
@@ -654,11 +595,8 @@ noncomputable def A_E_sq_fourierCoeff : ℤ → ℂ
 
 lemma A_E_sq_fourierCoeff_four_ne_zero : A_E_sq_fourierCoeff 4 ≠ 0 := by
   have hcond : 4 ≤ (4 : ℕ) ∧ Even (4 : ℕ) := by decide
-  have hc4 : A_E_sq_fourierCoeff 4 = (720 : ℂ) ^ 2 := by
-    -- Unfold the definition at `4` and compute `(4 / 2 - 2) = 0`.
-    simp [A_E_sq_fourierCoeff, hcond, A_E_sq_coeff, A_E_coeff, pow_two]
-  rw [hc4]
-  exact pow_ne_zero 2 (by norm_num : (720 : ℂ) ≠ 0)
+  have h720 : (720 : ℂ) ≠ 0 := by norm_num
+  simp [A_E_sq_fourierCoeff, hcond, A_E_sq_coeff, A_E_coeff, h720]
 
 lemma norm_A_E_sq_fourierCoeff_ofNat_le (j : ℕ) (hj : 4 ≤ j) :
     ‖A_E_sq_fourierCoeff (Int.ofNat j)‖ ≤ (720 : ℝ) ^ 2 * (j : ℝ) ^ 11 := by
@@ -686,9 +624,8 @@ lemma norm_A_E_sq_fourierCoeff_ofNat_le (j : ℕ) (hj : 4 ≤ j) :
 lemma A_E_sq_fourierCoeff_isBigO :
     A_E_sq_fourierCoeff =O[atTop] (fun n ↦ (n ^ 11 : ℝ)) := by
   simp only [isBigO_iff, eventually_atTop, ge_iff_le]
-  refine ⟨(720 : ℝ) ^ 2, (4 : ℤ), ?_⟩
-  intro n hn
-  obtain ⟨j, rfl⟩ := Int.eq_ofNat_of_zero_le (le_trans (by decide : (0 : ℤ) ≤ 4) hn)
+  refine ⟨(720 : ℝ) ^ 2, (4 : ℤ), fun n hn => ?_⟩
+  rcases Int.eq_ofNat_of_zero_le (le_trans (by decide : (0 : ℤ) ≤ 4) hn) with ⟨j, rfl⟩
   simpa using norm_A_E_sq_fourierCoeff_ofNat_le (j := j) (Int.ofNat_le.mp (by simpa using hn))
 
 lemma A_E_sq_fourierCoeff_summable (z : ℍ) (hz : 1 / 2 < z.im) :
@@ -830,9 +767,7 @@ lemma A_E_sq_fourierCoeff_hf :
     have hidx : ((2 * m + 1 : ℕ) : ℤ) + (4 : ℤ) = (Int.ofNat (2 * m + 5)) := by
       simpa [hidxNat] using (Int.ofNat_add_ofNat (2 * m + 1) 4)
     have hcond : ¬(4 ≤ (2 * m + 5) ∧ Even (2 * m + 5)) := by
-      intro h
-      have : ¬Even (2 * m + 5) := by simp [parity_simps]
-      exact this h.2
+      grind only [= Nat.even_iff]
     -- Unfold and simplify.
     dsimp [f, fouterm]
     -- Rewrite the index to an `ofNat` and use `hcond`.
@@ -896,32 +831,19 @@ lemma A_E_sq_fourierCoeff_hf :
     exact (summable_zero : Summable (0 : ℕ → ℂ))
   have hs_g : Summable g := by
     simpa [g] using A_E_sq_series_summable (x := x)
-  have he : Summable (fun m : ℕ => f (2 * m)) := by
-    refine Summable.congr hs_g ?_
-    intro m
-    exact (heven_term m).symm
+  have he : Summable (fun m : ℕ => f (2 * m)) :=
+    (summable_congr heven_term).mpr hs_g
   have hsplit :
       (∑' m : ℕ, f (2 * m)) + (∑' m : ℕ, f (2 * m + 1)) = ∑' n : ℕ, f n :=
     tsum_even_add_odd (f := f) he ho
   have hodd_sum : (∑' m : ℕ, f (2 * m + 1)) = 0 := by
     -- since all odd terms are zero
-    have : (∑' m : ℕ, f (2 * m + 1)) = ∑' m : ℕ, (0 : ℂ) := by
-      exact tsum_congr hodd_term
+    have : (∑' m : ℕ, f (2 * m + 1)) = ∑' m : ℕ, (0 : ℂ) :=
+      tsum_congr hodd_term
     simpa using this.trans (tsum_zero : (∑' m : ℕ, (0 : ℂ)) = 0)
   have heven_sum : (∑' m : ℕ, f (2 * m)) = ∑' m : ℕ, g m := by
-    refine tsum_congr ?_
-    intro m
-    exact heven_term m
-  have hsumf : (∑' n : ℕ, f n) = ∑' m : ℕ, g m := by
-    calc
-      (∑' n : ℕ, f n) = (∑' m : ℕ, f (2 * m)) + (∑' m : ℕ, f (2 * m + 1)) := by
-        simpa [add_comm, add_left_comm, add_assoc] using hsplit.symm
-      _ = (∑' m : ℕ, f (2 * m)) := by simp [hodd_sum]
-      _ = ∑' m : ℕ, g m := heven_sum
-  -- Now use Bhavik's `2π i`-series.
-  have hA2' : (A_E x) ^ 2 = ∑' m : ℕ, g m := by
-    simpa [g] using hA2
-  simpa [f, hsumf] using hA2'
+    exact tsum_congr heven_term
+  grind only
 
 /-- Exponential decay for the magic function `φ₀` in the upper half-plane.
 

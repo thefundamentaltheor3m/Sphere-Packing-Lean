@@ -129,7 +129,7 @@ public theorem PeriodicSpherePacking.mem_basis_Z_span
     v ∈ Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) ↔ v ∈ S.lattice :=
   SetLike.ext_iff.mp (S.basis_Z_span b) v
 
-theorem PeriodicSpherePacking.basis_R_span
+public theorem PeriodicSpherePacking.basis_R_span
     (S : PeriodicSpherePacking d) {ι : Type*} (b : Basis ι ℤ S.lattice) :
     Submodule.span ℝ (Set.range (b.ofZLatticeBasis ℝ _)) = ⊤ :=
   Basis.span_eq _
@@ -274,23 +274,19 @@ public lemma scale_finiteDensity' {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc 
 /-- Density of a scaled packing. -/
 public lemma scale_density {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c) :
     (S.scale hc).density = S.density := by
-  rw [density, density]
-  simpa [Function.comp, map_div_atTop_eq c hc] using
+  simpa [density, Function.comp, map_div_atTop_eq c hc] using
     (limsup_congr (Eventually.of_forall fun R => scale_finiteDensity' (S := S) hc R)).trans
       (Filter.limsup_comp (u := S.finiteDensity) (v := fun R => R / c) (f := atTop))
 
 public theorem constant_eq_constant_normalized {d : ℕ} :
     SpherePackingConstant d = ⨆ (S : SpherePacking d) (_ : S.separation = 1), S.density := by
   rw [iSup_subtype', SpherePackingConstant]
-  apply le_antisymm
-  · apply iSup_le
-    intro S
-    have h := inv_mul_cancel₀ S.separation_pos.ne.symm
-    have := le_iSup (fun S : { S : SpherePacking d // S.separation = 1 } ↦ S.val.density)
-        ⟨S.scale (inv_pos.mpr S.separation_pos), h⟩
-    simpa only [scale_density]
-  · apply iSup_le
-    intro ⟨S, _⟩
+  refine le_antisymm (iSup_le ?_) (iSup_le ?_)
+  · intro S
+    simpa [scale_density] using
+      (le_iSup (fun S : { S : SpherePacking d // S.separation = 1 } ↦ S.val.density)
+        ⟨S.scale (inv_pos.mpr S.separation_pos), inv_mul_cancel₀ S.separation_pos.ne.symm⟩)
+  · rintro ⟨S, -⟩
     exact le_iSup density S
 
 end DensityLemmas.SpherePacking

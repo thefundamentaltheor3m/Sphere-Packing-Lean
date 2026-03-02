@@ -130,9 +130,7 @@ lemma norm_φ₀''_le_of_half_lt {C₀ : ℝ}
     have : (-2 * π * zH.im) ≤ 0 := by nlinarith [Real.pi_pos, hzH0]
     simpa using (Real.exp_le_one_iff.2 this)
   have hmul : C₀ * Real.exp (-2 * π * zH.im) ≤ C₀ := by
-    calc
-      C₀ * Real.exp (-2 * π * zH.im) ≤ C₀ * 1 := mul_le_mul_of_nonneg_left hexp hC₀_nonneg
-      _ = C₀ := by simp
+    exact mul_le_of_le_one_right hC₀_nonneg hexp
   exact hφ'.trans hmul
 
 lemma im_I_div (t : ℝ) : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := by
@@ -182,21 +180,18 @@ lemma exp_k₅ (u : ℂ) (t : ℝ) :
 lemma I₁'C_eq (u : ℂ) :
     I₁'C u = ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₁ t) := by
   refine intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
-    (fun t _ => ?_)
-  simp [base₁, exp_k₁, neg_one_div_I_mul_eq_arg₁, mul_assoc]
+    fun t _ => by simp [base₁, exp_k₁, neg_one_div_I_mul_eq_arg₁, mul_assoc]
 
 lemma I₃'C_eq (u : ℂ) :
     I₃'C u = ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₃ t) := by
   refine intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
-    (fun t _ => ?_)
-  simp [base₁, exp_k₃, neg_one_div_I_mul_eq_arg₁, mul_assoc]
+    fun t _ => by simp [base₁, exp_k₃, neg_one_div_I_mul_eq_arg₁, mul_assoc]
 
 lemma I₅'C_eq (u : ℂ) :
     I₅'C u = -2 * ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₅ t) := by
-  refine congrArg (fun x : ℂ => -2 * x) ?_
-  refine intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
-    (fun t _ => ?_)
-  simp [base₁, exp_k₅, neg_one_div_I_mul_eq_arg₁, mul_assoc]
+  refine congrArg (fun x : ℂ => -2 * x) <|
+    intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
+      fun t _ => by simp [base₁, exp_k₅, neg_one_div_I_mul_eq_arg₁, mul_assoc]
 
 lemma arg₁_continuousOn : ContinuousOn arg₁ (Ι (0 : ℝ) 1) := by
   have hcontDen : ContinuousOn (fun t : ℝ => (t : ℂ)) (Ι (0 : ℝ) 1) :=
@@ -210,9 +205,7 @@ lemma arg₁_mapsTo :
     Set.MapsTo arg₁ (Ι (0 : ℝ) 1) UpperHalfPlane.upperHalfPlaneSet := by
   intro t ht
   have ht0 : 0 < t := by simpa using ht.1
-  have hpos : 0 < (arg₁ t).im := by
-    simpa [arg₁, im_I_div] using (inv_pos.2 ht0)
-  simpa [UpperHalfPlane.upperHalfPlaneSet] using hpos
+  simpa [UpperHalfPlane.upperHalfPlaneSet, arg₁, im_I_div] using inv_pos.2 ht0
 
 lemma base₁_continuousOn : ContinuousOn base₁ (Ι (0 : ℝ) 1) := by
   change
@@ -266,15 +259,13 @@ lemma base₁_bound :
     _ ≤ C₀ := hφ
 
 private lemma norm_of_mem_uIoc_le_one {t : ℝ} (ht : t ∈ Ι (0 : ℝ) 1) : ‖(t : ℂ)‖ ≤ 1 := by
-  have ht0 : 0 ≤ t := (show 0 < t from by simpa using ht.1).le
+  have ht0 : 0 ≤ t := (by simpa using ht.1 : (0 : ℝ) < t).le
   simpa [Complex.norm_real, abs_of_nonneg ht0] using ht.2
 
 private lemma norm_neg_pi_mul_le_pi {z : ℂ} (hz : ‖z‖ ≤ 1) : ‖(-π : ℂ) * z‖ ≤ Real.pi := by
-  calc
-    ‖(-π : ℂ) * z‖ = ‖(-π : ℂ)‖ * ‖z‖ := by simp
-    _ = Real.pi * ‖z‖ := by simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
-    _ ≤ Real.pi * 1 := mul_le_mul_of_nonneg_left hz Real.pi_pos.le
-    _ = Real.pi := by simp
+  have hnorm : ‖(-π : ℂ) * z‖ = Real.pi * ‖z‖ := by
+    simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
+  nlinarith [Real.pi_pos, hz, hnorm]
 
 private lemma norm_pi_I_mul_eq_pi : ‖(π : ℂ) * (Complex.I : ℂ)‖ = Real.pi := by
   simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
@@ -284,21 +275,15 @@ private lemma norm_neg_pi_I_mul_eq_pi : ‖(-π : ℂ) * (Complex.I : ℂ)‖ = 
 
 private lemma norm_pi_I_mul_le_pi {z : ℂ} (hz : ‖z‖ ≤ 1) :
     ‖(π : ℂ) * (Complex.I : ℂ) * z‖ ≤ Real.pi := by
-  calc
-    ‖(π : ℂ) * (Complex.I : ℂ) * z‖ = ‖(π : ℂ) * (Complex.I : ℂ)‖ * ‖z‖ := by
-      simp [mul_assoc]
-    _ = Real.pi * ‖z‖ := by simpa using congrArg (fun x : ℝ => x * ‖z‖) norm_pi_I_mul_eq_pi
-    _ ≤ Real.pi * 1 := mul_le_mul_of_nonneg_left hz Real.pi_pos.le
-    _ = Real.pi := by simp
+  have hnorm : ‖(π : ℂ) * (Complex.I : ℂ) * z‖ = Real.pi * ‖z‖ := by
+    simpa [mul_assoc] using congrArg (fun x : ℝ => x * ‖z‖) norm_pi_I_mul_eq_pi
+  nlinarith [Real.pi_pos, hz, hnorm]
 
 private lemma norm_neg_pi_I_mul_le_pi {z : ℂ} (hz : ‖z‖ ≤ 1) :
     ‖(-π : ℂ) * (Complex.I : ℂ) * z‖ ≤ Real.pi := by
-  calc
-    ‖(-π : ℂ) * (Complex.I : ℂ) * z‖ = ‖(-π : ℂ) * (Complex.I : ℂ)‖ * ‖z‖ := by
-      simp [mul_assoc]
-    _ = Real.pi * ‖z‖ := by simpa using congrArg (fun x : ℝ => x * ‖z‖) norm_neg_pi_I_mul_eq_pi
-    _ ≤ Real.pi * 1 := mul_le_mul_of_nonneg_left hz Real.pi_pos.le
-    _ = Real.pi := by simp
+  have hnorm : ‖(-π : ℂ) * (Complex.I : ℂ) * z‖ = Real.pi * ‖z‖ := by
+    simpa [mul_assoc] using congrArg (fun x : ℝ => x * ‖z‖) norm_neg_pi_I_mul_eq_pi
+  nlinarith [Real.pi_pos, hz, hnorm]
 
 lemma k₁_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₁ t‖ ≤ (2 * Real.pi) := by
   intro t ht
@@ -309,8 +294,8 @@ lemma k₁_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₁ t‖ ≤ (2 * Real.pi) := b
     by simpa [k₁] using (norm_add_le (-π * (Complex.I : ℂ) : ℂ) (-π * (t : ℂ) : ℂ))
   have hpiI : ‖(-π * (Complex.I : ℂ) : ℂ)‖ = Real.pi := by
     simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
-  have : ‖k₁ t‖ ≤ Real.pi + Real.pi := by
-    exact hsum.trans (add_le_add (le_of_eq hpiI) (by simpa [mul_assoc] using htpi))
+  have : ‖k₁ t‖ ≤ Real.pi + Real.pi :=
+    hsum.trans (add_le_add (le_of_eq hpiI) (by simpa [mul_assoc] using htpi))
   simpa [two_mul] using this
 
 lemma k₃_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₃ t‖ ≤ (2 * Real.pi) := by
@@ -322,8 +307,8 @@ lemma k₃_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₃ t‖ ≤ (2 * Real.pi) := b
     by simpa [k₃] using (norm_add_le (π * (Complex.I : ℂ) : ℂ) (-π * (t : ℂ) : ℂ))
   have hpiI : ‖(π * (Complex.I : ℂ) : ℂ)‖ = Real.pi := by
     simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
-  have : ‖k₃ t‖ ≤ Real.pi + Real.pi := by
-    exact hsum.trans (add_le_add (le_of_eq hpiI) (by simpa [mul_assoc] using htpi))
+  have : ‖k₃ t‖ ≤ Real.pi + Real.pi :=
+    hsum.trans (add_le_add (le_of_eq hpiI) (by simpa [mul_assoc] using htpi))
   simpa [two_mul] using this
 
 lemma k₅_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₅ t‖ ≤ Real.pi := by
@@ -409,17 +394,13 @@ lemma exp_k₄ (u : ℂ) (t : ℝ) :
 
 lemma I₂'C_eq (u : ℂ) :
     I₂'C u = ∫ t in (0 : ℝ)..1, base₂ t * Complex.exp (u * k₂ t) := by
-  refine
-    intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
-      (fun t _ => ?_)
-  simp [base₂, arg₂, exp_k₂, mul_assoc, mul_left_comm, mul_comm]
+  refine intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
+    fun t _ => by simp [base₂, arg₂, exp_k₂, mul_assoc, mul_left_comm, mul_comm]
 
 lemma I₄'C_eq (u : ℂ) :
     I₄'C u = ∫ t in (0 : ℝ)..1, base₄ t * Complex.exp (u * k₄ t) := by
-  refine
-    intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
-      (fun t _ => ?_)
-  simp [base₄, arg₄, exp_k₄, mul_assoc, mul_left_comm, mul_comm]
+  refine intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
+    fun t _ => by simp [base₄, arg₄, exp_k₄, mul_assoc, mul_left_comm, mul_comm]
 
 lemma base₂_continuousOn : ContinuousOn base₂ (Ι (0 : ℝ) 1) := by
   change ContinuousOn (fun t : ℝ => φ₀'' (arg₂ t) * (((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ)))
@@ -690,8 +671,7 @@ lemma base₆_continuousOn : ContinuousOn base₆ (Set.Ici (1 : ℝ)) := by
     refine (MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn).comp
       (by fun_prop : Continuous fun t : ℝ => (t : ℂ) * (Complex.I : ℂ)).continuousOn ?_
     intro t ht
-    have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
-    simpa [UpperHalfPlane.upperHalfPlaneSet, mul_assoc] using ht0
+    simpa [UpperHalfPlane.upperHalfPlaneSet, mul_assoc] using (lt_of_lt_of_le (by norm_num) ht)
   simpa [base₆, mul_assoc] using (continuousOn_const.mul hcomp)
 
 lemma re_sub_lt_of_mem_ball {u0 u : ℂ} {ε : ℝ} (hu : u ∈ Metric.ball u0 ε) :
@@ -703,8 +683,7 @@ lemma re_sub_lt_of_mem_ball {u0 u : ℂ} {ε : ℝ} (hu : u ∈ Metric.ball u0 �
 
 lemma re_half_le_of_mem_ball {u0 u : ℂ}
     (hu : u ∈ Metric.ball u0 (u0.re / 2)) : u0.re / 2 ≤ u.re := by
-  have hlt := re_sub_lt_of_mem_ball (u0 := u0) (u := u) (ε := u0.re / 2) hu
-  nlinarith
+  nlinarith [re_sub_lt_of_mem_ball (u0 := u0) (u := u) (ε := u0.re / 2) hu]
 
 lemma integrableOn_mul_exp_neg_mul_Ioi {b : ℝ} (hb : 0 < b) :
     MeasureTheory.IntegrableOn (fun t : ℝ => t * Real.exp (-b * t)) (Set.Ioi (1 : ℝ))
@@ -714,9 +693,7 @@ lemma integrableOn_mul_exp_neg_mul_Ioi {b : ℝ} (hb : 0 < b) :
     simpa [Real.rpow_one] using
       (integrableOn_rpow_mul_exp_neg_mul_rpow (p := (1 : ℝ)) (s := (1 : ℝ))
         (hs := by linarith) (hp := le_rfl) (b := b) hb)
-  exact hIoi0.mono_set (by
-    intro t ht
-    exact lt_trans (by norm_num : (0 : ℝ) < 1) ht)
+  exact hIoi0.mono_set (Set.Ioi_subset_Ioi (by norm_num : (0 : ℝ) ≤ 1))
 
 lemma integrable_mul_exp_neg_mul_Ici {C b : ℝ} (hb : 0 < b) :
     MeasureTheory.Integrable (fun t : ℝ => C * t * Real.exp (-b * t))
@@ -724,8 +701,7 @@ lemma integrable_mul_exp_neg_mul_Ici {C b : ℝ} (hb : 0 < b) :
   simpa [MeasureTheory.IntegrableOn] using
     (integrableOn_Ici_iff_integrableOn_Ioi (μ := (MeasureTheory.volume : Measure ℝ))
           (f := fun t : ℝ => C * t * Real.exp (-b * t)) (b := (1 : ℝ)) (by finiteness)).2
-      (by
-        simpa [mul_assoc] using (integrableOn_mul_exp_neg_mul_Ioi (b := b) hb).const_mul C)
+      (by simpa [mul_assoc] using (integrableOn_mul_exp_neg_mul_Ioi (b := b) hb).const_mul C)
 
 lemma hasDerivAt_integral_I₆IntegrandC
     (μ : Measure ℝ) (u0 : ℂ) (ε : ℝ) (bound : ℝ → ℝ) (hε : 0 < ε)
@@ -804,9 +780,8 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
       have hmulIci :
           MeasureTheory.IntegrableOn
             (fun t : ℝ => C₀ * Real.exp (-((Real.pi * u0.re) * t)))
-            (Set.Ici (1 : ℝ)) MeasureTheory.volume := by
-        exact
-          (integrableOn_Ici_iff_integrableOn_Ioi (μ := (MeasureTheory.volume : Measure ℝ))
+            (Set.Ici (1 : ℝ)) MeasureTheory.volume :=
+        (integrableOn_Ici_iff_integrableOn_Ioi (μ := (MeasureTheory.volume : Measure ℝ))
                 (f := fun t : ℝ => C₀ * Real.exp (-((Real.pi * u0.re) * t))) (b := (1 : ℝ))
                 (by finiteness)).2 hmul
       simpa [MeasureTheory.IntegrableOn, μ, g] using hmulIci
@@ -838,10 +813,7 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
             ContinuousOn
               (fun t : ℝ => Complex.exp (-(π : ℂ) * u0 * (t : ℂ)))
               (Set.Ici (1 : ℝ)) := by
-          have :
-              Continuous fun t : ℝ => Complex.exp (-(π : ℂ) * u0 * (t : ℂ)) := by
-            fun_prop
-          exact this.continuousOn
+          fun_prop
         simpa [I₆IntegrandC] using base₆_continuousOn.mul hexp
       refine (hlin.mul hint).congr ?_; intro t _ht; simp [I₆IntegrandC_deriv, mul_assoc]
     exact
@@ -875,8 +847,8 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
       calc
         ‖I₆IntegrandC z t‖ = ‖base₆ t‖ * ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ := by
           simp [I₆IntegrandC]
-        _ ≤ C₀ * Real.exp (-π * ε * t) := by
-          exact mul_le_mul hbase hExp (norm_nonneg _) (by positivity)
+        _ ≤ C₀ * Real.exp (-π * ε * t) :=
+          mul_le_mul hbase hExp (norm_nonneg _) (by positivity)
     have hlin_norm : ‖(-(π : ℂ) * (t : ℂ))‖ ≤ Real.pi * t := by
       have : ‖(-(π : ℂ) * (t : ℂ))‖ = Real.pi * |t| := by
         simp [Complex.norm_real, Real.pi_pos.le]
@@ -957,7 +929,7 @@ public lemma aPrimeC_analyticOnNhd :
   have hdiff : DifferentiableOn ℂ aPrimeC rightHalfPlane := by
     simpa [aPrimeC] using
       (((((I₁'C_differentiableOn.add I₂'C_differentiableOn).add I₃'C_differentiableOn).add
-              I₄'C_differentiableOn).add I₅'C_differentiableOn).add I₆'C_differentiableOn)
+                I₄'C_differentiableOn).add I₅'C_differentiableOn).add I₆'C_differentiableOn)
   exact hdiff.analyticOnNhd rightHalfPlane_isOpen
 end
 

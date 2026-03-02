@@ -251,8 +251,6 @@ public lemma Delta_q_exp_two : (qExpansion 1 Delta).coeff 2 = (-24 : ℂ) := by
       simpa [E4_q_exp_zero, E4_q_exp_one] using h
     norm_num
   simp [hs]
-  have h1728 : (1728 : ℂ) ≠ 0 := by norm_num
-  field_simp [h1728]
   norm_num
 
 private lemma qExpansion_coeff_zero_ne_zero_of_not_cusp {k : ℤ} (f : ModularForm Γ(1) k)
@@ -533,7 +531,7 @@ lemma finiteDimensional_modularForm_level_one (k : ℤ) :
   by_cases hkneg : k < 0
   · have hr : Module.rank ℂ (ModularForm Γ(1) k) = 0 :=
       ModularForm.levelOne_neg_weight_rank_zero (k := k) hkneg
-    exact Module.finite_of_rank_eq_nat hr
+    exact Module.finite_of_rank_eq_zero hr
   · have hk0le : 0 ≤ k := le_of_not_gt hkneg
     by_cases hk0 : k = 0
     · subst hk0
@@ -554,24 +552,7 @@ lemma finiteDimensional_modularForm_level_one (k : ℤ) :
           refine finiteDimensional_of_rank_lt_aleph0 (V := ModularForm Γ(1) (2 : ℤ)) ?_
           simpa [hr] using (Cardinal.natCast_lt_aleph0 (n := 0))
         · have hkNat_ge3 : (3 : ℤ) ≤ (Int.toNat k : ℤ) := by
-            rcases hk2 with ⟨t, rfl⟩
-            have htpos : 0 < t := by
-              have : 0 < t + t := by simpa using hkpos
-              linarith
-            have htne1 : t ≠ 1 := by
-              intro ht1
-              apply hk2'
-              simp [ht1]
-            have htge2 : (2 : ℤ) ≤ t := by
-              have htge1 : (1 : ℤ) ≤ t := by omega
-              have htgt1 : (1 : ℤ) < t := lt_of_le_of_ne htge1 (Ne.symm htne1)
-              omega
-            have hkge4 : (4 : ℤ) ≤ t + t := by linarith
-            have hkge3 : (3 : ℤ) ≤ t + t := le_trans (by norm_num) hkge4
-            have hkNat' : (kN : ℤ) = (t + t) := by
-              have hnn : 0 ≤ t + t := le_of_lt (show 0 < t + t from by linarith [htpos])
-              simp [kN, Int.toNat_of_nonneg hnn]
-            simpa [hkNat', kN] using hkge3
+            grind only [= Int.even_iff]
           have hr :
               Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) kN) =
                 if 12 ∣ ((kN : ℤ) - 2) then Nat.floor ((kN : ℚ) / 12) else
@@ -682,9 +663,7 @@ public lemma dim_gen_cong_levels (k : ℤ) (Γ : Subgroup SL(2, ℤ)) (hΓ : Sub
           have hf0 :
               ((f - g : ModularForm GΓ k) : ℍ → ℂ) = 0 :=
             this.1 (by simpa using hnorm)
-          ext x
-          have hx := congrArg (fun g : ℍ → ℂ => g x) hf0
-          simpa using hx
+          exact (coe_eq_zero_iff (f - g)).mp hf0
         simpa [sub_eq_zero] using this
       haveI : FiniteDimensional ℂ (Fin N → ℂ) := by infer_instance
       simpa using (FiniteDimensional.of_injective trunc htrunc_inj)

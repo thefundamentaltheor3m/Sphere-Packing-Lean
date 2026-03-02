@@ -76,8 +76,8 @@ lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
   have hcongr :
       (∫ t in Set.Ioi (0 : ℝ),
           (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t)) =
-        ∫ t in Set.Ioi (0 : ℝ), ((g2 t + g1 t) + g0 t) := by
-    exact ext (congrArg re (congrArg (integral (volume.restrict (Set.Ioi 0))) hsplit))
+        ∫ t in Set.Ioi (0 : ℝ), ((g2 t + g1 t) + g0 t) :=
+    ext (congrArg re (congrArg (integral (volume.restrict (Set.Ioi 0))) hsplit))
       (congrArg im (congrArg (integral (volume.restrict (Set.Ioi 0))) hsplit))
   rw [hcongr]
   -- Switch to the restricted measure and split the integral.
@@ -112,9 +112,7 @@ lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
     have hI0 : (∫ t, f0 t ∂ μ0) = ((1 / (π * u) : ℝ) : ℂ) := by
       dsimp [f0]
       simpa [μ0, μIoi0] using hIexp
-    calc
-      (∫ t, g0 t ∂ μ0) = c18144 * ∫ t, f0 t ∂ μ0 := h0
-      _ = c18144 * ((1 / (π * u) : ℝ) : ℂ) := by rw [hI0]
+    exact Eq.symm (CancelDenoms.derive_trans (id (Eq.symm hI0)) (id (Eq.symm h0)))
   have hG1 :
       (∫ t, g1 t ∂ μ0) = (-c8640) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) := by
     have h1 : (∫ t, g1 t ∂ μ0) = (-c8640) * ∫ t, f1 t ∂ μ0 := by
@@ -122,18 +120,14 @@ lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
     have hI1 : (∫ t, f1 t ∂ μ0) = ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) := by
       dsimp [f1]
       simpa [μ0, μIoi0] using hItexp
-    calc
-      (∫ t, g1 t ∂ μ0) = (-c8640) * ∫ t, f1 t ∂ μ0 := h1
-      _ = (-c8640) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) := by rw [hI1]
+    exact Eq.symm (CancelDenoms.derive_trans (id (Eq.symm hI1)) (id (Eq.symm h1)))
   have hG2 : (∫ t, g2 t ∂ μ0) = c36 * ((1 / (π * (u - 2)) : ℝ) : ℂ) := by
     have h2 : (∫ t, g2 t ∂ μ0) = c36 * ∫ t, f2 t ∂ μ0 := by
       simpa [g2] using (MeasureTheory.integral_const_mul (μ := μ0) c36 f2)
     have hI2 : (∫ t, f2 t ∂ μ0) = ((1 / (π * (u - 2)) : ℝ) : ℂ) := by
       dsimp [f2]
       simpa [μ0, μIoi0] using hI2exp
-    calc
-      (∫ t, g2 t ∂ μ0) = c36 * ∫ t, f2 t ∂ μ0 := h2
-      _ = c36 * ((1 / (π * (u - 2)) : ℝ) : ℂ) := by rw [hI2]
+    exact Eq.symm (CancelDenoms.derive_trans (id (Eq.symm hI2)) (id (Eq.symm h2)))
   rw [hsplitInt, hG2, hG1, hG0]
   have h36term :
       c36 * ((1 / (π * (u - 2)) : ℝ) : ℂ) = (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) := by
@@ -203,9 +197,7 @@ lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
             simp [Complex.ofReal_div]
   rw [h36term, h8640term, h18144term]
   -- Put the subtraction into `+ (-·)` and normalize the negative quotient.
-  rw [sub_eq_add_neg]
-  rw [neg_div]
-  abel
+  ring
 
 lemma assemble_another_integral {u : ℝ} {corr : ℝ → ℂ} {E : ℂ}
     (hLap' :
@@ -344,11 +336,10 @@ lemma aRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
       (∫ t in Set.Ioi (0 : ℝ), corr t) =
         (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
           (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-            (18144 : ℂ) / (π ^ (3 : ℕ) * u) :=
-    corrIntegral_eval (u := u) (hu0 := hu0) (hu := hu) (c36 := c36) (c8640 := c8640)
-      (c18144 := c18144) (hc36 := hc36) (hc8640 := hc8640) (hc18144 := hc18144) (corr := corr)
-      (hcorr := rfl) (hIexp := hIexp) (hItexp := hItexp) (hI2exp := hI2exp)
-      (hExpInt := hExpInt) (hTExpInt := hTExpInt) (h2ExpInt := h2ExpInt)
+            (18144 : ℂ) / (π ^ (3 : ℕ) * u) := by
+    exact
+        corrIntegral_eval hu0 hu hc36 hc8640 hc18144 rfl hIexp hItexp hI2exp hExpInt hTExpInt
+          h2ExpInt
   -- Put everything together (fresh lemma to avoid heartbeat timeouts).
   set E : ℂ :=
     (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -

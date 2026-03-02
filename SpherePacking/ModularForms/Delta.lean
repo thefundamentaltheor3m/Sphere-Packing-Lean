@@ -267,9 +267,7 @@ public theorem Delta_boundedfactor :
         · simpa using hr
         · simpa [UpperHalfPlane.I_im] using hb.2.2
     simpa [tsum_zero] using hsum
-  have ht' : Tendsto (fun x : ℍ => ∏' n : ℕ, f n x) atImInfty (𝓝 1) := by
-    simpa [hcexp] using ht
-  simpa [f] using ht'
+  exact (tendsto_congr (congrFun hcexp)).mp ht
 
 /-- The discriminant has a zero at the cusp `∞` after any `SL(2,ℤ)` slash action. -/
 public lemma Discriminant_zeroAtImInfty :
@@ -352,8 +350,8 @@ public lemma Delta_isTheta_rexp : Delta =Θ[atImInfty] (fun τ => Real.exp (-2 *
     ‖Real.exp (-2 * π * z.im)‖ = Real.exp (-2 * π * z.im) := by
       simp
     _ ≤ 2 * (Real.exp (-2 * π * z.im) * ‖g z‖) := h2
-    _ = 2 * (‖cexp (2 * π * Complex.I * (z : ℂ))‖ * ‖g z‖) := by
-      exact congrArg (fun t => 2 * (t * ‖g z‖)) hExp.symm
+    _ = 2 * (‖cexp (2 * π * Complex.I * (z : ℂ))‖ * ‖g z‖) :=
+      congrArg (fun t => 2 * (t * ‖g z‖)) hExp.symm
     _ = 2 * ‖cexp (2 * π * Complex.I * (z : ℂ)) * g z‖ := by
       simp [mul_comm]
     _ = 2 * ‖Delta z‖ := by
@@ -551,8 +549,8 @@ public lemma re_ResToImagAxis_Delta_eq_real_prod (t : ℝ) (ht : 0 < t) :
     Real.exp (-2 * π * t) *
       ∏' (n : ℕ), (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24 := by
   have cexp_aux2 (t : ℝ) (n : ℕ) :
-      cexp (2 * π * Complex.I * (n + 1) * (Complex.I * t)) = rexp (-(2 * π * (n + 1) * t)) := by
-    exact cexp_aux2 t n
+      cexp (2 * π * Complex.I * (n + 1) * (Complex.I * t)) = rexp (-(2 * π * (n + 1) * t)) :=
+    cexp_aux2 t n
   have cexp_aux1 (t : ℝ) : cexp (2 * ↑π * Complex.I * (Complex.I * t)) = rexp (-2 * π * t) := by
     simpa using (cexp_aux2 t 0)
   set fR : ℕ → ℝ := fun n => (1 - Real.exp (-(2 * π * ((n + 1) : ℝ) * t))) ^ 24

@@ -37,12 +37,12 @@ private noncomputable def q₃ : UpperHalfPlane → ℂ :=
 private noncomputable def L₁₀_over : UpperHalfPlane → ℂ :=
   fun z => L₁₀ z / (q₂ z * q₃ z)
 
-private lemma coeff_4piI_div_2piI : ((4 * π * Complex.I) / (2 * π * Complex.I) : ℂ) = (2 : ℂ) := by
-  exact (div_eq_iff Complex.two_pi_I_ne_zero).2 (by ring)
+private lemma coeff_4piI_div_2piI : ((4 * π * Complex.I) / (2 * π * Complex.I) : ℂ) = (2 : ℂ) :=
+  (div_eq_iff Complex.two_pi_I_ne_zero).2 (by ring)
 
 private lemma coeff_3piI_div_2piI :
-    ((3 * π * Complex.I) / (2 * π * Complex.I) : ℂ) = (3 / 2 : ℂ) := by
-  exact (div_eq_iff Complex.two_pi_I_ne_zero).2 (by ring)
+    ((3 * π * Complex.I) / (2 * π * Complex.I) : ℂ) = (3 / 2 : ℂ) :=
+  (div_eq_iff Complex.two_pi_I_ne_zero).2 (by ring)
 
 private lemma L₁₀_real_resToImagAxis : ResToImagAxis.Real L₁₀ := by
   have hFreal : ResToImagAxis.Real F := F_pos.1
@@ -129,15 +129,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
                   (2 * π * Complex.I * ((n + 1 : ℕ) : ℂ) * (z : ℂ) -
                         (2 * π * Complex.I * (z : ℂ))) =
                       (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
-                calc
-                  (2 * π * Complex.I * ((n + 1 : ℕ) : ℂ) * (z : ℂ) -
-                        (2 * π * Complex.I * (z : ℂ))) =
-                      (2 * π * Complex.I) * (((n + 1 : ℕ) : ℂ) * (z : ℂ) - (z : ℂ)) := by
-                        simp [mul_assoc, mul_sub]
-                  _ = (2 * π * Complex.I) * ((n : ℂ) * (z : ℂ)) := by
-                        simpa [mul_assoc] using congrArg (fun w : ℂ => (2 * π * Complex.I) * w) hsub
-                  _ = (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
-                        simp [mul_assoc, mul_left_comm, mul_comm]
+                grind only
               exact congrArg cexp hexp2
     have hq1 : q₁ z = cexp (2 * π * Complex.I * (z : ℂ)) := by simp [q₁]
     -- Combine everything.
@@ -173,16 +165,11 @@ private lemma L₁₀_over_tendsto_atImInfty :
       _ = (720 : ℂ) * ∑' n : ℕ,
             ((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
               (cexp (2 * π * Complex.I * ((n + 1 : ℕ) : ℂ) * (z : ℂ)) / q₁ z) := by
-            refine congrArg (fun s => (720 : ℂ) * s) ?_
-            refine tsum_congr ?_
-            intro n
-            ring
+            grind only
       _ = (720 : ℂ) * ∑' n : ℕ,
             ((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
               cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
-            refine congrArg (fun s => (720 : ℂ) * s) ?_
-            refine tsum_congr ?_
-            tauto
+            grind only
       _ = (720 : ℂ) * ∑' n : ℕ,
             ((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
               cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
@@ -264,11 +251,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
           have hnexp' : 0 ≤ Real.exp (-2 * π * n) := (Real.exp_pos _).le
           have hmul :=
             (mul_le_mul_of_nonneg_right hterm hnexp' : _)
-          have hexp_form : Real.exp (-(2 * (π * (n : ℝ)))) = r ^ n := by
-            have harg : (-(2 * (π * (n : ℝ))) : ℝ) = (-2 * π * n : ℝ) := by ring
-            simpa [harg] using hexp
-          -- `hmul` is phrased with `Real.exp (-2πn)`; rewrite it as `r^n`.
-          simpa [mul_assoc, hexp_form] using hmul
+          grind only
         simpa [hn, mul_assoc, mul_left_comm, mul_comm] using this
     -- Use `Summable.of_nonneg_of_le` with a summable majorant.
     have hsumm_major :
@@ -370,14 +353,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
           _ = (cexp (π * Complex.I * (z : ℂ) / 4) * g z) ^ 4 := by simp [hΘ₂]
           _ = cexp (π * Complex.I * (z : ℂ) / 4) ^ 4 * (g z) ^ 4 := by simp [mul_pow]
           _ = cexp (π * Complex.I * (z : ℂ)) * (g z) ^ 4 := by simp [hE]
-      have hne : qπ z ≠ 0 := by simp [qπ]
-      -- Cancel the exponential factor.
-      calc
-        H₂' z = (cexp (π * Complex.I * (z : ℂ)) * (g z) ^ 4) / qπ z := by
-          simp [hH2'_def, qπ, hH2, mul_assoc]
-        _ = (g z) ^ 4 := by
-          -- Cancel the `exp(πiz)` factor.
-          simp [qπ, mul_assoc]
+      exact Eq.symm (CancelDenoms.cancel_factors_eq_div (id (Eq.symm hH2)) (hqπ_ne z))
     -- Finish.
     have h2pow : (2 : ℂ) ^ 4 = (16 : ℂ) := by norm_num
     simpa [hrewrite, h2pow] using (hg.pow 4)
@@ -462,11 +438,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
   have hG0_bdd : IsBoundedAtImInfty G₀ := by
     have hzero : Tendsto (fun z : UpperHalfPlane =>
       G₀ z - (20480 : ℂ)) UpperHalfPlane.atImInfty (nhds 0) := by
-      have hconst :
-          Tendsto (fun _ : UpperHalfPlane =>
-            (20480 : ℂ)) UpperHalfPlane.atImInfty (nhds (20480 : ℂ)) :=
-        tendsto_const_nhds
-      simpa using hG0lim.sub hconst
+      exact tendsto_sub_nhds_zero_iff.mpr hG0lim
     have hbdd_diff : IsBoundedAtImInfty (fun z : UpperHalfPlane => G₀ z - (20480 : ℂ)) :=
       UpperHalfPlane.IsZeroAtImInfty.isBoundedAtImInfty hzero
     have hbdd_const : IsBoundedAtImInfty (fun _ : UpperHalfPlane => (20480 : ℂ)) :=
@@ -533,11 +505,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
       rfl
     -- Rewrite everything in terms of `qπ` and cancel powers.
     rw [hGz, hG0z, hH2, hq3]
-    have hpow := (mul_pow (qπ z) (H₂' z) 3)
-    -- Prevent `whnf` from unfolding large definitions by generalizing.
-    rw [hpow]
-    generalize ha : (qπ z) ^ 3 = a
-    exact Semigroup.mul_assoc a (H₂' z ^ 3) (poly z)
+    ring
   -- Compute the limit of `L₁₀/(q₂*q₃)`.
   have hDF_over :
       (fun z : UpperHalfPlane => (D F z) / q₂ z) =
@@ -552,27 +520,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
           (D q₂ z) * F₀ z + q₂ z * D F₀ z := by
       have hDprod := D_mul q₂ F₀ hq₂_holo hF0_holo
       simpa using congrArg (fun f => f z) hDprod
-    have hDz : D F z = (D q₂ z) * F₀ z + q₂ z * D F₀ z := by
-      simpa [hF_factor] using hDprod_z
-    calc
-      (D F z) / q₂ z = ((D q₂ z) * F₀ z + q₂ z * D F₀ z) / q₂ z := by
-        simp [hDz]
-      _ = (D q₂ z) * F₀ z / q₂ z + (q₂ z * D F₀ z) / q₂ z := by
-        simp [add_div]
-      _ = (2 : ℂ) * F₀ z + D F₀ z := by
-        have hterm2 : (q₂ z * D F₀ z) / q₂ z = D F₀ z := by
-          simpa [mul_assoc] using (mul_div_cancel_left₀ (D F₀ z) hq2ne)
-        have hterm1 : (D q₂ z) * F₀ z / q₂ z = (2 : ℂ) * F₀ z := by
-          calc
-            (D q₂ z) * F₀ z / q₂ z = ((2 : ℂ) * q₂ z) * F₀ z / q₂ z := by
-              simp [hDq2]
-            _ = (2 : ℂ) * ((q₂ z * F₀ z) / q₂ z) := by
-              simp [mul_assoc, mul_div_assoc]
-            _ = (2 : ℂ) * F₀ z := by
-              have : (q₂ z * F₀ z) / q₂ z = F₀ z := by
-                simpa [mul_assoc] using (mul_div_cancel_left₀ (F₀ z) hq2ne)
-              simp [this]
-        simp [hterm1, hterm2]
+    grind only
   have hDG_over :
       (fun z : UpperHalfPlane => (D G z) / q₃ z) =
         fun z => (3 / 2 : ℂ) * G₀ z + D G₀ z := by
@@ -586,27 +534,7 @@ private lemma L₁₀_over_tendsto_atImInfty :
           (D q₃ z) * G₀ z + q₃ z * D G₀ z := by
       have hDprod := D_mul q₃ G₀ hq₃_holo hG0_holo
       simpa using congrArg (fun f => f z) hDprod
-    have hDz : D G z = (D q₃ z) * G₀ z + q₃ z * D G₀ z := by
-      simpa [hG_factor] using hDprod_z
-    calc
-      (D G z) / q₃ z = ((D q₃ z) * G₀ z + q₃ z * D G₀ z) / q₃ z := by
-        simp [hDz]
-      _ = (D q₃ z) * G₀ z / q₃ z + (q₃ z * D G₀ z) / q₃ z := by
-        simp [add_div]
-      _ = (3 / 2 : ℂ) * G₀ z + D G₀ z := by
-              have hterm2 : (q₃ z * D G₀ z) / q₃ z = D G₀ z := by
-                simpa [mul_assoc] using (mul_div_cancel_left₀ (D G₀ z) hq3ne)
-              have hterm1 : (D q₃ z) * G₀ z / q₃ z = (3 / 2 : ℂ) * G₀ z := by
-                calc
-                  (D q₃ z) * G₀ z / q₃ z = ((3 / 2 : ℂ) * q₃ z) * G₀ z / q₃ z := by
-                    simp [hDq3]
-                  _ = (3 / 2 : ℂ) * ((q₃ z * G₀ z) / q₃ z) := by
-                    simp [mul_assoc, mul_div_assoc]
-                  _ = (3 / 2 : ℂ) * G₀ z := by
-                    have : (q₃ z * G₀ z) / q₃ z = G₀ z := by
-                      simpa [mul_assoc] using (mul_div_cancel_left₀ (G₀ z) hq3ne)
-                    simp [this]
-              simp [hterm1, hterm2]
+    grind only
   have hDF_over_lim :
       Tendsto (fun z : UpperHalfPlane =>
         (D F z) / q₂ z) UpperHalfPlane.atImInfty (nhds (1036800 : ℂ)) := by

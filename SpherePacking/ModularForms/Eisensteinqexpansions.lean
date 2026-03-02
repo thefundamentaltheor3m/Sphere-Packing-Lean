@@ -61,8 +61,8 @@ private lemma gammaSetN_exists (N : ℕ) (v : gammaSetN N) :
     ∃ w ∈ gammaSet 1 1 0, N • w = v.1 := by
   simpa [gammaSetN, singleton_smul, mem_smul_set] using v.2
 
-def gammaSetN_map (N : ℕ) (v : gammaSetN N) : gammaSet 1 1 0 := by
-  exact ⟨Classical.choose (gammaSetN_exists N v), (Classical.choose_spec (gammaSetN_exists N v)).1⟩
+def gammaSetN_map (N : ℕ) (v : gammaSetN N) : gammaSet 1 1 0 :=
+  ⟨Classical.choose (gammaSetN_exists N v), (Classical.choose_spec (gammaSetN_exists N v)).1⟩
 
 lemma gammaSet_top_mem (v : Fin 2 → ℤ) : v ∈ gammaSet 1 1 0 ↔ IsCoprime (v 0) (v 1) := by
   simpa using (EisensteinSeries.mem_gammaSet_one (v := v))

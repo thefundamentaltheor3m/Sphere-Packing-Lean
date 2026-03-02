@@ -39,9 +39,7 @@ public lemma frequently_eq_near_three
       have hε2 : 0 ≤ (ε / 2 : ℝ) := by positivity [hεpos.le]
       simpa [Real.norm_eq_abs, abs_of_nonneg hε2, abs_of_nonneg hεpos.le] using
         (half_lt_self hεpos)
-    have : dist ((3 + ε / 2 : ℝ) : ℂ) (3 : ℂ) < ε := by
-      simpa [Complex.dist_eq, norm_real, sub_eq_add_neg, add_assoc, add_comm] using hnorm
-    simpa [Metric.mem_ball] using this
+    simp_all
   · have : (3 + ε / 2 : ℝ) ≠ 3 := by nlinarith [hεpos.ne']
     simpa [Set.mem_compl_iff, Set.mem_singleton_iff] using (show ((3 + ε / 2 : ℝ) : ℂ) ≠ 3 by
       exact_mod_cast this)

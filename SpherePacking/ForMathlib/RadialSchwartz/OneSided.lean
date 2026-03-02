@@ -36,9 +36,8 @@ lemma iteratedFDeriv_cutoffC_mul_eq_of_pos {f : ℝ → ℂ} {x : ℝ} (hx : 0 <
 
 lemma exists_bound_on_Icc_of_continuous {g : ℝ → ℝ} (hg : Continuous g) :
     ∃ C, ∀ x ∈ Icc (-1 : ℝ) 0, g x ≤ C := by
-  simpa using
-    (SpherePacking.ForMathlib.Continuous.exists_upper_bound_on_Icc (g := g) hg (a := (-1 : ℝ))
-      (b := 0) (by norm_num))
+  simpa using SpherePacking.ForMathlib.Continuous.exists_upper_bound_on_Icc (g := g) hg
+    (a := (-1 : ℝ)) (b := 0) (by norm_num)
 
 /-- If `cutoffC * f` is smooth and `f` satisfies Schwartz decay bounds on `0 ≤ x`, then
 `cutoffC * f` satisfies the global Schwartz decay bounds on `ℝ`. -/
@@ -53,8 +52,7 @@ public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
   let g : ℝ → ℂ := fun r ↦ cutoffC r * f r
   have hg_smooth' : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) g := by
     simpa [g] using hg_smooth
-  have hn : (n : WithTop ℕ∞) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞) := by
-    exact_mod_cast (le_top : (n : ℕ∞) ≤ ⊤)
+  have hn : (n : WithTop ℕ∞) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞) := by exact_mod_cast (le_top : (n : ℕ∞) ≤ ⊤)
   have hcont_iter : Continuous fun x : ℝ ↦ iteratedFDeriv ℝ n g x :=
     hg_smooth'.continuous_iteratedFDeriv (m := n) hn
   have hcont : Continuous fun x : ℝ ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n g x‖ := by
@@ -67,20 +65,16 @@ public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
   intro x
   have hC0 : 0 ≤ C := le_max_right _ _
   by_cases hx₁ : x < -1
-  · have hzero : iteratedFDeriv ℝ n g x = 0 :=
-      iteratedFDeriv_cutoffC_mul_eq_zero_of_lt (f := f) hx₁ n
-    simp [C, g, hzero, hC0]
+  · simp [C, iteratedFDeriv_cutoffC_mul_eq_zero_of_lt (f := f) hx₁ n, hC0]
   · by_cases hx₂ : x ≤ 0
-    · have hxIcc : x ∈ Icc (-1 : ℝ) 0 := by
-        exact ⟨le_of_not_gt hx₁, hx₂⟩
+    · have hxIcc : x ∈ Icc (-1 : ℝ) 0 :=
+        ⟨le_of_not_gt hx₁, hx₂⟩
       exact (hCmid x hxIcc).trans (le_trans (le_max_left _ _) (le_max_left _ _))
     · have hxpos : 0 < x := lt_of_not_ge hx₂
       have hx0 : 0 ≤ x := le_of_lt hxpos
-      have hEq : iteratedFDeriv ℝ n g x = iteratedFDeriv ℝ n f x :=
-        iteratedFDeriv_cutoffC_mul_eq_of_pos (f := f) hxpos n
       have hbd := hCpos x hx0
       have : Cpos ≤ C := le_trans (le_max_right Cmid Cpos) (le_max_left _ _)
-      simpa [C, g, hEq] using hbd.trans this
+      simpa [C, g, iteratedFDeriv_cutoffC_mul_eq_of_pos (f := f) hxpos n] using hbd.trans this
 
 /-- Convenience wrapper: if `f` is smooth and satisfies one-sided Schwartz decay on `0 ≤ x`,
 then `cutoffC * f` satisfies global Schwartz decay on `ℝ`. -/
@@ -90,10 +84,8 @@ public theorem cutoffC_mul_decay_of_nonneg
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ,
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun r ↦ cutoffC r * f r) x‖ ≤ C := by
-  have hg_smooth :
-      ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) (fun r ↦ cutoffC r * f r) := by
-    simpa using cutoffC_contDiff.mul hf_smooth
-  simpa using (cutoffC_mul_decay_of_nonneg_of_contDiff (f := f) (hg_smooth := hg_smooth) hf_decay)
+  simpa using cutoffC_mul_decay_of_nonneg_of_contDiff (f := f)
+    (hg_smooth := by simpa using cutoffC_contDiff.mul hf_smooth) hf_decay
 
 namespace Bridge
 

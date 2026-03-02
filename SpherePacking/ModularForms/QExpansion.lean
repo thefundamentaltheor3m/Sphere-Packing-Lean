@@ -60,7 +60,7 @@ public lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n
         refine ⟨1, fun z hz k ↦ ?_⟩
         simpa using norm_term_bound_nat (a := a) (z := z) hz k))
 
-lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * rexp (-2 * π * n))
+public lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * rexp (-2 * π * n))
     (ha' : ∀ n, n < 0 → a n = 0) :
     Tendsto (fun z : ℍ ↦ ∑' n, a n * cexp (2 * π * I * z * n)) atImInfty (𝓝 (a 0)) := by
   -- ∑' (n : ℕ), f ↑n + ∑' (n : ℕ), f (-(↑n + 1))

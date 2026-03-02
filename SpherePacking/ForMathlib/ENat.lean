@@ -21,8 +21,8 @@ public theorem ENat.tsum_const {α : Type*} (c : ENat) :
       filter_upwards [Filter.eventually_ge_atTop s] with t ht
       have hcard : (n : ℕ∞) < s.card := by
         simp only [Nat.cast_lt, hs, Nat.lt_succ_self n]
-      have hcard' : (n : ℕ∞) < t.card := by
-        exact lt_of_lt_of_le hcard (by simpa using Finset.card_le_card ht)
+      have hcard' : (n : ℕ∞) < t.card :=
+        lt_of_lt_of_le hcard (by simpa using Finset.card_le_card ht)
       exact lt_of_lt_of_le hcard' (le_mul_of_one_le_right' (ENat.one_le_iff_ne_zero.2 hc)))
 
 /-- The infinite sum of a constant `c : ENat` over a set `s` is `s.encard * c`. -/

@@ -89,17 +89,14 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
       (∫ x : EuclideanSpace ℝ (Fin 8), f x s) =
           ∫ x : EuclideanSpace ℝ (Fin 8),
             ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) *
-              (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) := by
-            exact congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hfactor
+              (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) :=
+            congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hfactor
       _ =
           ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) *
             ∫ x : EuclideanSpace ℝ (Fin 8),
               cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s) := by
-            exact
-              (MeasureTheory.integral_const_mul (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
-                (r := ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)))
-                (f := fun x : EuclideanSpace ℝ (Fin 8) ↦
-                  cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)))
+            exact MeasureTheory.integral_const_mul (-I * ψS' (I * ↑s) * ↑s ^ (-4)) fun a =>
+              cexp (↑(-2 * (π * ⟪a, w⟫)) * I) * cexp (-↑π * ↑‖a‖ ^ 2 / ↑s)
       _ =
           ((-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * (s ^ (-4 : ℤ) : ℂ)) *
             ((s ^ 4 : ℂ) * cexp (-π * (‖w‖ ^ 2) * s)) := by
@@ -175,18 +172,14 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
             = ∫ x : EuclideanSpace ℝ (Fin 8),
                 (-2 : ℂ) *
                   (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-                    ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s) := by
-          exact congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hfun
+                    ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s) :=
+          congrArg (fun F : EuclideanSpace ℝ (Fin 8) → ℂ => ∫ x, F x) hfun
         _ = (-2 : ℂ) *
               (∫ x : EuclideanSpace ℝ (Fin 8),
                 cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-                  ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s) := by
-          exact
-            (MeasureTheory.integral_const_mul (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
-              (r := (-2 : ℂ))
-              (f := fun x : EuclideanSpace ℝ (Fin 8) ↦
-                cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-                  ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s))
+                  ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s) :=
+          MeasureTheory.integral_const_mul (-2) fun a =>
+            cexp (↑(-2 * (π * ⟪a, w⟫)) * I) * ∫ (s : ℝ) in Ici 1, J5Change.g (‖a‖ ^ 2) s
     calc
       (∫ x : EuclideanSpace ℝ (Fin 8),
             cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
@@ -223,9 +216,8 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
             -((Complex.I : ℂ) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) := by
             exact congrArg (fun F : ℝ → ℂ => ∫ s in Ici (1 : ℝ), F s) hneg
       _ = -(∫ s in Ici (1 : ℝ),
-              (Complex.I : ℂ) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) := by
-            exact
-              (MeasureTheory.integral_neg (μ := (volume : Measure ℝ).restrict (Ici (1 : ℝ)))
+              (Complex.I : ℂ) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) :=
+            (MeasureTheory.integral_neg (μ := (volume : Measure ℝ).restrict (Ici (1 : ℝ)))
                 (f := fun s : ℝ ↦
                   (Complex.I : ℂ) * ψS' ((Complex.I : ℂ) * (s : ℂ)) *
                     cexp (-π * (‖w‖ ^ 2) * s)))

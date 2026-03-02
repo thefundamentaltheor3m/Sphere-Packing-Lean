@@ -114,8 +114,8 @@ public lemma aestronglyMeasurable_perm_I₅_kernel (w : ℝ⁸) :
   have hmeas :
       AEStronglyMeasurable
         (permI5Kernel w)
-        (((volume : Measure ℝ⁸).prod (volume : Measure ℝ)).restrict (univ ×ˢ Ici (1 : ℝ))) := by
-    exact ContinuousOn.aestronglyMeasurable hkernel (MeasurableSet.univ.prod measurableSet_Ici)
+        (((volume : Measure ℝ⁸).prod (volume : Measure ℝ)).restrict (univ ×ˢ Ici (1 : ℝ))) :=
+    ContinuousOn.aestronglyMeasurable hkernel (MeasurableSet.univ.prod measurableSet_Ici)
   have hμ :
       (volume : Measure ℝ⁸).prod ((volume : Measure ℝ).restrict (Ici (1 : ℝ))) =
         (((volume : Measure ℝ⁸).prod (volume : Measure ℝ)).restrict (univ ×ˢ Ici (1 : ℝ))) := by

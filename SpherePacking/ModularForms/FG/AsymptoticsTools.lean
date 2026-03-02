@@ -69,9 +69,7 @@ public lemma ResToImagAxis.Real.D_of_real {F : UpperHalfPlane → ℂ}
     hdiff.hasDerivAt
   have h_im0 : (fun u : ℝ => (F.resToImagAxis u).im) =ᶠ[nhds t] fun _ => 0 := by
     filter_upwards [lt_mem_nhds ht] with u hu
-    have : (F.resToImagAxis u).im = 0 := by
-      simpa [Function.resToImagAxis, ResToImagAxis, hu] using hF u hu
-    simpa [this]
+    tauto
   have hderiv_im :
       HasDerivAt (fun u : ℝ => (F.resToImagAxis u).im) (deriv F.resToImagAxis t).im t := by
     simpa using
@@ -81,13 +79,4 @@ public lemma ResToImagAxis.Real.D_of_real {F : UpperHalfPlane → ℂ}
   have him_deriv : (deriv F.resToImagAxis t).im = 0 := hderiv_im.unique hderiv_im0
   have hD : deriv F.resToImagAxis t = -2 * π * (D F).resToImagAxis t :=
     deriv_resToImagAxis_eq F hFholo ht
-  have hpi : (-2 * Real.pi : ℝ) ≠ 0 := by
-    have h2 : (-2 : ℝ) ≠ 0 := by norm_num
-    exact mul_ne_zero h2 Real.pi_ne_zero
-  have : ((D F).resToImagAxis t).im = 0 := by
-    have himEq : (deriv F.resToImagAxis t).im = (-2 * Real.pi) * ((D F).resToImagAxis t).im := by
-      simpa [Complex.mul_im, mul_assoc, mul_left_comm, mul_comm] using congrArg Complex.im hD
-    have hmul0 : (-2 * Real.pi) * ((D F).resToImagAxis t).im = 0 := by
-      nlinarith [himEq, him_deriv]
-    exact (mul_eq_zero.mp hmul0).resolve_left hpi
-  simpa [Function.resToImagAxis, ResToImagAxis, ht] using this
+  simp_all

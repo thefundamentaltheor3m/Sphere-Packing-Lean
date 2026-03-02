@@ -286,15 +286,7 @@ public lemma E₂_eq_qexp (z : UpperHalfPlane) :
           -- For `n ≠ 0`, `a n = -24 * σ₁(n)`.
           have : a n = (-24 : ℂ) * (σ 1 n : ℂ) := by simp [a, hn]
           -- Convert norms to reals and apply `σ₁(n) ≤ n^2`.
-          calc
-            ‖a n‖ = ‖(-24 : ℂ) * (σ 1 n : ℂ)‖ := by simp [this]
-            _ = ‖(-24 : ℂ)‖ * ‖(σ 1 n : ℂ)‖ := by simp
-            _ ≤ (24 : ℝ) * (n : ℝ) ^ 2 := by
-              have hσnorm : ‖(σ 1 n : ℂ)‖ = (σ 1 n : ℝ) := by simp
-              have h24 : ‖(-24 : ℂ)‖ = (24 : ℝ) := by norm_num
-              have hσ' : (24 : ℝ) * (σ 1 n : ℝ) ≤ (24 : ℝ) * (n : ℝ) ^ 2 :=
-                mul_le_mul_of_nonneg_left (hσ n) (by positivity)
-              simpa [h24, hσnorm, mul_assoc, mul_left_comm, mul_comm] using hσ'
+          simp_all
         -- Bound the term using `‖a n‖ ≤ 24*n^2` and `‖exp(...)‖ = r^n`.
         calc
           ‖a n * cexp (2 * π * Complex.I * (n : ℂ) * (z : ℂ))‖
@@ -364,14 +356,7 @@ public lemma E₂_eq_qexp (z : UpperHalfPlane) :
   have ha0 : a 0 * cexp (2 * π * Complex.I * (0 : ℂ) * (z : ℂ)) = (1 : ℂ) := by
     simp [a]
   -- Substitute into the sigma q-expansion.
-  calc
-    E₂ z = 1 - 24 * ∑' n : ℕ+, (σ 1 n : ℂ) * cexp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := hEσ
-    _ = (a 0 * cexp (2 * π * Complex.I * (0 : ℂ) * (z : ℂ))) +
-          (-24 : ℂ) * ∑' n : ℕ+, (σ 1 n : ℂ) * cexp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by
-          simp [a, sub_eq_add_neg, mul_assoc]
-    _ = (∑' n : ℕ, a n * cexp (2 * π * Complex.I * (n : ℂ) * (z : ℂ))) := by
-          -- Use the split formula and `hcompl`.
-          simp [htsum_split, hcompl]
+  grind only
 
 lemma cexp_two_pi_I_nat_mul_I_mul (t : ℝ) (n : ℕ) :
     cexp (2 * π * Complex.I * n * (Complex.I * t)) = (rexp (-(2 * π * n * t)) : ℂ) := by
@@ -414,24 +399,12 @@ lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
     have hk_im : δ ≤ k.1.im := hδ_le k.1 k.2
     have hnorm_exp :
         ‖cexp (2 * π * Complex.I * (n : ℂ) * k.1)‖ ≤ r ^ n :=
-          SpherePacking.ForMathlib.norm_cexp_two_pi_I_mul_nat_mul_le_pow_of_le_im n hk_im
+      SpherePacking.ForMathlib.norm_cexp_two_pi_I_mul_nat_mul_le_pow_of_le_im n hk_im
     have hσ : (σ 1 n : ℝ) ≤ (n : ℝ) ^ 2 := by
       exact_mod_cast (sigma_bound 1 n)
     have ha_norm : ‖a n‖ ≤ (24 : ℝ) * (n : ℝ) ^ 2 := by
       have : a n = (-24 : ℂ) * (σ 1 n : ℂ) := by simp [a, hn0]
-      have hσnorm : ‖(σ 1 n : ℂ)‖ = (σ 1 n : ℝ) := by simp
-      have h24 : ‖(-24 : ℂ)‖ = (24 : ℝ) := by norm_num
-      calc
-        ‖a n‖ = ‖(-24 : ℂ) * (σ 1 n : ℂ)‖ := by simp [this]
-        _ = ‖(-24 : ℂ)‖ * ‖(σ 1 n : ℂ)‖ := by simp
-        _ ≤ (24 : ℝ) * (n : ℝ) ^ 2 := by
-          -- Use `σ₁(n) ≤ n^2`.
-          have : ‖(-24 : ℂ)‖ * ‖(σ 1 n : ℂ)‖ = (24 : ℝ) * (σ 1 n : ℝ) := by
-            simp [h24]
-          -- Multiply the bound `σ₁(n) ≤ n^2` by the positive constant `24`.
-          have hσ' : (24 : ℝ) * (σ 1 n : ℝ) ≤ (24 : ℝ) * (n : ℝ) ^ 2 :=
-            mul_le_mul_of_nonneg_left hσ (by positivity)
-          simpa [this] using hσ'
+      simp_all
     have hnorm_2pin : ‖(2 * π * Complex.I * (n : ℂ) : ℂ)‖ = 2 * Real.pi * (n : ℝ) := by
       simp [Real.norm_of_nonneg Real.pi_pos.le, mul_left_comm, mul_comm]
     calc
@@ -443,14 +416,7 @@ lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
             gcongr
             · simpa [hnorm_2pin] using (le_of_eq hnorm_2pin)
       _ ≤ u n := by
-            have hA :
-                ((24 : ℝ) * (n : ℝ) ^ 2) * (2 * Real.pi * (n : ℝ)) =
-                  (48 * Real.pi) * ((n : ℝ) ^ 3) := by ring_nf
-            have hA' := congrArg (fun x : ℝ => x * (r ^ n)) hA
-            -- `u n = (48π) * (n^3 * r^n)`.
-            have hu' : (48 * Real.pi) * ((n : ℝ) ^ 3) * (r ^ n) = u n := by
-              simp [u, mul_assoc, mul_left_comm, mul_comm]
-            exact le_of_eq (by simpa [mul_assoc] using (hA'.trans hu'))
+            grind only
   have hneg (τ : UpperHalfPlane) :
       negDE₂ τ =
         ∑' n : ℕ, (24 : ℂ) * (n : ℂ) * (σ 1 n : ℂ) * cexp (2 * π * Complex.I * n * τ) := by
@@ -530,13 +496,7 @@ lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
                 have hσmul' :
                     (n : ℝ) * (σ 1 n : ℝ) * (r ^ n) ≤ (n : ℝ) * (n : ℝ) ^ 2 * (r ^ n) :=
                   mul_le_mul_of_nonneg_right hσmul hrn
-                have hσmul'' :
-                    (24 : ℝ) * ((n : ℝ) * (σ 1 n : ℝ) * (r ^ n)) ≤
-                      (24 : ℝ) * ((n : ℝ) * (n : ℝ) ^ 2 * (r ^ n)) :=
-                  mul_le_mul_of_nonneg_left hσmul' (by norm_num)
-                have hn3 : (n : ℝ) * (n : ℝ) ^ 2 = (n : ℝ) ^ 3 := by
-                  simp [pow_succ, mul_comm]
-                simpa [mul_assoc, hn3, pow_succ] using hσmul''
+                grind only
     refine Summable.of_norm_bounded (g := fun n : ℕ => (24 : ℝ) * ((n : ℝ) ^ 3 * r ^ n))
       (hs.mul_left 24) (fun n => hbound n)
   refine ⟨?_, ?_⟩
@@ -615,9 +575,7 @@ lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
               Real.exp (-2 * Real.pi * (n : ℝ) * t) = r ^ n := by
             -- `exp(-2πnt) = (exp(-2πt))^n`.
             have hmul : (-2 * Real.pi * (n : ℝ) * t) = n * (-2 * Real.pi * t) := by
-              calc
-                (-2 * Real.pi * (n : ℝ) * t) = (n : ℝ) * (-2 * Real.pi * t) := by ring
-                _ = n * (-2 * Real.pi * t) := by simp
+              ring
             calc
               Real.exp (-2 * Real.pi * (n : ℝ) * t) = Real.exp (n * (-2 * Real.pi * t)) := by
                 rw [hmul]
@@ -658,11 +616,9 @@ lemma negDE₂_pos : ResToImagAxis.Pos negDE₂ := by
           have hineq :
               (24 : ℝ) * ((n : ℝ) * (σ 1 n : ℝ) * (r ^ n)) ≤
                 (24 : ℝ) * ((n : ℝ) ^ 3 * (r ^ n)) := by
-            calc
-              (24 : ℝ) * ((n : ℝ) * (σ 1 n : ℝ) * (r ^ n)) ≤
-                  (24 : ℝ) * ((n : ℝ) * (n : ℝ) ^ 2 * (r ^ n)) := hσmul''
-              _ = (24 : ℝ) * ((n : ℝ) ^ 3 * (r ^ n)) := by
-                    simp [hn3]
+            exact
+                le_of_le_of_eq hσmul''
+                  (congrArg (HMul.hMul 24) (congrFun (congrArg HMul.hMul hn3) (r ^ n)))
           simpa [mul_assoc] using hineq
       refine Summable.of_norm_bounded (g := fun n : ℕ => (24 : ℝ) * ((n : ℝ) ^ 3 * r ^ n))
         (hs.mul_left 24) (fun n => hbound n)
@@ -733,8 +689,8 @@ public lemma SerreDer_22_L₁₀_pos : ResToImagAxis.Pos SerreDer_22_L₁₀ := 
     (ResToImagAxis.Pos.mul (ResToImagAxis.Pos.mul hΔ hH2) hF)
   have hterm1' : ResToImagAxis.Pos ((7200 : ℝ) • (Δ_fun * negDE₂ * G)) := by
     exact ResToImagAxis.Pos.smul (c := (7200 : ℝ)) hterm1 (by positivity)
-  have hterm2' : ResToImagAxis.Pos ((640 : ℝ) • (Δ_fun * H₂ * F)) := by
-    exact ResToImagAxis.Pos.smul (c := (640 : ℝ)) hterm2 (by positivity)
+  have hterm2' : ResToImagAxis.Pos ((640 : ℝ) • (Δ_fun * H₂ * F)) :=
+    ResToImagAxis.Pos.smul (c := (640 : ℝ)) hterm2 (by positivity)
   have hsum :
       ResToImagAxis.Pos
         (((7200 : ℝ) • (Δ_fun * negDE₂ * G)) + ((640 : ℝ) • (Δ_fun * H₂ * F))) :=

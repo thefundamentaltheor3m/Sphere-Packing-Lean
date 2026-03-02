@@ -73,15 +73,7 @@ lemma phi0Cancellation_compact_case {M A C t : ℝ} (ht1 : 1 ≤ t) (htA : t ≤
       (M / Real.exp (-2 * π * A)) * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) ≤
         C * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) :=
     mul_le_mul_of_nonneg_right hCle hfac0
-  have hMle : M ≤ C * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) :=
-    hscale.trans hmul
-  have hfinal : ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-        ((8640 / π : ℝ) : ℂ) * t -
-        ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
-      C * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) :=
-    le_trans hbound hMle
-  simpa [mul_assoc] using hfinal
+  grind only
 
 lemma exists_phi0_cancellation_bound :
     ∃ C : ℝ, 0 < C ∧
@@ -195,15 +187,9 @@ lemma exists_phi0_cancellation_bound :
       simpa [hφ₀S] using hST'
     -- Algebraic cleanup: insert/remove the principal parts `720` and `504`.
     have h720 : (12 / (π : ℂ)) * (t : ℂ) * (720 : ℂ) = (8640 / (π : ℂ)) * (t : ℂ) := by
-      have hpi : (π : ℂ) ≠ 0 := by
-        exact_mod_cast Real.pi_ne_zero
-      field_simp [hpi]
       ring
     have h504 : (36 / (π : ℂ) ^ (2 : ℕ)) * (504 : ℂ) = (18144 / (π : ℂ) ^ (2 : ℕ)) := by
-      have hpi : (π : ℂ) ≠ 0 := by
-        exact_mod_cast Real.pi_ne_zero
-      field_simp [hpi]
-      norm_num
+      ring
     have hSTpow :
         (↑t ^ (2 : ℕ)) * φ₀'' (Complex.I / ↑t) =
           (↑t ^ (2 : ℕ)) * φ₀ z - (12 / (π : ℂ)) * (t : ℂ) * φ₂' z +
@@ -631,39 +617,7 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
         -- `0 ≤ ‖((8640 / π : ℝ) : ℂ)‖`.
         have := mul_le_mul_of_nonneg_left ht_le1 (norm_nonneg ((8640 / π : ℝ) : ℂ))
         simpa using this
-      have hD : ‖D‖ = ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := by simp [D]
-      -- Combine.
-      have hcomb :
-          ‖A‖ + ‖B‖ + ‖Cc‖ + ‖D‖ ≤
-            (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
-              ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
-              ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := by
-        -- Assemble from `hA`, `hB`, `hC`, and `hD`.
-        have hAB :
-            ‖A‖ + ‖B‖ ≤
-              (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
-                ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) :=
-          add_le_add hA hB
-        have hABC : ‖A‖ + ‖B‖ + ‖Cc‖ ≤
-            (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
-              ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
-              ‖((8640 / π : ℝ) : ℂ)‖ := by
-          simpa [add_assoc] using add_le_add hAB hC
-        have hABCD : ‖A‖ + ‖B‖ + ‖Cc‖ + ‖D‖ ≤
-            (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
-              ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
-              ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := by
-          have := add_le_add hABC (le_of_eq hD)
-          simpa [add_assoc] using this
-        exact hABCD
-      -- Finish by rewriting `A,B,Cc,D` back to the original expression.
-      have hmain :
-          ‖A - B + Cc - D‖ ≤
-            (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
-              ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
-              ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ :=
-        (hsum.trans hcomb)
-      simpa [A, B, Cc, D] using hmain
+      grind only
     have hmul :
         ‖aAnotherIntegrand u t‖ ≤
           ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
@@ -824,15 +778,10 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
           _ = C * (t ^ (2 : ℕ) : ℝ) * Real.exp (-(2 * π + π * u) * t) := by
                   -- Rewrite `2*b*t` using `hb2`, inside the exponential.
                   have harg : (2 * b * t) = (2 * π + π * u) * t := by
-                    calc
-                      2 * b * t = (2 * b) * t := by ring
-                      _ = (2 * π + π * u) * t := by simp [hb2]
+                    ring
                   have harg' : -(2 * b * t) = -(2 * π + π * u) * t := by
                     -- Multiply `harg` by `-1` and rewrite `-((·) * t)` as `-(·) * t` by `ring`.
-                    have hneg : -(2 * b * t) = -((2 * π + π * u) * t) :=
-                      congrArg (fun x : ℝ => -x) harg
-                    -- Keep `t` inside to avoid `mul_eq_mul_right_iff` cancellations.
-                    simpa [mul_assoc] using (hneg.trans (by ring))
+                    ring
                   rw [hb2, neg_mul]
       simpa using hO''
     have hIntIoi :

@@ -43,35 +43,30 @@ lemma coordCubeCover_unique (x : EuclideanSpace ℝ (Fin d)) (g : cubeLattice (d
 
 lemma mem_neg_coordCubeCover_vadd_coordCube (x : EuclideanSpace ℝ (Fin d)) :
     x ∈ (-coordCubeCover (d := d) L hL x) +ᵥ coordCube (d := d) L := by
-  simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using (coordCubeCover_spec (d := d) L hL x)
+  simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using coordCubeCover_spec (d := d) L hL x
 
 lemma neg_coordCubeCover_mem_ball {C R : ℝ}
     (hC : coordCube (d := d) L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
     {x : EuclideanSpace ℝ (Fin d)} (hx : x ∈ ball 0 R) :
     ((-coordCubeCover (d := d) L hL x : cubeLattice (d := d) L hL) :
         EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C) := by
-  have hx0 : ‖x‖ < R := by
-    simpa [mem_ball_zero_iff] using hx
-  have hxgC : ‖(coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)) + x‖ ≤ C := by
+  have hx0 : ‖x‖ < R := by simpa [mem_ball_zero_iff] using hx
+  have hxgC : ‖(coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)) + x‖ < C := by
     have hmem :
-        (coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)) + x ∈
-          coordCube (d := d) L := by
+        (coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)) + x ∈ coordCube (d := d) L := by
       simpa [Submodule.vadd_def, vadd_eq_add] using coordCubeCover_spec (d := d) L hL x
-    have : (coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)) + x ∈ ball 0 C := hC hmem
-    exact (le_of_lt (by simpa [mem_ball_zero_iff] using this))
+    simpa [mem_ball_zero_iff] using (hC hmem)
   have htri :
       ‖(coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d))‖ ≤
         ‖(coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)) + x‖ + ‖x‖ := by
     simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using
-      (norm_sub_le
-        (a := (coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)) + x)
-        (b := x))
-  have hg' : ‖(coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d))‖ < C + R := by
-    refine lt_of_le_of_lt htri ?_
-    refine lt_of_le_of_lt (add_le_add_left hxgC _) ?_
-    simpa using (add_lt_add_left hx0 C)
-  have : ‖(- (coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)))‖ < R + C := by
-    simpa [norm_neg, add_comm, add_left_comm, add_assoc] using hg'
+      (norm_sub_le (a := (coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)) + x) (b := x))
+  have :
+      ‖(- (coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)))‖ < R + C := by
+    have : ‖(coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d))‖ < C + R := by
+      refine lt_of_le_of_lt htri ?_
+      simpa [add_comm, add_left_comm, add_assoc] using add_lt_add hxgC hx0
+    simpa [norm_neg, add_comm, add_left_comm, add_assoc] using this
   simpa [mem_ball_zero_iff] using this
 
 lemma mem_vadd_coordCube_iff_eq_neg_coordCubeCover (g : cubeLattice (d := d) L hL)
@@ -79,14 +74,11 @@ lemma mem_vadd_coordCube_iff_eq_neg_coordCubeCover (g : cubeLattice (d := d) L h
     x ∈ g +ᵥ coordCube (d := d) L ↔ g = -coordCubeCover (d := d) L hL x := by
   constructor
   · intro hx
-    have hx' : (-g : cubeLattice (d := d) L hL) +ᵥ x ∈ coordCube (d := d) L := by
-      simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx
-    have hcov : (-g : cubeLattice (d := d) L hL) = coordCubeCover (d := d) L hL x :=
-      coordCubeCover_unique (d := d) L hL x (-g) hx'
-    simpa using congrArg (fun t : cubeLattice (d := d) L hL => -t) hcov
-  · intro hg
-    subst hg
-    exact mem_neg_coordCubeCover_vadd_coordCube (d := d) L hL x
+    have : (-g : cubeLattice (d := d) L hL) = coordCubeCover (d := d) L hL x :=
+      coordCubeCover_unique (d := d) L hL x (-g)
+        (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx)
+    simpa using congrArg (fun t : cubeLattice (d := d) L hL => -t) this
+  · rintro rfl; exact mem_neg_coordCubeCover_vadd_coordCube (d := d) L hL x
 
 end CoordCubeCover
 
@@ -105,12 +97,9 @@ lemma vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ}
     simpa [mem_ball_zero_iff] using hC hx
   have hg' : ‖(g : EuclideanSpace ℝ (Fin d))‖ < R + C := by
     simpa [mem_ball_zero_iff] using hg
-  have hle : ‖(g : EuclideanSpace ℝ (Fin d)) + x‖ ≤ ‖(g : EuclideanSpace ℝ (Fin d))‖ + ‖x‖ :=
-    norm_add_le _ _
-  have hlt : ‖(g : EuclideanSpace ℝ (Fin d)) + x‖ < (R + C) + C :=
-    lt_of_le_of_lt hle (add_lt_add hg' hx')
   have : ‖(g : EuclideanSpace ℝ (Fin d)) + x‖ < R + (2 * C) := by
-    simpa [two_mul, add_assoc, add_left_comm, add_comm] using hlt
+    refine (lt_of_le_of_lt (norm_add_le _ _) ?_)
+    simpa [two_mul, add_assoc, add_left_comm, add_comm] using add_lt_add hg' hx'
   simpa [Submodule.vadd_def, vadd_eq_add, mem_ball_zero_iff] using this
 
 lemma iUnion_finset_vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ}
@@ -121,8 +110,7 @@ lemma iUnion_finset_vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ
     (⋃ g ∈ t, g +ᵥ coordCube (d := d) L) ⊆
       ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C)) := by
   intro htSet t y hy
-  rcases Set.mem_iUnion.1 hy with ⟨g, hg⟩
-  rcases Set.mem_iUnion.1 hg with ⟨hgT, hy'⟩
+  rcases Set.mem_iUnion₂.1 hy with ⟨g, hgT, hy'⟩
   have hgBall :
       (g : EuclideanSpace ℝ (Fin d)) ∈ ball (0 : EuclideanSpace ℝ (Fin d)) (R + C) :=
     htSet.mem_toFinset.1 (by simpa [t] using hgT)
@@ -136,21 +124,17 @@ lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} 
     (t.card : ℝ≥0∞) * volume (coordCube (d := d) L) ≤
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) := by
   intro htSet t
-  have hD_unique_covers :
-      ∀ x, ∃! g : cubeLattice (d := d) L hL, g +ᵥ x ∈ coordCube (d := d) L :=
-    PeriodicConstant.coordCube_unique_covers (d := d) L hL
-  have hD_meas : MeasurableSet (coordCube (d := d) L) :=
-    PeriodicConstant.measurableSet_coordCube (d := d) L hL
   have hdisj :
       Set.PairwiseDisjoint (↑t : Set (cubeLattice (d := d) L hL))
         (fun g : cubeLattice (d := d) L hL => g +ᵥ coordCube (d := d) L) := by
     intro g _ h _ hgh
     exact disjoint_vadd_of_unique_covers (d := d)
-      (Λ := cubeLattice (d := d) L hL) (D := coordCube (d := d) L) hD_unique_covers hgh
+      (Λ := cubeLattice (d := d) L hL) (D := coordCube (d := d) L)
+      (PeriodicConstant.coordCube_unique_covers (d := d) L hL) hgh
   have hmeas :
       ∀ g ∈ t, MeasurableSet (g +ᵥ coordCube (d := d) L) := by
-    intro g _
-    simpa using (MeasurableSet.const_vadd hD_meas g)
+    intro g _; simpa using
+      (MeasurableSet.const_vadd (PeriodicConstant.measurableSet_coordCube (d := d) L hL) g)
   have hvol_union :
       volume (⋃ g ∈ t, g +ᵥ coordCube (d := d) L) =
         ∑ g ∈ t, volume (g +ᵥ coordCube (d := d) L) :=
@@ -159,9 +143,7 @@ lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} 
       (⋃ g ∈ t, g +ᵥ coordCube (d := d) L) ⊆
         ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C)) :=
     iUnion_finset_vadd_coordCube_subset_ball (d := d) (hL := hL) (R := R) (C := C) hC
-  have hle : volume (⋃ g ∈ t, g +ᵥ coordCube (d := d) L) ≤
-      volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) :=
-    volume.mono hsub
+  have hle := volume.mono hsub
   simp_all
 
 end CoverVolumeBound
@@ -659,8 +641,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     simpa [mul_one] using (ENNReal.Tendsto.const_mul hratio_tend (a := c))
   have hb_add : b + cubeShellErr L < c := lt_tsub_iff_left.mp hLerr
   have hratio_event :
-      ∀ᶠ R in (atTop : Filter ℝ), b + cubeShellErr L < c * ratio R := by
-    exact hmul_tend.eventually (Ioi_mem_nhds hb_add)
+      ∀ᶠ R in (atTop : Filter ℝ), b + cubeShellErr L < c * ratio R :=
+    hmul_tend.eventually (Ioi_mem_nhds hb_add)
   have hfreq : ∃ᶠ R in (atTop : Filter ℝ), c < S.finiteDensity R :=
     frequently_lt_finiteDensity_of_lt_density (S := S) (b := c) hcS
   have hfreq' :
@@ -742,10 +724,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       simpa [s] using (hX.mem_toFinset.1 hx)
     have hx_ball : x ∈ ball 0 R₁ := hx_mem.2
     have hx_gball :
-        (f x : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R₁ + C) := by
-      simpa [f] using
-        (PeriodicConstantApprox.neg_coordCubeCover_mem_ball (d := d) (L := L) (hL := hLpos)
-          (C := C) (R := R₁) hC hx_ball)
+        (f x : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R₁ + C) :=
+      PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC hx_ball
     have : f x ∈ {g : cubeLattice (d := d) L hLpos |
         (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R₁ + C)} := by
       simpa using hx_gball
@@ -771,11 +751,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hsg_memCube : ∀ x ∈ sg, x ∈ g0 +ᵥ coordCube (d := d) L := by
     intro x hx
     have hx_f : f x = g0 := (Finset.mem_filter.1 hx).2
-    have : g0 = -PeriodicConstantApprox.coordCubeCover (d := d) L hLpos x := by
-      simpa [f] using hx_f.symm
-    exact
-      (PeriodicConstantApprox.mem_vadd_coordCube_iff_eq_neg_coordCubeCover (d := d) (L := L)
-          (hL := hLpos) (g := g0) x).2 this
+    exact (PeriodicConstantApprox.mem_vadd_coordCube_iff_eq_neg_coordCubeCover L hLpos g0 x).mpr
+      (id (Eq.symm hx_f))
   -- The maximal fiber gives a density lower bound.
   have hs_sum :
       s.card =
@@ -959,10 +936,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   -- `b < sgDensity - cubeShellErr L ≤ P.density`.
   have hb_lt : b < (sg.card : ℝ≥0∞) * volBall / volCube - cubeShellErr L :=
     lt_tsub_iff_right.mpr hsg_density
-  have hF_card_add : F.card + sb.card = sg.card := by
-    simpa [F, sb] using
-      (Finset.card_filter_add_card_filter_not (s := sg)
-        (p := fun x : EuclideanSpace ℝ (Fin d) => x ∈ innerSet))
+  have hF_card_add : F.card + sb.card = sg.card :=
+    Finset.card_filter_add_card_filter_not fun x => x ∈ innerSet
   have hP_lower :
       (sg.card : ℝ≥0∞) * volBall / volCube - cubeShellErr L ≤ P.density := by
     -- show `sgDensity ≤ P.density + cubeShellErr L`, then rewrite with `tsub_le_iff_right`
@@ -1028,6 +1003,6 @@ public theorem periodic_constant_eq_constant (hd : 0 < d) :
     rcases SpherePacking.exists_periodicSpherePacking_sep_one_density_gt_of_lt_density
       (d := d) hd S hSsep hbS with
       ⟨P, hPsep, hbP⟩
-    have hb_lt_sup : b < ⨆ (P : PeriodicSpherePacking d) (_ : P.separation = 1), P.density := by
-      exact lt_of_lt_of_le hbP (le_iSup_of_le P (le_iSup_of_le hPsep le_rfl))
+    have hb_lt_sup : b < ⨆ (P : PeriodicSpherePacking d) (_ : P.separation = 1), P.density :=
+      lt_of_lt_of_le hbP (le_iSup_of_le P (le_iSup_of_le hPsep le_rfl))
     exact hab.trans hb_lt_sup

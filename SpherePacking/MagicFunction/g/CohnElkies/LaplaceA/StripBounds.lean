@@ -62,8 +62,8 @@ public lemma exists_phi2'_phi4'_bound_exp :
   rcases exists_inv_Delta_bound_exp with ⟨CΔ, AΔ, hCΔ, hΔ⟩
   let A : ℝ := max AΔ (max AE2 (max AE4 AE6))
   have hAΔ : AΔ ≤ A := le_max_left _ _
-  have hAE2 : AE2 ≤ A := by
-    exact le_trans (le_max_left _ _) (le_max_right _ _)
+  have hAE2 : AE2 ≤ A :=
+    le_trans (le_max_left _ _) (le_max_right _ _)
   have hAE4 : AE4 ≤ A := by
     have h₁ : AE4 ≤ max AE4 AE6 := le_max_left _ _
     have h₂ : AE4 ≤ max AE2 (max AE4 AE6) := le_trans h₁ (le_max_right _ _)
@@ -96,11 +96,11 @@ public lemma exists_phi2'_phi4'_bound_exp :
             = ‖(E₄ z) ^ (2 : ℕ) / (Δ z)‖ := by
                 simp [φ₄', div_eq_mul_inv, pow_two, mul_assoc]
         _ = ‖(E₄ z) ^ (2 : ℕ) * (Δ z)⁻¹‖ := by simp [div_eq_mul_inv]
-        _ ≤ ‖(E₄ z) ^ (2 : ℕ)‖ * ‖(Δ z)⁻¹‖ := by
-              exact norm_mul_le ((E₄ z) ^ (2 : ℕ)) ((Δ z)⁻¹)
+        _ ≤ ‖(E₄ z) ^ (2 : ℕ)‖ * ‖(Δ z)⁻¹‖ :=
+              norm_mul_le ((E₄ z) ^ (2 : ℕ)) ((Δ z)⁻¹)
         _ = (‖E₄ z‖ ^ (2 : ℕ)) * ‖(Δ z)⁻¹‖ := by simp [norm_pow]
-        _ ≤ (‖E₄ z‖ ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * z.im)) := by
-              exact mul_le_mul_of_nonneg_left hΔz (pow_nonneg (norm_nonneg _) _)
+        _ ≤ (‖E₄ z‖ ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * z.im)) :=
+              mul_le_mul_of_nonneg_left hΔz (pow_nonneg (norm_nonneg _) _)
         _ ≤ (CE4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * z.im)) := by
               gcongr
         _ = (CE4 ^ (2 : ℕ) * CΔ) * Real.exp (2 * π * z.im) := by ring
@@ -130,12 +130,12 @@ public lemma exists_phi2'_phi4'_bound_exp :
         ‖φ₂' z‖
             = ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) * (Δ z)⁻¹‖ := by
                 simp [φ₂', div_eq_mul_inv, mul_assoc]
-        _ ≤ ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z))‖ * ‖(Δ z)⁻¹‖ := by
-              exact norm_mul_le ((E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z))) ((Δ z)⁻¹)
-        _ ≤ (CE4 * (CE2 * CE4 + CE6)) * ‖(Δ z)⁻¹‖ := by
-              exact mul_le_mul_of_nonneg_right hmul (norm_nonneg _)
-        _ ≤ (CE4 * (CE2 * CE4 + CE6)) * (CΔ * Real.exp (2 * π * z.im)) := by
-              exact mul_le_mul_of_nonneg_left hΔz hnonneg
+        _ ≤ ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z))‖ * ‖(Δ z)⁻¹‖ :=
+              norm_mul_le ((E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z))) ((Δ z)⁻¹)
+        _ ≤ (CE4 * (CE2 * CE4 + CE6)) * ‖(Δ z)⁻¹‖ :=
+              mul_le_mul_of_nonneg_right hmul (norm_nonneg _)
+        _ ≤ (CE4 * (CE2 * CE4 + CE6)) * (CΔ * Real.exp (2 * π * z.im)) :=
+              mul_le_mul_of_nonneg_left hΔz hnonneg
         _ = (CE4 * (CE2 * CE4 + CE6) * CΔ) * Real.exp (2 * π * z.im) := by ring
     have hCdom : CE4 * (CE2 * CE4 + CE6) * CΔ ≤ C := by
       dsimp [C]
@@ -159,9 +159,7 @@ lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
   have hcontΦ6 : ContinuousOn (Φ₆' u) {z : ℂ | 0 < z.im} :=
     (MagicFunction.a.ComplexIntegrands.Φ₆'_contDiffOn_ℂ (r := u)).continuousOn
   have hmul : ContinuousOn (fun t : ℝ => ((t : ℂ) * Complex.I : ℂ)) (Set.Ioi (1 : ℝ)) := by
-    simpa using (by
-      have : Continuous (fun t : ℝ => ((t : ℂ) * Complex.I : ℂ)) := by fun_prop
-      exact this.continuousOn)
+    fun_prop
   have hmaps : Set.MapsTo (fun t : ℝ => ((t : ℂ) * Complex.I : ℂ)) (Set.Ioi (1 : ℝ))
       {z : ℂ | 0 < z.im} := by
     intro t ht
@@ -239,12 +237,7 @@ lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
         _ = (C₀ : ℝ) * Real.exp ((-(2 * π * t)) + (-(π * u * t))) := by simp [Real.exp_add]
         _ = (C₀ : ℝ) * Real.exp (-b * t) := by
               simp [hsum]
-    have hF' :
-        ‖Φ₆' u ((t : ℂ) * Complex.I)‖ ≤
-          (C₀ : ℝ) * Real.exp (-(2 * π * t)) * Real.exp (-(π * u * t)) := by
-      simpa [mul_assoc, mul_left_comm, mul_comm] using hF
-    -- Rewrite the RHS using `hcomb`.
-    exact hF'.trans_eq hcomb
+    grind only
   have hDomInt :
       Integrable (fun t : ℝ => (C₀ : ℝ) * Real.exp (-b * t))
         (volume.restrict (Set.Ioi (1 : ℝ))) :=
@@ -276,9 +269,7 @@ lemma integrableOn_Φ₂'_imag_axis_Ioc (u A : ℝ) :
     (MagicFunction.a.ComplexIntegrands.Φ₁'_contDiffOn_ℂ (r := u)).continuousOn
   have hIcc : IntegrableOn (fun t : ℝ => Φ₂' u ((t : ℂ) * I)) (Set.Icc (1 : ℝ) A) volume := by
     have hmulIcc : ContinuousOn (fun t : ℝ => ((t : ℂ) * I : ℂ)) (Set.Icc (1 : ℝ) A) := by
-      simpa using (by
-        have : Continuous (fun t : ℝ => ((t : ℂ) * I : ℂ)) := by fun_prop
-        exact this.continuousOn)
+      fun_prop
     have hmapsIcc :
         Set.MapsTo (fun t : ℝ => ((t : ℂ) * I : ℂ)) (Set.Icc (1 : ℝ) A) {z : ℂ | 0 < z.im} := by
       intro t ht
@@ -294,9 +285,7 @@ lemma aestronglyMeasurable_Φ₂'_imag_axis_Ioi (u A : ℝ) (hA0 : 0 < A) :
   have hcontΦ2 : ContinuousOn (Φ₂' u) {z : ℂ | 0 < z.im} :=
     (MagicFunction.a.ComplexIntegrands.Φ₁'_contDiffOn_ℂ (r := u)).continuousOn
   refine (hcontΦ2.comp ?_ ?_).aestronglyMeasurable measurableSet_Ioi
-  · simpa using (by
-      have : Continuous (fun t : ℝ => ((t : ℂ) * Complex.I : ℂ)) := by fun_prop
-      exact this.continuousOn)
+  · fun_prop
   · intro t ht
     have ht0 : 0 < t := lt_trans hA0 ht
     simpa using ht0
@@ -356,8 +345,8 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
         ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ =
             ‖(φ₀ wH * ((wH : ℂ) ^ (2 : ℕ)) -
                   (12 * Complex.I) / π * (wH : ℂ) * φ₂' wH) -
-                (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ := by
-              exact congrArg (fun z : ℂ => ‖z‖) this
+                (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ :=
+                  congrArg (fun z : ℂ => ‖z‖) this
       _ ≤ ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ)) -
                 (12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ +
             ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ := by
@@ -443,8 +432,8 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
     have ht2 : (1 : ℝ) ≤ t ^ (2 : ℕ) := one_le_pow₀ (show (1 : ℝ) ≤ t from ht1)
     calc
       ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ ≤
-          c36π2 * ‖φ₄' wH‖ := by
-        exact norm_mul_le ((36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))) (φ₄' wH)
+          c36π2 * ‖φ₄' wH‖ :=
+        norm_mul_le ((36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))) (φ₄' wH)
       _ ≤ c36π2 * (Cφ * Real.exp (2 * π * t)) := by
         -- Multiply the bound `‖φ₄'‖ ≤ Cφ*exp`.
         have hmul :=
@@ -465,41 +454,7 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
               c36π2 * Cφ * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
           ring
         exact le_trans hn (le_of_eq hrew)
-  have hsum :
-      (4 * C₀) + (2 * c12π * Cφ) + (c36π2 * Cφ) ≤
-        (4 * C₀ + (2 * c12π + c36π2) * Cφ) := by
-    ring_nf
-    nlinarith
-  have htot := (le_trans htri (add_le_add (add_le_add hA hB) hC))
-  -- Factor out `t^2 * exp(2πt)` and compare coefficients.
-  let X : ℝ := t ^ (2 : ℕ) * Real.exp (2 * π * t)
-  have hX_nonneg : 0 ≤ X := by
-    dsimp [X]
-    exact mul_nonneg (pow_nonneg ht_nonneg _) (Real.exp_pos _).le
-  let K : ℝ :=
-    4 * C₀ +
-      (2 * c12π + c36π2) * Cφ
-  have hcoeff_mul :
-      ((4 * C₀) + (2 * c12π * Cφ) + (c36π2 * Cφ)) * X ≤ K * X := by
-    simpa [K, mul_assoc, add_assoc, add_comm, add_left_comm] using
-      (mul_le_mul_of_nonneg_right hsum hX_nonneg)
-  have hsum_bound :
-      (4 * C₀) * X + (2 * ‖(12 * (Complex.I : ℂ)) / (π : ℂ)‖ * Cφ) * X +
-            (‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖ * Cφ) * X ≤
-        K * X := by
-    calc
-      (4 * C₀) * X + (2 * ‖(12 * (Complex.I : ℂ)) / (π : ℂ)‖ * Cφ) * X +
-            (‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖ * Cφ) * X =
-          ((4 * C₀) + (2 * ‖(12 * (Complex.I : ℂ)) / (π : ℂ)‖ * Cφ) +
-                (‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖ * Cφ)) * X := by ring
-      _ ≤ K * X := hcoeff_mul
-  -- Rewrite `htot` in terms of `X` and finish.
-  have htot' :
-      ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
-        (4 * C₀) * X + (2 * ‖(12 * (Complex.I : ℂ)) / (π : ℂ)‖ * Cφ) * X +
-            (‖(36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))‖ * Cφ) * X := by
-    simpa [X, mul_assoc, add_assoc, add_comm, add_left_comm] using htot
-  exact le_trans htot' (by simpa [X, K] using hsum_bound)
+  grind only
 
 /-- Pointwise bound for `‖Φ₂' u (tI)‖` on the tail `t ≥ 1`. -/
 lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ}
@@ -697,10 +652,7 @@ public lemma integrableOn_Φ₄'_imag_axis {u : ℝ} (hu : 2 < u) :
   have ht0 : 0 < t := lt_trans (by norm_num : (0 : ℝ) < 1) ht
   have hfd := Φ_finite_difference_imag_axis (u := u) (t := t) ht0
   -- Rearrange `Φ₂' - 2 Φ₅' + Φ₄' = 2 Φ₆'` to solve for `Φ₄'`.
-  have h :=
-    congrArg
-      (fun z : ℂ => z - (Φ₂' u ((t : ℂ) * I) - 2 * Φ₅' u ((t : ℂ) * I))) hfd
-  simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm, mul_assoc] using h.symm
+  grind only
 
 /--
 Rewrite the vertical-segment part `I₁' + I₃' + I₅'` as the imaginary-axis segment integral of

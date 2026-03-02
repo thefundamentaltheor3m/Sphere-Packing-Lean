@@ -85,12 +85,7 @@ public lemma hasDerivAt_integral_gN
     have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
     have hy0 : ε ≤ y + shift := by
       have hdist : |y - x| < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hy
-      have : x - ε < y := by nlinarith [abs_lt.1 hdist |>.1]
-      have : x + shift - ε < y + shift := by linarith
-      have hε_def : x + shift - ε = ε := by
-        dsimp [ε]
-        ring_nf
-      exact le_of_lt (by simpa [hε_def] using this)
+      grind only [= abs.eq_1, = max_def]
     have hlin : (-(Real.pi * (y + shift)) * t : ℝ) ≤ (-(Real.pi * ε) * t) := by
       have hπ : (Real.pi : ℝ) * ε ≤ (Real.pi : ℝ) * (y + shift) :=
         mul_le_mul_of_nonneg_left hy0 Real.pi_pos.le

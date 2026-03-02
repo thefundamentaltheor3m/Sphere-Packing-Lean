@@ -98,18 +98,14 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
           =
           ∫ x : ℝ⁸,
             ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))) *
-              (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) := by
-            exact congrArg (fun F : ℝ⁸ → ℂ => ∫ x : ℝ⁸, F x) hfactor
+              (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) :=
+            congrArg (fun F : ℝ⁸ → ℂ => ∫ x : ℝ⁸, F x) hfactor
       _ =
           ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))) *
             ∫ x : ℝ⁸,
-              cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s) := by
-            exact
-              (MeasureTheory.integral_const_mul
-                (μ := (volume : Measure ℝ⁸))
-                (r := ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))))
-                (f := fun x : ℝ⁸ ↦
-                  cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)))
+              cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s) :=
+            integral_const_mul (-I * φ₀'' (I * ↑s) * ↑s ^ (-4)) fun a =>
+              cexp (↑(-2 * (π * ⟪a, w⟫)) * I) * cexp (-↑π * ↑‖a‖ ^ 2 / ↑s)
       _ =
           ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))) *
             ((s ^ 4 : ℂ) * cexp (-π * (‖w‖ ^ 2) * s)) := by
@@ -183,13 +179,7 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
     have hexp (s : ℝ) :
         cexp (-((π : ℂ) * (((‖w‖ : ℂ) ^ (2 : ℕ)) * (s : ℂ)))) =
           cexp (-(π : ℂ) * ((‖w‖ : ℂ) ^ (2 : ℕ)) * (s : ℂ)) := by
-      refine congrArg cexp ?_
-      calc
-        -((π : ℂ) * (((‖w‖ : ℂ) ^ (2 : ℕ)) * (s : ℂ))) =
-            (-(π : ℂ)) * (((‖w‖ : ℂ) ^ (2 : ℕ)) * (s : ℂ)) := by
-              simp
-        _ = (-(π : ℂ)) * ((‖w‖ : ℂ) ^ (2 : ℕ)) * (s : ℂ) := by
-            simp [mul_assoc]
+      ring_nf
     simpa [μs, mul_assoc, neg_mul, hexp] using
       (MeasureTheory.integral_const_mul (μ := μs)
         (r := c)
@@ -217,16 +207,16 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
           ∫ x : ℝ⁸,
             ∫ s in Ici (1 : ℝ),
               cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-                MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s := by
-          exact congrArg (fun z : ℂ => (-2 : ℂ) * z) htoIter
+                MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s :=
+          congrArg (fun z : ℂ => (-2 : ℂ) * z) htoIter
     _ =
         (-2 : ℂ) *
           ∫ x : ℝ⁸, ∫ s in Ici (1 : ℝ), f x s := by
           simp [f, permI5Kernel, permI5Phase]
     _ =
         (-2 : ℂ) *
-          ∫ s in Ici (1 : ℝ), ∫ x : ℝ⁸, f x s := by
-          exact congrArg (fun z : ℂ => (-2 : ℂ) * z) hswap'
+          ∫ s in Ici (1 : ℝ), ∫ x : ℝ⁸, f x s :=
+          congrArg (fun z : ℂ => (-2 : ℂ) * z) hswap'
     _ =
         (-2 : ℂ) *
           ∫ s in Ici (1 : ℝ), (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
@@ -252,23 +242,7 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
                   ((I : ℂ) *
                     ∫ s in Ici (1 : ℝ),
                       φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) := by
-                  calc
-                    (-2 : ℂ) *
-                        ((-I : ℂ) *
-                          ∫ s in Ici (1 : ℝ),
-                            φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s))
-                        =
-                        ((-2 : ℂ) * (-I : ℂ)) *
-                          ∫ s in Ici (1 : ℝ), φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-                          ac_rfl
-                    _ =
-                        ((2 : ℂ) * (I : ℂ)) *
-                          ∫ s in Ici (1 : ℝ), φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
-                          simp [hconst]
-                    _ =
-                        (2 : ℂ) * ((I : ℂ) *
-                          ∫ s in Ici (1 : ℝ), φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) := by
-                          ac_rfl
+                  ring
             _ = 2 * ∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) := by
                   -- push `I` back into the integral
                   rw [hpush.symm]

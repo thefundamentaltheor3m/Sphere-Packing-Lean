@@ -365,10 +365,7 @@ lemma I₂'_eq_intervalIntegral_bottom (u : ℝ) :
     simp [hz, hcast, add_comm]
   have hshift :
       (∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ))) = ∫ x in (-1 : ℝ)..0, g x := by
-    simp
-      (config := { zeta := false })
-      [intervalIntegral.integral_comp_add_right
-        (f := g) (a := (0 : ℝ)) (b := (1 : ℝ)) (-1 : ℝ)]
+    norm_num
   calc
     (∫ t in (0 : ℝ)..1, Φ₂' u (MagicFunction.Parametrisations.z₂' t)) =
         ∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ)) := hcongr
@@ -397,12 +394,7 @@ lemma I₄'_eq_intervalIntegral_bottom (u : ℝ) :
     simp [hz, sub_eq_add_neg]
   rw [hrew]
   have hcomp : (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t := by
-    have h :=
-      intervalIntegral.integral_comp_sub_left
-        (f := g) (a := (0 : ℝ)) (b := (1 : ℝ)) (d := (1 : ℝ))
-    calc
-      (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (1 : ℝ) - 1..(1 : ℝ) - 0, g t := h
-      _ = ∫ t in (0 : ℝ)..1, g t := by simp
+    norm_num
   calc
     ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)
         = (-1 : ℂ) * ∫ t in (0 : ℝ)..1, g (1 - t) := by simp

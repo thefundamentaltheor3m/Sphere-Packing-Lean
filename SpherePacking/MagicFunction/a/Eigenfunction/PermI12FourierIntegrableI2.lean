@@ -63,28 +63,7 @@ lemma integral_norm_permI2Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
     set r : ℝ := ‖x‖ ^ 2
     have hre : (((Real.pi : ℂ) * I * (r : ℂ) * z₂line t)).re = -Real.pi * r := by
       -- `z₂line t = (-1 + t) + I`
-      have hz' : z₂line t = ((t - 1 : ℝ) : ℂ) + I := by
-        -- `(-1 : ℂ) + (t : ℂ) = ((t - 1 : ℝ) : ℂ)`
-        have : (-1 : ℂ) + (t : ℂ) = ((t - 1 : ℝ) : ℂ) := by
-          push_cast
-          ring
-        simp [z₂line, this, add_comm]
-      -- Expand and take real parts; only the `I * I` term contributes.
-      calc
-        (((Real.pi : ℂ) * I * (r : ℂ) * z₂line t)).re =
-            (((Real.pi : ℂ) * I * (r : ℂ) * (((t - 1 : ℝ) : ℂ) + I))).re := by
-              simp
-        _ =
-            (((Real.pi : ℂ) * I * (r : ℂ) * ((t - 1 : ℝ) : ℂ) +
-                  (Real.pi : ℂ) * I * (r : ℂ) * I)).re := by
-              simp [mul_add]
-        _ =
-            (((Real.pi : ℂ) * I * (r : ℂ) * ((t - 1 : ℝ) : ℂ)).re +
-                  ((Real.pi : ℂ) * I * (r : ℂ) * I).re) := by
-              simp
-        _ = 0 + (-Real.pi * r) := by
-              simp
-        _ = -Real.pi * r := by simp
+      simp
     have hmain :
         ‖cexp ((Real.pi : ℂ) * I * (r : ℂ) * z₂line t)‖ = rexp (-Real.pi * r) := by
       simp [Complex.norm_exp]
@@ -155,8 +134,8 @@ lemma integral_norm_permI2Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
       simpa [norm_pow] using hpow
     have hmul :
         ‖φ₀'' (-1 / (z₂line t + 1))‖ * ‖z₂line t + 1‖ ^ 2 ≤
-          ‖φ₀'' (-1 / (z₂line t + 1))‖ * (2 : ℝ) := by
-      exact mul_le_mul_of_nonneg_left hpow' hnonneg
+          ‖φ₀'' (-1 / (z₂line t + 1))‖ * (2 : ℝ) :=
+      mul_le_mul_of_nonneg_left hpow' hnonneg
     simpa [hEq, mul_assoc, mul_left_comm, mul_comm] using hmul
   simpa [mul_comm] using this
 
@@ -212,10 +191,7 @@ lemma integrable_integral_norm_permI2Kernel (w : ℝ⁸) :
       simpa using (Real.exp_le_one_iff.2 this)
     have hC₀_nonneg : 0 ≤ C₀ := hC₀_pos.le
     have hmul : (C₀ : ℝ) * rexp (-2 * π * z.im) ≤ (C₀ : ℝ) := by
-      calc
-        (C₀ : ℝ) * rexp (-2 * π * z.im) ≤ (C₀ : ℝ) * 1 := by
-          exact mul_le_mul_of_nonneg_left hexp hC₀_nonneg
-        _ = (C₀ : ℝ) := by simp
+      exact mul_le_of_le_one_right hC₀_nonneg hexp
     have : ‖φ₀'' ((-1 : ℂ) / ((t : ℂ) + I))‖ ≤ (C₀ : ℝ) * rexp (-2 * π * z.im) := by
       simpa [hφ₀_eq] using hφ₀
     exact this.trans hmul
@@ -228,11 +204,7 @@ lemma integrable_integral_norm_permI2Kernel (w : ℝ⁸) :
   have habs :
       ‖∫ x : ℝ⁸, ‖permI2Kernel w (x, t)‖‖ = ∫ x : ℝ⁸, ‖permI2Kernel w (x, t)‖ := by
     simp [Real.norm_eq_abs, abs_of_nonneg hn0]
-  have : (∫ x : ℝ⁸, ‖permI2Kernel w (x, t)‖) ≤ (2 : ℝ) * (C₀ : ℝ) := by
-    have hmul : (2 : ℝ) * ‖φ₀'' (-1 / (z₂line t + 1))‖ ≤ (2 : ℝ) * (C₀ : ℝ) := by
-      exact mul_le_mul_of_nonneg_left hφ₀''_seg (by positivity)
-    exact hkernel.trans hmul
-  simpa [habs] using this
+  linarith
 
 /-- Integrability of `permI2Kernel` on the product measure `volume × μIoc01`. -/
 public lemma integrable_perm_I₂_kernel (w : ℝ⁸) :

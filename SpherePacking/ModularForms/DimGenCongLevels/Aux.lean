@@ -177,10 +177,7 @@ public lemma qExpansion_coeff_eq_zero_of_cuspFunction_isBigO_pow
     have h' :
         ‖(qExpansion h f).coeff n‖
           ≤ ‖((2 * π * (Complex.I) : ℂ)⁻¹)‖ * (2 * π * R * C') := by
-      rw [hcoeff]
-      have :=
-        mul_le_mul_of_nonneg_left hbound_int (norm_nonneg ((2 * π * (Complex.I) : ℂ)⁻¹))
-      simpa [norm_mul, mul_assoc, mul_left_comm, mul_comm] using this
+      simp_all
     simpa [K, mul_assoc, mul_left_comm, mul_comm] using h'
   have hKne : (K : ℝ) ≠ 0 := ne_of_gt hKpos
   have hRlt : R < ε / K := by

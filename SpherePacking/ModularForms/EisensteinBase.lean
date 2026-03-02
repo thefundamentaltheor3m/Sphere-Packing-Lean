@@ -127,19 +127,17 @@ theorem cuspfunc_lim_coef {k : ℤ} {F : Type u_1} [inst : FunLike F ℍ ℂ] (n
   [inst_1 : ModularFormClass F Γ(n) k] [inst_2 : NeZero n] (hf : ∀ (τ : ℍ), HasSum (fun m ↦ c m • 𝕢
     ↑n ↑τ ^ m) (f τ))
   (q : ℂ) (hq : ‖q‖ < 1) (hq1 : q ≠ 0) : HasSum (fun m ↦ c m • q ^ m) (cuspFunction n f q) := by
-  have hq2 := Function.Periodic.im_invQParam_pos_of_norm_lt_one (h := n)
-    (by simp only [Nat.cast_pos]; exact Nat.pos_of_neZero n) hq hq1
-  have hft := hf ⟨(Periodic.invQParam (↑n) q), hq2⟩
-  have := eq_cuspFunction (h := n) f
-    ⟨(Periodic.invQParam (↑n) q), hq2⟩ (by simp) (by simp [inst_2.1])
-  simp only [smul_eq_mul, ne_eq] at *
-  rw [Function.Periodic.qParam_right_inv] at this hft
-  · rw [← this] at hft
-    exact hft
-  · simpa [Nat.cast_eq_zero] using (NeZero.ne n)
-  · exact hq1
-  · simpa [Nat.cast_eq_zero] using (NeZero.ne n)
-  · exact hq1
+  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast (NeZero.ne n)
+  have hq2 :=
+    Function.Periodic.im_invQParam_pos_of_norm_lt_one (h := n)
+      (Nat.cast_pos.2 (NeZero.pos n)) hq hq1
+  set τ : ℍ := ⟨Periodic.invQParam (↑n) q, hq2⟩
+  have hqτ : 𝕢 (n : ℝ) (τ : ℂ) = q := by
+    simpa [τ] using Function.Periodic.qParam_right_inv (h := (n : ℝ)) hn0 (q := q) hq1
+  have hcusp : cuspFunction n f q = f τ := by
+    simpa [hqτ] using eq_cuspFunction (h := n) f τ (by simp) hn0
+  have hft : HasSum (fun m ↦ c m • q ^ m) (f τ) := by simpa [hqτ] using hf τ
+  simpa [hcusp] using hft
 
 theorem summable_zero_pow {G} [NormedField G] (f : ℕ → G) : Summable (fun m ↦ f m * 0 ^ m) := by
   refine summable_of_finite_support ((Set.finite_singleton (0 : ℕ)).subset ?_)
@@ -151,30 +149,28 @@ theorem summable_zero_pow {G} [NormedField G] (f : ℕ → G) : Summable (fun m 
 
 lemma tsum_zero_pow (f : ℕ → ℂ) : (∑' m, f m * 0 ^ m) = f 0 := by
   simpa using (tsum_eq_single (f := fun m => f m * 0 ^ m) 0 fun m hm => by
-    cases m with
-    | zero => cases hm rfl
-    | succ m => simp)
+    simp_all)
 
 private lemma tendsto_tsum_mul_pow_nhdsWithin_ne_zero_half (c : ℕ → ℂ)
     (hc : Summable fun m : ℕ ↦ ‖c m‖ * (1 / 2 : ℝ) ^ m) :
     Tendsto (fun q : ℂ ↦ ∑' m : ℕ, c m * q ^ m) (𝓝[≠] (0 : ℂ)) (𝓝 (c 0)) := by
   -- As `q → 0` (with `q ≠ 0`), the power series tends to its constant term.
+  have hq : {q : ℂ | ‖q‖ < (1 / 2 : ℝ)} ∈ (𝓝[≠] (0 : ℂ)) := by
+    refine mem_nhdsWithin_of_mem_nhds ?_
+    simpa [Metric.ball, dist_eq_norm] using Metric.ball_mem_nhds (0 : ℂ) (by norm_num)
   simpa [tsum_zero_pow] using
     (tendsto_tsum_of_dominated_convergence (𝓕 := (𝓝[≠] (0 : ℂ)))
       (f := fun q : ℂ => fun m : ℕ => c m * q ^ m)
       (g := fun m : ℕ => c m * (0 : ℂ) ^ m)
-      (bound := fun m : ℕ => ‖c m‖ * (1 / 2 : ℝ) ^ m) (by
-        simpa using hc) (by
-        intro m
-        exact (tendsto_const_nhds.mul
-          ((((continuous_pow m (M := ℂ)).tendsto) 0).mono_left nhdsWithin_le_nhds))) (by
-        have hq : {q : ℂ | ‖q‖ < (1 / 2 : ℝ)} ∈ (𝓝[≠] (0 : ℂ)) :=
-          mem_nhdsWithin_of_mem_nhds <| by
-            simpa [Metric.ball, dist_eq_norm] using Metric.ball_mem_nhds (0 : ℂ) (by norm_num)
-        filter_upwards [hq] with q hq m
-        simp only [norm_mul, norm_pow]
-        refine mul_le_mul_of_nonneg_left ?_ (norm_nonneg (c m))
-        exact pow_le_pow_left₀ (norm_nonneg q) (le_of_lt hq) m))
+      (bound := fun m : ℕ => ‖c m‖ * (1 / 2 : ℝ) ^ m) (by simpa using hc)
+      (by intro m; simpa using
+        (tendsto_const_nhds.mul
+          (((continuous_pow m (M := ℂ)).tendsto 0).mono_left nhdsWithin_le_nhds)))
+      (by
+        filter_upwards [hq] with q hq' m
+        simpa [norm_mul, norm_pow, mul_assoc, mul_left_comm, mul_comm] using
+          mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg q) (le_of_lt hq') m)
+            (norm_nonneg (c m))))
 
 lemma cuspfunc_Zero [hn : NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0 =
     (qExpansion n f).coeff 0 := by
@@ -187,57 +183,43 @@ lemma modfom_q_exp_cuspfunc (c : ℕ → ℂ) (f : F) [ModularFormClass F Γ(n) 
     (hf : ∀ τ : ℍ, HasSum (fun m : ℕ ↦ (c m) • 𝕢 n τ ^ m) (f τ)) : ∀ q : ℂ, ‖q‖ < 1 →
     HasSum (fun m : ℕ ↦ c m • q ^ m) (cuspFunction n f q) := by
   intro q hq
-  by_cases hq1 : q ≠ 0
-  · apply cuspfunc_lim_coef n c f hf q hq hq1
+  rcases eq_or_ne q 0 with rfl | hq1
   · have h2 : cuspFunction n f 0 = c 0 := by
       rw [cuspFunction, Function.Periodic.cuspFunction_zero_eq_limUnder_nhds_ne]
       refine Filter.Tendsto.limUnder_eq ?_
-      have hsum :
-          Summable fun m : ℕ ↦ ‖c m‖ * (1 / 2 : ℝ) ^ m := by
-        have h :=
+      have hsum : Summable fun m : ℕ ↦ ‖c m‖ * (1 / 2 : ℝ) ^ m := by
+        simpa [smul_eq_mul, norm_mul, norm_pow] using
           (cuspfunc_lim_coef n c f hf (1 / 2 : ℂ) (by norm_num)
               (by
                 refine one_div_ne_zero ?_
                 exact (NeZero.ne' 2).symm)).summable.norm
-        simpa [smul_eq_mul, norm_mul, norm_pow] using h
-      have htt : Tendsto (fun q : ℂ ↦ ∑' m : ℕ, c m * q ^ m) (𝓝[≠] (0 : ℂ)) (𝓝 (c 0)) :=
+      have htt :
+          Tendsto (fun q : ℂ ↦ ∑' m : ℕ, c m * q ^ m) (𝓝[≠] (0 : ℂ)) (𝓝 (c 0)) :=
         tendsto_tsum_mul_pow_nhdsWithin_ne_zero_half c hsum
-      -- Use the explicit `HasSum` formula for `q ≠ 0` in a punctured neighborhood.
-      refine htt.congr' ?_
       have hmem : {y : ℂ | y ≠ 0 ∧ ‖y‖ < (1 : ℝ)} ∈ (𝓝[≠] (0 : ℂ)) := by
-        refine (mem_nhdsWithin_iff_exists_mem_nhds_inter).2 ?_
-        refine ⟨{y : ℂ | ‖y‖ < (1 : ℝ)}, ?_, ?_⟩
-        · simpa [Metric.ball, dist_eq_norm] using Metric.ball_mem_nhds (0 : ℂ) (by norm_num)
-        · intro y hy
-          exact ⟨hy.2, hy.1⟩
+        refine Filter.inter_mem self_mem_nhdsWithin ?_
+        refine mem_nhdsWithin_of_mem_nhds ?_
+        simpa [Metric.ball, dist_eq_norm] using Metric.ball_mem_nhds (0 : ℂ) (by norm_num)
+      refine htt.congr' ?_
       filter_upwards [hmem] with y hy
       simpa [smul_eq_mul] using (cuspfunc_lim_coef n c f hf y hy.2 hy.1).tsum_eq
-    have hq0 : q = 0 := by simpa using (not_not.mp hq1)
-    subst hq0
     rw [h2]
     simpa [smul_eq_mul] using
       (summable_zero_pow (f := c)).hasSum_iff.2 (by simpa using (tsum_zero_pow c))
+  · exact cuspfunc_lim_coef n c f hf q hq hq1
 
 
 lemma qParam_surj_onto_ball (r : ℝ) (hr : 0 < r) (hr2 : r < 1) [NeZero n] : ∃ (z : ℍ), ‖𝕢 n z‖ = r
     := by
-  use ⟨(Periodic.invQParam n r), ?_⟩
-  · have hq := Function.Periodic.qParam_right_inv (h := n) (q := r) ?_ ?_
-    · rw [hq]
-      simp [hr.le]
-    · exact Ne.symm (NeZero.ne' _)
-    · simpa [ne_eq, ofReal_eq_zero] using (ne_of_gt hr)
-  rw [Function.Periodic.im_invQParam]
-  simp only [norm_real, norm_eq_abs, log_abs]
-  rw [mul_pos_iff]
-  right
-  constructor
-  · refine div_neg_of_neg_of_pos ?_ ?_
-    · simp only [Left.neg_neg_iff, Nat.cast_pos]
-      exact Nat.pos_of_neZero n
-    exact two_pi_pos
-  rw [propext (log_neg_iff hr)]
-  exact hr2
+  have hn_pos : (0 : ℝ) < n := Nat.cast_pos.2 (NeZero.pos n)
+  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast (NeZero.ne n)
+  have hr0 : (r : ℂ) ≠ 0 := by exact_mod_cast (ne_of_gt hr)
+  have hnorm : ‖(r : ℂ)‖ < 1 := by simpa [Real.norm_of_nonneg hr.le] using hr2
+  refine ⟨⟨Periodic.invQParam n r, ?_⟩, ?_⟩
+  · simpa using Function.Periodic.im_invQParam_pos_of_norm_lt_one (h := (n : ℝ)) hn_pos hnorm hr0
+  have hq : 𝕢 (n : ℝ) (Periodic.invQParam n r) = (r : ℂ) :=
+    Function.Periodic.qParam_right_inv (h := (n : ℝ)) hn0 (q := (r : ℂ)) hr0
+  simpa [Real.norm_of_nonneg hr.le] using congrArg norm hq
 
 
 lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
@@ -317,16 +299,14 @@ lemma auxasdf (n : ℕ) : (PowerSeries.coeff n) ((qExpansion 1 E₄) * (qExpansi
 /-- A crude upper bound on the divisor sum `σ k n`. -/
 public lemma sigma_bound (k n : ℕ) : σ k n ≤ n ^ (k + 1) := by
   rw [ArithmeticFunction.sigma_apply]
-  have : ∑ d ∈ n.divisors, d ^ k ≤ ∑ d ∈ n.divisors, n ^ k := by
-    apply Finset.sum_le_sum
-    intro i hi
+  have hle : ∑ d ∈ n.divisors, d ^ k ≤ ∑ d ∈ n.divisors, n ^ k := by
+    refine Finset.sum_le_sum fun d hd => ?_
     gcongr
-    exact Nat.divisor_le hi
-  apply le_trans this
+    exact Nat.divisor_le hd
+  refine hle.trans ?_
   simp only [Finset.sum_const, smul_eq_mul]
-  rw [pow_add, mul_comm]
-  gcongr
-  simpa using Nat.card_divisors_le_self n
+  simpa [pow_add, mul_assoc, mul_left_comm, mul_comm] using
+    Nat.mul_le_mul_right (n ^ k) (Nat.card_divisors_le_self n)
 
 def Ek_q (k : ℕ) : ℕ → ℂ := fun m => if m = 0 then 1 else
     (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (σ (k-1) m)
@@ -438,8 +418,7 @@ public lemma E4_q_exp : (fun m => (qExpansion 1 E₄).coeff m) =
   funext m
   by_cases hm : m = 0
   · subst hm; simp
-  · have hconst := congrArg (fun t : ℂ => t * (σ 3 m : ℂ)) E4_q_exp_const
-    simpa [hm, mul_assoc, mul_left_comm, mul_comm] using hconst
+  · simpa [hm, mul_assoc] using congrArg (fun c : ℂ => c * (σ 3 m)) E4_q_exp_const
 
 /-- The constant `q`-coefficient of `E₄` is `1`. -/
 public lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 := by
@@ -447,8 +426,7 @@ public lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 := by
 
 
 @[simp]
-theorem Complex.I_pow_six : Complex.I ^ 6 = -1 := by
-  norm_num1
+theorem Complex.I_pow_six : Complex.I ^ 6 = -1 := by norm_num1
 
 @[simp]
 theorem bernoulli'_five : bernoulli' 5 = 0 := by
@@ -496,8 +474,7 @@ public lemma E6_q_exp : (fun m => (qExpansion 1 E₆).coeff m) =
   funext m
   by_cases hm : m = 0
   · subst hm; simp
-  · have hconst := congrArg (fun t : ℂ => t * (σ 5 m : ℂ)) E6_q_exp_const
-    simpa [hm, mul_assoc, mul_left_comm, mul_comm] using hconst
+  · simpa [hm, mul_assoc] using congrArg (fun c : ℂ => c * (σ 5 m)) E6_q_exp_const
 
 /-- The constant `q`-coefficient of `E₆` is `1`. -/
 public lemma E6_q_exp_zero : (qExpansion 1 E₆).coeff 0 = 1 := by
@@ -564,27 +541,25 @@ lemma Delta_cuspFuntion_eq : Set.EqOn (cuspFunction 1 Delta)
       (CuspFormClass.cuspFunction_apply_zero (h := 1) Delta zero_lt_one (by simp))
   · rw [Function.Periodic.cuspFunction_eq_of_nonzero]
     · simp only [comp_apply]
-      have hz := Function.Periodic.im_invQParam_pos_of_norm_lt_one (h := 1) (by exact
-        Real.zero_lt_one) (q := y) ?_ ?_
+      have hz := Function.Periodic.im_invQParam_pos_of_norm_lt_one (h := 1)
+        (Real.zero_lt_one) (q := y) ?_ ?_
       · rw [ofComplex_apply_of_im_pos hz]
         rw [Delta_apply, Δ]
         have hq :=
           Function.Periodic.qParam_right_inv (h := 1)
             (by simp) (q := y) hyn0
-        have : cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y) = y := by
-          nth_rw 2 [← hq]
-          congr 1
-          simp
-        rw [this]
+        have hyq : cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y) = y := by
+          simpa [Periodic.qParam] using hq
+        rw [hyq]
         congr
         ext n
         congr
-        have : cexp (2 * ↑π * Complex.I * (↑n + 1) * Periodic.invQParam 1 y) =
-            (cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y)) ^ (n + 1) := by
-          rw [← Complex.exp_nsmul]
-          congr
-          ring
-        rw [this]
+        have hpow :
+            cexp (2 * ↑π * Complex.I * (↑n + 1) * Periodic.invQParam 1 y) =
+              (cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y)) ^ (n + 1) := by
+          simpa [mul_assoc, mul_left_comm, mul_comm, Nat.cast_add_one] using
+            (Complex.exp_nat_mul (2 * ↑π * Complex.I * Periodic.invQParam 1 y) (n + 1))
+        rw [hpow]
         congr
       · have hy' : ‖y‖ < (2⁻¹ : ℝ) := by
           simpa [mem_ball, dist_zero_right] using hy
@@ -607,8 +582,8 @@ public lemma tendstoLocallyUniformlyOn_prod_range_one_sub_pow :
           (f := fun n : ℕ => fun y : ℂ => -(y ^ (n + 1)))
           (isCompact_closedBall 0 (2⁻¹ : ℝ)) (fun n => (2⁻¹ : ℝ) ^ (n + 1)) ?_ ?_ ?_)
         |>.tendstoLocallyUniformlyOn
-  · have h' := h.mono (s := Metric.closedBall 0 (2⁻¹ : ℝ)) ball_subset_closedBall
-    simpa [sub_eq_add_neg, hprod] using h'
+  · simpa [sub_eq_add_neg, hprod] using
+      h.mono (s := Metric.closedBall 0 (2⁻¹ : ℝ)) ball_subset_closedBall
   · rw [@summable_nat_add_iff, summable_geometric_iff_norm_lt_one]
     simp only [norm_inv, Real.norm_ofNat]
     exact two_inv_lt_one
@@ -623,15 +598,6 @@ theorem diffwithinat_prod_1 :
     DifferentiableWithinAt ℂ (fun (y : ℂ) ↦ ∏' (i : ℕ), (1 - y ^ (i + 1)) ^ 24)
       (ball (0 : ℂ) (2⁻¹ : ℝ)) 0
     := by
-  suffices
-      DifferentiableWithinAt ℂ (fun (n : ℂ) ↦ (∏' (i : ℕ), (1 - n ^ (i + 1))) ^ 24)
-        (ball (0 : ℂ) (2⁻¹ : ℝ)) 0 by
-    apply this.congr
-    · intro x hx
-      rw [← tprod_pow _ <|
-        multipliable_lt_one x ((Metric.ball_subset_ball (by norm_num : (2⁻¹ : ℝ) ≤ 1)) hx)]
-    simp
-  apply DifferentiableWithinAt.pow
   have hu :
       DifferentiableOn ℂ (fun x : ℂ ↦ ∏' i, (1 - x ^ (i + 1))) (Metric.ball (0 : ℂ) (2⁻¹ : ℝ)) := by
     refine tendstoLocallyUniformlyOn_prod_range_one_sub_pow.differentiableOn ?_ isOpen_ball
@@ -641,7 +607,15 @@ theorem diffwithinat_prod_1 :
       (s := Metric.ball (0 : ℂ) (2⁻¹ : ℝ)) ?_
     intro i hi
     fun_prop
-  exact hu 0 (mem_ball_self (by norm_num : (0 : ℝ) < (2⁻¹ : ℝ)))
+  have hpow :
+      DifferentiableWithinAt ℂ (fun n : ℂ ↦ (∏' i, (1 - n ^ (i + 1))) ^ 24)
+        (ball (0 : ℂ) (2⁻¹ : ℝ)) 0 :=
+    (hu 0 (mem_ball_self (by norm_num : (0 : ℝ) < (2⁻¹ : ℝ)))).pow 24
+  refine hpow.congr ?_ (by simp)
+  intro x hx
+  simpa using
+    (tprod_pow (f := fun i : ℕ => (1 - x ^ (i + 1) : ℂ))
+      (multipliable_lt_one x ((Metric.ball_subset_ball (by norm_num : (2⁻¹ : ℝ) ≤ 1)) hx)) 24).symm
 
 
 /-- The first nontrivial `q`-coefficient of `Delta` is `1`. -/
@@ -699,9 +673,7 @@ public lemma E6_ne_zero : E₆ ≠ 0 := by
 public lemma modularForm_normalise (f : ModularForm Γ(1) k) (hf : ¬ IsCuspForm Γ(1) k f) :
     (qExpansion 1 (((qExpansion 1 f).coeff 0)⁻¹ • f)).coeff 0 = 1 := by
   rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2, Nat.cast_one]
-  refine inv_mul_cancel₀ (by
-    intro h
-    exact hf ((IsCuspForm_iff_coeffZero_eq_zero k f).2 h))
+  exact inv_mul_cancel₀ (by intro h; exact hf ((IsCuspForm_iff_coeffZero_eq_zero k f).2 h))
 
 lemma PowerSeries.coeff_add (f g : PowerSeries ℂ) (n : ℕ) :
     (f + g).coeff n = (f.coeff n) + (g.coeff n) :=
@@ -875,8 +847,7 @@ public lemma norm_exp_two_pi_I_le_exp_neg_two_pi (z : ℍ) (hz : 1 ≤ z.im) :
     ‖cexp (2 * π * Complex.I * z)‖ ≤ Real.exp (-2 * π) := by
   have h : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
     simp [mul_assoc, mul_left_comm, mul_comm, Complex.mul_re, Complex.mul_im]
-  rw [Complex.norm_exp, h, Real.exp_le_exp]
-  nlinarith [Real.pi_pos]
+  simpa [Complex.norm_exp, h] using (Real.exp_le_exp.2 (by nlinarith [hz, Real.pi_pos]))
 
 /-- For ‖q‖ < 1, ‖∑ n·qⁿ/(1-qⁿ)‖ ≤ ‖q‖/(1-‖q‖)³. -/
 public lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
@@ -897,8 +868,8 @@ public lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
       _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow]
       _ ≤ ‖1 - q ^ (n : ℕ)‖ := by
         have := norm_sub_norm_le (1 : ℂ) (q ^ (n : ℕ)); simp only [norm_one] at this; linarith
-    calc ↑n * ‖q ^ (n : ℕ)‖ / ‖1 - q ^ (n : ℕ)‖ ≤ ↑n * ‖q ^ (n : ℕ)‖ / (1 - r) := by
-          exact div_le_div_of_nonneg_left (mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _))
+    calc ↑n * ‖q ^ (n : ℕ)‖ / ‖1 - q ^ (n : ℕ)‖ ≤ ↑n * ‖q ^ (n : ℕ)‖ / (1 - r) :=
+          div_le_div_of_nonneg_left (mul_nonneg (Nat.cast_nonneg _) (norm_nonneg _))
             (sub_pos.mpr hq) hdenom_lower
       _ = ↑n * r ^ (n : ℕ) / (1 - r) := by rw [norm_pow]
   have hsumm_norms : Summable (fun n : ℕ+ => ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖) :=

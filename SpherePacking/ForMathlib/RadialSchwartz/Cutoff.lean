@@ -31,17 +31,15 @@ open Complex Real
 /-- `cutoff r = 0` for `r ≤ -1/2`. -/
 @[simp] public lemma cutoff_eq_zero_of_le_neg_half {r : ℝ} (hr : r ≤ (-1 / 2 : ℝ)) :
     cutoff r = 0 := by
-  simpa [cutoff] using
-    (Real.smoothTransition.zero_of_nonpos (x := 2 * r + 1) (by linarith))
+  simpa [cutoff] using Real.smoothTransition.zero_of_nonpos (x := 2 * r + 1) (by linarith)
 
 /-- `cutoff r = 0` for `r ≤ -1`. -/
-@[simp] public lemma cutoff_eq_zero_of_le {r : ℝ} (hr : r ≤ -1) : cutoff r = 0 := by
-  exact cutoff_eq_zero_of_le_neg_half (r := r) (by linarith [hr])
+@[simp] public lemma cutoff_eq_zero_of_le {r : ℝ} (hr : r ≤ -1) : cutoff r = 0 :=
+  cutoff_eq_zero_of_le_neg_half (r := r) (by linarith [hr])
 
 /-- `cutoff r = 1` for `0 ≤ r`. -/
 @[simp] public lemma cutoff_eq_one_of_nonneg {r : ℝ} (hr : 0 ≤ r) : cutoff r = 1 := by
-  simpa [cutoff] using
-    (Real.smoothTransition.one_of_one_le (x := 2 * r + 1) (by linarith))
+  simpa [cutoff] using Real.smoothTransition.one_of_one_le (x := 2 * r + 1) (by linarith)
 
 /-- The cutoff function is smooth. -/
 @[fun_prop]
@@ -72,8 +70,8 @@ public lemma cutoffC_contDiff : ContDiff ℝ (⊤ : ℕ∞) cutoffC := by
 
 /-- `cutoff (‖x‖^2) = 1` for all `x`. -/
 @[simp] public lemma cutoff_norm_sq_eq_one {F : Type*} [NormedAddCommGroup F]
-    [InnerProductSpace ℝ F] (x : F) : cutoff (‖x‖ ^ 2) = 1 := by
-  exact cutoff_eq_one_of_nonneg (r := ‖x‖ ^ 2) (sq_nonneg ‖x‖)
+    [InnerProductSpace ℝ F] (x : F) : cutoff (‖x‖ ^ 2) = 1 :=
+  cutoff_eq_one_of_nonneg (r := ‖x‖ ^ 2) (sq_nonneg ‖x‖)
 
 /-- `cutoffC (‖x‖^2) = 1` for all `x`. -/
 @[simp] public lemma cutoffC_norm_sq_eq_one {F : Type*} [NormedAddCommGroup F]
@@ -87,11 +85,9 @@ public lemma contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1 {f : ℝ → ℂ}
   refine (contDiff_iff_contDiffAt (𝕜 := ℝ) (n := (⊤ : ℕ∞)) (f := fun r ↦ cutoffC r * f r)).2 ?_
   intro x
   by_cases hx : x < (-1 / 2 : ℝ)
-  · have hEq : (fun r ↦ cutoffC r * f r) =ᶠ[nhds x] fun _ ↦ (0 : ℂ) := by
-      refine Filter.eventuallyEq_of_mem (Iio_mem_nhds hx) fun y hy => ?_
-      simp [cutoffC_eq_zero_of_le_neg_half (r := y) (le_of_lt hy)]
-    simpa using
-      (contDiffAt_const : ContDiffAt ℝ (⊤ : ℕ∞) (fun _ ↦ (0 : ℂ)) x).congr_of_eventuallyEq hEq
+  · refine (contDiffAt_const : ContDiffAt ℝ (⊤ : ℕ∞) (fun _ ↦ (0 : ℂ)) x).congr_of_eventuallyEq ?_
+    filter_upwards [Iio_mem_nhds hx] with y hy
+    simp [cutoffC_eq_zero_of_le_neg_half (r := y) (le_of_lt hy)]
   · have hx' : (-1 : ℝ) < x := by linarith [le_of_not_gt hx]
     exact (cutoffC_contDiff.contDiffAt (x := x)).mul (hf.contDiffAt (isOpen_Ioi.mem_nhds hx'))
 

@@ -102,17 +102,7 @@ lemma gN_integrable (n : ℕ) (r : ℝ) (hr : -2 < r) : Integrable (gN n r) (μ)
     _ = (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀ := by
           have hp : (π * t) ^ n = (π ^ n) * (t ^ n) := by
             simp [mul_pow, mul_comm]
-          have hmulExp :
-              C₀ * rexp (-2 * π * t) * rexp (-π * r * t) = C₀ * rexp (-(π * (r + 2)) * t) := by
-            -- avoid `simp`-cancellation; just reassociate then rewrite the exponential product.
-            calc
-              C₀ * rexp (-2 * π * t) * rexp (-π * r * t)
-                  = C₀ * (rexp (-2 * π * t) * rexp (-π * r * t)) := by ring_nf
-              _ = C₀ * rexp (-(π * (r + 2)) * t) := by rw [hexp]
-          -- rewrite, then normalize by commutativity/associativity.
-          -- `ring_nf` is safe here and avoids `mul_eq_mul_*` simp lemmas.
-          rw [hmulExp, hp]
-          ring_nf
+          grind only
 
 lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) :
     HasDerivAt (fun r : ℝ ↦ ∫ t in Ici (1 : ℝ), gN n r t)
@@ -179,8 +169,7 @@ lemma hasDerivAt_integral_gN_of_gt_neg2 (n : ℕ) (r₀ : ℝ) (hr₀ : -2 < r�
   -- Shrink the neighborhood to avoid values `r ≤ -2`.
   let ε : ℝ := (r₀ + 2) / 2
   have ε_pos : 0 < ε := by
-    have : 0 < r₀ + 2 := by linarith
-    positivity
+    grind only
   have hb : 0 < π * ε := mul_pos Real.pi_pos ε_pos
   let bound : ℝ → ℝ :=
     fun t ↦ (π ^ (n + 1)) * (t ^ (n + 1) * rexp (-(π * ε) * t)) * C₀
@@ -207,9 +196,7 @@ lemma hasDerivAt_integral_gN_of_gt_neg2 (n : ℕ) (r₀ : ℝ) (hr₀ : -2 < r�
         ‖MagicFunction.a.IntegralEstimates.I₆.g r t‖ ≤ C₀ * rexp (-(π * ε) * t) := by
       have hr_lower : r₀ - ε ≤ r := by
         have : |r - r₀| < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hr
-        have hεle : 0 ≤ ε := le_of_lt ε_pos
-        have : r₀ - ε < r := by nlinarith [abs_lt.1 this |>.1, hεle]
-        exact le_of_lt this
+        grind only [= abs.eq_1, = max_def]
       have hε_def : r₀ + 2 - ε = ε := by
         dsimp [ε]
         ring_nf

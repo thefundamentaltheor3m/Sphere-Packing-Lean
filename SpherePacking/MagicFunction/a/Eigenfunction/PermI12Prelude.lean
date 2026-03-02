@@ -42,11 +42,10 @@ lemma fourier_involution {V : Type*} [NormedAddCommGroup V] [InnerProductSpace �
     [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V] {E : Type*} [NormedAddCommGroup E]
     [NormedSpace ℂ E] [CompleteSpace E] (f : 𝓢(V, E)) :
     FourierTransform.fourierCLE ℂ (SchwartzMap V E)
-        (FourierTransform.fourierCLE ℂ (SchwartzMap V E) f) = fun x => f (-x) :=
-by
+        (FourierTransform.fourierCLE ℂ (SchwartzMap V E) f) = fun x => f (-x) := by
   ext x; change 𝓕 (𝓕 f) x = f (-x)
-  simpa [Real.fourierInv_eq_fourier_neg, neg_neg] using
-    congrArg (fun g : V → E => g (-x)) (f.continuous.fourierInv_fourier_eq f.integrable
+  simpa [Real.fourierInv_eq_fourier_neg, neg_neg] using congrArg (fun g : V → E => g (-x))
+    (f.continuous.fourierInv_fourier_eq f.integrable
       (by simpa using (FourierTransform.fourierCLE ℂ (SchwartzMap V E) f).integrable))
 
 /-- If `f` is an even Schwartz function, then applying the Fourier transform twice gives back `f`.
@@ -56,8 +55,7 @@ public lemma radial_inversion {V : Type*} [NormedAddCommGroup V] [InnerProductSp
     [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V] {E : Type*} [NormedAddCommGroup E]
     [NormedSpace ℂ E] [CompleteSpace E] (f : 𝓢(V, E)) (hf : Function.Even f) :
     FourierTransform.fourierCLE ℂ (SchwartzMap V E)
-        (FourierTransform.fourierCLE ℂ (SchwartzMap V E) f) = f :=
-by
+        (FourierTransform.fourierCLE ℂ (SchwartzMap V E) f) = f := by
   ext x; simpa [hf x] using congrArg (fun g => g x) (fourier_involution (V:=V) (E:=E) f)
 
 lemma φ₀''_add_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z + 1) = φ₀'' z := by
@@ -71,10 +69,8 @@ lemma neg_one_div_sub_one_im_pos (w : ℂ) (hw : 0 < w.im) :
   have hw' : 0 < (w - 1).im := by simpa using hw
   have hne : w - 1 ≠ 0 := by
     intro h
-    have : (w - 1).im = 0 := by simp [h]
-    exact (lt_irrefl (0 : ℝ)) (this ▸ hw')
-  have hnormSq_pos : 0 < Complex.normSq (w - 1) := (Complex.normSq_pos).2 hne
-  have : 0 < (w - 1).im / Complex.normSq (w - 1) := div_pos hw' hnormSq_pos
+    exact (ne_of_gt hw') (by simp [h])
+  have : 0 < (w - 1).im / Complex.normSq (w - 1) := div_pos hw' ((Complex.normSq_pos).2 hne)
   simpa [div_eq_mul_inv, sub_eq_add_neg, Complex.inv_im] using this
 
 lemma one_sub_inv_sq_mul_sq (w : ℂ) (hw : w ≠ 0) :
@@ -93,21 +89,7 @@ lemma φ₀''_inv_add_one_mul_sq (w : ℂ) (hw : 0 < w.im) :
       have him0 : (w - 1).im = 0 := by simp [h]
       have hw' : 0 < (w - 1).im := by simpa using hw
       exact (lt_irrefl (0 : ℝ)) (him0 ▸ hw')
-    have hden : (-1 / w + 1) = (w - 1) / w := by
-      field_simp [hw0]
-      ring
-    -- Both sides simplify to `-w / (w - 1)`.
-    calc
-      (-1 / ((-1 / w) + 1))
-          = (-1 : ℂ) / ((w - 1) / w) := by
-              simp [hden]
-      _ = (-1 : ℂ) * ((w - 1) / w)⁻¹ := by simp [div_eq_mul_inv]
-      _ = (-1 : ℂ) * (w / (w - 1)) := by
-              simp [inv_div]
-      _ = (-w) / (w - 1) := by ring
-      _ = (-1 / (w - 1)) - 1 := by
-              field_simp [hw1]
-              ring
+    grind only
   have hφ :
       φ₀'' (-1 / ((-1 / w) + 1)) = φ₀'' (-1 / (w - 1)) := by
     have him : 0 < (-1 / (w - 1)).im := neg_one_div_sub_one_im_pos w hw
@@ -134,8 +116,8 @@ lemma φ₀''_inv_add_one_mul_sq' (w : ℂ) (hw : 0 < w.im) :
       φ₀'' (-1 / (w - 1)) * (w - 1) ^ 2 := by
   -- Replace the extra Fourier/Jacobian factor by `w^2`, then apply the main simplification lemma.
   have hfac :
-      ((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (w ^ (2 : ℕ))⁻¹ = w ^ (2 : ℕ) :=
-    by simpa [div_eq_mul_inv] using (I_div_neg_one_div_pow_four_mul_one_div_sq (w := w))
+      ((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (w ^ (2 : ℕ))⁻¹ = w ^ (2 : ℕ) := by
+    simpa [div_eq_mul_inv] using (I_div_neg_one_div_pow_four_mul_one_div_sq (w := w))
   simpa [hfac] using (φ₀''_inv_add_one_mul_sq (w := w) hw)
 
 
@@ -157,11 +139,10 @@ public lemma I₁'_eq_curveIntegral_segment (r : ℝ) :
   -- Reduce to pointwise equality of the integrands on `[0,1]`.
   refine intervalIntegral.integral_congr ?_
   intro t ht
-  have ht' : t ∈ Set.Icc (0 : ℝ) 1 := by
-    simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
   have hzlin :
       AffineMap.lineMap (-1 : ℂ) (-1 + Complex.I) t = MagicFunction.Parametrisations.z₁' t :=
-    SpherePacking.Contour.lineMap_z₁_eq_z₁' (t := t) ht'
+    SpherePacking.Contour.lineMap_z₁_eq_z₁' (t := t) (by
+      simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)
   simp [scalarOneForm_apply, hzlin]
 
 /-- Rewrite `I₂'` as a curve integral of `Φ₁'` along the segment `-1 + i → i`. -/
@@ -175,11 +156,10 @@ public lemma I₂'_eq_curveIntegral_segment (r : ℝ) :
   simp only [MagicFunction.a.RealIntegrals.I₂', MagicFunction.a.RealIntegrands.Φ₂_def]
   refine intervalIntegral.integral_congr ?_
   intro t ht
-  have ht' : t ∈ Set.Icc (0 : ℝ) 1 := by
-    simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
   have hzlin :
       AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t = MagicFunction.Parametrisations.z₂' t :=
-    SpherePacking.Contour.lineMap_z₂_eq_z₂' (t := t) ht'
+    SpherePacking.Contour.lineMap_z₂_eq_z₂' (t := t) (by
+      simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)
   simp [scalarOneForm_apply, hzlin, MagicFunction.a.ComplexIntegrands.Φ₂']
 
 lemma I₃'_eq_curveIntegral_segment (r : ℝ) :
@@ -192,11 +172,10 @@ lemma I₃'_eq_curveIntegral_segment (r : ℝ) :
   simp only [MagicFunction.a.RealIntegrals.I₃', MagicFunction.a.RealIntegrands.Φ₃_def]
   refine intervalIntegral.integral_congr ?_
   intro t ht
-  have ht' : t ∈ Set.Icc (0 : ℝ) 1 := by
-    simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
   have hzlin :
       AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) t = MagicFunction.Parametrisations.z₃' t :=
-    SpherePacking.Contour.lineMap_z₃_eq_z₃' (t := t) ht'
+    SpherePacking.Contour.lineMap_z₃_eq_z₃' (t := t) (by
+      simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)
   simp [scalarOneForm_apply, hzlin]
 
 lemma I₄'_eq_curveIntegral_segment (r : ℝ) :
@@ -209,11 +188,10 @@ lemma I₄'_eq_curveIntegral_segment (r : ℝ) :
   simp only [MagicFunction.a.RealIntegrals.I₄', MagicFunction.a.RealIntegrands.Φ₄_def]
   refine intervalIntegral.integral_congr ?_
   intro t ht
-  have ht' : t ∈ Set.Icc (0 : ℝ) 1 := by
-    simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
   have hzlin :
       AffineMap.lineMap ((1 : ℂ) + Complex.I) Complex.I t = MagicFunction.Parametrisations.z₄' t :=
-    SpherePacking.Contour.lineMap_z₄_eq_z₄' (t := t) ht'
+    SpherePacking.Contour.lineMap_z₄_eq_z₄' (t := t) (by
+      simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)
   simp [scalarOneForm_apply, hzlin, MagicFunction.a.ComplexIntegrands.Φ₄']
 
 /-- Rewrite `I₃' + I₄'` as a sum of curve integrals of `Φ₃'` along the two segments
@@ -230,10 +208,8 @@ public lemma I₃'_add_I₄'_eq_curveIntegral_segments (r : ℝ) :
 public lemma neg_one_div_im_pos (z : ℂ) (hz : 0 < z.im) : 0 < (-1 / z).im := by
   have hz0 : z ≠ 0 := by
     intro hz0
-    have : z.im = 0 := by simp [hz0]
-    exact (lt_irrefl (0 : ℝ)) (this ▸ hz)
-  have hnormSq_pos : 0 < Complex.normSq z := (Complex.normSq_pos).2 hz0
-  have : 0 < z.im / Complex.normSq z := div_pos hz hnormSq_pos
+    exact (ne_of_gt hz) (by simp [hz0])
+  have : 0 < z.im / Complex.normSq z := div_pos hz ((Complex.normSq_pos).2 hz0)
   simpa [div_eq_mul_inv, Complex.inv_im] using this
 
 /-- The Fourier-side integrand corresponding to `Φ₁'`, including the Mobius inversion Jacobian.
@@ -267,10 +243,7 @@ lemma Φ₁_fourier_eq_one_div_sq_mul_Φ₃' (r : ℝ) (z : ℂ) (hz : 0 < z.im)
       φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * (((Complex.I : ℂ) / z) ^ (4 : ℕ)) =
         (1 / z ^ (2 : ℕ)) * (φ₀'' (-1 / ((-1 / z) - 1)) * ((-1 / z) - 1) ^ 2) := by
     -- Multiply `hφz` by `1 / z^2` and cancel.
-    have h := congrArg (fun t : ℂ => (1 / z ^ (2 : ℕ)) * t) hφz
-    -- simplify the left-hand side
-    -- `1/z^2 * (A * (B * z^2)) = A * B` by commutativity and `inv_mul_cancel`.
-    simpa [div_eq_mul_inv, hz2, mul_assoc, mul_left_comm, mul_comm] using h
+    grind only
   -- Reattach the exponential; it matches the definition of `Φ₃'`.
   simp [Φ₁_fourier, MagicFunction.a.ComplexIntegrands.Φ₃', hcoef,
     mul_assoc, mul_left_comm, mul_comm]
@@ -285,10 +258,8 @@ public lemma Φ₁_fourier_eq_deriv_mobiusInv_mul_Φ₃' (r : ℝ) (z : ℂ) (hz
   -- Rewrite both sides using the previously established modular identity
   -- and the derivative formula.
   -- `SpherePacking.mobiusInv z = -1 / z`.
-  simpa [SpherePacking.mobiusInv, div_eq_mul_inv, SpherePacking.deriv_mobiusInv (z := z),
-    mul_assoc, mul_left_comm,
-    mul_comm] using
-    (Φ₁_fourier_eq_one_div_sq_mul_Φ₃' (r := r) (z := z) hz)
+  simpa [SpherePacking.mobiusInv, SpherePacking.deriv_mobiusInv (z := z), div_eq_mul_inv, mul_assoc,
+    mul_left_comm, mul_comm] using (Φ₁_fourier_eq_one_div_sq_mul_Φ₃' (r := r) (z := z) hz)
 
 end CurveIntegral
 

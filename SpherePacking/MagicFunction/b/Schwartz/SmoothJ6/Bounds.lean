@@ -232,10 +232,8 @@ public theorem decay_J₆' :
     simpa [hfun, Nat.add_zero] using (by simpa [hfun] using hG)
   -- Bound the iterated derivative via the integral representation and the exponential decay.
   have hnorm_iter :
-      ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖ = ‖iteratedDeriv n RealIntegrals.J₆' x‖ := by
-    simpa using
-      (norm_iteratedFDeriv_eq_norm_iteratedDeriv
-        (𝕜 := ℝ) (n := n) (f := RealIntegrals.J₆') (x := x))
+      ‖iteratedFDeriv ℝ n RealIntegrals.J₆' x‖ = ‖iteratedDeriv n RealIntegrals.J₆' x‖ :=
+    norm_iteratedFDeriv_eq_norm_iteratedDeriv
   have hGbound : ‖G n x‖ ≤ 2 * Kn * Real.exp (-Real.pi * x) := by
     -- First bound `‖F n x‖` using `‖gN n x t‖ ≤ bound t * exp(-π*x)` and integrate.
     have hx' : x ∈ s := hx_s
@@ -274,11 +272,7 @@ public theorem decay_J₆' :
                 gcongr
           _ = bound t * Real.exp (-Real.pi * x) := by
                 -- rearrange and fold `bound`
-                have hp : (Real.pi * t) ^ n = (Real.pi ^ n) * (t ^ n) := by
-                  simp [mul_pow, mul_comm]
-                rw [hp]
-                ring_nf
-                simp [bound, mul_assoc, mul_left_comm, mul_comm]
+                ring
       have hbound_int' : Integrable (fun t ↦ bound t * Real.exp (-Real.pi * x)) μ := by
         simpa [mul_assoc, mul_left_comm, mul_comm] using
           hbound_int.mul_const (Real.exp (-Real.pi * x))

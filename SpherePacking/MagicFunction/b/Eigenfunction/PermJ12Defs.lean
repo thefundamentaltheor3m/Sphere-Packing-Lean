@@ -76,8 +76,8 @@ public lemma ψT'_mobiusInv_eq_div (z : ℂ) (hz : 0 < z.im) :
     simpa [hS] using h
   have hdiv :
       ψT (UpperHalfPlane.mk (-zH)⁻¹ zH.im_inv_neg_coe_pos) =
-        (-ψT zH) / (zH : ℂ) ^ (2 : ℕ) := by
-    exact (eq_div_iff hz2).2 hS'
+        (-ψT zH) / (zH : ℂ) ^ (2 : ℕ) :=
+    (eq_div_iff hz2).2 hS'
   -- Identify the Möbius image point: `(-zH)⁻¹ = mobiusInv z`.
   have hz' : 0 < (mobiusInv z).im := mobiusInv_im_pos z hz
   have hmk :

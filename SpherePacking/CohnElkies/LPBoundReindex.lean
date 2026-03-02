@@ -147,8 +147,7 @@ public lemma tsum_centers_eq_tsum_centersInter_centersInter_lattice
         simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
           (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice (Λ := P.lattice) f
             ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d))))
-      · -- Summability over the finite index `x`.
-        exact Summable.of_finite
+      · exact Summable.of_finite
     · rintro ⟨x, ℓ⟩
       have hle :
           |(f ((e (x, ℓ) : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)))).re| ≤
@@ -198,9 +197,7 @@ public lemma tsum_centers_eq_tsum_centersInter_centersInter_lattice
           (Λ := P.lattice) (f := f)
           ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d))))
       -- Rewrite back to the original expression.
-      refine hs.congr ?_
-      intro ℓ
-      simp [he_sub x y ℓ]
+      exact (summable_congr fun b => congrArg Complex.re (congrArg (⇑f) (he_sub x y b))).mpr hs
     -- swap and rewrite back to `tsum`
     simpa [tsum_fintype] using
       (Summable.tsum_finsetSum (s := (Finset.univ : Finset ↑(P.centers ∩ D)))
@@ -211,10 +208,7 @@ public lemma tsum_centers_eq_tsum_centersInter_centersInter_lattice
   simp_rw [hy_comm]
   -- Finally, simplify `e (x, ℓ)` and rearrange `(e (x, ℓ) - y)` to `(x - y + ℓ)`.
   refine tsum_congr fun x => ?_
-  refine tsum_congr fun y => ?_
-  refine tsum_congr fun ℓ => ?_
-  -- `e (x, ℓ) = ℓ +ᵥ x` by definition, and `ℓ +ᵥ x - y = x - y + ℓ` by commutativity.
-  simp [he_sub x y ℓ]
+  exact tsum_congr₂ fun b c => congrArg Complex.re (congrArg (⇑f) (he_sub x b c))
 
 end
 

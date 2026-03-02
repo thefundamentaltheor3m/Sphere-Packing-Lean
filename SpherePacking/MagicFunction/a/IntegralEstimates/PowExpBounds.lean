@@ -40,9 +40,7 @@ public lemma pow_mul_exp_neg_pi_bounded (k : ℕ) :
   let N0 : ℝ := max N 0
   have hN0 : ∀ x ≥ N0, f x ≤ 1 := fun x hx => hN x ((le_max_left N 0).trans hx)
   have hf_cont : Continuous f := by
-    have hexp : Continuous fun x : ℝ => rexp (-π * x) := by
-      simpa [mul_assoc] using (Real.continuous_exp.comp ((continuous_const.mul continuous_id).neg))
-    simpa [f] using (continuous_id.pow k).mul hexp
+    fun_prop
   have hne : (Set.Icc (0 : ℝ) N0).Nonempty := nonempty_Icc.2 (le_max_right N 0)
   obtain ⟨x0, hx0, hxmax⟩ :=
     (isCompact_Icc : IsCompact (Set.Icc (0 : ℝ) N0)).exists_isMaxOn hne (hf_cont.continuousOn)
@@ -61,22 +59,17 @@ public lemma decay_of_bounding_uniform_norm {E : Type*} [SeminormedAddCommGroup 
     (hI : ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖I x‖ ≤ C₁ * rexp (-π * x)) :
     ∀ (k : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖I x‖ ≤ C := by
   intro k
-  obtain ⟨C₁, hC₁_pos, hC₁⟩ := hI
-  obtain ⟨Cpow, hCpow⟩ := pow_mul_exp_neg_pi_bounded (k := k)
+  rcases hI with ⟨C₁, hC₁_pos, hC₁⟩
+  rcases pow_mul_exp_neg_pi_bounded (k := k) with ⟨Cpow, hCpow⟩
   refine ⟨C₁ * Cpow, ?_⟩
   intro x hx
-  have hxnorm : ‖x‖ = x := by simpa using Real.norm_of_nonneg hx
-  have hxpow : ‖x‖ ^ k = x ^ k := by simp [hxnorm]
   have hIx : ‖I x‖ ≤ C₁ * rexp (-π * x) := hC₁ x hx
   calc
     ‖x‖ ^ k * ‖I x‖ ≤ ‖x‖ ^ k * (C₁ * rexp (-π * x)) :=
       mul_le_mul_of_nonneg_left hIx (by positivity)
-    _ = (x ^ k) * (C₁ * rexp (-π * x)) := congrArg (fun a ↦ a * (C₁ * rexp (-π * x))) hxpow
-    _ = C₁ * (x ^ k * rexp (-π * x)) := by ring_nf
-    _ ≤ C₁ * Cpow := by
-      gcongr
-      exact hCpow x hx
-    _ = C₁ * Cpow := rfl
+    _ = C₁ * (x ^ k * rexp (-π * x)) := by
+      simp [Real.norm_of_nonneg hx, mul_left_comm, mul_comm]
+    _ ≤ C₁ * Cpow := by gcongr; exact hCpow x hx
 
 /--
 Variant of `decay_of_bounding_uniform_norm` for iterated derivatives.  The input bound is stated
@@ -86,15 +79,10 @@ public lemma decay_of_bounding_uniform_norm_iteratedDeriv {I : ℝ → ℂ} (n :
     (hI : ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖iteratedDeriv n I x‖ ≤ C₁ * rexp (-π * x)) :
     ∀ (k : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C := by
   rcases hI with ⟨C₁, hC₁_pos, hC₁⟩
-  have hI' :
-      ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖iteratedFDeriv ℝ n I x‖ ≤ C₁ * rexp (-π * x) := by
-    refine ⟨C₁, hC₁_pos, ?_⟩
-    intro x hx
-    have hder :
-        ‖iteratedFDeriv ℝ n I x‖ = ‖iteratedDeriv n I x‖ := by
-      simpa using
-        (norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := I) (x := x))
-    simpa [hder] using hC₁ x hx
-  exact decay_of_bounding_uniform_norm (I := fun x : ℝ => iteratedFDeriv ℝ n I x) hI'
+  refine decay_of_bounding_uniform_norm (I := fun x : ℝ ↦ iteratedFDeriv ℝ n I x) ?_
+  refine ⟨C₁, hC₁_pos, ?_⟩
+  intro x hx
+  simpa [norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := I) (x := x)] using
+    hC₁ x hx
 
 end MagicFunction.a.IntegralEstimates

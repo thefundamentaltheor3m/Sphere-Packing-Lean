@@ -88,7 +88,7 @@ public lemma exists_bound_norm_ψT'_z₁'_of (k : ℕ) (ψS : ℍ → ℂ) (ψT'
   have hM0 : 0 ≤ M := (norm_nonneg _).trans hψS
   calc
     ‖ψT' (z₁' t)‖ ≤ M * t ^ k := hmul
-    _ ≤ M * 1 := by exact mul_le_mul_of_nonneg_left htK hM0
+    _ ≤ M * 1 := mul_le_mul_of_nonneg_left htK hM0
     _ = M := by simp
 
 /-- A pointwise bound for a modular rewrite on `Ioc 0 1`, given a bound on `ψS.resToImagAxis`. -/
@@ -112,8 +112,8 @@ public lemma norm_modular_rewrite_Ioc_bound (k : ℕ) (ψS : ℍ → ℂ) (ψZ :
       simp
     _ = ‖ψS.resToImagAxis (1 / t)‖ * t ^ k := by
       simp [hnorm]
-    _ ≤ B * t ^ k := by
-      exact mul_le_mul_of_nonneg_right hB (pow_nonneg ht0' k)
+    _ ≤ B * t ^ k :=
+      mul_le_mul_of_nonneg_right hB (pow_nonneg ht0' k)
 
 /-- A pointwise bound for a modular rewrite on `Ioc 0 1` with exponential decay input. -/
 public lemma norm_modular_rewrite_Ioc_exp_bound (k : ℕ) (Cψ : ℝ) (ψS : ℍ → ℂ) (ψZ : ℂ → ℂ)

@@ -135,10 +135,7 @@ public lemma norm_z₂'_le_two (t : ℝ) : ‖z₂' t‖ ≤ 2 := by
   have hu0 : 0 ≤ u := by simp [hu]
   have hu1 : u ≤ 1 := by simp [hu]
   have habs : |u - 1| ≤ 1 := by
-    have hle : u - 1 ≤ 0 := sub_nonpos.mpr hu1
-    have habs_eq : |u - 1| = 1 - u := by
-      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using abs_of_nonpos hle
-    simpa [habs_eq] using sub_le_self (1 : ℝ) hu0
+    grind only [= max_def, = min_def, = abs.eq_1]
   have hnorm : ‖(-1 : ℂ) + (u : ℂ)‖ ≤ 1 := by
     have : ‖(-1 : ℂ) + (u : ℂ)‖ = |u - 1| := by
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using

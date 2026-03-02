@@ -29,10 +29,8 @@ public lemma integral_gaussian_rexp_even (k : ℕ) (s : ℝ) (hs : 0 < s) :
           refine integral_congr_ae (ae_of_all _ fun x => by
             have : -π * (‖x‖ ^ 2) / s = -(π / s) * ‖x‖ ^ 2 := by ring_nf
             simpa [this])
-    _ = (π / (π / s)) ^ (Module.finrank ℝ (EuclideanSpace ℝ (Fin (2 * k))) / 2 : ℝ) := by
-        simpa using
-          (GaussianFourier.integral_rexp_neg_mul_sq_norm
-            (V := EuclideanSpace ℝ (Fin (2 * k))) (b := (π / s)) hb)
+    _ = (π / (π / s)) ^ (Module.finrank ℝ (EuclideanSpace ℝ (Fin (2 * k))) / 2 : ℝ) :=
+        GaussianFourier.integral_rexp_neg_mul_sq_norm hb
     _ = s ^ k := by
         have hbase : (π / (π / s)) = s := by
           field_simp [Real.pi_ne_zero, hs.ne']

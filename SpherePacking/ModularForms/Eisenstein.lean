@@ -98,21 +98,13 @@ private lemma E4qSeries_derivBound :
     simp [E4Coeff, u]
   have hk_im : δ ≤ k.1.im := hδ_le k.1 k.2
   have hnorm_exp :
-      ‖cexp (2 * Real.pi * Complex.I * (n : ℂ) * k.1)‖ ≤ r ^ n := by
-    exact SpherePacking.ForMathlib.norm_cexp_two_pi_I_mul_nat_mul_le_pow_of_le_im n hk_im
+      ‖cexp (2 * Real.pi * Complex.I * (n : ℂ) * k.1)‖ ≤ r ^ n :=
+    SpherePacking.ForMathlib.norm_cexp_two_pi_I_mul_nat_mul_le_pow_of_le_im n hk_im
   have hσ : (σ 3 n : ℝ) ≤ (n : ℝ) ^ 4 := by
     exact_mod_cast (sigma_bound 3 n)
   have hcoeff_norm : ‖E4Coeff n‖ ≤ (240 : ℝ) * (n : ℝ) ^ 4 := by
     have hc' : E4Coeff n = (240 : ℂ) * (σ 3 n : ℂ) := by simp [E4Coeff, hn0]
-    have hσnorm : ‖(σ 3 n : ℂ)‖ = (σ 3 n : ℝ) := by simp
-    have h240 : ‖(240 : ℂ)‖ = (240 : ℝ) := by norm_num
-    calc
-      ‖E4Coeff n‖ = ‖(240 : ℂ) * (σ 3 n : ℂ)‖ := by simp [hc']
-      _ = ‖(240 : ℂ)‖ * ‖(σ 3 n : ℂ)‖ := by simp
-      _ ≤ (240 : ℝ) * (n : ℝ) ^ 4 := by
-        have : (240 : ℝ) * (σ 3 n : ℝ) ≤ (240 : ℝ) * (n : ℝ) ^ 4 :=
-          mul_le_mul_of_nonneg_left hσ (by positivity)
-        simpa [h240, hσnorm, mul_assoc, mul_left_comm, mul_comm] using this
+    simp_all
   have hnorm_2pin : ‖(2 * Real.pi * Complex.I * (n : ℂ) : ℂ)‖ = 2 * Real.pi * (n : ℝ) := by
     simp [Real.norm_of_nonneg Real.pi_pos.le, mul_left_comm, mul_comm]
   have hmul1 :
@@ -150,11 +142,7 @@ public theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
   have hRam := congrArg (fun f : ℍ → ℂ => f z) ramanujan_E₄
   have h3 : (3 : ℂ) ≠ 0 := by norm_num
   have hmain : (E₂ z) * (E₄ z) - (E₆ z) = (3 : ℂ) * D E₄.toFun z := by
-    have h' : D E₄.toFun z = (3⁻¹ : ℂ) * ((E₂ z) * (E₄ z) - (E₆ z)) := by
-      simpa [Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe, mul_assoc] using hRam
-    -- Clear the scalar `3⁻¹`.
-    field_simp [h3] at h'
-    simpa [mul_assoc, mul_left_comm, mul_comm] using h'.symm
+    simp_all
   have htail :
       (∑' n : ℕ, (n : ℂ) * E4Coeff n * cexp (2 * Real.pi * Complex.I * n * z)) =
         (240 : ℂ) * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * Real.pi * Complex.I * n * z) := by
@@ -169,15 +157,7 @@ public theorem E₂_mul_E₄_sub_E₆ (z : ℍ) :
           (240 : ℂ) *
             ∑' n : ℕ+, n * (σ 3 n) * cexp (2 * Real.pi * Complex.I * n * z) := by
           simp [f, E4Coeff, tsum_mul_left, mul_assoc, mul_left_comm, mul_comm]
-  calc
-    (E₂ z) * (E₄ z) - (E₆ z) = (3 : ℂ) * (D E₄.toFun z) := hmain
-    _ = (3 : ℂ) * ((240 : ℂ) * ∑' (n : ℕ+), n * (σ 3 n) *
-          cexp (2 * Real.pi * Complex.I * n * z)) := by
-          rw [hDE4, htail]
-    _ = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * Real.pi * Complex.I * n * z) := by
-          set S : ℂ := ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * Real.pi * Complex.I * n * z)
-          have hcoef : (3 : ℂ) * (240 : ℂ) = (720 : ℂ) := by norm_num
-          simpa [S, mul_assoc] using congrArg (fun t : ℂ => t * S) hcoef
+  grind only
 
 /-- Rewrite `A_E` as an `ℕ`-indexed series with terms `A_E_term z n`. -/
 public lemma A_E_eq_tsum (z : ℍ) : A_E z = ∑' n : ℕ, A_E_term z n := by

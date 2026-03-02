@@ -120,9 +120,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     -- Integrability on the compact interval `[1,A]`.
     have hcontIcc : ContinuousOn f (Set.Icc (1 : ℝ) A) := by
       have hmul : ContinuousOn (fun t : ℝ => I * (t : ℂ)) (Set.Icc (1 : ℝ) A) := by
-        simpa using (by
-          have : Continuous (fun t : ℝ => I * (t : ℂ)) := by fun_prop
-          exact this.continuousOn)
+        fun_prop
       have hmaps :
           Set.MapsTo (fun t : ℝ => I * (t : ℂ)) (Set.Icc (1 : ℝ) A)
             {z : ℂ | 0 < z.im} := by
@@ -283,12 +281,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       -- `‖exp w‖ = exp (Re w)`.
       rw [Complex.norm_exp]
       -- Compute the real part of `π * I * u * z`.
-      have h1 :
-          (π : ℂ) * (Complex.I : ℂ) * (u : ℂ) * z =
-            ((π : ℂ) * (u : ℂ) * z) * (Complex.I : ℂ) := by
-        ring_nf
-      -- `Re (a * I) = -Im a`.
-      simp [h1]
+      simp
     -- Combine the estimates.
     have hnorm :
         ‖bContourIntegrandT u z‖ =
@@ -481,19 +474,11 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       have hz_g :
           MagicFunction.Parametrisations.z₄' t =
             ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I := by
-        calc
-          MagicFunction.Parametrisations.z₄' t = (1 : ℂ) - (t : ℂ) + (I : ℂ) := hz
-          _ = ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I := by
-            exact hz'.symm
+        simpa
       simp [g, bContourIntegrandT, bContourWeight, hz_g, sub_eq_add_neg, mul_assoc]
     rw [hrew]
     have hcomp : (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t := by
-      have h :=
-        intervalIntegral.integral_comp_sub_left
-          (f := g) (a := (0 : ℝ)) (b := (1 : ℝ)) (d := (1 : ℝ))
-      calc
-        (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (1 : ℝ) - 1..(1 : ℝ) - 0, g t := h
-        _ = ∫ t in (0 : ℝ)..1, g t := by simp
+      norm_num
     -- `(-1) * ∫ g = ∫_{1..0} g` by orientation reversal.
     calc
       ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)
@@ -745,8 +730,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hI1 :
         IntegrableOn
           (fun t : ℝ => bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
-          (Set.Ioi (1 : ℝ)) := by
-      exact hintI.mono_set (Set.Ioi_subset_Ioi (by norm_num : (0 : ℝ) ≤ 1))
+          (Set.Ioi (1 : ℝ)) :=
+      hintI.mono_set (Set.Ioi_subset_Ioi (by norm_num : (0 : ℝ) ≤ 1))
     have hT1 :
         IntegrableOn
           (fun t : ℝ => bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ)))
@@ -814,9 +799,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
             (Set.Ioi (0 : ℝ)) :=
         by
           simpa [mul_assoc] using (hintI.mul_const w)
-      simpa [add_comm, add_left_comm, add_assoc] using
-        (setIntegral_Ioi0_eq_add_Ioc_Ioi (f := fun t : ℝ =>
-            bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) hIoi0W).symm
+      exact Eq.symm (setIntegral_Ioi0_eq_add_Ioc_Ioi hIoi0W)
     -- Rewrite shifted rays using the pointwise translation lemmas.
     have hJ1_shift :
         (∫ t in Set.Ioc (0 : ℝ) 1,
@@ -899,14 +882,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           -(∫ t in Set.Ioi (1 : ℝ),
               bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) := by
       -- From `∫ S = -∫ I - ∫ T`.
-      have hS := hCenter_split
-      -- Add `∫ T` to both sides.
-      -- `T + S = -I`.
-      simpa [add_assoc, add_left_comm, add_comm] using
-        congrArg
-          (fun x =>
-            x + (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))))
-          hS
+      exact eq_sub_iff_add_eq'.mp hCenter_split
     -- Replace the central `I` integral using `VI`.
     have hCenterVI :
         (∫ t in Set.Ioc (0 : ℝ) 1,
@@ -918,84 +894,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     -- Final algebra step (avoid expensive normalization on large integrals).
     simp only [smul_eq_mul, neg_mul]
     -- Abbreviate the remaining integrals on the four rays and the two central pieces.
-    set L0 : ℂ :=
-        ∫ t in Set.Ioc (0 : ℝ) 1,
-          bContourIntegrandT u ((-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ)) with hL0
-    set L1 : ℂ :=
-        ∫ t in Set.Ioi (1 : ℝ),
-          bContourIntegrandT u ((-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ)) with hL1
-    set R0 : ℂ :=
-        ∫ t in Set.Ioc (0 : ℝ) 1,
-          bContourIntegrandT u ((1 : ℂ) + (Complex.I : ℂ) * (t : ℂ)) with hR0
-    set R1 : ℂ :=
-        ∫ t in Set.Ioi (1 : ℝ),
-          bContourIntegrandT u ((1 : ℂ) + (Complex.I : ℂ) * (t : ℂ)) with hR1
-    set C : ℂ :=
-        ∫ t in Set.Ioi (1 : ℝ),
-          bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ)) with hC
-    set S : ℂ :=
-        ∫ t in Set.Ioi (1 : ℝ),
-          bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ)) with hS
-    set I0 : ℂ :=
-        ∫ t in Set.Ioc (0 : ℝ) 1,
-          bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) with hI0
-    set I1 : ℂ :=
-        ∫ t in Set.Ioi (1 : ℝ),
-          bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) with hI1
-    -- The `set` commands above already rewrite the goal into this abbreviated form.
-    -- Rewrite the helper equalities in the abbreviated language.
-    have hLeft_full' : L0 + L1 = (-VI) * bContourWeight u (-1 : ℂ) := by
-      simpa [hL0, hL1] using hLeft_full
-    have hRight_full' : R0 + R1 = (-VI) * bContourWeight u (1 : ℂ) := by
-      simpa [hR0, hR1] using hRight_full
-    have hCenter' : C + S = -I1 := by
-      assumption
-    have hCenterVI' : I0 + I1 = VI := by
-      simpa [hI0, hI1] using hCenterVI
-    -- Center contribution equals `2*I*VI`.
-    have hCenterTerm :
-        (2 : ℂ) * (Complex.I : ℂ) * I0 + (-2 : ℂ) * (Complex.I : ℂ) * S -
-              (Complex.I : ℂ) * C - (Complex.I : ℂ) * C =
-          (2 : ℂ) * (Complex.I : ℂ) * VI := by
-      calc
-        (2 : ℂ) * (Complex.I : ℂ) * I0 + (-2 : ℂ) * (Complex.I : ℂ) * S -
-              (Complex.I : ℂ) * C - (Complex.I : ℂ) * C
-            =
-              (2 : ℂ) * (Complex.I : ℂ) * I0 + (-2 : ℂ) * (Complex.I : ℂ) * (C + S) := by
-                ring
-        _ =
-              (2 : ℂ) * (Complex.I : ℂ) * I0 + (2 : ℂ) * (Complex.I : ℂ) * I1 := by
-                simp [hCenter']
-        _ = (2 : ℂ) * (Complex.I : ℂ) * (I0 + I1) := by
-              ring
-        _ = (2 : ℂ) * (Complex.I : ℂ) * VI := by
-              simp [hCenterVI']
-    have hCenterTerm' :
-        (2 * Complex.I * I0 : ℂ) + (-(2 * Complex.I * S) : ℂ) -
-              (Complex.I : ℂ) * C - (Complex.I : ℂ) * C =
-          (2 : ℂ) * (Complex.I : ℂ) * VI := by
-      convert hCenterTerm using 1
-      ring
-    -- Combine the left and right contributions and finish.
-    calc
-      (Complex.I : ℂ) * L0 + ((Complex.I : ℂ) * L1 - (Complex.I : ℂ) * C) +
-          (Complex.I : ℂ) * R0 + ((Complex.I : ℂ) * R1 - (Complex.I : ℂ) * C) +
-          (2 * Complex.I * I0 : ℂ) + (-(2 * Complex.I * S) : ℂ)
-          =
-            (Complex.I : ℂ) * (L0 + L1) +
-              (Complex.I : ℂ) * (R0 + R1) +
-                ((2 : ℂ) * (Complex.I : ℂ) * I0 + (-2 : ℂ) * (Complex.I : ℂ) * S -
-                  (Complex.I : ℂ) * C - (Complex.I : ℂ) * C) := by
-            ring
-      _ =
-            (Complex.I : ℂ) * ((-VI) * bContourWeight u (-1 : ℂ)) +
-              (Complex.I : ℂ) * ((-VI) * bContourWeight u (1 : ℂ)) +
-              (2 : ℂ) * (Complex.I : ℂ) * VI := by
-            simp [hLeft_full', hRight_full', hCenterTerm']
-      _ =
-          (Complex.I : ℂ) *
-            (((2 : ℂ) - bContourWeight u (1 : ℂ) - bContourWeight u (-1 : ℂ)) * VI) := by
-          ring
+    grind only
   -- Identify the exponential weights at `±1`.
   have hW1 : bContourWeight u (1 : ℂ) = Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) := by
     simp [bContourWeight, mul_left_comm, mul_comm]

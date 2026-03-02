@@ -67,8 +67,7 @@ These are small, reusable facts for the frequently used measure `μIoo01`.
 
 /-- Almost everywhere with respect to `μIoo01`, the variable lies in `Ioo (0, 1)`. -/
 public lemma ae_mem_Ioo01_muIoo01 : ∀ᵐ t ∂μIoo01, t ∈ Ioo (0 : ℝ) 1 := by
-  simpa [μIoo01] using
-    (ae_restrict_mem (μ := (volume : Measure ℝ)) (s := Ioo (0 : ℝ) 1) measurableSet_Ioo)
+  simpa [μIoo01] using (ae_restrict_mem (s := Ioo (0 : ℝ) 1) measurableSet_Ioo)
 
 /-- The function `t ↦ A * t ^ p` is integrable with respect to `μIoo01` when `0 ≤ A`. -/
 public lemma integrable_const_mul_pow_muIoo01 (A : ℝ) (p : ℕ) (hA : 0 ≤ A) :
@@ -104,8 +103,7 @@ We keep the segment/interval-integral conversion lemma here because most downstr
 /-- The integral against `μIoc01` equals the interval integral on `(0, 1]`. -/
 public lemma integral_restrict_Ioc01_eq_intervalIntegral (f : ℝ → ℂ) :
     (∫ t : ℝ, f t ∂((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1))) = ∫ t in (0 : ℝ)..1, f t := by
-  simpa using
-    (intervalIntegral.integral_of_le (μ := (volume : Measure ℝ)) (f := f) (by norm_num)).symm
+  simpa using (intervalIntegral.integral_of_le (μ := volume) (f := f) (by norm_num)).symm
 
 /-- Product with the restricted measure agrees with restricting the product measure. -/
 public lemma prod_restrict_Ioc01_eq_restrict {α : Type*} [MeasurableSpace α] (μ : Measure α)
@@ -113,8 +111,7 @@ public lemma prod_restrict_Ioc01_eq_restrict {α : Type*} [MeasurableSpace α] (
     μ.prod ((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1)) =
       (μ.prod (volume : Measure ℝ)).restrict ((univ : Set α) ×ˢ (Ioc (0 : ℝ) 1)) := by
   simpa using
-    (Measure.prod_restrict (μ := μ) (ν := (volume : Measure ℝ)) (s := (univ : Set α))
-      (t := Ioc (0 : ℝ) 1))
+    (Measure.prod_restrict (μ := μ) (ν := volume) (s := (univ : Set α)) (t := Ioc (0 : ℝ) 1))
 
 /-- Specialized version of `prod_restrict_Ioc01_eq_restrict` for `μIoc01`. -/
 public lemma prod_muIoc01_eq_restrict {α : Type*} [MeasurableSpace α] (μ : Measure α) [SFinite μ] :
@@ -126,10 +123,9 @@ public lemma integral_dir_mul_restrict_Ioc01_eq_curveIntegral_segment (F : ℂ �
     (zline : ℝ → ℂ) (hzline : ∀ t : ℝ, AffineMap.lineMap a b t = zline t) :
     (∫ t : ℝ, (b - a) * F (zline t) ∂((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1))) =
       (∫ᶜ z in Path.segment a b, scalarOneForm F z) := by
-  rw [integral_restrict_Ioc01_eq_intervalIntegral (f := fun t => (b - a) * F (zline t))]
-  rw [curveIntegral_segment (ω := scalarOneForm F) a b]
-  refine intervalIntegral.integral_congr fun t ht => ?_
-  simp [scalarOneForm_apply, hzline t]
+  rw [integral_restrict_Ioc01_eq_intervalIntegral (f := fun t => (b - a) * F (zline t)),
+    curveIntegral_segment (ω := scalarOneForm F) a b]
+  refine intervalIntegral.integral_congr fun t ht => by simp [scalarOneForm_apply, hzline t]
 
 /-- Version of `integral_dir_mul_restrict_Ioc01_eq_curveIntegral_segment` for `μIoc01`. -/
 public lemma integral_dir_mul_muIoc01_eq_curveIntegral_segment (F : ℂ → ℂ) (a b : ℂ)

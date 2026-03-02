@@ -61,17 +61,15 @@ private lemma sixteen_mul_volume_ball_half :
 public theorem SpherePackingConstant_le_E8Packing_density :
     SpherePackingConstant 8 ≤ E8Packing.density := by
   have hLP :
-      SpherePackingConstant 8 ≤
-        (scaledMagic 0).re.toNNReal / (𝓕 (⇑scaledMagic) 0).re.toNNReal *
-          volume (ball (0 : ℝ⁸) (1 / 2 : ℝ)) := by
+      SpherePackingConstant 8 ≤ (scaledMagic 0).re.toNNReal / (𝓕 (⇑scaledMagic) 0).re.toNNReal *
+        volume (ball (0 : ℝ⁸) (1 / 2 : ℝ)) := by
     simpa using
-      (LinearProgrammingBound (d := 8) (f := (scaledMagic : 𝓢(ℝ⁸, ℂ)))
-        scaledMagic_ne_zero scaledMagic_real' scaledMagic_real_fourier'
-        scaledMagic_cohnElkies₁' scaledMagic_cohnElkies₂' (Nat.succ_pos 7))
+      (LinearProgrammingBound (d := 8) (f := (scaledMagic : 𝓢(ℝ⁸, ℂ))) scaledMagic_ne_zero
+        scaledMagic_real' scaledMagic_real_fourier' scaledMagic_cohnElkies₁'
+        scaledMagic_cohnElkies₂' (Nat.succ_pos 7))
   calc
-    SpherePackingConstant 8
-        ≤ (16 : ℝ≥0∞) * volume (ball (0 : ℝ⁸) (1 / 2 : ℝ)) := by
-            simpa [mul_assoc, scaledMagic_ratio_toNNReal] using hLP
+    SpherePackingConstant 8 ≤ (16 : ℝ≥0∞) * volume (ball (0 : ℝ⁸) (1 / 2 : ℝ)) := by
+      simpa [mul_assoc, scaledMagic_ratio_toNNReal] using hLP
     _ = ENNReal.ofReal π ^ 4 / 384 := sixteen_mul_volume_ball_half
     _ = E8Packing.density := by simpa using (E8Packing_density).symm
 

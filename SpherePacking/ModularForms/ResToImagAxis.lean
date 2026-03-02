@@ -63,12 +63,7 @@ public lemma continuousOn_resToImagAxis_Ioi_of {F : ℍ → ℂ} (hF : Continuou
         have ht : (0 : ℝ) < (t : ℝ) := t.property
         simpa [Complex.mul_im] using ht⟩
   have hz : Continuous z := by
-    have hC : Continuous fun t : Set.Ioi (0 : ℝ) => (Complex.I : ℂ) * (t : ℝ) :=
-      continuous_const.mul (Complex.continuous_ofReal.comp continuous_subtype_val)
-    simpa [z] using hC.upperHalfPlaneMk fun t =>
-      (by
-        have ht : (0 : ℝ) < (t : ℝ) := t.property
-        simpa [Complex.mul_im] using ht)
+    fun_prop
   refine (hF.comp hz).congr fun t => ?_
   have ht : (0 : ℝ) < (t : ℝ) := t.property
   simp [Set.restrict, ResToImagAxis, z, ht]
@@ -76,11 +71,8 @@ public lemma continuousOn_resToImagAxis_Ioi_of {F : ℍ → ℂ} (hF : Continuou
 /-- A variant of `continuousOn_resToImagAxis_Ioi_of` on the closed ray `Ici 1`. -/
 public lemma continuousOn_resToImagAxis_Ici_one_of {F : ℍ → ℂ} (hF : Continuous F) :
     ContinuousOn F.resToImagAxis (Set.Ici (1 : ℝ)) := by
-  refine (continuousOn_resToImagAxis_Ioi_of (F := F) hF).mono ?_
-  intro t ht
-  exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) ht
-
-
+  refine (continuousOn_resToImagAxis_Ioi_of hF).mono fun _ ht => by
+    simpa [Set.mem_Ioi] using lt_of_lt_of_le zero_lt_one ht
 
 /-- If `F z → l` as `im z → ∞`, then `F (I * t) → l` as `t → ∞`. -/
 public lemma tendsto_resToImagAxis_atImInfty (F : ℍ → ℂ) (l : ℂ)
@@ -199,9 +191,7 @@ public theorem ResToImagAxis.Real.sub {F G : ℍ → ℂ} (hF : ResToImagAxis.Re
 /-- The property `ResToImagAxis.Pos` is closed under addition. -/
 public theorem ResToImagAxis.Pos.add {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
     (hG : ResToImagAxis.Pos G) : ResToImagAxis.Pos (F + G) := by
-  rw [Pos]
-  refine ⟨Real.add hF.1 hG.1, fun t ht ↦ ?_⟩
-  grind [hF.2 t ht, hG.2 t ht]
+  refine ⟨Real.add hF.1 hG.1, fun t ht => by grind [hF.2 t ht, hG.2 t ht]⟩
 
 /-- The property `ResToImagAxis.Pos` is closed under multiplication. -/
 public theorem ResToImagAxis.Pos.mul {F G : ℍ → ℂ} (hF : ResToImagAxis.Pos F)
@@ -230,19 +220,12 @@ public theorem ResToImagAxis.Pos.smul {F : ℍ → ℂ} {c : ℝ} (hF : ResToIma
 theorem ResToImagAxis.EventuallyPos.add {F G : ℍ → ℂ}
     (hF : ResToImagAxis.EventuallyPos F) (hG : ResToImagAxis.EventuallyPos G) :
     ResToImagAxis.EventuallyPos (F + G) := by
-  rw [EventuallyPos]
   rcases hF with ⟨hFreal, ⟨tF, hF0, hFpos⟩⟩
   rcases hG with ⟨hGreal, ⟨tG, hG0, hGpos⟩⟩
-  refine ⟨ResToImagAxis.Real.add hFreal hGreal, ⟨max tF tG, by positivity, ?_⟩⟩
-  intro t ht
+  refine ⟨ResToImagAxis.Real.add hFreal hGreal, ⟨max tF tG, by positivity, fun t ht => ?_⟩⟩
   have htpos : 0 < t := lt_of_lt_of_le hF0 ((le_max_left _ _).trans ht)
-  simpa [ResToImagAxis, htpos] using
-    add_pos (hFpos t ((le_max_left _ _).trans ht)) (hGpos t ((le_max_right _ _).trans ht))
-
-
-
-
-
+  rw [Function.resToImagAxis_re_add (F := F) (G := G) (t := t) htpos]
+  exact add_pos (hFpos t ((le_max_left _ _).trans ht)) (hGpos t ((le_max_right _ _).trans ht))
 
 /--
 If `F : ℍ → ℂ` is `O(exp(-c * im τ))` at `atImInfty` for some `c > 0`, then
@@ -283,8 +266,6 @@ theorem tendsto_rpow_mul_resToImagAxis_of_isBigO_exp {F : ℍ → ℂ} {c : ℝ}
     (hF : F =O[atImInfty] fun τ => rexp (-c * τ.im)) (s : ℝ) :
     Tendsto (fun t : ℝ => (t : ℂ) ^ (s : ℂ) * F.resToImagAxis t) atTop (𝓝 0) :=
   tendsto_rpow_mul_of_isBigO_exp hc (isBigO_resToImagAxis_of_isBigO_atImInfty hF)
-
-
 
 /-!
 ## Fourier expansion approach for polynomial decay

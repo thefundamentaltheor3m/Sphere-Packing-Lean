@@ -167,9 +167,7 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
                   gcongr
                   exact norm_add_le _ _)
       have h144 : ‖(144 : ℂ)‖ = (144 : ℝ) := by norm_num
-      have : ‖bAnotherBase t‖ ≤ Cψ0 + 144 + Real.exp (2 * π) := by
-        nlinarith [htri, hψ, hexp, h144]
-      simpa [Csmall] using this
+      grind only
     exact hb.trans (le_max_left _ _)
   · -- `t > 1`, hence `1 ≤ t`
     have ht : (1 : ℝ) ≤ t := le_of_not_ge ht1
@@ -273,17 +271,7 @@ public lemma bAnotherBase_integrable_mul_exp {u : ℝ} (hu : 0 < u) :
               Real.exp (-(π * u) * t) / Real.exp (-(π * u / 2) * t) =
                 Real.exp ((-(π * u) * t) - (-(π * u / 2) * t)) := by
             simpa using (Real.exp_sub (-(π * u) * t) (-(π * u / 2) * t)).symm
-          have hExp : (-(π * u) * t) - (-(π * u / 2) * t) = (-(π * u / 2) * t) := by
-            ring
-          calc
-            (t * Real.exp (-(π * u) * t)) / Real.exp (-(π * u / 2) * t)
-                = t * (Real.exp (-(π * u) * t) / Real.exp (-(π * u / 2) * t)) := by
-                    simpa [mul_assoc] using
-                      (mul_div_assoc t (Real.exp (-(π * u) * t)) (Real.exp (-(π * u / 2) * t)))
-            _ = t * Real.exp ((-(π * u) * t) - (-(π * u / 2) * t)) := by
-                  rw [hdiv]
-            _ = t * Real.exp (-(π * u / 2) * t) := by
-                  rw [hExp]
+          grind only
         have hEq' :
             (fun t : ℝ => f t / Real.exp (-b' * t)) =ᶠ[atTop] fun t : ℝ => t * Real.exp (-b' * t) :=
           Filter.Eventually.of_forall fun t => by

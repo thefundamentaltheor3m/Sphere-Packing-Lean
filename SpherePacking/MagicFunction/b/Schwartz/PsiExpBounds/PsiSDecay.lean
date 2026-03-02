@@ -31,9 +31,7 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
     intro t ht
     have hle : CH2 ≤ CH2' := le_max_left _ _
     have hexp : 0 ≤ rexp (-π * t) := by positivity
-    have hmul : CH2 * rexp (-π * t) ≤ CH2' * rexp (-π * t) :=
-      mul_le_mul_of_nonneg_right hle hexp
-    exact (hH2 t ht).trans hmul
+    exact le_mul_of_le_mul_of_nonneg_right (hH2 t ht) hle hexp
   -- `H₃` and `H₄` converge to `1` along the imaginary axis, so their norms are bounded above
   -- and below away from `0` on `t ≥ 1` by compactness on an initial segment.
   have htendH3 : Tendsto (fun t : ℝ => H₃.resToImagAxis t) atTop (𝓝 (1 : ℂ)) := by
@@ -44,14 +42,14 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
       (Function.tendsto_resToImagAxis_atImInfty (F := H₄) (l := (1 : ℂ)) H₄_tendsto_atImInfty)
   have hEvH3 : ∀ᶠ t in atTop, ‖H₃.resToImagAxis t - (1 : ℂ)‖ ≤ (1 / 2 : ℝ) := by
     have hsub :
-        Tendsto (fun t : ℝ => H₃.resToImagAxis t - (1 : ℂ)) atTop (𝓝 (0 : ℂ)) := by
-      exact tendsto_sub_nhds_zero_iff.mpr htendH3
+        Tendsto (fun t : ℝ => H₃.resToImagAxis t - (1 : ℂ)) atTop (𝓝 (0 : ℂ)) :=
+      tendsto_sub_nhds_zero_iff.mpr htendH3
     have := (hsub.norm)
     exact this.eventually (Iic_mem_nhds (by norm_num))
   have hEvH4 : ∀ᶠ t in atTop, ‖H₄.resToImagAxis t - (1 : ℂ)‖ ≤ (1 / 2 : ℝ) := by
     have hsub :
-        Tendsto (fun t : ℝ => H₄.resToImagAxis t - (1 : ℂ)) atTop (𝓝 (0 : ℂ)) := by
-      exact tendsto_sub_nhds_zero_iff.mpr htendH4
+        Tendsto (fun t : ℝ => H₄.resToImagAxis t - (1 : ℂ)) atTop (𝓝 (0 : ℂ)) :=
+      tendsto_sub_nhds_zero_iff.mpr htendH4
     have := (hsub.norm)
     exact this.eventually (Iic_mem_nhds (by norm_num))
   rcases (eventually_atTop.1 (hEvH3.and hEvH4)) with ⟨T0, hT0⟩
@@ -79,9 +77,7 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
         have : (0 : ℝ) < (t : ℝ) := lt_of_lt_of_le (by norm_num) t.2.1
         simp [this]⟩
   have hφ : Continuous φ := by
-    simpa [φ] using
-      hI.upperHalfPlaneMk (fun t => by
-        simpa using lt_of_lt_of_le (by norm_num) t.2.1)
+    fun_prop
   have hcont_norm_resToImagAxis (H : ℍ → ℂ) (hH : Continuous H) :
       ContinuousOn (fun t : ℝ => ‖ResToImagAxis H t‖) (Icc 1 T) := by
     refine (continuousOn_iff_continuous_restrict).2 ?_
@@ -271,8 +267,8 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
     have hden : c3 ^ 2 * c4 ^ 2 ≤ ‖(H₃ z) ^ 2 * (H₄ z) ^ 2‖ := by
       simpa [norm_mul, norm_pow] using hmul
     have hinv' :
-        (‖(H₃ z) ^ 2 * (H₄ z) ^ 2‖)⁻¹ ≤ (c3 ^ 2 * c4 ^ 2)⁻¹ := by
-      exact (inv_le_inv₀ hpos (by positivity)).2 hden
+        (‖(H₃ z) ^ 2 * (H₄ z) ^ 2‖)⁻¹ ≤ (c3 ^ 2 * c4 ^ 2)⁻¹ :=
+      (inv_le_inv₀ hpos (by positivity)).2 hden
     simpa [norm_inv] using hinv'
   have hH2z : ‖H₂ z‖ ≤ CH2' * rexp (-π * t) := by
     have hH2t' : ‖ResToImagAxis H₂ t‖ ≤ CH2' * rexp (-π * t) := by
@@ -328,26 +324,18 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
           have h2 :
               (‖H₂ z‖ * ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖) *
                   ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ ≤
-                (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ := by
-            exact
-              mul_le_mul h1 hinv (norm_nonneg _)
+                (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ :=
+            mul_le_mul h1 hinv (norm_nonneg _)
                 (mul_nonneg (norm_nonneg _) hP0)
-          have h3 :
-              (128 : ℝ) *
-                    ((‖H₂ z‖ *
-                          ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖) *
-                        ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖) ≤
-                  (128 : ℝ) * ((‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹) := by
-            exact mul_le_mul_of_nonneg_left h2 (by positivity)
-          simpa [mul_assoc] using h3
+          grind only
     _ ≤ (128 : ℝ) * ((CH2' * rexp (-π * t)) * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ := by
           have hP0 : (0 : ℝ) ≤ P := le_trans (norm_nonneg _) hpoly'
           have h1 : ‖H₂ z‖ * P ≤ (CH2' * rexp (-π * t)) * P := by
             exact mul_le_mul_of_nonneg_right hH2z hP0
           have h2 :
               (‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ ≤
-                ((CH2' * rexp (-π * t)) * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ := by
-            exact mul_le_mul_of_nonneg_right h1 (by positivity)
+                ((CH2' * rexp (-π * t)) * P) * (c3 ^ 2 * c4 ^ 2)⁻¹ :=
+            mul_le_mul_of_nonneg_right h1 (by positivity)
           have h3 :
               (128 : ℝ) * ((‖H₂ z‖ * P) * (c3 ^ 2 * c4 ^ 2)⁻¹) ≤
                 (128 : ℝ) * (((CH2' * rexp (-π * t)) * P) * (c3 ^ 2 * c4 ^ 2)⁻¹) := by
