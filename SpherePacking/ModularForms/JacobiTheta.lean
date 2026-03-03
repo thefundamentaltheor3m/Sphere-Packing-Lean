@@ -364,13 +364,13 @@ lemma H₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := by
 
 /-- Differentiability of `t ↦ jacobiTheta₂(t/2, t)` at points in the upper half-plane. -/
 lemma differentiableAt_jacobiTheta₂_half (τ : ℍ) :
-    DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) τ.val := by
+    DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) ↑τ := by
   let f : ℂ → ℂ × ℂ := fun t => (t / 2, t)
-  have hf : DifferentiableAt ℂ f τ.val :=
+  have hf : DifferentiableAt ℂ f ↑τ :=
     (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
-  have hg : DifferentiableAt ℂ (fun p : ℂ × ℂ => jacobiTheta₂ p.1 p.2) (f τ.val) := by
-    simpa [f] using (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
-  simpa [f] using hg.comp τ.val hf
+  have hg : DifferentiableAt ℂ (fun p : ℂ × ℂ => jacobiTheta₂ p.1 p.2) (f ↑τ) := by
+    simpa [f] using (hasFDerivAt_jacobiTheta₂ ((τ : ℂ) / 2) τ.2).differentiableAt
+  simpa [f] using (DifferentiableAt.comp (x := (τ : ℂ)) hg hf)
 
 lemma Θ₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₂ := by
   intro τ
@@ -381,7 +381,7 @@ lemma Θ₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₂ := by
   have hMD := hΘ₂_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
   have : (fun t : ℂ => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t) ∘
       UpperHalfPlane.coe = Θ₂ := by
-    ext x; simp only [Function.comp_apply, Θ₂_as_jacobiTheta₂, coe_mk_subtype]; ring
+    ext x; simp only [Function.comp_apply, Θ₂_as_jacobiTheta₂]; ring_nf
   rwa [this] at hMD
 
 end H_MDifferentiable

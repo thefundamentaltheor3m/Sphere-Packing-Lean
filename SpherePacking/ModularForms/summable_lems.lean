@@ -167,13 +167,12 @@ lemma pnat_inv_sub_squares (z : ℍ) :
   · norm_cast
     ring_nf
     have h2 := upp_half_not_ints z n
-    simp only [Int.cast_natCast, ne_eq, PNat.pow_coe, Nat.cast_pow, mul_eq_mul_right_iff,
-      inv_eq_zero, OfNat.ofNat_ne_zero, or_false] at *
+    simp only [Int.cast_natCast, ne_eq, PNat.pow_coe, Nat.cast_pow] at *
   · have h1 := upp_half_not_ints z (n)
     norm_cast at *
     rw [@sub_eq_zero]
-    apply UpperHalfPlane.ne_int
-  have := UpperHalfPlane.ne_int z (-(n : ℤ))
+    apply UpperHalfPlane.ne_intCast
+  have := UpperHalfPlane.ne_intCast z (-(n : ℤ))
   rw [aus]
   aesop
 
@@ -317,7 +316,7 @@ theorem summable_diff (z : ℍ) (d : ℤ) :
     rfl
   have := lhs_summable ⟨ -D/ z, by simpa using pnat_div_upper ⟨D, hd⟩ z⟩
   rw [← summable_mul_left_iff (a := -1) (by norm_num)]
-  simp only [not_lt, coe_mk_subtype, one_div, neg_mul, one_mul, neg_add_rev] at *
+  simp only [not_lt, one_div, neg_mul, one_mul, neg_add_rev] at *
   rw [hd22] at this
   apply this.congr
   intro b
@@ -1049,16 +1048,14 @@ lemma sub_bound (s : ℍ) (A B : ℝ) (hB : 0 < B) (hs : s ∈ verticalStrip A B
     (n : ℕ+) :
     ‖((-1 : ℂ) ^ (k + 1) * (k + 1)! * (1 / (s - n) ^ (k + 2)))‖ ≤
     ‖((k + 1)! / r ⟨⟨A, B⟩, by simp [hB]⟩ ^ (k + 2)) * ((n : ℝ) ^ ((k : ℤ) +2))⁻¹‖ := by
-  simp only [mem_setOf_eq, one_div, norm_pow, norm_neg, one_mem,
-    CStarRing.norm_of_mem_unitary, one_pow, RCLike.norm_natCast, one_mul, norm_inv, norm_mul,
-    norm_div, Real.norm_eq_abs, norm_zpow]
+  simp only [one_div, norm_pow, norm_neg, one_mem, CStarRing.norm_of_mem_unitary, one_pow,
+    RCLike.norm_natCast, one_mul, norm_inv, norm_mul, norm_div, Real.norm_eq_abs, norm_zpow]
   rw [div_eq_mul_inv]
   rw [mul_assoc]
   gcongr
   have := summand_bound_of_mem_verticalStrip (k := (k + 2)) (by norm_cast; omega) ![1,-n] hB hs
-  simp only [coe_setOf, Fin.isValue, Matrix.cons_val_zero, Int.cast_one, one_mul,
-    Matrix.cons_val_one, Matrix.cons_val_fin_one, Int.cast_neg, Int.cast_natCast, neg_add_rev,
-    ge_iff_le] at *
+  simp only [Fin.isValue, Matrix.cons_val_zero, Int.cast_one, one_mul, Matrix.cons_val_one,
+    Matrix.cons_val_fin_one, Int.cast_neg, Int.cast_natCast, neg_add_rev, ge_iff_le] at *
   simp_rw [← zpow_natCast, ← zpow_neg]
   convert this
   · rw [Int.natCast_add]
@@ -1083,15 +1080,14 @@ lemma add_bound (s : ℍ) (A B : ℝ) (hB : 0 < B) (hs : s ∈ verticalStrip A B
     (n : ℕ+) :
     ‖((-1 : ℂ) ^ (k + 1) * (k + 1)! * (1 / (s + n) ^ (k + 2)))‖ ≤
     ‖((k + 1)! / r ⟨⟨A, B⟩, by simp [hB]⟩ ^ (k + 2)) * ((n : ℝ) ^ ((k : ℤ) +2))⁻¹‖ := by
-  simp only [mem_setOf_eq, one_div, norm_pow, norm_neg, one_mem,
-    CStarRing.norm_of_mem_unitary, one_pow, RCLike.norm_natCast, one_mul, norm_inv, norm_mul,
-    norm_div, Real.norm_eq_abs, norm_zpow]
+  simp only [one_div, norm_pow, norm_neg, one_mem, CStarRing.norm_of_mem_unitary, one_pow,
+    RCLike.norm_natCast, one_mul, norm_inv, norm_mul, norm_div, Real.norm_eq_abs, norm_zpow]
   rw [div_eq_mul_inv]
   rw [mul_assoc]
   gcongr
   have := summand_bound_of_mem_verticalStrip (k := (k + 2)) (by norm_cast; omega) ![1,n] hB hs
-  simp only [coe_setOf, Fin.isValue, Matrix.cons_val_zero, Int.cast_one, one_mul,
-    Matrix.cons_val_one, Matrix.cons_val_fin_one, Int.cast_natCast, neg_add_rev, ge_iff_le] at *
+  simp only [Fin.isValue, Matrix.cons_val_zero, Int.cast_one, one_mul, Matrix.cons_val_one,
+    Matrix.cons_val_fin_one, Int.cast_natCast, neg_add_rev, ge_iff_le] at *
   simp_rw [← zpow_natCast, ← zpow_neg]
   convert this
   · rw [Int.natCast_add]
@@ -1258,7 +1254,7 @@ theorem auxp_series_ite_deriv_uexp''' (k : ℕ) :
     {z : ℂ | 0 < z.im} := by
   intro x hx
   have := aut_series_ite_deriv_uexp2 k ⟨x, hx⟩
-  simp only [one_div, coe_mk_subtype] at *
+  simp only [one_div] at *
   rw [this]
   have h2 := tsum_ider_der_eq k ⟨x, hx⟩
   simpa using h2
@@ -1298,8 +1294,7 @@ theorem tsum_aexp_contDiffOn (k : ℕ) :
     congr 1
     apply derivWithin_congr
     · have h21 := (iter_div_aut_add n m).symm
-      simp only [Nat.cast_le, one_div, mem_setOf_eq, coe_setOf, image_univ, Subtype.forall,
-        Int.cast_natCast] at *
+      simp only [Nat.cast_le, one_div, mem_setOf_eq, Subtype.forall, Int.cast_natCast] at *
       intro v hv
       have h22 := h21 hv
       simp only [mem_setOf_eq, Pi.add_apply] at *
@@ -1326,13 +1321,13 @@ theorem aux_iter_der_tsum (k : ℕ) (hk : 1 ≤ k) (x : ℍ) :
       (-1) ^ (k : ℕ) * (k : ℕ)! * ∑' n : ℤ, 1 / ((x : ℂ) + n) ^ (k + 1 : ℕ) := by
   rw [iteratedDerivWithin_add ?_ ?_]
   · have h1 := aut_iter_deriv 0 k x.2
-    simp only [Int.cast_zero, add_zero, one_div, UpperHalfPlane.coe] at *
+    simp only [Int.cast_zero, add_zero, one_div] at *
     rw [h1]
     have := aut_series_ite_deriv_uexp2 k x
-    simp only [one_div, UpperHalfPlane.coe] at *
+    simp only [one_div] at *
     rw [this]
     have h2 := tsum_ider_der_eq k ⟨x, x.2⟩
-    simp only [one_div, mem_setOf_eq] at h2
+    simp only [one_div] at h2
     rw [h2]
     rw [tsum_int_eq_zero_add_tsum_pnat]
     · simp only [Int.cast_zero, add_zero, Int.cast_natCast, Int.cast_neg]
@@ -1453,7 +1448,7 @@ theorem q_exp_iden'' (k : ℕ) (hk : 2 ≤ k) :
   intro z hz
   simp only [Pi.add_apply]
   have := EisensteinSeries_Identity ⟨z, hz⟩
-  simp only [tsub_pos_iff_lt, coe_mk_subtype, one_div] at *
+  simp only [tsub_pos_iff_lt, one_div] at *
   rw [this]
   congr
   ext n
@@ -1522,7 +1517,7 @@ theorem q_exp_iden (k : ℕ) (hk : 2 ≤ k) (z : ℍ) :
     intro b
     rw [← mul_assoc]
     ring_nf
-  simp only [UpperHalfPlane.coe, neg_mul, neg_inj] at *
+  simp only [neg_mul, neg_inj] at *
   rw [hee]
   rw [← mul_assoc]
   have he2 : 2 * ↑π * Complex.I * (2 * ↑π * Complex.I) ^ (k - 1) = (2 * ↑π * Complex.I) ^ k :=
@@ -1706,7 +1701,7 @@ theorem summable_diff_right_a (z : ℍ) (d : ℕ+) :
   apply this.congr
   intro b
   have hz := ne_zero z
-  simp [UpperHalfPlane.coe] at *
+  simp at *
   grind
 
 theorem summable_diff_right (z : ℍ) (d : ℕ+) :
@@ -1719,7 +1714,7 @@ theorem summable_diff_right (z : ℍ) (d : ℕ+) :
     apply this.congr
     intro b
     have hz := ne_zero z
-    simp [UpperHalfPlane.coe] at *
+    simp at *
     grind
 
 lemma sum_int_pnatt (z : ℍ) (d : ℕ+) :

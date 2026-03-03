@@ -162,11 +162,11 @@ lemma MDifferentiable_div {F G : ℍ → ℂ}
     (hG_ne : ∀ z : ℍ, G z ≠ 0) :
     MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => F z / G z) := by
   intro τ
-  suffices h : DifferentiableAt ℂ ((fun z => F z / G z) ∘ ofComplex) τ.val by
+  suffices h : DifferentiableAt ℂ ((fun z => F z / G z) ∘ ofComplex) ↑τ by
     have h_eq : ((fun z => F z / G z) ∘ ofComplex) ∘ UpperHalfPlane.coe = fun z => F z / G z := by
       ext x; simp [Function.comp, ofComplex_apply]
     rw [← h_eq]; exact DifferentiableAt_MDifferentiableAt h
-  have h_eq : (fun z => F z / G z) ∘ ofComplex =ᶠ[nhds τ.val]
+  have h_eq : (fun z => F z / G z) ∘ ofComplex =ᶠ[nhds ↑τ]
       (F ∘ ofComplex) / (G ∘ ofComplex) := by
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds τ.2] with w hw
     simp [Function.comp, Pi.div_apply, ofComplex_apply_of_im_pos hw]
