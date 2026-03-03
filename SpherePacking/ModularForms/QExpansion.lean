@@ -23,18 +23,7 @@ lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n‖ * r
     Tendsto (fun z : ℍ ↦ ∑' n, a n * cexp (2 * π * I * z * n)) atImInfty (𝓝 (a 0)) := by
   convert tendsto_tsum_of_dominated_convergence (f := fun z n ↦ a n * cexp (2 * π * I * z * n))
     (𝓕 := atImInfty) (g := Set.indicator {0} (fun _ ↦ a 0)) ha ?_ ?_
-  · rw [← tsum_subtype]
-    convert (Finset.tsum_subtype {0} (fun _ ↦ a 0)).symm with x
-    · rw [Finset.sum_const, Finset.card_singleton, one_smul]
-    · -- Why did this get so complicated all of a sudden
-      ext n
-      simp only [Set.mem_singleton_iff]
-      constructor
-      · intro hn
-        rw [hn]
-        exact Finset.singleton_subset_set_iff.mp fun ⦃a⦄ a ↦ a
-      · intro hn
-        exact Finset.mem_zero.mp hn
+  · simp
   · intro k
     rcases eq_or_ne k 0 with (rfl | hk)
     · simp

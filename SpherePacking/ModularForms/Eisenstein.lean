@@ -588,12 +588,6 @@ theorem E4E6_coeff_zero_eq_zero :
           (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)) =
       qExpansion 1 (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
         qExpansion 1 (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12) := by
-    rw [show qExpansion (1 : ℕ)
-      ⇑((((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
-        (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)) =
-      qExpansion (1 : ℕ)
-        (⇑(((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
-          ⇑(((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)) by rfl]
     simpa using
       (qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ))
         (hh := by positivity) (hΓ := by simp)

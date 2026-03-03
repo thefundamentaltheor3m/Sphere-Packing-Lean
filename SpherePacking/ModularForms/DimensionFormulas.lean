@@ -437,62 +437,39 @@ f^3 = a^3 E₆, but now this would mean that Δ = 0 or a = 0, which is a contrad
 lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
     Module.rank ℂ (ModularForm (CongruenceSubgroup.Gamma 1) k) =
     1 + Module.rank ℂ (CuspForm (CongruenceSubgroup.Gamma 1) k) := by
-    have h1 : Module.rank ℂ (CuspFormSubmodule (CongruenceSubgroup.Gamma 1) k) =
+  have h1 : Module.rank ℂ (CuspFormSubmodule (CongruenceSubgroup.Gamma 1) k) =
       Module.rank ℂ (CuspForm (CongruenceSubgroup.Gamma 1) k) := by
-      apply LinearEquiv.rank_eq
-      have := CuspForm_iso_CuspFormSubmodule Γ(1) k
-      exact _root_.id this.symm
-    rw [← h1, ← Submodule.rank_quotient_add_rank (CuspFormSubmodule (CongruenceSubgroup.Gamma 1) k)]
-    congr
-    rw [rank_eq_one_iff ]
-    refine ⟨Submodule.Quotient.mk (E k hk), ?_, ?_⟩
-    · intro hq
-      rw [Submodule.Quotient.mk_eq_zero] at hq
-      have := IsCuspForm_iff_coeffZero_eq_zero k (E k hk)
-      rw [IsCuspForm] at this
-      rw [this, Ek_q_exp_zero k hk hk2] at hq
-      aesop
-    intro v
-    have := Quotient.exists_rep v
-    obtain ⟨f, hf⟩ := this
-    use ((qExpansion 1 f).coeff 0)
-    rw [← Submodule.Quotient.mk_smul, ← hf ]
-    have : ⟦f⟧ = Submodule.Quotient.mk f
-      (p := (CuspFormSubmodule (CongruenceSubgroup.Gamma 1) k) ):= by rfl
-    rw [this, Submodule.Quotient.eq, CuspFormSubmodule_mem_iff_coeffZero_eq_zero]
-    set c : ℂ := (qExpansion 1 f).coeff 0
-    have hsub1 : qExpansion 1 ⇑(c • E k hk - f) = qExpansion 1 (⇑(c • E k hk) - ⇑f) := by rfl
-    have hsub2 : qExpansion 1 (⇑(c • E k hk) - ⇑f) =
-        qExpansion 1 ⇑(c • E k hk) - qExpansion 1 ⇑f := by
-      simpa using (qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ))
-        (hh := by positivity) (hΓ := by simp) (f := (c • E k hk)) (g := f))
-    have hmain : (PowerSeries.coeff 0) (qExpansion 1 ⇑(c • E k hk) - qExpansion 1 ⇑f) = 0 := by
-      have hsmul : qExpansion 1 ⇑(c • E k hk) = c • qExpansion 1 (E k hk) := by
-        calc
-          qExpansion 1 ⇑(c • E k hk) = qExpansion 1 (c • ⇑(E k hk)) := by rfl
-          _ = c • qExpansion 1 (E k hk) := by
-            simpa using (qExpansion_smul2 1 c (E k hk)).symm
-      have hcoeff :
-          (PowerSeries.coeff 0) (qExpansion 1 ⇑(c • E k hk) - qExpansion 1 ⇑f) =
-          (PowerSeries.coeff 0) (c • qExpansion 1 (E k hk) - qExpansion 1 ⇑f) := by
-        simpa using congrArg (fun ps => (PowerSeries.coeff 0) (ps - qExpansion 1 ⇑f)) hsmul
-      have hfinal : (PowerSeries.coeff 0) (c • qExpansion 1 (E k hk) - qExpansion 1 ⇑f) = 0 := by
-        have hc := Ek_q_exp_zero k hk hk2
-        rw [← Nat.cast_one (R := ℝ)]
-        simp [PowerSeries.coeff_zero_eq_constantCoeff, map_sub, smul_eq_mul, hc, c]
-      exact hcoeff.trans hfinal
-    have hrew1 :
-        (PowerSeries.coeff 0) (qExpansion 1 ⇑(c • E k hk - f)) =
-        (PowerSeries.coeff 0) (qExpansion 1 (⇑(c • E k hk) - ⇑f)) := by
-      exact congrArg (PowerSeries.coeff 0) hsub1
-    have hrew2 :
-        (PowerSeries.coeff 0) (qExpansion 1 (⇑(c • E k hk) - ⇑f)) =
-        (PowerSeries.coeff 0) (qExpansion 1 ⇑(c • E k hk) - qExpansion 1 ⇑f) := by
-      exact congrArg (PowerSeries.coeff 0) hsub2
-    have hrew :
-        (PowerSeries.coeff 0) (qExpansion 1 ⇑(c • E k hk - f)) =
-        (PowerSeries.coeff 0) (qExpansion 1 ⇑(c • E k hk) - qExpansion 1 ⇑f) := hrew1.trans hrew2
-    exact hrew.trans hmain
+    simpa using LinearEquiv.rank_eq (CuspForm_iso_CuspFormSubmodule Γ(1) k).symm
+  rw [← h1, ← Submodule.rank_quotient_add_rank (CuspFormSubmodule (CongruenceSubgroup.Gamma 1) k)]
+  congr
+  rw [rank_eq_one_iff]
+  refine ⟨Submodule.Quotient.mk (E k hk), ?_, ?_⟩
+  · intro hq
+    rw [Submodule.Quotient.mk_eq_zero, CuspFormSubmodule_mem_iff_coeffZero_eq_zero,
+      Ek_q_exp_zero k hk hk2] at hq
+    simpa using hq
+  · intro v
+    obtain ⟨f, rfl⟩ := Quotient.exists_rep v
+    refine ⟨(qExpansion 1 f).coeff 0, ?_⟩
+    change Submodule.Quotient.mk (((qExpansion 1 f).coeff 0) • E k hk) = Submodule.Quotient.mk f
+    rw [Submodule.Quotient.eq, CuspFormSubmodule_mem_iff_coeffZero_eq_zero]
+    let c : ℂ := (qExpansion 1 f).coeff 0
+    change (PowerSeries.coeff 0) (qExpansion 1 ⇑(c • E k hk - f)) = 0
+    have hqsub :
+        qExpansion 1 ⇑(c • E k hk - f) =
+          qExpansion 1 ⇑(c • E k hk) - qExpansion 1 ⇑f := by
+      simpa using
+        (qExpansion_sub (Γ := Γ(1)) (h := (1 : ℕ)) (hh := by positivity) (hΓ := by simp)
+          (f := c • E k hk) (g := f))
+    have hsmul : qExpansion 1 ⇑(c • E k hk) = c • qExpansion 1 (E k hk) := by
+      calc
+        qExpansion 1 ⇑(c • E k hk) = qExpansion 1 (c • ⇑(E k hk)) := by rfl
+        _ = c • qExpansion 1 (E k hk) := by
+          simpa using (qExpansion_smul2 1 c (E k hk)).symm
+    rw [hqsub, hsmul]
+    rw [← Nat.cast_one (R := ℝ)]
+    simp [PowerSeries.coeff_zero_eq_constantCoeff, map_sub, smul_eq_mul, Ek_q_exp_zero k hk hk2,
+      c]
 
 theorem dim_weight_two : Module.rank ℂ (ModularForm Γ(1) ↑2) = 0 := by
   rw [@rank_zero_iff_forall_zero]

@@ -792,6 +792,10 @@ theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
 
 theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (1 / 2 : ℂ) x) atImInfty (𝓝 1) := by
+  have hnorm (z : ℍ) (k : ℤ) :
+      ‖cexp (2 * π * I * k * (1 / 2 : ℂ) + π * I * k ^ 2 * z)‖ = rexp (-π * k ^ 2 * z.im) := by
+    simpa [jacobiTheta₂_term, coe_im] using
+      (norm_jacobiTheta₂_term k (1 / 2 : ℂ) (z : ℂ))
   simp_rw [jacobiTheta₂, jacobiTheta₂_term]
   convert tendsto_tsum_of_dominated_convergence
     (f := fun (z : ℍ) (n : ℤ) ↦ cexp (2 * π * I * n * (1 / 2 : ℂ) + π * I * n ^ 2 * z))
@@ -812,24 +816,13 @@ theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     · subst hk
       simp
     · rw [tendsto_zero_iff_norm_tendsto_zero]
-      have hnorm (z : ℍ) :
-          ‖cexp (2 * π * I * k * (1 / 2 : ℂ) + π * I * k ^ 2 * z)‖ = rexp (-π * k ^ 2 * z.im) := by
-        simpa [jacobiTheta₂_term, coe_im] using
-          (norm_jacobiTheta₂_term k (1 / 2 : ℂ) (z : ℂ))
       simp_rw [hnorm]
       have hk2_pos : 0 < (k : ℝ) ^ 2 := by
         exact sq_pos_of_ne_zero (Int.cast_ne_zero.mpr hk)
-      have hcoef_neg : (-π * (k : ℝ) ^ 2) < 0 := by
-        nlinarith [Real.pi_pos, hk2_pos]
-      have harg : Tendsto (fun z : ℍ ↦ -π * (k : ℝ) ^ 2 * z.im) atImInfty atBot := by
-        exact tendsto_im_atImInfty.const_mul_atTop_of_neg hcoef_neg
-      exact (Real.tendsto_exp_atBot).comp harg
+      exact (Real.tendsto_exp_atBot).comp
+        (tendsto_im_atImInfty.const_mul_atTop_of_neg (by nlinarith [Real.pi_pos, hk2_pos]))
   · rw [eventually_atImInfty]
     use 1, fun z hz k ↦ ?_
-    have hnorm (z : ℍ) (k : ℤ) :
-        ‖cexp (2 * π * I * k * (1 / 2 : ℂ) + π * I * k ^ 2 * z)‖ = rexp (-π * k ^ 2 * z.im) := by
-      simpa [jacobiTheta₂_term, coe_im] using
-        (norm_jacobiTheta₂_term k (1 / 2 : ℂ) (z : ℂ))
     rw [hnorm]
     have hcoef_nonpos : (-π * (k : ℝ) ^ 2) ≤ 0 := by
       nlinarith [Real.pi_pos, sq_nonneg (k : ℝ)]
