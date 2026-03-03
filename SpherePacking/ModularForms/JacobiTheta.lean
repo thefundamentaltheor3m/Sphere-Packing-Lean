@@ -302,10 +302,10 @@ lemma H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂_SIF :=
       let f : ℂ → ℂ × ℂ := fun t : ℂ => (t / 2, t)
       let g : ℂ × ℂ → ℂ := fun p => jacobiTheta₂ p.1 p.2
       have hg : DifferentiableAt ℂ g (f (τ : ℂ)) := by
-        simpa [f] using (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
+        simpa [f] using (hasFDerivAt_jacobiTheta₂ ((τ : ℂ) / 2) τ.2).differentiableAt
       have hf : DifferentiableAt ℂ f (τ : ℂ) :=
         (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
-      simpa [f, g] using (DifferentiableAt.fun_comp' τ.1 hg hf)
+      simpa [f, g] using (DifferentiableAt.fun_comp' (τ : ℂ) hg hf)
     have h_prod : DifferentiableAt ℂ (fun t : ℂ => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t)
         (τ : ℂ) := h_exp.mul h_theta
     simpa [F] using h_prod.pow 4
