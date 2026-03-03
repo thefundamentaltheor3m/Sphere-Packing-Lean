@@ -129,14 +129,12 @@ lemma IteratedDeriv_smul (a : ℂ) (f : ℂ → ℂ) (m : ℕ) :
     rw [iteratedDeriv_succ, iteratedDeriv_succ, hm]
     ext x
     rw [@Pi.smul_def]
-    exact deriv_const_smul' a ..
+    exact deriv_const_smul_field a ..
 
 
 lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
-    (a • qExpansion n f) = (qExpansion n (a • f)) := by
-  simpa using
-    (qExpansion_smul (Γ := Γ(n)) (h := n)
-      (hh := by exact Nat.cast_pos.mpr (Nat.pos_of_neZero n))
+    (a • qExpansion n f) = (qExpansion n (a • f)) :=
+  (qExpansion_smul (Γ := Γ(n)) (h := n) (hh := Nat.cast_pos.mpr (Nat.pos_of_neZero n))
       (hΓ := by simp) a f).symm
 
 instance : FunLike (ℍ → ℂ) ℍ ℂ := { coe := fun ⦃a₁⦄ ↦ a₁, coe_injective' := fun ⦃_ _⦄ a ↦ a}
@@ -163,8 +161,7 @@ lemma qExpansion_ext2 {α β : Type*} [FunLike α ℍ ℂ] [FunLike β ℍ ℂ] 
 lemma IteratedDeriv_zero_fun (n : ℕ) (z : ℂ) : iteratedDeriv n (fun _ : ℂ => (0 : ℂ)) z = 0 := by
   induction n with
   | zero => simp
-  | succ n hn =>
-    simp [iteratedDeriv_succ', hn]
+  | succ n hn => simp
 
 lemma iteratedDeriv_const_eq_zero (m : ℕ) (hm : 0 < m) (c : ℂ) :
     iteratedDeriv m (fun _ : ℂ => c) = fun _ : ℂ => 0 := by
