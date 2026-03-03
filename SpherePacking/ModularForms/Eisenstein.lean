@@ -684,42 +684,31 @@ lemma Delta_ne_zero : Delta ≠ 0 := by
   rw [@DFunLike.ne_iff]
   refine ⟨UpperHalfPlane.I, this⟩
 
-lemma asdf : TendstoLocallyUniformlyOn (fun n : ℕ ↦ ∏ x ∈ Finset.range n,
-    fun y : ℂ ↦ (1 - y ^ (x + 1))) (fun x ↦ ∏' i, (1 - x ^ (i + 1))) atTop (Metric.ball 0 (1/2 : ℝ))
+lemma asdf : TendstoLocallyUniformlyOn
+    (fun n : ℕ ↦ fun y : ℂ => ∏ x ∈ Finset.range n, (1 - y ^ (x + 1)))
+    (fun x : ℂ ↦ ∏' i, (1 - x ^ (i + 1))) atTop
+    (Metric.ball (0 : ℂ) (1/2 : ℝ))
       := by
-  have := prod_tendstoUniformlyOn_tprod' ( Metric.closedBall 0 (1/2)) (f:= fun x : ℕ => fun y : ℂ =>
-    -y ^ (x + 1) )
-    (by exact isCompact_closedBall 0 (1 / 2)) (fun n => (1/2)^(n +1)) ?_ ?_ ?_
-  · apply TendstoLocallyUniformlyOn.mono (s := Metric.closedBall 0 (1/2))
-    · simp at *
-      have H:= this.tendstoLocallyUniformlyOn
-      conv =>
-        enter [1]
-        ext y
-        conv =>
-          enter [2]
-          ext n y
-          rw [sub_eq_add_neg]
-      conv =>
-        enter [2]
-        ext y
-        conv =>
-          enter [1]
-          ext n
-          rw [sub_eq_add_neg]
-      convert H
+  have hclosed :
+      TendstoUniformlyOn (fun n : ℕ ↦ fun y : ℂ => ∏ x ∈ Finset.range n, (1 - y ^ (x + 1)))
+        (fun x : ℂ ↦ ∏' i, (1 - x ^ (i + 1))) atTop (Metric.closedBall (0 : ℂ) (1/2 : ℝ)) := by
+    have hsum : Summable (fun n : ℕ => (1 / 2 : ℝ) ^ (n + 1)) := by
+      rw [@summable_nat_add_iff, summable_geometric_iff_norm_lt_one]
       simp
-    exact ball_subset_closedBall
-  · rw [@summable_nat_add_iff, summable_geometric_iff_norm_lt_one]
-    simp
-    exact two_inv_lt_one
-  · intro n x hx
-    simp at *
-    rw [← inv_pow]
-    apply pow_le_pow_left₀
-    · exact norm_nonneg x
-    exact hx
-  fun_prop
+      exact two_inv_lt_one
+    simpa [sub_eq_add_neg] using
+      (hsum.hasProdUniformlyOn_nat_one_add (f := fun n : ℕ => fun y : ℂ => -y ^ (n + 1))
+        (hK := isCompact_closedBall (0 : ℂ) (1 / 2))
+        (h := Filter.Eventually.of_forall (fun n (x : ℂ) hx => by
+          have hx' : ‖x‖ ≤ (1 / 2 : ℝ) := by
+            simpa [Metric.mem_closedBall, dist_eq_norm] using hx
+          calc
+            ‖-x ^ (n + 1)‖ = ‖x‖ ^ (n + 1) := by simp
+            _ ≤ (1 / 2 : ℝ) ^ (n + 1) := by
+              exact pow_le_pow_left₀ (norm_nonneg x) hx' _))
+        (hcts := fun n => by fun_prop)).tendstoUniformlyOn_finsetRange
+  exact TendstoLocallyUniformlyOn.mono (s := Metric.closedBall (0 : ℂ) (1/2 : ℝ))
+    hclosed.tendstoLocallyUniformlyOn ball_subset_closedBall
 
 theorem diffwithinat_prod_1 :
     DifferentiableWithinAt ℂ (fun (y : ℂ) ↦ ∏' (i : ℕ), (1 - y ^ (i + 1)) ^ 24) (ball 0 (1 / 2)) 0
@@ -738,14 +727,12 @@ theorem diffwithinat_prod_1 :
   · simp
     use 0
     intro b hb
-    have := DifferentiableOn.finset_prod (u := Finset.range b)
-      (f := fun x : ℕ => fun y : ℂ => 1 - y ^ (x + 1))
-      (s := Metric.ball 0 (1/2)) ?_
-    · simp at this
-      convert this
-    simp
-    intro i hi
-    fun_prop
+    simpa [Finset.prod_fn] using
+      (DifferentiableOn.finset_prod (u := Finset.range b)
+        (f := fun x : ℕ => fun y : ℂ => 1 - y ^ (x + 1))
+        (s := Metric.ball 0 (1 / 2)) (by
+          intro i hi
+          fun_prop))
   exact isOpen_ball
 
 
@@ -977,8 +964,9 @@ theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
     set r : ℂ := cexp (2 * ↑Real.pi * Complex.I * z) with hr
     have hr_norm : ‖r‖ < 1 := by
       simpa [hr] using exp_upperHalfPlane_lt_one z
-    have hs : Summable fun n : ℕ => (n : ℂ) * r ^ n / (1 - r ^ n) :=
-      logDeriv_q_expo_summable r hr_norm
+    have hs : Summable fun n : ℕ => (n : ℂ) * r ^ n / (1 - r ^ n) := by
+      simpa [pow_one] using
+        (summable_norm_pow_mul_geometric_div_one_sub (k := 1) (r := r) hr_norm)
     refine (hs.comp_injective PNat.coe_injective).congr ?_
     intro n
     have hpow : r ^ (n : ℕ) = cexp (2 * ↑Real.pi * Complex.I * (↑n : ℂ) * z) := by
