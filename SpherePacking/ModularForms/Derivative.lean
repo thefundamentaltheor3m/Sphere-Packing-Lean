@@ -1,3 +1,5 @@
+import SpherePacking.ForMathlib.MDifferentiableFunProp
+
 import SpherePacking.ModularForms.Eisenstein
 import Mathlib.Analysis.Calculus.DiffContOnCl
 
@@ -42,6 +44,7 @@ lemma DifferentiableAt_MDifferentiableAt {G : ℂ → ℂ} {z : ℍ}
 The derivative operator `D` preserves MDifferentiability.
 If `F : ℍ → ℂ` is MDifferentiable, then `D F` is also MDifferentiable.
 -/
+@[fun_prop]
 theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D F) := fun z =>
   let hDiffOn : DifferentiableOn ℂ (F ∘ ofComplex) {z : ℂ | 0 < z.im} :=
@@ -53,6 +56,7 @@ theorem D_differentiable {F : ℍ → ℂ} (hF : MDifferentiable 𝓘(ℂ) 𝓘(
 /--
 TODO: Move this to E2.lean.
 -/
+@[fun_prop]
 theorem E₂_holo' : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) E₂ := by
   rw [UpperHalfPlane.mdifferentiable_iff]
   have hη : DifferentiableOn ℂ η _ :=
@@ -150,6 +154,25 @@ theorem D_cube (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     _ = D F * F ^ 2 + F * D (F ^ 2) := by rw [D_mul F (F ^ 2) hF hF2]
     _ = D F * F ^ 2 + F * (2 * F * D F) := by rw [D_sq F hF]
     _ = 3 * F^2 * D F := by ring_nf
+
+/-- Division of MDifferentiable functions on ℍ is MDifferentiable, when the denominator
+is everywhere nonzero. -/
+lemma MDifferentiable_div {F G : ℍ → ℂ}
+    (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G)
+    (hG_ne : ∀ z : ℍ, G z ≠ 0) :
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => F z / G z) := by
+  intro τ
+  suffices h : DifferentiableAt ℂ ((fun z => F z / G z) ∘ ofComplex) τ.val by
+    have h_eq : ((fun z => F z / G z) ∘ ofComplex) ∘ UpperHalfPlane.coe = fun z => F z / G z := by
+      ext x; simp [Function.comp, ofComplex_apply]
+    rw [← h_eq]; exact DifferentiableAt_MDifferentiableAt h
+  have h_eq : (fun z => F z / G z) ∘ ofComplex =ᶠ[nhds τ.val]
+      (F ∘ ofComplex) / (G ∘ ofComplex) := by
+    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds τ.2] with w hw
+    simp [Function.comp, Pi.div_apply, ofComplex_apply_of_im_pos hw]
+  exact ((MDifferentiableAt_DifferentiableAt (hF τ)).div
+    (MDifferentiableAt_DifferentiableAt (hG τ))
+    (by simp [Function.comp]; exact hG_ne _)).congr_of_eventuallyEq h_eq.symm
 
 @[simp]
 theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
@@ -367,6 +390,7 @@ theorem serre_D_mul (k₁ k₂ : ℤ) (F G : ℍ → ℂ) (hF : MDifferentiable 
 The Serre derivative preserves MDifferentiability.
 If `F : ℍ → ℂ` is MDifferentiable, then `serre_D k F` is also MDifferentiable.
 -/
+@[fun_prop]
 theorem serre_D_differentiable {F : ℍ → ℂ} {k : ℂ}
     (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
     MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D k F) := by
@@ -593,7 +617,34 @@ under the slash action of weight `k`, then `serre_D k F` is invariant under the 
 of weight `k + 2`.
 -/
 theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
-    ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by sorry
+    ∀ γ : SL(2, ℤ), serre_D k F ∣[k + 2] γ = serre_D k (F ∣[k] γ) := by
+  intro γ
+  have hD := D_slash k F hF γ
+  have hE₂ := E₂_slash_transform γ
+  have hmul := ModularForm.mul_slash_SL2 (2 : ℤ) k γ E₂ F
+  ext z
+  simp only [serre_D_apply]
+  have hLHS : (serre_D (↑k) F ∣[k + 2] γ) z =
+      (D F ∣[k + 2] γ) z - ↑k * 12⁻¹ * ((E₂ ∣[(2 : ℤ)] γ) z * (F ∣[k] γ) z) := by
+    have h := congrFun hmul z
+    simp only [Pi.mul_apply, show (2 : ℤ) + k = k + 2 from by omega] at h
+    simp only [ModularForm.SL_slash_apply, serre_D_apply, Pi.mul_apply] at h ⊢
+    rw [← h]; ring
+  rw [hLHS]
+  have hE₂z := congrFun hE₂ z
+  simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul] at hE₂z
+  rw [hE₂z]
+  have hDz := congrFun hD z
+  simp only [Pi.sub_apply] at hDz
+  rw [hDz]
+  simp only [show D₂ γ z = (2 * ↑π * I * ↑↑(γ 1 0)) / denom γ ↑z from rfl,
+    riemannZeta_two]
+  have hpi_ne : (↑π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hdenom_ne : denom γ ↑z ≠ 0 := UpperHalfPlane.denom_ne_zero γ z
+  field_simp [hdenom_ne, hpi_ne]
+  ring_nf
+  simp only [I_sq]
+  ring
 
 theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     (γ : SL(2, ℤ)) (h : F ∣[k] γ = F) :
@@ -803,6 +854,43 @@ lemma D_isBoundedAtImInfty_of_bounded {f : ℍ → ℂ}
     _ = M / (π * z.im) := by ring
     _ ≤ M / (π * 1) := by gcongr
     _ = M / π := by ring
+
+/-- The D-derivative of a bounded holomorphic function tends to zero at infinity.
+
+For z with im(z) = y, a Cauchy estimate on a ball of radius y/2 gives
+‖D f z‖ ≤ M / (π · y), which tends to zero as y → ∞. -/
+theorem D_tendsto_zero_of_isBoundedAtImInfty {f : ℍ → ℂ}
+    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
+    (hbdd : IsBoundedAtImInfty f) :
+    Filter.Tendsto (D f) atImInfty (nhds 0) := by
+  obtain ⟨M, A, hMA⟩ := isBoundedAtImInfty_iff.mp hbdd
+  -- ‖D f z‖ ≤ M / (π · z.im) by Cauchy estimate; the bound → 0 since z.im → ∞.
+  suffices h : ∀ᶠ z : ℍ in atImInfty, ‖D f z‖ ≤ M / (π * z.im) by
+    apply squeeze_zero_norm' h
+    have := Filter.tendsto_im_atImInfty.inv_tendsto_atTop.const_mul (M / π)
+    simp only [Pi.inv_apply, mul_zero] at this
+    exact this.congr fun z => by field_simp
+  have h_sphere_bdd : ∀ z : ℍ, 2 * max A 0 + 1 ≤ z.im →
+      ∀ w ∈ Metric.sphere (z : ℂ) (z.im / 2), ‖(f ∘ ofComplex) w‖ ≤ M := by
+    intro z hz_ge w hw
+    have hw_im_pos : 0 < w.im :=
+      closedBall_center_subset_upperHalfPlane z (Metric.sphere_subset_closedBall hw)
+    have hdist : dist w z = z.im / 2 := Metric.mem_sphere.mp hw
+    have habs : |w.im - z.im| ≤ z.im / 2 := by
+      calc |w.im - z.im| = |(w - z).im| := by simp [Complex.sub_im]
+        _ ≤ ‖w - z‖ := abs_im_le_norm _
+        _ = dist w z := (dist_eq_norm _ _).symm
+        _ = z.im / 2 := hdist
+    have hw_im_ge_A : A ≤ w.im := by linarith [(abs_le.mp habs).1, le_max_left A 0]
+    simpa [ofComplex_apply_of_im_pos hw_im_pos] using hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
+  rw [Filter.eventually_iff_exists_mem]
+  refine ⟨{z : ℍ | 2 * max A 0 + 1 ≤ z.im},
+    (atImInfty_mem _).mpr ⟨_, fun _ h => h⟩, fun z hz => ?_⟩
+  calc ‖D f z‖
+      ≤ M / (2 * π * (z.im / 2)) := norm_D_le_of_sphere_bound (by linarith [z.im_pos])
+          (diffContOnCl_comp_ofComplex_of_mdifferentiable hf
+            (closedBall_center_subset_upperHalfPlane z)) (h_sphere_bdd z hz)
+    _ = M / (π * z.im) := by ring
 
 /-- The Serre derivative of a bounded holomorphic function is bounded at infinity.
 
