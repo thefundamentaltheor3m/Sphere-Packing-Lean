@@ -176,7 +176,6 @@ lemma neg_inv_one_add_eq_ST (z : ℍ) :
     ⟨-1 / ((z : ℂ) + 1), neg_inv_one_add_mem z⟩ = (S * T) • z := by
   apply UpperHalfPlane.ext
   rw [← neg_inv_one_add_eq_ST_coe]
-  norm_cast
 
 lemma neg_inv_eq_S_coe (z : ℍ) :
     -1 / z = UpperHalfPlane.coe (S • z) := by
@@ -191,7 +190,6 @@ lemma neg_inv_eq_S (z : ℍ) :
     ⟨-1 / (z : ℂ), neg_inv_mem z⟩ = S • z := by
   apply UpperHalfPlane.ext
   rw [← neg_inv_eq_S_coe]
-  norm_cast
 
 end transforms_mem
 

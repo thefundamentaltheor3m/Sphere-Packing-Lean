@@ -6,13 +6,7 @@ open UpperHalfPlane TopologicalSpace Set
 
 open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
-lemma pnat_div_upper (n : ℕ+) (z : ℍ) : 0 < (-(n : ℂ) / z).im := by
-  norm_cast
-  rw [div_im, Int.cast_neg, Int.cast_natCast, neg_im, natCast_im, neg_zero, zero_mul, zero_div,
-    neg_re, natCast_re, neg_mul, zero_sub, Left.neg_pos_iff, @div_neg_iff]
-  right
-  simp only [Left.neg_neg_iff, Nat.cast_pos, PNat.pos, mul_pos_iff_of_pos_left, Complex.normSq_pos]
-  exact ⟨z.2, ne_zero z⟩
+lemma pnat_div_upper (n : ℕ+) (z : ℍ) : 0 < (-(n : ℂ) / z).im := im_pnat_div_pos (↑n) z
 
 lemma pos_nat_div_upper (n : ℤ) (hn : 0 < n) (z : ℍ) : 0 < (-(n : ℂ) / z).im := by
   norm_cast

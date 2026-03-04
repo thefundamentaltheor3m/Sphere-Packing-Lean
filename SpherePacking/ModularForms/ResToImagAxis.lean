@@ -64,7 +64,7 @@ theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDifferentiable �
       DifferentiableAt.const_mul ofRealCLM.differentiableAt _ using 1
   apply h_diff.congr_of_eventuallyEq
   filter_upwards [lt_mem_nhds ht] with t ht
-  simp_all only [coe_mk_subtype, ResToImagAxis, ↓reduceDIte]
+  simp_all only [ResToImagAxis, ↓reduceDIte]
   rw [ofComplex_apply_of_im_pos]
 
 /--

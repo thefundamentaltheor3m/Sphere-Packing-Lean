@@ -94,7 +94,6 @@ lemma Multipliable_pow {ι : Type*} (f : ι → ℂ) (hf : Multipliable f) (n : 
   induction n with
   | zero =>
     simp
-    apply multipliable_one
   | succ n hn =>
     conv =>
       enter [1]
