@@ -42,11 +42,22 @@ example : I + (3/2:ℂ) = 3/2 + I := by norm_num1
 example : I + (3/2:ℂ) = 3/2 + I := by norm_num1
 example : 2 * (2.5:ℂ) = 5 := by norm_num1
 
+example : I + (3/2:ℂ) = 3/2 + I := by
+  conv_lhs => norm_num1
+  conv_rhs => norm_num1
+
 -- Playing with the `parse` function
 example : (1 + I) * (1 + I * I * I) = 2 := by norm_num1
 -- #conv norm_numI_parse => ((1 + I) * (1 + I * I * I))
 -- #conv norm_numI_parse => (2 : ℂ)
 -- #conv norm_numI => ((1 + I) * (1 + I * I * I))
+
+example : (1 + I) * (1 + I * I * I) = 2 := by
+  conv_lhs => norm_numI_parse
+  conv_rhs => norm_numI_parse
+  -- rfl -- obviously this fails, demonstrating that `normalize` is necessary
+  -- (a cool example if we ever want to explain how `parse` and `normalize` interact)
+  conv_lhs => norm_num1
 
 example : (1 + I) * (1 + I * I * I) = 2 := by norm_num1
 example : (1 + I) * (1 + I * I * I) = 2 := by norm_num1
