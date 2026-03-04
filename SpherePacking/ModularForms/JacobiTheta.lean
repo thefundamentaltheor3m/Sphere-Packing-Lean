@@ -138,9 +138,8 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
   calc
   _ = cexp (-π * I / x) * jacobiTheta₂ (-1 / (2 * x)) (-1 / x) ^ 4 * x ^ (-2 : ℤ) := by
     rw [modular_slash_S_apply, H₂, Θ₂_as_jacobiTheta₂]
-    simp only [coe_mk_subtype, inv_neg, UpperHalfPlane.coe_mk, mul_neg, mul_pow, ←
-      Complex.exp_nat_mul, Nat.cast_ofNat, Int.reduceNeg, zpow_neg, neg_mul, mul_eq_mul_right_iff,
-      inv_eq_zero]
+    simp only [inv_neg, mul_neg, mul_pow, ← Complex.exp_nat_mul, Nat.cast_ofNat, Int.reduceNeg,
+      zpow_neg, neg_mul, mul_eq_mul_right_iff, inv_eq_zero]
     rw [mul_comm 4, div_mul_cancel₀ _ (by norm_num)]
     left
     congr 3
@@ -182,8 +181,7 @@ lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     rw [neg_mul, ← Complex.exp_add, neg_mul (π : ℂ), neg_div, neg_add_cancel, Complex.exp_zero,
       neg_one_mul]
   _ = -H₄ ⟨x, hx⟩ := by
-    rw [H₄, Θ₄_as_jacobiTheta₂]
-    rfl
+    simp [H₄, Θ₄_as_jacobiTheta₂]
 
 lemma H₃_S_action : (H₃ ∣[(2 : ℤ)] S) = -H₃ := by
   ext x
@@ -275,31 +273,31 @@ section H_MDifferentiable
 
 lemma H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂_SIF := by
   intro τ
-  suffices h_diff : DifferentiableAt ℂ (↑ₕH₂) τ.val by
+  suffices h_diff : DifferentiableAt ℂ (↑ₕH₂) (τ : ℂ) by
     have : (H₂ ∘ ↑ofComplex) ∘ UpperHalfPlane.coe = H₂_SIF := by
       ext x
       simp [H₂_SIF, ofComplex_apply]
     rw [← this]
     exact h_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
-  have hU : {z : ℂ | 0 < z.im} ∈ 𝓝 τ.val := isOpen_upperHalfPlaneSet.mem_nhds τ.2
+  have hU : {z : ℂ | 0 < z.im} ∈ 𝓝 (τ : ℂ) := isOpen_upperHalfPlaneSet.mem_nhds τ.2
   let F : ℂ → ℂ := fun t => (cexp (((π : ℂ) * I / 4) * t) * jacobiTheta₂ (t / 2) t) ^ 4
-  have hF : DifferentiableAt ℂ F τ.val := by
-    have h_exp : DifferentiableAt ℂ (fun t : ℂ => cexp ((π * I / 4) * t)) τ.val := by
-      have : DifferentiableAt ℂ (fun t : ℂ => (π * I / 4) * t) τ.val :=
+  have hF : DifferentiableAt ℂ F (τ : ℂ) := by
+    have h_exp : DifferentiableAt ℂ (fun t : ℂ => cexp ((π * I / 4) * t)) (τ : ℂ) := by
+      have : DifferentiableAt ℂ (fun t : ℂ => (π * I / 4) * t) (τ : ℂ) :=
         (differentiableAt_id.const_mul ((π : ℂ) * I / 4))
       exact this.cexp
-    have h_theta : DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) τ.val := by
+    have h_theta : DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) (τ : ℂ) := by
       let f : ℂ → ℂ × ℂ := fun t : ℂ => (t / 2, t)
       let g : ℂ × ℂ → ℂ := fun p => jacobiTheta₂ p.1 p.2
-      have hg : DifferentiableAt ℂ g (f τ.val) := by
-        simpa [f] using (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
-      have hf : DifferentiableAt ℂ f τ.val :=
+      have hg : DifferentiableAt ℂ g (f (τ : ℂ)) := by
+        simpa [f] using (hasFDerivAt_jacobiTheta₂ ((τ : ℂ) / 2) τ.2).differentiableAt
+      have hf : DifferentiableAt ℂ f (τ : ℂ) :=
         (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
-      simpa [f, g] using (DifferentiableAt.fun_comp' τ.1 hg hf)
+      simpa [f, g] using (DifferentiableAt.fun_comp' (τ : ℂ) hg hf)
     have h_prod : DifferentiableAt ℂ (fun t : ℂ => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t)
-        τ.val := h_exp.mul h_theta
+        (τ : ℂ) := h_exp.mul h_theta
     simpa [F] using h_prod.pow 4
-  have h_ev : F =ᶠ[𝓝 τ.val] (↑ₕH₂) := by
+  have h_ev : F =ᶠ[𝓝 (τ : ℂ)] (↑ₕH₂) := by
     refine Filter.eventually_of_mem hU ?_
     intro z hz
     have h_arg : cexp (((π : ℂ) * I / 4) * z) = cexp (π * I * z / 4) := by
@@ -366,13 +364,13 @@ lemma H₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := by
 
 /-- Differentiability of `t ↦ jacobiTheta₂(t/2, t)` at points in the upper half-plane. -/
 lemma differentiableAt_jacobiTheta₂_half (τ : ℍ) :
-    DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) τ.val := by
+    DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) ↑τ := by
   let f : ℂ → ℂ × ℂ := fun t => (t / 2, t)
-  have hf : DifferentiableAt ℂ f τ.val :=
+  have hf : DifferentiableAt ℂ f ↑τ :=
     (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
-  have hg : DifferentiableAt ℂ (fun p : ℂ × ℂ => jacobiTheta₂ p.1 p.2) (f τ.val) := by
-    simpa [f] using (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
-  simpa [f] using hg.comp τ.val hf
+  have hg : DifferentiableAt ℂ (fun p : ℂ × ℂ => jacobiTheta₂ p.1 p.2) (f ↑τ) := by
+    simpa [f] using (hasFDerivAt_jacobiTheta₂ ((τ : ℂ) / 2) τ.2).differentiableAt
+  simpa [f] using (DifferentiableAt.comp (x := (τ : ℂ)) hg hf)
 
 lemma Θ₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₂ := by
   intro τ
@@ -383,7 +381,7 @@ lemma Θ₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₂ := by
   have hMD := hΘ₂_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
   have : (fun t : ℂ => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t) ∘
       UpperHalfPlane.coe = Θ₂ := by
-    ext x; simp only [Function.comp_apply, Θ₂_as_jacobiTheta₂, coe_mk_subtype]; ring
+    ext x; simp only [Function.comp_apply, Θ₂_as_jacobiTheta₂]; ring_nf
   rwa [this] at hMD
 
 end H_MDifferentiable
@@ -478,7 +476,7 @@ lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
     rw [mul_assoc, im_ofReal_mul, ← Int.cast_pow, ← ofReal_intCast, im_ofReal_mul]
     simp [← mul_assoc]
   have h_sum (z : ℍ) : Summable fun n : ℤ ↦ rexp (-π * n ^ 2 * z.im) := by
-    have := (summable_jacobiTheta₂_term_iff 0 z).mpr z.prop
+    have := (summable_jacobiTheta₂_term_iff 0 z).mpr z.2
     rw [← summable_norm_iff, ← summable_ofReal] at this
     simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, norm_exp_mul_I, h_rw]
       at this
@@ -508,7 +506,7 @@ theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
   simp_rw [Θ₃_term_as_jacobiTheta₂_term]
   apply Summable.norm
   rw [summable_jacobiTheta₂_term_iff]
-  exact z.prop
+  exact z.2
 
 theorem isBoundedAtImInfty_H₄ : IsBoundedAtImInfty H₄ := by
   simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₄, Θ₄]
@@ -523,7 +521,7 @@ theorem isBoundedAtImInfty_H₄ : IsBoundedAtImInfty H₄ := by
   simp_rw [Θ₄_term_as_jacobiTheta₂_term]
   apply Summable.norm
   rw [summable_jacobiTheta₂_term_iff]
-  exact z.prop
+  exact z.2
 
 theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
       ∧ IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] γ) ∧ IsBoundedAtImInfty (H₄ ∣[(2 : ℤ)] γ) := by
@@ -794,12 +792,13 @@ theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
 
 theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (1 / 2 : ℂ) x) atImInfty (𝓝 1) := by
-  simp_rw [jacobiTheta₂, jacobiTheta₂_term, mul_right_comm _ _ (1 / 2 : ℂ), ← mul_div_assoc,
-    mul_one, div_self (G₀ := ℂ) two_ne_zero, one_mul, Complex.exp_add, mul_comm (π * I),
-    exp_int_mul, exp_pi_mul_I, mul_comm, mul_comm I]
-  -- I tried converting this to the formula for jacobiTheta₂ 0 x above, but couldn't
+  have hnorm (z : ℍ) (k : ℤ) :
+      ‖cexp (2 * π * I * k * (1 / 2 : ℂ) + π * I * k ^ 2 * z)‖ = rexp (-π * k ^ 2 * z.im) := by
+    simpa [jacobiTheta₂_term, coe_im] using
+      (norm_jacobiTheta₂_term k (1 / 2 : ℂ) (z : ℂ))
+  simp_rw [jacobiTheta₂, jacobiTheta₂_term]
   convert tendsto_tsum_of_dominated_convergence
-    (f := fun (z : ℍ) (n : ℤ) ↦ (-1) ^ n * cexp (π * I * n ^ 2 * z))
+    (f := fun (z : ℍ) (n : ℤ) ↦ cexp (2 * π * I * n * (1 / 2 : ℂ) + π * I * n ^ 2 * z))
     (𝓕 := atImInfty)
     (g := fun k ↦ if k = 0 then 1 else 0)
     (bound := fun n : ℤ ↦ rexp (-π * n ^ 2)) ?_ ?_ ?_
@@ -817,16 +816,19 @@ theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     · subst hk
       simp
     · rw [tendsto_zero_iff_norm_tendsto_zero]
-      simp_rw [mul_right_comm _ I, norm_mul, norm_zpow, norm_neg, norm_one, one_zpow, one_mul,
-        norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← ofReal_intCast, ← ofReal_pow, im_ofReal_mul,
-        ← mul_assoc]
-      simpa using tendsto_im_atImInfty.const_mul_atTop (by positivity)
+      simp_rw [hnorm]
+      have hk2_pos : 0 < (k : ℝ) ^ 2 := by
+        exact sq_pos_of_ne_zero (Int.cast_ne_zero.mpr hk)
+      exact (Real.tendsto_exp_atBot).comp
+        (tendsto_im_atImInfty.const_mul_atTop_of_neg (by nlinarith [Real.pi_pos, hk2_pos]))
   · rw [eventually_atImInfty]
     use 1, fun z hz k ↦ ?_
-    simp only
-    simp_rw [mul_right_comm _ I, norm_mul, norm_zpow, norm_neg, norm_one, one_zpow, one_mul,
-      norm_exp_mul_I]
-    simpa [← ofReal_intCast, ← ofReal_pow] using le_mul_of_one_le_right (by positivity) hz
+    rw [hnorm]
+    have hcoef_nonpos : (-π * (k : ℝ) ^ 2) ≤ 0 := by
+      nlinarith [Real.pi_pos, sq_nonneg (k : ℝ)]
+    have hmul : (-π * (k : ℝ) ^ 2) * z.im ≤ (-π * (k : ℝ) ^ 2) * 1 := by
+      exact mul_le_mul_of_nonpos_left hz hcoef_nonpos
+    simpa using Real.exp_le_exp.mpr hmul
 
 theorem Θ₂_tendsto_atImInfty : Tendsto Θ₂ atImInfty (𝓝 0) := by
   rw [funext Θ₂_as_jacobiTheta₂, ← zero_mul (2 : ℂ)]
