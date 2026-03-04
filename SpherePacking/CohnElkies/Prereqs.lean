@@ -3,25 +3,29 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+module
+
 /-
 ## THIS FILE SHOULD EVENTUALLY BE REMOVED AND THE REFERENCES IN COHN-ELKIES MUST BE REPLACED WITH
 ## THE RIGHT ONES (NOT THE ONES FROM HERE). THIS FILE IS JUST A TEMPORARY SOLUTION TO MAKE THE
 ## COHN-ELKIES FILE WORK.
 -/
-import Mathlib.Algebra.Module.ZLattice.Covolume
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
-import Mathlib.Analysis.RCLike.Inner
-import Mathlib.LinearAlgebra.BilinearForm.DualLattice
-import Mathlib.Order.CompletePartialOrder
-import Mathlib.Topology.Metrizable.Basic
-import Mathlib.Topology.Compactness.Lindelof
-import Mathlib.Topology.EMetricSpace.Paracompact
-import Mathlib.Topology.Separation.CompletelyRegular
+public import Mathlib.Algebra.Module.ZLattice.Covolume
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+public import Mathlib.Analysis.RCLike.Inner
+public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
+public import Mathlib.Order.CompletePartialOrder
+public import Mathlib.Topology.Metrizable.Basic
+public import Mathlib.Topology.Compactness.Lindelof
+public import Mathlib.Topology.EMetricSpace.Paracompact
+public import Mathlib.Topology.Separation.CompletelyRegular
 
-import SpherePacking.Basic.SpherePacking
-import SpherePacking.Basic.PeriodicPacking
-import SpherePacking.ForMathlib.InvPowSummability
+public import SpherePacking.Basic.SpherePacking
+public import SpherePacking.Basic.PeriodicPacking
+public import SpherePacking.ForMathlib.InvPowSummability
+
+@[expose] public section
 
 open BigOperators Bornology
 

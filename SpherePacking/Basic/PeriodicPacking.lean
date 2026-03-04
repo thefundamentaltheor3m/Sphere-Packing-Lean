@@ -3,14 +3,18 @@ Copyright (c) 2024 Gareth Ma. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gareth Ma
 -/
-import Mathlib.Algebra.Module.ZLattice.Covolume
-import Mathlib.Dynamics.Ergodic.Action.Regular
+module
 
-import SpherePacking.Basic.SpherePacking
-import SpherePacking.ForMathlib.ENNReal
-import SpherePacking.ForMathlib.Encard
-import SpherePacking.ForMathlib.ENat
-import SpherePacking.ForMathlib.ZLattice
+public import Mathlib.Algebra.Module.ZLattice.Covolume
+public import Mathlib.Dynamics.Ergodic.Action.Regular
+
+public import SpherePacking.Basic.SpherePacking
+public import SpherePacking.ForMathlib.ENNReal
+public import SpherePacking.ForMathlib.Encard
+public import SpherePacking.ForMathlib.ENat
+public import SpherePacking.ForMathlib.ZLattice
+
+@[expose] public section
 
 -- import Mathlib
 

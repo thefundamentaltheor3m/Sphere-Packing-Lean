@@ -1,8 +1,12 @@
-import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Analysis.Normed.Ring.Lemmas
-import Mathlib.Data.Int.Star
-import Mathlib.NumberTheory.TsumDivisorsAntidiagonal
-import Mathlib.Tactic
+module
+
+public import Mathlib.Algebra.Order.Ring.Star
+public import Mathlib.Analysis.Normed.Ring.Lemmas
+public import Mathlib.Data.Int.Star
+public import Mathlib.NumberTheory.TsumDivisorsAntidiagonal
+public import Mathlib.Tactic
+
+@[expose] public section
 
 
 
@@ -40,4 +44,3 @@ lemma swap_involutive {α : Type*} (b : Fin 2 → α) : swap (swap b) = b := by
 def swap_equiv {α : Type*} : Equiv (Fin 2 → α) (Fin 2 → α) := Equiv.mk swap swap
   (by rw [Function.LeftInverse]; apply swap_involutive)
   (by rw [Function.RightInverse]; apply swap_involutive)
-

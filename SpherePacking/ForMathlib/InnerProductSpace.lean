@@ -1,4 +1,8 @@
-import Mathlib.Analysis.InnerProductSpace.Basic
+module
+
+public import Mathlib.Analysis.InnerProductSpace.Basic
+
+@[expose] public section
 
 namespace InnerProductSpace
 

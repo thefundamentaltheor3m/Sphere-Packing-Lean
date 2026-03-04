@@ -5,11 +5,15 @@ Authors: Sidharth Hariharan
 
 M4R File
 -/
+module
 
-import SpherePacking.ForMathlib.Fourier
-import SpherePacking.ForMathlib.SpecificLimits
-import SpherePacking.ForMathlib.tprod
-import SpherePacking.ModularForms.Eisenstein
+
+public import SpherePacking.ForMathlib.Fourier
+public import SpherePacking.ForMathlib.SpecificLimits
+public import SpherePacking.ForMathlib.tprod
+public import SpherePacking.ModularForms.Eisenstein
+
+@[expose] public section
 
 
 /-
@@ -33,7 +37,7 @@ open scoped ArithmeticFunction.sigma
 
 namespace MagicFunction.PolyFourierCoeffBound
 
-private noncomputable def fouterm (coeff : ℤ → ℂ) (x : ℂ) (i : ℤ) : ℂ :=
+noncomputable def fouterm (coeff : ℤ → ℂ) (x : ℂ) (i : ℤ) : ℂ :=
   (coeff i) * cexp (π * I * i * x)
 
 variable (z : ℍ) (hz : 1 / 2 < z.im)

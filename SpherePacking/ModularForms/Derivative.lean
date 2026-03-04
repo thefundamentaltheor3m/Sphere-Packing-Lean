@@ -1,7 +1,11 @@
-import SpherePacking.ForMathlib.MDifferentiableFunProp
+module
 
-import SpherePacking.ModularForms.Eisenstein
-import Mathlib.Analysis.Calculus.DiffContOnCl
+public import SpherePacking.ForMathlib.MDifferentiableFunProp
+
+public import SpherePacking.ModularForms.Eisenstein
+public import Mathlib.Analysis.Calculus.DiffContOnCl
+
+@[expose] public section
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap

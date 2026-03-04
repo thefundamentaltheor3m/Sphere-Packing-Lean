@@ -1,8 +1,12 @@
-import SpherePacking.ModularForms.JacobiTheta
-import SpherePacking.ModularForms.Derivative
-import SpherePacking.ModularForms.DimensionFormulas
-import SpherePacking.ForMathlib.AtImInfty
-import SpherePacking.ModularForms.EisensteinAsymptotics
+module
+
+public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.Derivative
+public import SpherePacking.ModularForms.DimensionFormulas
+public import SpherePacking.ForMathlib.AtImInfty
+public import SpherePacking.ModularForms.EisensteinAsymptotics
+
+@[expose] public section
 
 /-!
 # Theta Derivative Identities

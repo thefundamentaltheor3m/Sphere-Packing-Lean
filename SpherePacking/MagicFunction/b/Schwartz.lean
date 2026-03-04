@@ -3,11 +3,15 @@ Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+module
+
 
 -- import Mathlib
 
-import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
-import SpherePacking.MagicFunction.b.Basic
+public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
+public import SpherePacking.MagicFunction.b.Basic
+
+@[expose] public section
 
 /-! # `b` is a Schwartz Function
 

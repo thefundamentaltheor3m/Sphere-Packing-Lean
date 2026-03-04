@@ -1,5 +1,9 @@
-import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
-import Mathlib.Data.Real.StarOrdered
+module
+
+public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+public import Mathlib.Data.Real.StarOrdered
+
+@[expose] public section
 
 open UpperHalfPlane TopologicalSpace Set
   Metric Filter Function Complex

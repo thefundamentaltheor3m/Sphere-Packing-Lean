@@ -1,4 +1,8 @@
-import Mathlib.Algebra.Module.ZLattice.Basic
+module
+
+public import Mathlib.Algebra.Module.ZLattice.Basic
+
+@[expose] public section
 
 open ZSpan Module
 
