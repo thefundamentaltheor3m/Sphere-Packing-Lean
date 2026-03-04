@@ -151,7 +151,7 @@ theorem HasSum.pos_add_zero_add_neg {α : Type*} [TopologicalSpace α] [AddCommG
 theorem upp_half_not_ints (z : ℍ) (n : ℤ) : (z : ℂ) ≠ n :=
   by
   simp only [ne_eq]
-  apply UpperHalfPlane.ne_int
+  apply UpperHalfPlane.ne_intCast
 
 
 lemma aus (a b : ℂ) : a + b ≠ 0 ↔ a ≠ -b := by

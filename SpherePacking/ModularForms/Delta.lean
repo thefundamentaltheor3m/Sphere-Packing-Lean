@@ -74,20 +74,20 @@ lemma Discriminant_S_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.S) = Δ := by
   ext z
   rw [ modular_slash_S_apply, Delta_eq_eta_pow, Delta_eq_eta_pow]
   have he := eta_equality z.2
-  simp only [comp_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul, UpperHalfPlane.coe_mk,
+  simp only [comp_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul,
     Int.reduceNeg, zpow_neg] at *
   have hi : -1/(z.1 : ℂ) = (-(z : ℂ))⁻¹ := by
     rw [neg_div]
     rw [← neg_inv]
-    simp [UpperHalfPlane.coe]
+    simp
   rw [hi] at he
   rw [he, mul_pow, mul_pow, inv_pow, csqrt_I]
-  simp only [inv_one, one_mul, UpperHalfPlane.coe]
+  simp only [inv_one, one_mul]
   rw [mul_comm]
   have hzz := csqrt_pow_24 z.1 (ne_zero z)
   rw [hzz, ← mul_assoc]
   have hz := ne_zero z
-  simp only [UpperHalfPlane.coe, ne_eq] at hz
+  simp only [ne_eq] at hz
   norm_cast
   field_simp
 
@@ -123,7 +123,7 @@ instance : atImInfty.NeBot := by
     positivity
   use ⟨z, hz⟩
   apply hx
-  simp only [UpperHalfPlane.im, coe_mk_subtype]
+  simp only [UpperHalfPlane.im]
   have : x ≤ |x| := by
     apply le_abs_self
   apply le_trans this
@@ -337,7 +337,7 @@ def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
     apply he2.congr
     intro z hz
     have := Delta_eq_eta_pow (⟨z, hz⟩ : ℍ)
-    simp only [coe_mk_subtype, comp_apply] at *
+    simp only [comp_apply] at *
     rw [ofComplex_apply_of_im_pos hz]
     exact this
   zero_at_cusps' hc := zero_at_cusps_of_zero_at_infty hc Discriminant_zeroAtImInfty

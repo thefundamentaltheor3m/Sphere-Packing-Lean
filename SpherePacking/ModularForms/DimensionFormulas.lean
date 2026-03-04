@@ -309,7 +309,8 @@ lemma weight_eight_one_dimensional (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even 
         calc
           (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) =
               (PowerSeries.coeff 0) (qExpansion 1 (c⁻¹ • ⇑f)) := by rfl
-          _ = (PowerSeries.coeff 0) (qExpansion 1 (((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ • ⇑f)) := by
+          _ = (PowerSeries.coeff 0)
+              (qExpansion 1 (((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ • ⇑f)) := by
               simp [hcInv]
           _ = 1 := hnorm0
       have hE := Ek_q_exp_zero k hk hk2
@@ -447,7 +448,7 @@ lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk
   · intro hq
     rw [Submodule.Quotient.mk_eq_zero, CuspFormSubmodule_mem_iff_coeffZero_eq_zero,
       Ek_q_exp_zero k hk hk2] at hq
-    simpa using hq
+    simp at hq
   · intro v
     obtain ⟨f, rfl⟩ := Quotient.exists_rep v
     refine ⟨(qExpansion 1 f).coeff 0, ?_⟩
