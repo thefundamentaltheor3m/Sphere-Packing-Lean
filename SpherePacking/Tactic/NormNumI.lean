@@ -8,11 +8,11 @@ import Mathlib.Tactic.NormNum
 
 
 /-!
-# `norm_numI` for `ℂ`
+# `norm_num` extensions for `ℂ`
 
-This file defines a conv tactic `norm_numI` extending `norm_num` to handle expressions in `ℂ`.
-The key idea is to rewrite a complex expression into `Complex.mk` form, then run `norm_num`
-separately on the real and imaginary parts.
+This file defines norm_num extensions and a conv tactic `norm_numI` for handling expressions
+in `ℂ`. The key idea is to rewrite a complex expression into `Complex.mk` form, then to run
+`norm_num` separately on the real and imaginary parts.
 
 ## Main declarations
 * `Mathlib.Meta.NormNumI.parse` and `Mathlib.Meta.NormNumI.normalize`

@@ -5,7 +5,8 @@ import Mathlib.Data.ZMod.Basic
 /-!
 # Tests for `SpherePacking.Tactic.NormNumI`
 
-This file contains `example`s exercising the conv tactic `norm_numI`.
+This file contains tests for the ℂ `norm_num` extensions and for the conv tactics
+`norm_numI` and `norm_numI_parse`.
 -/
 
 open Complex ComplexConjugate Mathlib.Meta.NormNumI Real Qq
@@ -44,8 +45,8 @@ example : 2 * (2.5:ℂ) = 5 := by norm_num1
 
 example : I + (3/2:ℂ) = 3/2 + I := by
   conv_lhs => norm_num1
-  conv_rhs => norm_num1
-  norm_num1
+  conv_rhs => norm_numI
+  norm_num
 
 -- Playing with the `parse` function
 example : (1 + I) * (1 + I * I * I) = 2 := by norm_num1
@@ -58,7 +59,11 @@ example : (1 + I) * (1 + I * I * I) = 2 := by
   conv_rhs => norm_numI_parse
   -- rfl -- obviously this fails, demonstrating that `normalize` is necessary
   -- (a cool example if we ever want to explain how `parse` and `normalize` interact)
-  conv_lhs => norm_num1
+  conv_lhs => norm_num
+
+example : (1 + I) * (1 + I * I * I) = 2 := by --norm_num1
+  conv_lhs => norm_numI
+  conv_rhs => norm_numI
 
 example : (1 + I) * (1 + I * I * I) = 2 := by norm_num1
 example : (1 + I) * (1 + I * I * I) = 2 := by norm_num1
