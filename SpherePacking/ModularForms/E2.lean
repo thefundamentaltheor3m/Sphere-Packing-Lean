@@ -77,7 +77,8 @@ lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
   have hI : (Complex.I : ℂ) ≠ 0 := Complex.I_ne_zero
   have hz : (z : ℂ) ≠ 0 := ne_zero z
   calc
-    (E₂ ∣[(2 : ℤ)] ModularGroup.S) z = E₂ z - 1 / (2 * (π ^ 2 / (6 : ℂ))) * (2 * π * Complex.I / z) := h'
+    (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
+        E₂ z - 1 / (2 * (π ^ 2 / (6 : ℂ))) * (2 * π * Complex.I / z) := h'
     _ = E₂ z + 6 / (π * Complex.I * z) := by
       field_simp [hpi, hI, hz]
       ring_nf
@@ -141,7 +142,8 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ, (n + 1) *
           simp [g, hpow]
 
 lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
-    1 - 24 * ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)) := by
+    1 - 24 * ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * n * z) /
+                        (1 - cexp (2 * π * Complex.I * n * z)) := by
   rw [E₂, EisensteinSeries.E2]
   simp [smul_eq_mul]
   rw [EisensteinSeries.G2_eq_tsum_cexp]
