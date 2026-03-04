@@ -260,10 +260,3 @@ such that `norm_num` successfully recognises the imaginary part of `z`.
   return r.eqTrans q(NormNumI.im_eq_of_eq $pf)
 
 end Mathlib.Meta.NormNum
-open Lean Elab Tactic in
-/-- `norm_num1` conv tactic for complex numbers. -/
-@[tactic Mathlib.Tactic.normNum1Conv] def normNum1ConvComplex : Tactic :=
-  fun _ => withMainContext do
-  let z ← Mathlib.Meta.NormNumI.getComplexLhs
-  let ⟨a, b, pf⟩ ← Mathlib.Meta.NormNumI.normalize z
-  Conv.applySimpResult { expr := q(Complex.mk $a $b), proof? := some pf }

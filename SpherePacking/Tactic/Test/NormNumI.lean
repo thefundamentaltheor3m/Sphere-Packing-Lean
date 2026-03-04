@@ -45,6 +45,7 @@ example : 2 * (2.5:ℂ) = 5 := by norm_num1
 example : I + (3/2:ℂ) = 3/2 + I := by
   conv_lhs => norm_num1
   conv_rhs => norm_num1
+  norm_num1
 
 -- Playing with the `parse` function
 example : (1 + I) * (1 + I * I * I) = 2 := by norm_num1
