@@ -93,25 +93,13 @@ lemma f₄_decompose :
 -/
 
 /-- f₂ is MDifferentiable -/
-lemma f₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₂ := by
-  simp only [f₂]
-  exact (serre_D_differentiable H₂_SIF_MDifferentiable).sub
-    ((H₂_SIF_MDifferentiable.mul (H₂_SIF_MDifferentiable.add
-      (H₄_SIF_MDifferentiable.const_smul _))).const_smul _)
+lemma f₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₂ := by unfold f₂; fun_prop
 
 /-- f₃ is MDifferentiable -/
-lemma f₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₃ := by
-  simp only [f₃, sq]
-  exact (serre_D_differentiable H₃_SIF_MDifferentiable).sub
-    (((H₂_SIF_MDifferentiable.mul H₂_SIF_MDifferentiable).sub
-      (H₄_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)).const_smul _)
+lemma f₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₃ := by unfold f₃; fun_prop
 
 /-- f₄ is MDifferentiable -/
-lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by
-  simp only [f₄]
-  exact (serre_D_differentiable H₄_SIF_MDifferentiable).add
-    ((H₄_SIF_MDifferentiable.mul
-      ((H₂_SIF_MDifferentiable.const_smul _).add H₄_SIF_MDifferentiable)).const_smul _)
+lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by unfold f₄; fun_prop
 
 /-!
 ## Phase 3-4: Relation f₂ + f₄ = f₃

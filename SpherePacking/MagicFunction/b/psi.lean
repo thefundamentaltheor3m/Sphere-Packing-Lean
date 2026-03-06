@@ -76,15 +76,7 @@ private lemma slashS (z : ℍ) (F : ℍ → ℂ) : (F ∣[(2 : ℤ)] (S)) (z) =
 private lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (2 : ℕ) := by
   rw [SL_slash_apply, S, denom]
-  simp only [Int.reduceNeg, sl_moeb, coe2_smul, Fin.isValue,
-    SpecialLinearGroup.coe_GL_coe_matrix, SpecialLinearGroup.map_apply_coe,
-    RingHom.mapMatrix_apply, Int.coe_castRingHom, map_apply, of_apply, cons_val', cons_val_zero,
-    cons_val_fin_one, cons_val_one, Int.cast_one, ofReal_one, one_mul, Int.cast_zero,
-    ofReal_zero, add_zero, neg_neg, mul_eq_mul_left_iff]
-  have pow_coe_nat (a : ℂ) : a ^ (2 : ℕ) = a ^ (2 : ℤ) := by
-    rw [zpow_two, pow_two]
-  left
-  rw [pow_coe_nat]
+  simp [zpow_two, pow_two]
 
 private lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
     (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
@@ -526,31 +518,25 @@ section rels_explicit
 lemma ψS_slash_ST_explicit₁ {t : ℝ} (ht : t ∈ Ioc 0 1) :
     ψT' (z₁' t) = ψS' (-1 / (z₁' t + 1)) * (z₁' t + 1) ^ 2 := by
   rw [ψT'_comp_z₁'_eq_ψT_comp_z₁'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
-  congr
 
 lemma ψS_slash_ST_explicit₂ {t : ℝ} (ht : t ∈ Icc 0 1) :
     ψT' (z₂' t) = ψS' (-1 / (z₂' t + 1)) * (z₂' t + 1) ^ 2 := by
   rw [ψT'_comp_z₂'_eq_ψT_comp_z₂'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
-  congr
 
 lemma ψS_slash_ST_explicit₃ {t : ℝ} (ht : t ∈ Ioc 0 1) :
     ψT' (z₃' t) = ψS' (-1 / (z₃' t + 1)) * (z₃' t + 1) ^ 2 := by
   rw [ψT'_comp_z₃'_eq_ψT_comp_z₃'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
-  congr
 
 lemma ψS_slash_ST_explicit₄ {t : ℝ} (ht : t ∈ Icc 0 1) :
     ψT' (z₄' t) = ψS' (-1 / (z₄' t + 1)) * (z₄' t + 1) ^ 2 := by
   rw [ψT'_comp_z₄'_eq_ψT_comp_z₄'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
-  congr
 
 lemma ψS_slash_S_explicit₅ {t : ℝ} (ht : t ∈ Ioc 0 1) :
     ψI' (z₅' t) = ψS' (-1 / z₅' t) * (z₅' t) ^ 2 := by
   rw [ψI'_comp_z₅'_eq_ψI_comp_z₅'_of_mem ht, ← ψS_slash_S, ψS_slash_S_apply' _]
-  congr
 
 lemma ψS_slash_ST_explicit₆ {t : ℝ} (ht : t ∈ Ici 1) :
   ψT' (z₆' t) = ψS' (-1 / (z₆' t + 1)) * (z₆' t + 1) ^ 2 := by
   rw [ψT'_comp_z₆'_eq_ψT_comp_z₆'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
-  congr
 
 end rels_explicit

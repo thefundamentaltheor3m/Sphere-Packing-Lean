@@ -16,6 +16,7 @@ import SpherePacking.ForMathlib.Fourier
 import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 import SpherePacking.ForMathlib.InnerProductSpace
 import SpherePacking.ForMathlib.InvPowSummability
+import SpherePacking.ForMathlib.MDifferentiableFunProp
 import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 import SpherePacking.ForMathlib.Real
 import SpherePacking.ForMathlib.SlashActions
@@ -74,7 +75,6 @@ import SpherePacking.ModularForms.eta
 import SpherePacking.ModularForms.exp_lems
 import SpherePacking.ModularForms.iteratedderivs
 import SpherePacking.ModularForms.limunder_lems
-import SpherePacking.ModularForms.logDeriv_lems
 import SpherePacking.ModularForms.multipliable_lems
 import SpherePacking.ModularForms.qExpansion_lems
 import SpherePacking.ModularForms.riemannZetalems
