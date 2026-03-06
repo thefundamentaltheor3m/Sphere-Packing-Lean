@@ -136,12 +136,14 @@ theorem MLDE_F : serre_D 12 (serre_D 10 F) =
   ext z; simp [F, Δ_fun, negDE₂]; field_simp (disch := norm_num); ring
 
 /-- Δ_fun expressed in terms of theta functions. -/
-private lemma Δ_fun_theta (z : ℍ) :
-    Δ_fun z = (H₂ z * (H₂ z + H₄ z) * H₄ z) ^ 2 / 256 := by
+private lemma Δ_fun_theta :
+    Δ_fun = (1 / 256 : ℂ) • ((H₂ * (H₂ + H₄) * H₄) ^ 2) := by
+  ext z
   rw [congrFun Δ_fun_eq_Δ z, ← Delta_apply, Delta_eq_H₂_H₃_H₄ z, ← jacobi_identity]
-  simp [Pi.add_apply]
+  simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
+  ring
 
-private lemma serre_D_10_G :serre_D 10 G = (5/3 : ℂ) • (H₂ ^ 3 * ((H₂ + H₄) ^ 3 + H₄ ^ 3)) := by
+private lemma serre_D_10_G : serre_D 10 G = (5/3 : ℂ) • (H₂ ^ 3 * ((H₂ + H₄) ^ 3 + H₄ ^ 3)) := by
   rw [G_eq]
   ext z
   simp (disch := fun_prop) [serre_D_apply, D_mul, D_add, D_sq, D_cube, D_smul,
@@ -154,10 +156,9 @@ Modular linear differential equation satisfied by $G$.
 theorem MLDE_G : serre_D 12 (serre_D 10 G) =
     5 * 6⁻¹ * E₄.toFun * G - 640 * Δ_fun * H₂ := by
   ext z
-  rw [E₄_eq_H_sum_sq, serre_D_10_G]
-  simp (disch := fun_prop) [serre_D_eq, Δ_fun_theta z, H_sum_sq, D_H₂, D_H₄, G,
-    Pi.mul_apply, Pi.add_apply, Pi.sub_apply, Pi.smul_apply, Pi.pow_apply,
-    Complex.real_smul, Complex.ofReal_ofNat]
+  rw [E₄_eq_H_sum_sq, serre_D_10_G, Δ_fun_theta]
+  simp (disch := fun_prop) [H_sum_sq, D_H₂, D_H₄, G, Pi.mul_apply, Pi.add_apply,
+    Pi.sub_apply, Pi.smul_apply, Pi.pow_apply, Complex.real_smul, Complex.ofReal_ofNat]
   ring
 
 /-- Pointwise log-derivative of a product: `D(f·h)/(f·h) = Df/f + Dh/h`. -/
