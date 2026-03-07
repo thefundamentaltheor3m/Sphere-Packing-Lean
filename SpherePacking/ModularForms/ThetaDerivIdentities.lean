@@ -579,7 +579,8 @@ lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 := fun h =>
 
 /-- 3 * H_sum_sq ≠ 0 -/
 lemma three_H_sum_sq_ne_zero : (fun z => 3 * H_sum_sq z) ≠ 0 :=
-  fun h => H_sum_sq_ne_zero (funext fun z => (mul_eq_zero.mp (congrFun h z)).resolve_left (by norm_num))
+  fun h => H_sum_sq_ne_zero
+    (funext fun z => (mul_eq_zero.mp (congrFun h z)).resolve_left (by norm_num))
 
 /-- 3 * H_sum_sq is MDifferentiable -/
 lemma three_H_sum_sq_MDifferentiable :
@@ -757,37 +758,32 @@ theorem serre_D_H₄ :
 theorem D_H₂ :
     D H₂ = (1 / 6 : ℂ) • (H₂ ^ 2 + (2 : ℂ) • (H₂ * H₄)) + (1 / 6 : ℂ) • (E₂ * H₂) := by
   ext z
-  have h := congrFun serre_D_H₂ z
-  have h' : D H₂ z = (1 / 6 : ℂ) * (H₂ z ^ 2 + 2 * H₂ z * H₄ z) +
-      (2 : ℂ) * 12⁻¹ * E₂ z * H₂ z :=
-    sub_eq_iff_eq_add.mp (by simpa [serre_D_apply] using h)
-  have hz : D H₂ z = 6⁻¹ * H₂ z ^ 2 + 6⁻¹ * (2 * (H₂ z * H₄ z)) + 6⁻¹ * (E₂ z * H₂ z) := by
-    convert h' using 1
-    ring_nf
-  simpa [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul] using hz
+  have h : D H₂ z = serre_D 2 H₂ z + 2 * 12⁻¹ * E₂ z * H₂ z := by
+    simp only [serre_D_apply]
+    ring
+  rw [h, congrFun serre_D_H₂]
+  simp only [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
+  ring
 
 /-- Ordinary derivative of `H₃` in terms of `H₂`, `H₄`, and `E₂`. -/
 theorem D_H₃ :
     D H₃ = (1 / 6 : ℂ) • (H₂ ^ 2 - H₄ ^ 2) + (1 / 6 : ℂ) • (E₂ * H₃) := by
   ext z
-  have h := congrFun serre_D_H₃ z
-  have h' : D H₃ z = (1 / 6 : ℂ) * (H₂ z ^ 2 - H₄ z ^ 2) + (2 : ℂ) * 12⁻¹ * E₂ z * H₃ z :=
-    sub_eq_iff_eq_add.mp (by simpa [serre_D_apply] using h)
-  have hz : D H₃ z = 6⁻¹ * (H₂ z ^ 2 - H₄ z ^ 2) + 6⁻¹ * (E₂ z * H₃ z) := by
-    convert h' using 1
-    ring_nf
-  simpa [Pi.add_apply, Pi.sub_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
-    using hz
+  have h : D H₃ z = serre_D 2 H₃ z + 2 * 12⁻¹ * E₂ z * H₃ z := by
+    simp only [serre_D_apply]
+    ring
+  rw [h, congrFun serre_D_H₃]
+  simp only [Pi.add_apply, Pi.sub_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
+  ring
 
 /-- Ordinary derivative of `H₄` in terms of `H₂`, `H₄`, and `E₂`. -/
 theorem D_H₄ :
-    D H₄ = (-(1 / 6 : ℂ)) • ((2 : ℂ) • (H₂ * H₄) + H₄ ^ 2) + (1 / 6 : ℂ) • (E₂ * H₄) := by
+    D H₄ = (-(1 / 6 : ℂ)) • ((2 : ℂ) • (H₂ * H₄) + H₄ ^ 2) +
+      (1 / 6 : ℂ) • (E₂ * H₄) := by
   ext z
-  have h := congrFun serre_D_H₄ z
-  have h' : D H₄ z = -(1 / 6 : ℂ) * (2 * H₂ z * H₄ z + H₄ z ^ 2) +
-      (2 : ℂ) * 12⁻¹ * E₂ z * H₄ z :=
-    sub_eq_iff_eq_add.mp (by simpa [serre_D_apply] using h)
-  have hz : D H₄ z = -(6⁻¹ * (2 * (H₂ z * H₄ z))) + -(6⁻¹ * H₄ z ^ 2) + 6⁻¹ * (E₂ z * H₄ z) := by
-    convert h' using 1
-    ring_nf
-  simpa [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul] using hz
+  have h : D H₄ z = serre_D 2 H₄ z + 2 * 12⁻¹ * E₂ z * H₄ z := by
+    simp only [serre_D_apply]
+    ring
+  rw [h, congrFun serre_D_H₄]
+  simp only [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
+  ring
