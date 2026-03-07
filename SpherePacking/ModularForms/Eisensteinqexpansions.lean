@@ -15,7 +15,7 @@ noncomputable section Definitions
 def standardcongruencecondition : Fin 2 → ZMod ((1 : ℕ+) : ℕ) := 0
 
 def E (k : ℤ) (hk : 3 ≤ k) : ModularForm (CongruenceSubgroup.Gamma ↑1) k :=
-  (1/2 : ℂ) • eisensteinSeries_MF hk standardcongruencecondition /-they need 1/2 for the
+  (1/2 : ℂ) • eisensteinSeriesMF hk standardcongruencecondition /-they need 1/2 for the
     normalization to match up (since the sum here is taken over coprime integers).-/
 
 open Pointwise
@@ -175,7 +175,7 @@ theorem q_exp_iden_2 (k : ℕ) (hk : 3 ≤ k) (hk2 : Even k) (z : ℍ) :
     apply (EisensteinSeries.summable_norm_eisSummand hkz z).congr
     intro v
     simp_rw [eisSummand]
-    simp only [Fin.isValue, zpow_neg, zpow_natCast, norm_inv, norm_pow, UpperHalfPlane.coe, one_div,
+    simp only [Fin.isValue, zpow_neg, zpow_natCast, norm_inv, norm_pow, one_div,
       piFinTwoEquiv_apply, comp_apply]
   · have hkz : 3 ≤ (k : ℤ) := by linarith
     rw [← (piFinTwoEquiv fun _ => ℤ).summable_iff]
@@ -183,7 +183,7 @@ theorem q_exp_iden_2 (k : ℕ) (hk : 3 ≤ k) (hk2 : Even k) (z : ℍ) :
     apply (EisensteinSeries.summable_norm_eisSummand hkz z).congr
     intro v
     simp_rw [eisSummand]
-    simp only [Fin.isValue, zpow_neg, zpow_natCast, norm_inv, norm_pow, UpperHalfPlane.coe, one_div,
+    simp only [Fin.isValue, zpow_neg, zpow_natCast, norm_inv, norm_pow, one_div,
       piFinTwoEquiv_apply, comp_apply]
 
 lemma EQ0 (k : ℕ) (z : ℍ) : ∑' (x : Fin 2 → ℤ),
@@ -223,13 +223,13 @@ lemma EQ1 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) : ∑' (x : 
       simp [sigmaAntidiagonalEquivProd]
       apply (summable_auxil_1 (k - 1) z).congr
       intro b
-      simp [mapdiv]
+      simp [divisorsAntidiagonalFactors]
     simp
     intro b
     have A3 := a1 k b z
     apply A3.subtype
   rw [sigmaAntidiagonalEquivProd.summable_iff.symm]
-  simp [sigmaAntidiagonalEquivProd, mapdiv]
+  simp [sigmaAntidiagonalEquivProd, divisorsAntidiagonalFactors]
   apply (summable_auxil_1 (k - 1) z).congr
   intro b
   simp
@@ -293,7 +293,7 @@ lemma EQ2 (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) : ∑' (x : Fin 2 → ℤ),
     1 / ((c.1 0) * (z : ℂ) + (c.1 1)) ^ k := by
   have := EQ22 k hk z
   simp_rw [eisSummand] at this
-  simp [ UpperHalfPlane.coe] at *
+  simp at *
   convert this
 
 
@@ -305,11 +305,11 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
         ∑' n : ℕ+, σ (k - 1) n * Complex.exp (2 * ↑π * Complex.I * z * n) := by
   rw [_root_.E]
   rw [IsGLPos.smul_apply]
-  have : (eisensteinSeries_MF hk standardcongruencecondition) z =
-    (eisensteinSeries_SIF standardcongruencecondition k) z := rfl
-  rw [this]
-  have := eisensteinSeries_SIF_apply standardcongruencecondition k z
-  rw [this, eisensteinSeries, standardcongruencecondition]
+  have hmf : (ModularForm.eisensteinSeriesMF hk standardcongruencecondition) z =
+      (eisensteinSeriesSIF standardcongruencecondition k) z := rfl
+  rw [hmf]
+  have hsif := eisensteinSeriesSIF_apply standardcongruencecondition k z
+  rw [hsif, eisensteinSeries, standardcongruencecondition]
   simp
   simp_rw [eisSummand]
   have HE1 := EQ1 k hk hk2 z
@@ -319,7 +319,7 @@ lemma E_k_q_expansion (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (z : ℍ) 
     simp
     omega
   rw [← inv_mul_eq_iff_eq_mul₀ z2 ] at HE2
-  simp [UpperHalfPlane.coe] at *
+  simp at *
   conv =>
     enter [1,2]
     rw [← HE2]

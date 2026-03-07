@@ -411,7 +411,7 @@ lemma E₄_sigma_qexp (z : UpperHalfPlane) :
     rw [hcoeffn n n.pos]
     -- Function.Periodic.qParam 1 z = exp(2πiz)
     have hq : Function.Periodic.qParam 1 z = Complex.exp (2 * π * Complex.I * z) := by
-      simp only [Function.Periodic.qParam, UpperHalfPlane.coe]
+      simp only [Function.Periodic.qParam]
       congr 1
       ring_nf
       simp

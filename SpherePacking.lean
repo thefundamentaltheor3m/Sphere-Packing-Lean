@@ -75,7 +75,6 @@ import SpherePacking.ModularForms.eta
 import SpherePacking.ModularForms.exp_lems
 import SpherePacking.ModularForms.iteratedderivs
 import SpherePacking.ModularForms.limunder_lems
-import SpherePacking.ModularForms.logDeriv_lems
 import SpherePacking.ModularForms.multipliable_lems
 import SpherePacking.ModularForms.qExpansion_lems
 import SpherePacking.ModularForms.riemannZetalems

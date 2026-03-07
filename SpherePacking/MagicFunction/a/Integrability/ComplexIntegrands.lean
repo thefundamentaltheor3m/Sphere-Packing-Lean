@@ -44,16 +44,6 @@ section Helpers
 
 namespace UpperHalfPlane
 
-theorem range_upperHalfPlane_coe : range UpperHalfPlane.coe = ℍ₀ := by
-  ext z
-  rw [mem_range]
-  constructor <;> intro hz
-  · obtain ⟨y, hy⟩ := hz
-    rw [← hy]
-    exact y.2
-  · use ⟨z, hz⟩
-    exact coe_mk_subtype hz
-
 theorem zero_not_mem_upperHalfPlaneSet : (0 : ℂ) ∉ ℍ₀ := by simp
 
 end UpperHalfPlane
@@ -71,8 +61,9 @@ section Holo_Lemmas
 theorem φ₀''_holo : Holo(φ₀'') := by
   have hF := UpperHalfPlane.mdifferentiable_iff.mp F_holo
   have hΔ := UpperHalfPlane.mdifferentiable_iff.mp Delta.holo'
-  have h_eq : EqOn φ₀'' (fun z => (F ∘ UpperHalfPlane.ofComplex) z / (Δ ∘ UpperHalfPlane.ofComplex) z)
-      ℍ₀ := fun z hz => by simp [φ₀''_def hz, F, φ₀, UpperHalfPlane.ofComplex_apply_of_im_pos hz]
+  have h_eq :
+      EqOn φ₀'' (fun z => (F ∘ UpperHalfPlane.ofComplex) z / (Δ ∘ UpperHalfPlane.ofComplex) z) ℍ₀ :=
+    fun z hz => by simp [φ₀''_def hz, F, φ₀, UpperHalfPlane.ofComplex_apply_of_im_pos hz]
   refine DifferentiableOn.congr ?_ h_eq
   exact hF.div hΔ fun z hz => by
     simp [Function.comp_apply, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Δ_ne_zero]
