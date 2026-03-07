@@ -199,7 +199,8 @@ lemma MDifferentiable_div {F G : ℍ → ℂ}
     (by simp [Function.comp]; exact hG_ne _)).congr_of_eventuallyEq h_eq.symm
 
 @[simp]
-theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
+theorem D_const (c : ℂ) : D (Function.const ℍ c) = 0 := by
+  ext z
   have h : deriv (Function.const _ c ∘ ofComplex) z = 0 := by
     have h' : Function.const _ c ∘ ofComplex = Function.const _ c := by rfl
     rw [h']
@@ -210,17 +211,12 @@ theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
     _ = (2 * π * I)⁻¹ * 0 := by rw [h]
     _ = 0 := by ring_nf
 
-@[simp]
-lemma D_const_fun (c : ℂ) : D (Function.const ℍ c) = 0 := by
-  ext z
-  exact D_const c z
-
-/-- Normalize a numeric literal `(n : ℍ → ℂ)` to `Function.const ℍ n` so `D_const_fun` fires. -/
+/-- Normalize a numeric literal `(n : ℍ → ℂ)` to `Function.const ℍ n` so `D_const` fires. -/
 @[simp]
 lemma pi_ofNat_eq_const (n : ℕ) [n.AtLeastTwo] :
     (@OfNat.ofNat (ℍ → ℂ) n _) = Function.const ℍ (OfNat.ofNat n) := rfl
 
-/-- Normalize `(Function.const ℍ c)⁻¹` to `Function.const ℍ c⁻¹` so `D_const_fun` fires. -/
+/-- Normalize `(Function.const ℍ c)⁻¹` to `Function.const ℍ c⁻¹` so `D_const` fires. -/
 @[simp]
 lemma pi_inv_const_eq_const (c : ℂ) :
     (Function.const ℍ c)⁻¹ = Function.const ℍ c⁻¹ := rfl

@@ -131,9 +131,11 @@ theorem MLDE_F : serre_D 12 (serre_D 10 F) =
   -- Compute D(D F - cE₂F) using automated simp + fun_prop discharge
   simp (disch := fun_prop) only [serre_D_eq, D_sub, D_add, D_mul, D_sq, D_cube, F_aux,
     ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
-  simp only [pi_ofNat_eq_const, pi_inv_const_eq_const, D_const_fun]
-  -- Close algebraic identity
-  ext z; simp [F, Δ_fun, negDE₂]; field_simp (disch := norm_num); ring
+  simp only [pi_ofNat_eq_const, pi_inv_const_eq_const, D_const]
+  ext z
+  simp [F, Δ_fun, negDE₂]
+  field_simp (disch := norm_num)
+  ring
 
 /-- Δ_fun expressed in terms of theta functions. -/
 private lemma Δ_fun_theta :
@@ -384,7 +386,7 @@ theorem DE₄_qexp (z : UpperHalfPlane) :
     rw [h]; exact (E₄.holo'.sub mdifferentiable_const).const_smul _
   have hD_smul : D ((240 : ℂ) • f) z = (240 : ℂ) * D f z := by
     rw [congrFun (D_smul 240 f hf_mdiff) z, Pi.smul_apply, smul_eq_mul]
-  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := D_const 1 z
+  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := congrFun (D_const 1) z
   calc D E₄.toFun z
       = D ((fun _ => 1) + (240 : ℂ) • f) z := by rw [hE4_eq]
     _ = D (fun _ => 1) z + D ((240 : ℂ) • f) z :=
@@ -487,7 +489,7 @@ theorem negDE₂_qexp (z : UpperHalfPlane) :
     rw [h]; exact (mdifferentiable_const.sub E₂_holo').const_smul _
   have hD_smul : D ((24 : ℂ) • f) z = (24 : ℂ) * D f z := by
     rw [congrFun (D_smul 24 f hf_mdiff) z, Pi.smul_apply, smul_eq_mul]
-  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := D_const 1 z
+  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := congrFun (D_const 1) z
   calc -(D E₂) z
       = -(D ((fun _ => 1) - (24 : ℂ) • f)) z := by rw [hE2_eq]
     _ = -((D (fun _ => 1) - D ((24 : ℂ) • f)) z) := by
