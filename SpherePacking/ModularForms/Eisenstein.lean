@@ -846,18 +846,6 @@ lemma exp_imag_axis_arg (t : ℝ) (ht : 0 < t) (n : ℕ+) :
   simp only [I_sq]
   ring
 
-/-- `ζ(2k)` is real for all `k ≥ 1`. -/
-lemma riemannZeta_even_im_eq_zero (k : ℕ) (hk : k ≠ 0) :
-    (riemannZeta (2 * k : ℕ)).im = 0 := by
-  rw [Nat.cast_mul, Nat.cast_two, riemannZeta_two_mul_nat hk]
-  -- The RHS is the coercion of a real expression
-  have : ((-1 : ℂ) ^ (k + 1) * (2 : ℂ) ^ (2 * k - 1) * (↑Real.pi : ℂ) ^ (2 * k) *
-         ↑(bernoulli (2 * k)) / ↑((2 * k)! : ℕ)) =
-         ↑((-1 : ℝ) ^ (k + 1) * (2 : ℝ) ^ (2 * k - 1) * Real.pi ^ (2 * k) *
-           bernoulli (2 * k) / (2 * k)!) := by push_cast; ring
-  rw [this]
-  exact ofReal_im _
-
 /-- `E_k(it)` is real for all `t > 0` when `k` is even and `k ≥ 4`.
 This is the generalized theorem from which `E₄_imag_axis_real` and `E₆_imag_axis_real` follow. -/
 theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
@@ -909,11 +897,10 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
   have hpow_im : ((-2 * Real.pi * Complex.I) ^ k : ℂ).im = 0 :=
     neg_two_pi_I_pow_even_real k hk2
   have hfact_im : ((k - 1).factorial : ℂ).im = 0 := by simp
-  -- For ζ(k) when k is even and ≥ 4, it's real
-  obtain ⟨m, _⟩ := hk2
+  -- For ζ(k) when k ≥ 4, it's real (mathlib: riemannZeta_im_eq_zero_of_one_lt)
   have hzeta_im : (riemannZeta k).im = 0 := by
-    rw [show k = 2 * m by omega]
-    exact riemannZeta_even_im_eq_zero m (by omega)
+    rw [show (k : ℂ) = ((k : ℝ) : ℂ) from by push_cast; ring]
+    exact riemannZeta_im_eq_zero_of_one_lt (by exact_mod_cast show 1 < (k : ℤ) by omega)
   have hinv_zeta_im : (1 / riemannZeta k).im = 0 := by simp [hzeta_im]
   simp only [mul_im, div_im, hinv_zeta_im, hsum_im, hpow_im, hfact_im]
   ring
