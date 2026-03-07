@@ -487,10 +487,10 @@ lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
 /-- theta_h tends to 0 at infinity.
 theta_h = f₂² + f₂f₄ + f₄² → 0 + 0 + 0 = 0 as f₂, f₄ → 0. -/
 lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
-  simpa [theta_h, sq] using
-    ((f₂_tendsto_atImInfty.mul f₂_tendsto_atImInfty).add
+  simpa [theta_h] using
+    ((f₂_tendsto_atImInfty.pow 2).add
       (f₂_tendsto_atImInfty.mul f₄_tendsto_atImInfty)).add
-      (f₄_tendsto_atImInfty.mul f₄_tendsto_atImInfty)
+      (f₄_tendsto_atImInfty.pow 2)
 
 /-- Build a cusp form from a SlashInvariantForm that's MDifferentiable and
 tends to zero at infinity. This pattern is reused for theta_g and theta_h. -/
@@ -578,16 +578,72 @@ lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 := fun h =>
   one_ne_zero (tendsto_nhds_unique tendsto_const_nhds (h ▸ H_sum_sq_tendsto)).symm
 
 /-- 3 * H_sum_sq ≠ 0 -/
-lemma three_H_sum_sq_ne_zero : (fun z => 3 * H_sum_sq z) ≠ 0 := by
-  intro h
-  apply H_sum_sq_ne_zero
-  funext z
-  exact (mul_eq_zero.mp (congrFun h z)).resolve_left (by norm_num)
+lemma three_H_sum_sq_ne_zero : (fun z => 3 * H_sum_sq z) ≠ 0 :=
+  fun h => H_sum_sq_ne_zero
+    (funext fun z => (mul_eq_zero.mp (congrFun h z)).resolve_left (by norm_num))
 
 /-- 3 * H_sum_sq is MDifferentiable -/
 lemma three_H_sum_sq_MDifferentiable :
     MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 3 * H_sum_sq z) :=
   mdifferentiable_const.mul H_sum_sq_MDifferentiable
+
+/-!
+## E₄ = H_sum_sq (dimension argument)
+
+E₄ and H_sum_sq are both weight-4 level-1 modular forms tending to 1 at ∞.
+Their difference is a weight-4 cusp form, hence zero by dimension vanishing.
+-/
+
+/-- S-action on H_sum_sq: invariant since H₂|S = -H₄ and H₄|S = -H₂ -/
+private lemma H_sum_sq_S_action : (H_sum_sq ∣[(4 : ℤ)] S) = H_sum_sq := by
+  have h_eq : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by
+    ext z; simp [H_sum_sq, sq]
+  simp only [h_eq, show (4 : ℤ) = 2 + 2 from by norm_num,
+    SlashAction.add_slash, mul_slash_SL2 2 2 S _ _, H₂_S_action, H₄_S_action]
+  ext z; simp [Pi.mul_apply, Pi.add_apply]; ring
+
+/-- T-action on H_sum_sq: invariant since H₂|T = -H₂ and H₄|T = H₃ = H₂+H₄ -/
+private lemma H_sum_sq_T_action : (H_sum_sq ∣[(4 : ℤ)] T) = H_sum_sq := by
+  have h_eq : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by
+    ext z; simp [H_sum_sq, sq]
+  simp only [h_eq, show (4 : ℤ) = 2 + 2 from by norm_num,
+    SlashAction.add_slash, mul_slash_SL2 2 2 T _ _, H₂_T_action, H₄_T_action, ← jacobi_identity]
+  ext z; simp [Pi.mul_apply, Pi.add_apply]; ring
+
+private lemma H_sum_sq_SL2Z_invariant :
+    ∀ γ : SL(2, ℤ), H_sum_sq ∣[(4 : ℤ)] γ = H_sum_sq :=
+  slashaction_generators_SL2Z H_sum_sq 4 H_sum_sq_S_action H_sum_sq_T_action
+
+private lemma isBoundedAtImInfty_H_sum_sq : IsBoundedAtImInfty H_sum_sq := by
+  have : H_sum_sq = H₂ * H₂ + H₂ * H₄ + H₄ * H₄ := by ext z; simp [H_sum_sq, sq]
+  rw [this]
+  exact ((isBoundedAtImInfty_H₂.mul isBoundedAtImInfty_H₂).add
+    (isBoundedAtImInfty_H₂.mul isBoundedAtImInfty_H₄)).add
+    (isBoundedAtImInfty_H₄.mul isBoundedAtImInfty_H₄)
+
+private noncomputable def H_sum_sq_SIF : SlashInvariantForm (Γ 1) 4 where
+  toFun := H_sum_sq
+  slash_action_eq' := slashaction_generators_GL2R H_sum_sq 4 H_sum_sq_S_action H_sum_sq_T_action
+
+private noncomputable def H_sum_sq_MF : ModularForm (Γ 1) 4 := {
+  H_sum_sq_SIF with
+  holo' := H_sum_sq_MDifferentiable
+  bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc fun A ⟨A', hA⟩ => by
+    rw [← hA]; simpa [SL_slash] using H_sum_sq_SL2Z_invariant A' ▸ isBoundedAtImInfty_H_sum_sq
+}
+
+/-- E₄.toFun = H₂² + H₂H₄ + H₄². Both are weight-4 level-1 modular forms tending to 1
+at ∞, so their difference is a weight-4 cusp form, hence zero. -/
+theorem E₄_eq_H_sum_sq : E₄.toFun = H_sum_sq := by
+  have h_toFun : (E₄ - H_sum_sq_MF).toFun = E₄.toFun - H_sum_sq := by
+    ext z; simp [H_sum_sq_MF, H_sum_sq_SIF]; rfl
+  have h_diff_tendsto : Tendsto (E₄ - H_sum_sq_MF).toFun atImInfty (nhds 0) := by
+    rw [h_toFun]; simpa using E₄_tendsto_one_atImInfty.sub H_sum_sq_tendsto
+  have h_cusp : IsCuspForm (Γ 1) 4 (E₄ - H_sum_sq_MF) := by
+    rw [IsCuspForm_iff_coeffZero_eq_zero, ModularFormClass.qExpansion_coeff]; simp
+    exact IsZeroAtImInfty.cuspFunction_apply_zero h_diff_tendsto (by norm_num : (0 : ℝ) < 1)
+  have h_zero := IsCuspForm_weight_lt_eq_zero 4 (by norm_num) (E₄ - H_sum_sq_MF) h_cusp
+  funext z; simpa [sub_eq_zero] using DFunLike.congr_fun h_zero z
 
 /-!
 ## Phase 9: Deduce f₂ = f₃ = f₄ = 0
@@ -664,10 +720,7 @@ lemma f₂_eq_zero : f₂ = 0 := by
 
 /-- From f₂ = 0 and h = 0, deduce f₄ = 0 -/
 lemma f₄_eq_zero : f₄ = 0 := by
-  ext z
-  have hz := congrFun theta_h_eq_zero z
-  simp only [theta_h, Pi.add_apply, Pi.pow_apply, Pi.mul_apply, Pi.zero_apply, f₂_eq_zero] at hz
-  simpa [sq_eq_zero_iff] using hz
+  funext z; simpa [theta_h, sq_eq_zero_iff, f₂_eq_zero] using congrFun theta_h_eq_zero z
 
 /-- From f₂ + f₄ = f₃ and both = 0, f₃ = 0 -/
 lemma f₃_eq_zero : f₃ = 0 := by
@@ -700,3 +753,37 @@ theorem serre_D_H₄ :
   simp only [f₄, Pi.add_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul, Pi.zero_apply,
     add_eq_zero_iff_eq_neg] at this
   convert this using 1; ring
+
+/-- Ordinary derivative of `H₂` in terms of `H₂`, `H₄`, and `E₂`. -/
+theorem D_H₂ :
+    D H₂ = (1 / 6 : ℂ) • (H₂ ^ 2 + (2 : ℂ) • (H₂ * H₄)) + (1 / 6 : ℂ) • (E₂ * H₂) := by
+  ext z
+  have h : D H₂ z = serre_D 2 H₂ z + 2 * 12⁻¹ * E₂ z * H₂ z := by
+    simp only [serre_D_apply]
+    ring
+  rw [h, congrFun serre_D_H₂]
+  simp only [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
+  ring
+
+/-- Ordinary derivative of `H₃` in terms of `H₂`, `H₄`, and `E₂`. -/
+theorem D_H₃ :
+    D H₃ = (1 / 6 : ℂ) • (H₂ ^ 2 - H₄ ^ 2) + (1 / 6 : ℂ) • (E₂ * H₃) := by
+  ext z
+  have h : D H₃ z = serre_D 2 H₃ z + 2 * 12⁻¹ * E₂ z * H₃ z := by
+    simp only [serre_D_apply]
+    ring
+  rw [h, congrFun serre_D_H₃]
+  simp only [Pi.add_apply, Pi.sub_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
+  ring
+
+/-- Ordinary derivative of `H₄` in terms of `H₂`, `H₄`, and `E₂`. -/
+theorem D_H₄ :
+    D H₄ = (-(1 / 6 : ℂ)) • ((2 : ℂ) • (H₂ * H₄) + H₄ ^ 2) +
+      (1 / 6 : ℂ) • (E₂ * H₄) := by
+  ext z
+  have h : D H₄ z = serre_D 2 H₄ z + 2 * 12⁻¹ * E₂ z * H₄ z := by
+    simp only [serre_D_apply]
+    ring
+  rw [h, congrFun serre_D_H₄]
+  simp only [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
+  ring
