@@ -3,12 +3,16 @@ Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+module
 
-import Mathlib.Analysis.InnerProductSpace.PiL2
-import Mathlib.Analysis.Complex.UpperHalfPlane.MoebiusAction
-import Mathlib.Analysis.RCLike.Basic
-import Mathlib.Data.Complex.Basic
-import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Analysis.Complex.UpperHalfPlane.MoebiusAction
+public import Mathlib.Analysis.RCLike.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+
+@[expose] public section
 
 open Set Complex Real
 
@@ -155,7 +159,7 @@ lemma _root_.ModularGroup.ST_eq : S * T = !![(0 : ℤ), -1; 1, 1] := by decide
 
 lemma _root_.ModularGroup.S_eq : S = !![(0 : ℤ), -1; 1, 0] := by rfl
 
-private lemma det_aux : !![(0 : ℤ), -1; 1, 1].det = 1 := by decide
+lemma det_aux : !![(0 : ℤ), -1; 1, 1].det = 1 := by decide
 
 lemma _root_.ModularGroup.ST_eq' : S * T = ⟨!![(0 : ℤ), -1; 1, 1], det_aux⟩ := by
   simp only [← ModularGroup.ST_eq]; norm_cast

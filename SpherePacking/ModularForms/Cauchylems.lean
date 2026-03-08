@@ -1,6 +1,10 @@
-import SpherePacking.ModularForms.Icc_Ico_lems
-import SpherePacking.ModularForms.riemannZetalems
-import SpherePacking.ModularForms.summable_lems
+module
+
+public import SpherePacking.ModularForms.Icc_Ico_lems
+public import SpherePacking.ModularForms.riemannZetalems
+public import SpherePacking.ModularForms.summable_lems
+
+@[expose] public section
 
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral

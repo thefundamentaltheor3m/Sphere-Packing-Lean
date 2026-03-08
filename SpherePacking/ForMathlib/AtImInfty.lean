@@ -1,5 +1,9 @@
-import Mathlib.Analysis.Normed.Group.Tannery
-import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
+module
+
+public import Mathlib.Analysis.Normed.Group.Tannery
+public import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
+
+@[expose] public section
 
 /-
 Probably put this at Analysis/Complex/UpperHalfPlane/FunctionsBoundedAtInfty.lean
@@ -13,4 +17,3 @@ lemma Filter.eventually_atImInfty {p : ℍ → Prop} :
 
 lemma Filter.tendsto_im_atImInfty : Tendsto (fun x : ℍ ↦ x.im) atImInfty atTop :=
   tendsto_iff_comap.mpr fun ⦃_⦄ a => a
-

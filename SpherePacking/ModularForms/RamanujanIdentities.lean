@@ -1,4 +1,8 @@
-import SpherePacking.ModularForms.EisensteinAsymptotics
+module
+
+public import SpherePacking.ModularForms.EisensteinAsymptotics
+
+@[expose] public section
 
 /-!
 # Ramanujan Identities for Eisenstein Series
@@ -148,4 +152,3 @@ theorem ramanujan_E₆ : D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun
   simp only [congrFun ramanujan_E₆' z, Pi.mul_apply, Pi.sub_apply,
     show (-2⁻¹ : ℍ → ℂ) z = -2⁻¹ from rfl, show (2⁻¹ : ℍ → ℂ) z = 2⁻¹ from rfl]
   ring
-

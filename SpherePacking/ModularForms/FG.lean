@@ -1,15 +1,19 @@
-import SpherePacking.ForMathlib.MDifferentiableFunProp
+module
 
-import SpherePacking.ModularForms.Derivative
-import SpherePacking.ModularForms.DimensionFormulas
-import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.ModularForms.ThetaDerivIdentities
-import SpherePacking.ModularForms.EisensteinAsymptotics
-import SpherePacking.ModularForms.JacobiTheta
-import SpherePacking.ModularForms.QExpansion
-import SpherePacking.ModularForms.RamanujanIdentities
-import SpherePacking.ModularForms.ResToImagAxis
-import SpherePacking.ModularForms.summable_lems
+public import SpherePacking.ForMathlib.MDifferentiableFunProp
+
+public import SpherePacking.ModularForms.Derivative
+public import SpherePacking.ModularForms.DimensionFormulas
+public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.ModularForms.ThetaDerivIdentities
+public import SpherePacking.ModularForms.EisensteinAsymptotics
+public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.QExpansion
+public import SpherePacking.ModularForms.RamanujanIdentities
+public import SpherePacking.ModularForms.ResToImagAxis
+public import SpherePacking.ModularForms.summable_lems
+
+@[expose] public section
 
 open Filter Complex
 open UpperHalfPlane (atImInfty ofComplex ofComplex_apply ofComplex_apply_of_im_pos coe_mk_subtype

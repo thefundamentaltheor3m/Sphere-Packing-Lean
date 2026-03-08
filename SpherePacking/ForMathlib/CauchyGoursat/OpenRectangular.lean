@@ -5,12 +5,16 @@ Authors: Sidharth Hariharan
 
 M4R File
 -/
+module
 
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Analysis.Complex.CauchyIntegral
-import Mathlib.MeasureTheory.Integral.IntegralEqImproper
-import Mathlib.Topology.EMetricSpace.Paracompact
-import Mathlib.Topology.Separation.CompletelyRegular
+
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Analysis.Complex.CauchyIntegral
+public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+public import Mathlib.Topology.EMetricSpace.Paracompact
+public import Mathlib.Topology.Separation.CompletelyRegular
+
+@[expose] public section
 
 /-! # Deforming Paths of Integration for Open Contours
 

@@ -1,7 +1,11 @@
-import Mathlib.Analysis.Normed.Group.Tannery
-import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
-import SpherePacking.ModularForms.JacobiTheta
-import SpherePacking.ForMathlib.AtImInfty
+module
+
+public import Mathlib.Analysis.Normed.Group.Tannery
+public import Mathlib.NumberTheory.ModularForms.JacobiTheta.Bounds
+public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ForMathlib.AtImInfty
+
+@[expose] public section
 
 /-!
 # Limits at infinity

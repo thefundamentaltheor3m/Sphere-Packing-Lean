@@ -1,7 +1,11 @@
-import Mathlib.NumberTheory.LSeries.Dirichlet
-import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
+module
 
-import SpherePacking.ModularForms.Delta
+public import Mathlib.NumberTheory.LSeries.Dirichlet
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
+
+public import SpherePacking.ModularForms.Delta
+
+@[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex

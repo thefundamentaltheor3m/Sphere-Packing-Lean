@@ -1,8 +1,12 @@
-import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
-import SpherePacking.ForMathlib.MDifferentiableFunProp
-import SpherePacking.ForMathlib.SlashActions
-import SpherePacking.ForMathlib.UpperHalfPlane
-import SpherePacking.ModularForms.DimensionFormulas
+module
+
+public import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
+public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.ForMathlib.SlashActions
+public import SpherePacking.ForMathlib.UpperHalfPlane
+public import SpherePacking.ModularForms.DimensionFormulas
+
+@[expose] public section
 
 /-!
 # Jacobi theta functions

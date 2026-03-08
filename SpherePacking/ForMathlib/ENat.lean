@@ -1,7 +1,11 @@
-import Mathlib.Data.Set.Card
-import Mathlib.Topology.Algebra.InfiniteSum.Basic
-import Mathlib.Topology.Instances.ENat
-import Mathlib.Topology.Algebra.InfiniteSum.Ring
+module
+
+public import Mathlib.Data.Set.Card
+public import Mathlib.Topology.Algebra.InfiniteSum.Basic
+public import Mathlib.Topology.Instances.ENat
+public import Mathlib.Topology.Algebra.InfiniteSum.Ring
+
+@[expose] public section
 
 theorem ENat.tsum_const {α : Type*} (c : ENat) :
     ∑' (_ : α), c = ENat.card α * c := by

@@ -3,9 +3,13 @@ Copyright (c) 2024 The Sphere Packing Contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sphere Packing Contributors
 -/
-import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.ModularForms.E2
-import SpherePacking.ModularForms.Delta
+module
+
+public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.ModularForms.E2
+public import SpherePacking.ModularForms.Delta
+
+@[expose] public section
 
 /-!
 # Transformation Rules for φ₀
