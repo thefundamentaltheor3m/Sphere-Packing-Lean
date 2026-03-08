@@ -30,6 +30,7 @@ import SpherePacking.MagicFunction.IntegralParametrisations
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.a.Eigenfunction
+import SpherePacking.MagicFunction.a.FourierExpansions
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.a.Integrability.Integrability
 import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
@@ -39,6 +40,7 @@ import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 import SpherePacking.MagicFunction.a.IntegralEstimates.I5
 import SpherePacking.MagicFunction.a.IntegralEstimates.I6
+import SpherePacking.MagicFunction.a.PhiBounds
 import SpherePacking.MagicFunction.a.Schwartz
 import SpherePacking.MagicFunction.a.SpecialValues
 import SpherePacking.MagicFunction.b.Basic
