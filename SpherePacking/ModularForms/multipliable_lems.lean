@@ -1,4 +1,8 @@
-import SpherePacking.ModularForms.summable_lems
+module
+
+public import SpherePacking.ModularForms.summable_lems
+
+@[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex

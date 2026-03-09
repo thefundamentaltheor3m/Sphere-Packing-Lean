@@ -10,11 +10,16 @@ import Mathlib.Tactic.Convert
 import Mathlib.Tactic.Ring
 
 /-!
-# `tendsto_poly` tactic
+# `tendsto_cont` tactic
 
 A tactic for proving goals of the form
-  `Tendsto (fun z => poly(f₁ z, ..., fₙ z)) l (nhds c)`
-where atomic limits `Tendsto fᵢ l (nhds aᵢ)` are known from context.
+  `Tendsto (fun z => expr(f₁ z, ..., fₙ z)) l (nhds c)`
+where atomic limits `Tendsto fᵢ l (nhds aᵢ)` are known from context
+and the expression is continuous in the atoms (proved via `fun_prop`).
+
+This handles any expression where `fun_prop` can prove continuity of the
+abstracted body — including polynomials, trigonometric functions,
+exponentials, and other compositions.
 
 ## Strategy
 
@@ -38,7 +43,7 @@ theorem tendsto_continuousAt_comp
     Filter.Tendsto (fun x => h (f x)) l (nhds (h b)) :=
   hh.tendsto.comp hf
 
-namespace TendstoPoly
+namespace TendstoCont
 
 /-- An atom: a context hypothesis `Tendsto f l (nhds a)` appearing in the goal body. -/
 structure Atom where
@@ -80,9 +85,9 @@ private def parseGoal (goal : Expr) :
     match ← matchNhds? tgt with
     | some c => return (goalFn, l, c, domTy, codTy)
     | none =>
-      throwError "tendsto_poly: target filter is not `nhds _`"
+      throwError "tendsto_cont: target filter is not `nhds _`"
   | none =>
-    throwError "tendsto_poly: goal is not `Tendsto f l (nhds c)`"
+    throwError "tendsto_cont: goal is not `Tendsto f l (nhds c)`"
 
 /-- Match `Tendsto f l (nhds a)` in a hypothesis type. -/
 private def matchTendstoNhds? (e : Expr) :
@@ -165,7 +170,7 @@ private def collectAtoms (body : Expr) (bvar : FVarId)
     for cand in candidates do
       if ← withNewMCtxDepth (isDefEq atom.fn cand.fn) then
         unless ← withNewMCtxDepth (isDefEq atom.limit cand.limit) do
-          throwError m!"tendsto_poly: ambiguous limit for atom — \
+          throwError m!"tendsto_cont: ambiguous limit for atom — \
             found hypotheses with limits `{atom.limit}` and \
             `{cand.limit}` for the same function"
   return (candidates, atoms)
@@ -247,8 +252,8 @@ private partial def abstractBody (body : Expr) (bvar : FVarId)
 -- Main tactic
 -- ══════════════════════════════════════════════════════════════
 
-/-- The `tendsto_poly` tactic. -/
-def tendstoPoly : TacticM Unit := withMainContext do
+/-- The `tendsto_cont` tactic. -/
+def tendstoCont : TacticM Unit := withMainContext do
   let goal ← getMainGoal
   let goalTy ← goal.getType >>= instantiateMVars
 
@@ -259,7 +264,7 @@ def tendstoPoly : TacticM Unit := withMainContext do
   let body ← match goalFn with
     | .lam _ _ b _ => pure b
     | _ => throwError
-      "tendsto_poly: goal function is not a lambda.\n\
+      "tendsto_cont: goal function is not a lambda.\n\
        Hint: try `show Tendsto (fun z => ...) _ (nhds _)` \
        or `unfold ...`"
 
@@ -279,11 +284,11 @@ def tendstoPoly : TacticM Unit := withMainContext do
           -- Body references the bound variable but no atoms matched
           if candidates.size == 0 then
             let filterFmt ← ppExpr goalFilter
-            throwError m!"tendsto_poly: no `Tendsto` hypotheses \
+            throwError m!"tendsto_cont: no `Tendsto` hypotheses \
               found for filter `{filterFmt}`"
           else
             let candFns ← candidates.mapM fun c => ppExpr c.fn
-            throwError m!"tendsto_poly: body references the \
+            throwError m!"tendsto_cont: body references the \
               bound variable but no candidate matched.\n\
               Available candidates: {candFns}"
         try
@@ -292,7 +297,7 @@ def tendstoPoly : TacticM Unit := withMainContext do
               (← `(tactic| exact tendsto_const_nhds)))
           return (atoms, default, default, default)
         catch _ =>
-          throwError "tendsto_poly: constant body but \
+          throwError "tendsto_cont: constant body but \
             `tendsto_const_nhds` failed"
 
       let prodTy ← buildProdType atoms
@@ -314,7 +319,7 @@ def tendstoPoly : TacticM Unit := withMainContext do
               (Elab.Tactic.evalTactic
                 (← `(tactic| fun_prop)))
           catch e =>
-            throwError m!"tendsto_poly: `fun_prop` failed:\
+            throwError m!"tendsto_cont: `fun_prop` failed:\
               \n{← e.toMessageData.format}\n\
               goal: {contGoalTy}"
 
@@ -334,7 +339,7 @@ def tendstoPoly : TacticM Unit := withMainContext do
   -- `congr 1; norm_num <;> ring` (norm_num reduces projections,
   -- ring handles commutativity/associativity).
   let proofTy ← inferType proof
-  let keyName := `_tendsto_poly_key
+  let keyName := `_tendsto_cont_key
   let goal1 ← goal.define keyName proofTy proof
   let (_, goal2) ← goal1.intro keyName
   let keyId : Ident := mkIdent keyName
@@ -350,14 +355,14 @@ def tendstoPoly : TacticM Unit := withMainContext do
             | (congr 1; norm_num <;> ring))))
       unless r.isEmpty do
         let subgoalTy ← g.getType
-        throwError m!"tendsto_poly: subgoal not closed \
+        throwError m!"tendsto_cont: subgoal not closed \
           by `rfl`, `norm_num`, or `ring`:\n{subgoalTy}"
     catch e =>
       let subgoalTy ← g.getType
-      throwError m!"tendsto_poly: failed to close \
+      throwError m!"tendsto_cont: failed to close \
         subgoal after convert:\n{subgoalTy}\n\
         {← e.toMessageData.format}"
 
-elab "tendsto_poly" : tactic => tendstoPoly
+elab "tendsto_cont" : tactic => tendstoCont
 
-end TendstoPoly
+end TendstoCont

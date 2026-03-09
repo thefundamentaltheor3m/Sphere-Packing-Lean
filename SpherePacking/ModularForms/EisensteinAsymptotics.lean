@@ -1,6 +1,10 @@
-import SpherePacking.ModularForms.SerreDerivativeSlash
-import SpherePacking.ModularForms.DimensionFormulas
-import Mathlib.Analysis.Real.Pi.Bounds
+module
+
+public import SpherePacking.ModularForms.SerreDerivativeSlash
+public import SpherePacking.ModularForms.DimensionFormulas
+public import Mathlib.Analysis.Real.Pi.Bounds
+
+@[expose] public section
 
 /-!
 # Asymptotic Behavior of Eisenstein Series

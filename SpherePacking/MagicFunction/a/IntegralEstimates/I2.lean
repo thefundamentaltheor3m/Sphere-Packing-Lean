@@ -5,9 +5,13 @@ Authors: Sidharth Hariharan
 
 M4R File
 -/
+module
 
-import SpherePacking.MagicFunction.PolyFourierCoeffBound
-import SpherePacking.MagicFunction.a.Basic
+
+public import SpherePacking.MagicFunction.PolyFourierCoeffBound
+public import SpherePacking.MagicFunction.a.Basic
+
+@[expose] public section
 
 /-! # Constructing Upper-Bounds for I₂
 

@@ -1,5 +1,9 @@
-import Mathlib.Analysis.Normed.Group.Tannery
-import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
+module
+
+public import Mathlib.Analysis.Normed.Group.Tannery
+public import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
+
+@[expose] public section
 
 /-
 Probably put this at Analysis/Complex/UpperHalfPlane/FunctionsBoundedAtInfty.lean
@@ -21,4 +25,3 @@ By uniqueness of limits, 0 = c, contradicting c ≠ 0. -/
 lemma ne_zero_of_tendsto_ne_zero {f : ℍ → ℂ} {c : ℂ} (hc : c ≠ 0)
     (hf : Tendsto f atImInfty (nhds c)) : f ≠ 0 := fun h =>
   hc (tendsto_nhds_unique tendsto_const_nhds (h ▸ hf)).symm
-

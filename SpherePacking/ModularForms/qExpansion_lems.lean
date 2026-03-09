@@ -1,8 +1,12 @@
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Data.Real.StarOrdered
-import Mathlib.NumberTheory.ModularForms.QExpansion
-import Mathlib.Order.CompletePartialOrder
-import Mathlib.Tactic.Cases
+module
+
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.NumberTheory.ModularForms.QExpansion
+public import Mathlib.Order.CompletePartialOrder
+public import Mathlib.Tactic.Cases
+
+@[expose] public section
 
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups

@@ -1,4 +1,8 @@
-import SpherePacking.ModularForms.Derivative
+module
+
+public import SpherePacking.ModularForms.Derivative
+
+@[expose] public section
 
 /-!
 # Slash Invariance of Serre Derivative of E₂

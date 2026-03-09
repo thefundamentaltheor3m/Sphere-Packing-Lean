@@ -1,7 +1,11 @@
-import Mathlib.Data.Rat.Star
-import Mathlib.LinearAlgebra.Dimension.Localization
-import Mathlib.NumberTheory.ModularForms.LevelOne
-import SpherePacking.ModularForms.Eisenstein
+module
+
+public import Mathlib.Data.Rat.Star
+public import Mathlib.LinearAlgebra.Dimension.Localization
+public import Mathlib.NumberTheory.ModularForms.LevelOne
+public import SpherePacking.ModularForms.Eisenstein
+
+@[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups SlashInvariantFormClass ModularFormClass

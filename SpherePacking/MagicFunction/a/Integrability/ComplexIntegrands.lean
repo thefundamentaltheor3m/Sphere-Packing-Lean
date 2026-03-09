@@ -3,11 +3,15 @@ Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+module
 
-import SpherePacking.MagicFunction.a.IntegralEstimates.I1
-import SpherePacking.ModularForms.FG
 
-import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
+public import SpherePacking.ModularForms.FG
+
+public import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+
+@[expose] public section
 
 /-! # Complex integrands Φ₁'–Φ₆' are holomorphic on the upper half-plane
 

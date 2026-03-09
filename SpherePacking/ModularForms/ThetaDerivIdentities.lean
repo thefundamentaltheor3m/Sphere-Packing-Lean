@@ -1,10 +1,13 @@
-import SpherePacking.ModularForms.JacobiTheta
-import SpherePacking.ModularForms.Derivative
-import SpherePacking.ModularForms.DimensionFormulas
-import SpherePacking.ModularForms.IsCuspForm
-import SpherePacking.ForMathlib.AtImInfty
-import SpherePacking.ModularForms.EisensteinAsymptotics
-import SpherePacking.Tactic.TendstoPoly
+module
+
+public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.Derivative
+public import SpherePacking.ModularForms.DimensionFormulas
+public import SpherePacking.ForMathlib.AtImInfty
+public import SpherePacking.ModularForms.EisensteinAsymptotics
+public import SpherePacking.Tactic.TendstoPoly
+
+@[expose] public section
 
 /-!
 # Theta Derivative Identities
@@ -452,7 +455,7 @@ lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
   have h_prod : Tendsto (fun z => H₂ z * (H₂ z + 2 * H₄ z)) atImInfty (𝓝 0) := by
     have := H₂_tendsto_atImInfty
     have := H₄_tendsto_atImInfty
-    tendsto_poly
+    tendsto_cont
   simpa [f₂] using h_serre_H₂.sub (h_prod.const_mul (1/6 : ℂ))
 
 /-- f₄ tends to 0 at infinity.
@@ -469,7 +472,7 @@ lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
       atImInfty (𝓝 (1/6 : ℂ)) := by
     have := H₂_tendsto_atImInfty
     have := H₄_tendsto_atImInfty
-    tendsto_poly
+    tendsto_cont
   simpa [f₄] using h_serre_H₄.add h_scaled
 
 /-- theta_g tends to 0 at infinity.
@@ -482,7 +485,7 @@ lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
   have := f₄_tendsto_atImInfty
   change Tendsto (fun z => (2 * H₂ z + H₄ z) * f₂ z + (H₂ z + 2 * H₄ z) * f₄ z)
     atImInfty (𝓝 0)
-  tendsto_poly
+  tendsto_cont
 
 /-- theta_h tends to 0 at infinity.
 theta_h = f₂² + f₂f₄ + f₄² → 0 + 0 + 0 = 0 as f₂, f₄ → 0. -/
@@ -490,7 +493,7 @@ lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
   have := f₂_tendsto_atImInfty
   have := f₄_tendsto_atImInfty
   change Tendsto (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) atImInfty (𝓝 0)
-  tendsto_poly
+  tendsto_cont
 
 /-- g is a cusp form of level 1. -/
 lemma theta_g_IsCuspForm :
@@ -544,7 +547,7 @@ lemma H_sum_sq_tendsto : Tendsto H_sum_sq atImInfty (𝓝 1) := by
   have := H₂_tendsto_atImInfty
   have := H₄_tendsto_atImInfty
   unfold H_sum_sq
-  tendsto_poly
+  tendsto_cont
 
 /-- H_sum_sq ≠ 0 (since it tends to 1 ≠ 0) -/
 lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 :=

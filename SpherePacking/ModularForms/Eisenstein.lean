@@ -1,6 +1,10 @@
-import SpherePacking.ModularForms.Eisensteinqexpansions
-import SpherePacking.ModularForms.IsCuspForm
-import SpherePacking.ModularForms.summable_lems
+module
+
+public import SpherePacking.ModularForms.Eisensteinqexpansions
+public import SpherePacking.ModularForms.IsCuspForm
+public import SpherePacking.ModularForms.summable_lems
+
+@[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups

@@ -1,11 +1,13 @@
-import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
-import SpherePacking.ForMathlib.MDifferentiableFunProp
-import SpherePacking.ForMathlib.SlashActions
-import SpherePacking.ForMathlib.UpperHalfPlane
-import SpherePacking.ModularForms.DimensionFormulas
-import SpherePacking.Tactic.TendstoPoly
-import SpherePacking.ModularForms.IsCuspForm
-import SpherePacking.ModularForms.ResToImagAxis
+module
+
+public import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
+public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.ForMathlib.SlashActions
+public import SpherePacking.ForMathlib.UpperHalfPlane
+public import SpherePacking.ModularForms.DimensionFormulas
+public import SpherePacking.Tactic.TendstoPoly
+
+@[expose] public section
 
 /-!
 # Jacobi theta functions
@@ -879,13 +881,13 @@ theorem jacobi_g_tendsto_atImInfty : Tendsto jacobi_g atImInfty (𝓝 0) := by
   have := H₃_tendsto_atImInfty
   have := H₄_tendsto_atImInfty
   change Tendsto (fun z => H₂ z + H₄ z - H₃ z) atImInfty (𝓝 0)
-  tendsto_poly
+  tendsto_cont
 
 /-- The function f := g² tends to 0 at i∞. -/
 theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
   have := jacobi_g_tendsto_atImInfty
   change Tendsto (fun z => jacobi_g z ^ 2) atImInfty (𝓝 0)
-  tendsto_poly
+  tendsto_cont
 
 /-- jacobi_f is bounded at i∞ (follows from tending to 0) -/
 lemma isBoundedAtImInfty_jacobi_f : IsBoundedAtImInfty jacobi_f :=

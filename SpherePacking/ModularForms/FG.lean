@@ -1,16 +1,20 @@
-import SpherePacking.ForMathlib.MDifferentiableFunProp
-import SpherePacking.Tactic.TendstoPoly
+module
 
-import SpherePacking.ModularForms.Derivative
-import SpherePacking.ModularForms.DimensionFormulas
-import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.ModularForms.ThetaDerivIdentities
-import SpherePacking.ModularForms.EisensteinAsymptotics
-import SpherePacking.ModularForms.JacobiTheta
-import SpherePacking.ModularForms.QExpansion
-import SpherePacking.ModularForms.RamanujanIdentities
-import SpherePacking.ModularForms.ResToImagAxis
-import SpherePacking.ModularForms.summable_lems
+public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.Tactic.TendstoPoly
+
+public import SpherePacking.ModularForms.Derivative
+public import SpherePacking.ModularForms.DimensionFormulas
+public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.ModularForms.ThetaDerivIdentities
+public import SpherePacking.ModularForms.EisensteinAsymptotics
+public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.QExpansion
+public import SpherePacking.ModularForms.RamanujanIdentities
+public import SpherePacking.ModularForms.ResToImagAxis
+public import SpherePacking.ModularForms.summable_lems
+
+@[expose] public section
 
 open Filter Complex
 open UpperHalfPlane (atImInfty ofComplex ofComplex_apply ofComplex_apply_of_im_pos coe_mk_subtype
@@ -971,7 +975,7 @@ private theorem D_B_tendsto_zero :
   have := H₂_tendsto_atImInfty
   have := H₄_tendsto_atImInfty
   have h : Tendsto (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
-      atImInfty (nhds 5) := by tendsto_poly
+      atImInfty (nhds 5) := by tendsto_cont
   exact (h.congr' (by filter_upwards with z; simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply,
     Pi.smul_apply, smul_eq_mul]; ring)).isBigO_one ℝ
 
@@ -998,7 +1002,7 @@ theorem D_G_div_G_tendsto :
     have := H₂_tendsto_atImInfty
     have := H₄_tendsto_atImInfty
     change Tendsto (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) atImInfty (nhds 5)
-    tendsto_poly
+    tendsto_cont
   have h_DB_B_tendsto : Filter.Tendsto (fun z => D B z / B z) atImInfty (nhds 0) := by
     have h := D_B_tendsto_zero.div h_B_tendsto (by norm_num : (5 : ℂ) ≠ 0)
     simp only [zero_div] at h; exact h

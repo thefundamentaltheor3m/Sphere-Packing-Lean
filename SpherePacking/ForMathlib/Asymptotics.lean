@@ -6,8 +6,12 @@ Authors: Sidharth Hariharan
 This file is more of a scratch file for asymptotics. If there is anything here that is not in
 Mathlib, which should not be the case, then we can PR it.
 -/
+module
 
-import Mathlib.Analysis.Asymptotics.Defs
+
+public import Mathlib.Analysis.Asymptotics.Defs
+
+@[expose] public section
 
 open Asymptotics Filter
 

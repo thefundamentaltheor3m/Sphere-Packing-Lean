@@ -1,7 +1,11 @@
-import Mathlib.Analysis.CStarAlgebra.Module.Defs
-import SpherePacking.ModularForms.qExpansion_lems
+module
 
-import SpherePacking.ForMathlib.Cusps
+public import Mathlib.Analysis.CStarAlgebra.Module.Defs
+public import SpherePacking.ModularForms.qExpansion_lems
+
+public import SpherePacking.ForMathlib.Cusps
+
+@[expose] public section
 
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups Manifold
