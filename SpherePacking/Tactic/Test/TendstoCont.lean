@@ -174,3 +174,48 @@ example {R : Type*} [TopologicalSpace R] [CommRing R] [IsTopologicalRing R]
     Tendsto (fun z => f z * g z + g z * f z) l (nhds (2 * a * b)) := by tendsto_cont
 
 end GeneralRing
+
+-- ══════════════════════════════════════════════════════════════
+-- Non-atTop filters (nhds 0, etc.)
+-- ══════════════════════════════════════════════════════════════
+
+-- Limit at nhds 0 (not atTop/atBot)
+example (h : Tendsto f (nhds 0) (nhds 1)) :
+    Tendsto (fun x => 2 * f x) (nhds 0) (nhds 2) := by tendsto_cont
+
+-- Two hypotheses with different filters: picks the right one
+example (_h₁ : Tendsto f (nhds 0) (nhds 1)) (h₂ : Tendsto f atTop (nhds 0)) :
+    Tendsto (fun x => 2 * f x) atTop (nhds 0) := by tendsto_cont
+
+-- ══════════════════════════════════════════════════════════════
+-- Composition: f(g(x)) as a single atom
+-- ══════════════════════════════════════════════════════════════
+
+-- Hypothesis about f(g(x)) treated as one atom
+example (h : Tendsto (fun x => f (g x)) (nhds 0) (nhds 1)) :
+    Tendsto (fun x => 2 * f (g x)) (nhds 0) (nhds 2) := by tendsto_cont
+
+-- ══════════════════════════════════════════════════════════════
+-- Composition via continuity: g(f(x)) where g is continuous
+-- ══════════════════════════════════════════════════════════════
+
+-- g continuous + f → 1 at 0 gives g(f(x)) → g(1) at 0
+example (hf : Tendsto f (nhds 0) (nhds 1)) (hg : Continuous g) :
+    Tendsto (fun x => g (f x)) (nhds 0) (nhds (g 1)) := by tendsto_cont
+
+-- Without continuity hypothesis, fun_prop can't prove ContinuousAt g
+/--
+error: tendsto_cont: `fun_prop` failed:
+`fun_prop` was unable to prove `ContinuousAt (fun p ↦ g p) 1`
+
+Issues:
+  No theorems found for `g` in order to prove `ContinuousAt (fun p ↦ g p) 1`
+goal: ContinuousAt (fun p ↦ g p) 1
+-/
+#guard_msgs(error, drop info) in
+example (hf : Tendsto f (nhds 0) (nhds 1)) :
+    Tendsto (fun x => g (f x)) (nhds 0) (nhds (g 1)) := by tendsto_cont
+
+-- But known continuous functions (Real.sin, etc.) work fine via fun_prop
+example (hf : Tendsto f (nhds 0) (nhds 1)) :
+    Tendsto (fun x => Real.sin (f x)) (nhds 0) (nhds (Real.sin 1)) := by tendsto_cont
