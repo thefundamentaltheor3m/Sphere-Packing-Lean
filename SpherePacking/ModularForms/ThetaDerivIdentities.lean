@@ -3,6 +3,7 @@ module
 public import SpherePacking.ModularForms.JacobiTheta
 public import SpherePacking.ModularForms.Derivative
 public import SpherePacking.ModularForms.DimensionFormulas
+public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ModularForms.EisensteinAsymptotics
 public import SpherePacking.Tactic.TendstoPoly
