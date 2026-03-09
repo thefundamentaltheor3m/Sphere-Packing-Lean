@@ -81,13 +81,13 @@ private meta def matchNhds? (e : Expr) : MetaM (Option Expr) := do
   if let some a := match1 e then return some a
   return match1 (← whnfR e)
 
-/-- Parse the goal `Tendsto goalFn l (nhds c)`. -/
+/-- Parse the goal `Tendsto goalFn l (nhds c)`, returning `(goalFn, l, domTy)`. -/
 private meta def parseGoal (goal : Expr) :
-    MetaM (Expr × Expr × Expr × Expr × Expr) := do
+    MetaM (Expr × Expr × Expr) := do
   match ← matchTendsto? goal with
-  | some (domTy, codTy, goalFn, l, tgt) =>
+  | some (domTy, _, goalFn, l, tgt) =>
     match ← matchNhds? tgt with
-    | some c => return (goalFn, l, c, domTy, codTy)
+    | some _ => return (goalFn, l, domTy)
     | none =>
       throwError "tendsto_cont: target filter is not `nhds _`"
   | none =>
@@ -315,8 +315,7 @@ private meta def tendstoCont : TacticM Unit := withMainContext do
   let goal ← getMainGoal
   let goalTy ← goal.getType >>= instantiateMVars
 
-  let (goalFn, goalFilter, _goalLimit, domTy, _codTy) ←
-    parseGoal goalTy
+  let (goalFn, goalFilter, domTy) ← parseGoal goalTy
 
   let body ← match goalFn with
     | .lam _ _ b _ => pure b
