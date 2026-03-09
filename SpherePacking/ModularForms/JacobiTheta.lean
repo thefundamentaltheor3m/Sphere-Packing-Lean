@@ -908,20 +908,21 @@ lemma isBoundedAtImInfty_jacobi_f_slash :
   exact isBoundedAtImInfty_jacobi_f
 
 /-- Package the cusp form proof for jacobi_f to avoid repeated elaboration -/
-private def jacobi_f_cusp_proof :=
+noncomputable def jacobi_f_cusp_proof :=
   IsCuspForm_of_SIF_tendsto_zero jacobi_f_SIF jacobi_f_SIF_MDifferentiable
     jacobi_f_tendsto_atImInfty
 
 /-- jacobi_f as a ModularForm of weight 4 and level Γ(1), with IsCuspForm proof -/
-noncomputable def jacobi_f_MF : ModularForm (Γ 1) 4 := jacobi_f_cusp_proof.choose
+noncomputable def jacobi_f_MF : ModularForm (Γ 1) 4 :=
+  Exists.choose jacobi_f_cusp_proof
 
 /-- jacobi_f_MF is a cusp form because it vanishes at i∞ -/
 theorem jacobi_f_MF_IsCuspForm : IsCuspForm (Γ 1) 4 jacobi_f_MF :=
-  jacobi_f_cusp_proof.choose_spec.1
+  (Exists.choose_spec jacobi_f_cusp_proof).1
 
 /-- jacobi_f_MF agrees with jacobi_f_SIF pointwise -/
 lemma jacobi_f_MF_eq : ∀ z, jacobi_f_MF z = jacobi_f_SIF z :=
-  jacobi_f_cusp_proof.choose_spec.2
+  (Exists.choose_spec jacobi_f_cusp_proof).2
 
 /-- The main dimension vanishing: jacobi_f_MF = 0 -/
 theorem jacobi_f_MF_eq_zero : jacobi_f_MF = 0 :=
