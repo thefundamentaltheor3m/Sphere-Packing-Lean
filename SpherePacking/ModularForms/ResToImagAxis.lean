@@ -1,7 +1,11 @@
-import Mathlib.NumberTheory.ModularForms.QExpansion
+module
 
-import SpherePacking.ForMathlib.AtImInfty
-import SpherePacking.ModularForms.SlashActionAuxil
+public import Mathlib.NumberTheory.ModularForms.QExpansion
+
+public import SpherePacking.ForMathlib.AtImInfty
+public import SpherePacking.ModularForms.SlashActionAuxil
+
+@[expose] public section
 
 open UpperHalfPlane hiding I
 
@@ -106,7 +110,7 @@ theorem ResToImagAxis.one_div_eq_S_smul (F : ℍ → ℂ) {t : ℝ} (ht : 0 < t)
     ring
   simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
   congr 1; apply UpperHalfPlane.ext
-  simp only [coe_mk_subtype, div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
+  simp only [div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]
 
 /--
 Realness, positivity and essential positivity are closed under the addition and multiplication.

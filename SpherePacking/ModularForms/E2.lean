@@ -1,5 +1,9 @@
-import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
-import SpherePacking.ModularForms.SlashActionAuxil
+module
+
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
+public import SpherePacking.ModularForms.SlashActionAuxil
+
+@[expose] public section
 
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups

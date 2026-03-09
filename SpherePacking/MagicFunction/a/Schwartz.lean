@@ -5,11 +5,15 @@ Authors: Sidharth Hariharan
 
 M4R File
 -/
+module
+
 
 -- import Mathlib
 
-import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
-import SpherePacking.MagicFunction.a.Basic
+public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
+public import SpherePacking.MagicFunction.a.Basic
+
+@[expose] public section
 
 /-! # `a` is a Schwartz Function
 

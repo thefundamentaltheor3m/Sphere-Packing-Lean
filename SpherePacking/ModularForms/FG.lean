@@ -1,12 +1,10 @@
-import SpherePacking.ForMathlib.MDifferentiableFunProp
+module
 
-import SpherePacking.ModularForms.RamanujanIdentities
-import SpherePacking.ModularForms.Derivative
-import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.ModularForms.JacobiTheta
-import SpherePacking.ModularForms.DimensionFormulas
-import SpherePacking.ModularForms.QExpansion
-import SpherePacking.ModularForms.RamanujanIdentities
+public import SpherePacking.ModularForms.QExpansion
+public import SpherePacking.ModularForms.RamanujanIdentities
+public import SpherePacking.ModularForms.ThetaDerivIdentities
+
+@[expose] public section
 
 open UpperHalfPlane hiding I
 open Filter Complex ModularGroup SlashAction
@@ -89,6 +87,7 @@ lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5
   ext τ
   simp
 
+@[fun_prop]
 theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by unfold F; fun_prop
 
 theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by rw [G_eq]; fun_prop
@@ -115,21 +114,50 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
   -- Holomorphicity of the terms
   repeat fun_prop
 
+private lemma serre_D_10_F : serre_D 10 F = D F - 5 * 6⁻¹ * E₂ * F := by
+  ext z; simp [serre_D_apply]; norm_num
+
 /--
 Modular linear differential equation satisfied by $F$.
 -/
-theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 7200 * Δ_fun * negDE₂ := by
-  ext x
-  rw [negDE₂, Δ_fun, serre_D, serre_D, F_aux]
-  unfold serre_D
-  rw [F_aux]
-  sorry
+theorem MLDE_F : serre_D 12 (serre_D 10 F) =
+    5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ_fun * negDE₂ := by
+  -- Unfold serre_D to D-level, substitute D F formula
+  rw [serre_D_10_F]
+  -- Compute D(D F - cE₂F) using automated simp + fun_prop discharge
+  simp (disch := fun_prop) only [serre_D_eq, D_sub, D_add, D_mul, D_sq, D_cube, F_aux,
+    ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
+  simp only [pi_ofNat_eq_const, pi_inv_const_eq_const, D_const]
+  ext z
+  simp [F, Δ_fun, negDE₂]
+  field_simp (disch := norm_num)
+  ring
+
+/-- Δ_fun expressed in terms of theta functions. -/
+private lemma Δ_fun_theta :
+    Δ_fun = (1 / 256 : ℂ) • ((H₂ * (H₂ + H₄) * H₄) ^ 2) := by
+  ext z
+  rw [congrFun Δ_fun_eq_Δ z, ← Delta_apply, Delta_eq_H₂_H₃_H₄ z, ← jacobi_identity]
+  simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
+  ring
+
+private lemma serre_D_10_G : serre_D 10 G = (5/3 : ℂ) • (H₂ ^ 3 * ((H₂ + H₄) ^ 3 + H₄ ^ 3)) := by
+  rw [G_eq]
+  ext z
+  simp (disch := fun_prop) [serre_D_apply, D_mul, D_add, D_sq, D_cube, D_smul,
+    D_H₂, D_H₄, Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.pow_apply, smul_eq_mul]
+  ring
 
 /--
 Modular linear differential equation satisfied by $G$.
 -/
-theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
-  sorry
+theorem MLDE_G : serre_D 12 (serre_D 10 G) =
+    5 * 6⁻¹ * E₄.toFun * G - 640 * Δ_fun * H₂ := by
+  ext z
+  rw [E₄_eq_H_sum_sq, serre_D_10_G, Δ_fun_theta]
+  simp (disch := fun_prop) [H_sum_sq, D_H₂, D_H₄, G, Pi.mul_apply, Pi.add_apply,
+    Pi.sub_apply, Pi.smul_apply, Pi.pow_apply, Complex.real_smul, Complex.ofReal_ofNat]
+  ring
 
 /-- Pointwise log-derivative of a product: `D(f·h)/(f·h) = Df/f + Dh/h`. -/
 private lemma logderiv_mul_eq (f h : ℍ → ℂ)
@@ -354,7 +382,7 @@ theorem DE₄_qexp (z : UpperHalfPlane) :
     rw [h]; exact (E₄.holo'.sub mdifferentiable_const).const_smul _
   have hD_smul : D ((240 : ℂ) • f) z = (240 : ℂ) * D f z := by
     rw [congrFun (D_smul 240 f hf_mdiff) z, Pi.smul_apply, smul_eq_mul]
-  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := D_const 1 z
+  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := congrFun (D_const 1) z
   calc D E₄.toFun z
       = D ((fun _ => 1) + (240 : ℂ) • f) z := by rw [hE4_eq]
     _ = D (fun _ => 1) z + D ((240 : ℂ) • f) z :=
@@ -457,7 +485,7 @@ theorem negDE₂_qexp (z : UpperHalfPlane) :
     rw [h]; exact (mdifferentiable_const.sub E₂_holo').const_smul _
   have hD_smul : D ((24 : ℂ) • f) z = (24 : ℂ) * D f z := by
     rw [congrFun (D_smul 24 f hf_mdiff) z, Pi.smul_apply, smul_eq_mul]
-  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := D_const 1 z
+  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := congrFun (D_const 1) z
   calc -(D E₂) z
       = -(D ((fun _ => 1) - (24 : ℂ) • f)) z := by rw [hE2_eq]
     _ = -((D (fun _ => 1) - D ((24 : ℂ) • f)) z) := by
@@ -1446,3 +1474,4 @@ theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
 theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
     FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
   sorry
+#min_imports

@@ -1,13 +1,29 @@
-import SpherePacking.ForMathlib.MDifferentiableFunProp
+module
 
-import SpherePacking.ModularForms.Eisenstein
-import Mathlib.Analysis.Calculus.DiffContOnCl
+public import SpherePacking.ForMathlib.MDifferentiableFunProp
+
+public import SpherePacking.ModularForms.Eisenstein
+public import Mathlib.Analysis.Calculus.DiffContOnCl
+
+@[expose] public section
 
 open UpperHalfPlane hiding I
 open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMap
 open Metric Filter Function
 
 open scoped ModularForm MatrixGroups Manifold Topology BigOperators
+
+/-- Constant Pi functions (numeric literals) are MDifferentiable. -/
+@[fun_prop]
+lemma MDifferentiable.pi_ofNat (n : ℕ) [n.AtLeastTwo] :
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (@OfNat.ofNat (ℍ → ℂ) n _) := mdifferentiable_const
+
+/-- Inverse of a constant Pi function (e.g. `6⁻¹ : ℍ → ℂ`) is MDifferentiable. -/
+@[fun_prop]
+lemma MDifferentiable.pi_inv_ofNat (n : ℕ) [n.AtLeastTwo] :
+    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (@OfNat.ofNat (ℍ → ℂ) n _)⁻¹ := by
+  change MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun (_ : ℍ) => (OfNat.ofNat n : ℂ)⁻¹)
+  exact mdifferentiable_const
 
 /-!
 Definition of (Serre) derivative of modular forms.
@@ -124,6 +140,14 @@ theorem D_smul (c : ℂ) (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(
     _ = c * D F z := by rfl
 
 @[simp]
+theorem D_neg (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) :
+    D (-F) = -D F := by
+  have : -F = (-1 : ℂ) • F := by ext; simp
+  rw [this, D_smul _ _ hF]
+  ext
+  simp
+
+@[simp]
 theorem D_mul (F G : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (hG : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G)
     : D (F * G) = D F * G + F * D G := by
   ext z
@@ -179,7 +203,8 @@ lemma MDifferentiable_div {F G : ℍ → ℂ}
     (by simp [Function.comp]; exact hG_ne _)).congr_of_eventuallyEq h_eq.symm
 
 @[simp]
-theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
+theorem D_const (c : ℂ) : D (Function.const ℍ c) = 0 := by
+  ext z
   have h : deriv (Function.const _ c ∘ ofComplex) z = 0 := by
     have h' : Function.const _ c ∘ ofComplex = Function.const _ c := by rfl
     rw [h']
@@ -189,6 +214,16 @@ theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
     _ = (2 * π * I)⁻¹ * deriv (Function.const _ c ∘ ofComplex) z := by rfl
     _ = (2 * π * I)⁻¹ * 0 := by rw [h]
     _ = 0 := by ring_nf
+
+/-- Normalize a numeric literal `(n : ℍ → ℂ)` to `Function.const ℍ n` so `D_const` fires. -/
+@[simp]
+lemma pi_ofNat_eq_const (n : ℕ) [n.AtLeastTwo] :
+    (@OfNat.ofNat (ℍ → ℂ) n _) = Function.const ℍ (OfNat.ofNat n) := rfl
+
+/-- Normalize `(Function.const ℍ c)⁻¹` to `Function.const ℍ c⁻¹` so `D_const` fires. -/
+@[simp]
+lemma pi_inv_const_eq_const (c : ℂ) :
+    (Function.const ℍ c)⁻¹ = Function.const ℍ c⁻¹ := rfl
 
 /-! ### Termwise differentiation of q-series (Lemma 6.45) -/
 
