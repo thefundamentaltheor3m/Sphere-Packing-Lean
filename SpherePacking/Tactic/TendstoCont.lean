@@ -253,95 +253,14 @@ private meta partial def abstractBody (body : Expr) (bvar : FVarId)
   | _ => return body
 
 -- ══════════════════════════════════════════════════════════════
--- Main tactic
+-- Limit reconciliation
 -- ══════════════════════════════════════════════════════════════
 
-/-- The `tendsto_cont` tactic. -/
-elab "tendsto_cont" : tactic => withMainContext do
-  let goal ← getMainGoal
-  let goalTy ← goal.getType >>= instantiateMVars
-
-  let (goalFn, goalFilter, _goalLimit, domTy, _codTy) ←
-    parseGoal goalTy
-
-  -- goalFn must be a lambda
-  let body ← match goalFn with
-    | .lam _ _ b _ => pure b
-    | _ => throwError
-      "tendsto_cont: goal function is not a lambda.\n\
-       Hint: try `show Tendsto (fun z => ...) _ (nhds _)` \
-       or `unfold ...`"
-
-  -- Collect atoms and build proof components inside
-  -- withLocalDecl, then do goal manipulation outside.
-  let (atoms, _prodMkProof, _contMVar, proof) ← do
-    withLocalDecl `z .default domTy fun zVar => do
-      let body := body.instantiate1 zVar
-      let bvar := zVar.fvarId!
-
-      let (candidates, atoms) ←
-        collectAtoms body bvar goalFilter
-
-      -- 0 atoms: constant function or diagnostic
-      if atoms.size == 0 then
-        if body.containsFVar bvar then
-          -- Body references the bound variable but no atoms matched
-          if candidates.size == 0 then
-            let filterFmt ← ppExpr goalFilter
-            throwError m!"tendsto_cont: no `Tendsto` hypotheses \
-              found for filter `{filterFmt}`"
-          else
-            let candFns ← candidates.mapM fun c => ppExpr c.fn
-            throwError m!"tendsto_cont: body references the \
-              bound variable but no candidate matched.\n\
-              Available candidates: {candFns}"
-        try
-          let _ ← Elab.Tactic.run goal
-            (Elab.Tactic.evalTactic
-              (← `(tactic| exact tendsto_const_nhds)))
-          return (atoms, default, default, default)
-        catch _ =>
-          throwError "tendsto_cont: constant body but \
-            `tendsto_const_nhds` failed"
-
-      let prodTy ← buildProdType atoms
-      let limitPt ← buildLimitPoint atoms
-      let prodMkProof ← buildProdMkNhds atoms
-
-      -- Build polyFn via nested withLocalDecl
-      let (contMVar, proof) ←
-        withLocalDecl `p .default prodTy fun pVar => do
-          let abstracted ←
-            abstractBody body bvar pVar atoms
-          let polyFn ← mkLambdaFVars #[pVar] abstracted
-
-          let contGoalTy ←
-            mkAppM ``ContinuousAt #[polyFn, limitPt]
-          let contMVar ← mkFreshExprMVar contGoalTy
-          try
-            let _ ← Elab.Tactic.run contMVar.mvarId!
-              (Elab.Tactic.evalTactic
-                (← `(tactic| fun_prop)))
-          catch e =>
-            throwError m!"tendsto_cont: `fun_prop` failed:\
-              \n{← e.toMessageData.format}\n\
-              goal: {contGoalTy}"
-
-          let proof ← mkAppM ``tendsto_continuousAt_comp
-            #[contMVar, prodMkProof]
-          return (contMVar, proof)
-
-      return (atoms, prodMkProof, contMVar, proof)
-
-  -- If 0 atoms, goal was already closed above
-  if atoms.size == 0 then return
-
-  -- The proof's limit may not be kernel-defeq to the
-  -- goal's (e.g. `1 + 2` vs `3`, or `b + a` vs `a + b`).
-  -- Use `convert using 1` to match function/filter by defeq,
-  -- leaving only the `nhds` target equality, then close with
-  -- `congr 1; norm_num <;> ring` (norm_num reduces projections,
-  -- ring handles commutativity/associativity).
+/-- Close a goal using a proof whose limit may differ from the stated one
+    (e.g. `1 + 2` vs `3`, or `b + a` vs `a + b`).
+    Uses `convert using 1` then `congr 1; norm_num <;> ring`. -/
+private meta def reconcileLimits (goal : MVarId) (proof : Expr) :
+    TacticM Unit := do
   let proofTy ← inferType proof
   let keyName := `_tendsto_cont_key
   let goal1 ← goal.define keyName proofTy proof
@@ -366,5 +285,77 @@ elab "tendsto_cont" : tactic => withMainContext do
       throwError m!"tendsto_cont: failed to close \
         subgoal after convert:\n{subgoalTy}\n\
         {← e.toMessageData.format}"
+
+-- ══════════════════════════════════════════════════════════════
+-- Main tactic
+-- ══════════════════════════════════════════════════════════════
+
+/-- Build the continuity-based proof for a non-constant body with atoms. -/
+private meta def buildContinuityProof (body : Expr) (bvar : FVarId)
+    (atoms : Array Atom) : TacticM Expr := do
+  let prodTy ← buildProdType atoms
+  let limitPt ← buildLimitPoint atoms
+  let prodMkProof ← buildProdMkNhds atoms
+  withLocalDecl `p .default prodTy fun pVar => do
+    let abstracted ← abstractBody body bvar pVar atoms
+    let polyFn ← mkLambdaFVars #[pVar] abstracted
+    let contGoalTy ← mkAppM ``ContinuousAt #[polyFn, limitPt]
+    let contMVar ← mkFreshExprMVar contGoalTy
+    try
+      let _ ← Elab.Tactic.run contMVar.mvarId!
+        (Elab.Tactic.evalTactic (← `(tactic| fun_prop)))
+    catch e =>
+      throwError m!"tendsto_cont: `fun_prop` failed:\
+        \n{← e.toMessageData.format}\n\
+        goal: {contGoalTy}"
+    mkAppM ``tendsto_continuousAt_comp #[contMVar, prodMkProof]
+
+/-- Core implementation of the `tendsto_cont` tactic. -/
+private meta def tendstoCont : TacticM Unit := withMainContext do
+  let goal ← getMainGoal
+  let goalTy ← goal.getType >>= instantiateMVars
+
+  let (goalFn, goalFilter, _goalLimit, domTy, _codTy) ←
+    parseGoal goalTy
+
+  let body ← match goalFn with
+    | .lam _ _ b _ => pure b
+    | _ => throwError
+      "tendsto_cont: goal function is not a lambda.\n\
+       Hint: try `show Tendsto (fun z => ...) _ (nhds _)` \
+       or `unfold ...`"
+
+  let (atoms, proof) ← withLocalDecl `z .default domTy fun zVar => do
+    let body := body.instantiate1 zVar
+    let bvar := zVar.fvarId!
+    let (candidates, atoms) ← collectAtoms body bvar goalFilter
+
+    if atoms.size == 0 then
+      if body.containsFVar bvar then
+        if candidates.size == 0 then
+          let filterFmt ← ppExpr goalFilter
+          throwError m!"tendsto_cont: no `Tendsto` hypotheses \
+            found for filter `{filterFmt}`"
+        else
+          let candFns ← candidates.mapM fun c => ppExpr c.fn
+          throwError m!"tendsto_cont: body references the \
+            bound variable but no candidate matched.\n\
+            Available candidates: {candFns}"
+      try
+        let _ ← Elab.Tactic.run goal
+          (Elab.Tactic.evalTactic
+            (← `(tactic| exact tendsto_const_nhds)))
+        return (atoms, default)
+      catch _ =>
+        throwError "tendsto_cont: constant body but \
+          `tendsto_const_nhds` failed"
+
+    let proof ← buildContinuityProof body bvar atoms
+    return (atoms, proof)
+
+  if atoms.size == 0 then return
+  reconcileLimits goal proof
+
+elab "tendsto_cont" : tactic => TendstoCont.tendstoCont
 
 end TendstoCont
