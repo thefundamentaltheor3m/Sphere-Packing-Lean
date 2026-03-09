@@ -3,11 +3,15 @@ Copyright (c) 2025 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-import Mathlib.Topology.Algebra.Ring.Basic
-import Mathlib.Tactic.FunProp
-import Mathlib.Tactic.NormNum
-import Mathlib.Tactic.Convert
-import Mathlib.Tactic.Ring
+module
+
+public import Mathlib.Topology.Algebra.Ring.Basic
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Convert
+public import Mathlib.Tactic.Ring
+
+@[expose] public section
 
 /-!
 # `tendsto_cont` tactic

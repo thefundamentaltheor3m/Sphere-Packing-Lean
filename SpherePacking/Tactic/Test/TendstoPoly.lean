@@ -1,10 +1,14 @@
-import SpherePacking.Tactic.TendstoPoly
-import Mathlib.Topology.Algebra.Ring.Basic
-import Mathlib.Topology.Order.Basic
-import Mathlib.Analysis.SpecificLimits.Basic
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.Analysis.SpecialFunctions.ExpDeriv
-import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
+module
+
+public import SpherePacking.Tactic.TendstoPoly
+public import Mathlib.Topology.Algebra.Ring.Basic
+public import Mathlib.Topology.Order.Basic
+public import Mathlib.Analysis.SpecificLimits.Basic
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
+
+@[expose] public section
 
 open Filter Topology
 
