@@ -85,4 +85,6 @@ import SpherePacking.ModularForms.uniformcts
 import SpherePacking.ModularForms.upperhalfplane
 import SpherePacking.Tactic.NormNumI
 import SpherePacking.Tactic.NormNumI_Scratch
+import SpherePacking.Tactic.TendstoPoly
 import SpherePacking.Tactic.Test.NormNumI
+import SpherePacking.Tactic.Test.TendstoPoly
