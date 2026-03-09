@@ -206,11 +206,11 @@ example (hf : Tendsto f (nhds 0) (nhds 1)) (hg : Continuous g) :
 -- Without continuity hypothesis, fun_prop can't prove ContinuousAt g
 /--
 error: tendsto_cont: `fun_prop` failed:
-`fun_prop` was unable to prove `ContinuousAt (fun p ↦ g p) 1`
+`fun_prop` was unable to prove `ContinuousAt (fun p => g p) 1`
 
 Issues:
-  No theorems found for `g` in order to prove `ContinuousAt (fun p ↦ g p) 1`
-goal: ContinuousAt (fun p ↦ g p) 1
+  No theorems found for `g` in order to prove `ContinuousAt (fun p => g p) 1`
+goal: ContinuousAt (fun p => g p) 1
 -/
 #guard_msgs(error, drop info) in
 example (hf : Tendsto f (nhds 0) (nhds 1)) :

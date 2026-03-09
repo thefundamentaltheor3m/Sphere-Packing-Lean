@@ -324,7 +324,7 @@ private meta def tendstoCont : TacticM Unit := withMainContext do
        Hint: try `show Tendsto (fun z => ...) _ (nhds _)` \
        or `unfold ...`"
 
-  let (atoms, proof) ← withLocalDecl `z .default domTy fun zVar => do
+  let proof? ← withLocalDecl `z .default domTy fun zVar => do
     let body := body.instantiate1 zVar
     let bvar := zVar.fvarId!
     let (candidates, atoms) ← collectAtoms body bvar goalFilter
@@ -344,16 +344,16 @@ private meta def tendstoCont : TacticM Unit := withMainContext do
         let _ ← Elab.Tactic.run goal
           (Elab.Tactic.evalTactic
             (← `(tactic| exact tendsto_const_nhds)))
-        return (atoms, default)
+        return none
       catch _ =>
         throwError "tendsto_cont: constant body but \
           `tendsto_const_nhds` failed"
 
-    let proof ← buildContinuityProof body bvar atoms
-    return (atoms, proof)
+    some <$> buildContinuityProof body bvar atoms
 
-  if atoms.size == 0 then return
-  reconcileLimits goal proof
+  match proof? with
+  | none => return
+  | some proof => reconcileLimits goal proof
 
 elab "tendsto_cont" : tactic => TendstoCont.tendstoCont
 
