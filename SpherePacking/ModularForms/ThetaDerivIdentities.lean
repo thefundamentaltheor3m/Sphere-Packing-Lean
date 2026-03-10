@@ -496,32 +496,6 @@ lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
       (f₂_tendsto_atImInfty.mul f₄_tendsto_atImInfty)).add
       (f₄_tendsto_atImInfty.pow 2)
 
-/-- Build a cusp form from a SlashInvariantForm that's MDifferentiable and
-tends to zero at infinity. This pattern is reused for theta_g and theta_h. -/
-lemma IsCuspForm_of_SIF_tendsto_zero {k : ℤ}
-    (f_SIF : SlashInvariantForm (Γ 1) k)
-    (h_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f_SIF.toFun)
-    (h_zero : Tendsto f_SIF.toFun atImInfty (𝓝 0)) :
-    ∃ (f_MF : ModularForm (Γ 1) k),
-    IsCuspForm (Γ 1) k f_MF ∧ ∀ z, f_MF z = f_SIF.toFun z := by
-  -- Use slash invariance to show zero at all cusps
-  have h_zero_at_cusps :
-      ∀ {c : OnePoint ℝ}, IsCusp c (Γ 1) → c.IsZeroAt f_SIF.toFun k := by
-    intro c hc
-    apply zero_at_cusps_of_zero_at_infty hc
-    intro A ⟨A', hA'⟩
-    have h_inv := f_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩
-    rw [h_inv]
-    exact h_zero
-  -- Construct CuspForm
-  let f_CF : CuspForm (Γ 1) k := {
-    toSlashInvariantForm := f_SIF
-    holo' := h_mdiff
-    zero_at_cusps' := fun hc => h_zero_at_cusps hc
-  }
-  let f_MF := CuspForm_to_ModularForm (Γ 1) k f_CF
-  exact ⟨f_MF, ⟨⟨f_CF, rfl⟩, fun _ => rfl⟩⟩
-
 /-- g is a cusp form of level 1. -/
 lemma theta_g_IsCuspForm :
     ∃ (g_MF : ModularForm (Γ 1) 6),
