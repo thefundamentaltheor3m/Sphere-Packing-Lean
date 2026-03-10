@@ -884,35 +884,21 @@ theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
   convert jacobi_g_tendsto_atImInfty.pow 2 using 1
   norm_num
 
-/-- jacobi_f is bounded at i∞ (follows from tending to 0) -/
-lemma isBoundedAtImInfty_jacobi_f : IsBoundedAtImInfty jacobi_f :=
-  IsZeroAtImInfty.isBoundedAtImInfty jacobi_f_tendsto_atImInfty
-
-/-- jacobi_f slash by any SL₂(ℤ) element equals jacobi_f (for use with bounded_at_cusps) -/
-lemma jacobi_f_slash_eq (A' : SL(2, ℤ)) :
-    jacobi_f ∣[(4 : ℤ)] (SpecialLinearGroup.mapGL ℝ A') = jacobi_f := by
-  simpa [ModularForm.SL_slash] using jacobi_f_SL2Z_invariant A'
-
-/-- jacobi_f slash by any SL₂(ℤ) element is bounded at i∞ -/
-lemma isBoundedAtImInfty_jacobi_f_slash :
-    ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (jacobi_f ∣[(4 : ℤ)] (A : GL (Fin 2) ℝ)) := by
-  intro A ⟨A', hA⟩
-  rw [← hA, jacobi_f_slash_eq A']
-  exact isBoundedAtImInfty_jacobi_f
+private noncomputable def jacobi_f_CF : CuspForm (Γ 1) 4 :=
+  cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_SIF_MDifferentiable
+    jacobi_f_tendsto_atImInfty
 
 /-- jacobi_f as a ModularForm of weight 4 and level Γ(1) -/
 noncomputable def jacobi_f_MF : ModularForm (Γ 1) 4 := {
   jacobi_f_SIF with
   holo' := jacobi_f_SIF_MDifferentiable
-  bdd_at_cusps' := fun hc =>
-    bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_jacobi_f_slash
+  bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc fun A ⟨A', hA'⟩ => by
+    rw [jacobi_f_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩]
+    exact IsZeroAtImInfty.isBoundedAtImInfty jacobi_f_tendsto_atImInfty
 }
 
 /-- jacobi_f_MF is a cusp form because it vanishes at i∞ -/
-theorem jacobi_f_MF_IsCuspForm : IsCuspForm (Γ 1) 4 jacobi_f_MF := by
-  rw [IsCuspForm_iff_coeffZero_eq_zero, ModularFormClass.qExpansion_coeff]; simp
-  exact IsZeroAtImInfty.cuspFunction_apply_zero jacobi_f_tendsto_atImInfty
-    (by norm_num : (0 : ℝ) < 1)
+theorem jacobi_f_MF_IsCuspForm : IsCuspForm (Γ 1) 4 jacobi_f_MF := ⟨jacobi_f_CF, by ext; rfl⟩
 
 /-- The main dimension vanishing: jacobi_f_MF = 0 -/
 theorem jacobi_f_MF_eq_zero : jacobi_f_MF = 0 :=
@@ -972,19 +958,6 @@ private lemma theta_prod_sq_tendsto_atImInfty : Tendsto theta_prod_sq atImInfty 
   have : (0 : ℂ) = (0 * 1 * 1) ^ 2 := by norm_num
   rw [this]
   exact ((H₂_tendsto_atImInfty.mul H₃_tendsto_atImInfty).mul H₄_tendsto_atImInfty).pow 2
-
-private lemma isBoundedAtImInfty_theta_prod_sq : IsBoundedAtImInfty theta_prod_sq :=
-  IsZeroAtImInfty.isBoundedAtImInfty theta_prod_sq_tendsto_atImInfty
-
-private lemma theta_prod_sq_slash_eq (A' : SL(2, ℤ)) :
-    theta_prod_sq ∣[(12 : ℤ)] (SpecialLinearGroup.mapGL ℝ A') = theta_prod_sq := by
-  simpa [ModularForm.SL_slash] using theta_prod_sq_SL2Z_invariant A'
-
-private lemma isBoundedAtImInfty_theta_prod_sq_slash :
-    ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (theta_prod_sq ∣[(12 : ℤ)] (A : GL (Fin 2) ℝ)) := by
-  intro A ⟨A', hA⟩
-  rw [← hA, theta_prod_sq_slash_eq A']
-  exact isBoundedAtImInfty_theta_prod_sq
 
 private noncomputable def theta_prod_sq_SIF :
     SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where

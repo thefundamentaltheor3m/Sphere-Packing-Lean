@@ -132,28 +132,19 @@ private lemma isZeroAtImInfty_of_coeffZero {k : ℤ}
   rw [qExpansion_coeff] at h
   simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul] at h
   have := modform_tendto_ndhs_zero f 1
-  simp only [Nat.cast_one, comp_apply, h] at this
-  have hgg : (fun x ↦ (⇑f ∘ ↑ofComplex) (Periodic.invQParam (1 : ℕ) x)) = ((⇑f ∘ ↑ofComplex) ∘
-    (Periodic.invQParam (1 : ℕ))) := by
-    rfl
-  simp only [Nat.cast_one, comp_apply] at hgg
-  rw [hgg] at this
-  have hgg2 := this.comp (Function.Periodic.qParam_tendsto (h := 1) ( Real.zero_lt_one))
-  have hgg3 := hgg2.comp tendsto_coe_atImInfty
+  simp only [Nat.cast_one, h] at this
+  have := (this.comp (Function.Periodic.qParam_tendsto (h := 1) Real.zero_lt_one)).comp
+    tendsto_coe_atImInfty
   rw [IsZeroAtImInfty, ZeroAtFilter]
-  apply hgg3.congr'
+  apply this.congr'
   rw [Filter.eventuallyEq_iff_exists_mem]
-  use ⊤
-  simp only [top_eq_univ, univ_mem, eqOn_univ, true_and]
-  ext y
+  refine ⟨⊤, univ_mem, fun y _ => ?_⟩
   simp only [comp_apply]
-  have h5 := periodic_comp_ofComplex (h := 1) f (by simp)
-  have := Function.Periodic.qParam_left_inv_mod_period (h := 1) (Ne.symm (zero_ne_one' ℝ)) y
-  obtain ⟨m, hm⟩ := this
-  have h6 := Function.Periodic.int_mul h5 m y
-  simp only [comp_apply, Periodic, ofReal_one, mul_one, ofComplex_apply] at *
-  rw [← hm] at h6
-  exact h6
+  obtain ⟨m, hm⟩ := Function.Periodic.qParam_left_inv_mod_period (h := 1)
+    (Ne.symm (zero_ne_one' ℝ)) y
+  have := (periodic_comp_ofComplex (h := 1) f (by simp)).int_mul m y
+  simp only [comp_apply, ofReal_one, mul_one, ofComplex_apply] at *
+  rwa [hm]
 
 /-- Build a `CuspForm` from a modular form whose q-expansion has vanishing constant term. -/
 noncomputable def cuspFormOfCoeffZero {k : ℤ}
@@ -188,22 +179,3 @@ lemma CuspFormSubmodule_mem_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(
   have := IsCuspForm_iff_coeffZero_eq_zero k f
   apply this
 
-/-- Build a cusp form from a SlashInvariantForm that's MDifferentiable and
-tends to zero at infinity.
-
-This is a common pattern for proving cusp form membership: if a slash-invariant
-function vanishes at i∞, then it vanishes at all cusps (by slash invariance),
-hence is a cusp form. -/
-lemma IsCuspForm_of_SIF_tendsto_zero {k : ℤ}
-    (f_SIF : SlashInvariantForm Γ(1) k)
-    (h_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f_SIF.toFun)
-    (h_zero : Tendsto f_SIF.toFun atImInfty (nhds 0)) :
-    ∃ (f_MF : ModularForm Γ(1) k),
-    IsCuspForm Γ(1) k f_MF ∧ ∀ z, f_MF z = f_SIF.toFun z := by
-  let f_CF : CuspForm Γ(1) k := {
-    toSlashInvariantForm := f_SIF
-    holo' := h_mdiff
-    zero_at_cusps' := fun hc => zero_at_cusps_of_zero_at_infty hc fun A ⟨A', hA'⟩ => by
-      rw [f_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩]; exact h_zero
-  }
-  exact ⟨CuspForm_to_ModularForm Γ(1) k f_CF, ⟨⟨f_CF, rfl⟩, fun _ => rfl⟩⟩

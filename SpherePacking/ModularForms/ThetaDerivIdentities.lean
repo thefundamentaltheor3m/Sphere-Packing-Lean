@@ -496,39 +496,37 @@ lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
       (f₂_tendsto_atImInfty.mul f₄_tendsto_atImInfty)).add
       (f₄_tendsto_atImInfty.pow 2)
 
-/-- g is a cusp form of level 1. -/
-lemma theta_g_IsCuspForm :
-    ∃ (g_MF : ModularForm (Γ 1) 6),
-      IsCuspForm (Γ 1) 6 g_MF ∧ ∀ z, g_MF z = theta_g z :=
-  IsCuspForm_of_SIF_tendsto_zero theta_g_SIF theta_g_MDifferentiable theta_g_tendsto_atImInfty
+private noncomputable def theta_g_CF : CuspForm (Γ 1) 6 :=
+  cuspFormOfSIFTendstoZero theta_g_SIF theta_g_MDifferentiable theta_g_tendsto_atImInfty
 
-/-- h is a cusp form of level 1. -/
-lemma theta_h_IsCuspForm :
-    ∃ (h_MF : ModularForm (Γ 1) 8),
-      IsCuspForm (Γ 1) 8 h_MF ∧ ∀ z, h_MF z = theta_h z :=
-  IsCuspForm_of_SIF_tendsto_zero theta_h_SIF theta_h_MDifferentiable theta_h_tendsto_atImInfty
+private noncomputable def theta_h_CF : CuspForm (Γ 1) 8 :=
+  cuspFormOfSIFTendstoZero theta_h_SIF theta_h_MDifferentiable theta_h_tendsto_atImInfty
 
 /-!
 ## Phase 8: Apply Dimension Vanishing
 -/
 
-/-- g = 0 by dimension argument.
+/-- g = 0 by dimension argument: weight-6 cusp forms vanish. -/
+lemma theta_g_eq_zero : theta_g = 0 :=
+  congr_arg (·.toFun)
+    (IsCuspForm_weight_lt_eq_zero 6 (by norm_num)
+      { theta_g_SIF with
+        holo' := theta_g_MDifferentiable
+        bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc fun A ⟨A', hA'⟩ => by
+          rw [theta_g_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩]
+          exact IsZeroAtImInfty.isBoundedAtImInfty theta_g_tendsto_atImInfty }
+      ⟨theta_g_CF, by ext; rfl⟩)
 
-Proof: g is a level-1 cusp form of weight 6. By IsCuspForm_weight_lt_eq_zero,
-all cusp forms of weight < 12 vanish. Hence g = 0. -/
-lemma theta_g_eq_zero : theta_g = 0 := by
-  obtain ⟨g_MF, hg_cusp, hg_eq⟩ := theta_g_IsCuspForm
-  ext z
-  simp [← hg_eq, IsCuspForm_weight_lt_eq_zero 6 (by norm_num) g_MF hg_cusp]
-
-/-- h = 0 by dimension argument.
-
-Proof: h is a level-1 cusp form of weight 8. By IsCuspForm_weight_lt_eq_zero,
-all cusp forms of weight < 12 vanish. Hence h = 0. -/
-lemma theta_h_eq_zero : theta_h = 0 := by
-  obtain ⟨h_MF, hh_cusp, hh_eq⟩ := theta_h_IsCuspForm
-  ext z
-  simp [← hh_eq, IsCuspForm_weight_lt_eq_zero 8 (by norm_num) h_MF hh_cusp]
+/-- h = 0 by dimension argument: weight-8 cusp forms vanish. -/
+lemma theta_h_eq_zero : theta_h = 0 :=
+  congr_arg (·.toFun)
+    (IsCuspForm_weight_lt_eq_zero 8 (by norm_num)
+      { theta_h_SIF with
+        holo' := theta_h_MDifferentiable
+        bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc fun A ⟨A', hA'⟩ => by
+          rw [theta_h_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩]
+          exact IsZeroAtImInfty.isBoundedAtImInfty theta_h_tendsto_atImInfty }
+      ⟨theta_h_CF, by ext; rfl⟩)
 
 /-!
 ## H_sum_sq: H₂² + H₂H₄ + H₄²
