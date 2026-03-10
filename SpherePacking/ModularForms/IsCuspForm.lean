@@ -179,20 +179,10 @@ lemma IsCuspForm_of_SIF_tendsto_zero {k : ℤ}
     (h_zero : Tendsto f_SIF.toFun atImInfty (nhds 0)) :
     ∃ (f_MF : ModularForm Γ(1) k),
     IsCuspForm Γ(1) k f_MF ∧ ∀ z, f_MF z = f_SIF.toFun z := by
-  -- Use slash invariance to show zero at all cusps
-  have h_zero_at_cusps :
-      ∀ {c : OnePoint ℝ}, IsCusp c Γ(1) → c.IsZeroAt f_SIF.toFun k := by
-    intro c hc
-    apply zero_at_cusps_of_zero_at_infty hc
-    intro A ⟨A', hA'⟩
-    have h_inv := f_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩
-    rw [h_inv]
-    exact h_zero
-  -- Construct CuspForm
   let f_CF : CuspForm Γ(1) k := {
     toSlashInvariantForm := f_SIF
     holo' := h_mdiff
-    zero_at_cusps' := fun hc => h_zero_at_cusps hc
+    zero_at_cusps' := fun hc => zero_at_cusps_of_zero_at_infty hc fun A ⟨A', hA'⟩ => by
+      rw [f_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩]; exact h_zero
   }
-  let f_MF := CuspForm_to_ModularForm Γ(1) k f_CF
-  exact ⟨f_MF, ⟨⟨f_CF, rfl⟩, fun _ => rfl⟩⟩
+  exact ⟨CuspForm_to_ModularForm Γ(1) k f_CF, ⟨⟨f_CF, rfl⟩, fun _ => rfl⟩⟩
