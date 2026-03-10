@@ -992,26 +992,12 @@ private noncomputable def theta_prod_sq_SIF :
   slash_action_eq' := slashaction_generators_GL2R theta_prod_sq 12
     theta_prod_sq_S_action theta_prod_sq_T_action
 
-private noncomputable def theta_prod_sq_MF : ModularForm (CongruenceSubgroup.Gamma 1) 12 := {
-  theta_prod_sq_SIF with
-  holo' := theta_prod_sq_MDifferentiable
-  bdd_at_cusps' := fun hc =>
-    bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_theta_prod_sq_slash
-}
-
-private lemma theta_prod_sq_MF_IsCuspForm :
-    IsCuspForm (CongruenceSubgroup.Gamma 1) 12 theta_prod_sq_MF := by
-  rw [IsCuspForm_iff_coeffZero_eq_zero, ModularFormClass.qExpansion_coeff]; simp
-  exact IsZeroAtImInfty.cuspFunction_apply_zero theta_prod_sq_tendsto_atImInfty
-    (by norm_num : (0 : ℝ) < 1)
-
 private noncomputable def theta_prod_sq_CF : CuspForm (CongruenceSubgroup.Gamma 1) 12 :=
-  IsCuspForm_to_CuspForm _ _ theta_prod_sq_MF theta_prod_sq_MF_IsCuspForm
+  cuspFormOfSIFTendstoZero theta_prod_sq_SIF theta_prod_sq_MDifferentiable
+    theta_prod_sq_tendsto_atImInfty
 
 private lemma theta_prod_sq_CF_apply (z : ℍ) :
-    theta_prod_sq_CF z = theta_prod_sq z := by
-  have := CuspForm_to_ModularForm_Fun_coe _ _ theta_prod_sq_MF theta_prod_sq_MF_IsCuspForm
-  exact congr_fun this z
+    theta_prod_sq_CF z = theta_prod_sq z := rfl
 
 private lemma finrank_cuspform_12 :
     Module.finrank ℂ (CuspForm (CongruenceSubgroup.Gamma 1) 12) = 1 := by

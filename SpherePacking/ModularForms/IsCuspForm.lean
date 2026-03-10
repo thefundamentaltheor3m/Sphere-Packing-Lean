@@ -10,7 +10,7 @@ public import SpherePacking.ForMathlib.Cusps
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Manifold
 
 
 noncomputable section Definitions
@@ -111,6 +111,19 @@ lemma CuspForm_to_ModularForm_Fun_coe (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : 
   simp only [ModForm_mk, LinearMap.coe_mk, AddHom.coe_mk, SlashInvariantForm.toFun_eq_coe,
     SlashInvariantForm.coe_mk, toSlashInvariantForm_coe, CuspForm.toSlashInvariantForm_coe] at *
   exact hgg
+
+/-- Build a `CuspForm` from a `SlashInvariantForm` that is holomorphic and tends to 0. -/
+noncomputable def cuspFormOfSIFTendstoZero {k : ℤ}
+    (f_SIF : SlashInvariantForm Γ(1) k)
+    (h_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f_SIF.toFun)
+    (h_zero : Tendsto f_SIF.toFun atImInfty (𝓝 0)) : CuspForm Γ(1) k where
+  toSlashInvariantForm := f_SIF
+  holo' := h_mdiff
+  zero_at_cusps' hc := by
+    apply zero_at_cusps_of_zero_at_infty hc
+    intro A ⟨A', hA'⟩
+    rw [f_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩]
+    exact h_zero
 
 lemma IsCuspForm_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(1) k) :
     IsCuspForm Γ(1) k f ↔ (qExpansion 1 f).coeff 0 = 0 := by
