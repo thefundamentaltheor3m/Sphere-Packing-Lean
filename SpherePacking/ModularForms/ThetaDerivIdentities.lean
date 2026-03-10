@@ -509,24 +509,12 @@ private noncomputable def theta_h_CF : CuspForm (Γ 1) 8 :=
 /-- g = 0 by dimension argument: weight-6 cusp forms vanish. -/
 lemma theta_g_eq_zero : theta_g = 0 :=
   congr_arg (·.toFun)
-    (IsCuspForm_weight_lt_eq_zero 6 (by norm_num)
-      { theta_g_SIF with
-        holo' := theta_g_MDifferentiable
-        bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc fun A ⟨A', hA'⟩ => by
-          rw [theta_g_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩]
-          exact IsZeroAtImInfty.isBoundedAtImInfty theta_g_tendsto_atImInfty }
-      ⟨theta_g_CF, by ext; rfl⟩)
+    (rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 6 (by norm_num)) theta_g_CF)
 
 /-- h = 0 by dimension argument: weight-8 cusp forms vanish. -/
 lemma theta_h_eq_zero : theta_h = 0 :=
   congr_arg (·.toFun)
-    (IsCuspForm_weight_lt_eq_zero 8 (by norm_num)
-      { theta_h_SIF with
-        holo' := theta_h_MDifferentiable
-        bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc fun A ⟨A', hA'⟩ => by
-          rw [theta_h_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩]
-          exact IsZeroAtImInfty.isBoundedAtImInfty theta_h_tendsto_atImInfty }
-      ⟨theta_h_CF, by ext; rfl⟩)
+    (rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 8 (by norm_num)) theta_h_CF)
 
 /-!
 ## H_sum_sq: H₂² + H₂H₄ + H₄²

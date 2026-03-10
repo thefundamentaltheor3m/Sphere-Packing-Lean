@@ -888,25 +888,10 @@ private noncomputable def jacobi_f_CF : CuspForm (Γ 1) 4 :=
   cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_SIF_MDifferentiable
     jacobi_f_tendsto_atImInfty
 
-/-- jacobi_f as a ModularForm of weight 4 and level Γ(1) -/
-noncomputable def jacobi_f_MF : ModularForm (Γ 1) 4 := {
-  jacobi_f_SIF with
-  holo' := jacobi_f_SIF_MDifferentiable
-  bdd_at_cusps' hc := bounded_at_cusps_of_bounded_at_infty hc fun A ⟨A', hA'⟩ => by
-    rw [jacobi_f_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩]
-    exact IsZeroAtImInfty.isBoundedAtImInfty jacobi_f_tendsto_atImInfty
-}
-
-/-- jacobi_f_MF is a cusp form because it vanishes at i∞ -/
-theorem jacobi_f_MF_IsCuspForm : IsCuspForm (Γ 1) 4 jacobi_f_MF := ⟨jacobi_f_CF, by ext; rfl⟩
-
-/-- The main dimension vanishing: jacobi_f_MF = 0 -/
-theorem jacobi_f_MF_eq_zero : jacobi_f_MF = 0 :=
-  IsCuspForm_weight_lt_eq_zero 4 (by norm_num) jacobi_f_MF jacobi_f_MF_IsCuspForm
-
-/-- jacobi_f = 0 as a function -/
+/-- jacobi_f = 0 by dimension argument: weight-4 cusp forms vanish. -/
 theorem jacobi_f_eq_zero : jacobi_f = 0 :=
-  congr_arg (·.toFun) jacobi_f_MF_eq_zero
+  congr_arg (·.toFun)
+    (rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 4 (by norm_num)) jacobi_f_CF)
 
 /-- jacobi_g = 0 as a function (from g² = 0) -/
 theorem jacobi_g_eq_zero : jacobi_g = 0 := by
