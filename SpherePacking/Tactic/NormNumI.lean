@@ -158,9 +158,8 @@ meta partial def parse (z : Q(ℂ)) :
       exact zpow_natCast (a := $w) $n)
     return ⟨a, b, q(Eq.trans $hpow $pf)⟩
   | ~q(@HPow.hPow ℂ ℕ ℂ instHPow $w $n) =>
-    let k? := n.nat?
-    let some k :=
-      k? <|> n.rawNatLit? | throwError "exponent {n} not handled by norm_numI"
+    let some k := n.nat? <|> n.rawNatLit?
+      | throwError "exponent {n} not handled by norm_numI"
     match k with
     | 0 => return ⟨q(1), q(0), (q(pow_zero $w) :)⟩
     | k + 1 =>
