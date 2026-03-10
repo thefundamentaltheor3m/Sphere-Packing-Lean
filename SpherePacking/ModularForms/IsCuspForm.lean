@@ -8,9 +8,9 @@ public import SpherePacking.ForMathlib.Cusps
 @[expose] public section
 
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex MatrixGroups
+  Metric Filter Function Complex MatrixGroups Manifold
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat CongruenceSubgroup
 
 
 noncomputable section Definitions
@@ -21,8 +21,6 @@ variable {α ι : Type*}
 
 open SlashInvariantFormClass ModularFormClass
 variable {k : ℤ} {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup SL(2, ℤ)} (n : ℕ) (f : F)
-
-open scoped Real MatrixGroups CongruenceSubgroup
 
 def ModForm_mk (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) : ModularForm Γ k where
   toFun := f
@@ -166,3 +164,33 @@ lemma CuspFormSubmodule_mem_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(
     f ∈ CuspFormSubmodule Γ(1) k ↔ (qExpansion 1 f).coeff 0 = 0 := by
   have := IsCuspForm_iff_coeffZero_eq_zero k f
   apply this
+
+/-- Build a cusp form from a SlashInvariantForm that's MDifferentiable and
+tends to zero at infinity.
+
+This is a common pattern for proving cusp form membership: if a slash-invariant
+function vanishes at i∞, then it vanishes at all cusps (by slash invariance),
+hence is a cusp form. -/
+lemma IsCuspForm_of_SIF_tendsto_zero {k : ℤ}
+    (f_SIF : SlashInvariantForm Γ(1) k)
+    (h_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f_SIF.toFun)
+    (h_zero : Tendsto f_SIF.toFun atImInfty (nhds 0)) :
+    ∃ (f_MF : ModularForm Γ(1) k),
+    IsCuspForm Γ(1) k f_MF ∧ ∀ z, f_MF z = f_SIF.toFun z := by
+  -- Use slash invariance to show zero at all cusps
+  have h_zero_at_cusps :
+      ∀ {c : OnePoint ℝ}, IsCusp c Γ(1) → c.IsZeroAt f_SIF.toFun k := by
+    intro c hc
+    apply zero_at_cusps_of_zero_at_infty hc
+    intro A ⟨A', hA'⟩
+    have h_inv := f_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩
+    rw [h_inv]
+    exact h_zero
+  -- Construct CuspForm
+  let f_CF : CuspForm Γ(1) k := {
+    toSlashInvariantForm := f_SIF
+    holo' := h_mdiff
+    zero_at_cusps' := fun hc => h_zero_at_cusps hc
+  }
+  let f_MF := CuspForm_to_ModularForm Γ(1) k f_CF
+  exact ⟨f_MF, ⟨⟨f_CF, rfl⟩, fun _ => rfl⟩⟩
