@@ -15,5 +15,3 @@ This project was kickstarted at EPFL by Maryna Viazovska and Sidharth Hariharan 
 ## Contributing to the Project
 
 Should you wish to make any contributions to the content of the project, please add them to a new branch and make a pull request. Your PR will need to satisfy certain status checks, be approved by a reviewer and have no conflicts with the base branch before it can be merged. Please read [CONTRIBUTING.md](/CONTRIBUTING.md) for details.
-
-<!-- This is a test branch -->
