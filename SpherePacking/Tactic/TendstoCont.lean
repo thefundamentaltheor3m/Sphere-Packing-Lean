@@ -63,23 +63,16 @@ meta structure Atom where
 
 /-- Match `Filter.Tendsto f l target` returning (α, β, f, l, target). -/
 private meta def matchTendsto? (e : Expr) :
-    MetaM (Option (Expr × Expr × Expr × Expr × Expr)) := do
-  let match1 (e : Expr) := do
-    match e.getAppFnArgs with
-    | (``Filter.Tendsto, #[α, β, f, l, tgt]) =>
-      return some (α, β, f, l, tgt)
-    | _ => return none
-  if let some r ← match1 e then return some r
-  match1 (← whnfR e)
+    MetaM (Option (Expr × Expr × Expr × Expr × Expr)) :=
+  return match e.getAppFnArgs with
+  | (``Filter.Tendsto, #[α, β, f, l, tgt]) => some (α, β, f, l, tgt)
+  | _ => none
 
 /-- Extract the limit from `nhds a`, returning `a`. -/
-private meta def matchNhds? (e : Expr) : MetaM (Option Expr) := do
-  let match1 (e : Expr) :=
-    match e.getAppFnArgs with
-    | (``nhds, #[_, _, a]) => some a
-    | _ => none
-  if let some a := match1 e then return some a
-  return match1 (← whnfR e)
+private meta def matchNhds? (e : Expr) : MetaM (Option Expr) :=
+  return match e.getAppFnArgs with
+  | (``nhds, #[_, _, a]) => some a
+  | _ => none
 
 /-- Parse the goal `Tendsto goalFn l (nhds c)`, returning `(goalFn, l, domTy)`. -/
 private meta def parseGoal (goal : Expr) :
