@@ -1,9 +1,13 @@
-import Mathlib.Geometry.Manifold.MFDeriv.Defs
-import Mathlib.Geometry.Manifold.MFDeriv.SpecificFunctions
-import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
-import Mathlib.Tactic.FunProp
+module
 
-import SpherePacking.ModularForms.Eisenstein
+public import Mathlib.Geometry.Manifold.MFDeriv.Defs
+public import Mathlib.Geometry.Manifold.MFDeriv.SpecificFunctions
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.Basic
+public import Mathlib.Tactic.FunProp
+
+public import SpherePacking.ModularForms.Eisenstein
+
+@[expose] public section
 
 open scoped Manifold UpperHalfPlane EisensteinSeries
 

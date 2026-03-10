@@ -3,11 +3,15 @@ Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Raphael Appenzeller
 -/
+module
+
 
 -- import Mathlib
 
-import SpherePacking.ModularForms.JacobiTheta
-import SpherePacking.MagicFunction.IntegralParametrisations
+public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.MagicFunction.IntegralParametrisations
+
+@[expose] public section
 
 /-! # The ψ Functions
 

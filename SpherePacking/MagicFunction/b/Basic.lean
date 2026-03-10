@@ -3,9 +3,13 @@ Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+module
 
-import SpherePacking.MagicFunction.b.psi
-import SpherePacking.MagicFunction.IntegralParametrisations
+
+public import SpherePacking.MagicFunction.b.psi
+public import SpherePacking.MagicFunction.IntegralParametrisations
+
+@[expose] public section
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 

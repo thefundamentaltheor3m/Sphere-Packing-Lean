@@ -1,12 +1,16 @@
-import SpherePacking.ModularForms.SlashActionAuxil
-import SpherePacking.ModularForms.clog_arg_lems
-import SpherePacking.ModularForms.eta
-import SpherePacking.ModularForms.multipliable_lems
-import SpherePacking.ModularForms.ResToImagAxis
-import Mathlib.NumberTheory.ModularForms.QExpansion
-import SpherePacking.Tactic.NormNumI
+module
 
-import SpherePacking.ForMathlib.Cusps
+public import SpherePacking.ModularForms.SlashActionAuxil
+public import SpherePacking.ModularForms.clog_arg_lems
+public import SpherePacking.ModularForms.eta
+public import SpherePacking.ModularForms.multipliable_lems
+public import SpherePacking.ModularForms.ResToImagAxis
+public import Mathlib.NumberTheory.ModularForms.QExpansion
+public import SpherePacking.Tactic.NormNumI
+
+public import SpherePacking.ForMathlib.Cusps
+
+@[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups

@@ -1,7 +1,11 @@
-import SpherePacking.ModularForms.E2
-import SpherePacking.ModularForms.csqrt
-import SpherePacking.ModularForms.upperhalfplane
-import Mathlib.NumberTheory.ModularForms.DedekindEta
+module
+
+public import SpherePacking.ModularForms.E2
+public import SpherePacking.ModularForms.csqrt
+public import SpherePacking.ModularForms.upperhalfplane
+public import Mathlib.NumberTheory.ModularForms.DedekindEta
+
+@[expose] public section
 
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral

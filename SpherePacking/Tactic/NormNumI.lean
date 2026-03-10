@@ -3,8 +3,10 @@ Copyright (c) 2025 Heather Macbeth. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Heather Macbeth, Yunzhou Xie, Sidharth Hariharan
 -/
-import Mathlib.Data.Complex.Basic
-import Mathlib.Tactic.NormNum
+module
+
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.Tactic.NormNum
 
 
 /-!
@@ -21,7 +23,6 @@ in `ℂ`. The key idea is to rewrite a complex expression into `Complex.mk` form
 -/
 
 @[expose] public meta section
-
 
 open Lean Meta Elab Qq Tactic Complex Mathlib.Tactic
 open ComplexConjugate
@@ -107,7 +108,7 @@ Parse a quoted complex expression into a witness `z = ⟨a, b⟩`.
 This is used by `norm_numI` to expose real and imaginary parts that can be simplified by
 `norm_num`.
 -/
-partial def parse (z : Q(ℂ)) :
+meta partial def parse (z : Q(ℂ)) :
     MetaM (Σ a b : Q(ℝ), Q($z = ⟨$a, $b⟩)) := do
   -- Syntactic `Complex.mk` case.
   -- We avoid Qq defeq-matching here, since structure eta means `Complex.mk _ _` would match
@@ -183,7 +184,7 @@ partial def parse (z : Q(ℂ)) :
   | _ => throwError "found the atom {z} which is not a numeral"
 
 /-- Normalize the output of `parse` by running `norm_num` on the real and imaginary parts. -/
-def normalize (z : Q(ℂ)) : MetaM (Σ a b : Q(ℝ), Q($z = ⟨$a, $b⟩)) := do
+meta def normalize (z : Q(ℂ)) : MetaM (Σ a b : Q(ℝ), Q($z = ⟨$a, $b⟩)) := do
   let ⟨a, b, pf⟩ ← parse z
   let ra ← Mathlib.Meta.NormNum.derive (α := q(ℝ)) a
   let rb ← Mathlib.Meta.NormNum.derive (α := q(ℝ)) b
@@ -217,7 +218,7 @@ namespace NormNum
 /-- The `norm_num` extension which identifies expressions of the form `(z : ℂ) = (w : ℂ)`,
 such that `norm_num` successfully recognises both the real and imaginary parts of both `z` and `w`.
 -/
-@[norm_num (_ : ℂ) = _] def evalComplexEq : NormNumExt where eval {v β} e := do
+@[norm_num (_ : ℂ) = _] meta def evalComplexEq : NormNumExt where eval {v β} e := do
   haveI' : v =QL 0 := ⟨⟩; haveI' : $β =Q Prop := ⟨⟩
   let .app (.app f z) w ← whnfR e | failure
   guard <| ← withNewMCtxDepth <| isDefEq f q(Eq (α := ℂ))
@@ -238,7 +239,7 @@ such that `norm_num` successfully recognises both the real and imaginary parts o
 /-- The `norm_num` extension which identifies expressions of the form `Complex.re (z : ℂ)`,
 such that `norm_num` successfully recognises the real part of `z`.
 -/
-@[norm_num Complex.re _] def evalRe : NormNumExt where eval {v β} e := do
+@[norm_num Complex.re _] meta def evalRe : NormNumExt where eval {v β} e := do
   haveI' : v =QL 0 := ⟨⟩; haveI' : $β =Q ℝ := ⟨⟩
   let .proj ``Complex 0 z ← whnfR e | failure
   have z : Q(ℂ) := z
@@ -250,7 +251,7 @@ such that `norm_num` successfully recognises the real part of `z`.
 /-- The `norm_num` extension which identifies expressions of the form `Complex.im (z : ℂ)`,
 such that `norm_num` successfully recognises the imaginary part of `z`.
 -/
-@[norm_num Complex.im _] def evalIm : NormNumExt where eval {v β} e := do
+@[norm_num Complex.im _] meta def evalIm : NormNumExt where eval {v β} e := do
   haveI' : v =QL 0 := ⟨⟩; haveI' : $β =Q ℝ := ⟨⟩
   let .proj ``Complex 1 z ← whnfR e | failure
   have z : Q(ℂ) := z

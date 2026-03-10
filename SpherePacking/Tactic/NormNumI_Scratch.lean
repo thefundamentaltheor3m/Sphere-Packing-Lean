@@ -1,5 +1,9 @@
-import Mathlib.Analysis.CStarAlgebra.Classes
-import SpherePacking.Tactic.NormNumI
+module
+
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import SpherePacking.Tactic.NormNumI
+
+@[expose] public section
 
 open Complex
 

@@ -1,6 +1,10 @@
-import SpherePacking.ModularForms.SerreDerivativeSlash
-import SpherePacking.ModularForms.DimensionFormulas
-import Mathlib.Analysis.Real.Pi.Bounds
+module
+
+public import SpherePacking.ModularForms.SerreDerivativeSlash
+public import SpherePacking.ModularForms.DimensionFormulas
+public import Mathlib.Analysis.Real.Pi.Bounds
+
+@[expose] public section
 
 /-!
 # Asymptotic Behavior of Eisenstein Series
@@ -115,10 +119,8 @@ lemma tendsto_exp_neg_mul_atTop {c : ℝ} (hc : 0 < c) :
 /-- If f = O(exp(-c * Im z)) as z → i∞ for c > 0, then f → 0 at i∞. -/
 lemma tendsto_zero_of_exp_decay {f : ℍ → ℂ} {c : ℝ} (hc : 0 < c)
     (hO : f =O[atImInfty] fun τ => Real.exp (-c * τ.im)) :
-    Filter.Tendsto f atImInfty (nhds 0) := by
-  apply Asymptotics.IsBigO.trans_tendsto hO
-  rw [atImInfty]
-  exact (tendsto_exp_neg_mul_atTop hc).comp Filter.tendsto_comap
+    Filter.Tendsto f atImInfty (nhds 0) :=
+  hO.trans_tendsto ((tendsto_exp_neg_mul_atTop hc).comp tendsto_im_atImInfty)
 
 /-- A modular form tends to its value at infinity as z → i∞. -/
 lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1) k) :

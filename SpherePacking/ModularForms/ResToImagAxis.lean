@@ -1,7 +1,11 @@
-import Mathlib.NumberTheory.ModularForms.QExpansion
+module
 
-import SpherePacking.ForMathlib.AtImInfty
-import SpherePacking.ModularForms.SlashActionAuxil
+public import Mathlib.NumberTheory.ModularForms.QExpansion
+
+public import SpherePacking.ForMathlib.AtImInfty
+public import SpherePacking.ModularForms.SlashActionAuxil
+
+@[expose] public section
 
 open UpperHalfPlane hiding I
 
