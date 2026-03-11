@@ -46,7 +46,7 @@ For z with large Im, consider the ball B(z, Im(z)/2) in ℂ.
 - By Cauchy: |deriv(f ∘ ofComplex)(z)| ≤ M / (Im(z)/2) = 2M/Im(z)
 - D f = (2πi)⁻¹ * deriv(...), so |D f(z)| ≤ M/(π·Im(z)) → 0 -/
 lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
-    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
+    (hf : MDiff f)
     (hbdd : IsBoundedAtImInfty f) :
     Filter.Tendsto (D f) atImInfty (nhds 0) := by
   rw [isBoundedAtImInfty_iff] at hbdd
@@ -226,7 +226,7 @@ This is the continuous mapping theorem applied to `serre_D k f = D f - (k/12) * 
 - f → c
 Therefore `serre_D k f → 0 - (k/12) * 1 * c = -k*c/12`. -/
 lemma serre_D_tendsto_of_tendsto (k : ℤ) (f : ℍ → ℂ) (c : ℂ)
-    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_holo : MDiff f) (hf_bdd : IsBoundedAtImInfty f)
     (hf_lim : Filter.Tendsto f atImInfty (nhds c)) :
     Filter.Tendsto (serre_D k f) atImInfty (nhds (-(k : ℂ) * c / 12)) := by
   rw [show serre_D k f = fun z => D f z - (k : ℂ) * 12⁻¹ * E₂ z * f z from serre_D_eq k f]
@@ -241,14 +241,14 @@ lemma serre_D_tendsto_of_tendsto (k : ℤ) (f : ℍ → ℂ) (c : ℂ)
 
 /-- Special case: if `f → 1` at i∞, then `serre_D k f → -k/12`. -/
 lemma serre_D_tendsto_neg_k_div_12 (k : ℤ) (f : ℍ → ℂ)
-    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_holo : MDiff f) (hf_bdd : IsBoundedAtImInfty f)
     (hf_lim : Filter.Tendsto f atImInfty (nhds 1)) :
     Filter.Tendsto (serre_D k f) atImInfty (nhds (-(k : ℂ) / 12)) := by
   simpa using serre_D_tendsto_of_tendsto k f 1 hf_holo hf_bdd hf_lim
 
 /-- Special case: if `f → 0` at i∞, then `serre_D k f → 0`. -/
 lemma serre_D_tendsto_zero_of_tendsto_zero (k : ℤ) (f : ℍ → ℂ)
-    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_holo : MDiff f) (hf_bdd : IsBoundedAtImInfty f)
     (hf_lim : Filter.Tendsto f atImInfty (nhds 0)) :
     Filter.Tendsto (serre_D k f) atImInfty (nhds 0) := by
   simpa using serre_D_tendsto_of_tendsto k f 0 hf_holo hf_bdd hf_lim
