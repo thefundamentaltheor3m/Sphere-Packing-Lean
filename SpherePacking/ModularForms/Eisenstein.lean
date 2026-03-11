@@ -628,14 +628,10 @@ theorem E4E6_coeff_zero_eq_zero :
   rw [E4_q_exp_zero]
   simp
 
-def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 := by
-  let foo : ModularForm Γ(1) 12 := (E₄).mul ((E₄).mul E₄)
-  let bar : ModularForm Γ(1) 12 := (E₆).mul E₆
+def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 :=
   let F := DirectSum.of _ 4 E₄
   let G := DirectSum.of _ 6 E₆
-  apply IsCuspForm_to_CuspForm _ _ ((1/ 1728 : ℂ) • (F^3 - G^2) 12 )
-  rw [IsCuspForm_iff_coeffZero_eq_zero]
-  exact E4E6_coeff_zero_eq_zero
+  cuspFormOfCoeffZero ((1 / 1728 : ℂ) • (F ^ 3 - G ^ 2) 12) E4E6_coeff_zero_eq_zero
 
 lemma Delta_cuspFuntion_eq : Set.EqOn (cuspFunction 1 Delta)
      (fun y => (y : ℂ) * ∏' i, ((1 : ℂ) - y ^ (i + 1)) ^ 24) (Metric.ball 0 (1/2)) := by
