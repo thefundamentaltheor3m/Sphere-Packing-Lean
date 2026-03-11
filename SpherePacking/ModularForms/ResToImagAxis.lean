@@ -477,4 +477,3 @@ lemma tendsto_resToImagAxis_of_tendsto_atImInfty {F : ℍ → ℂ} {c : ℂ}
   set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
   have hz_im : z.im = t := by simp [UpperHalfPlane.im, z]
   exact hA z (by simpa [hz_im] using le_of_max_le_left ht)
-#min_imports
