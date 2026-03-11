@@ -1,5 +1,6 @@
 module
 
+public import Mathlib.Geometry.Manifold.Notation
 public import Mathlib.NumberTheory.ModularForms.QExpansion
 
 public import SpherePacking.ForMathlib.AtImInfty
@@ -57,7 +58,7 @@ noncomputable def ResToImagAxis.EventuallyPos (F : ℍ → ℂ) : Prop :=
   ResToImagAxis.Real F ∧ ∃ t₀ : ℝ, 0 < t₀ ∧ ∀ t : ℝ, t₀ ≤ t → 0 < (F.resToImagAxis t).re
 
 @[fun_prop]
-theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) (t : ℝ)
+theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDiff F) (t : ℝ)
     (ht : 0 < t) : DifferentiableAt ℝ F.resToImagAxis t := by
   rw [Function.resToImagAxis_eq_resToImagAxis]
   have := hF ⟨Complex.I * t, by norm_num [Complex.I_re, ht]⟩
@@ -476,3 +477,4 @@ lemma tendsto_resToImagAxis_of_tendsto_atImInfty {F : ℍ → ℂ} {c : ℂ}
   set z : ℍ := ⟨Complex.I * t, by simp [ht_pos]⟩
   have hz_im : z.im = t := by simp [UpperHalfPlane.im, z]
   exact hA z (by simpa [hz_im] using le_of_max_le_left ht)
+#min_imports

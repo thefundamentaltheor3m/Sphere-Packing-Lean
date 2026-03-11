@@ -54,7 +54,7 @@ lemma D_D₂ (γ : SL(2, ℤ)) (z : ℍ) :
 /-! ## MDifferentiable infrastructure for D₂ -/
 
 /-- D₂ γ is MDifferentiable: it's a constant divided by a linear polynomial. -/
-lemma MDifferentiable_D₂ (γ : SL(2, ℤ)) : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D₂ γ) := fun z => by
+lemma MDifferentiable_D₂ (γ : SL(2, ℤ)) : MDiff (D₂ γ) := fun z => by
   have heq : D₂ γ = (fun w => (2 * π * I * (γ 1 0 : ℂ)) / denom γ w) ∘ (↑) := by ext; rfl
   rw [heq]; exact DifferentiableAt_MDifferentiableAt <|
     .div (differentiableAt_const _) (differentiableAt_denom γ z) (denom_ne_zero γ z)
