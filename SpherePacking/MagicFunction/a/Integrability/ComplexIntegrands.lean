@@ -39,8 +39,6 @@ local notation "ℍ₀" => upperHalfPlaneSet
 
 local notation "Holo(" f ")" => DifferentiableOn ℂ f ℍ₀
 
-local notation "MDiff(" f ")" => MDifferentiableOn 𝓘(ℂ) 𝓘(ℂ) f ℍ₀
-
 section Helpers
 
 namespace UpperHalfPlane

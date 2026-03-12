@@ -24,10 +24,6 @@ open Real Complex CongruenceSubgroup SlashAction SlashInvariantForm ContinuousMa
 open ModularFormClass
 open Metric Filter Function
 
-local notation "Iℂ" => 𝓘(ℂ)
-local notation "MDiff" => MDifferentiable Iℂ Iℂ
-local notation "MDiffAt" => MDifferentiableAt Iℂ Iℂ
-
 /-!
 Definition of (Serre) derivative of modular forms.
 Prove Ramanujan's formulas on derivatives of Eisenstein series.
