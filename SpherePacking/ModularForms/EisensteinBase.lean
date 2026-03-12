@@ -572,27 +572,30 @@ public lemma tendstoLocallyUniformlyOn_prod_range_one_sub_pow :
     TendstoLocallyUniformlyOn (fun n : ℕ ↦ ∏ x ∈ Finset.range n,
     fun y : ℂ ↦ (1 - y ^ (x + 1))) (fun x ↦ ∏' i, (1 - x ^ (i + 1))) atTop (Metric.ball 0 (2⁻¹ : ℝ))
       := by
-  have hprod :
-      (fun n : ℕ ↦ ∏ x ∈ Finset.range n, fun y : ℂ ↦ (1 + -(y ^ (x + 1)))) =
-        fun n y ↦ ∏ x ∈ Finset.range n, (1 + -(y ^ (x + 1))) := by
-    funext n y
-    simp
-  have h :=
-    (prod_tendstoUniformlyOn_tprod' (Metric.closedBall 0 (2⁻¹ : ℝ))
-          (f := fun n : ℕ => fun y : ℂ => -(y ^ (n + 1)))
-          (isCompact_closedBall 0 (2⁻¹ : ℝ)) (fun n => (2⁻¹ : ℝ) ^ (n + 1)) ?_ ?_ ?_)
-        |>.tendstoLocallyUniformlyOn
-  · simpa [sub_eq_add_neg, hprod] using
-      h.mono (s := Metric.closedBall 0 (2⁻¹ : ℝ)) ball_subset_closedBall
-  · rw [@summable_nat_add_iff, summable_geometric_iff_norm_lt_one]
-    simp only [norm_inv, Real.norm_ofNat]
-    exact two_inv_lt_one
-  · intro n x hx
-    have hx' : ‖x‖ ≤ (2⁻¹ : ℝ) := by
-      have : dist x 0 ≤ (2⁻¹ : ℝ) := (Metric.mem_closedBall).1 hx
-      simpa [dist_zero_right] using this
-    simpa [norm_pow, inv_pow] using pow_le_pow_left₀ (norm_nonneg x) hx' (n + 1)
-  fun_prop
+  have h₁ : (fun n : ℕ ↦ ∏ x ∈ Finset.range n, fun y : ℂ ↦ (1 - y ^ (x + 1))) =
+             fun n : ℕ ↦ fun y : ℂ ↦ ∏ x ∈ Finset.range n, (1 - y ^ (x + 1)) := by
+    ext n y; simp only [Finset.prod_apply]
+  rw [h₁]
+  have hclosed :
+      TendstoUniformlyOn (fun n : ℕ ↦ fun y : ℂ => ∏ x ∈ Finset.range n, (1 - y ^ (x + 1)))
+        (fun x : ℂ ↦ ∏' i, (1 - x ^ (i + 1))) atTop (Metric.closedBall (0 : ℂ) (2⁻¹ : ℝ)) := by
+    have hsum : Summable (fun n : ℕ => (2⁻¹ : ℝ) ^ (n + 1)) := by
+      rw [@summable_nat_add_iff, summable_geometric_iff_norm_lt_one]
+      simp
+      exact two_inv_lt_one
+    simpa [sub_eq_add_neg] using
+      (hsum.hasProdUniformlyOn_nat_one_add (f := fun n : ℕ => fun y : ℂ => -y ^ (n + 1))
+        (hK := isCompact_closedBall (0 : ℂ) (1 / 2))
+        (h := Filter.Eventually.of_forall (fun n (x : ℂ) hx => by
+          have hx' : ‖x‖ ≤ (2⁻¹ : ℝ) := by
+            simpa [Metric.mem_closedBall, dist_eq_norm] using hx
+          calc
+            ‖-x ^ (n + 1)‖ = ‖x‖ ^ (n + 1) := by simp
+            _ ≤ (2⁻¹ : ℝ) ^ (n + 1) := by
+              exact pow_le_pow_left₀ (norm_nonneg x) hx' _))
+        (hcts := fun n => by fun_prop)).tendstoUniformlyOn_finsetRange
+  exact TendstoLocallyUniformlyOn.mono (s := Metric.closedBall (0 : ℂ) (2⁻¹ : ℝ))
+    hclosed.tendstoLocallyUniformlyOn ball_subset_closedBall
 
 theorem diffwithinat_prod_1 :
     DifferentiableWithinAt ℂ (fun (y : ℂ) ↦ ∏' (i : ℕ), (1 - y ^ (i + 1)) ^ 24)

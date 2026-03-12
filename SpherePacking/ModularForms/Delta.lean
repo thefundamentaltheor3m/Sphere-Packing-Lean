@@ -1,4 +1,5 @@
 module
+
 public import SpherePacking.ModularForms.SlashActionAuxil
 public import SpherePacking.ModularForms.clog_arg_lems
 public import SpherePacking.ModularForms.eta
@@ -9,6 +10,7 @@ import SpherePacking.Tactic.NormNumI
 
 public import SpherePacking.ForMathlib.Cusps
 
+@[expose] public section
 
 /-!
 # Discriminant Product Formula
@@ -17,18 +19,21 @@ This file proves results such as `DiscriminantProductFormula`, `Delta_eq_eta_pow
 `Discriminant_T_invariant`, `Discriminant_S_invariant`, `I_in_atImInfty`.
 -/
 
-open scoped BigOperators Real Nat NNReal ENNReal Topology
+open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
+  Metric Filter Function Complex MatrixGroups
 
-open ModularForm UpperHalfPlane Complex MatrixGroups Function Set Filter ArithmeticFunction
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+
+open ArithmeticFunction
 
 noncomputable section Definitions
 
-/-- The discriminant modular form `Δ` as an explicit infinite product. -/
-@[expose] public def Δ (z : UpperHalfPlane) := cexp (2 * π * Complex.I * z) * ∏' (n : ℕ),
+/- The discriminant form -/
+def Δ (z : UpperHalfPlane) := cexp (2 * π * Complex.I * z) * ∏' (n : ℕ),
     (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24
 
 /-- Reindex `Δ` from a product over `ℕ` to a product over `ℕ+`. -/
-public lemma DiscriminantProductFormula (z : ℍ) :
+lemma DiscriminantProductFormula (z : ℍ) :
     Δ z = cexp (2 * π * Complex.I * z) * ∏' (n : ℕ+),
     (1 - cexp (2 * π * Complex.I * (n) * z)) ^ 24 := by
   simpa [Δ, Nat.cast_add, Nat.cast_one, add_mul] using
@@ -36,19 +41,25 @@ public lemma DiscriminantProductFormula (z : ℍ) :
       (1 - cexp (2 * π * Complex.I * (n : ℂ) * z)) ^ 24)).symm
 
 /-- The discriminant form is the 24th power of the Dedekind eta function. -/
-public lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
-  rw [η, Δ, mul_pow]
+lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
+  have hm : Multipliable (fun n : ℕ => 1 - ModularForm.eta_q n z) := by
+    refine (MultipliableEtaProductExpansion z).congr ?_
+    intro n
+    simp [ModularForm.eta_q_eq_cexp]
+  rw [η, ModularForm.eta, Δ, mul_pow, tprod_pow (f := fun n : ℕ => 1 - ModularForm.eta_q n z)
+    hm 24]
   congr
-  · rw [← Complex.exp_nat_mul]
+  · rw [Periodic.qParam]
+    rw [← Complex.exp_nat_mul]
     congr 1
     simp [field]
-  rw [tprod_pow]
-  apply MultipliableEtaProductExpansion
+  · ext n
+    simp [ModularForm.eta_q_eq_cexp]
 
-
-/-- The discriminant `Δ z` is nonzero on the upper half-plane. -/
-public lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by
-  simpa [Delta_eq_eta_pow] using pow_ne_zero 24 (eta_nonzero_on_UpperHalfPlane z)
+/-This should be easy from the definition and the Mulitpliable bit. -/
+lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by
+  rw [Delta_eq_eta_pow]
+  simpa [η] using (ModularForm.eta_ne_zero (z := (z : ℂ)) z.2)
 
 /-- Invariance of `Δ` under the translation `T : z ↦ z + 1`. -/
 public lemma Discriminant_T_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.T) = Δ := by
@@ -295,18 +306,17 @@ public lemma Discriminant_zeroAtImInfty :
   · apply Delta_boundedfactor
 
 /-- The discriminant cusp form of weight `12` on `Γ(1)`. -/
-@[expose] public def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
+def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun := Discriminant_SIF
   slash_action_eq' := Discriminant_SIF.slash_action_eq'
   holo' := by
-    rw [UpperHalfPlane.mdifferentiable_iff]
+    rw [mdifferentiable_iff]
     simp only [SlashInvariantForm.coe_mk]
-    have := eta_DifferentiableAt_UpperHalfPlane
     have he2 : DifferentiableOn ℂ (fun z => (η z) ^ 24) {z | 0 < z.im} := by
       apply DifferentiableOn.pow
       intro x hx
       apply DifferentiableAt.differentiableWithinAt
-      exact this ⟨x, hx⟩
+      simpa [η] using (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := x) hx)
     rw [Discriminant_SIF]
     simp only [SlashInvariantForm.coe_mk]
     apply he2.congr
