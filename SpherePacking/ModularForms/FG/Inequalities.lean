@@ -584,7 +584,7 @@ public theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
   have hG : 0 < GReal t := by simpa [GReal] using (G_pos.2 t ht)
   exact add_pos hF (mul_pos hcoef hG)
 
-lemma FmodG_strictAnti : StrictAntiOn FmodGReal (Set.Ioi (0 : ℝ)) := by
+public lemma FmodG_strictAntiOn : StrictAntiOn FmodGReal (Set.Ioi (0 : ℝ)) := by
   exact FmodG_strictAnti_aux
 
 lemma FmodGReal_le_rightLimitAt_zero {t : ℝ} (ht : 0 < t) :
@@ -605,7 +605,7 @@ lemma FmodGReal_le_rightLimitAt_zero {t : ℝ} (ht : 0 < t) :
 
 lemma FmodGReal_lt_rightLimitAt_zero {t : ℝ} (ht : 0 < t) :
     FmodGReal t < 18 * (π ^ (-2 : ℤ)) := by
-  have hstrict : StrictAntiOn FmodGReal (Set.Ioi (0 : ℝ)) := FmodG_strictAnti
+  have hstrict : StrictAntiOn FmodGReal (Set.Ioi (0 : ℝ)) := FmodG_strictAntiOn
   have hlt : FmodGReal t < FmodGReal (t / 2) :=
     hstrict (by simpa using half_pos ht) ht (half_lt_self ht)
   exact lt_of_lt_of_le hlt (FmodGReal_le_rightLimitAt_zero (t := t / 2) (half_pos ht))
