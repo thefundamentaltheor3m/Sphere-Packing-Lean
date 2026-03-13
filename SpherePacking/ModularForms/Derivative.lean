@@ -535,7 +535,7 @@ public lemma E₂_slash (γ : SL(2, ℤ)) :
     have hcoeff' : a * (-(2 * π * I)) = (12 : ℂ) * (2 * π * I)⁻¹ := by
       simpa [a, mul_assoc, mul_left_comm, mul_comm, neg_mul, mul_neg] using hcoeff
     rw [← hcoeff']
-    simp [D₂, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, a]
+    simp [D₂, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, a, EisensteinSeries.D2]
   unfold G₂ at hG
   calc
     (E₂ ∣[(2 : ℤ)] γ) z = a * (G₂ z - D₂ γ z) := by
