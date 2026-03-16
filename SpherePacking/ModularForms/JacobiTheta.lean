@@ -275,7 +275,7 @@ end H_SlashInvariant
 
 section H_MDifferentiable
 
-lemma H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂_SIF := by
+lemma H₂_SIF_MDifferentiable : MDiff H₂_SIF := by
   intro τ
   suffices h_diff : DifferentiableAt ℂ (↑ₕH₂) (τ : ℂ) by
     have : (H₂ ∘ ↑ofComplex) ∘ UpperHalfPlane.coe = H₂_SIF := by
@@ -311,7 +311,7 @@ lemma H₂_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂_SIF :=
     simp [F, H₂, Θ₂_as_jacobiTheta₂, ofComplex_apply_of_im_pos hz, h_arg]
   exact (DifferentiableAt.congr_of_eventuallyEq hF h_ev.symm)
 
-lemma H₃_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃_SIF := by
+lemma H₃_SIF_MDifferentiable : MDiff H₃_SIF := by
   rw [mdifferentiable_iff]
   simp only [H₃_SIF, SlashInvariantForm.coe_mk]
   have hθ : DifferentiableOn ℂ (fun z => jacobiTheta₂ (0 : ℂ) z) {z | 0 < z.im} := by
@@ -325,7 +325,7 @@ lemma H₃_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃_SIF :=
   intro _ hz
   simp [Function.comp, H₃, Θ₃_as_jacobiTheta₂, ofComplex_apply_of_im_pos hz]
 
-lemma H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF := by
+lemma H₄_SIF_MDifferentiable : MDiff H₄_SIF := by
   intro τ
   have hθ : DifferentiableAt ℂ (fun z : ℂ => jacobiTheta₂ (1 / 2 : ℂ) z) (τ : ℂ) :=
     differentiableAt_jacobiTheta₂_snd (1 / 2 : ℂ) τ.2
@@ -355,15 +355,15 @@ lemma H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF :=
   simpa [mdifferentiableWithinAt_univ] using hMD_within
 
 @[fun_prop]
-lemma H₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₂ := by
+lemma H₂_MDifferentiable : MDiff H₂ := by
   simpa [H₂_SIF, SlashInvariantForm.coe_mk] using H₂_SIF_MDifferentiable
 
 @[fun_prop]
-lemma H₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃ := by
+lemma H₃_MDifferentiable : MDiff H₃ := by
   simpa [H₃_SIF, SlashInvariantForm.coe_mk] using H₃_SIF_MDifferentiable
 
 @[fun_prop]
-lemma H₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := by
+lemma H₄_MDifferentiable : MDiff H₄ := by
   simpa [H₄_SIF, SlashInvariantForm.coe_mk] using H₄_SIF_MDifferentiable
 
 /-- Differentiability of `t ↦ jacobiTheta₂(t/2, t)` at points in the upper half-plane. -/
@@ -376,7 +376,7 @@ lemma differentiableAt_jacobiTheta₂_half (τ : ℍ) :
     simpa [f] using (hasFDerivAt_jacobiTheta₂ ((τ : ℂ) / 2) τ.2).differentiableAt
   simpa [f] using (DifferentiableAt.comp (x := (τ : ℂ)) hg hf)
 
-lemma Θ₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₂ := by
+lemma Θ₂_MDifferentiable : MDiff Θ₂ := by
   intro τ
   have hΘ₂_diff : DifferentiableAt ℂ
       (fun t : ℂ => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t) (τ : ℂ) :=
@@ -678,17 +678,16 @@ noncomputable def jacobi_f_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1)
   slash_action_eq' := slashaction_generators_GL2R jacobi_f 4 jacobi_f_S_action jacobi_f_T_action
 
 /-- jacobi_g is holomorphic (MDifferentiable) since H₂, H₃, H₄ are -/
-lemma jacobi_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_g := by unfold jacobi_g; fun_prop
+lemma jacobi_g_MDifferentiable : MDiff jacobi_g := by unfold jacobi_g; fun_prop
 
 /-- jacobi_f is holomorphic (MDifferentiable) since jacobi_g is -/
-lemma jacobi_f_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f := by
+lemma jacobi_f_MDifferentiable : MDiff jacobi_f := by
   unfold jacobi_f
   have _ := jacobi_g_MDifferentiable
   fun_prop
 
 /-- jacobi_f_SIF is holomorphic -/
-lemma jacobi_f_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) jacobi_f_SIF :=
-  jacobi_f_MDifferentiable
+lemma jacobi_f_SIF_MDifferentiable : MDiff jacobi_f_SIF := jacobi_f_MDifferentiable
 
 end JacobiIdentity
 
@@ -963,8 +962,8 @@ private lemma theta_prod_sq_SL2Z_invariant :
   slashaction_generators_SL2Z theta_prod_sq 12
     theta_prod_sq_S_action theta_prod_sq_T_action
 
-private lemma theta_prod_sq_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_prod_sq := by
-  change MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => (H₂ z * H₃ z * H₄ z) ^ 2)
+private lemma theta_prod_sq_MDifferentiable : MDiff theta_prod_sq := by
+  change MDiff (fun z => (H₂ z * H₃ z * H₄ z) ^ 2)
   exact ((H₂_SIF_MDifferentiable.mul H₃_SIF_MDifferentiable).mul H₄_SIF_MDifferentiable).pow 2
 
 private lemma theta_prod_sq_tendsto_atImInfty : Tendsto theta_prod_sq atImInfty (𝓝 0) := by

@@ -1,16 +1,16 @@
 module
 
 public import Mathlib.Analysis.CStarAlgebra.Module.Defs
-public import SpherePacking.ModularForms.qExpansion_lems
-
+public import Mathlib.Geometry.Manifold.Notation
 public import SpherePacking.ForMathlib.Cusps
+public import SpherePacking.ModularForms.qExpansion_lems
 
 @[expose] public section
 
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Manifold
 
 
 noncomputable section Definitions
@@ -166,3 +166,23 @@ lemma CuspFormSubmodule_mem_iff_coeffZero_eq_zero (k : ℤ) (f : ModularForm Γ(
     f ∈ CuspFormSubmodule Γ(1) k ↔ (qExpansion 1 f).coeff 0 = 0 := by
   have := IsCuspForm_iff_coeffZero_eq_zero k f
   apply this
+
+/-- Build a cusp form from a SlashInvariantForm that's MDifferentiable and
+tends to zero at infinity.
+
+This is a common pattern for proving cusp form membership: if a slash-invariant
+function vanishes at i∞, then it vanishes at all cusps (by slash invariance),
+hence is a cusp form. -/
+lemma IsCuspForm_of_SIF_tendsto_zero {k : ℤ}
+    (f_SIF : SlashInvariantForm Γ(1) k)
+    (h_mdiff : MDiff f_SIF.toFun)
+    (h_zero : Tendsto f_SIF.toFun atImInfty (nhds 0)) :
+    ∃ (f_MF : ModularForm Γ(1) k),
+    IsCuspForm Γ(1) k f_MF ∧ ∀ z, f_MF z = f_SIF.toFun z := by
+  let f_CF : CuspForm Γ(1) k := {
+    toSlashInvariantForm := f_SIF
+    holo' := h_mdiff
+    zero_at_cusps' := fun hc => zero_at_cusps_of_zero_at_infty hc fun A ⟨A', hA'⟩ => by
+      rw [f_SIF.slash_action_eq' A ⟨A', CongruenceSubgroup.mem_Gamma_one A', hA'⟩]; exact h_zero
+  }
+  exact ⟨CuspForm_to_ModularForm Γ(1) k f_CF, ⟨⟨f_CF, rfl⟩, fun _ => rfl⟩⟩
