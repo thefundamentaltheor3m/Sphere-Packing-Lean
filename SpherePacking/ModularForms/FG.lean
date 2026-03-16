@@ -1173,7 +1173,7 @@ theorem F_functional_equation (z : ℍ) :
   ring_nf
   simp only [I_sq, I_pow_three]
   field_simp
-  ring
+  field
 
 theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
     FReal (1 / t) = t ^ 12 * FReal t - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun).resToImagAxis t
@@ -1195,7 +1195,7 @@ theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
   have hE₄z : E₄.toFun z = E₄.toFun.resToImagAxis t := by
     simpa [z] using (ResToImagAxis.I_mul_t_eq E₄.toFun t ht)
   rw [hFz, hF₁E₄z, hE₄z] at hF
-  rw [F_eq_FReal ht, F_eq_FReal (one_div_pos.mpr ht)] at hF
+  rw [hFz, hF₁E₄z, hE₄z, F_eq_FReal ht, F_eq_FReal (one_div_pos.mpr ht)] at hF
   exact hF
 
 /- Functional equation of $G$ -/
