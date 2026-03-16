@@ -106,9 +106,9 @@ theorem ResToImagAxis.one_div_eq_S_smul (F : ℍ → ℂ) {t : ℝ} (ht : 0 < t)
     simp only [UpperHalfPlane.modular_S_smul, hz_def, div_eq_mul_inv]
     change (-(I * ↑t))⁻¹ = I * (↑t)⁻¹
     have hne : (I : ℂ) * t ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht.ne')
-    field_simp [hne]
-    simp only [I_sq]
-    ring
+    field_simp [hne, I_sq]
+    ring_nf
+    simp only [I_sq, mul_neg, mul_one]
   simp only [Function.resToImagAxis, ResToImagAxis, ht_inv, ↓reduceDIte, hS_z]
   congr 1; apply UpperHalfPlane.ext
   simp only [div_eq_mul_inv, mul_comm I, one_mul, ofReal_inv]

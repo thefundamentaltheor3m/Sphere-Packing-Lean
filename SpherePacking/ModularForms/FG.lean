@@ -1173,7 +1173,7 @@ theorem F_functional_equation (z : ℍ) :
   ring_nf
   simp only [I_sq, I_pow_three]
   field_simp
-  field
+  ring
 
 theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
     FReal (1 / t) = t ^ 12 * FReal t - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun).resToImagAxis t
@@ -1195,7 +1195,7 @@ theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
   have hE₄z : E₄.toFun z = E₄.toFun.resToImagAxis t := by
     simpa [z] using (ResToImagAxis.I_mul_t_eq E₄.toFun t ht)
   rw [hFz, hF₁E₄z, hE₄z] at hF
-  rw [hFz, hF₁E₄z, hE₄z, F_eq_FReal ht, F_eq_FReal (one_div_pos.mpr ht)] at hF
+  rw [F_eq_FReal ht, F_eq_FReal (one_div_pos.mpr ht)] at hF
   exact hF
 
 /- Functional equation of $G$ -/
@@ -1234,7 +1234,6 @@ the limit of F/G as t → 0⁺.
 F₁ = E₂*E₄ - E₆ = 720 * ∑_{n≥1} n*σ₃(n)*q^n -/
 lemma F₁_fourier_expansion (z : ℍ) :
     F₁ z = 720 * ∑' (n : ℕ+), n * (σ 3 n) * cexp (2 * π * Complex.I * n * z) := by
-  unfold F₁
   exact E₂_mul_E₄_sub_E₆ z
 
 /-- E₄.resToImagAxis tends to 1 at atTop. -/
