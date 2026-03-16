@@ -1237,18 +1237,15 @@ lemma F₁_fourier_expansion (z : ℍ) :
   exact E₂_mul_E₄_sub_E₆ z
 
 /-- E₄.resToImagAxis tends to 1 at atTop. -/
-lemma E₄_resToImagAxis_tendsto_one :
-    Tendsto E₄.toFun.resToImagAxis atTop (nhds 1) :=
+lemma E₄_resToImagAxis_tendsto_one : Tendsto E₄.toFun.resToImagAxis atTop (nhds 1) :=
   tendsto_resToImagAxis_of_tendsto_atImInfty E₄_tendsto_one_atImInfty
 
 /-- H₂.resToImagAxis tends to 0 at atTop. -/
-lemma H₂_resToImagAxis_tendsto_zero :
-    Tendsto H₂.resToImagAxis atTop (nhds 0) :=
+lemma H₂_resToImagAxis_tendsto_zero : Tendsto H₂.resToImagAxis atTop (nhds 0) :=
   tendsto_resToImagAxis_of_tendsto_atImInfty H₂_tendsto_atImInfty
 
 /-- H₄.resToImagAxis tends to 1 at atTop. -/
-lemma H₄_resToImagAxis_tendsto_one :
-    Tendsto H₄.resToImagAxis atTop (nhds 1) :=
+lemma H₄_resToImagAxis_tendsto_one : Tendsto H₄.resToImagAxis atTop (nhds 1) :=
   tendsto_resToImagAxis_of_tendsto_atImInfty H₄_tendsto_atImInfty
 
 /-- F₁ * E₄ is bounded at infinity (needed for the decay argument). -/
@@ -1473,4 +1470,3 @@ theorem FG_inequality_1 {t : ℝ} (ht : 0 < t) :
 theorem FG_inequality_2 {t : ℝ} (ht : 0 < t) :
     FReal t - 18 * (π ^ (-2 : ℤ)) * GReal t < 0 := by
   sorry
-#min_imports
