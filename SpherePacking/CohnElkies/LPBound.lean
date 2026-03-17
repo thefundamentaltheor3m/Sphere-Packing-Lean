@@ -216,7 +216,7 @@ theorem calc_steps_part1 (hd : 0 < d) :
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])).re
         := by
             congr! 5 with x y
-            exact SchwartzMap.PoissonSummation_Lattices P.lattice f _
+            exact SchwartzMap.poissonSummation_lattice P.lattice f _
   _ = ((1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
       (𝓕 f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
