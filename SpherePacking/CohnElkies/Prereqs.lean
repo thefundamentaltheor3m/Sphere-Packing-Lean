@@ -47,18 +47,6 @@ open scoped BigOperators FourierTransform
 
 namespace SchwartzMap
 
-omit [Fact (0 < d)] in
-/--
-Poisson summation for a Schwartz function over a full-rank `ℤ`-lattice `Λ ⊆ ℝ^d`.
-
-This is a wrapper around `SchwartzMap.poissonSummation_lattice`.
--/
-public theorem PoissonSummation_Lattices (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
-  (v : EuclideanSpace ℝ (Fin d)) : ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
-  ∑' m : dualLattice (d := d) Λ, (𝓕 ⇑f m) *
-    Complex.exp (2 * Real.pi * Complex.I * ⟪v, m⟫_[ℝ]) := by
-  simpa using (SchwartzMap.poissonSummation_lattice (d := d) (L := Λ) f v)
-
 section FourierSchwartz
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
