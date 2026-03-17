@@ -132,9 +132,9 @@ private meta partial def findAtomsAux (e : Expr) (bvar : FVarId)
   match ← matchAtom? e bvar candidates with
   | some cand =>
     let usedFns ← fnsRef.get
-    let isDup ← usedFns.anyM fun usedFn =>
+    let alreadyRecorded ← usedFns.anyM fun usedFn =>
       withNewMCtxDepth (isDefEq usedFn cand.fn)
-    unless isDup do
+    unless alreadyRecorded do
       atomsRef.modify (·.push cand)
       fnsRef.modify (·.push cand.fn)
   | none =>
@@ -154,8 +154,7 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
     | some (codTy, f, l, a) =>
       if ← withNewMCtxDepth (isDefEq l goalFilter) then
         candidates := candidates.push
-          { fn := f, limit := a, hyp := decl.toExpr
-            codTy := codTy }
+          { fn := f, limit := a, hyp := decl.toExpr, codTy := codTy }
     | none => continue
   let atomsRef ← IO.mkRef (α := Array Atom) #[]
   let fnsRef ← IO.mkRef (α := Array Expr) #[]
@@ -178,7 +177,7 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
 
 /-- Right-associated product type. -/
 private meta def buildProdType (atoms : Array Atom) : MetaM Expr := do
-  if atoms.size == 1 then return atoms[0]!.codTy
+  if atoms.size = 1 then return atoms[0]!.codTy
   let mut ty := atoms.back!.codTy
   for i in List.range (atoms.size - 1) |>.reverse do
     ty ← mkAppM ``Prod #[atoms[i]!.codTy, ty]
@@ -187,7 +186,7 @@ private meta def buildProdType (atoms : Array Atom) : MetaM Expr := do
 /-- Right-associated limit point. -/
 private meta def buildLimitPoint (atoms : Array Atom) :
     MetaM Expr := do
-  if atoms.size == 1 then return atoms[0]!.limit
+  if atoms.size = 1 then return atoms[0]!.limit
   let mut pt := atoms.back!.limit
   for i in List.range (atoms.size - 1) |>.reverse do
     pt ← mkAppM ``Prod.mk #[atoms[i]!.limit, pt]
@@ -196,19 +195,18 @@ private meta def buildLimitPoint (atoms : Array Atom) :
 /-- Chain of `prodMk_nhds` applications. -/
 private meta def buildProdMkNhds (atoms : Array Atom) :
     MetaM Expr := do
-  if atoms.size == 1 then return atoms[0]!.hyp
+  if atoms.size = 1 then return atoms[0]!.hyp
   let mut proof := atoms.back!.hyp
   for i in List.range (atoms.size - 1) |>.reverse do
-    proof ← mkAppM ``Filter.Tendsto.prodMk_nhds
-      #[atoms[i]!.hyp, proof]
+    proof ← mkAppM ``Filter.Tendsto.prodMk_nhds #[atoms[i]!.hyp, proof]
   return proof
 
 /-- Projection `p.2.2...fst/snd` for atom `i` of `n`. -/
 private meta def buildProjection (p : Expr) (n i : Nat) :
     MetaM Expr := do
-  if n == 1 then return p
+  if n = 1 then return p
   let mut e := p
-  for _ in List.range i do
+  for _ in [:i] do
     e ← mkAppM ``Prod.snd #[e]
   if i < n - 1 then
     e ← mkAppM ``Prod.fst #[e]
@@ -224,7 +222,7 @@ private meta partial def abstractBody (body : Expr) (bvar : FVarId)
     (pVar : Expr) (atoms : Array Atom) : MetaM Expr := do
   if !body.containsFVar bvar then return body
   let bvarExpr := Expr.fvar bvar
-  for i in List.range atoms.size do
+  for i in [:atoms.size] do
     let candApplied := mkApp atoms[i]!.fn bvarExpr
     if ← withNewMCtxDepth (isDefEq body candApplied) then
       return ← buildProjection pVar atoms.size i
@@ -291,8 +289,8 @@ private meta def buildContinuityProof (body : Expr) (bvar : FVarId)
   let prodMkProof ← buildProdMkNhds atoms
   withLocalDecl `p .default prodTy fun pVar => do
     let abstracted ← abstractBody body bvar pVar atoms
-    let polyFn ← mkLambdaFVars #[pVar] abstracted
-    let contGoalTy ← mkAppM ``ContinuousAt #[polyFn, limitPt]
+    let contFn ← mkLambdaFVars #[pVar] abstracted
+    let contGoalTy ← mkAppM ``ContinuousAt #[contFn, limitPt]
     let contMVar ← mkFreshExprMVar contGoalTy
     try
       let _ ← Elab.Tactic.run contMVar.mvarId!
