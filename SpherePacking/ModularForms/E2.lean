@@ -21,7 +21,7 @@ def G₂ : ℍ → ℂ := EisensteinSeries.G2
 def E₂ : ℍ → ℂ := EisensteinSeries.E2
 
 /-- Compatibility alias for Mathlib's `EisensteinSeries.D2`. -/
-def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := fun z => (2 * π * Complex.I * γ 1 0) / (denom γ z)
+def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := EisensteinSeries.D2 γ
 
 lemma D₂_apply (γ : SL(2, ℤ)) (z : ℍ) :
     D₂ γ z = (2 * π * Complex.I * γ 1 0) / (γ 1 0 * z + γ 1 1) := by
@@ -40,8 +40,8 @@ lemma D2_inv (A : SL(2, ℤ)) : (D₂ A) ∣[(2 : ℤ)] A⁻¹ = -D₂ (A⁻¹) 
 lemma D2_T : D₂ ModularGroup.T = 0 := by
   simpa [D₂] using (EisensteinSeries.D2_T)
 
-lemma D2_S (z : ℍ) : D₂ ModularGroup.S z = 2 * (π : ℂ) * Complex.I / z := by
-  simp [D₂, ModularGroup.S, ModularGroup.denom_apply]
+lemma D2_S (z : ℍ) : D₂ ModularGroup.S z = 2 * (π : ℂ) * Complex.I / z :=
+  EisensteinSeries.D2_S z
 
 lemma G2_q_exp (z : ℍ) : G₂ z = (2 * riemannZeta 2) - 8 * π ^ 2 *
     ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * n * z) := by

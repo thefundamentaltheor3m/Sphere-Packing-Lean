@@ -97,13 +97,13 @@ lemma f₄_decompose :
 -/
 
 /-- f₂ is MDifferentiable -/
-lemma f₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₂ := by unfold f₂; fun_prop
+lemma f₂_MDifferentiable : MDiff f₂ := by unfold f₂; fun_prop
 
 /-- f₃ is MDifferentiable -/
-lemma f₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₃ := by unfold f₃; fun_prop
+lemma f₃_MDifferentiable : MDiff f₃ := by unfold f₃; fun_prop
 
 /-- f₄ is MDifferentiable -/
-lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by unfold f₄; fun_prop
+lemma f₄_MDifferentiable : MDiff f₄ := by unfold f₄; fun_prop
 
 /-!
 ## Phase 3-4: Relation f₂ + f₄ = f₃
@@ -411,14 +411,14 @@ The tendsto lemmas for H₂, H₃, H₄ are already in AtImInfty.lean:
 -/
 
 /-- theta_g is MDifferentiable (from MDifferentiable of f₂, f₄, H₂, H₄) -/
-lemma theta_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_g :=
+lemma theta_g_MDifferentiable : MDiff theta_g :=
   ((mdifferentiable_const.mul H₂_SIF_MDifferentiable).add H₄_SIF_MDifferentiable).mul
     f₂_MDifferentiable |>.add <|
   (H₂_SIF_MDifferentiable.add (mdifferentiable_const.mul H₄_SIF_MDifferentiable)).mul
     f₄_MDifferentiable
 
 /-- theta_h is MDifferentiable (from MDifferentiable of f₂, f₄) -/
-lemma theta_h_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_h := by
+lemma theta_h_MDifferentiable : MDiff theta_h := by
   unfold theta_h
   exact ((f₂_MDifferentiable.pow 2).add (f₂_MDifferentiable.mul f₄_MDifferentiable)).add
     (f₄_MDifferentiable.pow 2)
@@ -451,7 +451,7 @@ Since H₂ → 0 and serre_D 2 H₂ = D H₂ - (1/6)E₂ H₂ → 0,
 we get f₂ → 0 - 0 = 0. -/
 lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
   have h_serre_H₂ : Tendsto (serre_D 2 H₂) atImInfty (𝓝 0) := by
-    have hD := D_tendsto_zero_of_tendsto_const H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂
+    have hD := D_tendsto_zero_of_isBoundedAtImInfty H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂
     have hE₂H₂ : Tendsto (fun z => E₂ z * H₂ z) atImInfty (𝓝 0) := by
       simpa using E₂_tendsto_one_atImInfty.mul H₂_tendsto_atImInfty
     convert hD.sub (hE₂H₂.const_mul ((2 : ℂ) / 12)) using 2 <;> simp [serre_D]; ring
@@ -538,7 +538,7 @@ lemma theta_h_eq_zero : theta_h = 0 := by
 noncomputable def H_sum_sq : ℍ → ℂ := fun z => H₂ z ^ 2 + H₂ z * H₄ z + H₄ z ^ 2
 
 /-- H_sum_sq is MDifferentiable -/
-lemma H_sum_sq_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H_sum_sq := by
+lemma H_sum_sq_MDifferentiable : MDiff H_sum_sq := by
   unfold H_sum_sq
   exact ((H₂_SIF_MDifferentiable.pow 2).add (H₂_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)).add
     (H₄_SIF_MDifferentiable.pow 2)
@@ -561,8 +561,7 @@ lemma three_H_sum_sq_ne_zero : (fun z => 3 * H_sum_sq z) ≠ 0 :=
     (funext fun z => (mul_eq_zero.mp (congrFun h z)).resolve_left (by norm_num))
 
 /-- 3 * H_sum_sq is MDifferentiable -/
-lemma three_H_sum_sq_MDifferentiable :
-    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 3 * H_sum_sq z) :=
+lemma three_H_sum_sq_MDifferentiable : MDiff (fun z => 3 * H_sum_sq z) :=
   mdifferentiable_const.mul H_sum_sq_MDifferentiable
 
 /-!
@@ -687,7 +686,7 @@ lemma f₂_eq_zero : f₂ = 0 := by
         = (2 * H₂ z + H₄ z) ^ 2 * theta_h z := f₄_sq_mul_eq z (congrFun hg z)
       _ = _ := by rw [hh_z, mul_zero]
   -- f₄² is MDifferentiable
-  have f₄_sq_MDiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (f₄ ^ 2) := f₄_MDifferentiable.pow 2
+  have f₄_sq_MDiff : MDiff (f₄ ^ 2) := f₄_MDifferentiable.pow 2
   -- By mul_eq_zero_iff: f₄² = 0 (since 3 * H_sum_sq ≠ 0)
   have h_f₄_sq_zero : f₄ ^ 2 = 0 :=
     ((UpperHalfPlane.mul_eq_zero_iff f₄_sq_MDiff three_H_sum_sq_MDifferentiable).mp h_f₄_sq_3H

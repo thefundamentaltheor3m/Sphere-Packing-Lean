@@ -1,9 +1,9 @@
 module
 
 public import Mathlib.Analysis.CStarAlgebra.Module.Defs
-public import SpherePacking.ModularForms.qExpansion_lems
-
+public import Mathlib.Geometry.Manifold.Notation
 public import SpherePacking.ForMathlib.Cusps
+public import SpherePacking.ModularForms.qExpansion_lems
 
 @[expose] public section
 
@@ -175,7 +175,7 @@ function vanishes at i∞, then it vanishes at all cusps (by slash invariance),
 hence is a cusp form. -/
 lemma IsCuspForm_of_SIF_tendsto_zero {k : ℤ}
     (f_SIF : SlashInvariantForm Γ(1) k)
-    (h_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f_SIF.toFun)
+    (h_mdiff : MDiff f_SIF.toFun)
     (h_zero : Tendsto f_SIF.toFun atImInfty (nhds 0)) :
     ∃ (f_MF : ModularForm Γ(1) k),
     IsCuspForm Γ(1) k f_MF ∧ ∀ z, f_MF z = f_SIF.toFun z := by
