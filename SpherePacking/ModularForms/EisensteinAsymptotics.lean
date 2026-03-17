@@ -34,79 +34,6 @@ open scoped ModularForm MatrixGroups Manifold Interval Real NNReal ENNReal Topol
 
 noncomputable section
 
-/-! ## Cauchy estimates and limits at infinity -/
-
-/-- If f is holomorphic and bounded at infinity, then D f → 0 at i∞.
-
-**Proof via Cauchy estimates:**
-For z with large Im, consider the ball B(z, Im(z)/2) in ℂ.
-- Ball is contained in upper half plane: all points have Im > Im(z)/2 > 0
-- f ∘ ofComplex is holomorphic on the ball (from MDifferentiable)
-- f is bounded by M for Im ≥ A (from IsBoundedAtImInfty)
-- By Cauchy: |deriv(f ∘ ofComplex)(z)| ≤ M / (Im(z)/2) = 2M/Im(z)
-- D f = (2πi)⁻¹ * deriv(...), so |D f(z)| ≤ M/(π·Im(z)) → 0 -/
-lemma D_tendsto_zero_of_tendsto_const {f : ℍ → ℂ}
-    (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
-    (hbdd : IsBoundedAtImInfty f) :
-    Filter.Tendsto (D f) atImInfty (nhds 0) := by
-  rw [isBoundedAtImInfty_iff] at hbdd
-  obtain ⟨M, A, hMA⟩ := hbdd
-  rw [Metric.tendsto_nhds]
-  intro ε hε
-  rw [Filter.Eventually, atImInfty, Filter.mem_comap]
-  use Set.Ici (max (2 * max A 0 + 1) (|M| / (π * ε) + 1))
-  constructor
-  · exact Filter.mem_atTop _
-  · intro z hz
-    simp only [Set.mem_preimage, Set.mem_Ici] at hz
-    have hz_ge_A : z.im / 2 > max A 0 := by linarith [le_trans (le_max_left _ _) hz]
-    have hz_ge_bound : z.im > |M| / (π * ε) := by linarith [le_trans (le_max_right _ _) hz]
-    have hDiff : DiffContOnCl ℂ (f ∘ ofComplex) (Metric.ball (z : ℂ) (z.im / 2)) :=
-      diffContOnCl_comp_ofComplex_of_mdifferentiable hf (closedBall_center_subset_upperHalfPlane z)
-    have hR_pos : 0 < z.im / 2 := by positivity
-    have hmax_nonneg : 0 ≤ max A 0 := le_max_right _ _
-    have hA_le_max : A ≤ max A 0 := le_max_left _ _
-    have hf_bdd_sphere : ∀ w ∈ Metric.sphere (z : ℂ) (z.im / 2), ‖(f ∘ ofComplex) w‖ ≤ M := by
-      intro w hw
-      have hw_im_pos : 0 < w.im :=
-        closedBall_center_subset_upperHalfPlane z (Metric.sphere_subset_closedBall hw)
-      have hw_im_ge_A : A ≤ w.im := by
-        have habs : |w.im - z.im| ≤ z.im / 2 := by
-          calc |w.im - z.im|
-            _ = |(w - z).im| := by simp [Complex.sub_im]
-            _ ≤ ‖w - z‖ := abs_im_le_norm _
-            _ = dist w z := (dist_eq_norm _ _).symm
-            _ = z.im / 2 := Metric.mem_sphere.mp hw
-        have hlower : z.im / 2 ≤ w.im := by linarith [(abs_le.mp habs).1]
-        have hA_lt : A < w.im := calc A ≤ max A 0 := hA_le_max
-          _ < z.im / 2 := hz_ge_A
-          _ ≤ w.im := hlower
-        linarith
-      simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw_im_pos]
-      exact hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
-    have hDf_bound : ‖D f z‖ ≤ M / (π * z.im) := by
-      have h := norm_D_le_of_sphere_bound hR_pos hDiff hf_bdd_sphere
-      calc ‖D f z‖ ≤ M / (2 * π * (z.im / 2)) := h
-        _ = M / (π * z.im) := by ring
-    have hM_nonneg : 0 ≤ M := by
-      have hA_le_z : A ≤ z.im := by linarith [hA_le_max, hmax_nonneg, hz_ge_A]
-      exact le_trans (norm_nonneg _) (hMA z hA_le_z)
-    simp only [dist_zero_right]
-    by_cases hM_zero : M = 0
-    · calc ‖D f z‖
-        _ ≤ M / (π * z.im) := hDf_bound
-        _ = 0 := by simp [hM_zero]
-        _ < ε := hε
-    · have hM_pos : 0 < M := lt_of_le_of_ne hM_nonneg (Ne.symm hM_zero)
-      calc ‖D f z‖
-        _ ≤ M / (π * z.im) := hDf_bound
-        _ = |M| / (π * z.im) := by rw [abs_of_pos hM_pos]
-        _ < |M| / (π * (|M| / (π * ε))) := by
-            apply div_lt_div_of_pos_left (abs_pos.mpr hM_zero)
-            · positivity
-            · apply mul_lt_mul_of_pos_left hz_ge_bound Real.pi_pos
-        _ = ε := by field_simp
-
 /-! ## Limits of Eisenstein series at infinity -/
 
 /-- exp(-c * y) → 0 as y → +∞ (for c > 0). -/
@@ -226,11 +153,11 @@ This is the continuous mapping theorem applied to `serre_D k f = D f - (k/12) * 
 - f → c
 Therefore `serre_D k f → 0 - (k/12) * 1 * c = -k*c/12`. -/
 lemma serre_D_tendsto_of_tendsto (k : ℤ) (f : ℍ → ℂ) (c : ℂ)
-    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_holo : MDiff f) (hf_bdd : IsBoundedAtImInfty f)
     (hf_lim : Filter.Tendsto f atImInfty (nhds c)) :
     Filter.Tendsto (serre_D k f) atImInfty (nhds (-(k : ℂ) * c / 12)) := by
   rw [show serre_D k f = fun z => D f z - (k : ℂ) * 12⁻¹ * E₂ z * f z from serre_D_eq k f]
-  have hD := D_tendsto_zero_of_tendsto_const hf_holo hf_bdd
+  have hD := D_tendsto_zero_of_isBoundedAtImInfty hf_holo hf_bdd
   have hprod := E₂_tendsto_one_atImInfty.mul hf_lim
   have hlim : (0 : ℂ) - (k : ℂ) * 12⁻¹ * 1 * c = -(k : ℂ) * c / 12 := by ring
   rw [← hlim]
@@ -241,14 +168,14 @@ lemma serre_D_tendsto_of_tendsto (k : ℤ) (f : ℍ → ℂ) (c : ℂ)
 
 /-- Special case: if `f → 1` at i∞, then `serre_D k f → -k/12`. -/
 lemma serre_D_tendsto_neg_k_div_12 (k : ℤ) (f : ℍ → ℂ)
-    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_holo : MDiff f) (hf_bdd : IsBoundedAtImInfty f)
     (hf_lim : Filter.Tendsto f atImInfty (nhds 1)) :
     Filter.Tendsto (serre_D k f) atImInfty (nhds (-(k : ℂ) / 12)) := by
   simpa using serre_D_tendsto_of_tendsto k f 1 hf_holo hf_bdd hf_lim
 
 /-- Special case: if `f → 0` at i∞, then `serre_D k f → 0`. -/
 lemma serre_D_tendsto_zero_of_tendsto_zero (k : ℤ) (f : ℍ → ℂ)
-    (hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hf_bdd : IsBoundedAtImInfty f)
+    (hf_holo : MDiff f) (hf_bdd : IsBoundedAtImInfty f)
     (hf_lim : Filter.Tendsto f atImInfty (nhds 0)) :
     Filter.Tendsto (serre_D k f) atImInfty (nhds 0) := by
   simpa using serre_D_tendsto_of_tendsto k f 0 hf_holo hf_bdd hf_lim

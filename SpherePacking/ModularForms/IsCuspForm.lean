@@ -1,9 +1,9 @@
 module
 
 public import Mathlib.Analysis.CStarAlgebra.Module.Defs
-public import SpherePacking.ModularForms.qExpansion_lems
-
+public import Mathlib.Geometry.Manifold.Notation
 public import SpherePacking.ForMathlib.Cusps
+public import SpherePacking.ModularForms.qExpansion_lems
 
 @[expose] public section
 

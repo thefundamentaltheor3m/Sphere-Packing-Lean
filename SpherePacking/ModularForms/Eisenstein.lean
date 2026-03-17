@@ -111,24 +111,6 @@ lemma φ₀''_mem_upperHalfPlane {z : ℂ} (hz : z ∈ upperHalfPlaneSet) : φ�
 lemma φ₀''_coe_upperHalfPlane (z : ℍ) : φ₀'' (z : ℂ) = φ₀ z := by
   simpa using (φ₀''_def (z := (z : ℂ)) (UpperHalfPlane.im_pos z))
 
-instance : atImInfty.NeBot := by
-  rw [atImInfty, Filter.comap_neBot_iff ]
-  simp only [mem_atTop_sets, ge_iff_le, forall_exists_index]
-  intro t x hx
-  have := ENNReal.nhdsGT_ofNat_neBot
-  let z : ℂ := Complex.mk (0 : ℝ) (|x| + 1)
-  have h0 : 0 ≤ |x| := by
-    apply abs_nonneg
-  have hz : 0 < z.im := by
-    positivity
-  use ⟨z, hz⟩
-  apply hx
-  simp only [UpperHalfPlane.im]
-  have : x ≤ |x| := by
-    apply le_abs_self
-  apply le_trans this
-  simp only [le_add_iff_nonneg_right, zero_le_one, z]
-
 open SlashInvariantFormClass ModularFormClass
 variable {k : ℤ} {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup SL(2, ℤ)} (n : ℕ) (f : F)
 
