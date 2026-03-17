@@ -225,8 +225,7 @@ private meta partial def abstractBody (body : Expr) (bvar : FVarId)
   for i in [:atoms.size] do
     let candApplied := mkApp atoms[i]!.fn bvarExpr
     if ← withNewMCtxDepth (isDefEq body candApplied) then
-      let proj ← buildProjection pVar atoms.size i
-      return proj
+      return ← buildProjection pVar atoms.size i
   match body with
   | .app f a =>
     return .app (← abstractBody f bvar pVar atoms)
