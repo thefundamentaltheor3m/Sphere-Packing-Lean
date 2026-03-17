@@ -144,6 +144,14 @@ example (h₁ : Tendsto fc atTop (nhds 0)) (h₂ : Tendsto gc atTop (nhds 1)) :
 example (h : Tendsto fc atTop (nhds 0)) :
     Tendsto (fun z => Complex.exp (fc z)) atTop (nhds 1) := by tendsto_cont
 
+-- Complex.re composition (pattern from PR #307: continuous_re.tendsto.comp)
+example (h : Tendsto fc atTop (nhds 1)) :
+    Tendsto (fun z => (fc z).re) atTop (nhds 1) := by tendsto_cont
+
+-- Complex.im composition
+example (h : Tendsto fc atTop (nhds I)) :
+    Tendsto (fun z => (fc z).im) atTop (nhds 1) := by tendsto_cont
+
 end Complex
 
 -- ══════════════════════════════════════════════════════════════
