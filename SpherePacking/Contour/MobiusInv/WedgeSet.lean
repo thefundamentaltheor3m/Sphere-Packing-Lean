@@ -32,40 +32,32 @@ private lemma mobiusInv_re_im (x y : ℝ) :
 public lemma mobiusInv_lineMap_z₁_mem_wedgeSet
     {t : ℝ} (ht0 : 0 < t) (ht1 : t < 1) :
     mobiusInv (AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) t) ∈ wedgeSet := by
-  simpa [SpherePacking.Contour.lineMap_z₁line (t := t)] using
-    (show mobiusInv (SpherePacking.Contour.z₁line t) ∈ wedgeSet from by
-      have hdenom : 0 < (1 + t ^ 2 : ℝ) := by positivity
-      have hre : (mobiusInv (SpherePacking.Contour.z₁line t)).re = 1 / (1 + t ^ 2) := by
-        simpa [SpherePacking.Contour.z₁line, mobiusInv, pow_two, add_assoc, add_comm,
-          add_left_comm] using (mobiusInv_re_im (-1) t).1
-      have him : (mobiusInv (SpherePacking.Contour.z₁line t)).im = t / (1 + t ^ 2) := by
-        simpa [SpherePacking.Contour.z₁line, mobiusInv, pow_two, add_assoc, add_comm,
-          add_left_comm] using (mobiusInv_re_im (-1) t).2
-      refine (wedgeSet_iff (z := mobiusInv (SpherePacking.Contour.z₁line t))).2 ?_
-      refine ⟨?_, ?_⟩
-      · rw [him]
-        exact div_pos ht0 hdenom
-      · constructor <;> (rw [hre, him]; field_simp [hdenom.ne']; nlinarith [ht0, ht1]))
+  rw [Contour.lineMap_z₁line]
+  obtain ⟨hre, him⟩ := mobiusInv_re_im (-1) t
+  have hc : mobiusInv (Contour.z₁line t) = -(↑(-1 : ℝ) + Complex.I * ↑t)⁻¹ := by simp [mobiusInv]
+  rw [← hc] at hre him
+  refine wedgeSet_iff.mpr ⟨?_, ?_⟩
+  · rw [him]
+    positivity
+  · rw [hre, him]
+    simp only [fieldLt]
+    constructor <;> nlinarith only [ht0, ht1]
 
 /-- Along `-1 + I → I`, the Mobius inversion map lands in `wedgeSet`. -/
 public lemma mobiusInv_lineMap_z₂_mem_wedgeSet
     {t : ℝ} (ht0 : 0 < t) (ht1 : t < 1) :
     mobiusInv (AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t) ∈ wedgeSet := by
-  simpa [SpherePacking.Contour.lineMap_z₂line (t := t)] using
-    (show mobiusInv (SpherePacking.Contour.z₂line t) ∈ wedgeSet from by
-      set x : ℝ := t - 1
-      have hdenom : 0 < (x ^ 2 + 1 : ℝ) := by positivity
-      have hre : (mobiusInv (SpherePacking.Contour.z₂line t)).re = (1 - t) / (x ^ 2 + 1) := by
-        simpa [SpherePacking.Contour.z₂line, x, sub_eq_add_neg, add_assoc, add_left_comm,
-          add_comm, mobiusInv, pow_two] using (mobiusInv_re_im x 1).1
-      have him : (mobiusInv (SpherePacking.Contour.z₂line t)).im = 1 / (x ^ 2 + 1) := by
-        simpa [SpherePacking.Contour.z₂line, x, sub_eq_add_neg, add_assoc, add_left_comm,
-          add_comm, mobiusInv, pow_two] using (mobiusInv_re_im x 1).2
-      refine (wedgeSet_iff (z := mobiusInv (SpherePacking.Contour.z₂line t))).2 ?_
-      refine ⟨?_, ?_⟩
-      · rw [him]
-        exact (one_div_pos.2 hdenom)
-      · constructor <;> (rw [hre, him]; field_simp [hdenom.ne']; nlinarith [ht0, ht1, x]))
+  rw [Contour.lineMap_z₂line]
+  obtain ⟨hre, him⟩ := mobiusInv_re_im (t - 1) 1
+  have hc : mobiusInv (Contour.z₂line t) = -(↑(t - 1) + Complex.I * ↑(1 : ℝ))⁻¹ := by
+    simp [sub_eq_add_neg, add_comm, mobiusInv]
+  rw [← hc, one_pow] at hre him
+  refine wedgeSet_iff.mpr ⟨?_, ?_⟩
+  · rw [him]
+    positivity
+  · rw [hre, him]
+    simp only [fieldLt]
+    constructor <;> nlinarith only [ht0, ht1]
 
 end
 
