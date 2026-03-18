@@ -501,15 +501,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hratio_event :
       ∀ᶠ R in (atTop : Filter ℝ), b + cubeShellErr L < c * ratio R :=
     hmul_tend.eventually (Ioi_mem_nhds hb_add)
-  have hfreq : ∃ᶠ R in (atTop : Filter ℝ), c < S.finiteDensity R :=
-    frequently_lt_finiteDensity_of_lt_density (S := S) (b := c) hcS
-  have hfreq' :
-      ∃ᶠ R in (atTop : Filter ℝ),
-        c < S.finiteDensity R ∧ 0 < R ∧ b + cubeShellErr L < c * ratio R := by
-    have hev : ∀ᶠ R in (atTop : Filter ℝ), 0 < R ∧ b + cubeShellErr L < c * ratio R :=
-      (eventually_gt_atTop (0 : ℝ)).and hratio_event
-    exact hfreq.and_eventually hev
-  rcases hfreq'.exists with ⟨R, hcR, hRpos, hRratio⟩
+  rcases ((frequently_lt_finiteDensity_of_lt_density (S := S) (b := c) hcS).and_eventually
+      ((eventually_gt_atTop (0 : ℝ)).and hratio_event)).exists with ⟨R, hcR, hRpos, hRratio⟩
   -- Abbreviations for volumes.
   let volBall : ℝ≥0∞ := volume (ball (0 : EuclideanSpace ℝ (Fin d)) r)
   let volCube : ℝ≥0∞ := volume (coordCube (d := d) L)
@@ -525,44 +518,20 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hvolCube_ne_top : volCube ≠ ∞ :=
     (PeriodicConstant.isBounded_coordCube (d := d) L hLpos).measure_lt_top.ne
   -- Convert `hcR` to a strict inequality involving `encard` of centers in `ball 0 (R+r)`.
-  have hcR' :
-      c <
-        ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) *
-            volBall /
-          volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
-    have hle :
-        S.finiteDensity R ≤
-          (S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard *
-              volBall /
-            volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
-      simpa [hSsep, volBall, r, add_assoc, add_left_comm, add_comm] using
-        (S.finiteDensity_le (hd := hd) (R := R))
-    exact lt_of_lt_of_le hcR hle
-  have hvolR_ne0 : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) ≠ 0 :=
-    (volume_ball_pos _ hRpos).ne.symm
-  have hvolR_ne_top : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) ≠ ∞ :=
-    (volume_ball_lt_top _).ne
-  have hc_mul :
-      c * volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) <
-        ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall :=
+  have hcR' : c < ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) *
+      volBall / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
+    hcR.trans_le (by simpa [hSsep, volBall, r, add_assoc, add_left_comm, add_comm] using
+      S.finiteDensity_le (hd := hd) (R := R))
+  have hc_mul : c * volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) <
+      ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall :=
     ENNReal.mul_lt_of_lt_div hcR'
-  have hvolR2_ne0 : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) ≠ 0 := by
-    have hR2pos : 0 < R + Cshift := by positivity
-    exact (volume_ball_pos _ hR2pos).ne.symm
-  have hvolR2_ne_top : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) ≠ ∞ :=
-    (volume_ball_lt_top _).ne
-  have hc_ratio :
-      c * ratio R <
-        ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall /
-          volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) := by
-    have hdiv :
-        c * volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) /
-              volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) <
-          ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) *
-              volBall /
-            volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) :=
-      ENNReal.div_lt_div_right hvolR2_ne0 hvolR2_ne_top hc_mul
-    simpa [ratio, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using hdiv
+  have hvolR2_ne0 : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) ≠ 0 :=
+    (volume_ball_pos _ (by positivity)).ne.symm
+  have hc_ratio : c * ratio R <
+      ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall /
+        volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) := by
+    simpa [ratio, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
+      ENNReal.div_lt_div_right hvolR2_ne0 (volume_ball_lt_top _).ne hc_mul
   -- Finite sets of centers and lattice translates.
   let R₁ : ℝ := R + r
   have hX : (S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R₁).Finite :=
