@@ -155,6 +155,22 @@ example (h : Tendsto fc atTop (nhds I)) :
 end Complex
 
 -- ══════════════════════════════════════════════════════════════
+-- Goal function behind a reducible definition (whnfR needed)
+-- ══════════════════════════════════════════════════════════════
+
+-- When the goal function is a reducible definition (abbrev), tendsto_cont
+-- should reduce it via whnfR to find the lambda (no `change` or `show` needed).
+noncomputable abbrev myExpr (f g : ℝ → ℝ) : ℝ → ℝ := fun z => f z ^ 2 + g z
+
+example (hf : Tendsto f atTop (nhds 1)) (hg : Tendsto g atTop (nhds 2)) :
+    Tendsto (myExpr f g) atTop (nhds 3) := by tendsto_cont
+
+noncomputable abbrev myExprMul (f g : ℝ → ℝ) : ℝ → ℝ := fun z => f z * g z
+
+example (hf : Tendsto f atTop (nhds 2)) (hg : Tendsto g atTop (nhds 3)) :
+    Tendsto (myExprMul f g) atTop (nhds 6) := by tendsto_cont
+
+-- ══════════════════════════════════════════════════════════════
 -- General topological ring
 -- ══════════════════════════════════════════════════════════════
 

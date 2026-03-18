@@ -62,15 +62,14 @@ meta structure Atom where
 -- ══════════════════════════════════════════════════════════════
 
 /-- Match `Filter.Tendsto f l target` returning (α, β, f, l, target). -/
-private meta def matchTendsto? (e : Expr) :
-    MetaM (Option (Expr × Expr × Expr × Expr × Expr)) :=
-  return match e.getAppFnArgs with
+private meta def matchTendsto? (e : Expr) : MetaM (Option (Expr × Expr × Expr × Expr × Expr)) :=
+  return match (← whnfR e).getAppFnArgs with
   | (``Filter.Tendsto, #[α, β, f, l, tgt]) => some (α, β, f, l, tgt)
   | _ => none
 
 /-- Extract the limit from `nhds a`, returning `a`. -/
 private meta def matchNhds? (e : Expr) : MetaM (Option Expr) :=
-  return match e.getAppFnArgs with
+  return match (← whnfR e).getAppFnArgs with
   | (``nhds, #[_, _, a]) => some a
   | _ => none
 
@@ -308,7 +307,7 @@ private meta def tendstoCont : TacticM Unit := withMainContext do
 
   let (goalFn, goalFilter, domTy) ← parseGoal goalTy
 
-  let body ← match goalFn with
+  let body ← match (← whnfR goalFn) with
     | .lam _ _ b _ => pure b
     | _ => throwError
       "tendsto_cont: goal function is not a lambda.\n\
