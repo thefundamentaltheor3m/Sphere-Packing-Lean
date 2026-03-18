@@ -61,7 +61,8 @@ meta structure Atom where
 -- Goal and hypothesis parsing
 -- ══════════════════════════════════════════════════════════════
 
-/-- Match `Filter.Tendsto f l target` returning (α, β, f, l, target). -/
+/-- Match `Filter.Tendsto f l target` returning (α, β, f, l, target).
+    Falls back to `whnfR` to handle wrapped/aliased `Tendsto` expressions. -/
 private meta def matchTendsto? (e : Expr) :
     MetaM (Option (Expr × Expr × Expr × Expr × Expr)) := do
   let match1 (e : Expr) := do
@@ -72,7 +73,8 @@ private meta def matchTendsto? (e : Expr) :
   if let some r ← match1 e then return some r
   match1 (← whnfR e)
 
-/-- Extract the limit from `nhds a`, returning `a`. -/
+/-- Extract the limit from `nhds a`, returning `a`.
+    Falls back to `whnfR` to handle wrapped/aliased `nhds` expressions. -/
 private meta def matchNhds? (e : Expr) : MetaM (Option Expr) := do
   let match1 (e : Expr) :=
     match e.getAppFnArgs with
@@ -319,7 +321,7 @@ private meta def tendstoCont : TacticM Unit := withMainContext do
     | .lam _ _ b _ => pure b
     | _ =>
       -- The goal function may be a definition that reduces to a lambda
-      let goalFn' ← whnfR goalFn
+      let goalFn' ← whnf goalFn
       match goalFn' with
       | .lam _ _ b _ => pure b
       | _ => throwError
