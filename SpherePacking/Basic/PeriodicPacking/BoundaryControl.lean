@@ -602,17 +602,11 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   let F : Finset (EuclideanSpace ℝ (Fin d)) := sg.filter fun x => x ∈ innerSet
   let sb : Finset (EuclideanSpace ℝ (Fin d)) := sg.filter fun x => x ∉ innerSet
   have hF_centers : ∀ x ∈ F, x ∈ S.centers := fun x hx => by
-    have := hx
-    dsimp [F] at this
-    exact hsg_centers x (Finset.mem_filter.1 this).1
+    have := hx; dsimp [F] at this; exact hsg_centers x (Finset.mem_filter.1 this).1
   have hF_inner : ∀ x ∈ F, x ∈ g0 +ᵥ coordCubeInner (d := d) L r := fun x hx => by
-    have := hx
-    dsimp [F] at this
-    simpa [innerSet] using (Finset.mem_filter.1 this).2
+    have := hx; dsimp [F] at this; simpa [innerSet] using (Finset.mem_filter.1 this).2
   have hsb_centers : ∀ x ∈ sb, x ∈ S.centers := fun x hx => by
-    have := hx
-    dsimp [sb] at this
-    exact hsg_centers x (Finset.mem_filter.1 this).1
+    have := hx; dsimp [sb] at this; exact hsg_centers x (Finset.mem_filter.1 this).1
   have hsb_boundary :
       ∀ x ∈ sb, x ∈ (g0 +ᵥ coordCube (d := d) L) \ (g0 +ᵥ coordCubeInner (d := d) L (1 / 2)) := by
     intro x hx
