@@ -307,17 +307,12 @@ private meta def tendstoCont : TacticM Unit := withMainContext do
 
   let (goalFn, goalFilter, domTy) ← parseGoal goalTy
 
-  let body ← match goalFn with
+  let body ← match (← whnfR goalFn) with
     | .lam _ _ b _ => pure b
-    | _ =>
-      -- The goal function may be a reducible definition that reduces to a lambda
-      let goalFn' ← whnfR goalFn
-      match goalFn' with
-      | .lam _ _ b _ => pure b
-      | _ => throwError
-        "tendsto_cont: goal function is not a lambda.\n\
-         Hint: try `show Tendsto (fun z => ...) _ (nhds _)` \
-         or `unfold ...`"
+    | _ => throwError
+      "tendsto_cont: goal function is not a lambda.\n\
+       Hint: try `show Tendsto (fun z => ...) _ (nhds _)` \
+       or `unfold ...`"
 
   let proof? ← withLocalDecl `z .default domTy fun zVar => do
     let body := body.instantiate1 zVar
