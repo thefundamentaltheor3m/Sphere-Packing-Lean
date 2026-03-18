@@ -1,6 +1,7 @@
 module
 
 public import SpherePacking.ModularForms.EisensteinAsymptotics
+public import SpherePacking.Tactic.TendstoCont
 
 @[expose] public section
 
@@ -116,7 +117,7 @@ theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.to
     simp at this
     convert this using 2
   have hc_val : c = -(1/2 : ℂ) := scalar_eq_of_tendsto hfun serre_DE₆_tendsto_atImInfty
-    (by simpa [mul_one] using E₄_tendsto_one_atImInfty.mul E₄_tendsto_one_atImInfty)
+    (by have := E₄_tendsto_one_atImInfty; tendsto_cont)
   ext z
   simp only [hfun z, hc_val, Pi.mul_apply]
   ring_nf
