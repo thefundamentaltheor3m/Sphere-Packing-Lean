@@ -66,10 +66,8 @@ lemma mem_vadd_coordCube_iff_eq_neg_coordCubeCover (g : cubeLattice (d := d) L h
     x ∈ g +ᵥ coordCube (d := d) L ↔ g = -coordCubeCover (d := d) L hL x := by
   constructor
   · intro hx
-    have : (-g : cubeLattice (d := d) L hL) = coordCubeCover (d := d) L hL x :=
-      coordCubeCover_unique (d := d) L hL x (-g)
-        (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx)
-    simpa using congrArg (fun t : cubeLattice (d := d) L hL => -t) this
+    rw [show g = -(-g) from (neg_neg g).symm, coordCubeCover_unique (d := d) L hL x (-g)
+      (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx)]
   · rintro rfl; exact mem_neg_coordCubeCover_vadd_coordCube (d := d) L hL x
 
 end CoordCubeCover
@@ -256,14 +254,10 @@ lemma coordCubeInner_one_subset_shell (L : ℝ) :
     coordCubeInner (d := d) L 1 ⊆
       (shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0 := by
   intro x hx
-  refine (Set.mem_vadd_set_iff_neg_vadd_mem).2 ?_
-  have hx' : ∀ i : Fin d, x.ofLp i ∈ Set.Icc (1 : ℝ) (L - 1) := by
-    simpa [coordCubeInner, Set.mem_setOf_eq] using hx
+  refine (Set.mem_vadd_set_iff_neg_vadd_mem).2 fun i => ?_
   simp only [coordCubeInner, Set.mem_setOf_eq, shellVec, vadd_eq_add, one_div, WithLp.ofLp_add,
-    WithLp.ofLp_neg, Pi.add_apply, Pi.neg_apply, neg_neg]
-  exact fun i => by
-    let hxi := hx' i
-    refine ⟨by linarith [hxi.1], by linarith [hxi.2]⟩
+    WithLp.ofLp_neg, Pi.add_apply, Pi.neg_apply, neg_neg] at hx ⊢
+  exact ⟨by linarith [(hx i).1], by linarith [(hx i).2]⟩
 
 lemma volume_cubeShell_eq (L : ℝ) :
     volume (((shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
@@ -364,29 +358,17 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
   let P : PeriodicSpherePacking d :=
     periodize_to_periodicSpherePacking (d := d) S (Λ := Λ) D Fset
       (hD_unique_covers := PeriodicConstantApprox.coordCube_unique_covers_vadd (d := d) L hL g)
-      (hF_centers := by
-        assumption)
-      (hF_ball := by
-        intro x hx
-        have hx' : x ∈ F := by simpa [Fset] using hx
-        have hxInner : x ∈ g +ᵥ coordCubeInner (d := d) L (S.separation / 2) := by
-          simpa [hSsep] using (hF_inner x hx')
-        exact ball_subset_vadd_coordCube_of_mem_vadd_inner hL hxInner)
+      (hF_centers := by assumption)
+      (hF_ball := fun x hx => ball_subset_vadd_coordCube_of_mem_vadd_inner hL
+        (by simpa [hSsep] using hF_inner x (by simpa [Fset] using hx)))
   have hPsep : P.separation = 1 := by simpa [P, hSsep]
   refine ⟨P, hPsep, ?_⟩
-  have hD_bounded : IsBounded D := by
-    simpa [D, Submodule.vadd_def, vadd_eq_add] using
-      (PeriodicConstant.isBounded_coordCube (d := d) L hL).vadd (g : EuclideanSpace ℝ (Fin d))
-  have hD_unique : ∀ x, ∃! g0 : (cubeLattice (d := d) L hL), g0 +ᵥ x ∈ D :=
-    PeriodicConstantApprox.coordCube_unique_covers_vadd (d := d) L hL g
-  have hF_sub : Fset ⊆ D := by
-    intro x hx
-    have hx' : x ∈ F := by simpa [Fset] using hx
-    rcases (hF_inner x hx') with ⟨a, ha, rfl⟩
-    have ha' : a ∈ coordCube (d := d) L :=
-      PeriodicConstant.coordCubeInner_subset_coordCube (d := d) (L := L) (r := (2⁻¹ : ℝ))
-        (by norm_num) ha
-    exact ⟨a, ha', rfl⟩
+  have hD_bounded : IsBounded D := by simpa [D, Submodule.vadd_def, vadd_eq_add] using
+    (PeriodicConstant.isBounded_coordCube (d := d) L hL).vadd (g : EuclideanSpace ℝ (Fin d))
+  have hD_unique := PeriodicConstantApprox.coordCube_unique_covers_vadd (d := d) L hL g
+  have hF_sub : Fset ⊆ D := fun x hx => by
+    rcases hF_inner x (by simpa [Fset] using hx) with ⟨a, ha, rfl⟩
+    exact ⟨a, PeriodicConstant.coordCubeInner_subset_coordCube (by norm_num) ha, rfl⟩
   have hcenters_inter :
       P.centers ∩ D = Fset := by
     simpa [P, periodize_to_periodicSpherePacking, Fset] using
@@ -640,13 +622,11 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       hF_centers hF_inner with ⟨P, hPsep, hPdens⟩
   -- Rewrite `P.density` with denominator `volCube`.
   have hden :
-      (Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) : ℝ≥0∞) = volCube :=
-      by
-    have : Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) =
-        volCube.toNNReal := by
-      simpa [volCube] using (PeriodicConstantApprox.toNNReal_covolume_cubeLattice
-        (d := d) (L := L) hLpos)
-    simp [this, ENNReal.coe_toNNReal hvolCube_ne_top]
+      (Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) : ℝ≥0∞) = volCube := by
+    rw [show Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) =
+      volCube.toNNReal from by simpa [volCube] using
+        PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) (L := L) hLpos]
+    exact ENNReal.coe_toNNReal hvolCube_ne_top
   have hPdens' : P.density = (F.card : ℝ≥0∞) * volBall / volCube := by
     simpa [hden, volBall] using hPdens
   refine ⟨P, hPsep, ?_⟩
