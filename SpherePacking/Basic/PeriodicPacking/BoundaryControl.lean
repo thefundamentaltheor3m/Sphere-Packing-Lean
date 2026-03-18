@@ -144,7 +144,11 @@ lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} 
         ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C)) :=
     iUnion_finset_vadd_coordCube_subset_ball (d := d) (hL := hL) (R := R) (C := C) hC
   have hle := volume.mono hsub
-  simp_all
+  calc (t.card : ℝ≥0∞) * volume (coordCube (d := d) L)
+      = ∑ g ∈ t, volume (g +ᵥ coordCube (d := d) L) := by
+        simp [Finset.sum_const, nsmul_eq_mul, MeasureTheory.measure_vadd]
+    _ = volume (⋃ g ∈ t, g +ᵥ coordCube (d := d) L) := hvol_union.symm
+    _ ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) := hle
 
 end CoverVolumeBound
 
