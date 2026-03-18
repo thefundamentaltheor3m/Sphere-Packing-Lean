@@ -30,31 +30,31 @@ variable (L : ℝ) (hL : 0 < L)
 
 /-- The unique lattice translate sending `x` into the coordinate cube `coordCube L`. -/
 noncomputable def coordCubeCover (x : EuclideanSpace ℝ (Fin d)) : cubeLattice (d := d) L hL :=
-  Classical.choose (PeriodicConstant.coordCube_unique_covers (d := d) L hL x)
+  Classical.choose (PeriodicConstant.coordCube_unique_covers L hL x)
 
 lemma coordCubeCover_spec (x : EuclideanSpace ℝ (Fin d)) :
-    coordCubeCover (d := d) L hL x +ᵥ x ∈ coordCube (d := d) L :=
-  (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers (d := d) L hL x)).1
+    coordCubeCover L hL x +ᵥ x ∈ coordCube L :=
+  (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers L hL x)).1
 
 lemma coordCubeCover_unique (x : EuclideanSpace ℝ (Fin d)) (g : cubeLattice (d := d) L hL)
-    (hg : g +ᵥ x ∈ coordCube (d := d) L) :
-    g = coordCubeCover (d := d) L hL x :=
-  (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers (d := d) L hL x)).2 g hg
+    (hg : g +ᵥ x ∈ coordCube L) :
+    g = coordCubeCover L hL x :=
+  (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers L hL x)).2 g hg
 
 lemma mem_neg_coordCubeCover_vadd_coordCube (x : EuclideanSpace ℝ (Fin d)) :
-    x ∈ (-coordCubeCover (d := d) L hL x) +ᵥ coordCube (d := d) L := by
-  simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using coordCubeCover_spec (d := d) L hL x
+    x ∈ (-coordCubeCover L hL x) +ᵥ coordCube (d := d) L := by
+  simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using coordCubeCover_spec L hL x
 
 lemma neg_coordCubeCover_mem_ball {C R : ℝ}
-    (hC : coordCube (d := d) L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
+    (hC : coordCube L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
     {x : EuclideanSpace ℝ (Fin d)} (hx : x ∈ ball 0 R) :
-    ((-coordCubeCover (d := d) L hL x : cubeLattice (d := d) L hL) :
+    ((-coordCubeCover L hL x : cubeLattice (d := d) L hL) :
         EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C) := by
-  set g := (coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d))
+  set g := (coordCubeCover L hL x : EuclideanSpace ℝ (Fin d))
   have hx0 : ‖x‖ < R := by simpa [mem_ball_zero_iff] using hx
   have hgx : ‖g + x‖ < C := by
-    have : g + x ∈ coordCube (d := d) L := by
-      simpa [Submodule.vadd_def, vadd_eq_add] using coordCubeCover_spec (d := d) L hL x
+    have : g + x ∈ coordCube L := by
+      simpa [Submodule.vadd_def, vadd_eq_add] using coordCubeCover_spec L hL x
     simpa [mem_ball_zero_iff] using hC this
   rw [mem_ball_zero_iff]
   change ‖-g‖ < R + C
@@ -65,12 +65,12 @@ lemma neg_coordCubeCover_mem_ball {C R : ℝ}
 
 lemma mem_vadd_coordCube_iff_eq_neg_coordCubeCover (g : cubeLattice (d := d) L hL)
     (x : EuclideanSpace ℝ (Fin d)) :
-    x ∈ g +ᵥ coordCube (d := d) L ↔ g = -coordCubeCover (d := d) L hL x := by
+    x ∈ g +ᵥ coordCube (d := d) L ↔ g = -coordCubeCover L hL x := by
   constructor
   · intro hx
-    rw [← neg_neg g, coordCubeCover_unique (d := d) L hL x (-g)
+    rw [← neg_neg g, coordCubeCover_unique L hL x (-g)
       (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx)]
-  · rintro rfl; exact mem_neg_coordCubeCover_vadd_coordCube (d := d) L hL x
+  · rintro rfl; exact mem_neg_coordCubeCover_vadd_coordCube L hL x
 
 end CoordCubeCover
 
@@ -79,7 +79,7 @@ section CoverVolumeBound
 open scoped BigOperators
 
 lemma vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ}
-    (hC : coordCube (d := d) L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
+    (hC : coordCube L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
     {g : cubeLattice (d := d) L hL}
     (hg : (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C)) :
     g +ᵥ coordCube (d := d) L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C)) := by
@@ -90,7 +90,7 @@ lemma vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ}
     mem_ball_zero_iff.mp (hC hx), mem_ball_zero_iff.mp hg]
 
 lemma iUnion_finset_vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ}
-    (hC : coordCube (d := d) L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
+    (hC : coordCube L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
     let htSet :=
       PeriodicConstantApprox.finite_lattice_in_ball (d := d) L hL (R + C)
     let t : Finset (cubeLattice (d := d) L hL) := htSet.toFinset
@@ -101,10 +101,10 @@ lemma iUnion_finset_vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ
   have hgBall :
       (g : EuclideanSpace ℝ (Fin d)) ∈ ball (0 : EuclideanSpace ℝ (Fin d)) (R + C) :=
     htSet.mem_toFinset.1 (by simpa [t] using hgT)
-  exact (vadd_coordCube_subset_ball (d := d) (hL := hL) (R := R) (C := C) hC hgBall) hy'
+  exact (vadd_coordCube_subset_ball (hL := hL) (R := R) (C := C) hC hgBall) hy'
 
 lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} (hL : 0 < L)
-    {R C : ℝ} (hC : coordCube (d := d) L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
+    {R C : ℝ} (hC : coordCube L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
     let htSet :=
       PeriodicConstantApprox.finite_lattice_in_ball (d := d) L hL (R + C)
     let t : Finset (cubeLattice (d := d) L hL) := htSet.toFinset
@@ -115,17 +115,17 @@ lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} 
       (fun g : cubeLattice (d := d) L hL => g +ᵥ coordCube (d := d) L) :=
     fun g _ h _ hgh => disjoint_vadd_of_unique_covers (d := d)
       (Λ := cubeLattice (d := d) L hL) (D := coordCube (d := d) L)
-      (PeriodicConstant.coordCube_unique_covers (d := d) L hL) hgh
+      (PeriodicConstant.coordCube_unique_covers L hL) hgh
   have hmeas : ∀ g ∈ t, MeasurableSet (g +ᵥ coordCube (d := d) L) := by
     intro g _; simpa using
-      MeasurableSet.const_vadd (PeriodicConstant.measurableSet_coordCube (d := d) L hL) g
+      MeasurableSet.const_vadd (PeriodicConstant.measurableSet_coordCube L hL) g
   calc (↑t.card : ℝ≥0∞) * volume (coordCube (d := d) L)
       = ∑ g ∈ t, volume (g +ᵥ coordCube (d := d) L) := by
           simp [measure_vadd, Finset.sum_const]
     _ = volume (⋃ g ∈ t, g +ᵥ coordCube (d := d) L) :=
           (measure_biUnion_finset (μ := volume) hdisj hmeas).symm
     _ ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) :=
-          volume.mono (iUnion_finset_vadd_coordCube_subset_ball (d := d) (hL := hL) hC)
+          volume.mono (iUnion_finset_vadd_coordCube_subset_ball (hL := hL) hC)
 
 end CoverVolumeBound
 
@@ -139,20 +139,20 @@ def constVec (c : ℝ) : EuclideanSpace ℝ (Fin d) :=
 
 lemma abs_coord_lt_of_norm_lt {x : EuclideanSpace ℝ (Fin d)} {r : ℝ} (hx : ‖x‖ < r)
     (i : Fin d) : |x i| < r :=
-  lt_of_le_of_lt (abs_coord_le_norm (d := d) x i) hx
+  lt_of_le_of_lt (abs_coord_le_norm x i) hx
 
 /-- If `x` lies in the width-`1/2` boundary strip of `coordCube L`, then the `1/2`-ball around `x`
 lies in a fixed set of finite volume independent of the translate. -/
 lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
-    ((coordCube (d := d) L \ coordCubeInner (d := d) L (1 / 2)) +
+    ((coordCube L \ coordCubeInner (d := d) L (1 / 2)) +
         ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2))
       ⊆ ((constVec (d := d) (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
         coordCubeInner (d := d) L 1 := by
   intro z hz
   rcases hz with ⟨x, hx, y, hy, rfl⟩
-  have hx_cube : x ∈ coordCube (d := d) L := hx.1
+  have hx_cube : x ∈ coordCube L := hx.1
   have hy' : ‖y‖ < (1 / 2 : ℝ) := by simpa [mem_ball_zero_iff] using hy
-  have hyi : ∀ i : Fin d, |y i| < (1 / 2 : ℝ) := fun i => abs_coord_lt_of_norm_lt (d := d) hy' i
+  have hyi : ∀ i : Fin d, |y i| < (1 / 2 : ℝ) := fun i => abs_coord_lt_of_norm_lt hy' i
   refine ⟨?_, ?_⟩
   · refine (Set.mem_vadd_set_iff_neg_vadd_mem).2 ?_
     simp only [coordCubeInner, coordCube, constVec, Set.mem_setOf_eq, vadd_eq_add] at hx_cube ⊢
@@ -202,7 +202,7 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
     rcases Set.mem_iUnion.1 hx with ⟨hxS, hyBall⟩
     have hxB := hs_boundary x hxS
     set x0 : EuclideanSpace ℝ (Fin d) := (-(g : EuclideanSpace ℝ (Fin d))) +ᵥ x
-    have hx0 : x0 ∈ coordCube (d := d) L := by
+    have hx0 : x0 ∈ coordCube L := by
       simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using hxB.1
     have hx0_notInner : x0 ∉ coordCubeInner (d := d) L (1 / 2) := by
       intro h; exact hxB.2 (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using h)
@@ -269,11 +269,11 @@ lemma volume_cubeShell_eq (L : ℝ) :
   have hsub :
       coordCubeInner (d := d) L 1 ⊆
         (shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0 :=
-    coordCubeInner_one_subset_shell (d := d) L
+    coordCubeInner_one_subset_shell L
   have hmeas_inner : MeasurableSet (coordCubeInner (d := d) L 1) := by
     have hmp : MeasurePreserving (fun x : EuclideanSpace ℝ (Fin d) => x.ofLp) := by
       simpa using PiLp.volume_preserving_ofLp (ι := Fin d)
-    simpa [PeriodicConstant.coordCubeInner_eq_preimage_ofLp (d := d) (L := L) (r := (1 : ℝ))] using
+    simpa [PeriodicConstant.coordCubeInner_eq_preimage_ofLp (L := L) (r := (1 : ℝ))] using
       (MeasurableSet.pi Set.countable_univ fun _ _ => measurableSet_Icc).preimage hmp.measurable
   simpa [measure_vadd, shellVec] using
     measure_diff (μ := volume) hsub hmeas_inner.nullMeasurableSet
@@ -283,7 +283,7 @@ lemma volume_cubeShell_eq_pow (L : ℝ) :
     volume (((shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
         coordCubeInner (d := d) L 1) =
       (ENNReal.ofReal (L + 1)) ^ d - (ENNReal.ofReal (L - 2)) ^ d := by
-  rw [volume_cubeShell_eq (d := d) (L := L)]
+  rw [volume_cubeShell_eq (L := L)]
   simp [PeriodicConstant.volume_coordCubeInner]
 
 section BoundaryControlShellVec
@@ -360,15 +360,15 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
     infer_instance
   let P : PeriodicSpherePacking d :=
     periodize_to_periodicSpherePacking (d := d) S (Λ := Λ) D Fset
-      (hD_unique_covers := PeriodicConstantApprox.coordCube_unique_covers_vadd (d := d) L hL g)
+      (hD_unique_covers := PeriodicConstantApprox.coordCube_unique_covers_vadd L hL g)
       (hF_centers := by assumption)
       (hF_ball := fun x hx => ball_subset_vadd_coordCube_of_mem_vadd_inner hL
         (by simpa [hSsep] using hF_inner x (by simpa [Fset] using hx)))
   have hPsep : P.separation = 1 := by simpa [P, hSsep]
   refine ⟨P, hPsep, ?_⟩
   have hD_bounded : IsBounded D := by simpa [D, Submodule.vadd_def, vadd_eq_add] using
-    (PeriodicConstant.isBounded_coordCube (d := d) L hL).vadd (g : EuclideanSpace ℝ (Fin d))
-  have hD_unique := PeriodicConstantApprox.coordCube_unique_covers_vadd (d := d) L hL g
+    (PeriodicConstant.isBounded_coordCube L hL).vadd (g : EuclideanSpace ℝ (Fin d))
+  have hD_unique := PeriodicConstantApprox.coordCube_unique_covers_vadd L hL g
   have hF_sub : Fset ⊆ D := fun x hx => by
     rcases hF_inner x (by simpa [Fset] using hx) with ⟨a, ha, rfl⟩
     exact ⟨a, PeriodicConstant.coordCubeInner_subset_coordCube (by norm_num) ha, rfl⟩
@@ -412,7 +412,7 @@ lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
         atTop (𝓝 (0 : ℝ≥0∞)) := by
   let f : ℝ → ℝ := fun L : ℝ => ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)
   have hf : Tendsto f atTop (𝓝 (0 : ℝ)) := by
-    simpa [f] using (tendsto_cubeShell_ratio_zero (d := d))
+    simpa [f] using (tendsto_cubeShell_ratio_zero)
   have hof : Tendsto (fun L : ℝ => ENNReal.ofReal (f L)) atTop (𝓝 (0 : ℝ≥0∞)) := by
     simpa using (ENNReal.continuous_ofReal.tendsto (0 : ℝ)).comp hf
   have hEq : (fun L : ℝ =>
@@ -427,9 +427,9 @@ lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
     have hshell : volume (((shellVec d (-(1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
         coordCubeInner (d := d) L 1) =
           (ENNReal.ofReal (L + 1)) ^ d - (ENNReal.ofReal (L - 2)) ^ d := by
-      simpa using volume_cubeShell_eq_pow (d := d) (L := L)
+      simpa using volume_cubeShell_eq_pow (L := L)
     have hcube : volume (coordCube (d := d) L) = (ENNReal.ofReal L) ^ d := by
-      simpa using PeriodicConstant.volume_coordCube (d := d) (L := L)
+      simpa using PeriodicConstant.volume_coordCube (L := L)
     rw [hshell, hcube, ← ENNReal.ofReal_pow hL1, ← ENNReal.ofReal_pow hL2',
       ← ENNReal.ofReal_pow hL0]
     have hsub : ENNReal.ofReal ((L + 1) ^ d) - ENNReal.ofReal ((L - 2) ^ d) =
@@ -470,11 +470,11 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hLevent : ∀ᶠ L in (atTop : Filter ℝ), cubeShellErr L < c - b := by
     have htend : Tendsto cubeShellErr atTop (𝓝 (0 : ℝ≥0∞)) := by
       simpa [cubeShellErr] using
-        (PeriodicConstantApprox.tendsto_volume_cubeShell_div_volume_coordCube_zero (d := d))
+        (PeriodicConstantApprox.tendsto_volume_cubeShell_div_volume_coordCube_zero)
     exact htend.eventually (Iio_mem_nhds hc_sub)
   rcases ((eventually_gt_atTop (0 : ℝ)).and hLevent).exists with ⟨L, hLpos, hLerr⟩
   -- A bounding radius `C` for the coordinate cube.
-  rcases PeriodicConstantApprox.coordCube_subset_ball (d := d) L hLpos with ⟨C, hC⟩
+  rcases PeriodicConstantApprox.coordCube_subset_ball L hLpos with ⟨C, hC⟩
   have hCpos : 0 < C := by
     have : (0 : EuclideanSpace ℝ (Fin d)) ∈ ball (0 : EuclideanSpace ℝ (Fin d)) C :=
       hC (by simp [coordCube, hLpos])
@@ -486,7 +486,7 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))
   have hratio_tend : Tendsto ratio atTop (𝓝 (1 : ℝ≥0∞)) := by
     simpa [ratio, Cshift, add_zero] using
-      (volume_ball_ratio_tendsto_nhds_one'' (d := d) (C := (0 : ℝ)) (C' := Cshift) hd)
+      (volume_ball_ratio_tendsto_nhds_one'' (C := (0 : ℝ)) (C' := Cshift) hd)
   have hmul_tend : Tendsto (fun R : ℝ => c * ratio R) atTop (𝓝 c) := by
     simpa [mul_one] using (ENNReal.Tendsto.const_mul hratio_tend (a := c))
   have hb_add : b + cubeShellErr L < c := lt_tsub_iff_left.mp hLerr
@@ -505,10 +505,10 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     simp [cubeShellErr, shellVol, volCube]
   have hvolCube_ne0 : volCube ≠ 0 := by
     have : volCube = (ENNReal.ofReal L) ^ d := by
-      simpa [volCube] using PeriodicConstant.volume_coordCube (d := d) (L := L)
+      simpa [volCube] using PeriodicConstant.volume_coordCube (L := L)
     simpa [this] using pow_ne_zero d (ENNReal.ofReal_pos.mpr hLpos).ne'
   have hvolCube_ne_top : volCube ≠ ∞ :=
-    (PeriodicConstant.isBounded_coordCube (d := d) L hLpos).measure_lt_top.ne
+    (PeriodicConstant.isBounded_coordCube L hLpos).measure_lt_top.ne
   -- Convert `hcR` to a strict inequality involving `encard` of centers in `ball 0 (R+r)`.
   have hcR' : c < ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) *
       volBall / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
@@ -532,7 +532,7 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   let htSet := PeriodicConstantApprox.finite_lattice_in_ball (d := d) L hLpos (R₁ + C)
   let t : Finset (cubeLattice (d := d) L hLpos) := htSet.toFinset
   let f : EuclideanSpace ℝ (Fin d) → cubeLattice (d := d) L hLpos := fun x =>
-    -PeriodicConstantApprox.coordCubeCover (d := d) L hLpos x
+    -PeriodicConstantApprox.coordCubeCover L hLpos x
   have hf_maps : (s : Set (EuclideanSpace ℝ (Fin d))).MapsTo f t := by
     intro x hx
     have hx_mem := (hX.mem_toFinset.1 hx)
@@ -570,7 +570,7 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
         volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R₁ + 2 * C)) := by
     simpa [volCube, R₁, r, t, htSet] using
       (PeriodicConstantApprox.card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball
-        (d := d) (hL := hLpos) (R := R₁) (C := C) hC)
+        (hL := hLpos) (R := R₁) (C := C) hC)
   have hs_enc :
       ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) = s.card := by
     have hfin : (S.centers ∩ ball 0 (R + r)).Finite := by
@@ -639,16 +639,16 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hsb_vol :
       (sb.card : ℝ≥0∞) * volBall ≤ shellVol := by
     simpa [volBall, shellVol, r] using
-      (PeriodicConstantApprox.card_mul_volume_ball_le_volume_cubeShell (d := d) (S := S) hLpos hSsep
+      (PeriodicConstantApprox.card_mul_volume_ball_le_volume_cubeShell (S := S) hLpos hSsep
         (g := g0) (s := sb) hsb_centers hsb_boundary)
-  rcases PeriodicConstantApprox.periodize_cube_density_eq (d := d) hd S hSsep hLpos (g := g0) F
+  rcases PeriodicConstantApprox.periodize_cube_density_eq hd S hSsep hLpos (g := g0) F
       hF_centers hF_inner with ⟨P, hPsep, hPdens⟩
   -- Rewrite `P.density` with denominator `volCube`.
   have hden :
       (Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) : ℝ≥0∞) = volCube := by
     rw [show Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) =
       volCube.toNNReal from by simpa [volCube] using
-        PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) (L := L) hLpos]
+        PeriodicConstantApprox.toNNReal_covolume_cubeLattice (L := L) hLpos]
     exact ENNReal.coe_toNNReal hvolCube_ne_top
   have hPdens' : P.density = (F.card : ℝ≥0∞) * volBall / volCube := by
     simpa [hden, volBall] using hPdens
@@ -684,8 +684,8 @@ This packages the boundary control argument developed in this file.
 public theorem periodic_constant_eq_constant (hd : 0 < d) :
     PeriodicSpherePackingConstant d = SpherePackingConstant d := by
   -- Reduce to the normalized (`separation = 1`) version on both sides.
-  rw [periodic_constant_eq_periodic_constant_normalized (d := d),
-    SpherePacking.constant_eq_constant_normalized (d := d)]
+  rw [periodic_constant_eq_periodic_constant_normalized,
+    SpherePacking.constant_eq_constant_normalized]
   -- From now on, we compare the two normalized suprema.
   apply le_antisymm
   · -- periodic ≤ general
@@ -701,5 +701,5 @@ public theorem periodic_constant_eq_constant (hd : 0 < d) :
     refine iSup₂_le fun S hSsep => le_of_forall_lt fun a ha => ?_
     rcases exists_between ha with ⟨b, hab, hbS⟩
     rcases SpherePacking.exists_periodicSpherePacking_sep_one_density_gt_of_lt_density
-      (d := d) hd S hSsep hbS with ⟨P, hPsep, hbP⟩
+      hd S hSsep hbS with ⟨P, hPsep, hbP⟩
     exact hab.trans (hbP.trans_le (le_iSup_of_le P (le_iSup_of_le hPsep le_rfl)))
