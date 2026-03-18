@@ -56,9 +56,7 @@ lemma neg_coordCubeCover_mem_ball {C R : ℝ}
     have : g + x ∈ coordCube (d := d) L := by
       simpa [Submodule.vadd_def, vadd_eq_add] using coordCubeCover_spec (d := d) L hL x
     simpa [mem_ball_zero_iff] using hC this
-  rw [mem_ball_zero_iff]
-  change ‖-g‖ < R + C
-  rw [norm_neg]
+  rw [mem_ball_zero_iff]; change ‖-g‖ < R + C; rw [norm_neg]
   have htri := norm_sub_le (g + x) x
   simp [add_sub_cancel_right] at htri
   linarith
@@ -157,8 +155,7 @@ lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
   · refine (Set.mem_vadd_set_iff_neg_vadd_mem).2 ?_
     simp only [coordCubeInner, coordCube, constVec, Set.mem_setOf_eq, vadd_eq_add] at hx_cube ⊢
     intro i
-    have hxi := hx_cube i
-    have hyi_le := abs_le.mp (hyi i).le
+    have hxi := hx_cube i; have hyi_le := abs_le.mp (hyi i).le
     refine ⟨?_, ?_⟩
     · have : (0 : ℝ) ≤ x i + y i + (1 / 2 : ℝ) := by linarith [hxi.1, hyi_le.1]
       simpa [add_assoc, add_left_comm, add_comm] using this
@@ -212,9 +209,9 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
       simpa [Metric.mem_ball, dist_eq_norm] using hy0
     have hy0' : y0 ∈ (coordCube (d := d) L \ coordCubeInner (d := d) L (1 / 2)) +
         ball (0 : EuclideanSpace ℝ (Fin d)) r :=
-      ⟨x0, ⟨hx0, hx0_notInner⟩, y0 - x0, hz, by simp [sub_eq_add_neg, add_left_comm]⟩
-    have := coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L
-      (by simpa [r] using hy0')
+      ⟨x0, ⟨hx0, hx0_notInner⟩, y0 - x0, hz, by simp [sub_eq_add_neg, add_assoc, add_comm,
+        add_left_comm]⟩
+    have := coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L (by simpa [r] using hy0')
     simpa [Set.mem_vadd_set_iff_neg_vadd_mem, y0] using this
   have hr : (2⁻¹ : ℝ) = r := by norm_num
   calc (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ))
@@ -271,10 +268,10 @@ lemma volume_cubeShell_eq (L : ℝ) :
         (shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0 :=
     coordCubeInner_one_subset_shell (d := d) L
   have hmeas_inner : MeasurableSet (coordCubeInner (d := d) L 1) := by
-    have hmp : MeasurePreserving (fun x : EuclideanSpace ℝ (Fin d) => x.ofLp) := by
-      simpa using PiLp.volume_preserving_ofLp (ι := Fin d)
     simpa [PeriodicConstant.coordCubeInner_eq_preimage_ofLp (d := d) (L := L) (r := (1 : ℝ))] using
-      (MeasurableSet.pi Set.countable_univ fun _ _ => measurableSet_Icc).preimage hmp.measurable
+      (MeasurableSet.pi Set.countable_univ fun _ _ => measurableSet_Icc).preimage
+        (show MeasurePreserving (fun x : EuclideanSpace ℝ (Fin d) => x.ofLp) from
+          by simpa using PiLp.volume_preserving_ofLp (ι := Fin d)).measurable
   simpa [measure_vadd, shellVec] using
     measure_diff (μ := volume) hsub hmeas_inner.nullMeasurableSet
       (by simp [PeriodicConstant.volume_coordCubeInner])
@@ -399,8 +396,7 @@ lemma tendsto_cubeShell_ratio_zero :
       fun L : ℝ => (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d := by
     filter_upwards [eventually_gt_atTop (0 : ℝ)] with L hLpos
     have hL : L ≠ 0 := ne_of_gt hLpos
-    rw [sub_div]
-    congr 1 <;> rw [← div_pow] <;> congr 1 <;> field_simp
+    rw [sub_div]; congr 1 <;> rw [← div_pow] <;> congr 1 <;> field_simp
   exact hdiff.congr' hEq.symm
 
 lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
@@ -424,18 +420,13 @@ lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
     have hL1 : 0 ≤ L + 1 := by linarith
     have hL2' : 0 ≤ L - 2 := by linarith
     have hLdpos : 0 < L ^ d := pow_pos (by linarith) d
-    have hshell : volume (((shellVec d (-(1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
-        coordCubeInner (d := d) L 1) =
-          (ENNReal.ofReal (L + 1)) ^ d - (ENNReal.ofReal (L - 2)) ^ d := by
-      simpa using volume_cubeShell_eq_pow (d := d) (L := L)
-    have hcube : volume (coordCube (d := d) L) = (ENNReal.ofReal L) ^ d := by
-      simpa using PeriodicConstant.volume_coordCube (d := d) (L := L)
-    rw [hshell, hcube, ← ENNReal.ofReal_pow hL1, ← ENNReal.ofReal_pow hL2',
-      ← ENNReal.ofReal_pow hL0]
-    have hsub : ENNReal.ofReal ((L + 1) ^ d) - ENNReal.ofReal ((L - 2) ^ d) =
-        ENNReal.ofReal ((L + 1) ^ d - (L - 2) ^ d) := by
-      simpa using (ENNReal.ofReal_sub _ (pow_nonneg hL2' d)).symm
-    rw [hsub]
+    rw [show volume (((shellVec d _) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
+        coordCubeInner (d := d) L 1) = _ from by simpa using volume_cubeShell_eq_pow (d := d) (L := L),
+      show volume (coordCube (d := d) L) = _ from by simpa using PeriodicConstant.volume_coordCube (d := d) (L := L)]
+    rw [← ENNReal.ofReal_pow hL1, ← ENNReal.ofReal_pow hL2', ← ENNReal.ofReal_pow hL0,
+      show ENNReal.ofReal ((L + 1) ^ d) - ENNReal.ofReal ((L - 2) ^ d) =
+        ENNReal.ofReal ((L + 1) ^ d - (L - 2) ^ d) from by
+          simpa using (ENNReal.ofReal_sub _ (pow_nonneg hL2' d)).symm]
     simpa [f] using (ENNReal.ofReal_div_of_pos (x := (L + 1) ^ d - (L - 2) ^ d) hLdpos).symm
   exact hof.congr' hEq.symm
 
@@ -451,8 +442,7 @@ variable {d : ℕ}
 lemma div_mul_div_cancel_right {a b c : ℝ≥0∞} (hb0 : b ≠ 0) (hb : b ≠ ∞) :
     ((a * b) / c) / b = a / c := by
   simp only [div_eq_mul_inv]
-  have h : a * b * c⁻¹ * b⁻¹ = a * c⁻¹ * (b * b⁻¹) := by ring
-  rw [h]
+  rw [show a * b * c⁻¹ * b⁻¹ = a * c⁻¹ * (b * b⁻¹) from by ring]
   simp [ENNReal.mul_inv_cancel hb0 hb]
 
 theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < d)
