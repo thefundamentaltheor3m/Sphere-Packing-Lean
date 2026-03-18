@@ -50,24 +50,16 @@ lemma neg_coordCubeCover_mem_ball {C R : ℝ}
     {x : EuclideanSpace ℝ (Fin d)} (hx : x ∈ ball 0 R) :
     ((-coordCubeCover (d := d) L hL x : cubeLattice (d := d) L hL) :
         EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C) := by
+  set g := (coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d))
   have hx0 : ‖x‖ < R := by simpa [mem_ball_zero_iff] using hx
-  have hxgC : ‖(coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)) + x‖ < C := by
-    have hmem :
-        (coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)) + x ∈ coordCube (d := d) L := by
+  have hgx : ‖g + x‖ < C := by
+    have : g + x ∈ coordCube (d := d) L := by
       simpa [Submodule.vadd_def, vadd_eq_add] using coordCubeCover_spec (d := d) L hL x
-    simpa [mem_ball_zero_iff] using (hC hmem)
-  have htri :
-      ‖(coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d))‖ ≤
-        ‖(coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)) + x‖ + ‖x‖ := by
-    simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using
-      (norm_sub_le (a := (coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)) + x) (b := x))
-  have :
-      ‖(- (coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d)))‖ < R + C := by
-    have : ‖(coordCubeCover (d := d) L hL x : EuclideanSpace ℝ (Fin d))‖ < C + R := by
-      refine lt_of_le_of_lt htri ?_
-      simpa [add_comm, add_left_comm, add_assoc] using add_lt_add hxgC hx0
-    simpa [norm_neg, add_comm, add_left_comm, add_assoc] using this
-  simpa [mem_ball_zero_iff] using this
+    simpa [mem_ball_zero_iff] using hC this
+  rw [mem_ball_zero_iff]; change ‖-g‖ < R + C; rw [norm_neg]
+  have htri := norm_sub_le (g + x) x
+  simp [add_sub_cancel_right] at htri
+  linarith
 
 lemma mem_vadd_coordCube_iff_eq_neg_coordCubeCover (g : cubeLattice (d := d) L hL)
     (x : EuclideanSpace ℝ (Fin d)) :
@@ -93,14 +85,9 @@ lemma vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ}
     g +ᵥ coordCube (d := d) L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C)) := by
   intro y hy
   rcases hy with ⟨x, hx, rfl⟩
-  have hx' : ‖x‖ < C := by
-    simpa [mem_ball_zero_iff] using hC hx
-  have hg' : ‖(g : EuclideanSpace ℝ (Fin d))‖ < R + C := by
-    simpa [mem_ball_zero_iff] using hg
-  have : ‖(g : EuclideanSpace ℝ (Fin d)) + x‖ < R + (2 * C) := by
-    refine (lt_of_le_of_lt (norm_add_le _ _) ?_)
-    simpa [two_mul, add_assoc, add_left_comm, add_comm] using add_lt_add hg' hx'
-  simpa [Submodule.vadd_def, vadd_eq_add, mem_ball_zero_iff] using this
+  simp only [vadd_eq_add, mem_ball_zero_iff]
+  linarith [norm_add_le (g : EuclideanSpace ℝ (Fin d)) x,
+    mem_ball_zero_iff.mp (hC hx), mem_ball_zero_iff.mp hg]
 
 lemma iUnion_finset_vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ}
     (hC : coordCube (d := d) L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
@@ -124,27 +111,21 @@ lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} 
     (t.card : ℝ≥0∞) * volume (coordCube (d := d) L) ≤
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) := by
   intro htSet t
-  have hdisj :
-      Set.PairwiseDisjoint (↑t : Set (cubeLattice (d := d) L hL))
-        (fun g : cubeLattice (d := d) L hL => g +ᵥ coordCube (d := d) L) := by
-    intro g _ h _ hgh
-    exact disjoint_vadd_of_unique_covers (d := d)
+  have hdisj : Set.PairwiseDisjoint (↑t : Set (cubeLattice (d := d) L hL))
+      (fun g : cubeLattice (d := d) L hL => g +ᵥ coordCube (d := d) L) :=
+    fun g _ h _ hgh => disjoint_vadd_of_unique_covers (d := d)
       (Λ := cubeLattice (d := d) L hL) (D := coordCube (d := d) L)
       (PeriodicConstant.coordCube_unique_covers (d := d) L hL) hgh
-  have hmeas :
-      ∀ g ∈ t, MeasurableSet (g +ᵥ coordCube (d := d) L) := by
+  have hmeas : ∀ g ∈ t, MeasurableSet (g +ᵥ coordCube (d := d) L) := by
     intro g _; simpa using
-      (MeasurableSet.const_vadd (PeriodicConstant.measurableSet_coordCube (d := d) L hL) g)
-  have hvol_union :
-      volume (⋃ g ∈ t, g +ᵥ coordCube (d := d) L) =
-        ∑ g ∈ t, volume (g +ᵥ coordCube (d := d) L) :=
-    measure_biUnion_finset (μ := volume) hdisj hmeas
-  have hsub :
-      (⋃ g ∈ t, g +ᵥ coordCube (d := d) L) ⊆
-        ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C)) :=
-    iUnion_finset_vadd_coordCube_subset_ball (d := d) (hL := hL) (R := R) (C := C) hC
-  have hle := volume.mono hsub
-  simp_all
+      MeasurableSet.const_vadd (PeriodicConstant.measurableSet_coordCube (d := d) L hL) g
+  calc (↑t.card : ℝ≥0∞) * volume (coordCube (d := d) L)
+      = ∑ g ∈ t, volume (g +ᵥ coordCube (d := d) L) := by
+          simp [measure_vadd, Finset.sum_const]
+    _ = volume (⋃ g ∈ t, g +ᵥ coordCube (d := d) L) :=
+          (measure_biUnion_finset (μ := volume) hdisj hmeas).symm
+    _ ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) :=
+          volume.mono (iUnion_finset_vadd_coordCube_subset_ball (d := d) (hL := hL) hC)
 
 end CoverVolumeBound
 
@@ -170,50 +151,26 @@ lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
   intro z hz
   rcases hz with ⟨x, hx, y, hy, rfl⟩
   have hx_cube : x ∈ coordCube (d := d) L := hx.1
+  have hy' : ‖y‖ < (1 / 2 : ℝ) := by simpa [mem_ball_zero_iff] using hy
+  have hyi : ∀ i : Fin d, |y i| < (1 / 2 : ℝ) := fun i => abs_coord_lt_of_norm_lt (d := d) hy' i
   refine ⟨?_, ?_⟩
-  · have hy' : ‖y‖ < (1 / 2 : ℝ) := by
-      simpa [mem_ball_zero_iff] using hy
-    refine (Set.mem_vadd_set_iff_neg_vadd_mem).2 ?_
+  · refine (Set.mem_vadd_set_iff_neg_vadd_mem).2 ?_
     simp only [coordCubeInner, coordCube, constVec, Set.mem_setOf_eq, vadd_eq_add] at hx_cube ⊢
     intro i
-    have hxi : x i ∈ Set.Ico (0 : ℝ) L := hx_cube i
-    have hyi : |y i| < (1 / 2 : ℝ) := abs_coord_lt_of_norm_lt (d := d) hy' i
-    have hyi_le : -(1 / 2 : ℝ) ≤ y i ∧ y i ≤ (1 / 2 : ℝ) := by
-      have : |y i| ≤ (1 / 2 : ℝ) := le_of_lt hyi
-      simpa [abs_le] using this
+    have hxi := hx_cube i; have hyi_le := abs_le.mp (hyi i).le
     refine ⟨?_, ?_⟩
     · have : (0 : ℝ) ≤ x i + y i + (1 / 2 : ℝ) := by linarith [hxi.1, hyi_le.1]
       simpa [add_assoc, add_left_comm, add_comm] using this
     · have : x i + y i + (1 / 2 : ℝ) ≤ L + 1 := by linarith [hxi.2.le, hyi_le.2]
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using this
-  · have hx_notInner : x ∉ coordCubeInner (d := d) L (1 / 2) := hx.2
-    have hy' : ‖y‖ < (1 / 2 : ℝ) := by
-      simpa [mem_ball_zero_iff] using hy
-    have hy_abs : ∀ i : Fin d, |y i| < (1 / 2 : ℝ) := fun i =>
-      abs_coord_lt_of_norm_lt (d := d) hy' i
-    have : ∃ i : Fin d, x i < (1 / 2 : ℝ) ∨ (L - 1 / 2 : ℝ) < x i := by
-      have : ∃ i : Fin d, ¬ x i ∈ Set.Icc (1 / 2 : ℝ) (L - 1 / 2) := by
-        simpa [coordCubeInner, Set.mem_setOf_eq] using (not_forall.mp hx_notInner)
-      rcases this with ⟨i, hi⟩
-      have hi' : x i < (1 / 2 : ℝ) ∨ (L - 1 / 2 : ℝ) < x i := by
-        have : ¬ ((1 / 2 : ℝ) ≤ x i ∧ x i ≤ (L - 1 / 2 : ℝ)) := by
-          simpa [Set.mem_Icc] using hi
-        have : ¬ (1 / 2 : ℝ) ≤ x i ∨ ¬ x i ≤ (L - 1 / 2 : ℝ) := not_and_or.mp this
-        exact this.imp (fun h => lt_of_not_ge h) (fun h => lt_of_not_ge h)
-      exact ⟨i, hi'⟩
-    rcases this with ⟨i, hxi⟩
+  · obtain ⟨i, hi⟩ : ∃ i : Fin d, ¬ x i ∈ Set.Icc (1 / 2 : ℝ) (L - 1 / 2) := by
+      simpa [coordCubeInner, Set.mem_setOf_eq] using not_forall.mp hx.2
+    rw [Set.mem_Icc, not_and_or] at hi
     intro hz_inner
     have hz_i : (x i + y i) ∈ Set.Icc (1 : ℝ) (L - 1) := by
-      simpa [coordCubeInner, Set.mem_setOf_eq] using (hz_inner i)
-    have hyi : |y i| < (1 / 2 : ℝ) := hy_abs i
-    have hyi_lt : - (1 / 2 : ℝ) < y i ∧ y i < (1 / 2 : ℝ) := abs_lt.mp hyi
-    cases hxi with
-    | inl hlt =>
-        have : x i + y i < (1 : ℝ) := by linarith
-        exact (not_lt_of_ge hz_i.1) this
-    | inr hgt =>
-        have : (L - 1 : ℝ) < x i + y i := by linarith
-        exact (not_lt_of_ge hz_i.2) this
+      simpa [coordCubeInner, Set.mem_setOf_eq] using hz_inner i
+    have := abs_lt.mp (hyi i)
+    rcases hi with hi | hi <;> linarith [hz_i.1, hz_i.2]
 
 variable (S : SpherePacking d)
 
@@ -227,90 +184,43 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
       volume (((constVec (d := d) (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
         coordCubeInner (d := d) L 1) := by
   let r : ℝ := (1 / 2 : ℝ)
-  have hdisj :
-      (s : Set (EuclideanSpace ℝ (Fin d))).PairwiseDisjoint fun x =>
-        ball x r := by
+  have hdisj : (s : Set (EuclideanSpace ℝ (Fin d))).PairwiseDisjoint fun x => ball x r := by
     intro x hx y hy hxy
-    have hxC : x ∈ S.centers := hs_centers x hx
-    have hyC : y ∈ S.centers := hs_centers y hy
-    have hdist : (1 : ℝ) ≤ dist x y := by
-      simpa [hSsep] using (S.centers_dist' x y hxC hyC hxy)
-    have hsum_eq : r + r = (1 : ℝ) := by
-      simpa [r] using (by norm_num : (2⁻¹ : ℝ) + 2⁻¹ = 1)
-    have hsum : r + r ≤ dist x y := by simpa [hsum_eq] using hdist
-    exact ball_disjoint_ball hsum
-  have hunion :
-      volume (⋃ x ∈ s, ball x r) =
-        (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) r) := by
+    have : (1 : ℝ) ≤ dist x y := by
+      simpa [hSsep] using S.centers_dist' x y (hs_centers x hx) (hs_centers y hy) hxy
+    exact ball_disjoint_ball (by dsimp [r]; linarith)
+  have hunion : volume (⋃ x ∈ s, ball x r) =
+      (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) r) := by
     simpa [Measure.addHaar_ball_center, mul_comm, mul_assoc] using
-      (measure_biUnion_finset (μ := volume) hdisj (by
-        intro x _
-        exact measurableSet_ball))
-  have hle_union :
-      (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) r) ≤
-        volume (⋃ x ∈ s, ball x r) := by
-    rw [hunion]
-  have hsub :
-      (⋃ x ∈ s, ball x r) ⊆
-        g +ᵥ
-          (((constVec (d := d) (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
-              coordCubeInner (d := d) L 1) := by
+      measure_biUnion_finset (μ := volume) hdisj (fun x _ => measurableSet_ball)
+  have hsub : (⋃ x ∈ s, ball x r) ⊆
+      g +ᵥ (((constVec (d := d) (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
+            coordCubeInner (d := d) L 1) := by
     intro y hy
     rcases Set.mem_iUnion.1 hy with ⟨x, hx⟩
     rcases Set.mem_iUnion.1 hx with ⟨hxS, hyBall⟩
     have hxB := hs_boundary x hxS
-    have hx0 : (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ x ∈ coordCube (d := d) L := by
-      simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hxB.1
-    have hx0_notInner :
-        (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ x ∉ coordCubeInner (d := d) L (1 / 2) := by
-      intro hx0Inner
-      apply hxB.2
-      simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx0Inner
-    have hy0 :
-        (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y ∈
-          ball ((- (g : EuclideanSpace ℝ (Fin d))) +ᵥ x) r := by
-      simpa [Metric.vadd_ball] using hyBall
-    have hy0' :
-        (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y ∈
-          ((coordCube (d := d) L \ coordCubeInner (d := d) L (1 / 2)) +
-              ball (0 : EuclideanSpace ℝ (Fin d)) r) := by
-      let x0 : EuclideanSpace ℝ (Fin d) := (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ x
-      let y0 : EuclideanSpace ℝ (Fin d) := (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y
-      have hy0' : y0 ∈ ball x0 r := by
-        simpa [x0, y0] using hy0
-      let z : EuclideanSpace ℝ (Fin d) := y0 - x0
-      have hz : z ∈ ball (0 : EuclideanSpace ℝ (Fin d)) r := by
-        have : dist y0 x0 < r := by simpa [Metric.mem_ball] using hy0'
-        have : ‖y0 - x0‖ < r := by simpa [dist_eq_norm] using this
-        simpa [z, Metric.mem_ball, dist_eq_norm] using this
-      refine ⟨x0, ⟨?_, ?_⟩, z, hz, by
-        simp [x0, y0, z, sub_eq_add_neg, add_assoc, add_left_comm, add_comm]⟩
-      · simpa [x0] using hx0
-      · simpa [x0] using hx0_notInner
-    have hy0'' :
-        (- (g : EuclideanSpace ℝ (Fin d))) +ᵥ y ∈
-          ((constVec (d := d) (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
-            coordCubeInner (d := d) L 1 := by
-      simpa [r] using
-        (coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L
-          (by simpa [r] using hy0'))
-    simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hy0''
-  have hle : volume (⋃ x ∈ s, ball x r) ≤
-      volume (g +ᵥ
-          (((constVec (d := d) (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
-              coordCubeInner (d := d) L 1)) :=
-    volume.mono hsub
-  have htrans :
-      volume (g +ᵥ
-          (((constVec (d := d) (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
-              coordCubeInner (d := d) L 1)) =
-        volume (((constVec (d := d) (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
-          coordCubeInner (d := d) L 1) := by
-    simp [measure_vadd]
-  have hr : (2⁻¹ : ℝ) = r := by
-    dsimp [r]
-    norm_num
-  simpa [hr] using (hle_union.trans (hle.trans_eq htrans))
+    set x0 : EuclideanSpace ℝ (Fin d) := (-(g : EuclideanSpace ℝ (Fin d))) +ᵥ x
+    have hx0 : x0 ∈ coordCube (d := d) L := by
+      simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using hxB.1
+    have hx0_notInner : x0 ∉ coordCubeInner (d := d) L (1 / 2) := by
+      intro h; exact hxB.2 (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using h)
+    set y0 : EuclideanSpace ℝ (Fin d) := (-(g : EuclideanSpace ℝ (Fin d))) +ᵥ y
+    have hy0 : y0 ∈ ball x0 r := by simpa [Metric.vadd_ball, x0, y0] using hyBall
+    have hz : y0 - x0 ∈ ball (0 : EuclideanSpace ℝ (Fin d)) r := by
+      simpa [Metric.mem_ball, dist_eq_norm] using hy0
+    have hy0' : y0 ∈ (coordCube (d := d) L \ coordCubeInner (d := d) L (1 / 2)) +
+        ball (0 : EuclideanSpace ℝ (Fin d)) r :=
+      ⟨x0, ⟨hx0, hx0_notInner⟩, y0 - x0, hz, by simp [sub_eq_add_neg, add_assoc, add_comm,
+        add_left_comm]⟩
+    have := coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L (by simpa [r] using hy0')
+    simpa [Set.mem_vadd_set_iff_neg_vadd_mem, y0] using this
+  have hr : (2⁻¹ : ℝ) = r := by norm_num
+  calc (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ))
+      = volume (⋃ x ∈ s, ball x r) := by rw [hr, hunion]
+    _ ≤ volume (g +ᵥ (((constVec (d := d) (-(1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
+          coordCubeInner (d := d) L 1)) := volume.mono hsub
+    _ = _ := by simp [measure_vadd]
 
 end BoundaryControl
 
@@ -364,19 +274,13 @@ lemma volume_cubeShell_eq (L : ℝ) :
         (shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0 :=
     coordCubeInner_one_subset_shell (d := d) L
   have hmeas_inner : MeasurableSet (coordCubeInner (d := d) L 1) := by
-    have hmeasPi :
-        MeasurableSet (Set.pi Set.univ fun _ : Fin d ↦ Set.Icc (1 : ℝ) (L - 1)) := by
-      refine MeasurableSet.pi Set.countable_univ ?_
-      intro _ _
-      exact measurableSet_Icc
-    have hmp : MeasurePreserving (fun x : EuclideanSpace ℝ (Fin d) ↦ x.ofLp) := by
-      simpa using (PiLp.volume_preserving_ofLp (ι := Fin d))
     simpa [PeriodicConstant.coordCubeInner_eq_preimage_ofLp (d := d) (L := L) (r := (1 : ℝ))] using
-      hmeasPi.preimage hmp.measurable
-  have hfin : volume (coordCubeInner (d := d) L 1) ≠ ∞ := by
-    simp [PeriodicConstant.volume_coordCubeInner]
+      (MeasurableSet.pi Set.countable_univ fun _ _ => measurableSet_Icc).preimage
+        (show MeasurePreserving (fun x : EuclideanSpace ℝ (Fin d) => x.ofLp) from
+          by simpa using PiLp.volume_preserving_ofLp (ι := Fin d)).measurable
   simpa [measure_vadd, shellVec] using
-    (measure_diff (μ := volume) hsub hmeas_inner.nullMeasurableSet hfin)
+    measure_diff (μ := volume) hsub hmeas_inner.nullMeasurableSet
+      (by simp [PeriodicConstant.volume_coordCubeInner])
 
 lemma volume_cubeShell_eq_pow (L : ℝ) :
     volume (((shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
@@ -416,13 +320,12 @@ lemma covolume_cubeLattice_eq_volume_coordCube_toReal (L : ℝ) (hL : 0 < L) :
       (volume (coordCube (d := d) L)).toReal := by
   letI : DiscreteTopology (cubeLattice (d := d) L hL) := by dsimp [cubeLattice]; infer_instance
   letI : IsZLattice ℝ (cubeLattice (d := d) L hL) := by dsimp [cubeLattice]; infer_instance
-  have hfund :
-      IsAddFundamentalDomain (cubeLattice (d := d) L hL)
-        (fundamentalDomain (cubeBasis (d := d) L hL)) volume := by
-    simpa [cubeLattice] using (ZSpan.isAddFundamentalDomain (cubeBasis (d := d) L hL) volume)
+  have hfund : IsAddFundamentalDomain (cubeLattice (d := d) L hL)
+      (fundamentalDomain (cubeBasis (d := d) L hL)) volume := by
+    simpa [cubeLattice] using ZSpan.isAddFundamentalDomain (cubeBasis (d := d) L hL) volume
   simpa [Measure.real, fundamentalDomain_cubeBasis_eq_coordCube (d := d) (L := L) (hL := hL)] using
-    (ZLattice.covolume_eq_measure_fundamentalDomain (L := cubeLattice (d := d) L hL)
-      (μ := volume) hfund)
+    ZLattice.covolume_eq_measure_fundamentalDomain (L := cubeLattice (d := d) L hL)
+      (μ := volume) hfund
 
 lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
     Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hL) volume) =
@@ -500,37 +403,18 @@ end PeriodizeCubeDensity
 
 lemma tendsto_cubeShell_ratio_zero :
     Tendsto (fun L : ℝ => ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)) atTop (𝓝 (0 : ℝ)) := by
-  have hL0 : Tendsto (fun L : ℝ => L⁻¹) atTop (𝓝 (0 : ℝ)) :=
-    tendsto_inv_atTop_zero
-  have hone : Tendsto (fun _ : ℝ => (1 : ℝ)) atTop (𝓝 (1 : ℝ)) :=
-    tendsto_const_nhds
-  have htwo : Tendsto (fun _ : ℝ => (2 : ℝ)) atTop (𝓝 (2 : ℝ)) :=
-    tendsto_const_nhds
   have h1 : Tendsto (fun L : ℝ => (1 + L⁻¹) ^ d) atTop (𝓝 (1 : ℝ)) := by
-    simpa using (hone.add hL0).pow d
+    simpa using (tendsto_const_nhds (x := (1 : ℝ))).add tendsto_inv_atTop_zero |>.pow d
   have h2 : Tendsto (fun L : ℝ => (1 - 2 * L⁻¹) ^ d) atTop (𝓝 (1 : ℝ)) := by
-    simpa using (hone.sub (htwo.mul hL0)).pow d
+    simpa using ((tendsto_const_nhds (x := (1 : ℝ))).sub
+      ((tendsto_const_nhds (x := (2 : ℝ))).mul tendsto_inv_atTop_zero)).pow d
   have hdiff : Tendsto (fun L : ℝ => (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d) atTop (𝓝 (0 : ℝ)) := by
-    simpa using (h1.sub h2)
-  have hEq :
-      (fun L : ℝ => ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)) =ᶠ[atTop]
-        fun L : ℝ => (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d := by
+    simpa using h1.sub h2
+  have hEq : (fun L : ℝ => ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)) =ᶠ[atTop]
+      fun L : ℝ => (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d := by
     filter_upwards [eventually_gt_atTop (0 : ℝ)] with L hLpos
     have hL : L ≠ 0 := ne_of_gt hLpos
-    have hLd : L ^ d ≠ 0 := by positivity
-    -- rewrite by dividing each term by `L^d` and using `div_pow`
-    calc
-      ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)
-          = (L + 1) ^ d / (L ^ d) - (L - 2) ^ d / (L ^ d) := by
-              simp [sub_div]
-      _ = ((L + 1) / L) ^ d - ((L - 2) / L) ^ d := by
-              simp [div_pow]
-      _ = (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d := by
-              have h1' : (L + 1) / L = (1 : ℝ) + L⁻¹ := by
-                field_simp [hL]
-              have h2' : (L - 2) / L = (1 : ℝ) - 2 * L⁻¹ := by
-                field_simp [hL]
-              simp [h1', h2']
+    rw [sub_div]; congr 1 <;> rw [← div_pow] <;> congr 1 <;> field_simp
   exact hdiff.congr' hEq.symm
 
 lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
@@ -545,45 +429,23 @@ lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
     simpa [f] using (tendsto_cubeShell_ratio_zero (d := d))
   have hof : Tendsto (fun L : ℝ => ENNReal.ofReal (f L)) atTop (𝓝 (0 : ℝ≥0∞)) := by
     simpa using (ENNReal.continuous_ofReal.tendsto (0 : ℝ)).comp hf
-  have hEq :
-      (fun L : ℝ =>
-          volume (((shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
-              coordCubeInner (d := d) L 1) /
-            volume (coordCube (d := d) L)) =ᶠ[atTop]
-        fun L : ℝ => ENNReal.ofReal (f L) := by
+  have hEq : (fun L : ℝ =>
+      volume (((shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
+          coordCubeInner (d := d) L 1) / volume (coordCube (d := d) L)) =ᶠ[atTop]
+      fun L : ℝ => ENNReal.ofReal (f L) := by
     filter_upwards [eventually_gt_atTop (2 : ℝ)] with L hL2
-    have hL0 : 0 ≤ L := le_of_lt (lt_trans (by norm_num : (0 : ℝ) < 2) hL2)
+    have hL0 : 0 ≤ L := by linarith
     have hL1 : 0 ≤ L + 1 := by linarith
     have hL2' : 0 ≤ L - 2 := by linarith
-    have hLpos : 0 < L := lt_trans (by norm_num : (0 : ℝ) < 2) hL2
-    have hLdpos : 0 < L ^ d := pow_pos hLpos d
-    have hshell :
-        volume (((shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
-            coordCubeInner (d := d) L 1) =
-          (ENNReal.ofReal (L + 1)) ^ d - (ENNReal.ofReal (L - 2)) ^ d := by
-      simpa using (volume_cubeShell_eq_pow (d := d) (L := L))
-    have hcube :
-        volume (coordCube (d := d) L) = (ENNReal.ofReal L) ^ d := by
-      simpa using (PeriodicConstant.volume_coordCube (d := d) (L := L))
-    have hnum :
-        (ENNReal.ofReal (L + 1)) ^ d - (ENNReal.ofReal (L - 2)) ^ d =
-          ENNReal.ofReal ((L + 1) ^ d - (L - 2) ^ d) := by
-      have hq : 0 ≤ (L - 2) ^ d := pow_nonneg hL2' d
-      -- rewrite both powers as `ofReal` of real powers, then use `ofReal_sub`
-      calc
-        (ENNReal.ofReal (L + 1)) ^ d - (ENNReal.ofReal (L - 2)) ^ d
-            = ENNReal.ofReal ((L + 1) ^ d) - ENNReal.ofReal ((L - 2) ^ d) := by
-                rw [← ENNReal.ofReal_pow hL1 d, ← ENNReal.ofReal_pow hL2' d]
-        _ = ENNReal.ofReal ((L + 1) ^ d - (L - 2) ^ d) := by
-                simpa using
-                  (ENNReal.ofReal_sub (p := (L + 1) ^ d) (q := (L - 2) ^ d) hq).symm
-    have hden :
-        (ENNReal.ofReal L) ^ d = ENNReal.ofReal (L ^ d) := by
-      simpa using (ENNReal.ofReal_pow hL0 d).symm
-    -- finish by rewriting in terms of `ENNReal.ofReal`
-    rw [hshell, hcube, hnum, hden]
-    simpa [f] using
-      (ENNReal.ofReal_div_of_pos (x := (L + 1) ^ d - (L - 2) ^ d) (y := L ^ d) hLdpos).symm
+    have hLdpos : 0 < L ^ d := pow_pos (by linarith) d
+    rw [show volume (((shellVec d _) +ᵥ coordCubeInner (d := d) (L + 1) 0) \
+        coordCubeInner (d := d) L 1) = _ from by simpa using volume_cubeShell_eq_pow (d := d) (L := L),
+      show volume (coordCube (d := d) L) = _ from by simpa using PeriodicConstant.volume_coordCube (d := d) (L := L)]
+    rw [← ENNReal.ofReal_pow hL1, ← ENNReal.ofReal_pow hL2', ← ENNReal.ofReal_pow hL0,
+      show ENNReal.ofReal ((L + 1) ^ d) - ENNReal.ofReal ((L - 2) ^ d) =
+        ENNReal.ofReal ((L + 1) ^ d - (L - 2) ^ d) from by
+          simpa using (ENNReal.ofReal_sub _ (pow_nonneg hL2' d)).symm]
+    simpa [f] using (ENNReal.ofReal_div_of_pos (x := (L + 1) ^ d - (L - 2) ^ d) hLdpos).symm
   exact hof.congr' hEq.symm
 
 end PeriodicConstantApprox
@@ -597,13 +459,9 @@ variable {d : ℕ}
 
 lemma div_mul_div_cancel_right {a b c : ℝ≥0∞} (hb0 : b ≠ 0) (hb : b ≠ ∞) :
     ((a * b) / c) / b = a / c := by
-  calc
-    ((a * b) / c) / b = (a * b) * c⁻¹ * b⁻¹ := by
-      simp [div_eq_mul_inv, mul_assoc]
-    _ = a * c⁻¹ * (b * b⁻¹) := by
-      ac_rfl
-    _ = a / c := by
-      simp [div_eq_mul_inv, ENNReal.mul_inv_cancel hb0 hb]
+  simp only [div_eq_mul_inv]
+  rw [show a * b * c⁻¹ * b⁻¹ = a * c⁻¹ * (b * b⁻¹) from by ring]
+  simp [ENNReal.mul_inv_cancel hb0 hb]
 
 theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < d)
     (S : SpherePacking d) (hSsep : S.separation = 1) {b : ℝ≥0∞} (hb : b < S.density) :
