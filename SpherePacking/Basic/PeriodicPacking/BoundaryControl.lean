@@ -29,14 +29,14 @@ open Metric
 variable (L : ℝ) (hL : 0 < L)
 
 /-- The unique lattice translate sending `x` into the coordinate cube `coordCube L`. -/
-noncomputable def coordCubeCover (x : EuclideanSpace ℝ (Fin d)) : cubeLattice (d := d) L hL :=
+noncomputable def coordCubeCover (x : EuclideanSpace ℝ (Fin d)) : cubeLattice d L hL :=
   Classical.choose (PeriodicConstant.coordCube_unique_covers L hL x)
 
 lemma coordCubeCover_spec (x : EuclideanSpace ℝ (Fin d)) :
     coordCubeCover L hL x +ᵥ x ∈ coordCube L :=
   (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers L hL x)).1
 
-lemma coordCubeCover_unique (x : EuclideanSpace ℝ (Fin d)) (g : cubeLattice (d := d) L hL)
+lemma coordCubeCover_unique (x : EuclideanSpace ℝ (Fin d)) (g : cubeLattice d L hL)
     (hg : g +ᵥ x ∈ coordCube L) :
     g = coordCubeCover L hL x :=
   (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers L hL x)).2 g hg
@@ -48,7 +48,7 @@ lemma mem_neg_coordCubeCover_vadd_coordCube (x : EuclideanSpace ℝ (Fin d)) :
 lemma neg_coordCubeCover_mem_ball {C R : ℝ}
     (hC : coordCube L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
     {x : EuclideanSpace ℝ (Fin d)} (hx : x ∈ ball 0 R) :
-    ((-coordCubeCover L hL x : cubeLattice (d := d) L hL) :
+    ((-coordCubeCover L hL x : cubeLattice d L hL) :
         EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C) := by
   set g := (coordCubeCover L hL x : EuclideanSpace ℝ (Fin d))
   have hx0 : ‖x‖ < R := by simpa [mem_ball_zero_iff] using hx
@@ -63,7 +63,7 @@ lemma neg_coordCubeCover_mem_ball {C R : ℝ}
   simp [add_sub_cancel_right] at htri
   linarith
 
-lemma mem_vadd_coordCube_iff_eq_neg_coordCubeCover (g : cubeLattice (d := d) L hL)
+lemma mem_vadd_coordCube_iff_eq_neg_coordCubeCover (g : cubeLattice d L hL)
     (x : EuclideanSpace ℝ (Fin d)) :
     x ∈ g +ᵥ coordCube (d := d) L ↔ g = -coordCubeCover L hL x := by
   constructor
@@ -80,7 +80,7 @@ open scoped BigOperators
 
 lemma vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ}
     (hC : coordCube L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
-    {g : cubeLattice (d := d) L hL}
+    {g : cubeLattice d L hL}
     (hg : (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C)) :
     g +ᵥ coordCube (d := d) L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C)) := by
   intro y hy
@@ -93,7 +93,7 @@ lemma iUnion_finset_vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ
     (hC : coordCube L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
     let htSet :=
       PeriodicConstantApprox.finite_lattice_in_ball (d := d) L hL (R + C)
-    let t : Finset (cubeLattice (d := d) L hL) := htSet.toFinset
+    let t : Finset (cubeLattice d L hL) := htSet.toFinset
     (⋃ g ∈ t, g +ᵥ coordCube (d := d) L) ⊆
       ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C)) := by
   intro htSet t y hy
@@ -107,14 +107,14 @@ lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} 
     {R C : ℝ} (hC : coordCube L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
     let htSet :=
       PeriodicConstantApprox.finite_lattice_in_ball (d := d) L hL (R + C)
-    let t : Finset (cubeLattice (d := d) L hL) := htSet.toFinset
+    let t : Finset (cubeLattice d L hL) := htSet.toFinset
     (t.card : ℝ≥0∞) * volume (coordCube (d := d) L) ≤
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) := by
   intro htSet t
-  have hdisj : Set.PairwiseDisjoint (↑t : Set (cubeLattice (d := d) L hL))
-      (fun g : cubeLattice (d := d) L hL => g +ᵥ coordCube (d := d) L) :=
+  have hdisj : Set.PairwiseDisjoint (↑t : Set (cubeLattice d L hL))
+      (fun g : cubeLattice d L hL => g +ᵥ coordCube (d := d) L) :=
     fun g _ h _ hgh => disjoint_vadd_of_unique_covers (d := d)
-      (Λ := cubeLattice (d := d) L hL) (D := coordCube (d := d) L)
+      (Λ := cubeLattice d L hL) (D := coordCube (d := d) L)
       (PeriodicConstant.coordCube_unique_covers L hL) hgh
   have hmeas : ∀ g ∈ t, MeasurableSet (g +ᵥ coordCube (d := d) L) := by
     intro g _; simpa using
@@ -177,7 +177,7 @@ variable (S : SpherePacking d)
 
 lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
     (hSsep : S.separation = 1)
-    {g : cubeLattice (d := d) L hL} {s : Finset (EuclideanSpace ℝ (Fin d))}
+    {g : cubeLattice d L hL} {s : Finset (EuclideanSpace ℝ (Fin d))}
     (hs_centers : ∀ x ∈ s, x ∈ S.centers)
     (hs_boundary : ∀ x ∈ s,
       x ∈ (g +ᵥ coordCube (d := d) L) \ (g +ᵥ coordCubeInner (d := d) L (1 / 2))) :
@@ -296,7 +296,7 @@ variable (S : SpherePacking d)
 
 lemma card_mul_volume_ball_le_volume_cubeShell {L : ℝ} (hL : 0 < L)
     (hSsep : S.separation = 1)
-    {g : cubeLattice (d := d) L hL} {s : Finset (EuclideanSpace ℝ (Fin d))}
+    {g : cubeLattice d L hL} {s : Finset (EuclideanSpace ℝ (Fin d))}
     (hs_centers : ∀ x ∈ s, x ∈ S.centers)
     (hs_boundary : ∀ x ∈ s,
       x ∈ (g +ᵥ coordCube (d := d) L) \ (g +ᵥ coordCubeInner (d := d) L (1 / 2))) :
@@ -313,19 +313,19 @@ open scoped ENNReal
 open ZSpan
 
 lemma covolume_cubeLattice_eq_volume_coordCube_toReal (L : ℝ) (hL : 0 < L) :
-    ZLattice.covolume (cubeLattice (d := d) L hL) volume =
+    ZLattice.covolume (cubeLattice d L hL) volume =
       (volume (coordCube (d := d) L)).toReal := by
-  letI : DiscreteTopology (cubeLattice (d := d) L hL) := by dsimp [cubeLattice]; infer_instance
-  letI : IsZLattice ℝ (cubeLattice (d := d) L hL) := by dsimp [cubeLattice]; infer_instance
-  have hfund : IsAddFundamentalDomain (cubeLattice (d := d) L hL)
+  letI : DiscreteTopology (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
+  letI : IsZLattice ℝ (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
+  have hfund : IsAddFundamentalDomain (cubeLattice d L hL)
       (fundamentalDomain (cubeBasis (d := d) L hL)) volume := by
     simpa [cubeLattice] using ZSpan.isAddFundamentalDomain (cubeBasis (d := d) L hL) volume
   simpa [Measure.real, fundamentalDomain_cubeBasis_eq_coordCube (d := d) (L := L) (hL := hL)] using
-    ZLattice.covolume_eq_measure_fundamentalDomain (L := cubeLattice (d := d) L hL)
+    ZLattice.covolume_eq_measure_fundamentalDomain (L := cubeLattice d L hL)
       (μ := volume) hfund
 
 lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
-    Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hL) volume) =
+    Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) =
       (volume (coordCube (d := d) L)).toNNReal := by
   simp [covolume_cubeLattice_eq_volume_coordCube_toReal (d := d) (L := L) hL]
 
@@ -339,7 +339,7 @@ open SpherePacking EuclideanSpace MeasureTheory Metric Bornology
 variable {d : ℕ}
 
 lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.separation = 1)
-    {L : ℝ} (hL : 0 < L) {g : cubeLattice (d := d) L hL}
+    {L : ℝ} (hL : 0 < L) {g : cubeLattice d L hL}
     (F : Finset (EuclideanSpace ℝ (Fin d)))
     (hF_centers : ∀ x ∈ F, x ∈ S.centers)
     (hF_inner : ∀ x ∈ F, x ∈ g +ᵥ coordCubeInner (d := d) L (2⁻¹ : ℝ)) :
@@ -348,8 +348,8 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
         P.density =
           (F.card : ℝ≥0∞) *
               volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ)) /
-            Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hL) volume) := by
-  let Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)) := cubeLattice (d := d) L hL
+            Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) := by
+  let Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)) := cubeLattice d L hL
   let D : Set (EuclideanSpace ℝ (Fin d)) := g +ᵥ coordCube (d := d) L
   let Fset : Set (EuclideanSpace ℝ (Fin d)) := (F : Set (EuclideanSpace ℝ (Fin d)))
   letI : DiscreteTopology Λ := by
@@ -375,7 +375,7 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
   have hcenters_inter :
       P.centers ∩ D = Fset := by
     simpa [P, periodize_to_periodicSpherePacking, Fset] using
-      (periodizedCenters_inter_eq_of_subset (d := d) (Λ := cubeLattice (d := d) L hL) (D := D)
+      (periodizedCenters_inter_eq_of_subset (d := d) (Λ := cubeLattice d L hL) (D := D)
         (F := Fset) hF_sub hD_unique)
   have hnumReps : P.numReps = F.card := by
     have h' : (P.numReps : ENat) = (F.card : ENat) := by
@@ -530,8 +530,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     finite_centers_inter_ball_set (S := S) R₁
   let s : Finset (EuclideanSpace ℝ (Fin d)) := hX.toFinset
   let htSet := PeriodicConstantApprox.finite_lattice_in_ball (d := d) L hLpos (R₁ + C)
-  let t : Finset (cubeLattice (d := d) L hLpos) := htSet.toFinset
-  let f : EuclideanSpace ℝ (Fin d) → cubeLattice (d := d) L hLpos := fun x =>
+  let t : Finset (cubeLattice d L hLpos) := htSet.toFinset
+  let f : EuclideanSpace ℝ (Fin d) → cubeLattice d L hLpos := fun x =>
     -PeriodicConstantApprox.coordCubeCover L hLpos x
   have hf_maps : (s : Set (EuclideanSpace ℝ (Fin d))).MapsTo f t := by
     intro x hx
@@ -540,7 +540,7 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       (PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC hx_mem.2)
   have ht_nonempty : t.Nonempty :=
     ⟨0, htSet.mem_toFinset.2 (by simp [Metric.mem_ball]; positivity)⟩
-  let fiber : cubeLattice (d := d) L hLpos → ℕ := fun g =>
+  let fiber : cubeLattice d L hLpos → ℕ := fun g =>
     (s.filter fun x : EuclideanSpace ℝ (Fin d) => f x = g).card
   rcases Finset.exists_max_image t fiber ht_nonempty with ⟨g0, hg0t, hg0max⟩
   let sg : Finset (EuclideanSpace ℝ (Fin d)) := s.filter fun x => f x = g0
@@ -645,8 +645,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       hF_centers hF_inner with ⟨P, hPsep, hPdens⟩
   -- Rewrite `P.density` with denominator `volCube`.
   have hden :
-      (Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) : ℝ≥0∞) = volCube := by
-    rw [show Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) =
+      (Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) : ℝ≥0∞) = volCube := by
+    rw [show Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) =
       volCube.toNNReal from by simpa [volCube] using
         PeriodicConstantApprox.toNNReal_covolume_cubeLattice (L := L) hLpos]
     exact ENNReal.coe_toNNReal hvolCube_ne_top
