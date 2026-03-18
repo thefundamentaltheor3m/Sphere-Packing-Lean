@@ -563,9 +563,9 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
         (d := d) (hL := hLpos) (R := R₁) (C := C) hC)
   have hs_enc :
       ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) = s.card := by
-    have hfin : (S.centers ∩ ball 0 (R + r)).Finite := by
-      simpa [R₁, r, add_assoc, add_left_comm, add_comm] using hX
-    simpa [s] using congrArg (fun n : ENat => (n : ℝ≥0∞)) hfin.encard_eq_coe_toFinset_card
+    simpa [s] using congrArg (fun n : ENat => (n : ℝ≥0∞))
+      ((show (S.centers ∩ ball 0 (R + r)).Finite by
+        simpa [R₁, r, add_assoc, add_left_comm, add_comm] using hX).encard_eq_coe_toFinset_card)
   have hR2 : R + Cshift = R₁ + 2 * C := by simp [Cshift, R₁, r, add_left_comm, add_comm]
   have hs_mul :
       ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volCube ≤
@@ -574,10 +574,9 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
         = (s.card : ℝ≥0∞) * volCube := by rw [hs_enc]
       _ ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) * volCube := by
           have h := mul_le_mul_right hs_le volCube
-          have h1 : volCube * (s.card : ℝ≥0∞) = (s.card : ℝ≥0∞) * volCube := mul_comm _ _
-          have h2 : volCube * ((t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞)) =
-              (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) * volCube := by ac_rfl
-          rwa [h1, h2] at h
+          rwa [show volCube * (s.card : ℝ≥0∞) = (s.card : ℝ≥0∞) * volCube from mul_comm _ _,
+            show volCube * ((t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞)) =
+              (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) * volCube from by ac_rfl] at h
       _ = (sg.card : ℝ≥0∞) * ((t.card : ℝ≥0∞) * volCube) := by ac_rfl
       _ ≤ _ := mul_le_mul_right (by simpa [hR2, volCube] using ht_vol) _
   have hsg_density :
@@ -591,15 +590,11 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     have hb3 : ((S.centers ∩ ball 0 (R + r)).encard : ℝ≥0∞) * volBall / V ≤
         (sg.card : ℝ≥0∞) * volBall / volCube := by
       have := mul_le_mul_left hdiv₁ volBall
-      have h1 : (↑(S.centers ∩ ball 0 (R + r)).encard / V) * volBall =
-          ↑(S.centers ∩ ball 0 (R + r)).encard * volBall / V := by
-        simp [div_eq_mul_inv]
-        ac_rfl
-      have h2 : ((sg.card : ℝ≥0∞) / volCube) * volBall =
-          (sg.card : ℝ≥0∞) * volBall / volCube := by
-        simp [div_eq_mul_inv]
-        ac_rfl
-      rwa [h1, h2] at this
+      rwa [show (↑(S.centers ∩ ball 0 (R + r)).encard / V) * volBall =
+          ↑(S.centers ∩ ball 0 (R + r)).encard * volBall / V from by
+            simp [div_eq_mul_inv]; ac_rfl,
+        show ((sg.card : ℝ≥0∞) / volCube) * volBall = (sg.card : ℝ≥0∞) * volBall / volCube from by
+            simp [div_eq_mul_inv]; ac_rfl] at this
     exact (hRratio.trans hc_ratio).trans_le hb3
   -- Periodize the interior points `F`.
   let innerSet : Set (EuclideanSpace ℝ (Fin d)) := g0 +ᵥ coordCubeInner (d := d) L r
@@ -621,11 +616,9 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hsb_boundary :
       ∀ x ∈ sb, x ∈ (g0 +ᵥ coordCube (d := d) L) \ (g0 +ᵥ coordCubeInner (d := d) L (1 / 2)) := by
     intro x hx
-    have hx_sb := hx
-    dsimp [sb] at hx_sb
+    have hx_sb := hx; dsimp [sb] at hx_sb
     have hx_mem := Finset.mem_filter.1 hx_sb
-    have hr : r = (1 / 2 : ℝ) := by norm_num
-    exact ⟨hsg_memCube x hx_mem.1, by simpa [innerSet, hr] using hx_mem.2⟩
+    exact ⟨hsg_memCube x hx_mem.1, by simpa [innerSet, show r = (1 / 2 : ℝ) from by norm_num] using hx_mem.2⟩
   have hsb_vol :
       (sb.card : ℝ≥0∞) * volBall ≤ shellVol := by
     simpa [volBall, shellVol, r] using
