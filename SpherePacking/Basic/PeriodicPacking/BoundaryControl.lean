@@ -66,7 +66,7 @@ lemma mem_vadd_coordCube_iff_eq_neg_coordCubeCover (g : cubeLattice (d := d) L h
     x ∈ g +ᵥ coordCube (d := d) L ↔ g = -coordCubeCover (d := d) L hL x := by
   constructor
   · intro hx
-    rw [← neg_neg g, coordCubeCover_unique (d := d) L hL x (-g)
+    rw [show g = -(-g) from (neg_neg g).symm, coordCubeCover_unique (d := d) L hL x (-g)
       (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx)]
   · rintro rfl; exact mem_neg_coordCubeCover_vadd_coordCube (d := d) L hL x
 
@@ -622,13 +622,10 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       hF_centers hF_inner with ⟨P, hPsep, hPdens⟩
   -- Rewrite `P.density` with denominator `volCube`.
   have hden :
-      (Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) : ℝ≥0∞) =
-        volCube := by
-    have h : Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) =
-        volCube.toNNReal := by
-      simpa [volCube] using
-        PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) (L := L) hLpos
-    rw [h]
+      (Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) : ℝ≥0∞) = volCube := by
+    rw [show Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) =
+      volCube.toNNReal from by simpa [volCube] using
+        PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) (L := L) hLpos]
     exact ENNReal.coe_toNNReal hvolCube_ne_top
   have hPdens' : P.density = (F.card : ℝ≥0∞) * volBall / volCube := by
     simpa [hden, volBall] using hPdens
