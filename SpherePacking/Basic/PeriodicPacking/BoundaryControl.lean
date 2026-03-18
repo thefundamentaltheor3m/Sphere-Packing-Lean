@@ -519,15 +519,11 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hcubeShell : cubeShellErr L = shellVol / volCube := by
     simp [cubeShellErr, shellVol, volCube]
   have hvolCube_ne0 : volCube ≠ 0 := by
-    have hvol : volCube = (ENNReal.ofReal L) ^ d := by
-      simpa [volCube] using (PeriodicConstant.volume_coordCube (d := d) (L := L))
-    have hL' : (ENNReal.ofReal L) ≠ 0 := by
-      exact (ne_of_gt (by simpa [ENNReal.ofReal_pos] using hLpos))
-    simpa [hvol] using pow_ne_zero d hL'
-  have hvolCube_ne_top : volCube ≠ ∞ := by
-    have hbounded : IsBounded (coordCube (d := d) L) :=
-      PeriodicConstant.isBounded_coordCube (d := d) L hLpos
-    simpa [volCube] using (hbounded.measure_lt_top (μ := volume)).ne
+    have : volCube = (ENNReal.ofReal L) ^ d := by
+      simpa [volCube] using PeriodicConstant.volume_coordCube (d := d) (L := L)
+    simpa [this] using pow_ne_zero d (ENNReal.ofReal_pos.mpr hLpos).ne'
+  have hvolCube_ne_top : volCube ≠ ∞ :=
+    (PeriodicConstant.isBounded_coordCube (d := d) L hLpos).measure_lt_top.ne
   -- Convert `hcR` to a strict inequality involving `encard` of centers in `ball 0 (R+r)`.
   have hcR' :
       c <
@@ -578,24 +574,11 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     -PeriodicConstantApprox.coordCubeCover (d := d) L hLpos x
   have hf_maps : (s : Set (EuclideanSpace ℝ (Fin d))).MapsTo f t := by
     intro x hx
-    have hx_mem : x ∈ S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R₁ := by
-      simpa [s] using (hX.mem_toFinset.1 hx)
-    have hx_ball : x ∈ ball 0 R₁ := hx_mem.2
-    have hx_gball :
-        (f x : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R₁ + C) :=
-      PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC hx_ball
-    have : f x ∈ {g : cubeLattice (d := d) L hLpos |
-        (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R₁ + C)} := by
-      simpa using hx_gball
-    exact htSet.mem_toFinset.2 this
-  have ht_nonempty : t.Nonempty := by
-    refine ⟨0, ?_⟩
-    have hpos : 0 < R₁ + C := by
-      dsimp [R₁, r]
-      nlinarith [hRpos, hCpos]
-    have : (0 : cubeLattice (d := d) L hLpos) ∈ htSet.toFinset :=
-      htSet.mem_toFinset.2 (by simp [Metric.mem_ball, hpos])
-    simpa [t] using this
+    have hx_mem := hX.mem_toFinset.1 (show x ∈ s from hx)
+    exact htSet.mem_toFinset.2 (show (f x : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R₁ + C) from
+      PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC hx_mem.2)
+  have ht_nonempty : t.Nonempty :=
+    ⟨0, htSet.mem_toFinset.2 (by simp [Metric.mem_ball]; positivity)⟩
   let fiber : cubeLattice (d := d) L hLpos → ℕ := fun g =>
     (s.filter fun x : EuclideanSpace ℝ (Fin d) => f x = g).card
   rcases Finset.exists_max_image t fiber ht_nonempty with ⟨g0, hg0t, hg0max⟩
