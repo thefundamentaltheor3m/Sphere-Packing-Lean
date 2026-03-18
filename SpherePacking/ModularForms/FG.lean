@@ -3,6 +3,7 @@ module
 public import SpherePacking.ModularForms.QExpansion
 public import SpherePacking.ModularForms.RamanujanIdentities
 public import SpherePacking.ModularForms.ThetaDerivIdentities
+public import SpherePacking.Tactic.TendstoCont
 
 @[expose] public section
 
@@ -1287,11 +1288,6 @@ lemma F₁_isBigO_exp_atImInfty :
       _ = fun z ↦ Real.exp (-(2 * π) * z.im) := by simp
   exact (hprod.add hE₄).sub hE₆
 
-/-- s * F₁.resToImagAxis s → 0 as s → ∞. -/
-lemma rpow_mul_F₁_resToImagAxis_tendsto_zero :
-    Tendsto (fun t : ℝ ↦ (t : ℂ) ^ (1 : ℂ) * F₁.resToImagAxis t) atTop (nhds 0) :=
-  tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity) (F₁_isBigO_exp_atImInfty) 1
-
 /-- s² * FReal s → 0 as s → ∞. -/
 lemma rpow_sq_mul_FReal_resToImagAxis_tendsto_zero :
     Tendsto (fun t : ℝ ↦ (t : ℂ) ^ (2 : ℂ) * F.resToImagAxis t) atTop (nhds 0) := by
@@ -1314,54 +1310,31 @@ lemma rpow_mul_F₁E₄_resToImagAxis_tendsto_zero :
       _ = fun τ ↦ Real.exp (-(2 * π) * τ.im) := by simp
   exact tendsto_rpow_mul_resToImagAxis_of_isBigO_exp (by positivity) hprod_bigO 1
 
-/-- s² * FReal s → 0 as s → ∞. -/
-lemma sq_mul_FReal_tendsto_zero :
-    Tendsto (fun s ↦ s ^ 2 * FReal s) atTop (nhds 0) := by
-  refine ((continuous_re.tendsto 0).comp rpow_sq_mul_FReal_resToImagAxis_tendsto_zero).congr' ?_
-  filter_upwards [eventually_gt_atTop 0] with s hs
-  unfold FReal
-  simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte]
-  -- (s : ℂ) ^ (2 : ℂ) = (s ^ 2 : ℂ) for s > 0
-  have h_cpow : (s : ℂ) ^ (2 : ℂ) = ((s ^ 2 : ℝ) : ℂ) := by norm_cast
-  simp only [Complex.mul_re, h_cpow, Complex.ofReal_re, Complex.ofReal_im]
-  ring
-
-/-- s * (F₁*E₄).resToImagAxis s (real part) → 0 as s → ∞. -/
-lemma mul_F₁E₄_re_tendsto_zero :
-    Tendsto (fun s ↦ s * ((F₁ * E₄.toFun).resToImagAxis s).re) atTop (nhds 0) := by
-  refine ((continuous_re.tendsto 0).comp rpow_mul_F₁E₄_resToImagAxis_tendsto_zero).congr' ?_
-  filter_upwards [eventually_gt_atTop 0] with s hs
-  simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte,
-    Complex.cpow_one, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
-  ring
-
-/-- E₄.resToImagAxis s (real part) → 1 as s → ∞. -/
-lemma E₄_re_resToImagAxis_tendsto_one :
-    Tendsto (fun s ↦ (E₄.toFun.resToImagAxis s).re) atTop (nhds 1) :=
-  (continuous_re.tendsto 1).comp E₄_resToImagAxis_tendsto_one
-
 /-- The numerator expression N(s) = s² * FReal s - 12/π * s * (F₁*E₄)(is) + 36/π² * E₄(is)²
 tends to 36/π² as s → ∞. -/
 lemma numerator_tendsto_at_infty :
-    Tendsto (fun s ↦ s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s * ((F₁ * E₄.toFun).resToImagAxis s).re
+    Tendsto (fun s ↦
+        s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * (s * ((F₁ * E₄.toFun).resToImagAxis s).re)
         + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2)
       atTop (nhds (36 * π ^ (-2 : ℤ))) := by
-  -- 0 - 12/π * 0 + 36/π² * 1 = 36/π²
-  convert (sq_mul_FReal_tendsto_zero.sub
-      (mul_F₁E₄_re_tendsto_zero.const_mul (12 * π ^ (-1 : ℤ)))).add
-    (E₄_re_resToImagAxis_tendsto_one.pow 2 |>.const_mul (36 * π ^ (-2 : ℤ))) using 1
-  · ext s; ring
-  · simp only [sq, mul_one, sub_zero, mul_zero, zero_add]
-
-/-- H₂.resToImagAxis s (real part) tends to 0 as s → ∞. -/
-lemma H₂_re_resToImagAxis_tendsto_zero :
-    Tendsto (fun s ↦ (H₂.resToImagAxis s).re) atTop (nhds 0) :=
-  (continuous_re.tendsto 0).comp H₂_resToImagAxis_tendsto_zero
-
-/-- H₄.resToImagAxis s (real part) tends to 1 as s → ∞. -/
-lemma H₄_re_resToImagAxis_tendsto_one :
-    Tendsto (fun s ↦ (H₄.resToImagAxis s).re) atTop (nhds 1) :=
-  (continuous_re.tendsto 1).comp H₄_resToImagAxis_tendsto_one
+  refine (fun
+    (hF : Tendsto (fun s ↦ s ^ 2 * FReal s) atTop (nhds 0))
+    (hF₁E₄ : Tendsto (fun s ↦ s * ((F₁ * E₄.toFun).resToImagAxis s).re) atTop (nhds 0))
+    (hE₄ : Tendsto (fun s ↦ (E₄.toFun.resToImagAxis s).re) atTop (nhds 1)) => ?_) ?_ ?_ ?_
+  · tendsto_cont
+  · refine ((continuous_re.tendsto 0).comp rpow_sq_mul_FReal_resToImagAxis_tendsto_zero).congr' ?_
+    filter_upwards [eventually_gt_atTop 0] with s hs
+    unfold FReal
+    simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte]
+    have h_cpow : (s : ℂ) ^ (2 : ℂ) = ((s ^ 2 : ℝ) : ℂ) := by norm_cast
+    simp only [Complex.mul_re, h_cpow, Complex.ofReal_re, Complex.ofReal_im]
+    ring
+  · refine ((continuous_re.tendsto 0).comp rpow_mul_F₁E₄_resToImagAxis_tendsto_zero).congr' ?_
+    filter_upwards [eventually_gt_atTop 0] with s hs
+    simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte,
+      Complex.cpow_one, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
+    ring
+  · exact (continuous_re.tendsto 1).comp E₄_resToImagAxis_tendsto_one
 
 /-- The denominator expression D(s) = H₄(is)³ * (2*H₄(is)² + 5*H₂(is)*H₄(is) + 5*H₂(is)²)
 tends to 2 as s → ∞. -/
@@ -1369,13 +1342,12 @@ lemma denominator_tendsto_at_infty :
     Tendsto (fun s ↦ (H₄.resToImagAxis s).re ^ 3 *
       (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
         + 5 * (H₂.resToImagAxis s).re ^ 2)) atTop (nhds 2) := by
-  -- H₄ → 1, H₂ → 0, so 1³ * (2*1² + 5*0*1 + 5*0²) = 2
-  convert (H₄_re_resToImagAxis_tendsto_one.pow 3).mul
-    ((H₄_re_resToImagAxis_tendsto_one.pow 2).const_mul 2 |>.add
-      ((H₂_re_resToImagAxis_tendsto_zero.mul H₄_re_resToImagAxis_tendsto_one).const_mul 5 |>.add
-        (H₂_re_resToImagAxis_tendsto_zero.pow 2 |>.const_mul 5))) using 1
-  · ext; ring
-  · norm_num
+  refine (fun
+    (h₂ : Tendsto (fun s ↦ (H₂.resToImagAxis s).re) atTop (nhds 0))
+    (h₄ : Tendsto (fun s ↦ (H₄.resToImagAxis s).re) atTop (nhds 1)) => ?_)
+    ((continuous_re.tendsto 0).comp H₂_resToImagAxis_tendsto_zero)
+    ((continuous_re.tendsto 1).comp H₄_resToImagAxis_tendsto_one)
+  tendsto_cont
 
 /-- G(1/s) = s^10 * (H₄(is))³ * (2(H₄(is))² + 5H₂(is)H₄(is) + 5(H₂(is))²) -/
 lemma G_functional_eq_real {s : ℝ} (hs : 0 < s) :
@@ -1409,7 +1381,7 @@ Proof outline (following blueprint Lemma 8.8):
 theorem FmodG_rightLimitAt_zero :
     Tendsto FmodGReal (nhdsWithin 0 (Set.Ioi 0)) (nhds (18 * (π ^ (-2 : ℤ)))) := by
   let rhs : ℝ → ℝ := fun s ↦
-    (s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s * ((F₁ * E₄.toFun).resToImagAxis s).re
+    (s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * (s * ((F₁ * E₄.toFun).resToImagAxis s).re)
       + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2) /
     ((H₄.resToImagAxis s).re ^ 3 *
       (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
@@ -1433,7 +1405,7 @@ theorem FmodG_rightLimitAt_zero :
     unfold FmodGReal
     rw [hG, hF_real_eq]
     calc
-      _ = s ^ 10 * (s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * s * ((F₁ * E₄.toFun).resToImagAxis s).re +
+      _ = s ^ 10 * (s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * (s * ((F₁ * E₄.toFun).resToImagAxis s).re) +
           36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2) /
             (s ^ 10 * ((H₄.resToImagAxis s).re ^ 3 *
             (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
