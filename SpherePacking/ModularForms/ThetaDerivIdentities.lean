@@ -6,7 +6,7 @@ public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ModularForms.EisensteinAsymptotics
-public import SpherePacking.Tactic.TendstoPoly
+public import SpherePacking.Tactic.TendstoCont
 
 @[expose] public section
 
@@ -99,13 +99,13 @@ lemma f₄_decompose :
 -/
 
 /-- f₂ is MDifferentiable -/
-lemma f₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₂ := by unfold f₂; fun_prop
+lemma f₂_MDifferentiable : MDiff f₂ := by unfold f₂; fun_prop
 
 /-- f₃ is MDifferentiable -/
-lemma f₃_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₃ := by unfold f₃; fun_prop
+lemma f₃_MDifferentiable : MDiff f₃ := by unfold f₃; fun_prop
 
 /-- f₄ is MDifferentiable -/
-lemma f₄_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f₄ := by unfold f₄; fun_prop
+lemma f₄_MDifferentiable : MDiff f₄ := by unfold f₄; fun_prop
 
 /-!
 ## Phase 3-4: Relation f₂ + f₄ = f₃
@@ -413,14 +413,14 @@ The tendsto lemmas for H₂, H₃, H₄ are already in AtImInfty.lean:
 -/
 
 /-- theta_g is MDifferentiable (from MDifferentiable of f₂, f₄, H₂, H₄) -/
-lemma theta_g_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_g :=
+lemma theta_g_MDifferentiable : MDiff theta_g :=
   ((mdifferentiable_const.mul H₂_SIF_MDifferentiable).add H₄_SIF_MDifferentiable).mul
     f₂_MDifferentiable |>.add <|
   (H₂_SIF_MDifferentiable.add (mdifferentiable_const.mul H₄_SIF_MDifferentiable)).mul
     f₄_MDifferentiable
 
 /-- theta_h is MDifferentiable (from MDifferentiable of f₂, f₄) -/
-lemma theta_h_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) theta_h := by
+lemma theta_h_MDifferentiable : MDiff theta_h := by
   unfold theta_h
   exact ((f₂_MDifferentiable.pow 2).add (f₂_MDifferentiable.mul f₄_MDifferentiable)).add
     (f₄_MDifferentiable.pow 2)
@@ -496,39 +496,25 @@ lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
   change Tendsto (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) atImInfty (𝓝 0)
   tendsto_cont
 
-/-- g is a cusp form of level 1. -/
-lemma theta_g_IsCuspForm :
-    ∃ (g_MF : ModularForm (Γ 1) 6),
-      IsCuspForm (Γ 1) 6 g_MF ∧ ∀ z, g_MF z = theta_g z :=
-  IsCuspForm_of_SIF_tendsto_zero theta_g_SIF theta_g_MDifferentiable theta_g_tendsto_atImInfty
+private noncomputable def theta_g_CF : CuspForm (Γ 1) 6 :=
+  cuspFormOfSIFTendstoZero theta_g_SIF theta_g_MDifferentiable theta_g_tendsto_atImInfty
 
-/-- h is a cusp form of level 1. -/
-lemma theta_h_IsCuspForm :
-    ∃ (h_MF : ModularForm (Γ 1) 8),
-      IsCuspForm (Γ 1) 8 h_MF ∧ ∀ z, h_MF z = theta_h z :=
-  IsCuspForm_of_SIF_tendsto_zero theta_h_SIF theta_h_MDifferentiable theta_h_tendsto_atImInfty
+private noncomputable def theta_h_CF : CuspForm (Γ 1) 8 :=
+  cuspFormOfSIFTendstoZero theta_h_SIF theta_h_MDifferentiable theta_h_tendsto_atImInfty
 
 /-!
 ## Phase 8: Apply Dimension Vanishing
 -/
 
-/-- g = 0 by dimension argument.
+/-- g = 0 by dimension argument: weight-6 cusp forms vanish. -/
+lemma theta_g_eq_zero : theta_g = 0 :=
+  congr_arg (·.toFun)
+    (rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 6 (by norm_num)) theta_g_CF)
 
-Proof: g is a level-1 cusp form of weight 6. By IsCuspForm_weight_lt_eq_zero,
-all cusp forms of weight < 12 vanish. Hence g = 0. -/
-lemma theta_g_eq_zero : theta_g = 0 := by
-  obtain ⟨g_MF, hg_cusp, hg_eq⟩ := theta_g_IsCuspForm
-  ext z
-  simp [← hg_eq, IsCuspForm_weight_lt_eq_zero 6 (by norm_num) g_MF hg_cusp]
-
-/-- h = 0 by dimension argument.
-
-Proof: h is a level-1 cusp form of weight 8. By IsCuspForm_weight_lt_eq_zero,
-all cusp forms of weight < 12 vanish. Hence h = 0. -/
-lemma theta_h_eq_zero : theta_h = 0 := by
-  obtain ⟨h_MF, hh_cusp, hh_eq⟩ := theta_h_IsCuspForm
-  ext z
-  simp [← hh_eq, IsCuspForm_weight_lt_eq_zero 8 (by norm_num) h_MF hh_cusp]
+/-- h = 0 by dimension argument: weight-8 cusp forms vanish. -/
+lemma theta_h_eq_zero : theta_h = 0 :=
+  congr_arg (·.toFun)
+    (rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero 8 (by norm_num)) theta_h_CF)
 
 /-!
 ## H_sum_sq: H₂² + H₂H₄ + H₄²
@@ -538,7 +524,7 @@ lemma theta_h_eq_zero : theta_h = 0 := by
 noncomputable def H_sum_sq : ℍ → ℂ := fun z => H₂ z ^ 2 + H₂ z * H₄ z + H₄ z ^ 2
 
 /-- H_sum_sq is MDifferentiable -/
-lemma H_sum_sq_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H_sum_sq := by
+lemma H_sum_sq_MDifferentiable : MDiff H_sum_sq := by
   unfold H_sum_sq
   exact ((H₂_SIF_MDifferentiable.pow 2).add (H₂_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)).add
     (H₄_SIF_MDifferentiable.pow 2)
@@ -560,8 +546,7 @@ lemma three_H_sum_sq_ne_zero : (fun z => 3 * H_sum_sq z) ≠ 0 :=
     (funext fun z => (mul_eq_zero.mp (congrFun h z)).resolve_left (by norm_num))
 
 /-- 3 * H_sum_sq is MDifferentiable -/
-lemma three_H_sum_sq_MDifferentiable :
-    MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (fun z => 3 * H_sum_sq z) :=
+lemma three_H_sum_sq_MDifferentiable : MDiff (fun z => 3 * H_sum_sq z) :=
   mdifferentiable_const.mul H_sum_sq_MDifferentiable
 
 /-!
@@ -686,7 +671,7 @@ lemma f₂_eq_zero : f₂ = 0 := by
         = (2 * H₂ z + H₄ z) ^ 2 * theta_h z := f₄_sq_mul_eq z (congrFun hg z)
       _ = _ := by rw [hh_z, mul_zero]
   -- f₄² is MDifferentiable
-  have f₄_sq_MDiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (f₄ ^ 2) := f₄_MDifferentiable.pow 2
+  have f₄_sq_MDiff : MDiff (f₄ ^ 2) := f₄_MDifferentiable.pow 2
   -- By mul_eq_zero_iff: f₄² = 0 (since 3 * H_sum_sq ≠ 0)
   have h_f₄_sq_zero : f₄ ^ 2 = 0 :=
     ((UpperHalfPlane.mul_eq_zero_iff f₄_sq_MDiff three_H_sum_sq_MDifferentiable).mp h_f₄_sq_3H
