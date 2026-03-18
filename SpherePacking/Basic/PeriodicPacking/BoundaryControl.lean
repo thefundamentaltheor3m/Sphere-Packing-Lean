@@ -525,9 +525,9 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     -PeriodicConstantApprox.coordCubeCover (d := d) L hLpos x
   have hf_maps : (s : Set (EuclideanSpace ℝ (Fin d))).MapsTo f t := by
     intro x hx
-    have hx_mem := (hX.mem_toFinset.1 hx)
-    exact htSet.mem_toFinset.2
-      (PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC hx_mem.2)
+    have hx_mem := hX.mem_toFinset.1 (show x ∈ s from hx)
+    exact htSet.mem_toFinset.2 (show (f x : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R₁ + C) from
+      PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC hx_mem.2)
   have ht_nonempty : t.Nonempty :=
     ⟨0, htSet.mem_toFinset.2 (by simp [Metric.mem_ball]; positivity)⟩
   let fiber : cubeLattice (d := d) L hLpos → ℕ := fun g =>
