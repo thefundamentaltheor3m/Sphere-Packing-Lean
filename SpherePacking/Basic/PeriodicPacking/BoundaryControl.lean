@@ -601,16 +601,9 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     -- `card_eq_sum_card_fiberwise` counts elements fiberwise over `t`.
     simpa [fiber] using (Finset.card_eq_sum_card_fiberwise (f := f) (s := s) (t := t) hf_maps)
   have hs_le : (s.card : ℝ≥0∞) ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) := by
-    -- bound the sum of fibers by `t.card * maxFiber`
-    have hsum_le :
-        Finset.sum t (fun g => (s.filter fun x => f x = g).card) ≤
-          Finset.sum t (fun _g => sg.card) := Finset.sum_le_sum hg0max
-    have hsum_eq : Finset.sum t (fun _g => sg.card) = t.card * sg.card := by
-      simp [Finset.sum_const]
-    have hs_le_nat : s.card ≤ t.card * sg.card := by
-      -- all the quantities here are naturals
-      simpa [hs_sum, hsum_eq] using hsum_le
-    exact_mod_cast hs_le_nat
+    have : s.card ≤ t.card * sg.card := by
+      simpa [hs_sum, Finset.sum_const] using Finset.sum_le_sum hg0max
+    exact_mod_cast this
   have ht_vol :
       ((t.card : ℝ≥0∞) * volCube) ≤
         volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R₁ + 2 * C)) := by
@@ -657,22 +650,12 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   letI : DecidablePred (fun x : EuclideanSpace ℝ (Fin d) => x ∈ innerSet) := Classical.decPred _
   let F : Finset (EuclideanSpace ℝ (Fin d)) := sg.filter fun x => x ∈ innerSet
   let sb : Finset (EuclideanSpace ℝ (Fin d)) := sg.filter fun x => x ∉ innerSet
-  have hF_centers : ∀ x ∈ F, x ∈ S.centers := by
-    intro x hx
-    have hx' := hx
-    dsimp [F] at hx'
-    exact hsg_centers x (Finset.mem_filter.1 hx').1
-  have hF_inner : ∀ x ∈ F, x ∈ g0 +ᵥ coordCubeInner (d := d) L r := by
-    intro x hx
-    have hx' := hx
-    dsimp [F] at hx'
-    have hx' : x ∈ innerSet := (Finset.mem_filter.1 hx').2
-    simpa [innerSet] using hx'
-  have hsb_centers : ∀ x ∈ sb, x ∈ S.centers := by
-    intro x hx
-    have hx' := hx
-    dsimp [sb] at hx'
-    exact hsg_centers x (Finset.mem_filter.1 hx').1
+  have hF_centers : ∀ x ∈ F, x ∈ S.centers := fun x hx => by
+    have := hx; dsimp [F] at this; exact hsg_centers x (Finset.mem_filter.1 this).1
+  have hF_inner : ∀ x ∈ F, x ∈ g0 +ᵥ coordCubeInner (d := d) L r := fun x hx => by
+    have := hx; dsimp [F] at this; simpa [innerSet] using (Finset.mem_filter.1 this).2
+  have hsb_centers : ∀ x ∈ sb, x ∈ S.centers := fun x hx => by
+    have := hx; dsimp [sb] at this; exact hsg_centers x (Finset.mem_filter.1 this).1
   have hsb_boundary :
       ∀ x ∈ sb, x ∈ (g0 +ᵥ coordCube (d := d) L) \ (g0 +ᵥ coordCubeInner (d := d) L (1 / 2)) := by
     intro x hx
@@ -743,17 +726,8 @@ public theorem periodic_constant_eq_constant (hd : 0 < d) :
           hPsep).trans ?_
     exact le_iSup (fun S : SpherePacking d ↦ ⨆ (_ : S.separation = 1), S.density) P.toSpherePacking
   · -- general ≤ periodic: approximate any packing by a periodic one
-    refine iSup₂_le ?_
-    intro S hSsep
-    -- show `S.density ≤ sup_{periodic, sep=1} density` by approximation from below
-    refine le_of_forall_lt ?_
-    intro a ha
-    -- choose `b` strictly between `a` and `S.density`
+    refine iSup₂_le fun S hSsep => le_of_forall_lt fun a ha => ?_
     rcases exists_between ha with ⟨b, hab, hbS⟩
-    -- Approximate `S` by a periodic packing with (normalized) separation `= 1`.
     rcases SpherePacking.exists_periodicSpherePacking_sep_one_density_gt_of_lt_density
-      (d := d) hd S hSsep hbS with
-      ⟨P, hPsep, hbP⟩
-    have hb_lt_sup : b < ⨆ (P : PeriodicSpherePacking d) (_ : P.separation = 1), P.density :=
-      lt_of_lt_of_le hbP (le_iSup_of_le P (le_iSup_of_le hPsep le_rfl))
-    exact hab.trans hb_lt_sup
+      (d := d) hd S hSsep hbS with ⟨P, hPsep, hbP⟩
+    exact hab.trans (hbP.trans_le (le_iSup_of_le P (le_iSup_of_le hPsep le_rfl)))
