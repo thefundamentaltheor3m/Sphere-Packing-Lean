@@ -946,9 +946,10 @@ private lemma theta_prod_sq_MDifferentiable : MDiff theta_prod_sq := by
 
 private lemma theta_prod_sq_tendsto_atImInfty : Tendsto theta_prod_sq atImInfty (𝓝 0) := by
   change Tendsto (fun z => (H₂ z * H₃ z * H₄ z) ^ 2) atImInfty (𝓝 0)
-  have : (0 : ℂ) = (0 * 1 * 1) ^ 2 := by norm_num
-  rw [this]
-  exact ((H₂_tendsto_atImInfty.mul H₃_tendsto_atImInfty).mul H₄_tendsto_atImInfty).pow 2
+  have := H₂_tendsto_atImInfty
+  have := H₃_tendsto_atImInfty
+  have := H₄_tendsto_atImInfty
+  tendsto_cont
 
 private noncomputable def theta_prod_sq_SIF :
     SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
