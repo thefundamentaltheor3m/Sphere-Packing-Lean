@@ -267,24 +267,19 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
       simp [qq, qExpansion2, smul_eq_mul, ContinuousMultilinearMap.smul_apply,
         ContinuousMultilinearMap.mkPiAlgebraFin_apply]
     exact hs'
-  have h3 : HasFPowerSeriesAt (cuspFunction n f) qq 0 := H2.hasFPowerSeriesAt
   have h4 : HasFPowerSeriesAt (cuspFunction n f) (qExpansionFormalMultilinearSeries n f) 0 :=
     (ModularFormClass.hasFPowerSeries_cuspFunction (h := n) (f := f)
         (by have := hn.1; positivity) (by simp)).hasFPowerSeriesAt
-  have := HasFPowerSeriesAt.eq_formalMultilinearSeries h3 h4
-  rw [@FormalMultilinearSeries.ext_iff] at this
-  have h5 := this m
+  have h5 := congr_fun (H2.hasFPowerSeriesAt.eq_formalMultilinearSeries h4) m
   simp only [PowerSeries.coeff_mk, qExpansionFormalMultilinearSeries, qq, qExpansion2] at h5
   have htv : (c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ).toFun =
-    ( (PowerSeries.coeff m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m
-      ℂ).toFun := by
-    simpa [FormalMultilinearSeries.ofScalars] using congrArg (fun t => t.toFun) h5
-  have h6 := congrFun htv m
+    ((PowerSeries.coeff m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ).toFun :=
+    congrArg (fun t => t.toFun) (by simpa [FormalMultilinearSeries.ofScalars] using h5)
   simpa only [ContinuousMultilinearMap.toMultilinearMap_smul, Pi.natCast_def,
     MultilinearMap.toFun_eq_coe, MultilinearMap.smul_apply, ContinuousMultilinearMap.coe_coe,
     ContinuousMultilinearMap.mkPiAlgebraFin_apply, List.ofFn_const, List.prod_replicate,
     smul_eq_mul, mul_eq_mul_right_iff, pow_eq_zero_iff', Nat.cast_eq_zero, ne_eq, and_not_self,
-    or_false, qExpansion2, qq] using h6
+    or_false, qExpansion2, qq] using congrFun htv m
 
 lemma deriv_mul_eq (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
     deriv (f * g) = deriv f * g + f * deriv g := by
