@@ -751,24 +751,17 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
   -- Summability of the series
   have hsum : Summable fun n : ℕ+ => ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n) := by
-    apply Summable.of_norm
-    apply Summable.of_nonneg_of_le (fun n => norm_nonneg _)
-    · intro n
-      calc ‖↑((ArithmeticFunction.sigma (k - 1)) ↑n) * cexp (2 * ↑Real.pi * Complex.I * z * n)‖
-          = ‖(↑((ArithmeticFunction.sigma (k - 1)) ↑n) : ℂ)‖ *
-            ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := norm_mul _ _
-        _ ≤ ‖(↑n : ℂ) ^ k‖ * ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
-          apply mul_le_mul_of_nonneg_right
-          · rw [Complex.norm_natCast, Complex.norm_pow, Complex.norm_natCast]
-            have hbound := sigma_bound (k - 1) n
-            have hk' : k - 1 + 1 = k := Nat.sub_add_cancel (by omega : 1 ≤ k)
-            rw [hk'] at hbound
-            exact_mod_cast hbound
-          · exact norm_nonneg _
-        _ = ‖(↑n : ℂ) ^ k * cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := (norm_mul _ _).symm
-    · have := a33 k 1 z
-      simp only [PNat.val_ofNat, Nat.cast_one, mul_one] at this
-      exact summable_norm_iff.mpr this
+    refine .of_norm (.of_nonneg_of_le (fun n => norm_nonneg _) (fun n => ?_)
+      (summable_norm_iff.mpr (by have := a33 k 1 z; simpa using this)))
+    calc ‖↑((σ (k - 1)) ↑n) * cexp (2 * ↑Real.pi * Complex.I * z * n)‖
+        = ‖(↑((σ (k - 1)) ↑n) : ℂ)‖ * ‖cexp _‖ := norm_mul _ _
+      _ ≤ ‖(↑n : ℂ) ^ k‖ * ‖cexp _‖ := by
+          exact mul_le_mul_of_nonneg_right (by
+            rw [Complex.norm_natCast, Complex.norm_pow, Complex.norm_natCast]
+            have := sigma_bound (k - 1) n
+            rw [Nat.sub_add_cancel (by omega : 1 ≤ k)] at this
+            exact_mod_cast this) (norm_nonneg _)
+      _ = ‖(↑n : ℂ) ^ k * cexp _‖ := (norm_mul _ _).symm
   -- The sum has zero imaginary part
   have hsum_im : (∑' (n : ℕ+), ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
