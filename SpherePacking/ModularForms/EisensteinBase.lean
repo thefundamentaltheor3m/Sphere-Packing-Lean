@@ -335,8 +335,13 @@ lemma Ek_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) :
       refine (add_left_cancel_iff).2 ?_
       rw [← tsum_mul_left]
       refine tsum_congr fun b => ?_
-      ring_nf; field_simp; congr
-      rw [Function.Periodic.qParam, ← Complex.exp_nsmul]; congr; simp; ring
+      ring_nf
+      field_simp
+      congr
+      rw [Function.Periodic.qParam, ← Complex.exp_nsmul]
+      congr
+      simp
+      ring
     · have hr := (summable_nat_add_iff 1 (f := fun n : ℕ ↦ c (n) • 𝕢 (1 : ℝ) ↑z ^ (n)))
       simp only [Nat.cast_one, smul_eq_mul] at *; rwa [hr]
   · simpa using hSummable
@@ -482,7 +487,10 @@ lemma Delta_cuspFuntion_eq : Set.EqOn (cuspFunction 1 Delta)
       have hyq : cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y) = y := by
         simpa [Periodic.qParam] using
           Function.Periodic.qParam_right_inv (h := (1 : ℝ)) (by simp) hyn0
-      rw [hyq]; congr; ext n; congr
+      rw [hyq]
+      congr
+      ext n
+      congr
       have hpow : cexp (2 * ↑π * Complex.I * (↑n + 1) * Periodic.invQParam 1 y) =
           (cexp (2 * ↑π * Complex.I * Periodic.invQParam 1 y)) ^ (n + 1) := by
         simpa [mul_assoc, mul_left_comm, mul_comm, Nat.cast_add_one] using
@@ -817,7 +825,8 @@ public lemma E₂_isBoundedAtImInfty : IsBoundedAtImInfty E₂ := by
   set S := ∑' n : ℕ+, (n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))
   have hS_eq : ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
       (1 - cexp (2 * π * Complex.I * ↑n * ↑z)) = S := by
-    congr 1; ext n
+    congr 1
+    ext n
     have : cexp (2 * π * Complex.I * n * z) = q ^ (n : ℕ) := exp_aux z ↑n
     simp [this]
   calc ‖1 - 24 * ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
@@ -844,7 +853,8 @@ lemma E₂_isZeroAtImInfty_sub_one : IsZeroAtImInfty (fun z : ℍ => E₂ z - 1)
   have hT_eq :
       (∑' n : ℕ+, (n : ℂ) * cexp (2 * π * Complex.I * n * z) /
           (1 - cexp (2 * π * Complex.I * n * z))) = S := by
-    congr 1; ext n
+    congr 1
+    ext n
     have : cexp (2 * π * Complex.I * n * z) = q ^ (n : ℕ) := exp_aux z ↑n
     simp [this]
   have hq_norm : ‖q‖ = Real.exp (-((2 * Real.pi) * z.im)) := by
@@ -861,7 +871,10 @@ lemma E₂_isZeroAtImInfty_sub_one : IsZeroAtImInfty (fun z : ℍ => E₂ z - 1)
         gcongr; linarith
     _ = 8 * ‖q‖ := by ring_nf
   have hE₂_sub_one : E₂ z - 1 = -24 * S := by
-    have := E₂_eq z; rw [hT_eq] at this; rw [this]; ring
+    have := E₂_eq z
+    rw [hT_eq] at this
+    rw [this]
+    ring
   calc ‖E₂ z - 1‖ = 24 * ‖S‖ := by simp [hE₂_sub_one]
     _ ≤ 24 * (8 * ‖q‖) := by gcongr
     _ ≤ 24 * (8 * (ε / 192)) := by gcongr; exact hqδ.trans (min_le_right _ _)
