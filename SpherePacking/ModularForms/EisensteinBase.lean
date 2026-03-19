@@ -275,16 +275,12 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
   rw [@FormalMultilinearSeries.ext_iff] at this
   have h5 := this m
   simp only [PowerSeries.coeff_mk, qExpansionFormalMultilinearSeries, qq, qExpansion2] at h5
-  have htv : (c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ).toFun =
-    ( (PowerSeries.coeff m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m
-      ℂ).toFun := by
-    simpa [FormalMultilinearSeries.ofScalars] using congrArg (fun t => t.toFun) h5
-  have h6 := congrFun htv m
-  simpa only [ContinuousMultilinearMap.toMultilinearMap_smul, Pi.natCast_def,
-    MultilinearMap.toFun_eq_coe, MultilinearMap.smul_apply, ContinuousMultilinearMap.coe_coe,
-    ContinuousMultilinearMap.mkPiAlgebraFin_apply, List.ofFn_const, List.prod_replicate,
-    smul_eq_mul, mul_eq_mul_right_iff, pow_eq_zero_iff', Nat.cast_eq_zero, ne_eq, and_not_self,
-    or_false, qExpansion2, qq] using h6
+  simp only [FormalMultilinearSeries.ofScalars] at h5
+  have hne : ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ ≠ 0 := by
+    intro h
+    have := congrFun (congrArg DFunLike.coe h) (fun _ => (1 : ℂ))
+    simp [ContinuousMultilinearMap.mkPiAlgebraFin_apply] at this
+  exact smul_left_injective _ hne h5
 
 lemma deriv_mul_eq (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
     deriv (f * g) = deriv f * g + f * deriv g := by
