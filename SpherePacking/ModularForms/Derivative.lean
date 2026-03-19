@@ -61,18 +61,16 @@ public theorem D_differentiable {F : ℍ → ℂ} (hF : MDiff F) : MDiff (D F) :
 TODO: Move this to E2.lean. -/
 public theorem E₂_holo' : MDiff E₂ := by
   rw [UpperHalfPlane.mdifferentiable_iff]
-  have hη : DifferentiableOn ℂ η {z : ℂ | 0 < z.im} := by
-    intro z hz
-    have hz' : DifferentiableAt ℂ η z := by
-      simpa [η] using (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := z) hz)
-    exact hz'.differentiableWithinAt
+  have hη : DifferentiableOn ℂ η {z : ℂ | 0 < z.im} := fun z hz => by
+    simpa [η] using (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := z)
+      hz).choose_spec.differentiableAt.differentiableWithinAt
   have hlog : DifferentiableOn ℂ (logDeriv η) {z | 0 < z.im} :=
     (hη.deriv isOpen_upperHalfPlaneSet).div hη fun z hz => by
       simpa [η] using (ModularForm.eta_ne_zero (z := z) hz)
   exact (hlog.const_mul ((↑π * I / 12)⁻¹)).congr fun z hz => by
-    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hz,
-      show logDeriv η z = (↑π * I / 12) * E₂ ⟨z, hz⟩ by
-        simpa [η, E₂] using (ModularForm.logDeriv_eta_eq_E2 ⟨z, hz⟩)]
+    have hld : logDeriv η z = (↑π * I / 12) * E₂ ⟨z, hz⟩ := by
+      simpa [η, E₂] using ModularForm.logDeriv_eta_eq_E2 ⟨z, hz⟩
+    simp only [Function.comp_apply, ofComplex_apply_of_im_pos hz, hld]
     field_simp [Real.pi_ne_zero]
 
 /--
@@ -1136,42 +1134,7 @@ lemma tendsto_serre_D_E₆_atImInfty :
       (by simpa using tendsto_E₆_atImInfty)
   simpa [show ((6 : ℂ) * 12⁻¹) = (2⁻¹ : ℂ) by norm_num] using hmain
 
-noncomputable def serreD_modularForm (k : ℤ) (F : ModularForm Γ(1) k) :
-    ModularForm Γ(1) (k + 2) :=
-  { toFun := serre_D k F.toFun
-    slash_action_eq' := by
-      intro γ hγ
-      rcases (Subgroup.mem_map.1 hγ) with ⟨γ', hγ', rfl⟩
-      have hγ'GL :
-          (γ' : GL (Fin 2) ℝ) ∈ (Γ(1) : Subgroup (GL (Fin 2) ℝ)) :=
-        ⟨γ', hγ', rfl⟩
-      have hF : F.toFun ∣[(k : ℤ)] γ' = F.toFun := by
-        have hFGL := F.slash_action_eq' (γ' : GL (Fin 2) ℝ) hγ'GL
-        simpa [ModularForm.SL_slash] using hFGL
-      have hSerre := serre_D_slash_invariant k F.toFun F.holo' γ' hF
-      simpa [ModularForm.SL_slash] using hSerre
-    holo' := serre_D_differentiable (k := (k : ℂ)) F.holo'
-    bdd_at_cusps' := by
-      intro c hc
-      have hbdd : IsBoundedAtImInfty (serre_D k F.toFun) :=
-        serre_D_isBoundedAtImInfty (k := (k : ℂ)) F.holo' (ModularFormClass.bdd_at_infty F)
-      refine bounded_at_cusps_of_bounded_at_infty
-        (f := serre_D k F.toFun) (k := (k + 2 : ℤ)) hc ?_
-      intro A hA
-      rcases hA with ⟨γ, rfl⟩
-      have hγmem : (γ : GL (Fin 2) ℝ) ∈ (Γ(1) : Subgroup (GL (Fin 2) ℝ)) :=
-        ⟨γ, CongruenceSubgroup.mem_Gamma_one γ, rfl⟩
-      have hF : F.toFun ∣[(k : ℤ)] γ = F.toFun := by
-        have hFGL := F.slash_action_eq' (γ : GL (Fin 2) ℝ) hγmem
-        simpa [ModularForm.SL_slash] using hFGL
-      have hSerre : serre_D k F.toFun ∣[(k + 2 : ℤ)] γ = serre_D k F.toFun :=
-        serre_D_slash_invariant k F.toFun F.holo' γ hF
-      have hSerreGL :
-          serre_D k F.toFun ∣[(k + 2 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ γ) =
-            serre_D k F.toFun := by
-        assumption
-      rw [hSerreGL]
-      exact hbdd }
+noncomputable abbrev serreD_modularForm := @serre_D_ModularForm
 
 lemma eq_zero_of_tendsto_zero_atImInfty {k : ℤ} (hk : k < 12) (G : ModularForm Γ(1) k)
     (hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ))) : G = 0 := by
@@ -1390,7 +1353,7 @@ public theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun :=
   let G : ModularForm Γ(1) 6 := F₆ + (3⁻¹ : ℂ) • E₆
   have hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ)) := by
     have hF : Tendsto (fun z : ℍ => F₆ z) atImInfty (𝓝 (-(3⁻¹ : ℂ))) := by
-      simpa [F₆, serreD_modularForm] using tendsto_serre_D_E₄_atImInfty
+      simpa [F₆, serre_D_ModularForm] using tendsto_serre_D_E₄_atImInfty
     have hE6 :
         Tendsto (fun z : ℍ => (3⁻¹ : ℂ) * E₆ z) atImInfty
           (𝓝 ((3⁻¹ : ℂ) * (1 : ℂ))) :=
@@ -1405,7 +1368,7 @@ public theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun :=
     (eq_neg_iff_add_eq_zero).2 (by simpa using hz)
   have hz'' : F₆.toFun z = -((3⁻¹ : ℂ) * E₆ z) := by
     simpa [ModularForm.toFun_eq_coe] using hz'
-  simpa [F₆, serreD_modularForm, neg_mul, mul_assoc] using hz''
+  simpa [F₆, serre_D_ModularForm, neg_mul, mul_assoc] using hz''
 
 public theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by
   let F₈ : ModularForm Γ(1) 8 := serreD_modularForm 6 E₆
@@ -1413,7 +1376,7 @@ public theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * 
   let G : ModularForm Γ(1) 8 := F₈ + (2⁻¹ : ℂ) • E4sq
   have hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ)) := by
     have hF : Tendsto (fun z : ℍ => F₈ z) atImInfty (𝓝 (-(2⁻¹ : ℂ))) := by
-      simpa [F₈, serreD_modularForm] using tendsto_serre_D_E₆_atImInfty
+      simpa [F₈, serre_D_ModularForm] using tendsto_serre_D_E₆_atImInfty
     have hE4 : Tendsto (fun z : ℍ => E₄ z) atImInfty (𝓝 (1 : ℂ)) :=
       tendsto_E₄_atImInfty
     have hE4sq :
@@ -1432,7 +1395,7 @@ public theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * 
     (eq_neg_iff_add_eq_zero).2 (by simpa using hz)
   have hz'' : F₈.toFun z = -((2⁻¹ : ℂ) * E4sq z) := by
     simpa [ModularForm.toFun_eq_coe] using hz'
-  simpa [F₈, serreD_modularForm, E4sq, neg_mul, mul_assoc, mul_left_comm, mul_comm] using hz''
+  simpa [F₈, serre_D_ModularForm, E4sq, neg_mul, mul_assoc, mul_left_comm, mul_comm] using hz''
 
 /-- Ramanujan's differential equation for `E₂`. -/
 @[simp]
