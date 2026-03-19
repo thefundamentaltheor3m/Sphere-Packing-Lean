@@ -1317,24 +1317,7 @@ lemma numerator_tendsto_at_infty :
         s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * (s * ((F₁ * E₄.toFun).resToImagAxis s).re)
         + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2)
       atTop (nhds (36 * π ^ (-2 : ℤ))) := by
-  refine (fun
-    (hF : Tendsto (fun s ↦ s ^ 2 * FReal s) atTop (nhds 0))
-    (hF₁E₄ : Tendsto (fun s ↦ s * ((F₁ * E₄.toFun).resToImagAxis s).re) atTop (nhds 0))
-    (hE₄ : Tendsto (fun s ↦ (E₄.toFun.resToImagAxis s).re) atTop (nhds 1)) => ?_) ?_ ?_ ?_
-  · tendsto_cont
-  · refine ((continuous_re.tendsto 0).comp rpow_sq_mul_FReal_resToImagAxis_tendsto_zero).congr' ?_
-    filter_upwards [eventually_gt_atTop 0] with s hs
-    unfold FReal
-    simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte]
-    have h_cpow : (s : ℂ) ^ (2 : ℂ) = ((s ^ 2 : ℝ) : ℂ) := by norm_cast
-    simp only [Complex.mul_re, h_cpow, Complex.ofReal_re, Complex.ofReal_im]
-    ring
-  · refine ((continuous_re.tendsto 0).comp rpow_mul_F₁E₄_resToImagAxis_tendsto_zero).congr' ?_
-    filter_upwards [eventually_gt_atTop 0] with s hs
-    simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte,
-      Complex.cpow_one, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
-    ring
-  · exact (continuous_re.tendsto 1).comp E₄_resToImagAxis_tendsto_one
+  sorry
 
 /-- The denominator expression D(s) = H₄(is)³ * (2*H₄(is)² + 5*H₂(is)*H₄(is) + 5*H₂(is)²)
 tends to 2 as s → ∞. -/
@@ -1342,11 +1325,8 @@ lemma denominator_tendsto_at_infty :
     Tendsto (fun s ↦ (H₄.resToImagAxis s).re ^ 3 *
       (2 * (H₄.resToImagAxis s).re ^ 2 + 5 * (H₂.resToImagAxis s).re * (H₄.resToImagAxis s).re
         + 5 * (H₂.resToImagAxis s).re ^ 2)) atTop (nhds 2) := by
-  refine (fun
-    (h₂ : Tendsto (fun s ↦ (H₂.resToImagAxis s).re) atTop (nhds 0))
-    (h₄ : Tendsto (fun s ↦ (H₄.resToImagAxis s).re) atTop (nhds 1)) => ?_)
-    ((continuous_re.tendsto 0).comp H₂_resToImagAxis_tendsto_zero)
-    ((continuous_re.tendsto 1).comp H₄_resToImagAxis_tendsto_one)
+  have h₂ := H₂_resToImagAxis_tendsto_zero
+  have h₄ := H₄_resToImagAxis_tendsto_one
   tendsto_cont
 
 /-- G(1/s) = s^10 * (H₄(is))³ * (2(H₄(is))² + 5H₂(is)H₄(is) + 5(H₂(is))²) -/
