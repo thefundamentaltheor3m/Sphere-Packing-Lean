@@ -267,19 +267,24 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
       simp [qq, qExpansion2, smul_eq_mul, ContinuousMultilinearMap.smul_apply,
         ContinuousMultilinearMap.mkPiAlgebraFin_apply]
     exact hs'
+  have h3 : HasFPowerSeriesAt (cuspFunction n f) qq 0 := H2.hasFPowerSeriesAt
   have h4 : HasFPowerSeriesAt (cuspFunction n f) (qExpansionFormalMultilinearSeries n f) 0 :=
     (ModularFormClass.hasFPowerSeries_cuspFunction (h := n) (f := f)
         (by have := hn.1; positivity) (by simp)).hasFPowerSeriesAt
-  have h5 := congr_fun (H2.hasFPowerSeriesAt.eq_formalMultilinearSeries h4) m
+  have := HasFPowerSeriesAt.eq_formalMultilinearSeries h3 h4
+  rw [@FormalMultilinearSeries.ext_iff] at this
+  have h5 := this m
   simp only [PowerSeries.coeff_mk, qExpansionFormalMultilinearSeries, qq, qExpansion2] at h5
   have htv : (c m • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ).toFun =
-    ((PowerSeries.coeff m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m ℂ).toFun :=
-    congrArg (fun t => t.toFun) (by simpa [FormalMultilinearSeries.ofScalars] using h5)
+    ( (PowerSeries.coeff m) (qExpansion n f) • ContinuousMultilinearMap.mkPiAlgebraFin ℂ m
+      ℂ).toFun := by
+    simpa [FormalMultilinearSeries.ofScalars] using congrArg (fun t => t.toFun) h5
+  have h6 := congrFun htv m
   simpa only [ContinuousMultilinearMap.toMultilinearMap_smul, Pi.natCast_def,
     MultilinearMap.toFun_eq_coe, MultilinearMap.smul_apply, ContinuousMultilinearMap.coe_coe,
     ContinuousMultilinearMap.mkPiAlgebraFin_apply, List.ofFn_const, List.prod_replicate,
     smul_eq_mul, mul_eq_mul_right_iff, pow_eq_zero_iff', Nat.cast_eq_zero, ne_eq, and_not_self,
-    or_false, qExpansion2, qq] using congrFun htv m
+    or_false, qExpansion2, qq] using h6
 
 lemma deriv_mul_eq (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
     deriv (f * g) = deriv f * g + f * deriv g := by
@@ -954,16 +959,12 @@ lemma E₂_isZeroAtImInfty_sub_one : IsZeroAtImInfty (fun z : ℍ => E₂ z - 1)
   have hq_half : ‖q‖ ≤ (1 / 2 : ℝ) := le_trans hqδ (min_le_left _ _)
   have hq_small : ‖q‖ ≤ ε / 192 := le_trans hqδ (min_le_right _ _)
   have hq_lt_one : ‖q‖ < 1 := lt_of_le_of_lt hq_half (by norm_num)
-  have hS_bound :
-      ‖S‖ ≤ 8 * ‖q‖ := by
-    have hS₁ : ‖S‖ ≤ ‖q‖ / (1 - ‖q‖) ^ 3 := norm_tsum_logDeriv_expo_le (q := q) hq_lt_one
-    have hpow : (1 / 2 : ℝ) ^ 3 ≤ (1 - ‖q‖) ^ 3 := by
-      have : (1 / 2 : ℝ) ≤ 1 - ‖q‖ := by linarith
-      gcongr
-    have hdiv : ‖q‖ / (1 - ‖q‖) ^ 3 ≤ ‖q‖ / ((1 / 2 : ℝ) ^ 3) :=
-      div_le_div_of_nonneg_left (norm_nonneg _) (by positivity) hpow
-    have hdiv' : ‖q‖ / ((1 / 2 : ℝ) ^ 3) = 8 * ‖q‖ := by ring_nf
-    exact hS₁.trans (hdiv.trans_eq hdiv')
+  have hS_bound : ‖S‖ ≤ 8 * ‖q‖ := calc
+    ‖S‖ ≤ ‖q‖ / (1 - ‖q‖) ^ 3 := norm_tsum_logDeriv_expo_le hq_lt_one
+    _ ≤ ‖q‖ / ((1 / 2 : ℝ) ^ 3) := by
+        apply div_le_div_of_nonneg_left (norm_nonneg _) (by positivity)
+        gcongr; linarith
+    _ = 8 * ‖q‖ := by ring_nf
   have hE₂_sub_one : E₂ z - 1 = -24 * S := by
     calc
       E₂ z - 1 = (1 - 24 * S) - 1 := by simp [E₂_eq, hT_eq]
