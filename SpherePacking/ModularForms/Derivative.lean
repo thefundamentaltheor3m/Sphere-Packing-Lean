@@ -390,11 +390,9 @@ public lemma deriv_moebius (z : ℍ) :
     exact_mod_cast this
   rw [deriv_fun_div (differentiableAt_num γ z) (differentiableAt_denom γ z) hz,
       deriv_num, deriv_denom]
-  -- The numerator collapses to `ad - bc = 1` by the determinant condition.
   have hnum_eq :
       ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * denom γ z -
           num γ z * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) = 1 := by
-    -- expand `num/denom` and cancel the `z` terms
     simp [num, denom, mul_add, add_mul, mul_assoc, mul_left_comm, mul_comm, hdet]
   simp [hnum_eq, one_div]
 
