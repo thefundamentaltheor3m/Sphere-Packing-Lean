@@ -646,9 +646,10 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   -- Rewrite `P.density` with denominator `volCube`.
   have hden :
       (Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) : ℝ≥0∞) = volCube := by
-    rw [show Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) =
-      volCube.toNNReal from by simpa [volCube] using
-        PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) (L := L) hLpos]
+    have h : Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) =
+        volCube.toNNReal := by
+      simpa [volCube] using PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) (L := L) hLpos
+    rw [h]
     exact ENNReal.coe_toNNReal hvolCube_ne_top
   have hPdens' : P.density = (F.card : ℝ≥0∞) * volBall / volCube := by
     simpa [hden, volBall] using hPdens
