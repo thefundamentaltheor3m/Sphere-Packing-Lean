@@ -1,3 +1,4 @@
+set_option linter.privateModule false
 module
 
 import Mathlib.Analysis.CStarAlgebra.Classes

@@ -1020,7 +1020,8 @@ theorem D_tendsto_zero_of_isBoundedAtImInfty {f : ℍ → ℂ}
     _ = M / (π * z.im) := by ring
 
 
--- TODO: The following lemma from Gauss overlaps with `D_tendsto_zero_of_isBoundedAtImInfty` above. We will probably want to drop it.
+-- TODO: The following lemma from Gauss overlaps with
+-- `D_tendsto_zero_of_isBoundedAtImInfty` above. We will probably want to drop it.
 /-- The D-derivative tends to 0 at infinity for bounded holomorphic functions. -/
 public lemma D_isZeroAtImInfty_of_bounded {f : ℍ → ℂ}
     (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
