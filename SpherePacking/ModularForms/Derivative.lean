@@ -521,14 +521,13 @@ public lemma E₂_slash (γ : SL(2, ℤ)) :
   have hG : (G₂ ∣[(2 : ℤ)] γ) z = G₂ z - D₂ γ z := by
     simpa using congrFun (G₂_transform γ) z
   have hcoeff : (-(a) * (2 * π * I)) = (12 : ℂ) * (2 * π * I)⁻¹ := by
-    apply (mul_right_inj' two_pi_I_ne_zero).1
-    dsimp [a]
-    rw [riemannZeta_two]
-    ring_nf
+    -- Multiply both sides by 2πi; reduces to 4aπ² = 12 since a = 3/π²
     have hpi : (π : ℂ) ≠ 0 := by simp [Real.pi_ne_zero]
+    apply (mul_right_inj' two_pi_I_ne_zero).1
+    simp only [a, riemannZeta_two]
     field_simp [hpi]
     ring_nf
-    simp
+    simp [I_sq]
   have hcorr : a * (-D₂ γ z) = (12 : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) := by
     have hcoeff' : a * (-(2 * π * I)) = (12 : ℂ) * (2 * π * I)⁻¹ := by
       simpa [a, mul_assoc, mul_left_comm, mul_comm, neg_mul, mul_neg] using hcoeff
@@ -1018,27 +1017,14 @@ theorem D_tendsto_zero_of_isBoundedAtImInfty {f : ℍ → ℂ}
     _ = M / (π * z.im) := by ring
 
 
--- TODO: The following lemma from Gauss overlaps with `D_tendsto_zero_of_isBoundedAtImInfty` above. We will probably want to drop it.
+-- TODO: The following lemma from Gauss overlaps with
+-- `D_tendsto_zero_of_isBoundedAtImInfty` above. We will probably want to drop it.
 /-- The D-derivative tends to 0 at infinity for bounded holomorphic functions. -/
 public lemma D_isZeroAtImInfty_of_bounded {f : ℍ → ℂ}
     (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f)
     (hbdd : IsBoundedAtImInfty f) :
-    IsZeroAtImInfty (D f) := by
-  rw [UpperHalfPlane.isZeroAtImInfty_iff]
-  intro ε hε
-  rw [UpperHalfPlane.isBoundedAtImInfty_iff] at hbdd
-  obtain ⟨M, A, hMA⟩ := hbdd
-  refine ⟨max (2 * max A 0 + 1) (M / (Real.pi * ε)), fun z hz => ?_⟩
-  have hz' : 2 * max A 0 + 1 ≤ z.im := le_trans (le_max_left _ _) hz
-  have hz_im : M / (Real.pi * ε) ≤ z.im := le_trans (le_max_right _ _) hz
-  have hpiε : 0 < (Real.pi * ε) := mul_pos Real.pi_pos hε
-  have hpiIm : 0 < (Real.pi * z.im) := mul_pos Real.pi_pos z.im_pos
-  have hMle : M ≤ ε * (Real.pi * z.im) := by
-    have hMle' : M ≤ z.im * (Real.pi * ε) := (div_le_iff₀ hpiε).1 hz_im
-    simpa [mul_assoc, mul_left_comm, mul_comm] using hMle'
-  have hbound : M / (π * z.im) ≤ ε :=
-    (div_le_iff₀ hpiIm).2 (by simpa [mul_assoc, mul_left_comm, mul_comm] using hMle)
-  exact (norm_D_le_div_pi_im_of_bounded hf hMA hz').trans hbound
+    IsZeroAtImInfty (D f) :=
+  D_tendsto_zero_of_isBoundedAtImInfty hf hbdd
 
 /-- The Serre derivative of a bounded holomorphic function is bounded at infinity.
 
