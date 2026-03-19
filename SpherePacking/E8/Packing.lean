@@ -74,11 +74,16 @@ lemma span_E8Matrix_eq_E8Lattice :
     Submodule.span ℤ
       (Set.range fun i ↦ (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i)) =
       E8Lattice := by
-  rw [show Set.range (fun i ↦ (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i)) =
+  rw [show Set.range (fun i ↦
+          (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm
+            ((E8Matrix ℝ).row i)) =
         ((WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm :
-            (Fin 8 → ℝ) →ₗ[ℤ] EuclideanSpace ℝ (Fin 8)) '' Set.range (E8Matrix ℝ).row by
+            (Fin 8 → ℝ) →ₗ[ℤ] EuclideanSpace ℝ (Fin 8)) ''
+          Set.range (E8Matrix ℝ).row by
       simpa [Function.comp] using
-        Set.range_comp (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm (E8Matrix ℝ).row,
+        Set.range_comp
+          (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm
+          (E8Matrix ℝ).row,
     ← Submodule.map_span, span_E8Matrix ℝ]
   simp [E8Lattice]
 
@@ -88,10 +93,13 @@ public instance instIsZLatticeE8Lattice : IsZLattice ℝ E8Lattice where
 
 noncomputable def E8_ℤBasis : Basis (Fin 8) ℤ E8Lattice := by
   refine Basis.mk
-      (v := fun i ↦ ⟨(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm ((E8Matrix ℝ).row i), ?_⟩) ?_ ?_
+      (v := fun i ↦
+        ⟨(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm
+          ((E8Matrix ℝ).row i), ?_⟩) ?_ ?_
   · exact Submodule.mem_map_of_mem (E8Matrix_row_mem_E8 i)
   · refine LinearIndependent.of_comp (Submodule.subtype _) ?_
-    refine LinearIndependent.of_comp (M' := (Fin 8 → ℝ)) (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)) ?_
+    refine LinearIndependent.of_comp (M' := (Fin 8 → ℝ))
+      (WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)) ?_
     exact (linearIndependent_E8Matrix ℝ).restrict_scalars' ℤ
   · rw [← Submodule.map_le_map_iff_of_injective (f := E8Lattice.subtype) (by simp)]
     simp only [Submodule.map_top, Submodule.range_subtype]
@@ -154,13 +162,15 @@ lemma ZSpan.volume_fundamentalDomain' {ι : Type*} [Fintype ι] [DecidableEq ι]
   volume_fundamentalDomain b
 
 public lemma E8Basis_volume : volume (fundamentalDomain (E8Basis ℝ)) = 1 := by
-  simp [ZSpan.volume_fundamentalDomain' (b := E8Basis ℝ), of_basis_eq_matrix, E8Matrix_myDet_eq_one]
+  simp [ZSpan.volume_fundamentalDomain' (b := E8Basis ℝ),
+    of_basis_eq_matrix, E8Matrix_myDet_eq_one]
 
 end Determinant
 
 open MeasureTheory ZSpan in
 lemma same_domain :
-    (WithLp.linearEquiv 2 ℝ _).symm ⁻¹' fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) =
+    (WithLp.linearEquiv 2 ℝ _).symm ⁻¹'
+      fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice) =
       fundamentalDomain (E8Basis ℝ) := by
   rw [← LinearEquiv.image_eq_preimage_symm, ZSpan.map_fundamentalDomain]
   congr! 1
@@ -170,7 +180,8 @@ lemma same_domain :
 open MeasureTheory ZSpan in
 lemma E8_Basis_volume :
     volume (fundamentalDomain (E8_ℤBasis.ofZLatticeBasis ℝ E8Lattice)) = 1 := by
-  rw [← (EuclideanSpace.volume_preserving_symm_measurableEquiv_toLp _).symm.measure_preimage_equiv]
+  rw [← (EuclideanSpace.volume_preserving_symm_measurableEquiv_toLp
+    _).symm.measure_preimage_equiv]
   erw [same_domain]
   rw [E8Basis_volume]
 

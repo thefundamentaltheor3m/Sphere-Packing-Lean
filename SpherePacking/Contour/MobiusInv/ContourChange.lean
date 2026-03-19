@@ -200,6 +200,8 @@ public lemma curveIntegral_segment_pos_inv
     funext z
     ext
     simp [scalarOneForm_apply, mul_neg]
-  simp_all
+  rw [hneg, show (fun z => scalarOneForm (fun z => -Ψ₁' r z) z) =
+    fun z => -scalarOneForm (Ψ₁' r) z from hω]
+  simp [neg_neg]
 
 end SpherePacking.MobiusInv

@@ -79,7 +79,7 @@ theorem split_scientific (m exp : ℕ) (x : Bool) :
 /-- Transport an equality `z = ⟨a, b⟩` along equalities `a = a'` and `b = b'`. -/
 theorem eq_eq {z : ℂ} {a b a' b' : ℝ} (pf : z = ⟨a, b⟩)
   (pf_a : a = a') (pf_b : b = b') :
-  z = ⟨a', b'⟩ := by simp_all
+  z = ⟨a', b'⟩ := by subst pf_a; subst pf_b; exact pf
 
 /-- Combine componentwise equalities to conclude equality of two complex numbers. -/
 theorem eq_of_eq_of_eq_of_eq {z w : ℂ} {az bz aw bw : ℝ} (hz : z = ⟨az, bz⟩) (hw : w = ⟨aw, bw⟩)

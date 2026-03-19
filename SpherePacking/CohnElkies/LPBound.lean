@@ -58,7 +58,9 @@ variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥
 -- We (locally) denote the Complex Conjugate of some `z : ℂ` by `conj z`
 local notation "conj" => starRingEnd ℂ
 
-local notation "FT" => FourierTransform.fourierCLE ℝ (SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
+local notation "FT" =>
+  FourierTransform.fourierCLE ℝ
+    (SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
 
 section Complex_Function_Helpers
 

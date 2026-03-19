@@ -71,7 +71,8 @@ public theorem fourier_scaledMagic_zero : FT scaledMagic 0 = (1 / 16 : ℂ) := b
       SchwartzMap.compCLMOfContinuousLinearEquiv_apply] using
       (SpherePacking.ForMathlib.Fourier.fourier_comp_linearEquiv
         (A := A) (f := (g : ℝ⁸ → ℂ)) (w := (0 : ℝ⁸)))
-  simp_all
+  rw [hscaled, hg0, hdet]
+  simp
 
 /-- Convenience form of `fourier_scaledMagic_zero` for the coerced function `⇑scaledMagic`. -/
 public theorem fourier_scaledMagic_zero_fun : 𝓕 (⇑scaledMagic) 0 = (1 / 16 : ℂ) := by

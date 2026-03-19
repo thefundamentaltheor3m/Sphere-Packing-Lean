@@ -13,17 +13,20 @@ public import SpherePacking.Basic.PeriodicPacking.BoundaryControl
 /-!
 # Basic properties of the E₈ lattice
 
-We define the E₈ lattice in two ways, as the ℤ-span of a chosen basis (`E8Matrix`), and as the set
+We define the E₈ lattice in two ways, as the ℤ-span of a chosen basis (`E8Matrix`),
+and as the set
 of vectors in ℝ^8 with sum of coordinates an even integer and coordinates either all integers or
 half-integers (`E8_Set`). We prove these two definitions are equivalent, and prove various
 properties about the E₈ lattice.
 
-See also earlier work which inspired this one, by Gareth Ma: https://github.com/thefundamentaltheor3m/Sphere-Packing-Lean/blob/42c839d1002f5bcc1f8d2eb73190d97cd9c52852/SpherePacking/Basic/E8.lean
+See also earlier work which inspired this one, by Gareth Ma:
+https://github.com/thefundamentaltheor3m/Sphere-Packing-Lean/
 
 ## Main declarations
 
 * `Submodule.E8`: The E₈ lattice as a submodule of `Fin 8 → R` for a field `R` in which `2` is
-  nonzero. We define it to be the set of vectors in `Fin 8 → R` such that the sum of coordinates is
+  nonzero. We define it to be the set of vectors in `Fin 8 → R` such that the sum of
+  coordinates is
   even, and either all coordinates are integers, or all coordinates are half of an odd integer.
 * `Submodule.E8_eq_sup`: The E₈ lattice can be seen as the smallest submodule containing both:
   the even lattice (the lattice of all integer points whose sum of coordinates is even); and the
@@ -31,11 +34,14 @@ See also earlier work which inspired this one, by Gareth Ma: https://github.com/
 * `E8Matrix`: An explicit matrix whose rows form a basis for the E₈ lattice over ℤ.
 * `E8Matrix_unimodular`: A proof that `E8Matrix` has determinant 1.
 * `span_E8Matrix_eq_top`: The `ℝ`-span of `E8Matrix` is the whole of `ℝ⁸`.
-* `span_E8Matrix`: The `ℤ`-span of `E8Matrix` is the E₈ lattice. This is the third characterisation
+* `span_E8Matrix`: The `ℤ`-span of `E8Matrix` is the E₈ lattice. This is the third
+  characterisation
   of the E₈ lattice given in this file.
-* `E8_integral`: The E₈ lattice is integral, i.e., the dot product of any two vectors in E₈ is an
+* `E8_integral`: The E₈ lattice is integral, i.e., the dot product of any two vectors
+  in E₈ is an
   integer.
-* `E8_integral_self`: The E₈ lattice is even, i.e., the norm-squared of any vector in E₈ is an even
+* `E8_integral_self`: The E₈ lattice is even, i.e., the norm-squared of any vector in
+  E₈ is an even
   integer.
 * `E8Lattice`: The E₈ lattice as a submodule of eight-dimensional Euclidean space. This additional
   definition is valuable, since it now puts the correct metric space structure on the lattice.
@@ -53,7 +59,8 @@ lemma AddCommGroup.ModEq.zsmul' {α : Type*} [AddCommGroup α] {p a b : α} {n :
 
 /-- The coefficientwise cast map `(ι → ℤ) → (ι → R)` as a `ℤ`-linear map. -/
 @[expose, simps]
-public def LinearMap.intCast {ι : Type*} (R : Type*) [Ring R] : (ι → ℤ) →ₗ[ℤ] (ι → R) where
+public def LinearMap.intCast {ι : Type*} (R : Type*) [Ring R] :
+    (ι → ℤ) →ₗ[ℤ] (ι → R) where
   toFun f := fun i ↦ Int.cast (f i)
   map_add' f g := by ext i; simp
   map_smul' c f := by ext i; simp
@@ -104,7 +111,9 @@ public lemma Submodule.mem_evenLattice {R : Type*} [Ring R] [CharZero R] (n : �
 public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
     Submodule ℤ (Fin 8 → R) where
   carrier :=
-    {v | ((∀ i, ∃ n : ℤ, n = v i) ∨ (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 • v i)) ∧ ∑ i, v i ≡ 0 [PMOD 2]}
+    {v | ((∀ i, ∃ n : ℤ, n = v i) ∨
+            (∀ i, ∃ n : ℤ, Odd n ∧ n = 2 • v i)) ∧
+          ∑ i, v i ≡ 0 [PMOD 2]}
   add_mem' := by
     simp only [Set.mem_setOf_eq, and_imp, nsmul_eq_mul, Nat.cast_ofNat, Pi.add_apply]
     rintro a b ha has hb hbs
@@ -344,7 +353,8 @@ lemma exists_cast_eq_vecMul_E8Inverse_aux {R : Type*} [Field R] [CharZero R]
     refine ⟨∑ i, v' i * w i, ?_⟩
     have hwR : (∑ i, (w i : R)) = 0 := by
       simpa [Int.cast_sum] using congrArg (fun z : ℤ => (z : R)) hw
-    simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum, Int.cast_sum, Int.cast_mul, hwR]
+    simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum,
+      Int.cast_sum, Int.cast_mul, hwR]
 
 lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (hv : v ∈ Submodule.E8 R) :
