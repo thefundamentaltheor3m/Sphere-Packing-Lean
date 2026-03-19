@@ -1,6 +1,7 @@
 module
 
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.Tactic.TendstoCont
 
 public import SpherePacking.ModularForms.Derivative
 public import SpherePacking.ModularForms.DimensionFormulas
@@ -902,10 +903,9 @@ theorem G_vanishing_order :
   simp_rw [h_eq]
   have h_poly : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
       atImInfty (nhds 5) := by
-    have hpair := H₂_tendsto_atImInfty.prodMk_nhds H₄_tendsto_atImInfty
-    have hcont : Continuous (fun p : ℂ × ℂ => 2 * p.1 ^ 2 + 5 * p.1 * p.2 + 5 * p.2 ^ 2) := by
-      fun_prop
-    simpa using hcont.continuousAt.tendsto.comp hpair
+    have := H₂_tendsto_atImInfty
+    have := H₄_tendsto_atImInfty
+    tendsto_cont
   convert (H₂_div_exp_tendsto.pow 3).mul h_poly
   norm_num
 
@@ -971,10 +971,10 @@ private theorem D_B_tendsto_zero :
     Filter.Tendsto (D ((2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2))
       atImInfty (nhds 0) := by
   apply D_tendsto_zero_of_isBoundedAtImInfty (by fun_prop)
-  have h := ((H₂_tendsto_atImInfty.pow 2).const_mul 2).add
-    (((H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty).const_mul 5).add
-      ((H₄_tendsto_atImInfty.pow 2).const_mul 5))
-  simp only [zero_pow two_ne_zero, one_pow, mul_zero, mul_one, zero_add] at h
+  have := H₂_tendsto_atImInfty
+  have := H₄_tendsto_atImInfty
+  have h : Tendsto (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
+      atImInfty (nhds 5) := by tendsto_cont
   exact (h.congr' (by filter_upwards with z; simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply,
     Pi.smul_apply, smul_eq_mul]; ring)).isBigO_one ℝ
 
@@ -998,15 +998,10 @@ theorem D_G_div_G_tendsto :
     filter_upwards [H₂_eventually_ne_zero] with z hz
     exact (h_DA_A z hz).symm
   have h_B_tendsto : Filter.Tendsto B atImInfty (nhds 5) := by
-    have h := ((H₂_tendsto_atImInfty.pow 2).const_mul 2).add
-      (((H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty).const_mul 5).add
-        ((H₄_tendsto_atImInfty.pow 2).const_mul 5))
-    simp only [zero_pow two_ne_zero, one_pow, mul_zero, mul_one, zero_add] at h
-    refine h.congr' ?_
-    filter_upwards with z
-    change _ = ((2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2) z
-    simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
-    ring
+    have := H₂_tendsto_atImInfty
+    have := H₄_tendsto_atImInfty
+    change Tendsto (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) atImInfty (nhds 5)
+    tendsto_cont
   have h_DB_B_tendsto : Filter.Tendsto (fun z => D B z / B z) atImInfty (nhds 0) := by
     have h := D_B_tendsto_zero.div h_B_tendsto (by norm_num : (5 : ℂ) ≠ 0)
     simp only [zero_div] at h; exact h
