@@ -1291,7 +1291,7 @@ lemma F₁_isBigO_exp_atImInfty :
 /-- s² * FReal s → 0 as s → ∞. -/
 lemma rpow_sq_mul_FReal_resToImagAxis_tendsto_zero :
     Tendsto (fun t : ℝ ↦ (t : ℂ) ^ (2 : ℂ) * F.resToImagAxis t) atTop (nhds 0) := by
-  -- F = F₁², so F = O(exp(-4π*y)) (double the decay rate)
+  -- F = F₁², so F = O(exp(-4π*y))
   have hF_bigO : F =O[atImInfty] fun τ ↦ Real.exp (-(4 * π) * τ.im) := by
     calc F = F₁ ^ 2 := rfl
       _ =O[atImInfty] fun τ ↦ (Real.exp (-(2 * π) * τ.im)) ^ 2 := F₁_isBigO_exp_atImInfty.pow 2
@@ -1317,7 +1317,22 @@ lemma numerator_tendsto_at_infty :
         s ^ 2 * FReal s - 12 * π ^ (-1 : ℤ) * (s * ((F₁ * E₄.toFun).resToImagAxis s).re)
         + 36 * π ^ (-2 : ℤ) * (E₄.toFun.resToImagAxis s).re ^ 2)
       atTop (nhds (36 * π ^ (-2 : ℤ))) := by
-  sorry
+  have hF : Tendsto (fun s ↦ s ^ 2 * FReal s) atTop (nhds 0) := by
+    refine ((continuous_re.tendsto 0).comp rpow_sq_mul_FReal_resToImagAxis_tendsto_zero).congr' ?_
+    filter_upwards [eventually_gt_atTop 0] with s hs
+    unfold FReal
+    simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte]
+    have h_cpow : (s : ℂ) ^ (2 : ℂ) = ((s ^ 2 : ℝ) : ℂ) := by norm_cast
+    simp only [Complex.mul_re, h_cpow, Complex.ofReal_re, Complex.ofReal_im]
+    ring
+  have hF₁E₄ : Tendsto (fun s ↦ s * ((F₁ * E₄.toFun).resToImagAxis s).re) atTop (nhds 0) := by
+    refine ((continuous_re.tendsto 0).comp rpow_mul_F₁E₄_resToImagAxis_tendsto_zero).congr' ?_
+    filter_upwards [eventually_gt_atTop 0] with s hs
+    simp only [Function.comp_apply, Function.resToImagAxis, ResToImagAxis, hs, ↓reduceDIte,
+      Complex.cpow_one, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
+    ring
+  have hE₄ := E₄_resToImagAxis_tendsto_one
+  tendsto_cont
 
 /-- The denominator expression D(s) = H₄(is)³ * (2*H₄(is)² + 5*H₂(is)*H₄(is) + 5*H₂(is)²)
 tends to 2 as s → ∞. -/
