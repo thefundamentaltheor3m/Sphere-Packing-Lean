@@ -966,17 +966,11 @@ lemma E₂_isZeroAtImInfty_sub_one : IsZeroAtImInfty (fun z : ℍ => E₂ z - 1)
         gcongr; linarith
     _ = 8 * ‖q‖ := by ring_nf
   have hE₂_sub_one : E₂ z - 1 = -24 * S := by
-    calc
-      E₂ z - 1 = (1 - 24 * S) - 1 := by simp [E₂_eq, hT_eq]
-      _ = -24 * S := by ring
-  -- take norms and bound
-  calc
-    ‖E₂ z - 1‖ = ‖-24 * S‖ := by simp [hE₂_sub_one]
-    _ = 24 * ‖S‖ := by simp
+    have := E₂_eq z; rw [hT_eq] at this; rw [this]; ring
+  calc ‖E₂ z - 1‖ = 24 * ‖S‖ := by simp [hE₂_sub_one]
     _ ≤ 24 * (8 * ‖q‖) := by gcongr
     _ ≤ 24 * (8 * (ε / 192)) := by gcongr
-    _ = ε := by
-        nlinarith
+    _ = ε := by nlinarith
 
 /-- `E₂ z` tends to `1` as `Im z → ∞`. -/
 public theorem tendsto_E₂_atImInfty : Tendsto E₂ atImInfty (𝓝 (1 : ℂ)) := by
