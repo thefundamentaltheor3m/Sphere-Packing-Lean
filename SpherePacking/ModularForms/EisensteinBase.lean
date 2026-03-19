@@ -127,17 +127,14 @@ theorem cuspfunc_lim_coef {k : ℤ} {F : Type u_1} [inst : FunLike F ℍ ℂ] (n
   [inst_1 : ModularFormClass F Γ(n) k] [inst_2 : NeZero n] (hf : ∀ (τ : ℍ), HasSum (fun m ↦ c m • 𝕢
     ↑n ↑τ ^ m) (f τ))
   (q : ℂ) (hq : ‖q‖ < 1) (hq1 : q ≠ 0) : HasSum (fun m ↦ c m • q ^ m) (cuspFunction n f q) := by
-  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast (NeZero.ne n)
-  have hq2 :=
-    Function.Periodic.im_invQParam_pos_of_norm_lt_one (h := n)
-      (Nat.cast_pos.2 (NeZero.pos n)) hq hq1
-  set τ : ℍ := ⟨Periodic.invQParam (↑n) q, hq2⟩
+  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast NeZero.ne n
+  set τ : ℍ := ⟨Periodic.invQParam n q,
+    Function.Periodic.im_invQParam_pos_of_norm_lt_one (Nat.cast_pos.2 (NeZero.pos n)) hq hq1⟩
   have hqτ : 𝕢 (n : ℝ) (τ : ℂ) = q := by
-    simpa [τ] using Function.Periodic.qParam_right_inv (h := (n : ℝ)) hn0 (q := q) hq1
+    simpa [τ] using Function.Periodic.qParam_right_inv hn0 hq1
   have hcusp : cuspFunction n f q = f τ := by
-    simpa [hqτ] using eq_cuspFunction (h := n) f τ (by simp) hn0
-  have hft : HasSum (fun m ↦ c m • q ^ m) (f τ) := by simpa [hqτ] using hf τ
-  simpa [hcusp] using hft
+    simpa [hqτ] using eq_cuspFunction f τ (by simp) hn0
+  simpa [hqτ, hcusp] using hf τ
 
 theorem summable_zero_pow {G} [NormedField G] (f : ℕ → G) : Summable (fun m ↦ f m * 0 ^ m) := by
   refine summable_of_finite_support ((Set.finite_singleton (0 : ℕ)).subset ?_)
@@ -212,14 +209,12 @@ lemma modfom_q_exp_cuspfunc (c : ℕ → ℂ) (f : F) [ModularFormClass F Γ(n) 
 lemma qParam_surj_onto_ball (r : ℝ) (hr : 0 < r) (hr2 : r < 1) [NeZero n] : ∃ (z : ℍ), ‖𝕢 n z‖ = r
     := by
   have hn_pos : (0 : ℝ) < n := Nat.cast_pos.2 (NeZero.pos n)
-  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast (NeZero.ne n)
-  have hr0 : (r : ℂ) ≠ 0 := by exact_mod_cast (ne_of_gt hr)
+  have hr0 : (r : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
   have hnorm : ‖(r : ℂ)‖ < 1 := by simpa [Real.norm_of_nonneg hr.le] using hr2
-  refine ⟨⟨Periodic.invQParam n r, ?_⟩, ?_⟩
-  · simpa using Function.Periodic.im_invQParam_pos_of_norm_lt_one (h := (n : ℝ)) hn_pos hnorm hr0
-  have hq : 𝕢 (n : ℝ) (Periodic.invQParam n r) = (r : ℂ) :=
-    Function.Periodic.qParam_right_inv (h := (n : ℝ)) hn0 (q := (r : ℂ)) hr0
-  simpa [Real.norm_of_nonneg hr.le] using congrArg norm hq
+  refine ⟨⟨Periodic.invQParam n r, by simpa using
+    Function.Periodic.im_invQParam_pos_of_norm_lt_one hn_pos hnorm hr0⟩, ?_⟩
+  simpa [Real.norm_of_nonneg hr.le] using
+    congrArg norm (Function.Periodic.qParam_right_inv hn_pos.ne' hr0)
 
 
 lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
@@ -799,12 +794,11 @@ public theorem E₂_imag_axis_real : ResToImagAxis.Real E₂ := by
     intro n
     have hexp_arg : 2 * ↑Real.pi * Complex.I * n * z = (-(2 * Real.pi * (n : ℝ) * t) : ℝ) := by
       simpa [mul_assoc, mul_left_comm, mul_comm, z] using exp_imag_axis_arg (t := t) ht n
-    -- Using simp only: `simp` gives false positive linter warning but args are needed
-    have hone_sub_real : (1 - cexp (2 * ↑Real.pi * Complex.I * ↑↑n * ↑z)).im = 0 := by
+    have h1 : (1 - cexp (2 * ↑Real.pi * Complex.I * ↑↑n * ↑z)).im = 0 := by
       simp only [Complex.sub_im, Complex.one_im, hexp_arg, exp_ofReal_im, sub_zero]
-    have hnum_real : (↑n * cexp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
+    have h2 : (↑n * cexp (2 * ↑Real.pi * Complex.I * n * z)).im = 0 := by
       simp only [mul_im, natCast_im, hexp_arg, exp_ofReal_im, mul_zero, zero_mul, add_zero]
-    simp [Complex.div_im, hnum_real, hone_sub_real]
+    simp [Complex.div_im, h2, h1]
   -- Step 2: Summability of the series
   have hsum : Summable fun n : ℕ+ => ↑n * cexp (2 * ↑Real.pi * Complex.I * n * z) /
       (1 - cexp (2 * ↑Real.pi * Complex.I * n * z)) := by
