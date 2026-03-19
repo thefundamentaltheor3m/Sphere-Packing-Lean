@@ -147,8 +147,8 @@ private lemma tendsto_tsum_mul_pow_nhdsWithin_ne_zero_half (c : ℕ → ℂ)
     Tendsto (fun q : ℂ ↦ ∑' m : ℕ, c m * q ^ m) (𝓝[≠] (0 : ℂ)) (𝓝 (c 0)) := by
   -- As `q → 0` (with `q ≠ 0`), the power series tends to its constant term.
   have hq : {q : ℂ | ‖q‖ < (1 / 2 : ℝ)} ∈ (𝓝[≠] (0 : ℂ)) := by
-    exact mem_nhdsWithin_of_mem_nhds
-      (by simpa [Metric.ball, dist_eq_norm] using Metric.ball_mem_nhds (0 : ℂ) (by norm_num))
+    refine mem_nhdsWithin_of_mem_nhds ?_
+    simpa [Metric.ball, dist_eq_norm] using Metric.ball_mem_nhds (0 : ℂ) (by norm_num)
   simpa [tsum_zero_pow] using
     (tendsto_tsum_of_dominated_convergence (𝓕 := (𝓝[≠] (0 : ℂ)))
       (f := fun q : ℂ ↦ fun m : ℕ ↦ c m * q ^ m)
@@ -870,11 +870,7 @@ lemma E₂_isZeroAtImInfty_sub_one : IsZeroAtImInfty (fun z : ℍ ↦ E₂ z - 1
         apply div_le_div_of_nonneg_left (norm_nonneg _) (by positivity)
         gcongr; linarith
     _ = 8 * ‖q‖ := by ring_nf
-  have hE₂_sub_one : E₂ z - 1 = -24 * S := by
-    have := E₂_eq z
-    rw [hT_eq] at this
-    rw [this]
-    ring
+  have hE₂_sub_one : E₂ z - 1 = -24 * S := by grind [E₂_eq z]
   calc ‖E₂ z - 1‖ = 24 * ‖S‖ := by simp [hE₂_sub_one]
     _ ≤ 24 * (8 * ‖q‖) := by gcongr
     _ ≤ 24 * (8 * (ε / 192)) := by gcongr; exact hqδ.trans (min_le_right _ _)
