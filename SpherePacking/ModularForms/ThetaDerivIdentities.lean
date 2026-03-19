@@ -478,7 +478,7 @@ lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
 
 /-- theta_g tends to 0 at infinity.
 theta_g = (2H₂ + H₄)f₂ + (H₂ + 2H₄)f₄.
-Using pair-of-pairs: (H₂, H₄) → (0, 1) and (f₂, f₄) → (0, 0), so theta_g → 0. -/
+Since 2H₂ + H₄ → 1, H₂ + 2H₄ → 2, and f₂, f₄ → 0, we get theta_g → 0. -/
 lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
   have := H₂_tendsto_atImInfty
   have := H₄_tendsto_atImInfty
