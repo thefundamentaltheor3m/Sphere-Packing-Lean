@@ -503,8 +503,7 @@ public lemma E₂_slash (γ : SL(2, ℤ)) :
     apply (mul_right_inj' two_pi_I_ne_zero).1
     simp only [a, riemannZeta_two]
     field_simp [hpi]
-    ring_nf
-    simp [I_sq]
+    norm_num [I_sq]
   have hcorr : a * (-D₂ γ z) = (12 : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) := by
     have hcoeff' : a * (-(2 * π * I)) = (12 : ℂ) * (2 * π * I)⁻¹ := by
       simpa [a, mul_assoc, mul_left_comm, mul_comm, neg_mul, mul_neg] using hcoeff
@@ -775,19 +774,9 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
             (D F).resToImagAxis t -
               (((k : ℂ) * 12⁻¹) : ℂ) * (E₂.resToImagAxis t * F.resToImagAxis t) := by
         simp [serre_D, Function.resToImagAxis, ResToImagAxis, ht, mul_assoc]
-      have h' := congrArg Complex.re hRes
-      have houter :
-          (((((k : ℂ) * 12⁻¹) : ℂ) * (E₂.resToImagAxis t * F.resToImagAxis t))).re =
-            a * (E₂.resToImagAxis t * F.resToImagAxis t).re := by
-        rw [Complex.mul_re]
-        simp [a, hk_im]
-      have hE₂im0 : (ResToImagAxis E₂ t).im = 0 := by
-        simpa [Function.resToImagAxis_apply] using hE₂im
-      have hFim0 : (ResToImagAxis F t).im = 0 := by
-        simpa [Function.resToImagAxis_apply] using hFim
-      simpa [a, g, Complex.sub_re, houter,
-        mul_re_of_im_eq_zero (x := ResToImagAxis E₂ t) (y := ResToImagAxis F t) hE₂im0 hFim0,
-        mul_assoc] using h'
+      simpa [a, g, Complex.sub_re, Complex.mul_re, hk_im,
+        mul_re_of_im_eq_zero (x := ResToImagAxis E₂ t) (y := ResToImagAxis F t) hE₂im hFim,
+        mul_assoc] using congrArg Complex.re hRes
     -- Rewrite `deriv h t` as `(-2π) * (d t)^(-a) * ((serre_D k F)(it)).re`.
     have hderiv :
         deriv h t = (-2 * π) * (d t) ^ (-a) * ((serre_D k F).resToImagAxis t).re := by
