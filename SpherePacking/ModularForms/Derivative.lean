@@ -531,10 +531,10 @@ public theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff
       (D F ∣[k + 2] γ) z - c * ((E₂ z + corr z) * (F ∣[k] γ) z) := by
     simp [hserre, sub_eq_add_neg, SlashAction.neg_slash, Pi.smul_apply, smul_eq_mul,
       hmul, Pi.mul_apply, hE]
-  have hD' : D (F ∣[k] γ) z = (D F ∣[k + 2] γ) z -
-      (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z := by
-    simpa [Pi.sub_apply] using hD
-  simp only [hLHS, serre_D_apply, hD', c, corr]
+  simp only [hLHS, serre_D_apply, c, corr,
+    show D (F ∣[k] γ) z = (D F ∣[k + 2] γ) z -
+      (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z from by
+      simpa [Pi.sub_apply] using hD]
   ring
 
 public theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) (γ : SL(2, ℤ))
@@ -966,11 +966,10 @@ private lemma tendsto_serre_D_of_bounded_tendsto_one {f : ℍ → ℂ} (k : ℂ)
      Tendsto (fun z : ℍ => serre_D k f z) atImInfty (𝓝 (-(k * 12⁻¹))) := by
   have hD : Tendsto (fun z : ℍ => D f z) atImInfty (𝓝 (0 : ℂ)) :=
     D_isZeroAtImInfty_of_bounded hf hbdd
-  have hconst : Tendsto (fun _ : ℍ => k * 12⁻¹) atImInfty (𝓝 (k * 12⁻¹)) :=
-    tendsto_const_nhds
   have hterm :
       Tendsto (fun z : ℍ => k * 12⁻¹ * E₂ z * f z) atImInfty (𝓝 (k * 12⁻¹)) := by
-    simpa [mul_assoc, mul_one, one_mul] using (hconst.mul tendsto_E₂_atImInfty).mul h1
+    simpa [mul_assoc, mul_one, one_mul] using
+      ((tendsto_const_nhds (x := k * 12⁻¹)).mul tendsto_E₂_atImInfty).mul h1
   simpa [serre_D, mul_assoc] using (hD.sub hterm)
 
 private lemma tendsto_E₄_atImInfty : Tendsto (fun z : ℍ => E₄ z) atImInfty (𝓝 (1 : ℂ)) := by
@@ -999,12 +998,8 @@ lemma eq_zero_of_tendsto_zero_atImInfty {k : ℤ} (hk : k < 12) (G : ModularForm
     (hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ))) : G = 0 := by
   refine IsCuspForm_weight_lt_eq_zero k hk G <|
     (IsCuspForm_iff_coeffZero_eq_zero k G).2 ?_
-  have hGval : UpperHalfPlane.valueAtInfty (G : ℍ → ℂ) = 0 :=
-    UpperHalfPlane.IsZeroAtImInfty.valueAtInfty_eq_zero (f := (G : ℍ → ℂ)) hGlim
-  have hq :
-      (qExpansion (1 : ℝ) G).coeff 0 = UpperHalfPlane.valueAtInfty (G : ℍ → ℂ) :=
-    qExpansion_coeff_zero (f := G) (h := (1 : ℝ)) (by positivity) (by simp)
-  simp [hq, hGval]
+  simp [qExpansion_coeff_zero (f := G) (h := (1 : ℝ)) (by positivity) (by simp),
+    UpperHalfPlane.IsZeroAtImInfty.valueAtInfty_eq_zero (f := (G : ℍ → ℂ)) hGlim]
 
 /--
 Serre derivative of Eisenstein series. We compare constant terms via the limit at infinity,
