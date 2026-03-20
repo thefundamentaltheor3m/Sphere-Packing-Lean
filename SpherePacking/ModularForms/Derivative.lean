@@ -579,9 +579,7 @@ public theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ}
   rw [(hF'.scomp t hg).deriv]
   have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by simp only [D]; field_simp
   simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z, smul_eq_mul]
-  ring_nf
-  simp only [I_sq]
-  ring
+  linear_combination I_sq * (π * D F z * 2)
 
 /-- The derivative of a function with zero imaginary part also has zero imaginary part. -/
 lemma im_deriv_eq_zero_of_im_eq_zero {f : ℝ → ℂ} {t : ℝ}
