@@ -216,25 +216,22 @@ public theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
     refine Set.Finite.subset (Set.finite_singleton 0) fun n hn => ?_
     simp only [Set.mem_setOf_eq, not_le] at hn
     by_contra h_ne
-    have h_deriv_bound := hu_bound n ⟨y, Set.mem_singleton y⟩
+    apply hn.not_ge
+    have hbd := hu_bound n ⟨y, Set.mem_singleton y⟩
+    have hn_pos : (0 : ℝ) < n := Nat.cast_pos.mpr (Nat.pos_of_ne_zero h_ne)
+    have h_pos : (0 : ℝ) < 2 * π * n := by positivity
+    have h_key : ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) ≤ u n := by
+      calc ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n)
+          = ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ := by
+            simp only [norm_mul, Complex.norm_ofNat, Complex.norm_real,
+              Complex.norm_I, mul_one, Complex.norm_natCast, Real.norm_of_nonneg pi_pos.le]; ring
+        _ ≤ u n := hbd
     have h_n_ge_1 : (1 : ℝ) ≤ n := Nat.one_le_cast.mpr (Nat.one_le_iff_ne_zero.mpr h_ne)
-    have h_norm_2pin : ‖(2 : ℂ) * π * I * n‖ = 2 * π * n := by
-      rw [norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real,
-          Complex.norm_I, mul_one, Complex.norm_natCast, Real.norm_of_nonneg pi_pos.le]
-    have h_bound : ‖a n * cexp (2 * π * I * n * y)‖ ≤ u n / (2 * π) := by
-      have h_pos : (0 : ℝ) < 2 * π * n := by positivity
-      have h_key : ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) =
-          ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ := by
-        simp only [norm_mul, h_norm_2pin]; ring
-      calc ‖a n * cexp (2 * π * I * n * y)‖
-          = ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n) / (2 * π * n) := by field_simp
-        _ = ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ / (2 * π * n) := by
-            rw [h_key]
-        _ ≤ u n / (2 * π * n) := div_le_div_of_nonneg_right h_deriv_bound h_pos.le
-        _ ≤ u n / (2 * π) := by
-            apply div_le_div_of_nonneg_left (le_trans (norm_nonneg _) h_deriv_bound)
-              (by positivity); nlinarith
-    exact hn.not_ge h_bound
+    calc ‖a n * cexp (2 * π * I * n * y)‖
+        ≤ u n / (2 * π * n) := by rwa [le_div_iff₀ h_pos]
+      _ ≤ u n / (2 * π) := by
+          exact div_le_div_of_nonneg_left ((norm_nonneg _).trans hbd)
+            (by positivity) (by nlinarith)
   -- Derivative bound for uniform convergence
   have hu : ∀ K ⊆ {w : ℂ | 0 < w.im}, IsCompact K →
       ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K),
