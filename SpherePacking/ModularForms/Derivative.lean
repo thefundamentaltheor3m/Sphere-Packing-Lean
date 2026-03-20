@@ -662,8 +662,7 @@ theorem antiDerPos {F : ℍ → ℂ} (hFderiv : MDiff F)
       simpa [g] using hasDerivAt_re_resToImagAxis F hFderiv t ht
   have hn : ∀ t ∈ Set.Ioi (0 : ℝ), deriv g t < 0 := fun t (ht : 0 < t) => by
     rw [(hg t ht).deriv]
-    have ht' : 0 < (ResToImagAxis (D F) t).re := hDF_pos t ht
-    nlinarith [Real.pi_pos, ht']
+    nlinarith [Real.pi_pos, show 0 < (ResToImagAxis (D F) t).re from hDF_pos t ht]
   have hAnti : StrictAntiOn g (Set.Ioi (0 : ℝ)) :=
     strictAntiOn_Ioi_zero_of_deriv_neg (fun x hx => (hg x hx).continuousAt.continuousWithinAt) hn
   exact ⟨hF_real, fun t ht => StrictAntiOn.eventuallyPos_Ioi hAnti ht₀_pos hF_pos t ht⟩
