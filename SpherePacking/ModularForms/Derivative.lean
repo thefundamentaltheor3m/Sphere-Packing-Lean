@@ -1145,50 +1145,30 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
       holo' := serre_D_differentiable (k := (1 : ℂ)) E₂_holo'
       bdd_at_cusps' := by
         intro c hc
-        -- Bounded at infinity: both terms in `serre_D` are bounded.
         have hbdd : IsBoundedAtImInfty (serre_D 1 E₂) :=
           serre_D_isBoundedAtImInfty (k := (1 : ℂ)) E₂_holo' E₂_isBoundedAtImInfty
-        refine bounded_at_cusps_of_bounded_at_infty
-          (f := serre_D 1 E₂) (k := (4 : ℤ)) hc ?_
-        intro A hA
-        rcases hA with ⟨γ, rfl⟩
-        have hcast :
-            serre_D 1 E₂ ∣[(4 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ γ) =
-              serre_D 1 E₂ ∣[(4 : ℤ)] γ := by
-          simpa using (ModularForm.SL_slash (f := serre_D 1 E₂) (k := (4 : ℤ)) γ).symm
-        have hSerreSL : serre_D 1 E₂ ∣[(4 : ℤ)] γ = serre_D 1 E₂ := hSerre_slash γ
-        have hSerreGL :
-            serre_D 1 E₂ ∣[(4 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ γ) =
-              serre_D 1 E₂ := by
-          simpa [hcast] using hSerreSL
-        rw [hSerreGL]
-        exact hbdd }
+        exact bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
+          obtain ⟨γ, rfl⟩ := hA
+          rw [show serre_D 1 E₂ ∣[(4 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ γ) =
+              serre_D 1 E₂ from by simpa [ModularForm.SL_slash] using hSerre_slash γ]
+          exact hbdd }
   -- Identify `F₄` by its constant term at infinity: it is `-(1/12)·E₄`.
   let G : ModularForm Γ(1) 4 := F₄ + (12⁻¹ : ℂ) • E₄
-  have hbddE₂ : IsBoundedAtImInfty E₂ := E₂_isBoundedAtImInfty
-  have hDlim : Tendsto (fun z : ℍ => D E₂ z) atImInfty (𝓝 (0 : ℂ)) :=
-    D_isZeroAtImInfty_of_bounded E₂_holo' hbddE₂
   have hE₂lim : Tendsto E₂ atImInfty (𝓝 (1 : ℂ)) := tendsto_E₂_atImInfty
+  have hDlim := D_isZeroAtImInfty_of_bounded E₂_holo' E₂_isBoundedAtImInfty
   have hF₄lim : Tendsto (fun z : ℍ => F₄ z) atImInfty (𝓝 (-(12⁻¹ : ℂ))) := by
-    -- `F₄ = D E₂ - (1/12) E₂^2`.
-    have hterm :
-        Tendsto (fun z => 12⁻¹ * E₂ z * E₂ z) atImInfty (𝓝 (12⁻¹ : ℂ)) := by
-      have hE₂' :
-          Tendsto (fun z => (12⁻¹ : ℂ) * E₂ z) atImInfty (𝓝 (12⁻¹ : ℂ)) := by
-        simpa [mul_one] using (tendsto_const_nhds.mul hE₂lim)
-      simpa [mul_assoc, mul_one] using (hE₂'.mul hE₂lim)
+    have : Tendsto (fun z => 12⁻¹ * E₂ z * E₂ z) atImInfty (𝓝 (12⁻¹ : ℂ)) := by
+      simpa [mul_assoc, mul_one] using
+        ((by simpa [mul_one] using tendsto_const_nhds.mul hE₂lim :
+          Tendsto (fun z => (12⁻¹ : ℂ) * E₂ z) _ (𝓝 (12⁻¹ : ℂ))).mul hE₂lim)
     have hmain :
         Tendsto (fun z : ℍ => serre_D 1 E₂ z) atImInfty (𝓝 (-(12⁻¹ : ℂ))) := by
-      simpa [serre_D, mul_assoc, mul_one] using (hDlim.sub hterm)
+      simpa [serre_D, mul_assoc, mul_one] using hDlim.sub this
     assumption
   have hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ)) := by
-    have hE₄lim :
-        Tendsto (fun z : ℍ => (12⁻¹ : ℂ) * E₄ z) atImInfty
-          (𝓝 ((12⁻¹ : ℂ) * (1 : ℂ))) :=
-      by
-        simpa [mul_one] using (tendsto_const_nhds.mul tendsto_E₄_atImInfty)
-    have hsum := hF₄lim.add hE₄lim
-    simpa [G, mul_one] using hsum
+    simpa [G, mul_one] using hF₄lim.add
+      (by simpa [mul_one] using tendsto_const_nhds.mul tendsto_E₄_atImInfty :
+        Tendsto (fun z : ℍ => (12⁻¹ : ℂ) * E₄ z) _ (𝓝 (12⁻¹ : ℂ)))
   have hG0 : G = 0 := eq_zero_of_tendsto_zero_atImInfty (k := 4) (by norm_num) G hGlim
   funext z
   have hz : F₄ z + (12⁻¹ : ℂ) * E₄ z = 0 := by
