@@ -644,7 +644,7 @@ public theorem hasDerivAt_re_resToImagAxis (F : ℍ → ℂ) (hF : MDiff F) :
     ∀ t,
       0 < t →
         HasDerivAt (fun t => (F.resToImagAxis t).re) (-2 * π * (ResToImagAxis (D F) t).re) t :=
-  fun t ht => hasDerivAt_resToImagAxis_re hF ht
+  fun _ ht => hasDerivAt_resToImagAxis_re hF ht
 
 public lemma mul_re_of_im_eq_zero {x y : ℂ} (hx : x.im = 0) (hy : y.im = 0) :
     (x * y).re = x.re * y.re := by
@@ -690,41 +690,28 @@ public theorem D_Delta_eq_E₂_mul_Delta : D Δ = E₂ * Δ := by
   have hηnz : η (z : ℂ) ≠ 0 := ModularForm.eta_ne_zero z.2
   have hlog :
       logDeriv (fun w : ℂ => (η w) ^ (24 : ℕ)) (z : ℂ) = (2 * π * I) * E₂ z := by
-    have hpowdiff : DifferentiableAt ℂ (fun x : ℂ => x ^ (24 : ℕ)) (η (z : ℂ)) := by
-      fun_prop
+    have hpowdiff : DifferentiableAt ℂ (fun x : ℂ => x ^ (24 : ℕ)) (η (z : ℂ)) := by fun_prop
     calc
       logDeriv (fun w : ℂ => (η w) ^ (24 : ℕ)) (z : ℂ) =
           logDeriv (fun x : ℂ => x ^ (24 : ℕ)) (η (z : ℂ)) * deriv η (z : ℂ) := by
             simpa [Function.comp] using
               (logDeriv_comp (x := (z : ℂ)) hpowdiff
                 (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet z.2))
-      _ = ((24 : ℂ) / η (z : ℂ)) * deriv η (z : ℂ) := by
-            simp [logDeriv_pow]
+      _ = ((24 : ℂ) / η (z : ℂ)) * deriv η (z : ℂ) := by simp [logDeriv_pow]
       _ = (24 : ℂ) * logDeriv η (z : ℂ) := by
             simp [logDeriv, div_eq_mul_inv, mul_assoc, mul_comm]
-      _ = (2 * π * I) * E₂ z := by
-            rw [ModularForm.logDeriv_eta_eq_E2 z, E₂]
-            ring
+      _ = (2 * π * I) * E₂ z := by rw [ModularForm.logDeriv_eta_eq_E2 z, E₂]; ring
   have hderiv_eta_pow :
       deriv (fun w : ℂ => (η w) ^ (24 : ℕ)) (z : ℂ) =
         (2 * π * I) * E₂ z * (η (z : ℂ) ^ (24 : ℕ)) := by
-    have :
-        deriv (fun w : ℂ => (η w) ^ (24 : ℕ)) (z : ℂ) =
-          logDeriv (fun w : ℂ => (η w) ^ (24 : ℕ)) (z : ℂ) *
-            (η (z : ℂ) ^ (24 : ℕ)) := by
+    have : deriv (fun w => (η w) ^ (24 : ℕ)) z =
+        logDeriv (fun w => (η w) ^ (24 : ℕ)) z * (η z ^ (24 : ℕ)) := by
       simp [logDeriv, div_mul_eq_mul_div, mul_div_cancel_right₀ _ (pow_ne_zero _ hηnz)]
     simpa [hlog, mul_assoc, mul_left_comm, mul_comm] using this
-  have h2piI : (2 * π * I : ℂ) ≠ 0 := two_pi_I_ne_zero
-  have hηpow : η (z : ℂ) ^ (24 : ℕ) = Δ z := (Delta_eq_eta_pow z).symm
-  calc
-    D Δ z = (2 * π * I)⁻¹ * deriv (fun w : ℂ => Δ (ofComplex w)) (z : ℂ) := rfl
-    _ = (2 * π * I)⁻¹ * deriv (fun w : ℂ => (η w) ^ (24 : ℕ)) (z : ℂ) := by
-          simp [h_eq.deriv_eq]
-    _ = (2 * π * I)⁻¹ * ((2 * π * I) * E₂ z * (η (z : ℂ) ^ (24 : ℕ))) := by
-          simp [hderiv_eta_pow]
-    _ = E₂ z * (η (z : ℂ) ^ (24 : ℕ)) := by
-          field_simp [h2piI]
-    _ = E₂ z * Δ z := by simp [hηpow]
+  calc D Δ z = (2 * π * I)⁻¹ * deriv (fun w : ℂ => Δ (ofComplex w)) (z : ℂ) := rfl
+    _ = (2 * π * I)⁻¹ * ((2 * π * I) * E₂ z * Δ z) := by
+          rw [h_eq.deriv_eq, hderiv_eta_pow, (Delta_eq_eta_pow z).symm]
+    _ = E₂ z * Δ z := by field_simp [two_pi_I_ne_zero]
 
 /--
 Let $F : \mathbb{H} \to \mathbb{C}$ be holomorphic with $F(it)$ real for all $t > 0$.
@@ -761,18 +748,16 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
         ((-2 * π * (ResToImagAxis (D F) t).re) * (d t) ^ (-a) +
             (g t) * ((-a) * (d t) ^ (-a - 1) * (-2 * π * (ResToImagAxis (D Δ) t).re))) t :=
     fun t ht => by
-      have hdpos : 0 < d t := hΔre_pos t ht
-      have hdne : d t ≠ 0 := ne_of_gt hdpos
-      have hpow :
+      have hdne : d t ≠ 0 := ne_of_gt (hΔre_pos t ht)
+      have hpow0 : HasDerivAt (fun x : ℝ => x ^ (-a)) ((-a) * (d t) ^ (-a - 1)) (d t) := by
+        simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm, mul_assoc] using
+          Real.hasDerivAt_rpow_const (x := d t) (p := -a) (Or.inl hdne)
+      have hpow :=
+        (by simpa [mul_assoc, mul_left_comm, mul_comm] using hpow0.comp t (hd t ht) :
           HasDerivAt (fun t => (d t) ^ (-a))
-            ((-a) * (d t) ^ (-a - 1) * (-2 * π * (ResToImagAxis (D Δ) t).re)) t := by
-        have hpow0 :
-            HasDerivAt (fun x : ℝ => x ^ (-a)) ((-a) * (d t) ^ (-a - 1)) (d t) := by
-          simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm, mul_assoc] using
-            (Real.hasDerivAt_rpow_const (x := d t) (p := -a) (Or.inl hdne))
-        simpa [mul_assoc, mul_left_comm, mul_comm] using hpow0.comp t (hd t ht)
-      have := (hg t ht).mul hpow
-      simpa [h, mul_assoc, mul_left_comm, mul_comm, add_assoc, add_left_comm, add_comm] using this
+            ((-a) * (d t) ^ (-a - 1) * (-2 * π * (ResToImagAxis (D Δ) t).re)) t)
+      simpa [h, mul_assoc, mul_left_comm, mul_comm, add_assoc, add_left_comm, add_comm] using
+        (hg t ht).mul hpow
   have hn : ∀ t ∈ Set.Ioi (0 : ℝ), deriv h t < 0 := fun t (ht : 0 < t) => by
     have hdpos : 0 < d t := hΔre_pos t ht
     have hdpowpos : 0 < (d t) ^ (-a) := Real.rpow_pos_of_pos hdpos (-a)
@@ -819,11 +804,8 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
         -- Rearranged, this is exactly `d^(-a-1) * d = d^(-a)`.
         simpa [add_assoc, add_left_comm, add_comm] using h.symm
       grind only
-    have hneg : (-2 * π : ℝ) < 0 := by nlinarith [Real.pi_pos]
-    -- Combine signs.
     rw [hderiv, mul_assoc]
-    have hpos : 0 < (d t) ^ (-a) * ((serre_D k F).resToImagAxis t).re := mul_pos hdpowpos hSpos
-    exact mul_neg_of_neg_of_pos hneg hpos
+    exact mul_neg_of_neg_of_pos (by nlinarith [Real.pi_pos]) (mul_pos hdpowpos hSpos)
   have hAnti : StrictAntiOn h (Set.Ioi (0 : ℝ)) :=
     strictAntiOn_of_deriv_neg (convex_Ioi (0 : ℝ))
       (fun x hx => (hh x hx).continuousAt.continuousWithinAt)
@@ -834,15 +816,9 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
     have hdpos : 0 < d t := hΔre_pos t htpos
     have hdpowpos : 0 < (d t) ^ (-a) := Real.rpow_pos_of_pos hdpos (-a)
     simpa [h, g, d, mul_assoc] using mul_pos hgpos hdpowpos
-  have hall : ∀ t : ℝ, 0 < t → 0 < h t :=
-    StrictAntiOn.eventuallyPos_Ioi hAnti ht₀_pos hEv
+  have hall := StrictAntiOn.eventuallyPos_Ioi hAnti ht₀_pos hEv
   refine ⟨hF_real, fun t ht => ?_⟩
-  have hdpos : 0 < d t := hΔre_pos t ht
-  have hdpowpos : 0 < (d t) ^ (-a) := Real.rpow_pos_of_pos hdpos (-a)
-  have : 0 < g t := by
-    have htpos : 0 < h t := hall t ht
-    exact pos_of_mul_pos_left htpos (le_of_lt hdpowpos)
-  simpa [g] using this
+  exact pos_of_mul_pos_left (hall t ht) (Real.rpow_pos_of_pos (hΔre_pos t ht) _).le
 
 /-! ## Cauchy estimates for `D` -/
 
