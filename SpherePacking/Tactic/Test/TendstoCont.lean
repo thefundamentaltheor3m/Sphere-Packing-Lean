@@ -257,7 +257,7 @@ example (h₁ : Tendsto f atTop (nhds 1)) (h₂ : Tendsto g atTop (nhds 2)) :
     Tendsto (fun z => f z + g z) atTop (nhds 3) := by tendsto_cont [h₁, h₂]
 
 -- Inline arg shadows conflicting local hypothesis — no ambiguity error
-example (h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
+example (_h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
     Tendsto (fun z => f z + 1) atTop (nhds 2) := by tendsto_cont [h₂]
 
 -- ══════════════════════════════════════════════════════════════
@@ -294,6 +294,22 @@ example (h : (1 : ℝ) + 1 = 2) :
 #guard_msgs(error, drop info) in
 example (h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
     Tendsto (fun z => f z + 1) atTop (nhds 1) := by tendsto_cont [h₁, h₂]
+
+-- ══════════════════════════════════════════════════════════════
+-- Negative tests: attribute type validation
+-- ══════════════════════════════════════════════════════════════
+
+-- Non-Tendsto declaration rejected at registration time
+/-- error: `@[tendsto_cont]`: declaration type must be `Tendsto f l (nhds a)`, got head `True` -/
+#guard_msgs(error, drop info) in
+@[tendsto_cont]
+theorem notATendstoTheorem : True := trivial
+
+-- Tendsto with wrong target filter rejected at registration time
+/-- error: `@[tendsto_cont]`: target filter must be `nhds _`, got `Filter.atTop` -/
+#guard_msgs(error, drop info) in
+@[tendsto_cont]
+theorem wrongTargetFilter : Tendsto (fun z : ℝ => z) atTop atTop := tendsto_id
 
 -- ══════════════════════════════════════════════════════════════
 -- Negative tests: attribute scope rejection

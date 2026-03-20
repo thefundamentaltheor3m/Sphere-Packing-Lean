@@ -35,5 +35,23 @@ initialize registerBuiltinAttribute {
   add := fun declName _stx kind => do
     unless kind == .global do
       throwError "`@[tendsto_cont]` only supports global scope (not `local` or `scoped`)"
+    let info ← getConstInfo declName
+    -- Strip leading forall binders to reach the conclusion
+    let mut ty := info.type
+    while ty.isForall do ty := ty.bindingBody!
+    match ty.getAppFnArgs with
+    | (`Filter.Tendsto, args) =>
+      if h : args.size ≥ 5 then
+        match args[4].getAppFnArgs with
+        | (`nhds, _) => pure ()
+        | (other, _) =>
+          throwError "`@[tendsto_cont]`: target filter must be `nhds _`, \
+            got `{other}`"
+      else
+        throwError "`@[tendsto_cont]`: declaration type is not a fully \
+          applied `Tendsto`"
+    | (other, _) =>
+      throwError "`@[tendsto_cont]`: declaration type must be \
+        `Tendsto f l (nhds a)`, got head `{other}`"
     tendstoContExt.add declName
 }
