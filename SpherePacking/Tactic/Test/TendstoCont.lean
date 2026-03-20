@@ -243,3 +243,71 @@ example (hf : Tendsto f (nhds 0) (nhds 1)) :
 -- But known continuous functions (Real.sin, etc.) work fine via fun_prop
 example (hf : Tendsto f (nhds 0) (nhds 1)) :
     Tendsto (fun x => Real.sin (f x)) (nhds 0) (nhds (Real.sin 1)) := by tendsto_cont
+
+-- ══════════════════════════════════════════════════════════════
+-- Inline argument syntax: tendsto_cont [h₁, h₂]
+-- ══════════════════════════════════════════════════════════════
+
+-- Single inline argument
+example (h : Tendsto f atTop (nhds 3)) :
+    Tendsto (fun z => f z + 1) atTop (nhds 4) := by tendsto_cont [h]
+
+-- Multiple inline arguments
+example (h₁ : Tendsto f atTop (nhds 1)) (h₂ : Tendsto g atTop (nhds 2)) :
+    Tendsto (fun z => f z + g z) atTop (nhds 3) := by tendsto_cont [h₁, h₂]
+
+-- Inline arg shadows conflicting local hypothesis — no ambiguity error
+example (h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
+    Tendsto (fun z => f z + 1) atTop (nhds 2) := by tendsto_cont [h₂]
+
+-- ══════════════════════════════════════════════════════════════
+-- @[tendsto_cont] attribute
+-- ══════════════════════════════════════════════════════════════
+
+-- Register a closed Tendsto theorem via attribute
+@[tendsto_cont]
+private theorem testAttrLemma :
+    Tendsto (fun z : ℝ => z) (nhds 0) (nhds 0) :=
+  tendsto_id
+
+-- Attribute-registered theorem used automatically (no local hypothesis needed)
+example : Tendsto (fun z : ℝ => z + 1) (nhds 0) (nhds 1) := by tendsto_cont
+
+-- ══════════════════════════════════════════════════════════════
+-- Negative tests: inline arguments
+-- ══════════════════════════════════════════════════════════════
+
+-- Wrong-filter inline arg is silently ignored → no candidates
+/-- error: tendsto_cont: no `Tendsto` hypotheses found for filter `atTop` -/
+#guard_msgs(error, drop info) in
+example (h : Tendsto f (nhds 0) (nhds 1)) :
+    Tendsto (fun z => f z + 1) atTop (nhds 2) := by tendsto_cont [h]
+
+-- Non-Tendsto inline arg is silently ignored → no candidates
+/-- error: tendsto_cont: no `Tendsto` hypotheses found for filter `atTop` -/
+#guard_msgs(error, drop info) in
+example (h : (1 : ℝ) + 1 = 2) :
+    Tendsto (fun z : ℝ => z + 1) atTop (nhds 2) := by tendsto_cont [h]
+
+-- Two inline args with same fn, different limits → ambiguity error
+/-- error: tendsto_cont: ambiguous limit for atom — found hypotheses with limits `0` and `1` for the same function -/
+#guard_msgs(error, drop info) in
+example (h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
+    Tendsto (fun z => f z + 1) atTop (nhds 1) := by tendsto_cont [h₁, h₂]
+
+-- ══════════════════════════════════════════════════════════════
+-- Negative tests: attribute scope rejection
+-- ══════════════════════════════════════════════════════════════
+
+theorem testScopeRejection : Tendsto (fun _ : ℝ => (0 : ℝ)) atTop (nhds 0) :=
+  tendsto_const_nhds
+
+/-- error: `@[tendsto_cont]` only supports global scope (not `local` or `scoped`) -/
+#guard_msgs(error, drop info) in
+attribute [local tendsto_cont] testScopeRejection
+
+namespace TestScopeRejection
+/-- error: `@[tendsto_cont]` only supports global scope (not `local` or `scoped`) -/
+#guard_msgs(error, drop info) in
+attribute [scoped tendsto_cont] testScopeRejection
+end TestScopeRejection
