@@ -1040,21 +1040,13 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
     (12 : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z)
   have hcorr_holo (γ : SL(2, ℤ)) : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (corr γ) := by
     rw [UpperHalfPlane.mdifferentiable_iff]
-    -- Reduce to a holomorphic rational function on `{z : ℂ | 0 < z.im}`.
-    have hG :
-        DifferentiableOn ℂ
-          (fun z : ℂ => (12 : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z))
-          {z : ℂ | 0 < z.im} := by
-      intro z hz
-      have hz0 : denom γ z ≠ 0 := UpperHalfPlane.denom_ne_zero γ ⟨z, hz⟩
-      have hdenom : DifferentiableAt ℂ (fun w : ℂ => denom γ w) z := by
-        simpa using (differentiableAt_denom (γ := γ) z)
-      have hdiv : DifferentiableAt ℂ (fun w : ℂ => (γ 1 0 : ℂ) / denom γ w) z :=
-        (differentiableAt_const _).div hdenom hz0
-      exact (hdiv.const_mul ((12 : ℂ) * (2 * π * I)⁻¹)).differentiableWithinAt
-    refine hG.congr ?_
-    intro z hz
-    simp [corr, Function.comp_apply, ofComplex_apply_of_im_pos hz]
+    have hG : DifferentiableOn ℂ
+        (fun z : ℂ => (12 : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z))
+        {z : ℂ | 0 < z.im} := fun z hz =>
+      (((differentiableAt_const _).div (by simpa using differentiableAt_denom (γ := γ) z)
+        (UpperHalfPlane.denom_ne_zero γ ⟨z, hz⟩)).const_mul _).differentiableWithinAt
+    exact hG.congr fun z hz => by
+      simp [corr, Function.comp_apply, ofComplex_apply_of_im_pos hz]
   have hcorr_D (γ : SL(2, ℤ)) :
       D (corr γ) = - 12⁻¹ * (corr γ) * (corr γ) := by
     funext z
@@ -1101,28 +1093,15 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
         simpa [anom, Pi.sub_apply, Pi.mul_apply] using hD
       exact (sub_eq_iff_eq_add).1 h0.symm
     have hDadd : D (E₂ ∣[(2 : ℤ)] γ) z = (D E₂ + D (corr γ)) z := by
-      rw [hE₂slash]
-      simp [D_add _ _ E₂_holo' hcorr_h]
+      rw [hE₂slash]; simp [D_add _ _ E₂_holo' hcorr_h]
     have hcorrD : D (corr γ) z = (-12⁻¹ : ℂ) * (corr γ z * corr γ z) := by
       simpa [Pi.mul_apply, Pi.neg_apply, mul_assoc] using congrFun (hcorr_D γ) z
-    have hA :
-        (2 : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) =
-          (6⁻¹ : ℂ) * corr γ z := by
-      ring
-    have hEeval : (E₂ ∣[(2 : ℤ)] γ) z = E₂ z + corr γ z := by
-      simpa [Pi.add_apply] using hE
     have hanom : anom = (6⁻¹ : ℂ) * corr γ z * (E₂ z + corr γ z) := by
-      -- rewrite the slashed `E₂` and then use `hA` for the prefactor
-      dsimp [anom]
-      rw [hEeval]
-      have hA' := congrArg (fun t => t * (E₂ z + corr γ z)) hA
-      simpa [mul_assoc] using hA'
+      simp only [anom, show (E₂ ∣[(2 : ℤ)] γ) z = E₂ z + corr γ z from by
+        simpa [Pi.add_apply] using hE, corr]; ring
     rw [hsolve, hDadd]
-    simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul]
-    -- `D(corr) = -(1/12)·corr²`, and `anom = (1/6)·corr·(E₂+corr)`.
-    rw [hcorrD, hanom]
-    simp [mul_add, mul_left_comm, mul_comm]
-    ring_nf
+    simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul, hcorrD, hanom]
+    ring
   have hSerre_slash (γ : SL(2, ℤ)) :
       serre_D 1 E₂ ∣[(4 : ℤ)] γ = serre_D 1 E₂ := by
     ext z
@@ -1136,23 +1115,10 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
       -- Rewrite the transformation law `E₂ ∣[2] γ = E₂ + corr γ` at `z`.
       have hmain : E₂ (γ • z) * (denom γ z) ^ (-(2 : ℤ)) = E₂ z + corr γ z := by
         simpa [ModularForm.SL_slash_apply (f := E₂) (k := (2 : ℤ)) γ z, Pi.add_apply] using hE
-      have hden :
-          ((denom γ z) ^ (-(2 : ℤ))) ^ (2 : ℕ) = (denom γ z) ^ (-(4 : ℤ)) := by
-        calc
-          ((denom γ z) ^ (-(2 : ℤ))) ^ (2 : ℕ)
-              = ((denom γ z) ^ (-(2 : ℤ))) ^ ((2 : ℤ)) := by
-                  simpa using (zpow_natCast ((denom γ z) ^ (-(2 : ℤ))) 2).symm
-          _ = (denom γ z) ^ (-(2 : ℤ) * (2 : ℤ)) := by
-                  simpa using (zpow_mul (denom γ z) (-(2 : ℤ)) (2 : ℤ)).symm
-          _ = (denom γ z) ^ (-(4 : ℤ)) := by norm_num
-      have hpow :
-          (E₂ (γ • z) * (denom γ z) ^ (-(2 : ℤ))) ^ (2 : ℕ) =
-            (E₂ z + corr γ z) ^ (2 : ℕ) := by
-        simpa using congrArg (fun w : ℂ => w ^ (2 : ℕ)) hmain
-      have hpow' := hpow
-      rw [mul_pow] at hpow'
-      rw [hden] at hpow'
-      exact hpow'
+      have := congrArg (· ^ (2 : ℕ)) hmain
+      simp only [mul_pow] at this
+      rwa [show ((denom γ z) ^ (-(2 : ℤ))) ^ (2 : ℕ) = (denom γ z) ^ (-(4 : ℤ)) from by
+        rw [← zpow_natCast, ← zpow_mul]; norm_num] at this
     -- Now compute `serre_D 1 E₂` under slash.
     -- `(serre_D 1 E₂ ∣[4] γ) z = (denom γ z)^(-4) * serre_D 1 E₂(γ•z)`.
     simp only [serre_D, SL_slash_apply, Pi.add_apply] at *
