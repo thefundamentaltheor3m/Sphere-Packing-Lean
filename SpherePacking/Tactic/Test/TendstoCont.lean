@@ -305,6 +305,13 @@ example (h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
 @[tendsto_cont]
 theorem notATendstoTheorem : True := trivial
 
+-- Parameterized declaration rejected (only closed lemmas allowed)
+/-- error: `@[tendsto_cont]`: declaration must be a closed `Tendsto` lemma with no parameters; got a declaration with binders -/
+#guard_msgs(error, drop info) in
+@[tendsto_cont]
+theorem paramTendsto (_h : True) : Tendsto (fun _ : ℝ => (0 : ℝ)) atTop (nhds 0) :=
+  tendsto_const_nhds
+
 -- Tendsto with wrong target filter rejected at registration time
 /-- error: `@[tendsto_cont]`: target filter must be `nhds _`, got `Filter.atTop` -/
 #guard_msgs(error, drop info) in

@@ -36,9 +36,11 @@ initialize registerBuiltinAttribute {
     unless kind == .global do
       throwError "`@[tendsto_cont]` only supports global scope (not `local` or `scoped`)"
     let info ← getConstInfo declName
-    -- Strip leading forall binders to reach the conclusion
-    let mut ty := info.type
-    while ty.isForall do ty := ty.bindingBody!
+    let ty := info.type
+    -- Reject declarations with any binders — only closed lemmas are supported
+    if ty.isForall then
+      throwError "`@[tendsto_cont]`: declaration must be a closed `Tendsto` \
+        lemma with no parameters; got a declaration with binders"
     match ty.getAppFnArgs with
     | (`Filter.Tendsto, args) =>
       if h : args.size ≥ 5 then
