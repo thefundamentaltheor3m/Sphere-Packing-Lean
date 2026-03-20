@@ -283,16 +283,12 @@ public theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
     · simp [a', u', hn]
   -- Apply D_qexp_tsum and convert sums via tsum_pNat
   have hD := D_qexp_tsum a' z hsum_deriv'
-  calc D (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) z
-      = D (fun w : ℍ => ∑' n : ℕ, a' n * cexp (2 * π * I * n * (w : ℂ))) z := by
-          congr 1
-          ext w
-          rw [← tsum_pNat _ (by simp [a'])]
-          exact tsum_congr fun n => by rw [ha']
-    _ = ∑' n : ℕ, (n : ℂ) * a' n * cexp (2 * π * I * n * (z : ℂ)) := hD
-    _ = ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
-          rw [← tsum_pNat _ (by simp [a'])]
-          exact tsum_congr fun n => by rw [ha']
+  have htsum : ∀ w : ℍ, (∑' n : ℕ+, a n * cexp (2 * π * I * n * (w : ℂ))) =
+      ∑' n : ℕ, a' n * cexp (2 * π * I * n * (w : ℂ)) := fun w => by
+    rw [← tsum_pNat _ (by simp [a'])]; exact tsum_congr fun n => by rw [ha']
+  simp_rw [htsum] at hD ⊢
+  rw [hD, ← tsum_pNat _ (by simp [a'])]
+  exact tsum_congr fun n => by rw [ha']
 
 /-- Serre derivative of weight `k` for functions `F : ℍ → ℂ`. -/
 @[expose] public noncomputable def serre_D (k : ℂ) : (ℍ → ℂ) → (ℍ → ℂ) :=
@@ -798,11 +794,8 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
       (fun x hx => (hh x hx).continuousAt.continuousWithinAt)
       (by simpa [interior_Ioi] using hn)
   have hEv : ∀ t : ℝ, t₀ ≤ t → 0 < h t := fun t ht => by
-    have htpos : 0 < t := lt_of_lt_of_le ht₀_pos ht
-    have hgpos : 0 < g t := hF_pos t ht
-    have hdpos : 0 < d t := hΔre_pos t htpos
-    have hdpowpos : 0 < (d t) ^ (-a) := Real.rpow_pos_of_pos hdpos (-a)
-    simpa [h, g, d, mul_assoc] using mul_pos hgpos hdpowpos
+    simpa [h, g, d, mul_assoc] using
+      mul_pos (hF_pos t ht) (Real.rpow_pos_of_pos (hΔre_pos t (ht₀_pos.trans_le ht)) (-a))
   have hall := StrictAntiOn.eventuallyPos_Ioi hAnti ht₀_pos hEv
   refine ⟨hF_real, fun t ht => ?_⟩
   exact pos_of_mul_pos_left (hall t ht) (Real.rpow_pos_of_pos (hΔre_pos t ht) _).le
@@ -1053,13 +1046,9 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
     -- Now rewrite `D` using `h_eq` and compute directly.
     simp only [D, neg_mul, Pi.mul_apply, Pi.neg_apply, Pi.inv_apply, Pi.ofNat_apply]
     rw [h_eq.deriv_eq]
-    have htwoPiI : (2 * π * I : ℂ) ≠ 0 := two_pi_I_ne_zero
     -- `D` applies an extra factor `(2πi)⁻¹`; `corr` itself already contains `(2πi)⁻¹`.
-    simp [mul_assoc, mul_left_comm, mul_comm, hderiv_div]
-    dsimp [corr]
-    field_simp [htwoPiI, hz0]
-    ring_nf
-    simp
+    simp [mul_assoc, mul_left_comm, mul_comm, hderiv_div, corr]
+    field_simp [two_pi_I_ne_zero, hz0]
   have hE₂slash (γ : SL(2, ℤ)) :
       (E₂ ∣[(2 : ℤ)] γ) = E₂ + corr γ := by
     simpa [corr] using (E₂_slash γ)
@@ -1148,10 +1137,8 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
       simpa [mul_assoc, mul_one] using
         ((by simpa [mul_one] using tendsto_const_nhds.mul hE₂lim :
           Tendsto (fun z => (12⁻¹ : ℂ) * E₂ z) _ (𝓝 (12⁻¹ : ℂ))).mul hE₂lim)
-    have hmain :
-        Tendsto (fun z : ℍ => serre_D 1 E₂ z) atImInfty (𝓝 (-(12⁻¹ : ℂ))) := by
-      simpa [serre_D, mul_assoc, mul_one] using hDlim.sub this
-    assumption
+    exact (by simpa [serre_D, mul_assoc, mul_one] using hDlim.sub this :
+        Tendsto (fun z : ℍ => serre_D 1 E₂ z) atImInfty (𝓝 (-(12⁻¹ : ℂ))))
   have hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ)) := by
     simpa [G, mul_one] using hF₄lim.add
       (by simpa [mul_one] using tendsto_const_nhds.mul tendsto_E₄_atImInfty :
@@ -1160,10 +1147,8 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   funext z
   have hz : F₄ z + (12⁻¹ : ℂ) * E₄ z = 0 := by
     simpa [G] using congrArg (fun f : ModularForm Γ(1) 4 => f z) hG0
-  have hz' : F₄ z = (-12⁻¹ : ℂ) * E₄ z := by
-    have : F₄ z = -((12⁻¹ : ℂ) * E₄ z) := (eq_neg_iff_add_eq_zero).2 (by simpa using hz)
-    simpa [neg_mul] using this
-  assumption
+  exact (by simpa [neg_mul] using eq_neg_iff_add_eq_zero.2 (by simpa using hz) :
+    F₄ z = (-12⁻¹ : ℂ) * E₄ z)
 
 public theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   let F₆ : ModularForm Γ(1) 6 := serreD_modularForm 4 E₄
