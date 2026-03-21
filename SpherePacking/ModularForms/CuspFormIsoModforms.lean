@@ -69,7 +69,8 @@ public def CuspForms_iso_Modforms (k : ℤ) : CuspForm (CongruenceSubgroup.Gamma
     ext z
     simp [Modform_mul_Delta_apply, CuspForm_div_Discriminant_apply, Delta_apply, Δ_ne_zero]
 
-public lemma cuspform_weight_lt_12_zero (k : ℤ) (hk : k < 12) : Module.rank ℂ (CuspForm Γ(1) k) = 0 := by
+public lemma cuspform_weight_lt_12_zero (k : ℤ) (hk : k < 12) :
+    Module.rank ℂ (CuspForm Γ(1) k) = 0 := by
   have := CuspForms_iso_Modforms k
   --apply Module.finrank_eq_of_rank_eq
   rw [LinearEquiv.rank_eq this]
