@@ -77,13 +77,11 @@ public theorem E₂_holo' : MDiff E₂ := by
 Basic properties of derivatives: linearity, Leibniz rule, etc.
 -/
 @[simp]
-public theorem D_add (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G) :
-    D (F + G) = D F + D G := by
+public theorem D_add (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G) : D (F + G) = D F + D G := by
   ext z
   simpa [D, mul_add] using congrArg ((2 * π * I)⁻¹ * ·)
     (deriv_add (MDifferentiableAt_DifferentiableAt (hF z))
       (MDifferentiableAt_DifferentiableAt (hG z)))
-
 
 /-- Compatibility of `D` with negation. -/
 @[simp]
@@ -93,13 +91,10 @@ public theorem D_neg (F : ℍ → ℂ) (hF : MDiff F) : D (-F) = -D F := by
     (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt.neg.deriv
   simp [D, hderiv, mul_assoc]
 
-
 /-- Compatibility of `D` with subtraction. -/
 @[simp]
-public theorem D_sub (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G)
-    : D (F - G) = D F - D G := by
+public theorem D_sub (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G) : D (F - G) = D F - D G := by
   simpa [sub_eq_add_neg, D_neg (F := G) hG] using D_add F (-G) hF hG.neg
-
 
 /-- Compatibility of `D` with scalar multiplication. -/
 @[simp]
@@ -109,11 +104,10 @@ public theorem D_smul (c : ℂ) (F : ℍ → ℂ) : D (c • F) = c • D F := b
     simpa [Pi.smul_apply] using (deriv_const_smul_field (x := (z : ℂ)) c (F ∘ ofComplex))
   simp [D, hderiv, Pi.smul_apply, smul_eq_mul, mul_assoc, mul_left_comm, mul_comm]
 
-
 /-- Leibniz rule for `D`. -/
 @[simp]
-public theorem D_mul (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G)
-    : D (F * G) = D F * G + F * D G := by
+public theorem D_mul (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G) :
+    D (F * G) = D F * G + F * D G := by
   ext z
   have hderiv : deriv ((F * G) ∘ ofComplex) z =
       deriv (F ∘ ofComplex) z * G z + F z * deriv (G ∘ ofComplex) z := by
@@ -123,11 +117,9 @@ public theorem D_mul (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G)
   simp [D, hderiv, mul_add, mul_assoc, mul_left_comm, mul_comm]
 
 @[simp]
-public theorem D_sq (F : ℍ → ℂ) (hF : MDiff F) :
-    D (F ^ 2) = 2 * F * D F := by
+public theorem D_sq (F : ℍ → ℂ) (hF : MDiff F) : D (F ^ 2) = 2 * F * D F := by
   rw [pow_two, D_mul F F hF hF]
   ring_nf
-
 
 /-- A specialization of the Leibniz rule: `D (F^3)`. -/
 @[simp]
@@ -152,7 +144,6 @@ lemma MDifferentiable_div {F G : ℍ → ℂ}
     (Filter.EventuallyEq.symm (Filter.eventuallyEq_of_mem
       (isOpen_upperHalfPlaneSet.mem_nhds τ.2) (fun w hw => by
         simp [Function.comp, Pi.div_apply, ofComplex_apply_of_im_pos hw])))
-
 
 /-- The derivative of a constant function is zero. -/
 @[simp]
@@ -462,8 +453,7 @@ public lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) (γ : SL(2, ℤ)
       DifferentiableAt ℂ ((F ∘ ofComplex) ∘ (fun w => num γ w / denom γ w)) z)
   have hprod_eq : (fun w => (F ∘ ofComplex) (num γ w / denom γ w) * (denom γ w) ^ (-k)) =
       ((fun w => (F ∘ ofComplex) (num γ w / denom γ w)) * fun w => (denom γ w) ^ (-k)) := rfl
-  rw [hprod_eq]
-  rw [deriv_mul hdiff_F_mobius hdiff_denom_zpow]
+  rw [hprod_eq, deriv_mul hdiff_F_mobius hdiff_denom_zpow]
   -- Apply chain rule to (F ∘ ofComplex) ∘ mobius
   have hchain :
       deriv (fun w => (F ∘ ofComplex) (num γ w / denom γ w)) z =
@@ -488,8 +478,8 @@ public lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) (γ : SL(2, ℤ)
     ring_nf
   -- Rewrite powers on LHS
   conv_lhs =>
-    rw [mul_assoc (deriv (F ∘ ofComplex) (num γ z / denom γ z)) (1 / denom γ z ^ 2) _]
-    rw [hpow_combine, hpow_m1]
+    rw [mul_assoc (deriv (F ∘ ofComplex) (num γ z / denom γ z)) (1 / denom γ z ^ 2) _,
+      hpow_combine, hpow_m1]
   -- Now the goal should be cleaner - distribute and simplify
   simp only [zpow_neg_one]
   ring
@@ -500,8 +490,7 @@ public lemma E₂_slash (γ : SL(2, ℤ)) :
       E₂ + fun z : ℍ => (12 : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) := by
   ext z
   let a : ℂ := (1 / (2 * riemannZeta 2) : ℂ)
-  have hG : (G₂ ∣[(2 : ℤ)] γ) z = G₂ z - D₂ γ z := by
-    simpa using congrFun (G₂_transform γ) z
+  have hG : (G₂ ∣[(2 : ℤ)] γ) z = G₂ z - D₂ γ z := by simpa using congrFun (G₂_transform γ) z
   have hcoeff : (-(a) * (2 * π * I)) = (12 : ℂ) * (2 * π * I)⁻¹ := by
     -- Multiply both sides by 2πi; reduces to 4aπ² = 12 since a = 3/π²
     have hpi : (π : ℂ) ≠ 0 := by simp [Real.pi_ne_zero]
@@ -532,8 +521,7 @@ public theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff
   let c : ℂ := (k : ℂ) * 12⁻¹
   let corr : ℍ → ℂ := fun w : ℍ => (12 : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ w)
   have hD := congrFun (D_slash k F hF γ) z
-  have hE : (E₂ ∣[(2 : ℤ)] γ) z = E₂ z + corr z := by
-    simpa [corr] using congrFun (E₂_slash γ) z
+  have hE : (E₂ ∣[(2 : ℤ)] γ) z = E₂ z + corr z := by simpa [corr] using congrFun (E₂_slash γ) z
   have hmul : (E₂ * F) ∣[k + 2] γ = (E₂ ∣[(2 : ℤ)] γ) * (F ∣[k] γ) := by
     -- Mathlib's lemma is stated for weight `2 + k`; rewrite to `k + 2`.
     simpa [add_comm, add_left_comm, add_assoc] using
@@ -651,8 +639,7 @@ public theorem hasDerivAt_re_resToImagAxis (F : ℍ → ℂ) (hF : MDiff F) :
   fun _ ht => hasDerivAt_resToImagAxis_re hF ht
 
 public lemma mul_re_of_im_eq_zero {x y : ℂ} (hx : x.im = 0) (hy : y.im = 0) :
-    (x * y).re = x.re * y.re := by
-  simp [Complex.mul_re, hx, hy]
+    (x * y).re = x.re * y.re := by simp [Complex.mul_re, hx, hy]
 
 lemma strictAntiOn_Ioi_zero_of_deriv_neg {f : ℝ → ℝ}
     (hcont : ∀ x : ℝ, 0 < x → ContinuousWithinAt f (Set.Ioi (0 : ℝ)) x)
@@ -702,8 +689,7 @@ public theorem D_Delta_eq_E₂_mul_Delta : D Δ = E₂ * Δ := by
               (logDeriv_comp (x := (z : ℂ)) hpowdiff
                 (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet z.2))
       _ = ((24 : ℂ) / η (z : ℂ)) * deriv η (z : ℂ) := by simp [logDeriv_pow]
-      _ = (24 : ℂ) * logDeriv η (z : ℂ) := by
-            simp [logDeriv, div_eq_mul_inv, mul_assoc, mul_comm]
+      _ = (24 : ℂ) * logDeriv η (z : ℂ) := by simp [logDeriv, div_eq_mul_inv, mul_assoc, mul_comm]
       _ = (2 * π * I) * E₂ z := by rw [ModularForm.logDeriv_eta_eq_E2 z, E₂]; ring
   have hderiv_eta_pow :
       deriv (fun w : ℂ => (η w) ^ (24 : ℕ)) (z : ℂ) =
@@ -741,8 +727,7 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
       ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t :=
     fun t ht => by
       simpa [g] using hasDerivAt_re_resToImagAxis F hFderiv t ht
-  have hΔholo : MDiff Δ := by
-    simpa [Delta_apply] using (Delta.holo' : MDiff Δ)
+  have hΔholo : MDiff Δ := by simpa [Delta_apply] using (Delta.holo' : MDiff Δ)
   have hd :
       ∀ t, 0 < t → HasDerivAt d (-2 * π * (ResToImagAxis (D Δ) t).re) t :=
     fun t ht => by
@@ -850,8 +835,7 @@ public lemma norm_D_le_of_sphere_bound {f : ℍ → ℂ} {z : ℍ} {r M : ℝ}
         gcongr; exact Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hr hDiff hbdd
   _ = M / (2 * π * r) := by ring
 
-lemma norm_D_le_div_pi_im_of_bounded {f : ℍ → ℂ}
-    (hf : MDiff f) {M A : ℝ}
+lemma norm_D_le_div_pi_im_of_bounded {f : ℍ → ℂ} (hf : MDiff f) {M A : ℝ}
     (hMA : ∀ z : ℍ, A ≤ z.im → ‖f z‖ ≤ M) {z : ℍ} (hz : 2 * max A 0 + 1 ≤ z.im) :
     ‖D f z‖ ≤ M / (π * z.im) := by
   have hR_pos : 0 < z.im / 2 := by linarith [z.im_pos]
@@ -913,7 +897,6 @@ theorem D_tendsto_zero_of_isBoundedAtImInfty {f : ℍ → ℂ}
     (atImInfty_mem _).mpr ⟨_, fun _ h => h⟩,
     fun z hz => norm_D_le_div_pi_im_of_bounded hf hMA hz⟩
 
-
 -- TODO: The following lemma from Gauss overlaps with
 -- `D_tendsto_zero_of_isBoundedAtImInfty` above. We will probably want to drop it.
 /-- The D-derivative tends to 0 at infinity for bounded holomorphic functions. -/
@@ -943,8 +926,7 @@ public theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
 
 /-- A level-1 modular form is invariant under slash action by any element of SL(2,ℤ). -/
 lemma ModularForm.slash_eq_self {k : ℤ} (f : ModularForm (Gamma 1) k) (γ : SL(2, ℤ)) :
-    (f : ℍ → ℂ) ∣[k] γ = f := by
-  simpa using f.slash_action_eq' _ ⟨γ, mem_Gamma_one γ, rfl⟩
+    (f : ℍ → ℂ) ∣[k] γ = f := by simpa using f.slash_action_eq' _ ⟨γ, mem_Gamma_one γ, rfl⟩
 
 /-- The Serre derivative of a weight-k level-1 modular form is a weight-(k+2) modular form. -/
 @[expose] public noncomputable def serre_D_ModularForm (k : ℤ) (f : ModularForm (Gamma 1) k) :
@@ -1059,8 +1041,7 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
     simp [mul_assoc, mul_left_comm, mul_comm, hderiv_div, corr]
     field_simp [two_pi_I_ne_zero, hz0]
   have hE₂slash (γ : SL(2, ℤ)) :
-      (E₂ ∣[(2 : ℤ)] γ) = E₂ + corr γ := by
-    simpa [corr] using (E₂_slash γ)
+      (E₂ ∣[(2 : ℤ)] γ) = E₂ + corr γ := by simpa [corr] using (E₂_slash γ)
   have hDE₂_slash (γ : SL(2, ℤ)) :
       D E₂ ∣[(4 : ℤ)] γ =
         D E₂
