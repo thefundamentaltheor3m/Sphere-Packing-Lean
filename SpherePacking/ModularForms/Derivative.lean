@@ -225,7 +225,8 @@ public theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
       calc ‖a n * cexp (2 * π * I * n * y)‖ * (2 * π * n)
           = ‖a n * (2 * π * I * n) * cexp (2 * π * I * n * y)‖ := by
             simp only [norm_mul, Complex.norm_ofNat, Complex.norm_real,
-              Complex.norm_I, mul_one, Complex.norm_natCast, Real.norm_of_nonneg pi_pos.le]; ring
+              Complex.norm_I, mul_one, Complex.norm_natCast, Real.norm_of_nonneg pi_pos.le]
+            ring
         _ ≤ u n := hbd
     have h_n_ge_1 : (1 : ℝ) ≤ n := Nat.one_le_cast.mpr (Nat.one_le_iff_ne_zero.mpr h_ne)
     calc ‖a n * cexp (2 * π * I * n * y)‖
