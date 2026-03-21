@@ -1061,9 +1061,9 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
       rw [hE₂slash]; simp [D_add _ _ E₂_holo' hcorr_h]
     have hcorrD : D (corr γ) z = (-12⁻¹ : ℂ) * (corr γ z * corr γ z) := by
       simpa [Pi.mul_apply, Pi.neg_apply, mul_assoc] using congrFun (hcorr_D γ) z
+    have hE₂z : (E₂ ∣[(2 : ℤ)] γ) z = E₂ z + corr γ z := by simpa [Pi.add_apply] using hE
     have hanom : anom = (6⁻¹ : ℂ) * corr γ z * (E₂ z + corr γ z) := by
-      simp only [anom, show (E₂ ∣[(2 : ℤ)] γ) z = E₂ z + corr γ z from by
-        simpa [Pi.add_apply] using hE, corr]; ring
+      simp only [anom, hE₂z, corr]; ring
     rw [hsolve, hDadd]
     simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul, hcorrD, hanom]
     ring
@@ -1082,8 +1082,9 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
         simpa [ModularForm.SL_slash_apply (f := E₂) (k := (2 : ℤ)) γ z, Pi.add_apply] using hE
       have := congrArg (· ^ (2 : ℕ)) hmain
       simp only [mul_pow] at this
-      rwa [show ((denom γ z) ^ (-(2 : ℤ))) ^ (2 : ℕ) = (denom γ z) ^ (-(4 : ℤ)) from by
-        rw [← zpow_natCast, ← zpow_mul]; norm_num] at this
+      have hpow : ((denom γ z) ^ (-(2 : ℤ))) ^ (2 : ℕ) = (denom γ z) ^ (-(4 : ℤ)) := by
+        rw [← zpow_natCast, ← zpow_mul]; norm_num
+      rwa [hpow] at this
     -- Now compute `serre_D 1 E₂` under slash.
     -- `(serre_D 1 E₂ ∣[4] γ) z = (denom γ z)^(-4) * serre_D 1 E₂(γ•z)`.
     simp only [serre_D, SL_slash_apply, Pi.add_apply] at *
@@ -1193,7 +1194,8 @@ public theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E�
   have h := congrFun ramanujan_E₄' z
   have h' : D E₄.toFun z = (-(3⁻¹ : ℂ) * E₆ z) + (4 : ℂ) * 12⁻¹ * E₂ z * E₄ z :=
     (sub_eq_iff_eq_add).1 (by simpa [serre_D, mul_assoc, mul_left_comm, mul_comm] using h)
-  rw [h']; simp [show (4 : ℂ) * 12⁻¹ = (3⁻¹ : ℂ) from by norm_num1, sub_eq_add_neg]; ring_nf
+  have hconst : ((4 : ℂ) * 12⁻¹) = (3⁻¹ : ℂ) := by norm_num1
+  rw [h']; simp [hconst, sub_eq_add_neg]; ring_nf
 
 /-- Ramanujan's differential equation for `E₆`. -/
 @[simp]
@@ -1205,6 +1207,7 @@ public theorem ramanujan_E₆ :
       D E₆.toFun z =
         (-(2⁻¹ : ℂ) * (E₄ z * E₄ z)) + (6 : ℂ) * 12⁻¹ * E₂ z * E₆ z :=
     (sub_eq_iff_eq_add).1 (by simpa [serre_D, mul_assoc, mul_left_comm, mul_comm] using h)
-  rw [h']; simp [show (6 : ℂ) * 12⁻¹ = (2⁻¹ : ℂ) from by norm_num1, sub_eq_add_neg]; ring_nf
+  have hconst : ((6 : ℂ) * 12⁻¹) = (2⁻¹ : ℂ) := by norm_num1
+  rw [h']; simp [hconst, sub_eq_add_neg]; ring_nf
 
 end Ramanujan
