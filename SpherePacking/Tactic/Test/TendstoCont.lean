@@ -359,9 +359,18 @@ private theorem bad_tendsto_true : Tendsto bad atTop (nhds true) := by
   rw [nhds_top]
   exact tendsto_top
 
+-- Same-bucket ambiguity: two attribute lemmas with same fn, different limits
 /-- error: tendsto_cont: ambiguous limit for atom — found hypotheses with limits `false` and `true` for the same function -/
 #guard_msgs(error, drop info) in
 example : Tendsto (fun z => bad z) atTop (nhds false) := by
   tendsto_cont
+
+-- Inline arg shadows both conflicting attribute candidates — no ambiguity
+example : Tendsto (fun z => bad z) atTop (nhds false) := by
+  tendsto_cont [bad_tendsto_false]
+
+-- Local hypothesis shadows both conflicting attribute candidates — no ambiguity
+example (h : Tendsto bad atTop (nhds false)) :
+    Tendsto (fun z => bad z) atTop (nhds false) := by tendsto_cont
 
 end AttrAmbiguity
