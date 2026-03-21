@@ -157,7 +157,9 @@ lemma MDifferentiable_div {F G : ℍ → ℂ}
 /-- The derivative of a constant function is zero. -/
 @[simp]
 public theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
-  unfold D; change (2 * π * I)⁻¹ * deriv (fun _ : ℂ => c) (z : ℂ) = 0; simp [deriv_const]
+  unfold D
+  change (2 * π * I)⁻¹ * deriv (fun _ : ℂ => c) (z : ℂ) = 0
+  simp [deriv_const]
 
 /-! ### Termwise differentiation of q-series (Lemma 6.45) -/
 
@@ -432,7 +434,9 @@ public lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) (γ : SL(2, ℤ)
     · have hsmul := UpperHalfPlane.coe_smul_of_det_pos hdet_pos ⟨w, hw⟩
       have hmob_im : 0 < (num γ w / denom γ w).im := by
         simpa [← hsmul] using (γ • (⟨w, hw⟩ : ℍ)).im_pos
-      congr 1; ext; simpa [ofComplex_apply_of_im_pos hmob_im] using hsmul
+      congr 1
+      ext
+      simpa [ofComplex_apply_of_im_pos hmob_im] using hsmul
   rw [hcomp]
   -- Now apply product rule: deriv[f * g] = f * deriv[g] + deriv[f] * g
   -- where f(w) = (F ∘ ofComplex)(num w / denom w) and g(w) = denom(w)^(-k)
@@ -477,9 +481,11 @@ public lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) (γ : SL(2, ℤ)
     simp only [Function.comp_apply, ← hmob_eq, ofComplex_apply]
   simp only [ModularForm.SL_slash_apply, hF_mob, hmob_eq]
   have hpow_combine : 1 / (denom γ z) ^ 2 * (denom γ z) ^ (-k) = (denom γ z) ^ (-(k + 2)) := by
-    rw [one_div, ← zpow_natCast (denom γ z) 2, ← zpow_neg, ← zpow_add₀ hz_denom_ne]; ring_nf
+    rw [one_div, ← zpow_natCast (denom γ z) 2, ← zpow_neg, ← zpow_add₀ hz_denom_ne]
+    ring_nf
   have hpow_m1 : (denom γ z) ^ (-k - 1) = (denom γ z) ^ (-1 : ℤ) * (denom γ z) ^ (-k) := by
-    rw [← zpow_add₀ hz_denom_ne]; ring_nf
+    rw [← zpow_add₀ hz_denom_ne]
+    ring_nf
   -- Rewrite powers on LHS
   conv_lhs =>
     rw [mul_assoc (deriv (F ∘ ofComplex) (num γ z / denom γ z)) (1 / denom γ z ^ 2) _]
@@ -533,7 +539,8 @@ public theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff
     simpa [add_comm, add_left_comm, add_assoc] using
       (ModularForm.mul_slash_SL2 (k1 := (2 : ℤ)) (k2 := k) (A := γ) (f := E₂) (g := F))
   have hserre : serre_D k F = D F - c • (E₂ * F) := by
-    ext w; simp [serre_D, c, smul_eq_mul, mul_assoc]
+    ext w
+    simp [serre_D, c, smul_eq_mul, mul_assoc]
   have hLHS : (serre_D k F ∣[k + 2] γ) z =
       (D F ∣[k + 2] γ) z - c * ((E₂ z + corr z) * (F ∣[k] γ) z) := by
     simp [hserre, sub_eq_add_neg, SlashAction.neg_slash, Pi.smul_apply, smul_eq_mul,
@@ -1071,12 +1078,14 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
         simpa [anom, Pi.sub_apply, Pi.mul_apply] using hD
       exact (sub_eq_iff_eq_add).1 h0.symm
     have hDadd : D (E₂ ∣[(2 : ℤ)] γ) z = (D E₂ + D (corr γ)) z := by
-      rw [hE₂slash]; simp [D_add _ _ E₂_holo' hcorr_h]
+      rw [hE₂slash]
+      simp [D_add _ _ E₂_holo' hcorr_h]
     have hcorrD : D (corr γ) z = (-12⁻¹ : ℂ) * (corr γ z * corr γ z) := by
       simpa [Pi.mul_apply, Pi.neg_apply, mul_assoc] using congrFun (hcorr_D γ) z
     have hE₂z : (E₂ ∣[(2 : ℤ)] γ) z = E₂ z + corr γ z := by simpa [Pi.add_apply] using hE
     have hanom : anom = (6⁻¹ : ℂ) * corr γ z * (E₂ z + corr γ z) := by
-      simp only [anom, hE₂z, corr]; ring
+      simp only [anom, hE₂z, corr]
+      ring
     rw [hsolve, hDadd]
     -- `D(corr) = -(1/12)·corr²`, and `anom = (1/6)·corr·(E₂+corr)`.
     simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul, hcorrD, hanom]
@@ -1097,7 +1106,8 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
       have := congrArg (· ^ (2 : ℕ)) hmain
       simp only [mul_pow] at this
       have hpow : ((denom γ z) ^ (-(2 : ℤ))) ^ (2 : ℕ) = (denom γ z) ^ (-(4 : ℤ)) := by
-        rw [← zpow_natCast, ← zpow_mul]; norm_num
+        rw [← zpow_natCast, ← zpow_mul]
+        norm_num
       rwa [hpow] at this
     -- Now compute `serre_D 1 E₂` under slash.
     -- `(serre_D 1 E₂ ∣[4] γ) z = (denom γ z)^(-4) * serre_D 1 E₂(γ•z)`.
@@ -1215,7 +1225,9 @@ public theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E�
   have h' : D E₄.toFun z = (-(3⁻¹ : ℂ) * E₆ z) + (4 : ℂ) * 12⁻¹ * E₂ z * E₄ z :=
     (sub_eq_iff_eq_add).1 (by simpa [serre_D, mul_assoc, mul_left_comm, mul_comm] using h)
   have hconst : ((4 : ℂ) * 12⁻¹) = (3⁻¹ : ℂ) := by norm_num1
-  rw [h']; simp [hconst, sub_eq_add_neg]; ring_nf
+  rw [h']
+  simp [hconst, sub_eq_add_neg]
+  ring_nf
 
 /-- Ramanujan's differential equation for `E₆`. -/
 @[simp]
@@ -1228,6 +1240,8 @@ public theorem ramanujan_E₆ :
         (-(2⁻¹ : ℂ) * (E₄ z * E₄ z)) + (6 : ℂ) * 12⁻¹ * E₂ z * E₆ z :=
     (sub_eq_iff_eq_add).1 (by simpa [serre_D, mul_assoc, mul_left_comm, mul_comm] using h)
   have hconst : ((6 : ℂ) * 12⁻¹) = (2⁻¹ : ℂ) := by norm_num1
-  rw [h']; simp [hconst, sub_eq_add_neg]; ring_nf
+  rw [h']
+  simp [hconst, sub_eq_add_neg]
+  ring_nf
 
 end Ramanujan
