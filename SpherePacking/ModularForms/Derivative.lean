@@ -748,10 +748,9 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
       have hpow0 : HasDerivAt (fun x : ℝ => x ^ (-a)) ((-a) * (d t) ^ (-a - 1)) (d t) := by
         simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm, mul_assoc] using
           Real.hasDerivAt_rpow_const (x := d t) (p := -a) (Or.inl hdne)
-      have hpow :=
-        (by simpa [mul_assoc, mul_left_comm, mul_comm] using hpow0.comp t (hd t ht) :
-          HasDerivAt (fun t => (d t) ^ (-a))
-            ((-a) * (d t) ^ (-a - 1) * (-2 * π * (ResToImagAxis (D Δ) t).re)) t)
+      have hpow : HasDerivAt (fun t => (d t) ^ (-a))
+          ((-a) * (d t) ^ (-a - 1) * (-2 * π * (ResToImagAxis (D Δ) t).re)) t := by
+        simpa [mul_assoc, mul_left_comm, mul_comm] using hpow0.comp t (hd t ht)
       simpa [h, mul_assoc, mul_left_comm, mul_comm, add_assoc, add_left_comm, add_comm] using
         (hg t ht).mul hpow
   have hn : ∀ t ∈ Set.Ioi (0 : ℝ), deriv h t < 0 := fun t (ht : 0 < t) => by
@@ -1140,32 +1139,35 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   have hDlim := D_isZeroAtImInfty_of_bounded E₂_holo' E₂_isBoundedAtImInfty
   have hF₄lim : Tendsto (fun z : ℍ => F₄ z) atImInfty (𝓝 (-(12⁻¹ : ℂ))) := by
     -- `F₄ = D E₂ - (1/12) E₂^2`.
+    have h12E₂ : Tendsto (fun z => (12⁻¹ : ℂ) * E₂ z) atImInfty (𝓝 (12⁻¹ : ℂ)) := by
+      simpa [mul_one] using tendsto_const_nhds.mul hE₂lim
     have : Tendsto (fun z => 12⁻¹ * E₂ z * E₂ z) atImInfty (𝓝 (12⁻¹ : ℂ)) := by
-      simpa [mul_assoc, mul_one] using
-        ((by simpa [mul_one] using tendsto_const_nhds.mul hE₂lim :
-          Tendsto (fun z => (12⁻¹ : ℂ) * E₂ z) _ (𝓝 (12⁻¹ : ℂ))).mul hE₂lim)
-    exact (by simpa [serre_D, mul_assoc, mul_one] using hDlim.sub this :
-        Tendsto (fun z : ℍ => serre_D 1 E₂ z) atImInfty (𝓝 (-(12⁻¹ : ℂ))))
+      simpa [mul_assoc, mul_one] using h12E₂.mul hE₂lim
+    have hmain : Tendsto (fun z : ℍ => serre_D 1 E₂ z) atImInfty (𝓝 (-(12⁻¹ : ℂ))) := by
+      simpa [serre_D, mul_assoc, mul_one] using hDlim.sub this
+    exact hmain
   have hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ)) := by
-    simpa [G, mul_one] using hF₄lim.add
-      (by simpa [mul_one] using tendsto_const_nhds.mul tendsto_E₄_atImInfty :
-        Tendsto (fun z : ℍ => (12⁻¹ : ℂ) * E₄ z) _ (𝓝 (12⁻¹ : ℂ)))
+    have h12E₄ : Tendsto (fun z : ℍ => (12⁻¹ : ℂ) * E₄ z) atImInfty (𝓝 (12⁻¹ : ℂ)) := by
+      simpa [mul_one] using tendsto_const_nhds.mul tendsto_E₄_atImInfty
+    simpa [G, mul_one] using hF₄lim.add h12E₄
   have hG0 : G = 0 := eq_zero_of_tendsto_zero_atImInfty (k := 4) (by norm_num) G hGlim
   funext z
   have hz : F₄ z + (12⁻¹ : ℂ) * E₄ z = 0 := by
     simpa [G] using congrArg (fun f : ModularForm Γ(1) 4 => f z) hG0
-  have hz' : F₄ z = -((12⁻¹ : ℂ) * E₄ z) := eq_neg_iff_add_eq_zero.2 (by simpa using hz)
-  exact (by simpa [neg_mul] using hz' : F₄ z = (-12⁻¹ : ℂ) * E₄ z)
+  have hz' : F₄ z = (-12⁻¹ : ℂ) * E₄ z := by
+    have := eq_neg_iff_add_eq_zero.2 (by simpa using hz)
+    simpa [neg_mul] using this
+  exact hz'
 
 public theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   let F₆ : ModularForm Γ(1) 6 := serreD_modularForm 4 E₄
   let G : ModularForm Γ(1) 6 := F₆ + (3⁻¹ : ℂ) • E₆
   have hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ)) := by
-    simpa [G, mul_one] using
-      (by simpa [F₆, serre_D_ModularForm] using tendsto_serre_D_E₄_atImInfty :
-        Tendsto (fun z : ℍ => F₆ z) _ (𝓝 (-(3⁻¹ : ℂ)))).add
-      (by simpa [mul_one] using tendsto_const_nhds.mul tendsto_E₆_atImInfty :
-        Tendsto (fun z : ℍ => (3⁻¹ : ℂ) * E₆ z) _ (𝓝 (3⁻¹ : ℂ)))
+    have hF₆ : Tendsto (fun z : ℍ => F₆ z) atImInfty (𝓝 (-(3⁻¹ : ℂ))) := by
+      simpa [F₆, serre_D_ModularForm] using tendsto_serre_D_E₄_atImInfty
+    have h3E₆ : Tendsto (fun z : ℍ => (3⁻¹ : ℂ) * E₆ z) atImInfty (𝓝 (3⁻¹ : ℂ)) := by
+      simpa [mul_one] using tendsto_const_nhds.mul tendsto_E₆_atImInfty
+    simpa [G, mul_one] using hF₆.add h3E₆
   have hG0 := eq_zero_of_tendsto_zero_atImInfty (k := (6 : ℤ)) (by norm_num) G hGlim
   funext z
   have hz : F₆.toFun z = -((3⁻¹ : ℂ) * E₆ z) := by
@@ -1181,11 +1183,11 @@ public theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * 
     have hE4 := tendsto_E₄_atImInfty
     have hE4sq : Tendsto (fun z : ℍ => E4sq z) atImInfty (𝓝 (1 : ℂ)) := by
       simpa [E4sq, mul_one] using hE4.mul hE4
-    simpa [G, mul_one] using
-      (by simpa [F₈, serre_D_ModularForm] using tendsto_serre_D_E₆_atImInfty :
-        Tendsto (fun z : ℍ => F₈ z) _ (𝓝 (-(2⁻¹ : ℂ)))).add
-      (by simpa [mul_one] using tendsto_const_nhds.mul hE4sq :
-        Tendsto (fun z => (2⁻¹ : ℂ) * E4sq z) _ (𝓝 (2⁻¹ : ℂ)))
+    have hF₈ : Tendsto (fun z : ℍ => F₈ z) atImInfty (𝓝 (-(2⁻¹ : ℂ))) := by
+      simpa [F₈, serre_D_ModularForm] using tendsto_serre_D_E₆_atImInfty
+    have h2E4sq : Tendsto (fun z => (2⁻¹ : ℂ) * E4sq z) atImInfty (𝓝 (2⁻¹ : ℂ)) := by
+      simpa [mul_one] using tendsto_const_nhds.mul hE4sq
+    simpa [G, mul_one] using hF₈.add h2E4sq
   have hG0 := eq_zero_of_tendsto_zero_atImInfty (k := (8 : ℤ)) (by norm_num) G hGlim
   funext z
   have hz : F₈.toFun z = -((2⁻¹ : ℂ) * E4sq z) := by
