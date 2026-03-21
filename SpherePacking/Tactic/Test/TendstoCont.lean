@@ -248,30 +248,63 @@ example (hf : Tendsto f (nhds 0) (nhds 1)) :
 -- Inline argument syntax: tendsto_cont [h₁, h₂]
 -- ══════════════════════════════════════════════════════════════
 
--- Single inline argument
-example (h : Tendsto f atTop (nhds 3)) :
-    Tendsto (fun z => f z + 1) atTop (nhds 4) := by tendsto_cont [h]
+section InlineArgs
+
+private def inlineFn : ℝ → ℝ := fun _ => 3
+
+private theorem inlineFn_tendsto : Tendsto inlineFn atTop (nhds 3) := by
+  simpa [inlineFn] using tendsto_const_nhds
+
+private def inlineFn₂ : ℝ → ℝ := fun _ => 2
+
+private theorem inlineFn₂_tendsto : Tendsto inlineFn₂ atTop (nhds 2) := by
+  simpa [inlineFn₂] using tendsto_const_nhds
+
+-- Without inline arg, no candidate exists
+/-- error: tendsto_cont: no `Tendsto` hypotheses found for filter `atTop` -/
+#guard_msgs(error, drop info) in
+example : Tendsto (fun z => inlineFn z + 1) atTop (nhds 4) := by
+  tendsto_cont
+
+-- Single inline argument makes it work
+example : Tendsto (fun z => inlineFn z + 1) atTop (nhds 4) := by
+  tendsto_cont [inlineFn_tendsto]
 
 -- Multiple inline arguments
-example (h₁ : Tendsto f atTop (nhds 1)) (h₂ : Tendsto g atTop (nhds 2)) :
-    Tendsto (fun z => f z + g z) atTop (nhds 3) := by tendsto_cont [h₁, h₂]
+example : Tendsto (fun z => inlineFn z + inlineFn₂ z) atTop (nhds 5) := by
+  tendsto_cont [inlineFn_tendsto, inlineFn₂_tendsto]
 
 -- Inline arg shadows conflicting local hypothesis — no ambiguity error
 example (_h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
     Tendsto (fun z => f z + 1) atTop (nhds 2) := by tendsto_cont [h₂]
 
+end InlineArgs
+
 -- ══════════════════════════════════════════════════════════════
 -- @[tendsto_cont] attribute
 -- ══════════════════════════════════════════════════════════════
 
--- Register a closed Tendsto theorem via attribute
-@[tendsto_cont]
-private theorem testAttrLemma :
-    Tendsto (fun z : ℝ => z) (nhds 0) (nhds 0) :=
-  tendsto_id
+section AttrRegistration
 
--- Attribute-registered theorem used automatically (no local hypothesis needed)
-example : Tendsto (fun z : ℝ => z + 1) (nhds 0) (nhds 1) := by tendsto_cont
+private def attrFn : ℝ → ℝ := fun _ => 0
+
+private theorem attrFn_tendsto : Tendsto attrFn (nhds 0) (nhds 0) := by
+  simpa [attrFn] using tendsto_const_nhds
+
+-- Before registration: fails
+/-- error: tendsto_cont: no `Tendsto` hypotheses found for filter `𝓝 0` -/
+#guard_msgs(error, drop info) in
+example : Tendsto (fun z => attrFn z + 1) (nhds 0) (nhds 1) := by
+  tendsto_cont
+
+-- Register via attribute
+attribute [tendsto_cont] attrFn_tendsto
+
+-- After registration: works
+example : Tendsto (fun z => attrFn z + 1) (nhds 0) (nhds 1) := by
+  tendsto_cont
+
+end AttrRegistration
 
 -- ══════════════════════════════════════════════════════════════
 -- Negative tests: inline arguments
