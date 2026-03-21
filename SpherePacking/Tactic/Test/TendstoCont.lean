@@ -243,3 +243,169 @@ example (hf : Tendsto f (nhds 0) (nhds 1)) :
 -- But known continuous functions (Real.sin, etc.) work fine via fun_prop
 example (hf : Tendsto f (nhds 0) (nhds 1)) :
     Tendsto (fun x => Real.sin (f x)) (nhds 0) (nhds (Real.sin 1)) := by tendsto_cont
+
+-- ══════════════════════════════════════════════════════════════
+-- Inline argument syntax: tendsto_cont [h₁, h₂]
+-- ══════════════════════════════════════════════════════════════
+
+-- Single inline argument
+example (h : Tendsto f atTop (nhds 3)) :
+    Tendsto (fun z => f z + 1) atTop (nhds 4) := by tendsto_cont [h]
+
+-- Multiple inline arguments
+example (h₁ : Tendsto f atTop (nhds 1)) (h₂ : Tendsto g atTop (nhds 2)) :
+    Tendsto (fun z => f z + g z) atTop (nhds 3) := by tendsto_cont [h₁, h₂]
+
+-- Inline arg shadows conflicting local hypothesis — no ambiguity error
+example (_h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
+    Tendsto (fun z => f z + 1) atTop (nhds 2) := by tendsto_cont [h₂]
+
+-- ══════════════════════════════════════════════════════════════
+-- @[tendsto_cont] attribute
+-- ══════════════════════════════════════════════════════════════
+
+-- Register a closed Tendsto theorem via attribute
+@[tendsto_cont]
+private theorem testAttrLemma :
+    Tendsto (fun z : ℝ => z) (nhds 0) (nhds 0) :=
+  tendsto_id
+
+-- Attribute-registered theorem used automatically (no local hypothesis needed)
+example : Tendsto (fun z : ℝ => z + 1) (nhds 0) (nhds 1) := by tendsto_cont
+
+-- ══════════════════════════════════════════════════════════════
+-- Negative tests: inline arguments
+-- ══════════════════════════════════════════════════════════════
+
+-- Wrong-filter inline arg is silently ignored → no candidates
+/-- error: tendsto_cont: no `Tendsto` hypotheses found for filter `atTop` -/
+#guard_msgs(error, drop info) in
+example (h : Tendsto f (nhds 0) (nhds 1)) :
+    Tendsto (fun z => f z + 1) atTop (nhds 2) := by tendsto_cont [h]
+
+-- Non-Tendsto inline arg is silently ignored → no candidates
+/-- error: tendsto_cont: no `Tendsto` hypotheses found for filter `atTop` -/
+#guard_msgs(error, drop info) in
+example (h : (1 : ℝ) + 1 = 2) :
+    Tendsto (fun z : ℝ => z + 1) atTop (nhds 2) := by tendsto_cont [h]
+
+-- Two inline args with same fn, different limits → ambiguity error
+/-- error: tendsto_cont: ambiguous limit for atom — found hypotheses with limits `0` and `1` for the same function -/
+#guard_msgs(error, drop info) in
+example (h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
+    Tendsto (fun z => f z + 1) atTop (nhds 1) := by tendsto_cont [h₁, h₂]
+
+-- ══════════════════════════════════════════════════════════════
+-- Negative tests: attribute type validation
+-- ══════════════════════════════════════════════════════════════
+
+-- Non-Tendsto declaration rejected at registration time
+/-- error: `@[tendsto_cont]`: declaration type must be `Tendsto f l (nhds a)`, got head `True` -/
+#guard_msgs(error, drop info) in
+@[tendsto_cont]
+theorem notATendstoTheorem : True := trivial
+
+-- Parameterized declaration rejected (only closed lemmas allowed)
+/-- error: `@[tendsto_cont]`: declaration must be a closed `Tendsto` lemma with no parameters; got a declaration with binders -/
+#guard_msgs(error, drop info) in
+@[tendsto_cont]
+theorem paramTendsto (_h : True) : Tendsto (fun _ : ℝ => (0 : ℝ)) atTop (nhds 0) :=
+  tendsto_const_nhds
+
+-- Tendsto with wrong target filter rejected at registration time
+/-- error: `@[tendsto_cont]`: target filter must be `nhds _`, got `Filter.atTop` -/
+#guard_msgs(error, drop info) in
+@[tendsto_cont]
+theorem wrongTargetFilter : Tendsto (fun z : ℝ => z) atTop atTop := tendsto_id
+
+-- ══════════════════════════════════════════════════════════════
+-- Negative tests: attribute scope rejection
+-- ══════════════════════════════════════════════════════════════
+
+theorem testScopeRejection : Tendsto (fun _ : ℝ => (0 : ℝ)) atTop (nhds 0) :=
+  tendsto_const_nhds
+
+/-- error: `@[tendsto_cont]` only supports global scope (not `local` or `scoped`) -/
+#guard_msgs(error, drop info) in
+attribute [local tendsto_cont] testScopeRejection
+
+namespace TestScopeRejection
+/-- error: `@[tendsto_cont]` only supports global scope (not `local` or `scoped`) -/
+#guard_msgs(error, drop info) in
+attribute [scoped tendsto_cont] testScopeRejection
+end TestScopeRejection
+
+-- ══════════════════════════════════════════════════════════════
+-- Negative test: attribute-level ambiguity (same fn, different limits)
+-- ══════════════════════════════════════════════════════════════
+
+-- Use Bool with the indiscrete topology (⊤) so that nhds = ⊤ and
+-- Tendsto holds trivially for any limit — no sorry needed.
+section AttrAmbiguity
+
+open Filter Topology
+
+local instance : TopologicalSpace Bool := ⊤
+
+private def bad : ℝ → Bool := fun _ => false
+
+@[tendsto_cont]
+private theorem bad_tendsto_false : Tendsto bad atTop (nhds false) := by
+  rw [nhds_top]
+  exact tendsto_top
+
+@[tendsto_cont]
+private theorem bad_tendsto_true : Tendsto bad atTop (nhds true) := by
+  rw [nhds_top]
+  exact tendsto_top
+
+-- Same-bucket ambiguity: two attribute lemmas with same fn, different limits
+/-- error: tendsto_cont: ambiguous limit for atom — found hypotheses with limits `false` and `true` for the same function -/
+#guard_msgs(error, drop info) in
+example : Tendsto (fun z => bad z) atTop (nhds false) := by
+  tendsto_cont
+
+end AttrAmbiguity
+
+-- ══════════════════════════════════════════════════════════════
+-- Cross-bucket shadowing: attribute vs local / attribute vs inline
+-- ══════════════════════════════════════════════════════════════
+
+-- Sierpinski-style topology on Bool via mkOfNhds:
+-- nhds false = ⊤ (every set is a neighborhood of false)
+-- nhds true = pure true (only sets containing true are neighborhoods)
+-- These are genuinely distinguishable, so reconcileLimits cannot paper
+-- over a wrong limit choice. Both Tendsto facts are provable because
+-- good always returns true.
+section AttrShadowing
+
+open Filter Topology
+
+local instance : TopologicalSpace Bool :=
+  TopologicalSpace.mkOfNhds (Function.update pure false ⊤)
+
+private lemma nhds_eq : ∀ b : Bool,
+    @nhds Bool (TopologicalSpace.mkOfNhds (Function.update pure false ⊤)) b =
+    Function.update pure false ⊤ b :=
+  TopologicalSpace.nhds_mkOfNhds_single le_top
+
+private def good : ℝ → Bool := fun _ => true
+
+@[tendsto_cont]
+private theorem good_attr_false : Tendsto good atTop (nhds false) := by
+  rw [nhds_eq]; simp [Function.update_self]
+
+private theorem good_inline_true : Tendsto good atTop (nhds true) := by
+  rw [nhds_eq]; simp [good]
+
+-- Local context shadows attribute registry.
+-- Load-bearing: if the attributed false limit were used instead,
+-- nhds false = ⊤ ≠ pure true = nhds true, so reconcileLimits fails.
+example (h : Tendsto good atTop (nhds true)) :
+    Tendsto (fun z => good z) atTop (nhds true) := by tendsto_cont
+
+-- Inline arg shadows attribute registry.
+example : Tendsto (fun z => good z) atTop (nhds true) := by
+  tendsto_cont [good_inline_true]
+
+end AttrShadowing
