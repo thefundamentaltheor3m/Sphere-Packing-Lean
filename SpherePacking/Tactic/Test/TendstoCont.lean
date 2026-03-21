@@ -371,39 +371,41 @@ end AttrAmbiguity
 -- Cross-bucket shadowing: attribute vs local / attribute vs inline
 -- ══════════════════════════════════════════════════════════════
 
--- These tests verify that a higher-priority candidate PREVENTS the
--- ambiguity error that would fire if both the attribute and the
--- higher-priority candidate survived into the merged array.
---
--- Limitation: they do NOT verify that the higher-priority candidate's
--- limit (rather than the attribute's) is actually used. In any topology
--- where both Tendsto facts are provable, nhds of both limits coincide,
--- so reconcileLimits can bridge the gap regardless of which candidate
--- is selected. A load-bearing "correct limit used" test would require
--- a topology where the limits are distinguishable but both provable —
--- which is impossible (unique limits in Hausdorff spaces, and in
--- non-Hausdorff spaces where both hold, nhds values coincide).
+-- Sierpinski-style topology on Bool via mkOfNhds:
+-- nhds false = ⊤ (every set is a neighborhood of false)
+-- nhds true = pure true (only sets containing true are neighborhoods)
+-- These are genuinely distinguishable, so reconcileLimits cannot paper
+-- over a wrong limit choice. Both Tendsto facts are provable because
+-- good always returns true.
 section AttrShadowing
 
 open Filter Topology
 
-local instance : TopologicalSpace Bool := ⊤
+local instance : TopologicalSpace Bool :=
+  TopologicalSpace.mkOfNhds (Function.update pure false ⊤)
 
-private def bad' : ℝ → Bool := fun _ => false
+private lemma nhds_eq : ∀ b : Bool,
+    @nhds Bool (TopologicalSpace.mkOfNhds (Function.update pure false ⊤)) b =
+    Function.update pure false ⊤ b :=
+  TopologicalSpace.nhds_mkOfNhds_single le_top
+
+private def good : ℝ → Bool := fun _ => true
 
 @[tendsto_cont]
-private theorem bad'_attr_false : Tendsto bad' atTop (nhds false) := by
-  rw [nhds_top]; exact tendsto_top
+private theorem good_attr_false : Tendsto good atTop (nhds false) := by
+  rw [nhds_eq]; simp [Function.update_self]
 
-private theorem bad'_true : Tendsto bad' atTop (nhds true) := by
-  rw [nhds_top]; exact tendsto_top
+private theorem good_inline_true : Tendsto good atTop (nhds true) := by
+  rw [nhds_eq]; simp [good]
 
--- Local context shadows attribute registry (no ambiguity error)
-example (h : Tendsto bad' atTop (nhds true)) :
-    Tendsto (fun z => bad' z) atTop (nhds true) := by tendsto_cont
+-- Local context shadows attribute registry.
+-- Load-bearing: if the attributed false limit were used instead,
+-- nhds false = ⊤ ≠ pure true = nhds true, so reconcileLimits fails.
+example (h : Tendsto good atTop (nhds true)) :
+    Tendsto (fun z => good z) atTop (nhds true) := by tendsto_cont
 
--- Inline arg shadows attribute registry (no ambiguity error)
-example : Tendsto (fun z => bad' z) atTop (nhds true) := by
-  tendsto_cont [bad'_true]
+-- Inline arg shadows attribute registry.
+example : Tendsto (fun z => good z) atTop (nhds true) := by
+  tendsto_cont [good_inline_true]
 
 end AttrShadowing
