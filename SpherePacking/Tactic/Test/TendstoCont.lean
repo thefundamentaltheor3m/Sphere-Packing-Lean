@@ -365,12 +365,37 @@ private theorem bad_tendsto_true : Tendsto bad atTop (nhds true) := by
 example : Tendsto (fun z => bad z) atTop (nhds false) := by
   tendsto_cont
 
--- Inline arg shadows both conflicting attribute candidates — no ambiguity
-example : Tendsto (fun z => bad z) atTop (nhds false) := by
-  tendsto_cont [bad_tendsto_false]
-
--- Local hypothesis shadows both conflicting attribute candidates — no ambiguity
-example (h : Tendsto bad atTop (nhds false)) :
-    Tendsto (fun z => bad z) atTop (nhds false) := by tendsto_cont
-
 end AttrAmbiguity
+
+-- ══════════════════════════════════════════════════════════════
+-- Cross-bucket shadowing: attribute vs local / attribute vs inline
+-- ══════════════════════════════════════════════════════════════
+
+-- Separate section with a single attributed lemma (limit false) so that
+-- a higher-priority source providing limit true is genuinely load-bearing:
+-- if shadowing fails, the tactic would use the wrong limit and the goal
+-- (nhds true) would not close.
+section AttrShadowing
+
+open Filter Topology
+
+local instance : TopologicalSpace Bool := ⊤
+
+private def bad' : ℝ → Bool := fun _ => false
+
+@[tendsto_cont]
+private theorem bad'_attr_false : Tendsto bad' atTop (nhds false) := by
+  rw [nhds_top]; exact tendsto_top
+
+private theorem bad'_true : Tendsto bad' atTop (nhds true) := by
+  rw [nhds_top]; exact tendsto_top
+
+-- Local context shadows attribute registry
+example (h : Tendsto bad' atTop (nhds true)) :
+    Tendsto (fun z => bad' z) atTop (nhds true) := by tendsto_cont
+
+-- Inline arg shadows attribute registry
+example : Tendsto (fun z => bad' z) atTop (nhds true) := by
+  tendsto_cont [bad'_true]
+
+end AttrShadowing
