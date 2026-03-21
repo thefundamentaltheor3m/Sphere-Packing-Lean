@@ -251,6 +251,7 @@ public theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.2] with w hw
     simp only [Function.comp_apply, ofComplex_apply_of_im_pos hw, UpperHalfPlane.coe_mk]
   rw [h_agree.deriv_eq, h_tsum_deriv.deriv]
+  -- Simplify derivWithin using helper
   simp_rw [derivWithin_qexp _ _ _ z.2, ← tsum_mul_left]
   congr 1; funext n; field_simp [two_pi_I_ne_zero]
 
@@ -384,9 +385,11 @@ public lemma deriv_moebius (z : ℍ) :
     exact_mod_cast this
   rw [deriv_fun_div (differentiableAt_num γ z) (differentiableAt_denom γ z) hz,
       deriv_num, deriv_denom]
+  -- The numerator collapses to `ad - bc = 1` by the determinant condition.
   have hnum_eq :
       ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) * denom γ z -
           num γ z * ((γ : Matrix (Fin 2) (Fin 2) ℤ) 1 0 : ℂ) = 1 := by
+    -- expand `num/denom` and cancel the `z` terms
     simp [num, denom, mul_add, add_mul, mul_assoc, mul_left_comm, mul_comm, hdet]
   simp [hnum_eq, one_div]
 
@@ -428,7 +431,7 @@ public lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) (γ : SL(2, ℤ)
     · have hsmul := UpperHalfPlane.coe_smul_of_det_pos hdet_pos ⟨w, hw⟩
       have hmob_im : 0 < (num γ w / denom γ w).im := by
         simpa [← hsmul] using (γ • (⟨w, hw⟩ : ℍ)).im_pos
-      congr 1; ext; · simpa [ofComplex_apply_of_im_pos hmob_im] using hsmul
+      congr 1; ext; simpa [ofComplex_apply_of_im_pos hmob_im] using hsmul
   rw [hcomp]
   -- Now apply product rule: deriv[f * g] = f * deriv[g] + deriv[f] * g
   -- where f(w) = (F ∘ ofComplex)(num w / denom w) and g(w) = denom(w)^(-k)
@@ -525,6 +528,7 @@ public theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff
   have hE : (E₂ ∣[(2 : ℤ)] γ) z = E₂ z + corr z := by
     simpa [corr] using congrFun (E₂_slash γ) z
   have hmul : (E₂ * F) ∣[k + 2] γ = (E₂ ∣[(2 : ℤ)] γ) * (F ∣[k] γ) := by
+    -- Mathlib's lemma is stated for weight `2 + k`; rewrite to `k + 2`.
     simpa [add_comm, add_left_comm, add_assoc] using
       (ModularForm.mul_slash_SL2 (k1 := (2 : ℤ)) (k2 := k) (A := γ) (f := E₂) (g := F))
   have hserre : serre_D k F = D F - c • (E₂ * F) := by
@@ -786,6 +790,7 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
         -- Rearranged, this is exactly `d^(-a-1) * d = d^(-a)`.
         simpa [add_assoc, add_left_comm, add_comm] using h.symm
       grind only
+    -- Combine signs.
     rw [hderiv, mul_assoc]
     exact mul_neg_of_neg_of_pos (by nlinarith [Real.pi_pos]) (mul_pos hdpowpos hSpos)
   have hAnti : StrictAntiOn h (Set.Ioi (0 : ℝ)) :=
@@ -1012,6 +1017,7 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
     (12 : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z)
   have hcorr_holo (γ : SL(2, ℤ)) : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (corr γ) := by
     rw [UpperHalfPlane.mdifferentiable_iff]
+    -- Reduce to a holomorphic rational function on `{z : ℂ | 0 < z.im}`.
     have hG : DifferentiableOn ℂ
         (fun z : ℂ => (12 : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z))
         {z : ℂ | 0 < z.im} := fun z hz =>
@@ -1068,6 +1074,7 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
     have hanom : anom = (6⁻¹ : ℂ) * corr γ z * (E₂ z + corr γ z) := by
       simp only [anom, hE₂z, corr]; ring
     rw [hsolve, hDadd]
+    -- `D(corr) = -(1/12)·corr²`, and `anom = (1/6)·corr·(E₂+corr)`.
     simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul, hcorrD, hanom]
     ring
   have hSerre_slash (γ : SL(2, ℤ)) :
@@ -1114,6 +1121,7 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
       holo' := serre_D_differentiable (k := (1 : ℂ)) E₂_holo'
       bdd_at_cusps' := by
         intro c hc
+        -- Bounded at infinity: both terms in `serre_D` are bounded.
         have hbdd : IsBoundedAtImInfty (serre_D 1 E₂) :=
           serre_D_isBoundedAtImInfty (k := (1 : ℂ)) E₂_holo' E₂_isBoundedAtImInfty
         exact bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
@@ -1127,6 +1135,7 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   have hE₂lim : Tendsto E₂ atImInfty (𝓝 (1 : ℂ)) := tendsto_E₂_atImInfty
   have hDlim := D_isZeroAtImInfty_of_bounded E₂_holo' E₂_isBoundedAtImInfty
   have hF₄lim : Tendsto (fun z : ℍ => F₄ z) atImInfty (𝓝 (-(12⁻¹ : ℂ))) := by
+    -- `F₄ = D E₂ - (1/12) E₂^2`.
     have : Tendsto (fun z => 12⁻¹ * E₂ z * E₂ z) atImInfty (𝓝 (12⁻¹ : ℂ)) := by
       simpa [mul_assoc, mul_one] using
         ((by simpa [mul_one] using tendsto_const_nhds.mul hE₂lim :
