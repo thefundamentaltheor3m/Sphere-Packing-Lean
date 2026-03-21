@@ -371,10 +371,18 @@ end AttrAmbiguity
 -- Cross-bucket shadowing: attribute vs local / attribute vs inline
 -- ══════════════════════════════════════════════════════════════
 
--- Separate section with a single attributed lemma (limit false) so that
--- a higher-priority source providing limit true is genuinely load-bearing:
--- if shadowing fails, the tactic would use the wrong limit and the goal
--- (nhds true) would not close.
+-- These tests verify that a higher-priority candidate PREVENTS the
+-- ambiguity error that would fire if both the attribute and the
+-- higher-priority candidate survived into the merged array.
+--
+-- Limitation: they do NOT verify that the higher-priority candidate's
+-- limit (rather than the attribute's) is actually used. In any topology
+-- where both Tendsto facts are provable, nhds of both limits coincide,
+-- so reconcileLimits can bridge the gap regardless of which candidate
+-- is selected. A load-bearing "correct limit used" test would require
+-- a topology where the limits are distinguishable but both provable —
+-- which is impossible (unique limits in Hausdorff spaces, and in
+-- non-Hausdorff spaces where both hold, nhds values coincide).
 section AttrShadowing
 
 open Filter Topology
@@ -390,11 +398,11 @@ private theorem bad'_attr_false : Tendsto bad' atTop (nhds false) := by
 private theorem bad'_true : Tendsto bad' atTop (nhds true) := by
   rw [nhds_top]; exact tendsto_top
 
--- Local context shadows attribute registry
+-- Local context shadows attribute registry (no ambiguity error)
 example (h : Tendsto bad' atTop (nhds true)) :
     Tendsto (fun z => bad' z) atTop (nhds true) := by tendsto_cont
 
--- Inline arg shadows attribute registry
+-- Inline arg shadows attribute registry (no ambiguity error)
 example : Tendsto (fun z => bad' z) atTop (nhds true) := by
   tendsto_cont [bad'_true]
 
