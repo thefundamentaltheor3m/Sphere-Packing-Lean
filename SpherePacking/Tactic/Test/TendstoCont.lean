@@ -334,3 +334,34 @@ namespace TestScopeRejection
 #guard_msgs(error, drop info) in
 attribute [scoped tendsto_cont] testScopeRejection
 end TestScopeRejection
+
+-- ══════════════════════════════════════════════════════════════
+-- Negative test: attribute-level ambiguity (same fn, different limits)
+-- ══════════════════════════════════════════════════════════════
+
+-- Use Bool with the indiscrete topology (⊤) so that nhds = ⊤ and
+-- Tendsto holds trivially for any limit — no sorry needed.
+section AttrAmbiguity
+
+open Filter Topology
+
+local instance : TopologicalSpace Bool := ⊤
+
+private def bad : ℝ → Bool := fun _ => false
+
+@[tendsto_cont]
+private theorem bad_tendsto_false : Tendsto bad atTop (nhds false) := by
+  rw [nhds_top]
+  exact tendsto_top
+
+@[tendsto_cont]
+private theorem bad_tendsto_true : Tendsto bad atTop (nhds true) := by
+  rw [nhds_top]
+  exact tendsto_top
+
+/-- error: tendsto_cont: ambiguous limit for atom — found hypotheses with limits `false` and `true` for the same function -/
+#guard_msgs(error, drop info) in
+example : Tendsto (fun z => bad z) atTop (nhds false) := by
+  tendsto_cont
+
+end AttrAmbiguity
