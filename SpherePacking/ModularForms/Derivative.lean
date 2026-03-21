@@ -929,7 +929,9 @@ public theorem serre_D_isBoundedAtImInfty {f : ℍ → ℂ} (k : ℂ)
   have hE₂f : IsBoundedAtImInfty (fun z => k * 12⁻¹ * E₂ z * f z) := by
     have hconst : IsBoundedAtImInfty (fun _ : ℍ => k * 12⁻¹) := Filter.const_boundedAtFilter _ _
     convert hconst.mul (E₂_isBoundedAtImInfty.mul hbdd) using 1
-    ext z; simp only [Pi.mul_apply]; ring
+    ext z
+    simp only [Pi.mul_apply]
+    ring
   exact hD.sub hE₂f
 
 /-- A level-1 modular form is invariant under slash action by any element of SL(2,ℤ). -/
@@ -990,14 +992,16 @@ private lemma tendsto_E₆_atImInfty : Tendsto (fun z : ℍ => E₆ z) atImInfty
 lemma tendsto_serre_D_E₄_atImInfty :
     Tendsto (fun z : ℍ => serre_D 4 E₄.toFun z) atImInfty (𝓝 (-(3⁻¹ : ℂ))) := by
   have : ((4 : ℂ) * 12⁻¹) = (3⁻¹ : ℂ) := by norm_num
+  have hE₄ : Tendsto (⇑E₄) atImInfty (𝓝 1) := by simpa using tendsto_E₄_atImInfty
   simpa [this] using tendsto_serre_D_of_bounded_tendsto_one (k := (4 : ℂ)) E₄.holo'
-    (ModularFormClass.bdd_at_infty E₄) (by simpa using tendsto_E₄_atImInfty)
+    (ModularFormClass.bdd_at_infty E₄) hE₄
 
 lemma tendsto_serre_D_E₆_atImInfty :
     Tendsto (fun z : ℍ => serre_D 6 E₆.toFun z) atImInfty (𝓝 (-(2⁻¹ : ℂ))) := by
   have : ((6 : ℂ) * 12⁻¹) = (2⁻¹ : ℂ) := by norm_num
+  have hE₆ : Tendsto (⇑E₆) atImInfty (𝓝 1) := by simpa using tendsto_E₆_atImInfty
   simpa [this] using tendsto_serre_D_of_bounded_tendsto_one (k := (6 : ℂ)) E₆.holo'
-    (ModularFormClass.bdd_at_infty E₆) (by simpa using tendsto_E₆_atImInfty)
+    (ModularFormClass.bdd_at_infty E₆) hE₆
 
 noncomputable abbrev serreD_modularForm := @serre_D_ModularForm
 
@@ -1150,8 +1154,8 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   funext z
   have hz : F₄ z + (12⁻¹ : ℂ) * E₄ z = 0 := by
     simpa [G] using congrArg (fun f : ModularForm Γ(1) 4 => f z) hG0
-  exact (by simpa [neg_mul] using eq_neg_iff_add_eq_zero.2 (by simpa using hz) :
-    F₄ z = (-12⁻¹ : ℂ) * E₄ z)
+  have hz' : F₄ z = -((12⁻¹ : ℂ) * E₄ z) := eq_neg_iff_add_eq_zero.2 (by simpa using hz)
+  exact (by simpa [neg_mul] using hz' : F₄ z = (-12⁻¹ : ℂ) * E₄ z)
 
 public theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
   let F₆ : ModularForm Γ(1) 6 := serreD_modularForm 4 E₄
