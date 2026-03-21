@@ -134,7 +134,8 @@ public theorem D_sq (F : ℍ → ℂ) (hF : MDiff F) :
 public theorem D_cube (F : ℍ → ℂ) (hF : MDiff F) :
     D (F ^ 3) = 3 * F ^ 2 * D F := by
   have hF2 : MDiff (F ^ 2) := by simpa [pow_two] using (MDifferentiable.mul hF hF)
-  rw [show F ^ 3 = F * F ^ 2 by ring_nf, D_mul F (F ^ 2) hF hF2, D_sq F hF]
+  have : F ^ 3 = F * F ^ 2 := by ring_nf
+  rw [this, D_mul F (F ^ 2) hF hF2, D_sq F hF]
   ring_nf
 
 /-- Division of MDifferentiable functions on ℍ is MDifferentiable, when the denominator
@@ -449,10 +450,11 @@ public lemma D_slash (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) (γ : SL(2, ℤ)
     MDifferentiableAt_DifferentiableAt (hF ⟨num γ z / denom γ z, hmobius_in_H⟩)
   have hdiff_F_mobius :
       DifferentiableAt ℂ (fun w => (F ∘ ofComplex) (num γ w / denom γ w)) z :=
-    show DifferentiableAt ℂ ((F ∘ ofComplex) ∘ (fun w => num γ w / denom γ w)) z from
-      hdiff_F_comp.comp (z : ℂ) hdiff_mobius
-  rw [show (fun w => (F ∘ ofComplex) (num γ w / denom γ w) * (denom γ w) ^ (-k)) =
-      ((fun w => (F ∘ ofComplex) (num γ w / denom γ w)) * fun w => (denom γ w) ^ (-k)) by rfl]
+    (hdiff_F_comp.comp (z : ℂ) hdiff_mobius :
+      DifferentiableAt ℂ ((F ∘ ofComplex) ∘ (fun w => num γ w / denom γ w)) z)
+  have hprod_eq : (fun w => (F ∘ ofComplex) (num γ w / denom γ w) * (denom γ w) ^ (-k)) =
+      ((fun w => (F ∘ ofComplex) (num γ w / denom γ w)) * fun w => (denom γ w) ^ (-k)) := rfl
+  rw [hprod_eq]
   rw [deriv_mul hdiff_F_mobius hdiff_denom_zpow]
   -- Apply chain rule to (F ∘ ofComplex) ∘ mobius
   have hchain :
@@ -531,10 +533,10 @@ public theorem serre_D_slash_equivariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff
       (D F ∣[k + 2] γ) z - c * ((E₂ z + corr z) * (F ∣[k] γ) z) := by
     simp [hserre, sub_eq_add_neg, SlashAction.neg_slash, Pi.smul_apply, smul_eq_mul,
       hmul, Pi.mul_apply, hE]
-  simp only [hLHS, serre_D_apply, c, corr,
-    show D (F ∣[k] γ) z = (D F ∣[k + 2] γ) z -
-      (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z from by
-      simpa [Pi.sub_apply] using hD]
+  have hD' : D (F ∣[k] γ) z = (D F ∣[k + 2] γ) z -
+      (k : ℂ) * (2 * π * I)⁻¹ * (γ 1 0 / denom γ z) * (F ∣[k] γ) z := by
+    simpa [Pi.sub_apply] using hD
+  simp only [hLHS, serre_D_apply, hD', c, corr]
   ring
 
 public theorem serre_D_slash_invariant (k : ℤ) (F : ℍ → ℂ) (hF : MDiff F) (γ : SL(2, ℤ))
@@ -662,7 +664,8 @@ theorem antiDerPos {F : ℍ → ℂ} (hFderiv : MDiff F)
       simpa [g] using hasDerivAt_re_resToImagAxis F hFderiv t ht
   have hn : ∀ t ∈ Set.Ioi (0 : ℝ), deriv g t < 0 := fun t (ht : 0 < t) => by
     rw [(hg t ht).deriv]
-    nlinarith [Real.pi_pos, show 0 < (ResToImagAxis (D F) t).re from hDF_pos t ht]
+    have : 0 < (ResToImagAxis (D F) t).re := hDF_pos t ht
+    nlinarith [Real.pi_pos]
   have hAnti : StrictAntiOn g (Set.Ioi (0 : ℝ)) :=
     strictAntiOn_Ioi_zero_of_deriv_neg (fun x hx => (hg x hx).continuousAt.continuousWithinAt) hn
   exact ⟨hF_real, fun t ht => StrictAntiOn.eventuallyPos_Ioi hAnti ht₀_pos hF_pos t ht⟩
@@ -981,15 +984,15 @@ private lemma tendsto_E₆_atImInfty : Tendsto (fun z : ℍ => E₆ z) atImInfty
 
 lemma tendsto_serre_D_E₄_atImInfty :
     Tendsto (fun z : ℍ => serre_D 4 E₄.toFun z) atImInfty (𝓝 (-(3⁻¹ : ℂ))) := by
-  simpa [show ((4 : ℂ) * 12⁻¹) = (3⁻¹ : ℂ) by norm_num] using
-    tendsto_serre_D_of_bounded_tendsto_one (k := (4 : ℂ)) E₄.holo'
-      (ModularFormClass.bdd_at_infty E₄) (by simpa using tendsto_E₄_atImInfty)
+  have : ((4 : ℂ) * 12⁻¹) = (3⁻¹ : ℂ) := by norm_num
+  simpa [this] using tendsto_serre_D_of_bounded_tendsto_one (k := (4 : ℂ)) E₄.holo'
+    (ModularFormClass.bdd_at_infty E₄) (by simpa using tendsto_E₄_atImInfty)
 
 lemma tendsto_serre_D_E₆_atImInfty :
     Tendsto (fun z : ℍ => serre_D 6 E₆.toFun z) atImInfty (𝓝 (-(2⁻¹ : ℂ))) := by
-  simpa [show ((6 : ℂ) * 12⁻¹) = (2⁻¹ : ℂ) by norm_num] using
-    tendsto_serre_D_of_bounded_tendsto_one (k := (6 : ℂ)) E₆.holo'
-      (ModularFormClass.bdd_at_infty E₆) (by simpa using tendsto_E₆_atImInfty)
+  have : ((6 : ℂ) * 12⁻¹) = (2⁻¹ : ℂ) := by norm_num
+  simpa [this] using tendsto_serre_D_of_bounded_tendsto_one (k := (6 : ℂ)) E₆.holo'
+    (ModularFormClass.bdd_at_infty E₆) (by simpa using tendsto_E₆_atImInfty)
 
 noncomputable abbrev serreD_modularForm := @serre_D_ModularForm
 
@@ -1115,8 +1118,9 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
           serre_D_isBoundedAtImInfty (k := (1 : ℂ)) E₂_holo' E₂_isBoundedAtImInfty
         exact bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
           obtain ⟨γ, rfl⟩ := hA
-          rw [show serre_D 1 E₂ ∣[(4 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ γ) =
-              serre_D 1 E₂ from by simpa [ModularForm.SL_slash] using hSerre_slash γ]
+          have hslash : serre_D 1 E₂ ∣[(4 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ γ) =
+              serre_D 1 E₂ := by simpa [ModularForm.SL_slash] using hSerre_slash γ
+          rw [hslash]
           exact hbdd }
   -- Identify `F₄` by its constant term at infinity: it is `-(1/12)·E₄`.
   let G : ModularForm Γ(1) 4 := F₄ + (12⁻¹ : ℂ) • E₄
