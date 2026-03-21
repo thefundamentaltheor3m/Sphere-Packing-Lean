@@ -3,6 +3,8 @@ module
 import Mathlib.Analysis.CStarAlgebra.Classes
 import SpherePacking.Tactic.NormNumI
 
+set_option linter.privateModule false
+
 open Complex
 
 -- [TODO] move all this metaprogramming stuff elsewhere!!

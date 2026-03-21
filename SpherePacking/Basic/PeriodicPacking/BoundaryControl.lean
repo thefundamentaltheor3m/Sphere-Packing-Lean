@@ -212,9 +212,9 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
       simpa [Metric.mem_ball, dist_eq_norm] using hy0
     have hy0' : y0 ∈ (coordCube (d := d) L \ coordCubeInner (d := d) L (1 / 2)) +
         ball (0 : EuclideanSpace ℝ (Fin d)) r :=
-      ⟨x0, ⟨hx0, hx0_notInner⟩, y0 - x0, hz, by simp [sub_eq_add_neg, add_assoc, add_comm,
-        add_left_comm]⟩
-    have := coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L (by simpa [r] using hy0')
+      ⟨x0, ⟨hx0, hx0_notInner⟩, y0 - x0, hz, by simp [sub_eq_add_neg, add_left_comm]⟩
+    have := coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L
+      (by simpa [r] using hy0')
     simpa [Set.mem_vadd_set_iff_neg_vadd_mem, y0] using this
   have hr : (2⁻¹ : ℝ) = r := by norm_num
   calc (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ))
@@ -645,10 +645,12 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       hF_centers hF_inner with ⟨P, hPsep, hPdens⟩
   -- Rewrite `P.density` with denominator `volCube`.
   have hden :
-      (Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) : ℝ≥0∞) = volCube := by
+      (Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) : ℝ≥0∞) =
+        volCube := by
     have h : Real.toNNReal (ZLattice.covolume (cubeLattice (d := d) L hLpos) volume) =
         volCube.toNNReal := by
-      simpa [volCube] using PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) (L := L) hLpos
+      simpa [volCube] using
+        PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) (L := L) hLpos
     rw [h]
     exact ENNReal.coe_toNNReal hvolCube_ne_top
   have hPdens' : P.density = (F.card : ℝ≥0∞) * volBall / volCube := by
