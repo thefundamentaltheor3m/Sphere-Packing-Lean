@@ -320,6 +320,27 @@ example : Tendsto (fun z => attrFn z + 1) (nhds 0) (nhds 1) := by
 
 end AttrRegistration
 
+-- Axiomatized function: fun_prop knows nothing about it,
+-- so the attribute is the only source of the Tendsto fact.
+section AttrAxiom
+
+private axiom opaqueF : ℝ → ℝ
+private axiom opaqueF_tendsto : Tendsto opaqueF (nhds 1) (nhds 0)
+
+-- Before registration: fails
+/-- error: tendsto_cont: no `Tendsto` hypotheses found for filter `𝓝 1` -/
+#guard_msgs(error, drop info) in
+example : Tendsto (fun z => opaqueF z + 1) (nhds 1) (nhds 1) := by
+  tendsto_cont
+
+attribute [tendsto_cont] opaqueF_tendsto
+
+-- After registration: works
+example : Tendsto (fun z => opaqueF z + 1) (nhds 1) (nhds 1) := by
+  tendsto_cont
+
+end AttrAxiom
+
 -- ══════════════════════════════════════════════════════════════
 -- Negative tests: inline arguments
 -- ══════════════════════════════════════════════════════════════
