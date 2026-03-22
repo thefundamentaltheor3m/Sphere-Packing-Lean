@@ -160,20 +160,30 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
     | none => continue
   -- Warn about redundant inline args (local hyps that don't disambiguate)
   let ctx ← getLCtx
-  for inlineCand in inlineCands do
+  for i in [:inlineCands.size] do
+    let inlineCand := inlineCands[i]!
     unless inlineCand.hyp.isFVar do continue
     let mut hasConflict := false
-    for decl in ctx do
-      if decl.isImplementationDetail then continue
-      if decl.fvarId == inlineCand.hyp.fvarId! then continue
-      let ty ← instantiateMVars decl.type
-      match ← matchTendstoNhds? ty with
-      | some (_, f, l, a) =>
-        if ← withNewMCtxDepth (isDefEq l goalFilter) then
-          if ← withNewMCtxDepth (isDefEq f inlineCand.fn) then
-            unless ← withNewMCtxDepth (isDefEq a inlineCand.limit) do
-              hasConflict := true
-      | none => continue
+    -- Check other inline args for conflicts (same fn, different limit)
+    for j in [:inlineCands.size] do
+      if i == j then continue
+      let other := inlineCands[j]!
+      if ← withNewMCtxDepth (isDefEq other.fn inlineCand.fn) then
+        unless ← withNewMCtxDepth (isDefEq other.limit inlineCand.limit) do
+          hasConflict := true
+    -- Check local context for conflicts (same fn, different limit)
+    unless hasConflict do
+      for decl in ctx do
+        if decl.isImplementationDetail then continue
+        if decl.fvarId == inlineCand.hyp.fvarId! then continue
+        let ty ← instantiateMVars decl.type
+        match ← matchTendstoNhds? ty with
+        | some (_, f, l, a) =>
+          if ← withNewMCtxDepth (isDefEq l goalFilter) then
+            if ← withNewMCtxDepth (isDefEq f inlineCand.fn) then
+              unless ← withNewMCtxDepth (isDefEq a inlineCand.limit) do
+                hasConflict := true
+        | none => continue
     unless hasConflict do
       let name ← ppExpr inlineCand.hyp
       logWarning m!"tendsto_cont: inline argument `{name}` is redundant \

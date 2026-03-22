@@ -284,6 +284,14 @@ example (h : Tendsto f atTop (nhds 3)) :
 example (_h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
     Tendsto (fun z => f z + 1) atTop (nhds 2) := by tendsto_cont [h₂]
 
+-- Inline FVar disambiguates against non-local inline arg — no redundancy warning
+-- (removing h would change behavior: inlineFn_tendsto would be used instead)
+/-- error: tendsto_cont: ambiguous limit for atom — found hypotheses with limits `0` and `3` for the same function -/
+#guard_msgs(error, drop info) in
+example (h : Tendsto inlineFn atTop (nhds 0)) :
+    Tendsto (fun z => inlineFn z + 1) atTop (nhds 4) := by
+  tendsto_cont [h, inlineFn_tendsto]
+
 end InlineArgs
 
 -- ══════════════════════════════════════════════════════════════
