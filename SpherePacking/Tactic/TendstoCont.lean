@@ -158,8 +158,27 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
         inlineCands := inlineCands.push
           { fn := f, limit := a, hyp := hyp, codTy := codTy }
     | none => continue
-  -- Bucket 2: local context (shadowed by inline)
+  -- Warn about redundant inline args (local hyps that don't disambiguate)
   let ctx ← getLCtx
+  for inlineCand in inlineCands do
+    unless inlineCand.hyp.isFVar do continue
+    let mut hasConflict := false
+    for decl in ctx do
+      if decl.isImplementationDetail then continue
+      if decl.fvarId == inlineCand.hyp.fvarId! then continue
+      let ty ← instantiateMVars decl.type
+      match ← matchTendstoNhds? ty with
+      | some (_, f, l, a) =>
+        if ← withNewMCtxDepth (isDefEq l goalFilter) then
+          if ← withNewMCtxDepth (isDefEq f inlineCand.fn) then
+            unless ← withNewMCtxDepth (isDefEq a inlineCand.limit) do
+              hasConflict := true
+      | none => continue
+    unless hasConflict do
+      let name ← ppExpr inlineCand.hyp
+      logWarning m!"tendsto_cont: inline argument `{name}` is redundant \
+        — it is already available as a local hypothesis"
+  -- Bucket 2: local context (shadowed by inline)
   let mut contextCands : Array Atom := #[]
   for decl in ctx do
     if decl.isImplementationDetail then continue

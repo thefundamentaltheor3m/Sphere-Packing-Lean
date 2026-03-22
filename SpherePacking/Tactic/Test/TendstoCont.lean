@@ -274,7 +274,13 @@ example : Tendsto (fun z => inlineFn z + 1) atTop (nhds 4) := by
 example : Tendsto (fun z => inlineFn z + inlineFn₂ z) atTop (nhds 5) := by
   tendsto_cont [inlineFn_tendsto, inlineFn₂_tendsto]
 
--- Inline arg shadows conflicting local hypothesis — no ambiguity error
+-- Redundant inline arg (already a local hypothesis) triggers warning
+/-- warning: tendsto_cont: inline argument `h` is redundant — it is already available as a local hypothesis -/
+#guard_msgs(warning, drop info) in
+example (h : Tendsto f atTop (nhds 3)) :
+    Tendsto (fun z => f z + 1) atTop (nhds 4) := by tendsto_cont [h]
+
+-- Inline arg shadows conflicting local hypothesis — no ambiguity error, no warning
 example (_h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
     Tendsto (fun z => f z + 1) atTop (nhds 2) := by tendsto_cont [h₂]
 
