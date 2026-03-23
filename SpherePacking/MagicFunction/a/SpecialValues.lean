@@ -576,7 +576,8 @@ lemma integral_f0_height_one_eq_neg_I6 :
       _ = Complex.I •
             (∫ t in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
               ∂MeasureTheory.volume) := by
-            simp [MeasureTheory.integral_const_mul, smul_eq_mul, mul_left_comm, mul_comm]
+            simp only [MeasureTheory.integral_const_mul, smul_eq_mul]
+            ring
   -- Solve for `bottom`.
   grind only
 
@@ -954,8 +955,8 @@ theorem a_zero_value : FourierEigenfunctions.a (0 : ℝ⁸) = -8640 * Complex.I 
           mul_assoc, mul_left_comm, mul_comm] using hI24
       rw [this, hsplit, hf0]
       simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, hphi2]
-    simp [hI24', div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-    norm_num
+    rw [hI24']
+    ring
   simp [ha, hI246]
 
 end StripContour

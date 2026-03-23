@@ -123,7 +123,7 @@ lemma norm_φ₀''_le_of_half_lt {C₀ : ℝ}
   have hφ' : ‖φ₀'' z‖ ≤ C₀ * Real.exp (-2 * π * zH.im) := by
     simpa [φ₀''_def hzpos] using hC₀ zH (by simpa [zH, UpperHalfPlane.im] using hzhalf)
   exact hφ'.trans (mul_le_of_le_one_right hC₀_nonneg
-    (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, hzpos.le])))
+    (Real.exp_le_one_iff.2 (by have : 0 ≤ zH.im := hzpos.le; nlinarith [Real.pi_pos])))
 
 lemma im_I_div (t : ℝ) : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := by
   simp
@@ -545,9 +545,13 @@ lemma I₂'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₂'C u0 := by
       exact (le_trans hbound (le_max_left _ _))
   have hpow_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖(((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ ≤ 4 := by
     intro t ht
-    have hnorm : ‖(t : ℂ) + (Complex.I : ℂ)‖ ≤ 2 :=
-      (norm_add_le _ _).trans (by simpa using (norm_of_mem_uIoc_le_one ht))
-    simpa using pow_le_pow_left₀ (norm_nonneg _) hnorm 2
+    have hnorm : ‖(t : ℂ) + (Complex.I : ℂ)‖ ≤ 2 := by
+      calc ‖(t : ℂ) + (Complex.I : ℂ)‖ ≤ ‖(t : ℂ)‖ + ‖(Complex.I : ℂ)‖ := norm_add_le _ _
+        _ ≤ 1 + 1 := add_le_add (norm_of_mem_uIoc_le_one ht) (by simp)
+        _ = 2 := by norm_num
+    calc ‖((t : ℂ) + I) ^ 2‖ = ‖(t : ℂ) + I‖ ^ 2 := by simp [norm_pow]
+      _ ≤ 2 ^ 2 := pow_le_pow_left₀ (norm_nonneg _) hnorm 2
+      _ = 4 := by norm_num
   have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base₂ t‖ ≤ (4 * Cφ) := by
     intro t ht
     simpa [base₂, mul_comm] using
@@ -581,9 +585,14 @@ lemma I₄'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₄'C u0 := by
       exact (le_trans hbound (le_max_left _ _))
   have hpow_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ ≤ 4 := by
     intro t ht
-    have hnorm : ‖-(t : ℂ) + (Complex.I : ℂ)‖ ≤ 2 :=
-      (norm_add_le _ _).trans (by simp; exact norm_of_mem_uIoc_le_one ht)
-    simpa using pow_le_pow_left₀ (norm_nonneg _) hnorm 2
+    have hnorm : ‖-(t : ℂ) + (Complex.I : ℂ)‖ ≤ 2 := by
+      calc ‖-(t : ℂ) + (Complex.I : ℂ)‖ ≤ ‖-(t : ℂ)‖ + ‖(Complex.I : ℂ)‖ := norm_add_le _ _
+        _ = ‖(t : ℂ)‖ + 1 := by simp
+        _ ≤ 1 + 1 := add_le_add (norm_of_mem_uIoc_le_one ht) le_rfl
+        _ = 2 := by norm_num
+    calc ‖(-(t : ℂ) + I) ^ 2‖ = ‖-(t : ℂ) + I‖ ^ 2 := by simp [norm_pow]
+      _ ≤ 2 ^ 2 := pow_le_pow_left₀ (norm_nonneg _) hnorm 2
+      _ = 4 := by norm_num
   have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base₄ t‖ ≤ (4 * Cφ) := by
     intro t ht
     simpa [base₄, mul_comm] using
