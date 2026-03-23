@@ -693,8 +693,7 @@ public theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : �
       use h.left, h.right.right, h.right.left
     · rw [← Subgroup.coe_inv, modular_negI_inv, SL_slash,
         modular_slash_negI_of_even _ 2 (by decide)]
-      rw [H₃_negI_action, H₄_negI_action]
-      exact h
+      rwa [H₃_negI_action, H₄_negI_action]
   · intro s hs
     simp_rw [Set.mem_setOf_eq, Set.mem_range] at hs
     obtain ⟨s, rfl⟩ := hs
@@ -1058,7 +1057,8 @@ lemma thetaDeltaFun_div_exp_tendsto_atImInfty :
         Tendsto (fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ)) atImInfty
           (𝓝 ((2 : ℂ) ^ 8 / (256 : ℂ))) := by
       simpa [div_eq_mul_inv] using (hghk.pow 8).mul tendsto_const_nhds
-    simpa using (show ((2 : ℂ) ^ 8 / (256 : ℂ)) = (1 : ℂ) by norm_num) ▸ hlim
+    have : ((2 : ℂ) ^ 8 / (256 : ℂ)) = (1 : ℂ) := by norm_num
+    simpa using this ▸ hlim
   have hrewrite :
       (fun z : ℍ => thetaDeltaFun z / cexp (2 * π * I * (z : ℂ))) =
         fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ) := by
@@ -1097,12 +1097,13 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
         (H₂ ∣[(2 : ℤ)] A) * ((H₃ ∣[(2 : ℤ)] A) * (H₄ ∣[(2 : ℤ)] A)) := by
     have h34 :
         ((H₃ * H₄) ∣[(4 : ℤ)] A) = (H₃ ∣[(2 : ℤ)] A) * (H₄ ∣[(2 : ℤ)] A) := by
-      simpa [show (4 : ℤ) = 2 + 2 by norm_num] using (mul_slash_SL2 2 2 A H₃ H₄)
+      have : (4 : ℤ) = 2 + 2 := by norm_num
+      simpa [this] using (mul_slash_SL2 2 2 A H₃ H₄)
     have h234 :
         ((H₂ * (H₃ * H₄)) ∣[(6 : ℤ)] A) =
           (H₂ ∣[(2 : ℤ)] A) * ((H₃ * H₄) ∣[(4 : ℤ)] A) := by
-      simpa [show (6 : ℤ) = 2 + 4 by norm_num, mul_assoc] using
-        (mul_slash_SL2 2 4 A H₂ (H₃ * H₄))
+      have : (6 : ℤ) = 2 + 4 := by norm_num
+      simpa [this, mul_assoc] using (mul_slash_SL2 2 4 A H₂ (H₃ * H₄))
     simp [thetaDelta_f, h234, h34]
   have hprod_S : (thetaDelta_f ∣[(6 : ℤ)] S) = -thetaDelta_f := by
     rw [hslash3 S, H₂_S_action, H₃_S_action, H₄_S_action]
@@ -1115,15 +1116,15 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
   -- Squaring removes the sign, so `thetaDeltaFun` is invariant under `S` and `T` at weight 12.
   have thetaDeltaFun_S_action : (thetaDeltaFun ∣[(12 : ℤ)] S) = thetaDeltaFun := by
     have hsq : ((thetaDelta_f ^ 2) ∣[(12 : ℤ)] S) = thetaDelta_f ^ 2 := by
-      simpa [pow_two, show (12 : ℤ) = 6 + 6 by norm_num, hprod_S] using
-        (mul_slash_SL2 6 6 S thetaDelta_f thetaDelta_f)
+      have : (12 : ℤ) = 6 + 6 := by norm_num
+      simpa [pow_two, this, hprod_S] using (mul_slash_SL2 6 6 S thetaDelta_f thetaDelta_f)
     dsimp [thetaDeltaFun]
     rw [SL_smul_slash]
     simp [hsq]
   have thetaDeltaFun_T_action : (thetaDeltaFun ∣[(12 : ℤ)] T) = thetaDeltaFun := by
     have hsq : ((thetaDelta_f ^ 2) ∣[(12 : ℤ)] T) = thetaDelta_f ^ 2 := by
-      simpa [pow_two, show (12 : ℤ) = 6 + 6 by norm_num, hprod_T] using
-        (mul_slash_SL2 6 6 T thetaDelta_f thetaDelta_f)
+      have : (12 : ℤ) = 6 + 6 := by norm_num
+      simpa [pow_two, this, hprod_T] using (mul_slash_SL2 6 6 T thetaDelta_f thetaDelta_f)
     dsimp [thetaDeltaFun]
     rw [SL_smul_slash]
     simp [hsq]

@@ -334,8 +334,7 @@ lemma rect_f0 (m : ℝ) (hm : 1 ≤ m) :
     refine f0_continuousOn.mono ?_
     intro z hz
     have hzIm' : (1 : ℝ) ≤ z.im :=
-      (show z.im ∈ Set.Icc (1 : ℝ) m by
-        simpa [Set.uIcc_of_le hm] using (mem_reProdIm.1 hz).2).1
+      (by simpa [Set.uIcc_of_le hm] using (mem_reProdIm.1 hz).2 : z.im ∈ Set.Icc (1 : ℝ) m).1
     exact lt_of_lt_of_le (by norm_num) hzIm'
   have hD :
       DifferentiableOn ℂ f0 (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioo (1 : ℝ) m) := by

@@ -871,9 +871,7 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
     have hDerivSet :
         HasDerivAt (fun z : ℂ => ∫ t in Set.Ici (1 : ℝ), I₆IntegrandC z t)
           (∫ t, I₆IntegrandC_deriv u0 t ∂μ) u0 := by
-      -- Rewrite the function in the goal without unfolding the integrand.
-      rw [← hfun]
-      exact hDerivμ
+      rwa [← hfun]
     have hmul :
         HasDerivAt (fun z : ℂ => 2 * ∫ t in Set.Ici (1 : ℝ), I₆IntegrandC z t)
           (2 * ∫ t, I₆IntegrandC_deriv u0 t ∂μ) u0 := by
