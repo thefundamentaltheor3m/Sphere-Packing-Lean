@@ -112,26 +112,12 @@ lemma summable_Θ₂_term (τ : ℍ) : Summable (fun n : ℤ => Θ₂_term n τ)
 private lemma Θ₂_term_eq_ofReal_exp_imag_axis (n : ℤ) (t : ℝ) (ht : 0 < t) :
     Θ₂_term n (⟨Complex.I * t, by simp [ht]⟩ : ℍ) =
       (Real.exp (-(Real.pi * (((n : ℝ) + (1 / 2 : ℝ)) ^ 2) * t)) : ℂ) := by
-  set r : ℝ := (n : ℝ) + (2⁻¹ : ℝ)
-  have hr : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by
-    apply Complex.ext <;> simp [r]
-  have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by
-    simp_all
-  have harg :
-      (π * Complex.I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I * t : ℂ)) : ℂ) =
-        ((-(Real.pi * (r ^ 2) * t) : ℝ) : ℂ) := by
-    calc
-      (π * Complex.I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I * t : ℂ)) : ℂ) =
-          π * (Complex.I * ((n + (2⁻¹ : ℂ)) ^ 2 * (Complex.I * t))) := by
-            simp [mul_assoc]
-      _ = π * (Complex.I * (((r ^ 2 : ℝ) : ℂ) * (Complex.I * t))) := by simp [hsq]
-      _ = π * (-(((r ^ 2 : ℝ) : ℂ) * (t : ℂ))) := by simp [I_mul_mul_I]
-      _ = ((-(Real.pi * (r ^ 2) * t) : ℝ) : ℂ) := by simp [mul_left_comm, mul_comm]
-  have hτ :
-      Θ₂_term n (⟨Complex.I * t, by simp [ht]⟩ : ℍ) =
-        Complex.exp (-(Real.pi * (r ^ 2) * t) : ℝ) := by
-    simp [Θ₂_term, one_div, harg]
-  simpa [r, one_div, mul_assoc] using hτ
+  simp only [Θ₂_term, one_div, ofReal_exp]
+  congr 1
+  push_cast
+  ring_nf
+  simp [I_sq]
+  ring
 
 /-- `Θ₂(it)` is real for all `t > 0`. -/
 theorem Θ₂_imag_axis_real : ResToImagAxis.Real Θ₂ := by
