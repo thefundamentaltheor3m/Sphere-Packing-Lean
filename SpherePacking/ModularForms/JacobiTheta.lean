@@ -208,23 +208,8 @@ public theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
     simpa [Function.resToImagAxis, ResToImagAxis, ht, τ] using Θ₂_imag_axis_real t ht
   have hΘpos : 0 < (Θ₂ τ).re := by
     simpa [Function.resToImagAxis, ResToImagAxis, ht, τ] using (Θ₂_imag_axis_pos).2 t ht
-  have hΘeq : Θ₂ τ = ((Θ₂ τ).re : ℂ) := by
-    refine Complex.ext (by simp) ?_
-    simpa using hΘreal
-  have hre : (H₂ τ).re = (Θ₂ τ).re ^ 4 := by
-    have hre' : ((Θ₂ τ) ^ 4).re = (Θ₂ τ).re ^ 4 := by
-      have hpow : (Θ₂ τ) ^ 4 = ((Θ₂ τ).re : ℂ) ^ 4 := by
-        simpa using congrArg (fun z : ℂ => z ^ 4) hΘeq
-      calc
-        ((Θ₂ τ) ^ 4).re = (((Θ₂ τ).re : ℂ) ^ 4).re := by simp [hpow]
-        _ = (Θ₂ τ).re ^ 4 := by
-          have h :
-              ((Θ₂ τ).re : ℂ) ^ 4 = (↑((Θ₂ τ).re ^ 4) : ℂ) :=
-            (Complex.ofReal_pow (Θ₂ τ).re 4).symm
-          rw [h]
-          exact Complex.ofReal_re ((Θ₂ τ).re ^ 4)
-    simpa [H₂] using hre'
-  simpa [hre] using pow_pos hΘpos 4
+  have hΘeq : Θ₂ τ = ((Θ₂ τ).re : ℂ) := Complex.ext (by simp) (by simpa using hΘreal)
+  rw [H₂, hΘeq, ← Complex.ofReal_pow, Complex.ofReal_re]; positivity
 
 /-- `H₄(it)` is real for all `t > 0`. -/
 public theorem H₄_imag_axis_real : ResToImagAxis.Real H₄ := by
