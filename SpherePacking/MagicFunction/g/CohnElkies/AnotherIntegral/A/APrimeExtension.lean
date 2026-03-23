@@ -121,17 +121,9 @@ lemma norm_φ₀''_le_of_half_lt {C₀ : ℝ}
     ‖φ₀'' z‖ ≤ C₀ := by
   let zH : ℍ := ⟨z, hzpos⟩
   have hφ' : ‖φ₀'' z‖ ≤ C₀ * Real.exp (-2 * π * zH.im) := by
-    have hφ : ‖φ₀ zH‖ ≤ C₀ * Real.exp (-2 * π * zH.im) :=
-      hC₀ zH (by simpa [zH, UpperHalfPlane.im] using hzhalf)
-    simpa [φ₀''_def hzpos] using hφ
-  have hexp : Real.exp (-2 * π * zH.im) ≤ 1 := by
-    have hzH0 : 0 ≤ zH.im := by
-      simpa [zH, UpperHalfPlane.im] using (le_of_lt hzpos)
-    have : (-2 * π * zH.im) ≤ 0 := by nlinarith [Real.pi_pos, hzH0]
-    simpa using (Real.exp_le_one_iff.2 this)
-  have hmul : C₀ * Real.exp (-2 * π * zH.im) ≤ C₀ := by
-    exact mul_le_of_le_one_right hC₀_nonneg hexp
-  exact hφ'.trans hmul
+    simpa [φ₀''_def hzpos] using hC₀ zH (by simpa [zH, UpperHalfPlane.im] using hzhalf)
+  exact hφ'.trans (mul_le_of_le_one_right hC₀_nonneg
+    (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, hzpos.le])))
 
 lemma im_I_div (t : ℝ) : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := by
   simp
@@ -251,12 +243,7 @@ lemma base₁_bound :
     have ht_abs : |t| ≤ 1 := by simpa [abs_of_nonneg ht0le] using ht1
     have hpow : |t| ^ (2 : ℕ) ≤ (1 : ℝ) := pow_le_one₀ (abs_nonneg t) ht_abs
     simpa [Real.norm_eq_abs, abs_pow] using hpow
-  calc
-    ‖base₁ t‖ = ‖φ₀'' (arg₁ t)‖ * ‖(t ^ (2 : ℕ) : ℝ)‖ := by
-      simp [base₁]
-    _ ≤ ‖φ₀'' (arg₁ t)‖ * 1 := mul_le_mul_of_nonneg_left ht2 (norm_nonneg _)
-    _ = ‖φ₀'' (arg₁ t)‖ := by simp
-    _ ≤ C₀ := hφ
+  simpa [base₁] using (hφ.trans' (mul_le_of_le_one_right (norm_nonneg _) ht2))
 
 private lemma norm_of_mem_uIoc_le_one {t : ℝ} (ht : t ∈ Ι (0 : ℝ) 1) : ‖(t : ℂ)‖ ≤ 1 := by
   have ht0 : 0 ≤ t := (by simpa using ht.1 : (0 : ℝ) < t).le
@@ -558,28 +545,13 @@ lemma I₂'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₂'C u0 := by
       exact (le_trans hbound (le_max_left _ _))
   have hpow_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖(((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ ≤ 4 := by
     intro t ht
-    have htnorm : ‖(t : ℂ)‖ ≤ 1 := norm_of_mem_uIoc_le_one ht
-    have hnorm : ‖(t : ℂ) + (Complex.I : ℂ)‖ ≤ 2 := by
-      calc
-        ‖(t : ℂ) + (Complex.I : ℂ)‖ ≤ ‖(t : ℂ)‖ + ‖(Complex.I : ℂ)‖ := norm_add_le _ _
-        _ ≤ 1 + 1 := add_le_add htnorm (by simp)
-        _ = 2 := by norm_num
-    calc
-      ‖((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ)‖ = ‖(t : ℂ) + (Complex.I : ℂ)‖ ^ (2 : ℕ) := by
-        simp
-      _ ≤ (2 : ℝ) ^ (2 : ℕ) := by
-        exact pow_le_pow_left₀ (norm_nonneg _) hnorm 2
-      _ = 4 := by norm_num
+    have hnorm : ‖(t : ℂ) + (Complex.I : ℂ)‖ ≤ 2 :=
+      (norm_add_le _ _).trans (by simpa using (norm_of_mem_uIoc_le_one ht))
+    simpa using pow_le_pow_left₀ (norm_nonneg _) hnorm 2
   have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base₂ t‖ ≤ (4 * Cφ) := by
     intro t ht
-    have hφ := hφ_bound t ht
-    have hpow := hpow_bound t ht
-    calc
-      ‖base₂ t‖ = ‖φ₀'' (arg₂ t)‖ * ‖(((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ := by
-        simp [base₂]
-      _ ≤ Cφ * 4 := by
-        exact mul_le_mul hφ hpow (norm_nonneg _) (by positivity)
-      _ = 4 * Cφ := by ring
+    simpa [base₂, mul_comm] using
+      mul_le_mul (hφ_bound t ht) (hpow_bound t ht) (norm_nonneg _) (by positivity)
   have h :=
     differentiableAt_intervalIntegral_mul_exp (base := base₂) (k := k₂) u0 (4 * Cφ) (3 * Real.pi)
       base₂_continuousOn k₂_continuousOn hbase_bound k₂_bound
@@ -609,29 +581,13 @@ lemma I₄'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₄'C u0 := by
       exact (le_trans hbound (le_max_left _ _))
   have hpow_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ ≤ 4 := by
     intro t ht
-    have htnorm : ‖(t : ℂ)‖ ≤ 1 := norm_of_mem_uIoc_le_one ht
-    have hnorm : ‖-(t : ℂ) + (Complex.I : ℂ)‖ ≤ 2 := by
-      calc
-        ‖-(t : ℂ) + (Complex.I : ℂ)‖ ≤ ‖-(t : ℂ)‖ + ‖(Complex.I : ℂ)‖ := norm_add_le _ _
-        _ = ‖(t : ℂ)‖ + 1 := by simp
-        _ ≤ 1 + 1 := add_le_add htnorm le_rfl
-        _ = 2 := by norm_num
-    calc
-      ‖((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ = ‖-(t : ℂ) + (Complex.I : ℂ)‖ ^ (2 : ℕ) := by
-        simp
-      _ ≤ (2 : ℝ) ^ (2 : ℕ) := by
-        exact pow_le_pow_left₀ (norm_nonneg _) hnorm 2
-      _ = 4 := by norm_num
+    have hnorm : ‖-(t : ℂ) + (Complex.I : ℂ)‖ ≤ 2 :=
+      (norm_add_le _ _).trans (by simp; exact norm_of_mem_uIoc_le_one ht)
+    simpa using pow_le_pow_left₀ (norm_nonneg _) hnorm 2
   have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base₄ t‖ ≤ (4 * Cφ) := by
     intro t ht
-    have hφ := hφ_bound t ht
-    have hpow := hpow_bound t ht
-    calc
-      ‖base₄ t‖ = ‖φ₀'' (arg₄ t)‖ * ‖((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ := by
-        simp [base₄]
-      _ ≤ Cφ * 4 := by
-        exact mul_le_mul hφ hpow (norm_nonneg _) (by positivity)
-      _ = 4 * Cφ := by ring
+    simpa [base₄, mul_comm] using
+      mul_le_mul (hφ_bound t ht) (hpow_bound t ht) (norm_nonneg _) (by positivity)
   have h :=
     differentiableAt_intervalIntegral_mul_exp (base := base₄) (k := k₄) u0 (4 * Cφ) (3 * Real.pi)
       base₄_continuousOn k₄_continuousOn hbase_bound k₄_bound
