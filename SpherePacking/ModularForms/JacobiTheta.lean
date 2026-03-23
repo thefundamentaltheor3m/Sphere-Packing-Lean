@@ -209,7 +209,8 @@ public theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
   have hΘpos : 0 < (Θ₂ τ).re := by
     simpa [Function.resToImagAxis, ResToImagAxis, ht, τ] using (Θ₂_imag_axis_pos).2 t ht
   have hΘeq : Θ₂ τ = ((Θ₂ τ).re : ℂ) := Complex.ext (by simp) (by simpa using hΘreal)
-  rw [H₂, hΘeq, ← Complex.ofReal_pow, Complex.ofReal_re]; positivity
+  rw [H₂, hΘeq, ← Complex.ofReal_pow, Complex.ofReal_re]
+  positivity
 
 /-- `H₄(it)` is real for all `t > 0`. -/
 public theorem H₄_imag_axis_real : ResToImagAxis.Real H₄ := by
@@ -259,8 +260,8 @@ public lemma H₄_negI_action : (H₄ ∣[(2:ℤ)] negI.1) = H₄ := modular_sla
       convert Int.even_mul_succ_self b using 1
       ring_nf
     norm_cast
-    rw [Complex.exp_add]
-    rw [mul_comm (π * I), Complex.exp_int_mul, Complex.exp_pi_mul_I, this.neg_one_zpow, one_mul]
+    rw [Complex.exp_add, mul_comm (π * I), Complex.exp_int_mul, Complex.exp_pi_mul_I,
+      this.neg_one_zpow, one_mul]
 
 /-- The slash action of `T` sends `H₃` to `H₄`. -/
 @[grind =]
