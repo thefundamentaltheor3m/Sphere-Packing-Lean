@@ -657,10 +657,8 @@ theorem antiDerPos {F : ℍ → ℂ} (hFderiv : MDiff F)
   obtain ⟨hF_real, t₀, ht₀_pos, hF_pos⟩ := hFepos
   obtain ⟨-, hDF_pos⟩ := hDF
   let g := fun t => (F.resToImagAxis t).re
-  have hg :
-      ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t :=
-    fun t ht => by
-      simpa [g] using hasDerivAt_re_resToImagAxis F hFderiv t ht
+  have hg (t : ℝ) (ht : 0 < t) : HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t := by
+    simpa [g] using hasDerivAt_re_resToImagAxis F hFderiv t ht
   have hn : ∀ t ∈ Set.Ioi (0 : ℝ), deriv g t < 0 := fun t (ht : 0 < t) => by
     rw [(hg t ht).deriv]
     have : 0 < (ResToImagAxis (D F) t).re := hDF_pos t ht
@@ -723,15 +721,11 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
   let d : ℝ → ℝ := fun t => (Δ.resToImagAxis t).re
   let h : ℝ → ℝ := fun t => g t * (d t) ^ (-a)
   have hE₂real : ResToImagAxis.Real E₂ := E₂_imag_axis_real
-  have hg :
-      ∀ t, 0 < t → HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t :=
-    fun t ht => by
-      simpa [g] using hasDerivAt_re_resToImagAxis F hFderiv t ht
+  have hg (t : ℝ) (ht : 0 < t) : HasDerivAt g (-2 * π * (ResToImagAxis (D F) t).re) t := by
+    simpa [g] using hasDerivAt_re_resToImagAxis F hFderiv t ht
   have hΔholo : MDiff Δ := by simpa [Delta_apply] using (Delta.holo' : MDiff Δ)
-  have hd :
-      ∀ t, 0 < t → HasDerivAt d (-2 * π * (ResToImagAxis (D Δ) t).re) t :=
-    fun t ht => by
-      simpa [d] using hasDerivAt_re_resToImagAxis Δ hΔholo t ht
+  have hd (t : ℝ) (ht : 0 < t) : HasDerivAt d (-2 * π * (ResToImagAxis (D Δ) t).re) t := by
+    simpa [d] using hasDerivAt_re_resToImagAxis Δ hΔholo t ht
   have hh : ∀ t, 0 < t →
       HasDerivAt h
         ((-2 * π * (ResToImagAxis (D F) t).re) * (d t) ^ (-a) +
