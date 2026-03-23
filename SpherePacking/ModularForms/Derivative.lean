@@ -264,9 +264,9 @@ public theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
   let a' : ℕ → ℂ := fun n => if h : 0 < n then a ⟨n, h⟩ else 0
   have ha' : ∀ n : ℕ+, a' n = a n := fun n => dif_pos n.pos
   -- Derivative bounds: extend u using nat_pos_tsum2
-  have hsum_deriv' : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
+  have hsum_deriv' (K : Set ℂ) (hK : K ⊆ {w : ℂ | 0 < w.im}) (hKc : IsCompact K) :
       ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K), ‖a' n * (2 * π * I * n) *
-        cexp (2 * π * I * n * k.1)‖ ≤ u n := fun K hK hKc => by
+        cexp (2 * π * I * n * k.1)‖ ≤ u n := by
     obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK hKc
     let u' : ℕ → ℝ := fun n => if h : 0 < n then u ⟨n, h⟩ else 0
     have hu' : ∀ n : ℕ+, u' n = u n := fun n => dif_pos n.pos
@@ -726,11 +726,10 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
   have hΔholo : MDiff Δ := by simpa [Delta_apply] using (Delta.holo' : MDiff Δ)
   have hd (t : ℝ) (ht : 0 < t) : HasDerivAt d (-2 * π * (ResToImagAxis (D Δ) t).re) t := by
     simpa [d] using hasDerivAt_re_resToImagAxis Δ hΔholo t ht
-  have hh : ∀ t, 0 < t →
+  have hh (t : ℝ) (ht : 0 < t) :
       HasDerivAt h
         ((-2 * π * (ResToImagAxis (D F) t).re) * (d t) ^ (-a) +
-            (g t) * ((-a) * (d t) ^ (-a - 1) * (-2 * π * (ResToImagAxis (D Δ) t).re))) t :=
-    fun t ht => by
+            (g t) * ((-a) * (d t) ^ (-a - 1) * (-2 * π * (ResToImagAxis (D Δ) t).re))) t := by
       have hdne : d t ≠ 0 := ne_of_gt (hΔre_pos t ht)
       have hpow0 : HasDerivAt (fun x : ℝ => x ^ (-a)) ((-a) * (d t) ^ (-a - 1)) (d t) := by
         simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm, mul_assoc] using
