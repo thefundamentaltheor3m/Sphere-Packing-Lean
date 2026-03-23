@@ -274,10 +274,7 @@ lemma f0_norm_bound_on_strip :
     let zH : ℍ := ⟨z, hzIm_pos⟩
     have hzHalf : (1 / 2 : ℝ) < zH.im := by
       simpa [zH, UpperHalfPlane.im] using (lt_of_lt_of_le (by norm_num) hzIm)
-    have hφ0 : ‖φ₀ zH‖ ≤ C₀ * Real.exp (-2 * π * zH.im) := hC₀ zH hzHalf
-    simpa [zH, UpperHalfPlane.im] using (by
-      simpa [zH] using (show ‖φ₀'' z‖ ≤ C₀ * Real.exp (-2 * π * zH.im) from by
-        simpa [φ₀''_def (z := z) hzIm_pos] using hφ0))
+    simpa [zH, UpperHalfPlane.im, φ₀''_def (z := z) hzIm_pos] using hC₀ zH hzHalf
   have hlin : ‖(2 : ℂ) * z - 1‖ ≤ 2 * z.im + 1 := by
     have hRe : |2 * z.re - 1| ≤ 1 := by
       refine abs_le.2 ?_
@@ -506,29 +503,7 @@ lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
               Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I))) =
           0 := by
       simpa [add_sub_assoc] using hrect
-    have hVertTerm :
-        Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((1 : ℝ) + y * Complex.I)) -
-            Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I)) =
-          Complex.I • (∫ y : ℝ in (1 : ℝ)..m, (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)) := by
-      calc
-        Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((1 : ℝ) + y * Complex.I)) -
-            Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I)) =
-            Complex.I •
-              ((∫ y : ℝ in (1 : ℝ)..m, f0 ((1 : ℝ) + y * Complex.I)) -
-                ∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I)) := by
-              simpa using
-                (smul_sub (Complex.I : ℂ)
-                  (∫ y : ℝ in (1 : ℝ)..m, f0 ((1 : ℝ) + y * Complex.I))
-                  (∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I))).symm
-        _ = Complex.I •
-              (∫ y : ℝ in (1 : ℝ)..m,
-                (f0 ((1 : ℝ) + y * Complex.I) - f0 ((0 : ℝ) + y * Complex.I))) := by
-              simpa using congrArg (fun z : ℂ => Complex.I • z) hSub
-        _ = Complex.I • (∫ y : ℝ in (1 : ℝ)..m, (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)) := by
-              simpa using congrArg (fun z : ℂ => Complex.I • z) hVert
-    have h := hrect₁
-    rw [hVertTerm] at h
-    exact h
+    rwa [← smul_sub, hSub, hVert] at hrect₁
   exact sub_eq_zero.mp (by
     simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hrect')
 
@@ -601,30 +576,7 @@ lemma integral_f0_height_one_eq_neg_I6 :
       _ = Complex.I •
             (∫ t in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
               ∂MeasureTheory.volume) := by
-            calc
-              (2 : ℂ) *
-                  (∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
-                    ∂MeasureTheory.volume) =
-                  (2 : ℂ) *
-                    ((Complex.I : ℂ) *
-                      (∫ t in Set.Ioi (1 : ℝ), φ₀'' ((t : ℂ) * Complex.I)
-                        ∂MeasureTheory.volume)) := by
-                    simp [MeasureTheory.integral_const_mul]
-              _ =
-                  (Complex.I : ℂ) *
-                    ((2 : ℂ) *
-                      (∫ t in Set.Ioi (1 : ℝ), φ₀'' ((t : ℂ) * Complex.I)
-                        ∂MeasureTheory.volume)) := by
-                    simp [mul_left_comm, mul_comm]
-              _ =
-                  (Complex.I : ℂ) *
-                    (∫ t in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
-                      ∂MeasureTheory.volume) := by
-                    simp [MeasureTheory.integral_const_mul]
-              _ = Complex.I •
-                    (∫ t in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
-                      ∂MeasureTheory.volume) := by
-                    simp [smul_eq_mul]
+            simp [MeasureTheory.integral_const_mul, smul_eq_mul, mul_left_comm, mul_comm]
   -- Solve for `bottom`.
   grind only
 
@@ -993,47 +945,17 @@ theorem a_zero_value : FourierEigenfunctions.a (0 : ℝ⁸) = -8640 * Complex.I 
         (g := fun x : ℝ => (12 * Complex.I) / π * φ₂'' (zI x)) hIntf0 (hIntphi2.const_mul _))
   have hI246 :
       I₂' (0 : ℝ) + I₄' 0 + I₆' 0 = -8640 * Complex.I / π := by
-    -- Rewrite `I₂' 0 + I₄' 0` using `hI24`, split, and use the computed integrals.
-    have hI24' :
-        I₂' (0 : ℝ) + I₄' 0 =
-          (∫ x : ℝ in (0 : ℝ)..1,
-            (f0 (zI x) - (12 * Complex.I) / π * φ₂'' (zI x))) := by
-      simpa [f0, zI, sub_eq_add_neg, add_assoc, add_comm, add_left_comm,
-        mul_assoc, mul_left_comm, mul_comm] using hI24
-    have hI24'' :
-        I₂' (0 : ℝ) + I₄' 0 =
-          (∫ x : ℝ in (0 : ℝ)..1, f0 (zI x)) -
-            ∫ x : ℝ in (0 : ℝ)..1, (12 * Complex.I) / π * φ₂'' (zI x) := by
-      calc
-        I₂' (0 : ℝ) + I₄' 0 =
-            (∫ x : ℝ in (0 : ℝ)..1, (f0 (zI x) - (12 * Complex.I) / π * φ₂'' (zI x))) := hI24'
-        _ = (∫ x : ℝ in (0 : ℝ)..1, f0 (zI x)) -
-              ∫ x : ℝ in (0 : ℝ)..1, (12 * Complex.I) / π * φ₂'' (zI x) := by
-              simpa using hsplit
-    have hconstmul :
-        (∫ x : ℝ in (0 : ℝ)..1, (12 * Complex.I) / π * φ₂'' (zI x)) =
-          ((12 : ℂ) * Complex.I) / π * (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) := by
-      simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-    have hI24''' :
-        I₂' (0 : ℝ) + I₄' 0 =
-          (∫ x : ℝ in (0 : ℝ)..1, f0 (zI x)) -
-            ((12 : ℂ) * Complex.I) / π * (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) := by
-      simpa [hconstmul] using hI24''
-    calc
-      I₂' (0 : ℝ) + I₄' 0 + I₆' 0
-          = ((∫ x : ℝ in (0 : ℝ)..1, f0 (zI x)) -
-                ((12 : ℂ) * Complex.I) / π * (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x))) + I₆' 0 := by
-              simpa [add_assoc] using congrArg (fun t => t + I₆' 0) hI24'''
-      _ = ((-I₆' (0 : ℝ)) -
-                ((12 : ℂ) * Complex.I) / π * (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x))) + I₆' 0 := by
-              simp [hf0]
-      _ = -(((12 : ℂ) * Complex.I) / π * (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x))) := by
-              simp [sub_eq_add_neg, add_comm]
-      _ = -(((12 : ℂ) * Complex.I) / π * (720 : ℂ)) := by
-              simp [hphi2]
-      _ = -8640 * Complex.I / π := by
-              simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-              norm_num
+    have hI24' : I₂' (0 : ℝ) + I₄' 0 =
+        -I₆' 0 - (12 * Complex.I) / π * 720 := by
+      have : I₂' (0 : ℝ) + I₄' 0 =
+          ∫ x : ℝ in (0 : ℝ)..1,
+            (f0 (zI x) - (12 * Complex.I) / π * φ₂'' (zI x)) := by
+        simpa [f0, zI, sub_eq_add_neg, add_assoc, add_comm, add_left_comm,
+          mul_assoc, mul_left_comm, mul_comm] using hI24
+      rw [this, hsplit, hf0]
+      simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, hphi2]
+    simp [hI24', div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
+    norm_num
   simp [ha, hI246]
 
 end StripContour
