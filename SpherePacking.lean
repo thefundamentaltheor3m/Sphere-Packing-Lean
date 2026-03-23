@@ -263,10 +263,10 @@ public import SpherePacking.ModularForms.uniformcts
 public import SpherePacking.ModularForms.upperhalfplane
 public import SpherePacking.ScaledMagic
 public import SpherePacking.Tactic.FunPropExt
-public import SpherePacking.Tactic.TendstoCont
 public import SpherePacking.Tactic.NormNumI
-public import SpherePacking.Tactic.Test.TendstoCont
 public import SpherePacking.Tactic.NormNumI_Scratch
+public import SpherePacking.Tactic.TendstoCont
 public import SpherePacking.Tactic.Test.FunPropExt
 public import SpherePacking.Tactic.Test.NormNumI
+public import SpherePacking.Tactic.Test.TendstoCont
 public import SpherePacking.UpperBound
