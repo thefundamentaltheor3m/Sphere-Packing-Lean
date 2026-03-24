@@ -115,25 +115,6 @@ lemma Δ_S_transform (z : ℍ) : Δ (ModularGroup.S • z) = z ^ (12 : ℕ) * Δ
   field_simp [ne_zero z] at h
   rw [h, mul_comm]
 
-instance : atImInfty.NeBot := by
-  rw [atImInfty, Filter.comap_neBot_iff ]
-  simp only [mem_atTop_sets, ge_iff_le, forall_exists_index]
-  intro t x hx
-  have := ENNReal.nhdsGT_ofNat_neBot
-  let z : ℂ := Complex.mk (0 : ℝ) (|x| + 1)
-  have h0 : 0 ≤ |x| := by
-    apply abs_nonneg
-  have hz : 0 < z.im := by
-    positivity
-  use ⟨z, hz⟩
-  apply hx
-  simp only [UpperHalfPlane.im]
-  have : x ≤ |x| := by
-    apply le_abs_self
-  apply le_trans this
-  simp only [le_add_iff_nonneg_right, zero_le_one, z]
-
-
 lemma I_in_atImInfty (A : ℝ) : { z : ℍ | A ≤ z.im} ∈ atImInfty := by
   rw [atImInfty_mem]
   use A
