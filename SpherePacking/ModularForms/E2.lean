@@ -5,6 +5,19 @@ public import SpherePacking.ModularForms.SlashActionAuxil
 
 @[expose] public section
 
+/-!
+# The Eisenstein series `E₂`
+
+This file defines the weight-2 Eisenstein series `E₂` on the upper half-plane, together with the
+auxiliary series `G₂` used to define it and a correction term `D₂` which appears in its modular
+transformation behavior.
+
+## Main definitions
+* `G₂`, `G₂_a`
+* `E₂`
+* `D₂`
+-/
+
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
 open ArithmeticFunction
