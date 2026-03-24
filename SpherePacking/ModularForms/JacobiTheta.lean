@@ -123,7 +123,7 @@ private lemma Θ₂_term_eq_ofReal_exp_imag_axis (n : ℤ) (t : ℝ) (ht : 0 < t
     calc
       (π * Complex.I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I * t : ℂ)) : ℂ) =
           π * (Complex.I * ((n + (2⁻¹ : ℂ)) ^ 2 * (Complex.I * t))) := by
-            simp [mul_assoc]
+            ac_rfl
       _ = π * (Complex.I * (((r ^ 2 : ℝ) : ℂ) * (Complex.I * t))) := by simp [hsq]
       _ = π * (-(((r ^ 2 : ℝ) : ℂ) * (t : ℂ))) := by simp [I_mul_mul_I]
       _ = ((-(Real.pi * (r ^ 2) * t) : ℝ) : ℂ) := by simp [mul_left_comm, mul_comm]
@@ -612,18 +612,17 @@ lemma norm_Θ₂_term (n : ℤ) (z : ℍ) :
   have him : (π * ((r ^ 2 : ℝ) : ℂ) * z : ℂ).im = π * (r ^ 2) * z.im := by
     calc
       (π * ((r ^ 2 : ℝ) : ℂ) * z : ℂ).im = (((π : ℂ) * ((r ^ 2 : ℝ) : ℂ)) * z : ℂ).im := by
-        simp [mul_assoc]
+        ac_rfl
       _ = (((Real.pi * (r ^ 2) : ℝ) : ℂ) * z : ℂ).im := by simp
       _ = (Real.pi * (r ^ 2)) * z.im := im_ofReal_mul (Real.pi * (r ^ 2)) (z : ℂ)
-      _ = π * (r ^ 2) * z.im := by simp [mul_assoc]
+      _ = π * (r ^ 2) * z.im := by ac_rfl
   calc
     ‖Θ₂_term n z‖ = ‖cexp ((π * ((r ^ 2 : ℝ) : ℂ) * z) * I)‖ := by
       simp [Θ₂_term, one_div, h_mulI]
     _ = rexp (-(π * ((r ^ 2 : ℝ) : ℂ) * z).im) := by
       simp [Complex.norm_exp_mul_I]
     _ = rexp (-π * (r ^ 2) * z.im) := by
-      rw [him]
-      simp [mul_assoc]
+      simp only [him, neg_mul]
     _ = rexp (-π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) * z.im) := by
       simp [r, pow_two, mul_assoc]
 
