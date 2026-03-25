@@ -281,10 +281,8 @@ public lemma integral_phase_gaussian (w : ℝ⁸) (s : ℝ) (hs0 : 0 < s) :
         cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
           cexp (-π * (‖x‖ ^ 2) / s)) =
       (s ^ 4 : ℂ) * cexp (-π * (‖w‖ ^ 2) * s) := by
-  have h :=
-    _root_.SpherePacking.ForMathlib.fourier_gaussian_norm_sq_div_even (k := 4) (s := s) hs0 (w := w)
-  rw [fourier_eq' (fun v : ℝ⁸ ↦ cexp (-π * (‖v‖ ^ 2) / s)) w] at h
-  simpa [smul_eq_mul, mul_assoc] using h
+  simpa [Real.fourier_eq', smul_eq_mul, real_inner_comm, mul_assoc, mul_left_comm, mul_comm] using
+    (fourier_gaussian_norm_sq_div_even 4 s hs0 w)
 
 
 end Integral_Permutations.PermI5
