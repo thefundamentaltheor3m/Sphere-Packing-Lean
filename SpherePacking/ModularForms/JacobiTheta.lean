@@ -122,7 +122,7 @@ private lemma Θ₂_term_eq_ofReal_exp_imag_axis (n : ℤ) (t : ℝ) (ht : 0 < t
           π * (Complex.I * ((n + (2⁻¹ : ℂ)) ^ 2 * (Complex.I * t))) := by
             simp [mul_assoc]
       _ = π * (Complex.I * (((r ^ 2 : ℝ) : ℂ) * (Complex.I * t))) := by simp [hsq]
-      _ = π * (-(((r ^ 2 : ℝ) : ℂ) * (t : ℂ))) := by simp [Complex.I_mul_I, mul_left_comm, mul_comm]
+      _ = π * (-(((r ^ 2 : ℝ) : ℂ) * (t : ℂ))) := by congr 1; simp [mul_left_comm, mul_comm]
       _ = ((-(Real.pi * (r ^ 2) * t) : ℝ) : ℂ) := by simp [mul_left_comm, mul_comm]
   have hτ :
       Θ₂_term n (⟨Complex.I * t, by simp [ht]⟩ : ℍ) =
