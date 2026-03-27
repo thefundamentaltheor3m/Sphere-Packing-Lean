@@ -1033,8 +1033,7 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
     have hEqFun : (thetaDelta_CF : ℍ → ℂ) = fun z => (c : ℂ) * Delta z := by
       ext z; simpa [Pi.smul_apply, smul_eq_mul] using
         congrArg (fun f : CuspForm (Γ 1) 12 => (f : ℍ → ℂ) z) hc.symm
-    simp_rw [hEqFun, mul_div_assoc]
-    simpa using tendsto_const_nhds.mul hlim_Delta
+    simp_rw [hEqFun, mul_div_assoc]; simpa using tendsto_const_nhds.mul hlim_Delta
   have hEqCF : thetaDelta_CF = Delta := by
     rw [← hc, tendsto_nhds_unique hlim_thetaDeltaCF' hlim_thetaDeltaCF, one_smul]
   have hEqFun' : thetaDeltaFun τ = Delta τ := by
