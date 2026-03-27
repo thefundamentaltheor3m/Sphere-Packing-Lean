@@ -293,7 +293,7 @@ public lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     all_goals ring_nf; simp [hx', inv_inv]
   _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
         * ((1 / (I / x) ^ (2 : ℂ)) * cexp (π * I / (4 * x)) ^ 4 * jacobiTheta₂ (1 / 2) x ^ 4) := by
-    simp only [mul_pow]; congr 3; simp only [div_pow, one_pow, ← cpow_mul_nat]; ring_nf
+    simp only [mul_pow, div_pow, one_pow, ← cpow_mul_nat]; ring_nf
   _ = cexp (-π * I / x) * (x ^ (-2 : ℤ) * (-x ^ (2 : ℤ)))
         * cexp (π * I / (4 * x)) ^ 4 * jacobiTheta₂ (1 / 2) x ^ 4 := by
     repeat rw [← mul_assoc]
@@ -301,10 +301,14 @@ public lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     rw [cpow_ofNat, div_pow, one_div_div, I_sq, div_neg, div_one]; rfl
   _ = -cexp (-π * I / x) * cexp (π * I / x) * jacobiTheta₂ (1 / 2) x ^ 4 := by
     rw [mul_neg, ← zpow_add₀ hx', neg_add_cancel, mul_neg, zpow_zero, mul_one]
-    congr 2; rw [← Complex.exp_nat_mul]; ring_nf
+    congr 2
+    rw [← Complex.exp_nat_mul]
+    congr 1
+    ring
   _ = -H₄ ⟨x, hx⟩ := by
     rw [neg_mul, ← Complex.exp_add, neg_mul (π : ℂ), neg_div, neg_add_cancel, Complex.exp_zero,
-      neg_one_mul]; simp [H₄, Θ₄_as_jacobiTheta₂]
+      neg_one_mul]
+    simp [H₄, Θ₄_as_jacobiTheta₂]
 
 /-- The slash action of `S` sends `H₃` to `-H₃`. -/
 @[grind =]
@@ -516,7 +520,8 @@ public theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
   have hterm_le (n : ℤ) : ‖Θ₂_term n z‖ ≤ rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) := by
     rw [norm_Θ₂_term]
     apply Real.exp_monotone
-    nlinarith [mul_le_mul_of_nonpos_left hz (neg_nonpos.mpr (show 0 ≤ π * ((↑n + 2⁻¹) ^ 2) by positivity))]
+    have h1 : 0 ≤ π * ((↑n + 2⁻¹) ^ 2) := by positivity
+    nlinarith [mul_le_mul_of_nonpos_left hz (neg_nonpos.mpr h1)]
   have hnorm : ‖Θ₂ z‖ ≤ ∑' n, ‖Θ₂_term n z‖ := by
     simpa [Θ₂] using norm_tsum_le_tsum_norm (summable_Θ₂_term z).norm
   exact hnorm.trans (Summable.tsum_le_tsum hterm_le (summable_Θ₂_term z).norm
@@ -996,10 +1001,6 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
         H₂_SIF_MDifferentiable.mul (H₃_SIF_MDifferentiable.mul H₄_SIF_MDifferentiable)
     have hsq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (thetaDelta_f ^ 2) := by simpa [pow_two] using hf.mul hf
     simpa [thetaDeltaFun] using hsq.const_smul ((256 : ℂ)⁻¹)
-  have thetaDeltaFun_SL2Z_invariant :
-      ∀ γ : SL(2, ℤ), thetaDeltaFun ∣[(12 : ℤ)] γ = thetaDeltaFun :=
-    slashaction_generators_SL2Z thetaDeltaFun 12 (thetaDeltaFun_action S hprod_S)
-      (thetaDeltaFun_action T hprod_T)
   -- `thetaDeltaFun` is zero at `i∞`, hence bounded there.
   have thetaDeltaFun_tendsto_atImInfty : Tendsto thetaDeltaFun atImInfty (𝓝 0) := by
     have hf0 : Tendsto thetaDelta_f atImInfty (𝓝 0) := by
@@ -1007,40 +1008,14 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
         H₂_tendsto_atImInfty.mul (H₃_tendsto_atImInfty.mul H₄_tendsto_atImInfty)
     simpa [thetaDeltaFun, Pi.smul_apply, smul_eq_mul, mul_zero] using
       tendsto_const_nhds.mul (hf0.pow 2)
-  have isBoundedAtImInfty_thetaDeltaFun : IsBoundedAtImInfty thetaDeltaFun :=
-    IsZeroAtImInfty.isBoundedAtImInfty thetaDeltaFun_tendsto_atImInfty
-  -- Any slash by an element of `SL(2,ℤ)` is just itself
-  -- (for use with `bounded_at_cusps_of_bounded_at_infty`).
-  have thetaDeltaFun_slash_eq (A' : SL(2, ℤ)) :
-      thetaDeltaFun ∣[(12 : ℤ)] (SpecialLinearGroup.mapGL ℝ A') = thetaDeltaFun := by
-    simpa [ModularForm.SL_slash] using thetaDeltaFun_SL2Z_invariant A'
-  have isBoundedAtImInfty_thetaDeltaFun_slash :
-      ∀ A ∈ 𝒮ℒ, IsBoundedAtImInfty (thetaDeltaFun ∣[(12 : ℤ)] (A : GL (Fin 2) ℝ)) := by
-    simpa using
-      (isBoundedAtImInfty_slash_of_slash_eq thetaDeltaFun_slash_eq isBoundedAtImInfty_thetaDeltaFun)
-  -- Package as a `ModularForm`.
-  let thetaDelta_SIF : SlashInvariantForm (Γ 1) 12 :=
-    { toFun := thetaDeltaFun
-      slash_action_eq' :=
-        slashaction_generators_GL2R thetaDeltaFun 12 (thetaDeltaFun_action S hprod_S)
-          (thetaDeltaFun_action T hprod_T) }
-  let thetaDelta_MF : ModularForm (Γ 1) 12 := {
-    thetaDelta_SIF with
-    holo' := thetaDeltaFun_holo
-    bdd_at_cusps' := fun hc =>
-      bounded_at_cusps_of_bounded_at_infty hc isBoundedAtImInfty_thetaDeltaFun_slash
-  }
-  have thetaDelta_MF_IsCuspForm : IsCuspForm (Γ 1) 12 thetaDelta_MF := by
-    rw [IsCuspForm_iff_coeffZero_eq_zero, ModularFormClass.qExpansion_coeff]
-    simp only [Nat.factorial_zero, Nat.cast_one, inv_one, iteratedDeriv_zero, one_mul]
-    exact IsZeroAtImInfty.cuspFunction_apply_zero thetaDeltaFun_tendsto_atImInfty (by norm_num)
-  -- Turn it into an element of the 1-dimensional cusp space and compare with `Delta`.
+  -- Package as a `CuspForm` via `cuspFormOfSIFTendstoZero`.
   let thetaDelta_CF : CuspForm (Γ 1) 12 :=
-    IsCuspForm_to_CuspForm (Γ 1) 12 thetaDelta_MF thetaDelta_MF_IsCuspForm
-  have hthetaDeltaFun_coe : (thetaDelta_CF : ℍ → ℂ) = thetaDeltaFun := by
-    funext z
-    simpa [thetaDelta_MF, thetaDeltaFun] using congrArg (fun f : ℍ → ℂ => f z)
-      (CuspForm_to_ModularForm_Fun_coe (Γ 1) 12 thetaDelta_MF thetaDelta_MF_IsCuspForm)
+    cuspFormOfSIFTendstoZero
+      { toFun := thetaDeltaFun
+        slash_action_eq' := slashaction_generators_GL2R thetaDeltaFun 12
+          (thetaDeltaFun_action S hprod_S) (thetaDeltaFun_action T hprod_T) }
+      thetaDeltaFun_holo thetaDeltaFun_tendsto_atImInfty
+  have hthetaDeltaFun_coe : (thetaDelta_CF : ℍ → ℂ) = thetaDeltaFun := rfl
   have hr : Module.finrank ℂ (CuspForm (Γ 1) 12) = 1 := by
     have e := CuspForms_iso_Modforms (12 : ℤ)
     apply Module.finrank_eq_of_rank_eq
