@@ -221,14 +221,12 @@ public lemma H₄_negI_action : (H₄ ∣[(2:ℤ)] negI.1) = H₄ := modular_sla
 /-- The slash action of `T` sends `H₃` to `H₄`. -/
 @[grind =]
 public lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
-  ext x
-  simp_rw [modular_slash_T_apply, H₃, H₄, Θ₃, Θ₄, Θ₃_term, Θ₄_term]; congr 1
+  ext x; simp_rw [modular_slash_T_apply, H₃, H₄, Θ₃, Θ₄, Θ₃_term, Θ₄_term]; congr 1
   apply tsum_congr fun b ↦ ?_
   rw [coe_vadd, ofReal_one, mul_add, Complex.exp_add, mul_one, mul_comm (π * I),
-    ← Int.cast_pow, Complex.exp_int_mul, Complex.exp_pi_mul_I]; congr 1
-  rcases Int.even_or_odd b with hb | hb
-  · rw [hb.neg_one_zpow, Even.neg_one_zpow]; simp [sq, hb]
-  · rw [hb.neg_one_zpow, Odd.neg_one_zpow]; simp [sq, hb]
+    ← Int.cast_pow, Complex.exp_int_mul, Complex.exp_pi_mul_I]
+  congr 1; rcases Int.even_or_odd b with hb | hb <;>
+    · simp [hb.neg_one_zpow, sq, hb, Odd.neg_one_zpow, Even.neg_one_zpow]
 
 /-- The slash action of `T` sends `H₄` to `H₃`. -/
 @[grind =]
@@ -282,11 +280,8 @@ public lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     · congr 1; grind only
     all_goals ring_nf; simp [hx', inv_inv]
   _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
-        * ((1 / (I / x) ^ ((1 : ℂ) / 2)) ^ 4 * cexp (π * I / (4 * x)) ^ 4
-          * jacobiTheta₂ (1 / 2) x ^ 4) := by simp [mul_pow]
-  _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
         * ((1 / (I / x) ^ (2 : ℂ)) * cexp (π * I / (4 * x)) ^ 4 * jacobiTheta₂ (1 / 2) x ^ 4) := by
-    congr 3; simp only [div_pow, one_pow, ← cpow_mul_nat]; ring_nf
+    simp only [mul_pow]; congr 3; simp only [div_pow, one_pow, ← cpow_mul_nat]; ring_nf
   _ = cexp (-π * I / x) * (x ^ (-2 : ℤ) * (-x ^ (2 : ℤ)))
         * cexp (π * I / (4 * x)) ^ 4 * jacobiTheta₂ (1 / 2) x ^ 4 := by
     repeat rw [← mul_assoc]
