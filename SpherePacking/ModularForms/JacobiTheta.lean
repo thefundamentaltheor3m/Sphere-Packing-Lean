@@ -582,10 +582,9 @@ public theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : �
     obtain ⟨s, rfl⟩ := hs
     rw [Set.mem_iInter, SetLike.mem_coe]
     intro hs
-    have hs2 : {S, T} ⊆ (s : Set (SL(2, ℤ))) := by
-      apply subset_trans _ hs
-      simp only [Set.singleton_subset_iff, Set.mem_insert_iff, Set.mem_singleton_iff, true_or,
-        Set.insert_subset_insert]
+    have hs2 : {S, T} ⊆ (s : Set (SL(2, ℤ))) :=
+      Set.insert_subset_iff.2 ⟨hs (Set.mem_insert _ _), Set.singleton_subset_iff.2
+        (hs (Set.mem_insert_of_mem _ (Set.mem_insert _ _)))⟩
     simp only [top_le_iff.mp <| SL2Z_generate.symm ▸ (Subgroup.closure_le s).mpr hs2,
       Subgroup.mem_top]
 
