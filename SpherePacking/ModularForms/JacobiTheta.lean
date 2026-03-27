@@ -498,9 +498,8 @@ lemma norm_Θ₂_term (n : ℤ) (z : ℍ) :
   have h_mulI : (π * I * (n + (2⁻¹ : ℂ)) ^ 2 * z : ℂ) = (π * ((r ^ 2 : ℝ) : ℂ) * z) * I := by
     simp [hsq, mul_assoc, mul_left_comm, mul_comm]
   have him : (π * ((r ^ 2 : ℝ) : ℂ) * z : ℂ).im = π * (r ^ 2) * z.im := by
-    have : (π * ((r ^ 2 : ℝ) : ℂ) * z : ℂ).im = (((Real.pi * (r ^ 2) : ℝ) : ℂ) * z : ℂ).im := by
-      simp [mul_assoc]
-    rw [this, im_ofReal_mul]; simp [mul_assoc]
+    have : (π : ℂ) * ↑(r ^ 2) = ↑(π * r ^ 2) := by push_cast; ring
+    rw [this, im_ofReal_mul, coe_im]
   simp only [Θ₂_term, one_div, h_mulI, Complex.norm_exp_mul_I, him]
   simp [r, pow_two, mul_assoc]
 
@@ -517,8 +516,7 @@ public theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
   have hterm_le (n : ℤ) : ‖Θ₂_term n z‖ ≤ rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) := by
     rw [norm_Θ₂_term]
     apply Real.exp_monotone
-    have h1 : 0 ≤ π * ((↑n + 2⁻¹) ^ 2) := by positivity
-    nlinarith [mul_le_mul_of_nonpos_left hz (neg_nonpos.mpr h1)]
+    nlinarith [mul_le_mul_of_nonpos_left hz (neg_nonpos.mpr (show 0 ≤ π * ((↑n + 2⁻¹) ^ 2) by positivity))]
   have hnorm : ‖Θ₂ z‖ ≤ ∑' n, ‖Θ₂_term n z‖ := by
     simpa [Θ₂] using norm_tsum_le_tsum_norm (summable_Θ₂_term z).norm
   exact hnorm.trans (Summable.tsum_le_tsum hterm_le (summable_Θ₂_term z).norm
