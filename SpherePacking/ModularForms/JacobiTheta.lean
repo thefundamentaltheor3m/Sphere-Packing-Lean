@@ -764,13 +764,10 @@ public theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
     (bound := fun n : ℤ ↦ rexp (π / 4) * rexp (-π * ((n : ℝ) + 1 / 2) ^ 2)) ?_ ?_ ?_
   · simp [← tsum_subtype]
   · apply summable_ofReal.mp
-    have (n : ℤ) := jacobiTheta₂_rel_aux n 1
-    simp_rw [mul_one] at this
+    have (n : ℤ) := jacobiTheta₂_rel_aux n 1; simp_rw [mul_one] at this
     simp_rw [ofReal_mul, this, ← smul_eq_mul]
-    apply Summable.const_smul
-    apply Summable.const_smul
-    rw [summable_jacobiTheta₂_term_iff]
-    simp
+    apply Summable.const_smul; apply Summable.const_smul
+    rw [summable_jacobiTheta₂_term_iff]; simp
   · intro n
     have : n = -1 ∨ n = 0 ∨ n ∉ ({-1, 0} : Set ℤ) := by
       rw [Set.mem_insert_iff, Set.mem_singleton_iff]
@@ -836,16 +833,14 @@ private theorem tsum_weighted_exp_sq_tendsto_atImInfty
     · subst hk
       simp [hw0]
     · have hk' : (k : ℝ) ≠ 0 := by exact_mod_cast hk
-      have hpos : 0 < π * (k : ℝ) ^ 2 := mul_pos Real.pi_pos (sq_pos_of_ne_zero hk')
-      have hk_im : Tendsto (fun z : ℍ ↦ (π * (k : ℝ) ^ 2) * z.im) atImInfty atTop :=
-        tendsto_im_atImInfty.const_mul_atTop hpos
       have hk_exp : Tendsto (fun z : ℍ ↦ ‖cexp (π * I * k ^ 2 * z)‖) atImInfty (𝓝 0) := by
         simp_rw [mul_right_comm _ I, norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← ofReal_intCast,
           ← ofReal_pow, im_ofReal_mul, ← mul_assoc, coe_im]
-        exact tendsto_exp_neg_atTop_nhds_zero.comp hk_im
+        exact tendsto_exp_neg_atTop_nhds_zero.comp
+          (tendsto_im_atImInfty.const_mul_atTop (mul_pos Real.pi_pos (sq_pos_of_ne_zero hk')))
       have : Tendsto (fun z : ℍ ↦ w k * cexp (π * I * k ^ 2 * z)) atImInfty (𝓝 0) := by
         rw [tendsto_zero_iff_norm_tendsto_zero]
-        simpa [norm_mul, mul_assoc, mul_left_comm, mul_comm] using (tendsto_const_nhds.mul hk_exp)
+        simpa [norm_mul, mul_assoc, mul_left_comm, mul_comm] using tendsto_const_nhds.mul hk_exp
       simpa [hk] using this
   · rw [eventually_atImInfty]
     refine ⟨1, fun z hz k ↦ ?_⟩
@@ -955,14 +950,9 @@ lemma thetaDeltaFun_div_exp_tendsto_atImInfty :
     simpa [k] using jacobiTheta₂_half_apply_tendsto_atImInfty
   have hghk : Tendsto (fun z : ℍ => g z * h z * k z) atImInfty (𝓝 (2 : ℂ)) := by
     simpa [mul_assoc] using hg.mul (hh.mul hk)
-  have :
-      Tendsto (fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ)) atImInfty (𝓝 1) := by
-    have hlim :
-        Tendsto (fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ)) atImInfty
-          (𝓝 ((2 : ℂ) ^ 8 / (256 : ℂ))) := by
-      simpa [div_eq_mul_inv] using (hghk.pow 8).mul tendsto_const_nhds
-    have : ((2 : ℂ) ^ 8 / (256 : ℂ)) = (1 : ℂ) := by norm_num
-    simpa using this ▸ hlim
+  have : Tendsto (fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ)) atImInfty (𝓝 1) := by
+    have hlim := (hghk.pow 8).mul (tendsto_const_nhds (x := (256 : ℂ)⁻¹))
+    simpa [div_eq_mul_inv, (by norm_num : (2 : ℂ) ^ 8 * (256 : ℂ)⁻¹ = 1)] using hlim
   have hrewrite :
       (fun z : ℍ => thetaDeltaFun z / cexp (2 * π * I * (z : ℂ))) =
         fun z : ℍ => (g z * h z * k z) ^ 8 / (256 : ℂ) := by
@@ -970,13 +960,12 @@ lemma thetaDeltaFun_div_exp_tendsto_atImInfty :
     have hΘ₂ : Θ₂ z = cexp (π * I * (z : ℂ) / 4) * g z := by simpa [g] using Θ₂_as_jacobiTheta₂ z
     have hΘ₃ : Θ₃ z = h z := by simpa [h] using Θ₃_as_jacobiTheta₂ z
     have hΘ₄ : Θ₄ z = k z := by simpa [k] using Θ₄_as_jacobiTheta₂ z
-    have hfz : thetaDelta_f z = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 4 := by
+    have hfz2 : (thetaDelta_f z) ^ 2 = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 := by
       dsimp [thetaDelta_f, H₂, H₃, H₄]; ring
-    have hfz2 : (thetaDelta_f z) ^ 2 = (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 := by simp [hfz, ← pow_mul]
     have hΘprod :
         Θ₂ z * Θ₃ z * Θ₄ z = cexp (π * I * (z : ℂ) / 4) * (g z * h z * k z) := by grind only
     have hexp : cexp (π * I * (z : ℂ) / 4) ^ 8 = cexp (2 * π * I * (z : ℂ)) := by
-      rw [← Complex.exp_nat_mul]; ring_nf
+      rw [← Complex.exp_nat_mul]; congr 1; ring
     have hΘ8 : (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 =
         cexp (2 * π * I * (z : ℂ)) * (g z * h z * k z) ^ 8 := by rw [hΘprod, mul_pow, hexp]
     simp only [thetaDeltaFun, Pi.smul_apply, smul_eq_mul, Pi.pow_apply, hfz2, hΘ8]
