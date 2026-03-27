@@ -553,21 +553,15 @@ lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
 theorem isBoundedAtImInfty_H₃ : IsBoundedAtImInfty H₃ := by
   simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₃, Θ₃]
   use (∑' n : ℤ, rexp (-π * n ^ 2)) ^ 4, 1
-  intro z hz
-  rw [norm_pow]
-  gcongr
+  intro z hz; rw [norm_pow]; gcongr
   apply (norm_tsum_le_tsum_norm ?_).trans (isBoundedAtImInfty_H₃_aux z hz)
   simp_rw [Θ₃_term_as_jacobiTheta₂_term]
-  apply Summable.norm
-  rw [summable_jacobiTheta₂_term_iff]
-  exact z.coe_im_pos
+  exact ((summable_jacobiTheta₂_term_iff _ _).2 z.coe_im_pos).norm
 
 public theorem isBoundedAtImInfty_H₄ : IsBoundedAtImInfty H₄ := by
   simp_rw [UpperHalfPlane.isBoundedAtImInfty_iff, H₄, Θ₄]
   use (∑' n : ℤ, rexp (-π * n ^ 2)) ^ 4, 1
-  intro z hz
-  rw [norm_pow]
-  gcongr
+  intro z hz; rw [norm_pow]; gcongr
   calc
     _ ≤ ∑' (n : ℤ), ‖Θ₄_term n z‖ := norm_tsum_le_tsum_norm ?_
     _ = ∑' (n : ℤ), ‖Θ₃_term n z‖ := by congr with n; simp [Θ₄_term, Θ₃_term]
@@ -871,8 +865,7 @@ public theorem Θ₂_tendsto_atImInfty : Tendsto Θ₂ atImInfty (𝓝 0) := by
   apply tendsto_zero_iff_norm_tendsto_zero.mpr
   -- simp_rw directly below fails
   have (z : ℍ) : ‖cexp (π * I * z / 4)‖ = rexp (-π * z.im / 4) := by
-    rw [mul_right_comm, mul_div_right_comm, norm_exp_mul_I]
-    simp [neg_div]
+    rw [mul_right_comm, mul_div_right_comm, norm_exp_mul_I]; simp [neg_div]
   simp_rw [this]
   exact (Real.tendsto_exp_atBot).comp <|
     (tendsto_div_const_atBot_of_pos zero_lt_four).mpr
@@ -981,15 +974,11 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
   have hslash3 (A : SL(2, ℤ)) :
       (thetaDelta_f ∣[(6 : ℤ)] A) =
         (H₂ ∣[(2 : ℤ)] A) * ((H₃ ∣[(2 : ℤ)] A) * (H₄ ∣[(2 : ℤ)] A)) := by
-    have h34 :
-        ((H₃ * H₄) ∣[(4 : ℤ)] A) = (H₃ ∣[(2 : ℤ)] A) * (H₄ ∣[(2 : ℤ)] A) := by
-      have : (4 : ℤ) = 2 + 2 := by norm_num
-      simpa [this] using (mul_slash_SL2 2 2 A H₃ H₄)
-    have h234 :
-        ((H₂ * (H₃ * H₄)) ∣[(6 : ℤ)] A) =
-          (H₂ ∣[(2 : ℤ)] A) * ((H₃ * H₄) ∣[(4 : ℤ)] A) := by
-      have : (6 : ℤ) = 2 + 4 := by norm_num
-      simpa [this, mul_assoc] using (mul_slash_SL2 2 4 A H₂ (H₃ * H₄))
+    have h34 : ((H₃ * H₄) ∣[(4 : ℤ)] A) = (H₃ ∣[(2 : ℤ)] A) * (H₄ ∣[(2 : ℤ)] A) := by
+      simpa [(by norm_num : (4 : ℤ) = 2 + 2)] using mul_slash_SL2 2 2 A H₃ H₄
+    have h234 : ((H₂ * (H₃ * H₄)) ∣[(6 : ℤ)] A) =
+        (H₂ ∣[(2 : ℤ)] A) * ((H₃ * H₄) ∣[(4 : ℤ)] A) := by
+      simpa [(by norm_num : (6 : ℤ) = 2 + 4), mul_assoc] using mul_slash_SL2 2 4 A H₂ (H₃ * H₄)
     simp [thetaDelta_f, h234, h34]
   have hprod_S : (thetaDelta_f ∣[(6 : ℤ)] S) = -thetaDelta_f := by
     rw [hslash3 S, H₂_S_action, H₃_S_action, H₄_S_action]
