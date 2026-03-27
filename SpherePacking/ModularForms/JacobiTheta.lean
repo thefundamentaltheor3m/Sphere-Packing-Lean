@@ -109,7 +109,8 @@ lemma summable_Θ₂_term (τ : ℍ) : Summable (fun n : ℤ => Θ₂_term n τ)
 private lemma Θ₂_term_eq_ofReal_exp_imag_axis (n : ℤ) (t : ℝ) (ht : 0 < t) :
     Θ₂_term n (⟨Complex.I * t, by simp [ht]⟩ : ℍ) =
       (Real.exp (-(Real.pi * (((n : ℝ) + (1 / 2 : ℝ)) ^ 2) * t)) : ℂ) := by
-  simp only [Θ₂_term, one_div, ofReal_exp]; congr 1; push_cast; ring_nf; simp [I_sq]; ring
+  simp only [Θ₂_term, one_div, ofReal_exp]; congr 1; push_cast
+  linear_combination (↑π : ℂ) * (↑n + 2⁻¹) ^ 2 * ↑t * I_sq
 
 /-- `Θ₂(it)` is real for all `t > 0`. -/
 theorem Θ₂_imag_axis_real : ResToImagAxis.Real Θ₂ := by
@@ -133,7 +134,7 @@ theorem Θ₂_imag_axis_pos : ResToImagAxis.Pos Θ₂ := by
   set τ : ℍ := ⟨Complex.I * t, by simp [ht]⟩
   have hsum := summable_Θ₂_term τ
   have hterm_pos (n : ℤ) : 0 < (Θ₂_term n τ).re := by
-    have := Θ₂_term_re_imag_axis n t ht; simpa [τ] using this ▸ Real.exp_pos _
+    rw [Θ₂_term_re_imag_axis n t ht]; exact Real.exp_pos _
   have hre_tsum : (Θ₂ τ).re = ∑' n, (Θ₂_term n τ).re := by
     simpa [Θ₂] using Complex.reCLM.map_tsum hsum
   simpa [hre_tsum] using
@@ -488,7 +489,8 @@ lemma jacobiTheta₂_rel_aux (n : ℤ) (t : ℝ) :
     rexp (-π * (n + 1 / 2) ^ 2 * t)
       = rexp (-π * t / 4) * jacobiTheta₂_term n (I * t / 2) (I * t) := by
   rw [jacobiTheta₂_term_half_apply, ofReal_exp, ofReal_exp, ← Complex.exp_add, ofReal_mul]
-  congr 1; ring_nf; simp; ring_nf
+  congr 1; push_cast
+  linear_combination -(↑π : ℂ) * (↑n ^ 2 + ↑n) * ↑t * I_sq
 
 /-- The norm of `cexp (z * I)` is `Real.exp (-z.im)`. -/
 public lemma Complex.norm_exp_mul_I (z : ℂ) : ‖cexp (z * I)‖ = rexp (-z.im) := by simp [norm_exp]
