@@ -236,11 +236,9 @@ public lemma H₃_T_action : (H₃ ∣[(2 : ℤ)] T) = H₄ := by
 /-- The slash action of `T` sends `H₄` to `H₃`. -/
 @[grind =]
 public lemma H₄_T_action : (H₄ ∣[(2 : ℤ)] T) = H₃ := by
-  -- H₄|T = H₃|T^2 = Θ₂(0, z + 2) = Θ₂(0, z) = H₃
   ext x
   simp_rw [← H₃_T_action, modular_slash_T_apply, H₃, Θ₃_as_jacobiTheta₂, coe_vadd, ← add_assoc]
-  norm_num
-  rw [add_comm, jacobiTheta₂_add_right]
+  norm_num; rw [add_comm, jacobiTheta₂_add_right]
 
 private lemma slash_inv_eq_of_slash_eq {k : ℤ} {F G : ℍ → ℂ} {γ : SL(2, ℤ)}
     (h : (F ∣[k] γ) = G) : (G ∣[k] γ⁻¹) = F := by
@@ -428,11 +426,9 @@ private lemma differentiableOn_jacobiTheta₂_snd (z : ℂ) :
 
 /-- Holomorphy of `H₃_SIF` as a slash invariant form. -/
 public lemma H₃_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃_SIF := by
-  rw [mdifferentiable_iff]
-  simp only [H₃_SIF, SlashInvariantForm.coe_mk]
+  rw [mdifferentiable_iff]; simp only [H₃_SIF, SlashInvariantForm.coe_mk]
   refine ((differentiableOn_jacobiTheta₂_snd (0 : ℂ)).pow 4).congr ?_
-  intro _ hz
-  simp [Function.comp, H₃, Θ₃_as_jacobiTheta₂, ofComplex_apply_of_im_pos hz]
+  intro _ hz; simp [Function.comp, H₃, Θ₃_as_jacobiTheta₂, ofComplex_apply_of_im_pos hz]
 
 /-- The function `H₃` is holomorphic on the upper half-plane. -/
 public lemma mdifferentiable_H₃ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃ := by
@@ -440,11 +436,9 @@ public lemma mdifferentiable_H₃ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₃ := 
 
 /-- Holomorphy of `H₄_SIF` as a slash invariant form. -/
 public lemma H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄_SIF := by
-  rw [mdifferentiable_iff]
-  simp only [H₄_SIF, SlashInvariantForm.coe_mk]
+  rw [mdifferentiable_iff]; simp only [H₄_SIF, SlashInvariantForm.coe_mk]
   refine ((differentiableOn_jacobiTheta₂_snd (1 / 2 : ℂ)).pow 4).congr ?_
-  intro _ hz
-  simp [Function.comp, H₄, Θ₄_as_jacobiTheta₂, ofComplex_apply_of_im_pos hz]
+  intro _ hz; simp [Function.comp, H₄, Θ₄_as_jacobiTheta₂, ofComplex_apply_of_im_pos hz]
 
 /-- The function `H₄` is holomorphic on the upper half-plane. -/
 public lemma mdifferentiable_H₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := by
@@ -747,6 +741,7 @@ We prove the limit of Θᵢ(z) and Hᵢ(z) as z tends to i∞. This is used to p
 public theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (x / 2) x) atImInfty (𝓝 2) := by
   simp_rw [jacobiTheta₂, jacobiTheta₂_term]
+  have h₁ (n : ℤ) (z : ℂ) : π * I * n * z + π * I * n ^ 2 * z = π * (n + n ^ 2) * z * I := by ring
   convert tendsto_tsum_of_dominated_convergence
     (f := fun z (n : ℤ) ↦ cexp (2 * π * I * n * (z / 2) + π * I * n ^ 2 * z))
     (𝓕 := atImInfty)
@@ -767,8 +762,6 @@ public theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
     · simp
     · simp only [hn, not_false_eq_true, Set.indicator_of_notMem]
       apply tendsto_zero_iff_norm_tendsto_zero.mpr
-      have h₁ (n : ℤ) (z : ℂ) : (π * I * n * z + π * I * n ^ 2 * z) = π * (n + n ^ 2) * z * I := by
-        ring_nf
       have h_base' : rexp (-π) ^ ((n : ℝ) + n ^ 2) < 1 := by
         apply Real.rpow_lt_one (by positivity) (Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos]))
         rw [Set.mem_insert_iff, Set.mem_singleton_iff] at hn; push_neg at hn
@@ -787,7 +780,6 @@ public theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
     use 1
     intro z hz k
     simp_rw [← Real.exp_add]; ring_nf
-    have h₁ : ↑π * I * ↑k * ↑z + ↑π * I * ↑k ^ 2 * ↑z = ↑π * (↑k + ↑k ^ 2) * ↑z * I := by ring
     rw [h₁, norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← Int.cast_pow, ← Int.cast_add,
       ← ofReal_intCast, im_ofReal_mul, ← mul_assoc, Int.cast_add, Int.cast_pow, coe_im]
     apply Real.exp_monotone
@@ -980,15 +972,11 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
     rw [hslash3 T, H₂_T_action, H₃_T_action, H₄_T_action]
     ext z; simp [thetaDelta_f, mul_comm]
   -- Squaring removes the sign, so `thetaDeltaFun` is invariant under `S` and `T` at weight 12.
-  have thetaDeltaFun_S_action : (thetaDeltaFun ∣[(12 : ℤ)] S) = thetaDeltaFun := by
-    have hsq : ((thetaDelta_f ^ 2) ∣[(12 : ℤ)] S) = thetaDelta_f ^ 2 := by
-      simpa [pow_two, (by norm_num : (12 : ℤ) = 6 + 6), hprod_S] using
-        mul_slash_SL2 6 6 S thetaDelta_f thetaDelta_f
-    dsimp [thetaDeltaFun]; rw [SL_smul_slash]; simp [hsq]
-  have thetaDeltaFun_T_action : (thetaDeltaFun ∣[(12 : ℤ)] T) = thetaDeltaFun := by
-    have hsq : ((thetaDelta_f ^ 2) ∣[(12 : ℤ)] T) = thetaDelta_f ^ 2 := by
-      simpa [pow_two, (by norm_num : (12 : ℤ) = 6 + 6), hprod_T] using
-        mul_slash_SL2 6 6 T thetaDelta_f thetaDelta_f
+  have thetaDeltaFun_action (g : SL(2, ℤ)) (hg : (thetaDelta_f ∣[(6 : ℤ)] g) = -thetaDelta_f) :
+      (thetaDeltaFun ∣[(12 : ℤ)] g) = thetaDeltaFun := by
+    have hsq : ((thetaDelta_f ^ 2) ∣[(12 : ℤ)] g) = thetaDelta_f ^ 2 := by
+      simpa [pow_two, (by norm_num : (12 : ℤ) = 6 + 6), hg] using
+        mul_slash_SL2 6 6 g thetaDelta_f thetaDelta_f
     dsimp [thetaDeltaFun]; rw [SL_smul_slash]; simp [hsq]
   -- Build a level-1 modular form out of `thetaDeltaFun`.
   have thetaDeltaFun_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) thetaDeltaFun := by
@@ -999,7 +987,8 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
     simpa [thetaDeltaFun] using hsq.const_smul ((256 : ℂ)⁻¹)
   have thetaDeltaFun_SL2Z_invariant :
       ∀ γ : SL(2, ℤ), thetaDeltaFun ∣[(12 : ℤ)] γ = thetaDeltaFun :=
-    slashaction_generators_SL2Z thetaDeltaFun 12 thetaDeltaFun_S_action thetaDeltaFun_T_action
+    slashaction_generators_SL2Z thetaDeltaFun 12 (thetaDeltaFun_action S hprod_S)
+      (thetaDeltaFun_action T hprod_T)
   -- `thetaDeltaFun` is zero at `i∞`, hence bounded there.
   have thetaDeltaFun_tendsto_atImInfty : Tendsto thetaDeltaFun atImInfty (𝓝 0) := by
     have hf0 : Tendsto thetaDelta_f atImInfty (𝓝 0) := by
@@ -1022,7 +1011,8 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
   let thetaDelta_SIF : SlashInvariantForm (Γ 1) 12 :=
     { toFun := thetaDeltaFun
       slash_action_eq' :=
-        slashaction_generators_GL2R thetaDeltaFun 12 thetaDeltaFun_S_action thetaDeltaFun_T_action }
+        slashaction_generators_GL2R thetaDeltaFun 12 (thetaDeltaFun_action S hprod_S)
+          (thetaDeltaFun_action T hprod_T) }
   let thetaDelta_MF : ModularForm (Γ 1) 12 := {
     thetaDelta_SIF with
     holo' := thetaDeltaFun_holo
