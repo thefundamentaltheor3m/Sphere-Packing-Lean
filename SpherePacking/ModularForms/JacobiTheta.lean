@@ -147,15 +147,17 @@ theorem Θ₄_imag_axis_real : ResToImagAxis.Real Θ₄ := by
   intro t ht
   simp only [Function.resToImagAxis, ResToImagAxis, ht, ↓reduceDIte]
   set τ : ℍ := ⟨Complex.I * t, by simp [ht]⟩
+  have him : 0 < (τ : ℂ).im := by simp [τ, ht]
   have hsum : Summable (fun n : ℤ => Θ₄_term n τ) := by
     simpa [Θ₄_term_as_jacobiTheta₂_term (τ := τ)] using
-      ((summable_jacobiTheta₂_term_iff (z := (1 / 2 : ℂ)) (τ := (τ : ℂ))).2
-        (by simpa using τ.im_pos))
+      (summable_jacobiTheta₂_term_iff (z := (1 / 2 : ℂ)) (τ := (τ : ℂ))).2 him
   have hterm_im (n : ℤ) : (Θ₄_term n τ).im = 0 := by
     have : Θ₄_term n τ = ↑((-1 : ℝ) ^ n * Real.exp (-(Real.pi * ((n : ℝ) ^ 2) * t))) := by
       simp only [Θ₄_term, Complex.ofReal_mul, Complex.ofReal_zpow, Complex.ofReal_exp,
-        Complex.ofReal_neg]; congr 2
-      push_cast; linear_combination ↑π * ↑n ^ 2 * ↑t * I_sq
+        Complex.ofReal_neg]
+      congr 2
+      push_cast
+      linear_combination ↑π * ↑n ^ 2 * ↑t * I_sq
     rw [this, Complex.ofReal_im]
   simp [Θ₄, im_tsum hsum, hterm_im]
 
@@ -177,7 +179,8 @@ public theorem H₂_imag_axis_pos : ResToImagAxis.Pos H₂ := by
   have hΘpos : 0 < (Θ₂ τ).re := by
     simpa [Function.resToImagAxis, ResToImagAxis, ht, τ] using Θ₂_imag_axis_pos.2 t ht
   have hΘeq : Θ₂ τ = ((Θ₂ τ).re : ℂ) := Complex.ext (by simp) (by simpa using hΘreal)
-  rw [H₂, hΘeq, ← Complex.ofReal_pow, Complex.ofReal_re]; positivity
+  rw [H₂, hΘeq, ← Complex.ofReal_pow, Complex.ofReal_re]
+  positivity
 
 /-- `H₄(it)` is real for all `t > 0`. -/
 public theorem H₄_imag_axis_real : ResToImagAxis.Real H₄ := by
@@ -283,7 +286,8 @@ public lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     simp only [inv_neg, mul_neg, mul_pow, ← Complex.exp_nat_mul, Nat.cast_ofNat, Int.reduceNeg,
       zpow_neg, neg_mul, mul_eq_mul_right_iff, inv_eq_zero]
     rw [mul_comm 4, div_mul_cancel₀ _ (by norm_num)]
-    left; congr 3 <;> simp [div_eq_mul_inv, mul_comm]
+    left
+    congr 3 <;> simp [div_eq_mul_inv, mul_comm]
   _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
         * (1 / (I / x) ^ ((1 : ℂ) / 2) * cexp (π * I / (4 * x)) * jacobiTheta₂ (1 / 2) x) ^ 4 := by
     rw [mul_right_comm, jacobiTheta₂_functional_equation]
