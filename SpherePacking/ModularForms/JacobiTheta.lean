@@ -152,7 +152,7 @@ theorem Θ₄_imag_axis_real : ResToImagAxis.Real Θ₄ := by
   have hterm_im (n : ℤ) : (Θ₄_term n τ).im = 0 := by
     have : Θ₄_term n τ = ↑((-1 : ℝ) ^ n * Real.exp (-(Real.pi * ((n : ℝ) ^ 2) * t))) := by
       simp only [Θ₄_term, Complex.ofReal_mul, Complex.ofReal_zpow, Complex.ofReal_exp,
-        Complex.ofReal_neg]; congr 1; congr 1
+        Complex.ofReal_neg]; congr 2
       push_cast; linear_combination ↑π * ↑n ^ 2 * ↑t * I_sq
     rw [this, Complex.ofReal_im]
   simp [Θ₄, im_tsum hsum, hterm_im]
@@ -208,17 +208,14 @@ public lemma H₄_negI_action : (H₄ ∣[(2:ℤ)] negI.1) = H₄ := modular_sla
   calc
   _ = ∑' (n : ℤ), cexp (π * I * (n + 1 / 2) ^ 2 * ((1 : ℝ) +ᵥ x)) := by simp_rw [Θ₂, Θ₂_term]
   _ = ∑' (n : ℤ), cexp (π * I / 4) * cexp (π * I * (n ^ 2 + n) + π * I * (n + 1 / 2) ^ 2 * x) := by
-    apply tsum_congr fun b ↦ ?_
-    rw [coe_vadd, ofReal_one]
+    apply tsum_congr fun b ↦ ?_; rw [coe_vadd, ofReal_one]
     simp only [← Complex.exp_add]; congr 1; ring
   _ = cexp (π * I / 4) * ∑' (n : ℤ), cexp (π * I * (n ^ 2 + n) + π * I * (n + 1 / 2) ^ 2 * x) := by
     rw [tsum_mul_left]
   _ = _ := by
-    simp_rw [Θ₂, Θ₂_term]; congr 1
-    apply tsum_congr fun b ↦ ?_
+    simp_rw [Θ₂, Θ₂_term]; congr 1; apply tsum_congr fun b ↦ ?_
     have : Even (b ^ 2 + b) := by convert Int.even_mul_succ_self b using 1; ring_nf
-    norm_cast
-    rw [Complex.exp_add, mul_comm (π * I), Complex.exp_int_mul, Complex.exp_pi_mul_I,
+    norm_cast; rw [Complex.exp_add, mul_comm (π * I), Complex.exp_int_mul, Complex.exp_pi_mul_I,
       this.neg_one_zpow, one_mul]
 
 /-- The slash action of `T` sends `H₃` to `H₄`. -/
@@ -809,8 +806,7 @@ private theorem tsum_weighted_exp_sq_tendsto_atImInfty
     exact this
   · intro k
     by_cases hk : k = 0
-    · subst hk
-      simp [hw0]
+    · subst hk; simp [hw0]
     · have hk' : (k : ℝ) ≠ 0 := by exact_mod_cast hk
       have hk_exp : Tendsto (fun z : ℍ ↦ ‖cexp (π * I * k ^ 2 * z)‖) atImInfty (𝓝 0) := by
         simp_rw [mul_right_comm _ I, norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← ofReal_intCast,
@@ -823,8 +819,7 @@ private theorem tsum_weighted_exp_sq_tendsto_atImInfty
       simpa [hk] using this
   · rw [eventually_atImInfty]
     refine ⟨1, fun z hz k ↦ ?_⟩
-    have hwk : ‖w k‖ ≤ 1 := hw k
-    have hmul : ‖w k * cexp (π * I * k ^ 2 * z)‖ ≤ ‖cexp (π * I * k ^ 2 * z)‖ := by simpa
+    have hmul : ‖w k * cexp (π * I * k ^ 2 * z)‖ ≤ ‖cexp (π * I * k ^ 2 * z)‖ := by simpa using hw k
     refine hmul.trans ?_
     simp_rw [mul_right_comm _ I, norm_exp_mul_I]
     simpa [← ofReal_intCast, ← ofReal_pow] using le_mul_of_one_le_right (by positivity) hz
@@ -848,7 +843,6 @@ public theorem Θ₂_tendsto_atImInfty : Tendsto Θ₂ atImInfty (𝓝 0) := by
   rw [funext Θ₂_as_jacobiTheta₂, ← zero_mul (2 : ℂ)]
   refine Tendsto.mul ?_ jacobiTheta₂_half_mul_apply_tendsto_atImInfty
   apply tendsto_zero_iff_norm_tendsto_zero.mpr
-  -- simp_rw directly below fails
   have (z : ℍ) : ‖cexp (π * I * z / 4)‖ = rexp (-π * z.im / 4) := by
     rw [mul_right_comm, mul_div_right_comm, norm_exp_mul_I]; simp [neg_div]
   simp_rw [this]
