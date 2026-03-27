@@ -273,19 +273,14 @@ public lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     simp only [inv_neg, mul_neg, mul_pow, ← Complex.exp_nat_mul, Nat.cast_ofNat, Int.reduceNeg,
       zpow_neg, neg_mul, mul_eq_mul_right_iff, inv_eq_zero]
     rw [mul_comm 4, div_mul_cancel₀ _ (by norm_num)]
-    left; congr 3
-    · rw [← div_eq_mul_inv, neg_div]
-    · rw [← one_div, neg_div, div_div, mul_comm, neg_div]
-    · rw [← one_div, neg_div]
+    left; congr 3 <;> simp [div_eq_mul_inv, mul_comm]
   _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
         * (1 / (I / x) ^ ((1 : ℂ) / 2) * cexp (π * I / (4 * x)) * jacobiTheta₂ (1 / 2) x) ^ 4 := by
     rw [mul_right_comm, jacobiTheta₂_functional_equation]
     congr 4
     · ring_nf
-    · congr 1
-      grind only
-    · ring_nf; simp [hx']
-    · ring_nf; simp [inv_inv]
+    · congr 1; grind only
+    all_goals ring_nf; simp [hx', inv_inv]
   _ = cexp (-π * I / x) * x ^ (-2 : ℤ)
         * ((1 / (I / x) ^ ((1 : ℂ) / 2)) ^ 4 * cexp (π * I / (4 * x)) ^ 4
           * jacobiTheta₂ (1 / 2) x ^ 4) := by simp [mul_pow]
