@@ -224,7 +224,8 @@ public lemma H₄_negI_action : (H₄ ∣[(2:ℤ)] negI.1) = H₄ := modular_sla
     simp_rw [Θ₂, Θ₂_term]
     congr 1
     apply tsum_congr fun b ↦ ?_
-    have : Even (b ^ 2 + b) := by convert Int.even_mul_succ_self b using 1; ring_nf
+    have hbb : b ^ 2 + b = b * (b + 1) := by ring
+    have : Even (b ^ 2 + b) := hbb ▸ Int.even_mul_succ_self b
     norm_cast
     rw [Complex.exp_add, mul_comm (π * I), Complex.exp_int_mul, Complex.exp_pi_mul_I,
       this.neg_one_zpow, one_mul]
