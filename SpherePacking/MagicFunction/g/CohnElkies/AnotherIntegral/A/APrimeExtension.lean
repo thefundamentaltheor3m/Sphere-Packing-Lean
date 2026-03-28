@@ -369,85 +369,49 @@ lemma I₄'C_eq (u : ℂ) :
     fun t _ => by simp [base₄, arg₄, exp_k₄, mul_assoc, mul_left_comm, mul_comm]
 
 lemma base₂_continuousOn : ContinuousOn base₂ (Ι (0 : ℝ) 1) := by
-  change ContinuousOn (fun t : ℝ => φ₀'' (arg₂ t) * (((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ)))
-    (Ι (0 : ℝ) 1)
-  have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) UpperHalfPlane.upperHalfPlaneSet := by
-    simpa using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-  have hden0 : ∀ t ∈ Ι (0 : ℝ) 1, ((t : ℂ) + (Complex.I : ℂ)) ≠ 0 := by
+  change ContinuousOn (fun t : ℝ => φ₀'' (arg₂ t) * (((t : ℂ) + I) ^ (2 : ℕ))) (Ι (0 : ℝ) 1)
+  have hden0 : ∀ t ∈ Ι (0 : ℝ) 1, ((t : ℂ) + I) ≠ 0 := by
     intro t _ ht0
-    have : (1 : ℝ) = 0 := by simpa using congrArg Complex.im ht0
-    exact one_ne_zero this
+    exact one_ne_zero (by simpa using congrArg Complex.im ht0 : (1 : ℝ) = 0)
   have hcontArg : ContinuousOn arg₂ (Ι (0 : ℝ) 1) := by
-    have hcontDen : ContinuousOn (fun t : ℝ => (t : ℂ) + (Complex.I : ℂ)) (Ι (0 : ℝ) 1) := by
-      simpa using (by fun_prop : Continuous fun t : ℝ => (t : ℂ) + (Complex.I : ℂ)).continuousOn
-    simpa [arg₂] using continuousOn_const.div hcontDen hden0
+    simpa [arg₂] using continuousOn_const.div
+      (by fun_prop : Continuous fun t : ℝ => (t : ℂ) + I).continuousOn hden0
   have hmaps : Set.MapsTo arg₂ (Ι (0 : ℝ) 1) UpperHalfPlane.upperHalfPlaneSet := by
     intro t ht
-    set z : ℂ := (t : ℂ) + (Complex.I : ℂ)
-    have him : (arg₂ t).im = 1 / Complex.normSq z := by
-      simp [arg₂, z, div_eq_mul_inv, Complex.inv_im, Complex.normSq, Complex.neg_im]
-    have : 0 < (arg₂ t).im := by
-      have hz0 : z ≠ 0 := hden0 t ht
-      have : 0 < (1 / Complex.normSq z : ℝ) := one_div_pos.2 (Complex.normSq_pos.2 hz0)
-      simpa [him] using this
-    simpa [UpperHalfPlane.upperHalfPlaneSet] using this
-  have hcontφcomp : ContinuousOn (fun t : ℝ => φ₀'' (arg₂ t)) (Ι (0 : ℝ) 1) :=
-    hcontφ.comp hcontArg hmaps
-  have hpow :
-      ContinuousOn (fun t : ℝ => (((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))) (Ι (0 : ℝ) 1) := by
-    simpa using
-      (by fun_prop :
-          Continuous fun t : ℝ => (((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))).continuousOn
-  exact hcontφcomp.mul hpow
+    simp only [UpperHalfPlane.upperHalfPlaneSet, Set.mem_setOf_eq]
+    have him : (arg₂ t).im = 1 / Complex.normSq ((t : ℂ) + I) := by
+      simp [arg₂, div_eq_mul_inv, Complex.inv_im, Complex.normSq, Complex.neg_im]
+    rw [him]
+    exact one_div_pos.2 (Complex.normSq_pos.2 (hden0 t ht))
+  exact ((MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn.comp hcontArg hmaps).mul
+    (by fun_prop : Continuous _).continuousOn)
 
 lemma base₄_continuousOn : ContinuousOn base₄ (Ι (0 : ℝ) 1) := by
-  change
-    ContinuousOn
-      (fun t : ℝ =>
-        (-1 : ℂ) * φ₀'' (arg₄ t) * ((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ)))
-      (Ι (0 : ℝ) 1)
-  have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) UpperHalfPlane.upperHalfPlaneSet := by
-    simpa using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-  have hden0 : ∀ t ∈ Ι (0 : ℝ) 1, (-(t : ℂ) + (Complex.I : ℂ)) ≠ 0 := by
+  change ContinuousOn (fun t : ℝ =>
+    (-1 : ℂ) * φ₀'' (arg₄ t) * ((-(t : ℂ) + I) ^ (2 : ℕ))) (Ι (0 : ℝ) 1)
+  have hden0 : ∀ t ∈ Ι (0 : ℝ) 1, (-(t : ℂ) + I) ≠ 0 := by
     intro t _ ht0
-    have : (1 : ℝ) = 0 := by simpa using congrArg Complex.im ht0
-    exact one_ne_zero this
+    exact one_ne_zero (by simpa using congrArg Complex.im ht0 : (1 : ℝ) = 0)
   have hcontArg : ContinuousOn arg₄ (Ι (0 : ℝ) 1) := by
-    have hcontDen : ContinuousOn (fun t : ℝ => (-(t : ℂ) + (Complex.I : ℂ))) (Ι (0 : ℝ) 1) := by
-      simpa using (by fun_prop : Continuous fun t : ℝ => (-(t : ℂ) + (Complex.I : ℂ))).continuousOn
-    simpa [arg₄] using continuousOn_const.div hcontDen hden0
+    simpa [arg₄] using continuousOn_const.div
+      (by fun_prop : Continuous fun t : ℝ => -(t : ℂ) + I).continuousOn hden0
   have hmaps : Set.MapsTo arg₄ (Ι (0 : ℝ) 1) UpperHalfPlane.upperHalfPlaneSet := by
     intro t ht
-    set z : ℂ := (-(t : ℂ) + (Complex.I : ℂ))
-    have him : (arg₄ t).im = 1 / Complex.normSq z := by
-      simp [arg₄, z, div_eq_mul_inv, Complex.inv_im, Complex.normSq, Complex.neg_im]
-    have : 0 < (arg₄ t).im := by
-      have hz0 : z ≠ 0 := hden0 t ht
-      have : 0 < (1 / Complex.normSq z : ℝ) := one_div_pos.2 (Complex.normSq_pos.2 hz0)
-      simpa [him] using this
-    simpa [UpperHalfPlane.upperHalfPlaneSet] using this
-  have hcontφcomp : ContinuousOn (fun t : ℝ => φ₀'' (arg₄ t)) (Ι (0 : ℝ) 1) :=
-    hcontφ.comp hcontArg hmaps
-  have hpow :
-      ContinuousOn (fun t : ℝ => ((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))) (Ι (0 : ℝ) 1) := by
-    simpa using
-      (by fun_prop : Continuous fun t : ℝ => ((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))).continuousOn
-  have hconst : ContinuousOn (fun _t : ℝ => (-1 : ℂ)) (Ι (0 : ℝ) 1) := continuousOn_const
-  exact (hconst.mul hcontφcomp).mul hpow
+    simp only [UpperHalfPlane.upperHalfPlaneSet, Set.mem_setOf_eq]
+    have him : (arg₄ t).im = 1 / Complex.normSq (-(t : ℂ) + I) := by
+      simp [arg₄, div_eq_mul_inv, Complex.inv_im, Complex.normSq, Complex.neg_im]
+    rw [him]
+    exact one_div_pos.2 (Complex.normSq_pos.2 (hden0 t ht))
+  exact ((continuousOn_const.mul (MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn.comp
+    hcontArg hmaps)).mul (by fun_prop : Continuous _).continuousOn)
 
 lemma k₂_continuousOn : ContinuousOn k₂ (Ι (0 : ℝ) 1) := by
-  let f : ℝ → ℂ :=
-    fun t => (-π * (Complex.I : ℂ)) + (π * (Complex.I : ℂ) * (t : ℂ)) + (-π)
-  change ContinuousOn f (Ι (0 : ℝ) 1)
-  have : Continuous f := by fun_prop
-  exact this.continuousOn
+  let f : ℝ → ℂ := fun t => (-π * (Complex.I : ℂ)) + (π * (Complex.I : ℂ) * (t : ℂ)) + (-π)
+  exact (by fun_prop : Continuous f).continuousOn
 
 lemma k₄_continuousOn : ContinuousOn k₄ (Ι (0 : ℝ) 1) := by
-  let f : ℝ → ℂ :=
-    fun t => (π * (Complex.I : ℂ)) + (-π * (Complex.I : ℂ) * (t : ℂ)) + (-π)
-  change ContinuousOn f (Ι (0 : ℝ) 1)
-  have : Continuous f := by fun_prop
-  exact this.continuousOn
+  let f : ℝ → ℂ := fun t => (π * (Complex.I : ℂ)) + (-π * (Complex.I : ℂ) * (t : ℂ)) + (-π)
+  exact (by fun_prop : Continuous f).continuousOn
 
 private lemma norm_three_sum_le_three_pi (a b c : ℂ) (ha : ‖a‖ ≤ π) (hb : ‖b‖ ≤ π)
     (hc : ‖c‖ ≤ π) : ‖a + b + c‖ ≤ 3 * π := by
