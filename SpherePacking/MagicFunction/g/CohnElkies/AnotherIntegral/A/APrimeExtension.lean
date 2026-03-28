@@ -454,28 +454,20 @@ lemma I₂'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₂'C u0 := by
       have hbound : ‖φ₀'' (arg₂ t)‖ ≤ C₀ :=
         norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀ hzpos him
       exact (le_trans hbound (le_max_left _ _))
-  have hpow_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖(((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ ≤ 4 := by
+  have hpow_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖(((t : ℂ) + I) ^ (2 : ℕ))‖ ≤ 4 := by
     intro t ht
-    have hnorm : ‖(t : ℂ) + (Complex.I : ℂ)‖ ≤ 2 := by
-      calc ‖(t : ℂ) + (Complex.I : ℂ)‖ ≤ ‖(t : ℂ)‖ + ‖(Complex.I : ℂ)‖ := norm_add_le _ _
-        _ ≤ 1 + 1 := add_le_add (norm_of_mem_uIoc_le_one ht) (by simp)
-        _ = 2 := by norm_num
-    calc ‖((t : ℂ) + I) ^ 2‖ = ‖(t : ℂ) + I‖ ^ 2 := by simp [norm_pow]
-      _ ≤ 2 ^ 2 := pow_le_pow_left₀ (norm_nonneg _) hnorm 2
+    have : ‖(t : ℂ) + I‖ ≤ 2 :=
+      (norm_add_le _ _).trans (by linarith [norm_of_mem_uIoc_le_one ht, Complex.norm_I])
+    simp only [norm_pow]
+    calc ‖(t : ℂ) + I‖ ^ 2 ≤ 2 ^ 2 := pow_le_pow_left₀ (norm_nonneg _) this 2
       _ = 4 := by norm_num
-  have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base₂ t‖ ≤ (4 * Cφ) := by
-    intro t ht
+  have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base₂ t‖ ≤ (4 * Cφ) := fun t ht => by
     simpa [base₂, mul_comm] using
       mul_le_mul (hφ_bound t ht) (hpow_bound t ht) (norm_nonneg _) (by positivity)
-  have h :=
-    differentiableAt_intervalIntegral_mul_exp (base := base₂) (k := k₂) u0 (4 * Cφ) (3 * Real.pi)
-      base₂_continuousOn k₂_continuousOn hbase_bound k₂_bound
-  have hEq :
-      I₂'C =
-        (fun u : ℂ => ∫ t in (0 : ℝ)..1, base₂ t * Complex.exp (u * k₂ t)) := by
-    funext u
-    simpa using (I₂'C_eq u)
-  simpa [hEq] using h
+  have h := differentiableAt_intervalIntegral_mul_exp u0 (4 * Cφ) (3 * Real.pi)
+    base₂_continuousOn k₂_continuousOn hbase_bound k₂_bound
+  simpa [show I₂'C = fun u => ∫ t in (0 : ℝ)..1, base₂ t * Complex.exp (u * k₂ t) from
+    funext fun u => by simpa using I₂'C_eq u] using h
 
 lemma I₄'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₄'C u0 := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
@@ -494,29 +486,22 @@ lemma I₄'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₄'C u0 := by
       have hbound : ‖φ₀'' (arg₄ t)‖ ≤ C₀ :=
         norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀ hzpos him
       exact (le_trans hbound (le_max_left _ _))
-  have hpow_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ ≤ 4 := by
+  have hpow_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖((-(t : ℂ) + I) ^ (2 : ℕ))‖ ≤ 4 := by
     intro t ht
-    have hnorm : ‖-(t : ℂ) + (Complex.I : ℂ)‖ ≤ 2 := by
-      calc ‖-(t : ℂ) + (Complex.I : ℂ)‖ ≤ ‖-(t : ℂ)‖ + ‖(Complex.I : ℂ)‖ := norm_add_le _ _
+    have : ‖-(t : ℂ) + I‖ ≤ 2 := by
+      calc ‖-(t : ℂ) + I‖ ≤ ‖-(t : ℂ)‖ + ‖I‖ := norm_add_le _ _
         _ = ‖(t : ℂ)‖ + 1 := by simp
-        _ ≤ 1 + 1 := add_le_add (norm_of_mem_uIoc_le_one ht) le_rfl
-        _ = 2 := by norm_num
-    calc ‖(-(t : ℂ) + I) ^ 2‖ = ‖-(t : ℂ) + I‖ ^ 2 := by simp [norm_pow]
-      _ ≤ 2 ^ 2 := pow_le_pow_left₀ (norm_nonneg _) hnorm 2
+        _ ≤ 2 := by linarith [norm_of_mem_uIoc_le_one ht]
+    simp only [norm_pow]
+    calc ‖-(t : ℂ) + I‖ ^ 2 ≤ 2 ^ 2 := pow_le_pow_left₀ (norm_nonneg _) this 2
       _ = 4 := by norm_num
-  have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base₄ t‖ ≤ (4 * Cφ) := by
-    intro t ht
+  have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base₄ t‖ ≤ (4 * Cφ) := fun t ht => by
     simpa [base₄, mul_comm] using
       mul_le_mul (hφ_bound t ht) (hpow_bound t ht) (norm_nonneg _) (by positivity)
-  have h :=
-    differentiableAt_intervalIntegral_mul_exp (base := base₄) (k := k₄) u0 (4 * Cφ) (3 * Real.pi)
-      base₄_continuousOn k₄_continuousOn hbase_bound k₄_bound
-  have hEq :
-      I₄'C =
-        (fun u : ℂ => ∫ t in (0 : ℝ)..1, base₄ t * Complex.exp (u * k₄ t)) := by
-    funext u
-    simpa using (I₄'C_eq u)
-  simpa [hEq] using h
+  have h := differentiableAt_intervalIntegral_mul_exp u0 (4 * Cφ) (3 * Real.pi)
+    base₄_continuousOn k₄_continuousOn hbase_bound k₄_bound
+  simpa [show I₄'C = fun u => ∫ t in (0 : ℝ)..1, base₄ t * Complex.exp (u * k₄ t) from
+    funext fun u => by simpa using I₄'C_eq u] using h
 
 lemma I₂'C_differentiableOn : DifferentiableOn ℂ I₂'C rightHalfPlane :=
   fun u _hu => (I₂'C_differentiableAt u).differentiableWithinAt
