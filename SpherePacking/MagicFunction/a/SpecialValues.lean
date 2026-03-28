@@ -442,53 +442,21 @@ lemma integral_f0_height_one_eq_neg_I6 :
         (f := fun y : ℝ => (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)) (a := (1 : ℝ))
         (b := fun m : ℝ => m) (l := atTop) (hfi := integrableOn_two_mul_phi0_imag)
         (hb := tendsto_id))
-  have hL :
-      Tendsto (fun m : ℝ => bottom + Complex.I • vert m) atTop
-        (𝓝
-          (bottom +
-            Complex.I •
-              (∫ y in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)
-                ∂MeasureTheory.volume))) :=
-    (tendsto_const_nhds.add (tendsto_const_nhds.smul hVert))
-  have hTopA :
-      Tendsto top atTop
-        (𝓝
-          (bottom +
-            Complex.I •
-              (∫ y in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)
-                ∂MeasureTheory.volume))) :=
-    hL.congr' hEq
-  have hTop0 : Tendsto top atTop (𝓝 (0 : ℂ)) := by simpa [top] using tendsto_top_f0
-  have hA0 :
-      bottom +
-          Complex.I •
-            (∫ y in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)
-              ∂MeasureTheory.volume) =
-        0 :=
-    tendsto_nhds_unique hTopA hTop0
+  set vertLim := ∫ y in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) ∂MeasureTheory.volume
+  have hA0 : bottom + Complex.I • vertLim = 0 :=
+    tendsto_nhds_unique
+      ((tendsto_const_nhds.add (tendsto_const_nhds.smul hVert)).congr' hEq)
+      (by simpa [top] using tendsto_top_f0)
   -- Identify the vertical limit with `I₆' 0`.
-  have hI6 :
-      I₆' (0 : ℝ) =
-        Complex.I •
-          (∫ y in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)
-            ∂MeasureTheory.volume) := by
-    -- Use the explicit `I₆'` formula at `r = 0` and `Ici = Ioi` up to measure zero.
-    have h0 := (MagicFunction.a.RadialFunctions.I₆'_eq (r := (0 : ℝ)))
-    -- simplify the exponential factor at `r = 0`
-    have h0' :
-        I₆' (0 : ℝ) =
-          2 * ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
-            ∂MeasureTheory.volume := by simp [h0, mul_comm]
-    -- switch to `Ioi` and pull out scalars
-    calc
-      I₆' (0 : ℝ)
-          = 2 * ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
-              ∂MeasureTheory.volume := by simp [h0', MeasureTheory.integral_Ici_eq_integral_Ioi]
-      _ = Complex.I •
-            (∫ t in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
-              ∂MeasureTheory.volume) := by
-            simp only [MeasureTheory.integral_const_mul, smul_eq_mul]
-            ring
+  have hI6 : I₆' (0 : ℝ) = Complex.I • vertLim := by
+    have h0 := MagicFunction.a.RadialFunctions.I₆'_eq (r := (0 : ℝ))
+    calc I₆' (0 : ℝ)
+        = 2 * ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
+            ∂MeasureTheory.volume := by
+          simp [h0, mul_comm, MeasureTheory.integral_Ici_eq_integral_Ioi]
+      _ = Complex.I • vertLim := by
+          simp only [vertLim, MeasureTheory.integral_const_mul, smul_eq_mul]
+          ring
   -- Solve for `bottom`.
   grind only
 
