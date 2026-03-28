@@ -13,7 +13,6 @@ public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.MeasureTheory.Integral.ExpDecay
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
-
 /-!
 # Complex analytic extension of `a'` (`aPrimeC`)
 
@@ -38,7 +37,6 @@ open SpherePacking intervalIntegral
 open MagicFunction.a.RealIntegrals
 
 noncomputable section
-
 
 /-! Complexified pieces `Iᵢ'C`. -/
 
@@ -114,8 +112,7 @@ We rewrite each `Iᵢ'C` (`i = 1, ..., 5`) into the form
 `u ↦ ∫ t, base t * exp (u * k t)` and apply `differentiableAt_intervalIntegral_mul_exp`.
 -/
 
-lemma norm_φ₀''_le_of_half_lt {C₀ : ℝ}
-    (hC₀_nonneg : 0 ≤ C₀)
+lemma norm_φ₀''_le_of_half_lt {C₀ : ℝ} (hC₀_nonneg : 0 ≤ C₀)
     (hC₀ : ∀ z : ℍ, 1 / 2 < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
     {z : ℂ} (hzpos : 0 < z.im) (hzhalf : 1 / 2 < z.im) :
     ‖φ₀'' z‖ ≤ C₀ := by
@@ -636,8 +633,7 @@ lemma base₆_continuousOn : ContinuousOn base₆ (Set.Ici (1 : ℝ)) := by
 lemma re_sub_lt_of_mem_ball {u0 u : ℂ} {ε : ℝ} (hu : u ∈ Metric.ball u0 ε) :
     u0.re - ε < u.re := by
   have habs : |u.re - u0.re| < ε := by
-    simpa using
-      lt_of_le_of_lt (abs_re_le_norm (u - u0)) (by simpa [Metric.mem_ball, dist_eq_norm] using hu)
+    simpa using (abs_re_le_norm (u - u0)).trans_lt (by simpa [Metric.mem_ball, dist_eq_norm] using hu)
   linarith [(abs_lt.mp habs).1]
 
 lemma re_half_le_of_mem_ball {u0 u : ℂ}
