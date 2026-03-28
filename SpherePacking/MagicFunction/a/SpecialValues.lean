@@ -139,8 +139,7 @@ lemma F_eq_phi0_phi2_phi4 (z : ℂ) (hz : 0 < z.im) :
   let zH : ℍ := ⟨z, hz⟩
   have hSz : ((ModularGroup.S • zH : ℍ) : ℂ) = -1 / (z : ℂ) := by
     simpa [zH] using ModularGroup.coe_S_smul (z := zH)
-  have hφ₀S : φ₀ (ModularGroup.S • zH) = φ₀'' (-1 / z) := by
-    rw [← hSz, φ₀''_coe_upperHalfPlane]
+  have hφ₀S : φ₀ (ModularGroup.S • zH) = φ₀'' (-1 / z) := by rw [← hSz, φ₀''_coe_upperHalfPlane]
   have hφ₀ : φ₀ zH = φ₀'' z := by simpa [zH] using (φ₀''_def (z := z) hz).symm
   have hφ₂ : φ₂' zH = φ₂'' z := by simp [φ₂'', hz, zH]
   have hφ₄ : φ₄' zH = φ₄'' z := by simp [φ₄'', hz, zH]
@@ -151,34 +150,27 @@ lemma F_eq_phi0_phi2_phi4 (z : ℂ) (hz : 0 < z.im) :
 private lemma φ₀''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z - 1) = φ₀'' z := by
   have hz1 : 0 < (z - 1).im := by simpa using hz
   let zH : ℍ := ⟨z, hz⟩
-  have hvneg : ((-1 : ℝ) +ᵥ zH : ℍ) = ⟨z - 1, hz1⟩ := by
-    ext1
-    simp [zH, sub_eq_add_neg, add_comm]
-  calc
-    φ₀'' (z - 1) = φ₀ (⟨z - 1, hz1⟩ : ℍ) := by simpa using (φ₀''_def (z := z - 1) hz1)
-    _ = φ₀ zH := by simpa [hvneg] using (φ₀_periodic_neg_one zH)
-    _ = φ₀'' z := by simpa [zH] using (φ₀''_def (z := z) hz).symm
+  have hvneg : ((-1 : ℝ) +ᵥ zH : ℍ) = ⟨z - 1, hz1⟩ := by ext1; simp [zH, sub_eq_add_neg, add_comm]
+  have h1 : φ₀'' (z - 1) = φ₀ (⟨z - 1, hz1⟩ : ℍ) := by simpa using φ₀''_def (z := z - 1) hz1
+  have h2 : φ₀ zH = φ₀'' z := by simpa [zH] using (φ₀''_def (z := z) hz).symm
+  rw [h1, ← hvneg, φ₀_periodic_neg_one, h2]
 
 private lemma φ₂''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₂'' (z - 1) = φ₂'' z := by
   have hz1 : 0 < (z - 1).im := by simpa using hz
   let zH : ℍ := ⟨z, hz⟩
-  have hvneg : ((-1 : ℝ) +ᵥ zH : ℍ) = ⟨z - 1, hz1⟩ := by
-    ext1
-    simp [zH, sub_eq_add_neg, add_comm]
-  calc
-    φ₂'' (z - 1) = φ₂' (⟨z - 1, hz1⟩ : ℍ) := by simpa using (φ₂''_def (z := z - 1) hz1)
-    _ = φ₂' zH := by simpa [hvneg] using (φ₂'_periodic_neg_one zH)
-    _ = φ₂'' z := by simpa [zH] using (φ₂''_def (z := z) hz).symm
+  have hvneg : ((-1 : ℝ) +ᵥ zH : ℍ) = ⟨z - 1, hz1⟩ := by ext1; simp [zH, sub_eq_add_neg, add_comm]
+  have h1 : φ₂'' (z - 1) = φ₂' (⟨z - 1, hz1⟩ : ℍ) := by simpa using φ₂''_def (z := z - 1) hz1
+  have h2 : φ₂' zH = φ₂'' z := by simpa [zH] using (φ₂''_def (z := z) hz).symm
+  rw [h1, ← hvneg, φ₂'_periodic_neg_one, h2]
 
 private lemma φ₄''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₄'' (z - 1) = φ₄'' z := by
   have hz1 : 0 < (z - 1).im := by simpa using hz
   let zH : ℍ := ⟨z, hz⟩
   have hvneg : ((-1 : ℝ) +ᵥ zH : ℍ) = ⟨z - 1, hz1⟩ := by
     ext1; simpa [zH, sub_eq_add_neg] using (add_comm (-1 : ℂ) z)
-  calc
-    φ₄'' (z - 1) = φ₄' (⟨z - 1, hz1⟩ : ℍ) := by simpa using (φ₄''_def (z := z - 1) hz1)
-    _ = φ₄' zH := by simpa [hvneg] using (φ₄'_periodic_neg_one zH)
-    _ = φ₄'' z := by simpa [zH] using (φ₄''_def (z := z) hz).symm
+  have h1 : φ₄'' (z - 1) = φ₄' (⟨z - 1, hz1⟩ : ℍ) := by simpa using φ₄''_def (z := z - 1) hz1
+  have h2 : φ₄' zH = φ₄'' z := by simpa [zH] using (φ₄''_def (z := z) hz).symm
+  rw [h1, ← hvneg, φ₄'_periodic_neg_one, h2]
 
 lemma F_sub_one (z : ℂ) (hz : 0 < z.im) :
     F z - F (z - 1) =
@@ -265,14 +257,10 @@ lemma f0_norm_bound_on_strip :
 public lemma φ₀''_add_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z + 1) = φ₀'' z := by
   have hz1 : 0 < (z + 1).im := by simpa using hz
   let zH : ℍ := ⟨z, hz⟩
-  have hvadd : ((1 : ℝ) +ᵥ zH : ℍ) = ⟨z + 1, hz1⟩ := by
-    ext1
-    simp [zH, add_comm]
-  calc
-    φ₀'' (z + 1) = φ₀ (⟨z + 1, hz1⟩ : ℍ) := by simpa using (φ₀''_def (z := z + 1) hz1)
-    _ = φ₀ ((1 : ℝ) +ᵥ zH) := by simp [hvadd]
-    _ = φ₀ zH := φ₀_periodic zH
-    _ = φ₀'' z := by simpa [zH] using (φ₀''_def (z := z) hz).symm
+  have hvadd : ((1 : ℝ) +ᵥ zH : ℍ) = ⟨z + 1, hz1⟩ := by ext1; simp [zH, add_comm]
+  have h1 : φ₀'' (z + 1) = φ₀ (⟨z + 1, hz1⟩ : ℍ) := by simpa using φ₀''_def (z := z + 1) hz1
+  have h2 : φ₀ zH = φ₀'' z := by simpa [zH] using (φ₀''_def (z := z) hz).symm
+  rw [h1, ← hvadd, φ₀_periodic, h2]
 
 lemma f0_vertical_diff (y : ℝ) (hy : 0 < y) :
     f0 ((1 : ℂ) + (y : ℂ) * Complex.I) - f0 ((y : ℂ) * Complex.I) =
@@ -535,14 +523,12 @@ lemma integral_f0_height_one_eq_neg_I6 :
 /-! ### Evaluating the remaining `φ₂''` term. -/
 
 lemma φ₂''_add_one (z : ℂ) (hz : 0 < z.im) : φ₂'' (z + 1) = φ₂'' z := by
-  let zH : ℍ := ⟨z, hz⟩
   have hz1 : 0 < (z + 1).im := by simpa using hz
+  let zH : ℍ := ⟨z, hz⟩
   have hvadd : ((1 : ℝ) +ᵥ zH : ℍ) = ⟨z + 1, hz1⟩ := by ext1; simp [zH, add_comm]
-  calc
-    φ₂'' (z + 1) = φ₂' (⟨z + 1, hz1⟩ : ℍ) := by simpa using (φ₂''_def (z := z + 1) hz1)
-    _ = φ₂' ((1 : ℝ) +ᵥ zH) := by simp [hvadd]
-    _ = φ₂' zH := φ₂'_periodic zH
-    _ = φ₂'' z := by simpa [zH] using (φ₂''_def (z := z) hz).symm
+  have h1 : φ₂'' (z + 1) = φ₂' (⟨z + 1, hz1⟩ : ℍ) := by simpa using φ₂''_def (z := z + 1) hz1
+  have h2 : φ₂' zH = φ₂'' z := by simpa [zH] using (φ₂''_def (z := z) hz).symm
+  rw [h1, ← hvadd, φ₂'_periodic, h2]
 
 lemma rect_phi2 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + (1 : ℝ) * Complex.I)) -
