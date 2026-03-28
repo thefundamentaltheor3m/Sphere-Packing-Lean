@@ -587,6 +587,19 @@ example (h₁ : Tendsto f atTop (nhds 6)) :
 example {s : Set ℝ} (h : Tendsto f atTop (nhdsWithin 3 s)) :
     Tendsto (fun z => 2 * f z) atTop (nhds 6) := by tendsto_cont [h]
 
+-- nhdsWithin: inline arg shadows local nhdsWithin hypothesis (no warning)
+example {s : Set ℝ} (_h₁ : Tendsto f atTop (nhdsWithin 0 s))
+    (h₂ : Tendsto f atTop (nhds 1)) :
+    Tendsto (fun z => f z + 1) atTop (nhds 2) := by tendsto_cont [h₂]
+
+-- nhdsWithin: ambiguity between two nhdsWithin hypotheses with different limits
+/-- error: tendsto_cont: ambiguous value for atom — found hypotheses with values `0` and `1` for the same function -/
+#guard_msgs(error, drop info) in
+example {s t : Set ℝ}
+    (h₁ : Tendsto f atTop (nhdsWithin 0 s))
+    (h₂ : Tendsto f atTop (nhdsWithin 1 t)) :
+    Tendsto (fun z => f z + 1) atTop (nhds 1) := by tendsto_cont
+
 -- ══════════════════════════════════════════════════════════════
 -- tendsto_cont? with disch
 -- ══════════════════════════════════════════════════════════════
@@ -598,3 +611,12 @@ computed limit: 3⁻¹ -/
 example (h : Tendsto f atTop (nhds 3)) :
     Tendsto (fun z => (f z)⁻¹) atTop (nhds 3⁻¹) := by
   tendsto_cont? (disch := norm_num)
+
+-- ══════════════════════════════════════════════════════════════
+-- disch with positivity-style discharger
+-- ══════════════════════════════════════════════════════════════
+
+-- Inverse with positivity: hypothesis ensures positivity
+example (h : Tendsto f atTop (nhds 3)) :
+    Tendsto (fun z => (f z)⁻¹) atTop (nhds 3⁻¹) := by
+  tendsto_cont (disch := positivity)
