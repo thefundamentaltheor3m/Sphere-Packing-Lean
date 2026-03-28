@@ -205,7 +205,8 @@ lemma I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2 :
   rw [I₂'_zero_add_I₄'_zero hF hG]
   refine intervalIntegral.integral_congr (μ := MeasureTheory.volume) ?_
   intro x hx
-  simpa [zI] using (F_sub_one (z := zI x) (by simp [zI]))
+  have hzI : 0 < (zI x).im := by simp [zI]
+  simpa [zI] using F_sub_one (z := zI x) hzI
 
 /-! ### Cancelling the `φ₀''` strip integral against `I₆' 0`. -/
 
@@ -747,8 +748,9 @@ lemma tendsto_top_phi2 :
     let zH : ℍ := ⟨(x : ℂ) + (m : ℂ) * Complex.I, by simpa using hm0⟩
     have hz : A ≤ zH.im := by simpa [zH, UpperHalfPlane.im, zI, Complex.add_im] using hmA
     have hmem : ‖φ₂' zH - (720 : ℂ)‖ < ε / 2 := by simpa using hA zH hz
+    have him : 0 < ((x : ℂ) + (m : ℂ) * Complex.I).im := by simpa using hm0
     have hdef : φ₂'' ((x : ℂ) + (m : ℂ) * Complex.I) = φ₂' zH := by
-      simpa [zH] using (φ₂''_def (z := (x : ℂ) + (m : ℂ) * Complex.I) (by simpa using hm0))
+      simpa [zH] using φ₂''_def (z := (x : ℂ) + (m : ℂ) * Complex.I) him
     simpa [zH, hdef, mul_assoc] using le_of_lt hmem
   -- Rewrite the difference of integrals as the integral of the difference.
   have hInt :
@@ -825,7 +827,8 @@ private lemma intervalIntegrable_F_comp
   have hφcomp :
       ContinuousOn (fun x : ℝ => φ₀'' ((-1 : ℂ) / (w x))) (Set.uIcc (0 : ℝ) 1) :=
     hφ.comp hinvcomp himap
-  simpa [F] using (hφcomp.mul (by simpa using hw.pow 2)).intervalIntegrable
+  have hwpow : ContinuousOn (fun x => w x ^ (2 : ℕ)) (Set.uIcc 0 1) := by simpa using hw.pow 2
+  simpa [F] using (hφcomp.mul hwpow).intervalIntegrable
 
 private lemma intervalIntegrable_comp_zI {g : ℂ → ℂ} (hg : ContinuousOn g {z : ℂ | 0 < z.im}) :
     IntervalIntegrable (fun x : ℝ => g (zI x)) MeasureTheory.volume (0 : ℝ) 1 := by
