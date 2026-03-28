@@ -110,37 +110,20 @@ lemma I₂'_zero :
 
 lemma I₄'_zero :
     I₄' (0 : ℝ) = -∫ x in (0 : ℝ)..1, F (zI x - 1) := by
-  -- Start from the explicit formula for `I₄'` and simplify at `r = 0`.
-  have h0 :
-      I₄' (0 : ℝ) =
-        ∫ x in (0 : ℝ)..1, (-1 : ℂ) *
-          (φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) := by
+  have h0 : I₄' (0 : ℝ) =
+      ∫ x in (0 : ℝ)..1, (-1 : ℂ) *
+        (φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) := by
     simp [MagicFunction.a.RadialFunctions.I₄'_eq, pow_two]
-  -- Express the integrand as `F (zI (1 - x) - 1)` and substitute `x ↦ 1 - x`.
-  have hrew :
-      (fun x : ℝ =>
-          φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) =
-        fun x : ℝ => F (zI (1 - x) - 1) := by
-    funext x
-    simp [F, zI, sub_eq_add_neg, add_assoc, add_comm]
-  have hsub :
-      (∫ x in (0 : ℝ)..1,
-          φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) =
-        ∫ x in (0 : ℝ)..1, F (zI x - 1) := by
-    have :
-        (∫ x in (0 : ℝ)..1, F (zI (1 - x) - 1)) = ∫ x in (0 : ℝ)..1, F (zI x - 1) := by
-      simpa using
-        (intervalIntegral.integral_comp_sub_left (f := fun x : ℝ => F (zI x - 1))
-          (a := (0 : ℝ)) (b := (1 : ℝ)) (d := (1 : ℝ)))
-    simpa [hrew] using this
-  -- Put the pieces together.
-  calc
-    I₄' (0 : ℝ)
-        = ∫ x in (0 : ℝ)..1, (-1 : ℂ) *
-            (φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) := h0
-    _ = -∫ x in (0 : ℝ)..1,
-            (φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) := by simp
-    _ = -∫ x in (0 : ℝ)..1, F (zI x - 1) := by simp [hsub]
+  have hrew : (fun x : ℝ =>
+      φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) =
+      fun x : ℝ => F (zI (1 - x) - 1) := by
+    funext x; simp [F, zI, sub_eq_add_neg, add_assoc, add_comm]
+  have hsub : (∫ x in (0 : ℝ)..1,
+      φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) =
+      ∫ x in (0 : ℝ)..1, F (zI x - 1) := by
+    simpa [hrew] using (intervalIntegral.integral_comp_sub_left
+      (f := fun x : ℝ => F (zI x - 1)) (a := 0) (b := 1) (d := 1))
+  simp [h0, hsub]
 
 /-! ### S-transform identity for `F(z) - F(z-1)`. -/
 
