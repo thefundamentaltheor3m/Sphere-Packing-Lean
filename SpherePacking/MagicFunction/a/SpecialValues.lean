@@ -138,14 +138,9 @@ lemma F_eq_phi0_phi2_phi4 (z : ℂ) (hz : 0 < z.im) :
   -- Work in `ℍ` and use the previously proved `φ₀_S_transform_mul_sq`.
   let zH : ℍ := ⟨z, hz⟩
   have hSz : ((ModularGroup.S • zH : ℍ) : ℂ) = -1 / (z : ℂ) := by
-    simpa [zH] using (ModularGroup.coe_S_smul (z := zH))
+    simpa [zH] using ModularGroup.coe_S_smul (z := zH)
   have hφ₀S : φ₀ (ModularGroup.S • zH) = φ₀'' (-1 / z) := by
-    calc
-      φ₀ (ModularGroup.S • zH) = φ₀'' ((ModularGroup.S • zH : ℍ) : ℂ) :=
-        (φ₀''_coe_upperHalfPlane (ModularGroup.S • zH)).symm
-      _ = φ₀'' (-1 / z) := by
-        -- avoid `simp` rewriting `S • zH` to a `GL` action
-        rw [hSz]
+    rw [← hSz, φ₀''_coe_upperHalfPlane]
   have hφ₀ : φ₀ zH = φ₀'' z := by simpa [zH] using (φ₀''_def (z := z) hz).symm
   have hφ₂ : φ₂' zH = φ₂'' z := by simp [φ₂'', hz, zH]
   have hφ₄ : φ₄' zH = φ₄'' z := by simp [φ₄'', hz, zH]
