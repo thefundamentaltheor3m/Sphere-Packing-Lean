@@ -28,7 +28,8 @@ exponentials, and other compositions.
 ## Features
 
 - **`tendsto_cont`**: Prove the goal automatically.
-- **`tendsto_cont?`**: Report matched atoms and computed limit, then prove.
+- **`tendsto_cont?`**: Report matched atoms and the computed limit
+  (the body evaluated at atom limits), then prove.
 - **`tendsto_cont (disch := tac)`**: Pass a discharger to `fun_prop` for
   side conditions (e.g., `disch := positivity` for `log`, `inv`, `div`).
 - **`tendsto_cont [h₁, h₂]`**: Provide inline `Tendsto` hypotheses.
@@ -100,24 +101,22 @@ private meta def parseGoal (goal : Expr) :
     For `nhdsWithin`, wraps the proof with `mono_right nhdsWithin_le_nhds`
     to produce a `Tendsto f l (nhds a)` proof. -/
 private meta def matchTendstoNhdsOrWithin? (e : Expr) (hypExpr : Expr) :
-    MetaM (Option (Expr × Expr × Expr × Expr × Expr)) := do
+    MetaM (Option (Expr × Expr × Expr × Expr × Expr × Option Expr)) := do
   match ← matchTendsto? e with
   | some (_α, codTy, f, l, tgt) =>
     match ← matchNhds? tgt with
-    | some a => return some (codTy, f, l, a, hypExpr)
+    | some a => return some (codTy, f, l, a, hypExpr, none)
     | none =>
       match ← matchNhdsWithin? tgt with
       | some (ty, inst, a, s) =>
         -- Wrap: Tendsto.mono_right h nhdsWithin_le_nhds
-        -- mono_right : {α β} {f} {l₁ : Filter α} {l₂ l₃ : Filter β} →
-        --   Tendsto f l₁ l₂ → l₂ ≤ l₃ → Tendsto f l₁ l₃
         let nhdsFilter ← mkAppOptM ``nhds #[some ty, some inst, some a]
         let leProof ← mkAppOptM ``nhdsWithin_le_nhds
           #[some ty, some inst, some a, some s]
         let wrappedHyp ← mkAppOptM ``Filter.Tendsto.mono_right
           #[none, none, none, none, none, some nhdsFilter,
             some hypExpr, some leProof]
-        return some (codTy, f, l, a, wrappedHyp)
+        return some (codTy, f, l, a, wrappedHyp, some hypExpr)
       | none => return none
   | none => return none
 
@@ -137,16 +136,18 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
   for hyp in extraHyps do
     let ty ← inferType hyp >>= instantiateMVars
     match ← matchTendstoNhdsOrWithin? ty hyp with
-    | some (codTy, f, l, a, wrappedHyp) =>
+    | some (codTy, f, l, a, wrappedHyp, origHyp?) =>
       if ← withNewMCtxDepth (isDefEq l goalFilter) then
         inlineCands := inlineCands.push
-          { fn := f, value := a, hyp := wrappedHyp, codTy := codTy }
+          { fn := f, value := a, hyp := wrappedHyp, codTy := codTy,
+            origHyp := origHyp? }
     | none => continue
   -- Warn about redundant inline args (local hyps that don't disambiguate)
   let ctx ← getLCtx
   for i in [:inlineCands.size] do
     let inlineCand := inlineCands[i]!
-    unless inlineCand.hyp.isFVar do continue
+    let diagHyp := inlineCand.origHyp.getD inlineCand.hyp
+    unless diagHyp.isFVar do continue
     let mut hasConflict := false
     -- Check other inline args for conflicts (same fn, different limit)
     for j in [:inlineCands.size] do
@@ -159,17 +160,17 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
     unless hasConflict do
       for decl in ctx do
         if decl.isImplementationDetail then continue
-        if decl.fvarId == inlineCand.hyp.fvarId! then continue
+        if decl.fvarId == diagHyp.fvarId! then continue
         let ty ← instantiateMVars decl.type
         match ← matchTendstoNhdsOrWithin? ty decl.toExpr with
-        | some (_, f, l, a, _) =>
+        | some (_, f, l, a, _, _) =>
           if ← withNewMCtxDepth (isDefEq l goalFilter) then
             if ← withNewMCtxDepth (isDefEq f inlineCand.fn) then
               unless ← withNewMCtxDepth (isDefEq a inlineCand.value) do
                 hasConflict := true
         | none => continue
     unless hasConflict do
-      let name ← ppExpr inlineCand.hyp
+      let name ← ppExpr diagHyp
       logWarning m!"tendsto_cont: inline argument `{name}` is redundant \
         — it is already available as a local hypothesis"
   -- Bucket 2: local context (shadowed by inline)
@@ -178,13 +179,14 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
     if decl.isImplementationDetail then continue
     let ty ← instantiateMVars decl.type
     match ← matchTendstoNhdsOrWithin? ty decl.toExpr with
-    | some (codTy, f, l, a, wrappedHyp) =>
+    | some (codTy, f, l, a, wrappedHyp, origHyp?) =>
       if ← withNewMCtxDepth (isDefEq l goalFilter) then
         let dominated ← inlineCands.anyM fun c =>
           withNewMCtxDepth (isDefEq c.fn f)
         unless dominated do
           contextCands := contextCands.push
-            { fn := f, value := a, hyp := wrappedHyp, codTy := codTy }
+            { fn := f, value := a, hyp := wrappedHyp, codTy := codTy,
+              origHyp := origHyp? }
     | none => continue
   -- Bucket 3: attribute registry (shadowed by inline and context)
   let env ← getEnv
@@ -195,13 +197,14 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
       let e ← mkConstWithFreshMVarLevels name
       let ty ← inferType e >>= instantiateMVars
       match ← matchTendstoNhdsOrWithin? ty e with
-      | some (codTy, f, l, a, wrappedHyp) =>
+      | some (codTy, f, l, a, wrappedHyp, origHyp?) =>
         if ← withNewMCtxDepth (isDefEq l goalFilter) then
           let dominated ← higherPriority.anyM fun c =>
             withNewMCtxDepth (isDefEq c.fn f)
           unless dominated do
             attrCands := attrCands.push
-              { fn := f, value := a, hyp := wrappedHyp, codTy := codTy }
+              { fn := f, value := a, hyp := wrappedHyp, codTy := codTy,
+                origHyp := origHyp? }
       | none => continue
     catch _ => continue
   -- Merge and discover atoms via AtomEngine
@@ -339,11 +342,14 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
         let fnFmt ← ppExpr atom.fn
         let valFmt ← ppExpr atom.value
         atomDescs := atomDescs.push m!"  {fnFmt} → {valFmt}"
-      let limitPt ← AtomEngine.buildValuePoint atoms
-      let computedFmt ← ppExpr limitPt
+      -- Compute actual limit by substituting atom values into the body.
+      -- Instead of going through product abstraction + projection,
+      -- directly replace each fᵢ(bvar) with its limit value.
+      let computedLimit ← AtomEngine.substituteAtomValues body bvar atoms
+      let computedFmt ← ppExpr computedLimit
       logInfo m!"tendsto_cont?: matched atoms:\
         \n{MessageData.joinSep atomDescs.toList "\n"}\
-        \ncomputed limit point: {computedFmt}"
+        \ncomputed limit: {computedFmt}"
 
     some <$> buildContinuityProof body bvar atoms dischStx?
 

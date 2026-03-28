@@ -49,10 +49,15 @@ structure Atom where
   fn : Expr
   /-- The associated value (limit, derivative, etc.). -/
   value : Expr
-  /-- The proof expression (Tendsto hypothesis, HasDerivAt proof, etc.). -/
+  /-- The proof expression (Tendsto hypothesis, HasDerivAt proof, etc.).
+      May be a wrapped version of the original hypothesis. -/
   hyp : Expr
   /-- The codomain type. -/
   codTy : Expr
+  /-- The original hypothesis expression before any proof wrapping
+      (e.g., before `mono_right` for nhdsWithin). Used for diagnostics
+      like redundancy warnings. If `none`, `hyp` is the original. -/
+  origHyp : Option Expr := none
   deriving Inhabited
 
 -- ══════════════════════════════════════════════════════════════
@@ -181,6 +186,34 @@ partial def abstractBody (body : Expr) (bvar : FVarId)
     return .mdata m (← abstractBody e bvar pVar atoms)
   | .proj s i e =>
     return .proj s i (← abstractBody e bvar pVar atoms)
+  | _ => return body
+
+/-- Replace `fᵢ(bvar)` with `atoms[i].value` in the body.
+    Used for computing the limit of the body given atom values,
+    without going through product abstraction. -/
+partial def substituteAtomValues (body : Expr) (bvar : FVarId)
+    (atoms : Array Atom) : MetaM Expr := do
+  if !body.containsFVar bvar then return body
+  let bvarExpr := Expr.fvar bvar
+  for i in [:atoms.size] do
+    let candApplied := mkApp atoms[i]!.fn bvarExpr
+    if ← withNewMCtxDepth (isDefEq body candApplied) then
+      return atoms[i]!.value
+  match body with
+  | .app f a =>
+    return .app (← substituteAtomValues f bvar atoms)
+                (← substituteAtomValues a bvar atoms)
+  | .lam n t b bi =>
+    return .lam n (← substituteAtomValues t bvar atoms)
+                  (← substituteAtomValues b bvar atoms) bi
+  | .letE n t v b nd =>
+    return .letE n (← substituteAtomValues t bvar atoms)
+                   (← substituteAtomValues v bvar atoms)
+                   (← substituteAtomValues b bvar atoms) nd
+  | .mdata m e =>
+    return .mdata m (← substituteAtomValues e bvar atoms)
+  | .proj s i e =>
+    return .proj s i (← substituteAtomValues e bvar atoms)
   | _ => return body
 
 end AtomEngine

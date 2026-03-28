@@ -528,7 +528,7 @@ end AttrShadowing
 /-- info: tendsto_cont?: matched atoms:
   f → 1
   g → 2
-computed limit point: (1, 2) -/
+computed limit: 1 + 2 -/
 #guard_msgs(info, drop warning) in
 example (h₁ : Tendsto f atTop (nhds 1)) (h₂ : Tendsto g atTop (nhds 2)) :
     Tendsto (fun z => f z + g z) atTop (nhds 3) := by tendsto_cont?
@@ -536,7 +536,7 @@ example (h₁ : Tendsto f atTop (nhds 1)) (h₂ : Tendsto g atTop (nhds 2)) :
 -- tendsto_cont? with single atom
 /-- info: tendsto_cont?: matched atoms:
   f → 3
-computed limit point: 3 -/
+computed limit: 2 * 3 -/
 #guard_msgs(info, drop warning) in
 example (h : Tendsto f atTop (nhds 3)) :
     Tendsto (fun z => 2 * f z) atTop (nhds 6) := by tendsto_cont?
@@ -576,3 +576,25 @@ example (h₁ : Tendsto f atTop (nhds 6)) (h₂ : Tendsto g atTop (nhds 3)) :
 example (h₁ : Tendsto f atTop (nhds 6)) :
     Tendsto (fun z => f z / 3) atTop (nhds 2) := by
   tendsto_cont (disch := norm_num)
+
+-- ══════════════════════════════════════════════════════════════
+-- nhdsWithin: redundancy warnings still fire
+-- ══════════════════════════════════════════════════════════════
+
+-- Redundant inline arg with nhdsWithin hypothesis triggers warning
+/-- warning: tendsto_cont: inline argument `h` is redundant — it is already available as a local hypothesis -/
+#guard_msgs(warning, drop info) in
+example {s : Set ℝ} (h : Tendsto f atTop (nhdsWithin 3 s)) :
+    Tendsto (fun z => 2 * f z) atTop (nhds 6) := by tendsto_cont [h]
+
+-- ══════════════════════════════════════════════════════════════
+-- tendsto_cont? with disch
+-- ══════════════════════════════════════════════════════════════
+
+/-- info: tendsto_cont?: matched atoms:
+  f → 3
+computed limit: 3⁻¹ -/
+#guard_msgs(info, drop warning) in
+example (h : Tendsto f atTop (nhds 3)) :
+    Tendsto (fun z => (f z)⁻¹) atTop (nhds 3⁻¹) := by
+  tendsto_cont? (disch := norm_num)
