@@ -85,17 +85,28 @@ private meta def matchNhdsWithin? (e : Expr) :
   | (``nhdsWithin, #[ty, inst, a, s]) => some (ty, inst, a, s)
   | _ => none
 
-/-- Parse the goal `Tendsto goalFn l (nhds c)`, returning `(goalFn, l, domTy)`. -/
+/-- Result of parsing a `Tendsto` goal. -/
+meta inductive GoalTarget
+  | nhds
+  | nhdsWithin (withinSet : Expr)
+
+/-- Parse the goal `Tendsto goalFn l (nhds c)` or
+    `Tendsto goalFn l (nhdsWithin c s)`,
+    returning `(goalFn, l, domTy, target)`. -/
 private meta def parseGoal (goal : Expr) :
-    MetaM (Expr × Expr × Expr) := do
+    MetaM (Expr × Expr × Expr × GoalTarget) := do
   match ← matchTendsto? goal with
   | some (domTy, _, goalFn, l, tgt) =>
     match ← matchNhds? tgt with
-    | some _ => return (goalFn, l, domTy)
+    | some _ => return (goalFn, l, domTy, .nhds)
     | none =>
-      throwError "tendsto_cont: target filter is not `nhds _`"
+      match ← matchNhdsWithin? tgt with
+      | some (_, _, _, s) => return (goalFn, l, domTy, .nhdsWithin s)
+      | none =>
+        throwError "tendsto_cont: target filter is not `nhds _` or `nhdsWithin _ _`"
   | none =>
-    throwError "tendsto_cont: goal is not `Tendsto f l (nhds c)`"
+    throwError "tendsto_cont: goal is not `Tendsto f l (nhds c)` or \
+      `Tendsto f l (nhdsWithin c s)`"
 
 /-- Match `Tendsto f l (nhds a)` or `Tendsto f l (nhdsWithin a s)`.
     For `nhdsWithin`, wraps the proof with `mono_right nhdsWithin_le_nhds`
@@ -301,7 +312,7 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
   let goal ← getMainGoal
   let goalTy ← goal.getType >>= instantiateMVars
 
-  let (goalFn, goalFilter, domTy) ← parseGoal goalTy
+  let (goalFn, goalFilter, domTy, goalTarget) ← parseGoal goalTy
 
   let body ← match (← whnfR goalFn) with
     | .lam _ _ b _ => pure b
@@ -342,9 +353,6 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
         let fnFmt ← ppExpr atom.fn
         let valFmt ← ppExpr atom.value
         atomDescs := atomDescs.push m!"  {fnFmt} → {valFmt}"
-      -- Compute actual limit by substituting atom values into the body.
-      -- Instead of going through product abstraction + projection,
-      -- directly replace each fᵢ(bvar) with its limit value.
       let computedLimit ← AtomEngine.substituteAtomValues body bvar atoms
       let computedFmt ← ppExpr computedLimit
       logInfo m!"tendsto_cont?: matched atoms:\
@@ -355,7 +363,37 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
 
   match proof? with
   | none => return
-  | some proof => reconcileLimits goal proof
+  | some nhdsProof =>
+    match goalTarget with
+    | .nhds => reconcileLimits goal nhdsProof
+    | .nhdsWithin _withinSet =>
+      -- For nhdsWithin goals, we have a proof of Tendsto body l (nhds c').
+      -- We need: Tendsto body l (nhdsWithin c s).
+      -- Strategy: apply tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within
+      -- which requires (1) nhds proof and (2) ∀ᶠ x in l, body x ∈ s.
+      -- First reconcile the nhds proof's limit with the goal's limit,
+      -- then try to close the ∀ᶠ side condition.
+      let remaining ← Elab.Tactic.run goal
+        (Elab.Tactic.evalTactic
+          (← `(tactic| apply tendsto_nhdsWithin_iff.mpr; constructor)))
+      -- remaining should have two subgoals: nhds part and ∀ᶠ part
+      match remaining with
+      | [nhdsGoal, evGoal] =>
+        -- Close nhds subgoal using the proof we built
+        reconcileLimits nhdsGoal nhdsProof
+        -- Try to close the ∀ᶠ subgoal
+        let evRemaining ← Elab.Tactic.run evGoal
+          (Elab.Tactic.evalTactic (← `(tactic| first
+            | exact Filter.univ_mem' (fun _ => trivial)
+            | assumption
+            | simp
+            | trivial)))
+        unless evRemaining.isEmpty do
+          -- Leave the subgoal for the user — don't error
+          pure ()
+      | _ =>
+        -- Fallback: just try reconcileLimits directly
+        reconcileLimits goal nhdsProof
 
 -- ══════════════════════════════════════════════════════════════
 -- Syntax

@@ -559,6 +559,23 @@ example {s : Set ℝ} (h : Tendsto f atTop (nhdsWithin 1 s)) :
     Tendsto (fun z => f z ^ 2 + f z) atTop (nhds 2) := by tendsto_cont
 
 -- ══════════════════════════════════════════════════════════════
+-- nhdsWithin goals
+-- ══════════════════════════════════════════════════════════════
+
+-- nhdsWithin goal with Set.univ (trivially closed)
+example (h : Tendsto f atTop (nhds 1)) :
+    Tendsto (fun z => f z + 1) atTop (nhdsWithin 2 Set.univ) := by tendsto_cont
+
+-- nhdsWithin goal with ∀ᶠ hypothesis in context
+example (h : Tendsto f atTop (nhds 1))
+    (hev : ∀ᶠ z in atTop, f z + 1 ∈ Set.Ioi 0) :
+    Tendsto (fun z => f z + 1) atTop (nhdsWithin 2 (Set.Ioi 0)) := by tendsto_cont
+
+-- nhdsWithin goal with limit reconciliation
+example (h₁ : Tendsto f atTop (nhds 1)) (h₂ : Tendsto g atTop (nhds 2)) :
+    Tendsto (fun z => f z + g z) atTop (nhdsWithin 3 Set.univ) := by tendsto_cont
+
+-- ══════════════════════════════════════════════════════════════
 -- disch := ... (discharger for fun_prop side conditions)
 -- ══════════════════════════════════════════════════════════════
 
