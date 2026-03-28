@@ -80,7 +80,7 @@ example (h₁ : Tendsto f atTop (nhds 0)) (_h₂ : Tendsto f atTop (nhds 0)) :
 -- Issue 3: Ambiguity detection (different limits for same atom)
 -- ══════════════════════════════════════════════════════════════
 
-/-- error: tendsto_cont: ambiguous limit for atom — found hypotheses with limits `0` and `1` for the same function -/
+/-- error: tendsto_cont: ambiguous value for atom — found hypotheses with values `0` and `1` for the same function -/
 #guard_msgs(error, drop info) in
 example (h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
     Tendsto (fun z => f z + 1) atTop (nhds 1) := by tendsto_cont
@@ -219,6 +219,49 @@ example (_h₁ : Tendsto f (nhds 0) (nhds 1)) (h₂ : Tendsto f atTop (nhds 0)) 
 example (h : Tendsto (fun x => f (g x)) (nhds 0) (nhds 1)) :
     Tendsto (fun x => 2 * f (g x)) (nhds 0) (nhds 2) := by tendsto_cont
 
+-- ── Group A: Pure compound-atom tests (isolating the confirmed gap) ──
+-- These use ONLY the compound-atom pattern — no limit reconciliation,
+-- no continuous wrappers. fun_prop's structural decomposition cannot
+-- handle these because it tries to split f(g(x)) into f and g and
+-- needs separate facts for each (see mathlib PR #37056 discussion).
+
+-- Compound atom in polynomial expression
+example (h : Tendsto (fun x => f (g x)) (nhds 0) (nhds 1)) :
+    Tendsto (fun x => f (g x) ^ 2 + f (g x)) (nhds 0) (nhds 2) := by tendsto_cont
+
+-- Compound atom mixed with regular atom
+example (h₁ : Tendsto (fun x => f (g x)) (nhds 0) (nhds 1))
+    (h₂ : Tendsto k (nhds 0) (nhds 3)) :
+    Tendsto (fun x => f (g x) + k x) (nhds 0) (nhds 4) := by tendsto_cont
+
+-- Two distinct compound atoms combined
+example (h₁ : Tendsto (fun x => f (g x)) (nhds 0) (nhds 1))
+    (h₂ : Tendsto (fun x => k (g x)) (nhds 0) (nhds 2)) :
+    Tendsto (fun x => f (g x) * k (g x)) (nhds 0) (nhds 2) := by tendsto_cont
+
+-- Triple composition treated as single atom
+example {p : ℝ → ℝ} (h : Tendsto (fun x => f (g (p x))) (nhds 0) (nhds 1)) :
+    Tendsto (fun x => 3 * f (g (p x))) (nhds 0) (nhds 3) := by tendsto_cont
+
+-- ── Group B: Compound atom + another feature (integration coverage) ──
+-- These combine compound atoms with continuous wrappers or limit
+-- reconciliation. If one fails under fun_prop, it could be either the
+-- compound-atom issue or the additional feature.
+
+-- Compound atom wrapped in a known continuous function
+example (h : Tendsto (fun x => f (g x)) (nhds 0) (nhds 0)) :
+    Tendsto (fun x => Real.exp (f (g x))) (nhds 0) (nhds 1) := by tendsto_cont
+
+-- Compound atom with ring normalization for limit
+example (h₁ : Tendsto (fun x => f (g x)) (nhds 0) (nhds 2))
+    (h₂ : Tendsto k (nhds 0) (nhds 3)) :
+    Tendsto (fun x => f (g x) * k x + k x) (nhds 0) (nhds 9) := by tendsto_cont
+
+-- Compound atom with symbolic commutativity
+example {a b : ℝ} (h₁ : Tendsto (fun x => f (g x)) (nhds 0) (nhds a))
+    (h₂ : Tendsto k (nhds 0) (nhds b)) :
+    Tendsto (fun x => k x + f (g x)) (nhds 0) (nhds (a + b)) := by tendsto_cont
+
 -- ══════════════════════════════════════════════════════════════
 -- Composition via continuity: g(f(x)) where g is continuous
 -- ══════════════════════════════════════════════════════════════
@@ -286,7 +329,7 @@ example (_h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
 
 -- Inline FVar disambiguates against non-local inline arg — no redundancy warning
 -- (removing h would change behavior: inlineFn_tendsto would be used instead)
-/-- error: tendsto_cont: ambiguous limit for atom — found hypotheses with limits `0` and `3` for the same function -/
+/-- error: tendsto_cont: ambiguous value for atom — found hypotheses with values `0` and `3` for the same function -/
 #guard_msgs(error, drop info) in
 example (h : Tendsto inlineFn atTop (nhds 0)) :
     Tendsto (fun z => inlineFn z + 1) atTop (nhds 4) := by
@@ -358,7 +401,7 @@ example (h : (1 : ℝ) + 1 = 2) :
     Tendsto (fun z : ℝ => z + 1) atTop (nhds 2) := by tendsto_cont [h]
 
 -- Two inline args with same fn, different limits → ambiguity error
-/-- error: tendsto_cont: ambiguous limit for atom — found hypotheses with limits `0` and `1` for the same function -/
+/-- error: tendsto_cont: ambiguous value for atom — found hypotheses with values `0` and `1` for the same function -/
 #guard_msgs(error, drop info) in
 example (h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
     Tendsto (fun z => f z + 1) atTop (nhds 1) := by tendsto_cont [h₁, h₂]
@@ -428,7 +471,7 @@ private theorem bad_tendsto_true : Tendsto bad atTop (nhds true) := by
   exact tendsto_top
 
 -- Same-bucket ambiguity: two attribute lemmas with same fn, different limits
-/-- error: tendsto_cont: ambiguous limit for atom — found hypotheses with limits `false` and `true` for the same function -/
+/-- error: tendsto_cont: ambiguous value for atom — found hypotheses with values `false` and `true` for the same function -/
 #guard_msgs(error, drop info) in
 example : Tendsto (fun z => bad z) atTop (nhds false) := by
   tendsto_cont
@@ -477,3 +520,59 @@ example : Tendsto (fun z => good z) atTop (nhds true) := by
   tendsto_cont [good_inline_true]
 
 end AttrShadowing
+
+-- ══════════════════════════════════════════════════════════════
+-- tendsto_cont? (trace mode)
+-- ══════════════════════════════════════════════════════════════
+
+/-- info: tendsto_cont?: matched atoms:
+  f → 1
+  g → 2
+computed limit point: (1, 2) -/
+#guard_msgs(info, drop warning) in
+example (h₁ : Tendsto f atTop (nhds 1)) (h₂ : Tendsto g atTop (nhds 2)) :
+    Tendsto (fun z => f z + g z) atTop (nhds 3) := by tendsto_cont?
+
+-- tendsto_cont? with single atom
+/-- info: tendsto_cont?: matched atoms:
+  f → 3
+computed limit point: 3 -/
+#guard_msgs(info, drop warning) in
+example (h : Tendsto f atTop (nhds 3)) :
+    Tendsto (fun z => 2 * f z) atTop (nhds 6) := by tendsto_cont?
+
+-- ══════════════════════════════════════════════════════════════
+-- nhdsWithin hypotheses
+-- ══════════════════════════════════════════════════════════════
+
+-- nhdsWithin hypothesis used to prove nhds goal
+example {s : Set ℝ} (h : Tendsto f atTop (nhdsWithin 3 s)) :
+    Tendsto (fun z => 2 * f z) atTop (nhds 6) := by tendsto_cont
+
+-- Two atoms, one nhds and one nhdsWithin
+example {s : Set ℝ} (h₁ : Tendsto f atTop (nhds 1))
+    (h₂ : Tendsto g atTop (nhdsWithin 2 s)) :
+    Tendsto (fun z => f z + g z) atTop (nhds 3) := by tendsto_cont
+
+-- nhdsWithin hypothesis with polynomial expression
+example {s : Set ℝ} (h : Tendsto f atTop (nhdsWithin 1 s)) :
+    Tendsto (fun z => f z ^ 2 + f z) atTop (nhds 2) := by tendsto_cont
+
+-- ══════════════════════════════════════════════════════════════
+-- disch := ... (discharger for fun_prop side conditions)
+-- ══════════════════════════════════════════════════════════════
+
+-- Inverse requires nonzero side condition
+example (h : Tendsto f atTop (nhds 3)) :
+    Tendsto (fun z => (f z)⁻¹) atTop (nhds 3⁻¹) := by
+  tendsto_cont (disch := norm_num)
+
+-- Division via disch
+example (h₁ : Tendsto f atTop (nhds 6)) (h₂ : Tendsto g atTop (nhds 3)) :
+    Tendsto (fun z => f z / g z) atTop (nhds 2) := by
+  tendsto_cont (disch := norm_num)
+
+-- disch combined with inline args
+example (h₁ : Tendsto f atTop (nhds 6)) :
+    Tendsto (fun z => f z / 3) atTop (nhds 2) := by
+  tendsto_cont (disch := norm_num)
