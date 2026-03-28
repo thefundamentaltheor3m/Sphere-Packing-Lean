@@ -65,15 +65,8 @@ lemma I₁'_zero_add_I₃'_zero_add_I₅'_zero :
 
 lemma a_zero_reduction_I₂₄₆ :
     FourierEigenfunctions.a (0 : ℝ⁸) = I₂' (0 : ℝ) + I₄' 0 + I₆' 0 := by
-  -- Start from the full sum, then cancel `I₁' 0 + I₃' 0 + I₅' 0`.
-  have h := a_zero_reduction
-  have hsum :
-      I₁' (0 : ℝ) + I₂' 0 + I₃' 0 + I₄' 0 + I₅' 0 + I₆' 0 =
-        I₂' (0 : ℝ) + I₄' 0 + I₆' 0 := by
-    apply sub_eq_zero.mp
-    ring_nf
-    simpa [add_assoc] using I₁'_zero_add_I₃'_zero_add_I₅'_zero
-  simpa [hsum] using h
+  rw [a_zero_reduction]
+  linear_combination I₁'_zero_add_I₃'_zero_add_I₅'_zero
 
 /--
 A second-order finite difference identity for `φ₀` obtained from its modular transformation under
@@ -225,7 +218,6 @@ lemma f0_norm_bound_on_strip :
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   refine ⟨C₀, hC₀_pos, ?_⟩
   intro z hzIm hzRe0 hzRe1
-  have hzIm_nonneg : 0 ≤ z.im := le_trans (by norm_num) hzIm
   have hzIm_pos : 0 < z.im := lt_of_lt_of_le (by norm_num) hzIm
   have hφ : ‖φ₀'' z‖ ≤ C₀ * Real.exp (-2 * π * z.im) := by
     let zH : ℍ := ⟨z, hzIm_pos⟩
@@ -233,16 +225,10 @@ lemma f0_norm_bound_on_strip :
       simpa [zH, UpperHalfPlane.im] using (lt_of_lt_of_le (by norm_num) hzIm)
     simpa [zH, UpperHalfPlane.im, φ₀''_def (z := z) hzIm_pos] using hC₀ zH hzHalf
   have hlin : ‖(2 : ℂ) * z - 1‖ ≤ 2 * z.im + 1 := by
-    have hRe : |2 * z.re - 1| ≤ 1 := by
-      refine abs_le.2 ?_
-      constructor <;> linarith [hzRe0, hzRe1]
-    have hIm : |2 * z.im| = 2 * z.im := by
-      have : 0 ≤ 2 * z.im := by positivity
-      simp [abs_of_nonneg this]
-    calc
-      ‖(2 : ℂ) * z - 1‖
-          ≤ |((2 : ℂ) * z - 1).re| + |((2 : ℂ) * z - 1).im| :=
-            Complex.norm_le_abs_re_add_abs_im _
+    have hRe : |2 * z.re - 1| ≤ 1 := abs_le.2 ⟨by linarith, by linarith⟩
+    have hIm : |2 * z.im| = 2 * z.im := abs_of_nonneg (by positivity)
+    calc ‖(2 : ℂ) * z - 1‖
+        ≤ |((2 : ℂ) * z - 1).re| + |((2 : ℂ) * z - 1).im| := Complex.norm_le_abs_re_add_abs_im _
       _ = |2 * z.re - 1| + |2 * z.im| := by simp
       _ ≤ 1 + |2 * z.im| := add_le_add hRe le_rfl
       _ = 2 * z.im + 1 := by simp [hIm, add_comm]
@@ -371,18 +357,15 @@ lemma tendsto_top_f0 :
     have hmul :
         Tendsto (fun m : ℝ => m * Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by
       simpa [Real.rpow_one] using
-        (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (1 : ℝ)) (b := (2 * Real.pi))
-              (by positivity))
+        tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := 1) (b := 2 * π) (by positivity)
     have hexp :
         Tendsto (fun m : ℝ => Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by simpa
     have hmain :
         Tendsto (fun m : ℝ => (2 * m + 1) * Real.exp (-2 * Real.pi * m)) atTop (𝓝 (0 : ℝ)) := by
-      have hsum :
-          Tendsto
-              (fun m : ℝ => 2 * (m * Real.exp (-(2 * Real.pi) * m)) + Real.exp (-(2 * Real.pi) * m))
-              atTop (𝓝 (0 : ℝ)) := by simpa using (hmul.const_mul 2).add hexp
-      refine hsum.congr' (Eventually.of_forall fun m => ?_)
-      ring_nf
+      have hsum : Tendsto (fun m : ℝ => 2 * (m * Real.exp (-(2 * Real.pi) * m)) +
+          Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by
+        simpa using (hmul.const_mul 2).add hexp
+      exact hsum.congr' (Eventually.of_forall fun m => by ring_nf)
     simpa [mul_assoc] using hmain.const_mul C₀
   -- squeeze the norm to `0`
   exact squeeze_zero_norm' hbound hdecay
