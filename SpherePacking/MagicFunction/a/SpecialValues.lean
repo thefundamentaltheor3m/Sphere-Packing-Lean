@@ -140,30 +140,23 @@ lemma F_eq_phi0_phi2_phi4 (z : ℂ) (hz : 0 < z.im) :
   rw [hφ₀S, hφ₀, hφ₂, hφ₄] at h'
   simpa [F, zH] using h'
 
+private lemma periodic_of_UHP {f'' : ℂ → ℂ} {f : ℍ → ℂ} (d : ℝ)
+    (hdef : ∀ (z : ℂ) (hz : 0 < z.im), f'' z = f ⟨z, hz⟩)
+    (hper : ∀ z : ℍ, f (d +ᵥ z) = f z) (z : ℂ) (hz : 0 < z.im) :
+    f'' (z + (d : ℂ)) = f'' z := by
+  have hzd : 0 < (z + (d : ℂ)).im := by simpa using hz
+  rw [hdef _ hzd, hdef _ hz]
+  have : (d +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z + (d : ℂ), hzd⟩ := by ext1; simp [add_comm]
+  rw [← this, hper]
+
 private lemma φ₀''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z - 1) = φ₀'' z := by
-  have hz1 : 0 < (z - 1).im := by simpa using hz
-  let zH : ℍ := ⟨z, hz⟩
-  have hvneg : ((-1 : ℝ) +ᵥ zH : ℍ) = ⟨z - 1, hz1⟩ := by ext1; simp [zH, sub_eq_add_neg, add_comm]
-  have h1 : φ₀'' (z - 1) = φ₀ (⟨z - 1, hz1⟩ : ℍ) := by simpa using φ₀''_def (z := z - 1) hz1
-  have h2 : φ₀ zH = φ₀'' z := by simpa [zH] using (φ₀''_def (z := z) hz).symm
-  rw [h1, ← hvneg, φ₀_periodic_neg_one, h2]
+  simpa using periodic_of_UHP (-1) (fun z hz => φ₀''_def hz) φ₀_periodic_neg_one z hz
 
 private lemma φ₂''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₂'' (z - 1) = φ₂'' z := by
-  have hz1 : 0 < (z - 1).im := by simpa using hz
-  let zH : ℍ := ⟨z, hz⟩
-  have hvneg : ((-1 : ℝ) +ᵥ zH : ℍ) = ⟨z - 1, hz1⟩ := by ext1; simp [zH, sub_eq_add_neg, add_comm]
-  have h1 : φ₂'' (z - 1) = φ₂' (⟨z - 1, hz1⟩ : ℍ) := by simpa using φ₂''_def (z := z - 1) hz1
-  have h2 : φ₂' zH = φ₂'' z := by simpa [zH] using (φ₂''_def (z := z) hz).symm
-  rw [h1, ← hvneg, φ₂'_periodic_neg_one, h2]
+  simpa using periodic_of_UHP (-1) (fun z hz => φ₂''_def z hz) φ₂'_periodic_neg_one z hz
 
 private lemma φ₄''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₄'' (z - 1) = φ₄'' z := by
-  have hz1 : 0 < (z - 1).im := by simpa using hz
-  let zH : ℍ := ⟨z, hz⟩
-  have hvneg : ((-1 : ℝ) +ᵥ zH : ℍ) = ⟨z - 1, hz1⟩ := by
-    ext1; simpa [zH, sub_eq_add_neg] using (add_comm (-1 : ℂ) z)
-  have h1 : φ₄'' (z - 1) = φ₄' (⟨z - 1, hz1⟩ : ℍ) := by simpa using φ₄''_def (z := z - 1) hz1
-  have h2 : φ₄' zH = φ₄'' z := by simpa [zH] using (φ₄''_def (z := z) hz).symm
-  rw [h1, ← hvneg, φ₄'_periodic_neg_one, h2]
+  simpa using periodic_of_UHP (-1) (fun z hz => φ₄''_def z hz) φ₄'_periodic_neg_one z hz
 
 lemma F_sub_one (z : ℂ) (hz : 0 < z.im) :
     F z - F (z - 1) =
@@ -241,13 +234,8 @@ lemma f0_norm_bound_on_strip :
 /-! ### Rectangle identity for `f0` and cancellation with `I₆' 0`. -/
 
 /-- Periodicity of `φ₀''` under translation by `1`. -/
-public lemma φ₀''_add_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z + 1) = φ₀'' z := by
-  have hz1 : 0 < (z + 1).im := by simpa using hz
-  let zH : ℍ := ⟨z, hz⟩
-  have hvadd : ((1 : ℝ) +ᵥ zH : ℍ) = ⟨z + 1, hz1⟩ := by ext1; simp [zH, add_comm]
-  have h1 : φ₀'' (z + 1) = φ₀ (⟨z + 1, hz1⟩ : ℍ) := by simpa using φ₀''_def (z := z + 1) hz1
-  have h2 : φ₀ zH = φ₀'' z := by simpa [zH] using (φ₀''_def (z := z) hz).symm
-  rw [h1, ← hvadd, φ₀_periodic, h2]
+public lemma φ₀''_add_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z + 1) = φ₀'' z :=
+  periodic_of_UHP 1 (fun z hz => φ₀''_def hz) φ₀_periodic z hz
 
 lemma f0_vertical_diff (y : ℝ) (hy : 0 < y) :
     f0 ((1 : ℂ) + (y : ℂ) * Complex.I) - f0 ((y : ℂ) * Complex.I) =
@@ -259,30 +247,30 @@ lemma f0_vertical_diff (y : ℝ) (hy : 0 < y) :
   simp [f0, hper]
   ring
 
+private lemma rect_holo (g : ℂ → ℂ) (hg : DifferentiableOn ℂ g {z : ℂ | 0 < z.im})
+    (m : ℝ) (hm : 1 ≤ m) :
+    (∫ x : ℝ in (0 : ℝ)..1, g (x + (1 : ℝ) * Complex.I)) -
+        (∫ x : ℝ in (0 : ℝ)..1, g (x + m * Complex.I)) +
+        Complex.I • (∫ y : ℝ in (1 : ℝ)..m, g ((1 : ℝ) + y * Complex.I)) -
+          Complex.I • (∫ y : ℝ in (1 : ℝ)..m, g ((0 : ℝ) + y * Complex.I)) = 0 := by
+  have hC : ContinuousOn g (Set.uIcc (0 : ℝ) 1 ×ℂ Set.uIcc (1 : ℝ) m) := by
+    refine hg.continuousOn.mono ?_
+    intro z hz
+    exact lt_of_lt_of_le (by norm_num)
+      (by simpa [Set.uIcc_of_le hm] using (mem_reProdIm.1 hz).2 : z.im ∈ Set.Icc (1 : ℝ) m).1
+  have hD : DifferentiableOn ℂ g (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioo (1 : ℝ) m) := by
+    exact hg.mono fun z hz => lt_trans (by norm_num) (mem_reProdIm.1 hz).2.1
+  simpa using
+    (Complex.integral_boundary_rect_eq_zero_of_continuousOn_of_differentiableOn
+      (f := g) (z := (Complex.I : ℂ)) (w := (1 : ℂ) + m * Complex.I) (Hc := by
+        simpa using hC) (Hd := by simpa [hm] using hD))
+
 lemma rect_f0 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) -
         (∫ x : ℝ in (0 : ℝ)..1, f0 (x + m * Complex.I)) +
         Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((1 : ℝ) + y * Complex.I)) -
-          Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I)) = 0 := by
-  -- Cauchy-Goursat on the rectangle with corners `i` and `1 + m i`.
-  have hC :
-      ContinuousOn f0 (Set.uIcc (0 : ℝ) 1 ×ℂ Set.uIcc (1 : ℝ) m) := by
-    refine f0_continuousOn.mono ?_
-    intro z hz
-    have hzIm' : (1 : ℝ) ≤ z.im :=
-      (by simpa [Set.uIcc_of_le hm] using (mem_reProdIm.1 hz).2 : z.im ∈ Set.Icc (1 : ℝ) m).1
-    exact lt_of_lt_of_le (by norm_num) hzIm'
-  have hD :
-      DifferentiableOn ℂ f0 (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioo (1 : ℝ) m) := by
-    refine f0_differentiableOn.mono ?_
-    intro z hz
-    have hzIm : z.im ∈ Set.Ioo (1 : ℝ) m := (mem_reProdIm.1 hz).2
-    exact lt_trans (by norm_num) hzIm.1
-  -- Apply the rectangle theorem with `z = i`, `w = 1 + m i`.
-  simpa using
-    (Complex.integral_boundary_rect_eq_zero_of_continuousOn_of_differentiableOn
-      (f := f0) (z := (Complex.I : ℂ)) (w := (1 : ℂ) + m * Complex.I) (Hc := by
-        simpa using hC) (Hd := by simpa [hm] using hD))
+          Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I)) = 0 :=
+  rect_holo f0 f0_differentiableOn m hm
 
 lemma integrableOn_phi0_imag :
     MeasureTheory.IntegrableOn (fun t : ℝ => φ₀'' ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ))
@@ -352,14 +340,14 @@ lemma tendsto_top_f0 :
     simpa using hN
   have hdecay :
       Tendsto (fun m : ℝ => C₀ * (2 * m + 1) * Real.exp (-2 * Real.pi * m)) atTop (𝓝 (0 : ℝ)) := by
-    have hu : Tendsto (fun m : ℝ => (2 * Real.pi) * m) atTop atTop :=
-      tendsto_id.const_mul_atTop (by positivity)
     have hmul :
         Tendsto (fun m : ℝ => m * Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by
       simpa [Real.rpow_one] using
         tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := 1) (b := 2 * π) (by positivity)
     have hexp :
-        Tendsto (fun m : ℝ => Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by simpa
+        Tendsto (fun m : ℝ => Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by
+      simpa [Real.rpow_zero] using
+        tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := 0) (b := 2 * π) (by positivity)
     have hmain :
         Tendsto (fun m : ℝ => (2 * m + 1) * Real.exp (-2 * Real.pi * m)) atTop (𝓝 (0 : ℝ)) := by
       have hsum : Tendsto (fun m : ℝ => 2 * (m * Real.exp (-(2 * Real.pi) * m)) +
@@ -506,40 +494,15 @@ lemma integral_f0_height_one_eq_neg_I6 :
 
 /-! ### Evaluating the remaining `φ₂''` term. -/
 
-lemma φ₂''_add_one (z : ℂ) (hz : 0 < z.im) : φ₂'' (z + 1) = φ₂'' z := by
-  have hz1 : 0 < (z + 1).im := by simpa using hz
-  let zH : ℍ := ⟨z, hz⟩
-  have hvadd : ((1 : ℝ) +ᵥ zH : ℍ) = ⟨z + 1, hz1⟩ := by ext1; simp [zH, add_comm]
-  have h1 : φ₂'' (z + 1) = φ₂' (⟨z + 1, hz1⟩ : ℍ) := by simpa using φ₂''_def (z := z + 1) hz1
-  have h2 : φ₂' zH = φ₂'' z := by simpa [zH] using (φ₂''_def (z := z) hz).symm
-  rw [h1, ← hvadd, φ₂'_periodic, h2]
+lemma φ₂''_add_one (z : ℂ) (hz : 0 < z.im) : φ₂'' (z + 1) = φ₂'' z :=
+  periodic_of_UHP 1 (fun z hz => φ₂''_def z hz) φ₂'_periodic z hz
 
 lemma rect_phi2 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + (1 : ℝ) * Complex.I)) -
         (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) +
         Complex.I • (∫ y : ℝ in (1 : ℝ)..m, φ₂'' ((1 : ℝ) + y * Complex.I)) -
-          Complex.I • (∫ y : ℝ in (1 : ℝ)..m, φ₂'' ((0 : ℝ) + y * Complex.I)) = 0 := by
-  have hC :
-      ContinuousOn φ₂'' (Set.uIcc (0 : ℝ) 1 ×ℂ Set.uIcc (1 : ℝ) m) := by
-    refine (MagicFunction.a.ComplexIntegrands.φ₂''_holo.continuousOn).mono ?_
-    intro z hz
-    have hzIm : z.im ∈ Set.uIcc (1 : ℝ) m := (mem_reProdIm.1 hz).2
-    have hzIm' : (1 : ℝ) ≤ z.im := by
-      have : z.im ∈ Set.Icc (1 : ℝ) m := by simpa [Set.uIcc_of_le hm] using hzIm
-      exact this.1
-    exact lt_of_lt_of_le (by norm_num) hzIm'
-  have hD :
-      DifferentiableOn ℂ φ₂'' (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioo (1 : ℝ) m) := by
-    refine
-      (MagicFunction.a.ComplexIntegrands.φ₂''_holo :
-          DifferentiableOn ℂ φ₂'' {z : ℂ | 0 < z.im}).mono ?_
-    intro z hz
-    have hzIm : z.im ∈ Set.Ioo (1 : ℝ) m := (mem_reProdIm.1 hz).2
-    exact lt_trans (by norm_num) hzIm.1
-  simpa using
-    (Complex.integral_boundary_rect_eq_zero_of_continuousOn_of_differentiableOn
-      (f := φ₂'') (z := (Complex.I : ℂ)) (w := (1 : ℂ) + m * Complex.I) (Hc := by simpa using hC)
-      (Hd := by simpa [hm] using hD))
+          Complex.I • (∫ y : ℝ in (1 : ℝ)..m, φ₂'' ((0 : ℝ) + y * Complex.I)) = 0 :=
+  rect_holo φ₂'' MagicFunction.a.ComplexIntegrands.φ₂''_holo m hm
 
 lemma strip_identity_phi2 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + (1 : ℝ) * Complex.I)) =
@@ -619,19 +582,10 @@ lemma tendsto_A_div_q :
           cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ)) =
             cexp (2 * π * Complex.I * (z : ℂ)) *
               cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
-        have harg :
-            (2 * π * Complex.I * (z : ℂ) * ((n : ℂ) + 1)) =
-              (2 * π * Complex.I * (z : ℂ)) + (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by ring_nf
-        calc
-          cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ)) =
-              cexp (2 * π * Complex.I * (z : ℂ) * ((n : ℂ) + 1)) := by
-                simp [Nat.cast_add, Nat.cast_one]
-          _ = cexp ((2 * π * Complex.I * (z : ℂ)) + (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) := by
-                simp [harg]
-          _ = cexp (2 * π * Complex.I * (z : ℂ)) *
-                cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
-                simp [Complex.exp_add, mul_left_comm, mul_comm]
-      grind only
+        rw [Nat.cast_succ, mul_add, mul_one, Complex.exp_add, mul_comm]
+      rw [hexp]
+      field_simp
+      ring
     calc
       ((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z)
           = (720 : ℂ) *
@@ -676,20 +630,10 @@ lemma tendsto_phi2'_atImInfty :
       funext z
       simp [Δ, div_eq_mul_inv, mul_left_comm, mul_comm]
     simpa [hrew] using (Delta_boundedfactor : Tendsto _ atImInfty (𝓝 (1 : ℂ)))
-  have hΔq_ne : ∀ᶠ z in atImInfty, (Δ z) / cexp (2 * π * Complex.I * z) ≠ (0 : ℂ) := by
-    have hne0 : {w : ℂ | w ≠ 0} ∈ 𝓝 (1 : ℂ) := by
-      refine Filter.mem_of_superset
-        (Metric.ball_mem_nhds (1 : ℂ) (ε := (1 / 2 : ℝ)) (by norm_num)) ?_
-      intro w hw h0
-      have hdist : dist (0 : ℂ) (1 : ℂ) < (1 / 2 : ℝ) := by
-        simpa [Metric.mem_ball, h0, dist_comm] using hw
-      have hdist' : (1 : ℝ) < (1 / 2 : ℝ) := by simpa [dist_eq_norm] using hdist
-      norm_num at hdist'
-    simpa [Set.mem_setOf_eq] using (hΔq.eventually hne0)
+  have hΔq_ne : ∀ᶠ z in atImInfty, (Δ z) / cexp (2 * π * Complex.I * z) ≠ (0 : ℂ) :=
+    hΔq.eventually (isOpen_ne.mem_nhds (by norm_num : (1 : ℂ) ≠ 0))
   have hA_over_Δ :
       Tendsto (fun z : ℍ => ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z)) atImInfty (𝓝 (720 : ℂ)) := by
-    have hq_ne : ∀ z : ℍ, (cexp (2 * π * Complex.I * z) : ℂ) ≠ 0 := fun z =>
-      by simp
     -- Rewrite `A/Δ` as `(A/q) / (Δ/q)`.
     have hrew :
         (fun z : ℍ => ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z)) =
@@ -697,15 +641,9 @@ lemma tendsto_phi2'_atImInfty :
             (((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z)) /
               ((Δ z) / cexp (2 * π * Complex.I * z)) := by
       funext z
-      field_simp [hq_ne z, Δ_ne_zero z]
-    -- Apply `tendsto_div` to the rewritten form.
-    have hdiv' :
-        Tendsto (fun z : ℍ =>
-            (((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z)) /
-              ((Δ z) / cexp (2 * π * Complex.I * z))) atImInfty (𝓝 (720 : ℂ)) := by
-      simpa using hAq.div hΔq (by norm_num : (1 : ℂ) ≠ 0)
+      field_simp [Δ_ne_zero z]
     rw [hrew]
-    exact hdiv'
+    simpa using hAq.div hΔq (by norm_num : (1 : ℂ) ≠ 0)
   -- Combine `E₄ → 1` and `A/Δ → 720`.
   simpa [φ₂', div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, one_mul] using hE4.mul hA_over_Δ
 
@@ -751,31 +689,15 @@ lemma tendsto_top_phi2 :
         simpa [Complex.add_im] using hm0
       exact hφ.comp hx hmaps
     simpa using hcont.intervalIntegrable
-  have hIntConst :
-      IntervalIntegrable (fun _x : ℝ => (720 : ℂ)) MeasureTheory.volume (0 : ℝ) 1 :=
-    intervalIntegrable_const
   have hsub :
       (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) - (720 : ℂ) =
         ∫ x : ℝ in (0 : ℝ)..1, (φ₂'' (x + m * Complex.I) - (720 : ℂ)) := by
-    -- Use `∫ f - ∫ c = ∫ (f - c)` and `∫ c = c` on `[0,1]`.
-    simpa using
-      (intervalIntegral.integral_sub (μ := MeasureTheory.volume) (a := (0 : ℝ)) (b := (1 : ℝ))
-        (f := fun x : ℝ => φ₂'' (x + m * Complex.I)) (g := fun _x : ℝ => (720 : ℂ)) hInt
-        hIntConst).symm
-  have hdist :
-      dist (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) (720 : ℂ) < ε := by
-    have hnorm :
-        ‖(∫ x : ℝ in (0 : ℝ)..1, (φ₂'' (x + m * Complex.I) - (720 : ℂ)))‖ ≤
-          (ε / 2) * |(1 : ℝ) - 0| :=
-      intervalIntegral.norm_integral_le_of_norm_le_const (a := (0 : ℝ)) (b := (1 : ℝ)) hbound
-    have hnorm' :
-        ‖(∫ x : ℝ in (0 : ℝ)..1, (φ₂'' (x + m * Complex.I) - (720 : ℂ)))‖ ≤ ε / 2 := by
-      simpa using hnorm
-    -- `dist` is the norm of the difference.
-    have : ‖(∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) - (720 : ℂ)‖ ≤ ε / 2 := by
-      simpa [hsub] using hnorm'
-    exact lt_of_le_of_lt this (half_lt_self hε)
-  simpa [Metric.ball, dist_eq_norm] using hdist
+    simpa using (intervalIntegral.integral_sub hInt intervalIntegrable_const).symm
+  have hnorm :
+      ‖(∫ x : ℝ in (0 : ℝ)..1, (φ₂'' (x + m * Complex.I) - (720 : ℂ)))‖ ≤ ε / 2 := by
+    simpa using intervalIntegral.norm_integral_le_of_norm_le_const hbound
+  rw [dist_eq_norm]
+  exact lt_of_le_of_lt (by simpa [hsub] using hnorm) (half_lt_self hε)
 
 lemma integral_phi2_height_one :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) = (720 : ℂ) := by
