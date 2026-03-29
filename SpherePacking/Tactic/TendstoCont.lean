@@ -17,7 +17,8 @@ public meta import SpherePacking.Tactic.AtomEngine
 # `tendsto_cont` tactic
 
 A tactic for proving goals of the form
-  `Tendsto (fun z => expr(f₁ z, ..., fₙ z)) l (nhds c)`
+  `Tendsto (fun z => expr(f₁ z, ..., fₙ z)) l (nhds c)` or
+  `Tendsto (fun z => expr(f₁ z, ..., fₙ z)) l (nhdsWithin c s)`
 where atomic limits `Tendsto fᵢ l (nhds aᵢ)` are known from context
 and the expression is continuous in the atoms (proved via `fun_prop`).
 
@@ -34,6 +35,9 @@ exponentials, and other compositions.
   side conditions (e.g., `disch := positivity` for `log`, `inv`, `div`).
 - **`tendsto_cont [h₁, h₂]`**: Provide inline `Tendsto` hypotheses.
 - Accepts `nhdsWithin` hypotheses (extracts limit via `nhdsWithin_le_nhds`).
+- Accepts `nhdsWithin` goals: proves the `nhds` part automatically, then
+  tries to close `∀ᶠ x in l, body x ∈ s` via `univ_mem`/`assumption`/
+  `simp`/`trivial`. Leaves the `∀ᶠ` subgoal for the user if undischargeable.
 
 ## Strategy
 
@@ -273,6 +277,51 @@ private meta def reconcileLimits (goal : MVarId) (proof : Expr) :
         {← e.toMessageData.format}"
 
 -- ══════════════════════════════════════════════════════════════
+-- nhdsWithin ∀ᶠ discharge
+-- ══════════════════════════════════════════════════════════════
+
+/-- Try to close an `∀ᶠ x in l, body x ∈ s` goal from nhdsWithin splitting.
+    Returns `[]` if closed, `[g]` if the goal should be left for the user.
+    Currently tries `assumption` (atomic, safe). More sophisticated
+    discharge strategies are left to `disch :=` or manual proof. -/
+private meta def tryEvGoal (g : MVarId) : TacticM (List MVarId) := do
+  -- Try assumption (atomic, finds ∀ᶠ hypotheses in context)
+  let r ← try
+    Elab.Tactic.run g
+      (Elab.Tactic.evalTactic (← `(tactic| assumption)))
+  catch _ => pure [g]
+  if r.isEmpty then return r
+  -- Try univ_mem' for Set.univ or other trivially-true membership.
+  -- Check reducibility first to avoid logged errors from failed exact.
+  let gTy ← g.getType >>= instantiateMVars
+  match gTy.getAppFnArgs with
+  | (``Filter.Eventually, #[_, pred, _]) =>
+    -- Check if the predicate body reduces to True
+    let domTy ← try
+      let fnTy ← inferType pred
+      match fnTy with
+      | .forallE _ t _ _ => pure (some t)
+      | _ => pure none
+    catch _ => pure none
+    match domTy with
+    | some dt =>
+      let bodyIsTrivial ← withLocalDecl `_x .default dt fun x => do
+        let body := mkApp pred x
+        let reduced ← whnf body
+        return reduced.isConstOf ``True
+      if bodyIsTrivial then
+        let r ← try
+          Elab.Tactic.run g
+            (Elab.Tactic.evalTactic
+              (← `(tactic| exact Filter.univ_mem' (fun _ => trivial))))
+        catch _ => pure [g]
+        return r
+    | none => pure ()
+  | _ => pure ()
+  -- Can't close — leave the goal for the user
+  return [g]
+
+-- ══════════════════════════════════════════════════════════════
 -- Main tactic
 -- ══════════════════════════════════════════════════════════════
 
@@ -318,8 +367,7 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
     | .lam _ _ b _ => pure b
     | _ => throwError
       "tendsto_cont: goal function is not a lambda.\n\
-       Hint: try `show Tendsto (fun z => ...) _ (nhds _)` \
-       or `unfold ...`"
+       Hint: try `show Tendsto (fun z => ...) _ _` or `unfold ...`"
 
   let proof? ← withLocalDecl `z .default domTy fun zVar => do
     let body := body.instantiate1 zVar
@@ -337,14 +385,31 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
           throwError m!"tendsto_cont: body references the \
             bound variable but no candidate matched.\n\
             Available candidates: {candFns}"
-      try
-        let _ ← Elab.Tactic.run goal
+      -- Constant body: no atoms, body doesn't reference bound variable
+      match goalTarget with
+      | .nhds =>
+        try
+          let _ ← Elab.Tactic.run goal
+            (Elab.Tactic.evalTactic
+              (← `(tactic| exact tendsto_const_nhds)))
+          return none
+        catch _ =>
+          throwError "tendsto_cont: constant body but \
+            `tendsto_const_nhds` failed"
+      | .nhdsWithin _ =>
+        -- Split via tendsto_nhdsWithin_iff, close nhds with
+        -- tendsto_const_nhds, try to close ∀ᶠ part
+        let remaining ← Elab.Tactic.run goal
           (Elab.Tactic.evalTactic
-            (← `(tactic| exact tendsto_const_nhds)))
-        return none
-      catch _ =>
-        throwError "tendsto_cont: constant body but \
-          `tendsto_const_nhds` failed"
+            (← `(tactic|
+              refine tendsto_nhdsWithin_iff.mpr ⟨tendsto_const_nhds, ?_⟩)))
+        -- Try to close the ∀ᶠ subgoal(s); leave unclosed ones for user
+        let mut leftover : List MVarId := []
+        for g in remaining do
+          let r ← tryEvGoal g
+          leftover := leftover ++ r
+        Elab.Tactic.replaceMainGoal leftover
+        return (none : Option Expr)
 
     -- Trace mode: report atoms and computed limit
     if traceMode then
@@ -381,16 +446,9 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
       | [nhdsGoal, evGoal] =>
         -- Close nhds subgoal using the proof we built
         reconcileLimits nhdsGoal nhdsProof
-        -- Try to close the ∀ᶠ subgoal
-        let evRemaining ← Elab.Tactic.run evGoal
-          (Elab.Tactic.evalTactic (← `(tactic| first
-            | exact Filter.univ_mem' (fun _ => trivial)
-            | assumption
-            | simp
-            | trivial)))
-        unless evRemaining.isEmpty do
-          -- Leave the subgoal for the user — don't error
-          pure ()
+        -- Try to close the ∀ᶠ subgoal. If we can't, leave it for user.
+        let evRemaining ← tryEvGoal evGoal
+        Elab.Tactic.replaceMainGoal evRemaining
       | _ =>
         -- Fallback: just try reconcileLimits directly
         reconcileLimits goal nhdsProof

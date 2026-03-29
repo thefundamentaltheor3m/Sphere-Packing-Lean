@@ -566,7 +566,7 @@ example {s : Set ℝ} (h : Tendsto f atTop (nhdsWithin 1 s)) :
 example (h : Tendsto f atTop (nhds 1)) :
     Tendsto (fun z => f z + 1) atTop (nhdsWithin 2 Set.univ) := by tendsto_cont
 
--- nhdsWithin goal with ∀ᶠ hypothesis in context
+-- nhdsWithin goal with ∀ᶠ hypothesis in context: assumption closes ∀ᶠ part
 example (h : Tendsto f atTop (nhds 1))
     (hev : ∀ᶠ z in atTop, f z + 1 ∈ Set.Ioi 0) :
     Tendsto (fun z => f z + 1) atTop (nhdsWithin 2 (Set.Ioi 0)) := by tendsto_cont
@@ -574,6 +574,24 @@ example (h : Tendsto f atTop (nhds 1))
 -- nhdsWithin goal with limit reconciliation
 example (h₁ : Tendsto f atTop (nhds 1)) (h₂ : Tendsto g atTop (nhds 2)) :
     Tendsto (fun z => f z + g z) atTop (nhdsWithin 3 Set.univ) := by tendsto_cont
+
+-- Constant body, nhdsWithin goal with Set.univ
+example : Tendsto (fun _ : ℝ => (2 : ℝ)) atTop (nhdsWithin 2 Set.univ) := by tendsto_cont
+
+-- Constant body, nhdsWithin goal with nontrivial set: tactic handles nhds
+-- part, user provides the ∀ᶠ membership proof
+example : Tendsto (fun _ : ℝ => (2 : ℝ)) atTop (nhdsWithin 2 (Set.Ioi 0)) := by
+  tendsto_cont
+  exact Filter.univ_mem' (fun _ => by norm_num)
+
+-- nhdsWithin goal where ∀ᶠ can't be auto-discharged: tendsto_cont
+-- handles the nhds part and leaves the ∀ᶠ subgoal for the user.
+-- (no matching ∀ᶠ hypothesis in context, so assumption can't close it)
+example (h : Tendsto f atTop (nhds 1)) :
+    Tendsto (fun z => f z + 1) atTop (nhdsWithin 2 (Set.Ioi 0)) := by
+  tendsto_cont
+  -- remaining goal: ∀ᶠ (n : ℝ) in atTop, f n + 1 ∈ Set.Ioi 0
+  sorry
 
 -- ══════════════════════════════════════════════════════════════
 -- disch := ... (discharger for fun_prop side conditions)
