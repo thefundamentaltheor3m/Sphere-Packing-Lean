@@ -36,8 +36,9 @@ exponentials, and other compositions.
 - **`tendsto_cont [h₁, h₂]`**: Provide inline `Tendsto` hypotheses.
 - Accepts `nhdsWithin` hypotheses (extracts limit via `nhdsWithin_le_nhds`).
 - Accepts `nhdsWithin` goals: proves the `nhds` part automatically, then
-  tries to close `∀ᶠ x in l, body x ∈ s` via `univ_mem`/`assumption`/
-  `simp`/`trivial`. Leaves the `∀ᶠ` subgoal for the user if undischargeable.
+  tries to close `∀ᶠ x in l, body x ∈ s` via `assumption` or `univ_mem'`
+  (when the predicate reduces to `True`). Leaves the `∀ᶠ` subgoal for
+  the user if undischargeable.
 
 ## Strategy
 

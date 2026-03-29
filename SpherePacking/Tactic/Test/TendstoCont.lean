@@ -585,13 +585,18 @@ example : Tendsto (fun _ : ℝ => (2 : ℝ)) atTop (nhdsWithin 2 (Set.Ioi 0)) :=
   exact Filter.univ_mem' (fun _ => by norm_num)
 
 -- nhdsWithin goal where ∀ᶠ can't be auto-discharged: tendsto_cont
--- handles the nhds part and leaves the ∀ᶠ subgoal for the user.
--- (no matching ∀ᶠ hypothesis in context, so assumption can't close it)
+-- handles the nhds part and leaves the ∀ᶠ subgoal as unsolved.
+/--
+error: unsolved goals
+case right
+f g k : ℝ → ℝ
+h : Tendsto f atTop (𝓝 1)
+⊢ ∀ᶠ (n : ℝ) in atTop, f n + 1 ∈ Set.Ioi 0
+-/
+#guard_msgs(error, drop info) in
 example (h : Tendsto f atTop (nhds 1)) :
     Tendsto (fun z => f z + 1) atTop (nhdsWithin 2 (Set.Ioi 0)) := by
   tendsto_cont
-  -- remaining goal: ∀ᶠ (n : ℝ) in atTop, f n + 1 ∈ Set.Ioi 0
-  sorry
 
 -- ══════════════════════════════════════════════════════════════
 -- disch := ... (discharger for fun_prop side conditions)
