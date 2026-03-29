@@ -152,13 +152,11 @@ theorem Θ₄_imag_axis_real : ResToImagAxis.Real Θ₄ := by
     simpa [Θ₄_term_as_jacobiTheta₂_term (τ := τ)] using
       (summable_jacobiTheta₂_term_iff (z := (1 / 2 : ℂ)) (τ := (τ : ℂ))).2 him
   have hterm_im (n : ℤ) : (Θ₄_term n τ).im = 0 := by
-    have : Θ₄_term n τ = ↑((-1 : ℝ) ^ n * Real.exp (-(Real.pi * ((n : ℝ) ^ 2) * t))) := by
-      simp only [Θ₄_term, Complex.ofReal_mul, Complex.ofReal_zpow, Complex.ofReal_exp,
-        Complex.ofReal_neg]
-      congr 2
-      push_cast
-      linear_combination ↑π * ↑n ^ 2 * ↑t * I_sq
-    rw [this, Complex.ofReal_im]
+    suffices Θ₄_term n τ = ↑((-1 : ℝ) ^ n * Real.exp (-(Real.pi * ((n : ℝ) ^ 2) * t))) by
+      rw [this, Complex.ofReal_im]
+    simp only [Θ₄_term, Complex.ofReal_mul, Complex.ofReal_zpow, Complex.ofReal_exp,
+      Complex.ofReal_neg]
+    congr 2; push_cast; linear_combination ↑π * ↑n ^ 2 * ↑t * I_sq
   simp [Θ₄, im_tsum hsum, hterm_im]
 
 /-- `H₂(it)` is real for all `t > 0`. -/
