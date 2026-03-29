@@ -281,39 +281,28 @@ lemma k₅_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₅ t‖ ≤ Real.pi := by
   intro t ht
   simpa [k₅] using norm_neg_pi_mul_le_pi (z := (t : ℂ)) (norm_of_mem_uIoc_le_one ht)
 
+private lemma differentiableAt_base₁_mul_exp (k : ℝ → ℂ) (Ck : ℝ)
+    (hk_cont : ContinuousOn k (Ι (0 : ℝ) 1)) (hk_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k t‖ ≤ Ck)
+    (u0 : ℂ) : DifferentiableAt ℂ (fun u => ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k t))
+    u0 := by
+  rcases base₁_bound with ⟨Cbase, _, hbase_bound⟩
+  exact differentiableAt_intervalIntegral_mul_exp u0 Cbase Ck
+    base₁_continuousOn hk_cont hbase_bound hk_bound
+
 lemma I₁'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₁'C u0 := by
-  rcases base₁_bound with ⟨Cbase, _hpos, hbase_bound⟩
-  have hEq :
-      I₁'C =
-        (fun u : ℂ => ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₁ t)) := by
-    funext u
-    simpa using (I₁'C_eq u)
-  simpa [hEq] using
-    differentiableAt_intervalIntegral_mul_exp (base := base₁) (k := k₁) u0 Cbase (2 * Real.pi)
-      base₁_continuousOn k₁_continuousOn hbase_bound k₁_bound
+  simpa [show I₁'C = fun u => ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₁ t) from
+    funext fun u => by simpa using I₁'C_eq u] using
+    differentiableAt_base₁_mul_exp k₁ (2 * Real.pi) k₁_continuousOn k₁_bound u0
 
 lemma I₃'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₃'C u0 := by
-  rcases base₁_bound with ⟨Cbase, _hpos, hbase_bound⟩
-  have hEq :
-      I₃'C =
-        (fun u : ℂ => ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₃ t)) := by
-    funext u
-    simpa using (I₃'C_eq u)
-  simpa [hEq] using
-    differentiableAt_intervalIntegral_mul_exp (base := base₁) (k := k₃) u0 Cbase (2 * Real.pi)
-      base₁_continuousOn k₃_continuousOn hbase_bound k₃_bound
+  simpa [show I₃'C = fun u => ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₃ t) from
+    funext fun u => by simpa using I₃'C_eq u] using
+    differentiableAt_base₁_mul_exp k₃ (2 * Real.pi) k₃_continuousOn k₃_bound u0
 
 lemma I₅'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₅'C u0 := by
-  rcases base₁_bound with ⟨Cbase, _hpos, hbase_bound⟩
-  have hEq :
-      I₅'C =
-        (fun u : ℂ =>
-          (-2 : ℂ) * ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₅ t)) := by
-    funext u
-    simpa [mul_assoc] using (I₅'C_eq u)
-  simpa [hEq, mul_assoc] using
-    (differentiableAt_intervalIntegral_mul_exp (base := base₁) (k := k₅) u0 Cbase Real.pi
-      base₁_continuousOn k₅_continuousOn hbase_bound k₅_bound).const_mul (-2 : ℂ)
+  simpa [show I₅'C = fun u => (-2 : ℂ) * ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₅ t)
+    from funext fun u => by simpa [mul_assoc] using I₅'C_eq u, mul_assoc] using
+    (differentiableAt_base₁_mul_exp k₅ Real.pi k₅_continuousOn k₅_bound u0).const_mul (-2 : ℂ)
 
 lemma I₁'C_differentiableOn : DifferentiableOn ℂ I₁'C rightHalfPlane :=
   fun u _hu => (I₁'C_differentiableAt u).differentiableWithinAt
@@ -435,25 +424,21 @@ lemma k₄_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₄ t‖ ≤ (3 * Real.pi) := b
     (by simpa [mul_assoc] using norm_neg_pi_I_mul_le_pi htnorm)
     (by simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le])
 
-lemma I₂'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₂'C u0 := by
-  -- bound `base₂` by a constant using `norm_φ₀_le` on `t < 1`,
-  -- and a pointwise bound at `t = 1`.
+private lemma φ₀''_bound_on_uIoc (arg : ℝ → ℂ)
+    (him : ∀ t, t ∈ Set.Ioo (0 : ℝ) 1 → (1 / 2 : ℝ) < (arg t).im) :
+    ∃ Cφ > 0, ∀ t ∈ Ι (0 : ℝ) 1, ‖φ₀'' (arg t)‖ ≤ Cφ := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  let Cφ : ℝ := max C₀ ‖φ₀'' (arg₂ 1)‖
-  have hφ_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖φ₀'' (arg₂ t)‖ ≤ Cφ := by
-    intro t ht
-    by_cases ht1 : t = 1
-    · subst ht1
-      exact le_max_right _ _
-    · have ht0 : 0 < t := by simpa using ht.1
-      have ht1' : t < 1 := lt_of_le_of_ne (by simpa using ht.2) ht1
-      have htIoo : t ∈ Set.Ioo (0 : ℝ) 1 := ⟨ht0, ht1'⟩
-      have him : (1 / 2 : ℝ) < (arg₂ t).im := by
-        simpa [arg₂] using (MagicFunction.a.IntegralEstimates.I₂.im_parametrisation_lower t htIoo)
-      have hzpos : 0 < (arg₂ t).im := one_half_pos.trans him
-      have hbound : ‖φ₀'' (arg₂ t)‖ ≤ C₀ :=
-        norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀ hzpos him
-      exact (le_trans hbound (le_max_left _ _))
+  refine ⟨max C₀ ‖φ₀'' (arg 1)‖, by positivity, fun t ht => ?_⟩
+  by_cases ht1 : t = 1
+  · exact ht1 ▸ le_max_right _ _
+  · have htIoo : t ∈ Set.Ioo (0 : ℝ) 1 := ⟨by simpa using ht.1,
+      lt_of_le_of_ne (by simpa using ht.2) ht1⟩
+    exact (norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀ (one_half_pos.trans (him t htIoo))
+      (him t htIoo)).trans (le_max_left _ _)
+
+lemma I₂'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₂'C u0 := by
+  obtain ⟨Cφ, _, hφ_bound⟩ := φ₀''_bound_on_uIoc arg₂ (fun t ht => by
+    simpa [arg₂] using MagicFunction.a.IntegralEstimates.I₂.im_parametrisation_lower t ht)
   have hpow_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖(((t : ℂ) + I) ^ (2 : ℕ))‖ ≤ 4 := by
     intro t ht
     have : ‖(t : ℂ) + I‖ ≤ 2 :=
@@ -470,22 +455,8 @@ lemma I₂'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₂'C u0 := by
     funext fun u => by simpa using I₂'C_eq u] using h
 
 lemma I₄'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₄'C u0 := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  let Cφ : ℝ := max C₀ ‖φ₀'' (arg₄ 1)‖
-  have hφ_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖φ₀'' (arg₄ t)‖ ≤ Cφ := by
-    intro t ht
-    by_cases ht1 : t = 1
-    · subst ht1
-      exact le_max_right _ _
-    · have ht0 : 0 < t := by simpa using ht.1
-      have ht1' : t < 1 := lt_of_le_of_ne (by simpa using ht.2) ht1
-      have htIoo : t ∈ Set.Ioo (0 : ℝ) 1 := ⟨ht0, ht1'⟩
-      have him : (1 / 2 : ℝ) < (arg₄ t).im := by
-        simpa [arg₄] using (MagicFunction.a.IntegralEstimates.I₄.im_parametrisation_lower t htIoo)
-      have hzpos : 0 < (arg₄ t).im := one_half_pos.trans him
-      have hbound : ‖φ₀'' (arg₄ t)‖ ≤ C₀ :=
-        norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀ hzpos him
-      exact (le_trans hbound (le_max_left _ _))
+  obtain ⟨Cφ, _, hφ_bound⟩ := φ₀''_bound_on_uIoc arg₄ (fun t ht => by
+    simpa [arg₄] using MagicFunction.a.IntegralEstimates.I₄.im_parametrisation_lower t ht)
   have hpow_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖((-(t : ℂ) + I) ^ (2 : ℕ))‖ ≤ 4 := by
     intro t ht
     have : ‖-(t : ℂ) + I‖ ≤ 2 := by
