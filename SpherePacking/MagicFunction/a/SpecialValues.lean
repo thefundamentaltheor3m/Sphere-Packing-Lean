@@ -280,22 +280,14 @@ lemma integrableOn_phi0_imag :
       ∀ t : ℝ, t ∈ Set.Ioi (1 : ℝ) → ‖φ₀'' ((t : ℂ) * Complex.I)‖ ≤ C₀ * Real.exp (-2 * π * t) := by
     intro t ht
     have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) (le_of_lt ht)
+    have htHalf : (1 / 2 : ℝ) < t := lt_of_lt_of_le (by norm_num) (le_of_lt ht)
     let zH : ℍ := ⟨(t : ℂ) * Complex.I, by simpa [mul_assoc] using ht0⟩
-    have htHalf : (1 / 2 : ℝ) < zH.im := by
-      have : (1 / 2 : ℝ) < t := lt_of_lt_of_le (by norm_num) (le_of_lt ht)
-      simpa [zH, UpperHalfPlane.im] using this
-    have hφ0 : ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * zH.im) := by
-      simpa [φ₀''_coe_upperHalfPlane] using hC₀ zH htHalf
-    simpa [zH, UpperHalfPlane.im] using hφ0
-  have hgi :
-      MeasureTheory.Integrable (fun t : ℝ => C₀ * Real.exp (-2 * π * t))
-        (MeasureTheory.volume.restrict (Set.Ioi (1 : ℝ))) := by
-    have hExp :
-        MeasureTheory.IntegrableOn (fun t : ℝ => Real.exp (-2 * π * t)) (Set.Ioi (1 : ℝ))
-          MeasureTheory.volume := by
-      simpa [mul_assoc] using
-        (exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := (2 * Real.pi)) (by positivity))
-    simpa [MeasureTheory.IntegrableOn, mul_assoc] using hExp.integrable.const_mul C₀
+    simpa [zH, UpperHalfPlane.im, ← φ₀''_coe_upperHalfPlane] using
+      hC₀ zH (by simpa [zH, UpperHalfPlane.im] using htHalf)
+  have hgi : MeasureTheory.Integrable (fun t : ℝ => C₀ * Real.exp (-2 * π * t))
+      (MeasureTheory.volume.restrict (Set.Ioi (1 : ℝ))) := by
+    have := (exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := (2 * Real.pi)) (by positivity))
+    simpa [MeasureTheory.IntegrableOn, mul_assoc] using this.integrable.const_mul C₀
   have hmeas :
       MeasureTheory.AEStronglyMeasurable (fun t : ℝ => φ₀'' ((t : ℂ) * Complex.I))
         (MeasureTheory.volume.restrict (Set.Ioi (1 : ℝ))) :=
@@ -334,10 +326,7 @@ lemma tendsto_top_f0 :
       have hzRe0 : 0 ≤ (x + m * Complex.I : ℂ).re := by simpa using hx0
       have hzRe1 : (x + m * Complex.I : ℂ).re ≤ 1 := by simpa using hx1
       simpa using hC₀ (z := (x + m * Complex.I : ℂ)) hzIm hzRe0 hzRe1
-    have hN :=
-      intervalIntegral.norm_integral_le_of_norm_le_const
-        (a := (0 : ℝ)) (b := (1 : ℝ)) (f := fun x : ℝ => f0 (x + m * Complex.I)) hC
-    simpa using hN
+    simpa using intervalIntegral.norm_integral_le_of_norm_le_const hC
   have hdecay :
       Tendsto (fun m : ℝ => C₀ * (2 * m + 1) * Real.exp (-2 * Real.pi * m)) atTop (𝓝 (0 : ℝ)) := by
     have hmul :
@@ -349,11 +338,10 @@ lemma tendsto_top_f0 :
       simpa [Real.rpow_zero] using
         tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := 0) (b := 2 * π) (by positivity)
     have hmain :
-        Tendsto (fun m : ℝ => (2 * m + 1) * Real.exp (-2 * Real.pi * m)) atTop (𝓝 (0 : ℝ)) := by
-      have hsum : Tendsto (fun m : ℝ => 2 * (m * Real.exp (-(2 * Real.pi) * m)) +
-          Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by
-        simpa using (hmul.const_mul 2).add hexp
-      exact hsum.congr' (Eventually.of_forall fun m => by ring_nf)
+        Tendsto (fun m : ℝ => (2 * m + 1) * Real.exp (-2 * Real.pi * m)) atTop (𝓝 (0 : ℝ)) :=
+      ((by simpa using (hmul.const_mul 2).add hexp :
+        Tendsto (fun m => 2 * (m * Real.exp (-(2 * π) * m)) + Real.exp (-(2 * π) * m)) atTop _
+      ).congr' (Eventually.of_forall fun m => by ring_nf))
     simpa [mul_assoc] using hmain.const_mul C₀
   -- squeeze the norm to `0`
   exact squeeze_zero_norm' hbound hdecay
@@ -368,22 +356,13 @@ lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
   have hInt (x : ℝ) :
       IntervalIntegrable (fun y : ℝ => f0 ((x : ℝ) + y * Complex.I))
         MeasureTheory.volume (1 : ℝ) m := by
-    have hconty :
-        ContinuousOn (fun y : ℝ => (x : ℂ) + (y : ℂ) * Complex.I) (Set.uIcc (1 : ℝ) m) :=
+    have hmaps : Set.MapsTo (fun y : ℝ => (x : ℂ) + (y : ℂ) * Complex.I) (Set.uIcc (1 : ℝ) m)
+        {z : ℂ | 0 < z.im} := fun y hy => by
+      simpa using lt_of_lt_of_le (by norm_num)
+        (by simpa [Set.uIcc_of_le hm] using hy : y ∈ Set.Icc (1 : ℝ) m).1
+    have hc : ContinuousOn (fun y : ℝ => (x : ℂ) + (y : ℂ) * Complex.I) (Set.uIcc (1 : ℝ) m) :=
       (continuous_const.add (continuous_ofReal.mul continuous_const)).continuousOn
-    have hmaps :
-        Set.MapsTo (fun y : ℝ => (x : ℂ) + (y : ℂ) * Complex.I) (Set.uIcc (1 : ℝ) m)
-          {z : ℂ | 0 < z.im} := by
-      intro y hy
-      have hy1 : (1 : ℝ) ≤ y := by
-        have hy' : y ∈ Set.Icc (1 : ℝ) m := by simpa [Set.uIcc_of_le hm] using hy
-        exact hy'.1
-      have hy0 : 0 < y := lt_of_lt_of_le (by norm_num) hy1
-      simpa using hy0
-    have hcomp :
-        ContinuousOn (fun y : ℝ => f0 ((x : ℂ) + (y : ℂ) * Complex.I)) (Set.uIcc (1 : ℝ) m) :=
-      f0_continuousOn.comp hconty hmaps
-    simpa using hcomp.intervalIntegrable
+    simpa using (f0_continuousOn.comp hc hmaps).intervalIntegrable
   have hIntR :
       IntervalIntegrable (fun y : ℝ => f0 ((1 : ℝ) + y * Complex.I)) MeasureTheory.volume
         (1 : ℝ) m := by simpa using hInt (x := (1 : ℝ))
@@ -397,15 +376,11 @@ lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
     exact Eq.symm (integral_sub (hInt 1) (hInt 0))
   have hVert :
       (∫ y : ℝ in (1 : ℝ)..m, (f0 ((1 : ℝ) + y * Complex.I) - f0 ((0 : ℝ) + y * Complex.I))) =
-        ∫ y : ℝ in (1 : ℝ)..m, (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) := by
-    refine intervalIntegral.integral_congr (μ := MeasureTheory.volume) ?_
-    intro y hy
-    have hy1 : (1 : ℝ) ≤ y := by
-      have hy' : y ∈ Set.Icc (1 : ℝ) m := by simpa [Set.uIcc_of_le hm] using hy
-      exact hy'.1
-    have hy0 : 0 < y := lt_of_lt_of_le (by norm_num) hy1
-    -- rewrite the left integrand using `f0_vertical_diff`
-    simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using (f0_vertical_diff y hy0)
+        ∫ y : ℝ in (1 : ℝ)..m, (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) :=
+    intervalIntegral.integral_congr fun y hy => by
+      have hy0 : 0 < y := lt_of_lt_of_le (by norm_num)
+        (by simpa [Set.uIcc_of_le hm] using hy : y ∈ Set.Icc (1 : ℝ) m).1
+      simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using f0_vertical_diff y hy0
   -- Rearrange the rectangle identity.
   have hrect' :
       (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) -
@@ -739,15 +714,10 @@ theorem a_zero_value : FourierEigenfunctions.a (0 : ℝ⁸) = -8640 * Complex.I 
   have hIntphi2 : IntervalIntegrable (fun x : ℝ => φ₂'' (zI x)) MeasureTheory.volume (0 : ℝ) 1 :=
     intervalIntegrable_comp_zI MagicFunction.a.ComplexIntegrands.φ₂''_holo.continuousOn
   have hsplit :
-      (∫ x : ℝ in (0 : ℝ)..1,
-            (f0 (zI x) - (12 * Complex.I) / π * φ₂'' (zI x))) =
+      (∫ x : ℝ in (0 : ℝ)..1, (f0 (zI x) - (12 * Complex.I) / π * φ₂'' (zI x))) =
         (∫ x : ℝ in (0 : ℝ)..1, f0 (zI x)) -
           ∫ x : ℝ in (0 : ℝ)..1, (12 * Complex.I) / π * φ₂'' (zI x) := by
-    simpa using
-      (intervalIntegral.integral_sub (μ := MeasureTheory.volume)
-        (a := (0 : ℝ)) (b := (1 : ℝ))
-        (f := fun x : ℝ => f0 (zI x))
-        (g := fun x : ℝ => (12 * Complex.I) / π * φ₂'' (zI x)) hIntf0 (hIntphi2.const_mul _))
+    simpa using (intervalIntegral.integral_sub hIntf0 (hIntphi2.const_mul _))
   have hI246 :
       I₂' (0 : ℝ) + I₄' 0 + I₆' 0 = -8640 * Complex.I / π := by
     have hI24' : I₂' (0 : ℝ) + I₄' 0 =
