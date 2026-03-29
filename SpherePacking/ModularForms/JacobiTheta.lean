@@ -102,9 +102,10 @@ section ImagAxisProperties
   simp [mul_left_comm, mul_comm]
 
 lemma summable_Θ₂_term (τ : ℍ) : Summable (fun n : ℤ => Θ₂_term n τ) := by
+  have him : 0 < (τ : ℂ).im := by simpa using τ.im_pos
   simpa [Θ₂_term_as_jacobiTheta₂_term (τ := τ)] using
     ((summable_jacobiTheta₂_term_iff (z := (τ : ℂ) / 2) (τ := (τ : ℂ))).2
-          (by simpa using τ.im_pos)).mul_left (cexp (π * Complex.I * (τ : ℂ) / 4))
+          him).mul_left (cexp (π * Complex.I * (τ : ℂ) / 4))
 
 private lemma Θ₂_term_eq_ofReal_exp_imag_axis (n : ℤ) (t : ℝ) (ht : 0 < t) :
     Θ₂_term n (⟨Complex.I * t, by simp [ht]⟩ : ℍ) =
@@ -854,15 +855,15 @@ private theorem tsum_weighted_exp_sq_tendsto_atImInfty
 theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ 0 x) atImInfty (𝓝 1) := by
   simpa [jacobiTheta₂, jacobiTheta₂_term, mul_zero, zero_add] using
-    (tsum_weighted_exp_sq_tendsto_atImInfty (w := fun _ : ℤ ↦ (1 : ℂ)) (by simp)
-      (by intro n; simp))
+    tsum_weighted_exp_sq_tendsto_atImInfty (w := fun _ : ℤ ↦ (1 : ℂ)) (by simp)
+      (fun n ↦ by simp)
 
 theorem jacobiTheta₂_half_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ (1 / 2 : ℂ) x) atImInfty (𝓝 1) := by
   have hΘ₄ : Tendsto Θ₄ atImInfty (𝓝 1) := by
     simpa [Θ₄, Θ₄_term] using
-      (tsum_weighted_exp_sq_tendsto_atImInfty (w := fun n : ℤ ↦ (-1 : ℂ) ^ n) (by simp)
-        (by intro n; simp))
+      tsum_weighted_exp_sq_tendsto_atImInfty (w := fun n : ℤ ↦ (-1 : ℂ) ^ n) (by simp)
+        (fun n ↦ by simp)
   simpa [funext Θ₄_as_jacobiTheta₂] using hΘ₄
 
 /-- The theta function `Θ₂` tends to `0` at `Im z → ∞`. -/
