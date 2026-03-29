@@ -620,18 +620,9 @@ lemma tendsto_top_phi2 :
   have hInt :
       IntervalIntegrable (fun x : ℝ => φ₂'' (x + m * Complex.I)) MeasureTheory.volume (0 : ℝ)
         1 := by
-    have hcont : ContinuousOn (fun x : ℝ => φ₂'' (x + m * Complex.I)) (Set.uIcc (0 : ℝ) 1) := by
-      have hφ : ContinuousOn φ₂'' {z : ℂ | 0 < z.im} :=
-        MagicFunction.a.ComplexIntegrands.φ₂''_holo.continuousOn
-      have hx : ContinuousOn (fun x : ℝ => (x : ℂ) + (m : ℂ) * Complex.I) (Set.uIcc (0 : ℝ) 1) :=
-        (continuous_ofReal.add continuous_const).continuousOn
-      have hmaps :
-          Set.MapsTo (fun x : ℝ => (x : ℂ) + (m : ℂ) * Complex.I) (Set.uIcc (0 : ℝ) 1)
-            {z : ℂ | 0 < z.im} := by
-        intro x hx'
-        simpa [Complex.add_im] using hm0
-      exact hφ.comp hx hmaps
-    simpa using hcont.intervalIntegrable
+    simpa using (MagicFunction.a.ComplexIntegrands.φ₂''_holo.continuousOn.comp
+      (continuous_ofReal.add continuous_const).continuousOn
+      (fun _ _ => by simpa [Complex.add_im] using hm0)).intervalIntegrable
   have hsub :
       (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) - (720 : ℂ) =
         ∫ x : ℝ in (0 : ℝ)..1, (φ₂'' (x + m * Complex.I) - (720 : ℂ)) := by

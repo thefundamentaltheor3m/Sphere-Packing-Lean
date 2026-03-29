@@ -547,13 +547,8 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
   have hbase_bound : ∀ t ∈ Set.Ici (1 : ℝ), ‖base₆ t‖ ≤ C₀ := by
     intro t ht
     have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
-    have htHalf : (1 / 2 : ℝ) < t := lt_of_lt_of_le (by norm_num) ht
-    have hzpos : 0 < (((t : ℂ) * (Complex.I : ℂ)) : ℂ).im := by simpa [mul_assoc] using ht0
-    have hhalf : (1 / 2 : ℝ) < (((t : ℂ) * (Complex.I : ℂ)) : ℂ).im := by
-      simpa [mul_assoc] using htHalf
-    have hφ : ‖φ₀'' ((t : ℂ) * (Complex.I : ℂ))‖ ≤ C₀ :=
-      norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀ hzpos hhalf
-    simpa [base₆, norm_mul] using hφ
+    simpa [base₆, norm_mul] using norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀
+      (by simpa [mul_assoc] using ht0) (by simpa [mul_assoc] using lt_of_lt_of_le (by norm_num) ht)
   have hF_meas :
       ∀ z : ℂ, MeasureTheory.AEStronglyMeasurable (fun t : ℝ => I₆IntegrandC z t) μ := by
     intro z
