@@ -225,9 +225,7 @@ lemma f0_norm_bound_on_strip :
       _ = |2 * z.re - 1| + |2 * z.im| := by simp
       _ ≤ 1 + |2 * z.im| := add_le_add hRe le_rfl
       _ = 2 * z.im + 1 := by simp [hIm, add_comm]
-  calc
-    ‖f0 z‖ = ‖φ₀'' z * ((2 : ℂ) * z - 1)‖ := by simp [f0]
-    _ = ‖φ₀'' z‖ * ‖(2 : ℂ) * z - 1‖ := by simp
+  calc ‖f0 z‖ = ‖φ₀'' z‖ * ‖(2 : ℂ) * z - 1‖ := by simp [f0, norm_mul]
     _ ≤ (C₀ * Real.exp (-2 * π * z.im)) * (2 * z.im + 1) := by gcongr
     _ = C₀ * (2 * z.im + 1) * Real.exp (-2 * π * z.im) := by ring_nf
 
