@@ -32,7 +32,10 @@ exponentials, and other compositions.
 - **`tendsto_cont?`**: Report matched atoms and the computed limit
   (the body evaluated at atom limits), then prove.
 - **`tendsto_cont (disch := tac)`**: Pass a discharger to `fun_prop` for
-  side conditions (e.g., `disch := positivity` for `log`, `inv`, `div`).
+  continuity side conditions (e.g., `disch := positivity` for `log`, `inv`).
+- **`tendsto_cont (within_disch := tac)`**: Discharge the `∀ᶠ x in l,
+  body x ∈ s` obligation for `nhdsWithin` goals. Both hooks compose:
+  `tendsto_cont (disch := norm_num) (within_disch := positivity)`.
 - **`tendsto_cont [h₁, h₂]`**: Provide inline `Tendsto` hypotheses.
 - Accepts `nhdsWithin` hypotheses (extracts limit via `nhdsWithin_le_nhds`).
 - Accepts `nhdsWithin` goals: proves the `nhds` part automatically, then
@@ -283,9 +286,11 @@ private meta def reconcileLimits (goal : MVarId) (proof : Expr) :
 
 /-- Try to close an `∀ᶠ x in l, body x ∈ s` goal from nhdsWithin splitting.
     Returns `[]` if closed, `[g]` if the goal should be left for the user.
-    Currently tries `assumption` (atomic, safe). More sophisticated
-    discharge strategies are left to `disch :=` or manual proof. -/
-private meta def tryEvGoal (g : MVarId) : TacticM (List MVarId) := do
+    Tries `assumption`, guarded `univ_mem'`, and optionally a user-provided
+    `within_disch` tactic. -/
+private meta def tryEvGoal (g : MVarId)
+    (withinDischStx? : Option (TSyntax ``Lean.Parser.Tactic.tacticSeq) := none) :
+    TacticM (List MVarId) := do
   -- Try assumption (atomic, finds ∀ᶠ hypotheses in context)
   let r ← try
     Elab.Tactic.run g
@@ -319,6 +324,15 @@ private meta def tryEvGoal (g : MVarId) : TacticM (List MVarId) := do
         return r
     | none => pure ()
   | _ => pure ()
+  -- Try user-provided within_disch tactic
+  match withinDischStx? with
+  | some disch =>
+    let r ← try
+      Elab.Tactic.run g
+        (Elab.Tactic.evalTactic (← `(tactic| ($disch))))
+    catch _ => pure [g]
+    if r.isEmpty then return r
+  | none => pure ()
   -- Can't close — leave the goal for the user
   return [g]
 
@@ -357,6 +371,7 @@ private meta def buildContinuityProof (body : Expr) (bvar : FVarId)
     `traceMode` enables diagnostic output for `tendsto_cont?`. -/
 private meta def tendstoCont (extraHyps : Array Expr := #[])
     (dischStx? : Option (TSyntax ``Lean.Parser.Tactic.tacticSeq) := none)
+    (withinDischStx? : Option (TSyntax ``Lean.Parser.Tactic.tacticSeq) := none)
     (traceMode : Bool := false) :
     TacticM Unit := withMainContext do
   let goal ← getMainGoal
@@ -407,7 +422,7 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
         -- Try to close the ∀ᶠ subgoal(s); leave unclosed ones for user
         let mut leftover : List MVarId := []
         for g in remaining do
-          let r ← tryEvGoal g
+          let r ← tryEvGoal g withinDischStx?
           leftover := leftover ++ r
         Elab.Tactic.replaceMainGoal leftover
         return (none : Option Expr)
@@ -421,9 +436,15 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
         atomDescs := atomDescs.push m!"  {fnFmt} → {valFmt}"
       let computedLimit ← AtomEngine.substituteAtomValues body bvar atoms
       let computedFmt ← ppExpr computedLimit
+      let withinMsg ← match goalTarget with
+        | .nhds => pure m!""
+        | .nhdsWithin s =>
+          let sFmt ← ppExpr s
+          pure m!"\nnhdsWithin set: {sFmt}\
+            \n  (∀ᶠ membership obligation will be attempted)"
       logInfo m!"tendsto_cont?: matched atoms:\
         \n{MessageData.joinSep atomDescs.toList "\n"}\
-        \ncomputed limit: {computedFmt}"
+        \ncomputed limit: {computedFmt}{withinMsg}"
 
     some <$> buildContinuityProof body bvar atoms dischStx?
 
@@ -448,7 +469,7 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
         -- Close nhds subgoal using the proof we built
         reconcileLimits nhdsGoal nhdsProof
         -- Try to close the ∀ᶠ subgoal. If we can't, leave it for user.
-        let evRemaining ← tryEvGoal evGoal
+        let evRemaining ← tryEvGoal evGoal withinDischStx?
         Elab.Tactic.replaceMainGoal evRemaining
       | _ =>
         -- Fallback: just try reconcileLimits directly
@@ -458,36 +479,61 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
 -- Syntax
 -- ══════════════════════════════════════════════════════════════
 
-syntax (name := tendstoContBasic) "tendsto_cont" ("[" term,* "]")? : tactic
-syntax (name := tendstoContDisch)
-  "tendsto_cont" "(" &"disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
-syntax (name := tendstoContTrace) "tendsto_cont?" ("[" term,* "]")? : tactic
-syntax (name := tendstoContTraceDisch)
-  "tendsto_cont?" "(" &"disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
+-- Base syntax (no within_disch)
+syntax "tendsto_cont" ("[" term,* "]")? : tactic
+syntax "tendsto_cont" "(" &"disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
+syntax "tendsto_cont?" ("[" term,* "]")? : tactic
+syntax "tendsto_cont?" "(" &"disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
+-- with within_disch
+syntax "tendsto_cont" "(" &"within_disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
+syntax "tendsto_cont" "(" &"disch" ":=" tacticSeq ")"
+  "(" &"within_disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
+syntax "tendsto_cont?" "(" &"within_disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
+syntax "tendsto_cont?" "(" &"disch" ":=" tacticSeq ")"
+  "(" &"within_disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
+
+private meta def elabExtras (extras : Syntax.TSepArray `term ",") :
+    TacticM (Array Expr) :=
+  withMainContext <| extras.getElems.mapM fun h => Term.elabTerm h none
 
 elab_rules : tactic
-  | `(tactic| tendsto_cont [ $extras,* ]) => do
-    let extraHyps ← withMainContext <|
-      extras.getElems.mapM fun h => Term.elabTerm h none
-    tendstoCont extraHyps
   | `(tactic| tendsto_cont) => tendstoCont
-  | `(tactic| tendsto_cont ( disch := $disch ) [ $extras,* ]) => do
-    let extraHyps ← withMainContext <|
-      extras.getElems.mapM fun h => Term.elabTerm h none
-    tendstoCont extraHyps (dischStx? := some disch)
-  | `(tactic| tendsto_cont ( disch := $disch )) =>
-    tendstoCont (dischStx? := some disch)
+  | `(tactic| tendsto_cont [ $extras,* ]) => do
+    tendstoCont (← elabExtras extras)
+  | `(tactic| tendsto_cont ( disch := $d )) =>
+    tendstoCont (dischStx? := some d)
+  | `(tactic| tendsto_cont ( disch := $d ) [ $extras,* ]) => do
+    tendstoCont (← elabExtras extras) (dischStx? := some d)
+  | `(tactic| tendsto_cont ( within_disch := $wd )) =>
+    tendstoCont (withinDischStx? := some wd)
+  | `(tactic| tendsto_cont ( within_disch := $wd ) [ $extras,* ]) => do
+    tendstoCont (← elabExtras extras) (withinDischStx? := some wd)
+  | `(tactic| tendsto_cont ( disch := $d ) ( within_disch := $wd )) =>
+    tendstoCont (dischStx? := some d) (withinDischStx? := some wd)
+  | `(tactic| tendsto_cont ( disch := $d ) ( within_disch := $wd )
+      [ $extras,* ]) => do
+    tendstoCont (← elabExtras extras) (dischStx? := some d)
+      (withinDischStx? := some wd)
+
+elab_rules : tactic
+  | `(tactic| tendsto_cont?) => tendstoCont (traceMode := true)
   | `(tactic| tendsto_cont? [ $extras,* ]) => do
-    let extraHyps ← withMainContext <|
-      extras.getElems.mapM fun h => Term.elabTerm h none
-    tendstoCont extraHyps (traceMode := true)
-  | `(tactic| tendsto_cont?) =>
-    tendstoCont (traceMode := true)
-  | `(tactic| tendsto_cont? ( disch := $disch ) [ $extras,* ]) => do
-    let extraHyps ← withMainContext <|
-      extras.getElems.mapM fun h => Term.elabTerm h none
-    tendstoCont extraHyps (dischStx? := some disch) (traceMode := true)
-  | `(tactic| tendsto_cont? ( disch := $disch )) =>
-    tendstoCont (dischStx? := some disch) (traceMode := true)
+    tendstoCont (← elabExtras extras) (traceMode := true)
+  | `(tactic| tendsto_cont? ( disch := $d )) =>
+    tendstoCont (dischStx? := some d) (traceMode := true)
+  | `(tactic| tendsto_cont? ( disch := $d ) [ $extras,* ]) => do
+    tendstoCont (← elabExtras extras) (dischStx? := some d) (traceMode := true)
+  | `(tactic| tendsto_cont? ( within_disch := $wd )) =>
+    tendstoCont (withinDischStx? := some wd) (traceMode := true)
+  | `(tactic| tendsto_cont? ( within_disch := $wd ) [ $extras,* ]) => do
+    tendstoCont (← elabExtras extras) (withinDischStx? := some wd)
+      (traceMode := true)
+  | `(tactic| tendsto_cont? ( disch := $d ) ( within_disch := $wd )) =>
+    tendstoCont (dischStx? := some d) (withinDischStx? := some wd)
+      (traceMode := true)
+  | `(tactic| tendsto_cont? ( disch := $d ) ( within_disch := $wd )
+      [ $extras,* ]) => do
+    tendstoCont (← elabExtras extras) (dischStx? := some d)
+      (withinDischStx? := some wd) (traceMode := true)
 
 end TendstoCont

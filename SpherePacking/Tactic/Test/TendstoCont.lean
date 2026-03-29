@@ -660,3 +660,53 @@ example (h : Tendsto f atTop (nhds 3)) :
 example (h : Tendsto f atTop (nhds 3)) :
     Tendsto (fun z => (f z)⁻¹) atTop (nhds 3⁻¹) := by
   tendsto_cont (disch := positivity)
+
+-- ══════════════════════════════════════════════════════════════
+-- within_disch := ... (discharger for nhdsWithin ∀ᶠ obligation)
+-- ══════════════════════════════════════════════════════════════
+
+-- Constant body, nontrivial set: within_disch closes membership
+-- (assumption and univ_mem' can't close this; within_disch does)
+example : Tendsto (fun _ : ℝ => (2 : ℝ)) atTop (nhdsWithin 2 (Set.Ioi 0)) := by
+  tendsto_cont (within_disch :=
+    exact Filter.univ_mem' (fun _ => by norm_num))
+
+-- Atom body: within_disch closes ∀ᶠ when no matching hypothesis exists
+-- (assumption can't find a match; within_disch provides the proof)
+example (h : Tendsto f atTop (nhds 3))
+    (hpos : ∀ x, 0 < f x) :
+    Tendsto (fun z => f z) atTop (nhdsWithin 3 (Set.Ioi 0)) := by
+  tendsto_cont (within_disch :=
+    exact Filter.univ_mem' (fun z => Set.mem_Ioi.mpr (hpos z)))
+
+-- Both hooks together: disch for continuity, within_disch for membership
+example (h : Tendsto f atTop (nhds 3))
+    (hpos : ∀ x, 0 < f x) :
+    Tendsto (fun z => (f z)⁻¹) atTop (nhdsWithin 3⁻¹ (Set.Ioi 0)) := by
+  tendsto_cont (disch := positivity) (within_disch :=
+    exact Filter.univ_mem' (fun z => Set.mem_Ioi.mpr (inv_pos.mpr (hpos z))))
+
+-- Without within_disch, the same nontrivial set goal is left open
+/--
+error: unsolved goals
+case right
+f g k : ℝ → ℝ
+h : Tendsto f atTop (𝓝 3)
+⊢ ∀ᶠ (n : ℝ) in atTop, f n ∈ Set.Ioi 0
+-/
+#guard_msgs(error, drop info) in
+example (h : Tendsto f atTop (nhds 3)) :
+    Tendsto (fun z => f z) atTop (nhdsWithin 3 (Set.Ioi 0)) := by
+  tendsto_cont  -- no within_disch, leaves ∀ᶠ subgoal
+
+-- tendsto_cont? with nhdsWithin shows set info
+/-- info: tendsto_cont?: matched atoms:
+  f → 1
+computed limit: 1 + 1
+nhdsWithin set: Set.Ioi 0
+  (∀ᶠ membership obligation will be attempted) -/
+#guard_msgs(info, drop warning) in
+example (h : Tendsto f atTop (nhds 1))
+    (hev : ∀ᶠ z in atTop, f z + 1 ∈ Set.Ioi 0) :
+    Tendsto (fun z => f z + 1) atTop (nhdsWithin 2 (Set.Ioi 0)) := by
+  tendsto_cont?
