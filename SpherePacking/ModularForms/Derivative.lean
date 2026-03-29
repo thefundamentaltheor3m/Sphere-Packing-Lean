@@ -931,7 +931,8 @@ lemma ModularForm.slash_eq_self {k : ℤ} (f : ModularForm (Gamma 1) k) (γ : SL
       simpa using serre_D_slash_invariant k f f.holo' γ' (f.slash_eq_self γ')
   }
   holo' := serre_D_differentiable f.holo'
-  bdd_at_cusps' := fun hc => bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
+  bdd_at_cusps' := fun hc => by
+    refine bounded_at_cusps_of_bounded_at_infty hc fun _ hA => ?_
     obtain ⟨A', rfl⟩ := MonoidHom.mem_range.mp hA
     exact (serre_D_slash_invariant k f f.holo' A' (f.slash_eq_self A')).symm ▸
       serre_D_isBoundedAtImInfty k f.holo' (ModularFormClass.bdd_at_infty f)
@@ -1112,12 +1113,12 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
         -- Bounded at infinity: both terms in `serre_D` are bounded.
         have hbdd : IsBoundedAtImInfty (serre_D 1 E₂) :=
           serre_D_isBoundedAtImInfty (k := (1 : ℂ)) E₂_holo' E₂_isBoundedAtImInfty
-        exact bounded_at_cusps_of_bounded_at_infty hc fun _ hA => by
-          obtain ⟨γ, rfl⟩ := hA
-          have hslash : serre_D 1 E₂ ∣[(4 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ γ) =
-              serre_D 1 E₂ := by simpa [ModularForm.SL_slash] using hSerre_slash γ
-          rw [hslash]
-          exact hbdd }
+        refine bounded_at_cusps_of_bounded_at_infty hc fun _ hA => ?_
+        obtain ⟨γ, rfl⟩ := hA
+        have hslash : serre_D 1 E₂ ∣[(4 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ γ) =
+            serre_D 1 E₂ := by simpa [ModularForm.SL_slash] using hSerre_slash γ
+        rw [hslash]
+        exact hbdd }
   -- Identify `F₄` by its constant term at infinity: it is `-(1/12)·E₄`.
   let G : ModularForm Γ(1) 4 := F₄ + (12⁻¹ : ℂ) • E₄
   have hE₂lim : Tendsto E₂ atImInfty (𝓝 (1 : ℂ)) := tendsto_E₂_atImInfty
