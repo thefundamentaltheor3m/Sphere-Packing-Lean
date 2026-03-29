@@ -565,13 +565,9 @@ lemma tendsto_phi2'_atImInfty :
     tendsto_A_div_q
   have hΔq :
       Tendsto (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) atImInfty (𝓝 (1 : ℂ)) := by
-    -- `Δ z / q =` the bounded product factor.
-    have hrew :
-        (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) =
-          fun z : ℍ =>
-            ∏' n : ℕ, (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24 := by
-      funext z
-      simp [Δ, div_eq_mul_inv, mul_left_comm, mul_comm]
+    have hrew : (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) = fun z : ℍ =>
+        ∏' n : ℕ, (1 - cexp (2 * π * Complex.I * (n + 1) * (z : ℂ))) ^ 24 :=
+      funext fun z => by simp [Δ, div_eq_mul_inv, mul_left_comm, mul_comm]
     simpa [hrew] using (Delta_boundedfactor : Tendsto _ atImInfty (𝓝 (1 : ℂ)))
   have hΔq_ne : ∀ᶠ z in atImInfty, (Δ z) / cexp (2 * π * Complex.I * z) ≠ (0 : ℂ) :=
     hΔq.eventually (isOpen_ne.mem_nhds (by norm_num : (1 : ℂ) ≠ 0))
