@@ -688,15 +688,11 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
           HasDerivAt (fun w : ℂ => (-(π : ℂ) * w * (t : ℂ))) (-(π : ℂ) * (t : ℂ)) z := by
         simpa [mul_assoc, mul_left_comm, mul_comm] using
           ((hasDerivAt_id z).const_mul (-(π : ℂ) * (t : ℂ)))
-      have hexp :
-          HasDerivAt (fun w : ℂ => Complex.exp (-(π : ℂ) * w * (t : ℂ)))
-            (Complex.exp (-(π : ℂ) * z * (t : ℂ)) * (-(π : ℂ) * (t : ℂ))) z := by
-        simpa using hlin.cexp
-      have hbaseConst :
-          HasDerivAt (fun w : ℂ => base₆ t * Complex.exp (-(π : ℂ) * w * (t : ℂ)))
-            (base₆ t * (Complex.exp (-(π : ℂ) * z * (t : ℂ)) * (-(π : ℂ) * (t : ℂ)))) z := by
-        simpa [mul_assoc, mul_left_comm, mul_comm] using (hexp.const_mul (base₆ t))
-      simpa [I₆IntegrandC_deriv, I₆IntegrandC, mul_assoc, mul_left_comm, mul_comm] using hbaseConst
+      have hexp := (by simpa using hlin.cexp :
+        HasDerivAt (fun w => Complex.exp (-(π : ℂ) * w * (t : ℂ)))
+          (Complex.exp (-(π : ℂ) * z * (t : ℂ)) * (-(π : ℂ) * (t : ℂ))) z)
+      simpa [I₆IntegrandC_deriv, I₆IntegrandC, mul_assoc, mul_left_comm, mul_comm] using
+        (by simpa [mul_assoc, mul_left_comm, mul_comm] using hexp.const_mul (base₆ t))
     exact
       hasDerivAt_integral_I₆IntegrandC μ u0 ε bound hε hF_meas' hF_int hF'_meas hbound hbound_int
         hdiff
