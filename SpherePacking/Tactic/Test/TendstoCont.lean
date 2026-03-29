@@ -665,34 +665,39 @@ example (h : Tendsto f atTop (nhds 3)) :
 -- within_disch := ... (discharger for nhdsWithin ∀ᶠ obligation)
 -- ══════════════════════════════════════════════════════════════
 
--- Constant body, nontrivial set: within_disch closes membership
--- (assumption and univ_mem' can't close this; within_disch does)
+-- Constant body, nontrivial set: within_disch with pointwise lift
+-- (norm_num proves 2 ∈ Set.Ioi 0 pointwise, auto-lifted to ∀ᶠ)
 example : Tendsto (fun _ : ℝ => (2 : ℝ)) atTop (nhdsWithin 2 (Set.Ioi 0)) := by
-  tendsto_cont (within_disch :=
-    exact Filter.univ_mem' (fun _ => by norm_num))
+  tendsto_cont (within_disch := norm_num)
 
--- Atom body: within_disch closes ∀ᶠ when no matching hypothesis exists
--- (assumption can't find a match; within_disch provides the proof)
+-- Atom body: within_disch with pointwise proof
 example (h : Tendsto f atTop (nhds 3))
     (hpos : ∀ x, 0 < f x) :
     Tendsto (fun z => f z) atTop (nhdsWithin 3 (Set.Ioi 0)) := by
-  tendsto_cont (within_disch :=
-    exact Filter.univ_mem' (fun z => Set.mem_Ioi.mpr (hpos z)))
+  tendsto_cont (within_disch := exact Set.mem_Ioi.mpr (hpos _))
 
 -- Both hooks together: disch for continuity, within_disch for membership
 example (h : Tendsto f atTop (nhds 3))
     (hpos : ∀ x, 0 < f x) :
     Tendsto (fun z => (f z)⁻¹) atTop (nhdsWithin 3⁻¹ (Set.Ioi 0)) := by
   tendsto_cont (disch := positivity) (within_disch :=
-    exact Filter.univ_mem' (fun z => Set.mem_Ioi.mpr (inv_pos.mpr (hpos z))))
+    exact Set.mem_Ioi.mpr (inv_pos.mpr (hpos _)))
 
 -- Reversed option order works
 example (h : Tendsto f atTop (nhds 3))
     (hpos : ∀ x, 0 < f x) :
     Tendsto (fun z => (f z)⁻¹) atTop (nhdsWithin 3⁻¹ (Set.Ioi 0)) := by
   tendsto_cont (within_disch :=
-    exact Filter.univ_mem' (fun z => Set.mem_Ioi.mpr (inv_pos.mpr (hpos z))))
+    exact Set.mem_Ioi.mpr (inv_pos.mpr (hpos _)))
     (disch := positivity)
+
+-- within_disch with a direct ∀ᶠ-level tactic (no pointwise lift needed)
+-- Uses filter_upwards which assumption can't match
+example (h : Tendsto f atTop (nhds 3))
+    (hpos : ∀ x, 0 < f x) :
+    Tendsto (fun z => f z) atTop (nhdsWithin 3 (Set.Ioi 0)) := by
+  tendsto_cont (within_disch :=
+    exact Filter.univ_mem' (fun z => Set.mem_Ioi.mpr (hpos z)))
 
 -- Without within_disch, the same nontrivial set goal is left open
 /--
