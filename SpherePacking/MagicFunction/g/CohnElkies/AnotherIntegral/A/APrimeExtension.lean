@@ -241,41 +241,24 @@ private lemma norm_neg_pi_I_mul_eq_pi : ‖(-π : ℂ) * (Complex.I : ℂ)‖ = 
 
 private lemma norm_pi_I_mul_le_pi {z : ℂ} (hz : ‖z‖ ≤ 1) :
     ‖(π : ℂ) * (Complex.I : ℂ) * z‖ ≤ Real.pi := by
-  have hnorm : ‖(π : ℂ) * (Complex.I : ℂ) * z‖ = Real.pi * ‖z‖ := by
-    simpa [mul_assoc] using congrArg (fun x : ℝ => x * ‖z‖) norm_pi_I_mul_eq_pi
-  nlinarith [Real.pi_pos, hz, hnorm]
+  nlinarith [Real.pi_pos, show ‖(π : ℂ) * I * z‖ = Real.pi * ‖z‖ by
+    simpa [mul_assoc] using congrArg (· * ‖z‖) norm_pi_I_mul_eq_pi]
 
 private lemma norm_neg_pi_I_mul_le_pi {z : ℂ} (hz : ‖z‖ ≤ 1) :
     ‖(-π : ℂ) * (Complex.I : ℂ) * z‖ ≤ Real.pi := by
-  have hnorm : ‖(-π : ℂ) * (Complex.I : ℂ) * z‖ = Real.pi * ‖z‖ := by
-    simpa [mul_assoc] using congrArg (fun x : ℝ => x * ‖z‖) norm_neg_pi_I_mul_eq_pi
-  nlinarith [Real.pi_pos, hz, hnorm]
+  nlinarith [Real.pi_pos, show ‖(-π : ℂ) * I * z‖ = Real.pi * ‖z‖ by
+    simpa [mul_assoc] using congrArg (· * ‖z‖) norm_neg_pi_I_mul_eq_pi]
 
-lemma k₁_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₁ t‖ ≤ (2 * Real.pi) := by
-  intro t ht
-  have htpi : ‖(-π : ℂ) * (t : ℂ)‖ ≤ Real.pi :=
-    norm_neg_pi_mul_le_pi (z := (t : ℂ)) (norm_of_mem_uIoc_le_one ht)
-  have hsum :
-      ‖k₁ t‖ ≤ ‖(-π * (Complex.I : ℂ) : ℂ)‖ + ‖(-π * (t : ℂ) : ℂ)‖ :=
-    by simpa [k₁] using (norm_add_le (-π * (Complex.I : ℂ) : ℂ) (-π * (t : ℂ) : ℂ))
-  have hpiI : ‖(-π * (Complex.I : ℂ) : ℂ)‖ = Real.pi := by
-    simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
-  have : ‖k₁ t‖ ≤ Real.pi + Real.pi :=
-    hsum.trans (add_le_add (le_of_eq hpiI) (by simpa [mul_assoc] using htpi))
-  simpa [two_mul] using this
+private lemma norm_sum_le_two_pi (a b : ℂ) (ha : ‖a‖ ≤ π) (hb : ‖b‖ ≤ π) :
+    ‖a + b‖ ≤ 2 * π := by linarith [norm_add_le a b]
 
-lemma k₃_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₃ t‖ ≤ (2 * Real.pi) := by
-  intro t ht
-  have htpi : ‖(-π : ℂ) * (t : ℂ)‖ ≤ Real.pi :=
-    norm_neg_pi_mul_le_pi (z := (t : ℂ)) (norm_of_mem_uIoc_le_one ht)
-  have hsum :
-      ‖k₃ t‖ ≤ ‖(π * (Complex.I : ℂ) : ℂ)‖ + ‖(-π * (t : ℂ) : ℂ)‖ :=
-    by simpa [k₃] using (norm_add_le (π * (Complex.I : ℂ) : ℂ) (-π * (t : ℂ) : ℂ))
-  have hpiI : ‖(π * (Complex.I : ℂ) : ℂ)‖ = Real.pi := by
-    simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
-  have : ‖k₃ t‖ ≤ Real.pi + Real.pi :=
-    hsum.trans (add_le_add (le_of_eq hpiI) (by simpa [mul_assoc] using htpi))
-  simpa [two_mul] using this
+lemma k₁_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₁ t‖ ≤ (2 * Real.pi) := fun t ht => by
+  simpa [k₁] using norm_sum_le_two_pi _ _ (le_of_eq norm_neg_pi_I_mul_eq_pi)
+    (norm_neg_pi_mul_le_pi (norm_of_mem_uIoc_le_one ht))
+
+lemma k₃_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₃ t‖ ≤ (2 * Real.pi) := fun t ht => by
+  simpa [k₃] using norm_sum_le_two_pi _ _ (le_of_eq norm_pi_I_mul_eq_pi)
+    (norm_neg_pi_mul_le_pi (norm_of_mem_uIoc_le_one ht))
 
 lemma k₅_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₅ t‖ ≤ Real.pi := by
   intro t ht
