@@ -34,8 +34,9 @@ exponentials, and other compositions.
 - **`tendsto_cont (disch := tac)`**: Pass a discharger to `fun_prop` for
   continuity side conditions (e.g., `disch := positivity` for `log`, `inv`).
 - **`tendsto_cont (within_disch := tac)`**: Discharge the `∀ᶠ x in l,
-  body x ∈ s` obligation for `nhdsWithin` goals. Both hooks compose:
-  `tendsto_cont (disch := norm_num) (within_disch := positivity)`.
+  body x ∈ s` obligation for `nhdsWithin` goals. Both hooks compose
+  (in either order):
+  `tendsto_cont (disch := positivity) (within_disch := exact hev)`.
 - **`tendsto_cont [h₁, h₂]`**: Provide inline `Tendsto` hypotheses.
 - Accepts `nhdsWithin` hypotheses (extracts limit via `nhdsWithin_le_nhds`).
 - Accepts `nhdsWithin` goals: proves the `nhds` part automatically, then
@@ -424,6 +425,8 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
         for g in remaining do
           let r ← tryEvGoal g withinDischStx?
           leftover := leftover ++ r
+        if traceMode && !leftover.isEmpty then
+          logInfo m!"tendsto_cont?: ∀ᶠ membership obligation left for user"
         Elab.Tactic.replaceMainGoal leftover
         return (none : Option Expr)
 
@@ -470,6 +473,8 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
         reconcileLimits nhdsGoal nhdsProof
         -- Try to close the ∀ᶠ subgoal. If we can't, leave it for user.
         let evRemaining ← tryEvGoal evGoal withinDischStx?
+        if traceMode && !evRemaining.isEmpty then
+          logInfo m!"tendsto_cont?: ∀ᶠ membership obligation left for user"
         Elab.Tactic.replaceMainGoal evRemaining
       | _ =>
         -- Fallback: just try reconcileLimits directly
@@ -484,13 +489,17 @@ syntax "tendsto_cont" ("[" term,* "]")? : tactic
 syntax "tendsto_cont" "(" &"disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
 syntax "tendsto_cont?" ("[" term,* "]")? : tactic
 syntax "tendsto_cont?" "(" &"disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
--- with within_disch
+-- with within_disch (both orders supported)
 syntax "tendsto_cont" "(" &"within_disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
 syntax "tendsto_cont" "(" &"disch" ":=" tacticSeq ")"
   "(" &"within_disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
+syntax "tendsto_cont" "(" &"within_disch" ":=" tacticSeq ")"
+  "(" &"disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
 syntax "tendsto_cont?" "(" &"within_disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
 syntax "tendsto_cont?" "(" &"disch" ":=" tacticSeq ")"
   "(" &"within_disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
+syntax "tendsto_cont?" "(" &"within_disch" ":=" tacticSeq ")"
+  "(" &"disch" ":=" tacticSeq ")" ("[" term,* "]")? : tactic
 
 private meta def elabExtras (extras : Syntax.TSepArray `term ",") :
     TacticM (Array Expr) :=
@@ -514,6 +523,12 @@ elab_rules : tactic
       [ $extras,* ]) => do
     tendstoCont (← elabExtras extras) (dischStx? := some d)
       (withinDischStx? := some wd)
+  | `(tactic| tendsto_cont ( within_disch := $wd ) ( disch := $d )) =>
+    tendstoCont (dischStx? := some d) (withinDischStx? := some wd)
+  | `(tactic| tendsto_cont ( within_disch := $wd ) ( disch := $d )
+      [ $extras,* ]) => do
+    tendstoCont (← elabExtras extras) (dischStx? := some d)
+      (withinDischStx? := some wd)
 
 elab_rules : tactic
   | `(tactic| tendsto_cont?) => tendstoCont (traceMode := true)
@@ -532,6 +547,13 @@ elab_rules : tactic
     tendstoCont (dischStx? := some d) (withinDischStx? := some wd)
       (traceMode := true)
   | `(tactic| tendsto_cont? ( disch := $d ) ( within_disch := $wd )
+      [ $extras,* ]) => do
+    tendstoCont (← elabExtras extras) (dischStx? := some d)
+      (withinDischStx? := some wd) (traceMode := true)
+  | `(tactic| tendsto_cont? ( within_disch := $wd ) ( disch := $d )) =>
+    tendstoCont (dischStx? := some d) (withinDischStx? := some wd)
+      (traceMode := true)
+  | `(tactic| tendsto_cont? ( within_disch := $wd ) ( disch := $d )
       [ $extras,* ]) => do
     tendstoCont (← elabExtras extras) (dischStx? := some d)
       (withinDischStx? := some wd) (traceMode := true)

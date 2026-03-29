@@ -686,6 +686,14 @@ example (h : Tendsto f atTop (nhds 3))
   tendsto_cont (disch := positivity) (within_disch :=
     exact Filter.univ_mem' (fun z => Set.mem_Ioi.mpr (inv_pos.mpr (hpos z))))
 
+-- Reversed option order works
+example (h : Tendsto f atTop (nhds 3))
+    (hpos : ∀ x, 0 < f x) :
+    Tendsto (fun z => (f z)⁻¹) atTop (nhdsWithin 3⁻¹ (Set.Ioi 0)) := by
+  tendsto_cont (within_disch :=
+    exact Filter.univ_mem' (fun z => Set.mem_Ioi.mpr (inv_pos.mpr (hpos z))))
+    (disch := positivity)
+
 -- Without within_disch, the same nontrivial set goal is left open
 /--
 error: unsolved goals
