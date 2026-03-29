@@ -502,15 +502,13 @@ public lemma Complex.norm_exp_mul_I (z : ℂ) : ‖cexp (z * I)‖ = rexp (-z.im
 lemma norm_Θ₂_term (n : ℤ) (z : ℍ) :
     ‖Θ₂_term n z‖ = rexp (-π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) * z.im) := by
   set r : ℝ := (n : ℝ) + (2⁻¹ : ℝ)
-  have hr : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by apply Complex.ext <;> simp [r]
-  have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by simp_all
-  have h_mulI : (π * I * (n + (2⁻¹ : ℂ)) ^ 2 * z : ℂ) = (π * ((r ^ 2 : ℝ) : ℂ) * z) * I := by
-    simp [hsq, mul_assoc, mul_left_comm, mul_comm]
-  have him : (π * ((r ^ 2 : ℝ) : ℂ) * z : ℂ).im = π * (r ^ 2) * z.im := by
-    have : (π : ℂ) * ↑(r ^ 2) = ↑(π * r ^ 2) := by push_cast; ring
-    rw [this, im_ofReal_mul, coe_im]
-  simp only [Θ₂_term, one_div, h_mulI, Complex.norm_exp_mul_I, him]
-  simp [r, pow_two, mul_assoc]
+  have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by
+    have : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by apply Complex.ext <;> simp [r]
+    simp [this]
+  simp only [Θ₂_term, one_div, hsq]
+  rw [show π * I * ↑(r ^ 2) * (z : ℂ) = (↑(π * r ^ 2) * z) * I from by push_cast; ring,
+    Complex.norm_exp_mul_I, im_ofReal_mul, coe_im]
+  ring
 
 lemma summable_exp_neg_pi_mul_int_add_half_sq :
     Summable fun n : ℤ => rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) := by
@@ -525,12 +523,11 @@ public theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
   have hterm_le (n : ℤ) : ‖Θ₂_term n z‖ ≤ rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) := by
     rw [norm_Θ₂_term]
     apply Real.exp_monotone
-    have h1 : 0 ≤ π * ((↑n + 2⁻¹) ^ 2) := by positivity
-    nlinarith [mul_le_mul_of_nonpos_left hz (neg_nonpos.mpr h1)]
-  have hnorm : ‖Θ₂ z‖ ≤ ∑' n, ‖Θ₂_term n z‖ := by
-    simpa [Θ₂] using norm_tsum_le_tsum_norm (summable_Θ₂_term z).norm
-  exact hnorm.trans (Summable.tsum_le_tsum hterm_le (summable_Θ₂_term z).norm
-    summable_exp_neg_pi_mul_int_add_half_sq)
+    nlinarith [mul_le_mul_of_nonpos_left hz (neg_nonpos.mpr (by positivity :
+      0 ≤ π * ((↑n + 2⁻¹) ^ 2)))]
+  exact ((by simpa [Θ₂] using norm_tsum_le_tsum_norm (summable_Θ₂_term z).norm :
+    ‖Θ₂ z‖ ≤ _)).trans (Summable.tsum_le_tsum hterm_le (summable_Θ₂_term z).norm
+      summable_exp_neg_pi_mul_int_add_half_sq)
 
 -- We isolate this lemma out as it's also used in the proof for Θ₄
 lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
