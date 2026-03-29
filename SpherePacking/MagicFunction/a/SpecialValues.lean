@@ -292,16 +292,11 @@ lemma integrableOn_phi0_imag :
       MeasureTheory.AEStronglyMeasurable (fun t : ℝ => φ₀'' ((t : ℂ) * Complex.I))
         (MeasureTheory.volume.restrict (Set.Ioi (1 : ℝ))) :=
     ((MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn).comp
-        (continuous_ofReal.mul continuous_const).continuousOn
-        (by
-          intro t ht
-          have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) (le_of_lt ht)
-          simpa [mul_assoc] using ht0)).aestronglyMeasurable measurableSet_Ioi
-  refine MeasureTheory.Integrable.mono' (μ := MeasureTheory.volume.restrict (Set.Ioi (1 : ℝ)))
-    hgi hmeas ?_
-  refine MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi ?_
-  intro t ht
-  simpa using hbound t ht
+      (continuous_ofReal.mul continuous_const).continuousOn
+      (fun t ht => by simpa [mul_assoc] using lt_of_lt_of_le (by norm_num) (le_of_lt ht)
+        )).aestronglyMeasurable measurableSet_Ioi
+  exact hgi.mono' hmeas (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi
+    fun t ht => by simpa using hbound t ht)
 
 lemma integrableOn_two_mul_phi0_imag :
     MeasureTheory.IntegrableOn (fun t : ℝ => (2 : ℂ) * φ₀'' ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ))
