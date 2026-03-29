@@ -306,9 +306,9 @@ lemma qexpsummable (k : ℕ) (hk : 3 ≤ (k : ℤ)) (z : ℍ) :
     refine Summable.of_nonneg_of_le (fun _ ↦ norm_nonneg _) (fun m ↦ ?_) hs
     have hk1 : 1 ≤ k := by omega
     simp only [norm_mul, Complex.norm_natCast]
-    exact mul_le_mul_of_nonneg_right (by exact_mod_cast
-      (sigma_bound (k := k - 1) (n := m + 1)).trans (by rw [Nat.sub_add_cancel hk1]))
-      (norm_nonneg _)
+    refine mul_le_mul_of_nonneg_right ?_ (norm_nonneg _)
+    exact_mod_cast
+      (sigma_bound (k := k - 1) (n := m + 1)).trans (by rw [Nat.sub_add_cancel hk1])
   -- reassociate to use `Summable.mul_left`
   simpa [C, mul_assoc] using (Summable.mul_left (a := C) hσ)
 
@@ -446,10 +446,7 @@ public theorem E4E6_coeff_zero_eq_zero :
     0 := by
   simp only [one_div, DirectSum.sub_apply]
   rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2, Nat.cast_one (R := ℝ)]
-  simp_rw [show (⇑((((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12 -
-    ((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)) : ℍ → ℂ) =
-    (⇑(((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) -
-      ⇑(((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12)) from rfl]
+  rw [coe_sub]
   rw [qExpansion_sub1]
   simp only [map_smul, map_sub, smul_eq_mul,
     mul_eq_zero, inv_eq_zero, OfNat.ofNat_ne_zero, false_or]
@@ -459,10 +456,9 @@ public theorem E4E6_coeff_zero_eq_zero :
     ext z; rw [pow_two, @DirectSum.of_mul_of]; rfl
   rw [hds, hd6, ← Nat.cast_one (R := ℝ), qExpansion_mul_coeff, qExpansion_mul_coeff,
     qExpansion_mul_coeff, PowerSeries.coeff_mul, PowerSeries.coeff_mul]
-  simp only [Finset.antidiagonal_zero, Prod.mk_zero_zero, Finset.sum_singleton, Prod.fst_zero,
+  simp [Finset.antidiagonal_zero, Prod.mk_zero_zero, Finset.sum_singleton, Prod.fst_zero,
     Prod.snd_zero, Nat.cast_one, E4_q_exp_zero, E6_q_exp_zero, PowerSeries.coeff_mul,
     mul_one]
-  simp
 
 /-- The cusp form `(1/1728) * (E₄^3 - E₆^2)` of weight `12`. -/
 @[expose] public def Delta_E4_E6_aux : CuspForm (CongruenceSubgroup.Gamma 1) 12 :=
@@ -680,11 +676,11 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
     refine .of_norm (.of_nonneg_of_le (fun n ↦ norm_nonneg _) (fun n ↦ ?_)
       (summable_norm_iff.mpr (by have := a33 k 1 z; simpa using this)))
     simp only [norm_mul, Complex.norm_natCast]
-    exact mul_le_mul_of_nonneg_right (by
-      rw [Complex.norm_pow, Complex.norm_natCast]
-      have := sigma_bound (k - 1) n
-      rw [Nat.sub_add_cancel (by omega : 1 ≤ k)] at this
-      exact_mod_cast this) (norm_nonneg _)
+    refine mul_le_mul_of_nonneg_right ?_ (norm_nonneg _)
+    rw [Complex.norm_pow, Complex.norm_natCast]
+    have := sigma_bound (k - 1) n
+    rw [Nat.sub_add_cancel (by omega : 1 ≤ k)] at this
+    exact_mod_cast this
   -- The sum has zero imaginary part
   have hsum_im : (∑' (n : ℕ+), ↑((ArithmeticFunction.sigma (k - 1)) ↑n) *
       cexp (2 * ↑Real.pi * Complex.I * z * n)).im = 0 := by
