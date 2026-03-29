@@ -599,8 +599,9 @@ lemma tendsto_top_phi2 :
       ∀ x ∈ Ι (0 : ℝ) 1, ‖φ₂'' (x + m * Complex.I) - (720 : ℂ)‖ ≤ ε / 2 := by
     intro x _hx
     let zH : ℍ := ⟨(x : ℂ) + (m : ℂ) * Complex.I, by simpa using hm0⟩
+    have him : 0 < ((x : ℂ) + (m : ℂ) * Complex.I).im := by simpa using hm0
     have hdef : φ₂'' ((x : ℂ) + (m : ℂ) * Complex.I) = φ₂' zH := by
-      simpa [zH] using φ₂''_def (z := (x : ℂ) + (m : ℂ) * Complex.I) (by simpa using hm0)
+      simpa [zH] using φ₂''_def (z := (x : ℂ) + (m : ℂ) * Complex.I) him
     simpa [zH, hdef] using le_of_lt
       (by simpa using hA zH (by simpa [zH, UpperHalfPlane.im, Complex.add_im] using hmA))
   -- Rewrite the difference of integrals as the integral of the difference.
