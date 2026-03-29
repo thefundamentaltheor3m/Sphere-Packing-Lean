@@ -137,8 +137,7 @@ theorem Θ₂_imag_axis_pos : ResToImagAxis.Pos Θ₂ := by
   have hsum := summable_Θ₂_term τ
   have hterm_pos (n : ℤ) : 0 < (Θ₂_term n τ).re := by
     rw [Θ₂_term_re_imag_axis n t ht]; exact Real.exp_pos _
-  have hre_tsum : (Θ₂ τ).re = ∑' n, (Θ₂_term n τ).re := by
-    simpa [Θ₂] using Complex.reCLM.map_tsum hsum
+  have hre_tsum : (Θ₂ τ).re = ∑' n, (Θ₂_term n τ).re := by simpa [Θ₂] using reCLM.map_tsum hsum
   simpa [hre_tsum] using
     (hsum.mapL Complex.reCLM).tsum_pos (fun n ↦ (hterm_pos n).le) 0 (hterm_pos 0)
 
@@ -302,11 +301,13 @@ public lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
         * cexp (π * I / (4 * x)) ^ 4 * jacobiTheta₂ (1 / 2) x ^ 4 := by
     repeat rw [← mul_assoc]
     congr 4
-    rw [cpow_ofNat, div_pow, one_div_div, I_sq, div_neg, div_one]; rfl
+    rw [cpow_ofNat, div_pow, one_div_div, I_sq, div_neg, div_one]
+    rfl
   _ = -cexp (-π * I / x) * cexp (π * I / x) * jacobiTheta₂ (1 / 2) x ^ 4 := by
     rw [mul_neg, ← zpow_add₀ hx', neg_add_cancel, mul_neg, zpow_zero, mul_one,
       ← Complex.exp_nat_mul]
-    congr 2; ring
+    congr 2
+    ring
   _ = -H₄ ⟨x, hx⟩ := by
     rw [neg_mul, ← Complex.exp_add, neg_mul (π : ℂ), neg_div, neg_add_cancel, Complex.exp_zero,
       neg_one_mul]
@@ -983,9 +984,7 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
     ext z
     simp [thetaDelta_f, mul_left_comm, mul_comm]
   have hprod_T : (thetaDelta_f ∣[(6 : ℤ)] T) = -thetaDelta_f := by
-    rw [hslash3 T, H₂_T_action, H₃_T_action, H₄_T_action]
-    ext z
-    simp [thetaDelta_f, mul_comm]
+    rw [hslash3 T, H₂_T_action, H₃_T_action, H₄_T_action]; ext z; simp [thetaDelta_f, mul_comm]
   -- Squaring removes the sign, so `thetaDeltaFun` is invariant under `S` and `T` at weight 12.
   have thetaDeltaFun_action (g : SL(2, ℤ)) (hg : (thetaDelta_f ∣[(6 : ℤ)] g) = -thetaDelta_f) :
       (thetaDeltaFun ∣[(12 : ℤ)] g) = thetaDeltaFun := by
@@ -1027,7 +1026,8 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
     simpa [hrew] using Delta_boundedfactor
   have hEqCF : thetaDelta_CF = Delta := by
     have hEqFun : (thetaDelta_CF : ℍ → ℂ) = fun z => (c : ℂ) * Delta z := by
-      ext z; simpa [Pi.smul_apply, smul_eq_mul] using
+      ext z
+      simpa [Pi.smul_apply, smul_eq_mul] using
         congrArg (fun f : CuspForm (Γ 1) 12 => (f : ℍ → ℂ) z) hc.symm
     have hlim' : Tendsto (fun z : ℍ => (thetaDelta_CF z) / cexp (2 * π * I * (z : ℂ)))
         atImInfty (𝓝 c) := by
