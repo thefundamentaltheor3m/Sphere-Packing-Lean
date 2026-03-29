@@ -213,19 +213,13 @@ public lemma H₄_negI_action : (H₄ ∣[(2:ℤ)] negI.1) = H₄ := modular_sla
   calc
   _ = ∑' (n : ℤ), cexp (π * I * (n + 1 / 2) ^ 2 * ((1 : ℝ) +ᵥ x)) := by simp_rw [Θ₂, Θ₂_term]
   _ = ∑' (n : ℤ), cexp (π * I / 4) * cexp (π * I * (n ^ 2 + n) + π * I * (n + 1 / 2) ^ 2 * x) := by
-    apply tsum_congr fun b ↦ ?_
-    rw [coe_vadd, ofReal_one]
-    simp only [← Complex.exp_add]
-    congr 1
-    ring
-  _ = cexp (π * I / 4) * ∑' (n : ℤ), cexp (π * I * (n ^ 2 + n) + π * I * (n + 1 / 2) ^ 2 * x) := by
-    rw [tsum_mul_left]
+    refine tsum_congr fun b ↦ ?_
+    rw [coe_vadd, ofReal_one, ← Complex.exp_add]; congr 1; ring
+  _ = cexp (π * I / 4) * ∑' (n : ℤ), cexp (π * I * (n ^ 2 + n) + π * I * (n + 1 / 2) ^ 2 * x) :=
+    tsum_mul_left
   _ = _ := by
-    simp_rw [Θ₂, Θ₂_term]
-    congr 1
-    apply tsum_congr fun b ↦ ?_
-    have hbb : b ^ 2 + b = b * (b + 1) := by ring
-    have : Even (b ^ 2 + b) := hbb ▸ Int.even_mul_succ_self b
+    simp_rw [Θ₂, Θ₂_term]; congr 1; refine tsum_congr fun b ↦ ?_
+    have : Even (b ^ 2 + b) := (by ring : b ^ 2 + b = b * (b + 1)) ▸ Int.even_mul_succ_self b
     norm_cast
     rw [Complex.exp_add, mul_comm (π * I), Complex.exp_int_mul, Complex.exp_pi_mul_I,
       this.neg_one_zpow, one_mul]
@@ -865,9 +859,8 @@ public theorem Θ₂_tendsto_atImInfty : Tendsto Θ₂ atImInfty (𝓝 0) := by
   rw [funext Θ₂_as_jacobiTheta₂, ← zero_mul (2 : ℂ)]
   refine Tendsto.mul ?_ jacobiTheta₂_half_mul_apply_tendsto_atImInfty
   apply tendsto_zero_iff_norm_tendsto_zero.mpr
-  have (z : ℍ) : ‖cexp (π * I * z / 4)‖ = rexp (-π * z.im / 4) := by
-    rw [mul_right_comm, mul_div_right_comm, norm_exp_mul_I]; simp [neg_div]
-  simp_rw [this]
+  simp_rw [show ∀ z : ℍ, ‖cexp (π * I * z / 4)‖ = rexp (-π * z.im / 4) from fun z => by
+    rw [mul_right_comm, mul_div_right_comm, norm_exp_mul_I]; simp [neg_div]]
   exact (Real.tendsto_exp_atBot).comp <|
     (tendsto_div_const_atBot_of_pos zero_lt_four).mpr
       (tendsto_im_atImInfty.const_mul_atTop_of_neg (neg_lt_zero.mpr Real.pi_pos))
