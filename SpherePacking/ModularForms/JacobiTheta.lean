@@ -1006,8 +1006,9 @@ public lemma Delta_eq_H₂_H₃_H₄ (τ : ℍ) :
       { toFun := thetaDeltaFun
         slash_action_eq' := slashaction_generators_GL2R thetaDeltaFun 12
           (thetaDeltaFun_action S hprod_S) (thetaDeltaFun_action T hprod_T) }
-      (by simpa [thetaDeltaFun] using (by simpa [pow_two] using hf_holo.mul hf_holo :
-        MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (thetaDelta_f ^ 2)).const_smul ((256 : ℂ)⁻¹))
+      (by have hsq : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (thetaDelta_f ^ 2) := by
+            simpa [pow_two] using hf_holo.mul hf_holo
+          simpa [thetaDeltaFun] using hsq.const_smul ((256 : ℂ)⁻¹))
       (by simpa [thetaDeltaFun, Pi.smul_apply, smul_eq_mul, mul_zero] using
         tendsto_const_nhds.mul (hf0.pow 2))
   have hr : Module.finrank ℂ (CuspForm (Γ 1) 12) = 1 := by
