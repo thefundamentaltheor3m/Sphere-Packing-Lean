@@ -141,24 +141,24 @@ private meta partial def findAtomsAux (e : Expr) (bvar : FVarId)
     for child in exprChildren e do
       findAtomsAux child bvar candidates atomsRef fnsRef
 
-/-- Collect atoms matching the goal filter and appearing in body.
-    Three-bucket collection with cross-bucket shadowing:
-    inline args > local context > attribute registry.
-    Returns `(candidates, usedAtoms)` — candidates for diagnostics. -/
-private meta def collectAtoms (body : Expr) (bvar : FVarId)
-    (goalFilter : Expr) (extraHyps : Array Expr := #[]) :
-    TacticM (Array Atom × Array Atom) := do
-  -- Bucket 1: inline args (highest priority)
-  let mut inlineCands : Array Atom := #[]
+/-- Bucket 1: Collect candidates from inline arguments. -/
+private meta def collectInlineCands (goalFilter : Expr)
+    (extraHyps : Array Expr) : TacticM (Array Atom) := do
+  let mut cands : Array Atom := #[]
   for hyp in extraHyps do
     let ty ← inferType hyp >>= instantiateMVars
     match ← matchTendstoNhds? ty with
     | some (codTy, f, l, a) =>
       if ← withNewMCtxDepth (isDefEq l goalFilter) then
-        inlineCands := inlineCands.push
+        cands := cands.push
           { fn := f, limit := a, hyp := hyp, codTy := codTy }
     | none => continue
-  -- Warn about redundant inline args (local hyps that don't disambiguate)
+  return cands
+
+/-- Warn about inline args that are redundant (already in local context
+    without disambiguation). -/
+private meta def warnRedundantInlineArgs (inlineCands : Array Atom)
+    (goalFilter : Expr) : TacticM Unit := do
   let ctx ← getLCtx
   for i in [:inlineCands.size] do
     let inlineCand := inlineCands[i]!
@@ -188,8 +188,13 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
       let name ← ppExpr inlineCand.hyp
       logWarning m!"tendsto_cont: inline argument `{name}` is redundant \
         — it is already available as a local hypothesis"
-  -- Bucket 2: local context (shadowed by inline)
-  let mut contextCands : Array Atom := #[]
+
+/-- Bucket 2: Collect candidates from local context, shadowed by
+    higher-priority inline candidates. -/
+private meta def collectContextCands (goalFilter : Expr)
+    (inlineCands : Array Atom) : TacticM (Array Atom) := do
+  let ctx ← getLCtx
+  let mut cands : Array Atom := #[]
   for decl in ctx do
     if decl.isImplementationDetail then continue
     let ty ← instantiateMVars decl.type
@@ -199,13 +204,17 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
         let dominated ← inlineCands.anyM fun c =>
           withNewMCtxDepth (isDefEq c.fn f)
         unless dominated do
-          contextCands := contextCands.push
+          cands := cands.push
             { fn := f, limit := a, hyp := decl.toExpr, codTy := codTy }
     | none => continue
-  -- Bucket 3: attribute registry (shadowed by inline and context)
+  return cands
+
+/-- Bucket 3: Collect candidates from the `@[tendsto_cont]` attribute
+    registry, shadowed by higher-priority candidates. -/
+private meta def collectAttrCands (goalFilter : Expr)
+    (higherPriority : Array Atom) : TacticM (Array Atom) := do
   let env ← getEnv
-  let higherPriority := inlineCands ++ contextCands
-  let mut attrCands : Array Atom := #[]
+  let mut cands : Array Atom := #[]
   for name in (tendstoContExt.getState env).toList do
     try
       let e ← mkConstWithFreshMVarLevels name
@@ -216,25 +225,41 @@ private meta def collectAtoms (body : Expr) (bvar : FVarId)
           let dominated ← higherPriority.anyM fun c =>
             withNewMCtxDepth (isDefEq c.fn f)
           unless dominated do
-            attrCands := attrCands.push
+            cands := cands.push
               { fn := f, limit := a, hyp := e, codTy := codTy }
       | none => continue
     catch _ => continue
-  -- Merge
-  let candidates := inlineCands ++ contextCands ++ attrCands
-  let atomsRef ← IO.mkRef (α := Array Atom) #[]
-  let fnsRef ← IO.mkRef (α := Array Expr) #[]
-  findAtomsAux body bvar candidates atomsRef fnsRef
-  let atoms ← atomsRef.get
-  -- Ambiguity detection: check if any used atom's fn matches a
-  -- candidate with a different limit
+  return cands
+
+/-- Check for ambiguous atoms: same `fn` but different `limit` across
+    candidates. Throws an error if ambiguity is detected. -/
+private meta def checkAmbiguity (atoms : Array Atom)
+    (allCandidates : Array Atom) : MetaM Unit := do
   for atom in atoms do
-    for cand in candidates do
+    for cand in allCandidates do
       if ← withNewMCtxDepth (isDefEq atom.fn cand.fn) then
         unless ← withNewMCtxDepth (isDefEq atom.limit cand.limit) do
           throwError m!"tendsto_cont: ambiguous limit for atom — \
             found hypotheses with limits `{atom.limit}` and \
             `{cand.limit}` for the same function"
+
+/-- Collect atoms matching the goal filter and appearing in body.
+    Three-bucket collection with cross-bucket shadowing:
+    inline args > local context > attribute registry.
+    Returns `(candidates, usedAtoms)` — candidates for diagnostics. -/
+private meta def collectAtoms (body : Expr) (bvar : FVarId)
+    (goalFilter : Expr) (extraHyps : Array Expr := #[]) :
+    TacticM (Array Atom × Array Atom) := do
+  let inlineCands ← collectInlineCands goalFilter extraHyps
+  warnRedundantInlineArgs inlineCands goalFilter
+  let contextCands ← collectContextCands goalFilter inlineCands
+  let attrCands ← collectAttrCands goalFilter (inlineCands ++ contextCands)
+  let candidates := inlineCands ++ contextCands ++ attrCands
+  let atomsRef ← IO.mkRef (α := Array Atom) #[]
+  let fnsRef ← IO.mkRef (α := Array Expr) #[]
+  findAtomsAux body bvar candidates atomsRef fnsRef
+  let atoms ← atomsRef.get
+  checkAmbiguity atoms candidates
   return (candidates, atoms)
 
 -- ══════════════════════════════════════════════════════════════
