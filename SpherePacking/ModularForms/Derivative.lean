@@ -234,7 +234,9 @@ public theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
             {w : ℂ | 0 < w.im} k‖ ≤ u n := by
     intro K hK1 hK2
     obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK1 hK2
-    exact ⟨u, hu_sum, fun n k => by rw [derivWithin_qexp _ _ _ (hK1 k.2)]; exact hu_bound n k⟩
+    exact ⟨u, hu_sum, fun n k => by
+      rw [derivWithin_qexp _ _ _ (hK1 k.2)]
+      exact hu_bound n k⟩
   -- Apply termwise differentiation
   have h_tsum_deriv := hasDerivAt_tsum_fun (fun n w => a n * cexp (2 * π * I * n * w))
     isOpen_upperHalfPlaneSet (z : ℂ) z.2 hf_sum hu hf_diff
@@ -247,7 +249,9 @@ public theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
   rw [h_agree.deriv_eq, h_tsum_deriv.deriv]
   -- Simplify derivWithin using helper
   simp_rw [derivWithin_qexp _ _ _ z.2, ← tsum_mul_left]
-  congr 1; funext n; field_simp [two_pi_I_ne_zero]
+  congr 1
+  funext n
+  field_simp [two_pi_I_ne_zero]
 
 /--
 `D_qexp_tsum` for ℕ+-indexed series (n ≥ 1), as used for Eisenstein q-expansions.
@@ -271,14 +275,16 @@ public theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
     let u' : ℕ → ℝ := fun n => if h : 0 < n then u ⟨n, h⟩ else 0
     have hu' : ∀ n : ℕ+, u' n = u n := fun n => dif_pos n.pos
     refine ⟨u', (nat_pos_tsum2 u' (by simp [u'])).mp (hu_sum.congr fun n => by rw [hu']), ?_⟩
-    intro n k; by_cases hn : 0 < n
+    intro n k
+    by_cases hn : 0 < n
     · simpa [a', u', dif_pos hn] using hu_bound ⟨n, hn⟩ k
     · simp [a', u', hn]
   -- Apply D_qexp_tsum and convert sums via tsum_pNat
   have hD := D_qexp_tsum a' z hsum_deriv'
   have htsum : ∀ w : ℍ, (∑' n : ℕ+, a n * cexp (2 * π * I * n * (w : ℂ))) =
       ∑' n : ℕ, a' n * cexp (2 * π * I * n * (w : ℂ)) := fun w => by
-    rw [← tsum_pNat _ (by simp [a'])]; exact tsum_congr fun n => by rw [ha']
+    rw [← tsum_pNat _ (by simp [a'])]
+    exact tsum_congr fun n => by rw [ha']
   simp_rw [htsum] at hD ⊢
   rw [hD, ← tsum_pNat _ (by simp [a'])]
   exact tsum_congr fun n => by rw [ha']
@@ -840,9 +846,8 @@ lemma norm_D_le_div_pi_im_of_bounded {f : ℍ → ℂ} (hf : MDiff f) {M A : ℝ
     intro w hw
     have hw_im_pos : 0 < w.im := hclosed (Metric.sphere_subset_closedBall hw)
     have hdist : dist w z = z.im / 2 := Metric.mem_sphere.mp hw
-    have habs : |w.im - z.im| ≤ z.im / 2 := by
-      simpa [Complex.sub_im, hdist] using
-          (by simpa [dist_eq_norm] using (abs_im_le_norm (w - z)) : |(w - z).im| ≤ dist w z)
+    have him : |(w - z).im| ≤ dist w z := by simpa [dist_eq_norm] using abs_im_le_norm (w - z)
+    have habs : |w.im - z.im| ≤ z.im / 2 := by simpa [Complex.sub_im, hdist] using him
     have hw_im_ge_A : A ≤ w.im := by linarith [(abs_le.mp habs).1, le_max_left A (0 : ℝ)]
     simpa [ofComplex_apply_of_im_pos hw_im_pos] using hMA ⟨w, hw_im_pos⟩ hw_im_ge_A
   have hDz : ‖D f z‖ ≤ M / (2 * π * (z.im / 2)) :=
