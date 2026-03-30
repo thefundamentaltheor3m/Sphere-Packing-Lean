@@ -712,6 +712,27 @@ example (h : Tendsto f atTop (nhds 3)) :
     Tendsto (fun z => f z) atTop (nhdsWithin 3 (Set.Ioi 0)) := by
   tendsto_cont  -- no within_disch, leaves ∀ᶠ subgoal
 
+-- tendsto_cont? reports undischarged ∀ᶠ obligation
+/--
+info: tendsto_cont?: matched atoms:
+  f → 3
+computed limit: 3
+nhdsWithin set: Set.Ioi 0
+  (∀ᶠ membership obligation will be attempted)
+---
+info: tendsto_cont?: ∀ᶠ membership obligation left for user
+---
+error: unsolved goals
+case right
+f g k : ℝ → ℝ
+h : Tendsto f atTop (𝓝 3)
+⊢ ∀ᶠ (n : ℝ) in atTop, f n ∈ Set.Ioi 0
+-/
+#guard_msgs in
+example (h : Tendsto f atTop (nhds 3)) :
+    Tendsto (fun z => f z) atTop (nhdsWithin 3 (Set.Ioi 0)) := by
+  tendsto_cont?
+
 -- tendsto_cont? with nhdsWithin shows set info + discharge method
 /--
 info: tendsto_cont?: matched atoms:
