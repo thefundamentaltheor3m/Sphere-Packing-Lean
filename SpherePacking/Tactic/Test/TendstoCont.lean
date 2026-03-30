@@ -762,13 +762,33 @@ example (h : Tendsto f atTop (nhds 3))
     Tendsto (fun z => f z) atTop (nhdsWithin 3 (Set.Ioi 0)) := by
   tendsto_cont? (within_disch := exact Set.mem_Ioi.mpr (hpos _))
 
+-- tendsto_cont? with direct within_disch (not pointwise lift).
+-- hpos is ∀ x (not ∀ᶠ), so assumption can't match.
+-- within_disch builds the ∀ᶠ proof directly via Filter.univ_mem'.
+/--
+info: tendsto_cont?: matched atoms:
+  f → 3
+computed limit: 3
+nhdsWithin set: Set.Ioi 0
+  (∀ᶠ membership obligation will be attempted)
+---
+info: tendsto_cont?: discharged ∀ᶠ via within_disch
+-/
+#guard_msgs(info, drop warning) in
+example (h : Tendsto f atTop (nhds 3))
+    (hpos : ∀ x, 0 < f x) :
+    Tendsto (fun z => f z) atTop (nhdsWithin 3 (Set.Ioi 0)) := by
+  tendsto_cont? (within_disch :=
+    exact Filter.univ_mem' (fun z => Set.mem_Ioi.mpr (hpos z)))
+
 -- @[tendsto_cont] with nhdsWithin lemma (opaque function, non-constant)
 section NhdsWithinAttr
 
 private axiom opaqueH : ℝ → ℝ
 private axiom opaqueH_tendsto : Tendsto opaqueH atTop (nhdsWithin 5 (Set.Ioi 0))
 
--- Before registration: fails (no matching candidate)
+-- Before registration: fails (no matching candidate for opaqueH).
+-- Note: candidate list includes unrelated atTop attributes from earlier tests.
 /-- error: tendsto_cont: body references the bound variable but no candidate matched.
 Available candidates: [bad, good, bad] -/
 #guard_msgs(error, drop info) in
