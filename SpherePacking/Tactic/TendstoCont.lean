@@ -286,25 +286,37 @@ private meta def reconcileLimits (goal : MVarId) (proof : Expr) :
 -- nhdsWithin ∀ᶠ discharge
 -- ══════════════════════════════════════════════════════════════
 
+/-- How the ∀ᶠ obligation was discharged. -/
+meta inductive EvDischargeMethod
+  | assumption     -- matched a local hypothesis
+  | univMem        -- predicate reduced to True (e.g., Set.univ)
+  | withinDisch    -- user-provided within_disch tactic (direct)
+  | pointwiseLift  -- user-provided within_disch tactic (pointwise lift)
+  | undischarged   -- left for the user
+
+/-- Format the discharge method for trace output. -/
+private meta def EvDischargeMethod.toMessageData : EvDischargeMethod → MessageData
+  | .assumption    => "discharged ∀ᶠ via assumption"
+  | .univMem       => "discharged ∀ᶠ via univ_mem' (trivially true)"
+  | .withinDisch   => "discharged ∀ᶠ via within_disch"
+  | .pointwiseLift => "discharged ∀ᶠ via within_disch (pointwise lift)"
+  | .undischarged  => "∀ᶠ membership obligation left for user"
+
 /-- Try to close an `∀ᶠ x in l, body x ∈ s` goal from nhdsWithin splitting.
-    Returns `[]` if closed, `[g]` if the goal should be left for the user.
-    Tries `assumption`, guarded `univ_mem'`, and optionally a user-provided
-    `within_disch` tactic. -/
+    Returns `(remaining_goals, discharge_method)`. -/
 private meta def tryEvGoal (g : MVarId)
     (withinDischStx? : Option (TSyntax ``Lean.Parser.Tactic.tacticSeq) := none) :
-    TacticM (List MVarId) := do
+    TacticM (List MVarId × EvDischargeMethod) := do
   -- Try assumption (atomic, finds ∀ᶠ hypotheses in context)
   let r ← try
     Elab.Tactic.run g
       (Elab.Tactic.evalTactic (← `(tactic| assumption)))
   catch _ => pure [g]
-  if r.isEmpty then return r
+  if r.isEmpty then return (r, .assumption)
   -- Try univ_mem' for Set.univ or other trivially-true membership.
-  -- Check reducibility first to avoid logged errors from failed exact.
   let gTy ← g.getType >>= instantiateMVars
   match gTy.getAppFnArgs with
   | (``Filter.Eventually, #[_, pred, _]) =>
-    -- Check if the predicate body reduces to True
     let domTy ← try
       let fnTy ← inferType pred
       match fnTy with
@@ -323,30 +335,27 @@ private meta def tryEvGoal (g : MVarId)
             (Elab.Tactic.evalTactic
               (← `(tactic| exact Filter.univ_mem' (fun _ => trivial))))
         catch _ => pure [g]
-        return r
+        if r.isEmpty then return (r, .univMem)
     | none => pure ()
   | _ => pure ()
   -- Try user-provided within_disch tactic
   match withinDischStx? with
   | some disch =>
-    -- Try the tactic directly on the ∀ᶠ goal
+    -- Direct attempt on the ∀ᶠ goal
     let r ← try
       Elab.Tactic.run g
         (Elab.Tactic.evalTactic (← `(tactic| ($disch))))
     catch _ => pure [g]
-    if r.isEmpty then return r
-    -- Try pointwise lift: apply Filter.univ_mem', intro, then the tactic
-    -- This lets users write `within_disch := norm_num` instead of
-    -- `within_disch := exact Filter.univ_mem' (fun _ => by norm_num)`
+    if r.isEmpty then return (r, .withinDisch)
+    -- Pointwise lift: apply Filter.univ_mem', intro, then the tactic
     let r ← try
       Elab.Tactic.run g
         (Elab.Tactic.evalTactic
           (← `(tactic| apply Filter.univ_mem'; intro _; ($disch))))
     catch _ => pure [g]
-    if r.isEmpty then return r
+    if r.isEmpty then return (r, .pointwiseLift)
   | none => pure ()
-  -- Can't close — leave the goal for the user
-  return [g]
+  return ([g], .undischarged)
 
 -- ══════════════════════════════════════════════════════════════
 -- Main tactic
@@ -414,6 +423,15 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
             bound variable but no candidate matched.\n\
             Available candidates: {candFns}"
       -- Constant body: no atoms, body doesn't reference bound variable
+      if traceMode then
+        let valFmt ← ppExpr body
+        let withinMsg ← match goalTarget with
+          | .nhds => pure m!""
+          | .nhdsWithin s =>
+            let sFmt ← ppExpr s
+            pure m!"\nnhdsWithin set: {sFmt}"
+        logInfo m!"tendsto_cont?: constant body\
+          \ncomputed limit: {valFmt}{withinMsg}"
       match goalTarget with
       | .nhds =>
         try
@@ -425,19 +443,16 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
           throwError "tendsto_cont: constant body but \
             `tendsto_const_nhds` failed"
       | .nhdsWithin _ =>
-        -- Split via tendsto_nhdsWithin_iff, close nhds with
-        -- tendsto_const_nhds, try to close ∀ᶠ part
         let remaining ← Elab.Tactic.run goal
           (Elab.Tactic.evalTactic
             (← `(tactic|
               refine tendsto_nhdsWithin_iff.mpr ⟨tendsto_const_nhds, ?_⟩)))
-        -- Try to close the ∀ᶠ subgoal(s); leave unclosed ones for user
         let mut leftover : List MVarId := []
         for g in remaining do
-          let r ← tryEvGoal g withinDischStx?
+          let (r, method) ← tryEvGoal g withinDischStx?
+          if traceMode then
+            logInfo m!"tendsto_cont?: {method.toMessageData}"
           leftover := leftover ++ r
-        if traceMode && !leftover.isEmpty then
-          logInfo m!"tendsto_cont?: ∀ᶠ membership obligation left for user"
         Elab.Tactic.replaceMainGoal leftover
         return (none : Option Expr)
 
@@ -483,9 +498,9 @@ private meta def tendstoCont (extraHyps : Array Expr := #[])
         -- Close nhds subgoal using the proof we built
         reconcileLimits nhdsGoal nhdsProof
         -- Try to close the ∀ᶠ subgoal. If we can't, leave it for user.
-        let evRemaining ← tryEvGoal evGoal withinDischStx?
-        if traceMode && !evRemaining.isEmpty then
-          logInfo m!"tendsto_cont?: ∀ᶠ membership obligation left for user"
+        let (evRemaining, method) ← tryEvGoal evGoal withinDischStx?
+        if traceMode then
+          logInfo m!"tendsto_cont?: {method.toMessageData}"
         Elab.Tactic.replaceMainGoal evRemaining
       | _ =>
         -- Fallback: just try reconcileLimits directly

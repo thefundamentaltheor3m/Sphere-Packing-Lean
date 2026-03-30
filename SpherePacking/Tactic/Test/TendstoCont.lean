@@ -411,7 +411,7 @@ example (h₁ : Tendsto f atTop (nhds 0)) (h₂ : Tendsto f atTop (nhds 1)) :
 -- ══════════════════════════════════════════════════════════════
 
 -- Non-Tendsto declaration rejected at registration time
-/-- error: `@[tendsto_cont]`: declaration type must be `Tendsto f l (nhds a)`, got head `True` -/
+/-- error: `@[tendsto_cont]`: declaration type must be `Tendsto f l (nhds a)` or `Tendsto f l (nhdsWithin a s)`, got head `True` -/
 #guard_msgs(error, drop info) in
 @[tendsto_cont]
 theorem notATendstoTheorem : True := trivial
@@ -424,7 +424,7 @@ theorem paramTendsto (_h : True) : Tendsto (fun _ : ℝ => (0 : ℝ)) atTop (nhd
   tendsto_const_nhds
 
 -- Tendsto with wrong target filter rejected at registration time
-/-- error: `@[tendsto_cont]`: target filter must be `nhds _`, got `Filter.atTop` -/
+/-- error: `@[tendsto_cont]`: target filter must be `nhds _` or `nhdsWithin _ _`, got `Filter.atTop` -/
 #guard_msgs(error, drop info) in
 @[tendsto_cont]
 theorem wrongTargetFilter : Tendsto (fun z : ℝ => z) atTop atTop := tendsto_id
@@ -712,14 +712,67 @@ example (h : Tendsto f atTop (nhds 3)) :
     Tendsto (fun z => f z) atTop (nhdsWithin 3 (Set.Ioi 0)) := by
   tendsto_cont  -- no within_disch, leaves ∀ᶠ subgoal
 
--- tendsto_cont? with nhdsWithin shows set info
-/-- info: tendsto_cont?: matched atoms:
+-- tendsto_cont? with nhdsWithin shows set info + discharge method
+/--
+info: tendsto_cont?: matched atoms:
   f → 1
 computed limit: 1 + 1
 nhdsWithin set: Set.Ioi 0
-  (∀ᶠ membership obligation will be attempted) -/
+  (∀ᶠ membership obligation will be attempted)
+---
+info: tendsto_cont?: discharged ∀ᶠ via assumption
+-/
 #guard_msgs(info, drop warning) in
 example (h : Tendsto f atTop (nhds 1))
     (hev : ∀ᶠ z in atTop, f z + 1 ∈ Set.Ioi 0) :
     Tendsto (fun z => f z + 1) atTop (nhdsWithin 2 (Set.Ioi 0)) := by
   tendsto_cont?
+
+-- tendsto_cont? on constant body
+/-- info: tendsto_cont?: constant body
+computed limit: 1 -/
+#guard_msgs(info, drop warning) in
+example : Tendsto (fun _ : ℝ => (1 : ℝ)) atTop (nhds 1) := by tendsto_cont?
+
+-- tendsto_cont? on constant nhdsWithin body
+/--
+info: tendsto_cont?: constant body
+computed limit: 2
+nhdsWithin set: Set.univ
+---
+info: tendsto_cont?: discharged ∀ᶠ via univ_mem' (trivially true)
+-/
+#guard_msgs(info, drop warning) in
+example : Tendsto (fun _ : ℝ => (2 : ℝ)) atTop (nhdsWithin 2 Set.univ) := by
+  tendsto_cont?
+
+-- tendsto_cont? with within_disch that succeeds (pointwise lift)
+/--
+info: tendsto_cont?: matched atoms:
+  f → 3
+computed limit: 3
+nhdsWithin set: Set.Ioi 0
+  (∀ᶠ membership obligation will be attempted)
+---
+info: tendsto_cont?: discharged ∀ᶠ via within_disch (pointwise lift)
+-/
+#guard_msgs(info, drop warning) in
+example (h : Tendsto f atTop (nhds 3))
+    (hpos : ∀ x, 0 < f x) :
+    Tendsto (fun z => f z) atTop (nhdsWithin 3 (Set.Ioi 0)) := by
+  tendsto_cont? (within_disch := exact Set.mem_Ioi.mpr (hpos _))
+
+-- @[tendsto_cont] with nhdsWithin lemma
+section NhdsWithinAttr
+
+axiom myFnNhdsWithin : Tendsto (fun _ : ℝ => (5 : ℝ)) atTop (nhdsWithin 5 (Set.Ioi 0))
+
+@[tendsto_cont]
+theorem myFnNhdsWithinThm : Tendsto (fun _ : ℝ => (5 : ℝ)) atTop (nhdsWithin 5 (Set.Ioi 0)) :=
+  myFnNhdsWithin
+
+-- Use it: the attribute is found and the nhdsWithin hypothesis is consumed
+example : Tendsto (fun z => 2 * (fun _ : ℝ => (5 : ℝ)) z) atTop (nhds 10) := by
+  tendsto_cont
+
+end NhdsWithinAttr
