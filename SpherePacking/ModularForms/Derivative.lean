@@ -1161,9 +1161,10 @@ public theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun :=
     simpa [G, mul_one] using hF₆.add h3E₆
   have hG0 := eq_zero_of_tendsto_zero_atImInfty (k := (6 : ℤ)) (by norm_num) G hGlim
   funext z
+  have hG0z := congrArg (fun f : ModularForm Γ(1) 6 => f z) hG0
   have hz : F₆.toFun z = -((3⁻¹ : ℂ) * E₆ z) := by
-    simpa [ModularForm.toFun_eq_coe] using eq_neg_iff_add_eq_zero.2 (by
-      simpa [G] using congrArg (fun f : ModularForm Γ(1) 6 => f z) hG0)
+    have hadd := eq_neg_iff_add_eq_zero.2 (by simpa [G] using hG0z)
+    simpa [ModularForm.toFun_eq_coe] using hadd
   simpa [F₆, serre_D_ModularForm, neg_mul, mul_assoc] using hz
 
 public theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by
@@ -1181,9 +1182,10 @@ public theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * 
     simpa [G, mul_one] using hF₈.add h2E4sq
   have hG0 := eq_zero_of_tendsto_zero_atImInfty (k := (8 : ℤ)) (by norm_num) G hGlim
   funext z
+  have hG0z := congrArg (fun f : ModularForm Γ(1) 8 => f z) hG0
   have hz : F₈.toFun z = -((2⁻¹ : ℂ) * E4sq z) := by
-    simpa [ModularForm.toFun_eq_coe] using eq_neg_iff_add_eq_zero.2 (by
-      simpa [G] using congrArg (fun f : ModularForm Γ(1) 8 => f z) hG0)
+    have hadd := eq_neg_iff_add_eq_zero.2 (by simpa [G] using hG0z)
+    simpa [ModularForm.toFun_eq_coe] using hadd
   simpa [F₈, serre_D_ModularForm, E4sq, neg_mul, mul_assoc, mul_left_comm, mul_comm] using hz
 
 /-- Ramanujan's differential equation for `E₂`. -/
