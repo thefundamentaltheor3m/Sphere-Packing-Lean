@@ -1192,24 +1192,19 @@ public theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * 
 @[simp]
 public theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) := by
   ext z
-  have h := ramanujan_E₂'
-  unfold serre_D at h
-  have h1 := congrFun h z
-  simp [field]
-  field_simp at h1
-  simpa [add_comm, sub_eq_iff_eq_add] using h1
+  have h := congrFun ramanujan_E₂' z
+  simp only [serre_D_apply] at h
+  norm_num at h ⊢
+  linear_combination h
 
 /-- Ramanujan's differential equation for `E₄`. -/
 @[simp]
 public theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E₆.toFun) := by
   ext z
   have h := congrFun ramanujan_E₄' z
-  have h' : D E₄.toFun z = (-(3⁻¹ : ℂ) * E₆ z) + (4 : ℂ) * 12⁻¹ * E₂ z * E₄ z :=
-    (sub_eq_iff_eq_add).1 (by simpa [serre_D, mul_assoc, mul_left_comm, mul_comm] using h)
-  have hconst : ((4 : ℂ) * 12⁻¹) = (3⁻¹ : ℂ) := by norm_num1
-  rw [h']
-  simp [hconst, sub_eq_add_neg]
-  ring_nf
+  simp only [serre_D_apply] at h
+  norm_num at h ⊢
+  linear_combination h
 
 /-- Ramanujan's differential equation for `E₆`. -/
 @[simp]
@@ -1217,13 +1212,10 @@ public theorem ramanujan_E₆ :
     D E₆.toFun = 2⁻¹ * (E₂ * E₆.toFun - E₄.toFun * E₄.toFun) := by
   ext z
   have h := congrFun ramanujan_E₆' z
-  have h' :
-      D E₆.toFun z =
-        (-(2⁻¹ : ℂ) * (E₄ z * E₄ z)) + (6 : ℂ) * 12⁻¹ * E₂ z * E₆ z :=
-    (sub_eq_iff_eq_add).1 (by simpa [serre_D, mul_assoc, mul_left_comm, mul_comm] using h)
-  have hconst : ((6 : ℂ) * 12⁻¹) = (2⁻¹ : ℂ) := by norm_num1
-  rw [h']
-  simp [hconst, sub_eq_add_neg]
-  ring_nf
+  simp only [serre_D_apply] at h
+  norm_num at h ⊢
+  rw [sub_eq_iff_eq_add] at h
+  rw [h]
+  ring
 
 end Ramanujan
