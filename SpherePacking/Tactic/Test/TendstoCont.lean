@@ -762,17 +762,26 @@ example (h : Tendsto f atTop (nhds 3))
     Tendsto (fun z => f z) atTop (nhdsWithin 3 (Set.Ioi 0)) := by
   tendsto_cont? (within_disch := exact Set.mem_Ioi.mpr (hpos _))
 
--- @[tendsto_cont] with nhdsWithin lemma
+-- @[tendsto_cont] with nhdsWithin lemma (opaque function, non-constant)
 section NhdsWithinAttr
 
-axiom myFnNhdsWithin : Tendsto (fun _ : ℝ => (5 : ℝ)) atTop (nhdsWithin 5 (Set.Ioi 0))
+private axiom opaqueH : ℝ → ℝ
+private axiom opaqueH_tendsto : Tendsto opaqueH atTop (nhdsWithin 5 (Set.Ioi 0))
 
-@[tendsto_cont]
-theorem myFnNhdsWithinThm : Tendsto (fun _ : ℝ => (5 : ℝ)) atTop (nhdsWithin 5 (Set.Ioi 0)) :=
-  myFnNhdsWithin
+-- Before registration: fails (no matching candidate)
+/-- error: tendsto_cont: body references the bound variable but no candidate matched.
+Available candidates: [bad, good, bad] -/
+#guard_msgs(error, drop info) in
+example : Tendsto (fun z => 2 * opaqueH z) atTop (nhds 10) := by
+  tendsto_cont
 
--- Use it: the attribute is found and the nhdsWithin hypothesis is consumed
-example : Tendsto (fun z => 2 * (fun _ : ℝ => (5 : ℝ)) z) atTop (nhds 10) := by
+-- Register via attribute
+@[tendsto_cont] private theorem opaqueH_attr :
+    Tendsto opaqueH atTop (nhdsWithin 5 (Set.Ioi 0)) := opaqueH_tendsto
+
+-- After registration: works (attribute provides nhdsWithin hypothesis,
+-- wrapped to nhds internally)
+example : Tendsto (fun z => 2 * opaqueH z) atTop (nhds 10) := by
   tendsto_cont
 
 end NhdsWithinAttr
