@@ -1195,7 +1195,7 @@ public theorem ramanujan_E₂ : D E₂ = 12⁻¹ * (E₂ * E₂ - E₄.toFun) :=
   have h := congrFun ramanujan_E₂' z
   simp only [serre_D_apply] at h
   norm_num at h ⊢
-  linear_combination h
+  grind
 
 /-- Ramanujan's differential equation for `E₄`. -/
 @[simp]
@@ -1204,7 +1204,7 @@ public theorem ramanujan_E₄ : D E₄.toFun = 3⁻¹ * (E₂ * E₄.toFun - E�
   have h := congrFun ramanujan_E₄' z
   simp only [serre_D_apply] at h
   norm_num at h ⊢
-  linear_combination h
+  grind
 
 /-- Ramanujan's differential equation for `E₆`. -/
 @[simp]
@@ -1214,8 +1214,6 @@ public theorem ramanujan_E₆ :
   have h := congrFun ramanujan_E₆' z
   simp only [serre_D_apply] at h
   norm_num at h ⊢
-  rw [sub_eq_iff_eq_add] at h
-  rw [h]
-  ring
+  grind
 
 end Ramanujan
