@@ -515,8 +515,7 @@ lemma E8_norm_eq_sqrt_even
     (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
     ∃ n : ℤ, Even n ∧ n = ‖WithLp.toLp 2 v‖ ^ 2 := by
   rw [← real_inner_self_eq_norm_sq]
-  change ∃ n : ℤ, Even n ∧ n = v ⬝ᵥ star v
-  rw [star_trivial]
+  change ∃ n : ℤ, Even n ∧ n = v ⬝ᵥ v
   exact E8_integral_self _ hv
 
 lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
@@ -539,19 +538,14 @@ instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
   use 1, by norm_num
   rintro ⟨x, hx⟩ h
+  have hx' : ‖x‖ < 1 := by simpa [Subtype.dist_eq, dist_zero_right] using h
   simp only [Submodule.mk_eq_zero]
   simp only [Submodule.mem_map] at hx
   obtain ⟨v, hv, rfl⟩ := hx
-  change dist (⟨WithLp.toLp 2 v, Submodule.mem_map_of_mem hv⟩ : E8Lattice) 0 < 1 at h
   suffices v = 0 from congrArg (WithLp.toLp 2) this
   refine (E8_norm_lower_bound v hv).resolve_right ?_
   have : 1 < √2 := by rw [Real.lt_sqrt zero_le_one, sq, mul_one]; exact one_lt_two
-  simp only [not_le]
-  calc ‖WithLp.toLp 2 v‖ =
-      dist (⟨WithLp.toLp 2 v, Submodule.mem_map_of_mem hv⟩ : E8Lattice) 0 := by
-        exact (dist_zero_right _).symm
-    _ < 1 := h
-    _ < √2 := this
+  exact not_le_of_gt (lt_trans hx' this)
 
 lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ := by
   simp only [Submodule.span, sInf_eq_top, Set.mem_setOf_eq]
