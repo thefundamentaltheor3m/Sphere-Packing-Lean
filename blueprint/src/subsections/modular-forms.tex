@@ -91,25 +91,21 @@ Follows from the definition of the slash operator:
 $(F|_{k}(-I))(z) = (-1)^{-k}F((-I)z) = F(z)$.
 \end{proof}
 
-\begin{definition}\label{def:holomorphic-modular-form}\uses{def:congruence-subgroup}\lean{ModularForm}\leanok
+\begin{definition}\label{def:Mk}\uses{def:congruence-subgroup}\lean{ModularForm}\leanok
 	Let  $\Gamma$ denote a subgroup of $\mathrm{SL}_2(\mathbb{Z})$, then a modular form  of level $\Gamma$ and weight $k \in \mathbb{Z}$ is a function $f : \mathbb{H} \to \mathbb{C}$ such that:
 	\begin{enumerate}
 		\item For all $\gamma \in \Gamma$ we have $f\mid_k \gamma = f$  (such functions are called slash invariant).
 		\item $f$ is holomorphic on $\mathbb{H}$.
 		\item For all $\gamma \in \mathrm{SL}_2(\mathbb{Z})$, there exist $A, B \in \mathbb{R}$ such that for all $z \in \mathbb{H}$, with $ A \le \mathrm{Im}(z)$, we have $|(f \mid_k \gamma) (z) |\le B$. Here $| - |$ denotes the standard complex absolute value.
 	\end{enumerate}
+    This defines a complex vector space which we denote by $M_{k}(\Gamma)$.
 \end{definition}
-This defines a complex vector space which we denote by $M_{k}(\Gamma)$. By replacing condition $(3)$ above with (4) below defines the subspace of cusp forms, which we denote by $S_k(\Gamma)$.
+By replacing condition $(3)$ above with (4) below defines the subspace of cusp forms, which we denote by $S_k(\Gamma)$.
 
 \begin{enumerate}
 	 \setcounter{enumi}{3}
 	\item  For all $\gamma \in \mathrm{SL}_2(\mathbb{Z})$, and all  $0 < \epsilon$, there exists $A \in \mathbb{R}$ such that for all $z \in \mathbb{H}$, with $ A \le \mathrm{Im}(z)$, we have $|(f \mid_k \gamma) (z) |\le \epsilon$.
 \end{enumerate}
-
-
-\begin{definition}\label{def:Mk}\uses{def:holomorphic-modular-form}\lean{ModularForm}\leanok
-    Let $M_k(\Gamma)$ be the space of modular forms of weight $k$ and congruence subgroup $\Gamma$.
-\end{definition}
 
 
 Let us consider several examples of modular forms.
@@ -144,7 +140,6 @@ Note that the assumption on the polynomial growth holds when $f$ is a holomorphi
 For Eisenstein series, we can see this directly from the following:
 
 \begin{lemma}\label{lemma:Ek-Fourier}\uses{def:Ek}\lean{E_k_q_expansion}\leanok
-% \lean{lemma:Ek-Fourier}\uses{def:Ek}
 The Eisenstein series possesses the Fourier expansion
 \begin{equation}\label{eqn:Ek-Fourier}E_k(z)=1+\frac{2}{\zeta(1-k)}\sum_{n=1}^\infty \sigma_{k-1}(n)\,e^{2\pi i z}, \end{equation}
 where $\sigma_{k-1}(n)\,=\,\sum_{d|n} d^{k-1}$. In particular, we have
@@ -163,7 +158,7 @@ On the other hand, the expression \eqref{eqn:Ek-Fourier} converges to a holomorp
 
 
 The discriminant form is a unique normalized cusp form of weight 12, which can be defined as:
-\begin{definition}\label{def:disc-definition}\lean{Delta}\leanok\uses{def:dedekind_eta}
+\begin{definition}\label{def:disc-definition}\lean{Δ}\leanok\uses{def:dedekind_eta}
 The \emph{discriminant form} $\Delta(z)$ is given by
 \begin{equation}\label{eqn:disc-definition}
 \Delta(z) = e^{2 \pi i z} \prod_{n \ge 1} (1 - e^{2 \pi i n z})^{24}.
@@ -280,7 +275,7 @@ This follows from the product formula.
 A key fact in the theory of modular forms is that the spaces $M_k(\Gamma)$ are finite-dimensional.
 To prove this we will do use the following non-standard proof. First we have the following result.
 
-\begin{theorem}\label{thm:nonpos_wt}\uses{def:holomorphic-modular-form}\lean{ModularForm}\leanok
+\begin{theorem}\label{thm:nonpos_wt}\uses{def:Mk}\lean{ModularFormClass.levelOne_neg_weight_eq_zero, ModularForm.levelOne_weight_zero_rank_one}\leanok
     Let $k \in \Z$ with $k < 0$. Then $M_k(\Gamma_1) = \{0\}$ and moreover $\dim M_0(\Gamma(1)) = 1$.
 \end{theorem}
 \begin{proof}
@@ -289,7 +284,7 @@ To prove this we will do use the following non-standard proof. First we have the
 \end{proof}
 
 
-\begin{theorem}\label{thm:lvl1_dims}\uses{def:holomorphic-modular-form, lemma:disc-E4E6, def:disc-definition}\lean{ModularForm.dimension_level_one}\leanok
+\begin{theorem}\label{thm:lvl1_dims}\uses{def:Mk, lemma:disc-E4E6, def:disc-definition}\lean{ModularForm.dimension_level_one}\leanok
     Let $k \in \Z$ with $k \ge 0$ and even. Then $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor $ if $k \equiv 2 \mod 12$ and $\dim M_k(\Gamma_1) = \lfloor k / 12 \rfloor + 1$ if $k \not\equiv 2 \mod 12$.
 \end{theorem}
 \begin{proof}
@@ -620,7 +615,7 @@ Combined with \eqref{eqn:E2-transform-general}, we get
 \end{proof}
 
 As a direct consequence of Theorem \ref{thm:serre-der-equiv-action}, we can check that the Serre derivative preserves the modularity of a modular form.
-\begin{theorem}\label{thm:serre-der-modularity}\uses{def:serre-der, def:holomorphic-modular-form, thm:serre-der-equiv-action}\lean{serre_D_slash_invariant}\leanok
+\begin{theorem}\label{thm:serre-der-modularity}\uses{def:serre-der, def:Mk, thm:serre-der-equiv-action}\lean{serre_D_slash_invariant}\leanok
 Let $F$ be a modular form of weight $k$ and level $\Gamma$.
 Then, $\partial_{k}F$ is a modular form of weight $k + 2$ of the same level.
 \end{theorem}

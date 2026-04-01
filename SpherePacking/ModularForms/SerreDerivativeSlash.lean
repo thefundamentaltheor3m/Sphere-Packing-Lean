@@ -1,4 +1,8 @@
-import SpherePacking.ModularForms.Derivative
+module
+
+public import SpherePacking.ModularForms.Derivative
+
+@[expose] public section
 
 /-!
 # Slash Invariance of Serre Derivative of E₂
@@ -41,7 +45,7 @@ lemma D_D₂ (γ : SL(2, ℤ)) (z : ℍ) :
       deriv (fun w => (2 * π * I * (γ 1 0 : ℂ)) / denom γ w) z := by
     apply Filter.EventuallyEq.deriv_eq
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
-    simp only [comp_apply, ofComplex_apply_of_im_pos hw, D₂, coe_mk_subtype]
+    simp only [comp_apply, ofComplex_apply_of_im_pos hw, D₂]
   simp only [D, hderiv, div_eq_mul_inv, ← zpow_neg_one]
   rw [deriv_const_mul _ (.zpow (differentiableAt_denom γ z) (.inl hz_ne)),
       deriv_denom_zpow γ 1 z]

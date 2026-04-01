@@ -1,90 +1,92 @@
-import SpherePacking.Basic.E8
-import SpherePacking.Basic.PeriodicPacking
-import SpherePacking.Basic.SpherePacking
-import SpherePacking.CohnElkies.LPBound
-import SpherePacking.CohnElkies.Prereqs
-import SpherePacking.ForMathlib.Asymptotics
-import SpherePacking.ForMathlib.AtImInfty
-import SpherePacking.ForMathlib.Cardinal
-import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
-import SpherePacking.ForMathlib.Cusps
-import SpherePacking.ForMathlib.ENNReal
-import SpherePacking.ForMathlib.ENat
-import SpherePacking.ForMathlib.Encard
-import SpherePacking.ForMathlib.Finsupp
-import SpherePacking.ForMathlib.Fourier
-import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
-import SpherePacking.ForMathlib.InnerProductSpace
-import SpherePacking.ForMathlib.InvPowSummability
-import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
-import SpherePacking.ForMathlib.Real
-import SpherePacking.ForMathlib.SlashActions
-import SpherePacking.ForMathlib.SpecificLimits
-import SpherePacking.ForMathlib.UpperHalfPlane
-import SpherePacking.ForMathlib.Vec
-import SpherePacking.ForMathlib.VolumeOfBalls
-import SpherePacking.ForMathlib.ZLattice
-import SpherePacking.ForMathlib.tprod
-import SpherePacking.MagicFunction.IntegralParametrisations
-import SpherePacking.MagicFunction.PolyFourierCoeffBound
-import SpherePacking.MagicFunction.a.Basic
-import SpherePacking.MagicFunction.a.Eigenfunction
-import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
-import SpherePacking.MagicFunction.a.Integrability.CuspPath
-import SpherePacking.MagicFunction.a.Integrability.Integrability
-import SpherePacking.MagicFunction.a.Integrability.RealDecay
-import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
-import SpherePacking.MagicFunction.a.IntegralEstimates.I1
-import SpherePacking.MagicFunction.a.IntegralEstimates.I2
-import SpherePacking.MagicFunction.a.IntegralEstimates.I3
-import SpherePacking.MagicFunction.a.IntegralEstimates.I4
-import SpherePacking.MagicFunction.a.IntegralEstimates.I5
-import SpherePacking.MagicFunction.a.IntegralEstimates.I6
-import SpherePacking.MagicFunction.a.Schwartz
-import SpherePacking.MagicFunction.a.SpecialValues
-import SpherePacking.MagicFunction.b.Basic
-import SpherePacking.MagicFunction.b.Eigenfunction
-import SpherePacking.MagicFunction.b.Schwartz
-import SpherePacking.MagicFunction.b.SpecialValues
-import SpherePacking.MagicFunction.b.psi
-import SpherePacking.MagicFunction.g.Basic
-import SpherePacking.MainTheorem
-import SpherePacking.ModularForms.BigO
-import SpherePacking.ModularForms.Cauchylems
-import SpherePacking.ModularForms.Delta
-import SpherePacking.ModularForms.Derivative
-import SpherePacking.ModularForms.DimensionFormulas
-import SpherePacking.ModularForms.E2
-import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.ModularForms.EisensteinAsymptotics
-import SpherePacking.ModularForms.Eisensteinqexpansions
-import SpherePacking.ModularForms.FG
-import SpherePacking.ModularForms.Icc_Ico_lems
-import SpherePacking.ModularForms.IsCuspForm
-import SpherePacking.ModularForms.JacobiTheta
-import SpherePacking.ModularForms.PhiTransform
-import SpherePacking.ModularForms.QExpansion
-import SpherePacking.ModularForms.RamanujanIdentities
-import SpherePacking.ModularForms.ResToImagAxis
-import SpherePacking.ModularForms.SerreDerivativeSlash
-import SpherePacking.ModularForms.SlashActionAuxil
-import SpherePacking.ModularForms.ThetaDerivIdentities
-import SpherePacking.ModularForms.clog_arg_lems
-import SpherePacking.ModularForms.csqrt
-import SpherePacking.ModularForms.equivs
-import SpherePacking.ModularForms.eta
-import SpherePacking.ModularForms.exp_lems
-import SpherePacking.ModularForms.iteratedderivs
-import SpherePacking.ModularForms.limunder_lems
-import SpherePacking.ModularForms.logDeriv_lems
-import SpherePacking.ModularForms.multipliable_lems
-import SpherePacking.ModularForms.qExpansion_lems
-import SpherePacking.ModularForms.riemannZetalems
-import SpherePacking.ModularForms.summable_lems
-import SpherePacking.ModularForms.tendstolems
-import SpherePacking.ModularForms.tsumderivWithin
-import SpherePacking.ModularForms.uniformcts
-import SpherePacking.ModularForms.upperhalfplane
-import SpherePacking.Tactic.NormNumI
-import SpherePacking.Tactic.NormNumI_Scratch
-import SpherePacking.Tactic.Test.NormNumI
+module  -- shake: keep-all
+
+public import SpherePacking.Basic.E8
+public import SpherePacking.Basic.PeriodicPacking
+public import SpherePacking.Basic.SpherePacking
+public import SpherePacking.CohnElkies.LPBound
+public import SpherePacking.CohnElkies.Prereqs
+public import SpherePacking.ForMathlib.Asymptotics
+public import SpherePacking.ForMathlib.AtImInfty
+public import SpherePacking.ForMathlib.Cardinal
+public import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
+public import SpherePacking.ForMathlib.Cusps
+public import SpherePacking.ForMathlib.ENNReal
+public import SpherePacking.ForMathlib.ENat
+public import SpherePacking.ForMathlib.Encard
+public import SpherePacking.ForMathlib.Finsupp
+public import SpherePacking.ForMathlib.Fourier
+public import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
+public import SpherePacking.ForMathlib.InnerProductSpace
+public import SpherePacking.ForMathlib.InvPowSummability
+public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
+public import SpherePacking.ForMathlib.Real
+public import SpherePacking.ForMathlib.SlashActions
+public import SpherePacking.ForMathlib.SpecificLimits
+public import SpherePacking.ForMathlib.UpperHalfPlane
+public import SpherePacking.ForMathlib.Vec
+public import SpherePacking.ForMathlib.VolumeOfBalls
+public import SpherePacking.ForMathlib.ZLattice
+public import SpherePacking.ForMathlib.tprod
+public import SpherePacking.MagicFunction.IntegralParametrisations
+public import SpherePacking.MagicFunction.PolyFourierCoeffBound
+public import SpherePacking.MagicFunction.a.Basic
+public import SpherePacking.MagicFunction.a.Eigenfunction
+public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
+public import SpherePacking.MagicFunction.a.Integrability.CuspPath
+public import SpherePacking.MagicFunction.a.Integrability.Integrability
+public import SpherePacking.MagicFunction.a.Integrability.RealDecay
+public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I2
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I3
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I4
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I5
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I6
+public import SpherePacking.MagicFunction.a.Schwartz
+public import SpherePacking.MagicFunction.a.SpecialValues
+public import SpherePacking.MagicFunction.b.Basic
+public import SpherePacking.MagicFunction.b.Eigenfunction
+public import SpherePacking.MagicFunction.b.Schwartz
+public import SpherePacking.MagicFunction.b.SpecialValues
+public import SpherePacking.MagicFunction.b.psi
+public import SpherePacking.MagicFunction.g.Basic
+public import SpherePacking.MainTheorem
+public import SpherePacking.ModularForms.BigO
+public import SpherePacking.ModularForms.Cauchylems
+public import SpherePacking.ModularForms.Delta
+public import SpherePacking.ModularForms.Derivative
+public import SpherePacking.ModularForms.DimensionFormulas
+public import SpherePacking.ModularForms.E2
+public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.ModularForms.EisensteinAsymptotics
+public import SpherePacking.ModularForms.Eisensteinqexpansions
+public import SpherePacking.ModularForms.FG
+public import SpherePacking.ModularForms.Icc_Ico_lems
+public import SpherePacking.ModularForms.IsCuspForm
+public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.PhiTransform
+public import SpherePacking.ModularForms.QExpansion
+public import SpherePacking.ModularForms.RamanujanIdentities
+public import SpherePacking.ModularForms.ResToImagAxis
+public import SpherePacking.ModularForms.SerreDerivativeSlash
+public import SpherePacking.ModularForms.SlashActionAuxil
+public import SpherePacking.ModularForms.ThetaDerivIdentities
+public import SpherePacking.ModularForms.clog_arg_lems
+public import SpherePacking.ModularForms.csqrt
+public import SpherePacking.ModularForms.equivs
+public import SpherePacking.ModularForms.eta
+public import SpherePacking.ModularForms.exp_lems
+public import SpherePacking.ModularForms.iteratedderivs
+public import SpherePacking.ModularForms.limunder_lems
+public import SpherePacking.ModularForms.multipliable_lems
+public import SpherePacking.ModularForms.qExpansion_lems
+public import SpherePacking.ModularForms.riemannZetalems
+public import SpherePacking.ModularForms.summable_lems
+public import SpherePacking.ModularForms.tendstolems
+public import SpherePacking.ModularForms.tsumderivWithin
+public import SpherePacking.ModularForms.uniformcts
+public import SpherePacking.ModularForms.upperhalfplane
+public import SpherePacking.Tactic.NormNumI
+public import SpherePacking.Tactic.NormNumI_Scratch
+public import SpherePacking.Tactic.Test.NormNumI
