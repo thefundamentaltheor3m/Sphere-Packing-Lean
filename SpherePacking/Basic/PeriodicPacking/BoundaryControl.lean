@@ -212,9 +212,8 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
       simpa [Metric.mem_ball, dist_eq_norm] using hy0
     have hy0' : y0 ∈ (coordCube d L \ coordCubeInner d L (1 / 2)) +
         ball (0 : EuclideanSpace ℝ (Fin d)) r :=
-      ⟨x0, ⟨hx0, hx0_notInner⟩, y0 - x0, hz, by simp [sub_eq_add_neg, add_assoc, add_comm,
-        add_left_comm]⟩
-    have := coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L (by simpa [r] using hy0')
+      ⟨x0, ⟨hx0, hx0_notInner⟩, y0 - x0, hz, by simp [sub_eq_add_neg, add_left_comm]⟩
+    have := coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L hy0'
     simpa [Set.mem_vadd_set_iff_neg_vadd_mem, y0] using this
   have hr : (2⁻¹ : ℝ) = r := by norm_num
   calc (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ))
