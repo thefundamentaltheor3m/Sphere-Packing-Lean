@@ -123,7 +123,7 @@ private lemma Θ₂_term_eq_ofReal_exp_imag_axis (n : ℤ) (t : ℝ) (ht : 0 < t
     calc
       (π * Complex.I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I * t : ℂ)) : ℂ) =
           π * (Complex.I * ((n + (2⁻¹ : ℂ)) ^ 2 * (Complex.I * t))) := by
-            simp [mul_assoc]
+            ac_rfl
       _ = π * (Complex.I * (((r ^ 2 : ℝ) : ℂ) * (Complex.I * t))) := by simp [hsq]
       _ = π * (-(((r ^ 2 : ℝ) : ℂ) * (t : ℂ))) := by simp [I_mul_mul_I]
       _ = ((-(Real.pi * (r ^ 2) * t) : ℝ) : ℂ) := by simp [mul_left_comm, mul_comm]
@@ -612,18 +612,17 @@ lemma norm_Θ₂_term (n : ℤ) (z : ℍ) :
   have him : (π * ((r ^ 2 : ℝ) : ℂ) * z : ℂ).im = π * (r ^ 2) * z.im := by
     calc
       (π * ((r ^ 2 : ℝ) : ℂ) * z : ℂ).im = (((π : ℂ) * ((r ^ 2 : ℝ) : ℂ)) * z : ℂ).im := by
-        simp [mul_assoc]
+        ac_rfl
       _ = (((Real.pi * (r ^ 2) : ℝ) : ℂ) * z : ℂ).im := by simp
       _ = (Real.pi * (r ^ 2)) * z.im := im_ofReal_mul (Real.pi * (r ^ 2)) (z : ℂ)
-      _ = π * (r ^ 2) * z.im := by simp [mul_assoc]
+      _ = π * (r ^ 2) * z.im := by ac_rfl
   calc
     ‖Θ₂_term n z‖ = ‖cexp ((π * ((r ^ 2 : ℝ) : ℂ) * z) * I)‖ := by
       simp [Θ₂_term, one_div, h_mulI]
     _ = rexp (-(π * ((r ^ 2 : ℝ) : ℂ) * z).im) := by
       simp [Complex.norm_exp_mul_I]
     _ = rexp (-π * (r ^ 2) * z.im) := by
-      rw [him]
-      simp [mul_assoc]
+      simp only [him, neg_mul]
     _ = rexp (-π * (((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) * z.im) := by
       simp [r, pow_two, mul_assoc]
 
@@ -953,45 +952,80 @@ public theorem jacobiTheta₂_half_mul_apply_tendsto_atImInfty :
       simpa using le_mul_of_one_le_right
         (by rw [← mul_add, add_comm]; exact mul_nonneg Real.pi_nonneg (this k)) hz
 
-private theorem tsum_weighted_exp_sq_tendsto_atImInfty
-    (w : ℤ → ℂ) (hw0 : w 0 = 1) (hw : ∀ n, ‖w n‖ ≤ 1) :
-    Tendsto (fun x : ℍ ↦ ∑' n : ℤ, w n * cexp (π * I * n ^ 2 * x)) atImInfty (𝓝 1) := by
-  convert tendsto_tsum_of_dominated_convergence
-    (f := fun (z : ℍ) (n : ℤ) ↦ w n * cexp (π * I * n ^ 2 * z))
-    (𝓕 := atImInfty)
-    (g := fun k ↦ if k = 0 then 1 else 0)
-    (bound := fun n : ℤ ↦ rexp (-π * n ^ 2)) ?_ ?_ ?_
-  · simp
-  · apply summable_ofReal.mp
-    have := (summable_jacobiTheta₂_term_iff 0 I).mpr (by simp)
-    rw [← summable_norm_iff, ← summable_ofReal] at this
-    simp_rw [jacobiTheta₂_term, mul_zero, zero_add, mul_right_comm _ I, mul_assoc, ← sq, I_sq,
-      mul_neg_one, norm_exp, re_ofReal_mul, neg_re, mul_neg, ← neg_mul, ← ofReal_intCast,
-      ← ofReal_pow, ofReal_re] at this
-    exact this
-  · intro k
-    by_cases hk : k = 0
-    · subst hk
-      simp [hw0]
-    · have hk' : (k : ℝ) ≠ 0 := by exact_mod_cast hk
-      have hpos : 0 < π * (k : ℝ) ^ 2 := mul_pos Real.pi_pos (sq_pos_of_ne_zero hk')
-      have hk_im : Tendsto (fun z : ℍ ↦ (π * (k : ℝ) ^ 2) * z.im) atImInfty atTop :=
-        tendsto_im_atImInfty.const_mul_atTop hpos
-      have hk_exp : Tendsto (fun z : ℍ ↦ ‖cexp (π * I * k ^ 2 * z)‖) atImInfty (𝓝 0) := by
-        simp_rw [mul_right_comm _ I, norm_exp_mul_I, mul_assoc, im_ofReal_mul, ← ofReal_intCast,
-          ← ofReal_pow, im_ofReal_mul, ← mul_assoc, coe_im]
-        exact tendsto_exp_neg_atTop_nhds_zero.comp hk_im
-      have : Tendsto (fun z : ℍ ↦ w k * cexp (π * I * k ^ 2 * z)) atImInfty (𝓝 0) := by
-        rw [tendsto_zero_iff_norm_tendsto_zero]
-        simpa [norm_mul, mul_assoc, mul_left_comm, mul_comm] using (tendsto_const_nhds.mul hk_exp)
-      simpa [hk] using this
-  · rw [eventually_atImInfty]
-    refine ⟨1, fun z hz k ↦ ?_⟩
-    have hwk : ‖w k‖ ≤ 1 := hw k
-    have hmul : ‖w k * cexp (π * I * k ^ 2 * z)‖ ≤ ‖cexp (π * I * k ^ 2 * z)‖ := by simpa
-    refine hmul.trans ?_
-    simp_rw [mul_right_comm _ I, norm_exp_mul_I]
-    simpa [← ofReal_intCast, ← ofReal_pow] using le_mul_of_one_le_right (by positivity) hz
+theorem summable_rexp_neg_pi_int_sq: Summable (fun n : ℤ ↦ rexp (-π * n ^ 2)) := by
+  simpa only [pow_zero, one_mul, mul_zero, zero_mul, sub_zero] using
+    (summable_pow_mul_jacobiTheta₂_term_bound (S := 0) (T := 1) zero_lt_one 0)
+
+theorem weighted_exp_sq_eventually_bound (w : ℤ → ℂ) (hw : ∀ n, ‖w n‖ ≤ 1) : ∀ᶠ z : ℍ in atImInfty, ∀ k : ℤ, ‖w k * cexp (π * I * k ^ 2 * z)‖ ≤ rexp (-π * k ^ 2) := by
+  show {z : ℍ | ∀ k : ℤ, ‖w k * cexp (π * I * k ^ 2 * z)‖ ≤ rexp (-π * k ^ 2)} ∈ atImInfty
+  rw [UpperHalfPlane.atImInfty_mem]
+  refine ⟨1, ?_⟩
+  intro z hz k
+  have hmul : ‖w k * cexp (π * I * k ^ 2 * z)‖ ≤ ‖cexp (π * I * k ^ 2 * z)‖ := by
+    simpa [norm_mul] using
+      mul_le_mul_of_nonneg_right (hw k) (norm_nonneg (cexp (π * I * k ^ 2 * z)))
+  have hcexp : ‖cexp (π * I * k ^ 2 * z)‖ = rexp (-(π * (k : ℝ) ^ 2) * z.im) := by
+    rw [Complex.norm_exp]
+    simp [mul_assoc, mul_left_comm, mul_comm, Complex.mul_re, Complex.mul_im, pow_two]
+  have hk_nonneg : 0 ≤ π * (k : ℝ) ^ 2 := by
+    positivity
+  have hmul_im : π * (k : ℝ) ^ 2 ≤ (π * (k : ℝ) ^ 2) * z.im := by
+    exact le_mul_of_one_le_right hk_nonneg hz
+  calc
+    ‖w k * cexp (π * I * k ^ 2 * z)‖ ≤ ‖cexp (π * I * k ^ 2 * z)‖ := hmul
+    _ = rexp (-(π * (k : ℝ) ^ 2) * z.im) := hcexp
+    _ ≤ rexp (-π * (k : ℝ) ^ 2) := by
+      apply Real.exp_le_exp.mpr
+      simpa [neg_mul, mul_assoc, mul_left_comm, mul_comm] using neg_le_neg hmul_im
+
+theorem weighted_exp_sq_term_tendsto_indicator (w : ℤ → ℂ) (hw0 : w 0 = 1) (k : ℤ) : Tendsto (fun z : ℍ ↦ w k * cexp (π * I * k ^ 2 * z)) atImInfty (𝓝 (if k = 0 then 1 else 0)) := by
+  by_cases hk : k = 0
+  · subst hk
+    simpa [hw0] using (tendsto_const_nhds : Tendsto (fun _ : ℍ => (1 : ℂ)) atImInfty (𝓝 1))
+  · let a : ℝ := π * (k : ℝ) ^ 2
+    have hk0 : (k : ℝ) ≠ 0 := by
+      exact_mod_cast hk
+    have ha : 0 < a := by
+      dsimp [a]
+      exact mul_pos Real.pi_pos (sq_pos_of_ne_zero hk0)
+    have hnorm : Tendsto (fun z : ℍ => ‖cexp (π * I * k ^ 2 * z)‖) atImInfty (𝓝 0) := by
+      have hrew :
+          (fun z : ℍ => ‖cexp (π * I * k ^ 2 * z)‖) =
+            fun z : ℍ => rexp (((-a) * z.im)) := by
+        funext z
+        calc
+          ‖cexp (π * I * k ^ 2 * z)‖ = ‖cexp (((a : ℂ) * z) * I)‖ := by
+            congr 2
+            dsimp [a]
+            simp [Int.cast_pow, mul_assoc, mul_left_comm, mul_comm]
+          _ = rexp (-(((a : ℂ) * z).im)) := by
+            simpa using (Complex.norm_exp_mul_I ((a : ℂ) * z))
+          _ = rexp (((-a) * z.im)) := by
+            rw [im_ofReal_mul]
+            simp [neg_mul]
+      rw [hrew]
+      exact (Real.tendsto_exp_atBot).comp
+        (tendsto_im_atImInfty.const_mul_atTop_of_neg (neg_lt_zero.mpr ha))
+    have hnorm_mul : Tendsto (fun z : ℍ => ‖w k * cexp (π * I * k ^ 2 * z)‖) atImInfty (𝓝 0) := by
+      simpa [Complex.norm_mul] using (tendsto_const_nhds.mul hnorm :
+        Tendsto (fun z : ℍ => ‖w k‖ * ‖cexp (π * I * k ^ 2 * z)‖) atImInfty (𝓝 (‖w k‖ * 0)))
+    have hzero : Tendsto (fun z : ℍ => w k * cexp (π * I * k ^ 2 * z)) atImInfty (𝓝 0) := by
+      exact tendsto_zero_iff_norm_tendsto_zero.mpr hnorm_mul
+    simpa [hk] using hzero
+
+theorem tsum_weighted_exp_sq_tendsto_atImInfty (w : ℤ → ℂ) (hw0 : w 0 = 1) (hw : ∀ n, ‖w n‖ ≤ 1) : Tendsto (fun x : ℍ ↦ ∑' n : ℤ, w n * cexp (π * I * n ^ 2 * x)) atImInfty (𝓝 1) := by
+  let f : ℍ → ℤ → ℂ := fun z n => w n * cexp (π * I * n ^ 2 * z)
+  let g : ℤ → ℂ := fun k => if k = 0 then 1 else 0
+  let bound : ℤ → ℝ := fun k => rexp (-π * k ^ 2)
+  have htsum :
+      Tendsto (fun x : ℍ ↦ ∑' n : ℤ, f x n) atImInfty (𝓝 (∑' n : ℤ, g n)) := by
+    apply tendsto_tsum_of_dominated_convergence
+    · exact summable_rexp_neg_pi_int_sq
+    · intro k
+      exact weighted_exp_sq_term_tendsto_indicator w hw0 k
+    · exact weighted_exp_sq_eventually_bound w hw
+  simpa [f, g, hw0] using htsum
+
 
 theorem jacobiTheta₂_zero_apply_tendsto_atImInfty :
     Tendsto (fun x : ℍ ↦ jacobiTheta₂ 0 x) atImInfty (𝓝 1) := by
