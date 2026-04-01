@@ -1,6 +1,7 @@
 module
 
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.Tactic.TendstoCont
 
 public import SpherePacking.ModularForms.Derivative
 public import SpherePacking.ModularForms.DimensionFormulas
@@ -96,13 +97,13 @@ lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5
   simp
 
 @[fun_prop]
-theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by unfold F; fun_prop
+theorem F_holo : MDiff F := by unfold F; fun_prop
 
-theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by rw [G_eq]; fun_prop
+theorem G_holo : MDiff G := by rw [G_eq]; fun_prop
 
-theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by unfold F; fun_prop
+theorem SerreF_holo : MDiff (serre_D 10 F) := by unfold F; fun_prop
 
-theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := by rw [G_eq]; fun_prop
+theorem SerreG_holo : MDiff (serre_D 10 G) := by rw [G_eq]; fun_prop
 
 theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
   sorry
@@ -169,7 +170,7 @@ theorem MLDE_G : serre_D 12 (serre_D 10 G) =
 
 /-- Pointwise log-derivative of a product: `D(f·h)/(f·h) = Df/f + Dh/h`. -/
 private lemma logderiv_mul_eq (f h : ℍ → ℂ)
-    (hf_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h)
+    (hf_md : MDiff f) (hh_md : MDiff h)
     (z : ℍ) (hf_ne : f z ≠ 0) (hh_ne : h z ≠ 0) :
     D (f * h) z / (f z * h z) = D f z / f z + D h z / h z := by
   simp only [congrFun (D_mul f h hf_md hh_md) z, Pi.mul_apply, Pi.add_apply]
@@ -384,7 +385,7 @@ theorem DE₄_qexp (z : UpperHalfPlane) :
   have hDf : D f z = ∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by
     apply D_qexp_tsum_pnat _ z (sigma3_qexp_summable z) sigma3_qexp_deriv_bound
-  have hf_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+  have hf_mdiff : MDiff f := by
     have h : f = (240 : ℂ)⁻¹ • (fun w => E₄ w - 1) := by
       ext w; simp only [f, Pi.smul_apply, smul_eq_mul]; rw [E₄_sigma_qexp w]; ring
     rw [h]; exact (E₄.holo'.sub mdifferentiable_const).const_smul _
@@ -487,7 +488,7 @@ theorem negDE₂_qexp (z : UpperHalfPlane) :
   have hDf : D f z = ∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by
     apply D_qexp_tsum_pnat _ z (sigma1_qexp_summable z) sigma1_qexp_deriv_bound
-  have hf_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+  have hf_mdiff : MDiff f := by
     have h : f = (24 : ℂ)⁻¹ • (fun w => 1 - E₂ w) := by
       ext w; simp only [f, Pi.smul_apply, smul_eq_mul]; rw [E₂_sigma_qexp w]; ring
     rw [h]; exact (mdifferentiable_const.sub E₂_holo').const_smul _
@@ -852,7 +853,7 @@ theorem D_F_div_F_tendsto :
   set f : ℍ → ℂ := fun z => E₂ z * E₄.toFun z - E₆.toFun z with hf_def
   have hF_eq : ∀ z, F z = (f z) ^ 2 := fun z => by
     simp only [F, hf_def, sq, Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe]
-  have hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+  have hf_holo : MDiff f := by
     apply MDifferentiable.sub
     · exact MDifferentiable.mul E₂_holo' E₄.holo'
     · exact E₆.holo'
@@ -902,10 +903,9 @@ theorem G_vanishing_order :
   simp_rw [h_eq]
   have h_poly : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
       atImInfty (nhds 5) := by
-    have hpair := H₂_tendsto_atImInfty.prodMk_nhds H₄_tendsto_atImInfty
-    have hcont : Continuous (fun p : ℂ × ℂ => 2 * p.1 ^ 2 + 5 * p.1 * p.2 + 5 * p.2 ^ 2) := by
-      fun_prop
-    simpa using hcont.continuousAt.tendsto.comp hpair
+    have := H₂_tendsto_atImInfty
+    have := H₄_tendsto_atImInfty
+    tendsto_cont
   convert (H₂_div_exp_tendsto.pow 3).mul h_poly
   norm_num
 
@@ -930,13 +930,13 @@ private theorem D_H₂_div_H₂_tendsto :
   let f : ℍ → ℂ := fun w => cexp (π * I * w)
   let h : ℍ → ℂ := fun w => H₂ w / f w
   have hf_ne : ∀ z : ℍ, f z ≠ 0 := fun z => Complex.exp_ne_zero _
-  have hf_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+  have hf_md : MDiff f := by
     intro τ
     have h_diff : DifferentiableAt ℂ (fun t : ℂ => cexp (π * I * t)) (τ : ℂ) :=
       (differentiableAt_id.const_mul (π * I)).cexp
     simpa [f, Function.comp] using
       DifferentiableAt_MDifferentiableAt (G := fun t : ℂ => cexp (π * I * t)) (z := τ) h_diff
-  have hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h :=
+  have hh_md : MDiff h :=
     MDifferentiable_div H₂_SIF_MDifferentiable hf_md hf_ne
   have hh_tendsto : Filter.Tendsto h atImInfty (nhds (16 : ℂ)) := H₂_div_exp_tendsto
   have hDh_tendsto : Filter.Tendsto (D h) atImInfty (nhds 0) :=
@@ -971,10 +971,10 @@ private theorem D_B_tendsto_zero :
     Filter.Tendsto (D ((2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2))
       atImInfty (nhds 0) := by
   apply D_tendsto_zero_of_isBoundedAtImInfty (by fun_prop)
-  have h := ((H₂_tendsto_atImInfty.pow 2).const_mul 2).add
-    (((H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty).const_mul 5).add
-      ((H₄_tendsto_atImInfty.pow 2).const_mul 5))
-  simp only [zero_pow two_ne_zero, one_pow, mul_zero, mul_one, zero_add] at h
+  have := H₂_tendsto_atImInfty
+  have := H₄_tendsto_atImInfty
+  have h : Tendsto (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
+      atImInfty (nhds 5) := by tendsto_cont
   exact (h.congr' (by filter_upwards with z; simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply,
     Pi.smul_apply, smul_eq_mul]; ring)).isBigO_one ℝ
 
@@ -984,8 +984,8 @@ theorem D_G_div_G_tendsto :
   let A := H₂ ^ 3
   let B := (2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2
   have hG_eq : G = A * B := G_eq
-  have hA : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A := by fun_prop
-  have hB : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B := by fun_prop
+  have hA : MDiff A := by fun_prop
+  have hB : MDiff B := by fun_prop
   have h_DA_A : ∀ z, H₂ z ≠ 0 → D A z / A z = 3 * (D H₂ z / H₂ z) := by
     intro z hH₂_ne
     change D (H₂ ^ 3) z / (H₂ z ^ 3) = 3 * (D H₂ z / H₂ z)
@@ -998,15 +998,10 @@ theorem D_G_div_G_tendsto :
     filter_upwards [H₂_eventually_ne_zero] with z hz
     exact (h_DA_A z hz).symm
   have h_B_tendsto : Filter.Tendsto B atImInfty (nhds 5) := by
-    have h := ((H₂_tendsto_atImInfty.pow 2).const_mul 2).add
-      (((H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty).const_mul 5).add
-        ((H₄_tendsto_atImInfty.pow 2).const_mul 5))
-    simp only [zero_pow two_ne_zero, one_pow, mul_zero, mul_one, zero_add] at h
-    refine h.congr' ?_
-    filter_upwards with z
-    change _ = ((2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2) z
-    simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
-    ring
+    have := H₂_tendsto_atImInfty
+    have := H₄_tendsto_atImInfty
+    change Tendsto (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) atImInfty (nhds 5)
+    tendsto_cont
   have h_DB_B_tendsto : Filter.Tendsto (fun z => D B z / B z) atImInfty (nhds 0) := by
     have h := D_B_tendsto_zero.div h_B_tendsto (by norm_num : (5 : ℂ) ≠ 0)
     simp only [zero_div] at h; exact h

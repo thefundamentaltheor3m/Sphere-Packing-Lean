@@ -133,18 +133,8 @@ lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1
 
 lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
   ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 - (DirectSum.of _ 6 E₆)^2) 12 )) := by
-  rw [ModForm_mk]
-  rw [Delta_E4_E6_aux]
-  have := CuspForm_to_ModularForm_Fun_coe _ _ ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 -
-    (DirectSum.of _ 6 E₆)^2) 12 )) ?_
-  · simp at *
-    ext z
-    have hg := congr_fun this z
-    simp at *
-    rw [← hg]
-    rfl
-  rw [IsCuspForm_iff_coeffZero_eq_zero]
-  exact E4E6_coeff_zero_eq_zero
+  ext
+  rfl
 
 lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff 1 = 1 := by
   have := Delta_E4_E6_eq
