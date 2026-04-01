@@ -8,6 +8,7 @@ import Mathlib.MeasureTheory.Integral.ExpDecay
 import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 import Mathlib.Analysis.Complex.Exponential
+import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
 /-!
 # Exponential Decay Integrability Lemmas (Tail Regime)
@@ -65,58 +66,21 @@ lemma tendsto_exp_neg_atTop (a : ℝ) (ha : 0 < a) :
     Tendsto (fun t => exp (-a * t)) atTop (nhds 0) := by
   simpa [rpow_zero] using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 0 a ha
 
-/-- Helper: t * exp(-a*t) = O(exp(-(a/2)*t)) as t → ∞ for a > 0. -/
-private lemma isBigO_mul_exp_neg (a : ℝ) (ha : 0 < a) :
-    (fun t => t * exp (-a * t)) =O[atTop] fun t => exp (-(a / 2) * t) := by
-  have h := tendsto_mul_exp_neg_atTop (a/2) (by linarith)
-  rw [Metric.tendsto_atTop] at h
-  obtain ⟨N, hN⟩ := h 1 (by linarith)
-  refine Asymptotics.IsBigO.of_bound 1 ?_
-  filter_upwards [Filter.eventually_ge_atTop (max N 1)] with t ht
-  have ht_pos : 0 < t := by linarith [le_of_max_le_right ht]
-  simp only [one_mul, norm_mul, Real.norm_eq_abs, abs_of_pos ht_pos, abs_of_pos (exp_pos _)]
-  have h1 : t * exp (-(a/2) * t) < 1 := by
-    simpa [dist_zero_right, abs_of_pos ht_pos, abs_of_pos (by positivity : 0 < t * _)]
-      using hN t (le_of_max_le_left ht)
-  calc t * exp (-a * t)
-      = t * (exp (-(a/2) * t) * exp (-(a/2) * t)) := by rw [← exp_add]; ring_nf
-    _ = (t * exp (-(a/2) * t)) * exp (-(a/2) * t) := by ring
-    _ ≤ exp (-(a/2) * t) := by nlinarith [exp_pos (-(a/2) * t)]
-
-/-- Helper: t² * exp(-a*t) = O(exp(-(a/2)*t)) as t → ∞ for a > 0. -/
-private lemma isBigO_sq_mul_exp_neg (a : ℝ) (ha : 0 < a) :
-    (fun t => t^2 * exp (-a * t)) =O[atTop] fun t => exp (-(a / 2) * t) := by
-  have h := tendsto_sq_mul_exp_neg_atTop (a/2) (by linarith)
-  rw [Metric.tendsto_atTop] at h
-  obtain ⟨N, hN⟩ := h 1 (by linarith)
-  refine Asymptotics.IsBigO.of_bound 1 ?_
-  filter_upwards [Filter.eventually_ge_atTop (max N 1)] with t ht
-  have ht_pos : 0 < t := by linarith [le_of_max_le_right ht]
-  simp only [one_mul, norm_mul, Real.norm_eq_abs, abs_of_pos (sq_pos_of_pos ht_pos),
-    abs_of_pos (exp_pos _)]
-  have h1 : t^2 * exp (-(a/2) * t) < 1 := by
-    simpa [dist_zero_right, abs_of_pos (sq_pos_of_pos ht_pos),
-      abs_of_pos (by positivity : 0 < t^2 * _)] using hN t (le_of_max_le_left ht)
-  calc t^2 * exp (-a * t)
-      = t^2 * (exp (-(a/2) * t) * exp (-(a/2) * t)) := by rw [← exp_add]; ring_nf
-    _ = (t^2 * exp (-(a/2) * t)) * exp (-(a/2) * t) := by ring
-    _ ≤ exp (-(a/2) * t) := by nlinarith [exp_pos (-(a/2) * t)]
-
 /-- t * exp(-a*t) is integrable on [1,∞) for a > 0. -/
 lemma integrableOn_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
     IntegrableOn (fun t => t * exp (-a * t)) (Ici 1) volume := by
   rw [integrableOn_Ici_iff_integrableOn_Ioi]
-  exact integrable_of_isBigO_exp_neg (by linarith : 0 < a / 2)
-    (continuous_id.mul (continuous_exp.comp (continuous_const.mul continuous_id))).continuousOn
-    (isBigO_mul_exp_neg a ha)
+  have h := integrableOn_rpow_mul_exp_neg_mul_rpow (s := 1) (p := 1) (by norm_num) le_rfl ha
+  simp only [rpow_one] at h
+  exact h.mono_set (Set.Ioi_subset_Ioi zero_le_one)
 
 /-- t² * exp(-a*t) is integrable on [1,∞) for a > 0. -/
 lemma integrableOn_sq_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
     IntegrableOn (fun t => t^2 * exp (-a * t)) (Ici 1) volume := by
   rw [integrableOn_Ici_iff_integrableOn_Ioi]
-  exact integrable_of_isBigO_exp_neg (by linarith : 0 < a / 2)
-    ((continuous_pow 2).mul (continuous_exp.comp (continuous_const.mul continuous_id))).continuousOn
-    (isBigO_sq_mul_exp_neg a ha)
+  have h := integrableOn_rpow_mul_exp_neg_mul_rpow (s := 2) (p := 1) (by norm_num) le_rfl ha
+  simp only [rpow_one, rpow_two] at h
+  exact h.mono_set (Set.Ioi_subset_Ioi zero_le_one)
 
 end Integrability
 

@@ -188,7 +188,7 @@ theorem φ₀''_continuous : ContinuousOn φ₀'' (Set.univ ×ℂ Ioi 0) :=
 theorem φ₀_continuous : Continuous φ₀ := by
   have h_eq : φ₀ = φ₀'' ∘ (↑· : ℍ → ℂ) := funext fun z => (φ₀''_coe_upperHalfPlane z).symm
   rw [h_eq]
-  exact φ₀''_holo.continuousOn.comp_continuous continuous_subtype_val fun z => z.2
+  exact φ₀''_holo.continuousOn.comp_continuous continuous_induced_dom fun z => z.2
 
 end Corollaries
 
