@@ -566,14 +566,9 @@ private lemma qExpansion_constantCoeff_mul {a b : ℤ} (f : ModularForm Γ(1) a)
     PowerSeries.constantCoeff (qExpansion 1 ⇑(f.mul g)) =
       PowerSeries.constantCoeff (qExpansion 1 ⇑f) *
         PowerSeries.constantCoeff (qExpansion 1 ⇑g) := by
-  change PowerSeries.constantCoeff (qExpansion 1 (⇑f * ⇑g)) =
-    PowerSeries.constantCoeff (qExpansion 1 ⇑f) * PowerSeries.constantCoeff (qExpansion 1 ⇑g)
-  simpa [PowerSeries.coeff_zero_eq_constantCoeff] using
-    (qExpansion_mul_coeff_zero
-      ((analyticAt_cuspFunction_zero (Γ := Γ(1)) (h := 1) (k := a) f
-        (by positivity) (by simp)).continuousAt)
-      ((analyticAt_cuspFunction_zero (Γ := Γ(1)) (h := 1) (k := b) g
-        (by positivity) (by simp)).continuousAt))
+  rw [coe_mul, qExpansion_mul (analyticAt_cuspFunction_zero f (by positivity) (by simp))
+                              (analyticAt_cuspFunction_zero g (by positivity) (by simp))]
+  exact PowerSeries.constantCoeff.map_mul (qExpansion 1 ⇑f) (qExpansion 1 ⇑g)
 
 theorem E4E6_coeff_zero_eq_zero :
   (PowerSeries.coeff 0)
@@ -600,14 +595,10 @@ theorem E4E6_coeff_zero_eq_zero :
   have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
     ext z
     rw [pow_three, @DirectSum.of_mul_of, @DirectSum.of_mul_of]
-    change (((DirectSum.of (ModularForm Γ(1)) 12)
-      (GradedMonoid.GMul.mul E₄ (GradedMonoid.GMul.mul E₄ E₄))) 12) z = (E₄.mul (E₄.mul E₄)) z
     rfl
   have hd6 : ((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12 = E₆.mul E₆ := by
     ext z
     rw [pow_two, @DirectSum.of_mul_of]
-    change (((DirectSum.of (ModularForm Γ(1)) 12) (GradedMonoid.GMul.mul E₆ E₆)) 12) z =
-      (E₆.mul E₆) z
     rfl
   rw [hds, hd6]
   have hq4 : PowerSeries.constantCoeff (qExpansion 1 ⇑(E₄.mul (E₄.mul E₄))) = 1 := by
@@ -993,9 +984,7 @@ lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
     rw [norm_div, norm_mul, Complex.norm_natCast]
     have hdenom_lower : 1 - r ≤ ‖1 - q ^ (n : ℕ)‖ := calc
       1 - r ≤ 1 - r ^ (n : ℕ) := by
-        have : r ^ (n : ℕ) ≤ r := by
-          simpa [r, pow_one] using
-            (pow_le_pow_of_le_one (norm_nonneg q) hq.le n.one_le : ‖q‖ ^ (n : ℕ) ≤ ‖q‖ ^ 1)
+        have : r ^ (n : ℕ) ≤ r := pow_le_of_le_one q.norm_nonneg hq.le n.ne_zero
         linarith
       _ = 1 - ‖q ^ (n : ℕ)‖ := by rw [norm_pow]
       _ ≤ ‖1 - q ^ (n : ℕ)‖ := by
