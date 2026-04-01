@@ -514,7 +514,8 @@ open InnerProductSpace RCLike
 lemma E8_norm_eq_sqrt_even
     (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
     ∃ n : ℤ, Even n ∧ n = ‖WithLp.toLp 2 v‖ ^ 2 := by
-  rw [← real_inner_self_eq_norm_sq, EuclideanSpace.inner_toLp_toLp, star_trivial]
+  rw [← real_inner_self_eq_norm_sq]
+  change ∃ n : ℤ, Even n ∧ n = v ⬝ᵥ v
   exact E8_integral_self _ hv
 
 lemma E8_norm_lower_bound (v : Fin 8 → ℝ) (hv : v ∈ Submodule.E8 ℝ) :
@@ -536,18 +537,15 @@ noncomputable abbrev E8Lattice : Submodule ℤ (EuclideanSpace ℝ (Fin 8)) :=
 instance instDiscreteE8Lattice : DiscreteTopology E8Lattice := by
   rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff]
   use 1, by norm_num
-  rintro ⟨v, hv⟩ h
-  simp only [dist_zero_right, AddSubgroupClass.coe_norm] at h
+  rintro ⟨x, hx⟩ h
+  have hx' : ‖x‖ < 1 := by simpa [Subtype.dist_eq, dist_zero_right] using h
   simp only [Submodule.mk_eq_zero]
-  simp only [Submodule.mem_map] at hv
-  obtain ⟨v, hv, rfl⟩ := hv
+  simp only [Submodule.mem_map] at hx
+  obtain ⟨v, hv, rfl⟩ := hx
   suffices v = 0 from congrArg (WithLp.toLp 2) this
   refine (E8_norm_lower_bound v hv).resolve_right ?_
   have : 1 < √2 := by rw [Real.lt_sqrt zero_le_one, sq, mul_one]; exact one_lt_two
-  simp only [not_le]
-  calc ‖WithLp.toLp 2 v‖ = ‖(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm v‖ := rfl
-    _ < 1 := h
-    _ < √2 := this
+  exact not_le_of_gt (lt_trans hx' this)
 
 lemma span_E8_eq_top : Submodule.span ℝ (Submodule.E8 ℝ : Set (Fin 8 → ℝ)) = ⊤ := by
   simp only [Submodule.span, sInf_eq_top, Set.mem_setOf_eq]
@@ -630,9 +628,9 @@ noncomputable def E8Packing : PeriodicSpherePacking 8 where
     have hne : a' ≠ b' := by
       contrapose! hab
       simp [hab]
-    simp only [dist_eq_norm, AddSubgroupClass.coe_norm, AddSubgroupClass.coe_sub]
     have hne' : a' - b' ≠ 0 := sub_ne_zero.mpr hne
-    convert (E8_norm_lower_bound _ hsub).resolve_left hne' using 2
+    change √2 ≤ ‖(WithLp.linearEquiv 2 ℤ (Fin 8 → ℝ)).symm (a' - b')‖
+    simpa using (E8_norm_lower_bound (a' - b') hsub).resolve_left hne'
   lattice_action x y := add_mem
 
 lemma E8Packing_separation : E8Packing.separation = √2 := rfl
@@ -650,9 +648,7 @@ lemma E8Basis_apply_norm : ∀ i : Fin 8, ‖WithLp.toLp 2 (E8Basis ℝ i)‖ �
 
 lemma E8_ℤBasis_apply_norm : ∀ i : Fin 8, ‖E8_ℤBasis i‖ ≤ 2 := by
   intro i
-  simp only [AddSubgroupClass.coe_norm]
-  rw [coe_E8_ℤBasis_apply, ← E8Basis_apply]
-  exact E8Basis_apply_norm i
+  simpa [coe_E8_ℤBasis_apply, E8Basis_apply] using E8Basis_apply_norm i
 
 section hack
 

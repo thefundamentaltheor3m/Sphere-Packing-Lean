@@ -41,8 +41,7 @@ noncomputable def g : ℝ → ℝ → ℂ := fun r t ↦ -1
     * cexp (-π * r)
 
 lemma I₄'_eq_integral_g_Ioo (r : ℝ) : I₄' r = ∫ t in Ioo (0 : ℝ) 1, g r t := by
-  simp only [I₄'_eq, neg_mul, intervalIntegral_eq_integral_uIoc, zero_le_one, ↓reduceIte,
-    uIoc_of_le, one_smul, g, integral_Ioc_eq_integral_Ioo]
+  simp only [I₄'_eq, g, integral_of_le zero_le_one, integral_Ioc_eq_integral_Ioo]
 
 end Setup
 
