@@ -126,8 +126,7 @@ public theorem D_sq (F : ℍ → ℂ) (hF : MDiff F) : D (F ^ 2) = 2 * F * D F :
 public theorem D_cube (F : ℍ → ℂ) (hF : MDiff F) :
     D (F ^ 3) = 3 * F ^ 2 * D F := by
   have hF2 : MDiff (F ^ 2) := by simpa [pow_two] using (MDifferentiable.mul hF hF)
-  have : F ^ 3 = F * F ^ 2 := by ring_nf
-  rw [this, D_mul F (F ^ 2) hF hF2, D_sq F hF]
+  rw [pow_succ', D_mul F (F ^ 2) hF hF2, D_sq F hF]
   ring_nf
 
 /-- Division of MDifferentiable functions on ℍ is MDifferentiable, when the denominator
@@ -769,7 +768,7 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
         mul_assoc] using congrArg Complex.re hRes
     -- Rewrite `deriv h t` as `(-2π) * (d t)^(-a) * ((serre_D k F)(it)).re`.
     have hderiv :
-        deriv h t = (-2 * π) * (d t) ^ (-a) * ((serre_D k F).resToImagAxis t).re := by
+        deriv h t = -2 * (π * (d t) ^ (-a) * ((serre_D k F).resToImagAxis t).re) := by
       -- Start from the explicit derivative formula provided by `hh`.
       rw [(hh t ht).deriv]
       -- Rewrite the Serre-derivative term.
@@ -782,8 +781,8 @@ public theorem antiSerreDerPos {F : ℍ → ℂ} {k : ℤ} (hFderiv : MDiff F)
         simpa [add_assoc, add_left_comm, add_comm] using h.symm
       grind only
     -- Combine signs.
-    rw [hderiv, mul_assoc]
-    exact mul_neg_of_neg_of_pos (by nlinarith [Real.pi_pos]) (mul_pos hdpowpos hSpos)
+    rw [hderiv]
+    exact mul_neg_of_neg_of_pos (by norm_num) (by positivity)
   have hAnti : StrictAntiOn h (Set.Ioi (0 : ℝ)) :=
     strictAntiOn_of_deriv_neg (convex_Ioi (0 : ℝ))
       (fun x hx => (hh x hx).continuousAt.continuousWithinAt)
