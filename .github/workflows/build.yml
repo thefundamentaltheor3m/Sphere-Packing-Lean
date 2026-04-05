@@ -5,6 +5,7 @@ on:
   pull_request:
     branches:
       - main
+      - gauss2
   workflow_dispatch:
 
 # Cancel previous runs if a new commit is pushed to the same PR or branch

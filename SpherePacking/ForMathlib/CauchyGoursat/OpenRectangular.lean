@@ -7,35 +7,29 @@ M4R File
 -/
 module
 
-
-public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 public import Mathlib.Topology.EMetricSpace.Paracompact
 public import Mathlib.Topology.Separation.CompletelyRegular
-
-@[expose] public section
 
 /-! # Deforming Paths of Integration for Open Contours
 
 In this file, we prove that if a function tends to zero as the imaginary part of its input tends to
 infinity and satisfies Cauchy-Goursat-type conditions, then we can deform paths of integration along
 rectangular contours that extend infinitely in the vertical direction.
-
-TODO: Use `atImInfty` for vanishing as imaginary part tends to i infinity!
 -/
-
-open Set Real Complex intervalIntegral Metric Filter MeasureTheory
-
-open scoped Interval Topology
 
 namespace Complex
 
+open Set Real intervalIntegral Metric Filter MeasureTheory
+open scoped Interval Topology
+
 section aux
 
--- WHY ARE THESE NOT JUST `exact?`????!!!!
-theorem re_of_real_add_real_mul_I (x y : ℝ) : (x + y * I).re = x := by simp
-theorem im_of_real_add_real_mul_I (x y : ℝ) : (x + y * I).im = y := by simp
+@[simp] theorem re_of_real_add_real_mul_I (x y : ℝ) : (x + y * I).re = x := by simp
+
+/-- Imaginary part of `x + y * I` is `y`. -/
+@[simp] public theorem im_of_real_add_real_mul_I (x y : ℝ) : (x + y * I).im = y := by simp
 
 end aux
 
@@ -48,65 +42,55 @@ section Tendsto_Zero
 lemma tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero
     (htendsto : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε) :
     Tendsto (fun (m : ℝ) ↦ ∫ (x : ℝ) in x₁..x₂, f (x + m * I)) atTop (𝓝 0) := by
-  wlog hne : x₁ ≠ x₂
-  · rw [ne_eq, Decidable.not_not] at hne
-    simp only [hne, integral_same, tendsto_const_nhds_iff]
+  by_cases h : x₁ = x₂
+  · subst h; simp
   simp only [NormedAddCommGroup.tendsto_nhds_zero, eventually_atTop, ge_iff_le]
   intro ε hε
-  obtain ⟨M, hM⟩ := htendsto ((1 / 2) * (ε / |x₂ - x₁|)) <| by
-    simp only [one_div, gt_iff_lt, inv_pos, Nat.ofNat_pos, mul_pos_iff_of_pos_left]
-    exact (div_pos hε (abs_sub_pos.mpr hne.symm))
+  have hx : 0 < |x₂ - x₁| := abs_sub_pos.mpr (ne_comm.mp h)
+  obtain ⟨M, hM⟩ :=
+    htendsto ((1 / 2 : ℝ) * (ε / |x₂ - x₁|)) (mul_pos (by norm_num) (div_pos hε hx))
   use M
-  intro y hy
-  calc ‖∫ (x : ℝ) in x₁..x₂, f (↑x + ↑y * I)‖
+  intro m hm
+  calc ‖∫ (x : ℝ) in x₁..x₂, f (x + m * I)‖
   _ ≤ ((1 / 2) * (ε / |x₂ - x₁|)) * |x₂ - x₁| :=
       intervalIntegral.norm_integral_le_of_norm_le_const <| by
-      intro x hx
-      specialize hM (x + y * I)
-      rw [im_of_real_add_real_mul_I x y] at hM
-      exact le_of_lt (hM hy)
+      intro x hx'
+      exact le_of_lt <| hM (x + m * I) (by simpa using hm)
   _ = (1 / 2) * ε := by
-      rw [mul_assoc]
-      have : 0 ≠ |x₂ - x₁| := ne_of_lt (abs_sub_pos.mpr hne.symm)
-      field_simp [this]
+      field_simp [mul_assoc, (show (|x₂ - x₁| : ℝ) ≠ 0 from ne_of_gt hx)]
   _ < ε := by linarith
 
 end Tendsto_Zero
 
 section Eventually_Eq_Zero
 
-private lemma hzero (hcont : ContinuousOn f ([[x₁, x₂]] ×ℂ (Ici y))) (s : Set ℂ) (hs : s.Countable)
+lemma hzero (hcont : ContinuousOn f ([[x₁, x₂]] ×ℂ (Ici y))) (s : Set ℂ) (hs : s.Countable)
     (hdiff : ∀ x ∈ ((Ioo (min x₁ x₂) (max x₁ x₂)) ×ℂ (Ioi y)) \ s, DifferentiableAt ℂ f x) :
     ∀ m ≥ y, (∫ (x : ℝ) in x₁..x₂, f (x + y * I)) - (∫ (x : ℝ) in x₁..x₂, f (x + m * I))
       + (I • ∫ (t : ℝ) in y..m, f (x₂ + t * I)) - (I • ∫ (t : ℝ) in y..m, f (x₁ + t * I))
     = 0 := by
   intro m hm
-  calc _
-  _ = (((∫ (t : ℝ) in (x₁ + y * I).re..(x₂ + m * I).re, f (t + (x₁ + y * I).im * I))
-      - ∫ (t : ℝ) in (x₁ + y * I).re..(x₂ + m * I).re, f (t + (x₂ + m * I).im * I))
-      + I • ∫ (t : ℝ) in (x₁ + y * I).im..(x₂ + m * I).im, f ((x₂ + m * I).re + t * I))
-      - I • ∫ (t : ℝ) in (x₁ + y * I).im..(x₂ + m * I).im, f ((x₁ + y * I).re + t * I) := by
-      simp only [re_of_real_add_real_mul_I x₁ y, re_of_real_add_real_mul_I x₂ m,
-                 im_of_real_add_real_mul_I x₁ y, im_of_real_add_real_mul_I x₂ m]
-  _ = 0 := by
-      refine Complex.integral_boundary_rect_eq_zero_of_differentiable_on_off_countable
-        f (x₁ + y * I) (x₂ + m * I) s hs ?_ ?_ <;>
-      simp only [re_of_real_add_real_mul_I x₁ y, re_of_real_add_real_mul_I x₂ m,
-                im_of_real_add_real_mul_I x₁ y, im_of_real_add_real_mul_I x₂ m]
-      · apply hcont.mono
+  simpa [re_of_real_add_real_mul_I, im_of_real_add_real_mul_I] using
+    (Complex.integral_boundary_rect_eq_zero_of_differentiable_on_off_countable f (x₁ + y * I)
+      (x₂ + m * I) s hs
+      (by
+        refine hcont.mono ?_
         rw [reProdIm_subset_iff]
         gcongr
-        rw [uIcc_of_le hm]
-        exact Icc_subset_Ici_self
-      · intro z hz
-        apply hdiff z
-        obtain ⟨hz₁, hz₂⟩ := hz
-        refine ⟨?_, hz₂⟩
-        rw [mem_reProdIm] at hz₁ ⊢
-        refine ⟨hz₁.1, ?_⟩
-        rw [mem_Ioi]
-        rw [inf_eq_left.2 hm] at hz₁
-        exact hz₁.2.1
+        · simp
+        · simpa [re_of_real_add_real_mul_I, im_of_real_add_real_mul_I, uIcc_of_le hm] using
+            (Icc_subset_Ici_self : Icc y m ⊆ Ici y))
+      (by
+        intro z hz
+        rcases (by
+          simpa [re_of_real_add_real_mul_I, im_of_real_add_real_mul_I] using hz :
+            z ∈ (Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Ioo (min y m) (max y m)) ∧ z ∉ s) with ⟨hz, hzns⟩
+        refine hdiff z ⟨?_, hzns⟩
+        rw [mem_reProdIm] at hz ⊢
+        refine ⟨hz.1, ?_⟩
+        exact (by
+          have hz_im := (mem_Ioo.1 hz.2).1
+          simpa [min_eq_left hm] using hz_im)))
 
 /-- A direct consequence of the **Cauchy-Goursat Theorem for rectangles**: given the conditions of
 the Cauchy-Goursat Theorem between two vertical lines in the Complex plane, fixing some `y`, the
@@ -170,11 +154,10 @@ theorem integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable
     {C₂ : E} (hC₂ : Tendsto (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₂ + t * I)) atTop (𝓝 C₂))
     (htendsto : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε) :
     (∫ (t : ℝ) in x₁..x₂, f (t + y * I)) + C₂ - C₁ = 0 := by
-  rw [sub_eq_zero]
-  symm
-  exact tendsto_nhds_unique hC₁ <|
-    tendsto_integral_boundary_open_rect_one_side_atTop_nhds_sum_other_two_sides
-      y hcont s hs hdiff hC₂ htendsto
+  exact sub_eq_zero.2 <|
+    (tendsto_nhds_unique hC₁ <|
+        tendsto_integral_boundary_open_rect_one_side_atTop_nhds_sum_other_two_sides
+          y hcont s hs hdiff hC₂ htendsto).symm
 
 /-- **Deformation of open rectangular contours:** Given two infinite vertical contours such that a
 function satisfies Cauchy-Goursat conditions between them, the limit of interval integrals along the
@@ -211,7 +194,8 @@ it requires the integral of the norm of the function to be finite rather than ju
 function. We nevertheless include this version of the theorem because it is likely that in
 applications involving specific functions, there will already be proofs of integrability.
 -/
-theorem integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
+public theorem
+    integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
     (hcont : ContinuousOn f ([[x₁, x₂]] ×ℂ (Ici y))) (s : Set ℂ) (hs : s.Countable)
     (hdiff : ∀ x ∈ ((Ioo (min x₁ x₂) (max x₁ x₂)) ×ℂ (Ioi y)) \ s, DifferentiableAt ℂ f x)
     (hint₁ : IntegrableOn (fun (t : ℝ) ↦ f (x₁ + t * I)) (Ioi y) volume)
@@ -220,43 +204,82 @@ theorem integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_o
     (∫ (x : ℝ) in x₁..x₂, f (x + y * I)) + (I • ∫ (t : ℝ) in Ioi y, f (x₂ + t * I))
       - (I • ∫ (t : ℝ) in Ioi y, f (x₁ + t * I)) = 0 := by
   refine integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable' y hcont s hs hdiff
-    ?_ ?_ htendsto
-  · exact intervalIntegral_tendsto_integral_Ioi y hint₁ fun ⦃U⦄ a ↦ a
-  · exact intervalIntegral_tendsto_integral_Ioi y hint₂ fun ⦃U⦄ a ↦ a
+    (intervalIntegral_tendsto_integral_Ioi y hint₁ tendsto_id)
+    (intervalIntegral_tendsto_integral_Ioi y hint₂ tendsto_id) htendsto
 
 end Contour_Deformation_of_Integrable_along_BOTH
 
-----------------------------------------------------------------------------------------------------
+section Contour_Deformation_Tendsto_Top
 
-section Contour_Deformation_of_Integrable_along_ONE
+/-- Finite-rectangle deformation on a bounded strip.
 
-/- I'm not sure if the following is true. Certainly, from `hint₁`, it follows that the integral
-of `f` along `x₂` does exist. But does that mean the integral of `‖f‖` along `x₂` also exists? -/
-theorem integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on'
-    (hcont : ContinuousOn f ([[x₁, x₂]] ×ℂ (Ici y))) (s : Set ℂ) (hs : s.Countable)
-    (hdiff : ∀ x ∈ ((Ioo (min x₁ x₂) (max x₁ x₂)) ×ℂ (Ioi y)) \ s, DifferentiableAt ℂ f x)
-    (hint₁ : IntegrableOn (fun (t : ℝ) ↦ f (x₁ + t * I)) (Ioi y) volume)
-    (htendsto : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε) :
-    (∫ (x : ℝ) in x₁..x₂, f (x + y * I)) + (I • ∫ (t : ℝ) in Ioi y, f (x₂ + t * I))
-      - (I • ∫ (t : ℝ) in Ioi y, f (x₁ + t * I)) = 0 := by
-  refine integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
-    y hcont s hs hdiff hint₁ ?_ htendsto
-  sorry
+This is a convenience lemma for applications where one already knows directly that the top-edge
+interval integral tends to `0` as the height tends to `∞`. -/
+public theorem rect_deform_of_tendsto_top {f : ℂ → E} {x₁ x₂ y : ℝ}
+    (hcont : ContinuousOn f (Set.uIcc x₁ x₂ ×ℂ Set.Ici y))
+    (hdiff :
+      ∀ z ∈ (Set.Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Set.Ioi y), DifferentiableAt ℂ f z)
+    (hint₁ :
+      IntegrableOn (fun t : ℝ => f ((x₁ : ℂ) + (t : ℂ) * I)) (Set.Ioi y) volume)
+    (hint₂ :
+      IntegrableOn (fun t : ℝ => f ((x₂ : ℂ) + (t : ℂ) * I)) (Set.Ioi y) volume)
+    (htop :
+      Tendsto (fun m : ℝ => ∫ x in x₁..x₂, f ((x : ℂ) + (m : ℂ) * I)) atTop (𝓝 0)) :
+    (∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) +
+          (I • ∫ t in Set.Ioi y, f ((x₂ : ℂ) + (t : ℂ) * I)) -
+            (I • ∫ t in Set.Ioi y, f ((x₁ : ℂ) + (t : ℂ) * I)) = 0 := by
+  have hrect :
+      ∀ m : ℝ, y ≤ m →
+        (∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) -
+              (∫ x in x₁..x₂, f ((x : ℂ) + (m : ℂ) * I)) +
+            (I • ∫ t in y..m, f ((x₂ : ℂ) + (t : ℂ) * I)) -
+              (I • ∫ t in y..m, f ((x₁ : ℂ) + (t : ℂ) * I)) = 0 := by
+    intro m hm
+    have hdiff' :
+        ∀ z ∈ ((Set.Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Set.Ioi y) \ (∅ : Set ℂ)),
+          DifferentiableAt ℂ f z := by
+      intro z hz
+      exact hdiff z (by simpa using hz.1)
+    simpa using
+      (Complex.hzero (f := f) (x₁ := x₁) (x₂ := x₂) (y := y) hcont (s := (∅ : Set ℂ))
+        (hs := by simp) hdiff' m hm)
+  have hEq :
+      (fun m : ℝ =>
+          (∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) +
+              (I • ∫ t in y..m, f ((x₂ : ℂ) + (t : ℂ) * I)) -
+                (I • ∫ t in y..m, f ((x₁ : ℂ) + (t : ℂ) * I))) =ᶠ[atTop]
+        fun m : ℝ => ∫ x in x₁..x₂, f ((x : ℂ) + (m : ℂ) * I) := by
+    filter_upwards [eventually_ge_atTop y] with m hm
+    grind only
+  have hF0 :
+      Tendsto
+          (fun m : ℝ =>
+            (∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) +
+                (I • ∫ t in y..m, f ((x₂ : ℂ) + (t : ℂ) * I)) -
+                  (I • ∫ t in y..m, f ((x₁ : ℂ) + (t : ℂ) * I))) atTop (𝓝 0) :=
+    (tendsto_congr' hEq).2 htop
+  have hV₁ :
+      Tendsto (fun m : ℝ => ∫ t in y..m, f ((x₁ : ℂ) + (t : ℂ) * I)) atTop
+        (𝓝 (∫ t in Set.Ioi y, f ((x₁ : ℂ) + (t : ℂ) * I))) :=
+    intervalIntegral_tendsto_integral_Ioi y hint₁ tendsto_id
+  have hV₂ :
+      Tendsto (fun m : ℝ => ∫ t in y..m, f ((x₂ : ℂ) + (t : ℂ) * I)) atTop
+        (𝓝 (∫ t in Set.Ioi y, f ((x₂ : ℂ) + (t : ℂ) * I))) :=
+    intervalIntegral_tendsto_integral_Ioi y hint₂ tendsto_id
+  have hFlim :
+      Tendsto
+          (fun m : ℝ =>
+            (∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) +
+                (I • ∫ t in y..m, f ((x₂ : ℂ) + (t : ℂ) * I)) -
+                  (I • ∫ t in y..m, f ((x₁ : ℂ) + (t : ℂ) * I))) atTop
+        (𝓝 ((∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) +
+              (I • ∫ t in Set.Ioi y, f ((x₂ : ℂ) + (t : ℂ) * I)) -
+                (I • ∫ t in Set.Ioi y, f ((x₁ : ℂ) + (t : ℂ) * I)))) := by
+    have hV₁' := hV₁.const_smul I
+    have hV₂' := hV₂.const_smul I
+    exact (tendsto_const_nhds.add hV₂').sub hV₁'
+  simpa using tendsto_nhds_unique hFlim hF0
 
-  -- Use the first 3 to prove the last one. Also find pf that continuous functions are integrable
-  -- on bounded intervals - use `integrableOn_Ioi_of_intervalIntegral_norm_tendsto`.
-  -- NOT EVEN THE ABOVE.
-  -- Say that the integral is eventually the sum of the other three integrals.
-  -- Try and do some kind of `integrableOn_of_eventually_eq_integrableOn`
-  -- (Maybe prove this? Idk)
-  -- let b :=
+end Contour_Deformation_Tendsto_Top
 
--- #check integrableOn_Ioi_of_intervalIntegral_norm_tendsto -- use for last one
--- -- #check integrableOn_Ioi_of_intervalIntegral_tendsto -- use for last one
--- #check Filter.tendsto_id
-
--- #check integral_boundary_rect_eq_zero_of_differentiable_on_off_countable
--- #check intervalIntegral_tendsto_integral_Ioi
-
-end Contour_Deformation_of_Integrable_along_ONE
 end Complex
