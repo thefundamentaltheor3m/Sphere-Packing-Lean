@@ -27,7 +27,7 @@ theorem EuclideanSpace.volume_ball_pos [Nonempty ι] (x : EuclideanSpace ℝ ι)
       linarith
 
 open Classical in
-@[reducible]
+@[implicit_reducible]
 noncomputable def Fintype.ofSingletonOnly (α : Type*) [Subsingleton α] : Fintype α :=
   if h : Nonempty α then
     Fintype.ofSubsingleton (Classical.choice h)

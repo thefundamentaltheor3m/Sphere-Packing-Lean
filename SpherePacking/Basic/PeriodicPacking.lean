@@ -192,7 +192,7 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     · apply hg'
       exact (Classical.choose_spec (hD_unique_covers x)).left
     · apply (hg' 0 ?_).symm
-      change ((0 : EuclideanSpace ℝ (Fin d)) + x) ∈ D
+      set_option backward.isDefEq.respectTransparency false in
       simpa using hx.right
 
 noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
