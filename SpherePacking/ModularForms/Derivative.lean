@@ -753,6 +753,7 @@ theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
 
 /-- If F is real on the imaginary axis and MDifferentiable, then the Serre derivative
 (of real weight) is also real on the imaginary axis. -/
+@[fun_prop]
 theorem serre_D_real_of_real {F : ℍ → ℂ} {k : ℝ} (hF_real : ResToImagAxis.Real F)
     (hF_diff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) : ResToImagAxis.Real (serre_D k F) := by
   unfold serre_D
