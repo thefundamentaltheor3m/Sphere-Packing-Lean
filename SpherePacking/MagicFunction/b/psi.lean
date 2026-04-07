@@ -3,10 +3,15 @@ Copyright (c) 2025 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Raphael Appenzeller
 -/
+module
+
 
 -- import Mathlib
 
-import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.MagicFunction.IntegralParametrisations
+
+@[expose] public section
 
 /-! # The ψ Functions
 
@@ -75,20 +80,12 @@ private lemma slashS (z : ℍ) (F : ℍ → ℂ) : (F ∣[(2 : ℤ)] (S)) (z) =
 private lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (2 : ℕ) := by
   rw [SL_slash_apply, S, denom]
-  simp only [Int.reduceNeg, sl_moeb, coe2_smul, Fin.isValue,
-    SpecialLinearGroup.coe_GL_coe_matrix, SpecialLinearGroup.map_apply_coe,
-    RingHom.mapMatrix_apply, Int.coe_castRingHom, map_apply, of_apply, cons_val', cons_val_zero,
-    cons_val_fin_one, cons_val_one, Int.cast_one, ofReal_one, one_mul, Int.cast_zero,
-    ofReal_zero, add_zero, neg_neg, mul_eq_mul_left_iff]
-  have pow_coe_nat (a : ℂ) : a ^ (2 : ℕ) = a ^ (2 : ℤ) := by
-    rw [zpow_two, pow_two]
-  left
-  rw [pow_coe_nat]
+  simp [zpow_two, pow_two]
 
 private lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
     (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
   rw [slashS, mul_assoc]
-  simp only [sl_moeb, Int.reduceNeg, zpow_neg]
+  simp only [sl_moeb, Int.reduceNeg, _root_.zpow_neg]
   have inv_mul_cancel (a : ℂ) (nonzero : a ≠ 0) : a⁻¹ * a = (1 : ℂ) := by
     rw [mul_comm]
     apply Complex.mul_inv_cancel
@@ -139,7 +136,7 @@ private lemma slashST' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (S * T
 private lemma slashST'' (z : ℍ) (F : ℍ → ℂ) : F ((S * T) • z) =
     (F ∣[(2 : ℤ)] (S * T)) (z) * (z + 1 : ℂ) ^ 2 := by
   rw [slashST, mul_assoc]
-  simp only [sl_moeb, map_mul, Int.reduceNeg, zpow_neg]
+  simp only [sl_moeb, map_mul, Int.reduceNeg, _root_.zpow_neg]
   have inv_mul_cancel (a : ℂ) (nonzero : a ≠ 0) : a⁻¹ * a = (1 : ℂ) := by
     rw [mul_comm]
     exact Complex.mul_inv_cancel nonzero
@@ -180,14 +177,9 @@ lemma ψI_eq : ψI = 128 • ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₄_MF - H
       128 • ((F3 ((S * T) • z) + F4 ((S * T) • z)) / ((F2 ((S * T) • z)) ^ 2)) := by
     simp only [nsmul_eq_mul, Nat.cast_ofNat, sl_moeb, map_mul, Pi.div_apply, Pi.add_apply,
       Pi.mul_apply, Pi.ofNat_apply, Pi.pow_apply]
-  rw [rewriting, h2', h3' , h4']
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := by exact rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
-  rw [hh2 , hh3, hh4]
-  rw [slash_mul, slash_mul, slash_mul, H₂_S_action, H₃_S_action, H₄_S_action,
-    SlashAction.neg_slash, SlashAction.neg_slash, SlashAction.neg_slash, H₂_T_action,
-    H₃_T_action, H₄_T_action, neg_neg, ← add_mul]
+  rw [rewriting, h2', h3' , h4', H₂_MF_coe , H₃_MF_coe, H₄_MF_coe, slash_mul, slash_mul, slash_mul,
+    H₂_S_action, H₃_S_action, H₄_S_action, SlashAction.neg_slash, SlashAction.neg_slash,
+    SlashAction.neg_slash, H₂_T_action, H₃_T_action, H₄_T_action, neg_neg, ← add_mul]
   nth_rw 2 [pow_two]
   have z_plus_one_squared_nonzero (z : ℍ) : (z + 1 : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
@@ -217,11 +209,8 @@ lemma ψT_eq : ψT = 128 * ((H₃_MF + H₄_MF) / (H₂_MF ^ 2) + (H₂_MF + H�
   have H4slashT' (z : ℍ): (H₄_MF : ℍ → ℂ) (T • z) = ((H₄_MF : ℍ → ℂ) ∣[(2 : ℤ)] (T)) (z) := by
     exact Eq.symm (Complex.ext (congrArg Complex.re (slashT z ⇑H₄_MF))
         (congrArg Complex.im (slashT z ⇑H₄_MF)))
-  rw [H2slashT', H3slashT', H4slashT']
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := by exact rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
-  rw [hh2, hh3, hh4, H₂_T_action, H₃_T_action, H₄_T_action]
+  rw [H2slashT', H3slashT', H4slashT', H₂_MF_coe, H₃_MF_coe, H₄_MF_coe, H₂_T_action, H₃_T_action,
+    H₄_T_action]
   simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm (H₃ z) (H₂ z)]
 -- proof of ψT_eq complete.
 
@@ -242,11 +231,8 @@ lemma ψS_eq' : ψS = 128 * ((H₄_MF - H₂_MF) / (H₃_MF ^ 2) - (H₂_MF + H�
   have H4slashS'' (z : ℍ): (H₄_MF : ℍ → ℂ) (S • z) =
       ((H₄_MF : ℍ → ℂ) ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
     exact slashS'' z ⇑H₄_MF
-  rw [H2slashS'', H3slashS'', H4slashS'']
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := by exact rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
-  rw [hh2 , hh3, hh4, H₂_S_action, H₃_S_action, H₄_S_action]
+  rw [H2slashS'', H3slashS'', H4slashS'', H₂_MF_coe , H₃_MF_coe, H₄_MF_coe, H₂_S_action,
+    H₃_S_action, H₄_S_action]
   have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
     exact ne_zero z
@@ -286,11 +272,8 @@ lemma ψT_slash_T : ψT ∣[-2] T = ψI := by
   rw [ψT_eq , ψI_eq , slashT']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply, Pi.smul_apply, Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat]
-  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := by exact rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
-  rw [hh2, hh3, hh4, H₂_T_action, H₃_T_action, H₄_T_action]
+  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF, H₂_MF_coe, H₃_MF_coe, H₄_MF_coe,
+    H₂_T_action, H₃_T_action, H₄_T_action]
   simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm  (- (H₂ z)) (H₄ z), sub_eq_add_neg]
 -- proof of ψT_slash_T complete.
 
@@ -299,11 +282,8 @@ lemma ψS_slash_S : ψS ∣[-2] S = ψI := by
   rw [ψS_eq' , ψI_eq , slashS']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply, Pi.smul_apply, Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat]
-  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := by exact rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
-  rw [hh2 , hh3, hh4, H₂_S_action, H₃_S_action, H₄_S_action]
+  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF, H₂_MF_coe , H₃_MF_coe, H₄_MF_coe,
+    H₂_S_action, H₃_S_action, H₄_S_action]
   simp only [Pi.neg_apply, neg_mul, sub_neg_eq_add, even_two, Even.neg_pow]
   have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
@@ -331,13 +311,9 @@ lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
   rw [ψS_eq', ψT_eq, slashST']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.sub_apply, Pi.div_apply,
     Pi.pow_apply, Pi.add_apply]
-  rw [slashST'' z ⇑H₂_MF, slashST'' z ⇑H₃_MF, slashST'' z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := by exact rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
-  rw [hh2 , hh3, hh4, slash_mul, slash_mul, slash_mul, H₂_S_action, H₃_S_action, H₄_S_action,
-    SlashAction.neg_slash, SlashAction.neg_slash, SlashAction.neg_slash,
-    H₂_T_action, H₃_T_action, H₄_T_action]
+  rw [slashST'' z ⇑H₂_MF, slashST'' z ⇑H₃_MF, slashST'' z ⇑H₄_MF, H₂_MF_coe , H₃_MF_coe, H₄_MF_coe,
+    slash_mul, slash_mul, slash_mul, H₂_S_action, H₃_S_action, H₄_S_action, SlashAction.neg_slash,
+    SlashAction.neg_slash, SlashAction.neg_slash, H₂_T_action, H₃_T_action, H₄_T_action]
   simp only [Pi.neg_apply, neg_neg, neg_mul, sub_neg_eq_add, even_two, Even.neg_pow]
   have z_plus_one_squared_nonzero (z : ℍ) : (z + 1 : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
@@ -358,16 +334,15 @@ lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
   rw [div_self (z_plus_one_squared_nonzero z), mul_one, mul_assoc, ← pow_two, ← mul_div,
      ← div_div, mul_div, div_self (z_plus_one_squared_nonzero z), mul_one]
 
+-- In my thesis, the - sign before ψS is missing. Makes no difference because we bound integrals in
+-- absolute value, but point is that this way the Js look even more similar to the Is!
 lemma ψS_slash_T : ψS ∣[-2] T = -ψS := by
   ext z
   rw [ψS_eq', slashT']
   simp only [Pi.mul_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply,  Pi.sub_apply]
-  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := by exact rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
-  rw [hh2 , hh3, hh4, H₂_T_action, H₃_T_action, H₄_T_action]
+  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF, H₂_MF_coe , H₃_MF_coe, H₄_MF_coe,
+    H₂_T_action, H₃_T_action, H₄_T_action]
   simp only [Pi.ofNat_apply, Pi.neg_apply, sub_neg_eq_add, Pi.mul_apply, Pi.sub_apply, Pi.div_apply,
     Pi.pow_apply, Pi.add_apply]
   rw [sub_eq_add_neg, add_comm, ← sub_neg_eq_add, ← neg_sub', mul_neg, add_comm,
@@ -379,11 +354,8 @@ lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
   rw [ψT_eq, slashS']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply, Pi.neg_apply]
-  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := by exact rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := by exact rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := by exact rfl
-  rw [hh2 , hh3, hh4, H₂_S_action, H₃_S_action, H₄_S_action]
+  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF, H₂_MF_coe , H₃_MF_coe, H₄_MF_coe,
+    H₂_S_action, H₃_S_action, H₄_S_action]
   simp only [Pi.neg_apply, neg_mul, even_two, Even.neg_pow]
   have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
     rw [pow_two, mul_self_ne_zero]
@@ -413,7 +385,6 @@ lemma ψI_slash_TS : ψI ∣[-2] (T * S) = -ψT := by
   have def_ψT : ψT = ψI ∣[-2] (T) := rfl
   rw [← def_ψT, ψT_slash_S]
 
-
 lemma ψS_slash_STS : ψS ∣[-2] (S * T * S) = -ψT := by
   ext z
   rw [slash_mul, slash_mul, ψS_slash_S]
@@ -429,6 +400,147 @@ lemma ψS_slash_TSTS : ψS ∣[-2] (T * S * T * S) = ψT := by
 
 end rels
 
+open MagicFunction.Parametrisations Set
+
+example {t : ℝ} (ht : t ∈ Ioc 0 1) : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
+
+section eq_of_mem
+
+lemma ψI'_eq_ψI_of_mem {z : ℂ} (hz : 0 < z.im) : ψI' z = ψI ⟨z, hz⟩ := by simp [ψI', hz]
+
+lemma ψS'_eq_ψS_of_mem {z : ℂ} (hz : 0 < z.im) : ψS' z = ψS ⟨z, hz⟩ := by simp [ψS', hz]
+
+lemma ψT'_eq_ψT_of_mem {z : ℂ} (hz : 0 < z.im) : ψT' z = ψT ⟨z, hz⟩ := by simp [ψT', hz]
+
+lemma ψT'_comp_z₁'_eq_ψT_comp_z₁'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψT' (z₁' t) = ψT ⟨z₁' t, im_z₁'_pos ht⟩ :=
+  ψT'_eq_ψT_of_mem (im_z₁'_pos ht)
+
+lemma ψS'_comp_z₁'_eq_ψS_comp_z₁'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψS' (z₁' t) = ψS ⟨z₁' t, im_z₁'_pos ht⟩ :=
+  ψS'_eq_ψS_of_mem (im_z₁'_pos ht)
+
+lemma ψI'_comp_z₁'_eq_ψI_comp_z₁'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψI' (z₁' t) = ψI ⟨z₁' t, im_z₁'_pos ht⟩ :=
+  ψI'_eq_ψI_of_mem (im_z₁'_pos ht)
+
+lemma ψT'_comp_z₂'_eq_ψT_comp_z₂'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψT' (z₂' t) = ψT ⟨z₂' t, im_z₂'_pos ht⟩ :=
+  ψT'_eq_ψT_of_mem (im_z₂'_pos ht)
+
+lemma ψS'_comp_z₂'_eq_ψS_comp_z₂'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψS' (z₂' t) = ψS ⟨z₂' t, im_z₂'_pos ht⟩ :=
+  ψS'_eq_ψS_of_mem (im_z₂'_pos ht)
+
+lemma ψI'_comp_z₂'_eq_ψI_comp_z₂'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψI' (z₂' t) = ψI ⟨z₂' t, im_z₂'_pos ht⟩ :=
+  ψI'_eq_ψI_of_mem (im_z₂'_pos ht)
+
+lemma ψT'_comp_z₃'_eq_ψT_comp_z₃'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψT' (z₃' t) = ψT ⟨z₃' t, im_z₃'_pos ht⟩ :=
+  ψT'_eq_ψT_of_mem (im_z₃'_pos ht)
+
+lemma ψS'_comp_z₃'_eq_ψS_comp_z₃'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψS' (z₃' t) = ψS ⟨z₃' t, im_z₃'_pos ht⟩ :=
+  ψS'_eq_ψS_of_mem (im_z₃'_pos ht)
+
+lemma ψI'_comp_z₃'_eq_ψI_comp_z₃'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψI' (z₃' t) = ψI ⟨z₃' t, im_z₃'_pos ht⟩ :=
+  ψI'_eq_ψI_of_mem (im_z₃'_pos ht)
+
+lemma ψT'_comp_z₄'_eq_ψT_comp_z₄'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψT' (z₄' t) = ψT ⟨z₄' t, im_z₄'_pos ht⟩ :=
+  ψT'_eq_ψT_of_mem (im_z₄'_pos ht)
+
+lemma ψS'_comp_z₄'_eq_ψS_comp_z₄'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψS' (z₄' t) = ψS ⟨z₄' t, im_z₄'_pos ht⟩ :=
+  ψS'_eq_ψS_of_mem (im_z₄'_pos ht)
+
+lemma ψI'_comp_z₄'_eq_ψI_comp_z₄'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
+  ψI' (z₄' t) = ψI ⟨z₄' t, im_z₄'_pos ht⟩ :=
+  ψI'_eq_ψI_of_mem (im_z₄'_pos ht)
+
+lemma ψT'_comp_z₅'_eq_ψT_comp_z₅'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψT' (z₅' t) = ψT ⟨z₅' t, im_z₅'_pos ht⟩ :=
+  ψT'_eq_ψT_of_mem (im_z₅'_pos ht)
+
+lemma ψS'_comp_z₅'_eq_ψS_comp_z₅'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψS' (z₅' t) = ψS ⟨z₅' t, im_z₅'_pos ht⟩ :=
+  ψS'_eq_ψS_of_mem (im_z₅'_pos ht)
+
+lemma ψI'_comp_z₅'_eq_ψI_comp_z₅'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψI' (z₅' t) = ψI ⟨z₅' t, im_z₅'_pos ht⟩ :=
+  ψI'_eq_ψI_of_mem (im_z₅'_pos ht)
+
+lemma ψT'_comp_z₆'_eq_ψT_comp_z₆'_of_mem {t : ℝ} (ht : t ∈ Ici 1) :
+  ψT' (z₆' t) = ψT ⟨z₆' t, im_z₆'_pos ht⟩ :=
+  ψT'_eq_ψT_of_mem (im_z₆'_pos ht)
+
+lemma ψS'_comp_z₆'_eq_ψS_comp_z₆'_of_mem {t : ℝ} (ht : t ∈ Ici 1) :
+  ψS' (z₆' t) = ψS ⟨z₆' t, im_z₆'_pos ht⟩ :=
+  ψS'_eq_ψS_of_mem (im_z₆'_pos ht)
+
+lemma ψI'_comp_z₆'_eq_ψI_comp_z₆'_of_mem {t : ℝ} (ht : t ∈ Ici 1) :
+  ψI' (z₆' t) = ψI ⟨z₆' t, im_z₆'_pos ht⟩ :=
+  ψI'_eq_ψI_of_mem (im_z₆'_pos ht)
+
+end eq_of_mem
+
+section slash_explicit
+
+lemma ψS_slash_ST_apply (z : ℍ) :
+    (ψS ∣[-2] (S * T)) z = ψS ⟨-1 / (z + 1), neg_inv_one_add_mem z⟩ * (z + 1) ^ 2 := by
+  rw [SL_slash_apply ψS (S * T) z, ← neg_inv_one_add_eq_ST z]
+  congr 1
+  rw [denom, ModularGroup.ST_eq']
+  simp only [Int.reduceNeg, Fin.isValue, SpecialLinearGroup.coe_GL_coe_matrix,
+    SpecialLinearGroup.map_apply_coe, RingHom.mapMatrix_apply, Int.coe_castRingHom, map_apply,
+    of_apply, cons_val', cons_val_zero, cons_val_fin_one, cons_val_one, Int.cast_one, ofReal_one,
+    one_mul, neg_neg]
+  norm_cast
+
+lemma ψS_slash_ST_apply' (z : ℍ) : (ψS ∣[-2] (S * T)) z = ψS' (-1 / (z + 1)) * (z + 1) ^ 2 := by
+  rw [ψS_slash_ST_apply, ← ψS'_eq_ψS_of_mem]
+
+lemma ψS_slash_S_apply (z : ℍ) : (ψS ∣[-2] S) z = ψS ⟨-1 / z, neg_inv_mem z⟩ * z ^ 2 := by
+  rw [SL_slash_apply ψS S z, ← neg_inv_eq_S z]
+  congr 1
+  rw [denom, ModularGroup.S_eq']
+  simp only [Int.reduceNeg, Fin.isValue, SpecialLinearGroup.coe_GL_coe_matrix,
+    SpecialLinearGroup.map_apply_coe, RingHom.mapMatrix_apply, Int.coe_castRingHom, map_apply,
+    of_apply, cons_val', cons_val_zero, cons_val_fin_one, cons_val_one, Int.cast_one, ofReal_one,
+    one_mul, Int.cast_zero, ofReal_zero, add_zero, neg_neg]
+  norm_cast
+
+lemma ψS_slash_S_apply' (z : ℍ) : (ψS ∣[-2] S) z = ψS' (-1 / z) * z ^ 2 := by
+  rw [ψS_slash_S_apply, ← ψS'_eq_ψS_of_mem]
+
+end slash_explicit
+
 section rels_explicit
+
+lemma ψS_slash_ST_explicit₁ {t : ℝ} (ht : t ∈ Ioc 0 1) :
+    ψT' (z₁' t) = ψS' (-1 / (z₁' t + 1)) * (z₁' t + 1) ^ 2 := by
+  rw [ψT'_comp_z₁'_eq_ψT_comp_z₁'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
+
+lemma ψS_slash_ST_explicit₂ {t : ℝ} (ht : t ∈ Icc 0 1) :
+    ψT' (z₂' t) = ψS' (-1 / (z₂' t + 1)) * (z₂' t + 1) ^ 2 := by
+  rw [ψT'_comp_z₂'_eq_ψT_comp_z₂'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
+
+lemma ψS_slash_ST_explicit₃ {t : ℝ} (ht : t ∈ Ioc 0 1) :
+    ψT' (z₃' t) = ψS' (-1 / (z₃' t + 1)) * (z₃' t + 1) ^ 2 := by
+  rw [ψT'_comp_z₃'_eq_ψT_comp_z₃'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
+
+lemma ψS_slash_ST_explicit₄ {t : ℝ} (ht : t ∈ Icc 0 1) :
+    ψT' (z₄' t) = ψS' (-1 / (z₄' t + 1)) * (z₄' t + 1) ^ 2 := by
+  rw [ψT'_comp_z₄'_eq_ψT_comp_z₄'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
+
+lemma ψS_slash_S_explicit₅ {t : ℝ} (ht : t ∈ Ioc 0 1) :
+    ψI' (z₅' t) = ψS' (-1 / z₅' t) * (z₅' t) ^ 2 := by
+  rw [ψI'_comp_z₅'_eq_ψI_comp_z₅'_of_mem ht, ← ψS_slash_S, ψS_slash_S_apply' _]
+
+lemma ψS_slash_ST_explicit₆ {t : ℝ} (ht : t ∈ Ici 1) :
+  ψT' (z₆' t) = ψS' (-1 / (z₆' t + 1)) * (z₆' t + 1) ^ 2 := by
+  rw [ψT'_comp_z₆'_eq_ψT_comp_z₆'_of_mem ht, ← ψS_slash_ST, ψS_slash_ST_apply' _]
 
 end rels_explicit

@@ -1,4 +1,8 @@
-import Mathlib.LinearAlgebra.Finsupp.LinearCombination
+module
+
+public import Mathlib.LinearAlgebra.Finsupp.LinearCombination
+
+@[expose] public section
 
 theorem Finsupp.linearCombination_eq_sum {α β ι : Type*} [Fintype ι] [AddCommMonoid α] [Semiring β]
   [Module β α]

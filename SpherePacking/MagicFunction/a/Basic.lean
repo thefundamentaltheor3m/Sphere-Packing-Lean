@@ -5,9 +5,13 @@ Authors: Sidharth Hariharan
 
 M4R File
 -/
+module
 
-import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.MagicFunction.IntegralParametrisations
+
+public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.MagicFunction.IntegralParametrisations
+
+@[expose] public section
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
 

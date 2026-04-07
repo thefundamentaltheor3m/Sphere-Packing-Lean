@@ -1,7 +1,11 @@
-import Mathlib.Algebra.Order.Group.Int
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Data.Int.Star
-import Mathlib.Tactic.Cases
+module
+
+public import Mathlib.Algebra.Order.Group.Int
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Data.Int.Star
+public import Mathlib.Tactic.Cases
+
+@[expose] public section
 
 open TopologicalSpace Set
   Metric Filter Function Complex
