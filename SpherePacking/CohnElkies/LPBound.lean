@@ -3,15 +3,19 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
-import Mathlib.Logic.IsEmpty
-import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
-import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
-import Mathlib.MeasureTheory.Integral.Bochner.Set
-import Mathlib.Analysis.Complex.Basic
+module
 
-import SpherePacking.CohnElkies.Prereqs
-import SpherePacking.ForMathlib.VolumeOfBalls
-import SpherePacking.Basic.PeriodicPacking
+public import Mathlib.Logic.IsEmpty.Basic
+public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
+public import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
+public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import Mathlib.Analysis.Complex.Basic
+
+public import SpherePacking.CohnElkies.Prereqs
+public import SpherePacking.ForMathlib.VolumeOfBalls
+public import SpherePacking.Basic.PeriodicPacking
+
+@[expose] public section
 
 open scoped FourierTransform ENNReal SchwartzMap
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan
@@ -79,14 +83,14 @@ end Complex_Function_Helpers
 section Nonnegativity
 
 private theorem hIntegrable : MeasureTheory.Integrable (𝓕 ⇑f) :=
-    ((SchwartzMap.fourierTransformCLE ℝ) f).integrable
+    ((FourierTransform.fourierCLE ℝ _) f).integrable
 
 include hne_zero in
 theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
-  rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
+  rw [← FourierTransform.fourierCLE_apply (R := ℝ)]
   intro hFourierZero
   apply hne_zero
-  rw [← ContinuousLinearEquiv.map_eq_zero_iff (SchwartzMap.fourierTransformCLE ℝ)]
+  rw [← ContinuousLinearEquiv.map_eq_zero_iff (FourierTransform.fourierCLE ℝ _)]
   exact hFourierZero
 
 -- include hReal hRealFourier hCohnElkies₂
@@ -150,13 +154,13 @@ theorem f_zero_pos : 0 < (f 0).re := by
       _ = (0 : (EuclideanSpace ℝ (Fin d)) → ℝ) x := by rw [hfun]
       _ = 0 := by rw [Pi.zero_apply]
     have hcont : Continuous (fun x ↦ (𝓕 f x).re) := by
-      rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
-      exact Continuous.comp' continuous_re ((SchwartzMap.fourierTransformCLE ℝ) f).continuous
+      rw [← FourierTransform.fourierCLE_apply (R := ℝ)]
+      exact Continuous.comp' continuous_re ((FourierTransform.fourierCLE ℝ _) f).continuous
     refine (Continuous.integral_zero_iff_zero_of_nonneg hcont ?_ hCohnElkies₂).mp hintzero.symm
     rw [← RCLike.re_eq_complex_re]
     refine MeasureTheory.Integrable.re ?_
-    rw [← SchwartzMap.fourierTransformCLE_apply ℝ f]
-    exact ((SchwartzMap.fourierTransformCLE ℝ) f).integrable
+    rw [← FourierTransform.fourierCLE_apply (R := ℝ)]
+    exact ((FourierTransform.fourierCLE ℝ _) f).integrable
   have h𝓕fzero : 𝓕 f = 0 := by
     ext x
     rw [← re_add_im (𝓕 f x), hFourierImZero hRealFourier, ofReal_zero, zero_mul,
@@ -363,12 +367,13 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
         := calc_steps' hD_isBounded hd hf
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice) *
-      ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m) *
+      ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice, (𝓕 f m) *
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])).re
         := by
             congr! 5 with x y
             exact SchwartzMap.PoissonSummation_Lattices P.lattice f _
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
+  _ = ((1 / ZLattice.covolume P.lattice) *
+      ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice,
       (𝓕 f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
         := by
@@ -378,7 +383,8 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             simp only [← tsum_mul_left]
             -- We want to apply `Summable.tsum_comm`, which requires some summability conditions.
             have hSummable₁ : Summable (Function.uncurry fun
-                (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) (x : ↑(P.centers ∩ D)) ↦
+                (m : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice))
+                (x : ↑(P.centers ∩ D)) ↦
                 ∑' (x_1 : ↑(P.centers ∩ D)), ↑(𝓕 f ↑m).re * exp (2 * ↑π * I *
                 ↑⟪x.val.ofLp - x_1.val.ofLp, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) := by
               sorry
@@ -393,7 +399,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             · symm
               exact Complex.ext rfl (congrArg im (hRealFourier ↑y))
   _ = ((1 / ZLattice.covolume P.lattice) *
-      ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f m).re * (
+      ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
       exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
@@ -406,7 +412,8 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             simp only [RCLike.wInner_neg_left, ofReal_add, ofReal_neg]
             rw [mul_add, Complex.exp_add, mul_comm]
             simp
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
+  _ = ((1 / ZLattice.covolume P.lattice) *
+      ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice,
       (𝓕 f m).re * (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       (∑' y : ↑(P.centers ∩ D),
@@ -415,8 +422,8 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             simp_rw [mul_assoc, ← tsum_mul_right, ← tsum_mul_left]
             congr! 9 with m x y
             simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
-  _ = ((1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice, (𝓕 f
-      m).re *
+  _ = ((1 / ZLattice.covolume P.lattice) *
+      ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       conj (∑' x : ↑(P.centers ∩ D),
@@ -426,12 +433,13 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             simp_rw [conj_tsum]
             congr! 7 with m x
             exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
-  _ = (1 / ZLattice.covolume P.lattice) * ∑' m : bilinFormOfRealInner.dualSubmodule P.lattice,
+  _ = (1 / ZLattice.covolume P.lattice) *
+      ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice,
       (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
         := by
             rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
-                ∑' (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)),
+                ∑' (m : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice)),
                  (𝓕 ⇑f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
                  cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
             congr 1
@@ -443,7 +451,7 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
             norm_cast
   -- We split the sum up into the `m = 0` and `m ≠ 0` parts.
   _ = (1 / ZLattice.covolume P.lattice) * (
-      (∑' (m : bilinFormOfRealInner.dualSubmodule P.lattice),
+      (∑' (m : LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice),
         if hm : m = (0 : EuclideanSpace ℝ (Fin d)) then 0
         else (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
@@ -454,12 +462,13 @@ private theorem calc_steps (hd : 0 < d) (hf : Summable f) :
         := by
             apply congrArg _ _
             rw [add_comm]
-            have hSummable : Summable (fun (m : ↥(bilinFormOfRealInner.dualSubmodule P.lattice)) =>
+            have hSummable : Summable
+              (fun (m : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice)) =>
               (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
               sorry
             rw [Summable.tsum_eq_add_tsum_ite hSummable
-              (0 : ↥(bilinFormOfRealInner.dualSubmodule P.lattice))]
+              (0 : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice))]
             simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, dite_eq_ite]
   _ ≥ (1 / ZLattice.covolume P.lattice) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
       (norm (∑' x : ↑(P.centers ∩ D),

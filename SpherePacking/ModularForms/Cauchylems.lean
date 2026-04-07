@@ -1,6 +1,10 @@
-import SpherePacking.ModularForms.Icc_Ico_lems
-import SpherePacking.ModularForms.riemannZetalems
-import SpherePacking.ModularForms.summable_lems
+module
+
+public import SpherePacking.ModularForms.Icc_Ico_lems
+public import SpherePacking.ModularForms.riemannZetalems
+public import SpherePacking.ModularForms.summable_lems
+
+@[expose] public section
 
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
@@ -155,94 +159,6 @@ theorem telescope_aux (z : ℍ) (m : ℤ) (b : ℕ) :
       not_false_eq_true, Finset.disjoint_singleton_right, neg_le_self_iff, Nat.cast_nonneg,
       lt_self_iff_false, and_false, and_self]
 
-theorem tendstozero_inv_linear (z : ℍ) (b : ℤ) :
-  Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z + ↑d)) atTop (𝓝 0) := by
-    rw [@tendsto_zero_iff_norm_tendsto_zero]
-    conv =>
-      enter [1]
-      simp
-    apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, n]‖ ^ (-1 : ℝ))
-    · simp
-    · intro t
-      have := EisensteinSeries.summand_bound z (k := 1) (by simp) ![b, t]
-      simp at *
-      apply le_trans _ this
-      apply le_of_eq
-      rw [Real.rpow_neg_one]
-    rw [← tendsto_const_smul_iff₀ (c := r z ) ]
-    · simp
-      have hr : r z * r z ^ (-1 : ℝ) = 1 := by
-        rw [Real.rpow_neg_one]
-        refine mul_inv_cancel₀ (ne_of_lt (r_pos z)).symm
-      conv =>
-        enter [1]
-        intro r
-        rw [← mul_assoc, hr]
-      simp
-      apply squeeze_zero' (g := (fun n : ℕ => |(n : ℝ)| ^ (-1 : ℝ)))
-      · apply Filter.Eventually.of_forall
-        intro x
-        refine Real.rpow_nonneg ?g0.hf.hp.hx (-1)
-        apply norm_nonneg
-      · rw [eventually_atTop]
-        use b.natAbs
-        intro x hx
-        apply le_of_eq
-        congr
-        rw [EisensteinSeries.norm_eq_max_natAbs ]
-        simp [hx]
-      simp
-      apply tendsto_inv_atTop_nhds_zero_nat.congr
-      intro x
-      exact Eq.symm (Real.rpow_neg_one ↑x)
-    have := r_pos z
-    exact (ne_of_lt this).symm
-
-theorem tendstozero_inv_linear_neg (z : ℍ) (b : ℤ) :
-  Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z - ↑d)) atTop (𝓝 0) := by
-    rw [@tendsto_zero_iff_norm_tendsto_zero]
-    conv =>
-      enter [1]
-      simp
-    apply squeeze_zero (g := fun n : ℕ => r z ^ (-1 : ℝ) * ‖![b, -n]‖ ^ (-1 : ℝ))
-    · simp
-    · intro t
-      have := EisensteinSeries.summand_bound z (k := 1) (by simp) ![b, -t]
-      simp at *
-      apply le_trans _ this
-      apply le_of_eq
-      rw [Real.rpow_neg_one]
-      congr
-    rw [← tendsto_const_smul_iff₀ (c := r z ) ]
-    · simp
-      have hr : r z * r z ^ (-1 : ℝ) = 1 := by
-        rw [Real.rpow_neg_one]
-        refine mul_inv_cancel₀ (ne_of_lt (r_pos z)).symm
-      conv =>
-        enter [1]
-        intro r
-        rw [← mul_assoc, hr]
-      simp
-      apply squeeze_zero' (g := (fun n : ℕ => |(n : ℝ)| ^ (-1 : ℝ)))
-      · apply Filter.Eventually.of_forall
-        intro x
-        refine Real.rpow_nonneg ?g0.hf.hp.hx (-1)
-        apply norm_nonneg
-      · rw [eventually_atTop]
-        use b.natAbs
-        intro x hx
-        apply le_of_eq
-        congr
-        rw [EisensteinSeries.norm_eq_max_natAbs ]
-        simp [hx]
-      simp
-      apply tendsto_inv_atTop_nhds_zero_nat.congr
-      intro x
-      exact Eq.symm (Real.rpow_neg_one ↑x)
-    have := r_pos z
-    exact (ne_of_lt this).symm
-
-
 theorem extracted_3 (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
   ∑ n ∈ Finset.Ico (-↑N : ℤ) ↑N, (1 / ((b : ℂ) * ↑z + ↑n) - 1 / (↑b * ↑z + ↑n + 1)) := by
   conv =>
@@ -251,7 +167,7 @@ theorem extracted_3 (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
       rw [telescope_aux ]
   apply Filter.Tendsto.cauchySeq (x := 0)
   have h1 : Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z - ↑d)) atTop (𝓝 0) := by
-    have := tendstozero_inv_linear z (-b)
+    have := tendsto_zero_inv_linear z (-b)
     rw [← tendsto_const_smul_iff₀ (c := (-1 : ℂ) ) ] at this
     · simp at *
       · apply this.congr
@@ -261,7 +177,7 @@ theorem extracted_3 (z : ℍ) (b : ℤ) : CauchySeq fun N : ℕ ↦
         ring
     · norm_cast
   have h2 : Tendsto (fun d : ℕ ↦ 1 / ((b : ℂ) * ↑z + ↑d)) atTop (𝓝 0) := by
-    apply tendstozero_inv_linear z b
+    apply tendsto_zero_inv_linear z b
   have := Filter.Tendsto.sub h1 h2
   simpa using this
 
@@ -349,7 +265,7 @@ lemma t8 (z : ℍ) :
     ext d
     let Z : ℍ := ⟨(d +1)* z, by simp; exact mul_pos (by linarith) z.2⟩
     have := q_exp_iden 2 (by norm_num) (z := Z)
-    simp only [coe_mk_subtype, one_div, neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one,
+    simp only [one_div, neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one,
       Nat.factorial_one, Nat.cast_one, div_one, pow_one, Z] at *
     rw [this]
     ring_nf

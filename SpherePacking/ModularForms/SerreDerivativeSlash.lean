@@ -1,4 +1,8 @@
-import SpherePacking.ModularForms.Derivative
+module
+
+public import SpherePacking.ModularForms.Derivative
+
+@[expose] public section
 
 /-!
 # Slash Invariance of Serre Derivative of E₂
@@ -10,7 +14,7 @@ under SL(2,ℤ), despite E₂ itself not being modular.
 
 * `D_D₂` : Derivative of the anomaly function D₂: `D(D₂ γ) z = -c²/denom²`
 * `MDifferentiable_D₂` : D₂ γ is MDifferentiable
-* `serre_D_E₂_slash_invariant` : serre_D 1 E₂ is weight-4 slash-invariant
+* `serre_DE₂_slash_invariant` : serre_D 1 E₂ is weight-4 slash-invariant
 
 ## Strategy
 
@@ -41,7 +45,7 @@ lemma D_D₂ (γ : SL(2, ℤ)) (z : ℍ) :
       deriv (fun w => (2 * π * I * (γ 1 0 : ℂ)) / denom γ w) z := by
     apply Filter.EventuallyEq.deriv_eq
     filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
-    simp only [comp_apply, ofComplex_apply_of_im_pos hw, D₂, coe_mk_subtype]
+    simp only [comp_apply, ofComplex_apply_of_im_pos hw, D₂, EisensteinSeries.D2]
   simp only [D, hderiv, div_eq_mul_inv, ← zpow_neg_one]
   rw [deriv_const_mul _ (.zpow (differentiableAt_denom γ z) (.inl hz_ne)),
       deriv_denom_zpow γ 1 z]
@@ -50,7 +54,7 @@ lemma D_D₂ (γ : SL(2, ℤ)) (z : ℍ) :
 /-! ## MDifferentiable infrastructure for D₂ -/
 
 /-- D₂ γ is MDifferentiable: it's a constant divided by a linear polynomial. -/
-lemma MDifferentiable_D₂ (γ : SL(2, ℤ)) : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (D₂ γ) := fun z => by
+lemma MDifferentiable_D₂ (γ : SL(2, ℤ)) : MDiff (D₂ γ) := fun z => by
   have heq : D₂ γ = (fun w => (2 * π * I * (γ 1 0 : ℂ)) / denom γ w) ∘ (↑) := by ext; rfl
   rw [heq]; exact DifferentiableAt_MDifferentiableAt <|
     .div (differentiableAt_const _) (differentiableAt_denom γ z) (denom_ne_zero γ z)
@@ -73,7 +77,7 @@ After expansion, the anomaly terms involving D₂ γ and D(D₂ γ) cancel using
 - D(D₂ γ) = -c²/denom² (from D_D₂)
 - The identity α = α² π²/3 (from ζ(2) = π²/6)
 -/
-lemma serre_D_E₂_slash_invariant (γ : SL(2, ℤ)) :
+lemma serre_DE₂_slash_invariant (γ : SL(2, ℤ)) :
     (serre_D 1 E₂) ∣[(4 : ℤ)] γ = serre_D 1 E₂ := by
   have hserre12 : serre_D 1 E₂ = serre_D 2 E₂ + (1 / 12 : ℂ) • (E₂ * E₂) := by
     ext z; simp only [serre_D, Pi.add_apply, Pi.smul_apply, Pi.mul_apply, smul_eq_mul]; ring
