@@ -737,6 +737,7 @@ lemma im_deriv_eq_zero_of_im_eq_zero {f : ℝ → ℂ} {t : ℝ}
 
 /-- If F is real on the imaginary axis and MDifferentiable, then D F is also real
 on the imaginary axis. -/
+@[fun_prop]
 theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
     (hF_diff : MDiff F) : ResToImagAxis.Real (D F) := fun t ht => by
   have him : ∀ s, (F.resToImagAxis s).im = 0 := fun s => by
@@ -754,15 +755,13 @@ theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
 (of real weight) is also real on the imaginary axis. -/
 theorem serre_D_real_of_real {F : ℍ → ℂ} {k : ℝ} (hF_real : ResToImagAxis.Real F)
     (hF_diff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) : ResToImagAxis.Real (serre_D k F) := by
-  have hD_real := D_real_of_real hF_real hF_diff
-  have hE₂F_real : ResToImagAxis.Real (fun z => k * 12⁻¹ * E₂ z * F z) := by
-    have hE₂F : ResToImagAxis.Real (E₂ * F) := ResToImagAxis.Real.mul E₂_imag_axis_real hF_real
-    convert ResToImagAxis.Real.smul (c := k * 12⁻¹) hE₂F using 1
-    ext z
-    simp only [Pi.smul_apply, Pi.mul_apply, Complex.real_smul]
-    push_cast
-    ring
-  exact ResToImagAxis.Real.sub hD_real hE₂F_real
+  unfold serre_D
+  have h : ResToImagAxis.Real (D F - ((k * 12⁻¹ : ℝ) • (E₂ * F))) := by fun_prop
+  convert h using 1
+  ext z
+  simp only [Pi.sub_apply, Pi.smul_apply, Pi.mul_apply, real_smul, ofReal_mul, ofReal_inv,
+    ofReal_ofNat, sub_right_inj]
+  ring
 
 /-- The real part of F.resToImagAxis has derivative -2π * ((D F).resToImagAxis t).re at t. -/
 lemma hasDerivAt_resToImagAxis_re {F : ℍ → ℂ} (hdiff : MDiff F)
