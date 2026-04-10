@@ -1,7 +1,11 @@
-import SpherePacking.ModularForms.E2
-import SpherePacking.ModularForms.csqrt
-import SpherePacking.ModularForms.upperhalfplane
-import Mathlib.NumberTheory.ModularForms.DedekindEta
+module
+
+public import SpherePacking.ModularForms.E2
+public import SpherePacking.ModularForms.csqrt
+public import SpherePacking.ModularForms.upperhalfplane
+public import Mathlib.NumberTheory.ModularForms.DedekindEta
+
+@[expose] public section
 
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
@@ -60,18 +64,16 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
           (π * Complex.I / 12) * E₂ (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) := by
           simpa [η, E₂] using
             (ModularForm.logDeriv_eta_eq_E2 (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ))
-        simp only [coe_mk_subtype] at Rb
         rw [Rb]
         have E := E₂_transform z
         simp only [one_div, neg_mul, smul_eq_mul, SL_slash_def, modular_S_smul,
                    ModularGroup.denom_S, Int.reduceNeg, zpow_neg] at *
         have h00 : UpperHalfPlane.mk (-z : ℂ)⁻¹ z.im_inv_neg_coe_pos =
                    (⟨-1 / z, by simpa using pnat_div_upper 1 z⟩ : ℍ) := by
-          simp [UpperHalfPlane.mk]
+          simp
           ring_nf
         rw [h00] at E
         rw [← mul_assoc, mul_comm, ← mul_assoc]
-        simp only [UpperHalfPlane.coe] at *
         rw [E, add_mul, add_comm]
         congr 1
         · have hzne := ne_zero z
@@ -79,7 +81,6 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
           have hpi : (π : ℂ) ≠ 0 := by
             simp only [ne_eq, ofReal_eq_zero]
             exact Real.pi_ne_zero
-          simp [UpperHalfPlane.coe] at hzne ⊢
           field_simp
           ring
         rw [mul_comm]
@@ -146,7 +147,7 @@ lemma eta_logderivs_const : ∃ z : ℂ, z ≠ 0 ∧ {z : ℂ | 0 < z.im}.EqOn (
     simp only [comp_apply, ne_eq]
     have := ModularForm.eta_ne_zero (z := (-1 / x))
       (by simpa using pnat_div_upper 1 ⟨x, hx⟩)
-    simpa only [ne_eq, coe_mk_subtype] using this
+    simpa only [ne_eq] using this
 
 lemma eta_equality : {z : ℂ | 0 < z.im}.EqOn ((η ∘ (fun z : ℂ => -1/z)))
    ((csqrt (Complex.I))⁻¹ • ((csqrt) * η)) := by

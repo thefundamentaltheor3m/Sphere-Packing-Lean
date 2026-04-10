@@ -1,7 +1,11 @@
-import Mathlib.Data.Rat.Star
-import Mathlib.LinearAlgebra.Dimension.Localization
-import Mathlib.NumberTheory.ModularForms.LevelOne
-import SpherePacking.ModularForms.Eisenstein
+module
+
+public import Mathlib.Data.Rat.Star
+public import Mathlib.LinearAlgebra.Dimension.Localization
+public import Mathlib.NumberTheory.ModularForms.LevelOne
+public import SpherePacking.ModularForms.Eisenstein
+
+@[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups SlashInvariantFormClass ModularFormClass
@@ -129,18 +133,8 @@ lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1
 
 lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
   ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 - (DirectSum.of _ 6 E₆)^2) 12 )) := by
-  rw [ModForm_mk]
-  rw [Delta_E4_E6_aux]
-  have := CuspForm_to_ModularForm_Fun_coe _ _ ((1/ 1728 : ℂ) • (((DirectSum.of _ 4 E₄)^3 -
-    (DirectSum.of _ 6 E₆)^2) 12 )) ?_
-  · simp at *
-    ext z
-    have hg := congr_fun this z
-    simp at *
-    rw [← hg]
-    rfl
-  rw [IsCuspForm_iff_coeffZero_eq_zero]
-  exact E4E6_coeff_zero_eq_zero
+  ext
+  rfl
 
 lemma Delta_E4_E6_aux_q_one_term : (qExpansion 1 Delta_E4_E6_aux).coeff 1 = 1 := by
   have := Delta_E4_E6_eq
@@ -309,7 +303,8 @@ lemma weight_eight_one_dimensional (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even 
         calc
           (PowerSeries.coeff 0) (qExpansion 1 ⇑(c⁻¹ • f)) =
               (PowerSeries.coeff 0) (qExpansion 1 (c⁻¹ • ⇑f)) := by rfl
-          _ = (PowerSeries.coeff 0) (qExpansion 1 (((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ • ⇑f)) := by
+          _ = (PowerSeries.coeff 0)
+              (qExpansion 1 (((PowerSeries.coeff 0) (qExpansion 1 ⇑f))⁻¹ • ⇑f)) := by
               simp [hcInv]
           _ = 1 := hnorm0
       have hE := Ek_q_exp_zero k hk hk2
@@ -447,7 +442,7 @@ lemma dim_modforms_eq_one_add_dim_cuspforms (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk
   · intro hq
     rw [Submodule.Quotient.mk_eq_zero, CuspFormSubmodule_mem_iff_coeffZero_eq_zero,
       Ek_q_exp_zero k hk hk2] at hq
-    simpa using hq
+    simp at hq
   · intro v
     obtain ⟨f, rfl⟩ := Quotient.exists_rep v
     refine ⟨(qExpansion 1 f).coeff 0, ?_⟩

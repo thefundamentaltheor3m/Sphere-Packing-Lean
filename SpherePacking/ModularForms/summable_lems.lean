@@ -1,20 +1,24 @@
-import Mathlib.Algebra.Lie.OfAssociative
-import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Analysis.Normed.Field.Instances
-import Mathlib.Data.Int.Star
-import Mathlib.NumberTheory.ArithmeticFunction.Moebius
-import Mathlib.NumberTheory.ModularForms.EisensteinSeries.UniformConvergence
-import Mathlib.Order.CompletePartialOrder
-import Mathlib.Topology.Algebra.Module.ModuleTopology
-import Mathlib.Topology.EMetricSpace.Paracompact
-import Mathlib.Topology.Separation.CompletelyRegular
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Cotangent
-import SpherePacking.ModularForms.exp_lems
-import SpherePacking.ModularForms.upperhalfplane
-import SpherePacking.ModularForms.BigO
-import SpherePacking.ModularForms.equivs
-import SpherePacking.ModularForms.tsumderivWithin
+module
+
+public import Mathlib.Algebra.Lie.OfAssociative
+public import Mathlib.Algebra.Order.Ring.Star
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Analysis.Normed.Field.Instances
+public import Mathlib.Data.Int.Star
+public import Mathlib.NumberTheory.ArithmeticFunction.Moebius
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.UniformConvergence
+public import Mathlib.Order.CompletePartialOrder
+public import Mathlib.Topology.Algebra.Module.ModuleTopology
+public import Mathlib.Topology.EMetricSpace.Paracompact
+public import Mathlib.Topology.Separation.CompletelyRegular
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Cotangent
+public import SpherePacking.ModularForms.exp_lems
+public import SpherePacking.ModularForms.upperhalfplane
+public import SpherePacking.ModularForms.BigO
+public import SpherePacking.ModularForms.equivs
+public import SpherePacking.ModularForms.tsumderivWithin
+
+@[expose] public section
 
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set
@@ -151,7 +155,7 @@ theorem HasSum.pos_add_zero_add_neg {α : Type*} [TopologicalSpace α] [AddCommG
 theorem upp_half_not_ints (z : ℍ) (n : ℤ) : (z : ℂ) ≠ n :=
   by
   simp only [ne_eq]
-  apply UpperHalfPlane.ne_int
+  apply UpperHalfPlane.ne_intCast
 
 
 lemma aus (a b : ℂ) : a + b ≠ 0 ↔ a ≠ -b := by

@@ -3,15 +3,19 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
-import Mathlib.Logic.IsEmpty
-import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
-import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
-import Mathlib.MeasureTheory.Integral.Bochner.Set
-import Mathlib.Analysis.Complex.Basic
+module
 
-import SpherePacking.CohnElkies.Prereqs
-import SpherePacking.ForMathlib.VolumeOfBalls
-import SpherePacking.Basic.PeriodicPacking
+public import Mathlib.Logic.IsEmpty.Basic
+public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
+public import Mathlib.MeasureTheory.Integral.Bochner.FundThmCalculus
+public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import Mathlib.Analysis.Complex.Basic
+
+public import SpherePacking.CohnElkies.Prereqs
+public import SpherePacking.ForMathlib.VolumeOfBalls
+public import SpherePacking.Basic.PeriodicPacking
+
+@[expose] public section
 
 open scoped FourierTransform ENNReal SchwartzMap
 open SpherePacking Metric BigOperators Pointwise Filter MeasureTheory Complex Real ZSpan

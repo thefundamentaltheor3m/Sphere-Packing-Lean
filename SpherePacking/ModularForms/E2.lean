@@ -1,5 +1,9 @@
-import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
-import SpherePacking.ModularForms.SlashActionAuxil
+module
+
+public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.E2.Transform
+public import SpherePacking.ModularForms.SlashActionAuxil
+
+@[expose] public section
 
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex MatrixGroups
@@ -17,7 +21,7 @@ def G₂ : ℍ → ℂ := EisensteinSeries.G2
 def E₂ : ℍ → ℂ := EisensteinSeries.E2
 
 /-- Compatibility alias for Mathlib's `EisensteinSeries.D2`. -/
-def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := fun z => (2 * π * Complex.I * γ 1 0) / (denom γ z)
+def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := EisensteinSeries.D2 γ
 
 lemma D₂_apply (γ : SL(2, ℤ)) (z : ℍ) :
     D₂ γ z = (2 * π * Complex.I * γ 1 0) / (γ 1 0 * z + γ 1 1) := by
@@ -36,8 +40,8 @@ lemma D2_inv (A : SL(2, ℤ)) : (D₂ A) ∣[(2 : ℤ)] A⁻¹ = -D₂ (A⁻¹) 
 lemma D2_T : D₂ ModularGroup.T = 0 := by
   simpa [D₂] using (EisensteinSeries.D2_T)
 
-lemma D2_S (z : ℍ) : D₂ ModularGroup.S z = 2 * (π : ℂ) * Complex.I / z := by
-  simp [D₂, ModularGroup.S, ModularGroup.denom_apply]
+lemma D2_S (z : ℍ) : D₂ ModularGroup.S z = 2 * (π : ℂ) * Complex.I / z :=
+  EisensteinSeries.D2_S z
 
 lemma G2_q_exp (z : ℍ) : G₂ z = (2 * riemannZeta 2) - 8 * π ^ 2 *
     ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * n * z) := by
@@ -77,7 +81,8 @@ lemma E₂_transform (z : ℍ) : (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
   have hI : (Complex.I : ℂ) ≠ 0 := Complex.I_ne_zero
   have hz : (z : ℂ) ≠ 0 := ne_zero z
   calc
-    (E₂ ∣[(2 : ℤ)] ModularGroup.S) z = E₂ z - 1 / (2 * (π ^ 2 / (6 : ℂ))) * (2 * π * Complex.I / z) := h'
+    (E₂ ∣[(2 : ℤ)] ModularGroup.S) z =
+        E₂ z - 1 / (2 * (π ^ 2 / (6 : ℂ))) * (2 * π * Complex.I / z) := h'
     _ = E₂ z + 6 / (π * Complex.I * z) := by
       field_simp [hpi, hI, hz]
       ring_nf
@@ -141,7 +146,8 @@ lemma tsum_eq_tsum_sigma (z : ℍ) : ∑' n : ℕ, (n + 1) *
           simp [g, hpow]
 
 lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
-    1 - 24 * ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * n * z) / (1 - cexp (2 * π * Complex.I * n * z)) := by
+    1 - 24 * ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * n * z) /
+                        (1 - cexp (2 * π * Complex.I * n * z)) := by
   rw [E₂, EisensteinSeries.E2]
   simp [smul_eq_mul]
   rw [EisensteinSeries.G2_eq_tsum_cexp]

@@ -3,15 +3,19 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan, Gareth Ma
 -/
-import Mathlib.Algebra.Module.ZLattice.Basic
-import Mathlib.Data.Real.StarOrdered
-import Mathlib.Order.CompletePartialOrder
-import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
-import Mathlib.Topology.Metrizable.Basic
-import Mathlib.Topology.Compactness.Lindelof
-import Mathlib.Topology.EMetricSpace.Paracompact
+module
 
-import SpherePacking.ForMathlib.VolumeOfBalls
+public import Mathlib.Algebra.Module.ZLattice.Basic
+public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.Order.CompletePartialOrder
+public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
+public import Mathlib.Topology.Metrizable.Basic
+public import Mathlib.Topology.Compactness.Lindelof
+public import Mathlib.Topology.EMetricSpace.Paracompact
+
+public import SpherePacking.ForMathlib.VolumeOfBalls
+
+@[expose] public section
 
 open BigOperators MeasureTheory Metric
 

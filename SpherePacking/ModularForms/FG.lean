@@ -1,7 +1,20 @@
-import SpherePacking.ForMathlib.MDifferentiableFunProp
+module
 
-import SpherePacking.ModularForms.QExpansion
-import SpherePacking.ModularForms.RamanujanIdentities
+public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.Tactic.TendstoCont
+
+public import SpherePacking.ModularForms.Derivative
+public import SpherePacking.ModularForms.DimensionFormulas
+public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.ModularForms.ThetaDerivIdentities
+public import SpherePacking.ModularForms.EisensteinAsymptotics
+public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.QExpansion
+public import SpherePacking.ModularForms.RamanujanIdentities
+public import SpherePacking.ModularForms.ResToImagAxis
+public import SpherePacking.ModularForms.summable_lems
+
+@[expose] public section
 
 open UpperHalfPlane hiding I
 open Filter Complex ModularGroup ModularForm SlashAction
@@ -61,13 +74,6 @@ noncomputable def GReal (t : ℝ) : ℝ := (G.resToImagAxis t).re
 
 noncomputable def FmodGReal (t : ℝ) : ℝ := (FReal t) / (GReal t)
 
-theorem F_eq_FReal {t : ℝ} (ht : 0 < t) : F.resToImagAxis t = FReal t := by sorry
-
-theorem G_eq_GReal {t : ℝ} (ht : 0 < t) : G.resToImagAxis t = GReal t := by sorry
-
-theorem FmodG_eq_FmodGReal {t : ℝ} (ht : 0 < t) :
-    FmodGReal t = (F.resToImagAxis t) / (G.resToImagAxis t) := by sorry
-
 /--
 `F = 9 * (D E₄)²` by Ramanujan's formula.
 From `ramanujan_E₄`: `D E₄ = (1/3) * (E₂ * E₄ - E₆)`
@@ -86,19 +92,14 @@ lemma G_eq : G = H₂^3 * ((2 : ℂ) • H₂^2 + (5 : ℂ) • H₂ * H₄ + (5
   ext τ
   simp
 
-theorem F_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F := by unfold F; fun_prop
+@[fun_prop]
+theorem F_holo : MDiff F := by unfold F; fun_prop
 
-theorem G_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) G := by rw [G_eq]; fun_prop
+theorem G_holo : MDiff G := by rw [G_eq]; fun_prop
 
-theorem SerreF_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 F) := by unfold F; fun_prop
+theorem SerreF_holo : MDiff (serre_D 10 F) := by unfold F; fun_prop
 
-theorem SerreG_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) (serre_D 10 G) := by rw [G_eq]; fun_prop
-
-theorem FReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ FReal t := by
-  sorry
-
-theorem GReal_Differentiable {t : ℝ} (ht : 0 < t) : DifferentiableAt ℝ GReal t := by
-  sorry
+theorem SerreG_holo : MDiff (serre_D 10 G) := by rw [G_eq]; fun_prop
 
 theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂ ^ 2 * E₄.toFun * E₆.toFun
     + 5 * 6⁻¹ * E₂ * E₄.toFun ^ 3 + 5 * 3⁻¹ * E₂ * E₆.toFun ^ 2 - 5 * 6⁻¹ * E₄.toFun^2 * E₆.toFun
@@ -112,25 +113,54 @@ theorem F_aux : D F = 5 * 6⁻¹ * E₂ ^ 3 * E₄.toFun ^ 2 - 5 * 2⁻¹ * E₂
   -- Holomorphicity of the terms
   repeat fun_prop
 
+private lemma serre_D_10_F : serre_D 10 F = D F - 5 * 6⁻¹ * E₂ * F := by
+  ext z; simp [serre_D_apply]; norm_num
+
 /--
 Modular linear differential equation satisfied by $F$.
 -/
-theorem MLDE_F : serre_D 12 (serre_D 10 F) = 5 * 6⁻¹ * F + 7200 * Δ_fun * negDE₂ := by
-  ext x
-  rw [negDE₂, Δ_fun, serre_D, serre_D, F_aux]
-  unfold serre_D
-  rw [F_aux]
-  sorry
+theorem MLDE_F : serre_D 12 (serre_D 10 F) =
+    5 * 6⁻¹ * E₄.toFun * F + 7200 * Δ_fun * negDE₂ := by
+  -- Unfold serre_D to D-level, substitute D F formula
+  rw [serre_D_10_F]
+  -- Compute D(D F - cE₂F) using automated simp + fun_prop discharge
+  simp (disch := fun_prop) only [serre_D_eq, D_sub, D_add, D_mul, D_sq, D_cube, F_aux,
+    ramanujan_E₂, ramanujan_E₄, ramanujan_E₆]
+  simp only [pi_ofNat_eq_const, pi_inv_const_eq_const, D_const]
+  ext z
+  simp [F, Δ_fun, negDE₂]
+  field_simp (disch := norm_num)
+  ring
+
+/-- Δ_fun expressed in terms of theta functions. -/
+private lemma Δ_fun_theta :
+    Δ_fun = (1 / 256 : ℂ) • ((H₂ * (H₂ + H₄) * H₄) ^ 2) := by
+  ext z
+  rw [congrFun Δ_fun_eq_Δ z, ← Delta_apply, Delta_eq_H₂_H₃_H₄ z, ← jacobi_identity]
+  simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
+  ring
+
+private lemma serre_D_10_G : serre_D 10 G = (5/3 : ℂ) • (H₂ ^ 3 * ((H₂ + H₄) ^ 3 + H₄ ^ 3)) := by
+  rw [G_eq]
+  ext z
+  simp (disch := fun_prop) [serre_D_apply, D_mul, D_add, D_sq, D_cube, D_smul,
+    D_H₂, D_H₄, Pi.mul_apply, Pi.add_apply, Pi.smul_apply, Pi.pow_apply, smul_eq_mul]
+  ring
 
 /--
 Modular linear differential equation satisfied by $G$.
 -/
-theorem MLDE_G : serre_D 12 (serre_D 10 G) = 5 * 6⁻¹ * G - 640 * Δ_fun * H₂ := by
-  sorry
+theorem MLDE_G : serre_D 12 (serre_D 10 G) =
+    5 * 6⁻¹ * E₄.toFun * G - 640 * Δ_fun * H₂ := by
+  ext z
+  rw [E₄_eq_H_sum_sq, serre_D_10_G, Δ_fun_theta]
+  simp (disch := fun_prop) [H_sum_sq, D_H₂, D_H₄, G, Pi.mul_apply, Pi.add_apply,
+    Pi.sub_apply, Pi.smul_apply, Pi.pow_apply, Complex.real_smul, Complex.ofReal_ofNat]
+  ring
 
 /-- Pointwise log-derivative of a product: `D(f·h)/(f·h) = Df/f + Dh/h`. -/
 private lemma logderiv_mul_eq (f h : ℍ → ℂ)
-    (hf_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f) (hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h)
+    (hf_md : MDiff f) (hh_md : MDiff h)
     (z : ℍ) (hf_ne : f z ≠ 0) (hh_ne : h z ≠ 0) :
     D (f * h) z / (f z * h z) = D f z / f z + D h z / h z := by
   simp only [congrFun (D_mul f h hf_md hh_md) z, Pi.mul_apply, Pi.add_apply]
@@ -318,7 +348,7 @@ lemma E₄_sigma_qexp (z : UpperHalfPlane) :
     rw [hcoeffn n n.pos]
     -- Function.Periodic.qParam 1 z = exp(2πiz)
     have hq : Function.Periodic.qParam 1 z = Complex.exp (2 * π * Complex.I * z) := by
-      simp only [Function.Periodic.qParam, UpperHalfPlane.coe]
+      simp only [Function.Periodic.qParam]
       congr 1
       ring_nf
       simp
@@ -345,13 +375,13 @@ theorem DE₄_qexp (z : UpperHalfPlane) :
   have hDf : D f z = ∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 3 n : ℂ) *
       Complex.exp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by
     apply D_qexp_tsum_pnat _ z (sigma3_qexp_summable z) sigma3_qexp_deriv_bound
-  have hf_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+  have hf_mdiff : MDiff f := by
     have h : f = (240 : ℂ)⁻¹ • (fun w => E₄ w - 1) := by
       ext w; simp only [f, Pi.smul_apply, smul_eq_mul]; rw [E₄_sigma_qexp w]; ring
     rw [h]; exact (E₄.holo'.sub mdifferentiable_const).const_smul _
   have hD_smul : D ((240 : ℂ) • f) z = (240 : ℂ) * D f z := by
     rw [congrFun (D_smul 240 f hf_mdiff) z, Pi.smul_apply, smul_eq_mul]
-  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := D_const 1 z
+  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := congrFun (D_const 1) z
   calc D E₄.toFun z
       = D ((fun _ => 1) + (240 : ℂ) • f) z := by rw [hE4_eq]
     _ = D (fun _ => 1) z + D ((240 : ℂ) • f) z :=
@@ -448,13 +478,13 @@ theorem negDE₂_qexp (z : UpperHalfPlane) :
   have hDf : D f z = ∑' n : ℕ+, (n : ℂ) * (ArithmeticFunction.sigma 1 n : ℂ) *
       Complex.exp (2 * π * Complex.I * (n : ℂ) * (z : ℂ)) := by
     apply D_qexp_tsum_pnat _ z (sigma1_qexp_summable z) sigma1_qexp_deriv_bound
-  have hf_mdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+  have hf_mdiff : MDiff f := by
     have h : f = (24 : ℂ)⁻¹ • (fun w => 1 - E₂ w) := by
       ext w; simp only [f, Pi.smul_apply, smul_eq_mul]; rw [E₂_sigma_qexp w]; ring
     rw [h]; exact (mdifferentiable_const.sub E₂_holo').const_smul _
   have hD_smul : D ((24 : ℂ) • f) z = (24 : ℂ) * D f z := by
     rw [congrFun (D_smul 24 f hf_mdiff) z, Pi.smul_apply, smul_eq_mul]
-  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := D_const 1 z
+  have hD_one : D (fun _ : UpperHalfPlane => (1 : ℂ)) z = 0 := congrFun (D_const 1) z
   calc -(D E₂) z
       = -(D ((fun _ => 1) - (24 : ℂ) • f)) z := by rw [hE2_eq]
     _ = -((D (fun _ => 1) - D ((24 : ℂ) • f)) z) := by
@@ -815,7 +845,7 @@ theorem D_F_div_F_tendsto :
   set f : ℍ → ℂ := fun z => E₂ z * E₄.toFun z - E₆.toFun z with hf_def
   have hF_eq : ∀ z, F z = (f z) ^ 2 := fun z => by
     simp only [F, hf_def, sq, Pi.mul_apply, Pi.sub_apply, ModularForm.toFun_eq_coe]
-  have hf_holo : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+  have hf_holo : MDiff f := by
     apply MDifferentiable.sub
     · exact MDifferentiable.mul E₂_holo' E₄.holo'
     · exact E₆.holo'
@@ -865,10 +895,9 @@ theorem G_vanishing_order :
   simp_rw [h_eq]
   have h_poly : Filter.Tendsto (fun z : ℍ => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
       atImInfty (nhds 5) := by
-    have hpair := H₂_tendsto_atImInfty.prodMk_nhds H₄_tendsto_atImInfty
-    have hcont : Continuous (fun p : ℂ × ℂ => 2 * p.1 ^ 2 + 5 * p.1 * p.2 + 5 * p.2 ^ 2) := by
-      fun_prop
-    simpa using hcont.continuousAt.tendsto.comp hpair
+    have := H₂_tendsto_atImInfty
+    have := H₄_tendsto_atImInfty
+    tendsto_cont
   convert (H₂_div_exp_tendsto.pow 3).mul h_poly
   norm_num
 
@@ -893,13 +922,13 @@ private theorem D_H₂_div_H₂_tendsto :
   let f : ℍ → ℂ := fun w => cexp (π * I * w)
   let h : ℍ → ℂ := fun w => H₂ w / f w
   have hf_ne : ∀ z : ℍ, f z ≠ 0 := fun z => Complex.exp_ne_zero _
-  have hf_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) f := by
+  have hf_md : MDiff f := by
     intro τ
     have h_diff : DifferentiableAt ℂ (fun t : ℂ => cexp (π * I * t)) (τ : ℂ) :=
       (differentiableAt_id.const_mul (π * I)).cexp
     simpa [f, Function.comp] using
       DifferentiableAt_MDifferentiableAt (G := fun t : ℂ => cexp (π * I * t)) (z := τ) h_diff
-  have hh_md : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) h :=
+  have hh_md : MDiff h :=
     MDifferentiable_div H₂_SIF_MDifferentiable hf_md hf_ne
   have hh_tendsto : Filter.Tendsto h atImInfty (nhds (16 : ℂ)) := H₂_div_exp_tendsto
   have hDh_tendsto : Filter.Tendsto (D h) atImInfty (nhds 0) :=
@@ -934,10 +963,10 @@ private theorem D_B_tendsto_zero :
     Filter.Tendsto (D ((2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2))
       atImInfty (nhds 0) := by
   apply D_tendsto_zero_of_isBoundedAtImInfty (by fun_prop)
-  have h := ((H₂_tendsto_atImInfty.pow 2).const_mul 2).add
-    (((H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty).const_mul 5).add
-      ((H₄_tendsto_atImInfty.pow 2).const_mul 5))
-  simp only [zero_pow two_ne_zero, one_pow, mul_zero, mul_one, zero_add] at h
+  have := H₂_tendsto_atImInfty
+  have := H₄_tendsto_atImInfty
+  have h : Tendsto (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2)
+      atImInfty (nhds 5) := by tendsto_cont
   exact (h.congr' (by filter_upwards with z; simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply,
     Pi.smul_apply, smul_eq_mul]; ring)).isBigO_one ℝ
 
@@ -947,8 +976,8 @@ theorem D_G_div_G_tendsto :
   let A := H₂ ^ 3
   let B := (2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2
   have hG_eq : G = A * B := G_eq
-  have hA : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) A := by fun_prop
-  have hB : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) B := by fun_prop
+  have hA : MDiff A := by fun_prop
+  have hB : MDiff B := by fun_prop
   have h_DA_A : ∀ z, H₂ z ≠ 0 → D A z / A z = 3 * (D H₂ z / H₂ z) := by
     intro z hH₂_ne
     change D (H₂ ^ 3) z / (H₂ z ^ 3) = 3 * (D H₂ z / H₂ z)
@@ -961,15 +990,10 @@ theorem D_G_div_G_tendsto :
     filter_upwards [H₂_eventually_ne_zero] with z hz
     exact (h_DA_A z hz).symm
   have h_B_tendsto : Filter.Tendsto B atImInfty (nhds 5) := by
-    have h := ((H₂_tendsto_atImInfty.pow 2).const_mul 2).add
-      (((H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty).const_mul 5).add
-        ((H₄_tendsto_atImInfty.pow 2).const_mul 5))
-    simp only [zero_pow two_ne_zero, one_pow, mul_zero, mul_one, zero_add] at h
-    refine h.congr' ?_
-    filter_upwards with z
-    change _ = ((2 : ℂ) • H₂ ^ 2 + (5 : ℂ) • H₂ * H₄ + (5 : ℂ) • H₄ ^ 2) z
-    simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
-    ring
+    have := H₂_tendsto_atImInfty
+    have := H₄_tendsto_atImInfty
+    change Tendsto (fun z => 2 * H₂ z ^ 2 + 5 * H₂ z * H₄ z + 5 * H₄ z ^ 2) atImInfty (nhds 5)
+    tendsto_cont
   have h_DB_B_tendsto : Filter.Tendsto (fun z => D B z / B z) atImInfty (nhds 0) := by
     have h := D_B_tendsto_zero.div h_B_tendsto (by norm_num : (5 : ℂ) ≠ 0)
     simp only [zero_div] at h; exact h
@@ -1151,7 +1175,7 @@ theorem F_functional_equation' {t : ℝ} (ht : 0 < t) :
       - 12 * π ^ (-1 : ℤ) * t ^ 11 * (F₁ * E₄.toFun) z
       + 36 * π ^ (-2 : ℤ) * t ^ 10 * (E₄.toFun z) ^ 2 := by
     rw [ResToImagAxis.one_div_eq_S_smul F ht, F_functional_equation z]
-    simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat]
+    simp only [hz_def, I_mul_t_pow_nat]
     ring_nf; simp only [I_sq]; ring
   -- Relate F z, (F₁ * E₄) z, E₄ z to resToImagAxis values
   have hF_z : F z = F.resToImagAxis t := by rw [hz_def]; exact ResToImagAxis.I_mul_t_eq F t ht
@@ -1209,7 +1233,7 @@ theorem G_functional_equation' {t : ℝ} (ht : 0 < t) :
       (2 * H₄.resToImagAxis t ^ 2 + 5 * H₂.resToImagAxis t * H₄.resToImagAxis t +
        5 * H₂.resToImagAxis t ^ 2) := by
     rw [ResToImagAxis.one_div_eq_S_smul G ht, G_functional_equation z]
-    simp only [hz_def, coe_mk_subtype, I_mul_t_pow_nat,
+    simp only [hz_def, I_mul_t_pow_nat,
       ResToImagAxis.I_mul_t_eq H₂ t ht, ResToImagAxis.I_mul_t_eq H₄ t ht]
     ring
   -- Use that H₂ and H₄ are real on the imaginary axis
