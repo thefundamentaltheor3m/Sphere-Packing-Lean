@@ -3,8 +3,10 @@ module
 public import SpherePacking.ModularForms.JacobiTheta
 public import SpherePacking.ModularForms.Derivative
 public import SpherePacking.ModularForms.DimensionFormulas
+public import SpherePacking.ModularForms.IsCuspForm
 public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ModularForms.EisensteinAsymptotics
+public import SpherePacking.Tactic.TendstoCont
 
 @[expose] public section
 
@@ -447,17 +449,14 @@ noncomputable def theta_h_SIF : SlashInvariantForm (Γ 1) 8 where
 
 /-- f₂ tends to 0 at infinity.
 Proof: f₂ = serre_D 2 H₂ - (1/6)H₂(H₂ + 2H₄)
-Since H₂ → 0 and serre_D 2 H₂ = D H₂ - (1/6)E₂ H₂ → 0,
-we get f₂ → 0 - 0 = 0. -/
+Since H₂ → 0, both serre_D 2 H₂ → 0 and H₂(H₂ + 2H₄) → 0, so f₂ → 0. -/
 lemma f₂_tendsto_atImInfty : Tendsto f₂ atImInfty (𝓝 0) := by
-  have h_serre_H₂ : Tendsto (serre_D 2 H₂) atImInfty (𝓝 0) := by
-    have hD := D_tendsto_zero_of_isBoundedAtImInfty H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂
-    have hE₂H₂ : Tendsto (fun z => E₂ z * H₂ z) atImInfty (𝓝 0) := by
-      simpa using E₂_tendsto_one_atImInfty.mul H₂_tendsto_atImInfty
-    convert hD.sub (hE₂H₂.const_mul ((2 : ℂ) / 12)) using 2 <;> simp [serre_D]; ring
-  have h_prod : Tendsto (H₂ * (H₂ + 2 * H₄)) atImInfty (𝓝 0) := by
-    simpa using H₂_tendsto_atImInfty.mul
-      (H₂_tendsto_atImInfty.add (H₄_tendsto_atImInfty.const_mul 2))
+  have h_serre_H₂ := serre_D_tendsto_zero_of_tendsto_zero 2 H₂
+    H₂_SIF_MDifferentiable isBoundedAtImInfty_H₂ H₂_tendsto_atImInfty
+  have h_prod : Tendsto (fun z => H₂ z * (H₂ z + 2 * H₄ z)) atImInfty (𝓝 0) := by
+    have := H₂_tendsto_atImInfty
+    have := H₄_tendsto_atImInfty
+    tendsto_cont
   simpa [f₂] using h_serre_H₂.sub (h_prod.const_mul (1/6 : ℂ))
 
 /-- f₄ tends to 0 at infinity.
@@ -470,31 +469,32 @@ lemma f₄_tendsto_atImInfty : Tendsto f₄ atImInfty (𝓝 0) := by
     convert serre_D_tendsto_neg_k_div_12 2 H₄ H₄_SIF_MDifferentiable isBoundedAtImInfty_H₄
       H₄_tendsto_atImInfty using 2
     norm_num
-  have h_sum : Tendsto (2 * H₂ + H₄) atImInfty (𝓝 1) := by
-    simpa using (H₂_tendsto_atImInfty.const_mul 2).add H₄_tendsto_atImInfty
-  have h_prod : Tendsto (H₄ * (2 * H₂ + H₄)) atImInfty (𝓝 1) := by
-    simpa using H₄_tendsto_atImInfty.mul h_sum
   have h_scaled : Tendsto (fun z => (1/6 : ℂ) * (H₄ z * (2 * H₂ z + H₄ z)))
-      atImInfty (𝓝 (1/6 : ℂ)) := by simpa using h_prod.const_mul (1/6 : ℂ)
+      atImInfty (𝓝 (1/6 : ℂ)) := by
+    have := H₂_tendsto_atImInfty
+    have := H₄_tendsto_atImInfty
+    tendsto_cont
   simpa [f₄] using h_serre_H₄.add h_scaled
 
 /-- theta_g tends to 0 at infinity.
 theta_g = (2H₂ + H₄)f₂ + (H₂ + 2H₄)f₄.
 Since 2H₂ + H₄ → 1, H₂ + 2H₄ → 2, and f₂, f₄ → 0, we get theta_g → 0. -/
 lemma theta_g_tendsto_atImInfty : Tendsto theta_g atImInfty (𝓝 0) := by
-  have h_coef1 : Tendsto (2 * H₂ + H₄) atImInfty (𝓝 1) := by
-    simpa using (H₂_tendsto_atImInfty.const_mul 2).add H₄_tendsto_atImInfty
-  have h_coef2 : Tendsto (H₂ + 2 * H₄) atImInfty (𝓝 2) := by
-    simpa using H₂_tendsto_atImInfty.add (H₄_tendsto_atImInfty.const_mul 2)
-  simpa [theta_g] using (h_coef1.mul f₂_tendsto_atImInfty).add (h_coef2.mul f₄_tendsto_atImInfty)
+  have := H₂_tendsto_atImInfty
+  have := H₄_tendsto_atImInfty
+  have := f₂_tendsto_atImInfty
+  have := f₄_tendsto_atImInfty
+  change Tendsto (fun z => (2 * H₂ z + H₄ z) * f₂ z + (H₂ z + 2 * H₄ z) * f₄ z)
+    atImInfty (𝓝 0)
+  tendsto_cont
 
 /-- theta_h tends to 0 at infinity.
 theta_h = f₂² + f₂f₄ + f₄² → 0 + 0 + 0 = 0 as f₂, f₄ → 0. -/
 lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
-  simpa [theta_h] using
-    ((f₂_tendsto_atImInfty.pow 2).add
-      (f₂_tendsto_atImInfty.mul f₄_tendsto_atImInfty)).add
-      (f₄_tendsto_atImInfty.pow 2)
+  have := f₂_tendsto_atImInfty
+  have := f₄_tendsto_atImInfty
+  change Tendsto (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) atImInfty (𝓝 0)
+  tendsto_cont
 
 private noncomputable def theta_g_CF : CuspForm (Γ 1) 6 :=
   cuspFormOfSIFTendstoZero theta_g_SIF theta_g_MDifferentiable theta_g_tendsto_atImInfty
@@ -531,15 +531,14 @@ lemma H_sum_sq_MDifferentiable : MDiff H_sum_sq := by
 
 /-- H_sum_sq → 1 at infinity -/
 lemma H_sum_sq_tendsto : Tendsto H_sum_sq atImInfty (𝓝 1) := by
+  have := H₂_tendsto_atImInfty
+  have := H₄_tendsto_atImInfty
   unfold H_sum_sq
-  simpa [sq] using
-    ((H₂_tendsto_atImInfty.mul H₂_tendsto_atImInfty).add
-      (H₂_tendsto_atImInfty.mul H₄_tendsto_atImInfty)).add
-      (H₄_tendsto_atImInfty.mul H₄_tendsto_atImInfty)
+  tendsto_cont
 
 /-- H_sum_sq ≠ 0 (since it tends to 1 ≠ 0) -/
-lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 := fun h =>
-  one_ne_zero (tendsto_nhds_unique tendsto_const_nhds (h ▸ H_sum_sq_tendsto)).symm
+lemma H_sum_sq_ne_zero : H_sum_sq ≠ 0 :=
+  ne_zero_of_tendsto_ne_zero one_ne_zero H_sum_sq_tendsto
 
 /-- 3 * H_sum_sq ≠ 0 -/
 lemma three_H_sum_sq_ne_zero : (fun z => 3 * H_sum_sq z) ≠ 0 :=

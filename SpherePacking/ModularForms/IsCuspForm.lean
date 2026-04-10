@@ -8,9 +8,9 @@ public import SpherePacking.ModularForms.qExpansion_lems
 @[expose] public section
 
 open ModularForm UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
-  Metric Filter Function Complex MatrixGroups
+  Metric Filter Function Complex MatrixGroups Manifold
 
-open scoped Interval Real NNReal ENNReal Topology BigOperators Nat Manifold
+open scoped Interval Real NNReal ENNReal Topology BigOperators Nat CongruenceSubgroup Manifold
 
 
 noncomputable section Definitions
@@ -21,8 +21,6 @@ variable {α ι : Type*}
 
 open SlashInvariantFormClass ModularFormClass
 variable {k : ℤ} {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup SL(2, ℤ)} (n : ℕ) (f : F)
-
-open scoped Real MatrixGroups CongruenceSubgroup
 
 def ModForm_mk (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) : ModularForm Γ k where
   toFun := f

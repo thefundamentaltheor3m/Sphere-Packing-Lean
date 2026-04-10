@@ -5,6 +5,9 @@ public import SpherePacking.ForMathlib.MDifferentiableFunProp
 public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ForMathlib.UpperHalfPlane
 public import SpherePacking.ModularForms.DimensionFormulas
+public import SpherePacking.ModularForms.IsCuspForm
+public import SpherePacking.ModularForms.ResToImagAxis
+public import SpherePacking.Tactic.TendstoCont
 
 @[expose] public section
 
@@ -875,13 +878,17 @@ Combined with the dimension vanishing for weight 4 cusp forms, this proves the J
 /-- The function g := H₂ + H₄ - H₃ tends to 0 at i∞.
     Since H₂ → 0, H₃ → 1, H₄ → 1, we have g → 0 + 1 - 1 = 0. -/
 theorem jacobi_g_tendsto_atImInfty : Tendsto jacobi_g atImInfty (𝓝 0) := by
-  convert (H₂_tendsto_atImInfty.add H₄_tendsto_atImInfty).sub H₃_tendsto_atImInfty using 1
-  norm_num
+  have := H₂_tendsto_atImInfty
+  have := H₃_tendsto_atImInfty
+  have := H₄_tendsto_atImInfty
+  change Tendsto (fun z => H₂ z + H₄ z - H₃ z) atImInfty (𝓝 0)
+  tendsto_cont
 
 /-- The function f := g² tends to 0 at i∞. -/
 theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
-  convert jacobi_g_tendsto_atImInfty.pow 2 using 1
-  norm_num
+  have := jacobi_g_tendsto_atImInfty
+  change Tendsto (fun z => jacobi_g z ^ 2) atImInfty (𝓝 0)
+  tendsto_cont
 
 private noncomputable def jacobi_f_CF : CuspForm (Γ 1) 4 :=
   cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_SIF_MDifferentiable
@@ -939,9 +946,10 @@ private lemma theta_prod_sq_MDifferentiable : MDiff theta_prod_sq := by
 
 private lemma theta_prod_sq_tendsto_atImInfty : Tendsto theta_prod_sq atImInfty (𝓝 0) := by
   change Tendsto (fun z => (H₂ z * H₃ z * H₄ z) ^ 2) atImInfty (𝓝 0)
-  have : (0 : ℂ) = (0 * 1 * 1) ^ 2 := by norm_num
-  rw [this]
-  exact ((H₂_tendsto_atImInfty.mul H₃_tendsto_atImInfty).mul H₄_tendsto_atImInfty).pow 2
+  have := H₂_tendsto_atImInfty
+  have := H₃_tendsto_atImInfty
+  have := H₄_tendsto_atImInfty
+  tendsto_cont
 
 private noncomputable def theta_prod_sq_SIF :
     SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
