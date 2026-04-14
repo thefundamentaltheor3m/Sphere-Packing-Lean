@@ -158,17 +158,23 @@ section ContDiffOn_Real
 
 /-! # Real Differentiability -/
 
-theorem Φ₁'_contDiffOn : ContDiffOn ℝ ∞ (Φ₁' r) ℍ₀ := Φ₁'_contDiffOn_ℂ.restrict_scalars ℝ
+private theorem ContDiffOn.restrict_scalars_complex {s : Set ℂ} {f : ℂ → ℂ} {n : WithTop ℕ∞}
+    (h : ContDiffOn ℂ n f s) : ContDiffOn ℝ n f s := by
+  intro x hx
+  exact @ContDiffWithinAt.restrict_scalars ℝ _ ℂ _ _ ℂ _ _ s f x n ℂ _ _ _
+    IsScalarTower.right _ IsScalarTower.right (h x hx)
 
-theorem Φ₂'_contDiffOn : ContDiffOn ℝ ∞ (Φ₂' r) ℍ₀ := Φ₂'_contDiffOn_ℂ.restrict_scalars ℝ
+theorem Φ₁'_contDiffOn : ContDiffOn ℝ ∞ (Φ₁' r) ℍ₀ := Φ₁'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ := Φ₃'_contDiffOn_ℂ.restrict_scalars ℝ
+theorem Φ₂'_contDiffOn : ContDiffOn ℝ ∞ (Φ₂' r) ℍ₀ := Φ₂'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₄'_contDiffOn : ContDiffOn ℝ ∞ (Φ₄' r) ℍ₀ := Φ₄'_contDiffOn_ℂ.restrict_scalars ℝ
+theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ := Φ₃'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₅'_contDiffOn : ContDiffOn ℝ ∞ (Φ₅' r) ℍ₀ := Φ₅'_contDiffOn_ℂ.restrict_scalars ℝ
+theorem Φ₄'_contDiffOn : ContDiffOn ℝ ∞ (Φ₄' r) ℍ₀ := Φ₄'_contDiffOn_ℂ.restrict_scalars_complex
 
-theorem Φ₆'_contDiffOn : ContDiffOn ℝ ∞ (Φ₆' r) ℍ₀ := Φ₆'_contDiffOn_ℂ.restrict_scalars ℝ
+theorem Φ₅'_contDiffOn : ContDiffOn ℝ ∞ (Φ₅' r) ℍ₀ := Φ₅'_contDiffOn_ℂ.restrict_scalars_complex
+
+theorem Φ₆'_contDiffOn : ContDiffOn ℝ ∞ (Φ₆' r) ℍ₀ := Φ₆'_contDiffOn_ℂ.restrict_scalars_complex
 
 end ContDiffOn_Real
 
