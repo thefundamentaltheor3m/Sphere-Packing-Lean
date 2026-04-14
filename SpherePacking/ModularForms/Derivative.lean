@@ -1,7 +1,6 @@
 module
 
-public import SpherePacking.ForMathlib.MDifferentiableFunProp
-
+public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ModularForms.Eisenstein
 public import Mathlib.Analysis.Calculus.DiffContOnCl
 
@@ -31,30 +30,6 @@ Prove Ramanujan's formulas on derivatives of Eisenstein series.
 -/
 noncomputable def D (F : ℍ → ℂ) : ℍ → ℂ :=
   fun (z : ℍ) => (2 * π * I)⁻¹ * ((deriv (F ∘ ofComplex)) z)
-
-/--
-TODO: Remove this or move this to somewhere more appropriate.
--/
-lemma MDifferentiableAt_DifferentiableAt {F : ℍ → ℂ} {z : ℍ}
-  (h : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) F z) :
-  DifferentiableAt ℂ (F ∘ ofComplex) ↑z := by
-  have h₁ : DifferentiableWithinAt ℂ (F ∘ ofComplex) Set.univ ↑z :=
-    by simpa [writtenInExtChartAt, extChartAt, Set.range_id] using
-      MDifferentiableWithinAt.differentiableWithinAt_writtenInExtChartAt h
-  exact (differentiableWithinAt_univ.1 h₁)
-
-/--
-The converse direction: `DifferentiableAt` on ℂ implies `MDifferentiableAt` on ℍ.
--/
-lemma DifferentiableAt_MDifferentiableAt {G : ℂ → ℂ} {z : ℍ}
-    (h : DifferentiableAt ℂ G ↑z) : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (G ∘ (↑) : ℍ → ℂ) z := by
-  rw [mdifferentiableAt_iff]
-  -- Goal: DifferentiableAt ℂ ((G ∘ (↑)) ∘ ofComplex) ↑z
-  -- The functions ((G ∘ (↑)) ∘ ofComplex) and G agree on the upper half-plane
-  -- which is a neighborhood of ↑z
-  apply DifferentiableAt.congr_of_eventuallyEq h
-  filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
-  simp [Function.comp_apply, ofComplex_apply_of_im_pos hw]
 
 /--
 The derivative operator `D` preserves MDifferentiability.
@@ -461,18 +436,6 @@ lemma deriv_num (z : ℂ) :
     deriv (fun w => num γ w) z = ((γ : Matrix (Fin 2) (Fin 2) ℤ) 0 0 : ℂ) := by
   simp only [num]
   rw [deriv_add_const, deriv_const_mul _ differentiableAt_id, deriv_id'', mul_one]; simp
-
-/-- Differentiability of denom. -/
-lemma differentiableAt_denom (z : ℂ) :
-    DifferentiableAt ℂ (fun w => denom γ w) z := by
-  simp only [denom]
-  fun_prop
-
-/-- Differentiability of num. -/
-lemma differentiableAt_num (z : ℂ) :
-    DifferentiableAt ℂ (fun w => num γ w) z := by
-  simp only [num]
-  fun_prop
 
 /-- Derivative of the Möbius transformation: d/dz[(az+b)/(cz+d)] = 1/(cz+d)².
 Uses det(γ) = 1: a(cz+d) - c(az+b) = ad - bc = 1. -/
