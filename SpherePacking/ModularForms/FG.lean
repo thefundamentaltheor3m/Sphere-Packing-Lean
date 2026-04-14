@@ -39,14 +39,10 @@ lemma Δ_fun_eq_Δ : Δ_fun = Δ := by
   have hds : (((DirectSum.of (ModularForm Γ(1)) 4) E₄ ^ 3) 12) = E₄.mul (E₄.mul E₄) := by
     ext w
     rw [pow_three, @DirectSum.of_mul_of, DirectSum.of_mul_of]
-    simp
-    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₄ (GradedMonoid.GMul.mul E₄ E₄)) rfl]
     rfl
   have hd6 : (((DirectSum.of (ModularForm Γ(1)) 6) E₆ ^ 2) 12) = E₆.mul E₆ := by
     ext w
     rw [pow_two, @DirectSum.of_mul_of]
-    simp
-    rw [DFunLike.congr_arg (GradedMonoid.GMul.mul E₆ E₆) rfl]
     rfl
   have h := congr_fun (congr_arg (fun f => f.toFun) Delta_E4_E6_eq) z
   have hE4E6 : Delta_E4_E6_aux z = 1728⁻¹ * (E₄ z ^ 3 - E₆ z ^ 2) := by

@@ -103,7 +103,7 @@ lemma Changing_Variables (r : ℝ) : ∫ (s : ℝ) in f '' (Ioc (0 : ℝ) (1 : �
 
 lemma Writing_as_intervalIntegral (r : ℝ) :
     ∫ (t : ℝ) in Ioc 0 1, |f' t| • (g r (f t)) = ∫ t in (0 : ℝ)..1, |f' t| • (g r (f t)) := by
-  simp [intervalIntegral_eq_integral_uIoc]
+  rw [integral_of_le zero_le_one]
 
 lemma Reconciling_Change_of_Variables (r : ℝ) :
     I₃' r = ∫ t in Ioc 0 1, |f' t| • (g r (f t)) := by
