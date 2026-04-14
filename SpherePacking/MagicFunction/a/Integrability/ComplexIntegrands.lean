@@ -24,6 +24,7 @@ In this file, we prove that all the complex integrands Φ₁' through Φ₆' tha
 * `Φⱼ'_contDiffOn_ℂ`: For j = 1…6, `Φⱼ'` is Complex-smooth on the upper half-plane.
 * `Φⱼ'_contDiffOn`: For j = 1…6, `Φⱼ'` is Real-smooth on the upper half-plane.
 * `φ₀''_holo`: `φ₀''` is Complex-differentiable on the upper half-plane.
+* `φ₀''_differentiable`: `φ₀''` is differentiable on `Set.univ ×ℂ Ioi 0`.
 * `φ₀''_continuous`: `φ₀''` is continuous on the upper half-plane.
 * `φ₀_continuous`: `φ₀ : ℍ → ℂ` is continuous.
 -/
