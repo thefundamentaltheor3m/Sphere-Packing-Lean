@@ -1,6 +1,6 @@
 module
 
-public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.JacobiTheta.JacobiTheta
 public import SpherePacking.ModularForms.Derivative
 public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.ModularForms.IsCuspForm
@@ -25,7 +25,7 @@ This file proves the Serre derivative identities for Jacobi theta functions
 ### Error Terms (Phases 1-5)
 * Error terms `f₂`, `f₃`, `f₄` definitions
 * MDifferentiable proofs for error terms
-* Relation `f₂ + f₄ = f₃` (from `jacobi_identity` in JacobiTheta.lean)
+* Relation `f₂ + f₄ = f₃` (from `jacobi_identity` in `JacobiTheta/JacobiTheta.lean`)
 * S/T transformation rules: `f₂_S_action`, `f₂_T_action`, `f₄_S_action`, `f₄_T_action`
 
 ### Level-1 Invariants (Phase 6)

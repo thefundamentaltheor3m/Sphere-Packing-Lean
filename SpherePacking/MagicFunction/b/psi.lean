@@ -8,7 +8,7 @@ module
 
 -- import Mathlib
 
-public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.JacobiTheta.JacobiTheta
 public import SpherePacking.MagicFunction.IntegralParametrisations
 
 @[expose] public section

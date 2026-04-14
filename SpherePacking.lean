@@ -62,14 +62,14 @@ public import SpherePacking.ModularForms.Eisensteinqexpansions
 public import SpherePacking.ModularForms.FG
 public import SpherePacking.ModularForms.Icc_Ico_lems
 public import SpherePacking.ModularForms.IsCuspForm
-public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.JacobiTheta.JacobiTheta
 public import SpherePacking.ModularForms.PhiTransform
 public import SpherePacking.ModularForms.QExpansion
 public import SpherePacking.ModularForms.RamanujanIdentities
 public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.SlashActionAuxil
-public import SpherePacking.ModularForms.ThetaDerivIdentities
+public import SpherePacking.ModularForms.JacobiTheta.ThetaDerivIdentities
 public import SpherePacking.ModularForms.clog_arg_lems
 public import SpherePacking.ModularForms.csqrt
 public import SpherePacking.ModularForms.equivs
