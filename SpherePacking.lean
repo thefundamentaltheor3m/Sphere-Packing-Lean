@@ -112,6 +112,7 @@ public import SpherePacking.MagicFunction.a.IntegralEstimates.BoundingAux
 public import SpherePacking.MagicFunction.a.IntegralEstimates.BoundingAuxIci
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I2
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I24Common
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I4
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I5

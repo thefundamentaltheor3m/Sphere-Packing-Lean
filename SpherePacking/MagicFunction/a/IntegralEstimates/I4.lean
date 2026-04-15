@@ -10,6 +10,7 @@ module
 public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
+public import SpherePacking.MagicFunction.a.IntegralEstimates.I24Common
 public import SpherePacking.MagicFunction.a.IntegralEstimates.PowExpBounds
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.Analysis.Complex.RealDeriv
@@ -95,19 +96,8 @@ section Bounding_Integral
 
 /-- A uniform-in-`r` bound on the integrand `g r t` on `Ioo (0, 1)`. -/
 public lemma g_norm_bound_uniform :
-    ∃ C₀ > 0, ∀ r : ℝ, ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le
-  refine ⟨C₀, hC₀_pos, ?_⟩
-  intro r t ht
-  have h0 := I₄'_bounding_aux_1 r t ht
-  refine h0.trans ?_
-  gcongr
-  have him : 1 / 2 < (-1 / (-↑t + I)).im := im_parametrisation_lower t ht
-  have hpos : 0 < (-1 / (-↑t + I)).im := one_half_pos.trans him
-  have hz_half : 1 / 2 < (⟨-1 / (-t + I), hpos⟩ : ℍ).im := by simpa using him
-  simpa [φ₀'', hpos] using
-    (norm_φ₀''_le_mul_exp_neg_pi_of_one_half_lt_im (C₀ := C₀) (hC₀_pos := hC₀_pos) (hC₀ := hC₀)
-      (z := ⟨-1 / (-t + I), hpos⟩) hz_half)
+    ∃ C₀ > 0, ∀ r : ℝ, ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r) :=
+  I24Common.g_norm_bound_uniform_of I₄'_bounding_aux_1 im_parametrisation_lower
 
 end Bounding.Bounding_Integral
 ----------------------------------------------------------------
@@ -121,21 +111,19 @@ section Higher_iteratedFDerivs
 open scoped Topology
 
 /--
-The coefficient appearing in the exponent when rewriting `g r t` as
-`A t * cexp ((r : ℂ) * coeff t)`.
+The coefficient appearing in the exponent when rewriting `g r t` as `A t * cexp ((r : ℂ) * coeff t)`.
+This is the specialization of `I24Common.coeff` to `shift = fun t => (1 : ℂ) - (t : ℂ)`.
 -/
-@[expose] public def coeff (t : ℝ) : ℂ :=
-  (-π : ℂ) + (π * I) * (1 - (t : ℂ))
+@[expose] public def coeff : ℝ → ℂ := I24Common.coeff (fun t => (1 : ℂ) - (t : ℂ))
 
 /-- Continuity of `coeff`. -/
-public lemma continuous_coeff : Continuous coeff := by
-  simpa [coeff] using
-    (continuous_const.add (continuous_const.mul (continuous_const.sub Complex.continuous_ofReal)))
+public lemma continuous_coeff : Continuous coeff :=
+  I24Common.continuous_coeff (continuous_const.sub Complex.continuous_ofReal)
 
 /-- A convenient expansion of `coeff t` as a sum. -/
 public lemma coeff_eq_sum (t : ℝ) :
     coeff t = (π * I : ℂ) + (-π * I * (t : ℂ)) + (-π : ℂ) := by
-  simp [coeff, sub_eq_add_neg, mul_add, mul_assoc, add_left_comm, add_comm]
+  simp [coeff, I24Common.coeff, sub_eq_add_neg, mul_add, mul_assoc, add_left_comm, add_comm]
 
 /-- The integrand for the `n`-th derivative, obtained by multiplying `g` by `(coeff t) ^ n`. -/
 @[expose] public def gN (n : ℕ) (r t : ℝ) : ℂ :=
@@ -143,32 +131,16 @@ public lemma coeff_eq_sum (t : ℝ) :
 
 /-- Uniform bound `‖coeff t‖ ≤ 2 * π` for `t ∈ Ioo (0, 1)`. -/
 public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
-    ‖coeff t‖ ≤ 2 * π := by
-  have ht0 : 0 ≤ t := le_of_lt ht.1
-  have ht1 : t ≤ 1 := le_of_lt ht.2
-  have habs : |1 - t| ≤ 1 := by
-    grind only [= mem_Ioo, = abs.eq_1, = max_def]
-  have hsub : ‖(1 : ℂ) - (t : ℂ)‖ ≤ 1 := by
-    have hnorm_sub : ‖(1 : ℂ) - (t : ℂ)‖ = |1 - t| := by
-      simpa [Real.norm_eq_abs] using (Complex.norm_real (1 - t))
-    simpa [hnorm_sub] using habs
-  have hpi0 : (0 : ℝ) ≤ π := Real.pi_pos.le
-  calc
-    ‖coeff t‖ = ‖(-π : ℂ) + (π * I) * ((1 : ℂ) - (t : ℂ))‖ := by
-      simp [coeff, sub_eq_add_neg, mul_add, mul_assoc]
-    _ ≤ ‖(-π : ℂ)‖ + ‖(π * I) * ((1 : ℂ) - (t : ℂ))‖ := norm_add_le _ _
-    _ ≤ π + π := by
-      have hleft : ‖(-π : ℂ)‖ = π := by
-        simp [Real.norm_eq_abs, abs_of_nonneg hpi0]
-      have hleft' : ‖(-π : ℂ)‖ ≤ π := by simp [hleft]
-      have hmul' : ‖(π * I) * ((1 : ℂ) - (t : ℂ))‖ ≤ π := by
-        calc
-          ‖(π * I) * ((1 : ℂ) - (t : ℂ))‖ = ‖(π * I : ℂ)‖ * ‖(1 : ℂ) - (t : ℂ)‖ := by simp
-          _ ≤ ‖(π * I : ℂ)‖ * 1 := by
-            exact mul_le_mul_of_nonneg_left hsub (norm_nonneg (π * I : ℂ))
-          _ = π := by simp [hpi0]
-      exact add_le_add hleft' hmul'
-    _ = 2 * π := by ring
+    ‖coeff t‖ ≤ 2 * π :=
+  I24Common.coeff_norm_le (shift := fun t => (1 : ℂ) - (t : ℂ))
+    (fun t ht => by
+      have habs : |1 - t| ≤ 1 := by
+        grind only [= mem_Ioo, = abs.eq_1, = max_def]
+      have hnorm : ‖((1 : ℂ) - (t : ℂ))‖ = |1 - t| := by
+        rw [show ((1 : ℂ) - (t : ℂ)) = ((1 - t : ℝ) : ℂ) from by push_cast; ring]
+        exact Complex.norm_real _
+      rw [hnorm]; exact habs)
+    t ht
 
 /-- Expand `cexp ((r : ℂ) * coeff t)` into the product of exponentials used in `g`. -/
 public lemma exp_r_mul_coeff (r t : ℝ) :
@@ -189,7 +161,8 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
       have hz_sub : z₄' t - 1 = (-t : ℂ) + I := by
         simp [hz, sub_eq_add_neg, add_assoc, add_comm]
       have hz_coeff : (π * I : ℂ) * (z₄' t : ℂ) = coeff t := by
-        simp [coeff, hz, sub_eq_add_neg, mul_add, mul_assoc, add_left_comm, add_comm]
+        simp [coeff, I24Common.coeff, hz, sub_eq_add_neg, mul_add, mul_assoc,
+          add_left_comm, add_comm]
       have hexp' :
           cexp (π * I * r * (z₄' t : ℂ)) =
             cexp (π * I * r) * cexp (-π * I * r * t) * cexp (-π * r : ℂ) := by
