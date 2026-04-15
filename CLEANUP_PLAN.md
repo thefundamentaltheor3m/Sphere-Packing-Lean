@@ -324,12 +324,26 @@ Key theorems (`MainTheorem`, `LinearProgrammingBound`, `eig_a`, `eig_b`, `g_cohn
 | 7 (file splitting) | 0 | (not yet) |
 | 8 (style polish) | 0 | (not yet) |
 
-## Actual Progress Through Phase 4a
+## Actual Progress Through Phase 4b (partial) + additional cleanup
 
-- 42 files changed
-- 246 insertions, 1,696 deletions
-- **Net: -1,450 lines** (~2.4% of project)
+- 47 files changed
+- 307 insertions, 1,936 deletions
+- **Net: -1,629 lines** (~2.7% of project)
 - All builds pass; no behavioral changes
+
+### Cleanup completed in this session
+
+10 commits on `gauss2-cleanup` (PR #391):
+1. Phase 1a: delete 15 dead files (1,161 lines)
+2. Phase 1b: delete unused declarations within files (36 lines)
+3. Phase 1c: inline trivial wrappers (14 lines)
+4. Phase 2a: deduplicate `mul_Delta_map` definitions (88 lines)
+5. Phase 2b: remove dead `RamanujanIdentities.lean` (157 lines)
+6. Phase 3: rename 12 files to mathlib naming conventions + sort imports
+7. Phase 4a: extract `SmoothI24Common` for a/ SmoothI2/I4 (structural)
+8. Documentation update
+9. Phase 4b (partial): remove commented-out dead code blocks (135 lines)
+10. Additional dead-code/inline cleanup (30 lines)
 
 ## Remaining Work
 
@@ -337,3 +351,18 @@ Phases 4c–8 are significant refactors that would require careful
 planning and substantial time. The a/ vs b/ unification (Phase 5) is
 the largest remaining target but also the most complex, requiring a
 shared `MagicFunction/Common/` module with parameterized structure.
+
+Suggested next steps for follow-up PRs:
+- **Phase 4c** (I2/I4 IntegralEstimates common, ~180 lines): Moderate
+  effort, moderate savings. The two files are 277 and 236 lines with
+  character-for-character identical proofs modulo sign/parametrization.
+- **Phase 5** (a/ vs b/ unification, ~2,000 lines): Biggest impact but
+  requires a carefully designed `MagicFunction/Common/` module
+  parameterized by `MagicFunctionData` (modular form, eigenvalue, sign).
+- **Phase 6** (Laplace A/B shared abstractions, ~600 lines): Extract
+  generic parametric-integral analyticity and analytic-continuation
+  wrappers.
+- **Phase 7** (split `Derivative.lean` 1475 lines, `JacobiTheta.lean`
+  1338 lines, `PolyFourierCoeffBound.lean` 905 lines into focused
+  sub-modules).
+- **Phase 8** (mathlib style polish: docstrings, consistent formatting).
