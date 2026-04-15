@@ -326,10 +326,10 @@ Key theorems (`MainTheorem`, `LinearProgrammingBound`, `eig_a`, `eig_b`, `g_cohn
 
 ## Actual Progress
 
-- **19 commits** on gauss2-cleanup (PR #391)
+- **28+ commits** on gauss2-cleanup (PR #391)
 - Starting: 59,366 lines
-- Current: 57,084 lines
-- **Net: -2,282 lines** (~3.8% of project)
+- Current: 55,916 lines
+- **Net: -3,450 lines** (~5.8% of project)
 - All builds pass; no behavioral changes
 
 ### Cleanup completed in this session
