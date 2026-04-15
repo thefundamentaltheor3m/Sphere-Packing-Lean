@@ -43,9 +43,4 @@ public theorem fourier_g_zero : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ
   simp [a_zero, b_zero, sub_eq_add_neg, div_eq_mul_inv]
   field_simp [show (π : ℂ) ≠ 0 by exact_mod_cast pi_ne_zero]; ring_nf; norm_num1
 
-/-- The values `g 0` and `𝓕 g 0` agree. -/
-public theorem g_zero_eq_fourier_g_zero :
-    g 0 = FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g 0 := by
-  rw [g_zero, fourier_g_zero]
-
 end

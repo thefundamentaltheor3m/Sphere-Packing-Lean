@@ -77,24 +77,9 @@ variable {r : ℝ} (hr : r ≥ 0)
 
 namespace MagicFunction.a.RealIntegrands
 
-public theorem Φ₁_contDiffOn : ContDiffOn ℝ ∞ (Φ₁ r) (Ioc (0 : ℝ) 1) := by
-  simp only [Φ₁_def, ← smul_eq_mul I _]
-  apply ContDiffOn.const_smul
-  change ContDiffOn ℝ ∞ ((Φ₁' r) ∘ z₁') (Ioc (0 : ℝ) 1)
-  refine Φ₁'_contDiffOn.comp z₁'_contDiffOn ?_
-  exact z₁'_mapsto
-
 /-- Smoothness of the real integrand `Φ₂ r` on `Icc (0, 1)`. -/
 public theorem Φ₂_contDiffOn : ContDiffOn ℝ ∞ (Φ₂ r) (Icc (0 : ℝ) 1) := by
   simpa [Φ₂_def, Φ₂'] using (Φ₁'_contDiffOn (r := r)).comp z₂'_contDiffOn z₂'_mapsto
-
-public theorem Φ₃_contDiffOn : ContDiffOn ℝ ∞ (Φ₃ r) (Ioc (0 : ℝ) 1) := by
-  simp only [Φ₃_def, ← smul_eq_mul I _]
-  apply ContDiffOn.const_smul
-  change ContDiffOn ℝ ∞ ((Φ₃' r) ∘ z₃') (Ioc (0 : ℝ) 1)
-  refine Φ₃'_contDiffOn.comp z₃'_contDiffOn ?_
-  exact z₃'_mapsto
-
 
 /-- Smoothness of the real integrand `Φ₄ r` on `Icc (0, 1)`. -/
 private lemma Φ₄_contDiffOn_core (r : ℝ) :
@@ -105,13 +90,6 @@ private lemma Φ₄_contDiffOn_core (r : ℝ) :
 
 public theorem Φ₄_contDiffOn : ContDiffOn ℝ ∞ (Φ₄ r) (Icc (0 : ℝ) 1) := by
   simpa [Φ₄_def, Φ₄', smul_eq_mul] using Φ₄_contDiffOn_core (r := r)
-
-public theorem Φ₅_contDiffOn : ContDiffOn ℝ ∞ (Φ₅ r) (Ioc (0 : ℝ) 1) := by
-  simp only [Φ₅_def, ← smul_eq_mul I _]
-  apply ContDiffOn.const_smul
-  change ContDiffOn ℝ ∞ ((Φ₅' r) ∘ z₅') (Ioc (0 : ℝ) 1)
-  refine Φ₅'_contDiffOn.comp z₅'_contDiffOn ?_
-  exact z₅'_mapsto
 
 /-- Smoothness of the real integrand `Φ₆ r` on `Ici 1`. -/
 private lemma Φ₆_contDiffOn_core (r : ℝ) :

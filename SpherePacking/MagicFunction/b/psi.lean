@@ -298,23 +298,11 @@ public lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
   nth_rw 3 [add_comm]
 -- proof of ψT_slash_S complete
 
-/-- Modular relation: `ψI ∣[-2] (T * S) = -ψT`. -/
-public lemma ψI_slash_TS : ψI ∣[-2] (T * S) = -ψT := by
-  ext z
-  simpa [ψT, ← slash_mul] using congrArg (fun f => f z) (ψT_slash_S : ψT ∣[-2] S = -ψT)
-
 /-- Modular relation: `ψS ∣[-2] (S * T * S) = -ψT`. -/
 public lemma ψS_slash_STS : ψS ∣[-2] (S * T * S) = -ψT := by
   ext z
   rw [slash_mul, slash_mul, ψS_slash_S]
   simpa [ψT] using congrArg (fun f => f z) (ψT_slash_S : ψT ∣[-2] S = -ψT)
-
-/-- Modular relation: `ψS ∣[-2] (T * S * T * S) = ψT`. -/
-public lemma ψS_slash_TSTS : ψS ∣[-2] (T * S * T * S) = ψT := by
-  ext z
-  rw [slash_mul, slash_mul, slash_mul, ψS_slash_T, neg_slash, ψS_slash_S, neg_slash, ← ψT,
-    neg_slash, ψT_slash_S]
-  simp
 
 end rels
 

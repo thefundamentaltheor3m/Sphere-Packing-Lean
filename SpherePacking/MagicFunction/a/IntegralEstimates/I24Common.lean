@@ -78,31 +78,6 @@ public lemma g_norm_bound_uniform_of {g : ℝ → ℝ → ℂ} {mob : ℝ → �
     norm_φ₀''_le_mul_exp_neg_pi_of_one_half_lt_im (C₀ := C₀) (hC₀_pos := hC₀_pos) (hC₀ := hC₀)
       (z := ⟨mob t, hpos⟩) hz_half
 
-/--
-Given a representation of `g r t` with suitable hypotheses, derive Schwartz-style decay
-`‖x‖^k * ‖iteratedFDeriv n I x‖ ≤ C` on `[0, ∞)` from a uniform-in-`r` exponential bound on `g`.
-
-The `hiteratedDeriv` hypothesis should express `iteratedDeriv n I` as the integral of
-`coeff^n * g r t` over `Ioo (0, 1)`; the precise form is provided by the caller.
--/
-public theorem decay_of_iteratedDeriv_eq_integral {I : ℝ → ℂ} {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ}
-    (hg_bound : ∃ C₀ > 0, ∀ r : ℝ, ∀ t ∈ Ioo (0 : ℝ) 1,
-      ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r))
-    (hcoeff : ∀ t ∈ Ioo (0 : ℝ) 1, ‖coeff t‖ ≤ 2 * π)
-    (hiteratedDeriv : ∀ n, iteratedDeriv n I =
-      fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g r t) :
-    ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
-      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C := by
-  intro k n
-  have hbound : ∃ C₁ > 0, ∀ r : ℝ, ‖iteratedDeriv n I r‖ ≤ C₁ * rexp (-π * r) := by
-    simpa using
-      iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul (I := I) (coeff := coeff) (g := g)
-        (n := n) hg_bound hcoeff (hiteratedDeriv n)
-  obtain ⟨C₁, hC₁_pos, hC₁⟩ := hbound
-  simpa using
-    (decay_of_bounding_uniform_norm_iteratedDeriv (I := I) (n := n)
-      ⟨C₁, hC₁_pos, fun x _ => by simpa using hC₁ x⟩ k)
-
 end
 
 end MagicFunction.a.IntegralEstimates.I24Common

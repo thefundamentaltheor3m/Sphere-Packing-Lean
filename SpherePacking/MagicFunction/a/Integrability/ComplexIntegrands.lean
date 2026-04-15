@@ -202,8 +202,6 @@ theorem Φ₂'_contDiffOn : ContDiffOn ℝ ∞ (Φ₂' r) ℍ₀ := Φ₂'_contD
 public theorem Φ₃'_contDiffOn : ContDiffOn ℝ ∞ (Φ₃' r) ℍ₀ :=
   (Φ₃'_contDiffOn_ℂ (r := r)).restrict_scalars ℝ
 
-public theorem Φ₄'_contDiffOn : ContDiffOn ℝ ∞ (Φ₄' r) ℍ₀ := Φ₄'_contDiffOn_ℂ.restrict_scalars ℝ
-
 /-- The integrand `Φ₅' r` is smooth as a real function on `upperHalfPlaneSet`. -/
 public theorem Φ₅'_contDiffOn : ContDiffOn ℝ ∞ (Φ₅' r) ℍ₀ := Φ₅'_contDiffOn_ℂ.restrict_scalars ℝ
 

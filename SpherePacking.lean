@@ -200,7 +200,6 @@ public import SpherePacking.MagicFunction.g.CohnElkies.PureImaginary
 public import SpherePacking.MagicFunction.g.CohnElkies.RealValued
 public import SpherePacking.MagicFunction.g.CohnElkies.ScaledMagic
 public import SpherePacking.MagicFunction.g.CohnElkies.SignConditions
-public import SpherePacking.MagicFunction.g.CohnElkies.TheoremG1
 public import SpherePacking.MainTheorem
 public import SpherePacking.ModularForms.BigO
 public import SpherePacking.ModularForms.CSqrt
