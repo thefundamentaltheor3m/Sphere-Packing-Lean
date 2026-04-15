@@ -67,10 +67,10 @@ We show that each radial integral `I₁'`-`I₆'` is smooth in `r`, either direc
 differentiating under the integral sign or by reducing to previously handled cases.
 -/
 
-theorem I₁'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₁' := by
+public theorem I₁'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₁' := by
   simpa using MagicFunction.a.Schwartz.I1Smooth.I₁'_contDiff
 
-theorem I₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₂' := by
+public theorem I₂'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₂' := by
   simpa using MagicFunction.a.Schwartz.I2Smooth.I₂'_contDiff
 
 private lemma I₃'_eq_exp_mul_I₁' :
@@ -93,10 +93,10 @@ private lemma I₃'_eq_exp_mul_I₁' :
       [RealIntegrals.I₃', Φ₃, Φ₃', RealIntegrals.I₁', Φ₁, Φ₁', mul_comm, mul_left_comm, mul_assoc]
     using intervalIntegral.integral_congr (a := 0) (b := 1) hEqOn
 
-theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' := by
+public theorem I₃'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₃' := by
   simpa [I₃'_eq_exp_mul_I₁'] using (contDiff_const.mul ofRealCLM.contDiff).cexp.mul I₁'_smooth'
 
-theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' := by
+public theorem I₄'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₄' := by
   simpa using MagicFunction.a.Schwartz.I4Smooth.I₄'_contDiff
 
 private lemma I₅'_eq_mul_exp_mul_I₁' :
@@ -124,7 +124,7 @@ private lemma I₅'_eq_mul_exp_mul_I₁' :
     _ = (-2 : ℂ) * ∫ t in (0 : ℝ)..1, f t := by
           simp [hexp]
 
-theorem I₅'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₅' := by
+public theorem I₅'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₅' := by
   have hExp : ContDiff ℝ ∞ (fun x : ℝ ↦ cexp (((π : ℂ) * I) * (x : ℂ))) :=
     (contDiff_const.mul ofRealCLM.contDiff).cexp
   have h :
@@ -132,7 +132,7 @@ theorem I₅'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₅' := by
     (contDiff_const.mul hExp).mul I₁'_smooth'
   simpa [I₅'_eq_mul_exp_mul_I₁', mul_assoc, mul_left_comm, mul_comm] using h
 
-theorem I₆'_smooth' : ContDiff ℝ ∞ (fun r : ℝ ↦
+public theorem I₆'_smooth' : ContDiff ℝ ∞ (fun r : ℝ ↦
   RadialSchwartz.cutoffC r * RealIntegrals.I₆' r) := by
   simpa using MagicFunction.a.Schwartz.I6Smooth.cutoffC_mul_I₆'_contDiff
 
@@ -144,15 +144,15 @@ section Decay
 
 We follow the proof of Proposition 7.8 in the blueprint.-/
 
-theorem I₁'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
+public theorem I₁'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₁' x‖ ≤ C := by
   simpa using MagicFunction.a.Schwartz.I1Decay.decay'
 
-theorem I₂'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
+public theorem I₂'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₂' x‖ ≤ C :=
   MagicFunction.a.IntegralEstimates.I₂.decay'
 
-theorem I₃'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
+public theorem I₃'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₃' x‖ ≤ C := by
   intro k n
   have hI1 : ∀ m : ℕ, ∃ C, ∀ x : ℝ, 0 ≤ x →
@@ -229,11 +229,11 @@ theorem I₃'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
                 gcongr
       simpa [mul_assoc, mul_left_comm, mul_comm] using hterm)
 
-theorem I₄'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
+public theorem I₄'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₄' x‖ ≤ C :=
   MagicFunction.a.IntegralEstimates.I₄.decay'
 
-theorem I₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
+public theorem I₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₅' x‖ ≤ C := by
   intro k n
   -- Constants for the decay bounds of `I₁'`.
@@ -352,7 +352,7 @@ theorem I₅'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
                 (mul_le_mul_of_nonneg_left htermBound (by positivity : (0 : ℝ) ≤ (2 : ℝ)))
   simpa [mul_assoc] using hscale
 
-theorem I₆'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
+public theorem I₆'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₆' x‖ ≤ C :=
   MagicFunction.a.IntegralEstimates.I₆.decay'
 
@@ -362,106 +362,45 @@ end MagicFunction.a.SchwartzProperties
 
 namespace MagicFunction.a.SchwartzIntegrals
 
-/--
-A Schwartz function on `ℝ` agreeing with `RealIntegrals.I₁'` on `r ≥ 0`.
+open RadialSchwartz.Bridge
 
-It is obtained by multiplying `RealIntegrals.I₁'` by the smooth cutoff `RadialSchwartz.cutoffC`.
-The prime indicates that this is a radial profile in the variable `r = ‖x‖^2`.
--/
-@[expose] public def I₁' : 𝓢(ℝ, ℂ) where
-  toFun := fun r ↦ RadialSchwartz.cutoffC r * MagicFunction.a.RealIntegrals.I₁' r
-  smooth' := by
-    simpa using
-      (RadialSchwartz.cutoffC_contDiff.mul MagicFunction.a.SchwartzProperties.I₁'_smooth')
-  decay' := by
-    simpa using
-      (RadialSchwartz.cutoffC_mul_decay_of_nonneg
-        (f := MagicFunction.a.RealIntegrals.I₁')
-        MagicFunction.a.SchwartzProperties.I₁'_smooth'
-        MagicFunction.a.SchwartzProperties.I₁'_decay')
+/-- The one-dimensional Schwartz function associated to the primed radial integral `I₁'`. -/
+@[expose] public def I₁' : 𝓢(ℝ, ℂ) :=
+  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₁')
+    MagicFunction.a.SchwartzProperties.I₁'_smooth'
+    MagicFunction.a.SchwartzProperties.I₁'_decay'
 
-/--
-A Schwartz function on `ℝ` agreeing with `RealIntegrals.I₂'` on `r ≥ 0`.
+/-- The one-dimensional Schwartz function associated to the primed radial integral `I₂'`. -/
+@[expose] public def I₂' : 𝓢(ℝ, ℂ) :=
+  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₂')
+    MagicFunction.a.SchwartzProperties.I₂'_smooth'
+    MagicFunction.a.SchwartzProperties.I₂'_decay'
 
-It is obtained by multiplying `RealIntegrals.I₂'` by the smooth cutoff `RadialSchwartz.cutoffC`.
-The prime indicates that this is a radial profile in the variable `r = ‖x‖^2`.
--/
-@[expose] public def I₂' : 𝓢(ℝ, ℂ) where
-  toFun := fun r ↦ RadialSchwartz.cutoffC r * MagicFunction.a.RealIntegrals.I₂' r
-  smooth' := by
-    simpa using
-      (RadialSchwartz.cutoffC_contDiff.mul MagicFunction.a.SchwartzProperties.I₂'_smooth')
-  decay' := by
-    simpa using
-      (RadialSchwartz.cutoffC_mul_decay_of_nonneg
-        (f := MagicFunction.a.RealIntegrals.I₂')
-        MagicFunction.a.SchwartzProperties.I₂'_smooth'
-        MagicFunction.a.SchwartzProperties.I₂'_decay')
+/-- The one-dimensional Schwartz function associated to the primed radial integral `I₃'`. -/
+@[expose] public def I₃' : 𝓢(ℝ, ℂ) :=
+  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₃')
+    MagicFunction.a.SchwartzProperties.I₃'_smooth'
+    MagicFunction.a.SchwartzProperties.I₃'_decay'
 
-/--
-A Schwartz function on `ℝ` agreeing with `RealIntegrals.I₃'` on `r ≥ 0`.
+/-- The one-dimensional Schwartz function associated to the primed radial integral `I₄'`. -/
+@[expose] public def I₄' : 𝓢(ℝ, ℂ) :=
+  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₄')
+    MagicFunction.a.SchwartzProperties.I₄'_smooth'
+    MagicFunction.a.SchwartzProperties.I₄'_decay'
 
-It is obtained by multiplying `RealIntegrals.I₃'` by the smooth cutoff `RadialSchwartz.cutoffC`.
-The prime indicates that this is a radial profile in the variable `r = ‖x‖^2`.
--/
-@[expose] public def I₃' : 𝓢(ℝ, ℂ) where
-  toFun := fun r ↦ RadialSchwartz.cutoffC r * MagicFunction.a.RealIntegrals.I₃' r
-  smooth' := by
-    simpa using
-      (RadialSchwartz.cutoffC_contDiff.mul MagicFunction.a.SchwartzProperties.I₃'_smooth')
-  decay' := by
-    simpa using
-      (RadialSchwartz.cutoffC_mul_decay_of_nonneg
-        (f := MagicFunction.a.RealIntegrals.I₃')
-        MagicFunction.a.SchwartzProperties.I₃'_smooth'
-        MagicFunction.a.SchwartzProperties.I₃'_decay')
+/-- The one-dimensional Schwartz function associated to the primed radial integral `I₅'`. -/
+@[expose] public def I₅' : 𝓢(ℝ, ℂ) :=
+  fCutSchwartz (f := MagicFunction.a.RealIntegrals.I₅')
+    MagicFunction.a.SchwartzProperties.I₅'_smooth'
+    MagicFunction.a.SchwartzProperties.I₅'_decay'
 
-/--
-A Schwartz function on `ℝ` agreeing with `RealIntegrals.I₄'` on `r ≥ 0`.
+/-- The one-dimensional Schwartz function associated to the primed radial integral `I₆'`.
 
-It is obtained by multiplying `RealIntegrals.I₄'` by the smooth cutoff `RadialSchwartz.cutoffC`.
-The prime indicates that this is a radial profile in the variable `r = ‖x‖^2`.
--/
-@[expose] public def I₄' : 𝓢(ℝ, ℂ) where
-  toFun := fun r ↦ RadialSchwartz.cutoffC r * MagicFunction.a.RealIntegrals.I₄' r
-  smooth' := by
-    simpa using
-      (RadialSchwartz.cutoffC_contDiff.mul MagicFunction.a.SchwartzProperties.I₄'_smooth')
-  decay' := by
-    simpa using
-      (RadialSchwartz.cutoffC_mul_decay_of_nonneg
-        (f := MagicFunction.a.RealIntegrals.I₄')
-        MagicFunction.a.SchwartzProperties.I₄'_smooth'
-        MagicFunction.a.SchwartzProperties.I₄'_decay')
-
-/--
-A Schwartz function on `ℝ` agreeing with `RealIntegrals.I₅'` on `r ≥ 0`.
-
-It is obtained by multiplying `RealIntegrals.I₅'` by the smooth cutoff `RadialSchwartz.cutoffC`.
-The prime indicates that this is a radial profile in the variable `r = ‖x‖^2`.
--/
-@[expose] public def I₅' : 𝓢(ℝ, ℂ) where
-  toFun := fun r ↦ RadialSchwartz.cutoffC r * MagicFunction.a.RealIntegrals.I₅' r
-  smooth' := by
-    simpa using
-      (RadialSchwartz.cutoffC_contDiff.mul MagicFunction.a.SchwartzProperties.I₅'_smooth')
-  decay' := by
-    simpa using
-      (RadialSchwartz.cutoffC_mul_decay_of_nonneg
-        (f := MagicFunction.a.RealIntegrals.I₅')
-        MagicFunction.a.SchwartzProperties.I₅'_smooth'
-        MagicFunction.a.SchwartzProperties.I₅'_decay')
-
-/--
-A Schwartz function on `ℝ` agreeing with `RealIntegrals.I₆'` on `r ≥ 0`.
-
-It is obtained by multiplying `RealIntegrals.I₆'` by the smooth cutoff `RadialSchwartz.cutoffC`.
-The prime indicates that this is a radial profile in the variable `r = ‖x‖^2`.
--/
+`I₆'` requires the cutoff variant because its smoothness is only provided on `(-1, ∞)`. -/
 @[expose] public def I₆' : 𝓢(ℝ, ℂ) where
-  toFun := fun r ↦ RadialSchwartz.cutoffC r * MagicFunction.a.RealIntegrals.I₆' r
+  toFun := RadialSchwartz.Bridge.fCut MagicFunction.a.RealIntegrals.I₆'
   smooth' := by
-    simpa using MagicFunction.a.SchwartzProperties.I₆'_smooth'
+    simpa [RadialSchwartz.Bridge.fCut] using MagicFunction.a.SchwartzProperties.I₆'_smooth'
   decay' := by
     simpa using
       (RadialSchwartz.cutoffC_mul_decay_of_nonneg_of_contDiff
@@ -493,41 +432,45 @@ The prime indicates that this is a radial profile in the variable `r = ‖x‖^2
 @[expose] public def I₆ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
   schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) I₆'
 
+private lemma fCut_apply_of_nonneg (f : ℝ → ℂ) {r : ℝ} (hr : 0 ≤ r) :
+    RadialSchwartz.Bridge.fCut f r = f r := by
+  simp [RadialSchwartz.Bridge.fCut, hr]
+
 /-- On `r ≥ 0`, the cutoff is `1`, so `I₁'` agrees with `RealIntegrals.I₁'`. -/
 @[simp]
 public lemma I₁'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
     (I₁' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₁' r := by
-  simp [I₁', SchwartzMap.instFunLike, RadialSchwartz.cutoffC_eq_one_of_nonneg hr]
+  simpa [I₁', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.I₁') hr
 
 /-- On `r ≥ 0`, the cutoff is `1`, so `I₂'` agrees with `RealIntegrals.I₂'`. -/
 @[simp]
 public lemma I₂'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
     (I₂' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₂' r := by
-  simp [I₂', SchwartzMap.instFunLike, RadialSchwartz.cutoffC_eq_one_of_nonneg hr]
+  simpa [I₂', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.I₂') hr
 
 /-- On `r ≥ 0`, the cutoff is `1`, so `I₃'` agrees with `RealIntegrals.I₃'`. -/
 @[simp]
 public lemma I₃'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
     (I₃' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₃' r := by
-  simp [I₃', SchwartzMap.instFunLike, RadialSchwartz.cutoffC_eq_one_of_nonneg hr]
+  simpa [I₃', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.I₃') hr
 
 /-- On `r ≥ 0`, the cutoff is `1`, so `I₄'` agrees with `RealIntegrals.I₄'`. -/
 @[simp]
 public lemma I₄'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
     (I₄' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₄' r := by
-  simp [I₄', SchwartzMap.instFunLike, RadialSchwartz.cutoffC_eq_one_of_nonneg hr]
+  simpa [I₄', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.I₄') hr
 
 /-- On `r ≥ 0`, the cutoff is `1`, so `I₅'` agrees with `RealIntegrals.I₅'`. -/
 @[simp]
 public lemma I₅'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
     (I₅' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₅' r := by
-  simp [I₅', SchwartzMap.instFunLike, RadialSchwartz.cutoffC_eq_one_of_nonneg hr]
+  simpa [I₅', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.I₅') hr
 
 /-- On `r ≥ 0`, the cutoff is `1`, so `I₆'` agrees with `RealIntegrals.I₆'`. -/
 @[simp]
 public lemma I₆'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
     (I₆' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₆' r := by
-  simp [I₆', SchwartzMap.instFunLike, RadialSchwartz.cutoffC_eq_one_of_nonneg hr]
+  simpa [I₆'] using fCut_apply_of_nonneg (f := RealIntegrals.I₆') hr
 
 end MagicFunction.a.SchwartzIntegrals
 namespace MagicFunction.FourierEigenfunctions
