@@ -310,14 +310,30 @@ Key theorems (`MainTheorem`, `LinearProgrammingBound`, `eig_a`, `eig_b`, `g_cohn
 
 ## Estimated Total Impact
 
-| Phase | Lines saved |
-|-------|------------|
-| 1 (dead code + dedup defs) | ~1,200 |
-| 2 (naming) | 0 (rename only) |
-| 3 (a/ internal) | ~520 |
-| 4 (b/ internal) | ~520 |
-| 5 (a/ vs b/ unification) | ~2,000 |
-| 6 (Laplace shared) | ~600 |
-| 7 (file splitting) | 0 (reorganization) |
-| 8 (style polish) | 0 (docstrings add lines) |
-| **Total** | **~4,840 lines (~8% of project)** |
+| Phase | Lines saved (estimated) | Actual |
+|-------|------------|--------|
+| 1 (dead code + dedup defs) | ~1,200 | ✅ 1,227 |
+| 2 (dedup defs) | ~75 | ✅ 245 |
+| 3 (naming conventions + file renames) | 0 (rename only) | ✅ done |
+| 4a (SmoothI24Common) | ~180 | ✅ ~20 (structural win) |
+| 4b (I1/I3 bounding merge) | ~80 | (skipped - analysis overstated) |
+| 4c (I2/I4 IntegralEstimates common) | ~180 | (not yet - heavy refactor) |
+| 4d (Fourier kernel shared) | ~60-80 | (not yet) |
+| 5 (a/ vs b/ unification) | ~2,000 | (not yet) |
+| 6 (Laplace shared) | ~600 | (not yet) |
+| 7 (file splitting) | 0 | (not yet) |
+| 8 (style polish) | 0 | (not yet) |
+
+## Actual Progress Through Phase 4a
+
+- 42 files changed
+- 246 insertions, 1,696 deletions
+- **Net: -1,450 lines** (~2.4% of project)
+- All builds pass; no behavioral changes
+
+## Remaining Work
+
+Phases 4c–8 are significant refactors that would require careful
+planning and substantial time. The a/ vs b/ unification (Phase 5) is
+the largest remaining target but also the most complex, requiring a
+shared `MagicFunction/Common/` module with parameterized structure.
