@@ -274,14 +274,6 @@ public lemma _root_.ModularGroup.ST_eq : S * T = !![(0 : ℤ), -1; 1, 1] := by d
 
 public lemma _root_.ModularGroup.S_eq : S = !![(0 : ℤ), -1; 1, 0] := by rfl
 
-public lemma det_aux : !![(0 : ℤ), -1; 1, 1].det = 1 := by decide
-
-public lemma _root_.ModularGroup.ST_eq' : S * T = ⟨!![(0 : ℤ), -1; 1, 1], det_aux⟩ := by
-  simp only [← ModularGroup.ST_eq]; norm_cast
-
-public lemma _root_.ModularGroup.S_eq' : S = ⟨!![(0 : ℤ), -1; 1, 0], det_aux⟩ := by
-  simp only [← ModularGroup.S_eq]; norm_cast
-
 end transforms_mem
 
 end MagicFunction.Parametrisations
