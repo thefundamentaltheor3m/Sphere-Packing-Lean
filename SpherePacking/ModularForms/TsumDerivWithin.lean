@@ -91,32 +91,6 @@ public theorem derivWithin_tsum_fun' {α : Type _} (f : α → ℂ → ℂ) {s :
     (HasDerivWithinAt.derivWithin (hasDerivAt_tsum_fun_core f hs x hx hf hu hf2).hasDerivWithinAt
       (IsOpen.uniqueDiffWithinAt hs hx))
 
-theorem der_iter_eq_der2' (k n : ℕ) (r : ℍ') :
-    derivWithin (iteratedDerivWithin k
-        (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) ℍ') ℍ' ↑r =
-      iteratedDerivWithin (k + 1)
-        (fun s : ℂ => Complex.exp (2 * ↑π * Complex.I * n * s)) ℍ' ↑r := by
-  rw [iteratedDerivWithin_succ]
-
-
-noncomputable def cts_exp_two_pi_n (K : Set ℂ) : ContinuousMap K ℂ where
-  toFun := fun r : K => Complex.exp (2 * ↑π * Complex.I * r)
-
-private lemma norm_exp_two_pi_I_mul_le_norm_pow (K : Set ℂ) [CompactSpace K] (t : K) (n : ℕ) :
-    ‖Complex.exp (2 * π * Complex.I * n * (t : ℂ))‖ ≤
-      ‖BoundedContinuousFunction.mkOfCompact (cts_exp_two_pi_n K)‖ ^ n := by
-  have hpow :
-      ‖Complex.exp (2 * π * Complex.I * n * (t : ℂ))‖ =
-        ‖Complex.exp (2 * π * Complex.I * (t : ℂ))‖ ^ n := by
-    simpa [Complex.norm_pow, mul_assoc, mul_left_comm, mul_comm] using
-      congrArg (fun z : ℂ => ‖z‖) (exp_nat_mul (2 * π * Complex.I * (t : ℂ)) n)
-  have hle : ‖Complex.exp (2 * π * Complex.I * (t : ℂ))‖ ≤
-      ‖BoundedContinuousFunction.mkOfCompact (cts_exp_two_pi_n K)‖ := by
-    simpa [BoundedContinuousFunction.mkOfCompact_apply, cts_exp_two_pi_n] using
-      BoundedContinuousFunction.norm_coe_le_norm
-        (BoundedContinuousFunction.mkOfCompact (cts_exp_two_pi_n K)) t
-  simpa [hpow] using (pow_le_pow_left₀ (by positivity) hle n)
-
 /-- A `HasDerivAt`-of-`tsum` lemma under the same hypotheses as `derivWithin_tsum_fun'`. -/
 public theorem hasDerivAt_tsum_fun {α : Type _} (f : α → ℂ → ℂ)
     {s : Set ℂ} (hs : IsOpen s) (x : ℂ) (hx : x ∈ s)

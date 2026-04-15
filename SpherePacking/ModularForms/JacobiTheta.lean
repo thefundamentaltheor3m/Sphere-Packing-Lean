@@ -552,16 +552,6 @@ public lemma H₄_SIF_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄
 public lemma mdifferentiable_H₄ : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) H₄ := by
   simpa [H₄_SIF] using H₄_SIF_MDifferentiable
 
-/-- Differentiability of `t ↦ jacobiTheta₂(t/2, t)` at points in the upper half-plane. -/
-lemma differentiableAt_jacobiTheta₂_half (τ : ℍ) :
-    DifferentiableAt ℂ (fun t : ℂ => jacobiTheta₂ (t / 2) t) τ := by
-  let f : ℂ → ℂ × ℂ := fun t => (t / 2, t)
-  have hf : DifferentiableAt ℂ f τ :=
-    (differentiableAt_id.mul_const ((2 : ℂ)⁻¹)).prodMk differentiableAt_id
-  have hg : DifferentiableAt ℂ (fun p : ℂ × ℂ => jacobiTheta₂ p.1 p.2) (f τ) := by
-    simpa [f] using (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
-  simpa [f] using hg.comp (UpperHalfPlane.coe τ) hf
-
 end H_MDifferentiable
 
 

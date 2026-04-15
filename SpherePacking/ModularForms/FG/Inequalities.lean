@@ -178,9 +178,6 @@ lemma modular_S_smul_imagAxis (t : ℝ) (ht : 0 < t) :
     congrArg (fun z : ℍ => (z : ℂ))
       (UpperHalfPlane.modular_S_smul (z := UpperHalfPlane.mk (Complex.I * t) (by simp [ht])))
 
-lemma pow_six_mul_inv (t : ℂ) (ht : t ≠ 0) :
-    t ^ (6 : ℕ) * t⁻¹ = t ^ (5 : ℕ) := by simp [pow_succ, mul_assoc, ht]
-
 /-- The `A_E` combination transforms on the imaginary axis as in the blueprint:
 `A_E(i/t) = -t^6 A_E(it) + (6/π) t^5 E₄(it)`. -/
 lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :

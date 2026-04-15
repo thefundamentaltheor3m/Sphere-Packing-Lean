@@ -553,10 +553,6 @@ public lemma E4_q_exp_one : (qExpansion 1 E₄).coeff 1 = 240 := by
 public lemma E6_q_exp_one : (qExpansion 1 E₆).coeff 1 = -504 := by
   simpa using congr_fun E6_q_exp 1
 
-/-- The antidiagonal of `1` is the two-element set `{(1,0),(0,1)}`. -/
-public lemma antidiagonal_one : Finset.antidiagonal 1 = {(1,0), (0,1)} := by
-  trivial
-
 /-- The Eisenstein series `E k` is nonzero (detected by its constant `q`-coefficient). -/
 public lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by
   intro h

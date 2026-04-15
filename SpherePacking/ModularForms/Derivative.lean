@@ -546,21 +546,6 @@ lemma im_deriv_eq_zero_of_im_eq_zero {f : ℝ → ℂ} {t : ℝ}
     (deriv f t).im = 0 := by
   simpa [funext him] using ((hasDerivAt_const t Complex.imCLM).clm_apply hf.hasDerivAt).deriv.symm
 
-/-- If F is real on the imaginary axis and MDifferentiable, then D F is also real
-on the imaginary axis. -/
-theorem D_real_of_real {F : ℍ → ℂ} (hF_real : ResToImagAxis.Real F)
-    (hF_diff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F) : ResToImagAxis.Real (D F) := fun t ht => by
-  have him : ∀ s, (F.resToImagAxis s).im = 0 := fun s => by
-    by_cases hs : 0 < s
-    · exact hF_real s hs
-    · simp [ResToImagAxis, hs]
-  have h_im_deriv :=
-    im_deriv_eq_zero_of_im_eq_zero (ResToImagAxis.Differentiable F hF_diff t ht) him
-  have h_im_eq : (deriv F.resToImagAxis t).im = -2 * π * ((D F).resToImagAxis t).im := by
-    simpa [mul_assoc, ofReal_mul] using congrArg Complex.im (deriv_resToImagAxis_eq F hF_diff ht)
-  exact (mul_eq_zero.mp (h_im_deriv ▸ h_im_eq).symm).resolve_left
-    (mul_ne_zero (by norm_num) Real.pi_ne_zero)
-
 /-- The real part of F.resToImagAxis has derivative -2π * ((D F).resToImagAxis t).re at t. -/
 lemma hasDerivAt_resToImagAxis_re {F : ℍ → ℂ} (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     {t : ℝ} (ht : 0 < t) :
@@ -583,12 +568,6 @@ public theorem hasDerivAt_re_resToImagAxis (F : ℍ → ℂ) (hF : MDiff F) :
 public lemma mul_re_of_im_eq_zero {x y : ℂ} (hx : x.im = 0) (hy : y.im = 0) :
     (x * y).re = x.re * y.re := by
   simp [Complex.mul_re, hx, hy]
-
-lemma strictAntiOn_Ioi_zero_of_deriv_neg {f : ℝ → ℝ}
-    (hcont : ∀ x : ℝ, 0 < x → ContinuousWithinAt f (Set.Ioi (0 : ℝ)) x)
-    (hn : ∀ x ∈ Set.Ioi (0 : ℝ), deriv f x < 0) : StrictAntiOn f (Set.Ioi (0 : ℝ)) := by
-  refine strictAntiOn_of_deriv_neg (convex_Ioi (0 : ℝ)) (fun x hx => hcont x hx) ?_
-  simpa [interior_Ioi] using hn
 
 /--
 Logarithmic derivative of the discriminant: `D Δ = E₂ * Δ` (used in `antiSerreDerPos`).

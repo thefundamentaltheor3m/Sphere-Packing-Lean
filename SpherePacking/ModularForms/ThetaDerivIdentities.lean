@@ -343,16 +343,6 @@ derivative identities of Blueprint Proposition `prop:theta-der`.
 
 local notation "Γ " n:100 => CongruenceSubgroup.Gamma n
 
-lemma tendsto_D_H₂_atImInfty : Tendsto (D H₂) atImInfty (𝓝 (0 : ℂ)) := by
-  simpa [UpperHalfPlane.IsZeroAtImInfty, ZeroAtFilter] using
-    D_isZeroAtImInfty_of_bounded H₂_SIF_MDifferentiable
-      (by simpa using ModularFormClass.bdd_at_infty H₂_MF)
-
-lemma tendsto_D_H₄_atImInfty : Tendsto (D H₄) atImInfty (𝓝 (0 : ℂ)) := by
-  simpa [UpperHalfPlane.IsZeroAtImInfty, ZeroAtFilter] using
-    D_isZeroAtImInfty_of_bounded H₄_SIF_MDifferentiable
-      (by simpa using ModularFormClass.bdd_at_infty H₄_MF)
-
 /-- f₂ tends to 0 at infinity.
 Proof: f₂ = serre_D 2 H₂ - (1/6)H₂(H₂ + 2H₄)
 Since H₂ → 0, both serre_D 2 H₂ → 0 and H₂(H₂ + 2H₄) → 0, so f₂ → 0. -/
@@ -411,12 +401,6 @@ lemma theta_h_tendsto_atImInfty : Tendsto theta_h atImInfty (𝓝 0) := by
   change Tendsto (fun z => f₂ z ^ 2 + f₂ z * f₄ z + f₄ z ^ 2) atImInfty (𝓝 0)
   tendsto_cont
 
-lemma isBoundedAtImInfty_theta_g : IsBoundedAtImInfty theta_g :=
-  IsZeroAtImInfty.isBoundedAtImInfty theta_g_tendsto_atImInfty
-
-lemma isBoundedAtImInfty_theta_h : IsBoundedAtImInfty theta_h :=
-  IsZeroAtImInfty.isBoundedAtImInfty theta_h_tendsto_atImInfty
-
 noncomputable def theta_g_SIF : SlashInvariantForm (Γ 1) 6 where
   toFun := theta_g
   slash_action_eq' := slashaction_generators_GL2R theta_g 6 theta_g_S_action theta_g_T_action
@@ -424,16 +408,6 @@ noncomputable def theta_g_SIF : SlashInvariantForm (Γ 1) 6 where
 noncomputable def theta_h_SIF : SlashInvariantForm (Γ 1) 8 where
   toFun := theta_h
   slash_action_eq' := slashaction_generators_GL2R theta_h 8 theta_h_S_action theta_h_T_action
-
-lemma theta_g_slash_eq (A' : SL(2, ℤ)) :
-    theta_g ∣[(6 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ A') = theta_g := by
-  simpa [ModularForm.SL_slash] using
-    (slashaction_generators_SL2Z theta_g 6 theta_g_S_action theta_g_T_action A')
-
-lemma theta_h_slash_eq (A' : SL(2, ℤ)) :
-    theta_h ∣[(8 : ℤ)] (Matrix.SpecialLinearGroup.mapGL ℝ A') = theta_h := by
-  simpa [ModularForm.SL_slash] using
-    (slashaction_generators_SL2Z theta_h 8 theta_h_S_action theta_h_T_action A')
 
 private noncomputable def theta_g_CF : CuspForm (Γ 1) 6 :=
   cuspFormOfSIFTendstoZero theta_g_SIF theta_g_MDifferentiable theta_g_tendsto_atImInfty

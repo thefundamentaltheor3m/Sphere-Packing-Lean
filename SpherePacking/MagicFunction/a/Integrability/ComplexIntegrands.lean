@@ -148,21 +148,6 @@ public theorem Φ₃'_contDiffOn_ℂ :
     ContDiffOn ℂ ∞ (Φ₃' r) ℍ₀ :=
   Φ₃'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
-/-- The integrand `Φ₅' r` is holomorphic on `upperHalfPlaneSet`. -/
-public theorem Φ₅'_holo : Holo(Φ₅' r) := by
-  refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
-      differentiable_fun_id).differentiableOn)
-  refine DifferentiableOn.mul ?_ <| differentiableOn_pow 2
-  apply φ₀''_holo.comp
-  · apply (differentiableOn_const (-1)).div differentiableOn_id
-    intro _ hz
-    exact ne_of_mem_of_not_mem hz <| by simp
-  · let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, 0]) (!![0, 1; -1, 0])
-      (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
-    have : ∀ z ∈ ℍ₀, UpperHalfPlane.smulAux' g z = -1 / z := fun _ _ ↦ by
-      simp [smulAux', g, num, denom, σ, ← sub_eq_add_neg]
-    exact MapsTo.congr (mapsTo_smulAux' g) this
-
 /-- The integrand `Φ₆' r` is holomorphic on `upperHalfPlaneSet`. -/
 public theorem Φ₆'_holo : Holo(Φ₆' r) := by
   have hExp : DifferentiableOn ℂ (fun z : ℂ => cexp (π * (Complex.I : ℂ) * r * z)) ℍ₀ := by fun_prop

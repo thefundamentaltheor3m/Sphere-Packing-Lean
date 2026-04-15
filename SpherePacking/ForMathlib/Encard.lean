@@ -59,17 +59,9 @@ protected theorem le_tsum (a : α) : f a ≤ ∑' a, f a :=
 @[simp] protected theorem tsum_eq_zero : ∑' i, f i = 0 ↔ ∀ i, f i = 0 :=
   Summable.tsum_eq_zero_iff ENat.summable
 
-protected theorem tsum_eq_top_of_eq_top : (∃ a, f a = ⊤) → ∑' a, f a = ⊤
-  | ⟨a, ha⟩ => top_unique <| ha ▸ ENat.le_tsum a
-
 protected theorem tsum_subtype_union_disjoint {s t : Set α} (hd : Disjoint s t) :
     ∑' (x : ↑(s ∪ t)), f x = ∑' (x : s), f x + ∑' (x : t), f x :=
   Summable.tsum_union_disjoint hd ENat.summable ENat.summable
-
-protected theorem tsum_subtype_le_of_subset {s t : Set α} (h : s ⊆ t) :
-    ∑' (x : s), f x ≤ ∑' (x : t), f x := by
-  rw [← Set.diff_union_of_subset h, ENat.tsum_subtype_union_disjoint disjoint_sdiff_left]
-  exact le_add_self
 
 protected theorem tsum_subtype_insert {s : Set α} {a : α} (h : a ∉ s) :
     ∑' (x : ↑(insert a s)), f x = f a + ∑' (x : s), f x := by
@@ -120,10 +112,6 @@ protected theorem tsum_subtype_eq_top_iff {s : Set α} :
       (f := Subtype.val) Subtype.val_injective.injOn).symm
   simp [ENat.tsum_eq_top_iff, hsupp]
 
-protected theorem tsum_subtype_eq_top_of_inter_support_infinite {s : Set α}
-    (hf : (s ∩ f.support).Infinite) : ∑' (a : s), f a = ⊤ :=
-  ENat.tsum_subtype_eq_top_iff.2 <| Or.inl hf
-
 protected theorem tsum_comp_le_tsum_of_injective {φ : α → β} (hφ : Injective φ) (g : β → ℕ∞) :
     ∑' x, g (φ x) ≤ ∑' y, g y :=
   (summable (f := fun x => g (φ x))).tsum_le_tsum_of_inj φ hφ (fun _ _ ↦ zero_le _)
@@ -144,17 +132,6 @@ protected theorem tsum_subtype_sigma' {β : α → Type*} (f : (Σ a, β a) → 
   Summable.tsum_sigma' (fun _ ↦ summable) summable
 
 variable {ι : Type*}
-
-protected theorem tsum_subtype_iUnion_le_tsum (f : α → ℕ∞) (t : ι → Set α) :
-    ∑' x : ⋃ i, t i, f x ≤ ∑' i, ∑' x : (t i), f x :=
-  calc ∑' x : ⋃ i, t i, f x ≤ ∑' x : Σ i, t i, f x.2 :=
-    ENat.tsum_le_tsum_comp_of_surjective (sigmaToiUnion_surjective t) _
-  _ = ∑' i, ∑' x : t i, f x := ENat.tsum_subtype_sigma' _
-
-protected theorem tsum_subtype_biUnion_le_tsum (f : α → ℕ∞) (s : Set ι) (t : ι → Set α) :
-    ∑' x : ⋃ i ∈ s , t i, f x ≤ ∑' i : s, ∑' x : t i, f x :=
-  calc ∑' x : ⋃ i ∈ s, t i, f x = ∑' x : ⋃ i : s, t i, f x := by rw [tsum_congr_subtype]; simp
-  _ ≤ ∑' i : s, ∑' x : t i, f x := ENat.tsum_subtype_iUnion_le_tsum _ _
 
 theorem tsum_subtype_iUnion_eq_tsum (f : α → ℕ∞) (t : ι → Set α) (ht : Pairwise (Disjoint on t)) :
     ∑' x : ⋃ i, t i, f x = ∑' i, ∑' x : t i, f x :=

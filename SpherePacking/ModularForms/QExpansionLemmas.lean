@@ -61,14 +61,6 @@ public theorem modularForm_tendsto_atImInfty {k : ℤ} (n : ℕ) (f : ModularFor
   refine ht'.congr fun τ ↦ ?_
   exact eq_cuspFunction f τ hmem hn_ne
 
-theorem derivWithin_mul2 (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn ℂ f s)
-    (hd : DifferentiableOn ℂ g s) :
-    s.restrict (derivWithin (fun y => f y * g y) s) =
-      s.restrict (derivWithin f s * g + f * derivWithin g s) := by
-  ext y
-  simp only [restrict_apply, Pi.add_apply, Pi.mul_apply]
-  rw [derivWithin_fun_mul (hf y y.2) (hd y y.2)]
-
 /-- The `qExpansion` of a product is the product of the `qExpansion`s (coeffwise). -/
 public lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b)
     [hn : NeZero n] : qExpansion n (f.mul g) = qExpansion n f * qExpansion n g := by

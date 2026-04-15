@@ -310,34 +310,4 @@ open MagicFunction.Parametrisations Set
 
 example {t : ℝ} (ht : t ∈ Ioc 0 1) : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
 
-section eq_of_mem
-
-lemma ψS'_eq_ψS_of_mem {z : ℂ} (hz : 0 < z.im) : ψS' z = ψS ⟨z, hz⟩ := by simp [ψS', hz]
-
-end eq_of_mem
-
-section slash_explicit
-
-lemma ψS_slash_ST_apply (z : ℍ) :
-    (ψS ∣[-2] (S * T)) z = ψS ⟨-1 / (z + 1), neg_inv_one_add_mem z⟩ * (z + 1) ^ 2 := by
-  rw [SL_slash_apply ψS (S * T) z, ← neg_inv_one_add_eq_ST z]
-  congr 1
-  rw [denom, ModularGroup.ST_eq']
-  simp only [Int.reduceNeg, Fin.isValue, SpecialLinearGroup.coe_GL_coe_matrix,
-    SpecialLinearGroup.map_apply_coe, RingHom.mapMatrix_apply, Int.coe_castRingHom, map_apply,
-    of_apply, cons_val', cons_val_zero, cons_val_fin_one, cons_val_one, Int.cast_one, ofReal_one,
-    one_mul, neg_neg]
-  norm_cast
-
-lemma ψS_slash_S_apply (z : ℍ) : (ψS ∣[-2] S) z = ψS ⟨-1 / z, neg_inv_mem z⟩ * z ^ 2 := by
-  rw [SL_slash_apply ψS S z, ← neg_inv_eq_S z]
-  congr 1
-  rw [denom, ModularGroup.S_eq']
-  simp only [Int.reduceNeg, Fin.isValue, SpecialLinearGroup.coe_GL_coe_matrix,
-    SpecialLinearGroup.map_apply_coe, RingHom.mapMatrix_apply, Int.coe_castRingHom, map_apply,
-    of_apply, cons_val', cons_val_zero, cons_val_fin_one, cons_val_one, Int.cast_one, ofReal_one,
-    one_mul, Int.cast_zero, ofReal_zero, add_zero, neg_neg]
-  norm_cast
-
-end slash_explicit
 
