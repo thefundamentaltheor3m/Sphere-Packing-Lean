@@ -226,7 +226,6 @@ public import SpherePacking.ModularForms.Lv1Lv2Identities
 public import SpherePacking.ModularForms.PhiTransform
 public import SpherePacking.ModularForms.PhiTransformLemmas
 public import SpherePacking.ModularForms.QExpansion
-public import SpherePacking.ModularForms.RamanujanIdentities
 public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.ModularForms.SerreDerivativeSlash
 public import SpherePacking.ModularForms.SlashActionAuxil
