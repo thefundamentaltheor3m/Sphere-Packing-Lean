@@ -305,7 +305,7 @@ public lemma H₂_S_action : (H₂ ∣[(2 : ℤ)] S) = -H₄ := by
     rw [mul_neg, ← zpow_add₀ hx', neg_add_cancel, mul_neg, zpow_zero, mul_one,
       ← Complex.exp_nat_mul]
     congr 2
-    ring
+    ring_nf
   _ = -H₄ ⟨x, hx⟩ := by
     rw [neg_mul, ← Complex.exp_add, neg_mul (π : ℂ), neg_div, neg_add_cancel, Complex.exp_zero,
       neg_one_mul]
@@ -510,7 +510,7 @@ lemma norm_Θ₂_term (n : ℤ) (z : ℍ) :
     push_cast
     ring
   rw [this, Complex.norm_exp_mul_I, im_ofReal_mul, coe_im]
-  ring
+  ring_nf
 
 lemma summable_exp_neg_pi_mul_int_add_half_sq :
     Summable fun n : ℤ => rexp (-π * ((n : ℝ) + (2⁻¹ : ℝ)) ^ 2) := by
@@ -958,7 +958,7 @@ lemma thetaDeltaFun_div_exp_tendsto_atImInfty :
     rw [hΘ₂, hΘ₃, hΘ₄]; ring
   have hΘ8 : (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8 =
       cexp (2 * π * I * (z : ℂ)) * (g z * h z * k z) ^ 8 := by
-    rw [hΘprod, mul_pow, ← Complex.exp_nat_mul]; congr 1; ring
+    rw [hΘprod, mul_pow, ← Complex.exp_nat_mul]; congr 1; ring_nf
   simp only [thetaDeltaFun, Pi.smul_apply, smul_eq_mul, Pi.pow_apply,
     (by dsimp [thetaDelta_f, H₂, H₃, H₄]; ring : (thetaDelta_f z) ^ 2 =
       (Θ₂ z * Θ₃ z * Θ₄ z) ^ 8), hΘ8]
