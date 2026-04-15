@@ -117,14 +117,6 @@ public lemma fCut_decay (f : ℝ → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
   smooth' := fCut_contDiff f hf
   decay' := fCut_decay f hf hf_decay
 
-/-- Build a Schwartz function `F → ℂ` from a smooth profile `f : ℝ → ℂ` that has Schwartz decay
-for all derivatives on the half-line `0 ≤ r`, by composing with `‖x‖^2`. -/
-@[expose] public noncomputable def schwartzMap_norm_sq_of_contDiff_decay_nonneg (f : ℝ → ℂ)
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (hf_decay : ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
-      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) : 𝓢(F, ℂ) :=
-  schwartzMap_multidimensional_of_schwartzMap_real F (fCutSchwartz f hf hf_decay)
-
 end Bridge
 
 end
