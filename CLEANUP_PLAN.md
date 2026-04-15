@@ -326,11 +326,22 @@ Key theorems (`MainTheorem`, `LinearProgrammingBound`, `eig_a`, `eig_b`, `g_cohn
 
 ## Actual Progress
 
-- **33+ commits** on gauss2-cleanup (PR #391)
+- **38+ commits** on gauss2-cleanup (PR #391)
 - Starting: 59,366 lines
-- Current: 55,746 lines
-- **Net: -3,620 lines** (~6.1% of project)
+- Current: 55,747 lines
+- **Net: -3,619 lines** (~6.1% of project)
 - All builds pass; no behavioral changes
+
+### Phase status as of this session
+- ✅ Phase 1: Dead code removal — done
+- ✅ Phase 2: Naming conventions — done
+- ✅ Phase 3: a/ internal dedup (SmoothI24Common, I24Common) — done
+- ✅ Phase 4a: Verified b/SmoothJ2 and SmoothJ4 fully use SmoothJ24Common
+- ⏸ Phase 4b-d: b/ internal dedup — mostly already factored
+- ⏸ Phase 5: a/b unification — requires careful mathematical refactor
+- ⏸ Phase 6: Laplace shared abstractions — requires mathematical work
+- ⏸ Phase 7: File splitting — saves 0 lines (just reorganization)
+- ⏸ Phase 8: Mathlib style polish — partially done via dead-code cleanup
 
 ### Cleanup completed in this session
 
