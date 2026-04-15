@@ -98,9 +98,6 @@ public theorem Θ₄_as_jacobiTheta₂ (τ : ℍ) : Θ₄ τ = jacobiTheta₂ (1
 
 section ImagAxisProperties
 
-@[grind =] lemma I_mul_mul_I (x y : ℂ) : I * (x * (I * y)) = -(x * y) := by
-  simp [mul_left_comm, mul_comm]
-
 lemma summable_Θ₂_term (τ : ℍ) : Summable (fun n : ℤ => Θ₂_term n τ) := by
   have him : 0 < (τ : ℂ).im := by simpa using τ.im_pos
   simpa [Θ₂_term_as_jacobiTheta₂_term (τ := τ)] using
@@ -717,7 +714,7 @@ lemma jacobi_f_eq_mul : jacobi_f = jacobi_g * jacobi_g := by
 private lemma jacobi_g_mul_slash (γ : SL(2, ℤ)) :
     ((jacobi_g * jacobi_g) ∣[(4 : ℤ)] γ) =
       (jacobi_g ∣[(2 : ℤ)] γ) * (jacobi_g ∣[(2 : ℤ)] γ) := by
-  simpa [(by norm_num : (4 : ℤ) = 2 + 2)] using (mul_slash_SL2 2 2 γ jacobi_g jacobi_g)
+  simpa using (mul_slash_SL2 2 2 γ jacobi_g jacobi_g)
 
 /-- S-invariance of f: f|[4]S = f, because g|[2]S = -g. -/
 lemma jacobi_f_S_action : (jacobi_f ∣[(4 : ℤ)] S) = jacobi_f := by
