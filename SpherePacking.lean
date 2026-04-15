@@ -246,7 +246,6 @@ public import SpherePacking.ModularForms.SummableLemmas.QExpansion
 public import SpherePacking.ModularForms.TendstoLemmas
 public import SpherePacking.ModularForms.ThetaDerivIdentities
 public import SpherePacking.ModularForms.TsumDerivWithin
-public import SpherePacking.ModularForms.UpperHalfPlane
 public import SpherePacking.ScaledMagic
 public import SpherePacking.Tactic.FunPropExt
 public import SpherePacking.Tactic.NormNumI
