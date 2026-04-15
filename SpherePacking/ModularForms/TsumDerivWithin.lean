@@ -4,6 +4,7 @@ public import Mathlib.Analysis.Normed.Group.FunctionSeries
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Exp
 public import Mathlib.Topology.Algebra.Module.ModuleTopology
 public import Mathlib.Topology.ContinuousMap.Compact
+public import SpherePacking.ModularForms.ExpLemmas
 public import SpherePacking.ModularForms.IteratedDerivs
 
 
@@ -26,28 +27,6 @@ open scoped Interval Real NNReal ENNReal Topology BigOperators Nat
 
 open UpperHalfPlane TopologicalSpace Set
   Metric Filter Function Complex
-
-/-- The exponential `exp(2π i z)` has norm strictly less than `1` for `z ∈ ℍ`. -/
-public theorem exp_upperHalfPlane_lt_one (z : ℍ) :
-    ‖(Complex.exp (2 * ↑π * Complex.I * z))‖ < 1 := by
-  simpa using UpperHalfPlane.norm_exp_two_pi_I_lt_one z
-
-/-- A shifted-power variant of `exp_upperHalfPlane_lt_one`. -/
-public theorem exp_upperHalfPlane_lt_one_nat (z : ℍ) (n : ℕ) :
-    ‖(Complex.exp (2 * ↑π * Complex.I * (n + 1) * z))‖ < 1 := by
-  have hn : (0 : ℝ) < (n + 1 : ℝ) := by
-    exact_mod_cast Nat.succ_pos n
-  let z' : ℍ :=
-    ⟨(n + 1 : ℂ) * z, by
-      simpa [Complex.mul_im] using mul_pos hn z.im_pos⟩
-  simpa [z', mul_assoc] using UpperHalfPlane.norm_exp_two_pi_I_lt_one z'
-
-/-- Periodicity of the exponential factor under integer translation. -/
-public lemma exp_periodo (z : ℍ) (n : ℕ) :
-    cexp (2 * ↑π * Complex.I * ↑↑n * (1 + ↑z)) = cexp (2 * ↑π * Complex.I * ↑↑n * ↑z) := by
-  simpa [mul_add, add_mul, mul_assoc, add_assoc, add_comm, mul_comm, mul_left_comm]
-    using (exp_periodic.nat_mul n (2 * π * Complex.I * n * z))
-
 
 /-! ## The open upper half-plane as a subset of `ℂ` -/
 
