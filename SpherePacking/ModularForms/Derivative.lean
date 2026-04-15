@@ -131,14 +131,6 @@ public theorem D_sq (F : ℍ → ℂ) (hF : MDiff F) :
   ring_nf
 
 
-/-- A specialization of the Leibniz rule: `D (F^3)`. -/
-@[simp]
-public theorem D_cube (F : ℍ → ℂ) (hF : MDiff F) :
-    D (F ^ 3) = 3 * F ^ 2 * D F := by
-  have hF2 : MDiff (F ^ 2) := by simpa [pow_two] using (MDifferentiable.mul hF hF)
-  rw [show F ^ 3 = F * F ^ 2 by ring_nf, D_mul F (F ^ 2) hF hF2, D_sq F hF]
-  ring_nf
-
 /-- Division of MDifferentiable functions on ℍ is MDifferentiable, when the denominator
 is everywhere nonzero. -/
 lemma MDifferentiable_div {F G : ℍ → ℂ}
@@ -159,13 +151,6 @@ lemma MDifferentiable_div {F G : ℍ → ℂ}
     (by simp [Function.comp]; exact hG_ne _)).congr_of_eventuallyEq h_eq.symm
 
 
-/-- The derivative of a constant function is zero. -/
-@[simp]
-public theorem D_const (c : ℂ) (z : ℍ) : D (Function.const _ c) z = 0 := by
-  unfold D
-  change (2 * π * I)⁻¹ * deriv (fun _ : ℂ => c) (z : ℂ) = 0
-  simp [deriv_const]
-
 /-! ### Termwise differentiation of q-series (Lemma 6.45) -/
 
 /-- Helper: HasDerivAt for a·exp(2πicw) with chain rule. -/
@@ -182,18 +167,6 @@ lemma derivWithin_qexp (a c : ℂ) (w : ℂ) (hw : 0 < w.im) :
       {z : ℂ | 0 < z.im} w = a * (2 * π * I * c) * cexp (2 * π * I * c * w) :=
   ((hasDerivAt_qexp a c w).hasDerivWithinAt).derivWithin
     (isOpen_upperHalfPlaneSet.uniqueDiffWithinAt hw)
-
-/-- Lemma 6.45 (Blueprint): D acts as q·d/dq on one q-term: D(a·qⁿ) = n·a·qⁿ. -/
-public theorem D_qexp_term (n : ℤ) (a : ℂ) (z : ℍ) :
-    D (fun w => a * cexp (2 * π * I * n * w)) z =
-      n * a * cexp (2 * π * I * n * z) := by
-  have h_agree :
-      ((fun w : ℍ => a * cexp (2 * π * I * n * w)) ∘ ofComplex)
-          =ᶠ[nhds (z : ℂ)] fun w : ℂ => a * cexp (2 * π * I * n * w) := by
-    filter_upwards [isOpen_upperHalfPlaneSet.mem_nhds z.2] with w hw
-    simp [Function.comp_apply, ofComplex_apply_of_im_pos hw]
-  rw [D, h_agree.deriv_eq, (hasDerivAt_qexp a n z).deriv]
-  field_simp [two_pi_I_ne_zero]
 
 /--
 **Lemma 6.45 (Blueprint)**: $D$ commutes with tsum for $q$-series.
@@ -267,44 +240,6 @@ public theorem D_qexp_tsum (a : ℕ → ℂ) (z : ℍ)
     fun n => derivWithin_qexp _ _ _ z.2
   simp_rw [h_deriv_simp, ← tsum_mul_left]
   congr 1; funext n; field_simp [two_pi_I_ne_zero]
-
-/--
-`D_qexp_tsum` for ℕ+-indexed series (n ≥ 1), as used for Eisenstein q-expansions.
-Extends `a : ℕ+ → ℂ` to `a' : ℕ → ℂ` with `a' 0 = 0`, converts via `tsum_pNat`,
-then applies `D_qexp_tsum`.
--/
-public theorem D_qexp_tsum_pnat (a : ℕ+ → ℂ) (z : ℍ)
-    (hsum_deriv : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
-        ∃ u : ℕ+ → ℝ, Summable u ∧ ∀ n (k : K), ‖a n * (2 * π * I * n) *
-          cexp (2 * π * I * n * k.1)‖ ≤ u n) :
-    D (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) z =
-      ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
-  -- Extend a to ℕ with a' 0 = 0
-  let a' : ℕ → ℂ := fun n => if h : 0 < n then a ⟨n, h⟩ else 0
-  have ha' : ∀ n : ℕ+, a' n = a n := fun n => dif_pos n.pos
-  -- Derivative bounds: extend u using nat_pos_tsum2
-  have hsum_deriv' : ∀ K : Set ℂ, K ⊆ {w : ℂ | 0 < w.im} → IsCompact K →
-      ∃ u : ℕ → ℝ, Summable u ∧ ∀ n (k : K), ‖a' n * (2 * π * I * n) *
-        cexp (2 * π * I * n * k.1)‖ ≤ u n := fun K hK hKc => by
-    obtain ⟨u, hu_sum, hu_bound⟩ := hsum_deriv K hK hKc
-    let u' : ℕ → ℝ := fun n => if h : 0 < n then u ⟨n, h⟩ else 0
-    have hu' : ∀ n : ℕ+, u' n = u n := fun n => dif_pos n.pos
-    refine ⟨u', (nat_pos_tsum2 u' (by simp [u'])).mp (hu_sum.congr fun n => by rw [hu']), ?_⟩
-    intro n k; by_cases hn : 0 < n
-    · simpa [a', u', dif_pos hn] using hu_bound ⟨n, hn⟩ k
-    · simp [a', u', hn]
-  -- Apply D_qexp_tsum and convert sums via tsum_pNat
-  have hD := D_qexp_tsum a' z hsum_deriv'
-  calc D (fun w => ∑' n : ℕ+, a n * cexp (2 * π * I * n * w)) z
-      = D (fun w : ℍ => ∑' n : ℕ, a' n * cexp (2 * π * I * n * (w : ℂ))) z := by
-          congr 1
-          ext w
-          rw [← tsum_pNat _ (by simp [a'])]
-          exact tsum_congr fun n => by rw [ha']
-    _ = ∑' n : ℕ, (n : ℂ) * a' n * cexp (2 * π * I * n * (z : ℂ)) := hD
-    _ = ∑' n : ℕ+, (n : ℂ) * a n * cexp (2 * π * I * n * z) := by
-          rw [← tsum_pNat _ (by simp [a'])]
-          exact tsum_congr fun n => by rw [ha']
 
 /-- Serre derivative of weight `k` for functions `F : ℍ → ℂ`. -/
 @[expose] public noncomputable def serre_D (k : ℂ) : (ℍ → ℂ) → (ℍ → ℂ) :=

@@ -125,18 +125,6 @@ for all derivatives on the half-line `0 ≤ r`, by composing with `‖x‖^2`. -
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) : 𝓢(F, ℂ) :=
   schwartzMap_multidimensional_of_schwartzMap_real F (fCutSchwartz f hf hf_decay)
 
-/-- Evaluate `schwartzMap_norm_sq_of_contDiff_decay_nonneg` pointwise. -/
-@[simp]
-public theorem schwartzMap_norm_sq_of_contDiff_decay_nonneg_apply (f : ℝ → ℂ)
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (hf_decay : ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
-      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) (x : F) :
-    schwartzMap_norm_sq_of_contDiff_decay_nonneg (F := F) f hf hf_decay x = f (‖x‖ ^ 2) := by
-  simp only [schwartzMap_norm_sq_of_contDiff_decay_nonneg, fCutSchwartz,
-    schwartzMap_multidimensional_of_schwartzMap_real_toFun]
-  change fCut f (‖x‖ ^ 2) = f (‖x‖ ^ 2)
-  simp [fCut]
-
 /-- Variant that only assumes smoothness of the cutoff-modified profile. This is the right API
 for profiles that are naturally only smooth on a neighborhood of `[0, ∞)`. -/
 public noncomputable def schwartzMap_norm_sq_of_cutoffMul_contDiff_decay_nonneg (f : ℝ → ℂ)
@@ -148,19 +136,6 @@ public noncomputable def schwartzMap_norm_sq_of_cutoffMul_contDiff_decay_nonneg 
       smooth' := by simpa [fCut] using hg
       decay' := by
         simpa [fCut] using cutoffC_mul_decay_of_nonneg_of_contDiff (f := f) hg hf_decay }
-
-/-- Evaluate `schwartzMap_norm_sq_of_cutoffMul_contDiff_decay_nonneg` pointwise. -/
-@[simp]
-public theorem schwartzMap_norm_sq_of_cutoffMul_contDiff_decay_nonneg_apply (f : ℝ → ℂ)
-    (hg : ContDiff ℝ (⊤ : ℕ∞) (fun r ↦ cutoffC r * f r))
-    (hf_decay : ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
-      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C) (x : F) :
-    schwartzMap_norm_sq_of_cutoffMul_contDiff_decay_nonneg (F := F) f hg hf_decay x =
-      f (‖x‖ ^ 2) := by
-  simp only [schwartzMap_norm_sq_of_cutoffMul_contDiff_decay_nonneg,
-    schwartzMap_multidimensional_of_schwartzMap_real_toFun]
-  change fCut f (‖x‖ ^ 2) = f (‖x‖ ^ 2)
-  simp [fCut]
 
 end Bridge
 

@@ -61,8 +61,6 @@ public lemma z₁line_im (t : ℝ) : (z₁line t).im = t := by simp [z₁line]
 
 @[simp] public lemma z₂line_im (t : ℝ) : (z₂line t).im = 1 := by simp [z₂line, add_assoc]
 
-public lemma z₃line_im (t : ℝ) : (z₃line t).im = t := by simp [z₃line]
-
 @[simp] public lemma z₄line_im (t : ℝ) : (z₄line t).im = 1 := by
   simp [z₄line, sub_eq_add_neg, add_assoc]
 

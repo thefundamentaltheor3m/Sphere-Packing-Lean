@@ -55,43 +55,6 @@ public lemma modular_form_tendsto_atImInfty {k : ℤ} (f : ModularForm (Gamma 1)
   rw [qExpansion_coeff_zero f (by norm_num : (0 : ℝ) < 1) one_mem_strictPeriods_SL2Z]
   simpa using (tendsto_zero_of_exp_decay hc hO).add_const (valueAtInfty f.toFun)
 
-/-- E₂ - 1 = O(exp(-2π·Im z)) at infinity. -/
-public lemma E₂_sub_one_isBigO_exp : (fun z : ℍ => E₂ z - 1) =O[atImInfty]
-    fun z => Real.exp (-(2 * π) * z.im) := by
-  rw [Asymptotics.isBigO_iff]
-  refine ⟨192, Filter.eventually_atImInfty.mpr ⟨1, fun z hz => ?_⟩⟩
-  -- E₂ z - 1 = -24 * ∑' n, n·qⁿ/(1-qⁿ)
-  have hsub : E₂ z - 1 = -24 * ∑' (n : ℕ+), ↑n * cexp (2 * π * Complex.I * ↑n * ↑z) /
-      (1 - cexp (2 * π * Complex.I * ↑n * ↑z)) := by rw [E₂_eq z]; ring
-  rw [hsub, norm_mul, show ‖(-24 : ℂ)‖ = 24 by simp, Real.norm_of_nonneg (Real.exp_pos _).le]
-  set q : ℂ := cexp (2 * π * Complex.I * z)
-  -- Rewrite sum in terms of q^n
-  simp_rw [show ∀ n : ℕ, cexp (2 * π * Complex.I * n * z) = q ^ n by
-    intro n; rw [← Complex.exp_nat_mul]; congr 1; ring]
-  -- Key bounds: ‖q‖ ≤ exp(-2π) < 1/2
-  have hq_bound : ‖q‖ ≤ Real.exp (-2 * π) := norm_exp_two_pi_I_le_exp_neg_two_pi z hz
-  have hexp_lt_half : Real.exp (-2 * π) < 1 / 2 := by
-    have : 1 < 2 * π := by nlinarith [pi_gt_three]
-    calc Real.exp (-2 * π) < Real.exp (-1) := Real.exp_strictMono (by linarith)
-      _ < 1 / 2 := by
-        rw [Real.exp_neg, one_div, inv_lt_inv₀ (Real.exp_pos _) (by norm_num : (0 : ℝ) < 2)]
-        have := Real.add_one_lt_exp (by norm_num : (1 : ℝ) ≠ 0); linarith
-  have hq_lt_half : ‖q‖ < 1 / 2 := lt_of_le_of_lt hq_bound hexp_lt_half
-  have hone_sub_q_gt_half : 1 / 2 < 1 - ‖q‖ := by linarith
-  -- Use norm_tsum_logDeriv_expo_le and bound r/(1-r)³ ≤ 8r for r < 1/2
-  have htsum_bound := norm_tsum_logDeriv_expo_le (norm_exp_two_pi_I_lt_one z)
-  have hsum_le_8q : ‖q‖ / (1 - ‖q‖) ^ 3 ≤ 8 * ‖q‖ := by
-    have h1 : (1 / 8 : ℝ) ≤ (1 - ‖q‖) ^ 3 := by nlinarith [sq_nonneg (1 - ‖q‖)]
-    calc ‖q‖ / (1 - ‖q‖) ^ 3 ≤ ‖q‖ / (1 / 8) := by
-          apply div_le_div_of_nonneg_left (norm_nonneg _) (by positivity) h1
-      _ = 8 * ‖q‖ := by ring
-  have hq_eq_exp : ‖q‖ = Real.exp (-2 * π * z.im) := by
-    have hre : (2 * ↑π * Complex.I * (z : ℂ)).re = -2 * π * z.im := by
-      rw [show (2 : ℂ) * ↑π * Complex.I * z = Complex.I * (2 * π * z) by ring]
-      simp [Complex.I_re, Complex.I_im, mul_comm]
-    rw [Complex.norm_exp, hre]
-  grind only
-
 /-- E₂ → 1 at i∞. -/
 public lemma E₂_tendsto_one_atImInfty : Filter.Tendsto E₂ atImInfty (nhds 1) := tendsto_E₂_atImInfty
 
@@ -118,10 +81,6 @@ public lemma serre_DE₂_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 1 E₂
 /-- serre_D 4 E₄ is a weight-6 modular form. -/
 public def serre_DE₄_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 6 :=
   serre_D_ModularForm 4 E₄
-
-/-- serre_D 6 E₆ is bounded at infinity. -/
-public lemma serre_DE₆_isBoundedAtImInfty : IsBoundedAtImInfty (serre_D 6 E₆.toFun) :=
-  serre_D_isBoundedAtImInfty 6 E₆.holo' E₆_isBoundedAtImInfty
 
 /-- serre_D 6 E₆ is a weight-8 modular form. -/
 public def serre_DE₆_ModularForm : ModularForm (CongruenceSubgroup.Gamma 1) 8 :=

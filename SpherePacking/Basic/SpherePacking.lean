@@ -246,10 +246,6 @@ public lemma finiteDensity_le_one {d : ℕ} (S : SpherePacking d) (R : ℝ) :
   simpa [finiteDensity] using
     (ENNReal.div_le_of_le_mul (by simpa [one_mul] using volume.mono Set.inter_subset_right))
 
-public lemma density_le_one {d : ℕ} (S : SpherePacking d) : S.density ≤ 1 := by
-  rw [density]
-  exact limsup_le_iSup.trans <| iSup_le fun R => finiteDensity_le_one (S := S) R
-
 /-- Finite density of a scaled packing. -/
 @[simp]
 public lemma scale_finiteDensity {d : ℕ} (S : SpherePacking d) {c : ℝ} (hc : 0 < c)
