@@ -39,10 +39,6 @@ local notation "ℍ₀" => upperHalfPlaneSet
 
 local notation "Holo(" f ")" => DifferentiableOn ℂ f ℍ₀
 
-section Helpers
-
-end Helpers
-
 namespace MagicFunction.a.ComplexIntegrands
 
 variable {r : ℝ} (hr : r ≥ 0)
