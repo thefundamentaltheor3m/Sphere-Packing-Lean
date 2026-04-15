@@ -1,5 +1,5 @@
 module
-public import SpherePacking.ModularForms.qExpansion_lems
+public import SpherePacking.ModularForms.QExpansionLemmas
 
 public import SpherePacking.ForMathlib.Cusps
 

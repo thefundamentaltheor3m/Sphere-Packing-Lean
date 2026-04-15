@@ -1,9 +1,9 @@
 module
 
 public import SpherePacking.ModularForms.E2
-public import SpherePacking.ModularForms.csqrt
-public import SpherePacking.ModularForms.logDeriv_lems
-public import SpherePacking.ModularForms.multipliable_lems
+public import SpherePacking.ModularForms.CSqrt
+public import SpherePacking.ModularForms.LogDerivLemmas
+public import SpherePacking.ModularForms.MultipliableLemmas
 public import Mathlib.NumberTheory.ModularForms.DedekindEta
 
 @[expose] public section

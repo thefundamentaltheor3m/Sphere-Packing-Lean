@@ -1,9 +1,9 @@
 module
 
 public import SpherePacking.ModularForms.SlashActionAuxil
-public import SpherePacking.ModularForms.clog_arg_lems
-public import SpherePacking.ModularForms.eta
-public import SpherePacking.ModularForms.multipliable_lems
+public import SpherePacking.ModularForms.ClogArgLemmas
+public import SpherePacking.ModularForms.Eta
+public import SpherePacking.ModularForms.MultipliableLemmas
 public import SpherePacking.ModularForms.ResToImagAxis
 import Mathlib.NumberTheory.ModularForms.QExpansion
 import SpherePacking.Tactic.NormNumI

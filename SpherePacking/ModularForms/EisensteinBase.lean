@@ -1,7 +1,7 @@
 module
-public import SpherePacking.ModularForms.Eisensteinqexpansions
+public import SpherePacking.ModularForms.EisensteinQExpansions
 public import SpherePacking.ModularForms.IsCuspForm
-public import SpherePacking.ModularForms.qExpansion_lems
+public import SpherePacking.ModularForms.QExpansionLemmas
 public import SpherePacking.ModularForms.SummableLemmas.Basic
 public import SpherePacking.ModularForms.SummableLemmas.Cotangent
 public import SpherePacking.ModularForms.SummableLemmas.G2

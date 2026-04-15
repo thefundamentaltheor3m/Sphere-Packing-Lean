@@ -1,5 +1,5 @@
 module
-public import SpherePacking.ModularForms.tendstolems
+public import SpherePacking.ModularForms.TendstoLemmas
 public import Mathlib.Algebra.Lie.OfAssociative
 public import Mathlib.Algebra.Order.Ring.Star
 public import Mathlib.Analysis.Complex.LocallyUniformLimit
