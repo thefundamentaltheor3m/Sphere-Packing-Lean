@@ -224,12 +224,3 @@ public lemma qExpansion_pow (f : ModularForm Γ(1) k) (n : ℕ) :
     (qExpansion_of_pow (Γ := Γ(1)) (h := (1 : ℝ)) (k := k) (by norm_num)
       (by simp [CongruenceSubgroup.strictPeriods_Gamma]) f n)
 
-/-
-lemma qExpansion_injective [hn : NeZero n] (f : ModularForm Γ(n) k) :
-    qExpansion n f = 0 ↔ f = 0 := by
-  refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-  · ext z
-    have n_pos : 0 < n := Nat.zero_lt_of_ne_zero hn.1
-    simp [← (hasSum_qExpansion (h := n) f (by positivity) (by simp) z).tsum_eq, h]
-  · simp [h]
--/
