@@ -96,14 +96,14 @@ public lemma fourier_gaussian_norm_sq_div_even (k : ℕ) (s : ℝ) (hs : 0 < s)
     (w : EuclideanSpace ℝ (Fin (2 * k))) :
     𝓕 (fun v : EuclideanSpace ℝ (Fin (2 * k)) ↦ cexp (-π * (‖v‖ ^ 2) / s)) w =
       (s ^ k : ℂ) * cexp (-π * (‖w‖ ^ 2) * s) := by
-  have hb : 0 < ((π / s : ℂ).re) := by simpa using (div_pos Real.pi_pos hs)
-  have hbase : (π : ℂ) / (π / s : ℂ) = (s : ℂ) := by
-    field_simp [(by exact_mod_cast (ne_of_gt hs) : (s : ℂ) ≠ 0),
-      (by exact_mod_cast Real.pi_ne_zero : (π : ℂ) ≠ 0)]
-  simpa [div_eq_mul_inv, hbase, finrank_div_two_eq_even (k := k), pow_two, mul_assoc,
-    mul_left_comm, mul_comm] using
+  have hb : 0 < (((Real.pi / s : ℝ) : ℂ)).re := by
+    simpa using div_pos Real.pi_pos hs
+  simpa [finrank_euclideanSpace_fin, Complex.cpow_natCast, Complex.ofReal_pow,
+    div_eq_mul_inv, hs.ne', Real.pi_ne_zero, pow_two,
+    mul_assoc, mul_left_comm, mul_comm] using
     (fourier_gaussian_innerProductSpace
-      (V := EuclideanSpace ℝ (Fin (2 * k))) (b := (π / s : ℂ)) hb w)
+      (V := EuclideanSpace ℝ (Fin (2 * k)))
+      (b := ((Real.pi / s : ℝ) : ℂ)) hb w)
 
 /-- Integral of the phase factor times the real Gaussian in even dimension `2k`. -/
 public lemma integral_phase_gaussian_even (k : ℕ) (w : EuclideanSpace ℝ (Fin (2 * k)))
