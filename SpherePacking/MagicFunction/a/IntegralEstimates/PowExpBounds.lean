@@ -3,6 +3,7 @@ public import Mathlib.Analysis.SpecialFunctions.Exp
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
+public import SpherePacking.MagicFunction.a.IntegralEstimates.BoundingAux
 
 /-!
 # Elementary exponential bounds
@@ -84,5 +85,25 @@ public lemma decay_of_bounding_uniform_norm_iteratedDeriv {I : ℝ → ℂ} (n :
   intro x hx
   simpa [norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := I) (x := x)] using
     hC₁ x hx
+
+/--
+Combined Schwartz decay from a representation of `iteratedDeriv n I` as an integral over
+`Ioo (0, 1)` of `(coeff t) ^ n * g r t`, with uniform bounds on `coeff` and `g`.
+-/
+public lemma decay_of_iteratedDeriv_eq_integral_pow_mul
+    {I : ℝ → ℂ} {coeff : ℝ → ℂ} {g : ℝ → ℝ → ℂ}
+    (hg_bound :
+      ∃ C₀ > 0, ∀ r : ℝ, ∀ t : ℝ, t ∈ Ioo (0 : ℝ) 1 →
+        ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r))
+    (hcoeff : ∀ t ∈ Ioo (0 : ℝ) 1, ‖coeff t‖ ≤ 2 * π)
+    (hrepr :
+      ∀ n : ℕ,
+        iteratedDeriv n I = fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g r t) :
+    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C := by
+  intro k n
+  obtain ⟨C₁, hC₁_pos, hC₁⟩ :=
+    iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul (n := n) hg_bound hcoeff (hrepr n)
+  exact decay_of_bounding_uniform_norm_iteratedDeriv (n := n)
+    ⟨C₁, hC₁_pos, fun x _ => hC₁ x⟩ k
 
 end MagicFunction.a.IntegralEstimates

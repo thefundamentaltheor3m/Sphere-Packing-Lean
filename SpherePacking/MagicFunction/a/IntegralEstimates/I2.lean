@@ -202,21 +202,16 @@ lemma iteratedDeriv_I₂'_eq_integral_gN (n : ℕ) :
       (hcoeff_cont := continuous_coeff) (hg_cont := hg_cont)
       (hg_bound := g_norm_bound_uniform) (hcoeff := coeff_norm_le) (hg_repr := hg_repr) n)
 
-lemma iteratedDeriv_bound (n : ℕ) :
-    ∃ C₁ > 0, ∀ r : ℝ, ‖iteratedDeriv n I₂' r‖ ≤ C₁ * rexp (-π * r) := by
-  simpa using iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul (n := n) g_norm_bound_uniform
-    coeff_norm_le (by simpa [gN] using iteratedDeriv_I₂'_eq_integral_gN (n := n))
-
 /--
 Schwartz-style decay estimate for `I₂'`: all iterated derivatives decay faster than any power.
 
 The prime in the name indicates that this result is about the auxiliary integral `I₂'`.
 -/
 public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
-    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₂' x‖ ≤ C := by
-  intro k n; rcases iteratedDeriv_bound (n := n) with ⟨C₁, hC₁_pos, hC₁⟩; simpa using
-    (MagicFunction.a.IntegralEstimates.decay_of_bounding_uniform_norm_iteratedDeriv (I := I₂')
-      (n := n) ⟨C₁, hC₁_pos, fun x _ => hC₁ x⟩ k)
+    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I₂' x‖ ≤ C :=
+  MagicFunction.a.IntegralEstimates.decay_of_iteratedDeriv_eq_integral_pow_mul
+    g_norm_bound_uniform coeff_norm_le
+    (fun n => by simpa [gN] using iteratedDeriv_I₂'_eq_integral_gN (n := n))
 
 end Schwartz_Decay.Higher_iteratedFDerivs
 end I₂
