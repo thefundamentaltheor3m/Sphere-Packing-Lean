@@ -231,12 +231,6 @@ public lemma z₆'_mapsto : MapsTo z₆' (Ici 1) ℍ₀ := by
   have ht0 : 0 < t := lt_of_lt_of_le one_pos ht
   simpa [UpperHalfPlane.upperHalfPlaneSet, z₆', IciExtend_of_mem, ht, z₆] using ht0
 
-public lemma im_z₆'_pos {t : ℝ} (ht : t ∈ Ici (1 : ℝ)) : 0 < (z₆' t).im := by
-  simp only [z₆', IciExtend_of_mem z₆ ht, z₆, mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re,
-    one_mul, zero_add]
-  rw [mem_Ici] at ht
-  linarith
-
 end UpperHalfPlane
 
 section eq_of_mem

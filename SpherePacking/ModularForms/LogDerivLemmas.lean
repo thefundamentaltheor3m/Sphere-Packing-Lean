@@ -43,16 +43,3 @@ public lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fu
     (n * r^n / (1 - r^n)) := by
   simpa [pow_one] using (summable_norm_pow_mul_geometric_div_one_sub (𝕜 := ℂ) 1 (r := r) hr)
 
-lemma func_div (a b c d : ℂ → ℂ) (x : ℂ) (hb : b x ≠ 0) (hd : d x ≠ 0) :
-     (a / b) x = (c /d) x ↔ (a * d) x = (b * c) x := by
-  simpa [Pi.div_apply, Pi.mul_apply, mul_assoc, mul_left_comm, mul_comm] using
-    (div_eq_div_iff hb hd : a x / b x = c x / d x ↔ a x * d x = c x * b x)
-
-lemma deriv_EqOn_congr {f g : ℂ → ℂ} (s : Set ℂ) (hfg : s.EqOn f g) (hs : IsOpen s) :
-    s.EqOn (deriv f) ( deriv g) := EqOn.deriv hfg hs
-
-lemma logDeriv_eqOn_iff' (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableOn ℂ f s)
-    (hg : DifferentiableOn ℂ g s) (hs2 : IsOpen s) (hsc : Convex ℝ s)
-    (hgn : ∀ x, x ∈ s → g x ≠ 0) (hfn : ∀ x, x ∈ s → f x ≠ 0) :
-    EqOn (logDeriv f) (logDeriv g) s ↔ ∃ z : ℂ, z ≠ 0 ∧ EqOn f (z • g) s := by
-  simpa using logDeriv_eqOn_iff hf hg hs2 hsc.isPreconnected hgn hfn

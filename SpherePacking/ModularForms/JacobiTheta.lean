@@ -562,18 +562,6 @@ lemma differentiableAt_jacobiTheta₂_half (τ : ℍ) :
     simpa [f] using (hasFDerivAt_jacobiTheta₂ (τ.1 / 2) τ.2).differentiableAt
   simpa [f] using hg.comp (UpperHalfPlane.coe τ) hf
 
-lemma Θ₂_MDifferentiable : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) Θ₂ := by
-  intro τ
-  have hΘ₂_diff : DifferentiableAt ℂ
-      (fun t : ℂ => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t) (τ : ℂ) :=
-    ((differentiableAt_id.const_mul ((π : ℂ) * I / 4)).cexp).mul
-      (differentiableAt_jacobiTheta₂_half τ)
-  have hMD := hΘ₂_diff.mdifferentiableAt.comp τ τ.mdifferentiable_coe
-  have : (fun t : ℂ => cexp ((π * I / 4) * t) * jacobiTheta₂ (t / 2) t) ∘
-      UpperHalfPlane.coe = Θ₂ := by
-    ext x; simp only [Function.comp_apply, Θ₂_as_jacobiTheta₂]; ring
-  rwa [this] at hMD
-
 end H_MDifferentiable
 
 
@@ -858,10 +846,6 @@ lemma jacobi_f_S_action : (jacobi_f ∣[(4 : ℤ)] S) = jacobi_f := by
 /-- T-invariance of f: f|[4]T = f, because g|[2]T = -g. -/
 lemma jacobi_f_T_action : (jacobi_f ∣[(4 : ℤ)] T) = jacobi_f := by
   simpa [jacobi_f_eq_mul, jacobi_g_T_action] using (jacobi_g_mul_slash T)
-
-/-- Full SL₂(ℤ) invariance of f with weight 4 -/
-lemma jacobi_f_SL2Z_invariant : ∀ γ : SL(2, ℤ), jacobi_f ∣[(4 : ℤ)] γ = jacobi_f :=
-  slashaction_generators_SL2Z jacobi_f 4 jacobi_f_S_action jacobi_f_T_action
 
 /-- jacobi_f as a SlashInvariantForm of weight 4 and level Γ(1) -/
 noncomputable def jacobi_f_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 4 where

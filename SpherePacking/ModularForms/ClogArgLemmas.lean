@@ -38,11 +38,6 @@ lemma arg_pow_aux (n : ℕ) (x : ℂ) (hna : |arg x| < π / n) :
       _ = (Nat.succ n : ℝ) * Complex.arg x := by
         simpa [Complex.arg_coe_angle_toReal_eq_arg] using htoreal
 
-lemma one_add_abs_half_ne_zero {x : ℂ} (hb : ‖x‖ < 1 / 2) : 1 + x ≠ 0 := by
-  intro h
-  have hx : x = (-1 : ℂ) := eq_neg_of_add_eq_zero_left (by simpa [add_comm] using h)
-  exact (not_lt_of_ge (by norm_num : (1 / 2 : ℝ) ≤ (1 : ℝ))) (by simpa [hx] using hb)
-
 lemma arg_pow_filter {α : Type*} (l : Filter α) (n : ℕ) (f : α → ℂ) (hf : Tendsto f l (𝓝 0)) :
     ∀ᶠ m : α in l, Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
   by_cases hn0 : n = 0
@@ -59,14 +54,6 @@ lemma arg_pow_filter {α : Type*} (l : Filter α) (n : ℕ) (f : α → ℂ) (hf
   filter_upwards [(Metric.tendsto_nhds.1 harg) (π / n) hpi] with m hmarg
   have hmarg' : |Complex.arg (1 + f m)| < π / n := by simpa [Real.dist_eq] using hmarg
   simpa using arg_pow_aux n (1 + f m) hmarg'
-
-lemma arg_pow (n : ℕ) (f : ℕ → ℂ) (hf : Tendsto f atTop (𝓝 0)) : ∀ᶠ m : ℕ in atTop,
-    Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
-  simpa using arg_pow_filter (l := atTop) n f hf
-
-lemma arg_pow2 (n : ℕ) (f : ℍ → ℂ) (hf : Tendsto f atImInfty (𝓝 0)) : ∀ᶠ m : ℍ in atImInfty,
-    Complex.arg ((1 + f m) ^ n) = n * Complex.arg (1 + f m) := by
-  simpa using arg_pow_filter (l := atImInfty) n f hf
 
 lemma clog_pow_filter {α : Type*} (l : Filter α) (n : ℕ) (f : α → ℂ) (hf : Tendsto f l (𝓝 0)) :
     ∀ᶠ m : α in l, Complex.log ((1 + f m) ^ n) = n * Complex.log (1 + f m) := by

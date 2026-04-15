@@ -312,11 +312,7 @@ example {t : ℝ} (ht : t ∈ Ioc 0 1) : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
 
 section eq_of_mem
 
-lemma ψI'_eq_ψI_of_mem {z : ℂ} (hz : 0 < z.im) : ψI' z = ψI ⟨z, hz⟩ := by simp [ψI', hz]
-
 lemma ψS'_eq_ψS_of_mem {z : ℂ} (hz : 0 < z.im) : ψS' z = ψS ⟨z, hz⟩ := by simp [ψS', hz]
-
-lemma ψT'_eq_ψT_of_mem {z : ℂ} (hz : 0 < z.im) : ψT' z = ψT ⟨z, hz⟩ := by simp [ψT', hz]
 
 end eq_of_mem
 
@@ -333,9 +329,6 @@ lemma ψS_slash_ST_apply (z : ℍ) :
     one_mul, neg_neg]
   norm_cast
 
-lemma ψS_slash_ST_apply' (z : ℍ) : (ψS ∣[-2] (S * T)) z = ψS' (-1 / (z + 1)) * (z + 1) ^ 2 := by
-  rw [ψS_slash_ST_apply, ← ψS'_eq_ψS_of_mem]
-
 lemma ψS_slash_S_apply (z : ℍ) : (ψS ∣[-2] S) z = ψS ⟨-1 / z, neg_inv_mem z⟩ * z ^ 2 := by
   rw [SL_slash_apply ψS S z, ← neg_inv_eq_S z]
   congr 1
@@ -345,9 +338,6 @@ lemma ψS_slash_S_apply (z : ℍ) : (ψS ∣[-2] S) z = ψS ⟨-1 / z, neg_inv_m
     of_apply, cons_val', cons_val_zero, cons_val_fin_one, cons_val_one, Int.cast_one, ofReal_one,
     one_mul, Int.cast_zero, ofReal_zero, add_zero, neg_neg]
   norm_cast
-
-lemma ψS_slash_S_apply' (z : ℍ) : (ψS ∣[-2] S) z = ψS' (-1 / z) * z ^ 2 := by
-  rw [ψS_slash_S_apply, ← ψS'_eq_ψS_of_mem]
 
 end slash_explicit
 

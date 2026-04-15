@@ -60,36 +60,4 @@ public lemma tendsto_nat (a : ℕ → ℂ) (ha : Summable fun n : ℕ ↦ ‖a n
         refine ⟨1, fun z hz k ↦ ?_⟩
         simpa using norm_term_bound_nat (a := a) (z := z) hz k))
 
-public lemma tendsto_int (a : ℤ → ℂ) (ha : Summable fun n : ℤ ↦ ‖a n‖ * rexp (-2 * π * n))
-    (ha' : ∀ n, n < 0 → a n = 0) :
-    Tendsto (fun z : ℍ ↦ ∑' n, a n * cexp (2 * π * I * z * n)) atImInfty (𝓝 (a 0)) := by
-  -- ∑' (n : ℕ), f ↑n + ∑' (n : ℕ), f (-(↑n + 1))
-  have : Tendsto
-    (fun z : ℍ ↦ (∑' n : ℕ, (a n * cexp (2 * π * I * z * n)
-      + a (-(n + 1 : ℤ)) * cexp (2 * π * I * z * (-(n + 1) : ℤ))))) atImInfty (𝓝 (a 0)) := by
-    have := tendsto_nat (fun n ↦ a n) ?_
-    · apply this.congr
-      exact fun _ ↦ tsum_congr (by simpa using fun _ ↦ ha' _ (by omega))
-    · exact (summable_int_iff_summable_nat_and_neg.mp ha).left
-  apply this.congr'
-  rw [EventuallyEq, eventually_atImInfty]
-  use 1, fun z hz ↦ ?_
-  rw [← tsum_nat_add_neg_add_one]
-  · rfl
-  rw [← summable_norm_iff]
-  convert_to Summable fun n ↦ ‖a n‖ * rexp (z.im * -2 * π * n)
-  · ext n
-    rw [norm_mul, mul_right_comm _ I, mul_right_comm _ I, norm_exp_mul_I]
-    simp
-    ring_nf
-    simp
-  · apply ha.of_nonneg_of_le (fun _ ↦ by positivity) fun b ↦ ?_
-    by_cases hb : 0 ≤ b
-    · have : z.im * -2 * π * b ≤ -2 * π * b := by
-        gcongr
-        simp [hz]
-      gcongr
-    · norm_num at hb
-      simp [ha' _ hb]
-
 end QExp

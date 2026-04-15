@@ -181,14 +181,6 @@ lemma modular_S_smul_imagAxis (t : ℝ) (ht : 0 < t) :
 lemma pow_six_mul_inv (t : ℂ) (ht : t ≠ 0) :
     t ^ (6 : ℕ) * t⁻¹ = t ^ (5 : ℕ) := by simp [pow_succ, mul_assoc, ht]
 
-lemma pow_six_mul_inv_mul (t x : ℂ) (ht : t ≠ 0) :
-    t ^ (6 : ℕ) * (t⁻¹ * x) = t ^ (5 : ℕ) * x := by
-  simpa [mul_assoc] using congrArg (fun y : ℂ => y * x) (pow_six_mul_inv (t := t) ht)
-
-lemma pow_two_mul_pow_four (z : ℂ) :
-    z ^ (2 : ℕ) * z ^ (4 : ℕ) = z ^ (6 : ℕ) := by
-  simpa using (pow_add z (2 : ℕ) (4 : ℕ)).symm
-
 /-- The `A_E` combination transforms on the imaginary axis as in the blueprint:
 `A_E(i/t) = -t^6 A_E(it) + (6/π) t^5 E₄(it)`. -/
 lemma A_E_resToImagAxis_inv (t : ℝ) (ht : 0 < t) :

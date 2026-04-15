@@ -112,9 +112,6 @@ public theorem summable_diff (z : ℍ) (d : ℤ) :
   rw [← summable_mul_left_iff (a := -1) (by norm_num)]
   grind only
 
-lemma arg1 (a b c d e f g h : ℂ) : e / f + g / h - a / b - c / d = e / f + g / h + a / -b + c / -d
-    := by ring
-
 private lemma aux (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) :
     a⁻¹ ≤ c * b⁻¹ ↔ b ≤ c * a := by
   have h2 : (a⁻¹ : ℝ) * b ≤ c ↔ b ≤ c * a := by
@@ -134,25 +131,6 @@ public lemma summable_hammerTime_nat {α : Type} [NormedField α] [CompleteSpace
   refine hs.congr ?_
   intro b
   simp
-
-theorem summable_diff_denom (z : ℍ) (i : ℤ) :
-  Summable fun (m : ℤ) ↦ ((m : ℂ) * ↑z + ↑i + 1)⁻¹ * ((m : ℂ) * ↑z + ↑i)⁻¹ := by
-  conv =>
-    enter [1]
-    ext m
-    rw [← mul_inv]
-  apply summable_inv_of_isBigO_rpow_inv one_lt_two
-  have h3 := (linear_bigO' i z).mul (linear_bigO' (i + 1) z)
-  apply h3.congr
-  · intro n
-    rw [mul_comm]
-    simp
-    ring
-  · intro n
-    norm_cast
-    rw [pow_two]
-    rw [← mul_inv]
-    simp
 
 theorem vector_norm_bound (b : Fin 2 → ℤ) (hb : b ≠ 0) (HB1 : b ≠ ![0, -1]) :
     ‖![b 0, b 1 + 1]‖ ^ (-1 : ℝ) * ‖b‖ ^ (-2 : ℝ) ≤ 2 * ‖b‖ ^ (-3 : ℝ) := by

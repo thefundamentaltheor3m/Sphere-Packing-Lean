@@ -34,15 +34,6 @@ public theorem term_ne_zero (z : ℍ) (n : ℕ) :
   intro h
   simpa [h.symm] using exp_upperHalfPlane_lt_one_nat z n
 
-theorem ball_pow_ne_1 (x : ℂ) (hx : x ∈ Metric.ball 0 1) (n : ℕ) :
-    1 + (fun n ↦ -x ^ (n + 1)) n ≠ 0 := by
-  simp only [Metric.mem_ball, dist_zero_right] at hx
-  rw [← sub_eq_add_neg, sub_ne_zero]
-  have hxn : ‖x ^ (n + 1)‖ < 1 := by
-    simpa [norm_pow] using pow_lt_one₀ (norm_nonneg x) hx (Nat.succ_ne_zero n)
-  intro h
-  simp [h.symm] at hxn
-
 /-- If `x` lies in the open unit ball, then `∏ (1 - x^(i+1))` is a convergent infinite product. -/
 public theorem multipliable_lt_one (x : ℂ) (hx : x ∈ Metric.ball 0 1) :
   Multipliable fun i ↦ 1 - x ^ (i+ 1) := by
@@ -102,8 +93,3 @@ theorem HasProd.le_one_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀
     (ha : HasProd g a) : a ≤ 1 :=
   hasProd_le_nonneg (f := g) (g := fun _ => 1) h h0 ha hasProd_one
 
-theorem one_le_tprod_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i) :
-    ∏' i, g i ≤ 1 := by
-  by_cases hg : Multipliable g
-  · apply hg.hasProd.le_one_nonneg g h h0
-  · rw [tprod_eq_one_of_not_multipliable hg]

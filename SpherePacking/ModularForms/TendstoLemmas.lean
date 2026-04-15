@@ -41,5 +41,3 @@ public lemma tendsto_of_tendsto_sub (f g : ℕ → ℂ) (x : ℂ) (hf : Tendsto 
     (hfg : Tendsto (g - f) atTop (𝓝 0)) : Tendsto g atTop (𝓝 x) := by
   simpa [sub_eq_add_neg, add_assoc] using hf.add hfg
 
-lemma aux47 (r : ℂ) (hr : ‖r‖ < 1) : Tendsto (fun n : ℕ => 1 - r^n) atTop (𝓝 1) := by
-  simpa using tendsto_const_nhds.sub <| tendsto_pow_atTop_nhds_zero_of_norm_lt_one hr

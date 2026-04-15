@@ -163,20 +163,3 @@ public lemma serre_DE₂_tendsto_atImInfty :
 
 /-! ## Generic q-expansion summability and derivative bounds -/
 
-/-- Summability of (m+1)^k * exp(-2πm) via comparison with shifted sum. -/
-public lemma summable_pow_shift (k : ℕ) :
-    Summable fun m : ℕ => (m + 1 : ℝ) ^ k * rexp (-2 * π * m) := by
-  have h := Real.summable_pow_mul_exp_neg_nat_mul k (by positivity : 0 < 2 * π)
-  have h_eq : ∀ m : ℕ, (m + 1 : ℝ) ^ k * rexp (-2 * π * m) =
-      rexp (2 * π) * ((m + 1) ^ k * rexp (-2 * π * (m + 1))) := fun m => by
-    have : rexp (-2 * π * m) = rexp (2 * π) * rexp (-2 * π * (m + 1)) := by
-      rw [← Real.exp_add]
-      ring_nf
-    rw [this]
-    ring
-  simp_rw [h_eq]
-  apply Summable.mul_left
-  convert h.comp_injective Nat.succ_injective using 1
-  ext m
-  simp [Function.comp_apply, Nat.succ_eq_add_one]
-

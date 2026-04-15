@@ -701,19 +701,6 @@ public theorem summable_exp_pow (z : ℍ) : Summable fun i : ℕ ↦
   rw [summable_nat_add_iff 1]
   simpa [summable_geometric_iff_norm_lt_one, norm_norm] using exp_upperHalfPlane_lt_one z
 
-/-- Summability of a geometric series with a fixed prefactor. -/
-public theorem a1 (k : ℕ) (e : ℕ+) (z : ℍ) :
-    Summable fun c : ℕ => (e : ℂ) ^ (k - 1) * exp (2 * ↑π * Complex.I * ↑z * e * c) := by
-  refine Summable.mul_left _ ?_
-  have he : (0 : ℝ) < (e : ℝ) := by
-    exact_mod_cast e.pos
-  let z' : ℍ := ⟨(e : ℂ) * z, by simpa [Complex.mul_im] using mul_pos he z.im_pos⟩
-  have hz' : ‖Complex.exp (2 * ↑π * Complex.I * z')‖ < 1 := exp_upperHalfPlane_lt_one z'
-  refine (summable_geometric_iff_norm_lt_one.2 hz').congr (fun c => ?_)
-  simpa [z', mul_assoc, mul_left_comm, mul_comm] using
-    (Complex.exp_nat_mul (2 * ↑π * Complex.I * z') c).symm
-
-
 /-- A summability lemma for a two-variable exponential sum, used with divisor antidiagonals. -/
 public theorem a4 (k : ℕ) (z : ℍ) :
     Summable (uncurry fun b c : ℕ+ => ↑b ^ (k - 1) * exp (2 * ↑π * Complex.I * ↑c * ↑z * ↑b)) := by

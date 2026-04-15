@@ -69,59 +69,6 @@ theorem derivWithin_mul2 (f g : ℂ → ℂ) (s : Set ℂ) (hf : DifferentiableO
   simp only [restrict_apply, Pi.add_apply, Pi.mul_apply]
   rw [derivWithin_fun_mul (hf y y.2) (hd y y.2)]
 
-lemma iteratedDerivWithin_mul' (f g : ℂ → ℂ) (s : Set ℂ) (hs : IsOpen s)
-    (x : ℂ) (hx : x ∈ s) (m : ℕ)
-    (hf : ContDiffOn ℂ ⊤ f s) (hg : ContDiffOn ℂ ⊤ g s) :
-    iteratedDerivWithin m (f * g) s x =
-    ∑ i ∈ Finset.range m.succ, (m.choose i) * (iteratedDerivWithin i f s x) *
-    (iteratedDerivWithin (m - i) g s x) := by
-  induction m generalizing f g with
-  | zero => simp only [iteratedDerivWithin_zero, Pi.mul_apply, Nat.succ_eq_add_one, zero_add,
-    Finset.range_one, zero_le, Nat.sub_eq_zero_of_le, Finset.sum_singleton, Nat.choose_self,
-    Nat.cast_one, one_mul]
-  | succ m hm =>
-    have h1 :=
-      derivWithin_mul2 f g s (hf.differentiableOn (by simp)) (hg.differentiableOn (by simp))
-    have h2 : (fun y => f y * g y) = f * g := by ext y; simp
-    rw [iteratedDerivWithin_succ']
-    have hset : s.EqOn (derivWithin (f * g) s) (derivWithin f s * g + f * derivWithin g s) := by
-      intro z hz
-      aesop
-    rw [iteratedDerivWithin_congr hset hx, iteratedDerivWithin_add hx hs.uniqueDiffOn, hm _ _ hf,
-      hm _ _ _ hg]
-    · simp_rw [←iteratedDerivWithin_succ']
-      have := Finset.sum_choose_succ_mul (fun i => fun j =>
-        ((iteratedDerivWithin i f s x) * (iteratedDerivWithin j g s x)) ) m
-      simp only [Nat.succ_eq_add_one, restrict_eq_restrict_iff] at *
-      rw [show m + 1 + 1 = m + 2 by ring]
-      simp_rw [← mul_assoc] at *
-      rw [this, add_comm]
-      congr 1
-      apply Finset.sum_congr rfl
-      intros i hi
-      congr
-      simp at hi
-      omega
-    · exact ContDiffOn.derivWithin hf (by exact IsOpen.uniqueDiffOn hs) (m := ⊤) (by simp)
-    · exact ContDiffOn.derivWithin hg (by exact IsOpen.uniqueDiffOn hs) (m := ⊤) (by simp)
-    · apply ContDiffOn.mul
-      · exact ContDiffOn.derivWithin hf (by exact IsOpen.uniqueDiffOn hs) (m := m) (by simp)
-      · apply ContDiffOn.of_le hg (by simp)
-      exact hx
-    · apply ContDiffOn.mul
-      · apply ContDiffOn.of_le hf (by simp)
-      · apply ContDiffOn.derivWithin hg (by exact IsOpen.uniqueDiffOn hs) (m := m) (by simp)
-      exact hx
-
-lemma iteratedDeriv_eq_iteratedDerivWithin (n : ℕ) (f : ℂ → ℂ) (s : Set ℂ) (hs : IsOpen s)
-  (z : ℂ) (hz : z ∈ s) : iteratedDeriv n f z = iteratedDerivWithin n f s z := by
-  rw [← iteratedDerivWithin_univ]
-  simp_rw [iteratedDerivWithin]
-  rw [iteratedFDerivWithin_congr_set]
-  apply EventuallyEq.symm
-  rw [eventuallyEq_univ]
-  exact IsOpen.mem_nhds hs hz
-
 /-- The `qExpansion` of a product is the product of the `qExpansion`s (coeffwise). -/
 public lemma qExpansion_mul_coeff (a b : ℤ) (f : ModularForm Γ(n) a) (g : ModularForm Γ(n) b)
     [hn : NeZero n] : qExpansion n (f.mul g) = qExpansion n f * qExpansion n g := by
@@ -182,10 +129,6 @@ public lemma qExpansion_smul2 (a : ℂ) (f : ModularForm Γ(n) k) [NeZero n] :
 
 instance : FunLike (ℍ → ℂ) ℍ ℂ := { coe := fun ⦃a₁⦄ ↦ a₁, coe_injective' := fun ⦃_ _⦄ a ↦ a}
 
-lemma qExpansion_ext (f g : ℍ → ℂ) (h : f = g) : qExpansion 1 f =
-    qExpansion 1 g := by
-  rw [h]
-
 lemma cuspFunction_congr_funLike
     {α β : Type*} [FunLike α ℍ ℂ] [FunLike β ℍ ℂ] (h : ℝ) (f : α) (g : β) (hf : ⇑f = ⇑g) :
     cuspFunction h f = cuspFunction h g := by
@@ -209,12 +152,6 @@ public lemma qExpansion_sub1 {a b : ℤ} (f : ModularForm Γ(1) a) (g : ModularF
 @[simp] --generalize this away from ℂ
 lemma IteratedDeriv_zero_fun (n : ℕ) (z : ℂ) : iteratedDeriv n (fun _ : ℂ => (0 : ℂ)) z = 0 := by
   norm_num
-
-lemma iteratedDeriv_const_eq_zero (m : ℕ) (hm : 0 < m) (c : ℂ) :
-    iteratedDeriv m (fun _ : ℂ => c) = fun _ : ℂ => 0 := by
-  ext z
-  have := iteratedDeriv_const_add hm (f := fun (x : ℂ) => (0 : ℂ)) c (x := z)
-  simpa only [add_zero, IteratedDeriv_zero_fun] using this
 
 /-- The `qExpansion` of a power agrees with the power of the `qExpansion`. -/
 public lemma qExpansion_pow (f : ModularForm Γ(1) k) (n : ℕ) :

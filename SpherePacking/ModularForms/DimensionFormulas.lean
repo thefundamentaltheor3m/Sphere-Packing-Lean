@@ -193,12 +193,6 @@ lemma weight_four_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 4) = 1 :=
   simpa using
     weight_lt_twelve_one_dimensional (k := 4) (E := E₄) E4_ne_zero E4_q_exp_zero (by norm_num)
 
-lemma weight_eight_one_dimensional (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (hk3 : k < 12) :
-    Module.rank ℂ (ModularForm Γ(1) k) = 1 := by
-  simpa using
-    weight_lt_twelve_one_dimensional (k := (k : ℤ)) (E := E k hk) (Ek_ne_zero k hk hk2)
-      (Ek_q_exp_zero k hk hk2) (by simpa using hk3)
-
 lemma weight_two_zero (f : ModularForm (CongruenceSubgroup.Gamma 1) 2) : f = 0 := by
 -- Let `a` be the constant term; then `f^2 = a^2 E₄` and `f^3 = a^3 E₆`, forcing `a = 0` or `Δ = 0`.
   by_cases hf : IsCuspForm (CongruenceSubgroup.Gamma 1) 2 f

@@ -163,13 +163,6 @@ private lemma tendsto_tsum_mul_pow_nhdsWithin_ne_zero_half (c : ℕ → ℂ)
           mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg q) (le_of_lt hq') m)
             (norm_nonneg (c m))))
 
-lemma cuspfunc_Zero [hn : NeZero n] [ModularFormClass F Γ(n) k] : cuspFunction n f 0 =
-    (qExpansion n f).coeff 0 := by
-  simpa [smul_eq_mul] using
-    (ModularFormClass.hasSum_qExpansion_of_norm_lt (h := n) (q := (0 : ℂ)) f
-          (by have := hn.1; positivity) (by simp) (by simp)).tsum_eq.symm.trans
-      (tsum_zero_pow fun m ↦ (qExpansion n f).coeff m)
-
 lemma modfom_q_exp_cuspfunc (c : ℕ → ℂ) (f : F) [ModularFormClass F Γ(n) k] [NeZero n]
     (hf : ∀ τ : ℍ, HasSum (fun m : ℕ ↦ (c m) • 𝕢 n τ ^ m) (f τ)) : ∀ q : ℂ, ‖q‖ < 1 →
     HasSum (fun m : ℕ ↦ c m • q ^ m) (cuspFunction n f q) := by
@@ -262,16 +255,6 @@ lemma q_exp_unique (c : ℕ → ℂ) (f : ModularForm Γ(n) k) [hn : NeZero n]
     have := congrFun (congrArg DFunLike.coe h) (fun _ ↦ (1 : ℂ))
     simp [ContinuousMultilinearMap.mkPiAlgebraFin_apply] at this
   exact smul_left_injective _ hne h5
-
-lemma deriv_mul_eq (f g : ℂ → ℂ) (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) :
-    deriv (f * g) = deriv f * g + f * deriv g := by
-  ext y
-  exact deriv_mul (hf y) (hg y)
-
-lemma auxasdf (n : ℕ) : (PowerSeries.coeff n) ((qExpansion 1 E₄) * (qExpansion 1 E₆)) =
-    ∑ p ∈ Finset.antidiagonal n, (PowerSeries.coeff p.1)
-    ((qExpansion 1 E₄)) * (PowerSeries.coeff p.2) ((qExpansion 1 E₆)) := by
-  apply PowerSeries.coeff_mul
 
 /-- A crude upper bound on the divisor sum `σ k n`. -/
 public lemma sigma_bound (k n : ℕ) : σ k n ≤ n ^ (k + 1) := by
@@ -573,12 +556,6 @@ public lemma E6_q_exp_one : (qExpansion 1 E₆).coeff 1 = -504 := by
 /-- The antidiagonal of `1` is the two-element set `{(1,0),(0,1)}`. -/
 public lemma antidiagonal_one : Finset.antidiagonal 1 = {(1,0), (0,1)} := by
   trivial
-
-lemma E4_pow_q_exp_one : (qExpansion 1 ((E₄).mul ((E₄).mul E₄))).coeff 1 = 3 * 240 := by
-  rw [← Nat.cast_one (R := ℝ), qExpansion_mul_coeff, qExpansion_mul_coeff]
-  simp [PowerSeries.coeff_mul, Finset.antidiagonal_zero, antidiagonal_one,
-    E4_q_exp_zero, E4_q_exp_one]
-  ring
 
 /-- The Eisenstein series `E k` is nonzero (detected by its constant `q`-coefficient). -/
 public lemma Ek_ne_zero (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) : E k hk ≠ 0 := by

@@ -36,24 +36,6 @@ def E₂ : ℍ → ℂ := EisensteinSeries.E2
 /-- Compatibility alias for Mathlib's `EisensteinSeries.D2`. -/
 def D₂ (γ : SL(2, ℤ)) : ℍ → ℂ := EisensteinSeries.D2 γ
 
-lemma G2_q_exp (z : ℍ) : G₂ z = (2 * riemannZeta 2) - 8 * π ^ 2 *
-    ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * n * z) := by
-  calc
-    G₂ z = (2 * riemannZeta 2) - 8 * π ^ 2 *
-        ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * z) ^ (n : ℕ) := by
-          simpa [G₂] using (EisensteinSeries.G2_eq_tsum_cexp z)
-    _ = (2 * riemannZeta 2) - 8 * π ^ 2 *
-        ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * n * z) := by
-          congr 2
-          apply tsum_congr
-          intro n
-          rw [← Complex.exp_nat_mul]
-          congr 1
-          ring_nf
-
-lemma G2_periodic : (G₂ ∣[(2 : ℤ)] ModularGroup.T) = G₂ := by
-  simpa [G₂] using (EisensteinSeries.G2_T_transform)
-
 lemma G₂_transform (γ : SL(2, ℤ)) : (G₂ ∣[(2 : ℤ)] γ) = G₂ - (D₂ γ) := by
   simpa [G₂, D₂] using (EisensteinSeries.G2_slash_action γ)
 

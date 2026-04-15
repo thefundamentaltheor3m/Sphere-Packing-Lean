@@ -127,8 +127,6 @@ public theorem Φ₁'_contDiffOn_ℂ :
     ContDiffOn ℂ ∞ (Φ₁' r) ℍ₀ :=
   Φ₁'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
-theorem Φ₂'_contDiffOn_ℂ : ContDiffOn ℂ ∞ (Φ₂' r) ℍ₀ := Φ₁'_contDiffOn_ℂ
-
 /-- The integrand `Φ₃' r` is holomorphic on `upperHalfPlaneSet`. -/
 public theorem Φ₃'_holo : Holo(Φ₃' r) := by
   refine DifferentiableOn.mul ?_ ((Complex.differentiable_exp.comp <| (differentiable_const _).mul
@@ -164,11 +162,6 @@ public theorem Φ₅'_holo : Holo(Φ₅' r) := by
     have : ∀ z ∈ ℍ₀, UpperHalfPlane.smulAux' g z = -1 / z := fun _ _ ↦ by
       simp [smulAux', g, num, denom, σ, ← sub_eq_add_neg]
     exact MapsTo.congr (mapsTo_smulAux' g) this
-
-/-- The integrand `Φ₅' r` is smooth as a complex function on `upperHalfPlaneSet`. -/
-public theorem Φ₅'_contDiffOn_ℂ :
-    ContDiffOn ℂ ∞ (Φ₅' r) ℍ₀ :=
-  Φ₅'_holo.contDiffOn isOpen_upperHalfPlaneSet
 
 /-- The integrand `Φ₆' r` is holomorphic on `upperHalfPlaneSet`. -/
 public theorem Φ₆'_holo : Holo(Φ₆' r) := by

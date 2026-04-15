@@ -84,30 +84,6 @@ lemma I₂'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ �
     · rw [norm_exp]
       simp
 
-lemma parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1,
-    (-1 / (↑t + I)) = -t / (t ^ 2 + 1) + (1 / (t ^ 2 + 1) * I) := by
-  intro t ht
-  obtain ⟨ht₀, ht₁⟩ := ht
-  calc
-  _ = (-1 / (t + I)) * ((t - I) / (t - I)) := by
-      conv_lhs => rw [← mul_one (-1 / (t + I))]
-      congr; symm
-      apply div_self
-      intro h
-      conv at h => rw [sub_eq_zero]
-      -- This has to be the most ridiculous proof ever. It should never have to go down to 0 ≠ 1 :(
-      have h₁ : (ofReal t).im = 0 := ofReal_im t
-      have h₂ : (ofReal t).im = 1 := by rw [h]; exact I_im
-      exact zero_ne_one ((h₁.symm).trans h₂)
-  _ = _ := by
-      conv_lhs => rw [div_mul_div_comm (-1) (t + I)]
-      simp only [neg_mul, one_mul, neg_sub, div_mul_eq_mul_div, ← add_div]
-      congr
-      · ac_rfl
-      · ring_nf
-        rw [I_sq]
-        ring
-
 lemma im_parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (↑t + I)).im = 1 / (t ^ 2 + 1) :=
   fun t _ => by simpa using SpherePacking.Integration.im_neg_one_div_ofReal_add_I (t := t)
 
