@@ -85,16 +85,17 @@ public lemma iteratedDeriv_cexp_mul_const (c : ℂ) :
       simpa [iteratedDeriv_succ, ih, mul_assoc] using
         (hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const (a := (1 : ℂ)) (c := c) (n := m) x).deriv
 
-/-- Bound the norm of `m`-th iterated derivative of `t ↦ exp (t * π i)` by `π ^ m`. -/
-public lemma norm_iteratedFDeriv_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
-    ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * ((Real.pi : ℂ) * Complex.I))) x‖ ≤
-      Real.pi ^ m := by
-  let c : ℂ := (Real.pi : ℂ) * Complex.I
+/-- Bound the norm of `m`-th iterated derivative of `t ↦ exp(t * a * I)` by `|a| ^ m` for any
+real `a`. -/
+public lemma norm_iteratedFDeriv_cexp_mul_ofReal_mul_I_le (a : ℝ) (m : ℕ) (x : ℝ) :
+    ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * ((a : ℂ) * Complex.I))) x‖ ≤
+      |a| ^ m := by
+  let c : ℂ := (a : ℂ) * Complex.I
   have hnorm_exp : ‖Complex.exp ((x : ℂ) * c)‖ = 1 := by
     have : ((x : ℂ) * c).re = 0 := by simp [c, mul_left_comm, mul_comm]
     simp [Complex.norm_exp, this]
   have hEq :
-      ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ = Real.pi ^ m := by
+      ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ = |a| ^ m := by
     calc
       ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ =
           ‖iteratedDeriv m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * c)) x‖ :=
@@ -102,8 +103,15 @@ public lemma norm_iteratedFDeriv_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
       _ = ‖c ^ m * Complex.exp ((x : ℂ) * c)‖ := by
             simpa using congrArg (fun F : ℝ → ℂ => ‖F x‖) (iteratedDeriv_cexp_mul_const (c := c) m)
       _ = ‖c ^ m‖ * ‖Complex.exp ((x : ℂ) * c)‖ := by simp
-      _ = Real.pi ^ m := by simp [norm_pow, c, abs_of_nonneg Real.pi_pos.le, hnorm_exp]
+      _ = |a| ^ m := by simp [norm_pow, c, hnorm_exp]
   simpa [c] using hEq.le
+
+/-- Bound the norm of `m`-th iterated derivative of `t ↦ exp (t * π i)` by `π ^ m`. -/
+public lemma norm_iteratedFDeriv_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
+    ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ Complex.exp ((t : ℂ) * ((Real.pi : ℂ) * Complex.I))) x‖ ≤
+      Real.pi ^ m := by
+  simpa [abs_of_nonneg Real.pi_pos.le] using
+    norm_iteratedFDeriv_cexp_mul_ofReal_mul_I_le Real.pi m x
 
 /-- Bound the norm of the `m`-th iterated derivative of `(-1/2) • exp (t * π i)`. -/
 public lemma norm_iteratedFDeriv_smul_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
