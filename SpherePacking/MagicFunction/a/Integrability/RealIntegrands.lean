@@ -22,12 +22,6 @@ section Parametrisations
 
 namespace MagicFunction.Parametrisations
 
-theorem z₁'_contDiffOn : ContDiffOn ℝ ∞ z₁' (Ioc (0 : ℝ) 1) := by
-  intro x hx
-  have h_eq : ∀ y ∈ Ioc (0 : ℝ) 1, z₁' y = _ := fun _ hy => z₁'_eq_of_mem <| mem_Icc_of_Ioc hy
-  refine ContDiffWithinAt.congr ?_ h_eq <| h_eq x hx
-  exact contDiffWithinAt_const.add (contDiffWithinAt_const.mul ofRealCLM.contDiff.contDiffWithinAt)
-
 private lemma z₂'_rhs_contDiffOn :
     ContDiffOn ℝ ∞ (fun y : ℝ => (-1 : ℂ) + y + I) (Icc (0 : ℝ) 1) := by
   simpa [add_assoc] using
@@ -37,12 +31,6 @@ private lemma z₂'_rhs_contDiffOn :
 public theorem z₂'_contDiffOn : ContDiffOn ℝ ∞ z₂' (Icc (0 : ℝ) 1) := by
   refine z₂'_rhs_contDiffOn.congr fun y hy => by simpa using z₂'_eq_of_mem (t := y) hy
 
-theorem z₃'_contDiffOn : ContDiffOn ℝ ∞ z₃' (Ioc (0 : ℝ) 1) := by
-  intro x hx
-  have h_eq : ∀ y ∈ Ioc (0 : ℝ) 1, z₃' y = _ := fun _ hy => z₃'_eq_of_mem <| mem_Icc_of_Ioc hy
-  refine ContDiffWithinAt.congr ?_ h_eq <| h_eq x hx
-  exact contDiffWithinAt_const.add (contDiffWithinAt_const.mul ofRealCLM.contDiff.contDiffWithinAt)
-
 private lemma z₄'_rhs_contDiffOn :
     ContDiffOn ℝ ∞ (fun y : ℝ => (1 : ℂ) - y + I) (Icc (0 : ℝ) 1) := by
   simpa [sub_eq_add_neg, add_assoc] using
@@ -51,12 +39,6 @@ private lemma z₄'_rhs_contDiffOn :
 /-- Smoothness of the parametrisation `z₄'` on `Icc (0, 1)`. -/
 public theorem z₄'_contDiffOn : ContDiffOn ℝ ∞ z₄' (Icc (0 : ℝ) 1) := by
   refine z₄'_rhs_contDiffOn.congr fun y hy => by simpa using z₄'_eq_of_mem (t := y) hy
-
-theorem z₅'_contDiffOn : ContDiffOn ℝ ∞ z₅' (Ioc (0 : ℝ) 1) := by
-  intro x hx
-  have h_eq : ∀ y ∈ Ioc (0 : ℝ) 1, z₅' y = _ := fun _ hy => z₅'_eq_of_mem <| mem_Icc_of_Ioc hy
-  refine ContDiffWithinAt.congr ?_ h_eq <| h_eq x hx
-  exact contDiffWithinAt_const.mul ofRealCLM.contDiff.contDiffWithinAt
 
 private lemma z₆'_rhs_contDiffOn : ContDiffOn ℝ ∞ (fun y : ℝ => I * y) (Ici (1 : ℝ)) := by
   simpa using (contDiffOn_const.mul ofRealCLM.contDiff.contDiffOn)
