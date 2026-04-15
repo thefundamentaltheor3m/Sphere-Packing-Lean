@@ -71,30 +71,6 @@ The prime indicates this is a complex-variable integrand, before reparametrizing
 @[expose] public def Φ₆' : ℂ → ℂ := fun z ↦
   φ₀'' (z) * cexp (π * I * r * (z : ℂ))
 
-section Def
-
--- We write some API that allows us to express the `(Φᵢ' r)` as functions when needed.
-
-lemma Φ₁'_def : Φ₁' r = fun z ↦ φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ)) :=
-  rfl
-
-lemma Φ₂'_def : Φ₂' r = fun z ↦ φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ)) :=
-  rfl
-
-lemma Φ₃'_def : Φ₃' r = fun z ↦ φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ)) :=
-  rfl
-
-lemma Φ₄'_def : Φ₄' r = fun z ↦ φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ)) :=
-  rfl
-
-lemma Φ₅'_def : Φ₅' r = fun z ↦ φ₀'' (-1 / z) * z ^ 2 * cexp (π * I * r * (z : ℂ)) :=
-  rfl
-
-lemma Φ₆'_def : Φ₆' r = fun z ↦ φ₀'' (z) * cexp (π * I * r * (z : ℂ)) :=
-  rfl
-
-end Def
-
 end MagicFunction.a.ComplexIntegrands
 
 namespace MagicFunction.a.RealIntegrands

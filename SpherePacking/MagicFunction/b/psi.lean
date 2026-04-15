@@ -322,73 +322,29 @@ lemma ψT'_comp_z₁'_eq_ψT_comp_z₁'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
   ψT' (z₁' t) = ψT ⟨z₁' t, im_z₁'_pos ht⟩ :=
   ψT'_eq_ψT_of_mem (im_z₁'_pos ht)
 
-lemma ψS'_comp_z₁'_eq_ψS_comp_z₁'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
-  ψS' (z₁' t) = ψS ⟨z₁' t, im_z₁'_pos ht⟩ :=
-  ψS'_eq_ψS_of_mem (im_z₁'_pos ht)
-
-lemma ψI'_comp_z₁'_eq_ψI_comp_z₁'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
-  ψI' (z₁' t) = ψI ⟨z₁' t, im_z₁'_pos ht⟩ :=
-  ψI'_eq_ψI_of_mem (im_z₁'_pos ht)
-
 lemma ψT'_comp_z₂'_eq_ψT_comp_z₂'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
   ψT' (z₂' t) = ψT ⟨z₂' t, im_z₂'_pos ht⟩ :=
   ψT'_eq_ψT_of_mem (im_z₂'_pos ht)
-
-lemma ψS'_comp_z₂'_eq_ψS_comp_z₂'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
-  ψS' (z₂' t) = ψS ⟨z₂' t, im_z₂'_pos ht⟩ :=
-  ψS'_eq_ψS_of_mem (im_z₂'_pos ht)
-
-lemma ψI'_comp_z₂'_eq_ψI_comp_z₂'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
-  ψI' (z₂' t) = ψI ⟨z₂' t, im_z₂'_pos ht⟩ :=
-  ψI'_eq_ψI_of_mem (im_z₂'_pos ht)
 
 lemma ψT'_comp_z₃'_eq_ψT_comp_z₃'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
   ψT' (z₃' t) = ψT ⟨z₃' t, im_z₃'_pos ht⟩ :=
   ψT'_eq_ψT_of_mem (im_z₃'_pos ht)
 
-lemma ψS'_comp_z₃'_eq_ψS_comp_z₃'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
-  ψS' (z₃' t) = ψS ⟨z₃' t, im_z₃'_pos ht⟩ :=
-  ψS'_eq_ψS_of_mem (im_z₃'_pos ht)
-
-lemma ψI'_comp_z₃'_eq_ψI_comp_z₃'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
-  ψI' (z₃' t) = ψI ⟨z₃' t, im_z₃'_pos ht⟩ :=
-  ψI'_eq_ψI_of_mem (im_z₃'_pos ht)
-
 lemma ψT'_comp_z₄'_eq_ψT_comp_z₄'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
   ψT' (z₄' t) = ψT ⟨z₄' t, im_z₄'_pos ht⟩ :=
   ψT'_eq_ψT_of_mem (im_z₄'_pos ht)
-
-lemma ψS'_comp_z₄'_eq_ψS_comp_z₄'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
-  ψS' (z₄' t) = ψS ⟨z₄' t, im_z₄'_pos ht⟩ :=
-  ψS'_eq_ψS_of_mem (im_z₄'_pos ht)
-
-lemma ψI'_comp_z₄'_eq_ψI_comp_z₄'_of_mem {t : ℝ} (ht : t ∈ Icc 0 1) :
-  ψI' (z₄' t) = ψI ⟨z₄' t, im_z₄'_pos ht⟩ :=
-  ψI'_eq_ψI_of_mem (im_z₄'_pos ht)
 
 lemma ψT'_comp_z₅'_eq_ψT_comp_z₅'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
   ψT' (z₅' t) = ψT ⟨z₅' t, im_z₅'_pos ht⟩ :=
   ψT'_eq_ψT_of_mem (im_z₅'_pos ht)
 
-lemma ψS'_comp_z₅'_eq_ψS_comp_z₅'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
-  ψS' (z₅' t) = ψS ⟨z₅' t, im_z₅'_pos ht⟩ :=
-  ψS'_eq_ψS_of_mem (im_z₅'_pos ht)
-
-lemma ψI'_comp_z₅'_eq_ψI_comp_z₅'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
-  ψI' (z₅' t) = ψI ⟨z₅' t, im_z₅'_pos ht⟩ :=
-  ψI'_eq_ψI_of_mem (im_z₅'_pos ht)
-
 lemma ψT'_comp_z₆'_eq_ψT_comp_z₆'_of_mem {t : ℝ} (ht : t ∈ Ici 1) :
   ψT' (z₆' t) = ψT ⟨z₆' t, im_z₆'_pos ht⟩ :=
   ψT'_eq_ψT_of_mem (im_z₆'_pos ht)
 
-lemma ψS'_comp_z₆'_eq_ψS_comp_z₆'_of_mem {t : ℝ} (ht : t ∈ Ici 1) :
-  ψS' (z₆' t) = ψS ⟨z₆' t, im_z₆'_pos ht⟩ :=
-  ψS'_eq_ψS_of_mem (im_z₆'_pos ht)
-
-lemma ψI'_comp_z₆'_eq_ψI_comp_z₆'_of_mem {t : ℝ} (ht : t ∈ Ici 1) :
-  ψI' (z₆' t) = ψI ⟨z₆' t, im_z₆'_pos ht⟩ :=
-  ψI'_eq_ψI_of_mem (im_z₆'_pos ht)
+lemma ψI'_comp_z₅'_eq_ψI_comp_z₅'_of_mem {t : ℝ} (ht : t ∈ Ioc 0 1) :
+  ψI' (z₅' t) = ψI ⟨z₅' t, im_z₅'_pos ht⟩ :=
+  ψI'_eq_ψI_of_mem (im_z₅'_pos ht)
 
 end eq_of_mem
 

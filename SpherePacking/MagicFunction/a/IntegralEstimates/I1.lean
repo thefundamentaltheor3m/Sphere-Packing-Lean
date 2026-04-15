@@ -41,12 +41,6 @@ variable (r : ℝ)
 /-! We begin by performing changes of variables. We use `Ioc` intervals everywhere because of the
 way `intervalIntegral` is defined. -/
 
-section Setup
-
-def f : ℝ → ℝ := fun t ↦ 1 / t
-
-def f' : ℝ → ℝ := fun t ↦ -1 / t ^ 2
-
 /-- The integrand on `Ici 1` obtained from `I₁'` after an inversion change of variables. -/
 @[expose] public def g : ℝ → ℝ → ℂ := fun r s ↦ -I
   * φ₀'' (I * s)
@@ -54,42 +48,7 @@ def f' : ℝ → ℝ := fun t ↦ -1 / t ^ 2
   * cexp (-π * I * r)
   * cexp (-π * r / s)
 
-lemma aux_measurable : MeasurableSet ((Ioc 0 1) : Set ℝ) := measurableSet_Ioc
-
-lemma aux_hasDeriv (x : ℝ) (hx : x ∈ Ioc 0 1) : HasDerivWithinAt f (f' x) (Ioc 0 1) x := by
-  have hf : f = fun t : ℝ ↦ t⁻¹ := by
-    funext t
-    simp [f, one_div]
-  simpa [hf, f', one_div, div_eq_mul_inv, pow_two, mul_assoc, mul_left_comm, mul_comm] using
-    (hasDerivWithinAt_inv (x := x) (ne_of_gt hx.1) (Ioc 0 1))
-
-lemma aux_injOn : InjOn f (Ioc 0 1) := by
-  intro x _ y _ hxy
-  exact inv_injective (by simpa [f, one_div] using hxy)
-
-end Setup
-
 section Change
-
-lemma Changing_Domain_of_Integration (r : ℝ) :
-    ∫ s in Ici (1 : ℝ), (g r s) = ∫ (s : ℝ) in f '' (Ioc (0 : ℝ) (1 : ℝ)), (g r s) := by
-  congr
-  ext x
-  constructor <;> intro hx
-  · refine ⟨x⁻¹, ?_, ?_⟩
-    · have hx' : (1 : ℝ) ≤ x := by simpa [mem_Ici] using hx
-      exact ⟨by positivity, inv_le_one_of_one_le₀ hx'⟩
-    · simp [f]
-  · obtain ⟨y, hy, rfl⟩ := hx
-    simpa [mem_Ici, f, one_div] using (one_le_inv_iff₀).2 hy
-
-lemma Changing_Variables (r : ℝ) : ∫ (s : ℝ) in f '' (Ioc (0 : ℝ) (1 : ℝ)), (g r s) =
-    ∫ (t : ℝ) in Ioc 0 1, |f' t| • (g r (f t)) :=
-  integral_image_eq_integral_abs_deriv_smul aux_measurable aux_hasDeriv aux_injOn (g r)
-
-lemma Writing_as_intervalIntegral (r : ℝ) :
-    ∫ (t : ℝ) in Ioc 0 1, |f' t| • (g r (f t)) = ∫ t in (0 : ℝ)..1, |f' t| • (g r (f t)) := by
-  simp [intervalIntegral_eq_integral_uIoc]
 
 lemma Reconciling_Change_of_Variables (r : ℝ) :
     I₁' r = ∫ t in Ioc 0 1, |(-1 / t ^ 2)| • (g r (1 / t)) := by
