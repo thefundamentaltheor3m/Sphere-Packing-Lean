@@ -225,7 +225,7 @@ lemma f0_norm_bound_on_strip :
       _ = |2 * z.re - 1| + |2 * z.im| := by simp
       _ ≤ 1 + |2 * z.im| := add_le_add hRe le_rfl
       _ = 2 * z.im + 1 := by simp [hIm, add_comm]
-  calc ‖f0 z‖ = ‖φ₀'' z‖ * ‖(2 : ℂ) * z - 1‖ := by simp [f0, norm_mul]
+  calc ‖f0 z‖ = ‖φ₀'' z‖ * ‖(2 : ℂ) * z - 1‖ := by simp [f0]
     _ ≤ (C₀ * Real.exp (-2 * π * z.im)) * (2 * z.im + 1) := by gcongr
     _ = C₀ * (2 * z.im + 1) * Real.exp (-2 * π * z.im) := by ring_nf
 
@@ -233,7 +233,7 @@ lemma f0_norm_bound_on_strip :
 
 /-- Periodicity of `φ₀''` under translation by `1`. -/
 public lemma φ₀''_add_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z + 1) = φ₀'' z :=
-  periodic_of_UHP 1 (fun z hz => φ₀''_def hz) φ₀_periodic z hz
+  periodic_of_UHP 1 (fun _ hz => φ₀''_def hz) φ₀_periodic z hz
 
 lemma f0_vertical_diff (y : ℝ) (hy : 0 < y) :
     f0 ((1 : ℂ) + (y : ℂ) * Complex.I) - f0 ((y : ℂ) * Complex.I) =
