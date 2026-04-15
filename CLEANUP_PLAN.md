@@ -324,11 +324,12 @@ Key theorems (`MainTheorem`, `LinearProgrammingBound`, `eig_a`, `eig_b`, `g_cohn
 | 7 (file splitting) | 0 | (not yet) |
 | 8 (style polish) | 0 | (not yet) |
 
-## Actual Progress Through Phase 4b (partial) + additional cleanup
+## Actual Progress
 
-- 47 files changed
-- 307 insertions, 1,936 deletions
-- **Net: -1,629 lines** (~2.7% of project)
+- **19 commits** on gauss2-cleanup (PR #391)
+- Starting: 59,366 lines
+- Current: 57,084 lines
+- **Net: -2,282 lines** (~3.8% of project)
 - All builds pass; no behavioral changes
 
 ### Cleanup completed in this session
@@ -345,24 +346,49 @@ Key theorems (`MainTheorem`, `LinearProgrammingBound`, `eig_a`, `eig_b`, `g_cohn
 9. Phase 4b (partial): remove commented-out dead code blocks (135 lines)
 10. Additional dead-code/inline cleanup (30 lines)
 
-## Remaining Work
+## Honest Assessment: Reaching 20k Lines
 
-Phases 4c–8 are significant refactors that would require careful
-planning and substantial time. The a/ vs b/ unification (Phase 5) is
-the largest remaining target but also the most complex, requiring a
-shared `MagicFunction/Common/` module with parameterized structure.
+The target is ~37,000 lines reduction (from current 57,084 to 20,000).
+This is beyond what mechanical cleanup can achieve. It requires:
 
-Suggested next steps for follow-up PRs:
-- **Phase 4c** (I2/I4 IntegralEstimates common, ~180 lines): Moderate
-  effort, moderate savings. The two files are 277 and 236 lines with
-  character-for-character identical proofs modulo sign/parametrization.
-- **Phase 5** (a/ vs b/ unification, ~2,000 lines): Biggest impact but
-  requires a carefully designed `MagicFunction/Common/` module
-  parameterized by `MagicFunctionData` (modular form, eigenvalue, sign).
-- **Phase 6** (Laplace A/B shared abstractions, ~600 lines): Extract
-  generic parametric-integral analyticity and analytic-continuation
-  wrappers.
+1. **Mathematical proof rewriting**: The largest proofs in the project
+   are ~200-900 lines each (`bRadial_eq_laplace_psiI_main` is 880 lines,
+   `ramanujan_E₂'` is 195 lines, many others in the 100-400 range).
+   Shortening these requires mathematical insight to find cleaner
+   arguments.
+
+2. **True a/ vs b/ module unification** (Phase 5 proper): Design a
+   `MagicFunctionData` structure parameterizing:
+   - The modular form (`phi0''` vs `psiT'/psiI'/psiS'`)
+   - Eigenvalue sign (+1 vs -1)
+   - Integral signs
+   And rewrite ~150 declarations in both a/ and b/ to use it.
+
+3. **Mathematical consolidation**: Many "parallel" proofs in a/ and b/
+   differ only by sign/parametrization. Unifying them requires careful
+   design of typeclass-based abstractions.
+
+4. **Proof golfing by a mathematician**: The 1,276 public declarations
+   and ~2,500 total declarations include many with 10-30 line proofs
+   that could be 1-5 lines with better tactics/lemma choices.
+
+Rough estimates of potential savings (per mathematician's focused work):
+- Phase 5 full unification: 2,000-4,000 lines
+- Phase 6 Laplace abstractions: 600-1,000 lines
+- Large proof simplifications: 5,000-10,000 lines
+- Mathematical API cleanup: 3,000-5,000 lines
+- Total: ~15,000-20,000 lines achievable with focused mathematical work.
+
+Even with aggressive cleanup, reaching exactly 20k lines from the
+current Gauss formalization would likely require rewriting entire
+sections. A more realistic target might be 35-40k lines.
+
+## Remaining Work (for follow-up PRs)
+
+- **Phase 5 full** (a/ vs b/ unification, ~2,000 lines): Design shared
+  `MagicFunction/Common/` module with `MagicFunctionData` parameter.
+- **Phase 6** (Laplace A/B shared abstractions, ~600 lines).
 - **Phase 7** (split `Derivative.lean` 1475 lines, `JacobiTheta.lean`
-  1338 lines, `PolyFourierCoeffBound.lean` 905 lines into focused
-  sub-modules).
-- **Phase 8** (mathlib style polish: docstrings, consistent formatting).
+  1338 lines, `PolyFourierCoeffBound.lean` 905 lines into sub-modules).
+- **Phase 8** (mathlib style polish: docstrings, formatting).
+- **Phase 9** (new): Aggressive proof golfing by a mathematician.
