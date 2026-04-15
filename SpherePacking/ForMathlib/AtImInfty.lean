@@ -20,12 +20,3 @@ public lemma Filter.tendsto_im_atImInfty :
     Tendsto (fun x : UpperHalfPlane ↦ x.im) UpperHalfPlane.atImInfty atTop := by
   simp [UpperHalfPlane.atImInfty, Filter.tendsto_iff_comap]
 
-open UpperHalfPlane Filter
-
-/-- If f tends to c ≠ 0 at infinity, then f ≠ 0 as a function.
-
-This packages the common argument: if f = 0, then f → 0, but also f → c by hypothesis.
-By uniqueness of limits, 0 = c, contradicting c ≠ 0. -/
-lemma ne_zero_of_tendsto_ne_zero {f : ℍ → ℂ} {c : ℂ} (hc : c ≠ 0)
-    (hf : Tendsto f atImInfty (nhds c)) : f ≠ 0 := fun h =>
-  hc (tendsto_nhds_unique tendsto_const_nhds (h ▸ hf)).symm

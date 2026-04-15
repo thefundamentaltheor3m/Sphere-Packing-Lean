@@ -19,25 +19,6 @@ public theorem EuclideanSpace.volume_ball_pos [Nonempty ι] (x : EuclideanSpace 
   simpa using measure_ball_pos (μ := volume) x hr
 
 
-open Classical in
-noncomputable def Fintype.ofSingletonOnly (α : Type*) [Subsingleton α] : Fintype α :=
-  if h : Nonempty α then
-    Fintype.ofSubsingleton (Classical.choice h)
-  else
-    @Fintype.ofIsEmpty _ (not_nonempty_iff.mp h)
-
-theorem MeasureTheory.MeasureSpace.volume_subsingleton
-    {α : Type*} [MeasureSpace α] {s : Set α} (hs : Subsingleton s) [NoAtoms (volume : Measure α)] :
-      volume s = 0 := by
-  obtain ⟨s', hs'⟩ := Fintype.ofSingletonOnly s
-  convert Finset.measure_zero (s'.map ⟨Subtype.val, Subtype.val_injective⟩) volume
-  ext x
-  simp [hs']
-
-theorem EuclideanSpace.ball_subsingleton [IsEmpty ι]
-    (x : EuclideanSpace ℝ ι) : Subsingleton (ball x r) :=
-  Set.subsingleton_coe_of_subsingleton
-
 /-- The Lebesgue volume of a Euclidean ball is finite. -/
 public theorem EuclideanSpace.volume_ball_lt_top
     [NoAtoms (volume : Measure (EuclideanSpace ℝ ι))] (x : EuclideanSpace ℝ ι) :
