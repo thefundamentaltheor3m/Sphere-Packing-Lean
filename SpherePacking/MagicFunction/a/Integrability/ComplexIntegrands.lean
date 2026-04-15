@@ -41,12 +41,6 @@ local notation "Holo(" f ")" => DifferentiableOn ℂ f ℍ₀
 
 section Helpers
 
-namespace UpperHalfPlane
-
-theorem zero_not_mem_upperHalfPlaneSet : (0 : ℂ) ∉ ℍ₀ := by simp
-
-end UpperHalfPlane
-
 end Helpers
 
 namespace MagicFunction.a.ComplexIntegrands
@@ -170,7 +164,7 @@ public theorem Φ₅'_holo : Holo(Φ₅' r) := by
   apply φ₀''_holo.comp
   · apply (differentiableOn_const (-1)).div differentiableOn_id
     intro _ hz
-    exact ne_of_mem_of_not_mem hz <| zero_not_mem_upperHalfPlaneSet
+    exact ne_of_mem_of_not_mem hz <| by simp
   · let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, 0]) (!![0, 1; -1, 0])
       (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
     have : ∀ z ∈ ℍ₀, UpperHalfPlane.smulAux' g z = -1 / z := fun _ _ ↦ by

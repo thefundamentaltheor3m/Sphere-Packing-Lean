@@ -30,19 +30,13 @@ def mul_Delta_map (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 1
   have hk : k - 12 + 12 = k := by ring
   exact ModularForm.mcast hk this
 
-lemma mcast_apply {a b : ℤ} {Γ : Subgroup SL(2, ℤ)} (h : a = b) (f : ModularForm Γ a) (z : ℍ) :
-  (ModularForm.mcast h f) z = f z := by
-  rfl
-
 lemma mul_Delta_map_eq (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) (z : ℍ) :
   (mul_Delta_map k f) z = f z * Delta z := by
-  rw [mul_Delta_map, mcast_apply ]
   rfl
 
 lemma mul_Delta_map_eq_mul (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) :
   ((mul_Delta_map k f) : ℍ → ℂ) = (f.mul (ModForm_mk _ 12 Delta)) := by
-  ext z
-  rw [mul_Delta_map, mcast_apply ]
+  rfl
 
 /-
 lemma mul_Delta_IsCuspForm (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) :
