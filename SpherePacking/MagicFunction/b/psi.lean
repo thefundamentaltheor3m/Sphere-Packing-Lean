@@ -25,11 +25,6 @@ noncomputable section matrices
 
 /- The matrices `S` and `T` are given by `ModularGroup.S` and `ModularGroup.T`. -/
 
--- #check ModularGroup.S
--- #check ModularGroup.T
-
-def ModularGroup.I : SL(2, ℤ) := ⟨!![1, 0; 0, 1], by decide⟩
-
 end matrices
 
 noncomputable section defs

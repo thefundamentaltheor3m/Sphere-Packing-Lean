@@ -13,5 +13,3 @@ public theorem isBoundedAtImInfty_neg_iff {α : Type*} [SeminormedAddGroup α]
     (f : UpperHalfPlane → α) :
     UpperHalfPlane.IsBoundedAtImInfty (-f) ↔ UpperHalfPlane.IsBoundedAtImInfty f := by
   simp [UpperHalfPlane.isBoundedAtImInfty_iff]
-
-alias ⟨_, IsBoundedAtImInfty.neg⟩ := isBoundedAtImInfty_neg_iff
