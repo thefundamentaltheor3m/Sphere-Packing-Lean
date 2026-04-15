@@ -53,11 +53,6 @@ protected theorem sum_le_tsum {f : α → ℕ∞} (s : Finset α) : ∑ x ∈ s,
 @[simp] protected theorem tsum_eq_zero : ∑' i, f i = 0 ↔ ∀ i, f i = 0 :=
   Summable.tsum_eq_zero_iff ENat.summable
 
-theorem _root_.Set.Infinite.exists_finite_subset_encard_gt (hs : s.Infinite) (b : ℕ) :
-    ∃ t ⊆ s, b < t.encard ∧ t.Finite := by
-  obtain ⟨t, hts, hcard⟩ := hs.exists_subset_card_eq (b + 1)
-  exact ⟨t, by simpa, by simp [encard_coe_eq_coe_finsetCard, hcard, Nat.cast_lt, - Nat.cast_add]⟩
-
 @[simp]
 theorem add_eq_top {x y : ℕ∞} : x + y = ⊤ ↔ x = ⊤ ∨ y = ⊤ :=
   WithTop.add_eq_top

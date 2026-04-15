@@ -83,13 +83,3 @@ public lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) :
     (∏' (i : ℕ), f i) ^ n = ∏' (i : ℕ), (f i) ^ n := by
   simpa using hf.map_tprod (g := powMonoidHom n) (hg := by simpa using continuous_pow n)
 
-variable {a a₁ a₂ : ℝ} {ι : Type*}
-
-theorem hasProd_le_nonneg (f g : ι → ℝ) (h : ∀ i, f i ≤ g i) (h0 : ∀ i, 0 ≤ f i)
-  (hf : HasProd f a₁) (hg : HasProd g a₂) : a₁ ≤ a₂ :=
-  le_of_tendsto_of_tendsto' hf hg fun _ ↦ Finset.prod_le_prod (fun i _ ↦ h0 i) (fun i _ ↦ h i)
-
-theorem HasProd.le_one_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i)
-    (ha : HasProd g a) : a ≤ 1 :=
-  hasProd_le_nonneg (f := g) (g := fun _ => 1) h h0 ha hasProd_one
-

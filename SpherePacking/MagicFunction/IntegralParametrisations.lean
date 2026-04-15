@@ -265,15 +265,4 @@ public lemma z₃'_eq_z₅'_add_one {t : ℝ} (ht : t ∈ Icc 0 1) : z₃' t = z
 
 end eq_of_mem
 
-section transforms_mem
-
-open Matrix Matrix.SpecialLinearGroup UpperHalfPlane ModularGroup
-open scoped MatrixGroups ComplexConjugate
-
-public lemma _root_.ModularGroup.ST_eq : S * T = !![(0 : ℤ), -1; 1, 1] := by decide
-
-public lemma _root_.ModularGroup.S_eq : S = !![(0 : ℤ), -1; 1, 0] := by rfl
-
-end transforms_mem
-
 end MagicFunction.Parametrisations
