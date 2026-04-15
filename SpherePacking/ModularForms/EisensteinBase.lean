@@ -383,9 +383,6 @@ public lemma E4_q_exp_zero : (qExpansion 1 E₄).coeff 0 = 1 := by
 
 
 @[simp]
-theorem Complex.I_pow_six : Complex.I ^ 6 = -1 := by norm_num1
-
-@[simp]
 theorem bernoulli'_five : bernoulli' 5 = 0 := by
   rw [bernoulli'_def]
   norm_num [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_zero,
@@ -601,10 +598,6 @@ public lemma modularForm_normalise (f : ModularForm Γ(1) k) (hf : ¬ IsCuspForm
     (qExpansion 1 (((qExpansion 1 f).coeff 0)⁻¹ • f)).coeff 0 = 1 := by
   rw [← Nat.cast_one (R := ℝ), ← qExpansion_smul2, Nat.cast_one]
   exact inv_mul_cancel₀ (by intro h; exact hf ((IsCuspForm_iff_coeffZero_eq_zero k f).2 h))
-
-lemma PowerSeries.coeff_add (f g : PowerSeries ℂ) (n : ℕ) :
-    (f + g).coeff n = (f.coeff n) + (g.coeff n) :=
-  rfl
 
 open ArithmeticFunction
 

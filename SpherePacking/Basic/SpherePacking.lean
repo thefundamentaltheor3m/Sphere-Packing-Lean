@@ -129,11 +129,6 @@ public theorem PeriodicSpherePacking.mem_basis_Z_span
     v ∈ Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _)) ↔ v ∈ S.lattice :=
   SetLike.ext_iff.mp (S.basis_Z_span b) v
 
-public theorem PeriodicSpherePacking.basis_R_span
-    (S : PeriodicSpherePacking d) {ι : Type*} (b : Basis ι ℤ S.lattice) :
-    Submodule.span ℝ (Set.range (b.ofZLatticeBasis ℝ _)) = ⊤ :=
-  Basis.span_eq _
-
 end Definitions
 
 section Scaling
@@ -204,11 +199,6 @@ open Real
         have := Submodule.smul_mem_pointwise_smul _ c _ this
         simpa [smul_smul, mul_inv_cancel₀ hc.ne.symm, one_smul]
 }
-
-lemma PeriodicSpherePacking.scale_toSpherePacking
-    {S : PeriodicSpherePacking d} {c : ℝ} (hc : 0 < c) :
-    (S.scale hc).toSpherePacking = S.toSpherePacking.scale hc :=
-  rfl
 
 lemma SpherePacking.scale_balls {S : SpherePacking d} {c : ℝ} (hc : 0 < c) :
     (S.scale hc).balls = c • S.balls := by
