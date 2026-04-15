@@ -258,10 +258,10 @@ private lemma rect_holo (g : ℂ → ℂ) (hg : DifferentiableOn ℂ g {z : ℂ 
       (by simpa [Set.uIcc_of_le hm] using (mem_reProdIm.1 hz).2 : z.im ∈ Set.Icc (1 : ℝ) m).1
   have hD : DifferentiableOn ℂ g (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioo (1 : ℝ) m) := by
     exact hg.mono fun z hz => lt_trans (by norm_num) (mem_reProdIm.1 hz).2.1
-  simpa using
-    (Complex.integral_boundary_rect_eq_zero_of_continuousOn_of_differentiableOn
-      (f := g) (z := (Complex.I : ℂ)) (w := (1 : ℂ) + m * Complex.I) (Hc := by
-        simpa using hC) (Hd := by simpa [hm] using hD))
+  convert Complex.integral_boundary_rect_eq_zero_of_continuousOn_of_differentiableOn
+      (f := g) (z := (Complex.I : ℂ)) (w := (1 : ℂ) + m * Complex.I)
+      (Hc := by simpa using hC) (Hd := by simpa [hm] using hD) using 1
+  simp
 
 lemma rect_f0 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) -
@@ -379,8 +379,8 @@ lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
               Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I))) =
           0 := by simpa [add_sub_assoc] using hrect
     rwa [← smul_sub, hSub, hVert] at hrect₁
-  exact sub_eq_zero.mp (by
-    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hrect')
+  refine sub_eq_zero.mp ?_
+  simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hrect'
 
 lemma integral_f0_height_one_eq_neg_I6 :
     (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) = -I₆' (0 : ℝ) := by
