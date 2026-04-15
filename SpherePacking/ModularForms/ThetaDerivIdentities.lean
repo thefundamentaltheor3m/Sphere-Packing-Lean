@@ -632,10 +632,6 @@ public theorem serre_D_two_H₂ :
     serre_D 2 H₂ = (1 / 6 : ℂ) • (H₂ * (H₂ + (2 : ℂ) • H₄)) := by
   exact sub_eq_zero.mp (by simpa [f₂] using (f₂_eq_zero : f₂ = 0))
 
-public theorem serre_D_two_H₃ :
-    serre_D 2 H₃ = (1 / 6 : ℂ) • (H₂ ^ 2 - H₄ ^ 2) := by
-  exact sub_eq_zero.mp (by simpa [f₃] using (f₃_eq_zero : f₃ = 0))
-
 /-- Serre derivative identity for `H₄` (Blueprint Proposition 6.52). -/
 public theorem serre_D_two_H₄ :
     serre_D 2 H₄ = (-1 / 6 : ℂ) • (H₄ * ((2 : ℂ) • H₂ + H₄)) := by

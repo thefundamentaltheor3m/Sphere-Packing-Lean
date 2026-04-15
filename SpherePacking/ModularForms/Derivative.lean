@@ -124,13 +124,6 @@ public theorem D_mul (F G : ℍ → ℂ) (hF : MDiff F) (hG : MDiff G)
         (MDifferentiableAt_DifferentiableAt (hG z))
   simp [D, hderiv, mul_add, mul_assoc, mul_left_comm, mul_comm]
 
-@[simp]
-public theorem D_sq (F : ℍ → ℂ) (hF : MDiff F) :
-    D (F ^ 2) = 2 * F * D F := by
-  rw [pow_two, D_mul F F hF hF]
-  ring_nf
-
-
 /-- Division of MDifferentiable functions on ℍ is MDifferentiable, when the denominator
 is everywhere nonzero. -/
 lemma MDifferentiable_div {F G : ℍ → ℂ}
