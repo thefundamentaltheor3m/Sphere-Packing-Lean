@@ -35,9 +35,6 @@ protected theorem hasSum : HasSum f (⨆ s : Finset α, ∑ a ∈ s, f a) :=
 @[simp] protected theorem summable : Summable f :=
   hasSum.summable
 
-protected theorem tsum_eq_iSup_sum : ∑' x, f x = (⨆ s : Finset α, ∑ a ∈ s, f a) :=
-  ENat.hasSum.tsum_eq
-
 protected theorem tsum_comm {f : α → β → ℕ∞} : ∑' (a) (b), f a b = ∑' (b) (a), f a b :=
   Summable.tsum_comm' ENat.summable (fun _ ↦ ENat.summable) fun _ ↦ ENat.summable
 
@@ -53,20 +50,8 @@ protected theorem tsum_le_tsum (h : f ≤ g) : ∑' a, f a ≤ ∑' a, g a :=
 protected theorem sum_le_tsum {f : α → ℕ∞} (s : Finset α) : ∑ x ∈ s, f x ≤ ∑' x, f x :=
   Summable.sum_le_tsum s (fun _ _ ↦ zero_le _) ENat.summable
 
-protected theorem le_tsum (a : α) : f a ≤ ∑' a, f a :=
-  Summable.le_tsum' ENat.summable a
-
 @[simp] protected theorem tsum_eq_zero : ∑' i, f i = 0 ↔ ∀ i, f i = 0 :=
   Summable.tsum_eq_zero_iff ENat.summable
-
-protected theorem tsum_subtype_union_disjoint {s t : Set α} (hd : Disjoint s t) :
-    ∑' (x : ↑(s ∪ t)), f x = ∑' (x : s), f x + ∑' (x : t), f x :=
-  Summable.tsum_union_disjoint hd ENat.summable ENat.summable
-
-protected theorem tsum_subtype_insert {s : Set α} {a : α} (h : a ∉ s) :
-    ∑' (x : ↑(insert a s)), f x = f a + ∑' (x : s), f x := by
-  rw [← singleton_union, ENat.tsum_subtype_union_disjoint, tsum_singleton]
-  rwa [disjoint_singleton_left]
 
 theorem _root_.Set.Infinite.exists_finite_subset_encard_gt (hs : s.Infinite) (b : ℕ) :
     ∃ t ⊆ s, b < t.encard ∧ t.Finite := by
@@ -76,41 +61,6 @@ theorem _root_.Set.Infinite.exists_finite_subset_encard_gt (hs : s.Infinite) (b 
 @[simp]
 theorem add_eq_top {x y : ℕ∞} : x + y = ⊤ ↔ x = ⊤ ∨ y = ⊤ :=
   WithTop.add_eq_top
-
-protected theorem tsum_subtype_eq_top_iff_of_finite (hs : s.Finite) :
-    ∑' (x : s), f x = ⊤ ↔ ∃ a ∈ s, f a = ⊤ := by
-  induction s, hs using Set.Finite.induction_on with
-  | empty => simp
-  | @insert a s₀ has₀ hs₀ ih => simp [ENat.tsum_subtype_insert has₀, ih]
-
-protected theorem tsum_eq_top_of_support_infinite (hf : f.support.Infinite) : ∑' a, f a = ⊤ := by
-  rw [ENat.tsum_eq_iSup_sum, iSup_eq_top]
-  intro b hb
-  lift b to ℕ using hb.ne
-  obtain ⟨t, htf, hbt, hfin⟩ := hf.exists_finite_subset_encard_gt b
-  refine ⟨hfin.toFinset, hbt.trans_le ?_⟩
-  rw [hfin.encard_eq_coe_toFinset_card, Finset.card_eq_sum_ones, Nat.cast_sum]
-  refine Finset.sum_le_sum fun i hi ↦ ?_
-  simp only [Nat.cast_one, ENat.one_le_iff_ne_zero]
-  exact htf <| by simpa using hi
-
-protected theorem tsum_eq_top_iff : ∑' a, f a = ⊤ ↔ f.support.Infinite ∨ ∃ a, f a = ⊤ := by
-  rw [iff_def, or_imp, and_iff_right ENat.tsum_eq_top_of_support_infinite, or_iff_not_imp_left,
-    not_infinite]
-  refine ⟨fun htop hfin ↦ ?_, fun ⟨a, ha⟩ ↦ ?_⟩
-  · rw [← tsum_subtype_support, ENat.tsum_subtype_eq_top_iff_of_finite hfin] at htop
-    exact Exists.elim htop <| fun a h ↦ ⟨a, h.2⟩
-  rw [← top_le_iff, ← ha]
-  exact ENat.le_tsum a
-
-protected theorem tsum_subtype_eq_top_iff {s : Set α} :
-    ∑' (a : s), f a = ⊤ ↔ (s ∩ f.support).Infinite ∨ ∃ a ∈ s, f a = ⊤ := by
-  have hsupp_img : (Subtype.val '' support (fun a : s ↦ f a)) = s ∩ f.support := by
-    ext a; simp [mem_support, and_comm]
-  have hsupp : (support (fun a : s ↦ f a)).Infinite ↔ (s ∩ f.support).Infinite := by
-    simpa [hsupp_img] using (Set.infinite_image_iff (s := support (fun a : s ↦ f a))
-      (f := Subtype.val) Subtype.val_injective.injOn).symm
-  simp [ENat.tsum_eq_top_iff, hsupp]
 
 protected theorem tsum_comp_le_tsum_of_injective {φ : α → β} (hφ : Injective φ) (g : β → ℕ∞) :
     ∑' x, g (φ x) ≤ ∑' y, g y :=

@@ -282,34 +282,6 @@ public lemma _root_.ModularGroup.ST_eq' : S * T = ⟨!![(0 : ℤ), -1; 1, 1], de
 public lemma _root_.ModularGroup.S_eq' : S = ⟨!![(0 : ℤ), -1; 1, 0], det_aux⟩ := by
   simp only [← ModularGroup.S_eq]; norm_cast
 
-public lemma neg_inv_one_add_eq_ST_coe (z : ℍ) :
-    -1 / ((z : ℂ) + 1) = UpperHalfPlane.coe ((S * T) • z) := by
-  rw [specialLinearGroup_apply]
-  simp_all [ST_eq]
-
-public lemma neg_inv_one_add_mem (z : ℍ) : 0 < (-1 / ((z : ℂ) + 1)).im := by
-  rw [neg_inv_one_add_eq_ST_coe, coe_im]
-  exact ((S * T) • z).2
-
-public lemma neg_inv_one_add_eq_ST (z : ℍ) :
-    ⟨-1 / ((z : ℂ) + 1), neg_inv_one_add_mem z⟩ = (S * T) • z := by
-  apply UpperHalfPlane.ext
-  rw [← neg_inv_one_add_eq_ST_coe]
-
-public lemma neg_inv_eq_S_coe (z : ℍ) :
-    -1 / z = UpperHalfPlane.coe (S • z) := by
-  rw [specialLinearGroup_apply]
-  simp_all [S_eq]
-
-public lemma neg_inv_mem (z : ℍ) : 0 < (-1 / (z : ℂ)).im := by
-  rw [neg_inv_eq_S_coe, coe_im]
-  exact (S • z).2
-
-public lemma neg_inv_eq_S (z : ℍ) :
-    ⟨-1 / (z : ℂ), neg_inv_mem z⟩ = S • z := by
-  apply UpperHalfPlane.ext
-  rw [← neg_inv_eq_S_coe]
-
 end transforms_mem
 
 end MagicFunction.Parametrisations

@@ -540,12 +540,6 @@ public theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ}
   simp only [I_sq]
   ring
 
-/-- The derivative of a function with zero imaginary part also has zero imaginary part. -/
-lemma im_deriv_eq_zero_of_im_eq_zero {f : ℝ → ℂ} {t : ℝ}
-    (hf : DifferentiableAt ℝ f t) (him : ∀ s, (f s).im = 0) :
-    (deriv f t).im = 0 := by
-  simpa [funext him] using ((hasDerivAt_const t Complex.imCLM).clm_apply hf.hasDerivAt).deriv.symm
-
 /-- The real part of F.resToImagAxis has derivative -2π * ((D F).resToImagAxis t).re at t. -/
 lemma hasDerivAt_resToImagAxis_re {F : ℍ → ℂ} (hdiff : MDifferentiable 𝓘(ℂ) 𝓘(ℂ) F)
     {t : ℝ} (ht : 0 < t) :
