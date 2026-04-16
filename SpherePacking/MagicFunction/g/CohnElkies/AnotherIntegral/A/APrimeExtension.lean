@@ -131,7 +131,7 @@ lemma neg_one_div_I_mul (t : ℝ) :
   · simp
   · have : (t : ℂ) ≠ 0 := by exact_mod_cast ht
     field_simp [this, Complex.I_ne_zero]
-    simp [Complex.I_sq]
+    simp [field]
 
 def arg₁ (t : ℝ) : ℂ := (Complex.I : ℂ) / (t : ℂ)
 
@@ -544,10 +544,8 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
   have hfun : (fun z : ℂ => ∫ t, I₆IntegrandC z t ∂μ) =
       fun z => ∫ t in Set.Ici (1 : ℝ), I₆IntegrandC z t := funext fun z => by simp [μ]
   rw [hfun] at hdiffCore
-  have hEqfun : I₆'C = fun z : ℂ => 2 * ∫ t in Set.Ici (1 : ℝ), I₆IntegrandC z t :=
-    funext fun z => by simpa using I₆'C_eq_integrandC z
-  exact (by simpa [hEqfun, mul_assoc] using
-    hdiffCore.const_mul (2 : ℂ) : HasDerivAt I₆'C _ u0).differentiableAt
+  rw [funext I₆'C_eq_integrandC]
+  exact hdiffCore.differentiableAt.const_mul 2
 
 lemma I₆'C_differentiableOn : DifferentiableOn ℂ I₆'C rightHalfPlane :=
   fun u hu => (I₆'C_differentiableAt u hu).differentiableWithinAt
@@ -555,10 +553,10 @@ lemma I₆'C_differentiableOn : DifferentiableOn ℂ I₆'C rightHalfPlane :=
 /-- `aPrimeC` is analytic on the right half-plane. -/
 public lemma aPrimeC_analyticOnNhd :
     AnalyticOnNhd ℂ aPrimeC rightHalfPlane := by
-  exact (by simpa [aPrimeC] using
-    (((((I₁'C_differentiableOn.add I₂'C_differentiableOn).add I₃'C_differentiableOn).add
-              I₄'C_differentiableOn).add I₅'C_differentiableOn).add I₆'C_differentiableOn) :
-    DifferentiableOn ℂ aPrimeC rightHalfPlane).analyticOnNhd rightHalfPlane_isOpen
+  suffices H : DifferentiableOn ℂ aPrimeC rightHalfPlane from H.analyticOnNhd rightHalfPlane_isOpen
+  simpa using
+    ((((I₁'C_differentiableOn.add I₂'C_differentiableOn).add I₃'C_differentiableOn).add
+      I₄'C_differentiableOn).add I₅'C_differentiableOn).add I₆'C_differentiableOn
 end
 
 end MagicFunction.g.CohnElkies.IntegralReps

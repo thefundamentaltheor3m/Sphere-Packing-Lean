@@ -254,8 +254,8 @@ private lemma rect_holo (g : ℂ → ℂ) (hg : DifferentiableOn ℂ g {z : ℂ 
   have hC : ContinuousOn g (Set.uIcc (0 : ℝ) 1 ×ℂ Set.uIcc (1 : ℝ) m) := by
     refine hg.continuousOn.mono ?_
     intro z hz
-    have hmem : z.im ∈ Set.Icc (1 : ℝ) m := by simpa [Set.uIcc_of_le hm] using (mem_reProdIm.1 hz).2
-    exact lt_of_lt_of_le (by norm_num) hmem.1
+    refine lt_of_lt_of_le zero_lt_one (?_ : z.im ∈ Set.Icc 1 m).1
+    simpa [Set.uIcc_of_le hm] using (mem_reProdIm.1 hz).2
   have hD : DifferentiableOn ℂ g (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioo (1 : ℝ) m) := by
     exact hg.mono fun z hz => lt_trans (by norm_num) (mem_reProdIm.1 hz).2.1
   convert Complex.integral_boundary_rect_eq_zero_of_continuousOn_of_differentiableOn

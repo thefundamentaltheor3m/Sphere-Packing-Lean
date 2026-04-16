@@ -220,7 +220,7 @@ public lemma H₄_negI_action : (H₄ ∣[(2:ℤ)] negI.1) = H₄ := modular_sla
     simp_rw [Θ₂, Θ₂_term]
     congr 1
     refine tsum_congr fun b ↦ ?_
-    have : Even (b ^ 2 + b) := (by ring : b ^ 2 + b = b * (b + 1)) ▸ Int.even_mul_succ_self b
+    have : Even (b ^ 2 + b) := by simp [parity_simps]
     norm_cast
     rw [Complex.exp_add, mul_comm (π * I), Complex.exp_int_mul, Complex.exp_pi_mul_I,
       this.neg_one_zpow, one_mul]
@@ -527,9 +527,9 @@ public theorem isBoundedAtImInfty_H₂ : IsBoundedAtImInfty H₂ := by
     apply Real.exp_monotone
     nlinarith [mul_le_mul_of_nonpos_left hz (neg_nonpos.mpr (by positivity :
       0 ≤ π * ((↑n + 2⁻¹) ^ 2)))]
-  exact ((by simpa [Θ₂] using norm_tsum_le_tsum_norm (summable_Θ₂_term z).norm :
-    ‖Θ₂ z‖ ≤ _)).trans (Summable.tsum_le_tsum hterm_le (summable_Θ₂_term z).norm
-      summable_exp_neg_pi_mul_int_add_half_sq)
+  refine ((?_ : ‖Θ₂ z‖ ≤ _)).trans (Summable.tsum_le_tsum hterm_le (summable_Θ₂_term z).norm
+                                  summable_exp_neg_pi_mul_int_add_half_sq)
+  simpa [Θ₂] using norm_tsum_le_tsum_norm (summable_Θ₂_term z).norm
 
 -- We isolate this lemma out as it's also used in the proof for Θ₄
 lemma isBoundedAtImInfty_H₃_aux (z : ℍ) (hz : 1 ≤ z.im) :
