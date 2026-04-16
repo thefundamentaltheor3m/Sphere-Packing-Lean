@@ -10,6 +10,7 @@ module
 -- import Mathlib
 
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
+public import SpherePacking.MagicFunction.Common.SchwartzAssembly
 public import SpherePacking.MagicFunction.a.Basic
 
 import Mathlib.Analysis.Calculus.ContDiff.Bounds
@@ -323,11 +324,9 @@ open RadialSchwartz.Bridge
 end MagicFunction.a.SchwartzIntegrals
 namespace MagicFunction.FourierEigenfunctions
 
-/--
-The radial profile of the `+1` Fourier eigenfunction `a`.
+open SchwartzMap MagicFunction.Common
 
-The prime indicates that this is a function of the real parameter `r = ‖x‖^2`.
--/
+/-- The radial profile of the `+1` Fourier eigenfunction `a`. -/
 @[expose] public def a' : 𝓢(ℝ, ℂ) :=
     MagicFunction.a.SchwartzIntegrals.I₁'
   + MagicFunction.a.SchwartzIntegrals.I₂'
@@ -349,16 +348,12 @@ public theorem a_eq_sum_integrals_RadialFunctions : a =
   + MagicFunction.a.RadialFunctions.I₅
   + MagicFunction.a.RadialFunctions.I₆ := by
   ext x
-  have hr : 0 ≤ (‖x‖ ^ 2) := sq_nonneg ‖x‖
+  have hr : 0 ≤ ‖x‖ ^ 2 := sq_nonneg ‖x‖
   simp [a, a', MagicFunction.a.RadialFunctions.I₁, MagicFunction.a.RadialFunctions.I₂,
     MagicFunction.a.RadialFunctions.I₃, MagicFunction.a.RadialFunctions.I₄,
-    MagicFunction.a.RadialFunctions.I₅, MagicFunction.a.RadialFunctions.I₆,
-    schwartzMap_multidimensional_of_schwartzMap_real, SchwartzMap.add_apply,
-    hr, add_assoc]
+    MagicFunction.a.RadialFunctions.I₅, MagicFunction.a.RadialFunctions.I₆, hr, add_assoc]
 
-/--
-Expand `a` as the sum of the six defining integrals from `MagicFunction.a.SchwartzIntegrals`.
--/
+/-- Expand `a` as the sum of the six Schwartz integrals. -/
 public theorem a_eq_sum_integrals_SchwartzIntegrals : a =
     MagicFunction.a.SchwartzIntegrals.I₁
   + MagicFunction.a.SchwartzIntegrals.I₂
