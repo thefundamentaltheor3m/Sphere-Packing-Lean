@@ -32,3 +32,26 @@ attribute [fun_prop]
   mdifferentiable_const
   E₄_MDifferentiable
   E₆_MDifferentiable
+
+-- Lambda forms of MDifferentiable lemmas: fun_prop needs these to match value-level operations
+-- inside lambdas, since the base lemmas use function-level operators (Pi instances).
+section MDifferentiableLambda
+
+variable
+  {𝕜 : Type*} [NontriviallyNormedField 𝕜]
+  {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
+  {H : Type*} [TopologicalSpace H] {I : ModelWithCorners 𝕜 E H}
+  {M : Type*} [TopologicalSpace M] [ChartedSpace H M]
+  {F' : Type*} [NormedRing F'] [NormedAlgebra 𝕜 F']
+
+@[fun_prop]
+theorem MDifferentiable.hMul {f g : M → F'}
+    (hf : MDifferentiable I 𝓘(𝕜, F') f) (hg : MDifferentiable I 𝓘(𝕜, F') g) :
+    MDifferentiable I 𝓘(𝕜, F') (fun x => f x * g x) := hf.mul hg
+
+@[fun_prop]
+theorem MDifferentiable.hPow {f : M → F'}
+    (hf : MDifferentiable I 𝓘(𝕜, F') f) (n : ℕ) :
+    MDifferentiable I 𝓘(𝕜, F') (fun x => f x ^ n) := hf.pow n
+
+end MDifferentiableLambda
