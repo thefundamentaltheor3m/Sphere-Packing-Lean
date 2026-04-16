@@ -117,6 +117,20 @@ public lemma fCut_decay (f : ℝ → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
   smooth' := fCut_contDiff f hf
   decay' := fCut_decay f hf hf_decay
 
+/-- On `0 ≤ r`, `fCut f` agrees with `f`. -/
+public lemma fCut_apply_of_nonneg (f : ℝ → ℂ) {r : ℝ} (hr : 0 ≤ r) :
+    fCut f r = f r := by
+  simp [fCut, hr]
+
+/-- On `0 ≤ r`, `fCutSchwartz f` agrees with `f`. -/
+@[simp] public lemma fCutSchwartz_apply_of_nonneg (f : ℝ → ℂ)
+    (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+    (hf_decay : ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
+      ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C)
+    (r : ℝ) (hr : 0 ≤ r) :
+    (fCutSchwartz f hf hf_decay : ℝ → ℂ) r = f r :=
+  fCut_apply_of_nonneg f hr
+
 end Bridge
 
 end

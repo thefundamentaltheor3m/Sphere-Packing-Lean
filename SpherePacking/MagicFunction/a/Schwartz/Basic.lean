@@ -296,45 +296,29 @@ open RadialSchwartz.Bridge
 @[expose] public def I₆ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
   schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) I₆'
 
-private lemma fCut_apply_of_nonneg (f : ℝ → ℂ) {r : ℝ} (hr : 0 ≤ r) :
-    RadialSchwartz.Bridge.fCut f r = f r := by
-  simp [RadialSchwartz.Bridge.fCut, hr]
+@[simp] public lemma I₁'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
+    (I₁' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₁' r :=
+  fCut_apply_of_nonneg _ hr
 
-/-- On `r ≥ 0`, the cutoff is `1`, so `I₁'` agrees with `RealIntegrals.I₁'`. -/
-@[simp]
-public lemma I₁'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (I₁' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₁' r := by
-  simpa [I₁', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.I₁') hr
+@[simp] public lemma I₂'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
+    (I₂' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₂' r :=
+  fCut_apply_of_nonneg _ hr
 
-/-- On `r ≥ 0`, the cutoff is `1`, so `I₂'` agrees with `RealIntegrals.I₂'`. -/
-@[simp]
-public lemma I₂'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (I₂' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₂' r := by
-  simpa [I₂', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.I₂') hr
+@[simp] public lemma I₃'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
+    (I₃' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₃' r :=
+  fCut_apply_of_nonneg _ hr
 
-/-- On `r ≥ 0`, the cutoff is `1`, so `I₃'` agrees with `RealIntegrals.I₃'`. -/
-@[simp]
-public lemma I₃'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (I₃' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₃' r := by
-  simpa [I₃', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.I₃') hr
+@[simp] public lemma I₄'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
+    (I₄' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₄' r :=
+  fCut_apply_of_nonneg _ hr
 
-/-- On `r ≥ 0`, the cutoff is `1`, so `I₄'` agrees with `RealIntegrals.I₄'`. -/
-@[simp]
-public lemma I₄'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (I₄' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₄' r := by
-  simpa [I₄', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.I₄') hr
+@[simp] public lemma I₅'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
+    (I₅' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₅' r :=
+  fCut_apply_of_nonneg _ hr
 
-/-- On `r ≥ 0`, the cutoff is `1`, so `I₅'` agrees with `RealIntegrals.I₅'`. -/
-@[simp]
-public lemma I₅'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (I₅' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₅' r := by
-  simpa [I₅', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.I₅') hr
-
-/-- On `r ≥ 0`, the cutoff is `1`, so `I₆'` agrees with `RealIntegrals.I₆'`. -/
-@[simp]
-public lemma I₆'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (I₆' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₆' r := by
-  simpa [I₆'] using fCut_apply_of_nonneg (f := RealIntegrals.I₆') hr
+@[simp] public lemma I₆'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
+    (I₆' : ℝ → ℂ) r = MagicFunction.a.RealIntegrals.I₆' r :=
+  fCut_apply_of_nonneg _ hr
 
 end MagicFunction.a.SchwartzIntegrals
 namespace MagicFunction.FourierEigenfunctions
