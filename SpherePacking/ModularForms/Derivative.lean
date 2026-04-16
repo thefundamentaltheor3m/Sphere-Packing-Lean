@@ -990,8 +990,6 @@ lemma tendsto_serre_D_E₆_atImInfty :
   simpa [this] using tendsto_serre_D_of_bounded_tendsto_one (k := (6 : ℂ)) E₆.holo'
     (ModularFormClass.bdd_at_infty E₆) hE₆
 
-noncomputable abbrev serreD_modularForm := @serre_D_ModularForm
-
 lemma eq_zero_of_tendsto_zero_atImInfty {k : ℤ} (hk : k < 12) (G : ModularForm Γ(1) k)
     (hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ))) : G = 0 := by
   refine IsCuspForm_weight_lt_eq_zero k hk G <|
@@ -1150,7 +1148,7 @@ public theorem ramanujan_E₂' : serre_D 1 E₂ = - 12⁻¹ * E₄.toFun := by
   exact hz'
 
 public theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun := by
-  let F₆ : ModularForm Γ(1) 6 := serreD_modularForm 4 E₄
+  let F₆ : ModularForm Γ(1) 6 := serre_D_ModularForm 4 E₄
   let G : ModularForm Γ(1) 6 := F₆ + (3⁻¹ : ℂ) • E₆
   have hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ)) := by
     have hF₆ : Tendsto (fun z : ℍ => F₆ z) atImInfty (𝓝 (-(3⁻¹ : ℂ))) := by
@@ -1167,7 +1165,7 @@ public theorem ramanujan_E₄' : serre_D 4 E₄.toFun = - 3⁻¹ * E₆.toFun :=
   simpa [F₆, serre_D_ModularForm, neg_mul, mul_assoc] using hz
 
 public theorem ramanujan_E₆' : serre_D 6 E₆.toFun = - 2⁻¹ * E₄.toFun * E₄.toFun := by
-  let F₈ : ModularForm Γ(1) 8 := serreD_modularForm 6 E₆
+  let F₈ : ModularForm Γ(1) 8 := serre_D_ModularForm 6 E₆
   let E4sq : ModularForm Γ(1) 8 := E₄.mul E₄
   let G : ModularForm Γ(1) 8 := F₈ + (2⁻¹ : ℂ) • E4sq
   have hGlim : Tendsto (fun z : ℍ => G z) atImInfty (𝓝 (0 : ℂ)) := by
