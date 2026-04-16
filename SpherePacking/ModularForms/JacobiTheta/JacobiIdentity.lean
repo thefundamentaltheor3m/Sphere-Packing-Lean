@@ -47,9 +47,7 @@ lemma jacobi_g_T_action : (jacobi_g ∣[(2 : ℤ)] T) = -jacobi_g := by
   ext z; simp only [Pi.add_apply, Pi.neg_apply]; ring
 
 /-- Rewrite `jacobi_f` as a pointwise product. -/
-lemma jacobi_f_eq_mul : jacobi_f = jacobi_g * jacobi_g := by
-  ext
-  simp [jacobi_f, sq]
+lemma jacobi_f_eq_mul : jacobi_f = jacobi_g * jacobi_g := sq jacobi_g
 
 /-- S-invariance of `f`: `f|[4]S = f`, because `g|[2]S = -g`. -/
 lemma jacobi_f_S_action : (jacobi_f ∣[(4 : ℤ)] S) = jacobi_f := by
@@ -70,17 +68,8 @@ noncomputable def jacobi_f_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1)
   toFun := jacobi_f
   slash_action_eq' := slashaction_generators_GL2R jacobi_f 4 jacobi_f_S_action jacobi_f_T_action
 
-/-- `jacobi_g` is holomorphic since `H₂`, `H₃`, and `H₄` are. -/
-lemma jacobi_g_MDifferentiable : MDiff jacobi_g := by
-  unfold jacobi_g
-  fun_prop
-
 /-- `jacobi_f` is holomorphic since `jacobi_g` is. -/
-lemma jacobi_f_MDifferentiable : MDiff jacobi_f := by
-  unfold jacobi_f jacobi_g; fun_prop
-
-/-- `jacobi_f_SIF` is holomorphic. -/
-lemma jacobi_f_SIF_MDifferentiable : MDiff jacobi_f_SIF := jacobi_f_MDifferentiable
+lemma jacobi_f_MDifferentiable : MDiff jacobi_f := by unfold jacobi_f jacobi_g; fun_prop
 
 end JacobiIdentity
 
@@ -107,8 +96,7 @@ theorem jacobi_f_tendsto_atImInfty : Tendsto jacobi_f atImInfty (𝓝 0) := by
   tendsto_cont
 
 private noncomputable def jacobi_f_CF : CuspForm (Γ 1) 4 :=
-  cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_SIF_MDifferentiable
-    jacobi_f_tendsto_atImInfty
+  cuspFormOfSIFTendstoZero jacobi_f_SIF jacobi_f_MDifferentiable jacobi_f_tendsto_atImInfty
 
 /-- `jacobi_f = 0` by dimension argument: weight-4 cusp forms vanish. -/
 theorem jacobi_f_eq_zero : jacobi_f = 0 :=
@@ -141,9 +129,7 @@ private lemma theta_prod_T_action : (theta_prod ∣[(6 : ℤ)] T) = -theta_prod 
 
 private noncomputable def theta_prod_sq : ℍ → ℂ := (H₂ * H₃ * H₄) ^ 2
 
-private lemma theta_prod_sq_eq_mul : theta_prod_sq = theta_prod * theta_prod := by
-  ext z
-  simp [theta_prod_sq, theta_prod, sq, Pi.mul_apply]
+private lemma theta_prod_sq_eq_mul : theta_prod_sq = theta_prod * theta_prod := sq theta_prod
 
 private lemma theta_prod_sq_S_action : (theta_prod_sq ∣[(12 : ℤ)] S) = theta_prod_sq := by
   rw [theta_prod_sq_eq_mul, (by norm_num : (12 : ℤ) = 6 + 6),
@@ -192,21 +178,14 @@ private lemma theta_prod_sq_proportional :
     ∃ c : ℂ, c • Delta = theta_prod_sq_CF :=
   (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).mp finrank_cuspform_12 theta_prod_sq_CF
 
-private lemma Θ₂_div_exp_tendsto :
-    Tendsto (fun z : ℍ ↦ Θ₂ z / cexp (π * I * ↑z / 4)) atImInfty (nhds 2) := by
-  simp_rw [Θ₂_as_jacobiTheta₂, mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
-  exact jacobiTheta₂_half_mul_apply_tendsto_atImInfty
-
 private lemma H₂_div_exp_tendsto :
     Tendsto (fun z : ℍ ↦ H₂ z / cexp (↑π * I * ↑z)) atImInfty (nhds 16) := by
   have h_eq : ∀ z : ℍ, H₂ z / cexp (↑π * I * ↑z) = (jacobiTheta₂ (↑z / 2) ↑z) ^ 4 := by
     intro z
-    rw [H₂, Θ₂_as_jacobiTheta₂, mul_pow]
-    have he : cexp (↑π * I * ↑z / 4) ^ 4 = cexp (↑π * I * ↑z) := by
-      rw [← Complex.exp_nat_mul]
-      congr 1
-      ring
-    rw [he, mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
+    rw [H₂, Θ₂_as_jacobiTheta₂, mul_pow,
+      show cexp (↑π * I * ↑z / 4) ^ 4 = cexp (↑π * I * ↑z) from by
+        rw [← Complex.exp_nat_mul]; ring_nf,
+      mul_div_cancel_left₀ _ (Complex.exp_ne_zero _)]
   simp_rw [h_eq]
   convert jacobiTheta₂_half_mul_apply_tendsto_atImInfty.pow 4 using 1; norm_num
 
@@ -227,11 +206,9 @@ lemma Delta_eq_H₂_H₃_H₄ : (Delta : ℍ → ℂ) = (1 / 256 : ℂ) • (H�
       have h_rewrite : ∀ z : ℍ, theta_prod_sq z / cexp (2 * ↑π * I * ↑z) =
           (H₂ z / cexp (↑π * I * ↑z)) ^ 2 * (H₃ z) ^ 2 * (H₄ z) ^ 2 := by
         intro z
-        have hq : cexp (2 * ↑π * I * ↑z) = cexp (↑π * I * ↑z) ^ 2 := by
-          rw [← Complex.exp_nat_mul]
-          ring_nf
         simp only [theta_prod_sq, Pi.mul_apply, Pi.pow_apply]
-        rw [hq]
+        rw [show cexp (2 * ↑π * I * ↑z) = cexp (↑π * I * ↑z) ^ 2 from by
+          rw [← Complex.exp_nat_mul]; ring_nf]
         field_simp
       simp_rw [h_rewrite]
       have : (256 : ℂ) = 16 ^ 2 * 1 ^ 2 * 1 ^ 2 := by norm_num
