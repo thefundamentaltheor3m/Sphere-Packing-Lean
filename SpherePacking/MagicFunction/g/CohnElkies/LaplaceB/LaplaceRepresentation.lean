@@ -1,6 +1,7 @@
 module
 public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.Basic
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
+public import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 import SpherePacking.MagicFunction.g.CohnElkies.LaplaceB.ContourIdentities
@@ -165,12 +166,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
             (Cψ * Real.exp (2 * π * t)) * Real.exp (-π * u * t) :=
         mul_le_mul_of_nonneg_right hψT_norm (le_of_lt (Real.exp_pos _))
       refine le_trans hmul (le_of_eq ?_)
-      calc
-        (Cψ * Real.exp (2 * π * t)) * Real.exp (-π * u * t) =
-            Cψ * (Real.exp (2 * π * t) * Real.exp (-π * u * t)) := by ring_nf
-        _ = Cψ * Real.exp (2 * π * t + (-π * u * t)) := by
-            simp [Real.exp_add, mul_assoc]
-        _ = Cψ * Real.exp (-(π * (u - 2)) * t) := by ring_nf
+      rw [mul_assoc, MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul]
     have hpos : 0 < π * (u - 2) := by
       have : 0 < u - 2 := sub_pos.2 hu
       exact mul_pos Real.pi_pos this
