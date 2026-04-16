@@ -3,10 +3,8 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Paramet
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.APrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReps.ACDomain
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.ContinuationCommon
-public import Mathlib.Analysis.Analytic.IsolatedZeros
+public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.ContinuationGeneric
 public import Mathlib.Analysis.Analytic.Composition
-public import Mathlib.Analysis.Normed.Module.Connected
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 
 
@@ -164,83 +162,23 @@ public theorem aRadial_eq_another_integral_analytic_continuation_of_gt2
             (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
             (18144 : ℂ) / (π ^ (3 : ℕ) * u) +
               ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t) := by
-  -- Upgrade the `u > 2` real-axis equality to an equality of analytic functions on `ACDomain`,
-  -- then restrict back to the real axis.
-  have h3_mem : (3 : ℂ) ∈ ACDomain := by
-    refine ⟨?_, ?_⟩
-    · simp [rightHalfPlane]
-    · simp
-  -- Analytic extension of `a'` on `ACDomain`.
-  rcases exists_a'_analytic_extension with ⟨f, hf_analytic, hf_ofReal⟩
-  -- Convert the known identity on real `u > 2` (from `AnotherIntegral/A/Main.lean`)
-  -- into equality of the analytic functions `f` and `aAnotherRHS` near `3`.
-  have hf_gt2 : ∀ r : ℝ, 2 < r → f (r : ℂ) = aAnotherRHS (r : ℂ) := by
-    intro r hr
-    have hr0 : 0 < r := lt_trans (by norm_num) hr
-    have hr2 : r ≠ 2 := by linarith
-    -- Left side: `f` restricts to `a'`.
-    have hf_r : f (r : ℂ) = a' r := by
-      simpa using hf_ofReal r hr0 hr2
-    -- Right side: `aAnotherRHS` restricts to the blueprint RHS.
-    have hRHS_r :
-        aAnotherRHS (r : ℂ) =
-          (4 * (Complex.I : ℂ)) *
-            (Real.sin (π * r / 2)) ^ (2 : ℕ) *
-              ((36 : ℂ) / (π ^ (3 : ℕ) * (r - 2)) -
-                (8640 : ℂ) / (π ^ (3 : ℕ) * r ^ (2 : ℕ)) +
-                (18144 : ℂ) / (π ^ (3 : ℕ) * r) +
-                  ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand r t) := by
-      -- Unfold `aAnotherRHS` and rewrite `sin` and `aAnotherIntegralC` on real arguments.
-      have hsin :
-          (Complex.sin ((π : ℂ) * (r : ℂ) / 2)) ^ (2 : ℕ) =
-            ((Real.sin (π * r / 2)) ^ (2 : ℕ) : ℂ) := by
-        -- `Complex.sin (x : ℂ)` agrees with `Real.sin` for real `x`.
-        simp
-      have hI : aAnotherIntegralC (r : ℂ) = ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand r t := by
-        simpa using aAnotherIntegralC_ofReal r
-      -- Put everything together.
-      simp [aAnotherRHS, hsin, hI]
-    -- Use the supplied real-axis identity for `r > 2`.
-    have ha_gt2 := h_gt2 r hr
-    -- Assemble.
-    simpa [hf_r] using (hf_r.trans (ha_gt2.trans hRHS_r.symm))
-  have hfreq : (∃ᶠ z in 𝓝[≠] (3 : ℂ), f z = aAnotherRHS z) :=
-    frequently_eq_near_three hf_gt2
-  have hEqOn : Set.EqOn f aAnotherRHS ACDomain :=
-    AnalyticOnNhd.eqOn_of_preconnected_of_frequently_eq hf_analytic aAnotherRHS_analyticOnNhd
-      ACDomain_isPreconnected h3_mem hfreq
-  have hu_mem : (u : ℂ) ∈ ACDomain := by
-    refine ⟨?_, ?_⟩
-    · -- `0 < Re (u : ℂ)` is `0 < u`.
-      simpa [rightHalfPlane] using hu
-    · -- `u ≠ 2`.
-      -- Cast `u ≠ 2` from `ℝ` to `ℂ`.
-      have : (u : ℂ) ≠ (2 : ℂ) := by exact_mod_cast hu2
-      simpa using this
-  have hmain : f (u : ℂ) = aAnotherRHS (u : ℂ) := hEqOn hu_mem
-  -- Rewrite the LHS (`f`) and RHS (`aAnotherRHS`) back to the target real statement.
-  have hf_u : f (u : ℂ) = a' u := by
-    simpa using hf_ofReal u hu hu2
-  have hRHS_u :
-      aAnotherRHS (u : ℂ) =
-        (4 * (Complex.I : ℂ)) *
-          (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-              (18144 : ℂ) / (π ^ (3 : ℕ) * u) +
-                ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t) := by
+  -- Reformulate h_gt2 in terms of aAnotherRHS for the generic wrapper.
+  let rhsR := fun r : ℝ =>
+    (4 * (Complex.I : ℂ)) *
+      (Real.sin (π * r / 2)) ^ (2 : ℕ) *
+        ((36 : ℂ) / (π ^ (3 : ℕ) * (r - 2)) -
+          (8640 : ℂ) / (π ^ (3 : ℕ) * r ^ (2 : ℕ)) +
+          (18144 : ℂ) / (π ^ (3 : ℕ) * r) +
+            ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand r t)
+  have h_rhs_eq : ∀ r : ℝ, aAnotherRHS (r : ℂ) = rhsR r := fun r => by
     have hsin :
-        (Complex.sin ((π : ℂ) * (u : ℂ) / 2)) ^ (2 : ℕ) =
-          ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) := by
-      simp
-    have hI : aAnotherIntegralC (u : ℂ) = ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t := by
-      simpa using aAnotherIntegralC_ofReal u
-    simp [aAnotherRHS, hsin, hI]
-  -- Finish.
-  have : a' u = aAnotherRHS (u : ℂ) := by
-    -- Convert `f` back to `a'` on the real axis.
-    simpa [hf_u] using (hf_u.symm.trans hmain)
-  simpa using this.trans hRHS_u
+        (Complex.sin ((π : ℂ) * (r : ℂ) / 2)) ^ (2 : ℕ) =
+          ((Real.sin (π * r / 2)) ^ (2 : ℕ) : ℂ) := by simp
+    have hI : aAnotherIntegralC (r : ℂ) = ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand r t := by
+      simpa using aAnotherIntegralC_ofReal r
+    simp only [aAnotherRHS, hsin, hI, rhsR]
+  exact analytic_continuation_of_gt2 exists_a'_analytic_extension aAnotherRHS_analyticOnNhd
+    h_rhs_eq h_gt2 hu hu2
 
 end
 

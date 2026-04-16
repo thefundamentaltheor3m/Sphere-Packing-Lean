@@ -3,10 +3,8 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.Paramet
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.BPrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReps.ACDomain
-public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.ContinuationCommon
-public import Mathlib.Analysis.Analytic.IsolatedZeros
+public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.ContinuationGeneric
 public import Mathlib.Analysis.Analytic.Composition
-public import Mathlib.Analysis.Normed.Module.Connected
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 
 
@@ -157,31 +155,15 @@ public theorem bRadial_eq_another_integral_analytic_continuation_of_gt2
           ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) +
             ∫ t in Set.Ioi (0 : ℝ),
               bAnotherBase t * (Real.exp (-π * u * t) : ℂ)) := by
-  have h3_mem : (3 : ℂ) ∈ ACDomain := by
-    simp [ACDomain, rightHalfPlane]
-  rcases exists_b'_analytic_extension with ⟨f, hf_analytic, hf_ofReal⟩
-  have hf_gt2 : ∀ r : ℝ, 2 < r → f (r : ℂ) = bAnotherRHS (r : ℂ) := by
-    intro r hr
-    have hr0 : 0 < r := lt_trans (by norm_num) hr
-    have hr2 : r ≠ 2 := by linarith
-    have hf_r : f (r : ℂ) = b' r := by simpa using hf_ofReal r hr0 hr2
-    exact (hf_r.trans (h_gt2 r hr)).trans (bAnotherRHS_ofReal r).symm
-  have hfreq : (∃ᶠ z in 𝓝[≠] (3 : ℂ), f z = bAnotherRHS z) :=
-    frequently_eq_near_three hf_gt2
-  have hEqOn : Set.EqOn f bAnotherRHS ACDomain :=
-    AnalyticOnNhd.eqOn_of_preconnected_of_frequently_eq hf_analytic bAnotherRHS_analyticOnNhd
-      ACDomain_isPreconnected h3_mem hfreq
-  have hu_mem : (u : ℂ) ∈ ACDomain := by
-    refine ⟨?_, ?_⟩
-    · simpa [rightHalfPlane] using hu
-    · have : (u : ℂ) ≠ (2 : ℂ) := by exact_mod_cast hu2
-      simpa [ACDomain, Set.mem_singleton_iff] using this
-  have hmain : f (u : ℂ) = bAnotherRHS (u : ℂ) := hEqOn hu_mem
-  have hf_u : f (u : ℂ) = b' u := by
-    simpa using hf_ofReal u hu hu2
-  have : b' u = bAnotherRHS (u : ℂ) := by
-    simpa [hf_u] using (hf_u.symm.trans hmain)
-  simpa using this.trans (bAnotherRHS_ofReal u)
+  -- Reformulate h_gt2 in terms of bAnotherRHS_ofReal for the generic wrapper.
+  let rhsR := fun r : ℝ =>
+    (-4 * (Complex.I : ℂ)) *
+      (Real.sin (π * r / 2)) ^ (2 : ℕ) *
+        ((144 : ℂ) / (π * r) + (1 : ℂ) / (π * (r - 2)) +
+          ∫ t in Set.Ioi (0 : ℝ), bAnotherBase t * (Real.exp (-π * r * t) : ℂ))
+  have h_rhs_eq : ∀ u : ℝ, bAnotherRHS (u : ℂ) = rhsR u := bAnotherRHS_ofReal
+  exact analytic_continuation_of_gt2 exists_b'_analytic_extension bAnotherRHS_analyticOnNhd
+    h_rhs_eq h_gt2 hu hu2
 
 end
 
