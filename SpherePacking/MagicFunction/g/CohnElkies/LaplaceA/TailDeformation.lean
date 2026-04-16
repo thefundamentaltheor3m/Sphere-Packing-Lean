@@ -108,7 +108,7 @@ lemma norm_Φ₂'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
   have hExpRew :
       Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (-a * t) := by
     simpa [a, mul_assoc, mul_left_comm, mul_comm] using
-      (MagicFunction.g.CohnElkies.IntegralReps.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t))
+      (MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t))
   have hdef :
       Φ₂' u ((x : ℂ) + (t : ℂ) * Complex.I) =
         (φ₀'' ((-1 : ℂ) / (w)) * (w ^ (2 : ℕ))) *
@@ -216,7 +216,7 @@ lemma norm_Φ₄'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
   have hExpRew :
       Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (-a * t) := by
     simpa [a, mul_assoc, mul_left_comm, mul_comm] using
-      (MagicFunction.g.CohnElkies.IntegralReps.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t))
+      (MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t))
   have hdef :
       Φ₄' u ((x : ℂ) + (t : ℂ) * Complex.I) =
         (φ₀'' ((-1 : ℂ) / (w)) * (w ^ (2 : ℕ))) *

@@ -49,11 +49,10 @@ public lemma integral_mul_exp_neg_pi_mul_Ioi {u : ℝ} (hu : 0 < u) :
   simpa [mul_assoc] using
     (integral_mul_exp_neg_mul_Ioi (a := π * u) (by positivity [Real.pi_pos, hu]))
 
-/-- Algebraic identity: `exp(2πt) * exp(-πut) = exp(-(π(u-2))t)`. -/
+/-- Algebraic identity: `exp(2πt) · exp(-πut) = exp(-(π(u-2))t)`. -/
 public lemma exp_two_pi_mul_mul_exp_neg_pi_mul (u t : ℝ) :
     Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (-(π * (u - 2)) * t) := by
-  rw [← Real.exp_add]
-  congr 1; ring
+  rw [← Real.exp_add]; congr 1; ring
 
 /-- Evaluate `∫ exp(2π t) * exp(-π u t)` over `t ∈ (0, ∞)` (for `2 < u`). -/
 public lemma integral_exp_two_pi_mul_exp_neg_pi_mul_Ioi {u : ℝ} (hu : 2 < u) :

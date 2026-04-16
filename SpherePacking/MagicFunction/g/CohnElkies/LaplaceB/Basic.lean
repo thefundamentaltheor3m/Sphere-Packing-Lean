@@ -320,7 +320,8 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         have hψI'0 : ‖ψI z‖ ≤ CI * Real.exp (2 * π * t) := by
           simpa [z, UpperHalfPlane.im] using hψI
         simpa [hval] using hψI'0
-      have hcomb := exp_two_pi_mul_mul_exp_neg_pi_mul u t
+      have hcomb :=
+        MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul u t
       have hnorm :
           ‖bLaplaceIntegrand u t‖ =
             ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ := by
