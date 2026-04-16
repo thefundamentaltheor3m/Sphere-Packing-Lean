@@ -141,10 +141,9 @@ theorem MLDE_F : serre_D 12 (serre_D 10 F) =
 /-- Δ_fun expressed in terms of theta functions. -/
 private lemma Δ_fun_theta :
     Δ_fun = (1 / 256 : ℂ) • ((H₂ * (H₂ + H₄) * H₄) ^ 2) := by
-  ext z
-  rw [congrFun Δ_fun_eq_Δ z, ← Delta_apply, Delta_eq_H₂_H₃_H₄ z, ← jacobi_identity]
-  simp [Pi.add_apply, Pi.mul_apply, Pi.pow_apply, Pi.smul_apply, smul_eq_mul]
-  ring
+  rw [jacobi_identity]
+  ext z; rw [congrFun Δ_fun_eq_Δ z, ← Delta_apply]
+  exact congrFun Delta_eq_H₂_H₃_H₄ z
 
 private lemma serre_D_10_G : serre_D 10 G = (5/3 : ℂ) • (H₂ ^ 3 * ((H₂ + H₄) ^ 3 + H₄ ^ 3)) := by
   rw [G_eq]
