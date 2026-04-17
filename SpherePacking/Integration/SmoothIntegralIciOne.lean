@@ -100,26 +100,15 @@ public lemma hasDerivAt_integral_gN
       simp [this]
     have hhf : ‖hf t‖ ≤ C * Real.exp (-(Real.pi * shift) * t) := hC t ht
     have hg : ‖g (hf := hf) y t‖ ≤ C * Real.exp (-(Real.pi * (y + shift)) * t) := by
-      have hg' : ‖g (hf := hf) y t‖ ≤ ‖hf t‖ * Real.exp (-Real.pi * y * t) :=
-        g_norm_bound (hf := hf) (x := y) (t := t)
+      have hg' := g_norm_bound (hf := hf) (x := y) (t := t)
       have hexp :
           Real.exp (-(Real.pi * shift) * t) * Real.exp (-Real.pi * y * t) =
             Real.exp (-(Real.pi * (y + shift)) * t) := by
-        have harg :
-            (-(Real.pi * (y + shift)) * t) =
-              (-(Real.pi * shift) * t) + (-Real.pi * y * t) := by ring_nf
-        simp [harg, Real.exp_add, mul_comm]
+        rw [← Real.exp_add]; ring_nf
       calc
         ‖g (hf := hf) y t‖ ≤ ‖hf t‖ * Real.exp (-Real.pi * y * t) := hg'
         _ ≤ (C * Real.exp (-(Real.pi * shift) * t)) * Real.exp (-Real.pi * y * t) := by gcongr
-        _ = C * Real.exp (-(Real.pi * (y + shift)) * t) := by
-          calc
-            (C * Real.exp (-(Real.pi * shift) * t)) * Real.exp (-Real.pi * y * t)
-                =
-                C * (Real.exp (-(Real.pi * shift) * t) * Real.exp (-Real.pi * y * t)) := by
-                  ring_nf
-            _ = C * Real.exp (-(Real.pi * (y + shift)) * t) := by
-              rw [hexp]
+        _ = C * Real.exp (-(Real.pi * (y + shift)) * t) := by rw [mul_assoc, hexp]
     calc
       ‖gN (hf := hf) (n + 1) y t‖ = ‖coeff t‖ ^ (n + 1) * ‖g (hf := hf) y t‖ := by
             simp [gN, norm_pow]
