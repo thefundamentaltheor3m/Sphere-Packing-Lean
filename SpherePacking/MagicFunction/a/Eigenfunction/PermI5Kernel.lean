@@ -4,23 +4,23 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
 module
+
 public import SpherePacking.MagicFunction.a.Schwartz.Basic
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I5
+public import SpherePacking.ModularForms.PhiTransform
+
 import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.MagicFunction.a.Schwartz.DecayI1
-public import SpherePacking.ModularForms.PhiTransform
 import SpherePacking.ForMathlib.ExpNormSqDiv
 import SpherePacking.ForMathlib.GaussianFourierCommon
-
 import Mathlib.Analysis.InnerProductSpace.Continuous
 import Mathlib.Analysis.Complex.HasPrimitives
 import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 import Mathlib.MeasureTheory.Function.SpecialFunctions.Inner
 import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
-
 
 /-!
 # Kernels for `perm_I₅`
@@ -36,7 +36,6 @@ unfolding lemmas for the functions `I₁`, ..., `I₆`.
 ## Main statements
 * `aestronglyMeasurable_perm_I₅_kernel`
 -/
-
 
 namespace MagicFunction.a.Fourier
 
@@ -58,28 +57,16 @@ public lemma continuousOn_I₅_g :
     ContinuousOn
       (fun p : ℝ⁸ × ℝ ↦ MagicFunction.a.IntegralEstimates.I₅.g (‖p.1‖ ^ 2) p.2)
       (univ ×ˢ Ici (1 : ℝ)) := by
-  have hφ :
-      ContinuousOn (fun s : ℝ ↦ φ₀'' (I * (s : ℂ))) (Ici (1 : ℝ)) :=
-    MagicFunction.a.Schwartz.I1Decay.φ₀''_I_mul_continuousOn
-  have hzpow :
-      ContinuousOn (fun s : ℝ ↦ (s : ℂ) ^ (-4 : ℤ)) (Ici (1 : ℝ)) :=
-    MagicFunction.a.Schwartz.I1Decay.zpow_neg_four_continuousOn
   have hφ' :
-      ContinuousOn (fun p : ℝ⁸ × ℝ ↦ φ₀'' (I * (p.2 : ℂ))) (univ ×ˢ Ici (1 : ℝ)) := by
-    refine hφ.comp continuousOn_snd ?_
-    intro _ hp
-    exact (Set.mem_prod.mp hp).2
+      ContinuousOn (fun p : ℝ⁸ × ℝ ↦ φ₀'' (I * (p.2 : ℂ))) (univ ×ˢ Ici (1 : ℝ)) :=
+    MagicFunction.a.Schwartz.I1Decay.φ₀''_I_mul_continuousOn.comp continuousOn_snd
+      mapsTo_snd_prod
   have hzpow' :
-      ContinuousOn (fun p : ℝ⁸ × ℝ ↦ (p.2 : ℂ) ^ (-4 : ℤ)) (univ ×ˢ Ici (1 : ℝ)) := by
-    refine hzpow.comp continuousOn_snd ?_
-    intro _ hp
-    exact (Set.mem_prod.mp hp).2
-  have hconst : ContinuousOn (fun _ : ℝ⁸ × ℝ ↦ (-I : ℂ)) (univ ×ˢ Ici (1 : ℝ)) :=
-    continuousOn_const
-  refine
-      (((hconst.mul hφ').mul hzpow').mul
-            (SpherePacking.ForMathlib.continuousOn_exp_norm_sq_div (E := ℝ⁸))).congr ?_
-  intro p hp
+      ContinuousOn (fun p : ℝ⁸ × ℝ ↦ (p.2 : ℂ) ^ (-4 : ℤ)) (univ ×ˢ Ici (1 : ℝ)) :=
+    MagicFunction.a.Schwartz.I1Decay.zpow_neg_four_continuousOn.comp continuousOn_snd
+      mapsTo_snd_prod
+  refine ((((continuousOn_const (c := (-I : ℂ))).mul hφ').mul hzpow').mul
+      (SpherePacking.ForMathlib.continuousOn_exp_norm_sq_div (E := ℝ⁸))).congr fun p _ ↦ ?_
   simp [MagicFunction.a.IntegralEstimates.I₅.g, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
 
 /-- The phase factor `v ↦ exp(-2π i ⟪v, w⟫)` used in the kernel for `perm_I₅`. -/
@@ -88,8 +75,7 @@ public lemma continuousOn_I₅_g :
 
 /-- The product kernel used to rewrite the Fourier transform of `I₅` as an iterated integral. -/
 @[expose] public def permI5Kernel (w : ℝ⁸) : ℝ⁸ × ℝ → ℂ :=
-  fun p =>
-    permI5Phase w p.1 * MagicFunction.a.IntegralEstimates.I₅.g (‖p.1‖ ^ 2) p.2
+  fun p ↦ permI5Phase w p.1 * MagicFunction.a.IntegralEstimates.I₅.g (‖p.1‖ ^ 2) p.2
 
 /-- Measurability of `permI5Kernel` with respect to the product measure
 `volume × (volume.restrict (Ici 1))`. -/
@@ -97,32 +83,16 @@ public lemma aestronglyMeasurable_perm_I₅_kernel (w : ℝ⁸) :
     AEStronglyMeasurable
       (permI5Kernel w)
       ((volume : Measure ℝ⁸).prod ((volume : Measure ℝ).restrict (Ici (1 : ℝ)))) := by
-  have hphase :
-      ContinuousOn (fun p : ℝ⁸ × ℝ ↦ permI5Phase w p.1) (univ ×ˢ Ici (1 : ℝ)) := by
-    have hinner : Continuous fun p : ℝ⁸ × ℝ => (⟪p.1, w⟫ : ℝ) := by
-      simpa using (continuous_fst.inner continuous_const)
-    have harg :
-        Continuous fun p : ℝ⁸ × ℝ =>
-            (↑(((-2 : ℝ) * ((π : ℝ) * (⟪p.1, w⟫ : ℝ)))) : ℂ) * I :=
-      (Complex.continuous_ofReal.comp (continuous_const.mul (continuous_const.mul hinner))).mul
-        continuous_const
-    refine (harg.cexp.continuousOn).congr ?_
-    intro p hp
-    simp [permI5Phase]
+  have hphase : Continuous fun p : ℝ⁸ × ℝ ↦ permI5Phase w p.1 := by
+    unfold permI5Phase; fun_prop
   have hkernel : ContinuousOn (permI5Kernel w) (univ ×ˢ Ici (1 : ℝ)) := by
-    simpa [permI5Kernel] using (hphase.mul continuousOn_I₅_g)
-  have hmeas :
-      AEStronglyMeasurable
-        (permI5Kernel w)
-        (((volume : Measure ℝ⁸).prod (volume : Measure ℝ)).restrict (univ ×ˢ Ici (1 : ℝ))) :=
-    ContinuousOn.aestronglyMeasurable hkernel (MeasurableSet.univ.prod measurableSet_Ici)
-  have hμ :
-      (volume : Measure ℝ⁸).prod ((volume : Measure ℝ).restrict (Ici (1 : ℝ))) =
-        (((volume : Measure ℝ⁸).prod (volume : Measure ℝ)).restrict (univ ×ˢ Ici (1 : ℝ))) := by
+    simpa [permI5Kernel] using hphase.continuousOn.mul continuousOn_I₅_g
+  have hμ : (volume : Measure ℝ⁸).prod ((volume : Measure ℝ).restrict (Ici (1 : ℝ))) =
+      ((volume : Measure ℝ⁸).prod (volume : Measure ℝ)).restrict (univ ×ˢ Ici (1 : ℝ)) := by
     simpa [Measure.restrict_univ] using
-      (Measure.prod_restrict (μ := (volume : Measure ℝ⁸)) (ν := (volume : Measure ℝ))
-          (s := (univ : Set ℝ⁸)) (t := Ici (1 : ℝ)))
-  simpa [hμ] using hmeas
+      Measure.prod_restrict (μ := (volume : Measure ℝ⁸)) (ν := (volume : Measure ℝ))
+        (s := univ) (t := Ici (1 : ℝ))
+  simpa [hμ] using hkernel.aestronglyMeasurable (MeasurableSet.univ.prod measurableSet_Ici)
 
 /-- Unfolding lemma for `I₅` as a radial function in terms of `I₅'`. -/
 public lemma I₅_apply (x : ℝ⁸) :

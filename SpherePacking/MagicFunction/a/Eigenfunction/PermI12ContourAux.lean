@@ -2,11 +2,11 @@ module
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12WedgeDomain
 public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Prelude
 public import SpherePacking.Contour.MobiusInv.WedgeSet
-import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 public import SpherePacking.Contour.MobiusInv.LineMap
+
+import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
 import SpherePacking.ForMathlib.ScalarOneFormDiffContOnCl
 import SpherePacking.ForMathlib.ScalarOneFormFDeriv
-
 
 /-!
 # Auxiliary lemmas for `perm_I12_contour`
@@ -28,29 +28,22 @@ open Filter SpherePacking
 
 section Integral_Permutations
 
-local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
-
 private lemma diffContOnCl_Φ₃'_wedgeSet (r : ℝ) :
     DiffContOnCl ℝ (MagicFunction.a.ComplexIntegrands.Φ₃' r) wedgeSet := by
   refine ⟨?_, ?_⟩
-  · have h :=
-      (MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).differentiableOn (by simp)
-    exact h.mono wedgeSet_subset_upperHalfPlaneSet
+  · exact ((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).differentiableOn
+      (by simp)).mono wedgeSet_subset_upperHalfPlaneSet
   · intro z hz
     by_cases h1 : z = (1 : ℂ)
     · subst h1
       have hval : MagicFunction.a.ComplexIntegrands.Φ₃' r (1 : ℂ) = 0 := by
         simp [MagicFunction.a.ComplexIntegrands.Φ₃']
-      have htend := tendsto_Φ₃'_one_within_closure_wedgeSet (r := r)
       -- `ContinuousWithinAt` is `Tendsto` to the value at the point.
-      simpa [ContinuousWithinAt, hval] using htend
+      simpa [ContinuousWithinAt, hval] using tendsto_Φ₃'_one_within_closure_wedgeSet (r := r)
     · have hzU : z ∈ UpperHalfPlane.upperHalfPlaneSet :=
         mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hz h1
-      have hcontU :
-          ContinuousAt (MagicFunction.a.ComplexIntegrands.Φ₃' r) z :=
-        (MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).continuousOn.continuousAt
-          (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzU)
-      exact hcontU.continuousWithinAt
+      exact ((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).continuousOn.continuousAt
+        (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzU)).continuousWithinAt
 
 /-- The `1`-form built from `Φ₃'` is differentiable on `wedgeSet` with continuous extension. -/
 public lemma diffContOnCl_ω_wedgeSet (r : ℝ) :
@@ -65,17 +58,13 @@ public lemma fderivWithin_ω_wedgeSet_symm (r : ℝ) :
       fderivWithin ℝ (scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r)) wedgeSet x u v =
         fderivWithin ℝ (scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r))
           wedgeSet x v u := by
-  intro x hx u _ v _
-  let f : ℂ → ℂ := MagicFunction.a.ComplexIntegrands.Φ₃' r
+  intro x hx _ _ _ _
   have hxU : x ∈ UpperHalfPlane.upperHalfPlaneSet := wedgeSet_subset_upperHalfPlaneSet hx
-  have hfdiff :
-      DifferentiableAt ℂ f x :=
+  have hfdiff : DifferentiableAt ℂ (MagicFunction.a.ComplexIntegrands.Φ₃' r) x :=
     (MagicFunction.a.ComplexIntegrands.Φ₃'_holo (r := r)).differentiableAt
       (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hxU)
-  simpa [f] using
-    (SpherePacking.ForMathlib.fderivWithin_scalarOneForm_symm_of_isOpen
-      (f := f) (s := wedgeSet) isOpen_wedgeSet hx (hfdiff := hfdiff))
-
+  exact SpherePacking.ForMathlib.fderivWithin_scalarOneForm_symm_of_isOpen
+    (s := wedgeSet) isOpen_wedgeSet hx (hfdiff := hfdiff)
 
 end Integral_Permutations
 
