@@ -77,7 +77,7 @@ public import SpherePacking.ForMathlib.SpecificLimits
 public import SpherePacking.ForMathlib.UpperHalfPlane
 public import SpherePacking.ForMathlib.VolumeOfBalls
 public import SpherePacking.ForMathlib.ZLattice
-public import SpherePacking.ForMathlib.tprod
+public import SpherePacking.ForMathlib.Tprod
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 public import SpherePacking.Integration.EndpointIntegrability
 public import SpherePacking.Integration.FubiniIoc01
@@ -155,7 +155,7 @@ public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ4
 public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ5
 public import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
 public import SpherePacking.MagicFunction.b.SpecialValues
-public import SpherePacking.MagicFunction.b.psi
+public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.g.Basic
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.APrimeExtension
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.A.Cancellation.ImagAxis

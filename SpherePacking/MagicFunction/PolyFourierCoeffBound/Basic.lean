@@ -6,7 +6,7 @@ Authors: Sidharth Hariharan
 module
 
 public import SpherePacking.ForMathlib.SpecificLimits
-public import SpherePacking.ForMathlib.tprod
+public import SpherePacking.ForMathlib.Tprod
 public import SpherePacking.ModularForms.Eisenstein
 
 

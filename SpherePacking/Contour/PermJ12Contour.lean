@@ -1,6 +1,3 @@
-/-
-Shared contour deformation lemmas for the `perm_J12_contour_h1` / `perm_J12_contour_h2` identities.
--/
 module
 
 public import Mathlib.MeasureTheory.Integral.CurveIntegral.Poincare
@@ -10,6 +7,14 @@ public import SpherePacking.ForMathlib.ScalarOneForm
 
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
+
+/-!
+# Shared contour deformation lemmas for `J₁/J₂`
+
+Deformation lemmas underlying the `perm_J12_contour_h1` and `perm_J12_contour_h2` identities
+in the `b`-eigenfunction Fourier permutation proof. Packaged here to reuse between the two
+contours and to keep the topological hypotheses factored through `ClosedOneFormOn`.
+-/
 
 open MeasureTheory
 open MagicFunction

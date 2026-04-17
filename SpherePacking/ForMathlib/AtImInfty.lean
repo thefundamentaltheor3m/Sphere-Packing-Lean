@@ -3,11 +3,15 @@ module
 public import Mathlib.Analysis.Normed.Group.Tannery
 public import Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty
 
-@[expose] public section
+/-!
+# `atImInfty` filter helpers
 
-/-
-Probably put this at Analysis/Complex/UpperHalfPlane/FunctionsBoundedAtInfty.lean
+Unfolding lemmas for `UpperHalfPlane.atImInfty` (the filter of points with large imaginary part).
+Candidates for upstreaming to
+`Mathlib.Analysis.Complex.UpperHalfPlane.FunctionsBoundedAtInfty`.
 -/
+
+@[expose] public section
 
 /-- Unfold `∀ᶠ z in UpperHalfPlane.atImInfty, p z` into an explicit bound on the imaginary part. -/
 public lemma Filter.eventually_atImInfty {p : UpperHalfPlane → Prop} :

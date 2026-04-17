@@ -1,17 +1,3 @@
-/-
-Shared segment parametrisations for the `J₁/J₂` permutation developments.
-
-The dimension-specific `b`-eigenfunction developments use the same four vertical/horizontal segments
-in the upper half plane:
-
-* `z₁line`: `-1 → -1 + I`
-* `z₂line`: `-1 + I → I`
-* `z₃line`: `1 → 1 + I`
-* `z₄line`: `1 + I → I`
-
-We centralize their definitions and basic continuity/imag-part facts here to avoid duplicating
-boilerplate across developments.
--/
 module
 
 public import Mathlib.Analysis.Complex.Basic
@@ -19,6 +5,21 @@ public import Mathlib.Topology.Basic
 public import SpherePacking.MagicFunction.IntegralParametrisations
 
 public import Mathlib.LinearAlgebra.AffineSpace.AffineMap
+
+/-!
+# Shared segment parametrisations for the `J₁/J₂` permutation developments
+
+The dimension-specific `b`-eigenfunction developments use the same four vertical/horizontal
+segments in the upper half-plane:
+
+* `z₁line` : `-1 → -1 + I`
+* `z₂line` : `-1 + I → I`
+* `z₃line` : `1 → 1 + I`
+* `z₄line` : `1 + I → I`
+
+We centralize their definitions and basic continuity/imaginary-part facts here to avoid
+duplicating boilerplate across developments.
+-/
 
 open Set
 open scoped Interval Topology

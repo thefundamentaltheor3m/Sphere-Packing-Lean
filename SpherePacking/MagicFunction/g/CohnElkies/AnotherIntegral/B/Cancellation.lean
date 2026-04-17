@@ -1,5 +1,5 @@
 module
-public import SpherePacking.MagicFunction.b.psi
+public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 public import Mathlib.MeasureTheory.Integral.ExpDecay
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation

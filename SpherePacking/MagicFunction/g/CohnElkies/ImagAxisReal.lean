@@ -1,6 +1,6 @@
 module
 public import SpherePacking.ModularForms.EisensteinBase
-public import SpherePacking.MagicFunction.b.psi
+public import SpherePacking.MagicFunction.b.Psi
 import SpherePacking.ModularForms.Delta
 
 

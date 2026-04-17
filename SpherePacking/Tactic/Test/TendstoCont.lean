@@ -8,6 +8,14 @@ public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 
+/-!
+# Tests for the `tendsto_cont` tactic
+
+This file collects minimal-working examples exercising the `tendsto_cont` tactic defined in
+`SpherePacking/Tactic/TendstoCont.lean`. It is kept separate so the tactic definition remains
+test-free.
+-/
+
 @[expose] public section
 
 open Filter Topology

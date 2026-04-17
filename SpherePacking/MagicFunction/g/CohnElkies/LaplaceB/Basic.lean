@@ -4,7 +4,7 @@ import SpherePacking.MagicFunction.g.CohnElkies.IntegralPieces
 import SpherePacking.MagicFunction.g.CohnElkies.LaplaceLemmas
 import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
 import SpherePacking.MagicFunction.g.CohnElkies.DeltaBounds
-public import SpherePacking.MagicFunction.b.psi
+public import SpherePacking.MagicFunction.b.Psi
 import SpherePacking.MagicFunction.b.PsiBounds
 import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 import Mathlib.MeasureTheory.Integral.ExpDecay

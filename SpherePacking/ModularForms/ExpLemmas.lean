@@ -3,8 +3,14 @@ module
 public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
-@[expose] public section
+/-!
+# Exponential-norm bounds on the upper half-plane
 
+Elementary `‖exp (2π i z)‖ < 1` inequalities for `z : ℍ`, used throughout the modular-forms
+development to control q-expansions.
+-/
+
+@[expose] public section
 
 open UpperHalfPlane TopologicalSpace Set
   Metric Filter Function Complex
