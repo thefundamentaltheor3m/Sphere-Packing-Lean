@@ -1,7 +1,7 @@
 module
 public import Mathlib.Analysis.Normed.Group.Tannery
 public import SpherePacking.ModularForms.JacobiTheta
-public import SpherePacking.ForMathlib.AtImInfty
+public import SpherePacking.ForMathlib.ModularFormsHelpers
 
 /-!
 # Limits at infinity

@@ -11,7 +11,7 @@ public import SpherePacking.ModularForms.PhiTransform
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.MeasureTheory.Integral.ExpDecay
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
-import SpherePacking.ForMathlib.UpperHalfPlane
+import SpherePacking.ForMathlib.ModularFormsHelpers
 
 /-!
 # Laplace integral for `a'`

@@ -7,7 +7,7 @@ module
 
 public import SpherePacking.ModularForms.JacobiTheta
 public import SpherePacking.MagicFunction.IntegralParametrisations
-import SpherePacking.ForMathlib.UpperHalfPlane
+import SpherePacking.ForMathlib.ModularFormsHelpers
 
 /-! # The ψ Functions
 

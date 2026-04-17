@@ -14,10 +14,8 @@ public import Mathlib.Order.CompletePartialOrder
 
 public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.JacobiTheta.Positivity
-public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ForMathlib.Cusps
-public import SpherePacking.ForMathlib.SlashActions
-public import SpherePacking.ForMathlib.UpperHalfPlane
+public import SpherePacking.ForMathlib.ModularFormsHelpers
 public import SpherePacking.ModularForms.SlashActionAuxil
 import SpherePacking.Tactic.NormNumI
 

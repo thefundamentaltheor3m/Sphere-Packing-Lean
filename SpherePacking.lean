@@ -40,7 +40,6 @@ public import SpherePacking.Contour.PermJ5Kernel
 public import SpherePacking.Contour.Segments
 public import SpherePacking.E8.Basic
 public import SpherePacking.E8.Packing
-public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ForMathlib.BoundsOnIcc
 public import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 public import SpherePacking.ForMathlib.ContDiffOnByDeriv
@@ -60,6 +59,7 @@ public import SpherePacking.ForMathlib.GaussianRexpIntegral
 public import SpherePacking.ForMathlib.IntegrablePowMulExp
 public import SpherePacking.ForMathlib.IteratedDeriv
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
+public import SpherePacking.ForMathlib.ModularFormsHelpers
 public import SpherePacking.ForMathlib.RadialSchwartz.Cutoff
 public import SpherePacking.ForMathlib.RadialSchwartz.Multidimensional
 public import SpherePacking.ForMathlib.RadialSchwartz.OneSided
@@ -68,9 +68,7 @@ public import SpherePacking.ForMathlib.ScalarOneFormDiffContOnCl
 public import SpherePacking.ForMathlib.ScalarOneFormFDeriv
 public import SpherePacking.ForMathlib.SigmaBounds
 public import SpherePacking.ForMathlib.SigmaSummability
-public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ForMathlib.SpecificLimits
-public import SpherePacking.ForMathlib.UpperHalfPlane
 public import SpherePacking.ForMathlib.VolumeOfBalls
 public import SpherePacking.ForMathlib.ZLattice
 public import SpherePacking.ForMathlib.Tprod

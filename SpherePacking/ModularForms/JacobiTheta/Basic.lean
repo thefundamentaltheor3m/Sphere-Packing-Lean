@@ -11,7 +11,7 @@ public import Mathlib.NumberTheory.ModularForms.Basic
 public import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
 public import Mathlib.Order.CompletePartialOrder
 
-public import SpherePacking.ForMathlib.UpperHalfPlane
+public import SpherePacking.ForMathlib.ModularFormsHelpers
 
 /-!
 # Jacobi theta functions: definitions and basic identifications
