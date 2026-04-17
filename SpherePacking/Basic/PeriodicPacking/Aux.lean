@@ -79,7 +79,7 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     · simp [As, hs] at hi
   obtain ⟨L, hL⟩ := (h_bounded.subset hUnion_subset).subset_ball 0
   have hUnion_fin : volume (⋃ i, As i) ≠ ∞ :=
-    ne_top_of_le_ne_top (volume_ball_lt_top _).ne (volume.mono hL)
+    ne_top_of_le_ne_top (MeasureTheory.measure_ball_lt_top (μ := volume)).ne (volume.mono hL)
   have hfinite : Set.Finite { i : ι | c ≤ volume (As i) } :=
     Measure.finite_const_le_meas_of_disjoint_iUnion (μ := volume) hc As_mble As_disj hUnion_fin
   refine hfinite.subset (by intro i hi; simpa [As, hi] using h_volume i hi)
@@ -92,7 +92,8 @@ public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd 
       (c := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)))
       (hc := by
         simpa using
-          volume_ball_pos (0 : EuclideanSpace ℝ (Fin d)) (by nlinarith [S.separation_pos]))
+          Metric.measure_ball_pos volume (0 : EuclideanSpace ℝ (Fin d))
+            (by nlinarith [S.separation_pos]))
       (h_measurable := fun _ _ => measurableSet_ball)
       (h_bounded := isBounded_iUnion_ball_centers_inter S D hD_isBounded)
       (h_volume := fun _ _ => by simp [Measure.addHaar_ball_center])

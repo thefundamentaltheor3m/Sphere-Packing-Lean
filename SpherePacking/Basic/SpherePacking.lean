@@ -12,7 +12,7 @@ public import Mathlib.Topology.Metrizable.Basic
 public import Mathlib.Topology.Compactness.Lindelof
 public import Mathlib.Topology.EMetricSpace.Paracompact
 
-public import SpherePacking.ForMathlib.VolumeOfBalls
+public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
 
 /-!
@@ -325,8 +325,8 @@ theorem SpherePacking.inter_ball_encard_le (hd : 0 < d) (R : ℝ) :
     Measure.addHaar_ball_center, ENNReal.tsum_set_const] at h
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rwa [← ENNReal.le_div_iff_mul_le] at h <;> left
-  · exact (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
-  · exact (volume_ball_lt_top _).ne
+  · exact (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
+  · exact (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
 
 /-- This gives an upper bound on the number of points in the sphere packing X with norm less than R.
 -/
@@ -352,8 +352,9 @@ public theorem SpherePacking.finite_centers_inter_ball (R : ℝ) :
     refine lt_of_le_of_lt (S.inter_ball_encard_le hd' R) ?_
     refine ENNReal.div_lt_top
       (ne_of_lt <|
-        lt_of_le_of_lt (volume.mono Set.inter_subset_right) (EuclideanSpace.volume_ball_lt_top _))
-      (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm
+        lt_of_le_of_lt (volume.mono Set.inter_subset_right)
+          (MeasureTheory.measure_ball_lt_top (μ := volume)))
+      (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm
 
 public theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
     S.finiteDensity R
@@ -364,8 +365,8 @@ public theorem SpherePacking.finiteDensity_ge (hd : 0 < d) (R : ℝ) :
   rw [finiteDensity, balls]
   apply ENNReal.div_le_div_right
   exact (ENNReal.le_div_iff_mul_le
-    (Or.inl (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm)
-    (Or.inl (volume_ball_lt_top _).ne)).1 <|
+    (Or.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
+    (Or.inl (MeasureTheory.measure_ball_lt_top (μ := volume)).ne)).1 <|
       (by simpa [sub_add_cancel] using (S.inter_ball_encard_le hd (R - S.separation / 2)))
 
 public theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
@@ -377,8 +378,8 @@ public theorem SpherePacking.finiteDensity_le (hd : 0 < d) (R : ℝ) :
   rw [finiteDensity, balls]
   apply ENNReal.div_le_div_right
   exact (ENNReal.div_le_iff_le_mul
-    (Or.inl (volume_ball_pos _ (by linarith [S.separation_pos])).ne.symm)
-    (Or.inl (volume_ball_lt_top _).ne)).1 <|
+    (Or.inl (Metric.measure_ball_pos volume _ (by linarith [S.separation_pos])).ne.symm)
+    (Or.inl (MeasureTheory.measure_ball_lt_top (μ := volume)).ne)).1 <|
       (by simpa [add_sub_cancel_right] using (S.inter_ball_encard_ge (R + S.separation / 2)))
 
 end BasicResults

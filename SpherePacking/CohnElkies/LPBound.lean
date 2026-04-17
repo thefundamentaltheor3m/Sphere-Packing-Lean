@@ -20,7 +20,7 @@ import SpherePacking.CohnElkies.LPBoundSwapSums
 public import SpherePacking.CohnElkies.LPBoundReindex
 public import SpherePacking.CohnElkies.LPBoundSummability
 import SpherePacking.CohnElkies.LatticeSumBounds
-public import SpherePacking.ForMathlib.VolumeOfBalls
+public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
 
 /-!
