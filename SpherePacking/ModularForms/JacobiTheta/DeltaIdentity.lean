@@ -15,9 +15,7 @@ public import Mathlib.Order.CompletePartialOrder
 public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.JacobiTheta.SlashActions
 public import SpherePacking.ForMathlib.AtImInfty
-public import SpherePacking.ForMathlib.ComplexI
 public import SpherePacking.ForMathlib.Cusps
-public import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ForMathlib.UpperHalfPlane
 public import SpherePacking.ModularForms.SlashActionAuxil

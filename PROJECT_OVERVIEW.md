@@ -1,206 +1,302 @@
-# Project Overview: Sphere-Packing-Lean
+---
+title: "Sphere-Packing-Lean: radical-deduplication overview"
+generated: 2026-04-17
+---
 
-Generated: 2026-04-14
+# Project Overview — Radical Deduplication
 
 ## Executive Summary
 
-This project formalizes the proof that the E8 lattice achieves the optimal sphere packing density in dimension 8, following Viazovska's breakthrough proof. The main theorem (`MainTheorem.lean`) states `SpherePackingConstant 8 = E8Packing.density = pi^4/384`.
+**Current state:** 269 `.lean` files, 54,873 lines, proves
+`SpherePackingConstant 8 = E8Packing.density` with a clean axiom footprint
+(`propext`, `Classical.choice`, `Quot.sound`) and no `sorry`/`admit`.
 
-The proof chain is: (1) Define sphere packings and their density, show periodic = general packing constant; (2) Construct the E8 lattice and compute its density; (3) Establish the Cohn-Elkies linear programming bound via Poisson summation; (4) Construct Viazovska's magic function g from modular forms (Eisenstein series, Jacobi theta, the discriminant Delta); (5) Prove g satisfies the Cohn-Elkies sign conditions (g(x) <= 0 for ||x|| >= sqrt(2), Fourier(g)(x) >= 0 everywhere); (6) Plug into the LP bound to get the upper bound matching E8 density.
+**User's stated goal:** reduce to ~20-30k lines by aggressively generalising
+over the `I₁-I₆` / `J₁-J₆` duplicate families and extracting API.
 
-The project spans **169 Lean files, ~59,400 lines, ~2,200 declarations, and zero sorries**.
+**Honest assessment of what's achievable:**
+
+| Tier | Net savings | Resulting total | Effort |
+|---|---:|---:|---|
+| All five analyses fully executed (high-confidence only) | **~6,500 lines** | ~48,400 | 3-5 days |
+| Same + medium-confidence items | **~9,500 lines** | ~45,400 | 1-2 weeks |
+| Same + upstream 4-5 PRs to mathlib absorbed | **~11,200 lines** | ~43,700 | 2-3 months (mathlib review) |
+| Reaching 30k | would require radical restructuring (see "Beyond the plan" §) |
+
+The bulk of the remaining 43-45k is **genuine mathematical content** — the
+CohnElkies bound, the magic-function construction, the blueprint's modular
+identities (`F·G`, Ramanujan, Jacobi `H₂+H₄=H₃`), the E8 lattice packing,
+and asymptotic analyses (`A_E_sq_coeff`, `L10OverAsymptotics`). Reaching
+20-30k would require either (a) a major upstream push to mathlib for the
+`F·G`/`D`/Jacobi-theta blueprint, or (b) an architectural rewrite of the
+radial magic-function construction (e.g., defining it once abstractly in
+terms of a `MagicFunctionData` structure and deriving both `a` and `b` as
+instances — the earlier Phase 5 only partially did this).
 
 ## Statistics
 
-| Module | Files | Lines | Declarations | Long proofs (>30 lines) |
-|--------|-------|-------|-------------|------------------------|
-| Basic + E8 + top-level | 14 | 3,327 | ~193 | 12 |
-| ForMathlib | 47 | 2,981 | ~175 | 6 |
-| CohnElkies | 14 | 3,165 | ~107 | 10 |
-| Contour | 16 | 2,000 | ~75 | 3 |
-| Integration | 9 | 1,138 | ~58 | 5 |
-| Tactic | 7 | 1,203 | ~51 | 2 |
-| ModularForms | 53 | 14,956 | ~620 | 25+ |
-| MagicFunction/a | 37 | ~8,000 | ~350 | 15+ |
-| MagicFunction/b | 29 | ~7,000 | ~220 | 20+ |
-| MagicFunction/g | 46 | 15,254 | ~350 | 25+ |
-| **Total** | **169** | **~59,400** | **~2,200** | **~120** |
+| Metric | Value |
+|---|---:|
+| `.lean` files | 269 |
+| Total lines | 54,873 |
+| Largest directory (`MagicFunction/g/CohnElkies/`) | 10,200 |
+| Second largest (`MagicFunction/a/` + `MagicFunction/b/`) | ~12,800 |
+| Third largest (`ModularForms/`) | 5,873 |
 
-- Sorries: **0**
-- Moral duplications found: ~5
-- Removable/dead code files: ~4
-- Naming convention violations: ~3 identifiers
+Per-agent identified savings (mid-range of each agent's estimate):
 
----
-
-## Part 1: Project Architecture
-
-### Critical Dependency Chain
-
-```
-Submodule.E8 --> E8Lattice --> E8Packing --> E8Packing_density (= pi^4/384)
-                                                     |
-       scaledMagic --> LinearProgrammingBound --> SpherePackingConstant_le_E8Packing_density
-            |                     |                          |
-            g                 Poisson                   MainTheorem
-           / \              Summation              (SpherePackingConstant 8 = E8Packing.density)
-          a   b                                          
-         / \   \                                   periodic_constant_eq_constant
-       eig_a  a_zero   eig_b, b_zero           (PeriodicSpherePackingConstant = SpherePackingConstant)
-```
-
-### Module Roles
-
-- **Basic/**: Sphere packing definitions, density formula, periodic = general constant
-- **E8/**: E8 lattice definition, unimodularity, density computation
-- **CohnElkies/**: Linear programming bound via Poisson summation
-- **Contour/**: Contour deformation infrastructure (Mobius inversion, wedge set, Poincare lemma)
-- **Integration/**: Differentiation under the integral sign, change of variables
-- **Tactic/**: Custom tactics (`tendsto_cont`, `norm_numI`, `fun_prop` extensions)
-- **ModularForms/**: Eisenstein series, Jacobi theta, Delta, Serre derivative, dimension formulas, FG inequalities
-- **MagicFunction/a**: Eigenfunction a (Fourier eigenvalue +1), 6 contour integrals I1-I6
-- **MagicFunction/b**: Eigenfunction b (Fourier eigenvalue -1), 6 contour integrals J1-J6
-- **MagicFunction/g**: Viazovska's magic function g = linear combination of a and b, sign conditions
+| Cluster | Mid savings | Detailed report |
+|---|---:|---|
+| I/J families (`a/`, `b/`, contour, Eigenfunction) | **~4,500** | `.claude-analysis/I_J_families.md` |
+| ModularForms (mathlib replacement + FG dedup) | **~1,525** | `.claude-analysis/modularForms.md` |
+| AnotherIntegral A/B | **~1,325** | `.claude-analysis/anotherIntegral_AB.md` |
+| LaplaceA/B | **~950** | `.claude-analysis/laplace_AB.md` |
+| ForMathlib / Integration / LPBound (no upstream) | **~760** | `.claude-analysis/mathlib_replacements.md` |
+| **Total mid-range** | **~9,060** | → 45,800 lines |
 
 ---
 
-## Part 2: Longest Proofs (Decomposition Candidates)
+## Top Findings by Cluster
 
-| Rank | Declaration | Lines | File |
-|------|------------|-------|------|
-| 1 | `bRadial_eq_laplace_psiI_main` | ~880 | g/CohnElkies/LaplaceB/LaplaceRepresentation |
-| 2 | `exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one` | ~540 | g/AnotherIntegral/B/PsiICancellation |
-| 3 | `exists_phi0_cancellation_bound` | ~400 | g/AnotherIntegral/A/Cancellation/Integrability |
-| 4 | `aLaplaceIntegral_convergent` | ~370 | g/CohnElkies/LaplaceA/Basic |
-| 5 | `exists_bound_norm_psiS_resToImagAxis_exp_Ici_one` | ~319 | b/Schwartz/PsiExpBounds/PsiSDecay |
-| 6 | `hw_tail_bound` | ~300 | g/AnotherIntegral/B/ThetaAxis/InvH2Sq |
-| 7 | `exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one` | ~280 | g/AnotherIntegral/B/ThetaAxis/HExpansions |
-| 8 | `negDE₂_pos` | ~275 | ModularForms/FG/Positivity |
-| 9 | `bLaplaceIntegral_convergent` | ~275 | g/CohnElkies/LaplaceB/Basic |
-| 10 | `fourier_g_eq_integral_B_of_ne_two` | ~280 | g/CohnElkies/IntegralB |
-| 11 | `J2'_J4_eq_neg_J6'_zero` | ~254 | b/SpecialValues |
-| 12 | `fourier_g_eq_integral_B` (limit extension) | ~240 | g/CohnElkies/IntegralB |
-| 13 | `perm_I₅` | ~220 | a/Eigenfunction/PermI5Main |
-| 14 | `exists_periodicSpherePacking_sep_one_density_gt_of_lt_density` | ~217 | Basic/PeriodicPacking/BoundaryControl |
-| 15 | `mFourierCoeff_descended` | ~198 | CohnElkies/PoissonSummation |
+### 1. I/J Families — the biggest single win (~4,500 lines)
+
+The `a/` and `b/` subtrees plus their Eigenfunction developments total ~7,800
+lines of near-sign-flipped parallel proofs. Phase 5 of the earlier plan
+unified the Schwartz-assembly layer but left the core proof infrastructure
+duplicated.
+
+**Concrete refactor (7 sub-steps, targeting 4,500-line reduction):**
+
+1. **New `MagicFunction/Common/IciOneIntegrand.lean`** (~150 lines) absorbing the common `Ici 1` half-line integral machinery currently duplicated between `a/IntegralEstimates/I5.lean`, `I6.lean`, `Integration/SmoothIntegralIciOne.lean`, and the decay half of `DecayI1.lean`. → ~300 lines saved.
+
+2. **New `Integration/SmoothIntegralIoo01.lean`** (~120 lines) unifying `SmoothI24Common.lean` and `SmoothJ24Common.lean`. → ~150 lines.
+
+3. **Sign-polymorphic `PermJ12FourierHypotheses` in `Contour/PermJ12Fourier.lean`** retires the 10-file `a/Eigenfunction/PermI12*` family (1,222 lines → ~400 after unification). → **~800 lines**. *This is the single biggest win.*
+
+4. **New `Contour/PermI5.lean`** (~200 lines) consolidating `PermI5Main` + `PermJ5Main`. → ~350 lines.
+
+5. **Extending `Common/SchwartzAssembly.lean`** + retiring `a/SmoothI6.lean`'s local `hasDerivAt_integral_gN_of_gt_neg2` (already in `SmoothIntegralIciOne`). → ~100 lines.
+
+6. **Decay unification**: `DecayI1.lean` + decay half of `I6.lean` → one generic `decay_of_iteratedDeriv_eq_integral_pow_mul` extension. → ~200 lines.
+
+7. **I2/I4 sign-unified variant**: `I24Common.lean` extension to absorb the few remaining sign differences. → ~100 lines.
+
+**Recommended ordering** (least-to-most disruptive): 1, 2, 5, 6, 7 first; 3 and 4 last.
+
+**Risks:** `DiffContOnCl` generalisation (item 3), heartbeat budgets on the `SmoothIntegralIciOne` reuse.
+
+### 2. ModularForms — mathlib has caught up (~1,500 lines)
+
+Mathlib's modular-forms library expanded significantly since the project
+started. Three files can shrink dramatically by delegating to mathlib:
+
+1. **`Delta.lean` 606 → ~300** using `Mathlib.NumberTheory.ModularForms.DedekindEta` (now has `ModularForm.eta`, `eta_ne_zero`, `logDeriv_eta_eq_E2`, `multipliableLocallyUniformlyOn_eta`). Local `Delta_boundedfactor` and `Delta_cuspFuntion_eq` + helpers are largely subsumed.
+
+2. **`SummableLemmas/QExpansion.lean` 716 → ~400** using mathlib's `EisensteinSeries.QExpansion`, `contDiffOn_tsum_cexp`, `iteratedDerivWithin_tsum_cexp_eq`. The local `exp_series_ite_deriv_uexp2`, `tsum_uexp_contDiffOn`, `aut_bound_on_comp` families are re-proven mathlib.
+
+3. **`EisensteinBase.lean` 845 → ~550** — `q_exp_unique` (line 199) is `HasFPowerSeriesAt.eq_formalMultilinearSeries`; `Ek_q_exp` can use mathlib's `eisensteinSeries_qExpansion`; `bernoulli'_five/six` and `riemannZeta_six` may already be upstream.
+
+4. **`SummableLemmas/Basic.lean` 116 → ~25** — eight of its lemmas are direct mathlib aliases (`int_sum_neg`, `summable_neg`, `tsum_pnat_eq_tsum_succ3`, etc.).
+
+5. **Internal FG dedupe (~150-280 lines)**: `F_eq_FReal` / `G_eq_GReal` / `FmodGReal_eq_div` are structurally identical; three copies of "exp bound on imag axis" across `EisensteinBase`, `FG/Positivity`, `FG/L10OverAsymptotics`.
+
+6. **`SerreDerivativeSlash.lean:77` vs `Derivative/Ramanujan.lean:221`** — two separate proofs of `serre_D 1 E₂` slash-invariance. Consolidate.
+
+**Genuinely project-specific (keep as-is):** `FG/*`, `DimensionFormulas`, `Lv1Lv2Identities`, `ThetaDerivIdentities`, `JacobiTheta/DeltaIdentity`, `ResToImagAxis`, `antiSerreDerPos`, `Derivative/Ramanujan`, `D₂` correction term.
+
+### 3. AnotherIntegral A/B — structural parallel (~1,300 lines)
+
+The `g/CohnElkies/AnotherIntegral/A/` (3,503 lines) and `B/` (5,100 lines)
+subtrees share a 4,108-line "assembly" layer (Parametric + Continuation +
+Representation + Extension) that differs only by 3-4 atomic substitutions:
+`aAnotherBase`↔`bAnotherBase`, `φ₀''/φ₂'/φ₄'`↔`ψI'/Θⱼ/Hⱼ`, sign `+4I`↔`-4I`,
+pole terms.
+
+**Six proposed refactors (total ~1,300 lines):**
+
+1. **`AnalyticityWrapper`** for `aAnotherIntegralC_analyticOnNhd` / `bAnotherIntegralC_analyticOnNhd`. **~420 lines** (HIGH confidence).
+2. **`ContinuationWrapper`** for `<x>AnotherRHS_analyticOnNhd` + continuation glue. **~180 lines** (HIGH).
+3. **`IntervalIntegralMul`** helper replacing 5 near-copies of `Jⱼ'C_differentiable` (B:239-435) and three of `Iⱼ'C_differentiableAt` (A:318-350). **~465 lines** (MED-HIGH).
+4. **`RepresentationAlgebra`** sharing `corrIntegral_eval`. **~160 lines** (MED).
+5. **Consolidate** 6-8 `exp_neg_*_le_exp_neg_*` lemmas. **~60 lines** (HIGH).
+6. **Extract** 2 integrability wrappers. **~80 lines** (HIGH).
+
+**What's genuinely distinct (~4,900 lines):** The asymptotic-analysis files
+(`A/Cancellation/*`, `B/ThetaAxis/*`, `B/PsiICancellation.lean`) carry
+different modular forms, different q-expansions, and different decay rates.
+Savings there are limited to extracted helpers.
+
+### 4. LaplaceA/B — A wasn't modernized (~950 lines)
+
+LaplaceA is 2,236 lines, LaplaceB is 1,523 — a 713-line gap. Only ~250-350
+lines is genuine math asymmetry (A's integrand has a `w²` tail from the
+`φ₀(S•w)·w²` S-transform); the remaining **~650 lines is pure "A hasn't
+been modernized"** — B's `bContourWeight/bContourIntegrand*` abstraction
+(in `ContourIdentities.lean`) has no A counterpart, and A inlines 4 copies
+of `‖cexp‖ = exp(-πut)` computations that B already shares.
+
+**Six-step refactor plan (R1-R6):**
+
+| Step | Target | Saves | Conf |
+|---|---|---:|---|
+| R1 | Weight-common: introduce `aContourWeight` mirroring B's `bContourWeight` | 100 | HIGH |
+| R2 | Rect-deform driver: 5 near-identical `hRect*` applications → one helper | 160 | MED |
+| R3 | Integrability helpers: 3 shared lemmas | 200 | HIGH |
+| R4 | Unified modular bound: `exists_phi2'_phi4'_bound_exp` + `exists_ψI_bound_exp` | 200 | MED |
+| R5 | Parametrisation helper: collapse 6 separate per-side parametrisations | 100 | HIGH |
+| R6 | Shift identities: small consolidation | 20 | HIGH |
+
+**Prerequisite for R2/R4**: split `LaplaceB/LaplaceRepresentation.lean`
+(918 lines — a monolith containing strip bounds, integrability, 2 rect-Cauchy
+applications, 6 parametrisations, final algebra) into files mirroring A's
+3-file architecture.
+
+**Quick wins:** R1 + R3 + R5 = **~400 lines, no-regret**.
+
+### 5. ForMathlib / Integration / LPBound — mathlib has most of this (~760 lines, +940 via upstream)
+
+**Immediate deletable (no upstream needed, ~760 lines):**
+
+- `ComplexI.lean` (15) — `Complex.I_mul_I` wrapper
+- `VolumeOfBalls.lean` (26) — `Metric.measure_ball_pos`, `MeasureTheory.measure_ball_lt_top` cover it
+- `IntervalIntegral.lean` (29), `IntegralProd.lean` (31), `FunctionsBoundedAtInfty.lean` (15) — 1-2 line wrappers
+- `RadialSchwartz/Multidimensional.lean`'s `hasFDerivAt_norm_sq` → mathlib's `HasFDerivAt.norm_sq`
+- 8 Integration duplicate wrapper pairs (~150 lines combined)
+- 4 modular-form helper files merge into one (~75 lines gain)
+
+**Mathlib equivalents found** (direct replacements):
+- `ENNReal.tsum_const`, `ENNReal.tsum_one` (direct analogs of `ENat.lean`)
+- `Set.encard_iUnion_of_finite` (replaces local `Encard` work)
+- `ModularGroup.S_mul_S_eq` (duplicated as `modular_S_sq`)
+- `Complex.norm_exp_ofReal_mul_I`, `HasFDerivAt.norm_sq`, `norm_iteratedFDeriv_mul_le`, `norm_iteratedFDeriv_eq_norm_iteratedDeriv`, `IsCompact.exists_isMaxOn`, `tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero`, `Real.summable_pow_mul_exp_neg_nat_mul`
+
+**`LPBound.lean` (605)** is two giant theorems. ~60 lines of `LinearProgrammingBound'` is pure `Real.toNNReal`/`ENNReal` coercion bookkeeping; the 92-line `hSummable` block deserves extraction as a named helper.
+
+**Upstream PR candidates (additional ~940 lines if accepted):**
+- `CauchyGoursat/OpenRectangular.lean` (260) — real mathematics, mathlib-worthy
+- `ENat.lean` + parts of `Encard.lean` (~130)
+- `BoundsOnIcc` / `IntegrablePowMulExp` / `SigmaBounds` / `DerivHelpers` / `ContDiffOnByDeriv` bundle (~200)
+- `FourierLinearEquiv.lean` (60)
+- `Cusps.lean` (35)
 
 ---
 
-## Part 3: Dead Code and Removable Declarations
+## Prioritised Action Plan
 
-### Files to Remove
+Seven phases, sequenced by dependency and difficulty.
 
-1. **`ModularForms/uniformcts.lean`** -- All declarations commented out. Dead file.
-2. **`ForMathlib/Asymptotics.lean`** -- Both declarations (`mul_isBigO_mul`, `isBigO_pow`) are literal wrappers around `IsBigO.mul` and `IsBigO.pow`. Remove entirely.
-3. **`ModularForms/riemannZetalems.lean`** (15 lines) -- Contains only `zeta_two_eqn` which duplicates the one in `Cauchylems.lean`.
+### Phase 9 — Quick no-regret wins (~1,200 lines, 1-2 days)
 
-### Declarations to Remove/Inline
+- Delete the 8 trivial ForMathlib wrappers
+- Replace project lemmas with existing mathlib equivalents (grep-and-sub)
+- Apply `SummableLemmas/Basic` mathlib-alias deletions
+- Merge four modular-form helper files
+- Consolidate the two duplicated `serre_D 1 E₂` slash-invariance proofs
+- Fix LPBound coercion bookkeeping (extract named helper from `calc_steps_part2`)
 
-4. **`ForMathlib/Cardinal.lean`** -- Single `rfl` lemma `Cardinal.aux`. Remove if unused.
-5. **`ModularForms/RamanujanIdentities.lean`** -- Appears to duplicate Ramanujan identity proofs from `Derivative.lean`. Audit for consolidation.
+### Phase 10 — Delta + SummableLemmas + EisensteinBase modernization (~1,500 lines, 3-5 days)
 
-### Pending Mathlib PRs (Remove When Merged)
+- `Delta.lean` → delegate to `Mathlib.NumberTheory.ModularForms.DedekindEta` (606 → ~300)
+- `SummableLemmas/QExpansion.lean` → use `EisensteinSeries.QExpansion` + `contDiffOn_tsum_cexp` (716 → ~400)
+- `EisensteinBase.lean` → use `HasFPowerSeriesAt.eq_formalMultilinearSeries` and `eisensteinSeries_qExpansion` (845 → ~550)
+- Internal FG dedup (F_eq_FReal / G_eq_GReal / "exp bound on imag axis" × 3)
 
-6. **`ForMathlib/Encard.lean`** (~232 lines, ~42 declarations) -- Porting results from mathlib PR #23503 (Peter Nelson). Remove once merged.
-7. **`ForMathlib/MDifferentiableFunProp.lean`** -- `fun_prop` attribute pending PR #33808.
+### Phase 11 — LaplaceA/B quick wins (~400 lines, 2-3 days)
 
----
+- R1 (weight-common for A mirroring B's `bContourWeight`)
+- R3 (3 shared integrability helpers)
+- R5 (parametrisation helper)
+- *Do not yet attempt R2/R4* — those require splitting LaplaceB first.
 
-## Part 4: Naming Convention Issues
+### Phase 12 — AnotherIntegral A/B unification (~1,300 lines, 1-2 weeks)
 
-The following identifiers use non-standard capitalization for mathlib:
+- Phase 1 `AnalyticityWrapper` (~420 lines, HIGH conf)
+- Phase 2 `ContinuationWrapper` (~180 lines, HIGH)
+- Phase 5 `exp_neg_*_le` consolidation (~60, HIGH)
+- Phase 6 integrability wrappers (~80, HIGH)
+- Phase 3 `IntervalIntegralMul` (~465, MED-HIGH)
+- Phase 4 `RepresentationAlgebra` (~160, MED)
 
-1. `Inv_Pow_Norm_Summable_Over_Set_Euclidean` -- should be `invPowNormSummableOverSetEuclidean` or restructured
-2. `Exists_Inv_Pow_Norm_Summable_Over_Set_Euclidean` -- same
-3. `Summable_of_Inv_Pow_Summable` / `Summable_of_Inv_Pow_Summable'` -- should be `summable_of_invPowSummable`
-4. `Summable_Inverse_Powers_of_Finite_Orbits` -- should be `summable_inversePowers_of_finite_orbits`
-5. `IsDecayingMap` -- acceptable as a Prop/predicate, but the module convention should be consistent
+### Phase 13 — I/J family unification (~4,500 lines, 2-3 weeks — the biggest lift)
 
-All in `ForMathlib/InvPowSummability.lean`.
+Sequencing inside this phase matters (least-to-most disruptive):
 
----
+- Step A (~300): `Common/IciOneIntegrand.lean` — easiest, no downstream impact
+- Step B (~150): `Integration/SmoothIntegralIoo01.lean` merging `SmoothI24Common` + `SmoothJ24Common`
+- Step C (~100): Retire `a/SmoothI6.lean`'s local `hasDerivAt_integral_gN_of_gt_neg2`
+- Step D (~200): `DecayI1.lean` + decay half of `I6.lean` unified via extended `decay_of_iteratedDeriv_eq_integral_pow_mul`
+- Step E (~100): `I24Common.lean` sign-unified variant
+- Step F (~350): `Contour/PermI5.lean` new
+- **Step G (~800)**: Sign-polymorphic `PermJ12FourierHypotheses` → retire 10-file `a/Eigenfunction/PermI12*` family. Highest risk, highest reward.
 
-## Part 5: Key API Summary
+### Phase 14 — LaplaceB split + R2/R4 (~450 lines, 3-5 days)
 
-### Core Definitions
-- `SpherePacking`, `PeriodicSpherePacking`, `SpherePackingConstant`, `PeriodicSpherePackingConstant`
-- `Submodule.E8`, `E8Lattice`, `E8Packing`
-- `scaledMagic` (the function fed into LinearProgrammingBound)
-- `g` (Viazovska's magic function), `a` (Fourier eigenvalue +1), `b` (eigenvalue -1)
-- `D` (normalized derivative), `serre_D` (Serre derivative)
-- `psiI`, `psiT`, `psiS` (weight -2 modular functions)
-- `phi₀`, `phi₀''` (weight 0 modular function and its extension)
-- `H₂`, `H₃`, `H₄` (squared Jacobi theta functions)
-- `ResToImagAxis` (restriction to positive imaginary axis)
+- Split `LaplaceB/LaplaceRepresentation.lean` (918) into 3 files mirroring A
+- R2 rect-deform driver (~160)
+- R4 unified modular bound (~200)
 
-### Central Theorems
-- `MainTheorem`: `SpherePackingConstant 8 = E8Packing.density`
-- `periodic_constant_eq_constant`: periodic and general packing constants agree
-- `LinearProgrammingBound`: Cohn-Elkies LP bound
-- `poissonSummation_lattice`: Poisson summation for Z-lattices
-- `eig_a`: `Fourier(a) = a`; `eig_b`: `Fourier(b) = -b`
-- `g_cohnElkies1`: `g(x) <= 0` for `||x|| >= sqrt(2)`
-- `g_cohnElkies2`: `Fourier(g)(x) >= 0`
-- `FG_inequality_1/2`: positivity/ordering of F and G modular forms
-- `antiSerreDerPos`: monotonicity criterion via Serre derivative
-- `jacobi_identity`: `H₂ + H₄ = H₃`
-- `Delta_eq_H₂_H₃_H₄`: discriminant as theta product
+### Phase 15 (optional) — Mathlib upstream PRs (~940 lines, 2-3 months wall-clock)
 
-### Custom Tactics
-- `tendsto_cont`: automated limit-composition prover (DFS on `Tendsto` hypotheses + `fun_prop`)
-- `norm_numI`: complex number arithmetic in `Complex.mk` form
-- `fun_prop` extensions: `MDifferentiable`, `Summable`, `HasSum`, `Integrable`
+- `CauchyGoursat/OpenRectangular.lean` (260) PR
+- `ENat` / `Encard` helpers PR
+- `BoundsOnIcc`/`IntegrablePowMulExp`/`SigmaBounds`/`DerivHelpers`/`ContDiffOnByDeriv` bundle PR
+- `FourierLinearEquiv` PR
+- `Cusps` PR
 
 ---
 
-## Part 6: Files > 1000 Lines (Split Candidates)
+## Beyond the plan — reaching 30k
 
-| File | Lines | Content |
-|------|-------|---------|
-| ModularForms/Derivative.lean | 1475 | D operator, Serre derivative, slash formula, Ramanujan identities |
-| ModularForms/JacobiTheta.lean | 1338 | Theta functions, slash actions, positivity, Delta identity |
-| MagicFunction/a/SpecialValues.lean | 1049 | a(0) computation via contour deformation |
-| MagicFunction/g/CohnElkies/AnotherIntegral/A/APrimeExtension.lean | 936 | Analytic extension of a' |
-| MagicFunction/g/CohnElkies/AnotherIntegral/B/ThetaAxis/HExpansions.lean | 930 | Theta q-expansion bounds |
-| MagicFunction/g/CohnElkies/LaplaceB/LaplaceRepresentation.lean | 922 | b' Laplace representation |
-| MagicFunction/PolyFourierCoeffBound.lean | 905 | Fourier coefficient bounds |
-| ModularForms/EisensteinBase.lean | 879 | Eisenstein q-expansions and basic properties |
-| MagicFunction/g/CohnElkies/AnotherIntegral/A/Cancellation/Integrability.lean | 864 | Cancellation integrability |
-| MagicFunction/g/CohnElkies/IntegralB.lean | 846 | Fourier(g) integral formula |
-| ModularForms/SummableLemmas/QExpansion.lean | 783 | Q-expansion summability |
-| MagicFunction/g/CohnElkies/LaplaceA/StripBounds.lean | 786 | Strip growth bounds |
+The five analyses collectively save ~9-11k lines, taking us to **~44-46k**.
+Going further requires more radical moves:
+
+### Option α: Rewrite the magic-function construction abstractly (~6k savings)
+
+Phase 5 of the earlier plan proposed a `MagicFunctionData` structure
+parameterising the entire 6-integral decomposition. It was only partially
+implemented. A full implementation would:
+
+- Define `MagicFunctionData` bundling: 6 modular forms, eigenvalue, sign prefactors
+- Instantiate `a` via `MagicFunctionData` with `(φ₀'', +1, +2)` and `b` with
+  `(ψT'/ψI'/ψS', −1, −2)`
+- Derive ALL 6-integral infrastructure (integrands, bounds, Fourier
+  permutation, Schwartz decay, special values) generically
+- `a/*` and `b/*` each shrink to ~30-line instantiation files
+
+This is a 1-2 month architectural project. It would genuinely reach ~38-40k.
+
+### Option β: Mathlib-absorb the entire blueprint identities (~3-5k savings)
+
+The Ramanujan identities, Jacobi `H₂+H₄=H₃`, Lv1Lv2Identities, and theta
+derivative identities are all standard. Upstream to mathlib in 4-6 PRs.
+3-6 months wall-clock for review.
+
+### Option γ: Asymptotics restructure (~2-3k savings)
+
+`L10OverAsymptotics.lean` (756), `A_E_sq_coeff` bounds (in PolyFourierCoeffBound),
+and the `norm_φ₀_le` decay proof share machinery. A generic "modular form
+whose q-expansion has polynomial coefficients is bounded by C·exp(-2π·Im z)"
+lemma could replace hundreds of lines of hand-rolled bounds.
+
+### Combined: Options α + β + γ
+
+- 46k − 6k − 4k − 2.5k ≈ **33.5k lines** — near the top of the user's range.
+
+**Reaching 20k** would require either abandoning parts of the formalization
+(the explicit E8 lattice density? the LP-bound proof?) or a multi-year
+mathlib integration effort. 20k is not realistic for a standalone project
+that proves this theorem from scratch.
 
 ---
 
-## Recommended Action Plan
+## References
 
-### Priority 1: Quick Wins (removable dead code)
+Detailed per-cluster analyses (all in `.claude-analysis/`):
+- `I_J_families.md` — 7-sub-step refactor, 4,500 lines (~8 pp)
+- `modularForms.md` — 5-phase plan, 1,180-1,870 lines (~9 pp)
+- `anotherIntegral_AB.md` — 6 phases, 1,260-1,400 lines (~12 pp)
+- `laplace_AB.md` — R1-R6 plan, 800-1,100 lines (~10 pp)
+- `mathlib_replacements.md` — per-file mathlib equivalents (~5 pp)
 
-1. **Delete `ModularForms/uniformcts.lean`** -- All commented out, no active declarations.
-2. **Delete `ForMathlib/Asymptotics.lean`** -- Trivial wrappers around existing mathlib API.
-3. **Delete `ModularForms/riemannZetalems.lean`** -- Duplicates `Cauchylems.lean`.
-4. **Audit `ModularForms/RamanujanIdentities.lean`** for consolidation with `Derivative.lean`.
-5. **Delete `ForMathlib/Cardinal.lean`** if unused.
-
-### Priority 2: Naming and Style
-
-6. Rename identifiers in `ForMathlib/InvPowSummability.lean` to mathlib conventions.
-7. Clean up non-standard file names: `clog_arg_lems.lean`, `upperhalfplane.lean`, `Cauchylems.lean`, `tendstolems.lean`, `limunder_lems.lean` (use PascalCase).
-
-### Priority 3: Proof Decomposition (high impact)
-
-8. **`bRadial_eq_laplace_psiI_main`** (~880 lines): Extract the 6 contour-piece deformations as separate lemmas.
-9. **`exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one`** (~540 lines): Factor into per-theta-function bounds.
-10. **`exists_phi0_cancellation_bound`** (~400 lines): Split into E4, E6, Delta remainder bounds.
-11. **`negDE₂_pos`** (~275 lines): Extract the interval-checking arithmetic into helper lemmas.
-
-### Priority 4: File Splitting
-
-12. **`Derivative.lean`** (1475 lines): Split into `D.lean` (basic D operator), `SerreD.lean` (Serre derivative), `DSlash.lean` (slash formula), `Ramanujan.lean` (Ramanujan identities).
-13. **`JacobiTheta.lean`** (1338 lines): Split into `JacobiTheta/Basic.lean`, `JacobiTheta/SlashActions.lean`, `JacobiTheta/Positivity.lean`, `JacobiTheta/DeltaIdentity.lean`.
-
-### Priority 5: Mathlib Upstream (when PRs merge)
-
-14. Remove `ForMathlib/Encard.lean` when PR #23503 merges.
-15. Remove `ForMathlib/MDifferentiableFunProp.lean` when PR #33808 merges.
-16. Upstream small ForMathlib lemmas: `Vec.lean`, `InnerProductSpace.lean`, `ComplexI.lean`, `BoundsOnIcc.lean`.
+Each has concrete file:line references, difficulty estimates, and risk
+sections. **Start with Phase 9 (quick wins) before tackling anything structural.**

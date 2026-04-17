@@ -43,7 +43,6 @@ public import SpherePacking.E8.Packing
 public import SpherePacking.ForMathlib.AtImInfty
 public import SpherePacking.ForMathlib.BoundsOnIcc
 public import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
-public import SpherePacking.ForMathlib.ComplexI
 public import SpherePacking.ForMathlib.ContDiffOnByDeriv
 public import SpherePacking.ForMathlib.Cusps
 public import SpherePacking.ForMathlib.DerivHelpers
@@ -55,13 +54,10 @@ public import SpherePacking.ForMathlib.ExpNormSqDiv
 public import SpherePacking.ForMathlib.ExpPiIMulMulI
 public import SpherePacking.ForMathlib.FourierLinearEquiv
 public import SpherePacking.ForMathlib.FourierPhase
-public import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 public import SpherePacking.ForMathlib.GaussianFourierCommon
 public import SpherePacking.ForMathlib.GaussianRexpIntegrable
 public import SpherePacking.ForMathlib.GaussianRexpIntegral
 public import SpherePacking.ForMathlib.IntegrablePowMulExp
-public import SpherePacking.ForMathlib.IntegralProd
-public import SpherePacking.ForMathlib.IntervalIntegral
 public import SpherePacking.ForMathlib.IteratedDeriv
 public import SpherePacking.ForMathlib.MDifferentiableFunProp
 public import SpherePacking.ForMathlib.RadialSchwartz.Cutoff

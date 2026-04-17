@@ -217,19 +217,6 @@ public theorem contDiff_integral_g_Ioo
     funext x; simp [I, gN, g, μIoo01]
   simpa [h0] using SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I) hI
 
-/-- A wrapper around `contDiff_integral_g_Ioo` using a pointwise equality. -/
-public theorem contDiff_of_eq_integral_g_Ioo
-    (I' : ℝ → ℂ)
-    (hI : ∀ x : ℝ, I' x = ∫ t in Ioo (0 : ℝ) 1, g (coeff := coeff) (hf := hf) x t)
-    (continuousOn_hf : ContinuousOn hf (Ioo (0 : ℝ) 1))
-    (continuous_coeff : Continuous coeff)
-    (exists_bound_norm_hf : ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf t‖ ≤ M)
-    (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi) :
-    ContDiff ℝ (⊤ : ℕ∞) I' := by
-  simpa [funext hI] using
-    (contDiff_integral_g_Ioo (coeff := coeff) (hf := hf) continuousOn_hf continuous_coeff
-      exists_bound_norm_hf coeff_norm_le)
-
 /-- Differentiate under the integral sign for the interval integral `∫ t in (0)..1, gN n x t`. -/
 public lemma hasDerivAt_integral_gN
     (continuous_gN : ∀ n : ℕ, ∀ x : ℝ, Continuous fun t : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t)

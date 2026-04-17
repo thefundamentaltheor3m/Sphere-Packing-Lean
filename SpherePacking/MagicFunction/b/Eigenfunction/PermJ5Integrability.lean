@@ -6,7 +6,6 @@ import SpherePacking.MagicFunction.b.Schwartz.SmoothJ6.Bounds
 public import SpherePacking.ForMathlib.ExpNormSqDiv
 public import SpherePacking.ForMathlib.GaussianRexpIntegral
 public import SpherePacking.ForMathlib.GaussianRexpIntegrable
-import SpherePacking.ForMathlib.IntegralProd
 public import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.IntegrablePowMulExp
 import SpherePacking.Contour.PermJ5Kernel
@@ -193,9 +192,8 @@ public lemma integrable_kernel (w : ℝ⁸) :
       simpa [μIciOne, IntegrableOn, mul_assoc, mul_left_comm, mul_comm] using hIci'
     have hmeas' :
         AEStronglyMeasurable (fun s : ℝ ↦ ∫ x : ℝ⁸, ‖kernel w (x, s)‖) μIciOne := by
-      simpa using
-        (SpherePacking.ForMathlib.aestronglyMeasurable_integral_norm_prod_right'
-          (μ := μIciOne) (ν := (volume : Measure ℝ⁸)) (f := kernel w) hmeas)
+      simpa using (hmeas.norm.prod_swap.integral_prod_right'
+        (μ := μIciOne) (ν := (volume : Measure ℝ⁸)))
     refine Integrable.mono' hmajor hmeas' ?_
     refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall ?_
     intro s hs

@@ -632,11 +632,15 @@ private lemma q₂q₃_mul_pos_re_and_im_zero (t : ℝ) (ht : 0 < t) :
   have hq2_ofReal : q₂ z = cexp (-(t * (π * 4)) : ℝ) := by
     dsimp [q₂, z]
     refine congrArg cexp ?_
-    simpa [mul_assoc, mul_left_comm, mul_comm] using (I_mul_I_mul (↑t * (↑π * 4)))
+    have : Complex.I * (Complex.I * (↑t * (↑π * 4))) = -(↑t * (↑π * 4)) := by
+      rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
+    simpa [mul_assoc, mul_left_comm, mul_comm] using this
   have hq3_ofReal : q₃ z = cexp (-(t * (π * 3)) : ℝ) := by
     dsimp [q₃, z]
     refine congrArg cexp ?_
-    simpa [mul_assoc, mul_left_comm, mul_comm] using (I_mul_I_mul (↑t * (↑π * 3)))
+    have : Complex.I * (Complex.I * (↑t * (↑π * 3))) = -(↑t * (↑π * 3)) := by
+      rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
+    simpa [mul_assoc, mul_left_comm, mul_comm] using this
   have hq_ne : q₂ z * q₃ z ≠ 0 := by simp [q₂, q₃, z]
   have hq2_im : (q₂ z).im = 0 := by
     simpa [hq2_ofReal] using (Complex.exp_ofReal_im (-(t * (π * 4))))

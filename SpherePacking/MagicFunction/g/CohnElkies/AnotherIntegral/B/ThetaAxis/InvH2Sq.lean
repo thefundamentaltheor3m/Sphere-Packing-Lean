@@ -62,7 +62,7 @@ lemma Theta2_term_resToImagAxis_eq (n : ℤ) (t : ℝ) (ht : 0 < t) :
       (π * I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I : ℂ) * t) : ℂ) =
         (-(Real.pi * (r ^ 2) * t) : ℂ) := by
     have hI : (I : ℂ) * ((I : ℂ) * (t : ℂ)) = -(t : ℂ) := by
-      simpa using I_mul_I_mul (t : ℂ)
+      rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
     grind only
   have :
       Θ₂_term n ⟨(Complex.I : ℂ) * t, by simp [ht]⟩ =

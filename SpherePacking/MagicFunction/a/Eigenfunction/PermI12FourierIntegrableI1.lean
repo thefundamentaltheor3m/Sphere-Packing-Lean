@@ -7,7 +7,6 @@ import SpherePacking.Contour.Segments
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.ForMathlib.FourierPhase
 import SpherePacking.ForMathlib.GaussianRexpIntegral
-import SpherePacking.ForMathlib.IntegralProd
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 import SpherePacking.Integration.EndpointIntegrability
 
@@ -159,9 +158,8 @@ lemma integrable_integral_norm_permI1Kernel (w : ℝ⁸) :
     simpa [μIoc01, IntegrableOn, mul_assoc, mul_left_comm, mul_comm] using hI.const_mul C₀
   have hmeas :
       AEStronglyMeasurable (fun t : ℝ ↦ ∫ x : ℝ⁸, ‖permI1Kernel w (x, t)‖) μIoc01 := by
-    simpa using aestronglyMeasurable_integral_norm_prod_right'
-      (μ := μIoc01) (ν := (volume : Measure ℝ⁸)) (f := permI1Kernel w)
-      (permI1Kernel_measurable (w := w))
+    simpa using ((permI1Kernel_measurable (w := w)).norm.prod_swap.integral_prod_right'
+      (μ := μIoc01) (ν := (volume : Measure ℝ⁸)))
   refine Integrable.mono' hmajor hmeas ?_
   refine (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => ?_
   have ht0 : 0 < t := ht.1

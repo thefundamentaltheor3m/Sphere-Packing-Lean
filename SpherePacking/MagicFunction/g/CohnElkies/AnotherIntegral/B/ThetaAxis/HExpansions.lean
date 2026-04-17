@@ -816,7 +816,8 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
       -- On the imaginary axis, the exponent is real and negative.
       have hcast : ((n : ℂ) + 1) ^ 2 = (((n : ℝ) + 1) ^ 2 : ℂ) := by
         norm_cast
-      have hI_mul (z : ℂ) : (Complex.I : ℂ) * ((Complex.I : ℂ) * z) = -z := I_mul_I_mul z
+      have hI_mul (z : ℂ) : (Complex.I : ℂ) * ((Complex.I : ℂ) * z) = -z := by
+        rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
       have hexp :
           (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ : ℂ)
             = (-(Real.pi * (((n : ℝ) + 1) ^ 2) * t) : ℂ) := by

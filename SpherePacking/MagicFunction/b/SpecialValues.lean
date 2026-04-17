@@ -13,7 +13,6 @@ import SpherePacking.MagicFunction.b.Schwartz.PsiExpBounds.PsiSDecay
 import SpherePacking.ForMathlib.CauchyGoursat.OpenRectangular
 import Mathlib.Analysis.Complex.Periodic
 import Mathlib.MeasureTheory.Integral.ExpDecay
-import SpherePacking.ForMathlib.IntervalIntegral
 
 /-!
 # Special values for `b`
@@ -225,8 +224,16 @@ lemma J₂'_J₄_eq_neg_J₆'_zero : J₂' (0 : ℝ) + J₄' 0 = -J₆' 0 := by
       have hneg :
           (∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' ((1 - t : ℂ) + Complex.I)) =
             -∫ t in (0 : ℝ)..1, ψT' ((t : ℂ) + Complex.I) := by
-        simpa [f] using
-          (SpherePacking.ForMathlib.intervalIntegral_neg_one_mul_comp_one_sub_eq_neg (f := f))
+        have hfeq : ∀ t : ℝ, ((1 - t : ℝ) : ℂ) = (1 - t : ℂ) := by intro t; push_cast; ring
+        have hcomp : (∫ t in (0 : ℝ)..1, f (1 - t)) = ∫ t in (0 : ℝ)..1, f t := by simp
+        have h1 : (∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' ((1 - t : ℂ) + Complex.I)) =
+            (-1 : ℂ) * ∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I) :=
+          intervalIntegral.integral_const_mul _ _
+        have h2 : (∫ t in (0 : ℝ)..1, ψT' ((1 - t : ℂ) + Complex.I)) =
+            ∫ t in (0 : ℝ)..1, f (1 - t) := by
+          refine intervalIntegral.integral_congr fun t _ => ?_
+          simp [f, hfeq t]
+        rw [h1, h2, hcomp, neg_one_mul]
       -- Avoid `simp` loops: use `hEq` as a rewrite step.
       calc
         (∫ t in (0 : ℝ)..1, (-1 : ℂ) * ψT' (z₄' t))

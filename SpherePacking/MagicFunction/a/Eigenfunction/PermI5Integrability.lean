@@ -13,7 +13,6 @@ public import SpherePacking.Integration.Measure
 import SpherePacking.ForMathlib.GaussianFourierCommon
 import SpherePacking.MagicFunction.a.IntegralEstimates.I3
 import SpherePacking.ForMathlib.IntegrablePowMulExp
-import SpherePacking.ForMathlib.IntegralProd
 
 /-!
 # Integrability for the `I₅` Fourier kernel
@@ -140,9 +139,8 @@ lemma integrable_integral_norm_permI5Kernel (w : ℝ⁸) :
     have hker :
         AEStronglyMeasurable (permI5Kernel w) ((volume : Measure ℝ⁸).prod μIciOne) := by
       simpa [μIciOne] using aestronglyMeasurable_perm_I₅_kernel (w := w)
-    simpa using
-      SpherePacking.ForMathlib.aestronglyMeasurable_integral_norm_prod_right'
-        (μ := μIciOne) (ν := (volume : Measure ℝ⁸)) (f := permI5Kernel w) hker
+    simpa using (hker.norm.prod_swap.integral_prod_right'
+      (μ := μIciOne) (ν := (volume : Measure ℝ⁸)))
   refine hmajor.mono' hmeas <| (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => ?_
   have hn0 : 0 ≤ ∫ x : ℝ⁸, ‖permI5Kernel w (x, s)‖ :=
     MeasureTheory.integral_nonneg fun _ => norm_nonneg _

@@ -7,7 +7,6 @@ module
 public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.ResToImagAxis
 public import SpherePacking.ModularForms.Delta
-public import SpherePacking.ForMathlib.ComplexI
 
 /-!
 # Jacobi theta functions: imaginary-axis positivity
@@ -118,7 +117,9 @@ theorem Θ₄_imag_axis_real : ResToImagAxis.Real Θ₄ := by
     have hexp_im : (cexp (π * Complex.I * (n : ℂ) ^ 2 * (τ : ℂ))).im = 0 := by
       have harg : (π * Complex.I * (n : ℂ) ^ 2 * (τ : ℂ) : ℂ) =
           (-(Real.pi * ((n : ℝ) ^ 2) * t) : ℝ) := by
-        simp [hτ, mul_assoc, mul_left_comm, mul_comm, I_mul_I_mul]
+        have hII : Complex.I * (Complex.I * (↑t * (↑π * ↑n ^ 2))) = -(↑t * (↑π * ↑n ^ 2)) := by
+          rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
+        simp [hτ, mul_assoc, mul_left_comm, mul_comm, hII]
       rw [harg]
       exact (Complex.exp_ofReal_im (-(Real.pi * ((n : ℝ) ^ 2) * t)))
     simp [Θ₄_term, Complex.mul_im, hsign_im, hexp_im]

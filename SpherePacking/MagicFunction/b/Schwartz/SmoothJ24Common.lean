@@ -46,9 +46,9 @@ public theorem contDiff_of_eq_I0_mul {z : ℝ → ℂ} {c : ℂ} {f : ℝ → �
             (coeff := coeff z) (hf := fun t : ℝ ↦ c * ψT' (z t)) 0 x)
     (hz : Continuous z) (him : ∀ t : ℝ, 0 < (z t).im) (hnorm : ∀ t : ℝ, ‖z t‖ ≤ 2) :
     ContDiff ℝ (⊤ : ℕ∞) f := by
-  refine
-    (SpherePacking.Integration.SmoothIntegralCommon.contDiff_of_eq_I0
-      (coeff := coeff z) (hf := fun t : ℝ ↦ c * ψT' (z t)) (f := f) (hfEq := hfEq)
+  simpa [funext hfEq] using
+    (SpherePacking.Integration.SmoothIntegralCommon.contDiff_integral
+      (coeff := coeff z) (hf := fun t : ℝ ↦ c * ψT' (z t))
       (continuous_const.mul (continuous_ψT'_comp (z := z) hz him))
       (by simpa [coeff] using (continuous_const.mul hz))
       (exists_bound_norm_hf_mul (z := z) (c := c) hz him) (coeff_norm_le (z := z) hnorm))
@@ -63,9 +63,9 @@ public theorem decay_of_eq_I0_of_coeff_re_mul {z : ℝ → ℂ} {c : ℂ} {f : �
     (hz : Continuous z) (him : ∀ t : ℝ, 0 < (z t).im) (hnorm : ∀ t : ℝ, ‖z t‖ ≤ 2)
     (him1 : ∀ t : ℝ, (z t).im = 1) :
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C := by
-  refine
-    (SpherePacking.Integration.SmoothIntegralCommon.decay_of_eq_I0_of_coeff_re
-      (coeff := coeff z) (hf := fun t : ℝ ↦ c * ψT' (z t)) (f := f) (hfEq := hfEq)
+  simpa [funext hfEq] using
+    (SpherePacking.Integration.SmoothIntegralCommon.decay_integral_of_coeff_re
+      (coeff := coeff z) (hf := fun t : ℝ ↦ c * ψT' (z t))
       (continuous_const.mul (continuous_ψT'_comp (z := z) hz him))
       (by simpa [coeff] using (continuous_const.mul hz))
       (exists_bound_norm_hf_mul (z := z) (c := c) hz him) (coeff_norm_le (z := z) hnorm)

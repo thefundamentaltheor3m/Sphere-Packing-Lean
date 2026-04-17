@@ -3,7 +3,6 @@ public import SpherePacking.MagicFunction.a.Eigenfunction.PermI12Fourier
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI12FourierIntegrableI1
 import SpherePacking.Contour.Segments
 import SpherePacking.ForMathlib.FourierPhase
-import SpherePacking.ForMathlib.IntegralProd
 import SpherePacking.Integration.UpperHalfPlaneComp
 import SpherePacking.MagicFunction.PolyFourierCoeffBound
 
@@ -97,9 +96,8 @@ lemma integrable_integral_norm_permI2Kernel (w : ℝ⁸) :
     simpa using MeasureTheory.integrable_const (μ := μIoc01) ((2 : ℝ) * (C₀ : ℝ))
   have hmeas :
       AEStronglyMeasurable (fun t : ℝ ↦ ∫ x : ℝ⁸, ‖permI2Kernel w (x, t)‖) μIoc01 := by
-    simpa using SpherePacking.ForMathlib.aestronglyMeasurable_integral_norm_prod_right'
-      (μ := μIoc01) (ν := (volume : Measure ℝ⁸)) (f := permI2Kernel w)
-      (permI2Kernel_measurable (w := w))
+    simpa using ((permI2Kernel_measurable (w := w)).norm.prod_swap.integral_prod_right'
+      (μ := μIoc01) (ν := (volume : Measure ℝ⁸)))
   refine Integrable.mono' hmajor hmeas ?_
   -- Prove the bound a.e. on `Ioc (0,1)`, excluding `t = 1` (a null set).
   have hne1 : ∀ᵐ t : ℝ ∂μIoc01, t ≠ 1 := by

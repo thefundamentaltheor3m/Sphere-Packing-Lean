@@ -11,7 +11,6 @@ public import Mathlib.NumberTheory.ModularForms.Basic
 public import Mathlib.NumberTheory.ModularForms.JacobiTheta.TwoVariable
 public import Mathlib.Order.CompletePartialOrder
 
-public import SpherePacking.ForMathlib.ComplexI
 public import SpherePacking.ForMathlib.UpperHalfPlane
 
 /-!

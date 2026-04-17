@@ -109,13 +109,14 @@ public theorem contDiff_of_eq_integral_g_Ioo {z : ℝ → ℂ} {shift prefactor 
     (hden : ∀ t, t ∈ Ioo (0 : ℝ) 1 → z t + shift ≠ 0)
     (harg_im_pos : ∀ t, t ∈ Ioo (0 : ℝ) 1 → 0 < (arg z shift t).im)
     (harg_im_half : ∀ t, t ∈ Ioo (0 : ℝ) 1 → (1 / 2 : ℝ) < (arg z shift t).im) :
-    ContDiff ℝ (⊤ : ℕ∞) f :=
-  DifferentiationUnderIntegral.contDiff_of_eq_integral_g_Ioo
-    (coeff := coeff z) (hf := hf z shift prefactor) f hfEq
-    (continuousOn_hf shift prefactor hz hden harg_im_pos)
-    (continuous_coeff hz)
-    (exists_bound_norm_hf shift prefactor hnorm hshift harg_im_half)
-    (coeff_norm_le hnorm)
+    ContDiff ℝ (⊤ : ℕ∞) f := by
+  simpa [funext hfEq] using
+    (DifferentiationUnderIntegral.contDiff_integral_g_Ioo
+      (coeff := coeff z) (hf := hf z shift prefactor)
+      (continuousOn_hf shift prefactor hz hden harg_im_pos)
+      (continuous_coeff hz)
+      (exists_bound_norm_hf shift prefactor hnorm hshift harg_im_half)
+      (coeff_norm_le hnorm))
 
 end
 

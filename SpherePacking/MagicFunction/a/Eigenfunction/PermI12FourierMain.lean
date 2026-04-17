@@ -69,10 +69,11 @@ public lemma fourier_I₁_eq_curveIntegral (w : ℝ⁸) :
   let g : ℝ → ℂ := fun t => (I : ℂ) * Φ₁_fourier (‖w‖ ^ 2) (z₁line t)
   have hswapEq :
       (∫ x : ℝ⁸, ∫ t in Ioc (0 : ℝ) 1, f x t) =
-        ∫ t in Ioc (0 : ℝ) 1, g t :=
-    integral_integral_swap_Ioc01 (V := ℝ⁸) (f := f) (g := g)
-      (integrable_perm_I₁_kernel (w := w)) fun t ht => by
-        simpa [f] using integral_permI1Kernel_x (w := w) (t := t) ht
+        ∫ t in Ioc (0 : ℝ) 1, g t := by
+    simpa [μIoc01] using
+      integral_integral_swap_muIoc01 (V := ℝ⁸) (f := f) (g := g)
+        (integrable_perm_I₁_kernel (w := w)) fun t ht => by
+          simpa [f] using integral_permI1Kernel_x (w := w) (t := t) ht
   -- Put everything together and convert back to a curve integral.
   have hcurve :
       (∫ t in Ioc (0 : ℝ) 1, g t) =
@@ -134,10 +135,11 @@ public lemma fourier_I₂_eq_curveIntegral (w : ℝ⁸) :
   let g : ℝ → ℂ := fun t => Φ₁_fourier (‖w‖ ^ 2) (z₂line t)
   have hswapEq :
       (∫ x : ℝ⁸, ∫ t in Ioc (0 : ℝ) 1, f x t) =
-        ∫ t in Ioc (0 : ℝ) 1, g t :=
-    integral_integral_swap_Ioc01 (V := ℝ⁸) (f := f) (g := g)
-      (integrable_perm_I₂_kernel (w := w)) fun t _ => by
-        simpa [f] using integral_permI2Kernel_x (w := w) (t := t)
+        ∫ t in Ioc (0 : ℝ) 1, g t := by
+    simpa [μIoc01] using
+      integral_integral_swap_muIoc01 (V := ℝ⁸) (f := f) (g := g)
+        (integrable_perm_I₂_kernel (w := w)) fun t _ => by
+          simpa [f] using integral_permI2Kernel_x (w := w) (t := t)
   have hcurve :
       (∫ t in Ioc (0 : ℝ) 1, g t) =
         (∫ᶜ z in Path.segment ((-1 : ℂ) + I) I,

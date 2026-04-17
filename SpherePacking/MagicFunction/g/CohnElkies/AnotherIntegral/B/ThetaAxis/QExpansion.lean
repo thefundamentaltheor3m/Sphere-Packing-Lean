@@ -413,7 +413,8 @@ public lemma exists_bound_norm_Theta3_resToImagAxis_sub_one_sub_two_exp_Ici_one 
   have hjac : jacobiTheta τ = (1 : ℂ) + (2 : ℂ) * ∑' n : ℕ, a n := by
     simpa [a] using (jacobiTheta_eq_tsum_nat (τ := τ) hτ)
   have ha0 : a 0 = (Real.exp (-Real.pi * t) : ℂ) := by
-    have hI_mul (z : ℂ) : (Complex.I : ℂ) * ((Complex.I : ℂ) * z) = -z := I_mul_I_mul z
+    have hI_mul (z : ℂ) : (Complex.I : ℂ) * ((Complex.I : ℂ) * z) = -z := by
+      rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
     have : a 0 = Complex.exp ((-Real.pi * t : ℝ) : ℂ) := by
       simp [a, τ, pow_two, mul_assoc, mul_left_comm, mul_comm, hI_mul]
     simpa [Complex.ofReal_exp] using this
@@ -501,7 +502,8 @@ public lemma exists_bound_norm_Theta4_resToImagAxis_sub_one_add_two_exp_Ici_one 
   have hjac : jacobiTheta τ = (1 : ℂ) + (2 : ℂ) * ∑' n : ℕ, a n := by
     simpa [a] using (jacobiTheta_eq_tsum_nat (τ := τ) hτ)
   have ha0 : a 0 = - (Real.exp (-Real.pi * t) : ℂ) := by
-    have hI_mul (z : ℂ) : (Complex.I : ℂ) * ((Complex.I : ℂ) * z) = -z := I_mul_I_mul z
+    have hI_mul (z : ℂ) : (Complex.I : ℂ) * ((Complex.I : ℂ) * z) = -z := by
+      rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
     have hIIt : (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ) = ((-Real.pi * t : ℝ) : ℂ) := by
       calc
         (Real.pi * Complex.I * ((Complex.I : ℂ) * t) : ℂ)

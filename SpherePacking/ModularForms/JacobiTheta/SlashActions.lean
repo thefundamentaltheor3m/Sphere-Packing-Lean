@@ -15,9 +15,7 @@ public import Mathlib.Order.CompletePartialOrder
 public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.JacobiTheta.Positivity
 public import SpherePacking.ForMathlib.AtImInfty
-public import SpherePacking.ForMathlib.ComplexI
 public import SpherePacking.ForMathlib.Cusps
-public import SpherePacking.ForMathlib.FunctionsBoundedAtInfty
 public import SpherePacking.ForMathlib.SlashActions
 public import SpherePacking.ForMathlib.UpperHalfPlane
 public import SpherePacking.ModularForms.SlashActionAuxil
@@ -478,6 +476,11 @@ public theorem isBoundedAtImInfty_H₄ : IsBoundedAtImInfty H₄ := by
   apply Summable.norm
   rw [summable_jacobiTheta₂_term_iff]
   exact z.coe_im_pos
+
+private theorem isBoundedAtImInfty_neg_iff {α : Type*} [SeminormedAddGroup α]
+    (f : UpperHalfPlane → α) :
+    UpperHalfPlane.IsBoundedAtImInfty (-f) ↔ UpperHalfPlane.IsBoundedAtImInfty f := by
+  simp [UpperHalfPlane.isBoundedAtImInfty_iff]
 
 public theorem isBoundedAtImInfty_H_slash : IsBoundedAtImInfty (H₂ ∣[(2 : ℤ)] γ)
       ∧ IsBoundedAtImInfty (H₃ ∣[(2 : ℤ)] γ) ∧ IsBoundedAtImInfty (H₄ ∣[(2 : ℤ)] γ) := by

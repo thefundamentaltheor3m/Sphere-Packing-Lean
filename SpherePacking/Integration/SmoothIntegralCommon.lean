@@ -71,18 +71,6 @@ public theorem contDiff_integral
         hasDerivAt_I_succ (coeff := coeff) (hf := hf) continuous_hf continuous_coeff
           exists_bound_norm_h coeff_norm_le n x)
 
-/-- Wrapper around `contDiff_integral` when the target function is given by `f x = I 0 x`. -/
-public theorem contDiff_of_eq_I0
-    {f : ℝ → ℂ} (hfEq : ∀ x : ℝ, f x = I (coeff := coeff) (hf := hf) 0 x)
-    (continuous_hf : Continuous hf)
-    (continuous_coeff : Continuous coeff)
-    (exists_bound_norm_h : ∃ M, ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ M)
-    (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi) :
-    ContDiff ℝ (⊤ : ℕ∞) f := by
-  simpa [funext hfEq] using
-    (contDiff_integral (coeff := coeff) (hf := hf) continuous_hf continuous_coeff
-      exists_bound_norm_h coeff_norm_le)
-
 /-- A convenient norm formula for `cexp ((x : ℂ) * coeff t)` when `Re (coeff t) = -π`. -/
 public lemma norm_cexp_ofReal_mul_coeff_eq
     (coeff_re : ∀ t : ℝ, (coeff t).re = (-Real.pi : ℝ)) (x t : ℝ) :
@@ -172,19 +160,6 @@ public theorem decay_integral_of_coeff_re
     (decay_integral (coeff := coeff) (hf := hf)
       continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le
       (norm_cexp := norm_cexp_ofReal_mul_coeff_eq (coeff := coeff) (coeff_re := coeff_re)))
-
-/-- Wrapper around `decay_integral_of_coeff_re` when `f x = I 0 x`. -/
-public theorem decay_of_eq_I0_of_coeff_re
-    {f : ℝ → ℂ} (hfEq : ∀ x : ℝ, f x = I (coeff := coeff) (hf := hf) 0 x)
-    (continuous_hf : Continuous hf)
-    (continuous_coeff : Continuous coeff)
-    (exists_bound_norm_h : ∃ M, ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ M)
-    (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
-    (coeff_re : ∀ t : ℝ, (coeff t).re = (-Real.pi : ℝ)) :
-    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n f x‖ ≤ C := by
-  simpa [funext hfEq] using
-    (decay_integral_of_coeff_re (coeff := coeff) (hf := hf)
-      continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le coeff_re)
 
 end
 
