@@ -1,11 +1,11 @@
 module
-import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
-import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
-
-import SpherePacking.ForMathlib.DerivHelpers
 public import SpherePacking.Integration.DifferentiationUnderIntegral
 public import SpherePacking.Integration.Measure
+
+import SpherePacking.MagicFunction.PolyFourierCoeffBound
+import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
+import SpherePacking.ForMathlib.DerivHelpers
 import SpherePacking.Integration.UpperHalfPlaneComp
 
 /-!
@@ -71,13 +71,10 @@ public lemma continuousOn_hf {z : ℝ → ℂ} (shift prefactor : ℂ)
     ContinuousOn (hf z shift prefactor) (Ioo (0 : ℝ) 1) := by
   have harg : ContinuousOn (arg z shift) (Ioo (0 : ℝ) 1) :=
     continuousOn_const.div (hz.continuousOn.add continuousOn_const) hden
-  have hpow : ContinuousOn (fun t : ℝ => (z t + shift) ^ (2 : ℕ)) (Ioo (0 : ℝ) 1) :=
-    ((hz.add continuous_const).pow 2).continuousOn
-  have hφ : ContinuousOn φ₀'' UpperHalfPlane.upperHalfPlaneSet :=
-    MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
   have hφcomp : ContinuousOn (fun t : ℝ => φ₀'' (arg z shift t)) (Ioo (0 : ℝ) 1) :=
-    hφ.comp harg fun t ht => harg_im_pos t ht
-  simpa [hf, mul_assoc] using continuousOn_const.mul (hφcomp.mul hpow)
+    φ₀''_holo.continuousOn.comp harg harg_im_pos
+  simpa [hf, mul_assoc] using
+    continuousOn_const.mul (hφcomp.mul ((hz.add continuous_const).pow 2).continuousOn)
 
 /-- Uniform bound on `hf` over `Ioo 0 1` given `‖z t‖ ≤ 2` and `Im(arg t) > 1/2`. -/
 public lemma exists_bound_norm_hf {z : ℝ → ℂ} (shift prefactor : ℂ)
@@ -85,26 +82,19 @@ public lemma exists_bound_norm_hf {z : ℝ → ℂ} (shift prefactor : ℂ)
     (harg_im_half : ∀ t, t ∈ Ioo (0 : ℝ) 1 → (1 / 2 : ℝ) < (arg z shift t).im) :
     ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf z shift prefactor t‖ ≤ M := by
   rcases norm_φ₀_le with ⟨C₀, hC₀_pos, hC₀⟩
-  refine ⟨‖prefactor‖ * (C₀ * rexp (-π) * ((3 : ℝ) ^ (2 : ℕ))), ?_⟩
-  intro t ht
+  refine ⟨‖prefactor‖ * (C₀ * rexp (-π) * ((3 : ℝ) ^ (2 : ℕ))), fun t ht => ?_⟩
   have hpos : 0 < (arg z shift t).im :=
     lt_trans (by norm_num : (0 : ℝ) < 1 / 2) (harg_im_half t ht)
-  let zUHP : ℍ := ⟨arg z shift t, hpos⟩
-  have hz_half : (1 / 2 : ℝ) < zUHP.im := harg_im_half t ht
   have hφle : ‖φ₀'' (arg z shift t)‖ ≤ C₀ * rexp (-π) :=
     norm_φ₀''_le_mul_exp_neg_pi_of_one_half_lt_im (C₀ := C₀) (hC₀_pos := hC₀_pos)
-      (hC₀ := hC₀) (z := zUHP) hz_half
+      (hC₀ := hC₀) (z := ⟨arg z shift t, hpos⟩) (harg_im_half t ht)
   have hpow : ‖(z t + shift) ^ (2 : ℕ)‖ ≤ (3 : ℝ) ^ (2 : ℕ) := by
-    have hnorm3 : ‖z t + shift‖ ≤ 3 := by
-      calc
-        ‖z t + shift‖ ≤ ‖z t‖ + ‖shift‖ := norm_add_le _ _
-        _ ≤ 2 + 1 := add_le_add (hnorm t) hshift
-        _ = 3 := by ring
+    have hnorm3 : ‖z t + shift‖ ≤ 3 :=
+      (norm_add_le _ _).trans <| by linarith [hnorm t, hshift]
     simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hnorm3 2
   calc
     ‖hf z shift prefactor t‖
-        = ‖prefactor‖ * (‖φ₀'' (arg z shift t)‖ * ‖(z t + shift) ^ (2 : ℕ)‖) := by
-          simp [hf]
+        = ‖prefactor‖ * (‖φ₀'' (arg z shift t)‖ * ‖(z t + shift) ^ (2 : ℕ)‖) := by simp [hf]
     _ ≤ ‖prefactor‖ * ((C₀ * rexp (-π)) * ((3 : ℝ) ^ (2 : ℕ))) := by gcongr
     _ = ‖prefactor‖ * (C₀ * rexp (-π) * ((3 : ℝ) ^ (2 : ℕ))) := by ring
 

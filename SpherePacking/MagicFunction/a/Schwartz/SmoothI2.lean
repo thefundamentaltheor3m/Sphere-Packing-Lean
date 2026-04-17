@@ -54,8 +54,7 @@ private lemma arg_z₂'_im_eq (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
 
 private lemma arg_z₂'_im_pos (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     0 < (arg z₂' (1 : ℂ) t).im := by
-  have : 0 < t ^ 2 + 1 := by positivity
-  simpa [arg_z₂'_im_eq (t := t) ht] using one_div_pos.2 this
+  rw [arg_z₂'_im_eq t ht]; positivity
 
 private lemma arg_z₂'_im_half (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     (1 / 2 : ℝ) < (arg z₂' (1 : ℂ) t).im := by
@@ -65,8 +64,8 @@ private lemma arg_z₂'_im_half (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
 private lemma den_z₂'_ne_zero (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     z₂' t + (1 : ℂ) ≠ 0 := by
   intro h0
-  have h0im : ((z₂' t : ℂ) + 1).im = 0 := by simpa using congrArg Complex.im h0
-  simp [z₂'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht), add_left_comm, add_comm] at h0im
+  simpa [z₂'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht), add_left_comm, add_comm] using
+    congrArg Complex.im h0
 
 /-- Smoothness of `RealIntegrals.I₂'` as a function `ℝ → ℂ`. -/
 public theorem I₂'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₂' :=
