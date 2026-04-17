@@ -291,9 +291,8 @@ public theorem decay_J₆' :
     -- Now go from `F` to `G`.
     calc
       ‖G n x‖ ≤ 2 * (Kn * Real.exp (-Real.pi * x)) := by
-        simpa [G, mul_assoc] using
-          (SpherePacking.ForMathlib.norm_neg_two_mul_le
-            (z := F n x) (B := Kn * Real.exp (-Real.pi * x)) hFn)
+        simpa [G, norm_mul, mul_assoc] using
+          mul_le_mul_of_nonneg_left hFn (by positivity : (0 : ℝ) ≤ 2)
       _ = 2 * Kn * Real.exp (-Real.pi * x) := by ring_nf
   have hpoly : x ^ k * Real.exp (-Real.pi * x) ≤ B := hB x hx
   have hpow0 : 0 ≤ 2 * Kn := by positivity
