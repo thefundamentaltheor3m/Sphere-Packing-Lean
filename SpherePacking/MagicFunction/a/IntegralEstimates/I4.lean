@@ -111,8 +111,9 @@ section Higher_iteratedFDerivs
 open scoped Topology
 
 /--
-The coefficient appearing in the exponent when rewriting `g r t` as `A t * cexp ((r : ℂ) * coeff t)`.
-This is the specialization of `I24Common.coeff` to `shift = fun t => (1 : ℂ) - (t : ℂ)`.
+The coefficient appearing in the exponent when rewriting `g r t` as
+`A t * cexp ((r : ℂ) * coeff t)`. This is the specialization of `I24Common.coeff`
+to `shift = fun t => (1 : ℂ) - (t : ℂ)`.
 -/
 @[expose] public def coeff : ℝ → ℂ := I24Common.coeff (fun t => (1 : ℂ) - (t : ℂ))
 
@@ -139,7 +140,7 @@ public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
       have hnorm : ‖((1 : ℂ) - (t : ℂ))‖ = |1 - t| := by
         rw [show ((1 : ℂ) - (t : ℂ)) = ((1 - t : ℝ) : ℂ) from by push_cast; ring]
         exact Complex.norm_real _
-      rw [hnorm]; exact habs)
+      rwa [hnorm])
     t ht
 
 /-- Expand `cexp ((r : ℂ) * coeff t)` into the product of exponentials used in `g`. -/
@@ -151,9 +152,9 @@ public lemma exp_r_mul_coeff (r t : ℝ) :
 lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
     iteratedDeriv n I₄' = fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, gN n r t := by
   have hg_cont (r : ℝ) : ContinuousOn (g r) (Ioo (0 : ℝ) 1) := by
-    have hΦ : ContinuousOn (MagicFunction.a.RealIntegrands.Φ₄ (r := r)) (Ioo (0 : ℝ) 1) := by
-      have h := (MagicFunction.a.RealIntegrands.Φ₄_contDiffOn (r := r)).continuousOn
-      exact h.mono (by intro x hx; exact mem_Icc_of_Ioo hx)
+    have hΦ : ContinuousOn (MagicFunction.a.RealIntegrands.Φ₄ (r := r)) (Ioo (0 : ℝ) 1) :=
+      (MagicFunction.a.RealIntegrands.Φ₄_contDiffOn (r := r)).continuousOn.mono
+        (fun _ hx => mem_Icc_of_Ioo hx)
     have hgEq : EqOn (g r) (MagicFunction.a.RealIntegrands.Φ₄ (r := r)) (Ioo (0 : ℝ) 1) := by
       intro t ht
       have ht' : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioo ht
@@ -167,8 +168,7 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
           cexp (π * I * r * (z₄' t : ℂ)) =
             cexp (π * I * r) * cexp (-π * I * r * t) * cexp (-π * r : ℂ) := by
         have harg : (r : ℂ) * coeff t = (π * I * r : ℂ) * (z₄' t : ℂ) := by
-          rw [← hz_coeff]
-          ring
+          rw [← hz_coeff]; ring
         simpa [mul_assoc, harg] using (exp_r_mul_coeff (r := r) (t := t))
       -- Avoid rewriting `z₄' t` itself; only rewrite `z₄' t - 1` and the exponential.
       simp [MagicFunction.a.RealIntegrands.Φ₄, MagicFunction.a.ComplexIntegrands.Φ₄',
@@ -178,8 +178,8 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
   let A : ℝ → ℂ := fun t : ℝ => (-1 : ℂ) * φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2
   have hg_repr : ∀ r t, g r t = A t * cexp ((r : ℂ) * coeff t) := by
     intro r t
-    have hexp := (exp_r_mul_coeff (r := r) (t := t)).symm
-    simpa [A, g, mul_assoc, mul_left_comm, mul_comm] using congrArg (fun z ↦ A t * z) hexp
+    simpa [A, g, mul_assoc, mul_left_comm, mul_comm] using
+      congrArg (fun z ↦ A t * z) (exp_r_mul_coeff (r := r) (t := t)).symm
   simpa [gN] using
     (iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
       (I := I₄') (coeff := coeff) (g := g) (A := A) (hI := I₄'_eq_integral_g_Ioo)

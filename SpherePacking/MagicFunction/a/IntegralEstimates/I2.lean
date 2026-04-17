@@ -81,8 +81,7 @@ lemma I₂'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ �
     · calc
       _ = ‖cexp (((π * r * t : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
       _ = 1 := norm_exp_ofReal_mul_I (π * r * t)
-    · rw [norm_exp]
-      simp
+    · rw [norm_exp]; norm_cast
 
 lemma im_parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (↑t + I)).im = 1 / (t ^ 2 + 1) :=
   fun t _ => by simpa using SpherePacking.Integration.im_neg_one_div_ofReal_add_I (t := t)
@@ -114,7 +113,7 @@ section Higher_iteratedFDerivs
 open scoped Topology
 
 /--
-The coefficient appearing in the exponent when rewriting `g r t` as `A t * cexp ((r : ℂ) * coeff t)`.
+The coefficient in the exponent when rewriting `g r t` as `A t * cexp ((r : ℂ) * coeff t)`.
 This is the specialization of `I24Common.coeff` to `shift = fun t => (t : ℂ) - 1`.
 -/
 @[expose] public def coeff : ℝ → ℂ := I24Common.coeff (fun t => (t : ℂ) - 1)
@@ -139,10 +138,9 @@ public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     (fun t ht => by
       have habs : |t - 1| ≤ 1 := by
         grind only [= mem_Ioo, = abs.eq_1, = max_def]
-      have hnorm : ‖((t : ℂ) - 1)‖ = |t - 1| := by
-        rw [show ((t : ℂ) - 1) = ((t - 1 : ℝ) : ℂ) from by push_cast; ring]
-        exact Complex.norm_real _
-      rw [hnorm]; exact habs)
+      change ‖((t : ℂ) - 1)‖ ≤ 1
+      rw [show ((t : ℂ) - 1) = ((t - 1 : ℝ) : ℂ) from by push_cast; ring, Complex.norm_real]
+      exact habs)
     t ht
 
 /-- Expand `cexp ((r : ℂ) * coeff t)` into the product of exponentials used in `g`. -/
@@ -154,9 +152,9 @@ public lemma exp_r_mul_coeff (r t : ℝ) :
 lemma iteratedDeriv_I₂'_eq_integral_gN (n : ℕ) :
     iteratedDeriv n I₂' = fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, gN n r t := by
   have hg_cont (r : ℝ) : ContinuousOn (g r) (Ioo (0 : ℝ) 1) := by
-    have hΦ : ContinuousOn (MagicFunction.a.RealIntegrands.Φ₂ (r := r)) (Ioo (0 : ℝ) 1) := by
-      have h := (MagicFunction.a.RealIntegrands.Φ₂_contDiffOn (r := r)).continuousOn
-      exact h.mono (by intro x hx; exact mem_Icc_of_Ioo hx)
+    have hΦ : ContinuousOn (MagicFunction.a.RealIntegrands.Φ₂ (r := r)) (Ioo (0 : ℝ) 1) :=
+      (MagicFunction.a.RealIntegrands.Φ₂_contDiffOn (r := r)).continuousOn.mono
+        fun _ hx => mem_Icc_of_Ioo hx
     have hgEq : EqOn (g r) (MagicFunction.a.RealIntegrands.Φ₂ (r := r)) (Ioo (0 : ℝ) 1) := by
       intro t ht
       have ht' : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioo ht
@@ -165,27 +163,12 @@ lemma iteratedDeriv_I₂'_eq_integral_gN (n : ℕ) :
       have hexparg :
           (π : ℂ) * I * (r : ℂ) * (z₂' t : ℂ) =
             (-π * I * r : ℂ) + (π * I * r * t : ℂ) + (-π * r : ℂ) := by
-        simp [hz, mul_add, mul_left_comm, mul_comm]
-        ring_nf
-        simp [I_sq]
-      have hexp :
-          cexp ((π : ℂ) * I * (r : ℂ) * (z₂' t : ℂ)) =
-            cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r : ℂ) := by
-        calc
-          cexp ((π : ℂ) * I * (r : ℂ) * (z₂' t : ℂ))
-              = cexp ((-π * I * r : ℂ) + (π * I * r * t : ℂ) + (-π * r : ℂ)) := by
-                simp [hexparg]
-          _ = cexp ((-π * I * r : ℂ) + (π * I * r * t : ℂ)) * cexp (-π * r : ℂ) := by
-                simpa [add_assoc] using
-                  (Complex.exp_add ((-π * I * r : ℂ) + (π * I * r * t : ℂ)) (-π * r : ℂ))
-          _ = (cexp (-π * I * r) * cexp (π * I * r * t)) * cexp (-π * r : ℂ) := by
-                simp [Complex.exp_add]
-          _ = cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r : ℂ) := by
-                ac_rfl
+        rw [hz]; ring_nf; rw [I_sq]; ring
       have hexp' :
           cexp (π * I * r * (z₂' t : ℂ)) =
             cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r : ℂ) := by
-        simpa [mul_assoc, mul_left_comm, mul_comm] using hexp
+        rw [show π * I * r * (z₂' t : ℂ) = (π : ℂ) * I * (r : ℂ) * (z₂' t : ℂ) from by ring,
+          hexparg, Complex.exp_add, Complex.exp_add]
       -- Avoid rewriting `z₂' t` itself; only rewrite `z₂' t + 1` and the exponential.
       simp [MagicFunction.a.RealIntegrands.Φ₂, MagicFunction.a.ComplexIntegrands.Φ₂',
         MagicFunction.a.ComplexIntegrands.Φ₁', g, hz_add, hexp']
@@ -194,8 +177,8 @@ lemma iteratedDeriv_I₂'_eq_integral_gN (n : ℕ) :
   let A : ℝ → ℂ := fun t : ℝ => φ₀'' (-1 / (t + I)) * (t + I) ^ 2
   have hg_repr : ∀ r t, g r t = A t * cexp ((r : ℂ) * coeff t) := by
     intro r t
-    have hexp := (exp_r_mul_coeff (r := r) (t := t)).symm
-    simpa [A, g, mul_assoc, mul_left_comm, mul_comm] using congrArg (fun z ↦ A t * z) hexp
+    simpa [A, g, mul_assoc, mul_left_comm, mul_comm] using
+      congrArg (fun z ↦ A t * z) (exp_r_mul_coeff (r := r) (t := t)).symm
   simpa [gN] using
     (iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
       (I := I₂') (coeff := coeff) (g := g) (A := A) (hI := I₂'_eq_integral_g_Ioo)

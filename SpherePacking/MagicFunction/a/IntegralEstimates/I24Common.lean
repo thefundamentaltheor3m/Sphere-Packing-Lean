@@ -43,17 +43,13 @@ Uniform bound `‖coeff t‖ ≤ 2π` on `Ioo (0, 1)` given `‖shift t‖ ≤ 1
 -/
 public lemma coeff_norm_le {shift : ℝ → ℂ} (hshift : ∀ t ∈ Ioo (0 : ℝ) 1, ‖shift t‖ ≤ 1) (t : ℝ)
     (ht : t ∈ Ioo (0 : ℝ) 1) : ‖coeff shift t‖ ≤ 2 * π := by
-  have hpi0 : (0 : ℝ) ≤ π := Real.pi_pos.le
-  have hleft : ‖(-π : ℂ)‖ ≤ π := by simp [abs_of_nonneg hpi0]
-  have hpiI : ‖(π * I : ℂ)‖ = π := by simp [abs_of_nonneg hpi0]
-  have hmul : ‖(π * I : ℂ) * shift t‖ ≤ π := by
-    calc
-      ‖(π * I : ℂ) * shift t‖ = ‖(π * I : ℂ)‖ * ‖shift t‖ := by simp
-      _ ≤ ‖(π * I : ℂ)‖ * 1 := mul_le_mul_of_nonneg_left (hshift t ht) (norm_nonneg _)
-      _ = π := by rw [hpiI]; ring
+  unfold coeff
+  have hnorm : ‖(π * I : ℂ)‖ = π := by simp [abs_of_nonneg Real.pi_pos.le]
   calc
-    ‖coeff shift t‖ ≤ ‖(-π : ℂ)‖ + ‖(π * I : ℂ) * shift t‖ := norm_add_le _ _
-    _ ≤ π + π := add_le_add hleft hmul
+    ‖(-π : ℂ) + (π * I) * shift t‖
+        ≤ ‖(-π : ℂ)‖ + ‖(π * I : ℂ) * shift t‖ := norm_add_le _ _
+    _ = π + π * ‖shift t‖ := by rw [norm_mul, hnorm]; simp [abs_of_nonneg Real.pi_pos.le]
+    _ ≤ π + π * 1 := by gcongr; exact hshift t ht
     _ = 2 * π := by ring
 
 /--
@@ -67,16 +63,12 @@ public lemma g_norm_bound_uniform_of {g : ℝ → ℝ → ℂ} {mob : ℝ → �
     ∃ C₀ > 0, ∀ r : ℝ, ∀ t ∈ Ioo (0 : ℝ) 1,
       ‖g r t‖ ≤ C₀ * rexp (-π) * 2 * rexp (-π * r) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le
-  refine ⟨C₀, hC₀_pos, ?_⟩
-  intro r t ht
-  refine (haux r t ht).trans ?_
+  refine ⟨C₀, hC₀_pos, fun r t ht ↦ (haux r t ht).trans ?_⟩
   gcongr
-  have him : (1 / 2 : ℝ) < (mob t).im := hmob_im t ht
-  have hpos : 0 < (mob t).im := one_half_pos.trans him
-  have hz_half : (1 / 2 : ℝ) < (⟨mob t, hpos⟩ : ℍ).im := by simpa using him
+  have hpos : 0 < (mob t).im := one_half_pos.trans (hmob_im t ht)
   simpa [φ₀'', hpos] using
     norm_φ₀''_le_mul_exp_neg_pi_of_one_half_lt_im (C₀ := C₀) (hC₀_pos := hC₀_pos) (hC₀ := hC₀)
-      (z := ⟨mob t, hpos⟩) hz_half
+      (z := ⟨mob t, hpos⟩) (by simpa using hmob_im t ht)
 
 end
 

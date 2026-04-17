@@ -1,7 +1,7 @@
 module
 
-import Mathlib.Analysis.Complex.Exponential
 public import Mathlib.Analysis.Calculus.Deriv.Basic
+public import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 public import Mathlib.Analysis.Normed.Group.Basic
 public import Mathlib.Data.Complex.Basic
 public import Mathlib.Data.Real.Basic
@@ -10,10 +10,10 @@ public import Mathlib.MeasureTheory.Integral.IntegrableOn
 public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 public import Mathlib.Order.Interval.Set.Defs
 public import Mathlib.Topology.Basic
-import Mathlib.Topology.Instances.Real.Lemmas
-import Mathlib.Analysis.Calculus.ParametricIntegral
-public import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 public import SpherePacking.Integration.UpperHalfPlaneComp
+import Mathlib.Analysis.Calculus.ParametricIntegral
+import Mathlib.Analysis.Complex.Exponential
+import Mathlib.Topology.Instances.Real.Lemmas
 import SpherePacking.ForMathlib.DerivHelpers
 
 /-!
@@ -70,7 +70,6 @@ public lemma iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := hg_bound
   refine ⟨(2 * π) ^ n * (C₀ * rexp (-π) * 2), by positivity, ?_⟩
   intro r
-  have hrepr_r := congrArg (fun f : ℝ → ℂ ↦ f r) hrepr
   have hbd : ∀ t ∈ Ioo (0 : ℝ) 1,
       ‖(coeff t) ^ n * g r t‖ ≤ ((2 * π) ^ n * (C₀ * rexp (-π) * 2)) * rexp (-π * r) := by
     intro t ht
@@ -79,12 +78,9 @@ public lemma iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul
         (G := C₀ * rexp (-π) * 2 * rexp (-π * r)) (n := n) (r := r) (t := t) (by positivity)
         (hcoeff t ht) (hC₀ r t ht)
     simpa [mul_assoc, mul_left_comm, mul_comm] using h
-  have hInt :
-      ‖∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g r t‖ ≤
-        ((2 * π) ^ n * (C₀ * rexp (-π) * 2)) * rexp (-π * r) :=
+  simpa [congrArg (fun f : ℝ → ℂ ↦ f r) hrepr] using
     norm_setIntegral_Ioo01_le_of_norm_le_const (f := fun t ↦ (coeff t) ^ n * g r t)
       measure_Ioo_lt_top hbd
-  simpa [hrepr_r] using hInt
 
 /--
 Integrability of `(coeff t) ^ n * g r t` from a uniform bound on `coeff` and a uniform (in `r`)
@@ -110,10 +106,9 @@ public lemma integrable_pow_mul_of_ae_mem_Ioo01 {μ : Measure ℝ} {coeff : ℝ 
         (G := C₀ * rexp (-π) * 2 * rexp (-π * r)) (n := n) (r := r) (t := t) (by positivity)
         (hcoeff t ht) (hC₀ r t ht)
     simpa [M, mul_assoc, mul_left_comm, mul_comm] using h
-  have : IntegrableOn (fun t : ℝ ↦ (coeff t) ^ n * g r t) (Set.univ : Set ℝ) μ :=
-    Measure.integrableOn_of_bounded (μ := μ) (s := (Set.univ : Set ℝ)) hμ_ne hmeas (by
-      simpa using hbd)
-  simpa [IntegrableOn] using this
+  simpa [IntegrableOn] using
+    Measure.integrableOn_of_bounded (μ := μ) (s := (Set.univ : Set ℝ)) hμ_ne hmeas
+      (by simpa using hbd)
 
 /--
 Specialization of `integrable_pow_mul_of_ae_mem_Ioo01` to `volume.restrict (Ioo (0, 1))`.
@@ -142,12 +137,10 @@ For `r` in a unit ball around `r₀`, compare `rexp (-π * r)` to `rexp (-π * r
 public lemma rexp_neg_pi_mul_le_rexp_pi_mul_rexp_neg_pi_mul_of_mem_ball {r r₀ : ℝ}
     (hr : r ∈ Metric.ball r₀ (1 : ℝ)) :
     rexp (-π * r) ≤ rexp (π) * rexp (-π * r₀) := by
-  have hr_lower : r₀ - 1 ≤ r := by
-    have : |r - r₀| < 1 := by
-      simpa [Metric.mem_ball, dist_eq_norm] using hr
-    nlinarith [abs_lt.1 this |>.1]
-  have h : (-π * r : ℝ) ≤ π + (-π * r₀) := by nlinarith [Real.pi_pos, hr_lower]
-  simpa [Real.exp_add] using (Real.exp_le_exp.2 h)
+  have habs : |r - r₀| < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hr
+  have h : (-π * r : ℝ) ≤ π + (-π * r₀) := by
+    nlinarith [Real.pi_pos, abs_lt.1 habs |>.1]
+  simpa [Real.exp_add] using Real.exp_le_exp.2 h
 
 /--
 Almost-everywhere bound for `‖(coeff t) ^ n * g r t‖` which is uniform in `r` on `Metric.ball r₀ 1`.
@@ -171,12 +164,9 @@ public lemma ae_forall_mem_ball_norm_pow_mul_mul_le {coeff : ℝ → ℂ} {g : �
     norm_pow_mul_mul_le (coeff := coeff) (g := g) (C := 2 * π)
       (G := C₀ * rexp (-π) * 2 * rexp (-π * r)) (n := n) (r := r) (t := t)
       (by positivity) (hcoeff t ht) (hg r t ht)
-  have h1 :
-      (2 * π) ^ n * (C₀ * rexp (-π) * 2 * rexp (-π * r)) ≤
-        (2 * π) ^ n * (C₀ * rexp (-π) * 2) * rexp (π) * rexp (-π * r₀) := by
-    have h0' : 0 ≤ (2 * π) ^ n * (C₀ * rexp (-π) * 2) := by positivity
-    simpa [mul_assoc, mul_left_comm, mul_comm] using mul_le_mul_of_nonneg_left hexp h0'
-  exact h0.trans h1
+  refine h0.trans ?_
+  have h0' : 0 ≤ (2 * π) ^ n * (C₀ * rexp (-π) * 2) := by positivity
+  simpa [mul_assoc, mul_left_comm, mul_comm] using mul_le_mul_of_nonneg_left hexp h0'
 
 /--
 Differentiate `x ↦ ∫ gN n x t` under the integral sign using a dominated bound on a ball of radius
@@ -228,18 +218,17 @@ public lemma hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one
     simpa [hμ, K, mul_assoc, mul_left_comm, mul_comm] using
       (ae_forall_mem_ball_norm_pow_mul_mul_le (coeff := coeff) (g := g) (n := n + 1) (r₀ := x₀)
         (C₀ := C₀) (hC₀ := hC₀_pos.le) (hcoeff := hcoeff) (hg := fun r t ht => hC₀ r t ht))
-  have hK_int : Integrable (fun _ : ℝ ↦ K) μ := integrable_const K
   have h_diff :
       ∀ᵐ t ∂μ, ∀ x ∈ Metric.ball x₀ (1 : ℝ),
-        HasDerivAt (fun x : ℝ ↦ (coeff t) ^ n * g x t) ((coeff t) ^ (n + 1) * g x t) x := by
-    refine ae_of_all _ (fun t x _hx => ?_)
-    simpa [hg_repr, mul_assoc, mul_left_comm, mul_comm] using
-      (SpherePacking.ForMathlib.hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const
-        (a := A t) (c := coeff t) (n := n) (x := x))
+        HasDerivAt (fun x : ℝ ↦ (coeff t) ^ n * g x t) ((coeff t) ^ (n + 1) * g x t) x :=
+    ae_of_all _ fun t x _hx => by
+      simpa [hg_repr, mul_assoc, mul_left_comm, mul_comm] using
+        SpherePacking.ForMathlib.hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const
+          (a := A t) (c := coeff t) (n := n) (x := x)
   simpa [K] using
-    (hasDerivAt_integral_gN_of_dominated_ball_one (μ := μ)
+    hasDerivAt_integral_gN_of_dominated_ball_one (μ := μ)
       (gN := fun n x t ↦ (coeff t) ^ n * g x t) (n := n) (x₀ := x₀) (C := K)
-      hmeas hint h_bound hK_int h_diff)
+      hmeas hint h_bound (integrable_const K) h_diff
 
 /--
 Variant of `hasDerivAt_integral_pow_mul_of_uniform_bound_ball_one` for set integrals over
@@ -284,32 +273,23 @@ public lemma iteratedDeriv_eq_setIntegral_pow_mul_of_uniform_bound_ball_one
   haveI : IsFiniteMeasure μ := isFiniteMeasure_restrict_Ioo 0 1
   have hmeas (n : ℕ) (r : ℝ) :
       AEStronglyMeasurable (fun t : ℝ ↦ (coeff t) ^ n * g r t) μ := by
-    have hcoeff_contOn : ContinuousOn (fun t : ℝ ↦ (coeff t) ^ n) (Ioo (0 : ℝ) 1) :=
-      (hcoeff_cont.pow n).continuousOn
     have hmul : ContinuousOn (fun t : ℝ ↦ (coeff t) ^ n * g r t) (Ioo (0 : ℝ) 1) :=
-      hcoeff_contOn.mul (hg_cont r)
+      (hcoeff_cont.pow n).continuousOn.mul (hg_cont r)
     -- `ContinuousOn.aestronglyMeasurable` is phrased as measurability for `volume.restrict`,
     -- so we `simpa` to our `μ`.
-    simpa [μ] using (ContinuousOn.aestronglyMeasurable (μ := (volume : Measure ℝ)) hmul
-      measurableSet_Ioo)
+    simpa [μ] using ContinuousOn.aestronglyMeasurable (μ := (volume : Measure ℝ)) hmul
+      measurableSet_Ioo
   have hint (n : ℕ) (r : ℝ) :
       Integrable (fun t : ℝ ↦ (coeff t) ^ n * g r t) μ :=
     integrable_pow_mul_of_volume_restrict_Ioo01 (hmeas n r) hcoeff hg_bound
   have hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
       HasDerivAt (fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g r t)
         (∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ (n + 1) * g r₀ t) r₀ :=
-    hasDerivAt_setIntegral_pow_mul_of_uniform_bound_ball_one rfl hg_bound hcoeff hg_repr hmeas
-          hint
+    hasDerivAt_setIntegral_pow_mul_of_uniform_bound_ball_one rfl hg_bound hcoeff hg_repr hmeas hint
   induction n with
-  | zero =>
-    funext r
-    simp [hI]
+  | zero => funext r; simp [hI]
   | succ n hn =>
     funext r
-    have hder :
-        deriv (fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g r t) r =
-          ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ (n + 1) * g r t :=
-      (hasDerivAt_integral_gN n r).deriv
-    simp [iteratedDeriv_succ, hn, hder]
+    simp [iteratedDeriv_succ, hn, (hasDerivAt_integral_gN n r).deriv]
 
 end MagicFunction.a.IntegralEstimates
