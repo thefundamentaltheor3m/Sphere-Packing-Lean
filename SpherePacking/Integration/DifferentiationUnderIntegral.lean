@@ -133,13 +133,12 @@ public theorem contDiff_integral_g_Ioo
     (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : ℝ => ∫ t in Ioo (0 : ℝ) 1, g (coeff := coeff) (hf := hf) x t) := by
   let I : ℕ → ℝ → ℂ := fun n x => ∫ t, gN (coeff := coeff) (hf := hf) n x t ∂μIoo01
-  have hI : ∀ n x, HasDerivAt (fun y : ℝ => I n y) (I (n + 1) x) x := fun n x => by
+  have h0 : (fun x : ℝ => ∫ t in Ioo (0 : ℝ) 1, g (coeff := coeff) (hf := hf) x t) = I 0 := by
+    funext x; simp [I, gN, g, μIoo01]
+  simpa [h0] using SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I) fun n x => by
     simpa [I] using
       hasDerivAt_integral_gN_Ioo (coeff := coeff) (hf := hf) continuousOn_hf continuous_coeff
         exists_bound_norm_hf coeff_norm_le n x
-  have h0 : (fun x : ℝ => ∫ t in Ioo (0 : ℝ) 1, g (coeff := coeff) (hf := hf) x t) = I 0 := by
-    funext x; simp [I, gN, g, μIoo01]
-  simpa [h0] using SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I) hI
 
 /-- Differentiate under the integral sign for the interval integral `∫ t in (0)..1, gN n x t`,
 assuming `hf` and `coeff` are continuous. -/
