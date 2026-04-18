@@ -87,36 +87,26 @@ private theorem decay_integral
   have hMh0 : 0 ≤ Mh := (norm_nonneg (hf 1)).trans (hMh 1 (by simp))
   refine ⟨(2 * Real.pi) ^ n * Mh * B, fun x hx => ?_⟩
   have hxabs : ‖x‖ = x := by simp [Real.norm_eq_abs, abs_of_nonneg hx]
-  have hrepr :
-      iteratedDeriv n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x =
-        I (coeff := coeff) (hf := hf) n x := by
-    simpa using
-      congrArg (fun f : ℝ → ℂ => f x)
-        (iteratedDeriv_eq_I (coeff := coeff) (hf := hf)
-          continuous_hf continuous_coeff ⟨Mh, hMh⟩ coeff_norm_le (n := n))
-  have hbound : ∀ t ∈ Ι (0 : ℝ) 1,
-      ‖gN (coeff := coeff) (hf := hf) n x t‖
-        ≤ (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x) := fun t ht => by
-    have hmul : ‖coeff t‖ ^ n * ‖hf t‖ ≤ (2 * Real.pi) ^ n * Mh :=
-      mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n) (hMh t ht)
-        (norm_nonneg _) (pow_nonneg (by positivity : 0 ≤ 2 * Real.pi) _)
-    calc
-      ‖gN (coeff := coeff) (hf := hf) n x t‖
-          = ‖coeff t‖ ^ n * ‖hf t‖ * ‖cexp ((x : ℂ) * coeff t)‖ := by
-            simp [gN, g, norm_pow, mul_left_comm, mul_comm, mul_assoc]
-      _ ≤ (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x) := by
-            simpa [mul_assoc, norm_cexp] using
-              (mul_le_mul_of_nonneg_right hmul (norm_nonneg (cexp ((x : ℂ) * coeff t))))
+  have hrepr := congrArg (fun f : ℝ → ℂ => f x)
+    (iteratedDeriv_eq_I (coeff := coeff) (hf := hf)
+      continuous_hf continuous_coeff ⟨Mh, hMh⟩ coeff_norm_le (n := n))
   have hnormI :
       ‖I (coeff := coeff) (hf := hf) n x‖ ≤
         (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x) := by
     rw [I]
-    simpa using
-      ((intervalIntegral.norm_integral_le_of_norm_le_const (a := (0 : ℝ)) (b := (1 : ℝ))
-        (C := (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x))
-        (f := fun t : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t) hbound).trans_eq (by simp))
-  calc
-    ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖
+    refine (intervalIntegral.norm_integral_le_of_norm_le_const (a := (0 : ℝ)) (b := (1 : ℝ))
+      (C := (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x))
+      (f := fun t : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t) (fun t ht => ?_)).trans_eq (by simp)
+    have hmul : ‖coeff t‖ ^ n * ‖hf t‖ ≤ (2 * Real.pi) ^ n * Mh :=
+      mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n) (hMh t ht)
+        (norm_nonneg _) (pow_nonneg (by positivity : 0 ≤ 2 * Real.pi) _)
+    calc ‖gN (coeff := coeff) (hf := hf) n x t‖
+        = ‖coeff t‖ ^ n * ‖hf t‖ * ‖cexp ((x : ℂ) * coeff t)‖ := by
+          simp [gN, g, norm_pow, mul_left_comm, mul_comm, mul_assoc]
+      _ ≤ (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x) := by
+          simpa [mul_assoc, norm_cexp] using
+            (mul_le_mul_of_nonneg_right hmul (norm_nonneg (cexp ((x : ℂ) * coeff t))))
+  calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖
         = x ^ k * ‖I (coeff := coeff) (hf := hf) n x‖ := by
           simp [hxabs, norm_iteratedFDeriv_eq_norm_iteratedDeriv, hrepr]
     _ ≤ x ^ k * ((2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x)) := by gcongr
