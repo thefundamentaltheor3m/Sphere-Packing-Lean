@@ -110,7 +110,7 @@ lemma hasDerivAt_F (n : ℕ) (x : ℝ) (hx : x ∈ s) :
   have hInt : Integrable (gN n x) μ := gN_integrable (n := n) (x := x) hx
   simpa [F, μ] using
     (SmoothIntegralIciOne.hasDerivAt_integral_gN
-      (hf := ψS.resToImagAxis) (shift := (1 : ℝ)) (hshift := (by norm_num))
+      (hf := ψS.resToImagAxis) (shift := (1 : ℝ))
       (exists_bound_norm_hf := exists_bound)
       (gN_measurable := fun n x => by simpa [μ] using gN_measurable (n := n) (x := x))
       (n := n) (x := x) hx' (hF_int := by simpa [μ] using hInt))

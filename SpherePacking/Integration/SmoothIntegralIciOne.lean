@@ -48,14 +48,17 @@ public lemma g_norm_bound (hf : ℝ → ℂ) (x t : ℝ) :
     ‖g (hf := hf) x t‖ ≤ ‖hf t‖ * Real.exp (-Real.pi * x * t) := by
   simp [g, coeff, Complex.norm_exp, mul_left_comm, mul_comm]
 
-/-- Differentiate under the integral sign for `∫ t ∈ Ici 1, gN n x t`, under standard bounds. -/
+/-- Differentiate under the integral sign for `∫ t ∈ Ici 1, gN n x t`, under standard bounds.
+
+The `shift` is the decay exponent of `hf` on `Ici 1`; differentiability at `x` only requires
+`-shift < x` so that `x + shift > 0`. -/
 public lemma hasDerivAt_integral_gN
-    {hf : ℝ → ℂ} {shift : ℝ} (hshift : 1 ≤ shift)
+    {hf : ℝ → ℂ} {shift : ℝ}
     (exists_bound_norm_hf :
       ∃ C, ∀ t : ℝ, 1 ≤ t → ‖hf t‖ ≤ C * Real.exp (-(Real.pi * shift) * t))
     (gN_measurable :
       ∀ n : ℕ, ∀ x : ℝ, AEStronglyMeasurable (gN (hf := hf) n x) μIciOne)
-    (n : ℕ) (x : ℝ) (hx : -1 < x)
+    (n : ℕ) (x : ℝ) (hx : -shift < x)
     (hF_int : Integrable (gN (hf := hf) n x) μIciOne) :
     HasDerivAt (fun y : ℝ ↦ ∫ t in Set.Ici (1 : ℝ), gN (hf := hf) n y t)
       (∫ t in Set.Ici (1 : ℝ), gN (hf := hf) (n + 1) x t) x := by
