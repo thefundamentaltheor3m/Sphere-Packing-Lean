@@ -56,7 +56,7 @@ lemma continuousOn_psiI'_mul_I :
       ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ) := by
   rfl
 
-lemma continuousOn_bAnotherBase : ContinuousOn bAnotherBase (Set.Ioi (0 : ℝ)) := by
+public lemma continuousOn_bAnotherBase : ContinuousOn bAnotherBase (Set.Ioi (0 : ℝ)) := by
   have hψ : ContinuousOn (fun t : ℝ => ψI' (Complex.I * (t : ℂ))) (Set.Ioi (0 : ℝ)) :=
     continuousOn_psiI'_mul_I
   have hexp : ContinuousOn (fun t : ℝ => (Real.exp (2 * π * t) : ℂ)) (Set.Ioi (0 : ℝ)) := by
