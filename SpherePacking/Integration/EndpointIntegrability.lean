@@ -34,35 +34,22 @@ public lemma integrableOn_one_div_sq_mul_exp_neg_div (c : ℝ) (hc : 0 < c) :
   let f : ℝ → ℝ := fun t ↦ (1 : ℝ) / t
   let f' : ℝ → ℝ := fun t ↦ -(1 : ℝ) / t ^ 2
   have hs : MeasurableSet s := measurableSet_Ioc
-  have hf' : ∀ t ∈ s, HasDerivWithinAt f (f' t) s t := by
-    intro t ht
+  have hf' : ∀ t ∈ s, HasDerivWithinAt f (f' t) s t := fun t ht => by
     simpa [f, f', one_div, div_eq_mul_inv, pow_two, ne_of_gt ht.1] using
       (hasDerivAt_inv (ne_of_gt ht.1)).hasDerivWithinAt
-  have hfinj : InjOn f s := by
-    intro a ha b hb hab
-    exact inv_injective (by simpa [f, one_div] using hab)
+  have hfinj : InjOn f s := fun a _ b _ hab =>
+    inv_injective (by simpa [f, one_div] using hab)
   have himage : f '' s = Ici (1 : ℝ) := by
     simpa [f, s] using (InvChangeOfVariables.Ici_one_eq_image_inv_Ioc).symm
-  have hdecay :
-      IntegrableOn (fun y : ℝ ↦ rexp (-(c * y))) (Ici (1 : ℝ)) volume := by
-    simpa [pow_zero, one_mul] using
-      (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := c) hc)
-  have hiff :=
-    (MeasureTheory.integrableOn_image_iff_integrableOn_abs_deriv_smul (hs := hs) (hf' := hf')
-      (hf := hfinj) (g := fun y : ℝ ↦ rexp (-(c * y))))
-  have hmain :
-      IntegrableOn (fun t : ℝ ↦ |f' t| • rexp (-(c * f t))) s volume := by
+  have hmain : IntegrableOn (fun t : ℝ ↦ |f' t| * rexp (-(c * f t))) s volume := by
     have : IntegrableOn (fun y : ℝ ↦ rexp (-(c * y))) (f '' s) volume := by
-      simpa [himage] using hdecay
-    exact (hiff.1 this)
-  have hmain' : IntegrableOn (fun t : ℝ ↦ |f' t| * rexp (-(c * f t))) s volume := by
-    simpa [smul_eq_mul] using hmain
-  refine hmain'.congr_fun (hs := hs) ?_
-  intro t ht
-  have habs : |f' t| = (1 : ℝ) / t ^ 2 := by simp [f', abs_div, abs_of_nonneg (pow_two_nonneg t)]
-  have harg : (-(c * f t) : ℝ) = -c / t := by
-    simp [f, div_eq_mul_inv]
-  simp [habs, harg]
+      simpa [himage, pow_zero, one_mul] using
+        (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := c) hc)
+    simpa [smul_eq_mul] using
+      (MeasureTheory.integrableOn_image_iff_integrableOn_abs_deriv_smul (hs := hs) (hf' := hf')
+        (hf := hfinj) (g := fun y : ℝ ↦ rexp (-(c * y)))).1 this
+  refine hmain.congr_fun (hs := hs) fun t _ => ?_
+  simp [f', f, abs_div, abs_of_nonneg (pow_two_nonneg t), div_eq_mul_inv]
 
 end
 
