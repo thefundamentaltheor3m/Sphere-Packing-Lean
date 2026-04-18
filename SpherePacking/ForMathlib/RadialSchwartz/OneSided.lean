@@ -20,19 +20,19 @@ noncomputable section
 open scoped Topology
 open Set SchwartzMap
 
-lemma iteratedFDeriv_cutoffC_mul_eq_zero_of_lt {f : ℝ → ℂ} {x : ℝ} (hx : x < -1) (n : ℕ) :
+private lemma iteratedFDeriv_cutoffC_mul_eq_zero_of_lt {f : ℝ → ℂ} {x : ℝ} (hx : x < -1) (n : ℕ) :
     iteratedFDeriv ℝ n (fun r ↦ cutoffC r * f r) x = 0 := by
-  have hEq : (fun r ↦ cutoffC r * f r) =ᶠ[𝓝 x] fun _ ↦ (0 : ℂ) := by
-    filter_upwards [Iio_mem_nhds hx] with y hy
-    simp [cutoffC_eq_zero_of_le (le_of_lt hy)]
-  simpa using (hEq.iteratedFDeriv (𝕜 := ℝ) n).self_of_nhds
+  simpa using
+    (show (fun r ↦ cutoffC r * f r) =ᶠ[𝓝 x] fun _ ↦ (0 : ℂ) by
+      filter_upwards [Iio_mem_nhds hx] with y hy
+      simp [cutoffC_eq_zero_of_le (le_of_lt hy)]).iteratedFDeriv (𝕜 := ℝ) n |>.self_of_nhds
 
-lemma iteratedFDeriv_cutoffC_mul_eq_of_pos {f : ℝ → ℂ} {x : ℝ} (hx : 0 < x) (n : ℕ) :
+private lemma iteratedFDeriv_cutoffC_mul_eq_of_pos {f : ℝ → ℂ} {x : ℝ} (hx : 0 < x) (n : ℕ) :
     iteratedFDeriv ℝ n (fun r ↦ cutoffC r * f r) x = iteratedFDeriv ℝ n f x := by
-  have hEq : (fun r ↦ cutoffC r * f r) =ᶠ[𝓝 x] f := by
-    filter_upwards [Ioi_mem_nhds hx] with y hy
-    simp [cutoffC_eq_one_of_nonneg (le_of_lt hy)]
-  simpa using (hEq.iteratedFDeriv (𝕜 := ℝ) n).self_of_nhds
+  simpa using
+    (show (fun r ↦ cutoffC r * f r) =ᶠ[𝓝 x] f by
+      filter_upwards [Ioi_mem_nhds hx] with y hy
+      simp [cutoffC_eq_one_of_nonneg (le_of_lt hy)]).iteratedFDeriv (𝕜 := ℝ) n |>.self_of_nhds
 
 /-- If `cutoffC * f` is smooth and `f` satisfies Schwartz decay bounds on `0 ≤ x`, then
 `cutoffC * f` satisfies the global Schwartz decay bounds on `ℝ`. -/
@@ -45,32 +45,24 @@ public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
   intro k n
   obtain ⟨Cpos, hCpos⟩ := hf_decay k n
   let g : ℝ → ℂ := fun r ↦ cutoffC r * f r
-  have hg_smooth' : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) g := by
-    simpa [g] using hg_smooth
   have hn : (n : WithTop ℕ∞) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞) := by exact_mod_cast (le_top : (n : ℕ∞) ≤ ⊤)
-  have hcont_iter : Continuous fun x : ℝ ↦ iteratedFDeriv ℝ n g x :=
-    hg_smooth'.continuous_iteratedFDeriv (m := n) hn
   have hcont : Continuous fun x : ℝ ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n g x‖ := by
-    simpa using (continuous_norm.pow k).mul (continuous_norm.comp hcont_iter)
+    simpa using (continuous_norm.pow k).mul
+      (continuous_norm.comp (hg_smooth.continuous_iteratedFDeriv (m := n) hn))
   obtain ⟨Cmid, hCmid⟩ :=
     SpherePacking.ForMathlib.Continuous.exists_upper_bound_on_Icc
       (g := fun x ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n g x‖) hcont
       (a := (-1 : ℝ)) (b := 0) (by norm_num)
-  let C : ℝ := max (max Cmid Cpos) 0
-  refine ⟨C, ?_⟩
-  intro x
-  have hC0 : 0 ≤ C := le_max_right _ _
+  refine ⟨max (max Cmid Cpos) 0, fun x => ?_⟩
+  have hC0 : 0 ≤ max (max Cmid Cpos) 0 := le_max_right _ _
   by_cases hx₁ : x < -1
-  · simp [C, iteratedFDeriv_cutoffC_mul_eq_zero_of_lt (f := f) hx₁ n, hC0]
+  · simp [iteratedFDeriv_cutoffC_mul_eq_zero_of_lt (f := f) hx₁ n, hC0]
   · by_cases hx₂ : x ≤ 0
-    · have hxIcc : x ∈ Icc (-1 : ℝ) 0 :=
-        ⟨le_of_not_gt hx₁, hx₂⟩
-      exact (hCmid x hxIcc).trans (le_trans (le_max_left _ _) (le_max_left _ _))
+    · exact (hCmid x ⟨le_of_not_gt hx₁, hx₂⟩).trans
+        (le_trans (le_max_left _ _) (le_max_left _ _))
     · have hxpos : 0 < x := lt_of_not_ge hx₂
-      have hx0 : 0 ≤ x := le_of_lt hxpos
-      have hbd := hCpos x hx0
-      have : Cpos ≤ C := le_trans (le_max_right Cmid Cpos) (le_max_left _ _)
-      simpa [C, g, iteratedFDeriv_cutoffC_mul_eq_of_pos (f := f) hxpos n] using hbd.trans this
+      simpa [g, iteratedFDeriv_cutoffC_mul_eq_of_pos (f := f) hxpos n] using
+        (hCpos x hxpos.le).trans (le_trans (le_max_right Cmid Cpos) (le_max_left _ _))
 
 /-- Convenience wrapper: if `f` is smooth and satisfies one-sided Schwartz decay on `0 ≤ x`,
 then `cutoffC * f` satisfies global Schwartz decay on `ℝ`. -/
