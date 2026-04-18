@@ -55,19 +55,15 @@ private lemma norm_gN_le_const
     (hh : ‖hf t‖ ≤ M) (n : ℕ) :
     ‖gN (coeff := coeff) (hf := hf) n x t‖ ≤
       (2 * Real.pi) ^ n * (M * Real.exp ((|x₀| + 1) * (2 * Real.pi))) := by
-  have hpow : ‖(coeff t) ^ n‖ ≤ (2 * Real.pi) ^ n := by
-    simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n
-  have hexp : ‖cexp ((x : ℂ) * coeff t)‖ ≤ Real.exp ((|x₀| + 1) * (2 * Real.pi)) :=
-    SpherePacking.ForMathlib.norm_cexp_ofReal_mul_le_exp_mul_of_norm_le (c := coeff t)
-      (B := (2 * Real.pi)) (coeff_norm_le t) hx
-  calc
-    ‖gN (coeff := coeff) (hf := hf) n x t‖ =
-        ‖(coeff t) ^ n * (hf t * cexp ((x : ℂ) * coeff t))‖ := by
-          simp [gN, g, mul_comm]
+  calc ‖gN (coeff := coeff) (hf := hf) n x t‖
+      = ‖(coeff t) ^ n * (hf t * cexp ((x : ℂ) * coeff t))‖ := by simp [gN, g, mul_comm]
     _ ≤ ‖(coeff t) ^ n‖ * ‖hf t * cexp ((x : ℂ) * coeff t)‖ := norm_mul_le _ _
     _ ≤ (2 * Real.pi) ^ n * (M * Real.exp ((|x₀| + 1) * (2 * Real.pi))) := by
           gcongr
-          exact norm_mul_le_of_le hh hexp
+          · simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n
+          · exact norm_mul_le_of_le hh
+              (SpherePacking.ForMathlib.norm_cexp_ofReal_mul_le_exp_mul_of_norm_le (c := coeff t)
+                (B := (2 * Real.pi)) (coeff_norm_le t) hx)
 
 /-- Differentiate under the integral sign on `(0, 1)` for the integrand `gN n`. -/
 public lemma hasDerivAt_integral_gN_Ioo
