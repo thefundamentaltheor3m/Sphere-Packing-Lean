@@ -179,55 +179,29 @@ private lemma perm_J12_contour_h_aux
     ContinuousMap.Homotopy.curveIntegral_add_curveIntegral_eq_of_diffContOnCl
       (𝕜 := ℂ) (E := ℂ) (F := ℂ) (γ₁ := γ) (γ₂ := δ) (t := wedgeSet) (ω := ω) (φ := φ)
       hφt hω hdω hcontdiff
-  have hφ0 : φ.evalAt (0 : I01) = Path.segment (γ (0 : I01)) (δ (0 : I01)) := by
-    rfl
-  have hφ1 : φ.evalAt (1 : I01) = Path.segment (γ (1 : I01)) (δ (1 : I01)) := by
-    rfl
   have h :
       (∫ᶜ z in γ, ω z) + ∫ᶜ z in Path.segment (γ (1 : I01)) (δ (1 : I01)), ω z =
         (∫ᶜ z in δ, ω z) + ∫ᶜ z in Path.segment (γ (0 : I01)) (δ (0 : I01)), ω z := by
-    simpa [hφ0, hφ1] using hmain
-  have hflat :
-      (∫ᶜ z in (Path.segment p0 p1).map' continuousOn_mobiusInv_segment, ω z) +
-          ∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
-              ((AffineMap.lineMap q0 q1) (1 : ℝ)),
-            ω z =
-        (∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)))
-                ((AffineMap.lineMap q0 q1) (0 : ℝ)),
-              ω z) +
-          ∫ᶜ z in Path.segment q0 q1, ω z := by
-    simpa [ω, γ, δ, Path.map', Path.segment_apply, add_assoc, add_left_comm, add_comm] using h
+    simpa [show φ.evalAt (0 : I01) = Path.segment (γ (0 : I01)) (δ (0 : I01)) from rfl,
+      show φ.evalAt (1 : I01) = Path.segment (γ (1 : I01)) (δ (1 : I01)) from rfl] using hmain
   have hseg1 :
       (∫ᶜ z in Path.segment (mobiusInv p1) q1, ω z) =
         ∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
-            ((AffineMap.lineMap q0 q1) (1 : ℝ)),
-          ω z := by
-    have hac : mobiusInv p1 = mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)) := by
-      simp [AffineMap.lineMap_apply_one]
-    have hbd : q1 = (AffineMap.lineMap q0 q1) (1 : ℝ) := by
-      simp [AffineMap.lineMap_apply_one]
-    rw [← Path.cast_segment hac hbd]
-    exact curveIntegral_cast ω
-      (Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) 1)) ((AffineMap.lineMap q0 q1) 1)) hac hbd
+            ((AffineMap.lineMap q0 q1) (1 : ℝ)), ω z := by
+    rw [← Path.cast_segment (by simp [AffineMap.lineMap_apply_one] :
+      mobiusInv p1 = mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
+      (by simp [AffineMap.lineMap_apply_one] : q1 = (AffineMap.lineMap q0 q1) (1 : ℝ))]
+    exact curveIntegral_cast ω _ _ _
   have hseg0 :
       (∫ᶜ z in Path.segment (mobiusInv p0) q0, ω z) =
         ∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)))
-            ((AffineMap.lineMap q0 q1) (0 : ℝ)),
-          ω z := by
-    have hac : mobiusInv p0 = mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)) := by
-      simp [AffineMap.lineMap_apply_zero]
-    have hbd : q0 = (AffineMap.lineMap q0 q1) (0 : ℝ) := by
-      simp [AffineMap.lineMap_apply_zero]
-    rw [← Path.cast_segment hac hbd]
-    exact curveIntegral_cast ω
-      (Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) 0)) ((AffineMap.lineMap q0 q1) 0)) hac hbd
-  -- Rewrite the endpoint segments via casting and finish.
-  have hfinal := hflat
-  -- LHS endpoint segment
-  rw [← hseg1] at hfinal
-  -- RHS endpoint segment
-  rw [← hseg0] at hfinal
-  simpa [ω, add_assoc] using hfinal
+            ((AffineMap.lineMap q0 q1) (0 : ℝ)), ω z := by
+    rw [← Path.cast_segment (by simp [AffineMap.lineMap_apply_zero] :
+      mobiusInv p0 = mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)))
+      (by simp [AffineMap.lineMap_apply_zero] : q0 = (AffineMap.lineMap q0 q1) (0 : ℝ))]
+    exact curveIntegral_cast ω _ _ _
+  rw [hseg0, hseg1]
+  simpa [ω, γ, δ, Path.map', Path.segment_apply, add_assoc, add_left_comm, add_comm] using h
 
 /--
 Contour deformation identity for the first segment in the `perm_J12` argument.
