@@ -71,27 +71,19 @@ public lemma ae_mem_Ioo01_muIoo01 : ∀ᵐ t ∂μIoo01, t ∈ Ioo (0 : ℝ) 1 :
 
 /-- The function `t ↦ A * t ^ p` is integrable with respect to `μIoo01` when `0 ≤ A`. -/
 public lemma integrable_const_mul_pow_muIoo01 (A : ℝ) (p : ℕ) (hA : 0 ≤ A) :
-    Integrable (fun t : ℝ ↦ A * t ^ p) μIoo01 := by
-  have haemeas : AEMeasurable (fun t : ℝ ↦ A * t ^ p) μIoo01 :=
-    (measurable_const.mul (measurable_id.pow_const p)).aemeasurable
-  have hμmem : ∀ᵐ t ∂μIoo01, t ∈ Ioo (0 : ℝ) 1 := ae_mem_Ioo01_muIoo01
-  have hmem : ∀ᵐ t ∂μIoo01, (A * t ^ p) ∈ Set.Icc 0 A := by
-    filter_upwards [hμmem] with t ht
-    have ht0 : 0 ≤ t := le_of_lt ht.1
-    have ht1 : t ≤ 1 := le_of_lt ht.2
-    refine ⟨mul_nonneg hA (pow_nonneg ht0 _), ?_⟩
-    have : A * t ^ p ≤ A * (1 : ℝ) := mul_le_mul_of_nonneg_left (pow_le_one₀ ht0 ht1) hA
-    simpa using this
-  exact
-    MeasureTheory.Integrable.of_mem_Icc (μ := μIoo01) (a := (0 : ℝ)) (b := A) (hX := haemeas) hmem
+    Integrable (fun t : ℝ ↦ A * t ^ p) μIoo01 :=
+  MeasureTheory.Integrable.of_mem_Icc (μ := μIoo01) (a := (0 : ℝ)) (b := A)
+    (hX := (measurable_const.mul (measurable_id.pow_const p)).aemeasurable) <| by
+    filter_upwards [ae_mem_Ioo01_muIoo01] with t ht
+    refine ⟨mul_nonneg hA (pow_nonneg ht.1.le _), ?_⟩
+    simpa using mul_le_mul_of_nonneg_left (pow_le_one₀ ht.1.le ht.2.le) hA
 
 /-- The integral of `t ↦ A * t ^ p` with respect to `μIoo01` is nonnegative when `0 ≤ A`. -/
 public lemma integral_nonneg_const_mul_pow_muIoo01 (A : ℝ) (p : ℕ) (hA : 0 ≤ A) :
-    0 ≤ (∫ t : ℝ, A * t ^ p ∂μIoo01) := by
-  refine integral_nonneg_of_ae ?_
-  have hμmem : ∀ᵐ t ∂μIoo01, t ∈ Ioo (0 : ℝ) 1 := ae_mem_Ioo01_muIoo01
-  filter_upwards [hμmem] with t ht
-  exact mul_nonneg hA (pow_nonneg (le_of_lt ht.1) _)
+    0 ≤ (∫ t : ℝ, A * t ^ p ∂μIoo01) :=
+  integral_nonneg_of_ae <| by
+    filter_upwards [ae_mem_Ioo01_muIoo01] with t ht
+    exact mul_nonneg hA (pow_nonneg ht.1.le _)
 
 /-!
 #### `μIoc01` helper lemmas
