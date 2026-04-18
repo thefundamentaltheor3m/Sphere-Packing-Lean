@@ -169,23 +169,20 @@ private lemma perm_J12_contour_h_aux
         (∫ᶜ z in δ, ω z) + ∫ᶜ z in Path.segment (γ (0 : I01)) (δ (0 : I01)), ω z := by
     simpa [show φ.evalAt (0 : I01) = Path.segment (γ (0 : I01)) (δ (0 : I01)) from rfl,
       show φ.evalAt (1 : I01) = Path.segment (γ (1 : I01)) (δ (1 : I01)) from rfl] using hmain
-  have hseg1 :
-      (∫ᶜ z in Path.segment (mobiusInv p1) q1, ω z) =
-        ∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
-            ((AffineMap.lineMap q0 q1) (1 : ℝ)), ω z := by
-    rw [← Path.cast_segment (by simp [AffineMap.lineMap_apply_one] :
-      mobiusInv p1 = mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
-      (by simp [AffineMap.lineMap_apply_one] : q1 = (AffineMap.lineMap q0 q1) (1 : ℝ))]
-    exact curveIntegral_cast ω _ _ _
-  have hseg0 :
-      (∫ᶜ z in Path.segment (mobiusInv p0) q0, ω z) =
+  rw [show (∫ᶜ z in Path.segment (mobiusInv p0) q0, ω z) =
         ∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)))
-            ((AffineMap.lineMap q0 q1) (0 : ℝ)), ω z := by
-    rw [← Path.cast_segment (by simp [AffineMap.lineMap_apply_zero] :
-      mobiusInv p0 = mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)))
-      (by simp [AffineMap.lineMap_apply_zero] : q0 = (AffineMap.lineMap q0 q1) (0 : ℝ))]
-    exact curveIntegral_cast ω _ _ _
-  rw [hseg0, hseg1]
+            ((AffineMap.lineMap q0 q1) (0 : ℝ)), ω z by
+      rw [← Path.cast_segment (by simp [AffineMap.lineMap_apply_zero] :
+        mobiusInv p0 = mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)))
+        (by simp [AffineMap.lineMap_apply_zero] : q0 = (AffineMap.lineMap q0 q1) (0 : ℝ))]
+      exact curveIntegral_cast ω _ _ _,
+    show (∫ᶜ z in Path.segment (mobiusInv p1) q1, ω z) =
+        ∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
+            ((AffineMap.lineMap q0 q1) (1 : ℝ)), ω z by
+      rw [← Path.cast_segment (by simp [AffineMap.lineMap_apply_one] :
+        mobiusInv p1 = mobiusInv ((AffineMap.lineMap p0 p1) (1 : ℝ)))
+        (by simp [AffineMap.lineMap_apply_one] : q1 = (AffineMap.lineMap q0 q1) (1 : ℝ))]
+      exact curveIntegral_cast ω _ _ _]
   simpa [ω, γ, δ, Path.map', Path.segment_apply, add_assoc, add_left_comm, add_comm] using h
 
 /--
