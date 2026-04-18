@@ -77,31 +77,24 @@ public structure TendstoPsiOneHypotheses
 private def expNorm (r : ℝ) : ℂ → ℝ :=
   fun z ↦ ‖cexp (z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))))‖
 
-private lemma expNorm_continuousAt (r : ℝ) :
-    ContinuousAt (expNorm r) (1 : ℂ) := by
-  simpa [expNorm] using (continuousAt_id.mul continuousAt_const).cexp.norm
-
 private lemma exists_expNorm_le_add_one (r : ℝ) :
     ∃ δ : ℝ, 0 < δ ∧ ∀ {z : ℂ}, dist z (1 : ℂ) < δ → expNorm r z ≤ expNorm r (1 : ℂ) + 1 := by
-  rcases (Metric.continuousAt_iff.1 (expNorm_continuousAt (r := r))) 1 (by norm_num) with
-    ⟨δ, hδ_pos, hδ⟩
-  refine ⟨δ, hδ_pos, fun {z} hz => ?_⟩
-  have habs : |expNorm r z - expNorm r (1 : ℂ)| < 1 := by
-    simpa [Real.dist_eq] using hδ hz
-  exact le_of_lt (sub_lt_iff_lt_add'.1 (abs_sub_lt_iff.1 habs).1)
+  have hcont : ContinuousAt (expNorm r) (1 : ℂ) := by
+    simpa [expNorm] using (continuousAt_id.mul continuousAt_const).cexp.norm
+  rcases (Metric.continuousAt_iff.1 hcont) 1 (by norm_num) with ⟨δ, hδ_pos, hδ⟩
+  exact ⟨δ, hδ_pos, fun {z} hz =>
+    le_of_lt (sub_lt_iff_lt_add'.1
+      (abs_sub_lt_iff.1 (by simpa [Real.dist_eq] using hδ hz)).1)⟩
 
 private lemma exists_im_bound_norm_ψS_le_one {ψS : UpperHalfPlane → ℂ}
     (tendsto_ψS_atImInfty : Tendsto ψS UpperHalfPlane.atImInfty (𝓝 (0 : ℂ))) :
     ∃ A : ℝ, 0 < A ∧ ∀ τ : UpperHalfPlane, A ≤ τ.im → ‖ψS τ‖ ≤ (1 : ℝ) := by
-  have htendNorm :
-      Tendsto (fun τ : UpperHalfPlane => ‖ψS τ‖) UpperHalfPlane.atImInfty (𝓝 (0 : ℝ)) :=
-    (tendsto_zero_iff_norm_tendsto_zero).1 tendsto_ψS_atImInfty
-  let Sψ : Set UpperHalfPlane := {τ : UpperHalfPlane | ‖ψS τ‖ < (1 : ℝ)}
-  have hSet_mem : Sψ ∈ UpperHalfPlane.atImInfty := by
-    simpa [Sψ] using htendNorm.eventually (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num))
-  rcases (UpperHalfPlane.atImInfty_mem (S := Sψ)).1 hSet_mem with ⟨A0, hA0⟩
-  refine ⟨max A0 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _), fun τ hτ => ?_⟩
-  exact le_of_lt (hA0 τ (le_trans (le_max_left _ _) hτ))
+  have htendNorm := (tendsto_zero_iff_norm_tendsto_zero).1 tendsto_ψS_atImInfty
+  rcases (UpperHalfPlane.atImInfty_mem
+    (S := {τ : UpperHalfPlane | ‖ψS τ‖ < (1 : ℝ)})).1
+    (htendNorm.eventually (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num))) with ⟨A0, hA0⟩
+  exact ⟨max A0 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _), fun τ hτ =>
+    le_of_lt (hA0 τ (le_trans (le_max_left _ _) hτ))⟩
 
 private lemma one_div_two_im_le_im_div_normSq_sub_one {z : ℂ}
     (hz_im_pos : 0 < z.im) (hz1 : z ≠ (1 : ℂ)) (habs_re : |z.re - 1| ≤ z.im) :
@@ -125,44 +118,6 @@ private lemma one_div_two_im_le_im_div_normSq_sub_one {z : ℂ}
     _ ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) := hMul
     _ = z.im / Complex.normSq (z - 1) := by simp [div_eq_mul_inv]
 
-private structure GActImNearOneHyp (wedgeSet : Set ℂ)
-    (gAct : UpperHalfPlane → UpperHalfPlane) : Prop where
-  gAct_im :
-    ∀ {z : ℂ} (hz : 0 < z.im),
-      (gAct (⟨z, hz⟩ : UpperHalfPlane)).im = z.im / Complex.normSq (z - 1)
-  mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one :
-    ∀ {z : ℂ}, z ∈ closure wedgeSet → z ≠ (1 : ℂ) → z ∈ UpperHalfPlane.upperHalfPlaneSet
-  closure_wedgeSet_subset_abs_re_sub_one_le_im :
-    ∀ {z : ℂ}, z ∈ closure wedgeSet → |z.re - 1| ≤ z.im
-
-private lemma exists_gAct_im_ge_of_dist_lt
-    {wedgeSet : Set ℂ}
-    {gAct : UpperHalfPlane → UpperHalfPlane}
-    (hg : GActImNearOneHyp wedgeSet gAct)
-    {A : ℝ} (hApos : 0 < A)
-    {z : ℂ} (hzcl : z ∈ closure wedgeSet) (hz1 : z ≠ (1 : ℂ))
-    (hdist : dist z (1 : ℂ) < 1 / (2 * A)) :
-    ∃ hz_im_pos : 0 < z.im, A ≤ (gAct (⟨z, hz_im_pos⟩ : UpperHalfPlane)).im := by
-  have hz_im_pos : 0 < z.im := by
-    simpa [UpperHalfPlane.upperHalfPlaneSet] using
-      (hg.mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1)
-  have hz_im_lt : z.im < 1 / (2 * A) := by
-    have hnorm : ‖z - 1‖ < 1 / (2 * A) := by simpa [dist_eq_norm] using hdist
-    have hz_im_le : z.im ≤ ‖z - 1‖ := by
-      simpa [abs_of_nonneg (le_of_lt hz_im_pos)] using (Complex.abs_im_le_norm (z - 1))
-    exact lt_of_le_of_lt hz_im_le hnorm
-  have habs_re : |z.re - 1| ≤ z.im := hg.closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl
-  have hLower : (1 : ℝ) / (2 * z.im) ≤ z.im / Complex.normSq (z - 1) :=
-    one_div_two_im_le_im_div_normSq_sub_one (z := z) hz_im_pos hz1 habs_re
-  have hA_lt : A < (1 : ℝ) / (2 * z.im) := by
-    have hmul : z.im * (2 * A) < (1 : ℝ) := (lt_div_iff₀ (by positivity)).1 hz_im_lt
-    exact (lt_div_iff₀ (by positivity)).2 (by
-      simpa [mul_assoc, mul_left_comm, mul_comm] using hmul)
-  refine ⟨hz_im_pos, ?_⟩
-  have : A < (gAct (⟨z, hz_im_pos⟩ : UpperHalfPlane)).im := by
-    have : A < z.im / Complex.normSq (z - 1) := lt_of_lt_of_le hA_lt hLower
-    simpa [hg.gAct_im (z := z) (hz := hz_im_pos)] using this
-  exact this.le
 
 /--
 Under `TendstoPsiOneHypotheses`, the integrand `Ψ₁' r` tends to `0` as `z → 1` within
@@ -231,16 +186,21 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of
   have hdist_im : dist z (1 : ℂ) < 1 / (2 * A) :=
     lt_of_lt_of_le hdist_min (min_le_right _ _)
   have hA_le_im : A ≤ (gAct zH).im := by
-    let hg : GActImNearOneHyp wedgeSet gAct :=
-      { gAct_im := h.gAct_im
-        mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one :=
-          h.mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one
-        closure_wedgeSet_subset_abs_re_sub_one_le_im :=
-          h.closure_wedgeSet_subset_abs_re_sub_one_le_im }
-    rcases
-      exists_gAct_im_ge_of_dist_lt (wedgeSet := wedgeSet) (gAct := gAct)
-        (hg := hg) hApos (hzcl := hzcl) (hz1 := hz1) hdist_im with ⟨hz', hA'⟩
-    assumption
+    have hz_im_lt : z.im < 1 / (2 * A) := by
+      have hnorm : ‖z - 1‖ < 1 / (2 * A) := by simpa [dist_eq_norm] using hdist_im
+      exact lt_of_le_of_lt (by
+        simpa [abs_of_nonneg (le_of_lt hz_im_pos)] using (Complex.abs_im_le_norm (z - 1))) hnorm
+    have habs_re : |z.re - 1| ≤ z.im := h.closure_wedgeSet_subset_abs_re_sub_one_le_im hzcl
+    have hLower : (1 : ℝ) / (2 * z.im) ≤ z.im / Complex.normSq (z - 1) :=
+      one_div_two_im_le_im_div_normSq_sub_one (z := z) hz_im_pos hz1 habs_re
+    have hA_lt : A < (1 : ℝ) / (2 * z.im) :=
+      (lt_div_iff₀ (by positivity)).2 (by
+        simpa [mul_assoc, mul_left_comm, mul_comm] using
+          (lt_div_iff₀ (by positivity)).1 hz_im_lt)
+    have : A < (gAct zH).im := by
+      simpa [zH, h.gAct_im (z := z) (hz := hz_im_pos)] using
+        lt_of_lt_of_le hA_lt hLower
+    exact this.le
   have hψS_bound : ‖ψS (gAct zH)‖ ≤ (1 : ℝ) := hA _ hA_le_im
   have hψT_norm : ‖ψT' z‖ ≤ ‖(z - 1) ^ k‖ := by
     have hψ : ψT' z = -ψS (gAct zH) * (z - 1) ^ k := by
