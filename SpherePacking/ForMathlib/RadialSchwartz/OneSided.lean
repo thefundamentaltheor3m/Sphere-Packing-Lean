@@ -34,11 +34,6 @@ lemma iteratedFDeriv_cutoffC_mul_eq_of_pos {f : ℝ → ℂ} {x : ℝ} (hx : 0 <
     simp [cutoffC_eq_one_of_nonneg (le_of_lt hy)]
   simpa using (hEq.iteratedFDeriv (𝕜 := ℝ) n).self_of_nhds
 
-lemma exists_bound_on_Icc_of_continuous {g : ℝ → ℝ} (hg : Continuous g) :
-    ∃ C, ∀ x ∈ Icc (-1 : ℝ) 0, g x ≤ C := by
-  simpa using SpherePacking.ForMathlib.Continuous.exists_upper_bound_on_Icc (g := g) hg
-    (a := (-1 : ℝ)) (b := 0) (by norm_num)
-
 /-- If `cutoffC * f` is smooth and `f` satisfies Schwartz decay bounds on `0 ≤ x`, then
 `cutoffC * f` satisfies the global Schwartz decay bounds on `ℝ`. -/
 public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
@@ -58,8 +53,9 @@ public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
   have hcont : Continuous fun x : ℝ ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n g x‖ := by
     simpa using (continuous_norm.pow k).mul (continuous_norm.comp hcont_iter)
   obtain ⟨Cmid, hCmid⟩ :=
-    exists_bound_on_Icc_of_continuous
+    SpherePacking.ForMathlib.Continuous.exists_upper_bound_on_Icc
       (g := fun x ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n g x‖) hcont
+      (a := (-1 : ℝ)) (b := 0) (by norm_num)
   let C : ℝ := max (max Cmid Cpos) 0
   refine ⟨C, ?_⟩
   intro x
