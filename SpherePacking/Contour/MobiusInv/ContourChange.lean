@@ -122,17 +122,12 @@ public lemma curveIntegral_segment_neg_inv
   refine
     SpherePacking.Contour.curveIntegral_segment_eq_neg_curveIntegral_segment_map'_of
       (Ψ := Ψ₁_fourier) (Ψ' := Ψ₁') a b (f := mobiusInv) (hf := hs.continuousOn_mobiusInv_segment)
-      (hΨ := ?_) (r := r)
-  intro r t ht
+      (hΨ := fun r t ht => ?_) (r := r)
   have hz_im : 0 < (AffineMap.lineMap a b t).im := hs.lineMap_im_pos t ht
-  have hz0 : AffineMap.lineMap a b t ≠ 0 := by
-    intro hz0
-    exact (ne_of_gt hz_im) (by simp [hz0])
-  have hderiv :
-      deriv (fun s : ℝ => mobiusInv (AffineMap.lineMap a b s)) t =
-        (b - a) / (AffineMap.lineMap a b t) ^ (2 : ℕ) := by
-    simpa using
-      (SpherePacking.hasDerivAt_mobiusInv_comp_lineMap (a := a) (b := b) (t := t) hz0).deriv
+  have hz0 : AffineMap.lineMap a b t ≠ 0 :=
+    fun hz0 => (ne_of_gt hz_im) (by simp [hz0])
+  have hderiv :=
+    (SpherePacking.hasDerivAt_mobiusInv_comp_lineMap (a := a) (b := b) (t := t) hz0).deriv
   simpa [hderiv, _root_.SpherePacking.deriv_mobiusInv, div_eq_mul_inv, mul_assoc, mul_left_comm,
     mul_comm] using
     congrArg (fun z => (b - a) * z)
@@ -154,23 +149,13 @@ public lemma curveIntegral_segment_pos_inv
       ∫ᶜ z in
         (Path.segment a b).map' (f := mobiusInv) (hs.continuousOn_mobiusInv_segment),
         scalarOneForm (Ψ₁' r) z := by
-  have hneg :
-      (∫ᶜ z in Path.segment a b, scalarOneForm (Ψ₁_fourier r) z) =
-        -∫ᶜ z in
-          (Path.segment a b).map' (f := mobiusInv) (hs.continuousOn_mobiusInv_segment),
-          scalarOneForm (fun z : ℂ => -Ψ₁' r z) z := by
-    simpa [neg_mul, mul_neg, neg_neg] using
-      (curveIntegral_segment_neg_inv (Ψ₁_fourier := Ψ₁_fourier) (Ψ₁' := fun r z => -Ψ₁' r z) a b
-        (Ψ₁_fourier_eq_neg_deriv_mul := by
-          intro r z hz
-          simpa [neg_mul, mul_neg, neg_neg] using (Ψ₁_fourier_eq_deriv_mul (r := r) (z := z) hz))
-        r)
-  have hω :
-      (fun z : ℂ => scalarOneForm (fun z : ℂ => -Ψ₁' r z) z) =
-        fun z : ℂ => -scalarOneForm (Ψ₁' r) z := by
-    funext z
-    ext
-    simp [scalarOneForm_apply, mul_neg]
+  have hω : (fun z : ℂ => scalarOneForm (fun z : ℂ => -Ψ₁' r z) z) =
+      fun z : ℂ => -scalarOneForm (Ψ₁' r) z := by
+    funext z; ext; simp [scalarOneForm_apply, mul_neg]
+  have hneg := curveIntegral_segment_neg_inv (Ψ₁_fourier := Ψ₁_fourier)
+    (Ψ₁' := fun r z => -Ψ₁' r z) a b
+    (Ψ₁_fourier_eq_neg_deriv_mul := fun r z hz => by
+      simpa [neg_mul, mul_neg, neg_neg] using (Ψ₁_fourier_eq_deriv_mul (r := r) (z := z) hz)) r
   simp_all
 
 end SpherePacking.MobiusInv
