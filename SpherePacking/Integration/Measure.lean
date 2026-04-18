@@ -100,38 +100,23 @@ We keep the segment/interval-integral conversion lemma here because most downstr
 `μIoc01` are in curve-integral arguments.
 -/
 
-/-- The integral against `μIoc01` equals the interval integral on `(0, 1]`. -/
-public lemma integral_restrict_Ioc01_eq_intervalIntegral (f : ℝ → ℂ) :
-    (∫ t : ℝ, f t ∂((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1))) = ∫ t in (0 : ℝ)..1, f t := by
-  simpa using (intervalIntegral.integral_of_le (μ := volume) (f := f) (by norm_num)).symm
-
-/-- Product with the restricted measure agrees with restricting the product measure. -/
-public lemma prod_restrict_Ioc01_eq_restrict {α : Type*} [MeasurableSpace α] (μ : Measure α)
-    [SFinite μ] :
-    μ.prod ((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1)) =
-      (μ.prod (volume : Measure ℝ)).restrict ((univ : Set α) ×ˢ (Ioc (0 : ℝ) 1)) := by
-  simpa using
-    (Measure.prod_restrict (μ := μ) (ν := volume) (s := (univ : Set α)) (t := Ioc (0 : ℝ) 1))
-
-/-- Specialized version of `prod_restrict_Ioc01_eq_restrict` for `μIoc01`. -/
+/-- Product with `μIoc01` agrees with restricting the product measure. -/
 public lemma prod_muIoc01_eq_restrict {α : Type*} [MeasurableSpace α] (μ : Measure α) [SFinite μ] :
     μ.prod μIoc01 = (μ.prod (volume : Measure ℝ)).restrict ((univ : Set α) ×ˢ (Ioc (0 : ℝ) 1)) := by
-  simpa [μIoc01] using prod_restrict_Ioc01_eq_restrict (μ := μ)
+  simpa [μIoc01] using
+    (Measure.prod_restrict (μ := μ) (ν := volume) (s := (univ : Set α)) (t := Ioc (0 : ℝ) 1))
 
-/-- Rewrite a restricted integral as a curve integral over a segment, for the scalar one-form. -/
-public lemma integral_dir_mul_restrict_Ioc01_eq_curveIntegral_segment (F : ℂ → ℂ) (a b : ℂ)
-    (zline : ℝ → ℂ) (hzline : ∀ t : ℝ, AffineMap.lineMap a b t = zline t) :
-    (∫ t : ℝ, (b - a) * F (zline t) ∂((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1))) =
-      (∫ᶜ z in Path.segment a b, scalarOneForm F z) := by
-  rw [integral_restrict_Ioc01_eq_intervalIntegral (f := fun t => (b - a) * F (zline t)),
-    curveIntegral_segment (ω := scalarOneForm F) a b]
-  refine intervalIntegral.integral_congr fun t ht => by simp [scalarOneForm_apply, hzline t]
-
-/-- Version of `integral_dir_mul_restrict_Ioc01_eq_curveIntegral_segment` for `μIoc01`. -/
+/-- Rewrite a `μIoc01`-integral as a curve integral over a segment, for the scalar one-form. -/
 public lemma integral_dir_mul_muIoc01_eq_curveIntegral_segment (F : ℂ → ℂ) (a b : ℂ)
     (zline : ℝ → ℂ) (hzline : ∀ t : ℝ, AffineMap.lineMap a b t = zline t) :
     (∫ t : ℝ, (b - a) * F (zline t) ∂μIoc01) = (∫ᶜ z in Path.segment a b, scalarOneForm F z) := by
-  simpa [μIoc01] using integral_dir_mul_restrict_Ioc01_eq_curveIntegral_segment F a b zline hzline
+  rw [show (∫ t : ℝ, (b - a) * F (zline t) ∂μIoc01) =
+      ∫ t in (0 : ℝ)..1, (b - a) * F (zline t) by
+    simpa [μIoc01] using
+      (intervalIntegral.integral_of_le (μ := volume)
+        (f := fun t => (b - a) * F (zline t)) (by norm_num)).symm,
+    curveIntegral_segment (ω := scalarOneForm F) a b]
+  refine intervalIntegral.integral_congr fun t ht => by simp [scalarOneForm_apply, hzline t]
 
 end
 
