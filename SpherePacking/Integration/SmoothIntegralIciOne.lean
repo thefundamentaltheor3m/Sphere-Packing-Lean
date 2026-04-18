@@ -89,13 +89,6 @@ public lemma hasDerivAt_integral_gN
     have hy0 : ε ≤ y + shift := by
       have hdist : |y - x| < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hy
       grind only [= abs.eq_1, = max_def]
-    have hexp2 : Real.exp (-(Real.pi * (y + shift)) * t) ≤ Real.exp (-(Real.pi * ε) * t) := by
-      refine Real.exp_le_exp.2 ?_
-      have : (Real.pi * ε) * t ≤ (Real.pi * (y + shift)) * t :=
-        mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hy0 Real.pi_pos.le) ht0
-      linarith
-    have hcoeff : ‖coeff t‖ ^ (n + 1) ≤ (Real.pi * t) ^ (n + 1) := by
-      simp [coeff_norm (t := t) ht]
     have hg : ‖g (hf := hf) y t‖ ≤ C * Real.exp (-(Real.pi * (y + shift)) * t) := by
       have hexp : Real.exp (-(Real.pi * shift) * t) * Real.exp (-Real.pi * y * t) =
           Real.exp (-(Real.pi * (y + shift)) * t) := by rw [← Real.exp_add]; ring_nf
@@ -108,7 +101,8 @@ public lemma hasDerivAt_integral_gN
             simp [gN, norm_pow]
       _ ≤ (Real.pi * t) ^ (n + 1) * (C * Real.exp (-(Real.pi * ε) * t)) := by
             gcongr
-            exact hg.trans (by gcongr)
+            · simp [coeff_norm (t := t) ht]
+            · exact hg.trans (by gcongr)
       _ = bound t := by simp [bound, mul_pow, mul_assoc, mul_left_comm, mul_comm]
   simpa [μIciOne, ε] using
     (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μIciOne)
