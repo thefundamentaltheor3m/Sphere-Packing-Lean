@@ -148,19 +148,13 @@ open scoped Interval
 
 noncomputable section
 
-private lemma ne_zero_of_re_ne_zero {z : ℂ} (hre : z.re ≠ 0) : z ≠ 0 :=
-  fun hz => hre (by simpa using congrArg Complex.re hz)
-
-private lemma ne_zero_of_im_ne_zero {z : ℂ} (him : z.im ≠ 0) : z ≠ 0 :=
-  fun hz => him (by simpa using congrArg Complex.im hz)
-
 public lemma segment_z₁_ne_zero (t : Set.Icc (0 : ℝ) 1) :
-    (AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) (t : ℝ)) ≠ 0 := by
-  refine ne_zero_of_re_ne_zero (by simp [Contour.lineMap_z₁line, Contour.z₁line])
+    (AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) (t : ℝ)) ≠ 0 := fun hz =>
+  by simpa [Contour.lineMap_z₁line, Contour.z₁line] using congrArg Complex.re hz
 
 public lemma segment_z₂_ne_zero (t : Set.Icc (0 : ℝ) 1) :
-    (AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I (t : ℝ)) ≠ 0 := by
-  refine ne_zero_of_im_ne_zero (by simp [Contour.lineMap_z₂line, Contour.z₂line])
+    (AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I (t : ℝ)) ≠ 0 := fun hz =>
+  by simpa [Contour.lineMap_z₂line, Contour.z₂line] using congrArg Complex.im hz
 
 end
 
