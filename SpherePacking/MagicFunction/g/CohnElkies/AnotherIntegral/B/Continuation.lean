@@ -4,8 +4,7 @@ public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.B.BPrimeE
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReductions
 public import SpherePacking.MagicFunction.g.CohnElkies.IntegralReps.ACDomain
 public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.ContinuationGeneric
-public import Mathlib.Analysis.Analytic.Composition
-public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
+public import SpherePacking.MagicFunction.g.CohnElkies.AnotherIntegral.Common.ContinuationWrapper
 
 
 /-!
@@ -20,10 +19,6 @@ right half-plane `ACDomain = {u : ℂ | 0 < Re u} \\ {2}` and applying an identi
 
 ## Main statement
 * `bRadial_eq_another_integral_analytic_continuation_of_gt2`
-
-## Domain for the identity theorem
-
-We work on `ACDomain = {u : ℂ | 0 < Re u} \\ {2}`.
 -/
 
 namespace MagicFunction.g.CohnElkies.IntegralReps
@@ -49,40 +44,20 @@ def bAnotherRHS (u : ℂ) : ℂ :=
 
 lemma bAnotherRHS_analyticOnNhd :
     AnalyticOnNhd ℂ bAnotherRHS ACDomain := by
-  have hb : ACDomain ⊆ rightHalfPlane := by
-    intro u hu
-    exact hu.1
-  have hπ : (π : ℂ) ≠ 0 := by
-    exact_mod_cast Real.pi_ne_zero
+  have hb : ACDomain ⊆ rightHalfPlane := fun u hu => hu.1
+  have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
   have hu_ne0 : ∀ u ∈ ACDomain, u ≠ 0 := by
     intro u hu h0
-    have hre : (0 : ℝ) < u.re := by
-      simpa [rightHalfPlane] using hu.1
-    have hne : u.re ≠ 0 := ne_of_gt hre
-    exact hne (by simp [h0])
-  have hsin_arg : AnalyticOnNhd ℂ (fun u : ℂ => (π : ℂ) * u / 2) ACDomain := by
-    refine (analyticOnNhd_const.mul analyticOnNhd_id).div analyticOnNhd_const ?_
-    intro _u _hu
-    norm_num
-  have hsin : AnalyticOnNhd ℂ (fun u : ℂ => Complex.sin ((π : ℂ) * u / 2)) ACDomain := by
-    simpa [Function.comp] using
-      (analyticOnNhd_sin (s := (Set.univ : Set ℂ))).comp hsin_arg (by intro _ _; simp)
-  have hsin_sq :
-      AnalyticOnNhd ℂ (fun u : ℂ => (Complex.sin ((π : ℂ) * u / 2)) ^ (2 : ℕ)) ACDomain :=
-    hsin.pow 2
+    have hre : (0 : ℝ) < u.re := by simpa [rightHalfPlane] using hu.1
+    exact (ne_of_gt hre) (by simp [h0])
   have hI : AnalyticOnNhd ℂ bAnotherIntegralC ACDomain :=
     (bAnotherIntegralC_analyticOnNhd).mono hb
   have hsub2 : AnalyticOnNhd ℂ (fun u : ℂ => u - 2) ACDomain :=
     analyticOnNhd_id.sub analyticOnNhd_const
-  have hden1 : ∀ u ∈ ACDomain, (π : ℂ) * u ≠ 0 := by
-    intro u hu
-    exact mul_ne_zero hπ (hu_ne0 u hu)
-  have hden2 : ∀ u ∈ ACDomain, (π : ℂ) * (u - 2) ≠ 0 := by
-    intro u hu
-    have hu_ne2 : u ≠ (2 : ℂ) := by
-      simpa [Set.mem_singleton_iff] using hu.2
-    have : u - 2 ≠ 0 := sub_ne_zero.2 hu_ne2
-    exact mul_ne_zero hπ this
+  have hden1 : ∀ u ∈ ACDomain, (π : ℂ) * u ≠ 0 := fun u hu =>
+    mul_ne_zero hπ (hu_ne0 u hu)
+  have hden2 : ∀ u ∈ ACDomain, (π : ℂ) * (u - 2) ≠ 0 := fun u hu =>
+    mul_ne_zero hπ (sub_ne_zero.2 (by simpa [Set.mem_singleton_iff] using hu.2))
   have hterm1 :
       AnalyticOnNhd ℂ (fun u : ℂ => (144 : ℂ) / ((π : ℂ) * u)) ACDomain :=
     analyticOnNhd_const.div (analyticOnNhd_const.mul analyticOnNhd_id) hden1
@@ -95,11 +70,8 @@ lemma bAnotherRHS_analyticOnNhd :
           (144 : ℂ) / ((π : ℂ) * u) + (1 : ℂ) / ((π : ℂ) * (u - 2)) + bAnotherIntegralC u)
         ACDomain := by
     simpa [add_assoc] using (hterm1.add hterm2).add hI
-  have hconst : AnalyticOnNhd ℂ (fun _u : ℂ => (-4 * (Complex.I : ℂ))) ACDomain :=
-    analyticOnNhd_const
-  -- Avoid `simp` normalization issues; unfold and use the analytic-factorization directly.
   unfold bAnotherRHS
-  exact (hconst.mul hsin_sq).mul hinner
+  exact analyticOnNhd_sinSq_prefactor_mul (sign := (-4 * (Complex.I : ℂ))) hinner
 
 lemma bAnotherRHS_ofReal (u : ℝ) :
     bAnotherRHS (u : ℂ) =
@@ -117,22 +89,15 @@ lemma bAnotherRHS_ofReal (u : ℝ) :
 lemma exists_b'_analytic_extension :
     ∃ f : ℂ → ℂ, AnalyticOnNhd ℂ f ACDomain ∧
       (∀ u : ℝ, 0 < u → u ≠ 2 → f (u : ℂ) = b' u) := by
-  refine ⟨bPrimeC, ?_, ?_⟩
-  · have hb : ACDomain ⊆ rightHalfPlane := by
-      intro u hu
-      exact hu.1
-    exact (bPrimeC_analyticOnNhd).mono hb
-  · intro u hu _hu2
-    have hb' : MagicFunction.b.RealIntegrals.b' u = b' u := by
-      simpa using
-        (MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) (le_of_lt hu)).symm
-    simpa [hb'] using (bPrimeC_ofReal u)
+  refine ⟨bPrimeC, (bPrimeC_analyticOnNhd).mono (fun u hu => hu.1), ?_⟩
+  intro u hu _hu2
+  have hb' : MagicFunction.b.RealIntegrals.b' u = b' u := by
+    simpa using
+      (MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) (le_of_lt hu)).symm
+  simpa [hb'] using (bPrimeC_ofReal u)
 
 /-!
 ## Final wrapper theorem
-
-This is the desired analytic continuation statement, packaged to take the `u > 2` identity as an
-input (supplied by `SpherePacking/MagicFunction/g/CohnElkies/AnotherIntegral/B/Main.lean`).
 -/
 
 /--
@@ -155,7 +120,6 @@ public theorem bRadial_eq_another_integral_analytic_continuation_of_gt2
           ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) +
             ∫ t in Set.Ioi (0 : ℝ),
               bAnotherBase t * (Real.exp (-π * u * t) : ℂ)) := by
-  -- Reformulate h_gt2 in terms of bAnotherRHS_ofReal for the generic wrapper.
   let rhsR := fun r : ℝ =>
     (-4 * (Complex.I : ℂ)) *
       (Real.sin (π * r / 2)) ^ (2 : ℕ) *
