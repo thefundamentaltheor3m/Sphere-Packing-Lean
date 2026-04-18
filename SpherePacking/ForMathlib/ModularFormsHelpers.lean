@@ -42,35 +42,28 @@ public theorem ModularGroup.coe_S_smul (z : UpperHalfPlane) :
 
 /-- The `S` matrix squares to `-1` in `SL(2, ℤ)`. -/
 @[simp] public theorem ModularGroup.modular_S_sq : S * S = -1 := by
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [S]
+  ext i j; fin_cases i <;> fin_cases j <;> simp [S]
 
 /-- Explicit matrix for `S * T` in `SL(2, ℤ)`. -/
 @[simp] public theorem ModularGroup.S_mul_T :
     S * T = ⟨!![0, -1; 1, 1], by norm_num [Matrix.det_fin_two_of]⟩ := by
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [S, T]
+  ext i j; fin_cases i <;> fin_cases j <;> simp [S, T]
 
 /-- Coercion of the `(S * T)`-action on `ℍ`: `((S * T) • z : ℂ) = -1 / (z + 1)`. -/
 public theorem ModularGroup.coe_ST_smul (z : UpperHalfPlane) :
     (↑((S * T) • z) : ℂ) = (-1 : ℂ) / ((z : ℂ) + 1) := by
   simpa [ModularGroup.S_mul_T] using coe_specialLinearGroup_apply (g := S * T) (z := z)
 
+
 /-! ### Slash actions by `-1` / negated matrices in even weight -/
 
-/-- Slash action by `-1` agrees with slash action by `1` for even weight.
-
-This is the version for the `GL (Fin 2) ℝ` slash action.
--/
+/-- Slash action by `-1` agrees with slash action by `1` for even weight
+(`GL (Fin 2) ℝ` version). -/
 @[simp] public theorem ModularForm.slash_neg_one {k : ℤ} (f : ℍ → ℂ) (hk : Even k) :
-    f ∣[k] (-1 : GL (Fin 2) ℝ) =
-    f ∣[k] (1 : GL (Fin 2) ℝ) := by
+    f ∣[k] (-1 : GL (Fin 2) ℝ) = f ∣[k] (1 : GL (Fin 2) ℝ) := by
   simp [slash_def, denom, hk.neg_one_zpow, Matrix.det_neg, σ]
 
-/-- Slash action by `-1` agrees with slash action by `1` for even weight.
-
-The prime indicates this is the `SL(2, ℤ)` version.
--/
+/-- Slash action by `-1` agrees with slash action by `1` for even weight (`SL(2, ℤ)` version). -/
 @[simp] public theorem ModularForm.slash_neg_one' {k : ℤ} (f : ℍ → ℂ) (hk : Even k) :
     f ∣[k] (-1 : SL(2, ℤ)) = f ∣[k] (1 : SL(2, ℤ)) := by
   simp [SL_slash_def, denom, hk.neg_one_zpow]
@@ -80,10 +73,7 @@ The prime indicates this is the `SL(2, ℤ)` version.
     f ∣[k] (-g) = f ∣[k] g := by
   rw [← neg_one_mul, SlashAction.slash_mul, slash_neg_one f hk, SlashAction.slash_one]
 
-/-- Negating a matrix does not change the slash action for even weight (`SL(2, ℤ)` version).
-
-The prime indicates this is the `SL(2, ℤ)` version.
--/
+/-- Negating a matrix does not change the slash action for even weight (`SL(2, ℤ)` version). -/
 @[simp] public theorem ModularForm.slash_neg' {k : ℤ} (g : SL(2, ℤ)) (f : ℍ → ℂ) (hk : Even k) :
     f ∣[k] (-g) = f ∣[k] g := by
   simpa [SL_slash] using (ModularForm.slash_neg (k := k) (g := (g : GL (Fin 2) ℝ)) f hk)
