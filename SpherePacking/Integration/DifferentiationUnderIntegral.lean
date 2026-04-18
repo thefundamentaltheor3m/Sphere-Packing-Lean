@@ -217,13 +217,11 @@ public theorem contDiff_integral_g_Ioo
     funext x; simp [I, gN, g, μIoo01]
   simpa [h0] using SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I) hI
 
-/-- Differentiate under the integral sign for the interval integral `∫ t in (0)..1, gN n x t`. -/
-public lemma hasDerivAt_integral_gN
-    (continuous_gN : ∀ n : ℕ, ∀ x : ℝ, Continuous fun t : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t)
-    (hasDerivAt_gN :
-      ∀ n : ℕ, ∀ x t : ℝ,
-        HasDerivAt (fun x : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t)
-          (gN (coeff := coeff) (hf := hf) (n + 1) x t) x)
+/-- Differentiate under the integral sign for the interval integral `∫ t in (0)..1, gN n x t`,
+assuming `hf` and `coeff` are continuous. -/
+public lemma hasDerivAt_integral_gN_of_continuous
+    (continuous_hf : Continuous hf)
+    (continuous_coeff : Continuous coeff)
     (exists_bound_norm_h : ∃ M, ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ M)
     (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
     (n : ℕ) (x₀ : ℝ) :
@@ -236,22 +234,28 @@ public lemma hasDerivAt_integral_gN
   have hμmem : ∀ᵐ t ∂μ, t ∈ Ι (0 : ℝ) 1 := by
     simpa [μ] using
       (ae_restrict_mem (μ := (volume : Measure ℝ)) (s := (Ι (0 : ℝ) 1)) (by measurability))
-  have hmeas : ∀ᶠ x in 𝓝 x₀, AEStronglyMeasurable (gN (coeff := coeff) (hf := hf) n x) μ :=
-    Filter.Eventually.of_forall fun x => (continuous_gN n x).aestronglyMeasurable
-  have hint : Integrable (gN (coeff := coeff) (hf := hf) n x₀) μ := by
-    simpa [μ] using (continuous_gN n x₀).integrableOn_uIoc
-      (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
-  have hmeas' : AEStronglyMeasurable (gN (coeff := coeff) (hf := hf) (n + 1) x₀) μ :=
-    (continuous_gN (n + 1) x₀).aestronglyMeasurable
+  have continuous_gN : ∀ n : ℕ, ∀ x : ℝ,
+      Continuous fun t : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t := fun n x => by
+    simpa [gN, g] using
+      (continuous_coeff.pow n).mul
+        (continuous_hf.mul ((continuous_const.mul continuous_coeff).cexp))
+  have hasDerivAt_gN : ∀ n : ℕ, ∀ x t : ℝ,
+      HasDerivAt (fun x : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t)
+        (gN (coeff := coeff) (hf := hf) (n + 1) x t) x := fun n x t => by
+    simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
+      ((SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const (hf t) (coeff t) x).const_mul
+        ((coeff t) ^ n))
   have hbound :
       ∀ᵐ t ∂μ, ∀ x ∈ Metric.ball x₀ 1,
         ‖gN (coeff := coeff) (hf := hf) (n + 1) x t‖ ≤ bound t := by
     filter_upwards [hμmem] with t ht
     intro x hx
-    have hh : ‖hf t‖ ≤ Mh := hMh t ht
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using
       (norm_gN_le_const (coeff := coeff) (hf := hf) (coeff_norm_le := coeff_norm_le)
-        (M := Mh) (t := t) (x := x) (x₀ := x₀) hx hh (n := n + 1))
+        (M := Mh) (t := t) (x := x) (x₀ := x₀) hx (hMh t ht) (n := n + 1))
+  have hint : Integrable (gN (coeff := coeff) (hf := hf) n x₀) μ := by
+    simpa [μ] using (continuous_gN n x₀).integrableOn_uIoc
+      (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
   haveI : IsFiniteMeasure μ := ⟨by simp [μ, Measure.restrict_apply, MeasurableSet.univ]⟩
   simpa [μ, intervalIntegral_eq_integral_uIoc, zero_le_one] using
     (hasDerivAt_integral_of_dominated_loc_of_deriv_le
@@ -259,32 +263,10 @@ public lemma hasDerivAt_integral_gN
         (F := fun x t => gN (coeff := coeff) (hf := hf) n x t)
         (F' := fun x t => gN (coeff := coeff) (hf := hf) (n + 1) x t)
         (bound := bound) (Metric.ball_mem_nhds x₀ (by norm_num))
-        hmeas hint hmeas' hbound
+        (Filter.Eventually.of_forall fun x => (continuous_gN n x).aestronglyMeasurable)
+        hint (continuous_gN (n + 1) x₀).aestronglyMeasurable hbound
         (integrable_const _)
         (ae_of_all _ fun t x _ => hasDerivAt_gN n x t)).2
-
-/-- Specialize `hasDerivAt_integral_gN` assuming `hf` and `coeff` are continuous. -/
-public lemma hasDerivAt_integral_gN_of_continuous
-    (continuous_hf : Continuous hf)
-    (continuous_coeff : Continuous coeff)
-    (exists_bound_norm_h : ∃ M, ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ M)
-    (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
-    (n : ℕ) (x₀ : ℝ) :
-    HasDerivAt (fun x : ℝ ↦ ∫ t in (0 : ℝ)..1, gN (coeff := coeff) (hf := hf) n x t)
-      (∫ t in (0 : ℝ)..1, gN (coeff := coeff) (hf := hf) (n + 1) x₀ t) x₀ := by
-  refine
-    hasDerivAt_integral_gN (coeff := coeff) (hf := hf)
-      (continuous_gN := ?_) (hasDerivAt_gN := ?_)
-      (exists_bound_norm_h := exists_bound_norm_h) (coeff_norm_le := coeff_norm_le)
-      (n := n) (x₀ := x₀)
-  · intro n x
-    simpa [gN, g] using
-      (continuous_coeff.pow n).mul
-        (continuous_hf.mul ((continuous_const.mul continuous_coeff).cexp))
-  · intro n x t
-    simpa [gN, g, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
-      ((SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const (hf t) (coeff t) x).const_mul
-        ((coeff t) ^ n))
 
 end
 
