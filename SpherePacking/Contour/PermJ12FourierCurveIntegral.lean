@@ -167,16 +167,12 @@ public theorem fourier_J₂_eq_curveIntegral_of
     (𝓕 (J₂ : V → ℂ)) w =
       (∫ᶜ z in Path.segment ((-1 : ℂ) + Complex.I) Complex.I,
         scalarOneForm (Ψ₁_fourier (‖w‖ ^ (2 : ℕ))) z) := by
-  have hphase' :
-      ∀ w x : V,
-        cexp (↑(-2 * Real.pi * ⟪x, w⟫) * Complex.I) * J₂' (‖x‖ ^ (2 : ℕ)) =
-          ∫ t : ℝ, permJ2Kernel w (x, t) ∂μ := by
-    intro w x
-    simpa [mul_assoc, mul_left_comm, mul_comm] using
-      phase_mul_J₂'_eq_integral_permJ2Kernel (w := w) (x := x)
   simpa using
     (fourier_J_eq_curveIntegral_of (J := J₂) (J' := J₂') (permJKernel := permJ2Kernel) (g := g)
-        (Ψ_fourier := Ψ₁_fourier) (a := (-1 : ℂ) + Complex.I) (b := Complex.I) J₂_apply hphase'
+        (Ψ_fourier := Ψ₁_fourier) (a := (-1 : ℂ) + Complex.I) (b := Complex.I) J₂_apply
+        (fun w x => by
+          simpa [mul_assoc, mul_left_comm, mul_comm] using
+            phase_mul_J₂'_eq_integral_permJ2Kernel (w := w) (x := x))
         integrable_permJ2Kernel integral_permJ2Kernel_x_ae integral_g_eq_curveIntegral w)
 
 /-! ### `μIoc01` segment integral helpers -/
