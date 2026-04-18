@@ -100,12 +100,6 @@ public lemma z₁'_eq_z₁line (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : z₁' t 
 public lemma z₂'_eq_z₂line (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : z₂' t = z₂line t := by
   simpa [z₂line, add_assoc] using (z₂'_eq_of_mem (t := t) ht)
 
-public lemma z₃'_eq_z₃line (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : z₃' t = z₃line t := by
-  simpa [z₃line, mul_assoc, mul_left_comm, mul_comm] using (z₃'_eq_of_mem (t := t) ht)
-
-public lemma z₄'_eq_z₄line (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : z₄' t = z₄line t := by
-  simpa [z₄line, sub_eq_add_neg, add_assoc] using (z₄'_eq_of_mem (t := t) ht)
-
 /-! ### `AffineMap.lineMap` equals `zⱼ'` on `[0,1]` -/
 
 public lemma lineMap_z₁_eq_z₁' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
@@ -118,11 +112,13 @@ public lemma lineMap_z₂_eq_z₂' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
 
 public lemma lineMap_z₃_eq_z₃' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) t = z₃' t := by
-  simpa [lineMap_z₃line (t := t)] using (z₃'_eq_z₃line (t := t) ht).symm
+  simpa [z₃line, lineMap_z₃line (t := t), mul_assoc, mul_left_comm, mul_comm]
+    using (z₃'_eq_of_mem (t := t) ht).symm
 
 public lemma lineMap_z₄_eq_z₄' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     AffineMap.lineMap ((1 : ℂ) + Complex.I) Complex.I t = z₄' t := by
-  simpa [lineMap_z₄line (t := t)] using (z₄'_eq_z₄line (t := t) ht).symm
+  simpa [z₄line, lineMap_z₄line (t := t), sub_eq_add_neg, add_assoc]
+    using (z₄'_eq_of_mem (t := t) ht).symm
 
 /-! ### Convenience lemmas for the left-side segments -/
 

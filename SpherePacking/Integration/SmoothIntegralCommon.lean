@@ -71,14 +71,8 @@ public theorem contDiff_integral
         hasDerivAt_I_succ (coeff := coeff) (hf := hf) continuous_hf continuous_coeff
           exists_bound_norm_h coeff_norm_le n x)
 
-/-- A convenient norm formula for `cexp ((x : ℂ) * coeff t)` when `Re (coeff t) = -π`. -/
-public lemma norm_cexp_ofReal_mul_coeff_eq
-    (coeff_re : ∀ t : ℝ, (coeff t).re = (-Real.pi : ℝ)) (x t : ℝ) :
-    ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x) := by
-  simp [Complex.norm_exp, Complex.mul_re, coeff_re t, mul_comm]
-
 /-- One-sided decay for `I 0 x` from a uniform bound on `‖cexp ((x : ℂ) * coeff t)‖`. -/
-public theorem decay_integral
+private theorem decay_integral
     (continuous_hf : Continuous hf)
     (continuous_coeff : Continuous coeff)
     (exists_bound_norm_h : ∃ M, ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ M)
@@ -159,7 +153,8 @@ public theorem decay_integral_of_coeff_re
   simpa using
     (decay_integral (coeff := coeff) (hf := hf)
       continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le
-      (norm_cexp := norm_cexp_ofReal_mul_coeff_eq (coeff := coeff) (coeff_re := coeff_re)))
+      (norm_cexp := fun x t => by
+        simp [Complex.norm_exp, Complex.mul_re, coeff_re t, mul_comm]))
 
 end
 
