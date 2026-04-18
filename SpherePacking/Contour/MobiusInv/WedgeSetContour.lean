@@ -37,17 +37,15 @@ lemma perm_J12_contour_h1_mobiusInv_wedgeSet
     (∫ᶜ z in mobiusInv_segment_z₁, scalarOneForm (Ψ₁' r) z) +
         ∫ᶜ z in Path.segment (mobiusInv ((-1 : ℂ) + Complex.I)) ((1 : ℂ) + Complex.I),
           scalarOneForm (Ψ₁' r) z =
-      ∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I), scalarOneForm (Ψ₁' r) z := by
-  exact perm_J12_contour_h1 (mobiusInv := mobiusInv) (Ψ₁' := Ψ₁') (wedgeSet := wedgeSet)
+      ∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I), scalarOneForm (Ψ₁' r) z :=
+  perm_J12_contour_h1 (mobiusInv := mobiusInv) (Ψ₁' := Ψ₁') (wedgeSet := wedgeSet)
     { closed_ω_wedgeSet := closed_ω_wedgeSet
       hyp :=
         { continuousOn_mobiusInv_segment_z₁ := continuousOn_mobiusInv_segment_z₁
           mobiusInv_neg_one := by simp [mobiusInv]
-          homotopy_mem_wedgeSet := by
-            intro x y hx hy
-            exact
-              convex_wedgeSet.lineMap_mem (mobiusInv_lineMap_z₁_mem_wedgeSet (t := y) hy.1 hy.2)
-                (lineMap_z₃line_mem_wedgeSet (t := y) hy.1) ⟨hx.1.le, hx.2.le⟩
+          homotopy_mem_wedgeSet := fun hx hy =>
+            convex_wedgeSet.lineMap_mem (mobiusInv_lineMap_z₁_mem_wedgeSet hy.1 hy.2)
+              (lineMap_z₃line_mem_wedgeSet hy.1) ⟨hx.1.le, hx.2.le⟩
           contDiffOn_homotopy := by
             refine contDiffOn_lineMap_mobiusInv_lineMap (-1) (-1 + Complex.I) 1 (1 + Complex.I) ?_
             rintro ⟨_x, y⟩ ⟨h0, h1⟩
@@ -66,11 +64,9 @@ lemma perm_J12_contour_h2_mobiusInv_wedgeSet
       hyp :=
         { continuousOn_mobiusInv_segment_z₂ := continuousOn_mobiusInv_segment_z₂
           mobiusInv_I := by simp [mobiusInv]
-          homotopy_mem_wedgeSet := by
-            intro x y hx hy
-            exact
-              convex_wedgeSet.lineMap_mem (mobiusInv_lineMap_z₂_mem_wedgeSet (t := y) hy.1 hy.2)
-                (lineMap_z₄line_mem_wedgeSet (t := y) hy.1 hy.2) ⟨hx.1.le, hx.2.le⟩
+          homotopy_mem_wedgeSet := fun hx hy =>
+            convex_wedgeSet.lineMap_mem (mobiusInv_lineMap_z₂_mem_wedgeSet hy.1 hy.2)
+              (lineMap_z₄line_mem_wedgeSet hy.1 hy.2) ⟨hx.1.le, hx.2.le⟩
           contDiffOn_homotopy := by
             refine contDiffOn_lineMap_mobiusInv_lineMap
               (-1 + Complex.I) Complex.I (1 + Complex.I) Complex.I ?_
