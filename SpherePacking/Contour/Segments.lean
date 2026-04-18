@@ -66,7 +66,7 @@ public lemma z₁line_im (t : ℝ) : (z₁line t).im = t := by simp [z₁line]
   simp [z₄line, sub_eq_add_neg, add_assoc]
 
 public lemma z₁line_im_pos_Ioc {t : ℝ} (ht : t ∈ Ioc (0 : ℝ) 1) : 0 < (z₁line t).im := by
-  simpa [z₁line_im (t := t)] using ht.1
+  simpa [z₁line_im t] using ht.1
 
 /-! ### `AffineMap.lineMap` descriptions of the `zⱼline` segments -/
 
@@ -74,14 +74,9 @@ public lemma lineMap_z₁line (t : ℝ) :
     AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) t = z₁line t := by
   simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₁line, add_comm, mul_comm]
 
-public lemma dir_z₁line :
-    ((-1 : ℂ) + Complex.I) - (-1 : ℂ) = (Complex.I : ℂ) := by ring
-
 public lemma lineMap_z₂line (t : ℝ) :
     AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t = z₂line t := by
   simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₂line, add_left_comm, add_comm]
-
-public lemma dir_z₂line : Complex.I - ((-1 : ℂ) + Complex.I) = (1 : ℂ) := by ring
 
 public lemma lineMap_z₃line (t : ℝ) :
     AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) t = z₃line t := by
@@ -91,6 +86,11 @@ public lemma lineMap_z₄line (t : ℝ) :
     AffineMap.lineMap ((1 : ℂ) + Complex.I) Complex.I t = z₄line t := by
   simp [AffineMap.lineMap_apply_module', Algebra.smul_def, z₄line, sub_eq_add_neg, add_left_comm,
     add_comm]
+
+public lemma dir_z₁line :
+    ((-1 : ℂ) + Complex.I) - (-1 : ℂ) = (Complex.I : ℂ) := by ring
+
+public lemma dir_z₂line : Complex.I - ((-1 : ℂ) + Complex.I) = (1 : ℂ) := by ring
 
 /-! ### Matching `MagicFunction.Parametrisations.zⱼ'` with `zⱼline` on `[0,1]` -/
 
