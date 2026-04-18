@@ -35,15 +35,6 @@ namespace SpherePacking.Contour
 
 noncomputable section
 
-/-- Differentiability of `z ↦ ψ z * exp(π * I * r * z)` on a set. -/
-public lemma differentiableOn_mul_cexp_pi_I_mul_real
-    {s : Set ℂ} {ψ : ℂ → ℂ} (hψ : DifferentiableOn ℂ ψ s) (r : ℝ) :
-    DifferentiableOn ℂ
-      (fun z : ℂ => ψ z * cexp ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z)) s := by
-  simpa [mul_assoc] using
-    hψ.mul
-      ((differentiable_id.const_mul ((Real.pi : ℂ) * Complex.I * (r : ℂ))).cexp.differentiableOn)
-
 /--
 `TendstoPsiOneHypotheses wedgeSet ψS ψT' Ψ₁' gAct k` bundles the hypotheses used to prove
 `Tendsto (Ψ₁' r) (𝓝[closure wedgeSet] 1) (𝓝 0)`.

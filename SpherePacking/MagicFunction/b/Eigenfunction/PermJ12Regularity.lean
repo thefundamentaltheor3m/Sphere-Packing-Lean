@@ -102,8 +102,10 @@ public lemma differentiableOn_ψT'_upper :
 /-- Holomorphicity of `Ψ₁' r` on the upper half-plane. -/
 public lemma differentiableOn_Ψ₁'_upper (r : ℝ) :
     DifferentiableOn ℂ (Ψ₁' r) UpperHalfPlane.upperHalfPlaneSet := by
-  simpa [Ψ₁'] using SpherePacking.Contour.differentiableOn_mul_cexp_pi_I_mul_real
-    (s := UpperHalfPlane.upperHalfPlaneSet) (ψ := ψT') (hψ := differentiableOn_ψT'_upper) (r := r)
+  unfold Ψ₁'
+  exact differentiableOn_ψT'_upper.mul
+    ((differentiable_id.const_mul
+      ((Real.pi : ℂ) * Complex.I * (r : ℂ))).cexp.differentiableOn)
 
 open UpperHalfPlane Complex ModularGroup MatrixGroups ModularForm SlashAction Matrix
 open scoped Real ModularForm MatrixGroups
