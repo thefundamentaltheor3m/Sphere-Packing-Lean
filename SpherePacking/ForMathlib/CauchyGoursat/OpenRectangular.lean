@@ -191,21 +191,6 @@ public theorem rect_deform_of_tendsto_top {f : ℂ → E} {x₁ x₂ y : ℝ}
     (∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) +
           (I • ∫ t in Set.Ioi y, f ((x₂ : ℂ) + (t : ℂ) * I)) -
             (I • ∫ t in Set.Ioi y, f ((x₁ : ℂ) + (t : ℂ) * I)) = 0 := by
-  have hrect :
-      ∀ m : ℝ, y ≤ m →
-        (∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) -
-              (∫ x in x₁..x₂, f ((x : ℂ) + (m : ℂ) * I)) +
-            (I • ∫ t in y..m, f ((x₂ : ℂ) + (t : ℂ) * I)) -
-              (I • ∫ t in y..m, f ((x₁ : ℂ) + (t : ℂ) * I)) = 0 := by
-    intro m hm
-    have hdiff' :
-        ∀ z ∈ ((Set.Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Set.Ioi y) \ (∅ : Set ℂ)),
-          DifferentiableAt ℂ f z := by
-      intro z hz
-      exact hdiff z (by simpa using hz.1)
-    simpa using
-      (Complex.hzero (f := f) (x₁ := x₁) (x₂ := x₂) (y := y) hcont (s := (∅ : Set ℂ))
-        (hs := by simp) hdiff' m hm)
   have hEq :
       (fun m : ℝ =>
           (∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) +
@@ -213,35 +198,17 @@ public theorem rect_deform_of_tendsto_top {f : ℂ → E} {x₁ x₂ y : ℝ}
                 (I • ∫ t in y..m, f ((x₁ : ℂ) + (t : ℂ) * I))) =ᶠ[atTop]
         fun m : ℝ => ∫ x in x₁..x₂, f ((x : ℂ) + (m : ℂ) * I) := by
     filter_upwards [eventually_ge_atTop y] with m hm
+    have hdiff' :
+        ∀ z ∈ ((Set.Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Set.Ioi y) \ (∅ : Set ℂ)),
+          DifferentiableAt ℂ f z :=
+      fun z hz => hdiff z (by simpa using hz.1)
+    have hr := Complex.hzero (f := f) (x₁ := x₁) (x₂ := x₂) (y := y) hcont (s := (∅ : Set ℂ))
+      (hs := by simp) hdiff' m hm
     grind only
-  have hF0 :
-      Tendsto
-          (fun m : ℝ =>
-            (∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) +
-                (I • ∫ t in y..m, f ((x₂ : ℂ) + (t : ℂ) * I)) -
-                  (I • ∫ t in y..m, f ((x₁ : ℂ) + (t : ℂ) * I))) atTop (𝓝 0) :=
-    (tendsto_congr' hEq).2 htop
-  have hV₁ :
-      Tendsto (fun m : ℝ => ∫ t in y..m, f ((x₁ : ℂ) + (t : ℂ) * I)) atTop
-        (𝓝 (∫ t in Set.Ioi y, f ((x₁ : ℂ) + (t : ℂ) * I))) :=
-    intervalIntegral_tendsto_integral_Ioi y hint₁ tendsto_id
-  have hV₂ :
-      Tendsto (fun m : ℝ => ∫ t in y..m, f ((x₂ : ℂ) + (t : ℂ) * I)) atTop
-        (𝓝 (∫ t in Set.Ioi y, f ((x₂ : ℂ) + (t : ℂ) * I))) :=
-    intervalIntegral_tendsto_integral_Ioi y hint₂ tendsto_id
-  have hFlim :
-      Tendsto
-          (fun m : ℝ =>
-            (∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) +
-                (I • ∫ t in y..m, f ((x₂ : ℂ) + (t : ℂ) * I)) -
-                  (I • ∫ t in y..m, f ((x₁ : ℂ) + (t : ℂ) * I))) atTop
-        (𝓝 ((∫ x in x₁..x₂, f ((x : ℂ) + (y : ℂ) * I)) +
-              (I • ∫ t in Set.Ioi y, f ((x₂ : ℂ) + (t : ℂ) * I)) -
-                (I • ∫ t in Set.Ioi y, f ((x₁ : ℂ) + (t : ℂ) * I)))) := by
-    have hV₁' := hV₁.const_smul I
-    have hV₂' := hV₂.const_smul I
-    exact (tendsto_const_nhds.add hV₂').sub hV₁'
-  simpa using tendsto_nhds_unique hFlim hF0
+  have hV₁ := (intervalIntegral_tendsto_integral_Ioi y hint₁ tendsto_id).const_smul I
+  have hV₂ := (intervalIntegral_tendsto_integral_Ioi y hint₂ tendsto_id).const_smul I
+  simpa using tendsto_nhds_unique
+    ((tendsto_const_nhds.add hV₂).sub hV₁) ((tendsto_congr' hEq).2 htop)
 
 end Contour_Deformation_Tendsto_Top
 
