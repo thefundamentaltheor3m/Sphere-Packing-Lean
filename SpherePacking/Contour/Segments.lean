@@ -103,12 +103,12 @@ public lemma z₂'_eq_z₂line (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : z₂' t 
 /-! ### `AffineMap.lineMap` equals `zⱼ'` on `[0,1]` -/
 
 public lemma lineMap_z₁_eq_z₁' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
-    AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) t = z₁' t := by
-  simpa [lineMap_z₁line (t := t)] using (z₁'_eq_z₁line (t := t) ht).symm
+    AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) t = z₁' t :=
+  (lineMap_z₁line t).trans (z₁'_eq_z₁line t ht).symm
 
 public lemma lineMap_z₂_eq_z₂' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
-    AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t = z₂' t := by
-  simpa [lineMap_z₂line (t := t)] using (z₂'_eq_z₂line (t := t) ht).symm
+    AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t = z₂' t :=
+  (lineMap_z₂line t).trans (z₂'_eq_z₂line t ht).symm
 
 public lemma lineMap_z₃_eq_z₃' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
     AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) t = z₃' t := by
