@@ -89,38 +89,27 @@ public lemma hasDerivAt_integral_gN
     have hy0 : ε ≤ y + shift := by
       have hdist : |y - x| < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hy
       grind only [= abs.eq_1, = max_def]
-    have hlin : (-(Real.pi * (y + shift)) * t : ℝ) ≤ (-(Real.pi * ε) * t) := by
-      have hπ : (Real.pi : ℝ) * ε ≤ (Real.pi : ℝ) * (y + shift) :=
-        mul_le_mul_of_nonneg_left hy0 Real.pi_pos.le
-      have ht' : (Real.pi * ε) * t ≤ (Real.pi * (y + shift)) * t :=
-        mul_le_mul_of_nonneg_right hπ ht0
-      have := neg_le_neg ht'
-      simpa [mul_assoc, mul_left_comm, mul_comm] using this
-    have hexp2 : Real.exp (-(Real.pi * (y + shift)) * t) ≤ Real.exp (-(Real.pi * ε) * t) :=
-      Real.exp_le_exp.2 hlin
+    have hexp2 : Real.exp (-(Real.pi * (y + shift)) * t) ≤ Real.exp (-(Real.pi * ε) * t) := by
+      refine Real.exp_le_exp.2 ?_
+      have : (Real.pi * ε) * t ≤ (Real.pi * (y + shift)) * t :=
+        mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hy0 Real.pi_pos.le) ht0
+      linarith
     have hcoeff : ‖coeff t‖ ^ (n + 1) ≤ (Real.pi * t) ^ (n + 1) := by
-      have : ‖coeff t‖ = Real.pi * t := coeff_norm (t := t) ht
-      simp [this]
-    have hhf : ‖hf t‖ ≤ C * Real.exp (-(Real.pi * shift) * t) := hC t ht
+      simp [coeff_norm (t := t) ht]
     have hg : ‖g (hf := hf) y t‖ ≤ C * Real.exp (-(Real.pi * (y + shift)) * t) := by
-      have hg' := g_norm_bound (hf := hf) (x := y) (t := t)
-      have hexp :
-          Real.exp (-(Real.pi * shift) * t) * Real.exp (-Real.pi * y * t) =
-            Real.exp (-(Real.pi * (y + shift)) * t) := by
-        rw [← Real.exp_add]; ring_nf
-      calc
-        ‖g (hf := hf) y t‖ ≤ ‖hf t‖ * Real.exp (-Real.pi * y * t) := hg'
-        _ ≤ (C * Real.exp (-(Real.pi * shift) * t)) * Real.exp (-Real.pi * y * t) := by gcongr
+      have hexp : Real.exp (-(Real.pi * shift) * t) * Real.exp (-Real.pi * y * t) =
+          Real.exp (-(Real.pi * (y + shift)) * t) := by rw [← Real.exp_add]; ring_nf
+      calc ‖g (hf := hf) y t‖ ≤ ‖hf t‖ * Real.exp (-Real.pi * y * t) := g_norm_bound _ _ _
+        _ ≤ (C * Real.exp (-(Real.pi * shift) * t)) * Real.exp (-Real.pi * y * t) := by
+              gcongr
+              exact hC t ht
         _ = C * Real.exp (-(Real.pi * (y + shift)) * t) := by rw [mul_assoc, hexp]
-    calc
-      ‖gN (hf := hf) (n + 1) y t‖ = ‖coeff t‖ ^ (n + 1) * ‖g (hf := hf) y t‖ := by
+    calc ‖gN (hf := hf) (n + 1) y t‖ = ‖coeff t‖ ^ (n + 1) * ‖g (hf := hf) y t‖ := by
             simp [gN, norm_pow]
-      _ ≤ (Real.pi * t) ^ (n + 1) * (C * Real.exp (-(Real.pi * (y + shift)) * t)) := by
-            gcongr
       _ ≤ (Real.pi * t) ^ (n + 1) * (C * Real.exp (-(Real.pi * ε) * t)) := by
             gcongr
-      _ = bound t := by
-            simp [bound, mul_pow, mul_assoc, mul_left_comm, mul_comm]
+            exact hg.trans (by gcongr)
+      _ = bound t := by simp [bound, mul_pow, mul_assoc, mul_left_comm, mul_comm]
   have h_diff :
       ∀ᵐ t ∂μIciOne, ∀ y ∈ Metric.ball x ε,
         HasDerivAt (fun y : ℝ ↦ gN (hf := hf) n y t) (gN (hf := hf) (n + 1) y t) y := by
