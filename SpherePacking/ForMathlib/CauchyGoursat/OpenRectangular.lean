@@ -96,52 +96,6 @@ end Eventually_Eq_Zero
 
 section Contour_Deformation_Tensdsto
 
-/-- **Deformation of open rectangular contours:** Given two infinite vertical contours such that a
-function satisfies Cauchy-Goursat conditions between them, the limit of interval integrals along the
-first contour equals the sum of a translation integral and the limit of interval integrals along
-the second integral. -/
-theorem integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable
-    (hcont : ContinuousOn f ([[x₁, x₂]] ×ℂ (Ici y))) (s : Set ℂ) (hs : s.Countable)
-    (hdiff : ∀ x ∈ ((Ioo (min x₁ x₂) (max x₁ x₂)) ×ℂ (Ioi y)) \ s, DifferentiableAt ℂ f x)
-    {C₁ : E} (hC₁ : Tendsto (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₁ + t * I)) atTop (𝓝 C₁))
-    {C₂ : E} (hC₂ : Tendsto (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₂ + t * I)) atTop (𝓝 C₂))
-    (htendsto : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε) :
-    (∫ (t : ℝ) in x₁..x₂, f (t + y * I)) + C₂ - C₁ = 0 := by
-  have heventually : (fun (m : ℝ) ↦
-      (∫ (x : ℝ) in x₁..x₂, f (x + y * I))
-        - (∫ (x : ℝ) in x₁..x₂, f (x + m * I))
-        + (I • ∫ (t : ℝ) in y..m, f (x₂ + t * I)))
-      =ᶠ[atTop] (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₁ + t * I)) := by
-    filter_upwards [eventually_ge_atTop y] with m hm
-    rw [← sub_eq_zero, ← (hzero y hcont s hs hdiff m hm)]
-  have hC₁' : Tendsto (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₁ + t * I)) atTop
-      (𝓝 ((∫ (t : ℝ) in x₁..x₂, f (t + y * I)) + C₂)) := by
-    rw [tendsto_congr' heventually.symm, ← sub_zero (∫ (t : ℝ) in x₁..x₂, f (↑t + ↑y * I))]
-    refine (Tendsto.sub ?_ ?_).add hC₂
-    · rw [sub_zero, tendsto_const_nhds_iff]
-    · exact tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero htendsto
-  exact sub_eq_zero.2 (tendsto_nhds_unique hC₁ hC₁').symm
-
-/-- **Deformation of open rectangular contours:** Given two infinite vertical contours such that a
-function satisfies Cauchy-Goursat conditions between them, the limit of interval integrals along the
-first contour equals the sum of a translation integral and the limit of interval integrals along
-the second integral.
-
-This is a variant of `integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable`. The
-sole difference is that the assumptions in this lemma do not include the factor of `I` that comes
-from contour parametrisation. The reason we state this version is that it might be more convenient
-to use in certain cases.
--/
-theorem integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable'
-    (hcont : ContinuousOn f ([[x₁, x₂]] ×ℂ (Ici y))) (s : Set ℂ) (hs : s.Countable)
-    (hdiff : ∀ x ∈ ((Ioo (min x₁ x₂) (max x₁ x₂)) ×ℂ (Ioi y)) \ s, DifferentiableAt ℂ f x)
-    {C₁ : E} (hC₁ : Tendsto (fun m ↦ ∫ (t : ℝ) in y..m, f (x₁ + t * I)) atTop (𝓝 C₁))
-    {C₂ : E} (hC₂ : Tendsto (fun m ↦ ∫ (t : ℝ) in y..m, f (x₂ + t * I)) atTop (𝓝 C₂))
-    (htendsto : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε) :
-    (∫ (t : ℝ) in x₁..x₂, f (t + y * I)) + (I • C₂) - (I • C₁) = 0 :=
-  integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable y hcont s hs hdiff
-    (hC₁.const_smul I) (hC₂.const_smul I) htendsto
-
 end Contour_Deformation_Tensdsto
 
 section Contour_Deformation_of_Integrable_along_BOTH
@@ -166,9 +120,26 @@ public theorem
     (htendsto : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε) :
     (∫ (x : ℝ) in x₁..x₂, f (x + y * I)) + (I • ∫ (t : ℝ) in Ioi y, f (x₂ + t * I))
       - (I • ∫ (t : ℝ) in Ioi y, f (x₁ + t * I)) = 0 := by
-  refine integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable' y hcont s hs hdiff
-    (intervalIntegral_tendsto_integral_Ioi y hint₁ tendsto_id)
-    (intervalIntegral_tendsto_integral_Ioi y hint₂ tendsto_id) htendsto
+  set C₁ := ∫ (t : ℝ) in Ioi y, f (x₁ + t * I)
+  set C₂ := ∫ (t : ℝ) in Ioi y, f (x₂ + t * I)
+  have hC₁ : Tendsto (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₁ + t * I)) atTop (𝓝 (I • C₁)) :=
+    (intervalIntegral_tendsto_integral_Ioi y hint₁ tendsto_id).const_smul I
+  have hC₂ : Tendsto (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₂ + t * I)) atTop (𝓝 (I • C₂)) :=
+    (intervalIntegral_tendsto_integral_Ioi y hint₂ tendsto_id).const_smul I
+  have heventually : (fun (m : ℝ) ↦
+      (∫ (x : ℝ) in x₁..x₂, f (x + y * I))
+        - (∫ (x : ℝ) in x₁..x₂, f (x + m * I))
+        + (I • ∫ (t : ℝ) in y..m, f (x₂ + t * I)))
+      =ᶠ[atTop] (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₁ + t * I)) := by
+    filter_upwards [eventually_ge_atTop y] with m hm
+    rw [← sub_eq_zero, ← (hzero y hcont s hs hdiff m hm)]
+  have hC₁' : Tendsto (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₁ + t * I)) atTop
+      (𝓝 ((∫ (t : ℝ) in x₁..x₂, f (t + y * I)) + I • C₂)) := by
+    rw [tendsto_congr' heventually.symm, ← sub_zero (∫ (t : ℝ) in x₁..x₂, f (↑t + ↑y * I))]
+    refine (Tendsto.sub ?_ ?_).add hC₂
+    · rw [sub_zero, tendsto_const_nhds_iff]
+    · exact tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero htendsto
+  exact sub_eq_zero.2 (tendsto_nhds_unique hC₁ hC₁').symm
 
 end Contour_Deformation_of_Integrable_along_BOTH
 

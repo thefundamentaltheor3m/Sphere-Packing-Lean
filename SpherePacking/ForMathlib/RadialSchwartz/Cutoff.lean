@@ -82,14 +82,13 @@ public lemma cutoffC_contDiff : ContDiff ℝ (⊤ : ℕ∞) cutoffC := by
 public lemma contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1 {f : ℝ → ℂ}
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f (Set.Ioi (-1 : ℝ))) :
     ContDiff ℝ (⊤ : ℕ∞) (fun r ↦ cutoffC r * f r) := by
-  refine (contDiff_iff_contDiffAt (𝕜 := ℝ) (n := (⊤ : ℕ∞)) (f := fun r ↦ cutoffC r * f r)).2 ?_
-  intro x
+  refine (contDiff_iff_contDiffAt (𝕜 := ℝ) (n := (⊤ : ℕ∞)) (f := fun r ↦ cutoffC r * f r)).2 fun x => ?_
   by_cases hx : x < (-1 / 2 : ℝ)
   · refine (contDiffAt_const : ContDiffAt ℝ (⊤ : ℕ∞) (fun _ ↦ (0 : ℂ)) x).congr_of_eventuallyEq ?_
     filter_upwards [Iio_mem_nhds hx] with y hy
     simp [cutoffC_eq_zero_of_le_neg_half (r := y) (le_of_lt hy)]
   · have hx' : (-1 : ℝ) < x := by linarith [le_of_not_gt hx]
-    exact (cutoffC_contDiff.contDiffAt (x := x)).mul (hf.contDiffAt (isOpen_Ioi.mem_nhds hx'))
+    exact cutoffC_contDiff.contDiffAt.mul (hf.contDiffAt (isOpen_Ioi.mem_nhds hx'))
 
 end
 
