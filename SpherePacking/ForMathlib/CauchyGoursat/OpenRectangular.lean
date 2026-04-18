@@ -65,32 +65,26 @@ end Tendsto_Zero
 section Eventually_Eq_Zero
 
 lemma hzero (hcont : ContinuousOn f ([[x₁, x₂]] ×ℂ (Ici y))) (s : Set ℂ) (hs : s.Countable)
-    (hdiff : ∀ x ∈ ((Ioo (min x₁ x₂) (max x₁ x₂)) ×ℂ (Ioi y)) \ s, DifferentiableAt ℂ f x) :
-    ∀ m ≥ y, (∫ (x : ℝ) in x₁..x₂, f (x + y * I)) - (∫ (x : ℝ) in x₁..x₂, f (x + m * I))
+    (hdiff : ∀ x ∈ ((Ioo (min x₁ x₂) (max x₁ x₂)) ×ℂ (Ioi y)) \ s, DifferentiableAt ℂ f x)
+    (m : ℝ) (hm : m ≥ y) :
+    (∫ (x : ℝ) in x₁..x₂, f (x + y * I)) - (∫ (x : ℝ) in x₁..x₂, f (x + m * I))
       + (I • ∫ (t : ℝ) in y..m, f (x₂ + t * I)) - (I • ∫ (t : ℝ) in y..m, f (x₁ + t * I))
     = 0 := by
-  intro m hm
   simpa [re_of_real_add_real_mul_I, im_of_real_add_real_mul_I] using
-    (Complex.integral_boundary_rect_eq_zero_of_differentiable_on_off_countable f (x₁ + y * I)
+    Complex.integral_boundary_rect_eq_zero_of_differentiable_on_off_countable f (x₁ + y * I)
       (x₂ + m * I) s hs
-      (by
-        refine hcont.mono ?_
+      (hcont.mono (by
         rw [reProdIm_subset_iff]
         gcongr
         · simp
         · simpa [re_of_real_add_real_mul_I, im_of_real_add_real_mul_I, uIcc_of_le hm] using
-            (Icc_subset_Ici_self : Icc y m ⊆ Ici y))
-      (by
-        intro z hz
-        rcases (by
-          simpa [re_of_real_add_real_mul_I, im_of_real_add_real_mul_I] using hz :
-            z ∈ (Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Ioo (min y m) (max y m)) ∧ z ∉ s) with ⟨hz, hzns⟩
+            (Icc_subset_Ici_self : Icc y m ⊆ Ici y)))
+      (fun z hz => by
+        obtain ⟨hz, hzns⟩ : z ∈ Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Ioo (min y m) (max y m) ∧ z ∉ s := by
+          simpa [re_of_real_add_real_mul_I, im_of_real_add_real_mul_I] using hz
         refine hdiff z ⟨?_, hzns⟩
         rw [mem_reProdIm] at hz ⊢
-        refine ⟨hz.1, ?_⟩
-        exact (by
-          have hz_im := (mem_Ioo.1 hz.2).1
-          simpa [min_eq_left hm] using hz_im)))
+        exact ⟨hz.1, by simpa [min_eq_left hm] using (mem_Ioo.1 hz.2).1⟩)
 
 end Eventually_Eq_Zero
 
