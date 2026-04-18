@@ -99,22 +99,8 @@ private lemma perm_12_contour_mobiusInv_wedgeSet_aux
               scalarOneForm (Ψ₁' r) z) +
           ∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I,
             scalarOneForm (Ψ₁' r) z) := by
-  let ω : ℂ → ℂ →L[ℂ] ℂ := scalarOneForm (Ψ₁' r)
-  let γa :
-      Path (mobiusInv (-1 : ℂ)) (mobiusInv ((-1 : ℂ) + Complex.I)) :=
-    mobiusInv_segment_z₁
-  let γb :
-      Path (mobiusInv ((-1 : ℂ) + Complex.I)) (mobiusInv Complex.I) :=
-    mobiusInv_segment_z₂
-  let zmid : ℂ := mobiusInv ((-1 : ℂ) + Complex.I)
-  let ztop : ℂ := (1 : ℂ) + Complex.I
-  let δa : Path (1 : ℂ) ((1 : ℂ) + Complex.I) := Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I)
-  let δb : Path ((1 : ℂ) + Complex.I) Complex.I := Path.segment ((1 : ℂ) + Complex.I) Complex.I
-  let η : Path zmid ztop := Path.segment zmid ztop
-  have h1 : (∫ᶜ z in γa, ω z) + ∫ᶜ z in η, ω z = ∫ᶜ z in δa, ω z := by
-    exact perm_J12_contour_h1_mobiusInv_wedgeSet closed_ω_wedgeSet r
-  have h2 : ∫ᶜ z in γb, ω z = (∫ᶜ z in δb, ω z) + ∫ᶜ z in η, ω z := by
-    exact perm_J12_contour_h2_mobiusInv_wedgeSet closed_ω_wedgeSet r
+  have h1 := perm_J12_contour_h1_mobiusInv_wedgeSet closed_ω_wedgeSet r
+  have h2 := perm_J12_contour_h2_mobiusInv_wedgeSet closed_ω_wedgeSet r
   grind only
 
 /--
