@@ -148,33 +148,18 @@ private lemma perm_J12_contour_h_aux
   have hcontdiff : ContDiffOn ℝ 2
       (fun xy : ℝ × ℝ ↦ Set.IccExtend zero_le_one (φ.extend xy.1) xy.2)
       (Set.Icc (0 : ℝ × ℝ) 1) := by
-    let F : ℝ × ℝ → ℂ := fun xy =>
-      ((AffineMap.lineMap (k := ℝ)
-            (mobiusInv ((AffineMap.lineMap (k := ℝ) p0 p1) xy.2))
-            ((AffineMap.lineMap (k := ℝ) q0 q1) xy.2)) xy.1)
-    have hF : ContDiffOn ℝ 2 (fun xy : ℝ × ℝ => F xy) (Set.Icc (0 : ℝ × ℝ) 1) := by
-      simpa [F] using contDiffOn_homotopy
-    refine (contDiffOn_congr ?_).2 hF
-    intro xy hxy
-    rcases xy with ⟨x, y⟩
-    rcases hxy with ⟨h0, h1⟩
-    have hx : x ∈ Set.Icc (0 : ℝ) 1 := ⟨h0.1, h1.1⟩
-    have hy : y ∈ Set.Icc (0 : ℝ) 1 := ⟨h0.2, h1.2⟩
-    let xI : I01 := ⟨x, hx⟩
-    let yI : I01 := ⟨y, hy⟩
-    calc
-      Set.IccExtend (h := (zero_le_one : (0 : ℝ) ≤ 1)) (φ.extend x) y = (φ.extend x) yI := by
-        simpa [yI] using
-          (Set.IccExtend_of_mem (h := (zero_le_one : (0 : ℝ) ≤ 1)) (f := φ.extend x) hy)
+    refine (contDiffOn_congr ?_).2 contDiffOn_homotopy
+    rintro ⟨x, y⟩ ⟨h0, h1⟩
+    let xI : I01 := ⟨x, h0.1, h1.1⟩
+    let yI : I01 := ⟨y, h0.2, h1.2⟩
+    calc Set.IccExtend (h := (zero_le_one : (0 : ℝ) ≤ 1)) (φ.extend x) y = (φ.extend x) yI := by
+          simpa [yI] using
+            (Set.IccExtend_of_mem (h := (zero_le_one : (0 : ℝ) ≤ 1)) (f := φ.extend x) ⟨h0.2, h1.2⟩)
       _ = φ (xI, yI) := by
-        simpa [xI, yI] using
-          (ContinuousMap.Homotopy.extend_apply_of_mem_I (F := φ) (ht := hx) (x := yI))
-      _ = (Path.segment (γ yI) (δ yI) xI : ℂ) := by
-        rfl
-      _ = (AffineMap.lineMap (γ yI) (δ yI) x : ℂ) := by
-        simp [Path.segment_apply, xI]
-      _ = (F (x, y) : ℂ) := by
-        simp [F, γ, δ, yI, Path.map', Path.segment_apply]
+          simpa [xI, yI] using
+            (ContinuousMap.Homotopy.extend_apply_of_mem_I (F := φ) (ht := ⟨h0.1, h1.1⟩) (x := yI))
+      _ = (Path.segment (γ yI) (δ yI) xI : ℂ) := rfl
+      _ = _ := by simp [γ, δ, yI, Path.map', Path.segment_apply, xI]
   have hmain :=
     ContinuousMap.Homotopy.curveIntegral_add_curveIntegral_eq_of_diffContOnCl
       (𝕜 := ℂ) (E := ℂ) (F := ℂ) (γ₁ := γ) (γ₂ := δ) (t := wedgeSet) (ω := ω) (φ := φ)
