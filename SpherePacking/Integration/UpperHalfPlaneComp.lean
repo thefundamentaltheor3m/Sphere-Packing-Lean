@@ -30,11 +30,8 @@ public lemma im_neg_one_div_neg_ofReal_add_I (t : ℝ) :
 public lemma one_half_lt_one_div_sq_add_one_of_mem_Ioo01 {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) :
     (1 / 2 : ℝ) < 1 / (t ^ 2 + 1) := by
   have hlt : t ^ 2 + 1 < 2 := by
-    have ht2 : t ^ 2 < 1 := (sq_lt_one_iff₀ (le_of_lt ht.1)).2 ht.2
-    linarith
-  have hpos : 0 < t ^ 2 + 1 := by positivity
-  -- `t^2 + 1 < 2` implies `1/2 < 1/(t^2 + 1)`.
-  simpa using (one_div_lt_one_div_of_lt hpos hlt)
+    linarith [(sq_lt_one_iff₀ (le_of_lt ht.1)).2 ht.2]
+  simpa using (one_div_lt_one_div_of_lt (by positivity) hlt)
 
 /-- A continuity helper for expressions that pass through `UpperHalfPlane.mk`.
 

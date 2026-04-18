@@ -45,9 +45,8 @@ variable [MeasureSpace V] [BorelSpace V]
 /-- The phase factor is a.e. strongly measurable with respect to Lebesgue measure. -/
 public lemma aestronglyMeasurable_phase (w : V) :
     AEStronglyMeasurable (fun x : V ↦ cexp (↑(-2 * (π * ⟪x, w⟫)) * Complex.I))
-      (volume : Measure V) := by
-  have hcont : Continuous fun x : V => cexp (↑(-2 * (π * ⟪x, w⟫)) * Complex.I) := by continuity
-  simpa using hcont.aestronglyMeasurable
+      (volume : Measure V) :=
+  Continuous.aestronglyMeasurable (by continuity)
 
 end
 
