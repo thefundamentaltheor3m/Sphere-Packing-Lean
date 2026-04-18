@@ -36,42 +36,18 @@ variable {coeff hf : ℝ → ℂ}
 @[expose] public def gN (n : ℕ) (x t : ℝ) : ℂ :=
   (coeff t) ^ n * g (coeff := coeff) (hf := hf) x t
 
-/-- Continuity of `g x` on `(0, 1)` assuming continuity of `hf` there and continuity of `coeff`. -/
-public lemma continuousOn_g_Ioo
-    (continuousOn_hf : ContinuousOn hf (Ioo (0 : ℝ) 1))
-    (continuous_coeff : Continuous coeff) (x : ℝ) :
-    ContinuousOn (g (coeff := coeff) (hf := hf) x) (Ioo (0 : ℝ) 1) := by
-  simpa [g] using
-    continuousOn_hf.mul (Continuous.continuousOn ((continuous_const.mul continuous_coeff).cexp))
-
-/-- Continuity of `gN n x` on `(0, 1)`.
-
-Assumes continuity of `hf` on `(0, 1)` and continuity of `coeff`.
--/
-public lemma continuousOn_gN_Ioo
-    (continuousOn_hf : ContinuousOn hf (Ioo (0 : ℝ) 1))
-    (continuous_coeff : Continuous coeff) (n : ℕ) (x : ℝ) :
-    ContinuousOn (gN (coeff := coeff) (hf := hf) n x) (Ioo (0 : ℝ) 1) := by
-  simpa [gN] using
-    ((continuous_coeff.pow n).continuousOn.mul
-      (continuousOn_g_Ioo (coeff := coeff) (hf := hf) continuousOn_hf continuous_coeff x))
-
 private lemma aestronglyMeasurable_gN_Ioo
     (continuousOn_hf : ContinuousOn hf (Ioo (0 : ℝ) 1))
     (continuous_coeff : Continuous coeff) (n : ℕ) (x : ℝ) :
     AEStronglyMeasurable (gN (coeff := coeff) (hf := hf) n x)
       μIoo01 := by
-  have hcont :=
-    continuousOn_gN_Ioo (coeff := coeff) (hf := hf) continuousOn_hf continuous_coeff n x
+  have hcont : ContinuousOn (gN (coeff := coeff) (hf := hf) n x) (Ioo (0 : ℝ) 1) := by
+    simpa [gN, g] using
+      (continuous_coeff.pow n).continuousOn.mul
+        (continuousOn_hf.mul
+          (Continuous.continuousOn ((continuous_const.mul continuous_coeff).cexp)))
   simpa [μIoo01] using
     hcont.aestronglyMeasurable (μ := (volume : Measure ℝ)) measurableSet_Ioo
-
-lemma norm_cexp_mul_coeff_le
-    (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
-    {x x₀ : ℝ} (t : ℝ) (hx : x ∈ Metric.ball x₀ (1 : ℝ)) :
-    ‖cexp ((x : ℂ) * coeff t)‖ ≤ Real.exp ((|x₀| + 1) * (2 * Real.pi)) :=
-  SpherePacking.ForMathlib.norm_cexp_ofReal_mul_le_exp_mul_of_norm_le (c := coeff t)
-    (B := (2 * Real.pi)) (coeff_norm_le t) hx
 
 private lemma norm_gN_le_const
     (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
@@ -82,17 +58,16 @@ private lemma norm_gN_le_const
   have hpow : ‖(coeff t) ^ n‖ ≤ (2 * Real.pi) ^ n := by
     simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le t) n
   have hexp : ‖cexp ((x : ℂ) * coeff t)‖ ≤ Real.exp ((|x₀| + 1) * (2 * Real.pi)) :=
-    norm_cexp_mul_coeff_le (coeff := coeff) (coeff_norm_le := coeff_norm_le) (t := t) hx
-  have hhexp :
-      ‖hf t * cexp ((x : ℂ) * coeff t)‖ ≤ M * Real.exp ((|x₀| + 1) * (2 * Real.pi)) :=
-    norm_mul_le_of_le hh hexp
+    SpherePacking.ForMathlib.norm_cexp_ofReal_mul_le_exp_mul_of_norm_le (c := coeff t)
+      (B := (2 * Real.pi)) (coeff_norm_le t) hx
   calc
     ‖gN (coeff := coeff) (hf := hf) n x t‖ =
         ‖(coeff t) ^ n * (hf t * cexp ((x : ℂ) * coeff t))‖ := by
           simp [gN, g, mul_comm]
-    _ ≤ ‖(coeff t) ^ n‖ * ‖hf t * cexp ((x : ℂ) * coeff t)‖ :=
-          norm_mul_le _ _
-    _ ≤ (2 * Real.pi) ^ n * (M * Real.exp ((|x₀| + 1) * (2 * Real.pi))) := by gcongr
+    _ ≤ ‖(coeff t) ^ n‖ * ‖hf t * cexp ((x : ℂ) * coeff t)‖ := norm_mul_le _ _
+    _ ≤ (2 * Real.pi) ^ n * (M * Real.exp ((|x₀| + 1) * (2 * Real.pi))) := by
+          gcongr
+          exact norm_mul_le_of_le hh hexp
 
 /-- Differentiate under the integral sign on `(0, 1)` for the integrand `gN n`. -/
 public lemma hasDerivAt_integral_gN_Ioo
