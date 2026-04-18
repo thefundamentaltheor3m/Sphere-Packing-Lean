@@ -36,12 +36,10 @@ public lemma mobiusInv_lineMap_z₁_mem_wedgeSet
   obtain ⟨hre, him⟩ := mobiusInv_re_im (-1) t
   have hc : mobiusInv (Contour.z₁line t) = -(↑(-1 : ℝ) + Complex.I * ↑t)⁻¹ := by simp [mobiusInv]
   rw [← hc] at hre him
-  refine wedgeSet_iff.mpr ⟨?_, ?_⟩
-  · rw [him]
-    positivity
-  · rw [hre, him]
-    simp only [fieldLt]
-    constructor <;> nlinarith only [ht0, ht1]
+  refine wedgeSet_iff.mpr ⟨by rw [him]; positivity, ?_⟩
+  rw [hre, him]
+  simp only [fieldLt]
+  constructor <;> nlinarith only [ht0, ht1]
 
 /-- Along `-1 + I → I`, the Mobius inversion map lands in `wedgeSet`. -/
 public lemma mobiusInv_lineMap_z₂_mem_wedgeSet
@@ -52,12 +50,10 @@ public lemma mobiusInv_lineMap_z₂_mem_wedgeSet
   have hc : mobiusInv (Contour.z₂line t) = -(↑(t - 1) + Complex.I * ↑(1 : ℝ))⁻¹ := by
     simp [sub_eq_add_neg, add_comm, mobiusInv]
   rw [← hc, one_pow] at hre him
-  refine wedgeSet_iff.mpr ⟨?_, ?_⟩
-  · rw [him]
-    positivity
-  · rw [hre, him]
-    simp only [fieldLt]
-    constructor <;> nlinarith only [ht0, ht1]
+  refine wedgeSet_iff.mpr ⟨by rw [him]; positivity, ?_⟩
+  rw [hre, him]
+  simp only [fieldLt]
+  constructor <;> nlinarith only [ht0, ht1]
 
 end
 
