@@ -29,18 +29,6 @@ variable {coeff hf : ℝ → ℂ}
 @[expose] public def I (n : ℕ) (x : ℝ) : ℂ :=
   ∫ t in (0 : ℝ)..1, gN (coeff := coeff) (hf := hf) n x t
 
-private lemma hasDerivAt_I_succ
-    (continuous_hf : Continuous hf)
-    (continuous_coeff : Continuous coeff)
-    (exists_bound_norm_h : ∃ M, ∀ t ∈ (Ι (0 : ℝ) 1), ‖hf t‖ ≤ M)
-    (coeff_norm_le : ∀ t : ℝ, ‖coeff t‖ ≤ 2 * Real.pi)
-    (n : ℕ) (x₀ : ℝ) :
-    HasDerivAt (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) n x)
-      (I (coeff := coeff) (hf := hf) (n + 1) x₀) x₀ := by
-  simpa [I] using
-    (hasDerivAt_integral_gN_of_continuous (coeff := coeff) (hf := hf)
-      continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le (n := n) (x₀ := x₀))
-
 /-- Identify `iteratedDeriv` of `I 0` with `I n`, using the derivative recurrence. -/
 public lemma iteratedDeriv_eq_I
     (continuous_hf : Continuous hf)
@@ -53,9 +41,9 @@ public lemma iteratedDeriv_eq_I
   simpa using
     (SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
       (I := fun (n : ℕ) (x : ℝ) => I (coeff := coeff) (hf := hf) n x)
-      (fun n x =>
-        hasDerivAt_I_succ (coeff := coeff) (hf := hf) continuous_hf continuous_coeff
-          exists_bound_norm_h coeff_norm_le (n := n) (x₀ := x))
+      (fun n x => by
+        simpa [I] using hasDerivAt_integral_gN_of_continuous (coeff := coeff) (hf := hf)
+          continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le (n := n) (x₀ := x))
       n)
 
 /-- Smoothness of `x ↦ I 0 x` under the hypotheses needed for dominated differentiation. -/
@@ -67,9 +55,9 @@ public theorem contDiff_integral
     ContDiff ℝ (⊤ : ℕ∞) (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) := by
   simpa using
     SpherePacking.ForMathlib.contDiff_of_hasDerivAt_succ (I := I (coeff := coeff) (hf := hf))
-      (fun n x =>
-        hasDerivAt_I_succ (coeff := coeff) (hf := hf) continuous_hf continuous_coeff
-          exists_bound_norm_h coeff_norm_le n x)
+      (fun n x => by
+        simpa [I] using hasDerivAt_integral_gN_of_continuous (coeff := coeff) (hf := hf)
+          continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le n x)
 
 /-- One-sided decay for `I 0 x` from a uniform bound on `‖cexp ((x : ℂ) * coeff t)‖`. -/
 private theorem decay_integral
