@@ -97,33 +97,6 @@ end Eventually_Eq_Zero
 section Contour_Deformation_Tensdsto
 
 /-- **Deformation of open rectangular contours:** Given two infinite vertical contours such that a
-function satisfies Cauchy-Goursat conditions between them, interval integrals of increasing interval
-length along the first contour tend to the sum of a translation integral and the limit of interval
-integrals along the second integral.
-
-We call this a deformation of _open rectangular contours_ because it allows us to change contours
-when working with contours that look like "infinite boxes without lids"---that is, rectangular
-contours that are "open" at the top (we do not mean open in a topological sense). -/
-theorem tendsto_integral_boundary_open_rect_one_side_atTop_nhds_sum_other_two_sides
-    (hcont : ContinuousOn f ([[x₁, x₂]] ×ℂ (Ici y))) (s : Set ℂ) (hs : s.Countable)
-    (hdiff : ∀ x ∈ ((Ioo (min x₁ x₂) (max x₁ x₂)) ×ℂ (Ioi y)) \ s, DifferentiableAt ℂ f x)
-    {C₂ : E} (hC₂ : Tendsto (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₂ + t * I)) atTop (𝓝 C₂))
-    (htendsto : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε) :
-    Tendsto (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₁ + t * I)) atTop <|
-      𝓝 ((∫ (t : ℝ) in x₁..x₂, f (t + y * I)) + C₂) := by
-  have heventually : (fun (m : ℝ) ↦
-      (∫ (x : ℝ) in x₁..x₂, f (x + y * I))
-        - (∫ (x : ℝ) in x₁..x₂, f (x + m * I))
-        + (I • ∫ (t : ℝ) in y..m, f (x₂ + t * I)))
-      =ᶠ[atTop] (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₁ + t * I)) := by
-    filter_upwards [eventually_ge_atTop y] with m hm
-    rw [← sub_eq_zero, ← (hzero y hcont s hs hdiff m hm)]
-  rw [tendsto_congr' heventually.symm, ← sub_zero (∫ (t : ℝ) in x₁..x₂, f (↑t + ↑y * I))]
-  refine (Tendsto.sub ?_ ?_).add hC₂
-  · rw [sub_zero, tendsto_const_nhds_iff]
-  · exact tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero htendsto
-
-/-- **Deformation of open rectangular contours:** Given two infinite vertical contours such that a
 function satisfies Cauchy-Goursat conditions between them, the limit of interval integrals along the
 first contour equals the sum of a translation integral and the limit of interval integrals along
 the second integral. -/
@@ -134,10 +107,20 @@ theorem integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable
     {C₂ : E} (hC₂ : Tendsto (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₂ + t * I)) atTop (𝓝 C₂))
     (htendsto : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε) :
     (∫ (t : ℝ) in x₁..x₂, f (t + y * I)) + C₂ - C₁ = 0 := by
-  exact sub_eq_zero.2 <|
-    (tendsto_nhds_unique hC₁ <|
-        tendsto_integral_boundary_open_rect_one_side_atTop_nhds_sum_other_two_sides
-          y hcont s hs hdiff hC₂ htendsto).symm
+  have heventually : (fun (m : ℝ) ↦
+      (∫ (x : ℝ) in x₁..x₂, f (x + y * I))
+        - (∫ (x : ℝ) in x₁..x₂, f (x + m * I))
+        + (I • ∫ (t : ℝ) in y..m, f (x₂ + t * I)))
+      =ᶠ[atTop] (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₁ + t * I)) := by
+    filter_upwards [eventually_ge_atTop y] with m hm
+    rw [← sub_eq_zero, ← (hzero y hcont s hs hdiff m hm)]
+  have hC₁' : Tendsto (fun m ↦ I • ∫ (t : ℝ) in y..m, f (x₁ + t * I)) atTop
+      (𝓝 ((∫ (t : ℝ) in x₁..x₂, f (t + y * I)) + C₂)) := by
+    rw [tendsto_congr' heventually.symm, ← sub_zero (∫ (t : ℝ) in x₁..x₂, f (↑t + ↑y * I))]
+    refine (Tendsto.sub ?_ ?_).add hC₂
+    · rw [sub_zero, tendsto_const_nhds_iff]
+    · exact tendsto_integral_atTop_nhds_zero_of_tendsto_im_atTop_nhds_zero htendsto
+  exact sub_eq_zero.2 (tendsto_nhds_unique hC₁ hC₁').symm
 
 /-- **Deformation of open rectangular contours:** Given two infinite vertical contours such that a
 function satisfies Cauchy-Goursat conditions between them, the limit of interval integrals along the
