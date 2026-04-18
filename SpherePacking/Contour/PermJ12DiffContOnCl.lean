@@ -8,8 +8,6 @@ public import Mathlib.Analysis.Calculus.DiffContOnCl
 
 public import SpherePacking.Basic.Domains.WedgeSet
 public import SpherePacking.ForMathlib.ScalarOneForm
-import SpherePacking.ForMathlib.ScalarOneFormDiffContOnCl
-import SpherePacking.ForMathlib.ScalarOneFormFDeriv
 
 /-!
 # Regularity lemmas on `wedgeSet` for contour arguments
