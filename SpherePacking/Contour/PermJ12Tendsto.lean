@@ -127,53 +127,32 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of
     (h : TendstoPsiOneHypotheses wedgeSet ψS ψT' Ψ₁' gAct k)
     (r : ℝ) :
     Tendsto (Ψ₁' r) (𝓝[closure wedgeSet] (1 : ℂ)) (𝓝 0) := by
-  -- Bound the exponential factor near `1`.
   let M : ℝ := expNorm r (1 : ℂ) + 1
   have hMpos : 0 < M := by
     have : 0 ≤ expNorm r (1 : ℂ) := norm_nonneg _
     linarith
-  rcases exists_expNorm_le_add_one (r := r) with ⟨δexp, hδexp_pos, hExpBound'⟩
-  have hExpBound : ∀ {z : ℂ}, dist z (1 : ℂ) < δexp → expNorm r z ≤ M := by
-    intro z hz
-    simpa [M] using hExpBound' (z := z) hz
-  -- From `ψS → 0` at `i∞`, get a uniform bound `‖ψS τ‖ ≤ 1` for large `im τ`.
-  rcases exists_im_bound_norm_ψS_le_one (ψS := ψS) h.tendsto_ψS_atImInfty with ⟨A, hApos, hA⟩
-  -- Metric characterization of `Tendsto` within a set.
-  refine (Metric.tendsto_nhdsWithin_nhds).2 ?_
-  intro ε hε
-  let δ0 : ℝ := min 1 (ε / M)
-  have hδ0_pos : 0 < δ0 := by
-    have hdiv : 0 < ε / M := div_pos hε hMpos
-    exact lt_min (by norm_num) hdiv
-  let δ : ℝ := min δexp (min δ0 (1 / (2 * A)))
-  have hδ_pos : 0 < δ := lt_min hδexp_pos (lt_min hδ0_pos (by positivity))
-  refine ⟨δ, hδ_pos, ?_⟩
-  intro z hzcl hdistz
+  obtain ⟨δexp, hδexp_pos, hExpBound⟩ := exists_expNorm_le_add_one (r := r)
+  obtain ⟨A, hApos, hA⟩ := exists_im_bound_norm_ψS_le_one (ψS := ψS) h.tendsto_ψS_atImInfty
+  refine (Metric.tendsto_nhdsWithin_nhds).2 fun ε hε => ?_
+  refine ⟨min δexp (min (min 1 (ε / M)) (1 / (2 * A))),
+    lt_min hδexp_pos (lt_min (lt_min (by norm_num) (div_pos hε hMpos)) (by positivity)),
+    fun z hzcl hdistz => ?_⟩
   by_cases hz1 : z = (1 : ℂ)
   · subst hz1
     simpa [h.Ψ₁'_eq, h.ψT'_one] using hε
-  have hzU : z ∈ UpperHalfPlane.upperHalfPlaneSet :=
-    h.mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1
   have hz_im_pos : 0 < z.im := by
-    simpa [UpperHalfPlane.upperHalfPlaneSet] using hzU
+    simpa [UpperHalfPlane.upperHalfPlaneSet] using
+      (h.mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1)
   let zH : UpperHalfPlane := ⟨z, hz_im_pos⟩
   have hexpZ : expNorm r z ≤ M :=
     hExpBound (lt_of_lt_of_le hdistz (min_le_left _ _))
-  have hdist_min : dist z (1 : ℂ) < min δ0 (1 / (2 * A)) :=
-    lt_of_lt_of_le hdistz (min_le_right _ _)
-  have hdist_lt : dist z (1 : ℂ) < δ0 :=
-    lt_of_lt_of_le hdist_min (min_le_left _ _)
-  have hdist_lt_one : dist z (1 : ℂ) < 1 :=
-    lt_of_lt_of_le hdist_lt (min_le_left _ _)
-  have hdist_lt_div : dist z (1 : ℂ) < ε / M :=
-    lt_of_lt_of_le hdist_lt (min_le_right _ _)
+  have hdist_min := lt_of_lt_of_le hdistz (min_le_right _ _)
+  have hdist_lt := lt_of_lt_of_le hdist_min (min_le_left _ _)
+  have hdist_lt_one : dist z (1 : ℂ) < 1 := lt_of_lt_of_le hdist_lt (min_le_left _ _)
   have hdist_pow : (dist z (1 : ℂ)) ^ k < ε / M := by
-    have hnonneg : 0 ≤ dist z (1 : ℂ) := dist_nonneg
-    have hle_one : dist z (1 : ℂ) ≤ 1 := le_of_lt hdist_lt_one
     have hpow_le : (dist z (1 : ℂ)) ^ k ≤ dist z (1 : ℂ) := by
-      simpa [pow_one] using (pow_le_pow_of_le_one hnonneg hle_one h.hk)
-    exact lt_of_le_of_lt hpow_le hdist_lt_div
-  -- Force `z.im` to be small, so the transformed point has large imaginary part.
+      simpa [pow_one] using (pow_le_pow_of_le_one dist_nonneg hdist_lt_one.le h.hk)
+    exact hpow_le.trans_lt (lt_of_lt_of_le hdist_lt (min_le_right _ _))
   have hdist_im : dist z (1 : ℂ) < 1 / (2 * A) :=
     lt_of_lt_of_le hdist_min (min_le_right _ _)
   have hA_le_im : A ≤ (gAct zH).im := by
@@ -192,48 +171,22 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet_of
       simpa [zH, h.gAct_im (z := z) (hz := hz_im_pos)] using
         lt_of_lt_of_le hA_lt hLower
     exact this.le
-  have hψS_bound : ‖ψS (gAct zH)‖ ≤ (1 : ℝ) := hA _ hA_le_im
   have hψT_norm : ‖ψT' z‖ ≤ ‖(z - 1) ^ k‖ := by
     have hψ : ψT' z = -ψS (gAct zH) * (z - 1) ^ k := by
       simpa [zH] using (h.ψT'_eq_neg_ψS_mul (z := z) (hz := hz_im_pos))
-    calc
-      ‖ψT' z‖ = ‖ψS (gAct zH)‖ * ‖(z - 1) ^ k‖ := by
-            simp [hψ, norm_neg]
-      _ ≤ (1 : ℝ) * ‖(z - 1) ^ k‖ :=
-            mul_le_mul_of_nonneg_right hψS_bound (norm_nonneg _)
-      _ = ‖(z - 1) ^ k‖ := by simp
-  have hmain :
-      ‖Ψ₁' r z‖ ≤ (dist z (1 : ℂ)) ^ k * M := by
-    have hmul :
-        ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z) =
-          z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))) := by
-      ac_rfl
-    have hExpMul : ‖Ψ₁' r z‖ = ‖ψT' z‖ * expNorm r z := by
-      have hcexp :
-          ‖cexp ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z)‖ = expNorm r z := by
-        simp [expNorm, hmul]
-      calc
-        ‖Ψ₁' r z‖ = ‖ψT' z * cexp ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z)‖ := by
-          simp [h.Ψ₁'_eq]
-        _ = ‖ψT' z‖ * ‖cexp ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z)‖ := by
-          simp
-        _ = ‖ψT' z‖ * expNorm r z := by
-          simp [hcexp]
-    have hpow : ‖(z - 1) ^ k‖ = (dist z (1 : ℂ)) ^ k := by
-      simp [dist_eq_norm, norm_pow]
-    calc
-      ‖Ψ₁' r z‖ = ‖ψT' z‖ * expNorm r z := hExpMul
-      _ ≤ ‖(z - 1) ^ k‖ * expNorm r z := by
-            have hexp : 0 ≤ expNorm r z := by simp [expNorm]
-            exact mul_le_mul_of_nonneg_right hψT_norm hexp
-      _ ≤ ‖(z - 1) ^ k‖ * M :=
-            mul_le_mul_of_nonneg_left hexpZ (norm_nonneg _)
-      _ = (dist z (1 : ℂ)) ^ k * M := by
-            simp [hpow]
-  have : ‖Ψ₁' r z‖ < ε := by
-    have hε' : (dist z (1 : ℂ)) ^ k * M < ε :=
-      (lt_div_iff₀ hMpos).mp hdist_pow
-    exact lt_of_le_of_lt hmain hε'
+    calc ‖ψT' z‖ = ‖ψS (gAct zH)‖ * ‖(z - 1) ^ k‖ := by simp [hψ, norm_neg]
+      _ ≤ 1 * ‖(z - 1) ^ k‖ := mul_le_mul_of_nonneg_right (hA _ hA_le_im) (norm_nonneg _)
+      _ = _ := by simp
+  have hmain : ‖Ψ₁' r z‖ ≤ (dist z (1 : ℂ)) ^ k * M := by
+    have hcexp : ‖cexp ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z)‖ = expNorm r z := by
+      simp [expNorm, show ((Real.pi : ℂ) * Complex.I * (r : ℂ) * z) =
+        z * (Complex.I * ((r : ℂ) * (Real.pi : ℂ))) by ac_rfl]
+    calc ‖Ψ₁' r z‖ = ‖ψT' z‖ * expNorm r z := by simp [h.Ψ₁'_eq, hcexp]
+      _ ≤ ‖(z - 1) ^ k‖ * expNorm r z :=
+          mul_le_mul_of_nonneg_right hψT_norm (by simp [expNorm])
+      _ ≤ ‖(z - 1) ^ k‖ * M := mul_le_mul_of_nonneg_left hexpZ (norm_nonneg _)
+      _ = (dist z (1 : ℂ)) ^ k * M := by simp [dist_eq_norm, norm_pow]
+  have : ‖Ψ₁' r z‖ < ε := hmain.trans_lt ((lt_div_iff₀ hMpos).mp hdist_pow)
   simpa [dist_eq_norm] using this
 
 end
