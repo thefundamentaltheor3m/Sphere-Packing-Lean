@@ -110,24 +110,20 @@ public lemma hasDerivAt_integral_gN
             gcongr
             exact hg.trans (by gcongr)
       _ = bound t := by simp [bound, mul_pow, mul_assoc, mul_left_comm, mul_comm]
-  have h_diff :
-      ∀ᵐ t ∂μIciOne, ∀ y ∈ Metric.ball x ε,
-        HasDerivAt (fun y : ℝ ↦ gN (hf := hf) n y t) (gN (hf := hf) (n + 1) y t) y := by
-    refine ae_of_all _ fun t y _ => ?_
-    have hg : HasDerivAt (fun y : ℝ ↦ g (hf := hf) y t) (coeff t * g (hf := hf) y t) y := by
-      simpa [g, mul_assoc, mul_left_comm, mul_comm] using
-        (SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
-          (a := (Complex.I : ℂ) * (hf t)) (c := coeff t) y)
-    have h := hg.const_mul ((coeff t) ^ n)
-    simpa [gN, pow_succ, mul_assoc, mul_left_comm, mul_comm] using h
-  -- Apply dominated differentiation.
   simpa [μIciOne, ε] using
     (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μIciOne)
       (s := Metric.ball x ε) (F := fun y t ↦ gN (hf := hf) n y t) (x₀ := x)
       (Metric.ball_mem_nhds x ε_pos)
       (hF_meas := Eventually.of_forall fun y ↦ gN_measurable n y) (hF_int := hF_int)
       (hF'_meas := gN_measurable (n + 1) x)
-      (h_bound := h_bound) (bound_integrable := hbound_int) (h_diff := h_diff)).2
+      (h_bound := h_bound) (bound_integrable := hbound_int)
+      (h_diff := ae_of_all _ fun t y _ => by
+        have hg : HasDerivAt (fun y : ℝ ↦ g (hf := hf) y t) (coeff t * g (hf := hf) y t) y := by
+          simpa [g, mul_assoc, mul_left_comm, mul_comm] using
+            (SpherePacking.ForMathlib.hasDerivAt_mul_cexp_ofReal_mul_const
+              (a := (Complex.I : ℂ) * (hf t)) (c := coeff t) y)
+        simpa [gN, pow_succ, mul_assoc, mul_left_comm, mul_comm] using
+          hg.const_mul ((coeff t) ^ n))).2
 
 end
 
