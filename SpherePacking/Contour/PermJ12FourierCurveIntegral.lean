@@ -76,34 +76,17 @@ private theorem fourier_J_eq_curveIntegral_of
   have htoIter :
       (fun x : V =>
           cexp (-(2 * (↑Real.pi : ℂ) * (↑⟪x, w⟫ : ℂ) * Complex.I)) * (J : V → ℂ) x) =
-        fun x : V =>
-          ∫ t : ℝ, permJKernel w (x, t) ∂μ := by
+        fun x : V => ∫ t : ℝ, permJKernel w (x, t) ∂μ := by
     funext x
     simpa [J_apply (x := x), cexp_neg_two_pi_inner_mul_I (x := x) (w := w)] using
       phase_mul_J'_eq_integral_permJKernel (w := w) (x := x)
-  have hint :
-      Integrable (Function.uncurry fun x t => permJKernel w (x, t))
-        ((volume : Measure V).prod μ) := by
-    simpa [Function.uncurry] using (integrable_permJKernel (w := w))
-  have hAE :
-      (fun t : ℝ => (∫ x : V, permJKernel w (x, t) ∂(volume : Measure V))) =ᵐ[μ] fun t =>
-        g w t := by
-    simpa using (integral_permJKernel_x_ae (w := w))
-  have hswap :
-      (∫ x : V, ∫ t : ℝ, permJKernel w (x, t) ∂μ) =
-        ∫ t : ℝ, ∫ x : V, permJKernel w (x, t) ∂(volume : Measure V) ∂μ := by
-    simpa using
-      (MeasureTheory.integral_integral_swap (μ := (volume : Measure V)) (ν := μ)
-        (f := fun x t => permJKernel w (x, t)) hint)
-  calc
-    (∫ x : V,
-          cexp (-(2 * (↑Real.pi : ℂ) * (↑⟪x, w⟫ : ℂ) * Complex.I)) * (J : V → ℂ) x) =
-        ∫ x : V, ∫ t : ℝ, permJKernel w (x, t) ∂μ := by simp [htoIter]
-    _ = ∫ t : ℝ, ∫ x : V, permJKernel w (x, t) ∂(volume : Measure V) ∂μ := hswap
-    _ = ∫ t : ℝ, g w t ∂μ := by simpa using (MeasureTheory.integral_congr_ae hAE)
-    _ =
-        (∫ᶜ z in Path.segment a b,
-          scalarOneForm (Ψ_fourier (‖w‖ ^ (2 : ℕ))) z) := integral_g_eq_curveIntegral (w := w)
+  rw [htoIter, MeasureTheory.integral_integral_swap (μ := (volume : Measure V)) (ν := μ)
+    (f := fun x t => permJKernel w (x, t))
+    (by simpa [Function.uncurry] using integrable_permJKernel w)]
+  rw [show (∫ t : ℝ, ∫ x : V, permJKernel w (x, t) ∂(volume : Measure V) ∂μ) =
+      ∫ t : ℝ, g w t ∂μ from
+    MeasureTheory.integral_congr_ae (integral_permJKernel_x_ae w)]
+  exact integral_g_eq_curveIntegral w
 
 /--
 Template lemma: prove a `curveIntegral` formula for `(𝓕 J₁) w` by a Fubini swap argument.
