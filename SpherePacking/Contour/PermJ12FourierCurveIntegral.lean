@@ -40,7 +40,8 @@ private lemma cexp_neg_two_pi_inner_mul_I
       cexp (↑(-2 * Real.pi * ⟪x, w⟫) * Complex.I) := by
   simp [mul_assoc]
 
-private theorem fourier_J_eq_curveIntegral_of
+/-- Fubini-based curve-integral formula for the Fourier transform of a radial Schwartz map. -/
+public theorem fourier_J_eq_curveIntegral_of
     {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
     [MeasurableSpace V] [BorelSpace V]
     {μ : Measure ℝ} [SFinite μ]
@@ -87,93 +88,6 @@ private theorem fourier_J_eq_curveIntegral_of
       ∫ t : ℝ, g w t ∂μ from
     MeasureTheory.integral_congr_ae (integral_permJKernel_x_ae w)]
   exact integral_g_eq_curveIntegral w
-
-/--
-Template lemma: prove a `curveIntegral` formula for `(𝓕 J₁) w` by a Fubini swap argument.
-
-The hypotheses provide:
-- a radial-profile description of `J₁`;
-- a kernel representation of the Fourier integrand as an integral over `t`;
-- integrability for Fubini; and
-- an identification of the resulting `t`-integral with the target curve integral.
--/
-public theorem fourier_J₁_eq_curveIntegral_of
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
-    [MeasurableSpace V] [BorelSpace V]
-    {μ : Measure ℝ} [SFinite μ]
-    {J₁ : SchwartzMap V ℂ} {J₁' : ℝ → ℂ}
-    {permJ1Kernel : V → V × ℝ → ℂ}
-    {g : V → ℝ → ℂ}
-    {Ψ₁_fourier : ℝ → ℂ → ℂ}
-    (J₁_apply : ∀ x : V, (J₁ : V → ℂ) x = J₁' (‖x‖ ^ (2 : ℕ)))
-    (phase_mul_J₁'_eq_integral_permJ1Kernel :
-      ∀ w x : V,
-        cexp (↑(-2 * Real.pi * ⟪x, w⟫) * Complex.I) * J₁' (‖x‖ ^ (2 : ℕ)) =
-          ∫ t : ℝ, permJ1Kernel w (x, t) ∂μ)
-    (integrable_permJ1Kernel :
-      ∀ w : V,
-        Integrable (permJ1Kernel w)
-          ((volume : Measure V).prod μ))
-    (integral_permJ1Kernel_x_ae :
-      ∀ w : V,
-        (fun t : ℝ => (∫ x : V, permJ1Kernel w (x, t) ∂(volume : Measure V))) =ᵐ[μ] fun t =>
-          g w t)
-    (integral_g_eq_curveIntegral :
-      ∀ w : V,
-        (∫ t : ℝ, g w t ∂μ) =
-          (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I),
-            scalarOneForm (Ψ₁_fourier (‖w‖ ^ (2 : ℕ))) z))
-    (w : V) :
-    (𝓕 (J₁ : V → ℂ)) w =
-      (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I),
-        scalarOneForm (Ψ₁_fourier (‖w‖ ^ (2 : ℕ))) z) := by
-  simpa using
-    (fourier_J_eq_curveIntegral_of (J := J₁) (J' := J₁') (permJKernel := permJ1Kernel) (g := g)
-        (Ψ_fourier := Ψ₁_fourier) (a := (-1 : ℂ)) (b := (-1 : ℂ) + Complex.I) J₁_apply
-        phase_mul_J₁'_eq_integral_permJ1Kernel integrable_permJ1Kernel integral_permJ1Kernel_x_ae
-        integral_g_eq_curveIntegral w)
-
-/--
-Template lemma: prove a `curveIntegral` formula for `(𝓕 J₂) w` by the same Fubini pattern as for
-`fourier_J₁_eq_curveIntegral_of`.
--/
-public theorem fourier_J₂_eq_curveIntegral_of
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
-    [MeasurableSpace V] [BorelSpace V]
-    {μ : Measure ℝ} [SFinite μ]
-    {J₂ : SchwartzMap V ℂ} {J₂' : ℝ → ℂ}
-    {permJ2Kernel : V → V × ℝ → ℂ}
-    {g : V → ℝ → ℂ}
-    {Ψ₁_fourier : ℝ → ℂ → ℂ}
-    (J₂_apply : ∀ x : V, (J₂ : V → ℂ) x = J₂' (‖x‖ ^ (2 : ℕ)))
-    (phase_mul_J₂'_eq_integral_permJ2Kernel :
-      ∀ w x : V,
-        cexp (↑(-2 * (Real.pi * ⟪x, w⟫)) * Complex.I) * J₂' (‖x‖ ^ (2 : ℕ)) =
-          ∫ t : ℝ, permJ2Kernel w (x, t) ∂μ)
-    (integrable_permJ2Kernel :
-      ∀ w : V,
-        Integrable (permJ2Kernel w)
-          ((volume : Measure V).prod μ))
-    (integral_permJ2Kernel_x_ae :
-      ∀ w : V,
-        (fun t : ℝ => (∫ x : V, permJ2Kernel w (x, t) ∂(volume : Measure V))) =ᵐ[μ] fun t =>
-          g w t)
-    (integral_g_eq_curveIntegral :
-      ∀ w : V,
-        (∫ t : ℝ, g w t ∂μ) =
-          (∫ᶜ z in Path.segment ((-1 : ℂ) + Complex.I) Complex.I,
-            scalarOneForm (Ψ₁_fourier (‖w‖ ^ (2 : ℕ))) z))
-    (w : V) :
-    (𝓕 (J₂ : V → ℂ)) w =
-      (∫ᶜ z in Path.segment ((-1 : ℂ) + Complex.I) Complex.I,
-        scalarOneForm (Ψ₁_fourier (‖w‖ ^ (2 : ℕ))) z) := by
-  simpa using
-    (fourier_J_eq_curveIntegral_of (J := J₂) (J' := J₂') (permJKernel := permJ2Kernel) (g := g)
-        (Ψ_fourier := Ψ₁_fourier) (a := (-1 : ℂ) + Complex.I) (b := Complex.I) J₂_apply
-        (fun w x => by
-          simpa [mul_assoc, mul_left_comm, mul_comm] using
-            phase_mul_J₂'_eq_integral_permJ2Kernel (w := w) (x := x))
-        integrable_permJ2Kernel integral_permJ2Kernel_x_ae integral_g_eq_curveIntegral w)
 
 /-! ### `μIoc01` segment integral helpers -/
 

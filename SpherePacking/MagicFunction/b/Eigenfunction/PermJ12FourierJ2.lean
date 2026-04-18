@@ -273,10 +273,13 @@ public lemma fourier_J₂_eq_curveIntegral (w : EuclideanSpace ℝ (Fin 8)) :
       (∫ᶜ z in Path.segment ((-1 : ℂ) + I) I,
         scalarOneForm (Ψ₁_fourier (‖w‖ ^ 2)) z) := by
   simpa using
-    SpherePacking.Contour.fourier_J₂_eq_curveIntegral_of
+    SpherePacking.Contour.fourier_J_eq_curveIntegral_of
+      (a := (-1 : ℂ) + I) (b := I)
       (fun x => by
         simpa using (J₂_apply (x := x)))
-      phase_mul_J₂'_eq_integral_permJ2Kernel
+      (fun w x => by
+        simpa [mul_assoc, mul_left_comm, mul_comm] using
+          phase_mul_J₂'_eq_integral_permJ2Kernel (w := w) (x := x))
       integrable_permJ2Kernel
       integral_permJ2Kernel_x_ae
       (fun w' => by
