@@ -41,8 +41,7 @@ public lemma hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const (a c : ℂ) (n : ℕ) 
 public lemma abs_le_abs_add_of_mem_ball {x x₀ ε : ℝ} (hx : x ∈ Metric.ball x₀ ε) :
     |x| ≤ |x₀| + ε := by
   have hdist : |x - x₀| ≤ ε := le_of_lt (by simpa [Metric.mem_ball, Real.dist_eq] using hx)
-  exact (by simpa [add_sub_cancel] using abs_add_le x₀ (x - x₀) :
-    |x| ≤ |x₀| + |x - x₀|).trans (add_le_add_right hdist _)
+  linarith [abs_sub_abs_le_abs_sub x x₀]
 
 /-- If `‖z‖ ≤ 2`, then `‖(π * I) * z‖ ≤ 2 * π`. -/
 public lemma norm_mul_pi_I_le_two_pi {z : ℂ} (hz : ‖z‖ ≤ 2) :
@@ -56,10 +55,11 @@ Bound `‖exp((x : ℂ) * c)‖` when `x ∈ ball x₀ 1` and `‖c‖ ≤ B`, b
 public lemma norm_cexp_ofReal_mul_le_exp_mul_of_norm_le {x x₀ : ℝ} {c : ℂ} {B : ℝ}
     (hc : ‖c‖ ≤ B) (hx : x ∈ Metric.ball x₀ (1 : ℝ)) :
     ‖cexp ((x : ℂ) * c)‖ ≤ Real.exp ((|x₀| + 1) * B) := by
-  have hxabs : |x| ≤ |x₀| + 1 := abs_le_abs_add_of_mem_ball hx
   have hre : ((x : ℂ) * c).re ≤ (|x₀| + 1) * B :=
     (Complex.re_le_norm _).trans <| by
-      have : |x| * ‖c‖ ≤ (|x₀| + 1) * B := by gcongr
+      have : |x| * ‖c‖ ≤ (|x₀| + 1) * B := by
+        gcongr
+        exact abs_le_abs_add_of_mem_ball hx
       simpa [norm_mul, Complex.norm_real, mul_assoc] using this
   simpa [Complex.norm_exp] using Real.exp_le_exp.2 hre
 
