@@ -59,31 +59,23 @@ public lemma eqOn_iteratedDeriv_eq_of_deriv_eq
     ∀ n m : ℕ, Set.EqOn (iteratedDeriv n (G m)) (G (n + m)) s := by
   intro n
   induction n with
-  | zero =>
-      intro m x hx
-      simp [iteratedDeriv_zero]
+  | zero => intro m x _; simp [iteratedDeriv_zero]
   | succ n ih =>
       intro m x hx
       have hEq : iteratedDeriv n (G m) =ᶠ[𝓝 x] G (n + m) := by
         filter_upwards [hs.mem_nhds hx] with y hy
-        exact ih (m := m) (x := y) hy
+        exact ih (m := m) hy
       simpa [iteratedDeriv_succ, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
         (Filter.EventuallyEq.deriv_eq hEq).trans (hderiv (n + m) x hx)
 
 /-- Closed form for iterated derivatives of `x ↦ exp (x * c)`. -/
-public lemma iteratedDeriv_cexp_mul_const (c : ℂ) :
-    ∀ m : ℕ,
-      iteratedDeriv m (fun x : ℝ ↦ Complex.exp ((x : ℂ) * c)) =
-        fun x : ℝ ↦ c ^ m * Complex.exp ((x : ℂ) * c) := by
-  intro m
+public lemma iteratedDeriv_cexp_mul_const (c : ℂ) (m : ℕ) :
+    iteratedDeriv m (fun x : ℝ ↦ Complex.exp ((x : ℂ) * c)) =
+      fun x : ℝ ↦ c ^ m * Complex.exp ((x : ℂ) * c) := by
   induction m with
-  | zero =>
-      funext x
-      simp [iteratedDeriv_zero]
-  | succ m ih =>
-      funext x
-      simpa [iteratedDeriv_succ, ih, mul_assoc] using
-        (hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const (a := (1 : ℂ)) (c := c) (n := m) x).deriv
+  | zero => funext x; simp [iteratedDeriv_zero]
+  | succ m ih => funext x; simpa [iteratedDeriv_succ, ih, mul_assoc] using
+      (hasDerivAt_pow_mul_mul_cexp_ofReal_mul_const (a := (1 : ℂ)) (c := c) (n := m) x).deriv
 
 /-- Bound the norm of `m`-th iterated derivative of `t ↦ exp(t * a * I)` by `|a| ^ m` for any
 real `a`. -/
