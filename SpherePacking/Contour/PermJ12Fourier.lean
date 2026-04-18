@@ -96,12 +96,9 @@ public theorem perm_J₃_J₄_of
     (perm_J₁_J₂ : FourierTransform.fourierCLE ℂ (SchwartzMap V ℂ) (J₁ + J₂) = -(J₃ + J₄)) :
     FourierTransform.fourierCLE ℂ (SchwartzMap V ℂ) (J₃ + J₄) = -(J₁ + J₂) := by
   let FT := FourierTransform.fourierCLE ℂ (SchwartzMap V ℂ)
-  have h : -(J₁ + J₂) = FT.symm (J₃ + J₄) := by
-    have := congrArg FT.symm perm_J₁_J₂
-    -- `simp` turns this into `J₁ + J₂ = -FT.symm (J₃ + J₄)`.
-    have : J₁ + J₂ = -FT.symm (J₃ + J₄) := by
-      simpa [FT] using (FT.symm_apply_apply (J₁ + J₂)).symm.trans this
-    simpa using congrArg Neg.neg this
+  have h₁ : J₁ + J₂ = -FT.symm (J₃ + J₄) := by
+    simpa [FT] using (FT.symm_apply_apply (J₁ + J₂)).symm.trans (congrArg FT.symm perm_J₁_J₂)
+  have : -(J₁ + J₂) = FT.symm (J₃ + J₄) := by simpa using congrArg Neg.neg h₁
   lia
 
 end SpherePacking.Contour

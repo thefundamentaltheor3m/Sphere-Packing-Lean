@@ -91,22 +91,16 @@ private lemma one_div_two_im_le_im_div_normSq_sub_one {z : ℂ}
     (hz_im_pos : 0 < z.im) (hz1 : z ≠ (1 : ℂ)) (habs_re : |z.re - 1| ≤ z.im) :
     (1 : ℝ) / (2 * z.im) ≤ z.im / Complex.normSq (z - 1) := by
   have hz_im_ne : z.im ≠ 0 := ne_of_gt hz_im_pos
-  have hz1' : z - 1 ≠ 0 := sub_ne_zero.mpr hz1
-  have hnormSq_pos : 0 < Complex.normSq (z - 1) := (Complex.normSq_pos).2 hz1'
+  have hnormSq_pos : 0 < Complex.normSq (z - 1) := Complex.normSq_pos.2 (sub_ne_zero.mpr hz1)
   have hnormSq_le : Complex.normSq (z - 1) ≤ 2 * z.im ^ 2 := by
     have hre_sq : (z.re - 1) ^ 2 ≤ z.im ^ 2 := by
-      have : |z.re - 1| ^ 2 ≤ z.im ^ 2 := pow_le_pow_left₀ (abs_nonneg _) habs_re 2
-      simpa [sq_abs] using this
+      simpa [sq_abs] using pow_le_pow_left₀ (abs_nonneg _) habs_re 2
     have hnormSq : Complex.normSq (z - 1) = (z.re - 1) ^ 2 + z.im ^ 2 := by
       simp [Complex.normSq, sub_eq_add_neg, pow_two, add_comm]
     nlinarith [hnormSq, hre_sq]
-  have hMul :
-      z.im * ((1 : ℝ) / (2 * z.im ^ 2)) ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) :=
-    mul_le_mul_of_nonneg_left (one_div_le_one_div_of_le hnormSq_pos hnormSq_le)
-      (le_of_lt hz_im_pos)
-  calc
-    (1 : ℝ) / (2 * z.im) = z.im * ((1 : ℝ) / (2 * z.im ^ 2)) := by field_simp [hz_im_ne]
-    _ ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) := hMul
+  calc (1 : ℝ) / (2 * z.im) = z.im * ((1 : ℝ) / (2 * z.im ^ 2)) := by field_simp [hz_im_ne]
+    _ ≤ z.im * ((1 : ℝ) / Complex.normSq (z - 1)) :=
+        mul_le_mul_of_nonneg_left (one_div_le_one_div_of_le hnormSq_pos hnormSq_le) hz_im_pos.le
     _ = z.im / Complex.normSq (z - 1) := by simp [div_eq_mul_inv]
 
 
