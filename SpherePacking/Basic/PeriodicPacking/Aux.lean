@@ -247,13 +247,8 @@ public noncomputable instance : Fintype (Quotient S.addAction.orbitRel) :=
 end instances
 
 section numReps
-
--- Gareth's Code
-
 open scoped Pointwise
-
 open Finset Set
-
 
 variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (Fin d)))
 
@@ -302,31 +297,27 @@ theorem PeriodicSpherePacking.encard_centers_inter_vadd_fundamentalDomain (hd : 
   rw [← S.card_centers_inter_vadd_fundamentalDomain hd b]
   convert Set.encard_eq_coe_toFinset_card _
 
-
 end numReps
 
 section numReps_aux
-
--- Sid's code for Cohn-Elkies
-
 variable {d : ℕ}
 
 public noncomputable instance PeriodicSpherePacking.instFintypeNumReps'
-  (S : PeriodicSpherePacking d) (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
-  Fintype ↑(S.centers ∩ D) :=
-    @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded S D hD_isBounded hd
+    (S : PeriodicSpherePacking d) (hd : 0 < d)
+    {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
+    Fintype ↑(S.centers ∩ D) :=
+  @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded S D hD_isBounded hd
 
 @[expose] public noncomputable def PeriodicSpherePacking.numReps'
-  (S : PeriodicSpherePacking d) (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) : ℕ :=
+    (S : PeriodicSpherePacking d) (hd : 0 < d)
+    {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) : ℕ :=
   letI := S.instFintypeNumReps' hd hD_isBounded
   Fintype.card ↑(S.centers ∩ D)
 
 public theorem PeriodicSpherePacking.numReps_eq_numReps' (S : PeriodicSpherePacking d) (hd : 0 < d)
-  {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
-  (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
-  S.numReps = S.numReps' hd hD_isBounded := by
+    {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
+    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) :
+    S.numReps = S.numReps' hd hD_isBounded := by
   simpa [PeriodicSpherePacking.numReps', Set.toFinset_card] using
     (S.card_centers_inter_isFundamentalDomain (D := D) hD_isBounded hD_unique_covers hd).symm
 
