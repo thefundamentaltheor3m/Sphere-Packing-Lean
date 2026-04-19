@@ -250,7 +250,6 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
         ∑' m : dualLattice (d := d) L,
           (𝓕 (fun x : E => f x) m) * Complex.exp (2 * π * Complex.I * ⟪v, m⟫_[ℝ]) := by
   let A : E ≃ₗ[ℝ] E := Aₗ (d := d) (L := L)
-  -- Apply Poisson summation for the standard lattice to `f ∘ A`.
   let g : SchwartzMap E ℂ :=
     SchwartzMap.compCLMOfContinuousLinearEquiv ℂ A.toContinuousLinearEquiv f
   have hstd :=

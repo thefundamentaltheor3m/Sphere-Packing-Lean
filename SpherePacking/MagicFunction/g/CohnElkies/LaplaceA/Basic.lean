@@ -69,11 +69,11 @@ lemma aestronglyMeasurable_aLaplaceIntegrand_Ioi (u : ℝ) :
     AEStronglyMeasurable (fun t : ℝ => aLaplaceIntegrand u t)
       (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) := by
   have ht2 : AEStronglyMeasurable (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ))
-        (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) :=
+      (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) :=
     ((continuous_ofReal.comp (continuous_id.pow 2)).aestronglyMeasurable
         (μ := (volume : Measure ℝ))).mono_measure Measure.restrict_le_self
   have hexp : AEStronglyMeasurable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))
-        (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) := by fun_prop
+      (MeasureTheory.volume.restrict (Set.Ioi (0 : ℝ))) := by fun_prop
   simpa [aLaplaceIntegrand, mul_assoc] using (ht2.mul aestronglyMeasurable_phi0''_div_Ioi).mul hexp
 
 /-- Convergence of the Laplace integral defining `a'` (integrability on `(0, ∞)` for `u > 2`). -/
@@ -136,10 +136,9 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         have ht2 : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ) := by fun_prop
         have hexp : Continuous fun t : ℝ => (Real.exp (-π * u * t) : ℂ) := by fun_prop
         simpa [aLaplaceIntegrand, mul_assoc] using
-          ((ht2.continuousOn.mul continuousOn_phi0''_div_Ioi).mul hexp.continuousOn)
-      have hcontIcc : ContinuousOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Icc (1 : ℝ) A) :=
-        hcontIoi.mono fun t ht => lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) ht.1
-      exact (hcontIcc.integrableOn_Icc (μ := MeasureTheory.volume)).mono_set Set.Ioc_subset_Icc_self
+          (ht2.continuousOn.mul continuousOn_phi0''_div_Ioi).mul hexp.continuousOn
+      exact ((hcontIoi.mono fun t ht => lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1)
+        ht.1).integrableOn_Icc (μ := MeasureTheory.volume)).mono_set Set.Ioc_subset_Icc_self
     have hbig : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi A) := by
       let a : ℝ := π * (u - 2)
       have ha : 0 < a := mul_pos Real.pi_pos (sub_pos.2 hu)

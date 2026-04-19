@@ -26,8 +26,6 @@ open SlashInvariantFormClass ModularFormClass
 
 noncomputable section
 
-/-! ## Approximating `φ₂'` and `φ₄'` for large imaginary part. -/
-
 lemma exp_neg_two_pi_pow_two_mul_exp_two_pi (t : ℝ) :
     Real.exp (-2 * π * t) ^ (2 : ℕ) * Real.exp (2 * π * t) = Real.exp (-2 * π * t) := by
   rw [← Real.exp_nat_mul, ← Real.exp_add]; ring_nf

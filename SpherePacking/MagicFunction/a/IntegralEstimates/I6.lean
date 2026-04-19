@@ -46,9 +46,8 @@ variable (r : ℝ)
 section Setup
 
 /-- The integrand on `Ici 1` whose set integral is `I₆'`. -/
-@[expose] public noncomputable def g : ℝ → ℝ → ℂ := fun r t ↦ I
-  * φ₀'' (I * t)
-  * cexp (-π * r * t)
+@[expose] public noncomputable def g : ℝ → ℝ → ℂ :=
+  fun r t ↦ I * φ₀'' (I * t) * cexp (-π * r * t)
 
 /-- Rewrite `I₆' r` as a set integral of `g r` over `Ici 1` (up to the factor `2`). -/
 public lemma I₆'_eq_integral_g_Ioo (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), g r t := by
@@ -56,7 +55,6 @@ public lemma I₆'_eq_integral_g_Ioo (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 :
 
 end Setup
 
-----------------------------------------------------------------
 
 section Bounding
 
@@ -79,7 +77,6 @@ lemma I₆'_bounding_aux_2' (C₀ : ℝ)
 end Bounding_Integrand
 
 end Bounding
-----------------------------------------------------------------
 
 noncomputable section Schwartz_Decay
 
@@ -91,18 +88,13 @@ open scoped Topology
 
 open SpherePacking.Integration (μIciOne)
 
-def coeff (t : ℝ) : ℂ :=
-  (-π * t : ℂ)
+def coeff (t : ℝ) : ℂ := (-π * t : ℂ)
 
-def gN (n : ℕ) (r t : ℝ) : ℂ :=
-  (coeff t) ^ n * g r t
+def gN (n : ℕ) (r t : ℝ) : ℂ := (coeff t) ^ n * g r t
 
-lemma coeff_norm (t : ℝ) :
-    ‖coeff t‖ = |π * t| := by
-  simp [coeff]
+lemma coeff_norm (t : ℝ) : ‖coeff t‖ = |π * t| := by simp [coeff]
 
-lemma coeff_norm_of_nonneg {t : ℝ} (ht : 0 ≤ t) :
-    ‖coeff t‖ = π * t := by
+lemma coeff_norm_of_nonneg {t : ℝ} (ht : 0 ≤ t) : ‖coeff t‖ = π * t := by
   simp [coeff_norm, abs_of_nonneg (mul_nonneg Real.pi_pos.le ht)]
 
 lemma coeff_norm_pow_of_nonneg (n : ℕ) {t : ℝ} (ht : 0 ≤ t) :
