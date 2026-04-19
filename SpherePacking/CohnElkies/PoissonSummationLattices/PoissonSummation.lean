@@ -42,17 +42,11 @@ namespace standardLattice
 
 /-- The standard lattice has the discrete topology. -/
 public instance instDiscreteTopology : DiscreteTopology (standardLattice d) := by
-  simpa [standardLattice] using
-    (inferInstance :
-      DiscreteTopology
-        (Submodule.span ℤ (Set.range ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis))))
+  unfold standardLattice; infer_instance
 
 /-- The standard lattice is a full-rank `ℤ`-lattice in `ℝ^d`. -/
 public instance instIsZLattice : IsZLattice ℝ (standardLattice d) := by
-  simpa [standardLattice] using
-    (inferInstance :
-      IsZLattice ℝ
-        (Submodule.span ℤ (Set.range ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis))))
+  unfold standardLattice; infer_instance
 
 end StandardLattice.standardLattice
 section PoissonSummation
@@ -82,10 +76,8 @@ public lemma intVec_mem_standardLattice (k : Fin d → ℤ) :
     ext j
     simp [intVec, OrthonormalBasis.coe_toBasis, EuclideanSpace.basisFun_apply, Pi.single_apply]
   rw [hsum]
-  refine (SchwartzMap.standardLattice d).sum_mem ?_
-  intro i hi
-  refine (SchwartzMap.standardLattice d).smul_mem (k i) ?_
-  exact Submodule.subset_span ⟨i, rfl⟩
+  exact (SchwartzMap.standardLattice d).sum_mem fun i _ =>
+    (SchwartzMap.standardLattice d).smul_mem (k i) (Submodule.subset_span ⟨i, rfl⟩)
 
 end SchwartzMap.PoissonSummation.PoissonSummation.Standard
 namespace SchwartzMap
