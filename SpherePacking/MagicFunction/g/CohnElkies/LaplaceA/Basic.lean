@@ -41,12 +41,11 @@ open MagicFunction.FourierEigenfunctions
   ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) * Real.exp (-π * u * t)
 
 lemma continuousOn_phi0''_div_Ioi :
-    ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) (Set.Ioi (0 : ℝ)) := by
-  have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) (Set.Ioi (0 : ℝ)) :=
-    continuousOn_const.div Complex.continuous_ofReal.continuousOn
-      fun t ht => by exact_mod_cast (ne_of_gt ht)
-  exact MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn.comp hcontIdiv
-    fun t ht => by simp_all
+    ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) (Set.Ioi (0 : ℝ)) :=
+  MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn.comp
+    (continuousOn_const.div Complex.continuous_ofReal.continuousOn
+      fun _ ht => by exact_mod_cast (ne_of_gt ht))
+    fun _ ht => by simp_all
 
 lemma aestronglyMeasurable_phi0''_div_Ioi :
     AEStronglyMeasurable (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ)))
@@ -99,18 +98,15 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     have hC₀ : 0 ≤ C₀ := MagicFunction.a.Schwartz.I1Decay.Cφ_pos.le
     have hφ₀'' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ C₀ := by
       have hsinv : (1 : ℝ) ≤ t⁻¹ := one_le_inv_iff₀.2 ⟨ht0, ht1⟩
-      have hdecay : ‖φ₀'' ((Complex.I : ℂ) * (t⁻¹ : ℂ))‖ ≤ C₀ * rexp (-2 * π * t⁻¹) := by
-        simpa [C₀] using MagicFunction.a.Schwartz.I1Decay.norm_φ₀''_le (s := t⁻¹) hsinv
-      have hexp : rexp (-2 * π * t⁻¹) ≤ 1 := by
-        have : (-2 * π * t⁻¹) ≤ 0 := by
-          nlinarith [Real.pi_pos, inv_nonneg.2 (le_of_lt ht0)]
-        simpa using Real.exp_le_one_iff.2 this
+      have hexp : rexp (-2 * π * t⁻¹) ≤ 1 :=
+        Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, inv_nonneg.2 (le_of_lt ht0)])
       have hdecay' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ C₀ * rexp (-2 * π * t⁻¹) := by
-        simpa [div_eq_mul_inv, Complex.ofReal_inv] using hdecay
+        simpa [div_eq_mul_inv, Complex.ofReal_inv, C₀] using
+          MagicFunction.a.Schwartz.I1Decay.norm_φ₀''_le (s := t⁻¹) hsinv
       exact hdecay'.trans ((mul_le_mul_of_nonneg_left hexp hC₀).trans_eq (by simp))
     have ht2_le : ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ ≤ 1 := by
-      have ht_abs : |t| ≤ 1 := by simpa [abs_of_pos ht0] using ht1
-      simpa [Complex.norm_real] using pow_le_one₀ (n := 2) (abs_nonneg t) ht_abs
+      simpa [Complex.norm_real] using
+        pow_le_one₀ (n := 2) (abs_nonneg t) (by simpa [abs_of_pos ht0] using ht1)
     have hexp_le : ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1 := by
       have harg : (-π * u * t) ≤ 0 := by
         have : 0 ≤ π * u * t := by positivity [Real.pi_pos.le, hu0.le, ht0.le]
@@ -156,11 +152,10 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         hMeasIoi.mono_measure <| Measure.restrict_mono_set (MeasureTheory.volume : Measure ℝ)
           fun t ht => lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (le_trans hA1 (le_of_lt ht))
       have hdomReal : Integrable (fun t : ℝ => Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)))
-            (MeasureTheory.volume.restrict (Set.Ioi A)) := by
-        have hbase' : Integrable (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t))
-              (MeasureTheory.volume.restrict (Set.Ioi A)) := by
-          simpa [IntegrableOn] using integrableOn_sq_mul_exp_neg A a ha
-        exact hbase'.const_mul Cφ
+            (MeasureTheory.volume.restrict (Set.Ioi A)) :=
+        (by simpa [IntegrableOn] using integrableOn_sq_mul_exp_neg A a ha
+          : Integrable (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t))
+              (MeasureTheory.volume.restrict (Set.Ioi A))).const_mul Cφ
       have hdom :
           ∀ᵐ t ∂(MeasureTheory.volume.restrict (Set.Ioi A)),
             ‖aLaplaceIntegrand u t‖ ≤ Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by
@@ -172,23 +167,15 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         have hzpos : 0 < (((Complex.I : ℂ) * (t : ℂ)) : ℂ).im := by simpa using ht0
         let zH : ℍ := ⟨(Complex.I : ℂ) * (t : ℂ), hzpos⟩
         have hz_im : zH.im = t := by simp [zH, UpperHalfPlane.im]
-        have hAΔ : AΔ ≤ A := by
-          dsimp [A]
-          exact le_trans (le_max_left AΔ (max A2 (max A4 A6))) (le_max_right (1 : ℝ) _)
+        have hAΔ : AΔ ≤ A := by dsimp [A]; exact le_max_of_le_right (le_max_left _ _)
         have hA2 : A2 ≤ A := by
-          dsimp [A]
-          exact le_trans (le_max_left A2 (max A4 A6)) <|
-            le_trans (le_max_right AΔ (max A2 (max A4 A6))) (le_max_right (1 : ℝ) _)
+          dsimp [A]; exact le_max_of_le_right <| le_max_of_le_right (le_max_left _ _)
         have hA4 : A4 ≤ A := by
-          dsimp [A]
-          exact le_trans (le_max_left A4 A6) <|
-            le_trans (le_max_right A2 (max A4 A6)) <|
-              le_trans (le_max_right AΔ (max A2 (max A4 A6))) (le_max_right (1 : ℝ) _)
+          dsimp [A]; exact le_max_of_le_right <| le_max_of_le_right <|
+            le_max_of_le_right (le_max_left _ _)
         have hA6 : A6 ≤ A := by
-          dsimp [A]
-          exact le_trans (le_max_right A4 A6) <|
-            le_trans (le_max_right A2 (max A4 A6)) <|
-              le_trans (le_max_right AΔ (max A2 (max A4 A6))) (le_max_right (1 : ℝ) _)
+          dsimp [A]; exact le_max_of_le_right <| le_max_of_le_right <|
+            le_max_of_le_right (le_max_right _ _)
         have hzAΔ : AΔ ≤ zH.im := le_trans hAΔ (by simpa [hz_im] using htA)
         have hzA2 : A2 ≤ zH.im := le_trans hA2 (by simpa [hz_im] using htA)
         have hzA4 : A4 ≤ zH.im := le_trans hA4 (by simpa [hz_im] using htA)
@@ -302,10 +289,8 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
           hdomReal hMeasA hdom
     have hIoi1_split : Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A := by
       simpa using (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) hA1).symm
-    rw [hIoi1_split]
-    exact hmid.union hbig
-  rw [hIoi_split]
-  exact hsmall.union htail
+    rw [hIoi1_split]; exact hmid.union hbig
+  rw [hIoi_split]; exact hsmall.union htail
 
 end
 
