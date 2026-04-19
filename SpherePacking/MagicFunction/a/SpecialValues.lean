@@ -170,8 +170,7 @@ lemma I₂'_zero_add_I₄'_zero :
     IntervalIntegrable (fun x : ℝ => F (zI x)) MeasureTheory.volume (0 : ℝ) 1 →
     IntervalIntegrable (fun x : ℝ => F (zI x - 1)) MeasureTheory.volume (0 : ℝ) 1 →
     I₂' (0 : ℝ) + I₄' 0 =
-      ∫ x in (0 : ℝ)..1, (F (zI x) - F (zI x - 1)) ∂MeasureTheory.volume := by
-  intro hF hG
+      ∫ x in (0 : ℝ)..1, (F (zI x) - F (zI x - 1)) ∂MeasureTheory.volume := fun hF hG => by
   simpa [I₂'_zero, I₄'_zero, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
     (intervalIntegral.integral_sub (μ := MeasureTheory.volume) (a := (0 : ℝ)) (b := (1 : ℝ))
         (f := fun x : ℝ => F (zI x)) (g := fun x : ℝ => F (zI x - 1)) hF hG).symm
@@ -182,12 +181,10 @@ lemma I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2 :
     I₂' (0 : ℝ) + I₄' 0 =
       ∫ x in (0 : ℝ)..1,
         (φ₀'' (zI x) * ((2 : ℂ) * (zI x) - 1) - (12 * Complex.I) / π * φ₂'' (zI x))
-          ∂MeasureTheory.volume := by
-  intro hF hG
+          ∂MeasureTheory.volume := fun hF hG => by
   rw [I₂'_zero_add_I₄'_zero hF hG]
-  refine intervalIntegral.integral_congr (μ := MeasureTheory.volume) ?_
-  intro x hx
-  simpa [zI] using (F_sub_one (z := zI x) (by simp [zI]))
+  refine intervalIntegral.integral_congr (μ := MeasureTheory.volume) fun x _ => ?_
+  simpa [zI] using F_sub_one (z := zI x) (by simp [zI])
 
 /-! ### Cancelling the `φ₀''` strip integral against `I₆' 0`. -/
 
@@ -461,19 +458,17 @@ private lemma tsum_pnat_div_q_eq_nat_tsum (z : ℍ) (a : ℕ → ℂ)
         ((n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
           cexp (2 * π * Complex.I * (z : ℂ))) =
       ∑' n : ℕ, a n * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
-  have hpnat :
-      (∑' (n : ℕ+),
-          ((n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
-            cexp (2 * π * Complex.I * (z : ℂ))) =
-        ∑' n : ℕ,
-          (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
-                cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ))) /
-            cexp (2 * π * Complex.I * (z : ℂ)) := by
-    simpa using
-      (tsum_pnat_eq_tsum_succ
-        (f := fun n : ℕ =>
-          ((n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
-            cexp (2 * π * Complex.I * (z : ℂ))))
+  have hpnat : (∑' (n : ℕ+),
+        ((n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
+          cexp (2 * π * Complex.I * (z : ℂ))) =
+      ∑' n : ℕ,
+        (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
+              cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ))) /
+          cexp (2 * π * Complex.I * (z : ℂ)) := by
+    simpa using tsum_pnat_eq_tsum_succ
+      (f := fun n : ℕ =>
+        ((n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
+          cexp (2 * π * Complex.I * (z : ℂ)))
   rw [hpnat]
   refine tsum_congr fun n => ?_
   rw [cexp_pnat_succ_factor, hrel]
