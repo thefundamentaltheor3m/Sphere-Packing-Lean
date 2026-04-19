@@ -466,10 +466,10 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       (Finset.mem_filter.1 hx).2.symm
   -- The maximal fiber gives a density lower bound.
   have hs_le : (s.card : ℝ≥0∞) ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) := by
-    have hs_sum : s.card = ∑ g ∈ t, (s.filter fun x => f x = g).card := by
-      simpa [fiber] using Finset.card_eq_sum_card_fiberwise hf_maps
     exact_mod_cast show s.card ≤ t.card * sg.card by
-      simpa [hs_sum, Finset.sum_const] using Finset.sum_le_sum hg0max
+      simpa [show s.card = ∑ g ∈ t, (s.filter fun x => f x = g).card by
+          simpa [fiber] using Finset.card_eq_sum_card_fiberwise hf_maps,
+        Finset.sum_const] using Finset.sum_le_sum hg0max
   have ht_vol : ((t.card : ℝ≥0∞) * volCube) ≤
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R₁ + 2 * C)) := by
     simpa [volCube, R₁, r, t, htSet] using
@@ -512,10 +512,10 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hsb_centers : ∀ x ∈ sb, x ∈ S.centers := fun x hx =>
     hsg_centers x (Finset.mem_filter.1 hx).1
   have hsb_boundary :
-      ∀ x ∈ sb, x ∈ (g0 +ᵥ coordCube d L) \ (g0 +ᵥ coordCubeInner d L (1 / 2)) := fun x hx => by
-    have hx_mem := Finset.mem_filter.1 hx
-    exact ⟨hsg_memCube x hx_mem.1, by
-      simpa [innerSet, show r = (1 / 2 : ℝ) from by norm_num] using hx_mem.2⟩
+      ∀ x ∈ sb, x ∈ (g0 +ᵥ coordCube d L) \ (g0 +ᵥ coordCubeInner d L (1 / 2)) := fun x hx =>
+    ⟨hsg_memCube x (Finset.mem_filter.1 hx).1, by
+      simpa [innerSet, show r = (1 / 2 : ℝ) from by norm_num] using
+        (Finset.mem_filter.1 hx).2⟩
   have hsb_vol : (sb.card : ℝ≥0∞) * volBall ≤ shellVol := by
     simpa [volBall, shellVol, r, PeriodicConstantApprox.constVec] using
       PeriodicConstantApprox.card_mul_volume_ball_le_volume_outer_diff_inner S hLpos hSsep
