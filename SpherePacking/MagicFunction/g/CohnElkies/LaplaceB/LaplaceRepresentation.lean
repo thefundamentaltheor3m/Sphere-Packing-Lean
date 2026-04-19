@@ -195,81 +195,42 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
   -- Decay of the contour integrand as `im z → ∞`, needed for the open-rectangle lemma.
   have htendstoT :
       ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
-    rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, hCψ, hψbd⟩
-    have hc : 0 < π * (u - 2) := by
-      have : 0 < u - 2 := sub_pos.2 hu
-      exact mul_pos Real.pi_pos this
-    -- The dominating exponential term tends to `0` as `y → ∞`.
+    rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
+    have hc : 0 < π * (u - 2) := mul_pos Real.pi_pos (sub_pos.2 hu)
     have htdec :
         Tendsto (fun y : ℝ => Cψ * Real.exp (-((π * (u - 2)) * y))) atTop (𝓝 (0 : ℝ)) := by
       have hmul : Tendsto (fun y : ℝ => (π * (u - 2)) * y) atTop atTop := by
-        simpa [mul_assoc, mul_comm, mul_left_comm] using (tendsto_id.const_mul_atTop hc)
-      have hexp :
-          Tendsto (fun y : ℝ => Real.exp (-((π * (u - 2)) * y))) atTop (𝓝 (0 : ℝ)) :=
-        Real.tendsto_exp_neg_atTop_nhds_zero.comp hmul
-      have hconst : Tendsto (fun _ : ℝ => Cψ) atTop (𝓝 Cψ) := tendsto_const_nhds
-      simpa [mul_assoc] using hconst.mul hexp
+        simpa [mul_assoc, mul_comm, mul_left_comm] using tendsto_id.const_mul_atTop hc
+      simpa [mul_assoc] using
+        tendsto_const_nhds.mul (Real.tendsto_exp_neg_atTop_nhds_zero.comp hmul)
     intro ε hε
-    have hEv :
-        ∀ᶠ y in atTop, Cψ * Real.exp (-((π * (u - 2)) * y)) < ε := by
-      simpa using htdec.eventually (Iio_mem_nhds hε)
-    rcases (Filter.eventually_atTop.1 hEv) with ⟨Mε, hMε⟩
-    let M : ℝ := max (max 1 Aψ) Mε
-    refine ⟨M, ?_⟩
-    intro z hzM
-    have hzpos : 0 < z.im := by
-      have hM1 : (1 : ℝ) ≤ M := le_trans (le_max_left 1 Aψ) (le_max_left (max 1 Aψ) Mε)
-      exact lt_of_lt_of_le (by norm_num) (le_trans hM1 hzM)
-    have hAψM : Aψ ≤ M := le_trans (le_max_right 1 Aψ) (le_max_left (max 1 Aψ) Mε)
-    have hzAψ : Aψ ≤ z.im := le_trans hAψM hzM
-    -- Control `ψT' z` by the exponential bound for `ψI`.
-    have hψT : ψT' z = ψI' (z + (1 : ℂ)) := ψT'_eq_ψI'_add_one z hzpos
+    rcases Filter.eventually_atTop.1 (htdec.eventually (Iio_mem_nhds hε)) with ⟨Mε, hMε⟩
+    refine ⟨max (max 1 Aψ) Mε, fun z hzM => ?_⟩
+    have hM1 : (1 : ℝ) ≤ max (max 1 Aψ) Mε :=
+      (le_max_left 1 Aψ).trans (le_max_left _ _)
+    have hzpos : 0 < z.im := lt_of_lt_of_le (by norm_num) (hM1.trans hzM)
+    have hzAψ : Aψ ≤ z.im :=
+      ((le_max_right 1 Aψ).trans (le_max_left _ _)).trans hzM
     have hzI : 0 < (z + (1 : ℂ)).im := by simpa [add_assoc] using hzpos
-    have htIm :
-        Aψ ≤ UpperHalfPlane.im (⟨z + (1 : ℂ), hzI⟩ : ℍ) := by
+    have htIm : Aψ ≤ UpperHalfPlane.im (⟨z + (1 : ℂ), hzI⟩ : ℍ) := by
       simpa [UpperHalfPlane.im, add_assoc] using hzAψ
-    have hψI :
-        ‖ψI (⟨z + (1 : ℂ), hzI⟩ : ℍ)‖ ≤ Cψ * Real.exp (2 * π * z.im) := by
-      simpa [UpperHalfPlane.im, add_assoc] using (hψbd (⟨z + (1 : ℂ), hzI⟩ : ℍ) htIm)
-    have hψI' : ψI' (z + (1 : ℂ)) = ψI (⟨z + (1 : ℂ), hzI⟩ : ℍ) := by
-      simp [ψI', hzpos]
-    -- Norm of the exponential weight.
+    have hψI : ‖ψI (⟨z + (1 : ℂ), hzI⟩ : ℍ)‖ ≤ Cψ * Real.exp (2 * π * z.im) := by
+      simpa [UpperHalfPlane.im, add_assoc] using hψbd _ htIm
     have hweight : ‖bContourWeight u z‖ = Real.exp (-π * u * z.im) := by
-      dsimp [bContourWeight]
-      -- `‖exp w‖ = exp (Re w)`.
-      rw [Complex.norm_exp]
-      -- Compute the real part of `π * I * u * z`.
-      simp
-    -- Combine the estimates.
-    have hnorm :
-        ‖bContourIntegrandT u z‖ =
-          ‖ψT' z‖ * ‖bContourWeight u z‖ := by
+      simp [bContourWeight, Complex.norm_exp]
+    have hnorm : ‖bContourIntegrandT u z‖ = ‖ψT' z‖ * ‖bContourWeight u z‖ := by
       simp [bContourIntegrandT]
-    rw [hnorm, hψT, hψI', hweight]
-    have hpos : 0 ≤ Real.exp (-π * u * z.im) := le_of_lt (Real.exp_pos _)
-    have hmul :
-        ‖ψI (⟨z + (1 : ℂ), hzI⟩ : ℍ)‖ * Real.exp (-π * u * z.im) ≤
-          (Cψ * Real.exp (2 * π * z.im)) * Real.exp (-π * u * z.im) :=
-      mul_le_mul_of_nonneg_right hψI hpos
-    have hcomb : 2 * π * z.im + (-π * u * z.im) = -((π * (u - 2)) * z.im) := by ring_nf
+    rw [hnorm, ψT'_eq_ψI'_add_one z hzpos, show ψI' (z + (1 : ℂ)) =
+        ψI ⟨z + (1 : ℂ), hzI⟩ by simp [ψI', hzpos], hweight]
     have hbound :
         ‖ψI (⟨z + (1 : ℂ), hzI⟩ : ℍ)‖ * Real.exp (-π * u * z.im) ≤
           Cψ * Real.exp (-((π * (u - 2)) * z.im)) := by
-      calc
-        ‖ψI (⟨z + (1 : ℂ), hzI⟩ : ℍ)‖ * Real.exp (-π * u * z.im) ≤
-            (Cψ * Real.exp (2 * π * z.im)) * Real.exp (-π * u * z.im) := hmul
-        _ = Cψ * Real.exp (-((π * (u - 2)) * z.im)) := by
-            calc
-              (Cψ * Real.exp (2 * π * z.im)) * Real.exp (-π * u * z.im) =
-                  Cψ * (Real.exp (2 * π * z.im) * Real.exp (-π * u * z.im)) := by ring_nf
-              _ = Cψ * Real.exp (2 * π * z.im + (-π * u * z.im)) := by
-                  simp [Real.exp_add, mul_assoc]
-              _ = Cψ * Real.exp (-((π * (u - 2)) * z.im)) := by
-                  rw [hcomb]
-    -- Apply the tail estimate from `Mε`.
-    have hzMε : Mε ≤ z.im := le_trans (le_max_right (max 1 Aψ) Mε) hzM
-    have htail : Cψ * Real.exp (-((π * (u - 2)) * z.im)) < ε := hMε z.im hzMε
-    exact lt_of_le_of_lt hbound htail
+      have hstep : ‖ψI (⟨z + (1 : ℂ), hzI⟩ : ℍ)‖ * Real.exp (-π * u * z.im) ≤
+          (Cψ * Real.exp (2 * π * z.im)) * Real.exp (-π * u * z.im) :=
+        mul_le_mul_of_nonneg_right hψI (Real.exp_pos _).le
+      refine hstep.trans (le_of_eq ?_)
+      rw [mul_assoc, ← Real.exp_add]; ring_nf
+    exact hbound.trans_lt (hMε z.im ((le_max_right _ _).trans hzM))
   -- Apply the open-rectangle deformation for the left and right vertical lines.
   have hRectLeft :
       (∫ (x : ℝ) in (0 : ℝ)..1,
