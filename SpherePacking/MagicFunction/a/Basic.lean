@@ -98,28 +98,22 @@ section Def
 -- We write some API that allows us to express the `(Φᵢ r)` as functions when needed.
 
 /-- Unfolding lemma for `Φ₁`. -/
-public lemma Φ₁_def : Φ₁ r = fun t ↦ I * Φ₁' r (z₁' t) :=
-  rfl
+public lemma Φ₁_def : Φ₁ r = fun t ↦ I * Φ₁' r (z₁' t) := rfl
 
 /-- Unfolding lemma for `Φ₂`. -/
-public lemma Φ₂_def : Φ₂ r = fun t ↦ Φ₂' r (z₂' t) :=
-  rfl
+public lemma Φ₂_def : Φ₂ r = fun t ↦ Φ₂' r (z₂' t) := rfl
 
 /-- Unfolding lemma for `Φ₃`. -/
-public lemma Φ₃_def : Φ₃ r = fun t ↦ I * Φ₃' r (z₃' t) :=
-  rfl
+public lemma Φ₃_def : Φ₃ r = fun t ↦ I * Φ₃' r (z₃' t) := rfl
 
 /-- Unfolding lemma for `Φ₄`. -/
-public lemma Φ₄_def : Φ₄ r = fun t ↦ -1 * Φ₄' r (z₄' t) :=
-  rfl
+public lemma Φ₄_def : Φ₄ r = fun t ↦ -1 * Φ₄' r (z₄' t) := rfl
 
 /-- Unfolding lemma for `Φ₅`. -/
-public lemma Φ₅_def : Φ₅ r = fun t ↦ I * Φ₅' r (z₅' t) :=
-  rfl
+public lemma Φ₅_def : Φ₅ r = fun t ↦ I * Φ₅' r (z₅' t) := rfl
 
 /-- Unfolding lemma for `Φ₆`. -/
-public lemma Φ₆_def : Φ₆ r = fun t ↦ I * Φ₆' r (z₆' t) :=
-  rfl
+public lemma Φ₆_def : Φ₆ r = fun t ↦ I * Φ₆' r (z₆' t) := rfl
 
 end Def
 
@@ -230,7 +224,7 @@ public lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, -I
   rw [z₁'_eq_of_mem ht,
     show ((-1 : ℂ) + I * t + 1) = I * t from by ring, mul_pow, I_sq,
     show ((π : ℂ) * I * r * (-1 + I * t)) = -π * I * r + -π * r * t from by
-      have : (I : ℂ) ^ 2 = -1 := I_sq; linear_combination ↑π * r * t * this,
+      linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1),
     Complex.exp_add]
   ring
 
@@ -254,7 +248,7 @@ public lemma I₂'_eq (r : ℝ) : I₂' r = ∫ t in (0 : ℝ)..1,
   rw [z₂'_eq_of_mem ht,
     show (-1 + (t : ℂ) + I + 1) = t + I from by ring,
     show ((π : ℂ) * I * r * (-1 + t + I)) = -π * I * r + π * I * r * t + -π * r from by
-      have : (I : ℂ) ^ 2 = -1 := I_sq; linear_combination ↑π * r * this,
+      linear_combination ↑π * r * (I_sq : (I : ℂ) ^ 2 = -1),
     Complex.exp_add, Complex.exp_add]
   ring
 
@@ -270,7 +264,7 @@ public lemma I₃'_eq (r : ℝ) : I₃' r = ∫ t in (0 : ℝ)..1, -I
   rw [z₃'_eq_of_mem ht,
     show (1 + I * (t : ℂ) - 1) = I * t from by ring, mul_pow, I_sq,
     show ((π : ℂ) * I * r * (1 + I * t)) = π * I * r + -π * r * t from by
-      have : (I : ℂ) ^ 2 = -1 := I_sq; linear_combination ↑π * r * t * this,
+      linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1),
     Complex.exp_add]
   ring
 
@@ -287,7 +281,7 @@ public lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1, -1
   rw [z₄'_eq_of_mem ht,
     show ((1 : ℂ) - t + I - 1) = -t + I from by ring,
     show ((π : ℂ) * I * r * (1 - t + I)) = π * I * r + -π * I * r * t + -π * r from by
-      have : (I : ℂ) ^ 2 = -1 := I_sq; linear_combination ↑π * r * this,
+      linear_combination ↑π * r * (I_sq : (I : ℂ) ^ 2 = -1),
     Complex.exp_add, Complex.exp_add]
   ring
 
@@ -301,7 +295,7 @@ public lemma I₅'_eq (r : ℝ) : I₅' r = -2 * ∫ t in (0 : ℝ)..1, -I
   simp only [uIcc_of_le zero_le_one, mem_Icc] at ht
   rw [z₅'_eq_of_mem ht, mul_pow, I_sq,
     show ((π : ℂ) * I * r * (I * t)) = -π * r * t from by
-      have : (I : ℂ) ^ 2 = -1 := I_sq; linear_combination ↑π * r * t * this]
+      linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1)]
   ring
 
 /-- Rewrite `I₅'` as an integral over `Ioc 0 1`. -/
@@ -314,12 +308,11 @@ public lemma I₅'_eq_Ioc (r : ℝ) : I₅' r = -2 * ∫ (t : ℝ) in Ioc 0 1, -
 public lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
     * φ₀'' (I * t)
     * cexp (-π * r * t) := by
-  simp only [I₆', Φ₆, Φ₆']
-  congr 1
+  simp only [I₆', Φ₆, Φ₆']; congr 1
   refine MeasureTheory.setIntegral_congr_fun measurableSet_Ici fun t ht => ?_
   rw [z₆'_eq_of_mem ht,
     show ((π : ℂ) * I * r * (I * t)) = -π * r * t from by
-      have : (I : ℂ) ^ 2 = -1 := I_sq; linear_combination ↑π * r * t * this]
+      linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1)]
   ring
 
 attribute [simp]
