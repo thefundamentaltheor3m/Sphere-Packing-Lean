@@ -143,7 +143,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         measurableSet_Ioi
     have hInt_tail : IntegrableOn f (Set.Ioi A) := by
       have : Integrable f (volume.restrict (Set.Ioi A)) :=
-        hg.mono' hmeas (ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by simpa using hdom t ht)
+        hg.mono' hmeas (ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
+          simpa using hdom t ht)
       simpa [MeasureTheory.IntegrableOn] using this
     rw [show Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A from
       (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) hA1).symm]
