@@ -125,26 +125,19 @@ lemma a'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (a' u
       simpa using
         (setIntegral_im_ofReal (f := fun t => innerR t * Real.exp (-π * u * t)))
     simpa [hcongr] using hReal
-  have hpiIm : ((π : ℂ)).im = 0 := by simp
   have hpi3Im : ((π : ℂ) ^ (3 : ℕ)).im = 0 := by
-    simpa using Complex.im_pow_eq_zero_of_im_eq_zero hpiIm 3
+    simpa using Complex.im_pow_eq_zero_of_im_eq_zero (by simp : ((π : ℂ)).im = 0) 3
+  have hu2Im : ((u : ℂ) ^ (2 : ℕ)).im = 0 := by
+    simpa using Complex.im_pow_eq_zero_of_im_eq_zero (by simp : ((u : ℂ)).im = 0) 2
   have hfrac36 : ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2))).im = 0 := by
-    have hden : ((π ^ (3 : ℕ) * (u - 2) : ℂ)).im = 0 := by
-      rw [Complex.mul_im]
-      simp [hpi3Im]
+    have hden : ((π ^ (3 : ℕ) * (u - 2) : ℂ)).im = 0 := by rw [Complex.mul_im]; simp [hpi3Im]
     simp [Complex.div_im, hden]
   have hfrac8640 : ((8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ))).im = 0 := by
     have hden : ((π ^ (3 : ℕ) * u ^ (2 : ℕ) : ℂ)).im = 0 := by
-      have huIm : ((u : ℂ)).im = 0 := by simp
-      have hu2Im : ((u : ℂ) ^ (2 : ℕ)).im = 0 := by
-        simpa using Complex.im_pow_eq_zero_of_im_eq_zero huIm 2
-      rw [Complex.mul_im]
-      simp [hpi3Im, hu2Im]
+      rw [Complex.mul_im]; simp [hpi3Im, hu2Im]
     simp [Complex.div_im, hden]
   have hfrac18144 : ((18144 : ℂ) / (π ^ (3 : ℕ) * u)).im = 0 := by
-    have hden : ((π ^ (3 : ℕ) * u : ℂ)).im = 0 := by
-      rw [Complex.mul_im]
-      simp [hpi3Im]
+    have hden : ((π ^ (3 : ℕ) * u : ℂ)).im = 0 := by rw [Complex.mul_im]; simp [hpi3Im]
     simp [Complex.div_im, hden]
   have hEim : E.im = 0 := by
     simp [E, Complex.add_im, Complex.sub_im, hIterm, hfrac36, hfrac8640, hfrac18144]
@@ -169,8 +162,7 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
   have hEq' : b' u =
       (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * E := by
     simpa [E, Iterm, IntegralReps.bAnotherIntegrand, mul_assoc] using hEq
-  have hψI : ∀ t : ℝ, 0 < t → (ψI' ((Complex.I : ℂ) * (t : ℂ))).im = 0 :=
-    fun t ht => ψI'_imag_axis_im t ht
+  have hψI : ∀ t : ℝ, 0 < t → (ψI' ((Complex.I : ℂ) * (t : ℂ))).im = 0 := ψI'_imag_axis_im
   have hIterm : Iterm.im = 0 := by
     let innerR : ℝ → ℝ := fun t =>
       (ψI' ((Complex.I : ℂ) * (t : ℂ))).re - (144 : ℝ) - Real.exp (2 * π * t)
@@ -203,14 +195,10 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
         (setIntegral_im_ofReal (f := fun t => innerR t * Real.exp (-π * u * t)))
     simpa [hcongr] using hReal
   have hfrac144 : ((144 : ℂ) / (π * u)).im = 0 := by
-    have hden : ((π * u : ℂ)).im = 0 := by
-      rw [Complex.mul_im]
-      simp
+    have hden : ((π * u : ℂ)).im = 0 := by rw [Complex.mul_im]; simp
     simp [Complex.div_im, hden]
   have hfrac1 : ((1 : ℂ) / (π * (u - 2))).im = 0 := by
-    have hden : ((π * (u - 2) : ℂ)).im = 0 := by
-      rw [Complex.mul_im]
-      simp
+    have hden : ((π * (u - 2) : ℂ)).im = 0 := by rw [Complex.mul_im]; simp
     simp
   have hEim : E.im = 0 := by
     simp [E, Complex.add_im, hIterm, hfrac144]
@@ -223,97 +211,40 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
   have hsinIm : (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ).im = 0 :=
     Complex.ofReal_im ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ)
   have hprodIm : ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E).im = 0 := by
-    rw [Complex.mul_im]
-    rw [hEim, hsinIm]
-    simp
+    rw [Complex.mul_im, hEim, hsinIm]; simp
   have :
       ((-4 * (Complex.I : ℂ)) * ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E)).re = 0 := by
-    rw [Complex.mul_re]
-    rw [hprodIm]
-    simp
+    rw [Complex.mul_re, hprodIm]; simp
   simpa [mul_assoc] using this
 
-lemma a'_re_eq_zero_of_pos {u : ℝ} (hu : 0 < u) : (a' u).re = 0 := by
-  by_cases hu2 : u = 2
-  · -- Extend across the removable point using continuity.
-    subst hu2
-    have hcont : Continuous fun r : ℝ => (a' r).re :=
-      Complex.continuous_re.comp (SchwartzMap.continuous a')
-    have hclosed : IsClosed {r : ℝ | (a' r).re = 0} := isClosed_eq hcont continuous_const
-    have hsubset : Set.Ioi (0 : ℝ) \ ({2} : Set ℝ) ⊆ {r : ℝ | (a' r).re = 0} := by
-      intro r hr
-      have hr0 : 0 < r := hr.1
-      have hr2 : r ≠ 2 := by
-        intro h
-        have : r ∈ ({2} : Set ℝ) := by simp [h]
-        exact hr.2 this
-      exact a'_re_eq_zero_of_pos_ne_two (u := r) hr0 hr2
-    have hclosure : closure (Set.Ioi (0 : ℝ) \ ({2} : Set ℝ)) ⊆ {r : ℝ | (a' r).re = 0} :=
-      (IsClosed.closure_subset_iff hclosed).2 hsubset
-    have hmem : (2 : ℝ) ∈ closure (Set.Ioi (0 : ℝ) \ ({2} : Set ℝ)) := by
-      -- Metric characterization of closure at a point.
-      rw [Metric.mem_closure_iff]
-      intro ε hε
-      refine ⟨2 + ε / 2, ?_, ?_⟩
-      · have hpos : 0 < ε / 2 := by nlinarith
-        refine ⟨?_, ?_⟩
-        · have h2 : (0 : ℝ) < 2 := by norm_num
-          exact add_pos h2 hpos
-        intro h
-        have hEq : (2 + ε / 2 : ℝ) = 2 := by simpa using h
-        have hzero : ε / 2 = 0 := by
-          have := congrArg (fun x : ℝ => x - 2) hEq
-          simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using this
-        exact (ne_of_gt hpos) hzero
-      · -- `dist (2 + ε/2) 2 = ε/2 < ε`
-        have hpos : 0 < ε / 2 := by nlinarith
-        have hdist : dist 2 (2 + ε / 2) = |ε / 2| := by
-          -- `dist 2 (2+ε/2) = |2-(2+ε/2)| = |-(ε/2)|`.
-          rw [Real.dist_eq]
-          simp [sub_eq_add_neg]
-        rw [hdist]
-        simpa [abs_of_pos hpos] using (by nlinarith : ε / 2 < ε)
-    exact hclosure hmem
-  · exact a'_re_eq_zero_of_pos_ne_two (u := u) hu hu2
-
-lemma b'_re_eq_zero_of_pos {u : ℝ} (hu : 0 < u) : (b' u).re = 0 := by
+/-- Extend `re = 0` from `(0,∞) \ {2}` to all of `(0,∞)` using continuity. -/
+private lemma re_eq_zero_of_pos_from_ne_two (f : ℝ → ℂ) (hcont : Continuous f)
+    (h : ∀ {u : ℝ}, 0 < u → u ≠ 2 → (f u).re = 0) {u : ℝ} (hu : 0 < u) : (f u).re = 0 := by
   by_cases hu2 : u = 2
   · subst hu2
-    have hcont : Continuous fun r : ℝ => (b' r).re :=
-      Complex.continuous_re.comp (SchwartzMap.continuous b')
-    have hclosed : IsClosed {r : ℝ | (b' r).re = 0} := isClosed_eq hcont continuous_const
-    have hsubset : Set.Ioi (0 : ℝ) \ ({2} : Set ℝ) ⊆ {r : ℝ | (b' r).re = 0} := by
-      intro r hr
-      have hr0 : 0 < r := hr.1
-      have hr2 : r ≠ 2 := by
-        intro h
-        have : r ∈ ({2} : Set ℝ) := by simp [h]
-        exact hr.2 this
-      exact b'_re_eq_zero_of_pos_ne_two (u := r) hr0 hr2
-    have hclosure : closure (Set.Ioi (0 : ℝ) \ ({2} : Set ℝ)) ⊆ {r : ℝ | (b' r).re = 0} :=
-      (IsClosed.closure_subset_iff hclosed).2 hsubset
-    have hmem : (2 : ℝ) ∈ closure (Set.Ioi (0 : ℝ) \ ({2} : Set ℝ)) := by
-      rw [Metric.mem_closure_iff]
-      intro ε hε
-      refine ⟨2 + ε / 2, ?_, ?_⟩
-      · have hpos : 0 < ε / 2 := by nlinarith
-        refine ⟨?_, ?_⟩
-        · have h2 : (0 : ℝ) < 2 := by norm_num
-          exact add_pos h2 hpos
-        intro h
-        have hEq : (2 + ε / 2 : ℝ) = 2 := by simpa using h
-        have hzero : ε / 2 = 0 := by
-          have := congrArg (fun x : ℝ => x - 2) hEq
-          simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using this
-        exact (ne_of_gt hpos) hzero
-      · have hpos : 0 < ε / 2 := by nlinarith
-        have hdist : dist 2 (2 + ε / 2) = |ε / 2| := by
-          rw [Real.dist_eq]
-          simp [sub_eq_add_neg]
-        rw [hdist]
-        simpa [abs_of_pos hpos] using (by nlinarith : ε / 2 < ε)
-    exact hclosure hmem
-  · exact b'_re_eq_zero_of_pos_ne_two (u := u) hu hu2
+    have hclosed : IsClosed {r : ℝ | (f r).re = 0} :=
+      isClosed_eq (Complex.continuous_re.comp hcont) continuous_const
+    have hsubset : Set.Ioi (0 : ℝ) \ ({2} : Set ℝ) ⊆ {r : ℝ | (f r).re = 0} := fun r hr =>
+      h hr.1 fun h' => hr.2 (by simp [h'])
+    refine (IsClosed.closure_subset_iff hclosed).2 hsubset ?_
+    rw [Metric.mem_closure_iff]
+    intro ε hε
+    have hpos : 0 < ε / 2 := by nlinarith
+    refine ⟨2 + ε / 2, ⟨add_pos (by norm_num) hpos, ?_⟩, ?_⟩
+    · intro h
+      have hEq : (2 + ε / 2 : ℝ) = 2 := by simpa using h
+      exact (ne_of_gt hpos) (by linarith)
+    · have hdist : dist 2 (2 + ε / 2) = |ε / 2| := by
+        rw [Real.dist_eq]; simp [sub_eq_add_neg]
+      rw [hdist]
+      simpa [abs_of_pos hpos] using (by nlinarith : ε / 2 < ε)
+  · exact h hu hu2
+
+lemma a'_re_eq_zero_of_pos {u : ℝ} (hu : 0 < u) : (a' u).re = 0 :=
+  re_eq_zero_of_pos_from_ne_two a' (SchwartzMap.continuous a') a'_re_eq_zero_of_pos_ne_two hu
+
+lemma b'_re_eq_zero_of_pos {u : ℝ} (hu : 0 < u) : (b' u).re = 0 :=
+  re_eq_zero_of_pos_from_ne_two b' (SchwartzMap.continuous b') b'_re_eq_zero_of_pos_ne_two hu
 
 end PureImaginary
 
@@ -321,24 +252,18 @@ end PureImaginary
 public theorem a_pureImag : ∀ x : ℝ⁸, (a x).re = 0 := by
   intro x
   by_cases hx : x = 0
-  · subst hx
-    -- `a(0)` is a purely imaginary constant.
-    simp [MagicFunction.a.SpecialValues.a_zero]
-  · have hu : 0 < (‖x‖ ^ 2 : ℝ) := by
-      simpa using pow_pos (norm_pos_iff.2 hx) 2
+  · subst hx; simp [MagicFunction.a.SpecialValues.a_zero]
+  · have hu : 0 < (‖x‖ ^ 2 : ℝ) := by simpa using pow_pos (norm_pos_iff.2 hx) 2
     simpa [MagicFunction.FourierEigenfunctions.a, schwartzMap_multidimensional_of_schwartzMap_real,
-      SchwartzMap.compCLM_apply] using (PureImaginary.a'_re_eq_zero_of_pos (u := ‖x‖ ^ 2) hu)
+      SchwartzMap.compCLM_apply] using PureImaginary.a'_re_eq_zero_of_pos (u := ‖x‖ ^ 2) hu
 
 /-- The eigenfunction `b` is purely imaginary-valued (its real part vanishes). -/
 public theorem b_pureImag : ∀ x : ℝ⁸, (b x).re = 0 := by
   intro x
   by_cases hx : x = 0
-  · subst hx
-    -- `b(0)=0`.
-    simp [MagicFunction.b.SpecialValues.b_zero]
-  · have hu : 0 < (‖x‖ ^ 2 : ℝ) := by
-      simpa using pow_pos (norm_pos_iff.2 hx) 2
+  · subst hx; simp [MagicFunction.b.SpecialValues.b_zero]
+  · have hu : 0 < (‖x‖ ^ 2 : ℝ) := by simpa using pow_pos (norm_pos_iff.2 hx) 2
     simpa [MagicFunction.FourierEigenfunctions.b, schwartzMap_multidimensional_of_schwartzMap_real,
-      SchwartzMap.compCLM_apply] using (PureImaginary.b'_re_eq_zero_of_pos (u := ‖x‖ ^ 2) hu)
+      SchwartzMap.compCLM_apply] using PureImaginary.b'_re_eq_zero_of_pos (u := ‖x‖ ^ 2) hu
 
 end MagicFunction.g.CohnElkies
