@@ -262,31 +262,26 @@ lemma f0_vertical_diff (y : ℝ) (hy : 0 < y) :
   simp [f0, hper]
   ring
 
+private lemma strip_uIcc_subset {m : ℝ} (hm : 1 ≤ m) :
+    (Set.uIcc (0 : ℝ) 1 ×ℂ Set.uIcc (1 : ℝ) m) ⊆ {z : ℂ | 0 < z.im} := by
+  intro z hz
+  exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1)
+    (Set.uIcc_of_le hm ▸ (mem_reProdIm.1 hz).2).1
+
+private lemma strip_Ioo_subset {m : ℝ} :
+    (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioo (1 : ℝ) m) ⊆ {z : ℂ | 0 < z.im} :=
+  fun z hz => lt_trans (by norm_num) (mem_reProdIm.1 hz).2.1
+
 lemma rect_f0 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) -
         (∫ x : ℝ in (0 : ℝ)..1, f0 (x + m * Complex.I)) +
         Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((1 : ℝ) + y * Complex.I)) -
           Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I)) = 0 := by
-  -- Cauchy-Goursat on the rectangle with corners `i` and `1 + m i`.
-  have hC :
-      ContinuousOn f0 (Set.uIcc (0 : ℝ) 1 ×ℂ Set.uIcc (1 : ℝ) m) := by
-    refine f0_continuousOn.mono ?_
-    intro z hz
-    have hzIm' : (1 : ℝ) ≤ z.im :=
-      (Set.uIcc_of_le hm ▸ (mem_reProdIm.1 hz).2).1
-    exact lt_of_lt_of_le (by norm_num) hzIm'
-  have hD :
-      DifferentiableOn ℂ f0 (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioo (1 : ℝ) m) := by
-    refine f0_differentiableOn.mono ?_
-    intro z hz
-    have hzIm : z.im ∈ Set.Ioo (1 : ℝ) m := (mem_reProdIm.1 hz).2
-    exact lt_trans (by norm_num) hzIm.1
-  -- Apply the rectangle theorem with `z = i`, `w = 1 + m i`.
   simpa using
     (Complex.integral_boundary_rect_eq_zero_of_continuousOn_of_differentiableOn
-      (f := f0) (z := (Complex.I : ℂ)) (w := (1 : ℂ) + m * Complex.I) (Hc := by
-        simpa using hC) (Hd := by
-          simpa [hm] using hD))
+      (f := f0) (z := (Complex.I : ℂ)) (w := (1 : ℂ) + m * Complex.I)
+      (Hc := by simpa using f0_continuousOn.mono (strip_uIcc_subset hm))
+      (Hd := by simpa [hm] using f0_differentiableOn.mono strip_Ioo_subset))
 
 private lemma norm_phi0_imag_le {C₀ : ℝ}
     (hC₀ : ∀ z : ℍ, (1/2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
@@ -457,26 +452,16 @@ lemma rect_phi2 (m : ℝ) (hm : 1 ≤ m) :
         (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) +
         Complex.I • (∫ y : ℝ in (1 : ℝ)..m, φ₂'' ((1 : ℝ) + y * Complex.I)) -
           Complex.I • (∫ y : ℝ in (1 : ℝ)..m, φ₂'' ((0 : ℝ) + y * Complex.I)) = 0 := by
-  have hC :
-      ContinuousOn φ₂'' (Set.uIcc (0 : ℝ) 1 ×ℂ Set.uIcc (1 : ℝ) m) := by
-    refine (MagicFunction.a.ComplexIntegrands.φ₂''_holo.continuousOn).mono ?_
-    intro z hz
-    have hzIm' : (1 : ℝ) ≤ z.im :=
-      (Set.uIcc_of_le hm ▸ (mem_reProdIm.1 hz).2).1
-    exact lt_of_lt_of_le (by norm_num) hzIm'
-  have hD :
-      DifferentiableOn ℂ φ₂'' (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioo (1 : ℝ) m) := by
-    refine
-      (MagicFunction.a.ComplexIntegrands.φ₂''_holo :
-          DifferentiableOn ℂ φ₂'' {z : ℂ | 0 < z.im}).mono ?_
-    intro z hz
-    have hzIm : z.im ∈ Set.Ioo (1 : ℝ) m := (mem_reProdIm.1 hz).2
-    exact lt_trans (by norm_num) hzIm.1
   simpa using
     (Complex.integral_boundary_rect_eq_zero_of_continuousOn_of_differentiableOn
-      (f := φ₂'') (z := (Complex.I : ℂ)) (w := (1 : ℂ) + m * Complex.I) (Hc := by
-        simpa using hC)
-      (Hd := by simpa [hm] using hD))
+      (f := φ₂'') (z := (Complex.I : ℂ)) (w := (1 : ℂ) + m * Complex.I)
+      (Hc := by
+        simpa using MagicFunction.a.ComplexIntegrands.φ₂''_holo.continuousOn.mono
+          (strip_uIcc_subset hm))
+      (Hd := by
+        simpa [hm] using
+          (MagicFunction.a.ComplexIntegrands.φ₂''_holo :
+              DifferentiableOn ℂ φ₂'' {z : ℂ | 0 < z.im}).mono strip_Ioo_subset))
 
 lemma strip_identity_phi2 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + (1 : ℝ) * Complex.I)) =
@@ -514,7 +499,6 @@ private lemma tsum_pnat_div_q_eq_nat_tsum (z : ℍ) (a : ℕ → ℂ)
         ((n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
           cexp (2 * π * Complex.I * (z : ℂ))) =
       ∑' n : ℕ, a n * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
-  have hz : cexp (2 * π * Complex.I * (z : ℂ)) ≠ 0 := by simp
   have hpnat :
       (∑' (n : ℕ+),
           ((n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
