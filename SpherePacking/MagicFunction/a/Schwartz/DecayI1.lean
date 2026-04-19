@@ -70,18 +70,17 @@ public lemma norm_φ₀''_le (s : ℝ) (hs : 1 ≤ s) :
   have hz_im : z.im = s := by simp [z, UpperHalfPlane.im]
   have hz_half : (1 / 2 : ℝ) < z.im := by
     simpa [hz_im] using lt_of_lt_of_le (by norm_num) hs
-  have hbound := (MagicFunction.PolyFourierCoeffBound.norm_φ₀_le).choose_spec.2 z hz_half
   have hφ₀'' : φ₀'' (I * (s : ℂ)) = φ₀ z := by
     simpa [z] using φ₀''_def (z := I * (s : ℂ)) hpos
-  simpa [Cφ, hz_im, hφ₀''] using hbound
+  simpa [Cφ, hz_im, hφ₀''] using
+    (MagicFunction.PolyFourierCoeffBound.norm_φ₀_le).choose_spec.2 z hz_half
 
 lemma g_norm_bound (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
     ‖g r s‖ ≤ Cφ * rexp (-2 * π * s) * rexp (-π * r / s) := by
-  have hs1 : 1 ≤ s := hs
   have hπ : ‖cexp (π * I * r)‖ = (1 : ℝ) := by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using (norm_exp_ofReal_mul_I (π * r))
+    simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (π * r)
   have hnegπ : ‖cexp (-(π * I * r))‖ = (1 : ℝ) := by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using (norm_exp_ofReal_mul_I (-π * r))
+    simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (-π * r)
   have hnorm : ‖MagicFunction.a.IntegralEstimates.I₃.g r s‖ = ‖g r s‖ := by
     let A : ℂ := (-I) * φ₀'' (I * s) * (s ^ (-4 : ℤ)) * cexp (-π * r / s)
     have hI3 : MagicFunction.a.IntegralEstimates.I₃.g r s = A * cexp (π * I * r) := by
@@ -90,15 +89,13 @@ lemma g_norm_bound (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
       simp [g, A, mul_assoc, mul_left_comm, mul_comm]
     simp [hI3, hI1, hπ, hnegπ]
   have h1 : ‖g r s‖ ≤ ‖φ₀'' (I * (s : ℂ))‖ * rexp (-π * r / s) := by
-    simpa [hnorm] using (MagicFunction.a.IntegralEstimates.I₃.I₃'_bounding_aux_1 (r := r) s hs)
-  have hφ : ‖φ₀'' (I * (s : ℂ))‖ ≤ Cφ * rexp (-2 * π * s) := norm_φ₀''_le (s := s) hs1
-  exact h1.trans (by gcongr)
+    simpa [hnorm] using MagicFunction.a.IntegralEstimates.I₃.I₃'_bounding_aux_1 (r := r) s hs
+  exact h1.trans (by gcongr; exact norm_φ₀''_le (s := s) hs)
 
 lemma coeff_norm_le (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) : ‖coeff s‖ ≤ 2 * π := by
   have hs1 : (1 : ℝ) ≤ s := hs
-  have hs0 : 0 ≤ s := zero_le_one.trans hs1
   have hinv : ‖(1 / (s : ℂ))‖ ≤ 1 := by
-    have hsabs : (1 : ℝ) ≤ |s| := by simpa [abs_of_nonneg hs0] using hs1
+    have hsabs : (1 : ℝ) ≤ |s| := by simpa [abs_of_nonneg (zero_le_one.trans hs1)] using hs1
     simpa [one_div, Complex.norm_real] using inv_le_one_of_one_le₀ hsabs
   have hpi : ‖(-π : ℂ)‖ = (π : ℝ) := by
     simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
@@ -111,13 +108,10 @@ lemma coeff_norm_le (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) : ‖coeff s‖ ≤ 2 *
 
 lemma gN_norm_bound (n : ℕ) (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
     ‖gN n r s‖ ≤ (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * r / s)) := by
-  have hcoeff : ‖coeff s‖ ^ n ≤ (2 * π) ^ n :=
-    pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le (s := s) hs) n
-  have hg : ‖g r s‖ ≤ Cφ * rexp (-2 * π * s) * rexp (-π * r / s) :=
-    g_norm_bound (r := r) (s := s) hs
   have hmul :
       ‖coeff s‖ ^ n * ‖g r s‖ ≤ (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * r / s)) :=
-    mul_le_mul hcoeff hg (norm_nonneg _) (by positivity)
+    mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le (s := s) hs) n)
+      (g_norm_bound (r := r) (s := s) hs) (norm_nonneg _) (by positivity)
   simpa [gN, norm_pow, mul_assoc, mul_left_comm, mul_comm] using hmul
 
 lemma exp_r_mul_coeff (r s : ℝ) :
@@ -143,40 +137,34 @@ lemma Φ₆_zero_eq_I_mul_φ₀'' (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
 /-- Continuity of `s ↦ φ₀'' (I * s)` on `Ici 1`. -/
 public lemma φ₀''_I_mul_continuousOn :
     ContinuousOn (fun s : ℝ ↦ φ₀'' (I * (s : ℂ))) (Ici (1 : ℝ)) := by
-  have hΦ :
-      ContinuousOn (MagicFunction.a.RealIntegrands.Φ₆ (r := (0 : ℝ))) (Ici (1 : ℝ)) :=
-    (MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := (0 : ℝ))).continuousOn
   have hΦ' :
       ContinuousOn (fun s : ℝ ↦ (-I) * MagicFunction.a.RealIntegrands.Φ₆ (r := (0 : ℝ)) s)
         (Ici (1 : ℝ)) :=
-    continuousOn_const.mul hΦ
+    continuousOn_const.mul
+      (MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := (0 : ℝ))).continuousOn
   refine hΦ'.congr fun s hs => ?_
-  rw [Φ₆_zero_eq_I_mul_φ₀'' (s := s) hs, ← mul_assoc]
-  simp
+  rw [Φ₆_zero_eq_I_mul_φ₀'' (s := s) hs, ← mul_assoc]; simp
 
 /-- Continuity of `s ↦ (s : ℂ) ^ (-4 : ℤ)` on `Ici 1`. -/
 public lemma zpow_neg_four_continuousOn :
-    ContinuousOn (fun s : ℝ ↦ (s : ℂ) ^ (-4 : ℤ)) (Ici (1 : ℝ)) := by
-  refine Complex.continuous_ofReal.continuousOn.zpow₀ (-4 : ℤ) fun s hs => Or.inl ?_
-  exact_mod_cast (lt_of_lt_of_le (by norm_num) hs).ne'
+    ContinuousOn (fun s : ℝ ↦ (s : ℂ) ^ (-4 : ℤ)) (Ici (1 : ℝ)) :=
+  Complex.continuous_ofReal.continuousOn.zpow₀ (-4 : ℤ) fun s hs =>
+    Or.inl (by exact_mod_cast (lt_of_lt_of_le (by norm_num) hs).ne')
+
+private lemma ofReal_inv_continuousOn_Ici_one :
+    ContinuousOn (fun s : ℝ ↦ (s : ℂ)⁻¹) (Ici (1 : ℝ)) :=
+  Complex.continuous_ofReal.continuousOn.inv₀ fun s hs => by
+    exact_mod_cast (lt_of_lt_of_le (by norm_num) hs).ne'
 
 lemma coeff_continuousOn : ContinuousOn coeff (Ici (1 : ℝ)) := by
-  have hs0 : ∀ s ∈ Ici (1 : ℝ), (s : ℂ) ≠ 0 := fun s hs => by
-    exact_mod_cast (lt_of_lt_of_le (by norm_num) hs).ne'
-  have hinv : ContinuousOn (fun s : ℝ ↦ (s : ℂ)⁻¹) (Ici (1 : ℝ)) :=
-    Complex.continuous_ofReal.continuousOn.inv₀ hs0
   have h : ContinuousOn (fun s : ℝ ↦ (-π : ℂ) * ((I : ℂ) + (s : ℂ)⁻¹)) (Ici (1 : ℝ)) :=
-    continuousOn_const.mul (continuousOn_const.add hinv)
+    continuousOn_const.mul (continuousOn_const.add ofReal_inv_continuousOn_Ici_one)
   exact h.congr fun s _ => by simp [coeff, one_div]
 
 lemma exp_div_continuousOn (r : ℝ) :
     ContinuousOn (fun s : ℝ ↦ cexp ((-π : ℂ) * (r : ℂ) / (s : ℂ))) (Ici (1 : ℝ)) := by
-  have hs0 : ∀ s ∈ Ici (1 : ℝ), (s : ℂ) ≠ 0 := fun s hs => by
-    exact_mod_cast (lt_of_lt_of_le (by norm_num) hs).ne'
-  have hinv : ContinuousOn (fun s : ℝ ↦ (s : ℂ)⁻¹) (Ici (1 : ℝ)) :=
-    Complex.continuous_ofReal.continuousOn.inv₀ hs0
   have hinner : ContinuousOn (fun s : ℝ ↦ ((-π : ℂ) * (r : ℂ)) * (s : ℂ)⁻¹) (Ici (1 : ℝ)) :=
-    continuousOn_const.mul hinv
+    continuousOn_const.mul ofReal_inv_continuousOn_Ici_one
   simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using hinner.cexp
 
 lemma g_continuousOn (r : ℝ) : ContinuousOn (fun s : ℝ ↦ g r s) (Ici (1 : ℝ)) := by
@@ -206,11 +194,8 @@ lemma exp_neg_pi_mul_div_le_exp_pi_abs (r s : ℝ) (hs : 1 ≤ s) :
 
 lemma integrable_gN (n : ℕ) (r : ℝ) : Integrable (gN n r) μ := by
   let K : ℝ := (2 * π) ^ n * (Cφ * rexp (π * |r|))
-  have hK : Integrable (fun s : ℝ ↦ K * rexp (-(2 * π) * s)) μ :=
-    integrable_exp_neg_two_pi.const_mul K
-  refine hK.mono' (gN_measurable (n := n) (r := r)) ?_
-  refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall ?_
-  intro s hs
+  refine (integrable_exp_neg_two_pi.const_mul K).mono' (gN_measurable (n := n) (r := r)) ?_
+  refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs => ?_
   have hExp : rexp (-π * r / s) ≤ rexp (π * |r|) :=
     exp_neg_pi_mul_div_le_exp_pi_abs (r := r) (s := s) hs
   refine (gN_norm_bound (n := n) (r := r) (s := s) hs).trans ?_
@@ -223,22 +208,16 @@ lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
     HasDerivAt (fun r : ℝ ↦ ∫ s, gN n r s ∂μ) (∫ s, gN (n + 1) r₀ s ∂μ) r₀ := by
   let R : ℝ := |r₀| + 1
   let bound : ℝ → ℝ := fun s ↦ (2 * π) ^ (n + 1) * (Cφ * rexp (π * R)) * rexp (-(2 * π) * s)
-  have hF_meas : ∀ᶠ r in 𝓝 r₀, AEStronglyMeasurable (gN n r) μ :=
-    Filter.Eventually.of_forall fun r => gN_measurable (n := n) (r := r)
-  have hF_int : Integrable (gN n r₀) μ := integrable_gN (n := n) (r := r₀)
-  have hF'_meas : AEStronglyMeasurable (gN (n + 1) r₀) μ :=
-    gN_measurable (n := n + 1) (r := r₀)
   have hbound_int : Integrable bound μ := by
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using
-      (integrable_exp_neg_two_pi.const_mul ((2 * π) ^ (n + 1) * (Cφ * rexp (π * R))))
+      integrable_exp_neg_two_pi.const_mul ((2 * π) ^ (n + 1) * (Cφ * rexp (π * R)))
   have h_bound :
       ∀ᵐ s ∂μ, ∀ r ∈ Metric.ball r₀ (1 : ℝ), ‖gN (n + 1) r s‖ ≤ bound s := by
-    refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall ?_
-    intro s hs r hr
+    refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs r hr => ?_
     have hrabs : |r| ≤ R := SpherePacking.ForMathlib.abs_le_abs_add_of_mem_ball hr
-    have hExp : rexp (-π * r / s) ≤ rexp (π * R) := by
-      refine (exp_neg_pi_mul_div_le_exp_pi_abs (r := r) (s := s) hs).trans ?_
-      exact Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hrabs Real.pi_pos.le)
+    have hExp : rexp (-π * r / s) ≤ rexp (π * R) :=
+      (exp_neg_pi_mul_div_le_exp_pi_abs (r := r) (s := s) hs).trans
+        (Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hrabs Real.pi_pos.le))
     refine (gN_norm_bound (n := n + 1) (r := r) (s := s) hs).trans ?_
     have hcoef0 : 0 ≤ (2 * π) ^ (n + 1) * (Cφ * rexp (-2 * π * s)) :=
       mul_nonneg (by positivity) (mul_nonneg Cφ_pos.le (Real.exp_pos _).le)
@@ -253,7 +232,9 @@ lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
     (hasDerivAt_integral_of_dominated_loc_of_deriv_le
       (μ := μ) (F := fun r s ↦ gN n r s) (x₀ := r₀) (s := Metric.ball r₀ (1 : ℝ))
       (hs := by simpa using Metric.ball_mem_nhds r₀ (by norm_num))
-      (hF_meas := hF_meas) (hF_int := hF_int) (hF'_meas := hF'_meas)
+      (hF_meas := Filter.Eventually.of_forall fun r => gN_measurable (n := n) (r := r))
+      (hF_int := integrable_gN (n := n) (r := r₀))
+      (hF'_meas := gN_measurable (n := n + 1) (r := r₀))
       (h_bound := h_bound) (bound_integrable := hbound_int) (h_diff := h_diff)).2
 
 lemma iteratedDeriv_eq_integral_gN (n : ℕ) :
@@ -270,18 +251,16 @@ lemma pow_mul_exp_neg_bounded (k : ℕ) :
     ∃ C, ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ C := by
   let f : ℝ → ℝ := fun u ↦ u ^ k * rexp (-u)
   have hlim : Tendsto f atTop (𝓝 0) := Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero k
-  have h_event : ∀ᶠ u in atTop, f u ≤ 1 :=
-    (hlim.eventually (Iio_mem_nhds (by norm_num : (0 : ℝ) < 1))).mono fun _ => le_of_lt
-  obtain ⟨N, hN⟩ := Filter.eventually_atTop.1 h_event
+  obtain ⟨N, hN⟩ := Filter.eventually_atTop.1
+    ((hlim.eventually (Iio_mem_nhds (by norm_num : (0 : ℝ) < 1))).mono fun _ => le_of_lt)
   let N0 : ℝ := max N 0
-  have hN0 : ∀ u ≥ N0, f u ≤ 1 := fun u hu => hN u ((le_max_left N 0).trans hu)
   have hf_cont : Continuous f := by dsimp [f]; fun_prop
-  have hne : (Set.Icc (0 : ℝ) N0).Nonempty := ⟨0, le_refl _, le_max_right _ _⟩
-  obtain ⟨u0, _, hu0max⟩ := isCompact_Icc.exists_isMaxOn hne hf_cont.continuousOn
+  obtain ⟨u0, _, hu0max⟩ := isCompact_Icc.exists_isMaxOn
+    ⟨0, le_refl _, le_max_right _ _⟩ hf_cont.continuousOn
   refine ⟨max 1 (f u0), fun u hu => ?_⟩
   by_cases huN : u ≤ N0
   · exact (hu0max ⟨hu, huN⟩).trans (le_max_right _ _)
-  · exact (hN0 u (le_of_not_ge huN)).trans (le_max_left _ _)
+  · exact (hN u ((le_max_left N 0).trans (le_of_not_ge huN))).trans (le_max_left _ _)
 
 lemma norm_iteratedDeriv_le (n : ℕ) (x : ℝ) :
     ‖iteratedDeriv n I₁' x‖ ≤
@@ -312,16 +291,14 @@ lemma xpow_mul_exp_neg_pi_div_le (k : ℕ) {x s : ℝ} (hx : 0 ≤ x) (hs : 1 �
   set u : ℝ := (π * x) / s
   have hu0 : 0 ≤ u := div_nonneg (by positivity) (zero_le_one.trans hs)
   have hu_mul : u * s = π * x := div_mul_cancel₀ (π * x) hs0
-  have hx' : x = u * s / π :=
-    CancelDenoms.cancel_factors_eq_div (id (Eq.symm hu_mul)) Real.pi_ne_zero
   have hxpow : x ^ k = (π ^ k)⁻¹ * s ^ k * u ^ k := by
+    have hx' : x = u * s / π :=
+      CancelDenoms.cancel_factors_eq_div (id hu_mul.symm) Real.pi_ne_zero
     simp [hx', mul_pow, div_eq_mul_inv, inv_pow, mul_assoc, mul_left_comm, mul_comm]
-  have hexp : rexp (-π * x / s) = rexp (-u) :=
-    congrArg rexp (by show -π * x / s = -u; ring)
+  have hexp : rexp (-π * x / s) = rexp (-u) := congrArg rexp (by show -π * x / s = -u; ring)
   calc
     x ^ k * rexp (-π * x / s)
-        = ((π ^ k)⁻¹ * s ^ k * u ^ k) * rexp (-u) := by rw [hexp, hxpow]
-    _ = (π ^ k)⁻¹ * s ^ k * (u ^ k * rexp (-u)) := by ac_rfl
+        = (π ^ k)⁻¹ * s ^ k * (u ^ k * rexp (-u)) := by rw [hexp, hxpow]; ring
     _ ≤ (π ^ k)⁻¹ * s ^ k * Cpow := by gcongr; exact hCpow u hu0
     _ = (π ^ k)⁻¹ * Cpow * s ^ k := by ring
 
@@ -338,8 +315,9 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
   let f : ℝ → ℝ := fun s ↦ x ^ k * (rexp (-2 * π * s) * rexp (-π * x / s))
   let g : ℝ → ℝ := fun s ↦ ((π ^ k)⁻¹ * Cpow) * (s ^ k * rexp (-2 * π * s))
   have hf_int : IntegrableOn f (Ici (1 : ℝ)) volume := by
-    have hB := MagicFunction.a.IntegralEstimates.I₃.Bound_integrableOn (r := x) (C₀ := (1 : ℝ))
-    simpa [f, mul_assoc, mul_left_comm, mul_comm] using hB.const_mul (x ^ k)
+    simpa [f, mul_assoc, mul_left_comm, mul_comm] using
+      (MagicFunction.a.IntegralEstimates.I₃.Bound_integrableOn (r := x) (C₀ := (1 : ℝ))).const_mul
+        (x ^ k)
   have hg_int : IntegrableOn g (Ici (1 : ℝ)) volume := by
     simpa [g, mul_assoc, mul_left_comm, mul_comm] using hInt.const_mul ((π ^ k)⁻¹ * Cpow)
   have hmono : ∀ s ∈ Ici (1 : ℝ), f s ≤ g s := fun s hs => by
@@ -348,14 +326,14 @@ lemma xpow_integral_le_of_Cpow (k : ℕ) {Cpow : ℝ}
         = rexp (-2 * π * s) * (x ^ k * rexp (-π * x / s)) := by simp [f, mul_assoc, mul_comm]
       _ ≤ rexp (-2 * π * s) * (((π ^ k)⁻¹ * Cpow) * s ^ k) := by gcongr
       _ = g s := by simp [g, mul_assoc, mul_left_comm, mul_comm]
-  have hset := setIntegral_mono_on hf_int hg_int measurableSet_Ici hmono
   have hf' : (∫ s in Ici (1 : ℝ), f s) =
       x ^ k * (∫ s in Ici (1 : ℝ), rexp (-2 * π * s) * rexp (-π * x / s)) :=
     integral_const_mul (x ^ k) fun a => rexp (-2 * π * a) * rexp (-π * x / a)
   have hg' : (∫ s in Ici (1 : ℝ), g s) =
       ((π ^ k)⁻¹ * Cpow) * (∫ s in Ici (1 : ℝ), s ^ k * rexp (-2 * π * s)) :=
     integral_const_mul ((π ^ k)⁻¹ * Cpow) fun a => a ^ k * rexp (-2 * π * a)
-  simpa [hf', hg', mul_assoc, mul_left_comm, mul_comm] using hset
+  simpa [hf', hg', mul_assoc, mul_left_comm, mul_comm] using
+    setIntegral_mono_on hf_int hg_int measurableSet_Ici hmono
 
 /--
 Schwartz-style decay estimate for `RealIntegrals.I₁'`.
