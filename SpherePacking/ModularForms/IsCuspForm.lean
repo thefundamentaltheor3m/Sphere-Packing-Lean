@@ -1,5 +1,5 @@
 module
-public import SpherePacking.ModularForms.qExpansion_lems
+public import SpherePacking.ModularForms.QExpansionLemmas
 
 public import SpherePacking.ForMathlib.Cusps
 
@@ -40,11 +40,6 @@ variable {k : ℤ} {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup SL(2, ℤ)} (n
   holo' := f.holo'
   bdd_at_cusps' := fun hc ↦ bdd_at_cusps f hc
 
-lemma ModForm_mk_inj (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : CuspForm Γ k) (hf : f ≠ 0) :
-  ModForm_mk _ _ f ≠ 0 := by
-  rw [@DFunLike.ne_iff] at *
-  assumption
-
 /-- The linear map sending a cusp form to the underlying modular form. -/
 @[expose] public def CuspForm_to_ModularForm (Γ : Subgroup SL(2, ℤ)) (k : ℤ) :
     CuspForm Γ k →ₗ[ℂ] ModularForm Γ k
@@ -70,12 +65,6 @@ public def CuspForm_iso_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) :
   -- `ModForm_mk` is definitional, so it suffices to check pointwise.
   ext z
   simpa [CuspForm_to_ModularForm, ModForm_mk] using congrArg (fun g : ModularForm Γ k => g z) hf
-
-lemma mem_CuspFormSubmodule (Γ : Subgroup SL(2, ℤ)) (k : ℤ) (f : ModularForm Γ k)
-    (hf : f ∈ CuspFormSubmodule Γ k) :
-    ∃ g : CuspForm Γ k, f = CuspForm_to_ModularForm Γ k g := by
-  rw [CuspFormSubmodule, LinearMap.mem_range] at hf
-  aesop
 
 /-- `CuspFormSubmodule` is a function space `ℍ → ℂ` by coercion. -/
 public instance (priority := 100) CuspFormSubmodule.funLike :

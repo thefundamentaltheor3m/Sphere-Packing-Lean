@@ -4,6 +4,12 @@ public import Mathlib.Topology.Algebra.InfiniteSum.Basic
 public import Mathlib.Topology.Instances.ENat
 public import Mathlib.Topology.Algebra.InfiniteSum.Ring
 
+/-!
+# `ENat`-valued `tsum` helpers
+
+Small `ENat` lemmas missing from mathlib, used in the sphere-packing density computation.
+-/
+
 /-- The infinite sum of a constant `c : ENat` over a type `α` is `ENat.card α * c`. -/
 public theorem ENat.tsum_const {α : Type*} (c : ENat) :
     ∑' (_ : α), c = ENat.card α * c := by
@@ -30,10 +36,6 @@ public theorem ENat.tsum_set_const {α : Type*} (s : Set α) (c : ENat) :
     ∑' (_ : s), c = s.encard * c := by
   rw [ENat.tsum_const, Set.encard]
 
-/-- The infinite sum of `1 : ENat` over a type `α` is `ENat.card α`. -/
-public theorem ENat.tsum_one {α : Type*} : ∑' (_ : α), 1 = ENat.card α := by
-  simp [ENat.tsum_const]
-
 /-- The infinite sum of `1 : ENat` over a set `s` is `s.encard`. -/
 public theorem ENat.tsum_set_one {α : Type*} (s : Set α) : ∑' (_ : s), 1 = s.encard := by
-  rw [ENat.tsum_one, Set.encard]
+  rw [ENat.tsum_const, mul_one, Set.encard]

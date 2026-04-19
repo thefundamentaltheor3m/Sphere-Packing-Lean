@@ -30,26 +30,6 @@ namespace SpherePacking.Contour
 noncomputable section
 
 /--
-On the interior of the parameter interval, the `extend` of a mapped segment evaluates pointwise as
-expected.
--/
-public lemma segment_map'_extend_eq (a b : ℂ) {f : ℂ → ℂ}
-    (hf : ContinuousOn f (Set.range (Path.segment a b))) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) :
-    ((Path.segment a b).map' (f := f) hf).extend t = f (AffineMap.lineMap a b t) := by
-  simpa using ((Path.segment a b).map' (f := f) hf).extend_apply ⟨ht.1.le, ht.2.le⟩
-
-/--
-The derivative of a mapped segment agrees with the derivative of its explicit parametrization.
--/
-public lemma deriv_segment_map'_extend_eq (a b : ℂ) {f : ℂ → ℂ}
-    (hf : ContinuousOn f (Set.range (Path.segment a b))) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) :
-    deriv (((Path.segment a b).map' (f := f) hf).extend) t =
-      deriv (fun s : ℝ => f (AffineMap.lineMap a b s)) t := by
-  simpa using
-    (Filter.eventuallyEq_of_mem (Ioo_mem_nhds ht.1 ht.2) fun s hs =>
-        segment_map'_extend_eq (a := a) (b := b) (f := f) hf (t := s) hs).deriv_eq
-
-/--
 Change-of-variables lemma for curve integrals on a straight segment.
 
 Given a relation between `Ψ` and `Ψ'` involving the derivative of a map `f`, we can rewrite the
@@ -67,6 +47,9 @@ public lemma curveIntegral_segment_eq_neg_curveIntegral_segment_map'_of
     (∫ᶜ z in Path.segment a b, scalarOneForm (Ψ r) z) =
       -∫ᶜ z in (Path.segment a b).map' (f := f) hf, scalarOneForm (Ψ' r) z := by
   let γw : Path (f a) (f b) := (Path.segment a b).map' (f := f) hf
+  have hExt : ∀ {t : ℝ}, t ∈ Set.Ioo (0 : ℝ) 1 →
+      γw.extend t = f (AffineMap.lineMap a b t) :=
+    fun {t} ht => by simpa [γw] using γw.extend_apply ⟨ht.1.le, ht.2.le⟩
   rw [curveIntegral_segment (ω := scalarOneForm (Ψ r)) a b,
     curveIntegral_eq_intervalIntegral_deriv (ω := scalarOneForm (Ψ' r)) γw,
     ← intervalIntegral.integral_neg]
@@ -83,12 +66,11 @@ public lemma curveIntegral_segment_eq_neg_curveIntegral_segment_map'_of
         Measure.ae_ne (volume.restrict (Set.Ioc 0 1)) 1] with t ht htne1
       exact ⟨ht.1, lt_of_le_of_ne ht.2 htne1⟩
     filter_upwards [htIoo] with t ht
-    have hγw_val : γw.extend t = f (AffineMap.lineMap a b t) :=
-      segment_map'_extend_eq (a := a) (b := b) (f := f) hf (t := t) ht
     have hderiv_w :
         deriv γw.extend t = deriv (fun s : ℝ => f (AffineMap.lineMap a b s)) t := by
-      simpa [γw] using deriv_segment_map'_extend_eq (a := a) (b := b) (f := f) hf (t := t) ht
-    simp [scalarOneForm_apply, hγw_val, hderiv_w, hΨ r t ht]
+      simpa using
+        (Filter.eventuallyEq_of_mem (Ioo_mem_nhds ht.1 ht.2) fun s hs => hExt hs).deriv_eq
+    simp [scalarOneForm_apply, hExt ht, hderiv_w, hΨ r t ht]
   simpa [Set.uIoc_of_le zero_le_one] using hEqAE
 
 end
@@ -108,28 +90,17 @@ public class SegmentHyp (a b : ℂ) : Prop where
   lineMap_im_pos : ∀ t : ℝ, t ∈ Set.Ioo (0 : ℝ) 1 → 0 < (AffineMap.lineMap a b t).im
   continuousOn_mobiusInv_segment : ContinuousOn mobiusInv (Set.range (Path.segment a b))
 
-/-- Imaginary part positivity along the segment `-1 → -1 + I`. -/
-public lemma lineMap_im_pos_z₁
-    (t : ℝ) (ht : t ∈ Set.Ioo (0 : ℝ) 1) :
-    0 < (AffineMap.lineMap (-1 : ℂ) ((-1 : ℂ) + Complex.I) t).im := by
-  simpa [SpherePacking.Contour.lineMap_z₁line, SpherePacking.Contour.z₁line_im] using ht.1
-
-/-- Imaginary part positivity along the segment `-1 + I → I`. -/
-public lemma lineMap_im_pos_z₂ (t : ℝ) (_ht : t ∈ Set.Ioo (0 : ℝ) 1) :
-    0 < (AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t).im := by
-  -- Here the imaginary part is constantly `1`.
-  simp [SpherePacking.Contour.lineMap_z₂line]
-
 /-- `SegmentHyp` for the segment `-1 → -1 + I`. -/
 public instance segmentHyp_z₁ :
     SegmentHyp (-1 : ℂ) ((-1 : ℂ) + Complex.I) where
-  lineMap_im_pos := fun t ht => lineMap_im_pos_z₁ t ht
+  lineMap_im_pos := fun t ht => by
+    simpa [SpherePacking.Contour.lineMap_z₁line, SpherePacking.Contour.z₁line_im] using ht.1
   continuousOn_mobiusInv_segment := continuousOn_mobiusInv_segment_z₁
 
 /-- `SegmentHyp` for the segment `-1 + I → I`. -/
 public instance segmentHyp_z₂ :
     SegmentHyp ((-1 : ℂ) + Complex.I) Complex.I where
-  lineMap_im_pos := fun t ht => lineMap_im_pos_z₂ t ht
+  lineMap_im_pos := fun _ _ => by simp [SpherePacking.Contour.lineMap_z₂line]
   continuousOn_mobiusInv_segment := continuousOn_mobiusInv_segment_z₂
 
 /--
@@ -151,17 +122,12 @@ public lemma curveIntegral_segment_neg_inv
   refine
     SpherePacking.Contour.curveIntegral_segment_eq_neg_curveIntegral_segment_map'_of
       (Ψ := Ψ₁_fourier) (Ψ' := Ψ₁') a b (f := mobiusInv) (hf := hs.continuousOn_mobiusInv_segment)
-      (hΨ := ?_) (r := r)
-  intro r t ht
+      (hΨ := fun r t ht => ?_) (r := r)
   have hz_im : 0 < (AffineMap.lineMap a b t).im := hs.lineMap_im_pos t ht
-  have hz0 : AffineMap.lineMap a b t ≠ 0 := by
-    intro hz0
-    exact (ne_of_gt hz_im) (by simp [hz0])
-  have hderiv :
-      deriv (fun s : ℝ => mobiusInv (AffineMap.lineMap a b s)) t =
-        (b - a) / (AffineMap.lineMap a b t) ^ (2 : ℕ) := by
-    simpa using
-      (SpherePacking.hasDerivAt_mobiusInv_comp_lineMap (a := a) (b := b) (t := t) hz0).deriv
+  have hz0 : AffineMap.lineMap a b t ≠ 0 :=
+    fun hz0 => (ne_of_gt hz_im) (by simp [hz0])
+  have hderiv :=
+    (SpherePacking.hasDerivAt_mobiusInv_comp_lineMap (a := a) (b := b) (t := t) hz0).deriv
   simpa [hderiv, _root_.SpherePacking.deriv_mobiusInv, div_eq_mul_inv, mul_assoc, mul_left_comm,
     mul_comm] using
     congrArg (fun z => (b - a) * z)
@@ -183,23 +149,13 @@ public lemma curveIntegral_segment_pos_inv
       ∫ᶜ z in
         (Path.segment a b).map' (f := mobiusInv) (hs.continuousOn_mobiusInv_segment),
         scalarOneForm (Ψ₁' r) z := by
-  have hneg :
-      (∫ᶜ z in Path.segment a b, scalarOneForm (Ψ₁_fourier r) z) =
-        -∫ᶜ z in
-          (Path.segment a b).map' (f := mobiusInv) (hs.continuousOn_mobiusInv_segment),
-          scalarOneForm (fun z : ℂ => -Ψ₁' r z) z := by
-    simpa [neg_mul, mul_neg, neg_neg] using
-      (curveIntegral_segment_neg_inv (Ψ₁_fourier := Ψ₁_fourier) (Ψ₁' := fun r z => -Ψ₁' r z) a b
-        (Ψ₁_fourier_eq_neg_deriv_mul := by
-          intro r z hz
-          simpa [neg_mul, mul_neg, neg_neg] using (Ψ₁_fourier_eq_deriv_mul (r := r) (z := z) hz))
-        r)
-  have hω :
-      (fun z : ℂ => scalarOneForm (fun z : ℂ => -Ψ₁' r z) z) =
-        fun z : ℂ => -scalarOneForm (Ψ₁' r) z := by
-    funext z
-    ext
-    simp [scalarOneForm_apply, mul_neg]
+  have hω : (fun z : ℂ => scalarOneForm (fun z : ℂ => -Ψ₁' r z) z) =
+      fun z : ℂ => -scalarOneForm (Ψ₁' r) z := by
+    funext z; ext; simp [scalarOneForm_apply, mul_neg]
+  have hneg := curveIntegral_segment_neg_inv (Ψ₁_fourier := Ψ₁_fourier)
+    (Ψ₁' := fun r z => -Ψ₁' r z) a b
+    (Ψ₁_fourier_eq_neg_deriv_mul := fun r z hz => by
+      simpa [neg_mul, mul_neg, neg_neg] using (Ψ₁_fourier_eq_deriv_mul (r := r) (z := z) hz)) r
   simp_all
 
 end SpherePacking.MobiusInv

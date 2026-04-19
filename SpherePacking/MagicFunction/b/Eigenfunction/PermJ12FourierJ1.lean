@@ -155,7 +155,8 @@ public lemma fourier_J₁_eq_curveIntegral (w : EuclideanSpace ℝ (Fin 8)) :
       (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + I),
         scalarOneForm (Ψ₁_fourier (‖w‖ ^ 2)) z) := by
   simpa using
-    SpherePacking.Contour.fourier_J₁_eq_curveIntegral_of
+    SpherePacking.Contour.fourier_J_eq_curveIntegral_of
+      (a := (-1 : ℂ)) (b := (-1 : ℂ) + I)
       (fun x => by
         simpa using (J₁_apply (x := x)))
       phase_mul_J₁'_eq_integral_permJ1Kernel

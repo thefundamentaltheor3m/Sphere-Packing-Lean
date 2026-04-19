@@ -49,25 +49,22 @@ public lemma integral_mul_exp_neg_pi_mul_Ioi {u : ℝ} (hu : 0 < u) :
   simpa [mul_assoc] using
     (integral_mul_exp_neg_mul_Ioi (a := π * u) (by positivity [Real.pi_pos, hu]))
 
+/-- Algebraic identity: `exp(2πt) · exp(-πut) = exp(-(π(u-2))t)`. -/
+public lemma exp_two_pi_mul_mul_exp_neg_pi_mul (u t : ℝ) :
+    Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (-(π * (u - 2)) * t) := by
+  rw [← Real.exp_add]; congr 1; ring
+
 /-- Evaluate `∫ exp(2π t) * exp(-π u t)` over `t ∈ (0, ∞)` (for `2 < u`). -/
 public lemma integral_exp_two_pi_mul_exp_neg_pi_mul_Ioi {u : ℝ} (hu : 2 < u) :
     (∫ t in Set.Ioi (0 : ℝ), Real.exp (2 * π * t) * Real.exp (-π * u * t)) =
       1 / (π * (u - 2)) := by
   have hpu : 0 < π * (u - 2) := by positivity [Real.pi_pos, sub_pos.2 hu]
-  have hexp (t : ℝ) :
-      Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (-(π * (u - 2)) * t) := by
-    have hmul :
-        Real.exp (2 * π * t) * Real.exp (-(π * u * t)) =
-          Real.exp (2 * π * t + (-(π * u * t))) := by
-      simpa using (Real.exp_add (2 * π * t) (-(π * u * t))).symm
-    have : 2 * π * t + (-(π * u * t)) = (-(π * (u - 2)) * t) := by ring_nf
-    simp [hmul, this]
   have hconv :
       (∫ t in Set.Ioi (0 : ℝ), Real.exp (2 * π * t) * Real.exp (-π * u * t)) =
         ∫ t in Set.Ioi (0 : ℝ), Real.exp (-(π * (u - 2)) * t) := by
     refine MeasureTheory.setIntegral_congr_fun measurableSet_Ioi ?_
-    intro t ht
-    simpa using hexp t
+    intro t _
+    simpa using exp_two_pi_mul_mul_exp_neg_pi_mul u t
   rw [hconv]
   simpa [mul_assoc] using (integral_exp_neg_mul_Ioi (a := π * (u - 2)) hpu)
 

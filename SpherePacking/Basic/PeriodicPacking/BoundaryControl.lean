@@ -518,12 +518,13 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall :=
     ENNReal.mul_lt_of_lt_div hcR'
   have hvolR2_ne0 : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) ≠ 0 :=
-    (volume_ball_pos _ (by positivity)).ne.symm
+    (Metric.measure_ball_pos volume _ (by positivity)).ne.symm
   have hc_ratio : c * ratio R <
       ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall /
         volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) := by
     simpa [ratio, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-      ENNReal.div_lt_div_right hvolR2_ne0 (volume_ball_lt_top _).ne hc_mul
+      ENNReal.div_lt_div_right hvolR2_ne0
+        (MeasureTheory.measure_ball_lt_top (μ := volume)).ne hc_mul
   -- Finite sets of centers and lattice translates.
   let R₁ : ℝ := R + r
   have hX : (S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R₁).Finite :=

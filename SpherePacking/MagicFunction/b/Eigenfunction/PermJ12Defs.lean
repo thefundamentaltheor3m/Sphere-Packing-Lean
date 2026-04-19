@@ -1,5 +1,5 @@
 module
-public import SpherePacking.MagicFunction.b.psi
+public import SpherePacking.MagicFunction.b.Psi
 public import SpherePacking.Contour.MobiusInv.Basic
 import SpherePacking.Contour.MobiusInv.PermJ12PsiFourier
 

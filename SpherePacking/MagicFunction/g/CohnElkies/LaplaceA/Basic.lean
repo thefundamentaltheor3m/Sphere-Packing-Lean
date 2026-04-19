@@ -11,7 +11,7 @@ public import SpherePacking.ModularForms.PhiTransform
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.MeasureTheory.Integral.ExpDecay
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
-import SpherePacking.ForMathlib.UpperHalfPlane
+import SpherePacking.ForMathlib.ModularFormsHelpers
 
 /-!
 # Laplace integral for `a'`
@@ -35,17 +35,6 @@ open scoped BigOperators UpperHalfPlane
 open MeasureTheory Real Complex Filter
 open UpperHalfPlane
 open MagicFunction.FourierEigenfunctions
-
-/-- Combine the exponential weights `exp(2π t)` and `exp(-π u t)` into a single `exp` term. -/
-public lemma exp_two_pi_mul_mul_exp_neg_pi_mul (u t : ℝ) :
-    Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (-(π * (u - 2)) * t) := by
-  have hsum : 2 * π * t + (-π * u * t) = -(π * (u - 2)) * t := by
-    ring_nf
-  calc
-    Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (2 * π * t + (-π * u * t)) := by
-      simp [Real.exp_add]
-    _ = Real.exp (-(π * (u - 2)) * t) := by
-      simpa using congrArg Real.exp hsum
 
 /-- The Laplace integrand appearing in the representation of the radial profile `a'`. -/
 @[expose] public def aLaplaceIntegrand (u t : ℝ) : ℂ :=

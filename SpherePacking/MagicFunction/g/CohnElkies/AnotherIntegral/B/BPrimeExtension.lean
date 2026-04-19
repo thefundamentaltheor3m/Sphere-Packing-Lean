@@ -645,7 +645,8 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
       -- Rewrite `F` and use `z₆' t = I * t` to simplify the exponent.
       have hψ' : ψS' ((Complex.I : ℂ) * (t : ℂ)) = ψS.resToImagAxis t := by
         simpa [hz] using hψ
-      have hIexp := I_mul_I_mul (↑t * ↑π)
+      have hIexp : Complex.I * (Complex.I * (↑t * ↑π)) = -(↑t * ↑π) := by
+        rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
       have hIexp' :
           u * ((Complex.I : ℂ) * (Complex.I * ((t : ℂ) * (π : ℂ)))) =
             -(u * ((t : ℂ) * (π : ℂ))) := by

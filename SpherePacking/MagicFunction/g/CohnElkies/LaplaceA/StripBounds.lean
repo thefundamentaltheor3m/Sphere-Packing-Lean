@@ -522,7 +522,7 @@ lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ}
   have hExpRew :
       Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (-a * t) := by
     simpa [a, mul_assoc, mul_left_comm, mul_comm] using
-      (MagicFunction.g.CohnElkies.IntegralReps.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t))
+      (MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t))
   have hΦ :
       ‖Φ₂' u ((t : ℂ) * I)‖ ≤ K * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by
     have hdef :

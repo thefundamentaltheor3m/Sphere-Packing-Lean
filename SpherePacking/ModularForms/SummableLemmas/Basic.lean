@@ -18,8 +18,7 @@ public import Mathlib.Topology.EMetricSpace.Paracompact
 public import Mathlib.Topology.Separation.CompletelyRegular
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Cotangent
 public import SpherePacking.ModularForms.BigO
-public import SpherePacking.ModularForms.equivs
-public import SpherePacking.ModularForms.tsumderivWithin
+public import SpherePacking.ModularForms.TsumDerivWithin
 
 
 /-!

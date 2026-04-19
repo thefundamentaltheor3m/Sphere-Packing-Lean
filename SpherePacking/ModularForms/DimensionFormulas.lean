@@ -24,115 +24,12 @@ open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureThe
 
 noncomputable section
 
-def mul_Delta_map (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) :
-    ModularForm (CongruenceSubgroup.Gamma 1) k := by
-  have := (f.mul (ModForm_mk _ 12 Delta))
-  have hk : k - 12 + 12 = k := by ring
-  exact ModularForm.mcast hk this
-
-lemma mcast_apply {a b : ℤ} {Γ : Subgroup SL(2, ℤ)} (h : a = b) (f : ModularForm Γ a) (z : ℍ) :
-  (ModularForm.mcast h f) z = f z := by
-  rfl
-
-lemma mul_Delta_map_eq (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) (z : ℍ) :
-  (mul_Delta_map k f) z = f z * Delta z := by
-  rw [mul_Delta_map, mcast_apply ]
-  rfl
-
-lemma mul_Delta_map_eq_mul (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) :
-  ((mul_Delta_map k f) : ℍ → ℂ) = (f.mul (ModForm_mk _ 12 Delta)) := by
-  ext z
-  rw [mul_Delta_map, mcast_apply ]
-
-lemma qExpansion_coe_smul {n : ℕ} [NeZero n] {k : ℤ} (a : ℂ) (f : ModularForm Γ(n) k) :
-    qExpansion n (⇑(a • f)) = qExpansion n (a • ⇑f) := rfl
-
-lemma qExpansion_coe_smul_cusp {n : ℕ} [NeZero n] {k : ℤ} (a : ℂ) (f : CuspForm Γ(n) k) :
-    qExpansion n (⇑(a • f)) = qExpansion n (a • ⇑f) := rfl
-
-lemma qExpansion_coe_sub {k : ℤ} (f g : ModularForm Γ(1) k) :
-    qExpansion (1 : ℕ) (⇑(f - g)) = qExpansion (1 : ℕ) (⇑f - ⇑g) := rfl
-
-/-
-lemma mul_Delta_IsCuspForm (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) :
-  IsCuspForm (CongruenceSubgroup.Gamma 1) k (mul_Delta_map k f) := by
-  rw [IsCuspForm_iff_coeffZero_eq_zero]
-  rw [qExpansion_ext2 _ _ (mul_Delta_map_eq_mul k f)]
-  rw [← Nat.cast_one (R := ℝ), qExpansion_mul_coeff]
-  simp only [PowerSeries.coeff_mul, Finset.antidiagonal_zero, Prod.mk_zero_zero,
-    Finset.sum_singleton, Prod.fst_zero, Prod.snd_zero]
-  simp only [mul_eq_zero]
-  right
-  rw [Nat.cast_one, ← IsCuspForm_iff_coeffZero_eq_zero]
-  rw [IsCuspForm, CuspFormSubmodule, CuspForm_to_ModularForm]
-  simp
-
-def Modform_mul_Delta' (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12)) :
-    CuspForm (CongruenceSubgroup.Gamma 1) k :=
-  IsCuspForm_to_CuspForm _ k (mul_Delta_map k f) (mul_Delta_IsCuspForm k f)
-
-theorem mul_apply {k₁ k₂ : ℤ} {Γ : Subgroup SL(2, ℤ)} (f : SlashInvariantForm Γ k₁)
-    (g : SlashInvariantForm Γ k₂) (z : ℍ) : (f.mul g) z = f z * g z := rfl
-
-lemma Modform_mul_Delta_apply (k : ℤ) (f : ModularForm (CongruenceSubgroup.Gamma 1) (k - 12))
-    (z : ℍ) : (Modform_mul_Delta' k f) z = f z * Delta z := by
-  rw [Modform_mul_Delta']
-  have := congr_fun
-    (CuspForm_to_ModularForm_Fun_coe _ _ (mul_Delta_map k f) (mul_Delta_IsCuspForm k f)) z
-  simp at *
-  rw [mul_Delta_map_eq] at this
-  exact this
-
-def CuspForms_iso_Modforms (k : ℤ) : CuspForm (CongruenceSubgroup.Gamma 1) k ≃ₗ[ℂ]
-    ModularForm (CongruenceSubgroup.Gamma 1) (k - 12) where
-      toFun f := CuspForm_div_Discriminant k f
-      map_add' a b := CuspForm_div_Discriminant_Add k a b
-      map_smul' := by
-        intro m a
-        ext z
-        simp only [CuspForm_div_Discriminant_apply, CuspForm.IsGLPos.smul_apply, smul_eq_mul,
-          RingHom.id_apply, IsGLPos.smul_apply]
-        exact mul_div_assoc m (a z) (Δ z)
-      invFun := Modform_mul_Delta' k
-      left_inv := by
-        intro f
-        ext z
-        simp [Modform_mul_Delta_apply, CuspForm_div_Discriminant_apply ]
-        rw [Delta_apply]
-        rw [div_mul_cancel₀ ]
-        apply Δ_ne_zero
-      right_inv := by
-        intro f
-        ext z
-        simp [Modform_mul_Delta_apply, CuspForm_div_Discriminant_apply ]
-        rw [Delta_apply]
-        rw [mul_div_cancel_right₀]
-        apply Δ_ne_zero
--/
-
 lemma delta_eq_E4E6_const : ∃ (c : ℂ), (c • Delta) = Delta_E4_E6_aux := by
   have hr : Module.finrank ℂ (CuspForm Γ(1) 12) = 1 :=
     Module.finrank_eq_of_rank_eq <| by
       simpa [LinearEquiv.rank_eq (CuspForms_iso_Modforms 12)] using
         ModularForm.levelOne_weight_zero_rank_one
   exact (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).1 hr Delta_E4_E6_aux
-
-/-
-lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1) k)
-    (hf : IsCuspForm Γ(1) k f) : f = 0 := by
-  have hfc2:= CuspForm_to_ModularForm_coe _ _ f hf
-  ext z
-  simp only [ModularForm.zero_apply] at *
-  have hy := congr_arg (fun x ↦ x.1) hfc2
-  have hz := congr_fun hy z
-  simp only [SlashInvariantForm.toFun_eq_coe, CuspForm.toSlashInvariantForm_coe,
-  toSlashInvariantForm_coe] at hz
-  rw [← hz]
-  have := rank_zero_iff_forall_zero.mp (cuspform_weight_lt_12_zero k hk)
-    (IsCuspForm_to_CuspForm Γ(1) k f hf)
-  rw [this]
-  simp only [CuspForm.zero_apply]
--/
 
 /-- The discriminant cusp form as a scaled version of `E₄^3 - E₆^2`. -/
 public lemma Delta_E4_E6_eq : ModForm_mk _ _ Delta_E4_E6_aux =
@@ -295,12 +192,6 @@ lemma weight_six_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 6) = 1 := 
 lemma weight_four_one_dimensional : Module.rank ℂ (ModularForm Γ(1) 4) = 1 := by
   simpa using
     weight_lt_twelve_one_dimensional (k := 4) (E := E₄) E4_ne_zero E4_q_exp_zero (by norm_num)
-
-lemma weight_eight_one_dimensional (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : Even k) (hk3 : k < 12) :
-    Module.rank ℂ (ModularForm Γ(1) k) = 1 := by
-  simpa using
-    weight_lt_twelve_one_dimensional (k := (k : ℤ)) (E := E k hk) (Ek_ne_zero k hk hk2)
-      (Ek_q_exp_zero k hk hk2) (by simpa using hk3)
 
 lemma weight_two_zero (f : ModularForm (CongruenceSubgroup.Gamma 1) 2) : f = 0 := by
 -- Let `a` be the constant term; then `f^2 = a^2 E₄` and `f^3 = a^3 E₆`, forcing `a = 0` or `Δ = 0`.

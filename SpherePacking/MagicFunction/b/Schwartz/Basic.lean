@@ -105,10 +105,6 @@ namespace MagicFunction.b.SchwartzIntegrals
 open SchwartzMap
 open RadialSchwartz.Bridge
 
-private lemma fCut_apply_of_nonneg (f : ℝ → ℂ) {r : ℝ} (hr : 0 ≤ r) :
-    RadialSchwartz.Bridge.fCut f r = f r := by
-  simp [fCut, hr]
-
 /-- The one-dimensional Schwartz function associated to the primed radial integral `J₁'`.
 
 The prime indicates this is the radial profile on `ℝ` (used at `r = ‖x‖ ^ 2`). -/
@@ -187,41 +183,29 @@ public def J₆' : 𝓢(ℝ, ℂ) where
 @[expose] public def J₆ : 𝓢(EuclideanSpace ℝ (Fin 8), ℂ) :=
   schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) J₆'
 
-/-- On `0 ≤ r`, the Schwartz function `J₁'` agrees with the integral definition. -/
-@[simp]
-public lemma J₁'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₁' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₁' r := by
-  simpa [J₁', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.J₁') hr
+@[simp] public lemma J₁'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
+    (J₁' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₁' r :=
+  fCut_apply_of_nonneg _ hr
 
-/-- On `0 ≤ r`, the Schwartz function `J₂'` agrees with the integral definition. -/
-@[simp]
-public lemma J₂'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₂' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₂' r := by
-  simpa [J₂', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.J₂') hr
+@[simp] public lemma J₂'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
+    (J₂' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₂' r :=
+  fCut_apply_of_nonneg _ hr
 
-/-- On `0 ≤ r`, the Schwartz function `J₃'` agrees with the integral definition. -/
-@[simp]
-public lemma J₃'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₃' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₃' r := by
-  simpa [J₃', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.J₃') hr
+@[simp] public lemma J₃'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
+    (J₃' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₃' r :=
+  fCut_apply_of_nonneg _ hr
 
-/-- On `0 ≤ r`, the Schwartz function `J₄'` agrees with the integral definition. -/
-@[simp]
-public lemma J₄'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₄' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₄' r := by
-  simpa [J₄', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.J₄') hr
+@[simp] public lemma J₄'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
+    (J₄' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₄' r :=
+  fCut_apply_of_nonneg _ hr
 
-/-- On `0 ≤ r`, the Schwartz function `J₅'` agrees with the integral definition. -/
-@[simp]
-public lemma J₅'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₅' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₅' r := by
-  simpa [J₅', fCutSchwartz] using fCut_apply_of_nonneg (f := RealIntegrals.J₅') hr
+@[simp] public lemma J₅'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
+    (J₅' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₅' r :=
+  fCut_apply_of_nonneg _ hr
 
-/-- On `0 ≤ r`, the Schwartz function `J₆'` agrees with the integral definition. -/
-@[simp]
-public lemma J₆'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
-    (J₆' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₆' r := by
-  simpa [J₆'] using fCut_apply_of_nonneg (f := RealIntegrals.J₆') hr
+@[simp] public lemma J₆'_apply_of_nonneg (r : ℝ) (hr : 0 ≤ r) :
+    (J₆' : ℝ → ℂ) r = MagicFunction.b.RealIntegrals.J₆' r :=
+  fCut_apply_of_nonneg _ hr
 
 end MagicFunction.b.SchwartzIntegrals
 namespace MagicFunction.FourierEigenfunctions

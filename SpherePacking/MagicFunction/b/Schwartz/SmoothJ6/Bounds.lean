@@ -110,7 +110,7 @@ lemma hasDerivAt_F (n : ℕ) (x : ℝ) (hx : x ∈ s) :
   have hInt : Integrable (gN n x) μ := gN_integrable (n := n) (x := x) hx
   simpa [F, μ] using
     (SmoothIntegralIciOne.hasDerivAt_integral_gN
-      (hf := ψS.resToImagAxis) (shift := (1 : ℝ)) (hshift := (by norm_num))
+      (hf := ψS.resToImagAxis) (shift := (1 : ℝ))
       (exists_bound_norm_hf := exists_bound)
       (gN_measurable := fun n x => by simpa [μ] using gN_measurable (n := n) (x := x))
       (n := n) (x := x) hx' (hF_int := by simpa [μ] using hInt))
@@ -291,9 +291,8 @@ public theorem decay_J₆' :
     -- Now go from `F` to `G`.
     calc
       ‖G n x‖ ≤ 2 * (Kn * Real.exp (-Real.pi * x)) := by
-        simpa [G, mul_assoc] using
-          (SpherePacking.ForMathlib.norm_neg_two_mul_le
-            (z := F n x) (B := Kn * Real.exp (-Real.pi * x)) hFn)
+        simpa [G, norm_mul, mul_assoc] using
+          mul_le_mul_of_nonneg_left hFn (by positivity : (0 : ℝ) ≤ 2)
       _ = 2 * Kn * Real.exp (-Real.pi * x) := by ring_nf
   have hpoly : x ^ k * Real.exp (-Real.pi * x) ≤ B := hB x hx
   have hpow0 : 0 ≤ 2 * Kn := by positivity

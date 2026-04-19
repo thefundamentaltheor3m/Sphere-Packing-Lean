@@ -8,6 +8,13 @@ public import Mathlib.Tactic.FunProp
 
 public import SpherePacking.ModularForms.Eisenstein
 
+/-!
+# `fun_prop` registrations for manifold-differentiable Eisenstein series
+
+Wrap `E₄.holo'` / `E₆.holo'` / `Δ.holo'` as `MDifferentiable` lemmas so that `fun_prop` can
+close goals of the form `MDiff (fun z => E₄ z * …)` automatically.
+-/
+
 @[expose] public section
 
 open scoped Manifold UpperHalfPlane EisensteinSeries

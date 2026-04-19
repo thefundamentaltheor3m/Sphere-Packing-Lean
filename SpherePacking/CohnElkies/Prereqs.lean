@@ -122,12 +122,6 @@ end Integration
 
 section Misc
 
-/-- Decidable equality for Euclidean space in finite dimension. -/
-public instance : DecidableEq (EuclideanSpace ℝ (Fin d)) := inferInstance
-
-/-- A point in Euclidean space is decidably equal to `0`. -/
-public instance (v : EuclideanSpace ℝ (Fin d)) : Decidable (v = 0) := inferInstance
-
 omit [Fact (0 < d)]
 -- Now a small theorem from Complex analysis:
 local notation "conj" => starRingEnd ℂ

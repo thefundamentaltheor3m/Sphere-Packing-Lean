@@ -287,8 +287,8 @@ public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0
     use 1
     intro b hb
     rw [ENNReal.div_self, Pi.one_apply]
-    · exact (volume_ball_pos _ (by linarith)).ne.symm
-    · exact (volume_ball_lt_top _).ne
+    · exact (Metric.measure_ball_pos volume _ (by linarith)).ne.symm
+    · exact (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
   · have (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
           = ENNReal.ofReal (R ^ d / (R + C) ^ d) := by
@@ -326,9 +326,9 @@ public theorem volume_ball_ratio_tendsto_nhds_one'
     intro R hR
     have hR' : 0 < R := lt_of_lt_of_le zero_lt_one hR
     rw [ENNReal.div_div_div_cancel_left]
-    · exact (volume_ball_pos _ hR').ne.symm
-    · exact (volume_ball_lt_top _).ne
-    · exact (volume_ball_lt_top _).ne
+    · exact (Metric.measure_ball_pos volume _ hR').ne.symm
+    · exact (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
+    · exact (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
   · convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
       (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
 

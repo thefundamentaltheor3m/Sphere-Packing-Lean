@@ -7,7 +7,7 @@ public import Mathlib.NumberTheory.ModularForms.SlashActions
 public import Mathlib.NumberTheory.ModularForms.QExpansion
 
 public import SpherePacking.ModularForms.SlashActionAuxil
-public import SpherePacking.ForMathlib.AtImInfty
+public import SpherePacking.ForMathlib.ModularFormsHelpers
 
 
 /-!

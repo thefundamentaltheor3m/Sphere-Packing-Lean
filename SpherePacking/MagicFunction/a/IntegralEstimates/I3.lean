@@ -60,12 +60,12 @@ public lemma inv_integrand_eq_integrand {t : ℝ} (ht₀ : 0 < t) (r : ℝ) (pha
         ((-I : ℂ) * φ₀'' (I * (1 / t)) * (1 / t) ^ (-4 : ℤ) * phase * cexp (-π * r / (1 / t))) := by
   simp only [Int.reduceNeg, zpow_neg, real_smul]
   have h₃ : -1 / (I * t) = I / t := by
-    rw [div_mul_eq_div_div_swap, div_I, neg_div, neg_mul, neg_neg, mul_comm, mul_div, mul_one]
+    rw [div_mul_eq_div_div_swap, div_I]; ring
   have h₁ : |-1 / t ^ 2| = 1 / t ^ 2 := by simp [neg_div]
   rw [h₁, h₃]
   simp only [neg_mul, ofReal_div, ofReal_one, ofReal_pow, mul_div_assoc', mul_one, div_zpow,
     one_zpow, inv_div, div_one, div_div_eq_mul_div, mul_neg, div_mul_eq_mul_div, one_mul, neg_div']
-  rw [eq_div_iff (pow_ne_zero 2 (by exact_mod_cast (ne_of_gt ht₀))), neg_mul, neg_inj]
+  rw [eq_div_iff (pow_ne_zero 2 (mod_cast ht₀.ne')), neg_mul, neg_inj]
   ring_nf; ac_rfl
 
 end Change_of_Variables.Change
@@ -86,7 +86,7 @@ public lemma I₃'_bounding_aux_1 (r : ℝ) :
   ]
   conv_rhs => rw [← mul_one ‖φ₀'' (I * ↑s)‖]
   gcongr
-  have hs1 : (1 : ℝ) ≤ s := by simpa [mem_Ici] using hs
+  have hs1 : (1 : ℝ) ≤ s := hs
   simpa [abs_of_nonneg (zero_le_one.trans hs1)] using
     (inv_le_one_of_one_le₀ (one_le_zpow₀ hs1 <| Int.zero_le_ofNat 4))
 
@@ -96,8 +96,8 @@ section Integrability
 
 /-- The model bound integrand is integrable on `Ici 1`. -/
 public lemma Bound_integrableOn (r C₀ : ℝ) :
-    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume := by
-  simpa using (MagicFunction.a.IntegralEstimates.bound_integrableOn_Ici (r := r) (C₀ := C₀))
+    IntegrableOn (fun s ↦ C₀ * rexp (-2 * π * s) * rexp (-π * r / s)) (Ici 1) volume :=
+  MagicFunction.a.IntegralEstimates.bound_integrableOn_Ici r C₀
 
 end Integrability
 end Bounding

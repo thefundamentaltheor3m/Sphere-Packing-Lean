@@ -479,6 +479,33 @@ lemma exists_phi0_cancellation_bound :
 
 /-! ## Integrability of the "another integrand" for `0 < u`. -/
 
+/-- Continuity of `aAnotherIntegrand u` on any subset of `(0, ∞)`. -/
+private lemma continuousOn_aAnotherIntegrand_of_subset_Ioi
+    {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) (u : ℝ) :
+    ContinuousOn (fun t : ℝ => aAnotherIntegrand u t) s := by
+  have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im} := by
+    simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
+  have hcont : ContinuousOn (fun t : ℝ => (t : ℂ)) s :=
+    (continuous_ofReal : Continuous fun t : ℝ => (t : ℂ)).continuousOn
+  have hne : ∀ t ∈ s, (t : ℂ) ≠ 0 := fun t ht => by exact_mod_cast (ne_of_gt (hs t ht))
+  have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) s := by
+    simpa [div_eq_mul_inv] using (continuous_const.continuousOn.mul (hcont.inv₀ hne))
+  have hmaps : Set.MapsTo (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) s {z : ℂ | 0 < z.im} := by
+    intro t ht
+    have ht0 : 0 < t := hs t ht
+    have : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := imag_I_div t
+    simpa [this] using inv_pos.2 ht0
+  have hφcont : ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) s :=
+    hcontφ.comp hcontIdiv hmaps
+  have hpowC : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ) := by fun_prop
+  have hexpC : Continuous fun t : ℝ => ((Real.exp (-π * u * t)) : ℂ) := by fun_prop
+  refine
+    ((hpowC.continuousOn.mul hφcont).sub ?_ |>.add ?_ |>.sub ?_).mul
+      hexpC.continuousOn
+  · fun_prop
+  · fun_prop
+  · fun_prop
+
 lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioc (0 : ℝ) 1) := by
   -- Finite measure; show essential boundedness.
@@ -491,34 +518,9 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
       ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖
   have hmeas_f :
       AEStronglyMeasurable (fun t : ℝ => aAnotherIntegrand u t)
-        ((volume : Measure ℝ).restrict (Set.Ioc (0 : ℝ) 1)) := by
-    refine (ContinuousOn.aestronglyMeasurable ?_ hmeas)
-    have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im} := by
-      simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-    have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) (Set.Ioc (0 : ℝ) 1) := by
-      have hcont : ContinuousOn (fun t : ℝ => (t : ℂ)) (Set.Ioc (0 : ℝ) 1) :=
-        (continuous_ofReal : Continuous fun t : ℝ => (t : ℂ)).continuousOn
-      have hne : ∀ t ∈ Set.Ioc (0 : ℝ) 1, (t : ℂ) ≠ 0 := by
-        intro t ht; exact_mod_cast (ne_of_gt ht.1)
-      simpa [div_eq_mul_inv] using (continuous_const.continuousOn.mul (hcont.inv₀ hne))
-    have hmaps :
-        Set.MapsTo (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) (Set.Ioc (0 : ℝ) 1)
-          {z : ℂ | 0 < z.im} := by
-      intro t ht
-      have ht0 : 0 < t := ht.1
-      have : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := imag_I_div t
-      simpa [this] using (inv_pos.2 ht0)
-    have hφcont :
-        ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) (Set.Ioc (0 : ℝ) 1) :=
-      hcontφ.comp hcontIdiv hmaps
-    have hpowC : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ) := by fun_prop
-    have hexpC : Continuous fun t : ℝ => ((Real.exp (-π * u * t)) : ℂ) := by fun_prop
-    refine
-      ((hpowC.continuousOn.mul hφcont).sub ?_ |>.add ?_ |>.sub ?_).mul
-        hexpC.continuousOn
-    · fun_prop
-    · fun_prop
-    · fun_prop
+        ((volume : Measure ℝ).restrict (Set.Ioc (0 : ℝ) 1)) :=
+    (continuousOn_aAnotherIntegrand_of_subset_Ioi
+        (fun t ht => ht.1) u).aestronglyMeasurable hmeas
   refine (MeasureTheory.IntegrableOn.of_bound hμ hmeas_f M ?_)
   -- pointwise bound on the restricted measure
   refine (ae_restrict_iff' hmeas).2 ?_
@@ -799,36 +801,9 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
     hdom.integrable
   have hf :
       AEStronglyMeasurable (fun t : ℝ => aAnotherIntegrand u t)
-        ((volume : Measure ℝ).restrict (Set.Ici (1 : ℝ))) := by
-    have hcont :
-        ContinuousOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ici (1 : ℝ)) := by
-      have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im} := by
-        simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-      have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) (Set.Ici (1 : ℝ)) := by
-        have hcont : ContinuousOn (fun t : ℝ => (t : ℂ)) (Set.Ici (1 : ℝ)) :=
-          (continuous_ofReal : Continuous fun t : ℝ => (t : ℂ)).continuousOn
-        have hne : ∀ t ∈ Set.Ici (1 : ℝ), (t : ℂ) ≠ 0 := by
-          intro t ht; exact_mod_cast (ne_of_gt (lt_of_lt_of_le (by norm_num) ht))
-        simpa [div_eq_mul_inv] using (continuous_const.continuousOn.mul (hcont.inv₀ hne))
-      have hmaps :
-          Set.MapsTo (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) (Set.Ici (1 : ℝ))
-            {z : ℂ | 0 < z.im} := by
-        intro t ht
-        have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
-        have : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := imag_I_div t
-        simpa [this] using inv_pos.2 ht0
-      have hφcont :
-          ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) (Set.Ici (1 : ℝ)) :=
-        hcontφ.comp hcontIdiv hmaps
-      have hpowC : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ) := by fun_prop
-      have hexpC : Continuous fun t : ℝ => ((Real.exp (-π * u * t)) : ℂ) := by fun_prop
-      refine
-        ((hpowC.continuousOn.mul hφcont).sub ?_ |>.add ?_ |>.sub ?_).mul
-          hexpC.continuousOn
-      · fun_prop
-      · fun_prop
-      · fun_prop
-    exact hcont.aestronglyMeasurable measurableSet_Ici
+        ((volume : Measure ℝ).restrict (Set.Ici (1 : ℝ))) :=
+    (continuousOn_aAnotherIntegrand_of_subset_Ioi
+        (fun t ht => lt_of_lt_of_le (by norm_num) ht) u).aestronglyMeasurable measurableSet_Ici
   have hfg :
       ∀ᵐ t ∂((volume : Measure ℝ).restrict (Set.Ici (1 : ℝ))),
         ‖aAnotherIntegrand u t‖ ≤ C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) := by

@@ -73,11 +73,9 @@ lemma I₆'_bounding_aux_2' (C₀ : ℝ)
   rw [I₆'_bounding_aux_1 r t ht]
   gcongr
   have him : (I * t).im = t := by simp
-  have hhalf : (1 / 2 : ℝ) < (I * t).im := by
-    have : (1 / 2 : ℝ) < t := by linarith [ht1]
-    simpa [him] using this
   have htpos : 0 < t := lt_of_lt_of_le one_pos ht1
   have hpos : 0 < (I * t).im := by simpa [him] using htpos
+  have hhalf : (1 / 2 : ℝ) < (I * t).im := by simpa [him] using (by linarith : (1 / 2 : ℝ) < t)
   simpa [φ₀'', hpos, him, htpos] using hC₀ ⟨I * t, hpos⟩ (by simpa using hhalf)
 
 end Bounding_Integrand
@@ -103,7 +101,6 @@ def gN (n : ℕ) (r t : ℝ) : ℂ :=
 
 lemma coeff_norm (t : ℝ) :
     ‖coeff t‖ = |π * t| := by
-  -- `coeff t` is a real complex number.
   simp [coeff]
 
 lemma coeff_norm_of_nonneg {t : ℝ} (ht : 0 ≤ t) :
@@ -175,7 +172,6 @@ private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n
   have hexp : rexp (-2 * π * t) * rexp (-π * r * t) = rexp (-(π * (r + 2)) * t) := by
     have : (-(π * (r + 2)) * t : ℝ) = (-2 * π * t) + (-π * r * t) := by ring_nf
     simp [Real.exp_add, this, mul_left_comm, mul_comm]
-  have hpow : (π * t) ^ n ≤ (π ^ n) * (t ^ n) := by simp [mul_pow, mul_comm]
   calc
     ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
     _ ≤ (π * t) ^ n * (C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) := by gcongr
@@ -213,12 +209,10 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
       have : (-π * r * t : ℝ) ≤ -π * (r₀ - 1) * t := by
         simpa [mul_assoc, mul_left_comm, mul_comm, sub_eq_add_neg] using hmul
       exact Real.exp_le_exp.2 this
-    have hg' : ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := hC₀ r t ht
     have hexp :
         rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) = rexp (-(π * (r₀ + 1)) * t) := by
       have : (-(π * (r₀ + 1)) * t : ℝ) = (-2 * π * t) + (-π * (r₀ - 1) * t) := by ring_nf
       simp [Real.exp_add, this, mul_comm]
-    have hpow : (π * t) ^ (n + 1) ≤ (π ^ (n + 1)) * (t ^ (n + 1)) := by simp [mul_pow, mul_comm]
     have hg'' :
         ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) := by
       have hnonneg : 0 ≤ C₀ * rexp (-2 * π * t) := by positivity
@@ -264,27 +258,19 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
 
 lemma iteratedDeriv_I₆'_eq_integral_gN (n : ℕ) :
     ∀ r : ℝ, -1 < r → iteratedDeriv n I₆' r = 2 * ∫ t in Ici (1 : ℝ), gN n r t := by
-  intro r hr
-  revert r hr
   induction n with
   | zero =>
     intro r hr
     simp [gN, I₆'_eq_integral_g_Ioo]
   | succ n hn =>
     intro r hr
-    have hmem : Ioi (-1 : ℝ) ∈ 𝓝 r := Ioi_mem_nhds hr
     have hEv :
         (iteratedDeriv n I₆') =ᶠ[𝓝 r] (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) := by
-      filter_upwards [hmem] with x hx
-      exact hn x hx
+      filter_upwards [Ioi_mem_nhds hr] with x hx using hn x hx
     have hder_int :
         deriv (fun x : ℝ ↦ 2 * ∫ t in Ici (1 : ℝ), gN n x t) r =
           2 * ∫ t in Ici (1 : ℝ), gN (n + 1) r t := by
-      have hI :
-          HasDerivAt (fun x : ℝ ↦ ∫ t in Ici (1 : ℝ), gN n x t)
-            (∫ t in Ici (1 : ℝ), gN (n + 1) r t) r :=
-        hasDerivAt_integral_gN (n := n) (r₀ := r) hr
-      simpa using (hI.const_mul (2 : ℂ)).deriv
+      simpa using ((hasDerivAt_integral_gN (n := n) (r₀ := r) hr).const_mul (2 : ℂ)).deriv
     calc
       iteratedDeriv (n + 1) I₆' r = deriv (iteratedDeriv n I₆') r := by
         simp [iteratedDeriv_succ]
@@ -322,8 +308,6 @@ lemma iteratedDeriv_bound (n : ℕ) :
   refine ⟨2 * (A + 1), hC₁_pos, ?_⟩
   intro r hr
   have hr' : (-1 : ℝ) < r := lt_of_lt_of_le (by norm_num) hr
-  have hrepr : iteratedDeriv n I₆' r = 2 * ∫ t in Ici (1 : ℝ), gN n r t :=
-    iteratedDeriv_I₆'_eq_integral_gN (n := n) r hr'
   have hExp : ∀ t ∈ Ici (1 : ℝ), rexp (-π * r * t) ≤ rexp (-π * r) := by
     intro t ht
     have ht1 : (1 : ℝ) ≤ t := ht
@@ -340,7 +324,6 @@ lemma iteratedDeriv_bound (n : ℕ) :
     have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
     have hcoeff_le : ‖coeff t‖ ^ n ≤ (π ^ n) * (t ^ n) := by
       simpa using coeff_norm_pow_le_pi_mul (n := n) (t := t) ht0
-    have hg0 : ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := hC₀ r t ht
     have hg1 : ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r) := by
       have hnonneg : 0 ≤ C₀ * rexp (-2 * π * t) := by positivity
       exact le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) (hExp t ht) hnonneg
@@ -369,11 +352,11 @@ lemma iteratedDeriv_bound (n : ℕ) :
         (∫ t in Ici (1 : ℝ), B t) * rexp (-π * r) := by
     simpa using (MeasureTheory.integral_mul_const (μ := volume.restrict (Ici (1 : ℝ)))
       (r := rexp (-π * r)) (f := fun t : ℝ ↦ B t))
-  have hA_le : A ≤ A + 1 := le_add_of_nonneg_right (by positivity : (0 : ℝ) ≤ 1)
   have hnorm :
       ‖iteratedDeriv n I₆' r‖ ≤ (2 * (A + 1)) * rexp (-π * r) := by
     calc
-      ‖iteratedDeriv n I₆' r‖ = ‖2 * ∫ t in Ici (1 : ℝ), gN n r t‖ := by simp [hrepr]
+      ‖iteratedDeriv n I₆' r‖ = ‖2 * ∫ t in Ici (1 : ℝ), gN n r t‖ := by
+        rw [iteratedDeriv_I₆'_eq_integral_gN (n := n) r hr']
       _ = 2 * ‖∫ t in Ici (1 : ℝ), gN n r t‖ := by simp
       _ ≤ 2 * ∫ t in Ici (1 : ℝ), ‖gN n r t‖ := by
         gcongr

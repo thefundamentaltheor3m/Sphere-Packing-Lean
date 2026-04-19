@@ -4,7 +4,6 @@ public import SpherePacking.MagicFunction.a.Basic
 import SpherePacking.MagicFunction.a.Eigenfunction.PermI12ContourAux
 import SpherePacking.Contour.MobiusInv.WedgeSetContour
 
-
 /-!
 # Contour permutation for `I₁` and `I₂`
 
@@ -24,10 +23,7 @@ open Filter SpherePacking
 
 section Integral_Permutations
 
-local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
-
-open MeasureTheory Set Complex Real
-open scoped Interval
+open MeasureTheory Complex
 
 /-- The contour permutation identity underlying the Fourier invariance of the `I₁`/`I₂` part. -/
 public lemma perm_I12_contour (r : ℝ) :
@@ -38,16 +34,14 @@ public lemma perm_I12_contour (r : ℝ) :
       (∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I),
             scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r) z) +
           ∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I,
-            scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r) z := by
-  simpa using
-    (SpherePacking.perm_I12_contour_mobiusInv_wedgeSet
-      (Ψ₁_fourier := Φ₁_fourier)
-      (Ψ₁' := MagicFunction.a.ComplexIntegrands.Φ₃')
-      (Ψ₁_fourier_eq_deriv_mul := Φ₁_fourier_eq_deriv_mobiusInv_mul_Φ₃')
-      (closed_ω_wedgeSet := fun r =>
-        ⟨diffContOnCl_ω_wedgeSet (r := r), fderivWithin_ω_wedgeSet_symm (r := r)⟩)
-      (r := r))
-
+            scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r) z :=
+  SpherePacking.perm_I12_contour_mobiusInv_wedgeSet
+    (Ψ₁_fourier := Φ₁_fourier)
+    (Ψ₁' := MagicFunction.a.ComplexIntegrands.Φ₃')
+    (Ψ₁_fourier_eq_deriv_mul := Φ₁_fourier_eq_deriv_mobiusInv_mul_Φ₃')
+    (closed_ω_wedgeSet := fun r =>
+      ⟨diffContOnCl_ω_wedgeSet (r := r), fderivWithin_ω_wedgeSet_symm (r := r)⟩)
+    (r := r)
 
 end Integral_Permutations
 
