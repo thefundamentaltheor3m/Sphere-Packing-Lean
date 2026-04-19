@@ -33,11 +33,8 @@ private theorem ball_subset_iUnion_lattice_inter_ball_vadd
   refine ⟨-g.val, ⟨⟨by simp, ?_⟩, (Set.mem_vadd_set_iff_neg_vadd_mem).2 (by simpa using hg)⟩⟩
   have htri : ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖ := by
     simpa [sub_eq_add_neg, add_assoc] using (norm_sub_le (a := g.val + x) (b := x))
-  have : ‖g.val‖ < R := by
-    refine lt_of_le_of_lt htri ?_
-    calc ‖g.val + x‖ + ‖x‖ < L + (R - L) :=
-          add_lt_add_of_le_of_lt (hL _ (by simpa using hg)) hx'
-      _ = R := by abel
+  have : ‖g.val‖ < R := lt_of_le_of_lt htri <| by
+    linarith [hL _ (by simpa using hg : g.val + x ∈ D)]
   simpa [mem_ball_zero_iff, norm_neg] using this
 
 /-- An add-left-invariant measure is invariant under translations by a submodule. -/
