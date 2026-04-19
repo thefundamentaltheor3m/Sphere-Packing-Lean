@@ -231,14 +231,14 @@ lemma iteratedDeriv_bound (n : ℕ) :
         (n := n) (b := 2 * π) (by positivity)
     simpa [B, mul_assoc, mul_left_comm, mul_comm] using hInt.const_mul (C₀ * (π ^ n))
   let A : ℝ := ∫ t in Ici (1 : ℝ), B t
-  have hA_nonneg : 0 ≤ A := by
-    refine MeasureTheory.setIntegral_nonneg (μ := volume) (s := Ici (1 : ℝ))
-      measurableSet_Ici fun t ht ↦ ?_
-    have ht0 : 0 ≤ t := (by norm_num : (0 : ℝ) ≤ 1).trans ht
-    have : 0 ≤ C₀ * (π ^ n) * (t ^ n * rexp (-(2 * π) * t)) :=
-      mul_nonneg (mul_nonneg hC₀_pos.le (pow_nonneg Real.pi_pos.le n))
-        (mul_nonneg (pow_nonneg ht0 n) (by positivity))
-    simpa [B, mul_assoc, mul_left_comm, mul_comm] using this
+  have hA_nonneg : 0 ≤ A :=
+    MeasureTheory.setIntegral_nonneg (μ := volume) (s := Ici (1 : ℝ))
+      measurableSet_Ici fun t ht ↦ by
+        have ht0 : 0 ≤ t := (by norm_num : (0 : ℝ) ≤ 1).trans ht
+        have : 0 ≤ C₀ * (π ^ n) * (t ^ n * rexp (-(2 * π) * t)) :=
+          mul_nonneg (mul_nonneg hC₀_pos.le (pow_nonneg Real.pi_pos.le n))
+            (mul_nonneg (pow_nonneg ht0 n) (by positivity))
+        simpa [B, mul_assoc, mul_left_comm, mul_comm] using this
   refine ⟨2 * (A + 1), by nlinarith [hA_nonneg], fun r hr ↦ ?_⟩
   have hr' : (-1 : ℝ) < r := lt_of_lt_of_le (by norm_num) hr
   have hExp : ∀ t ∈ Ici (1 : ℝ), rexp (-π * r * t) ≤ rexp (-π * r) := fun t ht ↦ by

@@ -237,13 +237,8 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
                   φ₀ zH - (12 * Complex.I) / (π * zH) * φ₂' zH
                     - 36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH := by
               simpa using φ₀_S_transform zH
-            calc
-              ‖φ₀ (ModularGroup.S • zH)‖ = _ := by rw [hEq]
-              _ ≤ ‖φ₀ zH - (12 * Complex.I) / (π * zH) * φ₂' zH‖ +
-                    ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ := norm_sub_le _ _
-              _ ≤ ‖φ₀ zH‖ + ‖(12 * Complex.I) / (π * zH) * φ₂' zH‖ +
-                    ‖36 / (π ^ (2 : ℕ) * (zH : ℂ) ^ (2 : ℕ)) * φ₄' zH‖ :=
-                      add_le_add_left (norm_sub_le _ _) _
+            rw [hEq]
+            exact (norm_sub_le _ _).trans (add_le_add_left (norm_sub_le _ _) _)
           have h2 := norm_mul_le_of_le hcoeff2 hφ2
           have h4 := norm_mul_le_of_le hcoeff4 hφ4
           grind only
