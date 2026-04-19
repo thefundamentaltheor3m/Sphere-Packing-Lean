@@ -557,20 +557,18 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   -- `b < sgDensity - cubeShellErr L ≤ P.density`.
   have hb_lt : b < (sg.card : ℝ≥0∞) * volBall / volCube - cubeShellErr L :=
     lt_tsub_iff_right.mpr hsg_density
-  have hF_card_add : F.card + sb.card = sg.card :=
-    Finset.card_filter_add_card_filter_not fun x => x ∈ innerSet
   have hP_lower :
       (sg.card : ℝ≥0∞) * volBall / volCube - cubeShellErr L ≤ P.density := by
     have hsg_eq : (sg.card : ℝ≥0∞) * volBall =
         (F.card : ℝ≥0∞) * volBall + (sb.card : ℝ≥0∞) * volBall := by
       simp [show (sg.card : ℝ≥0∞) = (F.card : ℝ≥0∞) + (sb.card : ℝ≥0∞) by
-        exact_mod_cast hF_card_add.symm, add_mul]
-    have hsg_le : (sg.card : ℝ≥0∞) * volBall ≤ (F.card : ℝ≥0∞) * volBall + shellVol := by
-      simpa [hsg_eq] using add_le_add_right hsb_vol _
+        exact_mod_cast (Finset.card_filter_add_card_filter_not (s := sg)
+          (p := fun x => x ∈ innerSet)).symm, add_mul]
     have hsg_div : (sg.card : ℝ≥0∞) * volBall / volCube ≤
         (F.card : ℝ≥0∞) * volBall / volCube + cubeShellErr L := by
       simpa [div_eq_mul_inv, mul_add, add_mul, mul_assoc, hcubeShell, shellVol] using
-        ENNReal.div_le_div_right hsg_le volCube
+        ENNReal.div_le_div_right (by simpa [hsg_eq] using add_le_add_right hsb_vol _ :
+          (sg.card : ℝ≥0∞) * volBall ≤ (F.card : ℝ≥0∞) * volBall + shellVol) volCube
     exact tsub_le_iff_right.2 (by simpa [hPdens'] using hsg_div)
   exact hb_lt.trans_le hP_lower
 
