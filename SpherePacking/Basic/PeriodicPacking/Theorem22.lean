@@ -3,13 +3,6 @@ public import SpherePacking.Basic.PeriodicPacking.Aux
 
 /-!
 # Periodic packings: Theorem 2.2 (blueprint)
-
-This file proves Theorem 2.2 from the blueprint. Under a strengthened "unique cover" hypothesis on a
-measurable set `D` (every point has a unique translate in `D`), we obtain two-sided volume bounds
-for the lattice point count `(↑S.lattice ∩ ball 0 R).encard`.
-
-These bounds are then turned into upper and lower estimates for `S.finiteDensity R` (the lemmas
-`aux_big_le` and `aux_big_ge`) and convergence statements for ratios of ball volumes as `R → ∞`.
 -/
 
 open scoped ENNReal
@@ -47,18 +40,14 @@ private theorem ball_subset_iUnion_lattice_inter_ball_vadd
       _ = R := by abel
   simpa [mem_ball_zero_iff, norm_neg] using this
 
-/--
-An add-left-invariant measure is invariant under translations by a submodule.
-
-This is used to package translation invariance in the volume computations for Theorem 2.2.
--/
+/-- An add-left-invariant measure is invariant under translations by a submodule. -/
 public instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Module ℤ E]
     [Module ℝ E] (μ : Measure E) [μ.IsAddLeftInvariant] [IsScalarTower ℤ ℝ E] (s : Submodule ℤ E) :
     VAddInvariantMeasure s E μ where
   measure_preimage_vadd c t ht := by
     simp only [Submodule.vadd_def, vadd_eq_add, measure_preimage_add]
 
--- Theorem 2.2, lower bound
+/-- Theorem 2.2, lower bound. -/
 theorem PeriodicSpherePacking.aux2_ge
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
     (hL : ∀ x ∈ D, ‖x‖ ≤ L) (hd : 0 < d) :
@@ -95,7 +84,7 @@ private theorem iUnion_lattice_inter_ball_vadd_subset_ball (hL : ∀ x ∈ D, �
     _ ≤ ‖i‖ + ‖-i + x‖ := norm_add_le _ _
     _ < R + L := add_lt_add_of_lt_of_le hi_ball' hi_mem'
 
--- Theorem 2.2, upper bound
+/-- Theorem 2.2, upper bound. -/
 theorem PeriodicSpherePacking.aux2_le
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
     (hL : ∀ x ∈ D, ‖x‖ ≤ L) (hd : 0 < d) :
@@ -125,7 +114,7 @@ open ZSpan
 
 variable (b : Basis ι ℤ S.lattice)
 
--- Theorem 2.2 lower bound, in terms of fundamental domain of Z-lattice
+/-- Theorem 2.2 lower bound, in terms of fundamental domain of Z-lattice. -/
 public theorem PeriodicSpherePacking.aux2_ge'
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
@@ -139,7 +128,7 @@ public theorem PeriodicSpherePacking.aux2_ge'
   exact Subtype.ext <| by
     simpa using congrArg Subtype.val (hvuniq ⟨y, by simpa [S.basis_Z_span] using hy⟩ hyD)
 
--- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice
+/-- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice. -/
 public theorem PeriodicSpherePacking.aux2_le'
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
@@ -246,7 +235,6 @@ section VolumeBallRatio
 open scoped Topology NNReal
 open Asymptotics Filter ENNReal EuclideanSpace
 
--- Credits to Bhavik Mehta for this <3 my original code is 92 lines long x)
 lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
     ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
   suffices Filter.Tendsto
@@ -289,7 +277,7 @@ public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0
         <;> positivity
     rw [ENNReal.tendsto_atTop (by decide)]
     intro ε hε
-    obtain ⟨k, ⟨hk₁, hk₂⟩⟩ := aux_bhavik' (d := d) hε
+    obtain ⟨k, hk₁, hk₂⟩ := aux_bhavik' (d := d) hε
     refine ⟨k * C, fun n hn => ?_⟩
     rw [hfmt _ ((by positivity : 0 ≤ k * C).trans hn)]
     convert hk₂ (n / C) ((le_div_iff₀ hC).mpr hn)
