@@ -203,9 +203,8 @@ lemma I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2 :
 def f0 (z : ℂ) : ℂ := φ₀'' z * ((2 : ℂ) * z - 1)
 
 lemma f0_differentiableOn : DifferentiableOn ℂ f0 {z : ℂ | 0 < z.im} := by
-  have hlin : Differentiable ℂ fun z : ℂ => (2 : ℂ) * z - 1 := by
-    fun_prop
-  simpa [f0] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.mul hlin.differentiableOn
+  simpa [f0] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.mul
+    (by fun_prop : Differentiable ℂ fun z : ℂ => (2 : ℂ) * z - 1).differentiableOn
 
 lemma f0_continuousOn : ContinuousOn f0 {z : ℂ | 0 < z.im} :=
   (f0_differentiableOn).continuousOn
@@ -412,15 +411,8 @@ private lemma I6_zero_eq_I_smul_integral :
         2 * ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
           ∂MeasureTheory.volume := by
     simp [MagicFunction.a.RadialFunctions.I₆'_eq (r := (0 : ℝ)), mul_comm]
-  calc
-    I₆' (0 : ℝ)
-        = 2 * ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
-            ∂MeasureTheory.volume := by
-            simp [h0', MeasureTheory.integral_Ici_eq_integral_Ioi]
-    _ = Complex.I •
-          (∫ t in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
-            ∂MeasureTheory.volume) := by
-          simp only [smul_eq_mul, MeasureTheory.integral_const_mul]; ring
+  rw [h0', MeasureTheory.integral_Ici_eq_integral_Ioi]
+  simp only [smul_eq_mul, MeasureTheory.integral_const_mul]; ring
 
 lemma integral_f0_height_one_eq_neg_I6 :
     (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) = -I₆' (0 : ℝ) := by
