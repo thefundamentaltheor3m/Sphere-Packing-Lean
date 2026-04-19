@@ -68,10 +68,10 @@ lemma I₆'_bounding_aux_2' (C₀ : ℝ)
     ∀ t ∈ Ici (1 : ℝ), ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
   intro t ht
   have ht1 : (1 : ℝ) ≤ t := ht
-  rw [I₆'_bounding_aux_1 r t ht]
-  gcongr
   have htpos : 0 < t := one_pos.trans_le ht1
   have hpos : 0 < (I * t).im := by simpa using htpos
+  rw [I₆'_bounding_aux_1 r t ht]
+  gcongr
   simpa [φ₀'', hpos, htpos] using hC₀ ⟨I * t, hpos⟩ (by simpa using by linarith : _)
 
 end Bounding_Integrand

@@ -108,11 +108,11 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
   intro t ht0
   by_cases ht1 : t ≤ 1
   · have hexp : ‖(Real.exp (2 * π * t) : ℂ)‖ ≤ Real.exp (2 * π) := by
-      have hle'' : 2 * π * t ≤ 2 * π := by
-        simpa [mul_assoc] using mul_le_mul_of_nonneg_left ht1 (show 0 ≤ (2 * π : ℝ) by positivity)
       have hn : ‖Complex.exp (2 * π * t)‖ = Real.exp (2 * π * t) := by
         simpa using Complex.norm_exp_ofReal (2 * π * t)
-      simpa [Complex.ofReal_exp, hn] using Real.exp_le_exp.2 hle''
+      simpa [Complex.ofReal_exp, hn] using Real.exp_le_exp.2 (by
+        simpa [mul_assoc] using
+          mul_le_mul_of_nonneg_left ht1 (show 0 ≤ (2 * π : ℝ) by positivity))
     have htri :
         ‖bAnotherBase t‖ ≤ ‖ψI' (Complex.I * (t : ℂ))‖ + ‖(144 : ℂ)‖ +
             ‖(Real.exp (2 * π * t) : ℂ)‖ := by
@@ -124,12 +124,10 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
           _ ≤
               ‖ψI' (Complex.I * (t : ℂ))‖ +
                 (‖(144 : ℂ)‖ + ‖(Real.exp (2 * π * t) : ℂ)‖) := by
-                gcongr
-                exact norm_add_le _ _)
+                gcongr; exact norm_add_le _ _)
     have h144 : ‖(144 : ℂ)‖ = (144 : ℝ) := by norm_num
     have hψ : ‖ψI' (Complex.I * (t : ℂ))‖ ≤ Cψ0 := hψI'_small t ht0 ht1
-    have hb : ‖bAnotherBase t‖ ≤ Csmall := by grind only
-    exact hb.trans (le_max_left _ _)
+    exact (by grind only : ‖bAnotherBase t‖ ≤ Csmall).trans (le_max_left _ _)
   · exact (htail t (le_of_not_ge ht1)).trans (le_max_right _ _)
 
 /-!

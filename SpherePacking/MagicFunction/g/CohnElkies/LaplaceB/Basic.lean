@@ -194,10 +194,9 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
   rcases exists_ψI_bound_exp with ⟨CI, AI, hCI, hI⟩
   let A : ℝ := max AI 1
   have hint_mid :
-      IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioc (1 : ℝ) A) := by
-    have hcontIcc : ContinuousOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Icc (1 : ℝ) A) :=
-      hcontIoi.mono fun t ht => lt_of_lt_of_le (by norm_num) ht.1
-    exact (hcontIcc.integrableOn_Icc (μ := (volume : Measure ℝ))).mono_set Set.Ioc_subset_Icc_self
+      IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioc (1 : ℝ) A) :=
+    ((hcontIoi.mono fun t ht => lt_of_lt_of_le (by norm_num) ht.1).integrableOn_Icc
+      (μ := (volume : Measure ℝ))).mono_set Set.Ioc_subset_Icc_self
   have hint_tail :
       IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi A) := by
     have hmeas : AEStronglyMeasurable (fun t : ℝ => bLaplaceIntegrand u t)
@@ -249,13 +248,11 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       simpa [IntegrableOn] using hE.ofReal.const_mul (CI : ℂ)
     exact MeasureTheory.Integrable.mono (μ := volume.restrict (Set.Ioi A))
       (by simpa [IntegrableOn] using hExpC) hmeas hdom
-  have h1A : (1 : ℝ) ≤ A := le_max_right _ _
   have hUnion1 : Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A := by
-    simpa using (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) h1A).symm
+    simpa using (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) (le_max_right _ _)).symm
   have hint_large : IntegrableOn (fun t : ℝ => bLaplaceIntegrand u t) (Set.Ioi (1 : ℝ)) := by
     simpa [hUnion1] using hint_mid.union hint_tail
-  have hUnion0 : Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) := by norm_num
-  rw [hUnion0]
+  rw [show Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) from by norm_num]
   exact hint_small.union hint_large
 
 end
