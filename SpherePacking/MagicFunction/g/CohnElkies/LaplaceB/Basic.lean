@@ -225,7 +225,6 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       have hcomb := MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul u t
       have hexp_norm : ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) := by
         simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-π * u * t)
-      have hnormCI : ‖(CI : ℂ)‖ = CI := by simp [abs_of_nonneg (le_of_lt hCI)]
       have hnormExp : ‖(Real.exp (-(π * (u - 2)) * t) : ℂ)‖ = Real.exp (-(π * (u - 2)) * t) := by
         simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-(π * (u - 2)) * t)
       have hnormB : ‖bLaplaceIntegrand u t‖ =
@@ -243,7 +242,7 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         _ = ‖(CI : ℂ) * (Real.exp (-(π * (u - 2)) * t) : ℂ)‖ := by
               rw [show ‖(CI : ℂ) * (Real.exp (-(π * (u - 2)) * t) : ℂ)‖ =
                 ‖(CI : ℂ)‖ * ‖(Real.exp (-(π * (u - 2)) * t) : ℂ)‖ from by simp,
-                hnormCI, hnormExp]
+                show ‖(CI : ℂ)‖ = CI from by simp [abs_of_nonneg (le_of_lt hCI)], hnormExp]
     have hpos : 0 < π * (u - 2) := mul_pos Real.pi_pos (sub_pos.2 hu)
     have hExp : IntegrableOn (fun t : ℝ => Real.exp (-(π * (u - 2)) * t)) (Set.Ioi A) := by
       simpa [mul_assoc] using exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2)) hpos

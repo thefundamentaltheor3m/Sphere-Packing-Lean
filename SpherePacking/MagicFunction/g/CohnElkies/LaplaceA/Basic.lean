@@ -212,21 +212,17 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
               simp [φ₄', div_eq_mul_inv]
             _ ≤ (B4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) :=
               mul_le_mul hpow hΔ (norm_nonneg _) (pow_nonneg hB4_nonneg _)
-        have hScoe : ((ModularGroup.S • zH : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) := by
-          calc
-            ((ModularGroup.S • zH : ℍ) : ℂ) = (-1 : ℂ) / (zH : ℂ) :=
-              ModularGroup.coe_S_smul (z := zH)
-            _ = (Complex.I : ℂ) / (t : ℂ) := by
-              simp [zH, div_eq_mul_inv, mul_inv_rev, mul_comm]
+        have hScoe : ((ModularGroup.S • zH : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) :=
+          (ModularGroup.coe_S_smul (z := zH)).trans (by
+            simp [zH, div_eq_mul_inv, mul_inv_rev, mul_comm])
         have hphiS : φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • zH) :=
           (congrArg φ₀'' hScoe.symm).trans (φ₀''_coe_upperHalfPlane (z := ModularGroup.S • zH))
         have hz_norm : ‖(zH : ℂ)‖ = t := by simp [zH, abs_of_pos ht0]
         have hz_inv : ‖(zH : ℂ)⁻¹‖ ≤ 1 := by
           simpa [norm_inv] using inv_le_one_of_one_le₀ (by simpa [hz_norm] using ht1)
         have hz2_inv : ‖((zH : ℂ) ^ (2 : ℕ))⁻¹‖ ≤ 1 := by
-          have hz2 : (1 : ℝ) ≤ ‖(zH : ℂ) ^ (2 : ℕ)‖ := by
-            simpa [norm_pow, hz_norm] using (one_le_pow₀ ht1 : (1 : ℝ) ≤ t ^ (2 : ℕ))
-          simpa [norm_inv] using inv_le_one_of_one_le₀ hz2
+          simpa [norm_inv] using inv_le_one_of_one_le₀
+            (by simpa [norm_pow, hz_norm] using (one_le_pow₀ ht1 : (1 : ℝ) ≤ t ^ (2 : ℕ)))
         have hcoeff2 : ‖(12 * Complex.I : ℂ) / (π * (zH : ℂ))‖ ≤ C2 := by
           have hrew : (12 * Complex.I : ℂ) / (π * (zH : ℂ)) =
                 ((12 * Complex.I : ℂ) / (π : ℂ)) * (zH : ℂ)⁻¹ := by
@@ -274,11 +270,9 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
                   ‖(Real.exp (-π * u * t) : ℂ)‖ := by
                 simp [aLaplaceIntegrand, mul_assoc]
           _ ≤ (t ^ (2 : ℕ)) * (Cφ * Real.exp (2 * π * t)) * Real.exp (-π * u * t) := by
-                have hExpNorm : ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) := by
-                  simp [Complex.ofReal_exp, Complex.norm_exp, mul_assoc]
-                have ht2_norm : ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ = t ^ (2 : ℕ) := by
-                  simp [Complex.norm_real]
-                rw [ht2_norm, hExpNorm]
+                rw [show ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ = t ^ (2 : ℕ) from by simp [Complex.norm_real],
+                  show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) from by
+                    simp [Complex.ofReal_exp, Complex.norm_exp, mul_assoc]]
                 gcongr
           _ = Cφ * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by
                 rw [show (t ^ (2 : ℕ)) * (Cφ * Real.exp (2 * π * t)) * Real.exp (-π * u * t) =
