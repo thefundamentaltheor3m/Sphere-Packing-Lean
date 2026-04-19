@@ -31,9 +31,6 @@ variable (Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d))) [DiscreteTopology Λ]
 
 local notation "E" => EuclideanSpace ℝ (Fin d)
 
--- This file is intentionally minimal; its purpose is to provide a reusable proof of Poisson
--- summation for `ℤ`-lattices, used by `SpherePacking/CohnElkies/Prereqs.lean`.
-
 section StandardLattice
 
 /-- The standard `ℤ`-lattice in `E = ℝ^d`, i.e. the span of the standard basis over `ℤ`. -/
@@ -58,20 +55,6 @@ public instance instIsZLattice : IsZLattice ℝ (standardLattice d) := by
         (Submodule.span ℤ (Set.range ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis))))
 
 end StandardLattice.standardLattice
-/-!
-## Poisson summation for lattices
-
-We prove a Poisson summation formula for Schwartz functions on `E = ℝ^d`, for any full-rank
-`ℤ`-lattice `Λ ⊆ E`.
-
-The proof follows the standard Fourier-series-on-the-torus argument:
-- periodize a Schwartz function along the lattice;
-- descend it to the quotient torus;
-- compute Fourier coefficients by pulling back to a fundamental domain and using the
-  fundamental-domain tiling lemma;
-- sum the Fourier series using absolute summability of Fourier coefficients (Schwartz decay).
--/
-
 section PoissonSummation
 
 namespace PoissonSummation
@@ -105,19 +88,6 @@ public lemma intVec_mem_standardLattice (k : Fin d → ℤ) :
   exact Submodule.subset_span ⟨i, rfl⟩
 
 end SchwartzMap.PoissonSummation.PoissonSummation.Standard
-/-!
-### Poisson summation for the standard lattice
-
-We specialize to the standard lattice in `E = ℝ^d` and use Fourier series on the torus
-`(ℝ/ℤ)^d`. The proof is a multi-dimensional analogue of `Mathlib.Analysis.Fourier.PoissonSummation`
-and follows the usual steps:
-- periodize a Schwartz function along the integer lattice;
-- descend to a continuous function on the torus;
-- compute Fourier coefficients as Fourier transforms by swapping `tsum` and `integral` and using a
-  fundamental domain;
-- apply uniform convergence of the Fourier series (summable Fourier coefficients).
--/
-
 namespace SchwartzMap
 
 open TopologicalSpace MeasureTheory
@@ -136,19 +106,13 @@ open UnitAddTorus
 
 /-- Measurability of the fundamental cube `iocCube`. -/
 public lemma measurableSet_iocCube : MeasurableSet (iocCube (d := d)) := by
-  -- `iocCube` is an intersection of coordinate preimages of a measurable interval.
   have hset :
       iocCube (d := d) = ⋂ i : Fin d, {x : E | x i ∈ Set.Ioc (0 : ℝ) 1} := by
-    ext x
-    simp [iocCube]
-  -- Coordinate projections are measurable, and `Ioc` is measurable.
+    ext x; simp [iocCube]
   have hcoord :
-      ∀ i : Fin d, MeasurableSet {x : E | x i ∈ Set.Ioc (0 : ℝ) 1} := by
-    intro i
-    have hproj : Measurable fun x : E => x i := by
-      simpa using
-        (PiLp.continuous_apply (p := (2 : ENNReal)) (β := fun _ : Fin d => ℝ) i).measurable
-    exact hproj measurableSet_Ioc
+      ∀ i : Fin d, MeasurableSet {x : E | x i ∈ Set.Ioc (0 : ℝ) 1} := fun i =>
+    ((PiLp.continuous_apply (p := (2 : ENNReal)) (β := fun _ : Fin d => ℝ) i).measurable)
+      measurableSet_Ioc
   simpa [hset] using MeasurableSet.iInter (ι := Fin d) hcoord
 
 /-- `iocCube` is null-measurable (useful for integrals over its indicator). -/
@@ -163,26 +127,21 @@ This is the usual "fractional part" decomposition used to identify `ℝ^d / ℤ^
 public lemma existsUnique_add_intVec_mem_iocCube (x : E) :
     ∃! n : Fin d → ℤ, x + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n ∈
       iocCube (d := d) := by
-  -- Choose the unique `n i` sending `x i` into `(0,1]`.
   have hxcoord :
-      ∀ i : Fin d, ∃! m : ℤ, (x i : ℝ) + m • (1 : ℝ) ∈ Set.Ioc (0 : ℝ) 1 := by
-    intro i
+      ∀ i : Fin d, ∃! m : ℤ, (x i : ℝ) + m • (1 : ℝ) ∈ Set.Ioc (0 : ℝ) 1 := fun i => by
     simpa [one_smul, add_assoc] using
       (existsUnique_add_zsmul_mem_Ioc (G := ℝ) (ha := zero_lt_one) (b := (x i : ℝ))
         (c := (0 : ℝ)))
   choose n hn hn_unique using hxcoord
-  refine ⟨n, ?_, ?_⟩
-  · -- membership
-    intro i
-    simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, iocCube, zsmul_one] using hn i
-  · -- uniqueness
-    intro n' hn'
-    funext i
-    have hcoords : ∀ i : Fin d,
-        (x + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n') i ∈ Set.Ioc (0 : ℝ) 1 := by
-      simpa [iocCube] using hn'
-    exact hn_unique i (n' i) (by
-      simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, zsmul_one] using hcoords i)
+  refine ⟨n, fun i => by
+    simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, iocCube, zsmul_one] using hn i, ?_⟩
+  intro n' hn'
+  funext i
+  have hcoords : ∀ i : Fin d,
+      (x + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n') i ∈ Set.Ioc (0 : ℝ) 1 := by
+    simpa [iocCube] using hn'
+  exact hn_unique i (n' i) (by
+    simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, zsmul_one] using hcoords i)
 
 /-! #### Elements of the standard lattice are integer vectors -/
 
@@ -193,17 +152,12 @@ public lemma exists_intVec_eq_of_mem_standardLattice (x : E)
   let b : OrthonormalBasis (Fin d) ℝ E := EuclideanSpace.basisFun (Fin d) ℝ
   have hx_span :
       x ∈ Submodule.span ℤ (Set.range fun j : Fin d => (b.toBasis j : E)) := by
-    -- Avoid rewriting `basisFun` into `single` (this can confuse `simp` through `Set.range`).
     simpa [SchwartzMap.standardLattice, standardLattice] using hx
-  have hx_repr :=
+  choose n hn using
     (Module.Basis.mem_span_iff_repr_mem (R := ℤ) (b := b.toBasis) x).1 hx_span
-  choose n hn using hx_repr
-  have hn' : ∀ i : Fin d, (n i : ℝ) = x i := by
-    intro i
-    simpa [b] using hn i
   refine ⟨n, ?_⟩
   ext i
-  simp [SchwartzMap.PoissonSummation.Standard.intVec_apply, hn' i]
+  simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, b] using (hn i).symm
 
 /-! #### Dual lattice of the standard lattice -/
 
@@ -213,24 +167,19 @@ public lemma dualSubmodule_standardLattice_eq :
         (SchwartzMap.standardLattice d) =
       SchwartzMap.standardLattice d := by
   ext x
-  constructor
-  · intro hx
-    have hxcoord : ∀ i : Fin d, ∃ n : ℤ, (n : ℝ) = x i := by
-      intro i
+  refine ⟨fun hx => ?_, fun hx y hy => ?_⟩
+  · have hxcoord : ∀ i : Fin d, ∃ n : ℤ, (n : ℝ) = x i := fun i => by
       have hinner :
           inner ℝ x (EuclideanSpace.basisFun (Fin d) ℝ i) ∈ (1 : Submodule ℤ ℝ) := by
-        simpa [innerₗ_apply_apply] using
-          hx _ (Submodule.subset_span ⟨i, by simp⟩)
+        simpa [innerₗ_apply_apply] using hx _ (Submodule.subset_span ⟨i, by simp⟩)
       rcases Submodule.mem_one.mp hinner with ⟨n, hn⟩
       exact ⟨n, by simpa [-EuclideanSpace.basisFun_apply] using hn⟩
     choose n hn using hxcoord
     have hx' : x = SchwartzMap.PoissonSummation.Standard.intVec (d := d) n := by
-      ext i
-      simp [SchwartzMap.PoissonSummation.Standard.intVec_apply, hn i]
+      ext i; simp [SchwartzMap.PoissonSummation.Standard.intVec_apply, hn i]
     simpa [hx'] using
       SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n
-  · intro hx y hy
-    rcases exists_intVec_eq_of_mem_standardLattice (d := d) x hx with ⟨n, rfl⟩
+  · rcases exists_intVec_eq_of_mem_standardLattice (d := d) x hx with ⟨n, rfl⟩
     rcases exists_intVec_eq_of_mem_standardLattice (d := d) y hy with ⟨m, rfl⟩
     refine Submodule.mem_one.mpr ⟨∑ i : Fin d, n i * m i, ?_⟩
     simp [innerₗ_apply_apply, SchwartzMap.PoissonSummation.Standard.intVec,
@@ -274,8 +223,7 @@ public theorem coeFunE_add_intVec (x : E) (n : Fin d → ℤ) :
 public theorem exists_intVec_eq_sub_of_coeFunE_eq {x y : E}
     (h : coeFunE (d := d) x = coeFunE (d := d) y) :
     ∃ n : Fin d → ℤ, x - y = SchwartzMap.PoissonSummation.Standard.intVec (d := d) n := by
-  have hcoord : ∀ i : Fin d, ∃ n : ℤ, (n : ℝ) = (x i - y i : ℝ) := by
-    intro i
+  have hcoord : ∀ i : Fin d, ∃ n : ℤ, (n : ℝ) = (x i - y i : ℝ) := fun i => by
     have hsub : ((x i - y i : ℝ) : AddCircle (1 : ℝ)) = 0 := by
       simpa [UnitAddCircle, AddCircle.coe_sub, coeFunE, UnitAddTorus.coeFun] using
         sub_eq_zero.2 (congrArg (fun t => t i) h)
@@ -298,10 +246,8 @@ public theorem isAddFundamentalDomain_iocCube :
   refine
     ⟨(⟨SchwartzMap.PoissonSummation.Standard.intVec (d := d) n,
         SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n⟩), ?_, ?_⟩
-  · -- membership
-    simpa [Submodule.vadd_def, vadd_eq_add, add_comm, add_left_comm, add_assoc] using hn
-  · -- uniqueness
-    intro ℓ hℓ
+  · simpa [Submodule.vadd_def, vadd_eq_add, add_comm, add_left_comm, add_assoc] using hn
+  · intro ℓ hℓ
     rcases
         SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice (d := d)
           (ℓ : E) ℓ.property with
