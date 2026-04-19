@@ -178,7 +178,7 @@ lemma phi4_numerator_bound
   set C : ℂ := (504 : ℂ) * (Δ z - qC)
   have hdecomp : (E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) -
       (504 : ℂ) * (Δ z) = A - B - C := by simp only [A, B, C]; ring
-  have hterm3 : ‖C‖ ≤ (504 * CΔq) * q ^ (2 : ℕ) := by
+  have hterm3 : ‖C‖ ≤ (504 * CΔq) * q ^ (2 : ℕ) :=
     calc ‖C‖ = 504 * ‖Δ z - qC‖ := by simp [C]
       _ ≤ 504 * (CΔq * q ^ (2 : ℕ)) := by gcongr
       _ = (504 * CΔq) * q ^ (2 : ℕ) := by ring
@@ -229,12 +229,11 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
       simpa [e, sub_eq_add_neg, add_assoc] using hE4err
     have hE : E₄ z = ((1 : ℂ) + (240 : ℂ) * (q : ℂ)) + e := by
       simp [e, sub_eq_add_neg, add_assoc, add_comm, add_left_comm]
-    have hbase_norm : ‖((1 : ℂ) + (240 : ℂ) * (q : ℂ))‖ ≤ B240 := by
+    have hbase_norm : ‖((1 : ℂ) + (240 : ℂ) * (q : ℂ))‖ ≤ B240 :=
       calc ‖((1 : ℂ) + (240 : ℂ) * (q : ℂ))‖
             ≤ ‖(1 : ℂ)‖ + ‖(240 : ℂ) * (q : ℂ)‖ := norm_add_le _ _
         _ = 1 + 240 * q := by simp [abs_of_nonneg hq_nonneg]
-        _ ≤ 1 + 240 * q1 := by linarith [hq_le_q1]
-        _ = B240 := rfl
+        _ ≤ B240 := by dsimp [B240]; linarith [hq_le_q1]
     simpa [hE.symm] using
       norm_base_add_e_sq_sub_one_sub_480q_le (q := q) (CE4 := CE4) (B240 := B240)
         hq_nonneg hq_le_one he hbase_norm
