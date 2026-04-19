@@ -65,14 +65,7 @@ lemma I₁'_zero_add_I₃'_zero_add_I₅'_zero :
 
 lemma a_zero_reduction_I₂₄₆ :
     FourierEigenfunctions.a (0 : ℝ⁸) = I₂' (0 : ℝ) + I₄' 0 + I₆' 0 := by
-  -- Start from the full sum, then cancel `I₁' 0 + I₃' 0 + I₅' 0`.
-  have hsum :
-      I₁' (0 : ℝ) + I₂' 0 + I₃' 0 + I₄' 0 + I₅' 0 + I₆' 0 =
-        I₂' (0 : ℝ) + I₄' 0 + I₆' 0 := by
-    apply sub_eq_zero.mp
-    ring_nf
-    simpa [add_assoc] using I₁'_zero_add_I₃'_zero_add_I₅'_zero
-  simpa [hsum] using a_zero_reduction
+  linear_combination a_zero_reduction + I₁'_zero_add_I₃'_zero_add_I₅'_zero
 
 /--
 A second-order finite difference identity for `φ₀` obtained from its modular transformation under
@@ -723,14 +716,12 @@ private lemma hI246_eq :
   field_simp
   ring
 
-theorem a_zero_value : FourierEigenfunctions.a (0 : ℝ⁸) = -8640 * Complex.I / π := by
-  rw [a_zero_reduction_I₂₄₆, hI246_eq]
-
 end StripContour
 
 /-- The special value at the origin: `a 0 = -8640 * I / π`. -/
 public theorem a_zero :
-    FourierEigenfunctions.a (0 : ℝ⁸) = -8640 * Complex.I / π := a_zero_value
+    FourierEigenfunctions.a (0 : ℝ⁸) = -8640 * Complex.I / π := by
+  rw [a_zero_reduction_I₂₄₆, hI246_eq]
 
 end Zero
 
