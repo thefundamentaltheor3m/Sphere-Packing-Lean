@@ -431,157 +431,72 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     rw [MeasureTheory.integral_Ici_eq_integral_Ioi]
     simp [MeasureTheory.integral_const_mul, mul_assoc]
   -- Pointwise translation identities on the shifted rays.
-  have hLeft_point :
-      ∀ t : ℝ, 0 < t →
-        bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ)) =
-          bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (-1 : ℂ)) := by
-    intro t ht
-    have hψ :
-        ψT' ((-1 : ℂ) + I * (t : ℂ)) = ψI' (I * (t : ℂ)) :=
-      ψT'_neg_one_add_I_mul (t := t) ht
-    have hw :
-        bContourWeight u ((-1 : ℂ) + I * (t : ℂ)) =
-          bContourWeight u (I * (t : ℂ)) * bContourWeight u (-1 : ℂ) := by
-      -- Use multiplicativity and commutativity of addition.
+  have hShift_point : ∀ (a : ℂ) (_ : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ)))
+      (t : ℝ), 0 < t →
+      bContourIntegrandT u (a + I * (t : ℂ)) =
+        bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a) := fun a hψa t ht => by
+    have hw : bContourWeight u (a + I * (t : ℂ)) =
+        bContourWeight u (I * (t : ℂ)) * bContourWeight u a := by
       simpa [add_assoc, add_left_comm, add_comm] using
-        (bContourWeight_add (u := u) (I * (t : ℂ)) (-1 : ℂ))
-    -- Expand the integrands and rewrite the exponential weight.
-    simp [bContourIntegrandT, bContourIntegrandI, hψ, hw, mul_assoc]
-  have hRight_point :
-      ∀ t : ℝ, 0 < t →
-        bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ)) =
-          bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (1 : ℂ)) := by
-    intro t ht
-    have hψ :
-        ψT' ((1 : ℂ) + I * (t : ℂ)) = ψI' (I * (t : ℂ)) :=
-      ψT'_one_add_I_mul (t := t) ht
-    have hw :
-        bContourWeight u ((1 : ℂ) + I * (t : ℂ)) =
-          bContourWeight u (I * (t : ℂ)) * bContourWeight u (1 : ℂ) := by
-      simpa [add_assoc, add_left_comm, add_comm] using
-        (bContourWeight_add (u := u) (I * (t : ℂ)) (1 : ℂ))
-    simp [bContourIntegrandT, bContourIntegrandI, hψ, hw, mul_assoc]
-  have hITS :
-      ∀ z : ℂ, 0 < z.im →
-        bContourIntegrandT u z + bContourIntegrandS u z = -bContourIntegrandI u z := by
-    intro z hz
-    have hψ :
-        ψI' z = ψT' z + ψS' z := by
-      have h := congrArg (fun F : ℍ → ℂ => F ⟨z, hz⟩) ψI_eq_add_ψT_ψS
-      simpa [ψI', ψT', ψS', hz] using h
+        bContourWeight_add (u := u) (I * (t : ℂ)) a
+    simp [bContourIntegrandT, bContourIntegrandI, hψa t ht, hw, mul_assoc]
+  have hLeft_point : ∀ t : ℝ, 0 < t →
+      bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ)) =
+        bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (-1 : ℂ)) :=
+    hShift_point (-1 : ℂ) (fun t ht => ψT'_neg_one_add_I_mul (t := t) ht)
+  have hRight_point : ∀ t : ℝ, 0 < t →
+      bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ)) =
+        bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (1 : ℂ)) :=
+    hShift_point (1 : ℂ) (fun t ht => ψT'_one_add_I_mul (t := t) ht)
+  have hITS : ∀ z : ℂ, 0 < z.im →
+      bContourIntegrandT u z + bContourIntegrandS u z = -bContourIntegrandI u z := fun z hz => by
+    have hψ : ψI' z = ψT' z + ψS' z := by
+      simpa [ψI', ψT', ψS', hz] using congrArg (fun F : ℍ → ℂ => F ⟨z, hz⟩) ψI_eq_add_ψT_ψS
     simp [bContourIntegrandI, bContourIntegrandT, bContourIntegrandS, hψ, add_mul]
   -- Convert the full left/right rays and the central correction term to `VI`.
-  have hLeft_ray :
-      (∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) =
-        (-VI) * bContourWeight u (-1 : ℂ) := by
-    have hcongr :
-        (∫ t in Set.Ioi (0 : ℝ),
-              bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) =
-            ∫ t in Set.Ioi (0 : ℝ),
-              bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (-1 : ℂ)) := by
-      refine MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (0 : ℝ)) measurableSet_Ioi ?_
-      intro t ht
-      exact hLeft_point t ht
-    rw [hcongr]
-    -- Pull out the constant exponential weight.
+  have hSide_ray : ∀ (a : ℂ) (_ : ∀ t : ℝ, 0 < t →
+      bContourIntegrandT u (a + I * (t : ℂ)) =
+        bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)),
+      (∫ t in Set.Ioi (0 : ℝ), bContourIntegrandT u (a + I * (t : ℂ))) =
+        (-VI) * bContourWeight u a := fun a hpt => by
+    rw [show (∫ t in Set.Ioi (0 : ℝ), bContourIntegrandT u (a + I * (t : ℂ))) =
+        ∫ t in Set.Ioi (0 : ℝ),
+          bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a) from
+      MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht => hpt t ht]
     dsimp [VI]
-    have hmul :
-        (∫ t in Set.Ioi (0 : ℝ),
-              bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (-1 : ℂ))) =
-            (∫ t in Set.Ioi (0 : ℝ),
-              bContourIntegrandI u (I * (t : ℂ))) * (-bContourWeight u (-1 : ℂ)) :=
-      (MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
-        (r := -bContourWeight u (-1 : ℂ))
-        (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))))
-    -- Normalize `* (-w)` into `(-·) * w`.
-    -- (We keep this algebraic step explicit to avoid simp rewriting the integrand to `-(·)`.)
-    calc
-      (∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (-1 : ℂ))) =
-          (∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandI u (I * (t : ℂ))) * (-bContourWeight u (-1 : ℂ)) := hmul
-      _ = (-((∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandI u (I * (t : ℂ))) * bContourWeight u (-1 : ℂ))) := by
-          ring
-      _ = (- (∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandI u (I * (t : ℂ)))) * bContourWeight u (-1 : ℂ) := by
-          ring
-  have hRight_ray :
-      (∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) =
-        (-VI) * bContourWeight u (1 : ℂ) := by
-    have hcongr :
-        (∫ t in Set.Ioi (0 : ℝ),
-              bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) =
-            ∫ t in Set.Ioi (0 : ℝ),
-              bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (1 : ℂ)) := by
-      refine MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (0 : ℝ)) measurableSet_Ioi ?_
-      intro t ht
-      exact hRight_point t ht
-    rw [hcongr]
-    dsimp [VI]
-    have hmul :
-        (∫ t in Set.Ioi (0 : ℝ),
-              bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (1 : ℂ))) =
-            (∫ t in Set.Ioi (0 : ℝ),
-              bContourIntegrandI u (I * (t : ℂ))) * (-bContourWeight u (1 : ℂ)) :=
-      (MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
-        (r := -bContourWeight u (1 : ℂ))
-        (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))))
-    calc
-      (∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (1 : ℂ))) =
-          (∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandI u (I * (t : ℂ))) * (-bContourWeight u (1 : ℂ)) := hmul
-      _ = (-((∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandI u (I * (t : ℂ))) * bContourWeight u (1 : ℂ))) := by
-          ring
-      _ = (- (∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandI u (I * (t : ℂ)))) * bContourWeight u (1 : ℂ) := by
-          ring
+    rw [MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
+      (r := -bContourWeight u a) (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))]
+    ring
+  have hLeft_ray : (∫ t in Set.Ioi (0 : ℝ),
+        bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) =
+      (-VI) * bContourWeight u (-1 : ℂ) :=
+    hSide_ray (-1 : ℂ) hLeft_point
+  have hRight_ray : (∫ t in Set.Ioi (0 : ℝ),
+        bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) =
+      (-VI) * bContourWeight u (1 : ℂ) :=
+    hSide_ray (1 : ℂ) hRight_point
   have hCenter_split :
       (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) =
         -(∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) -
           (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
-    -- Use `ψI = ψT + ψS` to rewrite `S` as `-I - T`.
-    have hcongr :
-        (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ))) =
-            ∫ t in Set.Ioi (1 : ℝ),
-              ((-bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) -
-                bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))) := by
-      refine MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (1 : ℝ)) measurableSet_Ioi ?_
-      intro t ht
+    have hcongr : (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ))) =
+        ∫ t in Set.Ioi (1 : ℝ),
+          ((-bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) -
+            bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))) := by
+      refine MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht => ?_
       have ht0 : 0 < t := lt_trans (by norm_num) ht
       have hz : 0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im := by simpa using ht0
       with_reducible exact eq_sub_iff_add_eq'.mpr (hITS (I * ↑t) hz)
     rw [hcongr]
-    -- Apply linearity of the integral on `Ioi 1`.
-    have hI1 :
-        IntegrableOn
-          (fun t : ℝ => bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
-          (Set.Ioi (1 : ℝ)) :=
-      hintI.mono_set (Set.Ioi_subset_Ioi (by norm_num : (0 : ℝ) ≤ 1))
-    have hT1 :
-        IntegrableOn
-          (fun t : ℝ => bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ)))
-          (Set.Ioi (1 : ℝ)) :=
-      hintT_center
-    -- Coerce to integrable functions over the restricted measure.
-    have hI1' :
-        Integrable (fun t : ℝ => bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
-          (volume.restrict (Set.Ioi (1 : ℝ))) := by
-      simpa [IntegrableOn] using hI1
-    have hT1' :
-        Integrable (fun t : ℝ => bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ)))
-          (volume.restrict (Set.Ioi (1 : ℝ))) := by
-      simpa [IntegrableOn] using hT1
-    have hSub :=
-      (MeasureTheory.integral_sub (μ := volume.restrict (Set.Ioi (1 : ℝ))) hI1'.neg hT1')
-    -- `∫ (-I - T) = -∫ I - ∫ T`.
-    simpa
-        [MeasureTheory.integral_neg, sub_eq_add_neg, add_assoc, add_left_comm, add_comm]
-      using hSub
+    have hI1' : Integrable (fun t : ℝ => bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
+        (volume.restrict (Set.Ioi (1 : ℝ))) := by
+      simpa [IntegrableOn] using
+        hintI.mono_set (Set.Ioi_subset_Ioi (by norm_num : (0 : ℝ) ≤ 1))
+    have hT1' : Integrable (fun t : ℝ => bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ)))
+        (volume.restrict (Set.Ioi (1 : ℝ))) := by
+      simpa [IntegrableOn] using hintT_center
+    simpa [MeasureTheory.integral_neg, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+      MeasureTheory.integral_sub (μ := volume.restrict (Set.Ioi (1 : ℝ))) hI1'.neg hT1'
   -- Split `VI` at height `1`.
   have hVI_split :
       VI =
