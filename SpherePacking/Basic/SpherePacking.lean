@@ -150,16 +150,16 @@ open Real
     simp_all only [SpherePacking.scale, Set.mem_smul_set]
     obtain ⟨x, hx, rfl⟩ := hx
     obtain ⟨y, hy, rfl⟩ := hy
-    use x + y, S.lattice_action hx hy, smul_add ..
+    exact ⟨x + y, S.lattice_action hx hy, smul_add ..⟩
   lattice_discrete := by
     have := S.lattice_discrete
     rw [discreteTopology_iff_isOpen_singleton_zero, Metric.isOpen_singleton_iff] at this ⊢
     obtain ⟨ε, hε, hε'⟩ := this
-    use c * ε, mul_pos hc hε
+    refine ⟨c * ε, mul_pos hc hε, ?_⟩
     simp_rw [dist_zero_right, Subtype.forall] at hε' ⊢
     rintro x ⟨x, hx, rfl⟩ hx'
     simp only [DistribSMul.toLinearMap_apply, Submodule.mk_eq_zero, smul_eq_zero]
-    right
+    refine Or.inr ?_
     specialize hε' x hx
     simp only [DistribSMul.toLinearMap_apply, AddSubgroupClass.coe_norm,
       Submodule.mk_eq_zero] at hx' hε'
