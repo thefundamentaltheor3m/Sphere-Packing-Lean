@@ -182,15 +182,12 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
     have hxB := hs_boundary x hxS
     set x0 : EuclideanSpace ℝ (Fin d) := (-(g : EuclideanSpace ℝ (Fin d))) +ᵥ x
     set y0 : EuclideanSpace ℝ (Fin d) := (-(g : EuclideanSpace ℝ (Fin d))) +ᵥ y
-    have hx0 : x0 ∈ coordCube d L := by
-      simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using hxB.1
-    have hx0_notInner : x0 ∉ coordCubeInner d L (1 / 2) := fun h =>
-      hxB.2 (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using h)
-    have hy0 : y0 ∈ ball x0 r := by simpa [Metric.vadd_ball, x0, y0] using hyBall
     have hy0' : y0 ∈ (coordCube d L \ coordCubeInner d L (1 / 2)) +
         ball (0 : EuclideanSpace ℝ (Fin d)) r :=
-      ⟨x0, ⟨hx0, hx0_notInner⟩, y0 - x0,
-        by simpa [Metric.mem_ball, dist_eq_norm] using hy0,
+      ⟨x0, ⟨by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using hxB.1,
+        fun h => hxB.2 (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using h)⟩,
+        y0 - x0,
+        by simpa [Metric.mem_ball, dist_eq_norm, Metric.vadd_ball, x0, y0] using hyBall,
         by simp [sub_eq_add_neg, add_left_comm]⟩
     simpa [Set.mem_vadd_set_iff_neg_vadd_mem, y0] using
       coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L
