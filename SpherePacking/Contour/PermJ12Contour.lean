@@ -129,18 +129,11 @@ private lemma perm_J12_contour_h_aux
             scalarOneForm (Ψ₁' r) z) +
         ∫ᶜ z in Path.segment q0 q1, scalarOneForm (Ψ₁' r) z := by
   let ω : ℂ → ℂ →L[ℂ] ℂ := scalarOneForm (Ψ₁' r)
-  let γ :
-      Path (mobiusInv p0) (mobiusInv p1) :=
+  let γ : Path (mobiusInv p0) (mobiusInv p1) :=
     (Path.segment p0 p1).map' continuousOn_mobiusInv_segment
   let δ : Path q0 q1 := Path.segment q0 q1
   let I01 : Set ℝ := unitInterval
   let φ : (γ : C(I01, ℂ)).Homotopy δ := ContinuousMap.Homotopy.affine (γ : C(I01, ℂ)) δ
-  have hω : DiffContOnCl ℝ ω wedgeSet := by
-    simpa [ω] using (closed_ω_wedgeSet (r := r)).diffContOnCl
-  have hdω :
-      ∀ x ∈ wedgeSet, ∀ u ∈ tangentConeAt ℝ wedgeSet x, ∀ v ∈ tangentConeAt ℝ wedgeSet x,
-        fderivWithin ℝ ω wedgeSet x u v = fderivWithin ℝ ω wedgeSet x v u := by
-    simpa [ω] using (closed_ω_wedgeSet (r := r)).fderivWithin_symm
   have hφt : ∀ a ∈ Set.Ioo 0 1, ∀ b ∈ Set.Ioo 0 1, φ (a, b) ∈ wedgeSet := by
     intro a ha b hb
     simpa [φ, γ, δ, Path.map', Path.segment_apply] using
@@ -160,15 +153,15 @@ private lemma perm_J12_contour_h_aux
             (ContinuousMap.Homotopy.extend_apply_of_mem_I (F := φ) (ht := ⟨h0.1, h1.1⟩) (x := yI))
       _ = (Path.segment (γ yI) (δ yI) xI : ℂ) := rfl
       _ = _ := by simp [γ, δ, yI, Path.map', Path.segment_apply, xI]
-  have hmain :=
-    ContinuousMap.Homotopy.curveIntegral_add_curveIntegral_eq_of_diffContOnCl
-      (𝕜 := ℂ) (E := ℂ) (F := ℂ) (γ₁ := γ) (γ₂ := δ) (t := wedgeSet) (ω := ω) (φ := φ)
-      hφt hω hdω hcontdiff
   have h :
       (∫ᶜ z in γ, ω z) + ∫ᶜ z in Path.segment (γ (1 : I01)) (δ (1 : I01)), ω z =
         (∫ᶜ z in δ, ω z) + ∫ᶜ z in Path.segment (γ (0 : I01)) (δ (0 : I01)), ω z := by
     simpa [show φ.evalAt (0 : I01) = Path.segment (γ (0 : I01)) (δ (0 : I01)) from rfl,
-      show φ.evalAt (1 : I01) = Path.segment (γ (1 : I01)) (δ (1 : I01)) from rfl] using hmain
+      show φ.evalAt (1 : I01) = Path.segment (γ (1 : I01)) (δ (1 : I01)) from rfl] using
+      ContinuousMap.Homotopy.curveIntegral_add_curveIntegral_eq_of_diffContOnCl
+        (𝕜 := ℂ) (E := ℂ) (F := ℂ) (γ₁ := γ) (γ₂ := δ) (t := wedgeSet) (ω := ω) (φ := φ)
+        hφt (by simpa [ω] using (closed_ω_wedgeSet (r := r)).diffContOnCl)
+        (by simpa [ω] using (closed_ω_wedgeSet (r := r)).fderivWithin_symm) hcontdiff
   rw [show (∫ᶜ z in Path.segment (mobiusInv p0) q0, ω z) =
         ∫ᶜ z in Path.segment (mobiusInv ((AffineMap.lineMap p0 p1) (0 : ℝ)))
             ((AffineMap.lineMap q0 q1) (0 : ℝ)), ω z by
