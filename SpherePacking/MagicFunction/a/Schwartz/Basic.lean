@@ -28,23 +28,10 @@ import SpherePacking.MagicFunction.a.IntegralEstimates.I6
 /-!
 # The magic function `a` is Schwartz
 
-This file assembles smoothness and decay estimates for the six auxiliary integrals defining the
-radial profile `a'`, and packages them as Schwartz maps on `ℝ` and on
+On `ℝ`, the radial profiles are only used at `r = ‖x‖^2 ≥ 0`. We use a smooth cutoff to build
+global Schwartz functions on `ℝ` without changing the induced functions on
 `EuclideanSpace ℝ (Fin 8)`.
-
-## Main definitions
-* `MagicFunction.a.SchwartzIntegrals.I₁'` ... `I₆'`
-* `MagicFunction.a.SchwartzIntegrals.I₁` ... `I₆`
-* `MagicFunction.FourierEigenfunctions.a'`, `MagicFunction.FourierEigenfunctions.a`
-
-## Main statements
-* `MagicFunction.FourierEigenfunctions.a_eq_sum_integrals_RadialFunctions`
-* `MagicFunction.FourierEigenfunctions.a_eq_sum_integrals_SchwartzIntegrals`
 -/
-
--- NOTE: On `ℝ`, the radial profiles are only used at `r = ‖x‖^2 ≥ 0`. We therefore use a smooth
--- cutoff to build global Schwartz functions on `ℝ` without changing the induced functions on
--- `EuclideanSpace ℝ (Fin 8)`.
 
 noncomputable section
 
@@ -58,13 +45,6 @@ open MagicFunction MagicFunction.a MagicFunction.a.RadialFunctions MagicFunction
 open Set Complex Real MeasureTheory
 
 section Smooth
-
-/-!
-## Smoothness of the auxiliary integrals
-
-We show that each radial integral `I₁'`-`I₆'` is smooth in `r`, either directly by
-differentiating under the integral sign or by reducing to previously handled cases.
--/
 
 public theorem I₁'_smooth' : ContDiff ℝ ∞ RealIntegrals.I₁' :=
   MagicFunction.a.Schwartz.I1Smooth.I₁'_contDiff
@@ -126,10 +106,6 @@ public theorem I₆'_smooth' : ContDiff ℝ ∞ (fun r : ℝ ↦
 end Smooth
 
 section Decay
-
-/-! # `a` decays faster than any inverse power of the norm squared.
-
-We follow the proof of Proposition 7.8 in the blueprint.-/
 
 public theorem I₁'_decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n RealIntegrals.I₁' x‖ ≤ C :=
