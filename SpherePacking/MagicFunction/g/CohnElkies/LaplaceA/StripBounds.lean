@@ -270,103 +270,56 @@ lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ}
     ‖Φ₂' u ((t : ℂ) * I)‖ ≤
       (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
         (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
+  set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht1
-  let a : ℝ := π * (u - 2)
-  let K : ℝ :=
-    4 * C₀ +
-      (2 * c12π + c36π2) * Cφ
   -- Set `w = tI + 1` and work in `ℍ`.
-  let w : ℂ := (t : ℂ) * I + 1
-  have hwpos : 0 < w.im := by simpa [w] using ht0
-  let wH : ℍ := ⟨w, hwpos⟩
-  have hwH_im : wH.im = t := by simp [wH, w, UpperHalfPlane.im]
+  let wH : ℍ := ⟨(t : ℂ) * I + 1, by simpa using ht0⟩
+  have hwH_im : wH.im = t := by simp [wH, UpperHalfPlane.im]
+  have hwH_coe : (wH : ℂ) = (t : ℂ) * I + 1 := rfl
   -- Bound `‖w‖` by `2*t` (since `t ≥ 1`).
-  have hw_norm_w : ‖w‖ ≤ 2 * t := by
-    have h1 : ‖(1 : ℂ)‖ = (1 : ℝ) := by simp
+  have hw_norm : ‖(wH : ℂ)‖ ≤ 2 * t := by
     have hIt : ‖(t : ℂ) * Complex.I‖ = t := by
-      calc
-        ‖(t : ℂ) * Complex.I‖ = ‖(t : ℂ)‖ * ‖(Complex.I : ℂ)‖ := by
-            simp
-        _ = ‖t‖ := by simp [Complex.norm_real]
-        _ = t := by simp [Real.norm_of_nonneg (le_of_lt ht0)]
-    have h0 : ‖w‖ ≤ ‖(t : ℂ) * Complex.I‖ + ‖(1 : ℂ)‖ := by
-      simpa [w] using (norm_add_le ((t : ℂ) * Complex.I) (1 : ℂ))
-    have htri : ‖w‖ ≤ t + 1 := by
-      calc
-        ‖w‖ ≤ ‖(t : ℂ) * Complex.I‖ + ‖(1 : ℂ)‖ := h0
-        _ = t + 1 := by
-          rw [hIt, h1]
-    have : t + 1 ≤ 2 * t := by linarith
-    exact le_trans htri this
-  have hw_norm : ‖(wH : ℂ)‖ ≤ 2 * t := by simpa [wH] using hw_norm_w
-  have hmod :
-      ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
-        K * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
-    simpa [K] using
-      (norm_phi0S_mul_sq_le (t := t) wH hwH_im (Cφ := Cφ) (Aφ := Aφ) (C₀ := C₀)
-        hC₀_pos hC₀ hφbd ht1 htAφ hw_norm)
-  -- Exponential factor on the imaginary axis.
-  have hExpNorm :
-      ‖cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I))‖ =
-        Real.exp (-π * u * t) := by
-    have hexp :
-        cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) =
-          (Real.exp (-π * u * t) : ℂ) := by
-      ring_nf
-      simp [Complex.ofReal_exp]
-    calc
-      ‖cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I))‖ =
-          ‖(Real.exp (-π * u * t) : ℂ)‖ := by
-            simp [hexp]
-      _ = Real.exp (-π * u * t) := by
-            rw [Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
-  have hExpRew :
-      Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (-a * t) := by
-    simpa [a, mul_assoc, mul_left_comm, mul_comm] using
-      (MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t))
-  have hΦ :
-      ‖Φ₂' u ((t : ℂ) * I)‖ ≤ K * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by
-    have hdef :
-        Φ₂' u ((t : ℂ) * I) =
-          (φ₀'' ((-1 : ℂ) / (((t : ℂ) * I) + 1)) * (((t : ℂ) * I + 1) ^ (2 : ℕ))) *
-            cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I)) := by
+      rw [norm_mul, Complex.norm_I, mul_one, Complex.norm_real,
+        Real.norm_of_nonneg ht0.le]
+    calc ‖(wH : ℂ)‖ = ‖(t : ℂ) * I + 1‖ := by rw [hwH_coe]
+      _ ≤ ‖(t : ℂ) * I‖ + ‖(1 : ℂ)‖ := norm_add_le _ _
+      _ = t + 1 := by rw [hIt]; simp
+      _ ≤ 2 * t := by linarith
+  have hmod : ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
+      K * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
+    norm_phi0S_mul_sq_le wH hwH_im hC₀_pos hC₀ hφbd ht1 htAφ hw_norm
+  -- `Φ₂' u (tI) = (φ₀(S•w) * w^2) * exp(…)` on the imaginary axis.
+  have hdef : Φ₂' u ((t : ℂ) * I) =
+      (φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))) *
+        cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I)) := by
+    have hwS : φ₀ (ModularGroup.S • wH) = φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) := by simp
+    have harg : ((ModularGroup.S • wH : ℍ) : ℂ) = (-1 : ℂ) / (wH : ℂ) := by
+      simpa using ModularGroup.coe_S_smul (z := wH)
+    have hphi0S : φ₀'' ((-1 : ℂ) / (((t : ℂ) * I) + 1)) * (((t : ℂ) * I + 1) ^ (2 : ℕ)) =
+        φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) := by
+      rw [show ((t : ℂ) * I + 1) = (wH : ℂ) from rfl, hwS, harg]
+    rw [show Φ₂' u ((t : ℂ) * I) =
+      (φ₀'' ((-1 : ℂ) / (((t : ℂ) * I) + 1)) * (((t : ℂ) * I + 1) ^ (2 : ℕ))) *
+        cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I)) from by
       simp [MagicFunction.a.ComplexIntegrands.Φ₂', MagicFunction.a.ComplexIntegrands.Φ₁',
-        mul_assoc]
-    have hw' : (wH : ℂ) = ((t : ℂ) * I + 1) := by
-      simp [wH, w]
-    have hphi0S :
-        φ₀'' ((-1 : ℂ) / (((t : ℂ) * I) + 1)) * (((t : ℂ) * I + 1) ^ (2 : ℕ)) =
-          φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) := by
-      have hwS : φ₀ (ModularGroup.S • wH) = φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) := by
-        simp
-      have harg : ((ModularGroup.S • wH : ℍ) : ℂ) = (-1 : ℂ) / (wH : ℂ) := by
-        simpa using (ModularGroup.coe_S_smul (z := wH))
-      -- Rewrite everything to the common form `φ₀'' (-1 / wH) * (wH^2)`.
-      rw [hw'.symm]
-      rw [hwS]
-      rw [harg]
-    calc
-      ‖Φ₂' u ((t : ℂ) * I)‖ =
-          ‖(φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))) *
-                cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I))‖ := by
-            simp [hdef, hphi0S, mul_assoc]
-      _ ≤ ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ *
-            ‖cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I))‖ := by
-            exact norm_mul_le _ _
-      _ =
-          ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ *
-            Real.exp (-π * u * t) := by
-            simp [hExpNorm]
-      _ ≤ (K * (t ^ (2 : ℕ) * Real.exp (2 * π * t))) * Real.exp (-π * u * t) := by
-            exact mul_le_mul_of_nonneg_right hmod (Real.exp_pos _).le
-      _ = K * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by
-            calc
-              (K * (t ^ (2 : ℕ) * Real.exp (2 * π * t))) * Real.exp (-π * u * t) =
-                  K * (t ^ (2 : ℕ) * (Real.exp (2 * π * t) * Real.exp (-π * u * t))) := by
-                    ring
-              _ = K * (t ^ (2 : ℕ) * Real.exp (-a * t)) := by
-                    simpa using congrArg (fun x => K * (t ^ (2 : ℕ) * x)) hExpRew
-  simpa [K, a, mul_assoc] using hΦ
+        mul_assoc], hphi0S]
+  have hExpNorm : ‖cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I))‖ =
+      Real.exp (-π * u * t) := by
+    have hexp : cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) =
+        (Real.exp (-π * u * t) : ℂ) := by ring_nf; simp [Complex.ofReal_exp]
+    rw [hexp, Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
+  have hExpRew : Real.exp (2 * π * t) * Real.exp (-π * u * t) =
+      Real.exp (-(π * (u - 2)) * t) := by
+    simpa [mul_assoc, mul_left_comm, mul_comm] using
+      MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t)
+  calc ‖Φ₂' u ((t : ℂ) * I)‖
+      = ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ * Real.exp (-π * u * t) := by
+        rw [hdef, norm_mul, hExpNorm]
+    _ ≤ (K * (t ^ (2 : ℕ) * Real.exp (2 * π * t))) * Real.exp (-π * u * t) :=
+        mul_le_mul_of_nonneg_right hmod (Real.exp_pos _).le
+    _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
+        rw [show (K * (t ^ 2 * Real.exp (2 * π * t))) * Real.exp (-π * u * t) =
+          K * (t ^ 2 * (Real.exp (2 * π * t) * Real.exp (-π * u * t))) from by ring, hExpRew]
 
 /-- Integrability of `Φ₂'` on the imaginary-axis tail `(A,∞)` using modular bounds. -/
 lemma integrableOn_Φ₂'_imag_axis_Ioi {u : ℝ} (hu : 2 < u) {Cφ Aφ C₀ A : ℝ}
