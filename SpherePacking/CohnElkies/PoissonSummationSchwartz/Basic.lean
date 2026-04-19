@@ -20,29 +20,22 @@ local notation "Λ" => SchwartzMap.standardLattice d
 open UnitAddTorus
 
 /-- Equivalence between integer vectors `Fin d → ℤ` and the standard lattice `Λ = ℤ^d ⊆ ℝ^d`. -/
-@[expose] public noncomputable def equivIntVec : (Fin d → ℤ) ≃ Λ := by
-  refine Equiv.ofBijective
+@[expose] public noncomputable def equivIntVec : (Fin d → ℤ) ≃ Λ :=
+  Equiv.ofBijective
     (fun n : Fin d → ℤ =>
       ⟨SchwartzMap.PoissonSummation.Standard.intVec (d := d) n,
         SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n⟩)
-    ?_
-  refine ⟨?_, ?_⟩
-  · intro a b hab
-    have hab' :
-        SchwartzMap.PoissonSummation.Standard.intVec (d := d) a =
+    ⟨fun a b hab => by
+      have hab' : SchwartzMap.PoissonSummation.Standard.intVec (d := d) a =
           SchwartzMap.PoissonSummation.Standard.intVec (d := d) b := by
-      simpa using congrArg Subtype.val hab
-    funext i
-    have := congrArg (fun x : E => x i) hab'
-    simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply] using this
-  · intro ℓ
-    rcases
-        SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice (d := d)
-          (x := (ℓ : E)) ℓ.property with
-      ⟨n, hn⟩
-    refine ⟨n, ?_⟩
-    apply Subtype.ext
-    simpa using hn.symm
+        simpa using congrArg Subtype.val hab
+      funext i
+      simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply] using
+        congrArg (fun x : E => x i) hab',
+    fun ℓ => by
+      rcases SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice (d := d)
+        (x := (ℓ : E)) ℓ.property with ⟨n, hn⟩
+      exact ⟨n, Subtype.ext (by simpa using hn.symm)⟩⟩
 
 /-- Coercion lemma for `equivIntVec`. -/
 @[simp] public lemma coe_equivIntVec (n : Fin d → ℤ) :
@@ -52,12 +45,10 @@ open UnitAddTorus
 variable (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
 
 /-- Measurability of the additive action of the standard lattice on `E = ℝ^d`. -/
-public instance instMeasurableVAdd_standardLattice :
-    MeasurableVAdd Λ E := by
-  refine { measurable_const_vadd := ?_, measurable_vadd_const := ?_ }
-  · intro c
+public instance instMeasurableVAdd_standardLattice : MeasurableVAdd Λ E where
+  measurable_const_vadd c := by
     simpa [Submodule.vadd_def, vadd_eq_add] using (continuous_const.add continuous_id).measurable
-  · intro x
+  measurable_vadd_const x := by
     simpa [Submodule.vadd_def, vadd_eq_add] using
       (continuous_subtype_val.add continuous_const).measurable
 
@@ -78,7 +69,6 @@ public instance instVAddInvariantMeasure_standardLattice :
 /-- Only finitely many standard lattice points lie in a closed ball of radius `r`. -/
 public lemma finite_norm_le_lattice (r : ℝ) :
     ( {ℓ : Λ | ‖(ℓ : E)‖ ≤ r} : Set _ ).Finite := by
-  -- In a proper metric space, a bounded set intersects a discrete closed subgroup in a finite set.
   haveI : DiscreteTopology ((Λ).toAddSubgroup) := (inferInstance : DiscreteTopology Λ)
   have hfinE : Set.Finite (Metric.closedBall (0 : E) r ∩ ((Λ).toAddSubgroup : Set E)) :=
     Metric.finite_isBounded_inter_isClosed DiscreteTopology.isDiscrete
@@ -87,11 +77,9 @@ public lemma finite_norm_le_lattice (r : ℝ) :
   have hfin_pre : (e ⁻¹' (Metric.closedBall (0 : E) r ∩ (Λ : Set E))).Finite := by
     simpa using Set.Finite.preimage_embedding e (by
       simpa [Submodule.coe_toAddSubgroup] using hfinE)
-  have :
-      (e ⁻¹' (Metric.closedBall (0 : E) r ∩ (Λ : Set E))) = {ℓ : Λ | ‖(ℓ : E)‖ ≤ r} := by
-    ext ℓ
-    simp [e, Metric.mem_closedBall, dist_eq_norm, sub_eq_add_neg, add_zero]
-  simpa [this] using hfin_pre
+  have heq : (e ⁻¹' (Metric.closedBall (0 : E) r ∩ (Λ : Set E))) = {ℓ : Λ | ‖(ℓ : E)‖ ≤ r} := by
+    ext ℓ; simp [e, Metric.mem_closedBall, dist_eq_norm, sub_eq_add_neg, add_zero]
+  simpa [heq] using hfin_pre
 
 /--
 Schwartz decay implies that the sup norms of translates, restricted to a compact set, are summable
@@ -99,78 +87,54 @@ over the standard lattice.
 -/
 public lemma summable_norm_translate_restrict (K : TopologicalSpace.Compacts E) :
     Summable (fun ℓ : Λ => ‖(translate (d := d) f ℓ).restrict K‖) := by
-  -- Choose a power larger than the rank.
   let k : ℕ := Module.finrank ℤ Λ + 1
   obtain ⟨C, hCpos, hC⟩ := f.decay k 0
-  have hC' : ∀ x : E, ‖x‖ ^ k * ‖f x‖ ≤ C := by
-    simpa [norm_iteratedFDeriv_zero] using hC
-  -- Bound the compact set `K` by a closed ball with nonnegative radius.
+  have hC' : ∀ x : E, ‖x‖ ^ k * ‖f x‖ ≤ C := by simpa [norm_iteratedFDeriv_zero] using hC
   obtain ⟨r, hrK⟩ := K.isCompact.isBounded.subset_closedBall (0 : E)
   let r0 : ℝ := max r 0
-  have hrK0 : (K : Set E) ⊆ Metric.closedBall (0 : E) r0 := by
-    have hr_le : r ≤ r0 := le_max_left r 0
-    have hball : Metric.closedBall (0 : E) r ⊆ Metric.closedBall (0 : E) r0 :=
-      Metric.closedBall_subset_closedBall hr_le
-    exact fun x hx => hball (hrK hx)
-  -- Outside the finite set of lattice points in `closedBall 0 (max (2*r0) 1)`, we have
-  -- `‖ℓ‖ > 2*r0` and `‖ℓ‖ > 1`, so in particular `ℓ ≠ 0`.
+  have hrK0 : (K : Set E) ⊆ Metric.closedBall (0 : E) r0 :=
+    fun x hx => Metric.closedBall_subset_closedBall (le_max_left r 0) (hrK hx)
   let R : ℝ := max (2 * r0) 1
-  have hfin :
-      ( {ℓ : Λ | ‖(ℓ : E)‖ ≤ R} : Set _ ).Finite :=
+  have hfin : ( {ℓ : Λ | ‖(ℓ : E)‖ ≤ R} : Set _ ).Finite :=
     finite_norm_le_lattice (d := d) (r := R)
-  have h_event :
-      ∀ᶠ ℓ : Λ in Filter.cofinite,
-        ‖(translate (d := d) f ℓ).restrict K‖ ≤ (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k) := by
+  have h_event : ∀ᶠ ℓ : Λ in Filter.cofinite,
+      ‖(translate (d := d) f ℓ).restrict K‖ ≤ (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k) := by
     filter_upwards [hfin.eventually_cofinite_notMem] with ℓ hℓ
     have hRlt : R < ‖(ℓ : E)‖ := lt_of_not_ge (by simpa using hℓ)
     have hnorm_lt : 2 * r0 < ‖(ℓ : E)‖ := lt_of_le_of_lt (le_max_left _ _) hRlt
     have hnorm_pos : 0 < ‖(ℓ : E)‖ := lt_trans (by positivity) hRlt
     refine (ContinuousMap.norm_le _ (by positivity)).2 ?_
     rintro ⟨x, hxK⟩
-    have hxball : (x : E) ∈ Metric.closedBall (0 : E) r0 := hrK0 hxK
     have hxnorm : ‖(x : E)‖ ≤ r0 := by
-      simpa [Metric.mem_closedBall, dist_eq_norm, sub_eq_add_neg, add_zero] using hxball
-    -- Lower bound: `‖x + ℓ‖ ≥ ‖ℓ‖ / 2`.
+      simpa [Metric.mem_closedBall, dist_eq_norm, sub_eq_add_neg, add_zero] using hrK0 hxK
     have hnorm_ge : (1 / 2 : ℝ) * ‖(ℓ : E)‖ ≤ ‖(x + (ℓ : E))‖ := by
       have hsub : ‖(ℓ : E)‖ - ‖(x : E)‖ ≤ ‖(ℓ : E) + x‖ := by
         simpa [add_comm, add_left_comm, add_assoc] using (norm_sub_norm_le (ℓ : E) (-x))
-      have hxlt : ‖(x : E)‖ < (1 / 2 : ℝ) * ‖(ℓ : E)‖ := by
-        grind
-      have : (1 / 2 : ℝ) * ‖(ℓ : E)‖ ≤ ‖(ℓ : E)‖ - ‖(x : E)‖ := by
-        nlinarith [le_of_lt hxlt]
-      have : (1 / 2 : ℝ) * ‖(ℓ : E)‖ ≤ ‖(ℓ : E) + x‖ := le_trans this hsub
+      have hxlt : ‖(x : E)‖ < (1 / 2 : ℝ) * ‖(ℓ : E)‖ := by grind
+      have : (1 / 2 : ℝ) * ‖(ℓ : E)‖ ≤ ‖(ℓ : E) + x‖ :=
+        le_trans (by nlinarith [le_of_lt hxlt]) hsub
       simpa [add_comm, add_left_comm, add_assoc] using this
-    have hnorm_xℓ_pos : 0 < ‖(x + (ℓ : E))‖ :=
-      (by positivity : 0 < (1 / 2 : ℝ) * ‖(ℓ : E)‖).trans_le hnorm_ge
-    have hpow_pos : 0 < ‖(x + (ℓ : E))‖ ^ k := pow_pos hnorm_xℓ_pos _
-    -- `‖f(x+ℓ)‖ ≤ C / ‖x+ℓ‖^k`
+    have hpow_pos : 0 < ‖(x + (ℓ : E))‖ ^ k :=
+      pow_pos ((by positivity : 0 < (1 / 2 : ℝ) * ‖(ℓ : E)‖).trans_le hnorm_ge) _
     have hdiv : ‖f (x + (ℓ : E))‖ ≤ C / (‖(x + (ℓ : E))‖ ^ k) :=
       (le_div_iff₀' hpow_pos).2 (hC' (x + (ℓ : E)))
-    -- Compare `1 / ‖x+ℓ‖^k` with `2^k * ‖ℓ‖⁻¹^k`.
     have hpow_le : C / (‖(x + (ℓ : E))‖ ^ k) ≤ (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k) := by
       have hpow_ge : ((1 / 2 : ℝ) * ‖(ℓ : E)‖) ^ k ≤ ‖(x + (ℓ : E))‖ ^ k :=
         pow_le_pow_left₀ (by positivity) hnorm_ge _
-      have hinv :
-          (‖(x + (ℓ : E))‖ ^ k)⁻¹ ≤ (2 ^ k : ℝ) * (‖(ℓ : E)‖⁻¹ ^ k) := by
-        have hapos : 0 < ((1 / 2 : ℝ) * ‖(ℓ : E)‖) ^ k := by
-          exact pow_pos (mul_pos (by positivity) hnorm_pos) _
-        have :
-            (‖(x + (ℓ : E))‖ ^ k)⁻¹ ≤ (((1 / 2 : ℝ) * ‖(ℓ : E)‖) ^ k)⁻¹ := by
+      have hinv : (‖(x + (ℓ : E))‖ ^ k)⁻¹ ≤ (2 ^ k : ℝ) * (‖(ℓ : E)‖⁻¹ ^ k) := by
+        have hapos : 0 < ((1 / 2 : ℝ) * ‖(ℓ : E)‖) ^ k :=
+          pow_pos (mul_pos (by positivity) hnorm_pos) _
+        have : (‖(x + (ℓ : E))‖ ^ k)⁻¹ ≤ (((1 / 2 : ℝ) * ‖(ℓ : E)‖) ^ k)⁻¹ := by
           simpa [one_div] using (one_div_le_one_div_of_le hapos hpow_ge)
         simpa [mul_assoc, mul_comm, inv_pow, mul_inv_rev, mul_pow] using this
-      have := mul_le_mul_of_nonneg_left hinv (le_of_lt hCpos)
-      simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using this
-    have : ‖f (x + (ℓ : E))‖ ≤ (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k) :=
-      le_trans hdiv hpow_le
+      simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
+        mul_le_mul_of_nonneg_left hinv (le_of_lt hCpos)
+    have : ‖f (x + (ℓ : E))‖ ≤ (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k) := le_trans hdiv hpow_le
     simpa [translate, ContinuousMap.restrict_apply, ContinuousMap.comp_apply] using this
-  -- Summability of the comparison series.
-  have hsum_pow : Summable (fun ℓ : Λ => (‖(ℓ : E)‖⁻¹ ^ k : ℝ)) := by
-    simpa [k] using
-      (ZLattice.summable_norm_pow_inv (L := Λ) (n := k) (Nat.lt_succ_self _))
-  have hsum_bd :
-      Summable (fun ℓ : Λ => (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k)) :=
-    hsum_pow.mul_left (C * (2 ^ k : ℝ))
-  -- Apply eventual domination.
+  have hsum_bd : Summable (fun ℓ : Λ => (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k)) :=
+    (by simpa [k] using (ZLattice.summable_norm_pow_inv
+      (L := Λ) (n := k) (Nat.lt_succ_self _)) : Summable (fun ℓ : Λ =>
+        (‖(ℓ : E)‖⁻¹ ^ k : ℝ))).mul_left (C * (2 ^ k : ℝ))
   refine Summable.of_norm_bounded_eventually hsum_bd ?_
   filter_upwards [h_event] with ℓ hℓ
   simpa [Real.norm_of_nonneg (by positivity)] using hℓ
@@ -203,8 +167,7 @@ public lemma isQuotientMap_coeFunEC : Topology.IsQuotientMap (coeFunEC (d := d))
 
 /-- The periodization is invariant under lattice translates, so it factors through the torus. -/
 public lemma periodized_factorsThrough :
-    Function.FactorsThrough (periodized (d := d) f) (coeFunEC (d := d)) := by
-  intro x y hxy
+    Function.FactorsThrough (periodized (d := d) f) (coeFunEC (d := d)) := fun x y hxy => by
   rcases PoissonSummation.Standard.exists_intVec_eq_sub_of_coeFunE_eq (d := d) (x := x) (y := y)
       (by simpa [coeFunEC] using hxy) with ⟨n, hn⟩
   have hx : x = y + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n := by
@@ -227,9 +190,8 @@ The descended function on the torus `(ℝ/ℤ)^d`, obtained by quotient-lifting 
 public lemma descended_comp (x : E) :
     descended (d := d) f (PoissonSummation.Standard.coeFunE (d := d) x) =
       periodized (d := d) f x := by
-  have hcomp : (descended (d := d) f).comp (coeFunEC (d := d)) = periodized (d := d) f := by
-    simp [descended]
-  simpa [coeFunEC] using congrArg (fun g : C(E, ℂ) => g x) hcomp
+  simpa [coeFunEC] using congrArg (fun g : C(E, ℂ) => g x)
+    (by simp [descended] : (descended (d := d) f).comp (coeFunEC (d := d)) = periodized (d := d) f)
 
 /-- Evaluate `mFourier (-n)` after composing with `coeFunE`, in terms of an inner product. -/
 public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
@@ -243,8 +205,7 @@ public lemma mFourier_neg_apply_coeFunE (n : Fin d → ℤ) (x : E) :
 @[simp] lemma intVec_neg (n : Fin d → ℤ) :
     SchwartzMap.PoissonSummation.Standard.intVec (d := d) (-n) =
       -SchwartzMap.PoissonSummation.Standard.intVec (d := d) n := by
-  ext i
-  simp [SchwartzMap.PoissonSummation.Standard.intVec_apply]
+  ext i; simp [SchwartzMap.PoissonSummation.Standard.intVec_apply]
 
 lemma mFourier_apply_coeFunE (n : Fin d → ℤ) (x : E) :
     UnitAddTorus.mFourier n (PoissonSummation.Standard.coeFunE (d := d) x) =
@@ -272,23 +233,19 @@ public lemma mFourier_neg_apply_coeFunE_add_standardLattice (n : Fin d → ℤ)
     (ℓ : Λ) (x : E) :
     UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) (x + (ℓ : E))) =
       UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) := by
-  rcases
-      PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice (d := d) (x := (ℓ : E))
-        ℓ.property with ⟨m, hm⟩
+  rcases PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice (d := d) (x := (ℓ : E))
+    ℓ.property with ⟨m, hm⟩
   simp [hm]
 
 /-- The fundamental cube `iocCube` is contained in the closed ball of radius `sqrt d`. -/
 public lemma iocCube_subset_closedBall :
     SchwartzMap.PoissonSummation.Standard.iocCube (d := d) ⊆
-      Metric.closedBall (0 : E) (Real.sqrt d) := by
-  intro x hx
+      Metric.closedBall (0 : E) (Real.sqrt d) := fun x hx => by
   have hsum : (∑ i : Fin d, ‖x i‖ ^ 2) ≤ (d : ℝ) := by
-    have hterm : ∀ i : Fin d, ‖x i‖ ^ 2 ≤ (1 : ℝ) := by
-      intro i
+    have hterm : ∀ i : Fin d, ‖x i‖ ^ 2 ≤ (1 : ℝ) := fun i => by
       have hi : x i ∈ Set.Ioc (0 : ℝ) 1 := hx i
       have hxle : ‖x i‖ ≤ (1 : ℝ) := by
-        have hxnonneg : 0 ≤ x i := le_of_lt hi.1
-        simpa [Real.norm_eq_abs, abs_of_nonneg hxnonneg] using hi.2
+        simpa [Real.norm_eq_abs, abs_of_nonneg (le_of_lt hi.1)] using hi.2
       simpa [pow_two] using mul_le_mul hxle hxle (norm_nonneg _) (by positivity)
     simpa using (Finset.sum_le_sum fun i _ => hterm i).trans_eq (by simp)
   simpa [Metric.mem_closedBall, dist_eq_norm, EuclideanSpace.norm_eq] using (Real.sqrt_le_sqrt hsum)
@@ -305,56 +262,42 @@ Integrability of `mFourier (-n) * translate` on the fundamental cube `iocCube`.
 This is one of the analytic inputs needed to compute Fourier coefficients of the descended
 periodization.
 -/
-public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ)
-    (ℓ : Λ) :
+public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (ℓ : Λ) :
     IntegrableOn
         (fun x : E =>
           UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
             f (x + (ℓ : E)))
         (SchwartzMap.PoissonSummation.Standard.iocCube (d := d)) (volume : Measure E) := by
-  -- Bound by the sup norm on a compact closed ball containing the cube.
   let K : TopologicalSpace.Compacts E :=
     ⟨Metric.closedBall (0 : E) (Real.sqrt d), isCompact_closedBall (0 : E) (Real.sqrt d)⟩
   have hK : SchwartzMap.PoissonSummation.Standard.iocCube (d := d) ⊆ (K : Set E) :=
-    (iocCube_subset_closedBall (d := d))
-  have hbound :
-      ∀ x ∈ SchwartzMap.PoissonSummation.Standard.iocCube (d := d),
-        ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
-            f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by
-    intro x hx
-    have hxK : x ∈ (K : Set E) := hK hx
+    iocCube_subset_closedBall (d := d)
+  have hbound : ∀ x ∈ SchwartzMap.PoissonSummation.Standard.iocCube (d := d),
+      ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
+          f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := fun x hx => by
     have hmFourier :
         ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ ≤ 1 := by
       simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
         (ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n))
           (PoissonSummation.Standard.coeFunE (d := d) x))
-    have hsup :
-        ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by
+    have hsup : ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by
       simpa [translate_apply, ContinuousMap.restrict_apply] using
-        (ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K) ⟨x, hxK⟩)
-    calc
-      ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
-            f (x + (ℓ : E))‖
-          = ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ *
-              ‖f (x + (ℓ : E))‖ := by simp
+        (ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K) ⟨x, hK hx⟩)
+    calc ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
+          f (x + (ℓ : E))‖
+        = ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ *
+            ‖f (x + (ℓ : E))‖ := by simp
       _ ≤ 1 * ‖f (x + (ℓ : E))‖ := by gcongr
-      _ = ‖f (x + (ℓ : E))‖ := by simp
-      _ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := hsup
-  -- Conclude integrability on the cube using a boundedness criterion.
+      _ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by simpa using hsup
   refine Measure.integrableOn_of_bounded (μ := (volume : Measure E))
       (s := SchwartzMap.PoissonSummation.Standard.iocCube (d := d))
       (s_finite := (volume_iocCube_lt_top (d := d)).ne)
-      ?_
       (M := ‖(translate (d := d) f ℓ).restrict K‖)
-      ?_
-  · -- measurability
-    exact
       (((UnitAddTorus.mFourier (-n)).continuous.comp
-            (PoissonSummation.Standard.continuous_coeFunE (d := d))).mul
+          (PoissonSummation.Standard.continuous_coeFunE (d := d))).mul
           (f.continuous.comp (continuous_id.add continuous_const))).aestronglyMeasurable
-  · -- boundedness (a.e. on the restricted measure)
-    exact ae_restrict_of_forall_mem
-      (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d)) hbound
+      (ae_restrict_of_forall_mem
+        (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d)) hbound)
 
 
 end SchwartzMap.PoissonSummation.Standard
