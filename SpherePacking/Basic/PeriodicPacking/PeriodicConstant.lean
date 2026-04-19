@@ -3,14 +3,6 @@ public import SpherePacking.Basic.PeriodicPacking.DensityFormula
 
 /-!
 # Periodizing a sphere packing
-
-This file defines a few auxiliary geometric constructions (coordinate cubes and their inner
-subcubes) and uses them to "periodize" a sphere packing with respect to a lattice.
-
-The key construction is `periodize_to_periodicSpherePacking`: given a sphere packing `S`, a lattice
-`Λ`, a measurable domain `D` meeting each orbit in exactly one point, and a set of representatives
-`F ⊆ S.centers` whose separation balls lie in `D`, we obtain a periodic sphere packing with lattice
-`Λ` and centers `⋃ g : Λ, g +ᵥ F`.
 -/
 
 open scoped ENNReal
@@ -54,9 +46,10 @@ public lemma dist_le_of_disjoint_ball_subsets {x y : EuclideanSpace ℝ (Fin d)}
   let m : EuclideanSpace ℝ (Fin d) := midpoint ℝ x y
   have hhalf : (1 / 2 : ℝ) * dist x y < r := by nlinarith
   have hmx : m ∈ ball x r := by
-    simpa [Metric.mem_ball, dist_comm, m] using (by simpa [m] using hhalf : dist m x < r)
+    simpa [Metric.mem_ball, dist_comm, m] using (show dist m x < r by simpa [m] using hhalf)
   have hmy : m ∈ ball y r := by
-    simpa [Metric.mem_ball, dist_comm, m] using (by simpa [m, dist_comm] using hhalf : dist m y < r)
+    simpa [Metric.mem_ball, dist_comm, m] using
+      (show dist m y < r by simpa [m, dist_comm] using hhalf)
   exact Set.disjoint_left.1 hAB (hx hmx) (hy hmy)
 
 open scoped Pointwise in
@@ -114,8 +107,7 @@ along a lattice `Λ`.
       lattice_action := ?_
       lattice_discrete := inferInstance
       lattice_isZLattice := inferInstance }
-  · -- `centers_dist`
-    intro a b hab
+  · intro a b hab
     change S.separation ≤ dist (a : EuclideanSpace ℝ (Fin d)) (b : EuclideanSpace ℝ (Fin d))
     rcases (mem_periodizedCenters_iff (d := d) (Λ := Λ) (F := F)
       (x := (a : EuclideanSpace ℝ (Fin d)))).1 a.property with ⟨ga, fa, hfa, ha⟩
@@ -129,8 +121,7 @@ along a lattice `Λ`.
         dist_vadd_cancel_left (ga : EuclideanSpace ℝ (Fin d)) fa fb
       have : S.separation ≤ dist (ga +ᵥ fa) (ga +ᵥ fb) := htrans ▸ hdist
       simpa [ha, hb] using this
-    · -- different lattice translates: use disjointness of translated domains + midpoint argument
-      have hballa : ball (ga +ᵥ fa) (S.separation / 2) ⊆ ga +ᵥ D :=
+    · have hballa : ball (ga +ᵥ fa) (S.separation / 2) ⊆ ga +ᵥ D :=
         ball_vadd_subset_vadd (d := d) (Λ := Λ) (D := D) (g := ga) (x := fa) (r := S.separation / 2)
           (hF_ball fa hfa)
       have hballb : ball (gb +ᵥ fb) (S.separation / 2) ⊆ gb +ᵥ D :=
@@ -143,8 +134,7 @@ along a lattice `Λ`.
       have : S.separation ≤ dist (ga +ᵥ fa) (gb +ᵥ fb) := by
         simpa [two_mul, add_halves] using h2
       simpa [ha, hb] using this
-  · -- lattice_action
-    intro x y hx hy
+  · intro x y hx hy
     exact periodizedCenters_lattice_action (d := d) (Λ := Λ) (F := F) hx hy
 
 end PeriodicConstantAux
