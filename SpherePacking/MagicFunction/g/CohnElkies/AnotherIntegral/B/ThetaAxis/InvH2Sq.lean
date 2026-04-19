@@ -66,12 +66,11 @@ private lemma Theta2_term_resToImagAxis_eq (n : ℤ) (t : ℝ) (ht : 0 < t) :
     simp [Θ₂_term, one_div, harg]
   simpa [Θ₂_term, one_div, r, pow_two, mul_assoc, mul_left_comm, mul_comm] using h
 
-lemma theta2_norm_ge_two_exp_quarter (t : ℝ) (ht : 0 < t) :
+private lemma theta2_norm_ge_two_exp_quarter (t : ℝ) (ht : 0 < t) :
     (2 : ℝ) * Real.exp (-Real.pi * t / 4) ≤ ‖Θ₂.resToImagAxis t‖ := by
   set τ : ℍ := ⟨(Complex.I : ℂ) * t, by simp [ht]⟩
   let g : ℤ → ℝ := fun n => Real.exp (-Real.pi * (((n : ℝ) + (1 / 2 : ℝ)) ^ 2) * t)
-  have hterm : ∀ n : ℤ, Θ₂_term n τ = (g n : ℂ) := by
-    intro n
+  have hterm : ∀ n : ℤ, Θ₂_term n τ = (g n : ℂ) := fun n => by
     simpa [g] using (Theta2_term_resToImagAxis_eq (n := n) (t := t) ht)
   have hsum : Summable (fun n : ℤ => Θ₂_term n τ) := by
     have hs : Summable (fun n : ℤ => jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)) :=
@@ -81,26 +80,16 @@ lemma theta2_norm_ge_two_exp_quarter (t : ℝ) (ht : 0 < t) :
       hs.mul_left (cexp (Real.pi * Complex.I * (τ : ℂ) / 4))
   have hsumg : Summable g := (Complex.summable_ofReal).1 (by simpa [hterm] using hsum)
   have hnonneg : ∀ n : ℤ, 0 ≤ g n := fun _ => by positivity
-  have hfin :
-      (∑ n ∈ ({0, (-1 : ℤ)} : Finset ℤ), g n) ≤ ∑' n : ℤ, g n := by
+  have hfin : (∑ n ∈ ({0, (-1 : ℤ)} : Finset ℤ), g n) ≤ ∑' n : ℤ, g n := by
     simpa using hsumg.sum_le_tsum ({0, (-1 : ℤ)} : Finset ℤ) (fun n _ => hnonneg n)
   have hsum2 :
       (∑ n ∈ ({0, (-1 : ℤ)} : Finset ℤ), g n) = 2 * Real.exp (-Real.pi * t / 4) := by
-    have hne : (0 : ℤ) ≠ (-1 : ℤ) := by decide
-    calc
-      (∑ n ∈ ({0, (-1 : ℤ)} : Finset ℤ), g n) = g 0 + g (-1) := by
-        simp [Finset.sum_insert, hne]
-      _ = 2 * Real.exp (-Real.pi * t / 4) := by
-        simp [g, pow_two]
-        ring_nf
+    simp [Finset.sum_insert, g, pow_two]; ring_nf
   have htsum : Θ₂ τ = (↑(∑' n : ℤ, g n) : ℂ) := by
     simp [Θ₂, hterm, g, Complex.ofReal_tsum]
   have hnorm : ‖ResToImagAxis Θ₂ t‖ = (∑' n : ℤ, g n) := by
-    have hpos : 0 ≤ (∑' n : ℤ, g n) := tsum_nonneg hnonneg
-    simp [ResToImagAxis, ht, τ, htsum, abs_of_nonneg hpos]
-  have hsum_ge : 2 * Real.exp (-Real.pi * t / 4) ≤ (∑' n : ℤ, g n) := by
-    simpa [hsum2] using hfin
-  simpa [Function.resToImagAxis, hnorm] using hsum_ge
+    simp [ResToImagAxis, ht, τ, htsum, abs_of_nonneg (tsum_nonneg hnonneg)]
+  simpa [Function.resToImagAxis, hnorm] using hsum2 ▸ hfin
 
 lemma pow_four_two_mul_exp (t : ℝ) :
     (2 * Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = (16 : ℝ) * Real.exp (-Real.pi * t) := by
