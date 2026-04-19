@@ -241,107 +241,71 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
             ∫ (t : ℝ) in Set.Ioi (1 : ℝ),
               bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) =
         0 := by
-    -- Apply the general lemma with `f(z) = bContourIntegrandT u (z-1)`.
-    -- Work on the strip `[[0,1]]×Ici 1`.
     let f : ℂ → ℂ := fun z : ℂ => bContourIntegrandT u (z - 1)
-    have hcont' : ContinuousOn f (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) := by
-      -- Compose `bContourIntegrandT` (continuous on the upper half-plane) with translation by `-1`.
-      simpa [f] using
-        (continuousOn_bContourIntegrandT (u := u)).comp (continuousOn_id.sub continuousOn_const) (by
-          intro z hz
-          have hz_uIcc : z ∈ Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ) := by
-            simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using hz
-          have hz' : 0 < z.im := hStrip0 hz_uIcc
-          simpa [sub_eq_add_neg] using hz')
+    have hcont' : ContinuousOn f (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) :=
+      (continuousOn_bContourIntegrandT (u := u)).comp
+        (continuousOn_id.sub continuousOn_const) fun z hz => by
+          have hz' : 0 < z.im := hStrip0 (by
+            simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using hz)
+          simpa [sub_eq_add_neg] using hz'
     have hdiff' :
-        ∀ z ∈
-            ((Set.Ioo (min (0 : ℝ) 1) (max (0 : ℝ) 1) ×ℂ Set.Ioi (1 : ℝ)) \
-              (∅ : Set ℂ)),
-          DifferentiableAt ℂ f z := by
-      intro z hz
-      have hzIm : (1 : ℝ) < z.im := by
-        simpa [Set.mem_Ioi] using hz.1.2
-      have hzpos : 0 < z.im := lt_trans (by norm_num) hzIm
-      have hzpos' : 0 < (z - 1).im := by simpa [sub_eq_add_neg] using hzpos
+        ∀ z ∈ ((Set.Ioo (min (0 : ℝ) 1) (max (0 : ℝ) 1) ×ℂ Set.Ioi (1 : ℝ)) \ (∅ : Set ℂ)),
+          DifferentiableAt ℂ f z := fun z hz => by
+      have hzpos' : 0 < (z - 1).im := by
+        simpa [sub_eq_add_neg] using lt_trans (by norm_num : (0 : ℝ) < 1)
+          ((Set.mem_Ioi).1 hz.1.2)
       have hAt : DifferentiableAt ℂ (bContourIntegrandT u) (z - 1) :=
         (differentiableOn_bContourIntegrandT (u := u) (z - 1) hzpos').differentiableAt
           (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos')
-      have htrans : DifferentiableAt ℂ (fun z : ℂ => z - 1) z := by fun_prop
-      simpa [f] using hAt.comp z htrans
-    -- Integrability along the two vertical lines after translation.
+      simpa [f] using hAt.comp z (by fun_prop : DifferentiableAt ℂ (fun z : ℂ => z - 1) z)
     have hint₁ :
         IntegrableOn (fun t : ℝ => f ((0 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
-      simpa
-          [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-            mul_assoc, mul_comm, mul_left_comm]
-        using hintT_left
+      simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
+        mul_assoc, mul_comm, mul_left_comm] using hintT_left
     have hint₂ :
         IntegrableOn (fun t : ℝ => f ((1 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
-      -- this is the center line `Re z = 0`.
-      simpa
-          [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-            mul_assoc, mul_comm, mul_left_comm]
-        using hintT_center
-    have htendsto' :
-        ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε := by
-      intro ε hε
+      simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
+        mul_assoc, mul_comm, mul_left_comm] using hintT_center
+    have htendsto' : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε := fun ε hε => by
       rcases htendstoT ε hε with ⟨M, hM⟩
-      refine ⟨M, ?_⟩
-      intro z hz
-      have hz' : M ≤ (z - 1).im := by simpa [sub_eq_add_neg] using hz
-      simpa [f] using hM (z - 1) hz'
-    have hrect :=
+      exact ⟨M, fun z hz => by
+        simpa [f] using hM (z - 1) (by simpa [sub_eq_add_neg] using hz)⟩
+    simpa [min_eq_left (zero_le_one : (0 : ℝ) ≤ 1),
+        max_eq_right (zero_le_one : (0 : ℝ) ≤ 1),
+        f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
+        mul_assoc, mul_comm, mul_left_comm] using
       integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
         (y := (1 : ℝ)) (f := f) (x₁ := (0 : ℝ)) (x₂ := (1 : ℝ))
         hcont' (s := (∅ : Set ℂ)) (by simp) hdiff' hint₁ hint₂ htendsto'
-    simpa
-        [min_eq_left (zero_le_one : (0 : ℝ) ≤ 1),
-          max_eq_right (zero_le_one : (0 : ℝ) ≤ 1),
-          f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-          mul_assoc, mul_comm, mul_left_comm]
-      using hrect
   have hRectRight :
       (∫ (x : ℝ) in (1 : ℝ)..0, bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I)) +
           (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) -
             (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ),
               bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) = 0 := by
-    -- Direct application on `[[0,1]]×Ici 1` with reversed orientation `1..0`.
-    -- Use `x₁ = 1`, `x₂ = 0`.
-    have hcont1 :
-        ContinuousOn (bContourIntegrandT u) (Set.uIcc (1 : ℝ) 0 ×ℂ Set.Ici (1 : ℝ)) := by
+    have hcont1 : ContinuousOn (bContourIntegrandT u)
+        (Set.uIcc (1 : ℝ) 0 ×ℂ Set.Ici (1 : ℝ)) := by
       simpa [Set.uIcc_comm] using hcontT
-    have hdiff1 :
-        ∀ z ∈
-            ((Set.Ioo (min (1 : ℝ) 0) (max (1 : ℝ) 0) ×ℂ Set.Ioi (1 : ℝ)) \
-              (∅ : Set ℂ)),
-          DifferentiableAt ℂ (bContourIntegrandT u) z := by
-      intro z hz
-      exact hdiffT z (by
-        simpa
-            [min_eq_right (zero_le_one : (0 : ℝ) ≤ 1),
-              max_eq_left (zero_le_one : (0 : ℝ) ≤ 1)]
-          using hz.1)
-    have hint₁ :
-        IntegrableOn
-          (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + (t : ℂ) * Complex.I))
-          (Set.Ioi (1 : ℝ)) volume := by
+    have hdiff1 : ∀ z ∈ ((Set.Ioo (min (1 : ℝ) 0) (max (1 : ℝ) 0) ×ℂ Set.Ioi (1 : ℝ)) \
+          (∅ : Set ℂ)), DifferentiableAt ℂ (bContourIntegrandT u) z := fun z hz =>
+      hdiffT z (by
+        simpa [min_eq_right (zero_le_one : (0 : ℝ) ≤ 1),
+          max_eq_left (zero_le_one : (0 : ℝ) ≤ 1)] using hz.1)
+    have hint₁ : IntegrableOn
+        (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + (t : ℂ) * Complex.I))
+        (Set.Ioi (1 : ℝ)) volume := by
       simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
         hintT_right
-    have hint₂ :
-        IntegrableOn
-          (fun t : ℝ => bContourIntegrandT u ((0 : ℂ) + (t : ℂ) * Complex.I))
-          (Set.Ioi (1 : ℝ)) volume := by
+    have hint₂ : IntegrableOn
+        (fun t : ℝ => bContourIntegrandT u ((0 : ℂ) + (t : ℂ) * Complex.I))
+        (Set.Ioi (1 : ℝ)) volume := by
       simpa [mul_comm, mul_left_comm, mul_assoc, add_assoc, add_left_comm, add_comm] using
         hintT_center
-    have hrect :=
+    simpa [min_eq_right (zero_le_one : (0 : ℝ) ≤ 1),
+        max_eq_left (zero_le_one : (0 : ℝ) ≤ 1),
+        mul_assoc, mul_comm, mul_left_comm, add_assoc, add_left_comm, add_comm] using
       integral_boundary_open_rect_eq_zero_of_differentiable_on_off_countable_of_integrable_on
         (y := (1 : ℝ)) (f := bContourIntegrandT u) (x₁ := (1 : ℝ)) (x₂ := (0 : ℝ))
         hcont1 (s := (∅ : Set ℂ)) (by simp) hdiff1 hint₁ hint₂ htendstoT
-    simpa
-        [min_eq_right (zero_le_one : (0 : ℝ) ≤ 1),
-          max_eq_left (zero_le_one : (0 : ℝ) ≤ 1),
-          mul_assoc, mul_comm, mul_left_comm, add_assoc, add_left_comm, add_comm]
-      using hrect
   -- Use the rectangle identities to rewrite `J₁'+J₂'` and `J₃'+J₄'`
   -- as shifted ray integrals.
   -- We now expand the defining integrals of `b'` and simplify.
