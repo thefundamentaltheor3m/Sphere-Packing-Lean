@@ -463,56 +463,34 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
   refine ⟨C0 * (C0 + 2), ?_⟩
   intro t ht
   set x : ℂ := H₃.resToImagAxis t
+  have hxge : (1 : ℝ) ≤ ‖x‖ := hnorm_H3_ge_one t ht
   have hx_inv : ‖(x ^ (2 : ℕ))⁻¹‖ ≤ 1 := by
-    have hx : (1 : ℝ) ≤ ‖x‖ := hnorm_H3_ge_one t ht
-    have hx2 : (1 : ℝ) ≤ ‖x‖ ^ (2 : ℕ) :=
-      one_le_pow₀ (hnorm_H3_ge_one t ht)
-    have hinv : (‖x‖ ^ (2 : ℕ))⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hx2
-    simpa [x, norm_inv, norm_pow] using hinv
-  have hxsub : ‖x - (1 : ℂ)‖ ≤ C0 * Real.exp (-Real.pi * t) := by
-    simpa [x] using hsub1 t ht
+    simpa [x, norm_inv, norm_pow] using inv_le_one_of_one_le₀ (one_le_pow₀ hxge)
+  have hxsub : ‖x - (1 : ℂ)‖ ≤ C0 * Real.exp (-Real.pi * t) := hsub1 t ht
   have hx_le : ‖x‖ + 1 ≤ C0 + 2 := by
     have h1 : ‖x‖ ≤ ‖x - (1 : ℂ)‖ + 1 := by
       simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ)
-    have hexp_le : Real.exp (-Real.pi * t) ≤ 1 := by
-      have : (-Real.pi * t) ≤ 0 := by nlinarith [Real.pi_pos, (le_trans zero_le_one ht)]
-      exact (Real.exp_le_one_iff).2 this
-    have : ‖x‖ ≤ C0 + 1 := by nlinarith [h1, hxsub, hexp_le]
-    nlinarith [this]
+    have hexp_le : Real.exp (-Real.pi * t) ≤ 1 :=
+      Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_trans zero_le_one ht])
+    nlinarith [h1, hxsub, hexp_le]
   have hx2sub :
       ‖x ^ (2 : ℕ) - (1 : ℂ)‖ ≤ (C0 + 2) * (C0 * Real.exp (-Real.pi * t)) := by
-    have hfac : x ^ (2 : ℕ) - (1 : ℂ) = (x - 1) * (x + 1) := by ring
-    calc
-      ‖x ^ (2 : ℕ) - (1 : ℂ)‖ = ‖(x - 1) * (x + 1)‖ := by simp [hfac]
-      _ = ‖x - 1‖ * ‖x + 1‖ := by simp
-      _ ≤ ‖x - 1‖ * (‖x‖ + 1) := by
-            gcongr
-            simpa using norm_add_le x (1 : ℂ)
-      _ ≤ (C0 * Real.exp (-Real.pi * t)) * (C0 + 2) := by
-            gcongr
+    have hfac : ‖x ^ (2 : ℕ) - (1 : ℂ)‖ = ‖x - 1‖ * ‖x + 1‖ := by
+      rw [show x ^ (2 : ℕ) - (1 : ℂ) = (x - 1) * (x + 1) from by ring, norm_mul]
+    have h1 : ‖x + 1‖ ≤ C0 + 2 :=
+      ((by simpa using norm_add_le x (1 : ℂ)) : ‖x + 1‖ ≤ ‖x‖ + 1).trans hx_le
+    rw [hfac]
+    calc ‖x - 1‖ * ‖x + 1‖
+        ≤ (C0 * Real.exp (-Real.pi * t)) * (C0 + 2) := by gcongr
       _ = (C0 + 2) * (C0 * Real.exp (-Real.pi * t)) := by ring
-  have hmain :
-      ‖(x ^ (2 : ℕ))⁻¹ - (1 : ℂ)‖ ≤ (C0 * (C0 + 2)) * Real.exp (-Real.pi * t) := by
-    have hx0 : x ≠ 0 := by
-      have hxpos : 0 < ‖x‖ := lt_of_lt_of_le zero_lt_one (hnorm_H3_ge_one t ht)
-      exact (norm_pos_iff).1 hxpos
-    have hx2_0 : x ^ (2 : ℕ) ≠ 0 := pow_ne_zero _ hx0
-    have hfac : (x ^ (2 : ℕ))⁻¹ - (1 : ℂ) = ((1 : ℂ) - x ^ (2 : ℕ)) * (x ^ (2 : ℕ))⁻¹ := by
-      grind only
-    calc
-      ‖(x ^ (2 : ℕ))⁻¹ - (1 : ℂ)‖
-          = ‖((1 : ℂ) - x ^ (2 : ℕ)) * (x ^ (2 : ℕ))⁻¹‖ := by simp [hfac]
-      _ = ‖x ^ (2 : ℕ) - (1 : ℂ)‖ * ‖(x ^ (2 : ℕ))⁻¹‖ := by
-            have hrev : ‖(1 : ℂ) - x ^ (2 : ℕ)‖ = ‖x ^ (2 : ℕ) - (1 : ℂ)‖ := by
-              simpa using (norm_sub_rev (1 : ℂ) (x ^ (2 : ℕ)))
-            simp [hrev]
-      _ ≤ ‖x ^ (2 : ℕ) - (1 : ℂ)‖ := by
-            have hmul :=
-              mul_le_mul_of_nonneg_left hx_inv (norm_nonneg (x ^ (2 : ℕ) - (1 : ℂ)))
-            simpa [mul_one] using hmul
-      _ ≤ (C0 * (C0 + 2)) * Real.exp (-Real.pi * t) := by
-            nlinarith [hx2sub]
-  simpa [x, mul_assoc] using hmain
+  have hx0 : x ≠ 0 := norm_pos_iff.1 (lt_of_lt_of_le zero_lt_one hxge)
+  have hfac : (x ^ (2 : ℕ))⁻¹ - (1 : ℂ) = ((1 : ℂ) - x ^ (2 : ℕ)) * (x ^ (2 : ℕ))⁻¹ := by
+    field_simp
+  have : ‖(x ^ (2 : ℕ))⁻¹ - (1 : ℂ)‖ ≤ ‖x ^ (2 : ℕ) - (1 : ℂ)‖ := by
+    rw [hfac, norm_mul, norm_sub_rev]
+    simpa using mul_le_mul_of_nonneg_left hx_inv (norm_nonneg (x ^ (2 : ℕ) - (1 : ℂ)))
+  have := this.trans hx2sub
+  simpa [x, mul_assoc, mul_left_comm, mul_comm] using this
 
 
 end
