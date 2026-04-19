@@ -423,10 +423,10 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
         coordCubeInner d (L + 1) 0) \ coordCubeInner d L 1)
   have hcubeShell : cubeShellErr L = shellVol / volCube := by
     simp [cubeShellErr, shellVol, volCube]
-  have hvolCube_ne0 : volCube ≠ 0 := by
-    rw [show volCube = (ENNReal.ofReal L) ^ d by
-      simpa [volCube] using PeriodicConstant.volume_coordCube L]
-    exact pow_ne_zero d (ENNReal.ofReal_pos.mpr hLpos).ne'
+  have hvolCube_ne0 : volCube ≠ 0 :=
+    (show volCube = (ENNReal.ofReal L) ^ d by
+      simpa [volCube] using PeriodicConstant.volume_coordCube L) ▸
+      pow_ne_zero d (ENNReal.ofReal_pos.mpr hLpos).ne'
   have hvolCube_ne_top : volCube ≠ ∞ :=
     (PeriodicConstant.isBounded_coordCube L hLpos).measure_lt_top.ne
   -- Convert `hcR` to a strict inequality involving `encard` of centers in `ball 0 (R+r)`.
@@ -540,17 +540,16 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     lt_tsub_iff_right.mpr hsg_density
   have hP_lower :
       (sg.card : ℝ≥0∞) * volBall / volCube - cubeShellErr L ≤ P.density := by
-    have hsg_eq : (sg.card : ℝ≥0∞) * volBall =
-        (F.card : ℝ≥0∞) * volBall + (sb.card : ℝ≥0∞) * volBall := by
-      simp [show (sg.card : ℝ≥0∞) = (F.card : ℝ≥0∞) + (sb.card : ℝ≥0∞) by
-        exact_mod_cast (Finset.card_filter_add_card_filter_not (s := sg)
-          (p := fun x => x ∈ innerSet)).symm, add_mul]
-    have hsg_div : (sg.card : ℝ≥0∞) * volBall / volCube ≤
-        (F.card : ℝ≥0∞) * volBall / volCube + cubeShellErr L := by
-      simpa [div_eq_mul_inv, mul_add, add_mul, mul_assoc, hcubeShell, shellVol] using
-        ENNReal.div_le_div_right (by simpa [hsg_eq] using add_le_add_right hsb_vol _ :
-          (sg.card : ℝ≥0∞) * volBall ≤ (F.card : ℝ≥0∞) * volBall + shellVol) volCube
-    exact tsub_le_iff_right.2 (by simpa [hPdens'] using hsg_div)
+    have hsg_le : (sg.card : ℝ≥0∞) * volBall ≤ (F.card : ℝ≥0∞) * volBall + shellVol := by
+      have : (sg.card : ℝ≥0∞) * volBall =
+          (F.card : ℝ≥0∞) * volBall + (sb.card : ℝ≥0∞) * volBall := by
+        simp [show (sg.card : ℝ≥0∞) = (F.card : ℝ≥0∞) + (sb.card : ℝ≥0∞) by
+          exact_mod_cast (Finset.card_filter_add_card_filter_not (s := sg)
+            (p := fun x => x ∈ innerSet)).symm, add_mul]
+      simpa [this] using add_le_add_right hsb_vol _
+    exact tsub_le_iff_right.2 (by
+      simpa [hPdens', div_eq_mul_inv, mul_add, add_mul, mul_assoc, hcubeShell, shellVol] using
+        ENNReal.div_le_div_right hsg_le volCube)
   exact hb_lt.trans_le hP_lower
 
 end SpherePacking
