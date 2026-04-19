@@ -463,10 +463,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           ((-bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) -
             bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))) := by
       refine MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht => ?_
-      have ht0 : 0 < t := lt_trans (by norm_num) ht
-      have hz : 0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im := by simpa using ht0
+      have hz : 0 < (((Complex.I : ℂ) * (t : ℂ) : ℂ)).im := by
+        simpa using lt_trans (show (0 : ℝ) < 1 by norm_num) ht
       with_reducible exact eq_sub_iff_add_eq'.mpr (hITS (I * ↑t) hz)
-    rw [hcongr]
     have hI1' : Integrable (fun t : ℝ => bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
         (volume.restrict (Set.Ioi (1 : ℝ))) := by
       simpa [IntegrableOn] using
@@ -474,6 +473,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hT1' : Integrable (fun t : ℝ => bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ)))
         (volume.restrict (Set.Ioi (1 : ℝ))) := by
       simpa [IntegrableOn] using hintT_center
+    rw [hcongr]
     simpa [MeasureTheory.integral_neg, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
       MeasureTheory.integral_sub (μ := volume.restrict (Set.Ioi (1 : ℝ))) hI1'.neg hT1'
   -- Split `VI` at height `1`.
