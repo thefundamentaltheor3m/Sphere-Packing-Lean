@@ -108,47 +108,36 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_Ici_one :
   set τ : ℍ := ⟨Complex.I * t, by simp [htpos]⟩
   have hterm : ∀ n : ℤ, ‖Θ₂_term n τ‖ ≤ majorant n := by
     intro n
-    -- Rewrite the term using the two-variable theta summand.
     have hterm' :
         Θ₂_term n τ =
           Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4) *
             jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ) := by
       simp [Θ₂_term_as_jacobiTheta₂_term]
-    -- Bound the two factors separately.
     have hpref :
         ‖Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4)‖ ≤ Real.exp (-Real.pi / 4) := by
-      have hpref' :
-          ‖Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4)‖ = Real.exp (-Real.pi * t / 4) := by
+      have : ‖Complex.exp (Real.pi * Complex.I * (τ : ℂ) / 4)‖ = Real.exp (-Real.pi * t / 4) := by
         simp [Complex.norm_exp, τ, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-      rw [hpref']
-      have hle : (-Real.pi * t / 4) ≤ (-Real.pi / 4) := by
-        nlinarith [Real.pi_pos, ht]
-      exact Real.exp_le_exp.mpr hle
+      rw [this]
+      exact Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])
     have habs_le_sq : (|n| : ℤ) ≤ n ^ 2 := by
       simpa [Int.natCast_natAbs] using (Int.natAbs_le_self_sq n)
     have hcore :
         ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ ≤
           Real.exp (-Real.pi * ((1 : ℝ) * (n ^ 2) - 2 * (1 / 2 : ℝ) * |n|)) := by
-      -- Evaluate the norm exactly, then compare exponents.
       have hn :
           ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
             Real.exp (-Real.pi * (t * ((n ^ 2 : ℤ) : ℝ) + t * (n : ℝ))) := by
-        -- Use the closed-form expression for the norm and normalize the resulting exponent.
         simp [norm_jacobiTheta₂_term, τ, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
         ring_nf
       rw [hn]
       have hdiff_nonneg : 0 ≤ ((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ) := by
         have : (|n| : ℝ) ≤ ((n ^ 2 : ℤ) : ℝ) := by exact_mod_cast habs_le_sq
         linarith
-      have hn_ge : (-(|n| : ℝ)) ≤ (n : ℝ) := by
-        exact_mod_cast (neg_abs_le n)
-      have hbase :
-          t * (((n ^ 2 : ℤ) : ℝ) + (n : ℝ)) ≥ ((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ) := by
-        calc
-          t * (((n ^ 2 : ℤ) : ℝ) + (n : ℝ)) ≥ t * (((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ)) := by
-            nlinarith [hn_ge, htpos.le]
-          _ ≥ (1 : ℝ) * (((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ)) := by
-            nlinarith [ht, hdiff_nonneg]
+      have hn_ge : (-(|n| : ℝ)) ≤ (n : ℝ) := by exact_mod_cast neg_abs_le n
+      have hbase : t * (((n ^ 2 : ℤ) : ℝ) + (n : ℝ)) ≥ ((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ) :=
+        calc t * (((n ^ 2 : ℤ) : ℝ) + (n : ℝ))
+            ≥ t * (((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ)) := by nlinarith [hn_ge, htpos.le]
+          _ ≥ (1 : ℝ) * (((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ)) := by nlinarith [ht, hdiff_nonneg]
           _ = ((n ^ 2 : ℤ) : ℝ) - (|n| : ℝ) := by simp
       have hexp :
           -Real.pi * (t * (((n ^ 2 : ℤ) : ℝ) + (n : ℝ))) ≤

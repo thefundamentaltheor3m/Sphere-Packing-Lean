@@ -356,116 +356,51 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
         ((∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((t : ℂ) * Complex.I)) -
             2 * (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) +
               ∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((t : ℂ) * Complex.I)) := by
-  -- Start from the definition of `I₆'` and rewrite the parametrization.
+  -- Rewrite `I₆'` using the parametrization `z₆' t = I * t`, and drop the endpoint `t = 1`.
   have hI6 :
       MagicFunction.a.RealIntegrals.I₆' u =
         (2 : ℂ) *
           ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I) := by
     dsimp [MagicFunction.a.RealIntegrals.I₆', MagicFunction.a.RealIntegrands.Φ₆]
-    have hcongr :
-        (∫ t in Set.Ici (1 : ℝ),
+    rw [show (∫ t in Set.Ici (1 : ℝ),
               (Complex.I : ℂ) * Φ₆' u (MagicFunction.Parametrisations.z₆' t)) =
-          ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I) := by
-      refine MeasureTheory.setIntegral_congr_fun (s := Set.Ici (1 : ℝ)) measurableSet_Ici ?_
-      intro t ht
-      have hz : MagicFunction.Parametrisations.z₆' t = (Complex.I : ℂ) * (t : ℂ) := by
-        simpa [mul_assoc, mul_comm, mul_left_comm] using
-          (MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t) ht)
-      simp [hz, mul_comm]
-    -- Replace `z₆' t` with `t * I` and remove the endpoint `t = 1`.
-    rw [hcongr]
-    rw [MeasureTheory.integral_Ici_eq_integral_Ioi]
-  -- Move `2` inside the integrand.
-  have hI6' :
-      (2 : ℂ) * ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I) =
-        ∫ t in Set.Ioi (1 : ℝ),
-          (2 : ℂ) * ((Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I)) := by
-    -- Use `integral_const_mul` on the restricted measure.
-    simpa using
-      (MeasureTheory.integral_const_mul (μ := volume.restrict (Set.Ioi (1 : ℝ))) (r := (2 : ℂ))
-        (f := fun t : ℝ => (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I))).symm
-  -- Use the finite-difference identity on the imaginary axis.
-  have hfd_int :
-      (∫ t in Set.Ioi (1 : ℝ),
-            (2 : ℂ) * ((Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I))) =
-        ∫ t in Set.Ioi (1 : ℝ),
-          (Complex.I : ℂ) *
-            (Φ₂' u ((t : ℂ) * Complex.I) - 2 * Φ₅' u ((t : ℂ) * Complex.I) +
-              Φ₄' u ((t : ℂ) * Complex.I)) := by
-    refine MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (1 : ℝ)) measurableSet_Ioi ?_
-    intro t ht
-    have ht0 : 0 < t := lt_trans (by norm_num : (0 : ℝ) < 1) ht
-    have hfd := Φ_finite_difference_imag_axis (u := u) (t := t) ht0
-    -- Multiply `Φ₂' - 2Φ₅' + Φ₄' = 2Φ₆'` by `I`.
-    have hfdI :=
-      congrArg (fun z : ℂ => (Complex.I : ℂ) * z) hfd
-    simpa [mul_add, add_mul, mul_assoc, mul_left_comm, mul_comm, sub_eq_add_neg] using hfdI.symm
-  -- Split the integral and pull out the outer factor `I`.
-  have hlin :
-      (∫ t in Set.Ioi (1 : ℝ),
-            (Complex.I : ℂ) *
-              (Φ₂' u ((t : ℂ) * Complex.I) - 2 * Φ₅' u ((t : ℂ) * Complex.I) +
-                Φ₄' u ((t : ℂ) * Complex.I))) =
-        (Complex.I : ℂ) *
-          ((∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((t : ℂ) * Complex.I)) -
-              2 * (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) +
-                ∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((t : ℂ) * Complex.I)) := by
-    -- Work on the restricted measure `μ = volume.restrict (Ioi 1)`.
-    let μ : Measure ℝ := volume.restrict (Set.Ioi (1 : ℝ))
-    let f2 : ℝ → ℂ := fun t : ℝ => Φ₂' u ((t : ℂ) * Complex.I)
-    let f5 : ℝ → ℂ := fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)
-    let f4 : ℝ → ℂ := fun t : ℝ => Φ₄' u ((t : ℂ) * Complex.I)
-    have hf2 : Integrable f2 μ := by
-      simpa [IntegrableOn, μ, f2] using (integrableOn_Φ₂'_imag_axis (u := u) hu)
-    have hf5 : Integrable f5 μ := by
-      simpa [IntegrableOn, μ, f5] using (integrableOn_Φ₅'_imag_axis (u := u) hu)
-    have hf4 : Integrable f4 μ := by
-      simpa [IntegrableOn, μ, f4] using (integrableOn_Φ₄'_imag_axis (u := u) hu)
-    have hf5' : Integrable (fun t : ℝ => (2 : ℂ) * f5 t) μ := hf5.const_mul (2 : ℂ)
-    have hsub : Integrable (fun t : ℝ => f2 t - (2 : ℂ) * f5 t) μ := hf2.sub hf5'
-    have hadd : Integrable (fun t : ℝ => (f2 t - (2 : ℂ) * f5 t) + f4 t) μ := hsub.add hf4
-    have hinter :
-        (∫ t, (f2 t - (2 : ℂ) * f5 t) + f4 t ∂μ) =
-          (∫ t, f2 t ∂μ) - (2 : ℂ) * (∫ t, f5 t ∂μ) + ∫ t, f4 t ∂μ := by
-      calc
-        (∫ t, (f2 t - (2 : ℂ) * f5 t) + f4 t ∂μ) =
-            (∫ t, (f2 t - (2 : ℂ) * f5 t) ∂μ) + ∫ t, f4 t ∂μ := by
-              simpa using (MeasureTheory.integral_add hsub hf4)
-        _ = ((∫ t, f2 t ∂μ) - ∫ t, (2 : ℂ) * f5 t ∂μ) + ∫ t, f4 t ∂μ := by
-              simpa using congrArg (fun z : ℂ => z + ∫ t, f4 t ∂μ)
-                (MeasureTheory.integral_sub hf2 hf5')
-        _ = ((∫ t, f2 t ∂μ) - ((2 : ℂ) * ∫ t, f5 t ∂μ)) + ∫ t, f4 t ∂μ := by
-              rw [MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ)) (f := f5)]
-        _ = (∫ t, f2 t ∂μ) - (2 : ℂ) * (∫ t, f5 t ∂μ) + ∫ t, f4 t ∂μ := by ring
-    -- Put everything back into `setIntegral` notation and pull out the leading `I`.
-    have hinner :
-        (∫ t in Set.Ioi (1 : ℝ), f2 t - (2 : ℂ) * f5 t + f4 t) =
-          (∫ t in Set.Ioi (1 : ℝ), f2 t) - (2 : ℂ) * (∫ t in Set.Ioi (1 : ℝ), f5 t) +
-            ∫ t in Set.Ioi (1 : ℝ), f4 t := by
-      -- This is exactly `hinter`, rewritten through `μ`.
-      simpa [μ, sub_eq_add_neg, add_assoc, f2, f5, f4] using hinter
-    -- Now pull out `I` and rewrite the integrand to match `f2 - 2*f5 + f4`.
-    have hI :
-        (∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * (f2 t - (2 : ℂ) * f5 t + f4 t)) =
-          (Complex.I : ℂ) * (∫ t in Set.Ioi (1 : ℝ), f2 t - (2 : ℂ) * f5 t + f4 t) := by
-      simpa [μ] using (MeasureTheory.integral_const_mul (μ := μ) (r := (Complex.I : ℂ))
-        (f := fun t : ℝ => f2 t - (2 : ℂ) * f5 t + f4 t))
-    rw [← hinter, ← hI]
-  -- Combine everything.
-  calc
-    MagicFunction.a.RealIntegrals.I₆' u
-        = (2 : ℂ) *
-            ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I) := hI6
-    _ = ∫ t in Set.Ioi (1 : ℝ),
-          (2 : ℂ) * ((Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I)) := hI6'
-    _ = ∫ t in Set.Ioi (1 : ℝ),
-          (Complex.I : ℂ) *
-            (Φ₂' u ((t : ℂ) * Complex.I) - 2 * Φ₅' u ((t : ℂ) * Complex.I) +
-              Φ₄' u ((t : ℂ) * Complex.I)) := hfd_int
-    _ = (Complex.I : ℂ) *
-          ((∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((t : ℂ) * Complex.I)) -
-              2 * (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) +
-                ∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((t : ℂ) * Complex.I)) := hlin
+          ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I) from
+      MeasureTheory.setIntegral_congr_fun measurableSet_Ici fun t ht => by
+        have hz : MagicFunction.Parametrisations.z₆' t = (Complex.I : ℂ) * (t : ℂ) := by
+          simpa [mul_assoc, mul_comm, mul_left_comm] using
+            MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t) ht
+        simp [hz, mul_comm], MeasureTheory.integral_Ici_eq_integral_Ioi]
+  -- Use the finite-difference identity `2 * Φ₆' = Φ₂' - 2 Φ₅' + Φ₄'` on the imaginary axis.
+  let μ : Measure ℝ := volume.restrict (Set.Ioi (1 : ℝ))
+  let f2 : ℝ → ℂ := fun t => Φ₂' u ((t : ℂ) * Complex.I)
+  let f5 : ℝ → ℂ := fun t => Φ₅' u ((t : ℂ) * Complex.I)
+  let f4 : ℝ → ℂ := fun t => Φ₄' u ((t : ℂ) * Complex.I)
+  have hf2 : Integrable f2 μ := integrableOn_Φ₂'_imag_axis (u := u) hu
+  have hf5 : Integrable f5 μ := integrableOn_Φ₅'_imag_axis (u := u) hu
+  have hf4 : Integrable f4 μ := integrableOn_Φ₄'_imag_axis (u := u) hu
+  have hfdI : ∀ t ∈ Set.Ioi (1 : ℝ),
+      (2 : ℂ) * ((Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I)) =
+        (Complex.I : ℂ) * (f2 t - 2 * f5 t + f4 t) := fun t ht => by
+    have hfd := Φ_finite_difference_imag_axis (u := u) (t := t)
+      (lt_trans (by norm_num : (0:ℝ) < 1) ht)
+    have := congrArg (fun z : ℂ => (Complex.I : ℂ) * z) hfd
+    simpa [f2, f5, f4, mul_add, add_mul, mul_assoc, mul_left_comm, mul_comm,
+      sub_eq_add_neg] using this.symm
+  have hlin : (∫ t, (f2 t - 2 * f5 t + f4 t) ∂μ) =
+      (∫ t, f2 t ∂μ) - 2 * (∫ t, f5 t ∂μ) + ∫ t, f4 t ∂μ := by
+    have h1 := MeasureTheory.integral_add (μ := μ) (hf2.sub (hf5.const_mul 2)) hf4
+    have h2 := MeasureTheory.integral_sub (μ := μ) hf2 (hf5.const_mul 2)
+    have h3 := MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ)) (f := f5)
+    calc (∫ t, (f2 t - 2 * f5 t + f4 t) ∂μ)
+        = (∫ t, f2 t - 2 * f5 t ∂μ) + ∫ t, f4 t ∂μ := by simpa using h1
+      _ = ((∫ t, f2 t ∂μ) - ∫ t, 2 * f5 t ∂μ) + ∫ t, f4 t ∂μ := by rw [h2]
+      _ = (∫ t, f2 t ∂μ) - 2 * (∫ t, f5 t ∂μ) + ∫ t, f4 t ∂μ := by rw [h3]
+  rw [hI6,
+    (MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ))
+      (f := fun t : ℝ => (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I))).symm,
+    MeasureTheory.setIntegral_congr_fun measurableSet_Ioi hfdI,
+    MeasureTheory.integral_const_mul (μ := μ) (r := (Complex.I : ℂ))
+      (f := fun t => f2 t - 2 * f5 t + f4 t), hlin]
 
 /-- Generic helper: if `G t = E * Φ₅' u (t*I)` for `t > 1`, then the ray integral of `G` over
 `Ioi 1` equals `E` times the central ray integral. -/
