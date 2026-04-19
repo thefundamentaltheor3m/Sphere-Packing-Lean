@@ -61,9 +61,9 @@ public lemma exists_phi2'_sub_720_bound_ge :
   have hq_nonneg : 0 ≤ q := (Real.exp_pos _).le
   have hq_le_q1 : q ≤ q1 := by simpa [q, q1] using q_le_q1 (t := t) ht1
   have hE4norm : ‖E₄ z‖ ≤ E4B := by
-    have hE4sub : ‖E₄ z - (1 : ℂ)‖ ≤ CE4 * q := by simpa [z, q] using hE4 t ht0 ht1
     have hE4sub' : ‖E₄ z - (1 : ℂ)‖ ≤ CE4 * q1 :=
-      hE4sub.trans (mul_le_mul_of_nonneg_left hq_le_q1 hCE4_pos.le)
+      (by simpa [z, q] using hE4 t ht0 ht1 : ‖E₄ z - (1 : ℂ)‖ ≤ CE4 * q).trans
+        (mul_le_mul_of_nonneg_left hq_le_q1 hCE4_pos.le)
     have htri : ‖E₄ z‖ ≤ ‖E₄ z - (1 : ℂ)‖ + 1 := by
       simpa using norm_add_le (E₄ z - (1 : ℂ)) (1 : ℂ)
     simp only [E4B]; linarith
@@ -72,9 +72,8 @@ public lemma exists_phi2'_sub_720_bound_ge :
   have hΔerr : ‖Δ z - (q : ℂ)‖ ≤ CΔq * q ^ (2 : ℕ) := by
     simpa [z, q] using hΔq t ht0 ht1
   have hΔinv' : ‖(Δ z)⁻¹‖ ≤ CΔinv * Real.exp (2 * π * t) := by
-    have hzim : AΔ ≤ z.im := by simpa [z, zI_im t ht0] using hAΔ.trans htA
-    simpa [z, zI_im t ht0] using hΔinv z hzim
-  -- Bound `‖E₄*q - Δ‖` by `O(q^2)`.
+    simpa [z, zI_im t ht0] using hΔinv z
+      (by simpa [z, zI_im t ht0] using hAΔ.trans htA)
   have hE4qΔ : ‖E₄ z * (q : ℂ) - Δ z‖ ≤ (CE4 + CΔq) * q ^ (2 : ℕ) := by
     have hE4sub : ‖E₄ z - (1 : ℂ)‖ ≤ CE4 * q := by simpa [z, q] using hE4 t ht0 ht1
     have hqnorm : ‖(q : ℂ)‖ = q := by simp [Complex.norm_real, abs_of_nonneg hq_nonneg]
@@ -89,14 +88,10 @@ public lemma exists_phi2'_sub_720_bound_ge :
       _ ≤ ‖(E₄ z - (1 : ℂ)) * (q : ℂ)‖ + ‖(q : ℂ) - Δ z‖ := norm_add_le _ _
       _ ≤ CE4 * q ^ (2 : ℕ) + CΔq * q ^ (2 : ℕ) := by linarith
       _ = (CE4 + CΔq) * q ^ (2 : ℕ) := by ring
-  -- Rewrite and bound `φ₂' z - 720`.
   have hrew :
       φ₂' z - (720 : ℂ) =
         ((E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)) / (Δ z) := by
-    have hΔ : (Δ z) ≠ 0 := Δ_ne_zero z
-    dsimp [φ₂']
-    field_simp [hΔ]
-  -- Bound the numerator by `O(q^2)`.
+    dsimp [φ₂']; field_simp [Δ_ne_zero z]
   have hnum :
       ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z)‖ ≤
         (E4B * CA + 720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by
@@ -118,7 +113,6 @@ public lemma exists_phi2'_sub_720_bound_ge :
           = ‖Aterm + Bterm‖ := congrArg norm hdecomp
       _ ≤ ‖Aterm‖ + ‖Bterm‖ := norm_add_le _ _
       _ ≤ (E4B * CA + 720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by linarith
-  -- Multiply by `‖Δ⁻¹‖ = O(exp(2πt))` to obtain `O(q)`.
   have hq2 : q ^ (2 : ℕ) * Real.exp (2 * π * t) = q := by
     simpa [q] using exp_neg_two_pi_pow_two_mul_exp_two_pi (t := t)
   have : ‖φ₂' z - (720 : ℂ)‖ ≤ (CΔinv * (E4B * CA + 720 * (CE4 + CΔq))) * q := by
@@ -131,13 +125,8 @@ public lemma exists_phi2'_sub_720_bound_ge :
             mul_le_mul (by simpa [K] using hnum) hΔinv' (norm_nonneg _) hK
       _ = (CΔinv * K) * q := by rw [show (K * q ^ 2) * (CΔinv * Real.exp (2*π*t)) =
             (CΔinv * K) * (q ^ 2 * Real.exp (2*π*t)) from by ring, hq2]
-  -- Enlarge the constant by `+1`.
-  have hle :
-      (CΔinv * (E4B * CA + 720 * (CE4 + CΔq))) * q ≤
-        C * q := by
-    have : CΔinv * (E4B * CA + 720 * (CE4 + CΔq)) ≤ C := by
-      dsimp [C]; linarith
-    exact mul_le_mul_of_nonneg_right this hq_nonneg
+  have hle : (CΔinv * (E4B * CA + 720 * (CE4 + CΔq))) * q ≤ C * q :=
+    mul_le_mul_of_nonneg_right (by dsimp [C]; linarith) hq_nonneg
   simpa [z, q, A, C] using (this.trans hle)
 
 lemma norm_base240_sq_sub_target480_eq {q : ℝ} :
@@ -175,8 +164,8 @@ lemma norm_base_add_e_sq_sub_one_sub_480q_le
       ‖b ^ (2 : ℕ) - t‖ + ‖(2 : ℂ) * b * e‖ + ‖e ^ (2 : ℕ)‖ := by
     have hdecomp : (b + e) ^ (2 : ℕ) - t = (b ^ (2 : ℕ) - t) + (2 : ℂ) * b * e + e ^ (2 : ℕ) := by
       ring
-    simpa [hdecomp] using (norm_add₃_le (a := b ^ (2 : ℕ) - t)
-      (b := (2 : ℂ) * b * e) (c := e ^ (2 : ℕ)))
+    simpa [hdecomp] using norm_add₃_le (a := b ^ (2 : ℕ) - t)
+      (b := (2 : ℂ) * b * e) (c := e ^ (2 : ℕ))
   linarith
 
 lemma phi4_numerator_bound
@@ -239,10 +228,8 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
   have hq1_le_one : q1 ≤ 1 := le_of_lt hq1_lt_one
   have hq_le_one : q ≤ 1 := le_trans hq_le_q1 hq1_le_one
   have hΔinv' : ‖(Δ z)⁻¹‖ ≤ CΔinv * Real.exp (2 * π * t) := by
-    have : AΔ ≤ z.im := by
-      have : AΔ ≤ t := le_trans hAΔ htA
-      simpa [z, zI_im t ht0] using this
-    simpa [z, zI_im t ht0] using hΔinv z this
+    simpa [z, zI_im t ht0] using hΔinv z
+      (by simpa [z, zI_im t ht0] using le_trans hAΔ htA)
   -- `E₄` approximation: `E₄ = 1 + 240q + O(q^2)`.
   have hE4err : ‖E₄ z - ((1 : ℂ) + (240 : ℂ) * (q : ℂ))‖ ≤ CE4 * q ^ (2 : ℕ) := by
     simpa [z, q] using hE4 t ht0 ht1
@@ -269,24 +256,20 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
   -- `Δ` approximation at order 2: `Δ = q - 24 q^2 + O(q^3)`.
   have hΔ3err : ‖Δ z - ((q : ℂ) + (-24 : ℂ) * ((q : ℂ) ^ (2 : ℕ)))‖ ≤ CΔ3 * q ^ (3 : ℕ) := by
     simpa [z, q, pow_two] using hΔ3 t ht0 ht1
-  -- Multiply by `exp(2πt)` to get `exp(2πt)*Δ = 1 - 24 q + O(q^2)`.
   have hExpq : (Real.exp (2 * π * t)) * q = 1 := by
-    rw [show q = Real.exp (-2 * π * t) from rfl, ← Real.exp_add]
-    simp
+    rw [show q = Real.exp (-2 * π * t) from rfl, ← Real.exp_add]; simp
   have hExpq3 : (Real.exp (2 * π * t)) * (q ^ (3 : ℕ)) = q ^ (2 : ℕ) := by
-    have : Real.exp (2 * π * t) * (q ^ (3 : ℕ)) = (Real.exp (2*π*t) * q) * q ^ (2:ℕ) := by ring
-    rw [this, hExpq, one_mul]
+    rw [show Real.exp (2 * π * t) * (q ^ (3 : ℕ)) = (Real.exp (2*π*t) * q) * q ^ (2:ℕ) from by
+      ring, hExpq, one_mul]
   have hExpΔ :
       ‖(Real.exp (2 * π * t) : ℂ) * Δ z - ((1 : ℂ) + (-24 : ℂ) * (q : ℂ))‖ ≤ CΔ3 * q ^ (2 : ℕ) := by
     set E : ℂ := (Real.exp (2 * π * t) : ℂ)
     set qC : ℂ := (q : ℂ)
     set approx : ℂ := qC + (-24 : ℂ) * (qC ^ (2 : ℕ))
     have hExpqC : E * qC = (1 : ℂ) := by
-      have := congrArg (fun x : ℝ => (x : ℂ)) hExpq
-      simpa [E, qC, Complex.ofReal_mul] using this
+      simpa [E, qC, Complex.ofReal_mul] using congrArg (fun x : ℝ => (x : ℂ)) hExpq
     have hE2 : E * (qC ^ 2) = qC := by
-      have h : E * (qC ^ 2) = (E * qC) * qC := by ring
-      rw [h, hExpqC, one_mul]
+      rw [show E * (qC ^ 2) = (E * qC) * qC from by ring, hExpqC, one_mul]
     have happ : E * approx = (1 : ℂ) + (-24 : ℂ) * qC := by
       simp only [approx, mul_add]
       rw [show E * ((-24 : ℂ) * (qC ^ 2)) = (-24) * (E * (qC ^ 2)) from by ring, hE2, hExpqC]
@@ -302,7 +285,6 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
       ‖(E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)‖ ≤
         ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq) * q ^ (2 : ℕ) :=
     phi4_numerator_bound hE4sq hExpΔ (hΔq t ht0 ht1)
-  -- Rewrite `φ₄'` and apply the numerator bound together with the inverse-Δ bound.
   have hrew :
       φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ) =
         ((E₄ z) ^ (2 : ℕ) - (Real.exp (2 * π * t) : ℂ) * (Δ z) - (504 : ℂ) * (Δ z)) / (Δ z) := by
@@ -320,7 +302,6 @@ public lemma exists_phi4'_sub_exp_sub_504_bound_ge :
           mul_le_mul hnum hΔinv' (norm_nonneg _) hK
       _ = (CΔinv * K) * q := by rw [show (K * q^2) * (CΔinv * Real.exp (2*π*t)) =
             (CΔinv * K) * (q^2 * Real.exp (2*π*t)) from by ring, hq2]
-  -- Enlarge the constant by `+1`.
   have hle : (CΔinv * ((240 ^ 2 : ℝ) + 2 * B240 * CE4 + CE4 ^ 2 + CΔ3 + 504 * CΔq)) * q ≤ C * q :=
     mul_le_mul_of_nonneg_right (by dsimp [C]; linarith) hq_nonneg
   simpa [z, q, A, C] using this.trans hle
