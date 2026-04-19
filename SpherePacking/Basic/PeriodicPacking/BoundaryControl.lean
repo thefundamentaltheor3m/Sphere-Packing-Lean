@@ -459,9 +459,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   -- A bounding radius `C` for the coordinate cube.
   rcases PeriodicConstantApprox.coordCube_subset_ball L hLpos with ⟨C, hC⟩
   have hCpos : 0 < C := by
-    have : (0 : EuclideanSpace ℝ (Fin d)) ∈ ball (0 : EuclideanSpace ℝ (Fin d)) C :=
-      hC (by simp [coordCube, hLpos])
-    simpa [Metric.mem_ball, dist_eq_norm] using this
+    simpa [Metric.mem_ball, dist_eq_norm] using hC (by simp [coordCube, hLpos] :
+      (0 : EuclideanSpace ℝ (Fin d)) ∈ coordCube d L)
   let r : ℝ := (2⁻¹ : ℝ)
   let Cshift : ℝ := r + 2 * C
   let ratio : ℝ → ℝ≥0∞ := fun R : ℝ =>
@@ -517,11 +516,9 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   let t : Finset (cubeLattice d L hLpos) := htSet.toFinset
   let f : EuclideanSpace ℝ (Fin d) → cubeLattice d L hLpos := fun x =>
     -PeriodicConstantApprox.coordCubeCover L hLpos x
-  have hf_maps : (s : Set (EuclideanSpace ℝ (Fin d))).MapsTo f t := by
-    intro x hx
-    have hx_mem := (hX.mem_toFinset.1 hx)
-    exact htSet.mem_toFinset.2
-      (PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC hx_mem.2)
+  have hf_maps : (s : Set (EuclideanSpace ℝ (Fin d))).MapsTo f t := fun x hx =>
+    htSet.mem_toFinset.2
+      (PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC (hX.mem_toFinset.1 hx).2)
   have ht_nonempty : t.Nonempty :=
     ⟨0, htSet.mem_toFinset.2 (by simp [Metric.mem_ball]; positivity)⟩
   let fiber : cubeLattice d L hLpos → ℕ := fun g =>
@@ -557,12 +554,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
         (sg.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) := by
     calc ((S.centers ∩ ball _ (R + r)).encard : ℝ≥0∞) * volCube
         = (s.card : ℝ≥0∞) * volCube := by rw [hs_enc]
-      _ ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) * volCube := by
-          have h := mul_le_mul_right hs_le volCube
-          have h1 : volCube * (s.card : ℝ≥0∞) = (s.card : ℝ≥0∞) * volCube := mul_comm _ _
-          have h2 : volCube * ((t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞)) =
-              (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) * volCube := by ac_rfl
-          rwa [h1, h2] at h
+      _ ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) * volCube :=
+          mul_le_mul_left hs_le volCube
       _ = (sg.card : ℝ≥0∞) * ((t.card : ℝ≥0∞) * volCube) := by ac_rfl
       _ ≤ _ := mul_le_mul_right (by simpa [hR2, volCube] using ht_vol) _
   have hsg_density :
@@ -576,15 +569,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     have hb3 : ((S.centers ∩ ball 0 (R + r)).encard : ℝ≥0∞) * volBall / V ≤
         (sg.card : ℝ≥0∞) * volBall / volCube := by
       have := mul_le_mul_left hdiv₁ volBall
-      have h1 : (↑(S.centers ∩ ball 0 (R + r)).encard / V) * volBall =
-          ↑(S.centers ∩ ball 0 (R + r)).encard * volBall / V := by
-        simp [div_eq_mul_inv]
-        ac_rfl
-      have h2 : ((sg.card : ℝ≥0∞) / volCube) * volBall =
-          (sg.card : ℝ≥0∞) * volBall / volCube := by
-        simp [div_eq_mul_inv]
-        ac_rfl
-      rwa [h1, h2] at this
+      simp only [div_eq_mul_inv] at this ⊢
+      convert this using 1 <;> ring
     exact (hRratio.trans hc_ratio).trans_le hb3
   -- Periodize the interior points `F`.
   let innerSet : Set (EuclideanSpace ℝ (Fin d)) := g0 +ᵥ coordCubeInner d L r
@@ -628,15 +614,14 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       (sg.card : ℝ≥0∞) * volBall / volCube - cubeShellErr L ≤ P.density := by
     have hsg_eq : (sg.card : ℝ≥0∞) * volBall =
         (F.card : ℝ≥0∞) * volBall + (sb.card : ℝ≥0∞) * volBall := by
-      have : (sg.card : ℝ≥0∞) = (F.card : ℝ≥0∞) + (sb.card : ℝ≥0∞) := by
-        exact_mod_cast hF_card_add.symm
-      simp [this, add_mul]
+      simp [show (sg.card : ℝ≥0∞) = (F.card : ℝ≥0∞) + (sb.card : ℝ≥0∞) by
+        exact_mod_cast hF_card_add.symm, add_mul]
     have hsg_le : (sg.card : ℝ≥0∞) * volBall ≤ (F.card : ℝ≥0∞) * volBall + shellVol := by
       simpa [hsg_eq] using add_le_add_right hsb_vol _
     have hsg_div : (sg.card : ℝ≥0∞) * volBall / volCube ≤
         (F.card : ℝ≥0∞) * volBall / volCube + cubeShellErr L := by
-      have := ENNReal.div_le_div_right hsg_le volCube
-      simpa [div_eq_mul_inv, mul_add, add_mul, mul_assoc, hcubeShell, shellVol] using this
+      simpa [div_eq_mul_inv, mul_add, add_mul, mul_assoc, hcubeShell, shellVol] using
+        ENNReal.div_le_div_right hsg_le volCube
     exact tsub_le_iff_right.2 (by simpa [hPdens'] using hsg_div)
   exact hb_lt.trans_le hP_lower
 
