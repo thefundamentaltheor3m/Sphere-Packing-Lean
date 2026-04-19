@@ -135,7 +135,6 @@ lemma gN_norm (n : ℕ) (r t : ℝ) :
   simp [gN]
 
 private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n r) μIciOne := by
-  have hmeas : AEStronglyMeasurable (gN n r) μIciOne := aestronglyMeasurable_gN (n := n) (r := r)
   obtain ⟨C₀, -, hC₀⟩ := g_norm_bound_uniform
   have hb : 0 < π * (r + 2) := mul_pos Real.pi_pos (by linarith)
   let bound : ℝ → ℝ := fun t ↦ (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀
@@ -145,7 +144,7 @@ private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n
         SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := π * (r + 2))
           (by simpa [mul_assoc] using hb)
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using hInt'.const_mul ((π ^ n) * C₀)
-  refine Integrable.mono' hbound_int hmeas <|
+  refine Integrable.mono' hbound_int (aestronglyMeasurable_gN (n := n) (r := r)) <|
     (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht ↦ ?_
   have ht0 : 0 ≤ t := (by norm_num : (0 : ℝ) ≤ 1).trans ht
   have hcoeff : ‖coeff t‖ ^ n ≤ (π * t) ^ n := by
@@ -166,10 +165,9 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
   let μ : Measure ℝ := μIciOne
   have hF_meas : ∀ᶠ r in 𝓝 r₀, AEStronglyMeasurable (gN n r) μ :=
     .of_forall fun r ↦ by simpa [μ] using aestronglyMeasurable_gN (n := n) (r := r)
-  have hF_int : Integrable (gN n r₀) μ := by
-    simpa [μ] using integrable_gN (n := n) (r := r₀) hr₀
-  have hF'_meas : AEStronglyMeasurable (gN (n + 1) r₀) μ := by
-    simpa [μ] using aestronglyMeasurable_gN (n := n + 1) (r := r₀)
+  have hF_int : Integrable (gN n r₀) μ := integrable_gN (n := n) (r := r₀) hr₀
+  have hF'_meas : AEStronglyMeasurable (gN (n + 1) r₀) μ :=
+    aestronglyMeasurable_gN (n := n + 1) (r := r₀)
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := g_norm_bound_uniform
   have hb : 0 < π * (r₀ + 1) := mul_pos Real.pi_pos (by linarith)
   let bound : ℝ → ℝ := fun t ↦ (π ^ (n + 1)) * (t ^ (n + 1) * rexp (-(π * (r₀ + 1)) * t)) * C₀
