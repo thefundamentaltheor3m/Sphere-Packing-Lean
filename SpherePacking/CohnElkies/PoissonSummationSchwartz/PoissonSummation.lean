@@ -2,12 +2,8 @@ module
 public import SpherePacking.CohnElkies.PoissonSummationLattices.PoissonSummation
 import SpherePacking.CohnElkies.PoissonSummationSchwartz.Basic
 
-
 /-!
-#### Fourier coefficients of the descended periodization
-
-We compute the Fourier coefficient of the descended, periodized Schwartz function and identify it
-with the Fourier transform of the original Schwartz function at integer frequencies.
+# Poisson summation for Schwartz functions over the standard lattice
 
 Main result: `poissonSummation_standard`.
 -/
@@ -26,7 +22,6 @@ local notation "Λ" => SchwartzMap.standardLattice d
 open UnitAddTorus
 
 variable (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
-
 
 noncomputable def ball : TopologicalSpace.Compacts E :=
   ⟨Metric.closedBall (0 : E) (Real.sqrt d), isCompact_closedBall (0 : E) (Real.sqrt d)⟩
@@ -48,8 +43,8 @@ lemma norm_mFourier_mul_translate_le (n : Fin d → ℤ) (ℓ : Λ)
           f (x + (ℓ : E))‖
       = ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ *
           ‖f (x + (ℓ : E))‖ := by simp
-    _ ≤ 1 * ‖f (x + (ℓ : E))‖ := by gcongr
-    _ ≤ ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖ := by simpa using hsup
+    _ ≤ 1 * ‖(translate (d := d) f ℓ).restrict (ball (d := d))‖ := by gcongr
+    _ = _ := one_mul _
 
 lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) :
     Summable
@@ -85,7 +80,6 @@ lemma summable_integral_norm_mFourier_mul_translate_iocCube (n : Fin d → ℤ) 
 lemma mFourierCoeff_descended (n : Fin d → ℤ) :
     UnitAddTorus.mFourierCoeff (descended (d := d) f) n =
       𝓕 (fun x : E => f x) (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n) := by
-  -- Pull back Haar integration on the torus to the cube in `E`.
   have hmeas : AEStronglyMeasurable
       (fun y : UnitAddTorus (Fin d) =>
         UnitAddTorus.mFourier (-n) y • (descended (d := d) f y))
@@ -100,7 +94,6 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
             (descended (d := d) f (PoissonSummation.Standard.coeFunE (d := d) x))
             ∂(volume : Measure E) := integral_eq_integral_preimage_coeFunE
               (fun y => (UnitAddTorus.mFourier (-n)) y • (descended f) y) hmeas
-  -- Expand `descended` back to the periodization on `E`, and swap `tsum` and integral.
   have hsum_int :
       (∫ x in SchwartzMap.PoissonSummation.Standard.iocCube (d := d),
             UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
@@ -124,7 +117,6 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
         Summable (fun ℓ : Λ =>
           ∫ x, ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
                 f (x + (ℓ : E))‖ ∂((volume : Measure E).restrict s)) := by
-      -- This is the required absolute convergence to justify Fubini.
       simpa [s] using
         (summable_integral_norm_mFourier_mul_translate_iocCube (d := d) (f := f) n)
     have :=
@@ -135,10 +127,7 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
               UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
                 f (x + (ℓ : E)))
           hInt hSum)
-    -- `integral_tsum_of_summable_integral_norm` gives `tsum (∫...) = ∫ (tsum ...)`; rearrange.
     simpa [s, tsum_mul_left, mul_assoc] using this.symm
-  -- Identify the sum of integrals with the integral over the whole space using the cube
-  -- as a fundamental domain, exploiting periodicity of the kernel factor.
   have hFD :=
     (PoissonSummation.Standard.isAddFundamentalDomain_iocCube (d := d))
   have hint :
@@ -167,8 +156,6 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
         ∫ x : E,
           UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) * f x
             ∂(volume : Measure E) := by
-    -- Use `integral_eq_tsum''` for the fundamental domain on the integrable function
-    -- `g x = mFourier(-n)(coeFunE x) * f x`, and rewrite each translate using periodicity.
     let g : E → ℂ :=
       fun x : E => UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) * f x
     have hmain :
@@ -179,7 +166,6 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
       simpa [g] using
         (MeasureTheory.IsAddFundamentalDomain.integral_eq_tsum'' (μ := (volume : Measure E))
           hFD (f := g) hint)
-    -- Rewrite the integrand `g (ℓ +ᵥ x)` as `mFourier(-n)(x) * f(x+ℓ)`.
     have hterm :
         ∀ ℓ : Λ,
           (∫ x in SchwartzMap.PoissonSummation.Standard.iocCube (d := d), g (ℓ +ᵥ x)
@@ -204,14 +190,9 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
         _ = UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
             f (x + (ℓ : E)) := by simp [hper']
     simpa [g, hterm] using hmain.symm
-  -- Put everything together and recognize the Fourier integral.
   calc
     UnitAddTorus.mFourierCoeff (descended (d := d) f) n
         = ∫ y : UnitAddTorus (Fin d), UnitAddTorus.mFourier (-n) y • descended (d := d) f y := by
-            -- The Fourier-theory `mFourierCoeff` in Mathlib is defined using the probability Haar
-            -- measure on `UnitAddCircle`, while this project works with the standard measure on
-            -- `AddCircle 1`. These coincide as measures, but are not definitional equal as
-            -- `MeasureSpace` instances, so we bridge them via equality of the induced `volume`s.
             simp only [UnitAddTorus.mFourierCoeff, smul_eq_mul]
             haveI : Fact (0 < (1 : ℝ)) := ⟨one_pos⟩
             have hμ_circle :
@@ -227,14 +208,12 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
                   (@volume (UnitAddTorus (Fin d))
                     (@MeasureSpace.pi (Fin d) (Fin.fintype d) (fun _ => UnitAddCircle)
                       (fun _ => AddCircle.measureSpace (1 : ℝ)))) := by
-              -- Unfold `volume` on a finite product and rewrite each component by `hμ_circle`.
               change
                 Measure.pi (fun _ : Fin d => @volume UnitAddCircle instMeasureSpaceUnitAddCircle) =
                   Measure.pi
                     (fun _ : Fin d =>
                       @volume UnitAddCircle (AddCircle.measureSpace (1 : ℝ)))
               exact congrArg Measure.pi (funext fun _ => hμ_circle)
-            -- Rewrite the measure on the LHS; the remaining goal is definitional.
             simp [hμ_torus]
     _ = ∫ x in SchwartzMap.PoissonSummation.Standard.iocCube (d := d),
           UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) •
@@ -244,7 +223,6 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
     _ = ∫ x in SchwartzMap.PoissonSummation.Standard.iocCube (d := d),
           UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
             (∑' ℓ : Λ, f (x + (ℓ : E))) ∂(volume : Measure E) := by
-          -- `ℂ`-scalar multiplication is multiplication.
           refine integral_congr_ae ?_
           refine ae_restrict_of_forall_mem
             (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d)) ?_
@@ -261,7 +239,6 @@ lemma mFourierCoeff_descended (n : Fin d → ℤ) :
             ∂(volume : Measure E) := by
           simpa using hFD'
     _ = 𝓕 (fun x : E => f x) (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n) := by
-          -- Unfold the Fourier transform integral and identify the phase factor.
           simp [Real.fourier_eq, Circle.smul_def, smul_eq_mul,
             mFourier_neg_apply_coeFunE (d := d) (n := n)]
 
