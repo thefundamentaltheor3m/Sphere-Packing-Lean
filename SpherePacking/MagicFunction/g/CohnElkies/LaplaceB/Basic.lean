@@ -54,8 +54,7 @@ lemma ψI_apply_eq_factor (z : ℍ) :
     simpa [Pi.smul_apply, nsmul_eq_mul] using congrArg (fun f : ℍ → ℂ => f z) ψI_eq
   have hΔ : (Δ z : ℂ) = ((H₂ z) * (H₃ z) * (H₄ z)) ^ 2 / (256 : ℂ) := by
     simpa [Delta_apply] using Delta_eq_H₂_H₃_H₄ z
-  have hΔ0 : (Δ z : ℂ) ≠ 0 := by simpa [Delta_apply] using Δ_ne_zero z
-  refine eq_div_of_mul_eq hΔ0 ?_
+  refine eq_div_of_mul_eq (by simpa [Delta_apply] using Δ_ne_zero z) ?_
   rw [hψI0, hΔ]
   field_simp [H₂_ne_zero z, H₃_ne_zero z, H₄_ne_zero z]
   simp [hJ]; ring
@@ -86,17 +85,16 @@ public lemma exists_ψI_bound_exp :
             atImInfty (𝓝 ((1 : ℂ) ^ (3 : ℕ) * (2 : ℂ))) := by
       simpa [mul_add, add_assoc, add_left_comm, add_comm, mul_assoc, mul_left_comm, mul_comm] using
         (hH4.pow 3).mul hpoly
-    have hconst : Tendsto (fun _ : ℍ => (1 / 2 : ℂ)) atImInfty (𝓝 (1 / 2 : ℂ)) :=
-      tendsto_const_nhds
     have hlim : ((1 / 2 : ℂ) * ((1 : ℂ) ^ (3 : ℕ) * (2 : ℂ))) = (1 : ℂ) := by norm_num
-    simpa [num, hlim] using hconst.mul hprod
+    simpa [num, hlim] using
+      (tendsto_const_nhds (x := (1 / 2 : ℂ)) (f := atImInfty)).mul hprod
   have hEvNum : ∀ᶠ z in atImInfty, ‖num z‖ ≤ (2 : ℝ) := by
     filter_upwards [hnum.eventually (Metric.ball_mem_nhds (1 : ℂ) (by norm_num : (0 : ℝ) < 1))]
       with z hz
     have hdist : ‖num z - (1 : ℂ)‖ < 1 := by simpa [Metric.mem_ball, dist_eq_norm] using hz
     have htriangle : ‖num z‖ ≤ ‖num z - (1 : ℂ)‖ + ‖(1 : ℂ)‖ := by
       simpa [sub_add_cancel] using norm_add_le (num z - (1 : ℂ)) (1 : ℂ)
-    nlinarith [htriangle, hdist, (by simp : ‖(1 : ℂ)‖ = (1 : ℝ))]
+    nlinarith [(by simp : ‖(1 : ℂ)‖ = (1 : ℝ))]
   rcases (UpperHalfPlane.atImInfty_mem _).1 (by simpa using hEvNum) with ⟨A0, hA0⟩
   rcases exists_inv_Delta_bound_exp with ⟨CΔ, AΔ, hCΔ, hΔ⟩
   refine ⟨2 * CΔ, max A0 AΔ, by positivity, fun z hz => ?_⟩
@@ -172,13 +170,10 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       have ht' : 1 ≤ (1 / t : ℝ) := by
         simpa [one_div] using (one_le_div ht0).2 ht1
       have hψS' : ‖ψS.resToImagAxis (1 / t : ℝ)‖ ≤ Cψ0 := by
-        have hexp_le : Real.exp (-π * (1 / t : ℝ)) ≤ 1 := by
-          have hle : (-π * (1 / t : ℝ)) ≤ 0 := by
-            nlinarith [Real.pi_pos, le_of_lt (one_div_pos.2 ht0)]
-          simpa using Real.exp_le_one_iff.2 hle
-        have : Cψ0 * Real.exp (-π * (1 / t : ℝ)) ≤ Cψ0 * 1 :=
-          mul_le_mul_of_nonneg_left hexp_le hCψ0
-        simpa using (hψS_bound (1 / t : ℝ) ht').trans this
+        have hexp_le : Real.exp (-π * (1 / t : ℝ)) ≤ 1 :=
+          Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_of_lt (one_div_pos.2 ht0)])
+        simpa using (hψS_bound (1 / t : ℝ) ht').trans
+          (mul_le_mul_of_nonneg_left hexp_le hCψ0)
       have ht2le : t ^ (2 : ℕ) ≤ 1 := by simpa using pow_le_one₀ (n := 2) (le_of_lt ht0) ht1
       have hψI : ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ ≤ Cψ0 := by
         rw [hψI' t ht0, hSlashS t ht0]
@@ -188,11 +183,10 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
           _ ≤ 1 * Cψ0 := mul_le_mul ht2le hψS' (norm_nonneg _) zero_le_one
           _ = Cψ0 := one_mul _
       have hexp_norm : ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1 := by
-        have hle' : (-π * u * t) ≤ 0 := by
-          nlinarith [Real.pi_pos, mul_nonneg hu0 (le_of_lt ht0)]
         have hnorm : ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) := by
           simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-π * u * t)
-        rw [hnorm]; exact Real.exp_le_one_iff.2 hle'
+        rw [hnorm]
+        exact Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, mul_nonneg hu0 (le_of_lt ht0)])
       calc
         ‖bLaplaceIntegrand u t‖
             = ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ := by
