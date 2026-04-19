@@ -26,49 +26,38 @@ noncomputable section
 
 /-! Helper inequalities for `Θⱼ` and `Hⱼ` norms. -/
 
-lemma norm_add_add_add_le (a b c d : ℂ) :
-    ‖a + b + c + d‖ ≤ ‖a‖ + ‖b‖ + ‖c‖ + ‖d‖ := by
-  nlinarith [norm_add_le (a + b + c) d, norm_add_le (a + b) c, norm_add_le a b]
-
-lemma norm_pow4_sub_le (x y : ℂ) :
+private lemma norm_pow4_sub_le (x y : ℂ) :
     ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤ 4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 := by
   have hfac :
       x ^ (4 : ℕ) - y ^ (4 : ℕ) =
-        (x - y) * (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ) + y ^ (3 : ℕ)) := by
-    ring
+        (x - y) * (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ) + y ^ (3 : ℕ)) := by ring
   have hx : ‖x‖ ≤ ‖x‖ + ‖y‖ := le_add_of_nonneg_right (norm_nonneg _)
   have hy : ‖y‖ ≤ ‖x‖ + ‖y‖ := le_add_of_nonneg_left (norm_nonneg _)
   have hx3 : ‖x ^ (3 : ℕ)‖ ≤ (‖x‖ + ‖y‖) ^ 3 := by
     simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hx 3
   have hy3 : ‖y ^ (3 : ℕ)‖ ≤ (‖x‖ + ‖y‖) ^ 3 := by
     simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hy 3
+  have hx2 : ‖x‖ ^ 2 ≤ (‖x‖ + ‖y‖) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) hx 2
+  have hy2 : ‖y‖ ^ 2 ≤ (‖x‖ + ‖y‖) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) hy 2
   have hx2y : ‖x ^ (2 : ℕ) * y‖ ≤ (‖x‖ + ‖y‖) ^ 3 := by
-    calc
-      ‖x ^ (2 : ℕ) * y‖ = ‖x‖ ^ 2 * ‖y‖ := by simp [norm_pow]
-      _ ≤ (‖x‖ + ‖y‖) ^ 2 * (‖x‖ + ‖y‖) := by
-            refine mul_le_mul ?_ hy (by positivity) (by positivity)
-            simpa using pow_le_pow_left₀ (norm_nonneg _) hx 2
-      _ = (‖x‖ + ‖y‖) ^ 3 := by ring
+    have : ‖x‖ ^ 2 * ‖y‖ ≤ (‖x‖ + ‖y‖) ^ 2 * (‖x‖ + ‖y‖) :=
+      mul_le_mul hx2 hy (norm_nonneg _) (by positivity)
+    simpa [norm_pow, pow_succ, mul_comm, mul_left_comm, mul_assoc] using this
   have hxy2 : ‖x * y ^ (2 : ℕ)‖ ≤ (‖x‖ + ‖y‖) ^ 3 := by
-    calc
-      ‖x * y ^ (2 : ℕ)‖ = ‖x‖ * (‖y‖ ^ 2) := by simp [norm_pow]
-      _ ≤ (‖x‖ + ‖y‖) * (‖x‖ + ‖y‖) ^ 2 := by
-            refine mul_le_mul hx ?_ (by positivity) (by positivity)
-            simpa using pow_le_pow_left₀ (norm_nonneg _) hy 2
-      _ = (‖x‖ + ‖y‖) ^ 3 := by ring
+    have : ‖x‖ * ‖y‖ ^ 2 ≤ (‖x‖ + ‖y‖) * (‖x‖ + ‖y‖) ^ 2 :=
+      mul_le_mul hx hy2 (by positivity) (by positivity)
+    simpa [norm_pow, pow_succ, mul_comm, mul_left_comm, mul_assoc] using this
   have hsum :
       ‖x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ) + y ^ (3 : ℕ)‖
         ≤ 4 * (‖x‖ + ‖y‖) ^ 3 := by
-    have h0 :=
-      norm_add_add_add_le (x ^ (3 : ℕ)) (x ^ (2 : ℕ) * y) (x * y ^ (2 : ℕ)) (y ^ (3 : ℕ))
-    nlinarith [h0, hx3, hx2y, hxy2, hy3]
+    have h0 := norm_add_le (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ)) (y ^ (3 : ℕ))
+    have h1 := norm_add_le (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y) (x * y ^ (2 : ℕ))
+    have h2 := norm_add_le (x ^ (3 : ℕ)) (x ^ (2 : ℕ) * y)
+    nlinarith [h0, h1, h2, hx3, hx2y, hxy2, hy3]
   calc
     ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖
-        = ‖(x - y) * (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ) + y ^ (3 : ℕ))‖ := by
-          simp [hfac]
-    _ = ‖x - y‖ *
-          ‖x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ) + y ^ (3 : ℕ)‖ := by
-          simp
+        = ‖x - y‖ * ‖x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ) + y ^ (3 : ℕ)‖ := by
+          rw [hfac, norm_mul]
     _ ≤ ‖x - y‖ * (4 * (‖x‖ + ‖y‖) ^ 3) :=
           mul_le_mul_of_nonneg_left hsum (norm_nonneg (x - y))
     _ = 4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 := by ring
