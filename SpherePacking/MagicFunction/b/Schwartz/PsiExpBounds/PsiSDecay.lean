@@ -95,18 +95,16 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
   let M4 : ℝ := max M4Icc 2
   have half_le_norm_of_norm_sub_one_le_half {x : ℂ} (h : ‖x - (1 : ℂ)‖ ≤ (1 / 2 : ℝ)) :
       (1 / 2 : ℝ) ≤ ‖x‖ := by
+    have h' : ‖(1 : ℂ)‖ - ‖(1 : ℂ) - x‖ ≤ ‖x‖ :=
+      (sub_le_iff_le_add).2 (norm_le_norm_add_norm_sub' 1 x)
     have hdiff : (1 : ℝ) - ‖x - (1 : ℂ)‖ ≤ ‖x‖ := by
-      have h' : ‖(1 : ℂ)‖ - ‖(1 : ℂ) - x‖ ≤ ‖x‖ :=
-        (sub_le_iff_le_add).2 (norm_le_norm_add_norm_sub' 1 x)
       simpa [norm_one, norm_sub_rev] using h'
     linarith
   have norm_le_three_halves_of_norm_sub_one_le_half {x : ℂ} (h : ‖x - (1 : ℂ)‖ ≤ (1 / 2 : ℝ)) :
       ‖x‖ ≤ (3 / 2 : ℝ) := by
     have hx : ‖x‖ ≤ ‖x - (1 : ℂ)‖ + 1 := by
-      have : ‖x‖ ≤ ‖x - (1 : ℂ)‖ + ‖(1 : ℂ)‖ := by
-        simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using
-          norm_add_le (x - (1 : ℂ)) (1 : ℂ)
-      simpa [norm_one] using this
+      simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc, norm_one] using
+        norm_add_le (x - (1 : ℂ)) (1 : ℂ)
     linarith
   have hH3_lower : ∀ t : ℝ, 1 ≤ t → min m3 (1 / 2 : ℝ) ≤ ‖H₃.resToImagAxis t‖ := by
     intro t ht
@@ -149,17 +147,17 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
           + (5 : ℂ) * (H₂.resToImagAxis t) * (H₄.resToImagAxis t)
           + (5 : ℂ) * (H₄.resToImagAxis t) ^ 2‖ ≤ P := by
     have h1 : ‖(2 : ℂ) * (H₂.resToImagAxis t) ^ 2‖ ≤ 2 * (CH2' ^ 2) := by
-      have : ‖(H₂.resToImagAxis t) ^ 2‖ ≤ CH2' ^ 2 := by
-        simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hH2le 2
-      simpa [norm_mul, norm_pow] using mul_le_mul_of_nonneg_left this (norm_nonneg (2 : ℂ))
+      simpa [norm_mul, norm_pow] using mul_le_mul_of_nonneg_left
+        (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hH2le 2)
+        (norm_nonneg (2 : ℂ))
     have h2 : ‖(5 : ℂ) * (H₂.resToImagAxis t) * (H₄.resToImagAxis t)‖ ≤ 5 * CH2' * M4 := by
-      have : ‖H₂.resToImagAxis t‖ * ‖H₄.resToImagAxis t‖ ≤ CH2' * M4 := by gcongr
       simpa [norm_mul, mul_assoc, mul_left_comm, mul_comm] using
-        mul_le_mul_of_nonneg_left this (norm_nonneg (5 : ℂ))
+        mul_le_mul_of_nonneg_left (by gcongr : ‖H₂.resToImagAxis t‖ * ‖H₄.resToImagAxis t‖ ≤
+          CH2' * M4) (norm_nonneg (5 : ℂ))
     have h3 : ‖(5 : ℂ) * (H₄.resToImagAxis t) ^ 2‖ ≤ 5 * (M4 ^ 2) := by
-      have : ‖(H₄.resToImagAxis t) ^ 2‖ ≤ M4 ^ 2 := by
-        simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hH4le 2
-      simpa [norm_mul, norm_pow] using mul_le_mul_of_nonneg_left this (norm_nonneg (5 : ℂ))
+      simpa [norm_mul, norm_pow] using mul_le_mul_of_nonneg_left
+        (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hH4le 2)
+        (norm_nonneg (5 : ℂ))
     exact norm_add_le_of_le ((norm_add_le _ _).trans (by linarith [h1, h2])) h3
   -- Now bound `ψS.resToImagAxis t` using `ψS_apply_eq_factor`.
   let z : ℍ := ⟨Complex.I * t, by simp [ht0]⟩
@@ -180,13 +178,9 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
   have hHz3 : ResToImagAxis H₃ t = H₃ z := by simp [ResToImagAxis, ht0, z]
   have hHz4 : ResToImagAxis H₄ t = H₄ z := by simp [ResToImagAxis, ht0, z]
   have hden_lower : c3 ≤ ‖H₃ z‖ := by
-    have : c3 ≤ ‖ResToImagAxis H₃ t‖ := by
-      change min m3 (1 / 2 : ℝ) ≤ ‖H₃.resToImagAxis t‖; exact hH3_lower t ht
-    simpa [hHz3] using this
+    simpa [hHz3] using (show c3 ≤ ‖ResToImagAxis H₃ t‖ from hH3_lower t ht)
   have hden_lower4 : c4 ≤ ‖H₄ z‖ := by
-    have : c4 ≤ ‖ResToImagAxis H₄ t‖ := by
-      change min m4 (1 / 2 : ℝ) ≤ ‖H₄.resToImagAxis t‖; exact hH4_lower t ht
-    simpa [hHz4] using this
+    simpa [hHz4] using (show c4 ≤ ‖ResToImagAxis H₄ t‖ from hH4_lower t ht)
   have hinv :
       ‖((H₃ z) ^ 2 * (H₄ z) ^ 2)⁻¹‖ ≤ (c3 ^ 2 * c4 ^ 2)⁻¹ := by
     have hpos : 0 < ‖(H₃ z) ^ 2 * (H₄ z) ^ 2‖ :=
@@ -198,17 +192,10 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
       simpa [norm_mul, norm_pow] using hmul
     simpa [norm_inv] using (inv_le_inv₀ hpos (by positivity)).2 hden
   have hH2z : ‖H₂ z‖ ≤ CH2' * rexp (-π * t) := by
-    have hH2t' : ‖ResToImagAxis H₂ t‖ ≤ CH2' * rexp (-π * t) := by
-      simpa [Function.resToImagAxis, ResToImagAxis] using hH2t
-    simpa [hHz2] using hH2t'
+    simpa [hHz2, Function.resToImagAxis, ResToImagAxis, ht0, z] using hH2t
   have hpoly' :
       ‖2 * (H₂ z) ^ 2 + 5 * (H₂ z) * (H₄ z) + 5 * (H₄ z) ^ 2‖ ≤ P := by
-    have hpoly0 :
-        ‖(2 : ℂ) * (ResToImagAxis H₂ t) ^ 2
-            + (5 : ℂ) * (ResToImagAxis H₂ t) * (ResToImagAxis H₄ t)
-            + (5 : ℂ) * (ResToImagAxis H₄ t) ^ 2‖ ≤ P := by
-      simpa [Function.resToImagAxis, ResToImagAxis] using hpoly
-    simpa [hHz2, hHz4] using hpoly0
+    simpa [hHz2, hHz4, Function.resToImagAxis, ResToImagAxis, ht0, z] using hpoly
   -- put everything together
   calc
     ‖ψS.resToImagAxis t‖ =
