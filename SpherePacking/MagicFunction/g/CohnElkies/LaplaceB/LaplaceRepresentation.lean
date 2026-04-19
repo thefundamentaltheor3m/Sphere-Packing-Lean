@@ -73,38 +73,24 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (Complex.I : ℂ) *
             (((2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
                   Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I))) * VI) := by
-    rw [hLap]
-    dsimp [VI]
-    rw [hcoef]
-    simp [mul_assoc, mul_comm]
+    rw [hLap]; dsimp [VI]; rw [hcoef]; simp [mul_assoc, mul_comm]
   rw [hRHS]
   clear hRHS hLap
   -- Deform the vertical lines onto the rectangle boundary pieces for `J₁', ..., J₄'`.
-  have hStrip0 :
-      (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} := by
-    intro z hz
-    have : (1 : ℝ) ≤ z.im := by simpa [Set.mem_Ici] using hz.2
-    exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) this
+  have hStrip0 : (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} := fun z hz =>
+    lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (by simpa [Set.mem_Ici] using hz.2)
   have hcontT :
       ContinuousOn (bContourIntegrandT u) (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) := by
     simpa using (continuousOn_bContourIntegrandT (u := u)).mono hStrip0
-  have hdiffT :
-      ∀ z ∈ (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioi (1 : ℝ)),
-        DifferentiableAt ℂ (bContourIntegrandT u) z := by
-    intro z hz
-    have hzIm : (1 : ℝ) < z.im := by
-      simpa [Set.mem_Ioi] using hz.2
-    have hzpos : 0 < z.im := lt_trans (by norm_num) hzIm
-    -- Use differentiability on the open upper half-plane.
-    exact
-      (differentiableOn_bContourIntegrandT (u := u) z hzpos).differentiableAt
-        (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos)
-  have hintI :
-      IntegrableOn (fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
-        (Set.Ioi (0 : ℝ)) := by
-    -- This is exactly `bLaplaceIntegral_convergent`, after rewriting the exponential.
-    have hneg :
-        IntegrableOn (fun t : ℝ => -bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) :=
+  have hdiffT : ∀ z ∈ (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioi (1 : ℝ)),
+      DifferentiableAt ℂ (bContourIntegrandT u) z := fun z hz => by
+    have hzIm : (1 : ℝ) < z.im := by simpa [Set.mem_Ioi] using hz.2
+    have hzpos : 0 < z.im := lt_trans (by norm_num : (0 : ℝ) < 1) hzIm
+    exact (differentiableOn_bContourIntegrandT (u := u) z hzpos).differentiableAt
+      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzpos)
+  have hintI : IntegrableOn (fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
+      (Set.Ioi (0 : ℝ)) := by
+    have hneg : IntegrableOn (fun t : ℝ => -bLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) :=
       (bLaplaceIntegral_convergent (u := u) hu).neg
     simpa [bContourIntegrandI_mul_I_eq_bLaplaceIntegrand] using hneg
   have hintT_center :
@@ -167,31 +153,24 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       (hψ : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ))) :
       IntegrableOn (fun t : ℝ => bContourIntegrandT u (a + I * (t : ℂ)))
         (Set.Ioi (1 : ℝ)) := by
-    have hI1 :
-        IntegrableOn (fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
-          (Set.Ioi (1 : ℝ)) := by
-      simpa using hintI.mono_set (Set.Ioi_subset_Ioi (by norm_num : (0 : ℝ) ≤ 1))
-    have hConst :
-        IntegrableOn
-            (fun t : ℝ =>
-              (-bContourIntegrandI u (I * (t : ℂ))) * bContourWeight u a)
-            (Set.Ioi (1 : ℝ)) := by
-      simpa [mul_assoc] using (hI1.neg.mul_const (bContourWeight u a))
-    refine hConst.congr_fun ?_ measurableSet_Ioi
-    intro t ht
-    have ht0 : 0 < t := lt_trans (by norm_num) ht
-    have hψ' := hψ t ht0
-    simp [bContourIntegrandT, bContourIntegrandI, hψ', bContourWeight_add, mul_comm, mul_left_comm]
+    have hI1 : IntegrableOn (fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
+        (Set.Ioi (1 : ℝ)) := hintI.mono_set (Set.Ioi_subset_Ioi (by norm_num : (0 : ℝ) ≤ 1))
+    have hConst : IntegrableOn (fun t : ℝ =>
+        (-bContourIntegrandI u (I * (t : ℂ))) * bContourWeight u a) (Set.Ioi (1 : ℝ)) := by
+      simpa [mul_assoc] using hI1.neg.mul_const (bContourWeight u a)
+    refine hConst.congr_fun (fun t ht => ?_) measurableSet_Ioi
+    simp [bContourIntegrandT, bContourIntegrandI, hψ t (lt_trans (by norm_num) ht),
+      bContourWeight_add, mul_comm, mul_left_comm]
   have hintT_left :
       IntegrableOn (fun t : ℝ => bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ)))
         (Set.Ioi (1 : ℝ)) :=
-    hintT_shift (-1 : ℂ) (fun t ht0 => by
-      simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0)
+    hintT_shift (-1 : ℂ) fun t ht0 => by
+      simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0
   have hintT_right :
       IntegrableOn (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ)))
         (Set.Ioi (1 : ℝ)) :=
-    hintT_shift (1 : ℂ) (fun t ht0 => by
-      simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0)
+    hintT_shift (1 : ℂ) fun t ht0 => by
+      simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0
   -- Decay of the contour integrand as `im z → ∞`, needed for the open-rectangle lemma.
   have htendstoT :
       ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
