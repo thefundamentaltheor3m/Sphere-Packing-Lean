@@ -183,17 +183,17 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
         ‖main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)‖ ≤
           (4096 : ℝ) * Real.exp (-(6 : ℝ) * Real.pi * t) := by
       have hq1_sq_c : (Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ) = (u : ℂ) := by
-        have : (Real.exp (-Real.pi * t)) ^ (2 : ℕ) = u := by
+        have h : (Real.exp (-Real.pi * t)) ^ (2 : ℕ) = u := by
           simp only [u]; rw [← Real.exp_nat_mul]; congr 1; ring
-        exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) this
+        exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) h
       have hq1q3_c :
           (Real.exp (-Real.pi * t) : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) =
             ((u ^ (2 : ℕ) : ℝ) : ℂ) := by
         rw [hu_sq]
-        have : Real.exp (-Real.pi * t) * Real.exp (-(3 : ℝ) * Real.pi * t) =
+        have h : Real.exp (-Real.pi * t) * Real.exp (-(3 : ℝ) * Real.pi * t) =
             Real.exp (-(4 : ℝ) * Real.pi * t) := by
           rw [← Real.exp_add]; congr 1; ring
-        exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) this
+        exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) h
       have hq3_sq_c :
           (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) ^ (2 : ℕ) =
             (Real.exp (-(6 : ℝ) * Real.pi * t) : ℂ) := by
@@ -223,28 +223,25 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
     have he256 : 0 ≤ e / 256 := by positivity
     have hA_norm : ‖A‖ = e / 256 := by
       simpa [A, abs_of_nonneg he256] using (RCLike.norm_ofReal (K := ℂ) (e / 256))
-    have hA256u : A * ((256 * u : ℝ) : ℂ) = (1 : ℂ) := by
-      simp only [A]; push_cast
-      rw [show (e : ℂ) / 256 * (256 * u) = (e * u : ℝ) from by push_cast; ring, heu]; simp
-    have hA2048u2 : A * ((2048 * (u ^ (2 : ℕ) : ℝ) : ℝ) : ℂ) = ((8 * u : ℝ) : ℂ) := by
-      have heuu : e * (u ^ (2 : ℕ) : ℝ) = u := by
-        have : (u ^ (2 : ℕ) : ℝ) = u * u := by ring
-        rw [this]; linear_combination u * heu
-      have h : (e / 256) * (2048 * (u ^ (2 : ℕ) : ℝ)) = 8 * u := by
-        rw [show (e / 256) * (2048 * (u ^ (2 : ℕ) : ℝ)) = 8 * (e * (u ^ (2 : ℕ) : ℝ)) from by ring,
-            heuu]
-      have h' : ((e / 256 : ℝ) : ℂ) * ((2048 * (u ^ (2 : ℕ) : ℝ) : ℝ) : ℂ) = ((8 * u : ℝ) : ℂ) := by
-        rw [show ((e / 256 : ℝ) : ℂ) * ((2048 * (u ^ (2 : ℕ) : ℝ) : ℝ) : ℂ) =
-          (((e / 256) * (2048 * (u ^ (2 : ℕ) : ℝ)) : ℝ) : ℂ) from by push_cast; ring, h]
-      exact h'
+    have heuu : e * (u ^ (2 : ℕ) : ℝ) = u := by
+      rw [show (u ^ (2 : ℕ) : ℝ) = u * u from by ring]; linear_combination u * heu
+    have h256 : (e / 256) * (256 * u) = 1 := by
+      rw [show (e / 256) * (256 * u) = e * u from by ring, heu]
+    have h2048 : (e / 256) * (2048 * (u ^ (2 : ℕ) : ℝ)) = 8 * u := by
+      rw [show (e / 256) * (2048 * (u ^ (2 : ℕ) : ℝ)) = 8 * (e * (u ^ (2 : ℕ) : ℝ))
+        from by ring, heuu]
     have hw_rewrite :
       w - (1 : ℂ) - ((8 * u : ℝ) : ℂ) =
         A * (x ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)) := by
+      have h256' : A * ((256 * u : ℝ) : ℂ) = (1 : ℂ) := by
+        simp only [A]; exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) h256
+      have h2048' : A * ((2048 * (u ^ (2 : ℕ) : ℝ) : ℝ) : ℂ) = ((8 * u : ℝ) : ℂ) := by
+        simp only [A]; exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) h2048
       have h :
           A * (x ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)) =
             A * (x ^ (2 : ℕ)) - A * ((256 * u : ℝ) : ℂ) -
               A * ((2048 * (u ^ (2 : ℕ) : ℝ) : ℝ) : ℂ) := by push_cast; ring
-      rw [h, hA256u, hA2048u2]
+      rw [h, h256', h2048']
     have hbr :
       ‖x ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ)‖
         ≤ (4096 : ℝ) * Real.exp (-(6 : ℝ) * Real.pi * t) +
