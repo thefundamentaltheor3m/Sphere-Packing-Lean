@@ -518,127 +518,61 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     -- Replace `J₁',J₃',J₅',J₆'` by their set-integral forms.
     rw [hJ1_set, hJ3_set, hJ5_set, hJ6_set]
     -- Convert the shifted-ray integrals on `Ioi 1` into full rays on `Ioi 0`.
-    -- Left ray: `Ioc 0 1` + `Ioi 1` equals `Ioi 0`.
-    have hIocI :
-        IntegrableOn
-          (fun t : ℝ => bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
-          (Set.Ioc (0 : ℝ) 1) := by
-      refine hintI.mono_set ?_
-      intro t ht
-      exact ht.1
-    have hIoiI :
-        IntegrableOn
-          (fun t : ℝ => bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
-          (Set.Ioi (1 : ℝ)) :=
-      hintI.mono_set (Set.Ioi_subset_Ioi (by norm_num : (0 : ℝ) ≤ 1))
     have hsplitW (w : ℂ) :
         (∫ t in Set.Ioc (0 : ℝ) 1,
               bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) +
             (∫ t in Set.Ioi (1 : ℝ),
               bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) =
           (∫ t in Set.Ioi (0 : ℝ),
-            bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) := by
-      have hIoi0W :
-          IntegrableOn
-            (fun t : ℝ => bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w)
-            (Set.Ioi (0 : ℝ)) :=
-        by
-          simpa [mul_assoc] using (hintI.mul_const w)
-      exact Eq.symm (setIntegral_Ioi0_eq_add_Ioc_Ioi hIoi0W)
-    -- Rewrite shifted rays using the pointwise translation lemmas.
-    have hJ1_shift :
-        (∫ t in Set.Ioc (0 : ℝ) 1,
-              bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) =
-            ∫ t in Set.Ioc (0 : ℝ) 1,
-              bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (-1 : ℂ)) := by
-      refine MeasureTheory.setIntegral_congr_fun (s := Set.Ioc (0 : ℝ) 1) measurableSet_Ioc ?_
-      intro t ht
-      exact hLeft_point t ht.1
-    have hJ2_shift :
-        (∫ t in Set.Ioi (1 : ℝ),
-              bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) =
-            ∫ t in Set.Ioi (1 : ℝ),
-              bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (-1 : ℂ)) := by
-      refine MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (1 : ℝ)) measurableSet_Ioi ?_
-      intro t ht
-      exact hLeft_point t (lt_trans (by norm_num) ht)
-    have hJ3_shift :
-        (∫ t in Set.Ioc (0 : ℝ) 1,
-              bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) =
-            ∫ t in Set.Ioc (0 : ℝ) 1,
-              bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (1 : ℂ)) := by
-      refine MeasureTheory.setIntegral_congr_fun (s := Set.Ioc (0 : ℝ) 1) measurableSet_Ioc ?_
-      intro t ht
-      exact hRight_point t ht.1
-    have hJ4_shift :
-        (∫ t in Set.Ioi (1 : ℝ),
-              bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) =
-            ∫ t in Set.Ioi (1 : ℝ),
-              bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (1 : ℂ)) := by
-      refine MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (1 : ℝ)) measurableSet_Ioi ?_
-      intro t ht
-      exact hRight_point t (lt_trans (by norm_num) ht)
+            bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) :=
+      Eq.symm (setIntegral_Ioi0_eq_add_Ioc_Ioi (by
+        simpa [mul_assoc] using hintI.mul_const w))
+    -- Shared helper: pointwise shift on Ioc 0 1 and Ioi 1 with a fixed translation constant.
+    have hshift_pair : ∀ (a : ℂ) (_hpt : ∀ t : ℝ, 0 < t →
+        bContourIntegrandT u (a + I * (t : ℂ)) =
+          bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)),
+        ((∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) =
+          ∫ t in Set.Ioc (0 : ℝ) 1,
+            bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)) ∧
+        ((∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (a + I * (t : ℂ))) =
+          ∫ t in Set.Ioi (1 : ℝ),
+            bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)) := fun a hpt =>
+      ⟨MeasureTheory.setIntegral_congr_fun measurableSet_Ioc fun t ht => hpt t ht.1,
+        MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht =>
+          hpt t (lt_trans (by norm_num) ht)⟩
+    obtain ⟨hJ1_shift, hJ2_shift⟩ := hshift_pair (-1 : ℂ) hLeft_point
+    obtain ⟨hJ3_shift, hJ4_shift⟩ := hshift_pair (1 : ℂ) hRight_point
     -- Replace the shifted integrals by `VI` times constants.
-    have hLeft_full :
-        (∫ t in Set.Ioc (0 : ℝ) 1,
-              bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) +
-            (∫ t in Set.Ioi (1 : ℝ),
-              bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) =
-          (-VI) * bContourWeight u (-1 : ℂ) := by
-      rw [hJ1_shift, hJ2_shift]
-      have hsplit := hsplitW (-bContourWeight u (-1 : ℂ))
-      have hmul :
-          (∫ t in Set.Ioi (0 : ℝ),
-              bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (-1 : ℂ))) =
-            VI * (-bContourWeight u (-1 : ℂ)) := by
+    have hfull : ∀ (a : ℂ)
+        (_ : (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) =
+          ∫ t in Set.Ioc (0 : ℝ) 1,
+            bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a))
+        (_ : (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (a + I * (t : ℂ))) =
+          ∫ t in Set.Ioi (1 : ℝ),
+            bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)),
+        (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) +
+            (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (a + I * (t : ℂ))) =
+          (-VI) * bContourWeight u a := fun a hA hB => by
+      rw [hA, hB]
+      have hmul : (∫ t in Set.Ioi (0 : ℝ),
+          bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)) =
+            VI * (-bContourWeight u a) := by
         dsimp [VI]
-        simpa using
-          (MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
-            (r := -bContourWeight u (-1 : ℂ))
-            (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))))
-      have := hsplit.trans hmul
-      -- Normalize the constant `-bContourWeight u (-1)` to match the statement.
-      simpa [mul_assoc, mul_left_comm, mul_comm] using this
-    have hRight_full :
-        (∫ t in Set.Ioc (0 : ℝ) 1,
-              bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) +
-            (∫ t in Set.Ioi (1 : ℝ),
-              bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) =
-          (-VI) * bContourWeight u (1 : ℂ) := by
-      rw [hJ3_shift, hJ4_shift]
-      have hsplit := hsplitW (-bContourWeight u (1 : ℂ))
-      have hmul :
-          (∫ t in Set.Ioi (0 : ℝ),
-              bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (1 : ℂ))) =
-            VI * (-bContourWeight u (1 : ℂ)) := by
-        dsimp [VI]
-        simpa using
-          (MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
-            (r := -bContourWeight u (1 : ℂ))
-            (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ))))
-      have := hsplit.trans hmul
-      simpa [mul_assoc, mul_left_comm, mul_comm] using this
+        simpa using MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
+          (r := -bContourWeight u a) (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
+      simpa [mul_assoc, mul_left_comm, mul_comm] using (hsplitW (-bContourWeight u a)).trans hmul
+    have hLeft_full := hfull (-1 : ℂ) hJ1_shift hJ2_shift
+    have hRight_full := hfull (1 : ℂ) hJ3_shift hJ4_shift
     -- Center correction: express the `S`-tail as `-I - T`.
-    have hCenter :
-        (∫ t in Set.Ioi (1 : ℝ),
-              bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))) +
-            (∫ t in Set.Ioi (1 : ℝ),
-              bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ))) =
-          -(∫ t in Set.Ioi (1 : ℝ),
-              bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) := by
-      -- From `∫ S = -∫ I - ∫ T`.
-      exact eq_sub_iff_add_eq'.mp hCenter_split
-    -- Replace the central `I` integral using `VI`.
-    have hCenterVI :
-        (∫ t in Set.Ioc (0 : ℝ) 1,
-              bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) +
-            (∫ t in Set.Ioi (1 : ℝ),
-              bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) = VI := by
-      -- This is exactly `hVI_split`, rearranged.
+    have hCenter : (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))) +
+          (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ))) =
+        -(∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) :=
+      eq_sub_iff_add_eq'.mp hCenter_split
+    have hCenterVI : (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) +
+          (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) = VI := by
       simpa [add_comm, add_left_comm, add_assoc] using hVI_split.symm
     -- Final algebra step (avoid expensive normalization on large integrals).
     simp only [smul_eq_mul, neg_mul]
-    -- Abbreviate the remaining integrals on the four rays and the two central pieces.
     grind only
   -- Identify the exponential weights at `±1`.
   have hW1 : bContourWeight u (1 : ℂ) = Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) := by
