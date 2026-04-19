@@ -221,16 +221,11 @@ theorem calc_steps_part1 (hd : 0 < d) :
                 ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
   calc
   ↑(P.numReps' hd hD_isBounded) * (f 0).re
-  _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)),
-      (f (x - ↑y)).re
-        := by
-            rw [ge_iff_le]
-            exact calc_aux_1 hCohnElkies₁ hP hD_isBounded hd hD_unique_covers
-  _ =
-      ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
-      (f (↑x - ↑y + ↑ℓ)).re
-        := CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice f P
-              hD_isBounded hD_unique_covers hd
+  _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re := by
+          rw [ge_iff_le]; exact calc_aux_1 hCohnElkies₁ hP hD_isBounded hd hD_unique_covers
+  _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice), (f (↑x - ↑y + ↑ℓ)).re :=
+          CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice f P
+            hD_isBounded hD_unique_covers hd
   -- Pull out real parts so we can apply PSF-L to the complex equality.
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       f (↑x - ↑y + ↑ℓ)).re
@@ -238,69 +233,57 @@ theorem calc_steps_part1 (hd : 0 < d) :
   _ = (∑' x : ↑(P.centers ∩ D),
       ∑' y : ↑(P.centers ∩ D), (1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m) *
-      exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])).re
-        := by
-            congr! 5 with x y
-            exact SchwartzMap.poissonSummation_lattice P.lattice f _
+      exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])).re := by
+          congr! 5 with x y; exact SchwartzMap.poissonSummation_lattice P.lattice f _
   _ = ((1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
       (𝓕 f m).re * (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
-      exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
-        := by
-            simpa using
-              (SpherePacking.CohnElkies.calc_steps_swap_sums (f := f)
-                (hRealFourier := hRealFourier) (P := P) (D := D) hD_isBounded hd)
+      exp (2 * π * I * ⟪↑x - ↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
+          simpa using SpherePacking.CohnElkies.calc_steps_swap_sums (f := f)
+            (hRealFourier := hRealFourier) (P := P) (D := D) hD_isBounded hd
   _ = ((1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m).re * (
       ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) *
-      exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re
-        := by
-            -- Use `congrArg`s to isolate the target expressions.
-            congr! 9 with m x y
-            simp only [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg, mul_comm]
-            rw [RCLike.wInner_add_left]
-            simp only [RCLike.wInner_neg_left, ofReal_add, ofReal_neg]
-            rw [mul_add, Complex.exp_add, mul_comm]
-            simp
+      exp (2 * π * I * ⟪-↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
+          congr! 9 with m x y
+          simp only [sub_eq_neg_add, RCLike.wInner_neg_left, ofReal_neg, mul_neg, mul_comm]
+          rw [RCLike.wInner_add_left]
+          simp only [RCLike.wInner_neg_left, ofReal_add, ofReal_neg]
+          rw [mul_add, Complex.exp_add, mul_comm]; simp
   _ = ((1 / ZLattice.covolume P.lattice volume) *
       ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
       (𝓕 f m).re * (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       (∑' y : ↑(P.centers ∩ D),
-      exp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])))).re
-        := by
-            simp_rw [mul_assoc, ← tsum_mul_right, ← tsum_mul_left]
-            congr! 9 with m x y
-            simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
+      exp (-(2 * π * I * ⟪↑y, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])))).re := by
+          simp_rw [mul_assoc, ← tsum_mul_right, ← tsum_mul_left]
+          congr! 9 with m x y
+          simp only [RCLike.wInner_neg_left, ofReal_neg, mul_neg]
   _ = ((1 / ZLattice.covolume P.lattice volume) *
-      ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f
-      m).re *
+      ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, (𝓕 f m).re *
       (∑' x : ↑(P.centers ∩ D),
       exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) *
       conj (∑' x : ↑(P.centers ∩ D),
-      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) -- Need its complex conjugate
-      ).re
-        := by
-            simp_rw [conj_tsum]
-            congr! 7 with m x
-            exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
-    _ = (1 / ZLattice.covolume P.lattice volume) *
-        ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
-          (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
-        exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
-          := by
-            rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
-                ∑' (m : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice)),
-                 (𝓕 ⇑f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
-                 cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
-            congr 1
-            push_cast
-            congr! 3 with m
-            rw [mul_assoc]
-            apply congrArg _ _
-            rw [mul_conj, Complex.normSq_eq_norm_sq]
-            norm_cast
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
+          simp_rw [conj_tsum]
+          congr! 7 with m x
+          exact Complex.exp_neg_real_I_eq_conj (x : EuclideanSpace ℝ (Fin d)) m
+  _ = (1 / ZLattice.covolume P.lattice volume) *
+      ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
+        (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
+      exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
+          rw [← ofReal_re (1 / ZLattice.covolume P.lattice volume *
+              ∑' (m : ↥(LinearMap.BilinForm.dualSubmodule (innerₗ _) P.lattice)),
+                (𝓕 ⇑f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
+                cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
+          congr 1
+          push_cast
+          congr! 3 with m
+          rw [mul_assoc]
+          refine congrArg _ ?_
+          rw [mul_conj, Complex.normSq_eq_norm_sq]
+          norm_cast
 
 include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ in
 omit hne_zero hReal hRealFourier hCohnElkies₁ hP [Nonempty ↑P.centers] in
@@ -359,8 +342,8 @@ include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hD_uniq
 omit hne_zero hReal in
 theorem calc_steps (hd : 0 < d) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥ ↑(P.numReps' hd hD_isBounded) ^ 2 *
-      (𝓕 f 0).re / ZLattice.covolume P.lattice volume := by
-  exact ge_trans
+      (𝓕 f 0).re / ZLattice.covolume P.lattice volume :=
+  ge_trans
     (calc_steps_part1 (P := P) (D := D) (hRealFourier := hRealFourier)
       (hCohnElkies₁ := hCohnElkies₁) (hP := hP) (hD_isBounded := hD_isBounded)
       (hD_unique_covers := hD_unique_covers) hd)
