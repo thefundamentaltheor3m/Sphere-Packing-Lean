@@ -48,100 +48,54 @@ public lemma exists_phi2'_phi4'_bound_exp :
       ‖φ₂' z‖ ≤ C * Real.exp (2 * π * z.im) ∧
         ‖φ₄' z‖ ≤ C * Real.exp (2 * π * z.im) := by
   -- Bounds for the Eisenstein series and for `Δ⁻¹` at `i∞`.
-  rcases
-      exists_bound_of_isBoundedAtImInfty (f := E₂) E₂_isBoundedAtImInfty with
-    ⟨CE2, AE2, hCE2, hE2⟩
-  have hbddE4 : UpperHalfPlane.IsBoundedAtImInfty (fun z : ℍ => E₄ z) := by
-    simpa using (ModularFormClass.bdd_at_infty E₄)
-  rcases exists_bound_of_isBoundedAtImInfty (f := fun z : ℍ => E₄ z) hbddE4 with
-    ⟨CE4, AE4, hCE4, hE4⟩
-  have hbddE6 : UpperHalfPlane.IsBoundedAtImInfty (fun z : ℍ => E₆ z) := by
-    simpa using (ModularFormClass.bdd_at_infty E₆)
-  rcases exists_bound_of_isBoundedAtImInfty (f := fun z : ℍ => E₆ z) hbddE6 with
-    ⟨CE6, AE6, hCE6, hE6⟩
+  rcases exists_bound_of_isBoundedAtImInfty (f := E₂) E₂_isBoundedAtImInfty with
+    ⟨CE2, AE2, _, hE2⟩
+  rcases exists_bound_of_isBoundedAtImInfty (f := fun z : ℍ => E₄ z)
+      (by simpa using (ModularFormClass.bdd_at_infty E₄)) with ⟨CE4, AE4, _, hE4⟩
+  rcases exists_bound_of_isBoundedAtImInfty (f := fun z : ℍ => E₆ z)
+      (by simpa using (ModularFormClass.bdd_at_infty E₆)) with ⟨CE6, AE6, _, hE6⟩
   rcases exists_inv_Delta_bound_exp with ⟨CΔ, AΔ, hCΔ, hΔ⟩
-  let A : ℝ := max AΔ (max AE2 (max AE4 AE6))
-  have hAΔ : AΔ ≤ A := le_max_left _ _
-  have hAE2 : AE2 ≤ A :=
-    le_trans (le_max_left _ _) (le_max_right _ _)
-  have hAE4 : AE4 ≤ A := by
-    have h₁ : AE4 ≤ max AE4 AE6 := le_max_left _ _
-    have h₂ : AE4 ≤ max AE2 (max AE4 AE6) := le_trans h₁ (le_max_right _ _)
-    exact le_trans h₂ (le_max_right _ _)
-  have hAE6 : AE6 ≤ A := by
-    have h₁ : AE6 ≤ max AE4 AE6 := le_max_right _ _
-    have h₂ : AE6 ≤ max AE2 (max AE4 AE6) := le_trans h₁ (le_max_right _ _)
-    exact le_trans h₂ (le_max_right _ _)
-  -- One constant dominating both bounds.
-  let C : ℝ :=
-    max 1 (max (CE4 ^ (2 : ℕ) * CΔ) (CE4 * (CE2 * CE4 + CE6) * CΔ))
-  have hCpos : 0 < C := by positivity
-  refine ⟨C, A, hCpos, ?_⟩
+  refine ⟨max 1 (max (CE4 ^ 2 * CΔ) (CE4 * (CE2 * CE4 + CE6) * CΔ)),
+    max AΔ (max AE2 (max AE4 AE6)), by positivity, ?_⟩
   intro z hzA
-  have hzΔ : AΔ ≤ z.im := le_trans hAΔ hzA
-  have hzE2 : AE2 ≤ z.im := le_trans hAE2 hzA
-  have hzE4 : AE4 ≤ z.im := le_trans hAE4 hzA
-  have hzE6 : AE6 ≤ z.im := le_trans hAE6 hzA
-  have hE2z : ‖E₂ z‖ ≤ CE2 := hE2 z hzE2
-  have hE4z : ‖E₄ z‖ ≤ CE4 := hE4 z hzE4
-  have hE6z : ‖E₆ z‖ ≤ CE6 := hE6 z hzE6
+  have hzΔ : AΔ ≤ z.im := (le_max_left _ _).trans hzA
+  have hzE2 : AE2 ≤ z.im := ((le_max_left _ _).trans (le_max_right _ _)).trans hzA
+  have hzE4 : AE4 ≤ z.im :=
+    (((le_max_left _ _).trans (le_max_right _ _)).trans (le_max_right _ _)).trans hzA
+  have hzE6 : AE6 ≤ z.im :=
+    (((le_max_right _ _).trans (le_max_right _ _)).trans (le_max_right _ _)).trans hzA
   have hΔz : ‖(Δ z)⁻¹‖ ≤ CΔ * Real.exp (2 * π * z.im) := hΔ z hzΔ
-  have hφ4 :
-      ‖φ₄' z‖ ≤ C * Real.exp (2 * π * z.im) := by
-    -- `φ₄' = (E₄^2) / Δ`.
-    have hφ4' :
-        ‖φ₄' z‖ ≤ (CE4 ^ (2 : ℕ) * CΔ) * Real.exp (2 * π * z.im) := by
-      calc
-        ‖φ₄' z‖
-            = ‖(E₄ z) ^ (2 : ℕ) / (Δ z)‖ := by
-                simp [φ₄', div_eq_mul_inv, pow_two, mul_assoc]
-        _ = ‖(E₄ z) ^ (2 : ℕ) * (Δ z)⁻¹‖ := by simp [div_eq_mul_inv]
-        _ ≤ ‖(E₄ z) ^ (2 : ℕ)‖ * ‖(Δ z)⁻¹‖ :=
-              norm_mul_le ((E₄ z) ^ (2 : ℕ)) ((Δ z)⁻¹)
-        _ = (‖E₄ z‖ ^ (2 : ℕ)) * ‖(Δ z)⁻¹‖ := by simp [norm_pow]
-        _ ≤ (‖E₄ z‖ ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * z.im)) :=
-              mul_le_mul_of_nonneg_left hΔz (pow_nonneg (norm_nonneg _) _)
-        _ ≤ (CE4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * z.im)) := by
-              gcongr
-        _ = (CE4 ^ (2 : ℕ) * CΔ) * Real.exp (2 * π * z.im) := by ring
-    have hCdom : CE4 ^ (2 : ℕ) * CΔ ≤ C := by
-      dsimp [C]
-      exact le_trans (le_max_left _ _) (le_max_right _ _)
-    exact hφ4'.trans (mul_le_mul_of_nonneg_right hCdom (Real.exp_pos _).le)
-  have hφ2 :
-      ‖φ₂' z‖ ≤ C * Real.exp (2 * π * z.im) := by
-    -- `φ₂' = E₄ * (E₂*E₄ - E₆) / Δ`.
-    have hcore :
-        ‖(E₂ z) * (E₄ z) - (E₆ z)‖ ≤ CE2 * CE4 + CE6 := by
-      calc
-        ‖(E₂ z) * (E₄ z) - (E₆ z)‖ ≤ ‖(E₂ z) * (E₄ z)‖ + ‖E₆ z‖ := by
-            simpa using (norm_sub_le ((E₂ z) * (E₄ z)) (E₆ z))
-        _ ≤ (‖E₂ z‖ * ‖E₄ z‖) + ‖E₆ z‖ := by
-            gcongr
-            simp
-        _ ≤ (CE2 * CE4) + CE6 := by
-            gcongr
-    have hφ2' :
-        ‖φ₂' z‖ ≤ (CE4 * (CE2 * CE4 + CE6) * CΔ) * Real.exp (2 * π * z.im) := by
-      have hmul : ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z))‖ ≤ CE4 * (CE2 * CE4 + CE6) :=
-        norm_mul_le_of_le (hE4 z hzE4) hcore
-      have hnonneg : 0 ≤ CE4 * (CE2 * CE4 + CE6) := by positivity
-      calc
-        ‖φ₂' z‖
-            = ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) * (Δ z)⁻¹‖ := by
-                simp [φ₂', div_eq_mul_inv, mul_assoc]
-        _ ≤ ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z))‖ * ‖(Δ z)⁻¹‖ :=
-              norm_mul_le ((E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z))) ((Δ z)⁻¹)
-        _ ≤ (CE4 * (CE2 * CE4 + CE6)) * ‖(Δ z)⁻¹‖ :=
-              mul_le_mul_of_nonneg_right hmul (norm_nonneg _)
+  have hexp_pos : 0 ≤ Real.exp (2 * π * z.im) := (Real.exp_pos _).le
+  refine ⟨?_, ?_⟩
+  · -- `φ₂' = E₄ * (E₂*E₄ - E₆) / Δ`.
+    have hcore : ‖(E₂ z) * (E₄ z) - (E₆ z)‖ ≤ CE2 * CE4 + CE6 := by
+      calc ‖(E₂ z) * (E₄ z) - (E₆ z)‖
+          ≤ ‖E₂ z‖ * ‖E₄ z‖ + ‖E₆ z‖ := by
+            simpa [norm_mul] using norm_sub_le ((E₂ z) * (E₄ z)) (E₆ z)
+        _ ≤ CE2 * CE4 + CE6 := by gcongr <;> [exact hE2 z hzE2; exact hE4 z hzE4; exact hE6 z hzE6]
+    have hmul : ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z))‖ ≤ CE4 * (CE2 * CE4 + CE6) :=
+      norm_mul_le_of_le (hE4 z hzE4) hcore
+    have hφ2' : ‖φ₂' z‖ ≤ (CE4 * (CE2 * CE4 + CE6) * CΔ) * Real.exp (2 * π * z.im) := by
+      calc ‖φ₂' z‖
+          = ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) * (Δ z)⁻¹‖ := by
+            simp [φ₂', div_eq_mul_inv, mul_assoc]
+        _ ≤ ‖(E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z))‖ * ‖(Δ z)⁻¹‖ := norm_mul_le _ _
         _ ≤ (CE4 * (CE2 * CE4 + CE6)) * (CΔ * Real.exp (2 * π * z.im)) :=
-              mul_le_mul_of_nonneg_left hΔz hnonneg
-        _ = (CE4 * (CE2 * CE4 + CE6) * CΔ) * Real.exp (2 * π * z.im) := by ring
-    have hCdom : CE4 * (CE2 * CE4 + CE6) * CΔ ≤ C := by
-      dsimp [C]
-      exact le_trans (le_max_right _ _) (le_max_right _ _)
-    exact hφ2'.trans (mul_le_mul_of_nonneg_right hCdom (Real.exp_pos _).le)
-  exact ⟨hφ2, hφ4⟩
+            mul_le_mul hmul hΔz (norm_nonneg _) (by positivity)
+        _ = _ := by ring
+    exact hφ2'.trans <| mul_le_mul_of_nonneg_right
+      ((le_max_right _ _).trans (le_max_right _ _)) hexp_pos
+  · -- `φ₄' = (E₄^2) / Δ`.
+    have hE4z : ‖E₄ z‖ ≤ CE4 := hE4 z hzE4
+    have hφ4' : ‖φ₄' z‖ ≤ (CE4 ^ 2 * CΔ) * Real.exp (2 * π * z.im) := by
+      calc ‖φ₄' z‖
+          = ‖E₄ z‖ ^ 2 * ‖(Δ z)⁻¹‖ := by
+            simp [φ₄', div_eq_mul_inv, pow_two]
+        _ ≤ CE4 ^ 2 * (CΔ * Real.exp (2 * π * z.im)) := by
+            gcongr
+        _ = _ := by ring
+    exact hφ4'.trans <| mul_le_mul_of_nonneg_right
+      ((le_max_left _ _).trans (le_max_right _ _)) hexp_pos
 
 /-- A convenient form of `φ₀_S_transform`, clearing the denominators by multiplying by `z^2`. -/
 public lemma φ₀_S_transform_mul_sq (w : ℍ) :

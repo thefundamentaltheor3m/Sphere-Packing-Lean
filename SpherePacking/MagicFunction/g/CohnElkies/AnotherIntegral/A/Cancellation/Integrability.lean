@@ -28,6 +28,29 @@ open SlashInvariantFormClass ModularFormClass
 
 noncomputable section
 
+/-- Continuity of the bracket `t^2 φ₀''(I/t) - (36/π²)·exp(2πt) + (8640/π)·t - 18144/π²`
+on any subset of `(0, ∞)`. -/
+private lemma continuousOn_aBracket_of_subset_Ioi {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) :
+    ContinuousOn (fun t : ℝ =>
+        (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+            ((8640 / π : ℝ) : ℂ) * t -
+            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))) s := by
+  have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im} := by
+    simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
+  have hcontDen : ContinuousOn (fun t : ℝ => (t : ℂ)) s :=
+    (continuous_ofReal : Continuous fun t : ℝ => (t : ℂ)).continuousOn
+  have hden0 : ∀ t ∈ s, (t : ℂ) ≠ 0 := fun t ht => by exact_mod_cast (ne_of_gt (hs t ht))
+  have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) s :=
+    continuous_const.continuousOn.div hcontDen hden0
+  have hmaps : Set.MapsTo (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) s {z : ℂ | 0 < z.im} := by
+    intro t ht
+    simpa [imag_I_div t] using inv_pos.2 (hs t ht)
+  have hcontPhiDiv : ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) s :=
+    hcontφ.comp hcontIdiv hmaps
+  have hcontT2 : ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) s := by fun_prop
+  exact (((hcontT2.mul hcontPhiDiv).sub (by fun_prop)).add (by fun_prop)).sub (by fun_prop)
+
 /-! ## Asymptotic/cancellation bound for integrability on `[1,∞)`. -/
 
 lemma exp_neg2piA_le_tpow2_mul_exp_neg2pit {A t : ℝ} (ht1 : 1 ≤ t) (htA : t ≤ A) :
@@ -242,57 +265,8 @@ lemma exists_phi0_cancellation_bound :
             ((8640 / π : ℝ) : ℂ) * t -
             ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖
     have hg_cont : ContinuousOn g (Set.Icc (1 : ℝ) A) := by
-      -- Continuity of `t ↦ φ₀''(I/t)` on `t ∈ [1,A]` via the upper half-plane.
-      have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im} := by
-        simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-      have hcontDen : ContinuousOn (fun t : ℝ => (t : ℂ)) (Set.Icc (1 : ℝ) A) :=
-        (continuous_ofReal : Continuous fun t : ℝ => (t : ℂ)).continuousOn
-      have hden0 : ∀ t ∈ Set.Icc (1 : ℝ) A, (t : ℂ) ≠ 0 := by
-        intro t ht
-        have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht.1
-        exact_mod_cast (ne_of_gt ht0)
-      have hcontIdiv :
-          ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) (Set.Icc (1 : ℝ) A) :=
-        (continuous_const.continuousOn.div hcontDen hden0)
-      have hmaps :
-          Set.MapsTo (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) (Set.Icc (1 : ℝ) A)
-            {z : ℂ | 0 < z.im} := by
-        intro t ht
-        have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht.1
-        have : 0 < (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im := by
-          simpa [imag_I_div t] using (inv_pos.2 ht0)
-        exact this
-      have hcontPhiDiv :
-          ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) (Set.Icc (1 : ℝ) A) :=
-        hcontφ.comp hcontIdiv hmaps
-      have hcontExpr :
-          ContinuousOn
-              (fun t : ℝ =>
-                (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-                      ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-                      ((8640 / π : ℝ) : ℂ) * t -
-                      ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))) (Set.Icc (1 : ℝ) A) := by
-        have hcontT2 :
-            ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) (Set.Icc (1 : ℝ) A) := by
-          fun_prop
-        have hcontExp :
-            ContinuousOn (fun t : ℝ => (Real.exp (2 * π * t) : ℂ)) (Set.Icc (1 : ℝ) A) := by
-          fun_prop
-        have hterm1 := hcontT2.mul hcontPhiDiv
-        have hterm2 :
-            ContinuousOn
-              (fun t : ℝ => ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (2 * π * t) : ℂ))
-              (Set.Icc (1 : ℝ) A) := by
-          fun_prop
-        have hterm3 :
-            ContinuousOn (fun t : ℝ => (((8640 / π : ℝ) : ℂ) * t)) (Set.Icc (1 : ℝ) A) := by
-          fun_prop
-        have hterm4 :
-            ContinuousOn (fun _t : ℝ => (((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))) (Set.Icc (1 : ℝ) A) :=
-          continuous_const.continuousOn
-        -- Assemble.
-        simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using
-          ((hterm1.sub hterm2).add hterm3).sub hterm4
+      have hcontExpr := continuousOn_aBracket_of_subset_Ioi
+        (s := Set.Icc (1 : ℝ) A) (fun t ht => lt_of_lt_of_le (by norm_num) ht.1)
       simpa [g] using hcontExpr.norm
     have hcomp : IsCompact (Set.Icc (1 : ℝ) A) := isCompact_Icc
     have hne : (Set.Icc (1 : ℝ) A).Nonempty := by

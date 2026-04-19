@@ -50,25 +50,21 @@ lemma norm_sub_one_le_of_norm_sub_one_sub (w : ℂ) (u C : ℝ)
     _ ≤ (|C| * u) + (8 * u) := add_le_add htail' (le_of_eq h8u)
     _ = (8 + |C|) * u := by ring
 
-lemma Theta2_term_resToImagAxis_eq (n : ℤ) (t : ℝ) (ht : 0 < t) :
+private lemma Theta2_term_resToImagAxis_eq (n : ℤ) (t : ℝ) (ht : 0 < t) :
     Θ₂_term n ⟨(Complex.I : ℂ) * t, by simp [ht]⟩ =
       (Real.exp (-Real.pi * (((n : ℝ) + (1 / 2 : ℝ)) ^ 2) * t) : ℂ) := by
   set r : ℝ := (n : ℝ) + (2⁻¹ : ℝ)
-  have hr : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by
-    apply Complex.ext <;> simp [r]
-  have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by
-    simp_all
+  have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by simp_all
   have harg :
       (π * I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I : ℂ) * t) : ℂ) =
         (-(Real.pi * (r ^ 2) * t) : ℂ) := by
     have hI : (I : ℂ) * ((I : ℂ) * (t : ℂ)) = -(t : ℂ) := by
       rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
     grind only
-  have :
-      Θ₂_term n ⟨(Complex.I : ℂ) * t, by simp [ht]⟩ =
-        (Real.exp (-(Real.pi * (r ^ 2) * t)) : ℂ) := by
+  have h : Θ₂_term n ⟨(Complex.I : ℂ) * t, by simp [ht]⟩ =
+      (Real.exp (-(Real.pi * (r ^ 2) * t)) : ℂ) := by
     simp [Θ₂_term, one_div, harg]
-  simpa [Θ₂_term, one_div, r, pow_two, mul_assoc, mul_left_comm, mul_comm] using this
+  simpa [Θ₂_term, one_div, r, pow_two, mul_assoc, mul_left_comm, mul_comm] using h
 
 lemma theta2_norm_ge_two_exp_quarter (t : ℝ) (ht : 0 < t) :
     (2 : ℝ) * Real.exp (-Real.pi * t / 4) ≤ ‖Θ₂.resToImagAxis t‖ := by

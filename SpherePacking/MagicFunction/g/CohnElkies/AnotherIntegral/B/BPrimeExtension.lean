@@ -117,13 +117,8 @@ private lemma norm_pi_mul_I : ‖(π : ℂ) * (Complex.I : ℂ)‖ = (π : ℝ) 
 
 private lemma norm_pi_mul_I_mul_le (z : ℂ) {N : ℝ} (hz : ‖z‖ ≤ N) :
     ‖(π : ℂ) * (Complex.I : ℂ) * z‖ ≤ N * π := by
-  calc
-    ‖(π : ℂ) * (Complex.I : ℂ) * z‖ = ‖(π : ℂ) * (Complex.I : ℂ)‖ * ‖z‖ := by
-      simp [mul_assoc]
-    _ ≤ ‖(π : ℂ) * (Complex.I : ℂ)‖ * N :=
-      mul_le_mul_of_nonneg_left hz (norm_nonneg ((π : ℂ) * (Complex.I : ℂ)))
-    _ = N * π := by
-      simpa [mul_comm, mul_assoc] using congrArg (fun r : ℝ => r * N) norm_pi_mul_I
+  have h := mul_le_mul_of_nonneg_left hz (norm_nonneg ((π : ℂ) * (Complex.I : ℂ)))
+  simpa [norm_mul, norm_pi_mul_I, mul_comm] using h
 
 private lemma exists_bound_norm_ψT'_comp_of_im_pos_all (z : ℝ → ℂ) (hz : Continuous z)
     (hIm : ∀ t : ℝ, 0 < (z t).im) :
