@@ -70,13 +70,11 @@ lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
           (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t)) =
         fun t : ℝ => ((g2 t + g1 t) + g0 t) := by
     funext t; dsimp [f0, f1, f2, g0, g1, g2]; ring
-  have hcongr :
-      (∫ t in Set.Ioi (0 : ℝ),
-          (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t)) =
-        ∫ t in Set.Ioi (0 : ℝ), ((g2 t + g1 t) + g0 t) :=
+  rw [show (∫ t in Set.Ioi (0 : ℝ),
+      (c36 * Real.exp (2 * π * t) - c8640 * t + c18144) * Real.exp (-π * u * t)) =
+      ∫ t in Set.Ioi (0 : ℝ), ((g2 t + g1 t) + g0 t) from
     ext (congrArg re (congrArg (integral (volume.restrict (Set.Ioi 0))) hsplit))
-      (congrArg im (congrArg (integral (volume.restrict (Set.Ioi 0))) hsplit))
-  rw [hcongr]
+      (congrArg im (congrArg (integral (volume.restrict (Set.Ioi 0))) hsplit))]
   let μ0 : Measure ℝ := μIoi0
   change (∫ t, ((g2 t + g1 t) + g0 t) ∂ μ0) =
     (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
@@ -85,32 +83,25 @@ lemma corrIntegral_eval {u : ℝ} (hu0 : 0 < u) (hu : 2 < u)
   have hIntegrable (f : ℝ → ℂ)
       (hf : IntegrableOn (μ := (volume : Measure ℝ)) f (Set.Ioi (0 : ℝ))) : Integrable f μ0 := by
     simpa [MeasureTheory.IntegrableOn, μ0, μIoi0] using hf
-  have hf0 : Integrable f0 μ0 := hIntegrable f0 hExpInt
-  have hf1 : Integrable f1 μ0 := hIntegrable f1 hTExpInt
-  have hf2 : Integrable f2 μ0 := hIntegrable f2 h2ExpInt
-  have hg0 : Integrable g0 μ0 := hf0.const_mul c18144
-  have hg1 : Integrable g1 μ0 := hf1.const_mul (-c8640)
-  have hg2 : Integrable g2 μ0 := hf2.const_mul c36
-  have hsplitInt :
-      (∫ t, ((g2 t + g1 t) + g0 t) ∂ μ0) =
-        (∫ t, g2 t ∂ μ0) + (∫ t, g1 t ∂ μ0) + (∫ t, g0 t ∂ μ0) :=
-    integral_add_add (μ := μ0) hg2 hg1 hg0
+  have hg0 : Integrable g0 μ0 := (hIntegrable f0 hExpInt).const_mul c18144
+  have hg1 : Integrable g1 μ0 := (hIntegrable f1 hTExpInt).const_mul (-c8640)
+  have hg2 : Integrable g2 μ0 := (hIntegrable f2 h2ExpInt).const_mul c36
   have hG0 : (∫ t, g0 t ∂ μ0) = c18144 * ((1 / (π * u) : ℝ) : ℂ) := by
-    have : (∫ t, g0 t ∂ μ0) = c18144 * ∫ t, f0 t ∂ μ0 := by
-      simpa [g0] using MeasureTheory.integral_const_mul (μ := μ0) c18144 f0
-    rw [this, show (∫ t, f0 t ∂ μ0) = ((1 / (π * u) : ℝ) : ℂ) from by
+    rw [show (∫ t, g0 t ∂ μ0) = c18144 * ∫ t, f0 t ∂ μ0 from by
+      simpa [g0] using MeasureTheory.integral_const_mul (μ := μ0) c18144 f0,
+      show (∫ t, f0 t ∂ μ0) = ((1 / (π * u) : ℝ) : ℂ) from by
       simpa [f0, μ0, μIoi0] using hIexp]
   have hG1 : (∫ t, g1 t ∂ μ0) = (-c8640) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) := by
-    have : (∫ t, g1 t ∂ μ0) = (-c8640) * ∫ t, f1 t ∂ μ0 := by
-      simpa [g1] using MeasureTheory.integral_const_mul (μ := μ0) (-c8640) f1
-    rw [this, show (∫ t, f1 t ∂ μ0) = ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) from by
+    rw [show (∫ t, g1 t ∂ μ0) = (-c8640) * ∫ t, f1 t ∂ μ0 from by
+      simpa [g1] using MeasureTheory.integral_const_mul (μ := μ0) (-c8640) f1,
+      show (∫ t, f1 t ∂ μ0) = ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) from by
       simpa [f1, μ0, μIoi0] using hItexp]
   have hG2 : (∫ t, g2 t ∂ μ0) = c36 * ((1 / (π * (u - 2)) : ℝ) : ℂ) := by
-    have : (∫ t, g2 t ∂ μ0) = c36 * ∫ t, f2 t ∂ μ0 := by
-      simpa [g2] using MeasureTheory.integral_const_mul (μ := μ0) c36 f2
-    rw [this, show (∫ t, f2 t ∂ μ0) = ((1 / (π * (u - 2)) : ℝ) : ℂ) from by
+    rw [show (∫ t, g2 t ∂ μ0) = c36 * ∫ t, f2 t ∂ μ0 from by
+      simpa [g2] using MeasureTheory.integral_const_mul (μ := μ0) c36 f2,
+      show (∫ t, f2 t ∂ μ0) = ((1 / (π * (u - 2)) : ℝ) : ℂ) from by
       simpa [f2, μ0, μIoi0] using hI2exp]
-  rw [hsplitInt, hG2, hG1, hG0, hc36, hc8640, hc18144]
+  rw [integral_add_add (μ := μ0) hg2 hg1 hg0, hG2, hG1, hG0, hc36, hc8640, hc18144]
   have hu2ne : (u - 2 : ℝ) ≠ 0 := ne_of_gt (sub_pos.mpr hu)
   have hune : (u : ℝ) ≠ 0 := ne_of_gt hu0
   have hπne : (π : ℝ) ≠ 0 := Real.pi_ne_zero
@@ -207,11 +198,9 @@ lemma aRadial_eq_another_integral_of_gt2 {u : ℝ} (hu : 2 < u) :
     (36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
       (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
         (18144 : ℂ) / (π ^ (3 : ℕ) * u) with hE
-  have hgoal : a' u = (4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-      (E + ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand u t) :=
+  simpa [aAnotherIntegral, hE, add_assoc] using
     assemble_another_integral (u := u) (corr := corr) (E := E) hLap' hLapInt_decomp
       (by simpa [hE] using hCorr_eval)
-  simpa [aAnotherIntegral, hE, add_assoc] using hgoal
 
 lemma aRadial_eq_another_integral_analytic_continuation {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) :
     a' u =
