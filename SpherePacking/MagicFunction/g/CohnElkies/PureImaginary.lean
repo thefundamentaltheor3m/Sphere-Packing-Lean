@@ -73,43 +73,9 @@ lemma a'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (a' u
                 ((8640 / π : ℝ) : ℂ) * t -
                 ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) =
             ((innerR t : ℝ) : ℂ) := by
-        -- Rewrite each term as `Complex.ofReal` and combine using `ofReal_{add,sub,mul}`.
         set φre : ℝ := (φ₀'' ((Complex.I : ℂ) / (t : ℂ))).re
-        have hφ' : φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = (φre : ℂ) := by
-          simpa [φre] using hφ
-        let aR : ℝ := (t ^ (2 : ℕ)) * φre
-        let bR : ℝ := (36 / (π ^ (2 : ℕ)) : ℝ) * Real.exp (2 * π * t)
-        let cR : ℝ := (8640 / π : ℝ) * t
-        let dR : ℝ := (18144 / (π ^ (2 : ℕ)) : ℝ)
-        have ha : (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ))) = (aR : ℂ) := by
-          rw [hφ']
-          simp [aR, Complex.ofReal_mul]
-        have hb : (((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t)) = (bR : ℂ) := by
-          simp [bR, Complex.ofReal_mul]
-        have hc : (((8640 / π : ℝ) : ℂ) * t) = (cR : ℂ) := by
-          simp [cR, Complex.ofReal_mul]
-        have hd : (((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) = (dR : ℂ) := by
-          simp [dR]
-        -- Now the bracket is `ofReal (aR - bR + cR - dR)`.
-        have hcomb :
-            (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-                  ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-                  ((8640 / π : ℝ) : ℂ) * t -
-                  ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) =
-                ((aR - bR + cR - dR : ℝ) : ℂ) := by
-          -- Rewrite by `ha hb hc hd`, then collapse using `ofReal_add/ofReal_sub`.
-          -- (We do this explicitly to avoid `simp` recursion issues.)
-          simp_all
-        -- Finish by unfolding `innerR`.
-        assumption
-      have hmul :
-          ((((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-                  ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-                  ((8640 / π : ℝ) : ℂ) * t -
-                  ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) *
-              Real.exp (-π * u * t)) =
-            ((innerR t : ℝ) : ℂ) * Real.exp (-π * u * t) :=
-        congrArg (fun z : ℂ => z * Real.exp (-π * u * t)) hbracket
+        have hφ' : φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = (φre : ℂ) := by simpa [φre] using hφ
+        simp_all [innerR, Complex.ofReal_mul]
       calc
         ((((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
                 ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
@@ -117,7 +83,7 @@ lemma a'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (a' u
                 ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) *
             Real.exp (-π * u * t)) =
             ((innerR t : ℝ) : ℂ) * Real.exp (-π * u * t) := by
-              simpa using hmul
+              simpa using congrArg (fun z : ℂ => z * Real.exp (-π * u * t)) hbracket
         _ = ((innerR t * Real.exp (-π * u * t) : ℝ) : ℂ) := by
               simp [Complex.ofReal_mul, mul_assoc]
     have hReal :
@@ -141,14 +107,10 @@ lemma a'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (a' u
     simp [Complex.div_im, hden]
   have hEim : E.im = 0 := by
     simp [E, Complex.add_im, Complex.sub_im, hIterm, hfrac36, hfrac8640, hfrac18144]
-  rw [hEq']
-  have hsin :
-      ((Real.sin (π * u / 2) : ℂ) ^ (2 : ℕ)) =
-        (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) := by
-    simp [Complex.ofReal_pow]
-  rw [hsin]
-  have hsinIm : (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ).im = 0 := by
-    exact Complex.ofReal_im ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ)
+  rw [hEq', show ((Real.sin (π * u / 2) : ℂ) ^ (2 : ℕ)) =
+      (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by simp [Complex.ofReal_pow]]
+  have hsinIm : (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ).im = 0 :=
+    Complex.ofReal_im ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ)
   simp_all
 
 lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u).re = 0 := by
@@ -202,20 +164,16 @@ lemma b'_re_eq_zero_of_pos_ne_two {u : ℝ} (hu : 0 < u) (hu2 : u ≠ 2) : (b' u
     simp
   have hEim : E.im = 0 := by
     simp [E, Complex.add_im, hIterm, hfrac144]
-  rw [hEq']
-  have hsin :
-      ((Real.sin (π * u / 2) : ℂ) ^ (2 : ℕ)) =
-        (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) := by
-    simp [Complex.ofReal_pow]
-  rw [hsin]
+  rw [hEq', show ((Real.sin (π * u / 2) : ℂ) ^ (2 : ℕ)) =
+      (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by simp [Complex.ofReal_pow]]
   have hsinIm : (((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ).im = 0 :=
     Complex.ofReal_im ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ)
   have hprodIm : ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E).im = 0 := by
     rw [Complex.mul_im, hEim, hsinIm]; simp
-  have :
+  have hre :
       ((-4 * (Complex.I : ℂ)) * ((((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) * E)).re = 0 := by
     rw [Complex.mul_re, hprodIm]; simp
-  simpa [mul_assoc] using this
+  simpa [mul_assoc] using hre
 
 /-- Extend `re = 0` from `(0,∞) \ {2}` to all of `(0,∞)` using continuity. -/
 private lemma re_eq_zero_of_pos_from_ne_two (f : ℝ → ℂ) (hcont : Continuous f)
@@ -230,14 +188,11 @@ private lemma re_eq_zero_of_pos_from_ne_two (f : ℝ → ℂ) (hcont : Continuou
     rw [Metric.mem_closure_iff]
     intro ε hε
     have hpos : 0 < ε / 2 := by nlinarith
-    refine ⟨2 + ε / 2, ⟨add_pos (by norm_num) hpos, ?_⟩, ?_⟩
-    · intro h
-      have hEq : (2 + ε / 2 : ℝ) = 2 := by simpa using h
-      exact (ne_of_gt hpos) (by linarith)
-    · have hdist : dist 2 (2 + ε / 2) = |ε / 2| := by
-        rw [Real.dist_eq]; simp [sub_eq_add_neg]
-      rw [hdist]
-      simpa [abs_of_pos hpos] using (by nlinarith : ε / 2 < ε)
+    refine ⟨2 + ε / 2, ⟨add_pos (by norm_num) hpos, fun h => by
+      have : (2 + ε / 2 : ℝ) = 2 := by simpa using h
+      linarith⟩, ?_⟩
+    rw [show dist 2 (2 + ε / 2) = |ε / 2| by rw [Real.dist_eq]; simp [sub_eq_add_neg]]
+    simpa [abs_of_pos hpos] using (by nlinarith : ε / 2 < ε)
   · exact h hu hu2
 
 lemma a'_re_eq_zero_of_pos {u : ℝ} (hu : 0 < u) : (a' u).re = 0 :=
