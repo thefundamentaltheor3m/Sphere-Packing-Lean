@@ -77,9 +77,8 @@ public lemma exists_phi2'_sub_720_bound_ge :
       exact mul_le_mul_of_nonneg_right hE4sub hq_nonneg
     have h2 : ‖(q : ℂ) - Δ z‖ ≤ CΔq * q ^ (2 : ℕ) := by simpa [norm_sub_rev] using hΔerr
     have hsum : E₄ z * (q : ℂ) - Δ z = (E₄ z - (1 : ℂ)) * (q : ℂ) + ((q : ℂ) - Δ z) := by ring
-    calc
-      ‖E₄ z * (q : ℂ) - Δ z‖ = ‖(E₄ z - (1 : ℂ)) * (q : ℂ) + ((q : ℂ) - Δ z)‖ :=
-            congrArg norm hsum
+    calc ‖E₄ z * (q : ℂ) - Δ z‖
+          = ‖(E₄ z - (1 : ℂ)) * (q : ℂ) + ((q : ℂ) - Δ z)‖ := congrArg norm hsum
       _ ≤ ‖(E₄ z - (1 : ℂ)) * (q : ℂ)‖ + ‖(q : ℂ) - Δ z‖ := norm_add_le _ _
       _ ≤ CE4 * q ^ (2 : ℕ) + CΔq * q ^ (2 : ℕ) := by linarith
       _ = (CE4 + CΔq) * q ^ (2 : ℕ) := by ring

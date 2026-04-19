@@ -88,8 +88,7 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
     rw [MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation.psiI'_mul_I_eq_resToImagAxis
       t ht0, psiI_resToImagAxis_eq_mul_psiS t ht0]
     have hcoeff : ‖(-(t ^ (2 : ℕ)) : ℂ)‖ = t ^ (2 : ℕ) := by simp
-    calc
-      ‖(-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t)‖
+    calc ‖(-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t)‖
           = ‖(-(t ^ (2 : ℕ)) : ℂ)‖ * ‖ψS.resToImagAxis (1 / t)‖ := by simp
       _ ≤ (t ^ (2 : ℕ)) * Cψ0 := by nlinarith [hcoeff, hψS']
       _ ≤ Cψ0 := by nlinarith [ht2le]

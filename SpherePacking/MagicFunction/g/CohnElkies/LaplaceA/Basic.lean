@@ -111,12 +111,10 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       have hn : ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) := by
         simpa [Complex.ofReal_exp] using Complex.norm_exp (-(π * u * t : ℂ))
       rw [hn]; exact Real.exp_le_one_iff.2 harg
-    calc
-      ‖aLaplaceIntegrand u t‖
+    calc ‖aLaplaceIntegrand u t‖
           ≤ ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ *
             ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ *
-              ‖(Real.exp (-π * u * t) : ℂ)‖ := by
-            simp [aLaplaceIntegrand, mul_assoc]
+              ‖(Real.exp (-π * u * t) : ℂ)‖ := by simp [aLaplaceIntegrand, mul_assoc]
       _ ≤ 1 * C₀ * 1 := by gcongr
       _ = C₀ := by ring
   have htail : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi (1 : ℝ)) := by
@@ -244,12 +242,10 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         have hExpRew : Real.exp (2 * π * t) * Real.exp (-π * u * t) = Real.exp (-a * t) := by
           simpa [a, mul_assoc, mul_left_comm, mul_comm] using
             exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t)
-        calc
-          ‖aLaplaceIntegrand u t‖
+        calc ‖aLaplaceIntegrand u t‖
               ≤ ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ *
                 ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ *
-                  ‖(Real.exp (-π * u * t) : ℂ)‖ := by
-                simp [aLaplaceIntegrand, mul_assoc]
+                  ‖(Real.exp (-π * u * t) : ℂ)‖ := by simp [aLaplaceIntegrand, mul_assoc]
           _ ≤ (t ^ (2 : ℕ)) * (Cφ * Real.exp (2 * π * t)) * Real.exp (-π * u * t) := by
                 rw [show ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ = t ^ (2 : ℕ) from by simp [Complex.norm_real],
                   show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) from by

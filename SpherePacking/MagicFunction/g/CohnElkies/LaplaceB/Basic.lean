@@ -97,8 +97,7 @@ public lemma exists_ψI_bound_exp :
   rcases (UpperHalfPlane.atImInfty_mem _).1 (by simpa using hEvNum) with ⟨A0, hA0⟩
   rcases exists_inv_Delta_bound_exp with ⟨CΔ, AΔ, hCΔ, hΔ⟩
   refine ⟨2 * CΔ, max A0 AΔ, by positivity, fun z hz => ?_⟩
-  calc
-    ‖ψI z‖ = ‖num z‖ * ‖(Δ z)⁻¹‖ := by simp [num, ψI_apply_eq_factor, div_eq_mul_inv]
+  calc ‖ψI z‖ = ‖num z‖ * ‖(Δ z)⁻¹‖ := by simp [num, ψI_apply_eq_factor, div_eq_mul_inv]
     _ ≤ (2 : ℝ) * (CΔ * Real.exp (2 * π * z.im)) :=
           mul_le_mul (hA0 z (le_trans (le_max_left _ _) hz))
             (hΔ z (le_trans (le_max_right _ _) hz)) (by positivity) (by positivity)
@@ -182,8 +181,7 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
           simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-π * u * t)
         rw [hnorm]
         exact Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, mul_nonneg hu0 (le_of_lt ht0)])
-      calc
-        ‖bLaplaceIntegrand u t‖
+      calc ‖bLaplaceIntegrand u t‖
             = ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ := by
               simp [bLaplaceIntegrand]
         _ ≤ ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * 1 :=
@@ -226,8 +224,7 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         rw [show ‖bLaplaceIntegrand u t‖ =
           ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ from by
           simp [bLaplaceIntegrand], hexp_norm]
-      calc
-        ‖bLaplaceIntegrand u t‖
+      calc ‖bLaplaceIntegrand u t‖
             = ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ * Real.exp (-π * u * t) := hnormB
         _ ≤ (CI * Real.exp (2 * π * t)) * Real.exp (-π * u * t) :=
               mul_le_mul_of_nonneg_right hψI' (Real.exp_pos _).le
