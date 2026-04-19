@@ -107,100 +107,43 @@ public lemma φ₀_S_transform_mul_sq (w : ℍ) :
 /-- Integrability of `Φ₆'` on the imaginary axis tail `t > 1`. -/
 lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₆' u ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
-  have hu0 : 0 < u := lt_trans (by norm_num) hu
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  -- Measurability by continuity on `t > 1`.
   have hcontΦ6 : ContinuousOn (Φ₆' u) {z : ℂ | 0 < z.im} :=
     (MagicFunction.a.ComplexIntegrands.Φ₆'_contDiffOn_ℂ (r := u)).continuousOn
-  have hmul : ContinuousOn (fun t : ℝ => ((t : ℂ) * Complex.I : ℂ)) (Set.Ioi (1 : ℝ)) := by
-    fun_prop
   have hmaps : Set.MapsTo (fun t : ℝ => ((t : ℂ) * Complex.I : ℂ)) (Set.Ioi (1 : ℝ))
-      {z : ℂ | 0 < z.im} := by
-    intro t ht
-    have ht0 : 0 < t := lt_trans (by norm_num) ht
-    simpa using ht0
-  have hMeas :
-      AEStronglyMeasurable (fun t : ℝ => Φ₆' u ((t : ℂ) * Complex.I))
-        (volume.restrict (Set.Ioi (1 : ℝ))) := by
-    exact (hcontΦ6.comp hmul hmaps).aestronglyMeasurable measurableSet_Ioi
-  -- Domination by an integrable exponential.
-  let b : ℝ := π * (u + 2)
-  have hb : 0 < b := by
-    have hπ : 0 < π := Real.pi_pos
-    have : 0 < u + 2 := by linarith
-    exact mul_pos hπ this
-  have hExp :
-      IntegrableOn (fun t : ℝ => C₀ * Real.exp (-b * t)) (Set.Ioi (1 : ℝ)) volume := by
-    have hExp' : IntegrableOn (fun t : ℝ => Real.exp (-b * t)) (Set.Ioi (1 : ℝ)) volume :=
-      exp_neg_integrableOn_Ioi 1 hb
-    simpa [mul_assoc] using hExp'.const_mul C₀
-  have hDom :
-      ∀ᵐ t : ℝ ∂(volume.restrict (Set.Ioi (1 : ℝ))),
-        ‖Φ₆' u ((t : ℂ) * Complex.I)‖ ≤ C₀ * Real.exp (-b * t) := by
-    refine (ae_restrict_iff' measurableSet_Ioi).2 <| .of_forall ?_
-    intro t ht
-    have ht0 : 0 < t := lt_trans (by norm_num) ht
-    -- Work in `ℍ` with `z = i*t`.
-    let zH : ℍ := ⟨(t : ℂ) * Complex.I, by simpa using ht0⟩
-    have hz_im : zH.im = t := by simp [zH, UpperHalfPlane.im]
-    have hz_half : (1 / 2 : ℝ) < zH.im := by
-      have : (1 / 2 : ℝ) < t := lt_trans (by norm_num) ht
-      simpa [hz_im] using this
-    have hφ₀ : ‖φ₀ zH‖ ≤ C₀ * Real.exp (-2 * π * zH.im) := hC₀ zH hz_half
-    have hφ₀'' : ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * zH.im) := by
-      simpa [φ₀''_coe_upperHalfPlane] using hφ₀
-    set expTerm : ℂ :=
-      cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I))
-    have hExpNorm :
-        ‖expTerm‖ = Real.exp (-π * u * t) := by
-      -- The exponent is the real number `-(π*u*t)`.
-      have hexp :
-          expTerm = (Real.exp (-π * u * t) : ℂ) := by
-        dsimp [expTerm]
-        ring_nf
-        simp [Complex.ofReal_exp]
-      calc
-        ‖expTerm‖ = ‖(Real.exp (-π * u * t) : ℂ)‖ := by
-            simp [hexp]
-        _ = Real.exp (-π * u * t) := by
-              -- `‖(r : ℂ)‖ = ‖r‖` and `‖r‖ = r` for `r ≥ 0`.
-              rw [Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
-    have hExpLe : ‖expTerm‖ ≤ Real.exp (-π * u * t) := by
-      simp [hExpNorm]
-    have hF :
-        ‖Φ₆' u ((t : ℂ) * Complex.I)‖ ≤
-          (C₀ * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) := by
-      -- Unfold `Φ₆'` and apply the two bounds.
-      have : ‖Φ₆' u ((t : ℂ) * Complex.I)‖ =
-          ‖φ₀'' ((t : ℂ) * Complex.I) * expTerm‖ := by
-        simp [MagicFunction.a.ComplexIntegrands.Φ₆', expTerm]
-      rw [this]
-      have hmul := norm_mul_le (φ₀'' ((t : ℂ) * Complex.I)) expTerm
-      refine norm_mul_le_of_le ?_ hExpLe
-      simpa [hz_im, zH] using hφ₀''
-    -- Combine the exponentials into `exp(-b*t)` (with `b = π*(u+2)`).
-    have hcomb :
-        (C₀ : ℝ) * Real.exp (-(2 * π * t)) * Real.exp (-(π * u * t)) =
-          (C₀ : ℝ) * Real.exp (-b * t) := by
-      have hsum : (-(2 * π * t)) + (-(π * u * t)) = (-b * t) := by
-        dsimp [b]
-        ring_nf
-      calc
-        (C₀ : ℝ) * Real.exp (-(2 * π * t)) * Real.exp (-(π * u * t))
-            = (C₀ : ℝ) * (Real.exp (-(2 * π * t)) * Real.exp (-(π * u * t))) := by ring
-        _ = (C₀ : ℝ) * Real.exp ((-(2 * π * t)) + (-(π * u * t))) := by simp [Real.exp_add]
-        _ = (C₀ : ℝ) * Real.exp (-b * t) := by
-              simp [hsum]
-    grind only
-  have hDomInt :
-      Integrable (fun t : ℝ => (C₀ : ℝ) * Real.exp (-b * t))
-        (volume.restrict (Set.Ioi (1 : ℝ))) :=
-    (by simpa [IntegrableOn] using hExp)
-  have hInt :
-      Integrable (fun t : ℝ => Φ₆' u ((t : ℂ) * Complex.I))
-        (volume.restrict (Set.Ioi (1 : ℝ))) :=
-    MeasureTheory.Integrable.mono' (μ := volume.restrict (Set.Ioi (1 : ℝ))) hDomInt hMeas hDom
-  simpa [IntegrableOn] using hInt
+      {z : ℂ | 0 < z.im} := fun t ht => by simpa using lt_trans (by norm_num : (0:ℝ) < 1) ht
+  have hMeas : AEStronglyMeasurable (fun t : ℝ => Φ₆' u ((t : ℂ) * Complex.I))
+      (volume.restrict (Set.Ioi (1 : ℝ))) :=
+    (hcontΦ6.comp (by fun_prop) hmaps).aestronglyMeasurable measurableSet_Ioi
+  set b : ℝ := π * (u + 2) with hb_def
+  have hb : 0 < b := mul_pos Real.pi_pos (by linarith)
+  have hExp : IntegrableOn (fun t : ℝ => C₀ * Real.exp (-b * t)) (Set.Ioi (1 : ℝ)) volume := by
+    simpa [mul_assoc] using (exp_neg_integrableOn_Ioi 1 hb).const_mul C₀
+  refine MeasureTheory.Integrable.mono'
+    (by simpa [IntegrableOn] using hExp) hMeas ?_
+  refine (ae_restrict_iff' measurableSet_Ioi).2 <| .of_forall fun t ht => ?_
+  have ht0 : 0 < t := lt_trans (by norm_num) ht
+  let zH : ℍ := ⟨(t : ℂ) * Complex.I, by simpa using ht0⟩
+  have hz_im : zH.im = t := by simp [zH, UpperHalfPlane.im]
+  have hφ₀'' : ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * t) := by
+    have := hC₀ zH (by simpa [hz_im] using lt_trans (by norm_num : (1/2:ℝ) < 1) ht)
+    simpa [φ₀''_coe_upperHalfPlane, hz_im] using this
+  have hExpEq : cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) =
+      (Real.exp (-π * u * t) : ℂ) := by ring_nf; simp [Complex.ofReal_exp]
+  have hExpLe : ‖cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I))‖ ≤
+      Real.exp (-π * u * t) := by
+    rw [hExpEq, Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
+  have hF : ‖Φ₆' u ((t : ℂ) * Complex.I)‖ ≤
+      (C₀ * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) := by
+    have : Φ₆' u ((t : ℂ) * Complex.I) = φ₀'' ((t : ℂ) * Complex.I) *
+        cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((t : ℂ) * Complex.I)) := by
+      simp [MagicFunction.a.ComplexIntegrands.Φ₆']
+    rw [this]
+    exact norm_mul_le_of_le (by simpa [zH] using hφ₀'') hExpLe
+  refine hF.trans ?_
+  rw [mul_assoc, ← Real.exp_add]
+  have : -2 * π * t + -π * u * t = -(b * t) := by dsimp [b]; ring
+  rw [this]
 
 /-- Integrability of `Φ₅'` on the imaginary-axis tail `t > 1`, via `aLaplaceIntegrand`. -/
 public lemma integrableOn_Φ₅'_imag_axis {u : ℝ} (hu : 2 < u) :
