@@ -85,13 +85,10 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     simp [Set.Ioc_union_Ioi_eq_Ioi (a := (0 : ℝ)) (b := 1) zero_le_one]
   have hsmall : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioc (0 : ℝ) 1) := by
     let C₀ : ℝ := MagicFunction.a.Schwartz.I1Decay.Cφ
-    have hs : (MeasureTheory.volume : Measure ℝ) (Set.Ioc (0 : ℝ) 1) < ⊤ := by simp
-    have hMeas_small :
-        AEStronglyMeasurable (fun t : ℝ => aLaplaceIntegrand u t)
-          (MeasureTheory.volume.restrict (Set.Ioc (0 : ℝ) 1)) :=
-      hMeasIoi.mono_measure <| Measure.restrict_mono_set (MeasureTheory.volume : Measure ℝ)
-        fun t ht => ht.1
-    refine MeasureTheory.IntegrableOn.of_bound hs hMeas_small C₀ ?_
+    refine MeasureTheory.IntegrableOn.of_bound (by simp : (MeasureTheory.volume : Measure ℝ)
+      (Set.Ioc (0 : ℝ) 1) < ⊤)
+      (hMeasIoi.mono_measure <| Measure.restrict_mono_set (MeasureTheory.volume : Measure ℝ)
+        fun t ht => ht.1) C₀ ?_
     refine (ae_restrict_iff' measurableSet_Ioc).2 <| .of_forall fun t ht => ?_
     have ht0 : 0 < t := ht.1
     have ht1 : t ≤ 1 := ht.2
