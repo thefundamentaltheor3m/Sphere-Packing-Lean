@@ -37,16 +37,15 @@ private theorem ball_subset_iUnion_lattice_inter_ball_vadd
   have hx' : ‖x‖ < R - L := by simpa [mem_ball_zero_iff] using hx
   rcases hD_unique_covers x with ⟨g, hg, -⟩
   simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff]
-  refine ⟨-g.val, ⟨⟨by simp, ?_⟩, ?_⟩⟩
-  · have : ‖g.val‖ < R := by
-      have htri : ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖ := by
-        simpa [sub_eq_add_neg, add_assoc] using (norm_sub_le (a := g.val + x) (b := x))
-      refine lt_of_le_of_lt htri ?_
-      calc
-        ‖g.val + x‖ + ‖x‖ < L + (R - L) := add_lt_add_of_le_of_lt (hL _ (by simpa using hg)) hx'
-        _ = R := by abel
-    simpa [mem_ball_zero_iff, norm_neg] using this
-  · exact (Set.mem_vadd_set_iff_neg_vadd_mem).2 (by simpa using hg)
+  refine ⟨-g.val, ⟨⟨by simp, ?_⟩, (Set.mem_vadd_set_iff_neg_vadd_mem).2 (by simpa using hg)⟩⟩
+  have htri : ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖ := by
+    simpa [sub_eq_add_neg, add_assoc] using (norm_sub_le (a := g.val + x) (b := x))
+  have : ‖g.val‖ < R := by
+    refine lt_of_le_of_lt htri ?_
+    calc ‖g.val + x‖ + ‖x‖ < L + (R - L) :=
+          add_lt_add_of_le_of_lt (hL _ (by simpa using hg)) hx'
+      _ = R := by abel
+  simpa [mem_ball_zero_iff, norm_neg] using this
 
 /--
 An add-left-invariant measure is invariant under translations by a submodule.
@@ -73,10 +72,8 @@ theorem PeriodicSpherePacking.aux2_ge
     rw [Set.biUnion_eq_iUnion, measure_iUnion]
     · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
     · intro i j hij
-      have hgh : (⟨i.1, i.2.1⟩ : S.lattice) ≠ ⟨j.1, j.2.1⟩ := by
-        intro h
-        exact hij <| Subtype.ext <|
-          congrArg (fun u : S.lattice => (u : EuclideanSpace ℝ (Fin d))) h
+      have hgh : (⟨i.1, i.2.1⟩ : S.lattice) ≠ ⟨j.1, j.2.1⟩ := fun h => hij <|
+        Subtype.ext <| congrArg (fun u : S.lattice => (u : EuclideanSpace ℝ (Fin d))) h
       simpa using
         disjoint_vadd_of_unique_covers (d := d) (Λ := S.lattice) (D := D) hD_unique_covers hgh
     · exact fun i => MeasurableSet.const_vadd hD_measurable i.1
@@ -112,19 +109,17 @@ theorem PeriodicSpherePacking.aux2_le
     rw [Set.biUnion_eq_iUnion, measure_iUnion]
     · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
     · intro i j hij
-      have hgh : (⟨i.1, i.2.1⟩ : S.lattice) ≠ ⟨j.1, j.2.1⟩ := by
-        intro h
-        exact hij <| Subtype.ext <|
-          congrArg (fun u : S.lattice => (u : EuclideanSpace ℝ (Fin d))) h
+      have hgh : (⟨i.1, i.2.1⟩ : S.lattice) ≠ ⟨j.1, j.2.1⟩ := fun h => hij <|
+        Subtype.ext <| congrArg (fun u : S.lattice => (u : EuclideanSpace ℝ (Fin d))) h
       simpa using
         disjoint_vadd_of_unique_covers (d := d) (Λ := S.lattice) (D := D) hD_unique_covers hgh
     · exact fun i => MeasurableSet.const_vadd hD_measurable i.1
-  · left
-    exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
-  · left
-    have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  · exact Or.inl <|
+      (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
+  · have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]
-    exact Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)
+    exact Or.inl <|
+      Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)
 
 open ZSpan
 
@@ -136,14 +131,13 @@ public theorem PeriodicSpherePacking.aux2_ge'
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≥ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L))
         / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
-  refine S.aux2_ge _ R ?_ (fundamentalDomain_measurableSet _) hL hd
-  intro x
+  refine S.aux2_ge _ R (fun x => ?_) (fundamentalDomain_measurableSet _) hL hd
   rcases exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x with
     ⟨⟨v, hv⟩, hvD, hvuniq⟩
   refine ⟨⟨v, by simpa [S.basis_Z_span] using hv⟩, hvD, ?_⟩
   rintro ⟨y, hy⟩ hyD
-  have := hvuniq ⟨y, by simpa [S.basis_Z_span] using hy⟩ hyD
-  exact Subtype.ext (by simpa using congrArg Subtype.val this)
+  exact Subtype.ext <| by
+    simpa using congrArg Subtype.val (hvuniq ⟨y, by simpa [S.basis_Z_span] using hy⟩ hyD)
 
 -- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice
 public theorem PeriodicSpherePacking.aux2_le'
@@ -151,14 +145,13 @@ public theorem PeriodicSpherePacking.aux2_le'
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L))
         / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
-  refine S.aux2_le _ R ?_ (fundamentalDomain_measurableSet _) hL hd
-  intro x
+  refine S.aux2_le _ R (fun x => ?_) (fundamentalDomain_measurableSet _) hL hd
   rcases exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x with
     ⟨⟨v, hv⟩, hvD, hvuniq⟩
   refine ⟨⟨v, by simpa [S.basis_Z_span] using hv⟩, hvD, ?_⟩
   rintro ⟨y, hy⟩ hyD
-  have := hvuniq ⟨y, by simpa [S.basis_Z_span] using hy⟩ hyD
-  exact Subtype.ext (by simpa using congrArg Subtype.val this)
+  exact Subtype.ext <| by
+    simpa using congrArg Subtype.val (hvuniq ⟨y, by simpa [S.basis_Z_span] using hy⟩ hyD)
 
 section finiteDensity_limit
 
@@ -284,27 +277,23 @@ public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0
   · simp_rw [add_zero]
     apply Tendsto.congr' (f₁ := 1) ?_ tendsto_const_nhds
     rw [EventuallyEq, eventually_atTop]
-    use 1
-    intro b hb
+    refine ⟨1, fun b hb => ?_⟩
     rw [ENNReal.div_self, Pi.one_apply]
     · exact (Metric.measure_ball_pos volume _ (by linarith)).ne.symm
     · exact (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
-  · have (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
+  · have hfmt (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
           = ENNReal.ofReal (R ^ d / (R + C) ^ d) := by
       rw [volume_ball, volume_ball, Fintype.card_fin, ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul,
         ← ENNReal.ofReal_pow, ← ENNReal.ofReal_mul, ← ENNReal.ofReal_div_of_pos, mul_div_mul_right]
-      <;> positivity
+        <;> positivity
     rw [ENNReal.tendsto_atTop (by decide)]
     intro ε hε
     obtain ⟨k, ⟨hk₁, hk₂⟩⟩ := aux_bhavik' (d := d) hε
-    use k * C
-    intro n hn
-    rw [this _ ((by positivity : 0 ≤ k * C).trans hn)]
+    refine ⟨k * C, fun n hn => ?_⟩
+    rw [hfmt _ ((by positivity : 0 ≤ k * C).trans hn)]
     convert hk₂ (n / C) ((le_div_iff₀ hC).mpr hn)
-    rw [div_add_one, div_div_div_cancel_right₀, div_pow]
-    · positivity
-    · positivity
+    rw [div_add_one, div_div_div_cancel_right₀, div_pow] <;> positivity
 
 /--
 As `R → ∞`, the ratio `volume (ball 0 (R + C)) / volume (ball 0 (R + C'))` tends to `1`
@@ -314,19 +303,16 @@ public theorem volume_ball_ratio_tendsto_nhds_one'
     {d : ℕ} {C C' : ℝ} (hd : 0 < d) (hC : 0 ≤ C) (hC' : 0 ≤ C') :
       Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) atTop (𝓝 1) := by
-  -- I love ENNReal (I don't)
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  apply Tendsto.congr' (f₁ := fun R ↦
+  refine Tendsto.congr' (f₁ := fun R ↦
     volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))
         / (volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
-          / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))))
+          / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C)))) ?_ ?_
   · rw [EventuallyEq, eventually_atTop]
-    use 1
-    intro R hR
-    have hR' : 0 < R := lt_of_lt_of_le zero_lt_one hR
+    refine ⟨1, fun R hR => ?_⟩
     rw [ENNReal.div_div_div_cancel_left]
-    · exact (Metric.measure_ball_pos volume _ hR').ne.symm
+    · exact (Metric.measure_ball_pos volume _ (lt_of_lt_of_le zero_lt_one hR)).ne.symm
     · exact (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
     · exact (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
   · convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
@@ -339,10 +325,8 @@ public theorem Filter.map_add_atTop_eq' {β : Type*} {f : ℝ → β} (C : ℝ) 
     Tendsto f atTop α ↔ Tendsto (fun x ↦ f (x + C)) atTop α := by
   have hmap : Filter.map (fun x : ℝ => x + C) atTop = atTop := by
     simpa using (Filter.map_add_atTop_eq (α := ℝ) (k := C))
-  constructor <;> intro hf
-  · exact tendsto_map'_iff.mp (by simpa [hmap] using hf)
-  · have : Tendsto f (Filter.map (fun x : ℝ => x + C) atTop) α := tendsto_map'_iff.mpr hf
-    simpa [hmap] using this
+  refine ⟨fun hf => tendsto_map'_iff.mp (by simpa [hmap] using hf), fun hf => ?_⟩
+  simpa [hmap] using (tendsto_map'_iff.mpr hf : Tendsto f (Filter.map (fun x : ℝ => x + C) atTop) α)
 
 /--
 As `R → ∞`, the ratio `volume (ball 0 (R + C)) / volume (ball 0 (R + C'))` tends to `1`,
