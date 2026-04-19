@@ -69,28 +69,6 @@ section CoverVolumeBound
 
 open scoped BigOperators
 
-lemma vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ}
-    (hC : coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
-    {g : cubeLattice d L hL}
-    (hg : (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C)) :
-    g +ᵥ coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C)) := by
-  intro y hy
-  rcases hy with ⟨x, hx, rfl⟩
-  simp only [vadd_eq_add, mem_ball_zero_iff]
-  linarith [norm_add_le (g : EuclideanSpace ℝ (Fin d)) x,
-    mem_ball_zero_iff.mp (hC hx), mem_ball_zero_iff.mp hg]
-
-lemma iUnion_finset_vadd_coordCube_subset_ball {L : ℝ} (hL : 0 < L) {R C : ℝ}
-    (hC : coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
-    let htSet :=
-      PeriodicConstantApprox.finite_lattice_in_ball (d := d) L hL (R + C)
-    let t : Finset (cubeLattice d L hL) := htSet.toFinset
-    (⋃ g ∈ t, g +ᵥ coordCube d L) ⊆
-      ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C)) := by
-  intro htSet t y hy
-  rcases Set.mem_iUnion₂.1 hy with ⟨g, hgT, hy'⟩
-  exact vadd_coordCube_subset_ball hL hC (htSet.mem_toFinset.1 (by simpa [t] using hgT)) hy'
-
 lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} (hL : 0 < L)
     {R C : ℝ} (hC : coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C) :
     let htSet :=
@@ -109,8 +87,14 @@ lemma card_finite_lattice_in_ball_mul_volume_coordCube_le_volume_ball {L : ℝ} 
       = ∑ g ∈ t, volume (g +ᵥ coordCube d L) := by
           simp [measure_vadd, Finset.sum_const]
     _ = volume (⋃ g ∈ t, g +ᵥ coordCube d L) := (measure_biUnion_finset hdisj hmeas).symm
-    _ ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) :=
-          volume.mono (iUnion_finset_vadd_coordCube_subset_ball hL hC)
+    _ ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + (2 * C))) := volume.mono <| by
+          rintro y hy
+          rcases Set.mem_iUnion₂.1 hy with ⟨g, hgT, x, hx, rfl⟩
+          have hg : (g : EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C) :=
+            htSet.mem_toFinset.1 (by simpa [t] using hgT)
+          simp only [vadd_eq_add, mem_ball_zero_iff]
+          linarith [norm_add_le (g : EuclideanSpace ℝ (Fin d)) x,
+            mem_ball_zero_iff.mp (hC hx), mem_ball_zero_iff.mp hg]
 
 end CoverVolumeBound
 
