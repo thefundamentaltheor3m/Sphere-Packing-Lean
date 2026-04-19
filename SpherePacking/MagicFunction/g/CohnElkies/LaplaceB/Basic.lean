@@ -85,8 +85,7 @@ public lemma exists_ψI_bound_exp :
             atImInfty (𝓝 ((1 : ℂ) ^ (3 : ℕ) * (2 : ℂ))) := by
       simpa [mul_add, add_assoc, add_left_comm, add_comm, mul_assoc, mul_left_comm, mul_comm] using
         (hH4.pow 3).mul hpoly
-    have hlim : ((1 / 2 : ℂ) * ((1 : ℂ) ^ (3 : ℕ) * (2 : ℂ))) = (1 : ℂ) := by norm_num
-    simpa [num, hlim] using
+    simpa [num, show ((1 / 2 : ℂ) * ((1 : ℂ) ^ (3 : ℕ) * (2 : ℂ))) = (1 : ℂ) from by norm_num] using
       (tendsto_const_nhds (x := (1 / 2 : ℂ)) (f := atImInfty)).mul hprod
   have hEvNum : ∀ᶠ z in atImInfty, ‖num z‖ ≤ (2 : ℝ) := by
     filter_upwards [hnum.eventually (Metric.ball_mem_nhds (1 : ℂ) (by norm_num : (0 : ℝ) < 1))]
@@ -98,14 +97,11 @@ public lemma exists_ψI_bound_exp :
   rcases (UpperHalfPlane.atImInfty_mem _).1 (by simpa using hEvNum) with ⟨A0, hA0⟩
   rcases exists_inv_Delta_bound_exp with ⟨CΔ, AΔ, hCΔ, hΔ⟩
   refine ⟨2 * CΔ, max A0 AΔ, by positivity, fun z hz => ?_⟩
-  have hnum_le : ‖num z‖ ≤ (2 : ℝ) := hA0 z (le_trans (le_max_left _ _) hz)
-  have hΔ_le : ‖(Δ z)⁻¹‖ ≤ CΔ * Real.exp (2 * π * z.im) :=
-    hΔ z (le_trans (le_max_right _ _) hz)
-  have hfac : ψI z = num z / (Δ z) := by simp [num, ψI_apply_eq_factor]
   calc
-    ‖ψI z‖ = ‖num z‖ * ‖(Δ z)⁻¹‖ := by simp [hfac, div_eq_mul_inv]
+    ‖ψI z‖ = ‖num z‖ * ‖(Δ z)⁻¹‖ := by simp [num, ψI_apply_eq_factor, div_eq_mul_inv]
     _ ≤ (2 : ℝ) * (CΔ * Real.exp (2 * π * z.im)) :=
-          mul_le_mul hnum_le hΔ_le (by positivity) (by positivity)
+          mul_le_mul (hA0 z (le_trans (le_max_left _ _) hz))
+            (hΔ z (le_trans (le_max_right _ _) hz)) (by positivity) (by positivity)
     _ = (2 * CΔ) * Real.exp (2 * π * z.im) := by ring
 
 /-- Convergence of the Laplace integral defining `b'` (integrability on `(0, ∞)` for `u > 2`). -/
