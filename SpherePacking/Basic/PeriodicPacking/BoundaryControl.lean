@@ -396,20 +396,20 @@ lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
         Tendsto f atTop (𝓝 (0 : ℝ)))
   refine hof.congr' ?_
   filter_upwards [eventually_gt_atTop (2 : ℝ)] with L hL2
-  have hL0 : 0 ≤ L := by linarith
   have hL1 : 0 ≤ L + 1 := by linarith
   have hL2' : 0 ≤ L - 2 := by linarith
   have hLdpos : 0 < L ^ d := pow_pos (by linarith) d
   rw [show volume (((shellVec d (-(1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
         coordCubeInner d L 1) = (ENNReal.ofReal (L + 1)) ^ d - (ENNReal.ofReal (L - 2)) ^ d by
-    simpa using volume_cubeShell_eq_pow L,
+      simpa using volume_cubeShell_eq_pow L,
     show volume (coordCube d L) = (ENNReal.ofReal L) ^ d by
       simpa using PeriodicConstant.volume_coordCube L,
-    ← ENNReal.ofReal_pow hL1, ← ENNReal.ofReal_pow hL2', ← ENNReal.ofReal_pow hL0,
+    ← ENNReal.ofReal_pow hL1, ← ENNReal.ofReal_pow hL2',
+    ← ENNReal.ofReal_pow (by linarith : (0 : ℝ) ≤ L),
     show ENNReal.ofReal ((L + 1) ^ d) - ENNReal.ofReal ((L - 2) ^ d) =
         ENNReal.ofReal ((L + 1) ^ d - (L - 2) ^ d) from by
       simpa using (ENNReal.ofReal_sub _ (pow_nonneg hL2' d)).symm]
-  simpa [f] using (ENNReal.ofReal_div_of_pos (x := (L + 1) ^ d - (L - 2) ^ d) hLdpos).symm
+  simpa [f] using ENNReal.ofReal_div_of_pos (x := (L + 1) ^ d - (L - 2) ^ d) hLdpos
 
 end PeriodicConstantApprox
 
