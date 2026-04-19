@@ -43,8 +43,6 @@ open Complex Real Set MeasureTheory MeasureTheory.Measure Filter intervalIntegra
 
 variable (r : ℝ)
 
-section Setup
-
 /-- The integrand on `Ici 1` whose set integral is `I₆'`. -/
 @[expose] public noncomputable def g : ℝ → ℝ → ℂ :=
   fun r t ↦ I * φ₀'' (I * t) * cexp (-π * r * t)
@@ -52,13 +50,6 @@ section Setup
 /-- Rewrite `I₆' r` as a set integral of `g r` over `Ici 1` (up to the factor `2`). -/
 public lemma I₆'_eq_integral_g_Ioo (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), g r t := by
   simp [I₆'_eq, g]
-
-end Setup
-
-
-section Bounding
-
-section Bounding_Integrand
 
 lemma I₆'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ici 1, ‖g r t‖ = ‖φ₀'' (I * t)‖ * rexp (-π * r * t) := by
   simp [g, neg_mul, norm_I, one_mul, norm_exp]
@@ -74,15 +65,9 @@ lemma I₆'_bounding_aux_2' (C₀ : ℝ)
   gcongr
   simpa [φ₀'', hpos, htpos] using hC₀ ⟨I * t, hpos⟩ (by simpa using by linarith : _)
 
-end Bounding_Integrand
-
-end Bounding
-
 noncomputable section Schwartz_Decay
 
 open SchwartzMap
-
-section Higher_iteratedFDerivs
 
 open scoped Topology
 
@@ -311,7 +296,8 @@ public theorem decay' : ∀ (k n : ℕ), ∃ C, ∀ (x : ℝ), 0 ≤ x →
   simpa using MagicFunction.a.IntegralEstimates.decay_of_bounding_uniform_norm_iteratedDeriv
     (I := I₆') (n := n) ⟨C₁, hC₁_pos, hC₁⟩ k
 
-end Schwartz_Decay.Higher_iteratedFDerivs
+end Schwartz_Decay
+
 end I₆
 
 end MagicFunction.a.IntegralEstimates
