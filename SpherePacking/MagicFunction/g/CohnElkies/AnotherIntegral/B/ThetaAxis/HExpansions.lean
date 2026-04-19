@@ -75,6 +75,11 @@ private lemma norm_ofReal_exp_neg_pi_pow (t : ℝ) (N : ℕ) :
   rw [ofReal_exp_neg_pi_pow_eq]
   simp [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
 
+/-- Nonnegativity of a bounding constant: if `‖a‖ ≤ C * exp r` then `0 ≤ C`. -/
+private lemma nonneg_of_norm_le_mul_exp {α : Type*} [SeminormedAddCommGroup α]
+    {a : α} {C r : ℝ} (h : ‖a‖ ≤ C * Real.exp r) : 0 ≤ C :=
+  nonneg_of_mul_nonneg_left ((norm_nonneg _).trans h) (Real.exp_pos _)
+
 /-- `H₂(it)` expansion up to the `exp(-3π t)` term on `t ≥ 1`. -/
 public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →
@@ -84,14 +89,8 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
         ≤ C * Real.exp (-(5 : ℝ) * Real.pi * t) := by
   rcases exists_bound_norm_Theta2_resToImagAxis_Ici_one with ⟨M, hM⟩
   rcases exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one with ⟨Cθ, hCθ⟩
-  have hCθ0 : 0 ≤ Cθ := by
-    have h := hCθ 1 (le_rfl : (1 : ℝ) ≤ 1)
-    have : 0 ≤ Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * (1 : ℝ)) :=
-      (norm_nonneg _).trans h
-    have he : 0 < Real.exp (-(25 / 4 : ℝ) * Real.pi * (1 : ℝ)) := Real.exp_pos _
-    nlinarith
-  have hM0 : 0 ≤ M :=
-    (norm_nonneg _).trans (hM 1 (le_rfl : (1 : ℝ) ≤ 1))
+  have hCθ0 : 0 ≤ Cθ := nonneg_of_norm_le_mul_exp (hCθ 1 le_rfl)
+  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 1 le_rfl)
   refine ⟨(4 * (M + 4) ^ 3) * Cθ + 176, ?_⟩
   intro t ht
   have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
@@ -122,46 +121,20 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
     linarith [htri, hya, hyb, hle1, hle2]
   have hxy : ‖x - y‖ ≤ Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) := by
     grind only
-  have hpow :
-      ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
-        (4 * (M + 4) ^ 3) * (Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t)) := by
-    have h := norm_pow4_sub_le x y
-    have hsum : (‖x‖ + ‖y‖) ^ 3 ≤ (M + 4) ^ 3 := by
-      have hx' : ‖x‖ + ‖y‖ ≤ M + 4 := by linarith
-      exact pow_le_pow_left₀ (by positivity : 0 ≤ ‖x‖ + ‖y‖) hx' 3
-    have hA : 0 ≤ Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) :=
-      mul_nonneg hCθ0 (Real.exp_pos _).le
-    have h1 : 4 * ‖x - y‖ ≤ 4 * (Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t)) :=
-      mul_le_mul_of_nonneg_left hxy (by positivity : (0 : ℝ) ≤ 4)
-    have h2 :
-        (4 * ‖x - y‖) * (‖x‖ + ‖y‖) ^ 3 ≤
-          (4 * (Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t))) * (‖x‖ + ‖y‖) ^ 3 :=
-      mul_le_mul_of_nonneg_right h1 (by positivity)
-    have h3 :
-        (4 * (Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t))) * (‖x‖ + ‖y‖) ^ 3 ≤
-          (4 * (Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t))) * (M + 4) ^ 3 :=
-      have hnonneg : (0 : ℝ) ≤ 4 * (Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t)) := by
-        positivity
-      mul_le_mul_of_nonneg_left hsum hnonneg
-    grind only
   have hpow' :
       ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
         (4 * (M + 4) ^ 3) * Cθ * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-    have hexp :
-        Real.exp (-(25 / 4 : ℝ) * Real.pi * t) ≤ Real.exp (-(5 : ℝ) * Real.pi * t) := by
-      apply Real.exp_le_exp.mpr
-      nlinarith [Real.pi_pos, ht]
-    have hCθexp :
-        Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) ≤ Cθ * Real.exp (-(5 : ℝ) * Real.pi * t) :=
-      mul_le_mul_of_nonneg_left hexp hCθ0
-    have hpow0 := hpow
-    have hstep :
-        (4 * (M + 4) ^ 3) * (Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t)) ≤
-          (4 * (M + 4) ^ 3) * (Cθ * Real.exp (-(5 : ℝ) * Real.pi * t)) :=
-      mul_le_mul_of_nonneg_left hCθexp (by positivity)
-    have := le_trans hpow0 hstep
-    -- rearrange to match the stated RHS
-    simpa [mul_assoc, mul_left_comm, mul_comm] using this
+    have h := norm_pow4_sub_le x y
+    have hsum : (‖x‖ + ‖y‖) ^ 3 ≤ (M + 4) ^ 3 :=
+      pow_le_pow_left₀ (by positivity) (by linarith) 3
+    have hexp : Real.exp (-(25 / 4 : ℝ) * Real.pi * t) ≤ Real.exp (-(5 : ℝ) * Real.pi * t) :=
+      Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])
+    have hbd :
+        4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 ≤
+          4 * (Cθ * Real.exp (-(5 : ℝ) * Real.pi * t)) * (M + 4) ^ 3 := by
+      gcongr
+      exact hxy.trans (mul_le_mul_of_nonneg_left hexp hCθ0)
+    linarith [h.trans hbd]
   have ha4 : a ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) := by
     have hpow : (Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = Real.exp (-Real.pi * t) := by
       calc
@@ -365,16 +338,8 @@ lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
         ≤ C * Real.exp (-(3 : ℝ) * Real.pi * t) := by
   rcases exists_bound_norm_Theta3_resToImagAxis_sub_one_Ici_one with ⟨C1, hC1⟩
   rcases exists_bound_norm_Theta3_resToImagAxis_sub_one_sub_two_exp_Ici_one with ⟨C2, hC2⟩
-  have hC10 : 0 ≤ C1 := by
-    have h := hC1 1 (le_rfl : (1 : ℝ) ≤ 1)
-    have he : 0 < Real.exp (-Real.pi * (1 : ℝ)) := Real.exp_pos _
-    have : 0 ≤ C1 * Real.exp (-Real.pi * (1 : ℝ)) := (norm_nonneg _).trans h
-    nlinarith
-  have hC20 : 0 ≤ C2 := by
-    have h := hC2 1 (le_rfl : (1 : ℝ) ≤ 1)
-    have he : 0 < Real.exp (-(4 : ℝ) * Real.pi * (1 : ℝ)) := Real.exp_pos _
-    have : 0 ≤ C2 * Real.exp (-(4 : ℝ) * Real.pi * (1 : ℝ)) := (norm_nonneg _).trans h
-    nlinarith
+  have hC10 : 0 ≤ C1 := nonneg_of_norm_le_mul_exp (hC1 1 le_rfl)
+  have hC20 : 0 ≤ C2 := nonneg_of_norm_le_mul_exp (hC2 1 le_rfl)
   refine ⟨(4 * (1 + C1 + 3) ^ 3) * C2 + 48, ?_⟩
   intro t ht
   have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
@@ -502,16 +467,8 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
         ≤ C * Real.exp (-(3 : ℝ) * Real.pi * t) := by
   rcases exists_bound_norm_Theta4_resToImagAxis_sub_one_Ici_one with ⟨C1, hC1⟩
   rcases exists_bound_norm_Theta4_resToImagAxis_sub_one_add_two_exp_Ici_one with ⟨C2, hC2⟩
-  have hC10 : 0 ≤ C1 := by
-    have h := hC1 1 (le_rfl : (1 : ℝ) ≤ 1)
-    have he : 0 < Real.exp (-Real.pi * (1 : ℝ)) := Real.exp_pos _
-    have : 0 ≤ C1 * Real.exp (-Real.pi * (1 : ℝ)) := (norm_nonneg _).trans h
-    nlinarith
-  have hC20 : 0 ≤ C2 := by
-    have h := hC2 1 (le_rfl : (1 : ℝ) ≤ 1)
-    have he : 0 < Real.exp (-(4 : ℝ) * Real.pi * (1 : ℝ)) := Real.exp_pos _
-    have : 0 ≤ C2 * Real.exp (-(4 : ℝ) * Real.pi * (1 : ℝ)) := (norm_nonneg _).trans h
-    nlinarith
+  have hC10 : 0 ≤ C1 := nonneg_of_norm_le_mul_exp (hC1 1 le_rfl)
+  have hC20 : 0 ≤ C2 := nonneg_of_norm_le_mul_exp (hC2 1 le_rfl)
   refine ⟨(4 * (1 + C1 + 3) ^ 3) * C2 + 48, ?_⟩
   intro t ht
   have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
@@ -679,10 +636,7 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
       ‖((H₃.resToImagAxis t) ^ (2 : ℕ))⁻¹ - (1 : ℂ)‖ ≤ C * Real.exp (-Real.pi * t) := by
   rcases exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one with ⟨C3, hC3⟩
   let C0 : ℝ := C3 + 32
-  have hC30 : 0 ≤ C3 := by
-    have hmul : 0 ≤ C3 * Real.exp (-(3 : ℝ) * Real.pi * (1 : ℝ)) :=
-      (norm_nonneg _).trans (hC3 1 (le_rfl : (1 : ℝ) ≤ 1))
-    exact nonneg_of_mul_nonneg_left hmul (Real.exp_pos _)
+  have hC30 : 0 ≤ C3 := nonneg_of_norm_le_mul_exp (hC3 1 le_rfl)
   have hsub1 : ∀ t : ℝ, 1 ≤ t → ‖H₃.resToImagAxis t - (1 : ℂ)‖ ≤ C0 * Real.exp (-Real.pi * t) := by
     intro t ht
     have h := hC3 t ht

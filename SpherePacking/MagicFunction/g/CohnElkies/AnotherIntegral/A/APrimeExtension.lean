@@ -347,91 +347,52 @@ lemma exp_k₄ (u : ℂ) (t : ℝ) :
   simp [k₄, mul_add, Complex.exp_add, add_assoc, mul_left_comm, mul_comm]
 
 lemma I₂'C_eq (u : ℂ) :
-    I₂'C u = ∫ t in (0 : ℝ)..1, base₂ t * Complex.exp (u * k₂ t) := by
-  refine intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
+    I₂'C u = ∫ t in (0 : ℝ)..1, base₂ t * Complex.exp (u * k₂ t) :=
+  intervalIntegral.integral_congr
     fun t _ => by simp [base₂, arg₂, exp_k₂, mul_assoc, mul_left_comm, mul_comm]
 
 lemma I₄'C_eq (u : ℂ) :
-    I₄'C u = ∫ t in (0 : ℝ)..1, base₄ t * Complex.exp (u * k₄ t) := by
-  refine intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
+    I₄'C u = ∫ t in (0 : ℝ)..1, base₄ t * Complex.exp (u * k₄ t) :=
+  intervalIntegral.integral_congr
     fun t _ => by simp [base₄, arg₄, exp_k₄, mul_assoc, mul_left_comm, mul_comm]
 
-lemma base₂_continuousOn : ContinuousOn base₂ (Ι (0 : ℝ) 1) := by
-  change ContinuousOn (fun t : ℝ => φ₀'' (arg₂ t) * (((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ)))
-    (Ι (0 : ℝ) 1)
+/-- Shared continuity argument for `base₂` and `base₄`: if `d : ℝ → ℂ` is continuous with
+imaginary part `1` (so nonzero), then `t ↦ φ₀'' (-1 / d t) * d t ^ 2` is continuous. -/
+private lemma phi_div_pow_continuousOn {d : ℝ → ℂ} (hd : Continuous d)
+    (hd_im : ∀ t, (d t).im = 1) :
+    ContinuousOn (fun t : ℝ => φ₀'' (-1 / d t) * (d t) ^ (2 : ℕ)) (Ι (0 : ℝ) 1) := by
   have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) UpperHalfPlane.upperHalfPlaneSet := by
     simpa using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-  have hden0 : ∀ t ∈ Ι (0 : ℝ) 1, ((t : ℂ) + (Complex.I : ℂ)) ≠ 0 := by
-    intro t _ ht0
-    have : (1 : ℝ) = 0 := by simpa using congrArg Complex.im ht0
+  have hden0 : ∀ t : ℝ, d t ≠ 0 := fun t ht0 => by
+    have : (1 : ℝ) = 0 := by simpa [hd_im] using congrArg Complex.im ht0
     exact one_ne_zero this
-  have hcontArg : ContinuousOn arg₂ (Ι (0 : ℝ) 1) := by
-    have hcontDen : ContinuousOn (fun t : ℝ => (t : ℂ) + (Complex.I : ℂ)) (Ι (0 : ℝ) 1) := by
-      simpa using (by fun_prop : Continuous fun t : ℝ => (t : ℂ) + (Complex.I : ℂ)).continuousOn
-    simpa [arg₂] using continuousOn_const.div hcontDen hden0
-  have hmaps : Set.MapsTo arg₂ (Ι (0 : ℝ) 1) UpperHalfPlane.upperHalfPlaneSet := by
-    intro t ht
-    set z : ℂ := (t : ℂ) + (Complex.I : ℂ)
-    have him : (arg₂ t).im = 1 / Complex.normSq z := by
-      calc
-        (arg₂ t).im = ((-1 : ℂ) * z⁻¹).im := by simp [arg₂, z, div_eq_mul_inv]
-        _ = -z⁻¹.im := by simp
-        _ = -(-z.im / Complex.normSq z) := by simp [Complex.inv_im]
-        _ = z.im / Complex.normSq z := by ring
-        _ = 1 / Complex.normSq z := by simp [z]
-    have : 0 < (arg₂ t).im := by
-      have hz0 : z ≠ 0 := hden0 t ht
-      have : 0 < (1 / Complex.normSq z : ℝ) := one_div_pos.2 (Complex.normSq_pos.2 hz0)
-      simpa [him] using this
+  have hcontArg : ContinuousOn (fun t => (-1 : ℂ) / d t) (Ι (0 : ℝ) 1) :=
+    continuousOn_const.div hd.continuousOn fun t _ => hden0 t
+  have hmaps :
+      Set.MapsTo (fun t => (-1 : ℂ) / d t) (Ι (0 : ℝ) 1) UpperHalfPlane.upperHalfPlaneSet := by
+    intro t _
+    set z : ℂ := d t
+    have hz0 : z ≠ 0 := hden0 t
+    have him : ((-1 : ℂ) / z).im = 1 / Complex.normSq z := by
+      have : ((-1 : ℂ) / z).im = -z⁻¹.im := by simp [div_eq_mul_inv]
+      rw [this, Complex.inv_im, hd_im]
+      field_simp
+    have : 0 < ((-1 : ℂ) / z).im := by
+      rw [him]; exact one_div_pos.2 (Complex.normSq_pos.2 hz0)
     simpa [UpperHalfPlane.upperHalfPlaneSet] using this
-  have hcontφcomp : ContinuousOn (fun t : ℝ => φ₀'' (arg₂ t)) (Ι (0 : ℝ) 1) :=
-    hcontφ.comp hcontArg hmaps
-  have hpow :
-      ContinuousOn (fun t : ℝ => (((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))) (Ι (0 : ℝ) 1) := by
-    simpa using
-      (by fun_prop :
-          Continuous fun t : ℝ => (((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))).continuousOn
-  exact hcontφcomp.mul hpow
+  exact (hcontφ.comp hcontArg hmaps).mul (by fun_prop)
+
+lemma base₂_continuousOn : ContinuousOn base₂ (Ι (0 : ℝ) 1) := by
+  unfold base₂ arg₂
+  exact phi_div_pow_continuousOn (by fun_prop) (fun _ => by simp)
 
 lemma base₄_continuousOn : ContinuousOn base₄ (Ι (0 : ℝ) 1) := by
-  change
-    ContinuousOn
-      (fun t : ℝ =>
-        (-1 : ℂ) * φ₀'' (arg₄ t) * ((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ)))
-      (Ι (0 : ℝ) 1)
-  have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) UpperHalfPlane.upperHalfPlaneSet := by
-    simpa using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-  have hden0 : ∀ t ∈ Ι (0 : ℝ) 1, (-(t : ℂ) + (Complex.I : ℂ)) ≠ 0 := by
-    intro t _ ht0
-    have : (1 : ℝ) = 0 := by simpa using congrArg Complex.im ht0
-    exact one_ne_zero this
-  have hcontArg : ContinuousOn arg₄ (Ι (0 : ℝ) 1) := by
-    have hcontDen : ContinuousOn (fun t : ℝ => (-(t : ℂ) + (Complex.I : ℂ))) (Ι (0 : ℝ) 1) := by
-      simpa using (by fun_prop : Continuous fun t : ℝ => (-(t : ℂ) + (Complex.I : ℂ))).continuousOn
-    simpa [arg₄] using continuousOn_const.div hcontDen hden0
-  have hmaps : Set.MapsTo arg₄ (Ι (0 : ℝ) 1) UpperHalfPlane.upperHalfPlaneSet := by
-    intro t ht
-    set z : ℂ := (-(t : ℂ) + (Complex.I : ℂ))
-    have him : (arg₄ t).im = 1 / Complex.normSq z := by
-      calc
-        (arg₄ t).im = ((-1 : ℂ) * z⁻¹).im := by simp [arg₄, z, div_eq_mul_inv]
-        _ = -z⁻¹.im := by simp
-        _ = -(-z.im / Complex.normSq z) := by simp [Complex.inv_im]
-        _ = z.im / Complex.normSq z := by ring
-        _ = 1 / Complex.normSq z := by simp [z]
-    have : 0 < (arg₄ t).im := by
-      have hz0 : z ≠ 0 := hden0 t ht
-      have : 0 < (1 / Complex.normSq z : ℝ) := one_div_pos.2 (Complex.normSq_pos.2 hz0)
-      simpa [him] using this
-    simpa [UpperHalfPlane.upperHalfPlaneSet] using this
-  have hcontφcomp : ContinuousOn (fun t : ℝ => φ₀'' (arg₄ t)) (Ι (0 : ℝ) 1) :=
-    hcontφ.comp hcontArg hmaps
-  have hpow :
-      ContinuousOn (fun t : ℝ => ((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))) (Ι (0 : ℝ) 1) := by
-    simpa using
-      (by fun_prop : Continuous fun t : ℝ => ((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))).continuousOn
-  have hconst : ContinuousOn (fun _t : ℝ => (-1 : ℂ)) (Ι (0 : ℝ) 1) := continuousOn_const
-  exact (hconst.mul hcontφcomp).mul hpow
+  have h := phi_div_pow_continuousOn (d := fun t : ℝ => -(t : ℂ) + (Complex.I : ℂ))
+    (by fun_prop) (fun _ => by simp)
+  have : (fun t : ℝ => (-1 : ℂ) * (φ₀'' (arg₄ t) * (-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))) =
+      base₄ := by
+    funext t; simp [base₄, arg₄]
+  exact this ▸ continuousOn_const.mul h
 
 lemma k₂_continuousOn : ContinuousOn k₂ (Ι (0 : ℝ) 1) := by
   unfold k₂; fun_prop
@@ -469,110 +430,71 @@ lemma k₄_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₄ t‖ ≤ (3 * Real.pi) := f
     show ((1 : ℝ) * Real.pi : ℂ) = (π : ℂ) by push_cast; ring] using
     k_bound_three_pi (s₁ := 1) (s₂ := -1) (by norm_num) (by norm_num) t ht
 
+/-- Shared `‖d t ^ 2‖ ≤ 4` bound where `‖d t‖ ≤ ‖t‖ + 1`. -/
+private lemma pow_two_bound_of_norm_sub {d : ℝ → ℂ}
+    (hd : ∀ t : ℝ, ‖d t‖ ≤ ‖(t : ℂ)‖ + 1) :
+    ∀ t ∈ Ι (0 : ℝ) 1, ‖(d t) ^ (2 : ℕ)‖ ≤ 4 := by
+  intro t ht
+  have hnorm : ‖d t‖ ≤ 2 := (hd t).trans (by linarith [norm_of_mem_uIoc_le_one ht])
+  calc
+    ‖(d t) ^ (2 : ℕ)‖ = ‖d t‖ ^ (2 : ℕ) := by simp
+    _ ≤ (2 : ℝ) ^ (2 : ℕ) := pow_le_pow_left₀ (norm_nonneg _) hnorm 2
+    _ = 4 := by norm_num
+
+/-- Shared argument to bound `base` for pieces 2 and 4 on `Ι 0 1`.
+Requires `im_lower t` witnessing `1/2 < (arg t).im` for `t ∈ Ioo 0 1`. -/
+private lemma phi_on_arg_bounded
+    (arg : ℝ → ℂ) (C₀ : ℝ) (hC₀_nonneg : 0 ≤ C₀)
+    (hC₀ : ∀ z : ℍ, 1 / 2 < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
+    (him : ∀ t ∈ Set.Ioo (0 : ℝ) 1, (1 / 2 : ℝ) < (arg t).im) :
+    ∀ t ∈ Ι (0 : ℝ) 1, ‖φ₀'' (arg t)‖ ≤ max C₀ ‖φ₀'' (arg 1)‖ := by
+  intro t ht
+  by_cases ht1 : t = 1
+  · exact ht1 ▸ le_max_right _ _
+  · have ht0 : 0 < t := by simpa using ht.1
+    have ht1' : t < 1 := lt_of_le_of_ne (by simpa using ht.2) ht1
+    have hh := him t ⟨ht0, ht1'⟩
+    exact (norm_φ₀''_le_of_half_lt hC₀_nonneg hC₀ (one_half_pos.trans hh) hh).trans
+      (le_max_left _ _)
+
 lemma I₂'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₂'C u0 := by
-  -- bound `base₂` by a constant using `norm_φ₀_le` on `t < 1`,
-  -- and a pointwise bound at `t = 1`.
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  let Cφ : ℝ := max C₀ ‖φ₀'' (arg₂ 1)‖
-  have hφ_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖φ₀'' (arg₂ t)‖ ≤ Cφ := by
-    intro t ht
-    by_cases ht1 : t = 1
-    · subst ht1
-      exact le_max_right _ _
-    · have ht0 : 0 < t := by simpa using ht.1
-      have ht1' : t < 1 := lt_of_le_of_ne (by simpa using ht.2) ht1
-      have htIoo : t ∈ Set.Ioo (0 : ℝ) 1 := ⟨ht0, ht1'⟩
-      have him : (1 / 2 : ℝ) < (arg₂ t).im := by
-        simpa [arg₂] using (MagicFunction.a.IntegralEstimates.I₂.im_parametrisation_lower t htIoo)
-      have hzpos : 0 < (arg₂ t).im := one_half_pos.trans him
-      have hbound : ‖φ₀'' (arg₂ t)‖ ≤ C₀ :=
-        norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀ hzpos him
-      exact (le_trans hbound (le_max_left _ _))
-  have hpow_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖(((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ ≤ 4 := by
-    intro t ht
-    have htnorm : ‖(t : ℂ)‖ ≤ 1 := norm_of_mem_uIoc_le_one ht
-    have hnorm : ‖(t : ℂ) + (Complex.I : ℂ)‖ ≤ 2 := by
-      calc
-        ‖(t : ℂ) + (Complex.I : ℂ)‖ ≤ ‖(t : ℂ)‖ + ‖(Complex.I : ℂ)‖ := norm_add_le _ _
-        _ ≤ 1 + 1 := add_le_add htnorm (by simp)
-        _ = 2 := by norm_num
+  set Cφ : ℝ := max C₀ ‖φ₀'' (arg₂ 1)‖
+  have hφ_bound := phi_on_arg_bounded arg₂ C₀ hC₀_pos.le hC₀ fun t htIoo => by
+    simpa [arg₂] using MagicFunction.a.IntegralEstimates.I₂.im_parametrisation_lower t htIoo
+  have hpow_bound := pow_two_bound_of_norm_sub
+    (d := fun t => (t : ℂ) + (Complex.I : ℂ)) fun t => by
+      simpa using (norm_add_le (t : ℂ) (Complex.I : ℂ))
+  have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base₂ t‖ ≤ (4 * Cφ) := fun t ht => by
     calc
-      ‖((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ)‖ = ‖(t : ℂ) + (Complex.I : ℂ)‖ ^ (2 : ℕ) := by
-        simp
-      _ ≤ (2 : ℝ) ^ (2 : ℕ) := by
-        exact pow_le_pow_left₀ (norm_nonneg _) hnorm 2
-      _ = 4 := by norm_num
-  have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base₂ t‖ ≤ (4 * Cφ) := by
-    intro t ht
-    have hφ := hφ_bound t ht
-    have hpow := hpow_bound t ht
-    calc
-      ‖base₂ t‖ = ‖φ₀'' (arg₂ t)‖ * ‖(((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ := by
-        simp [base₂]
-      _ ≤ Cφ * 4 := by
-        exact mul_le_mul hφ hpow (norm_nonneg _) (by positivity)
+      ‖base₂ t‖ = ‖φ₀'' (arg₂ t)‖ * ‖(((t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ := by simp [base₂]
+      _ ≤ Cφ * 4 := mul_le_mul (hφ_bound t ht) (hpow_bound t ht) (norm_nonneg _) (by positivity)
       _ = 4 * Cφ := by ring
-  have h :=
+  have hEq : I₂'C = fun u : ℂ => ∫ t in (0 : ℝ)..1, base₂ t * Complex.exp (u * k₂ t) :=
+    funext fun u => by simpa using I₂'C_eq u
+  simpa [hEq] using
     differentiableAt_intervalIntegral_mul_exp (base := base₂) (k := k₂) u0 (4 * Cφ) (3 * Real.pi)
       base₂_continuousOn k₂_continuousOn hbase_bound k₂_bound
-  have hEq :
-      I₂'C =
-        (fun u : ℂ => ∫ t in (0 : ℝ)..1, base₂ t * Complex.exp (u * k₂ t)) := by
-    funext u
-    simpa using (I₂'C_eq u)
-  simpa [hEq] using h
 
 lemma I₄'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₄'C u0 := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  let Cφ : ℝ := max C₀ ‖φ₀'' (arg₄ 1)‖
-  have hφ_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖φ₀'' (arg₄ t)‖ ≤ Cφ := by
-    intro t ht
-    by_cases ht1 : t = 1
-    · subst ht1
-      exact le_max_right _ _
-    · have ht0 : 0 < t := by simpa using ht.1
-      have ht1' : t < 1 := lt_of_le_of_ne (by simpa using ht.2) ht1
-      have htIoo : t ∈ Set.Ioo (0 : ℝ) 1 := ⟨ht0, ht1'⟩
-      have him : (1 / 2 : ℝ) < (arg₄ t).im := by
-        simpa [arg₄] using (MagicFunction.a.IntegralEstimates.I₄.im_parametrisation_lower t htIoo)
-      have hzpos : 0 < (arg₄ t).im := one_half_pos.trans him
-      have hbound : ‖φ₀'' (arg₄ t)‖ ≤ C₀ :=
-        norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀ hzpos him
-      exact (le_trans hbound (le_max_left _ _))
-  have hpow_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ ≤ 4 := by
-    intro t ht
-    have htnorm : ‖(t : ℂ)‖ ≤ 1 := norm_of_mem_uIoc_le_one ht
-    have hnorm : ‖-(t : ℂ) + (Complex.I : ℂ)‖ ≤ 2 := by
-      calc
-        ‖-(t : ℂ) + (Complex.I : ℂ)‖ ≤ ‖-(t : ℂ)‖ + ‖(Complex.I : ℂ)‖ := norm_add_le _ _
+  set Cφ : ℝ := max C₀ ‖φ₀'' (arg₄ 1)‖
+  have hφ_bound := phi_on_arg_bounded arg₄ C₀ hC₀_pos.le hC₀ fun t htIoo => by
+    simpa [arg₄] using MagicFunction.a.IntegralEstimates.I₄.im_parametrisation_lower t htIoo
+  have hpow_bound := pow_two_bound_of_norm_sub
+    (d := fun t => -(t : ℂ) + (Complex.I : ℂ)) fun t => by
+      calc ‖-(t : ℂ) + (Complex.I : ℂ)‖ ≤ ‖-(t : ℂ)‖ + ‖(Complex.I : ℂ)‖ := norm_add_le _ _
         _ = ‖(t : ℂ)‖ + 1 := by simp
-        _ ≤ 1 + 1 := add_le_add htnorm le_rfl
-        _ = 2 := by norm_num
+  have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base₄ t‖ ≤ (4 * Cφ) := fun t ht => by
     calc
-      ‖((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ = ‖-(t : ℂ) + (Complex.I : ℂ)‖ ^ (2 : ℕ) := by
-        simp
-      _ ≤ (2 : ℝ) ^ (2 : ℕ) := by
-        exact pow_le_pow_left₀ (norm_nonneg _) hnorm 2
-      _ = 4 := by norm_num
-  have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base₄ t‖ ≤ (4 * Cφ) := by
-    intro t ht
-    have hφ := hφ_bound t ht
-    have hpow := hpow_bound t ht
-    calc
-      ‖base₄ t‖ = ‖φ₀'' (arg₄ t)‖ * ‖((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ := by
-        simp [base₄]
-      _ ≤ Cφ * 4 := by
-        exact mul_le_mul hφ hpow (norm_nonneg _) (by positivity)
+      ‖base₄ t‖ = ‖φ₀'' (arg₄ t)‖ * ‖((-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))‖ := by simp [base₄]
+      _ ≤ Cφ * 4 := mul_le_mul (hφ_bound t ht) (hpow_bound t ht) (norm_nonneg _) (by positivity)
       _ = 4 * Cφ := by ring
-  have h :=
+  have hEq : I₄'C = fun u : ℂ => ∫ t in (0 : ℝ)..1, base₄ t * Complex.exp (u * k₄ t) :=
+    funext fun u => by simpa using I₄'C_eq u
+  simpa [hEq] using
     differentiableAt_intervalIntegral_mul_exp (base := base₄) (k := k₄) u0 (4 * Cφ) (3 * Real.pi)
       base₄_continuousOn k₄_continuousOn hbase_bound k₄_bound
-  have hEq :
-      I₄'C =
-        (fun u : ℂ => ∫ t in (0 : ℝ)..1, base₄ t * Complex.exp (u * k₄ t)) := by
-    funext u
-    simpa using (I₄'C_eq u)
-  simpa [hEq] using h
 
 lemma I₂'C_differentiableOn : DifferentiableOn ℂ I₂'C rightHalfPlane :=
   fun u _hu => (I₂'C_differentiableAt u).differentiableWithinAt

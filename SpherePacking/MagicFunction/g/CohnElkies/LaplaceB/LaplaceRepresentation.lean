@@ -312,30 +312,22 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
   -- The left and right shifted rays are converted to the central Laplace ray `VI` by translation.
   -- First express `J₂'` and `J₄'` as the top-edge integrals appearing in
   -- `hRectLeft/hRectRight`.
+  have hmem_Icc : ∀ {x : ℝ}, x ∈ Set.uIcc (0 : ℝ) 1 → x ∈ Set.Icc (0 : ℝ) 1 := fun hx => by
+    simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using hx
   have hJ2_top :
       MagicFunction.b.RealIntegrals.J₂' u =
         ∫ (x : ℝ) in (0 : ℝ)..1,
           bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1) := by
     dsimp [MagicFunction.b.RealIntegrals.J₂']
-    refine intervalIntegral.integral_congr ?_
-    intro x hx
-    have hx' : x ∈ Set.Icc (0 : ℝ) 1 := by
-      simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using hx
-    have hz : MagicFunction.Parametrisations.z₂' x = (-1 : ℂ) + (x : ℂ) + (I : ℂ) := by
-      simpa using (MagicFunction.Parametrisations.z₂'_eq_of_mem (t := x) hx')
-    have hz' : (x : ℂ) + (1 : ℂ) * Complex.I - 1 = (-1 : ℂ) + (x : ℂ) + (I : ℂ) := by
-      ring_nf
+    refine intervalIntegral.integral_congr fun x hx => ?_
     have hz_g : MagicFunction.Parametrisations.z₂' x = (x : ℂ) + (1 : ℂ) * Complex.I - 1 := by
-      calc
-        MagicFunction.Parametrisations.z₂' x = (-1 : ℂ) + (x : ℂ) + (I : ℂ) := hz
-        _ = (x : ℂ) + (1 : ℂ) * Complex.I - 1 := by
-          simpa using hz'.symm
+      have := MagicFunction.Parametrisations.z₂'_eq_of_mem (t := x) (hmem_Icc hx)
+      push_cast at this; linear_combination this
     simp [bContourIntegrandT, bContourWeight, hz_g, sub_eq_add_neg, mul_assoc]
   have hJ4_top :
       MagicFunction.b.RealIntegrals.J₄' u =
         ∫ (x : ℝ) in (1 : ℝ)..0,
           bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I) := by
-    -- Rewrite the parametrization `z₄'(t) = 1 - t + I` and switch orientation.
     dsimp [MagicFunction.b.RealIntegrals.J₄']
     let g : ℝ → ℂ := fun x : ℝ => bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I)
     have hrew :
@@ -343,35 +335,19 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
             (-1 : ℂ) * ψT' (MagicFunction.Parametrisations.z₄' t) *
               cexp (π * (Complex.I : ℂ) * (u : ℂ) * MagicFunction.Parametrisations.z₄' t)) =
           ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t) := by
-      refine intervalIntegral.integral_congr ?_
-      intro t ht
-      have ht' : t ∈ Set.Icc (0 : ℝ) 1 := by
-        simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
+      refine intervalIntegral.integral_congr fun t ht => ?_
       have hz : MagicFunction.Parametrisations.z₄' t = (1 : ℂ) - (t : ℂ) + (I : ℂ) := by
-        -- `z₄'_eq_of_mem` gives `1 - t + I` with the real coercion.
         simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-          (MagicFunction.Parametrisations.z₄'_eq_of_mem (t := t) ht')
-      have hz' :
-          ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I = (1 : ℂ) - (t : ℂ) + (I : ℂ) := by
-        norm_num
-      have hz_g :
-          MagicFunction.Parametrisations.z₄' t =
-            ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I := by
-        simpa
+          (MagicFunction.Parametrisations.z₄'_eq_of_mem (t := t) (hmem_Icc ht))
+      have hz_g : MagicFunction.Parametrisations.z₄' t =
+          ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I := by push_cast; linear_combination hz
       simp [g, bContourIntegrandT, bContourWeight, hz_g, sub_eq_add_neg, mul_assoc]
     rw [hrew]
-    have hcomp : (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t := by
-      norm_num
-    -- `(-1) * ∫ g = ∫_{1..0} g` by orientation reversal.
-    calc
-      ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)
-          = (-1 : ℂ) * ∫ t in (0 : ℝ)..1, g (1 - t) := by
-              simp
-      _ = (-1 : ℂ) * ∫ t in (0 : ℝ)..1, g t := by rw [hcomp]
-      _ = -∫ t in (0 : ℝ)..1, g t := by simp
+    have hcomp : (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t := by norm_num
+    calc ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)
+        = -∫ t in (0 : ℝ)..1, g t := by simp [hcomp]
       _ = ∫ t in (1 : ℝ)..0, g t := by
-            simpa using
-              (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm
+          simpa using (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm
   -- Solve for `J₂'` and `J₄'` using the rectangle identities.
   have hJ2_ray :
       MagicFunction.b.RealIntegrals.J₂' u =

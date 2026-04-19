@@ -500,53 +500,22 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
           ∀ᵐ t ∂μ,
             ‖(B t : ℂ) * Real.exp (-π * (useq n) * t)‖ ≤
               ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖ := by
-        refine (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi ?_)
-        intro t ht
-        have ht0 : 0 < t := ht
-        have ht0' : 0 ≤ t := le_of_lt ht0
-        have hnegπ : (-π : ℝ) ≤ 0 := by
-          have : (0 : ℝ) ≤ π := le_of_lt Real.pi_pos
-          exact neg_nonpos.mpr this
-        have hmul : (2 : ℝ) * t ≤ (useq n) * t :=
-          mul_le_mul_of_nonneg_right (le_of_lt (huseq_gt2 n)) ht0'
-        have hexparg :
-            (-π : ℝ) * ((useq n) * t) ≤ (-π : ℝ) * ((2 : ℝ) * t) :=
-          mul_le_mul_of_nonpos_left hmul hnegπ
+        refine MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_
+        have ht0 : 0 ≤ t := le_of_lt ht
+        have hnegπ : (-π : ℝ) ≤ 0 := neg_nonpos.mpr Real.pi_pos.le
         have hexp :
-            Real.exp ((-π : ℝ) * ((useq n) * t)) ≤ Real.exp ((-π : ℝ) * ((2 : ℝ) * t)) :=
-          Real.exp_le_exp.2 hexparg
-        -- Convert the exponential bound into a norm inequality.
-        have hBN : 0 ≤ ‖(B t : ℂ)‖ := norm_nonneg _
-        have hexp_nonneg : 0 ≤ Real.exp (-π * (useq n) * t) := le_of_lt (Real.exp_pos _)
-        have hexp2_nonneg : 0 ≤ Real.exp (-π * (2 : ℝ) * t) := le_of_lt (Real.exp_pos _)
-        have hnorm2 :
-            ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖ =
-              ‖(B t : ℂ)‖ * Real.exp (-π * (2 : ℝ) * t) := by
-          -- `‖z * r‖ = ‖z‖ * r` for `r ≥ 0`.
-            calc
-              ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖ =
-                  ‖(B t : ℂ)‖ * ‖((Real.exp (-π * (2 : ℝ) * t)) : ℂ)‖ := by
-                    simp
-            _ = ‖(B t : ℂ)‖ * Real.exp (-π * (2 : ℝ) * t) := by
-                  rw [Complex.norm_of_nonneg hexp2_nonneg]
-        calc
-          ‖(B t : ℂ) * Real.exp (-π * (useq n) * t)‖
-              = ‖(B t : ℂ)‖ * Real.exp (-π * (useq n) * t) := by
-                  calc
-                      ‖(B t : ℂ) * Real.exp (-π * (useq n) * t)‖ =
-                          ‖(B t : ℂ)‖ * ‖((Real.exp (-π * (useq n) * t)) : ℂ)‖ := by
-                            simp
-                    _ = ‖(B t : ℂ)‖ * Real.exp (-π * (useq n) * t) := by
-                          rw [Complex.norm_of_nonneg hexp_nonneg]
-          _ = ‖(B t : ℂ)‖ * Real.exp ((-π : ℝ) * ((useq n) * t)) := by
-                  simp [mul_assoc]
-          _ ≤ ‖(B t : ℂ)‖ * Real.exp ((-π : ℝ) * ((2 : ℝ) * t)) :=
-                  mul_le_mul_of_nonneg_left hexp hBN
-          _ = ‖(B t : ℂ)‖ * Real.exp (-π * (2 : ℝ) * t) := by
-                  simp [mul_assoc]
-          _ = ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖ :=
-                  hnorm2.symm
-      -- Apply `norm_integral_le_of_norm_le` on the restricted measure.
+            Real.exp (-π * useq n * t) ≤ Real.exp (-π * (2 : ℝ) * t) :=
+          Real.exp_le_exp.2 (by
+            have := mul_le_mul_of_nonneg_right (le_of_lt (huseq_gt2 n)) ht0
+            nlinarith [Real.pi_pos])
+        have h1 : ‖(B t : ℂ) * Real.exp (-π * useq n * t)‖ =
+            ‖(B t : ℂ)‖ * Real.exp (-π * useq n * t) := by
+          rw [norm_mul, Complex.norm_of_nonneg (Real.exp_pos _).le]
+        have h2 : ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖ =
+            ‖(B t : ℂ)‖ * Real.exp (-π * (2 : ℝ) * t) := by
+          rw [norm_mul, Complex.norm_of_nonneg (Real.exp_pos _).le]
+        rw [h1, h2]
+        exact mul_le_mul_of_nonneg_left hexp (norm_nonneg _)
       exact norm_integral_le_of_norm_le hM_int hle
     have hsin_tendsto :
         Filter.Tendsto (fun n : ℕ => (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ)) Filter.atTop
@@ -578,70 +547,14 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
                     (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t))‖
               ≤ (‖(π / 2160 : ℂ)‖ * M) * (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) := by
         intro n
-        have hsin_nonneg : 0 ≤ (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) := by positivity
-        calc
-          ‖(π / 2160 : ℂ) *
-                (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) *
-                  (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t))‖
-                  = ‖(π / 2160 : ℂ)‖ *
-                    ‖((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ *
-                      ‖∫ t in Set.Ioi (0 : ℝ),
-                          (B t : ℂ) * Real.exp (-π * (useq n) * t)‖ := by
-                  have h₁ :
-                      ‖(π / 2160 : ℂ) *
-                            ((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ =
-                        ‖(π / 2160 : ℂ)‖ *
-                          ‖((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ := by
-                    simp
-                  have h₂ :
-                      ‖(π / 2160 : ℂ) *
-                            ((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ) *
-                          (∫ t in Set.Ioi (0 : ℝ),
-                                (B t : ℂ) * Real.exp (-π * (useq n) * t))‖ =
-                        ‖(π / 2160 : ℂ) *
-                              ((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ *
-                            ‖∫ t in Set.Ioi (0 : ℝ),
-                                  (B t : ℂ) * Real.exp (-π * (useq n) * t)‖ := by
-                    simp [mul_assoc]
-                  calc
-                    ‖(π / 2160 : ℂ) *
-                          ((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ) *
-                        (∫ t in Set.Ioi (0 : ℝ),
-                              (B t : ℂ) * Real.exp (-π * (useq n) * t))‖
-                        =
-                        ‖(π / 2160 : ℂ) *
-                              ((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ *
-                            ‖∫ t in Set.Ioi (0 : ℝ),
-                                  (B t : ℂ) * Real.exp (-π * (useq n) * t)‖ := h₂
-                    _ =
-                        (‖(π / 2160 : ℂ)‖ *
-                            ‖((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖) *
-                          ‖∫ t in Set.Ioi (0 : ℝ),
-                                (B t : ℂ) * Real.exp (-π * (useq n) * t)‖ := by
-                      simp
-                    _ = ‖(π / 2160 : ℂ)‖ *
-                          ‖((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ *
-                        ‖∫ t in Set.Ioi (0 : ℝ),
-                              (B t : ℂ) * Real.exp (-π * (useq n) * t)‖ := by
-                      simp [mul_assoc]
-          _ ≤ ‖(π / 2160 : ℂ)‖ *
-                ‖((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ * M := by
-                gcongr
-                exact hInt_bound n
-          _ = (‖(π / 2160 : ℂ)‖ * M) * (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) := by
-                have hnorm_sin :
-                    ‖((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ =
-                      (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) := by
-                  simpa [pow_two] using
-                    (Complex.norm_of_nonneg (sq_nonneg (Real.sin (π * (useq n) / 2))))
-                calc
-                  ‖(π / 2160 : ℂ)‖ *
-                        ‖((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ * M =
-                      ‖(π / 2160 : ℂ)‖ * M *
-                        ‖((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ := by
-                    ac_rfl
-                  _ = ‖(π / 2160 : ℂ)‖ * M * (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) := by
-                    rw [hnorm_sin]
+        have hnorm_sin :
+            ‖((Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) : ℂ)‖ =
+              (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ) := by
+          simpa [pow_two] using
+            Complex.norm_of_nonneg (sq_nonneg (Real.sin (π * (useq n) / 2)))
+        rw [norm_mul, norm_mul, hnorm_sin, mul_right_comm]
+        gcongr
+        exact hInt_bound n
       have hbound_tendsto :
           Filter.Tendsto
               (fun n : ℕ =>
