@@ -33,68 +33,48 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
       (π / 2160 : ℂ) *
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
           (∫ t in Set.Ioi (0 : ℝ), (A t : ℂ) * Real.exp (-π * u * t)) := by
-  -- Start from the Laplace-type formulas for `a'` and `b'`.
-  have ha :=
-    MagicFunction.g.CohnElkies.IntegralReps.aRadial_eq_laplace_phi0_main (u := u) hu
-  have hb :=
-    MagicFunction.g.CohnElkies.IntegralReps.bRadial_eq_laplace_psiI_main (u := u) hu
-  -- Abbreviate the two integrals that appear.
   set IA : ℂ :=
     ∫ t in Set.Ioi (0 : ℝ),
       ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) * Real.exp (-π * u * t)
   set IB : ℂ :=
     ∫ t in Set.Ioi (0 : ℝ), ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)
   have ha' : a' u = (4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IA := by
-    simpa [IA, mul_assoc] using ha
+    simpa [IA, mul_assoc] using
+      MagicFunction.g.CohnElkies.IntegralReps.aRadial_eq_laplace_phi0_main (u := u) hu
   have hb' : b' u = (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IB := by
-    simpa [IB, mul_assoc] using hb
-  -- Rewrite `gRadial u` using the definition and substitute `ha'`/`hb'`.
+    simpa [IB, mul_assoc] using
+      MagicFunction.g.CohnElkies.IntegralReps.bRadial_eq_laplace_psiI_main (u := u) hu
   have hg :
       gRadial u =
         ((↑π * Complex.I) / 8640 : ℂ) * a' u - (Complex.I / (240 * (↑π)) : ℂ) * b' u := by
     simp [gRadial, sub_eq_add_neg, SchwartzMap.add_apply, SchwartzMap.smul_apply, smul_eq_mul]
-  -- Compute the scalar coefficients.
   have hcoefA :
       ((↑π * Complex.I) / 8640 : ℂ) * (4 * (Complex.I : ℂ)) = -(π / 2160 : ℂ) := by
-    -- Pure arithmetic in `ℂ` using `I^2 = -1`.
     have : ((↑π * Complex.I) / 8640 : ℂ) * (4 * (Complex.I : ℂ)) = -(↑π / 2160 : ℂ) := by
-      -- Reduce to `I * (I * x) = -x`.
-      ring_nf
-      simp
-      ring
+      ring_nf; simp; ring
     simpa using this
   have hcoefB :
       (-(Complex.I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ)) = -(1 / (60 * π) : ℂ) := by
     have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-    -- Clear denominators in `ℂ`.
-    field_simp [hπ]
-    ring_nf
-    simp
-  -- Express the RHS integral in terms of `IA` and `IB`.
+    field_simp [hπ]; ring_nf; simp
   have hA_integral :
       (∫ t in Set.Ioi (0 : ℝ), (A t : ℂ) * Real.exp (-π * u * t)) =
         -IA + (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB := by
-    -- Rewrite `A t` pointwise using `A_as_complex`.
     have hset :
         (∫ t in Set.Ioi (0 : ℝ), (A t : ℂ) * Real.exp (-π * u * t)) =
           ∫ t in Set.Ioi (0 : ℝ),
             (((-(t ^ (2 : ℕ)) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) +
                 (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * ψI' ((Complex.I : ℂ) * (t : ℂ))) *
-              Real.exp (-π * u * t)) := by
-      refine MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
-        measurableSet_Ioi ?_
-      intro t ht
-      simp [A_as_complex (t := t) ht]
-    -- Now expand and recognize `IA` and `IB`.
+              Real.exp (-π * u * t)) :=
+      MeasureTheory.setIntegral_congr_fun (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
+        measurableSet_Ioi (fun t ht => by simp [A_as_complex (t := t) ht])
     rw [hset]
-    -- Use integrability of the Laplace kernels (available as lemmas in `IntegralReps`).
     have hIntA :
         IntegrableOn
             (fun t : ℝ =>
               ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) *
                 Real.exp (-π * u * t))
             (Set.Ioi (0 : ℝ)) := by
-      -- This is exactly `aLaplaceIntegrand`.
       simpa [MagicFunction.g.CohnElkies.IntegralReps.aLaplaceIntegrand, mul_assoc] using
         (MagicFunction.g.CohnElkies.IntegralReps.aLaplaceIntegral_convergent (u := u) hu)
     have hIntB :
@@ -105,7 +85,6 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
       simpa [MagicFunction.g.CohnElkies.IntegralReps.bLaplaceIntegrand] using
         (MagicFunction.g.CohnElkies.IntegralReps.bLaplaceIntegral_convergent (u := u) hu)
     set c : ℂ := (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
-    -- Split the integral into the two pieces and identify `IA` and `IB`.
     have hsplit :
         (fun t : ℝ =>
             (((-(t ^ (2 : ℕ)) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) +
@@ -120,11 +99,9 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
           (-(t ^ (2 : ℕ) : ℂ)) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) * Real.exp (-π * u * t) =
             -(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) *
                 Real.exp (-π * u * t)) := by
-        -- `(-a) * (b * c) = -(a * (b * c))`, then reassociate.
         simp [mul_assoc]
       grind only
     rw [hsplit]
-    -- Use `integral_add` on the restricted measure.
     have hIntA0 :
         Integrable
             (fun t : ℝ =>
@@ -135,8 +112,7 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
     have hIntA'' : Integrable (fun t : ℝ =>
         -(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) *
             Real.exp (-π * u * t)))
-        ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
-      exact hIntA0.neg
+        ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := hIntA0.neg
     have hIntB0 :
         Integrable
             (fun t : ℝ =>
@@ -147,9 +123,7 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
         Integrable
             (fun t : ℝ =>
               c * (ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)))
-            ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
-      exact hIntB0.const_mul c
-    -- Rewrite the set integral as an integral over the restricted measure.
+            ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := hIntB0.const_mul c
     change
         (∫ t : ℝ,
             -(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) *
@@ -157,11 +131,8 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
               c * (ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) ∂
             ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ)))) =
           -IA + c * IB
-    -- Split the integral and simplify.
     rw [MeasureTheory.integral_add hIntA'' hIntB'']
-    -- Identify the two integrals with `IA` and `IB`.
     simp [IA, IB, c, mul_assoc, MeasureTheory.integral_neg, MeasureTheory.integral_const_mul]
-  -- Pull out the common `sin^2` factor and use `hA_integral`.
   have hmain :
       ((↑π * Complex.I) / 8640 : ℂ) *
               ((4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IA) +
@@ -170,7 +141,6 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
         (π / 2160 : ℂ) *
           (Real.sin (π * u / 2)) ^ (2 : ℕ) *
             (-IA + (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB) := by
-    -- Make the implicit coercions `ℝ → ℂ` explicit to avoid `simp` rewriting the sine factor.
     change
         ((↑π * Complex.I) / 8640 : ℂ) *
               ((4 * (Complex.I : ℂ)) *
@@ -180,17 +150,12 @@ public theorem gRadial_eq_integral_A {u : ℝ} (hu : 2 < u) :
                     ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) * IB) =
           (π / 2160 : ℂ) * ((Real.sin (π * u / 2)) ^ (2 : ℕ) : ℂ) *
             (-IA + (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB)
-    -- The only nontrivial numeric identity is `(π/2160) * (-(36/π^2)) = -(1/(60*π))`.
     have h36 :
         (π / 2160 : ℂ) * (-(36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) = (-(1 / (60 * π)) : ℂ) := by
-      have h36R :
-          (π / 2160 : ℝ) * (-(36 / (π ^ (2 : ℕ)) : ℝ)) = -(1 / (60 * π)) := by
-        have hπ : (π : ℝ) ≠ 0 := Real.pi_ne_zero
-        field_simp [hπ]
-        norm_num
+      have h36R : (π / 2160 : ℝ) * (-(36 / (π ^ (2 : ℕ)) : ℝ)) = -(1 / (60 * π)) := by
+        field_simp [Real.pi_ne_zero]; norm_num
       exact_mod_cast h36R
     grind only
-  -- Finish by rewriting the RHS using `hA_integral`.
   simp_all
 
 end MagicFunction.g.CohnElkies
