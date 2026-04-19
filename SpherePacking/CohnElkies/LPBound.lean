@@ -83,40 +83,30 @@ theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
 
 include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
-  have h0 : 0 ≤ (f 0).re := f_nonneg_at_zero (f := f) hCohnElkies₂
-  refine lt_of_le_of_ne h0 ?_
+  refine lt_of_le_of_ne (f_nonneg_at_zero (f := f) hCohnElkies₂) ?_
   intro hf0re
-  have hf0 : f 0 = 0 := by
-    simpa [hf0re.symm] using (hReal 0).symm
+  have hf0 : f 0 = 0 := by simpa [hf0re.symm] using (hReal 0).symm
   have hint0 : (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v) = 0 := by
     have hInv : 𝓕⁻ (𝓕 ⇑f) 0 = f 0 :=
-      congrArg (fun g : EuclideanSpace ℝ (Fin d) → ℂ => g 0) (f.fourierInversion)
-    simpa [fourierInv_eq, inner_zero_right, AddChar.map_zero_eq_one, one_smul, hf0] using hInv
+      congrArg (fun g : EuclideanSpace ℝ (Fin d) → ℂ => g 0) f.fourierInversion
+    simpa [fourierInv_eq, hf0] using hInv
   have hintRe : ∫ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).re = 0 := by
-    have : (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v).re = 0 := by
-      simpa using congrArg Complex.re hint0
-    have hre :
-        (∫ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).re) =
-          (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v).re := by
-      simpa using
-        (integral_re (f := fun v : EuclideanSpace ℝ (Fin d) => 𝓕 (⇑f) v) hIntegrable)
-    exact hre.trans this
-  have hcont : Continuous (fun x : EuclideanSpace ℝ (Fin d) => (𝓕 f x).re) := by
-    fun_prop
+    have hre : (∫ v : EuclideanSpace ℝ (Fin d), (𝓕 (⇑f) v).re) =
+        (∫ v : EuclideanSpace ℝ (Fin d), 𝓕 (⇑f) v).re := by
+      simpa using integral_re (f := fun v : EuclideanSpace ℝ (Fin d) => 𝓕 (⇑f) v) hIntegrable
+    rw [hre]; simpa using congrArg Complex.re hint0
   have hfun : (fun x : EuclideanSpace ℝ (Fin d) => (𝓕 f x).re) = 0 := by
-    refine (Continuous.integral_zero_iff_zero_of_nonneg hcont ?_ hCohnElkies₂).1 ?_
-    · have h𝓕_int : MeasureTheory.Integrable
-          (fun x : EuclideanSpace ℝ (Fin d) => 𝓕 f x) := by
-        rw [← FourierTransform.fourierCLE_apply (R := ℝ)
-          (E := 𝓢(EuclideanSpace ℝ (Fin d), ℂ)) f]
-        exact (FT f).integrable
-      exact h𝓕_int.re
-    simpa using hintRe
-  have h𝓕fzero : 𝓕 f = 0 := by
-    ext x
-    have hx : (𝓕 f x).re = 0 := by simpa [hfun] using congrArg (fun g => g x) hfun
-    simpa [hx] using (hRealFourier x).symm
-  exact fourier_ne_zero hne_zero h𝓕fzero
+    refine (Continuous.integral_zero_iff_zero_of_nonneg (by fun_prop) ?_ hCohnElkies₂).1
+      (by simpa using hintRe)
+    have h𝓕_int : MeasureTheory.Integrable
+        (fun x : EuclideanSpace ℝ (Fin d) => 𝓕 f x) := by
+      rw [← FourierTransform.fourierCLE_apply (R := ℝ) (E := 𝓢(EuclideanSpace ℝ (Fin d), ℂ)) f]
+      exact (FT f).integrable
+    exact h𝓕_int.re
+  refine fourier_ne_zero hne_zero ?_
+  ext x
+  have hx : (𝓕 f x).re = 0 := by simpa using congrArg (fun g => g x) hfun
+  simpa [hx] using (hRealFourier x).symm
 
 end Nonnegativity
 
@@ -156,63 +146,37 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
     ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2)
   refine Summable.of_norm_bounded (g := g') ?_ ?_
   · simpa [g'] using hFourierNorm.mul_right (n ^ 2)
-  · intro m
-    set A : ℂ :=
-        ∑' x : ↑(P.centers ∩ D),
-          exp (2 * π * I *
-            ⟪(x : EuclideanSpace ℝ (Fin d)),
-              (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) with hAdef
-    have hnexp : ∀ x : ↑(P.centers ∩ D),
-        ‖exp (2 * π * I *
-          ⟪(x : EuclideanSpace ℝ (Fin d)),
-            (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])‖ = (1 : ℝ) := by
-      intro x
-      have hmul :
-          (2 * π * I *
-            (⟪(x : EuclideanSpace ℝ (Fin d)),
-              (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℂ))
-            = ((2 * π *
-              ⟪(x : EuclideanSpace ℝ (Fin d)),
-                (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℝ) : ℂ) * I := by
-        simp [mul_assoc, mul_comm]
-      simpa [hmul] using
-        (Complex.norm_exp_ofReal_mul_I
-          (2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)),
-            (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))
-    have hA_le : ‖A‖ ≤ n := by
-      rw [hAdef]
-      have htri :
-          ‖∑ x : ↑(P.centers ∩ D),
-              exp (2 * π * I *
-                ⟪(x : EuclideanSpace ℝ (Fin d)),
-                  (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])‖
-            ≤ ∑ x : ↑(P.centers ∩ D),
-              ‖exp (2 * π * I *
-                ⟪(x : EuclideanSpace ℝ (Fin d)),
-                  (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])‖ := by
-        simpa using
-          (norm_sum_le (s := Finset.univ)
-            (f := fun x : ↑(P.centers ∩ D) =>
-              exp (2 * π * I *
-                ⟪(x : EuclideanSpace ℝ (Fin d)),
-                  (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])))
-      simpa [tsum_fintype, hnexp, n] using htri
-    have hA_sq : ‖A‖ ^ 2 ≤ n ^ 2 := pow_le_pow_left₀ (norm_nonneg A) hA_le 2
-    have hRe_le :
-        ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖
-          ≤ ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ := by
-      simpa [Real.norm_eq_abs] using
-        (abs_re_le_norm ((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))))
-    calc
-      ‖(𝓕 ⇑f m).re * (‖A‖ ^ 2)‖
-          = ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * ‖‖A‖ ^ 2‖ := by
-            simp [norm_mul]
-      _ ≤ ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * (n ^ 2) := by
-            refine mul_le_mul_of_nonneg_left ?_ (norm_nonneg _)
-            simpa [Real.norm_of_nonneg (sq_nonneg _)] using hA_sq
-      _ ≤ ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2) :=
-            mul_le_mul_of_nonneg_right hRe_le (by positivity)
-      _ ≤ g' m := by simp [g']
+  intro m
+  set A : ℂ := ∑' x : ↑(P.centers ∩ D),
+    exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
+      (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]) with hAdef
+  have hnexp : ∀ x : ↑(P.centers ∩ D),
+      ‖exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
+        (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])‖ = (1 : ℝ) := fun x => by
+    have hmul : (2 * π * I *
+        (⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℂ))
+        = ((2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)),
+          (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℝ) : ℂ) * I := by
+      simp [mul_assoc, mul_comm]
+    simpa [hmul] using Complex.norm_exp_ofReal_mul_I
+      (2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
+  have hA_le : ‖A‖ ≤ n := by
+    rw [hAdef]
+    have htri := norm_sum_le (s := (Finset.univ : Finset ↑(P.centers ∩ D)))
+      (f := fun x : ↑(P.centers ∩ D) =>
+        exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
+          (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))
+    simpa [tsum_fintype, hnexp, n] using htri
+  have hA_sq : ‖A‖ ^ 2 ≤ n ^ 2 := pow_le_pow_left₀ (norm_nonneg A) hA_le 2
+  calc ‖(𝓕 ⇑f m).re * (‖A‖ ^ 2)‖
+        = ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * ‖A‖ ^ 2 := by
+          simp [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
+    _ ≤ ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * (n ^ 2) :=
+          mul_le_mul_of_nonneg_left hA_sq (norm_nonneg _)
+    _ ≤ ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2) :=
+          mul_le_mul_of_nonneg_right
+            (by simpa [Real.norm_eq_abs] using abs_re_le_norm _) (by positivity)
+    _ ≤ g' m := by simp [g']
 
 include hP hCohnElkies₁ in
 open Classical in
