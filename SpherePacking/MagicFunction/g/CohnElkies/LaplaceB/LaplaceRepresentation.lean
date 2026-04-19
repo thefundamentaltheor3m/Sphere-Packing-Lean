@@ -372,22 +372,14 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           (∫ t in Set.Ioc (0 : ℝ) 1,
             bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) := by
     dsimp [MagicFunction.b.RealIntegrals.J₁']
-    -- Rewrite `z₁'(t) = -1 + I*t` on `[[0,1]]`.
-    have hrew :
-        (∫ t in (0 : ℝ)..1,
-            (I : ℂ) * ψT' (MagicFunction.Parametrisations.z₁' t) *
-              cexp (π * (I : ℂ) * (u : ℂ) * MagicFunction.Parametrisations.z₁' t)) =
-          ∫ t in (0 : ℝ)..1,
-            (I : ℂ) * bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ)) := by
-      refine intervalIntegral.integral_congr ?_
-      intro t ht
-      have ht' : t ∈ Set.Icc (0 : ℝ) 1 := by
-        simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
-      have hz : MagicFunction.Parametrisations.z₁' t = (-1 : ℂ) + I * (t : ℂ) := by
-        simpa using (MagicFunction.Parametrisations.z₁'_eq_of_mem (t := t) ht')
-      simp [bContourIntegrandT, bContourWeight, hz, mul_assoc]
-    rw [hrew]
-    -- Pull out the constant `I` and convert the interval integral to a set integral.
+    rw [show (∫ t in (0 : ℝ)..1,
+        (I : ℂ) * ψT' (MagicFunction.Parametrisations.z₁' t) *
+          cexp (π * (I : ℂ) * (u : ℂ) * MagicFunction.Parametrisations.z₁' t)) =
+        ∫ t in (0 : ℝ)..1, (I : ℂ) * bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ)) from
+      intervalIntegral.integral_congr fun t ht => by
+        have hz : MagicFunction.Parametrisations.z₁' t = (-1 : ℂ) + I * (t : ℂ) := by
+          simpa using MagicFunction.Parametrisations.z₁'_eq_of_mem (t := t) (hmem_Icc ht)
+        simp [bContourIntegrandT, bContourWeight, hz, mul_assoc]]
     simp only [intervalIntegral.integral_const_mul, mul_eq_mul_left_iff, I_ne_zero, or_false]
     rw [intervalIntegral.integral_of_le (show (0 : ℝ) ≤ 1 by norm_num)]
   have hJ3_set :
@@ -396,20 +388,14 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           (∫ t in Set.Ioc (0 : ℝ) 1,
             bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) := by
     dsimp [MagicFunction.b.RealIntegrals.J₃']
-    have hrew :
-        (∫ t in (0 : ℝ)..1,
-            (I : ℂ) * ψT' (MagicFunction.Parametrisations.z₃' t) *
-              cexp (π * (I : ℂ) * (u : ℂ) * MagicFunction.Parametrisations.z₃' t)) =
-          ∫ t in (0 : ℝ)..1,
-            (I : ℂ) * bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ)) := by
-      refine intervalIntegral.integral_congr ?_
-      intro t ht
-      have ht' : t ∈ Set.Icc (0 : ℝ) 1 := by
-        simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
-      have hz : MagicFunction.Parametrisations.z₃' t = (1 : ℂ) + I * (t : ℂ) := by
-        simpa using (MagicFunction.Parametrisations.z₃'_eq_of_mem (t := t) ht')
-      simp [bContourIntegrandT, bContourWeight, hz, mul_assoc]
-    rw [hrew]
+    rw [show (∫ t in (0 : ℝ)..1,
+        (I : ℂ) * ψT' (MagicFunction.Parametrisations.z₃' t) *
+          cexp (π * (I : ℂ) * (u : ℂ) * MagicFunction.Parametrisations.z₃' t)) =
+        ∫ t in (0 : ℝ)..1, (I : ℂ) * bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ)) from
+      intervalIntegral.integral_congr fun t ht => by
+        have hz : MagicFunction.Parametrisations.z₃' t = (1 : ℂ) + I * (t : ℂ) := by
+          simpa using MagicFunction.Parametrisations.z₃'_eq_of_mem (t := t) (hmem_Icc ht)
+        simp [bContourIntegrandT, bContourWeight, hz, mul_assoc]]
     simp only [intervalIntegral.integral_const_mul, mul_eq_mul_left_iff, I_ne_zero, or_false]
     rw [intervalIntegral.integral_of_le (show (0 : ℝ) ≤ 1 by norm_num)]
   have hJ5_set :
@@ -417,46 +403,31 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         (2 : ℂ) * (I : ℂ) *
           (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) := by
     dsimp [MagicFunction.b.RealIntegrals.J₅']
-    -- Rewrite `z₅'(t) = I*t` on `[[0,1]]` and pull out constants.
-    have hrew :
-        (∫ t in (0 : ℝ)..1,
-              (I : ℂ) * ψI' (MagicFunction.Parametrisations.z₅' t) *
-                cexp (π * (I : ℂ) * (u : ℂ) * MagicFunction.Parametrisations.z₅' t)) =
-          ∫ t in (0 : ℝ)..1,
-            -(I : ℂ) * bContourIntegrandI u (I * (t : ℂ)) := by
-      refine intervalIntegral.integral_congr ?_
-      intro t ht
-      have ht' : t ∈ Set.Icc (0 : ℝ) 1 := by
-        simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
-      have hz : MagicFunction.Parametrisations.z₅' t = I * (t : ℂ) := by
-        simpa using (MagicFunction.Parametrisations.z₅'_eq_of_mem (t := t) ht')
-      simp [bContourIntegrandI, bContourWeight, hz, mul_assoc, mul_left_comm, mul_comm]
-    rw [hrew]
-    -- Convert the interval integral to a set integral and pull out the constants `-2` and `I`.
-    simp only
-      [neg_mul, intervalIntegral.integral_neg, intervalIntegral.integral_const_mul,
-        mul_neg, neg_neg]
+    rw [show (∫ t in (0 : ℝ)..1,
+        (I : ℂ) * ψI' (MagicFunction.Parametrisations.z₅' t) *
+          cexp (π * (I : ℂ) * (u : ℂ) * MagicFunction.Parametrisations.z₅' t)) =
+        ∫ t in (0 : ℝ)..1, -(I : ℂ) * bContourIntegrandI u (I * (t : ℂ)) from
+      intervalIntegral.integral_congr fun t ht => by
+        have hz : MagicFunction.Parametrisations.z₅' t = I * (t : ℂ) := by
+          simpa using MagicFunction.Parametrisations.z₅'_eq_of_mem (t := t) (hmem_Icc ht)
+        simp [bContourIntegrandI, bContourWeight, hz, mul_assoc, mul_left_comm, mul_comm]]
+    simp only [neg_mul, intervalIntegral.integral_neg, intervalIntegral.integral_const_mul,
+      mul_neg, neg_neg]
     rw [intervalIntegral.integral_of_le (show (0 : ℝ) ≤ 1 by norm_num)]
     ring
   have hJ6_set :
       MagicFunction.b.RealIntegrals.J₆' u =
         (-2 : ℂ) * (I : ℂ) *
           (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) := by
-    -- Rewrite `z₆'(t) = I*t` and remove the endpoint `t = 1`.
     dsimp [MagicFunction.b.RealIntegrals.J₆']
-    have hcongr :
-        (∫ t in Set.Ici (1 : ℝ),
-              (I : ℂ) * ψS' (MagicFunction.Parametrisations.z₆' t) *
-                cexp (π * (I : ℂ) * (u : ℂ) * MagicFunction.Parametrisations.z₆' t)) =
-          ∫ t in Set.Ici (1 : ℝ),
-            (I : ℂ) * bContourIntegrandS u (I * (t : ℂ)) := by
-      refine MeasureTheory.setIntegral_congr_fun (s := Set.Ici (1 : ℝ)) measurableSet_Ici ?_
-      intro t ht
-      have hz : MagicFunction.Parametrisations.z₆' t = I * (t : ℂ) := by
-        simpa using (MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t) ht)
-      simp [bContourIntegrandS, bContourWeight, hz, mul_assoc, mul_left_comm, mul_comm]
-    rw [hcongr]
-    -- Pull out `I` and replace `Ici 1` by `Ioi 1`.
+    rw [show (∫ t in Set.Ici (1 : ℝ),
+        (I : ℂ) * ψS' (MagicFunction.Parametrisations.z₆' t) *
+          cexp (π * (I : ℂ) * (u : ℂ) * MagicFunction.Parametrisations.z₆' t)) =
+        ∫ t in Set.Ici (1 : ℝ), (I : ℂ) * bContourIntegrandS u (I * (t : ℂ)) from
+      MeasureTheory.setIntegral_congr_fun measurableSet_Ici fun t ht => by
+        have hz : MagicFunction.Parametrisations.z₆' t = I * (t : ℂ) := by
+          simpa using MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t) ht
+        simp [bContourIntegrandS, bContourWeight, hz, mul_assoc, mul_left_comm, mul_comm]]
     rw [MeasureTheory.integral_Ici_eq_integral_Ioi]
     simp [MeasureTheory.integral_const_mul, mul_assoc]
   -- Pointwise translation identities on the shifted rays.
