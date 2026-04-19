@@ -92,35 +92,32 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
   set x : ℂ := Θ₂.resToImagAxis t
   set y : ℂ := (2 : ℂ) * a + (2 : ℂ) * b
   have hx : ‖x‖ ≤ M := hM t ht
+  have ha_norm : ‖a‖ = Real.exp (-Real.pi * t / 4) := by
+    simp [-Complex.ofReal_exp, a, abs_of_nonneg (Real.exp_pos _).le]
+  have hb_norm : ‖b‖ = Real.exp (-(9 / 4 : ℝ) * Real.pi * t) := by
+    simp [-Complex.ofReal_exp, b, abs_of_nonneg (Real.exp_pos _).le]
   have hy : ‖y‖ ≤ 4 := by
-    have ha : ‖a‖ = Real.exp (-Real.pi * t / 4) := by
-      simp [-Complex.ofReal_exp, a, abs_of_nonneg (Real.exp_pos _).le]
-    have hb : ‖b‖ = Real.exp (-(9 / 4 : ℝ) * Real.pi * t) := by
-      simp [-Complex.ofReal_exp, b, abs_of_nonneg (Real.exp_pos _).le]
     have hle1 : Real.exp (-Real.pi * t / 4) ≤ 1 :=
       Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_trans zero_le_one ht])
     have hle2 : Real.exp (-(9 / 4 : ℝ) * Real.pi * t) ≤ 1 :=
       Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht])
     have htri : ‖y‖ ≤ ‖(2 : ℂ) * a‖ + ‖(2 : ℂ) * b‖ := by
       simpa [y] using norm_add_le ((2 : ℂ) * a) ((2 : ℂ) * b)
-    simp only [norm_mul, Complex.norm_ofNat, ha, hb] at htri
+    simp only [norm_mul, Complex.norm_ofNat, ha_norm, hb_norm] at htri
     linarith [htri]
   have hxy : ‖x - y‖ ≤ Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) := by
     grind only
-  have hpow' :
-      ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
+  have hpow' : ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
         (4 * (M + 4) ^ 3) * Cθ * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-    have h := norm_pow4_sub_le x y
     have hsum : (‖x‖ + ‖y‖) ^ 3 ≤ (M + 4) ^ 3 :=
       pow_le_pow_left₀ (by positivity) (by linarith) 3
     have hexp : Real.exp (-(25 / 4 : ℝ) * Real.pi * t) ≤ Real.exp (-(5 : ℝ) * Real.pi * t) :=
       Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])
-    have hbd :
-        4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 ≤
-          4 * (Cθ * Real.exp (-(5 : ℝ) * Real.pi * t)) * (M + 4) ^ 3 := by
+    have hbd : 4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 ≤
+        4 * (Cθ * Real.exp (-(5 : ℝ) * Real.pi * t)) * (M + 4) ^ 3 := by
       gcongr
       exact hxy.trans (mul_le_mul_of_nonneg_left hexp hCθ0)
-    linarith [h.trans hbd]
+    linarith [(norm_pow4_sub_le x y).trans hbd]
   -- Replace `y = 2a + 2b` into `y^4` and express `a^4`, `a^3·b` via exp-arithmetic.
   have ha4 : a ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) := by
     simpa [a, Complex.ofReal_pow] using congrArg (fun r : ℝ => (r : ℂ))
@@ -142,23 +139,18 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
       ‖y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
             (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖
         ≤ 176 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-    have ha : ‖a‖ = Real.exp (-Real.pi * t / 4) := by
-      simp [-Complex.ofReal_exp, a, abs_of_nonneg (Real.exp_pos _).le]
-    have hb : ‖b‖ = Real.exp (-(9 / 4 : ℝ) * Real.pi * t) := by
-      simp [-Complex.ofReal_exp, b, abs_of_nonneg (Real.exp_pos _).le]
-    -- General form: ‖a^i · b^j‖ = exp((i·(-π/4) + j·(-9π/4)) · t) up to sign.
     have hab : ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖ = Real.exp (-(5 : ℝ) * Real.pi * t) := by
-      simpa [norm_mul, norm_pow, ha, hb] using
+      simpa [norm_mul, norm_pow, ha_norm, hb_norm] using
         (show (Real.exp (-Real.pi * t / 4)) ^ 2 * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t)) ^ 2
             = Real.exp (-(5 : ℝ) * Real.pi * t) by
           rw [← Real.exp_nat_mul, ← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring)
     have hab3 : ‖a * b ^ (3 : ℕ)‖ = Real.exp (-(7 : ℝ) * Real.pi * t) := by
-      simpa [norm_mul, norm_pow, ha, hb] using
+      simpa [norm_mul, norm_pow, ha_norm, hb_norm] using
         (show Real.exp (-Real.pi * t / 4) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t)) ^ 3
             = Real.exp (-(7 : ℝ) * Real.pi * t) by
           rw [← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring)
     have hb4 : ‖b ^ (4 : ℕ)‖ = Real.exp (-(9 : ℝ) * Real.pi * t) := by
-      simpa [norm_pow, hb] using
+      simpa [norm_pow, hb_norm] using
         (show (Real.exp (-(9 / 4 : ℝ) * Real.pi * t)) ^ 4 =
             Real.exp (-(9 : ℝ) * Real.pi * t) by rw [← Real.exp_nat_mul]; congr 1; ring)
     have hab3_le : ‖a * b ^ (3 : ℕ)‖ ≤ Real.exp (-(5 : ℝ) * Real.pi * t) := by
@@ -214,35 +206,29 @@ lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
   have hx : ‖x‖ ≤ 1 + C1 := by
     have hx1 : ‖x - 1‖ ≤ C1 := (hC1 t ht).trans <| by
       simpa [mul_one] using mul_le_mul_of_nonneg_left hexp1 hC10
-    have htri : ‖x‖ ≤ ‖x - 1‖ + 1 := by
-      simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ)
-    linarith
+    linarith [(show ‖x‖ ≤ ‖x - 1‖ + 1 by
+      simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ))]
   have hy : ‖y‖ ≤ 3 := by
     have : ‖y‖ ≤ 1 + 2 * ‖q'‖ := by
       simpa [y, norm_mul, Complex.norm_two] using norm_add_le (1 : ℂ) ((2 : ℂ) * q')
     linarith
   have hxy : ‖x - y‖ ≤ C2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     simpa [x, y, q', sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using hC2 t ht
-  have hpow' :
-      ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
+  have hpow' : ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
         (4 * (1 + C1 + 3) ^ 3) * C2 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-    have h := norm_pow4_sub_le x y
     have hsum : (‖x‖ + ‖y‖) ^ 3 ≤ (1 + C1 + 3) ^ 3 :=
       pow_le_pow_left₀ (by positivity) (by linarith [hx, hy]) 3
     have hexp : Real.exp (-(4 : ℝ) * Real.pi * t) ≤ Real.exp (-(3 : ℝ) * Real.pi * t) :=
       Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])
-    have hbd :
-        4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 ≤
-          4 * (C2 * Real.exp (-(3 : ℝ) * Real.pi * t)) * (1 + C1 + 3) ^ 3 := by
+    have hbd : 4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 ≤
+        4 * (C2 * Real.exp (-(3 : ℝ) * Real.pi * t)) * (1 + C1 + 3) ^ 3 := by
       gcongr
       exact hxy.trans (mul_le_mul_of_nonneg_left hexp hC20)
-    linarith [h.trans hbd]
-  have hy4 :
-      ‖y ^ (4 : ℕ) - (1 : ℂ) - (8 : ℂ) * q' - (24 : ℂ) * (q' ^ (2 : ℕ))‖ ≤
+    linarith [(norm_pow4_sub_le x y).trans hbd]
+  have hy4 : ‖y ^ (4 : ℕ) - (1 : ℂ) - (8 : ℂ) * q' - (24 : ℂ) * (q' ^ (2 : ℕ))‖ ≤
         48 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
     have hmain : y ^ (4 : ℕ) - (1 : ℂ) - (8 : ℂ) * q' - (24 : ℂ) * (q' ^ (2 : ℕ))
-        = (32 : ℂ) * (q' ^ (3 : ℕ)) + (16 : ℂ) * (q' ^ (4 : ℕ)) := by
-      simp [y] ; ring
+        = (32 : ℂ) * (q' ^ (3 : ℕ)) + (16 : ℂ) * (q' ^ (4 : ℕ)) := by simp [y]; ring
     have hq3' : ‖q' ^ (3 : ℕ)‖ = Real.exp (-(3 : ℝ) * Real.pi * t) := by
       simpa [q'] using norm_ofReal_exp_neg_pi_pow t 3
     have hq4_le : ‖q' ^ (4 : ℕ)‖ ≤ ‖q' ^ (3 : ℕ)‖ := by
@@ -293,9 +279,8 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
   have hx : ‖x‖ ≤ 1 + C1 := by
     have hx1 : ‖x - 1‖ ≤ C1 := (hC1 t ht).trans <| by
       simpa [mul_one] using mul_le_mul_of_nonneg_left hexp1 hC10
-    have htri : ‖x‖ ≤ ‖x - 1‖ + 1 := by
-      simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ)
-    linarith
+    linarith [(show ‖x‖ ≤ ‖x - 1‖ + 1 by
+      simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ))]
   have hy : ‖y‖ ≤ 3 := by
     have : ‖y‖ ≤ 1 + 2 * ‖q'‖ := by
       simpa [y, sub_eq_add_neg, norm_mul, Complex.norm_two] using
@@ -303,20 +288,17 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
     linarith
   have hxy : ‖x - y‖ ≤ C2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     simpa [x, y, q', sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using hC2 t ht
-  have hpow' :
-      ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
+  have hpow' : ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
         (4 * (1 + C1 + 3) ^ 3) * C2 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-    have h := norm_pow4_sub_le x y
     have hsum : (‖x‖ + ‖y‖) ^ 3 ≤ (1 + C1 + 3) ^ 3 :=
       pow_le_pow_left₀ (by positivity) (by linarith [hx, hy]) 3
     have hexp : Real.exp (-(4 : ℝ) * Real.pi * t) ≤ Real.exp (-(3 : ℝ) * Real.pi * t) :=
       Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])
-    have hbd :
-        4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 ≤
-          4 * (C2 * Real.exp (-(3 : ℝ) * Real.pi * t)) * (1 + C1 + 3) ^ 3 := by
+    have hbd : 4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 ≤
+        4 * (C2 * Real.exp (-(3 : ℝ) * Real.pi * t)) * (1 + C1 + 3) ^ 3 := by
       gcongr
       exact hxy.trans (mul_le_mul_of_nonneg_left hexp hC20)
-    linarith [h.trans hbd]
+    linarith [(norm_pow4_sub_le x y).trans hbd]
   have hy4 :
       ‖y ^ (4 : ℕ) - (1 : ℂ) + (8 : ℂ) * q' - (24 : ℂ) * (q' ^ (2 : ℕ))‖ ≤
         48 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
