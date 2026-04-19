@@ -56,12 +56,10 @@ lemma aestronglyMeasurable_phi0''_div_Ioi :
 public lemma integrableOn_sq_mul_exp_neg (A a : ℝ) (ha : 0 < a) :
     IntegrableOn (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) (Set.Ioi A) := by
   have hb : 0 < a / 2 := half_pos ha
-  have hcont : ContinuousOn (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) (Set.Ici A) := by
-    fun_prop
   have hmul : (fun t : ℝ => t ^ (2 : ℕ) * Real.exp (-a * t)) =O[atTop]
         fun t : ℝ => Real.exp ((a / 2) * t) * Real.exp (-a * t) :=
     (isLittleO_pow_exp_pos_mul_atTop (k := 2) hb).isBigO.mul (Asymptotics.isBigO_refl _ _)
-  refine integrable_of_isBigO_exp_neg (a := A) (b := a / 2) hb hcont
+  refine integrable_of_isBigO_exp_neg (a := A) (b := a / 2) hb (by fun_prop)
     (hmul.congr_right fun t => ?_)
   rw [← Real.exp_add]; congr 1; ring
 
@@ -94,12 +92,11 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
     have ht1 : t ≤ 1 := ht.2
     have hC₀ : 0 ≤ C₀ := MagicFunction.a.Schwartz.I1Decay.Cφ_pos.le
     have hφ₀'' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ C₀ := by
-      have hsinv : (1 : ℝ) ≤ t⁻¹ := one_le_inv_iff₀.2 ⟨ht0, ht1⟩
       have hexp : rexp (-2 * π * t⁻¹) ≤ 1 :=
         Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, inv_nonneg.2 (le_of_lt ht0)])
       have hdecay' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ C₀ * rexp (-2 * π * t⁻¹) := by
         simpa [div_eq_mul_inv, Complex.ofReal_inv, C₀] using
-          MagicFunction.a.Schwartz.I1Decay.norm_φ₀''_le (s := t⁻¹) hsinv
+          MagicFunction.a.Schwartz.I1Decay.norm_φ₀''_le (s := t⁻¹) (one_le_inv_iff₀.2 ⟨ht0, ht1⟩)
       exact hdecay'.trans ((mul_le_mul_of_nonneg_left hexp hC₀).trans_eq (by simp))
     have ht2_le : ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ ≤ 1 := by
       simpa [Complex.norm_real] using
@@ -108,9 +105,9 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       have harg : (-π * u * t) ≤ 0 := by
         have : 0 ≤ π * u * t := by positivity [Real.pi_pos.le, hu0.le, ht0.le]
         linarith
-      have hn : ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) := by
-        simpa [Complex.ofReal_exp] using Complex.norm_exp (-(π * u * t : ℂ))
-      rw [hn]; exact Real.exp_le_one_iff.2 harg
+      rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
+        simpa [Complex.ofReal_exp] using Complex.norm_exp (-(π * u * t : ℂ))]
+      exact Real.exp_le_one_iff.2 harg
     calc ‖aLaplaceIntegrand u t‖
           ≤ ‖((t ^ (2 : ℕ) : ℝ) : ℂ)‖ *
             ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ *
@@ -132,8 +129,8 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         have hexp : Continuous fun t : ℝ => (Real.exp (-π * u * t) : ℂ) := by fun_prop
         simpa [aLaplaceIntegrand, mul_assoc] using
           (ht2.continuousOn.mul continuousOn_phi0''_div_Ioi).mul hexp.continuousOn
-      exact ((hcontIoi.mono fun t ht => lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1)
-        ht.1).integrableOn_Icc (μ := MeasureTheory.volume)).mono_set Set.Ioc_subset_Icc_self
+      exact ((hcontIoi.mono fun _ ht => lt_of_lt_of_le one_pos ht.1).integrableOn_Icc
+        (μ := MeasureTheory.volume)).mono_set Set.Ioc_subset_Icc_self
     have hbig : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi A) := by
       let a : ℝ := π * (u - 2)
       have ha : 0 < a := mul_pos Real.pi_pos (sub_pos.2 hu)
@@ -170,7 +167,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         have hA6 : A6 ≤ A := by
           dsimp [A]; exact le_max_of_le_right <| le_max_of_le_right <|
             le_max_of_le_right (le_max_right _ _)
-        have htAim : A ≤ zH.im := by simpa [hz_im] using htA
+        have htAim : A ≤ zH.im := hz_im ▸ htA
         have hE4 : ‖E₄ zH‖ ≤ B4 := hB4 zH (hA4.trans htAim)
         have hΔ : ‖(Δ zH)⁻¹‖ ≤ CΔ * Real.exp (2 * π * t) := by
           simpa [hz_im] using hΔinv zH (hAΔ.trans htAim)
@@ -179,25 +176,20 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
             (hB6 zH (hA6.trans htAim))
         have hBA_nonneg : 0 ≤ BA := le_trans (norm_nonneg _) hAterm
         have hB4_nonneg : 0 ≤ B4 := le_trans (norm_nonneg _) hE4
-        have hφ0 : ‖φ₀ zH‖ ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) :=
-          calc ‖φ₀ zH‖ = ‖(E₂ zH * E₄ zH - E₆ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ := by
-                simp [φ₀, div_eq_mul_inv]
-            _ ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
-                refine mul_le_mul ?_ hΔ (norm_nonneg _) (pow_nonneg hBA_nonneg _)
-                simpa [norm_pow, pow_two] using
-                  mul_le_mul hAterm hAterm (norm_nonneg _) hBA_nonneg
-        have hφ2 : ‖φ₂' zH‖ ≤ (B4 * BA) * (CΔ * Real.exp (2 * π * t)) :=
-          calc ‖φ₂' zH‖ = (‖E₄ zH‖ * ‖E₂ zH * E₄ zH - E₆ zH‖) * ‖(Δ zH)⁻¹‖ := by
-                simp [φ₂', div_eq_mul_inv, mul_assoc]
-            _ ≤ (B4 * BA) * (CΔ * Real.exp (2 * π * t)) :=
-                mul_le_mul (mul_le_mul hE4 hAterm (norm_nonneg _) hB4_nonneg) hΔ
-                  (norm_nonneg _) (mul_nonneg hB4_nonneg hBA_nonneg)
-        have hφ4 : ‖φ₄' zH‖ ≤ (B4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) :=
-          calc ‖φ₄' zH‖ = ‖(E₄ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ := by
-                simp [φ₄', div_eq_mul_inv]
-            _ ≤ (B4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
-                refine mul_le_mul ?_ hΔ (norm_nonneg _) (pow_nonneg hB4_nonneg _)
-                simpa [norm_pow, pow_two] using mul_le_mul hE4 hE4 (norm_nonneg _) hB4_nonneg
+        have hφ0 : ‖φ₀ zH‖ ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
+          rw [show ‖φ₀ zH‖ = ‖(E₂ zH * E₄ zH - E₆ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ by
+            simp [φ₀, div_eq_mul_inv]]
+          refine mul_le_mul ?_ hΔ (norm_nonneg _) (pow_nonneg hBA_nonneg _)
+          simpa [norm_pow, pow_two] using mul_le_mul hAterm hAterm (norm_nonneg _) hBA_nonneg
+        have hφ2 : ‖φ₂' zH‖ ≤ (B4 * BA) * (CΔ * Real.exp (2 * π * t)) := by
+          rw [show ‖φ₂' zH‖ = (‖E₄ zH‖ * ‖E₂ zH * E₄ zH - E₆ zH‖) * ‖(Δ zH)⁻¹‖ by
+            simp [φ₂', div_eq_mul_inv, mul_assoc]]
+          exact mul_le_mul (mul_le_mul hE4 hAterm (norm_nonneg _) hB4_nonneg) hΔ
+            (norm_nonneg _) (mul_nonneg hB4_nonneg hBA_nonneg)
+        have hφ4 : ‖φ₄' zH‖ ≤ (B4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
+          rw [show ‖φ₄' zH‖ = ‖(E₄ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ by simp [φ₄', div_eq_mul_inv]]
+          refine mul_le_mul ?_ hΔ (norm_nonneg _) (pow_nonneg hB4_nonneg _)
+          simpa [norm_pow, pow_two] using mul_le_mul hE4 hE4 (norm_nonneg _) hB4_nonneg
         have hScoe : ((ModularGroup.S • zH : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) :=
           (ModularGroup.coe_S_smul (z := zH)).trans (by
             simp [zH, div_eq_mul_inv, mul_inv_rev, mul_comm])
