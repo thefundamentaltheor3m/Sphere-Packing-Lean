@@ -148,15 +148,10 @@ lemma integrableOn_Φ₆'_imag_axis {u : ℝ} (hu : 2 < u) :
 /-- Integrability of `Φ₅'` on the imaginary-axis tail `t > 1`, via `aLaplaceIntegrand`. -/
 public lemma integrableOn_Φ₅'_imag_axis {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
-  have hLap : IntegrableOn (fun t : ℝ => aLaplaceIntegrand u t) (Set.Ioi (0 : ℝ)) volume :=
-    aLaplaceIntegral_convergent (u := u) hu
-  have hNeg : IntegrableOn (fun t : ℝ => -aLaplaceIntegrand u t) (Set.Ioi (1 : ℝ)) volume := by
-    refine (hLap.mono_set ?_).neg
-    intro t ht
-    exact lt_trans (by norm_num : (0 : ℝ) < 1) ht
-  refine hNeg.congr_fun ?_ measurableSet_Ioi
-  intro t ht
-  have ht0 : 0 < t := lt_trans (by norm_num) ht
+  have hNeg : IntegrableOn (fun t : ℝ => -aLaplaceIntegrand u t) (Set.Ioi (1 : ℝ)) volume :=
+    ((aLaplaceIntegral_convergent (u := u) hu).mono_set
+      fun _ ht => lt_trans (by norm_num : (0:ℝ) < 1) ht).neg
+  refine hNeg.congr_fun (fun t _ => ?_) measurableSet_Ioi
   simpa using (Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand (u := u) (t := t)).symm
 
 /-- Integrability of `Φ₂'` on the imaginary-axis bounded interval `(1,A]`. -/
@@ -164,28 +159,19 @@ lemma integrableOn_Φ₂'_imag_axis_Ioc (u A : ℝ) :
     IntegrableOn (fun t : ℝ => Φ₂' u ((t : ℂ) * I)) (Set.Ioc (1 : ℝ) A) volume := by
   have hcontΦ2 : ContinuousOn (Φ₂' u) {z : ℂ | 0 < z.im} :=
     (MagicFunction.a.ComplexIntegrands.Φ₁'_contDiffOn_ℂ (r := u)).continuousOn
-  have hIcc : IntegrableOn (fun t : ℝ => Φ₂' u ((t : ℂ) * I)) (Set.Icc (1 : ℝ) A) volume := by
-    have hmulIcc : ContinuousOn (fun t : ℝ => ((t : ℂ) * I : ℂ)) (Set.Icc (1 : ℝ) A) := by
-      fun_prop
-    have hmapsIcc :
-        Set.MapsTo (fun t : ℝ => ((t : ℂ) * I : ℂ)) (Set.Icc (1 : ℝ) A) {z : ℂ | 0 < z.im} := by
-      intro t ht
-      have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht.1
-      simpa using ht0
-    exact (hcontΦ2.comp hmulIcc hmapsIcc).integrableOn_compact isCompact_Icc
-  exact hIcc.mono_set Set.Ioc_subset_Icc_self
+  have hmapsIcc : Set.MapsTo (fun t : ℝ => ((t : ℂ) * I : ℂ)) (Set.Icc (1 : ℝ) A)
+      {z : ℂ | 0 < z.im} :=
+    fun t ht => by simpa using lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) ht.1
+  exact ((hcontΦ2.comp (by fun_prop) hmapsIcc).integrableOn_compact
+    isCompact_Icc).mono_set Set.Ioc_subset_Icc_self
 
 /-- Measurability of the imaginary-axis tail integrand `t ↦ Φ₂' u (tI)` on `t > A`. -/
 lemma aestronglyMeasurable_Φ₂'_imag_axis_Ioi (u A : ℝ) (hA0 : 0 < A) :
     AEStronglyMeasurable (fun t : ℝ => Φ₂' u ((t : ℂ) * Complex.I))
-      (volume.restrict (Set.Ioi A)) := by
-  have hcontΦ2 : ContinuousOn (Φ₂' u) {z : ℂ | 0 < z.im} :=
-    (MagicFunction.a.ComplexIntegrands.Φ₁'_contDiffOn_ℂ (r := u)).continuousOn
-  refine (hcontΦ2.comp ?_ ?_).aestronglyMeasurable measurableSet_Ioi
-  · fun_prop
-  · intro t ht
-    have ht0 : 0 < t := lt_trans hA0 ht
-    simpa using ht0
+      (volume.restrict (Set.Ioi A)) :=
+  ((MagicFunction.a.ComplexIntegrands.Φ₁'_contDiffOn_ℂ (r := u)).continuousOn.comp
+    (by fun_prop) fun t ht => by simpa using lt_trans hA0 ht).aestronglyMeasurable
+    measurableSet_Ioi
 
 /-- Modular-growth bound for `‖φ₀(S•w)‖‖w‖^2` depending only on `t = Im w`. -/
 public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
