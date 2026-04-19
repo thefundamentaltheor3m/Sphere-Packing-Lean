@@ -51,15 +51,14 @@ lemma neg_coordCubeCover_mem_ball {C R : ℝ}
     ((-coordCubeCover L hL x : cubeLattice d L hL) :
         EuclideanSpace ℝ (Fin d)) ∈ ball 0 (R + C) := by
   set g := (coordCubeCover L hL x : EuclideanSpace ℝ (Fin d))
-  have hx0 : ‖x‖ < R := by simpa [mem_ball_zero_iff] using hx
   have hgx : ‖g + x‖ < C := by
     simpa [mem_ball_zero_iff] using hC (by
       simpa [Submodule.vadd_def, vadd_eq_add] using coordCubeCover_spec L hL x)
-  rw [mem_ball_zero_iff]
   have htri := norm_sub_le (g + x) x
   simp [add_sub_cancel_right] at htri
-  change ‖-g‖ < R + C
-  rw [norm_neg]; linarith
+  rw [mem_ball_zero_iff, show ((-coordCubeCover L hL x : cubeLattice d L hL) :
+    EuclideanSpace ℝ (Fin d)) = -g from rfl, norm_neg]
+  linarith [show ‖x‖ < R by simpa [mem_ball_zero_iff] using hx]
 
 lemma mem_vadd_coordCube_iff_eq_neg_coordCubeCover (g : cubeLattice d L hL)
     (x : EuclideanSpace ℝ (Fin d)) :
