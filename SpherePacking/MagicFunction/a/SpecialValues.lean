@@ -352,19 +352,16 @@ private lemma tendsto_two_m_plus_one_mul_exp_decay (C₀ : ℝ) :
     Tendsto (fun m : ℝ => C₀ * (2 * m + 1) * Real.exp (-2 * Real.pi * m)) atTop (𝓝 (0 : ℝ)) := by
   have hmul : Tendsto (fun m : ℝ => m * Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by
     simpa [Real.rpow_one] using
-      (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (1 : ℝ)) (b := (2 * Real.pi))
-          (by positivity))
+      tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (1 : ℝ)) (b := (2 * Real.pi))
+        (by positivity)
   have hu : Tendsto (fun m : ℝ => (2 * Real.pi) * m) atTop atTop :=
     tendsto_id.const_mul_atTop (by positivity)
   have hexp : Tendsto (fun m : ℝ => Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by simpa
-  have hsum :
-      Tendsto (fun m : ℝ => 2 * (m * Real.exp (-(2 * Real.pi) * m)) +
-          Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by
-    simpa using (hmul.const_mul 2).add hexp
   have hmain :
       Tendsto (fun m : ℝ => (2 * m + 1) * Real.exp (-2 * Real.pi * m)) atTop (𝓝 (0 : ℝ)) := by
-    refine hsum.congr' (Eventually.of_forall fun m => ?_)
-    ring_nf
+    have := (hmul.const_mul 2).add hexp
+    simp only [mul_zero, add_zero] at this
+    exact this.congr' (Eventually.of_forall fun m => by ring_nf)
   simpa [mul_assoc] using hmain.const_mul C₀
 
 lemma tendsto_top_f0 :
@@ -621,27 +618,19 @@ lemma integral_phi2_height_one :
 private lemma intervalIntegrable_F_comp
     (w : ℝ → ℂ) (hw : ContinuousOn w (Set.uIcc (0 : ℝ) 1)) (hwim : ∀ x, 0 < (w x).im) :
     IntervalIntegrable (fun x : ℝ => F (w x)) MeasureTheory.volume (0 : ℝ) 1 := by
-  have hφ : ContinuousOn φ₀'' {z : ℂ | 0 < z.im} :=
-    MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-  have hwne : Set.MapsTo w (Set.uIcc (0 : ℝ) 1) ({0}ᶜ) := by
-    intro x hx
-    exact fun h0 => (ne_of_gt (hwim x)) (by simpa using congrArg Complex.im h0)
+  have hwne : Set.MapsTo w (Set.uIcc (0 : ℝ) 1) ({0}ᶜ) := fun x _ h0 =>
+    (ne_of_gt (hwim x)) (by simpa using congrArg Complex.im h0)
   have hinv : ContinuousOn (fun z : ℂ => (-1 : ℂ) / z) ({0}ᶜ) := by
-    have h :
-        ContinuousOn ((fun _ : ℂ => (-1 : ℂ)) * (Inv.inv : ℂ → ℂ)) ({0}ᶜ) :=
-      (continuousOn_const.mul (continuousOn_inv₀ (G₀ := ℂ)))
+    have h : ContinuousOn ((fun _ : ℂ => (-1 : ℂ)) * (Inv.inv : ℂ → ℂ)) ({0}ᶜ) :=
+      continuousOn_const.mul (continuousOn_inv₀ (G₀ := ℂ))
     convert h using 1
-  have hinvcomp : ContinuousOn (fun x : ℝ => (-1 : ℂ) / (w x)) (Set.uIcc (0 : ℝ) 1) :=
-    hinv.comp hw hwne
   have himap :
-      Set.MapsTo (fun x : ℝ => (-1 : ℂ) / (w x)) (Set.uIcc (0 : ℝ) 1) {z : ℂ | 0 < z.im} := by
-    intro x hx
-    have hpos : 0 < ((-(⟨w x, hwim x⟩ : ℍ) : ℂ)⁻¹).im :=
-      UpperHalfPlane.im_inv_neg_coe_pos ⟨w x, hwim x⟩
-    simpa [div_eq_mul_inv] using hpos
+      Set.MapsTo (fun x : ℝ => (-1 : ℂ) / (w x)) (Set.uIcc (0 : ℝ) 1) {z : ℂ | 0 < z.im} :=
+    fun x _ => by
+      simpa [div_eq_mul_inv] using UpperHalfPlane.im_inv_neg_coe_pos ⟨w x, hwim x⟩
   have hφcomp :
       ContinuousOn (fun x : ℝ => φ₀'' ((-1 : ℂ) / (w x))) (Set.uIcc (0 : ℝ) 1) :=
-    hφ.comp hinvcomp himap
+    MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn.comp (hinv.comp hw hwne) himap
   simpa [F] using (hφcomp.mul (by simpa using hw.pow 2)).intervalIntegrable
 
 private lemma intervalIntegrable_comp_zI {g : ℂ → ℂ} (hg : ContinuousOn g {z : ℂ | 0 < z.im}) :
