@@ -326,34 +326,25 @@ lemma I₂'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
       IntegrableOn
         (fun t : ℝ => Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I))
         (Set.Ioi (1 : ℝ)) volume := by
-    -- Shift to the `Φ₅'`-ray.
-    let E : ℂ := Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I))
     have hcongr :
         (fun t : ℝ => Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I)) =
-          fun t : ℝ => E * Φ₅' u ((t : ℂ) * Complex.I) := by
-      funext t
-      simpa [E, mul_assoc, add_assoc, add_comm, add_left_comm] using
-        (Φ₁'_shift_left (u := u) (t := t))
-    simpa [hcongr, mul_assoc] using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul E
+          fun t : ℝ => Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) *
+            Φ₅' u ((t : ℂ) * Complex.I) := by
+      funext t; exact Φ₁'_shift_left (u := u) (t := t)
+    simpa [hcongr] using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul _
   have hint₂ :
       IntegrableOn
         (fun t : ℝ => Φ₂' u ((0 : ℂ) + (t : ℂ) * Complex.I))
         (Set.Ioi (1 : ℝ)) volume := by
-    simpa [mul_assoc] using integrableOn_Φ₂'_imag_axis (u := u) hu
-  have htop :
-      Tendsto
-        (fun m : ℝ => ∫ x in (-1 : ℝ)..0, Φ₂' u ((x : ℂ) + (m : ℂ) * Complex.I))
-        atTop (𝓝 0) :=
-    tendsto_intervalIntegral_Φ₂'_top (u := u) hu
+    simpa using integrableOn_Φ₂'_imag_axis (u := u) hu
   have hbottom :
       (∫ x in (-1 : ℝ)..0, Φ₂' u ((x : ℂ) + (1 : ℂ) * Complex.I)) =
         (Complex.I : ℂ) •
           ((∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I)) -
             ∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((0 : ℂ) + (t : ℂ) * Complex.I)) := by
-    simpa using
-      (bottom_eq_I_smul_sub_of_rect_deform (f := Φ₂' u) (x₁ := (-1 : ℝ)) (x₂ := (0 : ℝ))
-        hcontΦ2 hdiffΦ2 (by simpa using hint₁) (by simpa using hint₂) htop)
-  -- Replace `I₂'` by the bottom-edge integral and simplify the `x = 0` ray.
+    simpa using bottom_eq_I_smul_sub_of_rect_deform (f := Φ₂' u)
+      (x₁ := (-1 : ℝ)) (x₂ := (0 : ℝ)) hcontΦ2 hdiffΦ2
+      (by simpa using hint₁) hint₂ (tendsto_intervalIntegral_Φ₂'_top (u := u) hu)
   rw [I₂'_eq_intervalIntegral_bottom (u := u)]
   simpa [zero_add] using hbottom
 
@@ -370,32 +361,25 @@ lemma I₄'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
       IntegrableOn
         (fun t : ℝ => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I))
         (Set.Ioi (1 : ℝ)) volume := by
-    let E : ℂ := Complex.exp (((π * u : ℝ) : ℂ) * Complex.I)
     have hcongr :
         (fun t : ℝ => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I)) =
-          fun t : ℝ => E * Φ₅' u ((t : ℂ) * Complex.I) := by
-      funext t
-      simpa [E, mul_assoc, add_assoc, add_comm, add_left_comm] using
-        (Φ₃'_shift_right (u := u) (t := t))
-    simpa [hcongr, mul_assoc] using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul E
+          fun t : ℝ => Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) *
+            Φ₅' u ((t : ℂ) * Complex.I) := by
+      funext t; exact Φ₃'_shift_right (u := u) (t := t)
+    simpa [hcongr] using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul _
   have hint₂ :
       IntegrableOn
         (fun t : ℝ => Φ₄' u ((0 : ℂ) + (t : ℂ) * Complex.I))
         (Set.Ioi (1 : ℝ)) volume := by
-    simpa [mul_assoc] using integrableOn_Φ₄'_imag_axis (u := u) hu
-  have htop :
-      Tendsto
-        (fun m : ℝ => ∫ x in (1 : ℝ)..0, Φ₄' u ((x : ℂ) + (m : ℂ) * Complex.I))
-        atTop (𝓝 0) :=
-    tendsto_intervalIntegral_Φ₄'_top (u := u) hu
+    simpa using integrableOn_Φ₄'_imag_axis (u := u) hu
   have hbottom :
       (∫ x in (1 : ℝ)..0, Φ₄' u ((x : ℂ) + (1 : ℂ) * Complex.I)) =
         (Complex.I : ℂ) •
           ((∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I)) -
             ∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((0 : ℂ) + (t : ℂ) * Complex.I)) := by
-    simpa using
-      (bottom_eq_I_smul_sub_of_rect_deform (f := Φ₄' u) (x₁ := (1 : ℝ)) (x₂ := (0 : ℝ))
-        hcontΦ4 hdiffΦ4 (by simpa using hint₁) (by simpa using hint₂) htop)
+    simpa using bottom_eq_I_smul_sub_of_rect_deform (f := Φ₄' u)
+      (x₁ := (1 : ℝ)) (x₂ := (0 : ℝ)) hcontΦ4 hdiffΦ4
+      (by simpa using hint₁) hint₂ (tendsto_intervalIntegral_Φ₄'_top (u := u) hu)
   rw [I₄'_eq_intervalIntegral_bottom (u := u)]
   simpa [zero_add] using hbottom
 

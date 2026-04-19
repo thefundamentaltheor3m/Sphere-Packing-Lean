@@ -434,11 +434,10 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     volume (((PeriodicConstantApprox.shellVec (d := d) (- (1 / 2 : ℝ))) +ᵥ
         coordCubeInner d (L + 1) 0) \ coordCubeInner d L 1) /
       volume (coordCube d L)
-  have hLevent : ∀ᶠ L in (atTop : Filter ℝ), cubeShellErr L < c - b := by
-    have htend : Tendsto cubeShellErr atTop (𝓝 (0 : ℝ≥0∞)) := by
-      simpa [cubeShellErr] using
-        (PeriodicConstantApprox.tendsto_volume_cubeShell_div_volume_coordCube_zero)
-    exact htend.eventually (Iio_mem_nhds hc_sub)
+  have hLevent : ∀ᶠ L in (atTop : Filter ℝ), cubeShellErr L < c - b :=
+    ((by simpa [cubeShellErr] using
+        PeriodicConstantApprox.tendsto_volume_cubeShell_div_volume_coordCube_zero :
+      Tendsto cubeShellErr atTop (𝓝 (0 : ℝ≥0∞)))).eventually (Iio_mem_nhds hc_sub)
   rcases ((eventually_gt_atTop (0 : ℝ)).and hLevent).exists with ⟨L, hLpos, hLerr⟩
   -- A bounding radius `C` for the coordinate cube.
   rcases PeriodicConstantApprox.coordCube_subset_ball L hLpos with ⟨C, hC⟩
@@ -516,12 +515,12 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     (PeriodicConstantApprox.mem_vadd_coordCube_iff_eq_neg_coordCubeCover L hLpos g0 x).mpr
       (Finset.mem_filter.1 hx).2.symm
   -- The maximal fiber gives a density lower bound.
-  have hs_sum : s.card =
-      Finset.sum t (fun g => (s.filter fun x : EuclideanSpace ℝ (Fin d) => f x = g).card) := by
-    simpa [fiber] using Finset.card_eq_sum_card_fiberwise hf_maps
   have hs_le : (s.card : ℝ≥0∞) ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) := by
     exact_mod_cast show s.card ≤ t.card * sg.card by
-      simpa [hs_sum, Finset.sum_const] using Finset.sum_le_sum hg0max
+      simpa [show s.card =
+          Finset.sum t (fun g => (s.filter fun x : EuclideanSpace ℝ (Fin d) => f x = g).card) by
+        simpa [fiber] using Finset.card_eq_sum_card_fiberwise hf_maps,
+        Finset.sum_const] using Finset.sum_le_sum hg0max
   have ht_vol : ((t.card : ℝ≥0∞) * volCube) ≤
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R₁ + 2 * C)) := by
     simpa [volCube, R₁, r, t, htSet] using
@@ -529,9 +528,9 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
         hLpos hC
   have hs_enc :
       ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) = s.card := by
-    have hfin : (S.centers ∩ ball 0 (R + r)).Finite := by
-      simpa [R₁, r, add_assoc, add_left_comm, add_comm] using hX
-    simpa [s] using congrArg (fun n : ENat => (n : ℝ≥0∞)) hfin.encard_eq_coe_toFinset_card
+    simpa [s] using congrArg (fun n : ENat => (n : ℝ≥0∞))
+      (by simpa [R₁, r, add_assoc, add_left_comm, add_comm] using hX :
+        (S.centers ∩ ball 0 (R + r)).Finite).encard_eq_coe_toFinset_card
   have hR2 : R + Cshift = R₁ + 2 * C := by simp [Cshift, R₁, r, add_left_comm, add_comm]
   have hs_mul :
       ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volCube ≤
