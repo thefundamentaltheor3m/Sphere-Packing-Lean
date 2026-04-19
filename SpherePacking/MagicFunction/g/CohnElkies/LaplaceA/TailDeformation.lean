@@ -213,105 +213,72 @@ lemma tendsto_intervalIntegral_Φ₄'_top {u : ℝ} (hu : 2 < u) :
 lemma I₂'_eq_intervalIntegral_bottom (u : ℝ) :
     MagicFunction.a.RealIntegrals.I₂' u =
       ∫ x in (-1 : ℝ)..0, Φ₂' u ((x : ℂ) + Complex.I) := by
-  -- Unfold `I₂'`/`Φ₂` and change variables `x = t - 1`.
   dsimp [MagicFunction.a.RealIntegrals.I₂', MagicFunction.a.RealIntegrands.Φ₂]
   let g : ℝ → ℂ := fun x : ℝ => Φ₂' u ((x : ℂ) + Complex.I)
   have hcongr :
       (∫ t in (0 : ℝ)..1, Φ₂' u (MagicFunction.Parametrisations.z₂' t)) =
         ∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ)) := by
-    refine intervalIntegral.integral_congr ?_
-    intro t ht
+    refine intervalIntegral.integral_congr fun t ht => ?_
     have ht' : t ∈ Set.Icc (0 : ℝ) 1 := by
       simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
-    have hz :
-        MagicFunction.Parametrisations.z₂' t =
-          (-1 : ℂ) + (t : ℂ) + (Complex.I : ℂ) := by
-      simpa using (MagicFunction.Parametrisations.z₂'_eq_of_mem (t := t) ht')
-    have hcast : ((t + (-1 : ℝ) : ℝ) : ℂ) = (t : ℂ) + (-1 : ℂ) := by
-      norm_cast
-    dsimp [g]
-    simp [hz, hcast, add_comm]
-  have hshift :
-      (∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ))) = ∫ x in (-1 : ℝ)..0, g x := by
-    norm_num
-  calc
-    (∫ t in (0 : ℝ)..1, Φ₂' u (MagicFunction.Parametrisations.z₂' t)) =
-        ∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ)) := hcongr
-    _ = ∫ x in (-1 : ℝ)..0, g x := hshift
-    _ = ∫ x in (-1 : ℝ)..0, Φ₂' u ((x : ℂ) + Complex.I) := by
-        simp [g]
+    have hz : MagicFunction.Parametrisations.z₂' t =
+        (-1 : ℂ) + (t : ℂ) + (Complex.I : ℂ) := by
+      simpa using MagicFunction.Parametrisations.z₂'_eq_of_mem (t := t) ht'
+    simp [g, hz, show ((t + (-1 : ℝ) : ℝ) : ℂ) = (t : ℂ) + (-1 : ℂ) from by norm_cast, add_comm]
+  rw [hcongr, show (∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ))) = ∫ x in (-1 : ℝ)..0, g x from by
+    norm_num]
 
 lemma I₄'_eq_intervalIntegral_bottom (u : ℝ) :
     MagicFunction.a.RealIntegrals.I₄' u =
       ∫ x in (1 : ℝ)..0, Φ₄' u ((x : ℂ) + Complex.I) := by
-  -- Unfold `I₄'`/`Φ₄` and change variables `x = 1 - t`, then reverse orientation.
   dsimp [MagicFunction.a.RealIntegrals.I₄', MagicFunction.a.RealIntegrands.Φ₄]
   let g : ℝ → ℂ := fun x : ℝ => Φ₄' u ((x : ℂ) + Complex.I)
   have hrew :
       (∫ t in (0 : ℝ)..1, (-1 : ℂ) * Φ₄' u (MagicFunction.Parametrisations.z₄' t)) =
         ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t) := by
-    refine intervalIntegral.integral_congr ?_
-    intro t ht
+    refine intervalIntegral.integral_congr fun t ht => ?_
     have ht' : t ∈ Set.Icc (0 : ℝ) 1 := by
       simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
-    have hz :
-        MagicFunction.Parametrisations.z₄' t =
-          (1 : ℂ) - (t : ℂ) + (Complex.I : ℂ) := by
-      simpa using (MagicFunction.Parametrisations.z₄'_eq_of_mem (t := t) ht')
-    dsimp [g]
-    simp [hz, sub_eq_add_neg]
+    have hz : MagicFunction.Parametrisations.z₄' t =
+        (1 : ℂ) - (t : ℂ) + (Complex.I : ℂ) := by
+      simpa using MagicFunction.Parametrisations.z₄'_eq_of_mem (t := t) ht'
+    simp [g, hz, sub_eq_add_neg]
   rw [hrew]
-  have hcomp : (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t := by
-    norm_num
-  calc
-    ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)
-        = (-1 : ℂ) * ∫ t in (0 : ℝ)..1, g (1 - t) := by simp
-    _ = (-1 : ℂ) * ∫ t in (0 : ℝ)..1, g t := by rw [hcomp]
-    _ = -∫ t in (0 : ℝ)..1, g t := by simp
+  have hcomp : (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t := by norm_num
+  calc ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)
+      = -∫ t in (0 : ℝ)..1, g (1 - t) := by simp
+    _ = -∫ t in (0 : ℝ)..1, g t := by rw [hcomp]
     _ = ∫ t in (1 : ℝ)..0, g t := by
-          simpa using
-            (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm
+        simpa using (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm
 
 private lemma bottom_eq_I_smul_sub_of_rect_deform {f : ℂ → ℂ} {x₁ x₂ : ℝ}
     (hcontU : ContinuousOn f {z : ℂ | 0 < z.im})
     (hdiffU : DifferentiableOn ℂ f {z : ℂ | 0 < z.im})
-    (hint₁ :
-      IntegrableOn
-        (fun t : ℝ => f ((x₁ : ℂ) + (t : ℂ) * Complex.I))
-        (Set.Ioi (1 : ℝ)) volume)
-    (hint₂ :
-      IntegrableOn
-        (fun t : ℝ => f ((x₂ : ℂ) + (t : ℂ) * Complex.I))
-        (Set.Ioi (1 : ℝ)) volume)
-    (htop :
-      Tendsto
-        (fun m : ℝ => ∫ x in x₁..x₂, f ((x : ℂ) + (m : ℂ) * Complex.I))
-        atTop (𝓝 0)) :
+    (hint₁ : IntegrableOn (fun t : ℝ => f ((x₁ : ℂ) + (t : ℂ) * Complex.I))
+      (Set.Ioi (1 : ℝ)) volume)
+    (hint₂ : IntegrableOn (fun t : ℝ => f ((x₂ : ℂ) + (t : ℂ) * Complex.I))
+      (Set.Ioi (1 : ℝ)) volume)
+    (htop : Tendsto (fun m : ℝ => ∫ x in x₁..x₂, f ((x : ℂ) + (m : ℂ) * Complex.I))
+      atTop (𝓝 0)) :
     (∫ x in x₁..x₂, f ((x : ℂ) + Complex.I)) =
       (Complex.I : ℂ) •
         ((∫ t in Set.Ioi (1 : ℝ), f ((x₁ : ℂ) + (t : ℂ) * Complex.I)) -
           ∫ t in Set.Ioi (1 : ℝ), f ((x₂ : ℂ) + (t : ℂ) * Complex.I)) := by
-  have hStrip : (Set.uIcc x₁ x₂ ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} := by
-    intro z hz
-    rcases (by simpa [mem_reProdIm] using hz :
-        z.re ∈ Set.uIcc x₁ x₂ ∧ z.im ∈ Set.Ici (1 : ℝ)) with ⟨-, hz⟩
-    exact lt_of_lt_of_le (show (0 : ℝ) < 1 by norm_num) (by simpa [Set.mem_Ici] using hz)
-  have hcont : ContinuousOn f (Set.uIcc x₁ x₂ ×ℂ Set.Ici (1 : ℝ)) := hcontU.mono hStrip
-  have hdiff :
-      ∀ z ∈ (Set.Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Set.Ioi (1 : ℝ)),
-        DifferentiableAt ℂ f z := by
-    intro z hz
-    have hz' :
-        z.re ∈ Set.Ioo (min x₁ x₂) (max x₁ x₂) ∧ z.im ∈ Set.Ioi (1 : ℝ) := by
+  have hcont : ContinuousOn f (Set.uIcc x₁ x₂ ×ℂ Set.Ici (1 : ℝ)) :=
+    hcontU.mono fun z hz => by
+      rcases (by simpa [mem_reProdIm] using hz :
+          z.re ∈ Set.uIcc x₁ x₂ ∧ z.im ∈ Set.Ici (1 : ℝ)) with ⟨-, hz⟩
+      exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) hz
+  have hdiff : ∀ z ∈ (Set.Ioo (min x₁ x₂) (max x₁ x₂) ×ℂ Set.Ioi (1 : ℝ)),
+      DifferentiableAt ℂ f z := fun z hz => by
+    have hz' : z.re ∈ Set.Ioo (min x₁ x₂) (max x₁ x₂) ∧ z.im ∈ Set.Ioi (1 : ℝ) := by
       simpa [mem_reProdIm] using hz
-    have hz0 : 0 < z.im :=
-      lt_trans (by norm_num : (0 : ℝ) < 1) (by simpa [Set.mem_Ioi] using hz'.2)
+    have hz0 : 0 < z.im := lt_trans (by norm_num : (0:ℝ) < 1) hz'.2
     exact (hdiffU z hz0).differentiableAt (isOpen_upperHalfPlaneSet.mem_nhds hz0)
-  have hrect :=
-    Complex.rect_deform_of_tendsto_top (f := f) (x₁ := x₁) (x₂ := x₂) (y := (1 : ℝ))
-      hcont hdiff hint₁ hint₂ htop
+  have hrect := Complex.rect_deform_of_tendsto_top (f := f) (x₁ := x₁) (x₂ := x₂) (y := (1 : ℝ))
+    hcont hdiff hint₁ hint₂ htop
   simpa [smul_eq_mul, mul_sub, one_mul] using
-    eq_sub_of_add_eq (by simpa [one_mul] using (sub_eq_zero.mp hrect))
+    eq_sub_of_add_eq (by simpa [one_mul] using sub_eq_zero.mp hrect)
 
 lemma I₂'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
     MagicFunction.a.RealIntegrals.I₂' u =
@@ -500,6 +467,19 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
               2 * (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) +
                 ∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((t : ℂ) * Complex.I)) := hlin
 
+/-- Generic helper: if `G t = E * Φ₅' u (t*I)` for `t > 1`, then the ray integral of `G` over
+`Ioi 1` equals `E` times the central ray integral. -/
+private lemma ray_integral_eq_const_mul_central {u : ℝ} {G : ℝ → ℂ} {E : ℂ}
+    (hG : ∀ t, 1 < t → G t = E * Φ₅' u ((t : ℂ) * Complex.I)) :
+    (∫ t in Set.Ioi (1 : ℝ), G t) =
+      E * (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) := by
+  rw [show (∫ t in Set.Ioi (1 : ℝ), G t) =
+    ∫ t in Set.Ioi (1 : ℝ), E * Φ₅' u ((t : ℂ) * Complex.I) from
+      MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht => hG t ht]
+  simpa using MeasureTheory.integral_const_mul
+    (μ := volume.restrict (Set.Ioi (1 : ℝ))) (r := E)
+    (f := fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I))
+
 /--
 Rewrite the tail part `I₂' + I₄' + I₆'` as an imaginary-axis integral of `Φ₅'` over `t ≥ 1`.
 -/
@@ -510,52 +490,16 @@ public lemma I₂'_add_I₄'_add_I₆'_eq_imag_axis_tail {u : ℝ} (hu : 2 < u) 
         ((Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) +
               Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) - (2 : ℂ)) *
           (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I))) := by
-  -- Rewrite `I₂'` and `I₄'` via rectangle deformation.
-  -- Convert the shifted rays to the central ray using the shift identities.
-  have hLeft_ray :
-      (∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I)) =
-        Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) *
-          (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) := by
-    let E : ℂ := Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I))
-    have hcongr :
-        (∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I)) =
-          ∫ t in Set.Ioi (1 : ℝ),
-            E * Φ₅' u ((t : ℂ) * Complex.I) := by
-      refine MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (1 : ℝ)) measurableSet_Ioi ?_
-      intro t ht
-      simpa [E, mul_assoc] using (Φ₁'_shift_left (u := u) (t := t))
-    rw [hcongr]
-    simpa [E] using
-      (MeasureTheory.integral_const_mul
-        (μ := volume.restrict (Set.Ioi (1 : ℝ)))
-        (r := E)
-        (f := fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)))
-  have hRight_ray :
-      (∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I)) =
-        Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) *
-          (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) := by
-    let E : ℂ := Complex.exp (((π * u : ℝ) : ℂ) * Complex.I)
-    have hcongr :
-        (∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I)) =
-          ∫ t in Set.Ioi (1 : ℝ),
-            E * Φ₅' u ((t : ℂ) * Complex.I) := by
-      refine MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (1 : ℝ)) measurableSet_Ioi ?_
-      intro t ht
-      simpa [E, mul_assoc] using (Φ₃'_shift_right (u := u) (t := t))
-    rw [hcongr]
-    simpa [E] using
-      (MeasureTheory.integral_const_mul
-        (μ := volume.restrict (Set.Ioi (1 : ℝ)))
-        (r := E)
-        (f := fun t : ℝ => Φ₅' u ((t : ℂ) * Complex.I)))
-  -- Combine and simplify; the `Φ₂'`/`Φ₄'` ray integrals cancel via the finite difference.
-  -- (This is a purely algebraic rearrangement after rewriting `I₂'`, `I₄'`, `I₆'`.)
-  -- Rewrite everything in terms of `∫ Φ₅'` and simplify.
+  have hLeft_ray := ray_integral_eq_const_mul_central
+    (G := fun t => Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I))
+    (E := Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)))
+    fun t _ => by simpa [mul_assoc] using Φ₁'_shift_left (u := u) (t := t)
+  have hRight_ray := ray_integral_eq_const_mul_central
+    (G := fun t => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I))
+    (E := Complex.exp (((π * u : ℝ) : ℂ) * Complex.I))
+    fun t _ => by simpa [mul_assoc] using Φ₃'_shift_right (u := u) (t := t)
   rw [I₂'_eq_deform_imag_axis (u := u) hu, I₄'_eq_deform_imag_axis (u := u) hu,
-    I₆'_eq_deform_imag_axis (u := u) hu]
-  -- Replace shifted rays.
-  rw [hLeft_ray, hRight_ray]
-  -- Final algebraic simplification: turn `•` into multiplication and let `ring` reorder.
+    I₆'_eq_deform_imag_axis (u := u) hu, hLeft_ray, hRight_ray]
   simp [smul_eq_mul, sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_comm]
   ring
 
