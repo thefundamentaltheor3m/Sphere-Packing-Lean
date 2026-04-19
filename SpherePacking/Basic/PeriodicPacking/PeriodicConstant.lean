@@ -119,21 +119,15 @@ along a lattice `Λ`.
       have hdist := S.centers_dist' fa fb (hF_centers hfa) (hF_centers hfb) hne
       have htrans : dist (ga +ᵥ fa) (ga +ᵥ fb) = dist fa fb :=
         dist_vadd_cancel_left (ga : EuclideanSpace ℝ (Fin d)) fa fb
-      have : S.separation ≤ dist (ga +ᵥ fa) (ga +ᵥ fb) := htrans ▸ hdist
-      simpa [ha, hb] using this
-    · have hballa : ball (ga +ᵥ fa) (S.separation / 2) ⊆ ga +ᵥ D :=
-        ball_vadd_subset_vadd (d := d) (Λ := Λ) (D := D) (g := ga) (x := fa) (r := S.separation / 2)
-          (hF_ball fa hfa)
-      have hballb : ball (gb +ᵥ fb) (S.separation / 2) ⊆ gb +ᵥ D :=
-        ball_vadd_subset_vadd (d := d) (Λ := Λ) (D := D) (g := gb) (x := fb) (r := S.separation / 2)
-          (hF_ball fb hfb)
-      have hdisj : Disjoint (ga +ᵥ D) (gb +ᵥ D) :=
-        disjoint_vadd_of_unique_covers (d := d) (Λ := Λ) (D := D) hD_unique_covers hgg
-      have h2 : 2 * (S.separation / 2) ≤ dist (ga +ᵥ fa) (gb +ᵥ fb) :=
-        dist_le_of_disjoint_ball_subsets (d := d) hballa hballb hdisj
-      have : S.separation ≤ dist (ga +ᵥ fa) (gb +ᵥ fb) := by
-        simpa [two_mul, add_halves] using h2
-      simpa [ha, hb] using this
+      simpa [ha, hb] using (htrans ▸ hdist : S.separation ≤ dist (ga +ᵥ fa) (ga +ᵥ fb))
+    · have h2 : 2 * (S.separation / 2) ≤ dist (ga +ᵥ fa) (gb +ᵥ fb) :=
+        dist_le_of_disjoint_ball_subsets (d := d)
+          (ball_vadd_subset_vadd (d := d) (Λ := Λ) (D := D) (g := ga) (x := fa)
+            (r := S.separation / 2) (hF_ball fa hfa))
+          (ball_vadd_subset_vadd (d := d) (Λ := Λ) (D := D) (g := gb) (x := fb)
+            (r := S.separation / 2) (hF_ball fb hfb))
+          (disjoint_vadd_of_unique_covers (d := d) (Λ := Λ) (D := D) hD_unique_covers hgg)
+      simpa [ha, hb, two_mul, add_halves] using h2
   · intro x y hx hy
     exact periodizedCenters_lattice_action (d := d) (Λ := Λ) (F := F) hx hy
 
