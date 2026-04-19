@@ -31,26 +31,10 @@ open MagicFunction.g.CohnElkies.AnotherIntegral.B.ThetaAxis
 
 /-- For `c ≥ 1` and `t ≥ 0`, `exp (-c π t) ≤ exp (-π t)`. -/
 private lemma exp_neg_scaled_pi_le (c : ℝ) (hc : 1 ≤ c) {t : ℝ} (ht : 0 ≤ t) :
-    Real.exp (-c * Real.pi * t) ≤ Real.exp (-Real.pi * t) :=
-  Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht, hc])
-
-/-- Bound the norm of a two-term scaled-exponential combination by a single `exp(-π t)` factor. -/
-private lemma norm_two_exp_le {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) {c d : ℝ}
-    (hc : 1 ≤ c) (hd : 1 ≤ d) {t : ℝ} (ht : 0 ≤ t) :
-    ‖(a : ℂ) * (Real.exp (-c * Real.pi * t) : ℂ) +
-        (b : ℂ) * (Real.exp (-d * Real.pi * t) : ℂ)‖
-      ≤ (a + b) * Real.exp (-Real.pi * t) := by
-  calc
-    ‖(a : ℂ) * (Real.exp (-c * Real.pi * t) : ℂ) +
-        (b : ℂ) * (Real.exp (-d * Real.pi * t) : ℂ)‖
-        ≤ ‖(a : ℂ) * (Real.exp (-c * Real.pi * t) : ℂ)‖ +
-            ‖(b : ℂ) * (Real.exp (-d * Real.pi * t) : ℂ)‖ := norm_add_le _ _
-    _ = a * Real.exp (-c * Real.pi * t) + b * Real.exp (-d * Real.pi * t) := by
-          simp [abs_of_nonneg (Real.exp_pos _).le, abs_of_nonneg ha, abs_of_nonneg hb,
-            -Complex.ofReal_exp]
-    _ ≤ a * Real.exp (-Real.pi * t) + b * Real.exp (-Real.pi * t) := by
-          gcongr <;> [exact exp_neg_scaled_pi_le c hc ht; exact exp_neg_scaled_pi_le d hd ht]
-    _ = (a + b) * Real.exp (-Real.pi * t) := by ring
+    Real.exp (-c * Real.pi * t) ≤ Real.exp (-Real.pi * t) := by
+  refine Real.exp_le_exp.mpr ?_
+  have := mul_nonneg (mul_nonneg (sub_nonneg.mpr hc) Real.pi_pos.le) ht
+  nlinarith [Real.pi_pos, ht, hc]
 
 /--
 If `A = err + main` where `‖err‖ ≤ Cerr * exp(-k π t)` with `k ≥ 1` and
@@ -69,8 +53,7 @@ private lemma norm_le_err_plus_main {A err main : ℂ} (hdec : A = err + main)
     _ ≤ ‖err‖ + ‖main‖ := norm_add_le _ _
     _ ≤ Cerr * Real.exp (-k * Real.pi * t) + Cm * Real.exp (-Real.pi * t) :=
         add_le_add herr hmain
-    _ ≤ Cerr * Real.exp (-Real.pi * t) + Cm * Real.exp (-Real.pi * t) :=
-        add_le_add_right hterm _
+    _ ≤ Cerr * Real.exp (-Real.pi * t) + Cm * Real.exp (-Real.pi * t) := by linarith
     _ = (Cerr + Cm) * Real.exp (-Real.pi * t) := by ring
 
 /-- Evaluate `ψI'` on the positive imaginary axis as a restriction of `ψI`. -/
@@ -140,8 +123,8 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
   have hu_le : u ≤ Real.exp (-Real.pi * t) := hle2
   have heu : e * u = 1 := by
     rw [show e = Real.exp (2 * Real.pi * t) from rfl,
-        show u = Real.exp (-(2 : ℝ) * Real.pi * t) from rfl, ← Real.exp_add]
-    simp [show (2 : ℝ) * Real.pi * t + -(2 : ℝ) * Real.pi * t = 0 by ring]
+        show u = Real.exp (-(2 : ℝ) * Real.pi * t) from rfl, ← Real.exp_add,
+        show (2 : ℝ) * Real.pi * t + -(2 : ℝ) * Real.pi * t = 0 by ring, Real.exp_zero]
   have hxy0_mainR :
       (128 : ℝ) * ((2 + 48 * u) * (e / 256 - 1 / 32)) = e + 16 - 192 * u := by
     have heu' : u * e = 1 := by simpa [mul_comm] using heu
@@ -186,14 +169,22 @@ public lemma exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one :
             - (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)) +
           ((16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) +
             (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)) := by ring
-    have hmain := norm_two_exp_le (a := (16 : ℝ)) (b := (64 : ℝ)) (by norm_num) (by norm_num)
-      (c := (1 : ℝ)) (d := (3 : ℝ)) le_rfl (by norm_num) ht0'
-    have hmain' :
+    have hmain :
         ‖(16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) +
             (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖
           ≤ (80 : ℝ) * Real.exp (-Real.pi * t) := by
-      simpa [show (-(1 : ℝ) * Real.pi * t) = -Real.pi * t by ring] using hmain
-    exact norm_le_err_plus_main hdec hCH2 (by norm_num : (1 : ℝ) ≤ 5) ht0' (hH2 t ht) hmain'
+      calc
+        ‖(16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) +
+            (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖
+            ≤ ‖(16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)‖ +
+                ‖(64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖ := norm_add_le _ _
+        _ = (16 : ℝ) * Real.exp (-Real.pi * t) +
+              (64 : ℝ) * Real.exp (-(3 : ℝ) * Real.pi * t) := by
+              simp [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
+        _ ≤ (16 : ℝ) * Real.exp (-Real.pi * t) +
+              (64 : ℝ) * Real.exp (-Real.pi * t) := by gcongr
+        _ = (80 : ℝ) * Real.exp (-Real.pi * t) := by ring
+    exact norm_le_err_plus_main hdec hCH2 (by norm_num : (1 : ℝ) ≤ 5) ht0' (hH2 t ht) hmain
   have hH4_bd : ‖H₄.resToImagAxis t - 1‖ ≤ (CH4 + 32) * Real.exp (-Real.pi * t) := by
     have hdec : H₄.resToImagAxis t - 1 =
         (H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ)
