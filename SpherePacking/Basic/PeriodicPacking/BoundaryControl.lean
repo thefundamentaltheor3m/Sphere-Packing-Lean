@@ -445,13 +445,10 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hvolCube_ne_top : volCube ≠ ∞ :=
     (PeriodicConstant.isBounded_coordCube L hLpos).measure_lt_top.ne
   -- Convert `hcR` to a strict inequality involving `encard` of centers in `ball 0 (R+r)`.
-  have hcR' : c < ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) *
-      volBall / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
-    hcR.trans_le (by simpa [hSsep, volBall, r, add_assoc, add_left_comm, add_comm] using
-      S.finiteDensity_le hd R)
   have hc_mul : c * volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) <
       ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall :=
-    ENNReal.mul_lt_of_lt_div hcR'
+    ENNReal.mul_lt_of_lt_div <| hcR.trans_le <| by
+      simpa [hSsep, volBall, r, add_assoc, add_left_comm, add_comm] using S.finiteDensity_le hd R
   have hvolR2_ne0 : volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) ≠ 0 :=
     (Metric.measure_ball_pos volume _ (by positivity)).ne.symm
   have hc_ratio : c * ratio R <
@@ -513,13 +510,12 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hsg_density :
       b + cubeShellErr L < (sg.card : ℝ≥0∞) * volBall / volCube := by
     set V := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))
-    -- encard / V ≤ sg.card / volCube, derived from hs_mul
-    have hdiv₁ : ((S.centers ∩ ball 0 (R + r)).encard : ℝ≥0∞) / V ≤
-        (sg.card : ℝ≥0∞) / volCube := by
-      have h := ENNReal.div_le_div_right (ENNReal.div_le_of_le_mul hs_mul) volCube
-      rwa [div_mul_div_cancel_right hvolCube_ne0 hvolCube_ne_top] at h
     refine (hRratio.trans hc_ratio).trans_le ?_
-    have := mul_le_mul_left hdiv₁ volBall
+    -- encard / V ≤ sg.card / volCube, derived from hs_mul; multiply by volBall
+    have := mul_le_mul_left (show ((S.centers ∩ ball 0 (R + r)).encard : ℝ≥0∞) / V ≤
+        (sg.card : ℝ≥0∞) / volCube by
+      have h := ENNReal.div_le_div_right (ENNReal.div_le_of_le_mul hs_mul) volCube
+      rwa [div_mul_div_cancel_right hvolCube_ne0 hvolCube_ne_top] at h) volBall
     simp only [div_eq_mul_inv] at this ⊢
     convert this using 1 <;> ring
   -- Periodize the interior points `F`.
