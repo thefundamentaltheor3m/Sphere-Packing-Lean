@@ -213,25 +213,18 @@ lemma coordCubeInner_one_subset_shell (L : ℝ) :
     WithLp.ofLp_add, WithLp.ofLp_neg, Pi.add_apply, Pi.neg_apply, neg_neg] at hx ⊢
   exact ⟨by linarith [(hx i).1], by linarith [(hx i).2]⟩
 
-lemma volume_cubeShell_eq (L : ℝ) :
+lemma volume_cubeShell_eq_pow (L : ℝ) :
     volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
         coordCubeInner d L 1) =
-      volume (coordCubeInner d (L + 1) 0) - volume (coordCubeInner d L 1) := by
+      (ENNReal.ofReal (L + 1)) ^ d - (ENNReal.ofReal (L - 2)) ^ d := by
   have hmp : MeasurePreserving (fun x : EuclideanSpace ℝ (Fin d) => x.ofLp) := by
     simpa using PiLp.volume_preserving_ofLp (ι := Fin d)
   have hmeas_inner : MeasurableSet (coordCubeInner d L 1) := by
     simpa [PeriodicConstant.coordCubeInner_eq_preimage_ofLp] using
       (MeasurableSet.pi Set.countable_univ fun _ _ => measurableSet_Icc).preimage hmp.measurable
-  simpa [measure_vadd, constVec] using
-    measure_diff (μ := volume) (coordCubeInner_one_subset_shell L)
-      hmeas_inner.nullMeasurableSet
-      (by simp [PeriodicConstant.volume_coordCubeInner])
-
-lemma volume_cubeShell_eq_pow (L : ℝ) :
-    volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
-        coordCubeInner d L 1) =
-      (ENNReal.ofReal (L + 1)) ^ d - (ENNReal.ofReal (L - 2)) ^ d := by
-  rw [volume_cubeShell_eq]; simp [PeriodicConstant.volume_coordCubeInner]
+  have := measure_diff (μ := volume) (coordCubeInner_one_subset_shell L)
+    hmeas_inner.nullMeasurableSet (by simp [PeriodicConstant.volume_coordCubeInner])
+  simpa [measure_vadd, constVec, PeriodicConstant.volume_coordCubeInner] using this
 
 section CubeLatticeCovolume
 
