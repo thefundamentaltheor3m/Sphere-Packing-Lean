@@ -188,18 +188,8 @@ theorem calc_aux_1 (hd : 0 < d)
     (f := f) (P := P) (D := D) hD_isBounded hD_unique_covers hd]
   letI : Fintype ↑(P.centers ∩ D) := P.instFintypeNumReps' hd hD_isBounded
   simp_rw [tsum_fintype]
-  have hmain :
-      (∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D),
-          ∑' ℓ : P.lattice,
-            (f ((x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)) +
-              (ℓ : EuclideanSpace ℝ (Fin d)))).re)
-        ≤
-        ∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), ite (x = y) (f 0).re 0 := by
-    refine Finset.sum_le_sum ?_
-    intro x hx
-    refine Finset.sum_le_sum ?_
-    exact fun i a => CohnElkies.lattice_sum_re_le_ite hP hD_unique_covers hCohnElkies₁ x i
-  refine hmain.trans ?_
+  refine (Finset.sum_le_sum fun x _ => Finset.sum_le_sum fun i _ =>
+    CohnElkies.lattice_sum_re_le_ite hP hD_unique_covers hCohnElkies₁ x i).trans ?_
   simp [PeriodicSpherePacking.numReps']
 
 omit [Nonempty ↑P.centers] in
@@ -341,12 +331,9 @@ theorem calc_steps_part2 (hd : 0 < d) :
         exp (2 * π * I * ⟪↑x, (0 : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2))
           := by
               refine congrArg (fun t => (1 / ZLattice.covolume P.lattice volume) * t) ?_
-              have hSummable := summable_fourier_mul_norm_exp_sq (f := f)
-                (P := P) (D := D) (hD_isBounded := hD_isBounded) hd
-              have hsplit :=
-                (Summable.tsum_eq_add_tsum_ite hSummable
-                  (0 : ↥(SchwartzMap.dualLattice (d := d) P.lattice)))
-              refine hsplit.trans ?_
+              refine (Summable.tsum_eq_add_tsum_ite
+                (summable_fourier_mul_norm_exp_sq (f := f) (P := P) (D := D)
+                  (hD_isBounded := hD_isBounded) hd) 0).trans ?_
               ac_rfl
     _ ≥ (1 / ZLattice.covolume P.lattice volume) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
         (norm (∑' x : ↑(P.centers ∩ D),
@@ -355,42 +342,18 @@ theorem calc_steps_part2 (hd : 0 < d) :
               rw [ge_iff_le, ← tsub_nonpos, mul_assoc,
                   ← mul_sub (1 / ZLattice.covolume P.lattice volume) _ _]
               simp only [sub_add_cancel_right, mul_neg, Left.neg_nonpos_iff]
-              apply mul_nonneg
-              · refine one_div_nonneg.mpr ?ha.a
-                rw [ZLattice.covolume]
-                exact ENNReal.toReal_nonneg
-              · exact
-                  SpherePacking.CohnElkies.tsum_ite_fourier_re_mul_norm_tsum_exp_sq_nonneg
-                    (f := f) (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂)
+              refine mul_nonneg (one_div_nonneg.mpr ?_)
+                (SpherePacking.CohnElkies.tsum_ite_fourier_re_mul_norm_tsum_exp_sq_nonneg
+                  (f := f) (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂))
+              rw [ZLattice.covolume]; exact ENNReal.toReal_nonneg
     _ = (1 / ZLattice.covolume P.lattice volume) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
-        ↑(P.numReps' hd hD_isBounded) ^ 2
-          := by
-              have hnorm0 :=
-                SpherePacking.CohnElkies.norm_tsum_exp_inner_zero_sq_eq_numReps_sq
-                  (P := P) (D := D) (hd := hd) (hD_isBounded := hD_isBounded)
-              simp only [hnorm0]
-    _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume := by
-              have hfou :
-                  (𝓕 f) (0 : EuclideanSpace ℝ (Fin d)) = (𝓕 ⇑f) (0 : EuclideanSpace ℝ (Fin d)) := by
-                simpa using congrArg (fun g : EuclideanSpace ℝ (Fin d) → ℂ => g 0)
-                  (SchwartzMap.fourier_coe (f := f))
-              have hfou_re : (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re = (𝓕 f 0).re := by
-                simp [hfou]
-              -- Commutative-monoid algebra + `hfou_re` (separate lemma avoids heartbeats).
-              have hcomm :
-                  (1 / ZLattice.covolume P.lattice volume) *
-                      (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
-                      (↑(P.numReps' hd hD_isBounded) : ℝ) ^ 2
-                    =
-                    (↑(P.numReps' hd hD_isBounded) : ℝ) ^ 2 *
-                      (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re /
-                        ZLattice.covolume P.lattice volume :=
-                SpherePacking.CohnElkies.one_div_mul_mul_eq_mul_mul_div
-                  (α := ℝ)
-                  (c := ZLattice.covolume P.lattice volume)
-                  (a := (𝓕 ⇑f 0).re)
-                  (b := (↑(P.numReps' hd hD_isBounded) : ℝ) ^ 2)
-              assumption
+        ↑(P.numReps' hd hD_isBounded) ^ 2 := by
+              simp only [SpherePacking.CohnElkies.norm_tsum_exp_inner_zero_sq_eq_numReps_sq
+                (P := P) (D := D) (hd := hd) (hD_isBounded := hD_isBounded)]
+    _ = ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume :=
+              SpherePacking.CohnElkies.one_div_mul_mul_eq_mul_mul_div
+                (α := ℝ) (c := ZLattice.covolume P.lattice volume)
+                (a := (𝓕 ⇑f 0).re) (b := (↑(P.numReps' hd hD_isBounded) : ℝ) ^ 2)
 
 include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hD_unique_covers in
 omit hne_zero hReal in
@@ -433,82 +396,62 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     have vol_pos := Metric.measure_ball_pos (μ := volume)
       (0 : EuclideanSpace ℝ (Fin d)) one_half_pos
     have vol_ne_zero : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ 0 :=
-      (ne_of_lt vol_pos).symm
+      vol_pos.ne'
     have vol_ne_top : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ ∞ :=
-      ne_of_lt (MeasureTheory.measure_ball_lt_top (μ := volume)
-        (x := (0 : EuclideanSpace ℝ (Fin d))) (r := 1 / 2))
-    cases eq_or_ne (𝓕 f 0) 0
-    · case inl h𝓕f =>
-      rw [h𝓕f, zero_re]
-      -- For `ENNReal.div_zero`, need `f 0 ≠ 0` (from `𝓕 f ≥ 0` and `f ≠ 0`).
+      (MeasureTheory.measure_ball_lt_top (μ := volume)
+        (x := (0 : EuclideanSpace ℝ (Fin d))) (r := 1 / 2)).ne
+    rcases eq_or_ne (𝓕 f 0) 0 with h𝓕f | h𝓕f
+    · rw [h𝓕f, zero_re]
       have ne_zero_at_zero : ((f 0).re.toNNReal : ENNReal) ≠ 0 :=
-        ENNReal.coe_ne_zero.mpr (Ne.symm (ne_of_lt (toNNReal_pos.mpr
-        (f_zero_pos hne_zero hReal hRealFourier hCohnElkies₂))))
-      -- Now we can safely divide by zero!
-      rw [ENat.toENNReal_coe, toNNReal_zero, ENNReal.coe_zero, ENNReal.div_zero ne_zero_at_zero]
-      -- Multiply by ⊤.
-      rw [ENNReal.top_mul vol_ne_zero]
+        ENNReal.coe_ne_zero.mpr (toNNReal_pos.mpr
+          (f_zero_pos hne_zero hReal hRealFourier hCohnElkies₂)).ne'
+      rw [ENat.toENNReal_coe, toNNReal_zero, ENNReal.coe_zero, ENNReal.div_zero ne_zero_at_zero,
+        ENNReal.top_mul vol_ne_zero]
       exact le_top
-    · case inr h𝓕f =>
-      -- Shift and cancel volumes on the right.
-      rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
-          ← mul_assoc, ENNReal.mul_le_mul_iff_left vol_ne_zero vol_ne_top]
-      -- Simplify `hCalc` by replacing `numReps'` with `numReps`.
-      rw [← PeriodicSpherePacking.numReps_eq_numReps' (S := P) Fact.out hD_isBounded
-        hD_unique_covers] at hCalc
-      -- Multiply by `(𝓕 (⇑f) 0).re.toNNReal` and cancel.
-      have hfouaux₁ : ((𝓕 f 0).re.toNNReal : ENNReal) ≠ 0 := by
-        refine ENNReal.coe_ne_zero.mpr ?_
-        rw [ne_eq, Real.toNNReal_eq_zero, not_le]
-        refine lt_of_le_of_ne (hCohnElkies₂ 0) ?_
-        intro heq
-        apply h𝓕f
-        -- `(𝓕 f 0).re = 0` and `.im = 0` (real-valued) implies `𝓕 f 0 = 0`.
-        refine Complex.ext heq.symm ?_
-        simpa [eq_comm] using congrArg Complex.im (hRealFourier 0)
-      have hfouaux₂ : ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) ≠ ⊤ := ENNReal.coe_ne_top
-      rw [← ENNReal.mul_le_mul_iff_left hfouaux₁ hfouaux₂,
-          div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _,
-          mul_assoc ((f 0).re.toNNReal : ENNReal) _ _, ENNReal.inv_mul_cancel hfouaux₁ hfouaux₂]
-      -- Put it in a more desirable form and consolidate.
-      rw [mul_one, mul_assoc, ← ENNReal.div_eq_inv_mul]
-      -- Multiply both sides by `↑P.numReps`.
-      have hnRaux₁ : ENat.toENNReal (P.numReps : ENat) ≠ 0 := by
-        rw [ENat.toENNReal_coe, ne_eq, Nat.cast_eq_zero]
-        unfold PeriodicSpherePacking.numReps
-        haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) := by
-          rw [nonempty_quotient_iff]; assumption
-        exact Fintype.card_ne_zero
-      have hnRaux₂ : ENat.toENNReal (P.numReps : ENat) ≠ ⊤ := Ne.symm (ne_of_beq_false rfl)
-      rw [← ENNReal.mul_le_mul_iff_right hnRaux₁ hnRaux₂]
-      -- Put it in a more desirable form and consolidate.
-      rw [ENat.toENNReal_coe, ← mul_assoc, ← pow_two, ← mul_div_assoc]
-      -- Use nonnegativity to pull `toNNReal`s out.
-      have hf0_nn : 0 ≤ (f 0).re := f_nonneg_at_zero hCohnElkies₂
-      have hcov_pos : 0 < ZLattice.covolume P.lattice volume :=
-        ZLattice.covolume_pos P.lattice volume
-      have hRHSCast :
-          (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal := by
-        rw [show ((P.numReps : ℝ) * (f 0).re).toNNReal
-              = (P.numReps : NNReal) * (f 0).re.toNNReal from ?_]
-        · push_cast; rfl
-        · rw [Real.toNNReal_mul (Nat.cast_nonneg _)]
-          simp
-      have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
-          ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
-          (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
-        have haux₁ : 0 ≤ (P.numReps : ℝ) ^ 2 * (𝓕 f 0).re * (ZLattice.covolume P.lattice volume)⁻¹
-          := mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0)) (inv_nonneg.mpr hcov_pos.le)
-        have haux₂ : (ZLattice.covolume P.lattice volume).toNNReal ≠ 0 :=
-          (Real.toNNReal_pos.mpr hcov_pos).ne'
-        simp only [div_eq_mul_inv, ← ENNReal.coe_inv haux₂, Real.toNNReal_of_nonneg haux₁]
-        norm_cast
-        rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0),
-            Real.toNNReal_of_nonneg hcov_pos.le]
-        rfl
-      -- Drop `toNNReal`s and finish with `hCalc`.
-      rw [hRHSCast, hLHSCast, ENNReal.coe_le_coe]
-      exact Real.toNNReal_le_toNNReal hCalc
+    -- Shift and cancel volumes on the right.
+    rw [ENat.toENNReal_coe, mul_div_assoc, div_eq_mul_inv (volume _), mul_comm (volume _),
+        ← mul_assoc, ENNReal.mul_le_mul_iff_left vol_ne_zero vol_ne_top]
+    rw [← PeriodicSpherePacking.numReps_eq_numReps' (S := P) Fact.out hD_isBounded
+      hD_unique_covers] at hCalc
+    have hfouaux₁ : ((𝓕 f 0).re.toNNReal : ENNReal) ≠ 0 := by
+      refine ENNReal.coe_ne_zero.mpr ?_
+      rw [ne_eq, Real.toNNReal_eq_zero, not_le]
+      refine lt_of_le_of_ne (hCohnElkies₂ 0) fun heq => h𝓕f ?_
+      exact Complex.ext heq.symm (by simpa [eq_comm] using congrArg Complex.im (hRealFourier 0))
+    have hfouaux₂ : ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) ≠ ⊤ := ENNReal.coe_ne_top
+    rw [← ENNReal.mul_le_mul_iff_left hfouaux₁ hfouaux₂,
+        div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _,
+        mul_assoc ((f 0).re.toNNReal : ENNReal) _ _, ENNReal.inv_mul_cancel hfouaux₁ hfouaux₂,
+        mul_one, mul_assoc, ← ENNReal.div_eq_inv_mul]
+    have hnRaux₁ : ENat.toENNReal (P.numReps : ENat) ≠ 0 := by
+      rw [ENat.toENNReal_coe, ne_eq, Nat.cast_eq_zero]
+      unfold PeriodicSpherePacking.numReps
+      haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) := by
+        rw [nonempty_quotient_iff]; assumption
+      exact Fintype.card_ne_zero
+    have hnRaux₂ : ENat.toENNReal (P.numReps : ENat) ≠ ⊤ := Ne.symm (ne_of_beq_false rfl)
+    rw [← ENNReal.mul_le_mul_iff_right hnRaux₁ hnRaux₂, ENat.toENNReal_coe, ← mul_assoc, ← pow_two,
+      ← mul_div_assoc]
+    have hcov_pos : 0 < ZLattice.covolume P.lattice volume :=
+      ZLattice.covolume_pos P.lattice volume
+    have hRHSCast :
+        (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal := by
+      rw [show ((P.numReps : ℝ) * (f 0).re).toNNReal
+            = (P.numReps : NNReal) * (f 0).re.toNNReal from by
+        rw [Real.toNNReal_mul (Nat.cast_nonneg _)]; simp]
+      push_cast; rfl
+    have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
+        ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
+        (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
+      have haux₁ : 0 ≤ (P.numReps : ℝ) ^ 2 * (𝓕 f 0).re * (ZLattice.covolume P.lattice volume)⁻¹
+        := mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0)) (inv_nonneg.mpr hcov_pos.le)
+      have haux₂ : (ZLattice.covolume P.lattice volume).toNNReal ≠ 0 :=
+        (Real.toNNReal_pos.mpr hcov_pos).ne'
+      simp only [div_eq_mul_inv, ← ENNReal.coe_inv haux₂, Real.toNNReal_of_nonneg haux₁]
+      norm_cast
+      rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0), Real.toNNReal_of_nonneg hcov_pos.le]; rfl
+    rw [hRHSCast, hLHSCast, ENNReal.coe_le_coe]
+    exact Real.toNNReal_le_toNNReal hCalc
   exact calc_steps hRealFourier hCohnElkies₁ hCohnElkies₂ hP hD_isBounded hD_unique_covers hd
 
 end Main_Theorem_For_One_Packing
