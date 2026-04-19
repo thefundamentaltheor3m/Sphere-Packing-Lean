@@ -185,31 +185,26 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
             (hB6 zH (hA6.trans htAim))
         have hBA_nonneg : 0 ≤ BA := le_trans (norm_nonneg _) hAterm
         have hB4_nonneg : 0 ≤ B4 := le_trans (norm_nonneg _) hE4
-        have hφ0 : ‖φ₀ zH‖ ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
-          have hpow : ‖(E₂ zH * E₄ zH - E₆ zH) ^ (2 : ℕ)‖ ≤ BA ^ (2 : ℕ) := by
-            simpa [norm_pow, pow_two] using
-              mul_le_mul hAterm hAterm (norm_nonneg _) hBA_nonneg
-          calc
-            ‖φ₀ zH‖ = ‖(E₂ zH * E₄ zH - E₆ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ := by
-              simp [φ₀, div_eq_mul_inv]
-            _ ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) :=
-              mul_le_mul hpow hΔ (norm_nonneg _) (pow_nonneg hBA_nonneg _)
-        have hφ2 : ‖φ₂' zH‖ ≤ (B4 * BA) * (CΔ * Real.exp (2 * π * t)) := by
-          have hmulEA : ‖E₄ zH‖ * ‖E₂ zH * E₄ zH - E₆ zH‖ ≤ B4 * BA :=
-            mul_le_mul hE4 hAterm (norm_nonneg _) hB4_nonneg
-          calc
-            ‖φ₂' zH‖ = (‖E₄ zH‖ * ‖E₂ zH * E₄ zH - E₆ zH‖) * ‖(Δ zH)⁻¹‖ := by
-              simp [φ₂', div_eq_mul_inv, mul_assoc]
+        have hφ0 : ‖φ₀ zH‖ ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) :=
+          calc ‖φ₀ zH‖ = ‖(E₂ zH * E₄ zH - E₆ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ := by
+                simp [φ₀, div_eq_mul_inv]
+            _ ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
+                refine mul_le_mul ?_ hΔ (norm_nonneg _) (pow_nonneg hBA_nonneg _)
+                simpa [norm_pow, pow_two] using
+                  mul_le_mul hAterm hAterm (norm_nonneg _) hBA_nonneg
+        have hφ2 : ‖φ₂' zH‖ ≤ (B4 * BA) * (CΔ * Real.exp (2 * π * t)) :=
+          calc ‖φ₂' zH‖ = (‖E₄ zH‖ * ‖E₂ zH * E₄ zH - E₆ zH‖) * ‖(Δ zH)⁻¹‖ := by
+                simp [φ₂', div_eq_mul_inv, mul_assoc]
             _ ≤ (B4 * BA) * (CΔ * Real.exp (2 * π * t)) :=
-              mul_le_mul hmulEA hΔ (norm_nonneg _) (mul_nonneg hB4_nonneg hBA_nonneg)
-        have hφ4 : ‖φ₄' zH‖ ≤ (B4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
-          have hpow : ‖(E₄ zH) ^ (2 : ℕ)‖ ≤ B4 ^ (2 : ℕ) := by
-            simpa [norm_pow, pow_two] using mul_le_mul hE4 hE4 (norm_nonneg _) hB4_nonneg
-          calc
-            ‖φ₄' zH‖ = ‖(E₄ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ := by
-              simp [φ₄', div_eq_mul_inv]
-            _ ≤ (B4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) :=
-              mul_le_mul hpow hΔ (norm_nonneg _) (pow_nonneg hB4_nonneg _)
+                mul_le_mul (mul_le_mul hE4 hAterm (norm_nonneg _) hB4_nonneg) hΔ
+                  (norm_nonneg _) (mul_nonneg hB4_nonneg hBA_nonneg)
+        have hφ4 : ‖φ₄' zH‖ ≤ (B4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) :=
+          calc ‖φ₄' zH‖ = ‖(E₄ zH) ^ (2 : ℕ)‖ * ‖(Δ zH)⁻¹‖ := by
+                simp [φ₄', div_eq_mul_inv]
+            _ ≤ (B4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
+                refine mul_le_mul ?_ hΔ (norm_nonneg _) (pow_nonneg hB4_nonneg _)
+                simpa [norm_pow, pow_two] using
+                  mul_le_mul hE4 hE4 (norm_nonneg _) hB4_nonneg
         have hScoe : ((ModularGroup.S • zH : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) :=
           (ModularGroup.coe_S_smul (z := zH)).trans (by
             simp [zH, div_eq_mul_inv, mul_inv_rev, mul_comm])
