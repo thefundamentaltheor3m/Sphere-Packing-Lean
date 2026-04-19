@@ -221,39 +221,40 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
         ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ +
           ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ := by
     rw [hS]
-    exact (norm_sub_le _ _).trans
-      (add_le_add_right (norm_sub_le _ _) _)
+    refine (norm_sub_le _ _).trans ?_
+    gcongr
+    exact norm_sub_le _ _
   -- Bound each of the three summands by `Kᵢ * (t^2 * exp(2πt))`.
   have hA : ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       (4 * C₀) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
     calc ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖
-        ≤ C₀ * (2 * t) ^ 2 := by
-          exact (norm_mul_le _ _).trans (mul_le_mul hφ0 hw2 (norm_nonneg _) hC₀_pos.le)
+        ≤ C₀ * (2 * t) ^ 2 :=
+          (norm_mul_le _ _).trans (mul_le_mul hφ0 hw2 (norm_nonneg _) hC₀_pos.le)
       _ = (4 * C₀) * t ^ 2 := by ring
       _ ≤ (4 * C₀) * (t ^ 2 * Real.exp (2 * π * t)) := by
-          gcongr; positivity
+          have : 0 ≤ 4 * C₀ := by positivity
+          gcongr
+          nlinarith [ht2_nonneg]
   have hB : ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ ≤
       (2 * c12π * Cφ) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
+    have h2coeff : 0 ≤ 2 * c12π * Cφ := by positivity
     calc ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖
         ≤ (c12π * ‖(wH : ℂ)‖) * ‖φ₂' wH‖ := norm_mul₃_le
       _ ≤ (c12π * (2 * t)) * (Cφ * Real.exp (2 * π * t)) :=
           mul_le_mul (mul_le_mul_of_nonneg_left hw_norm (norm_nonneg _))
             hφ2 (norm_nonneg _) (by positivity)
+      _ = (2 * c12π * Cφ) * (t * Real.exp (2 * π * t)) := by ring
       _ ≤ (2 * c12π * Cφ) * (t ^ 2 * Real.exp (2 * π * t)) := by
-          have h1 : c12π * (2 * t) * (Cφ * Real.exp (2 * π * t)) =
-              (2 * c12π * Cφ) * (t * Real.exp (2 * π * t)) := by ring
-          rw [h1]
           gcongr
   have hC : ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ ≤
       c36π2 * Cφ * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
+    have hccoeff : 0 ≤ c36π2 * Cφ := by positivity
     calc ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖
         ≤ c36π2 * ‖φ₄' wH‖ := norm_mul_le _ _
       _ ≤ c36π2 * (Cφ * Real.exp (2 * π * t)) :=
           mul_le_mul_of_nonneg_left hφ4 (norm_nonneg _)
       _ = c36π2 * Cφ * (1 * Real.exp (2 * π * t)) := by ring
-      _ ≤ c36π2 * Cφ * (t ^ 2 * Real.exp (2 * π * t)) := by
-          gcongr
-          exact mul_nonneg (norm_nonneg _) hCφ_nonneg
+      _ ≤ c36π2 * Cφ * (t ^ 2 * Real.exp (2 * π * t)) := by gcongr
   linarith [htri, hA, hB, hC]
 
 /-- Pointwise bound for `‖Φ₂' u (tI)‖` on the tail `t ≥ 1`. -/
