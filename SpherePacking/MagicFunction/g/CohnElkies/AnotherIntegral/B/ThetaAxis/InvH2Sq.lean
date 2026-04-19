@@ -171,7 +171,8 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
     have hq3_le : Real.exp (-(3 : ℝ) * Real.pi * t) ≤ Real.exp (-Real.pi * t) :=
       Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])
     have hmain_norm : ‖main‖ ≤ 80 * Real.exp (-Real.pi * t) := by
-      have htri : ‖main‖ ≤ 16 * Real.exp (-Real.pi * t) + 64 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
+      have htri : ‖main‖ ≤
+          16 * Real.exp (-Real.pi * t) + 64 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
         simpa [main, abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp] using
           norm_add_le ((16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ))
             ((64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ))
@@ -196,9 +197,10 @@ private lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
       have hq3_sq_c :
           (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) ^ (2 : ℕ) =
             (Real.exp (-(6 : ℝ) * Real.pi * t) : ℂ) := by
-        have : (Real.exp (-(3 : ℝ) * Real.pi * t)) ^ (2 : ℕ) = Real.exp (-(6 : ℝ) * Real.pi * t) := by
+        have h : (Real.exp (-(3 : ℝ) * Real.pi * t)) ^ (2 : ℕ) =
+            Real.exp (-(6 : ℝ) * Real.pi * t) := by
           rw [← Real.exp_nat_mul]; congr 1; ring
-        exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) this
+        exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) h
       have hEq :
           main ^ (2 : ℕ) - (256 : ℂ) * (u : ℂ) - (2048 : ℂ) * ((u ^ (2 : ℕ) : ℝ) : ℂ) =
             (4096 : ℂ) * (Real.exp (-(6 : ℝ) * Real.pi * t) : ℂ) := by grind only
