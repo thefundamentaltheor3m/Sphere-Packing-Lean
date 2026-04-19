@@ -131,26 +131,23 @@ lemma cuspFunction_qParam_eq {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL 
   simpa using
     SlashInvariantFormClass.eq_cuspFunction (h := (1 : ℝ)) (f := f) (τ := z) hΓ one_ne_zero
 
-/-- Helper: bound `‖cexp(2π i m z)‖ ≤ q^k * q1^(m-k)` for `z : ℍ`, `q = exp(-2πt)`, `q1 = exp(-2π)`,
-`m ≥ k`, given `qParam 1 z = q` and `q ≤ q1`. -/
-private lemma norm_cexp_mul_le {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le : q ≤ q1)
-    (hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ)) (m k : ℕ) (hmk : k ≤ m) :
-    ‖cexp (2 * π * Complex.I * (m : ℂ) * z)‖ ≤ q ^ k * q1 ^ (m - k) := by
+/-- Helper: bound `‖cexp(2π i m z)‖` by `q^j * q1^k` whenever `m = j + k`. -/
+private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le : q ≤ q1)
+    (hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ)) (j k : ℕ) :
+    ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ ≤ q ^ j * q1 ^ k := by
   have hbase : cexp (2 * π * Complex.I * z) = (q : ℂ) := by
     simpa [Periodic.qParam] using hqC
-  have hpow : cexp (2 * π * Complex.I * (m : ℂ) * z) = (cexp (2 * π * Complex.I * z)) ^ m := by
+  have hpow : cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z) =
+      (cexp (2 * π * Complex.I * z)) ^ (j + k) := by
     simpa [mul_assoc, mul_left_comm, mul_comm] using
-      (Complex.exp_nat_mul (2 * π * Complex.I * z) m)
-  have hnorm : ‖cexp (2 * π * Complex.I * (m : ℂ) * z)‖ = q ^ m := by
-    rw [hpow, hbase]
-    simp [abs_of_nonneg hq_nonneg]
-  rw [hnorm]
-  have hsplit : m = k + (m - k) := (Nat.add_sub_cancel' hmk).symm
-  rw [hsplit, pow_add]
+      (Complex.exp_nat_mul (2 * π * Complex.I * z) (j + k))
+  have hnorm : ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ = q ^ (j + k) := by
+    rw [hpow, hbase]; simp [abs_of_nonneg hq_nonneg]
+  rw [hnorm, pow_add]
   exact mul_le_mul_of_nonneg_left
     (pow_le_pow_left₀ hq_nonneg hq_le _) (pow_nonneg hq_nonneg _)
 
-/-- Helper: bound `‖(m : ℂ) * (σ 3 m : ℂ)‖ ≤ (M : ℝ) ^ 5` for `m ≤ M`. -/
+/-- Helper: bound `‖m * σ₃(m)‖` by `M ^ 5` when `m ≤ M`. -/
 private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
     ‖((m : ℂ) * (σ 3 m : ℂ))‖ ≤ ((M : ℝ) ^ 5 : ℝ) := by
   have hs : (σ 3 m : ℕ) ≤ m ^ 4 :=
@@ -159,14 +156,11 @@ private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
     have := Nat.mul_le_mul_left m hs
     simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using this
   have hnorm : ‖((m : ℂ) * (σ 3 m : ℂ))‖ = (m * (σ 3 m) : ℝ) := by
-    have : ‖(m : ℂ)‖ = (m : ℝ) := by simpa using Complex.norm_natCast m
+    have : ‖(m : ℂ)‖ = (m : ℝ) := by simp
     simp_all
-  have hcast : (m * (σ 3 m) : ℝ) ≤ (m ^ 5 : ℝ) := by exact_mod_cast hcoeff_nat
-  have hmono : (m ^ 5 : ℝ) ≤ (M ^ 5 : ℝ) := by exact_mod_cast Nat.pow_le_pow_left hM 5
   calc ‖((m : ℂ) * (σ 3 m : ℂ))‖ = (m * (σ 3 m) : ℝ) := hnorm
-    _ ≤ (m ^ 5 : ℝ) := hcast
-    _ ≤ (M ^ 5 : ℝ) := hmono
-    _ = ((M : ℝ) ^ 5 : ℝ) := by push_cast; rfl
+    _ ≤ (m ^ 5 : ℝ) := by exact_mod_cast hcoeff_nat
+    _ ≤ ((M : ℝ) ^ 5 : ℝ) := by exact_mod_cast Nat.pow_le_pow_left hM 5
 
 lemma qExpansionFormalMultilinearSeries_partialSum_one
     {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
@@ -403,64 +397,17 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
   -- Norm bound for each tail term `f n`.
   have hf_le : ∀ n : ℕ, ‖f n‖ ≤ q ^ (2 : ℕ) * b n := by
     intro n
-    -- Coefficient bound: `(n+2) * σ₃(n+2) ≤ (n+2)^5`.
-    have hcoeff_nat : (n + 2) * (σ 3 (n + 2)) ≤ (n + 2) ^ 5 := by
-      have hs : (σ 3 (n + 2) : ℕ) ≤ (n + 2) ^ 4 :=
-        SpherePacking.ForMathlib.sigma_three_le_pow_four (n + 2)
-      have := Nat.mul_le_mul_left (n + 2) hs
-      simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using this
     have hcoeff : ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) := by
-      -- Reduce to a cast inequality in `ℝ`.
-      have hnorm :
-          ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ = ((n + 2) * (σ 3 (n + 2)) : ℝ) := by
-        have hn2 : ‖(n + 2 : ℂ)‖ = (n + 2 : ℝ) := by
-          simpa using (Complex.norm_natCast (n + 2))
-        simp_all
-      have hcast : ((n + 2) * (σ 3 (n + 2)) : ℝ) ≤ ((n + 2) ^ 5 : ℝ) := by
-        exact_mod_cast hcoeff_nat
-      -- Rewrite the left-hand side using `hnorm`, then cast the RHS exponent.
-      rw [hnorm]
-      simpa [Nat.cast_pow] using hcast
-    -- Exponential factor: `‖exp(2π i (n+2) z)‖ = q^(n+2) ≤ q^2 * q1^n`.
-    have hexp :
-        ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ ≤ q ^ (2 : ℕ) * q1 ^ n := by
-      have hbase : cexp (2 * π * Complex.I * z) = (q : ℂ) := by
-        -- `qParam 1 z = exp(2π i z) = q`.
-        simpa [Periodic.qParam] using hqC
-      have hpow :
-          cexp (2 * π * Complex.I * (n + 2 : ℂ) * z) =
-            (cexp (2 * π * Complex.I * z)) ^ (n + 2) := by
-        simpa [mul_assoc, mul_left_comm, mul_comm] using
-          (Complex.exp_nat_mul (2 * π * Complex.I * z) (n + 2))
-      have hnorm :
-          ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ = q ^ (n + 2) := by
-        have hqpow : cexp (2 * π * Complex.I * (n + 2 : ℂ) * z) = (q : ℂ) ^ (n + 2) := by
-          simpa [hbase] using hpow
-        calc
-          ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ =
-              ‖(q : ℂ) ^ (n + 2)‖ := by simp [hqpow]
-          _ = ‖(q : ℂ)‖ ^ (n + 2) := by simp
-          _ = (abs q) ^ (n + 2) := by simp [Complex.norm_real]
-          _ = q ^ (n + 2) := by simp [abs_of_nonneg hq_nonneg]
-      -- Now bound `q^(n+2)` by `q^2 * q1^n`.
-      have hqn : q ^ n ≤ q1 ^ n := by
-        exact pow_le_pow_left₀ hq_nonneg hq_le _
-      have hqpow_le : q ^ (n + 2) ≤ q ^ (2 : ℕ) * q1 ^ n := by
-        -- `q^(n+2) = q^2 * q^n ≤ q^2 * q1^n`.
-        simpa [pow_add, mul_assoc, mul_left_comm, mul_comm] using
-          (mul_le_mul_of_nonneg_left hqn (pow_nonneg hq_nonneg _))
-      exact le_of_eq_of_le hnorm hqpow_le
-    -- Combine the coefficient and exponential bounds.
+      have := norm_mul_sigma_le (n + 2) (n + 2) le_rfl
+      push_cast at this ⊢; exact this
+    have hexp : ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ ≤ q ^ (2 : ℕ) * q1 ^ n := by
+      have h := norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 2 n
+      simpa [show ((2 + n : ℕ) : ℂ) = (n : ℂ) + 2 by push_cast; ring] using h
     calc
-      ‖f n‖ = ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ)) * cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ := by
-            simp [f, mul_assoc]
-      _ = ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ *
-            ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ := by
-            simp [mul_assoc]
-      _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q ^ (2 : ℕ) * q1 ^ n) := by
-            gcongr
-      _ = q ^ (2 : ℕ) * (((n + 2 : ℝ) ^ 5 : ℝ) * q1 ^ n) := by ring
-      _ = q ^ (2 : ℕ) * b n := rfl
+      ‖f n‖ = ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ *
+            ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ := by simp [f, mul_assoc]
+      _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q ^ (2 : ℕ) * q1 ^ n) := by gcongr
+      _ = q ^ (2 : ℕ) * b n := by simp [b]; ring
   -- Use Ramanujan's identity and isolate the `n=1` term.
   have hRam := E₂_mul_E₄_sub_E₆ z
   have hqexp : cexp (2 * π * Complex.I * z) = (q : ℂ) := by
@@ -476,68 +423,21 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
   let g : ℕ → ℂ :=
     fun n =>
       (n + 1) * (σ 3 (n + 1)) * cexp (2 * π * Complex.I * (n + 1) * z)
-  have hg_summ :
-      Summable g := by
-    -- Absolute summability: compare to `q * b`.
+  have hg_summ : Summable g := by
     have hg_norm_le : ∀ n : ℕ, ‖g n‖ ≤ q * b n := by
       intro n
-      -- Reuse `hf_le` at index `n` (since `g (n+1)` corresponds to `f n)`.
-      -- For `g n` we use the bound `q * q1^n`.
-      have hexp :
-          ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ ≤ q * q1 ^ n := by
-        have hbase : cexp (2 * π * Complex.I * z) = (q : ℂ) := by simpa [Periodic.qParam] using hqC
-        have hpow :
-            cexp (2 * π * Complex.I * (n + 1) * z) = (cexp (2 * π * Complex.I * z)) ^ (n + 1) := by
-          simpa [mul_assoc, mul_left_comm, mul_comm] using
-            (Complex.exp_nat_mul (2 * π * Complex.I * z) (n + 1))
-        have hnorm :
-            ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ = q ^ (n + 1) := by
-          have hqpow : cexp (2 * π * Complex.I * (n + 1) * z) = (q : ℂ) ^ (n + 1) := by
-            simpa [hbase] using hpow
-          calc
-            ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ = ‖(q : ℂ) ^ (n + 1)‖ := by
-              simp [hqpow]
-            _ = ‖(q : ℂ)‖ ^ (n + 1) := by simp
-            _ = (abs q) ^ (n + 1) := by simp [Complex.norm_real]
-            _ = q ^ (n + 1) := by simp [abs_of_nonneg hq_nonneg]
-        have hqn : q ^ n ≤ q1 ^ n := pow_le_pow_left₀ hq_nonneg hq_le _
-        have : q ^ (n + 1) ≤ q * q1 ^ n := by
-          -- `q^(n+1) = q*q^n ≤ q*q1^n`.
-          simpa [pow_add, mul_assoc, mul_left_comm, mul_comm] using
-            (mul_le_mul_of_nonneg_left hqn hq_nonneg)
-        simpa [hnorm] using this
-      have hcoeff_nat : (n + 1) * (σ 3 (n + 1)) ≤ (n + 1) ^ 5 := by
-        have hs : (σ 3 (n + 1) : ℕ) ≤ (n + 1) ^ 4 :=
-          SpherePacking.ForMathlib.sigma_three_le_pow_four (n + 1)
-        have := Nat.mul_le_mul_left (n + 1) hs
-        simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using this
+      have hexp : ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ ≤ q * q1 ^ n := by
+        have h := norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 1 n
+        simpa [pow_one, show ((1 + n : ℕ) : ℂ) = (n : ℂ) + 1 by push_cast; ring] using h
       have hcoeff : ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) := by
-        have hnorm :
-            ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ = ((n + 1) * (σ 3 (n + 1)) : ℝ) := by
-          have hn1 : ‖(n + 1 : ℂ)‖ = (n + 1 : ℝ) := by
-            simpa using (Complex.norm_natCast (n + 1))
-          simp_all
-        have hcast' : ((n + 1) * (σ 3 (n + 1)) : ℝ) ≤ ((n + 1) ^ 5 : ℝ) := by
-          exact_mod_cast hcoeff_nat
-        have hmain : ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ ≤ ((n + 1) ^ 5 : ℝ) := by
-          rw [hnorm]
-          exact hcast'
-        have hmono_nat : (n + 1) ^ 5 ≤ (n + 2) ^ 5 := Nat.pow_le_pow_left (Nat.le_succ _) _
-        have hmono : ((n + 1) ^ 5 : ℝ) ≤ ((n + 2 : ℕ) ^ 5 : ℝ) := by
-          exact_mod_cast hmono_nat
-        have hmono' : ((n + 1) ^ 5 : ℝ) ≤ ((n + 2 : ℝ) ^ 5 : ℝ) := by
-          simpa [Nat.cast_pow] using hmono
-        exact le_trans hmain hmono'
-      -- Put together.
+        have := norm_mul_sigma_le (n + 1) (n + 2) (by omega)
+        push_cast at this ⊢; exact this
       calc
-        ‖g n‖ = ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ)) * cexp (2 * π * Complex.I * (n + 1) * z)‖ := by
-              simp [g, mul_assoc]
-        _ = ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ *
-              ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ := by simp [mul_assoc]
+        ‖g n‖ = ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ *
+              ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ := by simp [g, mul_assoc]
         _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q * q1 ^ n) := by gcongr
-        _ = q * b n := by ring
-    have hsumMajor : Summable (fun n : ℕ => q * b n) := hb_summ.mul_left q
-    exact Summable.of_norm_bounded hsumMajor hg_norm_le
+        _ = q * b n := by simp [b]; ring
+    exact Summable.of_norm_bounded (hb_summ.mul_left q) hg_norm_le
   -- Identify the tail `∑_{n≥2}` as `∑' f n`.
   have hsplit :
       (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - cexp (2 * π * Complex.I * z) =
@@ -560,57 +460,29 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
       _ = ∑' n : ℕ, f n := by
             grind only
   -- Now bound the tail series using the majorant `b`.
-  have hnorm_summ : Summable (fun n : ℕ => ‖f n‖) := by
-    have hsumMajor : Summable (fun n : ℕ => q ^ (2 : ℕ) * b n) := hb_summ.mul_left (q ^ (2 : ℕ))
-    refine Summable.of_nonneg_of_le (f := fun n : ℕ => q ^ (2 : ℕ) * b n) (g := fun n : ℕ => ‖f n‖)
-      (fun _ => norm_nonneg _) ?_ hsumMajor
-    intro n
-    exact hf_le n
+  have hnorm_summ : Summable (fun n : ℕ => ‖f n‖) :=
+    Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hf_le (hb_summ.mul_left (q ^ (2 : ℕ)))
   have htail :
       ‖∑' n : ℕ, f n‖ ≤ q ^ (2 : ℕ) * (∑' n : ℕ, b n) := by
-    -- `‖∑ f‖ ≤ ∑ ‖f‖ ≤ ∑ q^2*b = q^2*∑ b`.
-    have h1 : ‖∑' n : ℕ, f n‖ ≤ ∑' n : ℕ, ‖f n‖ := norm_tsum_le_tsum_norm hnorm_summ
-    have h2 :
-        (∑' n : ℕ, ‖f n‖) ≤ ∑' n : ℕ, (q ^ (2 : ℕ) * b n) :=
-      hnorm_summ.tsum_le_tsum (fun n => hf_le n) (hb_summ.mul_left (q ^ (2 : ℕ)))
-    have h3 :
-        (∑' n : ℕ, q ^ (2 : ℕ) * b n) = q ^ (2 : ℕ) * (∑' n : ℕ, b n) := by
-      simpa [mul_assoc, mul_left_comm, mul_comm] using
-        (tsum_mul_left (a := q ^ (2 : ℕ)) (f := b))
-    exact h1.trans (h2.trans_eq h3)
+    refine (norm_tsum_le_tsum_norm hnorm_summ).trans ?_
+    have h2 : (∑' n : ℕ, ‖f n‖) ≤ ∑' n : ℕ, (q ^ (2 : ℕ) * b n) :=
+      hnorm_summ.tsum_le_tsum hf_le (hb_summ.mul_left (q ^ (2 : ℕ)))
+    exact h2.trans_eq (tsum_mul_left)
   -- Finish: substitute Ramanujan's identity and `q = exp(-2πt)`.
   have hmain :
       ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)‖ ≤
         (720 : ℝ) * (q ^ (2 : ℕ)) * (∑' n : ℕ, b n) := by
-    -- Replace the main expression by `720 * (tail)`.
-    have hrew :
-        (E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ) =
-          (720 : ℂ) * (∑' n : ℕ, f n) := by
-      -- Use Ramanujan and our tail identity.
-      rw [hRam]
-      -- Convert the difference `tsum - q` into the `f`-sum.
-      have hdiff :
-          (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - (q : ℂ) =
-            ∑' n : ℕ, f n := by
-        simpa [hqexp] using hsplit
-      -- Factor out `720`.
-      calc
-        (720 : ℂ) * (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) -
-              (720 : ℂ) * (q : ℂ) =
-            (720 : ℂ) *
-              ((∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - (q : ℂ)) := by
-          ring
-        _ = (720 : ℂ) * (∑' n : ℕ, f n) := by
-          simp [hdiff]
-    -- Take norms and apply the bound on the tail.
-    have h720 : ‖(720 : ℂ)‖ = (720 : ℝ) := by norm_num
+    have hdiff :
+        (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - (q : ℂ) =
+          ∑' n : ℕ, f n := by
+      simpa [hqexp] using hsplit
+    have hrew : (E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ) = (720 : ℂ) * (∑' n : ℕ, f n) := by
+      rw [hRam, ← hdiff]; ring
     calc
-      ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)‖ =
-          ‖(720 : ℂ) * (∑' n : ℕ, f n)‖ := by
-        simpa using congrArg (fun x : ℂ => ‖x‖) hrew
-      _ = ‖(720 : ℂ)‖ * ‖∑' n : ℕ, f n‖ := by simp
-      _ ≤ (720 : ℝ) * (q ^ (2 : ℕ) * (∑' n : ℕ, b n)) := by
-        simpa [h720] using (mul_le_mul_of_nonneg_left htail (by norm_num : (0 : ℝ) ≤ 720))
+      ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (q : ℂ)‖ = ‖(720 : ℂ) * (∑' n : ℕ, f n)‖ := by
+            rw [hrew]
+      _ = (720 : ℝ) * ‖∑' n : ℕ, f n‖ := by simp
+      _ ≤ (720 : ℝ) * (q ^ (2 : ℕ) * (∑' n : ℕ, b n)) := by gcongr
       _ = (720 : ℝ) * (q ^ (2 : ℕ)) * (∑' n : ℕ, b n) := by ring
   -- Convert `q` back to `Real.exp (-2πt)` and absorb into the chosen `C`.
   have hq_def : q = Real.exp (-2 * π * t) := rfl
