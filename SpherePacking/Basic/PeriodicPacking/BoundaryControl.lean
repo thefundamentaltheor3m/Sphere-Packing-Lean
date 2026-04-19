@@ -485,11 +485,10 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hR2 : R + Cshift = R₁ + 2 * C := by simp [Cshift, R₁, r, add_left_comm, add_comm]
   have hs_mul :
       ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volCube ≤
-        (sg.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) := by
+        (sg.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) :=
     calc ((S.centers ∩ ball _ (R + r)).encard : ℝ≥0∞) * volCube
         = (s.card : ℝ≥0∞) * volCube := by rw [hs_enc]
-      _ ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) * volCube :=
-          mul_le_mul_left hs_le volCube
+      _ ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) * volCube := mul_le_mul_left hs_le volCube
       _ = (sg.card : ℝ≥0∞) * ((t.card : ℝ≥0∞) * volCube) := by ac_rfl
       _ ≤ _ := mul_le_mul_right (by simpa [hR2, volCube] using ht_vol) _
   have hsg_density :
@@ -526,13 +525,13 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   rcases PeriodicConstantApprox.periodize_cube_density_eq hd S hSsep hLpos F
       hF_centers hF_inner with ⟨P, hPsep, hPdens⟩
   -- Rewrite `P.density` with denominator `volCube`.
-  have hden :
-      (Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) : ℝ≥0∞) = volCube := by
-    rw [show Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) =
-      volCube.toNNReal by simpa [volCube] using
-        PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) L hLpos,
-      ENNReal.coe_toNNReal hvolCube_ne_top]
   have hPdens' : P.density = (F.card : ℝ≥0∞) * volBall / volCube := by
+    have hden : (Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) : ℝ≥0∞)
+        = volCube := by
+      rw [show Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) =
+        volCube.toNNReal by simpa [volCube] using
+          PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) L hLpos,
+        ENNReal.coe_toNNReal hvolCube_ne_top]
     simpa [hden, volBall] using hPdens
   refine ⟨P, hPsep, ?_⟩
   -- `b < sgDensity - cubeShellErr L ≤ P.density`.
