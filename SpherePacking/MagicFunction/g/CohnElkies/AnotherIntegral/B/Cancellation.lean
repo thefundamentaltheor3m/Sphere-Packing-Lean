@@ -66,7 +66,6 @@ This is the cancellation estimate needed for convergence for all `u > 0`.
 
 lemma exists_bound_norm_bAnotherBase_Ioi :
     ∃ C : ℝ, ∀ t : ℝ, 0 < t → ‖bAnotherBase t‖ ≤ C := by
-  -- 1) Control `ψI' (I * t)` on `0 < t ≤ 1` via `ψS` bounds on `t ≥ 1`.
   rcases
       MagicFunction.b.PsiBounds.PsiExpBounds.exists_bound_norm_ψS_resToImagAxis_exp_Ici_one with
     ⟨Cψ, hCψ⟩
@@ -94,7 +93,6 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
           = ‖(-(t ^ (2 : ℕ)) : ℂ)‖ * ‖ψS.resToImagAxis (1 / t)‖ := by simp
       _ ≤ (t ^ (2 : ℕ)) * Cψ0 := by nlinarith [hcoeff, hψS']
       _ ≤ Cψ0 := by nlinarith [ht2le]
-  -- 2) Control `‖bAnotherBase t‖` for `1 ≤ t` via the cancellation estimate `O(exp(-π*t))`.
   open MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation in
     rcases exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one with ⟨Ctail, hCtail⟩
   let Ctail0 : ℝ := max Ctail 0
@@ -105,7 +103,6 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
     have hexp_le : Real.exp (-Real.pi * t) ≤ 1 :=
       Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_trans (by norm_num : (0:ℝ) ≤ 1) ht])
     exact h1.trans (by simpa [mul_one] using mul_le_mul_of_nonneg_left hexp_le hCtail0)
-  -- 3) Combine the two regimes into a single global bound on `t > 0`.
   let Csmall : ℝ := Cψ0 + 144 + Real.exp (2 * π)
   refine ⟨max Csmall Ctail0, ?_⟩
   intro t ht0

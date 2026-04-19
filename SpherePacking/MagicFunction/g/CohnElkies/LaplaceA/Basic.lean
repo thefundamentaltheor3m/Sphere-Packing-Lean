@@ -176,15 +176,13 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
         have hA6 : A6 ≤ A := by
           dsimp [A]; exact le_max_of_le_right <| le_max_of_le_right <|
             le_max_of_le_right (le_max_right _ _)
-        have hzAΔ : AΔ ≤ zH.im := le_trans hAΔ (by simpa [hz_im] using htA)
-        have hzA2 : A2 ≤ zH.im := le_trans hA2 (by simpa [hz_im] using htA)
-        have hzA4 : A4 ≤ zH.im := le_trans hA4 (by simpa [hz_im] using htA)
-        have hzA6 : A6 ≤ zH.im := le_trans hA6 (by simpa [hz_im] using htA)
-        have hE4 : ‖E₄ zH‖ ≤ B4 := hB4 zH hzA4
+        have htAim : A ≤ zH.im := by simpa [hz_im] using htA
+        have hE4 : ‖E₄ zH‖ ≤ B4 := hB4 zH (hA4.trans htAim)
         have hΔ : ‖(Δ zH)⁻¹‖ ≤ CΔ * Real.exp (2 * π * t) := by
-          simpa [hz_im] using hΔinv zH hzAΔ
+          simpa [hz_im] using hΔinv zH (hAΔ.trans htAim)
         have hAterm : ‖E₂ zH * E₄ zH - E₆ zH‖ ≤ BA :=
-          norm_sub_le_of_le (norm_mul_le_of_le (hB2 zH hzA2) hE4) (hB6 zH hzA6)
+          norm_sub_le_of_le (norm_mul_le_of_le (hB2 zH (hA2.trans htAim)) hE4)
+            (hB6 zH (hA6.trans htAim))
         have hBA_nonneg : 0 ≤ BA := le_trans (norm_nonneg _) hAterm
         have hB4_nonneg : 0 ≤ B4 := le_trans (norm_nonneg _) hE4
         have hφ0 : ‖φ₀ zH‖ ≤ (BA ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by

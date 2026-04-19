@@ -125,18 +125,18 @@ private lemma aestronglyMeasurable_gN (n : ℕ) (r : ℝ) :
     AEStronglyMeasurable (gN n r) μIciOne := by
   have hcoeff : Continuous coeff := by
     simpa [coeff, mul_assoc] using continuous_const.mul Complex.continuous_ofReal
-  have hΦ : ContinuousOn (MagicFunction.a.RealIntegrands.Φ₆ (r := r)) (Ici (1 : ℝ)) :=
-    (MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.mono fun _ hx ↦ hx
-  have hg : ContinuousOn (g r) (Ici (1 : ℝ)) := hΦ.congr (g_eq_Φ₆ (r := r))
+  have hg : ContinuousOn (g r) (Ici (1 : ℝ)) :=
+    ((MagicFunction.a.RealIntegrands.Φ₆_contDiffOn (r := r)).continuousOn.mono
+      fun _ hx ↦ hx).congr (g_eq_Φ₆ (r := r))
   simpa [gN, μIciOne] using
     ContinuousOn.aestronglyMeasurable ((hcoeff.pow n).continuousOn.mul hg) measurableSet_Ici
 
 /-- A uniform-in-`r` bound on the integrand `g r t` on `Ici 1`. -/
 public lemma g_norm_bound_uniform :
     ∃ C₀ > 0, ∀ r : ℝ, ∀ t ∈ Ici (1 : ℝ),
-      ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t) := by
-  rcases norm_φ₀_le with ⟨C₀, hC₀_pos, hC₀⟩
-  exact ⟨C₀, hC₀_pos, fun r t ht ↦ by simpa using I₆'_bounding_aux_2' (C₀ := C₀) hC₀ r t ht⟩
+      ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r * t) :=
+  let ⟨C₀, hC₀_pos, hC₀⟩ := norm_φ₀_le
+  ⟨C₀, hC₀_pos, fun r t ht ↦ by simpa using I₆'_bounding_aux_2' (C₀ := C₀) hC₀ r t ht⟩
 
 lemma gN_norm (n : ℕ) (r t : ℝ) :
     ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := by
