@@ -49,66 +49,65 @@ private lemma norm_real_add_mul_I_le_two_mul {a t : ℝ} (ha : ‖((a : ℝ) : �
     _ ≤ (1 : ℝ) + t := add_le_add ha hIt.le
     _ ≤ 2 * t := by linarith
 
-/-- Generic strip-bound core: given a shifted point `w = s + i*t` with `s ∈ [-1,1]` and a function
-`F` satisfying `F z = (φ₀''(-1/w) * w^2) * exp(π*I*u*z)`, bound `‖F z‖` by the standard envelope. -/
-private lemma norm_strip_le_of_hdef {u s t : ℝ} {F : ℂ → ℂ} {z : ℂ}
+/-- Generic strip-bound core: given `x ∈ [-1,1]`, `t ≥ 1`, and a function `F` satisfying
+`F (x + t*I) = (φ₀''(-1/w) * w^2) * exp(π*I*u*(x + t*I))` where `w = s + t*I` with `|s| ≤ 1`,
+bound `‖F (x + t*I)‖` by the standard envelope. -/
+private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
     {Cφ Aφ C₀ : ℝ}
     (hC₀_pos : 0 < C₀)
     (hC₀ : ∀ z : ℍ, (1 / 2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
     (hφbd : ∀ z : ℍ, Aφ ≤ z.im →
       ‖φ₂' z‖ ≤ Cφ * Real.exp (2 * π * z.im) ∧
         ‖φ₄' z‖ ≤ Cφ * Real.exp (2 * π * z.im))
-    (hs : ‖((s : ℝ) : ℂ)‖ ≤ (1 : ℝ))
+    (hs : |s| ≤ (1 : ℝ))
     (ht1 : (1 : ℝ) ≤ t) (htAφ : Aφ ≤ t)
-    (hz : z = ((s : ℝ) : ℂ) - ((s : ℝ) : ℂ) + z)
-    (hdef : F z =
+    (hdef : F ((x : ℂ) + (t : ℂ) * Complex.I) =
       (φ₀'' ((-1 : ℂ) / (((s : ℝ) : ℂ) + (t : ℂ) * Complex.I)) *
         ((((s : ℝ) : ℂ) + (t : ℂ) * Complex.I) ^ (2 : ℕ))) *
-          cexp ((π : ℂ) * Complex.I * (u : ℂ) * z))
-    (hz_re_im : ((π : ℂ) * Complex.I * (u : ℂ) * z).re = -π * u * t) :
-    ‖F z‖ ≤
+          cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I))) :
+    ‖F ((x : ℂ) + (t : ℂ) * Complex.I)‖ ≤
       (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
         (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht1
   set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
   let w : ℂ := ((s : ℝ) : ℂ) + (t : ℂ) * Complex.I
   have hw_im : w.im = t := by simp [w]
+  have hs' : ‖((s : ℝ) : ℂ)‖ ≤ (1 : ℝ) := by simpa [Complex.norm_real] using hs
   have hw_norm : ‖w‖ ≤ 2 * t :=
-    norm_real_add_mul_I_le_two_mul (a := s) (t := t) hs ht1
+    norm_real_add_mul_I_le_two_mul (a := s) (t := t) hs' ht1
   let wH : ℍ := ⟨w, by simpa [hw_im] using ht0⟩
-  have hwH_im : wH.im = t := hw_im
   have hmod : ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       K * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
-    norm_phi0S_mul_sq_le wH hwH_im hC₀_pos hC₀ hφbd ht1 htAφ hw_norm
+    norm_phi0S_mul_sq_le wH hw_im hC₀_pos hC₀ hφbd ht1 htAφ hw_norm
   have hphi0S : φ₀'' ((-1 : ℂ) / w) * (w ^ (2 : ℕ)) =
       φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) := by
     have hwS : φ₀ (ModularGroup.S • wH) = φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) := by simp
     have harg : ((ModularGroup.S • wH : ℍ) : ℂ) = (-1 : ℂ) / (wH : ℂ) := by
       simpa using ModularGroup.coe_S_smul (z := wH)
-    rw [hwS, harg]; rfl
-  have hExpNorm : ‖cexp ((π : ℂ) * Complex.I * (u : ℂ) * z)‖ = Real.exp (-π * u * t) := by
-    rw [Complex.norm_exp, hz_re_im]
+    rw [hwS, harg]
+  have hExpNorm :
+      ‖cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I))‖ =
+        Real.exp (-π * u * t) := by
+    have harg : ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I)) =
+        ((π * u * x : ℝ) : ℂ) * Complex.I - ((π * u * t : ℝ) : ℂ) := by
+      push_cast
+      ring_nf
+      simp [mul_left_comm, mul_comm, sub_eq_add_neg]
+    rw [harg, Complex.norm_exp]
+    simp [Complex.sub_re, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]
   have hExpRew : Real.exp (2 * π * t) * Real.exp (-π * u * t) =
       Real.exp (-(π * (u - 2)) * t) := by
     simpa [mul_assoc, mul_left_comm, mul_comm] using
       MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t)
-  calc ‖F z‖
-      = ‖(φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))) *
-            cexp ((π : ℂ) * Complex.I * (u : ℂ) * z)‖ := by rw [hdef, hphi0S]
-    _ = ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ * Real.exp (-π * u * t) := by
-          rw [norm_mul, hExpNorm]
+  calc ‖F ((x : ℂ) + (t : ℂ) * Complex.I)‖
+      = ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ * Real.exp (-π * u * t) := by
+          rw [hdef]; show ‖_ * _‖ = _; rw [show φ₀'' ((-1 : ℂ) / w) * (w ^ 2) = _ from hphi0S,
+            norm_mul, hExpNorm]
     _ ≤ (K * (t ^ (2 : ℕ) * Real.exp (2 * π * t))) * Real.exp (-π * u * t) :=
           mul_le_mul_of_nonneg_right hmod (Real.exp_pos _).le
     _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
           rw [show (K * (t ^ 2 * Real.exp (2 * π * t))) * Real.exp (-π * u * t) =
             K * (t ^ 2 * (Real.exp (2 * π * t) * Real.exp (-π * u * t))) from by ring, hExpRew]
-
-/-- Real part of `π*I*u*(x + t*I)` equals `-π*u*t`. -/
-private lemma pi_I_u_mul_re_of_add {u x t : ℝ} :
-    ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I)).re = -π * u * t := by
-  simp [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im,
-    Complex.I_re, Complex.I_im, Complex.ofReal_re, Complex.ofReal_im]
-  ring
 
 /-- Uniform strip bound for `Φ₂' u (x + tI)` with `x ∈ [-1,0]` and `t ≥ 1`. -/
 lemma norm_Φ₂'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
@@ -123,12 +122,8 @@ lemma norm_Φ₂'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
     ‖Φ₂' u ((x : ℂ) + (t : ℂ) * Complex.I)‖ ≤
       (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
         (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
-  have hxa : ‖(((x + 1 : ℝ) : ℝ) : ℂ)‖ ≤ (1 : ℝ) := by
-    simpa [Complex.norm_real, abs_of_nonneg (show (0 : ℝ) ≤ x + 1 by linarith)] using
-      (show x + 1 ≤ (1 : ℝ) by linarith)
-  refine norm_strip_le_of_hdef (s := x + 1) (F := Φ₂' u)
-    (z := (x : ℂ) + (t : ℂ) * Complex.I) hC₀_pos hC₀ hφbd hxa ht1 htAφ
-    rfl ?_ pi_I_u_mul_re_of_add
+  refine norm_strip_le_of_hdef (s := x + 1) (F := Φ₂' u) hC₀_pos hC₀ hφbd
+    (by rw [abs_of_nonneg (by linarith : (0:ℝ) ≤ x + 1)]; linarith) ht1 htAφ ?_
   have hshift : (x : ℂ) + (t : ℂ) * Complex.I + 1 =
       ((x + 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I := by push_cast; ring
   simp [MagicFunction.a.ComplexIntegrands.Φ₂', MagicFunction.a.ComplexIntegrands.Φ₁',
@@ -147,13 +142,8 @@ lemma norm_Φ₄'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
     ‖Φ₄' u ((x : ℂ) + (t : ℂ) * Complex.I)‖ ≤
       (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
         (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
-  have hxa : ‖(((x - 1 : ℝ) : ℝ) : ℂ)‖ ≤ (1 : ℝ) := by
-    have habs : |x - 1| ≤ (1 : ℝ) := by
-      rw [abs_sub_comm, abs_of_nonneg (by linarith : (0 : ℝ) ≤ 1 - x)]; linarith
-    simpa [Complex.norm_real] using habs
-  refine norm_strip_le_of_hdef (s := x - 1) (F := Φ₄' u)
-    (z := (x : ℂ) + (t : ℂ) * Complex.I) hC₀_pos hC₀ hφbd hxa ht1 htAφ
-    rfl ?_ pi_I_u_mul_re_of_add
+  refine norm_strip_le_of_hdef (s := x - 1) (F := Φ₄' u) hC₀_pos hC₀ hφbd
+    (by rw [abs_sub_comm, abs_of_nonneg (by linarith : (0:ℝ) ≤ 1 - x)]; linarith) ht1 htAφ ?_
   have hshift : (x : ℂ) + (t : ℂ) * Complex.I - 1 =
       ((x - 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I := by push_cast; ring
   simp [MagicFunction.a.ComplexIntegrands.Φ₄', MagicFunction.a.ComplexIntegrands.Φ₃',
