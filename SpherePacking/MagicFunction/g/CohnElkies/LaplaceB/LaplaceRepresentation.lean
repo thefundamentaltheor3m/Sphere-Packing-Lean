@@ -28,7 +28,7 @@ private lemma setIntegral_Ioi0_eq_add_Ioc_Ioi {f : ℝ → ℂ}
     (∫ t in Set.Ioi (0 : ℝ), f t) =
       (∫ t in Set.Ioc (0 : ℝ) 1, f t) + (∫ t in Set.Ioi (1 : ℝ), f t) := by
   have hIoc : IntegrableOn f (Set.Ioc (0 : ℝ) 1) (μ := (volume : Measure ℝ)) :=
-    hf.mono_set (by intro t ht; exact ht.1)
+    hf.mono_set fun _ ht => ht.1
   have hIoi : IntegrableOn f (Set.Ioi (1 : ℝ)) (μ := (volume : Measure ℝ)) :=
     hf.mono_set (Set.Ioi_subset_Ioi (by norm_num : (0 : ℝ) ≤ 1))
   simpa [Set.Ioc_union_Ioi_eq_Ioi (show (0 : ℝ) ≤ 1 by norm_num)] using
@@ -50,15 +50,12 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       (∫ t in Set.Ioi (0 : ℝ),
           ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
         -(∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) := by
-    calc
-      (∫ t in Set.Ioi (0 : ℝ),
-            ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
-          ∫ t in Set.Ioi (0 : ℝ), -bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) := by
-            refine MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (0 : ℝ)) measurableSet_Ioi ?_
-            intro t ht
-            simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc]
-      _ = -(∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) := by
-            simp [MeasureTheory.integral_neg]
+    rw [show (∫ t in Set.Ioi (0 : ℝ),
+          ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
+        ∫ t in Set.Ioi (0 : ℝ), -bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) from
+      MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t _ => by
+        simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc]]
+    simp [MeasureTheory.integral_neg]
   let VI : ℂ := ∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))
   have hcoef :
       (2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
@@ -118,87 +115,52 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hA1 : (1 : ℝ) ≤ A := le_max_left _ _
     have hAψ : Aψ ≤ A := le_max_right _ _
     let f : ℝ → ℂ := fun t : ℝ => bContourIntegrandT u (I * (t : ℂ))
-    -- Integrability on the compact interval `[1,A]`.
+    have hmaps_Ioi (S : Set ℝ) (hS : ∀ t ∈ S, 0 < t) :
+        Set.MapsTo (fun t : ℝ => I * (t : ℂ)) S {z : ℂ | 0 < z.im} :=
+      fun t ht => by simpa using hS t ht
     have hcontIcc : ContinuousOn f (Set.Icc (1 : ℝ) A) := by
-      have hmul : ContinuousOn (fun t : ℝ => I * (t : ℂ)) (Set.Icc (1 : ℝ) A) := by
-        fun_prop
-      have hmaps :
-          Set.MapsTo (fun t : ℝ => I * (t : ℂ)) (Set.Icc (1 : ℝ) A)
-            {z : ℂ | 0 < z.im} := by
-        intro t ht
-        have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht.1
-        simpa using ht0
-      simpa [f] using (continuousOn_bContourIntegrandT (u := u)).comp hmul hmaps
-    have hInt_finite : IntegrableOn f (Set.Ioc (1 : ℝ) A) := by
-      have hIntIcc : IntegrableOn f (Set.Icc (1 : ℝ) A) :=
-        hcontIcc.integrableOn_compact isCompact_Icc
-      exact hIntIcc.mono_set Set.Ioc_subset_Icc_self
-    -- Tail integrability on `(A,∞)` by domination.
+      have hmul : ContinuousOn (fun t : ℝ => I * (t : ℂ)) (Set.Icc (1 : ℝ) A) := by fun_prop
+      exact (continuousOn_bContourIntegrandT (u := u)).comp hmul
+        (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by norm_num) ht.1)
+    have hInt_finite : IntegrableOn f (Set.Ioc (1 : ℝ) A) :=
+      (hcontIcc.integrableOn_compact isCompact_Icc).mono_set Set.Ioc_subset_Icc_self
+    have hpos : 0 < π * (u - 2) := mul_pos Real.pi_pos (sub_pos.2 hu)
     have hdom :
         ∀ t : ℝ, t ∈ Set.Ioi A →
           ‖f t‖ ≤ Cψ * Real.exp (-(π * (u - 2)) * t) := by
       intro t ht
-      have ht1 : 1 ≤ t := le_trans hA1 (le_of_lt ht)
-      have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht1
-      have hzI : 0 < (((I * (t : ℂ) + (1 : ℂ) : ℂ)).im) := by
+      have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) (hA1.trans ht.le)
+      have hzI : 0 < ((I * (t : ℂ) + (1 : ℂ)).im) := by
         simpa [add_assoc, mul_assoc] using ht0
-      let z : ℍ := ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩
-      have hzIm : Aψ ≤ z.im := by
-        have : Aψ ≤ t := le_trans hAψ (le_of_lt ht)
-        simpa [z, UpperHalfPlane.im, add_assoc, mul_assoc] using this
-      have hψI :
-          ‖ψI z‖ ≤ Cψ * Real.exp (2 * π * t) := by
-        simpa [z, UpperHalfPlane.im, add_assoc, mul_assoc] using hψbd z hzIm
-      have hψT : ψT' (I * (t : ℂ)) = ψI z := by
-        calc
-          ψT' (I * (t : ℂ)) = ψI' (I * (t : ℂ) + (1 : ℂ)) := ψT'_I_mul (t := t) ht0
-          _ = ψI z := by simp [ψI', z, ht0]
-      have hψT_norm :
-          ‖ψT' (I * (t : ℂ))‖ ≤ Cψ * Real.exp (2 * π * t) := by
-        simpa [hψT] using hψI
-      have hnorm :
-          ‖f t‖ = ‖ψT' (I * (t : ℂ))‖ * Real.exp (-π * u * t) := by
+      have hzIm : Aψ ≤ UpperHalfPlane.im ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩ := by
+        simpa [UpperHalfPlane.im, add_assoc, mul_assoc] using hAψ.trans ht.le
+      have hψI : ‖ψI ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩‖ ≤ Cψ * Real.exp (2 * π * t) := by
+        simpa [UpperHalfPlane.im, add_assoc, mul_assoc] using hψbd _ hzIm
+      have hψT_norm : ‖ψT' (I * (t : ℂ))‖ ≤ Cψ * Real.exp (2 * π * t) := by
+        have : ψT' (I * (t : ℂ)) = ψI ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩ := by
+          rw [ψT'_I_mul (t := t) ht0]; simp [ψI', ht0]
+        simpa [this] using hψI
+      have hnorm : ‖f t‖ = ‖ψT' (I * (t : ℂ))‖ * Real.exp (-π * u * t) := by
         simp [f, bContourIntegrandT_mul_I, -Complex.ofReal_exp, Complex.norm_real,
-          abs_of_nonneg (le_of_lt (Real.exp_pos _))]
-      rw [hnorm]
-      have hmul :
-          ‖ψT' ((Complex.I : ℂ) * (t : ℂ))‖ * Real.exp (-π * u * t) ≤
-            (Cψ * Real.exp (2 * π * t)) * Real.exp (-π * u * t) :=
-        mul_le_mul_of_nonneg_right hψT_norm (le_of_lt (Real.exp_pos _))
-      refine le_trans hmul (le_of_eq ?_)
-      rw [mul_assoc, MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul]
-    have hpos : 0 < π * (u - 2) := by
-      have : 0 < u - 2 := sub_pos.2 hu
-      exact mul_pos Real.pi_pos this
-    have hg :
-        Integrable (fun t : ℝ => Cψ * Real.exp (-(π * (u - 2)) * t))
-          (volume.restrict (Set.Ioi A)) := by
+          abs_of_nonneg (Real.exp_pos _).le]
+      rw [hnorm, ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul, ← mul_assoc]
+      exact mul_le_mul_of_nonneg_right hψT_norm (Real.exp_pos _).le
+    have hg : Integrable (fun t : ℝ => Cψ * Real.exp (-(π * (u - 2)) * t))
+        (volume.restrict (Set.Ioi A)) := by
       have hI : IntegrableOn (fun t : ℝ => Real.exp (-(π * (u - 2)) * t)) (Set.Ioi A) := by
-        simpa [mul_assoc] using
-          exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2)) hpos
+        simpa [mul_assoc] using exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2)) hpos
       simpa [MeasureTheory.IntegrableOn, mul_assoc] using (hI.const_mul Cψ)
     have hmeas : AEStronglyMeasurable f (volume.restrict (Set.Ioi A)) := by
-      have hmul : ContinuousOn (fun t : ℝ => I * (t : ℂ)) (Set.Ioi A) := by
-        fun_prop
-      have hmaps :
-          Set.MapsTo (fun t : ℝ => I * (t : ℂ)) (Set.Ioi A) {z : ℂ | 0 < z.im} := by
-        intro t ht
-        have ht0 : 0 < t := lt_of_lt_of_le (by positivity) (le_of_lt ht)
-        simpa using ht0
-      have hcont : ContinuousOn f (Set.Ioi A) := by
-        simpa [f] using (continuousOn_bContourIntegrandT (u := u)).comp hmul hmaps
-      exact hcont.aestronglyMeasurable measurableSet_Ioi
+      have hmul : ContinuousOn (fun t : ℝ => I * (t : ℂ)) (Set.Ioi A) := by fun_prop
+      exact ((continuousOn_bContourIntegrandT (u := u)).comp hmul
+        (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by positivity) ht.le)).aestronglyMeasurable
+        measurableSet_Ioi
     have hInt_tail : IntegrableOn f (Set.Ioi A) := by
-      have hInt : Integrable f (volume.restrict (Set.Ioi A)) := by
-        refine MeasureTheory.Integrable.mono' hg hmeas ?_
-        refine ae_restrict_of_forall_mem measurableSet_Ioi ?_
-        intro t ht
-        simpa using hdom t ht
-      simpa [MeasureTheory.IntegrableOn] using hInt
-    -- Combine `(1,A]` and `(A,∞)`.
-    have hUnion : Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A := by
-      simpa using (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) hA1).symm
-    rw [hUnion]
+      have : Integrable f (volume.restrict (Set.Ioi A)) :=
+        hg.mono' hmeas (ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by simpa using hdom t ht)
+      simpa [MeasureTheory.IntegrableOn] using this
+    rw [show Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A from
+      (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) hA1).symm]
     exact hInt_finite.union hInt_tail
   -- The left/right vertical lines `Re z = ±1` reduce to `ψI(it)` using the `ψT'` identities.
   have hintT_shift (a : ℂ)
