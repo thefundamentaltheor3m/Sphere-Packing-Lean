@@ -55,8 +55,8 @@ noncomputable def A (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L
 @[simp] lemma A_apply_stdBasis (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
     (i : Fin d) : (A (d := d) L) ((stdBasis (d := d)) i) = (rBasis (d := d) L) i := by
   simpa [A, stdBasis, rBasis] using
-    (Basis.equiv_apply (b := stdBasis (d := d)) (b' := rBasis (d := d) L) (e := Equiv.refl _)
-      (i := i))
+    Basis.equiv_apply (b := stdBasis (d := d)) (b' := rBasis (d := d) L) (e := Equiv.refl _)
+      (i := i)
 
 lemma map_standardLattice_eq (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] :
     Submodule.map ((A (d := d) L).toLinearMap.restrictScalars ℤ)
@@ -67,9 +67,8 @@ lemma map_standardLattice_eq (L : Submodule ℤ E) [DiscreteTopology L] [IsZLatt
   have himage :
       (fun a : E => (A (d := d) L) a) '' (Set.range (stdBasis (d := d))) =
         Set.range (rBasis (d := d) L) := by
-    have hfun : (fun a : E => (A (d := d) L) a) ∘ stdBasis (d := d) = rBasis (d := d) L := by
-      funext i; simp [Function.comp]
-    simpa [hfun] using
+    simpa [show (fun a : E => (A (d := d) L) a) ∘ stdBasis (d := d) = rBasis (d := d) L from by
+      funext i; simp [Function.comp]] using
       (Set.range_comp (g := fun a : E => (A (d := d) L) a) (f := stdBasis (d := d))).symm
   calc
     Submodule.map ((A (d := d) L).toLinearMap.restrictScalars ℤ) (SchwartzMap.standardLattice d) =
@@ -147,14 +146,12 @@ noncomputable def Aadjₗ : E →ₗ[ℝ] E := ((Aₗ (d := d) (L := L)).toLinea
 noncomputable def equivStandardLattice : SchwartzMap.standardLattice d ≃ₗ[ℤ] L :=
   (LinearEquiv.restrictScalars ℤ (Aₗ (d := d) (L := L))).ofSubmodules
     (SchwartzMap.standardLattice d) L
-    (by
-      -- `map_standardLattice_eq` is stated for the underlying `ℤ`-linear map of `Aₗ`.
-      simpa [LinearEquiv.restrictScalars_apply] using (map_standardLattice_eq (d := d) L))
+    (by simpa [LinearEquiv.restrictScalars_apply] using map_standardLattice_eq (d := d) L)
 
 @[simp]
 lemma equivStandardLattice_apply (x : SchwartzMap.standardLattice d) :
     ((equivStandardLattice (d := d) L x : L) : E) = (Aₗ (d := d) (L := L)) x := by
-  simp [equivStandardLattice] -- `LinearEquiv.ofSubmodules_apply`: coercion to ambient space
+  simp [equivStandardLattice]
 
 lemma Bₗ_comp_Aadjₗ :
     (Bₗ (d := d) L ∘ₗ Aadjₗ (d := d) L) = (LinearMap.id : E →ₗ[ℝ] E) := by
@@ -292,15 +289,12 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
         Complex.exp (2 * π * Complex.I * ⟪A.symm v, w⟫_[ℝ]) =
           Complex.exp (2 * π * Complex.I * ⟪v, (Bₗ (d := d) L) w⟫_[ℝ]) := by
       have hinner : ⟪A.symm v, w⟫_[ℝ] = ⟪v, (Bₗ (d := d) L) w⟫_[ℝ] := by
-        have : inner ℝ (A.symm v) w = inner ℝ v ((Bₗ (d := d) L) w) := by
-          simpa [A, Bₗ] using
-            (LinearMap.adjoint_inner_right ((A.symm : E ≃ₗ[ℝ] E).toLinearMap) v w).symm
-        simpa [RCLike.inner_eq_wInner_one] using this
+        simpa [RCLike.inner_eq_wInner_one, A, Bₗ] using
+          (LinearMap.adjoint_inner_right ((A.symm : E ≃ₗ[ℝ] E).toLinearMap) v w).symm
       simp [hinner]
     have hdetC : cC = (1 / ZLattice.covolume L) := by
-      have hcovol : ZLattice.covolume L = abs detA := by
-        simpa [A, Aₗ, detA] using covolume_eq_abs_det_A (d := d) (L := L)
-      simp [cC, hcovol, one_div]
+      simp [cC, show ZLattice.covolume L = abs detA from by
+        simpa [A, Aₗ, detA] using covolume_eq_abs_det_A (d := d) (L := L), one_div]
     have hsum :
         (∑' n : Fin d → ℤ,
             (𝓕 (fun x : E => g x) (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n)) *

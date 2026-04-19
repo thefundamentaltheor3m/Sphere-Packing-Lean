@@ -98,9 +98,7 @@ public lemma exists_phi2'_sub_720_bound_ge :
         (E₄ z) * ((E₂ z) * (E₄ z) - (E₆ z)) - (720 : ℂ) * (Δ z) = Aterm + Bterm := by
       simp only [Aterm, Bterm]; ring
     have hA : ‖Aterm‖ ≤ (E4B * CA) * q ^ (2 : ℕ) := by
-      have hmul : ‖Aterm‖ ≤ E4B * (CA * q ^ (2 : ℕ)) :=
-        norm_mul_le_of_le hE4norm (hAq t ht0 ht1)
-      linarith
+      have := norm_mul_le_of_le hE4norm (hAq t ht0 ht1); linarith
     have hB : ‖Bterm‖ ≤ (720 * (CE4 + CΔq)) * q ^ (2 : ℕ) := by
       calc ‖Bterm‖ = 720 * ‖E₄ z * (q : ℂ) - Δ z‖ := by simp [Bterm]
         _ ≤ 720 * ((CE4 + CΔq) * q ^ (2 : ℕ)) :=
