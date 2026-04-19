@@ -53,10 +53,8 @@ lemma continuousOn_psiI'_mul_I :
     bAnotherBase t =
       ψI' (Complex.I * (t : ℂ)) - (144 : ℂ) - (Real.exp (2 * π * t) : ℂ) := rfl
 
-public lemma continuousOn_bAnotherBase : ContinuousOn bAnotherBase (Set.Ioi (0 : ℝ)) := by
-  have hexp : ContinuousOn (fun t : ℝ => (Real.exp (2 * π * t) : ℂ)) (Set.Ioi (0 : ℝ)) := by
-    fun_prop
-  exact (continuousOn_psiI'_mul_I.sub continuousOn_const).sub hexp
+public lemma continuousOn_bAnotherBase : ContinuousOn bAnotherBase (Set.Ioi (0 : ℝ)) :=
+  (continuousOn_psiI'_mul_I.sub continuousOn_const).sub (by fun_prop)
 
 /-!
 ## Global boundedness on the positive imaginary axis
@@ -77,21 +75,18 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
   have hψI'_small (t : ℝ) (ht0 : 0 < t) (ht1 : t ≤ 1) :
       ‖ψI' (Complex.I * (t : ℂ))‖ ≤ Cψ0 := by
     have ht' : 1 ≤ (1 / t : ℝ) := by
-      simpa [one_div] using (one_le_div (show 0 < t from ht0)).2 ht1
+      simpa [one_div] using (one_le_div ht0).2 ht1
     have hψS' : ‖ψS.resToImagAxis (1 / t : ℝ)‖ ≤ Cψ0 := by
       simpa using (hψS_bound (1 / t : ℝ) ht').trans
         (mul_le_mul_of_nonneg_left
-          (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_of_lt (one_div_pos.2 ht0)]))
+          (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, (one_div_pos.2 ht0).le]))
           hCψ0)
     have ht2le : t ^ (2 : ℕ) ≤ 1 := by
-      simpa using pow_le_one₀ (n := 2) (le_of_lt ht0) ht1
+      simpa using pow_le_one₀ (n := 2) ht0.le ht1
     rw [MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation.psiI'_mul_I_eq_resToImagAxis
-      t ht0, psiI_resToImagAxis_eq_mul_psiS t ht0]
+      t ht0, psiI_resToImagAxis_eq_mul_psiS t ht0, norm_mul]
     have hcoeff : ‖(-(t ^ (2 : ℕ)) : ℂ)‖ = t ^ (2 : ℕ) := by simp
-    calc ‖(-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t)‖
-          = ‖(-(t ^ (2 : ℕ)) : ℂ)‖ * ‖ψS.resToImagAxis (1 / t)‖ := by simp
-      _ ≤ (t ^ (2 : ℕ)) * Cψ0 := by nlinarith [hcoeff, hψS']
-      _ ≤ Cψ0 := by nlinarith [ht2le]
+    nlinarith [hcoeff, hψS', ht2le, hCψ0]
   open MagicFunction.g.CohnElkies.AnotherIntegral.B.PsiICancellation in
     rcases exists_bound_norm_psiI'_mul_I_sub_exp_add_const_Ici_one with ⟨Ctail, hCtail⟩
   let Ctail0 : ℝ := max Ctail 0
@@ -100,18 +95,15 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
     have h1 : ‖bAnotherBase t‖ ≤ Ctail0 * Real.exp (-Real.pi * t) :=
       (hCtail t ht).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity))
     have hexp_le : Real.exp (-Real.pi * t) ≤ 1 :=
-      Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_trans (by norm_num : (0:ℝ) ≤ 1) ht])
+      Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos])
     exact h1.trans (by simpa [mul_one] using mul_le_mul_of_nonneg_left hexp_le hCtail0)
   let Csmall : ℝ := Cψ0 + 144 + Real.exp (2 * π)
   refine ⟨max Csmall Ctail0, ?_⟩
   intro t ht0
   by_cases ht1 : t ≤ 1
   · have hexp : ‖(Real.exp (2 * π * t) : ℂ)‖ ≤ Real.exp (2 * π) := by
-      have hn : ‖Complex.exp (2 * π * t)‖ = Real.exp (2 * π * t) := by
-        simpa using Complex.norm_exp_ofReal (2 * π * t)
-      simpa [Complex.ofReal_exp, hn] using Real.exp_le_exp.2 (by
-        simpa [mul_assoc] using
-          mul_le_mul_of_nonneg_left ht1 (show 0 ≤ (2 * π : ℝ) by positivity))
+      rw [Complex.ofReal_exp, Complex.norm_exp_ofReal]
+      exact Real.exp_le_exp.2 (by nlinarith [Real.pi_pos])
     have htri :
         ‖bAnotherBase t‖ ≤ ‖ψI' (Complex.I * (t : ℂ))‖ + ‖(144 : ℂ)‖ +
             ‖(Real.exp (2 * π * t) : ℂ)‖ := by
@@ -120,8 +112,7 @@ lemma exists_bound_norm_bAnotherBase_Ioi :
           ‖ψI' (Complex.I * (t : ℂ)) - ((144 : ℂ) + (Real.exp (2 * π * t) : ℂ))‖
               ≤ ‖ψI' (Complex.I * (t : ℂ))‖ +
                   ‖(144 : ℂ) + (Real.exp (2 * π * t) : ℂ)‖ := norm_sub_le _ _
-          _ ≤
-              ‖ψI' (Complex.I * (t : ℂ))‖ +
+          _ ≤ ‖ψI' (Complex.I * (t : ℂ))‖ +
                 (‖(144 : ℂ)‖ + ‖(Real.exp (2 * π * t) : ℂ)‖) := by
                 gcongr; exact norm_add_le _ _)
     have h144 : ‖(144 : ℂ)‖ = (144 : ℝ) := by norm_num
@@ -161,14 +152,10 @@ public lemma bAnotherBase_integrable_exp {u : ℝ} (hu : 0 < u) :
           C0 * Real.exp (-(π * u) * t) := by
     refine ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_
     have hnormExp : ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-(π * u) * t) := by
-      have h' : ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) := by
-        simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-π * u * t)
-      simpa [show (-π * u * t) = (-(π * u) * t) by ring_nf] using h'
-    calc
-      ‖bAnotherBase t * (Real.exp (-π * u * t) : ℂ)‖
-          = ‖bAnotherBase t‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ := by simp
-      _ = ‖bAnotherBase t‖ * Real.exp (-(π * u) * t) := by rw [hnormExp]
-      _ ≤ C0 * Real.exp (-(π * u) * t) := by gcongr; exact hb t ht
+      rw [show (-π * u * t) = (-(π * u) * t) from by ring, Complex.ofReal_exp,
+        Complex.norm_exp_ofReal]
+    rw [norm_mul, hnormExp]
+    gcongr; exact hb t ht
   simpa [MeasureTheory.IntegrableOn] using Integrable.mono' hg hf_meas hbound
 
 /-- Integrability of `t ↦ t * bAnotherBase t * exp (-π u t)` on `t > 0`, for `u > 0`. -/
@@ -229,21 +216,15 @@ public lemma bAnotherBase_integrable_mul_exp {u : ℝ} (hu : 0 < u) :
       ∀ᵐ t : ℝ ∂((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))),
         ‖((t : ℝ) : ℂ) * bAnotherBase t * (Real.exp (-π * u * t) : ℂ)‖ ≤
           C0 * (t * Real.exp (-(π * u) * t)) := by
-    refine ae_restrict_of_forall_mem measurableSet_Ioi ?_
-    intro t ht
+    refine ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_
     have ht0 : 0 < t := ht
-    have hnorm_t : ‖((t : ℝ) : ℂ)‖ = t := by simp [abs_of_pos ht0]
     have hnormExp : ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-(π * u) * t) := by
-      have h' : ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) := by
-        simpa [Complex.ofReal_exp] using Complex.norm_exp_ofReal (-π * u * t)
-      simpa [show (-π * u * t) = (-(π * u) * t) by ring_nf] using h'
-    calc
-      ‖((t : ℝ) : ℂ) * bAnotherBase t * (Real.exp (-π * u * t) : ℂ)‖
-          = ‖((t : ℝ) : ℂ)‖ * ‖bAnotherBase t‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ := by
-              simp [mul_left_comm, mul_comm]
-      _ = t * ‖bAnotherBase t‖ * Real.exp (-(π * u) * t) := by rw [hnorm_t, hnormExp]
-      _ ≤ t * C0 * Real.exp (-(π * u) * t) := by gcongr; exact hb t ht0
-      _ = C0 * (t * Real.exp (-(π * u) * t)) := by ring_nf
+      rw [show (-π * u * t) = (-(π * u) * t) from by ring, Complex.ofReal_exp,
+        Complex.norm_exp_ofReal]
+    rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0.le, hnormExp]
+    calc t * ‖bAnotherBase t‖ * Real.exp (-(π * u) * t)
+        ≤ t * C0 * Real.exp (-(π * u) * t) := by gcongr; exact hb t ht0
+      _ = C0 * (t * Real.exp (-(π * u) * t)) := by ring
   simpa [MeasureTheory.IntegrableOn] using Integrable.mono' hg hf_meas hbound
 
 end
