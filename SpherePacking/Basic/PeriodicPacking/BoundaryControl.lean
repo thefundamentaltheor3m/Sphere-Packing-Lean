@@ -149,8 +149,7 @@ lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
     intro hz_inner
     have hz_i : (x i + y i) ∈ Set.Icc (1 : ℝ) (L - 1) := by
       simpa [coordCubeInner, Set.mem_setOf_eq] using hz_inner i
-    have := abs_lt.mp (hyi i)
-    rcases hi with hi | hi <;> linarith [hz_i.1, hz_i.2]
+    rcases hi with hi | hi <;> linarith [hz_i.1, hz_i.2, abs_lt.mp (hyi i)]
 
 variable (S : SpherePacking d)
 
@@ -192,9 +191,9 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
     simpa [Set.mem_vadd_set_iff_neg_vadd_mem, y0] using
       coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L
         (by simpa [r] using hy0')
-  have hr : (2⁻¹ : ℝ) = r := by norm_num
   calc (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ))
-      = volume (⋃ x ∈ s, ball x r) := by rw [hr, hunion]
+      = volume (⋃ x ∈ s, ball x r) := by
+        rw [show (2⁻¹ : ℝ) = r from by norm_num, hunion]
     _ ≤ volume (g +ᵥ (((constVec d (-(1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
           coordCubeInner d L 1)) := volume.mono hsub
     _ = _ := by simp [measure_vadd]
@@ -292,13 +291,12 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
           (F.card : ℝ≥0∞) *
               volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ)) /
             Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) := by
-  let Λ : Submodule ℤ (EuclideanSpace ℝ (Fin d)) := cubeLattice d L hL
   let D : Set (EuclideanSpace ℝ (Fin d)) := g +ᵥ coordCube d L
   let Fset : Set (EuclideanSpace ℝ (Fin d)) := (F : Set (EuclideanSpace ℝ (Fin d)))
-  letI : DiscreteTopology Λ := by dsimp [Λ, cubeLattice]; infer_instance
-  letI : IsZLattice ℝ Λ := by dsimp [Λ, cubeLattice]; infer_instance
+  letI : DiscreteTopology (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
+  letI : IsZLattice ℝ (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
   let P : PeriodicSpherePacking d :=
-    periodize_to_periodicSpherePacking (d := d) S (Λ := Λ) D Fset
+    periodize_to_periodicSpherePacking (d := d) S (Λ := cubeLattice d L hL) D Fset
       (hD_unique_covers := PeriodicConstantApprox.coordCube_unique_covers_vadd L hL g)
       (hF_centers := by assumption)
       (hF_ball := fun x hx => ball_subset_vadd_coordCube_of_mem_vadd_inner hL
@@ -309,12 +307,12 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
     (PeriodicConstant.isBounded_coordCube L hL).vadd (g : EuclideanSpace ℝ (Fin d))
   have hD_unique := PeriodicConstantApprox.coordCube_unique_covers_vadd L hL g
   have hcenters_inter : P.centers ∩ D = Fset := by
-    have hF_sub : Fset ⊆ D := fun x hx => by
-      rcases hF_inner x (by simpa [Fset] using hx) with ⟨a, ha, rfl⟩
-      exact ⟨a, PeriodicConstant.coordCubeInner_subset_coordCube (by norm_num) ha, rfl⟩
     simpa [P, periodize_to_periodicSpherePacking, Fset] using
       periodizedCenters_inter_eq_of_subset (d := d) (Λ := cubeLattice d L hL) (D := D)
-        (F := Fset) hF_sub hD_unique
+        (F := Fset) (fun x hx => by
+          rcases hF_inner x (by simpa [Fset] using hx) with ⟨a, ha, rfl⟩
+          exact ⟨a, PeriodicConstant.coordCubeInner_subset_coordCube (by norm_num) ha, rfl⟩)
+        hD_unique
   have hnumReps : P.numReps = F.card := by
     exact_mod_cast show (P.numReps : ENat) = (F.card : ENat) by
       simpa [hcenters_inter, Fset, Set.encard_coe_eq_coe_finsetCard] using
