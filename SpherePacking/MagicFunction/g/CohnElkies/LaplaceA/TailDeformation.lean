@@ -43,12 +43,10 @@ private lemma norm_real_add_mul_I_le_two_mul {a t : ℝ} (ha : ‖((a : ℝ) : �
     (ht : (1 : ℝ) ≤ t) :
     ‖((a : ℝ) : ℂ) + (t : ℂ) * Complex.I‖ ≤ 2 * t := by
   have ht0 : 0 ≤ t := le_trans (by norm_num) ht
-  have hIt : ‖(t : ℂ) * Complex.I‖ = t := by
-    simp [Complex.norm_real, abs_of_nonneg ht0]
-  calc
-    ‖((a : ℝ) : ℂ) + (t : ℂ) * Complex.I‖ ≤ ‖((a : ℝ) : ℂ)‖ + ‖(t : ℂ) * Complex.I‖ :=
-        norm_add_le _ _
-    _ ≤ (1 : ℝ) + t := add_le_add ha (le_of_eq hIt)
+  have hIt : ‖(t : ℂ) * Complex.I‖ = t := by simp [Complex.norm_real, abs_of_nonneg ht0]
+  calc ‖((a : ℝ) : ℂ) + (t : ℂ) * Complex.I‖
+      ≤ ‖((a : ℝ) : ℂ)‖ + ‖(t : ℂ) * Complex.I‖ := norm_add_le _ _
+    _ ≤ (1 : ℝ) + t := add_le_add ha hIt.le
     _ ≤ 2 * t := by linarith
 
 /-- Uniform strip bound for `Φ₂' u (x + tI)` with `x ∈ [-1,0]` and `t ≥ 1`. -/

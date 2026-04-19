@@ -250,16 +250,16 @@ open Filter
 
 variable {d : ℕ}
 
-def shellVec (d : ℕ) (c : ℝ) : EuclideanSpace ℝ (Fin d) :=
-  WithLp.toLp 2 (fun _ : Fin d => c)
+/-- Alias for `constVec`; kept to preserve the shell-focused naming in this section. -/
+abbrev shellVec (d : ℕ) (c : ℝ) : EuclideanSpace ℝ (Fin d) := constVec d c
 
 lemma coordCubeInner_one_subset_shell (L : ℝ) :
     coordCubeInner d L 1 ⊆
       (shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0 := by
   intro x hx
   refine (Set.mem_vadd_set_iff_neg_vadd_mem).2 fun i => ?_
-  simp only [coordCubeInner, Set.mem_setOf_eq, shellVec, vadd_eq_add, one_div, WithLp.ofLp_add,
-    WithLp.ofLp_neg, Pi.add_apply, Pi.neg_apply, neg_neg] at hx ⊢
+  simp only [coordCubeInner, Set.mem_setOf_eq, shellVec, constVec, vadd_eq_add, one_div,
+    WithLp.ofLp_add, WithLp.ofLp_neg, Pi.add_apply, Pi.neg_apply, neg_neg] at hx ⊢
   exact ⟨by linarith [(hx i).1], by linarith [(hx i).2]⟩
 
 lemma volume_cubeShell_eq (L : ℝ) :
