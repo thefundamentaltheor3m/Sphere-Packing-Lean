@@ -173,8 +173,7 @@ public lemma bLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
       have ht2le : t ^ (2 : ℕ) ≤ 1 := by simpa using pow_le_one₀ (n := 2) (le_of_lt ht0) ht1
       have hψI : ‖ψI' ((Complex.I : ℂ) * (t : ℂ))‖ ≤ Cψ0 := by
         rw [hψI' t ht0, hSlashS t ht0]
-        calc
-          ‖(-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t)‖
+        calc ‖(-(t ^ (2 : ℕ)) : ℂ) * ψS.resToImagAxis (1 / t)‖
               = (t ^ (2 : ℕ)) * ‖ψS.resToImagAxis (1 / t)‖ := by simp
           _ ≤ 1 * Cψ0 := mul_le_mul ht2le hψS' (norm_nonneg _) zero_le_one
           _ = Cψ0 := one_mul _

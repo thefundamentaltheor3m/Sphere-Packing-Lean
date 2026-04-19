@@ -137,8 +137,7 @@ private lemma integrable_gN (n : ℕ) (r : ℝ) (hr : -1 < r) : Integrable (gN n
   have hexp : rexp (-2 * π * t) * rexp (-π * r * t) = rexp (-(π * (r + 2)) * t) := by
     have : (-(π * (r + 2)) * t : ℝ) = (-2 * π * t) + (-π * r * t) := by ring_nf
     simp [Real.exp_add, this, mul_left_comm, mul_comm]
-  calc
-    ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
+  calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
     _ ≤ (π * t) ^ n * (C₀ * rexp (-2 * π * t) * rexp (-π * r * t)) := by gcongr; exact hC₀ r t ht
     _ = bound t := by
       have hmulpow : (π * t) ^ n = (π ^ n) * (t ^ n) := by simp [mul_pow, mul_comm]
@@ -175,8 +174,7 @@ private lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) (hr₀ : -1 < r₀) 
       simp [Real.exp_add, this, mul_comm]
     have hg'' : ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t) :=
       le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) hexp_r (by positivity)
-    calc
-      ‖gN (n + 1) r t‖ = ‖coeff t‖ ^ (n + 1) * ‖g r t‖ := gN_norm (n := n + 1) (r := r) (t := t)
+    calc ‖gN (n + 1) r t‖ = ‖coeff t‖ ^ (n + 1) * ‖g r t‖ := gN_norm (n := n + 1) (r := r) (t := t)
       _ ≤ (π * t) ^ (n + 1) * (C₀ * rexp (-2 * π * t) * rexp (-π * (r₀ - 1) * t)) :=
         mul_le_mul hcoeff hg'' (by positivity)
           (pow_nonneg (mul_nonneg Real.pi_pos.le ht0) (n + 1))
@@ -253,8 +251,7 @@ lemma iteratedDeriv_bound (n : ℕ) :
       simpa using coeff_norm_pow_le_pi_mul (n := n) (t := t) ht0
     have hg1 : ‖g r t‖ ≤ C₀ * rexp (-2 * π * t) * rexp (-π * r) :=
       le_mul_of_le_mul_of_nonneg_left (hC₀ r t ht) (hExp t ht) (by positivity)
-    calc
-      ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
+    calc ‖gN n r t‖ = ‖coeff t‖ ^ n * ‖g r t‖ := gN_norm (n := n) (r := r) (t := t)
       _ ≤ ((π ^ n) * (t ^ n)) * (C₀ * rexp (-2 * π * t) * rexp (-π * r)) :=
         mul_le_mul hcoeff_le hg1 (by positivity)
           (mul_nonneg (pow_nonneg Real.pi_pos.le n) (pow_nonneg ht0 n))
