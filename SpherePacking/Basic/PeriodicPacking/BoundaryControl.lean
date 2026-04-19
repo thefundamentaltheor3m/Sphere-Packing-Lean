@@ -509,7 +509,7 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   let sg : Finset (EuclideanSpace ℝ (Fin d)) := s.filter fun x => f x = g0
   -- `sg` is the fiber at `g0`.
   have hsg_centers : ∀ x ∈ sg, x ∈ S.centers := fun x hx =>
-    (hX.mem_toFinset.1 (Finset.mem_filter.1 (show x ∈ s.filter _ from hx)).1).1
+    (hX.mem_toFinset.1 (Finset.mem_filter.1 hx).1).1
   have hsg_memCube : ∀ x ∈ sg, x ∈ g0 +ᵥ coordCube d L := fun x hx =>
     (PeriodicConstantApprox.mem_vadd_coordCube_iff_eq_neg_coordCubeCover L hLpos g0 x).mpr
       (Finset.mem_filter.1 hx).2.symm
@@ -559,14 +559,14 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   let F : Finset (EuclideanSpace ℝ (Fin d)) := sg.filter fun x => x ∈ innerSet
   let sb : Finset (EuclideanSpace ℝ (Fin d)) := sg.filter fun x => x ∉ innerSet
   have hF_centers : ∀ x ∈ F, x ∈ S.centers := fun x hx =>
-    hsg_centers x (Finset.mem_filter.1 (show x ∈ sg.filter _ from hx)).1
+    hsg_centers x (Finset.mem_filter.1 hx).1
   have hF_inner : ∀ x ∈ F, x ∈ g0 +ᵥ coordCubeInner d L r := fun x hx => by
-    simpa [innerSet] using (Finset.mem_filter.1 (show x ∈ sg.filter _ from hx)).2
+    simpa [innerSet] using (Finset.mem_filter.1 hx).2
   have hsb_centers : ∀ x ∈ sb, x ∈ S.centers := fun x hx =>
-    hsg_centers x (Finset.mem_filter.1 (show x ∈ sg.filter _ from hx)).1
+    hsg_centers x (Finset.mem_filter.1 hx).1
   have hsb_boundary :
       ∀ x ∈ sb, x ∈ (g0 +ᵥ coordCube d L) \ (g0 +ᵥ coordCubeInner d L (1 / 2)) := fun x hx => by
-    have hx_mem := Finset.mem_filter.1 (show x ∈ sg.filter _ from hx)
+    have hx_mem := Finset.mem_filter.1 hx
     exact ⟨hsg_memCube x hx_mem.1, by
       simpa [innerSet, show r = (1 / 2 : ℝ) from by norm_num] using hx_mem.2⟩
   have hsb_vol :
@@ -581,8 +581,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       (Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) : ℝ≥0∞) = volCube := by
     rw [show Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) =
       volCube.toNNReal by simpa [volCube] using
-        PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) L hLpos]
-    exact ENNReal.coe_toNNReal hvolCube_ne_top
+        PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) L hLpos,
+      ENNReal.coe_toNNReal hvolCube_ne_top]
   have hPdens' : P.density = (F.card : ℝ≥0∞) * volBall / volCube := by
     simpa [hden, volBall] using hPdens
   refine ⟨P, hPsep, ?_⟩
