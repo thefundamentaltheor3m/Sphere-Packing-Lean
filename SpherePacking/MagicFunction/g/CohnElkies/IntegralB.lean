@@ -387,69 +387,9 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
           (1 / (60 * π) : ℂ) * IB +
           (4 : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) -
             (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) := by
-    -- Expand the decomposition.
-    rw [hBdecomp]
-    -- Evaluate the two elementary Laplace integrals.
-    rw [hItExp, hIexp]
-    -- Coefficient simplifications (only involve π).
-    have hcoef36 :
-        (π / 2160 : ℂ) * ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) = (1 / (60 * π) : ℂ) := by
-      -- Move all casts/divisions into `ℂ` before clearing denominators.
-      simp [Complex.ofReal_div, Complex.ofReal_pow]
-      field_simp [hπ]
-      norm_num
-    have hcoef8640 : (π / 2160 : ℂ) * ((8640 / π : ℝ) : ℂ) = (4 : ℂ) := by
-      simp [Complex.ofReal_div]
-      field_simp [hπ]
-      norm_num
-    have hcoef12960 :
-        (π / 2160 : ℂ) * ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) = (6 / π : ℂ) := by
-      simp [Complex.ofReal_div, Complex.ofReal_pow]
-      field_simp [hπ]
-      norm_num
-    -- Distribute the scalar multiplication over the decomposition and rewrite the coefficients.
-    rw [mul_sub]
-    -- Expand the three-term sum `(-IA + c36*IB + c8640*J1)`:
-    rw [mul_add]
-    rw [mul_add]
-    -- Rewrite each coefficient product.
-    have hIB :
-        (π / 2160 : ℂ) * (((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB) =
-          (1 / (60 * π) : ℂ) * IB := by
-      calc
-        (π / 2160 : ℂ) * (((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * IB) =
-            ((π / 2160 : ℂ) * ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) * IB := by
-              rw [← mul_assoc]
-        _ = (1 / (60 * π) : ℂ) * IB :=
-              congrArg (fun z : ℂ => z * IB) hcoef36
-    have hJ1coef :
-        (π / 2160 : ℂ) *
-              (((8640 / π : ℝ) : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ)) =
-            (4 : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) := by
-      calc
-        (π / 2160 : ℂ) *
-              (((8640 / π : ℝ) : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ)) =
-            ((π / 2160 : ℂ) * ((8640 / π : ℝ) : ℂ)) *
-              ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) := by
-              rw [← mul_assoc]
-        _ = (4 : ℂ) * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) := by
-              exact
-                congrArg (fun z : ℂ => z * ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ)) hcoef8640
-    have hJ0coef :
-        (π / 2160 : ℂ) *
-              (((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * ((1 / (π * u) : ℝ) : ℂ)) =
-            (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) := by
-      calc
-        (π / 2160 : ℂ) *
-              (((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * ((1 / (π * u) : ℝ) : ℂ)) =
-            ((π / 2160 : ℂ) * ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) *
-              ((1 / (π * u) : ℝ) : ℂ) := by
-              rw [← mul_assoc]
-        _ = (6 / π : ℂ) * ((1 / (π * u) : ℝ) : ℂ) := by
-              exact congrArg (fun z : ℂ => z * ((1 / (π * u) : ℝ) : ℂ)) hcoef12960
-    -- Apply the coefficient rewrites.
-    rw [hIB, hJ1coef, hJ0coef]
-    -- Only the `(-IA)` factor remains; rewrite it and reassociate.
+    rw [hBdecomp, hItExp, hIexp]
+    push_cast
+    field_simp
     ring
   have hBracket :
       (-(π / 2160 : ℂ)) *
