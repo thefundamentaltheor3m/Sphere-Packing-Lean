@@ -62,6 +62,19 @@ private lemma norm_pow4_sub_le (x y : ℂ) :
           mul_le_mul_of_nonneg_left hsum (norm_nonneg (x - y))
     _ = 4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 := by ring
 
+/-- Complex cast of `exp(-πt)^N = exp(-N π t)`. -/
+private lemma ofReal_exp_neg_pi_pow_eq (t : ℝ) (N : ℕ) :
+    (Real.exp (-Real.pi * t) : ℂ) ^ N = (Real.exp (-(N : ℝ) * Real.pi * t) : ℂ) := by
+  have hr : (Real.exp (-Real.pi * t)) ^ N = Real.exp (-(N : ℝ) * Real.pi * t) := by
+    rw [← Real.exp_nat_mul]; congr 1; ring
+  simpa [Complex.ofReal_pow] using congrArg (fun r : ℝ => (r : ℂ)) hr
+
+/-- `‖(Real.exp(-πt) : ℂ)^N‖ = exp(-N π t)`. -/
+private lemma norm_ofReal_exp_neg_pi_pow (t : ℝ) (N : ℕ) :
+    ‖(Real.exp (-Real.pi * t) : ℂ) ^ N‖ = Real.exp (-(N : ℝ) * Real.pi * t) := by
+  rw [ofReal_exp_neg_pi_pow_eq]
+  simp [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
+
 /-- `H₂(it)` expansion up to the `exp(-3π t)` term on `t ≥ 1`. -/
 public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
     ∃ C : ℝ, ∀ t : ℝ, 1 ≤ t →

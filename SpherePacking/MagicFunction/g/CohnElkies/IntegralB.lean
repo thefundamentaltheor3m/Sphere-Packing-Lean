@@ -63,6 +63,43 @@ lemma B_mul_exp_eq_decomp {u t : ℝ} (ht : 0 < t) :
     MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand, mul_assoc, mul_left_comm, mul_comm]
   ring_nf
 
+private lemma integrable_aAnother {u : ℝ} (hu : 0 < u) :
+    Integrable
+      (fun t : ℝ => MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t)
+      ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
+  simpa [MeasureTheory.IntegrableOn] using
+    (MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand_integrable_of_pos
+      (u := u) hu)
+
+private lemma integrable_bAnother {u : ℝ} (hu : 0 < u) :
+    Integrable
+      (fun t : ℝ => MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t)
+      ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
+  have hBase :
+      Integrable
+        (fun t : ℝ =>
+          MagicFunction.g.CohnElkies.IntegralReps.bAnotherBase t *
+            (Real.exp (-π * u * t) : ℂ))
+        ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
+    simpa [MeasureTheory.IntegrableOn] using
+      (MagicFunction.g.CohnElkies.IntegralReps.bAnotherBase_integrable_exp (u := u) hu)
+  simpa [MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand,
+    MagicFunction.g.CohnElkies.IntegralReps.bAnotherBase, mul_assoc] using hBase
+
+private lemma integrable_exp_complex {u : ℝ} (hu : 0 < u) :
+    Integrable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))
+      ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
+  simpa [MeasureTheory.IntegrableOn] using
+    (MagicFunction.g.CohnElkies.IntegralReps.integrableOn_exp_neg_pi_mul_Ioi_complex
+      (u := u) hu)
+
+private lemma integrable_t_mul_exp_complex {u : ℝ} (hu : 0 < u) :
+    Integrable (fun t : ℝ => (t : ℂ) * (Real.exp (-π * u * t) : ℂ))
+      ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
+  simpa [MeasureTheory.IntegrableOn] using
+    (MagicFunction.g.CohnElkies.IntegralReps.integrableOn_mul_exp_neg_pi_mul_Ioi_complex
+      (u := u) hu)
+
 lemma integrableOn_B_mul_exp_neg_pi_mul {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => (B t : ℂ) * Real.exp (-π * u * t)) (Set.Ioi (0 : ℝ)) := by
   let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))
@@ -72,79 +109,21 @@ lemma integrableOn_B_mul_exp_neg_pi_mul {u : ℝ} (hu : 0 < u) :
             MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t) +
         ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ))) -
       ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ)
-  have hpoint :
-      ∀ t : ℝ, t ∈ Set.Ioi (0 : ℝ) →
-        (B t : ℂ) * Real.exp (-π * u * t) = rhs t := by
-    intro t ht
-    have ht0 : 0 < t := ht
-    simpa [rhs, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-      (IntegralB.B_mul_exp_eq_decomp (u := u) (t := t) ht0)
   have hAe :
       (fun t : ℝ => (B t : ℂ) * Real.exp (-π * u * t)) =ᵐ[μ] rhs := by
-    refine (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi ?_)
-    intro t ht
-    exact hpoint t ht
-  have hA :
-      Integrable (fun t : ℝ =>
-        MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t) μ := by
-    simpa [MeasureTheory.IntegrableOn, μ] using
-      (MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand_integrable_of_pos
-        (u := u) hu)
-  have hB :
-      Integrable (fun t : ℝ =>
-        MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t) μ := by
-    have hBase :
-        Integrable
-          (fun t : ℝ =>
-            MagicFunction.g.CohnElkies.IntegralReps.bAnotherBase t *
-              (Real.exp (-π * u * t) : ℂ)) μ := by
-      simpa [MeasureTheory.IntegrableOn, μ] using
-        (MagicFunction.g.CohnElkies.IntegralReps.bAnotherBase_integrable_exp (u := u) hu)
-    simpa [MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand,
-      MagicFunction.g.CohnElkies.IntegralReps.bAnotherBase, mul_assoc] using hBase
-  have hExp :
-      Integrable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)) μ := by
-    simpa [MeasureTheory.IntegrableOn, μ] using
-      (MagicFunction.g.CohnElkies.IntegralReps.integrableOn_exp_neg_pi_mul_Ioi_complex
-        (u := u) hu)
-  have hTExp :
-      Integrable (fun t : ℝ => (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) μ := by
-    simpa [MeasureTheory.IntegrableOn, μ] using
-      (MagicFunction.g.CohnElkies.IntegralReps.integrableOn_mul_exp_neg_pi_mul_Ioi_complex
-        (u := u) hu)
-  have hcoefB :
-      Integrable (fun t : ℝ =>
-        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-          MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t) μ := by
-    simpa [mul_assoc] using hB.const_mul ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
-  have hcoefT :
-      Integrable (fun t : ℝ =>
-        ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ))) μ := by
-    simpa [mul_assoc] using hTExp.const_mul ((8640 / π : ℝ) : ℂ)
-  have hcoefE :
-      Integrable (fun t : ℝ =>
-        ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ)) μ := by
-    simpa [mul_assoc] using hExp.const_mul ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
+    refine MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_
+    simpa [rhs, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+      (IntegralB.B_mul_exp_eq_decomp (u := u) (t := t) ht)
+  have hA := integrable_aAnother (u := u) hu
+  have hB := integrable_bAnother (u := u) hu
+  have hExp := integrable_exp_complex (u := u) hu
+  have hTExp := integrable_t_mul_exp_complex (u := u) hu
+  have hcoefB := hB.const_mul ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
+  have hcoefT := hTExp.const_mul ((8640 / π : ℝ) : ℂ)
+  have hcoefE := hExp.const_mul ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
   have hRHS : Integrable rhs μ := by
-    -- `rhs = (-a) + (coef*b) + (coef*tExp) - (coef*exp)`.
-    have h12 :
-        Integrable (fun t : ℝ =>
-            -(MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t) +
-              ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-                MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t) μ := by
-      simpa using hA.neg.add hcoefB
-    have h123 :
-        Integrable (fun t : ℝ =>
-            (-(MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t) +
-                ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-                  MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t) +
-              ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ))) μ := by
-      exact h12.add hcoefT
-    -- `rhs` is definitionaly the same as `h123 - hcoefE`.
-    simpa [rhs] using h123.sub hcoefE
-  have hLHS : Integrable (fun t : ℝ => (B t : ℂ) * Real.exp (-π * u * t)) μ :=
-    hRHS.congr hAe.symm
-  simpa [MeasureTheory.IntegrableOn, μ] using hLHS
+    simpa [rhs] using ((hA.neg.add hcoefB).add hcoefT).sub hcoefE
+  simpa [MeasureTheory.IntegrableOn, μ] using hRHS.congr hAe.symm
 
 lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
     (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
@@ -166,16 +145,6 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
             (∫ t : ℝ, (t : ℂ) * (Real.exp (-π * u * t) : ℂ) ∂μ) -
           ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
             (∫ t : ℝ, (Real.exp (-π * u * t) : ℂ) ∂μ)
-  have hpoint :
-      ∀ t : ℝ, t ∈ Set.Ioi (0 : ℝ) →
-        (B t : ℂ) * Real.exp (-π * u * t) =
-          -(MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t) +
-            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-                (MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t) +
-              ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
-                ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ) := by
-    intro t ht
-    exact IntegralB.B_mul_exp_eq_decomp (u := u) (t := t) ht
   have hcongr :
       (∫ t : ℝ, (B t : ℂ) * Real.exp (-π * u * t) ∂μ) =
         ∫ t : ℝ,
@@ -185,39 +154,14 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
                 ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
                   ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
                     (Real.exp (-π * u * t) : ℂ)) ∂μ := by
-    refine MeasureTheory.integral_congr_ae ?_
-    refine (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi ?_)
-    intro t ht
-    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using (hpoint t ht)
-  have hA :
-      Integrable (fun t : ℝ =>
-        MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t) μ := by
-    simpa [MeasureTheory.IntegrableOn, μ] using
-      (MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand_integrable_of_pos
-        (u := u) hu)
-  have hB :
-      Integrable (fun t : ℝ =>
-        MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t) μ := by
-    have hBase :
-        Integrable
-          (fun t : ℝ =>
-            MagicFunction.g.CohnElkies.IntegralReps.bAnotherBase t *
-              (Real.exp (-π * u * t) : ℂ)) μ := by
-      simpa [MeasureTheory.IntegrableOn, μ] using
-        (MagicFunction.g.CohnElkies.IntegralReps.bAnotherBase_integrable_exp (u := u) hu)
-    simpa [MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand,
-      MagicFunction.g.CohnElkies.IntegralReps.bAnotherBase, mul_assoc] using hBase
-  have hExp :
-      Integrable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ)) μ := by
-    simpa [MeasureTheory.IntegrableOn, μ] using
-      (MagicFunction.g.CohnElkies.IntegralReps.integrableOn_exp_neg_pi_mul_Ioi_complex
-        (u := u) hu)
-  have hTExp :
-      Integrable (fun t : ℝ => (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) μ := by
-    simpa [MeasureTheory.IntegrableOn, μ] using
-      (MagicFunction.g.CohnElkies.IntegralReps.integrableOn_mul_exp_neg_pi_mul_Ioi_complex
-        (u := u) hu)
-  -- Split the integral using additivity.
+    refine MeasureTheory.integral_congr_ae <|
+      MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+      IntegralB.B_mul_exp_eq_decomp (u := u) (t := t) ht
+  have hA := integrable_aAnother (u := u) hu
+  have hB := integrable_bAnother (u := u) hu
+  have hExp := integrable_exp_complex (u := u) hu
+  have hTExp := integrable_t_mul_exp_complex (u := u) hu
   let f1 : ℝ → ℂ := fun t =>
     -(MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t)
   let f2 : ℝ → ℂ := fun t =>
@@ -227,39 +171,21 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
     ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ))
   let f4 : ℝ → ℂ := fun t =>
     -((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ)
-  have hf1 : Integrable f1 μ := by
-    dsimp [f1]
-    exact hA.neg
+  have hf1 : Integrable f1 μ := hA.neg
   have hf2 : Integrable f2 μ := by simpa [f2] using hB.const_mul _
   have hf3 : Integrable f3 μ := by simpa [f3] using hTExp.const_mul _
   have hf4 : Integrable f4 μ := by
-    dsimp [f4]
-    simpa [mul_assoc] using (hExp.const_mul (-((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ)))
+    simpa [f4, mul_assoc] using hExp.const_mul (-((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
   have hf23 : Integrable (fun t => f2 t + f3 t) μ := hf2.add hf3
   have hf234 : Integrable (fun t => (f2 t + f3 t) + f4 t) μ := hf23.add hf4
-  -- Rewrite the integrand and evaluate.
   have hsplit :
       (∫ t : ℝ, (f1 t + ((f2 t + f3 t) + f4 t)) ∂μ) =
         (∫ t : ℝ, f1 t ∂μ) +
           (∫ t : ℝ, f2 t ∂μ) + (∫ t : ℝ, f3 t ∂μ) + (∫ t : ℝ, f4 t ∂μ) := by
-    have h1 :
-        (∫ t : ℝ, (f1 t + ((f2 t + f3 t) + f4 t)) ∂μ) =
-          (∫ t : ℝ, f1 t ∂μ) + ∫ t : ℝ, ((f2 t + f3 t) + f4 t) ∂μ := by
-      simpa [add_assoc] using (MeasureTheory.integral_add hf1 hf234)
-    have h2 :
-        (∫ t : ℝ, ((f2 t + f3 t) + f4 t) ∂μ) =
-          (∫ t : ℝ, (f2 t + f3 t) ∂μ) + ∫ t : ℝ, f4 t ∂μ := by
-      simpa [add_assoc] using (MeasureTheory.integral_add hf23 hf4)
-    have h3 :
-        (∫ t : ℝ, (f2 t + f3 t) ∂μ) =
-          (∫ t : ℝ, f2 t ∂μ) + ∫ t : ℝ, f3 t ∂μ := by
-      simpa [add_assoc] using (MeasureTheory.integral_add hf2 hf3)
-    -- Combine.
-    rw [h1, h2, h3]
+    rw [MeasureTheory.integral_add hf1 hf234, MeasureTheory.integral_add hf23 hf4,
+      MeasureTheory.integral_add hf2 hf3]
     ring_nf
-  -- Finish.
   rw [hcongr]
-  -- Replace the integrand with the `fᵢ` and simplify.
   have hrew :
       (fun t : ℝ =>
           (-(MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t) +
@@ -270,9 +196,7 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
     fun t : ℝ => f1 t + ((f2 t + f3 t) + f4 t) := by
     funext t
     simp [f1, f2, f3, f4, sub_eq_add_neg, add_left_comm, add_comm, mul_assoc]
-  rw [hrew]
-  -- Apply the split and simplify the resulting integrals.
-  rw [hsplit]
+  rw [hrew, hsplit]
   simp [f1, f2, f3, f4, MeasureTheory.integral_neg, MeasureTheory.integral_const_mul, μ,
     sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc]
 

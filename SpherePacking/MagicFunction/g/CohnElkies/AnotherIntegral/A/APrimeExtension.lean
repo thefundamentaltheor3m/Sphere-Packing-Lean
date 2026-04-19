@@ -126,21 +126,17 @@ lemma norm_φ₀''_le_of_half_lt {C₀ : ℝ}
     simpa [φ₀''_def hzpos] using hφ
   have hexp : Real.exp (-2 * π * zH.im) ≤ 1 := by
     have hzH0 : 0 ≤ zH.im := by
-      simpa [zH, UpperHalfPlane.im] using (le_of_lt hzpos)
-    have : (-2 * π * zH.im) ≤ 0 := by nlinarith [Real.pi_pos, hzH0]
-    simpa using (Real.exp_le_one_iff.2 this)
-  have hmul : C₀ * Real.exp (-2 * π * zH.im) ≤ C₀ := by
-    exact mul_le_of_le_one_right hC₀_nonneg hexp
-  exact hφ'.trans hmul
+      simpa [zH, UpperHalfPlane.im] using hzpos.le
+    exact Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, hzH0])
+  exact hφ'.trans (mul_le_of_le_one_right hC₀_nonneg hexp)
 
 lemma im_I_div (t : ℝ) : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := by
   simp
 
 lemma neg_one_div_I_mul (t : ℝ) :
     (-1 : ℂ) / ((Complex.I : ℂ) * (t : ℂ)) = (Complex.I : ℂ) / (t : ℂ) := by
-  by_cases ht : t = 0
-  · subst ht
-    simp
+  rcases eq_or_ne t 0 with rfl | ht
+  · simp
   · have ht' : (t : ℂ) ≠ 0 := by exact_mod_cast ht
     field_simp [ht', Complex.I_ne_zero]
     simp [Complex.I_sq]
@@ -178,28 +174,25 @@ lemma exp_k₅ (u : ℂ) (t : ℝ) :
   simp [k₅, mul_left_comm, mul_comm]
 
 lemma I₁'C_eq (u : ℂ) :
-    I₁'C u = ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₁ t) := by
-  refine intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
+    I₁'C u = ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₁ t) :=
+  intervalIntegral.integral_congr
     fun t _ => by simp [base₁, exp_k₁, neg_one_div_I_mul_eq_arg₁, mul_assoc]
 
 lemma I₃'C_eq (u : ℂ) :
-    I₃'C u = ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₃ t) := by
-  refine intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
+    I₃'C u = ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₃ t) :=
+  intervalIntegral.integral_congr
     fun t _ => by simp [base₁, exp_k₃, neg_one_div_I_mul_eq_arg₁, mul_assoc]
 
 lemma I₅'C_eq (u : ℂ) :
-    I₅'C u = -2 * ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₅ t) := by
-  refine congrArg (fun x : ℂ => -2 * x) <|
-    intervalIntegral.integral_congr (μ := (volume : Measure ℝ)) (a := (0 : ℝ)) (b := (1 : ℝ))
+    I₅'C u = -2 * ∫ t in (0 : ℝ)..1, base₁ t * Complex.exp (u * k₅ t) :=
+  congrArg (fun x : ℂ => -2 * x) <|
+    intervalIntegral.integral_congr
       fun t _ => by simp [base₁, exp_k₅, neg_one_div_I_mul_eq_arg₁, mul_assoc]
 
 lemma arg₁_continuousOn : ContinuousOn arg₁ (Ι (0 : ℝ) 1) := by
-  have hcontDen : ContinuousOn (fun t : ℝ => (t : ℂ)) (Ι (0 : ℝ) 1) :=
-    (continuous_ofReal : Continuous fun t : ℝ => (t : ℂ)).continuousOn
-  have hden0 : ∀ t ∈ Ι (0 : ℝ) 1, (t : ℂ) ≠ 0 := by
-    intro t ht
-    exact_mod_cast (ne_of_gt (by simpa using ht.1))
-  simpa [arg₁] using (continuousOn_const.div hcontDen hden0)
+  have hden0 : ∀ t ∈ Ι (0 : ℝ) 1, (t : ℂ) ≠ 0 := fun t ht => by
+    exact_mod_cast (by simpa using ht.1 : (0 : ℝ) < t).ne'
+  simpa [arg₁] using continuousOn_const.div (by fun_prop) hden0
 
 lemma arg₁_mapsTo :
     Set.MapsTo arg₁ (Ι (0 : ℝ) 1) UpperHalfPlane.upperHalfPlaneSet := by
@@ -208,112 +201,87 @@ lemma arg₁_mapsTo :
   simpa [UpperHalfPlane.upperHalfPlaneSet, arg₁, im_I_div] using inv_pos.2 ht0
 
 lemma base₁_continuousOn : ContinuousOn base₁ (Ι (0 : ℝ) 1) := by
-  change
-    ContinuousOn (fun t : ℝ => (-Complex.I) * φ₀'' (arg₁ t) * ((t ^ (2 : ℕ) : ℝ) : ℂ)) (Ι (0 : ℝ) 1)
   have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) UpperHalfPlane.upperHalfPlaneSet := by
     simpa using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
   have hcontφcomp : ContinuousOn (fun t : ℝ => φ₀'' (arg₁ t)) (Ι (0 : ℝ) 1) :=
     hcontφ.comp arg₁_continuousOn arg₁_mapsTo
-  have ht2 : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ) := by fun_prop
-  have hconst : ContinuousOn (fun _t : ℝ => (-Complex.I : ℂ)) (Ι (0 : ℝ) 1) := continuousOn_const
-  -- `base₁ t = (-I) * φ₀'' (arg₁ t) * (t^2 : ℝ)`.
-  exact (hconst.mul hcontφcomp).mul ht2.continuousOn
+  exact (continuousOn_const.mul hcontφcomp).mul (by fun_prop)
 
 lemma k₁_continuousOn : ContinuousOn k₁ (Ι (0 : ℝ) 1) := by
-  change ContinuousOn (fun t : ℝ => (-π * (Complex.I : ℂ)) + (-π * (t : ℂ))) (Ι (0 : ℝ) 1)
-  exact (by fun_prop : Continuous fun t : ℝ => (-π * (Complex.I : ℂ)) + (-π * (t : ℂ))).continuousOn
+  unfold k₁; fun_prop
 
 lemma k₃_continuousOn : ContinuousOn k₃ (Ι (0 : ℝ) 1) := by
-  change ContinuousOn (fun t : ℝ => (π * (Complex.I : ℂ)) + (-π * (t : ℂ))) (Ι (0 : ℝ) 1)
-  exact (by fun_prop : Continuous fun t : ℝ => (π * (Complex.I : ℂ)) + (-π * (t : ℂ))).continuousOn
+  unfold k₃; fun_prop
 
 lemma k₅_continuousOn : ContinuousOn k₅ (Ι (0 : ℝ) 1) := by
-  change ContinuousOn (fun t : ℝ => (-π * (t : ℂ))) (Ι (0 : ℝ) 1)
-  exact (by fun_prop : Continuous fun t : ℝ => (-π * (t : ℂ))).continuousOn
+  unfold k₅; fun_prop
 
 lemma base₁_bound :
     ∃ C₀ > 0, ∀ t ∈ Ι (0 : ℝ) 1, ‖base₁ t‖ ≤ C₀ := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  refine ⟨C₀, hC₀_pos, ?_⟩
-  intro t ht
+  refine ⟨C₀, hC₀_pos, fun t ht => ?_⟩
   have ht0 : 0 < t := by simpa using ht.1
-  have ht0le : 0 ≤ t := ht0.le
   have ht1 : t ≤ 1 := by simpa using ht.2
-  have hzpos : 0 < (arg₁ t).im := by
-    simpa [arg₁, im_I_div] using (inv_pos.2 ht0)
+  have hzpos : 0 < (arg₁ t).im := by simpa [arg₁, im_I_div] using inv_pos.2 ht0
   have hzhalf : (1 / 2 : ℝ) < (arg₁ t).im := by
-    have ht_inv : (1 : ℝ) ≤ t⁻¹ := (one_le_inv_iff₀.2 ⟨ht0, ht1⟩)
-    have : (1 / 2 : ℝ) < t⁻¹ := lt_of_lt_of_le (by norm_num) ht_inv
-    simpa [arg₁, im_I_div] using this
-  have hφ : ‖φ₀'' (arg₁ t)‖ ≤ C₀ :=
-    norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀ hzpos hzhalf
+    have ht_inv : (1 : ℝ) ≤ t⁻¹ := one_le_inv_iff₀.2 ⟨ht0, ht1⟩
+    simpa [arg₁, im_I_div] using lt_of_lt_of_le (by norm_num : (1 / 2 : ℝ) < 1) ht_inv
+  have hφ := norm_φ₀''_le_of_half_lt hC₀_pos.le hC₀ hzpos hzhalf
   have ht2 : ‖(t ^ (2 : ℕ) : ℝ)‖ ≤ 1 := by
-    have ht_abs : |t| ≤ 1 := by simpa [abs_of_nonneg ht0le] using ht1
-    have hpow : |t| ^ (2 : ℕ) ≤ (1 : ℝ) := pow_le_one₀ (abs_nonneg t) ht_abs
+    have hpow : |t| ^ (2 : ℕ) ≤ (1 : ℝ) :=
+      pow_le_one₀ (abs_nonneg t) (by simpa [abs_of_nonneg ht0.le] using ht1)
     simpa [Real.norm_eq_abs, abs_pow] using hpow
   calc
-    ‖base₁ t‖ = ‖φ₀'' (arg₁ t)‖ * ‖(t ^ (2 : ℕ) : ℝ)‖ := by
-      simp [base₁]
-    _ ≤ ‖φ₀'' (arg₁ t)‖ * 1 := mul_le_mul_of_nonneg_left ht2 (norm_nonneg _)
-    _ = ‖φ₀'' (arg₁ t)‖ := by simp
-    _ ≤ C₀ := hφ
+    ‖base₁ t‖ = ‖φ₀'' (arg₁ t)‖ * ‖(t ^ (2 : ℕ) : ℝ)‖ := by simp [base₁]
+    _ ≤ C₀ * 1 := mul_le_mul hφ ht2 (norm_nonneg _) hC₀_pos.le
+    _ = C₀ := mul_one _
 
 private lemma norm_of_mem_uIoc_le_one {t : ℝ} (ht : t ∈ Ι (0 : ℝ) 1) : ‖(t : ℂ)‖ ≤ 1 := by
   have ht0 : 0 ≤ t := (by simpa using ht.1 : (0 : ℝ) < t).le
   simpa [Complex.norm_real, abs_of_nonneg ht0] using ht.2
 
-private lemma norm_neg_pi_mul_le_pi {z : ℂ} (hz : ‖z‖ ≤ 1) : ‖(-π : ℂ) * z‖ ≤ Real.pi := by
-  have hnorm : ‖(-π : ℂ) * z‖ = Real.pi * ‖z‖ := by
-    simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
-  nlinarith [Real.pi_pos, hz, hnorm]
+private lemma norm_pi_mul_eq {s : ℝ} (hs : |s| = 1) :
+    ‖(s * π : ℂ) * (Complex.I : ℂ)‖ = Real.pi := by
+  simp [Complex.norm_real, abs_mul, hs, abs_of_nonneg Real.pi_pos.le]
 
-private lemma norm_pi_I_mul_eq_pi : ‖(π : ℂ) * (Complex.I : ℂ)‖ = Real.pi := by
-  simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
+private lemma norm_sign_pi_mul_le_pi {s : ℝ} (hs : |s| = 1) {z : ℂ} (hz : ‖z‖ ≤ 1) :
+    ‖(s * π : ℂ) * z‖ ≤ Real.pi := by
+  have : ‖(s * π : ℂ) * z‖ = Real.pi * ‖z‖ := by
+    simp [Complex.norm_real, abs_mul, hs, abs_of_nonneg Real.pi_pos.le]
+  nlinarith [Real.pi_pos, hz, this]
 
-private lemma norm_neg_pi_I_mul_eq_pi : ‖(-π : ℂ) * (Complex.I : ℂ)‖ = Real.pi := by
-  simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
+private lemma norm_sign_pi_I_mul_le_pi {s : ℝ} (hs : |s| = 1) {z : ℂ} (hz : ‖z‖ ≤ 1) :
+    ‖(s * π : ℂ) * (Complex.I : ℂ) * z‖ ≤ Real.pi := by
+  have h : ‖(s * π : ℂ) * (Complex.I : ℂ) * z‖ = Real.pi * ‖z‖ := by
+    simpa [mul_assoc] using congrArg (fun x : ℝ => x * ‖z‖) (norm_pi_mul_eq hs)
+  nlinarith [Real.pi_pos, hz, h]
 
-private lemma norm_pi_I_mul_le_pi {z : ℂ} (hz : ‖z‖ ≤ 1) :
-    ‖(π : ℂ) * (Complex.I : ℂ) * z‖ ≤ Real.pi := by
-  have hnorm : ‖(π : ℂ) * (Complex.I : ℂ) * z‖ = Real.pi * ‖z‖ := by
-    simpa [mul_assoc] using congrArg (fun x : ℝ => x * ‖z‖) norm_pi_I_mul_eq_pi
-  nlinarith [Real.pi_pos, hz, hnorm]
-
-private lemma norm_neg_pi_I_mul_le_pi {z : ℂ} (hz : ‖z‖ ≤ 1) :
-    ‖(-π : ℂ) * (Complex.I : ℂ) * z‖ ≤ Real.pi := by
-  have hnorm : ‖(-π : ℂ) * (Complex.I : ℂ) * z‖ = Real.pi * ‖z‖ := by
-    simpa [mul_assoc] using congrArg (fun x : ℝ => x * ‖z‖) norm_neg_pi_I_mul_eq_pi
-  nlinarith [Real.pi_pos, hz, hnorm]
+/-- Shared bound for `k₁` and `k₃`: `‖s * I + (-π t)‖ ≤ 2π` when `|s| = π` and `‖t‖ ≤ 1`. -/
+private lemma k₁₃_bound_aux {s : ℝ} (hs : |s| = Real.pi) :
+    ∀ t ∈ Ι (0 : ℝ) 1, ‖(s : ℂ) * (Complex.I : ℂ) + (-π * (t : ℂ))‖ ≤ (2 * Real.pi) := by
+  intro t ht
+  have htnorm := norm_of_mem_uIoc_le_one ht
+  have hnegπ : ‖(-π : ℂ) * (t : ℂ)‖ ≤ Real.pi := by
+    have := norm_sign_pi_mul_le_pi (s := (-1 : ℝ)) (by norm_num) (z := (t : ℂ)) htnorm
+    simpa using this
+  have hsI : ‖(s : ℂ) * (Complex.I : ℂ)‖ = Real.pi := by
+    simp [Complex.norm_real, hs]
+  have hsum := norm_add_le ((s : ℂ) * (Complex.I : ℂ)) ((-π : ℂ) * (t : ℂ))
+  have : ‖(s : ℂ) * (Complex.I : ℂ) + (-π * (t : ℂ))‖ ≤ Real.pi + Real.pi :=
+    hsum.trans (add_le_add hsI.le hnegπ)
+  simpa [two_mul] using this
 
 lemma k₁_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₁ t‖ ≤ (2 * Real.pi) := by
   intro t ht
-  have htpi : ‖(-π : ℂ) * (t : ℂ)‖ ≤ Real.pi :=
-    norm_neg_pi_mul_le_pi (z := (t : ℂ)) (norm_of_mem_uIoc_le_one ht)
-  have hsum :
-      ‖k₁ t‖ ≤ ‖(-π * (Complex.I : ℂ) : ℂ)‖ + ‖(-π * (t : ℂ) : ℂ)‖ :=
-    by simpa [k₁] using (norm_add_le (-π * (Complex.I : ℂ) : ℂ) (-π * (t : ℂ) : ℂ))
-  have hpiI : ‖(-π * (Complex.I : ℂ) : ℂ)‖ = Real.pi := by
-    simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
-  have : ‖k₁ t‖ ≤ Real.pi + Real.pi :=
-    hsum.trans (add_le_add (le_of_eq hpiI) (by simpa [mul_assoc] using htpi))
-  simpa [two_mul] using this
+  simpa [k₁, mul_comm] using k₁₃_bound_aux (s := -Real.pi) (by simp [abs_of_nonneg Real.pi_pos.le]) t ht
 
 lemma k₃_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₃ t‖ ≤ (2 * Real.pi) := by
   intro t ht
-  have htpi : ‖(-π : ℂ) * (t : ℂ)‖ ≤ Real.pi :=
-    norm_neg_pi_mul_le_pi (z := (t : ℂ)) (norm_of_mem_uIoc_le_one ht)
-  have hsum :
-      ‖k₃ t‖ ≤ ‖(π * (Complex.I : ℂ) : ℂ)‖ + ‖(-π * (t : ℂ) : ℂ)‖ :=
-    by simpa [k₃] using (norm_add_le (π * (Complex.I : ℂ) : ℂ) (-π * (t : ℂ) : ℂ))
-  have hpiI : ‖(π * (Complex.I : ℂ) : ℂ)‖ = Real.pi := by
-    simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
-  have : ‖k₃ t‖ ≤ Real.pi + Real.pi :=
-    hsum.trans (add_le_add (le_of_eq hpiI) (by simpa [mul_assoc] using htpi))
-  simpa [two_mul] using this
+  simpa [k₃, mul_comm] using k₁₃_bound_aux (s := Real.pi) (by simp [abs_of_nonneg Real.pi_pos.le]) t ht
 
-lemma k₅_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₅ t‖ ≤ Real.pi := by
-  intro t ht
-  simpa [k₅] using norm_neg_pi_mul_le_pi (z := (t : ℂ)) (norm_of_mem_uIoc_le_one ht)
+lemma k₅_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₅ t‖ ≤ Real.pi := fun t ht => by
+  simpa [k₅] using
+    norm_sign_pi_mul_le_pi (s := (-1 : ℝ)) (by norm_num) (z := (t : ℂ)) (norm_of_mem_uIoc_le_one ht)
 
 lemma I₁'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₁'C u0 := by
   rcases base₁_bound with ⟨Cbase, _hpos, hbase_bound⟩
