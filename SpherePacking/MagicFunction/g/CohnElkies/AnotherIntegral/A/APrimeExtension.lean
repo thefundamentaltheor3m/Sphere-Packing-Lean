@@ -262,10 +262,9 @@ private lemma norm_sign_pi_I_mul_t_le {s : ℝ} (hs : |s| = 1) {t : ℝ} (ht : t
 /-- Shared bound for `k₁` and `k₃`: `‖±π * I + (-π * t)‖ ≤ 2π`. -/
 private lemma k_bound_two_pi {s : ℝ} (hs : |s| = 1) (t : ℝ) (ht : t ∈ Ι (0 : ℝ) 1) :
     ‖(s * π : ℂ) * (Complex.I : ℂ) + (-π * (t : ℂ))‖ ≤ (2 * Real.pi) := by
-  have : ‖(s * π : ℂ) * (Complex.I : ℂ) + (-π * (t : ℂ))‖ ≤ Real.pi + Real.pi :=
-    (norm_add_le _ _).trans
-      (add_le_add (norm_sign_pi_I_eq_pi hs).le (norm_neg_pi_mul_t_le ht))
-  simpa [two_mul] using this
+  have := (norm_add_le _ _).trans
+    (add_le_add (norm_sign_pi_I_eq_pi hs).le (norm_neg_pi_mul_t_le ht))
+  linarith
 
 lemma k₁_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₁ t‖ ≤ (2 * Real.pi) := fun t ht => by
   simpa [k₁, show ((-1 : ℝ) * Real.pi : ℂ) = (-π : ℂ) by push_cast; ring] using
@@ -406,27 +405,18 @@ private lemma k_bound_three_pi {s₁ s₂ : ℝ} (hs₁ : |s₁| = 1) (hs₂ : |
     ‖(s₁ * π : ℂ) * (Complex.I : ℂ) + (s₂ * π : ℂ) * (Complex.I : ℂ) * (t : ℂ) + (-π)‖ ≤
       (3 * Real.pi) := by
   have hpi : ‖(-π : ℂ)‖ = Real.pi := by simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
-  have h12 :
-      ‖(s₁ * π : ℂ) * (Complex.I : ℂ) + (s₂ * π : ℂ) * (Complex.I : ℂ) * (t : ℂ)‖ ≤
-        Real.pi + Real.pi :=
-    (norm_add_le _ _).trans
-      (add_le_add (norm_sign_pi_I_eq_pi hs₁).le (norm_sign_pi_I_mul_t_le hs₂ ht))
-  have h123 :
-      ‖(s₁ * π : ℂ) * (Complex.I : ℂ) + (s₂ * π : ℂ) * (Complex.I : ℂ) * (t : ℂ) + (-π : ℂ)‖ ≤
-        Real.pi + Real.pi + Real.pi :=
-    (norm_add_le _ _).trans (add_le_add h12 hpi.le)
-  have hring : Real.pi + Real.pi + Real.pi = 3 * Real.pi := by ring
-  linarith [h123]
+  have := (norm_add_le _ _).trans (add_le_add
+    ((norm_add_le _ _).trans (add_le_add (norm_sign_pi_I_eq_pi hs₁).le
+      (norm_sign_pi_I_mul_t_le hs₂ ht))) hpi.le)
+  linarith
 
 lemma k₂_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₂ t‖ ≤ (3 * Real.pi) := fun t ht => by
-  simpa [k₂,
-    show ((-1 : ℝ) * Real.pi : ℂ) = (-π : ℂ) by push_cast; ring,
+  simpa [k₂, show ((-1 : ℝ) * Real.pi : ℂ) = (-π : ℂ) by push_cast; ring,
     show ((1 : ℝ) * Real.pi : ℂ) = (π : ℂ) by push_cast; ring] using
     k_bound_three_pi (s₁ := -1) (s₂ := 1) (by norm_num) (by norm_num) t ht
 
 lemma k₄_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖k₄ t‖ ≤ (3 * Real.pi) := fun t ht => by
-  simpa [k₄,
-    show ((-1 : ℝ) * Real.pi : ℂ) = (-π : ℂ) by push_cast; ring,
+  simpa [k₄, show ((-1 : ℝ) * Real.pi : ℂ) = (-π : ℂ) by push_cast; ring,
     show ((1 : ℝ) * Real.pi : ℂ) = (π : ℂ) by push_cast; ring] using
     k_bound_three_pi (s₁ := 1) (s₂ := -1) (by norm_num) (by norm_num) t ht
 
@@ -584,20 +574,15 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
     (hIntegrandC_continuousOn z).aestronglyMeasurable measurableSet_Ici
   have hF_int : MeasureTheory.Integrable (fun t : ℝ => I₆IntegrandC u0 t) μ := by
     let g : ℝ → ℝ := fun t : ℝ => C₀ * Real.exp (-(Real.pi * u0.re) * t)
-    have hu0' : 0 < Real.pi * u0.re := by positivity
-    have hExp :
-        MeasureTheory.IntegrableOn (fun t : ℝ => Real.exp (-((Real.pi * u0.re) * t)))
-          (Set.Ioi (1 : ℝ)) MeasureTheory.volume := by
+    have hExp : MeasureTheory.Integrable (fun t : ℝ => Real.exp (-((Real.pi * u0.re) * t)))
+        (MeasureTheory.volume.restrict (Set.Ioi (1 : ℝ))) := by
       simpa [mul_assoc] using
-        exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := (Real.pi * u0.re)) hu0'
-    have hmulIoi : MeasureTheory.IntegrableOn g (Set.Ioi (1 : ℝ)) MeasureTheory.volume := by
-      have : MeasureTheory.Integrable (fun t : ℝ => Real.exp (-((Real.pi * u0.re) * t)))
-          (MeasureTheory.volume.restrict (Set.Ioi (1 : ℝ))) := hExp
-      simpa [g, MeasureTheory.IntegrableOn, mul_assoc] using this.const_mul C₀
+        exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := (Real.pi * u0.re)) (by positivity)
     have hg_int : MeasureTheory.Integrable g μ := by
       simpa [MeasureTheory.IntegrableOn, μ] using
         (integrableOn_Ici_iff_integrableOn_Ioi (μ := (MeasureTheory.volume : Measure ℝ))
-          (f := g) (b := (1 : ℝ)) (by finiteness)).2 hmulIoi
+          (f := g) (b := (1 : ℝ)) (by finiteness)).2
+            (by simpa [g, MeasureTheory.IntegrableOn, mul_assoc] using hExp.const_mul C₀)
     refine MeasureTheory.Integrable.mono' (μ := μ) hg_int (hF_meas u0) ?_
     refine MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ici fun t ht => ?_
     simpa [g, ← mul_assoc] using hIntegrand_le u0 t ht
@@ -613,20 +598,15 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
     have ht0 : 0 ≤ t := le_trans (by norm_num) ht
     have hzRe : ε ≤ z.re := by
       simpa [hε_def] using re_half_le_of_mem_ball (u0 := u0) (u := z) (by simpa [hε_def] using hz)
-    have hExp : ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ ≤ Real.exp (-π * ε * t) := by
-      have hmul : (-π * t) * z.re ≤ (-π * t) * ε :=
-        mul_le_mul_of_nonpos_left hzRe (by nlinarith [Real.pi_pos])
-      calc ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖
-          = Real.exp (-Real.pi * z.re * t) := by
-            simp [Complex.norm_exp, mul_assoc, Complex.mul_re, sub_eq_add_neg, add_comm]
-        _ ≤ Real.exp (-π * ε * t) :=
-            Real.exp_le_exp.mpr (by linarith [hmul, mul_comm (-π * t) z.re, mul_comm (-π * t) ε])
-    have hnorm_int : ‖I₆IntegrandC z t‖ ≤ C₀ * Real.exp (-π * ε * t) := by
-      calc
-        ‖I₆IntegrandC z t‖ = ‖base₆ t‖ * ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ := by
-          simp [I₆IntegrandC]
-        _ ≤ C₀ * Real.exp (-π * ε * t) :=
-          mul_le_mul (hbase_bound t ht) hExp (norm_nonneg _) (by positivity)
+    have hmul : (-π * t) * z.re ≤ (-π * t) * ε :=
+      mul_le_mul_of_nonpos_left hzRe (by nlinarith [Real.pi_pos])
+    have hle : -π * z.re * t ≤ -π * ε * t := by
+      have h1 : (-π * t) * z.re = -π * z.re * t := by ring
+      have h2 : (-π * t) * ε = -π * ε * t := by ring
+      linarith [hmul, h1, h2]
+    have hnorm_int : ‖I₆IntegrandC z t‖ ≤ C₀ * Real.exp (-π * ε * t) :=
+      (hIntegrand_le z t ht).trans (mul_le_mul_of_nonneg_left
+        (Real.exp_le_exp.mpr hle) hC₀_pos.le)
     have hlin_norm : ‖(-(π : ℂ) * (t : ℂ))‖ ≤ Real.pi * t := by
       simp [Complex.norm_real, abs_of_nonneg ht0, abs_of_nonneg Real.pi_pos.le]
     have : ‖I₆IntegrandC_deriv z t‖ ≤ (C₀ * Real.pi) * t * Real.exp (-(Real.pi * ε) * t) := by
