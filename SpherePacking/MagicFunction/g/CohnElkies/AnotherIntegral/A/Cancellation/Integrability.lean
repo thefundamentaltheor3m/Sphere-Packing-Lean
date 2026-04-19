@@ -513,30 +513,19 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
       simpa [z, UpperHalfPlane.im, him_div] using this
     exact lt_of_lt_of_le (by norm_num) this
   have hφ0z : ‖φ₀ z‖ ≤ Cφ₀ * Real.exp (-2 * π * z.im) := hCφ₀ z hzHalf
-  have hφ0'' :
-      ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ Cφ₀ := by
-    have hexp_le_one : Real.exp (-2 * π * z.im) ≤ 1 := by
-      have : (-2 * π * z.im) ≤ 0 := by nlinarith [Real.pi_pos, (z.2).le]
-      exact Real.exp_le_one_iff.2 this
+  have hφ0'' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ Cφ₀ := by
+    have hexp_le_one : Real.exp (-2 * π * z.im) ≤ 1 :=
+      Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, (z.2).le])
     have hdef : φ₀ z = φ₀'' ((Complex.I : ℂ) / (t : ℂ)) := by
       simpa [z] using (φ₀''_def (z := (Complex.I : ℂ) / (t : ℂ)) him_pos).symm
-    have hmul : Cφ₀ * Real.exp (-2 * π * z.im) ≤ Cφ₀ * 1 := by
-      have := mul_le_mul_of_nonneg_left hexp_le_one hCφ₀_pos.le
-      simpa using this
-    have : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ Cφ₀ := by
-      have := le_trans hφ0z hmul
-      -- Rewrite `φ₀ z` to `φ₀''`.
-      simpa [hdef] using this
-    simpa using this
-  have ht2_le : (t ^ (2 : ℕ) : ℝ) ≤ 1 := by
-    have : 0 ≤ t := ht0.le
-    nlinarith [ht.2]
-  have hexp_le_one : Real.exp (-π * u * t) ≤ 1 := by
-    have hnonneg : 0 ≤ π * u * t := by positivity
-    have hneg : -(π * u * t) ≤ 0 := neg_nonpos.mpr hnonneg
-    have hEq : (-π * u * t) = -(π * u * t) := by ring
-    have : (-π * u * t) ≤ 0 := by simpa [hEq] using hneg
-    exact Real.exp_le_one_iff.2 this
+    have hmul : Cφ₀ * Real.exp (-2 * π * z.im) ≤ Cφ₀ := by
+      simpa using mul_le_mul_of_nonneg_left hexp_le_one hCφ₀_pos.le
+    simpa [hdef] using hφ0z.trans hmul
+  have ht2_le : (t ^ (2 : ℕ) : ℝ) ≤ 1 := by nlinarith [ht0.le, ht.2]
+  have hexp_le_one : Real.exp (-π * u * t) ≤ 1 :=
+    Real.exp_le_one_iff.2 (by
+      have : 0 ≤ π * u * t := by positivity
+      linarith)
   -- Now bound `‖aAnotherIntegrand u t‖` by `M`.
   have hnorm :
       ‖aAnotherIntegrand u t‖ ≤ M := by
@@ -550,49 +539,30 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
             ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
             ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := by
       -- Rewrite as `A - B + C - D`, then use the triangle inequality.
-      let A : ℂ :=
-        ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ))
-      let B : ℂ :=
-        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t)
-      let Cc : ℂ := ((8640 / π : ℝ) : ℂ) * t
-      let D : ℂ := ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
+      set A : ℂ := ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ))
+      set B : ℂ := ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t)
+      set Cc : ℂ := ((8640 / π : ℝ) : ℂ) * t
+      set D : ℂ := ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
       have hsum : ‖A - B + Cc - D‖ ≤ ‖A‖ + ‖B‖ + ‖Cc‖ + ‖D‖ := by
-        calc
-          ‖A - B + Cc - D‖ = ‖(A - B) + (Cc - D)‖ := by
-            simp [sub_eq_add_neg, add_assoc, add_left_comm, add_comm]
+        calc ‖A - B + Cc - D‖
+            = ‖(A - B) + (Cc - D)‖ := by ring_nf
           _ ≤ ‖A - B‖ + ‖Cc - D‖ := norm_add_le _ _
-          _ ≤ (‖A‖ + ‖B‖) + (‖Cc‖ + ‖D‖) := by
-            exact add_le_add (norm_sub_le _ _) (norm_sub_le _ _)
+          _ ≤ (‖A‖ + ‖B‖) + (‖Cc‖ + ‖D‖) := add_le_add (norm_sub_le _ _) (norm_sub_le _ _)
           _ = ‖A‖ + ‖B‖ + ‖Cc‖ + ‖D‖ := by ring
+      have ht2nonneg : 0 ≤ (t ^ (2 : ℕ) : ℝ) := by positivity
       have hA : ‖A‖ ≤ (t ^ (2 : ℕ) : ℝ) * Cφ₀ := by
-        have : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ Cφ₀ := hφ0''
-        have := mul_le_mul_of_nonneg_left this (by positivity : 0 ≤ (t ^ (2 : ℕ) : ℝ))
-        have ht2nonneg : 0 ≤ (t ^ (2 : ℕ) : ℝ) := by positivity
+        have := mul_le_mul_of_nonneg_left hφ0'' ht2nonneg
         simpa [A, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht2nonneg] using this
       have hExp2 : Real.exp (2 * π * t) ≤ Real.exp (2 * π) := by
-        have : (2 * π * t) ≤ (2 * π * (1 : ℝ)) := by nlinarith [Real.pi_pos, ht.2]
-        simpa using (Real.exp_le_exp.2 this)
+        exact Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht.2])
       have hB : ‖B‖ ≤ ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) := by
-        have hExpNorm :
-            ‖(Real.exp (2 * π * t) : ℂ)‖ = Real.exp (2 * π * t) := norm_ofReal_exp (2 * π * t)
-        have hB' :
-            ‖B‖ = ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π * t) := by
-          -- Avoid rewriting `Real.exp` into `Complex.exp`.
-          calc
-            ‖B‖ = ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * ‖(Real.exp (2 * π * t) : ℂ)‖ := by
-              simp [-Complex.ofReal_exp, B]
-            _ = ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π * t) := by
-              rw [hExpNorm]
-        rw [hB']
+        rw [show ‖B‖ = ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π * t) by
+          simp [-Complex.ofReal_exp, B]]
         exact mul_le_mul_of_nonneg_left hExp2 (norm_nonneg _)
-      have ht_le1 : t ≤ 1 := ht.2
       have hC : ‖Cc‖ ≤ ‖((8640 / π : ℝ) : ℂ)‖ := by
-        have hCc' : ‖Cc‖ = ‖((8640 / π : ℝ) : ℂ)‖ * t := by
-          simp [Cc, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0.le]
-        rw [hCc']
-        -- `0 ≤ ‖((8640 / π : ℝ) : ℂ)‖`.
-        have := mul_le_mul_of_nonneg_left ht_le1 (norm_nonneg ((8640 / π : ℝ) : ℂ))
-        simpa using this
+        rw [show ‖Cc‖ = ‖((8640 / π : ℝ) : ℂ)‖ * t by
+          simp [Cc, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0.le]]
+        simpa using mul_le_mul_of_nonneg_left ht.2 (norm_nonneg ((8640 / π : ℝ) : ℂ))
       grind only
     have hmul :
         ‖aAnotherIntegrand u t‖ ≤
@@ -600,23 +570,17 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
                 ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
                 ((8640 / π : ℝ) : ℂ) * t -
                 ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ := by
-      -- Multiply by `exp(-π u t) ≤ 1`.
-      have hExpNorm : ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) := by
-        simpa using (norm_ofReal_exp (-π * u * t))
       have : ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1 := by
-        rw [hExpNorm]
-        exact hexp_le_one
+        rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) from by
+          simpa using norm_ofReal_exp (-π * u * t)]; exact hexp_le_one
       simpa [aAnotherIntegrand, norm_mul, mul_assoc] using
         (mul_le_mul_of_nonneg_left this (norm_nonneg _))
-    have : ‖aAnotherIntegrand u t‖ ≤ (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
+    have hbd : ‖aAnotherIntegrand u t‖ ≤ (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
             ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
-            ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ :=
-      le_trans hmul hbr
-    -- Use `t^2 ≤ 1` to replace `(t^2)*Cφ₀` by `Cφ₀`.
-    have : (t ^ (2 : ℕ) : ℝ) * Cφ₀ ≤ Cφ₀ := by
-      have := mul_le_mul_of_nonneg_right ht2_le hCφ₀_pos.le
-      simpa [one_mul] using this
-    nlinarith [this]
+            ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := hmul.trans hbr
+    have ht2Cφ₀ : (t ^ (2 : ℕ) : ℝ) * Cφ₀ ≤ Cφ₀ := by
+      simpa [one_mul] using mul_le_mul_of_nonneg_right ht2_le hCφ₀_pos.le
+    nlinarith [hbd, ht2Cφ₀]
   exact hnorm
 
 lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :

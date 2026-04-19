@@ -187,157 +187,74 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
     ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
         (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
-  have hwpos : 0 < t := by
-    have hwpos' : 0 < wH.im := wH.im_pos
-    simpa [hw_im] using hwpos'
-  have ht_nonneg : 0 ≤ t := le_of_lt hwpos
-  have hwH_im : wH.im = t := hw_im
+  have ht_nonneg : 0 ≤ t := by linarith
+  have hAw : Aφ ≤ wH.im := by simpa [hw_im] using htAφ
   have hφ2 : ‖φ₂' wH‖ ≤ Cφ * Real.exp (2 * π * t) := by
-    have : Aφ ≤ wH.im := by simpa [hwH_im] using htAφ
-    simpa [hwH_im] using (hφbd wH this).1
+    simpa [hw_im] using (hφbd wH hAw).1
   have hφ4 : ‖φ₄' wH‖ ≤ Cφ * Real.exp (2 * π * t) := by
-    have : Aφ ≤ wH.im := by simpa [hwH_im] using htAφ
-    simpa [hwH_im] using (hφbd wH this).2
+    simpa [hw_im] using (hφbd wH hAw).2
   have hφ0 : ‖φ₀ wH‖ ≤ C₀ := by
     have hhalf : (1 / 2 : ℝ) < wH.im := by
-      have : (1 / 2 : ℝ) < t := lt_of_lt_of_le (by norm_num) ht1
-      simpa [hwH_im] using this
-    have hφ0' := hC₀ wH hhalf
-    have hexp : Real.exp (-2 * π * wH.im) ≤ 1 := by
-      have : (-2 * π * wH.im) ≤ 0 := by
-        have : 0 ≤ wH.im := le_of_lt wH.im_pos
-        nlinarith [Real.pi_pos, this]
-      simpa using (Real.exp_le_one_iff.2 this)
-    have : C₀ * Real.exp (-2 * π * wH.im) ≤ C₀ :=
-      mul_le_of_le_one_right hC₀_pos.le hexp
-    exact hφ0'.trans this
+      rw [hw_im]; linarith
+    have hexp : Real.exp (-2 * π * wH.im) ≤ 1 := Real.exp_le_one_iff.2 <| by
+      nlinarith [Real.pi_pos, wH.im_pos]
+    exact (hC₀ wH hhalf).trans (mul_le_of_le_one_right hC₀_pos.le hexp)
   have hw2 : ‖(wH : ℂ) ^ (2 : ℕ)‖ ≤ (2 * t) ^ (2 : ℕ) := by
-    simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hw_norm (2 : ℕ)
-  have htri :
-      ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
-        ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ +
-          ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ +
-            ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ := by
-    have hS := φ₀_S_transform_mul_sq (w := wH)
-    have : φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) =
-        φ₀ wH * ((wH : ℂ) ^ (2 : ℕ)) -
-          (12 * Complex.I) / π * (wH : ℂ) * φ₂' wH -
-            (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH := by
-      simpa using hS
-    calc
-        ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ =
-            ‖(φ₀ wH * ((wH : ℂ) ^ (2 : ℕ)) -
-                  (12 * Complex.I) / π * (wH : ℂ) * φ₂' wH) -
-                (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ :=
-                  congrArg (fun z : ℂ => ‖z‖) this
-      _ ≤ ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ)) -
-                (12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ +
-            ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ := by
-            exact norm_sub_le _ _
-        _ ≤ (‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ +
-                  ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖) +
-              ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ := by
-              have hab :
-                  ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ)) -
-                        (12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ ≤
-                    ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ +
-                      ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ :=
-                norm_sub_le _ _
-              exact add_le_add_left hab ‖36 / ↑π ^ 2 * φ₄' wH‖
-      _ = ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ +
-            ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ +
-              ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ := by ring
-  have hexp_ge : (1 : ℝ) ≤ Real.exp (2 * π * t) := by
-    have h2pi : 0 ≤ (2 : ℝ) * π := mul_nonneg (by norm_num) Real.pi_pos.le
-    have : 0 ≤ (2 : ℝ) * π * t := mul_nonneg h2pi ht_nonneg
-    have : 0 ≤ 2 * π * t := by simpa [mul_assoc] using this
-    simpa using (Real.one_le_exp_iff.2 this)
-  have hA :
-      ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
-        (4 * C₀) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
-    calc
-      ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
-          ‖φ₀ wH‖ * ‖(wH : ℂ) ^ (2 : ℕ)‖ := by
-        exact norm_mul_le (φ₀ wH) ((wH : ℂ) ^ (2 : ℕ))
-      _ ≤ C₀ * (2 * t) ^ (2 : ℕ) := by
-        exact mul_le_mul hφ0 hw2 (norm_nonneg _) hC₀_pos.le
-      _ = (4 * C₀) * (t ^ (2 : ℕ)) := by ring
-      _ ≤ (4 * C₀) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
-        have ht2_nonneg : 0 ≤ t ^ (2 : ℕ) := pow_nonneg ht_nonneg _
-        have ht2_le : t ^ (2 : ℕ) ≤ t ^ (2 : ℕ) * Real.exp (2 * π * t) := by
-          have := mul_le_mul_of_nonneg_left hexp_ge ht2_nonneg
-          simpa [one_mul, mul_assoc] using this
-        have hC0' : 0 ≤ 4 * C₀ := mul_nonneg (by norm_num) hC₀_pos.le
-        exact mul_le_mul_of_nonneg_left ht2_le hC0'
-  have hB :
-      ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ ≤
-        (2 * c12π * Cφ) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
-    have ht_le : t ≤ t ^ (2 : ℕ) := by
-      have : (0 : ℝ) ≤ t := le_trans (by norm_num) ht1
-      have ht := mul_le_mul_of_nonneg_left ht1 this
-      simpa [pow_two, mul_assoc] using ht
-    have hY_nonneg : 0 ≤ Cφ * Real.exp (2 * π * t) := le_trans (norm_nonneg _) hφ2
-    calc
-      ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ ≤
-          (c12π * ‖(wH : ℂ)‖) * ‖φ₂' wH‖ := norm_mul₃_le
-      _ ≤ (c12π * (2 * t)) * (Cφ * Real.exp (2 * π * t)) := by
-        -- First use `‖φ₂'‖ ≤ Cφ*exp`, then `‖w‖ ≤ 2t`.
-        have hφ :
-            (c12π * ‖(wH : ℂ)‖) * ‖φ₂' wH‖ ≤
-              (c12π * ‖(wH : ℂ)‖) * (Cφ * Real.exp (2 * π * t)) := by
-          have hcoeff_nonneg : 0 ≤ c12π * ‖(wH : ℂ)‖ :=
-            mul_nonneg (norm_nonneg _) (norm_nonneg _)
-          exact mul_le_mul_of_nonneg_left hφ2 hcoeff_nonneg
-        have hw' :
-            c12π * ‖(wH : ℂ)‖ ≤ c12π * (2 * t) :=
-          mul_le_mul_of_nonneg_left hw_norm (norm_nonneg _)
-        exact le_mul_of_le_mul_of_nonneg_right hφ hw' hY_nonneg
-      _ ≤ (2 * c12π * Cφ) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
-        -- Use `t ≤ t^2` (since `t ≥ 1`) and `0 ≤ Cφ*exp`.
-        have htY :
-            t * (Cφ * Real.exp (2 * π * t)) ≤
-              t ^ (2 : ℕ) * (Cφ * Real.exp (2 * π * t)) := by
-          have := mul_le_mul_of_nonneg_right ht_le hY_nonneg
-          simpa [pow_two, mul_assoc] using this
-        have hpiabs_pos : 0 < |(π : ℝ)| := by
-          simpa [abs_of_pos Real.pi_pos] using Real.pi_pos
-        have h12pi_nonneg : 0 ≤ (12 : ℝ) / |(π : ℝ)| :=
-          div_nonneg (by norm_num) hpiabs_pos.le
-        have hcoeff_nonneg : 0 ≤ (2 : ℝ) * ((12 : ℝ) / |(π : ℝ)|) :=
-          mul_nonneg (by norm_num) h12pi_nonneg
-        have hmain := mul_le_mul_of_nonneg_left htY hcoeff_nonneg
-        -- Rewrite both sides to isolate `t*(Cφ*exp)` and apply `htY`.
-        simpa [mul_assoc, mul_left_comm, mul_comm, pow_two] using hmain
-  have hC :
-      ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ ≤
-        c36π2 * Cφ * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
-    have hY_nonneg : 0 ≤ Cφ * Real.exp (2 * π * t) := le_trans (norm_nonneg _) hφ4
-    have ht2 : (1 : ℝ) ≤ t ^ (2 : ℕ) := one_le_pow₀ (show (1 : ℝ) ≤ t from ht1)
-    calc
-      ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ ≤
-          c36π2 * ‖φ₄' wH‖ :=
-        norm_mul_le ((36 : ℂ) / ((π : ℂ) ^ (2 : ℕ))) (φ₄' wH)
-      _ ≤ c36π2 * (Cφ * Real.exp (2 * π * t)) := by
-        -- Multiply the bound `‖φ₄'‖ ≤ Cφ*exp`.
-        have hmul :=
-          mul_le_mul_of_nonneg_left hφ4
-            (a := c36π2) (norm_nonneg _)
-        simpa [mul_assoc] using hmul
-      _ ≤ c36π2 * Cφ * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
-        -- Use `1 ≤ t^2` and `0 ≤ Cφ*exp`.
-        have hY :
-            Cφ * Real.exp (2 * π * t) ≤ t ^ (2 : ℕ) * (Cφ * Real.exp (2 * π * t)) := by
-          have := mul_le_mul_of_nonneg_right ht2 hY_nonneg
-          simpa [one_mul, mul_assoc] using this
-        have hn_nonneg : 0 ≤ c36π2 := norm_nonneg _
-        have hn := mul_le_mul_of_nonneg_left hY hn_nonneg
-        -- Normalize the product layout.
-        have hrew :
-            c36π2 * (t ^ (2 : ℕ) * (Cφ * Real.exp (2 * π * t))) =
-              c36π2 * Cφ * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
-          ring
-        exact le_trans hn (le_of_eq hrew)
-  grind only
+    simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hw_norm 2
+  have hexp_nonneg : 0 ≤ Real.exp (2 * π * t) := (Real.exp_pos _).le
+  have hexp_ge : (1 : ℝ) ≤ Real.exp (2 * π * t) :=
+    Real.one_le_exp_iff.2 <| by positivity
+  have hY_nonneg : 0 ≤ Cφ * Real.exp (2 * π * t) := (norm_nonneg _).trans hφ2
+  have hCφ_nonneg : 0 ≤ Cφ :=
+    le_of_mul_le_mul_right (by simpa using hY_nonneg) (Real.exp_pos _)
+  have ht_le : t ≤ t ^ 2 := by nlinarith
+  have ht2 : (1 : ℝ) ≤ t ^ 2 := one_le_pow₀ ht1
+  have ht2_nonneg : 0 ≤ t ^ 2 := by positivity
+  -- Triangle inequality.
+  have hS : φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) =
+      φ₀ wH * ((wH : ℂ) ^ (2 : ℕ)) -
+        (12 * Complex.I) / π * (wH : ℂ) * φ₂' wH -
+          (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH := by
+    simpa using φ₀_S_transform_mul_sq (w := wH)
+  have htri : ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
+      ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ +
+        ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ +
+          ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ := by
+    rw [hS]
+    exact (norm_sub_le _ _).trans
+      (add_le_add_right (norm_sub_le _ _) _)
+  -- Bound each of the three summands by `Kᵢ * (t^2 * exp(2πt))`.
+  have hA : ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
+      (4 * C₀) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
+    calc ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖
+        ≤ C₀ * (2 * t) ^ 2 := by
+          exact (norm_mul_le _ _).trans (mul_le_mul hφ0 hw2 (norm_nonneg _) hC₀_pos.le)
+      _ = (4 * C₀) * t ^ 2 := by ring
+      _ ≤ (4 * C₀) * (t ^ 2 * Real.exp (2 * π * t)) := by
+          gcongr; positivity
+  have hB : ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ ≤
+      (2 * c12π * Cφ) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
+    calc ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖
+        ≤ (c12π * ‖(wH : ℂ)‖) * ‖φ₂' wH‖ := norm_mul₃_le
+      _ ≤ (c12π * (2 * t)) * (Cφ * Real.exp (2 * π * t)) :=
+          mul_le_mul (mul_le_mul_of_nonneg_left hw_norm (norm_nonneg _))
+            hφ2 (norm_nonneg _) (by positivity)
+      _ ≤ (2 * c12π * Cφ) * (t ^ 2 * Real.exp (2 * π * t)) := by
+          have h1 : c12π * (2 * t) * (Cφ * Real.exp (2 * π * t)) =
+              (2 * c12π * Cφ) * (t * Real.exp (2 * π * t)) := by ring
+          rw [h1]
+          gcongr
+  have hC : ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖ ≤
+      c36π2 * Cφ * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
+    calc ‖(36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH‖
+        ≤ c36π2 * ‖φ₄' wH‖ := norm_mul_le _ _
+      _ ≤ c36π2 * (Cφ * Real.exp (2 * π * t)) :=
+          mul_le_mul_of_nonneg_left hφ4 (norm_nonneg _)
+      _ = c36π2 * Cφ * (1 * Real.exp (2 * π * t)) := by ring
+      _ ≤ c36π2 * Cφ * (t ^ 2 * Real.exp (2 * π * t)) := by
+          gcongr
+          exact mul_nonneg (norm_nonneg _) hCφ_nonneg
+  linarith [htri, hA, hB, hC]
 
 /-- Pointwise bound for `‖Φ₂' u (tI)‖` on the tail `t ≥ 1`. -/
 lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ}
