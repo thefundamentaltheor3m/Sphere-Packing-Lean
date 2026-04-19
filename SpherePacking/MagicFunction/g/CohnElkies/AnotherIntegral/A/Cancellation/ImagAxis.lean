@@ -131,6 +131,43 @@ lemma cuspFunction_qParam_eq {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL 
   simpa using
     SlashInvariantFormClass.eq_cuspFunction (h := (1 : ℝ)) (f := f) (τ := z) hΓ one_ne_zero
 
+/-- Helper: bound `‖cexp(2π i m z)‖ ≤ q^k * q1^(m-k)` for `z : ℍ`, `q = exp(-2πt)`, `q1 = exp(-2π)`,
+`m ≥ k`, given `qParam 1 z = q` and `q ≤ q1`. -/
+private lemma norm_cexp_mul_le {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le : q ≤ q1)
+    (hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ)) (m k : ℕ) (hmk : k ≤ m) :
+    ‖cexp (2 * π * Complex.I * (m : ℂ) * z)‖ ≤ q ^ k * q1 ^ (m - k) := by
+  have hbase : cexp (2 * π * Complex.I * z) = (q : ℂ) := by
+    simpa [Periodic.qParam] using hqC
+  have hpow : cexp (2 * π * Complex.I * (m : ℂ) * z) = (cexp (2 * π * Complex.I * z)) ^ m := by
+    simpa [mul_assoc, mul_left_comm, mul_comm] using
+      (Complex.exp_nat_mul (2 * π * Complex.I * z) m)
+  have hnorm : ‖cexp (2 * π * Complex.I * (m : ℂ) * z)‖ = q ^ m := by
+    rw [hpow, hbase]
+    simp [abs_of_nonneg hq_nonneg]
+  rw [hnorm]
+  have hsplit : m = k + (m - k) := (Nat.add_sub_cancel' hmk).symm
+  rw [hsplit, pow_add]
+  exact mul_le_mul_of_nonneg_left
+    (pow_le_pow_left₀ hq_nonneg hq_le _) (pow_nonneg hq_nonneg _)
+
+/-- Helper: bound `‖(m : ℂ) * (σ 3 m : ℂ)‖ ≤ (M : ℝ) ^ 5` for `m ≤ M`. -/
+private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
+    ‖((m : ℂ) * (σ 3 m : ℂ))‖ ≤ ((M : ℝ) ^ 5 : ℝ) := by
+  have hs : (σ 3 m : ℕ) ≤ m ^ 4 :=
+    SpherePacking.ForMathlib.sigma_three_le_pow_four m
+  have hcoeff_nat : m * (σ 3 m) ≤ m ^ 5 := by
+    have := Nat.mul_le_mul_left m hs
+    simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using this
+  have hnorm : ‖((m : ℂ) * (σ 3 m : ℂ))‖ = (m * (σ 3 m) : ℝ) := by
+    have : ‖(m : ℂ)‖ = (m : ℝ) := by simpa using Complex.norm_natCast m
+    simp_all
+  have hcast : (m * (σ 3 m) : ℝ) ≤ (m ^ 5 : ℝ) := by exact_mod_cast hcoeff_nat
+  have hmono : (m ^ 5 : ℝ) ≤ (M ^ 5 : ℝ) := by exact_mod_cast Nat.pow_le_pow_left hM 5
+  calc ‖((m : ℂ) * (σ 3 m : ℂ))‖ = (m * (σ 3 m) : ℝ) := hnorm
+    _ ≤ (m ^ 5 : ℝ) := hcast
+    _ ≤ (M ^ 5 : ℝ) := hmono
+    _ = ((M : ℝ) ^ 5 : ℝ) := by push_cast; rfl
+
 lemma qExpansionFormalMultilinearSeries_partialSum_one
     {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} (f : F)
     [ModularFormClass F Γ k] [Γ.HasDetPlusMinusOne] [DiscreteTopology Γ]

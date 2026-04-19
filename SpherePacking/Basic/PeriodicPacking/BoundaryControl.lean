@@ -324,18 +324,17 @@ lemma periodize_cube_density_eq (hd : 0 < d) (S : SpherePacking d) (hSsep : S.se
   have hD_bounded : IsBounded D := by simpa [D, Submodule.vadd_def, vadd_eq_add] using
     (PeriodicConstant.isBounded_coordCube L hL).vadd (g : EuclideanSpace ℝ (Fin d))
   have hD_unique := PeriodicConstantApprox.coordCube_unique_covers_vadd L hL g
-  have hF_sub : Fset ⊆ D := fun x hx => by
-    rcases hF_inner x (by simpa [Fset] using hx) with ⟨a, ha, rfl⟩
-    exact ⟨a, PeriodicConstant.coordCubeInner_subset_coordCube (by norm_num) ha, rfl⟩
   have hcenters_inter : P.centers ∩ D = Fset := by
+    have hF_sub : Fset ⊆ D := fun x hx => by
+      rcases hF_inner x (by simpa [Fset] using hx) with ⟨a, ha, rfl⟩
+      exact ⟨a, PeriodicConstant.coordCubeInner_subset_coordCube (by norm_num) ha, rfl⟩
     simpa [P, periodize_to_periodicSpherePacking, Fset] using
       periodizedCenters_inter_eq_of_subset (d := d) (Λ := cubeLattice d L hL) (D := D)
         (F := Fset) hF_sub hD_unique
   have hnumReps : P.numReps = F.card := by
-    have h' : (P.numReps : ENat) = (F.card : ENat) := by
+    exact_mod_cast show (P.numReps : ENat) = (F.card : ENat) by
       simpa [hcenters_inter, Fset, Set.encard_coe_eq_coe_finsetCard] using
         (P.encard_centers_inter_isFundamentalDomain (d := d) (D := D) hD_bounded hD_unique hd).symm
-    exact_mod_cast h'
   simpa [hnumReps, hPsep] using P.density_eq' (d := d) hd
 
 end PeriodizeCubeDensity
@@ -443,9 +442,9 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hcubeShell : cubeShellErr L = shellVol / volCube := by
     simp [cubeShellErr, shellVol, volCube]
   have hvolCube_ne0 : volCube ≠ 0 := by
-    simpa [volCube, show volCube = (ENNReal.ofReal L) ^ d by
+    rw [show volCube = (ENNReal.ofReal L) ^ d by
       simpa [volCube] using PeriodicConstant.volume_coordCube L]
-      using pow_ne_zero d (ENNReal.ofReal_pos.mpr hLpos).ne'
+    exact pow_ne_zero d (ENNReal.ofReal_pos.mpr hLpos).ne'
   have hvolCube_ne_top : volCube ≠ ∞ :=
     (PeriodicConstant.isBounded_coordCube L hLpos).measure_lt_top.ne
   -- Convert `hcR` to a strict inequality involving `encard` of centers in `ball 0 (R+r)`.
@@ -473,11 +472,11 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   let t : Finset (cubeLattice d L hLpos) := htSet.toFinset
   let f : EuclideanSpace ℝ (Fin d) → cubeLattice d L hLpos := fun x =>
     -PeriodicConstantApprox.coordCubeCover L hLpos x
-  have hf_maps : (s : Set (EuclideanSpace ℝ (Fin d))).MapsTo f t := fun x hx =>
-    htSet.mem_toFinset.2
-      (PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC (hX.mem_toFinset.1 hx).2)
-  have ht_nonempty : t.Nonempty :=
-    ⟨0, htSet.mem_toFinset.2 (by simp [Metric.mem_ball]; positivity)⟩
+  have hf_maps : (s : Set (EuclideanSpace ℝ (Fin d))).MapsTo f t := fun _ hx =>
+    htSet.mem_toFinset.2 <|
+      PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC (hX.mem_toFinset.1 hx).2
+  have ht_nonempty : t.Nonempty := ⟨0, htSet.mem_toFinset.2 (by
+    simp [Metric.mem_ball]; positivity)⟩
   let fiber : cubeLattice d L hLpos → ℕ := fun g =>
     (s.filter fun x : EuclideanSpace ℝ (Fin d) => f x = g).card
   rcases Finset.exists_max_image t fiber ht_nonempty with ⟨g0, hg0t, hg0max⟩
@@ -518,16 +517,14 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       b + cubeShellErr L < (sg.card : ℝ≥0∞) * volBall / volCube := by
     set V := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))
     -- encard / V ≤ sg.card / volCube, derived from hs_mul
-    have hdiv₁ : ((S.centers ∩ ball 0 (R + r)).encard : ℝ≥0∞) / V ≤ (sg.card : ℝ≥0∞) / volCube := by
+    have hdiv₁ : ((S.centers ∩ ball 0 (R + r)).encard : ℝ≥0∞) / V ≤
+        (sg.card : ℝ≥0∞) / volCube := by
       have h := ENNReal.div_le_div_right (ENNReal.div_le_of_le_mul hs_mul) volCube
       rwa [div_mul_div_cancel_right hvolCube_ne0 hvolCube_ne_top] at h
-    -- Multiply both sides by volBall, rewrite a/b * c = a*c/b
-    have hb3 : ((S.centers ∩ ball 0 (R + r)).encard : ℝ≥0∞) * volBall / V ≤
-        (sg.card : ℝ≥0∞) * volBall / volCube := by
-      have := mul_le_mul_left hdiv₁ volBall
-      simp only [div_eq_mul_inv] at this ⊢
-      convert this using 1 <;> ring
-    exact (hRratio.trans hc_ratio).trans_le hb3
+    refine (hRratio.trans hc_ratio).trans_le ?_
+    have := mul_le_mul_left hdiv₁ volBall
+    simp only [div_eq_mul_inv] at this ⊢
+    convert this using 1 <;> ring
   -- Periodize the interior points `F`.
   let innerSet : Set (EuclideanSpace ℝ (Fin d)) := g0 +ᵥ coordCubeInner d L r
   letI : DecidablePred (fun x : EuclideanSpace ℝ (Fin d) => x ∈ innerSet) := Classical.decPred _

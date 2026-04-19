@@ -356,11 +356,9 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
         ((∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((t : ℂ) * Complex.I)) -
             2 * (∫ t in Set.Ioi (1 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) +
               ∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((t : ℂ) * Complex.I)) := by
-  -- Rewrite `I₆'` using the parametrization `z₆' t = I * t`, and drop the endpoint `t = 1`.
-  have hI6 :
-      MagicFunction.a.RealIntegrals.I₆' u =
-        (2 : ℂ) *
-          ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I) := by
+  have hI6 : MagicFunction.a.RealIntegrals.I₆' u =
+      (2 : ℂ) *
+        ∫ t in Set.Ioi (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I) := by
     dsimp [MagicFunction.a.RealIntegrals.I₆', MagicFunction.a.RealIntegrands.Φ₆]
     rw [show (∫ t in Set.Ici (1 : ℝ),
               (Complex.I : ℂ) * Φ₆' u (MagicFunction.Parametrisations.z₆' t)) =
@@ -370,7 +368,6 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
           simpa [mul_assoc, mul_comm, mul_left_comm] using
             MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t) ht
         simp [hz, mul_comm], MeasureTheory.integral_Ici_eq_integral_Ioi]
-  -- Use the finite-difference identity `2 * Φ₆' = Φ₂' - 2 Φ₅' + Φ₄'` on the imaginary axis.
   let μ : Measure ℝ := volume.restrict (Set.Ioi (1 : ℝ))
   let f2 : ℝ → ℂ := fun t => Φ₂' u ((t : ℂ) * Complex.I)
   let f5 : ℝ → ℂ := fun t => Φ₅' u ((t : ℂ) * Complex.I)
@@ -381,26 +378,25 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
   have hfdI : ∀ t ∈ Set.Ioi (1 : ℝ),
       (2 : ℂ) * ((Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I)) =
         (Complex.I : ℂ) * (f2 t - 2 * f5 t + f4 t) := fun t ht => by
-    have hfd := Φ_finite_difference_imag_axis (u := u) (t := t)
-      (lt_trans (by norm_num : (0:ℝ) < 1) ht)
-    have := congrArg (fun z : ℂ => (Complex.I : ℂ) * z) hfd
+    have := congrArg (fun z : ℂ => (Complex.I : ℂ) * z)
+      (Φ_finite_difference_imag_axis (u := u) (t := t)
+        (lt_trans (by norm_num : (0:ℝ) < 1) ht))
     simpa [f2, f5, f4, mul_add, add_mul, mul_assoc, mul_left_comm, mul_comm,
       sub_eq_add_neg] using this.symm
-  have hlin : (∫ t, (f2 t - 2 * f5 t + f4 t) ∂μ) =
-      (∫ t, f2 t ∂μ) - 2 * (∫ t, f5 t ∂μ) + ∫ t, f4 t ∂μ := by
-    have h1 := MeasureTheory.integral_add (μ := μ) (hf2.sub (hf5.const_mul 2)) hf4
-    have h2 := MeasureTheory.integral_sub (μ := μ) hf2 (hf5.const_mul 2)
-    have h3 := MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ)) (f := f5)
-    calc (∫ t, (f2 t - 2 * f5 t + f4 t) ∂μ)
-        = (∫ t, f2 t - 2 * f5 t ∂μ) + ∫ t, f4 t ∂μ := by simpa using h1
-      _ = ((∫ t, f2 t ∂μ) - ∫ t, 2 * f5 t ∂μ) + ∫ t, f4 t ∂μ := by rw [h2]
-      _ = (∫ t, f2 t ∂μ) - 2 * (∫ t, f5 t ∂μ) + ∫ t, f4 t ∂μ := by rw [h3]
   rw [hI6,
     (MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ))
       (f := fun t : ℝ => (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I))).symm,
     MeasureTheory.setIntegral_congr_fun measurableSet_Ioi hfdI,
     MeasureTheory.integral_const_mul (μ := μ) (r := (Complex.I : ℂ))
-      (f := fun t => f2 t - 2 * f5 t + f4 t), hlin]
+      (f := fun t => f2 t - 2 * f5 t + f4 t)]
+  have h1 := MeasureTheory.integral_add (μ := μ) (hf2.sub (hf5.const_mul 2)) hf4
+  have h2 := MeasureTheory.integral_sub (μ := μ) hf2 (hf5.const_mul 2)
+  have h3 := MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ)) (f := f5)
+  calc (Complex.I : ℂ) * (∫ t, (f2 t - 2 * f5 t + f4 t) ∂μ)
+      = (Complex.I : ℂ) * ((∫ t, f2 t - 2 * f5 t ∂μ) + ∫ t, f4 t ∂μ) := by
+        simpa using congrArg ((Complex.I : ℂ) * ·) h1
+    _ = (Complex.I : ℂ) * (((∫ t, f2 t ∂μ) - ∫ t, 2 * f5 t ∂μ) + ∫ t, f4 t ∂μ) := by rw [h2]
+    _ = (Complex.I : ℂ) * ((∫ t, f2 t ∂μ) - 2 * (∫ t, f5 t ∂μ) + ∫ t, f4 t ∂μ) := by rw [h3]
 
 /-- Generic helper: if `G t = E * Φ₅' u (t*I)` for `t > 1`, then the ray integral of `G` over
 `Ioi 1` equals `E` times the central ray integral. -/
