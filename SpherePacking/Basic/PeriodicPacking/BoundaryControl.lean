@@ -249,9 +249,9 @@ lemma volume_cubeShell_eq (L : ℝ) :
     volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
         coordCubeInner d L 1) =
       volume (coordCubeInner d (L + 1) 0) - volume (coordCubeInner d L 1) := by
+  have hmp : MeasurePreserving (fun x : EuclideanSpace ℝ (Fin d) => x.ofLp) := by
+    simpa using PiLp.volume_preserving_ofLp (ι := Fin d)
   have hmeas_inner : MeasurableSet (coordCubeInner d L 1) := by
-    have hmp : MeasurePreserving (fun x : EuclideanSpace ℝ (Fin d) => x.ofLp) := by
-      simpa using PiLp.volume_preserving_ofLp (ι := Fin d)
     simpa [PeriodicConstant.coordCubeInner_eq_preimage_ofLp] using
       (MeasurableSet.pi Set.countable_univ fun _ _ => measurableSet_Icc).preimage hmp.measurable
   simpa [measure_vadd, constVec] using
@@ -263,8 +263,7 @@ lemma volume_cubeShell_eq_pow (L : ℝ) :
     volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
         coordCubeInner d L 1) =
       (ENNReal.ofReal (L + 1)) ^ d - (ENNReal.ofReal (L - 2)) ^ d := by
-  rw [volume_cubeShell_eq]
-  simp [PeriodicConstant.volume_coordCubeInner]
+  rw [volume_cubeShell_eq]; simp [PeriodicConstant.volume_coordCubeInner]
 
 section CubeLatticeCovolume
 
@@ -422,17 +421,15 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   let ratio : ℝ → ℝ≥0∞ := fun R : ℝ =>
     volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) /
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))
-  have hratio_tend : Tendsto ratio atTop (𝓝 (1 : ℝ≥0∞)) := by
-    simpa [ratio, Cshift, add_zero] using
-      volume_ball_ratio_tendsto_nhds_one'' (C := (0 : ℝ)) (C' := Cshift) hd
   have hmul_tend : Tendsto (fun R : ℝ => c * ratio R) atTop (𝓝 c) := by
-    simpa [mul_one] using ENNReal.Tendsto.const_mul hratio_tend (a := c)
-  have hb_add : b + cubeShellErr L < c := lt_tsub_iff_left.mp hLerr
-  have hratio_event :
-      ∀ᶠ R in (atTop : Filter ℝ), b + cubeShellErr L < c * ratio R :=
-    hmul_tend.eventually (Ioi_mem_nhds hb_add)
+    simpa [mul_one] using ENNReal.Tendsto.const_mul (a := c)
+      (by simpa [ratio, Cshift, add_zero] using
+        volume_ball_ratio_tendsto_nhds_one'' (C := (0 : ℝ)) (C' := Cshift) hd :
+        Tendsto ratio atTop (𝓝 (1 : ℝ≥0∞)))
   rcases ((frequently_lt_finiteDensity_of_lt_density S hcS).and_eventually
-      ((eventually_gt_atTop (0 : ℝ)).and hratio_event)).exists with ⟨R, hcR, hRpos, hRratio⟩
+      ((eventually_gt_atTop (0 : ℝ)).and
+        (hmul_tend.eventually (Ioi_mem_nhds (lt_tsub_iff_left.mp hLerr :
+          b + cubeShellErr L < c))))).exists with ⟨R, hcR, hRpos, hRratio⟩
   -- Abbreviations for volumes.
   let volBall : ℝ≥0∞ := volume (ball (0 : EuclideanSpace ℝ (Fin d)) r)
   let volCube : ℝ≥0∞ := volume (coordCube d L)
