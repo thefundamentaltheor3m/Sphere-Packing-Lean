@@ -26,17 +26,13 @@ noncomputable section
 private lemma t_mul_exp_le {c t : ℝ} (hc : 0 < c) :
     t * Real.exp (-c * t) ≤ (2 / c) * Real.exp (-(c / 2) * t) := by
   have hx : (c / 2) * t ≤ Real.exp ((c / 2) * t) := by
-    have h := Real.add_one_le_exp ((c / 2) * t)
-    linarith
-  have hc2 : 0 ≤ (2 / c) := by
-    have : 0 < (2 / c) := div_pos (by norm_num) hc
-    exact this.le
+    linarith [Real.add_one_le_exp ((c / 2) * t)]
+  have hc2 : 0 ≤ (2 / c) := (div_pos (by norm_num) hc).le
   have ht_le : t ≤ (2 / c) * Real.exp ((c / 2) * t) := by
     have hmul := mul_le_mul_of_nonneg_left hx hc2
     have hsimp : (2 / c) * ((c / 2) * t) = t := by field_simp [hc.ne']
     simpa [mul_assoc, hsimp] using hmul
-  have hmul := mul_le_mul_of_nonneg_right ht_le (Real.exp_nonneg (-c * t))
-  refine hmul.trans_eq ?_
+  refine (mul_le_mul_of_nonneg_right ht_le (Real.exp_nonneg (-c * t))).trans_eq ?_
   calc
     ((2 / c) * Real.exp ((c / 2) * t)) * Real.exp (-c * t)
         = (2 / c) * (Real.exp ((c / 2) * t) * Real.exp (-c * t)) := by ring
@@ -72,23 +68,16 @@ public theorem analyticOnNhd_integral_base_exp
     let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))
     let F : ℂ → ℝ → ℂ := fun z t => base t * Complex.exp (-(π : ℂ) * z * (t : ℂ))
     let F' : ℂ → ℝ → ℂ := fun z t => (-(π : ℂ) * (t : ℂ)) * F z t
-    have hbase_meas : AEStronglyMeasurable base μ := by
-      exact hbase_cont.aestronglyMeasurable measurableSet_Ioi
-    have hF_meas : ∀ z : ℂ, AEStronglyMeasurable (F z) μ := by
-      intro z
-      have hexp : AEStronglyMeasurable
-          (fun t : ℝ => Complex.exp (-(π : ℂ) * z * (t : ℂ))) μ := by
-        have : Continuous fun t : ℝ => Complex.exp (-(π : ℂ) * z * (t : ℂ)) := by fun_prop
-        exact this.aestronglyMeasurable
-      exact hbase_meas.mul hexp
-    have hF_meas' :
-        ∀ᶠ z in nhds u, AEStronglyMeasurable (F z) μ :=
+    have hbase_meas : AEStronglyMeasurable base μ :=
+      hbase_cont.aestronglyMeasurable measurableSet_Ioi
+    have hF_meas : ∀ z : ℂ, AEStronglyMeasurable (F z) μ := fun z =>
+      hbase_meas.mul ((by fun_prop : Continuous fun t : ℝ =>
+        Complex.exp (-(π : ℂ) * z * (t : ℂ))).aestronglyMeasurable)
+    have hF_meas' : ∀ᶠ z in nhds u, AEStronglyMeasurable (F z) μ :=
       Filter.Eventually.of_forall hF_meas
-    have hF'_meas : AEStronglyMeasurable (F' u) μ := by
-      have hlin : AEStronglyMeasurable (fun t : ℝ => -(π : ℂ) * (t : ℂ)) μ := by
-        have : Continuous fun t : ℝ => (-(π : ℂ) * (t : ℂ)) := by fun_prop
-        exact this.aestronglyMeasurable
-      exact hlin.mul (hF_meas u)
+    have hF'_meas : AEStronglyMeasurable (F' u) μ :=
+      ((by fun_prop : Continuous fun t : ℝ =>
+        (-(π : ℂ) * (t : ℂ))).aestronglyMeasurable).mul (hF_meas u)
     -- Integrability at `u` via domination by the real `ε/2` integrand.
     have hε2 : 0 < ε / 2 := by positivity
     have hBase_ε2 :
@@ -140,37 +129,28 @@ public theorem analyticOnNhd_integral_base_exp
         ∀ᵐ t ∂μ, ∀ z ∈ Metric.ball u ε, ‖F' z t‖ ≤ bound t := by
       filter_upwards [hmem_Ioi] with t ht
       intro z hz
-      have ht0 : 0 ≤ t := le_of_lt ht
+      have ht0 : 0 ≤ t := ht.le
       have htpos : 0 < t := ht
       have hzre : ε ≤ z.re := by
         have hz' : ‖z - u‖ < ε := by simpa [Metric.mem_ball] using hz
-        have habs : |(z - u).re| ≤ ‖z - u‖ := abs_re_le_norm (z - u)
         have hlt : |z.re - u.re| < ε := by
           simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using
-            lt_of_le_of_lt habs hz'
+            lt_of_le_of_lt (abs_re_le_norm (z - u)) hz'
         have hl : -ε < z.re - u.re := (abs_lt.mp hlt).1
-        dsimp [ε] at hl ⊢
-        nlinarith
+        dsimp [ε] at hl ⊢; nlinarith
       have hExp :
           ‖Complex.exp (-(π : ℂ) * z * (t : ℂ))‖ ≤ Real.exp (-π * ε * t) := by
         have hre : (-(π : ℂ) * z * (t : ℂ)).re = -π * z.re * t := by
           simp [mul_assoc, Complex.mul_re, sub_eq_add_neg, add_comm]
         have hle : -π * z.re * t ≤ -π * ε * t := by
-          have hneg : (-π * t : ℝ) ≤ 0 := by
-            have hπ : 0 < (π : ℝ) := Real.pi_pos
-            nlinarith [hπ, ht0]
-          have hmul : (-π * t) * z.re ≤ (-π * t) * ε :=
+          have hneg : (-π * t : ℝ) ≤ 0 := by nlinarith [Real.pi_pos, ht0]
+          simpa [mul_assoc, mul_left_comm, mul_comm] using
             mul_le_mul_of_nonpos_left hzre hneg
-          simpa [mul_assoc, mul_left_comm, mul_comm] using hmul
-        simpa [Complex.norm_exp, hre] using (Real.exp_le_exp.mpr hle)
+        simpa [Complex.norm_exp, hre] using Real.exp_le_exp.mpr hle
       have hExpTrade :
           (π * t) * Real.exp (-π * ε * t) ≤ (2 / ε) * Real.exp (-π * (ε / 2) * t) := by
         have hc : 0 < (π * ε) := by positivity
-        have h0 :
-            t * Real.exp (-(π * ε) * t) ≤ (2 / (π * ε)) * Real.exp (-((π * ε) / 2) * t) :=
-          t_mul_exp_le hc
-        have hπ : 0 ≤ (π : ℝ) := Real.pi_pos.le
-        have h1 := mul_le_mul_of_nonneg_left h0 hπ
+        have h1 := mul_le_mul_of_nonneg_left (t_mul_exp_le (t := t) hc) Real.pi_pos.le
         have hεne : (ε : ℝ) ≠ 0 := ne_of_gt hε
         have hπne : (π : ℝ) ≠ 0 := Real.pi_ne_zero
         have h2 :
@@ -181,37 +161,28 @@ public theorem analyticOnNhd_integral_base_exp
             add_assoc, add_left_comm, add_comm] using h1
         simpa [mul_assoc, mul_left_comm, mul_comm] using h2
       have hbase_nonneg : 0 ≤ ‖base t‖ := norm_nonneg _
-      have hnorm_integ :
-          ‖F z t‖ ≤ ‖base t‖ * Real.exp (-π * ε * t) := by
-        have hmul := mul_le_mul_of_nonneg_left hExp hbase_nonneg
-        simpa [F, norm_mul, mul_assoc, mul_left_comm, mul_comm] using hmul
+      have hnorm_integ : ‖F z t‖ ≤ ‖base t‖ * Real.exp (-π * ε * t) := by
+        simpa [F, norm_mul, mul_assoc, mul_left_comm, mul_comm] using
+          mul_le_mul_of_nonneg_left hExp hbase_nonneg
       have hlin_norm : ‖(-(π : ℂ) * (t : ℂ))‖ = π * t := by
-        have htabs : |t| = t := abs_of_pos htpos
-        simp [htabs, Real.pi_pos.le]
-      have hmul_trade :
-          (π * t) * (‖base t‖ * Real.exp (-π * ε * t)) ≤
-            (2 / ε) * (‖base t‖ * Real.exp (-π * (ε / 2) * t)) := by
-        have hmul := mul_le_mul_of_nonneg_left hExpTrade hbase_nonneg
-        simpa [mul_assoc, mul_left_comm, mul_comm] using hmul
+        simp [abs_of_pos htpos, Real.pi_pos.le]
       have hnorm_base_exp :
           ‖base t * (Real.exp (-π * (ε / 2) * t) : ℂ)‖ =
             ‖base t‖ * Real.exp (-π * (ε / 2) * t) := by
-        have hr : 0 ≤ Real.exp (-π * (ε / 2) * t) := (Real.exp_nonneg _)
-        rw [norm_mul, Complex.norm_of_nonneg hr]
+        rw [norm_mul, Complex.norm_of_nonneg (Real.exp_nonneg _)]
       calc
         ‖F' z t‖ = ‖(-(π : ℂ) * (t : ℂ))‖ * ‖F z t‖ := by simp [F']
         _ ≤ (π * t) * ‖F z t‖ := by rw [hlin_norm]
-        _ ≤ (π * t) * (‖base t‖ * Real.exp (-π * ε * t)) := by
-          have hπt : 0 ≤ (π * t : ℝ) := by
-            have hπ : 0 < (π : ℝ) := Real.pi_pos
-            nlinarith [hπ, ht0]
-          exact mul_le_mul_of_nonneg_left hnorm_integ hπt
-        _ ≤ (2 / ε) * (‖base t‖ * Real.exp (-π * (ε / 2) * t)) := hmul_trade
+        _ ≤ (π * t) * (‖base t‖ * Real.exp (-π * ε * t)) :=
+          mul_le_mul_of_nonneg_left hnorm_integ
+            (by nlinarith [Real.pi_pos, ht0])
+        _ ≤ (2 / ε) * (‖base t‖ * Real.exp (-π * (ε / 2) * t)) := by
+          simpa [mul_assoc, mul_left_comm, mul_comm] using
+            mul_le_mul_of_nonneg_left hExpTrade hbase_nonneg
         _ = bound t := by rw [← hnorm_base_exp]
     have hdiff :
         ∀ᵐ t ∂μ, ∀ z ∈ Metric.ball u ε, HasDerivAt (fun w : ℂ => F w t) (F' z t) z := by
-      refine Filter.Eventually.of_forall (fun t => ?_)
-      intro z _hz
+      refine Filter.Eventually.of_forall (fun t z _hz => ?_)
       have hlin :
           HasDerivAt (fun w : ℂ => (-(π : ℂ) * w * (t : ℂ))) (-(π : ℂ) * (t : ℂ)) z := by
         simpa [mul_assoc, mul_left_comm, mul_comm] using
@@ -220,12 +191,7 @@ public theorem analyticOnNhd_integral_base_exp
           HasDerivAt (fun w : ℂ => Complex.exp (-(π : ℂ) * w * (t : ℂ)))
             (Complex.exp (-(π : ℂ) * z * (t : ℂ)) * (-(π : ℂ) * (t : ℂ))) z := by
         simpa using hlin.cexp
-      have hbaseConst :
-          HasDerivAt (fun w : ℂ => base t * Complex.exp (-(π : ℂ) * w * (t : ℂ)))
-            (base t *
-                (Complex.exp (-(π : ℂ) * z * (t : ℂ)) * (-(π : ℂ) * (t : ℂ)))) z := by
-        simpa [mul_assoc, mul_left_comm, mul_comm] using (hexp.const_mul (base t))
-      simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using hbaseConst
+      simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using hexp.const_mul (base t)
     have hDeriv :
         HasDerivAt (fun z : ℂ => ∫ t, F z t ∂μ) (∫ t, F' u t ∂μ) u :=
       (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ)
