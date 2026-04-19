@@ -108,57 +108,24 @@ lemma theta2_norm_ge_two_exp_quarter (t : ℝ) (ht : 0 < t) :
 
 lemma pow_four_two_mul_exp (t : ℝ) :
     (2 * Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = (16 : ℝ) * Real.exp (-Real.pi * t) := by
-  have hExp : (Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = Real.exp (-Real.pi * t) := by
-    calc
-      (Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = Real.exp (4 * (-Real.pi * t / 4)) := by
-        simpa using (Real.exp_nat_mul (-Real.pi * t / 4) 4).symm
-      _ = Real.exp (-Real.pi * t) := by
-        congr 1
-        ring
-  have h2 : (2 : ℝ) ^ (4 : ℕ) = 16 := by norm_num
-  calc
-    (2 * Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) =
-        (2 : ℝ) ^ (4 : ℕ) * (Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) := by
-          simpa using (mul_pow (2 : ℝ) (Real.exp (-Real.pi * t / 4)) 4)
-    _ = (16 : ℝ) * Real.exp (-Real.pi * t) := by
-          rw [h2, hExp]
+  rw [mul_pow, ← Real.exp_nat_mul]
+  ring_nf
 
 lemma H2_norm_pow_two_ge (t : ℝ) (ht0 : 0 < t) :
     (256 : ℝ) * Real.exp (-(2 : ℝ) * Real.pi * t) ≤ ‖H₂.resToImagAxis t‖ ^ (2 : ℕ) := by
   have hTheta2_ge : (2 : ℝ) * Real.exp (-Real.pi * t / 4) ≤ ‖Θ₂.resToImagAxis t‖ :=
     theta2_norm_ge_two_exp_quarter t ht0
-  have hΘpow :
-      (2 * Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) ≤ ‖Θ₂.resToImagAxis t‖ ^ (4 : ℕ) :=
-    pow_le_pow_left₀ (by positivity : 0 ≤ (2 * Real.exp (-Real.pi * t / 4))) hTheta2_ge 4
   have hx_ge : (16 : ℝ) * Real.exp (-Real.pi * t) ≤ ‖H₂.resToImagAxis t‖ := by
     have hH2norm : ‖H₂.resToImagAxis t‖ = ‖Θ₂.resToImagAxis t‖ ^ (4 : ℕ) := by
       simp [H₂, Function.resToImagAxis, ResToImagAxis, ht0, norm_pow]
-    have hΘ : (16 : ℝ) * Real.exp (-Real.pi * t) ≤ ‖Θ₂.resToImagAxis t‖ ^ (4 : ℕ) := by
-      rw [← pow_four_two_mul_exp t]
-      exact hΘpow
-    rw [hH2norm]
-    exact hΘ
-  -- Square the bound and simplify the left-hand side.
-  have hpow :
-      (16 * Real.exp (-Real.pi * t)) ^ (2 : ℕ) ≤ ‖H₂.resToImagAxis t‖ ^ (2 : ℕ) :=
-    pow_le_pow_left₀ (by positivity : 0 ≤ (16 * Real.exp (-Real.pi * t))) hx_ge 2
+    rw [hH2norm, ← pow_four_two_mul_exp t]
+    exact pow_le_pow_left₀ (by positivity) hTheta2_ge 4
+  have hpow : (16 * Real.exp (-Real.pi * t)) ^ (2 : ℕ) ≤ ‖H₂.resToImagAxis t‖ ^ (2 : ℕ) :=
+    pow_le_pow_left₀ (by positivity) hx_ge 2
   have hleft :
       (16 * Real.exp (-Real.pi * t)) ^ (2 : ℕ) = (256 : ℝ) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-    have h16 : (16 : ℝ) ^ (2 : ℕ) = 256 := by norm_num
-    have hexp :
-        (Real.exp (-Real.pi * t)) ^ (2 : ℕ) = Real.exp (-(2 : ℝ) * Real.pi * t) := by
-      have h := (Real.exp_nat_mul (-Real.pi * t) 2).symm
-      refine h.trans ?_
-      congr 1
-      ring_nf
-    calc
-      (16 * Real.exp (-Real.pi * t)) ^ (2 : ℕ)
-          = (16 : ℝ) ^ (2 : ℕ) * (Real.exp (-Real.pi * t)) ^ (2 : ℕ) := by simp [mul_pow]
-      _ = (256 : ℝ) * Real.exp (-(2 : ℝ) * Real.pi * t) := by
-            rw [h16, hexp]
-  -- Conclude.
-  rw [← hleft]
-  exact hpow
+    rw [mul_pow, ← Real.exp_nat_mul]; ring_nf
+  linarith [hpow, hleft]
 
 lemma bound_w_inv_sub_one_sub (t u C0 : ℝ) (w : ℂ)
     (hw_norm_ge : (1 : ℝ) ≤ ‖w‖)
