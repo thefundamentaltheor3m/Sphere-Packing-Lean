@@ -253,17 +253,14 @@ lemma volume_cubeShell_eq (L : ℝ) :
     volume (((shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
         coordCubeInner d L 1) =
       volume (coordCubeInner d (L + 1) 0) - volume (coordCubeInner d L 1) := by
-  have hsub :
-      coordCubeInner d L 1 ⊆
-        (shellVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0 :=
-    coordCubeInner_one_subset_shell L
   have hmeas_inner : MeasurableSet (coordCubeInner d L 1) := by
     have hmp : MeasurePreserving (fun x : EuclideanSpace ℝ (Fin d) => x.ofLp) := by
       simpa using PiLp.volume_preserving_ofLp (ι := Fin d)
     simpa [PeriodicConstant.coordCubeInner_eq_preimage_ofLp] using
       (MeasurableSet.pi Set.countable_univ fun _ _ => measurableSet_Icc).preimage hmp.measurable
   simpa [measure_vadd, shellVec] using
-    measure_diff (μ := volume) hsub hmeas_inner.nullMeasurableSet
+    measure_diff (μ := volume) (coordCubeInner_one_subset_shell L)
+      hmeas_inner.nullMeasurableSet
       (by simp [PeriodicConstant.volume_coordCubeInner])
 
 lemma volume_cubeShell_eq_pow (L : ℝ) :
@@ -455,9 +452,9 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift))
   have hratio_tend : Tendsto ratio atTop (𝓝 (1 : ℝ≥0∞)) := by
     simpa [ratio, Cshift, add_zero] using
-      (volume_ball_ratio_tendsto_nhds_one'' (C := (0 : ℝ)) (C' := Cshift) hd)
+      volume_ball_ratio_tendsto_nhds_one'' (C := (0 : ℝ)) (C' := Cshift) hd
   have hmul_tend : Tendsto (fun R : ℝ => c * ratio R) atTop (𝓝 c) := by
-    simpa [mul_one] using (ENNReal.Tendsto.const_mul hratio_tend (a := c))
+    simpa [mul_one] using ENNReal.Tendsto.const_mul hratio_tend (a := c)
   have hb_add : b + cubeShellErr L < c := lt_tsub_iff_left.mp hLerr
   have hratio_event :
       ∀ᶠ R in (atTop : Filter ℝ), b + cubeShellErr L < c * ratio R :=
@@ -473,9 +470,9 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hcubeShell : cubeShellErr L = shellVol / volCube := by
     simp [cubeShellErr, shellVol, volCube]
   have hvolCube_ne0 : volCube ≠ 0 := by
-    have : volCube = (ENNReal.ofReal L) ^ d := by
-      simpa [volCube] using PeriodicConstant.volume_coordCube L
-    simpa [this] using pow_ne_zero d (ENNReal.ofReal_pos.mpr hLpos).ne'
+    simpa [volCube, show volCube = (ENNReal.ofReal L) ^ d by
+      simpa [volCube] using PeriodicConstant.volume_coordCube L]
+      using pow_ne_zero d (ENNReal.ofReal_pos.mpr hLpos).ne'
   have hvolCube_ne_top : volCube ≠ ∞ :=
     (PeriodicConstant.isBounded_coordCube L hLpos).measure_lt_top.ne
   -- Convert `hcR` to a strict inequality involving `encard` of centers in `ball 0 (R+r)`.
@@ -625,19 +622,14 @@ public theorem periodic_constant_eq_constant (hd : 0 < d) :
   rw [periodic_constant_eq_periodic_constant_normalized,
     SpherePacking.constant_eq_constant_normalized]
   -- From now on, we compare the two normalized suprema.
-  apply le_antisymm
-  · -- periodic ≤ general
-    refine iSup₂_le ?_
-    intro P hPsep
-    -- view a periodic packing as a (general) packing
-    refine
-      (le_iSup
-          (fun _ : (P.toSpherePacking).separation = 1 ↦ (P.toSpherePacking).density)
-          hPsep).trans ?_
-    exact le_iSup (fun S : SpherePacking d ↦ ⨆ (_ : S.separation = 1), S.density) P.toSpherePacking
-  · -- general ≤ periodic: approximate any packing by a periodic one
-    refine iSup₂_le fun S hSsep => le_of_forall_lt fun a ha => ?_
-    rcases exists_between ha with ⟨b, hab, hbS⟩
-    rcases SpherePacking.exists_periodicSpherePacking_sep_one_density_gt_of_lt_density
-      hd S hSsep hbS with ⟨P, hPsep, hbP⟩
-    exact hab.trans (hbP.trans_le (le_iSup_of_le P (le_iSup_of_le hPsep le_rfl)))
+  refine le_antisymm (iSup₂_le fun P hPsep =>
+    (le_iSup (fun _ : (P.toSpherePacking).separation = 1 ↦ (P.toSpherePacking).density)
+      hPsep).trans <|
+      le_iSup (fun S : SpherePacking d ↦ ⨆ (_ : S.separation = 1), S.density)
+        P.toSpherePacking) ?_
+  -- general ≤ periodic: approximate any packing by a periodic one
+  refine iSup₂_le fun S hSsep => le_of_forall_lt fun a ha => ?_
+  rcases exists_between ha with ⟨b, hab, hbS⟩
+  rcases SpherePacking.exists_periodicSpherePacking_sep_one_density_gt_of_lt_density
+    hd S hSsep hbS with ⟨P, hPsep, hbP⟩
+  exact hab.trans (hbP.trans_le (le_iSup_of_le P (le_iSup_of_le hPsep le_rfl)))
