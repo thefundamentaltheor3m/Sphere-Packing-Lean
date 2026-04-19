@@ -135,61 +135,27 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
       gcongr
       exact hxy.trans (mul_le_mul_of_nonneg_left hexp hCθ0)
     linarith [h.trans hbd]
+  -- Replace `y = 2a + 2b` into `y^4` and express `a^4`, `a^3·b` via exp-arithmetic.
   have ha4 : a ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) := by
-    have hpow : (Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = Real.exp (-Real.pi * t) := by
-      calc
-        (Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = Real.exp ((4 : ℕ) * (-Real.pi * t / 4)) := by
-          simpa using (Real.exp_nat_mul (-Real.pi * t / 4) 4).symm
-        _ = Real.exp (-Real.pi * t) := by
-          congr 1
-          ring
-    have hpowC :
-        (Real.exp (-Real.pi * t / 4) : ℂ) ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) := by
-      simpa [Complex.ofReal_pow] using congrArg (fun r : ℝ => (r : ℂ)) hpow
-    simpa [-Complex.ofReal_exp, a] using hpowC
+    have : (Real.exp (-Real.pi * t / 4) : ℂ) ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) := by
+      have hr : (Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = Real.exp (-Real.pi * t) := by
+        rw [← Real.exp_nat_mul]; congr 1; ring
+      simpa [Complex.ofReal_pow] using congrArg (fun r : ℝ => (r : ℂ)) hr
+    simpa [a] using this
   have ha3b : a ^ (3 : ℕ) * b = (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) := by
-    have ha3 : a ^ (3 : ℕ) = (Real.exp (-(3 / 4 : ℝ) * Real.pi * t) : ℂ) := by
-      have hpow :
-          (Real.exp (-Real.pi * t / 4)) ^ (3 : ℕ) = Real.exp ((3 : ℕ) * (-Real.pi * t / 4)) := by
-        simpa using (Real.exp_nat_mul (-Real.pi * t / 4) 3).symm
-      have : (Real.exp (-Real.pi * t / 4)) ^ (3 : ℕ) = Real.exp (-(3 / 4 : ℝ) * Real.pi * t) := by
-        calc
-          (Real.exp (-Real.pi * t / 4)) ^ (3 : ℕ) = Real.exp ((3 : ℕ) * (-Real.pi * t / 4)) := hpow
-          _ = Real.exp (-(3 / 4 : ℝ) * Real.pi * t) := by
-                congr 1
-                ring
-      have hpowC :
-          (Real.exp (-Real.pi * t / 4) : ℂ) ^ (3 : ℕ) =
-            (Real.exp (-(3 / 4 : ℝ) * Real.pi * t) : ℂ) := by
-        simpa [Complex.ofReal_pow] using congrArg (fun r : ℝ => (r : ℂ)) this
-      simpa [-Complex.ofReal_exp, a] using hpowC
-    have hmulR :
-        Real.exp (-(3 / 4 : ℝ) * Real.pi * t) * Real.exp (-(9 / 4 : ℝ) * Real.pi * t) =
-          Real.exp (-(3 : ℝ) * Real.pi * t) := by
-      calc
-        Real.exp (-(3 / 4 : ℝ) * Real.pi * t) * Real.exp (-(9 / 4 : ℝ) * Real.pi * t) =
-            Real.exp (-(3 / 4 : ℝ) * Real.pi * t + (-(9 / 4 : ℝ) * Real.pi * t)) := by
-              exact
-                (Real.exp_add (-(3 / 4 : ℝ) * Real.pi * t) (-(9 / 4 : ℝ) * Real.pi * t)).symm
-        _ = Real.exp (-(3 : ℝ) * Real.pi * t) := by
-              congr 1
-              ring
-    have hmulC :
-        (Real.exp (-(3 / 4 : ℝ) * Real.pi * t) : ℂ) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ) =
-          (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) := by
-      simpa using congrArg (fun r : ℝ => (r : ℂ)) hmulR
-    calc
-      a ^ (3 : ℕ) * b
-          = (Real.exp (-(3 / 4 : ℝ) * Real.pi * t) : ℂ) *
-              (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ) := by
-                simp [ha3, b]
-      _ = (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) := hmulC
+    have hr : (Real.exp (-Real.pi * t / 4)) ^ (3 : ℕ) *
+        Real.exp (-(9 / 4 : ℝ) * Real.pi * t) = Real.exp (-(3 : ℝ) * Real.pi * t) := by
+      rw [← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring
+    have hC : (Real.exp (-Real.pi * t / 4) : ℂ) ^ (3 : ℕ) *
+        (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ) =
+        (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) := by
+      simpa [Complex.ofReal_pow] using congrArg (fun r : ℝ => (r : ℂ)) hr
+    simpa [a, b] using hC
   have hy_main :
       y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) - (64 : ℂ) *
             (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)
         = (96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) + (64 : ℂ) * (a * b ^ (3 : ℕ)) +
             (16 : ℂ) * (b ^ (4 : ℕ)) := by
-    -- (All algebraic, coefficients match the binomial expansion.)
     grind only
   have hy_tail :
       ‖y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
@@ -199,99 +165,36 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
       simp [-Complex.ofReal_exp, a, abs_of_nonneg (Real.exp_pos _).le]
     have hb : ‖b‖ = Real.exp (-(9 / 4 : ℝ) * Real.pi * t) := by
       simp [-Complex.ofReal_exp, b, abs_of_nonneg (Real.exp_pos _).le]
-    have hsquare (u : ℝ) : (Real.exp u) ^ (2 : ℕ) = Real.exp ((2 : ℕ) * u) := by
-      simpa using (Real.exp_nat_mul u 2).symm
-    have hcube (u : ℝ) : (Real.exp u) ^ (3 : ℕ) = Real.exp ((3 : ℕ) * u) := by
-      simpa using (Real.exp_nat_mul u 3).symm
-    have hquart (u : ℝ) : (Real.exp u) ^ (4 : ℕ) = Real.exp ((4 : ℕ) * u) := by
-      simpa using (Real.exp_nat_mul u 4).symm
-    have hab :
-        ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖ = Real.exp (-(5 : ℝ) * Real.pi * t) := by
-      set u1 : ℝ := -Real.pi * t / 4
-      set u2 : ℝ := (-(9 / 4 : ℝ) * Real.pi * t)
-      calc
-        ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖ = ‖a‖ ^ 2 * ‖b‖ ^ 2 := by
-          simp [norm_pow]
-        _ = (Real.exp u1) ^ 2 * (Real.exp u2) ^ 2 := by simp [ha, hb, u1, u2]
-        _ = Real.exp ((2 : ℕ) * u1) * Real.exp ((2 : ℕ) * u2) := by simp [hsquare]
-        _ = Real.exp (((2 : ℕ) * u1) + ((2 : ℕ) * u2)) := by
-            simpa using (Real.exp_add ((2 : ℕ) * u1) ((2 : ℕ) * u2)).symm
-        _ = Real.exp (-(5 : ℝ) * Real.pi * t) := by
-            congr 1
-            simp [u1, u2]
-            ring_nf
-    have hab3 :
-        ‖a * b ^ (3 : ℕ)‖ = Real.exp (-(7 : ℝ) * Real.pi * t) := by
-      set u1 : ℝ := -Real.pi * t / 4
-      set u2 : ℝ := (-(9 / 4 : ℝ) * Real.pi * t)
-      calc
-        ‖a * b ^ (3 : ℕ)‖ = ‖a‖ * ‖b ^ (3 : ℕ)‖ := by simp
-        _ = ‖a‖ * (‖b‖ ^ 3) := by simp [norm_pow]
-        _ = (Real.exp u1) * (Real.exp u2) ^ 3 := by simp [ha, hb, u1, u2]
-        _ = Real.exp u1 * Real.exp ((3 : ℕ) * u2) := by simp [hcube]
-        _ = Real.exp (u1 + ((3 : ℕ) * u2)) := by
-            simpa using (Real.exp_add u1 ((3 : ℕ) * u2)).symm
-        _ = Real.exp (-(7 : ℝ) * Real.pi * t) := by
-            congr 1
-            simp [u1, u2]
-            ring_nf
+    -- General form: ‖a^i · b^j‖ = exp((i·(-π/4) + j·(-9π/4)) · t) up to sign.
+    have hab : ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖ = Real.exp (-(5 : ℝ) * Real.pi * t) := by
+      have hr : (Real.exp (-Real.pi * t / 4)) ^ 2 * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t)) ^ 2
+          = Real.exp (-(5 : ℝ) * Real.pi * t) := by
+        rw [← Real.exp_nat_mul, ← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring
+      simpa [norm_mul, norm_pow, ha, hb] using hr
+    have hab3 : ‖a * b ^ (3 : ℕ)‖ = Real.exp (-(7 : ℝ) * Real.pi * t) := by
+      have hr : Real.exp (-Real.pi * t / 4) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t)) ^ 3
+          = Real.exp (-(7 : ℝ) * Real.pi * t) := by
+        rw [← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring
+      simpa [norm_mul, norm_pow, ha, hb] using hr
     have hb4 : ‖b ^ (4 : ℕ)‖ = Real.exp (-(9 : ℝ) * Real.pi * t) := by
-      set u2 : ℝ := (-(9 / 4 : ℝ) * Real.pi * t)
-      calc
-        ‖b ^ (4 : ℕ)‖ = ‖b‖ ^ 4 := by simp [norm_pow]
-        _ = (Real.exp u2) ^ 4 := by simp [hb, u2]
-        _ = Real.exp ((4 : ℕ) * u2) := by simp [hquart]
-        _ = Real.exp (-(9 : ℝ) * Real.pi * t) := by
-              congr 1
-              simp [u2]
-              ring_nf
+      have hr : (Real.exp (-(9 / 4 : ℝ) * Real.pi * t)) ^ 4 = Real.exp (-(9 : ℝ) * Real.pi * t) := by
+        rw [← Real.exp_nat_mul]; congr 1; ring
+      simpa [norm_pow, hb] using hr
     have hab3_le : ‖a * b ^ (3 : ℕ)‖ ≤ Real.exp (-(5 : ℝ) * Real.pi * t) := by
-      calc
-        ‖a * b ^ (3 : ℕ)‖ = Real.exp (-(7 : ℝ) * Real.pi * t) := hab3
-        _ ≤ Real.exp (-(5 : ℝ) * Real.pi * t) := by
-              refine Real.exp_monotone ?_
-              nlinarith [Real.pi_pos, ht]
+      rw [hab3]; exact Real.exp_monotone (by nlinarith [Real.pi_pos, ht])
     have hb4_le : ‖b ^ (4 : ℕ)‖ ≤ Real.exp (-(5 : ℝ) * Real.pi * t) := by
-      calc
-        ‖b ^ (4 : ℕ)‖ = Real.exp (-(9 : ℝ) * Real.pi * t) := hb4
-        _ ≤ Real.exp (-(5 : ℝ) * Real.pi * t) := by
-              refine Real.exp_monotone ?_
-              nlinarith [Real.pi_pos, ht]
-    have h1 :
-        ‖(96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ))‖ ≤ 96 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-      calc
-        ‖(96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ))‖ = 96 * ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖ := by
-          simp
-        _ = 96 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-          simpa using congrArg (fun r : ℝ => 96 * r) hab
-        _ ≤ 96 * Real.exp (-(5 : ℝ) * Real.pi * t) := le_rfl
-    have h2 :
-        ‖(64 : ℂ) * (a * b ^ (3 : ℕ))‖ ≤ 64 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-      calc
-        ‖(64 : ℂ) * (a * b ^ (3 : ℕ))‖ = 64 * ‖a * b ^ (3 : ℕ)‖ := by
-          simp
-        _ ≤ 64 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-          gcongr
-    have h3 : ‖(16 : ℂ) * (b ^ (4 : ℕ))‖ ≤ 16 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-      calc
-        ‖(16 : ℂ) * (b ^ (4 : ℕ))‖ = 16 * ‖b ^ (4 : ℕ)‖ := by
-          simp
-        _ ≤ 16 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-          gcongr
-    have hsum :
-        ‖(96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) + (64 : ℂ) * (a * b ^ (3 : ℕ)) +
-            (16 : ℂ) * (b ^ (4 : ℕ))‖ ≤ 176 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-      have htri1 :=
-        norm_add_le
-          ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) + (64 : ℂ) * (a * b ^ (3 : ℕ)))
-          ((16 : ℂ) * (b ^ (4 : ℕ)))
-      have htri2 :=
-        norm_add_le
-          ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)))
-          ((64 : ℂ) * (a * b ^ (3 : ℕ)))
-      nlinarith [htri1, htri2, h1, h2, h3]
+      rw [hb4]; exact Real.exp_monotone (by nlinarith [Real.pi_pos, ht])
     rw [hy_main]
-    exact hsum
+    have htri1 :=
+      norm_add_le ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) + (64 : ℂ) * (a * b ^ (3 : ℕ)))
+        ((16 : ℂ) * (b ^ (4 : ℕ)))
+    have htri2 :=
+      norm_add_le ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ))) ((64 : ℂ) * (a * b ^ (3 : ℕ)))
+    have hn1 : ‖(96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ))‖ = 96 * ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖ := by
+      simp
+    have hn2 : ‖(64 : ℂ) * (a * b ^ (3 : ℕ))‖ = 64 * ‖a * b ^ (3 : ℕ)‖ := by simp
+    have hn3 : ‖(16 : ℂ) * (b ^ (4 : ℕ))‖ = 16 * ‖b ^ (4 : ℕ)‖ := by simp
+    nlinarith [htri1, htri2, hab, hab3_le, hb4_le, hn1, hn2, hn3]
   have hH2 : H₂.resToImagAxis t = x ^ (4 : ℕ) := by
     simp [x, H₂, Function.resToImagAxis, ResToImagAxis, ht0]
   have htri : ‖x ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
