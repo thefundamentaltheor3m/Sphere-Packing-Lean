@@ -264,7 +264,7 @@ private lemma integral_ψ_exp_differentiable
         fun u : ℂ => ∫ t in (0 : ℝ)..1,
           ψ (z t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z t) := by
     funext u; congr 1; funext t
-    congr 2; simp [k, mul_assoc, mul_left_comm, mul_comm]
+    congr 2; simp [k, mul_left_comm, mul_comm]
   exact (hEq ▸ hd)
 
 lemma J₁'C_differentiable : Differentiable ℂ J₁'C := by
