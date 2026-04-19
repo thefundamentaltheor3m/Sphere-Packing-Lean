@@ -28,32 +28,29 @@ and a small quadratic estimate for inverting a number close to `1`.
 These auxiliary lemmas are proven below.
 -/
 
-lemma norm_sub_one_le_of_norm_sub_one_sub (w : ℂ) (u C : ℝ)
+private lemma norm_sub_one_le_of_norm_sub_one_sub (w : ℂ) (u C : ℝ)
     (hu0 : 0 ≤ u) (hu1 : u ≤ 1)
     (hw_tail : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ C * (u ^ (2 : ℕ))) :
     ‖w - (1 : ℂ)‖ ≤ (8 + |C|) * u := by
   have h8u : ‖((8 * u : ℝ) : ℂ)‖ = 8 * u := by
-    have hnonneg : (0 : ℝ) ≤ 8 * u := mul_nonneg (by norm_num : (0 : ℝ) ≤ 8) hu0
-    simpa [RCLike.norm_ofReal, abs_of_nonneg hnonneg]
+    simpa [RCLike.norm_ofReal, abs_of_nonneg (by positivity : (0 : ℝ) ≤ 8 * u)]
   have htail' : ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ ≤ |C| * u := by
-    have hE0 : 0 ≤ (u ^ (2 : ℕ) : ℝ) := pow_nonneg hu0 _
-    have hC : C * (u ^ (2 : ℕ) : ℝ) ≤ |C| * (u ^ (2 : ℕ) : ℝ) :=
-      mul_le_mul_of_nonneg_right (le_abs_self C) hE0
     have hpow : (u ^ (2 : ℕ) : ℝ) ≤ u := by
       simpa [pow_two] using (mul_le_of_le_one_right hu0 hu1)
-    exact hw_tail.trans <| hC.trans <| mul_le_mul_of_nonneg_left hpow (abs_nonneg C)
-  calc
-    ‖w - (1 : ℂ)‖ = ‖(w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) + ((8 * u : ℝ) : ℂ)‖ := by ring_nf
-    _ ≤ ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ + ‖((8 * u : ℝ) : ℂ)‖ := by
-          simpa using
-            (norm_add_le (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) ((8 * u : ℝ) : ℂ))
-    _ ≤ (|C| * u) + (8 * u) := add_le_add htail' (le_of_eq h8u)
-    _ = (8 + |C|) * u := by ring
+    have hC : C * (u ^ (2 : ℕ) : ℝ) ≤ |C| * u :=
+      (mul_le_mul_of_nonneg_right (le_abs_self C) (pow_nonneg hu0 _)).trans
+        (mul_le_mul_of_nonneg_left hpow (abs_nonneg C))
+    exact hw_tail.trans hC
+  have htri := norm_add_le (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) ((8 * u : ℝ) : ℂ)
+  have hrw : (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) + ((8 * u : ℝ) : ℂ) = w - 1 := by ring
+  rw [hrw] at htri
+  linarith [htri, htail', h8u.ge]
 
 private lemma Theta2_term_resToImagAxis_eq (n : ℤ) (t : ℝ) (ht : 0 < t) :
     Θ₂_term n ⟨(Complex.I : ℂ) * t, by simp [ht]⟩ =
       (Real.exp (-Real.pi * (((n : ℝ) + (1 / 2 : ℝ)) ^ 2) * t) : ℂ) := by
   set r : ℝ := (n : ℝ) + (2⁻¹ : ℝ)
+  have hr : (n + (2⁻¹ : ℂ)) = (r : ℂ) := by apply Complex.ext <;> simp [r]
   have hsq : (n + (2⁻¹ : ℂ)) ^ 2 = ((r ^ 2 : ℝ) : ℂ) := by simp_all
   have harg :
       (π * I * (n + (2⁻¹ : ℂ)) ^ 2 * ((Complex.I : ℂ) * t) : ℂ) =
@@ -89,7 +86,9 @@ private lemma theta2_norm_ge_two_exp_quarter (t : ℝ) (ht : 0 < t) :
     simp [Θ₂, hterm, g, Complex.ofReal_tsum]
   have hnorm : ‖ResToImagAxis Θ₂ t‖ = (∑' n : ℤ, g n) := by
     simp [ResToImagAxis, ht, τ, htsum, abs_of_nonneg (tsum_nonneg hnonneg)]
-  simpa [Function.resToImagAxis, hnorm] using hsum2 ▸ hfin
+  have hsum_ge : 2 * Real.exp (-Real.pi * t / 4) ≤ (∑' n : ℤ, g n) := by
+    simpa [hsum2] using hfin
+  simpa [Function.resToImagAxis, hnorm] using hsum_ge
 
 lemma pow_four_two_mul_exp (t : ℝ) :
     (2 * Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = (16 : ℝ) * Real.exp (-Real.pi * t) := by
@@ -112,7 +111,7 @@ lemma H2_norm_pow_two_ge (t : ℝ) (ht0 : 0 < t) :
     rw [mul_pow, ← Real.exp_nat_mul]; ring_nf
   linarith [hpow, hleft]
 
-lemma bound_w_inv_sub_one_sub (t u C0 : ℝ) (w : ℂ)
+private lemma bound_w_inv_sub_one_sub (t u C0 : ℝ) (w : ℂ)
     (hw_norm_ge : (1 : ℝ) ≤ ‖w‖)
     (hw_inv : ‖w⁻¹‖ ≤ 1)
     (hw_tail :
@@ -120,54 +119,25 @@ lemma bound_w_inv_sub_one_sub (t u C0 : ℝ) (w : ℂ)
     (hw_one :
       ‖w - (1 : ℂ)‖ ≤ (8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t)) :
     ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ ≤ ((8 + C0) ^ 2 + C0) * Real.exp (-(4 : ℝ) * Real.pi * t) := by
-  have hw_ne : w ≠ 0 := (norm_pos_iff).1 (lt_of_lt_of_le zero_lt_one hw_norm_ge)
+  have hw_ne : w ≠ 0 := norm_pos_iff.1 (lt_of_lt_of_le zero_lt_one hw_norm_ge)
   have hid : w⁻¹ - (2 - w) = (w - 1) ^ (2 : ℕ) * w⁻¹ := by
-    have hmul : (w⁻¹ - (2 - w)) * w = (w - 1) ^ (2 : ℕ) := by
-      calc
-        (w⁻¹ - (2 - w)) * w = (w⁻¹ * w) - (2 - w) * w := by ring
-        _ = (1 : ℂ) - (2 - w) * w := by simp [hw_ne]
-        _ = (w - 1) ^ (2 : ℕ) := by
-              simp [pow_two]
-              ring
-    simpa [mul_assoc, hw_ne, mul_inv_cancel, sub_eq_add_neg, pow_two] using
-      congrArg (fun z : ℂ => z * w⁻¹) hmul
+    field_simp; ring
   have htri :
       ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ ≤ ‖w⁻¹ - (2 - w)‖ + ‖w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)‖ := by
-    have hnorm :
-        ‖w⁻¹ - (1 - ((8 * u : ℝ) : ℂ))‖ =
-          ‖(w⁻¹ - (2 - w)) - (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ))‖ := by
-      simpa using congrArg norm (by
-        ring : w⁻¹ - (1 - ((8 * u : ℝ) : ℂ)) =
-          (w⁻¹ - (2 - w)) - (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)))
-    rw [hnorm]
-    exact norm_sub_le (w⁻¹ - (2 - w)) (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ))
-  have hquad :
-      ‖w⁻¹ - (2 - w)‖ ≤ (8 + C0) ^ 2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
+    have hrw : w⁻¹ - (1 - ((8 * u : ℝ) : ℂ)) =
+        (w⁻¹ - (2 - w)) - (w - (1 : ℂ) - ((8 * u : ℝ) : ℂ)) := by ring
+    rw [hrw]; exact norm_sub_le _ _
+  have hexp : (Real.exp (-(2 : ℝ) * Real.pi * t)) ^ (2 : ℕ) =
+      Real.exp (-(4 : ℝ) * Real.pi * t) := by
+    rw [← Real.exp_nat_mul]; ring_nf
+  have hquad : ‖w⁻¹ - (2 - w)‖ ≤ (8 + C0) ^ 2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     calc
-      ‖w⁻¹ - (2 - w)‖ = ‖(w - 1) ^ (2 : ℕ) * w⁻¹‖ := by simp [hid]
-      _ = ‖w - 1‖ ^ (2 : ℕ) * ‖w⁻¹‖ := by simp [norm_pow]
+      ‖w⁻¹ - (2 - w)‖ = ‖w - 1‖ ^ (2 : ℕ) * ‖w⁻¹‖ := by simp [hid, norm_pow]
       _ ≤ ‖w - 1‖ ^ (2 : ℕ) := by
-            simpa [mul_one] using
-              (mul_le_mul_of_nonneg_left hw_inv (by positivity : 0 ≤ ‖w - 1‖ ^ (2 : ℕ)))
-      _ ≤ ((8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t)) ^ (2 : ℕ) := by
-            exact pow_le_pow_left₀ (by positivity : 0 ≤ ‖w - 1‖) hw_one 2
-      _ = (8 + C0) ^ 2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
-            have hexp :
-                (Real.exp (-(2 : ℝ) * Real.pi * t)) ^ (2 : ℕ) =
-                  Real.exp (-(4 : ℝ) * Real.pi * t) := by
-              calc
-                (Real.exp (-(2 : ℝ) * Real.pi * t)) ^ (2 : ℕ) =
-                    Real.exp ((2 : ℝ) * (-(2 : ℝ) * Real.pi * t)) := by
-                      simpa using (Real.exp_nat_mul (-(2 : ℝ) * Real.pi * t) 2).symm
-                _ = Real.exp (-(4 : ℝ) * Real.pi * t) := by
-                      congr 1
-                      ring_nf
-            calc
-              ((8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t)) ^ (2 : ℕ)
-                  = (8 + C0) ^ (2 : ℕ) * (Real.exp (-(2 : ℝ) * Real.pi * t)) ^ (2 : ℕ) := by
-                      simp [mul_pow]
-              _ = (8 + C0) ^ 2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
-                    rw [hexp]
+            simpa using mul_le_mul_of_nonneg_left hw_inv (by positivity : 0 ≤ ‖w - 1‖ ^ (2 : ℕ))
+      _ ≤ ((8 + C0) * Real.exp (-(2 : ℝ) * Real.pi * t)) ^ (2 : ℕ) :=
+            pow_le_pow_left₀ (norm_nonneg _) hw_one 2
+      _ = (8 + C0) ^ 2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by rw [mul_pow, hexp]
   nlinarith [htri, hquad, hw_tail]
 
 lemma hw_tail_bound (t : ℝ) (ht : 1 ≤ t) (CH2 : ℝ)
