@@ -212,17 +212,14 @@ lemma f0_continuousOn : ContinuousOn f0 {z : ℂ | 0 < z.im} :=
 private lemma norm_two_z_sub_one_le_two_im_add_one {z : ℂ}
     (hz0 : 0 ≤ z.re) (hz1 : z.re ≤ 1) (hzIm : 0 ≤ z.im) :
     ‖(2 : ℂ) * z - 1‖ ≤ 2 * z.im + 1 := by
-  have hRe : |2 * z.re - 1| ≤ 1 := by
-    refine abs_le.2 ?_
-    constructor <;> linarith
-  have hIm : |2 * z.im| = 2 * z.im := abs_of_nonneg (by positivity)
+  have hRe : |2 * z.re - 1| ≤ 1 := abs_le.2 ⟨by linarith, by linarith⟩
   calc
-    ‖(2 : ℂ) * z - 1‖
-        ≤ |((2 : ℂ) * z - 1).re| + |((2 : ℂ) * z - 1).im| :=
+    ‖(2 : ℂ) * z - 1‖ ≤ |((2 : ℂ) * z - 1).re| + |((2 : ℂ) * z - 1).im| :=
           Complex.norm_le_abs_re_add_abs_im _
     _ = |2 * z.re - 1| + |2 * z.im| := by simp
-    _ ≤ 1 + |2 * z.im| := add_le_add hRe le_rfl
-    _ = 2 * z.im + 1 := by simp [hIm, add_comm]
+    _ ≤ 1 + 2 * z.im := by
+          rw [abs_of_nonneg (by positivity : (0 : ℝ) ≤ 2 * z.im)]; linarith
+    _ = 2 * z.im + 1 := by ring
 
 lemma f0_norm_bound_on_strip :
     ∃ C₀ > 0, ∀ {z : ℂ}, 1 ≤ z.im → 0 ≤ z.re → z.re ≤ 1 →
@@ -255,11 +252,9 @@ lemma f0_vertical_diff (y : ℝ) (hy : 0 < y) :
     f0 ((1 : ℂ) + (y : ℂ) * Complex.I) - f0 ((y : ℂ) * Complex.I) =
       (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) := by
   have hyIm : 0 < (((y : ℂ) * Complex.I) : ℂ).im := by simpa [mul_assoc] using hy
-  have hper :
-      φ₀'' ((1 : ℂ) + (y : ℂ) * Complex.I) = φ₀'' ((y : ℂ) * Complex.I) := by
+  have hper : φ₀'' ((1 : ℂ) + (y : ℂ) * Complex.I) = φ₀'' ((y : ℂ) * Complex.I) := by
     simpa [add_assoc, add_comm, add_left_comm] using φ₀''_add_one (z := (y : ℂ) * Complex.I) hyIm
-  simp [f0, hper]
-  ring
+  simp [f0, hper]; ring
 
 private lemma strip_uIcc_subset {m : ℝ} (hm : 1 ≤ m) :
     (Set.uIcc (0 : ℝ) 1 ×ℂ Set.uIcc (1 : ℝ) m) ⊆ {z : ℂ | 0 < z.im} := by
@@ -335,16 +330,12 @@ private lemma norm_integral_f0_strip_le {C₀ : ℝ}
       ‖∫ x : ℝ in (0 : ℝ)..1, f0 (x + m * Complex.I)‖ ≤
         C₀ * (2 * m + 1) * Real.exp (-2 * Real.pi * m) := by
   filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with m hm
-  have hC :
-      ∀ x ∈ Ι (0 : ℝ) 1, ‖f0 (x + m * Complex.I)‖ ≤
-        C₀ * (2 * m + 1) * Real.exp (-2 * Real.pi * m) := by
-    intro x hx
-    have hx0 : 0 ≤ x := le_of_lt (by simpa using hx.1)
-    have hx1 : x ≤ 1 := by simpa using hx.2
+  have hC : ∀ x ∈ Ι (0 : ℝ) 1, ‖f0 (x + m * Complex.I)‖ ≤
+        C₀ * (2 * m + 1) * Real.exp (-2 * Real.pi * m) := fun x hx => by
     simpa using hC₀ (z := (x + m * Complex.I : ℂ))
-      (by simpa using hm) (by simpa using hx0) (by simpa using hx1)
-  simpa using
-    intervalIntegral.norm_integral_le_of_norm_le_const
+      (by simpa using hm) (by simpa using le_of_lt (by simpa using hx.1))
+      (by simpa using hx.2)
+  simpa using intervalIntegral.norm_integral_le_of_norm_le_const
       (a := (0 : ℝ)) (b := (1 : ℝ)) (f := fun x : ℝ => f0 (x + m * Complex.I)) hC
 
 private lemma tendsto_two_m_plus_one_mul_exp_decay (C₀ : ℝ) :
@@ -561,13 +552,12 @@ lemma tendsto_phi2'_atImInfty :
 
 private lemma norm_phi2_strip_bound_le {ε : ℝ} {A m : ℝ}
     (hA : ∀ z : ℍ, A ≤ z.im → ‖φ₂' z - (720 : ℂ)‖ < ε / 2) (hmA : A ≤ m) (hm0 : 0 < m) :
-    ∀ x ∈ Ι (0 : ℝ) 1, ‖φ₂'' (x + m * Complex.I) - (720 : ℂ)‖ ≤ ε / 2 := by
-  intro x _
+    ∀ x ∈ Ι (0 : ℝ) 1, ‖φ₂'' (x + m * Complex.I) - (720 : ℂ)‖ ≤ ε / 2 := fun x _ => by
   let zH : ℍ := ⟨(x : ℂ) + (m : ℂ) * Complex.I, by simpa using hm0⟩
-  have hz : A ≤ zH.im := by simpa [zH, UpperHalfPlane.im, Complex.add_im] using hmA
   have hdef : φ₂'' ((x : ℂ) + (m : ℂ) * Complex.I) = φ₂' zH := by
     simpa [zH] using (φ₂''_def (z := (x : ℂ) + (m : ℂ) * Complex.I) (by simpa using hm0))
-  simpa [zH, hdef, mul_assoc] using le_of_lt (hA zH hz)
+  simpa [zH, hdef, mul_assoc] using le_of_lt (hA zH
+    (by simpa [zH, UpperHalfPlane.im, Complex.add_im] using hmA))
 
 private lemma intervalIntegrable_phi2_strip {m : ℝ} (hm : 0 < m) :
     IntervalIntegrable (fun x : ℝ => φ₂'' (x + m * Complex.I)) MeasureTheory.volume 0 1 := by
