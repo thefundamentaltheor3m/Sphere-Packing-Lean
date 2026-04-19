@@ -231,22 +231,18 @@ section CubeLatticeCovolume
 open scoped ENNReal
 open ZSpan
 
-lemma covolume_cubeLattice_eq_volume_coordCube_toReal (L : ℝ) (hL : 0 < L) :
-    ZLattice.covolume (cubeLattice d L hL) volume =
-      (volume (coordCube d L)).toReal := by
+lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
+    Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) =
+      (volume (coordCube d L)).toNNReal := by
   letI : DiscreteTopology (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
   letI : IsZLattice ℝ (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
   have hfund : IsAddFundamentalDomain (cubeLattice d L hL)
       (fundamentalDomain (cubeBasis d L hL)) volume := by
     simpa [cubeLattice] using ZSpan.isAddFundamentalDomain (cubeBasis d L hL) volume
-  simpa [Measure.real, fundamentalDomain_cubeBasis_eq_coordCube L hL] using
-    ZLattice.covolume_eq_measure_fundamentalDomain
+  have := ZLattice.covolume_eq_measure_fundamentalDomain
       (L := cubeLattice d L hL) (μ := volume) hfund
-
-lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
-    Real.toNNReal (ZLattice.covolume (cubeLattice d L hL) volume) =
-      (volume (coordCube d L)).toNNReal := by
-  simp [covolume_cubeLattice_eq_volume_coordCube_toReal (d := d) L hL]
+  simp [show ZLattice.covolume (cubeLattice d L hL) volume = (volume (coordCube d L)).toReal by
+    simpa [Measure.real, fundamentalDomain_cubeBasis_eq_coordCube L hL] using this]
 
 end CubeLatticeCovolume
 
