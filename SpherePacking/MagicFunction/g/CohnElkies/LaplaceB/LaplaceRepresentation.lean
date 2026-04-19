@@ -111,10 +111,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hInt_finite : IntegrableOn f (Set.Ioc (1 : ℝ) A) :=
       (hcontIcc.integrableOn_compact isCompact_Icc).mono_set Set.Ioc_subset_Icc_self
     have hpos : 0 < π * (u - 2) := mul_pos Real.pi_pos (sub_pos.2 hu)
-    have hdom :
-        ∀ t : ℝ, t ∈ Set.Ioi A →
-          ‖f t‖ ≤ Cψ * Real.exp (-(π * (u - 2)) * t) := by
-      intro t ht
+    have hdom : ∀ t : ℝ, t ∈ Set.Ioi A →
+        ‖f t‖ ≤ Cψ * Real.exp (-(π * (u - 2)) * t) := fun t ht => by
       have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) (hA1.trans ht.le)
       have hzI : 0 < ((I * (t : ℂ) + (1 : ℂ)).im) := by
         simpa [add_assoc, mul_assoc] using ht0
@@ -126,10 +124,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         have : ψT' (I * (t : ℂ)) = ψI ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩ := by
           rw [ψT'_I_mul (t := t) ht0]; simp [ψI', ht0]
         simpa [this] using hψI
-      have hnorm : ‖f t‖ = ‖ψT' (I * (t : ℂ))‖ * Real.exp (-π * u * t) := by
-        simp [f, bContourIntegrandT_mul_I, -Complex.ofReal_exp, Complex.norm_real,
-          abs_of_nonneg (Real.exp_pos _).le]
-      rw [hnorm, ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul, ← mul_assoc]
+      rw [show ‖f t‖ = ‖ψT' (I * (t : ℂ))‖ * Real.exp (-π * u * t) by
+            simp [f, bContourIntegrandT_mul_I, -Complex.ofReal_exp, Complex.norm_real,
+              abs_of_nonneg (Real.exp_pos _).le],
+        ← MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul, ← mul_assoc]
       exact mul_le_mul_of_nonneg_right hψT_norm (Real.exp_pos _).le
     have hg : Integrable (fun t : ℝ => Cψ * Real.exp (-(π * (u - 2)) * t))
         (volume.restrict (Set.Ioi A)) := by
