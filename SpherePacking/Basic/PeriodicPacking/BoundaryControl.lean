@@ -375,9 +375,8 @@ lemma tendsto_cubeShell_ratio_zero :
   refine (by simpa using h1.sub h2 :
     Tendsto (fun L : ℝ => (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d) atTop (𝓝 (0 : ℝ))).congr' ?_
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with L hLpos
-  have hL : L ≠ 0 := ne_of_gt hLpos
-  rw [sub_div]
-  congr 1 <;> rw [← div_pow] <;> congr 1 <;> field_simp
+  have : L ≠ 0 := ne_of_gt hLpos
+  rw [sub_div]; congr 1 <;> rw [← div_pow] <;> congr 1 <;> field_simp
 
 lemma tendsto_volume_cubeShell_div_volume_coordCube_zero :
     Tendsto
@@ -516,11 +515,10 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       (Finset.mem_filter.1 hx).2.symm
   -- The maximal fiber gives a density lower bound.
   have hs_le : (s.card : ℝ≥0∞) ≤ (t.card : ℝ≥0∞) * (sg.card : ℝ≥0∞) := by
+    have hs_sum : s.card = ∑ g ∈ t, (s.filter fun x => f x = g).card := by
+      simpa [fiber] using Finset.card_eq_sum_card_fiberwise hf_maps
     exact_mod_cast show s.card ≤ t.card * sg.card by
-      simpa [show s.card =
-          Finset.sum t (fun g => (s.filter fun x : EuclideanSpace ℝ (Fin d) => f x = g).card) by
-        simpa [fiber] using Finset.card_eq_sum_card_fiberwise hf_maps,
-        Finset.sum_const] using Finset.sum_le_sum hg0max
+      simpa [hs_sum, Finset.sum_const] using Finset.sum_le_sum hg0max
   have ht_vol : ((t.card : ℝ≥0∞) * volCube) ≤
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R₁ + 2 * C)) := by
     simpa [volCube, R₁, r, t, htSet] using
