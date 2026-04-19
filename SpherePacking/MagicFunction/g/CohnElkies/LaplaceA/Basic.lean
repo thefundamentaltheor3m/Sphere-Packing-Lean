@@ -199,8 +199,7 @@ public lemma aLaplaceIntegral_convergent {u : ℝ} (hu : 2 < u) :
                 simp [φ₄', div_eq_mul_inv]
             _ ≤ (B4 ^ (2 : ℕ)) * (CΔ * Real.exp (2 * π * t)) := by
                 refine mul_le_mul ?_ hΔ (norm_nonneg _) (pow_nonneg hB4_nonneg _)
-                simpa [norm_pow, pow_two] using
-                  mul_le_mul hE4 hE4 (norm_nonneg _) hB4_nonneg
+                simpa [norm_pow, pow_two] using mul_le_mul hE4 hE4 (norm_nonneg _) hB4_nonneg
         have hScoe : ((ModularGroup.S • zH : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) :=
           (ModularGroup.coe_S_smul (z := zH)).trans (by
             simp [zH, div_eq_mul_inv, mul_inv_rev, mul_comm])
