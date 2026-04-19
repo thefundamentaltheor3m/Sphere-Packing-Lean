@@ -60,8 +60,7 @@ lemma a_zero_reduction :
 
 lemma I₁'_zero_add_I₃'_zero_add_I₅'_zero :
     (I₁' (0 : ℝ) + I₃' 0 + I₅' 0 : ℂ) = 0 := by
-  simp [I₁'_eq, I₃'_eq, I₅'_eq]
-  ring
+  simp [I₁'_eq, I₃'_eq, I₅'_eq]; ring
 
 lemma a_zero_reduction_I₂₄₆ :
     FourierEigenfunctions.a (0 : ℝ⁸) = I₂' (0 : ℝ) + I₄' 0 + I₆' 0 := by
@@ -136,19 +135,14 @@ lemma F_eq_phi0_phi2_phi4 (z : ℂ) (hz : 0 < z.im) :
     F z =
       φ₀'' z * (z : ℂ) ^ (2 : ℕ) - (12 * Complex.I) / π * (z : ℂ) * φ₂'' z -
         36 / (π ^ 2) * φ₄'' z := by
-  -- Work in `ℍ` and use the previously proved `φ₀_S_transform_mul_sq`.
   let zH : ℍ := ⟨z, hz⟩
   have hSz : ((ModularGroup.S • zH : ℍ) : ℂ) = -1 / (z : ℂ) := by
     simpa [zH] using (ModularGroup.coe_S_smul (z := zH))
   have hφ₀S : φ₀ (ModularGroup.S • zH) = φ₀'' (-1 / z) := by
-    -- avoid `simp` rewriting `S • zH` to a `GL` action
     rw [← (φ₀''_coe_upperHalfPlane (ModularGroup.S • zH)), hSz]
-  have hφ₀ : φ₀ zH = φ₀'' z := by simpa [zH] using (φ₀''_def (z := z) hz).symm
-  have hφ₂ : φ₂' zH = φ₂'' z := by simp [φ₂'', hz, zH]
-  have hφ₄ : φ₄' zH = φ₄'' z := by simp [φ₄'', hz, zH]
   have h' := φ₀_S_transform_mul_sq zH
-  rw [hφ₀S, hφ₀, hφ₂, hφ₄] at h'
-  simpa [F, zH] using h'
+  rw [hφ₀S] at h'
+  simpa [F, zH, φ₀''_def (z := z) hz, φ₂'', φ₄'', hz] using h'
 
 private lemma vadd_neg_one_eq (z : ℂ) (hz : 0 < z.im) (hz1 : 0 < (z - 1).im) :
     ((-1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z - 1, hz1⟩ := by
