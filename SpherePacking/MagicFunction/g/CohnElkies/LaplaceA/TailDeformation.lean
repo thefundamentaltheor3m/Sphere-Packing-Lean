@@ -149,86 +149,66 @@ lemma norm_Φ₄'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
   simp [MagicFunction.a.ComplexIntegrands.Φ₄', MagicFunction.a.ComplexIntegrands.Φ₃',
     hshift, mul_assoc]
 
+/-- Generic top-edge decay: reduces a `tendsto` statement on an interval integral to a pointwise
+strip bound. -/
+private lemma tendsto_intervalIntegral_top_of_strip_bound {u : ℝ} (hu : 2 < u) {F : ℂ → ℂ}
+    {x₁ x₂ : ℝ} (hlen : |x₂ - x₁| ≤ 1)
+    (hF : ∀ Cφ Aφ C₀ x t : ℝ, 0 < C₀ →
+      (∀ z : ℍ, (1 / 2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im)) →
+      (∀ z : ℍ, Aφ ≤ z.im →
+        ‖φ₂' z‖ ≤ Cφ * Real.exp (2 * π * z.im) ∧
+          ‖φ₄' z‖ ≤ Cφ * Real.exp (2 * π * z.im)) →
+      x ∈ Set.uIoc x₁ x₂ → (1 : ℝ) ≤ t → Aφ ≤ t →
+      ‖F ((x : ℂ) + (t : ℂ) * Complex.I)‖ ≤
+        (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
+          (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t))) :
+    Tendsto (fun m : ℝ => ∫ x in x₁..x₂, F ((x : ℂ) + (m : ℂ) * Complex.I))
+      atTop (𝓝 0) := by
+  rcases exists_phi2'_phi4'_bound_exp with ⟨Cφ, Aφ, _, hφbd⟩
+  obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
+  set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
+  set a : ℝ := π * (u - 2)
+  have ha : 0 < a := mul_pos Real.pi_pos (sub_pos.2 hu)
+  have htend : Tendsto (fun m : ℝ => K * (m ^ (2 : ℕ) * Real.exp (-a * m))) atTop (𝓝 0) := by
+    simpa [mul_zero] using tendsto_const_nhds.mul
+      (tendsto_sq_mul_exp_neg_mul_atTop_nhds_zero a ha)
+  refine squeeze_zero_norm' (Filter.eventually_atTop.2 ⟨max 1 Aφ, ?_⟩) htend
+  intro m hm
+  have hm1 : (1 : ℝ) ≤ m := (le_max_left _ _).trans hm
+  have hmA : Aφ ≤ m := (le_max_right _ _).trans hm
+  refine (intervalIntegral.norm_integral_le_of_norm_le_const (a := x₁) (b := x₂)
+    (f := fun x : ℝ => F ((x : ℂ) + (m : ℂ) * Complex.I))
+    (C := K * (m ^ (2 : ℕ) * Real.exp (-a * m)))
+    (fun x hx => hF Cφ Aφ C₀ x m hC₀_pos hC₀ hφbd hx hm1 hmA)).trans ?_
+  have hnn : 0 ≤ K * (m ^ (2 : ℕ) * Real.exp (-a * m)) := by
+    have hK : 0 ≤ K := by positivity
+    have hm0 : 0 ≤ m := by linarith
+    positivity
+  calc K * (m ^ 2 * Real.exp (-a * m)) * |x₂ - x₁|
+      ≤ K * (m ^ 2 * Real.exp (-a * m)) * 1 := mul_le_mul_of_nonneg_left hlen hnn
+    _ = K * (m ^ 2 * Real.exp (-a * m)) := mul_one _
+
 /-- Top-edge decay needed for the left rectangle deformation (`Φ₂'`). -/
 lemma tendsto_intervalIntegral_Φ₂'_top {u : ℝ} (hu : 2 < u) :
     Tendsto
       (fun m : ℝ => ∫ x in (-1 : ℝ)..0, Φ₂' u ((x : ℂ) + (m : ℂ) * Complex.I))
-      atTop (𝓝 0) := by
-  rcases exists_phi2'_phi4'_bound_exp with ⟨Cφ, Aφ, hCφ, hφbd⟩
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  let K : ℝ :=
-    (4 * C₀ + (2 * c12π + c36π2) * Cφ)
-  let a : ℝ := π * (u - 2)
-  have ha : 0 < a := mul_pos Real.pi_pos (sub_pos.2 hu)
-  have htendBase : Tendsto (fun m : ℝ => m ^ (2 : ℕ) * Real.exp (-a * m)) atTop (𝓝 0) :=
-    tendsto_sq_mul_exp_neg_mul_atTop_nhds_zero a ha
-  have htend : Tendsto (fun m : ℝ => K * (m ^ (2 : ℕ) * Real.exp (-a * m))) atTop (𝓝 0) :=
-    by simpa [mul_zero] using (tendsto_const_nhds.mul htendBase)
-  have hbound :
-      ∀ᶠ m : ℝ in atTop,
-        ‖∫ x in (-1 : ℝ)..0, Φ₂' u ((x : ℂ) + (m : ℂ) * Complex.I)‖ ≤
-          K * (m ^ (2 : ℕ) * Real.exp (-a * m)) := by
-    refine (Filter.eventually_atTop.2 ⟨max 1 Aφ, ?_⟩)
-    intro m hm
-    have hm1 : (1 : ℝ) ≤ m := le_trans (le_max_left _ _) hm
-    have hmA : Aφ ≤ m := le_trans (le_max_right _ _) hm
-    have hnorm :
-        ∀ x ∈ Set.uIoc (-1 : ℝ) 0,
-          ‖Φ₂' u ((x : ℂ) + (m : ℂ) * Complex.I)‖ ≤
-            K * (m ^ (2 : ℕ) * Real.exp (-a * m)) := by
-      intro x hx
-      have hle : (-1 : ℝ) ≤ 0 := by norm_num
+      atTop (𝓝 0) :=
+  tendsto_intervalIntegral_top_of_strip_bound hu (x₁ := -1) (x₂ := 0) (by norm_num)
+    (fun _ _ _ x _ h1 h2 h3 hx h4 h5 => by
       have hx' : x ∈ Set.Ioc (-1 : ℝ) 0 := by
-        simpa [Set.uIoc_of_le hle] using hx
-      have hx0 : -1 ≤ x := le_of_lt hx'.1
-      have hx1 : x ≤ 0 := hx'.2
-      exact norm_Φ₂'_strip_le hC₀_pos hC₀ hφbd hx0 hx1 hm1 hmA
-    -- Apply the uniform bound on `Ι (-1) 0`.
-    simpa using
-      intervalIntegral.norm_integral_le_of_norm_le_const (a := (-1 : ℝ)) (b := (0 : ℝ))
-        (f := fun x : ℝ => Φ₂' u ((x : ℂ) + (m : ℂ) * Complex.I))
-        (C := K * (m ^ (2 : ℕ) * Real.exp (-a * m))) hnorm
-  exact squeeze_zero_norm' hbound htend
+        simpa [Set.uIoc_of_le (show (-1:ℝ) ≤ 0 by norm_num)] using hx
+      exact norm_Φ₂'_strip_le h1 h2 h3 hx'.1.le hx'.2 h4 h5)
 
 /-- Top-edge decay needed for the right rectangle deformation (`Φ₄'`). -/
 lemma tendsto_intervalIntegral_Φ₄'_top {u : ℝ} (hu : 2 < u) :
     Tendsto
       (fun m : ℝ => ∫ x in (1 : ℝ)..0, Φ₄' u ((x : ℂ) + (m : ℂ) * Complex.I))
-      atTop (𝓝 0) := by
-  rcases exists_phi2'_phi4'_bound_exp with ⟨Cφ, Aφ, hCφ, hφbd⟩
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
-  let K : ℝ :=
-    (4 * C₀ + (2 * c12π + c36π2) * Cφ)
-  let a : ℝ := π * (u - 2)
-  have ha : 0 < a := mul_pos Real.pi_pos (sub_pos.2 hu)
-  have htendBase : Tendsto (fun m : ℝ => m ^ (2 : ℕ) * Real.exp (-a * m)) atTop (𝓝 0) :=
-    tendsto_sq_mul_exp_neg_mul_atTop_nhds_zero a ha
-  have htend : Tendsto (fun m : ℝ => K * (m ^ (2 : ℕ) * Real.exp (-a * m))) atTop (𝓝 0) :=
-    by simpa [mul_zero] using (tendsto_const_nhds.mul htendBase)
-  have hbound :
-      ∀ᶠ m : ℝ in atTop,
-        ‖∫ x in (1 : ℝ)..0, Φ₄' u ((x : ℂ) + (m : ℂ) * Complex.I)‖ ≤
-          K * (m ^ (2 : ℕ) * Real.exp (-a * m)) := by
-    refine (Filter.eventually_atTop.2 ⟨max 1 Aφ, ?_⟩)
-    intro m hm
-    have hm1 : (1 : ℝ) ≤ m := le_trans (le_max_left _ _) hm
-    have hmA : Aφ ≤ m := le_trans (le_max_right _ _) hm
-    have hnorm :
-        ∀ x ∈ Set.uIoc (1 : ℝ) 0,
-          ‖Φ₄' u ((x : ℂ) + (m : ℂ) * Complex.I)‖ ≤
-            K * (m ^ (2 : ℕ) * Real.exp (-a * m)) := by
-      intro x hx
+      atTop (𝓝 0) :=
+  tendsto_intervalIntegral_top_of_strip_bound hu (x₁ := 1) (x₂ := 0) (by norm_num)
+    (fun _ _ _ x _ h1 h2 h3 hx h4 h5 => by
       have hx' : x ∈ Set.Ioc (0 : ℝ) 1 := by
-        -- `uIoc 1 0 = Ioc 0 1`.
-        simpa [Set.uIoc_of_ge (show (0 : ℝ) ≤ 1 by norm_num)] using hx
-      have hx0 : 0 ≤ x := le_of_lt hx'.1
-      have hx1 : x ≤ 1 := hx'.2
-      exact norm_Φ₄'_strip_le hC₀_pos hC₀ hφbd hx0 hx1 hm1 hmA
-    simpa using
-      intervalIntegral.norm_integral_le_of_norm_le_const (a := (1 : ℝ)) (b := (0 : ℝ))
-        (f := fun x : ℝ => Φ₄' u ((x : ℂ) + (m : ℂ) * Complex.I))
-        (C := K * (m ^ (2 : ℕ) * Real.exp (-a * m))) hnorm
-  exact squeeze_zero_norm' hbound htend
+        simpa [Set.uIoc_of_ge (show (0:ℝ) ≤ 1 by norm_num)] using hx
+      exact norm_Φ₄'_strip_le h1 h2 h3 hx'.1.le hx'.2 h4 h5)
 
 lemma I₂'_eq_intervalIntegral_bottom (u : ℝ) :
     MagicFunction.a.RealIntegrals.I₂' u =
