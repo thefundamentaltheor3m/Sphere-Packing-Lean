@@ -299,10 +299,10 @@ public theorem volume_ball_ratio_tendsto_nhds_one'
           / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C)))) ?_ ?_
   · rw [EventuallyEq, eventually_atTop]
     refine ⟨1, fun R hR => ?_⟩
-    rw [ENNReal.div_div_div_cancel_left]
-    · exact (Metric.measure_ball_pos volume _ (lt_of_lt_of_le zero_lt_one hR)).ne.symm
-    · exact (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
-    · exact (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
+    rw [ENNReal.div_div_div_cancel_left
+      (Metric.measure_ball_pos volume _ (lt_of_lt_of_le zero_lt_one hR)).ne.symm
+      (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
+      (MeasureTheory.measure_ball_lt_top (μ := volume)).ne]
   · convert ENNReal.Tendsto.div (volume_ball_ratio_tendsto_nhds_one hd hC') ?_
       (volume_ball_ratio_tendsto_nhds_one hd hC) ?_ <;> simp
 
