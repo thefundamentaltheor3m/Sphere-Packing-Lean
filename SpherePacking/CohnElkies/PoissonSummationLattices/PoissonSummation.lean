@@ -70,12 +70,10 @@ public lemma intVec_apply (k : Fin d → ℤ) (i : Fin d) :
 /-- The image of `intVec` lies in the standard lattice. -/
 public lemma intVec_mem_standardLattice (k : Fin d → ℤ) :
     intVec (d := d) k ∈ SchwartzMap.standardLattice d := by
-  have hsum :
-      intVec (d := d) k =
-        ∑ i : Fin d, (k i) • ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis i) := by
+  rw [show intVec (d := d) k =
+      ∑ i : Fin d, (k i) • ((EuclideanSpace.basisFun (Fin d) ℝ).toBasis i) by
     ext j
-    simp [intVec, OrthonormalBasis.coe_toBasis, EuclideanSpace.basisFun_apply, Pi.single_apply]
-  rw [hsum]
+    simp [intVec, OrthonormalBasis.coe_toBasis, EuclideanSpace.basisFun_apply, Pi.single_apply]]
   exact (SchwartzMap.standardLattice d).sum_mem fun i _ =>
     (SchwartzMap.standardLattice d).smul_mem (k i) (Submodule.subset_span ⟨i, rfl⟩)
 
@@ -101,11 +99,9 @@ public lemma measurableSet_iocCube : MeasurableSet (iocCube (d := d)) := by
   have hset :
       iocCube (d := d) = ⋂ i : Fin d, {x : E | x i ∈ Set.Ioc (0 : ℝ) 1} := by
     ext x; simp [iocCube]
-  have hcoord :
-      ∀ i : Fin d, MeasurableSet {x : E | x i ∈ Set.Ioc (0 : ℝ) 1} := fun i =>
+  simpa [hset] using MeasurableSet.iInter (ι := Fin d) fun i =>
     ((PiLp.continuous_apply (p := (2 : ENNReal)) (β := fun _ : Fin d => ℝ) i).measurable)
       measurableSet_Ioc
-  simpa [hset] using MeasurableSet.iInter (ι := Fin d) hcoord
 
 /-- `iocCube` is null-measurable (useful for integrals over its indicator). -/
 public lemma nullMeasurableSet_iocCube : NullMeasurableSet (iocCube (d := d)) :=
@@ -125,11 +121,11 @@ public lemma existsUnique_add_intVec_mem_iocCube (x : E) :
     simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, iocCube, zsmul_one] using hn i, ?_⟩
   intro n' hn'
   funext i
-  have hcoords : ∀ i : Fin d,
-      (x + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n') i ∈ Set.Ioc (0 : ℝ) 1 := by
-    simpa [iocCube] using hn'
+  have hcoords := (show ∀ i : Fin d,
+    (x + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n') i ∈ Set.Ioc (0:ℝ) 1 from
+    by simpa [iocCube] using hn') i
   exact hn_unique i (n' i) (by
-    simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, zsmul_one] using hcoords i)
+    simpa [SchwartzMap.PoissonSummation.Standard.intVec_apply, zsmul_one] using hcoords)
 
 /-! #### Elements of the standard lattice are integer vectors -/
 
@@ -165,7 +161,7 @@ public lemma dualSubmodule_standardLattice_eq :
     choose n hn using hxcoord
     have hx' : x = SchwartzMap.PoissonSummation.Standard.intVec (d := d) n := by
       ext i; simp [SchwartzMap.PoissonSummation.Standard.intVec_apply, hn i]
-    simpa [hx'] using
+    exact hx' ▸
       SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n
   · rcases exists_intVec_eq_of_mem_standardLattice (d := d) x hx with ⟨n, rfl⟩
     rcases exists_intVec_eq_of_mem_standardLattice (d := d) y hy with ⟨m, rfl⟩
@@ -218,9 +214,7 @@ public theorem exists_intVec_eq_sub_of_coeFunE_eq {x y : E}
     rcases (AddCircle.coe_eq_zero_iff (p := (1 : ℝ)) (x := (x i - y i : ℝ))).1 hsub with ⟨n, hn⟩
     exact ⟨n, by simpa using hn⟩
   choose n hn using hcoord
-  refine ⟨n, ?_⟩
-  ext i
-  simp [SchwartzMap.PoissonSummation.Standard.intVec, hn i]
+  exact ⟨n, by ext i; simp [SchwartzMap.PoissonSummation.Standard.intVec, hn i]⟩
 
 /-- The cube `iocCube` is a fundamental domain for translation by the standard lattice. -/
 public theorem isAddFundamentalDomain_iocCube :
@@ -239,9 +233,9 @@ public theorem isAddFundamentalDomain_iocCube :
       SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice (d := d)
         (ℓ : E) ℓ.property with
     ⟨n', hn'⟩
-  have : n' = n := hn_unique n' (by
+  have hn'_eq : n' = n := hn_unique n' (by
     simpa [Submodule.vadd_def, vadd_eq_add, add_comm, add_left_comm, add_assoc, hn'] using hℓ)
-  exact Subtype.ext (by simp [hn', this])
+  exact Subtype.ext (by simp [hn', hn'_eq])
 
 /-- Pull back Haar integration on `(ℝ/ℤ)^d` to `iocCube` in `E = ℝ^d`. -/
 public theorem integral_eq_integral_preimage_coeFunE (g : UnitAddTorus (Fin d) → ℂ)
@@ -249,12 +243,6 @@ public theorem integral_eq_integral_preimage_coeFunE (g : UnitAddTorus (Fin d) �
     (∫ y : UnitAddTorus (Fin d), g y) =
       ∫ x, g (coeFunE (d := d) x) ∂(volume : Measure E).restrict
         (SchwartzMap.PoissonSummation.Standard.iocCube (d := d)) := by
-  have h1 :
-      (∫ y : UnitAddTorus (Fin d), g y) =
-        ∫ x, g (UnitAddTorus.coeFun d x) ∂(volume : Measure (Fin d → ℝ)).restrict
-          (Set.univ.pi fun _ : Fin d => Set.Ioc (0 : ℝ) (0 + 1)) := by
-    simpa using
-      (UnitAddTorus.integral_eq_integral_preimage_coeFun (n := d) (t := (0 : ℝ)) g hg)
   let f : (Fin d → ℝ) ≃ᵐ E := MeasurableEquiv.toLp 2 (Fin d → ℝ)
   have hmp : MeasurePreserving (⇑f) (volume : Measure (Fin d → ℝ)) (volume : Measure E) := by
     simpa [f, MeasurableEquiv.coe_toLp] using (PiLp.volume_preserving_toLp (ι := Fin d))
@@ -271,14 +259,16 @@ public theorem integral_eq_integral_preimage_coeFunE (g : UnitAddTorus (Fin d) �
           (SchwartzMap.PoissonSummation.Standard.iocCube (d := d))) :=
     MeasurePreserving.restrict_preimage hmp
       (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d))
-  have h2 :
-      (∫ x, g (UnitAddTorus.coeFun d x) ∂(volume : Measure (Fin d → ℝ)).restrict
-          (Set.univ.pi fun _ : Fin d => Set.Ioc (0 : ℝ) (0 + 1))) =
-        ∫ y, g (coeFunE (d := d) y) ∂(volume : Measure E).restrict
+  calc
+    (∫ y : UnitAddTorus (Fin d), g y)
+        = ∫ x, g (UnitAddTorus.coeFun d x) ∂(volume : Measure (Fin d → ℝ)).restrict
+            (Set.univ.pi fun _ : Fin d => Set.Ioc (0 : ℝ) (0 + 1)) := by
+          simpa using
+            (UnitAddTorus.integral_eq_integral_preimage_coeFun (n := d) (t := (0 : ℝ)) g hg)
+    _ = ∫ y, g (coeFunE (d := d) y) ∂(volume : Measure E).restrict
           (SchwartzMap.PoissonSummation.Standard.iocCube (d := d)) := by
-    simpa [hpre, coeFunE, f] using
-      (MeasurePreserving.integral_comp' hmpR
-        (g := fun y : E => g (UnitAddTorus.coeFun d (WithLp.ofLp y))))
-  exact h1.trans h2
+          simpa [hpre, coeFunE, f] using
+            (MeasurePreserving.integral_comp' hmpR
+              (g := fun y : E => g (UnitAddTorus.coeFun d (WithLp.ofLp y))))
 
 end SchwartzMap.PoissonSummation.Standard
