@@ -591,59 +591,29 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
       simp [y] ; ring
     have hq : ‖q'‖ ≤ 1 := by
       simpa [q'] using (norm_exp_neg_pi_mul_le_one t ht0)
-    have hq4_le : ‖q' ^ (4 : ℕ)‖ ≤ ‖q' ^ (3 : ℕ)‖ := by
-      have ha3 : 0 ≤ ‖q'‖ ^ (3 : ℕ) := by positivity
-      have hpow : ‖q'‖ ^ (4 : ℕ) ≤ ‖q'‖ ^ (3 : ℕ) := by
-        calc
-          ‖q'‖ ^ (4 : ℕ) = ‖q'‖ ^ (3 : ℕ) * ‖q'‖ := by simp [pow_succ]
-          _ ≤ ‖q'‖ ^ (3 : ℕ) * 1 := mul_le_mul_of_nonneg_left hq ha3
-          _ = ‖q'‖ ^ (3 : ℕ) := by ring
-      simpa [norm_pow] using hpow
     have hq3' : ‖q' ^ (3 : ℕ)‖ = Real.exp (-(3 : ℝ) * Real.pi * t) := by
-      have hx : (Real.exp (-Real.pi * t)) ^ (3 : ℕ) = Real.exp (-(3 : ℝ) * Real.pi * t) := by
-        have harg : ((3 : ℕ) : ℝ) * (-Real.pi * t) = (-(3 : ℝ) * (Real.pi * t)) := by ring
-        have hx' : (Real.exp (-Real.pi * t)) ^ (3 : ℕ) = Real.exp (-(3 : ℝ) * (Real.pi * t)) := by
-          simpa [harg] using (Real.exp_nat_mul (-Real.pi * t) 3).symm
-        simpa [mul_assoc] using hx'
-      have hnormq : ‖q'‖ = Real.exp (-Real.pi * t) := by
-        simp [q', abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
-      calc
-        ‖q' ^ (3 : ℕ)‖ = ‖q'‖ ^ (3 : ℕ) := by simp [norm_pow]
-        _ = (Real.exp (-Real.pi * t)) ^ (3 : ℕ) := by simp [hnormq]
-        _ = Real.exp (-(3 : ℝ) * Real.pi * t) := hx
-    have htri := norm_add_le ((-(32 : ℂ)) * (q' ^ (3 : ℕ))) ((16 : ℂ) * (q' ^ (4 : ℕ)))
+      simpa [q'] using norm_ofReal_exp_neg_pi_pow t 3
+    have hq4_le : ‖q' ^ (4 : ℕ)‖ ≤ ‖q' ^ (3 : ℕ)‖ := by
+      rw [show (4 : ℕ) = 3 + 1 from rfl, pow_succ, norm_mul]
+      simpa using mul_le_mul_of_nonneg_left hq (norm_nonneg (q' ^ (3 : ℕ)))
     have hnorm :
         ‖(-(32 : ℂ)) * (q' ^ (3 : ℕ)) + (16 : ℂ) * (q' ^ (4 : ℕ))‖ ≤
           48 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-      calc
-        ‖(-(32 : ℂ)) * (q' ^ (3 : ℕ)) + (16 : ℂ) * (q' ^ (4 : ℕ))‖
-            ≤ ‖(-(32 : ℂ)) * (q' ^ (3 : ℕ))‖ + ‖(16 : ℂ) * (q' ^ (4 : ℕ))‖ := htri
-        _ = 32 * ‖q' ^ (3 : ℕ)‖ + 16 * ‖q' ^ (4 : ℕ)‖ := by simp
-        _ ≤ 32 * ‖q' ^ (3 : ℕ)‖ + 16 * ‖q' ^ (3 : ℕ)‖ := by gcongr
-        _ = 48 * ‖q' ^ (3 : ℕ)‖ := by ring
-        _ = 48 * Real.exp (-(3 : ℝ) * Real.pi * t) := by simp [hq3']
+      have htri := norm_add_le ((-(32 : ℂ)) * (q' ^ (3 : ℕ))) ((16 : ℂ) * (q' ^ (4 : ℕ)))
+      simp only [norm_mul, norm_neg, Complex.norm_ofNat] at htri
+      nlinarith [htri, hq4_le, hq3', norm_nonneg (q' ^ (3 : ℕ))]
     simpa [hmain] using hnorm
-  have hH4_res : ResToImagAxis H₄ t = x ^ (4 : ℕ) := by
-    simp [x, H₄, ResToImagAxis, ht0]
   have hH4 : H₄.resToImagAxis t = x ^ (4 : ℕ) := by
-    simpa [Function.resToImagAxis, ResToImagAxis, ht0] using hH4_res
+    simp [x, H₄, Function.resToImagAxis, ResToImagAxis, ht0]
+  have hexpN2 : (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) =
+      (Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ) :=
+    (ofReal_exp_neg_pi_pow_eq t 2).symm
   calc
     ‖H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
         (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖
         = ‖x ^ (4 : ℕ) - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
               (24 : ℂ) * ((Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ))‖ := by
-          rw [hH4]
-          have ha0 : Real.exp (-(2 : ℝ) * (Real.pi * t)) = (Real.exp (-Real.pi * t)) ^ (2 : ℕ) := by
-            have harg : ((2 : ℕ) : ℝ) * (-Real.pi * t) = (-(2 : ℝ) * (Real.pi * t)) := by ring
-            simpa [harg] using (Real.exp_nat_mul (-Real.pi * t) 2)
-          have ha : Real.exp (-(2 : ℝ) * Real.pi * t) = (Real.exp (-Real.pi * t)) ^ (2 : ℕ) := by
-            simpa [mul_assoc] using ha0
-          have haC0 := congrArg (fun r : ℝ => (r : ℂ)) ha
-          have haC :
-              (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ) =
-                (Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ) := by
-            simpa using haC0
-          rw [haC]
+          rw [hH4, hexpN2]
     _ ≤ ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ +
           ‖y ^ (4 : ℕ) - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
                 (24 : ℂ) * ((Real.exp (-Real.pi * t) : ℂ) ^ (2 : ℕ))‖ := by
