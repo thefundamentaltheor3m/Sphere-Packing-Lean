@@ -14,14 +14,8 @@ public import SpherePacking.MagicFunction.IntegralParametrisations
 # Integral representation of the magic function `a`
 
 We define the complex integrands and real reparametrizations used to build the scalar integrals
-`I₁'`, ..., `I₆'` and their radial versions on `V = EuclideanSpace ℝ (Fin 8)`. The resulting sum
-is the function `a`.
-
-## Main definitions
-* `MagicFunction.a.RealIntegrals.a'` and `MagicFunction.a.RadialFunctions.a`
-
-## Main statements
-* `MagicFunction.a.RadialFunctions.a_eq`
+`I₁'`, ..., `I₆'` and their radial versions on `V = EuclideanSpace ℝ (Fin 8)`. Primed names take a
+scalar parameter; unprimed names are the radial function `‖x‖^2 ↦ Iᵢ' (‖x‖^2)`.
 -/
 
 local notation "V" => EuclideanSpace ℝ (Fin 8)
@@ -35,37 +29,25 @@ variable (r : ℝ)
 
 namespace MagicFunction.a.ComplexIntegrands
 
-/-- The first complex integrand used to define the magic function `a`.
-
-The prime indicates this is a complex-variable integrand, before reparametrizing to `Φ₁`. -/
+/-- The first complex integrand used to define the magic function `a`. -/
 @[expose] public def Φ₁' : ℂ → ℂ := fun z ↦
   φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * cexp (π * I * r * (z : ℂ))
 
-/-- A copy of `Φ₁'` used for uniform indexing.
-
-The prime indicates this is a complex-variable integrand, before reparametrizing to `Φ₂`. -/
+/-- A copy of `Φ₁'` used for uniform indexing. -/
 @[expose] public def Φ₂' : ℂ → ℂ := Φ₁' r
 
-/-- The third complex integrand used to define the magic function `a`.
-
-The prime indicates this is a complex-variable integrand, before reparametrizing to `Φ₃`. -/
+/-- The third complex integrand used to define the magic function `a`. -/
 @[expose] public def Φ₃' : ℂ → ℂ := fun z ↦
   φ₀'' (-1 / (z - 1)) * (z - 1) ^ 2 * cexp (π * I * r * (z : ℂ))
 
-/-- A copy of `Φ₃'` used for uniform indexing.
-
-The prime indicates this is a complex-variable integrand, before reparametrizing to `Φ₄`. -/
+/-- A copy of `Φ₃'` used for uniform indexing. -/
 @[expose] public def Φ₄' : ℂ → ℂ := Φ₃' r
 
-/-- The fifth complex integrand used to define the magic function `a`.
-
-The prime indicates this is a complex-variable integrand, before reparametrizing to `Φ₅`. -/
+/-- The fifth complex integrand used to define the magic function `a`. -/
 @[expose] public def Φ₅' : ℂ → ℂ := fun z ↦
   φ₀'' (-1 / z) * z ^ 2 * cexp (π * I * r * (z : ℂ))
 
-/-- The sixth complex integrand used to define the magic function `a`.
-
-The prime indicates this is a complex-variable integrand, before reparametrizing to `Φ₆`. -/
+/-- The sixth complex integrand used to define the magic function `a`. -/
 @[expose] public def Φ₆' : ℂ → ℂ := fun z ↦
   φ₀'' (z) * cexp (π * I * r * (z : ℂ))
 
@@ -95,8 +77,6 @@ open MagicFunction.a.ComplexIntegrands
 
 section Def
 
--- We write some API that allows us to express the `(Φᵢ r)` as functions when needed.
-
 /-- Unfolding lemma for `Φ₁`. -/
 public lemma Φ₁_def : Φ₁ r = fun t ↦ I * Φ₁' r (z₁' t) := rfl
 
@@ -123,39 +103,25 @@ namespace MagicFunction.a.RealIntegrals
 
 open MagicFunction.a.RealIntegrands
 
-/-- The first scalar integral entering the definition of `a'`.
-
-The prime indicates the input is the scalar parameter `r`, before radializing to `I₁`. -/
+/-- The first scalar integral entering the definition of `a'`. -/
 @[expose] public def I₁' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Φ₁ x t
 
-/-- The second scalar integral entering the definition of `a'`.
-
-The prime indicates the input is the scalar parameter `r`, before radializing to `I₂`. -/
+/-- The second scalar integral entering the definition of `a'`. -/
 @[expose] public def I₂' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Φ₂ x t
 
-/-- The third scalar integral entering the definition of `a'`.
-
-The prime indicates the input is the scalar parameter `r`, before radializing to `I₃`. -/
+/-- The third scalar integral entering the definition of `a'`. -/
 @[expose] public def I₃' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Φ₃ x t
 
-/-- The fourth scalar integral entering the definition of `a'`.
-
-The prime indicates the input is the scalar parameter `r`, before radializing to `I₄`. -/
+/-- The fourth scalar integral entering the definition of `a'`. -/
 @[expose] public def I₄' : ℝ → ℂ := fun x ↦ ∫ t in (0 : ℝ)..1, Φ₄ x t
 
-/-- The fifth scalar integral entering the definition of `a'`.
-
-The prime indicates the input is the scalar parameter `r`, before radializing to `I₅`. -/
+/-- The fifth scalar integral entering the definition of `a'`. -/
 @[expose] public def I₅' : ℝ → ℂ := fun x ↦ -2 * ∫ t in (0 : ℝ)..1, Φ₅ x t
 
-/-- The sixth scalar integral entering the definition of `a'`.
-
-The prime indicates the input is the scalar parameter `r`, before radializing to `I₆`. -/
+/-- The sixth scalar integral entering the definition of `a'`. -/
 @[expose] public def I₆' : ℝ → ℂ := fun x ↦ 2 * ∫ t in Ici (1 : ℝ), Φ₆ x t
 
-/-- The scalar version of the magic function `a`, defined as the sum of `I₁'`, ..., `I₆'`.
-
-The prime indicates the input is the scalar parameter `r`, before radializing to `a`. -/
+/-- The scalar version of the magic function `a`, defined as the sum of `I₁'`, ..., `I₆'`. -/
 @[expose] public def a' : ℝ → ℂ := fun x ↦ I₁' x + I₂' x + I₃' x + I₄' x + I₅' x + I₆' x
 
 end MagicFunction.a.RealIntegrals
