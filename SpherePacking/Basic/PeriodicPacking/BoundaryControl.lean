@@ -41,10 +41,6 @@ lemma coordCubeCover_unique (x : EuclideanSpace ℝ (Fin d)) (g : cubeLattice d 
     g = coordCubeCover L hL x :=
   (Classical.choose_spec (PeriodicConstant.coordCube_unique_covers L hL x)).2 g hg
 
-lemma mem_neg_coordCubeCover_vadd_coordCube (x : EuclideanSpace ℝ (Fin d)) :
-    x ∈ (-coordCubeCover L hL x) +ᵥ coordCube d L := by
-  simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using coordCubeCover_spec L hL x
-
 lemma neg_coordCubeCover_mem_ball {C R : ℝ}
     (hC : coordCube d L ⊆ ball (0 : EuclideanSpace ℝ (Fin d)) C)
     {x : EuclideanSpace ℝ (Fin d)} (hx : x ∈ ball 0 R) :
@@ -65,7 +61,7 @@ lemma mem_vadd_coordCube_iff_eq_neg_coordCubeCover (g : cubeLattice d L hL)
     x ∈ g +ᵥ coordCube d L ↔ g = -coordCubeCover L hL x :=
   ⟨fun hx => by rw [← neg_neg g, coordCubeCover_unique L hL x (-g)
       (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using hx)],
-    fun h => h ▸ mem_neg_coordCubeCover_vadd_coordCube L hL x⟩
+    fun h => h ▸ by simpa [Set.mem_vadd_set_iff_neg_vadd_mem] using coordCubeCover_spec L hL x⟩
 
 end CoordCubeCover
 
@@ -126,10 +122,6 @@ def constVec (d : ℕ) (c : ℝ) : EuclideanSpace ℝ (Fin d) :=
   WithLp.toLp 2 (fun _ : Fin d => c)
 
 
-lemma abs_coord_lt_of_norm_lt {x : EuclideanSpace ℝ (Fin d)} {r : ℝ} (hx : ‖x‖ < r)
-    (i : Fin d) : |x i| < r :=
-  lt_of_le_of_lt (abs_coord_le_norm x i) hx
-
 /-- If `x` lies in the width-`1/2` boundary strip of `coordCube L`, then the `1/2`-ball around `x`
 lies in a fixed set of finite volume independent of the translate. -/
 lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
@@ -141,7 +133,7 @@ lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
   rcases hz with ⟨x, hx, y, hy, rfl⟩
   have hx_cube : x ∈ coordCube d L := hx.1
   have hyi : ∀ i : Fin d, |y i| < (1 / 2 : ℝ) := fun i =>
-    abs_coord_lt_of_norm_lt (by simpa [mem_ball_zero_iff] using hy) i
+    (abs_coord_le_norm y i).trans_lt (by simpa [mem_ball_zero_iff] using hy)
   refine ⟨(Set.mem_vadd_set_iff_neg_vadd_mem).2 ?_, ?_⟩
   · simp only [coordCubeInner, coordCube, constVec, Set.mem_setOf_eq, vadd_eq_add] at hx_cube ⊢
     intro i
@@ -223,10 +215,6 @@ variable {d : ℕ}
 lemma frequently_lt_finiteDensity_of_lt_density (S : SpherePacking d) {b : ℝ≥0∞}
     (hb : b < S.density) : ∃ᶠ R in (atTop : Filter ℝ), b < S.finiteDensity R :=
   frequently_lt_of_lt_limsup (h := by simpa [SpherePacking.density] using hb)
-
-lemma finite_centers_inter_ball_set (S : SpherePacking d) (R : ℝ) :
-    (S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).Finite := by
-  simpa [Set.finite_coe_iff] using SpherePacking.finite_centers_inter_ball S R
 
 end SpherePacking
 
@@ -459,8 +447,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
         (MeasureTheory.measure_ball_lt_top (μ := volume)).ne hc_mul
   -- Finite sets of centers and lattice translates.
   let R₁ : ℝ := R + r
-  have hX : (S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R₁).Finite :=
-    finite_centers_inter_ball_set S R₁
+  have hX : (S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R₁).Finite := by
+    simpa [Set.finite_coe_iff] using SpherePacking.finite_centers_inter_ball S R₁
   let s : Finset (EuclideanSpace ℝ (Fin d)) := hX.toFinset
   let htSet := PeriodicConstantApprox.finite_lattice_in_ball (d := d) L hLpos (R₁ + C)
   let t : Finset (cubeLattice d L hLpos) := htSet.toFinset
