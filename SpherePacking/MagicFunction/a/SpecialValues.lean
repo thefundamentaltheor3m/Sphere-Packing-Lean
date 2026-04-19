@@ -157,23 +157,24 @@ lemma F_eq_phi0_phi2_phi4 (z : ℂ) (hz : 0 < z.im) :
   rw [hφ₀S, hφ₀, hφ₂, hφ₄] at h'
   simpa [F, zH] using h'
 
+private lemma vadd_neg_one_eq (z : ℂ) (hz : 0 < z.im) (hz1 : 0 < (z - 1).im) :
+    ((-1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z - 1, hz1⟩ := by
+  ext1; simp [sub_eq_add_neg, add_comm]
+
 private lemma φ₀''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z - 1) = φ₀'' z := by
   have hz1 : 0 < (z - 1).im := by simpa using hz
-  have hvneg : ((-1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z - 1, hz1⟩ := by
-    ext1; simp [sub_eq_add_neg, add_comm]
-  rw [φ₀''_def (z := z - 1) hz1, φ₀''_def (z := z) hz, ← hvneg, φ₀_periodic_neg_one]
+  rw [φ₀''_def (z := z - 1) hz1, φ₀''_def (z := z) hz, ← vadd_neg_one_eq z hz hz1,
+    φ₀_periodic_neg_one]
 
 private lemma φ₂''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₂'' (z - 1) = φ₂'' z := by
   have hz1 : 0 < (z - 1).im := by simpa using hz
-  have hvneg : ((-1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z - 1, hz1⟩ := by
-    ext1; simp [sub_eq_add_neg, add_comm]
-  rw [φ₂''_def (z := z - 1) hz1, φ₂''_def (z := z) hz, ← hvneg, φ₂'_periodic_neg_one]
+  rw [φ₂''_def (z := z - 1) hz1, φ₂''_def (z := z) hz, ← vadd_neg_one_eq z hz hz1,
+    φ₂'_periodic_neg_one]
 
 private lemma φ₄''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₄'' (z - 1) = φ₄'' z := by
   have hz1 : 0 < (z - 1).im := by simpa using hz
-  have hvneg : ((-1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z - 1, hz1⟩ := by
-    ext1; simp [sub_eq_add_neg, add_comm]
-  rw [φ₄''_def (z := z - 1) hz1, φ₄''_def (z := z) hz, ← hvneg, φ₄'_periodic_neg_one]
+  rw [φ₄''_def (z := z - 1) hz1, φ₄''_def (z := z) hz, ← vadd_neg_one_eq z hz hz1,
+    φ₄'_periodic_neg_one]
 
 lemma F_sub_one (z : ℂ) (hz : 0 < z.im) :
     F z - F (z - 1) =
@@ -255,12 +256,14 @@ lemma f0_norm_bound_on_strip :
 
 /-! ### Rectangle identity for `f0` and cancellation with `I₆' 0`. -/
 
+private lemma vadd_one_eq (z : ℂ) (hz : 0 < z.im) (hz1 : 0 < (z + 1).im) :
+    ((1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z + 1, hz1⟩ := by
+  ext1; simp [add_comm]
+
 /-- Periodicity of `φ₀''` under translation by `1`. -/
 public lemma φ₀''_add_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z + 1) = φ₀'' z := by
   have hz1 : 0 < (z + 1).im := by simpa using hz
-  have hvadd : ((1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z + 1, hz1⟩ := by
-    ext1; simp [add_comm]
-  rw [φ₀''_def (z := z + 1) hz1, φ₀''_def (z := z) hz, ← hvadd, φ₀_periodic]
+  rw [φ₀''_def (z := z + 1) hz1, φ₀''_def (z := z) hz, ← vadd_one_eq z hz hz1, φ₀_periodic]
 
 lemma f0_vertical_diff (y : ℝ) (hy : 0 < y) :
     f0 ((1 : ℂ) + (y : ℂ) * Complex.I) - f0 ((y : ℂ) * Complex.I) =
@@ -460,9 +463,7 @@ lemma integral_f0_height_one_eq_neg_I6 :
 
 lemma φ₂''_add_one (z : ℂ) (hz : 0 < z.im) : φ₂'' (z + 1) = φ₂'' z := by
   have hz1 : 0 < (z + 1).im := by simpa using hz
-  have hvadd : ((1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z + 1, hz1⟩ := by
-    ext1; simp [add_comm]
-  rw [φ₂''_def (z := z + 1) hz1, φ₂''_def (z := z) hz, ← hvadd, φ₂'_periodic]
+  rw [φ₂''_def (z := z + 1) hz1, φ₂''_def (z := z) hz, ← vadd_one_eq z hz hz1, φ₂'_periodic]
 
 lemma rect_phi2 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + (1 : ℝ) * Complex.I)) -
@@ -517,15 +518,8 @@ lemma summable_coeff_A_over_q :
 private lemma cexp_pnat_succ_factor (z : ℂ) (n : ℕ) :
     cexp (2 * π * Complex.I * z * ((n + 1 : ℕ) : ℂ)) =
       cexp (2 * π * Complex.I * z) * cexp (2 * π * Complex.I * z * (n : ℂ)) := by
-  have harg : (2 * π * Complex.I * z * ((n : ℂ) + 1)) =
-      (2 * π * Complex.I * z) + (2 * π * Complex.I * z * (n : ℂ)) := by ring_nf
-  calc
-    cexp (2 * π * Complex.I * z * ((n + 1 : ℕ) : ℂ))
-        = cexp (2 * π * Complex.I * z * ((n : ℂ) + 1)) := by
-          simp [Nat.cast_add, Nat.cast_one]
-    _ = cexp ((2 * π * Complex.I * z) + (2 * π * Complex.I * z * (n : ℂ))) := by simp [harg]
-    _ = cexp (2 * π * Complex.I * z) * cexp (2 * π * Complex.I * z * (n : ℂ)) := by
-          simp [Complex.exp_add, mul_left_comm, mul_comm]
+  rw [show ((n + 1 : ℕ) : ℂ) = (n : ℂ) + 1 by push_cast; ring, mul_add, mul_one, Complex.exp_add]
+  ring
 
 private lemma tsum_pnat_div_q_eq_nat_tsum (z : ℍ) (a : ℕ → ℂ)
     (hrel : ∀ n : ℕ, a n = (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))) :
