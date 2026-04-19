@@ -686,80 +686,25 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
           (Set.Ici (1 : ℝ)) := by
       fun_prop
     -- Use `integrable_of_isBigO_exp_neg`.
+    set b : ℝ := (2 * π + π * u) / 2 with hb_def
+    have hb : 0 < b := ha
     have hO :
         (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t)) =O[atTop]
-          fun t : ℝ => Real.exp (-((2 * π + π * u) / 2) * t) := by
-      -- Let `b = (2π + πu) / 2 > 0`.
-      set b : ℝ := (2 * π + π * u) / 2
-      have hb : 0 < b := ha
-      have hlittle :
-          (fun t : ℝ => (t ^ (2 : ℕ) : ℝ)) =o[atTop] fun t : ℝ => Real.exp (b * t) :=
-        isLittleO_pow_exp_pos_mul_atTop 2 hb
+          fun t : ℝ => Real.exp (-b * t) := by
+      -- `C·t² = o(exp(b·t))`, then multiply by `exp(-b·t)` twice.
       have hlittleC :
           (fun t : ℝ => C * (t ^ (2 : ℕ) : ℝ)) =o[atTop] fun t : ℝ => Real.exp (b * t) :=
-        hlittle.const_mul_left C
-      have hExp : (fun t : ℝ => Real.exp (-b * t)) =O[atTop] fun t : ℝ => Real.exp (-b * t) := by
-        simpa using (Asymptotics.isBigO_refl (fun t : ℝ => Real.exp (-b * t)) atTop)
-      -- First show `C*t^2*exp(-b*t) = O(1)` using `t^2 = o(exp(b*t))`.
-      have hfac :
-          (fun t : ℝ => (C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) =o[atTop]
-            fun t : ℝ => (Real.exp (b * t)) * Real.exp (-b * t) :=
-        hlittleC.mul_isBigO hExp
-      have hfac' :
-          (fun t : ℝ => (C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) =o[atTop]
-            fun _t : ℝ => (1 : ℝ) :=
-        hfac.congr_right (fun t => by
-          calc
-            Real.exp (b * t) * Real.exp (-b * t) = Real.exp (b * t + (-b * t)) := by
-              simpa [Real.exp_add] using (Real.exp_add (b * t) (-b * t)).symm
-            _ = 1 := by simp)
+        (isLittleO_pow_exp_pos_mul_atTop 2 hb).const_mul_left C
+      have hExpRef : (fun t : ℝ => Real.exp (-b * t)) =O[atTop]
+          fun t : ℝ => Real.exp (-b * t) := Asymptotics.isBigO_refl _ _
       have hfacBig :
           (fun t : ℝ => (C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) =O[atTop]
             fun _t : ℝ => (1 : ℝ) :=
-        hfac'.isBigO
-      -- Multiply by `exp(-b*t)` one more time to get `C*t^2*exp(-(2b)*t) = O(exp(-b*t))`.
-      have hO' :
-          (fun t : ℝ => ((C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) * Real.exp (-b * t)) =O[atTop]
-            fun t : ℝ => (1 : ℝ) * Real.exp (-b * t) :=
-        hfacBig.mul (Asymptotics.isBigO_refl (fun t : ℝ => Real.exp (-b * t)) atTop)
-      have hO'' :
-          (fun t : ℝ => C * (t ^ (2 : ℕ) : ℝ) * Real.exp (-(2 * π + π * u) * t)) =O[atTop]
-            fun t : ℝ => Real.exp (-b * t) := by
-        -- Simplify the right side of `hO'`.
-        have hO1 :
-            (fun t : ℝ =>
-                ((C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) * Real.exp (-b * t)) =O[atTop]
-              fun t : ℝ => Real.exp (-b * t) := by
-          simpa [one_mul] using hO'
-        -- Rewrite the left side using `exp_add` and `b = (2π+πu)/2`.
-        refine hO1.congr_left (fun t => ?_)
-        have hmul :
-            Real.exp (-b * t) * Real.exp (-b * t) = Real.exp (-(2 * b * t)) := by
-          have h := (Real.exp_add (-(b * t)) (-(b * t))).symm
-          have : (-(b * t)) + (-(b * t)) = -(2 * b * t) := by ring
-          -- Rewrite `-b*t` as `-(b*t)` using `neg_mul`.
-          simpa [neg_mul, this] using h
-        -- Now unfold `b` in the exponent.
-        have hb2 : (2 * b) = (2 * π + π * u) := by
-          dsimp [b]
-          ring_nf
-        -- Put everything together.
-        calc
-          ((C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) * Real.exp (-b * t)
-              = (C * (t ^ (2 : ℕ) : ℝ)) * (Real.exp (-b * t) * Real.exp (-b * t)) := by
-                  simp [mul_assoc]
-          _ = (C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-(2 * b * t)) := by
-                  -- Use `hmul` without cancellation.
-                  simpa [mul_assoc] using congrArg (fun s : ℝ => (C * (t ^ (2 : ℕ) : ℝ)) * s) hmul
-          _ = C * (t ^ (2 : ℕ) : ℝ) * Real.exp (-(2 * π + π * u) * t) := by
-                  -- Rewrite `2*b*t` using `hb2`, inside the exponential.
-                  have harg : (2 * b * t) = (2 * π + π * u) * t := by
-                    ring
-                  have harg' : -(2 * b * t) = -(2 * π + π * u) * t := by
-                    -- Multiply `harg` by `-1` and rewrite `-((·) * t)` as `-(·) * t` by `ring`.
-                    ring
-                  rw [hb2, neg_mul]
-      simpa using hO''
+        ((hlittleC.mul_isBigO hExpRef).congr_right (fun t => by
+          rw [← Real.exp_add]; simp)).isBigO
+      refine ((hfacBig.mul hExpRef).congr_left (fun t => ?_)).congr_right (fun _ => by ring)
+      rw [mul_assoc, ← Real.exp_add]
+      congr 1; dsimp [b]; ring_nf
     have hIntIoi :
         IntegrableOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
           (Set.Ioi (1 : ℝ)) :=
