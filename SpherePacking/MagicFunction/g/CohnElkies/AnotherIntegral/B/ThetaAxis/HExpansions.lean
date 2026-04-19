@@ -130,20 +130,15 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
     linarith [h.trans hbd]
   -- Replace `y = 2a + 2b` into `y^4` and express `a^4`, `a^3·b` via exp-arithmetic.
   have ha4 : a ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) := by
-    have : (Real.exp (-Real.pi * t / 4) : ℂ) ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) := by
-      have hr : (Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = Real.exp (-Real.pi * t) := by
-        rw [← Real.exp_nat_mul]; congr 1; ring
-      simpa [Complex.ofReal_pow] using congrArg (fun r : ℝ => (r : ℂ)) hr
-    simpa [a] using this
+    have hr : (Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = Real.exp (-Real.pi * t) := by
+      rw [← Real.exp_nat_mul]; congr 1; ring
+    simpa [a, Complex.ofReal_pow] using congrArg (fun r : ℝ => (r : ℂ)) hr
   have ha3b : a ^ (3 : ℕ) * b = (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) := by
     have hr : (Real.exp (-Real.pi * t / 4)) ^ (3 : ℕ) *
         Real.exp (-(9 / 4 : ℝ) * Real.pi * t) = Real.exp (-(3 : ℝ) * Real.pi * t) := by
       rw [← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring
-    have hC : (Real.exp (-Real.pi * t / 4) : ℂ) ^ (3 : ℕ) *
-        (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ) =
-        (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) := by
-      simpa [Complex.ofReal_pow] using congrArg (fun r : ℝ => (r : ℂ)) hr
-    simpa [a, b] using hC
+    simpa [a, b, Complex.ofReal_pow, Complex.ofReal_mul] using
+      congrArg (fun r : ℝ => (r : ℂ)) hr
   have hy_main :
       y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) - (64 : ℂ) *
             (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)
@@ -170,7 +165,8 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
         rw [← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring
       simpa [norm_mul, norm_pow, ha, hb] using hr
     have hb4 : ‖b ^ (4 : ℕ)‖ = Real.exp (-(9 : ℝ) * Real.pi * t) := by
-      have hr : (Real.exp (-(9 / 4 : ℝ) * Real.pi * t)) ^ 4 = Real.exp (-(9 : ℝ) * Real.pi * t) := by
+      have hr : (Real.exp (-(9 / 4 : ℝ) * Real.pi * t)) ^ 4 =
+          Real.exp (-(9 : ℝ) * Real.pi * t) := by
         rw [← Real.exp_nat_mul]; congr 1; ring
       simpa [norm_pow, hb] using hr
     have hab3_le : ‖a * b ^ (3 : ℕ)‖ ≤ Real.exp (-(5 : ℝ) * Real.pi * t) := by
