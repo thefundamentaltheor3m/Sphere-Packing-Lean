@@ -433,16 +433,12 @@ lemma strip_identity_phi2 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + (1 : ℝ) * Complex.I)) =
       ∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I) := by
   have hrect := rect_phi2 m hm
-  have hVert :
-      ∫ y : ℝ in (1 : ℝ)..m, φ₂'' ((1 : ℝ) + y * Complex.I) =
-        ∫ y : ℝ in (1 : ℝ)..m, φ₂'' ((0 : ℝ) + y * Complex.I) := by
-    refine intervalIntegral.integral_congr (μ := MeasureTheory.volume) ?_
-    intro y hy
-    have hy1 : (1 : ℝ) ≤ y := (Set.uIcc_of_le hm ▸ hy).1
-    have hy0 : 0 < y := lt_of_lt_of_le (by norm_num) hy1
-    have hyIm : 0 < (((y : ℂ) * Complex.I) : ℂ).im := by simpa [mul_assoc] using hy0
-    simpa [add_assoc, add_comm, add_left_comm, mul_assoc] using
-      φ₂''_add_one (z := (y : ℂ) * Complex.I) hyIm
+  have hVert : ∫ y : ℝ in (1 : ℝ)..m, φ₂'' ((1 : ℝ) + y * Complex.I) =
+      ∫ y : ℝ in (1 : ℝ)..m, φ₂'' ((0 : ℝ) + y * Complex.I) :=
+    intervalIntegral.integral_congr (μ := MeasureTheory.volume) fun y hy => by
+      have hy0 : 0 < y := lt_of_lt_of_le (by norm_num) ((Set.uIcc_of_le hm ▸ hy).1)
+      simpa [add_assoc, add_comm, add_left_comm, mul_assoc] using
+        φ₂''_add_one (z := (y : ℂ) * Complex.I) (by simpa [mul_assoc] using hy0)
   grind only
 
 lemma summable_coeff_A_over_q :
@@ -487,10 +483,8 @@ private lemma A_div_q_eq_nat_tsum (z : ℍ)
     (a : ℕ → ℂ) (hrel : ∀ n : ℕ, a n = (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))) :
     ((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z) =
       (720 : ℂ) * ∑' n : ℕ, a n * cexp (2 * π * Complex.I * z * n) := by
-  have hA :
-      (E₂ z) * (E₄ z) - (E₆ z) =
-        (720 : ℂ) *
-          ∑' (n : ℕ+), (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
+  have hA : (E₂ z) * (E₄ z) - (E₆ z) = (720 : ℂ) *
+      ∑' (n : ℕ+), (n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ)) := by
     simpa [mul_assoc, mul_left_comm, mul_comm] using (E₂_mul_E₄_sub_E₆ z)
   rw [hA, mul_div_assoc, ← tsum_div_const, tsum_pnat_div_q_eq_nat_tsum z a hrel]
 
@@ -509,32 +503,25 @@ lemma tendsto_A_div_q :
 
 private lemma tendsto_Delta_div_q :
     Tendsto (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) atImInfty (𝓝 (1 : ℂ)) := by
-  have hrew :
-      (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) =
-        fun z : ℍ => ∏' n : ℕ, (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24 := by
-    funext z
-    simp [Δ, div_eq_mul_inv, mul_left_comm, mul_comm]
+  have hrew : (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) =
+      fun z : ℍ => ∏' n : ℕ, (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24 := by
+    funext z; simp [Δ, div_eq_mul_inv, mul_left_comm, mul_comm]
   simpa [hrew] using (Delta_boundedfactor : Tendsto _ atImInfty (𝓝 (1 : ℂ)))
 
 private lemma tendsto_A_over_Delta :
     Tendsto (fun z : ℍ => ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z))
       atImInfty (𝓝 (720 : ℂ)) := by
-  have hq_ne : ∀ z : ℍ, (cexp (2 * π * Complex.I * z) : ℂ) ≠ 0 := fun _ => by simp
-  have hrew :
-      (fun z : ℍ => ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z)) =
-        fun z : ℍ =>
-          (((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z)) /
-            ((Δ z) / cexp (2 * π * Complex.I * z)) := by
-    funext z; field_simp [hq_ne z, Δ_ne_zero z]
+  have hrew : (fun z : ℍ => ((E₂ z) * (E₄ z) - (E₆ z)) / (Δ z)) =
+      fun z : ℍ => (((E₂ z) * (E₄ z) - (E₆ z)) / cexp (2 * π * Complex.I * z)) /
+        ((Δ z) / cexp (2 * π * Complex.I * z)) := by
+    funext z; field_simp [(by simp : (cexp (2 * π * Complex.I * z) : ℂ) ≠ 0), Δ_ne_zero z]
   rw [hrew]
   simpa using tendsto_A_div_q.div tendsto_Delta_div_q (by norm_num : (1 : ℂ) ≠ 0)
 
 lemma tendsto_phi2'_atImInfty :
     Tendsto (fun z : ℍ => φ₂' z) atImInfty (𝓝 (720 : ℂ)) := by
-  have hE4 : Tendsto (fun z : ℍ => E₄ z) atImInfty (𝓝 (1 : ℂ)) :=
-    SpherePacking.ModularForms.tendsto_E₄_atImInfty
   simpa [φ₂', div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, one_mul] using
-    hE4.mul tendsto_A_over_Delta
+    SpherePacking.ModularForms.tendsto_E₄_atImInfty.mul tendsto_A_over_Delta
 
 private lemma norm_phi2_strip_bound_le {ε : ℝ} {A m : ℝ}
     (hA : ∀ z : ℍ, A ≤ z.im → ‖φ₂' z - (720 : ℂ)‖ < ε / 2) (hmA : A ≤ m) (hm0 : 0 < m) :
@@ -547,11 +534,9 @@ private lemma norm_phi2_strip_bound_le {ε : ℝ} {A m : ℝ}
 
 private lemma intervalIntegrable_phi2_strip {m : ℝ} (hm : 0 < m) :
     IntervalIntegrable (fun x : ℝ => φ₂'' (x + m * Complex.I)) MeasureTheory.volume 0 1 := by
-  have hcont : ContinuousOn (fun x : ℝ => φ₂'' (x + m * Complex.I)) (Set.uIcc (0 : ℝ) 1) :=
-    MagicFunction.a.ComplexIntegrands.φ₂''_holo.continuousOn.comp
-      (continuous_ofReal.add continuous_const).continuousOn
-      (fun x _ => by simpa [Complex.add_im] using hm)
-  simpa using hcont.intervalIntegrable
+  simpa using (MagicFunction.a.ComplexIntegrands.φ₂''_holo.continuousOn.comp
+    (continuous_ofReal.add continuous_const).continuousOn
+    (fun x _ => by simpa [Complex.add_im] using hm)).intervalIntegrable
 
 private lemma integral_phi2_sub_720 {m : ℝ} (hm : 0 < m) :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) - (720 : ℂ) =
@@ -576,9 +561,8 @@ lemma tendsto_top_phi2 :
 
 lemma integral_phi2_height_one :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) = (720 : ℂ) := by
-  have hEq :
-      (fun _m : ℝ => ∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) =ᶠ[atTop]
-        fun m : ℝ => ∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I) := by
+  have hEq : (fun _m : ℝ => ∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) =ᶠ[atTop]
+      fun m : ℝ => ∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I) := by
     filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with m hm
     simpa [zI] using strip_identity_phi2 m hm
   simpa using tendsto_const_nhds_iff.mp (tendsto_top_phi2.congr' hEq.symm)
