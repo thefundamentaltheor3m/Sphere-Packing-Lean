@@ -111,11 +111,7 @@ public lemma measurableSet_iocCube : MeasurableSet (iocCube (d := d)) := by
 public lemma nullMeasurableSet_iocCube : NullMeasurableSet (iocCube (d := d)) :=
   (measurableSet_iocCube (d := d)).nullMeasurableSet
 
-/--
-Every point `x : ℝ^d` has a unique translate by an integer vector that lies in `iocCube`.
-
-This is the usual "fractional part" decomposition used to identify `ℝ^d / ℤ^d` with a cube.
--/
+/-- Every point `x : ℝ^d` has a unique translate by an integer vector that lies in `iocCube`. -/
 public lemma existsUnique_add_intVec_mem_iocCube (x : E) :
     ∃! n : Fin d → ℤ, x + SchwartzMap.PoissonSummation.Standard.intVec (d := d) n ∈
       iocCube (d := d) := by
@@ -231,23 +227,21 @@ public theorem isAddFundamentalDomain_iocCube :
     MeasureTheory.IsAddFundamentalDomain (SchwartzMap.standardLattice d)
       (SchwartzMap.PoissonSummation.Standard.iocCube (d := d)) (volume : Measure E) := by
   refine MeasureTheory.IsAddFundamentalDomain.mk'
-      (SchwartzMap.PoissonSummation.Standard.nullMeasurableSet_iocCube (d := d)) ?_
-  intro x
+      (SchwartzMap.PoissonSummation.Standard.nullMeasurableSet_iocCube (d := d)) fun x => ?_
   rcases SchwartzMap.PoissonSummation.Standard.existsUnique_add_intVec_mem_iocCube (d := d) x with
     ⟨n, hn, hn_unique⟩
   refine
     ⟨(⟨SchwartzMap.PoissonSummation.Standard.intVec (d := d) n,
-        SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n⟩), ?_, ?_⟩
-  · simpa [Submodule.vadd_def, vadd_eq_add, add_comm, add_left_comm, add_assoc] using hn
-  · intro ℓ hℓ
-    rcases
-        SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice (d := d)
-          (ℓ : E) ℓ.property with
-      ⟨n', hn'⟩
-    have : n' = n := hn_unique n' (by
-      simpa [Submodule.vadd_def, vadd_eq_add, add_comm, add_left_comm, add_assoc, hn'] using hℓ)
-    apply Subtype.ext
-    simp [hn', this]
+        SchwartzMap.PoissonSummation.Standard.intVec_mem_standardLattice (d := d) n⟩),
+      by simpa [Submodule.vadd_def, vadd_eq_add, add_comm, add_left_comm, add_assoc] using hn,
+      fun ℓ hℓ => ?_⟩
+  rcases
+      SchwartzMap.PoissonSummation.Standard.exists_intVec_eq_of_mem_standardLattice (d := d)
+        (ℓ : E) ℓ.property with
+    ⟨n', hn'⟩
+  have : n' = n := hn_unique n' (by
+    simpa [Submodule.vadd_def, vadd_eq_add, add_comm, add_left_comm, add_assoc, hn'] using hℓ)
+  exact Subtype.ext (by simp [hn', this])
 
 /-- Pull back Haar integration on `(ℝ/ℤ)^d` to `iocCube` in `E = ℝ^d`. -/
 public theorem integral_eq_integral_preimage_coeFunE (g : UnitAddTorus (Fin d) → ℂ)
