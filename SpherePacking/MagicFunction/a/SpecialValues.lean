@@ -119,7 +119,6 @@ lemma I₄'_zero :
 /-! ### S-transform identity for `F(z) - F(z-1)`. -/
 
 lemma φ₂''_def (z : ℂ) (hz : 0 < z.im) : φ₂'' z = φ₂' ⟨z, hz⟩ := by simp [φ₂'', hz]
-
 lemma φ₄''_def (z : ℂ) (hz : 0 < z.im) : φ₄'' z = φ₄' ⟨z, hz⟩ := by simp [φ₄'', hz]
 
 lemma F_eq_phi0_phi2_phi4 (z : ℂ) (hz : 0 < z.im) :
@@ -136,8 +135,7 @@ lemma F_eq_phi0_phi2_phi4 (z : ℂ) (hz : 0 < z.im) :
   simpa [F, zH, φ₀''_def (z := z) hz, φ₂'', φ₄'', hz] using h'
 
 private lemma vadd_neg_one_eq (z : ℂ) (hz : 0 < z.im) (hz1 : 0 < (z - 1).im) :
-    ((-1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z - 1, hz1⟩ := by
-  ext1; simp [sub_eq_add_neg, add_comm]
+    ((-1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z - 1, hz1⟩ := by ext1; simp [sub_eq_add_neg, add_comm]
 
 private lemma φ₀''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z - 1) = φ₀'' z := by
   rw [φ₀''_def (z := z - 1) (by simpa using hz), φ₀''_def (z := z) hz,
@@ -215,8 +213,7 @@ lemma f0_norm_bound_on_strip :
 /-! ### Rectangle identity for `f0` and cancellation with `I₆' 0`. -/
 
 private lemma vadd_one_eq (z : ℂ) (hz : 0 < z.im) (hz1 : 0 < (z + 1).im) :
-    ((1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z + 1, hz1⟩ := by
-  ext1; simp [add_comm]
+    ((1 : ℝ) +ᵥ (⟨z, hz⟩ : ℍ) : ℍ) = ⟨z + 1, hz1⟩ := by ext1; simp [add_comm]
 
 /-- Periodicity of `φ₀''` under translation by `1`. -/
 public lemma φ₀''_add_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z + 1) = φ₀'' z := by
@@ -254,10 +251,9 @@ private lemma norm_phi0_imag_le {C₀ : ℝ}
     {t : ℝ} (ht : t ∈ Set.Ioi (1 : ℝ)) :
     ‖φ₀'' ((t : ℂ) * Complex.I)‖ ≤ C₀ * Real.exp (-2 * π * t) := by
   let zH : ℍ := ⟨(t : ℂ) * Complex.I, by simpa [mul_assoc] using lt_of_lt_of_le (by norm_num) ht.le⟩
-  have hφ0 : ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * zH.im) := by
+  simpa [zH, UpperHalfPlane.im] using (show ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * zH.im) by
     simpa [φ₀''_coe_upperHalfPlane] using hC₀ zH
-      (by simpa [zH, UpperHalfPlane.im] using lt_of_lt_of_le (by norm_num) ht.le)
-  simpa [zH, UpperHalfPlane.im] using hφ0
+      (by simpa [zH, UpperHalfPlane.im] using lt_of_lt_of_le (by norm_num) ht.le))
 
 private lemma integrable_const_mul_exp_on_Ioi (C₀ : ℝ) :
     MeasureTheory.Integrable (fun t : ℝ => C₀ * Real.exp (-2 * π * t))

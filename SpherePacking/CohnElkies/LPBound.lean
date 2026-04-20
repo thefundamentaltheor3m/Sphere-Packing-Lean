@@ -134,10 +134,9 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
   have hnexp : ∀ x : ↑(P.centers ∩ D),
       ‖exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
         (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])‖ = (1 : ℝ) := fun x => by
-    simpa [show (2 * π * I *
-        (⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℂ)) =
-        ((2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)),
-          (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℝ) : ℂ) * I from by simp [mul_assoc, mul_comm]]
+    simpa [show (2 * π * I * (⟪(x : EuclideanSpace ℝ (Fin d)),
+        (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℂ)) = ((2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)),
+        (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℝ) : ℂ) * I from by simp [mul_assoc, mul_comm]]
       using Complex.norm_exp_ofReal_mul_I
         (2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
   have hA_le : ‖A‖ ≤ n := by
@@ -175,11 +174,11 @@ lemma calc_steps' (hd : 0 < d) :
     (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : ↥P.lattice), f (↑x - ↑y + ↑ℓ)).re := by
   haveI : Finite ↑(P.centers ∩ D) := finite_centers_inter_of_isBounded P D hD_isBounded hd
   rw [re_tsum Summable.of_finite]
-  refine tsum_congr fun x => ?_
-  rw [re_tsum Summable.of_finite]
-  exact tsum_congr fun y => by simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-    (re_tsum (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate
-      (Λ := P.lattice) (f := f) (a := (↑x - ↑y : EuclideanSpace ℝ (Fin d))))).symm
+  exact tsum_congr fun x => by
+    rw [re_tsum Summable.of_finite]
+    exact tsum_congr fun y => by simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+      (re_tsum (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate
+        (Λ := P.lattice) (f := f) (a := (↑x - ↑y : EuclideanSpace ℝ (Fin d))))).symm
 
 include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hD_unique_covers in
 omit hne_zero hReal hCohnElkies₂ in
@@ -306,8 +305,8 @@ theorem calc_steps (hd : 0 < d) :
     ↑(P.numReps' hd hD_isBounded) * (f 0).re ≥ ↑(P.numReps' hd hD_isBounded) ^ 2 *
       (𝓕 f 0).re / ZLattice.covolume P.lattice volume :=
   ge_trans (calc_steps_part1 (P := P) (D := D) hRealFourier hCohnElkies₁ hP hD_isBounded
-      hD_unique_covers hd)
-    (calc_steps_part2 (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂) hD_isBounded hd)
+    hD_unique_covers hd) (calc_steps_part2 (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂)
+      hD_isBounded hd)
 
 end Fundamental_Domain_Dependent
 
@@ -350,15 +349,14 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
         ← mul_assoc, ENNReal.mul_le_mul_iff_left vol_ne_zero vol_ne_top]
     rw [← PeriodicSpherePacking.numReps_eq_numReps' (S := P) Fact.out hD_isBounded
       hD_unique_covers] at hCalc
-    have hfouaux₁ : ((𝓕 f 0).re.toNNReal : ENNReal) ≠ 0 := by
-      refine ENNReal.coe_ne_zero.mpr ?_
+    have hfouaux₁ : ((𝓕 f 0).re.toNNReal : ENNReal) ≠ 0 := ENNReal.coe_ne_zero.mpr <| by
       rw [ne_eq, Real.toNNReal_eq_zero, not_le]
       exact lt_of_le_of_ne (hCohnElkies₂ 0) fun heq => h𝓕f <|
         Complex.ext heq.symm (by simpa [eq_comm] using congrArg Complex.im (hRealFourier 0))
     rw [← ENNReal.mul_le_mul_iff_left hfouaux₁ ENNReal.coe_ne_top,
-        div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _, mul_assoc ((f 0).re.toNNReal : ENNReal) _ _,
-        ENNReal.inv_mul_cancel hfouaux₁ ENNReal.coe_ne_top, mul_one, mul_assoc,
-        ← ENNReal.div_eq_inv_mul]
+      div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _, mul_assoc ((f 0).re.toNNReal : ENNReal) _ _,
+      ENNReal.inv_mul_cancel hfouaux₁ ENNReal.coe_ne_top, mul_one, mul_assoc,
+      ← ENNReal.div_eq_inv_mul]
     have hnRaux₁ : ENat.toENNReal (P.numReps : ENat) ≠ 0 := by
       rw [ENat.toENNReal_coe, ne_eq, Nat.cast_eq_zero]
       unfold PeriodicSpherePacking.numReps
@@ -371,9 +369,8 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     have hcov_pos : 0 < ZLattice.covolume P.lattice volume := ZLattice.covolume_pos P.lattice volume
     have hRHSCast :
         (P.numReps : ENNReal) * ↑(f 0).re.toNNReal = (P.numReps * (f 0).re).toNNReal := by
-      rw [show ((P.numReps : ℝ) * (f 0).re).toNNReal
-            = (P.numReps : NNReal) * (f 0).re.toNNReal from by
-        rw [Real.toNNReal_mul (Nat.cast_nonneg _)]; simp]
+      rw [show ((P.numReps : ℝ) * (f 0).re).toNNReal = (P.numReps : NNReal) * (f 0).re.toNNReal
+        from by rw [Real.toNNReal_mul (Nat.cast_nonneg _)]; simp]
       push_cast; rfl
     have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
         ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *

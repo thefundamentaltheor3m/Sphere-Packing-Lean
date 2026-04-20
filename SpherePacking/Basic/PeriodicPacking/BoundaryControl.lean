@@ -367,7 +367,6 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
               Tendsto ratio atTop (𝓝 (1 : ℝ≥0∞)))).eventually
           (Ioi_mem_nhds (lt_tsub_iff_left.mp hLerr : b + cubeShellErr L < c))))).exists with
     ⟨R, hcR, hRpos, hRratio⟩
-  -- Abbreviations for volumes.
   let volBall : ℝ≥0∞ := volume (ball (0 : EuclideanSpace ℝ (Fin d)) r)
   let volCube : ℝ≥0∞ := volume (coordCube d L)
   let shellVol : ℝ≥0∞ :=
@@ -381,7 +380,6 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
       pow_ne_zero d (ENNReal.ofReal_pos.mpr hLpos).ne'
   have hvolCube_ne_top : volCube ≠ ∞ :=
     (PeriodicConstant.isBounded_coordCube L hLpos).measure_lt_top.ne
-  -- Convert `hcR` to a strict inequality involving `encard` of centers in `ball 0 (R+r)`.
   have hc_ratio : c * ratio R <
       ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall /
         volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) := by
