@@ -57,6 +57,8 @@ lemma integrable_permJ1Kernel (w : EuclideanSpace ℝ (Fin 8)) :
       simpa [sProd, μProd] using
         (SpherePacking.Integration.prod_muIoc01_eq_restrict
           (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8)))))
+    have hcontψ : ContinuousOn (fun t : ℝ => ψT' (z₁line t)) (Ioc (0 : ℝ) 1) :=
+      continuousOn_ψT'_z₁line
     have hcont :
         ContinuousOn (permJ1Kernel w) sProd := by
       have hphase :
@@ -64,34 +66,53 @@ lemma integrable_permJ1Kernel (w : EuclideanSpace ℝ (Fin 8)) :
             cexp ((-2 * (π * ⟪p.1, w⟫)) * I) := by
         have hinner : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => (⟪p.1, w⟫ : ℝ) := by
           simpa using (continuous_fst.inner continuous_const)
+        have hreal :
+            Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
+              (-2 : ℝ) * ((π : ℝ) * (⟪p.1, w⟫ : ℝ)) :=
+          continuous_const.mul (continuous_const.mul hinner)
         have harg :
             Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
               ((((-2 : ℝ) * ((π : ℝ) * (⟪p.1, w⟫ : ℝ))) : ℝ) : ℂ) * (Complex.I : ℂ) :=
-          (Complex.continuous_ofReal.comp
-            (continuous_const.mul (continuous_const.mul hinner))).mul continuous_const
+          (Complex.continuous_ofReal.comp hreal).mul continuous_const
         simpa [mul_assoc] using (Complex.continuous_exp.comp harg)
-      have hψ : ContinuousOn (fun p : EuclideanSpace ℝ (Fin 8) × ℝ => ψT' (z₁line p.2)) sProd :=
-        continuousOn_ψT'_z₁line.comp continuousOn_snd fun p hp => (Set.mem_prod.mp hp).2
+      have hψ : ContinuousOn (fun p : EuclideanSpace ℝ (Fin 8) × ℝ => ψT' (z₁line p.2)) sProd := by
+        refine hcontψ.comp continuousOn_snd ?_
+        intro p hp
+        exact (Set.mem_prod.mp hp).2
       have hgauss :
           Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
             cexp ((π : ℂ) * I * ((‖p.1‖ ^ 2 : ℝ) : ℂ) * (z₁line p.2)) := by
+        have hnormsq : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => (‖p.1‖ ^ 2 : ℝ) :=
+          (continuous_fst.norm.pow 2)
+        have hz : Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ => z₁line p.2 :=
+          continuous_z₁line.comp continuous_snd
         have harg' :
             Continuous fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
               (π : ℂ) * I * (((‖p.1‖ ^ 2 : ℝ) : ℂ) * (z₁line p.2)) :=
-          continuous_const.mul
-            ((continuous_ofReal.comp (continuous_fst.norm.pow 2)).mul
-              (continuous_z₁line.comp continuous_snd))
+          continuous_const.mul ((continuous_ofReal.comp hnormsq).mul hz)
         simpa [mul_assoc] using (Complex.continuous_exp.comp harg')
-      refine (hphase.continuousOn.mul ((continuousOn_const.mul hψ).mul hgauss.continuousOn)).congr ?_
+      have hconst : ContinuousOn (fun _p : EuclideanSpace ℝ (Fin 8) × ℝ => (Complex.I : ℂ)) sProd :=
+        continuousOn_const
+      have hmul1 :
+          ContinuousOn
+            (fun p : EuclideanSpace ℝ (Fin 8) × ℝ => (Complex.I : ℂ) * ψT' (z₁line p.2)) sProd :=
+        hconst.mul hψ
+      have hmul2 :
+          ContinuousOn
+            (fun p : EuclideanSpace ℝ (Fin 8) × ℝ =>
+              ((Complex.I : ℂ) * ψT' (z₁line p.2)) *
+                cexp ((π : ℂ) * I * ((‖p.1‖ ^ 2 : ℝ) : ℂ) * (z₁line p.2))) sProd :=
+        hmul1.mul hgauss.continuousOn
+      refine (hphase.continuousOn.mul hmul2).congr ?_
       intro p _hp
       simp [permJ1Kernel, mul_assoc]
     have hker : AEStronglyMeasurable (permJ1Kernel w) (μProd.restrict sProd) := by
       simpa [μProd] using (hcont.aestronglyMeasurable (μ := μProd) (s := sProd) hsProd)
     simpa [hμ] using hker
-  exact
+  refine
     (MeasureTheory.integrable_prod_iff' (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8))))
-      (ν := μIoc01) hmeas).2
-    ⟨ae_integrable_permJ1Kernel_slice (w := w), integrable_integral_norm_permJ1Kernel (w := w)⟩
+      (ν := μIoc01) hmeas).2 ?_
+  exact ⟨ae_integrable_permJ1Kernel_slice (w := w), integrable_integral_norm_permJ1Kernel (w := w)⟩
 
 lemma integral_permJ1Kernel_x (w : EuclideanSpace ℝ (Fin 8))
     (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
