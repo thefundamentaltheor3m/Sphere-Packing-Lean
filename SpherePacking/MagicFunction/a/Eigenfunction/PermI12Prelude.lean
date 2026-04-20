@@ -62,11 +62,8 @@ public lemma radial_inversion {V : Type*} [NormedAddCommGroup V] [InnerProductSp
         (FourierTransform.fourierCLE ℂ (SchwartzMap V E) f) = f := by
   ext x; simpa [hf x] using congrFun (fourier_involution (V:=V) (E:=E) f) x
 
-lemma φ₀''_add_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z + 1) = φ₀'' z :=
-  MagicFunction.a.SpecialValues.φ₀''_add_one (z := z) hz
-
 lemma φ₀''_sub_one (z : ℂ) (hz : 0 < z.im) : φ₀'' (z - 1) = φ₀'' z := by
-  simpa using (φ₀''_add_one (z := z - 1) (by simpa using hz)).symm
+  simpa using (MagicFunction.a.SpecialValues.φ₀''_add_one (z := z - 1) (by simpa using hz)).symm
 
 lemma neg_one_div_sub_one_im_pos (w : ℂ) (hw : 0 < w.im) :
     0 < (-1 / (w - 1)).im := by
