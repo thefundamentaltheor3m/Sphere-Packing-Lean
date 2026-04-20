@@ -73,9 +73,8 @@ private lemma exists_expNorm_le_add_one (r : ℝ) :
   have hcont : ContinuousAt (expNorm r) (1 : ℂ) := by
     simpa [expNorm] using (continuousAt_id.mul continuousAt_const).cexp.norm
   rcases (Metric.continuousAt_iff.1 hcont) 1 (by norm_num) with ⟨δ, hδ_pos, hδ⟩
-  exact ⟨δ, hδ_pos, fun {z} hz =>
-    le_of_lt (sub_lt_iff_lt_add'.1
-      (abs_sub_lt_iff.1 (by simpa [Real.dist_eq] using hδ hz)).1)⟩
+  exact ⟨δ, hδ_pos, fun {z} hz => le_of_lt (sub_lt_iff_lt_add'.1
+    (abs_sub_lt_iff.1 (by simpa [Real.dist_eq] using hδ hz)).1)⟩
 
 private lemma exists_im_bound_norm_ψS_le_one {ψS : UpperHalfPlane → ℂ}
     (tendsto_ψS_atImInfty : Tendsto ψS UpperHalfPlane.atImInfty (𝓝 (0 : ℂ))) :

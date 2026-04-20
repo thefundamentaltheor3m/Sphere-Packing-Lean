@@ -143,9 +143,8 @@ public lemma hasDerivAt_integral_gN_of_continuous
       (ae_restrict_mem (μ := (volume : Measure ℝ)) (s := (Ι (0 : ℝ) 1)) (by measurability))
   have continuous_gN : ∀ n : ℕ, ∀ x : ℝ,
       Continuous fun t : ℝ ↦ gN (coeff := coeff) (hf := hf) n x t := fun n x => by
-    simpa [gN, g] using
-      (continuous_coeff.pow n).mul
-        (continuous_hf.mul ((continuous_const.mul continuous_coeff).cexp))
+    simpa [gN, g] using (continuous_coeff.pow n).mul
+      (continuous_hf.mul ((continuous_const.mul continuous_coeff).cexp))
   have hbound :
       ∀ᵐ t ∂μ, ∀ x ∈ Metric.ball x₀ 1,
         ‖gN (coeff := coeff) (hf := hf) (n + 1) x t‖ ≤ bound t := by
