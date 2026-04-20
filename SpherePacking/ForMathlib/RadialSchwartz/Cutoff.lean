@@ -21,11 +21,10 @@ noncomputable section
 
 open Complex Real
 
--- We choose a transition region contained in `[-1/2, 0]`. This ensures the cutoff is identically
--- zero on a neighborhood of `(-1 : ℝ)`, which is convenient for profiles that are only naturally
--- smooth for `r > -1`.
 /-- A smooth cutoff function on `ℝ` with `cutoff r = 0` for `r ≤ -1/2` and `cutoff r = 1` for
-`0 ≤ r`. -/
+`0 ≤ r`.
+The transition region is contained in `[-1/2, 0]` so the cutoff is identically zero on a
+neighborhood of `(-1 : ℝ)`, convenient for profiles only naturally smooth for `r > -1`. -/
 @[expose] public def cutoff (r : ℝ) : ℝ := Real.smoothTransition (2 * r + 1)
 
 /-- `cutoff r = 0` for `r ≤ -1/2`. -/
@@ -52,8 +51,7 @@ public lemma cutoff_contDiff : ContDiff ℝ (⊤ : ℕ∞) cutoff := by
 
 /-- `cutoffC r = 0` for `r ≤ -1/2`. -/
 @[simp] public lemma cutoffC_eq_zero_of_le_neg_half {r : ℝ} (hr : r ≤ (-1 / 2 : ℝ)) :
-    cutoffC r = 0 := by
-  simp [cutoffC, cutoff_eq_zero_of_le_neg_half hr]
+    cutoffC r = 0 := by simp [cutoffC, cutoff_eq_zero_of_le_neg_half hr]
 
 /-- `cutoffC r = 0` for `r ≤ -1`. -/
 @[simp] public lemma cutoffC_eq_zero_of_le {r : ℝ} (hr : r ≤ -1) : cutoffC r = 0 := by
@@ -82,11 +80,12 @@ public lemma cutoffC_contDiff : ContDiff ℝ (⊤ : ℕ∞) cutoffC := by
 public lemma contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1 {f : ℝ → ℂ}
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f (Set.Ioi (-1 : ℝ))) :
     ContDiff ℝ (⊤ : ℕ∞) (fun r ↦ cutoffC r * f r) := by
-  refine (contDiff_iff_contDiffAt (𝕜 := ℝ) (n := (⊤ : ℕ∞)) (f := fun r ↦ cutoffC r * f r)).2 fun x => ?_
+  rw [contDiff_iff_contDiffAt (𝕜 := ℝ) (n := (⊤ : ℕ∞)) (f := fun r ↦ cutoffC r * f r)]
+  intro x
   by_cases hx : x < (-1 / 2 : ℝ)
   · refine (contDiffAt_const : ContDiffAt ℝ (⊤ : ℕ∞) (fun _ ↦ (0 : ℂ)) x).congr_of_eventuallyEq ?_
     filter_upwards [Iio_mem_nhds hx] with y hy
-    simp [cutoffC_eq_zero_of_le_neg_half (r := y) (le_of_lt hy)]
+    simp [cutoffC_eq_zero_of_le_neg_half (r := y) hy.le]
   · have hx' : (-1 : ℝ) < x := by linarith [le_of_not_gt hx]
     exact cutoffC_contDiff.contDiffAt.mul (hf.contDiffAt (isOpen_Ioi.mem_nhds hx'))
 
