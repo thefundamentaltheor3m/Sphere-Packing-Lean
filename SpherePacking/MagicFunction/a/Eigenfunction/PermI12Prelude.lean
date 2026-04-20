@@ -118,11 +118,8 @@ public lemma I₁'_eq_curveIntegral_segment (r : ℝ) :
     (-1 : ℂ) (-1 + Complex.I)]
   simp only [MagicFunction.a.RealIntegrals.I₁', MagicFunction.a.RealIntegrands.Φ₁_def]
   refine intervalIntegral.integral_congr fun t ht => ?_
-  have hzlin :
-      AffineMap.lineMap (-1 : ℂ) (-1 + Complex.I) t = MagicFunction.Parametrisations.z₁' t :=
-    SpherePacking.Contour.lineMap_z₁_eq_z₁' (t := t) (by
-      simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)
-  simp [scalarOneForm_apply, hzlin]
+  simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₁_eq_z₁' (t := t)
+    (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)]
 
 /-- Rewrite `I₂'` as a curve integral of `Φ₁'` along the segment `-1 + i → i`. -/
 public lemma I₂'_eq_curveIntegral_segment (r : ℝ) :
@@ -134,11 +131,9 @@ public lemma I₂'_eq_curveIntegral_segment (r : ℝ) :
     ((-1 : ℂ) + Complex.I) Complex.I]
   simp only [MagicFunction.a.RealIntegrals.I₂', MagicFunction.a.RealIntegrands.Φ₂_def]
   refine intervalIntegral.integral_congr fun t ht => ?_
-  have hzlin :
-      AffineMap.lineMap ((-1 : ℂ) + Complex.I) Complex.I t = MagicFunction.Parametrisations.z₂' t :=
-    SpherePacking.Contour.lineMap_z₂_eq_z₂' (t := t) (by
-      simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)
-  simp [scalarOneForm_apply, hzlin, MagicFunction.a.ComplexIntegrands.Φ₂']
+  simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₂_eq_z₂' (t := t)
+    (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht),
+    MagicFunction.a.ComplexIntegrands.Φ₂']
 
 lemma I₃'_eq_curveIntegral_segment (r : ℝ) :
     MagicFunction.a.RealIntegrals.I₃' r =
@@ -149,11 +144,8 @@ lemma I₃'_eq_curveIntegral_segment (r : ℝ) :
     (1 : ℂ) ((1 : ℂ) + Complex.I)]
   simp only [MagicFunction.a.RealIntegrals.I₃', MagicFunction.a.RealIntegrands.Φ₃_def]
   refine intervalIntegral.integral_congr fun t ht => ?_
-  have hzlin :
-      AffineMap.lineMap (1 : ℂ) ((1 : ℂ) + Complex.I) t = MagicFunction.Parametrisations.z₃' t :=
-    SpherePacking.Contour.lineMap_z₃_eq_z₃' (t := t) (by
-      simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)
-  simp [scalarOneForm_apply, hzlin]
+  simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₃_eq_z₃' (t := t)
+    (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)]
 
 lemma I₄'_eq_curveIntegral_segment (r : ℝ) :
     MagicFunction.a.RealIntegrals.I₄' r =
@@ -164,11 +156,9 @@ lemma I₄'_eq_curveIntegral_segment (r : ℝ) :
     ((1 : ℂ) + Complex.I) Complex.I]
   simp only [MagicFunction.a.RealIntegrals.I₄', MagicFunction.a.RealIntegrands.Φ₄_def]
   refine intervalIntegral.integral_congr fun t ht => ?_
-  have hzlin :
-      AffineMap.lineMap ((1 : ℂ) + Complex.I) Complex.I t = MagicFunction.Parametrisations.z₄' t :=
-    SpherePacking.Contour.lineMap_z₄_eq_z₄' (t := t) (by
-      simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)
-  simp [scalarOneForm_apply, hzlin, MagicFunction.a.ComplexIntegrands.Φ₄']
+  simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₄_eq_z₄' (t := t)
+    (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht),
+    MagicFunction.a.ComplexIntegrands.Φ₄']
 
 /-- Rewrite `I₃' + I₄'` as a sum of curve integrals of `Φ₃'` along the two segments
 `1 → 1 + i` and `1 + i → i`. -/
