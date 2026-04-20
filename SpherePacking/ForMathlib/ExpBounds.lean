@@ -46,29 +46,27 @@ For `0 ≤ x` and `0 < t`, we have
 public lemma exp_neg_pi_div_mul_exp_neg_pi_mul_le (x t : ℝ) (hx : 0 ≤ x) (ht : 0 < t) :
     Real.exp (-Real.pi / t) * Real.exp (-Real.pi * x * t) ≤
       Real.exp (-2 * Real.pi * Real.sqrt x) := by
-  have ht0 : 0 ≤ t := le_of_lt ht
-  have hxt : 0 ≤ x * t := mul_nonneg hx ht0
+  have hxt : 0 ≤ x * t := mul_nonneg hx ht.le
   have hAMGM : 2 * Real.sqrt (x * t) * (Real.sqrt t)⁻¹ ≤ x * t + 1 / t := by
     have h := two_mul_le_add_sq (Real.sqrt (x * t)) ((Real.sqrt t)⁻¹)
-    have hinv : ((Real.sqrt t)⁻¹ : ℝ) ^ 2 = (1 / t : ℝ) := by simp [one_div, Real.sq_sqrt ht0]
+    have hinv : ((Real.sqrt t)⁻¹ : ℝ) ^ 2 = (1 / t : ℝ) := by simp [one_div, Real.sq_sqrt ht.le]
     simpa [Real.sq_sqrt hxt, hinv, mul_assoc, mul_left_comm, mul_comm] using h
   have hmul_sqrt : Real.sqrt (x * t) * (Real.sqrt t)⁻¹ = Real.sqrt x := by
     have hsqrt : Real.sqrt (x * t) = Real.sqrt x * Real.sqrt t := by
-      simpa [mul_comm] using (Real.sqrt_mul hx t)
+      simpa [mul_comm] using Real.sqrt_mul hx t
     grind
   have hIneq : 2 * Real.sqrt x ≤ x * t + 1 / t := by
     simpa [hmul_sqrt, mul_assoc] using hAMGM
-  have hIneqπ := mul_le_mul_of_nonneg_left hIneq Real.pi_pos.le
   refine (Real.exp_add _ _).symm.trans_le (Real.exp_le_exp.2 ?_)
-  rw [show (-Real.pi / t) + (-Real.pi * x * t) = -(Real.pi * (x * t + 1 / t)) by ring_nf,
-    show -2 * Real.pi * Real.sqrt x = -(Real.pi * (2 * Real.sqrt x)) by ring_nf]
-  exact neg_le_neg hIneqπ
+  rw [show (-Real.pi / t) + (-Real.pi * x * t) = -(Real.pi * (x * t + 1 / t)) from by ring,
+    show -2 * Real.pi * Real.sqrt x = -(Real.pi * (2 * Real.sqrt x)) from by ring]
+  exact neg_le_neg (mul_le_mul_of_nonneg_left hIneq Real.pi_pos.le)
 
 /-- For `b, x ≥ 0` and `t ≥ 1`, we have `exp (-b*x*t) ≤ exp (-b*x)`. -/
 public lemma exp_neg_mul_mul_le_exp_neg_mul_of_one_le {b x t : ℝ} (hb : 0 ≤ b) (hx : 0 ≤ x)
     (ht : (1 : ℝ) ≤ t) :
     Real.exp (-b * x * t) ≤ Real.exp (-b * x) := by
-  have hAt : b * x ≤ b * x * t := le_mul_of_one_le_right (mul_nonneg hb hx) ht
-  simpa [mul_assoc, mul_left_comm, mul_comm] using Real.exp_le_exp.2 (neg_le_neg hAt)
+  simpa [mul_assoc, mul_left_comm, mul_comm] using
+    Real.exp_le_exp.2 (neg_le_neg (le_mul_of_one_le_right (mul_nonneg hb hx) ht))
 
 end SpherePacking.ForMathlib
