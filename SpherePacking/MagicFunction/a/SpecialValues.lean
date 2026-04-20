@@ -38,11 +38,8 @@ namespace MagicFunction.a.SpecialValues
 
 noncomputable section
 
-open Real Complex
-open UpperHalfPlane ModularGroup
-
-open MagicFunction.FourierEigenfunctions RealIntegrals
-open MagicFunction.a.RadialFunctions
+open Real Complex UpperHalfPlane ModularGroup
+open MagicFunction.FourierEigenfunctions RealIntegrals MagicFunction.a.RadialFunctions
 local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 
 section Zero
@@ -66,10 +63,8 @@ lemma a_zero_reduction_I₂₄₆ :
     FourierEigenfunctions.a (0 : ℝ⁸) = I₂' (0 : ℝ) + I₄' 0 + I₆' 0 := by
   linear_combination a_zero_reduction + I₁'_zero_add_I₃'_zero_add_I₅'_zero
 
-/--
-A second-order finite difference identity for `φ₀` obtained from its modular transformation under
-`S`, together with periodicity.
--/
+/-- A second-order finite difference identity for `φ₀` obtained from its modular transformation
+under `S`, together with periodicity. -/
 public theorem φ₀_finite_difference (z : ℍ) :
     φ₀ (S • ((1 : ℝ) +ᵥ z)) * (((1 : ℝ) +ᵥ z : ℍ) : ℂ) ^ (2 : ℕ)
       - 2 * (φ₀ (S • z) * (z : ℂ) ^ (2 : ℕ))
@@ -111,10 +106,9 @@ private lemma integral_neg_x_add_I_eq_integral_F_zI_sub_one :
 lemma I₄'_zero :
     I₄' (0 : ℝ) = -∫ x in (0 : ℝ)..1, F (zI x - 1) := by
   rw [show I₄' (0 : ℝ) = ∫ x in (0 : ℝ)..1, (-1 : ℂ) *
-      (φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) by
+      (φ₀'' (-1 / ((-(x : ℂ)) + Complex.I)) * ((-(x : ℂ)) + Complex.I) ^ (2 : ℕ)) from by
     simp [MagicFunction.a.RadialFunctions.I₄'_eq, pow_two],
-    intervalIntegral.integral_const_mul, integral_neg_x_add_I_eq_integral_F_zI_sub_one]
-  ring
+    intervalIntegral.integral_const_mul, integral_neg_x_add_I_eq_integral_F_zI_sub_one]; ring
 
 /-! ### S-transform identity for `F(z) - F(z-1)`. -/
 
@@ -183,8 +177,7 @@ def f0 (z : ℂ) : ℂ := φ₀'' z * ((2 : ℂ) * z - 1)
 
 lemma f0_differentiableOn : DifferentiableOn ℂ f0 {z : ℂ | 0 < z.im} := by
   simpa [f0] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.mul
-    (by fun_prop : Differentiable ℂ fun z : ℂ => (2 : ℂ) * z - 1).differentiableOn
-
+    (by fun_prop : Differentiable ℂ fun z : ℂ => (2:ℂ) * z - 1).differentiableOn
 lemma f0_continuousOn : ContinuousOn f0 {z : ℂ | 0 < z.im} := f0_differentiableOn.continuousOn
 
 private lemma norm_two_z_sub_one_le_two_im_add_one {z : ℂ}
@@ -224,8 +217,8 @@ lemma f0_vertical_diff (y : ℝ) (hy : 0 < y) :
     f0 ((1 : ℂ) + (y : ℂ) * Complex.I) - f0 ((y : ℂ) * Complex.I) =
       (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) := by
   have hper : φ₀'' ((1 : ℂ) + (y : ℂ) * Complex.I) = φ₀'' ((y : ℂ) * Complex.I) := by
-    simpa [add_assoc, add_comm, add_left_comm] using
-      φ₀''_add_one ((y : ℂ) * Complex.I) (by simpa [mul_assoc] using hy)
+    simpa [add_assoc, add_comm, add_left_comm] using φ₀''_add_one ((y : ℂ) * Complex.I)
+      (by simpa [mul_assoc] using hy)
   simp [f0, hper]; ring
 
 private lemma strip_uIcc_subset {m : ℝ} (hm : 1 ≤ m) :
@@ -281,9 +274,9 @@ lemma integrableOn_phi0_imag :
       fun t ht => by simpa using norm_phi0_imag_le hC₀ ht)
 
 lemma integrableOn_two_mul_phi0_imag :
-    MeasureTheory.IntegrableOn (fun t : ℝ => (2 : ℂ) * φ₀'' ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ))
-      MeasureTheory.volume := by
-  simpa [MeasureTheory.IntegrableOn] using (integrableOn_phi0_imag.const_mul (2 : ℂ))
+    MeasureTheory.IntegrableOn (fun t : ℝ => (2 : ℂ) * φ₀'' ((t : ℂ) * Complex.I))
+      (Set.Ioi (1 : ℝ)) MeasureTheory.volume := by
+  simpa [MeasureTheory.IntegrableOn] using integrableOn_phi0_imag.const_mul (2 : ℂ)
 
 private lemma norm_integral_f0_strip_le {C₀ : ℝ}
     (hC₀ : ∀ {z : ℂ}, 1 ≤ z.im → 0 ≤ z.re → z.re ≤ 1 →
@@ -422,16 +415,13 @@ private lemma tsum_pnat_div_q_eq_nat_tsum (z : ℍ) (a : ℕ → ℂ)
   rw [show (∑' (n : ℕ+),
         ((n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
           cexp (2 * π * Complex.I * (z : ℂ))) =
-      ∑' n : ℕ,
-        (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
-              cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ))) /
+      ∑' n : ℕ, (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ) *
+            cexp (2 * π * Complex.I * (z : ℂ) * ((n + 1 : ℕ) : ℂ))) /
           cexp (2 * π * Complex.I * (z : ℂ)) from by
-    simpa using tsum_pnat_eq_tsum_succ
-      (f := fun n : ℕ =>
-        ((n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
-          cexp (2 * π * Complex.I * (z : ℂ)))]
-  refine tsum_congr fun n => ?_
-  rw [cexp_pnat_succ_factor, hrel]; field_simp
+    simpa using tsum_pnat_eq_tsum_succ (f := fun n : ℕ =>
+      ((n : ℂ) * (σ 3 n : ℂ) * cexp (2 * π * Complex.I * (z : ℂ) * (n : ℂ))) /
+        cexp (2 * π * Complex.I * (z : ℂ)))]
+  exact tsum_congr fun n => by rw [cexp_pnat_succ_factor, hrel]; field_simp
 
 private lemma A_div_q_eq_nat_tsum (z : ℍ)
     (a : ℕ → ℂ) (hrel : ∀ n : ℕ, a n = (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))) :

@@ -404,8 +404,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
   have hf_maps : (s : Set (EuclideanSpace ℝ (Fin d))).MapsTo f t := fun _ hx =>
     htSet.mem_toFinset.2 <|
       PeriodicConstantApprox.neg_coordCubeCover_mem_ball L hLpos hC (hX.mem_toFinset.1 hx).2
-  rcases Finset.exists_max_image t (fun g => (s.filter fun x => f x = g).card)
-    ⟨0, htSet.mem_toFinset.2 (by simp [Metric.mem_ball]; positivity)⟩ with ⟨g0, hg0t, hg0max⟩
+  obtain ⟨g0, hg0t, hg0max⟩ := Finset.exists_max_image t (fun g => (s.filter fun x => f x = g).card)
+    ⟨0, htSet.mem_toFinset.2 (by simp [Metric.mem_ball]; positivity)⟩
   let sg : Finset (EuclideanSpace ℝ (Fin d)) := s.filter fun x => f x = g0
   have hsg_centers : ∀ x ∈ sg, x ∈ S.centers := fun x hx =>
     (hX.mem_toFinset.1 (Finset.mem_filter.1 hx).1).1
@@ -480,11 +480,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
 
 end SpherePacking
 
-/--
-The periodic sphere packing constant equals the (a priori larger) sphere packing constant.
-
-This packages the boundary control argument developed in this file.
--/
+/-- The periodic sphere packing constant equals the sphere packing constant; packages the
+boundary control argument developed in this file. -/
 public theorem periodic_constant_eq_constant (hd : 0 < d) :
     PeriodicSpherePackingConstant d = SpherePackingConstant d := by
   rw [periodic_constant_eq_periodic_constant_normalized,

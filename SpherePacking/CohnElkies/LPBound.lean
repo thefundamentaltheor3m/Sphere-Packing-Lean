@@ -22,7 +22,6 @@ public import SpherePacking.CohnElkies.LPBoundSummability
 import SpherePacking.CohnElkies.LatticeSumBounds
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
-
 /-!
 # Cohn-Elkies linear programming bound
 
@@ -45,19 +44,13 @@ open scoped FourierTransform ENNReal SchwartzMap BigOperators
 open SpherePacking MeasureTheory Complex Real Bornology Module
 
 variable {d : ℕ}
-
 variable {f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)} (hne_zero : f ≠ 0)
--- `f` is real-valued (as a complex-valued function).
 variable (hReal : ∀ x : EuclideanSpace ℝ (Fin d), ↑(f x).re = (f x))
--- `𝓕 f` is real-valued (as a complex-valued function).
 variable (hRealFourier : ∀ x : EuclideanSpace ℝ (Fin d), ↑(𝓕 f x).re = (𝓕 f x))
--- The Cohn-Elkies conditions:
 variable (hCohnElkies₁ : ∀ x : EuclideanSpace ℝ (Fin d), ‖x‖ ≥ 1 → (f x).re ≤ 0)
 variable (hCohnElkies₂ : ∀ x : EuclideanSpace ℝ (Fin d), (𝓕 f x).re ≥ 0)
 
--- We (locally) denote the Complex Conjugate of some `z : ℂ` by `conj z`
 local notation "conj" => starRingEnd ℂ
-
 local notation "FT" => FourierTransform.fourierCLE ℝ (SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
 
 section Nonnegativity
@@ -149,8 +142,9 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
           simp [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
     _ ≤ ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * (n ^ 2) :=
         mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg A) hA_le 2) (norm_nonneg _)
-    _ ≤ ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2) := mul_le_mul_of_nonneg_right
-        (by simpa [Real.norm_eq_abs] using abs_re_le_norm _) (by positivity)
+    _ ≤ ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2) :=
+        mul_le_mul_of_nonneg_right
+          (by simpa [Real.norm_eq_abs] using abs_re_le_norm _) (by positivity)
     _ ≤ g' m := by simp [g']
 
 include hP hCohnElkies₁ in
@@ -319,12 +313,8 @@ variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D)
 include d f hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ P hP D hD_isBounded
   hD_unique_covers
 
-/--
-Linear programming bound for a single periodic packing of separation `1`.
-
-This is the key estimate used to bound `SpherePackingConstant d`
-after reducing to periodic packings.
--/
+/-- Linear programming bound for a single periodic packing of separation `1`; the key estimate
+used to bound `SpherePackingConstant d` after reducing to periodic packings. -/
 public theorem LinearProgrammingBound' (hd : 0 < d) :
     P.density ≤ (f 0).re.toNNReal / (𝓕 f 0).re.toNNReal *
       volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) := by
@@ -332,8 +322,7 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
   rw [P.density_eq' hd]
   suffices hCalc : (P.numReps' hd hD_isBounded) * (f 0).re ≥
     (P.numReps' hd hD_isBounded)^2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume by
-    rw [hP]
-    rw [ge_iff_le] at hCalc
+    rw [hP]; rw [ge_iff_le] at hCalc
     have vol_ne_zero : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ 0 :=
       (Metric.measure_ball_pos (μ := volume) (0 : EuclideanSpace ℝ (Fin d)) one_half_pos).ne'
     have vol_ne_top : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ ∞ :=
