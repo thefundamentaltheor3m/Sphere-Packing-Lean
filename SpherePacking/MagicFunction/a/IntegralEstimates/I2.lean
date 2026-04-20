@@ -75,12 +75,10 @@ lemma I₂'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ �
     nlinarith [ht.1, ht.2]
   · conv_rhs => rw [← one_mul (rexp _), ← one_mul (rexp _)]
     gcongr <;> apply le_of_eq
-    · calc
-      _ = ‖cexp (((-π * r : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
-      _ = 1 := norm_exp_ofReal_mul_I (-π * r)
-    · calc
-      _ = ‖cexp (((π * r * t : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
-      _ = 1 := norm_exp_ofReal_mul_I (π * r * t)
+    · calc _ = ‖cexp (((-π * r : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
+        _ = 1 := norm_exp_ofReal_mul_I (-π * r)
+    · calc _ = ‖cexp (((π * r * t : ℝ) : ℂ) * I)‖ := by congr 2; push_cast; ac_rfl
+        _ = 1 := norm_exp_ofReal_mul_I (π * r * t)
     · rw [norm_exp]; norm_cast
 
 lemma im_parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (↑t + I)).im = 1 / (t ^ 2 + 1) :=
@@ -155,28 +153,22 @@ lemma iteratedDeriv_I₂'_eq_integral_gN (n : ℕ) :
     have hΦ : ContinuousOn (MagicFunction.a.RealIntegrands.Φ₂ (r := r)) (Ioo (0 : ℝ) 1) :=
       (MagicFunction.a.RealIntegrands.Φ₂_contDiffOn (r := r)).continuousOn.mono
         fun _ hx => mem_Icc_of_Ioo hx
-    have hgEq : EqOn (g r) (MagicFunction.a.RealIntegrands.Φ₂ (r := r)) (Ioo (0 : ℝ) 1) := by
-      intro t ht
-      have ht' : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioo ht
-      have hz : z₂' t = (-1 : ℂ) + t + I := z₂'_eq_of_mem ht'
-      have hz_add : z₂' t + 1 = t + I := by simp [hz, add_left_comm, add_comm]
-      have hexparg :
-          (π : ℂ) * I * (r : ℂ) * (z₂' t : ℂ) =
-            (-π * I * r : ℂ) + (π * I * r * t : ℂ) + (-π * r : ℂ) := by
-        rw [hz]; ring_nf; rw [I_sq]; ring
-      have hexp' :
-          cexp (π * I * r * (z₂' t : ℂ)) =
-            cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r : ℂ) := by
-        rw [show π * I * r * (z₂' t : ℂ) = (π : ℂ) * I * (r : ℂ) * (z₂' t : ℂ) from by ring,
-          hexparg, Complex.exp_add, Complex.exp_add]
-      -- Avoid rewriting `z₂' t` itself; only rewrite `z₂' t + 1` and the exponential.
-      simp [MagicFunction.a.RealIntegrands.Φ₂, MagicFunction.a.ComplexIntegrands.Φ₂',
-        MagicFunction.a.ComplexIntegrands.Φ₁', g, hz_add, hexp']
-      ac_rfl
-    exact hΦ.congr hgEq
+    refine hΦ.congr fun t ht => ?_
+    have hz : z₂' t = (-1 : ℂ) + t + I := z₂'_eq_of_mem (mem_Icc_of_Ioo ht)
+    have hz_add : z₂' t + 1 = t + I := by simp [hz, add_left_comm, add_comm]
+    have hexp' :
+        cexp (π * I * r * (z₂' t : ℂ)) =
+          cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r : ℂ) := by
+      rw [show π * I * r * (z₂' t : ℂ) = (π : ℂ) * I * (r : ℂ) * (z₂' t : ℂ) from by ring,
+        show (π : ℂ) * I * (r : ℂ) * (z₂' t : ℂ) =
+          (-π * I * r : ℂ) + (π * I * r * t : ℂ) + (-π * r : ℂ) by
+            rw [hz]; ring_nf; rw [I_sq]; ring,
+        Complex.exp_add, Complex.exp_add]
+    simp [MagicFunction.a.RealIntegrands.Φ₂, MagicFunction.a.ComplexIntegrands.Φ₂',
+      MagicFunction.a.ComplexIntegrands.Φ₁', g, hz_add, hexp']
+    ac_rfl
   let A : ℝ → ℂ := fun t : ℝ => φ₀'' (-1 / (t + I)) * (t + I) ^ 2
-  have hg_repr : ∀ r t, g r t = A t * cexp ((r : ℂ) * coeff t) := by
-    intro r t
+  have hg_repr : ∀ r t, g r t = A t * cexp ((r : ℂ) * coeff t) := fun r t => by
     simpa [A, g, mul_assoc, mul_left_comm, mul_comm] using
       congrArg (fun z ↦ A t * z) (exp_r_mul_coeff (r := r) (t := t)).symm
   simpa [gN] using
