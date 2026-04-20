@@ -28,11 +28,9 @@ local notation "ℝ⁸" => EuclideanSpace ℝ (Fin 8)
 private lemma integral_Ioi_ofReal_mul_exp (u : ℝ) (f : ℝ → ℝ) :
     (∫ t in Set.Ioi (0 : ℝ), (f t : ℂ) * Real.exp (-π * u * t)) =
       ((∫ t in Set.Ioi (0 : ℝ), f t * Real.exp (-π * u * t) : ℝ) : ℂ) := by
-  let μ : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))
-  change (∫ t : ℝ, (f t : ℂ) * Real.exp (-π * u * t) ∂ μ) =
-    ((∫ t : ℝ, f t * Real.exp (-π * u * t) ∂ μ : ℝ) : ℂ)
   simpa [Complex.ofReal_mul, mul_left_comm, mul_comm, mul_assoc] using
-    (integral_ofReal (μ := μ) (𝕜 := ℂ) (f := fun t : ℝ => f t * Real.exp (-π * u * t)))
+    (integral_ofReal (μ := (volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) (𝕜 := ℂ)
+      (f := fun t : ℝ => f t * Real.exp (-π * u * t)))
 
 lemma gRadial_re_nonpos_of_two_lt {u : ℝ} (hu : 2 < u) : (gRadial u).re ≤ 0 := by
   set IA : ℝ := ∫ t in Set.Ioi (0 : ℝ), A t * Real.exp (-π * u * t)
