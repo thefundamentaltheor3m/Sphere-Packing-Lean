@@ -233,12 +233,10 @@ lemma hasDerivAt_integral_gN (n : ℕ) (r₀ : ℝ) :
 lemma iteratedDeriv_eq_integral_gN (n : ℕ) :
     iteratedDeriv n I₁' = fun r : ℝ ↦ ∫ s, gN n r s ∂μ := by
   induction n with
-  | zero =>
-      funext r
-      simp [iteratedDeriv_zero, gN, μ, μIciOne, Complete_Change_of_Variables]
-  | succ n ih =>
-      funext r
-      simpa [iteratedDeriv_succ, ih] using (hasDerivAt_integral_gN (n := n) (r₀ := r)).deriv
+  | zero => funext r; simp [iteratedDeriv_zero, gN, μ, μIciOne, Complete_Change_of_Variables]
+  | succ n ih => funext r
+                 simpa [iteratedDeriv_succ, ih] using
+                   (hasDerivAt_integral_gN (n := n) (r₀ := r)).deriv
 
 lemma pow_mul_exp_neg_bounded (k : ℕ) :
     ∃ C, ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ C := by
@@ -257,24 +255,20 @@ lemma pow_mul_exp_neg_bounded (k : ℕ) :
 lemma norm_iteratedDeriv_le (n : ℕ) (x : ℝ) :
     ‖iteratedDeriv n I₁' x‖ ≤
       ∫ s in Ici (1 : ℝ), (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * x / s)) := by
-  have hL : IntegrableOn (fun s : ℝ ↦ ‖gN n x s‖) (Ici (1 : ℝ)) volume := by
-    simpa [IntegrableOn, μIciOne] using (integrable_gN (n := n) (r := x)).norm
-  have hR : IntegrableOn
-      (fun s : ℝ ↦ (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * x / s)))
-      (Ici (1 : ℝ)) volume := by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using
-      ((by simpa [mul_assoc, mul_left_comm, mul_comm] using
-        MagicFunction.a.IntegralEstimates.I₃.Bound_integrableOn (r := x) (C₀ := Cφ) :
-        IntegrableOn (fun s : ℝ ↦ Cφ * rexp (-2 * π * s) * rexp (-π * x / s))
-          (Ici (1 : ℝ)) volume).const_mul ((2 * π) ^ n))
   calc
     ‖iteratedDeriv n I₁' x‖ = ‖∫ s, gN n x s ∂μ‖ := by
       simp [iteratedDeriv_eq_integral_gN (n := n)]
     _ ≤ ∫ s, ‖gN n x s‖ ∂μ := norm_integral_le_integral_norm (gN n x)
     _ = ∫ s in Ici (1 : ℝ), ‖gN n x s‖ := by simp [μ, SpherePacking.Integration.μIciOne]
     _ ≤ ∫ s in Ici (1 : ℝ), (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * x / s)) :=
-        setIntegral_mono_on hL hR measurableSet_Ici
-          fun s hs => gN_norm_bound (n := n) (r := x) (s := s) hs
+        setIntegral_mono_on
+          (by simpa [IntegrableOn, μIciOne] using (integrable_gN (n := n) (r := x)).norm)
+          (by simpa [mul_assoc, mul_left_comm, mul_comm] using
+            ((by simpa [mul_assoc, mul_left_comm, mul_comm] using
+              MagicFunction.a.IntegralEstimates.I₃.Bound_integrableOn (r := x) (C₀ := Cφ) :
+              IntegrableOn (fun s : ℝ ↦ Cφ * rexp (-2 * π * s) * rexp (-π * x / s))
+                (Ici (1 : ℝ)) volume).const_mul ((2 * π) ^ n)))
+          measurableSet_Ici fun s hs => gN_norm_bound (n := n) (r := x) (s := s) hs
 
 lemma xpow_mul_exp_neg_pi_div_le (k : ℕ) {x s : ℝ} (hx : 0 ≤ x) (hs : 1 ≤ s)
     {Cpow : ℝ} (hCpow : ∀ u : ℝ, 0 ≤ u → u ^ k * rexp (-u) ≤ Cpow) :
