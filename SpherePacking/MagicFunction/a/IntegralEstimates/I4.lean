@@ -59,7 +59,6 @@ public lemma I₄'_eq_integral_g_Ioo (r : ℝ) : I₄' r = ∫ t in Ioo (0 : ℝ
 
 end Setup
 
-----------------------------------------------------------------
 
 section Bounding
 
@@ -100,7 +99,6 @@ public lemma g_norm_bound_uniform :
   I24Common.g_norm_bound_uniform_of I₄'_bounding_aux_1 im_parametrisation_lower
 
 end Bounding.Bounding_Integral
-----------------------------------------------------------------
 
 noncomputable section Schwartz_Decay
 
