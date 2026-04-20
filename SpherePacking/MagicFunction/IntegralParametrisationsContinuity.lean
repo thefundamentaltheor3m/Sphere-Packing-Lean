@@ -25,27 +25,24 @@ public lemma continuous_z₁ : Continuous z₁ := by
   simpa [z₁] using continuous_const.add (continuous_const.mul continuous_coe_Icc_toComplex)
 
 /-- The extension `z₁' : ℝ → ℂ` is continuous. -/
-public lemma continuous_z₁' : Continuous z₁' := by
-  change Continuous (IccExtend (zero_le_one : (0 : ℝ) ≤ 1) z₁)
-  exact continuous_z₁.Icc_extend'
+public lemma continuous_z₁' : Continuous z₁' :=
+  (continuous_z₁.Icc_extend' : Continuous (IccExtend (zero_le_one : (0 : ℝ) ≤ 1) z₁))
 
 /-- The parametrisation `z₂` is continuous on `Icc (0 : ℝ) 1`. -/
 public lemma continuous_z₂ : Continuous z₂ := by
   simpa [z₂] using (continuous_const.add continuous_coe_Icc_toComplex).add continuous_const
 
 /-- The extension `z₂' : ℝ → ℂ` is continuous. -/
-public lemma continuous_z₂' : Continuous z₂' := by
-  change Continuous (IccExtend (zero_le_one : (0 : ℝ) ≤ 1) z₂)
-  exact continuous_z₂.Icc_extend'
+public lemma continuous_z₂' : Continuous z₂' :=
+  (continuous_z₂.Icc_extend' : Continuous (IccExtend (zero_le_one : (0 : ℝ) ≤ 1) z₂))
 
 /-- The parametrisation `z₃` is continuous on `Icc (0 : ℝ) 1`. -/
 public lemma continuous_z₃ : Continuous z₃ := by
   simpa [z₃] using continuous_const.add (continuous_const.mul continuous_coe_Icc_toComplex)
 
 /-- The extension `z₃' : ℝ → ℂ` is continuous. -/
-public lemma continuous_z₃' : Continuous z₃' := by
-  change Continuous (IccExtend (zero_le_one : (0 : ℝ) ≤ 1) z₃)
-  exact continuous_z₃.Icc_extend'
+public lemma continuous_z₃' : Continuous z₃' :=
+  (continuous_z₃.Icc_extend' : Continuous (IccExtend (zero_le_one : (0 : ℝ) ≤ 1) z₃))
 
 /-- The parametrisation `z₄` is continuous on `Icc (0 : ℝ) 1`. -/
 public lemma continuous_z₄ : Continuous z₄ := by
@@ -53,18 +50,16 @@ public lemma continuous_z₄ : Continuous z₄ := by
     (continuous_const.sub continuous_coe_Icc_toComplex).add continuous_const
 
 /-- The extension `z₄' : ℝ → ℂ` is continuous. -/
-public lemma continuous_z₄' : Continuous z₄' := by
-  change Continuous (IccExtend (zero_le_one : (0 : ℝ) ≤ 1) z₄)
-  exact continuous_z₄.Icc_extend'
+public lemma continuous_z₄' : Continuous z₄' :=
+  (continuous_z₄.Icc_extend' : Continuous (IccExtend (zero_le_one : (0 : ℝ) ≤ 1) z₄))
 
 /-- The parametrisation `z₅` is continuous on `Icc (0 : ℝ) 1`. -/
 public lemma continuous_z₅ : Continuous z₅ := by
   simpa [z₅] using continuous_const.mul continuous_coe_Icc_toComplex
 
 /-- The extension `z₅' : ℝ → ℂ` is continuous. -/
-public lemma continuous_z₅' : Continuous z₅' := by
-  change Continuous (IccExtend (zero_le_one : (0 : ℝ) ≤ 1) z₅)
-  exact continuous_z₅.Icc_extend'
+public lemma continuous_z₅' : Continuous z₅' :=
+  (continuous_z₅.Icc_extend' : Continuous (IccExtend (zero_le_one : (0 : ℝ) ≤ 1) z₅))
 
 end
 
