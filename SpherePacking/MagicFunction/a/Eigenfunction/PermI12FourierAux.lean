@@ -36,9 +36,7 @@ public lemma integral_permI1Kernel_x (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0 :
   have hfactor : (fun x : ℝ⁸ => permI1Kernel w (x, t)) = fun x : ℝ⁸ =>
       c * (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
         cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * z₁line t)) := by
-    funext x
-    dsimp [permI1Kernel, MagicFunction.a.ComplexIntegrands.Φ₁', c]
-    ac_rfl
+    funext x; dsimp [permI1Kernel, MagicFunction.a.ComplexIntegrands.Φ₁', c]; ac_rfl
   calc
     (∫ x : ℝ⁸, permI1Kernel w (x, t)) =
         c * ((((I : ℂ) / (z₁line t)) ^ (4 : ℕ)) *
@@ -58,9 +56,7 @@ public lemma integral_permI2Kernel_x (w : ℝ⁸) (t : ℝ) :
   have hfactor : (fun x : ℝ⁸ => permI2Kernel w (x, t)) = fun x : ℝ⁸ =>
       c * (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
         cexp ((π : ℂ) * I * ((‖x‖ ^ 2 : ℝ) : ℂ) * z₂line t)) := by
-    funext x
-    dsimp [permI2Kernel, MagicFunction.a.ComplexIntegrands.Φ₁', c]
-    ac_rfl
+    funext x; dsimp [permI2Kernel, MagicFunction.a.ComplexIntegrands.Φ₁', c]; ac_rfl
   calc
     (∫ x : ℝ⁸, permI2Kernel w (x, t)) =
         c * ((((I : ℂ) / (z₂line t)) ^ (4 : ℕ)) *
