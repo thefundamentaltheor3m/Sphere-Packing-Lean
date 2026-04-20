@@ -43,8 +43,7 @@ public theorem schwartzRadialSum6_eq_sum
     (f₁ f₂ f₃ f₄ f₅ f₆ : 𝓢(ℝ, ℂ)) :
     schwartzRadialSum6 f₁ f₂ f₃ f₄ f₅ f₆ =
       liftRadial f₁ + liftRadial f₂ + liftRadial f₃ +
-      liftRadial f₄ + liftRadial f₅ + liftRadial f₆ := by
-  rfl
+      liftRadial f₄ + liftRadial f₅ + liftRadial f₆ := rfl
 
 /-- Evaluate the radial sum at a point using `‖x‖^2`. -/
 public theorem schwartzRadialSum6_apply
