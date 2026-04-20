@@ -74,13 +74,10 @@ public lemma ψT'_mobiusInv_eq_div (z : ℂ) (hz : 0 < z.im) :
       ψT (UpperHalfPlane.mk (-zH)⁻¹ zH.im_inv_neg_coe_pos) =
         (-ψT zH) / (zH : ℂ) ^ (2 : ℕ) :=
     (eq_div_iff hz2).2 (by simpa [hS] using h)
-  -- Identify the Möbius image point: `(-zH)⁻¹ = mobiusInv z`.
   have hz' : 0 < (mobiusInv z).im := mobiusInv_im_pos z hz
   have hmk :
       (UpperHalfPlane.mk (-zH)⁻¹ zH.im_inv_neg_coe_pos : UpperHalfPlane) =
-        ⟨mobiusInv z, hz'⟩ := by
-    ext1; simp [zH, mobiusInv, inv_neg]
-  -- Convert to `ψT'` on `ℂ`.
+        ⟨mobiusInv z, hz'⟩ := by ext1; simp [zH, mobiusInv, inv_neg]
   have hTz : ψT' z = ψT zH := by simp [ψT', hz, zH]
   calc
     ψT' (mobiusInv z) = ψT ⟨mobiusInv z, hz'⟩ := by simp [ψT', hz']
