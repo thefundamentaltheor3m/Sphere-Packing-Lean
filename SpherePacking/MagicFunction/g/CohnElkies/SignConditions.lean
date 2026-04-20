@@ -68,20 +68,17 @@ public theorem fourier_g_nonneg : ∀ x : ℝ⁸, (𝓕 g x).re ≥ 0 := by
     simp [h0]
   · have hx' : 0 < ‖x‖ ^ 2 := by positivity
     set u : ℝ := ‖x‖ ^ 2 with hu
-    have hEq := fourier_g_eq_integral_B (x := x) hx'
     set IB : ℝ := ∫ t in Set.Ioi (0 : ℝ), B t * Real.exp (-π * u * t)
-    have hIntB :
-        (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) = (IB : ℂ) :=
-      integral_Ioi_ofReal_mul_exp u B
     set s : ℝ := (π / 2160 : ℝ) * (Real.sin (π * u / 2)) ^ (2 : ℕ)
     have hEqReal : (𝓕 g x) = ((s * IB : ℝ) : ℂ) := by
-      rw [show 𝓕 g x = _ from hEq, ← hu, hIntB]; push_cast [s]; ring
+      rw [show 𝓕 g x = _ from fourier_g_eq_integral_B (x := x) hx', ← hu,
+        integral_Ioi_ofReal_mul_exp u B]
+      push_cast [s]; ring
     have hIntegral : 0 ≤ IB :=
       MeasureTheory.setIntegral_nonneg (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
         measurableSet_Ioi fun t ht =>
           mul_nonneg (B_pos (t := t) ht).le (Real.exp_pos _).le
-    have hRe : (𝓕 g x).re = s * IB := congrArg Complex.re hEqReal
-    have hs : 0 ≤ s := by change 0 ≤ (π / 2160 : ℝ) * _; positivity
-    rw [ge_iff_le, hRe]; exact mul_nonneg hs hIntegral
+    rw [ge_iff_le, congrArg Complex.re hEqReal]
+    exact mul_nonneg (by change 0 ≤ (π / 2160 : ℝ) * _; positivity) hIntegral
 
 end MagicFunction.g.CohnElkies
