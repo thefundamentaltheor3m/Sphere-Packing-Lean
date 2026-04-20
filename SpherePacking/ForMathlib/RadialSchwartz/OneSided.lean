@@ -54,9 +54,8 @@ public theorem cutoffC_mul_decay_of_nonneg_of_contDiff
       (g := fun x ↦ ‖x‖ ^ k * ‖iteratedFDeriv ℝ n g x‖) hcont
       (a := (-1 : ℝ)) (b := 0) (by norm_num)
   refine ⟨max (max Cmid Cpos) 0, fun x => ?_⟩
-  have hC0 : 0 ≤ max (max Cmid Cpos) 0 := le_max_right _ _
   by_cases hx₁ : x < -1
-  · simp [iteratedFDeriv_cutoffC_mul_eq_zero_of_lt (f := f) hx₁ n, hC0]
+  · simp [iteratedFDeriv_cutoffC_mul_eq_zero_of_lt (f := f) hx₁ n]
   · by_cases hx₂ : x ≤ 0
     · exact (hCmid x ⟨le_of_not_gt hx₁, hx₂⟩).trans
         (le_trans (le_max_left _ _) (le_max_left _ _))
