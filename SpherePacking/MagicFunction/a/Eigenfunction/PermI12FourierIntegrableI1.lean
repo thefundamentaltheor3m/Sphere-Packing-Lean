@@ -98,17 +98,17 @@ lemma integral_norm_permI1Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
     (∫ x : ℝ⁸, ‖permI1Kernel w (x, t)‖) ≤ ‖φ₀'' ((I : ℂ) / t)‖ * (1 / t ^ 2) := by
   have ht0 : 0 < t := ht.1
   have harg : (-1 / (z₁line t + 1) : ℂ) = (I : ℂ) / t := by
-    have : (-1 / ((I : ℂ) * (t : ℂ)) : ℂ) = (I : ℂ) / t := by
-      field_simp [ht0.ne']; simp [Complex.I_sq]
-    simpa [z₁line_add_one] using this
+    simpa [z₁line_add_one] using
+      (show (-1 / ((I : ℂ) * (t : ℂ)) : ℂ) = (I : ℂ) / t by
+        field_simp [ht0.ne']; simp [Complex.I_sq])
   have hexp (x : ℝ⁸) :
       ‖cexp (Real.pi * I * (‖x‖ ^ 2) * (z₁line t : ℂ))‖ =
         rexp (-(Real.pi * (t * (‖x‖ ^ 2)))) := by
-    have h' : ‖cexp (Real.pi * I * (‖x‖ ^ 2) * (z₁line t : ℂ))‖ =
-        rexp (-Real.pi * (‖x‖ ^ 2) * t) := by
+    rw [show ‖cexp (Real.pi * I * (‖x‖ ^ 2) * (z₁line t : ℂ))‖ =
+        rexp (-Real.pi * (‖x‖ ^ 2) * t) by
       simpa [z₁line_im, mul_assoc, mul_left_comm, mul_comm] using
-        norm_cexp_pi_mul_I_mul_sq (z := z₁line t) (x := x)
-    rw [h']; congr 1; ring
+        norm_cexp_pi_mul_I_mul_sq (z := z₁line t) (x := x)]
+    congr 1; ring
   have hnorm (x : ℝ⁸) :
       ‖permI1Kernel w (x, t)‖ =
         ‖φ₀'' ((I : ℂ) / t)‖ * t ^ 2 * rexp (-(Real.pi * (t * (‖x‖ ^ 2)))) := by
