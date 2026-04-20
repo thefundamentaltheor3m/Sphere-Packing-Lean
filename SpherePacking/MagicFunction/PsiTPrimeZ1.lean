@@ -51,21 +51,19 @@ public lemma exists_bound_norm_ψT'_z₁'_of (k : ℕ) (ψS : ℍ → ℂ) (ψT'
     (hEq : ∀ t : ℝ, t ∈ Ioc (0 : ℝ) 1 →
       ψT' (z₁' t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ k) :
     ∃ M : ℝ, ∀ t ∈ Ioo (0 : ℝ) 1, ‖ψT' (z₁' t)‖ ≤ M := by
-  rcases hBound with ⟨M, hM⟩
+  obtain ⟨M, hM⟩ := hBound
   refine ⟨M, fun t ht => ?_⟩
-  have htIoc : t ∈ Ioc (0 : ℝ) 1 := ⟨ht.1, le_of_lt ht.2⟩
-  have ht0' : 0 ≤ t := le_of_lt ht.1
-  have hψS : ‖ψS.resToImagAxis (1 / t)‖ ≤ M := hM (1 / t) (one_le_one_div ht.1 (le_of_lt ht.2))
-  have htK : t ^ k ≤ (1 : ℝ) := by simpa using pow_le_one₀ (n := k) ht0' (le_of_lt ht.2)
+  have htIoc : t ∈ Ioc (0 : ℝ) 1 := ⟨ht.1, ht.2.le⟩
+  have hψS : ‖ψS.resToImagAxis (1 / t)‖ ≤ M := hM (1 / t) (one_le_one_div ht.1 ht.2.le)
+  have htK : t ^ k ≤ (1 : ℝ) := by simpa using pow_le_one₀ (n := k) ht.1.le ht.2.le
   have hnorm : ‖((Complex.I : ℂ) * (t : ℂ)) ^ k‖ = t ^ k := by
-    simp [norm_pow, Complex.norm_real, abs_of_nonneg ht0']
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans hψS
+    simp [norm_pow, Complex.norm_real, abs_of_nonneg ht.1.le]
   calc
     ‖ψT' (z₁' t)‖ = ‖ψS.resToImagAxis (1 / t)‖ * ‖((Complex.I : ℂ) * (t : ℂ)) ^ k‖ := by
       simp [hEq t htIoc]
     _ = ‖ψS.resToImagAxis (1 / t)‖ * t ^ k := by simp [hnorm]
-    _ ≤ M * t ^ k := mul_le_mul_of_nonneg_right hψS (pow_nonneg ht0' k)
-    _ ≤ M * 1 := mul_le_mul_of_nonneg_left htK hM0
+    _ ≤ M * t ^ k := mul_le_mul_of_nonneg_right hψS (pow_nonneg ht.1.le k)
+    _ ≤ M * 1 := mul_le_mul_of_nonneg_left htK ((norm_nonneg _).trans hψS)
     _ = M := mul_one M
 
 /-- A pointwise bound for a modular rewrite on `Ioc 0 1`, given a bound on `ψS.resToImagAxis`. -/
