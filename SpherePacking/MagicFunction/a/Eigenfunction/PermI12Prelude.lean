@@ -97,9 +97,9 @@ lemma φ₀''_inv_add_one_mul_sq' (w : ℂ) (hw : 0 < w.im) :
     φ₀'' (-1 / ((-1 / w) + 1)) * ((-1 / w) + 1) ^ 2 *
         (((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (w ^ (2 : ℕ))⁻¹) =
       φ₀'' (-1 / (w - 1)) * (w - 1) ^ 2 := by
-  have hfac : ((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (w ^ (2 : ℕ))⁻¹ = w ^ (2 : ℕ) := by
-    simpa [div_eq_mul_inv] using I_div_neg_one_div_pow_four_mul_one_div_sq (w := w)
-  simpa [hfac] using φ₀''_inv_add_one_mul_sq (w := w) hw
+  simpa [show ((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (w ^ (2 : ℕ))⁻¹ = w ^ (2 : ℕ) from by
+    simpa [div_eq_mul_inv] using I_div_neg_one_div_pow_four_mul_one_div_sq (w := w)] using
+    φ₀''_inv_add_one_mul_sq (w := w) hw
 
 section CurveIntegral
 open scoped Interval
@@ -110,12 +110,11 @@ public lemma I₁'_eq_curveIntegral_segment (r : ℝ) :
     MagicFunction.a.RealIntegrals.I₁' r =
       (∫ᶜ z in Path.segment (-1 : ℂ) (-1 + Complex.I),
         scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₁' r) z) := by
-  rw [curveIntegral_segment
-    (ω := scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₁' r))
+  rw [curveIntegral_segment (ω := scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₁' r))
     (-1 : ℂ) (-1 + Complex.I)]
   simp only [MagicFunction.a.RealIntegrals.I₁', MagicFunction.a.RealIntegrands.Φ₁_def]
-  exact intervalIntegral.integral_congr fun t ht => by
-    simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₁_eq_z₁' (t := t)
+  exact intervalIntegral.integral_congr fun t ht => by simp [scalarOneForm_apply,
+    SpherePacking.Contour.lineMap_z₁_eq_z₁' (t := t)
       (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)]
 
 /-- Rewrite `I₂'` as a curve integral of `Φ₁'` along the segment `-1 + i → i`. -/
@@ -123,39 +122,36 @@ public lemma I₂'_eq_curveIntegral_segment (r : ℝ) :
     MagicFunction.a.RealIntegrals.I₂' r =
       (∫ᶜ z in Path.segment ((-1 : ℂ) + Complex.I) Complex.I,
         scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₁' r) z) := by
-  rw [curveIntegral_segment
-    (ω := scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₁' r))
+  rw [curveIntegral_segment (ω := scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₁' r))
     ((-1 : ℂ) + Complex.I) Complex.I]
   simp only [MagicFunction.a.RealIntegrals.I₂', MagicFunction.a.RealIntegrands.Φ₂_def]
-  exact intervalIntegral.integral_congr fun t ht => by
-    simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₂_eq_z₂' (t := t)
+  exact intervalIntegral.integral_congr fun t ht => by simp [scalarOneForm_apply,
+    SpherePacking.Contour.lineMap_z₂_eq_z₂' (t := t)
       (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht),
-      MagicFunction.a.ComplexIntegrands.Φ₂']
+    MagicFunction.a.ComplexIntegrands.Φ₂']
 
 lemma I₃'_eq_curveIntegral_segment (r : ℝ) :
     MagicFunction.a.RealIntegrals.I₃' r =
       (∫ᶜ z in Path.segment (1 : ℂ) ((1 : ℂ) + Complex.I),
         scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r) z) := by
-  rw [curveIntegral_segment
-    (ω := scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r))
+  rw [curveIntegral_segment (ω := scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r))
     (1 : ℂ) ((1 : ℂ) + Complex.I)]
   simp only [MagicFunction.a.RealIntegrals.I₃', MagicFunction.a.RealIntegrands.Φ₃_def]
-  exact intervalIntegral.integral_congr fun t ht => by
-    simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₃_eq_z₃' (t := t)
+  exact intervalIntegral.integral_congr fun t ht => by simp [scalarOneForm_apply,
+    SpherePacking.Contour.lineMap_z₃_eq_z₃' (t := t)
       (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)]
 
 lemma I₄'_eq_curveIntegral_segment (r : ℝ) :
     MagicFunction.a.RealIntegrals.I₄' r =
       (∫ᶜ z in Path.segment ((1 : ℂ) + Complex.I) Complex.I,
         scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r) z) := by
-  rw [curveIntegral_segment
-    (ω := scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r))
+  rw [curveIntegral_segment (ω := scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r))
     ((1 : ℂ) + Complex.I) Complex.I]
   simp only [MagicFunction.a.RealIntegrals.I₄', MagicFunction.a.RealIntegrands.Φ₄_def]
-  exact intervalIntegral.integral_congr fun t ht => by
-    simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₄_eq_z₄' (t := t)
+  exact intervalIntegral.integral_congr fun t ht => by simp [scalarOneForm_apply,
+    SpherePacking.Contour.lineMap_z₄_eq_z₄' (t := t)
       (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht),
-      MagicFunction.a.ComplexIntegrands.Φ₄']
+    MagicFunction.a.ComplexIntegrands.Φ₄']
 
 /-- Rewrite `I₃' + I₄'` as a sum of curve integrals of `Φ₃'` along the two segments
 `1 → 1 + i` and `1 + i → i`. -/
@@ -184,15 +180,12 @@ This is the holomorphic function whose curve integral appears in `fourier_I₁_e
 lemma Φ₁_fourier_eq_one_div_sq_mul_Φ₃' (r : ℝ) (z : ℂ) (hz : 0 < z.im) :
     Φ₁_fourier r z = (1 / z ^ (2 : ℕ)) * MagicFunction.a.ComplexIntegrands.Φ₃' r (-1 / z) := by
   have hz0 : z ≠ 0 := fun h => absurd (show z.im = 0 by simp [h]) hz.ne'
+  have hz2 : z ^ (2 : ℕ) ≠ 0 := pow_ne_zero 2 hz0
   have hφ := φ₀''_inv_add_one_mul_sq' (w := -1 / z) (neg_one_div_im_pos z hz)
   have hrew : (-1 / (-1 / z) : ℂ) = z := by field_simp [hz0]
-  have hsq : (((-1 / z) ^ (2 : ℕ) : ℂ)⁻¹) = z ^ (2 : ℕ) := by simp [div_eq_mul_inv, pow_two]
-  have hz2 : z ^ (2 : ℕ) ≠ 0 := pow_ne_zero 2 hz0
-  have hcoef :
-      φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * (((Complex.I : ℂ) / z) ^ (4 : ℕ)) =
-        (1 / z ^ (2 : ℕ)) * (φ₀'' (-1 / ((-1 / z) - 1)) * ((-1 / z) - 1) ^ 2) := by
-    grind only
-  simp [Φ₁_fourier, MagicFunction.a.ComplexIntegrands.Φ₃', hcoef,
+  simp [Φ₁_fourier, MagicFunction.a.ComplexIntegrands.Φ₃',
+    show φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * (((Complex.I : ℂ) / z) ^ (4 : ℕ)) =
+      (1 / z ^ (2 : ℕ)) * (φ₀'' (-1 / ((-1 / z) - 1)) * ((-1 / z) - 1) ^ 2) from by grind only,
     mul_assoc, mul_left_comm, mul_comm]
 
 /-- Modular identity relating `Φ₁_fourier` to `Φ₃'` via `mobiusInv` and its derivative.
