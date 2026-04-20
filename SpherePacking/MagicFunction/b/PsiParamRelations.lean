@@ -44,8 +44,7 @@ private lemma vadd_one_z₁'_eq_z₅' (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
 
 private lemma vadd_one_z₅'_eq_z₃' (t : ℝ)
     (hz5 : 0 < (z₅' t).im) (hz3 : 0 < (z₃' t).im) :
-    ((1 : ℝ) +ᵥ (⟨z₅' t, hz5⟩ : ℍ) : ℍ) = ⟨z₃' t, hz3⟩ := by
-  rfl
+    ((1 : ℝ) +ᵥ (⟨z₅' t, hz5⟩ : ℍ) : ℍ) = ⟨z₃' t, hz3⟩ := rfl
 
 /-- Compatibility of the primed extensions `ψT'` and `ψI'` along the parametrisations `z₁'`/`z₅'`.
 
