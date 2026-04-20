@@ -182,11 +182,8 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
     (hC₀ wH (by rw [hw_im]; linarith)).trans
       (mul_le_of_le_one_right hC₀_pos.le (Real.exp_le_one_iff.2 <| by
         nlinarith [Real.pi_pos, wH.im_pos]))
-  have hw2 : ‖(wH : ℂ) ^ (2 : ℕ)‖ ≤ (2 * t) ^ (2 : ℕ) := by
-    simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hw_norm 2
   have ht2_nonneg : 0 ≤ t ^ 2 := by positivity
-  have hexp_ge : (1 : ℝ) ≤ Real.exp (2 * π * t) :=
-    Real.one_le_exp_iff.2 <| by positivity
+  have hexp_ge : (1 : ℝ) ≤ Real.exp (2 * π * t) := Real.one_le_exp_iff.2 <| by positivity
   have htri : ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ +
         ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ +
@@ -201,8 +198,9 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
   have hA : ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       (4 * C₀) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
     calc ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖
-        ≤ C₀ * (2 * t) ^ 2 :=
-          (norm_mul_le _ _).trans (mul_le_mul hφ0 hw2 (norm_nonneg _) hC₀_pos.le)
+        ≤ C₀ * (2 * t) ^ 2 := (norm_mul_le _ _).trans
+          (mul_le_mul hφ0 (by simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hw_norm 2)
+            (norm_nonneg _) hC₀_pos.le)
       _ = (4 * C₀) * t ^ 2 := by ring
       _ ≤ (4 * C₀) * (t ^ 2 * Real.exp (2 * π * t)) := by
           have : 0 ≤ 4 * C₀ := by positivity
@@ -246,7 +244,7 @@ lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ}
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht1
   let wH : ℍ := ⟨(t : ℂ) * I + 1, by simpa using ht0⟩
   have hwH_im : wH.im = t := by simp [wH, UpperHalfPlane.im]
-  have hw_norm : ‖(wH : ℂ)‖ ≤ 2 * t := by
+  have hw_norm : ‖(wH : ℂ)‖ ≤ 2 * t :=
     calc ‖(wH : ℂ)‖ = ‖(t : ℂ) * I + 1‖ := rfl
       _ ≤ ‖(t : ℂ) * I‖ + ‖(1 : ℂ)‖ := norm_add_le _ _
       _ = t + 1 := by
@@ -257,11 +255,11 @@ lemma norm_Φ₂'_imag_axis_le {u t : ℝ} {Cφ Aφ C₀ : ℝ}
       (φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))) *
         cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I)) := by
     rw [show Φ₂' u ((t : ℂ) * I) =
-        (φ₀'' ((-1 : ℂ) / (((t : ℂ) * I) + 1)) * (((t : ℂ) * I + 1) ^ (2 : ℕ))) *
-          cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I)) from by
-      simp [MagicFunction.a.ComplexIntegrands.Φ₂', MagicFunction.a.ComplexIntegrands.Φ₁',
-        mul_assoc]]
-    rw [show ((t : ℂ) * I + 1) = (wH : ℂ) from rfl,
+          (φ₀'' ((-1 : ℂ) / (((t : ℂ) * I) + 1)) * (((t : ℂ) * I + 1) ^ (2 : ℕ))) *
+            cexp ((π : ℂ) * I * (u : ℂ) * ((t : ℂ) * I)) from by
+        simp [MagicFunction.a.ComplexIntegrands.Φ₂', MagicFunction.a.ComplexIntegrands.Φ₁',
+          mul_assoc],
+      show ((t : ℂ) * I + 1) = (wH : ℂ) from rfl,
       show φ₀ (ModularGroup.S • wH) = φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) from by simp,
       show ((ModularGroup.S • wH : ℍ) : ℂ) = (-1 : ℂ) / (wH : ℂ) from by
         simpa using ModularGroup.coe_S_smul (z := wH)]
