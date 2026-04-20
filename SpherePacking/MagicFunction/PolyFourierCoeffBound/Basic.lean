@@ -69,7 +69,7 @@ theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (
     exact ⟨C, (m - n₀).toNat, fun n hn ↦ hCa (n + n₀) (by grind)⟩
   refine h_shift.trans ?_
   simp only [isBigO_iff, eventually_atTop]
-  refine ⟨2 ^ k, n₀.natAbs, fun n hn ↦ ?_⟩
+  refine ⟨2 ^ k, n₀.natAbs, fun n _ ↦ ?_⟩
   simp only [Real.norm_eq_abs, abs_pow, abs_of_nonneg, Nat.cast_nonneg]
   rw [← mul_pow]
   refine pow_le_pow_left₀ (abs_nonneg _) ?_ _
@@ -103,13 +103,9 @@ section calc_aux
 
 -- These could even go in Mathlib... they look useful (if a bit random)
 
-lemma aux_1 (x : ℂ) : norm (cexp (I * x)) = rexp (-x.im) := by
-  simpa using (Complex.norm_exp (I * x))
-
 -- Below was written by Bhavik
-lemma aux_2 (x : ℂ) : 1 - Real.exp x.re ≤ norm (1 - cexp x) := by
-  refine (le_abs_self (1 - Real.exp x.re)).trans ?_
-  simpa [Complex.norm_exp] using (abs_norm_sub_norm_le (1 : ℂ) (cexp x))
+lemma aux_2 (x : ℂ) : 1 - Real.exp x.re ≤ norm (1 - cexp x) :=
+  (le_abs_self _).trans (by simpa [Complex.norm_exp] using abs_norm_sub_norm_le (1 : ℂ) (cexp x))
 
 include hcsum in
 lemma aux_3 : Summable fun (i : ℕ) ↦ ‖c (i + n₀) * cexp (↑π * I * i * z)‖ := by
@@ -137,7 +133,8 @@ lemma aux_6 (z : ℍ) : 0 ≤ ∏' (n : ℕ+), norm (1 - cexp (2 * ↑π * I * �
 
 lemma aux_7 (a : ℤ) :
     norm (cexp (↑π * I * a * z)) ≤ rexp (-π * a * z.im) := by
-  simpa [mul_assoc, mul_left_comm, mul_comm] using le_of_eq (aux_1 (x := (↑π * (a * z))))
+  simpa [mul_assoc, mul_left_comm, mul_comm] using
+    (Complex.norm_exp (I * (↑π * (a * z)))).le
 
 lemma aux_tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
     0 < ∏' (n : ℕ+), (1 - rexp (-c * (n : ℝ))) ^ 24 := by
@@ -156,12 +153,9 @@ lemma aux_8 : 0 < ∏' (n : ℕ+), (1 - rexp (-2 * π * ↑↑n * z.im)) ^ 24 :=
   simpa [mul_assoc, mul_left_comm, mul_comm] using
     aux_tprod_one_sub_rexp_pow_24_pos (c := 2 * π * z.im) (by positivity)
 
-lemma aux_ring (i : ℕ) : (I * ↑π * ↑i * z) = I * ((↑π * ↑i) * z) := by
-  simp [mul_assoc]
-
 lemma aux_9 (i : ℕ) :
     ‖c (i + n₀) * cexp (↑π * I * ↑i * z)‖ = ‖c (i + n₀)‖ * rexp (-π * ↑i * z.im) := by
-  rw [norm_mul, mul_comm (↑π) I, aux_ring, aux_1]
+  rw [norm_mul, show (↑π * I * (i : ℂ) * z) = I * ((↑π * i) * z) by ring, Complex.norm_exp]
   simp
 
 include hcsum in
@@ -179,6 +173,20 @@ section calc_steps
 lemma multipliable_pow {ι : Type*} (f : ι → ℝ) (hf : Multipliable f) (n : ℕ) :
     Multipliable (fun i => f i ^ n) := by
   induction n with | zero => simp | succ n hn => simpa [pow_succ] using hn.mul hf
+
+lemma step_12a {r : ℝ} (hr : 0 < r) :
+    Multipliable fun b : ℕ+ ↦ (1 - rexp (-r * (b : ℝ))) ^ 24 := by
+  refine Real.multipliable_of_summable_log (fun i ↦ ?_) ?_
+  · refine pow_pos (sub_pos.2 (Real.exp_lt_one_iff.2 ?_)) _
+    have : (0 : ℝ) < (i : ℝ) := by exact_mod_cast i.pos
+    nlinarith
+  have hnat : Summable fun b : ℕ ↦ Real.exp (-r * (b : ℝ)) := by
+    simpa [mul_assoc, mul_comm, mul_left_comm] using
+      (Real.summable_exp_nat_mul_iff (a := -r)).2 (by nlinarith)
+  simpa [log_pow, sub_eq_add_neg, smul_eq_mul] using Summable.const_smul (24 : ℝ)
+    (Real.summable_log_one_add_of_summable
+      ((by simpa using hnat.comp_injective PNat.coe_injective :
+        Summable fun b : ℕ+ ↦ Real.exp (-r * (b : ℝ))).neg))
 
 lemma step_7 :
     norm (cexp (π * I * (n₀ - 2) * z)) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
@@ -223,15 +231,8 @@ lemma step_10 :
     · simp only [sub_nonneg, exp_le_one_iff, Left.neg_nonpos_iff]; positivity
     · rw [show -(2 * π * n * z.im) = (2 * π * I * n * z).re by simp]
       exact aux_2 (2 * π * I * n * z)
-  · have h_base : Multipliable (fun b : ℕ+ => 1 - rexp (-2 * π * ↑↑b * z.im)) := by
-      refine Real.multipliable_of_summable_log (fun i => by simp [pi_pos, UpperHalfPlane.im_pos]) ?_
-      simp_rw [sub_eq_add_neg]
-      refine Real.summable_log_one_add_of_summable (Summable.neg ?_)
-      conv => lhs; equals (fun (b : ℕ) => Real.exp (-2 * π * b * z.im)) ∘ (PNat.val) => rfl
-      refine Summable.subtype ?_ _
-      simp_rw [mul_comm, mul_assoc, Real.summable_exp_nat_mul_iff]
-      simp [pi_pos, UpperHalfPlane.im_pos]
-    exact multipliable_pow _ h_base 24
+  · simpa [mul_assoc, mul_left_comm, mul_comm] using
+      step_12a (r := 2 * π * z.im) (mul_pos two_pi_pos (UpperHalfPlane.im_pos z))
   · exact multipliable_pow _ (MultipliableEtaProductExpansion_pnat z).norm 24
 
 include hz hcsum hpoly in
@@ -250,20 +251,6 @@ lemma step_11 :
     simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm, neg_mul] using this
   gcongr
   exact (aux_8 z).le
-
-lemma step_12a {r : ℝ} (hr : 0 < r) :
-    Multipliable fun b : ℕ+ ↦ (1 - rexp (-r * (b : ℝ))) ^ 24 := by
-  refine Real.multipliable_of_summable_log (fun i ↦ ?_) ?_
-  · refine pow_pos (sub_pos.2 (Real.exp_lt_one_iff.2 ?_)) _
-    have : (0 : ℝ) < (i : ℝ) := by exact_mod_cast i.pos
-    nlinarith
-  have hnat : Summable fun b : ℕ ↦ Real.exp (-r * (b : ℝ)) := by
-    simpa [mul_assoc, mul_comm, mul_left_comm] using
-      (Real.summable_exp_nat_mul_iff (a := -r)).2 (by nlinarith)
-  simpa [log_pow, sub_eq_add_neg, smul_eq_mul] using Summable.const_smul (24 : ℝ)
-    (Real.summable_log_one_add_of_summable
-      ((by simpa using hnat.comp_injective PNat.coe_injective :
-        Summable fun b : ℕ+ ↦ Real.exp (-r * (b : ℝ))).neg))
 
 include hz in
 lemma step_12 :
