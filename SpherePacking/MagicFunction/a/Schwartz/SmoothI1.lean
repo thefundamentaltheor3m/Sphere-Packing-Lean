@@ -43,12 +43,10 @@ private lemma I₁'_eq_integral_g_Ioo (x : ℝ) :
 
 private lemma arg_z₁'_eq_I_div (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     arg z₁' (1 : ℂ) t = I / t := by
-  have htne : (t : ℂ) ≠ 0 := by exact_mod_cast ht.1.ne'
+  have htne : (t : ℂ) ≠ 0 := mod_cast ht.1.ne'
   change (-1 : ℂ) / (z₁' t + 1) = I / t
   rw [z₁'_eq_of_mem (mem_Icc_of_Ioo ht)]
-  field_simp
-  ring_nf
-  simp [Complex.I_sq]
+  field_simp; ring_nf; simp [Complex.I_sq]
 
 private lemma arg_z₁'_im_pos (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     0 < (arg z₁' (1 : ℂ) t).im := by
@@ -60,8 +58,7 @@ private lemma arg_z₁'_im_half (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
   linarith [(one_lt_one_div ht.1) ht.2, him]
 
 private lemma den_z₁'_ne_zero (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
-    z₁' t + (1 : ℂ) ≠ 0 := by
-  intro h0
+    z₁' t + (1 : ℂ) ≠ 0 := fun h0 => by
   have h1 := congrArg Complex.im h0
   simp [z₁'_eq_of_mem (mem_Icc_of_Ioo ht)] at h1
   exact ht.1.ne' h1
