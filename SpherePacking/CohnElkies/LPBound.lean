@@ -73,7 +73,6 @@ theorem fourier_ne_zero : 𝓕 f ≠ 0 := by
 
 include hCohnElkies₂ in
 theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
-  -- f(0) is an integral of a nonneg function, hence nonneg.
   rw [← f.fourierInversion, fourierInv_eq]
   simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul]
   rw [← RCLike.re_eq_complex_re, ← integral_re hIntegrable]
@@ -194,8 +193,6 @@ lemma calc_steps' (hd : 0 < d) :
       (re_tsum (SpherePacking.CohnElkies.LPBoundSummability.summable_lattice_translate
         (Λ := P.lattice) (f := f) (a := (↑x - ↑y : EuclideanSpace ℝ (Fin d))))).symm
 
--- NOTE: intermediate summability facts should follow from `PSF_Conditions`
--- (add assumptions here if needed).
 include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ hD_unique_covers in
 omit hne_zero hReal hCohnElkies₂ in
 theorem calc_steps_part1 (hd : 0 < d) :
@@ -213,7 +210,6 @@ theorem calc_steps_part1 (hd : 0 < d) :
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice), (f (↑x - ↑y + ↑ℓ)).re :=
           CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice f P
             hD_isBounded hD_unique_covers hd
-  -- Pull out real parts so we can apply PSF-L to the complex equality.
   _ = (∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice),
       f (↑x - ↑y + ↑ℓ)).re
         := calc_steps' hD_isBounded hd

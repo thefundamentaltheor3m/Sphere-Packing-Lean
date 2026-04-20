@@ -190,7 +190,6 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
             (36 : ℂ) / (π ^ (2 : ℕ)) * φ₄' wH from by
       simpa using φ₀_S_transform_mul_sq (w := wH)]
     exact (norm_sub_le _ _).trans (by gcongr; exact norm_sub_le _ _)
-  -- Bound each of the three summands by `Kᵢ * (t^2 * exp(2πt))`.
   have hA : ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       (4 * C₀) * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) := by
     calc ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖
@@ -351,7 +350,6 @@ public lemma I₁'_add_I₃'_add_I₅'_eq_imag_axis (u : ℝ) :
   let V0 : ℂ := ∫ t in (0 : ℝ)..1, Φ₅' u ((t : ℂ) * I)
   have hmem : ∀ {t : ℝ}, t ∈ Set.uIcc (0 : ℝ) 1 → t ∈ Set.Icc (0 : ℝ) 1 := fun ht => by
     simpa [Set.uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] using ht
-  -- Helper: a shift for I₁/I₃ reparametrizing Φⱼ as an exp-times-Φ₅ along the vertical ray.
   have hIshift : ∀ (sign : ℂ) (zp : ℝ → ℂ) (Φⱼ : ℝ → ℂ → ℂ)
       (_ : ∀ {t : ℝ}, t ∈ Set.Icc (0 : ℝ) 1 → zp t = sign + (t : ℂ) * I)
       (_ : ∀ t : ℝ, Φⱼ u (sign + (t : ℂ) * I) =

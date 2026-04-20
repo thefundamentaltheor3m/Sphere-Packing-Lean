@@ -116,10 +116,9 @@ lemma norm_Φ₂'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
         (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
   refine norm_strip_le_of_hdef (s := x + 1) (F := Φ₂' u) hC₀_pos hC₀ hφbd
     (by rw [abs_of_nonneg (by linarith : (0:ℝ) ≤ x + 1)]; linarith) ht1 htAφ ?_
-  have hshift : (x : ℂ) + (t : ℂ) * Complex.I + 1 =
-      ((x + 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I := by push_cast; ring
   simp [MagicFunction.a.ComplexIntegrands.Φ₂', MagicFunction.a.ComplexIntegrands.Φ₁',
-    hshift, mul_assoc]
+    show (x : ℂ) + (t : ℂ) * Complex.I + 1 =
+      ((x + 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I from by push_cast; ring, mul_assoc]
 
 /-- Uniform strip bound for `Φ₄' u (x + tI)` with `x ∈ [0,1]` and `t ≥ 1`. -/
 lemma norm_Φ₄'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
@@ -136,10 +135,9 @@ lemma norm_Φ₄'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
         (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
   refine norm_strip_le_of_hdef (s := x - 1) (F := Φ₄' u) hC₀_pos hC₀ hφbd
     (by rw [abs_sub_comm, abs_of_nonneg (by linarith : (0:ℝ) ≤ 1 - x)]; linarith) ht1 htAφ ?_
-  have hshift : (x : ℂ) + (t : ℂ) * Complex.I - 1 =
-      ((x - 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I := by push_cast; ring
   simp [MagicFunction.a.ComplexIntegrands.Φ₄', MagicFunction.a.ComplexIntegrands.Φ₃',
-    hshift, mul_assoc]
+    show (x : ℂ) + (t : ℂ) * Complex.I - 1 =
+      ((x - 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I from by push_cast; ring, mul_assoc]
 
 /-- Generic top-edge decay: reduces a `tendsto` statement on an interval integral to a pointwise
 strip bound. -/
