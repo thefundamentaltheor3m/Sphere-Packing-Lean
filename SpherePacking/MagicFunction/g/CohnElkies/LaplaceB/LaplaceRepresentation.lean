@@ -53,22 +53,22 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         simp [bContourIntegrandI, bContourWeight_mul_I, mul_assoc]]
     simp [MeasureTheory.integral_neg]
   let VI : ℂ := ∫ t in Set.Ioi (0 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))
-  have hcoef :
-      (2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
-            Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) =
-        ((4 * (Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) := by
-    simpa using
-      (MagicFunction.g.CohnElkies.Trig.two_sub_exp_pi_mul_I_sub_exp_neg_pi_mul_I u).trans
-        (congrArg (fun r : ℝ => (r : ℂ))
-          (MagicFunction.g.CohnElkies.Trig.two_sub_two_cos_eq_four_sin_sq u))
-  rw [MagicFunction.b.RealIntegrals.b']
-  rw [show (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
+  rw [MagicFunction.b.RealIntegrals.b',
+    show (-4 * (Complex.I : ℂ)) * (Real.sin (π * u / 2)) ^ (2 : ℕ) *
             (∫ t in Set.Ioi (0 : ℝ),
               ψI' ((Complex.I : ℂ) * (t : ℂ)) * Real.exp (-π * u * t)) =
         (Complex.I : ℂ) *
             (((2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
-                  Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I))) * VI) from by
-    rw [hLap]; dsimp [VI]; rw [hcoef]; simp [mul_assoc, mul_comm]]
+                  Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I))) * VI) by
+      rw [hLap]; dsimp [VI]
+      rw [show (2 : ℂ) - Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) -
+            Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) =
+            ((4 * (Real.sin (π * u / 2)) ^ (2 : ℕ) : ℝ) : ℂ) by
+        simpa using
+          (MagicFunction.g.CohnElkies.Trig.two_sub_exp_pi_mul_I_sub_exp_neg_pi_mul_I u).trans
+            (congrArg (fun r : ℝ => (r : ℂ))
+              (MagicFunction.g.CohnElkies.Trig.two_sub_two_cos_eq_four_sin_sq u))]
+      simp [mul_assoc, mul_comm]]
   clear hLap
   have hStrip0 : (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} := fun z hz =>
     lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (by simpa [Set.mem_Ici] using hz.2)
@@ -127,14 +127,12 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         ((by simpa [mul_assoc] using
           exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2)) hpos :
           IntegrableOn (fun t : ℝ => Real.exp (-(π * (u - 2)) * t)) (Set.Ioi A)).const_mul Cψ)
-    have hmeas : AEStronglyMeasurable f (volume.restrict (Set.Ioi A)) :=
-      ((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
-        (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by positivity) ht.le)).aestronglyMeasurable
-        measurableSet_Ioi
     have hInt_tail : IntegrableOn f (Set.Ioi A) := by
       simpa [MeasureTheory.IntegrableOn] using
-        hg.mono' hmeas (ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
-          simpa using hdom t ht)
+        hg.mono' (((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
+          (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by positivity) ht.le)).aestronglyMeasurable
+          measurableSet_Ioi)
+          (ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by simpa using hdom t ht)
     rw [show Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A from
       (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) hA1).symm]
     exact hInt_finite.union hInt_tail
@@ -172,13 +170,12 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     intro ε hε
     rcases Filter.eventually_atTop.1 (htdec.eventually (Iio_mem_nhds hε)) with ⟨Mε, hMε⟩
     refine ⟨max (max 1 Aψ) Mε, fun z hzM => ?_⟩
-    have hM1 : (1 : ℝ) ≤ max (max 1 Aψ) Mε :=
-      (le_max_left 1 Aψ).trans (le_max_left _ _)
-    have hzpos : 0 < z.im := lt_of_lt_of_le (by norm_num) (hM1.trans hzM)
-    have hzAψ : Aψ ≤ z.im := ((le_max_right 1 Aψ).trans (le_max_left _ _)).trans hzM
+    have hzpos : 0 < z.im := lt_of_lt_of_le (by norm_num)
+      (((le_max_left 1 Aψ).trans (le_max_left _ _) : (1 : ℝ) ≤ max (max 1 Aψ) Mε).trans hzM)
     have hzI : 0 < (z + (1 : ℂ)).im := by simpa [add_assoc] using hzpos
     have htIm : Aψ ≤ UpperHalfPlane.im (⟨z + (1 : ℂ), hzI⟩ : ℍ) := by
-      simpa [UpperHalfPlane.im, add_assoc] using hzAψ
+      simpa [UpperHalfPlane.im, add_assoc] using
+        (((le_max_right 1 Aψ).trans (le_max_left _ _)).trans hzM : Aψ ≤ z.im)
     have hψI : ‖ψI (⟨z + (1 : ℂ), hzI⟩ : ℍ)‖ ≤ Cψ * Real.exp (2 * π * z.im) := by
       simpa [UpperHalfPlane.im, add_assoc] using hψbd _ htIm
     rw [show ‖bContourIntegrandT u z‖ = ‖ψT' z‖ * ‖bContourWeight u z‖ from by
@@ -309,38 +306,33 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
                 bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) -
           (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
     simpa [hJ4_top] using eq_sub_of_add_eq (sub_eq_zero.mp hRectRight)
+  have hJ_vert_aux : ∀ (a : ℂ) (zp : ℝ → ℂ)
+      (_ : ∀ {t : ℝ}, t ∈ Set.Icc (0 : ℝ) 1 → zp t = a + I * (t : ℂ)),
+      (∫ t in (0 : ℝ)..1, (I : ℂ) * ψT' (zp t) *
+          cexp (π * (I : ℂ) * (u : ℂ) * zp t)) =
+        (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) := by
+    intro a zp hzp
+    rw [show (∫ t in (0 : ℝ)..1, (I : ℂ) * ψT' (zp t) *
+        cexp (π * (I : ℂ) * (u : ℂ) * zp t)) =
+        ∫ t in (0 : ℝ)..1, (I : ℂ) * bContourIntegrandT u (a + I * (t : ℂ)) from
+      intervalIntegral.integral_congr fun t ht => by
+        simp [bContourIntegrandT, bContourWeight, hzp (hmem_Icc ht), mul_assoc]]
+    simp only [intervalIntegral.integral_const_mul, mul_eq_mul_left_iff, I_ne_zero, or_false]
+    rw [intervalIntegral.integral_of_le (show (0 : ℝ) ≤ 1 by norm_num)]
   have hJ1_set :
       MagicFunction.b.RealIntegrals.J₁' u =
-        (I : ℂ) *
-          (∫ t in Set.Ioc (0 : ℝ) 1,
-            bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) := by
+        (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1,
+          bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) := by
     dsimp [MagicFunction.b.RealIntegrals.J₁']
-    rw [show (∫ t in (0 : ℝ)..1,
-        (I : ℂ) * ψT' (MagicFunction.Parametrisations.z₁' t) *
-          cexp (π * (I : ℂ) * (u : ℂ) * MagicFunction.Parametrisations.z₁' t)) =
-        ∫ t in (0 : ℝ)..1, (I : ℂ) * bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ)) from
-      intervalIntegral.integral_congr fun t ht => by
-        have hz : MagicFunction.Parametrisations.z₁' t = (-1 : ℂ) + I * (t : ℂ) := by
-          simpa using MagicFunction.Parametrisations.z₁'_eq_of_mem (t := t) (hmem_Icc ht)
-        simp [bContourIntegrandT, bContourWeight, hz, mul_assoc]]
-    simp only [intervalIntegral.integral_const_mul, mul_eq_mul_left_iff, I_ne_zero, or_false]
-    rw [intervalIntegral.integral_of_le (show (0 : ℝ) ≤ 1 by norm_num)]
+    exact hJ_vert_aux (-1 : ℂ) MagicFunction.Parametrisations.z₁' fun ht => by
+      simpa using MagicFunction.Parametrisations.z₁'_eq_of_mem ht
   have hJ3_set :
       MagicFunction.b.RealIntegrals.J₃' u =
-        (I : ℂ) *
-          (∫ t in Set.Ioc (0 : ℝ) 1,
-            bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) := by
+        (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1,
+          bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) := by
     dsimp [MagicFunction.b.RealIntegrals.J₃']
-    rw [show (∫ t in (0 : ℝ)..1,
-        (I : ℂ) * ψT' (MagicFunction.Parametrisations.z₃' t) *
-          cexp (π * (I : ℂ) * (u : ℂ) * MagicFunction.Parametrisations.z₃' t)) =
-        ∫ t in (0 : ℝ)..1, (I : ℂ) * bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ)) from
-      intervalIntegral.integral_congr fun t ht => by
-        have hz : MagicFunction.Parametrisations.z₃' t = (1 : ℂ) + I * (t : ℂ) := by
-          simpa using MagicFunction.Parametrisations.z₃'_eq_of_mem (t := t) (hmem_Icc ht)
-        simp [bContourIntegrandT, bContourWeight, hz, mul_assoc]]
-    simp only [intervalIntegral.integral_const_mul, mul_eq_mul_left_iff, I_ne_zero, or_false]
-    rw [intervalIntegral.integral_of_le (show (0 : ℝ) ≤ 1 by norm_num)]
+    exact hJ_vert_aux (1 : ℂ) MagicFunction.Parametrisations.z₃' fun ht => by
+      simpa using MagicFunction.Parametrisations.z₃'_eq_of_mem ht
   have hJ5_set :
       MagicFunction.b.RealIntegrals.J₅' u =
         (2 : ℂ) * (I : ℂ) *
