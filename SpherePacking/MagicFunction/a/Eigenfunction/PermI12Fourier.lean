@@ -60,10 +60,10 @@ private lemma continuousAt_φ₀''_inv_add_one {z : ℝ → ℂ} (hz : Continuou
     (hpos : 0 < (z t + 1).im) :
     ContinuousAt (fun s : ℝ => φ₀'' ((-1 : ℂ) / (z s + 1))) t := by
   have hden : z t + 1 ≠ 0 := fun h => hpos.ne' (by simp [h])
-  have hφ : ContinuousAt (fun w : ℂ => φ₀'' w) ((-1 : ℂ) / (z t + 1)) := by
-    have hmem : (-1 : ℂ) / (z t + 1) ∈ UpperHalfPlane.upperHalfPlaneSet := by
-      simpa [UpperHalfPlane.upperHalfPlaneSet] using neg_one_div_im_pos (z t + 1) hpos
-    exact (MagicFunction.a.ComplexIntegrands.φ₀''_holo.differentiableAt
+  have hmem : (-1 : ℂ) / (z t + 1) ∈ UpperHalfPlane.upperHalfPlaneSet := by
+    simpa [UpperHalfPlane.upperHalfPlaneSet] using neg_one_div_im_pos (z t + 1) hpos
+  have hφ : ContinuousAt (fun w : ℂ => φ₀'' w) ((-1 : ℂ) / (z t + 1)) :=
+    (MagicFunction.a.ComplexIntegrands.φ₀''_holo.differentiableAt
       (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hmem)).continuousAt
   have hmap : ContinuousAt (fun s : ℝ => (-1 : ℂ) / (z s + 1)) t :=
     continuousAt_const.div ((hz.continuousAt).add continuousAt_const) (by simpa using hden)
@@ -75,23 +75,18 @@ private lemma continuousAt_Φ₁'_comp {z : ℝ → ℂ} (hz : Continuous z)
     {p : (EuclideanSpace ℝ (Fin 8)) × ℝ} (hpos : 0 < (z p.2 + 1).im) :
     ContinuousAt (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ =>
       MagicFunction.a.ComplexIntegrands.Φ₁' (‖q.1‖ ^ 2) (z q.2)) p := by
-  have hφcomp : ContinuousAt (fun s : ℝ => φ₀'' ((-1 : ℂ) / (z s + 1))) p.2 :=
-    continuousAt_φ₀''_inv_add_one hz hpos
   have hφterm : ContinuousAt
       (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ => φ₀'' ((-1 : ℂ) / (z q.2 + 1))) p := by
-    simpa [Function.comp] using hφcomp.comp continuousAt_snd
+    simpa [Function.comp] using (continuousAt_φ₀''_inv_add_one hz hpos).comp continuousAt_snd
   have hz_pt : ContinuousAt (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ => z q.2) p :=
     (hz.continuousAt).comp continuousAt_snd
   have hpow : ContinuousAt
       (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ => (z q.2 + 1) ^ (2 : ℕ)) p :=
     (hz_pt.add continuousAt_const).pow 2
-  have hnormSq : ContinuousAt
-      (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ => ((‖q.1‖ ^ 2 : ℝ) : ℂ)) p := by
-    fun_prop
   have hexp : ContinuousAt
       (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ =>
         cexp ((π : ℂ) * I * ((‖q.1‖ ^ 2 : ℝ) : ℂ) * z q.2)) p :=
-    (((continuousAt_const.mul continuousAt_const).mul hnormSq).mul hz_pt).cexp
+    (((continuousAt_const.mul continuousAt_const).mul (by fun_prop)).mul hz_pt).cexp
   dsimp [MagicFunction.a.ComplexIntegrands.Φ₁']
   exact (hφterm.mul hpow).mul hexp
 
@@ -114,25 +109,19 @@ public lemma permI1Kernel_measurable (w : EuclideanSpace ℝ (Fin 8)) :
       ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod (μIoc01)) := by
   refine aestronglyMeasurable_of_continuousOn_univ_prod_Ioc01 fun p hp => ?_
   have hpos : 0 < (z₁line p.2 + 1).im := by simpa using ((Set.mem_prod.mp hp).2).1
-  have hΦ : ContinuousAt (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ =>
-      MagicFunction.a.ComplexIntegrands.Φ₁' (‖q.1‖ ^ 2) (z₁line q.2)) p :=
-    continuousAt_Φ₁'_comp continuous_z₁line hpos
   have hphase : ContinuousAt (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ =>
       cexp (↑(-2 * (π * ⟪q.1, w⟫)) * I)) p := by fun_prop
-  exact (hphase.mul (continuousAt_const.mul hΦ)).continuousWithinAt
+  exact (hphase.mul (continuousAt_const.mul
+    (continuousAt_Φ₁'_comp continuous_z₁line hpos))).continuousWithinAt
 
 /-- Measurability of `permI2Kernel` with respect to the product measure `volume × μIoc01`. -/
 public lemma permI2Kernel_measurable (w : EuclideanSpace ℝ (Fin 8)) :
     AEStronglyMeasurable (permI2Kernel w)
       ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod (μIoc01)) := by
   refine aestronglyMeasurable_of_continuousOn_univ_prod_Ioc01 fun p _ => ?_
-  have hpos : 0 < (z₂line p.2 + 1).im := by simp
-  have hΦ : ContinuousAt (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ =>
-      MagicFunction.a.ComplexIntegrands.Φ₁' (‖q.1‖ ^ 2) (z₂line q.2)) p :=
-    continuousAt_Φ₁'_comp continuous_z₂line hpos
   have hphase : ContinuousAt (fun q : (EuclideanSpace ℝ (Fin 8)) × ℝ =>
       cexp (↑(-2 * (π * ⟪q.1, w⟫)) * I)) p := by fun_prop
-  exact (hphase.mul hΦ).continuousWithinAt
+  exact (hphase.mul (continuousAt_Φ₁'_comp continuous_z₂line (by simp))).continuousWithinAt
 
 end Integral_Permutations.PermI12Fourier
 end
