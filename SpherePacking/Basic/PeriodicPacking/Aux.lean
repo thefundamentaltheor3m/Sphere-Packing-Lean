@@ -259,8 +259,8 @@ public theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice)
     refine ⟨fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ ?_⟩
     rw [hS] at hx hy
     exact ⟨⟨y - x, sub_mem hy hx⟩, by simp [addAction_vadd]⟩
-  let z : S.centers := ⟨0, by simp [hS]⟩
-  exact Fintype.card_eq_one_iff.2 ⟨⟦z⟧, fun y => Subsingleton.elim y _⟩
+  exact Fintype.card_eq_one_iff.2 ⟨⟦(⟨0, by simp [hS]⟩ : S.centers)⟧,
+    fun y => Subsingleton.elim y _⟩
 
 public theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
     (hD_isBounded : IsBounded D)
@@ -347,10 +347,11 @@ private theorem disjoint_vadd_fundamentalDomain
     Submodule.span ℤ (Set.range (b.ofZLatticeBasis ℝ _))
   have hx' : x ∈ Λ := by simpa [Λ, S.basis_Z_span] using hx
   have hy' : y ∈ Λ := by simpa [Λ, S.basis_Z_span] using hy
-  have hxy' : (⟨x, hx'⟩ : Λ) ≠ ⟨y, hy'⟩ := fun h ↦ hxy (by simpa using congrArg Subtype.val h)
   simpa [Λ] using disjoint_vadd_of_unique_covers (d := d) (Λ := Λ)
     (D := fundamentalDomain (b.ofZLatticeBasis ℝ _))
-    (fun u ↦ by simpa using exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) u) hxy'
+    (fun u ↦ by simpa using exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) u)
+    (show (⟨x, hx'⟩ : Λ) ≠ ⟨y, hy'⟩ from
+      fun h ↦ hxy (by simpa using congrArg Subtype.val h))
 
 -- Theorem 2.3, lower bound
 public theorem PeriodicSpherePacking.aux_ge
