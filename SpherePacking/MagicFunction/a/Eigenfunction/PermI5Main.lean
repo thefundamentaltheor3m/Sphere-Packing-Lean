@@ -69,11 +69,8 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
       funext x
       simp [f, permI5Kernel, permI5Phase, MagicFunction.a.IntegralEstimates.I₅.g]
       ac_rfl
-    rw [show (∫ x : ℝ⁸, f x s) =
-          ∫ x : ℝ⁸, ((-I) * φ₀'' (I * s) * ((s : ℂ) ^ (-4 : ℤ))) *
-            (cexp (↑(-2 * (π * ⟪x, w⟫)) * I) * cexp (-π * (‖x‖ ^ 2) / s)) from
-      congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hfactor]
-    rw [integral_const_mul, integral_phase_gaussian (w := w) (s := s) hs0,
+    rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hfactor, integral_const_mul,
+      integral_phase_gaussian (w := w) (s := s) hs0,
       ← mul_assoc, mul_assoc (-I * φ₀'' (I * ↑s)) _ _, hcancel, mul_one]
   -- Pull the outer `-2` out and switch order via Fubini, then apply `hinner`.
   have hswap :=
@@ -95,11 +92,7 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
           from integral_congr_ae <| .of_forall fun _ ↦ by simp [f, permI5Kernel, permI5Phase],
         MeasureTheory.integral_const_mul (μ := μs)]
       ring
-    rw [show (∫ x : ℝ⁸,
-          cexp (↑(-2 * (π * ⟪x, w⟫)) * I) *
-            (-2 * ∫ s in Ici (1 : ℝ), MagicFunction.a.IntegralEstimates.I₅.g (‖x‖ ^ 2) s)) =
-          ∫ x : ℝ⁸, (-2 : ℂ) * ∫ s in Ici (1 : ℝ), f x s from
-      congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hrew,
+    rw [congrArg (fun F : ℝ⁸ → ℂ => ∫ x, F x) hrew,
       MeasureTheory.integral_const_mul, hswap]
     congr 1
     refine integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs ↦ ?_)
@@ -108,10 +101,10 @@ public theorem perm_I₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
   -- Transform `(-2) * ∫ (-I) * … = 2 * ∫ I * …` and match `I₆'`.
   rw [show ((-2 : ℂ) * ∫ s in Ici (1 : ℝ),
             (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) =
-          2 * ∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) from by
+          2 * ∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s) by
     rw [show ((-2 : ℂ) * ∫ s in Ici (1 : ℝ),
               (-I) * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) =
-        (-2 : ℂ) * -(∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) from by
+        (-2 : ℂ) * -(∫ s in Ici (1 : ℝ), I * φ₀'' (I * s) * cexp (-π * (‖w‖ ^ 2) * s)) by
       congr 1
       rw [← MeasureTheory.integral_neg]
       refine integral_congr_ae <| .of_forall fun _ ↦ ?_
