@@ -188,20 +188,19 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
     Quotient S.addAction.orbitRel ≃
       ↑(S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))) := by
   letI : Fintype ι := Fintype.ofFinite ι
+  have hact : ∀ (w u : EuclideanSpace ℝ (Fin d)), u ∈ S.centers →
+      u - floor (b.ofZLatticeBasis ℝ _) w ∈ S.centers := fun w u hu ↦ by
+    rw [sub_eq_neg_add]
+    exact S.lattice_action (Submodule.neg_mem _ <|
+      (mem_basis_Z_span ..).mp <| Submodule.coe_mem _) hu
   refine (S.addActionOrbitRelEquiv' b).trans {
-    toFun := fun ⟨u, ⟨hu_centers, _⟩⟩ ↦ by
-      refine ⟨u - floor (b.ofZLatticeBasis ℝ _) (u - v), ?_, ?_⟩
-      · rw [sub_eq_neg_add]
-        exact S.lattice_action (Submodule.neg_mem _ <|
-          (mem_basis_Z_span ..).mp <| Submodule.coe_mem _) hu_centers
-      · rw [Set.mem_vadd_set]
+    toFun := fun ⟨u, ⟨hu_centers, _⟩⟩ ↦
+      ⟨u - floor (b.ofZLatticeBasis ℝ _) (u - v), hact _ u hu_centers, by
+        rw [Set.mem_vadd_set]
         refine ⟨fract (b.ofZLatticeBasis ℝ _) (u - v), fract_mem_fundamentalDomain _ _, ?_⟩
-        rw [fract, vadd_eq_add]; abel
+        rw [fract, vadd_eq_add]; abel⟩
     invFun := fun ⟨u, ⟨hu_centers, _⟩⟩ ↦
-      ⟨fract (b.ofZLatticeBasis ℝ _) u, by
-        rw [fract, sub_eq_neg_add]
-        exact S.lattice_action (Submodule.neg_mem _ <|
-          (mem_basis_Z_span ..).mp <| Submodule.coe_mem _) hu_centers,
+      ⟨fract (b.ofZLatticeBasis ℝ _) u, by rw [fract]; exact hact _ u hu_centers,
        fract_mem_fundamentalDomain _ _⟩
     left_inv := fun ⟨u, ⟨_, hu_fd⟩⟩ ↦ by
       simp_rw [Subtype.mk.injEq]
