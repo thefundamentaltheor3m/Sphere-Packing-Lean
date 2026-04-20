@@ -357,8 +357,7 @@ private lemma phi_on_arg_bounded
     exact (norm_φ₀''_le_of_half_lt hC₀_nonneg hC₀ (one_half_pos.trans hh) hh).trans
       (le_max_left _ _)
 
-/-- Shared differentiability wrapper for I₂/I₄: given a `base` of the form
-`φ₀'' (arg t) * d t ^ 2` with various hypotheses, get differentiability. -/
+/-- Shared differentiability wrapper for I₂/I₄. -/
 private lemma base_pow_diffAt_of
     {base k : ℝ → ℂ} (arg d : ℝ → ℂ) (u0 : ℂ)
     (hbase_eq : ∀ t : ℝ, ‖base t‖ = ‖φ₀'' (arg t)‖ * ‖(d t) ^ (2 : ℕ)‖)
@@ -371,39 +370,37 @@ private lemma base_pow_diffAt_of
       ∫ t in (0 : ℝ)..1, base t * Complex.exp (u * k t)) u0 := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   set Cφ : ℝ := max C₀ ‖φ₀'' (arg 1)‖
-  have hbase_bound : ∀ t ∈ Ι (0 : ℝ) 1, ‖base t‖ ≤ (4 * Cφ) := fun t ht => by
-    rw [hbase_eq]
-    calc ‖φ₀'' (arg t)‖ * ‖(d t) ^ (2 : ℕ)‖
-        ≤ Cφ * 4 := mul_le_mul (phi_on_arg_bounded arg C₀ hC₀_pos.le hC₀ him t ht)
-          (pow_two_bound_of_norm_sub (d := d) hd_norm t ht) (norm_nonneg _) (by positivity)
-      _ = 4 * Cφ := by ring
   exact differentiableAt_intervalIntegral_mul_exp u0 (4 * Cφ) (3 * Real.pi)
-    hbase_cont hk_cont hbase_bound hk_bound
+    hbase_cont hk_cont (fun t ht => (hbase_eq t).le.trans <| by
+      calc ‖φ₀'' (arg t)‖ * ‖(d t) ^ (2 : ℕ)‖
+          ≤ Cφ * 4 := mul_le_mul (phi_on_arg_bounded arg C₀ hC₀_pos.le hC₀ him t ht)
+            (pow_two_bound_of_norm_sub (d := d) hd_norm t ht) (norm_nonneg _) (by positivity)
+        _ = 4 * Cφ := by ring) hk_bound
 
 lemma I₂'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₂'C u0 := by
   have hbase_cont : ContinuousOn base₂ (Ι (0 : ℝ) 1) := by
     unfold base₂ arg₂; exact phi_div_pow_continuousOn (by fun_prop) (fun _ => by simp)
-  have := base_pow_diffAt_of arg₂ (fun t => (t : ℂ) + (Complex.I : ℂ)) u0
-    (fun t => by simp [base₂]) hbase_cont
-    (fun t => by simpa using (norm_add_le (t : ℂ) (Complex.I : ℂ)))
-    (fun t htIoo => by
-      simpa [arg₂] using MagicFunction.a.IntegralEstimates.I₂.im_parametrisation_lower t htIoo)
-    (by unfold k₂; fun_prop) k₂_bound
-  simpa [show I₂'C = _ from funext fun u => I₂'C_eq u] using this
+  simpa [show I₂'C = _ from funext fun u => I₂'C_eq u] using
+    base_pow_diffAt_of arg₂ (fun t => (t : ℂ) + (Complex.I : ℂ)) u0
+      (fun t => by simp [base₂]) hbase_cont
+      (fun t => by simpa using (norm_add_le (t : ℂ) (Complex.I : ℂ)))
+      (fun t htIoo => by
+        simpa [arg₂] using MagicFunction.a.IntegralEstimates.I₂.im_parametrisation_lower t htIoo)
+      (by unfold k₂; fun_prop) k₂_bound
 
 lemma I₄'C_differentiableAt (u0 : ℂ) : DifferentiableAt ℂ I₄'C u0 := by
-  have hbase_cont : ContinuousOn base₄ (Ι (0 : ℝ) 1) := by
-    have h := phi_div_pow_continuousOn (d := fun t : ℝ => -(t : ℂ) + (Complex.I : ℂ))
-      (by fun_prop) (fun _ => by simp)
-    exact (show (fun t : ℝ => (-1 : ℂ) * (φ₀'' (arg₄ t) * (-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ)))
-        = base₄ from funext fun _ => by simp [base₄, arg₄]) ▸ continuousOn_const.mul h
-  have := base_pow_diffAt_of arg₄ (fun t => -(t : ℂ) + (Complex.I : ℂ)) u0
-    (fun t => by simp [base₄]) hbase_cont
-    (fun t => (norm_add_le _ _).trans (by simp))
-    (fun t htIoo => by
-      simpa [arg₄] using MagicFunction.a.IntegralEstimates.I₄.im_parametrisation_lower t htIoo)
-    (by unfold k₄; fun_prop) k₄_bound
-  simpa [show I₄'C = _ from funext fun u => I₄'C_eq u] using this
+  have hbase_cont : ContinuousOn base₄ (Ι (0 : ℝ) 1) :=
+    (show (fun t : ℝ => (-1 : ℂ) * (φ₀'' (arg₄ t) * (-(t : ℂ) + (Complex.I : ℂ)) ^ (2 : ℕ))) = base₄
+      from funext fun _ => by simp [base₄, arg₄]) ▸
+    continuousOn_const.mul (phi_div_pow_continuousOn
+      (d := fun t : ℝ => -(t : ℂ) + (Complex.I : ℂ)) (by fun_prop) (fun _ => by simp))
+  simpa [show I₄'C = _ from funext fun u => I₄'C_eq u] using
+    base_pow_diffAt_of arg₄ (fun t => -(t : ℂ) + (Complex.I : ℂ)) u0
+      (fun t => by simp [base₄]) hbase_cont
+      (fun t => (norm_add_le _ _).trans (by simp))
+      (fun t htIoo => by
+        simpa [arg₄] using MagicFunction.a.IntegralEstimates.I₄.im_parametrisation_lower t htIoo)
+      (by unfold k₄; fun_prop) k₄_bound
 
 lemma I₂'C_differentiableOn : DifferentiableOn ℂ I₂'C rightHalfPlane :=
   fun u _ => (I₂'C_differentiableAt u).differentiableWithinAt
@@ -504,13 +501,12 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
     refine MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ici fun t ht z hz => ?_
     have ht0 : 0 ≤ t := le_trans (by norm_num) ht
     have hzRe : ε ≤ z.re := by
-      have hu' : ‖z - u0‖ < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hz
-      have hre : |z.re - u0.re| ≤ ‖z - u0‖ := by simpa using abs_re_le_norm (z - u0)
-      have habs := (abs_lt.mp (lt_of_le_of_lt hre hu')).1
+      have habs := (abs_lt.mp (lt_of_le_of_lt
+        (by simpa using abs_re_le_norm (z - u0) : |z.re - u0.re| ≤ ‖z - u0‖)
+        (by simpa [Metric.mem_ball, dist_eq_norm] using hz : ‖z - u0‖ < ε))).1
       simp only [hε_def]; linarith
     have hle : -π * z.re * t ≤ -π * ε * t := by
-      have hπ : 0 < π := Real.pi_pos
-      nlinarith [mul_nonneg (le_of_lt hπ) ht0, hzRe]
+      nlinarith [mul_nonneg Real.pi_pos.le ht0, hzRe]
     have hnorm_int : ‖I₆IntegrandC z t‖ ≤ C₀ * Real.exp (-π * ε * t) :=
       (hIntegrand_le z t ht).trans
         (mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr hle) hC₀_pos.le)
@@ -534,20 +530,16 @@ lemma I₆'C_differentiableAt (u0 : ℂ) (hu0 : u0 ∈ rightHalfPlane) :
       simpa [I₆IntegrandC_deriv, I₆IntegrandC, mul_assoc, mul_left_comm, mul_comm] using
         (by simpa using hlin.cexp : HasDerivAt (fun w : ℂ => Complex.exp (-(π : ℂ) * w * (t : ℂ)))
           (Complex.exp (-(π : ℂ) * z * (t : ℂ)) * (-(π : ℂ) * (t : ℂ))) z).const_mul (base₆ t)
-  have hdiffCore :
-      HasDerivAt (fun z : ℂ => ∫ t, I₆IntegrandC z t ∂μ)
-        (∫ t, I₆IntegrandC_deriv u0 t ∂μ) u0 :=
-    (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ) (x₀ := u0)
-      (F := I₆IntegrandC) (F' := I₆IntegrandC_deriv) (bound := bound)
-      (hs := Metric.ball_mem_nhds u0 hε) (hF_meas := Filter.Eventually.of_forall hF_meas)
-      (hF_int := hF_int) (hF'_meas := hF'_meas)
-      (h_bound := hbound) (bound_integrable := hbound_int) (h_diff := hdiff)).2
   have hμ : (fun z : ℂ => ∫ t, I₆IntegrandC z t ∂μ) =
       fun z : ℂ => ∫ t in Set.Ici (1 : ℝ), I₆IntegrandC z t := funext fun _ => by simp [μ]
-  have hEqfun : I₆'C = fun z : ℂ => 2 * ∫ t in Set.Ici (1 : ℝ), I₆IntegrandC z t :=
-    funext fun z => by simpa using I₆'C_eq_integrandC z
   exact (show HasDerivAt I₆'C (2 * ∫ t, I₆IntegrandC_deriv u0 t ∂μ) u0 by
-    simpa [hEqfun, mul_assoc] using (hμ ▸ hdiffCore).const_mul (2 : ℂ)).differentiableAt
+    simpa [funext fun z : ℂ => (I₆'C_eq_integrandC z : I₆'C z = _), mul_assoc] using
+      (hμ ▸ (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ) (x₀ := u0)
+        (F := I₆IntegrandC) (F' := I₆IntegrandC_deriv) (bound := bound)
+        (hs := Metric.ball_mem_nhds u0 hε) (hF_meas := Filter.Eventually.of_forall hF_meas)
+        (hF_int := hF_int) (hF'_meas := hF'_meas)
+        (h_bound := hbound) (bound_integrable := hbound_int) (h_diff := hdiff)).2).const_mul
+      (2 : ℂ)).differentiableAt
 
 lemma I₆'C_differentiableOn : DifferentiableOn ℂ I₆'C rightHalfPlane :=
   fun u hu => (I₆'C_differentiableAt u hu).differentiableWithinAt
