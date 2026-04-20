@@ -77,9 +77,8 @@ public lemma finite_norm_le_lattice (r : ℝ) :
   have hfin_pre : (e ⁻¹' (Metric.closedBall (0 : E) r ∩ (Λ : Set E))).Finite := by
     simpa using Set.Finite.preimage_embedding e (by
       simpa [Submodule.coe_toAddSubgroup] using hfinE)
-  have heq : (e ⁻¹' (Metric.closedBall (0 : E) r ∩ (Λ : Set E))) = {ℓ : Λ | ‖(ℓ : E)‖ ≤ r} := by
-    ext ℓ; simp [e, Metric.mem_closedBall, dist_eq_norm, sub_eq_add_neg, add_zero]
-  simpa [heq] using hfin_pre
+  exact hfin_pre.subset fun ℓ hℓ => by
+    simpa [e, Metric.mem_closedBall, dist_eq_norm] using hℓ
 
 /--
 Schwartz decay implies that the sup norms of translates, restricted to a compact set, are summable
@@ -94,48 +93,36 @@ public lemma summable_norm_translate_restrict (K : TopologicalSpace.Compacts E) 
   let r0 : ℝ := max r 0
   have hrK0 : (K : Set E) ⊆ Metric.closedBall (0 : E) r0 :=
     fun x hx => Metric.closedBall_subset_closedBall (le_max_left r 0) (hrK hx)
-  let R : ℝ := max (2 * r0) 1
-  have hfin : ( {ℓ : Λ | ‖(ℓ : E)‖ ≤ R} : Set _ ).Finite :=
-    finite_norm_le_lattice (d := d) (r := R)
   have h_event : ∀ᶠ ℓ : Λ in Filter.cofinite,
       ‖(translate (d := d) f ℓ).restrict K‖ ≤ (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k) := by
-    filter_upwards [hfin.eventually_cofinite_notMem] with ℓ hℓ
-    have hRlt : R < ‖(ℓ : E)‖ := lt_of_not_ge (by simpa using hℓ)
+    filter_upwards [(finite_norm_le_lattice (d := d) (r := max (2 * r0) 1)
+      ).eventually_cofinite_notMem] with ℓ hℓ
+    have hRlt : max (2 * r0) 1 < ‖(ℓ : E)‖ := lt_of_not_ge (by simpa using hℓ)
     have hnorm_lt : 2 * r0 < ‖(ℓ : E)‖ := lt_of_le_of_lt (le_max_left _ _) hRlt
     have hnorm_pos : 0 < ‖(ℓ : E)‖ := lt_trans (by positivity) hRlt
     refine (ContinuousMap.norm_le _ (by positivity)).2 ?_
     rintro ⟨x, hxK⟩
     have hxnorm : ‖(x : E)‖ ≤ r0 := by
-      simpa [Metric.mem_closedBall, dist_eq_norm, sub_eq_add_neg, add_zero] using hrK0 hxK
+      simpa [Metric.mem_closedBall, dist_eq_norm] using hrK0 hxK
     have hnorm_ge : (1 / 2 : ℝ) * ‖(ℓ : E)‖ ≤ ‖(x + (ℓ : E))‖ := by
       have hsub : ‖(ℓ : E)‖ - ‖(x : E)‖ ≤ ‖(ℓ : E) + x‖ := by
-        simpa [add_comm, add_left_comm, add_assoc] using (norm_sub_norm_le (ℓ : E) (-x))
-      have hxlt : ‖(x : E)‖ < (1 / 2 : ℝ) * ‖(ℓ : E)‖ := by grind
-      have : (1 / 2 : ℝ) * ‖(ℓ : E)‖ ≤ ‖(ℓ : E) + x‖ :=
-        le_trans (by nlinarith [le_of_lt hxlt]) hsub
-      simpa [add_comm, add_left_comm, add_assoc] using this
+        simpa [add_comm] using norm_sub_norm_le (ℓ : E) (-x)
+      simpa [add_comm] using (by nlinarith : (1 / 2 : ℝ) * ‖(ℓ : E)‖ ≤ ‖(ℓ : E) + x‖)
     have hpow_pos : 0 < ‖(x + (ℓ : E))‖ ^ k :=
       pow_pos ((by positivity : 0 < (1 / 2 : ℝ) * ‖(ℓ : E)‖).trans_le hnorm_ge) _
-    have hdiv : ‖f (x + (ℓ : E))‖ ≤ C / (‖(x + (ℓ : E))‖ ^ k) :=
-      (le_div_iff₀' hpow_pos).2 (hC' (x + (ℓ : E)))
-    have hpow_le : C / (‖(x + (ℓ : E))‖ ^ k) ≤ (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k) := by
-      have hpow_ge : ((1 / 2 : ℝ) * ‖(ℓ : E)‖) ^ k ≤ ‖(x + (ℓ : E))‖ ^ k :=
-        pow_le_pow_left₀ (by positivity) hnorm_ge _
-      have hinv : (‖(x + (ℓ : E))‖ ^ k)⁻¹ ≤ (2 ^ k : ℝ) * (‖(ℓ : E)‖⁻¹ ^ k) := by
-        have hapos : 0 < ((1 / 2 : ℝ) * ‖(ℓ : E)‖) ^ k :=
-          pow_pos (mul_pos (by positivity) hnorm_pos) _
-        have : (‖(x + (ℓ : E))‖ ^ k)⁻¹ ≤ (((1 / 2 : ℝ) * ‖(ℓ : E)‖) ^ k)⁻¹ := by
-          simpa [one_div] using (one_div_le_one_div_of_le hapos hpow_ge)
-        simpa [mul_assoc, mul_comm, inv_pow, mul_inv_rev, mul_pow] using this
-      simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using
-        mul_le_mul_of_nonneg_left hinv (le_of_lt hCpos)
-    have : ‖f (x + (ℓ : E))‖ ≤ (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k) := le_trans hdiv hpow_le
-    simpa [translate, ContinuousMap.restrict_apply, ContinuousMap.comp_apply] using this
-  have hsum_bd : Summable (fun ℓ : Λ => (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k)) :=
-    (by simpa [k] using (ZLattice.summable_norm_pow_inv
-      (L := Λ) (n := k) (Nat.lt_succ_self _)) : Summable (fun ℓ : Λ =>
-        (‖(ℓ : E)‖⁻¹ ^ k : ℝ))).mul_left (C * (2 ^ k : ℝ))
-  refine Summable.of_norm_bounded_eventually hsum_bd ?_
+    have hpow_ge : ((1 / 2 : ℝ) * ‖(ℓ : E)‖) ^ k ≤ ‖(x + (ℓ : E))‖ ^ k :=
+      pow_le_pow_left₀ (by positivity) hnorm_ge _
+    have hinv : (‖(x + (ℓ : E))‖ ^ k)⁻¹ ≤ (2 ^ k : ℝ) * (‖(ℓ : E)‖⁻¹ ^ k) := by
+      have := one_div_le_one_div_of_le (pow_pos (mul_pos (by positivity) hnorm_pos) _) hpow_ge
+      simpa [one_div, mul_pow, inv_pow, mul_inv_rev, mul_comm] using this
+    calc ‖(translate (d := d) f ℓ) (⟨x, hxK⟩ : K)‖
+        = ‖f (x + (ℓ : E))‖ := by simp [translate]
+      _ ≤ C / (‖(x + (ℓ : E))‖ ^ k) := (le_div_iff₀' hpow_pos).2 (hC' (x + (ℓ : E)))
+      _ ≤ (C * (2 ^ k : ℝ)) * (‖(ℓ : E)‖⁻¹ ^ k) := by
+        simpa [div_eq_mul_inv, mul_assoc] using mul_le_mul_of_nonneg_left hinv hCpos.le
+  refine Summable.of_norm_bounded_eventually
+    (((by simpa [k] using ZLattice.summable_norm_pow_inv (L := Λ) (n := k) (Nat.lt_succ_self _)
+        : Summable (fun ℓ : Λ => (‖(ℓ : E)‖⁻¹ ^ k : ℝ))).mul_left (C * (2 ^ k : ℝ)))) ?_
   filter_upwards [h_event] with ℓ hℓ
   simpa [Real.norm_of_nonneg (by positivity)] using hℓ
 
