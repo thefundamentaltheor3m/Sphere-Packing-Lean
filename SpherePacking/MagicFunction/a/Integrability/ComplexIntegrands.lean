@@ -75,18 +75,17 @@ private lemma mapsTo_smulAux' (g : GL (Fin 2) ℝ) :
 
 /-- `φ₀''` is holomorphic on `upperHalfPlaneSet`. -/
 public theorem φ₀''_holo : Holo(φ₀'') := by
-  have hF := UpperHalfPlane.mdifferentiable_iff.mp F_holo
-  have hΔ := UpperHalfPlane.mdifferentiable_iff.mp Delta.holo'
   have h_eq :
       EqOn φ₀'' (fun z => (F ∘ UpperHalfPlane.ofComplex) z / (Δ ∘ UpperHalfPlane.ofComplex) z) ℍ₀ :=
     fun z hz => by simp [φ₀''_def hz, F, φ₀, UpperHalfPlane.ofComplex_apply_of_im_pos hz]
   refine DifferentiableOn.congr ?_ h_eq
-  exact hF.div hΔ fun z hz => by
+  exact (UpperHalfPlane.mdifferentiable_iff.mp F_holo).div
+    (UpperHalfPlane.mdifferentiable_iff.mp Delta.holo') fun z hz => by
     simp [Function.comp_apply, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Δ_ne_zero]
 
 /-- `φ₂''` is holomorphic on `upperHalfPlaneSet`. -/
 public theorem φ₂''_holo : Holo(φ₂'') := by
-  rcases differentiableOn_E₂_E₄_E₆_Delta with ⟨hE₂, hE₄, hE₆, hΔ⟩
+  obtain ⟨hE₂, hE₄, hE₆, hΔ⟩ := differentiableOn_E₂_E₄_E₆_Delta
   refine ((hE₄.mul ((hE₂.mul hE₄).sub hE₆)).div hΔ Delta_ofComplex_ne_zero).congr fun z hz => ?_
   have hz' : 0 < z.im := by simpa [upperHalfPlaneSet] using hz
   simp [φ₂'', φ₂', hz', UpperHalfPlane.ofComplex_apply_of_im_pos hz']
@@ -131,8 +130,8 @@ public theorem Φ₃'_contDiffOn_ℂ :
 
 /-- The integrand `Φ₆' r` is holomorphic on `upperHalfPlaneSet`. -/
 public theorem Φ₆'_holo : Holo(Φ₆' r) := by
-  have hExp : DifferentiableOn ℂ (fun z : ℂ => cexp (π * (Complex.I : ℂ) * r * z)) ℍ₀ := by fun_prop
-  simpa [Φ₆'] using φ₀''_holo.mul hExp
+  simpa [Φ₆'] using φ₀''_holo.mul
+    (by fun_prop : DifferentiableOn ℂ (fun z : ℂ => cexp (π * (Complex.I : ℂ) * r * z)) ℍ₀)
 
 /-- The integrand `Φ₆' r` is smooth as a complex function on `upperHalfPlaneSet`. -/
 public theorem Φ₆'_contDiffOn_ℂ :
