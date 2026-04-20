@@ -104,7 +104,6 @@ open scoped ENNReal Pointwise BigOperators
 def constVec (d : ℕ) (c : ℝ) : EuclideanSpace ℝ (Fin d) :=
   WithLp.toLp 2 (fun _ : Fin d => c)
 
-
 /-- If `x` lies in the width-`1/2` boundary strip of `coordCube L`, then the `1/2`-ball around `x`
 lies in a fixed set of finite volume independent of the translate. -/
 lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
@@ -202,12 +201,11 @@ variable {d : ℕ}
 
 lemma coordCubeInner_one_subset_shell (L : ℝ) :
     coordCubeInner d L 1 ⊆
-      (constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0 := by
-  intro x hx
-  refine (Set.mem_vadd_set_iff_neg_vadd_mem).2 fun i => ?_
-  simp only [coordCubeInner, Set.mem_setOf_eq, constVec, vadd_eq_add, one_div,
-    WithLp.ofLp_add, WithLp.ofLp_neg, Pi.add_apply, Pi.neg_apply, neg_neg] at hx ⊢
-  exact ⟨by linarith [(hx i).1], by linarith [(hx i).2]⟩
+      (constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0 := fun x hx =>
+  (Set.mem_vadd_set_iff_neg_vadd_mem).2 fun i => by
+    simp only [coordCubeInner, Set.mem_setOf_eq, constVec, vadd_eq_add, one_div,
+      WithLp.ofLp_add, WithLp.ofLp_neg, Pi.add_apply, Pi.neg_apply, neg_neg] at hx ⊢
+    exact ⟨by linarith [(hx i).1], by linarith [(hx i).2]⟩
 
 lemma volume_cubeShell_eq_pow (L : ℝ) :
     volume (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
