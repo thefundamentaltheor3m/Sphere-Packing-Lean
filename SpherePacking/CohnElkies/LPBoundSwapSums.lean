@@ -48,10 +48,9 @@ public lemma calc_steps_swap_sums (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
                   exp (2 * π * I *
                     ⟪(x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)),
                       (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))).re := by
-  have hfinite : Finite (↑(P.centers ∩ D)) :=
+  have : Finite (↑(P.centers ∩ D)) :=
     finite_centers_inter_of_isBounded P D hD_isBounded hd
   letI : Fintype (↑(P.centers ∩ D)) := Fintype.ofFinite (↑(P.centers ∩ D))
-  -- Work in `ℂ`, then take real parts.
   refine congrArg Complex.re ?_
   let c : ℂ := (1 / ZLattice.covolume P.lattice volume : ℂ)
   let a : SchwartzMap.dualLattice (d := d) P.lattice → ℂ := fun m => ((𝓕 f m).re : ℂ)
@@ -75,7 +74,6 @@ public lemma calc_steps_swap_sums (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
       (SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
         (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
         (a := (0 : EuclideanSpace ℝ (Fin d))))
-  -- Each `m ↦ c * a m * e x y m` is summable.
   have hSummable_c_mul_a_mul_e :
       ∀ x y : ↑(P.centers ∩ D),
         Summable fun m : SchwartzMap.dualLattice (d := d) P.lattice => c * a m * e x y m := by
@@ -91,7 +89,6 @@ public lemma calc_steps_swap_sums (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
             ⟪(x : EuclideanSpace ℝ (Fin d)) - (y : EuclideanSpace ℝ (Fin d)),
               (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ]))
       simp_all
-  -- Reduce the goal to the `c,a,e`-form, then commute the finite sums with the `m`-sum.
   have hmain :
       (∑' x : ↑(P.centers ∩ D),
           ∑' y : ↑(P.centers ∩ D),
@@ -101,64 +98,34 @@ public lemma calc_steps_swap_sums (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
           ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
             a m *
               (∑' x : ↑(P.centers ∩ D), ∑' y : ↑(P.centers ∩ D), e x y m) := by
-    -- Expand the finite `tsum`s as finite sums.
     simp only [tsum_fintype]
-    -- Rewrite `c * (∑' m, ...)` as `(∑' m, c * ...)` everywhere.
     simp_rw [← tsum_mul_left]
-    -- Commute `y` with `m`.
     have hy_comm :
         ∀ x : ↑(P.centers ∩ D),
           (∑ y : ↑(P.centers ∩ D),
                 ∑' m : SchwartzMap.dualLattice (d := d) P.lattice, c * (a m * e x y m))
             =
             ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
-              ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m) := by
-      intro x
-      have hy' :
-          ∀ y ∈ (Finset.univ : Finset ↑(P.centers ∩ D)),
-            Summable fun m : SchwartzMap.dualLattice (d := d) P.lattice =>
-              c * (a m * e x y m) := by
-        intro y _
-        simpa [mul_assoc] using hSummable_c_mul_a_mul_e x y
-      exact Eq.symm (Summable.tsum_finsetSum hy')
+              ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m) := fun x =>
+      (Summable.tsum_finsetSum (fun y _ => by
+        simpa [mul_assoc] using hSummable_c_mul_a_mul_e x y)).symm
     simp_rw [hy_comm]
-    -- Commute `x` with `m`.
     have hx_comm :
         (∑ x : ↑(P.centers ∩ D),
               ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
                 ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m))
           =
           ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
-            ∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m) := by
-      have hx' :
-          ∀ x ∈ (Finset.univ : Finset ↑(P.centers ∩ D)),
-            Summable fun m : SchwartzMap.dualLattice (d := d) P.lattice =>
-              ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m) := by
-        intro x _
-        -- finite sum of summable functions
+            ∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m) :=
+      (Summable.tsum_finsetSum (fun x _ => by
         have :
             Summable fun m : SchwartzMap.dualLattice (d := d) P.lattice =>
-              ∑ y ∈ (Finset.univ : Finset ↑(P.centers ∩ D)), c * (a m * e x y m) := by
-          refine summable_sum ?_
-          intro y _
-          simpa [mul_assoc] using hSummable_c_mul_a_mul_e x y
-        simpa using this
-      exact Eq.symm (Summable.tsum_finsetSum hx')
+              ∑ y ∈ (Finset.univ : Finset ↑(P.centers ∩ D)), c * (a m * e x y m) :=
+          summable_sum fun y _ => by simpa [mul_assoc] using hSummable_c_mul_a_mul_e x y
+        simpa using this)).symm
     simp_rw [hx_comm]
-    -- Pull constants out of the finite sums pointwise in `m`.
     refine tsum_congr ?_
     intro m
-    have hy_factor :
-        ∀ x : ↑(P.centers ∩ D),
-          (∑ y : ↑(P.centers ∩ D), (c * a m) * e x y m) =
-            (c * a m) * (∑ y : ↑(P.centers ∩ D), e x y m) :=
-      fun x => Eq.symm (Finset.mul_sum Finset.univ (fun i => e x i m) (c * a m))
-    have hx_factor :
-        (∑ x : ↑(P.centers ∩ D),
-              (c * a m) * (∑ y : ↑(P.centers ∩ D), e x y m)) =
-            (c * a m) *
-              (∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), e x y m) :=
-      Eq.symm (Finset.mul_sum Finset.univ (fun i => ∑ y, e i y m) (c * a m))
     calc
       (∑ x : ↑(P.centers ∩ D),
             ∑ y : ↑(P.centers ∩ D), c * (a m * e x y m))
@@ -167,12 +134,11 @@ public lemma calc_steps_swap_sums (f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
               simp [mul_assoc]
       _ = ∑ x : ↑(P.centers ∩ D),
               (c * a m) * (∑ y : ↑(P.centers ∩ D), e x y m) := by
-              simp_rw [hy_factor]
+              simp_rw [← Finset.mul_sum]
       _ = (c * a m) * (∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), e x y m) := by
-              simp [hx_factor]
+              rw [← Finset.mul_sum]
       _ = c * (a m * (∑ x : ↑(P.centers ∩ D), ∑ y : ↑(P.centers ∩ D), e x y m)) := by
-              simp [mul_assoc]
-  -- Rewrite the goal to the `c,a,e`-form, then close with `hmain`.
+              ring
   simpa (config := { zeta := false }) [c, e, hFourierReal] using hmain
 
 end SpherePacking.CohnElkies
