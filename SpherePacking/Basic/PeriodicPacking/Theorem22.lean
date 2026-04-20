@@ -41,8 +41,22 @@ private theorem ball_subset_iUnion_lattice_inter_ball_vadd
 public instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Module ℤ E]
     [Module ℝ E] (μ : Measure E) [μ.IsAddLeftInvariant] [IsScalarTower ℤ ℝ E] (s : Submodule ℤ E) :
     VAddInvariantMeasure s E μ where
-  measure_preimage_vadd c t ht := by
-    simp only [Submodule.vadd_def, vadd_eq_add, measure_preimage_add]
+  measure_preimage_vadd c t ht := by simp [Submodule.vadd_def, measure_preimage_add]
+
+private lemma measure_biUnion_lattice_inter_ball_vadd
+    (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D) :
+    volume (⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R, (x +ᵥ D)) =
+      (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard * volume D := by
+  have : Countable ↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
+    Set.Countable.mono Set.inter_subset_left (inferInstance : Countable ↑S.lattice)
+  rw [Set.biUnion_eq_iUnion, measure_iUnion]
+  · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
+  · intro i j hij
+    have hgh : (⟨i.1, i.2.1⟩ : S.lattice) ≠ ⟨j.1, j.2.1⟩ := fun h => hij <|
+      Subtype.ext <| congrArg (fun u : S.lattice => (u : EuclideanSpace ℝ (Fin d))) h
+    simpa using
+      disjoint_vadd_of_unique_covers (d := d) (Λ := S.lattice) (D := D) hD_unique_covers hgh
+  · exact fun i => MeasurableSet.const_vadd hD_measurable i.1
 
 /-- Theorem 2.2, lower bound. -/
 theorem PeriodicSpherePacking.aux2_ge
@@ -51,18 +65,8 @@ theorem PeriodicSpherePacking.aux2_ge
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≥ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L)) / volume D := by
   rw [ge_iff_le, ENNReal.div_le_iff]
-  · convert volume.mono <| ball_subset_iUnion_lattice_inter_ball_vadd S D R hD_unique_covers hL
-    rw [OuterMeasure.measureOf_eq_coe, Measure.coe_toOuterMeasure]
-    have : Countable ↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
-      Set.Countable.mono (Set.inter_subset_left) (inferInstance : Countable ↑S.lattice)
-    rw [Set.biUnion_eq_iUnion, measure_iUnion]
-    · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
-    · intro i j hij
-      have hgh : (⟨i.1, i.2.1⟩ : S.lattice) ≠ ⟨j.1, j.2.1⟩ := fun h => hij <|
-        Subtype.ext <| congrArg (fun u : S.lattice => (u : EuclideanSpace ℝ (Fin d))) h
-      simpa using
-        disjoint_vadd_of_unique_covers (d := d) (Λ := S.lattice) (D := D) hD_unique_covers hgh
-    · exact fun i => MeasurableSet.const_vadd hD_measurable i.1
+  · rw [← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
+    exact volume.mono <| ball_subset_iUnion_lattice_inter_ball_vadd S D R hD_unique_covers hL
   · exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
   · have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]
@@ -76,8 +80,7 @@ private theorem iUnion_lattice_inter_ball_vadd_subset_ball (hL : ∀ x ∈ D, �
     ⟨i, ⟨-, hi_ball⟩, hi_mem⟩
   have hi_ball' : ‖i‖ < R := by simpa [mem_ball_zero_iff] using hi_ball
   have hi_mem' : ‖-i + x‖ ≤ L := hL _ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hi_mem)
-  calc
-    _ = ‖i + (-i + x)‖ := by congr; abel
+  calc ‖x‖ = ‖i + (-i + x)‖ := by congr; abel
     _ ≤ ‖i‖ + ‖-i + x‖ := norm_add_le _ _
     _ < R + L := add_lt_add_of_lt_of_le hi_ball' hi_mem'
 
@@ -88,20 +91,9 @@ theorem PeriodicSpherePacking.aux2_le
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L)) / volume D := by
   rw [ENNReal.le_div_iff_mul_le]
-  · convert volume.mono <| iUnion_lattice_inter_ball_vadd_subset_ball S D R hL
-    rw [OuterMeasure.measureOf_eq_coe, Measure.coe_toOuterMeasure]
-    have : Countable ↑(↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R) :=
-      Set.Countable.mono (Set.inter_subset_left) (inferInstance : Countable ↑S.lattice)
-    rw [Set.biUnion_eq_iUnion, measure_iUnion]
-    · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
-    · intro i j hij
-      have hgh : (⟨i.1, i.2.1⟩ : S.lattice) ≠ ⟨j.1, j.2.1⟩ := fun h => hij <|
-        Subtype.ext <| congrArg (fun u : S.lattice => (u : EuclideanSpace ℝ (Fin d))) h
-      simpa using
-        disjoint_vadd_of_unique_covers (d := d) (Λ := S.lattice) (D := D) hD_unique_covers hgh
-    · exact fun i => MeasurableSet.const_vadd hD_measurable i.1
-  · exact Or.inl <|
-      (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
+  · rw [← measure_biUnion_lattice_inter_ball_vadd S D R hD_unique_covers hD_measurable]
+    exact volume.mono <| iUnion_lattice_inter_ball_vadd_subset_ball S D R hL
+  · exact Or.inl <| (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
   · have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
     rw [← lt_top_iff_ne_top]
     exact Or.inl <|
@@ -111,13 +103,8 @@ open ZSpan
 
 variable (b : Basis ι ℤ S.lattice)
 
-/-- Theorem 2.2 lower bound, in terms of fundamental domain of Z-lattice. -/
-public theorem PeriodicSpherePacking.aux2_ge'
-    (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
-    (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
-      ≥ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L))
-        / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
-  refine S.aux2_ge _ R (fun x => ?_) (fundamentalDomain_measurableSet _) hL hd
+private lemma fundamentalDomain_unique_covers (x : EuclideanSpace ℝ (Fin d)) :
+    ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _) := by
   rcases exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x with
     ⟨⟨v, hv⟩, hvD, hvuniq⟩
   refine ⟨⟨v, by simpa [S.basis_Z_span] using hv⟩, hvD, ?_⟩
@@ -125,19 +112,21 @@ public theorem PeriodicSpherePacking.aux2_ge'
   exact Subtype.ext <| by
     simpa using congrArg Subtype.val (hvuniq ⟨y, by simpa [S.basis_Z_span] using hy⟩ hyD)
 
+/-- Theorem 2.2 lower bound, in terms of fundamental domain of Z-lattice. -/
+public theorem PeriodicSpherePacking.aux2_ge'
+    (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
+    (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
+      ≥ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - L))
+        / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
+  S.aux2_ge _ R (fundamentalDomain_unique_covers S b) (fundamentalDomain_measurableSet _) hL hd
+
 /-- Theorem 2.2 upper bound, in terms of fundamental domain of Z-lattice. -/
 public theorem PeriodicSpherePacking.aux2_le'
     (hL : ∀ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _), ‖x‖ ≤ L) (hd : 0 < d) :
     (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R).encard
       ≤ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + L))
-        / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) := by
-  refine S.aux2_le _ R (fun x => ?_) (fundamentalDomain_measurableSet _) hL hd
-  rcases exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x with
-    ⟨⟨v, hv⟩, hvD, hvuniq⟩
-  refine ⟨⟨v, by simpa [S.basis_Z_span] using hv⟩, hvD, ?_⟩
-  rintro ⟨y, hy⟩ hyD
-  exact Subtype.ext <| by
-    simpa using congrArg Subtype.val (hvuniq ⟨y, by simpa [S.basis_Z_span] using hy⟩ hyD)
+        / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
+  S.aux2_le _ R (fundamentalDomain_unique_covers S b) (fundamentalDomain_measurableSet _) hL hd
 
 section finiteDensity_limit
 
