@@ -332,10 +332,10 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
               (Complex.I : ℂ) * Φ₆' u (MagicFunction.Parametrisations.z₆' t)) =
           ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I) from
       MeasureTheory.setIntegral_congr_fun measurableSet_Ici fun t ht => by
-        have hz : MagicFunction.Parametrisations.z₆' t = (Complex.I : ℂ) * (t : ℂ) := by
+        simp [show MagicFunction.Parametrisations.z₆' t = (Complex.I : ℂ) * (t : ℂ) from by
           simpa [mul_assoc, mul_comm, mul_left_comm] using
-            MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t) ht
-        simp [hz, mul_comm], MeasureTheory.integral_Ici_eq_integral_Ioi]
+            MagicFunction.Parametrisations.z₆'_eq_of_mem (t := t) ht, mul_comm],
+      MeasureTheory.integral_Ici_eq_integral_Ioi]
   let μ : Measure ℝ := volume.restrict (Set.Ioi (1 : ℝ))
   let f2 : ℝ → ℂ := fun t => Φ₂' u ((t : ℂ) * Complex.I)
   let f5 : ℝ → ℂ := fun t => Φ₅' u ((t : ℂ) * Complex.I)
@@ -346,11 +346,9 @@ lemma I₆'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
   have hfdI : ∀ t ∈ Set.Ioi (1 : ℝ),
       (2 : ℂ) * ((Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I)) =
         (Complex.I : ℂ) * (f2 t - 2 * f5 t + f4 t) := fun t ht => by
-    have ht' : 0 < t := lt_trans zero_lt_one ht
-    have := congrArg (fun z : ℂ => (Complex.I : ℂ) * z)
-      (Φ_finite_difference_imag_axis (u := u) (t := t) ht')
     simpa [f2, f5, f4, mul_add, add_mul, mul_assoc, mul_left_comm, mul_comm,
-      sub_eq_add_neg] using this.symm
+      sub_eq_add_neg] using (congrArg (fun z : ℂ => (Complex.I : ℂ) * z)
+      (Φ_finite_difference_imag_axis (u := u) (t := t) (lt_trans zero_lt_one ht))).symm
   rw [hI6,
     (MeasureTheory.integral_const_mul (μ := μ) (r := (2 : ℂ))
       (f := fun t : ℝ => (Complex.I : ℂ) * Φ₆' u ((t : ℂ) * Complex.I))).symm,
