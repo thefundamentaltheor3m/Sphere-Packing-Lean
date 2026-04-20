@@ -134,27 +134,22 @@ public lemma ψI_eq :
       128 • ((F3 ((S * T) • z) + F4 ((S * T) • z)) / ((F2 ((S * T) • z)) ^ 2)) := by
     simp only [nsmul_eq_mul, Nat.cast_ofNat, sl_moeb, map_mul, Pi.div_apply, Pi.add_apply,
       Pi.mul_apply, Pi.ofNat_apply, Pi.pow_apply]
-  rw [rewriting, slashST'' z ⇑H₂_MF, slashST'' z ⇑H₃_MF, slashST'' z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
-  rw [hh2 , hh3, hh4]
-  rw [slash_mul, slash_mul, slash_mul, H₂_S_action, H₃_S_action, H₄_S_action,
+  rw [rewriting, slashST'' z ⇑H₂_MF, slashST'' z ⇑H₃_MF, slashST'' z ⇑H₄_MF,
+    show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
+    show (H₄_MF : ℍ → ℂ) = H₄ from rfl, slash_mul, slash_mul, slash_mul,
+    H₂_S_action, H₃_S_action, H₄_S_action,
     SlashAction.neg_slash, SlashAction.neg_slash, SlashAction.neg_slash, H₂_T_action,
     H₃_T_action, H₄_T_action, neg_neg, ← add_mul]
   nth_rw 2 [pow_two]
-  have z_plus_one_squared_nonzero (z : ℍ) : (z + 1 : ℂ) ^ 2 ≠ 0 := by
-    rw [pow_two, mul_self_ne_zero]
-    exact z_plus_one_nonzero (z : ℍ)
-  rw [← mul_assoc, mul_div_mul_comm, div_self (z_plus_one_squared_nonzero z), mul_one]
+  have hz1 : (z + 1 : ℂ) ^ 2 ≠ 0 := pow_ne_zero _ (z_plus_one_nonzero z)
+  rw [← mul_assoc, mul_div_mul_comm, div_self hz1, mul_one]
   nth_rw 2 [mul_comm]
   rw [← mul_assoc, ← pow_two, ← div_div, smul_mul_assoc, div_mul_comm,
-    div_self (z_plus_one_squared_nonzero z), one_mul, ← neg_nsmul, neg_div', add_comm ]
+    div_self hz1, one_mul, ← neg_nsmul, neg_div', add_comm ]
   simp only [Pi.neg_apply, neg_add_rev, neg_neg, even_two, Even.neg_pow, nsmul_eq_mul,
     Nat.cast_ofNat, Pi.smul_apply, Pi.div_apply, Pi.sub_apply, Pi.pow_apply, mul_eq_mul_left_iff,
     OfNat.ofNat_ne_zero, or_false]
   rw [sub_eq_add_neg]
--- this completes the proof of ψI_eq
 
 /-- Explicit formula for `ψT` in terms of the Jacobi theta functions `H₂`, `H₃`, and `H₄`. -/
 public lemma ψT_eq :
@@ -164,11 +159,10 @@ public lemma ψT_eq :
   rw [slashT']
   simp only [Pi.smul_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply, Pi.sub_apply, smul_add,
     nsmul_eq_mul, Nat.cast_ofNat, Pi.mul_apply, Pi.ofNat_apply]
-  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF]
-  rw [show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
+  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF,
+    show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
     show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_T_action, H₃_T_action, H₄_T_action]
   simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm (H₃ z) (H₂ z)]
--- proof of ψT_eq complete.
 
 -- there was a typo in the blueprint, thats why we first formalized the following version of ψS_eq
 -- here is the description that can be found in Maryna's paper.
@@ -183,33 +177,28 @@ public lemma ψS_eq' :
   rw [slashS']
   simp only [Pi.smul_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply,
     Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat, Pi.mul_apply, Pi.ofNat_apply]
-  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF]
-  have hh2 : (H₂_MF : ℍ → ℂ) = H₂ := rfl
-  have hh3 : (H₃_MF : ℍ → ℂ) = H₃ := rfl
-  have hh4 : (H₄_MF : ℍ → ℂ) = H₄ := rfl
-  rw [hh2 , hh3, hh4, H₂_S_action, H₃_S_action, H₄_S_action]
-  have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
-    rw [pow_two, mul_self_ne_zero]
-    exact ne_zero z
+  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF,
+    show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
+    show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_S_action, H₃_S_action, H₄_S_action]
+  have hzsq : (z : ℂ) ^ 2 ≠ 0 := pow_ne_zero _ (ne_zero z)
   rw [← add_mul, ← sub_mul, ← mul_add, mul_assoc, add_mul]
   nth_rw 2 [pow_two]
   rw [mul_assoc]
   nth_rw 5 [mul_comm]
   rw [← mul_assoc, ← mul_assoc, div_mul, ← mul_div_assoc',  ← mul_div_assoc',
-    div_self z_square_nonzero, mul_one]
+    div_self hzsq, mul_one]
   nth_rw 3 [mul_comm]
-  rw [← div_div, mul_div, div_self z_square_nonzero, mul_one, add_comm]
+  rw [← div_div, mul_div, div_self hzsq, mul_one, add_comm]
   nth_rw 2 [pow_two]
   rw [mul_assoc]
   nth_rw 5 [mul_comm]
   rw [← mul_assoc, ← mul_assoc, div_mul, ← mul_div_assoc',  ← mul_div_assoc',
-    div_self z_square_nonzero, mul_one]
+    div_self hzsq, mul_one]
   nth_rw 3 [mul_comm]
-  rw [← div_div, mul_div, div_self z_square_nonzero, mul_one]
+  rw [← div_div, mul_div, div_self hzsq, mul_one]
   simp only [Pi.neg_apply, sub_neg_eq_add, mul_neg, neg_mul, neg_neg, mul_eq_mul_left_iff,
     OfNat.ofNat_ne_zero, or_false]
   ring
--- proof of ψS_eq' complete.
 
 /-- A rearranged explicit formula for `ψS`, derived from `ψS_eq'`. -/
 public lemma ψS_eq :
@@ -233,23 +222,20 @@ public lemma ψT_slash_T : ψT ∣[-2] T = ψI := by
   rw [ψT_eq, ψI_eq, slashT']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply, Pi.smul_apply,
     Pi.sub_apply, smul_add, nsmul_eq_mul, Nat.cast_ofNat]
-  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF]
-  rw [show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
+  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF,
+    show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
     show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_T_action, H₃_T_action, H₄_T_action]
   simp [← mul_add, add_comm (H₄ z) (H₃ z), add_comm  (- (H₂ z)) (H₄ z), sub_eq_add_neg]
--- proof of ψT_slash_T complete.
 
 /-- Modular relation: `ψS ∣[-2] S = ψI`. -/
 public lemma ψS_slash_S : ψS ∣[-2] S = ψI := by
-  have hk : Even (-2 : ℤ) := ⟨-1, by ring⟩
   rw [ψS, ← slash_mul, ModularGroup.modular_S_sq]
   norm_num
 
 /-- Modular relation: `ψS ∣[-2] (S * T) = ψT`. -/
 public lemma ψS_slash_ST : ψS ∣[-2] (S * T) = ψT := by
-  have hk : Even (-2 : ℤ) := ⟨-1, by ring⟩
   rw [ψS, ψT, ← slash_mul, ← mul_assoc, ModularGroup.modular_S_sq]
-  simp [hk]
+  simp [show Even (-2 : ℤ) from ⟨-1, by ring⟩]
 
 
 -- In my thesis, the - sign before ψS is missing. Makes no difference because we bound integrals in
@@ -259,12 +245,11 @@ public lemma ψS_slash_T : ψS ∣[-2] T = -ψS := by
   ext z
   rw [ψS_eq', slashT']
   simp only [Pi.mul_apply, Pi.add_apply, Pi.div_apply, Pi.pow_apply, Pi.sub_apply]
-  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF]
-  rw [show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
+  rw [← slashT z ⇑H₂_MF, ← slashT z ⇑H₃_MF, ← slashT z ⇑H₄_MF,
+    show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
     show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_T_action, H₃_T_action, H₄_T_action]
   simp [sub_eq_add_neg, add_comm]
   ring
--- proof of ψS_slash_T complete
 
 /-- Modular relation: `ψT ∣[-2] S = -ψT`. -/
 public lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
@@ -272,31 +257,27 @@ public lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
   rw [ψT_eq, slashS']
   simp only [Pi.mul_apply, Pi.ofNat_apply, Pi.add_apply, Pi.div_apply,
     Pi.pow_apply, Pi.neg_apply]
-  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF]
-  rw [show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
+  rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF,
+    show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
     show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_S_action, H₃_S_action, H₄_S_action]
   simp only [Pi.neg_apply, neg_mul, even_two, Even.neg_pow]
-  have z_square_nonzero : (z : ℂ) ^ 2 ≠ 0 := by
-    rw [pow_two, mul_self_ne_zero]
-    exact ne_zero z
+  have hzsq : (z : ℂ) ^ 2 ≠ 0 := pow_ne_zero _ (ne_zero z)
   rw [mul_assoc, ← neg_add, ← add_mul, add_mul]
   nth_rw 2 [pow_two]
   rw [mul_assoc]
   nth_rw 5 [mul_comm]
   rw [← mul_assoc, ← mul_assoc, neg_div, ← mul_div, ← div_div, div_right_comm, mul_div,
-    div_self z_square_nonzero, mul_one, neg_mul,  ← div_div, div_mul, ← pow_two,
-    div_self z_square_nonzero, div_one]
-  rw[← neg_add, ← neg_div', neg_mul, add_comm, ← add_mul]
+    div_self hzsq, mul_one, neg_mul,  ← div_div, div_mul, ← pow_two,
+    div_self hzsq, div_one, ← neg_add, ← neg_div', neg_mul, add_comm, ← add_mul]
   nth_rw 2 [pow_two]
   rw [← mul_assoc]
   nth_rw 6 [mul_comm]
   rw [div_mul]
   nth_rw 2 [← mul_div]
-  rw [div_self z_square_nonzero, mul_one, mul_assoc, ← pow_two, ← mul_div, ← div_div,
-    mul_div, div_self z_square_nonzero, mul_one, ← sub_eq_add_neg, ← neg_add', mul_neg]
+  rw [div_self hzsq, mul_one, mul_assoc, ← pow_two, ← mul_div, ← div_div,
+    mul_div, div_self hzsq, mul_one, ← sub_eq_add_neg, ← neg_add', mul_neg]
   nth_rw 2 [add_comm]
   nth_rw 3 [add_comm]
--- proof of ψT_slash_S complete
 
 /-- Modular relation: `ψS ∣[-2] (S * T * S) = -ψT`. -/
 public lemma ψS_slash_STS : ψS ∣[-2] (S * T * S) = -ψT := by
@@ -305,9 +286,3 @@ public lemma ψS_slash_STS : ψS ∣[-2] (S * T * S) = -ψT := by
   simpa [ψT] using congrArg (fun f => f z) (ψT_slash_S : ψT ∣[-2] S = -ψT)
 
 end rels
-
-open MagicFunction.Parametrisations Set
-
-example {t : ℝ} (ht : t ∈ Ioc 0 1) : t ∈ Icc 0 1 := mem_Icc_of_Ioc ht
-
-
