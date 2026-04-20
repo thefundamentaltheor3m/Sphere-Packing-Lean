@@ -70,7 +70,7 @@ lemma neg_one_div_sub_one_im_pos (w : ℂ) (hw : 0 < w.im) :
   have hw' : 0 < (w - 1).im := by simpa using hw
   have hne : w - 1 ≠ 0 := fun h => absurd (by simp [h] : (w - 1).im = 0) hw'.ne'
   simpa [div_eq_mul_inv, sub_eq_add_neg, Complex.inv_im] using
-    div_pos hw' ((Complex.normSq_pos).2 hne)
+    div_pos hw' (Complex.normSq_pos.2 hne)
 
 lemma one_sub_inv_sq_mul_sq (w : ℂ) (hw : w ≠ 0) :
     ((-1 / w + 1) ^ 2) * w ^ 2 = (w - 1) ^ 2 := by
@@ -114,9 +114,9 @@ public lemma I₁'_eq_curveIntegral_segment (r : ℝ) :
     (ω := scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₁' r))
     (-1 : ℂ) (-1 + Complex.I)]
   simp only [MagicFunction.a.RealIntegrals.I₁', MagicFunction.a.RealIntegrands.Φ₁_def]
-  refine intervalIntegral.integral_congr fun t ht => ?_
-  simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₁_eq_z₁' (t := t)
-    (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)]
+  exact intervalIntegral.integral_congr fun t ht => by
+    simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₁_eq_z₁' (t := t)
+      (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)]
 
 /-- Rewrite `I₂'` as a curve integral of `Φ₁'` along the segment `-1 + i → i`. -/
 public lemma I₂'_eq_curveIntegral_segment (r : ℝ) :
@@ -127,10 +127,10 @@ public lemma I₂'_eq_curveIntegral_segment (r : ℝ) :
     (ω := scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₁' r))
     ((-1 : ℂ) + Complex.I) Complex.I]
   simp only [MagicFunction.a.RealIntegrals.I₂', MagicFunction.a.RealIntegrands.Φ₂_def]
-  refine intervalIntegral.integral_congr fun t ht => ?_
-  simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₂_eq_z₂' (t := t)
-    (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht),
-    MagicFunction.a.ComplexIntegrands.Φ₂']
+  exact intervalIntegral.integral_congr fun t ht => by
+    simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₂_eq_z₂' (t := t)
+      (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht),
+      MagicFunction.a.ComplexIntegrands.Φ₂']
 
 lemma I₃'_eq_curveIntegral_segment (r : ℝ) :
     MagicFunction.a.RealIntegrals.I₃' r =
@@ -140,9 +140,9 @@ lemma I₃'_eq_curveIntegral_segment (r : ℝ) :
     (ω := scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r))
     (1 : ℂ) ((1 : ℂ) + Complex.I)]
   simp only [MagicFunction.a.RealIntegrals.I₃', MagicFunction.a.RealIntegrands.Φ₃_def]
-  refine intervalIntegral.integral_congr fun t ht => ?_
-  simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₃_eq_z₃' (t := t)
-    (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)]
+  exact intervalIntegral.integral_congr fun t ht => by
+    simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₃_eq_z₃' (t := t)
+      (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)]
 
 lemma I₄'_eq_curveIntegral_segment (r : ℝ) :
     MagicFunction.a.RealIntegrals.I₄' r =
@@ -152,10 +152,10 @@ lemma I₄'_eq_curveIntegral_segment (r : ℝ) :
     (ω := scalarOneForm (MagicFunction.a.ComplexIntegrands.Φ₃' r))
     ((1 : ℂ) + Complex.I) Complex.I]
   simp only [MagicFunction.a.RealIntegrals.I₄', MagicFunction.a.RealIntegrands.Φ₄_def]
-  refine intervalIntegral.integral_congr fun t ht => ?_
-  simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₄_eq_z₄' (t := t)
-    (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht),
-    MagicFunction.a.ComplexIntegrands.Φ₄']
+  exact intervalIntegral.integral_congr fun t ht => by
+    simp [scalarOneForm_apply, SpherePacking.Contour.lineMap_z₄_eq_z₄' (t := t)
+      (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht),
+      MagicFunction.a.ComplexIntegrands.Φ₄']
 
 /-- Rewrite `I₃' + I₄'` as a sum of curve integrals of `Φ₃'` along the two segments
 `1 → 1 + i` and `1 + i → i`. -/
@@ -170,8 +170,7 @@ public lemma I₃'_add_I₄'_eq_curveIntegral_segments (r : ℝ) :
 /-- If `z` lies in the upper half-plane, then so does `-1 / z` (in terms of imaginary part). -/
 public lemma neg_one_div_im_pos (z : ℂ) (hz : 0 < z.im) : 0 < (-1 / z).im := by
   have hz0 : z ≠ 0 := fun h => absurd (by simp [h] : z.im = 0) hz.ne'
-  simpa [div_eq_mul_inv, Complex.inv_im] using
-    div_pos hz ((Complex.normSq_pos).2 hz0)
+  simpa [div_eq_mul_inv, Complex.inv_im] using div_pos hz (Complex.normSq_pos.2 hz0)
 
 /-- The Fourier-side integrand corresponding to `Φ₁'`, including the Mobius inversion Jacobian.
 
