@@ -83,8 +83,7 @@ public lemma aestronglyMeasurable_perm_I₅_kernel (w : ℝ⁸) :
     AEStronglyMeasurable
       (permI5Kernel w)
       ((volume : Measure ℝ⁸).prod ((volume : Measure ℝ).restrict (Ici (1 : ℝ)))) := by
-  have hphase : Continuous fun p : ℝ⁸ × ℝ ↦ permI5Phase w p.1 := by
-    unfold permI5Phase; fun_prop
+  have hphase : Continuous fun p : ℝ⁸ × ℝ ↦ permI5Phase w p.1 := by unfold permI5Phase; fun_prop
   have hkernel : ContinuousOn (permI5Kernel w) (univ ×ˢ Ici (1 : ℝ)) := by
     simpa [permI5Kernel] using hphase.continuousOn.mul continuousOn_I₅_g
   have hμ : (volume : Measure ℝ⁸).prod ((volume : Measure ℝ).restrict (Ici (1 : ℝ))) =
@@ -96,33 +95,27 @@ public lemma aestronglyMeasurable_perm_I₅_kernel (w : ℝ⁸) :
 
 /-- Unfolding lemma for `I₅` as a radial function in terms of `I₅'`. -/
 public lemma I₅_apply (x : ℝ⁸) :
-    (I₅ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₅' (‖x‖ ^ 2) := by
-  simp [I₅]
+    (I₅ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₅' (‖x‖ ^ 2) := by simp [I₅]
 
 /-- Unfolding lemma for `I₆` as a radial function in terms of `I₆'`. -/
 public lemma I₆_apply (x : ℝ⁸) :
-    (I₆ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₆' (‖x‖ ^ 2) := by
-  simp [I₆]
+    (I₆ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₆' (‖x‖ ^ 2) := by simp [I₆]
 
 /-- Unfolding lemma for `I₁` as a radial function in terms of `I₁'`. -/
 public lemma I₁_apply (x : ℝ⁸) :
-    (I₁ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₁' (‖x‖ ^ 2) := by
-  simp [I₁]
+    (I₁ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₁' (‖x‖ ^ 2) := by simp [I₁]
 
 /-- Unfolding lemma for `I₂` as a radial function in terms of `I₂'`. -/
 public lemma I₂_apply (x : ℝ⁸) :
-    (I₂ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₂' (‖x‖ ^ 2) := by
-  simp [I₂]
+    (I₂ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₂' (‖x‖ ^ 2) := by simp [I₂]
 
 /-- Unfolding lemma for `I₃` as a radial function in terms of `I₃'`. -/
 public lemma I₃_apply (x : ℝ⁸) :
-    (I₃ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₃' (‖x‖ ^ 2) := by
-  simp [I₃]
+    (I₃ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₃' (‖x‖ ^ 2) := by simp [I₃]
 
 /-- Unfolding lemma for `I₄` as a radial function in terms of `I₄'`. -/
 public lemma I₄_apply (x : ℝ⁸) :
-    (I₄ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₄' (‖x‖ ^ 2) := by
-  simp [I₄]
+    (I₄ : ℝ⁸ → ℂ) x = MagicFunction.a.RealIntegrals.I₄' (‖x‖ ^ 2) := by simp [I₄]
 
 end Integral_Permutations.PermI5
 end
