@@ -324,19 +324,17 @@ public lemma exists_bound_norm_H3_add_H4_resToImagAxis_sub_two_sub_main_Ici_one 
   rcases exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one with ⟨C3, hC3⟩
   rcases exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one with ⟨C4, hC4⟩
   refine ⟨C3 + C4, fun t ht => ?_⟩
-  have htri :=
-    norm_add_le
-      (H₃.resToImagAxis t - (1 : ℂ) - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-        (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ))
-      (H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-        (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ))
+  have htri := norm_add_le
+    (H₃.resToImagAxis t - (1 : ℂ) - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
+      (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ))
+    (H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
+      (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ))
   have hcong : ‖(H₃.resToImagAxis t + H₄.resToImagAxis t) - (2 : ℂ) -
-        (48 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖ ≤
+      (48 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖ ≤
       ‖H₃.resToImagAxis t - (1 : ℂ) - (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
         (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖ +
       ‖H₄.resToImagAxis t - (1 : ℂ) + (8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
-        (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖ := by
-    convert htri using 2; ring
+        (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)‖ := by convert htri using 2; ring
   linarith [hcong, hC3 t ht, hC4 t ht]
 
 /-- Crude inverse-square bound for `H₃(it)` on `t ≥ 1`. -/
@@ -411,11 +409,10 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
     simpa [x, norm_inv, norm_pow] using inv_le_one_of_one_le₀ (one_le_pow₀ hxge)
   have hxsub : ‖x - (1 : ℂ)‖ ≤ C0 * Real.exp (-Real.pi * t) := hsub1 t ht
   have hx_le : ‖x‖ + 1 ≤ C0 + 2 := by
-    have h1 : ‖x‖ ≤ ‖x - (1 : ℂ)‖ + 1 := by
-      simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ)
-    have hexp_le : Real.exp (-Real.pi * t) ≤ 1 :=
-      Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_trans zero_le_one ht])
-    nlinarith [h1, hxsub, hexp_le]
+    nlinarith [show ‖x‖ ≤ ‖x - (1 : ℂ)‖ + 1 from by
+      simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ), hxsub,
+      Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_trans zero_le_one ht] :
+        -Real.pi * t ≤ 0)]
   have hx2sub :
       ‖x ^ (2 : ℕ) - (1 : ℂ)‖ ≤ (C0 + 2) * (C0 * Real.exp (-Real.pi * t)) := by
     rw [show ‖x ^ (2 : ℕ) - (1 : ℂ)‖ = ‖x - 1‖ * ‖x + 1‖ from by
