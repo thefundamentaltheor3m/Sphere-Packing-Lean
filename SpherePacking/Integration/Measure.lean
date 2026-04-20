@@ -26,12 +26,10 @@ open MagicFunction
   (volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1)
 
 /-- `μIoc01` is `SFinite`. -/
-public instance : MeasureTheory.SFinite μIoc01 := by
-  simpa [μIoc01] using (by infer_instance : SFinite (volume.restrict (Ioc (0 : ℝ) 1)))
+public instance : MeasureTheory.SFinite μIoc01 := by unfold μIoc01; infer_instance
 
 /-- `μIoc01` is finite. -/
-public instance : MeasureTheory.IsFiniteMeasure μIoc01 := by
-  refine ⟨by simp [μIoc01]⟩
+public instance : MeasureTheory.IsFiniteMeasure μIoc01 := ⟨by simp [μIoc01]⟩
 
 /-- The restriction of Lebesgue measure to `Ioo (0, 1)`. -/
 @[expose] public def μIoo01 : Measure ℝ :=
@@ -40,20 +38,17 @@ public instance : MeasureTheory.IsFiniteMeasure μIoc01 := by
 attribute [irreducible] μIoo01
 
 /-- `μIoo01` is `SFinite`. -/
-public instance : MeasureTheory.SFinite μIoo01 := by
-  simpa [μIoo01] using (by infer_instance : SFinite (volume.restrict (Ioo (0 : ℝ) 1)))
+public instance : MeasureTheory.SFinite μIoo01 := by unfold μIoo01; infer_instance
 
 /-- `μIoo01` is finite. -/
-public instance : MeasureTheory.IsFiniteMeasure μIoo01 := by
-  refine ⟨by simp [μIoo01]⟩
+public instance : MeasureTheory.IsFiniteMeasure μIoo01 := ⟨by simp [μIoo01]⟩
 
 /-- The restriction of Lebesgue measure to `Ici 1`. -/
 @[expose] public def μIciOne : Measure ℝ :=
   (volume : Measure ℝ).restrict (Ici (1 : ℝ))
 
 /-! `μIciOne` is `SFinite`. -/
-public instance : MeasureTheory.SFinite μIciOne := by
-  simpa [μIciOne] using (by infer_instance : SFinite (volume.restrict (Ici (1 : ℝ))))
+public instance : MeasureTheory.SFinite μIciOne := by unfold μIciOne; infer_instance
 
 /-- The restriction of Lebesgue measure to `Ioi 0`. -/
 @[expose] public def μIoi0 : Measure ℝ :=
@@ -108,7 +103,7 @@ public lemma integral_dir_mul_muIoc01_eq_curveIntegral_segment (F : ℂ → ℂ)
       (intervalIntegral.integral_of_le (μ := volume)
         (f := fun t => (b - a) * F (zline t)) (by norm_num)).symm,
     curveIntegral_segment (ω := scalarOneForm F) a b]
-  refine intervalIntegral.integral_congr fun t ht => by simp [scalarOneForm_apply, hzline t]
+  exact intervalIntegral.integral_congr fun t _ => by simp [scalarOneForm_apply, hzline t]
 
 end
 
