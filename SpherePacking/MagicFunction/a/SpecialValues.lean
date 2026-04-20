@@ -176,8 +176,8 @@ lemma I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2 :
         (φ₀'' (zI x) * ((2 : ℂ) * (zI x) - 1) - (12 * Complex.I) / π * φ₂'' (zI x))
           ∂MeasureTheory.volume := fun hF hG => by
   rw [I₂'_zero_add_I₄'_zero hF hG]
-  refine intervalIntegral.integral_congr (μ := MeasureTheory.volume) fun x _ => ?_
-  simpa [zI] using F_sub_one (z := zI x) (by simp [zI])
+  exact intervalIntegral.integral_congr (μ := MeasureTheory.volume) fun x _ => by
+    simpa [zI] using F_sub_one (z := zI x) (by simp [zI])
 
 /-! ### Cancelling the `φ₀''` strip integral against `I₆' 0`. -/
 
@@ -205,7 +205,7 @@ lemma f0_norm_bound_on_strip :
   have hzIm_pos : 0 < z.im := lt_of_lt_of_le (by norm_num) hzIm
   have hφ : ‖φ₀'' z‖ ≤ C₀ * Real.exp (-2 * π * z.im) := by
     simpa [UpperHalfPlane.im, φ₀''_def (z := z) hzIm_pos] using hC₀ ⟨z, hzIm_pos⟩
-      (by simpa [UpperHalfPlane.im] using (lt_of_lt_of_le (by norm_num) hzIm))
+      (by simpa [UpperHalfPlane.im] using lt_of_lt_of_le (by norm_num) hzIm)
   calc ‖f0 z‖
       = ‖φ₀'' z‖ * ‖(2 : ℂ) * z - 1‖ := by simp [f0]
     _ ≤ (C₀ * Real.exp (-2 * π * z.im)) * (2 * z.im + 1) := by
@@ -256,7 +256,7 @@ private lemma norm_phi0_imag_le {C₀ : ℝ}
   let zH : ℍ := ⟨(t : ℂ) * Complex.I, by simpa [mul_assoc] using lt_of_lt_of_le (by norm_num) ht.le⟩
   have hφ0 : ‖φ₀'' (zH : ℂ)‖ ≤ C₀ * Real.exp (-2 * π * zH.im) := by
     simpa [φ₀''_coe_upperHalfPlane] using hC₀ zH
-      (by simpa [zH, UpperHalfPlane.im] using (lt_of_lt_of_le (by norm_num) ht.le))
+      (by simpa [zH, UpperHalfPlane.im] using lt_of_lt_of_le (by norm_num) ht.le)
   simpa [zH, UpperHalfPlane.im] using hφ0
 
 private lemma integrable_const_mul_exp_on_Ioi (C₀ : ℝ) :
@@ -274,17 +274,15 @@ private lemma aestronglyMeasurable_phi0_imag :
   ((MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn).comp
     (continuous_ofReal.mul continuous_const).continuousOn fun t ht => by
       simpa [mul_assoc] using
-        (lt_of_lt_of_le (by norm_num) ht.le : (0 : ℝ) < t)).aestronglyMeasurable
-    measurableSet_Ioi
+        (lt_of_lt_of_le (by norm_num) ht.le : (0:ℝ) < t)).aestronglyMeasurable measurableSet_Ioi
 
 lemma integrableOn_phi0_imag :
     MeasureTheory.IntegrableOn (fun t : ℝ => φ₀'' ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ))
       MeasureTheory.volume := by
   rcases MagicFunction.PolyFourierCoeffBound.norm_φ₀_le with ⟨C₀, _, hC₀⟩
   exact MeasureTheory.Integrable.mono' (integrable_const_mul_exp_on_Ioi C₀)
-    aestronglyMeasurable_phi0_imag
-    (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
-      simpa using norm_phi0_imag_le hC₀ ht)
+    aestronglyMeasurable_phi0_imag (MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi
+      fun t ht => by simpa using norm_phi0_imag_le hC₀ ht)
 
 lemma integrableOn_two_mul_phi0_imag :
     MeasureTheory.IntegrableOn (fun t : ℝ => (2 : ℂ) * φ₀'' ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ))
@@ -306,9 +304,8 @@ private lemma norm_integral_f0_strip_le {C₀ : ℝ}
 private lemma tendsto_two_m_plus_one_mul_exp_decay (C₀ : ℝ) :
     Tendsto (fun m : ℝ => C₀ * (2 * m + 1) * Real.exp (-2 * Real.pi * m)) atTop (𝓝 (0 : ℝ)) := by
   have hmul : Tendsto (fun m : ℝ => m * Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by
-    simpa [Real.rpow_one] using
-      tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s := (1 : ℝ)) (b := (2 * Real.pi))
-        (by positivity)
+    simpa [Real.rpow_one] using tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero
+      (s := (1 : ℝ)) (b := (2 * Real.pi)) (by positivity)
   have hu : Tendsto (fun m : ℝ => (2 * Real.pi) * m) atTop atTop :=
     tendsto_id.const_mul_atTop (by positivity)
   have hexp : Tendsto (fun m : ℝ => Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by simpa
@@ -337,9 +334,9 @@ private lemma integral_f0_vertical_diff_eq {m : ℝ} (hm : 1 ≤ m) :
         ∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I) =
       ∫ y : ℝ in (1 : ℝ)..m, (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) := by
   rw [(integral_sub (intervalIntegrable_f0_vert hm 1) (intervalIntegrable_f0_vert hm 0)).symm]
-  refine intervalIntegral.integral_congr (μ := MeasureTheory.volume) fun y hy => ?_
-  simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using
-    f0_vertical_diff y (lt_of_lt_of_le (by norm_num) ((Set.uIcc_of_le hm ▸ hy).1))
+  exact intervalIntegral.integral_congr (μ := MeasureTheory.volume) fun y hy => by
+    simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using
+      f0_vertical_diff y (lt_of_lt_of_le (by norm_num) ((Set.uIcc_of_le hm ▸ hy).1))
 
 lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) +
@@ -507,11 +504,11 @@ lemma tendsto_top_phi2 :
   rcases (UpperHalfPlane.atImInfty_mem _).1
     (tendsto_phi2'_atImInfty (Metric.ball_mem_nhds (720 : ℂ) (half_pos hε))) with ⟨A, hA⟩
   refine ⟨max A 1, fun m hm => ?_⟩
-  have hm0 : 0 < m := lt_of_lt_of_le (by norm_num) (le_trans (le_max_right _ _) hm)
+  have hm0 : 0 < m := lt_of_lt_of_le (by norm_num) ((le_max_right _ _).trans hm)
   have hle : ‖(∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) - (720 : ℂ)‖ ≤ ε / 2 := by
     simpa [integral_phi2_sub_720 hm0] using
       intervalIntegral.norm_integral_le_of_norm_le_const (a := (0 : ℝ)) (b := (1 : ℝ))
-        (norm_phi2_strip_bound_le hA (le_trans (le_max_left _ _) hm) hm0)
+        (norm_phi2_strip_bound_le hA ((le_max_left _ _).trans hm) hm0)
   simpa [Metric.ball, dist_eq_norm] using lt_of_le_of_lt hle (half_lt_self hε)
 
 lemma integral_phi2_height_one :

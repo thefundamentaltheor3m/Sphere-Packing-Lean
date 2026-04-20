@@ -118,9 +118,8 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
     finite_centers_inter_of_isBounded P D hD_isBounded hd
   letI : Fintype (↑(P.centers ∩ D)) := Fintype.ofFinite (↑(P.centers ∩ D))
   let n : ℝ := (Fintype.card (↑(P.centers ∩ D)) : ℝ)
-  have hFourierNorm :
-      Summable (fun m : ↥(SchwartzMap.dualLattice (d := d) P.lattice) =>
-        ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖) := by
+  have hFourierNorm : Summable (fun m : ↥(SchwartzMap.dualLattice (d := d) P.lattice) =>
+      ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖) := by
     simpa [SchwartzMap.fourier_coe] using
       SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
         (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)

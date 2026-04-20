@@ -463,7 +463,7 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     ⟨P, hPsep, hPdens⟩
   have hPdens' : P.density = (F.card : ℝ≥0∞) * volBall / volCube := by
     simpa [show (Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) : ℝ≥0∞)
-        = volCube from by
+      = volCube from by
       rw [show Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) =
         volCube.toNNReal from by simpa [volCube] using
           PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) L hLpos,
@@ -492,9 +492,8 @@ public theorem periodic_constant_eq_constant (hd : 0 < d) :
   rw [periodic_constant_eq_periodic_constant_normalized,
     SpherePacking.constant_eq_constant_normalized]
   refine le_antisymm (iSup₂_le fun P hPsep =>
-    (le_iSup (fun _ : (P.toSpherePacking).separation = 1 ↦ (P.toSpherePacking).density)
-      hPsep).trans <|
-      le_iSup (fun S : SpherePacking d ↦ ⨆ (_ : S.separation = 1), S.density)
+    (le_iSup (fun _ : (P.toSpherePacking).separation = 1 ↦ (P.toSpherePacking).density) hPsep).trans
+      <| le_iSup (fun S : SpherePacking d ↦ ⨆ (_ : S.separation = 1), S.density)
         P.toSpherePacking) ?_
   refine iSup₂_le fun S hSsep => le_of_forall_lt fun a ha => ?_
   rcases exists_between ha with ⟨b, hab, hbS⟩
