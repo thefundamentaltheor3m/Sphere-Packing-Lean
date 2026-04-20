@@ -43,19 +43,16 @@ public lemma integrable_norm_ψT'_z₁line_mul_one_div_pow_add_two
       (c := Real.pi) (by simpa using Real.pi_pos)
   have hmajor :
       Integrable (fun t : ℝ ↦ (Cψ : ℝ) * ((1 / t ^ 2) * rexp (-Real.pi / t))) μIoc01 := by
-    have h0' :
-        Integrable (fun t : ℝ ↦ (1 / t ^ 2) * rexp (-Real.pi / t))
-          ((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1)) := by
-      simpa [MeasureTheory.IntegrableOn] using hmajor0
+    have h0' : Integrable (fun t : ℝ ↦ (1 / t ^ 2) * rexp (-Real.pi / t))
+        ((volume : Measure ℝ).restrict (Ioc (0 : ℝ) 1)) :=
+      by simpa [MeasureTheory.IntegrableOn] using hmajor0
     simpa [μIoc01, mul_assoc, mul_left_comm, mul_comm] using h0'.const_mul Cψ
   have hmeas_g : AEStronglyMeasurable g μIoc01 := by
     have hcont_inv : ContinuousOn (fun t : ℝ => (t : ℝ)⁻¹) (Ioc (0 : ℝ) 1) :=
       (continuousOn_inv₀ : ContinuousOn (fun t : ℝ => (t : ℝ)⁻¹) ({0}ᶜ)).mono
         (fun t ht => by simp [ne_of_gt ht.1])
-    have hcont_pow : ContinuousOn (fun t : ℝ => (1 / t : ℝ) ^ (k + 2)) (Ioc (0 : ℝ) 1) := by
-      simpa [one_div] using hcont_inv.pow (k + 2)
     have hcont_g : ContinuousOn g (Ioc (0 : ℝ) 1) := by
-      simpa [g] using hcont.norm.mul hcont_pow
+      simpa [g, one_div] using hcont.norm.mul (hcont_inv.pow (k + 2))
     simpa [μIoc01] using hcont_g.aestronglyMeasurable
       (μ := (volume : Measure ℝ)) (s := Ioc (0 : ℝ) 1) measurableSet_Ioc
   have hg_bound :
