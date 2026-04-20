@@ -39,12 +39,11 @@ public lemma iteratedDeriv_eq_I
     iteratedDeriv n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) =
       fun x : ℝ ↦ I (coeff := coeff) (hf := hf) n x := by
   simpa using
-    (SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
+    SpherePacking.ForMathlib.iteratedDeriv_eq_of_hasDerivAt_succ
       (I := fun (n : ℕ) (x : ℝ) => I (coeff := coeff) (hf := hf) n x)
       (fun n x => by
         simpa [I] using hasDerivAt_integral_gN_of_continuous (coeff := coeff) (hf := hf)
-          continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le (n := n) (x₀ := x))
-      n)
+          continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le (n := n) (x₀ := x)) n
 
 /-- Smoothness of `x ↦ I 0 x` under the hypotheses needed for dominated differentiation. -/
 public theorem contDiff_integral
@@ -93,7 +92,7 @@ private theorem decay_integral
           simp [gN, g, norm_pow, mul_left_comm, mul_comm, mul_assoc]
       _ ≤ (2 * Real.pi) ^ n * Mh * Real.exp (-Real.pi * x) := by
           simpa [mul_assoc, norm_cexp] using
-            (mul_le_mul_of_nonneg_right hmul (norm_nonneg (cexp ((x : ℂ) * coeff t))))
+            mul_le_mul_of_nonneg_right hmul (norm_nonneg (cexp ((x : ℂ) * coeff t)))
   calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖
         = x ^ k * ‖I (coeff := coeff) (hf := hf) n x‖ := by
           simp [hxabs, norm_iteratedFDeriv_eq_norm_iteratedDeriv, hrepr]
@@ -113,10 +112,10 @@ public theorem decay_integral_of_coeff_re
     ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x →
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : ℝ ↦ I (coeff := coeff) (hf := hf) 0 x) x‖ ≤ C := by
   simpa using
-    (decay_integral (coeff := coeff) (hf := hf)
+    decay_integral (coeff := coeff) (hf := hf)
       continuous_hf continuous_coeff exists_bound_norm_h coeff_norm_le
       (norm_cexp := fun x t => by
-        simp [Complex.norm_exp, Complex.mul_re, coeff_re t, mul_comm]))
+        simp [Complex.norm_exp, Complex.mul_re, coeff_re t, mul_comm])
 
 end
 
