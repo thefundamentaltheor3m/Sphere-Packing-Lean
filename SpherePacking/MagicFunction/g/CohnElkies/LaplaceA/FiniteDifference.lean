@@ -49,26 +49,22 @@ public lemma Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand (u t : ℝ) :
 public lemma Φ_finite_difference_imag_axis {u t : ℝ} (ht : 0 < t) :
     Φ₂' u ((t : ℂ) * Complex.I) - 2 * Φ₅' u ((t : ℂ) * Complex.I) + Φ₄' u ((t : ℂ) * Complex.I) =
       2 * Φ₆' u ((t : ℂ) * Complex.I) := by
-  -- Work with the upper-half-plane point `z = i t`.
   let zH : ℍ := UpperHalfPlane.mk (Complex.I * t) (by simp [ht])
-  -- Core finite-difference identity for `φ₀''` (no exponential weight).
   have hfd := MagicFunction.a.SpecialValues.φ₀_finite_difference (z := zH)
   have hcore :
       φ₀'' ((-1 : ℂ) / (((1 : ℝ) +ᵥ zH : ℍ) : ℂ)) * (((1 : ℝ) +ᵥ zH : ℍ) : ℂ) ^ (2 : ℕ)
           - 2 * (φ₀'' ((-1 : ℂ) / (zH : ℂ)) * ((zH : ℂ) ^ (2 : ℕ)))
           + φ₀'' ((-1 : ℂ) / (((-1 : ℝ) +ᵥ zH : ℍ) : ℂ)) * (((-1 : ℝ) +ᵥ zH : ℍ) : ℂ) ^ (2 : ℕ)
         = (2 : ℂ) * φ₀'' (zH : ℂ) := by
-    -- Rewrite the `S`-action input as `(-1) / w` on `ℂ`.
     have hS (w : ℍ) : φ₀ (ModularGroup.S • w) = φ₀'' ((-1 : ℂ) / (w : ℂ)) := by
       have hcoe : ((ModularGroup.S • w : ℍ) : ℂ) = (-1 : ℂ) / (w : ℂ) := by
         simpa using ModularGroup.coe_S_smul (z := w)
       calc φ₀ (ModularGroup.S • w) = φ₀'' ((ModularGroup.S • w : ℍ) : ℂ) :=
             (φ₀''_coe_upperHalfPlane (z := ModularGroup.S • w)).symm
         _ = φ₀'' ((-1 : ℂ) / (w : ℂ)) := by rw [hcoe]
-    have hz : φ₀ zH = φ₀'' (zH : ℂ) := (φ₀''_coe_upperHalfPlane (z := zH)).symm
-    rw [hS ((1 : ℝ) +ᵥ zH), hS zH, hS ((-1 : ℝ) +ᵥ zH), hz] at hfd
+    rw [hS ((1 : ℝ) +ᵥ zH), hS zH, hS ((-1 : ℝ) +ᵥ zH),
+      show φ₀ zH = φ₀'' (zH : ℂ) from (φ₀''_coe_upperHalfPlane (z := zH)).symm] at hfd
     simpa [mul_assoc] using hfd
-  -- Multiply by the common exponential weight and unfold the `Φⱼ'`.
   have hzH : (zH : ℂ) = (t : ℂ) * Complex.I := by simp [zH, mul_comm]
   set e : ℂ := Complex.exp ((Real.pi : ℂ) * Complex.I * (u : ℂ) * (zH : ℂ))
   set core : ℂ :=
