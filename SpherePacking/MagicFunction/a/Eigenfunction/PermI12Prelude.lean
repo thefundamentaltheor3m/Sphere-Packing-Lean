@@ -84,23 +84,17 @@ lemma φ₀''_inv_add_one_mul_sq (w : ℂ) (hw : 0 < w.im) :
       φ₀'' (-1 / (w - 1)) * (w - 1) ^ 2 := by
   have hw0 : w ≠ 0 := fun h => absurd (show w.im = 0 by simp [h]) hw.ne'
   have hw' : 0 < (w - 1).im := by simpa using hw
-  have hw1 : w - 1 ≠ 0 :=
-    fun h => absurd (show (w - 1).im = 0 by simp [h]) hw'.ne'
+  have hw1 : w - 1 ≠ 0 := fun h => absurd (show (w - 1).im = 0 by simp [h]) hw'.ne'
   have harg : (-1 / ((-1 / w) + 1)) = (-1 / (w - 1)) - 1 := by grind only
   have hφ : φ₀'' (-1 / ((-1 / w) + 1)) = φ₀'' (-1 / (w - 1)) := by
-    have him : 0 < (-1 / (w - 1)).im := neg_one_div_sub_one_im_pos w hw
-    simpa [harg] using φ₀''_sub_one (z := -1 / (w - 1)) him
-  have hsq : ((-1 / w + 1) ^ 2) * w ^ 2 = (w - 1) ^ 2 := one_sub_inv_sq_mul_sq w hw0
-  calc φ₀'' (-1 / ((-1 / w) + 1)) * ((-1 / w) + 1) ^ 2 * w ^ 2
-      = φ₀'' (-1 / ((-1 / w) + 1)) * (((-1 / w) + 1) ^ 2 * w ^ 2) := by ring
-    _ = φ₀'' (-1 / (w - 1)) * (w - 1) ^ 2 := by simp [hφ, hsq]
+    simpa [harg] using φ₀''_sub_one (z := -1 / (w - 1)) (neg_one_div_sub_one_im_pos w hw)
+  rw [mul_assoc, one_sub_inv_sq_mul_sq w hw0, hφ]
 
 lemma I_div_neg_one_div_pow_four_mul_one_div_sq (w : ℂ) :
     ((Complex.I : ℂ) / (-1 / w)) ^ (4 : ℕ) * (1 / w ^ (2 : ℕ)) = w ^ (2 : ℕ) := by
   rcases eq_or_ne w 0 with rfl | hw
   · simp
-  · field_simp [hw]
-    simp [Complex.I_pow_four]
+  · field_simp [hw]; simp [Complex.I_pow_four]
 
 lemma φ₀''_inv_add_one_mul_sq' (w : ℂ) (hw : 0 < w.im) :
     φ₀'' (-1 / ((-1 / w) + 1)) * ((-1 / w) + 1) ^ 2 *
@@ -204,15 +198,9 @@ This is the holomorphic function whose curve integral appears in `fourier_I₁_e
 lemma Φ₁_fourier_eq_one_div_sq_mul_Φ₃' (r : ℝ) (z : ℂ) (hz : 0 < z.im) :
     Φ₁_fourier r z = (1 / z ^ (2 : ℕ)) * MagicFunction.a.ComplexIntegrands.Φ₃' r (-1 / z) := by
   have hz0 : z ≠ 0 := fun h => absurd (show z.im = 0 by simp [h]) hz.ne'
-  have hw : 0 < (-1 / z).im := neg_one_div_im_pos z hz
-  have hφ := φ₀''_inv_add_one_mul_sq' (w := -1 / z) hw
+  have hφ := φ₀''_inv_add_one_mul_sq' (w := -1 / z) (neg_one_div_im_pos z hz)
   have hrew : (-1 / (-1 / z) : ℂ) = z := by field_simp [hz0]
   have hsq : (((-1 / z) ^ (2 : ℕ) : ℂ)⁻¹) = z ^ (2 : ℕ) := by simp [div_eq_mul_inv, pow_two]
-  have hφz :
-      φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 *
-          (((Complex.I : ℂ) / z) ^ (4 : ℕ) * (z ^ (2 : ℕ))) =
-        φ₀'' (-1 / ((-1 / z) - 1)) * ((-1 / z) - 1) ^ 2 := by
-    simpa [hrew, hsq, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hφ
   have hz2 : z ^ (2 : ℕ) ≠ 0 := pow_ne_zero 2 hz0
   have hcoef :
       φ₀'' (-1 / (z + 1)) * (z + 1) ^ 2 * (((Complex.I : ℂ) / z) ^ (4 : ℕ)) =
