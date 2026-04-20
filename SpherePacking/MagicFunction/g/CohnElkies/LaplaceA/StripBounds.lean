@@ -305,7 +305,7 @@ lemma integrableOn_Φ₂'_imag_axis_Ioi {u : ℝ} (hu : 2 < u) {Cφ Aφ C₀ A :
 /-- Integrability of `Φ₂'` on the imaginary-axis tail `t > 1`. -/
 public lemma integrableOn_Φ₂'_imag_axis {u : ℝ} (hu : 2 < u) :
     IntegrableOn (fun t : ℝ => Φ₂' u ((t : ℂ) * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
-  rcases exists_phi2'_phi4'_bound_exp with ⟨Cφ, Aφ, hCφ, hφbd⟩
+  obtain ⟨Cφ, Aφ, hCφ, hφbd⟩ := exists_phi2'_phi4'_bound_exp
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   let A : ℝ := max 1 Aφ
   have hA1 : (1 : ℝ) ≤ A := le_max_left _ _
