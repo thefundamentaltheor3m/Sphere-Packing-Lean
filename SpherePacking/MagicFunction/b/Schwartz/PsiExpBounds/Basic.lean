@@ -34,14 +34,10 @@ lemma norm_Θ₂_term_resToImagAxis (n : ℤ) (t : ℝ) (ht : 0 < t) :
   have hnorm_core :
       ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
         rexp (-(π * (n : ℝ) ^ 2 * t) - 2 * π * (n : ℝ) * (t / 2)) := by
-    have h :
-        ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
-          rexp (-π * (n : ℝ) ^ 2 * t - 2 * π * (n : ℝ) * (t / 2)) := by
+    have h : ‖jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)‖ =
+        rexp (-π * (n : ℝ) ^ 2 * t - 2 * π * (n : ℝ) * (t / 2)) := by
       simpa [hτ] using norm_jacobiTheta₂_term n ((τ : ℂ) / 2) (τ : ℂ)
-    have : (-π * (n : ℝ) ^ 2 * t - 2 * π * (n : ℝ) * (t / 2)) =
-        (-(π * (n : ℝ) ^ 2 * t) - 2 * π * (n : ℝ) * (t / 2)) := by
-      ring
-    simpa [this] using h
+    rw [h]; ring_nf
   simpa [τ] using (calc
     ‖Θ₂_term n τ‖ =
         ‖cexp (π * (Complex.I : ℂ) * (τ : ℂ) / 4)‖ *
@@ -52,10 +48,7 @@ lemma norm_Θ₂_term_resToImagAxis (n : ℤ) (t : ℝ) (ht : 0 < t) :
           simp [hnorm_pref, hnorm_core]
     _ = rexp ((-π * (t / 4)) + (-(π * (n : ℝ) ^ 2 * t) - 2 * π * (n : ℝ) * (t / 2))) := by
           simp [Real.exp_add]
-    _ = rexp (-π * (((n : ℝ) + (1 / 2)) ^ 2) * t) := by
-          congr 1
-          ring
-    )
+    _ = rexp (-π * (((n : ℝ) + (1 / 2)) ^ 2) * t) := by congr 1; ring)
 
 lemma norm_Θ₂_resToImagAxis_le (t : ℝ) (ht : 0 < t) :
     ‖Θ₂.resToImagAxis t‖ ≤
@@ -102,57 +95,31 @@ public lemma exists_bound_norm_H₂_resToImagAxis_exp_Ici_one :
   refine ⟨Cθ ^ 4, ?_⟩
   intro t ht
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
-  have hΘ2 :
-      ‖Θ₂.resToImagAxis t‖ ≤ Cθ * rexp (-π * (t / 4)) := by
+  have hΘ2 : ‖Θ₂.resToImagAxis t‖ ≤ Cθ * rexp (-π * (t / 4)) := by
     have hmain := norm_Θ₂_resToImagAxis_le t ht0
-    have hquarter :
-        rexp (-π * ((1 / 2 : ℝ) ^ 2) * t) = rexp (-π * (t / 4)) := by
-      congr 1
-      ring
-    have hquarter' :
-        (2 * rexp (-π * ((1 / 2 : ℝ) ^ 2) * t)) / (1 - rexp (-π * t)) =
-          (2 * rexp (-π * (t / 4))) / (1 - rexp (-π * t)) := by
-      simpa using congrArg (fun u => (2 * u) / (1 - rexp (-π * t))) hquarter
+    have hquarter : rexp (-π * ((1 / 2 : ℝ) ^ 2) * t) = rexp (-π * (t / 4)) := by
+      congr 1; ring
     have hden_pos : 0 < (1 - rexp (-π : ℝ)) := by
-      have : rexp (-π : ℝ) < 1 := by
-        simpa [Real.exp_lt_one_iff] using (show (-π : ℝ) < 0 by nlinarith [Real.pi_pos])
-      exact sub_pos.2 this
-    have hden' : (1 - rexp (-π : ℝ)) ≤ (1 - rexp (-π * t)) := by
-      have hmono : rexp (-π * t) ≤ rexp (-π : ℝ) := by
-        refine Real.exp_le_exp.2 ?_
-        nlinarith [Real.pi_pos, ht]
-      simpa using (sub_le_sub_left hmono 1)
+      have : (-π : ℝ) < 0 := by nlinarith [Real.pi_pos]
+      simpa [Real.exp_lt_one_iff] using sub_pos.2 this
+    have hden' : (1 - rexp (-π : ℝ)) ≤ (1 - rexp (-π * t)) :=
+      sub_le_sub_left (Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht])) 1
     calc
       ‖Θ₂.resToImagAxis t‖ ≤
           (2 * rexp (-π * ((1 / 2 : ℝ) ^ 2) * t)) / (1 - rexp (-π * t)) := hmain
-      _ = (2 * rexp (-π * (t / 4))) / (1 - rexp (-π * t)) := hquarter'
-      _ ≤ (2 * rexp (-π * (t / 4))) / (1 - rexp (-π : ℝ)) := by
-            exact div_le_div_of_nonneg_left (by positivity) hden_pos hden'
+      _ = (2 * rexp (-π * (t / 4))) / (1 - rexp (-π * t)) := by rw [hquarter]
+      _ ≤ (2 * rexp (-π * (t / 4))) / (1 - rexp (-π : ℝ)) :=
+            div_le_div_of_nonneg_left (by positivity) hden_pos hden'
       _ = Cθ * rexp (-π * (t / 4)) := by
             simp [Cθ, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
-  have hH2 :
-      ‖H₂.resToImagAxis t‖ = ‖Θ₂.resToImagAxis t‖ ^ 4 := by
+  have hH2 : ‖H₂.resToImagAxis t‖ = ‖Θ₂.resToImagAxis t‖ ^ 4 := by
     simp [H₂, Function.resToImagAxis, ResToImagAxis, ht0, norm_pow]
-  have hpow : ‖Θ₂.resToImagAxis t‖ ^ 4 ≤ (Cθ * rexp (-π * (t / 4))) ^ 4 :=
-    pow_le_pow_left₀ (norm_nonneg _) hΘ2 4
+  have hexp : rexp (-π * (t / 4)) ^ 4 = rexp (-π * t) := by
+    rw [← Real.exp_nat_mul]; congr 1; ring
   calc
     ‖H₂.resToImagAxis t‖ = ‖Θ₂.resToImagAxis t‖ ^ 4 := hH2
-    _ ≤ (Cθ * rexp (-π * (t / 4))) ^ 4 := hpow
-    _ = (Cθ ^ 4) * rexp (-π * t) := by
-          -- `(exp(-π*t/4))^4 = exp(-π*t)`
-          have hexp :
-              rexp (-π * (t / 4)) ^ 4 = rexp (-π * t) := by
-            calc
-              rexp (-π * (t / 4)) ^ 4 = rexp (4 * (-π * (t / 4))) := by
-                    simpa using (Real.exp_nat_mul (-π * (t / 4)) 4).symm
-              _ = rexp (-π * t) := by
-                    congr 1
-                    ring
-          calc
-            (Cθ * rexp (-π * (t / 4))) ^ 4 = (Cθ ^ 4) * (rexp (-π * (t / 4)) ^ 4) := by
-                  simp [mul_pow]
-            _ = (Cθ ^ 4) * rexp (-π * t) := by
-                  rw [hexp]
+    _ ≤ (Cθ * rexp (-π * (t / 4))) ^ 4 := pow_le_pow_left₀ (norm_nonneg _) hΘ2 4
+    _ = (Cθ ^ 4) * rexp (-π * t) := by rw [mul_pow, hexp]
 
 end
 
