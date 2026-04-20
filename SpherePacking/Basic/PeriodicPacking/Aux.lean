@@ -234,8 +234,7 @@ public noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
   · haveI : Finite ↑(S.centers ∩ fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
       finite_centers_inter_fundamentalDomain S b hd
     exact Finite.of_equiv _ (S.addActionOrbitRelEquiv' b).symm
-  · obtain rfl : d = 0 := Nat.eq_zero_of_not_pos hd
-    exact Quotient.finite (AddAction.orbitRel ..)
+  · obtain rfl : d = 0 := Nat.eq_zero_of_not_pos hd; exact Quotient.finite _
 
 public noncomputable instance : Fintype (Quotient S.addAction.orbitRel) :=
   Fintype.ofFinite _
