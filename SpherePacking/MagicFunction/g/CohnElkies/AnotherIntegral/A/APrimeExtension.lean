@@ -161,16 +161,14 @@ lemma I₅'C_eq (u : ℂ) :
   congrArg (fun x : ℂ => -2 * x) <| intervalIntegral.integral_congr fun t _ => by
     simp [base₁, k₅, neg_one_div_I_mul_eq_arg₁, mul_left_comm, mul_comm]
 
-lemma base₁_continuousOn : ContinuousOn base₁ (Ι (0 : ℝ) 1) := by
-  have hden0 : ∀ t ∈ Ι (0 : ℝ) 1, (t : ℂ) ≠ 0 := fun t ht => by
-    exact_mod_cast (by simpa using ht.1 : (0 : ℝ) < t).ne'
-  have hcontArg : ContinuousOn arg₁ (Ι (0 : ℝ) 1) :=
-    continuousOn_const.div (by fun_prop) hden0
-  have hmaps : Set.MapsTo arg₁ (Ι (0 : ℝ) 1) UpperHalfPlane.upperHalfPlaneSet := fun t ht => by
-    simpa [UpperHalfPlane.upperHalfPlaneSet, arg₁] using inv_pos.2 (by simpa using ht.1 : (0:ℝ) < t)
-  exact (continuousOn_const.mul
-    ((MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn).comp hcontArg hmaps)).mul
-      (by fun_prop)
+lemma base₁_continuousOn : ContinuousOn base₁ (Ι (0 : ℝ) 1) :=
+  (continuousOn_const.mul
+    ((MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn).comp
+      (continuousOn_const.div (by fun_prop) fun t ht => by
+        exact_mod_cast (by simpa using ht.1 : (0 : ℝ) < t).ne')
+      fun t ht => by
+        simpa [UpperHalfPlane.upperHalfPlaneSet, arg₁] using
+          inv_pos.2 (by simpa using ht.1 : (0:ℝ) < t))).mul (by fun_prop)
 
 lemma base₁_bound :
     ∃ C₀ > 0, ∀ t ∈ Ι (0 : ℝ) 1, ‖base₁ t‖ ≤ C₀ := by
@@ -546,12 +544,12 @@ lemma I₆'C_differentiableOn : DifferentiableOn ℂ I₆'C rightHalfPlane :=
 
 /-- `aPrimeC` is analytic on the right half-plane. -/
 public lemma aPrimeC_analyticOnNhd :
-    AnalyticOnNhd ℂ aPrimeC rightHalfPlane := by
-  have hdiff : DifferentiableOn ℂ aPrimeC rightHalfPlane := by
+    AnalyticOnNhd ℂ aPrimeC rightHalfPlane :=
+  (show DifferentiableOn ℂ aPrimeC rightHalfPlane by
     simpa [aPrimeC] using
       (((((I₁'C_differentiableOn.add I₂'C_differentiableOn).add I₃'C_differentiableOn).add
-                I₄'C_differentiableOn).add I₅'C_differentiableOn).add I₆'C_differentiableOn)
-  exact hdiff.analyticOnNhd rightHalfPlane_isOpen
+                I₄'C_differentiableOn).add I₅'C_differentiableOn).add
+        I₆'C_differentiableOn)).analyticOnNhd rightHalfPlane_isOpen
 end
 
 end MagicFunction.g.CohnElkies.IntegralReps
