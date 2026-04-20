@@ -54,22 +54,20 @@ public lemma continuous_ψS : Continuous ψS := by
   have hH2 : Continuous H₂ := mdifferentiable_H₂.continuous
   have hH3 : Continuous H₃ := mdifferentiable_H₃.continuous
   have hH4 : Continuous H₄ := mdifferentiable_H₄.continuous
-  have hden3 : ∀ z : ℍ, (H₃ z) ^ 2 ≠ 0 := fun z => pow_ne_zero 2 (H₃_ne_zero z)
-  have hden4 : ∀ z : ℍ, (H₄ z) ^ 2 ≠ 0 := fun z => pow_ne_zero 2 (H₄_ne_zero z)
   simpa [ψS_eq', mul_assoc] using
     (continuous_const.mul
-      (((hH4.sub hH2).div (hH3.pow 2) hden3).sub ((hH2.add hH3).div (hH4.pow 2) hden4)))
+      (((hH4.sub hH2).div (hH3.pow 2) (fun z => pow_ne_zero 2 (H₃_ne_zero z))).sub
+        ((hH2.add hH3).div (hH4.pow 2) (fun z => pow_ne_zero 2 (H₄_ne_zero z)))))
 
 /-- Continuity of the modular function `ψT`. -/
 public lemma continuous_ψT : Continuous ψT := by
   have hH2 : Continuous H₂ := mdifferentiable_H₂.continuous
   have hH3 : Continuous H₃ := mdifferentiable_H₃.continuous
   have hH4 : Continuous H₄ := mdifferentiable_H₄.continuous
-  have hden2 : ∀ z : ℍ, (H₂ z) ^ 2 ≠ 0 := fun z => pow_ne_zero 2 (H₂_ne_zero z)
-  have hden4 : ∀ z : ℍ, (H₄ z) ^ 2 ≠ 0 := fun z => pow_ne_zero 2 (H₄_ne_zero z)
   simpa [ψT_eq, mul_assoc] using
     (continuous_const.mul
-      (((hH3.add hH4).div (hH2.pow 2) hden2).add ((hH2.add hH3).div (hH4.pow 2) hden4)))
+      (((hH3.add hH4).div (hH2.pow 2) (fun z => pow_ne_zero 2 (H₂_ne_zero z))).add
+        ((hH2.add hH3).div (hH4.pow 2) (fun z => pow_ne_zero 2 (H₄_ne_zero z)))))
 
 /-- Continuity of the modular function `ψI`. -/
 public lemma continuous_ψI : Continuous ψI := by
@@ -86,15 +84,14 @@ public lemma continuous_ψI : Continuous ψI := by
       mul_comm] using
       congrArg (fun f : ℍ → ℂ => f z) ψI_eq
   rw [hψ]
-  have hterm1 : Continuous fun z : ℍ => (H₃ z + H₄ z) / (H₂ z) ^ (2 : ℕ) :=
-    (hH3.add hH4).div (hH2.pow 2) (fun z => pow_ne_zero 2 (H₂_ne_zero z))
-  have hterm2 : Continuous fun z : ℍ => (H₄ z - H₂ z) / (H₃ z) ^ (2 : ℕ) :=
-    (hH4.sub hH2).div (hH3.pow 2) (fun z => pow_ne_zero 2 (H₃_ne_zero z))
-  simpa [mul_assoc] using (continuous_const.mul hterm1).add (continuous_const.mul hterm2)
+  simpa [mul_assoc] using
+    (continuous_const.mul
+      ((hH3.add hH4).div (hH2.pow 2) (fun z => pow_ne_zero 2 (H₂_ne_zero z)))).add
+      (continuous_const.mul
+        ((hH4.sub hH2).div (hH3.pow 2) (fun z => pow_ne_zero 2 (H₃_ne_zero z))))
 
 /-- `ψS` tends to `0` at `Im z → ∞`. -/
 public theorem tendsto_ψS_atImInfty : Tendsto ψS atImInfty (𝓝 (0 : ℂ)) := by
-  -- Use the factorization from `ψS_apply_eq_factor` and the known limits of `H₂,H₃,H₄`.
   have hH2 : Tendsto H₂ atImInfty (𝓝 (0 : ℂ)) := H₂_tendsto_atImInfty
   have hH3 : Tendsto H₃ atImInfty (𝓝 (1 : ℂ)) := H₃_tendsto_atImInfty
   have hH4 : Tendsto H₄ atImInfty (𝓝 (1 : ℂ)) := H₄_tendsto_atImInfty
@@ -108,8 +105,7 @@ public theorem tendsto_ψS_atImInfty : Tendsto ψS atImInfty (𝓝 (0 : ℂ)) :=
       simpa [mul_assoc] using (tendsto_const_nhds.mul (hH2.mul hH4))
     have h3 : Tendsto (fun z : ℍ => 5 * (H₄ z) ^ 2) atImInfty (𝓝 (5 : ℂ)) := by
       simpa using (tendsto_const_nhds.mul (hH4.pow 2))
-    have h := (h1.add h2).add h3
-    simpa [add_assoc] using h
+    simpa [add_assoc] using (h1.add h2).add h3
   have hnum :
       Tendsto
         (fun z : ℍ =>
@@ -147,32 +143,24 @@ lemma tendsto_ψS_resToImagAxis_atTop :
 /-- Uniform bound for `‖ψS.resToImagAxis t‖` on `Ici (1 : ℝ)`. -/
 public lemma exists_bound_norm_ψS_resToImagAxis_Ici_one :
     ∃ M, ∀ t : ℝ, 1 ≤ t → ‖ψS.resToImagAxis t‖ ≤ M := by
-  have htend : Tendsto (fun t : ℝ => ψS.resToImagAxis t) atTop (𝓝 (0 : ℂ)) :=
-    tendsto_ψS_resToImagAxis_atTop
   have htend' : Tendsto (fun t : ℝ => ‖ψS.resToImagAxis t‖) atTop (𝓝 (0 : ℝ)) :=
-    (tendsto_zero_iff_norm_tendsto_zero).1 htend
+    (tendsto_zero_iff_norm_tendsto_zero).1 tendsto_ψS_resToImagAxis_atTop
   have hEv_lt : ∀ᶠ t in atTop, ‖ψS.resToImagAxis t‖ < (1 : ℝ) :=
     htend'.eventually (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num))
   rcases (eventually_atTop.1 hEv_lt) with ⟨A, hA⟩
   let B : ℝ := max A 1
-  have hBpos : 0 < B := lt_of_lt_of_le (by norm_num) (le_max_right _ _)
   have hB : 1 ≤ B := le_max_right _ _
   have hcontOn : ContinuousOn (fun t : ℝ => ‖ψS.resToImagAxis t‖) (Icc 1 B) := by
-    have hψS : Continuous ψS := continuous_ψS
     have hres : ContinuousOn (ψS.resToImagAxis) (Icc 1 B) :=
-      (Function.continuousOn_resToImagAxis_Ioi_of (F := ψS) hψS).mono fun _ ht =>
+      (Function.continuousOn_resToImagAxis_Ioi_of (F := ψS) continuous_ψS).mono fun _ ht =>
         lt_of_lt_of_le (by norm_num) ht.1
     simpa using (continuous_norm.comp_continuousOn hres)
   obtain ⟨C, hC⟩ := SpherePacking.ForMathlib.exists_upper_bound_on_Icc (hab := hB) (hg := hcontOn)
   refine ⟨max C 1, ?_⟩
   intro t ht
   by_cases htB : t ≤ B
-  · have htIcc : t ∈ Icc 1 B := ⟨ht, htB⟩
-    have : ‖ψS.resToImagAxis t‖ ≤ C := hC t htIcc
-    exact this.trans (le_max_left _ _)
-  · have htB' : B ≤ t := le_of_not_ge htB
-    have htA : A ≤ t := le_trans (le_max_left _ _) htB'
-    have hlt : ‖ψS.resToImagAxis t‖ < 1 := hA t htA
-    exact (le_of_lt hlt).trans (le_max_right _ _)
+  · exact (hC t ⟨ht, htB⟩).trans (le_max_left _ _)
+  · have htA : A ≤ t := le_trans (le_max_left _ _) (le_of_not_ge htB)
+    exact (hA t htA).le.trans (le_max_right _ _)
 
 end MagicFunction.b.PsiBounds
