@@ -93,9 +93,8 @@ lemma I₁'_bounding_aux_2 (r : ℝ) : ∃ C₀ > 0, ∀ x ∈ Ici 1,
   let z : ℍ := ⟨I * s, by simpa using hs_pos⟩
   have him' : z.im = s := by simp [z, UpperHalfPlane.im]
   have hC₀z := hC₀ z (him'.symm ▸ by linarith)
-  simp only [z, him'] at hC₀z
-  simpa [φ₀'', mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add, hs_pos]
-    using hC₀z
+  simpa [z, him', φ₀'', mul_im, I_re, ofReal_im, mul_zero, I_im, ofReal_re, one_mul, zero_add,
+    hs_pos] using hC₀z
 
 end Bounding_Integrand
 
@@ -104,22 +103,22 @@ section Bounding_Integral
 lemma I₁'_bounding_1_aux_3 (r : ℝ) : ∃ C₀ > 0, ∫ (s : ℝ) in Ici 1, ‖g r s‖ ≤
     ∫ (s : ℝ) in Ici 1, C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
   wlog hint : IntegrableOn (fun t ↦ ‖g r t‖) (Ici (1 : ℝ)) volume
-  · refine ⟨1, by positivity, ?_⟩
-    simpa [MeasureTheory.integral_undef (μ := volume.restrict (Ici (1 : ℝ)))
-      (f := fun t ↦ ‖g r t‖) (by simpa [IntegrableOn] using hint)] using
-      (by positivity : (0 : ℝ) ≤
-        ∫ (s : ℝ) in Ici 1, (1 : ℝ) * rexp (-2 * π * s) * rexp (-π * r / s))
+  · exact ⟨1, by positivity, by
+      simpa [MeasureTheory.integral_undef (μ := volume.restrict (Ici (1 : ℝ)))
+        (f := fun t ↦ ‖g r t‖) (by simpa [IntegrableOn] using hint)] using
+        (by positivity : (0 : ℝ) ≤
+          ∫ (s : ℝ) in Ici 1, (1 : ℝ) * rexp (-2 * π * s) * rexp (-π * r / s))⟩
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_aux_2 r
   exact ⟨C₀, hC₀_pos, setIntegral_mono_on hint (bound_integrableOn_Ici r C₀) measurableSet_Ici hC₀⟩
 
 theorem I₁'_bounding (r : ℝ) : ∃ C₀ > 0,
     ‖I₁' r‖ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := by
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := I₁'_bounding_1_aux_3 r
-  use C₀, hC₀_pos
-  calc
-  _ = ‖∫ s in Ici (1 : ℝ), g r s‖ := by simp only [Complete_Change_of_Variables, g]
-  _ ≤ ∫ s in Ici (1 : ℝ), ‖g r s‖ := norm_integral_le_integral_norm (g r)
-  _ ≤ ∫ s in Ici (1 : ℝ), C₀ * rexp (-2 * π * s) * rexp (-π * r / s) := hC₀
+  refine ⟨C₀, hC₀_pos, ?_⟩
+  calc ‖I₁' r‖
+      = ‖∫ s in Ici (1 : ℝ), g r s‖ := by simp only [Complete_Change_of_Variables, g]
+    _ ≤ ∫ s in Ici (1 : ℝ), ‖g r s‖ := norm_integral_le_integral_norm (g r)
+    _ ≤ _ := hC₀
 
 end Bounding_Integral
 
