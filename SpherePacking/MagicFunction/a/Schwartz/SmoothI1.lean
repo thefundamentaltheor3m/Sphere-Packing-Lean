@@ -60,8 +60,7 @@ private lemma arg_z₁'_im_half (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
 private lemma den_z₁'_ne_zero (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     z₁' t + (1 : ℂ) ≠ 0 := fun h0 => by
   have h1 := congrArg Complex.im h0
-  simp [z₁'_eq_of_mem (mem_Icc_of_Ioo ht)] at h1
-  exact ht.1.ne' h1
+  simp [z₁'_eq_of_mem (mem_Icc_of_Ioo ht)] at h1; exact ht.1.ne' h1
 
 /-- Smoothness of `RealIntegrals.I₁'` as a function `ℝ → ℂ`. -/
 public theorem I₁'_contDiff : ContDiff ℝ (⊤ : ℕ∞) I₁' :=
