@@ -93,18 +93,13 @@ public lemma norm_φ₀_imag_le :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, 1 ≤ t →
       ‖φ₀'' ((Complex.I : ℂ) * (t : ℂ))‖ ≤ C * Real.exp (-2 * π * t) := by
   rcases MagicFunction.PolyFourierCoeffBound.norm_φ₀_le with ⟨C, hCpos, hC⟩
-  refine ⟨C, hCpos, ?_⟩
-  intro t ht
+  refine ⟨C, hCpos, fun t ht => ?_⟩
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
-  let z : ℍ := zI t ht0
-  have hzHalf : (1 / 2 : ℝ) < z.im := by
-    have : (1 / 2 : ℝ) < t := lt_of_lt_of_le (by norm_num) ht
-    simpa [z, zI_im t ht0] using this
-  have hmain : ‖φ₀ z‖ ≤ C * Real.exp (-2 * π * z.im) := hC z hzHalf
-  have hφ₀'' : φ₀ z = φ₀'' ((Complex.I : ℂ) * (t : ℂ)) := by
-    simpa [z, zI] using
+  have hφ₀'' : φ₀ (zI t ht0) = φ₀'' ((Complex.I : ℂ) * (t : ℂ)) := by
+    simpa [zI] using
       (φ₀''_def (z := (Complex.I : ℂ) * (t : ℂ)) (by simpa using ht0)).symm
-  simpa [hφ₀'', z, zI_im t ht0] using hmain
+  simpa [hφ₀'', zI_im t ht0] using
+    hC (zI t ht0) (by simpa [zI_im t ht0] using lt_of_lt_of_le (by norm_num : (1/2 : ℝ) < 1) ht)
 
 /-! ## `q`-expansion remainder bounds on the imaginary axis. -/
 
@@ -135,30 +130,27 @@ lemma cuspFunction_qParam_eq {F : Type*} [FunLike F ℍ ℂ] {Γ : Subgroup (GL 
 private lemma norm_cexp_mul_le_split {z : ℍ} {q q1 : ℝ} (hq_nonneg : 0 ≤ q) (hq_le : q ≤ q1)
     (hqC : (Periodic.qParam (1 : ℝ) z) = (q : ℂ)) (j k : ℕ) :
     ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ ≤ q ^ j * q1 ^ k := by
-  have hbase : cexp (2 * π * Complex.I * z) = (q : ℂ) := by
-    simpa [Periodic.qParam] using hqC
-  have hpow : cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z) =
-      (cexp (2 * π * Complex.I * z)) ^ (j + k) := by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using
-      (Complex.exp_nat_mul (2 * π * Complex.I * z) (j + k))
-  have hnorm : ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ = q ^ (j + k) := by
-    rw [hpow, hbase]; simp [abs_of_nonneg hq_nonneg]
-  rw [hnorm, pow_add]
+  rw [show ‖cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z)‖ = q ^ (j + k) from by
+      rw [show cexp (2 * π * Complex.I * ((j + k : ℕ) : ℂ) * z) =
+          (cexp (2 * π * Complex.I * z)) ^ (j + k) from by
+        simpa [mul_assoc, mul_left_comm, mul_comm] using
+          (Complex.exp_nat_mul (2 * π * Complex.I * z) (j + k)),
+        show cexp (2 * π * Complex.I * z) = (q : ℂ) from by
+          simpa [Periodic.qParam] using hqC]
+      simp [abs_of_nonneg hq_nonneg],
+    pow_add]
   exact mul_le_mul_of_nonneg_left
     (pow_le_pow_left₀ hq_nonneg hq_le _) (pow_nonneg hq_nonneg _)
 
 /-- Helper: bound `‖m * σ₃(m)‖` by `M ^ 5` when `m ≤ M`. -/
 private lemma norm_mul_sigma_le (m M : ℕ) (hM : m ≤ M) :
     ‖((m : ℂ) * (σ 3 m : ℂ))‖ ≤ ((M : ℝ) ^ 5 : ℝ) := by
-  have hs : (σ 3 m : ℕ) ≤ m ^ 4 :=
-    SpherePacking.ForMathlib.sigma_three_le_pow_four m
   have hcoeff_nat : m * (σ 3 m) ≤ m ^ 5 := by
-    have := Nat.mul_le_mul_left m hs
+    have := Nat.mul_le_mul_left m (SpherePacking.ForMathlib.sigma_three_le_pow_four m)
     simpa [pow_succ, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using this
-  have hnorm : ‖((m : ℂ) * (σ 3 m : ℂ))‖ = (m * (σ 3 m) : ℝ) := by
-    have : ‖(m : ℂ)‖ = (m : ℝ) := by simp
-    simp_all
-  calc ‖((m : ℂ) * (σ 3 m : ℂ))‖ = (m * (σ 3 m) : ℝ) := hnorm
+  calc ‖((m : ℂ) * (σ 3 m : ℂ))‖ = (m * (σ 3 m) : ℝ) := by
+        have : ‖(m : ℂ)‖ = (m : ℝ) := by simp
+        simp_all
     _ ≤ (m ^ 5 : ℝ) := by exact_mod_cast hcoeff_nat
     _ ≤ ((M : ℝ) ^ 5 : ℝ) := by exact_mod_cast Nat.pow_le_pow_left hM 5
 
@@ -217,52 +209,35 @@ private lemma exists_sub_partialSum_bound
           (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n
             (Periodic.qParam (1 : ℝ) (zI t ht))‖ ≤
         C * (Real.exp (-2 * π * t)) ^ n := by
-  have hps :
-      HasFPowerSeriesOnBall (cuspFunction (1 : ℝ) f)
-        (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f) (0 : ℂ) 1 :=
-    ModularFormClass.hasFPowerSeries_cuspFunction (f := f) (h := (1 : ℝ)) hh hΓ
-  rcases hps.uniform_geometric_approx' (r' := r0) (by simpa using hr0) with
-    ⟨a, ha, C, hCpos, hbound⟩
-  refine ⟨C * (a / (r0 : ℝ)) ^ n, by
-      have : 0 < (a / (r0 : ℝ)) := by
-        have hr0pos : 0 < (r0 : ℝ) := Real.exp_pos (-π)
-        exact div_pos ha.1 hr0pos
-      exact mul_pos hCpos (pow_pos this _), ?_⟩
-  intro t ht ht1
+  rcases (ModularFormClass.hasFPowerSeries_cuspFunction
+      (f := f) (h := (1 : ℝ)) hh hΓ).uniform_geometric_approx' (r' := r0)
+      (by simpa using hr0) with ⟨a, ha, C, hCpos, hbound⟩
+  refine ⟨C * (a / (r0 : ℝ)) ^ n,
+    mul_pos hCpos (pow_pos (div_pos ha.1 (Real.exp_pos (-π))) _),
+    fun t ht ht1 => ?_⟩
   let z : ℍ := zI t ht
   let q : ℂ := Periodic.qParam (1 : ℝ) z
-  have hq_ball : q ∈ Metric.ball (0 : ℂ) (r0 : ℝ) := by
-    simpa [q, z] using qParam_zI_mem_ball (t := t) ht ht1
-  have hmain :
-      ‖cuspFunction (1 : ℝ) f q -
-          (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n q‖ ≤
-        C * (a * (‖q‖ / r0)) ^ n :=
-    by simpa using hbound q hq_ball n
-  have hcuspeq : cuspFunction (1 : ℝ) f q = f z := by
-    simpa [q] using cuspFunction_qParam_eq (f := f) z hΓ
-  have hscale :
-      C * (a * (‖q‖ / r0)) ^ n = (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n := by
-    -- Rewrite `a * (‖q‖ / r0)` as `(a / r0) * ‖q‖` and split the power.
-    simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_pow]
   have hqnorm : ‖q‖ = Real.exp (-2 * π * t) := by
     simpa [q, z] using qParam_zI_norm t ht
-  have hmain' :
+  have hmain :
       ‖f z - (qExpansionFormalMultilinearSeries (h := (1 : ℝ)) f).partialSum n q‖ ≤
         (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n := by
-    simpa [hcuspeq, hscale] using hmain
-  simpa [z, q, hqnorm] using hmain'
+    simpa [show cuspFunction (1 : ℝ) f q = f z from by
+        simpa [q] using cuspFunction_qParam_eq (f := f) z hΓ,
+      show C * (a * (‖q‖ / r0)) ^ n = (C * (a / (r0 : ℝ)) ^ n) * ‖q‖ ^ n from by
+        simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_pow]] using
+      hbound q (by simpa [q, z] using qParam_zI_mem_ball (t := t) ht ht1) n
+  simpa [z, q, hqnorm] using hmain
 
 /-- Uniform bound `‖E₄ (it) - 1‖ = O(exp (-2πt))` valid for all `t ≥ 1`. -/
 public lemma exists_E4_sub_one_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖E₄ (zI t ht) - (1 : ℂ)‖ ≤ C * Real.exp (-2 * π * t) := by
-  -- Use the `q`-expansion remainder at order `1` and evaluate the partial sum.
   rcases exists_sub_partialSum_bound (f := E₄) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 4)
       hΓ1 1 with ⟨C, hCpos, hC⟩
-  refine ⟨C, hCpos, ?_⟩
-  intro t ht0 ht1
-  simpa [qExpansionFormalMultilinearSeries_partialSum_one (f := E₄), E4_q_exp_zero] using
-    hC t ht0 ht1
+  exact ⟨C, hCpos, fun t ht0 ht1 => by
+    simpa [qExpansionFormalMultilinearSeries_partialSum_one (f := E₄), E4_q_exp_zero]
+      using hC t ht0 ht1⟩
 
 /--
 Second-order remainder bound for `E₄ (it)` after subtracting `1 + 240 q`, where
@@ -272,21 +247,17 @@ public lemma exists_E4_sub_one_sub_240q_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖E₄ (zI t ht) - ((1 : ℂ) + (240 : ℂ) * (Real.exp (-2 * π * t) : ℂ))‖ ≤
         C * (Real.exp (-2 * π * t)) ^ (2 : ℕ) := by
-  -- Use the `q`-expansion remainder at order `2` and evaluate the partial sum.
   rcases exists_sub_partialSum_bound (f := E₄) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 4)
       hΓ1 2 with ⟨C, hCpos, hC⟩
-  refine ⟨C, hCpos, ?_⟩
-  intro t ht0 ht1
-  simpa [qExpansionFormalMultilinearSeries_partialSum_two (f := E₄), E4_q_exp_zero, E4_q_exp_one,
-    qParam_zI t ht0] using hC t ht0 ht1
+  exact ⟨C, hCpos, fun t ht0 ht1 => by
+    simpa [qExpansionFormalMultilinearSeries_partialSum_two (f := E₄), E4_q_exp_zero,
+      E4_q_exp_one, qParam_zI t ht0] using hC t ht0 ht1⟩
 
 lemma Delta_q_exp_zero : (qExpansion 1 Delta).coeff 0 = (0 : ℂ) := by
-  -- `Delta` is a cusp form, so its value at `∞` (and hence its constant `q`-coefficient) is `0`.
-  have h0 : cuspFunction (1 : ℝ) Delta 0 = (0 : ℂ) :=
-    CuspFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1
   have hval : valueAtInfty (Delta : ℍ → ℂ) = (0 : ℂ) := by
     simpa using
-      (ModularFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1).symm.trans h0
+      (ModularFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1).symm.trans
+        (CuspFormClass.cuspFunction_apply_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1)
   simp [ModularFormClass.qExpansion_coeff_zero (f := Delta) (h := (1 : ℝ)) hh hΓ1, hval]
 
 /--
@@ -297,13 +268,11 @@ public lemma exists_Delta_sub_q_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, (ht : 0 < t) → 1 ≤ t →
       ‖Δ (zI t ht) - (Real.exp (-2 * π * t) : ℂ)‖ ≤
         C * (Real.exp (-2 * π * t)) ^ (2 : ℕ) := by
-  -- Use the `q`-expansion remainder at order `2` and evaluate the partial sum.
   rcases exists_sub_partialSum_bound (f := Delta) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 12)
       hΓ1 2 with ⟨C, hCpos, hC⟩
-  refine ⟨C, hCpos, ?_⟩
-  intro t ht0 ht1
-  simpa [qExpansionFormalMultilinearSeries_partialSum_two (f := Delta), Delta_q_exp_zero,
-    Delta_q_one_term, qParam_zI t ht0, Delta_apply] using hC t ht0 ht1
+  exact ⟨C, hCpos, fun t ht0 ht1 => by
+    simpa [qExpansionFormalMultilinearSeries_partialSum_two (f := Delta), Delta_q_exp_zero,
+      Delta_q_one_term, qParam_zI t ht0, Delta_apply] using hC t ht0 ht1⟩
 
 /--
 Third-order remainder bound for `Δ (it)` after subtracting `q - 24 q^2`, where `q = exp (-2π t)`,
@@ -314,13 +283,11 @@ public lemma exists_Delta_sub_q_sub_neg24_qsq_bound :
       ‖Δ (zI t ht) -
           ((Real.exp (-2 * π * t) : ℂ) + (-24 : ℂ) * ((Real.exp (-2 * π * t)) ^ (2 : ℕ) : ℂ))‖ ≤
         C * (Real.exp (-2 * π * t)) ^ (3 : ℕ) := by
-  -- Use the `q`-expansion remainder at order `3` and evaluate the partial sum.
   rcases exists_sub_partialSum_bound (f := Delta) (Γ := CongruenceSubgroup.Gamma (↑1)) (k := 12)
       hΓ1 3 with ⟨C, hCpos, hC⟩
-  refine ⟨C, hCpos, ?_⟩
-  intro t ht0 ht1
-  simpa [qExpansionFormalMultilinearSeries_partialSum_three (f := Delta), Delta_q_exp_zero,
-    Delta_q_one_term, Delta_q_exp_two, qParam_zI t ht0, Delta_apply] using hC t ht0 ht1
+  exact ⟨C, hCpos, fun t ht0 ht1 => by
+    simpa [qExpansionFormalMultilinearSeries_partialSum_three (f := Delta), Delta_q_exp_zero,
+      Delta_q_one_term, Delta_q_exp_two, qParam_zI t ht0, Delta_apply] using hC t ht0 ht1⟩
 
 /-! ### Bounding `E₂E₄ - E₆` on the imaginary axis. -/
 
@@ -341,42 +308,26 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
   -- A summable majorant series.
   let b : ℕ → ℝ := fun n => ((n + 2 : ℝ) ^ 5) * q1 ^ n
   have hb_summ : Summable b := by
-    -- Compare to `512 * ((n^5 + 1) * q1^n)`, which is summable.
     have hq1_norm : ‖q1‖ < 1 := by
       simpa [Real.norm_of_nonneg hq1_nonneg] using hq1_lt_one
-    have hsumm5 : Summable (fun n : ℕ => ((n : ℝ) ^ 5 : ℝ) * q1 ^ n) :=
-      summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 5 hq1_norm
-    have hsumm0 : Summable (fun n : ℕ => q1 ^ n) :=
-      summable_geometric_of_lt_one hq1_nonneg hq1_lt_one
     have hsummA :
         Summable (fun n : ℕ => (((n : ℝ) ^ 5 + 1) : ℝ) * q1 ^ n) := by
-      have h :
-          (fun n : ℕ => (((n : ℝ) ^ 5 + 1) : ℝ) * q1 ^ n) =
-            (fun n : ℕ => ((n : ℝ) ^ 5 : ℝ) * q1 ^ n) + fun n : ℕ => q1 ^ n := by
-        funext n
-        simp [add_mul]
-      simpa [h] using hsumm5.add hsumm0
-    have hsummMajor :
-        Summable (fun n : ℕ => (512 : ℝ) * ((((n : ℝ) ^ 5 + 1) : ℝ) * q1 ^ n)) :=
-      hsummA.mul_left (512 : ℝ)
-    -- Termwise inequality `b n ≤ 512 * ((n^5 + 1) * q1^n)`.
+      simpa [show (fun n : ℕ => (((n : ℝ) ^ 5 + 1) : ℝ) * q1 ^ n) =
+          (fun n : ℕ => ((n : ℝ) ^ 5 : ℝ) * q1 ^ n) + fun n : ℕ => q1 ^ n from by
+        funext n; simp [add_mul]] using
+        (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 5 hq1_norm).add
+          (summable_geometric_of_lt_one hq1_nonneg hq1_lt_one)
     refine Summable.of_nonneg_of_le
       (f := fun n : ℕ => (512 : ℝ) * ((((n : ℝ) ^ 5 + 1) : ℝ) * q1 ^ n))
-      (g := b) (by intro n; positivity) (fun n => ?_) hsummMajor
-    have hpow :
-        ((n + 2 : ℝ) ^ 5) ≤ (512 : ℝ) * ((n : ℝ) ^ 5 + 1) := by
+      (g := b) (by intro n; positivity) (fun n => ?_) (hsummA.mul_left (512 : ℝ))
+    have hpow : ((n + 2 : ℝ) ^ 5) ≤ (512 : ℝ) * ((n : ℝ) ^ 5 + 1) := by
       have hbase :
           ((n : ℝ) + (2 : ℝ)) ^ 5 ≤ 2 ^ (5 - 1) * ((n : ℝ) ^ 5 + (2 : ℝ) ^ 5) := by
         simpa using add_pow_le (a := (n : ℝ)) (b := (2 : ℝ)) (by positivity) (by positivity) 5
       have hn5 : 0 ≤ (n : ℝ) ^ 5 := by positivity
-      -- Massage constants (`2^(5-1)=16`, `2^5=32`) and absorb.
       grind only
-    -- Multiply by `q1^n ≥ 0`.
-    have hq1n : 0 ≤ q1 ^ n := pow_nonneg hq1_nonneg _
-    calc
-      b n = ((n + 2 : ℝ) ^ 5) * q1 ^ n := rfl
-      _ ≤ ((512 : ℝ) * ((n : ℝ) ^ 5 + 1)) * q1 ^ n := by
-            gcongr
+    calc b n = ((n + 2 : ℝ) ^ 5) * q1 ^ n := rfl
+      _ ≤ ((512 : ℝ) * ((n : ℝ) ^ 5 + 1)) * q1 ^ n := by gcongr
       _ = (512 : ℝ) * (((n : ℝ) ^ 5 + 1) * q1 ^ n) := by ring
   -- Choose a convenient positive constant.
   refine ⟨1 + (720 : ℝ) * (∑' n : ℕ, b n), by positivity, ?_⟩
