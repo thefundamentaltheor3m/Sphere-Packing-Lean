@@ -34,19 +34,16 @@ public lemma pow_mul_exp_neg_pi_bounded (k : ℕ) :
     have hf : f = fun x : ℝ => (π ^ k)⁻¹ * ((π * x) ^ k * rexp (-(π * x))) := by
       funext x; simp [f, mul_assoc, mul_left_comm, mul_comm, mul_pow, hpi0]
     simpa [hf] using tendsto_const_nhds.mul h
-  have h_event : ∀ᶠ x in atTop, f x ≤ 1 :=
+  obtain ⟨N, hN⟩ := Filter.eventually_atTop.1 <|
     (hlim.eventually (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num))).mono fun _ => le_of_lt
-  obtain ⟨N, hN⟩ := Filter.eventually_atTop.1 h_event
-  let N0 : ℝ := max N 0
-  have hN0 : ∀ x ≥ N0, f x ≤ 1 := fun x hx => hN x ((le_max_left N 0).trans hx)
-  have hf_cont : Continuous f := by fun_prop
-  have hne : (Set.Icc (0 : ℝ) N0).Nonempty := nonempty_Icc.2 (le_max_right N 0)
-  obtain ⟨x0, hx0, hxmax⟩ :=
-    (isCompact_Icc : IsCompact (Set.Icc (0 : ℝ) N0)).exists_isMaxOn hne (hf_cont.continuousOn)
+  set N0 : ℝ := max N 0
+  obtain ⟨x0, _, hxmax⟩ :=
+    (isCompact_Icc : IsCompact (Set.Icc (0 : ℝ) N0)).exists_isMaxOn
+      (nonempty_Icc.2 (le_max_right N 0)) (by fun_prop : Continuous f).continuousOn
   refine ⟨max 1 (f x0), fun x hx => ?_⟩
   by_cases hxN : x ≤ N0
-  · exact (hxmax (show x ∈ Set.Icc (0 : ℝ) N0 from ⟨hx, hxN⟩)).trans (le_max_right _ _)
-  · exact (hN0 x (le_of_not_ge hxN)).trans (le_max_left _ _)
+  · exact (hxmax ⟨hx, hxN⟩).trans (le_max_right _ _)
+  · exact (hN x ((le_max_left N 0).trans (le_of_not_ge hxN))).trans (le_max_left _ _)
 
 /--
 Turn a uniform exponential bound `‖I x‖ ≤ C₁ * exp (-π * x)` into the inverse-power decay
@@ -74,10 +71,10 @@ public lemma decay_of_bounding_uniform_norm_iteratedDeriv {I : ℝ → ℂ} (n :
     (hI : ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖iteratedDeriv n I x‖ ≤ C₁ * rexp (-π * x)) :
     ∀ (k : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C := by
   obtain ⟨C₁, hC₁_pos, hC₁⟩ := hI
-  refine decay_of_bounding_uniform_norm (I := fun x : ℝ ↦ iteratedFDeriv ℝ n I x)
-    ⟨C₁, hC₁_pos, fun x hx => ?_⟩
-  simpa [norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := I) (x := x)] using
-    hC₁ x hx
+  exact decay_of_bounding_uniform_norm (I := fun x : ℝ ↦ iteratedFDeriv ℝ n I x)
+    ⟨C₁, hC₁_pos, fun x hx => by
+      simpa [norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := I) (x := x)]
+        using hC₁ x hx⟩
 
 /--
 Combined Schwartz decay from a representation of `iteratedDeriv n I` as an integral over
