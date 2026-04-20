@@ -41,45 +41,31 @@ public theorem isOpenQuotientMap_coeFun (n : ℕ) : IsOpenQuotientMap (coeFun n)
   induction n with
   | zero =>
       have h : coeFun 0 =
-          (Homeomorph.homeomorphOfUnique (Fin 0 → ℝ) (UnitAddTorus (Fin 0)) : _ → _) := by
-        funext x; exact Subsingleton.elim _ _
+          (Homeomorph.homeomorphOfUnique (Fin 0 → ℝ) (UnitAddTorus (Fin 0)) : _ → _) :=
+        funext fun _ => Subsingleton.elim _ _
       simpa [h] using
         (Homeomorph.homeomorphOfUnique (Fin 0 → ℝ) (UnitAddTorus (Fin 0))).isOpenQuotientMap
   | succ n ih =>
-      -- Reduce to the product case using `finSuccPiHomeomorph`.
       have h₁ : IsOpenQuotientMap (fun x : ℝ => (x : UnitAddCircle)) := by
         simpa using
           (QuotientAddGroup.isOpenQuotientMap_mk (G := ℝ) (N := AddSubgroup.zmultiples (1 : ℝ)))
       let eX := (finSuccPiHomeomorph (α := ℝ) n).symm
       let eY := finSuccPiHomeomorph (α := UnitAddCircle) n
-      have heX : IsOpenQuotientMap (eX : (Fin n.succ → ℝ) → ℝ × (Fin n → ℝ)) :=
-        eX.isOpenQuotientMap
-      have hprod :
-          IsOpenQuotientMap (Prod.map (fun x : ℝ => (x : UnitAddCircle)) (coeFun n)) :=
-        IsOpenQuotientMap.prodMap h₁ (ih)
-      -- `coeFun (n+1)` is conjugate to `Prod.map` by these homeomorphisms.
-      have hconj :
-          coeFun n.succ =
-            (fun x =>
-              eY
-                (Prod.map (fun x : ℝ => (x : UnitAddCircle)) (coeFun n) (eX x))) := by
-        funext x
-        ext i
+      have hprod := IsOpenQuotientMap.prodMap h₁ ih
+      have hconj : coeFun n.succ =
+          (fun x => eY (Prod.map (fun x : ℝ => (x : UnitAddCircle)) (coeFun n) (eX x))) := by
+        funext x; ext i
         cases i using Fin.cases with
         | zero => simp [coeFun, eY, finSuccPiHomeomorph, eX, Prod.map]
         | succ i => simp [coeFun, eY, finSuccPiHomeomorph, eX, Prod.map, Fin.tail]
-      have hhomeoY : IsOpenQuotientMap eY := eY.isOpenQuotientMap
-      -- Compose: `Fin n.succ → ℝ` --eX--> `ℝ × (Fin n → ℝ)` --Prod.map--> ...
-      --   --> `Fin n.succ → UnitAddCircle` via the homeomorphism.
       simpa [hconj] using
-        (IsOpenQuotientMap.comp hhomeoY (IsOpenQuotientMap.comp hprod heX))
+        (IsOpenQuotientMap.comp eY.isOpenQuotientMap
+          (IsOpenQuotientMap.comp hprod eX.isOpenQuotientMap))
 
 theorem measurePreserving_coeFun (n : ℕ) (t : ℝ) :
     MeasurePreserving (coeFun n)
       (Measure.pi fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)))
       (volume : Measure (UnitAddTorus (Fin n))) := by
-  -- `coeFun` is the product of the coordinatewise quotient maps `ℝ → UnitAddCircle`,
-  -- each of which is measure-preserving on a fundamental interval.
   simpa [coeFun] using
     (MeasureTheory.measurePreserving_pi
       (μ := fun _ : Fin n => (volume : Measure ℝ).restrict (Set.Ioc t (t + 1)))
@@ -97,7 +83,6 @@ theorem mFourier_apply_coeFun (n : ℕ) (k : Fin n → ℤ) (x : Fin n → ℝ) 
       Complex.exp
         (2 * π * Complex.I *
           (∑ i : Fin n, (k i : ℝ) * x i)) := by
-  -- Unfold, then rewrite `fourier` explicitly on real representatives and use `exp_sum`.
   simpa [UnitAddTorus.mFourier, ContinuousMap.coe_mk, coeFun, fourier_coe_apply, Finset.mul_sum,
     mul_assoc, mul_left_comm, mul_comm] using
     (Complex.exp_sum (s := (Finset.univ : Finset (Fin n)))
@@ -123,13 +108,12 @@ public theorem integral_eq_integral_preimage_coeFun (n : ℕ) (t : ℝ) (g : Uni
       ∫ x, g (coeFun n x) ∂(volume : Measure (Fin n → ℝ)).restrict
         (Set.univ.pi fun _ : Fin n => Set.Ioc t (t + 1)) := by
   have hmp := measurePreserving_coeFun n t
-  have h1 :
-      (∫ y : UnitAddTorus (Fin n), g y) =
-        ∫ x, g (coeFun n x) ∂(Measure.pi fun _ : Fin n =>
-          (volume : Measure ℝ).restrict (Set.Ioc t (t + 1))) := by
+  have h1 : (∫ y : UnitAddTorus (Fin n), g y) =
+      ∫ x, g (coeFun n x) ∂(Measure.pi fun _ : Fin n =>
+        (volume : Measure ℝ).restrict (Set.Ioc t (t + 1))) := by
     rw [← hmp.map_eq]
-    simpa using (MeasureTheory.integral_map (hφ := hmp.aemeasurable) (f := g)
-      (hfm := by simpa [hmp.map_eq] using hg))
+    simpa using MeasureTheory.integral_map (hφ := hmp.aemeasurable) (f := g)
+      (hfm := by simpa [hmp.map_eq] using hg)
   simpa [(volume_restrict_pi_eq_pi_restrict n t).symm] using h1
 
 end SchwartzMap.UnitAddTorus
