@@ -73,8 +73,7 @@ lemma neg_one_div_sub_one_im_pos (w : ℂ) (hw : 0 < w.im) :
     div_pos hw' (Complex.normSq_pos.2 hne)
 
 lemma one_sub_inv_sq_mul_sq (w : ℂ) (hw : w ≠ 0) :
-    ((-1 / w + 1) ^ 2) * w ^ 2 = (w - 1) ^ 2 := by
-  field_simp [hw]; ring
+    ((-1 / w + 1) ^ 2) * w ^ 2 = (w - 1) ^ 2 := by field_simp [hw]; ring
 
 lemma φ₀''_inv_add_one_mul_sq (w : ℂ) (hw : 0 < w.im) :
     φ₀'' (-1 / ((-1 / w) + 1)) * ((-1 / w) + 1) ^ 2 * w ^ 2 =
@@ -192,9 +191,8 @@ lemma Φ₁_fourier_eq_one_div_sq_mul_Φ₃' (r : ℝ) (z : ℂ) (hz : 0 < z.im)
 
 The prime at the end of the name comes from the integrand `Φ₃'`. -/
 public lemma Φ₁_fourier_eq_deriv_mobiusInv_mul_Φ₃' (r : ℝ) (z : ℂ) (hz : 0 < z.im) :
-    Φ₁_fourier r z =
-      (deriv SpherePacking.mobiusInv z) *
-        MagicFunction.a.ComplexIntegrands.Φ₃' r (SpherePacking.mobiusInv z) := by
+    Φ₁_fourier r z = (deriv SpherePacking.mobiusInv z) *
+      MagicFunction.a.ComplexIntegrands.Φ₃' r (SpherePacking.mobiusInv z) := by
   simpa [SpherePacking.mobiusInv, SpherePacking.deriv_mobiusInv (z := z), div_eq_mul_inv, mul_assoc,
     mul_left_comm, mul_comm] using Φ₁_fourier_eq_one_div_sq_mul_Φ₃' (r := r) (z := z) hz
 
