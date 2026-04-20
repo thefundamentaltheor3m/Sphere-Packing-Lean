@@ -80,11 +80,10 @@ lemma g_norm_bound (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
     simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (-π * r)
   have hnorm : ‖MagicFunction.a.IntegralEstimates.I₃.g r s‖ = ‖g r s‖ := by
     let A : ℂ := (-I) * φ₀'' (I * s) * (s ^ (-4 : ℤ)) * cexp (-π * r / s)
-    have hI3 : MagicFunction.a.IntegralEstimates.I₃.g r s = A * cexp (π * I * r) := by
-      simp [MagicFunction.a.IntegralEstimates.I₃.g, A, mul_assoc, mul_left_comm, mul_comm]
-    have hI1 : g r s = A * cexp (-π * I * r) := by
-      simp [g, A, mul_assoc, mul_left_comm, mul_comm]
-    simp [hI3, hI1, hπ, hnegπ]
+    simp [hπ, hnegπ,
+      show MagicFunction.a.IntegralEstimates.I₃.g r s = A * cexp (π * I * r) by
+        simp [MagicFunction.a.IntegralEstimates.I₃.g, A, mul_assoc, mul_left_comm, mul_comm],
+      show g r s = A * cexp (-π * I * r) by simp [g, A, mul_assoc, mul_left_comm, mul_comm]]
   have h1 : ‖g r s‖ ≤ ‖φ₀'' (I * (s : ℂ))‖ * rexp (-π * r / s) := by
     simpa [hnorm] using MagicFunction.a.IntegralEstimates.I₃.I₃'_bounding_aux_1 (r := r) s hs
   exact h1.trans (by gcongr; exact norm_φ₀''_le (s := s) hs)
