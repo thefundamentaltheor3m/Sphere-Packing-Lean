@@ -82,11 +82,10 @@ public theorem aRadial_eq_laplace_phi0_main {u : ℝ} (hu : 2 < u) :
     grind only
   have hΦ5 : (∫ t in Set.Ioi (0 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) =
       - (∫ t in Set.Ioi (0 : ℝ), aLaplaceIntegrand u t) := by
-    have hcongr : (∫ t in Set.Ioi (0 : ℝ), Φ₅' u ((t : ℂ) * Complex.I)) =
-        ∫ t in Set.Ioi (0 : ℝ), -aLaplaceIntegrand u t :=
-      MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (0 : ℝ)) measurableSet_Ioi
-        (fun t _ => by simpa using (Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand (u := u) (t := t)))
-    simpa using hcongr.trans (integral_neg (aLaplaceIntegrand u))
+    rw [MeasureTheory.setIntegral_congr_fun (s := Set.Ioi (0 : ℝ)) measurableSet_Ioi
+      (g := fun t => -aLaplaceIntegrand u t)
+      (fun t _ => by simpa using (Φ₅'_imag_axis_eq_neg_aLaplaceIntegrand (u := u) (t := t)))]
+    simp [integral_neg]
   rw [hcoeff, hΦ5]
   simp [aLaplaceIntegrand, mul_assoc, mul_left_comm, mul_comm]
 
