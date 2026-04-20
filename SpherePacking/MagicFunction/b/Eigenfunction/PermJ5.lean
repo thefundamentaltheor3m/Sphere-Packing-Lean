@@ -34,7 +34,6 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
   change 𝓕 (J₅ : EuclideanSpace ℝ (Fin 8) → ℂ) w = -((J₆ : EuclideanSpace ℝ (Fin 8) → ℂ) w)
   rw [J₆_apply (x := w), fourier_eq' (J₅ : EuclideanSpace ℝ (Fin 8) → ℂ) w]
   simp only [smul_eq_mul, J₅_apply]
-  -- Rewrite `J₅'` using the `t ↦ 1/t` substitution.
   have hJ5' (x : EuclideanSpace ℝ (Fin 8)) :
       MagicFunction.b.RealIntegrals.J₅' (‖x‖ ^ 2) =
         (-2 : ℂ) * ∫ s in Ici (1 : ℝ), J5Change.g (‖x‖ ^ 2) s := by
@@ -46,7 +45,6 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
       ((volume : Measure (EuclideanSpace ℝ (Fin 8))).prod μs) := by
     simpa [μs, SpherePacking.Integration.μIciOne, f, Function.uncurry] using
       (PermJ5.integrable_kernel (w := w))
-  -- Compute the inner integral using the Gaussian Fourier transform.
   have hinner (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
       (∫ x : EuclideanSpace ℝ (Fin 8), f x s)
         =
@@ -79,7 +77,6 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
                 cexp (-π * (‖w‖ ^ 2) * s) := by ac_rfl
       _ = (-I) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s) := by
             rw [hcancel]; simp [mul_assoc]
-  -- Pull the outer `-2` out and switch phase/`∫s` order via Fubini, then apply `hinner`.
   have hswap :=
     MeasureTheory.integral_integral_swap
       (μ := (volume : Measure (EuclideanSpace ℝ (Fin 8)))) (ν := μs) (f := f) hint
@@ -111,16 +108,14 @@ public theorem perm_J₅ : FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ �
     congr 1
     refine integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun s hs ↦ ?_)
     simpa [f] using hinner s hs
-  rw [hmain, J₆'_eq (r := ‖w‖ ^ 2)]
-  -- Swap the `-` from `-I` out of the `∫s` to match `-J₆'`.
-  rw [show (∫ s in Ici (1 : ℝ),
+  rw [hmain, J₆'_eq (r := ‖w‖ ^ 2),
+    show (∫ s in Ici (1 : ℝ),
               (-I : ℂ) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s)) =
             -(∫ s in Ici (1 : ℝ),
               (Complex.I : ℂ) * ψS' ((Complex.I : ℂ) * (s : ℂ)) * cexp (-π * (‖w‖ ^ 2) * s))
     from by
       rw [← MeasureTheory.integral_neg]
-      refine integral_congr_ae <| .of_forall fun _ ↦ ?_
-      ring]
+      exact integral_congr_ae <| .of_forall fun _ ↦ by ring]
   simp [mul_assoc]
 
 /-- Fourier permutation identity: `𝓕 J₆ = -J₅`. -/
