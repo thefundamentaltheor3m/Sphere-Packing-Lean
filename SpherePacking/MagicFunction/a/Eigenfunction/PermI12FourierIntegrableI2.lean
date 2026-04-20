@@ -55,17 +55,15 @@ lemma integral_norm_permI2Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
     have hmain :
         ‖cexp ((Real.pi : ℂ) * I * (r : ℂ) * z₂line t)‖ = rexp (-Real.pi * r) := by
       simp [Complex.norm_exp]
-    have hneg : rexp (-Real.pi * r) = rexp (-(Real.pi * r)) := by ring_nf
-    simpa [r, mul_assoc, mul_left_comm, mul_comm, hneg] using hmain
+    simpa [r, mul_assoc, mul_left_comm, mul_comm, show rexp (-Real.pi * r) = rexp (-(Real.pi * r))
+      from by ring_nf] using hmain
   have hnorm (x : ℝ⁸) :
       ‖permI2Kernel w (x, t)‖ =
         ‖φ₀'' (-1 / (z₂line t + 1))‖ * (‖z₂line t + 1‖ ^ 2 * rexp (-(Real.pi * (‖x‖ ^ 2)))) := by
-    have hphase : ‖cexp (↑(-2 * (π * ⟪x, w⟫)) * I)‖ = (1 : ℝ) :=
-      SpherePacking.ForMathlib.norm_phase_eq_one (w := w) (x := x)
     have hphase' : ‖cexp (-(2 * (↑π * ↑⟪x, w⟫) * I))‖ = (1 : ℝ) := by
       have harg : (↑(-2 * (π * ⟪x, w⟫)) : ℂ) * I = -(2 * (↑π * ↑⟪x, w⟫) * I) := by
         push_cast; ring
-      simpa [harg] using hphase
+      simpa [harg] using SpherePacking.ForMathlib.norm_phase_eq_one (w := w) (x := x)
     calc
       ‖permI2Kernel w (x, t)‖
           = ‖cexp (↑(-2 * (π * ⟪x, w⟫)) * I)‖ *
@@ -79,8 +77,8 @@ lemma integral_norm_permI2Kernel_bound (w : ℝ⁸) (t : ℝ) (ht : t ∈ Ioc (0
             (‖z₂line t + 1‖ ^ 2 * rexp (-(Real.pi * (‖x‖ ^ 2)))) := by
             rw [hexp x, mul_assoc]
   have hgauss_one : (∫ x : ℝ⁸, rexp (-(Real.pi * (‖x‖ ^ 2)))) = (1 : ℝ) := by
-    have h := integral_rexp_neg_pi_mul_sq_norm (t := (1 : ℝ)) (by norm_num : (0 : ℝ) < 1)
-    simpa [one_mul] using h.trans (by simp)
+    simpa [one_mul] using
+      (integral_rexp_neg_pi_mul_sq_norm (t := (1 : ℝ)) (by norm_num : (0 : ℝ) < 1)).trans (by simp)
   have hEq :
       (∫ x : ℝ⁸, ‖permI2Kernel w (x, t)‖) =
         ‖φ₀'' (-1 / (z₂line t + 1))‖ * ‖z₂line t + 1‖ ^ 2 := by
@@ -99,7 +97,6 @@ lemma integrable_integral_norm_permI2Kernel (w : ℝ⁸) :
     simpa using ((permI2Kernel_measurable (w := w)).norm.prod_swap.integral_prod_right'
       (μ := μIoc01) (ν := (volume : Measure ℝ⁸)))
   refine Integrable.mono' hmajor hmeas ?_
-  -- Prove the bound a.e. on `Ioc (0,1)`, excluding `t = 1` (a null set).
   have hne1 : ∀ᵐ t : ℝ ∂μIoc01, t ≠ 1 := by
     have hμ : μIoc01 ({(1 : ℝ)} : Set ℝ) = 0 := by simp [μIoc01]
     simpa [Set.mem_singleton_iff] using measure_eq_zero_iff_ae_notMem.1 hμ
@@ -107,26 +104,22 @@ lemma integrable_integral_norm_permI2Kernel (w : ℝ⁸) :
     simpa [μIoc01] using (ae_restrict_mem measurableSet_Ioc : ∀ᵐ t ∂μIoc01, t ∈ Ioc (0 : ℝ) 1)
   filter_upwards [hmem, hne1] with t ht htne1
   have ht_lt1 : t < 1 := lt_of_le_of_ne ht.2 htne1
-  -- Bound `‖φ₀''(-1 / (z₂line t + 1))‖` by `C₀` using `norm_φ₀_le` on the upper half-plane.
   have him_pos : 0 < ((-1 : ℂ) / ((t : ℂ) + I)).im := by
-    have : 0 < (((t : ℂ) + I)).im := by simp
-    simpa using neg_one_div_im_pos ((t : ℂ) + I) this
+    simpa using neg_one_div_im_pos ((t : ℂ) + I) (by simp : 0 < (((t : ℂ) + I)).im)
   let z : UpperHalfPlane := ⟨(-1 : ℂ) / ((t : ℂ) + I), him_pos⟩
   have hz_half : (1 / 2 : ℝ) < z.im := by
-    have htIoo : t ∈ Ioo (0 : ℝ) 1 := ⟨ht.1, ht_lt1⟩
     have him : ((-1 : ℂ) / ((t : ℂ) + I)).im = 1 / (t ^ 2 + 1) := by
       simpa using SpherePacking.Integration.im_neg_one_div_ofReal_add_I (t := t)
     simpa [z, UpperHalfPlane.im, him] using
-      SpherePacking.Integration.one_half_lt_one_div_sq_add_one_of_mem_Ioo01 htIoo
+      SpherePacking.Integration.one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ⟨ht.1, ht_lt1⟩
   have hφ₀_eq : φ₀ z = φ₀'' ((-1 : ℂ) / ((t : ℂ) + I)) := by
     simpa [z] using (φ₀''_def (z := (-1 : ℂ) / ((t : ℂ) + I)) him_pos).symm
   have hφ₀'' : ‖φ₀'' ((-1 : ℂ) / ((t : ℂ) + I))‖ ≤ (C₀ : ℝ) := by
     have hexp : rexp (-2 * π * z.im) ≤ 1 :=
       Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, z.2.le])
-    have hφ₀ : ‖φ₀ z‖ ≤ (C₀ : ℝ) * rexp (-2 * π * z.im) := hC₀ z hz_half
     calc ‖φ₀'' ((-1 : ℂ) / ((t : ℂ) + I))‖
         = ‖φ₀ z‖ := by rw [hφ₀_eq]
-      _ ≤ (C₀ : ℝ) * rexp (-2 * π * z.im) := hφ₀
+      _ ≤ (C₀ : ℝ) * rexp (-2 * π * z.im) := hC₀ z hz_half
       _ ≤ (C₀ : ℝ) := mul_le_of_le_one_right hC₀_pos.le hexp
   have hkernel := integral_norm_permI2Kernel_bound (w := w) (t := t) ht
   have hφ₀''_seg : ‖φ₀'' (-1 / (z₂line t + 1))‖ ≤ (C₀ : ℝ) := by
