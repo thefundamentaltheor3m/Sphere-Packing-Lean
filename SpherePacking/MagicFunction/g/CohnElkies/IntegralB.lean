@@ -65,8 +65,7 @@ private lemma integrable_aAnother {u : ℝ} (hu : 0 < u) :
       (fun t : ℝ => MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t)
       ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
   simpa [MeasureTheory.IntegrableOn] using
-    (MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand_integrable_of_pos
-      (u := u) hu)
+    MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand_integrable_of_pos (u := u) hu
 
 private lemma integrable_bAnother {u : ℝ} (hu : 0 < u) :
     Integrable
@@ -81,15 +80,14 @@ private lemma integrable_exp_complex {u : ℝ} (hu : 0 < u) :
     Integrable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))
       ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
   simpa [MeasureTheory.IntegrableOn] using
-    (MagicFunction.g.CohnElkies.IntegralReps.integrableOn_exp_neg_pi_mul_Ioi_complex
-      (u := u) hu)
+    MagicFunction.g.CohnElkies.IntegralReps.integrableOn_exp_neg_pi_mul_Ioi_complex (u := u) hu
 
 private lemma integrable_t_mul_exp_complex {u : ℝ} (hu : 0 < u) :
     Integrable (fun t : ℝ => (t : ℂ) * (Real.exp (-π * u * t) : ℂ))
       ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
   simpa [MeasureTheory.IntegrableOn] using
-    (MagicFunction.g.CohnElkies.IntegralReps.integrableOn_mul_exp_neg_pi_mul_Ioi_complex
-      (u := u) hu)
+    MagicFunction.g.CohnElkies.IntegralReps.integrableOn_mul_exp_neg_pi_mul_Ioi_complex
+      (u := u) hu
 
 lemma integrableOn_B_mul_exp_neg_pi_mul {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => (B t : ℂ) * Real.exp (-π * u * t)) (Set.Ioi (0 : ℝ)) := by
@@ -100,20 +98,19 @@ lemma integrableOn_B_mul_exp_neg_pi_mul {u : ℝ} (hu : 0 < u) :
             MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t) +
         ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ))) -
       ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ)
-  have hAe :
-      (fun t : ℝ => (B t : ℂ) * Real.exp (-π * u * t)) =ᵐ[μ] rhs := by
-    refine MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_
-    simpa [rhs, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-      (IntegralB.B_mul_exp_eq_decomp (u := u) (t := t) ht)
-  have hA := integrable_aAnother (u := u) hu
-  have hB := integrable_bAnother (u := u) hu
-  have hExp := integrable_exp_complex (u := u) hu
-  have hTExp := integrable_t_mul_exp_complex (u := u) hu
-  have hcoefB := hB.const_mul ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
-  have hcoefT := hTExp.const_mul ((8640 / π : ℝ) : ℂ)
-  have hcoefE := hExp.const_mul ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
+  have hAe : (fun t : ℝ => (B t : ℂ) * Real.exp (-π * u * t)) =ᵐ[μ] rhs :=
+    MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
+      simpa [rhs, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
+        (IntegralB.B_mul_exp_eq_decomp (u := u) (t := t) ht)
   have hRHS : Integrable rhs μ := by
-    simpa [rhs] using ((hA.neg.add hcoefB).add hcoefT).sub hcoefE
+    simpa [rhs] using
+      ((((integrable_aAnother (u := u) hu).neg.add
+          ((integrable_bAnother (u := u) hu).const_mul
+            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ))).add
+        ((integrable_t_mul_exp_complex (u := u) hu).const_mul
+          ((8640 / π : ℝ) : ℂ))).sub
+      ((integrable_exp_complex (u := u) hu).const_mul
+        ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ)))
   simpa [MeasureTheory.IntegrableOn, μ] using hRHS.congr hAe.symm
 
 lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
@@ -136,23 +133,6 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
             (∫ t : ℝ, (t : ℂ) * (Real.exp (-π * u * t) : ℂ) ∂μ) -
           ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
             (∫ t : ℝ, (Real.exp (-π * u * t) : ℂ) ∂μ)
-  have hcongr :
-      (∫ t : ℝ, (B t : ℂ) * Real.exp (-π * u * t) ∂μ) =
-        ∫ t : ℝ,
-          (-(MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t) +
-              ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-                  MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t +
-                ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
-                  ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-                    (Real.exp (-π * u * t) : ℂ)) ∂μ := by
-    refine MeasureTheory.integral_congr_ae <|
-      MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => ?_
-    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-      IntegralB.B_mul_exp_eq_decomp (u := u) (t := t) ht
-  have hA := integrable_aAnother (u := u) hu
-  have hB := integrable_bAnother (u := u) hu
-  have hExp := integrable_exp_complex (u := u) hu
-  have hTExp := integrable_t_mul_exp_complex (u := u) hu
   let f1 : ℝ → ℂ := fun t =>
     -(MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t)
   let f2 : ℝ → ℂ := fun t =>
@@ -162,32 +142,24 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
     ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ))
   let f4 : ℝ → ℂ := fun t =>
     -((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ)
-  have hf1 : Integrable f1 μ := hA.neg
-  have hf2 : Integrable f2 μ := by simpa [f2] using hB.const_mul _
-  have hf3 : Integrable f3 μ := by simpa [f3] using hTExp.const_mul _
+  have hf1 : Integrable f1 μ := (integrable_aAnother (u := u) hu).neg
+  have hf2 : Integrable f2 μ := by
+    simpa [f2] using (integrable_bAnother (u := u) hu).const_mul _
+  have hf3 : Integrable f3 μ := by
+    simpa [f3] using (integrable_t_mul_exp_complex (u := u) hu).const_mul _
   have hf4 : Integrable f4 μ := by
-    simpa [f4, mul_assoc] using hExp.const_mul (-((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
+    simpa [f4, mul_assoc] using (integrable_exp_complex (u := u) hu).const_mul
+      (-((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
   have hf23 : Integrable (fun t => f2 t + f3 t) μ := hf2.add hf3
   have hf234 : Integrable (fun t => (f2 t + f3 t) + f4 t) μ := hf23.add hf4
-  have hsplit :
-      (∫ t : ℝ, (f1 t + ((f2 t + f3 t) + f4 t)) ∂μ) =
-        (∫ t : ℝ, f1 t ∂μ) +
-          (∫ t : ℝ, f2 t ∂μ) + (∫ t : ℝ, f3 t ∂μ) + (∫ t : ℝ, f4 t ∂μ) := by
-    rw [MeasureTheory.integral_add hf1 hf234, MeasureTheory.integral_add hf23 hf4,
-      MeasureTheory.integral_add hf2 hf3]
-    ring_nf
-  rw [hcongr]
-  have hrew :
-      (fun t : ℝ =>
-          (-(MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t) +
-              ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-                  MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t +
-                ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ)) -
-                  ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ))) =
-    fun t : ℝ => f1 t + ((f2 t + f3 t) + f4 t) := by
-    funext t
-    simp [f1, f2, f3, f4, sub_eq_add_neg, add_left_comm, add_comm, mul_assoc]
-  rw [hrew, hsplit]
+  rw [show (∫ t : ℝ, (B t : ℂ) * Real.exp (-π * u * t) ∂μ) =
+        ∫ t : ℝ, (f1 t + ((f2 t + f3 t) + f4 t)) ∂μ from
+      MeasureTheory.integral_congr_ae <|
+        MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
+          simpa [f1, f2, f3, f4, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
+            mul_assoc] using IntegralB.B_mul_exp_eq_decomp (u := u) (t := t) ht]
+  rw [MeasureTheory.integral_add hf1 hf234, MeasureTheory.integral_add hf23 hf4,
+    MeasureTheory.integral_add hf2 hf3]
   simp [f1, f2, f3, f4, MeasureTheory.integral_neg, MeasureTheory.integral_const_mul, μ,
     sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc]
 
@@ -270,31 +242,23 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
     ∫ t in Set.Ioi (0 : ℝ),
       (ψI' ((Complex.I : ℂ) * (t : ℂ)) - (144 : ℂ) - ((Real.exp (2 * π * t)) : ℂ)) *
         Real.exp (-π * u * t)
-  have haEq' :
-      a' u =
-        (4 * (Complex.I : ℂ)) *
-          (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-            ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
-              (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-              (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) := by
-    simpa [IA] using haEq
-  have hbEq' :
-      b' u =
-        (-4 * (Complex.I : ℂ)) *
-          (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-            ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by
-    simpa [IB] using hbEq
+  have haEq' : a' u =
+      (4 * (Complex.I : ℂ)) *
+        (Real.sin (π * u / 2)) ^ (2 : ℕ) *
+          ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
+            (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
+            (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) := by simpa [IA] using haEq
+  have hbEq' : b' u =
+      (-4 * (Complex.I : ℂ)) *
+        (Real.sin (π * u / 2)) ^ (2 : ℕ) *
+          ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by simpa [IB] using hbEq
   have hcoefA :
       (((↑π * I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) = -(π / 2160 : ℂ) := by
-    ring_nf
-    simp
-    ring
+    ring_nf; simp; ring
   have hcoefB :
       (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ) := by
     have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-    field_simp [hπ]
-    ring_nf
-    simp
+    field_simp [hπ]; ring_nf; simp
   have hIexp :
       (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) = ((1 / (π * u) : ℝ) : ℂ) :=
     MagicFunction.g.CohnElkies.IntegralReps.integral_exp_neg_pi_mul_Ioi_complex
@@ -374,15 +338,14 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
               ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
         (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) :=
     (bracket_arith (u := u) (IA := IA) (IB := IB) hπ huC hu2C).trans hBscaled.symm
-  have hFactor :
-      ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
+  simpa [u, mul_assoc] using
+    (show ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
         (π / 2160 : ℂ) *
           (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-            (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) := by
-    rw [hFourier']
-    exact factor_sin_sq u IA IB
-      (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) hBracket
-  simpa [u, mul_assoc] using hFactor
+            (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) from by
+      rw [hFourier']
+      exact factor_sin_sq u IA IB
+        (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) hBracket)
 
 /-- Integral representation of `𝓕 g` in terms of `B(t)` (for `0 < ‖x‖ ^ 2`). -/
 public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
