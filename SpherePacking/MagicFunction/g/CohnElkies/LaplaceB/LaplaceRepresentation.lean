@@ -110,12 +110,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         simpa [add_assoc, mul_assoc] using ht0
       have hzIm : Aψ ≤ UpperHalfPlane.im ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩ := by
         simpa [UpperHalfPlane.im, add_assoc, mul_assoc] using hAψ.trans ht.le
-      have hψI : ‖ψI ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩‖ ≤ Cψ * Real.exp (2 * π * t) := by
-        simpa [UpperHalfPlane.im, add_assoc, mul_assoc] using hψbd _ hzIm
       have hψT_norm : ‖ψT' (I * (t : ℂ))‖ ≤ Cψ * Real.exp (2 * π * t) := by
-        have : ψT' (I * (t : ℂ)) = ψI ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩ := by
-          rw [ψT'_I_mul (t := t) ht0]; simp [ψI', ht0]
-        simpa [this] using hψI
+        rw [show ψT' (I * (t : ℂ)) = ψI ⟨I * (t : ℂ) + (1 : ℂ), hzI⟩ by
+          rw [ψT'_I_mul (t := t) ht0]; simp [ψI', ht0]]
+        simpa [UpperHalfPlane.im, add_assoc, mul_assoc] using hψbd _ hzIm
       rw [show ‖f t‖ = ‖ψT' (I * (t : ℂ))‖ * Real.exp (-π * u * t) by
             simp [f, bContourIntegrandT_mul_I, -Complex.ofReal_exp, Complex.norm_real,
               abs_of_nonneg (Real.exp_pos _).le],
