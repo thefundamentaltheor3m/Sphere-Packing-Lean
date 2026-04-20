@@ -115,8 +115,7 @@ public lemma norm_iteratedFDeriv_smul_cexp_mul_pi_I_le (m : ℕ) (x : ℝ) :
     ‖iteratedFDeriv ℝ m (fun t : ℝ ↦ (-1 / 2 : ℂ) • e t) x‖
         = ‖(-1 / 2 : ℂ)‖ * ‖iteratedFDeriv ℝ m e x‖ := hsmul
     _ ≤ ‖(-1 / 2 : ℂ)‖ * Real.pi ^ m := by
-          gcongr
-          simpa [e] using norm_iteratedFDeriv_cexp_mul_pi_I_le (m := m) (x := x)
+          gcongr; simpa [e] using norm_iteratedFDeriv_cexp_mul_pi_I_le (m := m) (x := x)
     _ = (1 / 2 : ℝ) * Real.pi ^ m := by simp
 
 /-- If `f` has bounded derivatives and `g` has one-sided decay of all derivatives, then the product
@@ -146,9 +145,8 @@ public theorem decay_iteratedFDeriv_mul_of_bound_left
               Classical.choose_spec (hdec_g (n - i)) x hx
             have hchoose0 : 0 ≤ (n.choose i : ℝ) := by positivity
             have hBi0 : 0 ≤ B i := (norm_nonneg _).trans hfi
-            have hleft : (n.choose i : ℝ) * ‖iteratedFDeriv ℝ i f x‖ ≤ (n.choose i : ℝ) * B i :=
-              mul_le_mul_of_nonneg_left hfi hchoose0
-            have hprod := mul_le_mul hleft hgi (by positivity) (mul_nonneg hchoose0 hBi0)
+            have hprod := mul_le_mul (mul_le_mul_of_nonneg_left hfi hchoose0) hgi
+              (by positivity) (mul_nonneg hchoose0 hBi0)
             grind only
 
 end SpherePacking.ForMathlib
