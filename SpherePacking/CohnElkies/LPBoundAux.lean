@@ -43,7 +43,8 @@ public lemma summable_norm_comp_add_zlattice (f : 𝓢(EuclideanSpace ℝ (Fin d
     (g := fun ℓ : Λ => (C + 1) * ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖⁻¹ ^ k) ?_ ?_
   · simpa [mul_assoc] using
       (ZLattice.summable_norm_sub_inv_pow (L := Λ) (n := k) (by simp [k]) b).mul_left (C + 1)
-  · have hClosed : IsClosed (X := EuclideanSpace ℝ (Fin d)) (Λ : Set (EuclideanSpace ℝ (Fin d))) := by
+  · have hClosed : IsClosed (X := EuclideanSpace ℝ (Fin d))
+        (Λ : Set (EuclideanSpace ℝ (Fin d))) := by
       letI : DiscreteTopology Λ.toAddSubgroup := inferInstanceAs (DiscreteTopology Λ)
       simpa [Submodule.coe_toAddSubgroup] using
         AddSubgroup.isClosed_of_discrete (H := Λ.toAddSubgroup)
@@ -79,7 +80,8 @@ public lemma summable_norm_comp_add_zlattice (f : 𝓢(EuclideanSpace ℝ (Fin d
         C / ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k ≤
           (C + 1) / ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k := by
       have hnonneg : 0 ≤ (‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖ ^ k)⁻¹ := by positivity
-      simpa [div_eq_mul_inv, mul_assoc] using mul_le_mul_of_nonneg_right (by linarith : C ≤ C + 1) hnonneg
+      simpa [div_eq_mul_inv, mul_assoc] using
+        mul_le_mul_of_nonneg_right (by linarith : C ≤ C + 1) hnonneg
     have hgood : ‖f (a + (ℓ : EuclideanSpace ℝ (Fin d)))‖ ≤
         (C + 1) * ‖(ℓ : EuclideanSpace ℝ (Fin d)) - b‖⁻¹ ^ k := by
       simpa [div_eq_mul_inv, inv_pow] using hle.trans (by simpa using hmono)
