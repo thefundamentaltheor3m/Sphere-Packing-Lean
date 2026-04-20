@@ -44,7 +44,7 @@ private lemma norm_real_add_mul_I_le_two_mul {a t : ℝ} (ha : ‖((a : ℝ) : �
     ‖((a : ℝ) : ℂ) + (t : ℂ) * Complex.I‖ ≤ 2 * t := by
   have hIt : ‖(t : ℂ) * Complex.I‖ = t := by
     simp [Complex.norm_real, abs_of_nonneg (by linarith : (0:ℝ) ≤ t)]
-  linarith [norm_add_le ((a : ℝ) : ℂ) ((t : ℂ) * Complex.I), hIt.le]
+  linarith [norm_add_le ((a : ℝ) : ℂ) ((t : ℂ) * Complex.I)]
 
 /-- Generic strip-bound core: given `x ∈ [-1,1]`, `t ≥ 1`, and a function `F` satisfying
 `F (x + t*I) = (φ₀''(-1/w) * w^2) * exp(π*I*u*(x + t*I))` where `w = s + t*I` with `|s| ≤ 1`,
@@ -69,9 +69,8 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
   set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
   let w : ℂ := ((s : ℝ) : ℂ) + (t : ℂ) * Complex.I
   have hw_im : w.im = t := by simp [w]
-  have hs' : ‖((s : ℝ) : ℂ)‖ ≤ (1 : ℝ) := by simpa [Complex.norm_real] using hs
-  have hw_norm : ‖w‖ ≤ 2 * t :=
-    norm_real_add_mul_I_le_two_mul (a := s) (t := t) hs' ht1
+  have hw_norm : ‖w‖ ≤ 2 * t := norm_real_add_mul_I_le_two_mul (a := s) (t := t)
+    (by simpa [Complex.norm_real] using hs) ht1
   let wH : ℍ := ⟨w, by simpa [hw_im] using ht0⟩
   have hmod : ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       K * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
@@ -84,15 +83,10 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
   have hExpNorm :
       ‖cexp ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I))‖ =
         Real.exp (-π * u * t) := by
-    have harg : ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I)) =
-        ((π * u * x : ℝ) : ℂ) * Complex.I - ((π * u * t : ℝ) : ℂ) := by
-      push_cast; ring_nf; simp [mul_left_comm, mul_comm, sub_eq_add_neg]
-    rw [harg, Complex.norm_exp]
+    rw [show ((π : ℂ) * Complex.I * (u : ℂ) * ((x : ℂ) + (t : ℂ) * Complex.I)) =
+        ((π * u * x : ℝ) : ℂ) * Complex.I - ((π * u * t : ℝ) : ℂ) from by
+      push_cast; ring_nf; simp [mul_left_comm, mul_comm, sub_eq_add_neg], Complex.norm_exp]
     simp [Complex.sub_re, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]
-  have hExpRew : Real.exp (2 * π * t) * Real.exp (-π * u * t) =
-      Real.exp (-(π * (u - 2)) * t) := by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using
-      MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t)
   calc ‖F ((x : ℂ) + (t : ℂ) * Complex.I)‖
       = ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ * Real.exp (-π * u * t) := by
           rw [hdef]; show ‖_ * _‖ = _; rw [show φ₀'' ((-1 : ℂ) / w) * (w ^ 2) = _ from hphi0S,
@@ -101,7 +95,11 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
           mul_le_mul_of_nonneg_right hmod (Real.exp_pos _).le
     _ = K * (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
           rw [show (K * (t ^ 2 * Real.exp (2 * π * t))) * Real.exp (-π * u * t) =
-            K * (t ^ 2 * (Real.exp (2 * π * t) * Real.exp (-π * u * t))) from by ring, hExpRew]
+            K * (t ^ 2 * (Real.exp (2 * π * t) * Real.exp (-π * u * t))) from by ring,
+            show Real.exp (2 * π * t) * Real.exp (-π * u * t) =
+              Real.exp (-(π * (u - 2)) * t) by
+              simpa [mul_assoc, mul_left_comm, mul_comm] using
+                MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t)]
 
 /-- Uniform strip bound for `Φ₂' u (x + tI)` with `x ∈ [-1,0]` and `t ≥ 1`. -/
 lemma norm_Φ₂'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
@@ -158,7 +156,7 @@ private lemma tendsto_intervalIntegral_top_of_strip_bound {u : ℝ} (hu : 2 < u)
           (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t))) :
     Tendsto (fun m : ℝ => ∫ x in x₁..x₂, F ((x : ℂ) + (m : ℂ) * Complex.I))
       atTop (𝓝 0) := by
-  rcases exists_phi2'_phi4'_bound_exp with ⟨Cφ, Aφ, _, hφbd⟩
+  obtain ⟨Cφ, Aφ, _, hφbd⟩ := exists_phi2'_phi4'_bound_exp
   obtain ⟨C₀, hC₀_pos, hC₀⟩ := MagicFunction.PolyFourierCoeffBound.norm_φ₀_le
   set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
   set a : ℝ := π * (u - 2)
@@ -166,8 +164,7 @@ private lemma tendsto_intervalIntegral_top_of_strip_bound {u : ℝ} (hu : 2 < u)
   have htend : Tendsto (fun m : ℝ => K * (m ^ (2 : ℕ) * Real.exp (-a * m))) atTop (𝓝 0) := by
     simpa [mul_zero] using tendsto_const_nhds.mul
       (tendsto_sq_mul_exp_neg_mul_atTop_nhds_zero a ha)
-  refine squeeze_zero_norm' (Filter.eventually_atTop.2 ⟨max 1 Aφ, ?_⟩) htend
-  intro m hm
+  refine squeeze_zero_norm' (Filter.eventually_atTop.2 ⟨max 1 Aφ, fun m hm => ?_⟩) htend
   have hm1 : (1 : ℝ) ≤ m := (le_max_left _ _).trans hm
   have hmA : Aφ ≤ m := (le_max_right _ _).trans hm
   refine (intervalIntegral.norm_integral_le_of_norm_le_const (a := x₁) (b := x₂)
@@ -235,11 +232,10 @@ lemma I₄'_eq_intervalIntegral_bottom (u : ℝ) :
         (1 : ℂ) - (t : ℂ) + (Complex.I : ℂ) := by
       simpa using MagicFunction.Parametrisations.z₄'_eq_of_mem (t := t) ht'
     simp [g, hz, sub_eq_add_neg]
-  rw [hrew]
-  have hcomp : (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t := by norm_num
-  calc ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t)
-      = -∫ t in (0 : ℝ)..1, g (1 - t) := by simp
-    _ = -∫ t in (0 : ℝ)..1, g t := by rw [hcomp]
+  calc ∫ t in (0 : ℝ)..1, (-1 : ℂ) * Φ₄' u (MagicFunction.Parametrisations.z₄' t)
+      = ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t) := hrew
+    _ = -∫ t in (0 : ℝ)..1, g t := by simp [show (∫ t in (0 : ℝ)..1, g (1 - t)) =
+          ∫ t in (0 : ℝ)..1, g t by norm_num]
     _ = ∫ t in (1 : ℝ)..0, g t := by
         simpa using (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm
 
@@ -279,11 +275,10 @@ lemma I₂'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
           ∫ t in Set.Ioi (1 : ℝ), Φ₂' u ((t : ℂ) * Complex.I)) := by
   have hint₁ : IntegrableOn (fun t : ℝ => Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I))
       (Set.Ioi (1 : ℝ)) volume := by
-    have hcongr : (fun t : ℝ => Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I)) =
+    simpa [show (fun t : ℝ => Φ₂' u ((-1 : ℂ) + (t : ℂ) * Complex.I)) =
         fun t : ℝ => Complex.exp (-(((π * u : ℝ) : ℂ) * Complex.I)) *
-          Φ₅' u ((t : ℂ) * Complex.I) := by
-      funext t; exact Φ₁'_shift_left (u := u) (t := t)
-    simpa [hcongr] using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul _
+          Φ₅' u ((t : ℂ) * Complex.I) from funext fun t => Φ₁'_shift_left (u := u) (t := t)]
+      using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul _
   have hbottom :
       (∫ x in (-1 : ℝ)..0, Φ₂' u ((x : ℂ) + (1 : ℂ) * Complex.I)) =
         (Complex.I : ℂ) •
@@ -305,11 +300,10 @@ lemma I₄'_eq_deform_imag_axis {u : ℝ} (hu : 2 < u) :
           ∫ t in Set.Ioi (1 : ℝ), Φ₄' u ((t : ℂ) * Complex.I)) := by
   have hint₁ : IntegrableOn (fun t : ℝ => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I))
       (Set.Ioi (1 : ℝ)) volume := by
-    have hcongr : (fun t : ℝ => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I)) =
+    simpa [show (fun t : ℝ => Φ₄' u ((1 : ℂ) + (t : ℂ) * Complex.I)) =
         fun t : ℝ => Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) *
-          Φ₅' u ((t : ℂ) * Complex.I) := by
-      funext t; exact Φ₃'_shift_right (u := u) (t := t)
-    simpa [hcongr] using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul _
+          Φ₅' u ((t : ℂ) * Complex.I) from funext fun t => Φ₃'_shift_right (u := u) (t := t)]
+      using (integrableOn_Φ₅'_imag_axis (u := u) hu).const_mul _
   have hbottom :
       (∫ x in (1 : ℝ)..0, Φ₄' u ((x : ℂ) + (1 : ℂ) * Complex.I)) =
         (Complex.I : ℂ) •
