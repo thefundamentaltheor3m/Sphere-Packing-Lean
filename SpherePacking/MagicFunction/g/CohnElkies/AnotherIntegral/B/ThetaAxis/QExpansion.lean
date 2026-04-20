@@ -239,12 +239,11 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
     refine congrArg Complex.exp ?_
     simp [τ, pow_two, div_eq_mul_inv, mul_assoc, mul_comm]; ring_nf
     simp [div_eq_mul_inv, mul_assoc, mul_comm]
-  have hrew :
-      Θ₂.resToImagAxis t
+  rw [show Θ₂.resToImagAxis t
           - (2 : ℂ) * (Real.exp (-Real.pi * t / 4) : ℂ)
           - (2 : ℂ) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t) : ℂ)
-        = (2 : ℂ) * ∑' n : ℕ, f (n + 2) := by
-    rw [← hf0, ← hf1, hTheta2_nat, ← hshift]; ring
+        = (2 : ℂ) * ∑' n : ℕ, f (n + 2) from by
+    rw [← hf0, ← hf1, hTheta2_nat, ← hshift]; ring]
   set r : ℝ := Real.exp (-Real.pi)
   have hr : r < 1 := by
     simpa [r, Real.exp_lt_one_iff] using (by nlinarith [Real.pi_pos] : (-Real.pi : ℝ) < 0)
@@ -272,7 +271,6 @@ public lemma exists_bound_norm_Theta2_resToImagAxis_sub_two_terms_Ici_one :
   have htail :
       ‖∑' n : ℕ, f (n + 2)‖ ≤ Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹) :=
     tsum_of_norm_bounded (hgeom.mul_left (Real.exp (-(25 / 4 : ℝ) * Real.pi * t))) hterm
-  rw [hrew]
   calc
     ‖(2 : ℂ) * ∑' n : ℕ, f (n + 2)‖ = (2 : ℝ) * ‖∑' n : ℕ, f (n + 2)‖ := by simp
     _ ≤ (2 : ℝ) * (Real.exp (-(25 / 4 : ℝ) * Real.pi * t) * ((1 - r)⁻¹)) := by gcongr

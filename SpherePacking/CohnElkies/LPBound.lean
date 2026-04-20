@@ -265,9 +265,7 @@ theorem calc_steps_part1 (hd : 0 < d) :
                 (𝓕 ⇑f ↑m).re * norm (∑' (x : ↑(P.centers ∩ D)),
                 cexp (2 * ↑π * I * ↑⟪(x : EuclideanSpace ℝ (Fin d)), ↑m⟫_[ℝ])) ^ 2)]
           congr 1; push_cast; congr! 3 with m
-          rw [mul_assoc]
-          refine congrArg _ ?_
-          rw [mul_conj, Complex.normSq_eq_norm_sq]; norm_cast
+          rw [mul_assoc, mul_conj, Complex.normSq_eq_norm_sq]; norm_cast
 
 include d f hP hne_zero hReal hRealFourier hCohnElkies₁ hCohnElkies₂ in
 omit hne_zero hReal hRealFourier hCohnElkies₁ hP [Nonempty ↑P.centers] in
@@ -373,12 +371,12 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     have hfouaux₁ : ((𝓕 f 0).re.toNNReal : ENNReal) ≠ 0 := by
       refine ENNReal.coe_ne_zero.mpr ?_
       rw [ne_eq, Real.toNNReal_eq_zero, not_le]
-      refine lt_of_le_of_ne (hCohnElkies₂ 0) fun heq => h𝓕f ?_
-      exact Complex.ext heq.symm (by simpa [eq_comm] using congrArg Complex.im (hRealFourier 0))
-    have hfouaux₂ : ((𝓕 (⇑f) 0).re.toNNReal : ENNReal) ≠ ⊤ := ENNReal.coe_ne_top
-    rw [← ENNReal.mul_le_mul_iff_left hfouaux₁ hfouaux₂,
+      exact lt_of_le_of_ne (hCohnElkies₂ 0) fun heq => h𝓕f <|
+        Complex.ext heq.symm (by simpa [eq_comm] using congrArg Complex.im (hRealFourier 0))
+    rw [← ENNReal.mul_le_mul_iff_left hfouaux₁ ENNReal.coe_ne_top,
         div_eq_mul_inv ((f 0).re.toNNReal : ENNReal) _,
-        mul_assoc ((f 0).re.toNNReal : ENNReal) _ _, ENNReal.inv_mul_cancel hfouaux₁ hfouaux₂,
+        mul_assoc ((f 0).re.toNNReal : ENNReal) _ _,
+        ENNReal.inv_mul_cancel hfouaux₁ ENNReal.coe_ne_top,
         mul_one, mul_assoc, ← ENNReal.div_eq_inv_mul]
     have hnRaux₁ : ENat.toENNReal (P.numReps : ENat) ≠ 0 := by
       rw [ENat.toENNReal_coe, ne_eq, Nat.cast_eq_zero]
