@@ -149,10 +149,6 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
       have : (1 : ℝ) ≤ dist x y := by
         simpa [hSsep] using S.centers_dist' x y (hs_centers x hx) (hs_centers y hy) hxy
       dsimp [r]; linarith)
-  have hunion : volume (⋃ x ∈ s, ball x r) =
-      (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) r) := by
-    simpa [Measure.addHaar_ball_center, mul_comm, mul_assoc] using
-      measure_biUnion_finset (μ := volume) hdisj (fun x _ => measurableSet_ball)
   have hsub : (⋃ x ∈ s, ball x r) ⊆
       g +ᵥ (((constVec d (- (1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
             coordCubeInner d L 1) := by
@@ -162,19 +158,22 @@ lemma card_mul_volume_ball_le_volume_outer_diff_inner {L : ℝ} (hL : 0 < L)
     have hxB := hs_boundary x hxS
     set x0 : EuclideanSpace ℝ (Fin d) := (-(g : EuclideanSpace ℝ (Fin d))) +ᵥ x
     set y0 : EuclideanSpace ℝ (Fin d) := (-(g : EuclideanSpace ℝ (Fin d))) +ᵥ y
-    have hy0' : y0 ∈ (coordCube d L \ coordCubeInner d L (1 / 2)) +
-        ball (0 : EuclideanSpace ℝ (Fin d)) r :=
-      ⟨x0, ⟨by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using hxB.1,
-        fun h => hxB.2 (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using h)⟩,
-        y0 - x0,
-        by simpa [Metric.mem_ball, dist_eq_norm, Metric.vadd_ball, x0, y0] using hyBall,
-        by simp [sub_eq_add_neg, add_left_comm]⟩
     simpa [Set.mem_vadd_set_iff_neg_vadd_mem, y0] using
       coordCube_boundary_half_add_ball_subset_outer_diff_inner (d := d) L
-        (by simpa [r] using hy0')
+        (by simpa [r] using (show y0 ∈ (coordCube d L \ coordCubeInner d L (1 / 2)) +
+            ball (0 : EuclideanSpace ℝ (Fin d)) r from
+          ⟨x0, ⟨by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using hxB.1,
+            fun h => hxB.2 (by simpa [Set.mem_vadd_set_iff_neg_vadd_mem, x0] using h)⟩,
+            y0 - x0,
+            by simpa [Metric.mem_ball, dist_eq_norm, Metric.vadd_ball, x0, y0] using hyBall,
+            by simp [sub_eq_add_neg, add_left_comm]⟩))
   calc (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (2⁻¹ : ℝ))
       = volume (⋃ x ∈ s, ball x r) := by
-        rw [show (2⁻¹ : ℝ) = r from by norm_num, hunion]
+        rw [show (2⁻¹ : ℝ) = r from by norm_num,
+          show volume (⋃ x ∈ s, ball x r) =
+            (s.card : ℝ≥0∞) * volume (ball (0 : EuclideanSpace ℝ (Fin d)) r) by
+          simpa [Measure.addHaar_ball_center, mul_comm, mul_assoc] using
+            measure_biUnion_finset (μ := volume) hdisj (fun x _ => measurableSet_ball)]
     _ ≤ volume (g +ᵥ (((constVec d (-(1 / 2 : ℝ))) +ᵥ coordCubeInner d (L + 1) 0) \
           coordCubeInner d L 1)) := volume.mono hsub
     _ = _ := by simp [measure_vadd]
