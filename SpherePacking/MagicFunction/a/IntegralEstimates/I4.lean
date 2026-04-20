@@ -154,8 +154,6 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
         (fun _ hx => mem_Icc_of_Ioo hx)
     refine hΦ.congr fun t ht => ?_
     have hz : z₄' t = (1 : ℂ) - t + I := z₄'_eq_of_mem (mem_Icc_of_Ioo ht)
-    have hz_sub : z₄' t - 1 = (-t : ℂ) + I := by
-      simp [hz, sub_eq_add_neg, add_assoc, add_comm]
     have hz_coeff : (π * I : ℂ) * (z₄' t : ℂ) = coeff t := by
       simp [coeff, I24Common.coeff, hz, sub_eq_add_neg, mul_add, mul_assoc,
         add_left_comm, add_comm]
@@ -165,7 +163,8 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
       simpa [mul_assoc, show (r : ℂ) * coeff t = (π * I * r : ℂ) * (z₄' t : ℂ) by
         rw [← hz_coeff]; ring] using (exp_r_mul_coeff (r := r) (t := t))
     simp [MagicFunction.a.RealIntegrands.Φ₄, MagicFunction.a.ComplexIntegrands.Φ₄',
-      MagicFunction.a.ComplexIntegrands.Φ₃', g, hz_sub, hexp']
+      MagicFunction.a.ComplexIntegrands.Φ₃', g,
+      show z₄' t - 1 = (-t : ℂ) + I by simp [hz, sub_eq_add_neg, add_assoc, add_comm], hexp']
     ac_rfl
   let A : ℝ → ℂ := fun t : ℝ => (-1 : ℂ) * φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2
   have hg_repr : ∀ r t, g r t = A t * cexp ((r : ℂ) * coeff t) := fun r t => by

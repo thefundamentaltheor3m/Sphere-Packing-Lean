@@ -153,17 +153,16 @@ lemma iteratedDeriv_I₂'_eq_integral_gN (n : ℕ) :
         fun _ hx => mem_Icc_of_Ioo hx
     refine hΦ.congr fun t ht => ?_
     have hz : z₂' t = (-1 : ℂ) + t + I := z₂'_eq_of_mem (mem_Icc_of_Ioo ht)
-    have hz_add : z₂' t + 1 = t + I := by simp [hz, add_left_comm, add_comm]
     have hexp' :
         cexp (π * I * r * (z₂' t : ℂ)) =
           cexp (-π * I * r) * cexp (π * I * r * t) * cexp (-π * r : ℂ) := by
-      rw [show π * I * r * (z₂' t : ℂ) = (π : ℂ) * I * (r : ℂ) * (z₂' t : ℂ) from by ring,
-        show (π : ℂ) * I * (r : ℂ) * (z₂' t : ℂ) =
-          (-π * I * r : ℂ) + (π * I * r * t : ℂ) + (-π * r : ℂ) by
+      rw [show π * I * r * (z₂' t : ℂ) =
+          (-π * I * r : ℂ) + (π * I * r * t : ℂ) + (-π * r : ℂ) from by
             rw [hz]; ring_nf; rw [I_sq]; ring,
         Complex.exp_add, Complex.exp_add]
     simp [MagicFunction.a.RealIntegrands.Φ₂, MagicFunction.a.ComplexIntegrands.Φ₂',
-      MagicFunction.a.ComplexIntegrands.Φ₁', g, hz_add, hexp']
+      MagicFunction.a.ComplexIntegrands.Φ₁', g,
+      show z₂' t + 1 = t + I by simp [hz, add_left_comm, add_comm], hexp']
     ac_rfl
   let A : ℝ → ℂ := fun t : ℝ => φ₀'' (-1 / (t + I)) * (t + I) ^ 2
   have hg_repr : ∀ r t, g r t = A t * cexp ((r : ℂ) * coeff t) := fun r t => by
