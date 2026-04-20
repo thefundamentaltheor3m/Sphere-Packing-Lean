@@ -54,8 +54,7 @@ private lemma arg_z₄'_im_eq (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     im_neg_one_div_neg_ofReal_add_I (t := t)
 
 private lemma arg_z₄'_im_pos (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
-    0 < (arg z₄' (-1 : ℂ) t).im := by
-  rw [arg_z₄'_im_eq t ht]; positivity
+    0 < (arg z₄' (-1 : ℂ) t).im := by rw [arg_z₄'_im_eq t ht]; positivity
 
 private lemma arg_z₄'_im_half (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     (1 / 2 : ℝ) < (arg z₄' (-1 : ℂ) t).im := by
@@ -63,8 +62,7 @@ private lemma arg_z₄'_im_half (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht
 
 private lemma den_z₄'_ne_zero (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
-    z₄' t + (-1 : ℂ) ≠ 0 := by
-  intro h0
+    z₄' t + (-1 : ℂ) ≠ 0 := fun h0 => by
   simpa [z₄'_eq_of_mem (t := t) (mem_Icc_of_Ioo ht), sub_eq_add_neg,
     add_left_comm, add_comm, add_assoc] using congrArg Complex.im h0
 
