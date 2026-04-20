@@ -31,17 +31,13 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
     le_mul_of_le_mul_of_nonneg_right (hH2 t ht) (le_max_left _ _) (by positivity)
   -- `H₃` and `H₄` converge to `1` along the imaginary axis, so their norms are bounded above
   -- and below away from `0` on `t ≥ 1` by compactness on an initial segment.
-  have htendH3 : Tendsto (fun t : ℝ => H₃.resToImagAxis t) atTop (𝓝 (1 : ℂ)) := by
-    simpa using
-      (Function.tendsto_resToImagAxis_atImInfty (F := H₃) (l := (1 : ℂ)) H₃_tendsto_atImInfty)
-  have htendH4 : Tendsto (fun t : ℝ => H₄.resToImagAxis t) atTop (𝓝 (1 : ℂ)) := by
-    simpa using
-      (Function.tendsto_resToImagAxis_atImInfty (F := H₄) (l := (1 : ℂ)) H₄_tendsto_atImInfty)
-  have hEvH3 : ∀ᶠ t in atTop, ‖H₃.resToImagAxis t - (1 : ℂ)‖ ≤ (1 / 2 : ℝ) :=
-    (tendsto_sub_nhds_zero_iff.mpr htendH3).norm.eventually (Iic_mem_nhds (by norm_num))
-  have hEvH4 : ∀ᶠ t in atTop, ‖H₄.resToImagAxis t - (1 : ℂ)‖ ≤ (1 / 2 : ℝ) :=
-    (tendsto_sub_nhds_zero_iff.mpr htendH4).norm.eventually (Iic_mem_nhds (by norm_num))
-  rcases (eventually_atTop.1 (hEvH3.and hEvH4)) with ⟨T0, hT0⟩
+  have hEv (H : ℍ → ℂ) (hH : Tendsto (fun z : ℍ => H z) atImInfty (𝓝 (1 : ℂ))) :
+      ∀ᶠ t in atTop, ‖H.resToImagAxis t - (1 : ℂ)‖ ≤ (1 / 2 : ℝ) :=
+    (tendsto_sub_nhds_zero_iff.mpr (by simpa using
+        (Function.tendsto_resToImagAxis_atImInfty (F := H) (l := (1 : ℂ)) hH))).norm.eventually
+      (Iic_mem_nhds (by norm_num))
+  rcases (eventually_atTop.1 ((hEv H₃ H₃_tendsto_atImInfty).and
+    (hEv H₄ H₄_tendsto_atImInfty))) with ⟨T0, hT0⟩
   let T : ℝ := max T0 1
   have hT1 : 1 ≤ T := le_max_right _ _
   -- Nonvanishing on the imaginary axis.
@@ -49,46 +45,33 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
       ∀ t : ℝ, 1 ≤ t → H.resToImagAxis t ≠ (0 : ℂ) := by
     intro t ht
     have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
-    let z : ℍ := ⟨Complex.I * t, by simp [ht0]⟩
-    simpa [Function.resToImagAxis, ResToImagAxis, ht0, z] using hne z
-  have hH3_ne := hH_ne H₃ H₃_ne_zero
-  have hH4_ne := hH_ne H₄ H₄_ne_zero
-  -- Continuity of the norm on the compact interval `[1,T]`.
-  have hI : Continuous fun t : Icc 1 T => (Complex.I : ℂ) * (t : ℝ) :=
-    continuous_const.mul (Complex.continuous_ofReal.comp continuous_subtype_val)
+    simpa [Function.resToImagAxis, ResToImagAxis, ht0] using hne ⟨Complex.I * t, by simp [ht0]⟩
   let φ : Icc 1 T → ℍ :=
     fun t =>
       ⟨(Complex.I : ℂ) * (t : ℝ), by
         have : (0 : ℝ) < (t : ℝ) := lt_of_lt_of_le (by norm_num) t.2.1
         simp [this]⟩
-  have hφ : Continuous φ := by
-    fun_prop
+  have hφ : Continuous φ := by fun_prop
   have hcont_norm_resToImagAxis (H : ℍ → ℂ) (hH : Continuous H) :
       ContinuousOn (fun t : ℝ => ‖ResToImagAxis H t‖) (Icc 1 T) := by
     refine (continuousOn_iff_continuous_restrict).2 ?_
-    have hcomp : Continuous fun t : Icc 1 T => H (φ t) := hH.comp hφ
-    have hcomp' : Continuous fun t : Icc 1 T => ‖H (φ t)‖ := hcomp.norm
     have hEq :
         ((Icc 1 T).restrict fun t : ℝ => ‖ResToImagAxis H t‖) =
           fun t : Icc 1 T => ‖H (φ t)‖ := by
       funext t
       have ht0 : (0 : ℝ) < (t : ℝ) := lt_of_lt_of_le (by norm_num) t.2.1
       simp [Set.restrict, ResToImagAxis, ht0, φ]
-    simpa [hEq] using hcomp'
+    simpa [hEq] using (hH.comp hφ).norm
   have hcontH3 : ContinuousOn (fun t : ℝ => ‖ResToImagAxis H₃ t‖) (Icc 1 T) :=
     hcont_norm_resToImagAxis H₃ mdifferentiable_H₃.continuous
   have hcontH4 : ContinuousOn (fun t : ℝ => ‖ResToImagAxis H₄ t‖) (Icc 1 T) :=
     hcont_norm_resToImagAxis H₄ mdifferentiable_H₄.continuous
-  have hpos3 : ∀ t ∈ Icc (1 : ℝ) T, 0 < ‖H₃.resToImagAxis t‖ :=
-    fun t ht => norm_pos_iff.2 (hH3_ne t ht.1)
-  have hpos4 : ∀ t ∈ Icc (1 : ℝ) T, 0 < ‖H₄.resToImagAxis t‖ :=
-    fun t ht => norm_pos_iff.2 (hH4_ne t ht.1)
   rcases SpherePacking.ForMathlib.exists_lower_bound_pos_on_Icc (g := fun t ↦ ‖H₃.resToImagAxis t‖)
       (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using hcontH3)
-      (hpos := hpos3) with ⟨m3, hm3, hm3le⟩
+      (hpos := fun t ht => norm_pos_iff.2 (hH_ne H₃ H₃_ne_zero t ht.1)) with ⟨m3, hm3, hm3le⟩
   rcases SpherePacking.ForMathlib.exists_lower_bound_pos_on_Icc (g := fun t ↦ ‖H₄.resToImagAxis t‖)
       (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using hcontH4)
-      (hpos := hpos4) with ⟨m4, hm4, hm4le⟩
+      (hpos := fun t ht => norm_pos_iff.2 (hH_ne H₄ H₄_ne_zero t ht.1)) with ⟨m4, hm4, hm4le⟩
   rcases SpherePacking.ForMathlib.exists_upper_bound_on_Icc (g := fun t : ℝ => ‖H₄.resToImagAxis t‖)
       (hab := hT1) (hg := by simpa [Function.resToImagAxis_eq_resToImagAxis] using hcontH4)
       with ⟨M4Icc, hM4Icc⟩
@@ -136,11 +119,9 @@ public theorem exists_bound_norm_ψS_resToImagAxis_exp_Ici_one :
   intro t ht
   have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
   have hH2t : ‖H₂.resToImagAxis t‖ ≤ CH2' * rexp (-π * t) := hH2' t ht
-  have hH2le : ‖H₂.resToImagAxis t‖ ≤ CH2' := by
-    have hexp : rexp (-π * t) ≤ 1 := by
-      rw [Real.exp_le_one_iff]; nlinarith [Real.pi_pos, ht0.le]
-    calc ‖H₂.resToImagAxis t‖ ≤ CH2' * rexp (-π * t) := hH2t
-      _ ≤ CH2' := by simpa using mul_le_mul_of_nonneg_left hexp hCH2'
+  have hH2le : ‖H₂.resToImagAxis t‖ ≤ CH2' := hH2t.trans <| by
+    simpa using mul_le_mul_of_nonneg_left
+      (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le])) hCH2'
   have hH4le : ‖H₄.resToImagAxis t‖ ≤ M4 := hH4_upper t ht
   have hpoly :
       ‖(2 : ℂ) * (H₂.resToImagAxis t) ^ 2
