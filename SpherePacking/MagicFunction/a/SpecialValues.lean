@@ -77,9 +77,8 @@ public theorem φ₀_finite_difference (z : ℍ) :
       = 2 * φ₀ z := by
   rw [φ₀_S_transform_mul_sq ((1 : ℝ) +ᵥ z), φ₀_S_transform_mul_sq z,
     φ₀_S_transform_mul_sq ((-1 : ℝ) +ᵥ z)]
-  simp [φ₀_periodic, φ₂'_periodic, φ₄'_periodic,
-    φ₀_periodic_neg_one, φ₂'_periodic_neg_one, φ₄'_periodic_neg_one, pow_two]
-  ring_nf
+  simp [φ₀_periodic, φ₂'_periodic, φ₄'_periodic, φ₀_periodic_neg_one, φ₂'_periodic_neg_one,
+    φ₄'_periodic_neg_one, pow_two]; ring_nf
 
 /-! ## Evaluating `a(0)` via the strip contour. -/
 
@@ -96,7 +95,6 @@ def F (z : ℂ) : ℂ := φ₀'' (-1 / z) * z ^ (2 : ℕ)
 
 lemma I₂'_zero :
     I₂' (0 : ℝ) = ∫ x in (0 : ℝ)..1, F (zI x) := by
-  -- `I₂' 0` is the horizontal segment integral from `-1+i` to `i`.
   simp [F, zI, MagicFunction.a.RadialFunctions.I₂'_eq]
 
 private lemma integral_neg_x_add_I_eq_integral_F_zI_sub_one :
@@ -168,8 +166,7 @@ lemma I₂'_zero_add_I₄'_zero :
     I₂' (0 : ℝ) + I₄' 0 =
       ∫ x in (0 : ℝ)..1, (F (zI x) - F (zI x - 1)) ∂MeasureTheory.volume := fun hF hG => by
   simpa [I₂'_zero, I₄'_zero, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
-    (intervalIntegral.integral_sub (μ := MeasureTheory.volume) (a := (0 : ℝ)) (b := (1 : ℝ))
-        (f := fun x : ℝ => F (zI x)) (g := fun x : ℝ => F (zI x - 1)) hF hG).symm
+    (intervalIntegral.integral_sub (μ := MeasureTheory.volume) hF hG).symm
 
 lemma I₂'_zero_add_I₄'_zero_eq_integral_phi0_phi2 :
     IntervalIntegrable (fun x : ℝ => F (zI x)) MeasureTheory.volume (0 : ℝ) 1 →
@@ -196,12 +193,9 @@ private lemma norm_two_z_sub_one_le_two_im_add_one {z : ℂ}
     (hz0 : 0 ≤ z.re) (hz1 : z.re ≤ 1) (hzIm : 0 ≤ z.im) :
     ‖(2 : ℂ) * z - 1‖ ≤ 2 * z.im + 1 := by
   have hRe : |2 * z.re - 1| ≤ 1 := abs_le.2 ⟨by linarith, by linarith⟩
-  calc ‖(2 : ℂ) * z - 1‖
-      ≤ |((2 : ℂ) * z - 1).re| + |((2 : ℂ) * z - 1).im| := Complex.norm_le_abs_re_add_abs_im _
-    _ = |2 * z.re - 1| + |2 * z.im| := by simp
-    _ ≤ 1 + 2 * z.im := by
-          rw [abs_of_nonneg (by positivity : (0 : ℝ) ≤ 2 * z.im)]; linarith
-    _ = 2 * z.im + 1 := by ring
+  refine (Complex.norm_le_abs_re_add_abs_im _).trans ?_
+  rw [show ((2:ℂ) * z - 1).re = 2 * z.re - 1 by simp, show ((2:ℂ) * z - 1).im = 2 * z.im by simp,
+    abs_of_nonneg (by positivity : (0:ℝ) ≤ 2 * z.im)]; linarith
 
 lemma f0_norm_bound_on_strip :
     ∃ C₀ > 0, ∀ {z : ℂ}, 1 ≤ z.im → 0 ≤ z.re → z.re ≤ 1 →
@@ -233,29 +227,27 @@ lemma f0_vertical_diff (y : ℝ) (hy : 0 < y) :
     f0 ((1 : ℂ) + (y : ℂ) * Complex.I) - f0 ((y : ℂ) * Complex.I) =
       (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I) := by
   have hper : φ₀'' ((1 : ℂ) + (y : ℂ) * Complex.I) = φ₀'' ((y : ℂ) * Complex.I) := by
-    simpa [add_assoc, add_comm, add_left_comm] using φ₀''_add_one
-      (z := (y : ℂ) * Complex.I) (by simpa [mul_assoc] using hy)
+    simpa [add_assoc, add_comm, add_left_comm] using
+      φ₀''_add_one ((y : ℂ) * Complex.I) (by simpa [mul_assoc] using hy)
   simp [f0, hper]; ring
 
 private lemma strip_uIcc_subset {m : ℝ} (hm : 1 ≤ m) :
-    (Set.uIcc (0 : ℝ) 1 ×ℂ Set.uIcc (1 : ℝ) m) ⊆ {z : ℂ | 0 < z.im} :=
-  fun _ hz => lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1)
-    (Set.uIcc_of_le hm ▸ (mem_reProdIm.1 hz).2).1
+    (Set.uIcc (0 : ℝ) 1 ×ℂ Set.uIcc (1 : ℝ) m) ⊆ {z : ℂ | 0 < z.im} := fun _ hz =>
+  lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) (Set.uIcc_of_le hm ▸ (mem_reProdIm.1 hz).2).1
 
 private lemma strip_Ioo_subset {m : ℝ} :
     (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioo (1 : ℝ) m) ⊆ {z : ℂ | 0 < z.im} :=
-  fun z hz => lt_trans (by norm_num) (mem_reProdIm.1 hz).2.1
+  fun _ hz => lt_trans (by norm_num) (mem_reProdIm.1 hz).2.1
 
 lemma rect_f0 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) -
         (∫ x : ℝ in (0 : ℝ)..1, f0 (x + m * Complex.I)) +
         Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((1 : ℝ) + y * Complex.I)) -
           Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I)) = 0 := by
-  simpa using
-    (Complex.integral_boundary_rect_eq_zero_of_continuousOn_of_differentiableOn
-      (f := f0) (z := (Complex.I : ℂ)) (w := (1 : ℂ) + m * Complex.I)
-      (Hc := by simpa using f0_continuousOn.mono (strip_uIcc_subset hm))
-      (Hd := by simpa [hm] using f0_differentiableOn.mono strip_Ioo_subset))
+  simpa using Complex.integral_boundary_rect_eq_zero_of_continuousOn_of_differentiableOn
+    (f := f0) (z := (Complex.I : ℂ)) (w := (1 : ℂ) + m * Complex.I)
+    (Hc := by simpa using f0_continuousOn.mono (strip_uIcc_subset hm))
+    (Hd := by simpa [hm] using f0_differentiableOn.mono strip_Ioo_subset)
 
 private lemma norm_phi0_imag_le {C₀ : ℝ}
     (hC₀ : ∀ z : ℍ, (1/2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
@@ -270,12 +262,11 @@ private lemma norm_phi0_imag_le {C₀ : ℝ}
 private lemma integrable_const_mul_exp_on_Ioi (C₀ : ℝ) :
     MeasureTheory.Integrable (fun t : ℝ => C₀ * Real.exp (-2 * π * t))
       (MeasureTheory.volume.restrict (Set.Ioi (1 : ℝ))) := by
-  simpa [MeasureTheory.IntegrableOn] using
-    (show MeasureTheory.IntegrableOn (fun t : ℝ => Real.exp (-2 * π * t)) (Set.Ioi (1 : ℝ))
-      MeasureTheory.volume by
-        simpa [mul_assoc] using
-          exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := (2 * Real.pi)) (by positivity)
-      ).integrable.const_mul C₀
+  have : MeasureTheory.IntegrableOn (fun t : ℝ => Real.exp (-2 * π * t)) (Set.Ioi (1 : ℝ))
+      MeasureTheory.volume := by
+    simpa [mul_assoc] using
+      exp_neg_integrableOn_Ioi (a := (1 : ℝ)) (b := (2 * Real.pi)) (by positivity)
+  simpa [MeasureTheory.IntegrableOn] using this.integrable.const_mul C₀
 
 private lemma aestronglyMeasurable_phi0_imag :
     MeasureTheory.AEStronglyMeasurable (fun t : ℝ => φ₀'' ((t : ℂ) * Complex.I))
@@ -308,7 +299,7 @@ private lemma norm_integral_f0_strip_le {C₀ : ℝ}
         C₀ * (2 * m + 1) * Real.exp (-2 * Real.pi * m) := by
   filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with m hm
   simpa using intervalIntegral.norm_integral_le_of_norm_le_const
-    (a := (0 : ℝ)) (b := (1 : ℝ)) (f := fun x : ℝ => f0 (x + m * Complex.I)) fun x hx => by
+    (a := (0 : ℝ)) (b := (1 : ℝ)) fun x hx => by
       simpa using hC₀ (z := (x + m * Complex.I : ℂ)) (by simpa using hm)
         (by simpa using le_of_lt (by simpa using hx.1)) (by simpa using hx.2)
 
@@ -321,8 +312,8 @@ private lemma tendsto_two_m_plus_one_mul_exp_decay (C₀ : ℝ) :
   have hu : Tendsto (fun m : ℝ => (2 * Real.pi) * m) atTop atTop :=
     tendsto_id.const_mul_atTop (by positivity)
   have hexp : Tendsto (fun m : ℝ => Real.exp (-(2 * Real.pi) * m)) atTop (𝓝 (0 : ℝ)) := by simpa
-  have hmain :
-      Tendsto (fun m : ℝ => (2 * m + 1) * Real.exp (-2 * Real.pi * m)) atTop (𝓝 (0 : ℝ)) := by
+  have hmain : Tendsto (fun m : ℝ => (2 * m + 1) * Real.exp (-2 * Real.pi * m))
+      atTop (𝓝 (0 : ℝ)) := by
     have := (hmul.const_mul 2).add hexp
     simp only [mul_zero, add_zero] at this
     exact this.congr' (Eventually.of_forall fun m => by ring_nf)
@@ -354,9 +345,8 @@ lemma strip_identity_f0 (m : ℝ) (hm : 1 ≤ m) :
     (∫ x : ℝ in (0 : ℝ)..1, f0 (x + (1 : ℝ) * Complex.I)) +
         Complex.I • (∫ y : ℝ in (1 : ℝ)..m, (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)) =
       ∫ x : ℝ in (0 : ℝ)..1, f0 (x + m * Complex.I) := by
-  have hVertTerm :
-      Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((1 : ℝ) + y * Complex.I)) -
-          Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I)) =
+  have hVertTerm : Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((1 : ℝ) + y * Complex.I)) -
+      Complex.I • (∫ y : ℝ in (1 : ℝ)..m, f0 ((0 : ℝ) + y * Complex.I)) =
         Complex.I • (∫ y : ℝ in (1 : ℝ)..m, (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)) := by
     rw [← smul_sub, integral_f0_vertical_diff_eq hm]
   linear_combination rect_f0 m hm - hVertTerm
@@ -365,9 +355,8 @@ private lemma I6_zero_eq_I_smul_integral :
     I₆' (0 : ℝ) =
       Complex.I • (∫ y in Set.Ioi (1 : ℝ), (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)
         ∂MeasureTheory.volume) := by
-  rw [show I₆' (0 : ℝ) =
-        2 * ∫ t in Set.Ici (1 : ℝ), (Complex.I : ℂ) * φ₀'' ((t : ℂ) * Complex.I)
-          ∂MeasureTheory.volume by
+  rw [show I₆' (0 : ℝ) = 2 * ∫ t in Set.Ici (1 : ℝ),
+      (Complex.I : ℂ) * φ₀'' ((t : ℂ) * Complex.I) ∂MeasureTheory.volume from by
     simp [MagicFunction.a.RadialFunctions.I₆'_eq (r := (0 : ℝ)), mul_comm],
     MeasureTheory.integral_Ici_eq_integral_Ioi]
   simp only [smul_eq_mul, MeasureTheory.integral_const_mul]; ring
@@ -379,11 +368,10 @@ lemma integral_f0_height_one_eq_neg_I6 :
   have hVert := MeasureTheory.intervalIntegral_tendsto_integral_Ioi (μ := MeasureTheory.volume)
     (f := fun y : ℝ => (2 : ℂ) * φ₀'' ((y : ℂ) * Complex.I)) (a := (1 : ℝ))
     (hfi := integrableOn_two_mul_phi0_imag) (hb := tendsto_id)
-  have hA0 : bottom + Complex.I • J = 0 :=
-    tendsto_nhds_unique
-      ((tendsto_const_nhds.add (tendsto_const_nhds.smul hVert)).congr' <| by
-        filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with m hm using strip_identity_f0 m hm)
-      tendsto_top_f0
+  have hA0 : bottom + Complex.I • J = 0 := tendsto_nhds_unique
+    ((tendsto_const_nhds.add (tendsto_const_nhds.smul hVert)).congr' <| by
+      filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with m hm using strip_identity_f0 m hm)
+    tendsto_top_f0
   rw [I6_zero_eq_I_smul_integral]; linear_combination hA0
 
 /-! ### Evaluating the remaining `φ₂''` term. -/
@@ -422,17 +410,15 @@ lemma strip_identity_phi2 (m : ℝ) (hm : 1 ≤ m) :
 
 lemma summable_coeff_A_over_q :
     Summable (fun n : ℕ =>
-      ‖(((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))‖ * Real.exp (-2 * Real.pi * n)) := by
-  refine
-    SpherePacking.ForMathlib.summable_norm_mul_sigma_shift_mul_exp (k := 3) (m := 4) (s := 1) ?_
-  intro n
-  exact_mod_cast (SpherePacking.ForMathlib.sigma_three_le_pow_four (n + 1))
+      ‖(((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))‖ * Real.exp (-2 * Real.pi * n)) :=
+  SpherePacking.ForMathlib.summable_norm_mul_sigma_shift_mul_exp (k := 3) (m := 4) (s := 1)
+    fun n => by exact_mod_cast SpherePacking.ForMathlib.sigma_three_le_pow_four (n + 1)
 
 private lemma cexp_pnat_succ_factor (z : ℂ) (n : ℕ) :
     cexp (2 * π * Complex.I * z * ((n + 1 : ℕ) : ℂ)) =
       cexp (2 * π * Complex.I * z) * cexp (2 * π * Complex.I * z * (n : ℂ)) := by
-  rw [show ((n + 1 : ℕ) : ℂ) = (n : ℂ) + 1 by push_cast; ring, mul_add, mul_one, Complex.exp_add]
-  ring
+  rw [show ((n + 1 : ℕ) : ℂ) = (n : ℂ) + 1 by push_cast; ring,
+    mul_add, mul_one, Complex.exp_add]; ring
 
 private lemma tsum_pnat_div_q_eq_nat_tsum (z : ℍ) (a : ℕ → ℂ)
     (hrel : ∀ n : ℕ, a n = (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))) :
@@ -470,11 +456,8 @@ lemma tendsto_A_div_q :
   let a : ℕ → ℂ := fun n => (((n + 1 : ℕ) : ℂ) * (σ 3 (n + 1) : ℂ))
   have ha : Summable (fun n : ℕ => ‖a n‖ * Real.exp (-2 * Real.pi * n)) := by
     simpa [a] using summable_coeff_A_over_q
-  have hseries'' :
-      Tendsto (fun z : ℍ => (720 : ℂ) * ∑' n : ℕ, a n * cexp (2 * π * Complex.I * z * n))
-        atImInfty (𝓝 (720 : ℂ)) := by
-    simpa [a] using (tendsto_const_nhds.mul (QExp.tendsto_nat (a := a) (ha := ha)))
-  exact (tendsto_congr (fun z => A_div_q_eq_nat_tsum z a (fun _ => rfl))).mpr hseries''
+  refine (tendsto_congr fun z => A_div_q_eq_nat_tsum z a fun _ => rfl).mpr ?_
+  simpa [a] using tendsto_const_nhds.mul (QExp.tendsto_nat (a := a) (ha := ha))
 
 private lemma tendsto_Delta_div_q :
     Tendsto (fun z : ℍ => (Δ z) / cexp (2 * π * Complex.I * z)) atImInfty (𝓝 (1 : ℂ)) := by
@@ -515,10 +498,8 @@ private lemma intervalIntegrable_phi2_strip {m : ℝ} (hm : 0 < m) :
 private lemma integral_phi2_sub_720 {m : ℝ} (hm : 0 < m) :
     (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) - (720 : ℂ) =
       ∫ x : ℝ in (0 : ℝ)..1, (φ₂'' (x + m * Complex.I) - (720 : ℂ)) := by
-  simpa using
-    (intervalIntegral.integral_sub (μ := MeasureTheory.volume) (a := (0 : ℝ)) (b := (1 : ℝ))
-      (f := fun x : ℝ => φ₂'' (x + m * Complex.I)) (g := fun _x : ℝ => (720 : ℂ))
-      (intervalIntegrable_phi2_strip hm) intervalIntegrable_const).symm
+  simpa using (intervalIntegral.integral_sub (μ := MeasureTheory.volume)
+    (intervalIntegrable_phi2_strip hm) (intervalIntegrable_const (c := (720 : ℂ)))).symm
 
 lemma tendsto_top_phi2 :
     Tendsto (fun m : ℝ => ∫ x : ℝ in (0 : ℝ)..1, φ₂'' (x + m * Complex.I)) atTop (𝓝 (720 : ℂ)) := by
@@ -549,29 +530,27 @@ private lemma intervalIntegrable_F_comp
   have hinv : ContinuousOn (fun z : ℂ => (-1 : ℂ) / z) ({0}ᶜ) := by
     convert (continuousOn_const.mul (continuousOn_inv₀ (G₀ := ℂ)) :
       ContinuousOn ((fun _ : ℂ => (-1 : ℂ)) * (Inv.inv : ℂ → ℂ)) ({0}ᶜ)) using 1
-  have hφcomp : ContinuousOn (fun x : ℝ => φ₀'' ((-1 : ℂ) / (w x))) (Set.uIcc (0 : ℝ) 1) :=
-    MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn.comp (hinv.comp hw hwne)
-      (fun x _ => by simpa [div_eq_mul_inv] using UpperHalfPlane.im_inv_neg_coe_pos ⟨w x, hwim x⟩)
-  simpa [F] using (hφcomp.mul (by simpa using hw.pow 2)).intervalIntegrable
+  simpa [F] using ((MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn.comp
+    (hinv.comp hw hwne) fun x _ => by
+      simpa [div_eq_mul_inv] using UpperHalfPlane.im_inv_neg_coe_pos ⟨w x, hwim x⟩).mul
+    (by simpa using hw.pow 2)).intervalIntegrable
 
 private lemma intervalIntegrable_comp_zI {g : ℂ → ℂ} (hg : ContinuousOn g {z : ℂ | 0 < z.im}) :
     IntervalIntegrable (fun x : ℝ => g (zI x)) MeasureTheory.volume (0 : ℝ) 1 := by
-  have hx : ContinuousOn (fun x : ℝ => (zI x : ℂ)) (Set.uIcc (0 : ℝ) 1) :=
-    (continuous_ofReal.add continuous_const).continuousOn
-  simpa using (hg.comp hx (fun x hx => by simp [zI])).intervalIntegrable
+  simpa using (hg.comp (continuous_ofReal.add continuous_const).continuousOn
+    fun x _ => by simp).intervalIntegrable
 
 private lemma intervalIntegrable_F_zI :
     IntervalIntegrable (fun x : ℝ => F (zI x)) MeasureTheory.volume (0 : ℝ) 1 := by
-  simpa [zI] using
-    intervalIntegrable_F_comp (w := fun x : ℝ => zI x)
-      ((continuous_ofReal.add continuous_const).continuousOn) (by intro x; simp [zI])
+  simpa [zI] using intervalIntegrable_F_comp (fun x : ℝ => zI x)
+    (continuous_ofReal.add continuous_const).continuousOn fun x => by simp [zI]
 
 private lemma intervalIntegrable_F_zI_sub_one :
     IntervalIntegrable (fun x : ℝ => F (zI x - 1)) MeasureTheory.volume (0 : ℝ) 1 := by
   simpa [zI, sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using
-    intervalIntegrable_F_comp (w := fun x : ℝ => zI x - 1)
+    intervalIntegrable_F_comp (fun x : ℝ => zI x - 1)
       ((continuous_ofReal.add continuous_const).sub continuous_const).continuousOn
-      (by intro x; simp [zI])
+      fun x => by simp [zI]
 
 private lemma hI246_eq :
     I₂' (0 : ℝ) + I₄' 0 + I₆' 0 = -8640 * Complex.I / π := by
@@ -581,23 +560,20 @@ private lemma hI246_eq :
     simpa [f0] using intervalIntegrable_comp_zI f0_continuousOn
   have hIntphi2 : IntervalIntegrable (fun x : ℝ => φ₂'' (zI x)) MeasureTheory.volume (0 : ℝ) 1 :=
     intervalIntegrable_comp_zI MagicFunction.a.ComplexIntegrands.φ₂''_holo.continuousOn
-  have hI24' : I₂' (0 : ℝ) + I₄' 0 =
-      (∫ x : ℝ in (0 : ℝ)..1, (f0 (zI x) - (12 * Complex.I) / π * φ₂'' (zI x))) := by
+  rw [show I₂' (0 : ℝ) + I₄' 0 =
+      (∫ x : ℝ in (0 : ℝ)..1, (f0 (zI x) - (12 * Complex.I) / π * φ₂'' (zI x))) from by
     simpa [f0, zI, sub_eq_add_neg, add_assoc, add_comm, add_left_comm,
-      mul_assoc, mul_left_comm, mul_comm] using hI24
-  rw [hI24',
+      mul_assoc, mul_left_comm, mul_comm] using hI24,
     show (∫ x : ℝ in (0 : ℝ)..1, (f0 (zI x) - (12 * Complex.I) / π * φ₂'' (zI x))) =
         (∫ x : ℝ in (0 : ℝ)..1, f0 (zI x)) -
           ∫ x : ℝ in (0 : ℝ)..1, (12 * Complex.I) / π * φ₂'' (zI x) from by
       simpa using (intervalIntegral.integral_sub (μ := MeasureTheory.volume)
-        (a := (0 : ℝ)) (b := (1 : ℝ)) (f := fun x : ℝ => f0 (zI x))
-        (g := fun x : ℝ => (12 * Complex.I) / π * φ₂'' (zI x)) hIntf0 (hIntphi2.const_mul _)),
+        hIntf0 (hIntphi2.const_mul _)),
     show (∫ x : ℝ in (0 : ℝ)..1, (12 * Complex.I) / π * φ₂'' (zI x)) =
         ((12 : ℂ) * Complex.I) / π * (∫ x : ℝ in (0 : ℝ)..1, φ₂'' (zI x)) from by
       simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm],
     show (∫ x : ℝ in (0 : ℝ)..1, f0 (zI x)) = -I₆' (0 : ℝ) by
-      simpa [zI] using integral_f0_height_one_eq_neg_I6,
-    integral_phi2_height_one]
+      simpa [zI] using integral_f0_height_one_eq_neg_I6, integral_phi2_height_one]
   field_simp; ring
 
 end StripContour
