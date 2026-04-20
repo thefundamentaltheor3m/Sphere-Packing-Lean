@@ -97,9 +97,7 @@ theorem f_zero_pos : 0 < (f 0).re := by
   have hfun : (fun x : EuclideanSpace ℝ (Fin d) => (𝓕 f x).re) = 0 := by
     refine (Continuous.integral_zero_iff_zero_of_nonneg (by fun_prop) ?_ hCohnElkies₂).1
       (by simpa using hintRe)
-    exact (show MeasureTheory.Integrable (fun x : EuclideanSpace ℝ (Fin d) => 𝓕 f x) by
-      rw [← FourierTransform.fourierCLE_apply (R := ℝ) (E := 𝓢(EuclideanSpace ℝ (Fin d), ℂ)) f]
-      exact (FT f).integrable).re
+    exact hIntegrable.re
   refine fourier_ne_zero hne_zero ?_
   ext x
   simpa [show (𝓕 f x).re = 0 from by simpa using congrArg (fun g => g x) hfun]
@@ -131,13 +129,10 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
   have hFourierNorm :
       Summable (fun m : ↥(SchwartzMap.dualLattice (d := d) P.lattice) =>
         ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖) := by
-    have h0 :=
+    simpa [SchwartzMap.fourier_coe] using
       SpherePacking.CohnElkies.LPBoundAux.summable_norm_comp_add_zlattice
         (Λ := SchwartzMap.dualLattice (d := d) P.lattice) (f := 𝓕 f)
         (a := (0 : EuclideanSpace ℝ (Fin d)))
-    simpa [SchwartzMap.fourier_coe] using (by simpa using h0 :
-      Summable (fun m : ↥(SchwartzMap.dualLattice (d := d) P.lattice) =>
-        ‖(𝓕 f) (m : EuclideanSpace ℝ (Fin d))‖))
   let g' : ↥(SchwartzMap.dualLattice (d := d) P.lattice) → ℝ := fun m =>
     ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖ * (n ^ 2)
   refine Summable.of_norm_bounded (g := g') ?_ fun m => ?_
@@ -148,13 +143,12 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
   have hnexp : ∀ x : ↑(P.centers ∩ D),
       ‖exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
         (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])‖ = (1 : ℝ) := fun x => by
-    have hmul : (2 * π * I *
-        (⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℂ))
-        = ((2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)),
-          (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℝ) : ℂ) * I := by
-      simp [mul_assoc, mul_comm]
-    simpa [hmul] using Complex.norm_exp_ofReal_mul_I
-      (2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
+    simpa [show (2 * π * I *
+        (⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℂ)) =
+        ((2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)),
+          (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ] : ℝ) : ℂ) * I from by simp [mul_assoc, mul_comm]]
+      using Complex.norm_exp_ofReal_mul_I
+        (2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
   have hA_le : ‖A‖ ≤ n := by
     rw [hAdef]
     simpa [tsum_fintype, hnexp, n] using norm_sum_le
@@ -392,8 +386,8 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
       haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) := by
         rw [nonempty_quotient_iff]; assumption
       exact Fintype.card_ne_zero
-    have hnRaux₂ : ENat.toENNReal (P.numReps : ENat) ≠ ⊤ := Ne.symm (ne_of_beq_false rfl)
-    rw [← ENNReal.mul_le_mul_iff_right hnRaux₁ hnRaux₂, ENat.toENNReal_coe, ← mul_assoc, ← pow_two,
+    rw [← ENNReal.mul_le_mul_iff_right hnRaux₁ (Ne.symm (ne_of_beq_false rfl) :
+        ENat.toENNReal (P.numReps : ENat) ≠ ⊤), ENat.toENNReal_coe, ← mul_assoc, ← pow_two,
       ← mul_div_assoc]
     have hcov_pos : 0 < ZLattice.covolume P.lattice volume :=
       ZLattice.covolume_pos P.lattice volume
@@ -406,11 +400,10 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     have hLHSCast : (P.numReps : ENNReal) ^ 2 * ((𝓕 f 0).re.toNNReal : ENNReal) /
         ((ZLattice.covolume P.lattice volume).toNNReal : ENNReal) = ((P.numReps) ^ 2 *
         (𝓕 f 0).re / ZLattice.covolume P.lattice volume).toNNReal := by
-      have haux₁ : 0 ≤ (P.numReps : ℝ) ^ 2 * (𝓕 f 0).re * (ZLattice.covolume P.lattice volume)⁻¹
-        := mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0)) (inv_nonneg.mpr hcov_pos.le)
-      have haux₂ : (ZLattice.covolume P.lattice volume).toNNReal ≠ 0 :=
-        (Real.toNNReal_pos.mpr hcov_pos).ne'
-      simp only [div_eq_mul_inv, ← ENNReal.coe_inv haux₂, Real.toNNReal_of_nonneg haux₁]
+      simp only [div_eq_mul_inv,
+        ← ENNReal.coe_inv (Real.toNNReal_pos.mpr hcov_pos).ne',
+        Real.toNNReal_of_nonneg (mul_nonneg (mul_nonneg (sq_nonneg _) (hCohnElkies₂ 0))
+          (inv_nonneg.mpr hcov_pos.le))]
       norm_cast
       rw [Real.toNNReal_of_nonneg (hCohnElkies₂ 0), Real.toNNReal_of_nonneg hcov_pos.le]; rfl
     rw [hRHSCast, hLHSCast, ENNReal.coe_le_coe]
