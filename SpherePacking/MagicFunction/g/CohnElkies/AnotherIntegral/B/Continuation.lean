@@ -44,26 +44,19 @@ def bAnotherRHS (u : ℂ) : ℂ :=
 
 lemma bAnotherRHS_analyticOnNhd :
     AnalyticOnNhd ℂ bAnotherRHS ACDomain := by
-  have hb : ACDomain ⊆ rightHalfPlane := fun u hu => hu.1
   have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-  have hu_ne0 : ∀ u ∈ ACDomain, u ≠ 0 := by
-    intro u hu h0
-    have hre : (0 : ℝ) < u.re := by simpa [rightHalfPlane] using hu.1
-    exact (ne_of_gt hre) (by simp [h0])
+  have hu_ne0 : ∀ u ∈ ACDomain, u ≠ 0 := fun u hu h0 =>
+    (ne_of_gt (by simpa [rightHalfPlane] using hu.1)) (by simp [h0])
   have hI : AnalyticOnNhd ℂ bAnotherIntegralC ACDomain :=
-    (bAnotherIntegralC_analyticOnNhd).mono hb
-  have hsub2 : AnalyticOnNhd ℂ (fun u : ℂ => u - 2) ACDomain :=
-    analyticOnNhd_id.sub analyticOnNhd_const
-  have hden1 : ∀ u ∈ ACDomain, (π : ℂ) * u ≠ 0 := fun u hu =>
-    mul_ne_zero hπ (hu_ne0 u hu)
-  have hden2 : ∀ u ∈ ACDomain, (π : ℂ) * (u - 2) ≠ 0 := fun u hu =>
-    mul_ne_zero hπ (sub_ne_zero.2 (by simpa [Set.mem_singleton_iff] using hu.2))
+    bAnotherIntegralC_analyticOnNhd.mono fun u hu => hu.1
   have hterm1 :
       AnalyticOnNhd ℂ (fun u : ℂ => (144 : ℂ) / ((π : ℂ) * u)) ACDomain :=
-    analyticOnNhd_const.div (analyticOnNhd_const.mul analyticOnNhd_id) hden1
+    analyticOnNhd_const.div (analyticOnNhd_const.mul analyticOnNhd_id)
+      fun u hu => mul_ne_zero hπ (hu_ne0 u hu)
   have hterm2 :
       AnalyticOnNhd ℂ (fun u : ℂ => (1 : ℂ) / ((π : ℂ) * (u - 2))) ACDomain :=
-    analyticOnNhd_const.div (analyticOnNhd_const.mul hsub2) hden2
+    analyticOnNhd_const.div (analyticOnNhd_const.mul (analyticOnNhd_id.sub analyticOnNhd_const))
+      fun u hu => mul_ne_zero hπ (sub_ne_zero.2 (by simpa [Set.mem_singleton_iff] using hu.2))
   have hinner :
       AnalyticOnNhd ℂ
         (fun u : ℂ =>
@@ -89,12 +82,10 @@ lemma bAnotherRHS_ofReal (u : ℝ) :
 lemma exists_b'_analytic_extension :
     ∃ f : ℂ → ℂ, AnalyticOnNhd ℂ f ACDomain ∧
       (∀ u : ℝ, 0 < u → u ≠ 2 → f (u : ℂ) = b' u) := by
-  refine ⟨bPrimeC, (bPrimeC_analyticOnNhd).mono (fun u hu => hu.1), ?_⟩
-  intro u hu _hu2
+  refine ⟨bPrimeC, bPrimeC_analyticOnNhd.mono (fun u hu => hu.1), fun u hu _ => ?_⟩
   have hb' : MagicFunction.b.RealIntegrals.b' u = b' u := by
-    simpa using
-      (MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) (le_of_lt hu)).symm
-  simpa [hb'] using (bPrimeC_ofReal u)
+    simpa using (MagicFunction.g.CohnElkies.b'_eq_realIntegrals_b' (u := u) hu.le).symm
+  simpa [hb'] using bPrimeC_ofReal u
 
 /-!
 ## Final wrapper theorem
