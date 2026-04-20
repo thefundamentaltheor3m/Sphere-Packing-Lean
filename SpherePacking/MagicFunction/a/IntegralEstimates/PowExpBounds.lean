@@ -69,9 +69,9 @@ using `iteratedDeriv`, and is transferred to `iteratedFDeriv`.
 -/
 public lemma decay_of_bounding_uniform_norm_iteratedDeriv {I : ℝ → ℂ} (n : ℕ)
     (hI : ∃ C₁ > 0, ∀ x : ℝ, 0 ≤ x → ‖iteratedDeriv n I x‖ ≤ C₁ * rexp (-π * x)) :
-    ∀ (k : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C := by
-  obtain ⟨C₁, hC₁_pos, hC₁⟩ := hI
-  exact decay_of_bounding_uniform_norm (I := fun x : ℝ ↦ iteratedFDeriv ℝ n I x)
+    ∀ (k : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C :=
+  let ⟨C₁, hC₁_pos, hC₁⟩ := hI
+  decay_of_bounding_uniform_norm (I := fun x : ℝ ↦ iteratedFDeriv ℝ n I x)
     ⟨C₁, hC₁_pos, fun x hx => by
       simpa [norm_iteratedFDeriv_eq_norm_iteratedDeriv (𝕜 := ℝ) (n := n) (f := I) (x := x)]
         using hC₁ x hx⟩
@@ -89,11 +89,9 @@ public lemma decay_of_iteratedDeriv_eq_integral_pow_mul
     (hrepr :
       ∀ n : ℕ,
         iteratedDeriv n I = fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, (coeff t) ^ n * g r t) :
-    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C := by
-  intro k n
-  obtain ⟨C₁, hC₁_pos, hC₁⟩ :=
+    ∀ (k n : ℕ), ∃ C, ∀ x : ℝ, 0 ≤ x → ‖x‖ ^ k * ‖iteratedFDeriv ℝ n I x‖ ≤ C := fun k n =>
+  let ⟨C₁, hC₁_pos, hC₁⟩ :=
     iteratedDeriv_bound_of_iteratedDeriv_eq_integral_pow_mul (n := n) hg_bound hcoeff (hrepr n)
-  exact decay_of_bounding_uniform_norm_iteratedDeriv (n := n)
-    ⟨C₁, hC₁_pos, fun x _ => hC₁ x⟩ k
+  decay_of_bounding_uniform_norm_iteratedDeriv (n := n) ⟨C₁, hC₁_pos, fun x _ => hC₁ x⟩ k
 
 end MagicFunction.a.IntegralEstimates
