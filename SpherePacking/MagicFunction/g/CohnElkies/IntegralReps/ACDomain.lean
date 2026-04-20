@@ -66,37 +66,25 @@ public lemma ACDomain_isPreconnected : IsPreconnected ACDomain := by
     have himage :
         h '' ({h.symm z2}ᶜ : Set ℂ) = ({z2}ᶜ : Set {u : ℂ // 0 < u.re}) := by
       ext z
-      constructor
-      · rintro ⟨x, hx, rfl⟩
-        have hx' : x ≠ h.symm z2 := by simpa using hx
-        have : h x ≠ z2 := by
-          intro hz
-          exact hx' (by simpa using congrArg h.symm hz)
-        simpa using this
-      · intro hz
-        refine ⟨h.symm z, ?_, by simp⟩
-        simpa
-    simpa [himage] using (hconn.isPreconnected.image h h.continuous.continuousOn)
+      refine ⟨?_, fun hz => ⟨h.symm z, by simpa, by simp⟩⟩
+      rintro ⟨x, hx, rfl⟩
+      have hx' : x ≠ h.symm z2 := by simpa using hx
+      simpa using fun hz => hx' (by simpa using congrArg h.symm hz)
+    simpa [himage] using hconn.isPreconnected.image h h.continuous.continuousOn
   have hval :
       ((Subtype.val : {u : ℂ // 0 < u.re} → ℂ) '' ({z2}ᶜ :
           Set {u : ℂ // 0 < u.re})) = ACDomain := by
     ext u
-    constructor
+    refine ⟨?_, ?_⟩
     · rintro ⟨z, hz, rfl⟩
-      have hz' : z ≠ z2 := by
-        simpa [Set.mem_compl_iff, Set.mem_singleton_iff] using hz
-      refine ⟨z.2, ?_⟩
-      simpa using fun hEq => hz' (Subtype.ext hEq)
+      have hz' : z ≠ z2 := by simpa [Set.mem_compl_iff, Set.mem_singleton_iff] using hz
+      exact ⟨z.2, by simpa using fun hEq => hz' (Subtype.ext hEq)⟩
     · rintro hu
-      have hu_re : 0 < u.re := by
-        simpa [rightHalfPlane] using hu.1
-      have hu_ne2 : u ≠ (2 : ℂ) := by
-        simpa using hu.2
+      have hu_re : 0 < u.re := by simpa [rightHalfPlane] using hu.1
       refine ⟨⟨u, hu_re⟩, ?_, rfl⟩
-      have : (⟨u, hu_re⟩ : {u : ℂ // 0 < u.re}) ≠ z2 := fun hEq =>
-        hu_ne2 (congrArg Subtype.val hEq)
-      simpa [Set.mem_compl_iff, Set.mem_singleton_iff] using this
+      simpa [Set.mem_compl_iff, Set.mem_singleton_iff] using fun hEq =>
+        (by simpa using hu.2 : u ≠ (2 : ℂ)) (congrArg Subtype.val hEq)
   simpa [hval] using
-    (hpre.image (Subtype.val : {u : ℂ // 0 < u.re} → ℂ) continuous_subtype_val.continuousOn)
+    hpre.image (Subtype.val : {u : ℂ // 0 < u.re} → ℂ) continuous_subtype_val.continuousOn
 
 end MagicFunction.g.CohnElkies.IntegralReps
