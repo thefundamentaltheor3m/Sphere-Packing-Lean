@@ -83,9 +83,7 @@ public theorem fourier_J_eq_curveIntegral_of
       phase_mul_J'_eq_integral_permJKernel (w := w) (x := x)
   rw [htoIter, MeasureTheory.integral_integral_swap (μ := (volume : Measure V)) (ν := μ)
     (f := fun x t => permJKernel w (x, t))
-    (by simpa [Function.uncurry] using integrable_permJKernel w)]
-  rw [show (∫ t : ℝ, ∫ x : V, permJKernel w (x, t) ∂(volume : Measure V) ∂μ) =
-      ∫ t : ℝ, g w t ∂μ from
+    (by simpa [Function.uncurry] using integrable_permJKernel w),
     MeasureTheory.integral_congr_ae (integral_permJKernel_x_ae w)]
   exact integral_g_eq_curveIntegral w
 
@@ -95,17 +93,17 @@ public lemma integral_I_mul_muIoc01_z₁line (F : ℂ → ℂ) :
     (∫ t : ℝ, (Complex.I : ℂ) * F (z₁line t) ∂SpherePacking.Integration.μIoc01) =
       (∫ᶜ z in Path.segment (-1 : ℂ) ((-1 : ℂ) + Complex.I), scalarOneForm F z) := by
   simpa [SpherePacking.Contour.dir_z₁line] using
-    (SpherePacking.Integration.integral_dir_mul_muIoc01_eq_curveIntegral_segment
+    SpherePacking.Integration.integral_dir_mul_muIoc01_eq_curveIntegral_segment
       (F := F) (a := (-1 : ℂ)) (b := (-1 : ℂ) + Complex.I) (zline := z₁line)
-      SpherePacking.Contour.lineMap_z₁line)
+      SpherePacking.Contour.lineMap_z₁line
 
 public lemma integral_muIoc01_z₂line (F : ℂ → ℂ) :
     (∫ t : ℝ, F (z₂line t) ∂SpherePacking.Integration.μIoc01) =
       (∫ᶜ z in Path.segment ((-1 : ℂ) + Complex.I) Complex.I, scalarOneForm F z) := by
   simpa [SpherePacking.Contour.dir_z₂line, one_mul] using
-    (SpherePacking.Integration.integral_dir_mul_muIoc01_eq_curveIntegral_segment
+    SpherePacking.Integration.integral_dir_mul_muIoc01_eq_curveIntegral_segment
       (F := F) (a := (-1 : ℂ) + Complex.I) (b := Complex.I) (zline := z₂line)
-      SpherePacking.Contour.lineMap_z₂line)
+      SpherePacking.Contour.lineMap_z₂line
 
 end
 
