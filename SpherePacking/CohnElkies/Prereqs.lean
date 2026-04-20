@@ -57,8 +57,7 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E
 /-- Fourier inversion for Schwartz functions. -/
 @[simp]
 public theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f := by
-  rw [← fourier_coe, ← fourierInv_coe]
-  simp
+  rw [← fourier_coe, ← fourierInv_coe]; simp
 
 end FourierSchwartz
 
@@ -68,11 +67,9 @@ section Positivity_on_Nhd
 variable {E : Type*} [TopologicalSpace E]
 
 theorem Continuous.pos_iff_exists_nhd_pos {f : E → ℝ} (hf₁ : Continuous f) (x : E) :
-  0 < f x ↔ ∃ U ∈ (nhds x), ∀ y ∈ U, 0 < f y := by
-  refine ⟨?_, fun ⟨U, hU, hUpos⟩ => hUpos x (mem_of_mem_nhds hU)⟩
-  intro hx
-  refine ⟨{y : E | 0 < f y}, (isOpen_lt continuous_const hf₁).mem_nhds hx, ?_⟩
-  exact fun _ hy => hy
+    0 < f x ↔ ∃ U ∈ (nhds x), ∀ y ∈ U, 0 < f y :=
+  ⟨fun hx => ⟨{y : E | 0 < f y}, (isOpen_lt continuous_const hf₁).mem_nhds hx, fun _ hy => hy⟩,
+    fun ⟨_, hU, hUpos⟩ => hUpos x (mem_of_mem_nhds hU)⟩
 
 open MeasureTheory
 
@@ -97,33 +94,22 @@ If `f` is continuous, integrable, and pointwise nonnegative, then `∫ f = 0` if
 This uses that an additive-invariant regular measure is positive on nonempty open sets.
 -/
 public theorem Continuous.integral_zero_iff_zero_of_nonneg {f : E → ℝ} (hf₁ : Continuous f)
-  (hf₂ : Integrable f) (hnn : ∀ x, 0 ≤ f x) : ∫ (v : E), f v = 0 ↔ f = 0 := by
-  constructor
-  · intro hintf
-    have hzero_ae : f =ᵐ[volume] 0 := (integral_eq_zero_iff_of_nonneg hnn hf₂).1 hintf
-    have hne_zero : (volume : Measure E) {y | f y ≠ 0} = 0 := by
-      assumption
-    funext x
-    by_contra hx
-    have hposatx : 0 < f x := lt_of_le_of_ne (hnn x) (Ne.symm hx)
-    obtain ⟨U, hU₁, hU₃⟩ := (hf₁.pos_iff_exists_nhd_pos x).1 hposatx
-    have hUpos : 0 < (volume : Measure E) U :=
-      MeasureTheory.Measure.measure_pos_of_mem_nhds volume hU₁
-    have hUsub : U ⊆ {y | f y ≠ 0} := by
-      intro y hy
-      specialize hU₃ y hy
-      exact ne_of_gt hU₃
-    have : (volume : Measure E) U = 0 := measure_mono_null hUsub hne_zero
-    exact hUpos.ne' this
-  · intro hf
-    simp [hf]
+    (hf₂ : Integrable f) (hnn : ∀ x, 0 ≤ f x) : ∫ (v : E), f v = 0 ↔ f = 0 := by
+  refine ⟨fun hintf => ?_, fun hf => by simp [hf]⟩
+  have hne_zero : (volume : Measure E) {y | f y ≠ 0} = 0 :=
+    (integral_eq_zero_iff_of_nonneg hnn hf₂).1 hintf
+  funext x
+  by_contra hx
+  obtain ⟨U, hU₁, hU₃⟩ :=
+    (hf₁.pos_iff_exists_nhd_pos x).1 (lt_of_le_of_ne (hnn x) (Ne.symm hx))
+  exact (MeasureTheory.Measure.measure_pos_of_mem_nhds volume hU₁).ne'
+    (measure_mono_null (fun y hy => (hU₃ y hy).ne') hne_zero)
 
 end Integration
 
 section Misc
 
 omit [Fact (0 < d)]
--- Now a small theorem from Complex analysis:
 local notation "conj" => starRingEnd ℂ
 /--
 Complex exponential conjugation identity for real inner products.
@@ -131,23 +117,15 @@ Complex exponential conjugation identity for real inner products.
 This is used to relate `cexp (2 * pi * I * <x,m>)` and its conjugate.
 -/
 public theorem Complex.exp_neg_real_I_eq_conj (x m : EuclideanSpace ℝ (Fin d)) :
-  Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) =
-    conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) :=
-  calc
-    Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ)))
-        = Circle.exp (-2 * Real.pi * ⟪x, m⟫_[ℝ])
-      := by
-          rw [Circle.coe_exp]
-          push_cast
-          ring_nf
-    _ = conj (Circle.exp (2 * Real.pi * ⟪x, m⟫_[ℝ]))
-      := by rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
-    _ = conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ)))
-      := by
-          rw [Circle.coe_exp]
-          apply congrArg conj
-          push_cast
-          ring_nf
+    Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) =
+      conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) := calc
+  Complex.exp (-(2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ)))
+      = Circle.exp (-2 * Real.pi * ⟪x, m⟫_[ℝ]) := by
+        rw [Circle.coe_exp]; push_cast; ring_nf
+    _ = conj (Circle.exp (2 * Real.pi * ⟪x, m⟫_[ℝ])) := by
+        rw [mul_assoc, neg_mul, ← mul_assoc, ← Circle.coe_inv_eq_conj, Circle.exp_neg]
+    _ = conj (Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (⟪x, m⟫_[ℝ] : ℂ))) := by
+        rw [Circle.coe_exp]; apply congrArg conj; push_cast; ring_nf
 
 end Misc
 
