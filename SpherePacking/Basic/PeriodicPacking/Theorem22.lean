@@ -155,16 +155,13 @@ public theorem aux_big_le
         • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + S.separation / 2 + L)).encard
           * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
             / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
-    gcongr
-    simpa using ENat.toENNReal_le.mpr (S.aux_le hd b hL _)
+    gcongr; simpa using ENat.toENNReal_le.mpr (S.aux_le hd b hL _)
   _ ≤ S.numReps
         * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + S.separation / 2 + L + L))
           / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)))
             * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
               / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
-    rw [nsmul_eq_mul]
-    gcongr
-    exact S.aux2_le' _ b hL hd
+    rw [nsmul_eq_mul]; gcongr; exact S.aux2_le' _ b hL hd
   _ = S.numReps
         * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
           / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _))
@@ -172,8 +169,7 @@ public theorem aux_big_le
               / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)) := by
     rw [← mul_div_assoc, ← mul_div_assoc, mul_two, ← add_assoc, ← ENNReal.mul_div_right_comm,
       ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc]
-    congr 3
-    rw [mul_comm]
+    congr 3; rw [mul_comm]
 
 /--
 Lower bound for `S.finiteDensity R` in terms of a fundamental domain, up to a ball-volume ratio.
@@ -194,16 +190,13 @@ public theorem aux_big_ge
         • (↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - S.separation / 2 - L)).encard
           * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
             / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
-    gcongr
-    simpa using ENat.toENNReal_le.mpr (S.aux_ge hd b hL _)
+    gcongr; simpa using ENat.toENNReal_le.mpr (S.aux_ge hd b hL _)
   _ ≥ S.numReps
         * (volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R - S.separation / 2 - L - L))
           / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _)))
             * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
               / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) := by
-    rw [nsmul_eq_mul]
-    gcongr
-    exact S.aux2_ge' _ b hL hd
+    rw [nsmul_eq_mul]; gcongr; exact S.aux2_ge' _ b hL hd
   _ = S.numReps
         * volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2))
           / volume (fundamentalDomain (b.ofZLatticeBasis ℝ _))
@@ -211,8 +204,7 @@ public theorem aux_big_ge
               / volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)) := by
     rw [← mul_div_assoc, ← mul_div_assoc, mul_two, ← sub_sub, ← ENNReal.mul_div_right_comm,
       ← ENNReal.mul_div_right_comm, mul_assoc, mul_assoc]
-    congr 3
-    rw [mul_comm]
+    congr 3; rw [mul_comm]
 
 open Filter Topology
 
@@ -248,13 +240,11 @@ public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))) atTop (𝓝 1) := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   rcases le_iff_eq_or_lt.mp hC with (rfl | hC)
-  · simp_rw [add_zero]
-    apply Tendsto.congr' (f₁ := 1) ?_ tendsto_const_nhds
+  · refine Tendsto.congr' (f₁ := 1) ?_ tendsto_const_nhds
     rw [EventuallyEq, eventually_atTop]
-    refine ⟨1, fun b hb => ?_⟩
-    rw [ENNReal.div_self, Pi.one_apply]
-    · exact (Metric.measure_ball_pos volume _ (by linarith)).ne.symm
-    · exact (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
+    exact ⟨1, fun b hb => by
+      rw [add_zero, ENNReal.div_self (Metric.measure_ball_pos volume _ (by linarith)).ne.symm
+        (MeasureTheory.measure_ball_lt_top (μ := volume)).ne, Pi.one_apply]⟩
   · have hfmt (R : ℝ) (hR : 0 ≤ R) : volume (ball (0 : EuclideanSpace ℝ (Fin d)) R)
         / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
           = ENNReal.ofReal (R ^ d / (R + C) ^ d) := by
@@ -263,7 +253,7 @@ public theorem volume_ball_ratio_tendsto_nhds_one {C : ℝ} (hd : 0 < d) (hC : 0
         <;> positivity
     rw [ENNReal.tendsto_atTop (by decide)]
     intro ε hε
-    obtain ⟨k, hk₁, hk₂⟩ := aux_bhavik' (d := d) hε
+    obtain ⟨k, _, hk₂⟩ := aux_bhavik' (d := d) hε
     refine ⟨k * C, fun n hn => ?_⟩
     rw [hfmt _ ((by positivity : 0 ≤ k * C).trans hn)]
     convert hk₂ (n / C) ((le_div_iff₀ hC).mpr hn)
@@ -298,9 +288,10 @@ Shifting the argument by a constant does not change convergence to `atTop`.
 public theorem Filter.map_add_atTop_eq' {β : Type*} {f : ℝ → β} (C : ℝ) (α : Filter β) :
     Tendsto f atTop α ↔ Tendsto (fun x ↦ f (x + C)) atTop α := by
   have hmap : Filter.map (fun x : ℝ => x + C) atTop = atTop := by
-    simpa using (Filter.map_add_atTop_eq (α := ℝ) (k := C))
-  refine ⟨fun hf => tendsto_map'_iff.mp (by simpa [hmap] using hf), fun hf => ?_⟩
-  simpa [hmap] using (tendsto_map'_iff.mpr hf : Tendsto f (Filter.map (fun x : ℝ => x + C) atTop) α)
+    simpa using Filter.map_add_atTop_eq (α := ℝ) (k := C)
+  exact ⟨fun hf => tendsto_map'_iff.mp (by simpa [hmap]),
+    fun hf => by simpa [hmap] using (tendsto_map'_iff.mpr hf :
+      Tendsto f (Filter.map (fun x : ℝ => x + C) atTop) α)⟩
 
 /--
 As `R → ∞`, the ratio `volume (ball 0 (R + C)) / volume (ball 0 (R + C'))` tends to `1`,
@@ -309,14 +300,13 @@ without assuming signs on `C` and `C'`.
 public theorem volume_ball_ratio_tendsto_nhds_one'' {d : ℕ} {C C' : ℝ} (hd : 0 < d) :
     Tendsto (fun R ↦ volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C))
       / volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) atTop (𝓝 1) := by
-  have hC₀ : 0 ≤ max (-C) (-C') + C := by linarith [le_max_left (-C) (-C')]
-  have hC'₀ : 0 ≤ max (-C) (-C') + C' := by linarith [le_max_right (-C) (-C')]
   refine (Filter.map_add_atTop_eq' (f := fun R ↦
       volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C)) /
         volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + C'))) (max (-C) (-C')) _).mpr ?_
   simpa [add_assoc] using
     volume_ball_ratio_tendsto_nhds_one' (d := d) (C := max (-C) (-C') + C)
-      (C' := max (-C) (-C') + C') hd hC₀ hC'₀
+      (C' := max (-C) (-C') + C') hd (by linarith [le_max_left (-C) (-C')])
+        (by linarith [le_max_right (-C) (-C')])
 
 end VolumeBallRatio
 end finiteDensity_limit

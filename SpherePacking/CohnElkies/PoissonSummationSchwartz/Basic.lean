@@ -259,23 +259,6 @@ public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (�
     ⟨Metric.closedBall (0 : E) (Real.sqrt d), isCompact_closedBall (0 : E) (Real.sqrt d)⟩
   have hK : SchwartzMap.PoissonSummation.Standard.iocCube (d := d) ⊆ (K : Set E) :=
     iocCube_subset_closedBall (d := d)
-  have hbound : ∀ x ∈ SchwartzMap.PoissonSummation.Standard.iocCube (d := d),
-      ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
-          f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := fun x hx => by
-    have hmFourier :
-        ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ ≤ 1 := by
-      simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
-        (ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n))
-          (PoissonSummation.Standard.coeFunE (d := d) x))
-    have hsup : ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by
-      simpa [translate_apply, ContinuousMap.restrict_apply] using
-        (ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K) ⟨x, hK hx⟩)
-    calc ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
-          f (x + (ℓ : E))‖
-        = ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ *
-            ‖f (x + (ℓ : E))‖ := by simp
-      _ ≤ 1 * ‖f (x + (ℓ : E))‖ := by gcongr
-      _ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by simpa using hsup
   refine Measure.integrableOn_of_bounded (μ := (volume : Measure E))
       (s := SchwartzMap.PoissonSummation.Standard.iocCube (d := d))
       (s_finite := (volume_iocCube_lt_top (d := d)).ne)
@@ -284,7 +267,21 @@ public lemma integrableOn_mFourier_mul_translate_iocCube (n : Fin d → ℤ) (�
           (PoissonSummation.Standard.continuous_coeFunE (d := d))).mul
           (f.continuous.comp (continuous_id.add continuous_const))).aestronglyMeasurable
       (ae_restrict_of_forall_mem
-        (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d)) hbound)
+        (SchwartzMap.PoissonSummation.Standard.measurableSet_iocCube (d := d)) fun x hx => ?_)
+  have hmFourier :
+      ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ ≤ 1 := by
+    simpa [UnitAddTorus.mFourier_norm (d := Fin d) (n := -n)] using
+      ContinuousMap.norm_coe_le_norm (UnitAddTorus.mFourier (-n))
+        (PoissonSummation.Standard.coeFunE (d := d) x)
+  have hsup : ‖f (x + (ℓ : E))‖ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by
+    simpa [translate_apply, ContinuousMap.restrict_apply] using
+      ContinuousMap.norm_coe_le_norm ((translate (d := d) f ℓ).restrict K) ⟨x, hK hx⟩
+  calc ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x) *
+        f (x + (ℓ : E))‖
+      = ‖UnitAddTorus.mFourier (-n) (PoissonSummation.Standard.coeFunE (d := d) x)‖ *
+          ‖f (x + (ℓ : E))‖ := by simp
+    _ ≤ 1 * ‖f (x + (ℓ : E))‖ := by gcongr
+    _ ≤ ‖(translate (d := d) f ℓ).restrict K‖ := by simpa using hsup
 
 
 end SchwartzMap.PoissonSummation.Standard
