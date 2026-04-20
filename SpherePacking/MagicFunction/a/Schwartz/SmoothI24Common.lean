@@ -59,8 +59,7 @@ upper half-plane set. -/
 public lemma arg_mem_upperHalfPlaneSet {z : ℝ → ℂ} {shift : ℂ}
     (harg_im_pos : ∀ t, t ∈ Ioo (0 : ℝ) 1 → 0 < (arg z shift t).im)
     (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
-    arg z shift t ∈ UpperHalfPlane.upperHalfPlaneSet :=
-  harg_im_pos t ht
+    arg z shift t ∈ UpperHalfPlane.upperHalfPlaneSet := harg_im_pos t ht
 
 /-- Continuity of `hf` on `Ioo 0 1` given the continuity of `z`, non-vanishing of
 `z + shift`, and the geometric fact that `arg` lands in the upper half-plane. -/
@@ -89,12 +88,10 @@ public lemma exists_bound_norm_hf {z : ℝ → ℂ} (shift prefactor : ℂ)
     norm_φ₀''_le_mul_exp_neg_pi_of_one_half_lt_im (C₀ := C₀) (hC₀_pos := hC₀_pos)
       (hC₀ := hC₀) (z := ⟨arg z shift t, hpos⟩) (harg_im_half t ht)
   have hpow : ‖(z t + shift) ^ (2 : ℕ)‖ ≤ (3 : ℝ) ^ (2 : ℕ) := by
-    have hnorm3 : ‖z t + shift‖ ≤ 3 :=
-      (norm_add_le _ _).trans <| by linarith [hnorm t, hshift]
-    simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _) hnorm3 2
-  calc
-    ‖hf z shift prefactor t‖
-        = ‖prefactor‖ * (‖φ₀'' (arg z shift t)‖ * ‖(z t + shift) ^ (2 : ℕ)‖) := by simp [hf]
+    simpa [norm_pow] using pow_le_pow_left₀ (norm_nonneg _)
+      ((norm_add_le _ _).trans <| by linarith [hnorm t, hshift]) 2
+  calc ‖hf z shift prefactor t‖
+      = ‖prefactor‖ * (‖φ₀'' (arg z shift t)‖ * ‖(z t + shift) ^ (2 : ℕ)‖) := by simp [hf]
     _ ≤ ‖prefactor‖ * ((C₀ * rexp (-π)) * ((3 : ℝ) ^ (2 : ℕ))) := by gcongr
     _ = ‖prefactor‖ * (C₀ * rexp (-π) * ((3 : ℝ) ^ (2 : ℕ))) := by ring
 
