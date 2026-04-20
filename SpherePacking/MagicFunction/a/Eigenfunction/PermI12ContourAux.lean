@@ -29,20 +29,17 @@ section Integral_Permutations
 
 private lemma diffContOnCl_Φ₃'_wedgeSet (r : ℝ) :
     DiffContOnCl ℝ (MagicFunction.a.ComplexIntegrands.Φ₃' r) wedgeSet := by
-  refine ⟨?_, ?_⟩
-  · exact ((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).differentiableOn
-      (by simp)).mono wedgeSet_subset_upperHalfPlaneSet
-  · intro z hz
-    by_cases h1 : z = (1 : ℂ)
-    · subst h1
-      have hval : MagicFunction.a.ComplexIntegrands.Φ₃' r (1 : ℂ) = 0 := by
-        simp [MagicFunction.a.ComplexIntegrands.Φ₃']
-      -- `ContinuousWithinAt` is `Tendsto` to the value at the point.
-      simpa [ContinuousWithinAt, hval] using tendsto_Φ₃'_one_within_closure_wedgeSet (r := r)
-    · have hzU : z ∈ UpperHalfPlane.upperHalfPlaneSet :=
-        mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hz h1
-      exact ((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).continuousOn.continuousAt
-        (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzU)).continuousWithinAt
+  refine ⟨((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).differentiableOn
+      (by simp)).mono wedgeSet_subset_upperHalfPlaneSet, fun z hz => ?_⟩
+  by_cases h1 : z = (1 : ℂ)
+  · subst h1
+    have hval : MagicFunction.a.ComplexIntegrands.Φ₃' r (1 : ℂ) = 0 := by
+      simp [MagicFunction.a.ComplexIntegrands.Φ₃']
+    simpa [ContinuousWithinAt, hval] using tendsto_Φ₃'_one_within_closure_wedgeSet (r := r)
+  · have hzU : z ∈ UpperHalfPlane.upperHalfPlaneSet :=
+      mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hz h1
+    exact ((MagicFunction.a.ComplexIntegrands.Φ₃'_contDiffOn (r := r)).continuousOn.continuousAt
+      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hzU)).continuousWithinAt
 
 /-- The `1`-form built from `Φ₃'` is differentiable on `wedgeSet` with continuous extension. -/
 public lemma diffContOnCl_ω_wedgeSet (r : ℝ) :
