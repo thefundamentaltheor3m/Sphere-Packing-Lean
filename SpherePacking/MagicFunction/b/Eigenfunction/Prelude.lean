@@ -102,67 +102,43 @@ lemma Reconciling_Change_of_Variables (r : ℝ) :
   rw [J₅'_eq_Ioc]
   congr 1
   apply setIntegral_congr_ae₀ nullMeasurableSet_Ioc
-  refine ae_of_all _ ?_
-  intro t ht
+  refine ae_of_all _ fun t ht => ?_
   have ht0 : 0 < t := ht.1
   have ht_ne0 : t ≠ 0 := ne_of_gt ht0
-  have htIcc : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioc ht
   have hz5 : z₅' t = (Complex.I : ℂ) * (t : ℂ) := by
-    simpa [mul_assoc, mul_left_comm, mul_comm] using z₅'_eq_of_mem (t := t) htIcc
+    simpa [mul_assoc, mul_left_comm, mul_comm] using z₅'_eq_of_mem (t := t) (mem_Icc_of_Ioc ht)
   have hψI :
       ψI' (z₅' t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) :=
     MagicFunction.b.Schwartz.J5Smooth.ψI'_z₅'_eq t ht
-  have hψS : ψS' ((Complex.I : ℂ) * ((1 / t : ℝ) : ℂ)) = ψS.resToImagAxis (1 / t) := by
-    simp [ψS', Function.resToImagAxis, ResToImagAxis, one_div, mul_comm]
   have hψS_inv : ψS' ((Complex.I : ℂ) * (t : ℂ)⁻¹) = ψS.resToImagAxis (t⁻¹) := by
-    simpa [one_div] using hψS
-  have habs : |f' t| = 1 / t ^ 2 := by
-    simp [f', neg_div, abs_neg]
-  have hscal : (1 / t ^ 2) * ((1 / t : ℝ) ^ (-4 : ℤ)) = t ^ 2 := by
-    simpa using
-      (one_div_pow_two_mul_one_div_zpow (k := 4) (t := t) (hk := by decide) (ht := ht_ne0))
+    simpa [one_div] using
+      (show ψS' ((Complex.I : ℂ) * ((1 / t : ℝ) : ℂ)) = ψS.resToImagAxis (1 / t) by
+        simp [ψS', Function.resToImagAxis, ResToImagAxis, one_div, mul_comm])
   have hscalC : (1 / t ^ 2 : ℂ) * ((1 / t : ℝ) ^ (-4 : ℤ) : ℂ) = (t : ℂ) ^ (2 : ℕ) := by
-    have hscalC0 : ((1 / t ^ 2) * ((1 / t : ℝ) ^ (-4 : ℤ)) : ℂ) = (t ^ 2 : ℂ) := by
-      exact_mod_cast hscal
-    simpa [Complex.ofReal_mul] using hscalC0
+    have : ((1 / t ^ 2) * ((1 / t : ℝ) ^ (-4 : ℤ)) : ℂ) = (t ^ 2 : ℂ) := by
+      exact_mod_cast (one_div_pow_two_mul_one_div_zpow
+        (k := 4) (t := t) (hk := by decide) (ht := ht_ne0))
+    simpa [Complex.ofReal_mul] using this
   have hexp : cexp (π * (Complex.I : ℂ) * r * (z₅' t)) = cexp (-π * r * t) := by
-    have :
-        (π : ℂ) * (Complex.I : ℂ) * (r : ℂ) * (z₅' t) =
-          (-π : ℂ) * (r : ℂ) * (t : ℂ) := by
-      calc
-        (π : ℂ) * (Complex.I : ℂ) * (r : ℂ) * (z₅' t) =
-            (π : ℂ) * (Complex.I : ℂ) * (r : ℂ) * ((Complex.I : ℂ) * (t : ℂ)) := by
-              simp [hz5]
-        _ = (π : ℂ) * (r : ℂ) * ((Complex.I : ℂ) * (Complex.I : ℂ)) * (t : ℂ) := by
-              ring
-        _ = (-π : ℂ) * (r : ℂ) * (t : ℂ) := by
-              simp [Complex.I_mul_I, mul_left_comm, mul_comm]
-    simpa [mul_assoc] using congrArg cexp this
+    simpa [mul_assoc] using congrArg cexp
+      (show (π : ℂ) * (Complex.I : ℂ) * (r : ℂ) * (z₅' t) = (-π : ℂ) * (r : ℂ) * (t : ℂ) by
+        rw [hz5]; ring_nf; rw [Complex.I_sq]; ring)
   have hLHS :
       (Complex.I : ℂ) * ψI' (z₅' t) * cexp (π * (Complex.I : ℂ) * r * (z₅' t)) =
         (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) := by
-    have hPow : ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) = (-1 : ℂ) * (t : ℂ) ^ (2 : ℕ) := by
-      calc
-        ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) =
-            ((Complex.I : ℂ) * (t : ℂ)) * ((Complex.I : ℂ) * (t : ℂ)) := by
-              simp [pow_two]
-        _ = ((Complex.I : ℂ) * (Complex.I : ℂ)) * ((t : ℂ) * (t : ℂ)) := by ac_rfl
-        _ = (-1 : ℂ) * ((t : ℂ) * (t : ℂ)) := by simp [Complex.I_mul_I]
-        _ = (-1 : ℂ) * (t : ℂ) ^ (2 : ℕ) := by simp [pow_two]
-    rw [hψI, hexp, hPow]
+    rw [hψI, hexp,
+      show ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) = (-1 : ℂ) * (t : ℂ) ^ (2 : ℕ) by
+        rw [mul_pow]; simp [Complex.I_sq]]
     ring
   have hRHS :
       |f' t| • g r (f t) =
         (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) := by
-    rw [habs]
-    calc
-      (1 / t ^ 2) • g r (f t) = (1 / t ^ 2 : ℂ) * g r (f t) := by simp [real_smul]
-      _ =
-          (-I : ℂ) * ψS.resToImagAxis (1 / t) * ((1 / t ^ 2 : ℂ) * ((1 / t : ℝ) ^ (-4 : ℤ) : ℂ)) *
-            cexp (-π * r * t) := by
+    rw [show |f' t| = 1 / t ^ 2 by simp [f', neg_div, abs_neg]]
+    calc (1 / t ^ 2) • g r (f t) = (1 / t ^ 2 : ℂ) * g r (f t) := by simp [real_smul]
+      _ = (-I : ℂ) * ψS.resToImagAxis (1 / t) *
+            ((1 / t ^ 2 : ℂ) * ((1 / t : ℝ) ^ (-4 : ℤ) : ℂ)) * cexp (-π * r * t) := by
           simp [g, f, hψS_inv, mul_assoc, mul_left_comm, mul_comm]
-      _ =
-          (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) := by
+      _ = (-I : ℂ) * ψS.resToImagAxis (1 / t) * (t : ℂ) ^ (2 : ℕ) * cexp (-π * r * t) := by
           rw [hscalC]
   simp [hLHS, hRHS]
 
