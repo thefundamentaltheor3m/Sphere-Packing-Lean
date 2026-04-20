@@ -55,7 +55,7 @@ lemma gN_measurable (n : ℕ) (r : ℝ) : AEStronglyMeasurable (gN n r) (μ) := 
   simpa [gN] using hcoeff.continuousOn.mul hg
 
 lemma gN_integrable (n : ℕ) (r : ℝ) (hr : -2 < r) : Integrable (gN n r) (μ) := by
-  obtain ⟨C₀, hC₀_pos, hC₀⟩ := g_norm_bound_uniform
+  obtain ⟨C₀, _, hC₀⟩ := g_norm_bound_uniform
   let bound : ℝ → ℝ := fun t ↦ (π ^ n) * (t ^ n * rexp (-(π * (r + 2)) * t)) * C₀
   have hbound_int : Integrable bound (μ) := by
     have hInt : Integrable (fun t : ℝ ↦ t ^ n * rexp (-(π * (r + 2)) * t)) (μ) := by
@@ -63,8 +63,8 @@ lemma gN_integrable (n : ℕ) (r : ℝ) (hr : -2 < r) : Integrable (gN n r) (μ)
         SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := n) (b := π * (r + 2))
           (mul_pos Real.pi_pos (by linarith))
     simpa [bound, mul_assoc, mul_left_comm, mul_comm] using hInt.const_mul ((π ^ n) * C₀)
-  refine Integrable.mono' hbound_int (gN_measurable n r) ?_
-  refine (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht ↦ ?_
+  refine Integrable.mono' hbound_int (gN_measurable n r) <|
+    (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht ↦ ?_
   have ht0 : 0 ≤ t := le_trans (by norm_num : (0 : ℝ) ≤ 1) ht
   have hexp : rexp (-2 * π * t) * rexp (-π * r * t) = rexp (-(π * (r + 2)) * t) := by
     rw [← Real.exp_add]; ring_nf
@@ -107,21 +107,19 @@ lemma hasDerivAt_integral_gN_of_gt_neg2 (n : ℕ) (r₀ : ℝ) (hr₀ : -2 < r�
   have hbound_hf :
       ∃ C, ∀ t : ℝ, 1 ≤ t → ‖hφ t‖ ≤ C * Real.exp (-(Real.pi * (2 : ℝ)) * t) := by
     refine ⟨C₀, fun t ht ↦ ?_⟩
-    have h := hC₀ 0 t (by simpa using ht)
     have hexp : rexp (-2 * π * t) * rexp (-π * 0 * t) = rexp (-(π * 2) * t) := by
       rw [← Real.exp_add]; ring_nf
-    simpa [MagicFunction.a.IntegralEstimates.I₆.g, hφ, mul_assoc, hexp, mul_comm] using h
+    simpa [MagicFunction.a.IntegralEstimates.I₆.g, hφ, mul_assoc, hexp, mul_comm] using
+      hC₀ 0 t (by simpa using ht)
   have h :=
     SpherePacking.Integration.SmoothIntegralIciOne.hasDerivAt_integral_gN
       (hf := hφ) (shift := (2 : ℝ))
       (exists_bound_norm_hf := hbound_hf)
-      (gN_measurable := fun n x => by
-        refine (aestronglyMeasurable_congr ?_).mp (gN_measurable n x)
-        exact Filter.Eventually.of_forall (gN_eq_sharedGN n x))
+      (gN_measurable := fun n x =>
+        (aestronglyMeasurable_congr (.of_forall (gN_eq_sharedGN n x))).mp (gN_measurable n x))
       (n := n) (x := r₀) hr₀
-      (hF_int := by
-        refine (integrable_congr ?_).mp (gN_integrable n r₀ hr₀)
-        exact Filter.Eventually.of_forall (gN_eq_sharedGN n r₀))
+      (hF_int :=
+        (integrable_congr (.of_forall (gN_eq_sharedGN n r₀))).mp (gN_integrable n r₀ hr₀))
   convert h using 1
   · funext r
     exact integral_congr_ae ((ae_restrict_iff' measurableSet_Ici).2 <|
@@ -145,9 +143,8 @@ theorem I₆'_contDiffOn_Ioi_neg2 : ContDiffOn ℝ ∞ MagicFunction.a.RealInteg
 /-- Smoothness of the cutoff radial profile `r ↦ cutoffC r * RealIntegrals.I₆' r`. -/
 public theorem cutoffC_mul_I₆'_contDiff :
     ContDiff ℝ ∞ (fun r : ℝ ↦ cutoffC r * RealIntegrals.I₆' r) :=
-  contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1 <| I₆'_contDiffOn_Ioi_neg2.mono fun x hx ↦ by
-    simpa [s, Set.mem_Ioi] using
-      lt_trans (by norm_num : (-2 : ℝ) < (-1 : ℝ)) (by simpa [Set.mem_Ioi] using hx)
+  contDiff_cutoffC_mul_of_contDiffOn_Ioi_neg1 <| I₆'_contDiffOn_Ioi_neg2.mono fun x hx => by
+    simpa [s, Set.mem_Ioi] using lt_trans (by norm_num : (-2 : ℝ) < -1) hx
 
 end MagicFunction.a.Schwartz.I6Smooth
 
