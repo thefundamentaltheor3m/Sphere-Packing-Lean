@@ -433,31 +433,15 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
             bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)) * w) :=
       Eq.symm (setIntegral_Ioi0_eq_add_Ioc_Ioi (by
         simpa [mul_assoc] using hintI.mul_const w))
-    have hshift_pair : ∀ (a : ℂ) (_hpt : ∀ t : ℝ, 0 < t →
+    have hfull : ∀ (a : ℂ) (_hpt : ∀ t : ℝ, 0 < t →
         bContourIntegrandT u (a + I * (t : ℂ)) =
           bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)),
-        ((∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) =
-          ∫ t in Set.Ioc (0 : ℝ) 1,
-            bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)) ∧
-        ((∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (a + I * (t : ℂ))) =
-          ∫ t in Set.Ioi (1 : ℝ),
-            bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)) := fun a hpt =>
-      ⟨MeasureTheory.setIntegral_congr_fun measurableSet_Ioc fun t ht => hpt t ht.1,
-        MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht =>
-          hpt t (lt_trans (by norm_num) ht)⟩
-    obtain ⟨hJ1_shift, hJ2_shift⟩ := hshift_pair (-1 : ℂ) hLeft_point
-    obtain ⟨hJ3_shift, hJ4_shift⟩ := hshift_pair (1 : ℂ) hRight_point
-    have hfull : ∀ (a : ℂ)
-        (_ : (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) =
-          ∫ t in Set.Ioc (0 : ℝ) 1,
-            bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a))
-        (_ : (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (a + I * (t : ℂ))) =
-          ∫ t in Set.Ioi (1 : ℝ),
-            bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)),
         (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) +
             (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (a + I * (t : ℂ))) =
-          (-VI) * bContourWeight u a := fun a hA hB => by
-      rw [hA, hB]
+          (-VI) * bContourWeight u a := fun a hpt => by
+      rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioc fun t ht => hpt t ht.1,
+        MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun t ht =>
+          hpt t (lt_trans (by norm_num) ht)]
       have hmul : (∫ t in Set.Ioi (0 : ℝ),
           bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a)) =
             VI * (-bContourWeight u a) := by
@@ -465,8 +449,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         simpa using MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
           (r := -bContourWeight u a) (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
       simpa [mul_assoc, mul_left_comm, mul_comm] using (hsplitW (-bContourWeight u a)).trans hmul
-    have hLeft_full := hfull (-1 : ℂ) hJ1_shift hJ2_shift
-    have hRight_full := hfull (1 : ℂ) hJ3_shift hJ4_shift
+    have hLeft_full := hfull (-1 : ℂ) hLeft_point
+    have hRight_full := hfull (1 : ℂ) hRight_point
     have hCenter : (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))) +
           (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ))) =
         -(∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) :=
