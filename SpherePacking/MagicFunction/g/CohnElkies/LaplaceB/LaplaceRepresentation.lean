@@ -369,19 +369,13 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       (t : ℝ), 0 < t →
       bContourIntegrandT u (a + I * (t : ℂ)) =
         bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u a) := fun a hψa t ht => by
-    have hw : bContourWeight u (a + I * (t : ℂ)) =
-        bContourWeight u (I * (t : ℂ)) * bContourWeight u a := by
-      simpa [add_assoc, add_left_comm, add_comm] using
-        bContourWeight_add (u := u) (I * (t : ℂ)) a
-    simp [bContourIntegrandT, bContourIntegrandI, hψa t ht, hw, mul_assoc]
-  have hLeft_point : ∀ t : ℝ, 0 < t →
-      bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ)) =
-        bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (-1 : ℂ)) :=
-    hShift_point (-1 : ℂ) (fun t ht => ψT'_neg_one_add_I_mul (t := t) ht)
-  have hRight_point : ∀ t : ℝ, 0 < t →
-      bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ)) =
-        bContourIntegrandI u (I * (t : ℂ)) * (-bContourWeight u (1 : ℂ)) :=
-    hShift_point (1 : ℂ) (fun t ht => ψT'_one_add_I_mul (t := t) ht)
+    simp [bContourIntegrandT, bContourIntegrandI, hψa t ht,
+      show bContourWeight u (a + I * (t : ℂ)) =
+          bContourWeight u (I * (t : ℂ)) * bContourWeight u a by
+        simpa [add_assoc, add_left_comm, add_comm] using
+          bContourWeight_add (u := u) (I * (t : ℂ)) a, mul_assoc]
+  have hLeft_point := hShift_point (-1 : ℂ) (fun t ht => ψT'_neg_one_add_I_mul (t := t) ht)
+  have hRight_point := hShift_point (1 : ℂ) (fun t ht => ψT'_one_add_I_mul (t := t) ht)
   have hITS : ∀ z : ℂ, 0 < z.im →
       bContourIntegrandT u z + bContourIntegrandS u z = -bContourIntegrandI u z := fun z hz => by
     have hψ : ψI' z = ψT' z + ψS' z := by
