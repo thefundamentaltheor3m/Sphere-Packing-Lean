@@ -137,10 +137,9 @@ public lemma coeff_norm_le (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
     (fun t ht => by
       have habs : |1 - t| ≤ 1 := by
         grind only [= mem_Ioo, = abs.eq_1, = max_def]
-      have hnorm : ‖((1 : ℂ) - (t : ℂ))‖ = |1 - t| := by
-        rw [show ((1 : ℂ) - (t : ℂ)) = ((1 - t : ℝ) : ℂ) from by push_cast; ring]
-        exact Complex.norm_real _
-      rwa [hnorm])
+      change ‖((1 : ℂ) - (t : ℂ))‖ ≤ 1
+      rw [show ((1 : ℂ) - (t : ℂ)) = ((1 - t : ℝ) : ℂ) from by push_cast; ring, Complex.norm_real]
+      exact habs)
     t ht
 
 /-- Expand `cexp ((r : ℂ) * coeff t)` into the product of exponentials used in `g`. -/
@@ -155,29 +154,23 @@ lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
     have hΦ : ContinuousOn (MagicFunction.a.RealIntegrands.Φ₄ (r := r)) (Ioo (0 : ℝ) 1) :=
       (MagicFunction.a.RealIntegrands.Φ₄_contDiffOn (r := r)).continuousOn.mono
         (fun _ hx => mem_Icc_of_Ioo hx)
-    have hgEq : EqOn (g r) (MagicFunction.a.RealIntegrands.Φ₄ (r := r)) (Ioo (0 : ℝ) 1) := by
-      intro t ht
-      have ht' : t ∈ Icc (0 : ℝ) 1 := mem_Icc_of_Ioo ht
-      have hz : z₄' t = (1 : ℂ) - t + I := z₄'_eq_of_mem ht'
-      have hz_sub : z₄' t - 1 = (-t : ℂ) + I := by
-        simp [hz, sub_eq_add_neg, add_assoc, add_comm]
-      have hz_coeff : (π * I : ℂ) * (z₄' t : ℂ) = coeff t := by
-        simp [coeff, I24Common.coeff, hz, sub_eq_add_neg, mul_add, mul_assoc,
-          add_left_comm, add_comm]
-      have hexp' :
-          cexp (π * I * r * (z₄' t : ℂ)) =
-            cexp (π * I * r) * cexp (-π * I * r * t) * cexp (-π * r : ℂ) := by
-        have harg : (r : ℂ) * coeff t = (π * I * r : ℂ) * (z₄' t : ℂ) := by
-          rw [← hz_coeff]; ring
-        simpa [mul_assoc, harg] using (exp_r_mul_coeff (r := r) (t := t))
-      -- Avoid rewriting `z₄' t` itself; only rewrite `z₄' t - 1` and the exponential.
-      simp [MagicFunction.a.RealIntegrands.Φ₄, MagicFunction.a.ComplexIntegrands.Φ₄',
-        MagicFunction.a.ComplexIntegrands.Φ₃', g, hz_sub, hexp']
-      ac_rfl
-    exact hΦ.congr hgEq
+    refine hΦ.congr fun t ht => ?_
+    have hz : z₄' t = (1 : ℂ) - t + I := z₄'_eq_of_mem (mem_Icc_of_Ioo ht)
+    have hz_sub : z₄' t - 1 = (-t : ℂ) + I := by
+      simp [hz, sub_eq_add_neg, add_assoc, add_comm]
+    have hz_coeff : (π * I : ℂ) * (z₄' t : ℂ) = coeff t := by
+      simp [coeff, I24Common.coeff, hz, sub_eq_add_neg, mul_add, mul_assoc,
+        add_left_comm, add_comm]
+    have hexp' :
+        cexp (π * I * r * (z₄' t : ℂ)) =
+          cexp (π * I * r) * cexp (-π * I * r * t) * cexp (-π * r : ℂ) := by
+      simpa [mul_assoc, show (r : ℂ) * coeff t = (π * I * r : ℂ) * (z₄' t : ℂ) by
+        rw [← hz_coeff]; ring] using (exp_r_mul_coeff (r := r) (t := t))
+    simp [MagicFunction.a.RealIntegrands.Φ₄, MagicFunction.a.ComplexIntegrands.Φ₄',
+      MagicFunction.a.ComplexIntegrands.Φ₃', g, hz_sub, hexp']
+    ac_rfl
   let A : ℝ → ℂ := fun t : ℝ => (-1 : ℂ) * φ₀'' (-1 / (-t + I)) * (-t + I) ^ 2
-  have hg_repr : ∀ r t, g r t = A t * cexp ((r : ℂ) * coeff t) := by
-    intro r t
+  have hg_repr : ∀ r t, g r t = A t * cexp ((r : ℂ) * coeff t) := fun r t => by
     simpa [A, g, mul_assoc, mul_left_comm, mul_comm] using
       congrArg (fun z ↦ A t * z) (exp_r_mul_coeff (r := r) (t := t)).symm
   simpa [gN] using
