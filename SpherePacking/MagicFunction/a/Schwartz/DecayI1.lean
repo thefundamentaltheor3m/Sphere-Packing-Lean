@@ -106,11 +106,9 @@ lemma coeff_norm_le (s : ℝ) (hs : s ∈ Ici (1 : ℝ)) : ‖coeff s‖ ≤ 2 *
 
 lemma gN_norm_bound (n : ℕ) (r s : ℝ) (hs : s ∈ Ici (1 : ℝ)) :
     ‖gN n r s‖ ≤ (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * r / s)) := by
-  have hmul :
-      ‖coeff s‖ ^ n * ‖g r s‖ ≤ (2 * π) ^ n * (Cφ * rexp (-2 * π * s) * rexp (-π * r / s)) :=
+  simpa [gN, norm_pow, mul_assoc, mul_left_comm, mul_comm] using
     mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) (coeff_norm_le (s := s) hs) n)
       (g_norm_bound (r := r) (s := s) hs) (norm_nonneg _) (by positivity)
-  simpa [gN, norm_pow, mul_assoc, mul_left_comm, mul_comm] using hmul
 
 lemma exp_r_mul_coeff (r s : ℝ) :
     cexp ((r : ℂ) * coeff s) =
