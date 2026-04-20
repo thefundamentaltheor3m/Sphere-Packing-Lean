@@ -32,8 +32,7 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
   obtain ⟨δexp, hδexp_pos, hδexp⟩ := (Metric.continuousAt_iff.1 hExp) 1 (by norm_num)
   have hExpBound : ∀ {z : ℂ}, dist z (1 : ℂ) < δexp → expNorm z ≤ M := by
     intro z hz
-    have habs : |expNorm z - expNorm (1 : ℂ)| < 1 := by
-      simpa [Real.dist_eq] using hδexp hz
+    have habs : |expNorm z - expNorm (1 : ℂ)| < 1 := by simpa [Real.dist_eq] using hδexp hz
     simp only [M]
     linarith [le_abs_self (expNorm z - expNorm (1 : ℂ))]
   refine (Metric.tendsto_nhdsWithin_nhds).2 ?_
@@ -42,8 +41,7 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
   have hub :
       Tendsto (fun z : ℂ => (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M) (𝓝 (1 : ℂ))
         (𝓝 (0 : ℝ)) := by
-    have hcont : Continuous (fun z : ℂ => (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M) := by
-      fun_prop
+    have hcont : Continuous (fun z : ℂ => (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M) := by fun_prop
     simpa using hcont.tendsto (1 : ℂ)
   obtain ⟨δpow, hδpow_pos, hδpow⟩ :=
     Metric.mem_nhds_iff.1 <| Metric.tendsto_nhds.1 hub ε hε
@@ -54,12 +52,11 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
   by_cases hz1 : z = (1 : ℂ)
   · subst hz1
     simpa [MagicFunction.a.ComplexIntegrands.Φ₃'] using hε
-  have hdist_exp : dist z (1 : ℂ) < δexp :=
-    lt_of_lt_of_le hdistz (min_le_left _ _)
+  have hdist_exp : dist z (1 : ℂ) < δexp := hdistz.trans_le (min_le_left _ _)
   have hdist_lt1 : dist z (1 : ℂ) < 1 :=
-    lt_of_lt_of_le hdistz (le_trans (min_le_right _ _) (min_le_left _ _))
+    hdistz.trans_le ((min_le_right _ _).trans (min_le_left _ _))
   have hdist_pow : dist z (1 : ℂ) < δpow :=
-    lt_of_lt_of_le hdistz (le_trans (min_le_right _ _) (min_le_right _ _))
+    hdistz.trans_le ((min_le_right _ _).trans (min_le_right _ _))
   have hexpZ : expNorm z ≤ M := hExpBound hdist_exp
   have hzU : z ∈ UpperHalfPlane.upperHalfPlaneSet :=
     mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one hzcl hz1
@@ -104,14 +101,13 @@ public lemma tendsto_Φ₃'_one_within_closure_wedgeSet (r : ℝ) :
     have heq : ‖MagicFunction.a.ComplexIntegrands.Φ₃' r z‖
         = ‖φ₀'' (-1 / (z - 1))‖ * (dist z (1 : ℂ)) ^ (2 : ℕ) * expNorm z := by
       simp [MagicFunction.a.ComplexIntegrands.Φ₃', expNorm, dist_eq_norm, mul_left_comm, mul_comm]
-    rw [heq]
-    gcongr
+    rw [heq]; gcongr
   have hpow_small : (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M < ε := by
     have hnn : 0 ≤ (C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M := by positivity
     have h : dist ((C₀ : ℝ) * (dist z (1 : ℂ)) ^ (2 : ℕ) * M) (0 : ℝ) < ε :=
       hδpow (show z ∈ Metric.ball (1 : ℂ) δpow from hdist_pow)
     rwa [Real.dist_eq, sub_zero, abs_of_nonneg hnn] at h
-  simpa [dist_eq_norm] using lt_of_le_of_lt hmain hpow_small
+  simpa [dist_eq_norm] using hmain.trans_lt hpow_small
 
 end
 
