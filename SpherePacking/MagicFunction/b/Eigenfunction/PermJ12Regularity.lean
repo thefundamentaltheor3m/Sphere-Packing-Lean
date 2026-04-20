@@ -96,16 +96,11 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet (r : ℝ) :
     fun zH =>
       HSMul.hSMul (α := Matrix.SpecialLinearGroup (Fin 2) ℤ) (β := UpperHalfPlane)
         (γ := UpperHalfPlane) g zH
-  have hg :
-      g =
-        ⟨!![-1, 0; 1, -1], by
-          norm_num [Matrix.det_fin_two_of]⟩ := by
+  have hg : g = ⟨!![-1, 0; 1, -1], by norm_num [Matrix.det_fin_two_of]⟩ := by
     ext i j; fin_cases i <;> fin_cases j <;> simp [g, ModularGroup.S, ModularGroup.T]
   have hdenom : ∀ {z : ℂ} (hz : 0 < z.im),
       UpperHalfPlane.denom g (⟨z, hz⟩ : UpperHalfPlane) = (z : ℂ) - 1 := fun {z} hz => by
-    have hcalc : UpperHalfPlane.denom g (⟨z, hz⟩ : UpperHalfPlane) = (z : ℂ) + (-1 : ℂ) := by
-      simp [UpperHalfPlane.denom, hg]
-    simpa [sub_eq_add_neg] using hcalc
+    simp [UpperHalfPlane.denom, hg, sub_eq_add_neg]
   have hgAct_im :
       ∀ {z : ℂ} (hz : 0 < z.im),
         (gAct (⟨z, hz⟩ : UpperHalfPlane)).im = z.im / Complex.normSq (z - 1) := fun {z} hz => by
@@ -137,8 +132,7 @@ public lemma tendsto_Ψ₁'_one_within_closure_wedgeSet (r : ℝ) :
         ψT'_eq_neg_ψS_mul := hψT'
         mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one :=
           mem_upperHalfPlane_of_mem_closure_wedgeSet_ne_one
-        closure_wedgeSet_subset_abs_re_sub_one_le_im := by
-          intro z hz
+        closure_wedgeSet_subset_abs_re_sub_one_le_im := fun {z} hz => by
           simpa using (closure_wedgeSet_subset_abs_re_sub_one_le_im (a := z) hz)
       } : SpherePacking.Contour.TendstoPsiOneHypotheses wedgeSet ψS ψT' Ψ₁' gAct 2))
       (r := r))
