@@ -61,25 +61,22 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
   classical
   let As : ι → Set (EuclideanSpace ℝ τ) := fun i => if i ∈ s then f i else ∅
   have As_mble : ∀ i, MeasurableSet (As i) := fun i ↦ by
-    by_cases hi : i ∈ s
-    · simpa [As, hi] using h_measurable i hi
-    · simp [As, hi]
+    by_cases hi : i ∈ s <;> [simpa [As, hi] using h_measurable i hi; simp [As, hi]]
   have As_disj : Pairwise fun i j => Disjoint (As i) (As j) := by
     intro i j hij
     by_cases hi : i ∈ s <;> by_cases hj : j ∈ s
     · simpa [As, hi, hj] using h_disjoint hi hj hij
     all_goals simp [As, hi, hj]
-  have hUnion_subset : (⋃ i, As i) ⊆ ⋃ x ∈ s, f x := by
+  obtain ⟨L, hL⟩ := (h_bounded.subset (show (⋃ i, As i) ⊆ ⋃ x ∈ s, f x by
     intro x hx
     rcases Set.mem_iUnion.1 hx with ⟨i, hi⟩
     by_cases hs : i ∈ s
     · exact Set.mem_iUnion₂.2 ⟨i, hs, by simpa [As, hs] using hi⟩
-    · simp [As, hs] at hi
-  obtain ⟨L, hL⟩ := (h_bounded.subset hUnion_subset).subset_ball 0
-  have hUnion_fin : volume (⋃ i, As i) ≠ ∞ :=
-    ne_top_of_le_ne_top (MeasureTheory.measure_ball_lt_top (μ := volume)).ne (volume.mono hL)
+    · simp [As, hs] at hi)).subset_ball 0
   exact (Measure.finite_const_le_meas_of_disjoint_iUnion (μ := volume) hc As_mble As_disj
-    hUnion_fin).subset fun i hi ↦ by simpa [As, hi] using h_volume i hi
+    (ne_top_of_le_ne_top (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
+      (volume.mono hL))).subset
+    fun i hi ↦ by simpa [As, hi] using h_volume i hi
 
 /-- A periodic packing has only finitely many centers in a bounded set (in positive dimension). -/
 public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd : 0 < d) :
@@ -178,13 +175,13 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv'
   refine S.addActionOrbitRelEquiv _ fun x ↦ ?_
   obtain ⟨v, ⟨hv, hv'⟩⟩ := exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x
   use ⟨v.val, ?_⟩, ?_, ?_
-  · refine Set.mem_of_subset_of_mem ?_ v.prop
-    rw [← Submodule.coe_toAddSubgroup, Basis.ofZLatticeBasis_span]; rfl
+  · exact Set.mem_of_subset_of_mem
+      (by rw [← Submodule.coe_toAddSubgroup, Basis.ofZLatticeBasis_span]; rfl) v.prop
   · simp only at hv' ⊢; convert hv using 1
   · intro s hs
     rw [← hv' ⟨s, ?_⟩ hs]
-    refine Set.mem_of_subset_of_mem ?_ s.prop
-    rw [← Submodule.coe_toAddSubgroup, Basis.ofZLatticeBasis_span]; rfl
+    exact Set.mem_of_subset_of_mem
+      (by rw [← Submodule.coe_toAddSubgroup, Basis.ofZLatticeBasis_span]; rfl) s.prop
 
 public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
