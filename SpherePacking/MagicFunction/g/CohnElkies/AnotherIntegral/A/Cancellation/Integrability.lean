@@ -38,42 +38,31 @@ private lemma continuousOn_aBracket_of_subset_Ioi {s : Set ℝ} (hs : ∀ t ∈ 
             ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))) s := by
   have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im} := by
     simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-  have hcontDen : ContinuousOn (fun t : ℝ => (t : ℂ)) s :=
-    (continuous_ofReal : Continuous fun t : ℝ => (t : ℂ)).continuousOn
   have hden0 : ∀ t ∈ s, (t : ℂ) ≠ 0 := fun t ht => by exact_mod_cast (ne_of_gt (hs t ht))
   have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) s :=
-    continuous_const.continuousOn.div hcontDen hden0
-  have hmaps : Set.MapsTo (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) s {z : ℂ | 0 < z.im} := by
-    intro t ht
-    simpa [imag_I_div t] using inv_pos.2 (hs t ht)
+    continuous_const.continuousOn.div (continuous_ofReal.continuousOn) hden0
   have hcontPhiDiv : ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) s :=
-    hcontφ.comp hcontIdiv hmaps
-  have hcontT2 : ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) s := by fun_prop
-  exact (((hcontT2.mul hcontPhiDiv).sub (by fun_prop)).add (by fun_prop)).sub (by fun_prop)
+    hcontφ.comp hcontIdiv fun t ht => by simpa [imag_I_div t] using inv_pos.2 (hs t ht)
+  exact ((((by fun_prop : ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) s).mul
+    hcontPhiDiv).sub (by fun_prop)).add (by fun_prop)).sub (by fun_prop)
 
 /-! ## Asymptotic/cancellation bound for integrability on `[1,∞)`. -/
 
 lemma exp_neg2piA_le_tpow2_mul_exp_neg2pit {A t : ℝ} (ht1 : 1 ≤ t) (htA : t ≤ A) :
     Real.exp (-2 * π * A) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-  have hexp : Real.exp (-2 * π * A) ≤ Real.exp (-2 * π * t) := by
-    refine Real.exp_le_exp.2 ?_
-    have hconst : (-2 * π : ℝ) ≤ 0 := by nlinarith [Real.pi_pos]
-    exact mul_le_mul_of_nonpos_left htA hconst
-  have ht2 : (1 : ℝ) ≤ t ^ (2 : ℕ) := by nlinarith [ht1]
+  have hexp : Real.exp (-2 * π * A) ≤ Real.exp (-2 * π * t) :=
+    Real.exp_le_exp.2 <| mul_le_mul_of_nonpos_left htA (by nlinarith [Real.pi_pos])
   exact hexp.trans <| by
-    have hexp0 : 0 ≤ Real.exp (-2 * π * t) := (Real.exp_pos _).le
-    simpa [one_mul] using mul_le_mul_of_nonneg_right ht2 hexp0
+    simpa [one_mul] using mul_le_mul_of_nonneg_right (by nlinarith [ht1] : (1 : ℝ) ≤ t ^ (2 : ℕ))
+      (Real.exp_pos _).le
 
 lemma M_le_divExp_mul_tpow2_exp {M A t : ℝ} (hM0 : 0 ≤ M) (ht1 : 1 ≤ t) (htA : t ≤ A) :
     M ≤ (M / Real.exp (-2 * π * A)) * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) := by
-  have hden_le : Real.exp (-2 * π * A) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) :=
-    exp_neg2piA_le_tpow2_mul_exp_neg2pit (A := A) (t := t) ht1 htA
-  have hcoef0 : 0 ≤ M / Real.exp (-2 * π * A) := div_nonneg hM0 (Real.exp_pos _).le
-  have hmul :=
-    mul_le_mul_of_nonneg_left hden_le hcoef0
-  have hleft : (M / Real.exp (-2 * π * A)) * Real.exp (-2 * π * A) = M := by
-    field_simp [Real.exp_ne_zero]
-  simpa [hleft] using hmul
+  have hmul := mul_le_mul_of_nonneg_left
+    (exp_neg2piA_le_tpow2_mul_exp_neg2pit (A := A) (t := t) ht1 htA)
+    (div_nonneg hM0 (Real.exp_pos (-2 * π * A)).le)
+  simpa [show (M / Real.exp (-2 * π * A)) * Real.exp (-2 * π * A) = M by
+    field_simp [Real.exp_ne_zero]] using hmul
 
 lemma phi0Cancellation_compact_case {M A C t : ℝ} (ht1 : 1 ≤ t) (htA : t ≤ A)
     (hbound :
@@ -87,15 +76,10 @@ lemma phi0Cancellation_compact_case {M A C t : ℝ} (ht1 : 1 ≤ t) (htA : t ≤
           ((8640 / π : ℝ) : ℂ) * t -
           ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
       C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-  have hM0 : 0 ≤ M := le_trans (norm_nonneg _) hbound
-  have hscale :
-      M ≤ (M / Real.exp (-2 * π * A)) * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) :=
-    M_le_divExp_mul_tpow2_exp (M := M) (A := A) (t := t) hM0 ht1 htA
-  have hfac0 : 0 ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by positivity
-  have hmul :
-      (M / Real.exp (-2 * π * A)) * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) ≤
-        C * ((t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) :=
-    mul_le_mul_of_nonneg_right hCle hfac0
+  have hscale := M_le_divExp_mul_tpow2_exp (M := M) (A := A) (t := t)
+    (le_trans (norm_nonneg _) hbound) ht1 htA
+  have hmul := mul_le_mul_of_nonneg_right hCle
+    (by positivity : (0 : ℝ) ≤ (t ^ (2 : ℕ)) * Real.exp (-2 * π * t))
   grind only
 
 lemma exists_phi0_cancellation_bound :
@@ -110,11 +94,9 @@ lemma exists_phi0_cancellation_bound :
   rcases exists_phi2'_sub_720_bound_ge with ⟨C₂, A₂, hC₂pos, hA₂, hφ₂⟩
   rcases exists_phi4'_sub_exp_sub_504_bound_ge with ⟨C₄, A₄, hC₄pos, hA₄, hφ₄⟩
   let A : ℝ := max A₂ A₄
-  have hA1 : 1 ≤ A := le_trans hA₂ (le_max_left _ _)
   have hA₂' : A₂ ≤ A := le_max_left _ _
   have hA₄' : A₄ ≤ A := le_max_right _ _
-  -- Rewrite the cancellation expression using the `S`-transform.
-  -- Also expand the `φ₂'`/`φ₄'` principal parts.
+  have hA1 : 1 ≤ A := le_trans hA₂ hA₂'
   have hrewrite :
       ∀ {t : ℝ} (ht0 : 0 < t),
         (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
@@ -127,36 +109,16 @@ lemma exists_phi0_cancellation_bound :
                 (φ₄' (zI t ht0) - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))) := by
     intro t ht0
     let z : ℍ := zI t ht0
-    have htinv : 0 < t⁻¹ := inv_pos.2 ht0
-    have hS : ModularGroup.S • z = zI t⁻¹ htinv := by
+    have hS : ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) := by
       simpa [z] using modular_S_smul_zI t ht0
     have hcoe : ((ModularGroup.S • z : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) := by
-      calc
-        ((ModularGroup.S • z : ℍ) : ℂ) = (Complex.I : ℂ) * (t⁻¹ : ℂ) := by
-          have : ((ModularGroup.S • z : ℍ) : ℂ) = ((zI t⁻¹ htinv : ℍ) : ℂ) := by
-            simp [hS]
-          simpa [zI] using this
-        _ = (Complex.I : ℂ) / (t : ℂ) := by
-          simp [div_eq_mul_inv]
+      calc ((ModularGroup.S • z : ℍ) : ℂ)
+          = (Complex.I : ℂ) * (t⁻¹ : ℂ) := by simpa [zI] using congrArg (↑· : ℍ → ℂ) hS
+        _ = (Complex.I : ℂ) / (t : ℂ) := by simp [div_eq_mul_inv]
     have hφ₀S : φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • z) := by
-      have hcoe' :
-          (Complex.I : ℂ) / (t : ℂ) = ((ModularGroup.S • z : ℍ) : ℂ) := hcoe.symm
-      calc
-        φ₀'' ((Complex.I : ℂ) / (t : ℂ))
-            = φ₀'' ((ModularGroup.S • z : ℍ) : ℂ) := by
-                simpa using congrArg φ₀'' hcoe'
-        _ = φ₀ (ModularGroup.S • z) := by
-              simp
+      simpa using congrArg φ₀'' hcoe.symm
     have hzsq : (z : ℂ) ^ (2 : ℕ) = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
-      dsimp [z, zI]
-      calc
-        ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ)
-            = (Complex.I : ℂ) ^ (2 : ℕ) * (t : ℂ) ^ (2 : ℕ) := by
-                simpa using (mul_pow (Complex.I : ℂ) (t : ℂ) 2)
-        _ = (-1 : ℂ) * (t : ℂ) ^ (2 : ℕ) := by simp
-        _ = -((t : ℂ) ^ (2 : ℕ)) := by simp
-        _ = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
-            simp only [ofReal_pow]
+      dsimp [z, zI]; push_cast; rw [mul_pow]; simp
     have hST' :
         ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ (ModularGroup.S • z) =
           ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z -
@@ -240,147 +202,111 @@ lemma exists_phi0_cancellation_bound :
                   (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))) := by
               ring_nf
       _ = _ := by rfl
-  -- Large-`t` bound from the previously established asymptotics.
   let Clarge : ℝ := C₀ + (12 / π) * C₂ + (36 / (π ^ (2 : ℕ))) * C₄
   have hClarge_pos : 0 < Clarge := by
-    dsimp [Clarge]
-    have h12pi : 0 < (12 / π : ℝ) :=
-      div_pos (by norm_num) Real.pi_pos
-    have h36pi2 : 0 < (36 / (π ^ (2 : ℕ)) : ℝ) :=
-      div_pos (by norm_num) (pow_pos Real.pi_pos _)
-    have hterm2 : 0 < (12 / π : ℝ) * C₂ := mul_pos h12pi hC₂pos
-    have hterm4 : 0 < (36 / (π ^ (2 : ℕ)) : ℝ) * C₄ := mul_pos h36pi2 hC₄pos
-    exact add_pos (add_pos hC₀pos hterm2) hterm4
-  -- Bound on the compact interval `t ∈ [1,A]`.
+    dsimp [Clarge]; positivity
   have hcompact :
       ∃ M : ℝ, ∀ t : ℝ, 1 ≤ t → t ≤ A →
         ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
               ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
               ((8640 / π : ℝ) : ℂ) * t -
               ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤ M := by
-    -- Use the extreme value theorem on the compact interval `t ∈ [1,A]`.
     let g : ℝ → ℝ := fun t =>
       ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
             ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
             ((8640 / π : ℝ) : ℂ) * t -
             ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖
     have hg_cont : ContinuousOn g (Set.Icc (1 : ℝ) A) := by
-      have hcontExpr := continuousOn_aBracket_of_subset_Ioi
-        (s := Set.Icc (1 : ℝ) A) (fun t ht => lt_of_lt_of_le (by norm_num) ht.1)
-      simpa [g] using hcontExpr.norm
-    have hcomp : IsCompact (Set.Icc (1 : ℝ) A) := isCompact_Icc
-    have hne : (Set.Icc (1 : ℝ) A).Nonempty := by
-      refine ⟨1, le_rfl, hA1⟩
-    rcases hcomp.exists_isMaxOn hne hg_cont with ⟨t₀, ht₀mem, ht₀max⟩
-    refine ⟨g t₀, ?_⟩
-    intro t ht1 htA
-    have htmem : t ∈ Set.Icc (1 : ℝ) A := ⟨ht1, htA⟩
-    have ht₀max' : ∀ t ∈ Set.Icc (1 : ℝ) A, g t ≤ g t₀ := by
-      simpa [isMaxOn_iff] using ht₀max
-    have hle : g t ≤ g t₀ := ht₀max' t htmem
-    simpa [g] using hle
-  -- Final constant.
+      simpa [g] using (continuousOn_aBracket_of_subset_Ioi (s := Set.Icc (1 : ℝ) A)
+        (fun t ht => lt_of_lt_of_le (by norm_num) ht.1)).norm
+    rcases isCompact_Icc.exists_isMaxOn ⟨1, le_rfl, hA1⟩ hg_cont with ⟨t₀, _, ht₀max⟩
+    refine ⟨g t₀, fun t ht1 htA => ?_⟩
+    simpa [g] using (by simpa [isMaxOn_iff] using ht₀max : ∀ t ∈ Set.Icc (1 : ℝ) A, g t ≤ g t₀)
+      t ⟨ht1, htA⟩
   rcases hcompact with ⟨M, hM⟩
   let C : ℝ := max Clarge (M / Real.exp (-2 * π * A))
-  refine ⟨C, ?_, ?_⟩
-  · have : 0 < Clarge := hClarge_pos
-    exact lt_of_lt_of_le this (le_max_left _ _)
-  · intro t ht1
-    have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht1
-    by_cases htA : A ≤ t
-    · -- `t ≥ A`: use the asymptotic bounds for `φ₂'` and `φ₄'`.
-      have hA₂t : A₂ ≤ t := le_trans hA₂' htA
-      have hA₄t : A₄ ≤ t := le_trans hA₄' htA
-      let z : ℍ := zI t ht0
-      have hφ₀z : ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * t) := by
-        have hz : φ₀'' ((Complex.I : ℂ) * (t : ℂ)) = φ₀ z := by
-          simpa [z, zI] using (φ₀''_coe_upperHalfPlane z)
-        simpa [hz] using hφ₀ t ht1
-      have hφ₂z : ‖φ₂' z - (720 : ℂ)‖ ≤ C₂ * Real.exp (-2 * π * t) := by
-        simpa [z] using hφ₂ t ht0 hA₂t
-      have hφ₄z :
-          ‖φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)‖ ≤ C₄ * Real.exp (-2 * π * t) := by
-        simpa [z] using hφ₄ t ht0 hA₄t
-      have ht2 : (1 : ℝ) ≤ t ^ (2 : ℕ) := by nlinarith [ht1]
-      have hle_t : t ≤ t ^ (2 : ℕ) := by nlinarith [ht1]
-      have ht0le : 0 ≤ t := (le_trans (by norm_num) ht1)
-      have ht2nn : 0 ≤ (t ^ (2 : ℕ) : ℝ) := by positivity
-      have h12pi0 : 0 ≤ (12 / π : ℝ) := le_of_lt (div_pos (by norm_num) Real.pi_pos)
-      have h36pi2_0 : 0 ≤ (36 / (π ^ (2 : ℕ)) : ℝ) :=
-        le_of_lt (div_pos (by norm_num) (pow_pos Real.pi_pos _))
-      have hexp0 : 0 ≤ Real.exp (-2 * π * t) := (Real.exp_pos _).le
-      have hrew := hrewrite ht0
-      -- Apply the triangle inequality to the rewritten form.
-      have hnorm1 :
-          ‖((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z‖ ≤ C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-        calc ‖((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z‖
-            = (t ^ (2 : ℕ) : ℝ) * ‖φ₀ z‖ := by simp [Complex.norm_real]
-          _ ≤ (t ^ (2 : ℕ) : ℝ) * (C₀ * Real.exp (-2 * π * t)) := by gcongr
-          _ = C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by ring
-      have hnorm2 :
-          ‖((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))‖ ≤
-            ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-        have hX0 : 0 ≤ C₂ * Real.exp (-2 * π * t) := mul_nonneg hC₂pos.le hexp0
-        calc ‖((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))‖
-            = (12 / π) * t * ‖φ₂' z - (720 : ℂ)‖ := by
-              simp [mul_assoc, Complex.norm_real, Real.norm_eq_abs,
-                abs_of_nonneg ht0le, abs_of_pos Real.pi_pos]
-          _ ≤ (12 / π) * t * (C₂ * Real.exp (-2 * π * t)) := by
-              gcongr
-          _ ≤ (12 / π) * (t ^ (2 : ℕ)) * (C₂ * Real.exp (-2 * π * t)) := by
-              have := mul_le_mul_of_nonneg_right hle_t hX0
-              simpa [mul_assoc] using mul_le_mul_of_nonneg_left this h12pi0
-          _ = ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by ring
-      have hnorm3 :
-          ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-              (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))‖ ≤
-            ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-        have hX0 : 0 ≤ C₄ * Real.exp (-2 * π * t) := mul_nonneg hC₄pos.le hexp0
-        calc ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
-              (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))‖
-            = (36 / (π ^ (2 : ℕ))) * ‖φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)‖ := by
-              simp [Complex.norm_real, Real.norm_eq_abs]
-          _ ≤ (36 / (π ^ (2 : ℕ))) * (C₄ * Real.exp (-2 * π * t)) := by gcongr
-          _ ≤ (36 / (π ^ (2 : ℕ))) * (t ^ (2 : ℕ)) * (C₄ * Real.exp (-2 * π * t)) := by
-              have := (mul_le_mul_of_nonneg_right ht2 hX0)
-              simpa [one_mul, mul_assoc] using mul_le_mul_of_nonneg_left this h36pi2_0
-          _ = ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by ring
-      have htri :
-          ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-              ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-              ((8640 / π : ℝ) : ℂ) * t -
-              ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
-            Clarge * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-        -- Rewrite via `hrew`, then apply `‖x - y + z‖ ≤ ‖x‖ + ‖y‖ + ‖z‖`.
-        set x : ℂ := ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z
-        set y : ℂ := ((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))
-        set z' : ℂ :=
-          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))
-        have hE : (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+  refine ⟨C, lt_of_lt_of_le hClarge_pos (le_max_left _ _), ?_⟩
+  intro t ht1
+  have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht1
+  by_cases htA : A ≤ t
+  · let z : ℍ := zI t ht0
+    have hφ₀z : ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * t) := by
+      have hz : φ₀'' ((Complex.I : ℂ) * (t : ℂ)) = φ₀ z := by
+        simpa [z, zI] using (φ₀''_coe_upperHalfPlane z)
+      simpa [hz] using hφ₀ t ht1
+    have hφ₂z : ‖φ₂' z - (720 : ℂ)‖ ≤ C₂ * Real.exp (-2 * π * t) := by
+      simpa [z] using hφ₂ t ht0 (le_trans hA₂' htA)
+    have hφ₄z :
+        ‖φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)‖ ≤ C₄ * Real.exp (-2 * π * t) := by
+      simpa [z] using hφ₄ t ht0 (le_trans hA₄' htA)
+    have ht2 : (1 : ℝ) ≤ t ^ (2 : ℕ) := by nlinarith [ht1]
+    have hle_t : t ≤ t ^ (2 : ℕ) := by nlinarith [ht1]
+    have ht0le : 0 ≤ t := le_trans (by norm_num) ht1
+    have h12pi0 : 0 ≤ (12 / π : ℝ) := le_of_lt (div_pos (by norm_num) Real.pi_pos)
+    have h36pi2_0 : 0 ≤ (36 / (π ^ (2 : ℕ)) : ℝ) :=
+      le_of_lt (div_pos (by norm_num) (pow_pos Real.pi_pos _))
+    have hexp0 : 0 ≤ Real.exp (-2 * π * t) := (Real.exp_pos _).le
+    have hrew := hrewrite ht0
+    have hnorm1 :
+        ‖((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z‖ ≤ C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+      calc ‖((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z‖
+          = (t ^ (2 : ℕ) : ℝ) * ‖φ₀ z‖ := by simp [Complex.norm_real]
+        _ ≤ (t ^ (2 : ℕ) : ℝ) * (C₀ * Real.exp (-2 * π * t)) := by gcongr
+        _ = C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by ring
+    have hnorm2 :
+        ‖((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))‖ ≤
+          ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+      have hX0 : 0 ≤ C₂ * Real.exp (-2 * π * t) := mul_nonneg hC₂pos.le hexp0
+      calc ‖((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))‖
+          = (12 / π) * t * ‖φ₂' z - (720 : ℂ)‖ := by
+            simp [mul_assoc, Complex.norm_real, Real.norm_eq_abs,
+              abs_of_nonneg ht0le, abs_of_pos Real.pi_pos]
+        _ ≤ (12 / π) * t * (C₂ * Real.exp (-2 * π * t)) := by gcongr
+        _ ≤ (12 / π) * (t ^ (2 : ℕ)) * (C₂ * Real.exp (-2 * π * t)) := by
+            simpa [mul_assoc] using mul_le_mul_of_nonneg_left
+              (mul_le_mul_of_nonneg_right hle_t hX0) h12pi0
+        _ = ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by ring
+    have hnorm3 :
+        ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
+            (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))‖ ≤
+          ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+      have hX0 : 0 ≤ C₄ * Real.exp (-2 * π * t) := mul_nonneg hC₄pos.le hexp0
+      calc ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
+            (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))‖
+          = (36 / (π ^ (2 : ℕ))) * ‖φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)‖ := by
+            simp [Complex.norm_real, Real.norm_eq_abs]
+        _ ≤ (36 / (π ^ (2 : ℕ))) * (C₄ * Real.exp (-2 * π * t)) := by gcongr
+        _ ≤ (36 / (π ^ (2 : ℕ))) * (t ^ (2 : ℕ)) * (C₄ * Real.exp (-2 * π * t)) := by
+            simpa [one_mul, mul_assoc] using mul_le_mul_of_nonneg_left
+              (mul_le_mul_of_nonneg_right ht2 hX0) h36pi2_0
+        _ = ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by ring
+    have htri :
+        ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
             ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
             ((8640 / π : ℝ) : ℂ) * t -
-            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) = x - y + z' := by
-          simpa [x, y, z'] using hrew
-        have hxyz : ‖x - y + z'‖ ≤ ‖x‖ + ‖y‖ + ‖z'‖ := by
-          calc ‖x - y + z'‖
-              ≤ ‖x - y‖ + ‖z'‖ := norm_add_le _ _
-            _ ≤ (‖x‖ + ‖y‖) + ‖z'‖ := by gcongr; exact norm_sub_le _ _
-            _ = ‖x‖ + ‖y‖ + ‖z'‖ := by ring
-        have hbd := hxyz.trans (add_le_add_three hnorm1 hnorm2 hnorm3)
-        have hClarge_eq :
-            C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) +
-              ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) +
-              ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t)
-              = Clarge * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-          dsimp [Clarge]; ring
-        rw [hE]; exact hbd.trans hClarge_eq.le
-      exact htri.trans (by gcongr; exact le_max_left _ _)
-    · -- `t ≤ A`: use the compact bound.
-      have htA' : t ≤ A := le_of_not_ge htA
-      have hCle : M / Real.exp (-2 * π * A) ≤ C := le_max_right _ _
-      exact
-        phi0Cancellation_compact_case (M := M) (A := A) (C := C) (t := t) ht1 htA'
-          (hM t ht1 htA') hCle
+            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
+          Clarge * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+      set x : ℂ := ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z
+      set y : ℂ := ((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))
+      set z' : ℂ :=
+        ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))
+      have hE : (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+          ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+          ((8640 / π : ℝ) : ℂ) * t -
+          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) = x - y + z' := by simpa [x, y, z'] using hrew
+      have hxyz : ‖x - y + z'‖ ≤ ‖x‖ + ‖y‖ + ‖z'‖ :=
+        (norm_add_le _ _).trans (by linarith [norm_sub_le x y, norm_nonneg z'])
+      have hClarge_eq :
+          C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) +
+            ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) +
+            ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t)
+            = Clarge * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+        dsimp [Clarge]; ring
+      rw [hE]
+      exact (hxyz.trans (add_le_add_three hnorm1 hnorm2 hnorm3)).trans hClarge_eq.le
+    exact htri.trans (by gcongr; exact le_max_left _ _)
+  · exact phi0Cancellation_compact_case (M := M) (A := A) (C := C) (t := t) ht1
+      (le_of_not_ge htA) (hM t ht1 (le_of_not_ge htA)) (le_max_right _ _)
 
 /-! ## Integrability of the "another integrand" for `0 < u`. -/
 
@@ -390,129 +316,93 @@ private lemma continuousOn_aAnotherIntegrand_of_subset_Ioi
     ContinuousOn (fun t : ℝ => aAnotherIntegrand u t) s := by
   have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im} := by
     simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-  have hcont : ContinuousOn (fun t : ℝ => (t : ℂ)) s :=
-    (continuous_ofReal : Continuous fun t : ℝ => (t : ℂ)).continuousOn
   have hne : ∀ t ∈ s, (t : ℂ) ≠ 0 := fun t ht => by exact_mod_cast (ne_of_gt (hs t ht))
   have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) s := by
-    simpa [div_eq_mul_inv] using (continuous_const.continuousOn.mul (hcont.inv₀ hne))
-  have hmaps : Set.MapsTo (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) s {z : ℂ | 0 < z.im} := by
-    intro t ht
-    have ht0 : 0 < t := hs t ht
-    have : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := imag_I_div t
-    simpa [this] using inv_pos.2 ht0
+    simpa [div_eq_mul_inv] using continuous_const.continuousOn.mul
+      (continuous_ofReal.continuousOn.inv₀ hne)
   have hφcont : ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) s :=
-    hcontφ.comp hcontIdiv hmaps
-  have hpowC : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ) := by fun_prop
-  have hexpC : Continuous fun t : ℝ => ((Real.exp (-π * u * t)) : ℂ) := by fun_prop
-  refine
-    ((hpowC.continuousOn.mul hφcont).sub ?_ |>.add ?_ |>.sub ?_).mul
-      hexpC.continuousOn
-  · fun_prop
-  · fun_prop
-  · fun_prop
+    hcontφ.comp hcontIdiv fun t ht => by simpa [imag_I_div t] using inv_pos.2 (hs t ht)
+  refine ((((by fun_prop : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)).continuousOn.mul
+    hφcont).sub (by fun_prop) |>.add (by fun_prop)).sub (by fun_prop)).mul
+      (by fun_prop : Continuous fun t : ℝ => ((Real.exp (-π * u * t)) : ℂ)).continuousOn
 
 lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioc (0 : ℝ) 1) := by
-  -- Finite measure; show essential boundedness.
-  have hμ : (volume : Measure ℝ) (Set.Ioc (0 : ℝ) 1) < ⊤ := by simp
   have hmeas : MeasurableSet (Set.Ioc (0 : ℝ) 1) := measurableSet_Ioc
   rcases MagicFunction.PolyFourierCoeffBound.norm_φ₀_le with ⟨Cφ₀, hCφ₀_pos, hCφ₀⟩
   let M : ℝ :=
     Cφ₀ +
       ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
       ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖
-  have hmeas_f :
-      AEStronglyMeasurable (fun t : ℝ => aAnotherIntegrand u t)
-        ((volume : Measure ℝ).restrict (Set.Ioc (0 : ℝ) 1)) :=
-    (continuousOn_aAnotherIntegrand_of_subset_Ioi
-        (fun t ht => ht.1) u).aestronglyMeasurable hmeas
-  refine (MeasureTheory.IntegrableOn.of_bound hμ hmeas_f M ?_)
-  -- pointwise bound on the restricted measure
-  refine (ae_restrict_iff' hmeas).2 ?_
-  refine Filter.Eventually.of_forall (fun t ht => ?_)
+  refine MeasureTheory.IntegrableOn.of_bound (by simp : (volume : Measure ℝ) (Set.Ioc 0 1) < ⊤)
+    ((continuousOn_aAnotherIntegrand_of_subset_Ioi (fun t ht => ht.1) u).aestronglyMeasurable hmeas)
+    M ((ae_restrict_iff' hmeas).2 (Filter.Eventually.of_forall fun t ht => ?_))
   have ht0 : 0 < t := ht.1
-  have him_div : (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im = t⁻¹ := imag_I_div t
   have him_pos : 0 < (((Complex.I : ℂ) / (t : ℂ)) : ℂ).im := by
-    simpa [him_div] using inv_pos.2 ht0
+    simpa [imag_I_div t] using inv_pos.2 ht0
   let z : ℍ := ⟨(Complex.I : ℂ) / (t : ℂ), him_pos⟩
   have hzHalf : (1 / 2 : ℝ) < z.im := by
     have : (1 : ℝ) ≤ z.im := by
-      -- `1 ≤ 1/t` for `t ≤ 1`.
-      have ht1 : t ≤ 1 := ht.2
-      have : (1 : ℝ) ≤ t⁻¹ := by
-        exact (one_le_inv₀ ht0).2 ht1
-      simpa [z, UpperHalfPlane.im, him_div] using this
-    exact lt_of_lt_of_le (by norm_num) this
-  have hφ0z : ‖φ₀ z‖ ≤ Cφ₀ * Real.exp (-2 * π * z.im) := hCφ₀ z hzHalf
+      simpa [z, UpperHalfPlane.im, imag_I_div t] using (one_le_inv₀ ht0).2 ht.2
+    linarith
   have hφ0'' : ‖φ₀'' ((Complex.I : ℂ) / (t : ℂ))‖ ≤ Cφ₀ := by
     have hexp_le_one : Real.exp (-2 * π * z.im) ≤ 1 :=
       Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, (z.2).le])
     have hdef : φ₀ z = φ₀'' ((Complex.I : ℂ) / (t : ℂ)) := by
       simpa [z] using (φ₀''_def (z := (Complex.I : ℂ) / (t : ℂ)) him_pos).symm
-    have hmul : Cφ₀ * Real.exp (-2 * π * z.im) ≤ Cφ₀ := by
-      simpa using mul_le_mul_of_nonneg_left hexp_le_one hCφ₀_pos.le
-    simpa [hdef] using hφ0z.trans hmul
+    simpa [hdef] using (hCφ₀ z hzHalf).trans
+      (by simpa using mul_le_mul_of_nonneg_left hexp_le_one hCφ₀_pos.le)
   have ht2_le : (t ^ (2 : ℕ) : ℝ) ≤ 1 := by nlinarith [ht0.le, ht.2]
   have hexp_le_one : Real.exp (-π * u * t) ≤ 1 :=
     Real.exp_le_one_iff.2 (by
       have : 0 ≤ π * u * t := by positivity
       linarith)
-  -- Now bound `‖aAnotherIntegrand u t‖` by `M`.
-  have hnorm :
-      ‖aAnotherIntegrand u t‖ ≤ M := by
-    -- Triangle inequality on the bracket and `exp(-π u t) ≤ 1`.
-    have hbr :
+  have hbr :
+      ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
+            ((8640 / π : ℝ) : ℂ) * t -
+            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
+        (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
+          ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
+          ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := by
+    set A : ℂ := ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ))
+    set B : ℂ := ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t)
+    set Cc : ℂ := ((8640 / π : ℝ) : ℂ) * t
+    set D : ℂ := ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
+    have hsum : ‖A - B + Cc - D‖ ≤ ‖A‖ + ‖B‖ + ‖Cc‖ + ‖D‖ := by
+      calc ‖A - B + Cc - D‖
+          = ‖(A - B) + (Cc - D)‖ := by ring_nf
+        _ ≤ ‖A - B‖ + ‖Cc - D‖ := norm_add_le _ _
+        _ ≤ (‖A‖ + ‖B‖) + (‖Cc‖ + ‖D‖) := add_le_add (norm_sub_le _ _) (norm_sub_le _ _)
+        _ = ‖A‖ + ‖B‖ + ‖Cc‖ + ‖D‖ := by ring
+    have ht2nonneg : 0 ≤ (t ^ (2 : ℕ) : ℝ) := by positivity
+    have hA : ‖A‖ ≤ (t ^ (2 : ℕ) : ℝ) * Cφ₀ := by
+      simpa [A, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht2nonneg]
+        using mul_le_mul_of_nonneg_left hφ0'' ht2nonneg
+    have hB : ‖B‖ ≤ ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) := by
+      rw [show ‖B‖ = ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π * t) by
+        simp [-Complex.ofReal_exp, B]]
+      exact mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht.2]))
+        (norm_nonneg _)
+    have hC : ‖Cc‖ ≤ ‖((8640 / π : ℝ) : ℂ)‖ := by
+      rw [show ‖Cc‖ = ‖((8640 / π : ℝ) : ℂ)‖ * t by
+        simp [Cc, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0.le]]
+      simpa using mul_le_mul_of_nonneg_left ht.2 (norm_nonneg ((8640 / π : ℝ) : ℂ))
+    grind only
+  have hmul :
+      ‖aAnotherIntegrand u t‖ ≤
         ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
               ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
               ((8640 / π : ℝ) : ℂ) * t -
-              ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ ≤
-          (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
-            ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
-            ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := by
-      -- Rewrite as `A - B + C - D`, then use the triangle inequality.
-      set A : ℂ := ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ))
-      set B : ℂ := ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t)
-      set Cc : ℂ := ((8640 / π : ℝ) : ℂ) * t
-      set D : ℂ := ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
-      have hsum : ‖A - B + Cc - D‖ ≤ ‖A‖ + ‖B‖ + ‖Cc‖ + ‖D‖ := by
-        calc ‖A - B + Cc - D‖
-            = ‖(A - B) + (Cc - D)‖ := by ring_nf
-          _ ≤ ‖A - B‖ + ‖Cc - D‖ := norm_add_le _ _
-          _ ≤ (‖A‖ + ‖B‖) + (‖Cc‖ + ‖D‖) := add_le_add (norm_sub_le _ _) (norm_sub_le _ _)
-          _ = ‖A‖ + ‖B‖ + ‖Cc‖ + ‖D‖ := by ring
-      have ht2nonneg : 0 ≤ (t ^ (2 : ℕ) : ℝ) := by positivity
-      have hA : ‖A‖ ≤ (t ^ (2 : ℕ) : ℝ) * Cφ₀ := by
-        have := mul_le_mul_of_nonneg_left hφ0'' ht2nonneg
-        simpa [A, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht2nonneg] using this
-      have hExp2 : Real.exp (2 * π * t) ≤ Real.exp (2 * π) := by
-        exact Real.exp_le_exp.2 (by nlinarith [Real.pi_pos, ht.2])
-      have hB : ‖B‖ ≤ ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) := by
-        rw [show ‖B‖ = ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π * t) by
-          simp [-Complex.ofReal_exp, B]]
-        exact mul_le_mul_of_nonneg_left hExp2 (norm_nonneg _)
-      have hC : ‖Cc‖ ≤ ‖((8640 / π : ℝ) : ℂ)‖ := by
-        rw [show ‖Cc‖ = ‖((8640 / π : ℝ) : ℂ)‖ * t by
-          simp [Cc, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0.le]]
-        simpa using mul_le_mul_of_nonneg_left ht.2 (norm_nonneg ((8640 / π : ℝ) : ℂ))
-      grind only
-    have hmul :
-        ‖aAnotherIntegrand u t‖ ≤
-          ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-                ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-                ((8640 / π : ℝ) : ℂ) * t -
-                ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ := by
-      have : ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1 := by
-        rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) from by
-          simpa using norm_ofReal_exp (-π * u * t)]; exact hexp_le_one
-      simpa [aAnotherIntegrand, norm_mul, mul_assoc] using
-        (mul_le_mul_of_nonneg_left this (norm_nonneg _))
-    have hbd : ‖aAnotherIntegrand u t‖ ≤ (t ^ (2 : ℕ) : ℝ) * Cφ₀ +
-            ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ * Real.exp (2 * π) +
-            ‖((8640 / π : ℝ) : ℂ)‖ + ‖((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)‖ := hmul.trans hbr
-    have ht2Cφ₀ : (t ^ (2 : ℕ) : ℝ) * Cφ₀ ≤ Cφ₀ := by
-      simpa [one_mul] using mul_le_mul_of_nonneg_right ht2_le hCφ₀_pos.le
-    nlinarith [hbd, ht2Cφ₀]
-  exact hnorm
+              ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ := by
+    have h1 : ‖(Real.exp (-π * u * t) : ℂ)‖ ≤ 1 := by
+      rw [show ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) by
+        simpa using norm_ofReal_exp (-π * u * t)]; exact hexp_le_one
+    simpa [aAnotherIntegrand, norm_mul, mul_assoc] using
+      mul_le_mul_of_nonneg_left h1 (norm_nonneg _)
+  have ht2Cφ₀ : (t ^ (2 : ℕ) : ℝ) * Cφ₀ ≤ Cφ₀ := by
+    simpa [one_mul] using mul_le_mul_of_nonneg_right ht2_le hCφ₀_pos.le
+  nlinarith [hmul.trans hbr, ht2Cφ₀]
 
 lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ici (1 : ℝ)) := by
@@ -522,108 +412,50 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
         ‖aAnotherIntegrand u t‖ ≤ C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) := by
     intro t ht
     have ht1 : 1 ≤ t := ht
-    have hmain := hC t ht1
     have hexp :
         Real.exp (-2 * π * t) * Real.exp (-π * u * t) = Real.exp (-(2 * π + π * u) * t) := by
-      calc
-        Real.exp (-2 * π * t) * Real.exp (-π * u * t) =
-            Real.exp ((-2 * π * t) + (-π * u * t)) := by
-              simpa using (Real.exp_add (-2 * π * t) (-π * u * t)).symm
-        _ = Real.exp (-(2 * π + π * u) * t) := by
-              have : (-2 * π * t) + (-π * u * t) = (-(2 * π + π * u) * t) := by ring
-              simpa [this]
-    have hmul :=
-      (mul_le_mul_of_nonneg_right hmain (Real.exp_pos (-π * u * t)).le)
-    -- Convert the bound on the bracket to a bound on the full integrand.
+      rw [← Real.exp_add]; ring_nf
+    have hmul := mul_le_mul_of_nonneg_right (hC t ht1) (Real.exp_pos (-π * u * t)).le
     have hnorm :
         ‖aAnotherIntegrand u t‖ =
           ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
                 ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
                 ((8640 / π : ℝ) : ℂ) * t -
                 ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ * Real.exp (-π * u * t) := by
-      -- `Real.exp` is positive, so `‖(Real.exp x : ℂ)‖ = Real.exp x`.
-      let A : ℂ :=
-        (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-              ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-              ((8640 / π : ℝ) : ℂ) * t -
-              ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
-      have hA : aAnotherIntegrand u t = A * (Real.exp (-π * u * t) : ℂ) := by
-        -- Avoid rewriting `Real.exp` into `Complex.exp`.
-        simp [-Complex.ofReal_exp, aAnotherIntegrand, A, mul_left_comm, mul_comm]
-      have hExp :
-          ‖(Real.exp (-π * u * t) : ℂ)‖ = Real.exp (-π * u * t) := by
-        simpa using (norm_ofReal_exp (-π * u * t))
-      calc
-        ‖aAnotherIntegrand u t‖ = ‖A * (Real.exp (-π * u * t) : ℂ)‖ := by simp [hA]
-        _ = ‖A‖ * ‖(Real.exp (-π * u * t) : ℂ)‖ := by
-              simp
-        _ = ‖A‖ * Real.exp (-π * u * t) := by rw [hExp]
-    -- Finish by rewriting the exponential product.
-    have : ‖aAnotherIntegrand u t‖ ≤
-        (C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) := by
-      simpa [hnorm, mul_assoc, mul_left_comm, mul_comm] using hmul
-    -- Rewrite the RHS using `exp(-2πt) * exp(-πut) = exp(-(2π+πu)t)`.
-    calc
-      ‖aAnotherIntegrand u t‖ ≤
-          (C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) := this
-      _ = C * (t ^ (2 : ℕ)) * (Real.exp (-2 * π * t) * Real.exp (-π * u * t)) := by
-          simp [mul_assoc, mul_left_comm, mul_comm]
+      simp [-Complex.ofReal_exp, aAnotherIntegrand, mul_left_comm, mul_comm]
+    calc ‖aAnotherIntegrand u t‖
+        ≤ (C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) := by
+          simpa [hnorm, mul_assoc, mul_left_comm, mul_comm] using hmul
       _ = C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) := by
-          -- Rewrite the inner product using `hexp` without canceling `C * t^2`.
           simpa [mul_assoc] using congrArg (fun s : ℝ => C * (t ^ (2 : ℕ)) * s) hexp
-  -- Dominate by an integrable real function on `(1,∞)`.
+  have ha : 0 < (2 * π + π * u) / 2 := by positivity
   have hdom :
       IntegrableOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
         (Set.Ici (1 : ℝ)) := by
-    have ha : 0 < (2 * π + π * u) / 2 := by positivity
-    have hcont :
-        ContinuousOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
-          (Set.Ici (1 : ℝ)) := by
-      fun_prop
-    -- Use `integrable_of_isBigO_exp_neg`.
     set b : ℝ := (2 * π + π * u) / 2 with hb_def
-    have hb : 0 < b := ha
     have hO :
         (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t)) =O[atTop]
           fun t : ℝ => Real.exp (-b * t) := by
-      -- `C·t² = o(exp(b·t))`, then multiply by `exp(-b·t)` twice.
-      have hlittleC :
-          (fun t : ℝ => C * (t ^ (2 : ℕ) : ℝ)) =o[atTop] fun t : ℝ => Real.exp (b * t) :=
-        (isLittleO_pow_exp_pos_mul_atTop 2 hb).const_mul_left C
+      have hlittleC := ((isLittleO_pow_exp_pos_mul_atTop 2 ha).const_mul_left C :
+        (fun t : ℝ => C * (t ^ (2 : ℕ) : ℝ)) =o[atTop] fun t : ℝ => Real.exp (b * t))
       have hExpRef : (fun t : ℝ => Real.exp (-b * t)) =O[atTop]
           fun t : ℝ => Real.exp (-b * t) := Asymptotics.isBigO_refl _ _
-      have hfacBig :
-          (fun t : ℝ => (C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) =O[atTop]
-            fun _t : ℝ => (1 : ℝ) :=
-        ((hlittleC.mul_isBigO hExpRef).congr_right (fun t => by
-          rw [← Real.exp_add]; simp)).isBigO
+      have hfacBig : (fun t : ℝ => (C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) =O[atTop]
+          fun _t : ℝ => (1 : ℝ) :=
+        ((hlittleC.mul_isBigO hExpRef).congr_right (fun t => by rw [← Real.exp_add]; simp)).isBigO
       refine ((hfacBig.mul hExpRef).congr_left (fun t => ?_)).congr_right (fun _ => by ring)
-      rw [mul_assoc, ← Real.exp_add]
-      congr 1; dsimp [b]; ring_nf
-    have hIntIoi :
-        IntegrableOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
-          (Set.Ioi (1 : ℝ)) :=
-      integrable_of_isBigO_exp_neg (a := (1 : ℝ)) (b := (2 * π + π * u) / 2) ha
-        (by simpa [Set.Ici] using hcont) hO
+      rw [mul_assoc, ← Real.exp_add]; congr 1; dsimp [b]; ring_nf
     exact (integrableOn_Ici_iff_integrableOn_Ioi (μ := (volume : Measure ℝ))
         (f := fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
-        (b := (1 : ℝ))).2 hIntIoi
-  -- Apply domination under the restricted measure using `Integrable.mono'`.
-  have hg :
-      Integrable (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
-        ((volume : Measure ℝ).restrict (Set.Ici (1 : ℝ))) :=
-    hdom.integrable
-  have hf :
-      AEStronglyMeasurable (fun t : ℝ => aAnotherIntegrand u t)
-        ((volume : Measure ℝ).restrict (Set.Ici (1 : ℝ))) :=
-    (continuousOn_aAnotherIntegrand_of_subset_Ioi
-        (fun t ht => lt_of_lt_of_le (by norm_num) ht) u).aestronglyMeasurable measurableSet_Ici
-  have hfg :
-      ∀ᵐ t ∂((volume : Measure ℝ).restrict (Set.Ici (1 : ℝ))),
-        ‖aAnotherIntegrand u t‖ ≤ C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) := by
-    refine (ae_restrict_iff' measurableSet_Ici).2 ?_
-    exact Filter.Eventually.of_forall (fun t ht => hbound t ht)
-  exact (MeasureTheory.Integrable.mono' hg hf hfg)
+        (b := (1 : ℝ))).2 <|
+      integrable_of_isBigO_exp_neg (a := (1 : ℝ)) (b := (2 * π + π * u) / 2) ha
+        (by simpa [Set.Ici] using (by fun_prop :
+          ContinuousOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
+            (Set.Ici (1 : ℝ)))) hO
+  refine MeasureTheory.Integrable.mono' hdom.integrable
+    ((continuousOn_aAnotherIntegrand_of_subset_Ioi
+      (fun t ht => lt_of_lt_of_le (by norm_num) ht) u).aestronglyMeasurable measurableSet_Ici) ?_
+  exact (ae_restrict_iff' measurableSet_Ici).2 (Filter.Eventually.of_forall hbound)
 
 /-- For `u > 0`, the function `t ↦ aAnotherIntegrand u t` is integrable on `(0, ∞)`. -/
 public lemma aAnotherIntegrand_integrable_of_pos {u : ℝ} (hu : 0 < u) :
@@ -638,15 +470,9 @@ public lemma aAnotherIntegrand_integrable_of_pos {u : ℝ} (hu : 0 < u) :
     · rintro (ht | ht)
       · exact ht.1
       · exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) ht
-  have h1 := aAnotherIntegrand_integrableOn_Ioc (u := u) hu
-  have h2 := aAnotherIntegrand_integrableOn_Ici (u := u) hu
-  have hU :
-      IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioc (0 : ℝ) 1 ∪ Set.Ici (1 : ℝ)) :=
-    h1.union h2
-  -- Rewrite the domain and close.
-  -- Avoid `simp` recursion by rewriting the set.
   rw [hsplit]
-  exact hU
+  exact (aAnotherIntegrand_integrableOn_Ioc (u := u) hu).union
+    (aAnotherIntegrand_integrableOn_Ici (u := u) hu)
 
 end
 
