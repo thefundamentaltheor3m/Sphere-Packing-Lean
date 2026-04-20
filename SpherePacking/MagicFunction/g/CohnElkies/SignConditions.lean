@@ -35,22 +35,17 @@ private lemma integral_Ioi_ofReal_mul_exp (u : ℝ) (f : ℝ → ℝ) :
     (integral_ofReal (μ := μ) (𝕜 := ℂ) (f := fun t : ℝ => f t * Real.exp (-π * u * t)))
 
 lemma gRadial_re_nonpos_of_two_lt {u : ℝ} (hu : 2 < u) : (gRadial u).re ≤ 0 := by
-  have hEq := gRadial_eq_integral_A (u := u) hu
   set IA : ℝ := ∫ t in Set.Ioi (0 : ℝ), A t * Real.exp (-π * u * t)
-  have hIntA :
-      (∫ t in Set.Ioi (0 : ℝ), (A t : ℂ) * Real.exp (-π * u * t)) = (IA : ℂ) :=
-    integral_Ioi_ofReal_mul_exp u A
   have hEqReal : gRadial u =
       (((π / 2160 : ℝ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IA : ℝ) : ℂ) := by
-    rw [hEq, hIntA]; push_cast; ring
-  have hIntegral : IA ≤ 0 := by
-    refine MeasureTheory.setIntegral_nonpos (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
+    rw [gRadial_eq_integral_A (u := u) hu, integral_Ioi_ofReal_mul_exp u A]
+    push_cast; ring
+  have hIntegral : IA ≤ 0 :=
+    MeasureTheory.setIntegral_nonpos (μ := (volume : Measure ℝ)) (s := Set.Ioi (0 : ℝ))
       measurableSet_Ioi fun t ht =>
         mul_nonpos_of_nonpos_of_nonneg (A_neg (t := t) ht).le (Real.exp_pos _).le
-  have hRe :
-      (gRadial u).re = (π / 2160 : ℝ) * (Real.sin (π * u / 2)) ^ (2 : ℕ) * IA :=
-    congrArg Complex.re hEqReal
-  exact hRe.le.trans <| mul_nonpos_of_nonneg_of_nonpos (by positivity) hIntegral
+  exact (congrArg Complex.re hEqReal).le.trans
+    (mul_nonpos_of_nonneg_of_nonpos (by positivity) hIntegral)
 
 lemma gRadial_re_nonpos_of_two_le {u : ℝ} (hu : 2 ≤ u) : (gRadial u).re ≤ 0 := by
   have hclosed : IsClosed {u : ℝ | (gRadial u).re ≤ 0} :=
