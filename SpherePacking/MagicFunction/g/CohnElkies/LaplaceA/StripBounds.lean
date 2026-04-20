@@ -36,9 +36,9 @@ Turn an `IsBoundedAtImInfty` hypothesis into an explicit uniform bound with a po
 -/
 lemma exists_bound_of_isBoundedAtImInfty {f : ℍ → ℂ}
     (hbdd : UpperHalfPlane.IsBoundedAtImInfty f) :
-    ∃ C A : ℝ, 0 < C ∧ ∀ z : ℍ, A ≤ z.im → ‖f z‖ ≤ C := by
-  rcases (UpperHalfPlane.isBoundedAtImInfty_iff.mp hbdd) with ⟨C, A, hC⟩
-  exact ⟨max 1 C, A, lt_of_lt_of_le zero_lt_one (le_max_left _ _),
+    ∃ C A : ℝ, 0 < C ∧ ∀ z : ℍ, A ≤ z.im → ‖f z‖ ≤ C :=
+  let ⟨C, A, hC⟩ := UpperHalfPlane.isBoundedAtImInfty_iff.mp hbdd
+  ⟨max 1 C, A, lt_of_lt_of_le zero_lt_one (le_max_left _ _),
     fun z hz => (hC z hz).trans (le_max_right _ _)⟩
 
 /-- Exponential growth bounds for `φ₂'` and `φ₄'` on vertical rays in the upper half-plane. -/
@@ -46,17 +46,15 @@ public lemma exists_phi2'_phi4'_bound_exp :
     ∃ C A : ℝ, 0 < C ∧ ∀ z : ℍ, A ≤ z.im →
       ‖φ₂' z‖ ≤ C * Real.exp (2 * π * z.im) ∧
         ‖φ₄' z‖ ≤ C * Real.exp (2 * π * z.im) := by
-  -- Bounds for the Eisenstein series and for `Δ⁻¹` at `i∞`.
-  rcases exists_bound_of_isBoundedAtImInfty (f := E₂) E₂_isBoundedAtImInfty with
-    ⟨CE2, AE2, _, hE2⟩
-  rcases exists_bound_of_isBoundedAtImInfty (f := fun z : ℍ => E₄ z)
-      (by simpa using (ModularFormClass.bdd_at_infty E₄)) with ⟨CE4, AE4, _, hE4⟩
-  rcases exists_bound_of_isBoundedAtImInfty (f := fun z : ℍ => E₆ z)
-      (by simpa using (ModularFormClass.bdd_at_infty E₆)) with ⟨CE6, AE6, _, hE6⟩
-  rcases exists_inv_Delta_bound_exp with ⟨CΔ, AΔ, hCΔ, hΔ⟩
+  obtain ⟨CE2, AE2, _, hE2⟩ :=
+    exists_bound_of_isBoundedAtImInfty (f := E₂) E₂_isBoundedAtImInfty
+  obtain ⟨CE4, AE4, _, hE4⟩ := exists_bound_of_isBoundedAtImInfty (f := fun z : ℍ => E₄ z)
+    (by simpa using (ModularFormClass.bdd_at_infty E₄))
+  obtain ⟨CE6, AE6, _, hE6⟩ := exists_bound_of_isBoundedAtImInfty (f := fun z : ℍ => E₆ z)
+    (by simpa using (ModularFormClass.bdd_at_infty E₆))
+  obtain ⟨CΔ, AΔ, hCΔ, hΔ⟩ := exists_inv_Delta_bound_exp
   refine ⟨max 1 (max (CE4 ^ 2 * CΔ) (CE4 * (CE2 * CE4 + CE6) * CΔ)),
-    max AΔ (max AE2 (max AE4 AE6)), by positivity, ?_⟩
-  intro z hzA
+    max AΔ (max AE2 (max AE4 AE6)), by positivity, fun z hzA => ?_⟩
   have hzE2 : AE2 ≤ z.im := ((le_max_left _ _).trans (le_max_right _ _)).trans hzA
   have hzE4 : AE4 ≤ z.im :=
     (((le_max_left _ _).trans (le_max_right _ _)).trans (le_max_right _ _)).trans hzA
@@ -182,8 +180,6 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
     (hC₀ wH (by rw [hw_im]; linarith)).trans
       (mul_le_of_le_one_right hC₀_pos.le (Real.exp_le_one_iff.2 <| by
         nlinarith [Real.pi_pos, wH.im_pos]))
-  have ht2_nonneg : 0 ≤ t ^ 2 := by positivity
-  have hexp_ge : (1 : ℝ) ≤ Real.exp (2 * π * t) := Real.one_le_exp_iff.2 <| by positivity
   have htri : ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       ‖φ₀ wH * ((wH : ℂ) ^ (2 : ℕ))‖ +
         ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ +
@@ -205,7 +201,7 @@ public lemma norm_phi0S_mul_sq_le {t : ℝ} (wH : ℍ) (hw_im : wH.im = t)
       _ ≤ (4 * C₀) * (t ^ 2 * Real.exp (2 * π * t)) := by
           have : 0 ≤ 4 * C₀ := by positivity
           gcongr
-          nlinarith [ht2_nonneg]
+          nlinarith [sq_nonneg t, Real.one_le_exp_iff.2 (show (0 : ℝ) ≤ 2 * π * t by positivity)]
   have hCφ_nonneg : 0 ≤ Cφ :=
     le_of_mul_le_mul_right (by simpa using (norm_nonneg _).trans hφ2) (Real.exp_pos _)
   have hB : ‖(12 * Complex.I) / π * (wH : ℂ) * φ₂' wH‖ ≤
@@ -373,21 +369,19 @@ public lemma I₁'_add_I₃'_add_I₅'_eq_imag_axis (u : ℝ) :
   have hI1 :
       MagicFunction.a.RealIntegrals.I₁' u =
         (I : ℂ) * Complex.exp (-(((π * u : ℝ) : ℂ) * I)) * V0 := by
-    have := hIshift (-1 : ℂ) MagicFunction.Parametrisations.z₁' Φ₁'
+    simpa [MagicFunction.a.RealIntegrals.I₁', MagicFunction.a.RealIntegrands.Φ₁, mul_assoc,
+      neg_mul, one_mul] using hIshift (-1 : ℂ) MagicFunction.Parametrisations.z₁' Φ₁'
       (fun ht => by
         simpa [mul_comm] using MagicFunction.Parametrisations.z₁'_eq_of_mem ht)
       (fun t => by simpa [neg_mul, one_mul, mul_comm] using Φ₁'_shift_left (u := u) (t := t))
-    simpa [MagicFunction.a.RealIntegrals.I₁', MagicFunction.a.RealIntegrands.Φ₁, mul_assoc,
-      neg_mul, one_mul] using this
   have hI3 :
       MagicFunction.a.RealIntegrals.I₃' u =
         (I : ℂ) * Complex.exp (((π * u : ℝ) : ℂ) * I) * V0 := by
-    have := hIshift (1 : ℂ) MagicFunction.Parametrisations.z₃' Φ₃'
+    simpa [MagicFunction.a.RealIntegrals.I₃', MagicFunction.a.RealIntegrands.Φ₃, mul_assoc,
+      one_mul] using hIshift (1 : ℂ) MagicFunction.Parametrisations.z₃' Φ₃'
       (fun ht => by
         simpa [mul_comm] using MagicFunction.Parametrisations.z₃'_eq_of_mem ht)
       (fun t => by simpa [one_mul, mul_comm] using Φ₃'_shift_right (u := u) (t := t))
-    simpa [MagicFunction.a.RealIntegrals.I₃', MagicFunction.a.RealIntegrands.Φ₃, mul_assoc,
-      one_mul] using this
   have hI5 : MagicFunction.a.RealIntegrals.I₅' u = (-2 : ℂ) * (I : ℂ) * V0 := by
     have hparam : (∫ t in (0 : ℝ)..1, (I : ℂ) * Φ₅' u (MagicFunction.Parametrisations.z₅' t)) =
         (I : ℂ) * V0 :=
@@ -397,13 +391,6 @@ public lemma I₁'_add_I₃'_add_I₅'_eq_imag_axis (u : ℝ) :
         _ = (I : ℂ) * V0 := by simp [V0]
     simpa [MagicFunction.a.RealIntegrals.I₅', MagicFunction.a.RealIntegrands.Φ₅, mul_assoc]
       using congrArg (fun z : ℂ => (-2 : ℂ) * z) hparam
-  have hsum :
-      MagicFunction.a.RealIntegrals.I₁' u + MagicFunction.a.RealIntegrals.I₃' u +
-          MagicFunction.a.RealIntegrals.I₅' u =
-        (I : ℂ) *
-          ((Complex.exp (((π * u : ℝ) : ℂ) * I) +
-                Complex.exp (-(((π * u : ℝ) : ℂ) * I)) - (2 : ℂ)) * V0) := by
-    rw [hI1, hI3, hI5]; ring
-  simpa [V0, mul_assoc] using hsum
+  simpa [V0, mul_assoc, hI1, hI3, hI5] using by ring_nf
 
 end MagicFunction.g.CohnElkies.IntegralReps
