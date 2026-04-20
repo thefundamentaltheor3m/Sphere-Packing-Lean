@@ -47,34 +47,23 @@ def aAnotherRHS (u : ℂ) : ℂ :=
 
 lemma aAnotherRHS_analyticOnNhd :
     AnalyticOnNhd ℂ aAnotherRHS ACDomain := by
-  have ha : ACDomain ⊆ rightHalfPlane := fun u hu => hu.1
   have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-  have hu_ne0 : ∀ u ∈ ACDomain, u ≠ 0 := by
-    intro u hu h0
-    have : u.re = 0 := by simp [h0]
-    have hlt : ¬ (0 : ℝ) < u.re := by simp [this]
-    exact hlt (by simpa [rightHalfPlane] using hu.1)
+  have hu_ne0 : ∀ u ∈ ACDomain, u ≠ 0 := fun u hu h0 =>
+    absurd (by simpa [rightHalfPlane] using hu.1) (by simp [h0])
   have hI : AnalyticOnNhd ℂ aAnotherIntegralC ACDomain :=
-    (aAnotherIntegralC_analyticOnNhd).mono ha
-  have hsub2 : AnalyticOnNhd ℂ (fun u : ℂ => u - 2) ACDomain :=
-    analyticOnNhd_id.sub analyticOnNhd_const
-  have hpow2 : AnalyticOnNhd ℂ (fun u : ℂ => u ^ (2 : ℕ)) ACDomain :=
-    analyticOnNhd_id.pow 2
-  have hden1 : ∀ u ∈ ACDomain, (π : ℂ) ^ (3 : ℕ) * (u - 2) ≠ 0 := fun u hu =>
-    mul_ne_zero (pow_ne_zero _ hπ) (sub_ne_zero.2 (by simpa using hu.2))
-  have hden2 : ∀ u ∈ ACDomain, (π : ℂ) ^ (3 : ℕ) * (u ^ (2 : ℕ)) ≠ 0 := fun u hu =>
-    mul_ne_zero (pow_ne_zero _ hπ) (pow_ne_zero _ (hu_ne0 u hu))
-  have hden3 : ∀ u ∈ ACDomain, (π : ℂ) ^ (3 : ℕ) * u ≠ 0 := fun u hu =>
-    mul_ne_zero (pow_ne_zero _ hπ) (hu_ne0 u hu)
+    aAnotherIntegralC_analyticOnNhd.mono fun u hu => hu.1
   have hterm1 :
       AnalyticOnNhd ℂ (fun u : ℂ => (36 : ℂ) / ((π : ℂ) ^ (3 : ℕ) * (u - 2))) ACDomain :=
-    analyticOnNhd_const.div (analyticOnNhd_const.mul hsub2) hden1
+    analyticOnNhd_const.div (analyticOnNhd_const.mul (analyticOnNhd_id.sub analyticOnNhd_const))
+      fun u hu => mul_ne_zero (pow_ne_zero _ hπ) (sub_ne_zero.2 (by simpa using hu.2))
   have hterm2 :
       AnalyticOnNhd ℂ (fun u : ℂ => (8640 : ℂ) / ((π : ℂ) ^ (3 : ℕ) * u ^ (2 : ℕ))) ACDomain :=
-    analyticOnNhd_const.div (analyticOnNhd_const.mul hpow2) hden2
+    analyticOnNhd_const.div (analyticOnNhd_const.mul (analyticOnNhd_id.pow 2))
+      fun u hu => mul_ne_zero (pow_ne_zero _ hπ) (pow_ne_zero _ (hu_ne0 u hu))
   have hterm3 :
       AnalyticOnNhd ℂ (fun u : ℂ => (18144 : ℂ) / ((π : ℂ) ^ (3 : ℕ) * u)) ACDomain :=
-    analyticOnNhd_const.div (analyticOnNhd_const.mul analyticOnNhd_id) hden3
+    analyticOnNhd_const.div (analyticOnNhd_const.mul analyticOnNhd_id)
+      fun u hu => mul_ne_zero (pow_ne_zero _ hπ) (hu_ne0 u hu)
   have hinner :
       AnalyticOnNhd ℂ
         (fun u : ℂ =>
@@ -93,8 +82,7 @@ lemma aAnotherRHS_analyticOnNhd :
 lemma exists_a'_analytic_extension :
     ∃ f : ℂ → ℂ, AnalyticOnNhd ℂ f ACDomain ∧
       (∀ u : ℝ, 0 < u → u ≠ 2 → f (u : ℂ) = a' u) := by
-  refine ⟨aPrimeC, (aPrimeC_analyticOnNhd).mono (fun u hu => hu.1), ?_⟩
-  intro u hu _hu2
+  refine ⟨aPrimeC, aPrimeC_analyticOnNhd.mono (fun u hu => hu.1), fun u hu _ => ?_⟩
   have ha' : MagicFunction.a.RealIntegrals.a' u = a' u := by
     simpa using (MagicFunction.g.CohnElkies.a'_eq_realIntegrals_a' (u := u) (hu := hu.le)).symm
   simpa [ha'] using aPrimeC_ofReal u
@@ -136,9 +124,7 @@ public theorem aRadial_eq_another_integral_analytic_continuation_of_gt2
     have hsin :
         (Complex.sin ((π : ℂ) * (r : ℂ) / 2)) ^ (2 : ℕ) =
           ((Real.sin (π * r / 2)) ^ (2 : ℕ) : ℂ) := by simp
-    have hI : aAnotherIntegralC (r : ℂ) = ∫ t in Set.Ioi (0 : ℝ), aAnotherIntegrand r t := by
-      simpa using aAnotherIntegralC_ofReal r
-    simp only [aAnotherRHS, hsin, hI, rhsR]
+    simp only [aAnotherRHS, hsin, by simpa using aAnotherIntegralC_ofReal r, rhsR]
   exact analytic_continuation_of_gt2 exists_a'_analytic_extension aAnotherRHS_analyticOnNhd
     h_rhs_eq h_gt2 hu hu2
 
