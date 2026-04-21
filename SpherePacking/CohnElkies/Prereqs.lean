@@ -137,26 +137,6 @@ end PSF_L
 
 open scoped FourierTransform
 
-section FourierSchwartz
-
-namespace SchwartzMap
-
-variable (𝕜 : Type*) [RCLike 𝕜]
-  {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [NormedSpace 𝕜 E] [SMulCommClass ℂ 𝕜 E]
-    [CompleteSpace E]
-  {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
-  [MeasurableSpace V] [BorelSpace V]
-  (f : 𝓢(V, E))
-
-include 𝕜 in
-@[simp]
-theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f :=
-  f.continuous.fourierInv_fourier_eq f.integrable ((FourierTransform.fourierCLE 𝕜 _) f).integrable
-
-end SchwartzMap
-
-end FourierSchwartz
-
 section Positivity_on_Nhd
 
 -- TODO: PR this to Mathlib (very useful!)

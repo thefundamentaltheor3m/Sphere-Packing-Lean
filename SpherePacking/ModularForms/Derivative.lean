@@ -78,15 +78,15 @@ theorem E₂_holo' : MDiff E₂ := by
   have hη : DifferentiableOn ℂ η {z : ℂ | 0 < z.im} := by
     intro z hz
     have hz' : DifferentiableAt ℂ η z := by
-      simpa [η] using (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := z) hz)
+      simpa using (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet (z := z) hz)
     exact hz'.differentiableWithinAt
   have hlog : DifferentiableOn ℂ (logDeriv η) {z | 0 < z.im} :=
     (hη.deriv isOpen_upperHalfPlaneSet).div hη fun z hz => by
-      simpa [η] using (ModularForm.eta_ne_zero (z := z) hz)
+      simpa using (ModularForm.eta_ne_zero (z := z) hz)
   exact (hlog.const_mul ((↑π * I / 12)⁻¹)).congr fun z hz => by
     simp only [Function.comp_apply, ofComplex_apply_of_im_pos hz,
       show logDeriv η z = (↑π * I / 12) * E₂ ⟨z, hz⟩ by
-        simpa [η, E₂] using (ModularForm.logDeriv_eta_eq_E2 ⟨z, hz⟩)]
+        simpa [E₂] using (ModularForm.logDeriv_eta_eq_E2 ⟨z, hz⟩)]
     field_simp [Real.pi_ne_zero]
 
 /--
@@ -721,12 +721,13 @@ theorem deriv_resToImagAxis_eq (F : ℍ → ℂ) (hF : MDiff F) {t : ℝ} (ht : 
     have him : 0 < (g s).im := by simp [g, hs]
     simp [Function.resToImagAxis_apply, ResToImagAxis, hs, Function.comp_apply, g,
       ofComplex_apply_of_im_pos him]
-  rw [h_eq.deriv_eq]
-  have hg : HasDerivAt g I t := by simpa using ofRealCLM.hasDerivAt.const_mul I
-  have hF' := (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt
-  rw [(hF'.scomp t hg).deriv]
+  rw [show deriv F.resToImagAxis t = deriv (((F ∘ ofComplex) ∘ g)) t from h_eq.deriv_eq]
+  rw [show deriv (((F ∘ ofComplex) ∘ g)) t = deriv (F ∘ ofComplex) z * I by
+    have hF' := (MDifferentiableAt_DifferentiableAt (hF z)).hasDerivAt
+    simpa [g, z] using
+      (hF'.comp (t : ℂ) (by simpa using (hasDerivAt_id (t : ℂ)).const_mul I)).comp_ofReal.deriv]
   have hD : deriv (F ∘ ofComplex) z = 2 * π * I * D F z := by simp only [D]; field_simp
-  simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z, smul_eq_mul]
+  simp only [hD, Function.resToImagAxis_apply, ResToImagAxis, dif_pos ht, z]
   ring_nf; simp only [I_sq]; ring
 
 /-- The derivative of a function with zero imaginary part also has zero imaginary part. -/
