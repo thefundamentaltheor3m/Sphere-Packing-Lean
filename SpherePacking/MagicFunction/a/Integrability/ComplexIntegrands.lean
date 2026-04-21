@@ -187,7 +187,7 @@ section Corollaries
 theorem φ₀''_differentiable : DifferentiableOn ℂ φ₀'' (Set.univ ×ℂ Ioi 0) := by
   simpa [upperHalfPlaneSet, reProdIm] using φ₀''_holo
 
-/-- φ₀ : ℍ → ℂ is continuous. Follows from φ₀''_holo. -/
+/-- φ₀ : ℍ → ℂ is continuous. -/
 theorem φ₀_continuous : Continuous φ₀ := by
   unfold φ₀
   exact Continuous.div
@@ -195,12 +195,6 @@ theorem φ₀_continuous : Continuous φ₀ := by
       (MDifferentiable.continuous E₆.holo')).pow 2)
     (MDifferentiable.continuous Delta.holo')
     (fun z => Δ_ne_zero z)
-
-/-- φ₀ : ℍ → ℂ is continuous. Follows from φ₀''_holo. -/
-theorem φ₀_continuous : Continuous φ₀ := by
-  have h_eq : φ₀ = φ₀'' ∘ (↑· : ℍ → ℂ) := funext fun z => (φ₀''_coe_upperHalfPlane z).symm
-  rw [h_eq]
-  exact φ₀''_holo.continuousOn.comp_continuous continuous_induced_dom fun z => z.2
 
 end Corollaries
 
