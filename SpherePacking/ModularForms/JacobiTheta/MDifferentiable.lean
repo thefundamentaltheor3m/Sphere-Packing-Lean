@@ -37,12 +37,14 @@ lemma H₃_MDifferentiable : MDiff H₃ := by
 
 @[fun_prop]
 lemma H₄_MDifferentiable : MDiff H₄ := by
-  simpa [H₃_T_action] using H₃_MDifferentiable.slash_SL2 (k := 2) T
+  have := H₃_MDifferentiable.slash (k := 2) (T : GL (Fin 2) ℝ)
+  rwa [← SL_slash, H₃_T_action] at this
 
 @[fun_prop]
 lemma H₂_MDifferentiable : MDiff H₂ := by
   have hneg : MDiff (-H₂) := by
-    simpa [H₄_S_action] using H₄_MDifferentiable.slash_SL2 (k := 2) S
+    have := H₄_MDifferentiable.slash (k := 2) (S : GL (Fin 2) ℝ)
+    rwa [← SL_slash, H₄_S_action] at this
   simpa using hneg.neg
 
 lemma H₂_SIF_MDifferentiable : MDiff H₂_SIF := by
