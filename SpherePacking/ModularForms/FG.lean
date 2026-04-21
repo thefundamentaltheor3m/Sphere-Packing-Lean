@@ -11,7 +11,6 @@ public import SpherePacking.ModularForms.EisensteinAsymptotics
 public import SpherePacking.ModularForms.JacobiTheta.Basic
 public import SpherePacking.ModularForms.QExpansion
 public import SpherePacking.ModularForms.RamanujanIdentities
-public import SpherePacking.ModularForms.ThetaDerivIdentities
 public import SpherePacking.Tactic.TendstoCont
 
 @[expose] public section
