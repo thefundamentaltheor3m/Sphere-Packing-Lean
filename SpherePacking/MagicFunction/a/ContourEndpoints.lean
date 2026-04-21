@@ -82,8 +82,9 @@ lemma S_smul_I_mul_t (t : ℝ) (ht : 0 < t) :
     (↑(ModularGroup.S • mkI_mul_t t ht) : ℂ) = Complex.I / t := by
   rw [modular_S_smul]
   simp only [mkI_mul_t, coe_mk]
-  have h : (-(Complex.I * t))⁻¹ = Complex.I / t := by field_simp; rw [Complex.I_sq]; ring
-  exact h
+  field_simp
+  rw [Complex.I_sq]
+  ring
 
 /-- im(it) = t when viewed as element of ℍ. -/
 lemma mkI_mul_t_im (t : ℝ) (ht : 0 < t) : (mkI_mul_t t ht).im = t := by
@@ -103,19 +104,14 @@ lemma norm_I_mul_t (t : ℝ) (ht : 0 < t) : ‖(Complex.I * t : ℂ)‖ = t := b
   simp only [norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht]
 
 /-- The coefficient (12I)/(πz) has norm 12/(π|z|). -/
-lemma norm_coeff_12I_div (z : ℂ) (hz : z ≠ 0) :
+lemma norm_coeff_12I_div (z : ℂ) (_hz : z ≠ 0) :
     ‖(12 * Complex.I) / (↑π * z)‖ = 12 / (π * ‖z‖) := by
-  have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-  have hπz : (↑π : ℂ) * z ≠ 0 := mul_ne_zero hπ hz
   rw [norm_div, norm_mul, norm_mul, Complex.norm_I, Complex.norm_real, Complex.norm_ofNat]
   simp only [mul_one, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
 
 /-- The coefficient 36/(π²z²) has norm 36/(π²|z|²). -/
-lemma norm_coeff_36_div_sq (z : ℂ) (hz : z ≠ 0) :
+lemma norm_coeff_36_div_sq (z : ℂ) (_hz : z ≠ 0) :
     ‖36 / (↑π ^ 2 * z ^ 2)‖ = 36 / (π^2 * ‖z‖^2) := by
-  have hz2 : z ^ 2 ≠ 0 := pow_ne_zero 2 hz
-  have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-  have hπ2 : (↑π : ℂ) ^ 2 ≠ 0 := pow_ne_zero 2 hπ
   rw [norm_div, norm_mul, norm_pow, norm_pow, Complex.norm_real]
   simp only [Real.norm_eq_abs, abs_of_pos Real.pi_pos, Complex.norm_ofNat]
 
@@ -168,13 +164,9 @@ lemma norm_φ₀''_I_div_t_le (t : ℝ) (ht : 1 ≤ t) :
                     + (36 / (π^2 * t^2)) * phiBounds.C₄ * Real.exp (2 * π * t) := by
   have ht_pos : 0 < t := by linarith
   rw [φ₀''_I_div_t_eq t ht_pos]
-  set z := mkI_mul_t t ht_pos
-  have hz_im : z.im = t := mkI_mul_t_im t ht_pos
-  have hz_norm : ‖(z : ℂ)‖ = t := norm_I_mul_t t ht_pos
-  have hz_im_ge : 1 ≤ z.im := by rw [hz_im]; exact ht
-  have h := norm_φ₀_S_smul_le z hz_im_ge
-  simp only [hz_im, hz_norm] at h
-  exact h
+  have h := norm_φ₀_S_smul_le (mkI_mul_t t ht_pos) (by simpa [mkI_mul_t_im] using ht)
+  simp only [mkI_mul_t_im] at h
+  rwa [show ‖(↑(mkI_mul_t t ht_pos) : ℂ)‖ = t from norm_I_mul_t t ht_pos] at h
 
 /-! ## Vertical Ray Integrand -/
 
@@ -279,7 +271,6 @@ lemma integrableOn_verticalBound (r : ℝ) (hr : 2 < r) :
   have i3 : IntegrableOn (fun s => (36 * phiBounds.C₄ / π^2) * Real.exp (-(π * r - 2 * π) * s))
       (Ici 1) volume :=
     (_root_.integrableOn_exp_mul_Ici (-(π * r - 2 * π)) (by linarith)).const_mul _
-  -- Show functions are equal then combine
   have heq : verticalBound r = (fun s => phiBounds.C₀ * (s^2 * Real.exp (-(2 * π + π * r) * s)))
        + (fun s => (12 * phiBounds.C₂ / π) * (s * Real.exp (-(π * r) * s)))
        + (fun s => (36 * phiBounds.C₄ / π^2) * Real.exp (-(π * r - 2 * π) * s)) := by
@@ -347,12 +338,8 @@ lemma tendsto_verticalBound_atTop (r : ℝ) (hr : 2 < r) :
     have := (_root_.tendsto_exp_neg_atTop (π * r - 2 * π) h3).const_mul (36 * phiBounds.C₄ / π^2)
     simp only [mul_zero] at this
     exact this
-  -- Combine
-  have hsum : Tendsto (fun s => phiBounds.C₀ * s^2 * Real.exp (-(2 * π + π * r) * s)
-      + (12 * phiBounds.C₂ / π) * s * Real.exp (-(π * r) * s)
-      + (36 * phiBounds.C₄ / π^2) * Real.exp (-(π * r - 2 * π) * s)) atTop (𝓝 0) := by
-    convert (t1.add t2).add t3 using 1
-    simp only [add_zero]
+  have hsum := (t1.add t2).add t3
+  simp only [add_zero] at hsum
   convert hsum using 1
   funext s
   simp only [verticalBound]
