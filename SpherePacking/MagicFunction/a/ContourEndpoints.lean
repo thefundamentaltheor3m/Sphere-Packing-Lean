@@ -562,29 +562,20 @@ lemma norm_topEdgeIntegrand_le (r : ℝ) (x T : ℝ)
   -- This proof connects topEdgeIntegrand to the S-transform bound.
   -- The key insight is: φ₀''(-1/z) = φ₀(S•w) where w = ⟨z, _⟩ ∈ ℍ
   have hT_pos : 0 < T := lt_of_lt_of_le one_pos hT
-  -- Define z and the upper half plane point w
   let z : ℂ := ↑x + Complex.I * ↑T
   have hz_im : z.im = T := by simp [z]
   have hz_im_pos : 0 < z.im := by rw [hz_im]; exact hT_pos
   let w : ℍ := ⟨z, hz_im_pos⟩
-  -- Get the S-transform bound with w.im = T ≥ 1
-  have hw_im : w.im = T := hz_im
-  have hw_im_ge : 1 ≤ w.im := by rw [hw_im]; exact hT
-  -- Get z norm bounds
-  have hz_bounds := norm_x_add_I_mul_T_bounds x T hx hT
-  have hz_norm_ge : T ≤ ‖z‖ := hz_bounds.1
-  have hz_norm_le : ‖z‖ ≤ 1 + T := hz_bounds.2
-  have hz_norm_pos : 0 < ‖z‖ := lt_of_lt_of_le hT_pos hz_norm_ge
-  -- Step 1: Rewrite φ₀''(-1/z) = φ₀(S•w)
-  have hφ₀_eq : φ₀'' (-1 / z) = φ₀ (ModularGroup.S • w) := φ₀''_neg_inv_eq_φ₀_S_smul x T hT_pos
-  -- Step 2: Get the S-transform bound
-  have hS_bound := norm_φ₀_S_smul_le w hw_im_ge
+  rcases norm_x_add_I_mul_T_bounds x T hx hT with ⟨hz_norm_ge, hz_norm_le⟩
+  have hφ₀_eq : φ₀'' (-1 / z) = φ₀ (ModularGroup.S • w) := by
+    simpa [w, z] using φ₀''_neg_inv_eq_φ₀_S_smul x T hT_pos
+  have hS_bound := norm_φ₀_S_smul_le w (by rw [show w.im = T from hz_im]; exact hT)
   -- Step 3: Bound the norm of z² and the exponential phase
   have hz_sq_norm : ‖z^2‖ ≤ (1 + T)^2 := by
     rw [norm_pow]
     exact sq_le_sq' (by linarith) hz_norm_le
-  have hexp_norm : ‖Complex.exp (Complex.I * π * r * z)‖ = Real.exp (-π * r * T) :=
-    norm_cexp_verticalPhase x r T
+  have hexp_norm : ‖Complex.exp (Complex.I * π * r * z)‖ = Real.exp (-π * r * T) := by
+    simpa [z] using norm_cexp_verticalPhase x r T
   -- Step 4: Compute the full norm using triangle inequality
   unfold topEdgeIntegrand topEdgeBound
   simp only [z] at *
@@ -607,7 +598,7 @@ lemma norm_topEdgeIntegrand_le (r : ℝ) (x T : ℝ)
         ≤ phiBounds.C₀ * Real.exp (-2 * π * w.im) + 12 / (π * ‖(w : ℂ)‖) * phiBounds.C₂ +
             36 / (π^2 * ‖(w : ℂ)‖^2) * phiBounds.C₄ * Real.exp (2 * π * w.im) := hS_bound
       _ = phiBounds.C₀ * Real.exp (-2 * π * T) + 12 / (π * ‖(w : ℂ)‖) * phiBounds.C₂ +
-            36 / (π^2 * ‖(w : ℂ)‖^2) * phiBounds.C₄ * Real.exp (2 * π * T) := by rw [hw_im]
+            36 / (π^2 * ‖(w : ℂ)‖^2) * phiBounds.C₄ * Real.exp (2 * π * T) := by rw [show w.im = T from hz_im]
       _ ≤ phiBounds.C₀ * Real.exp (-2 * π * T) + 12 / (π * T) * phiBounds.C₂ +
             36 / (π^2 * T^2) * phiBounds.C₄ * Real.exp (2 * π * T) := by
           apply add_le_add
@@ -696,21 +687,16 @@ lemma tendsto_topEdgeIntegral_zero (r : ℝ) (hr : 2 < r) :
   -- Lower bound: 0 ≤ ‖∫...‖
   · filter_upwards with T
     exact norm_nonneg _
-  -- Upper bound: ‖∫...‖ ≤ 2 * topEdgeBound r T for T ≥ 1
   · filter_upwards [eventually_ge_atTop 1] with T hT
-    have h_meas : volume (Icc (-1 : ℝ) 1) < ⊤ := measure_Icc_lt_top
-    have h_bound : ∀ x ∈ Icc (-1 : ℝ) 1, ‖topEdgeIntegrand r x T‖ ≤ topEdgeBound r T :=
-      fun x hx => norm_topEdgeIntegrand_le r x T hx hT
     calc ‖∫ x in Icc (-1 : ℝ) 1, topEdgeIntegrand r x T‖
         ≤ topEdgeBound r T * volume.real (Icc (-1 : ℝ) 1) :=
-          norm_setIntegral_le_of_norm_le_const h_meas h_bound
-      _ = topEdgeBound r T * 2 := by
-          rw [Measure.real, Real.volume_Icc]; norm_num
-      _ = 2 * topEdgeBound r T := mul_comm _ _
-  -- Limit: 2 * topEdgeBound r T → 0
-  · have h := tendsto_topEdgeBound_atTop r hr
-    convert h.const_mul 2 using 1
-    simp
+          norm_setIntegral_le_of_norm_le_const measure_Icc_lt_top
+            (fun x hx => norm_topEdgeIntegrand_le r x T hx hT)
+      _ = 2 * topEdgeBound r T := by
+          rw [Measure.real, Real.volume_Icc]
+          norm_num
+          ring
+  · simpa using (tendsto_topEdgeBound_atTop r hr).const_mul 2
 
 end MagicFunction.ContourEndpoints
 
