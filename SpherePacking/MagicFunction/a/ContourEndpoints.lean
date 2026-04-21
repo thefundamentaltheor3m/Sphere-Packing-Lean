@@ -81,10 +81,7 @@ def mkI_mul_t (t : ℝ) (ht : 0 < t) : ℍ :=
 lemma S_smul_I_mul_t (t : ℝ) (ht : 0 < t) :
     (↑(ModularGroup.S • mkI_mul_t t ht) : ℂ) = Complex.I / t := by
   rw [modular_S_smul]
-  simp only [mkI_mul_t, coe_mk]
-  field_simp
-  rw [Complex.I_sq]
-  ring
+  simp [mkI_mul_t, div_eq_mul_inv, mul_comm]
 
 /-- im(it) = t when viewed as element of ℍ. -/
 lemma mkI_mul_t_im (t : ℝ) (ht : 0 < t) : (mkI_mul_t t ht).im = t := by
@@ -94,10 +91,8 @@ lemma mkI_mul_t_im (t : ℝ) (ht : 0 < t) : (mkI_mul_t t ht).im = t := by
 /-- φ₀''(I/t) equals φ₀ applied to S•(I*t). -/
 lemma φ₀''_I_div_t_eq (t : ℝ) (ht : 0 < t) :
     φ₀'' (Complex.I / t) = φ₀ (ModularGroup.S • mkI_mul_t t ht) := by
-  have hI_div : 0 < (Complex.I / t).im := by
-    rw [Complex.div_ofReal_im, Complex.I_im]; positivity
-  rw [φ₀''_def hI_div]
-  exact congrArg φ₀ (UpperHalfPlane.ext (S_smul_I_mul_t t ht).symm)
+  rw [φ₀''_def (by rw [Complex.div_ofReal_im, Complex.I_im]; positivity)]
+  simpa using congrArg φ₀ (UpperHalfPlane.ext (S_smul_I_mul_t t ht).symm)
 
 /-- Norm of I*t equals t for t > 0. -/
 lemma norm_I_mul_t (t : ℝ) (ht : 0 < t) : ‖(Complex.I * t : ℂ)‖ = t := by
@@ -186,30 +181,15 @@ def verticalIntegrand (r t : ℝ) : ℂ := verticalIntegrandX 0 r t
 lemma norm_cexp_verticalPhase (x r t : ℝ) :
     ‖Complex.exp (Complex.I * π * r * (x + Complex.I * t))‖ = Real.exp (-π * r * t) := by
   rw [Complex.norm_exp]
-  congr 1
-  -- Goal: (I * π * r * (x + I * t)).re = -π * r * t
-  have h1 : Complex.I * ↑π * ↑r * (↑x + Complex.I * ↑t) =
-            Complex.I * (π * r * x) + Complex.I * Complex.I * (π * r * t) := by ring
-  rw [h1, Complex.I_mul_I]
-  simp only [Complex.add_re, Complex.mul_re, Complex.I_re, Complex.I_im,
-             Complex.ofReal_re, Complex.ofReal_im, neg_one_mul, Complex.neg_re,
-             Complex.mul_im]
-  ring
+  ring_nf
+  simp
 
 /-! ## Integrability (complex-valued) -/
 
 /-- Norm of the vertical integrand. -/
-lemma norm_verticalIntegrandX (x r t : ℝ) (ht : 0 < t) :
+lemma norm_verticalIntegrandX (x r t : ℝ) (_ht : 0 < t) :
     ‖verticalIntegrandX x r t‖ = t^2 * ‖φ₀'' (Complex.I / t)‖ * Real.exp (-π * r * t) := by
-  simp only [verticalIntegrandX]
-  rw [norm_mul, norm_mul, norm_mul, Complex.norm_I, one_mul]
-  rw [norm_cexp_verticalPhase]
-  -- ‖(I*t)^2‖ = ‖-t^2‖ = t^2
-  have h1 : ‖(Complex.I * ↑t : ℂ)^2‖ = t^2 := by
-    have ht_abs : |t| = t := abs_of_pos ht
-    simp only [sq, norm_mul, Complex.norm_I, Complex.norm_real, Real.norm_eq_abs, ht_abs]
-    ring
-  rw [h1]
+  simp [verticalIntegrandX, norm_cexp_verticalPhase, sq]
   ring
 
 /-- Bounding function for the vertical integrand norm.
