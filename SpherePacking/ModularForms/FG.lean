@@ -434,8 +434,7 @@ lemma DE₄_summable (t : ℝ) (ht : 0 < t) :
   simpa [pow_one] using sigma_qexp_summable_generic 1 3 ⟨Complex.I * t, by simp [ht]⟩
 
 /-- D E₄ is real on the imaginary axis. -/
-lemma DE₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) :=
-  D_real_of_real E₄_imag_axis_real E₄.holo'
+lemma DE₄_imag_axis_real : ResToImagAxis.Real (D E₄.toFun) := by fun_prop
 
 /-- The real part of (D E₄)(it) is positive for t > 0. -/
 lemma DE₄_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
@@ -519,8 +518,7 @@ lemma negDE₂_term_re_pos (t : ℝ) (ht : 0 < t) (n : ℕ+) :
   · exact_mod_cast ArithmeticFunction.sigma_pos 1 n n.ne_zero
 
 /-- `negDE₂` is real on the imaginary axis. -/
-lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ :=
-  ResToImagAxis.Real.neg (D_real_of_real E₂_imag_axis_real E₂_holo')
+lemma negDE₂_imag_axis_real : ResToImagAxis.Real negDE₂ := by simp only [negDE₂]; fun_prop
 
 /-- The real part of negDE₂(it) is positive for t > 0. -/
 lemma negDE₂_imag_axis_re_pos (t : ℝ) (ht : 0 < t) :
@@ -1017,14 +1015,11 @@ theorem D_G_div_G_tendsto :
 
 /-- `L₁,₀(it)` is real for all `t > 0`. -/
 theorem L₁₀_imag_axis_real : ResToImagAxis.Real L₁₀ := by
-  intro t ht
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte, L₁₀_eq_FD_G_sub_F_DG]
-  have hF := F_imag_axis_real t ht
-  have hG := G_imag_axis_real t ht
-  have hDF := D_real_of_real F_imag_axis_real F_holo t ht
-  have hDG := D_real_of_real G_imag_axis_real G_holo t ht
-  simp only [Function.resToImagAxis_apply, ResToImagAxis, ht, ↓reduceDIte] at hF hG hDF hDG
-  simp [sub_im, mul_im, hF, hG, hDF, hDG]
+  unfold L₁₀
+  have hF := F_imag_axis_real
+  have hG := G_imag_axis_real
+  have hGh := G_holo
+  fun_prop
 
 /-- `lim_{t→∞} L₁,₀(it)/(F(it)G(it)) = 1/2`. -/
 theorem L₁₀_div_FG_tendsto :
