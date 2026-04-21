@@ -3,25 +3,29 @@ Copyright (c) 2024 Sidharth Hariharan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sidharth Hariharan
 -/
+module
+
 /-
 ## THIS FILE SHOULD EVENTUALLY BE REMOVED AND THE REFERENCES IN COHN-ELKIES MUST BE REPLACED WITH
 ## THE RIGHT ONES (NOT THE ONES FROM HERE). THIS FILE IS JUST A TEMPORARY SOLUTION TO MAKE THE
 ## COHN-ELKIES FILE WORK.
 -/
-import Mathlib.Algebra.Module.ZLattice.Covolume
-import Mathlib.Analysis.CStarAlgebra.Classes
-import Mathlib.Analysis.Distribution.FourierSchwartz
-import Mathlib.Analysis.RCLike.Inner
-import Mathlib.LinearAlgebra.BilinearForm.DualLattice
-import Mathlib.Order.CompletePartialOrder
-import Mathlib.Topology.Metrizable.Basic
-import Mathlib.Topology.Compactness.Lindelof
-import Mathlib.Topology.EMetricSpace.Paracompact
-import Mathlib.Topology.Separation.CompletelyRegular
+public import Mathlib.Algebra.Module.ZLattice.Covolume
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+public import Mathlib.Analysis.RCLike.Inner
+public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
+public import Mathlib.Order.CompletePartialOrder
+public import Mathlib.Topology.Metrizable.Basic
+public import Mathlib.Topology.Compactness.Lindelof
+public import Mathlib.Topology.EMetricSpace.Paracompact
+public import Mathlib.Topology.Separation.CompletelyRegular
 
-import SpherePacking.Basic.SpherePacking
-import SpherePacking.Basic.PeriodicPacking
-import SpherePacking.ForMathlib.InvPowSummability
+public import SpherePacking.Basic.SpherePacking
+public import SpherePacking.Basic.PeriodicPacking
+public import SpherePacking.ForMathlib.InvPowSummability
+
+@[expose] public section
 
 open BigOperators Bornology
 
@@ -102,21 +106,24 @@ def PSF_Conditions (f : EuclideanSpace ℝ (Fin d) → ℂ) : Prop :=
 theorem PSF_L {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f)
   (v : EuclideanSpace ℝ (Fin d)) :
   ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
-    ∑' m : bilinFormOfRealInner.dualSubmodule Λ,
+    ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) Λ,
   (𝓕 f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) :=
   sorry
 
 -- The version below is on the blueprint. I'm pretty sure it can be removed.
 theorem PSF_L' {f : EuclideanSpace ℝ (Fin d) → ℂ} (hf : PSF_Conditions f) :
-    ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) * ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 f m)
+    ∑' ℓ : Λ, f ℓ = (1 / ZLattice.covolume Λ) *
+      ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) Λ, (𝓕 f m)
     := by
   simpa using PSF_L Λ hf 0
 
 namespace SchwartzMap
 
 theorem PoissonSummation_Lattices (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ)
-  (v : EuclideanSpace ℝ (Fin d)) : ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
-  ∑' m : bilinFormOfRealInner.dualSubmodule Λ, (𝓕 ⇑f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) := by
+  (v : EuclideanSpace ℝ (Fin d)) :
+  ∑' ℓ : Λ, f (v + ℓ) = (1 / ZLattice.covolume Λ) *
+    ∑' m : LinearMap.BilinForm.dualSubmodule (innerₗ _) Λ,
+      (𝓕 ⇑f m) * exp (2 * π * I * ⟪v, m⟫_[ℝ]) := by
   sorry
 
 -- theorem PoissonSummation_Lattices' (f : SchwartzMap (EuclideanSpace ℝ (Fin d)) ℂ) :
@@ -129,30 +136,6 @@ end SchwartzMap
 end PSF_L
 
 open scoped FourierTransform
-
-section FourierSchwartz
-
-namespace SchwartzMap
-
-variable (𝕜 : Type*) [RCLike 𝕜]
-  {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [NormedSpace 𝕜 E] [SMulCommClass ℂ 𝕜 E]
-    [CompleteSpace E]
-  {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
-  [MeasurableSpace V] [BorelSpace V]
-  (f : 𝓢(V, E))
-
-include 𝕜 in
-@[simp]
-theorem fourierInversion : 𝓕⁻ (𝓕 ⇑f) = f := by
-  rw [← fourier_coe, ← fourierInv_coe]
-  congr 1
-  rw [← fourierTransformCLE_apply 𝕜 f,
-      ← fourierTransformCLE_symm_apply 𝕜 _,
-      ContinuousLinearEquiv.symm_apply_apply]
-
-end SchwartzMap
-
-end FourierSchwartz
 
 section Positivity_on_Nhd
 

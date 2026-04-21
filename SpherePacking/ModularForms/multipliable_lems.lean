@@ -1,4 +1,8 @@
-import SpherePacking.ModularForms.summable_lems
+module
+
+public import SpherePacking.ModularForms.summable_lems
+
+@[expose] public section
 
 open ModularForm EisensteinSeries UpperHalfPlane TopologicalSpace Set MeasureTheory intervalIntegral
   Metric Filter Function Complex
@@ -94,7 +98,6 @@ lemma Multipliable_pow {ι : Type*} (f : ι → ℂ) (hf : Multipliable f) (n : 
   induction n with
   | zero =>
     simp
-    apply multipliable_one
   | succ n hn =>
     conv =>
       enter [1]
@@ -126,7 +129,6 @@ lemma tprod_pow (f : ℕ → ℂ) (hf : Multipliable f) (n : ℕ) : (∏' (i : �
 
 variable {a a₁ a₂ : ℝ} {ι : Type*}
 
-@[to_additive]
 theorem hasProd_le_nonneg (f g : ι → ℝ) (h : ∀ i, f i ≤ g i) (h0 : ∀ i, 0 ≤ f i)
   (hf : HasProd f a₁) (hg : HasProd g a₂) : a₁ ≤ a₂ := by
   apply le_of_tendsto_of_tendsto' hf hg
@@ -137,12 +139,10 @@ theorem hasProd_le_nonneg (f g : ι → ℝ) (h : ∀ i, f i ≤ g i) (h0 : ∀ 
   intros i hi
   exact h i
 
-@[to_additive]
 theorem HasProd.le_one_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i)
     (ha : HasProd g a) : a ≤ 1 := by
   apply hasProd_le_nonneg (f := g) (g := fun _ => 1) h h0 ha hasProd_one
 
-@[to_additive]
 theorem one_le_tprod_nonneg (g : ℕ → ℝ) (h : ∀ i, g i ≤ 1) (h0 : ∀ i, 0 ≤ g i) : ∏' i, g i ≤ 1 := by
   by_cases hg : Multipliable g
   · apply hg.hasProd.le_one_nonneg g h h0
