@@ -299,19 +299,16 @@ lemma tendsto_verticalBound_atTop (r : ℝ) (hr : 2 < r) :
       atTop (𝓝 0) := by
     have := (_root_.tendsto_sq_mul_exp_neg_atTop (2 * π + π * r) h1).const_mul phiBounds.C₀
     simp only [mul_zero] at this
-    convert this using 1
-    funext s; ring
+    convert this using 1; funext s; ring
   have t2 : Tendsto (fun s => (12 * phiBounds.C₂ / π) * s * Real.exp (-(π * r) * s))
       atTop (𝓝 0) := by
     have := (_root_.tendsto_mul_exp_neg_atTop (π * r) h2).const_mul (12 * phiBounds.C₂ / π)
     simp only [mul_zero] at this
-    convert this using 1
-    funext s; ring
+    convert this using 1; funext s; ring
   have t3 : Tendsto (fun s => (36 * phiBounds.C₄ / π^2) * Real.exp (-(π * r - 2 * π) * s))
       atTop (𝓝 0) := by
-    have := (_root_.tendsto_exp_neg_atTop (π * r - 2 * π) h3).const_mul (36 * phiBounds.C₄ / π^2)
-    simp only [mul_zero] at this
-    exact this
+    simpa [mul_zero] using
+      (_root_.tendsto_exp_neg_atTop (π * r - 2 * π) h3).const_mul (36 * phiBounds.C₄ / π^2)
   have hsum := (t1.add t2).add t3
   simp only [add_zero] at hsum
   convert hsum using 1
@@ -549,8 +546,7 @@ lemma norm_topEdgeIntegrand_le (r : ℝ) (x T : ℝ)
   have hT_pos : 0 < T := lt_of_lt_of_le one_pos hT
   let z : ℂ := ↑x + Complex.I * ↑T
   have hz_im : z.im = T := by simp [z]
-  have hz_im_pos : 0 < z.im := by rw [hz_im]; exact hT_pos
-  let w : ℍ := ⟨z, hz_im_pos⟩
+  let w : ℍ := ⟨z, hz_im ▸ hT_pos⟩
   rcases norm_x_add_I_mul_T_bounds x T hx hT with ⟨hz_norm_ge, hz_norm_le⟩
   have hφ₀_eq : φ₀'' (-1 / z) = φ₀ (ModularGroup.S • w) := by
     simpa [w, z] using φ₀''_neg_inv_eq_φ₀_S_smul x T hT_pos
@@ -653,9 +649,7 @@ lemma tendsto_topEdgeIntegral_zero (r : ℝ) (hr : 2 < r) :
   -- Strategy: Use tendsto_zero_iff_norm_tendsto_zero + squeeze_zero'
   rw [tendsto_zero_iff_norm_tendsto_zero]
   apply squeeze_zero'
-  -- Lower bound: 0 ≤ ‖∫...‖
-  · filter_upwards with T
-    exact norm_nonneg _
+  · filter_upwards with T; exact norm_nonneg _
   · filter_upwards [eventually_ge_atTop 1] with T hT
     calc ‖∫ x in Icc (-1 : ℝ) 1, topEdgeIntegrand r x T‖
         ≤ topEdgeBound r T * volume.real (Icc (-1 : ℝ) 1) :=
