@@ -59,7 +59,8 @@ jobs:
           lake exe mk_all --check --module
 
       - name: Compile blueprint and documentation
-        uses: leanprover-community/docgen-action@deed0cdc44dd8e5de07a300773eb751d33e32fc8 # 2025-10-26
+        # workaround for https://github.com/leanprover-community/docgen-action/issues/28
+        uses:  dwrensha/docgen-action@a3f8189646977363717917b605e6de25f9704656
         with:
           blueprint: true
           homepage: home_page
