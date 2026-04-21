@@ -33,7 +33,9 @@ public import SpherePacking.MagicFunction.PolyFourierCoeffBound
 public import SpherePacking.MagicFunction.a.Basic
 public import SpherePacking.MagicFunction.a.Eigenfunction
 public import SpherePacking.MagicFunction.a.Integrability.ComplexIntegrands
+public import SpherePacking.MagicFunction.a.Integrability.CuspPath
 public import SpherePacking.MagicFunction.a.Integrability.Integrability
+public import SpherePacking.MagicFunction.a.Integrability.RealDecay
 public import SpherePacking.MagicFunction.a.Integrability.RealIntegrands
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I1
 public import SpherePacking.MagicFunction.a.IntegralEstimates.I2
