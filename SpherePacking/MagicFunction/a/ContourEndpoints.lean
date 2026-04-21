@@ -85,8 +85,7 @@ lemma S_smul_I_mul_t (t : ℝ) (ht : 0 < t) :
 
 /-- im(it) = t when viewed as element of ℍ. -/
 lemma mkI_mul_t_im (t : ℝ) (ht : 0 < t) : (mkI_mul_t t ht).im = t := by
-  simp only [mkI_mul_t, UpperHalfPlane.im]
-  simp
+  simp [mkI_mul_t]
 
 /-- φ₀''(I/t) equals φ₀ applied to S•(I*t). -/
 lemma φ₀''_I_div_t_eq (t : ℝ) (ht : 0 < t) :
@@ -251,14 +250,8 @@ lemma integrableOn_verticalBound (r : ℝ) (hr : 2 < r) :
   have i3 : IntegrableOn (fun s => (36 * phiBounds.C₄ / π^2) * Real.exp (-(π * r - 2 * π) * s))
       (Ici 1) volume :=
     (_root_.integrableOn_exp_mul_Ici (-(π * r - 2 * π)) (by linarith)).const_mul _
-  have heq : verticalBound r = (fun s => phiBounds.C₀ * (s^2 * Real.exp (-(2 * π + π * r) * s)))
-       + (fun s => (12 * phiBounds.C₂ / π) * (s * Real.exp (-(π * r) * s)))
-       + (fun s => (36 * phiBounds.C₄ / π^2) * Real.exp (-(π * r - 2 * π) * s)) := by
-    funext s
-    simp only [verticalBound, Pi.add_apply]
-    ring_nf
-  rw [heq]
-  exact (i1.add i2).add i3
+  convert (i1.add i2).add i3 using 1
+  funext s; simp [verticalBound]; ring_nf
 
 /-- Vertical ray integrand is integrable on [1,∞) for r > 2. -/
 lemma integrableOn_verticalIntegrandX (x r : ℝ) (hr : 2 < r) :
@@ -321,9 +314,7 @@ lemma tendsto_verticalBound_atTop (r : ℝ) (hr : 2 < r) :
   have hsum := (t1.add t2).add t3
   simp only [add_zero] at hsum
   convert hsum using 1
-  funext s
-  simp only [verticalBound]
-  ring_nf
+  funext s; simp only [verticalBound]; ring_nf
 
 /-- The vertical bound is nonnegative for t ≥ 1. -/
 lemma verticalBound_nonneg (r t : ℝ) (ht : 1 ≤ t) : 0 ≤ verticalBound r t := by
@@ -606,9 +597,7 @@ lemma uniform_vanishing_topEdgeIntegrand (r : ℝ) (hr : 2 < r) :
     ∀ ε > 0, ∃ M : ℝ, ∀ x T : ℝ, x ∈ Icc (-1 : ℝ) 1 → M ≤ T →
       ‖topEdgeIntegrand r x T‖ < ε := by
   intro ε hε
-  have hbound := tendsto_topEdgeBound_atTop r hr
-  rw [Metric.tendsto_atTop] at hbound
-  obtain ⟨N, hN⟩ := hbound ε hε
+  obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp (tendsto_topEdgeBound_atTop r hr) ε hε
   refine ⟨max N 1, fun x T hx hT => ?_⟩
   have hT1 : 1 ≤ T := le_trans (le_max_right N 1) hT
   have hTN : N ≤ T := le_trans (le_max_left N 1) hT
