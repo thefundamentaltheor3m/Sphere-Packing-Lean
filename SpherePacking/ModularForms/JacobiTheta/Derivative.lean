@@ -1,6 +1,6 @@
 module
 
-public import SpherePacking.ModularForms.JacobiTheta
+public import SpherePacking.ModularForms.JacobiTheta.JacobiIdentity
 public import SpherePacking.ModularForms.Derivative
 public import SpherePacking.ModularForms.DimensionFormulas
 public import SpherePacking.ModularForms.IsCuspForm
@@ -25,7 +25,7 @@ This file proves the Serre derivative identities for Jacobi theta functions
 ### Error Terms (Phases 1-5)
 * Error terms `f₂`, `f₃`, `f₄` definitions
 * MDifferentiable proofs for error terms
-* Relation `f₂ + f₄ = f₃` (from `jacobi_identity` in JacobiTheta.lean)
+* Relation `f₂ + f₄ = f₃` (from `jacobi_identity` in `JacobiIdentity.lean`)
 * S/T transformation rules: `f₂_S_action`, `f₂_T_action`, `f₄_S_action`, `f₄_T_action`
 
 ### Level-1 Invariants (Phase 6)
@@ -406,7 +406,7 @@ lemma theta_h_T_action : (theta_h ∣[(8 : ℤ)] T) = theta_h := by
 ## Phase 7: Cusp Form Arguments
 
 We need to show g and h vanish at infinity.
-The tendsto lemmas for H₂, H₃, H₄ are already in AtImInfty.lean:
+The tendsto lemmas for H₂, H₃, H₄ are already in `Basic.lean`:
 - H₂_tendsto_atImInfty : Tendsto H₂ atImInfty (𝓝 0)
 - H₃_tendsto_atImInfty : Tendsto H₃ atImInfty (𝓝 1)
 - H₄_tendsto_atImInfty : Tendsto H₄ atImInfty (𝓝 1)
