@@ -3,11 +3,15 @@ Copyright (c) 2025 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-import SpherePacking.ModularForms.PhiTransform
-import SpherePacking.MagicFunction.RealDecay
-import SpherePacking.MagicFunction.CuspPath
-import SpherePacking.MagicFunction.a.PhiBounds
-import Mathlib.MeasureTheory.Integral.IntegrableOn
+module
+
+public import SpherePacking.ModularForms.PhiTransform
+public import SpherePacking.MagicFunction.a.Integrability.RealDecay
+public import SpherePacking.MagicFunction.a.Integrability.CuspPath
+public import SpherePacking.MagicFunction.a.PhiBounds
+public import Mathlib.MeasureTheory.Integral.IntegrableOn
+
+@[expose] public section
 
 /-!
 # Contour Endpoint Bounds for Vertical Rays
@@ -91,8 +95,8 @@ lemma φ₀''_I_div_t_eq (t : ℝ) (ht : 0 < t) :
     φ₀'' (Complex.I / t) = φ₀ (ModularGroup.S • mkI_mul_t t ht) := by
   have hI_div : 0 < (Complex.I / t).im := by
     rw [Complex.div_ofReal_im, Complex.I_im]; positivity
-  rw [φ₀''_eq _ hI_div]
-  exact congrArg φ₀ (Subtype.ext (S_smul_I_mul_t t ht).symm)
+  rw [φ₀''_def hI_div]
+  exact congrArg φ₀ (UpperHalfPlane.ext (S_smul_I_mul_t t ht).symm)
 
 /-- Norm of I*t equals t for t > 0. -/
 lemma norm_I_mul_t (t : ℝ) (ht : 0 < t) : ‖(Complex.I * t : ℂ)‖ = t := by
@@ -291,13 +295,12 @@ lemma integrableOn_verticalIntegrandX (x r : ℝ) (hr : 2 < r) :
   -- Bound by verticalBound and use integrability of the bound
   apply MeasureTheory.Integrable.mono' (integrableOn_verticalBound r hr)
   · -- Measurability: verticalIntegrandX is continuous on Ici 1 → AEStronglyMeasurable
-    -- Use neg_one_div_I_mul: I/t = -1/(I*t) for t ≠ 0
+    -- I/t = -1/(I*t) via div_mul_eq_div_div + NormNumI
     have h_cont_phi : ContinuousOn (fun t : ℝ => φ₀'' (Complex.I / t)) (Ici 1) := by
       have h1 := continuousOn_φ₀''_cusp_path.mono
         (fun t ht => lt_of_lt_of_le zero_lt_one (mem_Ici.mp ht))
-      refine h1.congr (fun t ht => ?_)
-      have ht_pos : 0 < t := lt_of_lt_of_le zero_lt_one (mem_Ici.mp ht)
-      exact congrArg φ₀'' (neg_one_div_I_mul t (ne_of_gt ht_pos)).symm
+      refine h1.congr (fun t ht => congrArg φ₀'' ?_)
+      simp [div_mul_eq_div_div, Complex.div_I]
     have h_cont : ContinuousOn (fun t : ℝ => verticalIntegrandX x r t) (Ici 1) := by
       unfold verticalIntegrandX
       refine ((continuousOn_const.mul h_cont_phi).mul ?_).mul ?_
@@ -434,13 +437,8 @@ lemma norm_x_add_I_mul_T_bounds (x T : ℝ) (hx : x ∈ Icc (-1 : ℝ) 1) (hT : 
 lemma S_smul_x_add_I_mul_T (x T : ℝ) (hT : 0 < T) :
     let w : ℍ := ⟨↑x + Complex.I * ↑T, by simp; exact hT⟩
     (↑(ModularGroup.S • w) : ℂ) = -1 / (↑x + Complex.I * ↑T) := by
-  -- S•z = -z⁻¹ for z ∈ ℍ, and -z⁻¹ = -1/z
-  simp only [modular_S_smul, UpperHalfPlane.coe_mk_subtype]
-  -- Goal: ↑(mk ((-z)⁻¹) ...) = -1/z where z = x + iT
-  simp only [UpperHalfPlane.coe_mk]
-  -- Goal: (-z)⁻¹ = -1/z, which equals -(z⁻¹) = -(z⁻¹) by neg_inv
-  rw [← neg_inv]
-  ring
+  simp only [modular_S_smul, UpperHalfPlane.coe_mk]
+  rw [← neg_inv]; ring
 
 /-- φ₀''(-1/z) equals φ₀(S•w) where w = ⟨z, _⟩ ∈ ℍ.
     This connects the extension φ₀'' on ℂ to the original φ₀ on ℍ via S-transform. -/
@@ -452,8 +450,8 @@ lemma φ₀''_neg_inv_eq_φ₀_S_smul (x T : ℝ) (hT : 0 < T) :
   have hneg_inv_im : 0 < (-1 / z : ℂ).im := by
     simp only [z, neg_div, one_div, neg_inv]
     exact UpperHalfPlane.im_inv_neg_coe_pos ⟨_, by simp [Complex.add_im]; exact hT⟩
-  rw [φ₀''_eq _ hneg_inv_im]
-  exact congrArg φ₀ (Subtype.ext (S_smul_x_add_I_mul_T x T hT).symm)
+  rw [φ₀''_def hneg_inv_im]
+  exact congrArg φ₀ (UpperHalfPlane.ext (S_smul_x_add_I_mul_T x T hT).symm)
 
 /-- Bounding function for top edge integrand norm.
     For z = x + iT with x ∈ [-1,1] and T ≥ 1, this bounds ‖topEdgeIntegrand r x T‖. -/
