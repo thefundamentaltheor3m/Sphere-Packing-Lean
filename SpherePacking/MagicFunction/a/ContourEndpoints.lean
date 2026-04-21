@@ -539,31 +539,8 @@ lemma tendsto_topEdgeBound_atTop (r : ℝ) (hr : 2 < r) :
             · exact le_of_lt (Real.exp_pos _)
         _ = (144 * phiBounds.C₄ / π^2) * Real.exp (-(π * r - 2 * π) * T) := by ring
     · exact hbound
-  -- Combine by showing function equals sum of three terms
-  have heq : ∀ T, (1 + T)^2 * Real.exp (-π * r * T) *
-      (phiBounds.C₀ * Real.exp (-2 * π * T) + 12 * phiBounds.C₂ / (π * T) +
-       36 * phiBounds.C₄ / (π^2 * T^2) * Real.exp (2 * π * T))
-      = phiBounds.C₀ * (1 + T)^2 * Real.exp (-(π * r + 2 * π) * T)
-        + (12 * phiBounds.C₂ / (π * T)) * (1 + T)^2 * Real.exp (-π * r * T)
-        + (36 * phiBounds.C₄ / (π^2 * T^2)) * (1 + T)^2 * Real.exp (2 * π * T) *
-            Real.exp (-π * r * T) := fun T => by
-    have hexp1 : Real.exp (-π * r * T) * Real.exp (-2 * π * T) =
-        Real.exp (-(π * r + 2 * π) * T) := by rw [← Real.exp_add]; ring_nf
-    calc (1 + T)^2 * Real.exp (-π * r * T) *
-        (phiBounds.C₀ * Real.exp (-2 * π * T) + 12 * phiBounds.C₂ / (π * T) +
-         36 * phiBounds.C₄ / (π^2 * T^2) * Real.exp (2 * π * T))
-      = (1 + T)^2 * phiBounds.C₀ * (Real.exp (-π * r * T) * Real.exp (-2 * π * T))
-        + (12 * phiBounds.C₂ / (π * T)) * (1 + T)^2 * Real.exp (-π * r * T)
-        + (36 * phiBounds.C₄ / (π^2 * T^2)) * (1 + T)^2 * Real.exp (2 * π * T) *
-            Real.exp (-π * r * T) := by ring
-    _ = phiBounds.C₀ * (1 + T)^2 * Real.exp (-(π * r + 2 * π) * T)
-        + (12 * phiBounds.C₂ / (π * T)) * (1 + T)^2 * Real.exp (-π * r * T)
-        + (36 * phiBounds.C₄ / (π^2 * T^2)) * (1 + T)^2 * Real.exp (2 * π * T) *
-            Real.exp (-π * r * T) := by rw [hexp1]; ring
-  simp_rw [heq]
-  have hsum := (t1.add t2).add t3
-  simp only [add_zero] at hsum
-  exact hsum
+  simpa [pow_two, topEdgeBound, mul_add, add_mul, left_distrib, right_distrib,
+    mul_assoc, mul_left_comm, mul_comm, Real.exp_add] using (t1.add t2).add t3
 
 /-- The top edge bound is nonnegative for T ≥ 1. -/
 lemma topEdgeBound_nonneg (r T : ℝ) (hT : 1 ≤ T) : 0 ≤ topEdgeBound r T := by
