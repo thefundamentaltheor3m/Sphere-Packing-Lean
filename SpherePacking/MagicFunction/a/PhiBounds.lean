@@ -3,8 +3,12 @@ Copyright (c) 2025 Cameron Freer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Cameron Freer
 -/
-import SpherePacking.ModularForms.Eisenstein
-import SpherePacking.MagicFunction.PolyFourierCoeffBound
+module
+
+public import SpherePacking.ModularForms.Eisenstein
+public import SpherePacking.MagicFunction.PolyFourierCoeffBound
+
+@[expose] public section
 
 /-!
 # PhiBounds Structure
@@ -42,10 +46,10 @@ open ArithmeticFunction
 
 open MagicFunction.PolyFourierCoeffBound in
 /-- Coefficient function for φ₀ = ((E₂E₄ - E₆)²) / Δ and φ₂' = E₄(E₂E₄ - E₆) / Δ -/
-private def c_φ₀₂ : ℤ → ℂ := fun n ↦ n * (σ 3 n.toNat)
+def c_φ₀₂ : ℤ → ℂ := fun n ↦ n * (σ 3 n.toNat)
 
 /-- The coefficient function c_φ₀₂ has polynomial growth O(n^5). -/
-private lemma c_φ₀₂_poly : c_φ₀₂ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
+lemma c_φ₀₂_poly : c_φ₀₂ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
   -- Define the ℕ version
   let d : ℕ → ℂ := fun n ↦ n * (σ 3 n)
   have hcd (n : ℕ) : c_φ₀₂ n = d n := by simp [c_φ₀₂, d]
@@ -78,11 +82,11 @@ private lemma c_φ₀₂_poly : c_φ₀₂ =O[Filter.atTop] (fun n ↦ (n ^ 5 : 
 
 open MagicFunction.PolyFourierCoeffBound in
 /-- Coefficient function for φ₄' = E₄² / Δ -/
-private def c_φ₄ : ℤ → ℂ := fun n ↦ if n ≤ 0 then 1 else n * (σ 3 n.toNat)
+def c_φ₄ : ℤ → ℂ := fun n ↦ if n ≤ 0 then 1 else n * (σ 3 n.toNat)
 
 /-- The coefficient function c_φ₄ has polynomial growth O(n^5).
     For n > 0, c_φ₄ n = n * σ₃(n), which matches c_φ₀₂. -/
-private lemma c_φ₄_poly : c_φ₄ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
+lemma c_φ₄_poly : c_φ₄ =O[Filter.atTop] (fun n ↦ (n ^ 5 : ℝ)) := by
   -- For n > 0, c_φ₄ n = c_φ₀₂ n, so we use c_φ₀₂_poly
   have heq : c_φ₄ =ᶠ[Filter.atTop] c_φ₀₂ := by
     simp only [Filter.EventuallyEq, Filter.eventually_atTop, ge_iff_le]
