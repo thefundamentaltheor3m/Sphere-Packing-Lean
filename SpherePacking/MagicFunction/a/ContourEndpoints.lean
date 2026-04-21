@@ -552,8 +552,6 @@ lemma topEdgeBound_nonneg (r T : ℝ) (hT : 1 ≤ T) : 0 ≤ topEdgeBound r T :=
 lemma norm_topEdgeIntegrand_le (r : ℝ) (x T : ℝ)
     (hx : x ∈ Icc (-1 : ℝ) 1) (hT : 1 ≤ T) :
     ‖topEdgeIntegrand r x T‖ ≤ topEdgeBound r T := by
-  -- This proof connects topEdgeIntegrand to the S-transform bound.
-  -- The key insight is: φ₀''(-1/z) = φ₀(S•w) where w = ⟨z, _⟩ ∈ ℍ
   have hT_pos : 0 < T := lt_of_lt_of_le one_pos hT
   let z : ℂ := ↑x + Complex.I * ↑T
   have hz_im : z.im = T := by simp [z]
@@ -563,59 +561,44 @@ lemma norm_topEdgeIntegrand_le (r : ℝ) (x T : ℝ)
   have hφ₀_eq : φ₀'' (-1 / z) = φ₀ (ModularGroup.S • w) := by
     simpa [w, z] using φ₀''_neg_inv_eq_φ₀_S_smul x T hT_pos
   have hS_bound := norm_φ₀_S_smul_le w (by rw [show w.im = T from hz_im]; exact hT)
-  -- Step 3: Bound the norm of z² and the exponential phase
   have hz_sq_norm : ‖z^2‖ ≤ (1 + T)^2 := by
     rw [norm_pow]
     exact sq_le_sq' (by linarith) hz_norm_le
   have hexp_norm : ‖Complex.exp (Complex.I * π * r * z)‖ = Real.exp (-π * r * T) := by
     simpa [z] using norm_cexp_verticalPhase x r T
-  -- Step 4: Compute the full norm using triangle inequality
   unfold topEdgeIntegrand topEdgeBound
   simp only [z] at *
   rw [norm_mul, norm_mul, hφ₀_eq, hexp_norm]
-  -- Now we need: ‖φ₀(S•w)‖ * ‖z²‖ * exp(-πrT) ≤ topEdgeBound
-  -- First bound ‖z²‖ ≤ (1+T)²
-  have hz_sq_bound : ‖(↑x + Complex.I * ↑T : ℂ)^2‖ ≤ (1 + T)^2 := hz_sq_norm
-  -- Step 5: Rewrite the S-transform bound with 1/T replacing 1/‖z‖ (using ‖z‖ ≥ T)
-  have h12_div_le : 12 / (π * ‖(w : ℂ)‖) ≤ 12 / (π * T) := by
-    apply div_le_div_of_nonneg_left (by norm_num : (0:ℝ) ≤ 12) (by positivity)
-    exact mul_le_mul_of_nonneg_left hz_norm_ge (le_of_lt Real.pi_pos)
-  have h36_div_le : 36 / (π^2 * ‖(w : ℂ)‖^2) ≤ 36 / (π^2 * T^2) := by
-    apply div_le_div_of_nonneg_left (by norm_num : (0:ℝ) ≤ 36) (by positivity)
-    apply mul_le_mul_of_nonneg_left _ (sq_nonneg π)
-    exact sq_le_sq₀ (by linarith : 0 ≤ T) (norm_nonneg _) |>.mpr hz_norm_ge
+  -- Replace ‖z‖ with T in the S-transform bound (‖z‖ ≥ T → 1/‖z‖ ≤ 1/T)
   have hS_bound' : ‖φ₀ (ModularGroup.S • w)‖ ≤
       phiBounds.C₀ * Real.exp (-2 * π * T) + 12 * phiBounds.C₂ / (π * T) +
         36 * phiBounds.C₄ / (π^2 * T^2) * Real.exp (2 * π * T) := by
+    have h := hS_bound; rw [show w.im = T from hz_im] at h
     calc ‖φ₀ (ModularGroup.S • w)‖
-        ≤ phiBounds.C₀ * Real.exp (-2 * π * w.im) + 12 / (π * ‖(w : ℂ)‖) * phiBounds.C₂ +
-            36 / (π^2 * ‖(w : ℂ)‖^2) * phiBounds.C₄ * Real.exp (2 * π * w.im) := hS_bound
-      _ = phiBounds.C₀ * Real.exp (-2 * π * T) + 12 / (π * ‖(w : ℂ)‖) * phiBounds.C₂ +
-            36 / (π^2 * ‖(w : ℂ)‖^2) * phiBounds.C₄ * Real.exp (2 * π * T) := by
-          rw [show w.im = T from hz_im]
+        ≤ phiBounds.C₀ * Real.exp (-2 * π * T) + 12 / (π * ‖(w : ℂ)‖) * phiBounds.C₂ +
+            36 / (π^2 * ‖(w : ℂ)‖^2) * phiBounds.C₄ * Real.exp (2 * π * T) := h
       _ ≤ phiBounds.C₀ * Real.exp (-2 * π * T) + 12 / (π * T) * phiBounds.C₂ +
             36 / (π^2 * T^2) * phiBounds.C₄ * Real.exp (2 * π * T) := by
           apply add_le_add
           · apply add_le_add le_rfl
-            exact mul_le_mul_of_nonneg_right h12_div_le (le_of_lt phiBounds.hC₂_pos)
+            apply mul_le_mul_of_nonneg_right _ (le_of_lt phiBounds.hC₂_pos)
+            exact div_le_div_of_nonneg_left (by norm_num) (by positivity)
+              (mul_le_mul_of_nonneg_left hz_norm_ge (le_of_lt Real.pi_pos))
           · apply mul_le_mul_of_nonneg_right _ (le_of_lt (Real.exp_pos _))
-            exact mul_le_mul_of_nonneg_right h36_div_le (le_of_lt phiBounds.hC₄_pos)
-      _ = phiBounds.C₀ * Real.exp (-2 * π * T) + 12 * phiBounds.C₂ / (π * T) +
-            36 * phiBounds.C₄ / (π^2 * T^2) * Real.exp (2 * π * T) := by ring
-  -- Step 7: Combine everything
-  have hbound_pos : 0 ≤ phiBounds.C₀ * Real.exp (-2 * π * T) + 12 * phiBounds.C₂ / (π * T) +
-      36 * phiBounds.C₄ / (π^2 * T^2) * Real.exp (2 * π * T) := by
-    have := phiBounds.hC₀_pos; have := phiBounds.hC₂_pos; have := phiBounds.hC₄_pos
-    positivity
+            apply mul_le_mul_of_nonneg_right _ (le_of_lt phiBounds.hC₄_pos)
+            exact div_le_div_of_nonneg_left (by norm_num) (by positivity)
+              (mul_le_mul_of_nonneg_left
+                ((sq_le_sq₀ (by linarith : 0 ≤ T) (norm_nonneg _)).mpr hz_norm_ge) (sq_nonneg π))
+      _ = _ := by ring
   calc ‖φ₀ (ModularGroup.S • w)‖ * ‖(↑x + Complex.I * ↑T)^2‖ * Real.exp (-π * r * T)
       ≤ (phiBounds.C₀ * Real.exp (-2 * π * T) + 12 * phiBounds.C₂ / (π * T) +
           36 * phiBounds.C₄ / (π^2 * T^2) * Real.exp (2 * π * T)) * (1 + T)^2 *
             Real.exp (-π * r * T) := by
         apply mul_le_mul_of_nonneg_right _ (le_of_lt (Real.exp_pos _))
-        apply mul_le_mul hS_bound' hz_sq_bound (norm_nonneg _) hbound_pos
-    _ = (1 + T)^2 * Real.exp (-π * r * T) *
-          (phiBounds.C₀ * Real.exp (-2 * π * T) + 12 * phiBounds.C₂ / (π * T) +
-            36 * phiBounds.C₄ / (π^2 * T^2) * Real.exp (2 * π * T)) := by ring
+        apply mul_le_mul hS_bound' hz_sq_norm (norm_nonneg _)
+        have := phiBounds.hC₀_pos; have := phiBounds.hC₂_pos; have := phiBounds.hC₄_pos
+        positivity
+    _ = _ := by ring
 
 /-- Uniform vanishing: the top edge integrand is arbitrarily small for all z = x + iT
     with x ∈ [-1,1] and sufficiently large T. This is the form needed by Cauchy-Goursat. -/
