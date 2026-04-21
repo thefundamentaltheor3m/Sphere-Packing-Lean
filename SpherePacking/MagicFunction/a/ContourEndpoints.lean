@@ -98,13 +98,13 @@ lemma norm_I_mul_t (t : ℝ) (ht : 0 < t) : ‖(Complex.I * t : ℂ)‖ = t := b
   simp only [norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht]
 
 /-- The coefficient (12I)/(πz) has norm 12/(π|z|). -/
-lemma norm_coeff_12I_div (z : ℂ) (_hz : z ≠ 0) :
+lemma norm_coeff_12I_div (z : ℂ) :
     ‖(12 * Complex.I) / (↑π * z)‖ = 12 / (π * ‖z‖) := by
   rw [norm_div, norm_mul, norm_mul, Complex.norm_I, Complex.norm_real, Complex.norm_ofNat]
   simp only [mul_one, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
 
 /-- The coefficient 36/(π²z²) has norm 36/(π²|z|²). -/
-lemma norm_coeff_36_div_sq (z : ℂ) (_hz : z ≠ 0) :
+lemma norm_coeff_36_div_sq (z : ℂ) :
     ‖36 / (↑π ^ 2 * z ^ 2)‖ = 36 / (π^2 * ‖z‖^2) := by
   rw [norm_div, norm_mul, norm_pow, norm_pow, Complex.norm_real]
   simp only [Real.norm_eq_abs, abs_of_pos Real.pi_pos, Complex.norm_ofNat]
@@ -130,19 +130,18 @@ lemma norm_φ₀_S_smul_le (z : ℍ) (hz : 1 ≤ z.im) :
     linarith
   refine h_tri.trans ?_
   -- Step 3: Bound each of the three terms
-  have hz_ne : (z : ℂ) ≠ 0 := ne_zero z
   -- Derive 1/2 < z.im from 1 ≤ z.im for phiBounds lemmas
   have hz' : 1/2 < z.im := by linarith
   -- Bound (i): ‖φ₀ z‖ ≤ C₀ * exp(-2πt)  [from phiBounds.hφ₀]
   have hbound1 : ‖φ₀ z‖ ≤ phiBounds.C₀ * exp (-2 * π * z.im) := phiBounds.hφ₀ z hz'
   -- Bound (ii): ‖(12I)/(πz) * φ₂' z‖ ≤ (12/(π‖z‖)) * C₂
   have hbound2 : ‖(12 * Complex.I) / (↑π * z) * φ₂' z‖ ≤ (12 / (π * ‖(z : ℂ)‖)) * phiBounds.C₂ := by
-    rw [norm_mul, norm_coeff_12I_div (z : ℂ) hz_ne]
+    rw [norm_mul, norm_coeff_12I_div (z : ℂ)]
     exact mul_le_mul_of_nonneg_left (phiBounds.hφ₂ z hz') (by positivity)
   -- Bound (iii): ‖36/(π²z²) * φ₄' z‖ ≤ (36/(π²‖z‖²)) * C₄ * exp(2πt)
   have hbound3 : ‖36 / (↑π ^ 2 * ↑z ^ 2) * φ₄' z‖ ≤
       (36 / (π^2 * ‖(z : ℂ)‖^2)) * phiBounds.C₄ * exp (2 * π * z.im) := by
-    rw [norm_mul, norm_coeff_36_div_sq (z : ℂ) hz_ne]
+    rw [norm_mul, norm_coeff_36_div_sq (z : ℂ)]
     calc 36 / (π ^ 2 * ‖(z : ℂ)‖ ^ 2) * ‖φ₄' z‖
         ≤ 36 / (π ^ 2 * ‖(z : ℂ)‖ ^ 2) * (phiBounds.C₄ * exp (2 * π * z.im)) :=
           mul_le_mul_of_nonneg_left (phiBounds.hφ₄ z hz') (by positivity)
@@ -251,7 +250,9 @@ lemma integrableOn_verticalBound (r : ℝ) (hr : 2 < r) :
       (Ici 1) volume :=
     (_root_.integrableOn_exp_mul_Ici (-(π * r - 2 * π)) (by linarith)).const_mul _
   convert (i1.add i2).add i3 using 1
-  funext s; simp [verticalBound]; ring_nf
+  funext s
+  simp [verticalBound]
+  ring_nf
 
 /-- Vertical ray integrand is integrable on [1,∞) for r > 2. -/
 lemma integrableOn_verticalIntegrandX (x r : ℝ) (hr : 2 < r) :
@@ -314,7 +315,9 @@ lemma tendsto_verticalBound_atTop (r : ℝ) (hr : 2 < r) :
   have hsum := (t1.add t2).add t3
   simp only [add_zero] at hsum
   convert hsum using 1
-  funext s; simp only [verticalBound]; ring_nf
+  funext s
+  simp only [verticalBound]
+  ring_nf
 
 /-- The vertical bound is nonnegative for t ≥ 1. -/
 lemma verticalBound_nonneg (r t : ℝ) (ht : 1 ≤ t) : 0 ≤ verticalBound r t := by
@@ -341,7 +344,7 @@ lemma tendsto_verticalIntegrandX_atTop (x r : ℝ) (hr : 2 < r) :
     _ < ε := by
         have := hN₁ t ht_ge_N₁
         simp only [dist_zero_right, Real.norm_eq_abs] at this
-        rwa [abs_of_nonneg (verticalBound_nonneg r t ht_ge_1)] at this
+        rwa [abs_of_nonneg (verticalBound_nonneg r t ‹_›)] at this
 
 /-- Uniform vanishing: the vertical integrand is arbitrarily small for all z
     with sufficiently large imaginary part. This is the form needed by Cauchy-Goursat. -/
@@ -353,7 +356,7 @@ lemma uniform_vanishing_verticalIntegrandX (r : ℝ) (hr : 2 < r) :
   have ht1 : 1 ≤ t := le_trans (le_max_right N 1) ht
   have htN : N ≤ t := le_trans (le_max_left N 1) ht
   exact lt_of_le_of_lt (norm_verticalIntegrandX_le x r t ht1)
-    (by simpa [abs_of_nonneg (verticalBound_nonneg r t ht1)] using hN t htN)
+    (by simpa [abs_of_nonneg (verticalBound_nonneg r t ‹_›)] using hN t htN)
 
 /-! ## Top Edge Integral → 0 -/
 
@@ -551,7 +554,7 @@ lemma norm_topEdgeIntegrand_le (r : ℝ) (x T : ℝ)
   rcases norm_x_add_I_mul_T_bounds x T hx hT with ⟨hz_norm_ge, hz_norm_le⟩
   have hφ₀_eq : φ₀'' (-1 / z) = φ₀ (ModularGroup.S • w) := by
     simpa [w, z] using φ₀''_neg_inv_eq_φ₀_S_smul x T hT_pos
-  have hS_bound := norm_φ₀_S_smul_le w (by rw [show w.im = T from hz_im]; exact hT)
+  have hS_bound := norm_φ₀_S_smul_le w (by simpa [w, z] using hT)
   have hz_sq_norm : ‖z^2‖ ≤ (1 + T)^2 := by
     rw [norm_pow]
     exact sq_le_sq' (by linarith) hz_norm_le
