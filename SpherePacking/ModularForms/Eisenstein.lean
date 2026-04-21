@@ -333,21 +333,6 @@ lemma auxasdf (n : ℕ) : (PowerSeries.coeff n) ((qExpansion 1 E₄) * (qExpansi
     ((qExpansion 1 E₄)) * (PowerSeries.coeff p.2) ((qExpansion 1 E₆)) := by
   apply PowerSeries.coeff_mul
 
-lemma sigma_bound (k n : ℕ) : σ k n ≤ n ^ (k + 1) := by
-  rw [ArithmeticFunction.sigma_apply]
-  have : ∑ d ∈ n.divisors, d ^ k ≤ ∑ d ∈ n.divisors, n ^ k := by
-    apply Finset.sum_le_sum
-    intro i hi
-    gcongr
-    exact Nat.divisor_le hi
-  apply le_trans this
-  simp
-  rw [pow_add]
-  rw [mul_comm]
-  gcongr
-  simp
-  exact Nat.card_divisors_le_self n
-
 def Ek_q (k : ℕ) : ℕ → ℂ := fun m => if m = 0 then 1 else
     (1 / (riemannZeta (k))) * ((-2 * ↑π * Complex.I) ^ k / (k - 1)!) * (σ (k-1) m)
 
@@ -864,7 +849,7 @@ theorem E_even_imag_axis_real (k : ℕ) (hk : (3 : ℤ) ≤ k) (hk2 : Even k) :
         _ ≤ ‖(↑n : ℂ) ^ k‖ * ‖cexp (2 * ↑Real.pi * Complex.I * z * n)‖ := by
           apply mul_le_mul_of_nonneg_right
           · rw [Complex.norm_natCast, Complex.norm_pow, Complex.norm_natCast]
-            have hbound := sigma_bound (k - 1) n
+            have hbound := ArithmeticFunction.sigma_le_pow_succ (k - 1) n
             have hk' : k - 1 + 1 = k := Nat.sub_add_cancel (by omega : 1 ≤ k)
             rw [hk'] at hbound
             exact_mod_cast hbound
