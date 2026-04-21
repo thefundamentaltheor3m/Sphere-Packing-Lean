@@ -30,6 +30,6 @@ lemma continuousOn_φ₀''_cusp_path :
   φ₀''_holo.continuousOn.comp
     (continuousOn_const.div (continuousOn_const.mul continuous_ofReal.continuousOn)
       (fun t ht => mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr (ne_of_gt ht))))
-    (fun t ht => by simp [div_mul_eq_div_div, Complex.div_I, div_ofReal_im, mem_Ioi.mp ht])
+    (fun t ht => by simpa [div_mul_eq_div_div] using mem_Ioi.mp ht)
 
 end

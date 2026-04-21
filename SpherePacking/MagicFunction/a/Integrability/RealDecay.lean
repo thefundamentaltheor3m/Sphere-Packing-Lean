@@ -74,17 +74,15 @@ lemma tendsto_exp_neg_atTop (a : ℝ) (ha : 0 < a) :
 lemma integrableOn_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
     IntegrableOn (fun t => t * exp (-a * t)) (Ici 1) volume := by
   rw [integrableOn_Ici_iff_integrableOn_Ioi]
-  have h := integrableOn_rpow_mul_exp_neg_mul_rpow (s := 1) (p := 1) (by norm_num) le_rfl ha
-  simp only [rpow_one] at h
-  exact h.mono_set (Set.Ioi_subset_Ioi zero_le_one)
+  simpa [rpow_one] using (integrableOn_rpow_mul_exp_neg_mul_rpow (s := 1) (p := 1)
+    (by norm_num) le_rfl ha).mono_set (Set.Ioi_subset_Ioi zero_le_one)
 
 /-- t² * exp(-a*t) is integrable on [1,∞) for a > 0. -/
 lemma integrableOn_sq_mul_exp_neg_Ici (a : ℝ) (ha : 0 < a) :
     IntegrableOn (fun t => t^2 * exp (-a * t)) (Ici 1) volume := by
   rw [integrableOn_Ici_iff_integrableOn_Ioi]
-  have h := integrableOn_rpow_mul_exp_neg_mul_rpow (s := 2) (p := 1) (by norm_num) le_rfl ha
-  simp only [rpow_one, rpow_two] at h
-  exact h.mono_set (Set.Ioi_subset_Ioi zero_le_one)
+  simpa [rpow_one, rpow_two] using (integrableOn_rpow_mul_exp_neg_mul_rpow (s := 2) (p := 1)
+    (by norm_num) le_rfl ha).mono_set (Set.Ioi_subset_Ioi zero_le_one)
 
 end Integrability
 
