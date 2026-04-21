@@ -337,10 +337,7 @@ lemma tendsto_verticalIntegrandX_atTop (x r : ℝ) (hr : 2 < r) :
   -- Use squeeze theorem: ‖f(t)‖ ≤ g(t) → 0 implies f(t) → 0
   apply Metric.tendsto_atTop.mpr
   intro ε hε
-  -- Get N such that verticalBound < ε for t ≥ N
-  have htendsto := tendsto_verticalBound_atTop r hr
-  rw [Metric.tendsto_atTop] at htendsto
-  obtain ⟨N₁, hN₁⟩ := htendsto ε hε
+  obtain ⟨N₁, hN₁⟩ := Metric.tendsto_atTop.mp (tendsto_verticalBound_atTop r hr) ε hε
   -- Use max(N₁, 1) to ensure we can apply norm_verticalIntegrandX_le
   use max N₁ 1
   intro t ht
@@ -360,9 +357,7 @@ lemma tendsto_verticalIntegrandX_atTop (x r : ℝ) (hr : 2 < r) :
 lemma uniform_vanishing_verticalIntegrandX (r : ℝ) (hr : 2 < r) :
     ∀ ε > 0, ∃ M : ℝ, ∀ x t : ℝ, M ≤ t → ‖verticalIntegrandX x r t‖ < ε := by
   intro ε hε
-  have hbound := tendsto_verticalBound_atTop r hr
-  rw [Metric.tendsto_atTop] at hbound
-  obtain ⟨N, hN⟩ := hbound ε hε
+  obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp (tendsto_verticalBound_atTop r hr) ε hε
   refine ⟨max N 1, fun x t ht => ?_⟩
   have ht1 : 1 ≤ t := le_trans (le_max_right N 1) ht
   have htN : N ≤ t := le_trans (le_max_left N 1) ht
@@ -382,13 +377,11 @@ def topEdgeIntegrand (r x T : ℝ) : ℂ :=
 lemma norm_x_add_I_mul_T_bounds (x T : ℝ) (hx : x ∈ Icc (-1 : ℝ) 1) (hT : 1 ≤ T) :
     T ≤ ‖(↑x + Complex.I * ↑T : ℂ)‖ ∧ ‖(↑x + Complex.I * ↑T : ℂ)‖ ≤ 1 + T := by
   constructor
-  · -- Lower bound: ‖z‖ ≥ |Im(z)| = T
-    have hT_pos : 0 < T := by linarith
-    have hre : (↑x + Complex.I * ↑T : ℂ).re = x := by simp
-    have him : (↑x + Complex.I * ↑T : ℂ).im = T := by simp
-    rw [Complex.norm_eq_sqrt_sq_add_sq, hre, him]
-    calc T = Real.sqrt (T^2) := (Real.sqrt_sq (le_of_lt hT_pos)).symm
-      _ ≤ Real.sqrt (x^2 + T^2) := Real.sqrt_le_sqrt (by nlinarith [sq_nonneg x])
+  · have hsq : T^2 ≤ ‖(↑x + Complex.I * ↑T : ℂ)‖^2 := by
+      rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
+      simp
+      nlinarith [sq_nonneg x]
+    exact (sq_le_sq₀ (by linarith : 0 ≤ T) (norm_nonneg _)).mp hsq
   · -- Upper bound: ‖z‖ ≤ |x| + |T| ≤ 1 + T
     simp only [mem_Icc] at hx
     calc ‖(↑x + Complex.I * ↑T : ℂ)‖
@@ -598,7 +591,8 @@ lemma norm_topEdgeIntegrand_le (r : ℝ) (x T : ℝ)
         ≤ phiBounds.C₀ * Real.exp (-2 * π * w.im) + 12 / (π * ‖(w : ℂ)‖) * phiBounds.C₂ +
             36 / (π^2 * ‖(w : ℂ)‖^2) * phiBounds.C₄ * Real.exp (2 * π * w.im) := hS_bound
       _ = phiBounds.C₀ * Real.exp (-2 * π * T) + 12 / (π * ‖(w : ℂ)‖) * phiBounds.C₂ +
-            36 / (π^2 * ‖(w : ℂ)‖^2) * phiBounds.C₄ * Real.exp (2 * π * T) := by rw [show w.im = T from hz_im]
+            36 / (π^2 * ‖(w : ℂ)‖^2) * phiBounds.C₄ * Real.exp (2 * π * T) := by
+          rw [show w.im = T from hz_im]
       _ ≤ phiBounds.C₀ * Real.exp (-2 * π * T) + 12 / (π * T) * phiBounds.C₂ +
             36 / (π^2 * T^2) * phiBounds.C₄ * Real.exp (2 * π * T) := by
           apply add_le_add

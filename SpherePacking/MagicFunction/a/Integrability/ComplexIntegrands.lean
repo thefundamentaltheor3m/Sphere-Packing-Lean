@@ -83,11 +83,9 @@ theorem Φ₁'_holo : Holo(Φ₁' r) := by
   · apply (differentiableOn_const (-1)).div
     · rw [differentiableOn_add_const_iff]
       exact differentiableOn_id
-    · intro z hz hcontra
-      obtain ⟨hre, him⟩ := Complex.ext_iff.mp hcontra
-      simp only [add_im, one_im, add_zero, zero_im] at him
-      have : z.im > 0 := hz
-      linarith
+    · intro z hz
+      exact ne_of_mem_of_not_mem (by simpa using hz : z + 1 ∈ ℍ₀)
+        UpperHalfPlane.zero_not_mem_upperHalfPlaneSet
   · let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, 1]) (!![1, 1; -1, 0])
       (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
     have : ∀ z ∈ ℍ₀, UpperHalfPlane.smulAux' g z = -1 / (z + 1) := fun _ _ ↦ by
@@ -111,11 +109,9 @@ theorem Φ₃'_holo : Holo(Φ₃' r) := by
   · apply (differentiableOn_const (-1)).div
     · simp only [sub_eq_add_neg, differentiableOn_add_const_iff]
       exact differentiableOn_id
-    · intro z hz hcontra
-      obtain ⟨hre, him⟩ := Complex.ext_iff.mp hcontra
-      simp only [sub_im, one_im, sub_zero, zero_im] at him
-      have : z.im > 0 := hz
-      linarith
+    · intro z hz
+      exact ne_of_mem_of_not_mem (by simpa [sub_eq_add_neg] using hz : z - 1 ∈ ℍ₀)
+        UpperHalfPlane.zero_not_mem_upperHalfPlaneSet
   · let g : GL (Fin 2) ℝ := Units.mk (!![0, -1; 1, -1]) (!![-1, 1; -1, 0])
       (by simp [Matrix.one_fin_two]) (by simp [Matrix.one_fin_two])
     have : ∀ z ∈ ℍ₀, UpperHalfPlane.smulAux' g z = -1 / (z - 1) := fun _ _ ↦ by
@@ -193,9 +189,12 @@ theorem φ₀''_differentiable : DifferentiableOn ℂ φ₀'' (Set.univ ×ℂ Io
 
 /-- φ₀ : ℍ → ℂ is continuous. Follows from φ₀''_holo. -/
 theorem φ₀_continuous : Continuous φ₀ := by
-  have h_eq : φ₀ = φ₀'' ∘ (↑· : ℍ → ℂ) := funext fun z => (φ₀''_coe_upperHalfPlane z).symm
-  rw [h_eq]
-  exact φ₀''_holo.continuousOn.comp_continuous continuous_induced_dom fun z => z.2
+  unfold φ₀
+  exact Continuous.div
+    ((((MDifferentiable.continuous E₂_holo').mul (MDifferentiable.continuous E₄.holo')).sub
+      (MDifferentiable.continuous E₆.holo')).pow 2)
+    (MDifferentiable.continuous Delta.holo')
+    (fun z => Δ_ne_zero z)
 
 end Corollaries
 
