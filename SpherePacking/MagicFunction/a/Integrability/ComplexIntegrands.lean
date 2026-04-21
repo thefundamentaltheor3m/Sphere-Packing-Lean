@@ -196,6 +196,12 @@ theorem φ₀_continuous : Continuous φ₀ := by
     (MDifferentiable.continuous Delta.holo')
     (fun z => Δ_ne_zero z)
 
+/-- φ₀ : ℍ → ℂ is continuous. Follows from φ₀''_holo. -/
+theorem φ₀_continuous : Continuous φ₀ := by
+  have h_eq : φ₀ = φ₀'' ∘ (↑· : ℍ → ℂ) := funext fun z => (φ₀''_coe_upperHalfPlane z).symm
+  rw [h_eq]
+  exact φ₀''_holo.continuousOn.comp_continuous continuous_induced_dom fun z => z.2
+
 end Corollaries
 
 end MagicFunction.a.ComplexIntegrands
