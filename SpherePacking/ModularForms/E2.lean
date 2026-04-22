@@ -161,21 +161,31 @@ lemma E₂_eq (z : UpperHalfPlane) : E₂ z =
     · rw [riemannZeta_two]
       have hpi : (π : ℂ) ≠ 0 := by simp
       grind
-    · calc
-        ∑' n : ℕ+, sigma 1 n * cexp (2 * π * Complex.I * z) ^ (n : ℕ)
-            = ∑' n : ℕ+, (n : ℂ) ^ 1 * cexp (2 * π * Complex.I * z) ^ (n : ℕ) /
-                (1 - cexp (2 * π * Complex.I * z) ^ (n : ℕ)) := by
-                  simpa [pow_one] using
-                    (tsum_pow_div_one_sub_eq_tsum_sigma
-                      (r := cexp (2 * π * Complex.I * z))
-                        (UpperHalfPlane.norm_exp_two_pi_I_lt_one z) 1).symm
-        _ = ∑' n : ℕ+, ↑n * cexp (2 * π * Complex.I * n * z) /
-            (1 - cexp (2 * π * Complex.I * n * z)) := by
-              apply tsum_congr
-              intro n
-              have hpow : cexp (2 * π * Complex.I * n * z) =
-                  cexp (2 * π * Complex.I * z) ^ (n : ℕ) := by
-                rw [← Complex.exp_nat_mul]
-                congr 1
-                ring
-              simp [pow_one, hpow]
+    · have hl := tsum_pnat_eq_tsum_succ (f := fun n => sigma 1 n * cexp (2 * π * Complex.I * n * z))
+      have hr := tsum_pnat_eq_tsum_succ
+        (f := fun n => n * cexp (2 * π * Complex.I * n * z) /
+          (1 - cexp (2 * π * Complex.I * n * z)))
+      have ht := tsum_eq_tsum_sigma z
+      have hexp : ∀ n : ℕ+, cexp (2 * ↑π * Complex.I * ↑z) ^ (n : ℕ) =
+          cexp (2 * ↑π * Complex.I * ↑↑n * ↑z) := by
+        intro n
+        rw [← Complex.exp_nat_mul]
+        ring_nf
+      simp only [hexp]
+      rw [hl, hr]
+      simp at *
+      rw [ht]
+
+lemma E₂_q_exp (z : ℍ) :
+    E₂ z = 1 - 24 * ∑' (n : ℕ+), sigma 1 n * cexp (2 * π * Complex.I * n * z) := by
+  unfold E₂ EisensteinSeries.E2
+  simp only [Pi.smul_apply, smul_eq_mul]
+  rw [show EisensteinSeries.G2 z = G₂ z from rfl, G2_q_exp, riemannZeta_two,
+    mul_sub]
+  have hpi : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  congr 1
+  · field_simp
+  · rw [← mul_assoc, ← mul_assoc]
+    congr 1
+    field_simp
+    ring

@@ -58,10 +58,6 @@ lemma aux33 (f : ℕ → ℂ) (hf : Summable f) : ∑' n, f (n) =
   have V := this.comp tendsto_finset_range
   apply V
 
-/- this is being Pr'd-/
-lemma tsum_pnat_eq_tsum_succ3 {α : Type*} [TopologicalSpace α] [AddCommMonoid α] [T2Space α]
-  (f : ℕ → α) : ∑' (n : ℕ+), f ↑n = ∑' (n : ℕ), f (n + 1) := by
-  apply tsum_pnat_eq_tsum_succ
 
 
 
@@ -1414,7 +1410,7 @@ theorem cot_series_repr (z : ℍ) :
     ↑π * cot (↑π * z) - 1 / z = ∑' n : ℕ+, (1 / ((z : ℂ) - n) + 1 / (z + n)) := by
   have := cot_series_rep' (UpperHalfPlane.coe_mem_integerComplement z)
   simp only [one_div] at *
-  have hrw := tsum_pnat_eq_tsum_succ3 fun n : ℕ => (1 / ((z : ℂ) - n) + 1 / (z + n))
+  have hrw := tsum_pnat_eq_tsum_succ (f := fun n : ℕ => (1 / ((z : ℂ) - n) + 1 / (z + n)))
   simp only [one_div, Nat.cast_add, Nat.cast_one] at hrw
   rw [hrw]
   apply this
@@ -1641,7 +1637,7 @@ lemma t9 (z : ℍ) : ∑' m : ℕ,
   ( 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
       ∑' n : ℕ+, n ^ ((2 - 1)) * Complex.exp (2 * ↑π * Complex.I * (m + 1) * z * n)) = -
     8 * π ^ 2 * ∑' (n : ℕ+), (sigma 1 n) * cexp (2 * π * Complex.I * n * z) := by
-  have := tsum_pnat_eq_tsum_succ3 (fun m => 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
+  have := tsum_pnat_eq_tsum_succ (f := fun m => 2 * (-2 * ↑π * Complex.I) ^ 2 / (2 - 1)! *
       ∑' n : ℕ+, n ^ ((2 - 1)) * Complex.exp (2 * ↑π * Complex.I * (m) * z * n))
   simp only [neg_mul, even_two, Even.neg_pow, Nat.add_one_sub_one, Nat.factorial_one, Nat.cast_one,
     div_one, pow_one, Nat.cast_add] at *
