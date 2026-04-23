@@ -303,13 +303,11 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
   have hExp : ∀ u : ℂ, ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Set.Ici (1 : ℝ)) :=
     fun u => ContinuousOn.cexp (continuousOn_const.mul hk_cont)
   have hF_meas : ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) μ :=
-    Filter.Eventually.of_forall fun u => by
-      simpa [μ] using ((hcont_base.mul (hExp u)).aestronglyMeasurable
-        (μ := (volume : Measure ℝ)) measurableSet_Ici)
+    .of_forall fun u => by simpa [μ] using
+      ((hcont_base.mul (hExp u)).aestronglyMeasurable (μ := volume) measurableSet_Ici)
   have hF'_meas : AEStronglyMeasurable (F' u0) μ := by
-    simpa [F', μ, mul_assoc] using
-      ((hcont_base.mul hk_cont).mul (hExp u0)).aestronglyMeasurable
-        (μ := (volume : Measure ℝ)) measurableSet_Ici
+    simpa [F', μ, mul_assoc] using ((hcont_base.mul hk_cont).mul (hExp u0)).aestronglyMeasurable
+      (μ := volume) measurableSet_Ici
   obtain ⟨Mψ, hMψ⟩ := MagicFunction.b.PsiBounds.exists_bound_norm_ψS_resToImagAxis_Ici_one
   have hbase_bound : ∀ t : ℝ, 1 ≤ t → ‖base t‖ ≤ Mψ := fun t ht => by
     simpa [base, norm_mul] using
@@ -373,10 +371,9 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
   have h_diff :
       ∀ᵐ t ∂μ, ∀ u ∈ Metric.ball u0 ε,
         HasDerivAt (fun u : ℂ => F u t) (F' u t) u :=
-    Filter.Eventually.of_forall fun t u _ => by
-      simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using
-        (HasDerivAt.comp u (Complex.hasDerivAt_exp (u * k t))
-          (hasDerivAt_mul_const (k t) (x := u))).const_mul (base t)
+    .of_forall fun t u _ => by simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using
+      (HasDerivAt.comp u (Complex.hasDerivAt_exp (u * k t))
+        (hasDerivAt_mul_const (k t) (x := u))).const_mul (base t)
   have h :=
     hasDerivAt_integral_of_dominated_loc_of_deriv_le
       (μ := μ) (F := F) (x₀ := u0) (s := Metric.ball u0 ε) (hs := Metric.ball_mem_nhds u0 ε_pos)
