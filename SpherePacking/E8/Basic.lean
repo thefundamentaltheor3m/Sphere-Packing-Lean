@@ -55,8 +55,8 @@ lemma AddCommGroup.ModEq.zsmul' {α : Type*} [AddCommGroup α] {p a b : α} {n :
 @[expose, simps]
 public def LinearMap.intCast {ι : Type*} (R : Type*) [Ring R] : (ι → ℤ) →ₗ[ℤ] (ι → R) where
   toFun f i := Int.cast (f i)
-  map_add' _ _ := by ext i; simp
-  map_smul' _ _ := by ext i; simp
+  map_add' _ _ := by ext; simp
+  map_smul' _ _ := by ext; simp
 
 /-- The submodule of integer vectors in `Fin n → ℤ` whose coordinate sum is even. -/
 public def Submodule.evenLatticeInt (n : ℕ) : Submodule ℤ (Fin n → ℤ) where
@@ -79,13 +79,12 @@ public lemma Submodule.coe_evenLattice (R : Type*) (n : ℕ) [Ring R] [CharZero 
     {v | (∀ i, ∃ n : ℤ, (n : R) = v i) ∧ ∑ i, v i ≡ 0 [PMOD 2]} := by
   ext v
   simp only [evenLattice, map_coe, Set.mem_image, SetLike.mem_coe, Set.mem_setOf_eq]
-  refine ⟨?_, ?_⟩
-  · rintro ⟨f, hf, rfl⟩
+  refine ⟨fun ⟨f, hf, hfv⟩ => ?_, fun ⟨hv, hv'⟩ => ?_⟩
+  · subst hfv
     refine ⟨fun i ↦ ⟨f i, by simp⟩, ?_⟩
     simpa [Int.cast_sum] using
       (by simpa [evenLatticeInt] using hf : (∑ i, f i : ℤ) ≡ 0 [PMOD 2]).intCast (G := R)
-  · rintro ⟨hv, hv'⟩
-    choose w hw using hv
+  · choose w hw using hv
     refine ⟨w, ?_, by ext i; simpa using hw i⟩
     simpa [evenLatticeInt] using
       (AddCommGroup.intCast_modEq_intCast' (G := R) (a := ∑ i, w i) (b := 0) (n := 2)).1
@@ -122,8 +121,7 @@ public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
           rw [← even_iff_two_dvd]; exact ha'.add_odd hb'
         · obtain ⟨a', ha', ha⟩ := ha i; obtain ⟨b', hb⟩ := hb i
           exact ⟨a' + 2 * b', ha'.add_even (by simp), by simp [ha, hb, mul_add]⟩
-    · rw [Finset.sum_add_distrib]
-      exact ((has.add_right _).trans (hbs.add_left _)).trans (by simp)
+    · rw [Finset.sum_add_distrib]; exact ((has.add_right _).trans (hbs.add_left _)).trans (by simp)
   zero_mem' := by
     simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, Pi.zero_apply, forall_const,
       mul_zero, Finset.sum_const_zero, AddCommGroup.modEq_refl, and_true]
@@ -292,8 +290,8 @@ lemma exists_cast_eq_vecMul_E8Inverse_aux {R : Type*} [Field R] [CharZero R]
     exact ⟨∑ i, v' i * w i, by simp [← hv', Int.cast_sum, Int.cast_mul]⟩
   · choose v' hv' using hv'
     refine ⟨∑ i, v' i * w i, ?_⟩
-    have hwR : (∑ i, (w i : R)) = 0 := by exact_mod_cast hw
-    simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum, Int.cast_sum, Int.cast_mul, hwR]
+    simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum, Int.cast_sum, Int.cast_mul,
+      show (∑ i, (w i : R)) = 0 from by exact_mod_cast hw]
 
 lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (hv : v ∈ Submodule.E8 R) :

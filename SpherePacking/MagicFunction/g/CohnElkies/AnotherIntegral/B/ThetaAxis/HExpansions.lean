@@ -94,14 +94,12 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
   have hb_norm : ‖b‖ = Real.exp (-(9 / 4 : ℝ) * Real.pi * t) := by
     simp [-Complex.ofReal_exp, b, abs_of_nonneg (Real.exp_pos _).le]
   have hy : ‖y‖ ≤ 4 := by
-    have hle1 : Real.exp (-Real.pi * t / 4) ≤ 1 :=
-      Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_trans zero_le_one ht])
-    have hle2 : Real.exp (-(9 / 4 : ℝ) * Real.pi * t) ≤ 1 :=
-      Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht])
     have htri : ‖y‖ ≤ ‖(2 : ℂ) * a‖ + ‖(2 : ℂ) * b‖ := by
       simpa [y] using norm_add_le ((2 : ℂ) * a) ((2 : ℂ) * b)
     simp only [norm_mul, Complex.norm_ofNat, ha_norm, hb_norm] at htri
-    linarith [htri]
+    linarith [htri, Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, le_trans zero_le_one ht] :
+      -Real.pi * t / 4 ≤ 0),
+      Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht] : -(9 / 4 : ℝ) * Real.pi * t ≤ 0)]
   have hxy : ‖x - y‖ ≤ Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) := by grind only
   have hpow' : ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
         (4 * (M + 4) ^ 3) * Cθ * Real.exp (-(5 : ℝ) * Real.pi * t) := by

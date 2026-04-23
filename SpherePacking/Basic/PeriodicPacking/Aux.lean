@@ -66,8 +66,7 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     by_cases hi : i ∈ s <;> by_cases hj : j ∈ s
     · simpa [As, hi, hj] using h_disjoint hi hj hij
     all_goals simp [As, hi, hj]
-  obtain ⟨L, hL⟩ := (h_bounded.subset (show (⋃ i, As i) ⊆ ⋃ x ∈ s, f x by
-    intro x hx
+  obtain ⟨L, hL⟩ := (h_bounded.subset (show (⋃ i, As i) ⊆ ⋃ x ∈ s, f x from fun x hx => by
     obtain ⟨i, hi⟩ := Set.mem_iUnion.1 hx
     by_cases hs : i ∈ s
     · exact Set.mem_iUnion₂.2 ⟨i, hs, by simpa [As, hs] using hi⟩
@@ -94,8 +93,7 @@ public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd 
 
 /-- A periodic packing has finitely many centers in a fundamental domain of its lattice. -/
 public lemma finite_centers_inter_fundamentalDomain {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice)
-    (hd : 0 < d) :
-    Finite ↑(S.centers ∩ fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
+    (hd : 0 < d) : Finite ↑(S.centers ∩ fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
   finite_centers_inter_of_isBounded S _ (ZSpan.fundamentalDomain_isBounded _) hd
 
 open scoped Pointwise in
