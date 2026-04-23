@@ -156,14 +156,11 @@ lemma Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)]
         ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
   rw [mem_E8]
   suffices ∀ i, (∃ n : ℤ, Odd n ∧ n = 2 • v i) ↔ (∃ n : ℤ, n + 2⁻¹ = v i) by simp_rw [this]
-  refine fun i => ⟨?_, ?_⟩
-  · rintro ⟨_, ⟨k, rfl⟩, hn'⟩
-    refine ⟨k, ?_⟩
-    simp only [Int.cast_add, Int.cast_mul, Int.cast_ofNat, Int.cast_one, nsmul_eq_mul,
-      Nat.cast_ofNat] at hn'
-    linear_combination 2⁻¹ * hn' - (k - v i) * (inv_mul_cancel₀ (NeZero.ne (2 : R)))
-  · rintro ⟨k, hk⟩
-    exact ⟨2 * k + 1, by simp, by rw [← hk]; simp [NeZero.ne]⟩
+  refine fun i => ⟨fun ⟨_, ⟨k, rfl⟩, hn'⟩ => ⟨k, ?_⟩, fun ⟨k, hk⟩ =>
+    ⟨2 * k + 1, by simp, by rw [← hk]; simp [NeZero.ne]⟩⟩
+  simp only [Int.cast_add, Int.cast_mul, Int.cast_ofNat, Int.cast_one, nsmul_eq_mul,
+    Nat.cast_ofNat] at hn'
+  linear_combination 2⁻¹ * hn' - (k - v i) * (inv_mul_cancel₀ (NeZero.ne (2 : R)))
 
 theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     E8 R = (evenLattice R 8 ⊔ Submodule.span ℤ {fun _ ↦ (2⁻¹ : R)}) := by
