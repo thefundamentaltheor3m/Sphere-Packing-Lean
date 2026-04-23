@@ -105,12 +105,11 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
   have hxy : ‖x - y‖ ≤ Cθ * Real.exp (-(25 / 4 : ℝ) * Real.pi * t) := by grind only
   have hpow' : ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
         (4 * (M + 4) ^ 3) * Cθ * Real.exp (-(5 : ℝ) * Real.pi * t) := by
-    have hexp : Real.exp (-(25 / 4 : ℝ) * Real.pi * t) ≤ Real.exp (-(5 : ℝ) * Real.pi * t) :=
-      Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])
     have hbd : 4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 ≤
         4 * (Cθ * Real.exp (-(5 : ℝ) * Real.pi * t)) * (M + 4) ^ 3 := by
       gcongr (4 * ?_ * ?_)
-      · exact hxy.trans (mul_le_mul_of_nonneg_left hexp hCθ0)
+      · exact hxy.trans (mul_le_mul_of_nonneg_left
+          (Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])) hCθ0)
       · exact pow_le_pow_left₀ (by positivity) (by linarith) 3
     linarith [(norm_pow4_sub_le x y).trans hbd]
   have ha4 : a ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) := by
@@ -193,8 +192,8 @@ lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
   have hx : ‖x‖ ≤ 1 + C1 := by
     have hx1 : ‖x - 1‖ ≤ C1 := (hC1 t ht).trans <| by
       simpa [mul_one] using mul_le_mul_of_nonneg_left hexp1 hC10
-    linarith [(show ‖x‖ ≤ ‖x - 1‖ + 1 by
-      simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ))]
+    linarith [show ‖x‖ ≤ ‖x - 1‖ + 1 by
+      simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ)]
   have hy : ‖y‖ ≤ 3 := by
     have : ‖y‖ ≤ 1 + 2 * ‖q'‖ := by
       simpa [y, norm_mul, Complex.norm_two] using norm_add_le (1 : ℂ) ((2 : ℂ) * q')
@@ -203,12 +202,11 @@ lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
     simpa [x, y, q', sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using hC2 t ht
   have hpow' : ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
         (4 * (1 + C1 + 3) ^ 3) * C2 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-    have hexp : Real.exp (-(4 : ℝ) * Real.pi * t) ≤ Real.exp (-(3 : ℝ) * Real.pi * t) :=
-      Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])
     have hbd : 4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 ≤
         4 * (C2 * Real.exp (-(3 : ℝ) * Real.pi * t)) * (1 + C1 + 3) ^ 3 := by
       gcongr (4 * ?_ * ?_)
-      · exact hxy.trans (mul_le_mul_of_nonneg_left hexp hC20)
+      · exact hxy.trans (mul_le_mul_of_nonneg_left
+          (Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])) hC20)
       · exact pow_le_pow_left₀ (by positivity) (by linarith [hx, hy]) 3
     linarith [(norm_pow4_sub_le x y).trans hbd]
   have hy4 : ‖y ^ (4 : ℕ) - (1 : ℂ) - (8 : ℂ) * q' - (24 : ℂ) * (q' ^ (2 : ℕ))‖ ≤
@@ -262,8 +260,8 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
   have hx : ‖x‖ ≤ 1 + C1 := by
     have hx1 : ‖x - 1‖ ≤ C1 := (hC1 t ht).trans <| by
       simpa [mul_one] using mul_le_mul_of_nonneg_left hexp1 hC10
-    linarith [(show ‖x‖ ≤ ‖x - 1‖ + 1 by
-      simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ))]
+    linarith [show ‖x‖ ≤ ‖x - 1‖ + 1 by
+      simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ)]
   have hy : ‖y‖ ≤ 3 := by
     have : ‖y‖ ≤ 1 + 2 * ‖q'‖ := by
       simpa [y, sub_eq_add_neg, norm_mul, Complex.norm_two] using
@@ -273,12 +271,11 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
     simpa [x, y, q', sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using hC2 t ht
   have hpow' : ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
         (4 * (1 + C1 + 3) ^ 3) * C2 * Real.exp (-(3 : ℝ) * Real.pi * t) := by
-    have hexp : Real.exp (-(4 : ℝ) * Real.pi * t) ≤ Real.exp (-(3 : ℝ) * Real.pi * t) :=
-      Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])
     have hbd : 4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 ≤
         4 * (C2 * Real.exp (-(3 : ℝ) * Real.pi * t)) * (1 + C1 + 3) ^ 3 := by
       gcongr (4 * ?_ * ?_)
-      · exact hxy.trans (mul_le_mul_of_nonneg_left hexp hC20)
+      · exact hxy.trans (mul_le_mul_of_nonneg_left
+          (Real.exp_le_exp.mpr (by nlinarith [Real.pi_pos, ht])) hC20)
       · exact pow_le_pow_left₀ (by positivity) (by linarith [hx, hy]) 3
     linarith [(norm_pow4_sub_le x y).trans hbd]
   have hy4 : ‖y ^ (4 : ℕ) - (1 : ℂ) + (8 : ℂ) * q' - (24 : ℂ) * (q' ^ (2 : ℕ))‖ ≤
