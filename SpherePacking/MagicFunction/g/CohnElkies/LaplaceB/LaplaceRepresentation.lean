@@ -209,10 +209,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         IntegrableOn (fun t : ℝ => f ((1 : ℂ) + t * Complex.I)) (Set.Ioi (1 : ℝ)) volume := by
       simpa [f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
         mul_assoc, mul_comm, mul_left_comm] using hintT_center
-    have htendsto' : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε := fun ε hε => by
-      rcases htendstoT ε hε with ⟨M, hM⟩
-      exact ⟨M, fun z hz => by
-        simpa [f] using hM (z - 1) (by simpa [sub_eq_add_neg] using hz)⟩
+    have htendsto' : ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖f z‖ < ε := fun ε hε =>
+      let ⟨M, hM⟩ := htendstoT ε hε
+      ⟨M, fun z hz => by simpa [f] using hM (z - 1) (by simpa [sub_eq_add_neg] using hz)⟩
     simpa [min_eq_left (zero_le_one : (0 : ℝ) ≤ 1),
         max_eq_right (zero_le_one : (0 : ℝ) ≤ 1),
         f, sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
