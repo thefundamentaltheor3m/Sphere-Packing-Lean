@@ -102,14 +102,11 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
                 MagicFunction.g.CohnElkies.exp_two_pi_mul_mul_exp_neg_pi_mul (u := u) (t := t)]
 
 /-- Uniform strip bound for `Φ₂' u (x + tI)` with `x ∈ [-1,0]` and `t ≥ 1`. -/
-lemma norm_Φ₂'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
-    (hC₀_pos : 0 < C₀)
-    (hC₀ :
-      ∀ z : ℍ, (1 / 2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
-    (hφbd :
-      ∀ z : ℍ, Aφ ≤ z.im →
-        ‖φ₂' z‖ ≤ Cφ * Real.exp (2 * π * z.im) ∧
-          ‖φ₄' z‖ ≤ Cφ * Real.exp (2 * π * z.im))
+lemma norm_Φ₂'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 < C₀)
+    (hC₀ : ∀ z : ℍ, (1 / 2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
+    (hφbd : ∀ z : ℍ, Aφ ≤ z.im →
+      ‖φ₂' z‖ ≤ Cφ * Real.exp (2 * π * z.im) ∧
+        ‖φ₄' z‖ ≤ Cφ * Real.exp (2 * π * z.im))
     (hx0 : -1 ≤ x) (hx1 : x ≤ 0) (ht1 : (1 : ℝ) ≤ t) (htAφ : Aφ ≤ t) :
     ‖Φ₂' u ((x : ℂ) + (t : ℂ) * Complex.I)‖ ≤
       (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
@@ -121,14 +118,11 @@ lemma norm_Φ₂'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
       ((x + 1 : ℝ) : ℂ) + (t : ℂ) * Complex.I from by push_cast; ring, mul_assoc]
 
 /-- Uniform strip bound for `Φ₄' u (x + tI)` with `x ∈ [0,1]` and `t ≥ 1`. -/
-lemma norm_Φ₄'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ}
-    (hC₀_pos : 0 < C₀)
-    (hC₀ :
-      ∀ z : ℍ, (1 / 2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
-    (hφbd :
-      ∀ z : ℍ, Aφ ≤ z.im →
-        ‖φ₂' z‖ ≤ Cφ * Real.exp (2 * π * z.im) ∧
-          ‖φ₄' z‖ ≤ Cφ * Real.exp (2 * π * z.im))
+lemma norm_Φ₄'_strip_le {u x t : ℝ} {Cφ Aφ C₀ : ℝ} (hC₀_pos : 0 < C₀)
+    (hC₀ : ∀ z : ℍ, (1 / 2 : ℝ) < z.im → ‖φ₀ z‖ ≤ C₀ * Real.exp (-2 * π * z.im))
+    (hφbd : ∀ z : ℍ, Aφ ≤ z.im →
+      ‖φ₂' z‖ ≤ Cφ * Real.exp (2 * π * z.im) ∧
+        ‖φ₄' z‖ ≤ Cφ * Real.exp (2 * π * z.im))
     (hx0 : 0 ≤ x) (hx1 : x ≤ 1) (ht1 : (1 : ℝ) ≤ t) (htAφ : Aφ ≤ t) :
     ‖Φ₄' u ((x : ℂ) + (t : ℂ) * Complex.I)‖ ≤
       (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
