@@ -162,10 +162,8 @@ private lemma tendsto_intervalIntegral_top_of_strip_bound {u : ℝ} (hu : 2 < u)
     (f := fun x : ℝ => F ((x : ℂ) + (m : ℂ) * Complex.I))
     (C := K * (m ^ (2 : ℕ) * Real.exp (-a * m)))
     (fun x hx => hF Cφ Aφ C₀ x m hC₀_pos hC₀ hφbd hx hm1 ((le_max_right _ _).trans hm))).trans ?_
-  have hnn : 0 ≤ K * (m ^ (2 : ℕ) * Real.exp (-a * m)) := by
-    have : 0 ≤ K := by positivity
-    have : 0 ≤ m := by linarith
-    positivity
+  have hm0 : 0 ≤ m := by linarith
+  have hnn : 0 ≤ K * (m ^ (2 : ℕ) * Real.exp (-a * m)) := by positivity
   nlinarith [hlen, hnn]
 
 /-- Top-edge decay needed for the left rectangle deformation (`Φ₂'`). -/
