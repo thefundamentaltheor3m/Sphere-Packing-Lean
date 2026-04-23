@@ -166,11 +166,10 @@ lemma exists_bound_norm_ψT'_z₄' :
     exists_bound_norm_ψT'_comp_of_im_pos_all z₄' continuous_z₄' (fun t => im_z₄'_pos_all t)
 
 private lemma norm_add_I_mul_le_two (a : ℂ) (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) (ha : ‖a‖ = 1) :
-    ‖a + (Complex.I : ℂ) * (t : ℂ)‖ ≤ 2 :=
-  calc ‖a + (Complex.I : ℂ) * (t : ℂ)‖
-      ≤ ‖a‖ + ‖(Complex.I : ℂ) * (t : ℂ)‖ := norm_add_le _ _
-    _ = 1 + t := by simp [ha, Complex.norm_real, abs_of_nonneg ht.1]
-    _ ≤ 2 := by nlinarith [ht.2]
+    ‖a + (Complex.I : ℂ) * (t : ℂ)‖ ≤ 2 := by
+  have := norm_add_le a ((Complex.I : ℂ) * (t : ℂ))
+  simp [ha, Complex.norm_real, abs_of_nonneg ht.1] at this
+  nlinarith [ht.2]
 
 lemma norm_z₃'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₃' t‖ ≤ 2 := by
   have hz : z₃' t = (1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := by simp [z₃'_eq_of_mem (t := t) ht]
