@@ -226,12 +226,11 @@ lemma J₁'C_differentiable : Differentiable ℂ J₁'C := by
 
 lemma J₂'C_differentiable : Differentiable ℂ J₂'C := by
   obtain ⟨Mψ, hMψ⟩ := exists_bound_norm_ψT'_z₂'
-  exact (show J₂'C = fun u : ℂ => ∫ t in (0 : ℝ)..1,
-      ψT' (z₂' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₂' t) from by
-    funext u; simp [J₂'C]) ▸ integral_ψ_exp_differentiable
-      (ψ := ψT') (z := z₂') (Mψ := Mψ) (Cz := 3) (continuousOn_ψT'_comp z₂' continuous_z₂'
-        fun t ht => im_z₂'_pos (t := t) (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
-      continuous_z₂' hMψ (fun t ht => norm_z₂'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
+  exact integral_ψ_exp_differentiable (ψ := ψT') (z := z₂') (Mψ := Mψ) (Cz := 3)
+    (continuousOn_ψT'_comp z₂' continuous_z₂'
+      fun t ht => im_z₂'_pos (t := t) (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
+    continuous_z₂' hMψ
+    (fun t ht => norm_z₂'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
 
 lemma J₃'C_differentiable : Differentiable ℂ J₃'C := by
   obtain ⟨Mψ, hMψ⟩ := exists_bound_norm_ψT'_z₃'
