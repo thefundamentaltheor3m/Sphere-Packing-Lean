@@ -66,7 +66,7 @@ theorem f_nonneg_at_zero : 0 ≤ (f 0).re := by
   rw [← f.fourierInversion, fourierInv_eq]
   simp only [inner_zero_right, AddChar.map_zero_eq_one, one_smul]
   rw [← RCLike.re_eq_complex_re, ← integral_re hIntegrable]
-  exact integral_nonneg fun v => by simpa [RCLike.re_eq_complex_re] using hCohnElkies₂ v
+  exact integral_nonneg fun v => by simpa using hCohnElkies₂ v
 
 include hReal hRealFourier hCohnElkies₂ hne_zero in
 theorem f_zero_pos : 0 < (f 0).re := by
@@ -84,9 +84,8 @@ theorem f_zero_pos : 0 < (f 0).re := by
       (by simpa using hintRe)
     exact hIntegrable.re
   refine fourier_ne_zero hne_zero ?_
-  ext x
-  simpa [show (𝓕 f x).re = 0 from by simpa using congrArg (fun g => g x) hfun]
-    using (hRealFourier x).symm
+  ext x; simpa [show (𝓕 f x).re = 0 from by simpa using congrArg (fun g => g x) hfun] using
+    (hRealFourier x).symm
 
 end Nonnegativity
 
@@ -107,9 +106,8 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
     Summable (fun m : ↥(SchwartzMap.dualLattice (d := d) P.lattice) =>
       (𝓕 ⇑f m).re * (norm (∑' x : ↑(P.centers ∩ D),
         exp (2 * π * I * ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)) := by
-  have hfinite : Finite (↑(P.centers ∩ D)) :=
-    finite_centers_inter_of_isBounded P D hD_isBounded hd
-  letI : Fintype (↑(P.centers ∩ D)) := Fintype.ofFinite (↑(P.centers ∩ D))
+  haveI : Finite (↑(P.centers ∩ D)) := finite_centers_inter_of_isBounded P D hD_isBounded hd
+  letI : Fintype (↑(P.centers ∩ D)) := Fintype.ofFinite _
   let n : ℝ := (Fintype.card (↑(P.centers ∩ D)) : ℝ)
   have hFourierNorm : Summable (fun m : ↥(SchwartzMap.dualLattice (d := d) P.lattice) =>
       ‖(𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))‖) := by
@@ -133,10 +131,9 @@ private lemma summable_fourier_mul_norm_exp_sq (hd : 0 < d) :
       using Complex.norm_exp_ofReal_mul_I
         (2 * π * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
   have hA_le : ‖A‖ ≤ n := by
-    rw [hAdef]
-    simpa [tsum_fintype, hnexp, n] using norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D))
-      fun x : ↑(P.centers ∩ D) => exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)),
-        (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
+    simpa [hAdef, tsum_fintype, hnexp, n] using
+      norm_sum_le (Finset.univ : Finset ↑(P.centers ∩ D)) fun x : ↑(P.centers ∩ D) =>
+        exp (2 * π * I * ⟪(x : EuclideanSpace ℝ (Fin d)), (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])
   calc ‖(𝓕 ⇑f m).re * (‖A‖ ^ 2)‖
         = ‖((𝓕 ⇑f) (m : EuclideanSpace ℝ (Fin d))).re‖ * ‖A‖ ^ 2 := by
           simp [norm_mul, Real.norm_of_nonneg (sq_nonneg _)]
@@ -184,10 +181,9 @@ theorem calc_steps_part1 (hd : 0 < d) :
             (norm (∑' x : ↑(P.centers ∩ D),
               exp (2 * π * I *
                 ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2) := by
-  calc
-  ↑(P.numReps' hd hD_isBounded) * (f 0).re
-  _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re := by
-        rw [ge_iff_le]; exact calc_aux_1 hCohnElkies₁ hP hD_isBounded hd hD_unique_covers
+  calc ↑(P.numReps' hd hD_isBounded) * (f 0).re
+  _ ≥ ∑' (x : P.centers) (y : ↑(P.centers ∩ D)), (f (x - ↑y)).re :=
+        calc_aux_1 hCohnElkies₁ hP hD_isBounded hd hD_unique_covers
   _ = ∑' (x : ↑(P.centers ∩ D)) (y : ↑(P.centers ∩ D)) (ℓ : P.lattice), (f (↑x - ↑y + ↑ℓ)).re :=
         CohnElkies.tsum_centers_eq_tsum_centersInter_centersInter_lattice f P
           hD_isBounded hD_unique_covers hd
@@ -254,8 +250,7 @@ theorem calc_steps_part2 (hd : 0 < d) :
                 ⟪↑x, (m : EuclideanSpace ℝ (Fin d))⟫_[ℝ])) ^ 2)
       ≥
       ↑(P.numReps' hd hD_isBounded) ^ 2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume := by
-  calc
-    (1 / ZLattice.covolume P.lattice volume) *
+  calc (1 / ZLattice.covolume P.lattice volume) *
         ∑' m : SchwartzMap.dualLattice (d := d) P.lattice,
           (𝓕 ⇑f m).re *
             (norm (∑' x : ↑(P.centers ∩ D),
@@ -280,10 +275,9 @@ theorem calc_steps_part2 (hd : 0 < d) :
         rw [ge_iff_le, ← tsub_nonpos, mul_assoc,
           ← mul_sub (1 / ZLattice.covolume P.lattice volume) _ _]
         simp only [sub_add_cancel_right, mul_neg, Left.neg_nonpos_iff]
-        refine mul_nonneg (one_div_nonneg.mpr ?_)
+        exact mul_nonneg (one_div_nonneg.mpr (by rw [ZLattice.covolume]; exact ENNReal.toReal_nonneg))
           (SpherePacking.CohnElkies.tsum_ite_fourier_re_mul_norm_tsum_exp_sq_nonneg
             (f := f) (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂))
-        rw [ZLattice.covolume]; exact ENNReal.toReal_nonneg
     _ = (1 / ZLattice.covolume P.lattice volume) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
         ↑(P.numReps' hd hD_isBounded) ^ 2 := by
         simp only [SpherePacking.CohnElkies.norm_tsum_exp_inner_zero_sq_eq_numReps_sq
@@ -326,8 +320,7 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     have vol_ne_zero : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ 0 :=
       (Metric.measure_ball_pos (μ := volume) (0 : EuclideanSpace ℝ (Fin d)) one_half_pos).ne'
     have vol_ne_top : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ ∞ :=
-      (MeasureTheory.measure_ball_lt_top (μ := volume)
-        (x := (0 : EuclideanSpace ℝ (Fin d))) (r := 1 / 2)).ne
+      (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
     rcases eq_or_ne (𝓕 f 0) 0 with h𝓕f | h𝓕f
     · rw [h𝓕f, zero_re, ENat.toENNReal_coe, toNNReal_zero, ENNReal.coe_zero,
         ENNReal.div_zero (ENNReal.coe_ne_zero.mpr (toNNReal_pos.mpr
@@ -349,8 +342,8 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
     have hnRaux₁ : ENat.toENNReal (P.numReps : ENat) ≠ 0 := by
       rw [ENat.toENNReal_coe, ne_eq, Nat.cast_eq_zero]
       unfold PeriodicSpherePacking.numReps
-      haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) := by
-        rw [nonempty_quotient_iff]; assumption
+      haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) :=
+        nonempty_quotient_iff _ |>.2 ‹_›
       exact Fintype.card_ne_zero
     rw [← ENNReal.mul_le_mul_iff_right hnRaux₁ (Ne.symm (ne_of_beq_false rfl) :
         ENat.toENNReal (P.numReps : ENat) ≠ ⊤), ENat.toENNReal_coe, ← mul_assoc, ← pow_two,
