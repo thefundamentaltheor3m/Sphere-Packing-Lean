@@ -138,10 +138,8 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
   let f4 : ℝ → ℂ := fun t =>
     -((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ)
   have hf1 : Integrable f1 μ := (integrable_aAnother (u := u) hu).neg
-  have hf2 : Integrable f2 μ := by
-    simpa [f2] using (integrable_bAnother (u := u) hu).const_mul _
-  have hf3 : Integrable f3 μ := by
-    simpa [f3] using (integrable_t_mul_exp_complex (u := u) hu).const_mul _
+  have hf2 : Integrable f2 μ := (integrable_bAnother (u := u) hu).const_mul _
+  have hf3 : Integrable f3 μ := (integrable_t_mul_exp_complex (u := u) hu).const_mul _
   have hf4 : Integrable f4 μ := by
     simpa [f4, mul_assoc] using (integrable_exp_complex (u := u) hu).const_mul
       (-((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
