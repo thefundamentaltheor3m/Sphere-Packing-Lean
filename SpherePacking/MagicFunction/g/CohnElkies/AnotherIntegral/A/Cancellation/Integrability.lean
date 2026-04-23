@@ -28,6 +28,14 @@ open SlashInvariantFormClass ModularFormClass
 
 noncomputable section
 
+private lemma continuousOn_phi0''_Idiv {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) :
+    ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) s := by
+  have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im} := by
+    simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
+  exact hcontφ.comp (continuous_const.continuousOn.div (continuous_ofReal.continuousOn)
+    fun t ht => by exact_mod_cast (ne_of_gt (hs t ht)))
+    fun t ht => by simpa [imag_I_div t] using inv_pos.2 (hs t ht)
+
 /-- Continuity of the bracket `t^2 φ₀''(I/t) - (36/π²)·exp(2πt) + (8640/π)·t - 18144/π²`
 on any subset of `(0, ∞)`. -/
 private lemma continuousOn_aBracket_of_subset_Ioi {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) :
@@ -35,16 +43,9 @@ private lemma continuousOn_aBracket_of_subset_Ioi {s : Set ℝ} (hs : ∀ t ∈ 
         (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
             ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
             ((8640 / π : ℝ) : ℂ) * t -
-            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))) s := by
-  have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im} := by
-    simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-  have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) s :=
-    continuous_const.continuousOn.div (continuous_ofReal.continuousOn)
-      fun t ht => by exact_mod_cast (ne_of_gt (hs t ht))
-  have hcontPhiDiv : ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) s :=
-    hcontφ.comp hcontIdiv fun t ht => by simpa [imag_I_div t] using inv_pos.2 (hs t ht)
-  exact ((((by fun_prop : ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) s).mul
-    hcontPhiDiv).sub (by fun_prop)).add (by fun_prop)).sub (by fun_prop)
+            ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))) s :=
+  ((((by fun_prop : ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) s).mul
+    (continuousOn_phi0''_Idiv hs)).sub (by fun_prop)).add (by fun_prop)).sub (by fun_prop)
 
 /-! ## Asymptotic/cancellation bound for integrability on `[1,∞)`. -/
 
@@ -133,26 +134,24 @@ lemma exists_phi0_cancellation_bound :
               φ₀ z * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) -
                 (12 * Complex.I) / π * (z : ℂ) * φ₂' z - 36 / (π ^ 2) * φ₄' z := by
           simpa [hzsq] using h0
-        have hneg := congrArg (fun w : ℂ => -w) <|
+        simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
+          mul_assoc, mul_left_comm, mul_comm, pow_two, neg_add, neg_mul,
+          mul_neg, neg_neg] using congrArg (fun w : ℂ => -w) <|
           show φ₀ (ModularGroup.S • z) * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) =
               φ₀ z * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) +
                 (-( (12 * Complex.I) / π * (z : ℂ) * φ₂' z)) +
                 (-(36 / (π ^ 2) * φ₄' z)) by
             simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using h0'
-        simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-          mul_assoc, mul_left_comm, mul_comm, pow_two, neg_add, neg_mul,
-          mul_neg, neg_neg] using hneg
       have hcoeffTerm :
           (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ)) =
             -((t : ℂ) * ((12 : ℂ) / (π : ℂ) * φ₂' z)) := by
         dsimp [z, zI]; ring_nf; simp
-      have hneg'' :
+      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
+        mul_assoc, mul_left_comm, mul_comm, pow_two] using
+        (by simpa [hcoeffTerm] using hneg' :
           (t : ℂ) * ((t : ℂ) * φ₀ (ModularGroup.S • z)) =
             (t : ℂ) * ((t : ℂ) * φ₀ z) +
-              (36 / ((π : ℂ) * (π : ℂ)) * φ₄' z + -((t : ℂ) * ((12 : ℂ) / (π : ℂ) * φ₂' z))) := by
-        simpa [hcoeffTerm] using hneg'
-      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
-        mul_assoc, mul_left_comm, mul_comm, pow_two] using hneg''
+              (36 / ((π : ℂ) * (π : ℂ)) * φ₄' z + -((t : ℂ) * ((12 : ℂ) / (π : ℂ) * φ₂' z))))
     have h720 : (12 / (π : ℂ)) * (t : ℂ) * (720 : ℂ) = (8640 / (π : ℂ)) * (t : ℂ) := by ring
     have h504 : (36 / (π : ℂ) ^ (2 : ℕ)) * (504 : ℂ) = (18144 / (π : ℂ) ^ (2 : ℕ)) := by ring
     have hSTpow :
@@ -283,17 +282,9 @@ lemma exists_phi0_cancellation_bound :
 /-- Continuity of `aAnotherIntegrand u` on any subset of `(0, ∞)`. -/
 private lemma continuousOn_aAnotherIntegrand_of_subset_Ioi
     {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) (u : ℝ) :
-    ContinuousOn (fun t : ℝ => aAnotherIntegrand u t) s := by
-  have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im} := by
-    simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-  have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) s := by
-    simpa [div_eq_mul_inv] using continuous_const.continuousOn.mul
-      (continuous_ofReal.continuousOn.inv₀ fun t ht => by
-        exact_mod_cast (ne_of_gt (hs t ht)))
-  have hφcont : ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) s :=
-    hcontφ.comp hcontIdiv fun t ht => by simpa [imag_I_div t] using inv_pos.2 (hs t ht)
-  refine ((((by fun_prop : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)).continuousOn.mul
-    hφcont).sub (by fun_prop) |>.add (by fun_prop)).sub (by fun_prop)).mul
+    ContinuousOn (fun t : ℝ => aAnotherIntegrand u t) s :=
+  ((((by fun_prop : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)).continuousOn.mul
+    (continuousOn_phi0''_Idiv hs)).sub (by fun_prop) |>.add (by fun_prop)).sub (by fun_prop)).mul
       (by fun_prop : Continuous fun t : ℝ => ((Real.exp (-π * u * t)) : ℂ)).continuousOn
 
 lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
