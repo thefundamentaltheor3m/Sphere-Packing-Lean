@@ -114,8 +114,6 @@ lemma exists_phi0_cancellation_bound :
               (show ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) by
                 simpa [z] using modular_S_smul_zI t ht0)
         _ = (Complex.I : ℂ) / (t : ℂ) := by simp [div_eq_mul_inv]
-    have hφ₀S : φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • z) := by
-      simpa using congrArg φ₀'' hcoe.symm
     have hzsq : (z : ℂ) ^ (2 : ℕ) = -((t ^ (2 : ℕ) : ℝ) : ℂ) := by
       dsimp [z, zI]; push_cast; rw [mul_pow]; simp
     have hST' :
@@ -158,7 +156,8 @@ lemma exists_phi0_cancellation_bound :
         (↑t ^ (2 : ℕ)) * φ₀'' (Complex.I / ↑t) =
           (↑t ^ (2 : ℕ)) * φ₀ z - (12 / (π : ℂ)) * (t : ℂ) * φ₂' z +
             (36 / (π : ℂ) ^ (2 : ℕ)) * φ₄' z := by
-      simpa [hφ₀S] using hST'
+      simpa [show φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • z) from by
+        simpa using congrArg φ₀'' hcoe.symm] using hST'
     calc
       (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
             ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
