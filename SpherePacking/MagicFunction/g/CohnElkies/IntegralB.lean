@@ -242,20 +242,17 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
       (-4 * (Complex.I : ℂ)) *
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
           ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by simpa [IB] using hbEq
-  have hcoefA :
-      (((↑π * I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) = -(π / 2160 : ℂ) := by
+  have hcoefA : (((↑π * I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) = -(π / 2160 : ℂ) := by
     ring_nf; simp; ring
-  have hcoefB :
-      (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ) := by
+  have hcoefB : (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ) := by
     have hπ : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
     field_simp [hπ]; ring_nf; simp
   have hIexp :
       (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) = ((1 / (π * u) : ℝ) : ℂ) :=
     MagicFunction.g.CohnElkies.IntegralReps.integral_exp_neg_pi_mul_Ioi_complex (u := u) hu
-  have hItExp :
-      (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) =
-        ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) :=
-      IntegralReps.integral_mul_exp_neg_pi_mul_Ioi_complex hx
+  have hItExp : (∫ t in Set.Ioi (0 : ℝ), (t : ℂ) * (Real.exp (-π * u * t) : ℂ)) =
+      ((1 / (π * u) ^ (2 : ℕ) : ℝ) : ℂ) :=
+    IntegralReps.integral_mul_exp_neg_pi_mul_Ioi_complex hx
   have hAterm :
       ((↑π * I) / 8640 : ℂ) * a' u =
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
@@ -289,13 +286,11 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
             (1 / (60 * π) : ℂ) *
               ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by
     rw [hFourier, hAterm, hBterm]
-  have hIA :
-      (∫ t in Set.Ioi (0 : ℝ),
-          MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t) = IA := by
+  have hIA : (∫ t in Set.Ioi (0 : ℝ),
+      MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t) = IA := by
     simp [IA, MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand]
-  have hIB :
-      (∫ t in Set.Ioi (0 : ℝ),
-          MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t) = IB := by
+  have hIB : (∫ t in Set.Ioi (0 : ℝ),
+      MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t) = IB := by
     simp [IB, MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand]
   have hBdecomp :
       (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
