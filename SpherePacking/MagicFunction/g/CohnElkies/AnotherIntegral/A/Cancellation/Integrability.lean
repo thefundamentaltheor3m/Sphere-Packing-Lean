@@ -367,7 +367,6 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
       ∀ t : ℝ, t ∈ Set.Ici (1 : ℝ) →
         ‖aAnotherIntegrand u t‖ ≤ C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) := by
     intro t ht
-    have ht1 : 1 ≤ t := ht
     have hexp :
         Real.exp (-2 * π * t) * Real.exp (-π * u * t) = Real.exp (-(2 * π + π * u) * t) := by
       rw [← Real.exp_add]; ring_nf
@@ -381,14 +380,14 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
     calc ‖aAnotherIntegrand u t‖
         ≤ (C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) := by
           simpa [hnorm, mul_assoc, mul_left_comm, mul_comm] using
-            mul_le_mul_of_nonneg_right (hC t ht1) (Real.exp_pos (-π * u * t)).le
+            mul_le_mul_of_nonneg_right (hC t ht) (Real.exp_pos (-π * u * t)).le
       _ = C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) := by
           simpa [mul_assoc] using congrArg (fun s : ℝ => C * (t ^ (2 : ℕ)) * s) hexp
   have ha : 0 < (2 * π + π * u) / 2 := by positivity
   have hdom :
       IntegrableOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
         (Set.Ici (1 : ℝ)) := by
-    set b : ℝ := (2 * π + π * u) / 2 with hb_def
+    set b : ℝ := (2 * π + π * u) / 2
     have hExpRef : (fun t : ℝ => Real.exp (-b * t)) =O[atTop]
         fun t : ℝ => Real.exp (-b * t) := Asymptotics.isBigO_refl _ _
     have hfacBig : (fun t : ℝ => (C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) =O[atTop]

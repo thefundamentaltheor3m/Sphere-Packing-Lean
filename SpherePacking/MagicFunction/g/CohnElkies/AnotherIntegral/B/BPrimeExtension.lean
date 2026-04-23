@@ -260,10 +260,9 @@ private lemma continuousOn_ψI'_z₅' :
   have hcont : Continuous fun t : Ioc (0 : ℝ) 1 => ψI' (z₅' (t : ℝ)) := by
     let zH : Ioc (0 : ℝ) 1 → ℍ :=
       fun t => ⟨z₅' (t : ℝ), im_z₅'_pos (t := (t : ℝ)) t.2⟩
-    have hz : Continuous fun t : Ioc (0 : ℝ) 1 => z₅' (t : ℝ) :=
-      continuous_z₅'.comp continuous_subtype_val
     have hzH : Continuous zH := by
-      simpa [zH] using Continuous.upperHalfPlaneMk hz
+      simpa [zH] using Continuous.upperHalfPlaneMk
+        (continuous_z₅'.comp continuous_subtype_val : Continuous fun t : Ioc (0:ℝ) 1 => z₅' (t:ℝ))
         (fun t => im_z₅'_pos (t := (t : ℝ)) t.2)
     have hEq : (fun t : Ioc (0 : ℝ) 1 => ψI' (z₅' (t : ℝ))) = fun t => ψI (zH t) := by
       funext t; simp [ψI', zH, im_z₅'_pos (t := (t : ℝ)) t.2]

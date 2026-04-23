@@ -347,8 +347,6 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           bContourWeight u (I * (t : ℂ)) * bContourWeight u a from by
         simpa [add_assoc, add_left_comm, add_comm] using
           bContourWeight_add (u := u) (I * (t : ℂ)) a, mul_assoc]
-  have hLeft_point := hShift_point (-1 : ℂ) (fun t ht => ψT'_neg_one_add_I_mul (t := t) ht)
-  have hRight_point := hShift_point (1 : ℂ) (fun t ht => ψT'_one_add_I_mul (t := t) ht)
   have hITS : ∀ z : ℂ, 0 < z.im →
       bContourIntegrandT u z + bContourIntegrandS u z = -bContourIntegrandI u z := fun z hz => by
     have hψ : ψI' z = ψT' z + ψS' z := by
@@ -410,8 +408,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         simpa using MeasureTheory.integral_mul_const (μ := volume.restrict (Set.Ioi (0 : ℝ)))
           (r := -bContourWeight u a) (f := fun t : ℝ => bContourIntegrandI u (I * (t : ℂ)))
       simpa [mul_assoc, mul_left_comm, mul_comm] using (hsplitW (-bContourWeight u a)).trans hmul
-    have hLeft_full := hfull (-1 : ℂ) hLeft_point
-    have hRight_full := hfull (1 : ℂ) hRight_point
+    have hLeft_full := hfull (-1 : ℂ)
+      (hShift_point (-1 : ℂ) (fun t ht => ψT'_neg_one_add_I_mul (t := t) ht))
+    have hRight_full := hfull (1 : ℂ)
+      (hShift_point (1 : ℂ) (fun t ht => ψT'_one_add_I_mul (t := t) ht))
     have hCenter : (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ))) +
           (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ))) =
         -(∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) :=
