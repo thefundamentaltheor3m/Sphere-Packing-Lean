@@ -121,8 +121,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hg : Integrable (fun t : ℝ => Cψ * Real.exp (-(π * (u - 2)) * t))
         (volume.restrict (Set.Ioi A)) := by
       simpa [MeasureTheory.IntegrableOn, mul_assoc] using
-        ((by simpa [mul_assoc] using
-          exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2)) hpos :
+        ((by simpa [mul_assoc] using exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2)) hpos :
           IntegrableOn (fun t : ℝ => Real.exp (-(π * (u - 2)) * t)) (Set.Ioi A)).const_mul Cψ)
     have hInt_tail : IntegrableOn f (Set.Ioi A) := by
       simpa [MeasureTheory.IntegrableOn] using
@@ -255,20 +254,18 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         hint₁ hint₂ htendstoT
   have hmem_Icc : ∀ {x : ℝ}, x ∈ Set.uIcc (0 : ℝ) 1 → x ∈ Set.Icc (0 : ℝ) 1 := fun hx => by
     simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using hx
-  have hJ2_top :
-      MagicFunction.b.RealIntegrals.J₂' u =
-        ∫ (x : ℝ) in (0 : ℝ)..1,
-          bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1) := by
+  have hJ2_top : MagicFunction.b.RealIntegrals.J₂' u =
+      ∫ (x : ℝ) in (0 : ℝ)..1,
+        bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1) := by
     dsimp [MagicFunction.b.RealIntegrals.J₂']
     refine intervalIntegral.integral_congr fun x hx => ?_
     have hz_g : MagicFunction.Parametrisations.z₂' x = (x : ℂ) + (1 : ℂ) * Complex.I - 1 := by
       have h := MagicFunction.Parametrisations.z₂'_eq_of_mem (t := x) (hmem_Icc hx)
       push_cast at h; linear_combination h
     simp [bContourIntegrandT, bContourWeight, hz_g, sub_eq_add_neg, mul_assoc]
-  have hJ4_top :
-      MagicFunction.b.RealIntegrals.J₄' u =
-        ∫ (x : ℝ) in (1 : ℝ)..0,
-          bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I) := by
+  have hJ4_top : MagicFunction.b.RealIntegrals.J₄' u =
+      ∫ (x : ℝ) in (1 : ℝ)..0,
+        bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I) := by
     dsimp [MagicFunction.b.RealIntegrals.J₄']
     let g : ℝ → ℂ := fun x : ℝ => bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I)
     rw [show (∫ t in (0 : ℝ)..1,
@@ -289,15 +286,13 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           simp [show (∫ t in (0 : ℝ)..1, g (1 - t)) = ∫ t in (0 : ℝ)..1, g t from by norm_num]
       _ = ∫ t in (1 : ℝ)..0, g t := by
           simpa using (intervalIntegral.integral_symm (a := (0 : ℝ)) (b := (1 : ℝ)) (f := g)).symm
-  have hJ2_ray :
-      MagicFunction.b.RealIntegrals.J₂' u =
-        (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) -
-          (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
+  have hJ2_ray : MagicFunction.b.RealIntegrals.J₂' u =
+      (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) -
+        (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
     simpa [hJ2_top] using eq_sub_of_add_eq (sub_eq_zero.mp hRectLeft)
-  have hJ4_ray :
-      MagicFunction.b.RealIntegrals.J₄' u =
-        (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) -
-          (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
+  have hJ4_ray : MagicFunction.b.RealIntegrals.J₄' u =
+      (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) -
+        (I • ∫ (t : ℝ) in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
     simpa [hJ4_top] using eq_sub_of_add_eq (sub_eq_zero.mp hRectRight)
   have hJ_vert_aux : ∀ (a : ℂ) (zp : ℝ → ℂ)
       (_ : ∀ {t : ℝ}, t ∈ Set.Icc (0 : ℝ) 1 → zp t = a + I * (t : ℂ)),
@@ -312,22 +307,19 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         simp [bContourIntegrandT, bContourWeight, hzp (hmem_Icc ht), mul_assoc]]
     simp only [intervalIntegral.integral_const_mul, mul_eq_mul_left_iff, I_ne_zero, or_false]
     rw [intervalIntegral.integral_of_le (show (0 : ℝ) ≤ 1 by norm_num)]
-  have hJ1_set :
-      MagicFunction.b.RealIntegrals.J₁' u =
-        (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1,
-          bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) :=
+  have hJ1_set : MagicFunction.b.RealIntegrals.J₁' u =
+      (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1,
+        bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) :=
     hJ_vert_aux (-1 : ℂ) MagicFunction.Parametrisations.z₁' fun ht => by
       simpa using MagicFunction.Parametrisations.z₁'_eq_of_mem ht
-  have hJ3_set :
-      MagicFunction.b.RealIntegrals.J₃' u =
-        (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1,
-          bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) :=
+  have hJ3_set : MagicFunction.b.RealIntegrals.J₃' u =
+      (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1,
+        bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) :=
     hJ_vert_aux (1 : ℂ) MagicFunction.Parametrisations.z₃' fun ht => by
       simpa using MagicFunction.Parametrisations.z₃'_eq_of_mem ht
-  have hJ5_set :
-      MagicFunction.b.RealIntegrals.J₅' u =
-        (2 : ℂ) * (I : ℂ) *
-          (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) := by
+  have hJ5_set : MagicFunction.b.RealIntegrals.J₅' u =
+      (2 : ℂ) * (I : ℂ) *
+        (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) := by
     dsimp [MagicFunction.b.RealIntegrals.J₅']
     rw [show (∫ t in (0 : ℝ)..1,
         (I : ℂ) * ψI' (MagicFunction.Parametrisations.z₅' t) *
@@ -341,10 +333,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       mul_neg, neg_neg]
     rw [intervalIntegral.integral_of_le (show (0 : ℝ) ≤ 1 by norm_num)]
     ring
-  have hJ6_set :
-      MagicFunction.b.RealIntegrals.J₆' u =
-        (-2 : ℂ) * (I : ℂ) *
-          (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) := by
+  have hJ6_set : MagicFunction.b.RealIntegrals.J₆' u =
+      (-2 : ℂ) * (I : ℂ) *
+        (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) := by
     dsimp [MagicFunction.b.RealIntegrals.J₆']
     rw [show (∫ t in Set.Ici (1 : ℝ),
         (I : ℂ) * ψS' (MagicFunction.Parametrisations.z₆' t) *
@@ -372,10 +363,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hψ : ψI' z = ψT' z + ψS' z := by
       simpa [ψI', ψT', ψS', hz] using congrArg (fun F : ℍ → ℂ => F ⟨z, hz⟩) ψI_eq_add_ψT_ψS
     simp [bContourIntegrandI, bContourIntegrandT, bContourIntegrandS, hψ, add_mul]
-  have hCenter_split :
-      (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) =
-        -(∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) -
-          (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
+  have hCenter_split : (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u (I * (t : ℂ))) =
+      -(∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) -
+        (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
     have hI1' : Integrable (fun t : ℝ => bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
         (volume.restrict (Set.Ioi (1 : ℝ))) := by
       simpa [IntegrableOn] using
@@ -393,20 +383,18 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
         with_reducible exact eq_sub_iff_add_eq'.mpr (hITS (I * ↑t) hz)]
     simpa [MeasureTheory.integral_neg, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
       MeasureTheory.integral_sub (μ := volume.restrict (Set.Ioi (1 : ℝ))) hI1'.neg hT1'
-  have hVI_split :
-      VI =
-        (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) +
-          (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) :=
+  have hVI_split : VI =
+      (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) +
+        (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) :=
     setIntegral_Ioi0_eq_add_Ioc_Ioi hintI
-  have hsum :
-      MagicFunction.b.RealIntegrals.J₁' u +
-          MagicFunction.b.RealIntegrals.J₂' u +
-            MagicFunction.b.RealIntegrals.J₃' u +
-              MagicFunction.b.RealIntegrals.J₄' u +
-                MagicFunction.b.RealIntegrals.J₅' u +
-                  MagicFunction.b.RealIntegrals.J₆' u =
-        (Complex.I : ℂ) *
-          (((2 : ℂ) - bContourWeight u (1 : ℂ) - bContourWeight u (-1 : ℂ)) * VI) := by
+  have hsum : MagicFunction.b.RealIntegrals.J₁' u +
+        MagicFunction.b.RealIntegrals.J₂' u +
+          MagicFunction.b.RealIntegrals.J₃' u +
+            MagicFunction.b.RealIntegrals.J₄' u +
+              MagicFunction.b.RealIntegrals.J₅' u +
+                MagicFunction.b.RealIntegrals.J₆' u =
+      (Complex.I : ℂ) *
+        (((2 : ℂ) - bContourWeight u (1 : ℂ) - bContourWeight u (-1 : ℂ)) * VI) := by
     rw [hJ2_ray, hJ4_ray, hJ1_set, hJ3_set, hJ5_set, hJ6_set]
     have hsplitW (w : ℂ) :
         (∫ t in Set.Ioc (0 : ℝ) 1,
