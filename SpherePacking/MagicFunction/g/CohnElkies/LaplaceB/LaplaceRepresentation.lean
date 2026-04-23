@@ -71,9 +71,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
   clear hLap
   have hStrip0 : (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} := fun z hz =>
     lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (by simpa [Set.mem_Ici] using hz.2)
-  have hcontT :
-      ContinuousOn (bContourIntegrandT u) (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) := by
-    simpa using (continuousOn_bContourIntegrandT (u := u)).mono hStrip0
+  have hcontT : ContinuousOn (bContourIntegrandT u) (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) :=
+    (continuousOn_bContourIntegrandT (u := u)).mono hStrip0
   have hdiffT : ∀ z ∈ (Set.Ioo (0 : ℝ) 1 ×ℂ Set.Ioi (1 : ℝ)),
       DifferentiableAt ℂ (bContourIntegrandT u) z := fun z hz => by
     have hzpos : 0 < z.im :=
@@ -144,12 +143,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       bContourWeight_add, mul_comm, mul_left_comm]
   have hintT_left : IntegrableOn (fun t : ℝ => bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ)))
       (Set.Ioi (1 : ℝ)) :=
-    hintT_shift (-1 : ℂ) fun t ht0 => by
-      simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0
+    hintT_shift (-1 : ℂ) fun t ht0 => by simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0
   have hintT_right : IntegrableOn (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ)))
       (Set.Ioi (1 : ℝ)) :=
-    hintT_shift (1 : ℂ) fun t ht0 => by
-      simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0
+    hintT_shift (1 : ℂ) fun t ht0 => by simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0
   have htendstoT :
       ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
     rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
@@ -304,15 +301,13 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     simp only [intervalIntegral.integral_const_mul, mul_eq_mul_left_iff, I_ne_zero, or_false]
     rw [intervalIntegral.integral_of_le (show (0 : ℝ) ≤ 1 by norm_num)]
   have hJ1_set : MagicFunction.b.RealIntegrals.J₁' u =
-      (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1,
-        bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) :=
-    hJ_vert_aux (-1 : ℂ) MagicFunction.Parametrisations.z₁' fun ht => by
-      simpa using MagicFunction.Parametrisations.z₁'_eq_of_mem ht
+      (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) :=
+    hJ_vert_aux (-1 : ℂ) MagicFunction.Parametrisations.z₁'
+      fun ht => by simpa using MagicFunction.Parametrisations.z₁'_eq_of_mem ht
   have hJ3_set : MagicFunction.b.RealIntegrals.J₃' u =
-      (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1,
-        bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) :=
-    hJ_vert_aux (1 : ℂ) MagicFunction.Parametrisations.z₃' fun ht => by
-      simpa using MagicFunction.Parametrisations.z₃'_eq_of_mem ht
+      (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ))) :=
+    hJ_vert_aux (1 : ℂ) MagicFunction.Parametrisations.z₃'
+      fun ht => by simpa using MagicFunction.Parametrisations.z₃'_eq_of_mem ht
   have hJ5_set : MagicFunction.b.RealIntegrals.J₅' u =
       (2 : ℂ) * (I : ℂ) *
         (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u (I * (t : ℂ))) := by
@@ -363,12 +358,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       -(∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u (I * (t : ℂ))) -
         (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandT u (I * (t : ℂ))) := by
     have hI1' : Integrable (fun t : ℝ => bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ)))
-        (volume.restrict (Set.Ioi (1 : ℝ))) := by
-      simpa [IntegrableOn] using
-        hintI.mono_set (Set.Ioi_subset_Ioi (by norm_num : (0 : ℝ) ≤ 1))
+        (volume.restrict (Set.Ioi (1 : ℝ))) :=
+      hintI.mono_set (Set.Ioi_subset_Ioi (by norm_num : (0 : ℝ) ≤ 1))
     have hT1' : Integrable (fun t : ℝ => bContourIntegrandT u ((Complex.I : ℂ) * (t : ℂ)))
-        (volume.restrict (Set.Ioi (1 : ℝ))) := by
-      simpa [IntegrableOn] using hintT_center
+        (volume.restrict (Set.Ioi (1 : ℝ))) := hintT_center
     rw [show (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandS u ((Complex.I : ℂ) * (t : ℂ))) =
         ∫ t in Set.Ioi (1 : ℝ),
           ((-bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) -
