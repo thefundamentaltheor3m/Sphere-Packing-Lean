@@ -45,20 +45,15 @@ private lemma norm_pow4_sub_le (x y : ℂ) :
     nlinarith [norm_add_le (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ)) (y ^ (3 : ℕ)),
       norm_add_le (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y) (x * y ^ (2 : ℕ)),
       norm_add_le (x ^ (3 : ℕ)) (x ^ (2 : ℕ) * y), hx3, hx2y, hxy2, hy3]
-  calc ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖
-      = ‖x - y‖ * ‖x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ) + y ^ (3 : ℕ)‖ := by
-        rw [show x ^ (4 : ℕ) - y ^ (4 : ℕ) =
-          (x - y) * (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ) + y ^ (3 : ℕ)) from by ring,
-          norm_mul]
-    _ ≤ ‖x - y‖ * (4 * (‖x‖ + ‖y‖) ^ 3) := mul_le_mul_of_nonneg_left hsum (norm_nonneg _)
-    _ = 4 * ‖x - y‖ * (‖x‖ + ‖y‖) ^ 3 := by ring
+  rw [show x ^ (4 : ℕ) - y ^ (4 : ℕ) =
+      (x - y) * (x ^ (3 : ℕ) + x ^ (2 : ℕ) * y + x * y ^ (2 : ℕ) + y ^ (3 : ℕ)) from by ring,
+    norm_mul]
+  nlinarith [mul_le_mul_of_nonneg_left hsum (norm_nonneg (x - y)), norm_nonneg (x - y)]
 
 /-- Complex cast of `exp(-πt)^N = exp(-N π t)`. -/
 private lemma ofReal_exp_neg_pi_pow_eq (t : ℝ) (N : ℕ) :
     (Real.exp (-Real.pi * t) : ℂ) ^ N = (Real.exp (-(N : ℝ) * Real.pi * t) : ℂ) := by
-  simpa [Complex.ofReal_pow] using congrArg (fun r : ℝ => (r : ℂ))
-    (show (Real.exp (-Real.pi * t)) ^ N = Real.exp (-(N : ℝ) * Real.pi * t) by
-      rw [← Real.exp_nat_mul]; congr 1; ring)
+  rw [← Complex.ofReal_pow, ← Real.exp_nat_mul]; push_cast; ring_nf
 
 /-- `‖(Real.exp(-πt) : ℂ)^N‖ = exp(-N π t)`. -/
 private lemma norm_ofReal_exp_neg_pi_pow (t : ℝ) (N : ℕ) :
@@ -66,8 +61,8 @@ private lemma norm_ofReal_exp_neg_pi_pow (t : ℝ) (N : ℕ) :
   rw [ofReal_exp_neg_pi_pow_eq]; simp [abs_of_nonneg (Real.exp_pos _).le, -Complex.ofReal_exp]
 
 /-- Nonnegativity of a bounding constant: if `‖a‖ ≤ C * exp r` then `0 ≤ C`. -/
-private lemma nonneg_of_norm_le_mul_exp {α : Type*} [SeminormedAddCommGroup α]
-    {a : α} {C r : ℝ} (h : ‖a‖ ≤ C * Real.exp r) : 0 ≤ C :=
+private lemma nonneg_of_norm_le_mul_exp {α : Type*} [SeminormedAddCommGroup α] {a : α} {C r : ℝ}
+    (h : ‖a‖ ≤ C * Real.exp r) : 0 ≤ C :=
   nonneg_of_mul_nonneg_left ((norm_nonneg _).trans h) (Real.exp_pos _)
 
 /-- `H₂(it)` expansion up to the `exp(-3π t)` term on `t ≥ 1`. -/
@@ -111,14 +106,13 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
       · exact pow_le_pow_left₀ (by positivity) (by linarith) 3
     linarith [(norm_pow4_sub_le x y).trans hbd]
   have ha4 : a ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) := by
-    simpa [a, Complex.ofReal_pow] using congrArg ((↑) : ℝ → ℂ)
-      (show (Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = Real.exp (-Real.pi * t) by
-        rw [← Real.exp_nat_mul]; congr 1; ring)
+    rw [show a = ((Real.exp (-Real.pi * t / 4) : ℝ) : ℂ) from rfl, ← Complex.ofReal_pow,
+      ← Real.exp_nat_mul]; push_cast; ring_nf
   have ha3b : a ^ (3 : ℕ) * b = (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) := by
-    simpa [a, b, Complex.ofReal_pow, Complex.ofReal_mul] using congrArg ((↑) : ℝ → ℂ)
-      (show (Real.exp (-Real.pi * t / 4)) ^ (3 : ℕ) *
-          Real.exp (-(9 / 4 : ℝ) * Real.pi * t) = Real.exp (-(3 : ℝ) * Real.pi * t) by
-        rw [← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring)
+    rw [show a = ((Real.exp (-Real.pi * t / 4) : ℝ) : ℂ) from rfl,
+      show b = ((Real.exp (-(9/4 : ℝ) * Real.pi * t) : ℝ) : ℂ) from rfl,
+      ← Complex.ofReal_pow, ← Complex.ofReal_mul, ← Real.exp_nat_mul, ← Real.exp_add]
+    push_cast; ring_nf
   have hy_main : y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) - (64 : ℂ) *
         (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) = (96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) +
           (64 : ℂ) * (a * b ^ (3 : ℕ)) + (16 : ℂ) * (b ^ (4 : ℕ)) := by grind only
@@ -126,21 +120,19 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
         (64 : ℂ) * (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ)‖ ≤
           176 * Real.exp (-(5 : ℝ) * Real.pi * t) := by
     have hab : ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖ = Real.exp (-(5 : ℝ) * Real.pi * t) := by
-      simpa [norm_mul, norm_pow, ha_norm, hb_norm] using
-        (show (Real.exp (-Real.pi * t / 4)) ^ 2 * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t)) ^ 2
-            = Real.exp (-(5 : ℝ) * Real.pi * t) by
-          rw [← Real.exp_nat_mul, ← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring)
+      simpa [norm_mul, norm_pow, ha_norm, hb_norm, ← Real.exp_nat_mul, ← Real.exp_add] using
+        congrArg Real.exp (show (2 : ℕ) * (-Real.pi * t / 4) + (2 : ℕ) *
+          (-(9 / 4 : ℝ) * Real.pi * t) = -(5 : ℝ) * Real.pi * t by ring)
     have hab3_le : ‖a * b ^ (3 : ℕ)‖ ≤ Real.exp (-(5 : ℝ) * Real.pi * t) := by
       rw [show ‖a * b ^ (3 : ℕ)‖ = Real.exp (-(7 : ℝ) * Real.pi * t) from by
-        simpa [norm_mul, norm_pow, ha_norm, hb_norm] using
-          (show Real.exp (-Real.pi * t / 4) * (Real.exp (-(9 / 4 : ℝ) * Real.pi * t)) ^ 3
-              = Real.exp (-(7 : ℝ) * Real.pi * t) by
-            rw [← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring)]
+        simpa [norm_mul, norm_pow, ha_norm, hb_norm, ← Real.exp_nat_mul, ← Real.exp_add] using
+          congrArg Real.exp (show -Real.pi * t / 4 + (3 : ℕ) * (-(9 / 4 : ℝ) * Real.pi * t) =
+            -(7 : ℝ) * Real.pi * t by ring)]
       exact Real.exp_monotone (by nlinarith [Real.pi_pos, ht])
     have hb4_le : ‖b ^ (4 : ℕ)‖ ≤ Real.exp (-(5 : ℝ) * Real.pi * t) := by
       rw [show ‖b ^ (4 : ℕ)‖ = Real.exp (-(9 : ℝ) * Real.pi * t) from by
-        simpa [norm_pow, hb_norm] using (show (Real.exp (-(9 / 4 : ℝ) * Real.pi * t)) ^ 4 =
-          Real.exp (-(9 : ℝ) * Real.pi * t) by rw [← Real.exp_nat_mul]; congr 1; ring)]
+        simpa [norm_pow, hb_norm, ← Real.exp_nat_mul] using congrArg Real.exp
+          (show (4 : ℕ) * (-(9 / 4 : ℝ) * Real.pi * t) = -(9 : ℝ) * Real.pi * t by ring)]
       exact Real.exp_monotone (by nlinarith [Real.pi_pos, ht])
     rw [hy_main]
     nlinarith [norm_add_le ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) +
@@ -189,10 +181,9 @@ lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
       simpa [mul_one] using mul_le_mul_of_nonneg_left hexp1 hC10
     linarith [show ‖x‖ ≤ ‖x - 1‖ + 1 by
       simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ)]
-  have hy : ‖y‖ ≤ 3 := by
-    have : ‖y‖ ≤ 1 + 2 * ‖q'‖ := by
-      simpa [y, norm_mul, Complex.norm_two] using norm_add_le (1 : ℂ) ((2 : ℂ) * q')
-    linarith
+  have hy : ‖y‖ ≤ 3 :=
+    (by simpa [y, norm_mul, Complex.norm_two] using norm_add_le (1 : ℂ) ((2 : ℂ) * q') :
+      ‖y‖ ≤ 1 + 2 * ‖q'‖).trans (by linarith)
   have hxy : ‖x - y‖ ≤ C2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     simpa [x, y, q', sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using hC2 t ht
   have hpow' : ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
@@ -257,11 +248,9 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
       simpa [mul_one] using mul_le_mul_of_nonneg_left hexp1 hC10
     linarith [show ‖x‖ ≤ ‖x - 1‖ + 1 by
       simpa [sub_eq_add_neg, add_assoc] using norm_add_le (x - 1) (1 : ℂ)]
-  have hy : ‖y‖ ≤ 3 := by
-    have : ‖y‖ ≤ 1 + 2 * ‖q'‖ := by
-      simpa [y, sub_eq_add_neg, norm_mul, Complex.norm_two] using
-        norm_add_le (1 : ℂ) (-((2 : ℂ) * q'))
-    linarith
+  have hy : ‖y‖ ≤ 3 :=
+    (by simpa [y, sub_eq_add_neg, norm_mul, Complex.norm_two] using
+      norm_add_le (1 : ℂ) (-((2 : ℂ) * q')) : ‖y‖ ≤ 1 + 2 * ‖q'‖).trans (by linarith)
   have hxy : ‖x - y‖ ≤ C2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     simpa [x, y, q', sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using hC2 t ht
   have hpow' : ‖x ^ (4 : ℕ) - y ^ (4 : ℕ)‖ ≤
@@ -354,8 +343,7 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
           ((8 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) +
           (24 : ℂ) * (Real.exp (-(2 : ℝ) * Real.pi * t) : ℂ)) =
         H₃.resToImagAxis t - (1 : ℂ) from by ring] at htri'
-      simp only [C0]
-      nlinarith [htri, htri', h1, h2, mul_le_mul_of_nonneg_left hq3_le hC30, hC3 t ht, hq2_le,
+      nlinarith [C0, htri, htri', h1, h2, mul_le_mul_of_nonneg_left hq3_le hC30, hC3 t ht, hq2_le,
         Real.exp_pos (-Real.pi * t)]
   have hnorm_H3_ge_one : ∀ t : ℝ, 1 ≤ t → (1 : ℝ) ≤ ‖H₃.resToImagAxis t‖ := fun t ht => by
     have ht0 : 0 < t := lt_of_lt_of_le zero_lt_one ht
@@ -402,8 +390,7 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
         -Real.pi * t ≤ 0)]
   have hx2sub :
       ‖x ^ (2 : ℕ) - (1 : ℂ)‖ ≤ (C0 + 2) * (C0 * Real.exp (-Real.pi * t)) := by
-    rw [show ‖x ^ (2 : ℕ) - (1 : ℂ)‖ = ‖x - 1‖ * ‖x + 1‖ from by
-      rw [show x ^ (2 : ℕ) - (1 : ℂ) = (x - 1) * (x + 1) from by ring, norm_mul]]
+    rw [show x ^ (2 : ℕ) - (1 : ℂ) = (x - 1) * (x + 1) from by ring, norm_mul]
     have h1 : ‖x + 1‖ ≤ C0 + 2 :=
       ((by simpa using norm_add_le x (1 : ℂ)) : ‖x + 1‖ ≤ ‖x‖ + 1).trans hx_le
     calc ‖x - 1‖ * ‖x + 1‖ ≤ (C0 * Real.exp (-Real.pi * t)) * (C0 + 2) := by gcongr
@@ -414,7 +401,6 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
       field_simp, norm_mul, norm_sub_rev]
     simpa using mul_le_mul_of_nonneg_left hx_inv (norm_nonneg (x ^ (2 : ℕ) - (1 : ℂ)))
   simpa [x, mul_assoc, mul_left_comm, mul_comm] using hinv_le.trans hx2sub
-
 
 end
 
