@@ -132,12 +132,9 @@ public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
     simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, zsmul_eq_mul, Pi.mul_apply,
       Pi.intCast_apply, and_imp]
     refine fun c a ha has => ⟨?_, by simpa [zsmul_eq_mul, Finset.mul_sum] using has.zsmul' (n := c)⟩
-    obtain ha | ha := ha
-    · refine Or.inl fun i ↦ ?_
-      obtain ⟨a, ha⟩ := ha i
-      simp only [← ha, ← Int.cast_mul]
-      exact ⟨_, rfl⟩
-    · obtain ⟨c, rfl⟩ | hc := c.even_or_odd
+    rcases ha with ha | ha
+    · exact Or.inl fun i ↦ let ⟨a, ha⟩ := ha i; by simp only [← ha, ← Int.cast_mul]; exact ⟨_, rfl⟩
+    · rcases c.even_or_odd with ⟨c, rfl⟩ | hc
       · exact Or.inl fun i ↦ let ⟨j, hj, hj'⟩ := ha i;
           ⟨c * j, by rw [Int.cast_mul, hj', Int.cast_add]; ring⟩
       · exact Or.inr fun i ↦ let ⟨j, hj, hj'⟩ := ha i;
@@ -192,8 +189,7 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
       rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
         nsmul_eq_mul, Nat.cast_ofNat, show (8 : R) * 2⁻¹ = 2 • 2 by norm_num] at hx'
       exact (AddCommGroup.add_nsmul_modEq _).symm.trans hx'
-    · ext i
-      rw [Pi.add_apply, LinearMap.intCast_apply, Pi.smul_apply, one_smul]
+    · ext i; rw [Pi.add_apply, LinearMap.intCast_apply, Pi.smul_apply, one_smul]
       linear_combination - 2⁻¹ * hy' i
 
 section E8_basis
@@ -385,7 +381,6 @@ public theorem E8_integral_self {R : Type*} [Field R] [CharZero R] (v : Fin 8 �
   simp only [exists_eq_right, E8.inn, Int.reduceNeg, Matrix.of_apply, Matrix.cons_val',
     Matrix.cons_val_fin_one, Fin.sum_univ_eight, Fin.isValue, Matrix.cons_val_zero,
     Matrix.cons_val_one, Matrix.cons_val, mul_neg, mul_zero, add_zero, mul_one, zero_add]
-  ring_nf
-  simp [show Even (4 : ℤ) from ⟨2, rfl⟩, parity_simps]
+  ring_nf; simp [show Even (4 : ℤ) from ⟨2, rfl⟩, parity_simps]
 
 end E8_basis
