@@ -123,15 +123,14 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       simpa [MeasureTheory.IntegrableOn, mul_assoc] using
         ((by simpa [mul_assoc] using exp_neg_integrableOn_Ioi (a := A) (b := π * (u - 2)) hpos :
           IntegrableOn (fun t : ℝ => Real.exp (-(π * (u - 2)) * t)) (Set.Ioi A)).const_mul Cψ)
-    have hInt_tail : IntegrableOn f (Set.Ioi A) := by
+    rw [show Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A from
+      (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) hA1).symm]
+    refine hInt_finite.union (by
       simpa [MeasureTheory.IntegrableOn] using
         hg.mono' (((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
           (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by positivity) ht.le)).aestronglyMeasurable
           measurableSet_Ioi)
-          (ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by simpa using hdom t ht)
-    rw [show Set.Ioi (1 : ℝ) = Set.Ioc (1 : ℝ) A ∪ Set.Ioi A from
-      (Set.Ioc_union_Ioi_eq_Ioi (a := (1 : ℝ)) (b := A) hA1).symm]
-    exact hInt_finite.union hInt_tail
+          (ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by simpa using hdom t ht))
   have hintT_shift (a : ℂ)
       (hψ : ∀ t : ℝ, 0 < t → ψT' (a + I * (t : ℂ)) = ψI' (I * (t : ℂ))) :
       IntegrableOn (fun t : ℝ => bContourIntegrandT u (a + I * (t : ℂ)))
