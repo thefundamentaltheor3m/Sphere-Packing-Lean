@@ -153,19 +153,13 @@ lemma exists_phi0_cancellation_bound :
         simpa [hcoeffTerm] using hneg'
       simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
         mul_assoc, mul_left_comm, mul_comm, pow_two] using hneg''
-    have hST'' :
-        (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ))) =
-          ((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z -
-            ((12 / π : ℝ) : ℂ) * t * φ₂' z +
-            ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * φ₄' z := by
-      simpa [hφ₀S] using hST'
     have h720 : (12 / (π : ℂ)) * (t : ℂ) * (720 : ℂ) = (8640 / (π : ℂ)) * (t : ℂ) := by ring
     have h504 : (36 / (π : ℂ) ^ (2 : ℕ)) * (504 : ℂ) = (18144 / (π : ℂ) ^ (2 : ℕ)) := by ring
     have hSTpow :
         (↑t ^ (2 : ℕ)) * φ₀'' (Complex.I / ↑t) =
           (↑t ^ (2 : ℕ)) * φ₀ z - (12 / (π : ℂ)) * (t : ℂ) * φ₂' z +
             (36 / (π : ℂ) ^ (2 : ℕ)) * φ₄' z := by
-      simpa using hST''
+      simpa [hφ₀S] using hST'
     calc
       (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
             ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
@@ -293,10 +287,10 @@ private lemma continuousOn_aAnotherIntegrand_of_subset_Ioi
     ContinuousOn (fun t : ℝ => aAnotherIntegrand u t) s := by
   have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im} := by
     simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-  have hne : ∀ t ∈ s, (t : ℂ) ≠ 0 := fun t ht => by exact_mod_cast (ne_of_gt (hs t ht))
   have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) s := by
     simpa [div_eq_mul_inv] using continuous_const.continuousOn.mul
-      (continuous_ofReal.continuousOn.inv₀ hne)
+      (continuous_ofReal.continuousOn.inv₀ fun t ht => by
+        exact_mod_cast (ne_of_gt (hs t ht)))
   have hφcont : ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) s :=
     hcontφ.comp hcontIdiv fun t ht => by simpa [imag_I_div t] using inv_pos.2 (hs t ht)
   refine ((((by fun_prop : Continuous fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)).continuousOn.mul
