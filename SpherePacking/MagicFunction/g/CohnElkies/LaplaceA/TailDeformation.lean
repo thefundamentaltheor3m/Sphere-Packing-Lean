@@ -42,7 +42,7 @@ lemma tendsto_sq_mul_exp_neg_mul_atTop_nhds_zero (a : ℝ) (ha : 0 < a) :
 private lemma norm_real_add_mul_I_le_two_mul {a t : ℝ} (ha : ‖((a : ℝ) : ℂ)‖ ≤ (1 : ℝ))
     (ht : (1 : ℝ) ≤ t) :
     ‖((a : ℝ) : ℂ) + (t : ℂ) * Complex.I‖ ≤ 2 * t := by
-  have hIt : ‖(t : ℂ) * Complex.I‖ = t := by
+  have : ‖(t : ℂ) * Complex.I‖ = t := by
     simp [Complex.norm_real, abs_of_nonneg (by linarith : (0:ℝ) ≤ t)]
   linarith [norm_add_le ((a : ℝ) : ℂ) ((t : ℂ) * Complex.I)]
 
@@ -69,12 +69,12 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
   set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
   let w : ℂ := ((s : ℝ) : ℂ) + (t : ℂ) * Complex.I
   have hw_im : w.im = t := by simp [w]
-  have hw_norm : ‖w‖ ≤ 2 * t := norm_real_add_mul_I_le_two_mul (a := s) (t := t)
-    (by simpa [Complex.norm_real] using hs) ht1
   let wH : ℍ := ⟨w, by simpa [hw_im] using ht0⟩
   have hmod : ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       K * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
-    norm_phi0S_mul_sq_le wH hw_im hC₀_pos hC₀ hφbd ht1 htAφ hw_norm
+    norm_phi0S_mul_sq_le wH hw_im hC₀_pos hC₀ hφbd ht1 htAφ
+      (norm_real_add_mul_I_le_two_mul (a := s) (t := t)
+        (by simpa [Complex.norm_real] using hs) ht1)
   have hphi0S : φ₀'' ((-1 : ℂ) / w) * (w ^ (2 : ℕ)) =
       φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ)) := by
     rw [show φ₀ (ModularGroup.S • wH) = φ₀'' ((ModularGroup.S • wH : ℍ) : ℂ) by simp,
@@ -164,11 +164,10 @@ private lemma tendsto_intervalIntegral_top_of_strip_bound {u : ℝ} (hu : 2 < u)
       (tendsto_sq_mul_exp_neg_mul_atTop_nhds_zero a ha)
   refine squeeze_zero_norm' (Filter.eventually_atTop.2 ⟨max 1 Aφ, fun m hm => ?_⟩) htend
   have hm1 : (1 : ℝ) ≤ m := (le_max_left _ _).trans hm
-  have hmA : Aφ ≤ m := (le_max_right _ _).trans hm
   refine (intervalIntegral.norm_integral_le_of_norm_le_const (a := x₁) (b := x₂)
     (f := fun x : ℝ => F ((x : ℂ) + (m : ℂ) * Complex.I))
     (C := K * (m ^ (2 : ℕ) * Real.exp (-a * m)))
-    (fun x hx => hF Cφ Aφ C₀ x m hC₀_pos hC₀ hφbd hx hm1 hmA)).trans ?_
+    (fun x hx => hF Cφ Aφ C₀ x m hC₀_pos hC₀ hφbd hx hm1 ((le_max_right _ _).trans hm))).trans ?_
   have hnn : 0 ≤ K * (m ^ (2 : ℕ) * Real.exp (-a * m)) := by
     have : 0 ≤ K := by positivity
     have : 0 ≤ m := by linarith
@@ -206,11 +205,10 @@ lemma I₂'_eq_intervalIntegral_bottom (u : ℝ) :
       (∫ t in (0 : ℝ)..1, Φ₂' u (MagicFunction.Parametrisations.z₂' t)) =
         ∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ)) := by
     refine intervalIntegral.integral_congr fun t ht => ?_
-    have ht' : t ∈ Set.Icc (0 : ℝ) 1 := by
-      simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
     have hz : MagicFunction.Parametrisations.z₂' t =
         (-1 : ℂ) + (t : ℂ) + (Complex.I : ℂ) := by
-      simpa using MagicFunction.Parametrisations.z₂'_eq_of_mem (t := t) ht'
+      simpa using MagicFunction.Parametrisations.z₂'_eq_of_mem (t := t)
+        (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)
     simp [g, hz, show ((t + (-1 : ℝ) : ℝ) : ℂ) = (t : ℂ) + (-1 : ℂ) from by norm_cast, add_comm]
   rw [hcongr, show (∫ t in (0 : ℝ)..1, g (t + (-1 : ℝ))) = ∫ x in (-1 : ℝ)..0, g x from by
     norm_num]
@@ -224,11 +222,10 @@ lemma I₄'_eq_intervalIntegral_bottom (u : ℝ) :
       (∫ t in (0 : ℝ)..1, (-1 : ℂ) * Φ₄' u (MagicFunction.Parametrisations.z₄' t)) =
         ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t) := by
     refine intervalIntegral.integral_congr fun t ht => ?_
-    have ht' : t ∈ Set.Icc (0 : ℝ) 1 := by
-      simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht
     have hz : MagicFunction.Parametrisations.z₄' t =
         (1 : ℂ) - (t : ℂ) + (Complex.I : ℂ) := by
-      simpa using MagicFunction.Parametrisations.z₄'_eq_of_mem (t := t) ht'
+      simpa using MagicFunction.Parametrisations.z₄'_eq_of_mem (t := t)
+        (by simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using ht)
     simp [g, hz, sub_eq_add_neg]
   calc ∫ t in (0 : ℝ)..1, (-1 : ℂ) * Φ₄' u (MagicFunction.Parametrisations.z₄' t)
       = ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t) := hrew
