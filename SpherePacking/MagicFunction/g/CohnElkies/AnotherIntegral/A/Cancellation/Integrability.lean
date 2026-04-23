@@ -429,13 +429,9 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
 /-- For `u > 0`, the function `t ↦ aAnotherIntegrand u t` is integrable on `(0, ∞)`. -/
 public lemma aAnotherIntegrand_integrable_of_pos {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioi (0 : ℝ)) := by
-  have hsplit : Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ici (1 : ℝ) := by
-    ext t
-    refine ⟨fun ht => (le_total t 1).imp (fun h1 => ⟨ht, h1⟩) id, ?_⟩
-    rintro (ht | ht)
-    · exact ht.1
-    · exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) ht
-  rw [hsplit]
+  rw [show Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ici (1 : ℝ) from by
+    ext t; refine ⟨fun ht => (le_total t 1).imp (fun h1 => ⟨ht, h1⟩) id, ?_⟩
+    rintro (ht | ht) <;> [exact ht.1; exact lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) ht]]
   exact (aAnotherIntegrand_integrableOn_Ioc (u := u) hu).union
     (aAnotherIntegrand_integrableOn_Ici (u := u) hu)
 
