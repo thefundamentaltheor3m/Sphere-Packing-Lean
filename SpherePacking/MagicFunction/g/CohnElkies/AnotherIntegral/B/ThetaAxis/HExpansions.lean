@@ -411,8 +411,7 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
       rw [show x ^ (2 : ℕ) - (1 : ℂ) = (x - 1) * (x + 1) from by ring, norm_mul]]
     have h1 : ‖x + 1‖ ≤ C0 + 2 :=
       ((by simpa using norm_add_le x (1 : ℂ)) : ‖x + 1‖ ≤ ‖x‖ + 1).trans hx_le
-    calc ‖x - 1‖ * ‖x + 1‖
-        ≤ (C0 * Real.exp (-Real.pi * t)) * (C0 + 2) := by gcongr
+    calc ‖x - 1‖ * ‖x + 1‖ ≤ (C0 * Real.exp (-Real.pi * t)) * (C0 + 2) := by gcongr
       _ = (C0 + 2) * (C0 * Real.exp (-Real.pi * t)) := by ring
   have hx0 : x ≠ 0 := norm_pos_iff.1 (lt_of_lt_of_le zero_lt_one hxge)
   have hinv_le : ‖(x ^ (2 : ℕ))⁻¹ - (1 : ℂ)‖ ≤ ‖x ^ (2 : ℕ) - (1 : ℂ)‖ := by

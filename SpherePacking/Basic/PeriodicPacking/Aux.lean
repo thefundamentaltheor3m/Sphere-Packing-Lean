@@ -224,9 +224,9 @@ instance (S : PeriodicSpherePacking 0) : Finite S.centers := inferInstance
 
 public noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
     Finite (Quotient S.addAction.orbitRel) := by
-  let b : Basis _ ℤ S.lattice := (ZLattice.module_free ℝ S.lattice).chooseBasis
   by_cases hd : 0 < d
-  · haveI : Finite ↑(S.centers ∩ fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
+  · let b : Basis _ ℤ S.lattice := (ZLattice.module_free ℝ S.lattice).chooseBasis
+    haveI : Finite ↑(S.centers ∩ fundamentalDomain (b.ofZLatticeBasis ℝ _)) :=
       finite_centers_inter_fundamentalDomain S b hd
     exact Finite.of_equiv _ (S.addActionOrbitRelEquiv' b).symm
   · obtain rfl : d = 0 := Nat.eq_zero_of_not_pos hd; exact Quotient.finite _
@@ -248,9 +248,8 @@ variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (F
 public theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice) :
     S.numReps = 1 := by
   rw [numReps]
-  haveI : Subsingleton (Quotient S.addAction.orbitRel) := by
-    rw [← AddAction.pretransitive_iff_subsingleton_quotient]
-    exact ⟨fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
+  haveI : Subsingleton (Quotient S.addAction.orbitRel) :=
+    (AddAction.pretransitive_iff_subsingleton_quotient _ _).mp ⟨fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
       rw [hS] at hx hy
       exact ⟨⟨y - x, sub_mem hy hx⟩, by simp [addAction_vadd]⟩⟩
   exact Fintype.card_eq_one_iff.2 ⟨⟦(⟨0, by simp [hS]⟩ : S.centers)⟧,
@@ -277,9 +276,9 @@ public theorem PeriodicSpherePacking.encard_centers_inter_isFundamentalDomain
 theorem PeriodicSpherePacking.card_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
     haveI := @Fintype.ofFinite _ <| finite_centers_inter_vadd_fundamentalDomain S b hd v
-    (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps := by
-  rw [numReps]
-  exact card_eq_of_equiv_fintype (by simpa using (S.addActionOrbitRelEquiv'' b v).symm)
+    (S.centers ∩ (v +ᵥ fundamentalDomain (b.ofZLatticeBasis ℝ _))).toFinset.card = S.numReps :=
+  by rw [numReps]
+     exact card_eq_of_equiv_fintype (by simpa using (S.addActionOrbitRelEquiv'' b v).symm)
 
 theorem PeriodicSpherePacking.encard_centers_inter_vadd_fundamentalDomain (hd : 0 < d)
     {ι : Type*} [Finite ι] (b : Basis ι ℤ S.lattice) (v : EuclideanSpace ℝ (Fin d)) :
@@ -295,8 +294,8 @@ variable {d : ℕ}
 public noncomputable instance PeriodicSpherePacking.instFintypeNumReps'
     (S : PeriodicSpherePacking d) (hd : 0 < d)
     {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D) :
-    Fintype ↑(S.centers ∩ D) :=
-  @Fintype.ofFinite _ <| finite_centers_inter_of_isBounded S D hD_isBounded hd
+    Fintype ↑(S.centers ∩ D) := @Fintype.ofFinite _ <|
+  finite_centers_inter_of_isBounded S D hD_isBounded hd
 
 @[expose] public noncomputable def PeriodicSpherePacking.numReps'
     (S : PeriodicSpherePacking d) (hd : 0 < d)
@@ -324,11 +323,9 @@ private theorem aux
     {L : ℝ} (hL : ∀ x ∈ fundamentalDomain b, ‖x‖ ≤ L) (R : ℝ) :
     ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L),
       x +ᵥ (fundamentalDomain b : Set (EuclideanSpace ℝ (Fin d)))
-        ⊆ ball 0 R := by
-  intro x hx
+        ⊆ ball 0 R := fun x hx => by
   simp only [Set.mem_iUnion, exists_prop] at hx
-  obtain ⟨y, ⟨_, hy⟩, hy'⟩ := hx
-  obtain ⟨z, hz, rfl⟩ := Set.mem_vadd_set.mp hy'
+  obtain ⟨y, ⟨_, hy⟩, z, hz, rfl⟩ := hx
   simp only [mem_ball, dist_zero_right, vadd_eq_add] at hy ⊢
   exact (norm_add_le _ _).trans_lt (by linarith [hy, hL z hz])
 
