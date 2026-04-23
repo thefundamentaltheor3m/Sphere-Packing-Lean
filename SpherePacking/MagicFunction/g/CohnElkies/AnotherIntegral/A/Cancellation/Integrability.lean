@@ -207,8 +207,7 @@ lemma exists_phi0_cancellation_bound :
         simpa [z, zI] using (φ₀''_coe_upperHalfPlane z)] using hφ₀ t ht1
     have hφ₂z : ‖φ₂' z - (720 : ℂ)‖ ≤ C₂ * Real.exp (-2 * π * t) := by
       simpa [z] using hφ₂ t ht0 (hA₂'.trans htA)
-    have hφ₄z :
-        ‖φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)‖ ≤ C₄ * Real.exp (-2 * π * t) := by
+    have hφ₄z : ‖φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)‖ ≤ C₄ * Real.exp (-2 * π * t) := by
       simpa [z] using hφ₄ t ht0 (hA₄'.trans htA)
     have ht2 : (1 : ℝ) ≤ t ^ (2 : ℕ) := by nlinarith [ht1]
     have hle_t : t ≤ t ^ (2 : ℕ) := by nlinarith [ht1]

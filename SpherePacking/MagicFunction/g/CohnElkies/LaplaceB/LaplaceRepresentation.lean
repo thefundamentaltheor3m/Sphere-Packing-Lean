@@ -96,11 +96,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hmaps_Ioi (S : Set ℝ) (hS : ∀ t ∈ S, 0 < t) :
         Set.MapsTo (fun t : ℝ => I * (t : ℂ)) S {z : ℂ | 0 < z.im} :=
       fun t ht => by simpa using hS t ht
-    have hcontIcc : ContinuousOn f (Set.Icc (1 : ℝ) A) :=
-      (continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
-        (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by norm_num) ht.1)
     have hInt_finite : IntegrableOn f (Set.Ioc (1 : ℝ) A) :=
-      (hcontIcc.integrableOn_compact isCompact_Icc).mono_set Set.Ioc_subset_Icc_self
+      (((continuousOn_bContourIntegrandT (u := u)).comp (by fun_prop)
+        (hmaps_Ioi _ fun _ ht => lt_of_lt_of_le (by norm_num) ht.1)).integrableOn_compact
+          isCompact_Icc).mono_set Set.Ioc_subset_Icc_self
     have hpos : 0 < π * (u - 2) := mul_pos Real.pi_pos (sub_pos.2 hu)
     have hdom : ∀ t : ℝ, t ∈ Set.Ioi A →
         ‖f t‖ ≤ Cψ * Real.exp (-(π * (u - 2)) * t) := fun t ht => by
@@ -143,14 +142,12 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     refine hConst.congr_fun (fun t ht => ?_) measurableSet_Ioi
     simp [bContourIntegrandT, bContourIntegrandI, hψ t (lt_trans (by norm_num) ht),
       bContourWeight_add, mul_comm, mul_left_comm]
-  have hintT_left :
-      IntegrableOn (fun t : ℝ => bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ)))
-        (Set.Ioi (1 : ℝ)) :=
+  have hintT_left : IntegrableOn (fun t : ℝ => bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ)))
+      (Set.Ioi (1 : ℝ)) :=
     hintT_shift (-1 : ℂ) fun t ht0 => by
       simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0
-  have hintT_right :
-      IntegrableOn (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ)))
-        (Set.Ioi (1 : ℝ)) :=
+  have hintT_right : IntegrableOn (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ)))
+      (Set.Ioi (1 : ℝ)) :=
     hintT_shift (1 : ℂ) fun t ht0 => by
       simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0
   have htendstoT :
