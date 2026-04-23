@@ -106,13 +106,9 @@ private lemma continuousOn_ψT'_comp (z : ℝ → ℂ) (hz : Continuous z)
 
 private lemma norm_pi_mul_I_mul_le (z : ℂ) {N : ℝ} (hz : ‖z‖ ≤ N) :
     ‖(π : ℂ) * (Complex.I : ℂ) * z‖ ≤ N * π := by
-  have hπI : ‖(π : ℂ) * (Complex.I : ℂ)‖ = (π : ℝ) := by
-    simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le]
-  calc ‖(π : ℂ) * (Complex.I : ℂ) * z‖
-      = ‖(π : ℂ) * (Complex.I : ℂ)‖ * ‖z‖ := by simp [mul_assoc]
-    _ ≤ ‖(π : ℂ) * (Complex.I : ℂ)‖ * N :=
-        mul_le_mul_of_nonneg_left hz (norm_nonneg ((π : ℂ) * (Complex.I : ℂ)))
-    _ = N * π := by simpa [mul_comm, mul_assoc] using congrArg (fun r : ℝ => r * N) hπI
+  rw [norm_mul, show ‖(π : ℂ) * (Complex.I : ℂ)‖ = (π : ℝ) from by
+    simp [Complex.norm_real, abs_of_nonneg Real.pi_pos.le], mul_comm]
+  gcongr
 
 private lemma exists_bound_norm_ψT'_comp_of_im_pos_all (z : ℝ → ℂ) (hz : Continuous z)
     (hIm : ∀ t : ℝ, 0 < (z t).im) :
@@ -176,22 +172,21 @@ lemma norm_z₃'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₃' t‖ ≤ 2
   simpa [hz] using norm_add_I_mul_le_two (1 : ℂ) t ht (by simp)
 
 private lemma norm_add_I_le_three (a : ℂ) (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
-    (ha : ‖a‖ ≤ 1 + t) : ‖a + (Complex.I : ℂ)‖ ≤ 3 :=
-  calc ‖a + (Complex.I : ℂ)‖
-      ≤ ‖a‖ + ‖(Complex.I : ℂ)‖ := norm_add_le _ _
-    _ ≤ (1 + t) + 1 := by simpa using (add_le_add_right ha ‖(Complex.I : ℂ)‖)
-    _ ≤ 3 := by nlinarith [ht.2]
+    (ha : ‖a‖ ≤ 1 + t) : ‖a + (Complex.I : ℂ)‖ ≤ 3 := by
+  have h := norm_add_le a (Complex.I : ℂ)
+  simp at h
+  nlinarith [ht.2]
 
 lemma norm_z₂'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₂' t‖ ≤ 3 := by
   have hz : z₂' t = ((-1 : ℂ) + (t : ℂ)) + (Complex.I : ℂ) := by
     simp [z₂'_eq_of_mem (t := t) ht, add_comm]
-  simpa [hz] using norm_add_I_le_three ((-1 : ℂ) + (t : ℂ)) t ht
+  exact hz ▸ norm_add_I_le_three _ t ht
     (by simpa [Complex.norm_real, abs_of_nonneg ht.1] using norm_add_le (-1 : ℂ) (t : ℂ))
 
 lemma norm_z₄'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₄' t‖ ≤ 3 := by
   have hz : z₄' t = ((1 : ℂ) + (-(t : ℂ))) + (Complex.I : ℂ) := by
     simp [z₄'_eq_of_mem (t := t) ht, sub_eq_add_neg, add_comm]
-  simpa [hz] using norm_add_I_le_three ((1 : ℂ) + (-(t : ℂ))) t ht
+  exact hz ▸ norm_add_I_le_three _ t ht
     ((norm_add_le _ _).trans (by simp [Complex.norm_real, abs_of_nonneg ht.1]))
 
 lemma norm_z₅'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₅' t‖ ≤ 1 := by
@@ -302,24 +297,21 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
   let k : ℝ → ℂ := fun t => (-(π : ℂ)) * (t : ℂ)
   let F : ℂ → ℝ → ℂ := fun u t => base t * Complex.exp (u * k t)
   let F' : ℂ → ℝ → ℂ := fun u t => base t * k t * Complex.exp (u * k t)
-  have hcont_res : ContinuousOn ψS.resToImagAxis (Set.Ici (1 : ℝ)) :=
-    Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) MagicFunction.b.PsiBounds.continuous_ψS
   have hcont_base : ContinuousOn base (Set.Ici (1 : ℝ)) := by
-    simpa [base] using (continuousOn_const.mul hcont_res)
+    simpa [base] using continuousOn_const.mul
+      (Function.continuousOn_resToImagAxis_Ici_one_of
+        (F := ψS) MagicFunction.b.PsiBounds.continuous_ψS)
   have hk_cont : ContinuousOn k (Set.Ici (1 : ℝ)) := by fun_prop
+  have hExp : ∀ u : ℂ, ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Set.Ici (1 : ℝ)) :=
+    fun u => ContinuousOn.cexp (continuousOn_const.mul hk_cont)
   have hF_meas : ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) μ :=
     Filter.Eventually.of_forall fun u => by
-      simpa [μ] using ((hcont_base.mul
-        (ContinuousOn.cexp (continuousOn_const.mul hk_cont) :
-          ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Set.Ici (1 : ℝ)))).aestronglyMeasurable
+      simpa [μ] using ((hcont_base.mul (hExp u)).aestronglyMeasurable
         (μ := (volume : Measure ℝ)) measurableSet_Ici)
   have hF'_meas : AEStronglyMeasurable (F' u0) μ := by
-    have hcont : ContinuousOn (fun t : ℝ => F' u0 t) (Set.Ici (1 : ℝ)) := by
-      simpa [F'] using ((hcont_base.mul hk_cont).mul
-        (ContinuousOn.cexp (continuousOn_const.mul hk_cont) :
-          ContinuousOn (fun t : ℝ => Complex.exp (u0 * k t)) (Set.Ici (1 : ℝ))))
     simpa [F', μ, mul_assoc] using
-      hcont.aestronglyMeasurable (μ := (volume : Measure ℝ)) measurableSet_Ici
+      ((hcont_base.mul hk_cont).mul (hExp u0)).aestronglyMeasurable
+        (μ := (volume : Measure ℝ)) measurableSet_Ici
   obtain ⟨Mψ, hMψ⟩ := MagicFunction.b.PsiBounds.exists_bound_norm_ψS_resToImagAxis_Ici_one
   have hbase_bound : ∀ t : ℝ, 1 ≤ t → ‖base t‖ ≤ Mψ := fun t ht => by
     simpa [base, norm_mul] using
@@ -327,17 +319,15 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
   have hF_int : Integrable (F u0) μ := by
     let b : ℝ := Real.pi * u0.re
     have hb : 0 < b := by positivity
-    have hG_int : Integrable (fun t : ℝ => (Mψ : ℝ) * Real.exp (-b * t)) μ := by
+    have hG_int : Integrable (fun t : ℝ => Mψ * Real.exp (-b * t)) μ := by
       simpa [μ, MeasureTheory.IntegrableOn, pow_zero, one_mul] using
         ((SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := b)
           hb) : IntegrableOn _ _ (volume : Measure ℝ)).const_mul Mψ
     refine Integrable.mono' hG_int hF_meas.self_of_nhds
       ((ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_)
     have hexp : ‖Complex.exp (u0 * k t)‖ = Real.exp (-b * t) := by
-      have hre : (u0 * k t).re = -Real.pi * u0.re * t := by
-        simp [mul_re, show (k t).re = -Real.pi * t by simp [k],
-          show (k t).im = 0 by simp [k], mul_left_comm, mul_comm]
-      simp [Complex.norm_exp, hre, b, mul_comm]
+      simp [Complex.norm_exp, mul_re, show (k t).re = -Real.pi * t by simp [k],
+        show (k t).im = 0 by simp [k], b, mul_left_comm, mul_comm]
     calc ‖F u0 t‖
         = ‖base t‖ * ‖Complex.exp (u0 * k t)‖ := by simp [F]
       _ ≤ Mψ * Real.exp (-b * t) := by
@@ -364,10 +354,8 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
     (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht u hu => by
       have ht0 : 0 ≤ t := le_trans (by norm_num) ht
       have hexp_le : ‖Complex.exp (u * k t)‖ ≤ Real.exp (-b * t) := by
-        have hre : (u * k t).re = -Real.pi * u.re * t := by
-          simp [mul_re, show (k t).re = -Real.pi * t by simp [k],
-            show (k t).im = 0 by simp [k], mul_left_comm, mul_comm]
-        simpa [Complex.norm_exp, hre, b, ε, mul_assoc, mul_left_comm, mul_comm] using
+        simpa [Complex.norm_exp, mul_re, show (k t).re = -Real.pi * t by simp [k],
+          show (k t).im = 0 by simp [k], b, ε, mul_assoc, mul_left_comm, mul_comm] using
           Real.exp_le_exp.2 (show -Real.pi * u.re * t ≤ -Real.pi * (u0.re / 2) * t by
             simpa [mul_assoc, mul_left_comm, mul_comm] using
               mul_le_mul_of_nonpos_left (hre_lower u hu)
