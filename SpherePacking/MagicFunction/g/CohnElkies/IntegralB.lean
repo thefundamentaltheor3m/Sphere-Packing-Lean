@@ -62,9 +62,8 @@ lemma B_mul_exp_eq_decomp {u t : ℝ} (ht : 0 < t) :
 
 private lemma integrable_aAnother {u : ℝ} (hu : 0 < u) :
     Integrable (fun t : ℝ => MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand u t)
-      ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
-  simpa [MeasureTheory.IntegrableOn] using
-    MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand_integrable_of_pos (u := u) hu
+      ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) :=
+  MagicFunction.g.CohnElkies.IntegralReps.aAnotherIntegrand_integrable_of_pos (u := u) hu
 
 private lemma integrable_bAnother {u : ℝ} (hu : 0 < u) :
     Integrable (fun t : ℝ => MagicFunction.g.CohnElkies.IntegralReps.bAnotherIntegrand u t)
