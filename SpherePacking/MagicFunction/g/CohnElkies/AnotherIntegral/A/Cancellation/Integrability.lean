@@ -211,11 +211,9 @@ lemma exists_phi0_cancellation_bound :
     have ht2 : (1 : ℝ) ≤ t ^ (2 : ℕ) := by nlinarith [ht1]
     have hle_t : t ≤ t ^ (2 : ℕ) := by nlinarith [ht1]
     have ht0le : 0 ≤ t := (by norm_num : (0 : ℝ) ≤ 1).trans ht1
-    have h12pi0 : 0 ≤ (12 / π : ℝ) := (div_pos (by norm_num) Real.pi_pos).le
-    have h36pi2_0 : 0 ≤ (36 / (π ^ (2 : ℕ)) : ℝ) :=
-      (div_pos (by norm_num) (pow_pos Real.pi_pos _)).le
+    have h12pi0 : 0 ≤ (12 / π : ℝ) := by positivity
+    have h36pi2_0 : 0 ≤ (36 / (π ^ (2 : ℕ)) : ℝ) := by positivity
     have hexp0 : 0 ≤ Real.exp (-2 * π * t) := (Real.exp_pos _).le
-    have hrew := hrewrite ht0
     have hnorm1 :
         ‖((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z‖ ≤ C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
       calc ‖((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z‖
@@ -225,7 +223,6 @@ lemma exists_phi0_cancellation_bound :
     have hnorm2 :
         ‖((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))‖ ≤
           ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-      have hX0 : 0 ≤ C₂ * Real.exp (-2 * π * t) := mul_nonneg hC₂pos.le hexp0
       calc ‖((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))‖
           = (12 / π) * t * ‖φ₂' z - (720 : ℂ)‖ := by
             simp [mul_assoc, Complex.norm_real, Real.norm_eq_abs,
@@ -233,13 +230,12 @@ lemma exists_phi0_cancellation_bound :
         _ ≤ (12 / π) * t * (C₂ * Real.exp (-2 * π * t)) := by gcongr
         _ ≤ (12 / π) * (t ^ (2 : ℕ)) * (C₂ * Real.exp (-2 * π * t)) := by
             simpa [mul_assoc] using mul_le_mul_of_nonneg_left
-              (mul_le_mul_of_nonneg_right hle_t hX0) h12pi0
+              (mul_le_mul_of_nonneg_right hle_t (mul_nonneg hC₂pos.le hexp0)) h12pi0
         _ = ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by ring
     have hnorm3 :
         ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
             (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))‖ ≤
           ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
-      have hX0 : 0 ≤ C₄ * Real.exp (-2 * π * t) := mul_nonneg hC₄pos.le hexp0
       calc ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
             (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))‖
           = (36 / (π ^ (2 : ℕ))) * ‖φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)‖ := by
@@ -247,7 +243,7 @@ lemma exists_phi0_cancellation_bound :
         _ ≤ (36 / (π ^ (2 : ℕ))) * (C₄ * Real.exp (-2 * π * t)) := by gcongr
         _ ≤ (36 / (π ^ (2 : ℕ))) * (t ^ (2 : ℕ)) * (C₄ * Real.exp (-2 * π * t)) := by
             simpa [one_mul, mul_assoc] using mul_le_mul_of_nonneg_left
-              (mul_le_mul_of_nonneg_right ht2 hX0) h36pi2_0
+              (mul_le_mul_of_nonneg_right ht2 (mul_nonneg hC₄pos.le hexp0)) h36pi2_0
         _ = ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by ring
     have htri :
         ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
@@ -262,7 +258,8 @@ lemma exists_phi0_cancellation_bound :
       have hE : (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
           ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
           ((8640 / π : ℝ) : ℂ) * t -
-          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) = x - y + z' := by simpa [x, y, z'] using hrew
+          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) = x - y + z' := by
+        simpa [x, y, z'] using hrewrite ht0
       have hxyz : ‖x - y + z'‖ ≤ ‖x‖ + ‖y‖ + ‖z'‖ :=
         (norm_add_le _ _).trans (by linarith [norm_sub_le x y, norm_nonneg z'])
       have hClarge_eq :
