@@ -328,12 +328,10 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
   have hF_int : Integrable (F u0) μ := by
     let b : ℝ := Real.pi * u0.re
     have hb : 0 < b := by positivity
-    have hExpIci : IntegrableOn (fun t : ℝ => Real.exp (-b * t)) (Set.Ici (1 : ℝ))
-        (volume : Measure ℝ) := by
-      simpa [pow_zero, one_mul] using
-        (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := b) hb)
     have hG_int : Integrable (fun t : ℝ => (Mψ : ℝ) * Real.exp (-b * t)) μ := by
-      simpa [μ, MeasureTheory.IntegrableOn] using hExpIci.const_mul Mψ
+      simpa [μ, MeasureTheory.IntegrableOn, pow_zero, one_mul] using
+        ((SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 0) (b := b)
+          hb) : IntegrableOn _ _ (volume : Measure ℝ)).const_mul Mψ
     refine Integrable.mono' hG_int hF_meas.self_of_nhds
       ((ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht => ?_)
     have hexp : ‖Complex.exp (u0 * k t)‖ = Real.exp (-b * t) := by
