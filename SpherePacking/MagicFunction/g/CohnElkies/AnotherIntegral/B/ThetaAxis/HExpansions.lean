@@ -113,15 +113,14 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
       · exact pow_le_pow_left₀ (by positivity) (by linarith) 3
     linarith [(norm_pow4_sub_le x y).trans hbd]
   have ha4 : a ^ (4 : ℕ) = (Real.exp (-Real.pi * t) : ℂ) := by
-    simpa [a, Complex.ofReal_pow] using congrArg (fun r : ℝ => (r : ℂ))
+    simpa [a, Complex.ofReal_pow] using congrArg ((↑) : ℝ → ℂ)
       (show (Real.exp (-Real.pi * t / 4)) ^ (4 : ℕ) = Real.exp (-Real.pi * t) by
         rw [← Real.exp_nat_mul]; congr 1; ring)
   have ha3b : a ^ (3 : ℕ) * b = (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) := by
-    simpa [a, b, Complex.ofReal_pow, Complex.ofReal_mul] using
-      congrArg (fun r : ℝ => (r : ℂ))
-        (show (Real.exp (-Real.pi * t / 4)) ^ (3 : ℕ) *
-            Real.exp (-(9 / 4 : ℝ) * Real.pi * t) = Real.exp (-(3 : ℝ) * Real.pi * t) by
-          rw [← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring)
+    simpa [a, b, Complex.ofReal_pow, Complex.ofReal_mul] using congrArg ((↑) : ℝ → ℂ)
+      (show (Real.exp (-Real.pi * t / 4)) ^ (3 : ℕ) *
+          Real.exp (-(9 / 4 : ℝ) * Real.pi * t) = Real.exp (-(3 : ℝ) * Real.pi * t) by
+        rw [← Real.exp_nat_mul, ← Real.exp_add]; congr 1; ring)
   have hy_main : y ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) - (64 : ℂ) *
         (Real.exp (-(3 : ℝ) * Real.pi * t) : ℂ) = (96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) +
           (64 : ℂ) * (a * b ^ (3 : ℕ)) + (16 : ℂ) * (b ^ (4 : ℕ)) := by grind only
@@ -146,15 +145,13 @@ public lemma exists_bound_norm_H2_resToImagAxis_sub_two_terms_Ici_one :
           Real.exp (-(9 : ℝ) * Real.pi * t) by rw [← Real.exp_nat_mul]; congr 1; ring)]
       exact Real.exp_monotone (by nlinarith [Real.pi_pos, ht])
     rw [hy_main]
-    have htri1 := norm_add_le ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) +
-      (64 : ℂ) * (a * b ^ (3 : ℕ))) ((16 : ℂ) * (b ^ (4 : ℕ)))
-    have htri2 := norm_add_le ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)))
-      ((64 : ℂ) * (a * b ^ (3 : ℕ)))
-    have hn1 : ‖(96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ))‖ = 96 * ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖ := by
-      simp
-    have hn2 : ‖(64 : ℂ) * (a * b ^ (3 : ℕ))‖ = 64 * ‖a * b ^ (3 : ℕ)‖ := by simp
-    have hn3 : ‖(16 : ℂ) * (b ^ (4 : ℕ))‖ = 16 * ‖b ^ (4 : ℕ)‖ := by simp
-    nlinarith [htri1, htri2, hab, hab3_le, hb4_le, hn1, hn2, hn3]
+    nlinarith [norm_add_le ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ)) +
+      (64 : ℂ) * (a * b ^ (3 : ℕ))) ((16 : ℂ) * (b ^ (4 : ℕ))),
+      norm_add_le ((96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ))) ((64 : ℂ) * (a * b ^ (3 : ℕ))),
+      hab, hab3_le, hb4_le,
+      (by simp : ‖(96 : ℂ) * (a ^ (2 : ℕ) * b ^ (2 : ℕ))‖ = 96 * ‖a ^ (2 : ℕ) * b ^ (2 : ℕ)‖),
+      (by simp : ‖(64 : ℂ) * (a * b ^ (3 : ℕ))‖ = 64 * ‖a * b ^ (3 : ℕ)‖),
+      (by simp : ‖(16 : ℂ) * (b ^ (4 : ℕ))‖ = 16 * ‖b ^ (4 : ℕ)‖)]
   rw [show H₂.resToImagAxis t = x ^ (4 : ℕ) from by
     simp [x, H₂, Function.resToImagAxis, ResToImagAxis, ht0]]
   have htri : ‖x ^ (4 : ℕ) - (16 : ℂ) * (Real.exp (-Real.pi * t) : ℂ) -
@@ -369,13 +366,13 @@ public lemma exists_bound_norm_inv_H3_sq_sub_one_Ici_one :
     let f : ℕ → ℝ := fun n => Real.exp (-Real.pi * (((n : ℝ) + 1) ^ 2) * t)
     have hterm : ∀ n : ℕ, cexp (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ) = (f n : ℂ) :=
       fun n => by
-        have hI_mul (z : ℂ) : (Complex.I : ℂ) * ((Complex.I : ℂ) * z) = -z := by
-          rw [← mul_assoc, Complex.I_mul_I, neg_one_mul]
         have hexp : (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ : ℂ)
               = (-(Real.pi * (((n : ℝ) + 1) ^ 2) * t) : ℂ) := by
           rw [show (Real.pi * Complex.I * ((n : ℂ) + 1) ^ 2 * τ : ℂ)
               = (Real.pi : ℂ) * ((n : ℂ) + 1) ^ 2 * ((Complex.I : ℂ) * τ) from by ac_rfl,
-            show τ = Complex.I * (t : ℂ) from rfl, hI_mul,
+            show τ = Complex.I * (t : ℂ) from rfl,
+            show (Complex.I : ℂ) * ((Complex.I : ℂ) * (t : ℂ)) = -(t : ℂ) by
+              rw [← mul_assoc, Complex.I_mul_I, neg_one_mul],
             show ((n : ℂ) + 1) ^ 2 = (((n : ℝ) + 1) ^ 2 : ℂ) from by norm_cast]
           push_cast; ring
         simp [f, hexp]
