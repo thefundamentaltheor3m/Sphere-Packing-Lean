@@ -38,9 +38,9 @@ private lemma continuousOn_aBracket_of_subset_Ioi {s : Set ℝ} (hs : ∀ t ∈ 
             ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))) s := by
   have hcontφ : ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im} := by
     simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn
-  have hden0 : ∀ t ∈ s, (t : ℂ) ≠ 0 := fun t ht => by exact_mod_cast (ne_of_gt (hs t ht))
   have hcontIdiv : ContinuousOn (fun t : ℝ => (Complex.I : ℂ) / (t : ℂ)) s :=
-    continuous_const.continuousOn.div (continuous_ofReal.continuousOn) hden0
+    continuous_const.continuousOn.div (continuous_ofReal.continuousOn)
+      fun t ht => by exact_mod_cast (ne_of_gt (hs t ht))
   have hcontPhiDiv : ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) s :=
     hcontφ.comp hcontIdiv fun t ht => by simpa [imag_I_div t] using inv_pos.2 (hs t ht)
   exact ((((by fun_prop : ContinuousOn (fun t : ℝ => ((t ^ (2 : ℕ) : ℝ) : ℂ)) s).mul
@@ -106,11 +106,12 @@ lemma exists_phi0_cancellation_bound :
                 (φ₄' (zI t ht0) - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))) := by
     intro t ht0
     let z : ℍ := zI t ht0
-    have hS : ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) := by
-      simpa [z] using modular_S_smul_zI t ht0
     have hcoe : ((ModularGroup.S • z : ℍ) : ℂ) = (Complex.I : ℂ) / (t : ℂ) := by
       calc ((ModularGroup.S • z : ℍ) : ℂ)
-          = (Complex.I : ℂ) * (t⁻¹ : ℂ) := by simpa [zI] using congrArg (↑· : ℍ → ℂ) hS
+          = (Complex.I : ℂ) * (t⁻¹ : ℂ) := by
+            simpa [zI] using congrArg (↑· : ℍ → ℂ)
+              (show ModularGroup.S • z = zI t⁻¹ (inv_pos.2 ht0) by
+                simpa [z] using modular_S_smul_zI t ht0)
         _ = (Complex.I : ℂ) / (t : ℂ) := by simp [div_eq_mul_inv]
     have hφ₀S : φ₀'' ((Complex.I : ℂ) / (t : ℂ)) = φ₀ (ModularGroup.S • z) := by
       simpa using congrArg φ₀'' hcoe.symm
@@ -183,7 +184,6 @@ lemma exists_phi0_cancellation_bound :
                 ((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ)) +
                 ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
                   (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))) := by ring_nf
-      _ = _ := by rfl
   let Clarge : ℝ := C₀ + (12 / π) * C₂ + (36 / (π ^ (2 : ℕ))) * C₄
   have hClarge_pos : 0 < Clarge := by dsimp [Clarge]; positivity
   obtain ⟨M, hM⟩ : ∃ M : ℝ, ∀ t : ℝ, 1 ≤ t → t ≤ A →
@@ -199,10 +199,9 @@ lemma exists_phi0_cancellation_bound :
     have hg_cont : ContinuousOn g (Set.Icc (1 : ℝ) A) := by
       simpa [g] using (continuousOn_aBracket_of_subset_Ioi (s := Set.Icc (1 : ℝ) A)
         (fun t ht => lt_of_lt_of_le (by norm_num) ht.1)).norm
-    rcases isCompact_Icc.exists_isMaxOn ⟨1, le_rfl, hA1⟩ hg_cont with ⟨t₀, _, ht₀max⟩
-    refine ⟨g t₀, fun t ht1 htA => ?_⟩
-    simpa [g] using (by simpa [isMaxOn_iff] using ht₀max : ∀ t ∈ Set.Icc (1 : ℝ) A, g t ≤ g t₀)
-      t ⟨ht1, htA⟩
+    obtain ⟨t₀, _, ht₀max⟩ := isCompact_Icc.exists_isMaxOn ⟨1, le_rfl, hA1⟩ hg_cont
+    exact ⟨g t₀, fun t ht1 htA => (by simpa [isMaxOn_iff] using ht₀max :
+      ∀ t ∈ Set.Icc (1 : ℝ) A, g t ≤ g t₀) t ⟨ht1, htA⟩⟩
   let C : ℝ := max Clarge (M / Real.exp (-2 * π * A))
   refine ⟨C, lt_of_lt_of_le hClarge_pos (le_max_left _ _), ?_⟩
   intro t ht1
@@ -345,7 +344,7 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
     set B : ℂ := ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t)
     set Cc : ℂ := ((8640 / π : ℝ) : ℂ) * t
     set D : ℂ := ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
-    have hsum : ‖A - B + Cc - D‖ ≤ ‖A‖ + ‖B‖ + ‖Cc‖ + ‖D‖ := by
+    have hsum : ‖A - B + Cc - D‖ ≤ ‖A‖ + ‖B‖ + ‖Cc‖ + ‖D‖ :=
       calc ‖A - B + Cc - D‖
           = ‖(A - B) + (Cc - D)‖ := by ring_nf
         _ ≤ ‖A - B‖ + ‖Cc - D‖ := norm_add_le _ _
@@ -409,16 +408,17 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
       IntegrableOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
         (Set.Ici (1 : ℝ)) := by
     set b : ℝ := (2 * π + π * u) / 2 with hb_def
+    have hExpRef : (fun t : ℝ => Real.exp (-b * t)) =O[atTop]
+        fun t : ℝ => Real.exp (-b * t) := Asymptotics.isBigO_refl _ _
+    have hfacBig : (fun t : ℝ => (C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) =O[atTop]
+        fun _t : ℝ => (1 : ℝ) :=
+      ((((isLittleO_pow_exp_pos_mul_atTop 2 ha).const_mul_left C :
+        (fun t : ℝ => C * (t ^ (2 : ℕ) : ℝ)) =o[atTop]
+          fun t : ℝ => Real.exp (b * t)).mul_isBigO hExpRef).congr_right
+        (fun t => by rw [← Real.exp_add]; simp)).isBigO
     have hO :
         (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t)) =O[atTop]
           fun t : ℝ => Real.exp (-b * t) := by
-      have hlittleC := ((isLittleO_pow_exp_pos_mul_atTop 2 ha).const_mul_left C :
-        (fun t : ℝ => C * (t ^ (2 : ℕ) : ℝ)) =o[atTop] fun t : ℝ => Real.exp (b * t))
-      have hExpRef : (fun t : ℝ => Real.exp (-b * t)) =O[atTop]
-          fun t : ℝ => Real.exp (-b * t) := Asymptotics.isBigO_refl _ _
-      have hfacBig : (fun t : ℝ => (C * (t ^ (2 : ℕ) : ℝ)) * Real.exp (-b * t)) =O[atTop]
-          fun _t : ℝ => (1 : ℝ) :=
-        ((hlittleC.mul_isBigO hExpRef).congr_right (fun t => by rw [← Real.exp_add]; simp)).isBigO
       refine ((hfacBig.mul hExpRef).congr_left (fun t => ?_)).congr_right (fun _ => by ring)
       rw [mul_assoc, ← Real.exp_add]; congr 1; dsimp [b]; ring_nf
     exact (integrableOn_Ici_iff_integrableOn_Ioi (μ := (volume : Measure ℝ))
@@ -438,13 +438,10 @@ public lemma aAnotherIntegrand_integrable_of_pos {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => aAnotherIntegrand u t) (Set.Ioi (0 : ℝ)) := by
   have hsplit : Set.Ioi (0 : ℝ) = Set.Ioc (0 : ℝ) 1 ∪ Set.Ici (1 : ℝ) := by
     ext t
-    refine ⟨fun ht => ?_, ?_⟩
-    · by_cases h1 : t ≤ 1
-      · exact Or.inl ⟨ht, h1⟩
-      · exact Or.inr (le_of_not_ge h1)
-    · rintro (ht | ht)
-      · exact ht.1
-      · exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) ht
+    refine ⟨fun ht => (le_total t 1).imp (fun h1 => ⟨ht, h1⟩) id, ?_⟩
+    rintro (ht | ht)
+    · exact ht.1
+    · exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) ht
   rw [hsplit]
   exact (aAnotherIntegrand_integrableOn_Ioc (u := u) hu).union
     (aAnotherIntegrand_integrableOn_Ici (u := u) hu)
