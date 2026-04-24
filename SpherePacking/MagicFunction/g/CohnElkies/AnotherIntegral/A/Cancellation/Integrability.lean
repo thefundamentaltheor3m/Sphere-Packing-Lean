@@ -32,8 +32,8 @@ private lemma continuousOn_phi0''_Idiv {s : Set ℝ} (hs : ∀ t ∈ s, 0 < t) :
     ContinuousOn (fun t : ℝ => φ₀'' ((Complex.I : ℂ) / (t : ℂ))) s :=
   ((by simpa [upperHalfPlaneSet] using MagicFunction.a.ComplexIntegrands.φ₀''_holo.continuousOn :
     ContinuousOn (fun z : ℂ => φ₀'' z) {z : ℂ | 0 < z.im})).comp
-    (continuous_const.continuousOn.div (continuous_ofReal.continuousOn)
-      fun t ht => by exact_mod_cast (ne_of_gt (hs t ht)))
+    (continuous_const.continuousOn.div continuous_ofReal.continuousOn
+      fun t ht => by exact_mod_cast (hs t ht).ne')
     fun t ht => by simpa [imag_I_div t] using inv_pos.2 (hs t ht)
 
 /-- Continuity of the bracket `t^2 φ₀''(I/t) - (36/π²)·exp(2πt) + (8640/π)·t - 18144/π²`
@@ -87,7 +87,6 @@ lemma exists_phi0_cancellation_bound :
   let A : ℝ := max A₂ A₄
   have hA₂' : A₂ ≤ A := le_max_left _ _
   have hA₄' : A₄ ≤ A := le_max_right _ _
-  have hA1 : 1 ≤ A := hA₂.trans hA₂'
   have hrewrite :
       ∀ {t : ℝ} (ht0 : 0 < t),
         (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
@@ -117,10 +116,9 @@ lemma exists_phi0_cancellation_bound :
             (t : ℂ) * ((t : ℂ) * φ₀ z) +
               (36 / ((π : ℂ) * (π : ℂ)) * φ₄' z +
                 (Complex.I : ℂ) * 12 / (π : ℂ) * (φ₂' z * (z : ℂ))) := by
-        have h0' :
-            φ₀ (ModularGroup.S • z) * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) =
-              φ₀ z * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) -
-                (12 * Complex.I) / π * (z : ℂ) * φ₂' z - 36 / (π ^ 2) * φ₄' z := by
+        have h0' : φ₀ (ModularGroup.S • z) * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) =
+            φ₀ z * (-((t ^ (2 : ℕ) : ℝ) : ℂ)) -
+              (12 * Complex.I) / π * (z : ℂ) * φ₂' z - 36 / (π ^ 2) * φ₄' z := by
           simpa [hzsq] using h0
         simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
           mul_assoc, mul_left_comm, mul_comm, pow_two, neg_add, neg_mul,
@@ -181,7 +179,7 @@ lemma exists_phi0_cancellation_bound :
     have hg_cont : ContinuousOn g (Set.Icc (1 : ℝ) A) := by
       simpa [g] using (continuousOn_aBracket_of_subset_Ioi (s := Set.Icc (1 : ℝ) A)
         (fun t ht => lt_of_lt_of_le (by norm_num) ht.1)).norm
-    obtain ⟨t₀, _, ht₀max⟩ := isCompact_Icc.exists_isMaxOn ⟨1, le_rfl, hA1⟩ hg_cont
+    obtain ⟨t₀, _, ht₀max⟩ := isCompact_Icc.exists_isMaxOn ⟨1, le_rfl, hA₂.trans hA₂'⟩ hg_cont
     exact ⟨g t₀, fun t ht1 htA => (by simpa [isMaxOn_iff] using ht₀max :
       ∀ t ∈ Set.Icc (1 : ℝ) A, g t ≤ g t₀) t ⟨ht1, htA⟩⟩
   let C : ℝ := max Clarge (M / Real.exp (-2 * π * A))
@@ -204,10 +202,10 @@ lemma exists_phi0_cancellation_bound :
     have hnorm1 :
         ‖((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀ z‖ ≤ C₀ * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
-      nlinarith [hφ₀z, sq_nonneg t, hC₀pos, norm_nonneg (φ₀ z), hexp0]
+      nlinarith [hφ₀z, hC₀pos, norm_nonneg (φ₀ z), hexp0]
     have hnorm2 :
         ‖((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))‖ ≤
-          ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+          ((12 / π) * C₂) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) :=
       calc ‖((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))‖
           = (12 / π) * t * ‖φ₂' z - (720 : ℂ)‖ := by
             simp [mul_assoc, Complex.norm_real, Real.norm_eq_abs,
@@ -220,7 +218,7 @@ lemma exists_phi0_cancellation_bound :
     have hnorm3 :
         ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
             (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))‖ ≤
-          ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) := by
+          ((36 / (π ^ (2 : ℕ))) * C₄) * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t) :=
       calc ‖((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
             (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))‖
           = (36 / (π ^ (2 : ℕ))) * ‖φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ)‖ := by
@@ -374,10 +372,10 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
         (by simpa [Set.Ici] using (by fun_prop :
           ContinuousOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
             (Set.Ici (1 : ℝ)))) hO
-  refine MeasureTheory.Integrable.mono' hdom.integrable
+  exact MeasureTheory.Integrable.mono' hdom.integrable
     ((continuousOn_aAnotherIntegrand_of_subset_Ioi
-      (fun t ht => lt_of_lt_of_le (by norm_num) ht) u).aestronglyMeasurable measurableSet_Ici) ?_
-  exact (ae_restrict_iff' measurableSet_Ici).2 (Filter.Eventually.of_forall hbound)
+      (fun t ht => lt_of_lt_of_le (by norm_num) ht) u).aestronglyMeasurable measurableSet_Ici)
+    ((ae_restrict_iff' measurableSet_Ici).2 (Filter.Eventually.of_forall hbound))
 
 /-- For `u > 0`, the function `t ↦ aAnotherIntegrand u t` is integrable on `(0, ∞)`. -/
 public lemma aAnotherIntegrand_integrable_of_pos {u : ℝ} (hu : 0 < u) :
