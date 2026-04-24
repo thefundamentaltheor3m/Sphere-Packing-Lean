@@ -240,15 +240,14 @@ lemma exists_phi0_cancellation_bound :
       set y : ℂ := ((12 / π : ℝ) : ℂ) * t * (φ₂' z - (720 : ℂ))
       set z' : ℂ :=
         ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (φ₄' z - (Real.exp (2 * π * t) : ℂ) - (504 : ℂ))
-      have hE : (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
+      rw [show (((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
           ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
           ((8640 / π : ℝ) : ℂ) * t -
-          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) = x - y + z' := by
-        simpa [x, y, z'] using hrewrite ht0
-      have hxyz : ‖x - y + z'‖ ≤ ‖x‖ + ‖y‖ + ‖z'‖ :=
-        (norm_add_le _ _).trans (by linarith [norm_sub_le x y, norm_nonneg z'])
-      rw [hE]
-      refine (hxyz.trans (add_le_add_three hnorm1 hnorm2 hnorm3)).trans ?_
+          ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)) = x - y + z' from by
+        simpa [x, y, z'] using hrewrite ht0]
+      refine (((norm_add_le _ _).trans (by linarith [norm_sub_le x y, norm_nonneg z'] :
+        ‖x - y‖ + ‖z'‖ ≤ ‖x‖ + ‖y‖ + ‖z'‖)).trans
+        (add_le_add_three hnorm1 hnorm2 hnorm3)).trans ?_
       dsimp [Clarge]; nlinarith [hexp0, sq_nonneg t]
     exact htri.trans (by gcongr; exact le_max_left _ _)
   · exact phi0Cancellation_compact_case (M := M) (A := A) (C := C) (t := t) ht1
@@ -306,9 +305,8 @@ lemma aAnotherIntegrand_integrableOn_Ioc {u : ℝ} (hu : 0 < u) :
     set Cc : ℂ := ((8640 / π : ℝ) : ℂ) * t
     set D : ℂ := ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ)
     have hsum : ‖A - B + Cc - D‖ ≤ ‖A‖ + ‖B‖ + ‖Cc‖ + ‖D‖ := by
-      have := ((show ‖A - B + Cc - D‖ = ‖(A - B) + (Cc - D)‖ by ring_nf).le.trans
-        (norm_add_le _ _)).trans (add_le_add (norm_sub_le _ _) (norm_sub_le _ _))
-      linarith
+      linarith [((show ‖A - B + Cc - D‖ = ‖(A - B) + (Cc - D)‖ by ring_nf).le.trans
+        (norm_add_le _ _)).trans (add_le_add (norm_sub_le _ _) (norm_sub_le _ _))]
     have ht2nn : 0 ≤ (t ^ (2 : ℕ) : ℝ) := by positivity
     have hA : ‖A‖ ≤ (t ^ (2 : ℕ) : ℝ) * Cφ₀ := by
       simpa [A, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht2nn]
@@ -345,22 +343,12 @@ lemma aAnotherIntegrand_integrableOn_Ici {u : ℝ} (hu : 0 < u) :
       ∀ t : ℝ, t ∈ Set.Ici (1 : ℝ) →
         ‖aAnotherIntegrand u t‖ ≤ C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) := by
     intro t ht
-    have hexp :
-        Real.exp (-2 * π * t) * Real.exp (-π * u * t) = Real.exp (-(2 * π + π * u) * t) := by
-      rw [← Real.exp_add]; ring_nf
-    have hnorm :
-        ‖aAnotherIntegrand u t‖ =
-          ‖(((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
-                ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * Real.exp (2 * π * t) +
-                ((8640 / π : ℝ) : ℂ) * t -
-                ((18144 / (π ^ (2 : ℕ)) : ℝ) : ℂ))‖ * Real.exp (-π * u * t) := by
-      simp [-Complex.ofReal_exp, aAnotherIntegrand, mul_left_comm, mul_comm]
     calc ‖aAnotherIntegrand u t‖
         ≤ (C * (t ^ (2 : ℕ)) * Real.exp (-2 * π * t)) * Real.exp (-π * u * t) := by
-          simpa [hnorm, mul_assoc, mul_left_comm, mul_comm] using
+          simpa [-Complex.ofReal_exp, aAnotherIntegrand, mul_assoc, mul_left_comm, mul_comm] using
             mul_le_mul_of_nonneg_right (hC t ht) (Real.exp_pos (-π * u * t)).le
       _ = C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t) := by
-          simpa [mul_assoc] using congrArg (fun s : ℝ => C * (t ^ (2 : ℕ)) * s) hexp
+          rw [mul_assoc, ← Real.exp_add]; ring_nf
   have ha : 0 < (2 * π + π * u) / 2 := by positivity
   have hdom :
       IntegrableOn (fun t : ℝ => C * (t ^ (2 : ℕ)) * Real.exp (-(2 * π + π * u) * t))
