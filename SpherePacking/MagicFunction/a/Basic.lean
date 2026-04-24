@@ -187,11 +187,9 @@ public lemma I₁'_eq (r : ℝ) : I₁' r = ∫ t in (0 : ℝ)..1, -I
   simp only [I₁', Φ₁, Φ₁']
   refine integral_congr fun t ht => ?_
   simp only [uIcc_of_le zero_le_one, mem_Icc] at ht
-  rw [z₁'_eq_of_mem ht,
-    show ((-1 : ℂ) + I * t + 1) = I * t from by ring, mul_pow, I_sq,
-    show ((π : ℂ) * I * r * (-1 + I * t)) = -π * I * r + -π * r * t from by
-      linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1),
-    Complex.exp_add]
+  rw [z₁'_eq_of_mem ht, show ((-1 : ℂ) + I * t + 1) = I * t from by ring, mul_pow, I_sq,
+    show ((π : ℂ) * I * r * (-1 + I * t)) = -π * I * r + -π * r * t by
+      linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1), Complex.exp_add]
   ring
 
 /-- Rewrite `I₁'` as an integral over `Ioc 0 1`. -/
@@ -211,11 +209,9 @@ public lemma I₂'_eq (r : ℝ) : I₂' r = ∫ t in (0 : ℝ)..1,
   simp only [I₂', Φ₂, Φ₂', Φ₁']
   refine integral_congr fun t ht => ?_
   simp only [uIcc_of_le zero_le_one, mem_Icc] at ht
-  rw [z₂'_eq_of_mem ht,
-    show (-1 + (t : ℂ) + I + 1) = t + I from by ring,
-    show ((π : ℂ) * I * r * (-1 + t + I)) = -π * I * r + π * I * r * t + -π * r from by
-      linear_combination ↑π * r * (I_sq : (I : ℂ) ^ 2 = -1),
-    Complex.exp_add, Complex.exp_add]
+  rw [z₂'_eq_of_mem ht, show (-1 + (t : ℂ) + I + 1) = t + I from by ring,
+    show ((π : ℂ) * I * r * (-1 + t + I)) = -π * I * r + π * I * r * t + -π * r by
+      linear_combination ↑π * r * (I_sq : (I : ℂ) ^ 2 = -1), Complex.exp_add, Complex.exp_add]
   ring
 
 /-- An explicit integral expression for `I₃'` after rewriting `Φ₃` and the parametrization `z₃'`. -/
@@ -227,11 +223,9 @@ public lemma I₃'_eq (r : ℝ) : I₃' r = ∫ t in (0 : ℝ)..1, -I
   simp only [I₃', Φ₃, Φ₃']
   refine integral_congr fun t ht => ?_
   simp only [uIcc_of_le zero_le_one, mem_Icc] at ht
-  rw [z₃'_eq_of_mem ht,
-    show (1 + I * (t : ℂ) - 1) = I * t from by ring, mul_pow, I_sq,
-    show ((π : ℂ) * I * r * (1 + I * t)) = π * I * r + -π * r * t from by
-      linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1),
-    Complex.exp_add]
+  rw [z₃'_eq_of_mem ht, show (1 + I * (t : ℂ) - 1) = I * t from by ring, mul_pow, I_sq,
+    show ((π : ℂ) * I * r * (1 + I * t)) = π * I * r + -π * r * t by
+      linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1), Complex.exp_add]
   ring
 
 /-- An explicit integral expression for `I₄'` after rewriting `Φ₄` and the parametrization `z₄'`. -/
@@ -244,11 +238,9 @@ public lemma I₄'_eq (r : ℝ) : I₄' r = ∫ t in (0 : ℝ)..1, -1
   simp only [I₄', Φ₄, Φ₄', Φ₃']
   refine integral_congr fun t ht => ?_
   simp only [uIcc_of_le zero_le_one, mem_Icc] at ht
-  rw [z₄'_eq_of_mem ht,
-    show ((1 : ℂ) - t + I - 1) = -t + I from by ring,
-    show ((π : ℂ) * I * r * (1 - t + I)) = π * I * r + -π * I * r * t + -π * r from by
-      linear_combination ↑π * r * (I_sq : (I : ℂ) ^ 2 = -1),
-    Complex.exp_add, Complex.exp_add]
+  rw [z₄'_eq_of_mem ht, show ((1 : ℂ) - t + I - 1) = -t + I from by ring,
+    show ((π : ℂ) * I * r * (1 - t + I)) = π * I * r + -π * I * r * t + -π * r by
+      linear_combination ↑π * r * (I_sq : (I : ℂ) ^ 2 = -1), Complex.exp_add, Complex.exp_add]
   ring
 
 /-- An explicit integral expression for `I₅'` after rewriting `Φ₅` and the parametrization `z₅'`. -/
@@ -259,8 +251,7 @@ public lemma I₅'_eq (r : ℝ) : I₅' r = -2 * ∫ t in (0 : ℝ)..1, -I
   simp only [I₅', Φ₅, Φ₅']; congr 1
   refine integral_congr fun t ht => ?_
   simp only [uIcc_of_le zero_le_one, mem_Icc] at ht
-  rw [z₅'_eq_of_mem ht, mul_pow, I_sq,
-    show ((π : ℂ) * I * r * (I * t)) = -π * r * t from by
+  rw [z₅'_eq_of_mem ht, mul_pow, I_sq, show ((π : ℂ) * I * r * (I * t)) = -π * r * t by
       linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1)]
   ring
 
@@ -276,8 +267,7 @@ public lemma I₆'_eq (r : ℝ) : I₆' r = 2 * ∫ t in Ici (1 : ℝ), I
     * cexp (-π * r * t) := by
   simp only [I₆', Φ₆, Φ₆']; congr 1
   refine MeasureTheory.setIntegral_congr_fun measurableSet_Ici fun t ht => ?_
-  rw [z₆'_eq_of_mem ht,
-    show ((π : ℂ) * I * r * (I * t)) = -π * r * t from by
+  rw [z₆'_eq_of_mem ht, show ((π : ℂ) * I * r * (I * t)) = -π * r * t by
       linear_combination ↑π * r * t * (I_sq : (I : ℂ) ^ 2 = -1)]
   ring
 
