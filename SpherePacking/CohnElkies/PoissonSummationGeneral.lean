@@ -273,9 +273,6 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
       simp [show ⟪A.symm v, w⟫_[ℝ] = ⟪v, (Bₗ (d := d) L) w⟫_[ℝ] by
         simpa [RCLike.inner_eq_wInner_one, A, Bₗ] using
           (LinearMap.adjoint_inner_right ((A.symm : E ≃ₗ[ℝ] E).toLinearMap) v w).symm]
-    have hdetC : cC = (1 / ZLattice.covolume L) := by
-      simp [cC, show ZLattice.covolume L = abs detA from by
-        simpa [A, Aₗ, detA] using covolume_eq_abs_det_A (d := d) (L := L), one_div]
     have hsum :
         (∑' n : Fin d → ℤ,
             (𝓕 (fun x : E => g x) (SchwartzMap.PoissonSummation.Standard.intVec (d := d) n)) *
@@ -289,7 +286,8 @@ public theorem poissonSummation_lattice (f : SchwartzMap E ℂ) (v : E) :
         congrArg₂ (· * ·)
           (hfourier (w := SchwartzMap.PoissonSummation.Standard.intVec (d := d) n))
           (hexp (w := SchwartzMap.PoissonSummation.Standard.intVec (d := d) n))
-    simp [hsum, hdetC, F]
+    simp [hsum, F, cC, show ZLattice.covolume L = abs detA from by
+      simpa [A, Aₗ, detA] using covolume_eq_abs_det_A (d := d) (L := L), one_div]
   simpa [hlhs, hrhs] using hstd
 
 end SchwartzMap.PoissonSummationLattices
