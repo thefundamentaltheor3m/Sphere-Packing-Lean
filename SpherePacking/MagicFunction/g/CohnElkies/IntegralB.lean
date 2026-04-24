@@ -59,26 +59,11 @@ lemma B_mul_exp_eq_decomp {u t : ℝ} (ht : 0 < t) :
   simp [aAnotherIntegrand, bAnotherIntegrand, mul_assoc, mul_left_comm, mul_comm]
   ring_nf
 
-private lemma integrable_aAnother {u : ℝ} (hu : 0 < u) :
-    Integrable (fun t : ℝ => aAnotherIntegrand u t)
-      ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) :=
-  aAnotherIntegrand_integrable_of_pos (u := u) hu
-
 private lemma integrable_bAnother {u : ℝ} (hu : 0 < u) :
     Integrable (fun t : ℝ => bAnotherIntegrand u t)
       ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
   simpa [MeasureTheory.IntegrableOn, bAnotherIntegrand, bAnotherBase, mul_assoc] using
     bAnotherBase_integrable_exp (u := u) hu
-
-private lemma integrable_exp_complex {u : ℝ} (hu : 0 < u) :
-    Integrable (fun t : ℝ => (Real.exp (-π * u * t) : ℂ))
-      ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) :=
-  integrableOn_exp_neg_pi_mul_Ioi_complex (u := u) hu
-
-private lemma integrable_t_mul_exp_complex {u : ℝ} (hu : 0 < u) :
-    Integrable (fun t : ℝ => (t : ℂ) * (Real.exp (-π * u * t) : ℂ))
-      ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) :=
-  integrableOn_mul_exp_neg_pi_mul_Ioi_complex (u := u) hu
 
 lemma integrableOn_B_mul_exp_neg_pi_mul {u : ℝ} (hu : 0 < u) :
     IntegrableOn (fun t : ℝ => (B t : ℂ) * Real.exp (-π * u * t)) (Set.Ioi (0 : ℝ)) := by
@@ -94,12 +79,12 @@ lemma integrableOn_B_mul_exp_neg_pi_mul {u : ℝ} (hu : 0 < u) :
         (IntegralB.B_mul_exp_eq_decomp (u := u) (t := t) ht)
   have hRHS : Integrable rhs μ := by
     simpa [rhs] using
-      ((((integrable_aAnother (u := u) hu).neg.add
+      ((((aAnotherIntegrand_integrable_of_pos (u := u) hu).neg.add
           ((integrable_bAnother (u := u) hu).const_mul
             ((36 / (π ^ (2 : ℕ)) : ℝ) : ℂ))).add
-        ((integrable_t_mul_exp_complex (u := u) hu).const_mul
+        ((integrableOn_mul_exp_neg_pi_mul_Ioi_complex (u := u) hu).const_mul
           ((8640 / π : ℝ) : ℂ))).sub
-      ((integrable_exp_complex (u := u) hu).const_mul
+      ((integrableOn_exp_neg_pi_mul_Ioi_complex (u := u) hu).const_mul
         ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ)))
   simpa [MeasureTheory.IntegrableOn, μ] using hRHS.congr hAe.symm
 
@@ -127,11 +112,12 @@ lemma integral_B_mul_exp_decomp {u : ℝ} (hu : 0 < u) :
     ((8640 / π : ℝ) : ℂ) * ((t : ℂ) * (Real.exp (-π * u * t) : ℂ))
   let f4 : ℝ → ℂ := fun t =>
     -((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) * (Real.exp (-π * u * t) : ℂ)
-  have hf1 : Integrable f1 μ := (integrable_aAnother (u := u) hu).neg
+  have hf1 : Integrable f1 μ := (aAnotherIntegrand_integrable_of_pos (u := u) hu).neg
   have hf2 : Integrable f2 μ := (integrable_bAnother (u := u) hu).const_mul _
-  have hf3 : Integrable f3 μ := (integrable_t_mul_exp_complex (u := u) hu).const_mul _
+  have hf3 : Integrable f3 μ :=
+    (integrableOn_mul_exp_neg_pi_mul_Ioi_complex (u := u) hu).const_mul _
   have hf4 : Integrable f4 μ := by
-    simpa [f4, mul_assoc] using (integrable_exp_complex (u := u) hu).const_mul
+    simpa [f4, mul_assoc] using (integrableOn_exp_neg_pi_mul_Ioi_complex (u := u) hu).const_mul
       (-((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ))
   have hf23 : Integrable (fun t => f2 t + f3 t) μ := hf2.add hf3
   have hf234 : Integrable (fun t => (f2 t + f3 t) + f4 t) μ := hf23.add hf4
@@ -188,28 +174,20 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
       (π / 2160 : ℂ) *
         (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
           (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) := by
-  set u : ℝ := ‖x‖ ^ 2
-  have hu : 0 < u := by simpa [u] using hx
-  have hu2 : u ≠ 2 := by simpa [u] using hx2
-  have hFg :
-      FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g =
-        ((↑π * I) / 8640) • a + (I / (240 * (↑π))) • b := by
-    simp [g, map_sub, map_smul, MagicFunction.a.Fourier.eig_a, MagicFunction.b.Fourier.eig_b,
-      -FourierTransform.fourierCLE_apply]
-  have ha : a x = a' u := by
-    simp [u, MagicFunction.FourierEigenfunctions.a,
-      schwartzMap_multidimensional_of_schwartzMap_real, SchwartzMap.compCLM_apply]
-  have hb : b x = b' u := by
-    simp [u, MagicFunction.FourierEigenfunctions.b,
-      schwartzMap_multidimensional_of_schwartzMap_real, SchwartzMap.compCLM_apply]
+  set u : ℝ := ‖x‖ ^ 2 with hu_def
+  have hu : 0 < u := hx
+  have hu2 : u ≠ 2 := hx2
   have hFourier :
       ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
         ((↑π * I) / 8640 : ℂ) * a' u + (I / (240 * (↑π)) : ℂ) * b' u := by
     change (FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g) x = _
-    rw [hFg]
-    simp [SchwartzMap.add_apply, SchwartzMap.smul_apply, smul_eq_mul, ha, hb]
-  have haEq := aRadial_eq_another_integral_main (u := u) hu hu2
-  have hbEq := bRadial_eq_another_integral_main (u := u) hu hu2
+    rw [show FourierTransform.fourierCLE ℂ (SchwartzMap ℝ⁸ ℂ) g =
+        ((↑π * I) / 8640) • a + (I / (240 * (↑π))) • b from by
+      simp [g, map_sub, map_smul, MagicFunction.a.Fourier.eig_a, MagicFunction.b.Fourier.eig_b,
+        -FourierTransform.fourierCLE_apply]]
+    simp [u, SchwartzMap.add_apply, SchwartzMap.smul_apply, smul_eq_mul,
+      MagicFunction.FourierEigenfunctions.a, MagicFunction.FourierEigenfunctions.b,
+      schwartzMap_multidimensional_of_schwartzMap_real, SchwartzMap.compCLM_apply]
   set IA : ℂ :=
     ∫ t in Set.Ioi (0 : ℝ),
       ((((t ^ (2 : ℕ) : ℝ) : ℂ) * φ₀'' ((Complex.I : ℂ) / (t : ℂ)) -
@@ -226,12 +204,13 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
           ((36 : ℂ) / (π ^ (3 : ℕ) * (u - 2)) -
             (8640 : ℂ) / (π ^ (3 : ℕ) * u ^ (2 : ℕ)) +
-            (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) := by simpa [IA] using haEq
+            (18144 : ℂ) / (π ^ (3 : ℕ) * u) + IA) := by
+    simpa [IA] using aRadial_eq_another_integral_main (u := u) hu hu2
   have hbEq' : b' u =
       (-4 * (Complex.I : ℂ)) *
         (Real.sin (π * u / 2)) ^ (2 : ℕ) *
-          ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by simpa [IB] using hbEq
-  have hπ' : (π : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+          ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) := by
+    simpa [IB] using bRadial_eq_another_integral_main (u := u) hu hu2
   have hcoefA : (((↑π * I) / 8640 : ℂ) * (4 * (Complex.I : ℂ))) = -(π / 2160 : ℂ) := by
     ring_nf; simp; ring
   have hcoefB : (((I / (240 * (↑π)) : ℂ)) * (-4 * (Complex.I : ℂ))) = (1 / (60 * π) : ℂ) := by
@@ -276,8 +255,6 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
             ((12960 / (π ^ (2 : ℕ)) : ℝ) : ℂ) *
               (∫ t in Set.Ioi (0 : ℝ), (Real.exp (-π * u * t) : ℂ)) := by
     simpa [hIA, hIB] using IntegralB.integral_B_mul_exp_decomp (u := u) hu
-  have huC : (u : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt hu
-  have hu2C : (u - 2 : ℂ) ≠ 0 := by exact_mod_cast sub_ne_zero.2 hu2
   have hBscaled :
       (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) =
         (-(π / 2160 : ℂ)) * IA +
@@ -296,7 +273,10 @@ theorem fourier_g_eq_integral_B_of_ne_two {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2)
           (1 / (60 * π) : ℂ) *
               ((144 : ℂ) / (π * u) + (1 : ℂ) / (π * (u - 2)) + IB) =
         (π / 2160 : ℂ) * (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * u * t)) :=
-    (bracket_arith (u := u) (IA := IA) (IB := IB) hπ' huC hu2C).trans hBscaled.symm
+    (bracket_arith (u := u) (IA := IA) (IB := IB)
+        (by exact_mod_cast Real.pi_ne_zero)
+        (by exact_mod_cast ne_of_gt hu)
+        (by exact_mod_cast sub_ne_zero.2 hu2)).trans hBscaled.symm
   simpa [u, mul_assoc] using
     (show ((𝓕 g : 𝓢(ℝ⁸, ℂ)) x) =
         (π / 2160 : ℂ) *
@@ -313,12 +293,11 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
         (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
           (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) := by
   by_cases hx2 : ‖x‖ ^ 2 = 2
-  · have hsin : Real.sin (π * (‖x‖ ^ 2) / 2) = 0 := by rw [hx2]; simp
-    have hRHS :
+  · have hRHS :
         (π / 2160 : ℂ) *
             (Real.sin (π * (‖x‖ ^ 2) / 2)) ^ (2 : ℕ) *
               (∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (‖x‖ ^ 2) * t)) = 0 := by
-      simp [hsin]
+      simp [show Real.sin (π * (‖x‖ ^ 2) / 2) = 0 by rw [hx2]; simp]
     let c : ℕ → ℝ := fun n => 1 + 1 / ((n : ℝ) + 1)
     let xseq : ℕ → ℝ⁸ := fun n => (c n) • x
     have hc : Filter.Tendsto c Filter.atTop (𝓝 (1 : ℝ)) := by
@@ -335,7 +314,7 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
     have huseq_gt2 : ∀ n : ℕ, 2 < useq n := fun n => by
       have hcn_pos : 0 < c n := by positivity
       have hcn_one : 1 < c n := by
-        have h1 : 0 < (1 / ((n : ℝ) + 1)) := by positivity
+        have : 0 < (1 / ((n : ℝ) + 1)) := by positivity
         linarith
       rw [show useq n = (c n) ^ (2 : ℕ) * (‖x‖ ^ 2) from by
         simp [useq, xseq, norm_smul, abs_of_pos hcn_pos, pow_two, mul_assoc, mul_left_comm,
@@ -362,18 +341,11 @@ public theorem fourier_g_eq_integral_B {x : ℝ⁸} (hx : 0 < ‖x‖ ^ 2) :
           ‖∫ t in Set.Ioi (0 : ℝ), (B t : ℂ) * Real.exp (-π * (useq n) * t)‖ ≤ M := fun n =>
       norm_integral_le_of_norm_le hM_int <|
         MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun t ht => by
-          have ht0 : 0 ≤ t := le_of_lt ht
-          have hexp : Real.exp (-π * useq n * t) ≤ Real.exp (-π * (2 : ℝ) * t) :=
-            Real.exp_le_exp.2 (by
-              have := mul_le_mul_of_nonneg_right (le_of_lt (huseq_gt2 n)) ht0
-              nlinarith [Real.pi_pos])
-          rw [show ‖(B t : ℂ) * Real.exp (-π * useq n * t)‖ =
-                ‖(B t : ℂ)‖ * Real.exp (-π * useq n * t) by
-              rw [norm_mul, Complex.norm_of_nonneg (Real.exp_pos _).le],
-            show ‖(B t : ℂ) * Real.exp (-π * (2 : ℝ) * t)‖ =
-                ‖(B t : ℂ)‖ * Real.exp (-π * (2 : ℝ) * t) by
-              rw [norm_mul, Complex.norm_of_nonneg (Real.exp_pos _).le]]
-          exact mul_le_mul_of_nonneg_left hexp (norm_nonneg _)
+          rw [norm_mul, norm_mul, Complex.norm_of_nonneg (Real.exp_pos _).le,
+            Complex.norm_of_nonneg (Real.exp_pos _).le]
+          refine mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ?_) (norm_nonneg _)
+          have := mul_le_mul_of_nonneg_right (le_of_lt (huseq_gt2 n)) (le_of_lt ht)
+          nlinarith [Real.pi_pos]
     have hsin_tendsto :
         Filter.Tendsto (fun n : ℕ => (Real.sin (π * (useq n) / 2)) ^ (2 : ℕ)) Filter.atTop
           (𝓝 (0 : ℝ)) := by
