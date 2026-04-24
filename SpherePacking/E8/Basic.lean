@@ -103,23 +103,23 @@ public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
   add_mem' := by
     simp only [Set.mem_setOf_eq, and_imp, nsmul_eq_mul, Nat.cast_ofNat, Pi.add_apply]
     rintro a b ha has hb hbs
-    refine ⟨?_, ?_⟩
-    · obtain ha | ha := ha
-      · refine hb.imp (fun hb i => ?_) (fun hb i => ?_)
-        · obtain ⟨a', ha⟩ := ha i; obtain ⟨b', hb⟩ := hb i
-          exact ⟨a' + b', by simp [ha, hb]⟩
-        · obtain ⟨a', ha⟩ := ha i; obtain ⟨b', hb', hb⟩ := hb i
-          exact ⟨2 * a' + b', Even.add_odd (by simp) hb', by simp [← ha, ← hb, mul_add]⟩
-      · refine hb.symm.imp (fun hb i => ?_) (fun hb i => ?_)
-        · obtain ⟨a', ha', ha⟩ := ha i; obtain ⟨b', hb', hb⟩ := hb i
-          use (a' + b') / 2
-          rw [Int.cast_div _ (by simpa using NeZero.ne 2), Int.cast_add, add_div (K := R), ha, hb,
-            Int.cast_ofNat, mul_div_cancel_left₀ _ (NeZero.ne 2),
-            mul_div_cancel_left₀ _ (NeZero.ne _)]
-          rw [← even_iff_two_dvd]; exact ha'.add_odd hb'
-        · obtain ⟨a', ha', ha⟩ := ha i; obtain ⟨b', hb⟩ := hb i
-          exact ⟨a' + 2 * b', ha'.add_even (by simp), by simp [ha, hb, mul_add]⟩
-    · rw [Finset.sum_add_distrib]; exact ((has.add_right _).trans (hbs.add_left _)).trans (by simp)
+    refine ⟨?_, by rw [Finset.sum_add_distrib]
+                   exact ((has.add_right _).trans (hbs.add_left _)).trans (by simp)⟩
+    obtain ha | ha := ha
+    · refine hb.imp (fun hb i => ?_) (fun hb i => ?_)
+      · obtain ⟨a', ha⟩ := ha i; obtain ⟨b', hb⟩ := hb i
+        exact ⟨a' + b', by simp [ha, hb]⟩
+      · obtain ⟨a', ha⟩ := ha i; obtain ⟨b', hb', hb⟩ := hb i
+        exact ⟨2 * a' + b', Even.add_odd (by simp) hb', by simp [← ha, ← hb, mul_add]⟩
+    · refine hb.symm.imp (fun hb i => ?_) (fun hb i => ?_) <;> obtain ⟨a', ha', ha⟩ := ha i
+      · obtain ⟨b', hb', hb⟩ := hb i
+        use (a' + b') / 2
+        rw [Int.cast_div _ (by simpa using NeZero.ne 2), Int.cast_add, add_div (K := R), ha, hb,
+          Int.cast_ofNat, mul_div_cancel_left₀ _ (NeZero.ne 2),
+          mul_div_cancel_left₀ _ (NeZero.ne _)]
+        rw [← even_iff_two_dvd]; exact ha'.add_odd hb'
+      · obtain ⟨b', hb⟩ := hb i
+        exact ⟨a' + 2 * b', ha'.add_even (by simp), by simp [ha, hb, mul_add]⟩
   zero_mem' := ⟨.inl fun _ => ⟨0, by simp⟩, by simp⟩
   smul_mem' := by
     simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, zsmul_eq_mul, Pi.mul_apply,
@@ -146,17 +146,17 @@ lemma Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)]
         ∧ ∑ i, v i ≡ 0 [PMOD 2] := by
   rw [mem_E8]
   suffices ∀ i, (∃ n : ℤ, Odd n ∧ n = 2 • v i) ↔ (∃ n : ℤ, n + 2⁻¹ = v i) by simp_rw [this]
-  refine fun i => ⟨fun ⟨_, ⟨k, rfl⟩, hn'⟩ => ⟨k, ?_⟩, fun ⟨k, hk⟩ =>
-    ⟨2 * k + 1, by simp, by rw [← hk]; simp [NeZero.ne]⟩⟩
-  simp only [Int.cast_add, Int.cast_mul, Int.cast_ofNat, Int.cast_one, nsmul_eq_mul,
-    Nat.cast_ofNat] at hn'
-  linear_combination 2⁻¹ * hn' - (k - v i) * (inv_mul_cancel₀ (NeZero.ne (2 : R)))
+  refine fun i => ⟨fun ⟨_, ⟨k, rfl⟩, hn'⟩ => ⟨k, by
+    simp only [Int.cast_add, Int.cast_mul, Int.cast_ofNat, Int.cast_one, nsmul_eq_mul,
+      Nat.cast_ofNat] at hn'
+    linear_combination 2⁻¹ * hn' - (k - v i) * (inv_mul_cancel₀ (NeZero.ne (2 : R)))⟩,
+    fun ⟨k, hk⟩ => ⟨2 * k + 1, by simp, by rw [← hk]; simp [NeZero.ne]⟩⟩
 
 theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     E8 R = (evenLattice R 8 ⊔ Submodule.span ℤ {fun _ ↦ (2⁻¹ : R)}) := by
-  refine le_antisymm ?_ ?_
-  · intro x
-    rw [mem_E8]
+  refine le_antisymm (fun x => ?_)
+    (sup_le (fun v hv ↦ by simp [mem_E8, (mem_evenLattice (R := R) (n := 8)).1 hv]) ?_)
+  · rw [mem_E8]
     rintro ⟨hx | hx, hx'⟩
     · exact Submodule.mem_sup_left ((mem_evenLattice (R := R) (n := 8)).2 ⟨hx, hx'⟩)
     simp only [Odd] at hx
@@ -173,13 +173,10 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     rw [← SetLike.mem_coe, coe_evenLattice]
     refine ⟨by simp, ?_⟩
     simp only [LinearMap.intCast_apply]
-    simp_rw [hi] at hx'
-    rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+    simp_rw [hi, Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
       nsmul_eq_mul, Nat.cast_ofNat, show (8 : R) * 2⁻¹ = 2 • 2 by norm_num] at hx'
     exact (AddCommGroup.add_nsmul_modEq _).symm.trans hx'
-  · rw [sup_le_iff]
-    refine ⟨fun v hv ↦ by simp [mem_E8, (mem_evenLattice (R := R) (n := 8)).1 hv], ?_⟩
-    rw [Submodule.span_le]
+  · rw [Submodule.span_le]
     simpa [mem_E8, show (8 * 2⁻¹ : R) = (2 : ℤ) • 2 by norm_num] using
       AddCommGroup.zsmul_modEq_zero (p := (2 : R)) 2
 
@@ -220,7 +217,7 @@ lemma lowerTriangular_E8Matrix {R : Type*} [Field R] :
 public theorem E8Matrix_unimodular (R : Type*) [Field R] [NeZero (2 : R)] :
     (E8Matrix R).det = 1 := by
   rw [Matrix.det_of_lowerTriangular _ lowerTriangular_E8Matrix]
-  simp [E8Matrix, Fin.prod_univ_eight, (NeZero.ne (2 : R))]
+  simp [E8Matrix, Fin.prod_univ_eight, NeZero.ne (2 : R)]
 
 lemma E8Matrix_is_basis (R : Type*) [Field R] [NeZero (2 : R)] :
     LinearIndependent R (E8Matrix R).row ∧
