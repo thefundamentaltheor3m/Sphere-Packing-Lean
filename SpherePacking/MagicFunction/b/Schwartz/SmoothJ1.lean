@@ -91,9 +91,7 @@ public lemma ψT'_z₁'_eq (t : ℝ) (ht : t ∈ Ioc (0 : ℝ) 1) :
     calc
       (↑((S * T) • z) : ℂ) = (-1 : ℂ) / ((z : ℂ) + 1) := coe_ST_smul (z := z)
       _ = (-1 : ℂ) / ((Complex.I : ℂ) * (t : ℂ)) := by simp [hzplus]
-      _ = (Complex.I : ℂ) * (1 / t) := by
-            field_simp [htne, Complex.I_ne_zero]
-            simp
+      _ = (Complex.I : ℂ) * (1 / t) := by field_simp [htne, Complex.I_ne_zero]; simp
   have hψT' : ψT' (z₁' t) = ψT z := by simp [ψT', hz_im, z]
   have hψS' : ψS ((S * T) • z) = ψS.resToImagAxis (1 / t) := by
     rw [hsmul]; simp [Function.resToImagAxis, ResToImagAxis, ht0]
@@ -113,20 +111,18 @@ lemma continuous_coeff : Continuous coeff := by
 
 lemma continuousOn_hf :
     ContinuousOn hf (Ioo (0 : ℝ) 1) := by
-  have hres : ContinuousOn ψS.resToImagAxis (Ici (1 : ℝ)) :=
-    Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) continuous_ψS
   simpa [hf] using
     (continuousOn_const.mul <| by
       simpa using
-        MagicFunction.continuousOn_ψT'_z₁'_of (k := 2) (ψS := ψS) (ψT' := ψT') hres ψT'_z₁'_eq)
+        MagicFunction.continuousOn_ψT'_z₁'_of (k := 2) (ψS := ψS) (ψT' := ψT')
+          (Function.continuousOn_resToImagAxis_Ici_one_of (F := ψS) continuous_ψS)
+          ψT'_z₁'_eq)
 
 lemma exists_bound_norm_hf :
     ∃ M, ∀ t ∈ Ioo (0 : ℝ) 1, ‖hf t‖ ≤ M := by
-  rcases
-      MagicFunction.exists_bound_norm_ψT'_z₁'_of (k := 2) (ψS := ψS) (ψT' := ψT')
-        exists_bound_norm_ψS_resToImagAxis_Ici_one ψT'_z₁'_eq with
-    ⟨Mψ, hMψ⟩
-  exact ⟨Mψ, by intro t ht; simpa [hf] using hMψ t ht⟩
+  rcases MagicFunction.exists_bound_norm_ψT'_z₁'_of (k := 2) (ψS := ψS) (ψT' := ψT')
+    exists_bound_norm_ψS_resToImagAxis_Ici_one ψT'_z₁'_eq with ⟨Mψ, hMψ⟩
+  exact ⟨Mψ, fun t ht => by simpa [hf] using hMψ t ht⟩
 
 def I (n : ℕ) (x : ℝ) : ℂ := ∫ t, gN n x t ∂μ
 
@@ -184,8 +180,7 @@ public theorem decay_J₁' :
     simpa [Kn, bound, μ, SpherePacking.Integration.μIoo01, mul_assoc, mul_left_comm, mul_comm] using
       (SpherePacking.Integration.integral_nonneg_const_mul_pow_muIoo01
         (((2 * Real.pi) ^ n) * Cψ) 2 hA)
-  refine ⟨Kn * B, ?_⟩
-  intro x hx
+  refine ⟨Kn * B, fun x hx => ?_⟩
   have hxabs : ‖x‖ = x := by simp [Real.norm_eq_abs, abs_of_nonneg hx]
   have hnorm_iter : ‖iteratedFDeriv ℝ n J₁' x‖ = ‖iteratedDeriv n J₁' x‖ := by
     simpa using
@@ -208,8 +203,7 @@ public theorem decay_J₁' :
       have hz1 : z₁' t = (-1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := by
         simpa [mul_assoc, mul_left_comm, mul_comm] using (z₁'_eq_of_mem (t := t) htIcc)
       have hcoeff_re : (coeff t).re = -Real.pi * t := by
-        have hz_im : (z₁' t).im = t := by simp [hz1]
-        simp [coeff, Complex.mul_re, hz_im, mul_assoc]
+        simp [coeff, Complex.mul_re, show (z₁' t).im = t from by simp [hz1], mul_assoc]
       have hcexp : ‖cexp ((x : ℂ) * coeff t)‖ = Real.exp (-Real.pi * x * t) := by
         simpa using
           (norm_cexp_ofReal_mul_coeff_of_coeff_re (coeff := coeff) (x := x) (t := t) hcoeff_re)
@@ -223,21 +217,17 @@ public theorem decay_J₁' :
         simpa [gN, hf, bound, mul_assoc, mul_left_comm, mul_comm] using
           (MagicFunction.b.Schwartz.norm_gN_le_bound_mul_exp (coeff := coeff) (ψ := ψT') (z := z₁')
             (n := n) (Cψ := Cψ) (x := x) (t := t) hCψ0 hcoeff hψT hcexp)
-      have hboundt : 0 ≤ bound t := by
-        positivity [hCψ0]
-      exact le_mul_of_le_mul_of_nonneg_left hgn hExp hboundt
+      exact le_mul_of_le_mul_of_nonneg_left hgn hExp (by positivity [hCψ0])
     simpa [I, Kn] using
       (norm_integral_le_integral_bound_mul_const (μ := μ) (f := gN n x) (bound := bound)
         (E := Real.exp (-2 * Real.pi * Real.sqrt x)) (hbound_int := hbound_int) hbound_ae)
-  have hpoly : x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x) ≤ B := by
-    simpa [mul_assoc] using hB x hx
   calc
     ‖x‖ ^ k * ‖iteratedFDeriv ℝ n J₁' x‖
         = x ^ k * ‖iteratedDeriv n J₁' x‖ := by simp [hxabs, hnorm_iter]
     _ = x ^ k * ‖I n x‖ := by simp [hiterJ]
     _ ≤ x ^ k * (Kn * Real.exp (-2 * Real.pi * Real.sqrt x)) := by gcongr
     _ = Kn * (x ^ k * Real.exp (-2 * Real.pi * Real.sqrt x)) := by ring_nf
-    _ ≤ Kn * B := mul_le_mul_of_nonneg_left hpoly hKn_nonneg
+    _ ≤ Kn * B := mul_le_mul_of_nonneg_left (by simpa [mul_assoc] using hB x hx) hKn_nonneg
 
 end
 
