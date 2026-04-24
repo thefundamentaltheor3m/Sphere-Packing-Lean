@@ -68,7 +68,6 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
             (congrArg (fun r : ℝ => (r : ℂ))
               (MagicFunction.g.CohnElkies.Trig.two_sub_two_cos_eq_four_sin_sq u))]
       simp [mul_assoc, mul_comm]]
-  clear hLap
   have hStrip0 : (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) ⊆ {z : ℂ | 0 < z.im} := fun z hz =>
     lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (by simpa [Set.mem_Ici] using hz.2)
   have hcontT : ContinuousOn (bContourIntegrandT u) (Set.uIcc (0 : ℝ) 1 ×ℂ Set.Ici (1 : ℝ)) :=
@@ -141,12 +140,10 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     refine hConst.congr_fun (fun t ht => ?_) measurableSet_Ioi
     simp [bContourIntegrandT, bContourIntegrandI, hψ t (lt_trans (by norm_num) ht),
       bContourWeight_add, mul_comm, mul_left_comm]
-  have hintT_left : IntegrableOn (fun t : ℝ => bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ)))
-      (Set.Ioi (1 : ℝ)) :=
-    hintT_shift (-1 : ℂ) fun t ht0 => by simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0
-  have hintT_right : IntegrableOn (fun t : ℝ => bContourIntegrandT u ((1 : ℂ) + I * (t : ℂ)))
-      (Set.Ioi (1 : ℝ)) :=
-    hintT_shift (1 : ℂ) fun t ht0 => by simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0
+  have hintT_left := hintT_shift (-1 : ℂ) fun t ht0 => by
+    simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0
+  have hintT_right := hintT_shift (1 : ℂ) fun t ht0 => by
+    simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0
   have htendstoT :
       ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
     rcases exists_ψI_bound_exp with ⟨Cψ, Aψ, _, hψbd⟩
@@ -263,8 +260,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
               cexp (π * (Complex.I : ℂ) * (u : ℂ) * z₄' t)) =
           ∫ t in (0 : ℝ)..1, (-1 : ℂ) * g (1 - t) from
       intervalIntegral.integral_congr fun t ht => by
-        have hz_g : z₄' t =
-            ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I := by
+        have hz_g : z₄' t = ((1 - t : ℝ) : ℂ) + (1 : ℂ) * Complex.I := by
           push_cast
           linear_combination (by
             simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using
