@@ -95,8 +95,6 @@ variable {P : PeriodicSpherePacking d} (hP : P.separation = 1) [Nonempty P.cente
 variable {D : Set (EuclideanSpace ℝ (Fin d))} (hD_isBounded : IsBounded D)
 variable (hD_unique_covers : ∀ x, ∃! g : P.lattice, g +ᵥ x ∈ D) (hD_measurable : MeasurableSet D)
 
-/- In this section, we bound packing density by the Cohn-Elkies bound. -/
-
 omit [Nonempty ↑P.centers] in
 include hD_isBounded in
 /-- Helper summability fact used in `calc_steps_part2`: the series
@@ -275,7 +273,8 @@ theorem calc_steps_part2 (hd : 0 < d) :
         rw [ge_iff_le, ← tsub_nonpos, mul_assoc,
           ← mul_sub (1 / ZLattice.covolume P.lattice volume) _ _]
         simp only [sub_add_cancel_right, mul_neg, Left.neg_nonpos_iff]
-        exact mul_nonneg (one_div_nonneg.mpr (by rw [ZLattice.covolume]; exact ENNReal.toReal_nonneg))
+        exact mul_nonneg
+          (one_div_nonneg.mpr (by rw [ZLattice.covolume]; exact ENNReal.toReal_nonneg))
           (SpherePacking.CohnElkies.tsum_ite_fourier_re_mul_norm_tsum_exp_sq_nonneg
             (f := f) (P := P) (D := D) (hCohnElkies₂ := hCohnElkies₂))
     _ = (1 / ZLattice.covolume P.lattice volume) * (𝓕 ⇑f (0 : EuclideanSpace ℝ (Fin d))).re *
@@ -316,7 +315,8 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
   rw [P.density_eq' hd]
   suffices hCalc : (P.numReps' hd hD_isBounded) * (f 0).re ≥
     (P.numReps' hd hD_isBounded)^2 * (𝓕 f 0).re / ZLattice.covolume P.lattice volume by
-    rw [hP]; rw [ge_iff_le] at hCalc
+    rw [hP]
+    rw [ge_iff_le] at hCalc
     have vol_ne_zero : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ 0 :=
       (Metric.measure_ball_pos (μ := volume) (0 : EuclideanSpace ℝ (Fin d)) one_half_pos).ne'
     have vol_ne_top : volume (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) (1 / 2)) ≠ ∞ :=
@@ -341,7 +341,6 @@ public theorem LinearProgrammingBound' (hd : 0 < d) :
       ← ENNReal.div_eq_inv_mul]
     have hnRaux₁ : ENat.toENNReal (P.numReps : ENat) ≠ 0 := by
       rw [ENat.toENNReal_coe, ne_eq, Nat.cast_eq_zero]
-      unfold PeriodicSpherePacking.numReps
       haveI : Nonempty (Quotient (AddAction.orbitRel ↥P.lattice ↑P.centers)) :=
         nonempty_quotient_iff _ |>.2 ‹_›
       exact Fintype.card_ne_zero
