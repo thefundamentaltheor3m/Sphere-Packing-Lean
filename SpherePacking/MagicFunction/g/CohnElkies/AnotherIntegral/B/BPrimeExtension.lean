@@ -89,7 +89,6 @@ public lemma bPrimeC_ofReal (u : ℝ) : bPrimeC (u : ℂ) = MagicFunction.b.Real
   simp [bPrimeC, MagicFunction.b.RealIntegrals.b', J₁'C, J₂'C, J₃'C, J₄'C, J₅'C, J₆'C,
     J₁', J₂', J₃', J₄', J₅', J₆']
 
-
 open ModularForm ModularGroup UpperHalfPlane
 
 lemma mem_Ioc_of_mem_uIoc {t : ℝ} (ht : t ∈ Ι (0 : ℝ) 1) : t ∈ Ioc (0 : ℝ) 1 := by simpa using ht
@@ -119,8 +118,7 @@ private lemma exists_bound_norm_ψT'_comp_of_im_pos_all (z : ℝ → ℂ) (hz : 
 
 lemma ψI'_z₅'_eq (t : ℝ) (ht : t ∈ Ι (0 : ℝ) 1) :
     ψI' (z₅' t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
-  simpa using
-    (MagicFunction.b.Schwartz.J5Smooth.ψI'_z₅'_eq (t := t) (ht := mem_Ioc_of_mem_uIoc ht))
+  simpa using MagicFunction.b.Schwartz.J5Smooth.ψI'_z₅'_eq (ht := mem_Ioc_of_mem_uIoc ht)
 
 lemma exists_bound_norm_ψI'_z₅' :
     ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψI' (z₅' t)‖ ≤ M := by
@@ -128,13 +126,10 @@ lemma exists_bound_norm_ψI'_z₅' :
   refine ⟨M, fun t ht => ?_⟩
   have htIoc : t ∈ Ioc (0 : ℝ) 1 := mem_Ioc_of_mem_uIoc ht
   have hM0 : 0 ≤ M := (norm_nonneg (ψS.resToImagAxis 1)).trans (hM 1 (by norm_num))
-  calc ‖ψI' (z₅' t)‖
-      ≤ M * t ^ 2 := norm_modular_rewrite_Ioc_bound 2 ψS ψI' z₅'
-        b.Schwartz.J5Smooth.ψI'_z₅'_eq htIoc
-        (hM (1 / t) (by simpa using (one_le_div htIoc.1).2 htIoc.2))
-    _ ≤ M := by
-        simpa [mul_one] using mul_le_mul_of_nonneg_left
-          (by simpa using pow_le_pow_left₀ htIoc.1.le htIoc.2 2 : t ^ 2 ≤ (1 : ℝ)) hM0
+  refine (norm_modular_rewrite_Ioc_bound 2 ψS ψI' z₅' b.Schwartz.J5Smooth.ψI'_z₅'_eq htIoc
+    (hM (1 / t) (by simpa using (one_le_div htIoc.1).2 htIoc.2))).trans ?_
+  simpa [mul_one] using mul_le_mul_of_nonneg_left
+    (by simpa using pow_le_pow_left₀ htIoc.1.le htIoc.2 2 : t ^ 2 ≤ (1 : ℝ)) hM0
 
 lemma exists_bound_norm_ψT'_z₁' :
     ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z₁' t)‖ ≤ M := by
@@ -161,8 +156,7 @@ lemma exists_bound_norm_ψT'_z₄' :
 private lemma norm_add_I_mul_le_two (a : ℂ) (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) (ha : ‖a‖ = 1) :
     ‖a + (Complex.I : ℂ) * (t : ℂ)‖ ≤ 2 := by
   have h := norm_add_le a ((Complex.I : ℂ) * (t : ℂ))
-  simp [ha, Complex.norm_real, abs_of_nonneg ht.1] at h
-  linarith [ht.2]
+  simp [ha, Complex.norm_real, abs_of_nonneg ht.1] at h; linarith [ht.2]
 
 lemma norm_z₃'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₃' t‖ ≤ 2 := by
   have hz : z₃' t = (1 : ℂ) + (Complex.I : ℂ) * (t : ℂ) := by simp [z₃'_eq_of_mem (t := t) ht]
@@ -170,8 +164,7 @@ lemma norm_z₃'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₃' t‖ ≤ 2
 
 private lemma norm_add_I_le_three (a : ℂ) (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
     (ha : ‖a‖ ≤ 1 + t) : ‖a + (Complex.I : ℂ)‖ ≤ 3 := by
-  have h := norm_add_le a (Complex.I : ℂ)
-  simp at h; linarith [ht.2]
+  have h := norm_add_le a (Complex.I : ℂ); simp at h; linarith [ht.2]
 
 lemma norm_z₂'_le (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) : ‖z₂' t‖ ≤ 3 :=
   (show z₂' t = ((-1 : ℂ) + (t : ℂ)) + (Complex.I : ℂ) by
@@ -271,7 +264,7 @@ lemma J₅'C_differentiable : Differentiable ℂ J₅'C := by
       (fun t ht => norm_z₅'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))))
 
 set_option maxHeartbeats 1000000 in
--- The `J₆'C` differentiability proof is large and needs more heartbeats.
+-- large dominated-convergence argument.
 lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
   intro u0 hu0
   have hu0re : 0 < u0.re := by simpa [rightHalfPlane] using hu0
@@ -279,8 +272,8 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
   have hψS'_eq :
       ∀ t : ℝ, t ∈ Set.Ici (1 : ℝ) → ψS' (z₆' t) = ψS.resToImagAxis t := fun t ht => by
     have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
-    have hz : z₆' t = (Complex.I : ℂ) * (t : ℂ) := by simpa using (z₆'_eq_of_mem (t := t) ht)
-    simp [hz, ψS', Function.resToImagAxis, ResToImagAxis, ht0, mul_comm]
+    simp [show z₆' t = (Complex.I : ℂ) * (t : ℂ) by simpa using (z₆'_eq_of_mem (t := t) ht),
+      ψS', Function.resToImagAxis, ResToImagAxis, ht0, mul_comm]
   let base : ℝ → ℂ := fun t => (Complex.I : ℂ) * ψS.resToImagAxis t
   let k : ℝ → ℂ := fun t => (-(π : ℂ)) * (t : ℂ)
   let F : ℂ → ℝ → ℂ := fun u t => base t * Complex.exp (u * k t)
@@ -392,13 +385,12 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
     |>.differentiableWithinAt
 
 /-- `bPrimeC` is analytic on the right half-plane. -/
-public lemma bPrimeC_analyticOnNhd :
-    AnalyticOnNhd ℂ bPrimeC rightHalfPlane := by
+public lemma bPrimeC_analyticOnNhd : AnalyticOnNhd ℂ bPrimeC rightHalfPlane := by
   simpa [bPrimeC] using
     (((((J₁'C_differentiable.differentiableOn.add J₂'C_differentiable.differentiableOn).add
-              J₃'C_differentiable.differentiableOn).add J₄'C_differentiable.differentiableOn).add
-            J₅'C_differentiable.differentiableOn).add J₆'C_differentiableOn).analyticOnNhd
-        rightHalfPlane_isOpen
+      J₃'C_differentiable.differentiableOn).add J₄'C_differentiable.differentiableOn).add
+      J₅'C_differentiable.differentiableOn).add J₆'C_differentiableOn).analyticOnNhd
+      rightHalfPlane_isOpen
 
 end
 
