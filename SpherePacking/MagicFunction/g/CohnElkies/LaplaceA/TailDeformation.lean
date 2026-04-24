@@ -65,11 +65,10 @@ private lemma norm_strip_le_of_hdef {u s t x : ℝ} {F : ℂ → ℂ}
     ‖F ((x : ℂ) + (t : ℂ) * Complex.I)‖ ≤
       (4 * C₀ + (2 * c12π + c36π2) * Cφ) *
         (t ^ (2 : ℕ) * Real.exp (-(π * (u - 2)) * t)) := by
-  have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht1
   set K : ℝ := 4 * C₀ + (2 * c12π + c36π2) * Cφ
   let w : ℂ := ((s : ℝ) : ℂ) + (t : ℂ) * Complex.I
   have hw_im : w.im = t := by simp [w]
-  let wH : ℍ := ⟨w, by simpa [hw_im] using ht0⟩
+  let wH : ℍ := ⟨w, by simpa [hw_im] using lt_of_lt_of_le (by norm_num : (0:ℝ) < 1) ht1⟩
   have hmod : ‖φ₀ (ModularGroup.S • wH) * ((wH : ℂ) ^ (2 : ℕ))‖ ≤
       K * (t ^ (2 : ℕ) * Real.exp (2 * π * t)) :=
     norm_phi0S_mul_sq_le wH hw_im hC₀_pos hC₀ hφbd ht1 htAφ
