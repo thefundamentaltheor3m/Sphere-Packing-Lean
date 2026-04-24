@@ -111,7 +111,7 @@ lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
   rintro z ⟨x, hx, y, hy, rfl⟩
   have hyi : ∀ i : Fin d, |y i| < (1 / 2 : ℝ) := fun i =>
     (abs_coord_le_norm y i).trans_lt (by simpa [mem_ball_zero_iff] using hy)
-  refine ⟨Set.mem_vadd_set_iff_neg_vadd_mem.2 fun i => ?_, ?_⟩
+  refine ⟨Set.mem_vadd_set_iff_neg_vadd_mem.2 fun i => ?_, fun hz_inner => ?_⟩
   · simp only [coordCubeInner, coordCube, constVec, vadd_eq_add] at hx ⊢
     have hyi_le := abs_le.mp (hyi i).le
     exact ⟨by simpa [add_assoc, add_left_comm, add_comm] using
@@ -121,7 +121,6 @@ lemma coordCube_boundary_half_add_ball_subset_outer_diff_inner (L : ℝ) :
   · obtain ⟨i, hi⟩ : ∃ i : Fin d, ¬ x i ∈ Set.Icc (1 / 2 : ℝ) (L - 1 / 2) := by
       simpa [coordCubeInner, Set.mem_setOf_eq] using not_forall.mp hx.2
     rw [Set.mem_Icc, not_and_or] at hi
-    intro hz_inner
     have hz_i : (x i + y i) ∈ Set.Icc (1 : ℝ) (L - 1) := by
       simpa [coordCubeInner, Set.mem_setOf_eq] using hz_inner i
     obtain hi | hi := hi <;> linarith [hz_i.1, hz_i.2, abs_lt.mp (hyi i)]
@@ -221,13 +220,12 @@ lemma toNNReal_covolume_cubeLattice (L : ℝ) (hL : 0 < L) :
       (volume (coordCube d L)).toNNReal := by
   letI : DiscreteTopology (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
   letI : IsZLattice ℝ (cubeLattice d L hL) := by dsimp [cubeLattice]; infer_instance
-  have hfund : IsAddFundamentalDomain (cubeLattice d L hL)
-      (fundamentalDomain (cubeBasis d L hL)) volume := by
-    simpa [cubeLattice] using ZSpan.isAddFundamentalDomain (cubeBasis d L hL) volume
   simp [show ZLattice.covolume (cubeLattice d L hL) volume = (volume (coordCube d L)).toReal by
     simpa [Measure.real, fundamentalDomain_cubeBasis_eq_coordCube L hL] using
-      ZLattice.covolume_eq_measure_fundamentalDomain
-        (L := cubeLattice d L hL) (μ := volume) hfund]
+      ZLattice.covolume_eq_measure_fundamentalDomain (L := cubeLattice d L hL) (μ := volume)
+        (by simpa [cubeLattice] using ZSpan.isAddFundamentalDomain (cubeBasis d L hL) volume :
+          IsAddFundamentalDomain (cubeLattice d L hL)
+            (fundamentalDomain (cubeBasis d L hL)) volume)]
 
 end CubeLatticeCovolume
 
@@ -440,8 +438,7 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
     ⟨P, hPsep, hPdens⟩
   have hPdens' : P.density = (F.card : ℝ≥0∞) * volBall / volCube := by
     simpa [volBall, show (Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) : ℝ≥0∞)
-        = volCube by
-      rw [show Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) =
+        = volCube by rw [show Real.toNNReal (ZLattice.covolume (cubeLattice d L hLpos) volume) =
           volCube.toNNReal by simpa [volCube] using
         PeriodicConstantApprox.toNNReal_covolume_cubeLattice (d := d) L hLpos,
         ENNReal.coe_toNNReal hvolCube_ne_top]] using hPdens
