@@ -309,8 +309,7 @@ private theorem aux
     ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R - L),
       x +ᵥ (fundamentalDomain b : Set (EuclideanSpace ℝ (Fin d)))
         ⊆ ball 0 R := fun x hx => by
-  simp only [Set.mem_iUnion, exists_prop] at hx
-  obtain ⟨y, ⟨_, hy⟩, z, hz, rfl⟩ := hx
+  obtain ⟨y, ⟨_, hy⟩, z, hz, rfl⟩ := by simpa using hx
   simp only [mem_ball, dist_zero_right, vadd_eq_add] at hy ⊢
   linarith [norm_add_le y z, hL z hz]
 
@@ -353,8 +352,7 @@ private theorem aux'
       ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + L),
         x +ᵥ (fundamentalDomain (b.ofZLatticeBasis ℝ _) : Set (EuclideanSpace ℝ (Fin d))) := by
   letI : Fintype ι := Fintype.ofFinite ι
-  intro x hx
-  refine Set.mem_iUnion₂.2 ⟨floor (b.ofZLatticeBasis ℝ _) x, ⟨?_, ?_⟩, ?_⟩
+  refine fun x hx ↦ Set.mem_iUnion₂.2 ⟨floor (b.ofZLatticeBasis ℝ _) x, ⟨?_, ?_⟩, ?_⟩
   · rw [SetLike.mem_coe, ← S.mem_basis_Z_span b]; exact Submodule.coe_mem _
   · rw [mem_ball_zero_iff] at hx ⊢
     exact ((show ‖floor (b.ofZLatticeBasis ℝ _) x‖ = ‖x - fract (b.ofZLatticeBasis ℝ _) x‖ by
