@@ -183,10 +183,9 @@ lemma exists_bound_norm_H3_resToImagAxis_sub_two_terms_Ici_one :
   set x : ℂ := Θ₃.resToImagAxis t
   set y : ℂ := (1 : ℂ) + (2 : ℂ) * q'
   have hq : ‖q'‖ ≤ 1 := by simpa [q'] using norm_exp_neg_pi_mul_le_one t ht0
-  have hexp1 : Real.exp (-Real.pi * t) ≤ 1 :=
-    Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le])
-  have hx : ‖x‖ ≤ 1 + C1 := norm_le_one_add_of_sub_one x <|
-    (hC1 t ht).trans <| by simpa [mul_one] using mul_le_mul_of_nonneg_left hexp1 hC10
+  have hx : ‖x‖ ≤ 1 + C1 := norm_le_one_add_of_sub_one x <| (hC1 t ht).trans <| by
+    simpa [mul_one] using mul_le_mul_of_nonneg_left
+      (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le])) hC10
   have hy : ‖y‖ ≤ 3 := norm_one_add_two_mul_le q' hq
   have hxy : ‖x - y‖ ≤ C2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     simpa [x, y, q', sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using hC2 t ht
@@ -241,10 +240,9 @@ public lemma exists_bound_norm_H4_resToImagAxis_sub_two_terms_Ici_one :
   set x : ℂ := Θ₄.resToImagAxis t
   set y : ℂ := (1 : ℂ) - (2 : ℂ) * q'
   have hq : ‖q'‖ ≤ 1 := by simpa [q'] using norm_exp_neg_pi_mul_le_one t ht0
-  have hexp1 : Real.exp (-Real.pi * t) ≤ 1 :=
-    Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le])
-  have hx : ‖x‖ ≤ 1 + C1 := norm_le_one_add_of_sub_one x <|
-    (hC1 t ht).trans <| by simpa [mul_one] using mul_le_mul_of_nonneg_left hexp1 hC10
+  have hx : ‖x‖ ≤ 1 + C1 := norm_le_one_add_of_sub_one x <| (hC1 t ht).trans <| by
+    simpa [mul_one] using mul_le_mul_of_nonneg_left
+      (Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, ht0.le])) hC10
   have hy : ‖y‖ ≤ 3 := norm_one_sub_two_mul_le q' hq
   have hxy : ‖x - y‖ ≤ C2 * Real.exp (-(4 : ℝ) * Real.pi * t) := by
     simpa [x, y, q', sub_eq_add_neg, add_assoc, add_left_comm, add_comm, mul_assoc] using hC2 t ht
