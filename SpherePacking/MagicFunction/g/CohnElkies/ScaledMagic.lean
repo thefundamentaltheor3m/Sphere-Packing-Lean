@@ -77,14 +77,10 @@ The prime `'` indicates this is the scaled variant of the corresponding lemma fo
 -/
 public theorem scaledMagic_cohnElkies₁' : ∀ x : ℝ⁸, ‖x‖ ≥ 1 → (scaledMagic x).re ≤ 0 := by
   intro x hx
-  have hxSq : (1 : ℝ) ≤ ‖x‖ ^ (2 : ℕ) := by
-    simpa [pow_two] using mul_le_mul hx hx (by positivity) (norm_nonneg x)
-  have hnorm : ‖(Real.sqrt 2) • x‖ ^ (2 : ℕ) = (2 : ℝ) * ‖x‖ ^ (2 : ℕ) := by
-    simp [norm_smul, pow_two, Real.norm_of_nonneg (Real.sqrt_nonneg _)]
-    ring_nf
-    simp [Real.mul_self_sqrt (by positivity : (0 : ℝ) ≤ 2), pow_two]
-    simp [mul_comm]
-  have h2 : (2 : ℝ) ≤ ‖(Real.sqrt 2) • x‖ ^ (2 : ℕ) := by simp_all
+  have h2 : (2 : ℝ) ≤ ‖(Real.sqrt 2) • x‖ ^ (2 : ℕ) := by
+    rw [norm_smul, mul_pow, Real.norm_of_nonneg (Real.sqrt_nonneg _),
+      Real.sq_sqrt (by positivity : (0 : ℝ) ≤ 2)]
+    nlinarith [mul_le_mul hx hx (by positivity) (norm_nonneg x), sq_nonneg ‖x‖]
   simpa [SpherePacking.scaledMagic] using
     g_nonpos_of_norm_sq_ge_two (x := (Real.sqrt 2) • x) h2
 
