@@ -112,9 +112,8 @@ private lemma exists_bound_norm_ψT'_comp_of_im_pos_all (z : ℝ → ℂ) (hz : 
     (hIm : ∀ t : ℝ, 0 < (z t).im) :
     ∃ M, ∀ t ∈ Ι (0 : ℝ) 1, ‖ψT' (z t)‖ ≤ M :=
   Integration.exists_bound_norm_uIoc_zero_one_of_continuous (fun t => ψT' (z t))
-    (SpherePacking.Integration.continuous_comp_upperHalfPlane_mk
-      (ψT := ψT) (ψT' := ψT') (MagicFunction.b.PsiBounds.continuous_ψT) (z := z) hz hIm
-      fun t => by simp [ψT', hIm t])
+    (SpherePacking.Integration.continuous_comp_upperHalfPlane_mk (ψT := ψT) (ψT' := ψT')
+      MagicFunction.b.PsiBounds.continuous_ψT (z := z) hz hIm fun t => by simp [ψT', hIm t])
 
 lemma ψI'_z₅'_eq (t : ℝ) (ht : t ∈ Ι (0 : ℝ) 1) :
     ψI' (z₅' t) = ψS.resToImagAxis (1 / t) * ((Complex.I : ℂ) * (t : ℂ)) ^ (2 : ℕ) := by
@@ -215,8 +214,7 @@ lemma J₂'C_differentiable : Differentiable ℂ J₂'C := by
   exact integral_ψ_exp_differentiable (Mψ := Mψ) (Cz := 3)
     (continuousOn_ψT'_comp z₂' continuous_z₂'
       fun t ht => im_z₂'_pos (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
-    continuous_z₂' hMψ
-    (fun t ht => norm_z₂'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
+    continuous_z₂' hMψ (fun t ht => norm_z₂'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht)))
 
 lemma J₃'C_differentiable : Differentiable ℂ J₃'C := by
   obtain ⟨Mψ, hMψ⟩ := exists_bound_norm_ψT'_z₃'
@@ -242,8 +240,7 @@ lemma J₄'C_differentiable : Differentiable ℂ J₄'C := by
 private lemma continuousOn_ψI'_z₅' :
     ContinuousOn (fun t : ℝ => ψI' (z₅' t)) (Ι (0 : ℝ) 1) := by
   have hcont : Continuous fun t : Ioc (0 : ℝ) 1 => ψI' (z₅' (t : ℝ)) := by
-    let zH : Ioc (0 : ℝ) 1 → ℍ :=
-      fun t => ⟨z₅' (t : ℝ), im_z₅'_pos (t := (t : ℝ)) t.2⟩
+    let zH : Ioc (0 : ℝ) 1 → ℍ := fun t => ⟨z₅' (t : ℝ), im_z₅'_pos (t := (t : ℝ)) t.2⟩
     have hzH : Continuous zH := by
       simpa [zH] using Continuous.upperHalfPlaneMk
         (continuous_z₅'.comp continuous_subtype_val : Continuous fun t : Ioc (0:ℝ) 1 => z₅' (t:ℝ))
@@ -257,8 +254,8 @@ lemma J₅'C_differentiable : Differentiable ℂ J₅'C := by
   obtain ⟨Mψ, hMψ⟩ := exists_bound_norm_ψI'_z₅'
   refine (show J₅'C = fun u : ℂ => (-2 * Complex.I : ℂ) * ∫ t in (0 : ℝ)..1,
       ψI' (z₅' t) * Complex.exp ((π : ℂ) * (Complex.I : ℂ) * u * z₅' t) by
-    funext u
-    simp [J₅'C, ← intervalIntegral.integral_const_mul, mul_assoc, mul_left_comm, mul_comm]) ▸
+    funext u; simp [J₅'C, ← intervalIntegral.integral_const_mul, mul_assoc, mul_left_comm,
+      mul_comm]) ▸
     (differentiable_const (-2 * Complex.I : ℂ)).mul (integral_ψ_exp_differentiable
       (Mψ := Mψ) (Cz := 1) continuousOn_ψI'_z₅' continuous_z₅' hMψ
       (fun t ht => norm_z₅'_le t (mem_Icc_of_Ioc (mem_Ioc_of_mem_uIoc ht))))
@@ -269,8 +266,7 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
   intro u0 hu0
   have hu0re : 0 < u0.re := by simpa [rightHalfPlane] using hu0
   let μ : Measure ℝ := μIciOne
-  have hψS'_eq :
-      ∀ t : ℝ, t ∈ Set.Ici (1 : ℝ) → ψS' (z₆' t) = ψS.resToImagAxis t := fun t ht => by
+  have hψS'_eq : ∀ t : ℝ, t ∈ Set.Ici (1 : ℝ) → ψS' (z₆' t) = ψS.resToImagAxis t := fun t ht => by
     have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht
     simp [show z₆' t = (Complex.I : ℂ) * (t : ℂ) by simpa using (z₆'_eq_of_mem (t := t) ht),
       ψS', Function.resToImagAxis, ResToImagAxis, ht0, mul_comm]
@@ -279,22 +275,19 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
   let F : ℂ → ℝ → ℂ := fun u t => base t * Complex.exp (u * k t)
   let F' : ℂ → ℝ → ℂ := fun u t => base t * k t * Complex.exp (u * k t)
   have hcont_base : ContinuousOn base (Set.Ici (1 : ℝ)) := by
-    simpa [base] using continuousOn_const.mul
-      (Function.continuousOn_resToImagAxis_Ici_one_of
-        (F := ψS) MagicFunction.b.PsiBounds.continuous_ψS)
+    simpa [base] using continuousOn_const.mul (Function.continuousOn_resToImagAxis_Ici_one_of
+      (F := ψS) MagicFunction.b.PsiBounds.continuous_ψS)
   have hk_cont : ContinuousOn k (Set.Ici (1 : ℝ)) := by fun_prop
   have hExp : ∀ u : ℂ, ContinuousOn (fun t : ℝ => Complex.exp (u * k t)) (Set.Ici (1 : ℝ)) :=
     fun u => ContinuousOn.cexp (continuousOn_const.mul hk_cont)
-  have hF_meas : ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) μ :=
-    .of_forall fun u => by simpa [μ] using
-      ((hcont_base.mul (hExp u)).aestronglyMeasurable (μ := volume) measurableSet_Ici)
+  have hF_meas : ∀ᶠ u in 𝓝 u0, AEStronglyMeasurable (F u) μ := .of_forall fun u => by
+    simpa [μ] using ((hcont_base.mul (hExp u)).aestronglyMeasurable (μ := volume) measurableSet_Ici)
   have hF'_meas : AEStronglyMeasurable (F' u0) μ := by
     simpa [F', μ, mul_assoc] using ((hcont_base.mul hk_cont).mul (hExp u0)).aestronglyMeasurable
       (μ := volume) measurableSet_Ici
   obtain ⟨Mψ, hMψ⟩ := MagicFunction.b.PsiBounds.exists_bound_norm_ψS_resToImagAxis_Ici_one
   have hbase_bound : ∀ t : ℝ, 1 ≤ t → ‖base t‖ ≤ Mψ := fun t ht => by
-    simpa [base, norm_mul] using
-      mul_le_mul_of_nonneg_left (hMψ t ht) (norm_nonneg (Complex.I : ℂ))
+    simpa [base, norm_mul] using mul_le_mul_of_nonneg_left (hMψ t ht) (norm_nonneg (Complex.I : ℂ))
   have hF_int : Integrable (F u0) μ := by
     let b : ℝ := Real.pi * u0.re
     have hb : 0 < b := by positivity
@@ -307,8 +300,7 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
     have hexp : ‖Complex.exp (u0 * k t)‖ = Real.exp (-b * t) := by
       simp [Complex.norm_exp, mul_re, show (k t).re = -Real.pi * t by simp [k],
         show (k t).im = 0 by simp [k], b, mul_left_comm, mul_comm]
-    calc ‖F u0 t‖
-        = ‖base t‖ * ‖Complex.exp (u0 * k t)‖ := by simp [F]
+    calc ‖F u0 t‖ = ‖base t‖ * ‖Complex.exp (u0 * k t)‖ := by simp [F]
       _ ≤ Mψ * Real.exp (-b * t) := by
           simpa [hexp] using
             mul_le_mul_of_nonneg_right (hbase_bound t ht) (norm_nonneg (Complex.exp (u0 * k t)))
@@ -323,13 +315,11 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
           (SpherePacking.ForMathlib.integrableOn_pow_mul_exp_neg_mul_Ici (n := 1) (b := b) hb) :
         IntegrableOn (fun t : ℝ => t * Real.exp (-b * t)) (Set.Ici (1 : ℝ))
           (volume : Measure ℝ)).const_mul (Mψ * Real.pi)
-  have hre_lower :
-      ∀ u : ℂ, u ∈ Metric.ball u0 ε → (u0.re / 2) ≤ u.re := fun u hu => by
+  have hre_lower : ∀ u : ℂ, u ∈ Metric.ball u0 ε → (u0.re / 2) ≤ u.re := fun u hu => by
     have hu' : ‖u - u0‖ < ε := by simpa [Metric.mem_ball, dist_eq_norm] using hu
     have hre : |u.re - u0.re| ≤ ‖u - u0‖ := by simpa using abs_re_le_norm (u - u0)
     grind only [= abs.eq_1, = max_def]
-  have h_bound :
-      ∀ᵐ t ∂μ, ∀ u ∈ Metric.ball u0 ε, ‖F' u t‖ ≤ bound t :=
+  have h_bound : ∀ᵐ t ∂μ, ∀ u ∈ Metric.ball u0 ε, ‖F' u t‖ ≤ bound t :=
     (ae_restrict_iff' measurableSet_Ici).2 <| .of_forall fun t ht u hu => by
       have ht0 : 0 ≤ t := le_trans (by norm_num) ht
       have hexp_le : ‖Complex.exp (u * k t)‖ ≤ Real.exp (-b * t) := by
@@ -351,9 +341,8 @@ lemma J₆'C_differentiableOn : DifferentiableOn ℂ J₆'C rightHalfPlane := by
               (mul_le_mul_of_nonneg_left h1 (norm_nonneg (base t))).trans
                 (mul_le_mul_of_nonneg_right (hbase_bound t ht) (by positivity))
         _ = bound t := by simp [bound, mul_assoc, mul_left_comm, mul_comm]
-  have h_diff :
-      ∀ᵐ t ∂μ, ∀ u ∈ Metric.ball u0 ε,
-        HasDerivAt (fun u : ℂ => F u t) (F' u t) u :=
+  have h_diff : ∀ᵐ t ∂μ, ∀ u ∈ Metric.ball u0 ε,
+      HasDerivAt (fun u : ℂ => F u t) (F' u t) u :=
     .of_forall fun t u _ => by simpa [F, F', mul_assoc, mul_left_comm, mul_comm] using
       (HasDerivAt.comp u (Complex.hasDerivAt_exp (u * k t))
         (hasDerivAt_mul_const (k t) (x := u))).const_mul (base t)
