@@ -293,10 +293,11 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
     refine Summable.of_nonneg_of_le
       (f := fun n : ℕ => (512 : ℝ) * ((((n : ℝ) ^ 5 + 1) : ℝ) * q1 ^ n))
       (g := b) (fun n => by positivity) (fun n => ?_) (hsummA.mul_left (512 : ℝ))
-    have hbase : ((n : ℝ) + (2 : ℝ)) ^ 5 ≤ 2 ^ (5 - 1) * ((n : ℝ) ^ 5 + (2 : ℝ) ^ 5) := by
-      simpa using add_pow_le (a := (n : ℝ)) (b := (2 : ℝ)) (by positivity) (by positivity) 5
-    have hn5 : 0 ≤ (n : ℝ) ^ 5 := by positivity
-    have hpow : ((n + 2 : ℝ) ^ 5) ≤ (512 : ℝ) * ((n : ℝ) ^ 5 + 1) := by grind only
+    have hpow : ((n + 2 : ℝ) ^ 5) ≤ (512 : ℝ) * ((n : ℝ) ^ 5 + 1) := by
+      have hbase : ((n : ℝ) + (2 : ℝ)) ^ 5 ≤ 2 ^ (5 - 1) * ((n : ℝ) ^ 5 + (2 : ℝ) ^ 5) := by
+        simpa using add_pow_le (a := (n : ℝ)) (b := (2 : ℝ)) (by positivity) (by positivity) 5
+      have : (0 : ℝ) ≤ (n : ℝ) ^ 5 := by positivity
+      grind only
     calc b n = ((n + 2 : ℝ) ^ 5) * q1 ^ n := rfl
       _ ≤ ((512 : ℝ) * ((n : ℝ) ^ 5 + 1)) * q1 ^ n := by gcongr
       _ = (512 : ℝ) * (((n : ℝ) ^ 5 + 1) * q1 ^ n) := by ring
@@ -312,13 +313,13 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
   have hf_le : ∀ n : ℕ, ‖f n‖ ≤ q ^ (2 : ℕ) * b n := fun n => by
     have hcoeff : ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) := by
       have h := norm_mul_sigma_le (n + 2) (n + 2) le_rfl; push_cast at h ⊢; exact h
-    have hexp : ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ ≤ q ^ (2 : ℕ) * q1 ^ n := by
-      simpa [show ((2 + n : ℕ) : ℂ) = (n : ℂ) + 2 by push_cast; ring] using
-        norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 2 n
     calc
       ‖f n‖ = ‖((n + 2 : ℂ) * (σ 3 (n + 2) : ℂ))‖ *
             ‖cexp (2 * π * Complex.I * (n + 2 : ℂ) * z)‖ := by simp [f, mul_assoc]
-      _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q ^ (2 : ℕ) * q1 ^ n) := by gcongr
+      _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q ^ (2 : ℕ) * q1 ^ n) := by
+            gcongr
+            simpa [show ((2 + n : ℕ) : ℂ) = (n : ℂ) + 2 by push_cast; ring] using
+              norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 2 n
       _ = q ^ (2 : ℕ) * b n := by simp [b]; ring
   have hRam := E₂_mul_E₄_sub_E₆ z
   have hqexp : cexp (2 * π * Complex.I * z) = (q : ℂ) := by simpa [Periodic.qParam] using hqC
@@ -331,15 +332,15 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
     (n + 1) * (σ 3 (n + 1)) * cexp (2 * π * Complex.I * (n + 1) * z)
   have hg_summ : Summable g := by
     refine Summable.of_norm_bounded (hb_summ.mul_left q) fun n => ?_
-    have hexp : ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ ≤ q * q1 ^ n := by
-      simpa [pow_one, show ((1 + n : ℕ) : ℂ) = (n : ℂ) + 1 by push_cast; ring] using
-        norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 1 n
     have hcoeff : ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) := by
       have h := norm_mul_sigma_le (n + 1) (n + 2) (by omega); push_cast at h ⊢; exact h
     calc
       ‖g n‖ = ‖((n + 1 : ℂ) * (σ 3 (n + 1) : ℂ))‖ *
             ‖cexp (2 * π * Complex.I * (n + 1) * z)‖ := by simp [g, mul_assoc]
-      _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q * q1 ^ n) := by gcongr
+      _ ≤ ((n + 2 : ℝ) ^ 5 : ℝ) * (q * q1 ^ n) := by
+            gcongr
+            simpa [pow_one, show ((1 + n : ℕ) : ℂ) = (n : ℂ) + 1 by push_cast; ring] using
+              norm_cexp_mul_le_split (z := z) hq_nonneg hq_le hqC 1 n
       _ = q * b n := by simp [b]; ring
   have hsplit :
       (∑' n : ℕ+, n * (σ 3 n) * cexp (2 * π * Complex.I * n * z)) - cexp (2 * π * Complex.I * z) =
@@ -371,11 +372,9 @@ public lemma exists_E2E4_sub_E6_sub_720q_bound :
       _ = (720 : ℝ) * ‖∑' n : ℕ, f n‖ := by simp
       _ ≤ (720 : ℝ) * (q ^ (2 : ℕ) * (∑' n : ℕ, b n)) := by gcongr
       _ = (720 : ℝ) * (q ^ (2 : ℕ)) * (∑' n : ℕ, b n) := by ring
-  have hmain' :
-      ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (Real.exp (-2 * π * t) : ℂ)‖ ≤
-        ((720 : ℝ) * (∑' n : ℕ, b n)) * (Real.exp (-2 * π * t)) ^ (2 : ℕ) := by
-    simpa [q, mul_assoc, mul_left_comm, mul_comm] using hmain
-  simpa [z, q] using hmain'.trans
+  simpa [z, q] using (show ‖(E₂ z) * (E₄ z) - (E₆ z) - (720 : ℂ) * (Real.exp (-2 * π * t) : ℂ)‖ ≤
+        ((720 : ℝ) * (∑' n : ℕ, b n)) * (Real.exp (-2 * π * t)) ^ (2 : ℕ) by
+      simpa [q, mul_assoc, mul_left_comm, mul_comm] using hmain).trans
     (mul_le_mul_of_nonneg_right (by linarith : (720 : ℝ) * (∑' n : ℕ, b n) ≤
       1 + (720 : ℝ) * (∑' n : ℕ, b n)) (pow_nonneg hq_nonneg _))
 
