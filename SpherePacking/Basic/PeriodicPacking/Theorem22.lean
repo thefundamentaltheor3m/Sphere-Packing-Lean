@@ -27,15 +27,14 @@ private theorem ball_subset_iUnion_lattice_inter_ball_vadd
     (hD_unique_covers : ∀ x, ∃! g : S.lattice, g +ᵥ x ∈ D) (hL : ∀ x ∈ D, ‖x‖ ≤ L) :
     ball 0 (R - L) ⊆ ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R, (x +ᵥ D) := by
   intro x hx
-  have hx' : ‖x‖ < R - L := by simpa [mem_ball_zero_iff] using hx
   rcases hD_unique_covers x with ⟨g, hg, -⟩
   simp_rw [Set.mem_iUnion, exists_prop, Set.mem_inter_iff]
   refine ⟨-g.val, ⟨⟨by simp, ?_⟩, (Set.mem_vadd_set_iff_neg_vadd_mem).2 (by simpa using hg)⟩⟩
   have htri : ‖g.val‖ ≤ ‖g.val + x‖ + ‖x‖ := by
     simpa [sub_eq_add_neg, add_assoc] using (norm_sub_le (a := g.val + x) (b := x))
-  have : ‖g.val‖ < R := lt_of_le_of_lt htri <| by
+  simpa [mem_ball_zero_iff, norm_neg] using lt_of_le_of_lt htri <| by
+    have : ‖x‖ < R - L := by simpa [mem_ball_zero_iff] using hx
     linarith [hL _ (by simpa using hg : g.val + x ∈ D)]
-  simpa [mem_ball_zero_iff, norm_neg] using this
 
 /-- An add-left-invariant measure is invariant under translations by a submodule. -/
 public instance (E : Type*) [AddCommGroup E] [MeasurableSpace E] [MeasurableAdd E] [Module ℤ E]
@@ -51,11 +50,11 @@ private lemma measure_biUnion_lattice_inter_ball_vadd
     Set.Countable.mono Set.inter_subset_left (inferInstance : Countable ↑S.lattice)
   rw [Set.biUnion_eq_iUnion, measure_iUnion]
   · rw [tsum_congr fun i ↦ measure_vadd .., ENNReal.tsum_set_const]
-  · intro i j hij
-    have hgh : (⟨i.1, i.2.1⟩ : S.lattice) ≠ ⟨j.1, j.2.1⟩ := fun h => hij <|
-      Subtype.ext <| congrArg (fun u : S.lattice => (u : EuclideanSpace ℝ (Fin d))) h
-    simpa using
-      disjoint_vadd_of_unique_covers (d := d) (Λ := S.lattice) (D := D) hD_unique_covers hgh
+  · exact fun i j hij => by
+      simpa using disjoint_vadd_of_unique_covers (d := d) (Λ := S.lattice) (D := D)
+        hD_unique_covers (fun h => hij <|
+          Subtype.ext <| congrArg (fun u : S.lattice => (u : EuclideanSpace ℝ (Fin d))) h :
+          (⟨i.1, i.2.1⟩ : S.lattice) ≠ ⟨j.1, j.2.1⟩)
   · exact fun i => MeasurableSet.const_vadd hD_measurable i.1
 
 /-- Theorem 2.2, lower bound. -/
@@ -69,8 +68,8 @@ theorem PeriodicSpherePacking.aux2_ge
     exact volume.mono <| ball_subset_iUnion_lattice_inter_ball_vadd S D R hD_unique_covers hL
   · exact (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
   · have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-    rw [← lt_top_iff_ne_top]
-    exact Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)
+    exact lt_top_iff_ne_top.mp <|
+      Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)
 
 private theorem iUnion_lattice_inter_ball_vadd_subset_ball (hL : ∀ x ∈ D, ‖x‖ ≤ L) :
     ⋃ x ∈ ↑S.lattice ∩ ball (0 : EuclideanSpace ℝ (Fin d)) R, (x +ᵥ D) ⊆ ball 0 (R + L) := by
@@ -78,11 +77,10 @@ private theorem iUnion_lattice_inter_ball_vadd_subset_ball (hL : ∀ x ∈ D, �
   rw [mem_ball_zero_iff]
   rcases (by simpa [Set.mem_iUnion, exists_prop, Set.mem_inter_iff] using hx) with
     ⟨i, ⟨-, hi_ball⟩, hi_mem⟩
-  have hi_ball' : ‖i‖ < R := by simpa [mem_ball_zero_iff] using hi_ball
-  have hi_mem' : ‖-i + x‖ ≤ L := hL _ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hi_mem)
   calc ‖x‖ = ‖i + (-i + x)‖ := by congr; abel
     _ ≤ ‖i‖ + ‖-i + x‖ := norm_add_le _ _
-    _ < R + L := add_lt_add_of_lt_of_le hi_ball' hi_mem'
+    _ < R + L := add_lt_add_of_lt_of_le (by simpa [mem_ball_zero_iff] using hi_ball)
+        (hL _ (Set.mem_vadd_set_iff_neg_vadd_mem.mp hi_mem))
 
 /-- Theorem 2.2, upper bound. -/
 theorem PeriodicSpherePacking.aux2_le
@@ -95,8 +93,7 @@ theorem PeriodicSpherePacking.aux2_le
     exact volume.mono <| iUnion_lattice_inter_ball_vadd_subset_ball S D R hL
   · exact Or.inl <| (hD_isAddFundamentalDomain S D ‹_› ‹_›).measure_ne_zero (NeZero.ne volume)
   · have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-    rw [← lt_top_iff_ne_top]
-    exact Or.inl <|
+    exact Or.inl <| lt_top_iff_ne_top.mp <|
       Bornology.IsBounded.measure_lt_top (isBounded_iff_forall_norm_le.mpr ⟨L, hL⟩)
 
 open ZSpan
@@ -107,10 +104,8 @@ private lemma fundamentalDomain_unique_covers (x : EuclideanSpace ℝ (Fin d)) :
     ∃! g : S.lattice, g +ᵥ x ∈ fundamentalDomain (b.ofZLatticeBasis ℝ _) := by
   rcases exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) x with
     ⟨⟨v, hv⟩, hvD, hvuniq⟩
-  refine ⟨⟨v, by simpa [S.basis_Z_span] using hv⟩, hvD, ?_⟩
-  rintro ⟨y, hy⟩ hyD
-  exact Subtype.ext <| by
-    simpa using congrArg Subtype.val (hvuniq ⟨y, by simpa [S.basis_Z_span] using hy⟩ hyD)
+  refine ⟨⟨v, by simpa [S.basis_Z_span] using hv⟩, hvD, fun ⟨y, hy⟩ hyD => Subtype.ext <| by
+    simpa using congrArg Subtype.val (hvuniq ⟨y, by simpa [S.basis_Z_span] using hy⟩ hyD)⟩
 
 /-- Theorem 2.2 lower bound, in terms of fundamental domain of Z-lattice. -/
 public theorem PeriodicSpherePacking.aux2_ge'
@@ -221,12 +216,12 @@ lemma aux_bhavik {d : ℝ} {ε : ℝ≥0∞} (hd : 0 ≤ d) (hε : 0 < ε) :
     obtain ⟨k, hk⟩ := this ε hε
     refine ⟨max 0 k, by simp, ?_⟩
     simp only [ge_iff_le, max_le_iff, and_imp]
-    intro k' hk₀ hk₁
+    intro k' _ hk₁
     have := hk k' hk₁
     rwa [sub_zero, ofReal_one, one_rpow, ←one_div, one_sub_div, add_sub_cancel_right,
       ENNReal.ofReal_rpow_of_nonneg] at this <;> positivity
-  refine Tendsto.ennrpow_const d (tendsto_ofReal (Tendsto.const_sub 1 ?_))
-  exact tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id)
+  exact Tendsto.ennrpow_const d <| tendsto_ofReal <| Tendsto.const_sub 1 <|
+    tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_id)
 
 lemma aux_bhavik' {ε : ℝ≥0∞} (hε : 0 < ε) :
     ∃ k : ℝ, k ≥ 0 ∧ ∀ k' ≥ k, ENNReal.ofReal ((k' / (k' + 1)) ^ d) ∈ Set.Icc (1 - ε) (1 + ε) := by
@@ -286,10 +281,10 @@ public theorem volume_ball_ratio_tendsto_nhds_one'
 Shifting the argument by a constant does not change convergence to `atTop`.
 -/
 public theorem Filter.map_add_atTop_eq' {β : Type*} {f : ℝ → β} (C : ℝ) (α : Filter β) :
-    Tendsto f atTop α ↔ Tendsto (fun x ↦ f (x + C)) atTop α := by
+    Tendsto f atTop α ↔ Tendsto (fun x ↦ f (x + C)) atTop α :=
   have hmap : Filter.map (fun x : ℝ => x + C) atTop = atTop := by
     simpa using Filter.map_add_atTop_eq (α := ℝ) (k := C)
-  exact ⟨fun hf => tendsto_map'_iff.mp (by simpa [hmap]),
+  ⟨fun hf => tendsto_map'_iff.mp (by simpa [hmap]),
     fun hf => by simpa [hmap] using (tendsto_map'_iff.mpr hf :
       Tendsto f (Filter.map (fun x : ℝ => x + C) atTop) α)⟩
 
