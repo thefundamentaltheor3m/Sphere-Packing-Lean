@@ -21,12 +21,6 @@ open Complex Real Asymptotics Filter Topology Manifold SlashInvariantForm Matrix
 
 local notation "GL(" n ", " R ")" "⁺" => Matrix.GLPos (Fin n) R
 
-noncomputable section matrices
-
-/- The matrices `S` and `T` are given by `ModularGroup.S` and `ModularGroup.T`. -/
-
-end matrices
-
 noncomputable section defs
 
 /- We begin by defining the `h` function. The `ψ` functions are defined in terms of `h`
@@ -69,9 +63,8 @@ section eq
 
 section aux
 
-lemma z_plus_one_nonzero (z : ℍ) : (z + 1 : ℂ) ≠ 0 := by
-  intro hz
-  exact (lt_irrefl (0 : ℝ)) (by simpa [hz] using (by simpa using z.2 : 0 < (z + 1 : ℂ).im))
+lemma z_plus_one_nonzero (z : ℍ) : (z + 1 : ℂ) ≠ 0 := fun hz =>
+  lt_irrefl (0 : ℝ) (by simpa [hz] using (by simpa using z.2 : 0 < (z + 1 : ℂ).im))
 
 lemma slashS (z : ℍ) (F : ℍ → ℂ) : (F ∣[(2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (-2 : ℤ) := by simp [SL_slash_apply, S, denom]
@@ -81,8 +74,7 @@ lemma slashS (z : ℍ) (F : ℍ → ℂ) : (F ∣[(2 : ℤ)] (S)) (z) =
 The prime in `slashS'` indicates the `k = -2` specialization (compare `slashS`). -/
 public lemma slashS' (z : ℍ) (F : ℍ → ℂ) : (F ∣[(-2 : ℤ)] (S)) (z) =
     F (S • z) * (z : ℂ) ^ (2 : ℕ) := by
-  rw [SL_slash_apply, S, denom]
-  simp [zpow_two, pow_two]
+  rw [SL_slash_apply, S, denom]; simp [zpow_two, pow_two]
 
 lemma slashS'' (z : ℍ) (F : ℍ → ℂ) : F (S • z) =
     (F ∣[(2 : ℤ)] (S)) (z) * (z : ℂ) ^ (2 : ℕ) := by
@@ -94,13 +86,11 @@ lemma slashT (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (T)) (z) = (F) (T
 
 lemma slashT' (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(-2 : ℤ)] (T)) (z) =  (F) (T • z) := by
   simp [SL_slash_apply, T, denom]
- -- no need for slashT'', as ← slashT already fulfils that role
 
 private lemma S_mul_T : S * T = ⟨!![0, -1; 1, 1], by norm_num [det_fin_two_of]⟩ := by
   ext (i : Fin 2) (j : Fin 2)
   fin_cases i <;> fin_cases j <;> simp [S, T]
 
--- the following statements will be applied of F = H₂, H₃, H₄ or (H₃+H₄)/H₂^2
 lemma slashST (z : ℍ) (F : ℍ → ℂ) : ((F) ∣[(2 : ℤ)] (S * T)) (z) =
     F ((S * T) • z ) * (z + 1 : ℂ) ^ (-2 : ℤ) := by
   simp [SL_slash_apply, ModularGroup.S_mul_T, denom]
@@ -180,24 +170,9 @@ public lemma ψS_eq' :
   rw [slashS'' z ⇑H₂_MF, slashS'' z ⇑H₃_MF, slashS'' z ⇑H₄_MF,
     show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
     show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_S_action, H₃_S_action, H₄_S_action]
-  have hzsq : (z : ℂ) ^ 2 ≠ 0 := pow_ne_zero _ (ne_zero z)
-  rw [← add_mul, ← sub_mul, ← mul_add, mul_assoc, add_mul]
-  nth_rw 2 [pow_two]
-  rw [mul_assoc]
-  nth_rw 5 [mul_comm]
-  rw [← mul_assoc, ← mul_assoc, div_mul, ← mul_div_assoc',  ← mul_div_assoc',
-    div_self hzsq, mul_one]
-  nth_rw 3 [mul_comm]
-  rw [← div_div, mul_div, div_self hzsq, mul_one, add_comm]
-  nth_rw 2 [pow_two]
-  rw [mul_assoc]
-  nth_rw 5 [mul_comm]
-  rw [← mul_assoc, ← mul_assoc, div_mul, ← mul_div_assoc',  ← mul_div_assoc',
-    div_self hzsq, mul_one]
-  nth_rw 3 [mul_comm]
-  rw [← div_div, mul_div, div_self hzsq, mul_one]
-  simp only [Pi.neg_apply, sub_neg_eq_add, mul_neg, neg_mul, neg_neg, mul_eq_mul_left_iff,
-    OfNat.ofNat_ne_zero, or_false]
+  have hz : (z : ℂ) ≠ 0 := ne_zero z
+  simp only [Pi.neg_apply]
+  field_simp
   ring
 
 /-- A rearranged explicit formula for `ψS`, derived from `ψS_eq'`. -/
@@ -261,23 +236,9 @@ public lemma ψT_slash_S : ψT ∣[-2] S = -ψT := by
     show (H₂_MF : ℍ → ℂ) = H₂ from rfl, show (H₃_MF : ℍ → ℂ) = H₃ from rfl,
     show (H₄_MF : ℍ → ℂ) = H₄ from rfl, H₂_S_action, H₃_S_action, H₄_S_action]
   simp only [Pi.neg_apply, neg_mul, even_two, Even.neg_pow]
-  have hzsq : (z : ℂ) ^ 2 ≠ 0 := pow_ne_zero _ (ne_zero z)
-  rw [mul_assoc, ← neg_add, ← add_mul, add_mul]
-  nth_rw 2 [pow_two]
-  rw [mul_assoc]
-  nth_rw 5 [mul_comm]
-  rw [← mul_assoc, ← mul_assoc, neg_div, ← mul_div, ← div_div, div_right_comm, mul_div,
-    div_self hzsq, mul_one, neg_mul,  ← div_div, div_mul, ← pow_two,
-    div_self hzsq, div_one, ← neg_add, ← neg_div', neg_mul, add_comm, ← add_mul]
-  nth_rw 2 [pow_two]
-  rw [← mul_assoc]
-  nth_rw 6 [mul_comm]
-  rw [div_mul]
-  nth_rw 2 [← mul_div]
-  rw [div_self hzsq, mul_one, mul_assoc, ← pow_two, ← mul_div, ← div_div,
-    mul_div, div_self hzsq, mul_one, ← sub_eq_add_neg, ← neg_add', mul_neg]
-  nth_rw 2 [add_comm]
-  nth_rw 3 [add_comm]
+  have hz : (z : ℂ) ≠ 0 := ne_zero z
+  field_simp
+  ring
 
 /-- Modular relation: `ψS ∣[-2] (S * T * S) = -ψT`. -/
 public lemma ψS_slash_STS : ψS ∣[-2] (S * T * S) = -ψT := by
