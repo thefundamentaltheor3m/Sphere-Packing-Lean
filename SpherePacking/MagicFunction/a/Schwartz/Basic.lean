@@ -276,13 +276,10 @@ open SchwartzMap MagicFunction.Common
   schwartzMap_multidimensional_of_schwartzMap_real (EuclideanSpace ℝ (Fin 8)) a'
 
 /-- Expand `a` as the sum of the six defining integrals from `MagicFunction.a.RadialFunctions`. -/
-public theorem a_eq_sum_integrals_RadialFunctions : a =
-    MagicFunction.a.RadialFunctions.I₁
-  + MagicFunction.a.RadialFunctions.I₂
-  + MagicFunction.a.RadialFunctions.I₃
-  + MagicFunction.a.RadialFunctions.I₄
-  + MagicFunction.a.RadialFunctions.I₅
-  + MagicFunction.a.RadialFunctions.I₆ := by
+public theorem a_eq_sum_integrals_RadialFunctions :
+    a = MagicFunction.a.RadialFunctions.I₁ + MagicFunction.a.RadialFunctions.I₂
+      + MagicFunction.a.RadialFunctions.I₃ + MagicFunction.a.RadialFunctions.I₄
+      + MagicFunction.a.RadialFunctions.I₅ + MagicFunction.a.RadialFunctions.I₆ := by
   ext x
   simp [a, a', MagicFunction.a.RadialFunctions.I₁, MagicFunction.a.RadialFunctions.I₂,
     MagicFunction.a.RadialFunctions.I₃, MagicFunction.a.RadialFunctions.I₄,
@@ -290,13 +287,10 @@ public theorem a_eq_sum_integrals_RadialFunctions : a =
     sq_nonneg ‖x‖, add_assoc]
 
 /-- Expand `a` as the sum of the six Schwartz integrals. -/
-public theorem a_eq_sum_integrals_SchwartzIntegrals : a =
-    MagicFunction.a.SchwartzIntegrals.I₁
-  + MagicFunction.a.SchwartzIntegrals.I₂
-  + MagicFunction.a.SchwartzIntegrals.I₃
-  + MagicFunction.a.SchwartzIntegrals.I₄
-  + MagicFunction.a.SchwartzIntegrals.I₅
-  + MagicFunction.a.SchwartzIntegrals.I₆ :=
+public theorem a_eq_sum_integrals_SchwartzIntegrals :
+    a = MagicFunction.a.SchwartzIntegrals.I₁ + MagicFunction.a.SchwartzIntegrals.I₂
+      + MagicFunction.a.SchwartzIntegrals.I₃ + MagicFunction.a.SchwartzIntegrals.I₄
+      + MagicFunction.a.SchwartzIntegrals.I₅ + MagicFunction.a.SchwartzIntegrals.I₆ :=
   rfl
 
 end MagicFunction.FourierEigenfunctions
