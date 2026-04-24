@@ -347,8 +347,7 @@ lemma E8Matrix_mul_E8Matrix_transpose_rat :
 lemma E8Matrix_mul_E8Matrix_transpose [Field R] [CharZero R] :
     E8Matrix R * (E8Matrix R).transpose = E8.inn.map (↑) := by
   rw [E8Matrix_eq_cast, ← Matrix.transpose_map, ← Matrix.map_mul,
-    E8Matrix_mul_E8Matrix_transpose_rat, Matrix.map_map]
-  ext i j; simp
+    E8Matrix_mul_E8Matrix_transpose_rat, Matrix.map_map]; ext i j; simp
 
 lemma dotProduct_eq_inn {R : Type*} [Field R] [CharZero R] (i j : Fin 8) :
     (E8Matrix R).row i ⬝ᵥ (E8Matrix R).row j = E8.inn i j := by
