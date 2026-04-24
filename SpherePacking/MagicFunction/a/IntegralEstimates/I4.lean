@@ -80,14 +80,12 @@ lemma I₄'_bounding_aux_1 (r : ℝ) : ∀ t ∈ Ioo (0 : ℝ) 1, ‖g r t‖ �
     · simpa [mul_assoc, mul_left_comm, mul_comm] using norm_exp_ofReal_mul_I (-π * r * t)
     · simp [norm_exp]
 
-lemma im_parametrisation_eq : ∀ t ∈ Ioo (0 : ℝ) 1, (-1 / (-↑t + I)).im = 1 / (t ^ 2 + 1) :=
-  fun t _ => by simpa using SpherePacking.Integration.im_neg_one_div_neg_ofReal_add_I (t := t)
-
 /-- A uniform lower bound on the imaginary part of the parametrisation `t ↦ -1 / (-t + I)`. -/
 public lemma im_parametrisation_lower : ∀ t ∈ Ioo (0 : ℝ) 1, 1 / 2 < (-1 / (-↑t + I)).im := by
   intro t ht
-  simpa [im_parametrisation_eq t ht] using
-    (SpherePacking.Integration.one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht)
+  have him : (-1 / (-↑t + I)).im = 1 / (t ^ 2 + 1) := by
+    simpa using SpherePacking.Integration.im_neg_one_div_neg_ofReal_add_I (t := t)
+  simpa [him] using SpherePacking.Integration.one_half_lt_one_div_sq_add_one_of_mem_Ioo01 ht
 
 end Bounding_Integrand
 
@@ -149,10 +147,8 @@ public lemma exp_r_mul_coeff (r t : ℝ) :
 lemma iteratedDeriv_I₄'_eq_integral_gN (n : ℕ) :
     iteratedDeriv n I₄' = fun r : ℝ ↦ ∫ t in Ioo (0 : ℝ) 1, gN n r t := by
   have hg_cont (r : ℝ) : ContinuousOn (g r) (Ioo (0 : ℝ) 1) := by
-    have hΦ : ContinuousOn (MagicFunction.a.RealIntegrands.Φ₄ (r := r)) (Ioo (0 : ℝ) 1) :=
-      (MagicFunction.a.RealIntegrands.Φ₄_contDiffOn (r := r)).continuousOn.mono
-        (fun _ hx => mem_Icc_of_Ioo hx)
-    refine hΦ.congr fun t ht => ?_
+    refine ((MagicFunction.a.RealIntegrands.Φ₄_contDiffOn (r := r)).continuousOn.mono
+      (fun _ hx => mem_Icc_of_Ioo hx)).congr fun t ht => ?_
     have hz : z₄' t = (1 : ℂ) - t + I := z₄'_eq_of_mem (mem_Icc_of_Ioo ht)
     have hz_coeff : (π * I : ℂ) * (z₄' t : ℂ) = coeff t := by
       simp [coeff, I24Common.coeff, hz, sub_eq_add_neg, mul_add, mul_assoc,
