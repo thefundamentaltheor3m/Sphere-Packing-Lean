@@ -79,10 +79,8 @@ public lemma Submodule.coe_evenLattice (R : Type*) (n : ℕ) [Ring R] [CharZero 
     {v | (∀ i, ∃ n : ℤ, (n : R) = v i) ∧ ∑ i, v i ≡ 0 [PMOD 2]} := by
   ext v
   simp only [evenLattice, map_coe, Set.mem_image, SetLike.mem_coe, Set.mem_setOf_eq]
-  refine ⟨fun ⟨f, hf, hfv⟩ => ?_, fun ⟨hv, hv'⟩ => ?_⟩
-  · subst hfv
-    refine ⟨fun i ↦ ⟨f i, by simp⟩, ?_⟩
-    simpa [Int.cast_sum] using
+  refine ⟨fun ⟨f, hf, hfv⟩ => hfv ▸ ⟨fun i ↦ ⟨f i, by simp⟩, ?_⟩, fun ⟨hv, hv'⟩ => ?_⟩
+  · simpa [Int.cast_sum] using
       (by simpa [evenLatticeInt] using hf : (∑ i, f i : ℤ) ≡ 0 [PMOD 2]).intCast (G := R)
   · choose w hw using hv
     refine ⟨w, ?_, by ext i; simpa using hw i⟩
@@ -122,21 +120,18 @@ public noncomputable def Submodule.E8 (R : Type*) [Field R] [NeZero (2 : R)] :
         · obtain ⟨a', ha', ha⟩ := ha i; obtain ⟨b', hb⟩ := hb i
           exact ⟨a' + 2 * b', ha'.add_even (by simp), by simp [ha, hb, mul_add]⟩
     · rw [Finset.sum_add_distrib]; exact ((has.add_right _).trans (hbs.add_left _)).trans (by simp)
-  zero_mem' := by
-    simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, Pi.zero_apply, forall_const,
-      mul_zero, Finset.sum_const_zero, AddCommGroup.modEq_refl, and_true]
-    exact Or.inl ⟨0, by simp⟩
+  zero_mem' := ⟨.inl fun _ => ⟨0, by simp⟩, by simp⟩
   smul_mem' := by
     simp only [nsmul_eq_mul, Nat.cast_ofNat, Set.mem_setOf_eq, zsmul_eq_mul, Pi.mul_apply,
       Pi.intCast_apply, and_imp]
     refine fun c a ha has => ⟨?_, by simpa [zsmul_eq_mul, Finset.mul_sum] using has.zsmul' (n := c)⟩
     rcases ha with ha | ha
-    · exact Or.inl fun i ↦ let ⟨a, ha⟩ := ha i; by simp only [← ha, ← Int.cast_mul]; exact ⟨_, rfl⟩
-    · rcases c.even_or_odd with ⟨c, rfl⟩ | hc
-      · exact Or.inl fun i ↦ let ⟨j, hj, hj'⟩ := ha i;
-          ⟨c * j, by rw [Int.cast_mul, hj', Int.cast_add]; ring⟩
-      · exact Or.inr fun i ↦ let ⟨j, hj, hj'⟩ := ha i;
-          ⟨c * j, by simp [hc, hj, hj', mul_left_comm]⟩
+    · exact .inl fun i ↦ let ⟨a, ha⟩ := ha i; by simp only [← ha, ← Int.cast_mul]; exact ⟨_, rfl⟩
+    rcases c.even_or_odd with ⟨c, rfl⟩ | hc
+    · exact .inl fun i ↦ let ⟨j, hj, hj'⟩ := ha i;
+        ⟨c * j, by rw [Int.cast_mul, hj', Int.cast_add]; ring⟩
+    · exact .inr fun i ↦ let ⟨j, hj, hj'⟩ := ha i;
+        ⟨c * j, by simp [hc, hj, hj', mul_left_comm]⟩
 
 lemma Submodule.mem_E8 {R : Type*} [Field R] [NeZero (2 : R)]
     {v : Fin 8 → R} :
@@ -179,16 +174,16 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     have hi (i : Fin 8) : x i = z i + 2⁻¹ := by linear_combination - 2⁻¹ * hy' i
     have hspan : span ℤ (evenLattice R 8) = evenLattice R 8 := by simp
     rw [← hspan, sup_comm, ← Submodule.span_insert, Submodule.mem_span_insert, hspan]
-    refine ⟨1, LinearMap.intCast R z, ?_, ?_⟩
-    · rw [← SetLike.mem_coe, coe_evenLattice]
-      refine ⟨by simp, ?_⟩
-      simp only [LinearMap.intCast_apply]
-      simp_rw [hi] at hx'
-      rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
-        nsmul_eq_mul, Nat.cast_ofNat, show (8 : R) * 2⁻¹ = 2 • 2 by norm_num] at hx'
-      exact (AddCommGroup.add_nsmul_modEq _).symm.trans hx'
-    · ext i; rw [Pi.add_apply, LinearMap.intCast_apply, Pi.smul_apply, one_smul]
-      linear_combination - 2⁻¹ * hy' i
+    refine ⟨1, LinearMap.intCast R z, ?_, by
+      ext i; rw [Pi.add_apply, LinearMap.intCast_apply, Pi.smul_apply, one_smul]
+      linear_combination - 2⁻¹ * hy' i⟩
+    rw [← SetLike.mem_coe, coe_evenLattice]
+    refine ⟨by simp, ?_⟩
+    simp only [LinearMap.intCast_apply]
+    simp_rw [hi] at hx'
+    rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+      nsmul_eq_mul, Nat.cast_ofNat, show (8 : R) * 2⁻¹ = 2 • 2 by norm_num] at hx'
+    exact (AddCommGroup.add_nsmul_modEq _).symm.trans hx'
 
 section E8_basis
 
@@ -258,8 +253,8 @@ public lemma of_basis_eq_matrix [Field R] [CharZero R] : Matrix.of (E8Basis R) =
 
 /-- The row vectors of `E8Matrix` all lie in the `E8` submodule. -/
 public theorem range_E8Matrix_row_subset (R : Type*) [Field R] [CharZero R] :
-    Set.range (E8Matrix R).row ⊆ Submodule.E8 R := by
-  simpa [Set.subset_def] using E8Matrix_row_mem_E8 (R := R)
+    Set.range (E8Matrix R).row ⊆ Submodule.E8 R :=
+  Set.range_subset_iff.2 (E8Matrix_row_mem_E8 (R := R))
 
 def E8Inverse (R : Type*) [Field R] [NeZero (2 : R)] : Matrix (Fin 8) (Fin 8) R := !![
   2⁻¹, 0, 0, 0, 0, 0, 0, 0;
@@ -285,13 +280,11 @@ lemma exists_cast_eq_vecMul_E8Inverse_aux {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (w : Fin 8 → ℤ) (hv : v ∈ Submodule.E8 R)
     (hw : ∑ i, w i = 0) :
     ∃ c : ℤ, c = ∑ i, v i * w i := by
-  obtain ⟨(hv' | hv'), _⟩ := Submodule.mem_E8''.1 hv
-  · choose v' hv' using hv'
-    exact ⟨∑ i, v' i * w i, by simp [← hv', Int.cast_sum, Int.cast_mul]⟩
-  · choose v' hv' using hv'
-    refine ⟨∑ i, v' i * w i, ?_⟩
-    simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum, Int.cast_sum, Int.cast_mul,
-      show (∑ i, (w i : R)) = 0 from by exact_mod_cast hw]
+  obtain ⟨(hv' | hv'), _⟩ := Submodule.mem_E8''.1 hv <;> choose v' hv' using hv'
+  · exact ⟨∑ i, v' i * w i, by simp [← hv', Int.cast_sum, Int.cast_mul]⟩
+  · exact ⟨∑ i, v' i * w i, by
+      simp [← hv', add_mul, Finset.sum_add_distrib, ← Finset.mul_sum, Int.cast_sum, Int.cast_mul,
+        show (∑ i, (w i : R)) = 0 from by exact_mod_cast hw]⟩
 
 lemma exists_cast_eq_vecMul_E8Inverse {R : Type*} [Field R] [CharZero R]
     (v : Fin 8 → R) (hv : v ∈ Submodule.E8 R) :
@@ -339,9 +332,9 @@ public theorem span_E8Matrix (R : Type*) [Field R] [CharZero R] :
   rw [Submodule.mem_span_range_iff_exists_fun]
   obtain ⟨c, hc⟩ := exists_cast_eq_vecMul_E8Inverse v hv
   refine ⟨c, ?_⟩
-  have hvec : Matrix.vecMul (LinearMap.intCast R c) (E8Matrix R) = v := by
-    rw [hc, Matrix.vecMul_vecMul, E8Inverse_mul_E8Matrix]; simp
-  simpa [Matrix.vecMul_eq_sum, Matrix.row, LinearMap.intCast_apply, zsmul_eq_mul] using hvec
+  simpa [Matrix.vecMul_eq_sum, Matrix.row, LinearMap.intCast_apply, zsmul_eq_mul] using
+    show Matrix.vecMul (LinearMap.intCast R c) (E8Matrix R) = v by
+      rw [hc, Matrix.vecMul_vecMul, E8Inverse_mul_E8Matrix]; simp
 
 def E8.inn : Matrix (Fin 8) (Fin 8) ℤ :=
   !![4, -2, 0, 0, 0, 0, 0, 1;
