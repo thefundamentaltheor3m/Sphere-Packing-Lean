@@ -136,9 +136,9 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           (bContourWeight u a))).congr_fun (fun t ht => ?_) measurableSet_Ioi
     simp [bContourIntegrandT, bContourIntegrandI, hψ t (lt_trans (by norm_num) ht),
       bContourWeight_add, mul_comm, mul_left_comm]
-  have hintT_left := hintT_shift (-1 : ℂ) fun t ht0 => by
+  have hintT_left := hintT_shift (-1 : ℂ) fun t ht0 ↦ by
     simpa [add_assoc] using ψT'_neg_one_add_I_mul (t := t) ht0
-  have hintT_right := hintT_shift (1 : ℂ) fun t ht0 => by
+  have hintT_right := hintT_shift (1 : ℂ) fun t ht0 ↦ by
     simpa [add_assoc] using ψT'_one_add_I_mul (t := t) ht0
   have htendstoT :
       ∀ ε > 0, ∃ M : ℝ, ∀ z : ℂ, M ≤ z.im → ‖bContourIntegrandT u z‖ < ε := by
@@ -235,17 +235,16 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
           simpa [min_eq_right (zero_le_one : (0 : ℝ) ≤ 1),
             max_eq_left (zero_le_one : (0 : ℝ) ≤ 1)] using hz.1))
         hint₁ hint₂ htendstoT
-  have hmem_Icc : ∀ {x : ℝ}, x ∈ Set.uIcc (0 : ℝ) 1 → x ∈ Set.Icc (0 : ℝ) 1 := fun hx => by
-    simpa [Set.uIcc_of_le (show (0 : ℝ) ≤ 1 by norm_num)] using hx
+  have hmem_Icc : ∀ {x : ℝ}, x ∈ Set.uIcc (0 : ℝ) 1 → x ∈ Set.Icc (0 : ℝ) 1 := fun hx ↦ by
+    simpa [Set.uIcc_of_le zero_le_one] using hx
   have hJ2_top : J₂' u =
       ∫ (x : ℝ) in (0 : ℝ)..1,
         bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I - 1) := by
     dsimp [J₂']
     refine intervalIntegral.integral_congr fun x hx => ?_
-    have h := z₂'_eq_of_mem (t := x) (hmem_Icc hx)
-    push_cast at h
     simp [bContourIntegrandT, bContourWeight, sub_eq_add_neg, mul_assoc,
-      show z₂' x = (x : ℂ) + (1 : ℂ) * Complex.I - 1 by linear_combination h]
+      show z₂' x = (x : ℂ) + (1 : ℂ) * Complex.I - 1 by
+        have h := z₂'_eq_of_mem (t := x) (hmem_Icc hx); push_cast at h; linear_combination h]
   have hJ4_top : J₄' u =
       ∫ (x : ℝ) in (1 : ℝ)..0,
         bContourIntegrandT u ((x : ℂ) + (1 : ℂ) * Complex.I) := by
