@@ -371,9 +371,8 @@ theorem exists_periodicSpherePacking_sep_one_density_gt_of_lt_density (hd : 0 < 
         ((Metric.measure_ball_pos volume _ (by positivity)).ne.symm :
           volume (ball (0 : EuclideanSpace ℝ (Fin d)) (R + Cshift)) ≠ 0)
         (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
-        (ENNReal.mul_lt_of_lt_div <| hcR.trans_le <| by
-          simpa [hSsep, volBall, r, add_assoc, add_left_comm, add_comm] using
-            S.finiteDensity_le hd R :
+        (ENNReal.mul_lt_of_lt_div <| hcR.trans_le <| by simpa [hSsep, volBall, r, add_assoc,
+          add_left_comm, add_comm] using S.finiteDensity_le hd R :
         c * volume (ball (0 : EuclideanSpace ℝ (Fin d)) R) <
         ((S.centers ∩ ball (0 : EuclideanSpace ℝ (Fin d)) (R + r)).encard : ℝ≥0∞) * volBall)
   let R₁ : ℝ := R + r
