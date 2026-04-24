@@ -209,8 +209,7 @@ lemma volume_cubeShell_eq_pow (L : ℝ) :
   have hmeas_inner : MeasurableSet (coordCubeInner d L 1) := by
     simpa [PeriodicConstant.coordCubeInner_eq_preimage_ofLp] using
       (MeasurableSet.pi Set.countable_univ fun _ _ => measurableSet_Icc).preimage
-        (by simpa using PiLp.volume_preserving_ofLp (ι := Fin d) :
-          MeasurePreserving (fun x : EuclideanSpace ℝ (Fin d) => x.ofLp)).measurable
+        (PiLp.volume_preserving_ofLp (ι := Fin d)).measurable
   simpa [measure_vadd, constVec, PeriodicConstant.volume_coordCubeInner] using
     measure_diff (μ := volume) (coordCubeInner_one_subset_shell L) hmeas_inner.nullMeasurableSet
       (by simp [PeriodicConstant.volume_coordCubeInner])
@@ -281,13 +280,12 @@ end PeriodizeCubeDensity
 
 lemma tendsto_cubeShell_ratio_zero :
     Tendsto (fun L : ℝ => ((L + 1) ^ d - (L - 2) ^ d) / (L ^ d)) atTop (𝓝 (0 : ℝ)) := by
-  refine (by
-    simpa using
-      ((by simpa using (tendsto_const_nhds (x := (1 : ℝ))).add tendsto_inv_atTop_zero |>.pow d :
-        Tendsto (fun L : ℝ => (1 + L⁻¹) ^ d) atTop (𝓝 (1 : ℝ))).sub
-      (by simpa using ((tendsto_const_nhds (x := (1 : ℝ))).sub
-        ((tendsto_const_nhds (x := (2 : ℝ))).mul tendsto_inv_atTop_zero)).pow d :
-        Tendsto (fun L : ℝ => (1 - 2 * L⁻¹) ^ d) atTop (𝓝 (1 : ℝ)))) :
+  have h1 : Tendsto (fun L : ℝ => (1 + L⁻¹) ^ d) atTop (𝓝 (1 : ℝ)) := by
+    simpa using ((tendsto_const_nhds (x := (1 : ℝ))).add tendsto_inv_atTop_zero).pow d
+  have h2 : Tendsto (fun L : ℝ => (1 - 2 * L⁻¹) ^ d) atTop (𝓝 (1 : ℝ)) := by
+    simpa using ((tendsto_const_nhds (x := (1 : ℝ))).sub
+      ((tendsto_const_nhds (x := (2 : ℝ))).mul tendsto_inv_atTop_zero)).pow d
+  refine (by simpa using h1.sub h2 :
     Tendsto (fun L : ℝ => (1 + L⁻¹) ^ d - (1 - 2 * L⁻¹) ^ d) atTop (𝓝 (0 : ℝ))).congr' ?_
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with L hLpos
   rw [sub_div]; congr 1 <;> rw [← div_pow] <;> congr 1 <;> field_simp
