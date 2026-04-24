@@ -72,19 +72,18 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     · exact Set.mem_iUnion₂.2 ⟨i, hs, by simpa [As, hs] using hi⟩
     · simp [As, hs] at hi)).subset_ball 0
   exact (Measure.finite_const_le_meas_of_disjoint_iUnion (μ := volume) hc As_mble As_disj
-    (ne_top_of_le_ne_top (MeasureTheory.measure_ball_lt_top (μ := volume)).ne
-      (volume.mono hL))).subset fun i hi ↦ by simpa [As, hi] using h_volume i hi
+    (ne_top_of_le_ne_top measure_ball_lt_top.ne (volume.mono hL))).subset
+    fun i hi ↦ by simpa [As, hi] using h_volume i hi
 
 /-- A periodic packing has only finitely many centers in a bounded set (in positive dimension). -/
 public lemma finite_centers_inter_of_isBounded (hD_isBounded : IsBounded D) (hd : 0 < d) :
     Finite ↑(S.centers ∩ D) := by
   haveI : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  refine (Set.finite_coe_iff).2 <| finite_of_bounded_iUnion_of_volume_lower_bound
+  refine Set.finite_coe_iff.2 <| finite_of_bounded_iUnion_of_volume_lower_bound
       (c := volume (ball (0 : EuclideanSpace ℝ (Fin d)) (S.separation / 2)))
       (hc := by
-        simpa using
-          Metric.measure_ball_pos volume (0 : EuclideanSpace ℝ (Fin d))
-            (by nlinarith [S.separation_pos]))
+        simpa using Metric.measure_ball_pos volume (0 : EuclideanSpace ℝ (Fin d))
+          (by nlinarith [S.separation_pos]))
       (h_measurable := fun _ _ => measurableSet_ball)
       (h_bounded := isBounded_iUnion_ball_centers_inter S D hD_isBounded)
       (h_volume := fun _ _ => by simp [Measure.addHaar_ball_center])
@@ -204,14 +203,12 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
         rwa [Set.mem_vadd_set_iff_neg_vadd_mem, vadd_eq_add, neg_add_eq_sub] at hu_fd
       ext i
       set b' := b.ofZLatticeBasis ℝ _
-      calc
-        _ = b'.repr (fract b' u) i - b'.repr (floor b' (u - floor b' u - v)) i := rfl
+      calc _ = b'.repr (fract b' u) i - b'.repr (floor b' (u - floor b' u - v)) i := rfl
         _ = b'.repr (fract b' u) i - b'.repr (floor b' (u - v - floor b' u)) i := by abel_nf
         _ = b'.repr u i - ⌊b'.repr u i⌋ - (⌊b'.repr (u - v) i⌋ - ⌊b'.repr u i⌋) := by simp
         _ = b'.repr u i - ⌊b'.repr (u - v) i⌋ := by abel_nf
         _ = b'.repr u i := by
-          rw [sub_eq_self, ← repr_floor_apply, (ZSpan.floor_eq_zero ..).mp hu_fd']; simp
-  }
+          rw [sub_eq_self, ← repr_floor_apply, (ZSpan.floor_eq_zero ..).mp hu_fd']; simp }
 
 instance (S : PeriodicSpherePacking 0) : Subsingleton S.centers := inferInstance
 instance (S : PeriodicSpherePacking 0) : Finite S.centers := inferInstance
@@ -245,8 +242,7 @@ public theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice)
     (AddAction.pretransitive_iff_subsingleton_quotient _ _).mp ⟨fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
       rw [hS] at hx hy
       exact ⟨⟨y - x, sub_mem hy hx⟩, by simp [addAction_vadd]⟩⟩
-  exact Fintype.card_eq_one_iff.2
-    ⟨⟦(⟨0, by simp [hS]⟩ : S.centers)⟧, fun y => Subsingleton.elim y _⟩
+  exact Fintype.card_eq_one_iff.2 ⟨⟦(⟨0, by simp [hS]⟩ : S.centers)⟧, (Subsingleton.elim · _)⟩
 
 public theorem PeriodicSpherePacking.card_centers_inter_isFundamentalDomain
     (hD_isBounded : IsBounded D)
@@ -334,7 +330,7 @@ private theorem disjoint_vadd_fundamentalDomain
     (fun u ↦ by simpa using exist_unique_vadd_mem_fundamentalDomain (b.ofZLatticeBasis ℝ _) u)
     (show (⟨x, by simpa [Λ, S.basis_Z_span] using hx⟩ : Λ) ≠
         ⟨y, by simpa [Λ, S.basis_Z_span] using hy⟩ from
-      fun h ↦ hxy (by simpa using congrArg Subtype.val h))
+      fun h ↦ hxy (congrArg Subtype.val h))
 
 /-- Theorem 2.3, lower bound. -/
 public theorem PeriodicSpherePacking.aux_ge
@@ -351,7 +347,7 @@ public theorem PeriodicSpherePacking.aux_ge
     rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
   · rintro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     exact Set.disjoint_left.2 fun u hux huy ↦ Set.disjoint_left.1
-      (disjoint_vadd_fundamentalDomain S b hx.left hy.left fun h ↦ hxy (Subtype.ext h))
+      (disjoint_vadd_fundamentalDomain S b hx.1 hy.1 fun h ↦ hxy (Subtype.ext h))
       hux.right huy.right
 
 private theorem aux'
@@ -386,7 +382,7 @@ public theorem PeriodicSpherePacking.aux_le
     rw [nsmul_eq_mul, ENat.tsum_set_const, mul_comm]
   · rintro ⟨x, hx⟩ _ ⟨y, hy⟩ _ hxy
     exact Set.disjoint_left.2 fun u hux huy ↦ Set.disjoint_left.1
-      (disjoint_vadd_fundamentalDomain S b hx.left hy.left fun h ↦ hxy (Subtype.ext h))
+      (disjoint_vadd_fundamentalDomain S b hx.1 hy.1 fun h ↦ hxy (Subtype.ext h))
       hux.right huy.right
 
 end theorem_2_3
