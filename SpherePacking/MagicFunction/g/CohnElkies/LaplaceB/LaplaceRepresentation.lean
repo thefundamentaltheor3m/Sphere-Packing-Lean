@@ -276,15 +276,14 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
       (_ : ∀ {t : ℝ}, t ∈ Set.Icc (0 : ℝ) 1 → zp t = a + I * (t : ℂ)),
       (∫ t in (0 : ℝ)..1, (I : ℂ) * ψT' (zp t) *
           cexp (π * (I : ℂ) * (u : ℂ) * zp t)) =
-        (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) := by
-    intro a zp hzp
+        (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u (a + I * (t : ℂ))) :=
+      fun a zp hzp => by
     rw [show (∫ t in (0 : ℝ)..1, (I : ℂ) * ψT' (zp t) *
         cexp (π * (I : ℂ) * (u : ℂ) * zp t)) =
         ∫ t in (0 : ℝ)..1, (I : ℂ) * bContourIntegrandT u (a + I * (t : ℂ)) from
       intervalIntegral.integral_congr fun t ht => by
-        simp [bContourIntegrandT, bContourWeight, hzp (hmem_Icc ht), mul_assoc]]
-    simp only [intervalIntegral.integral_const_mul, mul_eq_mul_left_iff, I_ne_zero, or_false]
-    rw [intervalIntegral.integral_of_le zero_le_one]
+        simp [bContourIntegrandT, bContourWeight, hzp (hmem_Icc ht), mul_assoc],
+      intervalIntegral.integral_const_mul, intervalIntegral.integral_of_le zero_le_one]
   have hJ1_set : J₁' u =
       (I : ℂ) * (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandT u ((-1 : ℂ) + I * (t : ℂ))) :=
     hJ_vert_aux (-1 : ℂ) z₁' fun ht => by simpa using z₁'_eq_of_mem ht
