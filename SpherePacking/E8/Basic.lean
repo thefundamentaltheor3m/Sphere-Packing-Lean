@@ -154,15 +154,8 @@ lemma Submodule.mem_E8'' {R : Type*} [Field R] [NeZero (2 : R)]
 
 theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     E8 R = (evenLattice R 8 ⊔ Submodule.span ℤ {fun _ ↦ (2⁻¹ : R)}) := by
-  refine le_antisymm ?h1 ?h2
-  case h2 =>
-    rw [sup_le_iff]
-    refine ⟨fun v hv ↦ by simp [mem_E8, (mem_evenLattice (R := R) (n := 8)).1 hv], ?_⟩
-    rw [Submodule.span_le]
-    simpa [mem_E8, show (8 * 2⁻¹ : R) = (2 : ℤ) • 2 by norm_num] using
-      AddCommGroup.zsmul_modEq_zero (p := (2 : R)) 2
-  case h1 =>
-    intro x
+  refine le_antisymm ?_ ?_
+  · intro x
     rw [mem_E8]
     rintro ⟨hx | hx, hx'⟩
     · exact Submodule.mem_sup_left ((mem_evenLattice (R := R) (n := 8)).2 ⟨hx, hx'⟩)
@@ -184,6 +177,11 @@ theorem Submodule.E8_eq_sup (R : Type*) [Field R] [CharZero R] :
     rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
       nsmul_eq_mul, Nat.cast_ofNat, show (8 : R) * 2⁻¹ = 2 • 2 by norm_num] at hx'
     exact (AddCommGroup.add_nsmul_modEq _).symm.trans hx'
+  · rw [sup_le_iff]
+    refine ⟨fun v hv ↦ by simp [mem_E8, (mem_evenLattice (R := R) (n := 8)).1 hv], ?_⟩
+    rw [Submodule.span_le]
+    simpa [mem_E8, show (8 * 2⁻¹ : R) = (2 : ℤ) • 2 by norm_num] using
+      AddCommGroup.zsmul_modEq_zero (p := (2 : R)) 2
 
 section E8_basis
 
