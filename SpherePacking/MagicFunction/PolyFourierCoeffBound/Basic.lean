@@ -73,8 +73,7 @@ theorem hpoly' : (fun (n : ℕ) ↦ c (n + n₀)) =O[atTop] (fun (n : ℕ) ↦ (
   simp only [Real.norm_eq_abs, abs_pow, abs_of_nonneg, Nat.cast_nonneg]
   rw [← mul_pow]
   refine pow_le_pow_left₀ (abs_nonneg _) ?_ _
-  norm_cast
-  cases abs_cases (n + n₀ : ℤ) <;> grind
+  norm_cast; cases abs_cases (n + n₀ : ℤ) <;> grind
 
 end hpoly_aux
 
@@ -86,7 +85,7 @@ lemma summable_norm_mul_rexp_neg_pi_div_two :
   let r : ℂ := cexp (-(π : ℂ) / 2)
   have hr : ‖r‖ < 1 := by
     simpa [r, Complex.norm_exp] using
-      (Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-(π : ℝ) / 2) < 0))
+      Real.exp_lt_one_iff.2 (by nlinarith [Real.pi_pos] : (-(π : ℝ) / 2) < 0)
   have hs : Summable (fun n : ℕ => ‖c (n + n₀) * r ^ n‖) :=
     summable_real_norm_mul_geometric_of_norm_lt_one (k := k) (r := r) hr
       (by simpa using hpoly' (c := c) (n₀ := n₀) (k := k) hpoly)
@@ -101,9 +100,6 @@ end summable_aux
 
 section calc_aux
 
--- These could even go in Mathlib... they look useful (if a bit random)
-
--- Below was written by Bhavik
 lemma aux_2 (x : ℂ) : 1 - Real.exp x.re ≤ norm (1 - cexp x) :=
   (le_abs_self _).trans (by simpa [Complex.norm_exp] using abs_norm_sub_norm_le (1 : ℂ) (cexp x))
 
@@ -144,8 +140,8 @@ lemma aux_tprod_one_sub_rexp_pow_24_pos (c : ℝ) (hc : 0 < c) :
   have hnat : Summable fun b : ℕ ↦ Real.exp (-c * (b : ℝ)) := by
     simpa [mul_assoc, mul_comm, mul_left_comm] using
       (Real.summable_exp_nat_mul_iff (a := -c)).2 (by nlinarith)
-  simpa [log_pow, Nat.cast_ofNat, sub_eq_add_neg, smul_eq_mul] using Summable.const_smul (24 : ℝ)
-    (Real.summable_log_one_add_of_summable
+  simpa [log_pow, Nat.cast_ofNat, sub_eq_add_neg, smul_eq_mul] using
+    Summable.const_smul (24 : ℝ) (Real.summable_log_one_add_of_summable
       ((by simpa using hnat.comp_injective PNat.coe_injective :
         Summable fun b : ℕ+ ↦ Real.exp (-c * (b : ℝ))).neg))
 
@@ -178,13 +174,13 @@ lemma step_12a {r : ℝ} (hr : 0 < r) :
     Multipliable fun b : ℕ+ ↦ (1 - rexp (-r * (b : ℝ))) ^ 24 := by
   refine Real.multipliable_of_summable_log (fun i ↦ ?_) ?_
   · refine pow_pos (sub_pos.2 (Real.exp_lt_one_iff.2 ?_)) _
-    have : (0 : ℝ) < (i : ℝ) := by exact_mod_cast i.pos
+    have : (0 : ℝ) < (i : ℝ) := mod_cast i.pos
     nlinarith
   have hnat : Summable fun b : ℕ ↦ Real.exp (-r * (b : ℝ)) := by
     simpa [mul_assoc, mul_comm, mul_left_comm] using
       (Real.summable_exp_nat_mul_iff (a := -r)).2 (by nlinarith)
-  simpa [log_pow, sub_eq_add_neg, smul_eq_mul] using Summable.const_smul (24 : ℝ)
-    (Real.summable_log_one_add_of_summable
+  simpa [log_pow, sub_eq_add_neg, smul_eq_mul] using
+    Summable.const_smul (24 : ℝ) (Real.summable_log_one_add_of_summable
       ((by simpa using hnat.comp_injective PNat.coe_injective :
         Summable fun b : ℕ+ ↦ Real.exp (-r * (b : ℝ))).neg))
 
@@ -241,9 +237,8 @@ lemma step_11 :
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) ≤
   rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * rexp (-π * n / 2)) /
   (∏' (n : ℕ+), (1 - rexp (-2 * π * n * z.im)) ^ 24) := by
-  have hsum :
-      (∑' n : ℕ, ‖c (n + n₀)‖ * rexp (-π * n * z.im)) ≤
-        ∑' n : ℕ, ‖c (n + n₀)‖ * rexp (-π * n / 2) := by
+  have hsum : (∑' n : ℕ, ‖c (n + n₀)‖ * rexp (-π * n * z.im)) ≤
+      ∑' n : ℕ, ‖c (n + n₀)‖ * rexp (-π * n / 2) := by
     refine Summable.tsum_le_tsum (fun n ↦ ?_) (by simpa using aux_10 z c n₀ hcsum)
       (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
     refine mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ?_) (norm_nonneg _)
@@ -260,10 +255,8 @@ lemma step_12 :
     (∏' (n : ℕ+), (1 - rexp (-π * n)) ^ 24) := by
   gcongr
   · exact aux_11
-  have h0 (n : ℕ+) : 0 ≤ 1 - rexp (-π * (n : ℝ)) := by
-    refine sub_nonneg.2 (Real.exp_le_one_iff.2 ?_)
-    have : 0 ≤ (n : ℝ) := by positivity
-    nlinarith [Real.pi_pos]
+  have h0 (n : ℕ+) : 0 ≤ 1 - rexp (-π * (n : ℝ)) :=
+    sub_nonneg.2 <| Real.exp_le_one_iff.2 (by nlinarith [Real.pi_pos, n.pos])
   apply tprod_le_of_nonneg_of_multipliable (fun n => pow_nonneg (h0 n) 24)
   · intro n
     refine pow_le_pow_left₀ (h0 n) (sub_le_sub_left (Real.exp_le_exp.2 ?_) 1) 24
@@ -277,10 +270,6 @@ lemma step_12 :
 end calc_steps
 
 section main_theorem
-
-/-
-This section contains the proof of the main result of this file.
--/
 
 include f hf z hz c n₀ hcsum k hpoly in
 /-- A uniform bound on `‖(f z) / (Δ z)‖` for a function given by a Fourier series with polynomially
@@ -299,29 +288,20 @@ public theorem DivDiscBoundOfPolyFourierCoeff : norm ((f z) / (Δ z)) ≤
       (cexp (2 * π * I * z) * ∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
         congr
         rw [← tsum_mul_left]
-        congr
-        ext n; ring_nf
-        rw [mul_assoc (c (n + n₀)) (cexp _), ← Complex.exp_add]
-        congr 2
-        ring
+        congr; ext n; ring_nf
+        rw [mul_assoc (c (n + n₀)) (cexp _), ← Complex.exp_add]; congr 2; ring
   _ = norm ((cexp (π * I * n₀ * z) / cexp (2 * π * I * z)) *
       (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
-        field_simp
+      (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by field_simp
   _ = norm ((cexp (π * I * (n₀ - 2) * z)) *
       (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24)) := by
-        rw [mul_sub, sub_mul, ← Complex.exp_sub]
-        congr 6
-        ac_rfl
+        rw [mul_sub, sub_mul, ← Complex.exp_sub]; congr 6; ac_rfl
   _ = norm (cexp (π * I * (n₀ - 2) * z)) *
       norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := by
-        simp
+      norm (∏' (n : ℕ+), (1 - cexp (2 * π * I * n * z)) ^ 24) := by simp
   _ = norm (cexp (π * I * (n₀ - 2) * z)) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
-      ∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24 := by
-        congr
-        exact aux_5 z
+      ∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24 := by congr; exact aux_5 z
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * norm (∑' (n : ℕ), c (n + n₀) * cexp (π * I * n * z)) /
       (∏' (n : ℕ+), norm (1 - cexp (2 * π * I * n * z)) ^ 24) := step_7 z c n₀
   _ ≤ rexp (-π * (n₀ - 2) * z.im) * (∑' (n : ℕ), norm (c (n + n₀)) * norm (cexp (π * I * n * z))) /
@@ -341,16 +321,13 @@ end main_theorem
 
 section positivity
 
--- Note that this proof does NOT use our custom `summable_norm_pow_mul_geometric_of_norm_lt_one`
--- for functions with real inputs (see SpherePacking.ForMathlib.SpecificLimits).
 include hpoly hcn₀ in
 public theorem DivDiscBound_pos : 0 < DivDiscBound c n₀ := by
   rw [DivDiscBound]
   refine div_pos ?_ aux_11
-  refine
-    Summable.tsum_pos
-      (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
-      (fun _ => by positivity) 0 ?_
+  refine Summable.tsum_pos
+    (summable_norm_mul_rexp_neg_pi_div_two (c := c) (n₀ := n₀) (k := k) hpoly)
+    (fun _ => by positivity) 0 ?_
   simpa using (norm_pos_iff.2 hcn₀)
 
 end positivity
