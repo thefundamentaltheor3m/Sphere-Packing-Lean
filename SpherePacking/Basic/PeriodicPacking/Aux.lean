@@ -5,12 +5,8 @@ Authors: Gareth Ma
 -/
 module
 public import Mathlib.Algebra.Module.ZLattice.Covolume
-import Mathlib.Combinatorics.Pigeonhole
-import Mathlib.Dynamics.Ergodic.Action.Regular
-import Mathlib.Order.LiminfLimsup
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 import Mathlib.LinearAlgebra.Basis.SMul
-import Mathlib.Data.ENNReal.Inv
 
 public import SpherePacking.Basic.SpherePacking
 public import SpherePacking.ForMathlib.ENNReal
@@ -59,14 +55,14 @@ private theorem finite_of_bounded_iUnion_of_volume_lower_bound
     (h_disjoint : s.PairwiseDisjoint f) :
     s.Finite := by
   classical
-  let As : ι → Set (EuclideanSpace ℝ τ) := fun i => if i ∈ s then f i else ∅
+  let As : ι → Set (EuclideanSpace ℝ τ) := fun i ↦ if i ∈ s then f i else ∅
   have As_mble : ∀ i, MeasurableSet (As i) := fun i ↦ by
     by_cases hi : i ∈ s <;> [simpa [As, hi] using h_measurable i hi; simp [As, hi]]
-  have As_disj : Pairwise fun i j => Disjoint (As i) (As j) := fun i j hij => by
+  have As_disj : Pairwise fun i j ↦ Disjoint (As i) (As j) := fun i j hij ↦ by
     by_cases hi : i ∈ s <;> by_cases hj : j ∈ s
     · simpa [As, hi, hj] using h_disjoint hi hj hij
     all_goals simp [As, hi, hj]
-  obtain ⟨L, hL⟩ := (h_bounded.subset (show (⋃ i, As i) ⊆ ⋃ x ∈ s, f x from fun x hx => by
+  obtain ⟨L, hL⟩ := (h_bounded.subset (show (⋃ i, As i) ⊆ ⋃ x ∈ s, f x from fun x hx ↦ by
     obtain ⟨i, hi⟩ := Set.mem_iUnion.1 hx
     by_cases hs : i ∈ s
     · exact Set.mem_iUnion₂.2 ⟨i, hs, by simpa [As, hs] using hi⟩
@@ -144,8 +140,8 @@ noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv
     simp_rw [Subtype.forall, S.lattice.mk_vadd, vadd_eq_add, Subtype.mk.injEq, ← add_assoc]
     congr 1
     convert Subtype.ext_iff.mp (hv' _ (add_mem (SetLike.coe_mem _) hy) ?_)
-    simp only [S.lattice.mk_vadd, vadd_eq_add, add_assoc]
-    simpa [Subtype.forall] using (Classical.choose_spec (hD_unique_covers (y + v))).left
+    simpa [Subtype.forall, S.lattice.mk_vadd, add_assoc] using
+      (Classical.choose_spec (hD_unique_covers (y + v))).left
   invFun := fun ⟨x, hx⟩ ↦ ⟦⟨x, hx.left⟩⟧
   left_inv := Quotient.ind fun ⟨a, ha⟩ ↦ by
     simp_rw [Quotient.lift_mk, Quotient.eq]
@@ -204,22 +200,23 @@ public noncomputable def PeriodicSpherePacking.addActionOrbitRelEquiv''
       ext i
       set b' := b.ofZLatticeBasis ℝ _
       calc _ = b'.repr (fract b' u) i - b'.repr (floor b' (u - floor b' u - v)) i := rfl
-        _ = b'.repr (fract b' u) i - b'.repr (floor b' (u - v - floor b' u)) i := by abel_nf
-        _ = b'.repr u i - ⌊b'.repr u i⌋ - (⌊b'.repr (u - v) i⌋ - ⌊b'.repr u i⌋) := by simp
-        _ = b'.repr u i - ⌊b'.repr (u - v) i⌋ := by abel_nf
+        _ = b'.repr u i - ⌊b'.repr u i⌋ - (⌊b'.repr (u - v) i⌋ - ⌊b'.repr u i⌋) := by
+          rw [show u - floor b' u - v = u - v - floor b' u by abel]; simp
         _ = b'.repr u i := by
-          rw [sub_eq_self, ← repr_floor_apply, (ZSpan.floor_eq_zero ..).mp hu_fd']; simp }
+          rw [show b'.repr u i - ⌊b'.repr u i⌋ - (⌊b'.repr (u - v) i⌋ - ⌊b'.repr u i⌋)
+            = b'.repr u i - ⌊b'.repr (u - v) i⌋ by abel_nf, sub_eq_self,
+            ← repr_floor_apply, (ZSpan.floor_eq_zero ..).mp hu_fd']; simp }
 
 instance (S : PeriodicSpherePacking 0) : Subsingleton S.centers := inferInstance
 instance (S : PeriodicSpherePacking 0) : Finite S.centers := inferInstance
 
 public noncomputable instance PeriodicSpherePacking.finiteOrbitRelQuotient :
     Finite (Quotient S.addAction.orbitRel) := by
-  by_cases hd : 0 < d
+  rcases Nat.eq_zero_or_pos d with rfl | hd
+  · exact Quotient.finite _
   · let b : Basis _ ℤ S.lattice := (ZLattice.module_free ℝ S.lattice).chooseBasis
     haveI := finite_centers_inter_fundamentalDomain S b hd
     exact Finite.of_equiv _ (S.addActionOrbitRelEquiv' b).symm
-  · obtain rfl : d = 0 := Nat.eq_zero_of_not_pos hd; exact Quotient.finite _
 
 public noncomputable instance : Fintype (Quotient S.addAction.orbitRel) :=
   Fintype.ofFinite _
@@ -237,7 +234,6 @@ variable {d : ℕ} (S : PeriodicSpherePacking d) (D : Set (EuclideanSpace ℝ (F
 
 public theorem PeriodicSpherePacking.numReps_eq_one (hS : S.centers = S.lattice) :
     S.numReps = 1 := by
-  rw [numReps]
   haveI : Subsingleton (Quotient S.addAction.orbitRel) :=
     (AddAction.pretransitive_iff_subsingleton_quotient _ _).mp ⟨fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
       rw [hS] at hx hy
