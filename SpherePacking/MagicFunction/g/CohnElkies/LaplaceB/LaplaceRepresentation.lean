@@ -392,8 +392,7 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     have hCenterVI : (∫ t in Set.Ioc (0 : ℝ) 1, bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) +
           (∫ t in Set.Ioi (1 : ℝ), bContourIntegrandI u ((Complex.I : ℂ) * (t : ℂ))) = VI := by
       simpa [add_comm, add_left_comm, add_assoc] using hVI_split.symm
-    simp only [smul_eq_mul, neg_mul]
-    grind only
+    simp only [smul_eq_mul, neg_mul]; grind only
   refine hsum.trans ?_
   simp [show bContourWeight u (1 : ℂ) = Complex.exp (((π * u : ℝ) : ℂ) * Complex.I) by
           simp [bContourWeight, mul_left_comm, mul_comm],
