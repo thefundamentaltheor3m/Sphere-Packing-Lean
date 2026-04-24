@@ -152,8 +152,8 @@ public theorem bRadial_eq_laplace_psiI_main {u : ℝ} (hu : 2 < u) :
     intro ε hε
     rcases Filter.eventually_atTop.1 (htdec.eventually (Iio_mem_nhds hε)) with ⟨Mε, hMε⟩
     refine ⟨max (max 1 Aψ) Mε, fun z hzM => ?_⟩
-    have hzpos : 0 < z.im := lt_of_lt_of_le (by norm_num)
-      (((le_max_left 1 Aψ).trans (le_max_left _ _) : (1 : ℝ) ≤ max (max 1 Aψ) Mε).trans hzM)
+    have hzpos : 0 < z.im := lt_of_lt_of_le zero_lt_one
+      (((le_max_left 1 Aψ).trans (le_max_left _ _) : (1 : ℝ) ≤ _).trans hzM)
     have hzI : 0 < (z + (1 : ℂ)).im := by simpa [add_assoc] using hzpos
     have htIm : Aψ ≤ UpperHalfPlane.im (⟨z + (1 : ℂ), hzI⟩ : ℍ) := by
       simpa [UpperHalfPlane.im, add_assoc] using
